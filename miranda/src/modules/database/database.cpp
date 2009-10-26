@@ -41,6 +41,27 @@ bool fileExist(TCHAR* fname)
 	return res;
 }
 
+int validateProfileDir(TCHAR* profiledir)
+{
+	REPLACEVARSDATA dat = {0};
+	dat.cbSize = sizeof(dat);
+	dat.dwFlags = RVF_TCHAR;
+
+	TCHAR* pfd = (TCHAR*)CallService(MS_UTILS_REPLACEVARS, (WPARAM)_T("%miranda_path%\\"), (LPARAM)&dat);
+
+	int res = lstrcmpi(profiledir, pfd) == 0;
+	if (res)
+	{
+		MessageBox(NULL, 
+			_T("Profile cannot be placed into Miranda root folder.\n")
+			_T("Please move Miranda profile to some other location."),
+			_T("Miranda IM"), MB_ICONERROR | MB_OK);
+	}
+	mir_free(pfd);
+
+	return res;
+}
+
 // returns 1 if the profile path was returned, without trailing slash
 int getProfilePath(TCHAR * buf, size_t cch)
 {
@@ -52,7 +73,7 @@ int getProfilePath(TCHAR * buf, size_t cch)
 	dat.dwFlags = RVF_TCHAR;
 
 	if (profiledir[0] == 0)
-		_tcscpy(profiledir, _T("%miranda_path%"));
+		_tcscpy(profiledir, _T("%miranda_path%\\Profiles"));
 
 	TCHAR* exprofiledir = (TCHAR*)CallService(MS_UTILS_REPLACEVARS, (WPARAM)profiledir, (LPARAM)&dat);
 	size_t len = pathToAbsoluteT(exprofiledir, buf, NULL);
@@ -121,14 +142,17 @@ static int getProfile1(TCHAR * szProfile, size_t cch, TCHAR * profiledir, BOOL *
 	bool reqfd = !nodprof && (_taccess(szProfile, 0) == 0 || shouldAutoCreate(szProfile));
 	bool shpm = showProfileManager();
 
-	if (shpm || !reqfd) {
+	if (shpm || !reqfd) 
+	{
 		TCHAR searchspec[MAX_PATH];
 		mir_sntprintf(searchspec, SIZEOF(searchspec), _T("%s*.dat"), profiledir);
 
 		WIN32_FIND_DATA ffd;
 		HANDLE hFind = FindFirstFile(searchspec, &ffd);
-		if (hFind != INVALID_HANDLE_VALUE) {
-			do {
+		if (hFind != INVALID_HANDLE_VALUE) 
+		{
+			do 
+			{
 				// make sure the first hit is actually a *.dat file
 				if (!(ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) && isValidProfileName(ffd.cFileName)) 
 				{
@@ -147,6 +171,31 @@ static int getProfile1(TCHAR * szProfile, size_t cch, TCHAR * profiledir, BOOL *
 		*noProfiles = found == 0;
     
     if (nodprof && !reqfd) szProfile[0] = 0;
+
+	if (!found)
+	{
+		REPLACEVARSDATA dat = {0};
+		dat.cbSize = sizeof(dat);
+		dat.dwFlags = RVF_TCHAR;
+
+		TCHAR* pfd = (TCHAR*)CallService(MS_UTILS_REPLACEVARS, (WPARAM)_T("%miranda_path%\\*.dat"), (LPARAM)&dat);
+
+		WIN32_FIND_DATA ffd;
+		HANDLE hFind = FindFirstFile(pfd, &ffd);
+		FindClose(hFind);
+		mir_free(pfd);
+		if (hFind != INVALID_HANDLE_VALUE)
+		{
+			TCHAR buf[256];
+			mir_sntprintf(buf, SIZEOF(buf), 
+				_T("Your database is located in Miranda root folder.\n")
+				_T("Even though your profile folder is %s\n")
+				_T("Profiles are not allowed in the Miranda root folder.\n")
+				_T("Please move Miranda database into the current profile folder."),
+				profiledir);
+			MessageBox(NULL, buf, _T("Miranda IM"), MB_ICONERROR | MB_OK);
+		}
+	}
 
 	return reqfd;
 }
@@ -226,6 +275,7 @@ static int getProfile(TCHAR * szProfile, size_t cch)
 	getProfilePath(profiledir, SIZEOF(profiledir));
 	getDefaultProfile(szProfile, cch, profiledir);
 	getProfileCmdLine(szProfile, cch, profiledir);
+	if (validateProfileDir(profiledir)) return 0;
 	if (getProfileAutoRun(szProfile)) return 1;
 	if (getProfile1(szProfile, cch, profiledir, &pd.noProfiles)) return 1;
 

@@ -70,17 +70,17 @@ int pathToAbsolute(const char *pSrc, char *pOut, char* base)
 	if ( base == NULL )
 		base = szMirandaPath;
 
-    char buf[MAX_PATH];
-    if ( pSrc[0] < ' ')
+	char buf[MAX_PATH];
+	if ( pSrc[0] < ' ')
 		return mir_snprintf( pOut, MAX_PATH, "%s", pSrc );
-    else if ( pathIsAbsolute( pSrc ))
-        return GetFullPathNameA(pSrc, MAX_PATH, pOut, NULL);
+	else if ( pathIsAbsolute( pSrc ))
+		return GetFullPathNameA(pSrc, MAX_PATH, pOut, NULL);
 	else if ( pSrc[0] != '\\' )
 		mir_snprintf( buf, MAX_PATH, "%s%s", base, pSrc );
 	else
 		mir_snprintf( buf, MAX_PATH, "%s%s", base, pSrc+1 );
 
-    return GetFullPathNameA(buf, MAX_PATH, pOut, NULL);
+	return GetFullPathNameA(buf, MAX_PATH, pOut, NULL);
 }
 
 static INT_PTR pathToAbsolute(WPARAM wParam, LPARAM lParam) 
@@ -320,7 +320,7 @@ static __forceinline char *GetModulePathX(char *, HMODULE hModule)
 static __forceinline char *GetUserNameX(char *)
 {
 	char result[128];
-    DWORD size = SIZEOF(result);
+	DWORD size = SIZEOF(result);
 	if (GetUserNameA(result, &size))
 		return mir_strdup(result);
 	return NULL;
@@ -368,7 +368,7 @@ static __forceinline TCHAR *GetModulePathX(TCHAR *, HMODULE hModule)
 static __forceinline TCHAR *GetUserNameX(TCHAR *)
 {
 	TCHAR result[128];
-    DWORD size = SIZEOF(result);
+	DWORD size = SIZEOF(result);
 	if (GetUserName(result, &size))
 		return mir_tstrdup(result);
 	return NULL;
@@ -417,8 +417,8 @@ XCHAR *GetInternalVariable(XCHAR *key, size_t keyLength, HANDLE hContact)
 		else if (!_xcscmp(theKey, XSTR(key, "username")))
 			theValue = GetUserNameX(key);
 		else if (!_xcscmp(theKey, XSTR(key, "miranda_userdata")) ||
-				   !_xcscmp(theKey, XSTR(key, "miranda_avatarcache")) ||
-					!_xcscmp(theKey, XSTR(key, "miranda_logpath")))
+				 !_xcscmp(theKey, XSTR(key, "miranda_avatarcache")) ||
+				 !_xcscmp(theKey, XSTR(key, "miranda_logpath")))
 		{
 			char szFullPath[MAX_PATH], szProfilePath[MAX_PATH], szProfileName[MAX_PATH];
 			CallService(MS_DB_GETPROFILEPATH, SIZEOF(szProfilePath), (LPARAM) szProfilePath);
@@ -427,10 +427,10 @@ XCHAR *GetInternalVariable(XCHAR *key, size_t keyLength, HANDLE hContact)
 			if ( lstrcmpA( pos, ".dat" ) == 0 )
 				*pos = 0;
 			if (!_xcscmp(theKey, XSTR(key, "miranda_avatarcache"))) 
-				mir_snprintf(szFullPath, SIZEOF(szFullPath), "%s\\Profiles\\%s\\AvatarCache", szProfilePath, szProfileName);
+				mir_snprintf(szFullPath, SIZEOF(szFullPath), "%s\\%s\\AvatarCache", szProfilePath, szProfileName);
 			else if (!_xcscmp(theKey, XSTR(key, "miranda_logpath"))) 
-				mir_snprintf(szFullPath, SIZEOF(szFullPath), "%s\\Profiles\\%s\\Logs", szProfilePath, szProfileName);
-			else mir_snprintf(szFullPath, SIZEOF(szFullPath), "%s\\Profiles\\%s", szProfilePath, szProfileName);
+				mir_snprintf(szFullPath, SIZEOF(szFullPath), "%s\\%s\\Logs", szProfilePath, szProfileName);
+			else mir_snprintf(szFullPath, SIZEOF(szFullPath), "%s\\%s", szProfilePath, szProfileName);
 			theValue = mir_a2x(key, szFullPath);
 	}	}
 
