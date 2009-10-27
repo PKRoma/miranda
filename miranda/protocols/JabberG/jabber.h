@@ -747,7 +747,7 @@ struct TStringPairs
 };
 
 TCHAR*        __stdcall JabberNickFromJID( const TCHAR* jid );
-TCHAR*                  JabberPrepareJid( TCHAR *jid );
+TCHAR*                  JabberPrepareJid( LPCTSTR jid );
 char*         __stdcall JabberUrlDecode( char* str );
 void          __stdcall JabberUrlDecodeW( WCHAR* str );
 char*         __stdcall JabberUrlEncode( const char* str );

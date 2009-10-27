@@ -628,7 +628,7 @@ void CPepMood::InitGui()
 void CPepMood::ProcessItems(const TCHAR *from, HXML itemsNode)
 {
 	HANDLE hContact = NULL, hSelfContact = NULL;
-	if (lstrcmp(from, m_proto->m_szJabberJID))
+	if ( !m_proto->IsMyOwnJID( from ))
 	{
 		hContact = m_proto->HContactFromJID(from);
 		if (!hContact) return;
@@ -1024,7 +1024,7 @@ void CPepActivity::InitGui()
 void CPepActivity::ProcessItems(const TCHAR *from, HXML itemsNode)
 {
 	HANDLE hContact = NULL, hSelfContact = NULL;
-	if (lstrcmp(from, m_proto->m_szJabberJID))
+	if ( !m_proto->IsMyOwnJID( from ))
 	{
 		hContact = m_proto->HContactFromJID(from);
 		if (!hContact) return;
