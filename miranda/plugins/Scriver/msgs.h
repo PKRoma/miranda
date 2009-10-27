@@ -138,7 +138,6 @@ struct MessageWindowData
 	time_t	startTime;
 	time_t 	lastEventTime;
 	int    	lastEventType;
-	HANDLE  lastEventContact;
 	DWORD	flags;
 	int		messagesInProgress;
 	struct avatarCacheEntry *ace;

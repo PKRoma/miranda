@@ -145,6 +145,7 @@ struct GlobalMessageData
 	int		   toolbarPosition;
 	int        splitterY;
 	HWND       hFocusWnd;
+    DWORD      logLineColour;
 };
 
 int IconsChanged(WPARAM wParam, LPARAM lParam);
@@ -167,5 +168,6 @@ int ImageList_ReplaceIcon_ProtoEx(HIMAGELIST hIml, int nIndex, const char* szPro
 void ReleaseIconSmart(HICON hIcon);
 
 extern struct GlobalMessageData *g_dat;
+void StreamInTestEvents(HWND hEditWnd, struct GlobalMessageData *gdat);
 
 #endif

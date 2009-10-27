@@ -184,28 +184,6 @@ static BOOL CALLBACK LangAddCallback(CHAR * str) {
 	return TRUE;
 }
 
-int FindBorderColour(int colour) {
-	BOOL add = TRUE;
-	int diff = 60;
-	int r = (colour >> 16) &0xFF;
-	int g = (colour >> 8) &0xFF;
-	int b = colour &0xFF;
-	int r2 = r - diff;
-	int g2 = g - diff;
-	int b2 = b - diff;
-	int diff2 = (max(0, r2) - r2) + (max(0, g2) - g2) + (max(0, b2) - b2);
-	if (diff2 > 0) {
-		int r1 = r + diff;
-		int g1 = g + diff;
-		int b1 = b + diff;
-		int diff1 = (r1 - min(255, r1)) + (g1 - min(255, g1)) + (b1 - min(255, b1));
-		if (diff1 < diff2) {
-			return (min(255, r1) << 16) | (min(255, g1) << 8) | (min(255, b1));
-		}
-	}
-	return (max(0, r2) << 16) | (max(0, g2) << 8) | (max(0, b2));
-}
-
 void LoadInfobarFonts()
 {
 	LOGFONT lf;
@@ -342,6 +320,7 @@ void ReloadGlobals() {
 
 	g_dat->openFlags = DBGetContactSettingDword(NULL, SRMMMOD, SRMSGSET_POPFLAGS, SRMSGDEFSET_POPFLAGS);
 	g_dat->indentSize = DBGetContactSettingWord(NULL, SRMMMOD, SRMSGSET_INDENTSIZE, SRMSGDEFSET_INDENTSIZE);
+    g_dat->logLineColour = DBGetContactSettingDword(NULL, SRMMMOD, SRMSGSET_LINECOLOUR, SRMSGDEFSET_LINECOLOUR);
 
 	if (DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_USETABS, SRMSGDEFSET_USETABS))
 		g_dat->flags2 |= SMF2_USETABS;

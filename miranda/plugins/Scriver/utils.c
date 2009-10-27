@@ -26,7 +26,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <mbstring.h>
 #include <winsock.h>
 #include <m_netlib.h>
-
+#ifndef TTI_NONE
+#define TTI_NONE 0
+#endif
 extern HANDLE			g_hInst;
 
 static unsigned hookNum = 0;
