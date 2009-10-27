@@ -199,7 +199,7 @@ JABBER_RESOURCE_STATUS* CJabberProto::ResourceInfoFromJID( const TCHAR* jid )
 	return r;
 }
 
-TCHAR* JabberPrepareJid( TCHAR *jid )
+TCHAR* JabberPrepareJid( LPCTSTR jid )
 {
 	if ( !jid ) return NULL;
 	TCHAR* szNewJid = mir_tstrdup( jid );
@@ -1564,4 +1564,33 @@ TCHAR* CJabberProto::FindLastResourceByDbEvent( HANDLE hDbEvent )
 		}
 	}
 	return NULL;
+}
+
+BOOL CJabberProto::IsMyOwnJID( LPCTSTR szJID )
+{
+	if ( !m_ThreadInfo )
+		return FALSE;
+
+	TCHAR* szFrom = JabberPrepareJid( szJID );
+	if ( !szFrom )
+		return FALSE;
+
+	TCHAR* szTo = JabberPrepareJid( m_ThreadInfo->fullJID );
+	if ( !szTo ) {
+		mir_free( szFrom );
+		return FALSE;
+	}
+
+	TCHAR* pDelimiter = _tcschr( szFrom, _T('/') );
+	if ( pDelimiter ) *pDelimiter = _T('\0');
+
+	pDelimiter = _tcschr( szTo, _T('/') );
+	if ( pDelimiter ) *pDelimiter = _T('\0');
+
+	BOOL bRetVal = _tcscmp( szFrom, szTo ) == 0;
+
+	mir_free( szFrom );
+	mir_free( szTo );
+
+	return bRetVal;
 }

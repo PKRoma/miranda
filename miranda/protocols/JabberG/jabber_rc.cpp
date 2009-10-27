@@ -49,28 +49,7 @@ BOOL CJabberProto::IsRcRequestAllowedByACL( CJabberIqInfo* pInfo )
 	if ( !pInfo || !pInfo->GetFrom() )
 		return FALSE;
 
-	TCHAR* szFrom = JabberPrepareJid( pInfo->GetFrom() );
-	if ( !szFrom )
-		return FALSE;
-
-	TCHAR* szTo = JabberPrepareJid( m_ThreadInfo->fullJID );
-	if ( !szTo ) {
-		mir_free( szFrom );
-		return FALSE;
-	}
-
-	TCHAR* pDelimiter = _tcschr( szFrom, _T('/') );
-	if ( pDelimiter ) *pDelimiter = _T('\0');
-
-	pDelimiter = _tcschr( szTo, _T('/') );
-	if ( pDelimiter ) *pDelimiter = _T('\0');
-
-	BOOL bRetVal = _tcscmp( szFrom, szTo ) == 0;
-	
-	mir_free( szFrom );
-	mir_free( szTo );
-
-	return bRetVal;
+	return IsMyOwnJID( pInfo->GetFrom() );
 }
 
 void CJabberProto::HandleAdhocCommandRequest( HXML iqNode, CJabberIqInfo* pInfo )
