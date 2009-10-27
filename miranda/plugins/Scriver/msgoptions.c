@@ -25,6 +25,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "chat/chat.h"
 extern HINSTANCE g_hInst;
 extern HANDLE hEventOptInitialise;
+extern struct CREOleCallback reOleCallback;
 extern void ChangeStatusIcons();
 extern int    Chat_FontsChanged(WPARAM wParam,LPARAM lParam);
 extern int    Chat_IconsChanged(WPARAM wParam,LPARAM lParam);
@@ -809,6 +810,7 @@ static INT_PTR CALLBACK DlgProcOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 static void ShowPreview(HWND hwndDlg) 
 {
     struct GlobalMessageData gdat = { 0 };
+	PARAFORMAT2 pf2;
     gdat.flags |= IsDlgButtonChecked(hwndDlg, IDC_SHOWLOGICONS) ? SMF_SHOWICONS : 0;
     gdat.flags |= IsDlgButtonChecked(hwndDlg, IDC_SHOWNAMES) ? 0 : SMF_HIDENAMES;
     gdat.flags |= IsDlgButtonChecked(hwndDlg, IDC_SHOWTIMES) ? SMF_SHOWTIME : 0;
@@ -823,6 +825,11 @@ static void ShowPreview(HWND hwndDlg)
     gdat.flags |= IsDlgButtonChecked(hwndDlg, IDC_INDENTTEXT) ? SMF_INDENTTEXT : 0;
     gdat.logLineColour = SendDlgItemMessage(hwndDlg, IDC_LINECOLOUR, CPM_GETCOLOUR, 0, 0);
     gdat.indentSize = (int) SendDlgItemMessage(hwndDlg, IDC_INDENTSPIN, UDM_GETPOS, 0, 0);
+	pf2.cbSize = sizeof(pf2);
+	pf2.dwMask = PFM_OFFSET;
+	pf2.dxOffset = (gdat.flags & SMF_INDENTTEXT) ? gdat.indentSize * 15 : 0;
+	SetDlgItemText(hwndDlg, IDC_LOG, _T(""));
+	SendDlgItemMessage(hwndDlg, IDC_LOG, EM_SETPARAFORMAT, 0, (LPARAM)&pf2);
     StreamInTestEvents(GetDlgItem(hwndDlg, IDC_LOG), &gdat);
 }
 
@@ -886,11 +893,30 @@ static INT_PTR CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam,
 			CheckDlgButton(hwndDlg, IDC_SHOWSTATUSCHANGES, DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_SHOWSTATUSCH, SRMSGDEFSET_SHOWSTATUSCH));
 
 			SendDlgItemMessage(hwndDlg, IDC_LINECOLOUR, CPM_SETCOLOUR, 0, DBGetContactSettingDword(NULL, SRMMMOD, SRMSGSET_LINECOLOUR, SRMSGDEFSET_LINECOLOUR));
-            ShowPreview(hwndDlg);
+			{
+				PARAFORMAT2 pf2;
+				ZeroMemory((void *)&pf2, sizeof(pf2));
+				pf2.cbSize = sizeof(pf2);
+				pf2.dwMask = PFM_OFFSETINDENT | PFM_RIGHTINDENT;
+				pf2.dxStartIndent = 30;
+				pf2.dxRightIndent = 30;
+				SendDlgItemMessage(hwndDlg, IDC_LOG, EM_SETPARAFORMAT, 0, (LPARAM)&pf2);
+				SendDlgItemMessage(hwndDlg, IDC_LOG, EM_SETEDITSTYLE, SES_EXTENDBACKCOLOR, SES_EXTENDBACKCOLOR);
+				SendDlgItemMessage(hwndDlg, IDC_LOG, EM_SETMARGINS, EC_LEFTMARGIN | EC_RIGHTMARGIN, MAKELONG(0,0));
+				SendDlgItemMessage(hwndDlg, IDC_LOG, EM_AUTOURLDETECT, (WPARAM) TRUE, 0);
+				SendDlgItemMessage(hwndDlg, IDC_LOG, EM_SETOLECALLBACK, 0, (LPARAM) & reOleCallback);
+			}
+			ShowPreview(hwndDlg);
 			return TRUE;
 		case WM_COMMAND:
 			switch (LOWORD(wParam)) {
-				case IDC_LOADUNREAD:
+				case IDC_FONTSCOLORS:
+					{
+						/*
+						TODO: Implement a service to handle that in options module...
+						*/
+					}
+					break;
 				case IDC_LOADCOUNT:
 				case IDC_LOADTIME:
 					EnableWindow(GetDlgItem(hwndDlg, IDC_LOADCOUNTN), IsDlgButtonChecked(hwndDlg, IDC_LOADCOUNT));
