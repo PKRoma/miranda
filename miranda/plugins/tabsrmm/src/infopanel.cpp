@@ -167,7 +167,7 @@ void CInfoPanel::setHeight(LONG newHeight, bool fBroadcast)
 
 void CInfoPanel::Configure() const
 {
-	::ShowWindow(GetDlgItem(m_dat->hwnd, IDC_PANELSPLITTER), m_active ? SW_SHOW : SW_HIDE);
+	Utils::showDlgControl(m_dat->hwnd, IDC_PANELSPLITTER, m_active ? SW_SHOW : SW_HIDE);
 }
 
 void CInfoPanel::showHide() const
@@ -193,7 +193,7 @@ void CInfoPanel::showHide() const
 			Configure();
 			InvalidateRect(hwndDlg, NULL, FALSE);
 		}
-		::ShowWindow(GetDlgItem(hwndDlg, IDC_PANELSPLITTER), m_active ? SW_SHOW : SW_HIDE);
+		Utils::showDlgControl(hwndDlg, IDC_PANELSPLITTER, m_active ? SW_SHOW : SW_HIDE);
 		::SendMessage(hwndDlg, WM_SIZE, 0, 0);
 		::InvalidateRect(GetDlgItem(hwndDlg, IDC_CONTACTPIC), NULL, TRUE);
 		::SetAeroMargins(m_dat->pContainer);
@@ -202,7 +202,7 @@ void CInfoPanel::showHide() const
 		::DM_ScrollToBottom(m_dat, 0, 1);
 	}
 	else {
-		::ShowWindow(GetDlgItem(hwndDlg, IDC_PANELSPLITTER), m_active ? SW_SHOW : SW_HIDE);
+		Utils::showDlgControl(hwndDlg, IDC_PANELSPLITTER, m_active ? SW_SHOW : SW_HIDE);
 
 		if (m_active) {
 			Configure();
@@ -288,27 +288,23 @@ void CInfoPanel::renderBG(const HDC hdc, RECT& rc, CSkinItem *item, bool fAero, 
 							0, 0, 1, 0);
 		}
 		else {
-			if(PluginConfig.m_WinVerMajor >= 5) {
-				if(CSkin::m_skinEnabled) {
-					rc.bottom -= 2;
-					CSkin::SkinDrawBG(m_dat->hwnd, m_dat->pContainer->hwnd, m_dat->pContainer, &rc, hdc);
-					item = &SkinItems[ID_EXTBKINFOPANELBG];
-					if(item->IGNORED)
-						item = &SkinItems[ID_EXTBKINFOPANEL];
-					CSkin::DrawItem(hdc, &rc, item);
-				} else {
-					rc.bottom -= 2;
-					::DrawAlpha(hdc, &rc, PluginConfig.m_ipBackgroundGradient, 100, PluginConfig.m_ipBackgroundGradientHigh, 0, 17,
-							  31, 8, 0);
-					if(fAutoCalc) {
-						rc.top = rc.bottom - 1;
-						rc.left--; rc.right++;
-						::DrawEdge(hdc, &rc, BDR_SUNKENOUTER, BF_RECT);
-					}
+			if(CSkin::m_skinEnabled) {
+				rc.bottom -= 2;
+				CSkin::SkinDrawBG(m_dat->hwnd, m_dat->pContainer->hwnd, m_dat->pContainer, &rc, hdc);
+				item = &SkinItems[ID_EXTBKINFOPANELBG];
+				if(item->IGNORED)
+					item = &SkinItems[ID_EXTBKINFOPANEL];
+				CSkin::DrawItem(hdc, &rc, item);
+			} else {
+				rc.bottom -= 2;
+				::DrawAlpha(hdc, &rc, PluginConfig.m_ipBackgroundGradient, 100, PluginConfig.m_ipBackgroundGradientHigh, 0, 17,
+						  31, 8, 0);
+				if(fAutoCalc) {
+					rc.top = rc.bottom - 1;
+					rc.left--; rc.right++;
+					::DrawEdge(hdc, &rc, BDR_SUNKENOUTER, BF_RECT);
 				}
 			}
-			else
-				::FillRect(hdc, &rc, GetSysColorBrush(COLOR_3DFACE));
 		}
 	}
 }
@@ -549,15 +545,12 @@ void CInfoPanel::RenderIPStatus(const HDC hdc, RECT& rcItem)
 	}
 
 	if (m_dat->timezone != -1) {
-		DBTIMETOSTRINGT dbtts;
+		TCHAR *formatTime = _T("%H:%M");
 		time_t 			final_time;
 		time_t 			now = time(NULL);
 
 		final_time = now - m_dat->timediff;
-		dbtts.szDest = szResult;
-		dbtts.cbDest = 70;
-		dbtts.szFormat = _T("t");
-		CallService(MS_DB_TIME_TIMESTAMPTOSTRINGT, final_time, (LPARAM) &dbtts);
+		_tcsftime(szResult, 30, formatTime, _localtime32((__time32_t *)&final_time));
 		GetTextExtentPoint32(hdc, szResult, lstrlen(szResult), &sTime);
 	}
 
@@ -726,15 +719,6 @@ void CInfoPanel::Invalidate() const
 	::InvalidateRect(m_dat->hwnd, &rc, FALSE);
 }
 
-void CInfoPanel::addMenuItem(const HMENU& m, MENUITEMINFO& mii, HICON hIcon, const TCHAR *szText, UINT uID, UINT pos) const
-{
-	mii.wID = uID;
-	mii.dwItemData = (ULONG_PTR)hIcon;
-	mii.dwTypeData = const_cast<TCHAR *>(szText);
-	mii.cch = lstrlen(mii.dwTypeData) + 1;
-
-	::InsertMenuItem(m, pos, TRUE, &mii);
-}
 /**
  * build the left click contextual menu for the info panel
  * @return HMENU: menu handle for the fully prepared menu
@@ -750,12 +734,12 @@ HMENU CInfoPanel::constructContextualMenu() const
 	HMENU m = ::CreatePopupMenu();
 
 	if(m_hoverFlags & HOVER_NICK) {
-		addMenuItem(m, mii, ::LoadSkinnedIcon(SKINICON_OTHER_USERDETAILS), CTranslator::get(CTranslator::GEN_IP_MENU_USER_DETAILS),
+		Utils::addMenuItem(m, mii, ::LoadSkinnedIcon(SKINICON_OTHER_USERDETAILS), CTranslator::get(CTranslator::GEN_IP_MENU_USER_DETAILS),
 					IDC_NAME, 0);
-		addMenuItem(m, mii, ::LoadSkinnedIcon(SKINICON_OTHER_HISTORY), CTranslator::get(CTranslator::GEN_IP_MENU_HISTORY),
+		Utils::addMenuItem(m, mii, ::LoadSkinnedIcon(SKINICON_OTHER_HISTORY), CTranslator::get(CTranslator::GEN_IP_MENU_HISTORY),
 					IDC_HISTORY, 0);
 		if(!m_isChat)
-			addMenuItem(m, mii, PluginConfig.g_iconContainer, CTranslator::get(CTranslator::GEN_IP_MENU_MSGPREFS),
+			Utils::addMenuItem(m, mii, PluginConfig.g_iconContainer, CTranslator::get(CTranslator::GEN_IP_MENU_MSGPREFS),
 						ID_MESSAGELOGSETTINGS_FORTHISCONTACT, 1);
 		else
 			::AppendMenu(m, MF_STRING, CMD_IP_ROOMPREFS, CTranslator::get(CTranslator::GEN_IP_MENU_ROOMPREFS));
@@ -795,14 +779,13 @@ void CInfoPanel::handleClick(const POINT& pt)
 
 	if(!m_isChat) {
 		::KillTimer(m_dat->hwnd, TIMERID_AWAYMSG);
-		::KillTimer(m_dat->hwnd, TIMERID_AWAYMSG + 1);
 		m_dat->dwFlagsEx &= ~MWF_SHOW_AWAYMSGTIMER;
 	}
 	HMENU m = constructContextualMenu();
 	LRESULT r = ::TrackPopupMenu(m, TPM_RETURNCMD, pt.x, pt.y, 0, m_dat->hwnd, NULL);
 
 	if(cmdHandler(r) == 0)
-		::Utils::CmdDispatcher(Utils::CMD_INFOPANEL, m_dat->hwnd, r, 0, 0, m_dat, m_dat->pContainer);
+		Utils::CmdDispatcher(Utils::CMD_INFOPANEL, m_dat->hwnd, r, 0, 0, m_dat, m_dat->pContainer);
 	::DestroyMenu(m);
 	m_hoverFlags = 0;
 	Invalidate();
@@ -838,8 +821,6 @@ void CInfoPanel::trackMouse(POINT& pt)
 {
 	if(!m_active)
 		return;
-
-	POINT ptMouse = pt;
 
 	int result = hitTest(pt);
 
@@ -1027,7 +1008,7 @@ INT_PTR CALLBACK CInfoPanel::ConfigDlgProc(HWND hwnd, UINT msg, WPARAM wParam, L
 
 			::CheckDlgButton(hwnd, IDC_NOSYNC, M->GetByte("syncAllPanels", 0) ? BST_UNCHECKED : BST_CHECKED);
 
-			::ShowWindow(GetDlgItem(hwnd, IDC_IPCONFIG_PRIVATECONTAINER), m_dat->pContainer->settings->fPrivate ? SW_SHOW : SW_HIDE);
+			Utils::showDlgControl(hwnd, IDC_IPCONFIG_PRIVATECONTAINER, m_dat->pContainer->settings->fPrivate ? SW_SHOW : SW_HIDE);
 
 			if(!m_isChat) {
 				v = M->GetByte(m_dat->hContact, SRMSGMOD_T, "hideavatar", -1);
@@ -1037,7 +1018,7 @@ INT_PTR CALLBACK CInfoPanel::ConfigDlgProc(HWND hwnd, UINT msg, WPARAM wParam, L
 				::SendDlgItemMessage(hwnd, IDC_PANELPICTUREVIS, CB_SETCURSEL, (v == (BYTE)-1 ? 0 : (v == 1 ? 1 : 2)), 0);
 			}
 			else
-				::EnableWindow(GetDlgItem(hwnd, IDC_PANELPICTUREVIS), FALSE);
+				Utils::enableDlgControl(hwnd, IDC_PANELPICTUREVIS, FALSE);
 
 			return(FALSE);
 		}
@@ -1328,11 +1309,11 @@ void CTip::show(const RECT& rc, POINT& pt, const HICON hIcon, const TCHAR *szTit
 
 	m_rcRich = rc;
 
-	m_rcRich.bottom = 550;
+	m_rcRich.bottom = 800;
 	m_rcRich.left = LEFT_BORDER + m_leftWidth; m_rcRich.top = TOP_BORDER;
 	m_rcRich.right -= (LEFT_BORDER + RIGHT_BORDER + m_leftWidth);
 
-	m_rcRich.right = m_rcRich.left + (twips * (m_rcRich.right - m_rcRich.left)) - 8 * twips;
+	m_rcRich.right = m_rcRich.left + (twips * (m_rcRich.right - m_rcRich.left)) - 10 * twips;
 	m_rcRich.bottom = m_rcRich.top + (twips * (m_rcRich.bottom - m_rcRich.top));
 
 	fr.hdc = hdc;
@@ -1342,7 +1323,7 @@ void CTip::show(const RECT& rc, POINT& pt, const HICON hIcon, const TCHAR *szTit
 	fr.chrg.cpMax = -1;
 	fr.chrg.cpMin = 0;
 	LRESULT lr = ::SendMessage(m_hRich, EM_FORMATRANGE, 0, (LPARAM)&fr);
-	m_szRich.cx = (fr.rc.right - fr.rc.left) / twips;
+	m_szRich.cx = ((fr.rc.right - fr.rc.left) / twips) + 8;
 	m_szRich.cy = ((fr.rc.bottom - fr.rc.top) / twips) + 3;
 
 	m_rcRich.right = m_rcRich.left + m_szRich.cx;

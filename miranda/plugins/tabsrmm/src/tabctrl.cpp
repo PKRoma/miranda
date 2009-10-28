@@ -1990,8 +1990,8 @@ INT_PTR CALLBACK DlgProcTabConfig(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 			SendDlgItemMessage(hwndDlg, IDC_SPIN3, UDM_SETPOS, 0, (LPARAM)M->GetByte("x-pad", 4));
 			SetDlgItemInt(hwndDlg, IDC_TABPADDING, (int)M->GetByte("y-pad", 3), FALSE);;
 			SetDlgItemInt(hwndDlg, IDC_HTABPADDING, (int)M->GetByte("x-pad", 4), FALSE);;
-			EnableWindow(GetDlgItem(hwndDlg, IDC_LABELUSEWINCOLORS), CSkin::m_skinEnabled ? FALSE : TRUE);
-			EnableWindow(GetDlgItem(hwndDlg, IDC_BKGUSEWINCOLORS2), CSkin::m_skinEnabled ? FALSE : TRUE);
+			Utils::enableDlgControl(hwndDlg, IDC_LABELUSEWINCOLORS, CSkin::m_skinEnabled ? FALSE : TRUE);
+			Utils::enableDlgControl(hwndDlg, IDC_BKGUSEWINCOLORS2, CSkin::m_skinEnabled ? FALSE : TRUE);
 
 			SendDlgItemMessage(hwndDlg, IDC_AEROGLOW, CPM_SETCOLOUR, 0, (LPARAM)M->GetDword("aeroGlow", RGB(40, 40, 255)));
 			return 0;
@@ -2073,9 +2073,9 @@ INT_PTR CALLBACK DlgProcTabConfig(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 					BOOL iBkg = IsDlgButtonChecked(hwndDlg, IDC_BKGUSEWINCOLORS2);
 					while (tabcolors[i].szKey != NULL) {
 						if (i < 4)
-							EnableWindow(GetDlgItem(hwndDlg, tabcolors[i].id), iLabel ? FALSE : TRUE);
+							Utils::enableDlgControl(hwndDlg, tabcolors[i].id, iLabel ? FALSE : TRUE);
 						else
-							EnableWindow(GetDlgItem(hwndDlg, tabcolors[i].id), iBkg ? FALSE : TRUE);
+							Utils::enableDlgControl(hwndDlg, tabcolors[i].id, iBkg ? FALSE : TRUE);
 						i++;
 					}
 					break;

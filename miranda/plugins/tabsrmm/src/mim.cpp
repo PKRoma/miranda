@@ -727,7 +727,6 @@ int CMimAPI::MessageEventAdded(WPARAM wParam, LPARAM lParam)
 	HWND hwnd;
 	CLISTEVENT cle;
 	DBEVENTINFO dbei;
-	UINT mesCount=0;
 	BYTE bAutoPopup = FALSE, bAutoCreate = FALSE, bAutoContainer = FALSE, bAllowAutoCreate = 0;
 	struct ContainerWindowData *pContainer = 0;
 	TCHAR szName[CONTAINER_NAMELEN + 1];
@@ -810,13 +809,6 @@ int CMimAPI::MessageEventAdded(WPARAM wParam, LPARAM lParam)
 	if (nen_options.iNoAutoPopup)
 		goto nowindowcreate;
 
-	//MAD
-	if (M->GetByte((HANDLE) wParam, "ActualHistory", 0)) {
-		mesCount = M->GetDword((HANDLE)wParam, SRMSGMOD_T, "messagecount", 0);
-		M->WriteDword((HANDLE) wParam, SRMSGMOD_T, "messagecount", (DWORD)mesCount++);
-	}
-	//
-
 	GetContainerNameForContact((HANDLE) wParam, szName, CONTAINER_NAMELEN);
 
 	bAutoPopup = M->GetByte(SRMSGSET_AUTOPOPUP, SRMSGDEFSET_AUTOPOPUP);
@@ -893,7 +885,7 @@ int CMimAPI::MessageEventAdded(WPARAM wParam, LPARAM lParam)
 nowindowcreate:
 	if (!(dbei.flags & DBEF_READ)) {
 		UpdateTrayMenu(0, 0, dbei.szModule, NULL, (HANDLE)wParam, 1);
-		if (!nen_options.bTraySupport || PluginConfig.m_WinVerMajor < 5) {
+		if (!nen_options.bTraySupport) {
 			TCHAR toolTip[256], *contactName;
 			ZeroMemory(&cle, sizeof(cle));
 			cle.cbSize = sizeof(cle);

@@ -531,7 +531,7 @@ struct NewMessageWindowLParam {
 #define CNT_GLOBALSIZE 0x800
 #define CNT_INFOPANEL 0x1000
 #define CNT_NOSOUND 0x2000
-#define CNT_SYNCSOUNDS 0x4000
+// #define CNT_SYNCSOUNDS 0x4000
 #define CNT_DEFERREDCONFIGURE 0x8000
 #define CNT_CREATE_MINIMIZED 0x10000
 #define CNT_NEED_UPDATETITLE 0x20000
@@ -550,10 +550,15 @@ struct NewMessageWindowLParam {
 #define CNT_UINSTATUSBAR 0x40000000
 #define CNT_VERTICALMAX 0x80000000
 
+#define CNT_EX_SOUNDS_MINIMIZED 1024
+#define CNT_EX_SOUNDS_UNFOCUSED 2048
+#define CNT_EX_SOUNDS_INACTIVETABS 4096
+#define CNT_EX_SOUNDS_FOCUSED	8192
+
 #define CNT_FLAGS_DEFAULT (CNT_DONTREPORT | CNT_DONTREPORTUNFOCUSED | CNT_ALWAYSREPORTINACTIVE | CNT_HIDETABS | CNT_NEWCONTAINERFLAGS | CNT_NOMENUBAR | CNT_INFOPANEL)
 #define CNT_TRANS_DEFAULT 0x00ff00ff
 
-#define CNT_FLAGSEX_DEFAULT (TCF_FLASHICON)
+#define CNT_FLAGSEX_DEFAULT (TCF_FLASHICON | CNT_EX_SOUNDS_MINIMIZED | CNT_EX_SOUNDS_UNFOCUSED | CNT_EX_SOUNDS_INACTIVETABS | CNT_EX_SOUNDS_FOCUSED)
 
 #define CNT_CREATEFLAG_CLONED 1
 #define CNT_CREATEFLAG_MINIMIZED 2
@@ -598,7 +603,7 @@ struct NewMessageWindowLParam {
 #define DM_QUERYPENDING      (WM_USER+29)
 #define DM_UPDATEPICLAYOUT   (WM_USER+30)
 #define DM_QUERYCONTAINER    (WM_USER+31)
-// #define DM_QUERYCONTAINERHWND    (WM_USER+32)
+#define DM_MUCFLASHWORKER    (WM_USER+32)
 #define DM_CALCMINHEIGHT     (WM_USER+33)       // msgdialog asked to recalculate its minimum height
 #define DM_REPORTMINHEIGHT   (WM_USER+34)       // msg dialog reports its minimum height to the container
 //#define DM_QUERYMINHEIGHT    (WM_USER+35)       // container queries msg dialog about minimum height
@@ -664,6 +669,7 @@ struct NewMessageWindowLParam {
 //#define DM_SPLITTERMOVEDGLOBAL_NOSYNC_IM (WM_USER+99)
 #define DM_SC_BUILDLIST      (WM_USER+100)
 #define DM_SC_INITDIALOG     (WM_USER+101)
+#define DM_SC_CONFIG		 (WM_USER+104)
 #define DM_SCROLLIEVIEW		 (WM_USER+102)
 
 #define MINSPLITTERY         42
@@ -1113,6 +1119,41 @@ typedef struct _tagSKINDesc {
 #define ICON_BUTTON_ADD					0
 #define ICON_BUTTON_CANCEL				6
 #define ICON_BUTTON_SAVE				7
+
+/*
+ * FIXME (tz stuff needed to compile (taken from m_timezones.h)
+ */
+
+#define MIM_TZ_PLF_CB		1				// UI element is assumed to be a combo box
+#define MIM_TZ_PLF_LB		2				// UI element is assumed to be a list box
+#define MIM_TZ_NAMELEN 64
+#define MIM_TZ_DISPLAYLEN 128
+
+typedef struct _tagTimeZone {
+	DWORD	cbSize;						// caller must supply this
+	TCHAR	tszName[MIM_TZ_NAMELEN];				// windows name for the time zone
+	TCHAR	tszDisplay[MIM_TZ_DISPLAYLEN];			// more descriptive display name (that's what usually appears in dialogs)
+	LONG	Bias;						// Standardbias (gmt offset)
+	LONG	DaylightBias;				// daylight Bias (dst offset, relative to standard bias, -60 for most time zones)
+	SYSTEMTIME StandardTime;			// when DST ends (month/dayofweek/time)
+	SYSTEMTIME DaylightTime;			// when DST begins (month/dayofweek/time)
+	char	GMT_Offset;					// simple GMT offset (+/-, measured in half-hours, may be incorrect for DST timezones)
+	LONG	Offset;						// time offset to local time, in seconds. It is relativ to the current local time, NOT GMT
+										// the sign is inverted, so you have to subtract it from the current time.
+	SYSTEMTIME CurrentTime;				// current system time. only updated when forced by the caller
+	time_t	   now;						// same in unix time format (seconds since 1970).
+} MIM_TIMEZONE;
+
+typedef struct _tagPrepareList {
+	DWORD	cbSize;									// caller must supply this
+	HWND	hWnd;									// window handle of the combo or list box
+	TCHAR	tszName[MIM_TZ_NAMELEN];				// tz name (for preselecting)
+	DWORD	dwFlags;								// flags - if neither PLF_CB or PLF_LB is set, the window class name will be used
+													// to figure out the type of control.
+	HANDLE	hContact;								// contact handle (for preselecting)
+} MIM_TZ_PREPARELIST;
+#define MS_TZ_PREPARELIST "TZ/PrepareList"
+#define MIM_TZ_PLF_CB 1
 
 #endif
 

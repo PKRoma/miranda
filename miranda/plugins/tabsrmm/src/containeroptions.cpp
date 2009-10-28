@@ -112,7 +112,7 @@ void TSAPI ApplyContainerSetting(ContainerWindowData *pContainer, DWORD flags, U
 	BroadCastContainer(pContainer, DM_BBNEEDUPDATE, 0, 0);
 }
 
-#define NR_O_PAGES 9
+#define NR_O_PAGES 10
 #define NR_O_OPTIONSPERPAGE 10
 
 static struct _tagPages {
@@ -123,19 +123,20 @@ static struct _tagPages {
 	{ CTranslator::CNT_OPT_TITLE_GEN, CTranslator::STR_LAST, IDC_O_NOTABS, IDC_O_STICKY, IDC_VERTICALMAX, 0, 0, 0, 0, 0, 0, 0},
 	{ CTranslator::CNT_OPT_TITLE_LAYOUT, CTranslator::STR_LAST, IDC_CNTNOSTATUSBAR, IDC_HIDEMENUBAR, IDC_UIDSTATUSBAR, IDC_HIDETOOLBAR, IDC_INFOPANEL, IDC_BOTTOMTOOLBAR, 0, 0, 0, 0},
 	{ CTranslator::CNT_OPT_TITLE_TABS, CTranslator::CNT_OPT_DESC_TABS, IDC_TABMODE, IDC_O_TABMODE, IDC_O_SBARLAYOUT, IDC_SBARLAYOUT, IDC_FLASHICON, IDC_FLASHLABEL, IDC_SINGLEROWTAB, IDC_BUTTONTABS, IDC_STYLEDTABS, IDC_CLOSEBUTTONONTABS},
-	{ CTranslator::CNT_OPT_TITLE_NOTIFY, CTranslator::CNT_OPT_DESC_NOTIFY, IDC_O_DONTREPORT, IDC_DONTREPORTUNFOCUSED2, IDC_ALWAYSPOPUPSINACTIVE, IDC_SYNCSOUNDS, IDC_O_EXPLAINGLOBALNOTIFY, 0, 0, 0, 0, 0},
+	{ CTranslator::CNT_OPT_TITLE_NOTIFY, CTranslator::CNT_OPT_DESC_NOTIFY, IDC_O_DONTREPORT, IDC_DONTREPORTUNFOCUSED2, IDC_ALWAYSPOPUPSINACTIVE, IDC_O_EXPLAINGLOBALNOTIFY, 0, 0, 0, 0, 0, 0},
 	{ CTranslator::CNT_OPT_TITLE_FLASHING, CTranslator::STR_LAST, IDC_O_FLASHDEFAULT, IDC_O_FLASHALWAYS, IDC_O_FLASHNEVER, 0, 0, 0, 0, 0, 0, 0},
 	{ CTranslator::CNT_OPT_TITLE_TITLEBAR, CTranslator::STR_LAST, IDC_O_HIDETITLE, IDC_STATICICON, IDC_USEPRIVATETITLE, IDC_TITLEFORMAT, 0, 0, 0, 0, 0, 0},
 	{ CTranslator::CNT_OPT_TITLE_THEME, CTranslator::CNT_OPT_DESC_THEME, IDC_THEME, IDC_SELECTTHEME, IDC_USEGLOBALSIZE, IDC_SAVESIZEASGLOBAL, IDC_LABEL_PRIVATETHEME, 0, 0, 0, 0, 0},
 	{ CTranslator::CNT_OPT_TITLE_TRANS, CTranslator::CNT_OPT_DESC_TRANS, IDC_TRANSPARENCY, IDC_TRANSPARENCY_ACTIVE, IDC_TRANSPARENCY_INACTIVE, IDC_TLABEL_ACTIVE, IDC_TLABEL_INACTIVE, IDC_TSLABEL_ACTIVE, IDC_TSLABEL_INACTIVE,0, 0, 0},
 	{ CTranslator::CNT_OPT_TITLE_AVATARS, CTranslator::STR_LAST, IDC_O_STATIC_AVATAR, IDC_O_STATIC_OWNAVATAR, IDC_AVATARMODE, IDC_OWNAVATARMODE, 0, 0, 0, 0, 0, 0},
+	{ CTranslator::CNT_OPT_TITLE_SOUNDS, CTranslator::STR_LAST, IDC_O_ENABLESOUNDS, IDC_O_SOUNDSMINIMIZED, IDC_O_SOUNDSUNFOCUSED, IDC_O_SOUNDSINACTIVE, IDC_O_SOUNDSFOCUSED, 0, 0, 0, 0, 0},
 };
 
 static void ShowPage(HWND hwndDlg, int iPage, BOOL fShow)
 {
 	if (iPage >= 0 && iPage < NR_O_PAGES) {
 		for (int i = 0; i < NR_O_OPTIONSPERPAGE && o_pages[iPage].uIds[i] != 0; i++)
-			ShowWindow(GetDlgItem(hwndDlg, o_pages[iPage].uIds[i]), fShow ? SW_SHOW : SW_HIDE);
+			Utils::showDlgControl(hwndDlg, o_pages[iPage].uIds[i], fShow ? SW_SHOW : SW_HIDE);
 	}
 	if (fShow) {
 		SetDlgItemText(hwndDlg, IDC_TITLEBOX, CTranslator::get(o_pages[iPage].idTitle));
@@ -144,7 +145,7 @@ static void ShowPage(HWND hwndDlg, int iPage, BOOL fShow)
 		else
 			SetDlgItemText(hwndDlg, IDC_DESC, _T(""));
 	}
-	ShowWindow(GetDlgItem(hwndDlg, IDC_O_EXPLAINGLOBALNOTIFY), (iPage == 3 && nen_options.bWindowCheck) ? SW_SHOW : SW_HIDE);
+	Utils::showDlgControl(hwndDlg, IDC_O_EXPLAINGLOBALNOTIFY, (iPage == 3 && nen_options.bWindowCheck) ? SW_SHOW : SW_HIDE);
 }
 
 INT_PTR CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
@@ -171,9 +172,9 @@ INT_PTR CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, 
 			SetWindowText(hwndDlg, CTranslator::get(CTranslator::CNT_OPT_TITLE));
 			mir_sntprintf(szNewTitle, SIZEOF(szNewTitle), CTranslator::get(CTranslator::CNT_OPT_HEADERBAR), pContainer->szName);
 			SetDlgItemText(hwndDlg, IDC_HEADERBAR, szNewTitle);
-			EnableWindow(GetDlgItem(hwndDlg, IDC_O_HIDETITLE), CSkin::m_frameSkins ? FALSE : TRUE);
+			Utils::enableDlgControl(hwndDlg, IDC_O_HIDETITLE, CSkin::m_frameSkins ? FALSE : TRUE);
 			CheckDlgButton(hwndDlg, IDC_CNTPRIVATE, pContainer->settings->fPrivate ? BST_CHECKED : BST_UNCHECKED);
-			EnableWindow(GetDlgItem(hwndDlg, IDC_TITLEFORMAT), IsDlgButtonChecked(hwndDlg, IDC_USEPRIVATETITLE));
+			Utils::enableDlgControl(hwndDlg, IDC_TITLEFORMAT, IsDlgButtonChecked(hwndDlg, IDC_USEPRIVATETITLE));
 
 			SendDlgItemMessage(hwndDlg, IDC_TABMODE, CB_INSERTSTRING, -1, (LPARAM)CTranslator::get(CTranslator::CNT_OPT_TABSTOP));
 			SendDlgItemMessage(hwndDlg, IDC_TABMODE, CB_INSERTSTRING, -1, (LPARAM)CTranslator::get(CTranslator::CNT_OPT_TABSBOTTOM));
@@ -203,7 +204,7 @@ INT_PTR CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, 
 
 			SendMessage(hwndDlg, DM_SC_INITDIALOG, (WPARAM)0, (LPARAM)pContainer->settings);
 			CheckDlgButton(hwndDlg, IDC_USEPRIVATETITLE, pContainer->dwFlags & CNT_TITLE_PRIVATE);
-			EnableWindow(GetDlgItem(hwndDlg, IDC_TITLEFORMAT), IsDlgButtonChecked(hwndDlg, IDC_USEPRIVATETITLE));
+			Utils::enableDlgControl(hwndDlg, IDC_TITLEFORMAT, IsDlgButtonChecked(hwndDlg, IDC_USEPRIVATETITLE));
 			SendDlgItemMessage(hwndDlg, IDC_TITLEFORMAT, EM_LIMITTEXT, TITLE_FORMATLEN - 1, 0);
 			SetDlgItemText(hwndDlg, IDC_TITLEFORMAT, pContainer->settings->szTitleFormat);
 			SetDlgItemText(hwndDlg, IDC_THEME, pContainer->szRelThemeFile);
@@ -217,13 +218,13 @@ INT_PTR CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, 
 				if (i == 0)
 					SendMessage(hwndTree, TVM_SELECTITEM, TVGN_CARET, (LPARAM)hItem);
 				for (j = 0; j < NR_O_OPTIONSPERPAGE && o_pages[i].uIds[j] != 0; j++)
-					ShowWindow(GetDlgItem(hwndDlg, o_pages[i].uIds[j]), SW_HIDE);
+					Utils::showDlgControl(hwndDlg, o_pages[i].uIds[j], SW_HIDE);
 				ShowPage(hwndDlg, i, FALSE);
 			}
 			SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)PluginConfig.g_iconContainer);
 			ShowPage(hwndDlg, 0, TRUE);
 			SetFocus(hwndTree);
-			EnableWindow(GetDlgItem(hwndDlg, IDC_APPLY), FALSE);
+			Utils::enableDlgControl(hwndDlg, IDC_APPLY, FALSE);
 
 			HFONT hFont = (HFONT)SendDlgItemMessage(hwndDlg, IDC_DESC, WM_GETFONT, 0, 0);
 			LOGFONT lf = {0};
@@ -261,7 +262,7 @@ INT_PTR CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, 
 					SetWindowTextA(GetDlgItem(hwndDlg, IDC_TLABEL_ACTIVE), szBuf);
 				if ((HWND)lParam == GetDlgItem(hwndDlg, IDC_TRANSPARENCY_INACTIVE))
 					SetWindowTextA(GetDlgItem(hwndDlg, IDC_TLABEL_INACTIVE), szBuf);
-				EnableWindow(GetDlgItem(hwndDlg, IDC_APPLY), TRUE);
+				Utils::enableDlgControl(hwndDlg, IDC_APPLY, TRUE);
 			}
 			break;
 		case WM_NOTIFY:
@@ -297,8 +298,8 @@ INT_PTR CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, 
 				case IDC_TRANSPARENCY: {
 					int isTrans = IsDlgButtonChecked(hwndDlg, IDC_TRANSPARENCY);
 
-					EnableWindow(GetDlgItem(hwndDlg, IDC_TRANSPARENCY_ACTIVE), isTrans ? TRUE : FALSE);
-					EnableWindow(GetDlgItem(hwndDlg, IDC_TRANSPARENCY_INACTIVE), isTrans ? TRUE : FALSE);
+					Utils::enableDlgControl(hwndDlg, IDC_TRANSPARENCY_ACTIVE, isTrans ? TRUE : FALSE);
+					Utils::enableDlgControl(hwndDlg, IDC_TRANSPARENCY_INACTIVE, isTrans ? TRUE : FALSE);
 					goto do_apply;
 				}
 				case IDC_SECTIONTREE:
@@ -316,8 +317,11 @@ INT_PTR CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, 
 					}
 					break;
 				}
+				case IDC_O_ENABLESOUNDS:
+					SendMessage(hwndDlg, DM_SC_CONFIG, 0, 0);
+					break;
 				case IDC_USEPRIVATETITLE:
-					EnableWindow(GetDlgItem(hwndDlg, IDC_TITLEFORMAT), IsDlgButtonChecked(hwndDlg, IDC_USEPRIVATETITLE));
+					Utils::enableDlgControl(hwndDlg, IDC_TITLEFORMAT, IsDlgButtonChecked(hwndDlg, IDC_USEPRIVATETITLE));
 					goto do_apply;
 				case IDC_TITLEFORMAT:
 					if (HIWORD(wParam) != EN_CHANGE || (HWND) lParam != GetFocus())
@@ -392,7 +396,7 @@ INT_PTR CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, 
 					if (LOWORD(wParam) == IDOK)
 						DestroyWindow(hwndDlg);
 					else
-						EnableWindow(GetDlgItem(hwndDlg, IDC_APPLY), FALSE);
+						Utils::enableDlgControl(hwndDlg, IDC_APPLY, FALSE);
 
 					break;
 				}
@@ -401,7 +405,7 @@ INT_PTR CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, 
 					return TRUE;
 				default:
 do_apply:
-					EnableWindow(GetDlgItem(hwndDlg, IDC_APPLY), TRUE);
+					Utils::enableDlgControl(hwndDlg, IDC_APPLY, TRUE);
 					break;
 			}
 			break;
@@ -430,7 +434,6 @@ do_apply:
 			MY_CheckDlgButton(hwndDlg, IDC_TRANSPARENCY, dwFlags & CNT_TRANSPARENCY);
 			MY_CheckDlgButton(hwndDlg, IDC_DONTREPORTUNFOCUSED2, dwFlags & CNT_DONTREPORTUNFOCUSED);
 			MY_CheckDlgButton(hwndDlg, IDC_ALWAYSPOPUPSINACTIVE, dwFlags & CNT_ALWAYSREPORTINACTIVE);
-			MY_CheckDlgButton(hwndDlg, IDC_SYNCSOUNDS, dwFlags & CNT_SYNCSOUNDS);
 			MY_CheckDlgButton(hwndDlg, IDC_CNTNOSTATUSBAR, dwFlags & CNT_NOSTATUSBAR);
 			MY_CheckDlgButton(hwndDlg, IDC_HIDEMENUBAR, dwFlags & CNT_NOMENUBAR);
 			MY_CheckDlgButton(hwndDlg, IDC_STATICICON, dwFlags & CNT_STATICICON);
@@ -450,6 +453,14 @@ do_apply:
 			MY_CheckDlgButton(hwndDlg, IDC_SINGLEROWTAB, dwFlagsEx & TCF_SINGLEROWTABCONTROL);
 			MY_CheckDlgButton(hwndDlg, IDC_BUTTONTABS, dwFlagsEx & TCF_FLAT);
 
+			MY_CheckDlgButton(hwndDlg, IDC_O_ENABLESOUNDS, !(dwFlags & CNT_NOSOUND));
+			MY_CheckDlgButton(hwndDlg, IDC_O_SOUNDSMINIMIZED, dwFlagsEx & CNT_EX_SOUNDS_MINIMIZED);
+			MY_CheckDlgButton(hwndDlg, IDC_O_SOUNDSUNFOCUSED, dwFlagsEx & CNT_EX_SOUNDS_UNFOCUSED);
+			MY_CheckDlgButton(hwndDlg, IDC_O_SOUNDSINACTIVE, dwFlagsEx & CNT_EX_SOUNDS_INACTIVETABS);
+			MY_CheckDlgButton(hwndDlg, IDC_O_SOUNDSFOCUSED, dwFlagsEx & CNT_EX_SOUNDS_FOCUSED);
+
+			SendMessage(hwndDlg, DM_SC_CONFIG, 0, 0);
+
 			if(!(dwFlagsEx & (TCF_SBARLEFT | TCF_SBARRIGHT)))
 				SendDlgItemMessage(hwndDlg, IDC_TABMODE, CB_SETCURSEL, dwFlags & CNT_TABSBOTTOM ? 1 : 0, 0);
 			else
@@ -460,11 +471,11 @@ do_apply:
 			else
 				CheckDlgButton(hwndDlg, IDC_TRANSPARENCY, FALSE);
 
-			EnableWindow(GetDlgItem(hwndDlg, IDC_TRANSPARENCY), PluginConfig.m_WinVerMajor >= 5 && fAllowTrans ? TRUE : FALSE);
+			Utils::enableDlgControl(hwndDlg, IDC_TRANSPARENCY, PluginConfig.m_WinVerMajor >= 5 && fAllowTrans ? TRUE : FALSE);
 
 			isTrans = IsDlgButtonChecked(hwndDlg, IDC_TRANSPARENCY);
-			EnableWindow(GetDlgItem(hwndDlg, IDC_TRANSPARENCY_ACTIVE), isTrans ? TRUE : FALSE);
-			EnableWindow(GetDlgItem(hwndDlg, IDC_TRANSPARENCY_INACTIVE), isTrans ? TRUE : FALSE);
+			Utils::enableDlgControl(hwndDlg, IDC_TRANSPARENCY_ACTIVE, isTrans ? TRUE : FALSE);
+			Utils::enableDlgControl(hwndDlg, IDC_TRANSPARENCY_INACTIVE, isTrans ? TRUE : FALSE);
 
 			_snprintf(szBuf, 10, "%d", LOWORD(dwTransparency));
 			SetWindowTextA(GetDlgItem(hwndDlg, IDC_TLABEL_ACTIVE), szBuf);
@@ -477,17 +488,26 @@ do_apply:
 			SendDlgItemMessage(hwndDlg, IDC_TRANSPARENCY_ACTIVE, TBM_SETPOS, TRUE, (LPARAM) LOWORD(dwTransparency));
 			SendDlgItemMessage(hwndDlg, IDC_TRANSPARENCY_INACTIVE, TBM_SETPOS, TRUE, (LPARAM) HIWORD(dwTransparency));
 
-			EnableWindow(GetDlgItem(hwndDlg, IDC_O_DONTREPORT), nen_options.bWindowCheck == 0);
-			EnableWindow(GetDlgItem(hwndDlg, IDC_SYNCSOUNDS), nen_options.bWindowCheck == 0);
-			EnableWindow(GetDlgItem(hwndDlg, IDC_DONTREPORTUNFOCUSED2), nen_options.bWindowCheck == 0);
-			EnableWindow(GetDlgItem(hwndDlg, IDC_ALWAYSPOPUPSINACTIVE), nen_options.bWindowCheck == 0);
+			Utils::enableDlgControl(hwndDlg, IDC_O_DONTREPORT, nen_options.bWindowCheck == 0);
+			Utils::enableDlgControl(hwndDlg, IDC_DONTREPORTUNFOCUSED2, nen_options.bWindowCheck == 0);
+			Utils::enableDlgControl(hwndDlg, IDC_ALWAYSPOPUPSINACTIVE, nen_options.bWindowCheck == 0);
 
 			SendDlgItemMessage(hwndDlg, IDC_AVATARMODE, CB_SETCURSEL, (WPARAM)cs->avatarMode, 0);
 			SendDlgItemMessage(hwndDlg, IDC_OWNAVATARMODE, CB_SETCURSEL, (WPARAM)cs->ownAvatarMode, 0);
 
-			ShowWindow(GetDlgItem(hwndDlg, IDC_O_EXPLAINGLOBALNOTIFY), nen_options.bWindowCheck ? SW_SHOW : SW_HIDE);
+			Utils::showDlgControl(hwndDlg, IDC_O_EXPLAINGLOBALNOTIFY, nen_options.bWindowCheck ? SW_SHOW : SW_HIDE);
 			break;
 		}
+
+		case DM_SC_CONFIG: {
+			LRESULT enable = (IsDlgButtonChecked(hwndDlg, IDC_O_ENABLESOUNDS) ? BST_CHECKED : BST_UNCHECKED);
+			Utils::enableDlgControl(hwndDlg, IDC_O_SOUNDSINACTIVE, enable);
+			Utils::enableDlgControl(hwndDlg, IDC_O_SOUNDSUNFOCUSED, enable);
+			Utils::enableDlgControl(hwndDlg, IDC_O_SOUNDSMINIMIZED, enable);
+			Utils::enableDlgControl(hwndDlg, IDC_O_SOUNDSFOCUSED, enable);
+			return(0);
+		}
+
 		case DM_SC_BUILDLIST: {
 			DWORD dwNewFlags = 0, dwNewFlagsEx = 0;
 			TContainerSettings* cs = (TContainerSettings *)lParam;
@@ -501,7 +521,6 @@ do_apply:
 						 (IsDlgButtonChecked(hwndDlg, IDC_TRANSPARENCY) ? CNT_TRANSPARENCY : 0) |
 						 (IsDlgButtonChecked(hwndDlg, IDC_DONTREPORTUNFOCUSED2) ? CNT_DONTREPORTUNFOCUSED : 0) |
 						 (IsDlgButtonChecked(hwndDlg, IDC_ALWAYSPOPUPSINACTIVE) ? CNT_ALWAYSREPORTINACTIVE : 0) |
-						 (IsDlgButtonChecked(hwndDlg, IDC_SYNCSOUNDS) ? CNT_SYNCSOUNDS : 0) |
 						 (IsDlgButtonChecked(hwndDlg, IDC_CNTNOSTATUSBAR) ? CNT_NOSTATUSBAR : 0) |
 						 (IsDlgButtonChecked(hwndDlg, IDC_HIDEMENUBAR) ? CNT_NOMENUBAR : 0) |
 						 (IsDlgButtonChecked(hwndDlg, IDC_STATICICON) ? CNT_STATICICON : 0) |
@@ -511,6 +530,7 @@ do_apply:
 						 (IsDlgButtonChecked(hwndDlg, IDC_USEPRIVATETITLE) ? CNT_TITLE_PRIVATE : 0) |
 						 (IsDlgButtonChecked(hwndDlg, IDC_USEGLOBALSIZE) ? CNT_GLOBALSIZE : 0) |
 						 (IsDlgButtonChecked(hwndDlg, IDC_INFOPANEL) ? CNT_INFOPANEL : 0) |
+						 (IsDlgButtonChecked(hwndDlg, IDC_O_ENABLESOUNDS) ? 0 : CNT_NOSOUND) |
 						 (IsDlgButtonChecked(hwndDlg, IDC_VERTICALMAX) ? CNT_VERTICALMAX : 0) |
 						 (CNT_NEWCONTAINERFLAGS);
 
@@ -531,7 +551,11 @@ do_apply:
 						   (IsDlgButtonChecked(hwndDlg, IDC_BUTTONTABS) ? TCF_FLAT : 0) |
 						   (IsDlgButtonChecked(hwndDlg, IDC_STYLEDTABS) ? TCF_STYLED : 0) |
 						   (IsDlgButtonChecked(hwndDlg, IDC_CLOSEBUTTONONTABS) ? TCF_CLOSEBUTTON : 0) |
-						   (IsDlgButtonChecked(hwndDlg, IDC_SINGLEROWTAB) ? TCF_SINGLEROWTABCONTROL : 0)
+						   (IsDlgButtonChecked(hwndDlg, IDC_SINGLEROWTAB) ? TCF_SINGLEROWTABCONTROL : 0) |
+						   (IsDlgButtonChecked(hwndDlg, IDC_O_SOUNDSMINIMIZED) ? CNT_EX_SOUNDS_MINIMIZED : 0) |
+						   (IsDlgButtonChecked(hwndDlg, IDC_O_SOUNDSUNFOCUSED) ? CNT_EX_SOUNDS_UNFOCUSED : 0) |
+						   (IsDlgButtonChecked(hwndDlg, IDC_O_SOUNDSFOCUSED) ? CNT_EX_SOUNDS_FOCUSED : 0) |
+						   (IsDlgButtonChecked(hwndDlg, IDC_O_SOUNDSINACTIVE) ? CNT_EX_SOUNDS_INACTIVETABS : 0)
 						  );
 
 			/* bits 24 - 31 of dwFlagsEx hold the sidebar layout id */

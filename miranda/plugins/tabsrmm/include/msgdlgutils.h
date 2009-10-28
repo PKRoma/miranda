@@ -61,7 +61,7 @@ UINT	TSAPI GetIEViewMode					(HWND hwndDlg, HANDLE hContact);
 void	TSAPI FindFirstEvent				(_MessageWindowData *dat);
 void	TSAPI SaveSplitter					(_MessageWindowData *dat);
 void	TSAPI LoadSplitter					(_MessageWindowData *dat);
-void	TSAPI PlayIncomingSound				(const ContainerWindowData *pContainer, HWND hwnd);
+void	TSAPI PlayIncomingSound				(const _MessageWindowData *dat);
 void	TSAPI GetSendFormat					(_MessageWindowData *dat, int mode);
 void	TSAPI GetLocaleID					(_MessageWindowData *dat, const TCHAR *szKLName);
 void	TSAPI LoadOwnAvatar					(_MessageWindowData *dat);

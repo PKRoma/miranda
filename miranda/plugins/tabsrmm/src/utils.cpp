@@ -476,10 +476,10 @@ const TCHAR* Utils::DoubleAmpersands(TCHAR *pszText)
 
 /**
  * Get a preview of the text with an ellipsis appended (...)
- * caller must free the return value
+ *
  * @param szText	source text
  * @param iMaxLen	max length of the preview
- * @return
+ * @return TCHAR*   result (caller must mir_free() it)
  */
 TCHAR* Utils::GetPreviewWithEllipsis(TCHAR *szText, size_t iMaxLen)
 {
@@ -676,6 +676,12 @@ void Utils::ContainerToSettings(ContainerWindowData *pContainer)
 	pContainer->settings->ownAvatarMode		= pContainer->ownAvatarMode;
 }
 
+/**
+ * read settings for a container with private settings enabled.
+ *
+ * @param pContainer	container window info struct
+ * @param fForce		true -> force them private, even if they were not marked as private in the db
+ */
 void Utils::ReadPrivateContainerSettings(ContainerWindowData *pContainer, bool fForce)
 {
 	char	szCname[50];
@@ -691,6 +697,70 @@ void Utils::ReadPrivateContainerSettings(ContainerWindowData *pContainer, bool f
 	}
 	else
 		pContainer->settings = &PluginConfig.globalContainerSettings;
+}
+
+/**
+ * add a menu item to a ownerdrawn menu. mii must be pre-initialized
+ *
+ * @param m			menu handle
+ * @param mii		menu item info structure
+ * @param hIcon		the icon (0 allowed -> no icon)
+ * @param szText	menu item text (must NOT be 0)
+ * @param uID		the item command id
+ * @param pos		zero-based position index
+ */
+void Utils::addMenuItem(const HMENU& m, MENUITEMINFO& mii, HICON hIcon, const TCHAR *szText, UINT uID, UINT pos)
+{
+	mii.wID = uID;
+	mii.dwItemData = (ULONG_PTR)hIcon;
+	mii.dwTypeData = const_cast<TCHAR *>(szText);
+	mii.cch = lstrlen(mii.dwTypeData) + 1;
+
+	::InsertMenuItem(m, pos, TRUE, &mii);
+}
+
+/**
+ * return != 0 when the sound effect must be played for the given
+ * session. Uses container sound settings
+ */
+int	TSAPI Utils::mustPlaySound(const _MessageWindowData *dat)
+{
+	if(!dat)
+		return(0);
+
+	if(dat->pContainer->fHidden)		// hidden container is treated as closed, so play the sound
+		return(1);
+
+	if(dat->pContainer->dwFlags & CNT_NOSOUND || nen_options.iNoSounds)
+		return(0);
+
+	bool fActiveWindow = (dat->pContainer->hwnd == ::GetForegroundWindow() ? true : false);
+	bool fActiveTab = (dat->pContainer->hwndActive == dat->hwnd ? true : false);
+	bool fIconic = (::IsIconic(dat->hwnd) ? true : false);
+
+	if(fActiveTab && fActiveWindow)
+		return(dat->pContainer->dwFlagsEx & CNT_EX_SOUNDS_FOCUSED ? 1 : 0);
+
+	if(fIconic)
+		return(dat->pContainer->dwFlagsEx & CNT_EX_SOUNDS_MINIMIZED ? 1 : 0);
+
+	return(1);
+}
+
+/**
+ * enable or disable a dialog control
+ */
+void TSAPI Utils::enableDlgControl(const HWND hwnd, UINT id, BOOL fEnable)
+{
+	::EnableWindow(::GetDlgItem(hwnd, id), fEnable);
+}
+
+/**
+ * show or hide a dialog control
+ */
+void TSAPI Utils::showDlgControl(const HWND hwnd, UINT id, int showCmd)
+{
+	::ShowWindow(::GetDlgItem(hwnd, id), showCmd);
 }
 
 /*

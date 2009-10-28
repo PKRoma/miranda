@@ -182,10 +182,10 @@ INT_PTR CALLBACK DlgProcPopupOpts(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPa
 					ShowWindow(hwndChild, SW_HIDE);
 					hwndChild = FindWindowEx(hWnd, hwndChild, 0, 0);
 				}
-				ShowWindow(GetDlgItem(hWnd, IDC_NOPOPUPAVAIL), SW_SHOW);
+				Utils::showDlgControl(hWnd, IDC_NOPOPUPAVAIL, SW_SHOW);
 			}
 			else
-				ShowWindow(GetDlgItem(hWnd, IDC_NOPOPUPAVAIL), SW_HIDE);
+				Utils::showDlgControl(hWnd, IDC_NOPOPUPAVAIL, SW_HIDE);
 			/*
 			* fill the tree view
 			*/
@@ -240,22 +240,22 @@ INT_PTR CALLBACK DlgProcPopupOpts(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPa
 			SendDlgItemMessage(hWnd, IDC_DELAY_OTHERS_SPIN, UDM_SETPOS, 0, (LPARAM)options->iDelayOthers);
 			SendDlgItemMessage(hWnd, IDC_DELAY_MESSAGE_MUC_SPIN, UDM_SETPOS, 0, (LPARAM)g_Settings.iPopupTimeout);
 
-			EnableWindow(GetDlgItem(hWnd, IDC_COLBACK_MESSAGE), !options->bDefaultColorMsg);
-			EnableWindow(GetDlgItem(hWnd, IDC_COLTEXT_MESSAGE), !options->bDefaultColorMsg);
-			EnableWindow(GetDlgItem(hWnd, IDC_COLBACK_OTHERS), !options->bDefaultColorOthers);
-			EnableWindow(GetDlgItem(hWnd, IDC_COLTEXT_OTHERS), !options->bDefaultColorOthers);
-			EnableWindow(GetDlgItem(hWnd, IDC_COLTEXT_MUC),  (g_Settings.iPopupStyle == 3) ? TRUE : FALSE);
-			EnableWindow(GetDlgItem(hWnd, IDC_COLBACK_MUC),  (g_Settings.iPopupStyle == 3) ? TRUE : FALSE);
+			Utils::enableDlgControl(hWnd, IDC_COLBACK_MESSAGE, !options->bDefaultColorMsg);
+			Utils::enableDlgControl(hWnd, IDC_COLTEXT_MESSAGE, !options->bDefaultColorMsg);
+			Utils::enableDlgControl(hWnd, IDC_COLBACK_OTHERS, !options->bDefaultColorOthers);
+			Utils::enableDlgControl(hWnd, IDC_COLTEXT_OTHERS, !options->bDefaultColorOthers);
+			Utils::enableDlgControl(hWnd, IDC_COLTEXT_MUC,  (g_Settings.iPopupStyle == 3) ? TRUE : FALSE);
+			Utils::enableDlgControl(hWnd, IDC_COLBACK_MUC,  (g_Settings.iPopupStyle == 3) ? TRUE : FALSE);
 
 			CheckDlgButton(hWnd, IDC_MUC_LOGCOLORS, g_Settings.iPopupStyle < 2 ? TRUE : FALSE);
-			EnableWindow(GetDlgItem(hWnd, IDC_MUC_LOGCOLORS), g_Settings.iPopupStyle != 2 ? TRUE : FALSE);
+			Utils::enableDlgControl(hWnd, IDC_MUC_LOGCOLORS, g_Settings.iPopupStyle != 2 ? TRUE : FALSE);
 
 			SetDlgItemInt(hWnd, IDC_MESSAGEPREVIEWLIMIT, options->iLimitPreview, FALSE);
 			CheckDlgButton(hWnd, IDC_LIMITPREVIEW, (options->iLimitPreview > 0) ? 1 : 0);
 			SendDlgItemMessage(hWnd, IDC_MESSAGEPREVIEWLIMITSPIN, UDM_SETRANGE, 0, MAKELONG(2048, options->iLimitPreview > 0 ? 50 : 0));
 			SendDlgItemMessage(hWnd, IDC_MESSAGEPREVIEWLIMITSPIN, UDM_SETPOS, 0, (LPARAM)options->iLimitPreview);
-			EnableWindow(GetDlgItem(hWnd, IDC_MESSAGEPREVIEWLIMIT), IsDlgButtonChecked(hWnd, IDC_LIMITPREVIEW));
-			EnableWindow(GetDlgItem(hWnd, IDC_MESSAGEPREVIEWLIMITSPIN), IsDlgButtonChecked(hWnd, IDC_LIMITPREVIEW));
+			Utils::enableDlgControl(hWnd, IDC_MESSAGEPREVIEWLIMIT, IsDlgButtonChecked(hWnd, IDC_LIMITPREVIEW));
+			Utils::enableDlgControl(hWnd, IDC_MESSAGEPREVIEWLIMITSPIN, IsDlgButtonChecked(hWnd, IDC_LIMITPREVIEW));
 
 			bWmNotify = FALSE;
 			return TRUE;
@@ -284,7 +284,7 @@ INT_PTR CALLBACK DlgProcPopupOpts(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPa
 						else
 							g_Settings.iPopupStyle = 3;
 
-						EnableWindow(GetDlgItem(hWnd, IDC_MUC_LOGCOLORS), g_Settings.iPopupStyle != 2 ? TRUE : FALSE);
+						Utils::enableDlgControl(hWnd, IDC_MUC_LOGCOLORS, g_Settings.iPopupStyle != 2 ? TRUE : FALSE);
 
 						options->bDefaultColorMsg = IsDlgButtonChecked(hWnd, IDC_CHKDEFAULTCOL_MESSAGE);
 						options->bDefaultColorOthers = IsDlgButtonChecked(hWnd, IDC_CHKDEFAULTCOL_OTHERS);
@@ -298,20 +298,20 @@ INT_PTR CALLBACK DlgProcPopupOpts(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPa
 							options->iLimitPreview = GetDlgItemInt(hWnd, IDC_MESSAGEPREVIEWLIMIT, NULL, FALSE);
 						else
 							options->iLimitPreview = 0;
-						EnableWindow(GetDlgItem(hWnd, IDC_COLBACK_MESSAGE), !options->bDefaultColorMsg);
-						EnableWindow(GetDlgItem(hWnd, IDC_COLTEXT_MESSAGE), !options->bDefaultColorMsg);
-						EnableWindow(GetDlgItem(hWnd, IDC_COLBACK_OTHERS), !options->bDefaultColorOthers);
-						EnableWindow(GetDlgItem(hWnd, IDC_COLTEXT_OTHERS), !options->bDefaultColorOthers);
-						EnableWindow(GetDlgItem(hWnd, IDC_COLTEXT_MUC),  (g_Settings.iPopupStyle == 3) ? TRUE : FALSE);
-						EnableWindow(GetDlgItem(hWnd, IDC_COLBACK_MUC),  (g_Settings.iPopupStyle == 3) ? TRUE : FALSE);
+						Utils::enableDlgControl(hWnd, IDC_COLBACK_MESSAGE, !options->bDefaultColorMsg);
+						Utils::enableDlgControl(hWnd, IDC_COLTEXT_MESSAGE, !options->bDefaultColorMsg);
+						Utils::enableDlgControl(hWnd, IDC_COLBACK_OTHERS, !options->bDefaultColorOthers);
+						Utils::enableDlgControl(hWnd, IDC_COLTEXT_OTHERS, !options->bDefaultColorOthers);
+						Utils::enableDlgControl(hWnd, IDC_COLTEXT_MUC,  (g_Settings.iPopupStyle == 3) ? TRUE : FALSE);
+						Utils::enableDlgControl(hWnd, IDC_COLBACK_MUC,  (g_Settings.iPopupStyle == 3) ? TRUE : FALSE);
 
-						EnableWindow(GetDlgItem(hWnd, IDC_MESSAGEPREVIEWLIMIT), IsDlgButtonChecked(hWnd, IDC_LIMITPREVIEW));
-						EnableWindow(GetDlgItem(hWnd, IDC_MESSAGEPREVIEWLIMITSPIN), IsDlgButtonChecked(hWnd, IDC_LIMITPREVIEW));
+						Utils::enableDlgControl(hWnd, IDC_MESSAGEPREVIEWLIMIT, IsDlgButtonChecked(hWnd, IDC_LIMITPREVIEW));
+						Utils::enableDlgControl(hWnd, IDC_MESSAGEPREVIEWLIMITSPIN, IsDlgButtonChecked(hWnd, IDC_LIMITPREVIEW));
 						//disable delay textbox when infinite is checked
 
-						EnableWindow(GetDlgItem(hWnd, IDC_DELAY_MESSAGE), options->iDelayMsg != -1);
-						EnableWindow(GetDlgItem(hWnd, IDC_DELAY_OTHERS), options->iDelayOthers != -1);
-						EnableWindow(GetDlgItem(hWnd, IDC_DELAY_MUC), g_Settings.iPopupTimeout != -1);
+						Utils::enableDlgControl(hWnd, IDC_DELAY_MESSAGE, options->iDelayMsg != -1);
+						Utils::enableDlgControl(hWnd, IDC_DELAY_OTHERS, options->iDelayOthers != -1);
+						Utils::enableDlgControl(hWnd, IDC_DELAY_MUC, g_Settings.iPopupTimeout != -1);
 
 						if (HIWORD(wParam) == CPN_COLOURCHANGED) {
 							options->colBackMsg = SendDlgItemMessage(hWnd, IDC_COLBACK_MESSAGE, CPM_GETCOLOUR, 0, 0);

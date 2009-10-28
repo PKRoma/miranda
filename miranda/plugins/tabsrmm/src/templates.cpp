@@ -181,15 +181,15 @@ INT_PTR CALLBACK DlgProcTemplateEditor(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			ShowWindow(hwndDlg, SW_SHOW);
 			SendDlgItemMessage(hwndDlg, IDC_EDITTEMPLATE, EM_LIMITTEXT, (WPARAM)TEMPLATE_LENGTH - 1, 0);
 			SetWindowText(hwndDlg, CTranslator::getOpt(CTranslator::OPT_TEMP_TITLE));
-			EnableWindow(GetDlgItem(hwndDlg, IDC_SAVETEMPLATE), FALSE);
-			EnableWindow(GetDlgItem(hwndDlg, IDC_REVERT), FALSE);
-			EnableWindow(GetDlgItem(hwndDlg, IDC_FORGET), FALSE);
+			Utils::enableDlgControl(hwndDlg, IDC_SAVETEMPLATE, FALSE);
+			Utils::enableDlgControl(hwndDlg, IDC_REVERT, FALSE);
+			Utils::enableDlgControl(hwndDlg, IDC_FORGET, FALSE);
 			for (i = 0; i <= TMPL_ERRMSG; i++) {
 				SendDlgItemMessageA(hwndDlg, IDC_TEMPLATELIST, LB_ADDSTRING, 0, (LPARAM)Translate(TemplateNames[i]));
 				SendDlgItemMessage(hwndDlg, IDC_TEMPLATELIST, LB_SETITEMDATA, i, (LPARAM)i);
 			}
-			EnableWindow(GetDlgItem(teInfo->hwndParent, IDC_MODIFY), FALSE);
-			EnableWindow(GetDlgItem(teInfo->hwndParent, IDC_RTLMODIFY), FALSE);
+			Utils::enableDlgControl(teInfo->hwndParent, IDC_MODIFY, FALSE);
+			Utils::enableDlgControl(teInfo->hwndParent, IDC_RTLMODIFY, FALSE);
 
 			SendDlgItemMessage(hwndDlg, IDC_COLOR1, CPM_SETCOLOUR, 0, M->GetDword("cc1", SRMSGDEFSET_BKGCOLOUR));
 			SendDlgItemMessage(hwndDlg, IDC_COLOR2, CPM_SETCOLOUR, 0, M->GetDword("cc2", SRMSGDEFSET_BKGCOLOUR));
@@ -249,10 +249,10 @@ INT_PTR CALLBACK DlgProcTemplateEditor(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 						if (!teInfo->selchanging) {
 							teInfo->changed = TRUE;
 							teInfo->updateInfo[teInfo->inEdit] = TRUE;
-							EnableWindow(GetDlgItem(hwndDlg, IDC_SAVETEMPLATE), TRUE);
-							EnableWindow(GetDlgItem(hwndDlg, IDC_FORGET), TRUE);
-							EnableWindow(GetDlgItem(hwndDlg, IDC_TEMPLATELIST), FALSE);
-							EnableWindow(GetDlgItem(hwndDlg, IDC_REVERT), TRUE);
+							Utils::enableDlgControl(hwndDlg, IDC_SAVETEMPLATE, TRUE);
+							Utils::enableDlgControl(hwndDlg, IDC_FORGET, TRUE);
+							Utils::enableDlgControl(hwndDlg, IDC_TEMPLATELIST, FALSE);
+							Utils::enableDlgControl(hwndDlg, IDC_REVERT, TRUE);
 						}
 						InvalidateRect(GetDlgItem(hwndDlg, IDC_TEMPLATELIST), NULL, FALSE);
 					}
@@ -264,10 +264,10 @@ INT_PTR CALLBACK DlgProcTemplateEditor(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 					CopyMemory(tSet->szTemplates[teInfo->inEdit], newTemplate, sizeof(TCHAR) * TEMPLATE_LENGTH);
 					teInfo->changed = FALSE;
 					teInfo->updateInfo[teInfo->inEdit] = FALSE;
-					EnableWindow(GetDlgItem(hwndDlg, IDC_SAVETEMPLATE), FALSE);
-					EnableWindow(GetDlgItem(hwndDlg, IDC_FORGET), FALSE);
-					EnableWindow(GetDlgItem(hwndDlg, IDC_TEMPLATELIST), TRUE);
-					EnableWindow(GetDlgItem(hwndDlg, IDC_REVERT), FALSE);
+					Utils::enableDlgControl(hwndDlg, IDC_SAVETEMPLATE, FALSE);
+					Utils::enableDlgControl(hwndDlg, IDC_FORGET, FALSE);
+					Utils::enableDlgControl(hwndDlg, IDC_TEMPLATELIST, TRUE);
+					Utils::enableDlgControl(hwndDlg, IDC_REVERT, FALSE);
 					InvalidateRect(GetDlgItem(hwndDlg, IDC_TEMPLATELIST), NULL, FALSE);
 					M->WriteTString(teInfo->hContact, teInfo->rtl ? RTLTEMPLATES_MODULE : TEMPLATES_MODULE, TemplateNames[teInfo->inEdit], newTemplate);
 					SendMessage(GetDlgItem(hwndDlg, IDC_EDITTEMPLATE), EM_SETREADONLY, TRUE, 0);
@@ -280,10 +280,10 @@ INT_PTR CALLBACK DlgProcTemplateEditor(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 					SetDlgItemText(hwndDlg, IDC_EDITTEMPLATE, tSet->szTemplates[teInfo->inEdit]);
 					SetFocus(GetDlgItem(hwndDlg, IDC_EDITTEMPLATE));
 					InvalidateRect(GetDlgItem(hwndDlg, IDC_TEMPLATELIST), NULL, FALSE);
-					EnableWindow(GetDlgItem(hwndDlg, IDC_SAVETEMPLATE), FALSE);
-					EnableWindow(GetDlgItem(hwndDlg, IDC_FORGET), FALSE);
-					EnableWindow(GetDlgItem(hwndDlg, IDC_TEMPLATELIST), TRUE);
-					EnableWindow(GetDlgItem(hwndDlg, IDC_REVERT), FALSE);
+					Utils::enableDlgControl(hwndDlg, IDC_SAVETEMPLATE, FALSE);
+					Utils::enableDlgControl(hwndDlg, IDC_FORGET, FALSE);
+					Utils::enableDlgControl(hwndDlg, IDC_TEMPLATELIST, TRUE);
+					Utils::enableDlgControl(hwndDlg, IDC_REVERT, FALSE);
 					teInfo->selchanging = FALSE;
 					SendMessage(GetDlgItem(hwndDlg, IDC_EDITTEMPLATE), EM_SETREADONLY, TRUE, 0);
 					break;
@@ -298,10 +298,10 @@ INT_PTR CALLBACK DlgProcTemplateEditor(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 					SetFocus(GetDlgItem(hwndDlg, IDC_EDITTEMPLATE));
 					InvalidateRect(GetDlgItem(hwndDlg, IDC_TEMPLATELIST), NULL, FALSE);
 					teInfo->selchanging = FALSE;
-					EnableWindow(GetDlgItem(hwndDlg, IDC_SAVETEMPLATE), FALSE);
-					EnableWindow(GetDlgItem(hwndDlg, IDC_REVERT), FALSE);
-					EnableWindow(GetDlgItem(hwndDlg, IDC_FORGET), FALSE);
-					EnableWindow(GetDlgItem(hwndDlg, IDC_TEMPLATELIST), TRUE);
+					Utils::enableDlgControl(hwndDlg, IDC_SAVETEMPLATE, FALSE);
+					Utils::enableDlgControl(hwndDlg, IDC_REVERT, FALSE);
+					Utils::enableDlgControl(hwndDlg, IDC_FORGET, FALSE);
+					Utils::enableDlgControl(hwndDlg, IDC_TEMPLATELIST, TRUE);
 					SendMessage(GetDlgItem(hwndDlg, IDC_EDITTEMPLATE), EM_SETREADONLY, TRUE, 0);
 					break;
 				}
@@ -371,8 +371,8 @@ INT_PTR CALLBACK DlgProcTemplateEditor(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			break;
 		}
 		case WM_DESTROY:
-			EnableWindow(GetDlgItem(teInfo->hwndParent, IDC_MODIFY), TRUE);
-			EnableWindow(GetDlgItem(teInfo->hwndParent, IDC_RTLMODIFY), TRUE);
+			Utils::enableDlgControl(teInfo->hwndParent, IDC_MODIFY, TRUE);
+			Utils::enableDlgControl(teInfo->hwndParent, IDC_RTLMODIFY, TRUE);
 			if (dat->pContainer)
 				free(dat->pContainer);
 			if (dat)

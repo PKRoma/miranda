@@ -20,8 +20,8 @@
 #define IDR_SKIN_LOGO                   20
 #define IDI_IMGOPEN                     102
 #define IDI_IMGCLOSE                    103
-#define IDI_FEATURE_DISABLED			104
-#define IDI_FEATURE_ENABLED				105
+#define IDI_FEATURE_DISABLED            104
+#define IDI_FEATURE_ENABLED             105
 #define IDR_CONTEXT                     180
 #define IDM_PASTEFORMATTED              181
 #define IDM_CUT                         182
@@ -58,13 +58,12 @@
 #define IDD_SKINTABDIALOG               312
 #define IDD_OPT_SKIN                    313
 #define IDD_OPTIONS_PLUS                333
-#define IDD_EXCEPTION					400
-#define IDC_EXCEPTION_DETAILS			1000
-#define IDC_COPY_EXCEPTION				1001
+#define IDD_EXCEPTION                   400
+#define IDC_EXCEPTION_DETAILS           1000
 #define IDC_UNLOAD                      1000
 #define IDC_READNEXT                    1000
 #define IDC_MINIMIZE                    1000
-#define IDC_OPTIONSTAB					2111
+#define IDC_COPY_EXCEPTION              1001
 #define IDC_RELOADSKIN                  1001
 #define IDC_APPLY                       1001
 #define IDC_MAXIMIZE                    1001
@@ -358,7 +357,6 @@
 #define IDC_SKIN_LOADFONTS              1289
 #define IDC_PRESERVEAVATARSIZE          1289
 #define IDC_UPREFS_SHOWICONS            1289
-#define IDC_SYNCSOUNDS                  1290
 #define IDC_ALWAYSTRIM2                 1290
 #define IDC_SKIN_LOADTEMPLATES          1290
 #define IDC_UPREFS_SHOWSYMBOLS          1290
@@ -473,15 +471,13 @@
 #define IDC_AEROGLOW                    1395
 #define IDC_SUPPORT                     1396
 #define IDC_SHOWAVATAR                  1396
-#define IDC_NOPOPUPAVAIL				1398
-#define IDC_HEADERBAR					2397
+#define IDC_NOPOPUPAVAIL                1398
 #define IDC_QHTM                        1399
 #define IDC_TSLABEL_ACTIVE              1400
 #define IDC_TSLABEL_INACTIVE            1401
 #define IDC_TITLEBOX                    1402
 #define IDC_DESC                        1404
 #define IDC_LABEL_PRIVATETHEME          1405
-#define IDC_SKIN_WIN9XWARN              1406
 #define IDC_MSGLOGDIDSPLAY              1407
 #define IDC_TOOLBARTREE                 1409
 #define IDC_IMCHECK                     1410
@@ -532,6 +528,7 @@
 #define IDC_POPUPONCREATE               1436
 #define IDC_SIZE_TIP                    1436
 #define IDC_IPCONFIG_PRIVATECONTAINER   1437
+#define IDC_EXPLAINMSGLOGSETTINGS       1437
 #define IDC_NOTIFYFILE                  1438
 #define IDC_PANELPICTUREVIS             1438
 #define IDC_NOTIFYURL                   1439
@@ -541,19 +538,26 @@
 #define IDC_FLASHLABEL                  1490
 #define IDC_STATIC_VISIBILTY            1491
 #define IDC_BUTTONTABS                  1492
-#define IDC_CLOSEBUTTONONTABS			1493
-#define IDC_O_STATIC_AVATAR				1501
-#define IDC_O_STATIC_OWNAVATAR			1502
+#define IDC_CLOSEBUTTONONTABS           1493
+#define IDC_O_STATIC_AVATAR             1501
+#define IDC_O_STATIC_OWNAVATAR          1502
 #define IDC_TXT_TITLE1                  1617
 #define IDC_TXT_TITLE2                  1618
 #define IDC_TXT_TITLE4                  1620
 #define IDC_TXT_TITLE5                  1622
 #define IDC_TXT_TITLE3                  1623
+#define IDC_O_ENABLESOUNDS				1701
+#define IDC_O_SOUNDSMINIMIZED			1702
+#define IDC_O_SOUNDSUNFOCUSED			1703
+#define IDC_O_SOUNDSINACTIVE			1704
+#define IDC_O_SOUNDSFOCUSED				1705
 #define IDC_O_EXPLAINGLOBALNOTIFY       1624
 #define IDC_PLUS_CHECKTREE              2000
 #define IDC_COPYRIGHT                   2002
 #define IDC_PLUS_HELP                   2004
 #define IDC_BUILDTIME                   2005
+#define IDC_OPTIONSTAB                  2111
+#define IDC_HEADERBAR                   2397
 #define IDD_OPT_TYPINGNOTIFYPOPUP       30159
 #define IDI_START1                      30160
 #define IDI_STOP1                       30161
@@ -769,12 +773,12 @@
 #endif
 
 // Next default values for new objects
-//
+// 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        15
 #define _APS_NEXT_COMMAND_VALUE         40256
-#define _APS_NEXT_CONTROL_VALUE         1437
+#define _APS_NEXT_CONTROL_VALUE         1438
 #define _APS_NEXT_SYMED_VALUE           40283
 #endif
 #endif

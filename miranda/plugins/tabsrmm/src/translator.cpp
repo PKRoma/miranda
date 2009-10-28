@@ -248,6 +248,8 @@ TCHAR* CTranslator::m_strings[STR_LAST] = {
 	LPGENT("The topic is \'%s\' (set by %s)"),			/* GEN_MUC_POPUP_TOPIC1 */
 	LPGENT("%s enables \'%s\' status for %s"),			/* GEN_MUC_POPUP_STATUS_ON */
 	LPGENT("%s disables \'%s\' status for %s"),			/* GEN_MUC_POPUP_STATUS_OFF */
+
+	LPGENT("Sound notifications"),						/* CNT_OPT_TITLE_SOUNDS */
 };
 
 /*
@@ -355,6 +357,7 @@ TCHAR* CTranslator::m_OptStrings[OPT_LAST] = {
 	LPGENT("Log formatting"),										/* OPT_TABS_MUC_LOG */
 	LPGENT("Events and filters"),									/* OPT_TABS_MUC_EVENTS */
 	LPGENT("Highlighting"),											/* OPT_TABS_MUC_HIGHLIGHT */
+	LPGENT("You have chosen to use an external plugin for displaying the message history in the chat window. Most of the settings on this page are for the standard message log viewer only and will have no effect. To change the appearance of the message log, you must configure either IEView or History++."),									/* OPT_MSGLOG_EXPLAINSETTINGS */
 };
 TCHAR* CTranslator::m_translated[STR_LAST];
 TCHAR* CTranslator::m_OptTranslated[OPT_LAST];

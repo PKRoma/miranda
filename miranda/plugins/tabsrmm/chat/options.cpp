@@ -183,7 +183,6 @@ static struct branch_t branch1[] = {
 	{LPGENT("Colorize nicknames in member list"), "ColorizeNicks", 0, 1, NULL},
 	{LPGENT("Show button menus when right clicking the buttons"), "RightClickFilter", 0, 0, NULL},
 	{LPGENT("Show topic as status message on the contact list"), "TopicOnClist", 0, 1, NULL},
-	{LPGENT("Do not play sounds when the chat room is focused"), "SoundsFocus", 0, 0, NULL},
 	{LPGENT("Do not pop up the window when joining a chat room"), "PopupOnJoin", 0, 0, NULL},
 	{LPGENT("Hide or show the window by double click in the contact list"), "ToggleVisibility", 0, 0, NULL},
 	{LPGENT("Sync splitter position with standard IM sessions"), "SyncSplitter", 0, 0, NULL},
@@ -549,13 +548,13 @@ INT_PTR CALLBACK DlgProcOptions1(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
 					InitSetting(&pszGroup, "AddToGroup", _T("Chat rooms"));
 					SetWindowText(GetDlgItem(hwndDlg, IDC_GROUP), pszGroup);
 					mir_free(pszGroup);
-					ShowWindow(GetDlgItem(hwndDlg, IDC_STATIC_MESSAGE), SW_HIDE);
+					Utils::showDlgControl(hwndDlg, IDC_STATIC_MESSAGE, SW_HIDE);
 				}
 			} else {
 				int i = 0;
 
 				while (_o1controls[i])
-					ShowWindow(GetDlgItem(hwndDlg, _o1controls[i++]), SW_HIDE);
+					Utils::showDlgControl(hwndDlg, _o1controls[i++], SW_HIDE);
 			}
 			break;
 
@@ -894,11 +893,11 @@ INT_PTR CALLBACK DlgProcOptions2(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
 				SetDlgItemText(hwndDlg, IDC_INSTAMP, g_Settings.pszIncomingNick);
 				CheckDlgButton(hwndDlg, IDC_LOGGING, g_Settings.LoggingEnabled);
 				SetDlgItemText(hwndDlg, IDC_LOGDIRECTORY, g_Settings.pszLogDir);
-				EnableWindow(GetDlgItem(hwndDlg, IDC_LOGDIRECTORY), g_Settings.LoggingEnabled ? TRUE : FALSE);
-				EnableWindow(GetDlgItem(hwndDlg, IDC_FONTCHOOSE), g_Settings.LoggingEnabled ? TRUE : FALSE);
+				Utils::enableDlgControl(hwndDlg, IDC_LOGDIRECTORY, g_Settings.LoggingEnabled ? TRUE : FALSE);
+				Utils::enableDlgControl(hwndDlg, IDC_FONTCHOOSE, g_Settings.LoggingEnabled ? TRUE : FALSE);
 				SendDlgItemMessage(hwndDlg, IDC_CHAT_SPIN4, UDM_SETRANGE, 0, MAKELONG(10000, 0));
 				SendDlgItemMessage(hwndDlg, IDC_CHAT_SPIN4, UDM_SETPOS, 0, MAKELONG(DBGetContactSettingWord(NULL, "Chat", "LoggingLimit", 100), 0));
-				EnableWindow(GetDlgItem(hwndDlg, IDC_LIMIT), g_Settings.LoggingEnabled ? TRUE : FALSE);
+				Utils::enableDlgControl(hwndDlg, IDC_LIMIT, g_Settings.LoggingEnabled ? TRUE : FALSE);
 
 				if (ServiceExists(MS_UTILS_REPLACEVARS)) {
 					TCHAR tszTooltipText[2048];
@@ -939,7 +938,7 @@ INT_PTR CALLBACK DlgProcOptions2(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
 				int i = 0;
 
 				while (_o2chatcontrols[i])
-					EnableWindow(GetDlgItem(hwndDlg, _o2chatcontrols[i++]), FALSE);
+					Utils::enableDlgControl(hwndDlg, _o2chatcontrols[i++], FALSE);
 			}
 			if (hPathTip)
 				SetTimer(hwndDlg, 0, 3000, NULL);
@@ -989,9 +988,9 @@ INT_PTR CALLBACK DlgProcOptions2(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
 
 				case IDC_LOGGING:
 					if (PluginConfig.m_chat_enabled) {
-						EnableWindow(GetDlgItem(hwndDlg, IDC_LOGDIRECTORY), IsDlgButtonChecked(hwndDlg, IDC_LOGGING) == BST_CHECKED ? TRUE : FALSE);
-						EnableWindow(GetDlgItem(hwndDlg, IDC_FONTCHOOSE), IsDlgButtonChecked(hwndDlg, IDC_LOGGING) == BST_CHECKED ? TRUE : FALSE);
-						EnableWindow(GetDlgItem(hwndDlg, IDC_LIMIT), IsDlgButtonChecked(hwndDlg, IDC_LOGGING) == BST_CHECKED ? TRUE : FALSE);
+						Utils::enableDlgControl(hwndDlg, IDC_LOGDIRECTORY, IsDlgButtonChecked(hwndDlg, IDC_LOGGING) == BST_CHECKED ? TRUE : FALSE);
+						Utils::enableDlgControl(hwndDlg, IDC_FONTCHOOSE, IsDlgButtonChecked(hwndDlg, IDC_LOGGING) == BST_CHECKED ? TRUE : FALSE);
+						Utils::enableDlgControl(hwndDlg, IDC_LIMIT, IsDlgButtonChecked(hwndDlg, IDC_LOGGING) == BST_CHECKED ? TRUE : FALSE);
 					}
 					break;
 			}
@@ -1234,7 +1233,6 @@ void LoadGlobalSettings(void)
 
 	g_Settings.LogLimitNames = M->GetByte("Chat", "LogLimitNames", 1);
 	g_Settings.ShowTime = M->GetByte("Chat", "ShowTimeStamp", 1);
-	g_Settings.SoundsFocus = M->GetByte("Chat", "SoundsFocus", 0);
 	g_Settings.ShowTimeIfChanged = (BOOL)M->GetByte("Chat", "ShowTimeStampIfChanged", 0);
 	g_Settings.TimeStampEventColour = (BOOL)M->GetByte("Chat", "TimeStampEventColour", 0);
 	g_Settings.iEventLimit = DBGetContactSettingWord(NULL, "Chat", "LogLimit", 100);

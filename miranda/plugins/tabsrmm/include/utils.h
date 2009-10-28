@@ -93,6 +93,11 @@ public:
 	static	DWORD 		CALLBACK 	  StreamOut(DWORD_PTR dwCookie, LPBYTE pbBuff, LONG cb, LONG * pcb);
 	static	LRESULT				TSAPI CmdDispatcher					(UINT uType, HWND hwndDlg, UINT cmd, WPARAM wParam, LPARAM lParam, _MessageWindowData *dat = 0,
 																	 ContainerWindowData *pContainer = 0);
+	static	void 				TSAPI addMenuItem					(const HMENU& m, MENUITEMINFO& mii, HICON hIcon,
+																	 const TCHAR *szText, UINT uID, UINT pos);
+	static	void				TSAPI enableDlgControl				(const HWND hwnd, UINT id, BOOL fEnable = 1);
+	static 	void 				TSAPI showDlgControl				(const HWND hwnd, UINT id, int showCmd);
+	static	int					TSAPI mustPlaySound					(const _MessageWindowData *dat);
 
 	template<typename T> static size_t TSAPI CopyToClipBoard(T* _t, const HWND hwndOwner)
 	{

@@ -173,19 +173,19 @@ static INT_PTR CALLBACK DlgProcOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 				SetDlgItemText(hwndDlg, IDC_INFO, CTranslator::get(CTranslator::GEN_MTN_POPUP_UNSUPPORTED));
 			if (ColorMode == COLOR_WINDOWS) {
 				CheckDlgButton(hwndDlg, IDC_USEWINCOLORS, BST_CHECKED);
-				EnableWindow(GetDlgItem(hwndDlg, IDC_USEPOPUPCOLORS), FALSE);
-				EnableWindow(GetDlgItem(hwndDlg, IDC_USEWINCOLORS), TRUE);
+				Utils::enableDlgControl(hwndDlg, IDC_USEPOPUPCOLORS, FALSE);
+				Utils::enableDlgControl(hwndDlg, IDC_USEWINCOLORS, TRUE);
 				CheckDlgButton(hwndDlg, IDC_USEPOPUPCOLORS, BST_UNCHECKED);
 			} else if (ColorMode == COLOR_POPUP) {
 				CheckDlgButton(hwndDlg, IDC_USEWINCOLORS, BST_UNCHECKED);
-				EnableWindow(GetDlgItem(hwndDlg, IDC_USEWINCOLORS), FALSE);
-				EnableWindow(GetDlgItem(hwndDlg, IDC_USEPOPUPCOLORS), TRUE);
+				Utils::enableDlgControl(hwndDlg, IDC_USEWINCOLORS, FALSE);
+				Utils::enableDlgControl(hwndDlg, IDC_USEPOPUPCOLORS, TRUE);
 				CheckDlgButton(hwndDlg, IDC_USEPOPUPCOLORS, BST_CHECKED);
 			}
 
 			for (i = 0; i < sizeof(colorPicker) / sizeof(colorPicker[0]); i++) {
 				SendDlgItemMessage(hwndDlg, colorPicker[i].res, CPM_SETCOLOUR, 0, colorPicker[i].color);
-				EnableWindow(GetDlgItem(hwndDlg, colorPicker[i].res), (ColorMode == COLOR_OWN));
+				Utils::enableDlgControl(hwndDlg, colorPicker[i].res, (ColorMode == COLOR_OWN));
 			}
 
 			CheckDlgButton(hwndDlg, IDC_TIMEOUT_PERMANENT, (TimeoutMode == TIMEOUT_PERMANENT) ? BST_CHECKED : BST_UNCHECKED);
@@ -193,13 +193,13 @@ static INT_PTR CALLBACK DlgProcOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 			CheckDlgButton(hwndDlg, IDC_TIMEOUT_PROTO, (TimeoutMode == TIMEOUT_PROTO) ? BST_CHECKED : BST_UNCHECKED);
 			CheckDlgButton(hwndDlg, IDC_TIMEOUT_CUSTOM, (TimeoutMode == TIMEOUT_CUSTOM) ? BST_CHECKED : BST_UNCHECKED);
 			SetDlgItemInt(hwndDlg, IDC_TIMEOUT_VALUE, Timeout, 0);
-			EnableWindow(GetDlgItem(hwndDlg, IDC_TIMEOUT_VALUE), TimeoutMode == TIMEOUT_CUSTOM);
+			Utils::enableDlgControl(hwndDlg, IDC_TIMEOUT_VALUE, TimeoutMode == TIMEOUT_CUSTOM);
 
 			CheckDlgButton(hwndDlg, IDC_TIMEOUT_PERMANENT2, (TimeoutMode2 == TIMEOUT_PERMANENT) ? BST_CHECKED : BST_UNCHECKED);
 			CheckDlgButton(hwndDlg, IDC_TIMEOUT_POPUP2, (TimeoutMode2 == TIMEOUT_POPUP) ? BST_CHECKED : BST_UNCHECKED);
 			CheckDlgButton(hwndDlg, IDC_TIMEOUT_CUSTOM2, (TimeoutMode2 == TIMEOUT_CUSTOM) ? BST_CHECKED : BST_UNCHECKED);
 			SetDlgItemInt(hwndDlg, IDC_TIMEOUT_VALUE2, Timeout2, 0);
-			EnableWindow(GetDlgItem(hwndDlg, IDC_TIMEOUT_VALUE2), TimeoutMode2 == TIMEOUT_CUSTOM);
+			Utils::enableDlgControl(hwndDlg, IDC_TIMEOUT_VALUE2, TimeoutMode2 == TIMEOUT_CUSTOM);
 
 			CheckDlgButton(hwndDlg, IDC_START, (StartDisabled) ? BST_UNCHECKED : BST_CHECKED);
 			CheckDlgButton(hwndDlg, IDC_STOP, (StopDisabled) ? BST_UNCHECKED : BST_CHECKED);
@@ -207,9 +207,9 @@ static INT_PTR CALLBACK DlgProcOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 			CheckDlgButton(hwndDlg, IDC_ONEPOPUP, (OnePopUp) ? BST_CHECKED : BST_UNCHECKED);
 			CheckDlgButton(hwndDlg, IDC_SHOWMENU, (ShowMenu) ? BST_CHECKED : BST_UNCHECKED);
 
-			EnableWindow(GetDlgItem(hwndDlg, IDC_ONEPOPUP), PopupService);
-			EnableWindow(GetDlgItem(hwndDlg, IDC_SHOWMENU), PopupService);
-			EnableWindow(GetDlgItem(hwndDlg, IDC_PREVIEW), PopupService/*&&!ServiceExists(MS_POPUP_REGISTERNOTIFICATION)*/);
+			Utils::enableDlgControl(hwndDlg, IDC_ONEPOPUP, PopupService);
+			Utils::enableDlgControl(hwndDlg, IDC_SHOWMENU, PopupService);
+			Utils::enableDlgControl(hwndDlg, IDC_PREVIEW, PopupService/*&&!ServiceExists(MS_POPUP_REGISTERNOTIFICATION)*/);
 
 			newTimeout = Timeout;
 			newTimeoutMode = TimeoutMode;
@@ -243,9 +243,9 @@ static INT_PTR CALLBACK DlgProcOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 					}
 
 					for (i = 0; i < sizeof(colorPicker) / sizeof(colorPicker[0]); i++)
-						EnableWindow(GetDlgItem(hwndDlg, colorPicker[i].res), bEnableOthers);
+						Utils::enableDlgControl(hwndDlg, colorPicker[i].res, bEnableOthers);
 
-					EnableWindow(GetDlgItem(hwndDlg, IDC_USEPOPUPCOLORS), bEnableOthers);
+					Utils::enableDlgControl(hwndDlg, IDC_USEPOPUPCOLORS, bEnableOthers);
 
 					SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
 					break;
@@ -264,9 +264,9 @@ static INT_PTR CALLBACK DlgProcOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 					}
 
 					for (i = 0; i < sizeof(colorPicker) / sizeof(colorPicker[0]); i++)
-						EnableWindow(GetDlgItem(hwndDlg, colorPicker[i].res), bEnableOthers);
+						Utils::enableDlgControl(hwndDlg, colorPicker[i].res, bEnableOthers);
 
-					EnableWindow(GetDlgItem(hwndDlg, IDC_USEWINCOLORS), bEnableOthers);
+					Utils::enableDlgControl(hwndDlg, IDC_USEWINCOLORS, bEnableOthers);
 
 					SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
 					break;
@@ -372,49 +372,49 @@ static INT_PTR CALLBACK DlgProcOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 					if (wNotifyCode != BN_CLICKED)
 						break;
 					newTimeoutMode2 = TIMEOUT_POPUP;
-					EnableWindow(GetDlgItem(hwndDlg, IDC_TIMEOUT_VALUE2), 0);
+					Utils::enableDlgControl(hwndDlg, IDC_TIMEOUT_VALUE2, 0);
 					SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
 					break;
 				case IDC_TIMEOUT_CUSTOM2:
 					if (wNotifyCode != BN_CLICKED)
 						break;
 					newTimeoutMode2 = TIMEOUT_CUSTOM;
-					EnableWindow(GetDlgItem(hwndDlg, IDC_TIMEOUT_VALUE2), 1);
+					Utils::enableDlgControl(hwndDlg, IDC_TIMEOUT_VALUE2, 1);
 					SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
 					break;
 				case IDC_TIMEOUT_POPUP:
 					if (wNotifyCode != BN_CLICKED)
 						break;
 					newTimeoutMode = TIMEOUT_POPUP;
-					EnableWindow(GetDlgItem(hwndDlg, IDC_TIMEOUT_VALUE), 0);
+					Utils::enableDlgControl(hwndDlg, IDC_TIMEOUT_VALUE, 0);
 					SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
 					break;
 				case IDC_TIMEOUT_PERMANENT:
 					if (wNotifyCode != BN_CLICKED)
 						break;
 					newTimeoutMode = TIMEOUT_PERMANENT;
-					EnableWindow(GetDlgItem(hwndDlg, IDC_TIMEOUT_VALUE), 0);
+					Utils::enableDlgControl(hwndDlg, IDC_TIMEOUT_VALUE, 0);
 					SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
 					break;
 				case IDC_TIMEOUT_PERMANENT2:
 					if (wNotifyCode != BN_CLICKED)
 						break;
 					newTimeoutMode2 = TIMEOUT_PERMANENT;
-					EnableWindow(GetDlgItem(hwndDlg, IDC_TIMEOUT_VALUE2), 0);
+					Utils::enableDlgControl(hwndDlg, IDC_TIMEOUT_VALUE2, 0);
 					SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
 					break;
 				case IDC_TIMEOUT_CUSTOM:
 					if (wNotifyCode != BN_CLICKED)
 						break;
 					newTimeoutMode = TIMEOUT_CUSTOM;
-					EnableWindow(GetDlgItem(hwndDlg, IDC_TIMEOUT_VALUE), 1);
+					Utils::enableDlgControl(hwndDlg, IDC_TIMEOUT_VALUE, 1);
 					SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
 					break;
 				case IDC_TIMEOUT_PROTO:
 					if (wNotifyCode != BN_CLICKED)
 						break;
 					newTimeoutMode = TIMEOUT_PROTO;
-					EnableWindow(GetDlgItem(hwndDlg, IDC_TIMEOUT_VALUE), 0);
+					Utils::enableDlgControl(hwndDlg, IDC_TIMEOUT_VALUE, 0);
 					SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
 					break;
 				case IDC_TIMEOUT_VALUE:

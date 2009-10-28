@@ -239,7 +239,8 @@ public:
 		GEN_MUC_POPUP_TOPIC1									= 195,
 		GEN_MUC_POPUP_STATUS_ON									= 196,
 		GEN_MUC_POPUP_STATUS_OFF								= 197,
-		STR_LAST 												= 198
+		CNT_OPT_TITLE_SOUNDS									= 198,
+		STR_LAST 												= 199
 	};
 
 	enum {
@@ -343,7 +344,8 @@ public:
 		OPT_TABS_MUC_LOG										= 97,
 		OPT_TABS_MUC_EVENTS										= 98,
 		OPT_TABS_MUC_HIGHLIGHT									= 99,
-		OPT_LAST												= 100
+		OPT_MSGLOG_EXPLAINSETTINGS								= 100,
+		OPT_LAST												= 101
 	};
 
 	/*

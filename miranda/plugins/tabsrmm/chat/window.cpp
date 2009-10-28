@@ -117,8 +117,8 @@ static void Chat_SetMessageLog(_MessageWindowData *dat)
 		iee.pszProto = si->pszModule;
 		CallService(MS_IEVIEW_EVENT, 0, (LPARAM)&iee);
 
-		ShowWindow(GetDlgItem(dat->hwnd, IDC_CHAT_LOG), SW_HIDE);
-		EnableWindow(GetDlgItem(dat->hwnd, IDC_CHAT_LOG), FALSE);
+		Utils::showDlgControl(dat->hwnd, IDC_CHAT_LOG, SW_HIDE);
+		Utils::enableDlgControl(dat->hwnd, IDC_CHAT_LOG, FALSE);
 	} else if (iLogMode == WANT_HPP_LOG && dat->hwndHPP == 0) {
 		IEVIEWWINDOW ieWindow;
 
@@ -135,13 +135,13 @@ static void Chat_SetMessageLog(_MessageWindowData *dat)
 		ieWindow.cy = 10;
 		CallService(MS_HPP_EG_WINDOW, 0, (LPARAM)&ieWindow);
 		dat->hwndHPP = ieWindow.hwnd;
-		ShowWindow(GetDlgItem(dat->hwnd, IDC_CHAT_LOG), SW_HIDE);
-		EnableWindow(GetDlgItem(dat->hwnd, IDC_CHAT_LOG), FALSE);
+		Utils::showDlgControl(dat->hwnd, IDC_CHAT_LOG, SW_HIDE);
+		Utils::enableDlgControl(dat->hwnd, IDC_CHAT_LOG, FALSE);
 	} else {
 		if (iLogMode != WANT_IEVIEW_LOG)
 			CheckAndDestroyIEView(dat);
-		ShowWindow(GetDlgItem(dat->hwnd, IDC_CHAT_LOG), SW_SHOW);
-		EnableWindow(GetDlgItem(dat->hwnd, IDC_CHAT_LOG), TRUE);
+		Utils::showDlgControl(dat->hwnd, IDC_CHAT_LOG, SW_SHOW);
+		Utils::enableDlgControl(dat->hwnd, IDC_CHAT_LOG, TRUE);
 		dat->hwndIEView = 0;
 		dat->hwndIWebBrowserControl = 0;
 		dat->hwndHPP = 0;
@@ -380,13 +380,13 @@ static void	InitButtons(HWND hwndDlg, SESSION_INFO* si)
 	int i = 0;
 
 	if (pInfo) {
-		EnableWindow(GetDlgItem(hwndDlg, IDC_CHAT_BOLD), pInfo->bBold);
-		EnableWindow(GetDlgItem(hwndDlg, IDC_ITALICS), pInfo->bItalics);
-		EnableWindow(GetDlgItem(hwndDlg, IDC_CHAT_UNDERLINE), pInfo->bUnderline);
-		EnableWindow(GetDlgItem(hwndDlg, IDC_COLOR), pInfo->bColor);
-		EnableWindow(GetDlgItem(hwndDlg, IDC_BKGCOLOR), pInfo->bBkgColor);
+		Utils::enableDlgControl(hwndDlg, IDC_CHAT_BOLD, pInfo->bBold);
+		Utils::enableDlgControl(hwndDlg, IDC_ITALICS, pInfo->bItalics);
+		Utils::enableDlgControl(hwndDlg, IDC_CHAT_UNDERLINE, pInfo->bUnderline);
+		Utils::enableDlgControl(hwndDlg, IDC_COLOR, pInfo->bColor);
+		Utils::enableDlgControl(hwndDlg, IDC_BKGCOLOR, pInfo->bBkgColor);
 		if (si->iType == GCW_CHATROOM)
-			EnableWindow(GetDlgItem(hwndDlg, IDC_CHANMGR), pInfo->bChanMgr);
+			Utils::enableDlgControl(hwndDlg, IDC_CHANMGR, pInfo->bChanMgr);
 	}
 }
 
@@ -442,25 +442,25 @@ static int RoomWndResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL *urc)
 	TabHeight = rcTabs.bottom - rcTabs.top;
 
 	if (si->iType != GCW_SERVER) {
-		ShowWindow(GetDlgItem(hwndDlg, IDC_LIST), si->bNicklistEnabled ? SW_SHOW : SW_HIDE);
-		ShowWindow(GetDlgItem(hwndDlg, IDC_SPLITTERX), si->bNicklistEnabled ? SW_SHOW : SW_HIDE);
+		Utils::showDlgControl(hwndDlg, IDC_LIST, si->bNicklistEnabled ? SW_SHOW : SW_HIDE);
+		Utils::showDlgControl(hwndDlg, IDC_SPLITTERX, si->bNicklistEnabled ? SW_SHOW : SW_HIDE);
 
-		EnableWindow(GetDlgItem(hwndDlg, IDC_SHOWNICKLIST), TRUE);
-		EnableWindow(GetDlgItem(hwndDlg, IDC_FILTER), TRUE);
+		Utils::enableDlgControl(hwndDlg, IDC_SHOWNICKLIST, TRUE);
+		Utils::enableDlgControl(hwndDlg, IDC_FILTER, TRUE);
 		if (si->iType == GCW_CHATROOM)	{
 			MODULEINFO* tmp = MM_FindModule(si->pszModule);
 			if (tmp)
-				EnableWindow(GetDlgItem(hwndDlg, IDC_CHANMGR), tmp->bChanMgr);
+				Utils::enableDlgControl(hwndDlg, IDC_CHANMGR, tmp->bChanMgr);
 		}
 	} else {
-		ShowWindow(GetDlgItem(hwndDlg, IDC_LIST), SW_HIDE);
-		ShowWindow(GetDlgItem(hwndDlg, IDC_SPLITTERX), SW_HIDE);
+		Utils::showDlgControl(hwndDlg, IDC_LIST, SW_HIDE);
+		Utils::showDlgControl(hwndDlg, IDC_SPLITTERX, SW_HIDE);
 	}
 
 	if (si->iType == GCW_SERVER) {
-		EnableWindow(GetDlgItem(hwndDlg, IDC_SHOWNICKLIST), FALSE);
-		EnableWindow(GetDlgItem(hwndDlg, IDC_FILTER), FALSE);
-		EnableWindow(GetDlgItem(hwndDlg, IDC_CHANMGR), FALSE);
+		Utils::enableDlgControl(hwndDlg, IDC_SHOWNICKLIST, FALSE);
+		Utils::enableDlgControl(hwndDlg, IDC_FILTER, FALSE);
+		Utils::enableDlgControl(hwndDlg, IDC_CHANMGR, FALSE);
 	}
 	//ShowWindow(GetDlgItem(hwndDlg, IDC_CHAT_TOGGLESIDEBAR), dat->pContainer->dwFlags & CNT_SIDEBAR ? SW_SHOW : SW_HIDE);
 
@@ -1984,7 +1984,7 @@ INT_PTR CALLBACK RoomWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 			SendDlgItemMessage(hwndDlg, IDC_CHAT_MESSAGE, EM_SETMARGINS, EC_LEFTMARGIN | EC_RIGHTMARGIN, MAKELONG(3, 3));
 			SendDlgItemMessage(hwndDlg, IDC_CHAT_LOG, EM_SETMARGINS, EC_LEFTMARGIN | EC_RIGHTMARGIN, MAKELONG(3, 3));
 			dat->Panel->loadHeight();
-			EnableWindow(GetDlgItem(hwndDlg, IDC_SMILEYBTN), TRUE);
+			Utils::enableDlgControl(hwndDlg, IDC_SMILEYBTN, TRUE);
 
 			if (PluginConfig.g_hMenuTrayUnread != 0 && dat->hContact != 0 && dat->szProto != NULL)
 				UpdateTrayMenu(0, dat->wStatus, dat->szProto, dat->szStatus, dat->hContact, FALSE);
@@ -3096,11 +3096,11 @@ LABEL_SHOWWINDOW:
 					DoTrimMessage(ptszText);
 
 					if(mi && mi->bAckMsg) {
-						EnableWindow(GetDlgItem(hwndDlg, IDC_CHAT_MESSAGE), FALSE);
+						Utils::enableDlgControl(hwndDlg, IDC_CHAT_MESSAGE, FALSE);
 						SendDlgItemMessage(hwndDlg, IDC_CHAT_MESSAGE, EM_SETREADONLY, TRUE, 0);
 					} else SendDlgItemMessage(hwndDlg, IDC_CHAT_MESSAGE, WM_SETTEXT, 0, (LPARAM)_T(""));
 
-					EnableWindow(GetDlgItem(hwndDlg, IDOK), FALSE);
+					Utils::enableDlgControl(hwndDlg, IDOK, FALSE);
 
 					if(ptszText[0] == '/' || si->iType == GCW_SERVER)
 						fSound = false;
@@ -3144,7 +3144,7 @@ LABEL_SHOWWINDOW:
 						dat->dwLastActivity = GetTickCount();
 						dat->pContainer->dwLastActivity = dat->dwLastActivity;
 						SendDlgItemMessage(hwndDlg, IDOK, BUTTONSETASFLATBTN + 14, GetRichTextLength(GetDlgItem(hwndDlg, IDC_CHAT_MESSAGE)) != 0, 0);
-						EnableWindow(GetDlgItem(hwndDlg, IDOK), GetRichTextLength(GetDlgItem(hwndDlg, IDC_CHAT_MESSAGE)) != 0);
+						Utils::enableDlgControl(hwndDlg, IDOK, GetRichTextLength(GetDlgItem(hwndDlg, IDC_CHAT_MESSAGE)) != 0);
 					}
 					break;
 

@@ -41,41 +41,6 @@
 #pragma hdrstop
 #include <uxtheme.h>
 
-/*
- * FIXME (tz stuff needed to compile (taken from m_timezones.h)
- */
-
-#define MIM_TZ_PLF_CB		1				// UI element is assumed to be a combo box
-#define MIM_TZ_PLF_LB		2				// UI element is assumed to be a list box
-#define MIM_TZ_NAMELEN 64
-#define MIM_TZ_DISPLAYLEN 128
-
-typedef struct _tagTimeZone {
-	DWORD	cbSize;						// caller must supply this
-	TCHAR	tszName[MIM_TZ_NAMELEN];				// windows name for the time zone
-	TCHAR	tszDisplay[MIM_TZ_DISPLAYLEN];			// more descriptive display name (that's what usually appears in dialogs)
-	LONG	Bias;						// Standardbias (gmt offset)
-	LONG	DaylightBias;				// daylight Bias (dst offset, relative to standard bias, -60 for most time zones)
-	SYSTEMTIME StandardTime;			// when DST ends (month/dayofweek/time)
-	SYSTEMTIME DaylightTime;			// when DST begins (month/dayofweek/time)
-	char	GMT_Offset;					// simple GMT offset (+/-, measured in half-hours, may be incorrect for DST timezones)
-	LONG	Offset;						// time offset to local time, in seconds. It is relativ to the current local time, NOT GMT
-										// the sign is inverted, so you have to subtract it from the current time.
-	SYSTEMTIME CurrentTime;				// current system time. only updated when forced by the caller
-	time_t	   now;						// same in unix time format (seconds since 1970).
-} MIM_TIMEZONE;
-
-typedef struct _tagPrepareList {
-	DWORD	cbSize;									// caller must supply this
-	HWND	hWnd;									// window handle of the combo or list box
-	TCHAR	tszName[MIM_TZ_NAMELEN];				// tz name (for preselecting)
-	DWORD	dwFlags;								// flags - if neither PLF_CB or PLF_LB is set, the window class name will be used
-													// to figure out the type of control.
-	HANDLE	hContact;								// contact handle (for preselecting)
-} MIM_TZ_PREPARELIST;
-#define MS_TZ_PREPARELIST "TZ/PrepareList"
-#define MIM_TZ_PLF_CB 1
-
 #define UPREF_ACTION_APPLYOPTIONS 1
 #define UPREF_ACTION_REMAKELOG 2
 #define UPREF_ACTION_SWITCHLOGVIEWER 4
@@ -144,23 +109,31 @@ static INT_PTR CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, 
 			SendDlgItemMessage(hwndDlg, IDC_SHOWAVATAR, CB_SETCURSEL, bAvatarVisible == 0xff ? 0 : (bAvatarVisible == 1 ? 1 : 2), 0);
 
 			SendDlgItemMessage(hwndDlg, IDC_IEVIEWMODE, CB_INSERTSTRING, -1, (LPARAM)CTranslator::getOpt(CTranslator::OPT_UPREFS_IPGLOBAL));
-
-			if(have_hpp)
-				SendDlgItemMessage(hwndDlg, IDC_IEVIEWMODE, CB_INSERTSTRING, -1, (LPARAM)CTranslator::getOpt(CTranslator::OPT_UPREFS_FORCEHPP));
-
-			if(have_ieview)
-				SendDlgItemMessage(hwndDlg, IDC_IEVIEWMODE, CB_INSERTSTRING, -1, (LPARAM)CTranslator::getOpt(CTranslator::OPT_UPREFS_FORCEIEV));
-
 			SendDlgItemMessage(hwndDlg, IDC_IEVIEWMODE, CB_INSERTSTRING, -1, (LPARAM)CTranslator::getOpt(CTranslator::OPT_UPREFS_FORCEDEFAULT));
 
-			if (bIEView == 0xff && bHPP == 0xff)
-				SendDlgItemMessage(hwndDlg, IDC_IEVIEWMODE, CB_SETCURSEL, 3, 0);
-			else if (bIEView == 1 && have_ieview)
-				SendDlgItemMessage(hwndDlg, IDC_IEVIEWMODE, CB_SETCURSEL, 2, 0);
-			else if (bHPP == 1 && have_hpp)
-				SendDlgItemMessage(hwndDlg, IDC_IEVIEWMODE, CB_SETCURSEL, 1, 0);
-			else
+			SendDlgItemMessage(hwndDlg, IDC_IEVIEWMODE, CB_SETITEMDATA, 0, 0);
+			SendDlgItemMessage(hwndDlg, IDC_IEVIEWMODE, CB_SETITEMDATA, 1, 1);
+
+			if(have_hpp) {
+				SendDlgItemMessage(hwndDlg, IDC_IEVIEWMODE, CB_INSERTSTRING, -1, (LPARAM)CTranslator::getOpt(CTranslator::OPT_UPREFS_FORCEHPP));
+				SendDlgItemMessage(hwndDlg, IDC_IEVIEWMODE, CB_SETITEMDATA, 2, 2);
+			}
+
+			if(have_ieview) {
+				SendDlgItemMessage(hwndDlg, IDC_IEVIEWMODE, CB_INSERTSTRING, -1, (LPARAM)CTranslator::getOpt(CTranslator::OPT_UPREFS_FORCEIEV));
+				SendDlgItemMessage(hwndDlg, IDC_IEVIEWMODE, CB_SETITEMDATA, have_hpp ? 3 : 2, 3);
+			}
+
+			if (bIEView == 0 && bHPP == 0)
 				SendDlgItemMessage(hwndDlg, IDC_IEVIEWMODE, CB_SETCURSEL, 0, 0);
+			else if (bIEView == 0xff && bHPP == 0xff)
+				SendDlgItemMessage(hwndDlg, IDC_IEVIEWMODE, CB_SETCURSEL, 1, 0);
+			else {
+				if(bHPP == 1)
+					SendDlgItemMessage(hwndDlg, IDC_IEVIEWMODE, CB_SETCURSEL, have_hpp ? 2 : 0, 0);
+				if(bIEView == 1)
+					SendDlgItemMessage(hwndDlg, IDC_IEVIEWMODE, CB_SETCURSEL, (have_hpp && have_ieview) ? 3 : (have_ieview ? 2 : 0), 0);
+			}
 
 			SendDlgItemMessage(hwndDlg, IDC_TEXTFORMATTING, CB_INSERTSTRING, -1, (LPARAM)CTranslator::getOpt(CTranslator::OPT_UPREFS_IPGLOBAL));
 			SendDlgItemMessage(hwndDlg, IDC_TEXTFORMATTING, CB_INSERTSTRING, -1, (LPARAM)CTranslator::getOpt(CTranslator::OPT_UPREFS_SIMPLETAGS));
@@ -183,8 +156,8 @@ static INT_PTR CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, 
 			//
 			SendDlgItemMessage(hwndDlg, IDC_TRIMSPIN, UDM_SETRANGE, 0, MAKELONG(1000, 5));
 			SendDlgItemMessage(hwndDlg, IDC_TRIMSPIN, UDM_SETPOS, 0, maxhist);
-			EnableWindow(GetDlgItem(hwndDlg, IDC_TRIMSPIN), maxhist != 0);
-			EnableWindow(GetDlgItem(hwndDlg, IDC_TRIM), maxhist != 0);
+			Utils::enableDlgControl(hwndDlg, IDC_TRIMSPIN, maxhist != 0);
+			Utils::enableDlgControl(hwndDlg, IDC_TRIM, maxhist != 0);
 			CheckDlgButton(hwndDlg, IDC_ALWAYSTRIM2, maxhist != 0);
 
 #if defined(_UNICODE)
@@ -202,8 +175,8 @@ static INT_PTR CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, 
 			}
 			CheckDlgButton(hwndDlg, IDC_FORCEANSI, M->GetByte(hContact, "forceansi", 0) ? 1 : 0);
 #else
-			EnableWindow(GetDlgItem(hwndDlg, IDC_CODEPAGES), FALSE);
-			EnableWindow(GetDlgItem(hwndDlg, IDC_FORCEANSI), FALSE);
+			Utils::enableDlgControl(hwndDlg, IDC_CODEPAGES, FALSE);
+			Utils::enableDlgControl(hwndDlg, IDC_FORCEANSI, FALSE);
 #endif
 			CheckDlgButton(hwndDlg, IDC_IGNORETIMEOUTS, M->GetByte(hContact, "no_ack", 0));
 			timezone = M->GetByte(hContact, "UserInfo", "Timezone", M->GetByte(hContact, (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0), "Timezone", -1));
@@ -239,13 +212,13 @@ static INT_PTR CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, 
 		case WM_COMMAND:
 			switch (LOWORD(wParam)) {
 				case IDC_ALWAYSTRIM2:
-					EnableWindow(GetDlgItem(hwndDlg, IDC_TRIMSPIN), IsDlgButtonChecked(hwndDlg, IDC_ALWAYSTRIM2));
-					EnableWindow(GetDlgItem(hwndDlg, IDC_TRIM), IsDlgButtonChecked(hwndDlg, IDC_ALWAYSTRIM2));
+					Utils::enableDlgControl(hwndDlg, IDC_TRIMSPIN, IsDlgButtonChecked(hwndDlg, IDC_ALWAYSTRIM2));
+					Utils::enableDlgControl(hwndDlg, IDC_TRIM, IsDlgButtonChecked(hwndDlg, IDC_ALWAYSTRIM2));
 					break;
 				case WM_USER + 100: {
 					struct	_MessageWindowData *dat = 0;
 					DWORD	*pdwActionToTake = (DWORD *)lParam;
-					int		iIndex = CB_ERR;
+					int		iIndex = CB_ERR, iMode = -1;
 					DWORD	newCodePage;
 					unsigned int iOldIEView;
 					HWND	hWnd = M->FindWindow(hContact);
@@ -259,25 +232,27 @@ static INT_PTR CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, 
 						if (dat)
 							iOldIEView = GetIEViewMode(hWnd, dat->hContact);
 					}
+					iIndex = SendDlgItemMessage(hwndDlg, IDC_IEVIEWMODE, CB_GETCURSEL, 0, 0);
+					iMode = SendDlgItemMessage(hwndDlg, IDC_IEVIEWMODE, CB_GETITEMDATA, iIndex, 0);
 
-					if ((iIndex = SendDlgItemMessage(hwndDlg, IDC_IEVIEWMODE, CB_GETCURSEL, 0, 0)) != CB_ERR) {
+					if (iIndex != CB_ERR && (iMode >= 0 && iMode <= 3)) {
 						unsigned int iNewIEView;
 
-						switch (iIndex) {
+						switch (iMode) {
 							case 0:
 								M->WriteByte(hContact, SRMSGMOD_T, "ieview", 0);
 								M->WriteByte(hContact, SRMSGMOD_T, "hpplog", 0);
 								break;
 							case 1:
 								M->WriteByte(hContact, SRMSGMOD_T, "ieview", -1);
-								M->WriteByte(hContact, SRMSGMOD_T, "hpplog", 1);
-								break;
-							case 2:
-								M->WriteByte(hContact, SRMSGMOD_T, "ieview", 1);
 								M->WriteByte(hContact, SRMSGMOD_T, "hpplog", -1);
 								break;
-							case 3:
+							case 2:
 								M->WriteByte(hContact, SRMSGMOD_T, "ieview", -1);
+								M->WriteByte(hContact, SRMSGMOD_T, "hpplog", 1);
+								break;
+							case 3:
+								M->WriteByte(hContact, SRMSGMOD_T, "ieview", 1);
 								M->WriteByte(hContact, SRMSGMOD_T, "hpplog", -1);
 								break;
 							default:

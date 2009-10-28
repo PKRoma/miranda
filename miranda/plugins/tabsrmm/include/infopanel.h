@@ -177,7 +177,6 @@ private:
 	void 						Chat_RenderIPSecondLine		(const HDC hdc, RECT& rcItem);
 	LRESULT						cmdHandler					(UINT cmd);
 	HMENU						constructContextualMenu		() const;
-	void						addMenuItem					(const HMENU& m, MENUITEMINFO& mii, HICON hIcon, const TCHAR *szText, UINT uID, UINT pos) const;
 	INT_PTR	CALLBACK			ConfigDlgProc				(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 	static INT_PTR CALLBACK	 	ConfigDlgProcStub			(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 

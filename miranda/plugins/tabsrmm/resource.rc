@@ -80,11 +80,11 @@ END
 IDD_OPTIONS_PLUS DIALOGEX 0, 0, 303, 226
 STYLE DS_FIXEDSYS | DS_CONTROL | WS_CHILD
 EXSTYLE WS_EX_CONTROLPARENT
-FONT 8, "MS Shell Dlg"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     GROUPBOX        "Advanced tweaks",IDC_STATIC,3,0,300,224
     CONTROL         "",IDC_PLUS_CHECKTREE,"SysTreeView32",
-                    TVS_DISABLEDRAGDROP | TVS_SHOWSELALWAYS | WS_BORDER |
+                    TVS_DISABLEDRAGDROP | TVS_SHOWSELALWAYS | WS_BORDER | 
                     WS_TABSTOP,6,9,294,136
     LTEXT           "Message send timeout",IDC_STATIC,11,155,161,11
     EDITTEXT        IDC_SECONDS,187,152,35,12,ES_AUTOHSCROLL
@@ -305,8 +305,6 @@ BEGIN
     CONTROL         "Show popups for inactive tabs in active containers",
                     IDC_ALWAYSPOPUPSINACTIVE,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,135,89,184,10
-    CONTROL         "Sync sounds with popup mode",IDC_SYNCSOUNDS,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,135,101,156,10
     CONTROL         "Hide the status bar",IDC_CNTNOSTATUSBAR,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,135,77,156,10
     CONTROL         "Hide the menu bar",IDC_HIDEMENUBAR,"Button",
@@ -381,6 +379,20 @@ BEGIN
                     12
     COMBOBOX        IDC_OWNAVATARMODE,120,98,196,14,CBS_DROPDOWNLIST | 
                     WS_VSCROLL | WS_TABSTOP
+
+    CONTROL         "Enable sound effects",IDC_O_ENABLESOUNDS,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,135,65,156,10
+    CONTROL         "Play sounds when minimized",IDC_O_SOUNDSMINIMIZED,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,135,77,156,10
+    CONTROL         "Play sounds when not focused",IDC_O_SOUNDSUNFOCUSED,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,135,89,156,10
+    CONTROL         "Play sounds for inactive tabs in active containers",
+                    IDC_O_SOUNDSINACTIVE,"Button",BS_AUTOCHECKBOX |
+                    WS_TABSTOP,135,101,184,10
+    CONTROL         "Play sounds for the active tab / window",
+                    IDC_O_SOUNDSFOCUSED,"Button",BS_AUTOCHECKBOX |
+                    WS_TABSTOP,135,113,184,10
+
 END
 
 IDD_OPT_MSGDLG DIALOGEX 0, 0, 303, 226
@@ -388,7 +400,7 @@ STYLE DS_FIXEDSYS | DS_CONTROL | WS_CHILD | WS_VISIBLE
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     GROUPBOX        "Message window options",IDC_STATIC,3,0,300,112
-    CONTROL         "",IDC_WINDOWOPTIONS,"SysTreeView32",TVS_DISABLEDRAGDROP |
+    CONTROL         "",IDC_WINDOWOPTIONS,"SysTreeView32",TVS_DISABLEDRAGDROP | 
                     TVS_SHOWSELALWAYS | WS_BORDER | WS_TABSTOP,6,9,294,100
     GROUPBOX        "Avatar options (size and scaling only for bottom avatar display)",
                     IDC_STATIC,3,117,300,42
@@ -426,12 +438,12 @@ BEGIN
                     0x1,224,211,67,9
 END
 
-IDD_OPT_MSGLOG DIALOGEX 0, 0, 303, 226
+IDD_OPT_MSGLOG DIALOG DISCARDABLE  0, 0, 303, 226
 STYLE DS_FIXEDSYS | DS_CONTROL | WS_CHILD
-FONT 8, "MS Shell Dlg", 0, 0, 0x1
+FONT 8, "MS Shell Dlg"
 BEGIN
     GROUPBOX        "Options",IDC_STATIC,3,0,300,106
-    CONTROL         "",IDC_LOGOPTIONS,"SysTreeView32",TVS_DISABLEDRAGDROP |
+    CONTROL         "",IDC_LOGOPTIONS,"SysTreeView32",TVS_DISABLEDRAGDROP | 
                     TVS_SHOWSELALWAYS | WS_BORDER | WS_TABSTOP,6,9,294,94
     GROUPBOX        "Indent values",IDC_STMSGLOGGROUP2,3,107,145,29
     LTEXT           "Left/Right",IDC_STATIC,10,119,46,11
@@ -480,6 +492,7 @@ BEGIN
                     147,29
     COMBOBOX        IDC_MSGLOGDIDSPLAY,155,117,135,46,CBS_DROPDOWNLIST | 
                     WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Static",IDC_EXPLAINMSGLOGSETTINGS,31,25,240,59
 END
 
 IDD_OPT_MSGTYPE DIALOGEX 0, 0, 283, 251
@@ -525,7 +538,7 @@ STYLE DS_FIXEDSYS | DS_CONTROL | WS_CHILD
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     GROUPBOX        "Tab options",IDC_STATIC,3,0,300,147
-    CONTROL         "",IDC_TABMSGOPTIONS,"SysTreeView32",TVS_DISABLEDRAGDROP |
+    CONTROL         "",IDC_TABMSGOPTIONS,"SysTreeView32",TVS_DISABLEDRAGDROP | 
                     TVS_SHOWSELALWAYS | WS_BORDER | WS_HSCROLL | WS_TABSTOP,
                     6,9,294,134
     GROUPBOX        "Miscellaneous options",IDC_STATIC,3,149,300,75
@@ -842,8 +855,6 @@ BEGIN
     CONTROL         "Load templates provided by skin (use with care, will overwrite your templates)",
                     IDC_SKIN_LOADTEMPLATES,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,11,100,281,11
-    CTEXT           "Skinning is only available when running under Windows 2000 or later",
-                    IDC_SKIN_WIN9XWARN,17,39,270,20,NOT WS_VISIBLE
 END
 
 IDD_USERPREFS_FRAME DIALOGEX 0, 0, 289, 316

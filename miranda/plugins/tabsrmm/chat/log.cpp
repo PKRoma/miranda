@@ -1120,17 +1120,8 @@ void Log_StreamInEvent(HWND hwndDlg,  LOGINFO* lin, SESSION_INFO* si, BOOL bRedr
 
 					fi2.chrgText.cpMin = fi.chrgText.cpMin;
 					SendMessage(hwndRich, EM_EXSETSEL, 0, (LPARAM)&fi2.chrgText);
-// 					if (g_Settings.ColorizeNicksInLog)
-// 						{
-						cf2.dwMask = CFM_PROTECTED;
-						cf2.dwEffects = CFE_PROTECTED;
-// 						}
-// 					else
-// 						{
-// 						cf2.dwMask = CFM_LINK;
-// 						cf2.dwEffects = CFE_LINK;
-// 						}
-//
+					cf2.dwMask = CFM_PROTECTED;
+					cf2.dwEffects = CFE_PROTECTED;
 					SendMessage(hwndRich, EM_SETCHARFORMAT, SCF_SELECTION, (LPARAM)&cf2);
 				}
 				fi.chrg.cpMin = fi.chrgText.cpMax;

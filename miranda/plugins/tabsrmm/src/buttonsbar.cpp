@@ -397,8 +397,8 @@ static INT_PTR CB_SetButtonState(WPARAM wParam, LPARAM lParam)
 		} else SendMessage(GetDlgItem(hwndDlg, tempCID), BUTTONADDTOOLTIP, (WPARAM)bbdi->ptszTooltip, 0);
 	}
 	if (hwndDlg && realbutton && bbdi->bbbFlags) {
-		ShowWindow(GetDlgItem(hwndDlg, tempCID), (bbdi->bbbFlags&BBSF_HIDDEN) ? SW_HIDE : SW_SHOW);
-		EnableWindow(GetDlgItem(hwndDlg, tempCID), (bbdi->bbbFlags&BBSF_DISABLED) ? 0 : 1);
+		Utils::showDlgControl(hwndDlg, tempCID, (bbdi->bbbFlags&BBSF_HIDDEN) ? SW_HIDE : SW_SHOW);
+		Utils::enableDlgControl(hwndDlg, tempCID, (bbdi->bbbFlags&BBSF_DISABLED) ? 0 : 1);
 		CheckDlgButton(hwndDlg, tempCID, (bbdi->bbbFlags&BBSF_PUSHED) ? 1 : 0);
 		CheckDlgButton(hwndDlg, tempCID, (bbdi->bbbFlags&BBSF_RELEASED) ? 0 : 1);
 	}
@@ -1288,9 +1288,9 @@ INT_PTR CALLBACK DlgProcToolBar(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM l
 
 			LeaveCriticalSection(&ToolBarCS);
 
-			EnableWindow(GetDlgItem(hwndDlg, IDC_IMCHECK), FALSE);
-			EnableWindow(GetDlgItem(hwndDlg, IDC_CHATCHECK), FALSE);
-			EnableWindow(GetDlgItem(hwndDlg, IDC_CANBEHIDDEN), FALSE);
+			Utils::enableDlgControl(hwndDlg, IDC_IMCHECK, FALSE);
+			Utils::enableDlgControl(hwndDlg, IDC_CHATCHECK, FALSE);
+			Utils::enableDlgControl(hwndDlg, IDC_CANBEHIDDEN, FALSE);
 
 			SendDlgItemMessage(hwndDlg, IDC_SPIN1, UDM_SETRANGE, 0, MAKELONG(10, 0));
 			SendDlgItemMessage(hwndDlg, IDC_SPIN1, UDM_SETPOS, 0, MAKELONG(PluginConfig.g_iButtonsBarGap, 0));
@@ -1453,9 +1453,9 @@ INT_PTR CALLBACK DlgProcToolBar(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM l
 
 							M->WriteByte(SRMSGMOD_T, "ButtonsBarGap", PluginConfig.g_iButtonsBarGap);
 
-							EnableWindow(GetDlgItem(hwndDlg, IDC_IMCHECK), FALSE);
-							EnableWindow(GetDlgItem(hwndDlg, IDC_CHATCHECK), FALSE);
-							EnableWindow(GetDlgItem(hwndDlg, IDC_CANBEHIDDEN), FALSE);
+							Utils::enableDlgControl(hwndDlg, IDC_IMCHECK, FALSE);
+							Utils::enableDlgControl(hwndDlg, IDC_CHATCHECK, FALSE);
+							Utils::enableDlgControl(hwndDlg, IDC_CANBEHIDDEN, FALSE);
 							return 1;
 						}
 
@@ -1526,9 +1526,9 @@ INT_PTR CALLBACK DlgProcToolBar(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM l
 							TreeView_GetItem(hToolBarTree, &tvi);
 
 							if (!TreeView_GetCheckState(hToolBarTree, tvi.hItem) || !_tcscmp(tvi.pszText, MIDDLE_SEPARATOR)) {
-								EnableWindow(GetDlgItem(hwndDlg, IDC_IMCHECK), FALSE);
-								EnableWindow(GetDlgItem(hwndDlg, IDC_CHATCHECK), FALSE);
-								EnableWindow(GetDlgItem(hwndDlg, IDC_CANBEHIDDEN), FALSE);
+								Utils::enableDlgControl(hwndDlg, IDC_IMCHECK, FALSE);
+								Utils::enableDlgControl(hwndDlg, IDC_CHATCHECK, FALSE);
+								Utils::enableDlgControl(hwndDlg, IDC_CANBEHIDDEN, FALSE);
 								break;
 							}
 
@@ -1537,9 +1537,9 @@ INT_PTR CALLBACK DlgProcToolBar(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM l
 
 							cbd = (CustomButtonData*)tvi.lParam;
 							if (cbd) {
-								EnableWindow(GetDlgItem(hwndDlg, IDC_IMCHECK), TRUE);
-								EnableWindow(GetDlgItem(hwndDlg, IDC_CHATCHECK), TRUE);
-								EnableWindow(GetDlgItem(hwndDlg, IDC_CANBEHIDDEN), TRUE);
+								Utils::enableDlgControl(hwndDlg, IDC_IMCHECK, TRUE);
+								Utils::enableDlgControl(hwndDlg, IDC_CHATCHECK, TRUE);
+								Utils::enableDlgControl(hwndDlg, IDC_CANBEHIDDEN, TRUE);
 								if (cbd->opFlags) {
 									CheckDlgButton(hwndDlg, IDC_IMCHECK, (cbd->opFlags&BBSF_IMBUTTON) ? 1 : 0);
 									CheckDlgButton(hwndDlg, IDC_CHATCHECK, (cbd->opFlags&BBSF_CHATBUTTON) ? 1 : 0);
@@ -1562,15 +1562,15 @@ INT_PTR CALLBACK DlgProcToolBar(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM l
 								if (hti.flags&TVHT_ONITEMSTATEICON) {
 									SendMessage(GetParent(hwndDlg), PSM_CHANGED, (WPARAM)hwndDlg, 0);
 									if (TreeView_GetCheckState(hToolBarTree, hti.hItem)) {
-										EnableWindow(GetDlgItem(hwndDlg, IDC_IMCHECK), FALSE);
-										EnableWindow(GetDlgItem(hwndDlg, IDC_CHATCHECK), FALSE);
-										EnableWindow(GetDlgItem(hwndDlg, IDC_CANBEHIDDEN), FALSE);
+										Utils::enableDlgControl(hwndDlg, IDC_IMCHECK, FALSE);
+										Utils::enableDlgControl(hwndDlg, IDC_CHATCHECK, FALSE);
+										Utils::enableDlgControl(hwndDlg, IDC_CANBEHIDDEN, FALSE);
 										CheckDlgButton(hwndDlg, IDC_IMCHECK, 1);
 										//CheckDlgButton(hwndDlg,IDC_CHATCHECK,1);
 									} else {
-										EnableWindow(GetDlgItem(hwndDlg, IDC_IMCHECK), TRUE);
-										EnableWindow(GetDlgItem(hwndDlg, IDC_CHATCHECK), TRUE);
-										EnableWindow(GetDlgItem(hwndDlg, IDC_CANBEHIDDEN), TRUE);
+										Utils::enableDlgControl(hwndDlg, IDC_IMCHECK, TRUE);
+										Utils::enableDlgControl(hwndDlg, IDC_CHATCHECK, TRUE);
+										Utils::enableDlgControl(hwndDlg, IDC_CANBEHIDDEN, TRUE);
 									}
 
 									TreeView_SelectItem(hToolBarTree, hti.hItem);

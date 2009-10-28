@@ -450,7 +450,7 @@ void TSAPI ShowMultipleControls(HWND hwndDlg, const UINT *controls, int cControl
 {
 	int i;
 	for (i = 0; i < cControls; i++)
-		ShowWindow(GetDlgItem(hwndDlg, controls[i]), state);
+		Utils::showDlgControl(hwndDlg, controls[i], state);
 }
 
 void TSAPI SetDialogToType(HWND hwndDlg)
@@ -465,21 +465,21 @@ void TSAPI SetDialogToType(HWND hwndDlg)
 		if (M->GetByte(dat->hContact, "CList", "NotOnList", 0)) {
 			dat->bNotOnList = TRUE;
 			ShowMultipleControls(hwndDlg, addControls, 2, SW_SHOW);
-			ShowWindow(GetDlgItem(hwndDlg, IDC_LOGFROZENTEXT), SW_SHOW);
+			Utils::showDlgControl(hwndDlg, IDC_LOGFROZENTEXT, SW_SHOW);
 			SetWindowText(GetDlgItem(hwndDlg, IDC_LOGFROZENTEXT), CTranslator::get(CTranslator::GEN_MSG_CONTACT_NOT_ON_LIST));
 		} else {
 			ShowMultipleControls(hwndDlg, addControls, 2, SW_HIDE);
 			dat->bNotOnList = FALSE;
-			ShowWindow(GetDlgItem(hwndDlg, IDC_LOGFROZENTEXT), SW_HIDE);
+			Utils::showDlgControl(hwndDlg, IDC_LOGFROZENTEXT, SW_HIDE);
 		}
 	}
 
-	EnableWindow(GetDlgItem(hwndDlg, IDC_TIME), TRUE);
+	Utils::enableDlgControl(hwndDlg, IDC_TIME, TRUE);
 
 	if (dat->hwndIEView || dat->hwndHPP) {
-		ShowWindow(GetDlgItem(hwndDlg, IDC_LOG), SW_HIDE);
-		EnableWindow(GetDlgItem(hwndDlg, IDC_LOG), FALSE);
-		ShowWindow(GetDlgItem(hwndDlg, IDC_MESSAGE), SW_SHOW);
+		Utils::showDlgControl(hwndDlg, IDC_LOG, SW_HIDE);
+		Utils::enableDlgControl(hwndDlg, IDC_LOG, FALSE);
+		Utils::showDlgControl(hwndDlg, IDC_MESSAGE, SW_SHOW);
 	} else
 		ShowMultipleControls(hwndDlg, sendControls, sizeof(sendControls) / sizeof(sendControls[0]), SW_SHOW);
 
@@ -498,16 +498,16 @@ void TSAPI SetDialogToType(HWND hwndDlg)
 	DM_RecalcPictureSize(dat);
 	GetAvatarVisibility(hwndDlg, dat);
 
-	ShowWindow(GetDlgItem(hwndDlg, IDC_CONTACTPIC), dat->showPic ? SW_SHOW : SW_HIDE);
-	ShowWindow(GetDlgItem(hwndDlg, IDC_SPLITTER), SW_SHOW);
-	ShowWindow(GetDlgItem(hwndDlg, IDC_MULTISPLITTER), (dat->sendMode & SMODE_MULTIPLE) ? SW_SHOW : SW_HIDE);
+	Utils::showDlgControl(hwndDlg, IDC_CONTACTPIC, dat->showPic ? SW_SHOW : SW_HIDE);
+	Utils::showDlgControl(hwndDlg, IDC_SPLITTER, SW_SHOW);
+	Utils::showDlgControl(hwndDlg, IDC_MULTISPLITTER, (dat->sendMode & SMODE_MULTIPLE) ? SW_SHOW : SW_HIDE);
 
 	EnableSendButton(dat, GetWindowTextLength(GetDlgItem(hwndDlg, IDC_MESSAGE)) != 0);
 	SendMessage(hwndDlg, DM_UPDATETITLE, 0, 1);
 	SendMessage(hwndDlg, WM_SIZE, 0, 0);
 
 	if (!PluginConfig.g_FlashAvatarAvail)
-		EnableWindow(GetDlgItem(hwndDlg, IDC_CONTACTPIC), FALSE);
+		Utils::enableDlgControl(hwndDlg, IDC_CONTACTPIC, FALSE);
 
 	dat->Panel->Configure();
 }
@@ -1384,7 +1384,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			dat->showPic = GetAvatarVisibility(hwndDlg, dat);
 			GetWindowRect(GetDlgItem(hwndDlg, IDC_SMILEYBTN), &rc);
 
-			ShowWindow(GetDlgItem(hwndDlg, IDC_MULTISPLITTER), SW_HIDE);
+			Utils::showDlgControl(hwndDlg, IDC_MULTISPLITTER, SW_HIDE);
 
 			GetWindowRect(GetDlgItem(hwndDlg, IDC_SPLITTER), &rc);
 			pt.y = (rc.top + rc.bottom) / 2;
@@ -1942,8 +1942,8 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 										SendMessage(hwndDlg, WM_SIZE, 0, 0);
 										RedrawWindow(hwndEdit, NULL, NULL, RDW_INVALIDATE | RDW_FRAME | RDW_UPDATENOW | RDW_ERASE);
 										DM_ScrollToBottom(dat, 0, 0);
-										ShowWindow(GetDlgItem(hwndDlg, IDC_MULTISPLITTER), (dat->sendMode & SMODE_MULTIPLE) ? SW_SHOW : SW_HIDE);
-										ShowWindow(GetDlgItem(hwndDlg, IDC_CLIST), (dat->sendMode & SMODE_MULTIPLE) ? SW_SHOW : SW_HIDE);
+										Utils::showDlgControl(hwndDlg, IDC_MULTISPLITTER, (dat->sendMode & SMODE_MULTIPLE) ? SW_SHOW : SW_HIDE);
+										Utils::showDlgControl(hwndDlg, IDC_CLIST, (dat->sendMode & SMODE_MULTIPLE) ? SW_SHOW : SW_HIDE);
 										if (dat->sendMode & SMODE_MULTIPLE)
 											SetFocus(GetDlgItem(hwndDlg, IDC_CLIST));
 										else
@@ -2042,7 +2042,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 								if (dat->dwFlagsEx & MWF_SHOW_SCROLLINGDISABLED)
 									SendMessage(hwndDlg, DM_REPLAYQUEUE, 0, 0);
 								dat->dwFlagsEx ^= MWF_SHOW_SCROLLINGDISABLED;
-								ShowWindow(GetDlgItem(hwndDlg, IDC_LOGFROZENTEXT), (dat->bNotOnList || dat->dwFlagsEx & MWF_SHOW_SCROLLINGDISABLED) ? SW_SHOW : SW_HIDE);
+								Utils::showDlgControl(hwndDlg, IDC_LOGFROZENTEXT, (dat->bNotOnList || dat->dwFlagsEx & MWF_SHOW_SCROLLINGDISABLED) ? SW_SHOW : SW_HIDE);
 								if(!(dat->dwFlagsEx & MWF_SHOW_SCROLLINGDISABLED))
 									SetDlgItemText(hwndDlg, IDC_LOGFROZENTEXT, CTranslator::get(CTranslator::GEN_MSG_CONTACT_NOT_ON_LIST));
 								else
@@ -2476,7 +2476,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 					dat->dynaSplitter = (rc.bottom - pt.y) - DPISCALEY(11);
 					DM_RecalcPictureSize(dat);
 				}
-				RedrawWindow(hwndDlg, NULL, NULL, RDW_INVALIDATE|RDW_UPDATENOW|RDW_ALLCHILDREN);
+				RedrawWindow(hwndDlg, NULL, NULL, RDW_INVALIDATE|RDW_UPDATENOW);
 			} else if ((HWND) lParam == GetDlgItem(hwndDlg, IDC_PANELSPLITTER)) {
 				RECT rc;
 				POINT pt;
@@ -2487,8 +2487,8 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 				if (pt.y + 2 >= MIN_PANELHEIGHT+2 && pt.y + 2 < 100)
 					dat->Panel->setHeight(pt.y + 2, true);
 				dat->panelWidth = -1;
-				SetAeroMargins(dat->pContainer);
-				RedrawWindow(hwndDlg, NULL, NULL, RDW_ALLCHILDREN | RDW_INVALIDATE | RDW_UPDATENOW);
+				//SetAeroMargins(dat->pContainer);
+				RedrawWindow(hwndDlg, NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW);
 				if(M->isAero())
 					InvalidateRect(GetParent(hwndDlg), NULL, FALSE);
 				break;
@@ -3215,7 +3215,7 @@ quote_from_last:
 						dat->bNotOnList = FALSE;
 						ShowMultipleControls(hwndDlg, addControls, 2, SW_HIDE);
 						if(!(dat->dwFlagsEx & MWF_SHOW_SCROLLINGDISABLED))
-							ShowWindow(GetDlgItem(hwndDlg, IDC_LOGFROZENTEXT), SW_HIDE);
+							Utils::showDlgControl(hwndDlg, IDC_LOGFROZENTEXT, SW_HIDE);
 						SendMessage(hwndDlg, WM_SIZE, 0, 0);
 					}
 					break;
@@ -3224,7 +3224,7 @@ quote_from_last:
 					dat->bNotOnList = FALSE;
 					ShowMultipleControls(hwndDlg, addControls, 2, SW_HIDE);
 					if(!(dat->dwFlagsEx & MWF_SHOW_SCROLLINGDISABLED))
-						ShowWindow(GetDlgItem(hwndDlg, IDC_LOGFROZENTEXT), SW_HIDE);
+						Utils::showDlgControl(hwndDlg, IDC_LOGFROZENTEXT, SW_HIDE);
 					SendMessage(hwndDlg, WM_SIZE, 0, 0);
 					break;
 
@@ -3520,7 +3520,7 @@ quote_from_last:
 		case DM_PLAYINCOMINGSOUND:
 			if (!dat)
 				return 0;
-			PlayIncomingSound(m_pContainer, hwndDlg);
+			PlayIncomingSound(dat);
 			return 0;
 		case DM_REFRESHTABINDEX:
 			dat->iTabID = GetTabIndexFromHWND(GetParent(hwndDlg), hwndDlg);
@@ -3778,12 +3778,16 @@ quote_from_last:
 									  LoadSkinnedProtoIcon(dat->cache->getActiveProto(), dat->cache->getActiveStatus()), 1, PluginConfig.g_hMenuRecent);
 				if (dat->hContact) {
 
-					char *msg = Message_GetFromStream(GetDlgItem(hwndDlg, IDC_MESSAGE), dat, (CP_UTF8 << 16) | (SF_TEXT | SF_USECODEPAGE));
-					if (msg) {
-						DBWriteContactSettingString(dat->hContact, SRMSGMOD, "SavedMsg", msg);
-						free(msg);
-					} else
-						DBWriteContactSettingString(dat->hContact, SRMSGMOD, "SavedMsg", "");
+					if(!dat->fEditNotesActive) {
+						char *msg = Message_GetFromStream(GetDlgItem(hwndDlg, IDC_MESSAGE), dat, (CP_UTF8 << 16) | (SF_TEXT | SF_USECODEPAGE));
+						if (msg) {
+							DBWriteContactSettingString(dat->hContact, SRMSGMOD, "SavedMsg", msg);
+							free(msg);
+						} else
+							DBWriteContactSettingString(dat->hContact, SRMSGMOD, "SavedMsg", "");
+					}
+					else
+						SendMessage(hwndDlg, WM_COMMAND, IDC_PIC, 0);
 				}
 			}
 
@@ -3833,9 +3837,6 @@ quote_from_last:
 
 			if (dat->hwndTip)
 				DestroyWindow(dat->hwndTip);
-
-			if(dat->fEditNotesActive)
-				SendMessage(hwndDlg, WM_COMMAND, IDC_PIC, 0);
 
 			UpdateTrayMenuState(dat, FALSE);               // remove me from the tray menu (if still there)
 			if (PluginConfig.g_hMenuTrayUnread)

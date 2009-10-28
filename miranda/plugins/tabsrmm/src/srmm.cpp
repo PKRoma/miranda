@@ -92,9 +92,13 @@ extern "C" __declspec(dllexport) PLUGININFOEX *MirandaPluginInfoEx(DWORD miranda
 {
 	CMimAPI::m_MimVersion = mirandaVersion;
 
-	if (mirandaVersion < PLUGIN_MAKE_VERSION(0, 8, 2, 0)) {
+	if(WinVerMajor() < 5) {
+		MessageBox(0, _T("This version of tabSRMM requires Windows 2000 or later."), _T("tabSRMM"), MB_OK | MB_ICONERROR);
+		return(0);
+	}
+	if (mirandaVersion < PLUGIN_MAKE_VERSION(0, 8, 6, 0)) {
 		MessageBox(0, _T("This version of tabSRMM requires Miranda 0.8.5 or later. The plugin cannot be loaded."), _T("tabSRMM"), MB_OK | MB_ICONERROR);
-		return NULL;
+		return(0);
 	}
 	return &pluginInfo;
 }

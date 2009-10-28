@@ -787,14 +787,19 @@ void CGlobals::logStatusChange(const CContactCache *c)
 			else
 				mir_sntprintf(buffer, safe_sizeof(buffer), CTranslator::get(CTranslator::GEN_MSG_CHANGEDSTATUS), szOldStatus, szNewStatus);
 		}
-		dbei.pBlob = (PBYTE)M->utf8_encodeT(buffer);
-		dbei.cbBlob = lstrlenA((char *)dbei.pBlob) + 1;
+
+		char *szMsg = M->utf8_encodeT(buffer);
+
+		dbei.pBlob = (PBYTE)szMsg;
+		dbei.cbBlob = lstrlenA(szMsg) + 1;
 		dbei.flags = DBEF_UTF | DBEF_READ;
 		dbei.cbSize = sizeof(dbei);
 		dbei.eventType = EVENTTYPE_STATUSCHANGE;
 		dbei.timestamp = time(NULL);
 		dbei.szModule = const_cast<char *>(c->getProto());
 		hNewEvent = (HANDLE) CallService(MS_DB_EVENT_ADD, (WPARAM) hContact, (LPARAM) & dbei);
+
+		mir_free(szMsg);
 	}
 }
 

@@ -571,7 +571,7 @@ void SendQueue::EnableSending(const _MessageWindowData *dat, const int iMode)
 	if(dat) {
 		HWND hwndDlg = dat->hwnd;
 		::SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_SETREADONLY, (WPARAM) iMode ? FALSE : TRUE, 0);
-		::EnableWindow(GetDlgItem(hwndDlg, IDC_CLIST), iMode ? TRUE : FALSE);
+		Utils::enableDlgControl(hwndDlg, IDC_CLIST, iMode ? TRUE : FALSE);
 		::EnableSendButton(dat, iMode);
 	}
 }
@@ -601,7 +601,7 @@ void SendQueue::showErrorControls(_MessageWindowData *dat, const int showCmd) co
 
 	for (i = 0; i < 5; i++) {
 		if (IsWindow(GetDlgItem(hwndDlg, myerrorControls[i])))
-			ShowWindow(GetDlgItem(hwndDlg, myerrorControls[i]), showCmd ? SW_SHOW : SW_HIDE);
+			Utils::showDlgControl(hwndDlg, myerrorControls[i], showCmd ? SW_SHOW : SW_HIDE);
 	}
 
 	SendMessage(hwndDlg, WM_SIZE, 0, 0);

@@ -278,7 +278,6 @@ struct TMUCSettings {
 	BOOL        HighlightEnabled;
 	BOOL        LogIndentEnabled;
 	BOOL        StripFormat;
-	BOOL        SoundsFocus;
 	BOOL        BBCodeInPopups;
 	BOOL        TrayIconInactiveOnly;
 	BOOL        AddColonToAutoComplete;
@@ -329,6 +328,14 @@ struct TMUCSettings {
 	BOOL		ContactStatusFirst;
 	HANDLE		hGroup;
 	CMUCHighlight* Highlight;
+};
+
+struct FLASH_PARAMS {
+	HANDLE hContact;
+	const char* sound;
+	int   iEvent;
+	HICON hNotifyIcon;
+	BOOL  bActiveTab, bHighlight, bInactive, bMustFlash, bMustAutoswitch;
 };
 
 extern TMUCSettings g_Settings;

@@ -168,7 +168,7 @@ BOOL          DoEventHook(const TCHAR* pszID, const char* pszModule, int iType, 
 BOOL          IsEventSupported(int eventType);
 BOOL          LogToFile(SESSION_INFO* si, GCEVENT * gce);
 void          Chat_SetFilters(SESSION_INFO *si);
-
+void 		  TSAPI DoFlashAndSoundWorker(FLASH_PARAMS* p);
 // message.c
 char*         Chat_Message_GetFromStream(HWND hwndDlg, SESSION_INFO* si);
 TCHAR*        Chat_DoRtfToTags( char* pszRtfText, SESSION_INFO* si);

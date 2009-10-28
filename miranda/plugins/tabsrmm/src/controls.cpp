@@ -302,7 +302,7 @@ LRESULT CALLBACK CMenuBar::wndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lP
  */
 LONG_PTR CMenuBar::customDrawWorker(NMCUSTOMDRAW *nm)
 {
-	bool fMustDraw = (CSkin::m_skinEnabled || m_isAero || M->isVSThemed());
+	bool fMustDraw = true;
 
 	if(nm->hdr.hwndFrom == m_hwndToolbar) {
 		NMTBCUSTOMDRAW *nmtb = (NMTBCUSTOMDRAW *)(nm);

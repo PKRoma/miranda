@@ -912,11 +912,11 @@ void TSAPI AdjustBottomAvatarDisplay(_MessageWindowData *dat)
 				LoadSplitter(dat);
 			dat->dynaSplitter = dat->splitterY - DPISCALEY(34);
 			DM_RecalcPictureSize(dat);
-			ShowWindow(GetDlgItem(hwndDlg, IDC_CONTACTPIC), dat->showPic ? SW_SHOW : SW_HIDE);
+			Utils::showDlgControl(hwndDlg, IDC_CONTACTPIC, dat->showPic ? SW_SHOW : SW_HIDE);
 			InvalidateRect(GetDlgItem(hwndDlg, IDC_CONTACTPIC), NULL, TRUE);
 		} else {
 			dat->showPic = GetAvatarVisibility(hwndDlg, dat);
-			ShowWindow(GetDlgItem(hwndDlg, IDC_CONTACTPIC), dat->showPic ? SW_SHOW : SW_HIDE);
+			Utils::showDlgControl(hwndDlg, IDC_CONTACTPIC, dat->showPic ? SW_SHOW : SW_HIDE);
 			dat->pic.cy = dat->pic.cx = DPISCALEY(60);
 			InvalidateRect(GetDlgItem(hwndDlg, IDC_CONTACTPIC), NULL, TRUE);
 		}
@@ -966,7 +966,7 @@ void TSAPI FlashOnClist(HWND hwndDlg, struct _MessageWindowData *dat, HANDLE hEv
 	dat->dwTickLastEvent = GetTickCount();
 	if ((GetForegroundWindow() != dat->pContainer->hwnd || dat->pContainer->hwndActive != hwndDlg) && !(dbei->flags & DBEF_SENT) && dbei->eventType == EVENTTYPE_MESSAGE) {
 		UpdateTrayMenu(dat, (WORD)(dat->cache->getActiveStatus()), dat->cache->getActiveProto(), dat->szStatus, dat->hContact, 0L);
-		if (nen_options.bTraySupport == TRUE && PluginConfig.m_WinVerMajor >= 5)
+		if (nen_options.bTraySupport)
 			return;
 	}
 	if (hEvent == 0)
@@ -1414,8 +1414,8 @@ void TSAPI SetMessageLog(_MessageWindowData *dat)
 		ieWindow.cy = 200;
 		CallService(MS_IEVIEW_WINDOW, 0, (LPARAM)&ieWindow);
 		dat->hwndIEView = ieWindow.hwnd;
-		ShowWindow(GetDlgItem(hwndDlg, IDC_LOG), SW_HIDE);
-		EnableWindow(GetDlgItem(hwndDlg, IDC_LOG), FALSE);
+		Utils::showDlgControl(hwndDlg, IDC_LOG, SW_HIDE);
+		Utils::enableDlgControl(hwndDlg, IDC_LOG, FALSE);
 	} else if (iLogMode == WANT_HPP_LOG && dat->hwndHPP == 0) {
 		IEVIEWWINDOW ieWindow;
 
@@ -1431,15 +1431,15 @@ void TSAPI SetMessageLog(_MessageWindowData *dat)
 		ieWindow.cy = 10;
 		CallService(MS_HPP_EG_WINDOW, 0, (LPARAM)&ieWindow);
 		dat->hwndHPP = ieWindow.hwnd;
-		ShowWindow(GetDlgItem(hwndDlg, IDC_LOG), SW_HIDE);
-		EnableWindow(GetDlgItem(hwndDlg, IDC_LOG), FALSE);
+		Utils::showDlgControl(hwndDlg, IDC_LOG, SW_HIDE);
+		Utils::enableDlgControl(hwndDlg, IDC_LOG, FALSE);
 	} else {
 		if (iLogMode != WANT_IEVIEW_LOG)
 			CheckAndDestroyIEView(dat);
 		if (iLogMode != WANT_HPP_LOG)
 			CheckAndDestroyHPP(dat);
-		ShowWindow(GetDlgItem(hwndDlg, IDC_LOG), SW_SHOW);
-		EnableWindow(GetDlgItem(hwndDlg, IDC_LOG), TRUE);
+		Utils::showDlgControl(hwndDlg, IDC_LOG, SW_SHOW);
+		Utils::enableDlgControl(hwndDlg, IDC_LOG, TRUE);
 		dat->hwndIEView = 0;
 		dat->hwndIWebBrowserControl = 0;
 		dat->hwndHPP = 0;
@@ -1452,8 +1452,8 @@ void TSAPI SwitchMessageLog(_MessageWindowData *dat, int iMode)
 
 	if (iMode) {           // switch from rtf to IEview or hpp
 		SetDlgItemText(hwndDlg, IDC_LOG, _T(""));
-		EnableWindow(GetDlgItem(hwndDlg, IDC_LOG), FALSE);
-		ShowWindow(GetDlgItem(hwndDlg, IDC_LOG), SW_HIDE);
+		Utils::enableDlgControl(hwndDlg, IDC_LOG, FALSE);
+		Utils::showDlgControl(hwndDlg, IDC_LOG, SW_HIDE);
 		SetMessageLog(dat);
 	} else                    // switch from IEView or hpp to rtf
 		SetMessageLog(dat);
@@ -1581,23 +1581,12 @@ void TSAPI LoadSplitter(_MessageWindowData *dat)
 		dat->splitterY = 150;
 }
 
-void TSAPI PlayIncomingSound(const ContainerWindowData *pContainer, HWND hwnd)
+void TSAPI PlayIncomingSound(const _MessageWindowData *dat)
 {
-	int iPlay = 0;
-	DWORD dwFlags = pContainer->dwFlags;
-
-	if (nen_options.iNoSounds)
-		return;
-
-	if (dwFlags & CNT_NOSOUND)
-		iPlay = FALSE;
-	else if (dwFlags & CNT_SYNCSOUNDS) {
-		iPlay = !MessageWindowOpened(0, (LPARAM)hwnd);
-	} else
-		iPlay = TRUE;
+	int iPlay = Utils::mustPlaySound(dat);
 
 	if (iPlay) {
-		if (GetForegroundWindow() == pContainer->hwnd && pContainer->hwndActive == hwnd)
+		if (GetForegroundWindow() == dat->pContainer->hwnd && dat->pContainer->hwndActive == dat->hwnd)
 			SkinPlaySound("RecvMsgActive");
 		else
 			SkinPlaySound("RecvMsgInactive");
@@ -1622,7 +1611,7 @@ void TSAPI GetSendFormat(_MessageWindowData *dat, int mode)
 			dat->SendFormat = PluginConfig.m_SendFormat ? 1 : 0;
 	}
 	for (i = 0; i < 5; i++)
-		EnableWindow(GetDlgItem(dat->hwnd, controls[i]), dat->SendFormat != 0 ? TRUE : FALSE);
+		Utils::enableDlgControl(dat->hwnd, controls[i], dat->SendFormat != 0 ? TRUE : FALSE);
 	return;
 }
 
@@ -1729,17 +1718,20 @@ void TSAPI LoadOwnAvatar(_MessageWindowData *dat)
 
 void TSAPI LoadTimeZone(_MessageWindowData *dat)
 {
-	if(ServiceExists("CLN/GetTimeOffset")) {
-		dat->timezone = 1;
-		dat->timediff = (DWORD)CallService("CLN/GetTimeOffset", (WPARAM)dat->hContact, 0);
-	}
-	else {
-		dat->timezone = (DWORD)(M->GetByte(dat->hContact, "UserInfo", "Timezone", M->GetByte(dat->hContact, dat->szProto, "Timezone", -1)));
-		if (dat->timezone != -1) {
-			DWORD contact_gmt_diff;
-			contact_gmt_diff = dat->timezone > 128 ? 256 - dat->timezone : 0 - dat->timezone;
-			dat->timediff = (int)PluginConfig.local_gmt_diff - (int)contact_gmt_diff * 60 * 60 / 2;
+	if(ServiceExists("TZ/GetInfoByContact")) {
+		MIM_TIMEZONE  *tzi;
+		tzi = (MIM_TIMEZONE *)CallService("TZ/GetInfoByContact", (WPARAM)dat->hContact, 0);
+		if(tzi) {
+			dat->timediff = tzi->Offset;
+			dat->timezone = 1;
+			return;
 		}
+	}
+	dat->timezone = (DWORD)(M->GetByte(dat->hContact, "UserInfo", "Timezone", M->GetByte(dat->hContact, dat->szProto, "Timezone", -1)));
+	if (dat->timezone != -1) {
+		DWORD contact_gmt_diff;
+		contact_gmt_diff = dat->timezone > 128 ? 256 - dat->timezone : 0 - dat->timezone;
+		dat->timediff = (int)PluginConfig.local_gmt_diff - (int)contact_gmt_diff * 60 * 60 / 2;
 	}
 }
 
@@ -1907,7 +1899,7 @@ int TSAPI MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, _Mess
 			if (!bPanelPic && fInfoPanel) {
 				fa.hParentWindow = GetDlgItem(hwndDlg, IDC_CONTACTPIC);
 				CallService(MS_FAVATAR_MAKE, (WPARAM)&fa, 0);
-				EnableWindow(GetDlgItem(hwndDlg, IDC_CONTACTPIC), fa.hWindow != 0);
+				Utils::enableDlgControl(hwndDlg, IDC_CONTACTPIC, fa.hWindow != 0);
 			} else {
 				fa.hContact = dat->hContact;
 				fa.hParentWindow = fInfoPanel ? dat->hwndPanelPicParent : GetDlgItem(hwndDlg, IDC_CONTACTPIC);
@@ -2276,8 +2268,8 @@ void TSAPI ConfigureSmileyButton(_MessageWindowData *dat)
 	if (nrSmileys == 0 || dat->hContact == 0)
 		dat->doSmileys = 0;
 
-	ShowWindow(GetDlgItem(hwndDlg, iItemID), (dat->doSmileys && showToolbar) ? SW_SHOW : SW_HIDE);
-	EnableWindow(GetDlgItem(hwndDlg, iItemID), dat->doSmileys ? TRUE : FALSE);
+	Utils::showDlgControl(hwndDlg, iItemID, (dat->doSmileys && showToolbar) ? SW_SHOW : SW_HIDE);
+	Utils::enableDlgControl(hwndDlg, iItemID, dat->doSmileys ? TRUE : FALSE);
 }
 
 HICON TSAPI GetXStatusIcon(const _MessageWindowData *dat)

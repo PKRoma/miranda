@@ -464,8 +464,8 @@ LRESULT TSAPI DM_MsgWindowCmdHandler(HWND hwndDlg, ContainerWindowData *m_pConta
 			SendMessage(hwndContainer, DM_QUERYCLIENTAREA, 0, (LPARAM)&rc);
 			SendMessage(hwndDlg, WM_SIZE, 0, 0);
 			DM_ScrollToBottom(dat, 1, 1);
-			ShowWindow(GetDlgItem(hwndDlg, IDC_MULTISPLITTER), (dat->sendMode & SMODE_MULTIPLE) ? SW_SHOW : SW_HIDE);
-			ShowWindow(GetDlgItem(hwndDlg, IDC_CLIST), (dat->sendMode & SMODE_MULTIPLE) ? SW_SHOW : SW_HIDE);
+			Utils::showDlgControl(hwndDlg, IDC_MULTISPLITTER, (dat->sendMode & SMODE_MULTIPLE) ? SW_SHOW : SW_HIDE);
+			Utils::showDlgControl(hwndDlg, IDC_CLIST, (dat->sendMode & SMODE_MULTIPLE) ? SW_SHOW : SW_HIDE);
 			break;
 		}
 		case IDC_TOGGLESIDEBAR: {

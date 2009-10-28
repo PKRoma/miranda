@@ -113,19 +113,11 @@ void TSAPI CreateTrayMenus(int mode)
 		PluginConfig.g_hMenuFavorites = CreatePopupMenu();
 		PluginConfig.g_hMenuRecent = CreatePopupMenu();
 		PluginConfig.g_hMenuTrayContext = GetSubMenu(PluginConfig.g_hMenuContext, 6);
-		if (PluginConfig.m_WinVerMajor >= 5) {
-			ModifyMenu(PluginConfig.g_hMenuTrayContext, 0, MF_BYPOSITION | MF_POPUP,
-					   (UINT_PTR)PluginConfig.g_hMenuFavorites, CTranslator::get(CTranslator::GEN_FAVORITES));
-			ModifyMenu(PluginConfig.g_hMenuTrayContext, 2, MF_BYPOSITION | MF_POPUP,
-					   (UINT_PTR)PluginConfig.g_hMenuRecent, CTranslator::get(CTranslator::GEN_RECENT_SESSIONS));
-			LoadFavoritesAndRecent();
-		}
-		else {
-			DeleteMenu(PluginConfig.g_hMenuTrayContext, 2, MF_BYPOSITION);
-			DeleteMenu(PluginConfig.g_hMenuTrayContext, 0, MF_BYPOSITION);
-			DeleteMenu(PluginConfig.g_hMenuTrayContext, 0, MF_BYPOSITION);
-			DeleteMenu(PluginConfig.g_hMenuTrayContext, 0, MF_BYPOSITION);
-		}
+		ModifyMenu(PluginConfig.g_hMenuTrayContext, 0, MF_BYPOSITION | MF_POPUP,
+				   (UINT_PTR)PluginConfig.g_hMenuFavorites, CTranslator::get(CTranslator::GEN_FAVORITES));
+		ModifyMenu(PluginConfig.g_hMenuTrayContext, 2, MF_BYPOSITION | MF_POPUP,
+				   (UINT_PTR)PluginConfig.g_hMenuRecent, CTranslator::get(CTranslator::GEN_RECENT_SESSIONS));
+		LoadFavoritesAndRecent();
 	}
 	else {
 		isAnimThreadRunning = FALSE;
@@ -218,9 +210,6 @@ static void GetTrayWindowRect(LPRECT lprect)
 void TSAPI FlashTrayIcon(HICON hIcon)
 {
 	NOTIFYICONDATA nim;
-
-	if (PluginConfig.m_WinVerMajor < 5)
-		return;
 
 	hIconTrayCurrent = hIcon;
 

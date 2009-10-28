@@ -337,8 +337,6 @@ INT_PTR CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 					case WM_LBUTTONUP: {
 						POINT pt;
 						GetCursorPos(&pt);
-						if (PluginConfig.m_WinVerMajor < 5)
-							break;
 						if (wParam == 100)
 							SetForegroundWindow(hwndDlg);
 						if (GetMenuItemCount(PluginConfig.g_hMenuTrayUnread) > 0) {
@@ -356,9 +354,6 @@ INT_PTR CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 
 						if (wParam == 100)
 							SetForegroundWindow(hwndDlg);
-
-						if (PluginConfig.m_WinVerMajor < 5)
-							break;
 
 						if (iCount > 0) {
 							UINT uid = 0;
@@ -650,9 +645,17 @@ INT_PTR CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 			}
 			return 0;
 		}
+
 		case DM_LOGSTATUSCHANGE:
 			CGlobals::logStatusChange(reinterpret_cast<CContactCache *>(lParam));
 			return(0);
+
+		case DM_MUCFLASHWORKER: {
+			FLASH_PARAMS *p = reinterpret_cast<FLASH_PARAMS*>(lParam);
+			DoFlashAndSoundWorker(p);
+			return(0);
+		}
+
 		case WM_POWERBROADCAST:
 		case WM_DISPLAYCHANGE: {
 			struct ContainerWindowData *pContainer = pFirstContainer;
