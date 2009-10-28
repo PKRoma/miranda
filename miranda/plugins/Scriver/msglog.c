@@ -275,12 +275,12 @@ static EventData *GetTestEvents()
     prevEvent = event;
     event = GetTestEvent(0);
 	event->pszNickT = mir_tstrdup(_T("My Contact"));
-	event->pszTextT = mir_tstrdup(_T("O Lord, bless this Thy hand grenade that with it Thou mayest blow Thine enemies"));
+	event->pszTextT = mir_tstrdup(_T("Lorem ipsum dolor sit amet,"));
     prevEvent->next = event;
     prevEvent = event;
     event = GetTestEvent(0);
 	event->pszNickT = mir_tstrdup(_T("My Contact"));
-	event->pszTextT = mir_tstrdup(_T("to tiny bits, in Thy mercy"));
+	event->pszTextT = mir_tstrdup(_T("consectetur adipisicing elit"));
     prevEvent->next = event;
     prevEvent = event;
 	return firstEvent;

@@ -838,6 +838,7 @@ static INT_PTR CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam,
 	switch (msg) {
 		case WM_INITDIALOG:
 			TranslateDialogDefault(hwndDlg);
+			RichUtil_SubClass(GetDlgItem(hwndDlg, IDC_LOG));
 			switch (DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_LOADHISTORY, SRMSGDEFSET_LOADHISTORY)) {
 				case LOADHISTORY_UNREAD:
 					CheckDlgButton(hwndDlg, IDC_LOADUNREAD, BST_CHECKED);
@@ -912,9 +913,12 @@ static INT_PTR CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam,
 			switch (LOWORD(wParam)) {
 				case IDC_FONTSCOLORS:
 					{
-						/*
-						TODO: Implement a service to handle that in options module...
-						*/
+						OPENOPTIONSDIALOG ood;
+						ood.cbSize = sizeof(ood);
+						ood.pszGroup = "Customize";
+						ood.pszPage = "Fonts & Colors";
+						ood.pszTab = NULL;
+						CallService( MS_OPT_OPENOPTIONS, 0, (LPARAM)&ood );
 					}
 					break;
 				case IDC_LOADCOUNT:
