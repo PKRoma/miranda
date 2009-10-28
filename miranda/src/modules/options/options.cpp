@@ -1336,8 +1336,25 @@ static void OpenOptionsNow(const char *pszGroup,const char *pszPage,const char *
 	if ( IsWindow( hwndOptions )) {
 		ShowWindow( hwndOptions, SW_RESTORE );
 		SetForegroundWindow( hwndOptions );
-	}
-	else {
+		if ( pszPage != NULL) {
+			TCHAR *ptszPage = LangPackPcharToTchar(pszPage);
+			HTREEITEM hItem = NULL;
+			if (pszGroup != NULL) {
+				TCHAR *ptszGroup = LangPackPcharToTchar(pszGroup);
+				hItem = FindNamedTreeItemAtRoot(GetDlgItem(hwndOptions,IDC_PAGETREE),ptszGroup);
+				if (hItem != NULL) {
+					hItem = FindNamedTreeItemAtChildren(GetDlgItem(hwndOptions,IDC_PAGETREE),hItem,ptszPage);
+				}
+				mir_free(ptszGroup);
+			} else {
+				hItem = FindNamedTreeItemAtRoot(GetDlgItem(hwndOptions,IDC_PAGETREE),ptszPage);
+			}
+			if (hItem != NULL) {
+				TreeView_SelectItem(GetDlgItem(hwndOptions,IDC_PAGETREE),hItem);
+			}
+			mir_free(ptszPage);
+		}	
+	} else {
 		struct OptionsPageInit opi = { 0 };
 		NotifyEventHooks( hOptionsInitEvent, ( WPARAM )&opi, 0 );
 		if ( opi.pageCount > 0 ) {
