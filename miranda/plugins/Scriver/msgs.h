@@ -36,6 +36,15 @@ extern PSLWA pSetLayeredWindowAttributes;
 extern BOOL (WINAPI *pfnIsAppThemed)(VOID);
 extern HRESULT (WINAPI *pfnDrawThemeParentBackground)(HWND, HDC, RECT *);
 
+typedef struct ToolbarButtonStruct
+{
+	TCHAR *name;
+	UINT controlId;
+	int alignment;
+	int spacing;
+	int width;
+}ToolbarButton;
+
 typedef struct ErrorWindowDataStruct
 {
 	TCHAR*	szName;

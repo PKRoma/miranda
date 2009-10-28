@@ -43,11 +43,16 @@ extern HINSTANCE g_hInst;
 static void UpdateReadChars(HWND hwndDlg, struct MessageWindowData * dat);
 
 static WNDPROC OldMessageEditProc, OldSplitterProc, OldLogEditProc;
-static TCHAR *buttonNames[] = {_T("Quote"), _T("Smiley"), _T("Add Contact"), _T("User Menu"), _T("User Details"), _T("History"), _T("Close"), _T("Send")};
-static const UINT buttonControls[] = { IDC_QUOTE, IDC_SMILEYS, IDC_ADD, IDC_USERMENU, IDC_DETAILS, IDC_HISTORY, IDCANCEL, IDOK};
-static char buttonAlignment[] = { 0, 0, 0, 1, 1, 1, 1, 1};
-static UINT buttonSpacing[] = { 4, 10, 10, 0, 0, 0, 0, 0};
-static UINT buttonWidth[] = { 24, 24, 24, 24, 24, 24, 24, 38};
+static ToolbarButton toolbarButtons[] = {
+	{_T("Quote"), IDC_QUOTE, 0, 4, 24},
+	{_T("Smiley"), IDC_SMILEYS, 0, 10, 24},
+	{_T("Add Contact"), IDC_ADD, 0, 10, 24},
+	{_T("User Menu"), IDC_USERMENU, 1, 0, 24},
+	{_T("User Details"), IDC_DETAILS, 1, 0, 24},
+	{_T("History"), IDC_HISTORY, 1, 0, 24},
+	{_T("Close"), IDCANCEL, 1, 0, 24},
+	{_T("Send"), IDOK, 1, 0, 38}
+};
 
 static DWORD CALLBACK StreamOutCallback(DWORD_PTR dwCookie, LPBYTE pbBuff, LONG cb, LONG * pcb)
 {
@@ -250,13 +255,13 @@ static void AddToFileList(TCHAR ***pppFiles,int *totalCount,const TCHAR* szFilen
 			FindClose( hFind );
 }	}	}
 
-static int GetToolbarWidth(int cControls, const UINT * controls)
+static int GetToolbarWidth(int cControls, const ToolbarButton * buttons)
 {
 	int i, w = 0;
 	for (i = 0; i < cControls; i++) {
 //		if (g_dat->buttonVisibility & (1 << i)) {
-			if (controls[i] != IDC_SMILEYS || g_dat->smileyAddInstalled) {
-				w += buttonWidth[i] + buttonSpacing[i];
+			if (buttons[i].controlId != IDC_SMILEYS || g_dat->smileyAddInstalled) {
+				w += buttons[i].width + buttons[i].spacing;
 			}
 //		}
 	}
@@ -275,7 +280,7 @@ static void SetDialogToType(HWND hwndDlg)
 		ShowWindow(dat->infobarData->hWnd, SW_HIDE);
 	}
 	if (dat->windowData.hContact) {
-		ShowToolbarControls(hwndDlg, SIZEOF(buttonControls), buttonControls, g_dat->buttonVisibility, showToolbar ? SW_SHOW : SW_HIDE);
+		ShowToolbarControls(hwndDlg, SIZEOF(toolbarButtons), toolbarButtons, g_dat->buttonVisibility, showToolbar ? SW_SHOW : SW_HIDE);
 		if (!DBGetContactSettingByte(dat->windowData.hContact, "CList", "NotOnList", 0)) {
 			ShowWindow(GetDlgItem(hwndDlg, IDC_ADD), SW_HIDE);
 		}
@@ -283,7 +288,7 @@ static void SetDialogToType(HWND hwndDlg)
 			ShowWindow(GetDlgItem(hwndDlg, IDC_SMILEYS), SW_HIDE);
 		}
 	} else {
-		ShowToolbarControls(hwndDlg, SIZEOF(buttonControls), buttonControls, g_dat->buttonVisibility, SW_HIDE);
+		ShowToolbarControls(hwndDlg, SIZEOF(toolbarButtons), toolbarButtons, g_dat->buttonVisibility, SW_HIDE);
 	}
 	ShowWindow(GetDlgItem(hwndDlg, IDC_MESSAGE), SW_SHOW);
 	if (dat->windowData.hwndLog != NULL) {
@@ -632,8 +637,7 @@ static void MessageDialogResize(HWND hwndDlg, struct MessageWindowData *dat, int
 	hdwp = DeferWindowPos(hdwp, GetDlgItem(hwndDlg, IDC_AVATAR), 0, w-avatarWidth - 1, h - (avatarHeight + avatarWidth) / 2 - 1, avatarWidth, avatarWidth, SWP_NOZORDER);
 	
 	hdwp = DeferWindowPos(hdwp, GetDlgItem(hwndDlg, IDC_SPLITTER), 0, 0, h - hSplitterPos-1, toolbarWidth, SPLITTER_HEIGHT, SWP_NOZORDER);
-	hdwp = ResizeToolbar(hwndDlg, hdwp, toolbarWidth, h - hSplitterPos - toolbarHeight + 1, toolbarHeight, SIZEOF(buttonControls),
-					buttonControls, buttonWidth, buttonSpacing, buttonAlignment, g_dat->buttonVisibility);
+	hdwp = ResizeToolbar(hwndDlg, hdwp, toolbarWidth, h - hSplitterPos - toolbarHeight + 1, toolbarHeight, SIZEOF(toolbarButtons), toolbarButtons, g_dat->buttonVisibility);
 
 	/*
 	if (hSplitterPos - SPLITTER_HEIGHT - toolbarHeight - 2< dat->avatarHeight) {
@@ -878,7 +882,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			dat->windowData.minLogBoxHeight = dat->windowData.minEditBoxHeight;
 			dat->splitterPos = g_dat->splitterY;
 			dat->toolbarSize.cy = TOOLBAR_HEIGHT;
-			dat->toolbarSize.cx = GetToolbarWidth(SIZEOF(buttonControls), buttonControls);
+			dat->toolbarSize.cx = GetToolbarWidth(SIZEOF(toolbarButtons), toolbarButtons);
 			if (dat->splitterPos == -1) {
 				dat->splitterPos = dat->windowData.minEditBoxHeight;
 			}
@@ -905,8 +909,8 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			// Make them flat buttons
 			{
 				int i;
-				for (i = 0; i < SIZEOF(buttonControls) ; i++)
-					SendMessage(GetDlgItem(hwndDlg, buttonControls[i]), BUTTONSETASFLATBTN, 0, 0);
+				for (i = 0; i < SIZEOF(toolbarButtons) ; i++)
+					SendMessage(GetDlgItem(hwndDlg, toolbarButtons[i].controlId), BUTTONSETASFLATBTN, 0, 0);
 			}
 			SendMessage(GetDlgItem(hwndDlg, IDC_ADD), BUTTONADDTOOLTIP, (WPARAM) Translate("Add Contact Permanently to List"), 0);
 			SendMessage(GetDlgItem(hwndDlg, IDC_USERMENU), BUTTONADDTOOLTIP, (WPARAM) Translate("User Menu"), 0);
@@ -1087,7 +1091,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			POINT pt;
 			MENUITEMINFO mii;
 			hToolbarMenu = CreatePopupMenu();
-			for (i = 0; i < SIZEOF(buttonControls); i++) {
+			for (i = 0; i < SIZEOF(toolbarButtons); i++) {
 				ZeroMemory(&mii, sizeof(mii));
 				mii.cbSize = sizeof(mii);
 				mii.fMask = MIIM_ID | MIIM_STRING | MIIM_STATE | MIIM_DATA | MIIM_BITMAP;
@@ -1096,7 +1100,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 				mii.wID = i + 1;
 				mii.dwItemData = (ULONG_PTR)g_dat->hButtonIconList;
 				mii.hbmpItem = HBMMENU_CALLBACK;
-				mii.dwTypeData = TranslateTS((buttonNames[i]));
+				mii.dwTypeData = TranslateTS((toolbarButtons[i].name));
 				InsertMenuItem(hToolbarMenu, i, TRUE, &mii);
 			}
 //			CallService(MS_LANGPACK_TRANSLATEMENU, (WPARAM) hToolbarMenu, 0);

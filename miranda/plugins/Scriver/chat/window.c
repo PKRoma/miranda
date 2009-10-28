@@ -53,14 +53,21 @@ static WNDPROC OldNicklistProc;
 static WNDPROC OldFilterButtonProc;
 static WNDPROC OldLogProc;
 
-static TCHAR *buttonNames[] = {_T("Bold"), _T("Italic"), _T("Underline"), _T("Text color"), _T("Background color"),
-							   _T("Font size"), _T("Smiley"), _T("History"), _T("Filter"), _T("Manager"), _T("Nick list")};
-static const UINT buttonControls[] = {  IDC_CHAT_BOLD, IDC_CHAT_ITALICS, IDC_CHAT_UNDERLINE,
-										IDC_CHAT_COLOR, IDC_CHAT_BKGCOLOR, IDC_CHAT_FONTSIZE, IDC_CHAT_SMILEY,
-										IDC_CHAT_HISTORY, IDC_CHAT_FILTER, IDC_CHAT_CHANMGR, IDC_CHAT_SHOWNICKLIST};
-static char buttonAlignment[] = { 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1};
-static UINT buttonSpacing[] = { 4, 0, 0, 0, 0, 0, 8, 0, 0, 0, 0};
-static UINT buttonWidth[] = { 24, 24, 24, 24, 24, 48, 24, 24, 24, 24, 24};
+static ToolbarButton toolbarButtons[] = {
+	{_T("Bold"), IDC_CHAT_BOLD, 0, 4, 24},
+	{_T("Italic"), IDC_CHAT_ITALICS, 0, 0, 24},
+	{_T("Underline"), IDC_CHAT_UNDERLINE, 0, 10, 24},
+	{_T("Text color"), IDC_CHAT_COLOR, 0, 0, 24},
+	{_T("Background color"), IDC_CHAT_BKGCOLOR, 0, 0, 24},
+	{_T("Font size"), IDC_CHAT_FONTSIZE, 0, 0, 48},
+	{_T("Smiley"), IDC_CHAT_SMILEY, 0, 8, 24},
+	{_T("History"), IDC_CHAT_HISTORY, 1, 0, 24},
+	//{_T("Close"), IDCANCEL, 1, 0, 24},
+	//{_T("Send"), IDOK, 1, 0, 38},
+	{_T("Filter"), IDC_CHAT_FILTER, 1, 0, 24},
+	{_T("Manager"), IDC_CHAT_CHANMGR, 1, 0, 24},
+	{_T("Nick list"), IDC_CHAT_SHOWNICKLIST, 1, 0, 24}
+};
 
 typedef struct
 {
@@ -216,7 +223,7 @@ static void MessageDialogResize(HWND hwndDlg, SESSION_INFO *si, int w, int h) {
 		si->iSplitterY = hSplitterMinBottom;
 	}
 
-	ShowToolbarControls(hwndDlg, SIZEOF(buttonControls), buttonControls, buttonVisibility, SW_SHOW);
+	ShowToolbarControls(hwndDlg, SIZEOF(toolbarButtons), toolbarButtons, buttonVisibility, SW_SHOW);
 	ShowWindow(GetDlgItem(hwndDlg, IDOK), bSend?SW_SHOW:SW_HIDE);
 	ShowWindow(GetDlgItem(hwndDlg, IDC_CHAT_SPLITTERX), bNick?SW_SHOW:SW_HIDE);
 	if (si->iType != GCW_SERVER)
@@ -235,7 +242,7 @@ static void MessageDialogResize(HWND hwndDlg, SESSION_INFO *si, int w, int h) {
 			EnableWindow(GetDlgItem(hwndDlg, IDC_CHAT_CHANMGR), MM_FindModule(si->pszModule)->bChanMgr);
 	}
 
-	hdwp = BeginDeferWindowPos(12);
+	hdwp = BeginDeferWindowPos(20);
 	toolbarTopY = bToolbar ? h - si->iSplitterY - TOOLBAR_HEIGHT : h - si->iSplitterY;
 	if (si->windowData.hwndLog != NULL) {
 		logBottom = toolbarTopY / 2;
@@ -265,7 +272,7 @@ static void MessageDialogResize(HWND hwndDlg, SESSION_INFO *si, int w, int h) {
 	
 */
 
-	hdwp = ResizeToolbar(hwndDlg, hdwp, w, toolbarTopY + 1, TOOLBAR_HEIGHT - 1, SIZEOF(buttonControls), buttonControls, buttonWidth, buttonSpacing, buttonAlignment, buttonVisibility);
+	hdwp = ResizeToolbar(hwndDlg, hdwp, w, toolbarTopY + 1, TOOLBAR_HEIGHT - 1, SIZEOF(toolbarButtons), toolbarButtons, buttonVisibility);
 	EndDeferWindowPos(hdwp);
 	if (si->windowData.hwndLog != NULL) {
 		RECT rect;
