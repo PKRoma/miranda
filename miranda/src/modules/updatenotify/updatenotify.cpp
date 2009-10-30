@@ -565,6 +565,9 @@ static INT_PTR CALLBACK UpdateNotifyProc(HWND hwndDlg, UINT msg, WPARAM wParam, 
 			p = strstr(szVersion, " Unicode");
 			if (p)
 				*p = '\0';
+			p = strstr(szVersion, " Unicode");
+			if (p)
+				*p = '\0';
 			SetDlgItemTextA(hwndDlg, IDC_CURRENTVERSION, szVersion);
 			mir_snprintf(szVersionTmp, SIZEOF(szVersionTmp), "%s", und->version?und->version:szVersion);
 			SetDlgItemTextA(hwndDlg, und->isNew?IDC_VERSION:IDC_UPDATE, szVersionTmp);
