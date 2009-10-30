@@ -562,6 +562,9 @@ static INT_PTR CALLBACK UpdateNotifyProc(HWND hwndDlg, UINT msg, WPARAM wParam, 
 			}
 			SetWindowText(hwndDlg, szTmp);
 			CallService(MS_SYSTEM_GETVERSIONTEXT, sizeof(szVersion), (LPARAM)szVersion);
+			p = strstr(szVersion, "x64 Unicode");
+			if (p)
+				*p = '\0';
 			p = strstr(szVersion, " Unicode");
 			if (p)
 				*p = '\0';
