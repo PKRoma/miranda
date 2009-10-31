@@ -82,6 +82,17 @@ int TSAPI RegisterTabCtrlClass(void)
 	wce.hbrBackground  = 0;
 	wce.style          = CS_GLOBALCLASS;// | CS_DBLCLKS; // | CS_PARENTDC;
 	RegisterClassEx(&wce);
+
+	ZeroMemory(&wce, sizeof(wce));
+	wce.cbSize         = sizeof(wce);
+	wce.lpszClassName  = _T("TSHK");
+	wce.lpfnWndProc    = HotkeyHandlerDlgProc;
+	wce.hCursor        = LoadCursor(NULL, IDC_ARROW);
+	wce.cbWndExtra     = sizeof(void*);
+	wce.hbrBackground  = 0;
+	wce.style          = CS_GLOBALCLASS;// | CS_DBLCLKS; // | CS_PARENTDC;
+	RegisterClassEx(&wce);
+
 	return 0;
 }
 

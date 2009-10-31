@@ -125,7 +125,7 @@ static struct _tagPages {
 	{ CTranslator::CNT_OPT_TITLE_TABS, CTranslator::CNT_OPT_DESC_TABS, IDC_TABMODE, IDC_O_TABMODE, IDC_O_SBARLAYOUT, IDC_SBARLAYOUT, IDC_FLASHICON, IDC_FLASHLABEL, IDC_SINGLEROWTAB, IDC_BUTTONTABS, IDC_STYLEDTABS, IDC_CLOSEBUTTONONTABS},
 	{ CTranslator::CNT_OPT_TITLE_NOTIFY, CTranslator::CNT_OPT_DESC_NOTIFY, IDC_O_DONTREPORT, IDC_DONTREPORTUNFOCUSED2, IDC_ALWAYSPOPUPSINACTIVE, IDC_O_EXPLAINGLOBALNOTIFY, 0, 0, 0, 0, 0, 0},
 	{ CTranslator::CNT_OPT_TITLE_FLASHING, CTranslator::STR_LAST, IDC_O_FLASHDEFAULT, IDC_O_FLASHALWAYS, IDC_O_FLASHNEVER, 0, 0, 0, 0, 0, 0, 0},
-	{ CTranslator::CNT_OPT_TITLE_TITLEBAR, CTranslator::STR_LAST, IDC_O_HIDETITLE, IDC_STATICICON, IDC_USEPRIVATETITLE, IDC_TITLEFORMAT, 0, 0, 0, 0, 0, 0},
+	{ CTranslator::CNT_OPT_TITLE_TITLEBAR, CTranslator::STR_LAST, IDC_O_HIDETITLE, IDC_STATICICON, IDC_TITLEFORMAT, IDC_O_TITLEBARFORMAT, 0, 0, 0, 0, 0, 0},
 	{ CTranslator::CNT_OPT_TITLE_THEME, CTranslator::CNT_OPT_DESC_THEME, IDC_THEME, IDC_SELECTTHEME, IDC_USEGLOBALSIZE, IDC_SAVESIZEASGLOBAL, IDC_LABEL_PRIVATETHEME, 0, 0, 0, 0, 0},
 	{ CTranslator::CNT_OPT_TITLE_TRANS, CTranslator::CNT_OPT_DESC_TRANS, IDC_TRANSPARENCY, IDC_TRANSPARENCY_ACTIVE, IDC_TRANSPARENCY_INACTIVE, IDC_TLABEL_ACTIVE, IDC_TLABEL_INACTIVE, IDC_TSLABEL_ACTIVE, IDC_TSLABEL_INACTIVE,0, 0, 0},
 	{ CTranslator::CNT_OPT_TITLE_AVATARS, CTranslator::STR_LAST, IDC_O_STATIC_AVATAR, IDC_O_STATIC_OWNAVATAR, IDC_AVATARMODE, IDC_OWNAVATARMODE, 0, 0, 0, 0, 0, 0},
@@ -174,7 +174,6 @@ INT_PTR CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, 
 			SetDlgItemText(hwndDlg, IDC_HEADERBAR, szNewTitle);
 			Utils::enableDlgControl(hwndDlg, IDC_O_HIDETITLE, CSkin::m_frameSkins ? FALSE : TRUE);
 			CheckDlgButton(hwndDlg, IDC_CNTPRIVATE, pContainer->settings->fPrivate ? BST_CHECKED : BST_UNCHECKED);
-			Utils::enableDlgControl(hwndDlg, IDC_TITLEFORMAT, IsDlgButtonChecked(hwndDlg, IDC_USEPRIVATETITLE));
 
 			SendDlgItemMessage(hwndDlg, IDC_TABMODE, CB_INSERTSTRING, -1, (LPARAM)CTranslator::get(CTranslator::CNT_OPT_TABSTOP));
 			SendDlgItemMessage(hwndDlg, IDC_TABMODE, CB_INSERTSTRING, -1, (LPARAM)CTranslator::get(CTranslator::CNT_OPT_TABSBOTTOM));
@@ -203,8 +202,6 @@ INT_PTR CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, 
 
 
 			SendMessage(hwndDlg, DM_SC_INITDIALOG, (WPARAM)0, (LPARAM)pContainer->settings);
-			CheckDlgButton(hwndDlg, IDC_USEPRIVATETITLE, pContainer->dwFlags & CNT_TITLE_PRIVATE);
-			Utils::enableDlgControl(hwndDlg, IDC_TITLEFORMAT, IsDlgButtonChecked(hwndDlg, IDC_USEPRIVATETITLE));
 			SendDlgItemMessage(hwndDlg, IDC_TITLEFORMAT, EM_LIMITTEXT, TITLE_FORMATLEN - 1, 0);
 			SetDlgItemText(hwndDlg, IDC_TITLEFORMAT, pContainer->settings->szTitleFormat);
 			SetDlgItemText(hwndDlg, IDC_THEME, pContainer->szRelThemeFile);
@@ -320,9 +317,6 @@ INT_PTR CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, 
 				case IDC_O_ENABLESOUNDS:
 					SendMessage(hwndDlg, DM_SC_CONFIG, 0, 0);
 					break;
-				case IDC_USEPRIVATETITLE:
-					Utils::enableDlgControl(hwndDlg, IDC_TITLEFORMAT, IsDlgButtonChecked(hwndDlg, IDC_USEPRIVATETITLE));
-					goto do_apply;
 				case IDC_TITLEFORMAT:
 					if (HIWORD(wParam) != EN_CHANGE || (HWND) lParam != GetFocus())
 						return TRUE;
@@ -347,12 +341,8 @@ INT_PTR CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, 
 					pContainer->settings->avatarMode = (WORD)SendDlgItemMessage(hwndDlg, IDC_AVATARMODE, CB_GETCURSEL, 0, 0);
 					pContainer->settings->ownAvatarMode = (WORD)SendDlgItemMessage(hwndDlg, IDC_OWNAVATARMODE, CB_GETCURSEL, 0, 0);
 
-					if (pContainer->settings->dwFlags & CNT_TITLE_PRIVATE) {
-						GetDlgItemText(hwndDlg, IDC_TITLEFORMAT, pContainer->settings->szTitleFormat, TITLE_FORMATLEN);
-						pContainer->settings->szTitleFormat[TITLE_FORMATLEN - 1] = 0;
-					}
-					else
-						_tcsncpy(pContainer->settings->szTitleFormat, PluginConfig.szDefaultTitleFormat, TITLE_FORMATLEN);
+					GetDlgItemText(hwndDlg, IDC_TITLEFORMAT, pContainer->settings->szTitleFormat, TITLE_FORMATLEN);
+					pContainer->settings->szTitleFormat[TITLE_FORMATLEN - 1] = 0;
 
 					pContainer->szRelThemeFile[0] = pContainer->szAbsThemeFile[0] = 0;
 
@@ -441,7 +431,6 @@ do_apply:
 			MY_CheckDlgButton(hwndDlg, IDC_BOTTOMTOOLBAR, dwFlags & CNT_BOTTOMTOOLBAR);
 			MY_CheckDlgButton(hwndDlg, IDC_UIDSTATUSBAR, dwFlags & CNT_UINSTATUSBAR);
 			MY_CheckDlgButton(hwndDlg, IDC_VERTICALMAX, dwFlags & CNT_VERTICALMAX);
-			MY_CheckDlgButton(hwndDlg, IDC_USEPRIVATETITLE, dwFlags & CNT_TITLE_PRIVATE);
 			MY_CheckDlgButton(hwndDlg, IDC_INFOPANEL, dwFlags & CNT_INFOPANEL);
 			MY_CheckDlgButton(hwndDlg, IDC_USEGLOBALSIZE, dwFlags & CNT_GLOBALSIZE);
 
@@ -527,7 +516,6 @@ do_apply:
 						 (IsDlgButtonChecked(hwndDlg, IDC_HIDETOOLBAR) ? CNT_HIDETOOLBAR : 0) |
 						 (IsDlgButtonChecked(hwndDlg, IDC_BOTTOMTOOLBAR) ? CNT_BOTTOMTOOLBAR : 0) |
 						 (IsDlgButtonChecked(hwndDlg, IDC_UIDSTATUSBAR) ? CNT_UINSTATUSBAR : 0) |
-						 (IsDlgButtonChecked(hwndDlg, IDC_USEPRIVATETITLE) ? CNT_TITLE_PRIVATE : 0) |
 						 (IsDlgButtonChecked(hwndDlg, IDC_USEGLOBALSIZE) ? CNT_GLOBALSIZE : 0) |
 						 (IsDlgButtonChecked(hwndDlg, IDC_INFOPANEL) ? CNT_INFOPANEL : 0) |
 						 (IsDlgButtonChecked(hwndDlg, IDC_O_ENABLESOUNDS) ? 0 : CNT_NOSOUND) |

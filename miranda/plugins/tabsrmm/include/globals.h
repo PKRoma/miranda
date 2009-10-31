@@ -153,7 +153,6 @@ public:
 	int         m_TabAppearance;
 	struct      myTabCtrl tabConfig;
 	int         m_panelHeight, m_MUCpanelHeight;
-	TCHAR       szDefaultTitleFormat[256];
 	WINDOWPLACEMENT m_GlobalContainerWpos;
 	int         m_IdleDetect;
 	int         m_smcxicon, m_smcyicon;

@@ -46,7 +46,7 @@ int 				IEViewOptionsChanged		(WPARAM wParam, LPARAM lParam);
 void 				RegisterFontServiceFonts	();
 int 				ModPlus_PreShutdown			(WPARAM wparam, LPARAM lparam);
 int 				ModPlus_Init				(WPARAM wparam, LPARAM lparam);
-INT_PTR CALLBACK 	HotkeyHandlerDlgProc		(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+LONG_PTR CALLBACK 	HotkeyHandlerDlgProc		(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 
 
 /*

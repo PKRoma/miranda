@@ -160,57 +160,20 @@ nothing_open:
 
 void TSAPI DrawMenuItem(DRAWITEMSTRUCT *dis, HICON hIcon, DWORD dwIdle)
 {
-	int cx = PluginConfig.m_smcxicon;
-	int cy = PluginConfig.m_smcyicon;
-
-	if (PluginConfig.m_bIsXP) {
-		FillRect(dis->hDC, &dis->rcItem, GetSysColorBrush(COLOR_MENU));
-		if (dis->itemState & ODS_HOTLIGHT)
-			DrawEdge(dis->hDC, &dis->rcItem, BDR_RAISEDINNER, BF_RECT);
-		else if (dis->itemState & ODS_SELECTED)
-			DrawEdge(dis->hDC, &dis->rcItem, BDR_SUNKENOUTER, BF_RECT);
-		if (dwIdle) {
-			CSkin::DrawDimmedIcon(dis->hDC, 2, (dis->rcItem.bottom + dis->rcItem.top - cy) / 2, 16, 16, hIcon, 180);
-		} else
-			DrawIconEx(dis->hDC, 2, (dis->rcItem.bottom + dis->rcItem.top - cy) / 2, hIcon, cx, cy, 0, 0, DI_NORMAL | DI_COMPAT);
-	} else {
-		BOOL bfm = FALSE;
-		SystemParametersInfo(SPI_GETFLATMENU, 0, &bfm, 0);
-		if (bfm) {
-			/* flat menus: fill with COLOR_MENUHILIGHT and outline with COLOR_HIGHLIGHT, otherwise use COLOR_MENUBAR */
-			if (dis->itemState & ODS_SELECTED || dis->itemState & ODS_HOTLIGHT) {
-				/* selected or hot lighted, no difference */
-				FillRect(dis->hDC, &dis->rcItem, GetSysColorBrush(COLOR_MENUHILIGHT));
-				/* draw the frame */
-				FrameRect(dis->hDC, &dis->rcItem, GetSysColorBrush(COLOR_HIGHLIGHT));
-			} else {
-				/* flush the DC with the menu bar colour (only supported on XP) and then draw the icon */
-				FillRect(dis->hDC, &dis->rcItem, GetSysColorBrush(COLOR_MENUBAR));
-			}   //if
-			/* draw the icon */
-			if (dwIdle) {
-				CSkin::DrawDimmedIcon(dis->hDC, 2, (dis->rcItem.bottom + dis->rcItem.top - cy) / 2, 16, 16, hIcon, 180);
-			} else
-				DrawIconEx(dis->hDC, 2, (dis->rcItem.bottom + dis->rcItem.top - cy) / 2, hIcon, cx, cy, 0, 0, DI_NORMAL | DI_COMPAT);
-		} else {
-			/* non-flat menus, flush the DC with a normal menu colour */
-			FillRect(dis->hDC, &dis->rcItem, GetSysColorBrush(COLOR_MENU));
-			if (dis->itemState & ODS_HOTLIGHT) {
-				DrawEdge(dis->hDC, &dis->rcItem, BDR_RAISEDINNER, BF_RECT);
-			} else if (dis->itemState & ODS_SELECTED) {
-				DrawEdge(dis->hDC, &dis->rcItem, BDR_SUNKENOUTER, BF_RECT);
-			}
-			if (dwIdle) {
-				CSkin::DrawDimmedIcon(dis->hDC, 2, (dis->rcItem.bottom + dis->rcItem.top - cy) / 2, 16, 16, hIcon, 180);
-			} else
-				DrawIconEx(dis->hDC, 2, (dis->rcItem.bottom + dis->rcItem.top - cy) / 2, hIcon, cx, cy, 0, 0, DI_NORMAL | DI_COMPAT);
-		}       //if
-	}           //if
+	FillRect(dis->hDC, &dis->rcItem, GetSysColorBrush(COLOR_MENU));
+	/*if (dis->itemState & ODS_HOTLIGHT)
+		DrawEdge(dis->hDC, &dis->rcItem, BDR_RAISEDINNER, BF_RECT);
+	else if (dis->itemState & ODS_SELECTED)
+		DrawEdge(dis->hDC, &dis->rcItem, BDR_SUNKENOUTER, BF_RECT);*/
+	if (dwIdle) {
+		CSkin::DrawDimmedIcon(dis->hDC, 2, (dis->rcItem.bottom + dis->rcItem.top - 16) / 2, 16, 16, hIcon, 180);
+	} else
+		DrawIconEx(dis->hDC, 2, (dis->rcItem.bottom + dis->rcItem.top - 16) / 2, hIcon, 16, 16, 0, 0, DI_NORMAL | DI_COMPAT);
 }
 
 static time_t t_last_sendlater_processed = 0;
 
-INT_PTR CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+LONG_PTR CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	static POINT ptLast;
 	static int iMousedown;
@@ -222,7 +185,7 @@ INT_PTR CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 		return 0;
 	}
 	switch (msg) {
-		case WM_INITDIALOG:
+		case WM_CREATE:
 			int i;
 
 			for(i = 0; i < safe_sizeof(_hotkeydescs); i++) {
@@ -239,29 +202,7 @@ INT_PTR CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 			ShowWindow(hwndDlg, SW_HIDE);
 			hSvcHotkeyProcessor = CreateServiceFunction(MS_TABMSG_HOTKEYPROCESS, HotkeyProcessor);
 			SetTimer(hwndDlg, TIMERID_SENDLATER, TIMEOUT_SENDLATER, NULL);
-			return TRUE;
-		case WM_LBUTTONDOWN:
-			iMousedown = 1;
-			GetCursorPos(&ptLast);
-			SetCapture(hwndDlg);
 			break;
-		case WM_LBUTTONUP: {
-			iMousedown = 0;
-			ReleaseCapture();
-			break;
-		}
-		case WM_MOUSEMOVE: {
-			RECT rc;
-			POINT pt;
-
-			if (iMousedown) {
-				GetWindowRect(hwndDlg, &rc);
-				GetCursorPos(&pt);
-				MoveWindow(hwndDlg, rc.left - (ptLast.x - pt.x), rc.top - (ptLast.y - pt.y), rc.right - rc.left, rc.bottom - rc.top, TRUE);
-				ptLast = pt;
-			}
-			break;
-		}
 		case WM_HOTKEY: {
 			CLISTEVENT *cli = 0;
 
@@ -751,7 +692,7 @@ INT_PTR CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 			break;
 		}
 	}
-	return FALSE;
+	return(DefWindowProc(hwndDlg, msg, wParam, lParam));
 }
 
 /*

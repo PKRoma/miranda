@@ -51,7 +51,6 @@
 #define IDD_SELECTCONTAINER             299
 #define IDD_CONTAINEROPTIONS            300
 #define IDD_OPT_CONTAINERS              301
-#define IDD_HOTKEYSLAVE                 303
 #define IDD_OPT_TOOLBAR                 304
 #define IDR_MENUBAR                     308
 #define IDD_CHOOSESTATUSMODES           310
@@ -352,7 +351,6 @@
 #define IDC_GROUPMODE                   1288
 #define IDC_ANIMATED                    1289
 #define IDC_ISFAVORITE                  1289
-#define IDC_USEPRIVATETITLE             1289
 #define IDC_ALWAYSTRIM                  1289
 #define IDC_SKIN_LOADFONTS              1289
 #define IDC_PRESERVEAVATARSIZE          1289
@@ -463,7 +461,6 @@
 #define IDC_TITLEFORMAT                 1393
 #define IDC_LIGHTSHADOW                 1393
 #define IDC_EDIT1                       1394
-#define IDC_DEFAULTTITLEFORMAT          1394
 #define IDC_THEME                       1394
 #define IDC_DARKSHADOW                  1394
 #define IDC_CHECK3                      1395
@@ -551,6 +548,7 @@
 #define IDC_O_SOUNDSUNFOCUSED			1703
 #define IDC_O_SOUNDSINACTIVE			1704
 #define IDC_O_SOUNDSFOCUSED				1705
+#define IDC_O_TITLEBARFORMAT			1706
 #define IDC_O_EXPLAINGLOBALNOTIFY       1624
 #define IDC_PLUS_CHECKTREE              2000
 #define IDC_COPYRIGHT                   2002

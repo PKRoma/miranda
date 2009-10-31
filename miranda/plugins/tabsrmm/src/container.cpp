@@ -1714,10 +1714,6 @@ buttons_done:
 			else
 				pContainer->szAbsThemeFile[0] = pContainer->szRelThemeFile[0] = 0;
 
-			if(!(pContainer->dwFlags & CNT_TITLE_PRIVATE)) {
-				_tcsncpy(pContainer->settings->szTitleFormat, PluginConfig.szDefaultTitleFormat, TITLE_FORMATLEN);
-				pContainer->settings->szTitleFormat[TITLE_FORMATLEN - 1] = 0;
-			}
 			pContainer->ltr_templates = pContainer->rtl_templates = 0;
 			break;
 		}

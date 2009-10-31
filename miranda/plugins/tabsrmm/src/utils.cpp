@@ -463,8 +463,8 @@ const TCHAR* Utils::DoubleAmpersands(TCHAR *pszText)
 
 	while (TRUE) {
 		if ((textPos = text.find(_T("&"),textPos)) != text.npos) {
-			text.insert(textPos,__T("%"));
-			text.replace(textPos, 2, __T("&&"));
+			text.insert(textPos,_T("%"));
+			text.replace(textPos, 2, _T("&&"));
 			textPos+=2;
 			continue;
 		} else

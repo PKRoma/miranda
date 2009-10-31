@@ -1098,8 +1098,6 @@ static INT_PTR CALLBACK DlgProcContainerSettings(HWND hwndDlg, UINT msg, WPARAM 
 			SendDlgItemMessage(hwndDlg, IDC_FLASHINTERVALSPIN, UDM_SETRANGE, 0, MAKELONG(10000, 500));
 			SendDlgItemMessage(hwndDlg, IDC_FLASHINTERVALSPIN, UDM_SETPOS, 0, (int)M->GetDword("flashinterval", 1000));
 			SendDlgItemMessage(hwndDlg, IDC_FLASHINTERVALSPIN, UDM_SETACCEL, 0, (int)M->GetDword("flashinterval", 1000));
-			SetDlgItemText(hwndDlg, IDC_DEFAULTTITLEFORMAT, PluginConfig.szDefaultTitleFormat);
-			SendDlgItemMessage(hwndDlg, IDC_DEFAULTTITLEFORMAT, EM_LIMITTEXT, TITLE_FORMATLEN - 1, 0);
 			CheckDlgButton(hwndDlg, IDC_USESKIN, M->GetByte("useskin", 0) ? 1 : 0);
 			SendMessage(hwndDlg, WM_COMMAND, MAKELONG(IDC_USESKIN, BN_CLICKED), 0);
 			Utils::enableDlgControl(hwndDlg, IDC_USESKIN, IsWinVer2000Plus() ? TRUE : FALSE);
@@ -1135,7 +1133,6 @@ static INT_PTR CALLBACK DlgProcContainerSettings(HWND hwndDlg, UINT msg, WPARAM 
 					switch (((LPNMHDR) lParam)->code) {
 						case PSN_APPLY: {
 							BOOL translated;
-							TCHAR szDefaultName[TITLE_FORMATLEN + 2];
 
 							M->WriteByte(SRMSGMOD_T, "useclistgroups", (BYTE)(IsDlgButtonChecked(hwndDlg, IDC_CONTAINERGROUPMODE)));
 							M->WriteByte(SRMSGMOD_T, "limittabs", (BYTE)(IsDlgButtonChecked(hwndDlg, IDC_LIMITTABS)));
@@ -1145,13 +1142,6 @@ static INT_PTR CALLBACK DlgProcContainerSettings(HWND hwndDlg, UINT msg, WPARAM 
 							M->WriteByte(SRMSGMOD_T, "nrflash", (BYTE)(GetDlgItemInt(hwndDlg, IDC_NRFLASH, &translated, FALSE)));
 							CSkin::setAeroEffect(SendDlgItemMessage(hwndDlg, IDC_AEROEFFECT, CB_GETCURSEL, 0, 0));
 
-							GetDlgItemText(hwndDlg, IDC_DEFAULTTITLEFORMAT, szDefaultName, TITLE_FORMATLEN);
-#if defined(_UNICODE)
-							DBWriteContactSettingWString(NULL, SRMSGMOD_T, "titleformatW", szDefaultName);
-#else
-							DBWriteContactSettingString(NULL, SRMSGMOD_T, "titleformat", szDefaultName);
-#endif
-							GetDefaultContainerTitleFormat();
 							BuildContainerMenu();
 							return TRUE;
 						}
@@ -1677,27 +1667,4 @@ INT_PTR CALLBACK DlgProcSetupStatusModes(HWND hwndDlg, UINT msg, WPARAM wParam, 
 			break;
 	}
 	return FALSE;
-}
-
-/*
- * get the default format string for the window (container) title bar.
- */
-
-void TSAPI GetDefaultContainerTitleFormat()
-{
-	DBVARIANT dbv = {0};
-#if defined(_UNICODE)
-	const	char *tszKeyName = "titleformatW";
-#else
-	const	char *tszKeyName = "titleformatW";
-#endif
-
-	if (M->GetTString(NULL, SRMSGMOD_T, tszKeyName, &dbv)) {
-		M->WriteTString(NULL, SRMSGMOD_T, tszKeyName, _T("%n - %s"));
-		_tcsncpy(PluginConfig.szDefaultTitleFormat, _T("%n - %s"), safe_sizeof(PluginConfig.szDefaultTitleFormat));
-	} else {
-		_tcsncpy(PluginConfig.szDefaultTitleFormat, dbv.ptszVal, safe_sizeof(PluginConfig.szDefaultTitleFormat));
-		DBFreeVariant(&dbv);
-	}
-	PluginConfig.szDefaultTitleFormat[255] = 0;
 }

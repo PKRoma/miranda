@@ -784,9 +784,9 @@ void CInfoPanel::handleClick(const POINT& pt)
 	HMENU m = constructContextualMenu();
 	LRESULT r = ::TrackPopupMenu(m, TPM_RETURNCMD, pt.x, pt.y, 0, m_dat->hwnd, NULL);
 
+	::DestroyMenu(m);
 	if(cmdHandler(r) == 0)
 		Utils::CmdDispatcher(Utils::CMD_INFOPANEL, m_dat->hwnd, r, 0, 0, m_dat, m_dat->pContainer);
-	::DestroyMenu(m);
 	m_hoverFlags = 0;
 	Invalidate();
 }

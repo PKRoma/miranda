@@ -612,7 +612,6 @@ tzdone:
 	LoadDefaultTemplates();
 
 	BuildCodePageList();
-	GetDefaultContainerTitleFormat();
 	PluginConfig.local_gmt_diff = nOffset;
 
 	return 0;

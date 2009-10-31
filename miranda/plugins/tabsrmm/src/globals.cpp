@@ -46,7 +46,7 @@ static TContainerSettings _cnt_default = {
 		255,
 		CInfoPanel::DEGRADE_THRESHOLD,
 		60,
-		_T("%n (%s"),
+		_T("%n (%s)"),
 		1,
 		0
 };
@@ -162,21 +162,6 @@ void CGlobals::reloadSystemStartup()
 	g_DPIscaleX = 						GetDeviceCaps(hScrnDC, LOGPIXELSX) / 96.0;
 	g_DPIscaleY = 						GetDeviceCaps(hScrnDC, LOGPIXELSY) / 96.0;
 	ReleaseDC(0, hScrnDC);
-
-#if defined(_UNICODE)
-	const	char *tszKeyName = "titleformatW";
-#else
-	const	char *tszKeyName = "titleformatW";
-#endif
-
-	if (M->GetTString(NULL, SRMSGMOD_T, tszKeyName, &dbv)) {
-		M->WriteTString(NULL, SRMSGMOD_T, tszKeyName, _T("%n - %s"));
-		_tcsncpy(szDefaultTitleFormat, _T("%n - %s"), safe_sizeof(szDefaultTitleFormat));
-	} else {
-		_tcsncpy(szDefaultTitleFormat, dbv.ptszVal, safe_sizeof(szDefaultTitleFormat));
-		::DBFreeVariant(&dbv);
-	}
-	szDefaultTitleFormat[255] = 0;
 
 	reloadSettings();
 	reloadAdv();
@@ -428,7 +413,8 @@ int CGlobals::ModulesLoaded(WPARAM wParam, LPARAM lParam)
 	if (M->GetByte("avatarmode", -1) == -1)
 		M->WriteByte(SRMSGMOD_T, "avatarmode", 2);
 
-	PluginConfig.g_hwndHotkeyHandler = CreateDialog(g_hInst, MAKEINTRESOURCE(IDD_HOTKEYSLAVE), 0, HotkeyHandlerDlgProc);
+	PluginConfig.g_hwndHotkeyHandler = CreateWindowEx(0, _T("TSHK"), _T(""), WS_POPUP,
+								  0, 0, 40, 40, 0, 0, g_hInst, NULL);
 
 	::CreateTrayMenus(TRUE);
 	if (nen_options.bTraySupport)
@@ -650,6 +636,7 @@ int CGlobals::PreshutdownSendRecv(WPARAM wParam, LPARAM lParam)
 	::UnregisterClass(_T("SideBarClass"), g_hInst);
 	::UnregisterClassA("TSTabCtrlClass", g_hInst);
 	::UnregisterClass(_T("RichEditTipClass"), g_hInst);
+	::UnregisterClass(_T("TSHK"), g_hInst);
 	return 0;
 }
 

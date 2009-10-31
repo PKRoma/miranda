@@ -170,14 +170,6 @@ BEGIN
                     IDC_NOPOPUPAVAIL,6,30,303,109
 END
 
-IDD_HOTKEYSLAVE DIALOGEX 0, 0, 38, 11
-STYLE DS_NOIDLEMSG | DS_FIXEDSYS | WS_POPUP | WS_CLIPCHILDREN | WS_BORDER
-EXSTYLE WS_EX_NOPARENTNOTIFY | WS_EX_TOOLWINDOW
-FONT 8, "MS Shell Dlg", 400, 0, 0x1
-BEGIN
-    LTEXT           "Statisch",IDC_TRAYCONTAINER,19,3,8,8
-END
-
 IDD_CHOOSESTATUSMODES DIALOGEX 0, 0, 226, 154
 STYLE DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Dialog"
@@ -309,20 +301,19 @@ BEGIN
                     BS_AUTOCHECKBOX | WS_TABSTOP,135,77,156,10
     CONTROL         "Hide the menu bar",IDC_HIDEMENUBAR,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,135,89,156,10
-    CONTROL         "User ID in Status Bar",IDC_UIDSTATUSBAR,"Button",
+    CONTROL         "User ID in status bar",IDC_UIDSTATUSBAR,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,135,101,156,10
     CONTROL         "Hide the tool bar",IDC_HIDETOOLBAR,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,135,113,156,10
-    CONTROL         "Place ToolBar at bottom",IDC_BOTTOMTOOLBAR,"Button",
+    CONTROL         "Place the tool bar at the bottom",IDC_BOTTOMTOOLBAR,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,135,125,156,10
     CONTROL         "Show the info panel",IDC_INFOPANEL,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,135,137,156,10
     CONTROL         "Hide title bar",IDC_O_HIDETITLE,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,135,66,111,10
-    CONTROL         "Use static container Icon",IDC_STATICICON,"Button",
+    CONTROL         "Use static container icon",IDC_STATICICON,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,135,78,121,10
-    CONTROL         "Use private title format",IDC_USEPRIVATETITLE,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,135,90,115,9
+    LTEXT           "Title bar format",IDC_O_TITLEBARFORMAT,135,91,160,11
     EDITTEXT        IDC_TITLEFORMAT,135,103,123,13,ES_AUTOHSCROLL
     EDITTEXT        IDC_THEME,135,64,123,13,ES_AUTOHSCROLL
     PUSHBUTTON      "...",IDC_SELECTTHEME,263,64,27,13
@@ -343,7 +334,7 @@ BEGIN
     LTEXT           "Statisch",IDC_TLABEL_INACTIVE,269,112,19,9
     CONTROL         "Container settings are private",IDC_CNTPRIVATE,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,96,170,158,10
-    LTEXT           "Check if you don't want this container to use the global container options. Titlebar format and window position can always be private.",
+    LTEXT           "Check if you don't want this container to use the global container options. Window position can always be private.",
                     IDC_STATIC,107,180,238,18
     DEFPUSHBUTTON   "OK",IDOK,194,205,50,14
     PUSHBUTTON      "Cancel",IDCANCEL,249,205,50,14
@@ -632,8 +623,6 @@ BEGIN
                     UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | 
                     UDS_ARROWKEYS,149,115,10,10
     LTEXT           "milliseconds",IDC_STATIC,166,113,81,12
-    GROUPBOX        "Default window title format",IDC_STATIC,3,139,300,28
-    EDITTEXT        IDC_DEFAULTTITLEFORMAT,10,150,274,14,ES_AUTOHSCROLL
     CONTROL         "Help on containers",IDC_HELP_CONTAINERS,"Hyperlink",
                     WS_TABSTOP | 0x1,21,210,262,9
     COMBOBOX        IDC_AEROEFFECT,9,183,158,36,CBS_DROPDOWNLIST | CBS_SORT | 
