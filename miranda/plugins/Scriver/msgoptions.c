@@ -230,11 +230,12 @@ void RegisterFontServiceFonts() {
 
 int IconsChanged(WPARAM wParam, LPARAM lParam)
 {
+	ReleaseIcons();
+	LoadGlobalIcons();
 	FreeMsgLogIcons();
 	LoadMsgLogIcons();
 	ChangeStatusIcons();
 	WindowList_Broadcast(g_dat->hMessageWindowList, DM_REMAKELOG, 0, 0);
-	// change all the icons
 	WindowList_Broadcast(g_dat->hMessageWindowList, DM_CHANGEICONS, 0, 1);
 	Chat_IconsChanged(wParam, lParam);
 	return 0;
@@ -245,105 +246,6 @@ int SmileySettingsChanged(WPARAM wParam, LPARAM lParam)
 	WindowList_Broadcast(g_dat->hMessageWindowList, DM_REMAKELOG, wParam, 0);
 	Chat_SmileyOptionsChanged(wParam, lParam);
 	return 0;
-}
-
-int IcoLibIconsChanged(WPARAM wParam, LPARAM lParam)
-{
-	ReleaseGlobalIcons();
-	LoadGlobalIcons();
-	return IconsChanged(wParam, lParam);
-}
-
-void RegisterIcoLibIcons()
-{
-	SKINICONDESC sid = { 0 };
-	TCHAR path[MAX_PATH];
-        TCHAR tTemp[500];
-
-	hEventSkin2IconsChanged = HookEvent_Ex(ME_SKIN2_ICONSCHANGED, IcoLibIconsChanged);
-
-	GetModuleFileName(g_hInst, path, MAX_PATH);
-	sid.cbSize = sizeof(SKINICONDESC);
-	sid.cx = sid.cy = 16;
-	sid.flags = SIDF_ALL_TCHAR;
-    mir_sntprintf(tTemp, SIZEOF(tTemp), _T("%s/%s"), LPGENT("Messaging"), LPGENT("Single Messaging"));
-    sid.ptszSection = tTemp;
-	sid.ptszDefaultFile = path;
-	sid.pszName = (char *) "scriver_ADD";
-	sid.iDefaultIndex = -IDI_ADDCONTACT;
-	sid.ptszDescription = LPGENT("Add contact");
-	CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
-	sid.pszName = (char *) "scriver_USERDETAILS";
-	sid.iDefaultIndex = -IDI_USERDETAILS;
-	sid.ptszDescription = LPGENT("User's details");
-	CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
-	sid.pszName = (char *) "scriver_HISTORY";
-	sid.iDefaultIndex = -IDI_HISTORY;
-	sid.ptszDescription = LPGENT("User's history");
-	CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
-	sid.pszName = (char *) "scriver_SEND";
-	sid.iDefaultIndex = -IDI_SEND;
-	sid.ptszDescription = LPGENT("Send message");
-	CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
-	sid.pszName = (char *) "scriver_CANCEL";
-	sid.iDefaultIndex = -IDI_CANCEL;
-	sid.ptszDescription = LPGENT("Close session");
-	CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
-	sid.pszName = (char *) "scriver_SMILEY";
-	sid.iDefaultIndex = -IDI_SMILEY;
-	sid.ptszDescription = LPGENT("Smiley button");
-	CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
-	sid.pszName = (char *) "scriver_TYPING";
-	sid.iDefaultIndex = -IDI_TYPING;
-	sid.ptszDescription = LPGENT("User is typing");
-	CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
-
-	sid.pszName = (char *) "scriver_TYPINGOFF";
-	sid.iDefaultIndex = -IDI_TYPINGOFF;
-	sid.ptszDescription = LPGENT("Typing notification off");
-	CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
-
-	sid.pszName = (char *) "scriver_UNICODEON";
-	sid.iDefaultIndex = -IDI_UNICODEON;
-	sid.ptszDescription = LPGENT("Unicode is on");
-	CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
-	sid.pszName = (char *) "scriver_UNICODEOFF";
-	sid.iDefaultIndex = -IDI_UNICODEOFF;
-	sid.ptszDescription = LPGENT("Unicode is off");
-	CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
-
-	sid.pszName = (char *) "scriver_DELIVERING";
-	sid.iDefaultIndex = -IDI_TIMESTAMP;
-	sid.ptszDescription = LPGENT("Sending");
-	CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
-
-	sid.pszName = (char *) "scriver_QUOTE";
-	sid.iDefaultIndex = -IDI_QUOTE;
-	sid.ptszDescription = LPGENT("Quote button");
-	CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
-
-	sid.pszName = (char *) "scriver_CLOSEX";
-	sid.iDefaultIndex = -IDI_CLOSEX;
-	sid.ptszDescription = LPGENT("Close button");
-	CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
-
-	sid.pszName = (char *) "scriver_OVERLAY";
-	sid.iDefaultIndex = -IDI_OVERLAY;
-	sid.ptszDescription = LPGENT("Icon overlay");
-	CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
-
-	sid.pszName = (char *) "scriver_INCOMING";
-	sid.iDefaultIndex = -IDI_INCOMING;
-	sid.ptszDescription = LPGENT("Incoming message (10x10)");
-	CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
-	sid.pszName = (char *) "scriver_OUTGOING";
-	sid.iDefaultIndex = -IDI_OUTGOING;
-	sid.ptszDescription = LPGENT("Outgoing message (10x10)");
-	CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
-	sid.pszName = (char *) "scriver_NOTICE";
-	sid.iDefaultIndex = -IDI_NOTICE;
-	sid.ptszDescription = LPGENT("Notice (10x10)");
-	CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
 }
 
 void LoadMsgDlgFont(int i, LOGFONT * lf, COLORREF * colour)
@@ -488,7 +390,7 @@ static INT_PTR CALLBACK DlgProcTabsOptions(HWND hwndDlg, UINT msg, WPARAM wParam
 			EnableWindow(GetDlgItem(hwndDlg, IDC_LIMITNAMES), bChecked );
 			EnableWindow(GetDlgItem(hwndDlg, IDC_SEPARATECHATSCONTAINERS), bChecked );
 			EnableWindow(GetDlgItem(hwndDlg, IDC_LIMITTABS), bChecked );
-                        bChecked = IsDlgButtonChecked(hwndDlg, IDC_USETABS) && IsDlgButtonChecked(hwndDlg, IDC_LIMITNAMES);
+            bChecked = IsDlgButtonChecked(hwndDlg, IDC_USETABS) && IsDlgButtonChecked(hwndDlg, IDC_LIMITNAMES);
 			EnableWindow(GetDlgItem(hwndDlg, IDC_LIMITNAMESLEN), bChecked);
 			EnableWindow(GetDlgItem(hwndDlg, IDC_CHARS), bChecked);
 			bChecked = IsDlgButtonChecked(hwndDlg, IDC_USETABS) && IsDlgButtonChecked(hwndDlg, IDC_LIMITTABS);

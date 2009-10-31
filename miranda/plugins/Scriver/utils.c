@@ -404,7 +404,7 @@ void AppendToBuffer(char **buffer, int *cbBufferEnd, int *cbBufferAlloced, const
 int MeasureMenuItem(WPARAM wParam, LPARAM lParam)
 {
 	LPMEASUREITEMSTRUCT mis = (LPMEASUREITEMSTRUCT) lParam;
-	if (mis->itemData != (ULONG_PTR) g_dat->hButtonIconList && mis->itemData != (ULONG_PTR) g_dat->hSearchEngineIconList) {
+	if (mis->itemData != (ULONG_PTR) g_dat->hButtonIconList && mis->itemData != (ULONG_PTR) g_dat->hSearchEngineIconList && mis->itemData != (ULONG_PTR) g_dat->hChatButtonIconList) {
 		return FALSE;
 	}
 	mis->itemWidth = max(0, GetSystemMetrics(SM_CXSMICON) - GetSystemMetrics(SM_CXMENUCHECK) + 4);
@@ -417,7 +417,7 @@ int DrawMenuItem(WPARAM wParam, LPARAM lParam)
 	int y;
 	int id;
 	LPDRAWITEMSTRUCT dis = (LPDRAWITEMSTRUCT) lParam;
-	if (dis->itemData != (ULONG_PTR) g_dat->hButtonIconList && dis->itemData != (ULONG_PTR) g_dat->hSearchEngineIconList) {
+	if (dis->itemData != (ULONG_PTR) g_dat->hButtonIconList && dis->itemData != (ULONG_PTR) g_dat->hSearchEngineIconList && dis->itemData != (ULONG_PTR) g_dat->hChatButtonIconList) {
 		return FALSE;
 	}
 	id = dis->itemID;

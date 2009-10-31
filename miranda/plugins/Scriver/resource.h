@@ -88,7 +88,6 @@
 #define IDC_LIMITCHATSTABSNUM			1013
 #define IDC_SPLITTER                    1017
 #define IDC_SHOWNAMES                   1020
-#define IDC_SHOWSENDBTN                 1021
 #define IDC_USETABS                     1022
 #define IDC_SHOWSECONDS                 1023
 #define IDC_USELONGDATE                 1024
@@ -210,7 +209,6 @@
 #define IDC_CHAT_FONTSIZE			5020
 #define IDC_CHAT_CHECKBOXES                  5021
 #define IDC_CHAT_HISTORY                     5022
-#define IDC_CHAT_CLOSE                       5023
 #define IDC_CHAT_NICKROW                     5024
 #define IDC_CHAT_LOGLIMIT                    5024
 #define IDC_CHAT_SPIN1                       5028

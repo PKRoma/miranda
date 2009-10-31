@@ -24,7 +24,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 extern TCHAR* pszActiveWndID ;
 extern char*  pszActiveWndModule ;
-extern HICON  hIcons[30];
 extern struct MM_INTERFACE		mmi ;
 
 extern struct GlobalMessageData *g_dat;
@@ -279,23 +278,14 @@ HICON SM_GetStatusIcon(SESSION_INFO* si, USERINFO * ui)
 		if ((INT_PTR)ti->hIcon < STATUSICONCOUNT)
 		{
 			INT_PTR id = si->iStatusCount - (INT_PTR)ti->hIcon - 1;
-			if (id == 0)
-				return hIcons[ICON_STATUS0];
-			if (id == 1)
-				return hIcons[ICON_STATUS1];
-			if (id == 2)
-				return hIcons[ICON_STATUS2];
-			if (id == 3)
-				return hIcons[ICON_STATUS3];
-			if (id == 4)
-				return hIcons[ICON_STATUS4];
-			if (id == 5)
-				return hIcons[ICON_STATUS5];
+			char name[128];
+			sprintf(name, "chat_status%d", id);
+			return GetCachedIcon(name);
 		}
 		else
 			return ti->hIcon;
 	}
-	return hIcons[ICON_STATUS0];
+	return GetCachedIcon("chat_status0");
 }
 
 BOOL SM_AddEventToAllMatchingUID(GCEVENT * gce)

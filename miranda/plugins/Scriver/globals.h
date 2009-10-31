@@ -88,18 +88,37 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define SMF_ICON_UNICODEOFF	8
 #define SMF_ICON_DELIVERING	9
 #define SMF_ICON_QUOTE		10
-
 #define SMF_ICON_INCOMING	11
 #define SMF_ICON_OUTGOING	12
 #define SMF_ICON_NOTICE		13
-
 #define SMF_ICON_CLOSEX		14
 #define SMF_ICON_OVERLAY    15
-
 #define SMF_ICON_TYPINGOFF  16
+#define SMF_ICON_COUNT		17
 
-#define SMF_ICON_MESSAGE	17
-#define SMF_ICON_COUNT		18
+#define SMF_CHAT_ICON_ACTION				0
+#define SMF_CHAT_ICON_ADDSTATUS			1
+#define SMF_CHAT_ICON_HIGHLIGHT			2
+#define SMF_CHAT_ICON_INFO				3
+#define SMF_CHAT_ICON_JOIN				4
+#define SMF_CHAT_ICON_KICK				5
+#define SMF_CHAT_ICON_MESSAGE			6
+#define SMF_CHAT_ICON_MESSAGEOUT			7
+#define SMF_CHAT_ICON_NICK				8
+#define SMF_CHAT_ICON_NOTICE				9
+#define SMF_CHAT_ICON_PART				10
+#define SMF_CHAT_ICON_QUIT				11
+#define SMF_CHAT_ICON_REMSTATUS			12
+#define SMF_CHAT_ICON_TOPIC				13
+#define SMF_CHAT_ICON_STATUS1			14
+#define SMF_CHAT_ICON_STATUS2			15
+#define SMF_CHAT_ICON_STATUS3			16
+#define SMF_CHAT_ICON_STATUS4			17
+#define SMF_CHAT_ICON_STATUS0			18
+#define SMF_CHAT_ICON_STATUS5			19
+#define SMF_CHAT_ICON_WINDOW				20
+#define SMF_CHAT_ICON_OVERLAY			21
+#define SMF_CHAT_ICON_COUNT_GROUP		22
 
 typedef struct ImageListUsageEntry_tag
 {
@@ -112,7 +131,6 @@ struct GlobalMessageData
 {
 	unsigned int flags;
 	unsigned int flags2;
-	HICON hIcons[SMF_ICON_COUNT];
 	HANDLE hMessageWindowList;
 	DWORD openFlags;
 	HANDLE hParentWindowList;
@@ -130,17 +148,15 @@ struct GlobalMessageData
 	int 	popupInstalled;
 	int		ieviewInstalled;
 	int		buttonVisibility;
+	int		chatBbuttonVisibility;
 	int		limitTabsNum;
 	int		limitChatsTabsNum;
 	int		indentSize;
 	HIMAGELIST hTabIconList;
 	HIMAGELIST hButtonIconList;
+	HIMAGELIST hChatButtonIconList;
 	HIMAGELIST hHelperIconList;
 	HIMAGELIST hSearchEngineIconList;
-	HFONT	   hContactNameFont;
-	COLORREF   contactNameColour;
-	HFONT	   hContactStatusFont;
-	COLORREF   contactStatusColour;
 	HBRUSH	   hInfobarBrush;
 	int		   toolbarPosition;
 	int        splitterY;
@@ -153,11 +169,11 @@ int SmileySettingsChanged(WPARAM wParam, LPARAM lParam);
 void InitGlobals();
 void FreeGlobals();
 void ReloadGlobals();
-void RegisterIcoLibIcons();
-void RegisterFontServiceFonts();
+void RegisterIcons();
+void ReleaseIcons();
 void LoadGlobalIcons();
-void ReleaseGlobalIcons();
-int IcoLibIconsChanged(WPARAM wParam, LPARAM lParam) ;
+HICON GetCachedIcon(const char *name);
+void RegisterFontServiceFonts();
 int ScriverRestoreWindowPosition(HWND hwnd,HANDLE hContact,const char *szModule,const char *szNamePrefix, int flags, int showCmd);
 
 int ImageList_AddIcon_Ex(HIMAGELIST hIml, int id);

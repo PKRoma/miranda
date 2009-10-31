@@ -40,7 +40,6 @@ extern HBRUSH      hListBkgBrush;
 extern HBRUSH      hListSelectedBkgBrush;
 extern HANDLE      hSendEvent;
 extern HINSTANCE   g_hInst;
-extern HICON      hIcons[30];
 extern struct      CREOleCallback reOleCallback;
 extern HMENU      g_hMenu;
 extern TABLIST *   g_TabList;
@@ -56,17 +55,17 @@ static WNDPROC OldLogProc;
 static ToolbarButton toolbarButtons[] = {
 	{_T("Bold"), IDC_CHAT_BOLD, 0, 4, 24},
 	{_T("Italic"), IDC_CHAT_ITALICS, 0, 0, 24},
-	{_T("Underline"), IDC_CHAT_UNDERLINE, 0, 10, 24},
+	{_T("Underline"), IDC_CHAT_UNDERLINE, 0, 0, 24},
 	{_T("Text color"), IDC_CHAT_COLOR, 0, 0, 24},
 	{_T("Background color"), IDC_CHAT_BKGCOLOR, 0, 0, 24},
-	{_T("Font size"), IDC_CHAT_FONTSIZE, 0, 0, 48},
+//	{_T("Font size"), IDC_CHAT_FONTSIZE, 0, 0, 48},
 	{_T("Smiley"), IDC_CHAT_SMILEY, 0, 8, 24},
 	{_T("History"), IDC_CHAT_HISTORY, 1, 0, 24},
-	//{_T("Close"), IDCANCEL, 1, 0, 24},
-	//{_T("Send"), IDOK, 1, 0, 38},
 	{_T("Filter"), IDC_CHAT_FILTER, 1, 0, 24},
 	{_T("Manager"), IDC_CHAT_CHANMGR, 1, 0, 24},
-	{_T("Nick list"), IDC_CHAT_SHOWNICKLIST, 1, 0, 24}
+	{_T("Nick list"), IDC_CHAT_SHOWNICKLIST, 1, 0, 24},
+	{_T("Close"), IDCANCEL, 1, 0, 24},
+	{_T("Send"), IDOK, 1, 0, 38},
 };
 
 typedef struct
@@ -112,43 +111,22 @@ static LRESULT CALLBACK SplitterSubclassProc(HWND hwnd,UINT msg,WPARAM wParam,LP
    return CallWindowProc(OldSplitterProc,hwnd,msg,wParam,lParam);
 }
 
-static int GetButtonVisibility(MODULEINFO * pInfo)
-{
-	BOOL      bFormat = (BOOL)DBGetContactSettingByte(NULL, "Chat", "ShowFormatButtons", 1);
-	BOOL      bControl = (BOOL)DBGetContactSettingByte(NULL, "Chat", "ShowTopButtons", 1);
-	if (pInfo != NULL) {
-		int vis = 0;
-		if (bFormat) {
-			vis |= pInfo->bBold ? 0x0001 : 0;
-			vis |= pInfo->bItalics ? 0x0002 : 0;
-			vis |= pInfo->bUnderline ? 0x0004 : 0;
-			vis |= pInfo->bColor ? 0x0008 : 0;
-			vis |= pInfo->bBkgColor ? 0x0010 : 0;
-			vis |= pInfo->bFontSize ? 0x0020 : 0;
-			vis |= g_dat->smileyAddInstalled ? 0x0040 : 0;
-		}
-		if (bControl) {
-			vis |= 0x0780;
-		}
-		return vis;
-	}
-	return 0;
-}
-
 static void   InitButtons(HWND hwndDlg, SESSION_INFO* si)
 {
-   MODULEINFO * pInfo = MM_FindModule(si->pszModule);
+	MODULEINFO * pInfo = MM_FindModule(si->pszModule);
 
-   SendDlgItemMessage(hwndDlg,IDC_CHAT_SMILEY,BM_SETIMAGE,IMAGE_ICON,(LPARAM)LoadIconEx(IDI_SMILEY, "smiley", 0, 0 ));
-   SendDlgItemMessage(hwndDlg,IDC_CHAT_BOLD,BM_SETIMAGE,IMAGE_ICON,(LPARAM)LoadIconEx(IDI_BBOLD, "bold", 0, 0 ));
-   SendDlgItemMessage(hwndDlg,IDC_CHAT_ITALICS,BM_SETIMAGE,IMAGE_ICON,(LPARAM)LoadIconEx(IDI_BITALICS, "italics", 0, 0 ));
-   SendDlgItemMessage(hwndDlg,IDC_CHAT_UNDERLINE,BM_SETIMAGE,IMAGE_ICON,(LPARAM)LoadIconEx(IDI_BUNDERLINE, "underline", 0, 0 ));
-   SendDlgItemMessage(hwndDlg,IDC_CHAT_COLOR,BM_SETIMAGE,IMAGE_ICON,(LPARAM)LoadIconEx(IDI_COLOR, "fgcol", 0, 0 ));
-   SendDlgItemMessage(hwndDlg,IDC_CHAT_BKGCOLOR,BM_SETIMAGE,IMAGE_ICON,(LPARAM)LoadIconEx(IDI_BKGCOLOR, "bkgcol", 0, 0 ));
-   SendDlgItemMessage(hwndDlg,IDC_CHAT_HISTORY,BM_SETIMAGE,IMAGE_ICON,(LPARAM)LoadIconEx(IDI_HISTORY, "history", 0, 0 ));
-   SendDlgItemMessage(hwndDlg,IDC_CHAT_CHANMGR,BM_SETIMAGE,IMAGE_ICON,(LPARAM)LoadIconEx(IDI_TOPICBUT, "settings", 0, 0 ));
-   SendDlgItemMessage(hwndDlg,IDC_CHAT_SHOWNICKLIST,BM_SETIMAGE,IMAGE_ICON,(LPARAM)LoadIconEx(si->bNicklistEnabled?IDI_NICKLIST:IDI_NICKLIST2, si->bNicklistEnabled?"nicklist":"nicklist2", 0, 0 ));
-   SendDlgItemMessage(hwndDlg,IDC_CHAT_FILTER,BM_SETIMAGE,IMAGE_ICON,(LPARAM)LoadIconEx(si->bFilterEnabled?IDI_FILTER:IDI_FILTER2, si->bFilterEnabled?"filter":"filter2", 0, 0 ));
+	SendDlgItemMessage(hwndDlg,IDC_CHAT_SMILEY,BM_SETIMAGE,IMAGE_ICON,(LPARAM)GetCachedIcon("chat_smiley"));
+	SendDlgItemMessage(hwndDlg,IDC_CHAT_BOLD,BM_SETIMAGE,IMAGE_ICON,(LPARAM)GetCachedIcon("chat_bold"));
+	SendDlgItemMessage(hwndDlg,IDC_CHAT_ITALICS,BM_SETIMAGE,IMAGE_ICON,(LPARAM)GetCachedIcon("chat_italics"));
+	SendDlgItemMessage(hwndDlg,IDC_CHAT_UNDERLINE,BM_SETIMAGE,IMAGE_ICON,(LPARAM)GetCachedIcon("chat_underline"));
+	SendDlgItemMessage(hwndDlg,IDC_CHAT_COLOR,BM_SETIMAGE,IMAGE_ICON,(LPARAM)GetCachedIcon("chat_fgcol"));
+	SendDlgItemMessage(hwndDlg,IDC_CHAT_BKGCOLOR,BM_SETIMAGE,IMAGE_ICON,(LPARAM)GetCachedIcon("chat_bkgcol"));
+	SendDlgItemMessage(hwndDlg,IDC_CHAT_HISTORY,BM_SETIMAGE,IMAGE_ICON,(LPARAM)GetCachedIcon("chat_history"));
+	SendDlgItemMessage(hwndDlg,IDC_CHAT_CHANMGR,BM_SETIMAGE,IMAGE_ICON,(LPARAM)GetCachedIcon("chat_settings"));
+	SendDlgItemMessage(hwndDlg,IDC_CHAT_SHOWNICKLIST,BM_SETIMAGE,IMAGE_ICON,(LPARAM)GetCachedIcon(si->bNicklistEnabled?"chat_nicklist":"chat_nicklist2"));
+	SendDlgItemMessage(hwndDlg,IDC_CHAT_FILTER,BM_SETIMAGE,IMAGE_ICON,(LPARAM)GetCachedIcon(si->bFilterEnabled?"chat_filter":"chat_filter2"));
+	SendDlgItemMessage(hwndDlg, IDOK, BM_SETIMAGE, IMAGE_ICON, (LPARAM) GetCachedIcon("scriver_SEND"));
+	SendDlgItemMessage(hwndDlg, IDCANCEL, BM_SETIMAGE, IMAGE_ICON, (LPARAM) GetCachedIcon("scriver_CANCEL"));
 
    SendDlgItemMessage(hwndDlg,IDC_CHAT_SMILEY, BUTTONSETASFLATBTN, 0, 0);
    SendDlgItemMessage(hwndDlg,IDC_CHAT_BOLD, BUTTONSETASFLATBTN, 0, 0);
@@ -160,7 +138,8 @@ static void   InitButtons(HWND hwndDlg, SESSION_INFO* si)
    SendDlgItemMessage(hwndDlg,IDC_CHAT_SHOWNICKLIST, BUTTONSETASFLATBTN, 0, 0);
    SendDlgItemMessage(hwndDlg,IDC_CHAT_CHANMGR, BUTTONSETASFLATBTN, 0, 0);
    SendDlgItemMessage(hwndDlg,IDC_CHAT_FILTER, BUTTONSETASFLATBTN, 0, 0);
-   SendDlgItemMessage(hwndDlg,IDC_CHAT_CLOSE, BUTTONSETASFLATBTN, 0, 0);
+	SendDlgItemMessage(hwndDlg,IDOK, BUTTONSETASFLATBTN, 0, 0);
+	SendDlgItemMessage(hwndDlg,IDCANCEL, BUTTONSETASFLATBTN, 0, 0);
 
    SendMessage(GetDlgItem(hwndDlg,IDC_CHAT_SMILEY), BUTTONADDTOOLTIP, (WPARAM)Translate("Insert a smiley"), 0);
    SendMessage(GetDlgItem(hwndDlg,IDC_CHAT_BOLD), BUTTONADDTOOLTIP, (WPARAM)Translate("Make the text bold (CTRL+B)"), 0);
@@ -172,7 +151,8 @@ static void   InitButtons(HWND hwndDlg, SESSION_INFO* si)
    SendMessage(GetDlgItem(hwndDlg,IDC_CHAT_SHOWNICKLIST), BUTTONADDTOOLTIP, (WPARAM)Translate("Show/hide the nicklist (CTRL+N)"), 0);
    SendMessage(GetDlgItem(hwndDlg,IDC_CHAT_CHANMGR), BUTTONADDTOOLTIP, (WPARAM)Translate("Control this room (CTRL+O)"), 0);
    SendMessage(GetDlgItem(hwndDlg,IDC_CHAT_FILTER), BUTTONADDTOOLTIP, (WPARAM)Translate("Enable/disable the event filter (CTRL+F)"), 0);
-   SendMessage(GetDlgItem(hwndDlg,IDC_CHAT_CLOSE), BUTTONADDTOOLTIP, (WPARAM)Translate("Close current tab (CTRL+F4)"), 0);
+	SendMessage(GetDlgItem(hwndDlg, IDOK), BUTTONADDTOOLTIP, (WPARAM) Translate("Send Message"), 0);
+	SendMessage(GetDlgItem(hwndDlg, IDCANCEL), BUTTONADDTOOLTIP, (WPARAM) Translate("Close Session"), 0);
    SendDlgItemMessage(hwndDlg, IDC_CHAT_BOLD, BUTTONSETASPUSHBTN, 0, 0);
    SendDlgItemMessage(hwndDlg, IDC_CHAT_ITALICS, BUTTONSETASPUSHBTN, 0, 0);
    SendDlgItemMessage(hwndDlg, IDC_CHAT_UNDERLINE, BUTTONSETASPUSHBTN, 0, 0);
@@ -200,9 +180,8 @@ static void MessageDialogResize(HWND hwndDlg, SESSION_INFO *si, int w, int h) {
 	HDWP hdwp;
 	BOOL      bNick = si->iType!=GCW_SERVER && si->bNicklistEnabled;
 	BOOL      bToolbar = SendMessage(GetParent(hwndDlg), CM_GETTOOLBARSTATUS, 0, 0);
-	BOOL      bSend = (BOOL)DBGetContactSettingByte(NULL, "Chat", "ShowSend", 0);
 	MODULEINFO * pInfo = MM_FindModule(si->pszModule);
-	int       buttonVisibility = bToolbar ? GetButtonVisibility(pInfo) : 0;
+	int       buttonVisibility = bToolbar ? g_dat->chatBbuttonVisibility : 0;
 	int		  hSplitterMinTop = TOOLBAR_HEIGHT + si->windowData.minLogBoxHeight, hSplitterMinBottom = si->windowData.minEditBoxHeight;
 	bToolbar  &= buttonVisibility != 0;
 
@@ -224,7 +203,6 @@ static void MessageDialogResize(HWND hwndDlg, SESSION_INFO *si, int w, int h) {
 	}
 
 	ShowToolbarControls(hwndDlg, SIZEOF(toolbarButtons), toolbarButtons, buttonVisibility, SW_SHOW);
-	ShowWindow(GetDlgItem(hwndDlg, IDOK), bSend?SW_SHOW:SW_HIDE);
 	ShowWindow(GetDlgItem(hwndDlg, IDC_CHAT_SPLITTERX), bNick?SW_SHOW:SW_HIDE);
 	if (si->iType != GCW_SERVER)
 		ShowWindow(GetDlgItem(hwndDlg, IDC_CHAT_LIST), si->bNicklistEnabled?SW_SHOW:SW_HIDE);
@@ -253,8 +231,7 @@ static void MessageDialogResize(HWND hwndDlg, SESSION_INFO *si, int w, int h) {
 	hdwp = DeferWindowPos(hdwp, GetDlgItem(hwndDlg, IDC_CHAT_LIST), 0, w - si->iSplitterX + 2, 0, si->iSplitterX - 1, toolbarTopY, SWP_NOZORDER);
 	hdwp = DeferWindowPos(hdwp, GetDlgItem(hwndDlg, IDC_CHAT_SPLITTERX), 0, w - si->iSplitterX, 1, 2, toolbarTopY - 1, SWP_NOZORDER);
 	hdwp = DeferWindowPos(hdwp, GetDlgItem(hwndDlg, IDC_CHAT_SPLITTERY), 0, 0, h - si->iSplitterY, w, SPLITTER_HEIGHT, SWP_NOZORDER);
-	hdwp = DeferWindowPos(hdwp, GetDlgItem(hwndDlg, IDC_CHAT_MESSAGE), 0, 0, h - si->iSplitterY + SPLITTER_HEIGHT, bSend?w-64:w, si->iSplitterY - SPLITTER_HEIGHT, SWP_NOZORDER);
-	hdwp = DeferWindowPos(hdwp, GetDlgItem(hwndDlg, IDOK), 0, w - 64, h - si->iSplitterY + SPLITTER_HEIGHT, 64, si->iSplitterY - SPLITTER_HEIGHT - 1, SWP_NOZORDER);
+	hdwp = DeferWindowPos(hdwp, GetDlgItem(hwndDlg, IDC_CHAT_MESSAGE), 0, 0, h - si->iSplitterY + SPLITTER_HEIGHT, w, si->iSplitterY - SPLITTER_HEIGHT, SWP_NOZORDER);
 /*
 
 	toolbarTopY = h - toolbarHeight;
@@ -296,7 +273,6 @@ static void MessageDialogResize(HWND hwndDlg, SESSION_INFO *si, int w, int h) {
 	}
 	RedrawWindow(GetDlgItem(hwndDlg,IDC_CHAT_LIST), NULL, NULL, RDW_INVALIDATE);
 	RedrawWindow(GetDlgItem(hwndDlg,IDC_CHAT_MESSAGE), NULL, NULL, RDW_INVALIDATE);
-	RedrawWindow(GetDlgItem(hwndDlg,IDOK), NULL, NULL, RDW_INVALIDATE);
 }
 
 
@@ -1209,6 +1185,7 @@ static void __cdecl phase2(void * lParam)
 
 INT_PTR CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 {
+	static HMENU hToolbarMenu;
 	SESSION_INFO * si;
 	si = (SESSION_INFO *)GetWindowLongPtr(hwndDlg,GWLP_USERDATA);
 	if (!si && uMsg!=WM_INITDIALOG) return FALSE;
@@ -1337,7 +1314,7 @@ INT_PTR CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
     {
         TitleBarData tbd;
         TCHAR szTemp [100];
-        HICON hIcon = hIcons[ICON_WINDOW];
+		HICON hIcon = GetCachedIcon("chat_window");
         if (g_dat->flags & SMF_STATUSICON) {
             MODULEINFO* mi = MM_FindModule(si->pszModule);
             hIcon = (si->wStatus == ID_STATUS_ONLINE) ? mi->hOnlineIcon : mi->hOfflineIcon;
@@ -1557,7 +1534,7 @@ INT_PTR CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
       return (INT_PTR) hListBkgBrush;
 
    case WM_MEASUREITEM:
-      {
+	if (!MeasureMenuItem(wParam, lParam)) {
          MEASUREITEMSTRUCT *mis = (MEASUREITEMSTRUCT *) lParam;
 
 		 if (mis->CtlType == ODT_MENU)
@@ -1579,10 +1556,9 @@ INT_PTR CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
       }
 
    case WM_DRAWITEM:
-      {
-         DRAWITEMSTRUCT *dis = (DRAWITEMSTRUCT *) lParam;
-		 if (dis->CtlType == ODT_MENU)
-		 {
+	if (!DrawMenuItem(wParam, lParam))	{
+        DRAWITEMSTRUCT *dis = (DRAWITEMSTRUCT *) lParam;
+		if (dis->CtlType == ODT_MENU) {
 			 return CallService(MS_CLIST_MENUDRAWITEM, wParam, lParam);
 		 } else
          if (dis->CtlID == IDC_CHAT_LIST) {
@@ -1980,7 +1956,7 @@ LABEL_SHOWWINDOW:
 
          si->bNicklistEnabled = !si->bNicklistEnabled;
 
-         SendDlgItemMessage(hwndDlg,IDC_CHAT_SHOWNICKLIST,BM_SETIMAGE,IMAGE_ICON,(LPARAM)LoadIconEx(si->bNicklistEnabled?IDI_NICKLIST:IDI_NICKLIST2, si->bNicklistEnabled?"nicklist":"nicklist2", 0, 0 ));
+		 SendDlgItemMessage(hwndDlg,IDC_CHAT_SHOWNICKLIST,BM_SETIMAGE,IMAGE_ICON,(LPARAM)GetCachedIcon(si->bNicklistEnabled?"chat_nicklist":"chat_nicklist2"));
          SendMessage(hwndDlg, GC_SCROLLTOBOTTOM, 0, 0);
          SendMessage(hwndDlg, WM_SIZE, 0, 0);
          break;
@@ -2037,7 +2013,7 @@ LABEL_SHOWWINDOW:
             break;
 
          si->bFilterEnabled = !si->bFilterEnabled;
-         SendDlgItemMessage(hwndDlg,IDC_CHAT_FILTER,BM_SETIMAGE,IMAGE_ICON,(LPARAM)LoadIconEx(si->bFilterEnabled?IDI_FILTER:IDI_FILTER2, si->bFilterEnabled?"filter":"filter2", 0, 0 ));
+		 SendDlgItemMessage(hwndDlg,IDC_CHAT_FILTER,BM_SETIMAGE,IMAGE_ICON,(LPARAM)GetCachedIcon(si->bFilterEnabled?"chat_filter":"chat_filter2"));
          if (si->bFilterEnabled && DBGetContactSettingByte(NULL, "Chat", "RightClickFilter", 0) == 0) {
             SendMessage(hwndDlg, GC_SHOWFILTERMENU, 0, 0);
             break;
@@ -2144,7 +2120,11 @@ LABEL_SHOWWINDOW:
 			} else {
 				SendDlgItemMessage(hwndDlg, IDC_CHAT_MESSAGE, EM_SETCHARFORMAT, SCF_SELECTION, (LPARAM)&cf);
 			}
-      }   }
+		}
+		 break;
+		case IDCANCEL:
+			PostMessage(hwndDlg, WM_CLOSE, 0, 0);
+      }
       break;
 
    case WM_KEYDOWN:
@@ -2174,6 +2154,37 @@ LABEL_SHOWWINDOW:
 	case WM_LBUTTONDOWN:
 		SendMessage(GetParent(hwndDlg), WM_LBUTTONDOWN, wParam, lParam);
 		return TRUE;
+
+	case WM_RBUTTONUP:
+		{
+			int i;
+			POINT pt;
+			MENUITEMINFO mii;
+			hToolbarMenu = CreatePopupMenu();
+			for (i = 0; i < SIZEOF(toolbarButtons); i++) {
+				ZeroMemory(&mii, sizeof(mii));
+				mii.cbSize = sizeof(mii);
+				mii.fMask = MIIM_ID | MIIM_STRING | MIIM_STATE | MIIM_DATA | MIIM_BITMAP;
+				mii.fType = MFT_STRING;
+				mii.fState = (g_dat->chatBbuttonVisibility & (1<< i)) ? MFS_CHECKED : MFS_UNCHECKED;
+				mii.wID = i + 1;
+				mii.dwItemData = (ULONG_PTR)g_dat->hChatButtonIconList;
+				mii.hbmpItem = HBMMENU_CALLBACK;
+				mii.dwTypeData = TranslateTS((toolbarButtons[i].name));
+				InsertMenuItem(hToolbarMenu, i, TRUE, &mii);
+			}
+//			CallService(MS_LANGPACK_TRANSLATEMENU, (WPARAM) hToolbarMenu, 0);
+			pt.x = (short) LOWORD(GetMessagePos());
+			pt.y = (short) HIWORD(GetMessagePos());
+			i = TrackPopupMenu(hToolbarMenu, TPM_RETURNCMD, pt.x, pt.y, 0, hwndDlg, NULL);
+			if (i > 0) {
+				g_dat->chatBbuttonVisibility ^= (1 << (i - 1));
+				DBWriteContactSettingDword(NULL, SRMMMOD, SRMSGSET_CHATBUTTONVISIBILITY, g_dat->chatBbuttonVisibility);
+				SM_BroadcastMessage(NULL, GC_SETWNDPROPS, 0, 0, TRUE);
+			}
+			DestroyMenu(hToolbarMenu);
+			return TRUE;
+		}
 
 	case DM_GETCONTEXTMENU:
 		{

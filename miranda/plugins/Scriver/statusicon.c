@@ -39,8 +39,8 @@ INT_PTR AddStickyStatusIcon(WPARAM wParam, LPARAM lParam) {
 	siln->sid.cbSize = sid->cbSize;
 	siln->sid.szModule = mir_strdup(sid->szModule);
 	siln->sid.dwId = sid->dwId;
-	siln->sid.hIcon = CopyIcon(sid->hIcon);
-	siln->sid.hIconDisabled = CopyIcon(sid->hIconDisabled);
+	siln->sid.hIcon = sid->hIcon;
+	siln->sid.hIconDisabled = sid->hIconDisabled;
 	siln->sid.flags = sid->flags;
 	if(sid->szTooltip) siln->sid.szTooltip = mir_strdup(sid->szTooltip);
 	else siln->sid.szTooltip = 0;

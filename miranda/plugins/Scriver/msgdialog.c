@@ -37,6 +37,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 extern HCURSOR hCurSplitNS, hCurSplitWE, hCurHyperlinkHand, hDragCursor;
 extern HANDLE hHookWinEvt;
 extern HANDLE hHookWinPopup;
+extern HICON hMsgIcon;
 extern struct CREOleCallback reOleCallback, reOleCallback2;
 extern HINSTANCE g_hInst;
 
@@ -342,16 +343,16 @@ void SetStatusIcon(struct MessageWindowData *dat) {
 
 HICON GetTitlebarIcon(struct MessageWindowData *dat) {
 	if (dat->showTyping && (g_dat->flags2&SMF2_SHOWTYPINGWIN)) {
-		return g_dat->hIcons[SMF_ICON_TYPING];
+		return GetCachedIcon("scriver_TYPING");
 	} else if ((g_dat->flags & SMF_STATUSICON) && ! (dat->showUnread && (GetActiveWindow() != dat->hwndParent || GetForegroundWindow() != dat->hwndParent))) {
 		return dat->statusIcon;
 	}
-	return g_dat->hIcons[SMF_ICON_MESSAGE];
+	return hMsgIcon;
 }
 
 HICON GetTabIcon(struct MessageWindowData *dat) {
 	if (dat->showTyping) {
-		return g_dat->hIcons[SMF_ICON_TYPING];
+		return GetCachedIcon("scriver_TYPING");
 	} else if (dat->showUnread != 0) {
 		return dat->statusIconOverlay;
 	}
@@ -1198,13 +1199,13 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 		dat->nTypeSecs = (int) lParam > 0 ? (int) lParam : 0;
 		break;
 	case DM_CHANGEICONS:
-		SendDlgItemMessage(hwndDlg, IDC_ADD, BM_SETIMAGE, IMAGE_ICON, (LPARAM) g_dat->hIcons[SMF_ICON_ADD]);
-		SendDlgItemMessage(hwndDlg, IDC_DETAILS, BM_SETIMAGE, IMAGE_ICON, (LPARAM) g_dat->hIcons[SMF_ICON_USERDETAILS]);
-		SendDlgItemMessage(hwndDlg, IDC_HISTORY, BM_SETIMAGE, IMAGE_ICON, (LPARAM) g_dat->hIcons[SMF_ICON_HISTORY]);
-		SendDlgItemMessage(hwndDlg, IDC_QUOTE, BM_SETIMAGE, IMAGE_ICON, (LPARAM) g_dat->hIcons[SMF_ICON_QUOTE]);
-		SendDlgItemMessage(hwndDlg, IDC_SMILEYS, BM_SETIMAGE, IMAGE_ICON, (LPARAM) g_dat->hIcons[SMF_ICON_SMILEY]);
-		SendDlgItemMessage(hwndDlg, IDOK, BM_SETIMAGE, IMAGE_ICON, (LPARAM) g_dat->hIcons[SMF_ICON_SEND]);
-		SendDlgItemMessage(hwndDlg, IDCANCEL, BM_SETIMAGE, IMAGE_ICON, (LPARAM) g_dat->hIcons[SMF_ICON_CANCEL]);
+		SendDlgItemMessage(hwndDlg, IDC_ADD, BM_SETIMAGE, IMAGE_ICON, (LPARAM) GetCachedIcon("scriver_ADD"));
+		SendDlgItemMessage(hwndDlg, IDC_DETAILS, BM_SETIMAGE, IMAGE_ICON, (LPARAM) GetCachedIcon("scriver_USERDETAILS"));
+		SendDlgItemMessage(hwndDlg, IDC_HISTORY, BM_SETIMAGE, IMAGE_ICON, (LPARAM) GetCachedIcon("scriver_HISTORY"));
+		SendDlgItemMessage(hwndDlg, IDC_QUOTE, BM_SETIMAGE, IMAGE_ICON, (LPARAM) GetCachedIcon("scriver_QUOTE"));
+		SendDlgItemMessage(hwndDlg, IDC_SMILEYS, BM_SETIMAGE, IMAGE_ICON, (LPARAM) GetCachedIcon("scriver_SMILEY"));
+		SendDlgItemMessage(hwndDlg, IDOK, BM_SETIMAGE, IMAGE_ICON, (LPARAM) GetCachedIcon("scriver_SEND"));
+		SendDlgItemMessage(hwndDlg, IDCANCEL, BM_SETIMAGE, IMAGE_ICON, (LPARAM) GetCachedIcon("scriver_CANCEL"));
 		SendMessage(hwndDlg, DM_UPDATESTATUSBAR, 0, 0);
 		SetStatusIcon(dat);
 
@@ -1678,12 +1679,12 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			StatusIconData sid = {0};
 			sbd.iFlags = SBDF_TEXT | SBDF_ICON;
 			if (dat->messagesInProgress && (g_dat->flags & SMF_SHOWPROGRESS)) {
-				sbd.hIcon = g_dat->hIcons[SMF_ICON_DELIVERING];
+				sbd.hIcon = GetCachedIcon("scriver_DELIVERING");
 				sbd.pszText = szText;
 				mir_sntprintf(szText, SIZEOF(szText), TranslateT("Sending in progress: %d message(s) left..."), dat->messagesInProgress);
 			} else if (dat->nTypeSecs) {
 				TCHAR *szContactName = GetNickname(dat->windowData.hContact, dat->szProto);
-				sbd.hIcon = g_dat->hIcons[SMF_ICON_TYPING];
+				sbd.hIcon = GetCachedIcon("scriver_TYPING");
 				sbd.pszText = szText;
 				mir_sntprintf(szText, SIZEOF(szText), TranslateT("%s is typing a message..."), szContactName);
 				mir_free(szContactName);
@@ -1873,11 +1874,9 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 		return TRUE;
 
 	case WM_DRAWITEM:
-			{
+			if (!DrawMenuItem(wParam, lParam)) {
 				LPDRAWITEMSTRUCT dis = (LPDRAWITEMSTRUCT) lParam;
-				if (dis->hwndItem == (HWND)hToolbarMenu) {
-					return DrawMenuItem(wParam, lParam);
-				} else if (dis->hwndItem == GetDlgItem(hwndDlg, IDC_AVATAR)) {
+				if (dis->hwndItem == GetDlgItem(hwndDlg, IDC_AVATAR)) {
 					RECT rect;
 					HDC hdcMem = CreateCompatibleDC(dis->hDC);
 					int avatarWidth = 0;

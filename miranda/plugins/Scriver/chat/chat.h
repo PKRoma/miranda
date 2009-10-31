@@ -81,30 +81,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define GC_EVENT_HIGHLIGHT		0x1000
 #define STATE_TALK				0x0001
 
-#define ICON_ACTION				0
-#define ICON_ADDSTATUS			1
-#define ICON_HIGHLIGHT			2
-#define ICON_INFO				3
-#define ICON_JOIN				4
-#define ICON_KICK				5
-#define ICON_MESSAGE			6
-#define ICON_MESSAGEOUT			7
-#define ICON_NICK				8
-#define ICON_NOTICE				9
-#define ICON_PART				10
-#define ICON_QUIT				11
-#define ICON_REMSTATUS			12
-#define ICON_TOPIC				13
-
-#define ICON_STATUS1			14
-#define ICON_STATUS2			15
-#define ICON_STATUS3			16
-#define ICON_STATUS4			17
-#define ICON_STATUS0			18
-#define ICON_STATUS5			19
-
-#define ICON_WINDOW				20
-#define ICON_OVERLAY			21
 
 // special service for tweaking performance
 #define MS_GC_GETEVENTPTR  "GChat/GetNewEventPtr"
@@ -319,7 +295,6 @@ typedef struct{
 
 //main.c
 void LoadIcons(void);
-void LoadLogIcons(void);
 void FreeIcons(void);
 void UpgradeCheck(void);
 
@@ -343,10 +318,6 @@ int    OptionsInit(void);
 int    OptionsUnInit(void);
 void   Chat_LoadMsgDlgFont(int i, LOGFONT * lf, COLORREF * colour);
 void   LoadGlobalSettings(void);
-void   AddIcons(void);
-HICON  LoadIconEx(int iIndex, char * pszIcoLibName, int iX, int iY);
-DWORD  ReleaseIconEx(char *pszIcoLibName);
-void   ReleaseLogIcons(void);
 void   LoadLogFonts(void);
 
 //services.c

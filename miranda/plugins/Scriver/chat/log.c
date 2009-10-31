@@ -33,9 +33,13 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 // the srmm module and then modified to fit the chat module.
 
 extern FONTINFO  aFonts[OPTIONS_FONTCOUNT];
-extern HICON     hIcons[30];
 
 static PBYTE pLogIconBmpBits[14];
+static const char *logIconNames[14] = {
+	"chat_log_action", "chat_log_addstatus", "chat_log_highlight", "chat_log_info", "chat_log_join",
+	"chat_log_kick", "chat_log_message_in", "chat_log_message_out", "chat_log_nick", "chat_log_notice",
+	"chat_log_part", "chat_log_quit", "chat_log_removestatus", "chat_log_topic"
+};
 static int logIconBmpSize[ SIZEOF(pLogIconBmpBits) ];
 
 static int logPixelSY = 0;
@@ -70,21 +74,21 @@ static int EventToIcon(LOGINFO * lin)
 	switch (lin->iType) {
 		case GC_EVENT_MESSAGE:
 			if (lin->bIsMe)
-				return ICON_MESSAGEOUT;
+				return SMF_CHAT_ICON_MESSAGEOUT;
 			else
-				return ICON_MESSAGE;
+				return SMF_CHAT_ICON_MESSAGE;
 
-		case GC_EVENT_JOIN: return ICON_JOIN;
-		case GC_EVENT_PART: return ICON_PART;
-		case GC_EVENT_QUIT: return ICON_QUIT;
-		case GC_EVENT_NICK: return ICON_NICK;
-		case GC_EVENT_KICK: return ICON_KICK;
-		case GC_EVENT_NOTICE: return ICON_NOTICE;
-		case GC_EVENT_TOPIC: return ICON_TOPIC;
-		case GC_EVENT_INFORMATION:return ICON_INFO;
-		case GC_EVENT_ADDSTATUS: return ICON_ADDSTATUS;
-		case GC_EVENT_REMOVESTATUS: return ICON_REMSTATUS;
-		case GC_EVENT_ACTION: return ICON_ACTION;
+		case GC_EVENT_JOIN: return SMF_CHAT_ICON_JOIN;
+		case GC_EVENT_PART: return SMF_CHAT_ICON_PART;
+		case GC_EVENT_QUIT: return SMF_CHAT_ICON_QUIT;
+		case GC_EVENT_NICK: return SMF_CHAT_ICON_NICK;
+		case GC_EVENT_KICK: return SMF_CHAT_ICON_KICK;
+		case GC_EVENT_NOTICE: return SMF_CHAT_ICON_NOTICE;
+		case GC_EVENT_TOPIC: return SMF_CHAT_ICON_TOPIC;
+		case GC_EVENT_INFORMATION:return SMF_CHAT_ICON_INFO;
+		case GC_EVENT_ADDSTATUS: return SMF_CHAT_ICON_ADDSTATUS;
+		case GC_EVENT_REMOVESTATUS: return SMF_CHAT_ICON_REMSTATUS;
+		case GC_EVENT_ACTION: return SMF_CHAT_ICON_ACTION;
 	}
 	return 0;
 }
@@ -649,7 +653,7 @@ static char* Log_CreateRTF(LOGSTREAMDATA *streamData, BOOL ieviewMode)
 				// Insert icon
 				if ((lin->iType&g_Settings.dwIconFlags) || (lin->bIsHighlighted&&g_Settings.dwIconFlags&GC_EVENT_HIGHLIGHT))
 				{
-					int iIndex = (lin->bIsHighlighted&&g_Settings.dwIconFlags&GC_EVENT_HIGHLIGHT) ? ICON_HIGHLIGHT : EventToIcon(lin);
+					int iIndex = (lin->bIsHighlighted&&g_Settings.dwIconFlags&GC_EVENT_HIGHLIGHT) ? SMF_CHAT_ICON_HIGHLIGHT : EventToIcon(lin);
 					AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\f0\\fs14");
 					while (bufferAlloced - bufferEnd < logIconBmpSize[0])
 						bufferAlloced += 4096;
@@ -987,7 +991,7 @@ void LoadMsgLogBitmaps(void)
 	hdcMem = CreateCompatibleDC(hdc);
 	pBmpBits = (PBYTE) mir_alloc(widthBytes * bih.biHeight);
 	for (i = 0; i < SIZEOF(pLogIconBmpBits); i++) {
-		hIcon = hIcons[i];
+		hIcon = GetCachedIcon(logIconNames[i]);
 		pLogIconBmpBits[i] = (PBYTE) mir_alloc(RTFPICTHEADERMAXSIZE + (bih.biSize + widthBytes * bih.biHeight) * 2);
 		rtfHeaderSize = sprintf(pLogIconBmpBits[i], "{\\pict\\dibitmap0\\wbmbitspixel%u\\wbmplanes1\\wbmwidthbytes%u\\picw%u\\pich%u ", bih.biBitCount, widthBytes, (unsigned int)bih.biWidth, (unsigned int)bih.biHeight);
 		hoBmp = (HBITMAP) SelectObject(hdcMem, hBmp);

@@ -31,8 +31,6 @@ HANDLE				hBuildMenuEvent ;
 HANDLE				g_hHookContactDblClick, g_hHookPrebuildMenu;
 CRITICAL_SECTION	cs;
 
-void RegisterFonts( void );
-
 #ifdef _WIN64 
 
 #define SIZEOF_STRUCT_GCREGISTER_V1 40
@@ -48,16 +46,6 @@ void RegisterFonts( void );
 #define SIZEOF_STRUCT_GCEVENT_V2	48
 
 #endif
-
-int Chat_ModulesLoaded(WPARAM wParam,LPARAM lParam)
-{
-	char* mods[3] = { "Chat", "ChatFonts" };
-	CallService( "DBEditorpp/RegisterModule", (WPARAM)mods, 2 );
-	RegisterFonts();
-	CList_SetAllOffline(TRUE, NULL);
- 	return 0;
-}
-
 
 int Chat_SmileyOptionsChanged(WPARAM wParam,LPARAM lParam)
 {
@@ -100,8 +88,6 @@ int Chat_FontsChanged(WPARAM wParam,LPARAM lParam)
 int Chat_IconsChanged(WPARAM wParam,LPARAM lParam)
 {
 	FreeMsgLogBitmaps();
-	ReleaseLogIcons();
-	LoadLogIcons();
 	LoadMsgLogBitmaps();
 	MM_IconsChanged();
 	SM_BroadcastMessage(NULL, GC_SETWNDPROPS, 0, 0, FALSE);
@@ -170,7 +156,7 @@ static INT_PTR Service_GetInfo(WPARAM wParam,LPARAM lParam)
 void LoadModuleIcons(MODULEINFO * mi) {
 	int index;
 	HIMAGELIST hList = ImageList_Create(16, 16, IsWinVerXPPlus() ? ILC_COLOR32 | ILC_MASK : ILC_COLOR8 | ILC_MASK, 0, 0);
-	int overlayIcon = ImageList_AddIcon(hList, hIcons[ICON_OVERLAY]);
+	int overlayIcon = ImageList_AddIcon(hList, GetCachedIcon("chat_overlay"));
 	ImageList_SetOverlayImage(hList, overlayIcon, 1);
 	index = ImageList_AddIcon_ProtoEx(hList, mi->pszModule, ID_STATUS_ONLINE);
 	mi->hOnlineIcon = ImageList_GetIcon(hList, index, ILD_TRANSPARENT);
