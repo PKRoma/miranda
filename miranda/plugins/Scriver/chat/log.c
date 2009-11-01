@@ -74,21 +74,21 @@ static int EventToIcon(LOGINFO * lin)
 	switch (lin->iType) {
 		case GC_EVENT_MESSAGE:
 			if (lin->bIsMe)
-				return SMF_CHAT_ICON_MESSAGEOUT;
+				return 7;
 			else
-				return SMF_CHAT_ICON_MESSAGE;
+				return 6;
 
-		case GC_EVENT_JOIN: return SMF_CHAT_ICON_JOIN;
-		case GC_EVENT_PART: return SMF_CHAT_ICON_PART;
-		case GC_EVENT_QUIT: return SMF_CHAT_ICON_QUIT;
-		case GC_EVENT_NICK: return SMF_CHAT_ICON_NICK;
-		case GC_EVENT_KICK: return SMF_CHAT_ICON_KICK;
-		case GC_EVENT_NOTICE: return SMF_CHAT_ICON_NOTICE;
-		case GC_EVENT_TOPIC: return SMF_CHAT_ICON_TOPIC;
-		case GC_EVENT_INFORMATION:return SMF_CHAT_ICON_INFO;
-		case GC_EVENT_ADDSTATUS: return SMF_CHAT_ICON_ADDSTATUS;
-		case GC_EVENT_REMOVESTATUS: return SMF_CHAT_ICON_REMSTATUS;
-		case GC_EVENT_ACTION: return SMF_CHAT_ICON_ACTION;
+		case GC_EVENT_JOIN: return 4;
+		case GC_EVENT_PART: return 10;
+		case GC_EVENT_QUIT: return 11;
+		case GC_EVENT_NICK: return 8;
+		case GC_EVENT_KICK: return 5;
+		case GC_EVENT_NOTICE: return 9;
+		case GC_EVENT_TOPIC: return 13;
+		case GC_EVENT_INFORMATION:return 3;
+		case GC_EVENT_ADDSTATUS: return 1;
+		case GC_EVENT_REMOVESTATUS: return 12;
+		case GC_EVENT_ACTION: return 0;
 	}
 	return 0;
 }
@@ -653,13 +653,14 @@ static char* Log_CreateRTF(LOGSTREAMDATA *streamData, BOOL ieviewMode)
 				// Insert icon
 				if ((lin->iType&g_Settings.dwIconFlags) || (lin->bIsHighlighted&&g_Settings.dwIconFlags&GC_EVENT_HIGHLIGHT))
 				{
-					int iIndex = (lin->bIsHighlighted&&g_Settings.dwIconFlags&GC_EVENT_HIGHLIGHT) ? SMF_CHAT_ICON_HIGHLIGHT : EventToIcon(lin);
-					AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\f0\\fs14");
+					int iIndex = (lin->bIsHighlighted&&g_Settings.dwIconFlags&GC_EVENT_HIGHLIGHT) ? 2 : EventToIcon(lin);
+					AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\fs1  ");
 					while (bufferAlloced - bufferEnd < logIconBmpSize[0])
 						bufferAlloced += 4096;
 					buffer = (char *) mir_realloc(buffer, bufferAlloced);
 					CopyMemory(buffer + bufferEnd, pLogIconBmpBits[iIndex], logIconBmpSize[iIndex]);
 					bufferEnd += logIconBmpSize[iIndex];
+					AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, " ");
 				}
 
 				if (g_Settings.TimeStampEventColour)
@@ -683,8 +684,8 @@ static char* Log_CreateRTF(LOGSTREAMDATA *streamData, BOOL ieviewMode)
 				else
 					AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s ", Log_SetStyle(0, 0 ));
 				// insert a TAB if necessary to put the timestamp in the right position
-				if (g_Settings.dwIconFlags)
-					AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\tab ");
+//				if (g_Settings.dwIconFlags)
+//					AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\tab ");
 
 				//insert timestamp
 				if (g_Settings.ShowTime)

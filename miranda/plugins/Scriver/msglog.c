@@ -37,7 +37,7 @@ extern int RTL_Detect(WCHAR *pszwText);
 extern HINSTANCE g_hInst;
 static int logPixelSY;
 static PBYTE pLogIconBmpBits[3];
-static int logIconBmpSize[sizeof(pLogIconBmpBits) / sizeof(pLogIconBmpBits[0])];
+static int logIconBmpSize[SIZEOF(pLogIconBmpBits)];
 static HIMAGELIST g_hImageList;
 
 #define STREAMSTAGE_HEADER  0
