@@ -186,7 +186,7 @@ static void MessageDialogResize(HWND hwndDlg, SESSION_INFO *si, int w, int h) {
 	bToolbar  &= buttonVisibility != 0;
 
 	if (g_dat->flags & SMF_AUTORESIZE) {
-		si->iSplitterY = si->desiredInputAreaHeight + SPLITTER_HEIGHT + 2;
+		si->iSplitterY = si->desiredInputAreaHeight + SPLITTER_HEIGHT + 3;
 		if (si->iSplitterY < h / 8) {
 			si->iSplitterY = h / 8;
 			if (si->desiredInputAreaHeight <= 80 && si->iSplitterY > 80) {
@@ -227,11 +227,11 @@ static void MessageDialogResize(HWND hwndDlg, SESSION_INFO *si, int w, int h) {
 	} else {
 		logBottom = toolbarTopY;
 	}
-	hdwp = DeferWindowPos(hdwp, GetDlgItem(hwndDlg, IDC_CHAT_LOG), 0, 0, 0, bNick?w - si->iSplitterX:w, logBottom, SWP_NOZORDER);
-	hdwp = DeferWindowPos(hdwp, GetDlgItem(hwndDlg, IDC_CHAT_LIST), 0, w - si->iSplitterX + 2, 0, si->iSplitterX - 1, toolbarTopY, SWP_NOZORDER);
+	hdwp = DeferWindowPos(hdwp, GetDlgItem(hwndDlg, IDC_CHAT_LOG), 0, 1, 0, bNick?w - si->iSplitterX - 1:w - 2, logBottom, SWP_NOZORDER);
+	hdwp = DeferWindowPos(hdwp, GetDlgItem(hwndDlg, IDC_CHAT_LIST), 0, w - si->iSplitterX + 2, 0, si->iSplitterX - 3, toolbarTopY, SWP_NOZORDER);
 	hdwp = DeferWindowPos(hdwp, GetDlgItem(hwndDlg, IDC_CHAT_SPLITTERX), 0, w - si->iSplitterX, 1, 2, toolbarTopY - 1, SWP_NOZORDER);
 	hdwp = DeferWindowPos(hdwp, GetDlgItem(hwndDlg, IDC_CHAT_SPLITTERY), 0, 0, h - si->iSplitterY, w, SPLITTER_HEIGHT, SWP_NOZORDER);
-	hdwp = DeferWindowPos(hdwp, GetDlgItem(hwndDlg, IDC_CHAT_MESSAGE), 0, 0, h - si->iSplitterY + SPLITTER_HEIGHT, w, si->iSplitterY - SPLITTER_HEIGHT, SWP_NOZORDER);
+	hdwp = DeferWindowPos(hdwp, GetDlgItem(hwndDlg, IDC_CHAT_MESSAGE), 0, 1, h - si->iSplitterY + SPLITTER_HEIGHT, w - 2, si->iSplitterY - SPLITTER_HEIGHT - 1, SWP_NOZORDER);
 /*
 
 	toolbarTopY = h - toolbarHeight;
@@ -1201,6 +1201,9 @@ INT_PTR CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 			TranslateDialogDefault(hwndDlg);
 			SetWindowLongPtr(hwndDlg,GWLP_USERDATA,(LONG_PTR)psi);
 			si = psi;
+			RichUtil_SubClass(GetDlgItem(hwndDlg, IDC_CHAT_MESSAGE));
+			RichUtil_SubClass(GetDlgItem(hwndDlg, IDC_CHAT_LOG));
+			RichUtil_SubClass(GetDlgItem(hwndDlg, IDC_CHAT_LIST));
 			OldSplitterProc=(WNDPROC)SetWindowLongPtr(GetDlgItem(hwndDlg,IDC_CHAT_SPLITTERX),GWLP_WNDPROC,(LONG_PTR)SplitterSubclassProc);
 			SetWindowLongPtr(GetDlgItem(hwndDlg,IDC_CHAT_SPLITTERY),GWLP_WNDPROC,(LONG_PTR)SplitterSubclassProc);
 			OldNicklistProc=(WNDPROC)SetWindowLongPtr(hNickList,GWLP_WNDPROC,(LONG_PTR)NicklistSubclassProc);

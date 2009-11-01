@@ -590,7 +590,7 @@ static void MessageDialogResize(HWND hwndDlg, struct MessageWindowData *dat, int
 		infobarHeight = 0;
 	}
 	if (g_dat->flags & SMF_AUTORESIZE) {
-		hSplitterPos = dat->desiredInputAreaHeight + SPLITTER_HEIGHT + 2;
+		hSplitterPos = dat->desiredInputAreaHeight + SPLITTER_HEIGHT + 3;
 		if (hSplitterPos < h / 8) {
 			hSplitterPos = h / 8;
 			if (dat->desiredInputAreaHeight <= 80 && hSplitterPos > 80) {
@@ -632,7 +632,7 @@ static void MessageDialogResize(HWND hwndDlg, struct MessageWindowData *dat, int
 	logY = infobarHeight;
 	logH = h-hSplitterPos-toolbarHeight - infobarHeight;
 	hdwp = BeginDeferWindowPos(15);
-	hdwp = DeferWindowPos(hdwp, dat->infobarData->hWnd, 0, 1, 1, w - 2, infobarHeight - 3, SWP_NOZORDER);
+	hdwp = DeferWindowPos(hdwp, dat->infobarData->hWnd, 0, 1, 0, w - 2, infobarHeight - 2, SWP_NOZORDER);
 	hdwp = DeferWindowPos(hdwp, GetDlgItem(hwndDlg, IDC_LOG), 0, 1, logY, w-2, logH, SWP_NOZORDER);
 	hdwp = DeferWindowPos(hdwp, GetDlgItem(hwndDlg, IDC_MESSAGE), 0, 1, h - hSplitterPos + SPLITTER_HEIGHT, messageEditWidth, hSplitterPos - SPLITTER_HEIGHT - 1, SWP_NOZORDER);
 	hdwp = DeferWindowPos(hdwp, GetDlgItem(hwndDlg, IDC_AVATAR), 0, w-avatarWidth - 1, h - (avatarHeight + avatarWidth) / 2 - 1, avatarWidth, avatarWidth, SWP_NOZORDER);
