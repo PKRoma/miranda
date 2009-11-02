@@ -1,8 +1,7 @@
 /*
 Scriver
 
-Copyright 2000-2003 Miranda ICQ/IM project,
-Copyright 2005 Piotr Piastucki
+Copyright 2000-2009 Miranda ICQ/IM project,
 
 all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
@@ -25,14 +24,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "commonheaders.h"
 #include "statusicon.h"
 #include "chat/chat.h"
-
-
-#ifdef _MSC_VER
-#define STRING2(x) #x
-#define STRING(x) STRING2(x)
-#pragma message ("_MSC_VER: "STRING(_MSC_VER))
-#endif
-
 
 #ifndef __MINGW32__
 #if (_MSC_VER < 1300)
@@ -66,38 +57,50 @@ void UnsubclassTabCtrl(HWND hwnd) {
 	SetWindowLongPtr(hwnd, GWLP_WNDPROC, (LONG_PTR) OldTabCtrlProc);
 }
 
+static TCHAR *titleTokenNames[] = {_T("%name%"), _T("%status%"), _T("%statusmsg%"), _T("%account%")};
+
 TCHAR* GetWindowTitle(HANDLE *hContact, const char *szProto)
 {
-	DBVARIANT dbv;
 	int isTemplate;
-	int i, j, len, contactNameLen = 0, statusLen = 0, statusMsgLen = 0, protocolLen = 0;
-	TCHAR *p, *tmplt, *szContactName = NULL, *szStatus = NULL, *szStatusMsg = NULL, *szProtocol = NULL, *title;
+	int i, j, len;
+    TCHAR* tokens[4] = {NULL};
+    int tokenLen[4] = {0};
+	TCHAR *p, *tmplt, *title;
+    char *accModule;
 	TCHAR *pszNewTitleEnd = mir_tstrdup(TranslateT("Message Session"));
 	isTemplate = 0;
 	if (hContact && szProto) {
-		szContactName = GetNickname(hContact, szProto);
-		contactNameLen = lstrlen(szContactName);
-		szStatus = a2t((char *) CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, szProto == NULL ? ID_STATUS_OFFLINE : DBGetContactSettingWord(hContact, szProto, "Status", ID_STATUS_OFFLINE), 0));
-		statusLen = lstrlen(szStatus);
-		szStatusMsg = DBGetStringT(hContact, "CList", "StatusMsg");
-		if (szStatusMsg != NULL) {
-			statusMsgLen = (int)_tcslen(szStatusMsg);
-			for (i = j = 0; i < statusMsgLen; i++) {
-				if (szStatusMsg[i] == '\r') {
+		tokens[0] = GetNickname(hContact, szProto);
+		tokenLen[0] = lstrlen(tokens[0]);
+		tokens[1] = a2t((char *) CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, szProto == NULL ? ID_STATUS_OFFLINE : DBGetContactSettingWord(hContact, szProto, "Status", ID_STATUS_OFFLINE), 0));
+		tokenLen[1] = lstrlen(tokens[1]);
+		tokens[2] = DBGetStringT(hContact, "CList", "StatusMsg");
+		if (tokens[2] != NULL) {
+			tokenLen[2] = (int)lstrlen(tokens[2]);
+			for (i = j = 0; i < tokenLen[2]; i++) {
+				if (tokens[2][i] == '\r') {
 					continue;
-				} else if (szStatusMsg[i] == '\n') {
-					szStatusMsg[j++] = ' ';
+				} else if (tokens[2][i] == '\n') {
+					tokens[2][j++] = ' ';
 				} else {
-					szStatusMsg[j++] = szStatusMsg[i];
+					tokens[2][j++] = tokens[2][i];
 				}
 			}
-			szStatusMsg[j] = '\0';
-			statusMsgLen = j;
+			tokens[2][j] = '\0';
+			tokenLen[2] = j;
 		}
-		if (!DBGetContactSettingTString(NULL, SRMMMOD, SRMSGSET_WINDOWTITLE, &dbv)) {
+
+    	accModule = (char *) CallService(MS_PROTO_GETCONTACTBASEACCOUNT, (WPARAM) hContact, 0);
+        if (accModule != NULL) {
+            PROTOACCOUNT* proto = (PROTOACCOUNT*)CallService(MS_PROTO_GETACCOUNT, (WPARAM) 0, accModule);
+            if (proto != NULL) {
+                tokens[3] = mir_tstrdup(proto->tszAccountName);
+                tokenLen[3] = lstrlen(tokens[3]);
+            }
+        }
+        tmplt = DBGetStringT(NULL, SRMMMOD, SRMSGSET_WINDOWTITLE);
+		if (tmplt != NULL) {
 			isTemplate = 1;
-			tmplt = mir_tstrdup(dbv.ptszVal);
-			DBFreeVariant(&dbv);
 		} else {
 			if (g_dat->flags & SMF_STATUSICON) {
 				tmplt = _T("%name% - ");
@@ -110,19 +113,14 @@ TCHAR* GetWindowTitle(HANDLE *hContact, const char *szProto)
 	}
 	for (len = 0, p = tmplt; *p; p++) {
 		if (*p == '%') {
-			if (!_tcsncmp(p, _T("%name%"), 6)) {
-				len += contactNameLen;
-				p += 5;
-				continue;
-			} else if (!_tcsncmp(p, _T("%status%"), 8)) {
-				len += statusLen;
-				p += 7;
-				continue;
-			} else if (!_tcsncmp(p, _T("%statusmsg%"), 11)) {
-				len += statusMsgLen;
-				p += 10;
-				continue;
-			}
+            for (i = 0; i < SIZEOF(titleTokenNames); i ++) {
+                int tnlen = lstrlen(titleTokenNames[i]);
+                if (!_tcsncmp(p, titleTokenNames[i], tnlen)) {
+                    len += tokenLen[i];
+                    p += tnlen;
+                    break;
+                }
+            }
 		}
 		len++;
 	}
@@ -132,22 +130,17 @@ TCHAR* GetWindowTitle(HANDLE *hContact, const char *szProto)
 	title = (TCHAR *)mir_alloc(sizeof(TCHAR) * (len + 1));
 	for (len = 0, p = tmplt; *p; p++) {
 		if (*p == '%') {
-			if (!_tcsncmp(p, _T("%name%"), 6)) {
-				memcpy(title+len, szContactName, sizeof(TCHAR) * contactNameLen);
-				len += contactNameLen;
-				p += 5;
-				continue;
-			} else if (!_tcsncmp(p, _T("%status%"), 8)) {
-				memcpy(title+len, szStatus, sizeof(TCHAR) * statusLen);
-				len += statusLen;
-				p += 7;
-				continue;
-			} else if (!_tcsncmp(p, _T("%statusmsg%"), 11)) {
-				memcpy(title+len, szStatusMsg, sizeof(TCHAR) * statusMsgLen);
-				len += statusMsgLen;
-				p += 10;
-				continue;
-			}
+            for (i = 0; i < SIZEOF(titleTokenNames); i ++) {
+                int tnlen = lstrlen(titleTokenNames[i]);
+                if (!_tcsncmp(p, titleTokenNames[i], tnlen)) {
+                    if (tokens[i] != NULL) {
+                        memcpy(title+len, tokens[i], sizeof(TCHAR) * tokenLen[i]);
+                        len += tokenLen[i];
+                    }
+                    p += tnlen;
+                    break;
+                }
+            }
 		}
 		title[len++] = *p;
 	}
@@ -159,11 +152,10 @@ TCHAR* GetWindowTitle(HANDLE *hContact, const char *szProto)
 	if (isTemplate) {
 		mir_free(tmplt);
 	}
-	mir_free(szContactName);
-	mir_free(szStatus);
+    for (i = 0; i < SIZEOF(titleTokenNames); i ++) {
+        mir_free(tokens[i]);
+    }
 	mir_free(pszNewTitleEnd);
-	if (szStatusMsg)
-		mir_free(szStatusMsg);
 	return title;
 }
 
