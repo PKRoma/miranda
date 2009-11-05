@@ -33,6 +33,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 static HMODULE g_hSchannel;
 static PSecurityFunctionTableA g_pSSPI;
 static HANDLE g_hSslMutex; 
+static SSL_EMPTY_CACHE_FN_A MySslEmptyCache;
 
 typedef enum
 {
@@ -60,7 +61,7 @@ struct SslHandle
 	SocketState state; 
 };
 
-static void ReportSslError(SECURITY_STATUS scRet)
+static void ReportSslError(SECURITY_STATUS scRet, int line)
 {
 	const char *msg;
 	switch (scRet)
@@ -130,6 +131,11 @@ static int SSL_library_init(void)
 				FreeLibrary(g_hSchannel);
 				g_hSchannel = NULL;
 			}
+			else
+			{
+				MySslEmptyCache = (SSL_EMPTY_CACHE_FN_A)GetProcAddress(g_hSchannel, "SslEmptyCacheA");
+				if (!MySslEmptyCache) MySslEmptyCache = (SSL_EMPTY_CACHE_FN_A)GetProcAddress(g_hSchannel, "SslEmptyCache");
+			}
 		}
 	}
 
@@ -167,7 +173,7 @@ static BOOL AcquireCredentials(SslHandle *ssl, BOOL verify, BOOL chkname)
 		&ssl->hCreds,			// (out) Cred Handle
 		&tsExpiry);             // (out) Lifetime (optional)
 
-	ReportSslError(scRet);
+	ReportSslError(scRet, __LINE__);
 	return scRet == SEC_E_OK;
 }
 
@@ -219,7 +225,7 @@ static SECURITY_STATUS ClientHandshakeLoop(SslHandle *ssl, BOOL fDoInitialRead)
 	scRet = SEC_I_CONTINUE_NEEDED;
 
 	// Loop until the handshake is finished or an error occurs.
-	while(scRet == SEC_I_CONTINUE_NEEDED || scRet == SEC_E_INCOMPLETE_MESSAGE || scRet == SEC_I_INCOMPLETE_CREDENTIALS) 
+	while (scRet == SEC_I_CONTINUE_NEEDED || scRet == SEC_E_INCOMPLETE_MESSAGE || scRet == SEC_I_INCOMPLETE_CREDENTIALS) 
 	{
 		// Read server data
 		if (0 == ssl->cbIoBuffer || scRet == SEC_E_INCOMPLETE_MESSAGE) 
@@ -310,10 +316,11 @@ static SECURITY_STATUS ClientHandshakeLoop(SslHandle *ssl, BOOL fDoInitialRead)
 		// send the contents of the output buffer to the server.
 		if (scRet == SEC_E_OK                ||
 			scRet == SEC_I_CONTINUE_NEEDED   ||
-			FAILED(scRet) && (dwSSPIOutFlags & ISC_REQ_EXTENDED_ERROR))
+			(FAILED(scRet) && (dwSSPIOutFlags & ISC_RET_EXTENDED_ERROR)))
 		{
 			if (OutBuffers[0].cbBuffer != 0 && OutBuffers[0].pvBuffer != NULL) 
 			{
+				NetlibDumpData(NULL, (unsigned char*)(OutBuffers[0].pvBuffer), OutBuffers[0].cbBuffer, 1, MSG_DUMPSSL);
 				cbData = send(ssl->s, (char*)OutBuffers[0].pvBuffer, OutBuffers[0].cbBuffer, 0);
 				if (cbData == SOCKET_ERROR || cbData == 0) 
 				{
@@ -363,7 +370,7 @@ static SECURITY_STATUS ClientHandshakeLoop(SslHandle *ssl, BOOL fDoInitialRead)
 
 
 		// Copy any leftover data from the buffer, and go around again.
-		if ( InBuffers[1].BufferType == SECBUFFER_EXTRA ) 
+		if (InBuffers[1].BufferType == SECBUFFER_EXTRA) 
 		{
 			MoveMemory(ssl->pbIoBuffer,
 				ssl->pbIoBuffer + (ssl->cbIoBuffer - InBuffers[1].cbBuffer),
@@ -375,7 +382,7 @@ static SECURITY_STATUS ClientHandshakeLoop(SslHandle *ssl, BOOL fDoInitialRead)
 	}
 
 	// Delete the security context in the case of a fatal error.
-	ReportSslError(scRet);
+	ReportSslError(scRet, __LINE__);
 
 	if (ssl->cbIoBuffer == 0) 
 	{
@@ -403,10 +410,12 @@ static int ClientConnect(SslHandle *ssl, const char *host)
 		SecInvalidateHandle(&ssl->hContext);
 	}
 
+	if (MySslEmptyCache) MySslEmptyCache((SEC_CHAR*)host, 0);
+
 	dwSSPIFlags = ISC_REQ_SEQUENCE_DETECT   |
 		ISC_REQ_REPLAY_DETECT     |
 		ISC_REQ_CONFIDENTIALITY   |
-		ISC_RET_EXTENDED_ERROR    |
+		ISC_REQ_EXTENDED_ERROR    |
 		ISC_REQ_ALLOCATE_MEMORY   |
 		ISC_REQ_STREAM;
 
@@ -435,7 +444,10 @@ static int ClientConnect(SslHandle *ssl, const char *host)
 		&tsExpiry);
 
 	if (scRet != SEC_I_CONTINUE_NEEDED)
+	{
+		ReportSslError(scRet, __LINE__);
 		return 0;
+	}
 
 	// Send response to server if there is one.
 	if (OutBuffers[0].cbBuffer != 0 && OutBuffers[0].pvBuffer != NULL) 
@@ -682,7 +694,7 @@ int NetlibSslRead(SslHandle *ssl, char *buf, int num, int peek)
 
 		if ( scRet != SEC_E_OK && scRet != SEC_I_RENEGOTIATE && scRet != SEC_I_CONTEXT_EXPIRED)
 		{
-			ReportSslError(scRet);
+			ReportSslError(scRet, __LINE__);
 			ssl->state = sockError;
 			return NetlibSslReadSetResult(ssl, buf, num, peek);
 		}
