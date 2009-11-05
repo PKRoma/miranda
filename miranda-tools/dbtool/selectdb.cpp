@@ -24,7 +24,7 @@ void GetProfileDirectory(TCHAR* szMirandaDir, TCHAR* szPath, int cbPath)
 
 	lstrcpy(szMirandaBootIni,szMirandaDir);
 	lstrcat(szMirandaBootIni,_T("\\mirandaboot.ini"));
-	GetPrivateProfileString(_T("Database"),_T("ProfileDir"),_T("."),szProfileDir,SIZEOF(szProfileDir),szMirandaBootIni);
+	GetPrivateProfileString(_T("Database"),_T("ProfileDir"),_T("./Profiles"),szProfileDir,SIZEOF(szProfileDir),szMirandaBootIni);
 	ExpandEnvironmentStrings(szProfileDir,szExpandedProfileDir,SIZEOF(szExpandedProfileDir));
 	_tchdir(szMirandaDir);
 	if(!_tfullpath(szPath,szExpandedProfileDir,cbPath))
@@ -170,14 +170,19 @@ INT_PTR CALLBACK SelectDbDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM lPa
 				HKEY hKey;
 				TCHAR szProfileDir[MAX_PATH];
 				DWORD cbData = SIZEOF(szMirandaPath);
+				TCHAR szMirandaProfiles[MAX_PATH];
 
+				_tcscpy(szMirandaProfiles, szMirandaPath);
+				_tcscat(szMirandaProfiles, _T("\\Profiles"));
 				GetProfileDirectory(szMirandaPath,szProfileDir,SIZEOF(szProfileDir));
+
 				// search in profile dir (using ini file)
-				if( lstrcmp(szProfileDir,szMirandaPath) )
+				if( lstrcmpi(szProfileDir,szMirandaProfiles) )
 					FindAdd(hdlg, szProfileDir, _T("[ini]\\"));
 
+				FindAdd(hdlg, szMirandaProfiles, _T("[prf]\\"));
 				// search in current dir (as DBTOOL)
-        		FindAdd(hdlg, szMirandaPath, _T("[ . ]\\"));
+        FindAdd(hdlg, szMirandaPath, _T("[ . ]\\"));
 
 				// search in profile dir (using registry path + ini file)
 				if(RegOpenKeyEx(HKEY_LOCAL_MACHINE,_T("Software\\Microsoft\\Windows\\CurrentVersion\\App Paths\\miranda32.exe"),0,KEY_QUERY_VALUE,&hKey) == ERROR_SUCCESS) {
