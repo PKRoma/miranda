@@ -1612,20 +1612,9 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			}
 			return newData->iActivate ? TRUE : FALSE;
 		}
-		case WM_ERASEBKGND:
-			return(1);
+		case WM_ERASEBKGND: {
+			HDC 			hdc = (HDC)wParam;
 
-		case WM_NCPAINT:
-			return 0;
-
-		case WM_PAINT: {
-			/*
-			 * in skinned mode only, draw the background elements for the 2 richedit controls
-			 * this allows border-less textboxes to appear "skinned" and blended with the
-			 * background
-			 */
-			PAINTSTRUCT 	ps;
-			HDC 			hdc = BeginPaint(hwndDlg, &ps);
 			RECT 			rcClient, rcWindow, rc;
 			HDC				hdcMem = 0;
 			HBITMAP 		hbm, hbmOld;
@@ -1709,8 +1698,21 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 				DeleteObject(hbm);
 				DeleteDC(hdcMem);
 			}
-			EndPaint(hwndDlg, &ps);
 			SetAeroMargins(dat->pContainer);
+			return(1);
+		}
+		case WM_NCPAINT:
+			return 0;
+
+		case WM_PAINT: {
+			/*
+			 * in skinned mode only, draw the background elements for the 2 richedit controls
+			 * this allows border-less textboxes to appear "skinned" and blended with the
+			 * background
+			 */
+			PAINTSTRUCT 	ps;
+			HDC 			hdc = BeginPaint(hwndDlg, &ps);
+			EndPaint(hwndDlg, &ps);
 			return 0;
 		}
 

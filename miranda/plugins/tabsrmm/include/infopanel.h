@@ -155,7 +155,7 @@ public:
 	bool 						getVisibility				();
 	void 						renderBG					(const HDC hdc, RECT& rc, CSkinItem *item, bool fAero, bool fAutoCalc = true) const;
 	void 						renderContent				(const HDC hdcMem);
-	void 						Invalidate					() const;
+	void 						Invalidate					(BOOL fErase = FALSE) const;
 	void 						trackMouse					(POINT& pt);
 	int							hitTest						(POINT  pt);
 	void						handleClick					(const POINT& pt);

@@ -710,13 +710,13 @@ void CInfoPanel::Chat_RenderIPSecondLine(const HDC hdc, RECT& rcItem)
 /**
  * Invalidate the info panel rectangle
  */
-void CInfoPanel::Invalidate() const
+void CInfoPanel::Invalidate(BOOL fErase) const
 {
 	RECT	rc;
 
 	::GetClientRect(m_dat->hwnd, &rc);
 	rc.bottom = m_height;
-	::InvalidateRect(m_dat->hwnd, &rc, FALSE);
+	::InvalidateRect(m_dat->hwnd, &rc, fErase);
 }
 
 /**
@@ -788,7 +788,7 @@ void CInfoPanel::handleClick(const POINT& pt)
 	if(cmdHandler(r) == 0)
 		Utils::CmdDispatcher(Utils::CMD_INFOPANEL, m_dat->hwnd, r, 0, 0, m_dat, m_dat->pContainer);
 	m_hoverFlags = 0;
-	Invalidate();
+	Invalidate(TRUE);
 }
 
 /**
@@ -851,7 +851,7 @@ void CInfoPanel::trackMouse(POINT& pt)
 		}
 	}
 	if(dwOldHovering != m_hoverFlags)
-		Invalidate();
+		Invalidate(TRUE);
 	if(m_hoverFlags == 0)
 		m_dat->dwFlagsEx &= ~MWF_SHOW_AWAYMSGTIMER;
 }

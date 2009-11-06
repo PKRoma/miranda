@@ -354,14 +354,19 @@ LONG_PTR CMenuBar::customDrawWorker(NMCUSTOMDRAW *nm)
 
 					nmtb->nmcd.rc.bottom--;
 					if(CSkin::m_skinEnabled) {
-						CSkinItem *item;
+						CSkinItem *item = 0;
+
+						::FillRect(m_hdcDraw, &nmtb->nmcd.rc, CSkin::m_MenuBGBrush);
 
 						if(uState & CDIS_MARKED || uState & CDIS_CHECKED || uState & CDIS_SELECTED)
 							item = &SkinItems[ID_EXTBKBUTTONSPRESSED];
 						else if(uState & CDIS_HOT)
 							item = &SkinItems[ID_EXTBKBUTTONSMOUSEOVER];
 
-						fDraw = !CSkin::DrawItem(m_hdcDraw, &nmtb->nmcd.rc, item);
+						if(item)
+							fDraw = !CSkin::DrawItem(m_hdcDraw, &nmtb->nmcd.rc, item);
+						else
+							fDraw = false;
 					}
 					if(fDraw) {
 						COLORREF clr = ::GetSysColor(COLOR_HOTLIGHT);

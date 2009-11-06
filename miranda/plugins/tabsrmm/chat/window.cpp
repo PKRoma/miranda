@@ -3310,15 +3310,8 @@ LABEL_SHOWWINDOW:
 		case WM_MOVE:
 			break;
 
-		case WM_ERASEBKGND:
-			return(1);
-
-		case WM_NCPAINT:
-			if (CSkin::m_skinEnabled)
-				return 0;
-			break;
-		case WM_PAINT: {
-			PAINTSTRUCT ps;
+		case WM_ERASEBKGND: {
+			HDC  hdc = (HDC)wParam;
 			RECT rcClient, rcWindow, rc;
 			CSkinItem *item;
 			POINT pt;
@@ -3331,7 +3324,6 @@ LABEL_SHOWWINDOW:
 			HDC 	hdcMem = 0;
 			HBITMAP hbm, hbmOld;
 
-			HDC 	hdc = BeginPaint(hwndDlg, &ps);
 			GetClientRect(hwndDlg, &rcClient);
 			LONG cx = rcClient.right - rcClient.left;
 			LONG cy = rcClient.bottom - rcClient.top;
@@ -3389,8 +3381,18 @@ LABEL_SHOWWINDOW:
 				DeleteObject(hbm);
 				DeleteDC(hdcMem);
 			}
-			EndPaint(hwndDlg, &ps);
 			SetAeroMargins(dat->pContainer);
+			return(1);
+		}
+
+		case WM_NCPAINT:
+			if (CSkin::m_skinEnabled)
+				return 0;
+			break;
+		case WM_PAINT: {
+			PAINTSTRUCT ps;
+			HDC 	hdc = BeginPaint(hwndDlg, &ps);
+			EndPaint(hwndDlg, &ps);
 			return 0;
 		}
 
