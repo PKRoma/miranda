@@ -134,7 +134,8 @@ static int SSL_library_init(void)
 			else
 			{
 				MySslEmptyCache = (SSL_EMPTY_CACHE_FN_A)GetProcAddress(g_hSchannel, "SslEmptyCacheA");
-				if (!MySslEmptyCache) MySslEmptyCache = (SSL_EMPTY_CACHE_FN_A)GetProcAddress(g_hSchannel, "SslEmptyCache");
+				if (MySslEmptyCache == NULL) 
+					MySslEmptyCache = (SSL_EMPTY_CACHE_FN_A)GetProcAddress(g_hSchannel, "SslEmptyCache");
 			}
 		}
 	}
@@ -681,7 +682,7 @@ int NetlibSslRead(SslHandle *ssl, char *buf, int num, int peek)
 		Message.cBuffers        = 4;
 		Message.pBuffers        = Buffers;
 
-		if (g_pSSPI->DecryptMessage != NULL)
+		if (g_pSSPI->DecryptMessage != NULL && g_pSSPI->DecryptMessage != PVOID(0x80000000))
 			scRet = g_pSSPI->DecryptMessage(&ssl->hContext, &Message, 0, NULL);
 		else
 			scRet = ((DECRYPT_MESSAGE_FN)g_pSSPI->Reserved4)(&ssl->hContext, &Message, 0, NULL);
