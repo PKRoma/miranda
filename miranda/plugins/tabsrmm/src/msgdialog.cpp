@@ -2478,7 +2478,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 					dat->dynaSplitter = (rc.bottom - pt.y) - DPISCALEY(11);
 					DM_RecalcPictureSize(dat);
 				}
-				RedrawWindow(hwndDlg, NULL, NULL, RDW_INVALIDATE|RDW_UPDATENOW);
+				RedrawWindow(hwndDlg, NULL, NULL, RDW_INVALIDATE|RDW_UPDATENOW|RDW_ERASE);
 			} else if ((HWND) lParam == GetDlgItem(hwndDlg, IDC_PANELSPLITTER)) {
 				RECT rc;
 				POINT pt;
@@ -2490,7 +2490,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 					dat->Panel->setHeight(pt.y + 2, true);
 				dat->panelWidth = -1;
 				//SetAeroMargins(dat->pContainer);
-				RedrawWindow(hwndDlg, NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW);
+				RedrawWindow(hwndDlg, NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW | RDW_ERASE);
 				if(M->isAero())
 					InvalidateRect(GetParent(hwndDlg), NULL, FALSE);
 				break;

@@ -2536,7 +2536,7 @@ LABEL_SHOWWINDOW:
 				if (pt.y + 2 >= MIN_PANELHEIGHT+2 && pt.y + 2 < 100)
 					dat->Panel->setHeight(pt.y + 2);
 				dat->panelWidth = -1;
-				RedrawWindow(hwndDlg, NULL, NULL, RDW_ALLCHILDREN | RDW_INVALIDATE | RDW_UPDATENOW);
+				RedrawWindow(hwndDlg, NULL, NULL, RDW_ALLCHILDREN | RDW_INVALIDATE | RDW_UPDATENOW | RDW_ERASE);
 				SetAeroMargins(dat->pContainer);
 				if(M->isAero())
 					InvalidateRect(GetParent(hwndDlg), NULL, FALSE);
@@ -2544,7 +2544,7 @@ LABEL_SHOWWINDOW:
 				break;
 			}
 			SendMessage(hwndDlg, WM_SIZE, 0, 0);
-			RedrawWindow(hwndDlg, NULL, NULL, RDW_INVALIDATE|RDW_UPDATENOW);
+			RedrawWindow(hwndDlg, NULL, NULL, RDW_INVALIDATE|RDW_UPDATENOW|RDW_ERASE);
 		}
 		break;
 
