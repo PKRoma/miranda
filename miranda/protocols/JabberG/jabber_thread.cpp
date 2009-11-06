@@ -631,6 +631,7 @@ LBL_FatalError:
 		m_ThreadInfo = NULL;
 	}
 
+	info->close();
 	mir_free( buffer );
 	Log( "Exiting ServerThread" );
 	goto LBL_Exit;
