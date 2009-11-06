@@ -26,7 +26,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #define SECURITY_WIN32
 #include <security.h>
-#include "schannel.h"
+#include <schannel.h>
 
 //#include <SCHNLSP.H>
 
