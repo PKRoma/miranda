@@ -265,7 +265,6 @@ static VOID CALLBACK CreateDropTargetHelperTimerProc(HWND hwnd, UINT, UINT_PTR i
 
 void InitFileDropping(void)
 {
-	OleInitialize(NULL);
 	dropTarget.lpVtbl = &dropTargetVtbl;
 	dropTarget.lpVtbl->AddRef = (ULONG(__stdcall *) (IDropTarget *)) CDropTarget_AddRef;
 	dropTarget.lpVtbl->Release = (ULONG(__stdcall *) (IDropTarget *)) CDropTarget_Release;
@@ -277,11 +276,6 @@ void InitFileDropping(void)
 	dropTarget.refCount = 0;
 	dropTarget.pDropTargetHelper = NULL;
 	SetTimer(NULL, 1, 1000, CreateDropTargetHelperTimerProc);
-}
-
-void FreeFileDropping(void)
-{
-	OleUninitialize();
 }
 
 void fnRegisterFileDropping(HWND hwnd)

@@ -95,16 +95,11 @@ static INT_PTR BmpFilterLoadBitmap(WPARAM, LPARAM lParam)
 			return (INT_PTR)cbFileSize;
 	}	}
 
-	OleInitialize(NULL);
 	MultiByteToWideChar(CP_ACP,0,szFilename,-1,pszwFilename,MAX_PATH);
-	if(S_OK!=OleLoadPicturePath(pszwFilename,NULL,0,0,IID_IPicture,(PVOID*)&pic)) {
-		OleUninitialize();
-		return 0;
-	}
+	if(S_OK!=OleLoadPicturePath(pszwFilename,NULL,0,0,IID_IPicture,(PVOID*)&pic)) return 0;
 	pic->lpVtbl->get_Type(pic,&picType);
 	if(picType!=PICTYPE_BITMAP) {
 		pic->lpVtbl->Release(pic);
-		OleUninitialize();
 		return 0;
 	}
 	pic->lpVtbl->get_Handle(pic,(OLE_HANDLE*)&hBmp);
@@ -126,7 +121,6 @@ static INT_PTR BmpFilterLoadBitmap(WPARAM, LPARAM lParam)
 
 	DeleteObject(hBmp);
 	pic->lpVtbl->Release(pic);
-	OleUninitialize();
 	return (INT_PTR)hBmpCopy;
 }
 

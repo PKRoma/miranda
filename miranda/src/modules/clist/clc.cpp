@@ -245,7 +245,6 @@ void UnloadClcModule()
 
 	mir_free(cli.clcProto);
 
-	FreeFileDropping();
 	FreeDisplayNameCache();
 
 	UninitCustomMenus();

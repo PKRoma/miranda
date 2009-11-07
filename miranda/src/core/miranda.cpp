@@ -591,6 +591,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int )
 	    }
     }
 
+	OleInitialize(NULL);
+
 	InitialiseModularEngine();
 	ParseCommandLine();
 

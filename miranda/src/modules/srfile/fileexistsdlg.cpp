@@ -53,7 +53,6 @@ static void DoAnnoyingShellCommand(HWND hwnd,const TCHAR *szFilename,int cmd,POI
 {
 	IMalloc *pShellMalloc;
 
-	OleInitialize(NULL);
 	if(SHGetMalloc(&pShellMalloc)==NOERROR) {
 		IShellFolder *pDesktopFolder;
 		if(SHGetDesktopFolder(&pDesktopFolder)==NOERROR) {
@@ -123,7 +122,6 @@ static void DoAnnoyingShellCommand(HWND hwnd,const TCHAR *szFilename,int cmd,POI
 		}
 		pShellMalloc->lpVtbl->Release(pShellMalloc);
 	}
-	OleUninitialize();
 }
 
 static WNDPROC pfnIconWindowProc;
@@ -155,7 +153,6 @@ void __cdecl LoadIconsAndTypesThread(void* param)
 	loadiconsstartinfo *info = ( loadiconsstartinfo* )param;
 	SHFILEINFO fileInfo;
 
-	OleInitialize(NULL);
 	if ( SHGetFileInfo( info->szFilename, 0, &fileInfo, sizeof(fileInfo),SHGFI_TYPENAME|SHGFI_ICON|SHGFI_LARGEICON)) {
 		TCHAR *pszExtension,*pszFilename;
 		TCHAR szExtension[64];
@@ -207,7 +204,6 @@ void __cdecl LoadIconsAndTypesThread(void* param)
 		}
 		SendDlgItemMessage(info->hwndDlg,IDC_NEWICON,STM_SETICON,(WPARAM)fileInfo.hIcon,0);
 	}
-	OleUninitialize();
 	mir_free(info->szFilename);
 	mir_free(info);
 }
