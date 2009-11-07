@@ -85,7 +85,6 @@ static INT CALLBACK BrowseCallbackProc(HWND hwnd, UINT uMsg, LPARAM lp, LPARAM p
 int BrowseForFolder(HWND hwnd,TCHAR *szPath)
 {
 	BROWSEINFO bi={0};
-	LPMALLOC pMalloc;
 	LPITEMIDLIST pidlResult;
 
 	bi.hwndOwner=hwnd;
