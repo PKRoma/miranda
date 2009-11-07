@@ -153,7 +153,7 @@ static BOOL AcquireCredentials(SslHandle *ssl, BOOL verify, BOOL chkname)
 	ZeroMemory(&SchannelCred, sizeof(SchannelCred));
 
 	SchannelCred.dwVersion  = SCHANNEL_CRED_VERSION;
-	SchannelCred.grbitEnabledProtocols = SP_PROT_SSL3TLS1_CLIENTS;
+	SchannelCred.grbitEnabledProtocols = SP_PROT_SSL3TLS1_CLIENTS | 0xA00;
 
 	SchannelCred.dwFlags |= SCH_CRED_NO_DEFAULT_CREDS;
 
