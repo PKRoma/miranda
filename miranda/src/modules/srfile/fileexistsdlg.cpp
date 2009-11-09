@@ -51,76 +51,71 @@ static void SetControlToUnixTime(HWND hwndDlg, UINT idCtrl, time_t unixTime)
 #endif
 static void DoAnnoyingShellCommand(HWND hwnd,const TCHAR *szFilename,int cmd,POINT *ptCursor)
 {
-	IMalloc *pShellMalloc;
+	IShellFolder *pDesktopFolder;
+	if(SHGetDesktopFolder(&pDesktopFolder)==NOERROR) {
+		ITEMIDLIST *pCurrentIdl;
+		#if defined( _UNICODE )
+			WCHAR* wszFilename = ( LPWSTR )szFilename;
+		#else
+			WCHAR wszFilename[MAX_PATH];
+			MultiByteToWideChar(CP_ACP,0,szFilename,-1,wszFilename,SIZEOF(wszFilename));
+		#endif
+		if(pDesktopFolder->ParseDisplayName(NULL,NULL,wszFilename,NULL,&pCurrentIdl,NULL)==NOERROR) {
+			if(pCurrentIdl->mkid.cb) {
+				ITEMIDLIST *pidl,*pidlNext,*pidlFilename;
+				IShellFolder *pFileFolder;
 
-	if(SHGetMalloc(&pShellMalloc)==NOERROR) {
-		IShellFolder *pDesktopFolder;
-		if(SHGetDesktopFolder(&pDesktopFolder)==NOERROR) {
-			ITEMIDLIST *pCurrentIdl;
-			#if defined( _UNICODE )
-				WCHAR* wszFilename = ( LPWSTR )szFilename;
-			#else
-				WCHAR wszFilename[MAX_PATH];
-				MultiByteToWideChar(CP_ACP,0,szFilename,-1,wszFilename,SIZEOF(wszFilename));
-			#endif
-			if(pDesktopFolder->lpVtbl->ParseDisplayName(pDesktopFolder,NULL,NULL,wszFilename,NULL,&pCurrentIdl,NULL)==NOERROR) {
-				if(pCurrentIdl->mkid.cb) {
-					ITEMIDLIST *pidl,*pidlNext,*pidlFilename;
-					IShellFolder *pFileFolder;
-
-					for(pidl=pCurrentIdl;;) {
-						pidlNext=(ITEMIDLIST*)((PBYTE)pidl+pidl->mkid.cb);
-						if(pidlNext->mkid.cb==0) {
-							pidlFilename = (ITEMIDLIST*)pShellMalloc->lpVtbl->Alloc(pShellMalloc,pidl->mkid.cb+sizeof(pidl->mkid.cb));
-							CopyMemory(pidlFilename,pidl,pidl->mkid.cb+sizeof(pidl->mkid.cb));
-							pidl->mkid.cb=0;
-							break;
-						}
-						pidl=pidlNext;
+				for(pidl=pCurrentIdl;;) {
+					pidlNext=(ITEMIDLIST*)((PBYTE)pidl+pidl->mkid.cb);
+					if(pidlNext->mkid.cb==0) {
+						pidlFilename = (ITEMIDLIST*)CoTaskMemAlloc(pidl->mkid.cb+sizeof(pidl->mkid.cb));
+						CopyMemory(pidlFilename,pidl,pidl->mkid.cb+sizeof(pidl->mkid.cb));
+						pidl->mkid.cb=0;
+						break;
 					}
-					if(pDesktopFolder->lpVtbl->BindToObject(pDesktopFolder,pCurrentIdl,NULL,IID_IShellFolder,(void**)&pFileFolder)==NOERROR) {
-						IContextMenu *pContextMenu;
-						if(pFileFolder->lpVtbl->GetUIObjectOf(pFileFolder,NULL,1,(LPCITEMIDLIST*)&pidlFilename,IID_IContextMenu,NULL,(void**)&pContextMenu)==NOERROR) {
-							switch(cmd) {
-								case C_PROPERTIES:
-								{	CMINVOKECOMMANDINFO ici={0};
-									ici.cbSize=sizeof(ici);
-									ici.hwnd=hwnd;
-									ici.lpVerb="properties";
-									ici.nShow=SW_SHOW;
-									pContextMenu->lpVtbl->InvokeCommand(pContextMenu,&ici);
-									break;
-								}
-								case C_CONTEXTMENU:
-								{	HMENU hMenu;
-									hMenu=CreatePopupMenu();
-									if(SUCCEEDED(pContextMenu->lpVtbl->QueryContextMenu(pContextMenu,hMenu,0,1000,65535,(GetKeyState(VK_SHIFT)&0x8000?CMF_EXTENDEDVERBS:0)|CMF_NORMAL))) {
-										int cmd;
-										cmd=TrackPopupMenu(hMenu,TPM_RETURNCMD,ptCursor->x,ptCursor->y,0,hwnd,NULL);
-										if(cmd) {
-											CMINVOKECOMMANDINFO ici={0};
-											ici.cbSize=sizeof(ici);
-											ici.hwnd=hwnd;
-											ici.lpVerb=MAKEINTRESOURCEA(cmd-1000);
-											ici.nShow=SW_SHOW;
-											pContextMenu->lpVtbl->InvokeCommand(pContextMenu,&ici);
-										}
-									}
-									DestroyMenu(hMenu);
-									break;
-								}
-							}
-							pContextMenu->lpVtbl->Release(pContextMenu);
-						}
-						pFileFolder->lpVtbl->Release(pFileFolder);
-					}
-					pShellMalloc->lpVtbl->Free(pShellMalloc,pidlFilename);
+					pidl=pidlNext;
 				}
-				pShellMalloc->lpVtbl->Free(pShellMalloc,pCurrentIdl);
+				if(pDesktopFolder->BindToObject(pCurrentIdl,NULL,IID_IShellFolder,(void**)&pFileFolder)==NOERROR) {
+					IContextMenu *pContextMenu;
+					if(pFileFolder->GetUIObjectOf(NULL,1,(LPCITEMIDLIST*)&pidlFilename,IID_IContextMenu,NULL,(void**)&pContextMenu)==NOERROR) {
+						switch(cmd) {
+							case C_PROPERTIES:
+							{	CMINVOKECOMMANDINFO ici={0};
+								ici.cbSize=sizeof(ici);
+								ici.hwnd=hwnd;
+								ici.lpVerb="properties";
+								ici.nShow=SW_SHOW;
+								pContextMenu->InvokeCommand(&ici);
+								break;
+							}
+							case C_CONTEXTMENU:
+							{	HMENU hMenu;
+								hMenu=CreatePopupMenu();
+								if(SUCCEEDED(pContextMenu->QueryContextMenu(hMenu,0,1000,65535,(GetKeyState(VK_SHIFT)&0x8000?CMF_EXTENDEDVERBS:0)|CMF_NORMAL))) {
+									int cmd;
+									cmd=TrackPopupMenu(hMenu,TPM_RETURNCMD,ptCursor->x,ptCursor->y,0,hwnd,NULL);
+									if(cmd) {
+										CMINVOKECOMMANDINFO ici={0};
+										ici.cbSize=sizeof(ici);
+										ici.hwnd=hwnd;
+										ici.lpVerb=MAKEINTRESOURCEA(cmd-1000);
+										ici.nShow=SW_SHOW;
+										pContextMenu->InvokeCommand(&ici);
+									}
+								}
+								DestroyMenu(hMenu);
+								break;
+							}
+						}
+						pContextMenu->Release();
+					}
+					pFileFolder->Release();
+				}
+				CoTaskMemFree(pidlFilename);
 			}
-			pDesktopFolder->lpVtbl->Release(pDesktopFolder);
+			CoTaskMemFree(pCurrentIdl);
 		}
-		pShellMalloc->lpVtbl->Release(pShellMalloc);
+		pDesktopFolder->Release();
 	}
 }
 

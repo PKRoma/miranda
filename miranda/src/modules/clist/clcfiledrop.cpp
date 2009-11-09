@@ -24,42 +24,48 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "clc.h"
 #include <shlobj.h>
 
-static IDropTargetVtbl dropTargetVtbl;
-
-struct CDropTarget 
+struct CDropTarget : IDropTarget
 {
-	IDropTargetVtbl *lpVtbl;
-	unsigned refCount;
+	LONG refCount;
 	IDropTargetHelper *pDropTargetHelper;
+
+	ULONG STDMETHODCALLTYPE AddRef(void); 
+	ULONG STDMETHODCALLTYPE Release(void);
+	HRESULT STDMETHODCALLTYPE QueryInterface(REFIID iid, void ** ppvObject);
+
+    HRESULT STDMETHODCALLTYPE DragEnter(IDataObject *pDataObj, DWORD grfKeyState, POINTL pt, DWORD *pdwEffect);
+    HRESULT STDMETHODCALLTYPE DragOver(DWORD grfKeyState, POINTL pt, DWORD *pdwEffect);
+    HRESULT STDMETHODCALLTYPE DragLeave(void);
+    HRESULT STDMETHODCALLTYPE Drop(IDataObject *pDataObj, DWORD grfKeyState, POINTL pt, DWORD *pdwEffect);
 }
 static dropTarget;
 
 static HWND hwndCurrentDrag = NULL;
 static int originalSelection;
 
-static STDMETHODIMP_(ULONG) CDropTarget_QueryInterface(struct CDropTarget *lpThis, REFIID riid, LPVOID * ppvObj)
+HRESULT CDropTarget::QueryInterface(REFIID riid, LPVOID * ppvObj)
 {
-	if (IsEqualIID(riid, IID_IDropTarget)) {
-		*ppvObj = lpThis;
-		lpThis->lpVtbl->AddRef((IDropTarget *) lpThis);
+	if (riid == IID_IDropTarget) {
+		*ppvObj = this;
+		AddRef();
 		return S_OK;
 	}
 	*ppvObj = NULL;
 	return E_NOINTERFACE;
 }
 
-static STDMETHODIMP_(ULONG) CDropTarget_AddRef(struct CDropTarget *lpThis)
+ULONG CDropTarget::AddRef(void)
 {
-	return ++lpThis->refCount;
+	return InterlockedIncrement(&refCount);
 }
 
-static STDMETHODIMP_(ULONG) CDropTarget_Release(struct CDropTarget *lpThis)
+ULONG CDropTarget::Release(void)
 {
-	if (lpThis->refCount == 1) {
-		if (lpThis->pDropTargetHelper)
-			lpThis->pDropTargetHelper->lpVtbl->Release(lpThis->pDropTargetHelper);
+	if (refCount == 1) {
+		if (pDropTargetHelper)
+			pDropTargetHelper->Release();
 	}
-	return --lpThis->refCount;
+	return InterlockedDecrement(&refCount);
 }
 
 static HANDLE HContactFromPoint(HWND hwnd, struct ClcData *dat, int x, int y, int *hitLine)
@@ -86,7 +92,7 @@ static HANDLE HContactFromPoint(HWND hwnd, struct ClcData *dat, int x, int y, in
 	return contact->hContact;
 }
 
-static STDMETHODIMP_(HRESULT) CDropTarget_DragOver(struct CDropTarget *lpThis, DWORD /*fKeyState*/, POINTL pt, DWORD * pdwEffect)
+HRESULT CDropTarget::DragOver(DWORD /*grfKeyState*/, POINTL pt, DWORD * pdwEffect)
 {
 	POINT shortPt;
 	struct ClcData *dat;
@@ -94,8 +100,8 @@ static STDMETHODIMP_(HRESULT) CDropTarget_DragOver(struct CDropTarget *lpThis, D
 	int hit;
 	HANDLE hContact;
 
-	if (lpThis->pDropTargetHelper && hwndCurrentDrag)
-		lpThis->pDropTargetHelper->lpVtbl->DragOver(lpThis->pDropTargetHelper, (POINT *) & pt, *pdwEffect);
+	if (pDropTargetHelper && hwndCurrentDrag)
+		pDropTargetHelper->DragOver((POINT*)&pt, *pdwEffect);
 
 	*pdwEffect = 0;
 	if (hwndCurrentDrag == NULL) {
@@ -124,15 +130,15 @@ static STDMETHODIMP_(HRESULT) CDropTarget_DragOver(struct CDropTarget *lpThis, D
 	if (dat->selection != hit) {
 		dat->selection = hit;
 		cli.pfnInvalidateRect(hwndCurrentDrag, NULL, FALSE);
-		lpThis->pDropTargetHelper->lpVtbl->Show(lpThis->pDropTargetHelper, FALSE);
+		pDropTargetHelper->Show(FALSE);
 		UpdateWindow(hwndCurrentDrag);
-		lpThis->pDropTargetHelper->lpVtbl->Show(lpThis->pDropTargetHelper, TRUE);
+		pDropTargetHelper->Show(TRUE);
 	}
 
 	return S_OK;
 }
 
-static STDMETHODIMP_(HRESULT) CDropTarget_DragEnter(struct CDropTarget *lpThis, IDataObject * pData, DWORD fKeyState, POINTL pt, DWORD * pdwEffect)
+HRESULT CDropTarget::DragEnter(IDataObject *pDataObj, DWORD grfKeyState, POINTL pt, DWORD *pdwEffect)
 {
 	HWND hwnd;
 	TCHAR szWindowClass[64];
@@ -149,17 +155,17 @@ static STDMETHODIMP_(HRESULT) CDropTarget_DragEnter(struct CDropTarget *lpThis, 
 		originalSelection = dat->selection;
 		dat->showSelAlways = 1;
 	}
-	if (lpThis->pDropTargetHelper && hwndCurrentDrag)
-		lpThis->pDropTargetHelper->lpVtbl->DragEnter(lpThis->pDropTargetHelper, hwndCurrentDrag, pData, (POINT *) & pt, *pdwEffect);
-	return CDropTarget_DragOver(lpThis, fKeyState, pt, pdwEffect);
+	if (pDropTargetHelper && hwndCurrentDrag)
+		pDropTargetHelper->DragEnter(hwndCurrentDrag, pDataObj, (POINT*)&pt, *pdwEffect);
+	return DragOver(grfKeyState, pt, pdwEffect);
 }
 
-static STDMETHODIMP_(HRESULT) CDropTarget_DragLeave(struct CDropTarget *lpThis)
+HRESULT CDropTarget::DragLeave(void)
 {
 	if (hwndCurrentDrag) {
 		struct ClcData *dat;
-		if (lpThis->pDropTargetHelper)
-			lpThis->pDropTargetHelper->lpVtbl->DragLeave(lpThis->pDropTargetHelper);
+		if (pDropTargetHelper)
+			pDropTargetHelper->DragLeave();
 		dat = (struct ClcData *) GetWindowLongPtr(hwndCurrentDrag, 0);
 		dat->showSelAlways = 0;
 		dat->selection = originalSelection;
@@ -194,7 +200,7 @@ static void AddToFileList(TCHAR ***pppFiles, int *totalCount, const TCHAR *szFil
 	}
 }
 
-static STDMETHODIMP_(HRESULT) CDropTarget_Drop(struct CDropTarget *lpThis, IDataObject * pData, DWORD /*fKeyState*/, POINTL pt, DWORD * pdwEffect)
+HRESULT CDropTarget::Drop(IDataObject * pDataObj, DWORD /*fKeyState*/, POINTL pt, DWORD * pdwEffect)
 {
 	FORMATETC fe = { CF_HDROP, NULL, DVASPECT_CONTENT, -1, TYMED_HGLOBAL };
 	STGMEDIUM stg;
@@ -203,11 +209,11 @@ static STDMETHODIMP_(HRESULT) CDropTarget_Drop(struct CDropTarget *lpThis, IData
 	struct ClcData *dat;
 	HANDLE hContact;
 
-	if (lpThis->pDropTargetHelper && hwndCurrentDrag)
-		lpThis->pDropTargetHelper->lpVtbl->Drop(lpThis->pDropTargetHelper, pData, (POINT *) & pt, *pdwEffect);
+	if (pDropTargetHelper && hwndCurrentDrag)
+		pDropTargetHelper->Drop(pDataObj, (POINT*)&pt, *pdwEffect);
 
 	*pdwEffect = DROPEFFECT_NONE;
-	if (hwndCurrentDrag == NULL || S_OK != pData->lpVtbl->GetData(pData, &fe, &stg))
+	if (hwndCurrentDrag == NULL || S_OK != pDataObj->GetData(&fe, &stg))
 		return S_OK;
 	hDrop = (HDROP) stg.hGlobal;
 	dat = (struct ClcData *) GetWindowLongPtr(hwndCurrentDrag, 0);
@@ -237,44 +243,25 @@ static STDMETHODIMP_(HRESULT) CDropTarget_Drop(struct CDropTarget *lpThis, IData
 	}
 
 	if (stg.pUnkForRelease)
-		stg.pUnkForRelease->lpVtbl->Release(stg.pUnkForRelease);
+		stg.pUnkForRelease->Release();
 	else
 		GlobalFree(stg.hGlobal);
 
-	CDropTarget_DragLeave(lpThis);
+	DragLeave();
 	return S_OK;
 }
 
 static VOID CALLBACK CreateDropTargetHelperTimerProc(HWND hwnd, UINT, UINT_PTR idEvent, DWORD)
 {
-	/* macro defines needed CLSID and IID declarations since
-	they have to be referenced */
-#ifndef CLSID_DragDropHelper
-#define MDEF_CLSID(name, l, w1, w2, b1, b2, b3, b4, b5, b6, b7, b8) \
-	const CLSID name \
-	= { l, w1, w2, { b1, b2,  b3,  b4,  b5,  b6,  b7,  b8 } }
-
-	MDEF_CLSID(IID_IDropTargetHelper, 0x4657278b, 0x411b, 0x11d2, 0x83, 0x9a, 0x0, 0xc0, 0x4f, 0xd9, 0x18, 0xd0);
-	MDEF_CLSID(CLSID_DragDropHelper, 0x4657278a, 0x411b, 0x11d2, 0x83, 0x9a, 0x0, 0xc0, 0x4f, 0xd9, 0x18, 0xd0);
-#endif
 	KillTimer(hwnd, idEvent);
 	//This is a ludicrously slow function (~200ms) so we delay load it a bit.
-	if (S_OK != CoCreateInstance(CLSID_DragDropHelper, NULL, CLSCTX_INPROC_SERVER, IID_IDropTargetHelper, (LPVOID*)&dropTarget.pDropTargetHelper))
+	if (S_OK != CoCreateInstance(CLSID_DragDropHelper, NULL, CLSCTX_INPROC_SERVER, 
+		IID_IDropTargetHelper, (LPVOID*)&dropTarget.pDropTargetHelper))
 		dropTarget.pDropTargetHelper = NULL;
 }
 
 void InitFileDropping(void)
 {
-	dropTarget.lpVtbl = &dropTargetVtbl;
-	dropTarget.lpVtbl->AddRef = (ULONG(__stdcall *) (IDropTarget *)) CDropTarget_AddRef;
-	dropTarget.lpVtbl->Release = (ULONG(__stdcall *) (IDropTarget *)) CDropTarget_Release;
-	dropTarget.lpVtbl->QueryInterface = (HRESULT(__stdcall *) (IDropTarget *, REFIID, PVOID *)) CDropTarget_QueryInterface;
-	dropTarget.lpVtbl->DragEnter = (HRESULT(__stdcall *) (IDropTarget *, IDataObject *, DWORD, POINTL, PDWORD)) CDropTarget_DragEnter;
-	dropTarget.lpVtbl->DragOver = (HRESULT(__stdcall *) (IDropTarget *, DWORD, POINTL, PDWORD)) CDropTarget_DragOver;
-	dropTarget.lpVtbl->DragLeave = (HRESULT(__stdcall *) (IDropTarget *)) CDropTarget_DragLeave;
-	dropTarget.lpVtbl->Drop = (HRESULT(__stdcall *) (IDropTarget *, IDataObject *, DWORD, POINTL, PDWORD)) CDropTarget_Drop;
-	dropTarget.refCount = 0;
-	dropTarget.pDropTargetHelper = NULL;
 	SetTimer(NULL, 1, 1000, CreateDropTargetHelperTimerProc);
 }
 

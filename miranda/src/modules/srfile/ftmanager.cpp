@@ -471,7 +471,7 @@ static INT_PTR CALLBACK FtMgrDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
 		DestroyWindow(dat->hwndIncoming);
 		DestroyWindow(dat->hwndOutgoing);
 		if (dat->pTaskbarInterface)
-			dat->pTaskbarInterface->lpVtbl->Release(dat->pTaskbarInterface);
+			dat->pTaskbarInterface->Release();
 		mir_free(dat);
 		SetWindowLongPtr(hwnd, GWLP_USERDATA, 0);
 		Utils_SaveWindowPosition(hwnd, NULL, "SRFile", "FtMgrDlg_");
@@ -504,23 +504,23 @@ static INT_PTR CALLBACK FtMgrDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
 			SendMessage(dat->hwndOutgoing, M_CALCPROGRESS, (WPARAM)&prg, 0);
 			if (dat->errorState)
 			{
-				dat->pTaskbarInterface->lpVtbl->SetProgressState(dat->pTaskbarInterface, hwnd, dat->errorState);
+				dat->pTaskbarInterface->SetProgressState(hwnd, dat->errorState);
 				if (!prg.run)
-					dat->pTaskbarInterface->lpVtbl->SetProgressValue(dat->pTaskbarInterface, hwnd, 1, 1);
+					dat->pTaskbarInterface->SetProgressValue(hwnd, 1, 1);
 			} else if (prg.run) 
 			{
-				dat->pTaskbarInterface->lpVtbl->SetProgressState(dat->pTaskbarInterface, hwnd, TBPF_NORMAL);
+				dat->pTaskbarInterface->SetProgressState(hwnd, TBPF_NORMAL);
 			} else if (prg.init || prg.scan)
 			{
-				dat->pTaskbarInterface->lpVtbl->SetProgressState(dat->pTaskbarInterface, hwnd, TBPF_INDETERMINATE);
+				dat->pTaskbarInterface->SetProgressState(hwnd, TBPF_INDETERMINATE);
 			} else {
-				dat->pTaskbarInterface->lpVtbl->SetProgressState(dat->pTaskbarInterface, hwnd, TBPF_NOPROGRESS);
+				dat->pTaskbarInterface->SetProgressState(hwnd, TBPF_NOPROGRESS);
 				KillTimer(hwnd, 1);
 			}
 
 			if (prg.run)
 			{
-				dat->pTaskbarInterface->lpVtbl->SetProgressValue(dat->pTaskbarInterface, hwnd, prg.totalProgress, prg.totalBytes);	
+				dat->pTaskbarInterface->SetProgressValue(hwnd, prg.totalProgress, prg.totalBytes);	
 			}				
 
 		}
