@@ -21,6 +21,8 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 #include "commonheaders.h"
+#include <initguid.h>
+#include <oleacc.h>
 
 // TODO:
 // - Support for bitmap buttons (simple call to DrawIconEx())
@@ -43,6 +45,7 @@ typedef struct {
 	char	cHot;
 	int     flatBtn;
 	HWND    hwndToolTips;
+	IAccPropServices* pAccPropServices;
 } MButtonCtrl;
 
 
@@ -121,6 +124,14 @@ static void LoadTheme(MButtonCtrl *ctl)
 	}
 }
 
+static void SetHwndPropInt(MButtonCtrl* bct, DWORD idObject, DWORD idChild, MSAAPROPID idProp, int val) 
+{
+	if (bct->pAccPropServices == NULL) return;
+	VARIANT var;
+	var.vt = VT_I4;
+	var.lVal = val;
+	bct->pAccPropServices->SetHwndProp(bct->hwnd, idObject, idChild, idProp, var);
+}
 static int TBStateConvert2Flat(int state)
 {
 	switch(state) {
@@ -285,19 +296,31 @@ static LRESULT CALLBACK MButtonWndProc(HWND hwndDlg, UINT msg,  WPARAM wParam, L
 	MButtonCtrl* bct =  (MButtonCtrl *)GetWindowLongPtr(hwndDlg, 0);
 	switch(msg) {
 	case WM_NCCREATE:
-		SetWindowLongPtr(hwndDlg, GWL_STYLE, GetWindowLongPtr(hwndDlg, GWL_STYLE)|BS_OWNERDRAW);
+		SetWindowLongPtr(hwndDlg, GWL_STYLE, GetWindowLongPtr(hwndDlg, GWL_STYLE) | BS_OWNERDRAW);
 		bct = ( MButtonCtrl* )mir_calloc(sizeof(MButtonCtrl));
 		if (bct==NULL) return FALSE;
 		bct->hwnd = hwndDlg;
 		bct->stateId = PBS_NORMAL;
 		bct->hFont = ( HFONT )GetStockObject(DEFAULT_GUI_FONT);
 		LoadTheme(bct);
+		if (SUCCEEDED(CoCreateInstance(CLSID_AccPropServices, NULL, CLSCTX_SERVER, 
+			IID_IAccPropServices, (void**)&bct->pAccPropServices))) 
+		{
+			// Annotating the Role of this object to be PushButton
+			SetHwndPropInt(bct, OBJID_CLIENT, CHILDID_SELF, PROPID_ACC_ROLE, ROLE_SYSTEM_PUSHBUTTON);
+		} 
+		else 
+			bct->pAccPropServices = NULL;
 		SetWindowLongPtr(hwndDlg, 0, (LONG_PTR)bct);
 		if (((CREATESTRUCT *)lParam)->lpszName) SetWindowText(hwndDlg, ((CREATESTRUCT *)lParam)->lpszName);
 		return TRUE;
 
 	case WM_DESTROY:
 		if (bct) {
+			if (bct->pAccPropServices) {
+				bct->pAccPropServices->Release();
+				bct->pAccPropServices = NULL;
+			}
 			if (bct->hwndToolTips) {
 				TOOLINFO ti = {0};
 				ti.cbSize = sizeof(ti);
@@ -435,13 +458,16 @@ static LRESULT CALLBACK MButtonWndProc(HWND hwndDlg, UINT msg,  WPARAM wParam, L
 		return 0;
 	case BUTTONSETARROW: // turn arrow on/off
 		if (wParam) {
-			if (!bct->arrow)
+			if (!bct->arrow) {
 				bct->arrow = LoadSkinIcon(SKINICON_OTHER_DOWNARROW);
+				SetHwndPropInt(bct, OBJID_CLIENT, CHILDID_SELF, PROPID_ACC_ROLE, ROLE_SYSTEM_BUTTONDROPDOWN);
+			}
 		}
 		else {
 			if (bct->arrow) {
 				IconLib_ReleaseIcon(bct->arrow, 0);
 				bct->arrow = NULL;
+				SetHwndPropInt(bct, OBJID_CLIENT, CHILDID_SELF, PROPID_ACC_ROLE, ROLE_SYSTEM_PUSHBUTTON);
 			}
 		}
 		InvalidateRect(bct->hwnd, NULL, TRUE);
@@ -494,6 +520,12 @@ static LRESULT CALLBACK MButtonWndProc(HWND hwndDlg, UINT msg,  WPARAM wParam, L
 			#else
 				ti.lpszText = Translate(( char* )wParam );
 			#endif
+			if (bct->pAccPropServices) {
+				wchar_t *tmpstr = mir_t2u(ti.lpszText);
+				bct->pAccPropServices->SetHwndPropStr(bct->hwnd, OBJID_CLIENT, 
+					CHILDID_SELF, PROPID_ACC_DESCRIPTION, tmpstr);
+				mir_free(tmpstr);
+			}
 			SendMessage( bct->hwndToolTips, TTM_ADDTOOL, 0, (LPARAM)&ti);
 			#if defined( _UNICODE )
 				mir_free( ti.lpszText );
