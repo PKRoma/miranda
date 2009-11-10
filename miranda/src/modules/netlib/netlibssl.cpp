@@ -30,10 +30,13 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 //#include <SCHNLSP.H>
 
+typedef BOOL (* SSL_EMPTY_CACHE_FN_M)(VOID);
+
+
 static HMODULE g_hSchannel;
 static PSecurityFunctionTableA g_pSSPI;
 static HANDLE g_hSslMutex; 
-static SSL_EMPTY_CACHE_FN_A MySslEmptyCache;
+static SSL_EMPTY_CACHE_FN_M MySslEmptyCache;
 
 typedef enum
 {
@@ -133,9 +136,7 @@ static int SSL_library_init(void)
 			}
 			else
 			{
-				MySslEmptyCache = (SSL_EMPTY_CACHE_FN_A)GetProcAddress(g_hSchannel, "SslEmptyCacheA");
-				if (MySslEmptyCache == NULL) 
-					MySslEmptyCache = (SSL_EMPTY_CACHE_FN_A)GetProcAddress(g_hSchannel, "SslEmptyCache");
+				MySslEmptyCache = (SSL_EMPTY_CACHE_FN_M)GetProcAddress(g_hSchannel, "SslEmptyCache");
 			}
 		}
 	}
@@ -411,7 +412,7 @@ static int ClientConnect(SslHandle *ssl, const char *host)
 		SecInvalidateHandle(&ssl->hContext);
 	}
 
-	if (MySslEmptyCache) MySslEmptyCache((SEC_CHAR*)host, 0);
+	if (MySslEmptyCache) MySslEmptyCache();
 
 	dwSSPIFlags = ISC_REQ_SEQUENCE_DETECT   |
 		ISC_REQ_REPLAY_DETECT     |
