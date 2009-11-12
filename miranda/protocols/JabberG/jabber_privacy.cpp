@@ -462,7 +462,7 @@ public:
 				if ( m_pRule->GetValue() )
 				{
 					SetDlgItemText( m_hwnd, IDC_COMBO_VALUES, m_pRule->GetValue() );
-					int nSelPos = SendDlgItemMessage( m_hwnd, IDC_COMBO_VALUES, CB_FINDSTRINGEXACT , -1, (LPARAM)m_pRule->GetValue() );
+					LRESULT nSelPos = SendDlgItemMessage( m_hwnd, IDC_COMBO_VALUES, CB_FINDSTRINGEXACT , -1, (LPARAM)m_pRule->GetValue() );
 					if ( nSelPos != CB_ERR )
 						SendDlgItemMessage( m_hwnd, IDC_COMBO_VALUES, CB_SETCURSEL, nSelPos, 0 );
 				}
@@ -492,7 +492,7 @@ public:
 				if ( m_pRule->GetValue() )
 				{
 					SetDlgItemText( m_hwnd, IDC_COMBO_VALUES, m_pRule->GetValue() );
-					int nSelPos = SendDlgItemMessage( m_hwnd, IDC_COMBO_VALUES, CB_FINDSTRINGEXACT , -1, (LPARAM)m_pRule->GetValue() );
+					LRESULT nSelPos = SendDlgItemMessage( m_hwnd, IDC_COMBO_VALUES, CB_FINDSTRINGEXACT , -1, (LPARAM)m_pRule->GetValue() );
 					if ( nSelPos != CB_ERR )
 						SendDlgItemMessage( m_hwnd, IDC_COMBO_VALUES, CB_SETCURSEL, nSelPos, 0 );
 				}
@@ -506,7 +506,7 @@ public:
 
 				if ( m_pRule->GetValue() )
 				{
-					int nSelected = SendDlgItemMessage( m_hwnd, IDC_COMBO_VALUE, CB_SELECTSTRING, -1, (LPARAM)TranslateTS(m_pRule->GetValue()) );
+					LRESULT nSelected = SendDlgItemMessage( m_hwnd, IDC_COMBO_VALUE, CB_SELECTSTRING, -1, (LPARAM)TranslateTS(m_pRule->GetValue()) );
 					if ( nSelected == CB_ERR )
 						SendDlgItemMessage( m_hwnd, IDC_COMBO_VALUE, CB_SETCURSEL, 0, 0 );
 				}
