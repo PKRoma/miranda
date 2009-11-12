@@ -150,11 +150,11 @@ void CJabberProto::OnIqResultPrivacyList( HXML iqNode )
 
 CPrivacyList* GetSelectedList(HWND hDlg)
 {
-	int nCurSel = SendDlgItemMessage( hDlg, IDC_LB_LISTS, LB_GETCURSEL, 0, 0 );
+	LRESULT nCurSel = SendDlgItemMessage( hDlg, IDC_LB_LISTS, LB_GETCURSEL, 0, 0 );
 	if ( nCurSel == LB_ERR )
 		return NULL;
 
-	int nItemData = SendDlgItemMessage( hDlg, IDC_LB_LISTS, LB_GETITEMDATA, nCurSel, 0 );
+	LRESULT nItemData = SendDlgItemMessage( hDlg, IDC_LB_LISTS, LB_GETITEMDATA, nCurSel, 0 );
 	if ( nItemData == LB_ERR || nItemData == 0 )
 		return NULL;
 
@@ -163,11 +163,11 @@ CPrivacyList* GetSelectedList(HWND hDlg)
 
 CPrivacyListRule* GetSelectedRule(HWND hDlg)
 {
-	int nCurSel = SendDlgItemMessage( hDlg, IDC_PL_RULES_LIST, LB_GETCURSEL, 0, 0 );
+	LRESULT nCurSel = SendDlgItemMessage( hDlg, IDC_PL_RULES_LIST, LB_GETCURSEL, 0, 0 );
 	if ( nCurSel == LB_ERR)
 		return NULL;
 
-	int nItemData = SendDlgItemMessage( hDlg, IDC_PL_RULES_LIST, LB_GETITEMDATA, nCurSel, 0 );
+	LRESULT nItemData = SendDlgItemMessage( hDlg, IDC_PL_RULES_LIST, LB_GETITEMDATA, nCurSel, 0 );
 	if ( nItemData == LB_ERR || nItemData == 0 )
 		return NULL;
 
@@ -379,7 +379,7 @@ public:
 		int i, nTypes[] = { Jid, Group, Subscription, Else };
 		for ( i = 0; i < SIZEOF(szTypes); i++ )
 		{
-			int nItem = SendDlgItemMessage( m_hwnd, IDC_COMBO_TYPE, CB_ADDSTRING, 0, (LPARAM)TranslateTS( szTypes[i] ));
+			LRESULT nItem = SendDlgItemMessage( m_hwnd, IDC_COMBO_TYPE, CB_ADDSTRING, 0, (LPARAM)TranslateTS( szTypes[i] ));
 			SendDlgItemMessage( m_hwnd, IDC_COMBO_TYPE, CB_SETITEMDATA, nItem, nTypes[i] );
 			if ( m_pRule->GetType() == nTypes[i] )
 				SendDlgItemMessage( m_hwnd, IDC_COMBO_TYPE, CB_SETCURSEL, nItem, 0 );
@@ -389,7 +389,7 @@ public:
 		TCHAR* szSubscriptions[] = { _T("none"), _T("from"), _T("to"), _T("both") };
 		for ( i = 0; i < SIZEOF(szSubscriptions); i++ )
 		{
-			int nItem = SendDlgItemMessage( m_hwnd, IDC_COMBO_VALUE, CB_ADDSTRING, 0, (LPARAM)TranslateTS( szSubscriptions[i] ));
+			LRESULT nItem = SendDlgItemMessage( m_hwnd, IDC_COMBO_VALUE, CB_ADDSTRING, 0, (LPARAM)TranslateTS( szSubscriptions[i] ));
 			SendDlgItemMessage( m_hwnd, IDC_COMBO_VALUE, CB_SETITEMDATA, nItem, (LPARAM)szSubscriptions[i] );
 		}
 
@@ -420,11 +420,11 @@ public:
 	{
 		if ( !m_pRule ) return;
 
-		int nCurSel = SendDlgItemMessage( m_hwnd, IDC_COMBO_TYPE, CB_GETCURSEL, 0, 0 );
+		LRESULT nCurSel = SendDlgItemMessage( m_hwnd, IDC_COMBO_TYPE, CB_GETCURSEL, 0, 0 );
 		if ( nCurSel == CB_ERR )
 			return;
 
-		int nItemData = SendDlgItemMessage( m_hwnd, IDC_COMBO_TYPE, CB_GETITEMDATA, nCurSel, 0 );
+		LRESULT nItemData = SendDlgItemMessage( m_hwnd, IDC_COMBO_TYPE, CB_GETITEMDATA, nCurSel, 0 );
 		switch (nItemData)
 		{
 			case Jid:
@@ -462,7 +462,7 @@ public:
 				if ( m_pRule->GetValue() )
 				{
 					SetDlgItemText( m_hwnd, IDC_COMBO_VALUES, m_pRule->GetValue() );
-					int nSelPos = SendDlgItemMessage( m_hwnd, IDC_COMBO_VALUES, CB_FINDSTRINGEXACT , -1, (LPARAM)m_pRule->GetValue() );
+					LRESULT nSelPos = SendDlgItemMessage( m_hwnd, IDC_COMBO_VALUES, CB_FINDSTRINGEXACT , -1, (LPARAM)m_pRule->GetValue() );
 					if ( nSelPos != CB_ERR )
 						SendDlgItemMessage( m_hwnd, IDC_COMBO_VALUES, CB_SETCURSEL, nSelPos, 0 );
 				}
@@ -492,7 +492,7 @@ public:
 				if ( m_pRule->GetValue() )
 				{
 					SetDlgItemText( m_hwnd, IDC_COMBO_VALUES, m_pRule->GetValue() );
-					int nSelPos = SendDlgItemMessage( m_hwnd, IDC_COMBO_VALUES, CB_FINDSTRINGEXACT , -1, (LPARAM)m_pRule->GetValue() );
+					LRESULT nSelPos = SendDlgItemMessage( m_hwnd, IDC_COMBO_VALUES, CB_FINDSTRINGEXACT , -1, (LPARAM)m_pRule->GetValue() );
 					if ( nSelPos != CB_ERR )
 						SendDlgItemMessage( m_hwnd, IDC_COMBO_VALUES, CB_SETCURSEL, nSelPos, 0 );
 				}
@@ -506,7 +506,7 @@ public:
 
 				if ( m_pRule->GetValue() )
 				{
-					int nSelected = SendDlgItemMessage( m_hwnd, IDC_COMBO_VALUE, CB_SELECTSTRING, -1, (LPARAM)TranslateTS(m_pRule->GetValue()) );
+					LRESULT nSelected = SendDlgItemMessage( m_hwnd, IDC_COMBO_VALUE, CB_SELECTSTRING, -1, (LPARAM)TranslateTS(m_pRule->GetValue()) );
 					if ( nSelected == CB_ERR )
 						SendDlgItemMessage( m_hwnd, IDC_COMBO_VALUE, CB_SETCURSEL, 0, 0 );
 				}
@@ -527,8 +527,8 @@ public:
 
 	void btnOk_OnClick(CCtrlButton *)
 	{
-		int nItemData = -1;
-		int nCurSel = SendDlgItemMessage( m_hwnd, IDC_COMBO_TYPE, CB_GETCURSEL, 0, 0 );
+		LRESULT nItemData = -1;
+		LRESULT nCurSel = SendDlgItemMessage( m_hwnd, IDC_COMBO_TYPE, CB_GETCURSEL, 0, 0 );
 		if ( nCurSel != CB_ERR )
 			nItemData = SendDlgItemMessage( m_hwnd, IDC_COMBO_TYPE, CB_GETITEMDATA, nCurSel, 0 );
 
@@ -912,14 +912,16 @@ void CJabberDlgPrivacyLists::OnDestroy()
 
 void CJabberDlgPrivacyLists::OnProtoRefresh(WPARAM, LPARAM)
 {
-	int sel = SendDlgItemMessage(m_hwnd, IDC_LB_LISTS, LB_GETCURSEL, 0, 0);
-	int len = SendDlgItemMessage(m_hwnd, IDC_LB_LISTS, LB_GETTEXTLEN, sel, 0) + 1;
+	LRESULT sel = SendDlgItemMessage(m_hwnd, IDC_LB_LISTS, LB_GETCURSEL, 0, 0);
+	if ( sel == LB_ERR ) return;
+
+	LRESULT len = SendDlgItemMessage(m_hwnd, IDC_LB_LISTS, LB_GETTEXTLEN, sel, 0) + 1;
 	TCHAR *szCurrentSelectedList = (TCHAR *)_alloca(len * sizeof(TCHAR));
 	SendDlgItemMessage(m_hwnd, IDC_LB_LISTS, LB_GETTEXT, sel, (LPARAM)szCurrentSelectedList);
 
 	SendDlgItemMessage( m_hwnd, IDC_LB_LISTS, LB_RESETCONTENT, 0, 0 );
 
-	int nItemId = SendDlgItemMessage( m_hwnd, IDC_LB_LISTS, LB_ADDSTRING, 0, (LPARAM)TranslateT( "<none>" ));
+	LRESULT nItemId = SendDlgItemMessage( m_hwnd, IDC_LB_LISTS, LB_ADDSTRING, 0, (LPARAM)TranslateT( "<none>" ));
 	SendDlgItemMessage( m_hwnd, IDC_LB_LISTS, LB_SETITEMDATA, nItemId, (LPARAM)NULL );
 
 	m_proto->m_privacyListManager.Lock();
@@ -1077,7 +1079,7 @@ void CJabberDlgPrivacyLists::ShowAdvancedList(CPrivacyList *pList)
 		TCHAR szListItem[ 512 ];
 		mir_sntprintf( szListItem, SIZEOF( szListItem ), _T("%s %s %s"), szTypeValue, pRule->GetAction() ? _T("allow") : _T("deny"), szPackets );
 
-		int nItemId = SendDlgItemMessage( m_hwnd, IDC_PL_RULES_LIST, LB_ADDSTRING, 0, (LPARAM)szListItem );
+		LRESULT nItemId = SendDlgItemMessage( m_hwnd, IDC_PL_RULES_LIST, LB_ADDSTRING, 0, (LPARAM)szListItem );
 		SendDlgItemMessage( m_hwnd, IDC_PL_RULES_LIST, LB_SETITEMDATA, nItemId, (LPARAM)pRule );
 
 		pRule = pRule->GetNext();
@@ -1251,8 +1253,8 @@ void CJabberDlgPrivacyLists::DrawRulesList(LPDRAWITEMSTRUCT lpdis)
 
 	if (lpdis->itemState & ODS_FOCUS)
 	{
-		int sel = SendDlgItemMessage(m_hwnd, lpdis->CtlID, LB_GETCURSEL, 0, 0);
-		if ((sel == LB_ERR) || (sel == (int)lpdis->itemID))
+		LRESULT sel = SendDlgItemMessage(m_hwnd, lpdis->CtlID, LB_GETCURSEL, 0, 0);
+		if ((sel == LB_ERR) || (sel == (LRESULT)lpdis->itemID))
 			DrawFocusRect(lpdis->hDC, &lpdis->rcItem);
 	}
 }
@@ -1376,11 +1378,11 @@ void CJabberDlgPrivacyLists::CListFilter(HWND)
 bool CJabberDlgPrivacyLists::CListIsGroup(HANDLE hGroup)
 {
 	char idstr[33];
-	_itoa((int)hGroup-1, idstr, 10);
+	_i64toa((INT_PTR)hGroup-1, idstr, 10);
 
 	DBVARIANT dbv;
 	bool result = DBGetContactSettingTString(NULL, "CListGroups", idstr, &dbv) == 0;
-	if ( !result )
+	if ( result )
 		DBFreeVariant(&dbv);
 
 	return result;
@@ -1838,11 +1840,11 @@ void CJabberDlgPrivacyLists::btnSetDefault_OnClick(CCtrlButton *)
 
 void CJabberDlgPrivacyLists::lbLists_OnSelChange(CCtrlListBox *)
 {
-	int nCurSel = SendDlgItemMessage( m_hwnd, IDC_LB_LISTS, LB_GETCURSEL, 0, 0 );
+	LRESULT nCurSel = SendDlgItemMessage( m_hwnd, IDC_LB_LISTS, LB_GETCURSEL, 0, 0 );
 	if ( nCurSel == LB_ERR )
 		return;
 
-	int nErr = SendDlgItemMessage( m_hwnd, IDC_LB_LISTS, LB_GETITEMDATA, nCurSel, 0 );
+	LRESULT nErr = SendDlgItemMessage( m_hwnd, IDC_LB_LISTS, LB_GETITEMDATA, nCurSel, 0 );
 	if ( nErr == LB_ERR )
 		return;
 	if ( nErr == 0 )
