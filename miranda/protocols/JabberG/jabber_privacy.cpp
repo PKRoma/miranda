@@ -913,6 +913,8 @@ void CJabberDlgPrivacyLists::OnDestroy()
 void CJabberDlgPrivacyLists::OnProtoRefresh(WPARAM, LPARAM)
 {
 	LRESULT sel = SendDlgItemMessage(m_hwnd, IDC_LB_LISTS, LB_GETCURSEL, 0, 0);
+	if ( sel == LB_ERR ) return;
+
 	LRESULT len = SendDlgItemMessage(m_hwnd, IDC_LB_LISTS, LB_GETTEXTLEN, sel, 0) + 1;
 	TCHAR *szCurrentSelectedList = (TCHAR *)_alloca(len * sizeof(TCHAR));
 	SendDlgItemMessage(m_hwnd, IDC_LB_LISTS, LB_GETTEXT, sel, (LPARAM)szCurrentSelectedList);
@@ -1380,7 +1382,7 @@ bool CJabberDlgPrivacyLists::CListIsGroup(HANDLE hGroup)
 
 	DBVARIANT dbv;
 	bool result = DBGetContactSettingTString(NULL, "CListGroups", idstr, &dbv) == 0;
-	if ( !result )
+	if ( result )
 		DBFreeVariant(&dbv);
 
 	return result;
