@@ -563,7 +563,7 @@ INT_PTR NetlibHttpTransaction(WPARAM wParam,LPARAM lParam)
 			memcpy(nlhrSend.headers,nlhr->headers,sizeof(NETLIBHTTPHEADER)*nlhr->headersCount);
         }
 		if(!doneUserAgentHeader) {
-			char *pspace,szMirandaVer[32];
+			char *pspace,szMirandaVer[64];
 
 			nlhrSend.headers[nlhrSend.headersCount].szName="User-Agent";
 			nlhrSend.headers[nlhrSend.headersCount].szValue=szUserAgent;
