@@ -140,6 +140,36 @@ bool txtParseParam (const char* szData, const char* presearch, const char* start
 	return true;
 } 
 
+char* parseWLID(const char* wlid, char** net, char** email, char** inst)
+{
+	 char* tWild = mir_strdup(wlid);
+
+	char* col = strchr(tWild, ':');
+	if (col && strncmp(tWild, "tel:", 4))
+	{
+		*col = 0;
+		if (net) *net = tWild;
+		if (email) *email = col + 1;
+		++col;
+	}
+	else
+	{
+		if (net) *net = NULL;
+		if (email) *email = tWild;
+	}
+
+
+	col = strchr(tWild, ';');
+	if (col)
+	{
+		*col = 0;
+		if (inst) *inst = col + 1;
+	}
+	else
+		if (inst) *inst = NULL;
+
+	return tWild;
+}
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // UrlDecode - converts URL chars like %20 into printable characters
@@ -321,18 +351,21 @@ void stripColorCode(char* src)
 				if (isdigit(ps[3]))
 				{
 					ps += 3;
-					if (ps[0] == '1' && isdigit(ps[1]))
+					if (isdigit(ps[1]))
 					{
 						ps += 2;
-						if (ps[0] == ',' && isdigit(ps[1]))
-						{
-							ps += 2;
-							if (ps[0] == '1' && isdigit(ps[1]))
-								ps += 2;
-						}
 					}
 					else
 						++ps;
+
+					if (ps[0] == ',' && isdigit(ps[1]))
+					{
+						ps += 2;
+						if (isdigit(ps[1]))
+							ps += 2;
+						else
+							++ps;
+					}
 					continue;
 				}
 				else if (ps[3] == '#')
@@ -349,5 +382,58 @@ void stripColorCode(char* src)
 		*(pd++) = *(ps++);
 	}
 	*pd = 0;
+}
+
+// Process a string, and double all % characters, according to chat.dll's restrictions
+// Returns a pointer to the new string (old one is not freed)
+TCHAR* EscapeChatTags(const TCHAR* pszText)
+{
+	int nChars = 0;
+	for (const TCHAR* p = pszText; (p = _tcschr(p, '%')) != NULL; p++)
+		nChars++;
+
+	if (nChars == 0)
+		return mir_tstrdup(pszText);
+
+	TCHAR *pszNewText = (TCHAR*)mir_alloc(sizeof(TCHAR)*(_tcslen(pszText) + 1 + nChars));
+	if (pszNewText == NULL)
+		return mir_tstrdup(pszText);
+
+	const TCHAR *s = pszText;
+	TCHAR *d = pszNewText;
+	while (*s) {
+		if (*s == '%')
+			*d++ = '%';
+		*d++ = *s++;
+	}
+	*d = 0;
+	return pszNewText;
+}
+
+TCHAR* UnEscapeChatTags(TCHAR* str_in)
+{
+	TCHAR *s = str_in, *d = str_in;
+	while (*s) {
+		if ((*s == '%' && s[1] == '%') || (*s == '\n' && s[1] == '\n'))
+			s++;
+		*d++ = *s++;
+	}
+	*d = 0;
+	return str_in;
+}
+
+char* getNewUuid(void)
+{
+	BYTE* p;
+	UUID id;
+
+	UuidCreate(&id);
+	UuidToStringA(&id, &p);
+	size_t len = strlen((char*)p) + 3;
+	char* result = (char*)mir_alloc(len);
+	mir_snprintf(result, len, "{%s}", p);
+	_strupr(result);
+	RpcStringFreeA(&p);
+	return result;
 }
 
