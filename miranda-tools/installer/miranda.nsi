@@ -59,8 +59,8 @@ var INST_SUCCESS
 !define MUI_FINISHPAGE_SHOWREADME $INSTDIR\readme.txt
 !define MUI_FINISHPAGE_SHOWREADME_TEXT "View Readme"
 !define MUI_FINISHPAGE_SHOWREADME_NOTCHECKED
-!define MUI_FINISHPAGE_LINK "What next?"
-!define MUI_FINISHPAGE_LINK_LOCATION "http://www.miranda-im.org/download/complete/"
+!define MUI_FINISHPAGE_LINK "Support Miranda IM"
+!define MUI_FINISHPAGE_LINK_LOCATION "http://www.miranda-im.org/donate/"
 
 !insertmacro MUI_PAGE_WELCOME
 !insertmacro MUI_PAGE_LICENSE "${MIM_BUILD_SRC}\docs\license.txt"
