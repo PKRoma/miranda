@@ -3,7 +3,16 @@
                    
                            www.miranda-im.org
                              
-                             
+
+* New in 0.8.10
+Bugfixes:
+ - SSL improvements on Windows 9x
+ - Jabber: Improve support for Jabber transports
+ - MSN: Fix for forward list
+ - MSN: Fixed stripping of bbcodes
+ - MSN: Fixed possible memory leak in privacy lists
+ 
+
 * New in 0.8.9
 Bugfixes:
  - Fix for entering cyrillic chars into the profile manager
