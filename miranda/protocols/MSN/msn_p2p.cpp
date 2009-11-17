@@ -53,6 +53,21 @@ void CMsnProto::p2p_logHeader(P2P_Header* hdrdata)
 	MSN_DebugLog("------------------------");
 }
 
+char* getNewUuid(void)
+{
+	BYTE* p;
+	UUID id;
+
+	UuidCreate(&id);
+	UuidToStringA(&id, &p);
+	size_t len = strlen((char*)p) + 3;
+	char* result = (char*)mir_alloc(len);
+	mir_snprintf(result, len, "{%s}", p);
+	_strupr(result);
+	RpcStringFreeA(&p);
+	return result;
+}
+
 unsigned CMsnProto::p2p_getMsgId(HANDLE hContact, int inc)
 {
 	unsigned cid = getDword(hContact, "p2pMsgId", 0);

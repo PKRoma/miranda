@@ -1108,6 +1108,44 @@ char* TWinErrorCode::getText()
 	return mErrorText;
 }
 
+// Process a string, and double all % characters, according to chat.dll's restrictions
+// Returns a pointer to the new string (old one is not freed)
+TCHAR* EscapeChatTags(const TCHAR* pszText)
+{
+	int nChars = 0;
+	for (const TCHAR* p = pszText; (p = _tcschr(p, '%')) != NULL; p++)
+		nChars++;
+
+	if (nChars == 0)
+		return mir_tstrdup(pszText);
+
+	TCHAR *pszNewText = (TCHAR*)mir_alloc(sizeof(TCHAR)*(_tcslen(pszText) + 1 + nChars));
+	if (pszNewText == NULL)
+		return mir_tstrdup(pszText);
+
+	const TCHAR *s = pszText;
+	TCHAR *d = pszNewText;
+	while (*s) {
+		if (*s == '%')
+			*d++ = '%';
+		*d++ = *s++;
+	}
+	*d = 0;
+	return pszNewText;
+}
+
+TCHAR* UnEscapeChatTags(TCHAR* str_in)
+{
+	TCHAR *s = str_in, *d = str_in;
+	while (*s) {
+		if ((*s == '%' && s[1] == '%') || (*s == '\n' && s[1] == '\n'))
+			s++;
+		*d++ = *s++;
+	}
+	*d = 0;
+	return str_in;
+}
+
 char* MSN_Base64Decode(const char* str)
 {
 	if (str == NULL) return NULL; 
