@@ -20,16 +20,16 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 INT_PTR CAimProto::GetMyAwayMsg(WPARAM wParam,LPARAM lParam)
 {
-    char** msgptr = getStatusMsgLoc(wParam ? wParam : m_iStatus);
+	char** msgptr = getStatusMsgLoc(wParam ? wParam : m_iStatus);
 	if (msgptr == NULL)	return 0;
 
-    return (lParam & SGMA_UNICODE) ? (INT_PTR)mir_utf8decodeW(*msgptr) : (INT_PTR)mir_utf8decodeA(*msgptr);
+	return (lParam & SGMA_UNICODE) ? (INT_PTR)mir_utf8decodeW(*msgptr) : (INT_PTR)mir_utf8decodeA(*msgptr);
 }
 
 int CAimProto::OnIdleChanged(WPARAM /*wParam*/, LPARAM lParam)
 {
 	if (state != 1) 
-    {
+	{
 		idle=0;
 		return 0;
 	}
@@ -41,7 +41,7 @@ int CAimProto::OnIdleChanged(WPARAM /*wParam*/, LPARAM lParam)
 	BOOL bPrivacy = (lParam & IDF_PRIVACY);
 
 	if (bPrivacy && idle) 
-    {
+	{
 		aim_set_idle(hServerConn,seqno,0);
 		return 0;
 	}
@@ -50,7 +50,7 @@ int CAimProto::OnIdleChanged(WPARAM /*wParam*/, LPARAM lParam)
 		return 0;
 
 	if (bIdle)  //don't want to change idle time if we are already idle
-    {
+	{
 		MIRANDA_IDLE_INFO mii;
 
 		ZeroMemory(&mii, sizeof(mii));
@@ -68,20 +68,20 @@ int CAimProto::OnWindowEvent(WPARAM wParam, LPARAM lParam)
 {
 	MessageWindowEventData* msgEvData  = (MessageWindowEventData*)lParam;
 
-    if (msgEvData->uType == MSG_WINDOW_EVT_CLOSE) 
-    {
-	    if (state != 1 || !is_my_contact(msgEvData->hContact)) 
-            return 0;
+	if (msgEvData->uType == MSG_WINDOW_EVT_CLOSE) 
+	{
+		if (state != 1 || !is_my_contact(msgEvData->hContact)) 
+			return 0;
 
-        if (getWord(msgEvData->hContact, AIM_KEY_ST, ID_STATUS_OFFLINE) == ID_STATUS_ONTHEPHONE)
-            return 0;
+		if (getWord(msgEvData->hContact, AIM_KEY_ST, ID_STATUS_OFFLINE) == ID_STATUS_ONTHEPHONE)
+			return 0;
 
-        DBVARIANT dbv;
-        if (!getString(msgEvData->hContact, AIM_KEY_SN, &dbv)) 
-        {
+		DBVARIANT dbv;
+		if (!getString(msgEvData->hContact, AIM_KEY_SN, &dbv)) 
+		{
 			aim_typing_notification(hServerConn, seqno, dbv.pszVal, 0x000f);
-		    DBFreeVariant(&dbv);
-        }
+			DBFreeVariant(&dbv);
+		}
 	}
 	return 0;
 }
@@ -93,7 +93,7 @@ INT_PTR CAimProto::GetProfile(WPARAM wParam, LPARAM lParam)
 
 	DBVARIANT dbv;
 	if (!getString((HANDLE)wParam, AIM_KEY_SN, &dbv))
-    {
+	{
 		request_HTML_profile = 1;
 		aim_query_profile(hServerConn, seqno, dbv.pszVal);
 		DBFreeVariant(&dbv);
@@ -108,9 +108,9 @@ INT_PTR CAimProto::GetHTMLAwayMsg(WPARAM wParam, LPARAM /*lParam*/)
 
 	DBVARIANT dbv;
 	if (!getString((HANDLE)wParam, AIM_KEY_SN, &dbv))
-    {
-        request_away_message = 1;
-        aim_query_away_message(hServerConn, seqno, dbv.pszVal);
+	{
+		request_away_message = 1;
+		aim_query_away_message(hServerConn, seqno, dbv.pszVal);
 	}
 	return 0;
 }
@@ -119,52 +119,52 @@ int CAimProto::OnSettingChanged(WPARAM wParam,LPARAM lParam)
 {
 	DBCONTACTWRITESETTING *cws = (DBCONTACTWRITESETTING*)lParam;
 
-    if (strcmp(cws->szModule, MOD_KEY_CL) == 0 && state == 1 && wParam)
-    {
-        HANDLE hContact = (HANDLE)wParam;
-        if (strcmp(cws->szSetting, AIM_KEY_NL) == 0)
-        {
-            if (cws->value.type == DBVT_DELETED && is_my_contact(hContact))
-            {
-			    DBVARIANT dbv;
-			    if(!DBGetContactSettingStringUtf(hContact, MOD_KEY_CL, OTH_KEY_GP, &dbv))
-			    {
-				    add_contact_to_group(hContact, dbv.pszVal);
-				    DBFreeVariant(&dbv);
-			    }
-			    else
-				    add_contact_to_group(hContact, AIM_DEFAULT_GROUP);
-		    }
-        }
-        else if (strcmp(cws->szSetting, "MyHandle") == 0)
-        {
-            if (is_my_contact(hContact))
-            {
-                char* name;
-                switch (cws->value.type)
-                {
-                case DBVT_DELETED:
-                    set_local_nick(hContact, NULL, NULL);
-                    break;
+	if (strcmp(cws->szModule, MOD_KEY_CL) == 0 && state == 1 && wParam)
+	{
+		HANDLE hContact = (HANDLE)wParam;
+		if (strcmp(cws->szSetting, AIM_KEY_NL) == 0)
+		{
+			if (cws->value.type == DBVT_DELETED && is_my_contact(hContact))
+			{
+				DBVARIANT dbv;
+				if(!DBGetContactSettingStringUtf(hContact, MOD_KEY_CL, OTH_KEY_GP, &dbv))
+				{
+					add_contact_to_group(hContact, dbv.pszVal);
+					DBFreeVariant(&dbv);
+				}
+				else
+					add_contact_to_group(hContact, AIM_DEFAULT_GROUP);
+			}
+		}
+		else if (strcmp(cws->szSetting, "MyHandle") == 0)
+		{
+			if (is_my_contact(hContact))
+			{
+				char* name;
+				switch (cws->value.type)
+				{
+				case DBVT_DELETED:
+					set_local_nick(hContact, NULL, NULL);
+					break;
 
-                case DBVT_ASCIIZ:
-                    name = mir_utf8encode(cws->value.pszVal);
-                    set_local_nick(hContact, name, NULL);
-                    mir_free(name);
-                    break;
+				case DBVT_ASCIIZ:
+					name = mir_utf8encode(cws->value.pszVal);
+					set_local_nick(hContact, name, NULL);
+					mir_free(name);
+					break;
 
-                case DBVT_UTF8:
-                    set_local_nick(hContact, cws->value.pszVal, NULL);
-                    break;
+				case DBVT_UTF8:
+					set_local_nick(hContact, cws->value.pszVal, NULL);
+					break;
 
-                case DBVT_WCHAR:
-                    name = mir_utf8encodeW(cws->value.pwszVal);
-                    set_local_nick(hContact, name, NULL);
-                    mir_free(name);
-                    break;
-                }
-            }
-        }
+				case DBVT_WCHAR:
+					name = mir_utf8encodeW(cws->value.pwszVal);
+					set_local_nick(hContact, name, NULL);
+					mir_free(name);
+					break;
+				}
+			}
+		}
 	}
 
 	return 0;
@@ -174,28 +174,28 @@ int CAimProto::OnContactDeleted(WPARAM wParam,LPARAM /*lParam*/)
 {
 	if (state != 1) return 0;
 
-    const HANDLE hContact = (HANDLE)wParam;
+	const HANDLE hContact = (HANDLE)wParam;
 
-    if (!is_my_contact(hContact) || DBGetContactSettingByte(hContact, MOD_KEY_CL, AIM_KEY_NL, 0))
-        return 0;
+	if (!is_my_contact(hContact) || DBGetContactSettingByte(hContact, MOD_KEY_CL, AIM_KEY_NL, 0))
+		return 0;
 
 	DBVARIANT dbv;
 	if (!getString(hContact, AIM_KEY_SN, &dbv)) 
-    {
+	{
 		for(int i=1;;++i)
 		{
-            unsigned short item_id = getBuddyId(hContact, i);
+			unsigned short item_id = getBuddyId(hContact, i);
 			if (item_id == 0) break; 
 
-            unsigned short group_id = getGroupId(hContact, i);
+			unsigned short group_id = getGroupId(hContact, i);
 			if (group_id)
-            {
-                aim_ssi_update(hServerConn, seqno, true);
+			{
+				aim_ssi_update(hServerConn, seqno, true);
 				aim_delete_contact(hServerConn, seqno, dbv.pszVal, item_id, group_id, 0);
-                char* group = group_list.find_name(group_id);
-			    update_server_group(group, group_id);
-                aim_ssi_update(hServerConn, seqno, false);
-            }
+				char* group = group_list.find_name(group_id);
+				update_server_group(group, group_id);
+				aim_ssi_update(hServerConn, seqno, false);
+			}
 		}
 		DBFreeVariant(&dbv);
 	}
@@ -215,40 +215,40 @@ int CAimProto::OnGroupChange(WPARAM wParam,LPARAM lParam)
 		if (grpchg->pszNewName == NULL && grpchg->pszOldName != NULL)
 		{
 			char* szOldName = mir_utf8encodeT(grpchg->pszOldName);
-            unsigned short group_id = group_list.find_id(szOldName);
-            if (group_id)
-            {
-			    aim_delete_contact(hServerConn, seqno, szOldName, 0, group_id, 1);
-                group_list.remove_by_id(group_id);
-		        update_server_group("", 0);
-            }
+			unsigned short group_id = group_list.find_id(szOldName);
+			if (group_id)
+			{
+				aim_delete_contact(hServerConn, seqno, szOldName, 0, group_id, 1);
+				group_list.remove_by_id(group_id);
+				update_server_group("", 0);
+			}
 			mir_free(szOldName);
 		}
 		else if (grpchg->pszNewName != NULL && grpchg->pszOldName != NULL)
 		{
 			char* szOldName = mir_utf8encodeT(grpchg->pszOldName);
-            unsigned short group_id = group_list.find_id(szOldName);
-            if (group_id)
-            {
-			    char* szNewName = mir_utf8encodeT(grpchg->pszNewName);
-			    update_server_group(szNewName, group_id);
-			    mir_free(szNewName);
+			unsigned short group_id = group_list.find_id(szOldName);
+			if (group_id)
+			{
+				char* szNewName = mir_utf8encodeT(grpchg->pszNewName);
+				update_server_group(szNewName, group_id);
+				mir_free(szNewName);
 			}
 			mir_free(szOldName);
 		}
 	}
 	else
 	{
-        if (is_my_contact(hContact) && !DBGetContactSettingByte(hContact, MOD_KEY_CL, AIM_KEY_NL, 0))
+		if (is_my_contact(hContact) && !DBGetContactSettingByte(hContact, MOD_KEY_CL, AIM_KEY_NL, 0))
 		{
-            if (grpchg->pszNewName)
-            {
-			    char* szNewName = mir_utf8encodeT(grpchg->pszNewName);
-			    add_contact_to_group(hContact, szNewName);
-			    mir_free(szNewName);
-            }
-            else
-          		ShowPopup(LPGEN("Buddies without group are not allowed"), ERROR_POPUP);
+			if (grpchg->pszNewName)
+			{
+				char* szNewName = mir_utf8encodeT(grpchg->pszNewName);
+				add_contact_to_group(hContact, szNewName);
+				mir_free(szNewName);
+			}
+			else
+				ShowPopup(LPGEN("Buddies without group are not allowed"), ERROR_POPUP);
 		}
 	}
 	return 0;
@@ -258,10 +258,10 @@ INT_PTR CAimProto::AddToServerList(WPARAM wParam, LPARAM /*lParam*/)
 {
 	if (state != 1) return 0;
 
-    HANDLE hContact = (HANDLE)wParam;
+	HANDLE hContact = (HANDLE)wParam;
 	DBVARIANT dbv;
 	if (!DBGetContactSettingStringUtf(hContact, MOD_KEY_CL, OTH_KEY_GP, &dbv))
-    {
+	{
 		add_contact_to_group(hContact, dbv.pszVal);
 		DBFreeVariant(&dbv);
 	}
@@ -273,48 +273,48 @@ INT_PTR CAimProto::BlockBuddy(WPARAM wParam, LPARAM /*lParam*/)
 {
 	if (state != 1)	return 0;
 
-    HANDLE hContact = (HANDLE)wParam;
-    unsigned short item_id;
+	HANDLE hContact = (HANDLE)wParam;
+	unsigned short item_id;
 	DBVARIANT dbv;
 	if (getString(hContact, AIM_KEY_SN, &dbv)) return 0;
 
-    switch(pd_mode)
-    {
-    case 1:
-        pd_mode = 4;
-        aim_set_pd_info(hServerConn, seqno);
+	switch(pd_mode)
+	{
+	case 1:
+		pd_mode = 4;
+		aim_set_pd_info(hServerConn, seqno);
 
-    case 4:
-        item_id = block_list.find_id(dbv.pszVal);
+	case 4:
+		item_id = block_list.find_id(dbv.pszVal);
 		if (item_id != 0)
-        {
-            block_list.remove_by_id(item_id);
-            aim_delete_contact(hServerConn, seqno, dbv.pszVal, item_id, 0, 3);
-        }
-        else
-        {
-            item_id = block_list.add(dbv.pszVal);
-            aim_add_contact(hServerConn, seqno, dbv.pszVal, item_id, 0, 3);
-        }
-        break;
+		{
+			block_list.remove_by_id(item_id);
+			aim_delete_contact(hServerConn, seqno, dbv.pszVal, item_id, 0, 3);
+		}
+		else
+		{
+			item_id = block_list.add(dbv.pszVal);
+			aim_add_contact(hServerConn, seqno, dbv.pszVal, item_id, 0, 3);
+		}
+		break;
 
-    case 2:
-        pd_mode = 3;
-        aim_set_pd_info(hServerConn, seqno);
+	case 2:
+		pd_mode = 3;
+		aim_set_pd_info(hServerConn, seqno);
 
-    case 3:
-        item_id = allow_list.find_id(dbv.pszVal);
+	case 3:
+		item_id = allow_list.find_id(dbv.pszVal);
 		if (item_id != 0)
-        {
-            allow_list.remove_by_id(item_id);
-            aim_delete_contact(hServerConn, seqno, dbv.pszVal, item_id, 0, 2);
-        }
-        else
-        {
-            item_id = allow_list.add(dbv.pszVal);
-            aim_add_contact(hServerConn, seqno, dbv.pszVal, item_id, 0, 2);
-        }
-        break;
+		{
+			allow_list.remove_by_id(item_id);
+			aim_delete_contact(hServerConn, seqno, dbv.pszVal, item_id, 0, 2);
+		}
+		else
+		{
+			item_id = allow_list.add(dbv.pszVal);
+			aim_add_contact(hServerConn, seqno, dbv.pszVal, item_id, 0, 2);
+		}
+		break;
 	}
 	DBFreeVariant(&dbv);
 
@@ -331,31 +331,31 @@ INT_PTR CAimProto::OnJoinChat(WPARAM wParam, LPARAM /*lParam*/)
 {
 	if (state != 1)	return 0;
 
-    HANDLE hContact = (HANDLE)wParam;
+	HANDLE hContact = (HANDLE)wParam;
 
-    DBVARIANT dbv;
-    if (!getString(hContact, "ChatRoomID", &dbv))
-    {
-        chatnav_param* par = new chatnav_param(dbv.pszVal, getWord(hContact, "Exchange", 4));
-        ForkThread(&CAimProto::chatnav_request_thread, par);
-        DBFreeVariant(&dbv);
-    }
-    return 0;
+	DBVARIANT dbv;
+	if (!getString(hContact, "ChatRoomID", &dbv))
+	{
+		chatnav_param* par = new chatnav_param(dbv.pszVal, getWord(hContact, "Exchange", 4));
+		ForkThread(&CAimProto::chatnav_request_thread, par);
+		DBFreeVariant(&dbv);
+	}
+	return 0;
 }
 
 INT_PTR CAimProto::OnLeaveChat(WPARAM wParam, LPARAM /*lParam*/)
 {
 	if (state != 1)	return 0;
 
-    HANDLE hContact = (HANDLE)wParam;
+	HANDLE hContact = (HANDLE)wParam;
 
-    DBVARIANT dbv;
-    if (!getString(hContact, "ChatRoomID", &dbv))
-    {
-        chat_leave(dbv.pszVal);
-        DBFreeVariant(&dbv);
-    }
-    return 0;
+	DBVARIANT dbv;
+	if (!getString(hContact, "ChatRoomID", &dbv))
+	{
+		chat_leave(dbv.pszVal);
+		DBFreeVariant(&dbv);
+	}
+	return 0;
 }
 
 INT_PTR CAimProto::InstantIdle(WPARAM /*wParam*/, LPARAM /*lParam*/)
@@ -373,49 +373,49 @@ INT_PTR CAimProto::ManageAccount(WPARAM /*wParam*/, LPARAM /*lParam*/)
 INT_PTR CAimProto::GetAvatarInfo(WPARAM wParam, LPARAM lParam)
 {
 	PROTO_AVATAR_INFORMATION* AI = (PROTO_AVATAR_INFORMATION*)lParam;
-    
-    int res = GAIR_NOAVATAR;
-    AI->filename[0] = 0;
-    AI->format = PA_FORMAT_UNKNOWN;
+	
+	int res = GAIR_NOAVATAR;
+	AI->filename[0] = 0;
+	AI->format = PA_FORMAT_UNKNOWN;
 
 	if (getByte(AIM_KEY_DA, 0)) return res;
 
-    if (AI->hContact == NULL)
-    {
-	    get_avatar_filename(NULL, AI->filename, sizeof(AI->filename), NULL);
-        AI->format = detect_image_type(AI->filename);
-        return (AI->format ? GAIR_SUCCESS : GAIR_NOAVATAR);
-    }
+	if (AI->hContact == NULL)
+	{
+		get_avatar_filename(NULL, AI->filename, sizeof(AI->filename), NULL);
+		AI->format = detect_image_type(AI->filename);
+		return (AI->format ? GAIR_SUCCESS : GAIR_NOAVATAR);
+	}
 
-    char* hash=getSetting(AI->hContact, AIM_KEY_AH);
-    if (hash)
-    {
-	    get_avatar_filename(AI->hContact, AI->filename, sizeof(AI->filename), NULL);
-        char* hashs=getSetting(AI->hContact, AIM_KEY_ASH);
-        if (hashs && strcmp(hashs, hash) == 0)
-        {
-            AI->format = detect_image_type(AI->filename);
-            if (AI->format != PA_FORMAT_UNKNOWN) res = GAIR_SUCCESS;
-        }
-        mir_free(hashs);
+	char* hash=getSetting(AI->hContact, AIM_KEY_AH);
+	if (hash)
+	{
+		get_avatar_filename(AI->hContact, AI->filename, sizeof(AI->filename), NULL);
+		char* hashs=getSetting(AI->hContact, AIM_KEY_ASH);
+		if (hashs && strcmp(hashs, hash) == 0)
+		{
+			AI->format = detect_image_type(AI->filename);
+			if (AI->format != PA_FORMAT_UNKNOWN) res = GAIR_SUCCESS;
+		}
+		mir_free(hashs);
 
-	    if ((wParam & GAIF_FORCE) != 0 && res != GAIR_SUCCESS)
-	    {
-		    WORD wStatus = getWord(AI->hContact, AIM_KEY_ST, ID_STATUS_OFFLINE);
-		    if (wStatus == ID_STATUS_OFFLINE) 
-		    {
-			    deleteSetting(AI->hContact, "AvatarHash");
-		    }
-		    else 
-		    {
-                avatar_req_param *ar = new avatar_req_param(getSetting(AI->hContact, AIM_KEY_SN), mir_strdup(hash));
-			    LOG("Starting avatar request thread for %s)", ar->sn);
-			    ForkThread(&CAimProto::avatar_request_thread, ar);
-                res = GAIR_WAITFOR;
-		    }
-	    }
-        mir_free(hash);
-    }
+		if ((wParam & GAIF_FORCE) != 0 && res != GAIR_SUCCESS)
+		{
+			WORD wStatus = getWord(AI->hContact, AIM_KEY_ST, ID_STATUS_OFFLINE);
+			if (wStatus == ID_STATUS_OFFLINE) 
+			{
+				deleteSetting(AI->hContact, "AvatarHash");
+			}
+			else 
+			{
+				avatar_req_param *ar = new avatar_req_param(getSetting(AI->hContact, AIM_KEY_SN), mir_strdup(hash));
+				LOG("Starting avatar request thread for %s)", ar->sn);
+				ForkThread(&CAimProto::avatar_request_thread, ar);
+				res = GAIR_WAITFOR;
+			}
+		}
+		mir_free(hash);
+	}
 	return res;
 }
 
@@ -430,9 +430,9 @@ INT_PTR CAimProto::GetAvatarCaps(WPARAM wParam, LPARAM lParam)
 		((POINT*)lParam)->y = 64;
 		break;
 
-    case AF_MAXFILESIZE:
-        res = 7168;
-        break;
+	case AF_MAXFILESIZE:
+		res = 7168;
+		break;
 
 	case AF_PROPORTION:
 		res = PIP_SQUARE;
@@ -442,8 +442,8 @@ INT_PTR CAimProto::GetAvatarCaps(WPARAM wParam, LPARAM lParam)
 		res = (lParam == PA_FORMAT_JPEG || lParam == PA_FORMAT_GIF || lParam == PA_FORMAT_BMP);
 		break;
 
-    case AF_ENABLED:
-    case AF_DONTNEEDDELAYS:
+	case AF_ENABLED:
+	case AF_DONTNEEDDELAYS:
 		res = 1;
 		break;
 	}
@@ -471,31 +471,31 @@ INT_PTR CAimProto::SetAvatar(WPARAM wParam, LPARAM lParam)
 	get_avatar_filename(NULL, tFileName, sizeof(tFileName), NULL);
 	remove(tFileName);
 
-    if (szFileName == NULL)
+	if (szFileName == NULL)
 	{
-        aim_set_avatar_hash(hServerConn, seqno, 0, 5, "\x02\x01\xd2\x04\x72");
+		aim_set_avatar_hash(hServerConn, seqno, 0, 5, "\x02\x01\xd2\x04\x72");
 	}
 	else
 	{
-        char hash[16], *data;
-        unsigned short size;
-        if (!get_avatar_hash(szFileName, hash, &data, size))
-            return 1;
+		char hash[16], *data;
+		unsigned short size;
+		if (!get_avatar_hash(szFileName, hash, &data, size))
+			return 1;
 
 		char* tFileName = (char*)mir_alloc(MAX_PATH);
-        char *ext = strrchr(szFileName, '.');
+		char *ext = strrchr(szFileName, '.');
 		get_avatar_filename(NULL, tFileName, MAX_PATH, ext);
 		int fileId = _open(tFileName, _O_CREAT | _O_TRUNC | _O_WRONLY | O_BINARY, _S_IREAD | _S_IWRITE);
 		if (fileId < 0)
-        {
+		{
 //			ShowError("Cannot set avatar. File '%s' could not be created/overwritten", tFileName);
-            mir_free(tFileName);         
-            return 1; 
+			mir_free(tFileName);         
+			return 1; 
 		}
 		_write(fileId, data, size);
 		_close(fileId);
-    
-        ForkThread(&CAimProto::avatar_upload_thread, tFileName);
-    }
-    return 0;
+	
+		ForkThread(&CAimProto::avatar_upload_thread, tFileName);
+	}
+	return 0;
 }
