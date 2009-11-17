@@ -312,7 +312,7 @@ void stripColorCode(char* src)
 				if (isdigit(ps[3]))
 				{
 					ps += 3;
-					if (ps[0] <= '3' && isdigit(ps[1]))
+					if (isdigit(ps[1]))
 					{
 						ps += 2;
 					}
@@ -322,8 +322,8 @@ void stripColorCode(char* src)
 						if (ps[0] == ',' && isdigit(ps[1]))
 						{
 							ps += 2;
-						if (ps[0] <= '3' && isdigit(ps[1]))
-							ps += 2;
+							if (isdigit(ps[1]))
+								ps += 2;
 						else
 							++ps;
 					}
