@@ -597,21 +597,21 @@ BEGIN
     CONTROL         "",IDC_SPIN_W,"msctls_updown32",UDS_SETBUDDYINT | 
                     UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | 
                     UDS_NOTHOUSANDS | UDS_HOTTRACK,276,118,11,12
-    RTEXT           "Button width",IDC_STATIC_W,174,120,60,10
+    RTEXT           "Button width",IDC_STATIC_W,154,120,80,10
     EDITTEXT        IDC_TEXT_S,240,148,35,12,ES_NUMBER
     CONTROL         "",IDC_SPIN_S,"msctls_updown32",UDS_SETBUDDYINT | 
                     UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | 
                     UDS_NOTHOUSANDS | UDS_HOTTRACK,276,148,11,12
-    RTEXT           "Space between",IDC_STATIC_S,156,151,77,10
+    RTEXT           "Space between",IDC_STATIC_S,154,151,80,10
     EDITTEXT        IDC_TEXT_H,240,133,35,12,ES_NUMBER
     CONTROL         "",IDC_SPIN_H,"msctls_updown32",UDS_SETBUDDYINT | 
                     UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | 
                     UDS_NOTHOUSANDS | UDS_HOTTRACK,276,133,11,12
-    RTEXT           "Height",IDC_STATIC_H,156,136,77,10
+    RTEXT           "Height",IDC_STATIC_H,154,136,80,10
     CONTROL         "Multiline toolbar",IDC_CHECK_MULTILINE,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,164,86,122,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,157,86,139,10
     CONTROL         "Autosize toolbar",IDC_CHECK_AUTOSIZE,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,164,101,122,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,157,100,139,10
 END
 
 
@@ -723,12 +723,12 @@ BEGIN
     CONTROL         "Ask before deleting contacts",IDC_CONFIRMDELETE,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,10,61,124,10
     CONTROL         "Dont move offline user to bottom",IDC_NOOFFLINEMOVE,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,156,77,138,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,153,77,141,10
     GROUPBOX        "Contact List",IDC_STCLISTGROUP,2,8,142,84
     GROUPBOX        "Contact List Sorting",IDC_STATIC,146,8,154,84,WS_GROUP
     LTEXT           "1st:",IDC_STATIC,153,19,14,8
-    LTEXT           "2nd:",IDC_STATIC,152,35,16,8
-    LTEXT           "3rd:",IDC_STATIC,154,49,14,8
+    LTEXT           "2nd:",IDC_STATIC,153,35,14,8
+    LTEXT           "3rd:",IDC_STATIC,153,49,14,8
     COMBOBOX        IDC_CLSORT1,169,18,125,146,CBS_DROPDOWNLIST | WS_VSCROLL | 
                     WS_TABSTOP
     COMBOBOX        IDC_CLSORT2,169,33,125,140,CBS_DROPDOWNLIST | WS_VSCROLL | 
@@ -736,7 +736,7 @@ BEGIN
     COMBOBOX        IDC_CLSORT3,169,48,125,140,CBS_DROPDOWNLIST | WS_VSCROLL | 
                     WS_TABSTOP
     CONTROL         "Place offline users out of groups",IDC_OFFLINETOROOT,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,156,64,138,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,153,64,141,10
     CONTROL         "Gamma correction",IDC_GAMMACORRECT,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,14,180,124,10
     CONTROL         "Default",IDC_HILIGHTMODE4,"Button",BS_AUTORADIOBUTTON,
