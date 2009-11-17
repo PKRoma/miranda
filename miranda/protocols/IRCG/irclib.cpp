@@ -425,7 +425,7 @@ void CIrcProto::DoReceive()
 						while( *p1 != '\0' ) {
 							if( *p1 == '\r' || *p1 == '\n')
 								*p1 = '\0';
-							*p1++;
+							p1++;
 						}
 
 						createMessageFromPchar( pszTemp );
