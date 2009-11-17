@@ -52,90 +52,90 @@ static INT_PTR ServiceParseAimLink(WPARAM /*wParam*/,LPARAM lParam)
 	if (proto==NULL) return 1;
 
 	/*
-        add user:      aim:addbuddy?screenname=NICK&groupname=GROUP
-        send message:  aim:goim?screenname=NICK&message=MSG
-        open chatroom: aim:gochat?roomname=ROOM&exchange=NUM
-    */
-    /* add a contact to the list */
-    if (!_strnicmp(arg,"addbuddy?",9)) 
+		add user:      aim:addbuddy?screenname=NICK&groupname=GROUP
+		send message:  aim:goim?screenname=NICK&message=MSG
+		open chatroom: aim:gochat?roomname=ROOM&exchange=NUM
+	*/
+	/* add a contact to the list */
+	if (!_strnicmp(arg,"addbuddy?",9)) 
 	{
-        char *tok,*tok2,*sn=NULL,*group=NULL;
-        ADDCONTACTSTRUCT acs;
-        PROTOSEARCHRESULT psr;
+		char *tok,*tok2,*sn=NULL,*group=NULL;
+		ADDCONTACTSTRUCT acs;
+		PROTOSEARCHRESULT psr;
 		
-        for (tok=arg+8;tok!=NULL;tok=tok2) 
-        {
+		for (tok=arg+8;tok!=NULL;tok=tok2) 
+		{
 			tok2=strchr(++tok,'&'); /* first token */
 			if (tok2) *tok2=0;
-            if (!_strnicmp(tok,"screenname=",11) && *(tok+11)!=0)
-                sn=Netlib_UrlDecode(tok+11);
-            if (!_strnicmp(tok,"groupname=",10) && *(tok+10)!=0)
-                group=Netlib_UrlDecode(tok+10);  /* group is currently ignored */
-        }
-        if (sn==NULL) return 1; /* parse failed */
-        if (proto->contact_from_sn(sn)==NULL) /* does not yet check if sn is current user */
-        {
-            acs.handleType=HANDLE_SEARCHRESULT;
+			if (!_strnicmp(tok,"screenname=",11) && *(tok+11)!=0)
+				sn=Netlib_UrlDecode(tok+11);
+			if (!_strnicmp(tok,"groupname=",10) && *(tok+10)!=0)
+				group=Netlib_UrlDecode(tok+10);  /* group is currently ignored */
+		}
+		if (sn==NULL) return 1; /* parse failed */
+		if (proto->contact_from_sn(sn)==NULL) /* does not yet check if sn is current user */
+		{
+			acs.handleType=HANDLE_SEARCHRESULT;
 			acs.szProto=proto->m_szModuleName;
-            acs.psr=&psr;
-            ZeroMemory(&psr,sizeof(PROTOSEARCHRESULT));
-            psr.cbSize=sizeof(PROTOSEARCHRESULT);
-            psr.nick=sn;
-            CallService(MS_ADDCONTACT_SHOW,(WPARAM)NULL,(LPARAM)&acs);
-        }
-        return 0;
-    }
-    /* send a message to a contact */
-    else if (!_strnicmp(arg,"goim?",5)) 
-    {
-        char *tok,*tok2,*sn=NULL,*msg=NULL;
-        HANDLE hContact;
+			acs.psr=&psr;
+			ZeroMemory(&psr,sizeof(PROTOSEARCHRESULT));
+			psr.cbSize=sizeof(PROTOSEARCHRESULT);
+			psr.nick=sn;
+			CallService(MS_ADDCONTACT_SHOW,(WPARAM)NULL,(LPARAM)&acs);
+		}
+		return 0;
+	}
+	/* send a message to a contact */
+	else if (!_strnicmp(arg,"goim?",5)) 
+	{
+		char *tok,*tok2,*sn=NULL,*msg=NULL;
+		HANDLE hContact;
 
-        for(tok=arg+4;tok!=NULL;tok=tok2) 
-        {
+		for(tok=arg+4;tok!=NULL;tok=tok2) 
+		{
 			tok2=strchr(++tok,'&'); /* first token */
 			if (tok2) *tok2=0;
-            if(!_strnicmp(tok,"screenname=",11) && *(tok+11)!=0)
-                sn=Netlib_UrlDecode(tok+11);
-            if(!_strnicmp(tok,"message=",8) && *(tok+8)!=0)
-                msg=Netlib_UrlDecode(tok+8);
-        }
-        if (sn==NULL) return 1; /* parse failed */
-        if (ServiceExists(MS_MSG_SENDMESSAGE)) 
-        {
-		    hContact = proto->contact_from_sn(sn, true, true);
-            if (hContact)
-                CallService(MS_MSG_SENDMESSAGE, (WPARAM)hContact, (LPARAM)msg);
-        }
-        return 0;
-    }
-    /* open a chatroom */
-    else if(!_strnicmp(arg,"gochat?",7)) 
-    {
-        char *tok,*tok2,*rm=NULL;
-        int exchange=0;
+			if(!_strnicmp(tok,"screenname=",11) && *(tok+11)!=0)
+				sn=Netlib_UrlDecode(tok+11);
+			if(!_strnicmp(tok,"message=",8) && *(tok+8)!=0)
+				msg=Netlib_UrlDecode(tok+8);
+		}
+		if (sn==NULL) return 1; /* parse failed */
+		if (ServiceExists(MS_MSG_SENDMESSAGE)) 
+		{
+			hContact = proto->contact_from_sn(sn, true, true);
+			if (hContact)
+				CallService(MS_MSG_SENDMESSAGE, (WPARAM)hContact, (LPARAM)msg);
+		}
+		return 0;
+	}
+	/* open a chatroom */
+	else if(!_strnicmp(arg,"gochat?",7)) 
+	{
+		char *tok,*tok2,*rm=NULL;
+		int exchange=0;
 
-        for(tok=arg+6;tok!=NULL;tok=tok2) 
-        {
+		for(tok=arg+6;tok!=NULL;tok=tok2) 
+		{
 			tok2=strchr(++tok,'&'); /* first token */
 			if (tok2) *tok2=0;
-            if (!_strnicmp(tok,"roomname=",9) && *(tok+9)!=0)
-            {
-                rm=Netlib_UrlDecode(tok+9);
-                for (char *ch=rm; *ch; ++ch)
-                    if (*ch == '+') *ch = ' ';
-            }
-            if (!_strnicmp(tok,"exchange=",9))
-                exchange=atoi(Netlib_UrlDecode(tok+9)); 
-        }
-        if (rm==NULL || exchange<=0) return 1; /* parse failed */
+			if (!_strnicmp(tok,"roomname=",9) && *(tok+9)!=0)
+			{
+				rm=Netlib_UrlDecode(tok+9);
+				for (char *ch=rm; *ch; ++ch)
+					if (*ch == '+') *ch = ' ';
+			}
+			if (!_strnicmp(tok,"exchange=",9))
+				exchange=atoi(Netlib_UrlDecode(tok+9)); 
+		}
+		if (rm==NULL || exchange<=0) return 1; /* parse failed */
 
-        chatnav_param* par = new chatnav_param(rm, (unsigned short)exchange);
-        proto->ForkThread(&CAimProto::chatnav_request_thread, par);
+		chatnav_param* par = new chatnav_param(rm, (unsigned short)exchange);
+		proto->ForkThread(&CAimProto::chatnav_request_thread, par);
 
-        return 0;
-    }
-    return 1; /* parse failed */
+		return 0;
+	}
+	return 1; /* parse failed */
 }
 
 void aim_links_init(void)
@@ -148,5 +148,5 @@ void aim_links_init(void)
 
 void aim_links_destroy(void)
 {
-    DestroyServiceFunction(hServiceParseLink);
+	DestroyServiceFunction(hServiceParseLink);
 }

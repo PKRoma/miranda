@@ -25,7 +25,7 @@ int aim_writesnac(unsigned short service, unsigned short subgroup,unsigned short
 	snac->service=_htons(service);
 	snac->subgroup=_htons(subgroup);
 	snac->flags=0;
-    snac->request_id[0]=_htons(id);
+	snac->request_id[0]=_htons(id);
 	snac->request_id[1]=_htons(subgroup);
 	offset+=sizeof(snac_header);
 	return 0;
@@ -40,34 +40,34 @@ int aim_writetlv(unsigned short type,unsigned short length, const char* value,un
 
 int aim_writetlvchar(unsigned short type, unsigned char value, unsigned short &offset, char* out)
 {
-    return aim_writetlv(type, sizeof(value), (char*)&value, offset, out);
+	return aim_writetlv(type, sizeof(value), (char*)&value, offset, out);
 }
 
 
 int aim_writetlvshort(unsigned short type, unsigned short value, unsigned short &offset, char* out)
 {
-    value = _htons(value);
-    return aim_writetlv(type, sizeof(value), (char*)&value, offset, out);
+	value = _htons(value);
+	return aim_writetlv(type, sizeof(value), (char*)&value, offset, out);
 }
 
 
 int aim_writetlvlong(unsigned short type, unsigned long value, unsigned short &offset, char* out)
 {
-    value = _htonl(value);
-    return aim_writetlv(type, sizeof(value), (char*)&value, offset, out);
+	value = _htonl(value);
+	return aim_writetlv(type, sizeof(value), (char*)&value, offset, out);
 }
 
 int aim_writetlvlong64(unsigned short type, unsigned __int64 value, unsigned short &offset, char* out)
 {
-    value = _htonl64(value);
-    return aim_writetlv(type, sizeof(value), (char*)&value, offset, out);
+	value = _htonl64(value);
+	return aim_writetlv(type, sizeof(value), (char*)&value, offset, out);
 }
 
 
 int CAimProto::aim_sendflap(HANDLE hServerConn, char type,unsigned short length,const char *buf, unsigned short &seqno)
 {
 	EnterCriticalSection(&SendingMutex);
-    const int slen = FLAP_SIZE + length;
+	const int slen = FLAP_SIZE + length;
 	char* obuf = (char*)alloca(slen);
 	flap_header *flap = (flap_header*)obuf;
 	flap->ast = '*';
@@ -78,7 +78,7 @@ int CAimProto::aim_sendflap(HANDLE hServerConn, char type,unsigned short length,
 	int rlen= Netlib_Send(hServerConn, obuf, slen, 0);
 	if (rlen == SOCKET_ERROR) seqno--;
 	LeaveCriticalSection(&SendingMutex);
-    return rlen >= 0 ? 0 : -1;
+	return rlen >= 0 ? 0 : -1;
 }
 
 void aim_writefamily(const char *buf,unsigned short &offset,char* out)
@@ -89,21 +89,21 @@ void aim_writefamily(const char *buf,unsigned short &offset,char* out)
 
 void aim_writechar(unsigned char val, unsigned short &offset,char* out)
 {
-    out[offset++] = val;
+	out[offset++] = val;
 }
 
 void aim_writeshort(unsigned short val, unsigned short &offset,char* out)
 {
-    out[offset++] = (char)(val >> 8);
-    out[offset++] = (char)(val & 0xFF);
+	out[offset++] = (char)(val >> 8);
+	out[offset++] = (char)(val & 0xFF);
 }
 
 void aim_writelong(unsigned long val, unsigned short &offset,char* out)
 {
-    out[offset++] = (char)(val >> 24);
-    out[offset++] = (char)((val >> 16) & 0xFF);
-    out[offset++] = (char)((val >> 8) & 0xFF);
-    out[offset++] = (char)(val & 0xFF);
+	out[offset++] = (char)(val >> 24);
+	out[offset++] = (char)((val >> 16) & 0xFF);
+	out[offset++] = (char)((val >> 8) & 0xFF);
+	out[offset++] = (char)(val & 0xFF);
 }
 
 void aim_writegeneric(unsigned short size,const char *buf,unsigned short &offset,char* out)
@@ -114,10 +114,10 @@ void aim_writegeneric(unsigned short size,const char *buf,unsigned short &offset
 
 void aim_writebartid(unsigned short type, unsigned char flags, unsigned short size,const char *buf,unsigned short &offset,char* out)
 {
-    out[offset++]=(unsigned char)(type >> 8);
-    out[offset++]=(unsigned char)(type & 0xff);
-    out[offset++]=flags;
-    out[offset++]=(char)size;
-    memcpy(&out[offset],buf,size);
-    offset+=size;
+	out[offset++]=(unsigned char)(type >> 8);
+	out[offset++]=(unsigned char)(type & 0xff);
+	out[offset++]=flags;
+	out[offset++]=(char)size;
+	memcpy(&out[offset],buf,size);
+	offset+=size;
 }
