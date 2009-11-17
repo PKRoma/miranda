@@ -10,7 +10,7 @@ Bugfixes:
  - Jabber: Improve support for Jabber transports
  - Jabber: Fixed memory leak & crash in privacy lists
  - MSN: Fix for forward list
- - MSN: Added stripping new style of MSN color codes s
+ - MSN: Added stripping new style of MSN color codes
  
 
 * New in 0.8.9
