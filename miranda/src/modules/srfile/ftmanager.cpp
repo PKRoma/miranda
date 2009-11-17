@@ -31,7 +31,6 @@ struct TFtMgrData
 	HWND hwndOutgoing;
 
 	HANDLE hhkPreshutdown;
-	interface ITaskbarList3 * pTaskbarInterface;
 	TBPFLAG         errorState;
 };
 
@@ -309,8 +308,6 @@ static INT_PTR CALLBACK FtMgrDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
 		Window_SetIcon_IcoLib(hwnd, SKINICON_EVENT_FILE);
 
 		dat = (struct TFtMgrData *)mir_calloc(sizeof(struct TFtMgrData));
-		if (IsWinVer7Plus())
-			CoCreateInstance(CLSID_TaskbarList, NULL, CLSCTX_ALL, IID_ITaskbarList3, (void**)&dat->pTaskbarInterface);
 
 		SetWindowLongPtr(hwnd, GWLP_USERDATA, (LONG_PTR)dat);
 
@@ -470,8 +467,6 @@ static INT_PTR CALLBACK FtMgrDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
 		Window_FreeIcon_IcoLib(hwnd);
 		DestroyWindow(dat->hwndIncoming);
 		DestroyWindow(dat->hwndOutgoing);
-		if (dat->pTaskbarInterface)
-			dat->pTaskbarInterface->Release();
 		mir_free(dat);
 		SetWindowLongPtr(hwnd, GWLP_USERDATA, 0);
 		Utils_SaveWindowPosition(hwnd, NULL, "SRFile", "FtMgrDlg_");
@@ -493,7 +488,7 @@ static INT_PTR CALLBACK FtMgrDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
 	}
 	case WM_TIMER:
 	{
-		if (dat->pTaskbarInterface)
+		if (pTaskbarInterface)
 		{
 			SetTimer(hwnd, 1, 400, NULL);
 			if ((lParam == ACKRESULT_FAILED) || (lParam == ACKRESULT_DENIED))
@@ -504,23 +499,23 @@ static INT_PTR CALLBACK FtMgrDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
 			SendMessage(dat->hwndOutgoing, M_CALCPROGRESS, (WPARAM)&prg, 0);
 			if (dat->errorState)
 			{
-				dat->pTaskbarInterface->SetProgressState(hwnd, dat->errorState);
+				pTaskbarInterface->SetProgressState(hwnd, dat->errorState);
 				if (!prg.run)
-					dat->pTaskbarInterface->SetProgressValue(hwnd, 1, 1);
+					pTaskbarInterface->SetProgressValue(hwnd, 1, 1);
 			} else if (prg.run) 
 			{
-				dat->pTaskbarInterface->SetProgressState(hwnd, TBPF_NORMAL);
+				pTaskbarInterface->SetProgressState(hwnd, TBPF_NORMAL);
 			} else if (prg.init || prg.scan)
 			{
-				dat->pTaskbarInterface->SetProgressState(hwnd, TBPF_INDETERMINATE);
+				pTaskbarInterface->SetProgressState(hwnd, TBPF_INDETERMINATE);
 			} else {
-				dat->pTaskbarInterface->SetProgressState(hwnd, TBPF_NOPROGRESS);
+				pTaskbarInterface->SetProgressState(hwnd, TBPF_NOPROGRESS);
 				KillTimer(hwnd, 1);
 			}
 
 			if (prg.run)
 			{
-				dat->pTaskbarInterface->SetProgressValue(hwnd, prg.totalProgress, prg.totalBytes);	
+				pTaskbarInterface->SetProgressValue(hwnd, prg.totalProgress, prg.totalBytes);	
 			}				
 
 		}

@@ -71,6 +71,8 @@ extern pfnSetWindowTheme setWindowTheme;
 extern pfnSetWindowThemeAttribute setWindowThemeAttribute;
 extern pfnIsThemeActive isThemeActive;
 
+extern ITaskbarList3 * pTaskbarInterface;
+
 typedef HRESULT ( STDAPICALLTYPE *pfnDwmExtendFrameIntoClientArea )( HWND hwnd, const MARGINS *margins );
 typedef HRESULT ( STDAPICALLTYPE *pfnDwmIsCompositionEnabled )( BOOL * );
 
