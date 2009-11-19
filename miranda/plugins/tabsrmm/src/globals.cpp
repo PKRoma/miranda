@@ -759,6 +759,9 @@ void CGlobals::logStatusChange(const CContactCache *c)
 		wStatus = c->getStatus();
 		wOldStatus = c->getOldStatus();
 
+		if(wStatus == wOldStatus)
+			return;
+
 		DBEVENTINFO 	dbei;
 		TCHAR 			buffer[450];
 		HANDLE 			hNewEvent;

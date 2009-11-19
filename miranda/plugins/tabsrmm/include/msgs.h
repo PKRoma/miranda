@@ -299,7 +299,8 @@ struct ContainerWindowData {
 	HWND    hwndStatus;
 	int     statusBarHeight;
 	DWORD   dwLastActivity;
-	int     hIcon;                // current window icon stick indicator
+	int     hIcon;                	// current window icon stick indicator
+	HICON	hIconTaskbarOverlay;	// contains a "sticky" taskbar overlay (e.g. new message icon)
 	DWORD   dwFlashingStarted;
 	HWND    hWndOptions;
 	BOOL    bSizingLoop;

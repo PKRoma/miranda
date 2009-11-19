@@ -419,6 +419,8 @@ int SplitmsgShutdown(void)
 	ImageList_RemoveAll(PluginConfig.g_hImageList);
 	ImageList_Destroy(PluginConfig.g_hImageList);
 
+	delete Win7Taskbar;
+
 	OleUninitialize();
 	DestroyMenu(PluginConfig.g_hMenuContext);
 	if (PluginConfig.g_hMenuContainer)
@@ -595,6 +597,8 @@ tzdone:
 	LoadLibraryA("riched20");
 	OleInitialize(NULL);
 	mREOLECallback = new REOLECallback;
+	Win7Taskbar = new CTaskbarInteract;
+
 	ZeroMemory((void *)&nen_options, sizeof(nen_options));
 	M->m_hMessageWindowList = (HANDLE) CallService(MS_UTILS_ALLOCWINDOWLIST, 0, 0);
 	PluginConfig.hUserPrefsWindowList = (HANDLE) CallService(MS_UTILS_ALLOCWINDOWLIST, 0, 0);

@@ -378,6 +378,7 @@ LISTOPTIONSITEM CTranslator::m_lvItemsModPlus[] = {
 	0, LPGENT("Disable error popups on sending failures"), 0, LOI_TYPE_SETTING, (UINT_PTR)"adv_noErrorPopups", 1,
 	0, LPGENT("Disable popups for send later and multisend jobs"), 0, LOI_TYPE_SETTING, (UINT_PTR)"adv_noSendLaterPopups", 1,
 	0, LPGENT("Use Aero Glass for the message window (Vista+)"), 1, LOI_TYPE_SETTING, (UINT_PTR)"useAero", 0,
+	0, LPGENT("Use Windows 7 task bar features (*)"), 1, LOI_TYPE_SETTING, (UINT_PTR)"useW7Taskbar", 0,
 	0, LPGENT("Automatic keyboard layout: Do not load the system default for new contacts"), 1, LOI_TYPE_SETTING, (UINT_PTR)"adv_leaveKeyboardAlone", 0,
 	0, NULL, 0, 0, 0, 0
 };

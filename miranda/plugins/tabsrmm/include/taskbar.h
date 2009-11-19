@@ -29,9 +29,6 @@
  * $Id$
  *
  * Windows 7 taskbar integration
- * each toplevel message window ("container") creates an instance of this
- * class to manage things like thumbnail(s) and jump lists.
- *
  */
 
 #ifndef __TASKBAR_H
@@ -42,15 +39,31 @@ class CTaskbarInteract
 public:
 	CTaskbarInteract()
 	{
-		m_isEnabled = (IsWinVer7Plus() && M->GetByte("useW7Taskbar", 0));
+		m_pTaskbarInterface = 0;
+		m_isEnabled = (IsWinVer7Plus() && M->GetByte("useW7Taskbar", 1));
+
+		if(m_isEnabled)
+			::CoCreateInstance(CLSID_TaskbarList, NULL, CLSCTX_ALL, IID_ITaskbarList3, (void**)&m_pTaskbarInterface);
 	}
 
 	~CTaskbarInteract()
 	{
+		if(m_isEnabled && m_pTaskbarInterface) {
+			m_pTaskbarInterface->Release();
+			m_pTaskbarInterface = 0;
+			m_isEnabled = false;
+		}
 	}
+
+	bool 			setOverlayIcon					(HWND hwndDlg, LPARAM lParam) const;
+	void			clearOverlayIcon				(HWND hwndDlg) const;
+
 private:
-	bool m_isEnabled;
+	bool 										m_isEnabled;
+	ITaskbarList3* 								m_pTaskbarInterface;
 };
+
+extern CTaskbarInteract* Win7Taskbar;
 
 #endif /* __TASKBAR_H */
 

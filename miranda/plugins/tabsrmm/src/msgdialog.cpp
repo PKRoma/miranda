@@ -443,6 +443,9 @@ static void MsgWindowUpdateState(_MessageWindowData *dat, UINT msg)
 			InvalidateRect(hwndTab, NULL, FALSE);
 		if(dat->pContainer->dwFlags & CNT_SIDEBAR)
 			dat->pContainer->SideBar->setActiveItem(dat);
+
+		dat->pContainer->hIconTaskbarOverlay = 0;
+		Win7Taskbar->clearOverlayIcon(dat->pContainer->hwnd);
 	}
 }
 

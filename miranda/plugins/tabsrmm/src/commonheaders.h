@@ -125,6 +125,7 @@
 #include <stddef.h>
 #include <process.h>
 #include <shlwapi.h>
+#include <shlobj.h>
 #include <richedit.h>
 #include <limits.h>
 #include <ctype.h>

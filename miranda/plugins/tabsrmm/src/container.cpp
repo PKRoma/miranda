@@ -1888,9 +1888,17 @@ buttons_done:
 			return(0);
 		case DM_SETICON: {
 			HICON hIconMsg = PluginConfig.g_IconMsgEvent;
-			if ((HICON)lParam == PluginConfig.g_buttonBarIcons[ICON_DEFAULT_TYPING]) {              // always set typing icon, but don't save it...
-				SendMessage(hwndDlg, WM_SETICON, wParam, lParam);
-				break;
+
+			if ((HICON)lParam == PluginConfig.g_buttonBarIcons[ICON_DEFAULT_TYPING] || (HICON)lParam == hIconMsg) {              // always set typing icon, but don't save it...
+				if(Win7Taskbar->setOverlayIcon(hwndDlg, lParam)) {
+					if((HICON)lParam == hIconMsg)
+						pContainer->hIconTaskbarOverlay = hIconMsg;
+					break;
+				}
+				if((HICON)lParam == PluginConfig.g_buttonBarIcons[ICON_DEFAULT_TYPING]) {
+					SendMessage(hwndDlg, WM_SETICON, wParam, lParam);
+					break;
+				}
 			}
 
 			if ((HICON)lParam != hIconMsg && pContainer->dwFlags & CNT_STATICICON && PluginConfig.g_iconContainer != 0)
@@ -1898,9 +1906,14 @@ buttons_done:
 
 			if (pContainer->hIcon == STICK_ICON_MSG && (HICON)lParam != hIconMsg && pContainer->dwFlags & CNT_NEED_UPDATETITLE)
 				lParam = (LPARAM)hIconMsg;
-			//break;          // don't overwrite the new message indicator flag
 			SendMessage(hwndDlg, WM_SETICON, wParam, lParam);
 			pContainer->hIcon = (lParam == (LPARAM)hIconMsg) ? STICK_ICON_MSG : 0;
+
+			if(pContainer->hIconTaskbarOverlay)
+				Win7Taskbar->setOverlayIcon(hwndDlg, (LPARAM)pContainer->hIconTaskbarOverlay);
+			else
+				Win7Taskbar->clearOverlayIcon(hwndDlg);
+
 			return(0);
 		}
 		case WM_DRAWITEM: {

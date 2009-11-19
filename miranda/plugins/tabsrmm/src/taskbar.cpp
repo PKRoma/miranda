@@ -34,3 +34,45 @@
 
 #include "commonheaders.h"
 
+CTaskbarInteract* Win7Taskbar = 0;
+
+/**
+ * set the overlay icon for a task bar button. Used for typing notifications and incoming
+ * message indicator.
+ *
+ * @param 	hwndDlg HWND: 	container window handle
+ * @param 	lParam  LPARAM:	icon handle
+ * @return	true if icon has been set and taskbar will accept it, false otherwise
+ */
+bool CTaskbarInteract::setOverlayIcon(HWND hwndDlg, LPARAM lParam) const
+{
+	if (m_pTaskbarInterface && m_isEnabled){
+		HKEY 	hKey;
+		DWORD 	val = 1;
+		DWORD	size = 4;
+		DWORD	dwType = REG_DWORD;
+		/*
+		 * check whether the taskbar is set to show large icons. This is necessary, because the method SetOverlayIcon()
+		 * always returns S_OK, but the icon is simply ignored when using small taskbar icons.
+		 */
+		if(::RegOpenKey(HKEY_CURRENT_USER, _T("Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced"), &hKey) == ERROR_SUCCESS) {
+			::RegQueryValueEx(hKey, _T("TaskbarSmallIcons"), 0, &dwType, (LPBYTE)&val, &size);
+			::RegCloseKey(hKey);
+		}
+		if(val)
+			return(false);			// small icons in use, revert to default icon feedback
+		m_pTaskbarInterface->SetOverlayIcon(hwndDlg,(HICON)lParam, NULL);
+		return(true);
+	}
+	return(false);
+}
+
+/**
+ * removes the overlay icon for the given container window
+ * @param hwndDlg HWND: window handle
+ */
+void CTaskbarInteract::clearOverlayIcon(HWND hwndDlg) const
+{
+	if (m_pTaskbarInterface && m_isEnabled)
+		m_pTaskbarInterface->SetOverlayIcon(hwndDlg, NULL, NULL);
+}
