@@ -1,7 +1,7 @@
 [Project]
 name=Yahoo
 type=2
-defaultConfig=1
+defaultConfig=0
 
 
 [Debug]
@@ -12,7 +12,7 @@ intermediateFilesDirectory=Debug
 outputFilesDirectory=Debug
 compilerPreprocessor=
 extraCompilerOptions=-DHAVE_CONFIG_H -DUNICODE -D_UNICODE
-compilerIncludeDirectory=..\..\include
+compilerIncludeDirectory=..\..\include_stable
 noWarning=0
 defaultWarning=1
 allWarning=1
@@ -50,7 +50,7 @@ intermediateFilesDirectory=Release
 outputFilesDirectory=Release
 compilerPreprocessor=
 extraCompilerOptions=-DHAVE_CONFIG_H -DUNICODE -D_UNICODE
-compilerIncludeDirectory=..\..\include
+compilerIncludeDirectory=..\..\include_stable
 noWarning=0
 defaultWarning=1
 allWarning=1
@@ -137,12 +137,16 @@ extraResourceOptions=
 6=libyahoo2\Docs\TODO
 7=libyahoo2\Docs\ymsg-9.txt
 [History]
-..\..\..\kopete\yahooaccount.cpp,37381
-..\..\..\pidgin-2.5.8\libpurple\protocols\yahoo\yahoo.c,52574
+libyahoo2\libyahoo2.c,1492
+version.h,134
 util.cpp,2020
-main.cpp,474
+main.cpp,4638
 server.cpp,1139
-yahoo.cpp,19367
-proto.h,0
-proto.cpp,3654
-libyahoo2\libyahoo2.c,69772
+yahoo.cpp,45439
+proto.h,15024
+..\MSN\msn_proto.cpp,0
+..\MSN\msn.cpp,0
+..\..\include\m_system_cpp.h,2550
+..\..\include_stable\m_system.h,9182
+..\..\include_stable\m_system_cpp.h,950
+proto.cpp,1159
