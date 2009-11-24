@@ -2839,7 +2839,7 @@ static void yahoo_process_mail(struct yahoo_input_data *yid, struct yahoo_packet
 		char from[1024];
 		
 		if (who) {
-			snprintf(from, sizeof(from), "%s (%s)", who, email);
+			snprintf(from, sizeof(from), "\"%s\" <%s>", who, email);
 		} else {
 			snprintf(from, sizeof(from), "%s", email);
 		}
