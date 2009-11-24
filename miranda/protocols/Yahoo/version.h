@@ -1,3 +1,3 @@
-#define __FILEVERSION_STRING        0,8,3,0
-#define __VERSION_STRING            "0.8.3.0"
-#define __VERSION_DWORD             0x00080300
+#define __FILEVERSION_STRING        0,8,4,0
+#define __VERSION_STRING            "0.8.4.0"
+#define __VERSION_DWORD             0x00080400
