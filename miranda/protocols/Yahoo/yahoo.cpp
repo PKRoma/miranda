@@ -1063,9 +1063,16 @@ void CYahooProto::ext_login_response(int succ, const char *url)
 	LOG(("[ext_login_response] succ: %d, url: %s", succ, url));
 	
 	if(succ == YAHOO_LOGIN_OK) {
+		const char *c;
+		
 		m_status = yahoo_current_status(m_id);
 		LOG(("logged in status-> %d", m_status));
 		
+		c = yahoo_get_pw_token(m_id);
+		
+		SetString(YAHOO_PWTOKEN, c);
+		
+		LOG(("PW Token-> %s", c));
 		return;
 	}
 	
@@ -1098,6 +1105,8 @@ void CYahooProto::ext_login_response(int succ, const char *url)
 	} 
 	else snprintf(buff, sizeof(buff),Translate("Could not log in, unknown reason: %d."), succ);
 
+	DBDeleteContactSetting(NULL, m_szModuleName, YAHOO_PWTOKEN);
+	
 	YAHOO_DEBUGLOG("ERROR: %s", buff);
 	
 	/*
@@ -1509,8 +1518,7 @@ void CYahooProto::ext_login(enum yahoo_status login_mode)
 	LOG(("Proxy Type: %d HTTP Gateway: %d", nlus.proxyType, iHTTPGateway));
 #endif
 
-	//m_id = yahoo_init(ylad->yahoo_id, ylad->password);
-	m_id = yahoo_init_with_attributes(m_yahoo_id, m_password, 
+	m_id = yahoo_init_with_attributes(m_yahoo_id, m_password, m_pw_token,
 		"pager_host", host,
 		"pager_port", port,
 		"filetransfer_host", fthost,

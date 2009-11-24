@@ -2466,7 +2466,7 @@ static void yahoo_process_auth_0x0f(struct yahoo_input_data *yid, const char *se
 	struct yahoo_data 				*yd = yid->yd;
 	struct yahoo_server_settings 	*yss;
 
-	char  							*token=NULL, *crumb=NULL;
+	char  							*crumb=NULL;
 	char  							*response = NULL;
 	char 							url[1024];
 	char 							*c, *t;
@@ -2494,7 +2494,7 @@ GET /config/pwtoken_login?src=ymsgr&ts=1195577376&token=token HTTP/1.1
 		 **/
 	yss = yd->server_settings;
 	
-	if (token == NULL ) {
+	if (yd->pw_token == NULL ) {
 
 		c = yahoo_urlencode(yd->password);
 		t = yahoo_urlencode(seed);
@@ -2571,24 +2571,24 @@ GET /config/pwtoken_login?src=ymsgr&ts=1195577376&token=token HTTP/1.1
 			
 				while ( (*c) != '\0' && (*c) != '\r' && (*c) != '\n') c++;
 				
-				token = (char *) _alloca(c - t + 1);
+				yd->pw_token = (char *) malloc(c - t + 1);
 				
-				memcpy(token, t, c - t);
-				token[c - t] = '\0';
+				memcpy(yd->pw_token, t, c - t);
+				yd->pw_token[c - t] = '\0';
 				
-				LOG(("Got Token: %s", token));
+				LOG(("Got Token: %s", yd->pw_token));
 		}
 		
 		FREE(response);
 		
-		if (token == NULL) {
+		if (yd->pw_token == NULL) {
 			YAHOO_CALLBACK(ext_yahoo_login_response)(yd->client_id, YAHOO_LOGIN_PASSWD, NULL);
 			return; // fail for now
 		}
 	}
 	
 	_snprintf(url, sizeof(url), "/config/pwtoken_login?src=ymsgr&ts=%lu&token=%s",
-				time(NULL),token);
+				time(NULL),yd->pw_token);
 				
 	/*
 				0
@@ -2835,12 +2835,19 @@ static void yahoo_process_mail(struct yahoo_input_data *yid, struct yahoo_packet
 			LOG(("key: %d => value: '%s'", pair->key, pair->value));
 	}
 
-	if (who && email && subj) {
+	if (email && subj) {
 		char from[1024];
-		snprintf(from, sizeof(from), "%s (%s)", who, email);
+		
+		if (who) {
+			snprintf(from, sizeof(from), "%s (%s)", who, email);
+		} else {
+			snprintf(from, sizeof(from), "%s", email);
+		}
+		
 		YAHOO_CALLBACK(ext_yahoo_mail_notify)(yd->client_id, from, subj, count);
-	} else 
+	} else {
 		YAHOO_CALLBACK(ext_yahoo_mail_notify)(yd->client_id, NULL, NULL, count);
+	}
 }
 
 static void yahoo_buddy_added_us(struct yahoo_input_data *yid, struct yahoo_packet *pkt)
@@ -4765,7 +4772,7 @@ int yahoo_read_ready(int id, int fd, void *data)
 	return len;
 }
 
-int yahoo_init_with_attributes(const char *username, const char *password, ...)
+int yahoo_init_with_attributes(const char *username, const char *password, const char *pw_token, ...)
 {
 	va_list ap;
 	struct yahoo_data *yd;
@@ -4777,7 +4784,8 @@ int yahoo_init_with_attributes(const char *username, const char *password, ...)
 
 	yd->user = strdup(username);
 	yd->password = strdup(password);
-
+	yd->pw_token = (pw_token != NULL && pw_token[0] != '\0') ? strdup(pw_token) : NULL;
+	
 	yd->initial_status = YAHOO_STATUS_OFFLINE;
 	yd->current_status = YAHOO_STATUS_OFFLINE;
 
@@ -4785,7 +4793,7 @@ int yahoo_init_with_attributes(const char *username, const char *password, ...)
 
 	add_to_list(yd);
 
-	va_start(ap, password);
+	va_start(ap, pw_token);
 	yd->server_settings = _yahoo_assign_server_settings(ap);
 	va_end(ap);
 
@@ -4795,9 +4803,9 @@ int yahoo_init_with_attributes(const char *username, const char *password, ...)
 	return yd->client_id;
 }
 
-int yahoo_init(const char *username, const char *password)
+int yahoo_init(const char *username, const char *password, const char *pw_token)
 {
-	return yahoo_init_with_attributes(username, password, NULL);
+	return yahoo_init_with_attributes(username, password, pw_token, NULL);
 }
 
 struct connect_callback_data {
@@ -6301,6 +6309,15 @@ const char * yahoo_get_cookie(int id, const char *which)
 	if(!strncasecmp(which, "b", 1))
 		return yd->cookie_b;
 	return NULL;
+}
+
+const char * yahoo_get_pw_token(int id)
+{
+	struct yahoo_data *yd = find_conn_by_id(id);
+	if(!yd)
+		return NULL;
+	
+	return yd->pw_token;
 }
 
 void yahoo_get_url_handle(int id, const char *url, 

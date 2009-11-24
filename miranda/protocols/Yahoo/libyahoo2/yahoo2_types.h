@@ -323,6 +323,7 @@ struct yahoo_server_settings {
 struct yahoo_data {
 	char  *user;
 	char  *password;
+	char  *pw_token;
 
 	char  *cookie_y;
 	char  *cookie_t;

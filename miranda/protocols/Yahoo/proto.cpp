@@ -556,6 +556,16 @@ int __cdecl CYahooProto::SetStatus( int iNewStatus )
 		if (iNewStatus == ID_STATUS_OFFLINE)
 			iNewStatus = ID_STATUS_ONLINE;
 
+		FREE(m_pw_token); // No Token yet.
+		
+		if (!GetString(YAHOO_PWTOKEN, &dbv)) {
+			if (lstrlenA(dbv.pszVal) > 0) {
+				m_pw_token = strdup(dbv.pszVal);
+			} 
+			
+			DBFreeVariant(&dbv);
+		}
+		
 		//DBWriteContactSettingWord(NULL, m_szModuleName, "StartupStatus", status);
 		m_startStatus = iNewStatus;
 
@@ -837,14 +847,40 @@ INT_PTR CALLBACK first_run_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 		if (((LPNMHDR)lParam)->code == (UINT)PSN_APPLY ) 
 		{
 			CYahooProto* ppro = (CYahooProto*)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
-
 			char str[128];
+			DBVARIANT dbv;
+			BOOL reconnectRequired = FALSE;
+			
 			GetDlgItemTextA(hwndDlg, IDC_HANDLE, str, sizeof(str));
+			
+			dbv.pszVal = NULL;
+			
+			if ( ppro->GetString( YAHOO_LOGINID, &dbv ) || lstrcmpA( str, dbv.pszVal ))
+				reconnectRequired = TRUE;
+			
+			if ( dbv.pszVal != NULL )
+				DBFreeVariant( &dbv );
+			
 			ppro->SetString(YAHOO_LOGINID, str);
 			GetDlgItemTextA(hwndDlg, IDC_PASSWORD, str, sizeof(str));
+			
+			dbv.pszVal = NULL;
+			if ( ppro->GetString( YAHOO_PASSWORD, &dbv ) || lstrcmpA( str, dbv.pszVal ))
+				reconnectRequired = TRUE;
+			if ( dbv.pszVal != NULL )
+				DBFreeVariant( &dbv );
+			
+			if (reconnectRequired ) {
+				DBDeleteContactSetting(NULL, ppro->m_szModuleName, YAHOO_PWTOKEN);
+			}
+			
 			CallService(MS_DB_CRYPT_ENCODESTRING, sizeof(str), (LPARAM) str);
 			ppro->SetString(YAHOO_PASSWORD, str);
 			ppro->SetByte("YahooJapan", ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_YAHOO_JAPAN ));
+			
+			if ( reconnectRequired && ppro->m_bLoggedIn )
+				MessageBoxA( hwndDlg, Translate( "The changes you have made require you to reconnect to the Yahoo network before they take effect"), Translate("YAHOO Options"), MB_OK );
+
 			return TRUE;
 		}
 		break;

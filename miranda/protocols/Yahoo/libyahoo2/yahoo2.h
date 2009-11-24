@@ -65,13 +65,15 @@ enum yahoo_log_level  yahoo_get_log_level( void );
  *
  * You should set at least local_host if you intend to use webcams
  */
-int  yahoo_init_with_attributes(const char *username, const char *password, ...);
+int  yahoo_init_with_attributes(const char *username, const char *password, const char *pw_token, ...);
 
 /* yahoo_init does the same as yahoo_init_with_attributes, assuming defaults
  * for all attributes */
-int  yahoo_init(const char *username, const char *password);
+int  yahoo_init(const char *username, const char *password, const char *pw_token);
 
-
+/* retrieve the pw_token that's currently setup for this id if any
+ */
+const char * yahoo_get_pw_token(int id);
 
 /* release all resources held by this session */
 /* you need to call yahoo_close for a session only if
