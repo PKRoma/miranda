@@ -287,10 +287,13 @@ HANDLE CYahooProto::getbuddyH(const char *yahoo_id)
 HANDLE CYahooProto::add_buddy( const char *yahoo_id, const char *yahoo_name, int protocol, DWORD flags )
 {
 	HANDLE hContact;
-
-	hContact = getbuddyH(yahoo_id);
+	char *yid = strdup(yahoo_id);
+	
+	strlwr(yid);
+	
+	hContact = getbuddyH(yid);
 	if (hContact != NULL) {
-		LOG(("[add_buddy] Found buddy id: %s, handle: %lu", yahoo_id, (DWORD)hContact));
+		LOG(("[add_buddy] Found buddy id: %s, handle: %lu", yid, (DWORD)hContact));
 		if ( !( flags & PALF_TEMPORARY ) && DBGetContactSettingByte( hContact, "CList", "NotOnList", 1 )) 
 		{
 			LOG(("[add_buddy] Making Perm id: %s, flags: %lu", yahoo_id, flags));
@@ -298,14 +301,16 @@ HANDLE CYahooProto::add_buddy( const char *yahoo_id, const char *yahoo_name, int
 			DBDeleteContactSetting( hContact, "CList", "Hidden" );
 
 		}
+		
+		FREE(yid);
 		return hContact;
 	}
 
 	//not already there: add
-	LOG(("[add_buddy] Adding buddy id: %s, flags: %lu", yahoo_id, flags));
+	LOG(("[add_buddy] Adding buddy id: %s (Nick: %s), flags: %lu", yid, yahoo_name, flags));
 	hContact = ( HANDLE )YAHOO_CallService( MS_DB_CONTACT_ADD, 0, 0 );
 	YAHOO_CallService( MS_PROTO_ADDTOCONTACT, ( WPARAM )hContact,( LPARAM )m_szModuleName );
-	SetString( hContact, YAHOO_LOGINID, yahoo_id );
+	SetString( hContact, YAHOO_LOGINID, yid );
 	Set_Protocol( hContact, protocol );
 
 	if (lstrlenA(yahoo_name) > 0)
@@ -317,6 +322,8 @@ HANDLE CYahooProto::add_buddy( const char *yahoo_id, const char *yahoo_name, int
 		DBWriteContactSettingByte( hContact, "CList", "NotOnList", 1 );
 		DBWriteContactSettingByte( hContact, "CList", "Hidden", 1 );
 	}	
+	
+	FREE(yid);
 	return hContact;
 }
 
@@ -699,6 +706,7 @@ void CYahooProto::ext_buddy_added(char *myid, char *who, char *group, int status
 		break;
 
 	case 1:  /* invalid ID? */
+	case 3:  /* invalid ID  */
 		if (hContact != NULL) {
 			ShowPopup( "Invalid Contact", "The id you tried to add is invalid.", NULL);
 			/* Make it TEMP first, we don't want to send any extra packets for FALSE ids */
@@ -1097,6 +1105,8 @@ void CYahooProto::ext_login_response(int succ, const char *url)
 	} 
 	else snprintf(buff, sizeof(buff),Translate("Could not log in, unknown reason: %d."), succ);
 
+	DBDeleteContactSetting(NULL, m_szModuleName, YAHOO_PWTOKEN);
+	
 	YAHOO_DEBUGLOG("ERROR: %s", buff);
 	
 	/*
