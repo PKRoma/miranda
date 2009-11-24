@@ -287,10 +287,13 @@ HANDLE CYahooProto::getbuddyH(const char *yahoo_id)
 HANDLE CYahooProto::add_buddy( const char *yahoo_id, const char *yahoo_name, int protocol, DWORD flags )
 {
 	HANDLE hContact;
-
-	hContact = getbuddyH(yahoo_id);
+	char *yid = strdup(yahoo_id);
+	
+	strlwr(yid);
+	
+	hContact = getbuddyH(yid);
 	if (hContact != NULL) {
-		LOG(("[add_buddy] Found buddy id: %s, handle: %lu", yahoo_id, (DWORD)hContact));
+		LOG(("[add_buddy] Found buddy id: %s, handle: %lu", yid, (DWORD)hContact));
 		if ( !( flags & PALF_TEMPORARY ) && DBGetContactSettingByte( hContact, "CList", "NotOnList", 1 )) 
 		{
 			LOG(("[add_buddy] Making Perm id: %s, flags: %lu", yahoo_id, flags));
@@ -298,14 +301,16 @@ HANDLE CYahooProto::add_buddy( const char *yahoo_id, const char *yahoo_name, int
 			DBDeleteContactSetting( hContact, "CList", "Hidden" );
 
 		}
+		
+		FREE(yid);
 		return hContact;
 	}
 
 	//not already there: add
-	LOG(("[add_buddy] Adding buddy id: %s, flags: %lu", yahoo_id, flags));
+	LOG(("[add_buddy] Adding buddy id: %s (Nick: %s), flags: %lu", yid, yahoo_name, flags));
 	hContact = ( HANDLE )YAHOO_CallService( MS_DB_CONTACT_ADD, 0, 0 );
 	YAHOO_CallService( MS_PROTO_ADDTOCONTACT, ( WPARAM )hContact,( LPARAM )m_szModuleName );
-	SetString( hContact, YAHOO_LOGINID, yahoo_id );
+	SetString( hContact, YAHOO_LOGINID, yid );
 	Set_Protocol( hContact, protocol );
 
 	if (lstrlenA(yahoo_name) > 0)
@@ -317,6 +322,8 @@ HANDLE CYahooProto::add_buddy( const char *yahoo_id, const char *yahoo_name, int
 		DBWriteContactSettingByte( hContact, "CList", "NotOnList", 1 );
 		DBWriteContactSettingByte( hContact, "CList", "Hidden", 1 );
 	}	
+	
+	FREE(yid);
 	return hContact;
 }
 
@@ -1485,9 +1492,6 @@ void CYahooProto::ext_login(enum yahoo_status login_mode)
 							GetByte("YahooJapan",0) != 0 ? YAHOO_DEFAULT_JAPAN_LOGIN_SERVER :
 															YAHOO_DEFAULT_LOGIN_SERVER
 					);
-			//ShowError(Translate("Yahoo Login Error"), Translate("Please enter Yahoo server to Connect to in Options."));
-	
-			//return;
 		}
 	}
 	
