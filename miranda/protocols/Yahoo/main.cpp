@@ -28,7 +28,6 @@ HANDLE g_hNetlibUser;
 MM_INTERFACE   mmi;
 UTF8_INTERFACE utfi;
 MD5_INTERFACE  md5i;
-SHA1_INTERFACE sha1i;
 LIST_INTERFACE li;
 
 
@@ -112,12 +111,17 @@ extern "C" int __declspec(dllexport)Load(PLUGINLINK *link)
 	/**
 	 * Grab the interface handles (through pluginLink)
 	 */
+	int i = mir_getLI( &li );
+		
+	if (i) {
+		MessageBox(NULL, _T("Can not retrieve the core List Interface."), _T("Yahoo Plugin Load Failed"), MB_ICONERROR | MB_OK);
+		return 1;
+	}
+	
 	mir_getMMI( &mmi );
-	mir_getLI( &li );
 	mir_getUTFI( &utfi );
 	mir_getMD5I( &md5i );
-	mir_getSHA1I( &sha1i );
-		
+	
 	PROTOCOLDESCRIPTOR pd = { 0 };
 	pd.cbSize = sizeof(pd);
 	pd.szName = "YAHOO";

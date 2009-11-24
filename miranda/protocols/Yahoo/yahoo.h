@@ -18,7 +18,6 @@
 extern "C"
 {
 	extern struct MD5_INTERFACE  md5i;
-	extern struct SHA1_INTERFACE sha1i;
 	extern struct tagPLUGINLINK* pluginLink;
 };
 
