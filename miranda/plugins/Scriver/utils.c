@@ -353,35 +353,6 @@ TCHAR *GetRichTextWord(HWND hwnd, POINTL *ptl)
 	return pszWord;
 }
 
-HDWP ResizeToolbar(HWND hwnd, HDWP hdwp, int width, int vPos, int height, int cControls, const ToolbarButton * buttons, int controlVisibility)
-{
-	int i;
-	int lPos = 0;
-	int rPos = width;
-	for (i = 0; i < cControls ; i++) {
-		if (!buttons[i].alignment && (controlVisibility & (1 << i))) {
-			lPos += buttons[i].spacing;
-			hdwp = DeferWindowPos(hdwp, GetDlgItem(hwnd, buttons[i].controlId), 0, lPos, vPos, buttons[i].width, height, SWP_NOZORDER);
-			lPos += buttons[i].width;
-		}
-	}
-	for (i = cControls - 1; i >=0; i--) {
-		if (buttons[i].alignment && (controlVisibility & (1 << i))) {
-			rPos -= buttons[i].spacing + buttons[i].width;
-			hdwp = DeferWindowPos(hdwp, GetDlgItem(hwnd, buttons[i].controlId), 0, rPos, vPos, buttons[i].width, height, SWP_NOZORDER);
-		}
-	}
-	return hdwp;
-}
-
-void ShowToolbarControls(HWND hwndDlg, int cControls, const ToolbarButton* buttons, int controlVisibility, int state)
-{
-	int i;
-	for (i = 0; i < cControls; i++)
-		ShowWindow(GetDlgItem(hwndDlg, buttons[i].controlId), (controlVisibility & (1 << i)) ? state : SW_HIDE);
-}
-
-
 void AppendToBuffer(char **buffer, int *cbBufferEnd, int *cbBufferAlloced, const char *fmt, ...)
 {
 	va_list va;
@@ -566,3 +537,57 @@ void SetToolTipRect(HWND hwndParent, HWND hwndTT, RECT* rect)
 	ti.rect = *rect;
 	SendMessage(hwndTT, TTM_NEWTOOLRECT, 0, (LPARAM) (LPTOOLINFO) &ti);
 } 
+
+/* toolbar-related stuff, to be moved to a separate file */
+
+HDWP ResizeToolbar(HWND hwnd, HDWP hdwp, int width, int vPos, int height, int cControls, const ToolbarButton * buttons, int controlVisibility)
+{
+	int i;
+	int lPos = 0;
+	int rPos = width;
+	for (i = 0; i < cControls ; i++) {
+		if (!buttons[i].alignment && (controlVisibility & (1 << i))) {
+			lPos += buttons[i].spacing;
+			hdwp = DeferWindowPos(hdwp, GetDlgItem(hwnd, buttons[i].controlId), 0, lPos, vPos, buttons[i].width, height, SWP_NOZORDER);
+			lPos += buttons[i].width;
+		}
+	}
+	for (i = cControls - 1; i >=0; i--) {
+		if (buttons[i].alignment && (controlVisibility & (1 << i))) {
+			rPos -= buttons[i].spacing + buttons[i].width;
+			hdwp = DeferWindowPos(hdwp, GetDlgItem(hwnd, buttons[i].controlId), 0, rPos, vPos, buttons[i].width, height, SWP_NOZORDER);
+		}
+	}
+	return hdwp;
+}
+
+void ShowToolbarControls(HWND hwndDlg, int cControls, const ToolbarButton* buttons, int controlVisibility, int state)
+{
+	int i;
+	for (i = 0; i < cControls; i++)
+		ShowWindow(GetDlgItem(hwndDlg, buttons[i].controlId), (controlVisibility & (1 << i)) ? state : SW_HIDE);
+}
+
+int GetToolbarWidth(int cControls, const ToolbarButton * buttons)
+{
+	int i, w = 0;
+	for (i = 0; i < cControls; i++) {
+//		if (g_dat->buttonVisibility & (1 << i)) {
+			if (buttons[i].controlId != IDC_SMILEYS || g_dat->smileyAddInstalled) {
+				w += buttons[i].width + buttons[i].spacing;
+			}
+//		}
+	}
+	return w;
+}
+
+BOOL IsToolbarVisible(int cControls, int visibilityFlags)
+{
+	int i;
+	for (i = 0; i < cControls; i++) {
+		if (visibilityFlags & (1 << i)) {
+			return TRUE;
+		}
+	}
+	return FALSE;
+}

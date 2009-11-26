@@ -256,19 +256,6 @@ static void AddToFileList(TCHAR ***pppFiles,int *totalCount,const TCHAR* szFilen
 			FindClose( hFind );
 }	}	}
 
-static int GetToolbarWidth(int cControls, const ToolbarButton * buttons)
-{
-	int i, w = 0;
-	for (i = 0; i < cControls; i++) {
-//		if (g_dat->buttonVisibility & (1 << i)) {
-			if (buttons[i].controlId != IDC_SMILEYS || g_dat->smileyAddInstalled) {
-				w += buttons[i].width + buttons[i].spacing;
-			}
-//		}
-	}
-	return w;
-}
-
 static void SetDialogToType(HWND hwndDlg)
 {
 	BOOL showToolbar = SendMessage(GetParent(hwndDlg), CM_GETTOOLBARSTATUS, 0, 0);
@@ -578,7 +565,7 @@ static void UnsubclassLogEdit(HWND hwnd) {
 static void MessageDialogResize(HWND hwndDlg, struct MessageWindowData *dat, int w, int h) {
 	HDWP hdwp;
 	ParentWindowData *pdat = dat->parent;
-	int hSplitterPos = dat->splitterPos, toolbarHeight = pdat->flags2&SMF2_SHOWTOOLBAR ? dat->toolbarSize.cy : 0;
+	int hSplitterPos = dat->splitterPos, toolbarHeight = pdat->flags2&SMF2_SHOWTOOLBAR ? IsToolbarVisible(SIZEOF(toolbarButtons), g_dat->buttonVisibility) ? dat->toolbarSize.cy : dat->toolbarSize.cy / 3 : 0;
 	int hSplitterMinTop = toolbarHeight + dat->windowData.minLogBoxHeight, hSplitterMinBottom = dat->windowData.minEditBoxHeight;
 	int infobarHeight = INFO_BAR_INNER_HEIGHT;
 	int avatarWidth = 0, avatarHeight = 0;

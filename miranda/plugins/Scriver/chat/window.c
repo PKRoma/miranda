@@ -183,7 +183,7 @@ static void MessageDialogResize(HWND hwndDlg, SESSION_INFO *si, int w, int h) {
 	MODULEINFO * pInfo = MM_FindModule(si->pszModule);
 	int       buttonVisibility = bToolbar ? g_dat->chatBbuttonVisibility : 0;
 	int		  hSplitterMinTop = TOOLBAR_HEIGHT + si->windowData.minLogBoxHeight, hSplitterMinBottom = si->windowData.minEditBoxHeight;
-	bToolbar  &= buttonVisibility != 0;
+	int		  toolbarHeight = bToolbar ? IsToolbarVisible(SIZEOF(toolbarButtons), g_dat->chatBbuttonVisibility) ? TOOLBAR_HEIGHT : TOOLBAR_HEIGHT / 3 : 0;
 
 	if (g_dat->flags & SMF_AUTORESIZE) {
 		si->iSplitterY = si->desiredInputAreaHeight + SPLITTER_HEIGHT + 3;
@@ -221,7 +221,7 @@ static void MessageDialogResize(HWND hwndDlg, SESSION_INFO *si, int w, int h) {
 	}
 
 	hdwp = BeginDeferWindowPos(20);
-	toolbarTopY = bToolbar ? h - si->iSplitterY - TOOLBAR_HEIGHT : h - si->iSplitterY;
+	toolbarTopY = bToolbar ? h - si->iSplitterY - toolbarHeight : h - si->iSplitterY;
 	if (si->windowData.hwndLog != NULL) {
 		logBottom = toolbarTopY / 2;
 	} else {
@@ -249,7 +249,7 @@ static void MessageDialogResize(HWND hwndDlg, SESSION_INFO *si, int w, int h) {
 	
 */
 
-	hdwp = ResizeToolbar(hwndDlg, hdwp, w, toolbarTopY + 1, TOOLBAR_HEIGHT - 1, SIZEOF(toolbarButtons), toolbarButtons, buttonVisibility);
+	hdwp = ResizeToolbar(hwndDlg, hdwp, w, toolbarTopY + 1, toolbarHeight - 1, SIZEOF(toolbarButtons), toolbarButtons, buttonVisibility);
 	EndDeferWindowPos(hdwp);
 	if (si->windowData.hwndLog != NULL) {
 		RECT rect;

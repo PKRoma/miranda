@@ -62,4 +62,6 @@ extern void GetContactUniqueId(struct MessageWindowData *dat, char *buf, int max
 HWND CreateToolTip(HWND hwndParent, LPTSTR ptszText, LPTSTR ptszTitle, RECT *rect);
 void SetToolTipText(HWND hwndParent, HWND hwndTT, LPTSTR ptszText, LPTSTR ptszTitle);
 void SetToolTipRect(HWND hwndParent, HWND hwndTT, RECT* rect);
+int GetToolbarWidth(int cControls, const ToolbarButton * buttons);
+BOOL IsToolbarVisible(int cControls, int visibilityFlags);
 #endif
