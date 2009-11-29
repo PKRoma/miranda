@@ -131,7 +131,7 @@ filetransfer* CIcqProto::CreateFileTransfer(HANDLE hContact, DWORD dwUin, int nV
 // buf points to the first data after the string
 void CIcqProto::handleFileRequest(PBYTE buf, WORD wLen, DWORD dwUin, DWORD dwCookie, DWORD dwID1, DWORD dwID2, char* pszDescription, int nVersion, BOOL bDC)
 {
-	char* pszFileName = NULL;
+	char *pszFileName = NULL;
 	DWORD dwFileSize;
 	WORD wFilenameLength;
 	BOOL bEmptyDesc = FALSE;
@@ -170,10 +170,10 @@ void CIcqProto::handleFileRequest(PBYTE buf, WORD wLen, DWORD dwUin, DWORD dwCoo
 	HANDLE hContact = HContactFromUIN(dwUin, &bAdded);
 
 	// Initialize a filetransfer struct
-	filetransfer* ft = CreateFileTransfer(hContact, dwUin, nVersion);
+	filetransfer *ft = CreateFileTransfer(hContact, dwUin, nVersion);
 	ft->dwCookie = dwCookie;
-	ft->szFilename = null_strdup(pszFileName);
-	ft->szDescription = null_strdup(pszDescription);
+	ft->szFilename = ansi_to_utf8(pszFileName);
+	ft->szDescription = ansi_to_utf8(pszDescription);
 	ft->fileId = -1;
 	ft->dwTotalSize = dwFileSize;
 	ft->pMessage.dwMsgID1 = dwID1;
