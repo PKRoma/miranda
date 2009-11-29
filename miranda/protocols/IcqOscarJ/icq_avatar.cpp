@@ -1485,7 +1485,7 @@ void CIcqProto::handleAvatarFam(BYTE *pBuffer, WORD wBufferLength, snac_header *
 						strcpy(ai.filename, szMyFile);
 
 						out = _open(szMyFile, _O_BINARY | _O_CREAT | _O_TRUNC | _O_WRONLY, _S_IREAD | _S_IWRITE);
-						if (out) 
+						if (out != -1) 
 						{
 							DBVARIANT dbv;
 
