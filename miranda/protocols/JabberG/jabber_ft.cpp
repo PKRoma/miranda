@@ -432,7 +432,7 @@ void CJabberProto::FtAcceptIbbRequest( filetransfer* ft )
 				<< XCHILD( _T("value"), _T(JABBER_FEAT_IBB)));
 }	}
 
-void CJabberProto::FtHandleBytestreamRequest( HXML iqNode, CJabberIqInfo* pInfo )
+BOOL CJabberProto::FtHandleBytestreamRequest( HXML iqNode, CJabberIqInfo* pInfo )
 {
 	HXML queryNode = pInfo->GetChildNode();
 
@@ -450,11 +450,11 @@ void CJabberProto::FtHandleBytestreamRequest( HXML iqNode, CJabberIqInfo* pInfo 
 		item->ft->jbt = jbt;
 		JForkThread(( JThreadFunc )&CJabberProto::ByteReceiveThread, jbt );
 		ListRemove( LIST_FTRECV, sid );
-		return;
+		return TRUE;
 	}
 
 	Log( "File transfer invalid bytestream initiation request received" );
-	return;
+	return TRUE;
 }
 
 BOOL CJabberProto::FtHandleIbbRequest( HXML iqNode, BOOL bOpen )

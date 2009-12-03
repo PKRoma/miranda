@@ -581,7 +581,7 @@ BOOL CJabberProto::DBCheckIsTransportedContact(const TCHAR* jid, HANDLE hContact
 
 	if ( m_lstTransports.getIndex( domain ) == -1 ) {
 		if ( isAgent ) {
-			m_lstTransports.insert( _tcsdup(domain) ); 
+			m_lstTransports.insert( mir_tstrdup(domain) ); 
 			JSetByte( hContact, "IsTransport", 1 );
 	}	}
 

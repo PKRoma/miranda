@@ -150,6 +150,9 @@ int __cdecl CJabberProto::OnPreShutdown( WPARAM, LPARAM )
 
 	m_iqManager.ExpireAll();
 	m_iqManager.Shutdown();
+	m_messageManager.Shutdown();
+	m_presenceManager.Shutdown();
+	m_sendManager.Shutdown();
 	ConsoleUninit();
 	return 0;
 }

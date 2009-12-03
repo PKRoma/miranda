@@ -414,7 +414,7 @@ void CJabberProto::PerformBrowse(HWND hwndDlg)
 							JSetByte( hContact, "IsTransport", TRUE );
 
 						if ( m_lstTransports.getIndex( item->jid ) == -1 )
-							m_lstTransports.insert( _tcsdup( item->jid ));
+							m_lstTransports.insert( mir_tstrdup( item->jid ));
 
 						CJabberSDNode* pNode = m_SDManager.AddPrimaryNode(item->jid, NULL, NULL);
 						SendBothRequests( pNode, NULL );

@@ -37,7 +37,7 @@ Last change by : $Author$
 
 #define JABBER_PL_BUSY_MSG	 "Sending request, please wait..."
 
-void CJabberProto::OnIqRequestPrivacyLists( HXML, CJabberIqInfo* pInfo )
+BOOL CJabberProto::OnIqRequestPrivacyLists( HXML, CJabberIqInfo* pInfo )
 {
 	if ( pInfo->GetIqType() == JABBER_IQ_TYPE_SET ) {
 		if ( !m_pDlgPrivacyLists )
@@ -49,7 +49,9 @@ void CJabberProto::OnIqRequestPrivacyLists( HXML, CJabberIqInfo* pInfo )
 
 		XmlNodeIq iq( _T("result"), pInfo );
 		m_ThreadInfo->send( iq );
-}	}
+	}
+	return TRUE;
+}
 
 void CJabberProto::OnIqResultPrivacyListModify( HXML, CJabberIqInfo* pInfo )
 {

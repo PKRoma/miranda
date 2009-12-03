@@ -171,6 +171,198 @@ static void xmlapiFree( void* p )
 	free( p );
 }
 
+// XML API v2 methods
+static int xmlapiGetTextCount( HXML _n )
+{
+	return XMLNode(_n).nText();
+}
+
+static LPCTSTR xmlapiGetTextByIndex( HXML _n, int i )
+{
+	return XMLNode(_n).getText( i );
+}
+
+static void xmlapiSetTextByIndex( HXML _n, int i, LPCTSTR value )
+{
+	XMLNode(_n).updateText( value, i );
+}
+
+static void xmlapiAddText( HXML _n, LPCTSTR value, XML_ELEMENT_POS pos )
+{
+	XMLNode(_n).addText( value, ( XMLElementPosition )pos );
+}
+
+static LPTSTR xmlapiToStringWithFormatting( HXML _n, int* datalen )
+{
+	return XMLNode(_n).createXMLString( 1, datalen );
+}
+
+static int xmlapiGetClearCount( HXML _n )
+{
+	return XMLNode(_n).nClear();
+}
+
+static LPCTSTR xmlapiGetClear( HXML _n, int i, LPCTSTR *openTag, LPCTSTR *closeTag )
+{
+	XMLClear c = XMLNode(_n).getClear( i );
+	if ( openTag )
+		*openTag = c.lpszOpenTag;
+	if ( closeTag )
+		*closeTag = c.lpszCloseTag;
+	return c.lpszValue;
+}
+
+static void xmlapiAddClear( HXML _n, LPCTSTR lpszValue, LPCTSTR openTag, LPCTSTR closeTag, XML_ELEMENT_POS pos )
+{
+	XMLNode(_n).addClear( lpszValue, openTag, closeTag, ( XMLElementPosition )pos );
+}
+
+static void xmlapiSetClear( HXML _n, int i, LPCTSTR lpszValue )
+{
+	XMLNode(_n).updateClear( lpszValue, i );
+}
+
+static int xmlapiGetElement( HXML _n, XML_ELEMENT_POS pos, XML_ELEMENT_TYPE *type, HXML *child, LPCTSTR *value, LPCTSTR *name, LPCTSTR *openTag, LPCTSTR *closeTag )
+{
+	// reset all values
+	if ( child )
+		*child = NULL;
+	if ( value )
+		*value = NULL;
+	if ( name )
+		*name = NULL;
+	if ( openTag )
+		*openTag = NULL;
+	if ( closeTag )
+		*closeTag = NULL;
+
+	if ( !type || pos >= XMLNode(_n).nElement())
+		return false;
+	XMLNodeContents c( XMLNode(_n).enumContents( ( XMLElementPosition )pos ));
+	switch ( c.etype ) {
+		case eNodeChild:
+		{
+			*type = XML_ELEM_TYPE_CHILD;
+			if ( child )
+				*child = c.child;
+		} break;
+		case eNodeAttribute:
+		{
+			*type = XML_ELEM_TYPE_ATTRIBUTE;
+			if ( name )
+				*name = c.attrib.lpszName;
+			if ( value )
+				*value = c.attrib.lpszValue;
+		} break;
+		case eNodeText:
+		{
+			*type = XML_ELEM_TYPE_TEXT;
+			if ( value )
+				*value = c.text;
+		} break;
+		case eNodeClear:
+		{
+			*type = XML_ELEM_TYPE_CLEAR;
+			if ( value )
+				*value = c.clear.lpszValue;
+			if ( openTag )
+				*openTag = c.clear.lpszOpenTag;
+			if ( closeTag )
+				*closeTag = c.clear.lpszCloseTag;
+		} break;
+		case eNodeNULL:
+		{
+			return false;
+		} break;
+	}
+	return true;
+}
+
+static int xmlapiGetElementCount( HXML _n )
+{
+	return XMLNode(_n).nElement();
+}
+
+static char xmlapiIsDeclaration( HXML _n )
+{
+	return XMLNode(_n).isDeclaration();
+}
+
+static HXML xmlapiDeepCopy( HXML _n )
+{
+	return XMLNode(_n).deepCopy().detach();
+}
+
+static HXML xmlapiAddChildEx( HXML _n, LPCTSTR name, char isDeclaration, XML_ELEMENT_POS pos )
+{
+	return XMLNode(_n).addChild( name, isDeclaration, ( XMLElementPosition )pos );
+}
+
+static void xmlapiAddChildEx2( HXML _n, HXML parent, XML_ELEMENT_POS pos )
+{
+	XMLNode(_n).addChild( parent, ( XMLElementPosition )pos );
+}
+
+static void xmlapiSetAttrByIndex( HXML _n, int i, LPCTSTR value )
+{
+	XMLNode(_n).updateAttribute( value, NULL, i );
+}
+
+static void xmlapiSetAttrByName( HXML _n, LPCTSTR name, LPCTSTR value )
+{
+	XMLNode(_n).updateAttribute( value, NULL, name );
+}
+
+static void xmlapiDeleteNodeContent( HXML _n )
+{
+	XMLNode(_n).deleteNodeContent();
+}
+
+static void xmlapiDeleteAttrByIndex( HXML _n, int i )
+{
+	XMLNode(_n).deleteAttribute( i );
+}
+
+static void xmlapiDeleteAttrByName( HXML _n, LPCTSTR name )
+{
+	XMLNode(_n).deleteAttribute( name );
+}
+
+static void xmlapiDeleteText( HXML _n, int i )
+{
+	XMLNode(_n).deleteText( i );
+}
+
+static void xmlapiDeleteClear( HXML _n, int i )
+{
+	XMLNode(_n).deleteClear( i );
+}
+
+static XML_ELEMENT_POS xmlapiPositionOfText( HXML _n, int i )
+{
+	return ( XML_ELEMENT_POS )XMLNode(_n).positionOfText( i );
+}
+
+static XML_ELEMENT_POS xmlapiPositionOfClear( HXML _n, int i )
+{
+	return ( XML_ELEMENT_POS )XMLNode(_n).positionOfClear( i );
+}
+
+static XML_ELEMENT_POS xmlapiPositionOfChildByIndex( HXML _n, int i )
+{
+	return ( XML_ELEMENT_POS )XMLNode(_n).positionOfChildNode( i );
+}
+
+static XML_ELEMENT_POS xmlapiPositionOfChildByNode( HXML _n, HXML child )
+{
+	return ( XML_ELEMENT_POS )XMLNode(_n).positionOfChildNode( child );
+}
+
+static XML_ELEMENT_POS xmlapiPositionOfChildByName( HXML _n, LPCTSTR name, int i )
+{
+	return ( XML_ELEMENT_POS )XMLNode(_n).positionOfChildNode( name, i );
+}
+
 /////////////////////////////////////////////////////////////////////////////////////////
 
 static INT_PTR GetXmlApi( WPARAM, LPARAM lParam )
@@ -179,7 +371,7 @@ static INT_PTR GetXmlApi( WPARAM, LPARAM lParam )
 	if ( xi == NULL )
 		return FALSE;
 
-	if ( xi->cbSize != sizeof(XML_API))
+	if ( xi->cbSize != XML_API_SIZEOF_V1 && xi->cbSize != sizeof(XML_API))
 		return FALSE;
 
 	xi->createNode          = xmlapiCreateNode;
@@ -211,6 +403,38 @@ static INT_PTR GetXmlApi( WPARAM, LPARAM lParam )
 	xi->getAttrValue        = xmlapiGetAttrValue;
 	xi->addAttr             = xmlapiAddAttr;
 	xi->addAttrInt          = xmlapiAddAttrInt;
+
+	if ( xi->cbSize > XML_API_SIZEOF_V1 ) {
+		xi->isDeclaration          = xmlapiIsDeclaration;
+		xi->toStringWithFormatting = xmlapiToStringWithFormatting;
+		xi->deepCopy               = xmlapiDeepCopy;
+		xi->setAttrByIndex         = xmlapiSetAttrByIndex;
+		xi->setAttrByName          = xmlapiSetAttrByName;
+		xi->addChildEx             = xmlapiAddChildEx;
+		xi->addChildEx2            = xmlapiAddChildEx2;
+		xi->getTextCount           = xmlapiGetTextCount;
+		xi->getTextByIndex         = xmlapiGetTextByIndex;
+		xi->addText                = xmlapiAddText;
+		xi->setTextByIndex         = xmlapiSetTextByIndex;
+		xi->getClearCount          = xmlapiGetClearCount;
+		xi->getClear               = xmlapiGetClear;
+		xi->addClear               = xmlapiAddClear;
+		xi->setClear               = xmlapiSetClear;
+		xi->getElementCount        = xmlapiGetElementCount;
+		xi->getElement             = xmlapiGetElement;
+
+		xi->deleteNodeContent      = xmlapiDeleteNodeContent;
+		xi->deleteAttrByIndex      = xmlapiDeleteAttrByIndex;
+		xi->deleteAttrByName       = xmlapiDeleteAttrByName;
+		xi->deleteText             = xmlapiDeleteText;
+		xi->deleteClear            = xmlapiDeleteClear;
+
+		xi->positionOfChildByIndex = xmlapiPositionOfChildByIndex;
+		xi->positionOfChildByNode  = xmlapiPositionOfChildByNode;
+		xi->positionOfChildByName  = xmlapiPositionOfChildByName;
+		xi->positionOfText         = xmlapiPositionOfText;
+		xi->positionOfClear        = xmlapiPositionOfClear;
+	}
 	return TRUE;
 }
 

@@ -83,6 +83,7 @@ Last change by : $Author$
 #include <m_button.h>
 #include <m_avatars.h>
 #include <m_idle.h>
+#include <m_jabber.h>
 #include <win2k.h>
 
 #include "../../plugins/zlib/zlib.h"
@@ -236,9 +237,6 @@ enum {
 };
 
 // Services and Events
-#define JE_RAWXMLIN                "/RawXMLIn"
-#define JE_RAWXMLOUT               "/RawXMLOut"
-
 #define JS_PARSE_XMPP_URI          "/ParseXmppURI"
 
 // XEP-0224 support (Attention/Nudge)
@@ -251,7 +249,7 @@ enum {
 #define JE_CUSTOMSTATUS_EXTRAICON_CHANGED "/XStatusExtraIconChanged"
 #define JE_CUSTOMSTATUS_CHANGED						"/XStatusChanged"
 
-#define JS_SENDXML                 "/SendXML"
+#define JS_SENDXML                 "/SendXML" // Warning: This service is obsolete. Use IJabberNetInterface::SendXmlNode() instead.
 #define JS_GETADVANCEDSTATUSICON   "/GetAdvancedStatusIcon"
 #define JS_GETCUSTOMSTATUSICON     "/GetXStatusIcon"
 #define JS_GETXSTATUS              "/GetXStatus"

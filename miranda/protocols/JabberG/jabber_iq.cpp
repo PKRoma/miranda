@@ -239,7 +239,7 @@ void CJabberIqManager::ExpireInfo( CJabberIqInfo* pInfo, void*)
 	(ppro->*(pInfo->m_pHandler))( NULL, pInfo );
 }
 
-CJabberIqInfo* CJabberIqManager::AddHandler(JABBER_IQ_HANDLER pHandler, int nIqType, const TCHAR *szReceiver, DWORD dwParamsToParse, int nIqId, void *pUserData, DWORD dwGroupId, DWORD dwTimeout)
+CJabberIqInfo* CJabberIqManager::AddHandler(JABBER_IQ_HANDLER pHandler, int nIqType, const TCHAR *szReceiver, DWORD dwParamsToParse, int nIqId, void *pUserData, DWORD dwGroupId, DWORD dwTimeout, int iPriority)
 {
 	CJabberIqInfo* pInfo = new CJabberIqInfo();
 	if (!pInfo)
@@ -255,9 +255,10 @@ CJabberIqInfo* CJabberIqManager::AddHandler(JABBER_IQ_HANDLER pHandler, int nIqT
 	pInfo->m_dwGroupId = dwGroupId;
 	pInfo->m_dwRequestTime = GetTickCount();
 	pInfo->m_dwTimeout = dwTimeout;
+	pInfo->m_iPriority = iPriority;
 	pInfo->SetReceiver(szReceiver);
 
-	AppendIq(pInfo);
+	InsertIq(pInfo);
 
 	return pInfo;
 }
@@ -315,60 +316,63 @@ BOOL CJabberIqManager::HandleIq(int nIqId, HXML pNode )
 
 BOOL CJabberIqManager::HandleIqPermanent( HXML pNode )
 {
-	const TCHAR *szType = xmlGetAttrValue( pNode, _T("type"));
-	if ( !szType )
-		return FALSE;
-	
-	CJabberIqInfo iqInfo;
-
-	iqInfo.m_nIqType = JABBER_IQ_TYPE_FAIL;
-	if ( !_tcsicmp( szType, _T("get")))
-		iqInfo.m_nIqType = JABBER_IQ_TYPE_GET;
-	else if ( !_tcsicmp( szType, _T("set")))
-		iqInfo.m_nIqType = JABBER_IQ_TYPE_SET;
-	else
-		return FALSE;
-
-	HXML pFirstChild = xmlGetChild( pNode , 0 );
-	if ( !pFirstChild || !xmlGetName( pFirstChild ) )
-		return FALSE;
-	
-	const TCHAR *szTagName = xmlGetName( pFirstChild );
-	const TCHAR *szXmlns = xmlGetAttrValue( pFirstChild, _T("xmlns"));
-
-	BOOL bHandled = FALSE;
+	BOOL bStopHandling = FALSE;
 	Lock();
 	CJabberIqPermanentInfo *pInfo = m_pPermanentHandlers;
 	while ( pInfo ) {
-		BOOL bAllow = TRUE;
-		if ( !(pInfo->m_nIqTypes & iqInfo.m_nIqType ))
-			bAllow = FALSE;
-		if ( bAllow && pInfo->m_szXmlns && ( !szXmlns || _tcscmp( pInfo->m_szXmlns, szXmlns )))
-			bAllow = FALSE;
-		if ( bAllow && pInfo->m_szTag && _tcscmp( pInfo->m_szTag, szTagName ))
-			bAllow = FALSE;
-		if ( bAllow ) {
-			iqInfo.m_pChildNode = pFirstChild;
-			iqInfo.m_szChildTagName = ( TCHAR* )szTagName;
-			iqInfo.m_szChildTagXmlns = ( TCHAR* )szXmlns;
-			iqInfo.m_szId = ( TCHAR* )xmlGetAttrValue( pNode, _T("id"));
+		// have to get all data here, in the loop, because there's always possibility that previous handler modified it
+		const TCHAR *szType = xmlGetAttrValue( pNode, _T("type"));
+		if ( !szType )
+			break;
+		
+		CJabberIqInfo iqInfo;
 
-			if (pInfo->m_dwParamsToParse & JABBER_IQ_PARSE_TO)
-				iqInfo.m_szTo = ( TCHAR* )xmlGetAttrValue( pNode, _T("to"));
+		iqInfo.m_nIqType = JABBER_IQ_TYPE_FAIL;
+		if ( !_tcsicmp( szType, _T("get")))
+			iqInfo.m_nIqType = JABBER_IQ_TYPE_GET;
+		else if ( !_tcsicmp( szType, _T("set")))
+			iqInfo.m_nIqType = JABBER_IQ_TYPE_SET;
+		else
+			break;
 
-			if (pInfo->m_dwParamsToParse & JABBER_IQ_PARSE_FROM)
-				iqInfo.m_szFrom = ( TCHAR* )xmlGetAttrValue( pNode, _T("from"));
+		if ( pInfo->m_nIqTypes & iqInfo.m_nIqType )
+		{
+			HXML pFirstChild = xmlGetChild( pNode , 0 );
+			if ( !pFirstChild || !xmlGetName( pFirstChild ) )
+				break;
+			
+			const TCHAR *szTagName = xmlGetName( pFirstChild );
+			const TCHAR *szXmlns = xmlGetAttrValue( pFirstChild, _T("xmlns"));
 
-			if ((pInfo->m_dwParamsToParse & JABBER_IQ_PARSE_HCONTACT) && (iqInfo.m_szFrom))
-				iqInfo.m_hContact = ppro->HContactFromJID( iqInfo.m_szFrom, 3 );
+			if ( (!pInfo->m_szXmlns || ( szXmlns && !_tcscmp( pInfo->m_szXmlns, szXmlns ))) &&
+			( !pInfo->m_szTag || !_tcscmp( pInfo->m_szTag, szTagName ))) {
+			// node suits handler criteria, call the handler
+				iqInfo.m_pChildNode = pFirstChild;
+				iqInfo.m_szChildTagName = ( TCHAR* )szTagName;
+				iqInfo.m_szChildTagXmlns = ( TCHAR* )szXmlns;
+				iqInfo.m_szId = ( TCHAR* )xmlGetAttrValue( pNode, _T("id"));
+				iqInfo.m_pUserData = pInfo->m_pUserData;
 
-			ppro->Log( "Handling iq id " TCHAR_STR_PARAM ", type " TCHAR_STR_PARAM ", from " TCHAR_STR_PARAM, iqInfo.m_szId, szType, iqInfo.m_szFrom );
-			(ppro->*(pInfo->m_pHandler))(pNode, &iqInfo);
-			bHandled = TRUE;
+				if (pInfo->m_dwParamsToParse & JABBER_IQ_PARSE_TO)
+					iqInfo.m_szTo = ( TCHAR* )xmlGetAttrValue( pNode, _T("to"));
+
+				if (pInfo->m_dwParamsToParse & JABBER_IQ_PARSE_FROM)
+					iqInfo.m_szFrom = ( TCHAR* )xmlGetAttrValue( pNode, _T("from"));
+
+				if ((pInfo->m_dwParamsToParse & JABBER_IQ_PARSE_HCONTACT) && (iqInfo.m_szFrom))
+					iqInfo.m_hContact = ppro->HContactFromJID( iqInfo.m_szFrom, 3 );
+
+				ppro->Log( "Handling iq id " TCHAR_STR_PARAM ", type " TCHAR_STR_PARAM ", from " TCHAR_STR_PARAM, iqInfo.m_szId, szType, iqInfo.m_szFrom );
+				if ((ppro->*(pInfo->m_pHandler))(pNode, &iqInfo)) {
+					bStopHandling = TRUE;
+					break;
+				}
+			}
 		}
+
 		pInfo = pInfo->m_pNext;
 	}
 	Unlock();
 
-	return bHandled;
+	return bStopHandling;
 }

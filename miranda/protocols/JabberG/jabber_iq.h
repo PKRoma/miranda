@@ -53,6 +53,7 @@ typedef enum {
 
 struct CJabberProto;
 typedef void ( CJabberProto::*JABBER_IQ_PFUNC )( HXML iqNode );
+typedef void ( *IQ_USER_DATA_FREE_FUNC )( void *pUserData );
 
 typedef struct {
 	TCHAR* xmlns;
@@ -66,17 +67,8 @@ void  __stdcall replaceStr( WCHAR*& dest, const WCHAR* src );
 // 2 minutes, milliseconds
 #define JABBER_DEFAULT_IQ_REQUEST_TIMEOUT		120000
 
-class CJabberIqRequestManager;
-
 typedef void ( CJabberProto::*JABBER_IQ_HANDLER )( HXML iqNode, /*void *usedata,*/ CJabberIqInfo* pInfo );
-
-#define JABBER_IQ_TYPE_FAIL						0
-#define JABBER_IQ_TYPE_RESULT					1
-#define JABBER_IQ_TYPE_ERROR					2
-#define JABBER_IQ_TYPE_GET						4
-#define JABBER_IQ_TYPE_SET						8
-
-#define JABBER_IQ_TYPE_GOOD						(JABBER_IQ_TYPE_RESULT|JABBER_IQ_TYPE_GET|JABBER_IQ_TYPE_SET)
+typedef BOOL ( CJabberProto::*JABBER_PERMANENT_IQ_HANDLER )( HXML iqNode, CJabberIqInfo* pInfo );
 
 #define JABBER_IQ_PARSE_CHILD_TAG_NODE			(1)
 #define JABBER_IQ_PARSE_CHILD_TAG_NAME			((1<<1)|JABBER_IQ_PARSE_CHILD_TAG_NODE)
@@ -100,6 +92,7 @@ protected:
 	DWORD m_dwRequestTime;
 	DWORD m_dwTimeout;
 	TCHAR *m_szReceiver;
+	int m_iPriority;
 public:
 	void *m_pUserData;
 	DWORD m_dwGroupId;
@@ -197,12 +190,15 @@ class CJabberIqPermanentInfo
 
 	CJabberIqPermanentInfo* m_pNext;
 
-	JABBER_IQ_HANDLER m_pHandler;
+	JABBER_PERMANENT_IQ_HANDLER m_pHandler;
 	DWORD m_dwParamsToParse;
 	int m_nIqTypes;
 	TCHAR* m_szXmlns;
 	TCHAR* m_szTag;
 	BOOL m_bAllowPartialNs;
+	void *m_pUserData;
+	IQ_USER_DATA_FREE_FUNC m_pUserDataFree;
+	int m_iPriority;
 public:
 	CJabberIqPermanentInfo()
 	{
@@ -210,10 +206,10 @@ public:
 	}
 	~CJabberIqPermanentInfo()
 	{
+		if ( m_pUserDataFree )
+			m_pUserDataFree(m_pUserData);
 		mir_free(m_szXmlns);
 		mir_free(m_szTag);
-		if ( m_pNext )
-			delete m_pNext;
 	}
 };
 
@@ -223,7 +219,7 @@ protected:
 	CJabberProto* ppro;
 	CRITICAL_SECTION m_cs;
 	DWORD m_dwLastUsedHandle;
-	CJabberIqInfo* m_pIqs;
+	CJabberIqInfo* m_pIqs; // list of iqs ordered by priority
 	HANDLE m_hExpirerThread;
 	BOOL m_bExpirerThreadShutdownRequest;
 
@@ -310,17 +306,24 @@ protected:
 		return NULL;
 	}
 	void ExpireInfo( CJabberIqInfo* pInfo, void *pUserData = NULL );
-	BOOL AppendIq(CJabberIqInfo* pInfo)
-	{
+	BOOL InsertIq(CJabberIqInfo* pInfo)
+	{ // inserts pInfo at a place determined by pInfo->m_iPriority
 		Lock();
 		if (!m_pIqs)
 			m_pIqs = pInfo;
 		else
 		{
-			CJabberIqInfo* pTmp = m_pIqs;
-			while (pTmp->m_pNext)
-				pTmp = pTmp->m_pNext;
-			pTmp->m_pNext = pInfo;
+			if (m_pIqs->m_iPriority > pInfo->m_iPriority) {
+				pInfo->m_pNext = m_pIqs;
+				m_pIqs = pInfo;
+			} else
+			{
+				CJabberIqInfo* pTmp = m_pIqs;
+				while (pTmp->m_pNext && pTmp->m_pNext->m_iPriority <= pInfo->m_iPriority)
+					pTmp = pTmp->m_pNext;
+				pInfo->m_pNext = pTmp->m_pNext;
+				pTmp->m_pNext = pInfo;
+			}
 		}
 		Unlock();
 		return TRUE;
@@ -338,8 +341,16 @@ public:
 	~CJabberIqManager()
 	{
 		ExpireAll();
-		if ( m_pPermanentHandlers )
-			delete m_pPermanentHandlers;
+		Lock();
+		CJabberIqPermanentInfo *pInfo = m_pPermanentHandlers;
+		while ( pInfo )
+		{
+			CJabberIqPermanentInfo *pTmp = pInfo->m_pNext;
+			delete pInfo;
+			pInfo = pTmp;
+		}
+		m_pPermanentHandlers = NULL;
+		Unlock();
 		DeleteCriticalSection(&m_cs);
 	}
 	BOOL Start();
@@ -386,33 +397,109 @@ public:
 		return dwCount;
 	}
 	// fucking params, maybe just return CJabberIqRequestInfo pointer ?
-	CJabberIqInfo* AddHandler(JABBER_IQ_HANDLER pHandler, int nIqType = JABBER_IQ_TYPE_GET, const TCHAR *szReceiver = NULL, DWORD dwParamsToParse = 0, int nIqId = -1, void *pUserData = NULL, DWORD dwGroupId = 0, DWORD dwTimeout = JABBER_DEFAULT_IQ_REQUEST_TIMEOUT);
-	CJabberIqPermanentInfo* AddPermanentHandler(JABBER_IQ_HANDLER pHandler, int nIqTypes, DWORD dwParamsToParse, const TCHAR* szXmlns, BOOL bAllowPartialNs, const TCHAR* szTag)
+	CJabberIqInfo* AddHandler(JABBER_IQ_HANDLER pHandler, int nIqType = JABBER_IQ_TYPE_GET, const TCHAR *szReceiver = NULL, DWORD dwParamsToParse = 0, int nIqId = -1, void *pUserData = NULL, DWORD dwGroupId = 0, DWORD dwTimeout = JABBER_DEFAULT_IQ_REQUEST_TIMEOUT, int iPriority = JH_PRIORITY_DEFAULT);
+	CJabberIqPermanentInfo* AddPermanentHandler(JABBER_PERMANENT_IQ_HANDLER pHandler, int nIqTypes, DWORD dwParamsToParse, const TCHAR* szXmlns, BOOL bAllowPartialNs, const TCHAR* szTag, void *pUserData = NULL, IQ_USER_DATA_FREE_FUNC pUserDataFree = NULL, int iPriority = JH_PRIORITY_DEFAULT)
 	{
 		CJabberIqPermanentInfo* pInfo = new CJabberIqPermanentInfo();
 		if (!pInfo)
 			return NULL;
 
 		pInfo->m_pHandler = pHandler;
-		pInfo->m_nIqTypes = nIqTypes;
+		pInfo->m_nIqTypes = nIqTypes ? nIqTypes : JABBER_IQ_TYPE_ANY;
 		replaceStr( pInfo->m_szXmlns, szXmlns );
 		pInfo->m_bAllowPartialNs = bAllowPartialNs;
 		replaceStr( pInfo->m_szTag, szTag );
 		pInfo->m_dwParamsToParse = dwParamsToParse;
+		pInfo->m_pUserData = pUserData;
+		pInfo->m_pUserDataFree = pUserDataFree;
+		pInfo->m_iPriority = iPriority;
 
 		Lock();
 		if (!m_pPermanentHandlers)
 			m_pPermanentHandlers = pInfo;
 		else
 		{
-			CJabberIqPermanentInfo* pTmp = m_pPermanentHandlers;
-			while (pTmp->m_pNext)
-				pTmp = pTmp->m_pNext;
-			pTmp->m_pNext = pInfo;
+			if (m_pPermanentHandlers->m_iPriority > pInfo->m_iPriority) {
+				pInfo->m_pNext = m_pPermanentHandlers;
+				m_pPermanentHandlers = pInfo;
+			} else
+			{
+				CJabberIqPermanentInfo* pTmp = m_pPermanentHandlers;
+				while (pTmp->m_pNext && pTmp->m_pNext->m_iPriority <= pInfo->m_iPriority)
+					pTmp = pTmp->m_pNext;
+				pInfo->m_pNext = pTmp->m_pNext;
+				pTmp->m_pNext = pInfo;
+			}
 		}
 		Unlock();
 
 		return pInfo;
+	}
+	BOOL DeletePermanentHandler(CJabberIqPermanentInfo *pInfo)
+	{ // returns TRUE when pInfo found, or FALSE otherwise
+		Lock();
+		if (!m_pPermanentHandlers)
+		{
+			Unlock();
+			return FALSE;
+		}
+		if (m_pPermanentHandlers == pInfo) // check first item
+		{
+			m_pPermanentHandlers = m_pPermanentHandlers->m_pNext;
+			delete pInfo;
+			Unlock();
+			return TRUE;
+		} else
+		{
+			CJabberIqPermanentInfo* pTmp = m_pPermanentHandlers;
+			while (pTmp->m_pNext)
+			{
+				if (pTmp->m_pNext == pInfo)
+				{
+					pTmp->m_pNext = pTmp->m_pNext->m_pNext;
+					delete pInfo;
+					Unlock();
+					return TRUE;
+				}
+				pTmp = pTmp->m_pNext;
+			}
+		}
+		Unlock();
+		return FALSE;
+	}
+	BOOL DeleteHandler(CJabberIqInfo *pInfo)
+	{ // returns TRUE when pInfo found, or FALSE otherwise
+		Lock();
+		if (!m_pIqs)
+		{
+			Unlock();
+			return FALSE;
+		}
+		if (m_pIqs == pInfo) // check first item
+		{
+			m_pIqs = m_pIqs->m_pNext;
+			Unlock();
+			ExpireInfo(pInfo); // must expire it to allow the handler to free m_pUserData if necessary
+			delete pInfo;
+			return TRUE;
+		} else
+		{
+			CJabberIqInfo* pTmp = m_pIqs;
+			while (pTmp->m_pNext)
+			{
+				if (pTmp->m_pNext == pInfo)
+				{
+					pTmp->m_pNext = pTmp->m_pNext->m_pNext;
+					Unlock();
+					ExpireInfo(pInfo); // must expire it to allow the handler to free m_pUserData if necessary
+					delete pInfo;
+					return TRUE;
+				}
+				pTmp = pTmp->m_pNext;
+			}
+		}
+		Unlock();
+		return FALSE;
 	}
 	BOOL HandleIq(int nIqId, HXML pNode);
 	BOOL HandleIqPermanent(HXML pNode);

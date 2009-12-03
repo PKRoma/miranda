@@ -293,13 +293,25 @@ static void sttFillResourceInfo( CJabberProto* ppro, HWND hwndTree, HTREEITEM ht
 		if ( !( jcb & JABBER_RESOURCE_CAPS_ERROR ))
 		{
 			HTREEITEM htiCaps = sttFillInfoLine( hwndTree, htiResource, ppro->LoadIconEx( "main" ), NULL, TranslateT( "Client capabilities" ), sttInfoLineId(resource, INFOLINE_CAPS));
-			for ( int i = 0; g_JabberFeatCapPairs[i].szFeature; i++ ) 
+			int i;
+			for ( i = 0; g_JabberFeatCapPairs[i].szFeature; i++ ) 
 				if ( jcb & g_JabberFeatCapPairs[i].jcbCap ) {
 					TCHAR szDescription[ 1024 ];
 					if ( g_JabberFeatCapPairs[i].szDescription )
 						mir_sntprintf( szDescription, SIZEOF( szDescription ), _T("%s (%s)"), TranslateTS(g_JabberFeatCapPairs[i].szDescription), g_JabberFeatCapPairs[i].szFeature );
 					else
 						mir_sntprintf( szDescription, SIZEOF( szDescription ), _T("%s"), g_JabberFeatCapPairs[i].szFeature );
+					sttFillInfoLine( hwndTree, htiCaps, NULL, NULL, szDescription, sttInfoLineId(resource, INFOLINE_CAPS, i) );
+				}
+
+			int j;
+			for ( j = 0; j < ppro->m_lstJabberFeatCapPairsDynamic.getCount(); j++, i++ )
+				if ( jcb & ppro->m_lstJabberFeatCapPairsDynamic[j]->jcbCap ) {
+					TCHAR szDescription[ 1024 ];
+					if ( ppro->m_lstJabberFeatCapPairsDynamic[j]->szDescription )
+						mir_sntprintf( szDescription, SIZEOF( szDescription ), _T("%s (%s)"), TranslateTS(ppro->m_lstJabberFeatCapPairsDynamic[j]->szDescription), ppro->m_lstJabberFeatCapPairsDynamic[j]->szFeature );
+					else
+						mir_sntprintf( szDescription, SIZEOF( szDescription ), _T("%s"), ppro->m_lstJabberFeatCapPairsDynamic[j]->szFeature );
 					sttFillInfoLine( hwndTree, htiCaps, NULL, NULL, szDescription, sttInfoLineId(resource, INFOLINE_CAPS, i) );
 				}
 		}

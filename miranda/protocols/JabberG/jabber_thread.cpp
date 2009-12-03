@@ -1072,53 +1072,24 @@ void CJabberProto::OnProcessMessage( HXML node, ThreadData* info )
 	if (( from = xmlGetAttrValue( node, _T("from"))) == NULL )
 		return;
 
+	idStr = xmlGetAttrValue( node, _T("id"));
+	JABBER_RESOURCE_STATUS *resourceStatus = ResourceInfoFromJID( from );
+
+	// Message receipts delivery request. Reply here, before a call to HandleMessagePermanent() to make sure message receipts are handled for external plugins too.
+	if ( ( !type || _tcsicmp( type, _T("error"))) && xmlGetChildByTag( node, "request", "xmlns", _T( JABBER_FEAT_MESSAGE_RECEIPTS ))) {
+		info->send(
+			XmlNode( _T("message")) << XATTR( _T("to"), from ) << XATTR( _T("id"), idStr )
+				<< XCHILDNS( _T("received"), _T(JABBER_FEAT_MESSAGE_RECEIPTS)));
+
+		if ( resourceStatus )
+			resourceStatus->jcbManualDiscoveredCaps |= JABBER_CAPS_MESSAGE_RECEIPTS;
+	}
+
+	if ( m_messageManager.HandleMessagePermanent( node, info ))
+		return;
+
 	hContact = HContactFromJID( from );
-
-	HXML errorNode = xmlGetChild( node , "error" );
-	if ( errorNode != NULL || !lstrcmp( type, _T("error"))) {
-		// we check if is message delivery failure
-		int id = JabberGetPacketID( node );
-		JABBER_LIST_ITEM* item = ListGetItemPtr( LIST_ROSTER, from );
-		if ( item != NULL ) { // yes, it is
-			TCHAR *szErrText = JabberErrorMsg(errorNode);
-			char *errText = mir_t2a(szErrText);
-			JSendBroadcast( hContact, ACKTYPE_MESSAGE, ACKRESULT_FAILED, ( HANDLE ) id, (LPARAM)errText );
-			mir_free(errText);
-			mir_free(szErrText);
-		}
-		return;
-	}
-
-	if ( n = xmlGetChildByTag( node, "data", "xmlns", _T( JABBER_FEAT_IBB ))) {
-		BOOL bOk = FALSE;
-		const TCHAR *sid = xmlGetAttrValue( n, _T("sid"));
-		const TCHAR *seq = xmlGetAttrValue( n, _T("seq"));
-		if ( sid && seq && xmlGetText( n ) ) {
-			bOk = OnIbbRecvdData( xmlGetText( n ), sid, seq );
-		}
-		return;
-	}
-
-	if ( n = xmlGetChildByTag( node, "event", "xmlns", _T( "http://jabber.org/protocol/pubsub#event" ))) {
-		OnProcessPubsubEvent( node );
-		return;
-	}
-
 	JABBER_LIST_ITEM *chatItem = ListGetItemPtr( LIST_CHATROOM, from );
-	if (!lstrcmp( type, _T("groupchat")))
-	{
-		if ( chatItem )
-		{	// process GC message
-			GroupchatProcessMessage( node );
-		} else
-		{	// got message from unknown conference... let's leave it :)
-//			TCHAR *conference = NEWTSTR_ALLOCA(from);
-//			if (TCHAR *s = _tcschr(conference, _T('/'))) *s = 0;
-//			XmlNode p( "presence" ); xmlAddAttr( p, "to", conference ); xmlAddAttr( p, "type", "unavailable" );
-//			info->send( p );
-		}
-		return;
-	}
 
 	const TCHAR* szMessage = NULL;
 	HXML bodyNode = xmlGetChildByTag( node , "body", "xml:lang", m_tszSelectedLang );
@@ -1161,8 +1132,6 @@ void CJabberProto::OnProcessMessage( HXML node, ThreadData* info )
 	if ( !item )
 		item = ListGetItemPtr( LIST_VCARD_TEMP, from );
 
-	JABBER_RESOURCE_STATUS *resourceStatus = ResourceInfoFromJID( from );
-
 	time_t msgTime = 0;
 	BOOL  isChatRoomInvitation = FALSE;
 	const TCHAR* inviteRoomJid = NULL;
@@ -1186,18 +1155,6 @@ void CJabberProto::OnProcessMessage( HXML node, ThreadData* info )
 	// chatstates inactive event
 	if ( hContact && xmlGetChildByTag( node, "inactive", "xmlns", _T( JABBER_FEAT_CHATSTATES )))
 		JCallService( MS_PROTO_CONTACTISTYPING, ( WPARAM )hContact, PROTOTYPE_CONTACTTYPING_OFF );
-
-	idStr = xmlGetAttrValue( node, _T("id"));
-
-	// message receipts delivery request
-	if ( xmlGetChildByTag( node, "request", "xmlns", _T( JABBER_FEAT_MESSAGE_RECEIPTS ))) {
-		info->send(
-			XmlNode( _T("message")) << XATTR( _T("to"), from ) << XATTR( _T("id"), idStr )
-				<< XCHILDNS( _T("received"), _T(JABBER_FEAT_MESSAGE_RECEIPTS)));
-
-		if ( resourceStatus )
-			resourceStatus->jcbManualDiscoveredCaps |= JABBER_CAPS_MESSAGE_RECEIPTS;
-	}
 
 	// message receipts delivery notification
 	if ( xmlGetChildByTag( node, "received", "xmlns", _T( JABBER_FEAT_MESSAGE_RECEIPTS ))) {
@@ -1567,6 +1524,9 @@ void CJabberProto::OnProcessPresence( HXML node, ThreadData* info )
 	if ( !node || !xmlGetName( node ) ||_tcscmp( xmlGetName( node ), _T("presence"))) return;
 	if (( from = xmlGetAttrValue( node, _T("from"))) == NULL ) return;
 
+	if ( m_presenceManager.HandlePresencePermanent( node, info ))
+		return;
+
 	if ( ListExist( LIST_CHATROOM, from )) {
 		GroupchatProcessPresence( node );
 		return;
@@ -1816,6 +1776,52 @@ void CJabberProto::OnIqResultVersion( HXML /*node*/, CJabberIqInfo *pInfo )
 	JabberUserInfoUpdate(pInfo->GetHContact());
 }
 
+BOOL CJabberProto::OnProcessJingle( HXML node )
+{
+	LPCTSTR type;
+	HXML child = xmlGetChildByTag( node, _T("jingle"), _T("xmlns"), _T(JABBER_FEAT_JINGLE));
+
+	if ( child ) {
+		if (( type=xmlGetAttrValue( node, _T("type"))) == NULL ) return FALSE;
+		if (( !_tcscmp( type, _T("get")) || !_tcscmp( type, _T("set") ))) {
+			LPCTSTR szAction = xmlGetAttrValue( child, _T("action"));
+			LPCTSTR idStr = xmlGetAttrValue( node, _T("id"));
+			LPCTSTR from = xmlGetAttrValue( node, _T("from"));
+			if ( szAction && !_tcscmp( szAction, _T("session-initiate")) ) {
+				// if this is a Jingle 'session-initiate' and noone processed it yet, reply with "unsupported-applications"
+				m_ThreadInfo->send( XmlNodeIq( _T("result"), idStr, from ));
+		
+				XmlNodeIq iq( _T("set"), SerialNext(), from );
+				HXML jingleNode = iq << XCHILDNS( _T("jingle"), _T(JABBER_FEAT_JINGLE));
+
+				jingleNode << XATTR( _T("action"), _T("session-terminate"));
+				LPCTSTR szInitiator = xmlGetAttrValue( child, _T("initiator"));
+				if ( szInitiator )
+					jingleNode << XATTR( _T("initiator"), szInitiator );
+				LPCTSTR szSid = xmlGetAttrValue( child, _T("sid"));
+				if ( szSid )
+					jingleNode << XATTR( _T("sid"), szSid );
+
+				jingleNode << XCHILD( _T("reason"))
+					<< XCHILD( _T("unsupported-applications"));
+				m_ThreadInfo->send( iq );
+				return TRUE;
+			}
+			else {
+			// if it's something else than 'session-initiate' and noone processed it yet, reply with "unknown-session"
+				XmlNodeIq iq( _T("error"), idStr, from );
+				HXML errNode = iq << XCHILD( _T("error"));
+				errNode << XATTR( _T("type"), _T("cancel"));
+				errNode << XCHILDNS( _T("item-not-found"), _T("urn:ietf:params:xml:ns:xmpp-stanzas"));
+				errNode << XCHILDNS( _T("unknown-session"), _T("urn:xmpp:jingle:errors:1"));
+				m_ThreadInfo->send( iq );
+				return TRUE;
+			}
+		}
+	}
+	return FALSE;
+}
+
 void CJabberProto::OnProcessIq( HXML node )
 {
 	HXML queryNode;
@@ -1837,6 +1843,10 @@ void CJabberProto::OnProcessIq( HXML node )
 
 	// new iq handler engine
 	if ( m_iqManager.HandleIqPermanent( node ))
+		return;
+
+	// Jingle support
+	if ( OnProcessJingle( node ))
 		return;
 
 	/////////////////////////////////////////////////////////////////////////
@@ -1989,6 +1999,9 @@ int ThreadData::send( HXML node )
 
 	while ( HXML parent = xi.getParent( node ))
 		node = parent;
+
+	if ( proto->m_sendManager.HandleSendPermanent( node, this ))
+		return 0;
 
 	proto->OnConsoleProcessXml(node, JCPF_OUT);
 

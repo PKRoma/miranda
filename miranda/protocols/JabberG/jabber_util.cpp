@@ -840,6 +840,15 @@ void CJabberProto::SendPresenceTo( int status, TCHAR* to, HXML extra, TCHAR *msg
 		_tcscat( szExtCaps, _T(JABBER_EXT_MIR_NOTES) );
 	}
 
+	// add features enabled through IJabberNetInterface::AddFeatures()
+	for ( int i = 0; i < m_lstJabberFeatCapPairsDynamic.getCount(); i++ ) {
+		if ( m_uEnabledFeatCapsDynamic & m_lstJabberFeatCapPairsDynamic[i]->jcbCap ) {
+			if ( szExtCaps[0] )
+				_tcscat( szExtCaps, _T(" "));
+			_tcscat( szExtCaps, m_lstJabberFeatCapPairsDynamic[i]->szExt );
+		}
+	}
+
 	if ( szExtCaps[0] )
 		xmlAddAttr( c, _T("ext"), szExtCaps );
 

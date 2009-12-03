@@ -74,6 +74,9 @@ CJabberProto::CJabberProto( const char* aProtoName, const TCHAR* aUserName ) :
 	m_lstTransports( 50, compareTransports ),
 	m_lstRoster( 50, compareListItems ),
 	m_iqManager( this ),
+	m_messageManager( this ),
+	m_presenceManager( this ),
+	m_sendManager( this ),
 	m_adhocManager( this ),
 	m_clientCapsManager( this ),
 	m_privacyListManager( this ),
@@ -82,7 +85,9 @@ CJabberProto::CJabberProto( const char* aProtoName, const TCHAR* aUserName ) :
 	m_priorityMenuValSet( false ),
 	m_hPrivacyMenuRoot( 0 ),
 	m_hPrivacyMenuItems( 10 ),
-	m_pLastResourceList( NULL )
+	m_pLastResourceList( NULL ),
+	m_lstJabberFeatCapPairsDynamic( 2 ),
+	m_uEnabledFeatCapsDynamic( 0 )
 {
 	InitializeCriticalSection( &m_csModeMsgMutex );
 	InitializeCriticalSection( &m_csLists );
@@ -97,13 +102,16 @@ CJabberProto::CJabberProto( const char* aProtoName, const TCHAR* aUserName ) :
 	m_szProtoName[0] = toupper( m_szProtoName[0] );
 	Log( "Setting protocol/module name to '%s/%s'", m_szProtoName, m_szModuleName );
 
+	// Initialize Jabber API
+	m_JabberApi.m_psProto = this;
+	m_JabberSysApi.m_psProto = this;
+	m_JabberNetApi.m_psProto = this;
+
 	// Jabber dialog list
 	m_windowList = (HANDLE)CallService(MS_UTILS_ALLOCWINDOWLIST, 0, 0);
 
 	// Protocol services and events...
 	m_hEventNudge = JCreateHookableEvent( JE_NUDGE );
-	m_hEventRawXMLIn = JCreateHookableEvent( JE_RAWXMLIN );
-	m_hEventRawXMLOut = JCreateHookableEvent( JE_RAWXMLOUT );
 	m_hEventXStatusIconChanged = JCreateHookableEvent( JE_CUSTOMSTATUS_EXTRAICON_CHANGED );
 	m_hEventXStatusChanged = JCreateHookableEvent( JE_CUSTOMSTATUS_CHANGED );
 
@@ -132,6 +140,8 @@ CJabberProto::CJabberProto( const char* aProtoName, const TCHAR* aUserName ) :
 	JCreateService( JS_DB_GETEVENTTEXT_CHATSTATES, &CJabberProto::OnGetEventTextChatStates );
 	JCreateService( JS_DB_GETEVENTTEXT_PRESENCE, &CJabberProto::OnGetEventTextPresence );
 
+	JCreateService( JS_GETJABBERAPI, &CJabberProto::JabberGetApi );
+
 	// XEP-0224 support (Attention/Nudge)
 	JCreateService( JS_SEND_NUDGE, &CJabberProto::JabberSendNudge );
 
@@ -150,6 +160,11 @@ CJabberProto::CJabberProto( const char* aProtoName, const TCHAR* aUserName ) :
 
 	m_iqManager.FillPermanentHandlers();
 	m_iqManager.Start();
+	m_messageManager.FillPermanentHandlers();
+	m_messageManager.Start();
+	m_presenceManager.FillPermanentHandlers();
+	m_presenceManager.Start();
+	m_sendManager.Start();
 	m_adhocManager.FillDefaultNodes();
 	m_clientCapsManager.AddDefaultCaps();
 
@@ -203,8 +218,6 @@ CJabberProto::~CJabberProto()
 	delete m_pInfoFrame;
 
 	DestroyHookableEvent( m_hEventNudge );
-	DestroyHookableEvent( m_hEventRawXMLIn );
-	DestroyHookableEvent( m_hEventRawXMLOut );
 	DestroyHookableEvent( m_hEventXStatusIconChanged );
 	DestroyHookableEvent( m_hEventXStatusChanged );
 	if ( m_hInitChat )
@@ -235,9 +248,19 @@ CJabberProto::~CJabberProto()
 	mir_free( m_szModuleName );
 	mir_free( m_tszUserName );
 
-	for ( int i=0; i < m_lstTransports.getCount(); i++ )
-		free( m_lstTransports[i] );
+	int i;
+	for ( i=0; i < m_lstTransports.getCount(); i++ )
+		mir_free( m_lstTransports[i] );
 	m_lstTransports.destroy();
+
+	for ( i=0; i < m_lstJabberFeatCapPairsDynamic.getCount(); i++ ) {
+		mir_free( m_lstJabberFeatCapPairsDynamic[i]->szExt );
+		mir_free( m_lstJabberFeatCapPairsDynamic[i]->szFeature );
+		if ( m_lstJabberFeatCapPairsDynamic[i]->szDescription )
+			mir_free( m_lstJabberFeatCapPairsDynamic[i]->szDescription );
+		delete m_lstJabberFeatCapPairsDynamic[i];
+	}
+	m_lstJabberFeatCapPairsDynamic.destroy();
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -325,7 +348,7 @@ int CJabberProto::OnModulesLoadedEx( WPARAM, LPARAM )
 					TCHAR* resourcepos = _tcschr( domain, '/' );
 					if ( resourcepos != NULL )
 						*resourcepos = '\0';
-					m_lstTransports.insert( _tcsdup( domain ));
+					m_lstTransports.insert( mir_tstrdup( domain ));
 					JFreeVariant( &dbv );
 		}	}	}
 
