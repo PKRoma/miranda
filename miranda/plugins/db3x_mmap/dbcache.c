@@ -54,7 +54,7 @@ void ReMap(DWORD needed)
 
 	if (needed > ChunkSize)
 	{
-		if ((needed + dwFileSize) - dbHeader.ofsFileEnd > ChunkSize)
+		if (needed + dwFileSize > dbHeader.ofsFileEnd + ChunkSize)
 			DatabaseCorruption( _T("%s (Too large increment)"));
 		else
 		{
