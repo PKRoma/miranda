@@ -71,31 +71,22 @@ static INT CALLBACK BrowseCallbackProc(HWND hwnd, UINT uMsg, LPARAM lp, LPARAM p
 int BrowseForFolder(HWND hwnd,char *szPath)
 {
 	BROWSEINFOA bi={0};
-	LPMALLOC pMalloc;
 	LPITEMIDLIST pidlResult;
-	int result=0;
 
-	if(SUCCEEDED(OleInitialize(NULL))) {
-		if(SUCCEEDED(CoGetMalloc(1,&pMalloc))) {
-			bi.hwndOwner=hwnd;
-			bi.pszDisplayName=szPath;
-			bi.lpszTitle=Translate("Select Folder");
-			bi.ulFlags=BIF_NEWDIALOGSTYLE|BIF_EDITBOX|BIF_RETURNONLYFSDIRS;				// Use this combo instead of BIF_USENEWUI
-			bi.lpfn=BrowseCallbackProc;
-			bi.lParam=(LPARAM)szPath;
+	bi.hwndOwner=hwnd;
+	bi.pszDisplayName=szPath;
+	bi.lpszTitle=Translate("Select Folder");
+	bi.ulFlags=BIF_NEWDIALOGSTYLE|BIF_EDITBOX|BIF_RETURNONLYFSDIRS;				// Use this combo instead of BIF_USENEWUI
+	bi.lpfn=BrowseCallbackProc;
+	bi.lParam=(LPARAM)szPath;
 
-			pidlResult=SHBrowseForFolderA(&bi);
-			if(pidlResult) {
-				SHGetPathFromIDListA(pidlResult,szPath);
-				lstrcatA(szPath,"\\");
-				result=1;
-			}
-			pMalloc->lpVtbl->Free(pMalloc,pidlResult);
-			pMalloc->lpVtbl->Release(pMalloc);
-		}
-		OleUninitialize();
+	pidlResult=SHBrowseForFolderA(&bi);
+	if (pidlResult) {
+		SHGetPathFromIDListA(pidlResult,szPath);
+		lstrcatA(szPath, "\\");
+		CoTaskMemFree(pidlResult);
 	}
-	return result;
+	return pidlResult != NULL;
 }
 
 static REPLACEVARSARRAY sttVarsToReplace[] =

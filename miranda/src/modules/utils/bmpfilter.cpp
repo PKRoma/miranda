@@ -21,7 +21,6 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 #include "commonheaders.h"
-#include <ocidl.h>
 #include <olectl.h>
 
 #include "m_png.h"
@@ -95,19 +94,16 @@ static INT_PTR BmpFilterLoadBitmap(WPARAM, LPARAM lParam)
 			return (INT_PTR)cbFileSize;
 	}	}
 
-	OleInitialize(NULL);
 	MultiByteToWideChar(CP_ACP,0,szFilename,-1,pszwFilename,MAX_PATH);
-	if(S_OK!=OleLoadPicturePath(pszwFilename,NULL,0,0,IID_IPicture,(PVOID*)&pic)) {
-		OleUninitialize();
-		return 0;
-	}
-	pic->lpVtbl->get_Type(pic,&picType);
+	if(S_OK!=OleLoadPicturePath(pszwFilename,NULL,0,0,IID_IPicture,(PVOID*)&pic)) return 0;
+	pic->get_Type(&picType);
 	if(picType!=PICTYPE_BITMAP) {
-		pic->lpVtbl->Release(pic);
-		OleUninitialize();
+		pic->Release();
 		return 0;
 	}
-	pic->lpVtbl->get_Handle(pic,(OLE_HANDLE*)&hBmp);
+	OLE_HANDLE hOleBmp;
+	pic->get_Handle(&hOleBmp);
+	hBmp = (HBITMAP)hOleBmp;
 	GetObject(hBmp,sizeof(bmpInfo),&bmpInfo);
 
 	//need to copy bitmap so we can free the IPicture
@@ -125,8 +121,7 @@ static INT_PTR BmpFilterLoadBitmap(WPARAM, LPARAM lParam)
 	ReleaseDC(NULL,hdc);
 
 	DeleteObject(hBmp);
-	pic->lpVtbl->Release(pic);
-	OleUninitialize();
+	pic->Release();
 	return (INT_PTR)hBmpCopy;
 }
 

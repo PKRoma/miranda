@@ -71,6 +71,8 @@ extern pfnSetWindowTheme setWindowTheme;
 extern pfnSetWindowThemeAttribute setWindowThemeAttribute;
 extern pfnIsThemeActive isThemeActive;
 
+extern ITaskbarList3 * pTaskbarInterface;
+
 typedef HRESULT ( STDAPICALLTYPE *pfnDwmExtendFrameIntoClientArea )( HWND hwnd, const MARGINS *margins );
 typedef HRESULT ( STDAPICALLTYPE *pfnDwmIsCompositionEnabled )( BOOL * );
 
@@ -127,6 +129,12 @@ char* Utf8Encode( const char* str );
 char* Utf8EncodeCP( const char* src, int codepage );
 
 char* Utf8EncodeUcs2( const wchar_t* str );
+
+#if defined( _UNICODE )
+	#define Utf8EncodeT Utf8EncodeUcs2
+#else
+	#define Utf8EncodeT Utf8Encode
+#endif
 
 /**** langpack.c ***********************************************************************/
 
