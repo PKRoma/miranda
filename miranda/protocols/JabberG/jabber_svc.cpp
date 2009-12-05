@@ -1106,6 +1106,7 @@ LPTSTR CJabberNetInterface::GetResourceFeatures( LPCTSTR jid )
 		}
 		*p = 0; // extra zero terminator
 		m_psProto->ListUnlock();
+		return str;
 	}
 	return NULL;
 }
