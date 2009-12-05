@@ -40,7 +40,7 @@ typedef enum XML_ELEMENT_TYPE
 
 typedef struct
 {
-	int cbSize;
+	size_t cbSize;
 
 	HXML    ( *createNode )( LPCTSTR name, LPCTSTR text, char isDeclaration );
 	void    ( *destroyNode )( HXML node );
@@ -112,7 +112,7 @@ typedef struct
 }
 	XML_API;
 
-#define XML_API_SIZEOF_V1 (sizeof(int)+26*sizeof(void*))
+#define XML_API_SIZEOF_V1 (sizeof(size_t)+26*sizeof(void*))
 
 /* every protocol should declare this variable to use the XML API */
 extern XML_API xi;
