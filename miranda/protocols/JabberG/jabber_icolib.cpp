@@ -404,7 +404,7 @@ static HICON LoadTransportIcon(char *filename,int i,char *IconName,TCHAR *SectNa
 	BOOL has_proto_icon=FALSE;
 	SKINICONDESC sid={0};
 	if (needFree) *needFree=FALSE;
-	GetModuleFileNameA(GetModuleHandle(NULL), szPath, MAX_PATH);
+	GetModuleFileNameA(NULL, szPath, MAX_PATH);
 	str=strrchr(szPath,'\\');
 	if(str!=NULL) *str=0;
 	_snprintf(szMyPath, sizeof(szMyPath), "%s\\Icons\\%s", szPath, filename);

@@ -455,11 +455,14 @@ void CMimAPI::InitAPI()
 	HMODULE hDLL = GetModuleHandleA("user32");
 	m_pSetLayeredWindowAttributes = (PSLWA) GetProcAddress(hDLL, "SetLayeredWindowAttributes");
 	m_MyFlashWindowEx = (PFWEX) GetProcAddress(hDLL, "FlashWindowEx");
-	m_MyAlphaBlend = (PAB) GetProcAddress(GetModuleHandleA("msimg32"), "AlphaBlend");
-	m_MyGradientFill = (PGF) GetProcAddress(GetModuleHandleA("msimg32"), "GradientFill");
+	m_pfnMonitorFromWindow = (MMFW)GetProcAddress(hDLL, "MonitorFromWindow");
+	m_pfnGetMonitorInfoA = (GMIA)GetProcAddress(hDLL, "GetMonitorInfoA");
 
-	m_pfnMonitorFromWindow = (MMFW)GetProcAddress(GetModuleHandleA("USER32"), "MonitorFromWindow");
-	m_pfnGetMonitorInfoA = (GMIA)GetProcAddress(GetModuleHandleA("USER32"), "GetMonitorInfoA");
+	m_MyAlphaBlend = (PAB) GetProcAddress(GetModuleHandleA("gdi32"), "GdiAlphaBlend");
+	if (m_MyAlphaBlend == NULL) m_MyAlphaBlend = (PAB) GetProcAddress(GetModuleHandleA("msimg32"), "AlphaBlend");
+
+	m_MyGradientFill = (PGF) GetProcAddress(GetModuleHandleA("gdi32"), "GdiGradientFill");
+	if (m_MyGradientFill == NULL) m_MyGradientFill = (PGF) GetProcAddress(GetModuleHandleA("msimg32"), "GradientFill");
 
 	if (IsWinVerXPPlus()) {
 		if ((m_hUxTheme = LoadLibraryA("uxtheme.dll")) != 0) {

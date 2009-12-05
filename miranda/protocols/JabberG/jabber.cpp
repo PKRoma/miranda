@@ -262,8 +262,10 @@ extern "C" int __declspec( dllexport ) Load( PLUGINLINK *link )
 	CallService( MS_PROTO_REGISTERMODULE, 0, ( LPARAM )&pd );
 
 	// Load some fuctions
-	HINSTANCE hDll;
-	if ( hDll = LoadLibraryA("msimg32.dll" ))
+	HMODULE hDll;
+	if ( hDll = GetModuleHandleA( "gdi32.dll" ))
+		JabberAlphaBlend = (BOOL (WINAPI *)(HDC, int, int, int, int, HDC, int, int, int, int, BLENDFUNCTION)) GetProcAddress(hDll, "GdiAlphaBlend");
+	if ( JabberAlphaBlend == NULL && ( hDll = LoadLibraryA("msimg32.dll" )))
 		JabberAlphaBlend = (BOOL (WINAPI *)(HDC, int, int, int, int, HDC, int, int, int, int, BLENDFUNCTION)) GetProcAddress(hDll, "AlphaBlend");
 
 	if ( IsWinVerXPPlus() ) {
