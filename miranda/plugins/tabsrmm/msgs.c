@@ -1665,8 +1665,10 @@ tzdone:
 	pSetLayeredWindowAttributes = (PSLWA) GetProcAddress(hDLL, "SetLayeredWindowAttributes");
 	pUpdateLayeredWindow = (PULW) GetProcAddress(hDLL, "UpdateLayeredWindow");
 	MyFlashWindowEx = (PFWEX) GetProcAddress(hDLL, "FlashWindowEx");
-	MyAlphaBlend = (PAB) GetProcAddress(GetModuleHandleA("msimg32"), "AlphaBlend");
-	MyGradientFill = (PGF) GetProcAddress(GetModuleHandleA("msimg32"), "GradientFill");
+	MyAlphaBlend = (PAB) GetProcAddress(GetModuleHandleA("gdi32"), "GdiAlphaBlend");
+	if (MyAlphaBlend == NULL) MyAlphaBlend = (PAB) GetProcAddress(GetModuleHandleA("msimg32"), "AlphaBlend");
+	MyGradientFill = (PGF) GetProcAddress(GetModuleHandleA("gdi32"), "GdiGradientFill");
+	if (MyGradientFill == NULL) MyGradientFill = (PGF) GetProcAddress(GetModuleHandleA("msimg32"), "GradientFill");
 	return 0;
 }
 

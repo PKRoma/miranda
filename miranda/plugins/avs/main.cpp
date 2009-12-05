@@ -52,6 +52,8 @@ HANDLE  hProtoAckHook = 0, hContactSettingChanged = 0, hEventChanged = 0, hEvent
 		hMyAvatarChanged = 0, hEventDeleted = 0, hUserInfoInitHook = 0;
 HICON   g_hIcon = 0;
 
+BOOL (WINAPI *AvsAlphaBlend)(HDC, int, int, int, int, HDC, int, int, int, int, BLENDFUNCTION) = NULL;
+
 static struct  CacheNode *g_Cache = 0;
 static CRITICAL_SECTION cachecs, alloccs;
 
@@ -2292,6 +2294,7 @@ void InternalDrawAvatar(AVATARDRAWREQUEST *r, HBITMAP hbm, LONG bmWidth, LONG bm
 	// create the region for the avatar border - use the same region for clipping, if needed.
 
 	oldRgn = CreateRectRgn(0,0,1,1);
+
 	if (GetClipRgn(r->hTargetDC, oldRgn) != 1)
 	{
 		DeleteObject(oldRgn);
@@ -2308,18 +2311,19 @@ void InternalDrawAvatar(AVATARDRAWREQUEST *r, HBITMAP hbm, LONG bmWidth, LONG bm
 	bf.SourceConstantAlpha = r->alpha > 0 ? r->alpha : 255;
 	bf.AlphaFormat = dwFlags & AVS_PREMULTIPLIED ? AC_SRC_ALPHA : 0;
 
-	SetStretchBltMode(r->hTargetDC, HALFTONE);
-	if (r->dwFlags & AVDRQ_FORCEFASTALPHA)
-	{
-		AlphaBlend(
+	if(!(r->dwFlags & AVDRQ_AERO))
+		SetStretchBltMode(r->hTargetDC, HALFTONE);
+	//else
+	//	FillRect(r->hTargetDC, &r->rcDraw, (HBRUSH)GetStockObject(BLACK_BRUSH));
+
+	if (r->dwFlags & AVDRQ_FORCEFASTALPHA && !(r->dwFlags & AVDRQ_AERO) && AvsAlphaBlend) {
+		AvsAlphaBlend(
 			r->hTargetDC, r->rcDraw.left + leftoffset, r->rcDraw.top + topoffset, newWidth, newHeight,
 			hdcAvatar, 0, 0, bmWidth, bmHeight, bf);
-	} else
-		if(bf.SourceConstantAlpha == 255 && bf.AlphaFormat == 0 && !(r->dwFlags & AVDRQ_FORCEALPHA))
-		{
+	} else {
+		if((bf.SourceConstantAlpha == 255 && bf.AlphaFormat == 0 && !(r->dwFlags & AVDRQ_FORCEALPHA) && !(r->dwFlags & AVDRQ_AERO)) || !AvsAlphaBlend) {
 			StretchBlt(r->hTargetDC, r->rcDraw.left + leftoffset, r->rcDraw.top + topoffset, newWidth, newHeight, hdcAvatar, 0, 0, bmWidth, bmHeight, SRCCOPY);
-		} else
-		{
+		} else {
 			/*
 			* get around SUCKY AlphaBlend() rescaling quality...
 			*/
@@ -2333,7 +2337,7 @@ void InternalDrawAvatar(AVATARDRAWREQUEST *r, HBITMAP hbm, LONG bmWidth, LONG bm
 			HDC hdcTemp = CreateCompatibleDC(r->hTargetDC);
 			hbmTempOld = (HBITMAP)SelectObject(hdcTemp, hbmResized);
 
-			AlphaBlend(
+			AvsAlphaBlend(
 				r->hTargetDC, r->rcDraw.left + leftoffset, r->rcDraw.top + topoffset, newWidth, newHeight,
 				hdcTemp, 0, 0, newWidth, newHeight, bf);
 
@@ -2356,6 +2360,7 @@ void InternalDrawAvatar(AVATARDRAWREQUEST *r, HBITMAP hbm, LONG bmWidth, LONG bm
 
 		SelectObject(hdcAvatar, hbmMem);
 		DeleteDC(hdcAvatar);
+	}
 }
 
 INT_PTR DrawAvatarPicture(WPARAM wParam, LPARAM lParam)
@@ -2479,6 +2484,12 @@ static int LoadAvatarModule()
 	hMyAvatarChanged = CreateHookableEvent(ME_AV_MYAVATARCHANGED);
 
 	AllocCacheBlock();
+
+	HMODULE hDll;
+	if (hDll = GetModuleHandleA("gdi32"))
+		AvsAlphaBlend = (BOOL (WINAPI *)(HDC, int, int, int, int, HDC, int, int, int, int, BLENDFUNCTION)) GetProcAddress(hDll, "GdiAlphaBlend");
+	if (AvsAlphaBlend == NULL && (hDll = LoadLibraryA("msimg32")))
+		AvsAlphaBlend = (BOOL (WINAPI *)(HDC, int, int, int, int, HDC, int, int, int, int, BLENDFUNCTION)) GetProcAddress(hDll, "AlphaBlend");
 
 	char* tmpPath = Utils_ReplaceVars("%miranda_userdata%");
 	lstrcpynA(g_szDataPath, tmpPath, sizeof(g_szDataPath)-1);
