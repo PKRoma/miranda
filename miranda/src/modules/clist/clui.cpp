@@ -315,16 +315,21 @@ int LoadCLUIModule(void)
 		DBFreeVariant(&dbv);
 	}
 
+	RECT pos;
+	pos.left = (int) DBGetContactSettingDword(NULL, "CList", "x", 700);
+	pos.top = (int) DBGetContactSettingDword(NULL, "CList", "y", 221);
+	pos.right = pos.left + (int) DBGetContactSettingDword(NULL, "CList", "Width", 108);
+	pos.bottom = pos.top + (int) DBGetContactSettingDword(NULL, "CList", "Height", 310);
+
+	Utils_AssertInsideScreen(&pos);
+
 	cli.hwndContactList = CreateWindowEx(
 		DBGetContactSettingByte(NULL, "CList", "ToolWindow", SETTING_TOOLWINDOW_DEFAULT) ? WS_EX_TOOLWINDOW : 0,
 		_T(MIRANDACLASS),
 		titleText,
 		(DBGetContactSettingByte(NULL, "CLUI", "ShowCaption", SETTING_SHOWCAPTION_DEFAULT) ?
 			WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX : 0) | WS_POPUPWINDOW | WS_THICKFRAME | WS_CLIPCHILDREN,
-		(int) DBGetContactSettingDword(NULL, "CList", "x", 700),
-		(int) DBGetContactSettingDword(NULL, "CList", "y", 221),
-		(int) DBGetContactSettingDword(NULL, "CList", "Width", 108),
-		(int) DBGetContactSettingDword(NULL, "CList", "Height", 310),
+		pos.left, pos.top, pos.right - pos.left, pos.bottom - pos.top,
 		NULL, NULL, cli.hInst, NULL);
 
 	if (DBGetContactSettingByte(NULL, "CList", "OnDesktop", 0)) {

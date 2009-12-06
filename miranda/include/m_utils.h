@@ -247,6 +247,15 @@ __inline static INT_PTR Utils_RestoreWindowPositionNoMove(HWND hwnd,HANDLE hCont
 	return CallService(MS_UTILS_RESTOREWINDOWPOSITION,RWPF_NOMOVE,(LPARAM)&swp);
 }
 
+//Moves a RECT inside screen if it is outside.It works with multiple monitors	 v0.9.0.4+
+//wParam=RECT *
+//lParam=0
+//returns <0 on error, 0 if not changed the rect, 1 if changed the rect
+#define MS_UTILS_ASSERTINSIDESCREEN	"Utils/AssertInsideScreen"
+__inline static INT_PTR Utils_AssertInsideScreen(RECT *rc) {
+	return CallService(MS_UTILS_ASSERTINSIDESCREEN,(WPARAM)rc,0);
+}
+
 /************************ Colour Picker Control (0.1.2.1+) **********************/
 
 #define WNDCLASS_COLOURPICKER  _T("ColourPicker")
