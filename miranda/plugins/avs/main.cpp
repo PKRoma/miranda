@@ -2311,19 +2311,21 @@ void InternalDrawAvatar(AVATARDRAWREQUEST *r, HBITMAP hbm, LONG bmWidth, LONG bm
 	bf.SourceConstantAlpha = r->alpha > 0 ? r->alpha : 255;
 	bf.AlphaFormat = dwFlags & AVS_PREMULTIPLIED ? AC_SRC_ALPHA : 0;
 
-	if(!(r->dwFlags & AVDRQ_AERO))
-		SetStretchBltMode(r->hTargetDC, HALFTONE);
-	//else
-	//	FillRect(r->hTargetDC, &r->rcDraw, (HBRUSH)GetStockObject(BLACK_BRUSH));
-
-	if (r->dwFlags & AVDRQ_FORCEFASTALPHA && !(r->dwFlags & AVDRQ_AERO) && AvsAlphaBlend) {
+	SetStretchBltMode(r->hTargetDC, HALFTONE);
+	if ((r->dwFlags & AVDRQ_FORCEFASTALPHA) && AvsAlphaBlend)
+	{
 		AvsAlphaBlend(
 			r->hTargetDC, r->rcDraw.left + leftoffset, r->rcDraw.top + topoffset, newWidth, newHeight,
 			hdcAvatar, 0, 0, bmWidth, bmHeight, bf);
-	} else {
-		if((bf.SourceConstantAlpha == 255 && bf.AlphaFormat == 0 && !(r->dwFlags & AVDRQ_FORCEALPHA) && !(r->dwFlags & AVDRQ_AERO)) || !AvsAlphaBlend) {
+	} 
+	else
+	{
+		if((bf.SourceConstantAlpha == 255 && bf.AlphaFormat == 0 && !(r->dwFlags & AVDRQ_FORCEALPHA) && !(r->dwFlags & AVDRQ_AERO)) || !AvsAlphaBlend)
+		{
 			StretchBlt(r->hTargetDC, r->rcDraw.left + leftoffset, r->rcDraw.top + topoffset, newWidth, newHeight, hdcAvatar, 0, 0, bmWidth, bmHeight, SRCCOPY);
-		} else {
+		} 
+		else
+		{
 			/*
 			* get around SUCKY AlphaBlend() rescaling quality...
 			*/
