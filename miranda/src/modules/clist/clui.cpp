@@ -83,7 +83,7 @@ static void DisconnectAll()
 
 static int CluiIconsChanged(WPARAM, LPARAM)
 {
-	ImageList_ReplaceIcon_IconLibLoaded(himlMirandaIcon, 0, LoadSkinIcon( SKINICON_OTHER_MIRANDA ));
+	ImageList_ReplaceIcon_IconLibLoaded(himlMirandaIcon, 0, IsWinVer7Plus() ? LoadIcon(hMirandaInst, MAKEINTRESOURCE(IDI_MIRANDA)) : LoadSkinIcon( SKINICON_OTHER_MIRANDA ) );
 	DrawMenuBar(cli.hwndContactList);
 	return 0;
 }
@@ -301,7 +301,7 @@ int LoadCLUIModule(void)
 	wndclass.cbClsExtra = 0;
 	wndclass.cbWndExtra = 0;
 	wndclass.hInstance = cli.hInst;
-	wndclass.hIcon = LoadSkinIcon( SKINICON_OTHER_MIRANDA );
+	wndclass.hIcon = IsWinVer7Plus() ? LoadIcon(hMirandaInst, MAKEINTRESOURCE(IDI_MIRANDA)) : LoadSkinIcon( SKINICON_OTHER_MIRANDA );
 	wndclass.hCursor = LoadCursor(NULL, IDC_ARROW);
 	wndclass.hbrBackground = (HBRUSH) (COLOR_3DFACE + 1);
 	wndclass.lpszMenuName = MAKEINTRESOURCE(IDR_CLISTMENU);
