@@ -39,25 +39,25 @@ struct IJabberInterface;
 struct IJabberSysInterface
 {
 	// Returns version of IJabberSysInterface.
-	virtual int				GetVersion() const = 0;
+	virtual int STDMETHODCALLTYPE		GetVersion() const = 0;
 
 	// Compares JIDs by their node@domain part (without resource name).
-	virtual int				CompareJIDs(LPCTSTR jid1, LPCTSTR jid2) = 0;
+	virtual int STDMETHODCALLTYPE		CompareJIDs(LPCTSTR jid1, LPCTSTR jid2) = 0;
 
 	// Returns contact handle for given JID, or NULL on error.
-	virtual HANDLE			ContactFromJID(LPCTSTR jid) = 0;
+	virtual HANDLE STDMETHODCALLTYPE	ContactFromJID(LPCTSTR jid) = 0;
 
 	// Returns JID of hContact, or NULL on error. You must free the result using mir_free().
-	virtual LPTSTR			ContactToJID(HANDLE hContact) = 0;
+	virtual LPTSTR STDMETHODCALLTYPE	ContactToJID(HANDLE hContact) = 0;
 
 	// Returns best resource name for given JID, or NULL on error. You must free the result using mir_free().
-	virtual LPTSTR			GetBestResourceName(LPCTSTR jid) = 0;
+	virtual LPTSTR STDMETHODCALLTYPE	GetBestResourceName(LPCTSTR jid) = 0;
 
 	// Returns all resource names for a given JID in format "resource1\0resource2\0resource3\0\0" (all resources are separated by \0 character and the whole string is terminated with two \0 characters), or NULL on error. You must free returned string using mir_free().
-	virtual LPTSTR			GetResourceList(LPCTSTR jid) = 0;
+	virtual LPTSTR STDMETHODCALLTYPE	GetResourceList(LPCTSTR jid) = 0;
 
 	// Returns Jabber module name. DO NOT free the returned string.
-	virtual char			*GetModuleName() const = 0;
+	virtual char* STDMETHODCALLTYPE		GetModuleName() const = 0;
 };
 
 // Iq type flags
@@ -110,48 +110,48 @@ typedef BOOL (*JABBER_HANDLER_FUNC)(IJabberInterface *ji, HXML node, void *pUser
 struct IJabberNetInterface
 {
 	// Returns version of IJabberNetInterface.
-	virtual int				GetVersion() const = 0;
+	virtual int STDMETHODCALLTYPE			GetVersion() const = 0;
 
 	// Returns id that can be used for next message sent through SendXmlNode().
-	virtual unsigned int	SerialNext() = 0;
+	virtual unsigned int STDMETHODCALLTYPE	SerialNext() = 0;
 
 	// Sends XML node.
-	virtual int				SendXmlNode(HXML node) = 0;
+	virtual int STDMETHODCALLTYPE			SendXmlNode(HXML node) = 0;
 
 
 	// Registers incoming <presence/> handler. Returns handler handle on success or NULL on error.
-	virtual HJHANDLER		AddPresenceHandler(JABBER_HANDLER_FUNC Func, void *pUserData = NULL, int iPriority = JH_PRIORITY_DEFAULT) = 0;
+	virtual HJHANDLER STDMETHODCALLTYPE		AddPresenceHandler(JABBER_HANDLER_FUNC Func, void *pUserData = NULL, int iPriority = JH_PRIORITY_DEFAULT) = 0;
 
 	// Registers incoming <message/> handler for messages of types specified by iMsgTypes. iMsgTypes is a combination of JABBER_MESSAGE_TYPE_* flags. Returns handler handle on success or NULL on error.
-	virtual HJHANDLER		AddMessageHandler(JABBER_HANDLER_FUNC Func, int iMsgTypes, LPCTSTR szXmlns, LPCTSTR szTag, void *pUserData = NULL, int iPriority = JH_PRIORITY_DEFAULT) = 0;
+	virtual HJHANDLER STDMETHODCALLTYPE		AddMessageHandler(JABBER_HANDLER_FUNC Func, int iMsgTypes, LPCTSTR szXmlns, LPCTSTR szTag, void *pUserData = NULL, int iPriority = JH_PRIORITY_DEFAULT) = 0;
 
 	// Registers incoming <iq/> handler. iIqTypes is a combination of JABBER_IQ_TYPE_* flags. Returns handler handle on success or NULL on error.
-	virtual HJHANDLER		AddIqHandler(JABBER_HANDLER_FUNC Func, int iIqTypes, LPCTSTR szXmlns, LPCTSTR szTag, void *pUserData = NULL, int iPriority = JH_PRIORITY_DEFAULT) = 0;
+	virtual HJHANDLER STDMETHODCALLTYPE		AddIqHandler(JABBER_HANDLER_FUNC Func, int iIqTypes, LPCTSTR szXmlns, LPCTSTR szTag, void *pUserData = NULL, int iPriority = JH_PRIORITY_DEFAULT) = 0;
 
 	// Registers temporary handler for incoming <iq/> stanza of type iIqType with id iIqId. iIqTypes is a combination of JABBER_IQ_TYPE_* flags. Returns handler handle on success or NULL on error.
 	// If dwTimeout milliseconds pass and no Iq stanza with the specified iIqId is received, Jabber plugin will call Func() with NULL node.
-	virtual HJHANDLER		AddTemporaryIqHandler(JABBER_HANDLER_FUNC Func, int iIqTypes, int iIqId, void *pUserData = NULL, DWORD dwTimeout = 30000, int iPriority = JH_PRIORITY_DEFAULT) = 0;
+	virtual HJHANDLER STDMETHODCALLTYPE		AddTemporaryIqHandler(JABBER_HANDLER_FUNC Func, int iIqTypes, int iIqId, void *pUserData = NULL, DWORD dwTimeout = 30000, int iPriority = JH_PRIORITY_DEFAULT) = 0;
 
 	// Registers handler for outgoing nodes. Returns handler handle on success or NULL on error.
 	// Return FALSE in the handler to continue, or TRUE to abort sending.
-	virtual HJHANDLER		AddSendHandler(JABBER_HANDLER_FUNC Func, void *pUserData = NULL, int iPriority = JH_PRIORITY_DEFAULT) = 0;
+	virtual HJHANDLER STDMETHODCALLTYPE		AddSendHandler(JABBER_HANDLER_FUNC Func, void *pUserData = NULL, int iPriority = JH_PRIORITY_DEFAULT) = 0;
 
 	// Unregisters handler by its handle.
-	virtual int				RemoveHandler(HJHANDLER hHandler) = 0;
+	virtual int STDMETHODCALLTYPE			RemoveHandler(HJHANDLER hHandler) = 0;
 
 
 // Entity capabilities support (see xep-0115)
 	// Registers feature so that it's displayed with proper description in other users' details. Call this function in your ME_SYSTEM_MODULESLOADED handler. Returns TRUE on success or FALSE on error.
-	virtual int				RegisterFeature(LPCTSTR szFeature, LPCTSTR szDescription) = 0;
+	virtual int STDMETHODCALLTYPE			RegisterFeature(LPCTSTR szFeature, LPCTSTR szDescription) = 0;
 
 	// Adds features to the list of features supported by the client. szFeatures is a list of features separated by \0 character and terminated with two \0 characters. You can call this function at any time. Returns TRUE on success or FALSE on error.
-	virtual int				AddFeatures(LPCTSTR szFeatures) = 0;
+	virtual int STDMETHODCALLTYPE			AddFeatures(LPCTSTR szFeatures) = 0;
 
 	// Removes features from the list of features supported by the client. szFeatures is a list of features separated by \0 character and terminated with two \0 characters. You can call this function at any time.
-	virtual int				RemoveFeatures(LPCTSTR szFeatures) = 0;
+	virtual int STDMETHODCALLTYPE			RemoveFeatures(LPCTSTR szFeatures) = 0;
 
 	// Returns features supported by JID in format "feature1\0feature2\0...\0featureN\0\0" (a list of features separated by \0 character and terminated with two \0 characters), or NULL on error. JID may contain resource name to get features of a specific resource. If there's no resource name, GetResourceFeatures() returns features for the same resource as IJabberSysInterface::GetBestResourceName() returns. If a feature you're checking for is not supported by Jabber plugin natively, you must register it with RegisterFeature(), otherwise GetContactFeatures() won't be able to return it. You must free returned string using mir_free().
-	virtual LPTSTR			GetResourceFeatures(LPCTSTR jid) = 0;
+	virtual LPTSTR STDMETHODCALLTYPE		GetResourceFeatures(LPCTSTR jid) = 0;
 };
 
 // IJabberInterface::dwFlags values
@@ -164,19 +164,19 @@ enum
 struct IJabberInterface
 {
 	// Set of JIF_* flags.
-	virtual DWORD				GetFlags() const = 0;
+	virtual DWORD STDMETHODCALLTYPE					GetFlags() const = 0;
 
 	// Returns version of IJabberInterface.
-	virtual int					GetVersion() const = 0;
+	virtual int STDMETHODCALLTYPE					GetVersion() const = 0;
 
 	// Returns Jabber plugin version.
-	virtual DWORD				GetJabberVersion() const = 0;
+	virtual DWORD STDMETHODCALLTYPE					GetJabberVersion() const = 0;
 
 	// Jabber system utilities.
-	virtual IJabberSysInterface	*Sys() const = 0;
+	virtual IJabberSysInterface* STDMETHODCALLTYPE	Sys() const = 0;
 
 	// Jabber network interface.
-	virtual IJabberNetInterface	*Net() const = 0;
+	virtual IJabberNetInterface* STDMETHODCALLTYPE	Net() const = 0;
 };
 
 /*
