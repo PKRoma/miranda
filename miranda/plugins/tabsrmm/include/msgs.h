@@ -349,7 +349,7 @@ struct _MessageWindowData {
 	WORD    wStatus;
 	char    *sendBuffer;
 	int     iSendBufferSize;
-	HICON   hTabIcon, hTabStatusIcon, hXStatusIcon, hClientIcon;
+	HICON   hTabIcon, hTabStatusIcon, hXStatusIcon, hClientIcon, hTaskbarIcon;
 	HICON   iFlashIcon;
 	BOOL    mayFlashTab;
 	BOOL    bTabFlash;
@@ -610,7 +610,7 @@ struct NewMessageWindowLParam {
 //#define DM_QUERYMINHEIGHT    (WM_USER+35)       // container queries msg dialog about minimum height
 #define DM_SAVESIZE          (WM_USER+36)
 #define DM_CHECKSIZE         (WM_USER+37)
-// #define DM_SAVEPERCONTACT    (WM_USER+38)
+#define DM_FORCEREDRAW       (WM_USER+38)
 #define DM_CONTAINERSELECTED (WM_USER+39)
 #define DM_CONFIGURECONTAINER (WM_USER+40)
 #define DM_QUERYHCONTACT    (WM_USER+41)

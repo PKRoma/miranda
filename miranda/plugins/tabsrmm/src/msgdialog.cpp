@@ -378,6 +378,7 @@ static void MsgWindowUpdateState(_MessageWindowData *dat, UINT msg)
 				SendMessage(hwndDlg, DM_SETLOCALE, 0, 0);
 		}
 
+		dat->pContainer->hIconTaskbarOverlay = 0;
 		SendMessage(dat->pContainer->hwnd, DM_UPDATETITLE, (WPARAM)dat->hContact, 0);
 
 		UpdateStatusBar(dat);
@@ -443,9 +444,6 @@ static void MsgWindowUpdateState(_MessageWindowData *dat, UINT msg)
 			InvalidateRect(hwndTab, NULL, FALSE);
 		if(dat->pContainer->dwFlags & CNT_SIDEBAR)
 			dat->pContainer->SideBar->setActiveItem(dat);
-
-		dat->pContainer->hIconTaskbarOverlay = 0;
-		Win7Taskbar->clearOverlayIcon(dat->pContainer->hwnd);
 	}
 }
 
@@ -1557,7 +1555,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 				SetTimer(hwndDlg, TIMERID_FLASHWND, TIMEOUT_FLASHWND, NULL);
 				dat->mayFlashTab = TRUE;
 				FlashOnClist(hwndDlg, dat, dat->hDbEventFirst, &dbei);
-				SendMessage(hwndContainer, DM_SETICON, ICON_BIG, (LPARAM)LoadSkinnedIcon(SKINICON_EVENT_MESSAGE));
+				SendMessage(hwndContainer, DM_SETICON, (WPARAM)dat, (LPARAM)LoadSkinnedIcon(SKINICON_EVENT_MESSAGE));
 				m_pContainer->dwFlags |= CNT_NEED_UPDATETITLE;
 				dat->dwFlags |= (MWF_NEEDCHECKSIZE | MWF_WASBACKGROUNDCREATE);
 				dat->dwFlags |= MWF_DEFERREDSCROLL;
@@ -2315,7 +2313,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 				SendDlgItemMessage(hwndDlg, IDC_PROTOCOL, BM_SETIMAGE, IMAGE_ICON, (LPARAM)(dat->hXStatusIcon ? dat->hXStatusIcon : dat->hTabIcon));
 
 				if (m_pContainer->hwndActive == hwndDlg)
-					SendMessage(t_hwnd, DM_SETICON, (WPARAM) ICON_BIG, (LPARAM)(dat->hXStatusIcon ? dat->hXStatusIcon : dat->hTabIcon));
+					SendMessage(t_hwnd, DM_SETICON, (WPARAM)dat, (LPARAM)(dat->hXStatusIcon ? dat->hXStatusIcon : dat->hTabIcon));
 			}
 			return 0;
 		}
@@ -3843,6 +3841,9 @@ quote_from_last:
 			if (dat->hwndTip)
 				DestroyWindow(dat->hwndTip);
 
+			if (dat->hTaskbarIcon)
+				DestroyIcon(dat->hTaskbarIcon);
+
 			UpdateTrayMenuState(dat, FALSE);               // remove me from the tray menu (if still there)
 			if (PluginConfig.g_hMenuTrayUnread)
 				DeleteMenu(PluginConfig.g_hMenuTrayUnread, (UINT_PTR)dat->hContact, MF_BYCOMMAND);
@@ -3914,6 +3915,11 @@ quote_from_last:
 			BB_RefreshTheme(dat);
 			ZeroMemory(&m_pContainer->mOld, sizeof(MARGINS));
 			break;
+
+		case DM_FORCEREDRAW:
+			RedrawWindow(hwndDlg, NULL, NULL, RDW_INVALIDATE | RDW_ERASE | RDW_UPDATENOW);
+			return(0);
+
 		case WM_NCDESTROY:
 			if (dat) {
 				ZeroMemory(&m_pContainer->mOld, sizeof(MARGINS));

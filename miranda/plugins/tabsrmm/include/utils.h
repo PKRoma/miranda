@@ -98,6 +98,7 @@ public:
 	static	void				TSAPI enableDlgControl				(const HWND hwnd, UINT id, BOOL fEnable = 1);
 	static 	void 				TSAPI showDlgControl				(const HWND hwnd, UINT id, int showCmd);
 	static	int					TSAPI mustPlaySound					(const _MessageWindowData *dat);
+	static 	HICON				TSAPI iconFromAvatar				(const _MessageWindowData *dat);
 
 	template<typename T> static size_t TSAPI CopyToClipBoard(T* _t, const HWND hwndOwner)
 	{

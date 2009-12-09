@@ -1552,7 +1552,7 @@ void TSAPI DM_Typing(_MessageWindowData *dat)
 				}
 			}
 			if ((GetForegroundWindow() != hwndContainer) || (dat->pContainer->hwndStatus == 0))
-				SendMessage(hwndContainer, DM_SETICON, (WPARAM) ICON_BIG, (LPARAM) PluginConfig.g_buttonBarIcons[ICON_DEFAULT_TYPING]);
+				SendMessage(hwndContainer, DM_SETICON, (WPARAM)dat, (LPARAM) PluginConfig.g_buttonBarIcons[ICON_DEFAULT_TYPING]);
 			dat->showTyping = 1;
 		}
 	}
@@ -1777,7 +1777,7 @@ void TSAPI DM_EventAdded(_MessageWindowData *dat, WPARAM wParam, LPARAM lParam)
 		if ((GetActiveWindow() != hwndContainer || GetForegroundWindow() != hwndContainer) && !(dbei.flags & DBEF_SENT) && !fIsStatusChangeEvent) {
 			if (!(m_pContainer->dwFlags & CNT_NOFLASH))
 				FlashContainer(m_pContainer, 1, 0);
-			SendMessage(hwndContainer, DM_SETICON, ICON_BIG, (LPARAM)LoadSkinnedIcon(SKINICON_EVENT_MESSAGE));
+			SendMessage(hwndContainer, DM_SETICON, (WPARAM)dat, (LPARAM)LoadSkinnedIcon(SKINICON_EVENT_MESSAGE));
 			m_pContainer->dwFlags |= CNT_NEED_UPDATETITLE;
 		}
 		/*

@@ -700,6 +700,85 @@ void Utils::ReadPrivateContainerSettings(ContainerWindowData *pContainer, bool f
 }
 
 /**
+ * convert the avatar bitmap to icon format so that it can be used on the task bar
+ * tries to keep correct aspect ratio of the avatar image
+ *
+ * @param dat: _MessageWindowData* pointer to the window data
+ * @return HICON: the icon handle
+ */
+HICON Utils::iconFromAvatar(const _MessageWindowData *dat)
+{
+	BITMAP		bm;
+	double		dAspect, dNewWidth, dNewHeight;
+	bool		fFree = false;
+	HIMAGELIST 	hIml_c = 0;
+	HICON		hIcon = 0;
+
+	if(dat) {
+		AVATARCACHEENTRY *ace = (AVATARCACHEENTRY *)CallService(MS_AV_GETAVATARBITMAP, (WPARAM)dat->hContact, 0);
+		LONG	lIconSize = Win7Taskbar->getIconSize();
+
+		if(ace && ace->hbmPic) {
+			GetObject(ace->hbmPic, sizeof(bm), &bm);
+
+			if (bm.bmHeight > bm.bmWidth) {
+				if (bm.bmHeight > 0)
+					dAspect = (double)(lIconSize) / (double)bm.bmHeight;
+				else
+					dAspect = 1.0;
+				dNewWidth = (double)bm.bmWidth * dAspect;
+				dNewHeight = (double)lIconSize;
+			} else {
+				if (bm.bmWidth > 0)
+					dAspect = (double)(lIconSize) / (double)bm.bmWidth;
+				else
+					dAspect = 1.0;
+				dNewHeight = (double)bm.bmHeight * dAspect;
+				dNewWidth = (double)lIconSize;
+			}
+			/*
+			 * resize picture to fit it on the task bar, use an image list for converting it to
+			 * 32bpp icon format
+			 * dat->hTaskbarIcon will cache it until avatar is changed
+			 */
+			HBITMAP hbmResized = CSkin::ResizeBitmap(ace->hbmPic, (LONG)dNewWidth, (LONG)dNewHeight, fFree);
+			hIml_c = ::ImageList_Create(lIconSize, lIconSize, ILC_COLOR32 | ILC_MASK, 1, 0);
+
+			RECT	rc = {0, 0, lIconSize, lIconSize};
+
+			HDC 	hdc = ::GetDC(dat->pContainer->hwnd);
+			HDC 	dc = ::CreateCompatibleDC(hdc);
+			HDC 	dcResized = ::CreateCompatibleDC(hdc);
+
+			ReleaseDC(dat->pContainer->hwnd, hdc);
+
+			HBITMAP hbmNew = CSkin::CreateAeroCompatibleBitmap(rc, dc);
+			HBITMAP hbmOld = (HBITMAP)::SelectObject(dc, hbmNew);
+			HBITMAP hbmOldResized = (HBITMAP)::SelectObject(dcResized, hbmResized);
+
+			LONG	ix = (lIconSize - (LONG)dNewWidth) / 2;
+			LONG	iy = (lIconSize - (LONG)dNewHeight) / 2;
+			CSkin::m_default_bf.SourceConstantAlpha = M->GetByte("taskBarIconAlpha", 255);
+			CMimAPI::m_MyAlphaBlend(dc, ix, iy, (LONG)dNewWidth, (LONG)dNewHeight, dcResized,
+									0, 0, (LONG)dNewWidth, (LONG)dNewHeight, CSkin::m_default_bf);
+
+			CSkin::m_default_bf.SourceConstantAlpha = 255;
+			::SelectObject(dc, hbmOld);
+			::ImageList_Add(hIml_c, hbmNew, 0);
+			::DeleteObject(hbmNew);
+			::DeleteDC(dc);
+
+			::SelectObject(dcResized, hbmOldResized);
+			::DeleteObject(hbmResized);
+			::DeleteDC(dcResized);
+			hIcon = ::ImageList_GetIcon(hIml_c, 0, ILD_NORMAL);
+			::ImageList_RemoveAll(hIml_c);
+			::ImageList_Destroy(hIml_c);
+		}
+	}
+	return(hIcon);
+}
+/**
  * add a menu item to a ownerdrawn menu. mii must be pre-initialized
  *
  * @param m			menu handle

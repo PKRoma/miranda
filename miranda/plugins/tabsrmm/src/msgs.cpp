@@ -470,6 +470,9 @@ int AvatarChanged(WPARAM wParam, LPARAM lParam)
 		struct _MessageWindowData *dat = (struct _MessageWindowData *)GetWindowLongPtr(hwnd, GWLP_USERDATA);
 		if (dat) {
 			dat->ace = ace;
+			if(dat->hTaskbarIcon)
+				DestroyIcon(dat->hTaskbarIcon);
+			dat->hTaskbarIcon = 0;
 			DM_RecalcPictureSize(dat);
 			if (dat->showPic == 0 || dat->showInfoPic == 0)
 				GetAvatarVisibility(hwnd, dat);
@@ -598,6 +601,7 @@ tzdone:
 	OleInitialize(NULL);
 	mREOLECallback = new REOLECallback;
 	Win7Taskbar = new CTaskbarInteract;
+	Win7Taskbar->updateMetrics();
 
 	ZeroMemory((void *)&nen_options, sizeof(nen_options));
 	M->m_hMessageWindowList = (HANDLE) CallService(MS_UTILS_ALLOCWINDOWLIST, 0, 0);
@@ -819,7 +823,7 @@ HWND TSAPI CreateNewTabForContact(struct ContainerWindowData *pContainer, HANDLE
 			SetFocus(pContainer->hwndActive);
 		} else {
 			if (pContainer->dwFlags & CNT_NOFLASH)
-				SendMessage(pContainer->hwnd, DM_SETICON, ICON_BIG, (LPARAM)LoadSkinnedIcon(SKINICON_EVENT_MESSAGE));
+				SendMessage(pContainer->hwnd, DM_SETICON, 0, (LPARAM)LoadSkinnedIcon(SKINICON_EVENT_MESSAGE));
 			else
 				FlashContainer(pContainer, 1, 0);
 		}

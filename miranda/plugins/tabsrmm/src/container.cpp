@@ -1356,7 +1356,7 @@ buttons_done:
 					szText[SIZEOF(szText)-1] = 0;
 					SetWindowText(hwndDlg, szText);
 					if (dat)
-						SendMessage(hwndDlg, DM_SETICON, (WPARAM) ICON_BIG, (LPARAM)(dat->hTabIcon != dat->hTabStatusIcon ? dat->hTabIcon : dat->hTabStatusIcon));
+						SendMessage(hwndDlg, DM_SETICON, (WPARAM)dat, (LPARAM)(dat->hTabIcon != dat->hTabStatusIcon ? dat->hTabIcon : dat->hTabStatusIcon));
 					return(0);
 			}
 			if (wParam == 0) {           // no hContact given - obtain the hContact for the active tab
@@ -1380,7 +1380,7 @@ buttons_done:
 					dat = (struct _MessageWindowData *)GetWindowLongPtr(hwnd, GWLP_USERDATA);
 			}
 			if (dat) {
-				SendMessage(hwndDlg, DM_SETICON, (WPARAM) ICON_BIG, (LPARAM)(dat->hXStatusIcon ? dat->hXStatusIcon : dat->hTabStatusIcon));
+				SendMessage(hwndDlg, DM_SETICON, (WPARAM)dat, (LPARAM)(dat->hXStatusIcon ? dat->hXStatusIcon : dat->hTabStatusIcon));
 				szNewTitle = Utils::FormatTitleBar(dat, pContainer->settings->szTitleFormat);
 				if (szNewTitle) {
 					SetWindowText(hwndDlg, szNewTitle);
@@ -1886,19 +1886,46 @@ buttons_done:
 		case DM_REPORTMINHEIGHT:
 			pContainer->uChildMinHeight = ((UINT) lParam > pContainer->uChildMinHeight) ? (UINT) lParam : pContainer->uChildMinHeight;
 			return(0);
-		case DM_SETICON: {
-			HICON hIconMsg = PluginConfig.g_IconMsgEvent;
 
-			if ((HICON)lParam == PluginConfig.g_buttonBarIcons[ICON_DEFAULT_TYPING] || (HICON)lParam == hIconMsg) {              // always set typing icon, but don't save it...
-				if(Win7Taskbar->setOverlayIcon(hwndDlg, lParam)) {
+		case DM_SETICON: {
+			HICON 		hIconMsg = PluginConfig.g_IconMsgEvent;
+
+			if(Win7Taskbar->haveLargeIcons()) {
+				_MessageWindowData*dat = (_MessageWindowData *)wParam;
+
+				if ((HICON)lParam == PluginConfig.g_buttonBarIcons[ICON_DEFAULT_TYPING] || (HICON)lParam == hIconMsg) {
+					Win7Taskbar->setOverlayIcon(hwndDlg, lParam);
+					SendMessage(hwndDlg, WM_SETICON, ICON_SMALL, lParam);
 					if((HICON)lParam == hIconMsg)
 						pContainer->hIconTaskbarOverlay = hIconMsg;
 					break;
 				}
-				if((HICON)lParam == PluginConfig.g_buttonBarIcons[ICON_DEFAULT_TYPING]) {
-					SendMessage(hwndDlg, WM_SETICON, wParam, lParam);
-					break;
+
+				if(dat) {
+					if(dat->hTaskbarIcon == 0)
+						dat->hTaskbarIcon = Utils::iconFromAvatar(dat);
+
+					if(dat->hTaskbarIcon) {
+						SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)dat->hTaskbarIcon);
+						SendMessage(hwndDlg, WM_SETICON, ICON_SMALL, lParam);
+						Win7Taskbar->setOverlayIcon(hwndDlg, (LPARAM)(dat->hTabIcon ? (LPARAM)dat->hTabIcon : lParam));
+					}
+					else {
+						SendMessage(hwndDlg, WM_SETICON, ICON_BIG, lParam);
+						if(dat->pContainer->hIconTaskbarOverlay)
+							Win7Taskbar->setOverlayIcon(hwndDlg, (LPARAM)dat->pContainer->hIconTaskbarOverlay);
+						else
+							Win7Taskbar->clearOverlayIcon(hwndDlg);
+					}
+					return(0);
 				}
+			}
+			/*
+			 * default handling (no win7 taskbar)
+			 */
+			if ((HICON)lParam == PluginConfig.g_buttonBarIcons[ICON_DEFAULT_TYPING]) {              // always set typing icon, but don't save it...
+				SendMessage(hwndDlg, WM_SETICON, ICON_BIG, lParam);
+				break;
 			}
 
 			if ((HICON)lParam != hIconMsg && pContainer->dwFlags & CNT_STATICICON && PluginConfig.g_iconContainer != 0)
@@ -1906,14 +1933,9 @@ buttons_done:
 
 			if (pContainer->hIcon == STICK_ICON_MSG && (HICON)lParam != hIconMsg && pContainer->dwFlags & CNT_NEED_UPDATETITLE)
 				lParam = (LPARAM)hIconMsg;
-			SendMessage(hwndDlg, WM_SETICON, wParam, lParam);
+			//break;          // don't overwrite the new message indicator flag
+			SendMessage(hwndDlg, WM_SETICON, ICON_BIG, lParam);
 			pContainer->hIcon = (lParam == (LPARAM)hIconMsg) ? STICK_ICON_MSG : 0;
-
-			if(pContainer->hIconTaskbarOverlay)
-				Win7Taskbar->setOverlayIcon(hwndDlg, (LPARAM)pContainer->hIconTaskbarOverlay);
-			else
-				Win7Taskbar->clearOverlayIcon(hwndDlg);
-
 			return(0);
 		}
 		case WM_DRAWITEM: {

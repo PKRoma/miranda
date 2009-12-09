@@ -40,10 +40,13 @@ public:
 	CTaskbarInteract()
 	{
 		m_pTaskbarInterface = 0;
+		m_IconSize = 0;
 		m_isEnabled = (IsWinVer7Plus() && M->GetByte("useW7Taskbar", 1));
 
-		if(m_isEnabled)
+		if(m_isEnabled) {
 			::CoCreateInstance(CLSID_TaskbarList, NULL, CLSCTX_ALL, IID_ITaskbarList3, (void**)&m_pTaskbarInterface);
+			updateMetrics();
+		}
 	}
 
 	~CTaskbarInteract()
@@ -54,13 +57,18 @@ public:
 			m_isEnabled = false;
 		}
 	}
+	LONG			getIconSize						() const { return(m_IconSize); }
 
 	bool 			setOverlayIcon					(HWND hwndDlg, LPARAM lParam) const;
 	void			clearOverlayIcon				(HWND hwndDlg) const;
+	bool			haveLargeIcons					();
+	LONG			updateMetrics					();
 
 private:
 	bool 										m_isEnabled;
 	ITaskbarList3* 								m_pTaskbarInterface;
+	bool										m_fHaveLargeicons;
+	LONG										m_IconSize;
 };
 
 extern CTaskbarInteract* Win7Taskbar;

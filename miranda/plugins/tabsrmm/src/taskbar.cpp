@@ -46,7 +46,22 @@ CTaskbarInteract* Win7Taskbar = 0;
  */
 bool CTaskbarInteract::setOverlayIcon(HWND hwndDlg, LPARAM lParam) const
 {
-	if (m_pTaskbarInterface && m_isEnabled){
+	if (m_pTaskbarInterface && m_isEnabled && m_fHaveLargeicons) {
+		m_pTaskbarInterface->SetOverlayIcon(hwndDlg,(HICON)lParam, NULL);
+		return(true);
+	}
+	return(false);
+}
+
+/**
+ * check the task bar status for "large icon mode".
+ * @return bool: true if large icons are in use, false otherwise
+ */
+bool CTaskbarInteract::haveLargeIcons()
+{
+	m_fHaveLargeicons = false;
+
+	if (m_pTaskbarInterface && m_isEnabled) {
 		HKEY 	hKey;
 		DWORD 	val = 1;
 		DWORD	size = 4;
@@ -59,12 +74,9 @@ bool CTaskbarInteract::setOverlayIcon(HWND hwndDlg, LPARAM lParam) const
 			::RegQueryValueEx(hKey, _T("TaskbarSmallIcons"), 0, &dwType, (LPBYTE)&val, &size);
 			::RegCloseKey(hKey);
 		}
-		if(val)
-			return(false);			// small icons in use, revert to default icon feedback
-		m_pTaskbarInterface->SetOverlayIcon(hwndDlg,(HICON)lParam, NULL);
-		return(true);
+		m_fHaveLargeicons = (val ? false : true);			// small icons in use, revert to default icon feedback
 	}
-	return(false);
+	return(m_fHaveLargeicons);
 }
 
 /**
@@ -75,4 +87,11 @@ void CTaskbarInteract::clearOverlayIcon(HWND hwndDlg) const
 {
 	if (m_pTaskbarInterface && m_isEnabled)
 		m_pTaskbarInterface->SetOverlayIcon(hwndDlg, NULL, NULL);
+}
+
+LONG CTaskbarInteract::updateMetrics()
+{
+	m_IconSize = 32;
+
+	return(m_IconSize);
 }

@@ -562,7 +562,7 @@ HWND CreateNewRoom(struct ContainerWindowData *pContainer, SESSION_INFO *si, BOO
 			SetFocus(pContainer->hwndActive);
 		} else {
 			if (pContainer->dwFlags & CNT_NOFLASH)
-				SendMessage(pContainer->hwnd, DM_SETICON, ICON_BIG, (LPARAM)LoadSkinnedIcon(SKINICON_EVENT_MESSAGE));
+				SendMessage(pContainer->hwnd, DM_SETICON, 0, (LPARAM)LoadSkinnedIcon(SKINICON_EVENT_MESSAGE));
 			else
 				FlashContainer(pContainer, 1, 0);
 		}

@@ -393,9 +393,10 @@ void TSAPI DoFlashAndSoundWorker(FLASH_PARAMS* p)
 			p->bInactive = dat->pContainer->hwnd != GetForegroundWindow();
 			p->bActiveTab = (dat->pContainer->hwndActive == si->hWnd);
 		}
+		if (p->sound && Utils::mustPlaySound(si->dat))
+			SkinPlaySound(p->sound);
 	}
-
-	if (p->sound && Utils::mustPlaySound(si->dat))
+	else if(p->sound)
 		SkinPlaySound(p->sound);
 
 	if (dat) {
@@ -453,7 +454,7 @@ void TSAPI DoFlashAndSoundWorker(FLASH_PARAMS* p)
 			}
 			hIcon = (HICON)SendMessage(dat->pContainer->hwnd, WM_GETICON, ICON_BIG, 0);
 			if (p->hNotifyIcon == hIcons[ICON_HIGHLIGHT] || (hIcon != hIcons[ICON_MESSAGE] && hIcon != hIcons[ICON_HIGHLIGHT])) {
-				SendMessage(dat->pContainer->hwnd, DM_SETICON, ICON_BIG, (LPARAM)p->hNotifyIcon);
+				SendMessage(dat->pContainer->hwnd, DM_SETICON, (WPARAM)dat, (LPARAM)p->hNotifyIcon);
 				dat->pContainer->dwFlags |= CNT_NEED_UPDATETITLE;
 			}
 		}
