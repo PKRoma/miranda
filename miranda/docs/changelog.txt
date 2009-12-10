@@ -4,6 +4,16 @@
                            www.miranda-im.org
                              
 
+* New in 0.8.11
+Enhancements:
+ - Windows 7 Taskbar support for file transfer progress and event notifications
+ 
+Bugfixes:
+ - ICQ: Possible crash loading avatar from cache
+ - Yahoo: Improvements in comparing Yahoo ids
+ - Yahoo: Display fix for email notifications
+ 
+ 
 * New in 0.8.10
 Bugfixes:
  - SSL improvements on Windows 9x
