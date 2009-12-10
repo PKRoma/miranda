@@ -70,6 +70,16 @@ static TCHAR* sttGetXStatus( const char* szProto )
 	return result;
 }
 
+static void SetTaskBarIcon(const HICON hIcon, const TCHAR *szNewTip)
+{
+	if (pTaskbarInterface)
+	{
+		wchar_t *szTip = mir_t2u(szNewTip);
+		pTaskbarInterface->SetOverlayIcon(cli.hwndContactList, hIcon, szTip);
+		mir_free(szTip);
+	}
+}
+
 TCHAR* fnTrayIconMakeTooltip( const TCHAR *szPrefix, const char *szProto )
 {
 	TCHAR *szStatus, *szSeparator;
@@ -203,6 +213,10 @@ int fnTrayIconAdd(HWND hwnd, const char *szProto, const char *szIconProto, int s
 
 	Shell_NotifyIcon(NIM_ADD, &nid);
 	cli.trayIcon[i].isBase = 1;
+
+	if (cli.trayIconCount == 1)
+		SetTaskBarIcon(cli.trayIcon[0].hBaseIcon, cli.szTip);
+
 	ulock; return i;
 }
 
@@ -225,6 +239,10 @@ void fnTrayIconRemove(HWND hwnd, const char *szProto)
 			pii->id = 0;
 			break;
 	}	}
+
+	if (cli.trayIconCount == 1)
+		SetTaskBarIcon(NULL, NULL);
+
 	ulock;
 }
 
@@ -303,6 +321,10 @@ int fnTrayIconDestroy(HWND hwnd)
 	int i;
 	initcheck 0;
 	lock;
+
+	if (cli.trayIconCount == 1)
+		SetTaskBarIcon(NULL, NULL);
+
 	nid.cbSize = ( cli.shellVersion >= 5 ) ? sizeof(nid) : NOTIFYICONDATA_V1_SIZE;
 	nid.hWnd = hwnd;
 	for ( i = 0; i < cli.trayIconCount; i++ ) {
@@ -369,6 +391,11 @@ int fnTrayIconUpdate(HICON hNewIcon, const TCHAR *szNewTip, const char *szPrefer
 			lstrcpyn(nid.szTip, cli.szTip, SIZEOF(nid.szTip));
 		Shell_NotifyIcon(NIM_MODIFY, &nid);
 
+		if (cli.trayIconCount == 1)
+			SetTaskBarIcon(hNewIcon, cli.szTip);
+		else
+			SetTaskBarIcon(NULL, NULL);
+
 		cli.trayIcon[i].isBase = isBase;
 		{ ulock; return i; }
 	}
@@ -386,6 +413,11 @@ int fnTrayIconUpdate(HICON hNewIcon, const TCHAR *szNewTip, const char *szPrefer
 			if(!mToolTipTrayTips)
 				lstrcpyn(nid.szTip, cli.szTip, SIZEOF(nid.szTip));
 			Shell_NotifyIcon(NIM_MODIFY, &nid);
+
+			if (cli.trayIconCount == 1)
+				SetTaskBarIcon(hNewIcon, cli.szTip);
+			else
+				SetTaskBarIcon(NULL, NULL);
 
 			cli.trayIcon[i].isBase = isBase;
 			if (DBGetContactSettingByte(NULL,"CList","TrayIcon",SETTING_TRAYICON_DEFAULT) == SETTING_TRAYICON_MULTI)
@@ -445,12 +477,6 @@ void fnTrayIconUpdateWithImageList(int iImage, const TCHAR *szNewTip, char *szPr
 {
 	HICON hIcon = ImageList_GetIcon(hCListImages, iImage, ILD_NORMAL);
 	cli.pfnTrayIconUpdate(hIcon, szNewTip, szPreferredProto, 0);
-	if (pTaskbarInterface)
-	{
-		wchar_t *szTip = mir_t2u(szNewTip);
-		pTaskbarInterface->SetOverlayIcon(cli.hwndContactList, hIcon, szTip);
-		mir_free(szTip);
-	}
 	DestroyIcon(hIcon);
 }
 
@@ -566,9 +592,6 @@ void fnTrayIconSetToBase(char *szPreferredProto)
 	int i;
 	initcheck;
 	lock;
-
-	if (pTaskbarInterface)
-		pTaskbarInterface->SetOverlayIcon(cli.hwndContactList, NULL, NULL);
 
 	for (i = 0; i < cli.trayIconCount; i++) {
 		if ( cli.trayIcon[i].id == 0 )
