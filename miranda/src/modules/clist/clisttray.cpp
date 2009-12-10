@@ -523,7 +523,11 @@ void fnTrayIconUpdateBase(const char *szChangedProto)
 		if (!lstrcmpA(szChangedProto, accounts[i]->szModuleName ))
 			cycleStep = i - 1;
 	}
-
+    
+    if (pTaskbarInterface) {
+        pTaskbarInterface->SetOverlayIcon(cli.hwndContactList, cli.pfnGetIconFromStatusMode( NULL, szChangedProto, CallService(MS_CLIST_GETSTATUSMODE, 0, 0)), NULL);
+    }
+    
 	if (netProtoCount > 0) 
     {
         int trayIconSetting = DBGetContactSettingByte(NULL, "CList", "TrayIcon", SETTING_TRAYICON_DEFAULT);
@@ -592,7 +596,11 @@ void fnTrayIconSetToBase(char *szPreferredProto)
 	int i;
 	initcheck;
 	lock;
-
+    
+	if (pTaskbarInterface) {
+        pTaskbarInterface->SetOverlayIcon(cli.hwndContactList, cli.pfnGetIconFromStatusMode( NULL, szPreferredProto, CallService(MS_CLIST_GETSTATUSMODE, 0, 0)), NULL);
+    }
+    
 	for (i = 0; i < cli.trayIconCount; i++) {
 		if ( cli.trayIcon[i].id == 0 )
 			continue;
