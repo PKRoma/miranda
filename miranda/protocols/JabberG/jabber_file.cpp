@@ -144,7 +144,7 @@ int CJabberProto::FileReceiveParse( filetransfer* ft, char* buffer, int datalen 
 						else if (( s=strchr( str, ':' )) != NULL ) {
 							*s = '\0';
 							if ( !strcmp( str, "Content-Length" ))
-								ft->std.totalBytes = ft->std.currentFileSize = strtol( s+1, NULL, 10 );
+								ft->std.totalBytes = ft->std.currentFileSize = strtoul( s+1, NULL, 10 );
 					}	}
 
 					mir_free( str );
@@ -162,7 +162,7 @@ int CJabberProto::FileReceiveParse( filetransfer* ft, char* buffer, int datalen 
 			}
 		}
 		else if ( ft->state == FT_RECEIVING ) {
-			int bufferSize, remainingBytes, writeSize;
+			unsigned bufferSize, remainingBytes, writeSize;
 
 			if ( ft->std.currentFileSize < 0 || ft->std.currentFileProgress < ft->std.currentFileSize ) {
 				bufferSize = eob - p;
@@ -171,7 +171,7 @@ int CJabberProto::FileReceiveParse( filetransfer* ft, char* buffer, int datalen 
 					writeSize = remainingBytes;
 				else
 					writeSize = bufferSize;
-				if ( _write( ft->fileId, p, writeSize ) != writeSize ) {
+				if ( _write( ft->fileId, p, writeSize ) != (int)writeSize ) {
 					Log( "_write() error" );
 					ft->state = FT_ERROR;
 				}
@@ -579,7 +579,7 @@ int filetransfer::create()
 
 	if ( fileId == -1 )
 		ppro->Log( "Cannot create file '%s' during a file transfer", filefull );
-	else if ( std.currentFileSize != 0 )
+	else if ( std.currentFileSize != 0 && std.currentFileSize < INT_MAX )
 		_chsize( fileId, std.currentFileSize );
 
 	return fileId;

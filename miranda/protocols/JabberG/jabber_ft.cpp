@@ -303,7 +303,7 @@ void CJabberProto::FtHandleSiRequest( HXML iqNode )
 {
 	const TCHAR* from, *sid, *str, *szId, *filename;
 	HXML siNode, fileNode, featureNode, xNode, fieldNode, n;
-	int filesize, i;
+	unsigned filesize, i;
 
 	if ( !iqNode ||
 		  ( from = xmlGetAttrValue( iqNode, _T("from"))) == NULL ||
@@ -317,7 +317,7 @@ void CJabberProto::FtHandleSiRequest( HXML iqNode )
 		( filename = xmlGetAttrValue( fileNode,  _T("name"))) != NULL &&
 		( str = xmlGetAttrValue( fileNode,  _T("size"))) != NULL ) {
 
-		filesize = _ttoi( str );
+		filesize = _tcstoul( str, NULL, 10 );
 		if (( featureNode = xmlGetChildByTag( siNode, "feature", "xmlns", _T(JABBER_FEAT_FEATURE_NEG))) != NULL &&
 			( xNode = xmlGetChildByTag( featureNode, "x", "xmlns", _T(JABBER_FEAT_DATA_FORMS)))!=NULL &&
 			( fieldNode = xmlGetChildByTag( xNode, "field", "var", _T("stream-method")))!=NULL ) {
@@ -535,9 +535,9 @@ int CJabberProto::FtReceive( HANDLE, filetransfer* ft, char* buffer, int datalen
 	if ( ft->create() == -1 )
 		return -1;
 
-	int remainingBytes = ft->std.currentFileSize - ft->std.currentFileProgress;
-	if ( remainingBytes > 0 ) {
-		int writeSize = ( remainingBytes<datalen ) ? remainingBytes : datalen;
+	if ( ft->std.currentFileSize > ft->std.currentFileProgress ) {
+		unsigned remainingBytes = ft->std.currentFileSize - ft->std.currentFileProgress;
+		int writeSize = ( remainingBytes < (unsigned)datalen ) ? remainingBytes : datalen;
 		if ( _write( ft->fileId, buffer, writeSize ) != writeSize ) {
 			Log( "_write() error" );
 			return -1;
