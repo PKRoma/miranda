@@ -77,13 +77,13 @@ typedef struct
 static const CLSID IID_ITextDocument= { 0x8CC497C0,0xA1DF,0x11CE, { 0x80,0x98, 0x00,0xAA, 0x00,0x47,0xBE,0x5D} };
 extern WNDPROC OldIEViewProc, OldHppProc;
 
-static void Chat_ClearLog(const _MessageWindowData *dat)
+static void Chat_ClearLog(const TWindowData *dat)
 {
 	if(dat && dat->si) {
 	}
 }
 
-static void Chat_SetMessageLog(_MessageWindowData *dat)
+static void Chat_SetMessageLog(TWindowData *dat)
 {
 	unsigned int iLogMode = M->GetByte("Chat", "useIEView", 0);
 
@@ -252,7 +252,7 @@ static BOOL IsStringValidLink(TCHAR* pszText)
  * container window
  */
 
-static void Chat_UpdateWindowState(_MessageWindowData *dat, UINT msg)
+static void Chat_UpdateWindowState(TWindowData *dat, UINT msg)
 {
 	if (dat == NULL)
 		return;
@@ -267,7 +267,6 @@ static void Chat_UpdateWindowState(_MessageWindowData *dat, UINT msg)
 			CMimAPI::m_pSetLayeredWindowAttributes(dat->pContainer->hwnd, CSkin::m_ContainerColorKey, (BYTE)trans, (CSkin::m_skinEnabled ? LWA_COLORKEY : 0) | (dat->pContainer->dwFlags & CNT_TRANSPARENCY ? LWA_ALPHA : 0));
 		}
 	}
-
 
 	if(si->hwndFilter) {
 		POINT pt;
@@ -390,7 +389,7 @@ static void	InitButtons(HWND hwndDlg, SESSION_INFO* si)
 	}
 }
 
-static void Chat_ResizeIeView(const _MessageWindowData *dat)
+static void Chat_ResizeIeView(const TWindowData *dat)
 {
 	RECT 			rcRichEdit;
 	POINT 			pt;
@@ -425,7 +424,7 @@ static int RoomWndResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL *urc)
 {
 	RECT rc, rcTabs;
 	SESSION_INFO* si = (SESSION_INFO*)lParam;
-	struct      _MessageWindowData *dat = (struct _MessageWindowData *)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
+	struct      TWindowData *dat = (struct TWindowData *)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 	int			TabHeight;
 	BOOL		bToolbar = !(dat->pContainer->dwFlags & CNT_HIDETOOLBAR);
 	BOOL		bBottomToolbar = dat->pContainer->dwFlags & CNT_BOTTOMTOOLBAR ? 1 : 0;
@@ -556,10 +555,10 @@ static LRESULT CALLBACK MessageSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, 
 {
 	MESSAGESUBDATA *dat;
 	SESSION_INFO* Parentsi;
-	struct _MessageWindowData *mwdat;
+	struct TWindowData *mwdat;
 	HWND hwndParent = GetParent(hwnd);
 
-	mwdat = (struct _MessageWindowData *)GetWindowLongPtr(hwndParent, GWLP_USERDATA);
+	mwdat = (struct TWindowData *)GetWindowLongPtr(hwndParent, GWLP_USERDATA);
 	Parentsi = (SESSION_INFO *)mwdat->si;
 
 	dat = (MESSAGESUBDATA *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
@@ -1314,7 +1313,7 @@ static LRESULT CALLBACK ButtonSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, L
 static LRESULT CALLBACK LogSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	HWND hwndParent = GetParent(hwnd);
-	struct _MessageWindowData *mwdat = (struct _MessageWindowData *)GetWindowLongPtr(hwndParent, GWLP_USERDATA);
+	struct TWindowData *mwdat = (struct TWindowData *)GetWindowLongPtr(hwndParent, GWLP_USERDATA);
 
 	switch (msg) {
 		case WM_NCCALCSIZE:
@@ -1493,7 +1492,7 @@ static void ProcessNickListHovering(HWND hwnd, int hoveredItem, POINT * pt, SESS
 static LRESULT CALLBACK NicklistSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	HWND hwndParent = GetParent(hwnd);
-	struct _MessageWindowData *mwdat = (struct _MessageWindowData *)GetWindowLongPtr(hwndParent, GWLP_USERDATA);
+	struct TWindowData *mwdat = (struct TWindowData *)GetWindowLongPtr(hwndParent, GWLP_USERDATA);
 
 	switch (msg) {
 		//MAD: attemp to fix weird bug, when combobox with hidden vscroll
@@ -1515,7 +1514,7 @@ static LRESULT CALLBACK NicklistSubclassProc(HWND hwnd, UINT msg, WPARAM wParam,
 
 		case WM_ERASEBKGND: {
 			HDC dc = (HDC)wParam;
-			struct _MessageWindowData *dat = (struct _MessageWindowData *)GetWindowLongPtr(hwndParent, GWLP_USERDATA);
+			struct TWindowData *dat = (struct TWindowData *)GetWindowLongPtr(hwndParent, GWLP_USERDATA);
 			SESSION_INFO *parentdat = (SESSION_INFO *)dat->si;
 			if (dc) {
 				int height, index, items = 0;
@@ -1689,7 +1688,7 @@ static LRESULT CALLBACK NicklistSubclassProc(HWND hwnd, UINT msg, WPARAM wParam,
 			int item;
 			int height;
 			USERINFO * ui;
-			struct _MessageWindowData *dat = (struct _MessageWindowData *)GetWindowLongPtr(hwndParent, GWLP_USERDATA);
+			struct TWindowData *dat = (struct TWindowData *)GetWindowLongPtr(hwndParent, GWLP_USERDATA);
 			SESSION_INFO *parentdat = (SESSION_INFO *)dat->si;
 
 
@@ -1789,7 +1788,7 @@ static LRESULT CALLBACK NicklistSubclassProc(HWND hwnd, UINT msg, WPARAM wParam,
 			bInClient = PtInRect(&clientRect, pt);
  			if (bInClient) {
 				//hit test item under mouse
-				struct _MessageWindowData *dat = (struct _MessageWindowData *)GetWindowLongPtr(hwndParent, GWLP_USERDATA);
+				struct TWindowData *dat = (struct TWindowData *)GetWindowLongPtr(hwndParent, GWLP_USERDATA);
 				SESSION_INFO *parentdat = (SESSION_INFO *)dat->si;
 
 				DWORD nItemUnderMouse = (DWORD)SendMessage(hwnd, LB_ITEMFROMPOINT, 0, lParam);
@@ -1899,7 +1898,7 @@ INT_PTR CALLBACK RoomWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 {
 	SESSION_INFO * si = NULL;
 	HWND hwndTab = GetParent(hwndDlg);
-	struct _MessageWindowData *dat = (struct _MessageWindowData *)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
+	struct TWindowData *dat = (struct TWindowData *)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 	if (dat)
 		si = (SESSION_INFO *)dat->si;
 
@@ -1909,13 +1908,13 @@ INT_PTR CALLBACK RoomWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 	switch (uMsg) {
 		case WM_INITDIALOG: {
 			int mask;
-			struct NewMessageWindowLParam *newData = (struct NewMessageWindowLParam *) lParam;
-			struct _MessageWindowData *dat;
+			struct TNewWindowData *newData = (struct TNewWindowData *) lParam;
+			struct TWindowData *dat;
 			SESSION_INFO *psi = (SESSION_INFO*)newData->hdbEvent;
 			RECT rc;
 
-			dat = (struct _MessageWindowData *)malloc(sizeof(struct _MessageWindowData));
-			ZeroMemory(dat, sizeof(struct _MessageWindowData));
+			dat = (struct TWindowData *)malloc(sizeof(struct TWindowData));
+			ZeroMemory(dat, sizeof(struct TWindowData));
 			si = psi;
 			dat->si = psi;
 			dat->hContact = psi->hContact;
@@ -3475,7 +3474,7 @@ LABEL_SHOWWINDOW:
 			break;
 
 		case DM_CONTAINERSELECTED: {
-			struct ContainerWindowData *pNewContainer = 0;
+			struct TContainerData *pNewContainer = 0;
 			TCHAR *szNewName = (TCHAR *)lParam;
 			int iOldItems = TabCtrl_GetItemCount(hwndTab);
 			if (!_tcsncmp(dat->pContainer->szName, szNewName, CONTAINER_NAMELEN))
@@ -3498,7 +3497,7 @@ LABEL_SHOWWINDOW:
 		// container API support functions
 
 		case DM_QUERYCONTAINER: {
-			struct ContainerWindowData **pc = (struct ContainerWindowData **) lParam;
+			struct TContainerData **pc = (struct TContainerData **) lParam;
 			if (pc)
 				*pc = dat->pContainer;
 			return 0;
@@ -3515,7 +3514,7 @@ LABEL_SHOWWINDOW:
 			int iTabs, i;
 			TCITEM item = {0};
 			RECT rc;
-			struct ContainerWindowData *pContainer = dat->pContainer;
+			struct TContainerData *pContainer = dat->pContainer;
 			BOOL   bForced = (lParam == 2);
 
 			iTabs = TabCtrl_GetItemCount(hwndTab);

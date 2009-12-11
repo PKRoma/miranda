@@ -247,8 +247,8 @@ typedef struct SESSIONINFO_TYPE
 	USERINFO*      pUsers;
 	USERINFO*      pMe;
 	STATUSINFO*    pStatuses;
-	struct         ContainerWindowData *pContainer;
-	struct		   _MessageWindowData *dat;
+	TContainerData *pContainer;
+	TWindowData    *dat;
 	int            wasTrimmed;
 	SESSIONINFO_TYPE*  next;
 }  SESSION_INFO;
@@ -263,7 +263,7 @@ typedef struct
 	BOOL          bRedraw;
 	SESSION_INFO* si;
 	int           crCount;
-	struct _MessageWindowData *dat;
+	TWindowData*  dat;
 }
 	LOGSTREAMDATA;
 

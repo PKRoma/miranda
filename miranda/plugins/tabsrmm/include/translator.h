@@ -396,11 +396,11 @@ public:
 		translateOptionTree(m_lvItemsLog);
 	}
 
-	static void translateGroupTree(LISTOPTIONSGROUP *groups);
-	static void translateOptionTree(LISTOPTIONSITEM *items);
+	static void translateGroupTree(TOptionListGroup *groups);
+	static void translateOptionTree(TOptionListItem *items);
 
-	static	LISTOPTIONSITEM* 	getTree(UINT id);
-	static  LISTOPTIONSGROUP* 	getGroupTree(UINT id);
+	static	TOptionListItem* 	getTree(UINT id);
+	static  TOptionListGroup* 	getGroupTree(UINT id);
 
 private:
 	static TCHAR *m_strings[STR_LAST];
@@ -409,8 +409,8 @@ private:
 	static TCHAR *m_OptStrings[OPT_LAST];
 	static TCHAR *m_OptTranslated[OPT_LAST];
 
-	static LISTOPTIONSGROUP		m_lvGroupsModPlus[], m_lvGroupsNEN[], m_lvGroupsMsg[], m_lvGroupsLog[], m_lvGroupsTab[];
-	static LISTOPTIONSITEM		m_lvItemsModPlus[], m_lvItemsNEN[], m_lvItemsMsg[], m_lvItemsLog[], m_lvItemsTab[];
+	static TOptionListGroup		m_lvGroupsModPlus[], m_lvGroupsNEN[], m_lvGroupsMsg[], m_lvGroupsLog[], m_lvGroupsTab[];
+	static TOptionListItem		m_lvItemsModPlus[], m_lvItemsNEN[], m_lvItemsMsg[], m_lvItemsLog[], m_lvItemsTab[];
 };
 
 #endif

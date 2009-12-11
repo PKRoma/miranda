@@ -45,7 +45,7 @@ INT_PTR CALLBACK SelectContainerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, L
 		case WM_INITDIALOG: {
 			TCHAR szNewTitle[128];
 			RECT rc, rcParent;
-			struct ContainerWindowData *pContainer = 0;
+			struct TContainerData *pContainer = 0;
 
 			SetWindowLongPtr(hwndDlg, GWLP_USERDATA, (LONG_PTR) lParam);
 			hwndMsgDlg = (HWND) lParam;
@@ -53,7 +53,7 @@ INT_PTR CALLBACK SelectContainerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, L
 			TranslateDialogDefault(hwndDlg);
 
 			if (lParam) {
-				struct _MessageWindowData *dat = (struct _MessageWindowData *)GetWindowLongPtr((HWND)lParam, GWLP_USERDATA);
+				struct TWindowData *dat = (struct TWindowData *)GetWindowLongPtr((HWND)lParam, GWLP_USERDATA);
 				if (dat) {
 					mir_sntprintf(szNewTitle, safe_sizeof(szNewTitle), CTranslator::get(CTranslator::CNT_SELECT_FOR), dat->cache->getNick());
 					SetWindowText(hwndDlg, szNewTitle);
@@ -109,7 +109,7 @@ INT_PTR CALLBACK SelectContainerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, L
 				case IDC_RENAMECONTAINER: {
 					TCHAR szNewName[CONTAINER_NAMELEN], szName[CONTAINER_NAMELEN + 1];
 					int iLen, iItem;
-					struct ContainerWindowData *pCurrent = pFirstContainer;
+					struct TContainerData *pCurrent = pFirstContainer;
 
 					iLen = GetWindowTextLength(GetDlgItem(hwndDlg, IDC_NEWCONTAINERNAME));
 					if (iLen) {
@@ -188,7 +188,7 @@ INT_PTR CALLBACK SelectContainerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, L
 			char *szKey = "TAB_Containers";
 #endif
 			char szValue[10];
-			struct ContainerWindowData *pContainer = 0;
+			struct TContainerData *pContainer = 0;
 			do {
 				_snprintf(szValue, 8, "%d", iCounter);
 				if (M->GetTString(NULL, szKey, szValue, &dbv))

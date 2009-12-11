@@ -69,7 +69,7 @@ int  Service_SetSBText(WPARAM wParam, LPARAM lParam);
 int  Service_SetVisibility(WPARAM wParam, LPARAM lParam);
 INT_PTR  Service_GetCount(WPARAM wParam,LPARAM lParam);
 
-HWND CreateNewRoom(struct ContainerWindowData *pContainer, SESSION_INFO *si, BOOL bActivateTab, BOOL bPopupContainer, BOOL bWantPopup);
+HWND CreateNewRoom(TContainerData *pContainer, SESSION_INFO *si, BOOL bActivateTab, BOOL bPopupContainer, BOOL bWantPopup);
 
 //manager.c
 void          SetActiveSession(const TCHAR* pszID, const char* pszModule);

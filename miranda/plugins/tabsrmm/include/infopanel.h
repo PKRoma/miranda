@@ -121,7 +121,7 @@ public:
 		HTSTATUS		= 3,
 		HTNIRVANA		= 0
 	};
-	CInfoPanel(_MessageWindowData *dat)
+	CInfoPanel(TWindowData *dat)
 	{
 		if(dat) {
 			m_dat = dat;
@@ -145,7 +145,7 @@ public:
 	bool						isActive					() const { return(m_active); }
 	bool						isPrivateHeight				() const { return(m_fPrivateHeight); }
 	DWORD						isHovered					() const { return(m_active ? m_hoverFlags : 0); }
-	const _MessageWindowData*	getDat						() const { return(m_dat); }
+	const TWindowData*	getDat						() const { return(m_dat); }
 	void						setActive					(const int newActive);
 	void						loadHeight					();
 	void						saveHeight					(bool fFlush = false);
@@ -165,7 +165,7 @@ public:
 
 public:
 	static						InfoPanelConfig m_ipConfig;
-	static int	 				setPanelHandler				(_MessageWindowData *dat, WPARAM wParam, LPARAM lParam);
+	static int	 				setPanelHandler				(TWindowData *dat, WPARAM wParam, LPARAM lParam);
 
 private:
 	void						mapRealRect					(const RECT& rcSrc, RECT& rcDest, const SIZE& sz);
@@ -184,7 +184,7 @@ private:
 	bool				m_isChat;											// is MUC session
 	bool				m_active;											// panel active and visible
 	bool				m_fPrivateHeight;
-	_MessageWindowData*	m_dat;												// this one OWNS us...
+	TWindowData*	m_dat;												// this one OWNS us...
 	LONG				m_height;											// height (determined by position of IDC_PANELSPLITTER)
 	LONG				m_defaultHeight, m_defaultMUCHeight;				// global values for the info bar height
 	HWND				m_hwndConfig;										// window handle of the config dialog window

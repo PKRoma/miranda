@@ -190,7 +190,7 @@ INT_PTR CALLBACK DlgProcPopupOpts(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPa
 			* fill the tree view
 			*/
 
-			LISTOPTIONSGROUP *lGroups = CTranslator::getGroupTree(CTranslator::TREE_NEN);
+			TOptionListGroup *lGroups = CTranslator::getGroupTree(CTranslator::TREE_NEN);
 
 			while (lGroups[i].szName != NULL) {
 				tvi.hParent = 0;
@@ -203,7 +203,7 @@ INT_PTR CALLBACK DlgProcPopupOpts(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPa
 			}
 			i = 0;
 
-			LISTOPTIONSITEM *defaultItems = CTranslator::getTree(CTranslator::TREE_NEN);
+			TOptionListItem *defaultItems = CTranslator::getTree(CTranslator::TREE_NEN);
 
 			while (defaultItems[i].szName != 0) {
 				tvi.hParent = (HTREEITEM)lGroups[defaultItems[i].uGroup].handle;
@@ -361,9 +361,9 @@ INT_PTR CALLBACK DlgProcPopupOpts(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPa
 				case PSN_APPLY: {
 					int i = 0;
 					TVITEM item = {0};
-					struct ContainerWindowData *pContainer = pFirstContainer;
+					struct TContainerData *pContainer = pFirstContainer;
 
-					LISTOPTIONSITEM *defaultItems = CTranslator::getTree(CTranslator::TREE_NEN);
+					TOptionListItem *defaultItems = CTranslator::getTree(CTranslator::TREE_NEN);
 
 					while (defaultItems[i].szName != NULL) {
 						item.mask = TVIF_HANDLE | TVIF_STATE;
@@ -768,7 +768,7 @@ static int TSAPI PopupPreview(NEN_OPTIONS *pluginOptions)
  * updates the menu entry...
  * bForced is used to only update the status, nickname etc. and does NOT update the unread count
  */
-void TSAPI UpdateTrayMenuState(struct _MessageWindowData *dat, BOOL bForced)
+void TSAPI UpdateTrayMenuState(struct TWindowData *dat, BOOL bForced)
 {
 	MENUITEMINFO	mii = {0};
 	TCHAR			szMenuEntry[80];
@@ -803,7 +803,7 @@ void TSAPI UpdateTrayMenuState(struct _MessageWindowData *dat, BOOL bForced)
  * if we want tray support, add the contact to the list of unread sessions in the tray menu
  */
 
-int TSAPI UpdateTrayMenu(const _MessageWindowData *dat, WORD wStatus, const char *szProto, const TCHAR *szStatus, HANDLE hContact, DWORD fromEvent)
+int TSAPI UpdateTrayMenu(const TWindowData *dat, WORD wStatus, const char *szProto, const TCHAR *szStatus, HANDLE hContact, DWORD fromEvent)
 {
 	if (PluginConfig.g_hMenuTrayUnread != 0 && hContact != 0 && szProto != NULL) {
 		TCHAR			szMenuEntry[80], *tszFinalProto = NULL;
@@ -875,7 +875,7 @@ int TSAPI UpdateTrayMenu(const _MessageWindowData *dat, WORD wStatus, const char
 }
 
 
-int tabSRMM_ShowPopup(WPARAM wParam, LPARAM lParam, WORD eventType, int windowOpen, struct ContainerWindowData *pContainer, HWND hwndChild, const char *szProto, struct _MessageWindowData *dat)
+int tabSRMM_ShowPopup(WPARAM wParam, LPARAM lParam, WORD eventType, int windowOpen, struct TContainerData *pContainer, HWND hwndChild, const char *szProto, struct TWindowData *dat)
 {
 	int heFlags;
 

@@ -40,7 +40,7 @@
 extern      NEN_OPTIONS nen_options;
 extern      LOGFONTA logfonts[MSGDLGFONTCOUNT + 2];
 extern      COLORREF fontcolors[MSGDLGFONTCOUNT + 2];
-extern      TemplateSet LTR_Active, RTL_Active;
+extern      TTemplateSet LTR_Active, RTL_Active;
 
 #ifndef SHVIEW_THUMBNAIL
 #define SHVIEW_THUMBNAIL 0x702D
@@ -85,7 +85,7 @@ BOOL TSAPI IsStatusEvent(int eventType)
  * contacts db record (if so, the container will try to open the tab at the saved position later)
  */
 
-void TSAPI RearrangeTab(HWND hwndDlg, const _MessageWindowData *dat, int iMode, BOOL fSavePos)
+void TSAPI RearrangeTab(HWND hwndDlg, const TWindowData *dat, int iMode, BOOL fSavePos)
 {
 	TCITEM item = {0};
 	HWND hwndTab = GetParent(hwndDlg);
@@ -145,7 +145,7 @@ static BOOL CALLBACK OpenFileSubclass(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
  * requires AVS and ADVAIMG services (Miranda 0.7+)
  */
 
-static void SaveAvatarToFile(_MessageWindowData *dat, HBITMAP hbm, int isOwnPic)
+static void SaveAvatarToFile(TWindowData *dat, HBITMAP hbm, int isOwnPic)
 {
 	TCHAR szFinalPath[MAX_PATH];
 	TCHAR szFinalFilename[MAX_PATH];
@@ -230,7 +230,7 @@ static void SaveAvatarToFile(_MessageWindowData *dat, HBITMAP hbm, int isOwnPic)
  * store flashing state into bState
  */
 
-void TSAPI FlashTab(struct _MessageWindowData *dat, HWND hwndTab, int iTabindex, BOOL *bState, BOOL mode, HICON origImage)
+void TSAPI FlashTab(struct TWindowData *dat, HWND hwndTab, int iTabindex, BOOL *bState, BOOL mode, HICON origImage)
 {
 	TCITEM item;
 
@@ -252,7 +252,7 @@ void TSAPI FlashTab(struct _MessageWindowData *dat, HWND hwndTab, int iTabindex,
  * for the avatar w/o disturbing the toolbar too much.
  */
 
-void TSAPI CalcDynamicAvatarSize(_MessageWindowData *dat, BITMAP *bminfo)
+void TSAPI CalcDynamicAvatarSize(TWindowData *dat, BITMAP *bminfo)
 {
 	RECT rc;
 	double aspect = 0, newWidth = 0, picAspect = 0;
@@ -310,7 +310,7 @@ void TSAPI CalcDynamicAvatarSize(_MessageWindowData *dat, BITMAP *bminfo)
 	dat->pic.cx = (int)newWidth + 2;
 }
 
-void TSAPI WriteStatsOnClose(_MessageWindowData *dat)
+void TSAPI WriteStatsOnClose(TWindowData *dat)
 {
 	/*
 	DBEVENTINFO dbei;
@@ -339,7 +339,7 @@ void TSAPI WriteStatsOnClose(_MessageWindowData *dat)
 	*/
 }
 
-int TSAPI MsgWindowUpdateMenu(_MessageWindowData *dat, HMENU submenu, int menuID)
+int TSAPI MsgWindowUpdateMenu(TWindowData *dat, HMENU submenu, int menuID)
 {
 	HWND	hwndDlg = dat->hwnd;
 	bool 	fInfoPanel = dat->Panel->isActive();
@@ -392,7 +392,7 @@ int TSAPI MsgWindowUpdateMenu(_MessageWindowData *dat, HMENU submenu, int menuID
 	return 0;
 }
 
-int TSAPI MsgWindowMenuHandler(_MessageWindowData *dat, int selection, int menuId)
+int TSAPI MsgWindowMenuHandler(TWindowData *dat, int selection, int menuId)
 {
 	if(dat == 0)
 		return(0);
@@ -539,7 +539,7 @@ int TSAPI MsgWindowMenuHandler(_MessageWindowData *dat, int selection, int menuI
  * and various indicators (caps lock, num lock, insert mode).
  */
 
-void TSAPI UpdateReadChars(const _MessageWindowData *dat)
+void TSAPI UpdateReadChars(const TWindowData *dat)
 {
 
 	if(dat && (dat->pContainer->hwndStatus && dat->pContainer->hwndActive == dat->hwnd)) {
@@ -589,7 +589,7 @@ void TSAPI UpdateReadChars(const _MessageWindowData *dat)
  * update all status bar fields and force a redraw of the status bar.
  */
 
-void TSAPI UpdateStatusBar(const _MessageWindowData *dat)
+void TSAPI UpdateStatusBar(const TWindowData *dat)
 {
 	if (dat && dat->pContainer->hwndStatus && dat->pContainer->hwndActive == dat->hwnd) {
 		if (dat->bType == SESSIONTYPE_IM) {
@@ -618,7 +618,7 @@ void TSAPI UpdateStatusBar(const _MessageWindowData *dat)
  * MTN handler.
  */
 
-void TSAPI HandleIconFeedback(_MessageWindowData *dat, HICON iIcon)
+void TSAPI HandleIconFeedback(TWindowData *dat, HICON iIcon)
 {
 	TCITEM item = {0};
 	HICON iOldIcon = dat->hTabIcon;
@@ -644,7 +644,7 @@ void TSAPI HandleIconFeedback(_MessageWindowData *dat, HICON iIcon)
  * and local mode
  */
 
-int TSAPI GetAvatarVisibility(HWND hwndDlg, struct _MessageWindowData *dat)
+int TSAPI GetAvatarVisibility(HWND hwndDlg, struct TWindowData *dat)
 {
 	BYTE bAvatarMode = dat->pContainer->avatarMode;
 	BYTE bOwnAvatarMode = dat->pContainer->ownAvatarMode;
@@ -871,7 +871,7 @@ TCHAR* TSAPI QuoteText(const TCHAR *text, int charsPerLine, int removeExistingQu
 }
 
 
-void TSAPI AdjustBottomAvatarDisplay(_MessageWindowData *dat)
+void TSAPI AdjustBottomAvatarDisplay(TWindowData *dat)
 {
 	if(dat) {
 		bool fInfoPanel = dat->Panel->isActive();
@@ -923,7 +923,7 @@ void TSAPI AdjustBottomAvatarDisplay(_MessageWindowData *dat)
 	}
 }
 
-void TSAPI ShowPicture(_MessageWindowData *dat, BOOL showNewPic)
+void TSAPI ShowPicture(TWindowData *dat, BOOL showNewPic)
 {
 	DBVARIANT 	dbv = {0};
 	RECT 		rc;
@@ -959,7 +959,7 @@ void TSAPI ShowPicture(_MessageWindowData *dat, BOOL showNewPic)
 	SendMessage(dat->pContainer->hwnd, DM_REPORTMINHEIGHT, (WPARAM) hwndDlg, (LPARAM) dat->uMinHeight);
 }
 
-void TSAPI FlashOnClist(HWND hwndDlg, struct _MessageWindowData *dat, HANDLE hEvent, DBEVENTINFO *dbei)
+void TSAPI FlashOnClist(HWND hwndDlg, struct TWindowData *dat, HANDLE hEvent, DBEVENTINFO *dbei)
 {
 	CLISTEVENT cle;
 
@@ -1020,7 +1020,7 @@ static DWORD CALLBACK Message_StreamCallback(DWORD_PTR dwCookie, LPBYTE pbBuff, 
  * UNICODE version returns UTF-8 encoded string.
  */
 
-char* TSAPI Message_GetFromStream(HWND hwndRtf, const _MessageWindowData* dat, DWORD dwPassedFlags)
+char* TSAPI Message_GetFromStream(HWND hwndRtf, const TWindowData* dat, DWORD dwPassedFlags)
 {
 	EDITSTREAM stream;
 	char *pszText = NULL;
@@ -1053,7 +1053,7 @@ char* TSAPI Message_GetFromStream(HWND hwndRtf, const _MessageWindowData* dat, D
  * tags and return plain text
  */
 
-BOOL TSAPI DoRtfToTags(TCHAR * pszText, const _MessageWindowData *dat)
+BOOL TSAPI DoRtfToTags(TCHAR * pszText, const TWindowData *dat)
 {
 	TCHAR * p1;
 	BOOL bJustRemovedRTF = TRUE;
@@ -1303,7 +1303,7 @@ void TSAPI DoTrimMessage(TCHAR *msg)
  * respects metacontacts and uses the current protocol if the contact is a MC
  */
 
-void TSAPI GetMYUIN(_MessageWindowData *dat)
+void TSAPI GetMYUIN(TWindowData *dat)
 {
 	CONTACTINFO ci;
 	ZeroMemory((void *)&ci, sizeof(ci));
@@ -1358,7 +1358,7 @@ UINT TSAPI GetIEViewMode(HWND hwndDlg, HANDLE hContact)
 	return iWantHPP ? WANT_HPP_LOG : (iWantIEView ? WANT_IEVIEW_LOG : 0);
 }
 
-static void CheckAndDestroyHPP(struct _MessageWindowData *dat)
+static void CheckAndDestroyHPP(struct TWindowData *dat)
 {
 	if (dat->hwndHPP) {
 		IEVIEWWINDOW ieWindow;
@@ -1376,7 +1376,7 @@ static void CheckAndDestroyHPP(struct _MessageWindowData *dat)
 	}
 }
 
-void TSAPI CheckAndDestroyIEView(_MessageWindowData *dat)
+void TSAPI CheckAndDestroyIEView(TWindowData *dat)
 {
 	if (dat->hwndIEView) {
 		IEVIEWWINDOW ieWindow;
@@ -1393,7 +1393,7 @@ void TSAPI CheckAndDestroyIEView(_MessageWindowData *dat)
 	}
 }
 
-void TSAPI SetMessageLog(_MessageWindowData *dat)
+void TSAPI SetMessageLog(TWindowData *dat)
 {
 	HWND		 hwndDlg = dat->hwnd;
 	unsigned int iLogMode = GetIEViewMode(hwndDlg, dat->hContact);
@@ -1446,7 +1446,7 @@ void TSAPI SetMessageLog(_MessageWindowData *dat)
 	}
 }
 
-void TSAPI SwitchMessageLog(_MessageWindowData *dat, int iMode)
+void TSAPI SwitchMessageLog(TWindowData *dat, int iMode)
 {
 	HWND hwndDlg = dat->hwnd;
 
@@ -1475,7 +1475,7 @@ void TSAPI SwitchMessageLog(_MessageWindowData *dat, int iMode)
 	}
 }
 
-void TSAPI FindFirstEvent(_MessageWindowData *dat)
+void TSAPI FindFirstEvent(TWindowData *dat)
 {
 	int historyMode = (int)M->GetByte(dat->hContact, SRMSGMOD, SRMSGSET_LOADHISTORY, -1);
 	if (historyMode == -1)
@@ -1545,7 +1545,7 @@ void TSAPI FindFirstEvent(_MessageWindowData *dat)
 	}
 }
 
-void TSAPI SaveSplitter(_MessageWindowData *dat)
+void TSAPI SaveSplitter(TWindowData *dat)
 {
 	/*
 	 * group chats save their normal splitter position independently
@@ -1567,7 +1567,7 @@ void TSAPI SaveSplitter(_MessageWindowData *dat)
 	}
 }
 
-void TSAPI LoadSplitter(_MessageWindowData *dat)
+void TSAPI LoadSplitter(TWindowData *dat)
 {
 	if (!(dat->dwFlagsEx & MWF_SHOW_SPLITTEROVERRIDE))
 		if(!dat->pContainer->settings->fPrivate)
@@ -1581,7 +1581,7 @@ void TSAPI LoadSplitter(_MessageWindowData *dat)
 		dat->splitterY = 150;
 }
 
-void TSAPI PlayIncomingSound(const _MessageWindowData *dat)
+void TSAPI PlayIncomingSound(const TWindowData *dat)
 {
 	int iPlay = Utils::mustPlaySound(dat);
 
@@ -1598,7 +1598,7 @@ void TSAPI PlayIncomingSound(const _MessageWindowData *dat)
  * if mode == 0, int only configures the buttons and does not change send format
  */
 
-void TSAPI GetSendFormat(_MessageWindowData *dat, int mode)
+void TSAPI GetSendFormat(TWindowData *dat, int mode)
 {
 	UINT controls[5] = {IDC_FONTBOLD, IDC_FONTITALIC, IDC_FONTUNDERLINE,IDC_FONTSTRIKEOUT, IDC_FONTFACE};
 	int i;
@@ -1619,7 +1619,7 @@ void TSAPI GetSendFormat(_MessageWindowData *dat, int mode)
  * get 2-digit locale id from current keyboard layout
  */
 
-void TSAPI GetLocaleID(_MessageWindowData *dat, const TCHAR *szKLName)
+void TSAPI GetLocaleID(TWindowData *dat, const TCHAR *szKLName)
 {
 	TCHAR szLI[20], *stopped = NULL;
 	USHORT langID;
@@ -1666,7 +1666,7 @@ void TSAPI GetLocaleID(_MessageWindowData *dat, const TCHAR *szKLName)
 	}
 }
 
-void TSAPI LoadContactAvatar(_MessageWindowData *dat)
+void TSAPI LoadContactAvatar(TWindowData *dat)
 {
 	if (ServiceExists(MS_AV_GETAVATARBITMAP) && dat)
 		dat->ace = (AVATARCACHEENTRY *)CallService(MS_AV_GETAVATARBITMAP, (WPARAM)dat->hContact, 0);
@@ -1691,7 +1691,7 @@ void TSAPI LoadContactAvatar(_MessageWindowData *dat)
 	}
 }
 
-void TSAPI LoadOwnAvatar(_MessageWindowData *dat)
+void TSAPI LoadOwnAvatar(TWindowData *dat)
 {
 	AVATARCACHEENTRY *ace = NULL;
 
@@ -1716,7 +1716,7 @@ void TSAPI LoadOwnAvatar(_MessageWindowData *dat)
 	}
 }
 
-void TSAPI LoadTimeZone(_MessageWindowData *dat)
+void TSAPI LoadTimeZone(TWindowData *dat)
 {
 	if(ServiceExists("TZ/GetInfoByContact")) {
 		MIM_TIMEZONE  *tzi;
@@ -1739,7 +1739,7 @@ void TSAPI LoadTimeZone(_MessageWindowData *dat)
  * paste contents of the clipboard into the message input area and send it immediately
  */
 
-void TSAPI HandlePasteAndSend(const _MessageWindowData *dat)
+void TSAPI HandlePasteAndSend(const TWindowData *dat)
 {
 	UINT ctrlID = dat->bType == SESSIONTYPE_IM ? IDC_MESSAGE : IDC_CHAT_MESSAGE;
 
@@ -1758,7 +1758,7 @@ void TSAPI HandlePasteAndSend(const _MessageWindowData *dat)
  * and the color formatting menu
  */
 
-int TSAPI MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, _MessageWindowData *dat)
+int TSAPI MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, TWindowData *dat)
 {
 	LPDRAWITEMSTRUCT dis = (LPDRAWITEMSTRUCT) lParam;
 
@@ -2183,12 +2183,12 @@ int TSAPI MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, _Mess
 	return CallService(MS_CLIST_MENUDRAWITEM, wParam, lParam);
 }
 
-void TSAPI LoadThemeDefaults(ContainerWindowData *pContainer)
+void TSAPI LoadThemeDefaults(TContainerData *pContainer)
 {
 	int 		i;
 	char 		szTemp[40];
 	COLORREF 	colour;
-	ZeroMemory(&pContainer->theme, sizeof(MessageWindowTheme));
+	ZeroMemory(&pContainer->theme, sizeof(TLogTheme));
 
 	pContainer->theme.statbg = PluginConfig.crStatus;
 	pContainer->theme.oldinbg = PluginConfig.crOldIncoming;
@@ -2217,9 +2217,9 @@ void TSAPI LoadThemeDefaults(ContainerWindowData *pContainer)
 	pContainer->theme.isPrivate = false;
 }
 
-void TSAPI LoadOverrideTheme(ContainerWindowData *pContainer)
+void TSAPI LoadOverrideTheme(TContainerData *pContainer)
 {
-	ZeroMemory(&pContainer->theme, sizeof(MessageWindowTheme));
+	ZeroMemory(&pContainer->theme, sizeof(TLogTheme));
 
 	BOOL bReadTemplates = TRUE; //((pContainer->ltr_templates == NULL) || (pContainer->rtl_templates == NULL) ||
 								   //(pContainer->logFonts == NULL) || (pContainer->fontColors == NULL));
@@ -2231,12 +2231,12 @@ void TSAPI LoadOverrideTheme(ContainerWindowData *pContainer)
 				return;
 			}
 			if (pContainer->ltr_templates == NULL) {
-				pContainer->ltr_templates = (TemplateSet *)malloc(sizeof(TemplateSet));
-				CopyMemory(pContainer->ltr_templates, &LTR_Active, sizeof(TemplateSet));
+				pContainer->ltr_templates = (TTemplateSet *)malloc(sizeof(TTemplateSet));
+				CopyMemory(pContainer->ltr_templates, &LTR_Active, sizeof(TTemplateSet));
 			}
 			if (pContainer->rtl_templates == NULL) {
-				pContainer->rtl_templates = (TemplateSet *)malloc(sizeof(TemplateSet));
-				CopyMemory(pContainer->rtl_templates, &RTL_Active, sizeof(TemplateSet));
+				pContainer->rtl_templates = (TTemplateSet *)malloc(sizeof(TTemplateSet));
+				CopyMemory(pContainer->rtl_templates, &RTL_Active, sizeof(TTemplateSet));
 			}
 
 			pContainer->theme.logFonts = (LOGFONTA *)malloc(sizeof(LOGFONTA) * (MSGDLGFONTCOUNT + 2));
@@ -2253,7 +2253,7 @@ void TSAPI LoadOverrideTheme(ContainerWindowData *pContainer)
 	LoadThemeDefaults(pContainer);
 }
 
-void TSAPI ConfigureSmileyButton(_MessageWindowData *dat)
+void TSAPI ConfigureSmileyButton(TWindowData *dat)
 {
 	HWND  hwndDlg = dat->hwnd;
 	int nrSmileys = 0;
@@ -2272,7 +2272,7 @@ void TSAPI ConfigureSmileyButton(_MessageWindowData *dat)
 	Utils::enableDlgControl(hwndDlg, iItemID, dat->doSmileys ? TRUE : FALSE);
 }
 
-HICON TSAPI GetXStatusIcon(const _MessageWindowData *dat)
+HICON TSAPI GetXStatusIcon(const TWindowData *dat)
 {
 	char szServiceName[128];
 	BYTE xStatus = dat->cache->getXStatusId();
@@ -2294,7 +2294,7 @@ LRESULT TSAPI GetSendButtonState(HWND hwnd)
 		return 0;
 }
 
-void TSAPI EnableSendButton(const _MessageWindowData *dat, int iMode)
+void TSAPI EnableSendButton(const TWindowData *dat, int iMode)
 {
 	HWND hwndOK;
 	SendMessage(GetDlgItem(dat->hwnd, IDOK), BUTTONSETASFLATBTN + 14, iMode, 0);
@@ -2306,7 +2306,7 @@ void TSAPI EnableSendButton(const _MessageWindowData *dat, int iMode)
 		SendMessage(hwndOK, BUTTONSETASFLATBTN + 14, iMode, 0);
 }
 
-void TSAPI SendNudge(const _MessageWindowData *dat)
+void TSAPI SendNudge(const TWindowData *dat)
 {
 	char szServiceName[128];
 
@@ -2318,7 +2318,7 @@ void TSAPI SendNudge(const _MessageWindowData *dat)
 					(LPARAM)CTranslator::get(CTranslator::GEN_WARNING_NUDGE_DISABLED));
 }
 
-void TSAPI GetClientIcon(_MessageWindowData *dat)
+void TSAPI GetClientIcon(TWindowData *dat)
 {
 	DBVARIANT dbv = {0};
 
@@ -2333,7 +2333,7 @@ void TSAPI GetClientIcon(_MessageWindowData *dat)
 		}
 	}
 }
-void TSAPI GetMaxMessageLength(_MessageWindowData *dat)
+void TSAPI GetMaxMessageLength(TWindowData *dat)
 {
 	HANDLE 	hContact;
 	const 	char*		szProto;
@@ -2358,7 +2358,7 @@ void TSAPI GetMaxMessageLength(_MessageWindowData *dat)
 	}
 }
 
-void TSAPI GetMyNick(_MessageWindowData *dat)
+void TSAPI GetMyNick(TWindowData *dat)
 {
 	CONTACTINFO ci;
 
@@ -2395,12 +2395,12 @@ void TSAPI GetMyNick(_MessageWindowData *dat)
 		mir_free(ci.pszVal);
 }
 
-HICON TSAPI MY_GetContactIcon(const _MessageWindowData *dat)
+HICON TSAPI MY_GetContactIcon(const TWindowData *dat)
 {
 	return(LoadSkinnedProtoIcon(dat->cache->getActiveProto(), dat->cache->getActiveStatus()));
 }
 
-static void TSAPI MTH_updatePreview(const _MessageWindowData *dat)
+static void TSAPI MTH_updatePreview(const TWindowData *dat)
 {
 	TMathWindowInfo mathWndInfo;
 	HWND hwndEdit = GetDlgItem(dat->hwnd, dat->bType == SESSIONTYPE_IM ? IDC_MESSAGE : IDC_CHAT_MESSAGE);
@@ -2420,7 +2420,7 @@ static void TSAPI MTH_updatePreview(const _MessageWindowData *dat)
 	free(thestr);
 }
 
-void TSAPI MTH_updateMathWindow(const _MessageWindowData *dat)
+void TSAPI MTH_updateMathWindow(const TWindowData *dat)
 {
 	WINDOWPLACEMENT cWinPlace;
 
@@ -2437,7 +2437,7 @@ void TSAPI MTH_updateMathWindow(const _MessageWindowData *dat)
 /**
  * read keyboard state and return the state of the modifier keys
  */
-void TSAPI KbdState(_MessageWindowData *dat, BOOL& isShift, BOOL& isControl, BOOL& isAlt)
+void TSAPI KbdState(TWindowData *dat, BOOL& isShift, BOOL& isControl, BOOL& isAlt)
 {
 	GetKeyboardState(dat->kstate);
 	isShift = (dat->kstate[VK_SHIFT] & 0x80);
@@ -2449,7 +2449,7 @@ void TSAPI KbdState(_MessageWindowData *dat, BOOL& isShift, BOOL& isControl, BOO
  * clear the message log
  * code needs to distuingish between IM and MUC sessions.
  */
-void TSAPI ClearLog(_MessageWindowData *dat)
+void TSAPI ClearLog(TWindowData *dat)
 {
 	if(dat && dat->bType == SESSIONTYPE_IM) {
 		if (dat->hwndIEView || dat->hwndHPP) {

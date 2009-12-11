@@ -362,13 +362,13 @@ TCHAR* CTranslator::m_OptStrings[OPT_LAST] = {
 TCHAR* CTranslator::m_translated[STR_LAST];
 TCHAR* CTranslator::m_OptTranslated[OPT_LAST];
 
-LISTOPTIONSGROUP CTranslator::m_lvGroupsModPlus[] = {
+TOptionListGroup CTranslator::m_lvGroupsModPlus[] = {
 	0, LPGENT("Message window tweaks"),
 	0, LPGENT("Error feedback"),
 	0, NULL
 };
 
-LISTOPTIONSITEM CTranslator::m_lvItemsModPlus[] = {
+TOptionListItem CTranslator::m_lvItemsModPlus[] = {
 	0, LPGENT("Enable image tag button (*)"), 0, LOI_TYPE_SETTING, (UINT_PTR)"adv_IMGtagButton", 0,
 	0, LPGENT("Show client icon in status bar (fingerprint plugin required)"), 0, LOI_TYPE_SETTING, (UINT_PTR)"adv_ClientIconInStatusBar", 0,
 	0, LPGENT("Enable typing sounds"), 0, LOI_TYPE_SETTING, (UINT_PTR)"adv_soundontyping", 0,
@@ -383,7 +383,7 @@ LISTOPTIONSITEM CTranslator::m_lvItemsModPlus[] = {
 	0, NULL, 0, 0, 0, 0
 };
 
-LISTOPTIONSITEM CTranslator::m_lvItemsNEN [] = {
+TOptionListItem CTranslator::m_lvItemsNEN [] = {
 	0, LPGENT("Show a preview of the event"), IDC_CHKPREVIEW, LOI_TYPE_SETTING, (UINT_PTR)&nen_options.bPreview, 1,
 	0, LPGENT("Don't announce event when message dialog is open"), IDC_CHKWINDOWCHECK, LOI_TYPE_SETTING, (UINT_PTR)&nen_options.bWindowCheck, 1,
 	0, LPGENT("Don't announce events from RSS protocols"), IDC_NORSS, LOI_TYPE_SETTING, (UINT_PTR)&nen_options.bNoRSS, 1,
@@ -414,7 +414,7 @@ LISTOPTIONSITEM CTranslator::m_lvItemsNEN [] = {
 	0, NULL, 0, 0, 0, 0
 };
 
-LISTOPTIONSGROUP CTranslator::m_lvGroupsNEN[] = {
+TOptionListGroup CTranslator::m_lvGroupsNEN[] = {
 	0, LPGENT("Disable notifications"),
 	0, LPGENT("General options"),
 	0, LPGENT("System tray icon"),
@@ -426,14 +426,14 @@ LISTOPTIONSGROUP CTranslator::m_lvGroupsNEN[] = {
 	0, NULL
 };
 
-LISTOPTIONSGROUP CTranslator::m_lvGroupsMsg[] = {
+TOptionListGroup CTranslator::m_lvGroupsMsg[] = {
 	0, LPGENT("Message window behaviour"),
 	0, LPGENT("Sending messages"),
 	0, LPGENT("Other options"),
 	0, NULL
 };
 
-LISTOPTIONSITEM CTranslator::m_lvItemsMsg[] = {
+TOptionListItem CTranslator::m_lvItemsMsg[] = {
 	0, LPGENT("Send on SHIFT - Enter"), 0, LOI_TYPE_SETTING, (UINT_PTR)"sendonshiftenter", 1,
 	0, LPGENT("Send message on 'Enter'"), SRMSGDEFSET_SENDONENTER, LOI_TYPE_SETTING, (UINT_PTR)SRMSGSET_SENDONENTER, 1,
 	0, LPGENT("Send message on double 'Enter'"), 0, LOI_TYPE_SETTING, (UINT_PTR)"SendOnDblEnter", 1,
@@ -448,7 +448,7 @@ LISTOPTIONSITEM CTranslator::m_lvItemsMsg[] = {
 	0, NULL, 0, 0, 0, 0
 };
 
-LISTOPTIONSGROUP CTranslator::m_lvGroupsLog[] = {
+TOptionListGroup CTranslator::m_lvGroupsLog[] = {
 	0, LPGENT("Message log appearance"),
 	0, LPGENT("Support for external plugins"),
 	0, LPGENT("Other options"),
@@ -458,7 +458,7 @@ LISTOPTIONSGROUP CTranslator::m_lvGroupsLog[] = {
 	0, NULL
 };
 
-LISTOPTIONSITEM CTranslator::m_lvItemsLog[] = {
+TOptionListItem CTranslator::m_lvItemsLog[] = {
 	0, LPGENT("Show file events"), 1, LOI_TYPE_SETTING, (UINT_PTR)SRMSGSET_SHOWFILES, 3,
 	0, LPGENT("Show timestamps"), 1, LOI_TYPE_FLAG, (UINT_PTR)MWF_LOG_SHOWTIME, 4,
 	0, LPGENT("Show dates in timestamps"), 1, LOI_TYPE_FLAG, (UINT_PTR)MWF_LOG_SHOWDATES, 4,
@@ -488,7 +488,7 @@ LISTOPTIONSITEM CTranslator::m_lvItemsLog[] = {
 	0, NULL, 0, 0, 0, 0
 };
 
-LISTOPTIONSGROUP CTranslator::m_lvGroupsTab[] = {
+TOptionListGroup CTranslator::m_lvGroupsTab[] = {
 	0, LPGENT("Tab options"),
 	0, LPGENT("How to create tabs and windows for incoming messages"),
 	0, LPGENT("Message dialog visual settings"),
@@ -496,7 +496,7 @@ LISTOPTIONSGROUP CTranslator::m_lvGroupsTab[] = {
 	0, NULL
 };
 
-LISTOPTIONSITEM CTranslator::m_lvItemsTab[] = {
+TOptionListItem CTranslator::m_lvItemsTab[] = {
 	0, LPGENT("Show status text on tabs"), 1, LOI_TYPE_SETTING, (UINT_PTR)"tabstatus", 0,
 	0, LPGENT("Prefer xStatus icons when available"), 1, LOI_TYPE_SETTING, (UINT_PTR)"use_xicons", 0,
 	0, LPGENT("Warn when closing a tab or window"), 0, LOI_TYPE_SETTING, (UINT_PTR)"warnonexit", 0,
@@ -519,7 +519,7 @@ LISTOPTIONSITEM CTranslator::m_lvItemsTab[] = {
 };
 
 
-LISTOPTIONSITEM* CTranslator::getTree(UINT id)
+TOptionListItem* CTranslator::getTree(UINT id)
 {
 	switch(id) {
 		case TREE_MODPLUS:
@@ -537,7 +537,7 @@ LISTOPTIONSITEM* CTranslator::getTree(UINT id)
 	}
 }
 
-LISTOPTIONSGROUP* CTranslator::getGroupTree(UINT id)
+TOptionListGroup* CTranslator::getGroupTree(UINT id)
 {
 	switch(id) {
 		case TREE_MODPLUS:
@@ -555,7 +555,7 @@ LISTOPTIONSGROUP* CTranslator::getGroupTree(UINT id)
 	}
 }
 
-void CTranslator::translateGroupTree(LISTOPTIONSGROUP *lvGroup)
+void CTranslator::translateGroupTree(TOptionListGroup *lvGroup)
 {
 	UINT	i = 0;
 
@@ -565,7 +565,7 @@ void CTranslator::translateGroupTree(LISTOPTIONSGROUP *lvGroup)
 	}
 }
 
-void CTranslator::translateOptionTree(LISTOPTIONSITEM *lvItems)
+void CTranslator::translateOptionTree(TOptionListItem *lvItems)
 {
 	UINT	i = 0;
 

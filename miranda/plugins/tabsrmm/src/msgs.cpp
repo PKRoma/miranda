@@ -46,9 +46,9 @@ HMODULE 			g_hIconDLL = 0;
 static void 	UnloadIcons();
 
 extern INT_PTR 	CALLBACK 		DlgProcUserPrefsFrame(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
-extern struct 	MsgLogIcon 		msgLogIcons[NR_LOGICONS * 3];
-extern int 		CacheIconToBMP	(struct MsgLogIcon *theIcon, HICON hIcon, COLORREF backgroundColor, int sizeX, int sizeY);
-extern void 	DeleteCachedIcon(struct MsgLogIcon *theIcon);
+extern struct 	TLogIcon 		msgLogIcons[NR_LOGICONS * 3];
+extern int 		CacheIconToBMP	(struct TLogIcon *theIcon, HICON hIcon, COLORREF backgroundColor, int sizeX, int sizeY);
+extern void 	DeleteCachedIcon(struct TLogIcon *theIcon);
 
 int     Chat_IconsChanged(WPARAM wp, LPARAM lp);
 void    Chat_AddIcons(void);
@@ -177,7 +177,7 @@ static INT_PTR GetMessageWindowFlags(WPARAM wParam, LPARAM lParam)
 		hwndTarget = M->FindWindow((HANDLE)wParam);
 
 	if (hwndTarget) {
-		struct _MessageWindowData *dat = (struct _MessageWindowData *)GetWindowLongPtr(hwndTarget, GWLP_USERDATA);
+		struct TWindowData *dat = (struct TWindowData *)GetWindowLongPtr(hwndTarget, GWLP_USERDATA);
 		if (dat)
 			return (dat->dwFlags);
 		else
@@ -211,7 +211,7 @@ static INT_PTR GetWindowAPI(WPARAM wParam, LPARAM lParam)
 INT_PTR MessageWindowOpened(WPARAM wParam, LPARAM lParam)
 {
 	HWND hwnd = 0;
-	struct ContainerWindowData *pContainer = NULL;
+	struct TContainerData *pContainer = NULL;
 
 	if (wParam)
 		hwnd = M->FindWindow((HANDLE)wParam);
@@ -253,7 +253,7 @@ static INT_PTR ReadMessageCommand(WPARAM wParam, LPARAM lParam)
 {
 	HWND hwndExisting;
 	HANDLE hContact = ((CLISTEVENT *) lParam)->hContact;
-	struct ContainerWindowData *pContainer = 0;
+	struct TContainerData *pContainer = 0;
 
 	hwndExisting = M->FindWindow(hContact);
 
@@ -282,10 +282,10 @@ INT_PTR SendMessageCommand_W(WPARAM wParam, LPARAM lParam)
 {
 	HWND hwnd;
 	char *szProto;
-	struct NewMessageWindowLParam newData = {
+	struct TNewWindowData newData = {
 		0
 	};
-	struct ContainerWindowData *pContainer = 0;
+	struct TContainerData *pContainer = 0;
 	int isSplit = 1;
 
 	/*
@@ -346,10 +346,10 @@ INT_PTR SendMessageCommand(WPARAM wParam, LPARAM lParam)
 {
 	HWND hwnd;
 	char *szProto;
-	struct NewMessageWindowLParam newData = {
+	struct TNewWindowData newData = {
 		0
 	};
-	struct ContainerWindowData *pContainer = 0;
+	struct TContainerData *pContainer = 0;
 	int isSplit = 1;
 
 	if (GetCurrentThreadId() != PluginConfig.dwThreadID) {
@@ -445,7 +445,7 @@ int SplitmsgShutdown(void)
 
 int MyAvatarChanged(WPARAM wParam, LPARAM lParam)
 {
-	struct ContainerWindowData *pContainer = pFirstContainer;
+	struct TContainerData *pContainer = pFirstContainer;
 
 	if (wParam == 0 || IsBadReadPtr((void *)wParam, 4))
 		return 0;
@@ -467,7 +467,7 @@ int AvatarChanged(WPARAM wParam, LPARAM lParam)
 		return 0;
 	}
 	if (hwnd) {
-		struct _MessageWindowData *dat = (struct _MessageWindowData *)GetWindowLongPtr(hwnd, GWLP_USERDATA);
+		struct TWindowData *dat = (struct TWindowData *)GetWindowLongPtr(hwnd, GWLP_USERDATA);
 		if (dat) {
 			dat->ace = ace;
 			if(dat->hTaskbarIcon)
@@ -646,12 +646,12 @@ STDMETHODIMP REOLECallback::GetNewStorage(LPSTORAGE FAR *lplpstg)
  * hwnd of a message dialog window)
  */
 
-int TSAPI ActivateExistingTab(ContainerWindowData *pContainer, HWND hwndChild)
+int TSAPI ActivateExistingTab(TContainerData *pContainer, HWND hwndChild)
 {
-	struct _MessageWindowData *dat = 0;
+	struct TWindowData *dat = 0;
 	NMHDR nmhdr;
 
-	dat = (struct _MessageWindowData *) GetWindowLongPtr(hwndChild, GWLP_USERDATA);	// needed to obtain the hContact for the message window
+	dat = (struct TWindowData *) GetWindowLongPtr(hwndChild, GWLP_USERDATA);	// needed to obtain the hContact for the message window
 	if (dat && pContainer) {
 		ZeroMemory((void *)&nmhdr, sizeof(nmhdr));
 		nmhdr.code = TCN_SELCHANGE;
@@ -700,7 +700,7 @@ int TSAPI ActivateExistingTab(ContainerWindowData *pContainer, HWND hwndChild)
  * bPopupContainer: restore container if it was minimized, otherwise flash it...
  */
 
-HWND TSAPI CreateNewTabForContact(struct ContainerWindowData *pContainer, HANDLE hContact, int isSend, const char *pszInitialText, BOOL bActivateTab, BOOL bPopupContainer, BOOL bWantPopup, HANDLE hdbEvent)
+HWND TSAPI CreateNewTabForContact(struct TContainerData *pContainer, HANDLE hContact, int isSend, const char *pszInitialText, BOOL bActivateTab, BOOL bPopupContainer, BOOL bWantPopup, HANDLE hdbEvent)
 {
 	TCHAR 	*contactName = NULL, newcontactname[128], *szStatus, tabtitle[128];
 	char 	*szProto = NULL;
@@ -708,7 +708,7 @@ HWND TSAPI CreateNewTabForContact(struct ContainerWindowData *pContainer, HANDLE
 	int		newItem;
 	HWND 	hwndNew = 0;
 	HWND 	hwndTab;
-	struct 	NewMessageWindowLParam newData = {0};
+	struct 	TNewWindowData newData = {0};
 	DBVARIANT dbv = {0};
 
 	if (M->FindWindow(hContact) != 0) {
@@ -774,7 +774,7 @@ HWND TSAPI CreateNewTabForContact(struct ContainerWindowData *pContainer, HANDLE
 		int iCount = TabCtrl_GetItemCount(hwndTab);
 		TCITEM item = {0};
 		HWND hwnd;
-		struct _MessageWindowData *dat;
+		struct TWindowData *dat;
 		int relPos;
 		int i;
 
@@ -784,7 +784,7 @@ HWND TSAPI CreateNewTabForContact(struct ContainerWindowData *pContainer, HANDLE
 				item.mask = TCIF_PARAM;
 				TabCtrl_GetItem(hwndTab, i, &item);
 				hwnd = (HWND)item.lParam;
-				dat = (struct _MessageWindowData *)GetWindowLongPtr(hwnd, GWLP_USERDATA);
+				dat = (struct TWindowData *)GetWindowLongPtr(hwnd, GWLP_USERDATA);
 				if (dat) {
 					relPos = M->GetDword(dat->hContact, "tabindex", i * 100);
 					if (iTabIndex_wanted <= relPos)
@@ -809,7 +809,7 @@ HWND TSAPI CreateNewTabForContact(struct ContainerWindowData *pContainer, HANDLE
 	 * switchbar support
 	 */
 	if(pContainer->dwFlags & CNT_SIDEBAR) {
-		_MessageWindowData *dat = (_MessageWindowData *)GetWindowLongPtr(hwndNew, GWLP_USERDATA);
+		TWindowData *dat = (TWindowData *)GetWindowLongPtr(hwndNew, GWLP_USERDATA);
 		if(dat)
 			pContainer->SideBar->addSession(dat, pContainer->iTabIndex);
 	}
@@ -863,13 +863,13 @@ HWND TSAPI CreateNewTabForContact(struct ContainerWindowData *pContainer, HANDLE
  * a new (cloned) one.
  */
 
-struct ContainerWindowData* TSAPI FindMatchingContainer(const TCHAR *szName, HANDLE hContact)
+struct TContainerData* TSAPI FindMatchingContainer(const TCHAR *szName, HANDLE hContact)
 {
-	struct ContainerWindowData *pDesired = 0;
+	struct TContainerData *pDesired = 0;
 	int iMaxTabs = M->GetDword("maxtabs", 0);
 
 	if (iMaxTabs > 0 && M->GetByte("limittabs", 0) && !_tcsncmp(szName, _T("default"), 6)) {
-		struct ContainerWindowData *pCurrent = pFirstContainer;
+		struct TContainerData *pCurrent = pFirstContainer;
 		// search a "default" with less than iMaxTabs opened...
 		while (pCurrent) {
 			if (!_tcsncmp(pCurrent->szName, _T("default"), 6) && pCurrent->iChilds < iMaxTabs) {
@@ -915,7 +915,7 @@ int TABSRMM_FireEvent(HANDLE hContact, HWND hwnd, unsigned int type, unsigned in
 {
 	MessageWindowEventData mwe = { 0 };
 	struct TABSRMM_SessionInfo se = { 0 };
-	struct _MessageWindowData *dat = (struct _MessageWindowData *)GetWindowLongPtr(hwnd, GWLP_USERDATA);
+	struct TWindowData *dat = (struct TWindowData *)GetWindowLongPtr(hwnd, GWLP_USERDATA);
 	BYTE bType = dat ? dat->bType : SESSIONTYPE_IM;
 
 	if (hContact == NULL || hwnd == NULL)
@@ -951,7 +951,7 @@ int TABSRMM_FireEvent(HANDLE hContact, HWND hwnd, unsigned int type, unsigned in
  * standard icon definitions
  */
 
-static ICONDESC _toolbaricons[] = {
+static TIconDesc _toolbaricons[] = {
 	"tabSRMM_mlog", LPGEN("Message Log Options"), &PluginConfig.g_buttonBarIcons[2], -IDI_MSGLOGOPT, 1,
 	"tabSRMM_multi", LPGEN("Image tag"), &PluginConfig.g_buttonBarIcons[3], -IDI_IMAGETAG, 1,
 	"tabSRMM_quote", LPGEN("Quote text"), &PluginConfig.g_buttonBarIcons[8], -IDI_QUOTE, 1,
@@ -962,7 +962,7 @@ static ICONDESC _toolbaricons[] = {
 	NULL, NULL, NULL, 0, 0
 };
 
-static ICONDESC _exttoolbaricons[] = {
+static TIconDesc _exttoolbaricons[] = {
 	"tabSRMM_emoticon", LPGEN("Smiley button"), &PluginConfig.g_buttonBarIcons[11], -IDI_SMILEYICON, 1,
 	"tabSRMM_bold", LPGEN("Format bold"), &PluginConfig.g_buttonBarIcons[17], -IDI_FONTBOLD, 1,
 	"tabSRMM_italic", LPGEN("Format italic"), &PluginConfig.g_buttonBarIcons[18], -IDI_FONTITALIC, 1,
@@ -973,7 +973,7 @@ static ICONDESC _exttoolbaricons[] = {
 	NULL, NULL, NULL, 0, 0
 };
 //MAD
-static ICONDESC _chattoolbaricons[] = {
+static TIconDesc _chattoolbaricons[] = {
 	"chat_bkgcol",LPGEN("Background colour"), &PluginConfig.g_buttonBarIcons[31] ,-IDI_BKGCOLOR, 1,
 	"chat_settings",LPGEN("Room settings"),  &PluginConfig.g_buttonBarIcons[32],-IDI_TOPICBUT, 1,
 	"chat_filter",LPGEN("Event filter"), &PluginConfig.g_buttonBarIcons[33] ,-IDI_FILTER2, 1,
@@ -981,14 +981,14 @@ static ICONDESC _chattoolbaricons[] = {
 	NULL, NULL, NULL, 0, 0
 	};
 //
-static ICONDESC _logicons[] = {
+static TIconDesc _logicons[] = {
 	"tabSRMM_error", LPGEN("Message delivery error"), &PluginConfig.g_iconErr, -IDI_MSGERROR, 1,
 	"tabSRMM_in", LPGEN("Incoming message"), &PluginConfig.g_iconIn, -IDI_ICONIN, 0,
 	"tabSRMM_out", LPGEN("Outgoing message"), &PluginConfig.g_iconOut, -IDI_ICONOUT, 0,
 	"tabSRMM_status", LPGEN("Statuschange"), &PluginConfig.g_iconStatus, -IDI_STATUSCHANGE, 0,
 	NULL, NULL, NULL, 0, 0
 };
-static ICONDESC _deficons[] = {
+static TIconDesc _deficons[] = {
 	"tabSRMM_container", LPGEN("Static container icon"), &PluginConfig.g_iconContainer, -IDI_CONTAINER, 1,
 	"tabSRMM_sounds_on", LPGEN("Sounds (status bar)"), &PluginConfig.g_buttonBarIcons[ICON_DEFAULT_SOUNDS], -IDI_SOUNDSON, 1,
 	"tabSRMM_pulldown", LPGEN("Pulldown Arrow"), &PluginConfig.g_buttonBarIcons[ICON_DEFAULT_PULLDOWN], -IDI_PULLDOWNARROW, 1,
@@ -998,7 +998,7 @@ static ICONDESC _deficons[] = {
 	"tabSRMM_sb_slist", LPGEN("Session List"), &PluginConfig.g_sideBarIcons[0], -IDI_SESSIONLIST, 1,
 	NULL, NULL, NULL, 0, 0
 };
-static ICONDESC _trayIcon[] = {
+static TIconDesc _trayIcon[] = {
 	"tabSRMM_frame1", LPGEN("Frame 1"), &PluginConfig.m_AnimTrayIcons[0], -IDI_TRAYANIM1, 1,
 	"tabSRMM_frame2", LPGEN("Frame 2"), &PluginConfig.m_AnimTrayIcons[1], -IDI_TRAYANIM2, 1,
 	"tabSRMM_frame3", LPGEN("Frame 3"), &PluginConfig.m_AnimTrayIcons[2], -IDI_TRAYANIM3, 1,
@@ -1008,7 +1008,7 @@ static ICONDESC _trayIcon[] = {
 
 static struct _iconblocks {
 	char *szSection;
-	ICONDESC *idesc;
+	TIconDesc *idesc;
 } ICONBLOCKS[] = {
 	"TabSRMM/Default", _deficons,
 	"TabSRMM/Toolbar", _toolbaricons,

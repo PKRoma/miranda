@@ -37,7 +37,7 @@
 
 #define MS_HTTPSERVER_ADDFILENAME "HTTPServer/AddFileName"
 
-extern 	TemplateSet RTL_Active, LTR_Active;
+extern 	TTemplateSet RTL_Active, LTR_Active;
 const 	TCHAR*		pszIDCSAVE_close = 0, *pszIDCSAVE_save = 0;
 
 static  WNDPROC OldMessageEditProc=0, OldAvatarWndProc=0, OldMessageLogProc=0;
@@ -115,7 +115,7 @@ BOOL TSAPI IsUtfSendAvailable(HANDLE hContact)
  * @param hwndFrom		src window handle
  * @param pt			mouse pointer position
  */
-static void ShowPopupMenu(_MessageWindowData *dat, int idFrom, HWND hwndFrom, POINT pt)
+static void ShowPopupMenu(TWindowData *dat, int idFrom, HWND hwndFrom, POINT pt)
 {
 	HMENU 		hMenu, hSubMenu;
 	CHARRANGE 	sel, all = { 0, -1};
@@ -245,7 +245,7 @@ static void ShowPopupMenu(_MessageWindowData *dat, int idFrom, HWND hwndFrom, PO
 	}
 }
 
-static void ResizeIeView(const _MessageWindowData *dat, DWORD px, DWORD py, DWORD cx, DWORD cy)
+static void ResizeIeView(const TWindowData *dat, DWORD px, DWORD py, DWORD cx, DWORD cy)
 {
 	RECT 			rcRichEdit;
 	POINT 			pt;
@@ -273,7 +273,7 @@ static void ResizeIeView(const _MessageWindowData *dat, DWORD px, DWORD py, DWOR
 
 LRESULT CALLBACK IEViewSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	struct _MessageWindowData *mwdat = (struct _MessageWindowData *)GetWindowLongPtr(GetParent(hwnd), GWLP_USERDATA);
+	struct TWindowData *mwdat = (struct TWindowData *)GetWindowLongPtr(GetParent(hwnd), GWLP_USERDATA);
 
 	switch (msg) {
 		case WM_NCCALCSIZE:
@@ -291,7 +291,7 @@ LRESULT CALLBACK IEViewSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 LRESULT CALLBACK HPPKFSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 
-	struct _MessageWindowData *mwdat = (struct _MessageWindowData *)GetWindowLongPtr(GetParent(hwnd), GWLP_USERDATA);
+	struct TWindowData *mwdat = (struct TWindowData *)GetWindowLongPtr(GetParent(hwnd), GWLP_USERDATA);
 	if(mwdat) {
 		BOOL isCtrl, isShift, isAlt;
 		KbdState(mwdat, isShift, isCtrl, isAlt);
@@ -327,7 +327,7 @@ LRESULT CALLBACK HPPKFSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lP
  * normal IM sessions *only*. Group chat sessions have their own activation handler (see chat/window.c)
 */
 
-static void MsgWindowUpdateState(_MessageWindowData *dat, UINT msg)
+static void MsgWindowUpdateState(TWindowData *dat, UINT msg)
 {
 	if (dat && dat->iTabID >= 0) {
 		HWND hwndDlg = dat->hwnd;
@@ -456,10 +456,10 @@ void TSAPI ShowMultipleControls(HWND hwndDlg, const UINT *controls, int cControl
 
 void TSAPI SetDialogToType(HWND hwndDlg)
 {
-	struct _MessageWindowData *dat;
+	struct TWindowData *dat;
 	int showToolbar = 0;
 
-	dat = (struct _MessageWindowData *) GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
+	dat = (struct TWindowData *) GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 	showToolbar = dat->pContainer->dwFlags & CNT_HIDETOOLBAR ? 0 : 1;
 
 	if (dat->hContact) {
@@ -516,7 +516,7 @@ void TSAPI SetDialogToType(HWND hwndDlg)
 static LRESULT CALLBACK MessageLogSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	HWND hwndParent = GetParent(hwnd);
-	_MessageWindowData *mwdat = (_MessageWindowData *)GetWindowLongPtr(hwndParent, GWLP_USERDATA);
+	TWindowData *mwdat = (TWindowData *)GetWindowLongPtr(hwndParent, GWLP_USERDATA);
 	//MAD
 	BOOL isCtrl, isShift, isAlt;
 	KbdState(mwdat, isShift, isCtrl, isAlt);
@@ -617,7 +617,7 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
 {
 	LONG lastEnterTime = GetWindowLongPtr(hwnd, GWLP_USERDATA);
 	HWND hwndParent = GetParent(hwnd);
-	struct _MessageWindowData *mwdat = (struct _MessageWindowData *)GetWindowLongPtr(hwndParent, GWLP_USERDATA);
+	struct TWindowData *mwdat = (struct TWindowData *)GetWindowLongPtr(hwndParent, GWLP_USERDATA);
 
 	/*
 	 * prevent the rich edit from switching text direction or keyboard layout when
@@ -919,7 +919,7 @@ static LRESULT CALLBACK AvatarSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, L
 LRESULT CALLBACK SplitterSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	HWND hwndParent = GetParent(hwnd);
-	_MessageWindowData *dat = (_MessageWindowData *)GetWindowLongPtr(hwndParent, GWLP_USERDATA);
+	TWindowData *dat = (TWindowData *)GetWindowLongPtr(hwndParent, GWLP_USERDATA);
 
 	switch (msg) {
 		case WM_NCHITTEST:
@@ -934,7 +934,7 @@ LRESULT CALLBACK SplitterSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 			if (hwnd == GetDlgItem(hwndParent, IDC_SPLITTER) || hwnd == GetDlgItem(hwndParent, IDC_SPLITTERY)) {
 				RECT rc;
 
-				struct _MessageWindowData *dat = (struct _MessageWindowData *)GetWindowLongPtr(hwndParent, GWLP_USERDATA);
+				struct TWindowData *dat = (struct TWindowData *)GetWindowLongPtr(hwndParent, GWLP_USERDATA);
 				if (dat) {
 					GetClientRect(hwnd, &rc);
 					dat->savedSplitter = rc.right > rc.bottom ? (short) HIWORD(GetMessagePos()) + rc.bottom / 2 : (short) LOWORD(GetMessagePos()) + rc.right / 2;
@@ -962,7 +962,7 @@ LRESULT CALLBACK SplitterSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 		case WM_ERASEBKGND:
 			return(1);
 		case WM_PAINT: {
-			struct _MessageWindowData *dat = (struct _MessageWindowData *)GetWindowLongPtr(GetParent(hwnd), GWLP_USERDATA);
+			struct TWindowData *dat = (struct TWindowData *)GetWindowLongPtr(GetParent(hwnd), GWLP_USERDATA);
 			RECT rc;
 			PAINTSTRUCT ps;
 			HDC dc = BeginPaint(hwnd, &ps);
@@ -1076,7 +1076,7 @@ LRESULT CALLBACK SplitterSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 
 static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * urc)
 {
-	struct _MessageWindowData *dat = (struct _MessageWindowData *) lParam;
+	struct TWindowData *dat = (struct TWindowData *) lParam;
 	int iClistOffset = 0;
 	RECT rc, rcButton;
 	static int uinWidth, msgTop = 0, msgBottom = 0;
@@ -1234,11 +1234,11 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
 
 INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	struct _MessageWindowData *dat = 0;
+	struct TWindowData *dat = 0;
 	HWND   hwndTab, hwndContainer;
-	struct ContainerWindowData *m_pContainer = 0;
+	struct TContainerData *m_pContainer = 0;
 
-	dat = (struct _MessageWindowData *) GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
+	dat = (struct TWindowData *) GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 
 	hwndTab = GetParent(hwndDlg);
 
@@ -1260,10 +1260,10 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			int		dwLocalSmAdd = 0;
 			DBVARIANT dbv = {0};
 
-			struct NewMessageWindowLParam *newData = (struct NewMessageWindowLParam *) lParam;
+			struct TNewWindowData *newData = (struct TNewWindowData *) lParam;
 
-			dat = (struct _MessageWindowData *) malloc(sizeof(struct _MessageWindowData));
-			ZeroMemory((void *) dat, sizeof(struct _MessageWindowData));
+			dat = (struct TWindowData *) malloc(sizeof(struct TWindowData));
+			ZeroMemory((void *) dat, sizeof(struct TWindowData));
 			if (newData->iTabID >= 0) {
 				dat->pContainer = newData->pContainer;
 				m_pContainer = dat->pContainer;
@@ -2729,7 +2729,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			return 0;
 		}
 		case DM_QUERYCONTAINER: {
-			struct ContainerWindowData **pc = (struct ContainerWindowData **) lParam;
+			struct TContainerData **pc = (struct TContainerData **) lParam;
 			if (pc)
 				*pc = m_pContainer;
 			return 0;
@@ -3325,7 +3325,7 @@ quote_from_last:
 			 * lParam = (TCHAR *)selected name...
 			 */
 		case DM_CONTAINERSELECTED: {
-			struct ContainerWindowData *pNewContainer = 0;
+			struct TContainerData *pNewContainer = 0;
 			TCHAR *szNewName = (TCHAR *)lParam;
 			int iOldItems = TabCtrl_GetItemCount(hwndTab);
 			if (!_tcsncmp(m_pContainer->szName, szNewName, CONTAINER_NAMELEN))
@@ -3655,7 +3655,7 @@ quote_from_last:
 			int iTabs, i;
 			TCITEM item = {0};
 			RECT rc;
-			ContainerWindowData *pContainer = dat->pContainer;
+			TContainerData *pContainer = dat->pContainer;
 
 			// esc handles error controls if we are in error state (error controls visible)
 
@@ -3706,7 +3706,7 @@ quote_from_last:
 				return 1;
 			}
 
-			StatusIconListNode *current;
+			TStatusBarIconNode *current;
 
 			while (dat->pSINod) {
 				current = dat->pSINod;

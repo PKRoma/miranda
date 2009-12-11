@@ -32,32 +32,32 @@
  *
  */
 
-void 	TSAPI		DM_SetDBButtonStates	(HWND hwndChild, struct _MessageWindowData *dat);
+void 	TSAPI		DM_SetDBButtonStates	(HWND hwndChild, struct TWindowData *dat);
 int 	TSAPI		BTN_GetStockItem		(ButtonItem *item, const TCHAR *szName);
-HWND 	TSAPI		DM_CreateClist			(const _MessageWindowData *dat);
+HWND 	TSAPI		DM_CreateClist			(const TWindowData *dat);
 
-void 	TSAPI		DM_OptionsApplied		(_MessageWindowData *dat, WPARAM wParam, LPARAM lParam);
-void 	TSAPI		DM_UpdateTitle			(_MessageWindowData *dat, WPARAM wParam, LPARAM lParam);
-LRESULT TSAPI		DM_ScrollToBottom		(_MessageWindowData *dat, WPARAM wParam, LPARAM lParam);
-LRESULT TSAPI		DM_LoadLocale			(_MessageWindowData *dat);
-LRESULT TSAPI		DM_SaveLocale			(_MessageWindowData *dat, WPARAM wParam, LPARAM lParam);
-LRESULT TSAPI		DM_UpdateLastMessage	(const _MessageWindowData *dat);
-LRESULT __stdcall 	DM_RecalcPictureSize	(_MessageWindowData *dat);
+void 	TSAPI		DM_OptionsApplied		(TWindowData *dat, WPARAM wParam, LPARAM lParam);
+void 	TSAPI		DM_UpdateTitle			(TWindowData *dat, WPARAM wParam, LPARAM lParam);
+LRESULT TSAPI		DM_ScrollToBottom		(TWindowData *dat, WPARAM wParam, LPARAM lParam);
+LRESULT TSAPI		DM_LoadLocale			(TWindowData *dat);
+LRESULT TSAPI		DM_SaveLocale			(TWindowData *dat, WPARAM wParam, LPARAM lParam);
+LRESULT TSAPI		DM_UpdateLastMessage	(const TWindowData *dat);
+LRESULT __stdcall 	DM_RecalcPictureSize	(TWindowData *dat);
 LRESULT TSAPI		DM_WMCopyHandler		(HWND hwnd, WNDPROC oldWndProc, WPARAM wParam, LPARAM lParam);
-LRESULT TSAPI		DM_MouseWheelHandler	(HWND hwnd, HWND hwndParent, struct _MessageWindowData *mwdat, WPARAM wParam, LPARAM lParam);
-LRESULT TSAPI		DM_ThemeChanged			(_MessageWindowData *dat);
-void	TSAPI		DM_Typing				(_MessageWindowData *dat);
-void	TSAPI		DM_FreeTheme			(_MessageWindowData *dat);
-void	TSAPI		DM_NotifyTyping			(_MessageWindowData *dat, int mode);
-int 	TSAPI 		DM_SplitterGlobalEvent	(_MessageWindowData *dat, WPARAM wParam, LPARAM lParam);
-void 	TSAPI		BB_InitDlgButtons		(_MessageWindowData *dat);
+LRESULT TSAPI		DM_MouseWheelHandler	(HWND hwnd, HWND hwndParent, struct TWindowData *mwdat, WPARAM wParam, LPARAM lParam);
+LRESULT TSAPI		DM_ThemeChanged			(TWindowData *dat);
+void	TSAPI		DM_Typing				(TWindowData *dat);
+void	TSAPI		DM_FreeTheme			(TWindowData *dat);
+void	TSAPI		DM_NotifyTyping			(TWindowData *dat, int mode);
+int 	TSAPI 		DM_SplitterGlobalEvent	(TWindowData *dat, WPARAM wParam, LPARAM lParam);
+void 	TSAPI		BB_InitDlgButtons		(TWindowData *dat);
 
-BOOL 	TSAPI		BB_SetButtonsPos		(_MessageWindowData *dat);
-void 	TSAPI		BB_CustomButtonClick	(_MessageWindowData *dat,DWORD idFrom ,HWND hwndFrom, BOOL code) ;
-void	TSAPI		DM_EventAdded			(_MessageWindowData *dat, WPARAM wParam, LPARAM lParam);
-void 	TSAPI		DM_InitRichEdit			(_MessageWindowData *dat);
-LRESULT TSAPI 		DM_ContainerCmdHandler	(ContainerWindowData *pContainer, UINT cmd, WPARAM wParam, LPARAM lParam);
-LRESULT TSAPI		DM_MsgWindowCmdHandler	(HWND hwndDlg, ContainerWindowData *pContainer, _MessageWindowData *dat, UINT cmd, WPARAM wParam, LPARAM lParam);
-LRESULT TSAPI		DM_GenericHotkeysCheck	(MSG *message, _MessageWindowData *dat);
-void 	TSAPI 		DM_DismissTip			(_MessageWindowData *dat, const POINT& pt);
-void 	TSAPI 		DM_InitTip				(_MessageWindowData *dat);
+BOOL 	TSAPI		BB_SetButtonsPos		(TWindowData *dat);
+void 	TSAPI		BB_CustomButtonClick	(TWindowData *dat,DWORD idFrom ,HWND hwndFrom, BOOL code) ;
+void	TSAPI		DM_EventAdded			(TWindowData *dat, WPARAM wParam, LPARAM lParam);
+void 	TSAPI		DM_InitRichEdit			(TWindowData *dat);
+LRESULT TSAPI 		DM_ContainerCmdHandler	(TContainerData *pContainer, UINT cmd, WPARAM wParam, LPARAM lParam);
+LRESULT TSAPI		DM_MsgWindowCmdHandler	(HWND hwndDlg, TContainerData *pContainer, TWindowData *dat, UINT cmd, WPARAM wParam, LPARAM lParam);
+LRESULT TSAPI		DM_GenericHotkeysCheck	(MSG *message, TWindowData *dat);
+void 	TSAPI 		DM_DismissTip			(TWindowData *dat, const POINT& pt);
+void 	TSAPI 		DM_InitTip				(TWindowData *dat);

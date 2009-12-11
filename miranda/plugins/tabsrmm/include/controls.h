@@ -44,7 +44,7 @@ public:
 		NR_BUTTONS = 8
 	};
 
-	CMenuBar(HWND hwndParent, const ContainerWindowData *pContainer);
+	CMenuBar(HWND hwndParent, const TContainerData *pContainer);
 	~CMenuBar();
 
 	const RECT&		TSAPI getClientRect();
@@ -99,7 +99,7 @@ private:
 	HWND		m_hwndRebar;
 	HWND		m_hwndToolbar;
 	RECT		m_rcClient;
-	ContainerWindowData *m_pContainer;
+	TContainerData *m_pContainer;
 	HMENU		m_activeMenu, m_activeSubMenu;;
 	int			m_activeID;
 	bool		m_fTracking;

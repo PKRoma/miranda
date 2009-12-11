@@ -37,8 +37,8 @@
 #define __GLOBALS_H
 
 struct TSplitterBroadCast {
-	ContainerWindowData *pSrcContainer;
-	_MessageWindowData  *pSrcDat;
+	TContainerData *pSrcContainer;
+	TWindowData  *pSrcDat;
 	LONG				pos, pos_chat;
 	LONG				off_chat, off_im;
 	LPARAM				lParam;

@@ -96,7 +96,7 @@ TCHAR* Utils::FilterEventMarkers(TCHAR *wszText)
  * flags: loword = words only for simple  * /_ formatting
  *        hiword = bbcode support (strip bbcodes if 0)
  */
-const TCHAR* Utils::FormatRaw(_MessageWindowData *dat, const TCHAR *msg, int flags, BOOL isSent)
+const TCHAR* Utils::FormatRaw(TWindowData *dat, const TCHAR *msg, int flags, BOOL isSent)
 {
 	bool 	clr_was_added = false, was_added;
 	static 	tstring message(msg);
@@ -280,7 +280,7 @@ ok:
  * format the title bar string for IM chat sessions using placeholders.
  * the caller must free() the returned string
  */
-const TCHAR* Utils::FormatTitleBar(const _MessageWindowData *dat, const TCHAR *szFormat)
+const TCHAR* Utils::FormatTitleBar(const TWindowData *dat, const TCHAR *szFormat)
 {
 	TCHAR *szResult = 0;
 	INT_PTR length = 0;
@@ -516,7 +516,7 @@ TCHAR* Utils::GetPreviewWithEllipsis(TCHAR *szText, size_t iMaxLen)
  * used to find out whether we need to configure the message input box for bidirectional mode
  */
 
-int Utils::FindRTLLocale(_MessageWindowData *dat)
+int Utils::FindRTLLocale(TWindowData *dat)
 {
 	HKL layouts[20];
 	int i, result = 0;
@@ -660,7 +660,7 @@ int Utils::WriteContainerSettingsToDB(const HANDLE hContact, TContainerSettings 
 	return(0);
 }
 
-void Utils::SettingsToContainer(ContainerWindowData *pContainer)
+void Utils::SettingsToContainer(TContainerData *pContainer)
 {
 	pContainer->dwFlags 		= pContainer->settings->dwFlags;
 	pContainer->dwFlagsEx 		= pContainer->settings->dwFlagsEx;
@@ -668,7 +668,7 @@ void Utils::SettingsToContainer(ContainerWindowData *pContainer)
 	pContainer->ownAvatarMode 	= pContainer->settings->ownAvatarMode;
 }
 
-void Utils::ContainerToSettings(ContainerWindowData *pContainer)
+void Utils::ContainerToSettings(TContainerData *pContainer)
 {
 	pContainer->settings->dwFlags			= pContainer->dwFlags;
 	pContainer->settings->dwFlagsEx			= pContainer->dwFlagsEx;
@@ -682,7 +682,7 @@ void Utils::ContainerToSettings(ContainerWindowData *pContainer)
  * @param pContainer	container window info struct
  * @param fForce		true -> force them private, even if they were not marked as private in the db
  */
-void Utils::ReadPrivateContainerSettings(ContainerWindowData *pContainer, bool fForce)
+void Utils::ReadPrivateContainerSettings(TContainerData *pContainer, bool fForce)
 {
 	char	szCname[50];
 	TContainerSettings csTemp = {0};
@@ -706,7 +706,7 @@ void Utils::ReadPrivateContainerSettings(ContainerWindowData *pContainer, bool f
  * @param dat: _MessageWindowData* pointer to the window data
  * @return HICON: the icon handle
  */
-HICON Utils::iconFromAvatar(const _MessageWindowData *dat)
+HICON Utils::iconFromAvatar(const TWindowData *dat)
 {
 	BITMAP		bm;
 	double		dAspect, dNewWidth, dNewHeight;
@@ -802,7 +802,7 @@ void Utils::addMenuItem(const HMENU& m, MENUITEMINFO& mii, HICON hIcon, const TC
  * return != 0 when the sound effect must be played for the given
  * session. Uses container sound settings
  */
-int	TSAPI Utils::mustPlaySound(const _MessageWindowData *dat)
+int	TSAPI Utils::mustPlaySound(const TWindowData *dat)
 {
 	if(!dat)
 		return(0);
@@ -865,7 +865,7 @@ DWORD CALLBACK Utils::StreamOut(DWORD_PTR dwCookie, LPBYTE pbBuff, LONG cb, LONG
  * used in various places (context menus, info panel menus etc.)
  */
 
-LRESULT Utils::CmdDispatcher(UINT uType, HWND hwndDlg, UINT cmd, WPARAM wParam, LPARAM lParam, _MessageWindowData *dat, ContainerWindowData *pContainer)
+LRESULT Utils::CmdDispatcher(UINT uType, HWND hwndDlg, UINT cmd, WPARAM wParam, LPARAM lParam, TWindowData *dat, TContainerData *pContainer)
 {
 	switch(uType) {
 		case CMD_CONTAINER:

@@ -63,7 +63,7 @@ TSideBarLayout CSideBar::m_layouts[CSideBar::NR_LAYOUTS] = {
 	}
 };
 
-CSideBarButton::CSideBarButton(const _MessageWindowData *dat, CSideBar *sideBar)
+CSideBarButton::CSideBarButton(const TWindowData *dat, CSideBar *sideBar)
 {
 	m_dat = dat;
 	m_id = reinterpret_cast<UINT>(dat->hContact);								// set the control id
@@ -244,7 +244,7 @@ void CSideBarButton::renderIconAndNick(const HDC hdc, const RECT *rcItem) const
 	DWORD	dwTextFlags = DT_SINGLELINE | DT_VCENTER;
 	int		stateId = m_buttonControl->stateId;
 	int		iSize = 16;
-	const 	ContainerWindowData *pContainer = m_sideBar->getContainer();
+	const 	TContainerData *pContainer = m_sideBar->getContainer();
 
 	if(m_dat && pContainer) {
 		if (m_dat->dwFlags & MWF_ERRORSTATE)
@@ -348,7 +348,7 @@ void CSideBarButton::activateSession() const
 		::SendMessage(m_dat->hwnd, DM_ACTIVATEME, 0, 0);					// the child window will activate itself
 }
 
-CSideBar::CSideBar(ContainerWindowData *pContainer)
+CSideBar::CSideBar(TContainerData *pContainer)
 {
 	m_pContainer = pContainer;
 	m_up = m_down = 0;
@@ -510,7 +510,7 @@ void CSideBar::populateAll()
 		for(int i = 0; i < iItems; i++) {
 			TabCtrl_GetItem(hwndTab, i, &item);
 			if(item.lParam && ::IsWindow((HWND)item.lParam)) {
-				_MessageWindowData *dat = (_MessageWindowData *)::GetWindowLongPtr((HWND)item.lParam, GWLP_USERDATA);
+				TWindowData *dat = (TWindowData *)::GetWindowLongPtr((HWND)item.lParam, GWLP_USERDATA);
 				if(dat) {
 			    	if((b_item = findSession(dat)) == m_buttonlist.end())
 						addSession(dat, i);
@@ -535,7 +535,7 @@ void CSideBar::populateAll()
  *               (that is, it can only be used after WM_INITIALOG completed).
  *        position: -1 = append, otherwise insert it at the given position
  */
-void CSideBar::addSession(const _MessageWindowData *dat, int position)
+void CSideBar::addSession(const TWindowData *dat, int position)
 {
 	if(!m_isActive)
 		return;
@@ -569,7 +569,7 @@ void CSideBar::addSession(const _MessageWindowData *dat, int position)
  *
  * @param dat    _MessageWindowData *: session data for a client session.
  */
-HRESULT CSideBar::removeSession(const _MessageWindowData *dat)
+HRESULT CSideBar::removeSession(const TWindowData *dat)
 {
 	if(dat) {
 		std::vector<CSideBarButton *>::iterator item = findSession(dat);
@@ -656,7 +656,7 @@ void CSideBar::scrollIntoView(const CSideBarButton *item)
  *
  * @param dat    _MessageWindowData*: Session data
  */
-void CSideBar::updateSession(const _MessageWindowData *dat)
+void CSideBar::updateSession(const TWindowData *dat)
 {
 	if(!m_isVisible || !m_isActive)
 		return;
@@ -688,7 +688,7 @@ void CSideBar::updateSession(const _MessageWindowData *dat)
  *
  * @return The previously active item (that can be zero)
  */
-const CSideBarButton* CSideBar::setActiveItem(const _MessageWindowData *dat)
+const CSideBarButton* CSideBar::setActiveItem(const TWindowData *dat)
 {
 	ButtonIterator item = findSession(dat);
 	if(item != m_buttonlist.end()) {
@@ -822,7 +822,7 @@ void CSideBar::showAll(int showCmd)
  *
  * @return CSideBarButtonItem*: pointer to the found item. Zero, if none was found
  */
-ButtonIterator CSideBar::findSession(const _MessageWindowData *dat)
+ButtonIterator CSideBar::findSession(const TWindowData *dat)
 {
 	if(dat) {
 		std::vector<CSideBarButton *>::iterator item = m_buttonlist.begin();
@@ -1134,7 +1134,7 @@ void __fastcall CSideBar::m_DefaultContentRenderer(const HDC hdc, const RECT *rc
 												   const CSideBarButton *item)
 {
 	UINT 						id = item->getID();
-	const _MessageWindowData* 	dat = item->getDat();
+	const TWindowData* 	dat = item->getDat();
 	int	  						stateID = item->m_buttonControl->stateId;
 
 	LONG	cx = rcBox->right - rcBox->left;

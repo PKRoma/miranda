@@ -103,7 +103,7 @@ INT_PTR CALLBACK PlusOptionsProc(HWND hwndDlg,UINT msg,WPARAM wParam,LPARAM lPar
 							/*
 							* scan the tree view and obtain the options...
 							*/
-							LISTOPTIONSITEM* lvItems = CTranslator::getTree(CTranslator::TREE_MODPLUS);
+							TOptionListItem* lvItems = CTranslator::getTree(CTranslator::TREE_MODPLUS);
 
 							bool	fOldAeroState = M->getAeroState();
 							while (lvItems[i].szName != NULL) {
@@ -139,7 +139,7 @@ INT_PTR CALLBACK PlusOptionsProc(HWND hwndDlg,UINT msg,WPARAM wParam,LPARAM lPar
 			else if(LOWORD(wParam) == IDC_PLUS_REVERT) {		// revert to defaults...
 				int i = 0;
 
-				LISTOPTIONSITEM *lvItems = CTranslator::getTree(CTranslator::TREE_MODPLUS);
+				TOptionListItem *lvItems = CTranslator::getTree(CTranslator::TREE_MODPLUS);
 
 				while(lvItems[i].szName) {
 					if(lvItems[i].uType == LOI_TYPE_SETTING)
@@ -162,7 +162,7 @@ INT_PTR CALLBACK PlusOptionsProc(HWND hwndDlg,UINT msg,WPARAM wParam,LPARAM lPar
 			TVINSERTSTRUCT tvi = {0};
 			int		i = 0;
 
-			LISTOPTIONSGROUP *lvGroups = CTranslator::getGroupTree(CTranslator::TREE_MODPLUS);
+			TOptionListGroup *lvGroups = CTranslator::getGroupTree(CTranslator::TREE_MODPLUS);
 
 			while (lvGroups[i].szName != NULL) {
 				tvi.hParent = 0;
@@ -176,7 +176,7 @@ INT_PTR CALLBACK PlusOptionsProc(HWND hwndDlg,UINT msg,WPARAM wParam,LPARAM lPar
 
 			i = 0;
 
-			LISTOPTIONSITEM *lvItems = CTranslator::getTree(CTranslator::TREE_MODPLUS);
+			TOptionListItem *lvItems = CTranslator::getTree(CTranslator::TREE_MODPLUS);
 
 			while (lvItems[i].szName != 0) {
 				tvi.hParent = (HTREEITEM)lvGroups[lvItems[i].uGroup].handle;

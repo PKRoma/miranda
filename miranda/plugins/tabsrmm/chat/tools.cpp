@@ -248,10 +248,10 @@ static BOOL DoTrayIcon(SESSION_INFO* si, GCEVENT * gce)
 	return TRUE;
 }
 
-static BOOL DoPopup(SESSION_INFO* si, GCEVENT* gce, struct _MessageWindowData* dat)
+static BOOL DoPopup(SESSION_INFO* si, GCEVENT* gce, struct TWindowData* dat)
 {
 	int iEvent = gce->pDest->iType;
-	struct ContainerWindowData *pContainer = dat ? dat->pContainer : NULL;
+	struct TContainerData *pContainer = dat ? dat->pContainer : NULL;
 	char *szProto = dat ? dat->szProto : si->pszModule;
 
 	TCHAR *bbStart, *bbEnd;
@@ -382,7 +382,7 @@ passed:
 void TSAPI DoFlashAndSoundWorker(FLASH_PARAMS* p)
 {
 	SESSION_INFO*		si = SM_FindSessionByHCONTACT(p->hContact);
-	_MessageWindowData* dat = 0;
+	TWindowData* dat = 0;
 
 	if(si == 0)
 		return;
@@ -469,7 +469,7 @@ void TSAPI DoFlashAndSoundWorker(FLASH_PARAMS* p)
 BOOL DoSoundsFlashPopupTrayStuff(SESSION_INFO* si, GCEVENT * gce, BOOL bHighlight, int bManyFix)
 {
 	FLASH_PARAMS* params;
-	struct _MessageWindowData *dat = 0;
+	struct TWindowData *dat = 0;
 
 	if (!gce || si == NULL || gce->bIsMe || si->iType == GCW_SERVER)
 		return FALSE;

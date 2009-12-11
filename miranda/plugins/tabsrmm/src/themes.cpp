@@ -1135,7 +1135,7 @@ bool CSkin::warnToClose() const
 	if (::pFirstContainer) {
 		if (MessageBox(0, CTranslator::get(CTranslator::GEN_SKIN_WARNCLOSE),
 					   CTranslator::get(CTranslator::GEN_SKIN_WARNCLOSE_TITLE), MB_YESNO | MB_ICONQUESTION) == IDYES) {
-			ContainerWindowData *pContainer = ::pFirstContainer;
+			TContainerData *pContainer = ::pFirstContainer;
 			while (pFirstContainer)
 				SendMessage(pFirstContainer->hwnd, WM_CLOSE, 0, 1);
 			return true;
@@ -1790,14 +1790,14 @@ void CSkin::LoadItems()
 {
 	TCHAR *szSections = NULL;
 	TCHAR *p, *p1;
-	ICONDESC tmpIconDesc = {0};
+	TIconDesc tmpIconDesc = {0};
 
 	CImageItem *pItem = m_ImageItems;
 
 	if (m_skinIcons == NULL)
-		m_skinIcons = (ICONDESCW *)malloc(sizeof(ICONDESCW) * NR_MAXSKINICONS);
+		m_skinIcons = (TIconDescW *)malloc(sizeof(TIconDescW) * NR_MAXSKINICONS);
 
-	ZeroMemory(m_skinIcons, sizeof(ICONDESC) * NR_MAXSKINICONS);
+	ZeroMemory(m_skinIcons, sizeof(TIconDesc) * NR_MAXSKINICONS);
 	m_nrSkinIcons = 0;
 
 	szSections = (TCHAR *)malloc(5004);
@@ -1812,7 +1812,7 @@ void CSkin::LoadItems()
 		if (m_nrSkinIcons < NR_MAXSKINICONS && p1) {
 			LoadIcon(_T("Icons"), p, (HICON *)&tmpIconDesc.uId);
 			if (tmpIconDesc.uId) {
-				ZeroMemory(&m_skinIcons[m_nrSkinIcons], sizeof(ICONDESC));
+				ZeroMemory(&m_skinIcons[m_nrSkinIcons], sizeof(TIconDesc));
 				m_skinIcons[m_nrSkinIcons].uId = tmpIconDesc.uId;
 				m_skinIcons[m_nrSkinIcons].phIcon = (HICON *)(&m_skinIcons[m_nrSkinIcons].uId);
 				m_skinIcons[m_nrSkinIcons].szName = (TCHAR *)malloc(sizeof(TCHAR) * (lstrlen(p) + 1));
@@ -2114,7 +2114,7 @@ void CSkin::SkinCalcFrameWidth()
  * @param rcClient   RECT *: client rectangle (target area)
  * @param hdcTarget  HDC: device context of the target window
  */
-void CSkin::SkinDrawBG(HWND hwndClient, HWND hwnd, struct ContainerWindowData *pContainer, RECT *rcClient, HDC hdcTarget)
+void CSkin::SkinDrawBG(HWND hwndClient, HWND hwnd, struct TContainerData *pContainer, RECT *rcClient, HDC hdcTarget)
 {
 	RECT rcWindow;
 	POINT pt;
@@ -2217,7 +2217,7 @@ void CSkin::DrawDimmedIcon(HDC hdc, LONG left, LONG top, LONG dx, LONG dy, HICON
 	DeleteDC(dcMem);
 }
 
-UINT CSkin::NcCalcRichEditFrame(HWND hwnd, const _MessageWindowData *mwdat, UINT skinID, UINT msg, WPARAM wParam, LPARAM lParam, WNDPROC OldWndProc)
+UINT CSkin::NcCalcRichEditFrame(HWND hwnd, const TWindowData *mwdat, UINT skinID, UINT msg, WPARAM wParam, LPARAM lParam, WNDPROC OldWndProc)
 {
 	LRESULT orig;
 	NCCALCSIZE_PARAMS *nccp = (NCCALCSIZE_PARAMS *)lParam;
@@ -2265,7 +2265,7 @@ UINT CSkin::NcCalcRichEditFrame(HWND hwnd, const _MessageWindowData *mwdat, UINT
  * may also draw a skin item around the rich edit control.
  */
 
-UINT CSkin::DrawRichEditFrame(HWND hwnd, const _MessageWindowData *mwdat, UINT skinID, UINT msg, WPARAM wParam, LPARAM lParam, WNDPROC OldWndProc)
+UINT CSkin::DrawRichEditFrame(HWND hwnd, const TWindowData *mwdat, UINT skinID, UINT msg, WPARAM wParam, LPARAM lParam, WNDPROC OldWndProc)
 {
 	CSkinItem *item = &SkinItems[skinID];
 	LRESULT result = 0;
@@ -2501,7 +2501,7 @@ void CSkin::MapClientToParent(HWND hwndClient, HWND hwndParent, RECT &rc)
  * @param hdc      HDC: handle to the device context in which painting should occur.
  * @param rcWindow RECT &: The window rectangle of the message dialog window
  */
-void CSkin::RenderToolbarBG(const _MessageWindowData *dat, HDC hdc, const RECT &rcWindow)
+void CSkin::RenderToolbarBG(const TWindowData *dat, HDC hdc, const RECT &rcWindow)
 {
 	if(dat) {
 		if(dat->pContainer->dwFlags & CNT_HIDETOOLBAR)
@@ -2720,7 +2720,7 @@ void CSkin::initAeroEffect()
 		m_BrushBack = ::CreateSolidBrush(0);
 	}
 
-	ContainerWindowData *pContainer = pFirstContainer;
+	TContainerData *pContainer = pFirstContainer;
 
 	if(pContainer)
 		CSideBar::initBG(pContainer->hwnd);

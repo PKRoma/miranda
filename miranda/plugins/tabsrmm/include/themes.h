@@ -63,7 +63,7 @@ typedef struct {
 	int     flatBtn;
 	int     dimmed;
 	HICON	overlay;
-	struct ContainerWindowData *pContainer;
+	struct TContainerData *pContainer;
 	ButtonItem *item;
 	CSideBarButton *sitem;
 } MButtonCtrl;
@@ -261,7 +261,7 @@ public:
 	int				getNrIcons() const { return(m_nrSkinIcons); }
 	const	DWORD	getDwmColor() const { return(m_dwmColor); }
 
-	const ICONDESCW* getIconDesc(const int id) const { return(&m_skinIcons[id]); }
+	const TIconDescW* getIconDesc(const int id) const { return(&m_skinIcons[id]); }
 	/**
 	 * get the glyph image item (a single PNG image, containing a number of textures
 	 * for the skin.
@@ -285,16 +285,16 @@ public:
 	 * static member functions
 	 */
 	static void TSAPI		SkinDrawBGFromDC(HWND hwndClient, HWND hwnd, HDC hdcSrc, RECT *rcClient, HDC hdcTarget);
-	static void TSAPI		SkinDrawBG(HWND hwndClient, HWND hwnd, struct ContainerWindowData *pContainer, RECT *rcClient, HDC hdcTarget);
+	static void TSAPI		SkinDrawBG(HWND hwndClient, HWND hwnd, struct TContainerData *pContainer, RECT *rcClient, HDC hdcTarget);
 	static void TSAPI		MY_AlphaBlend(HDC hdcDraw, DWORD left, DWORD top,  int width, int height, int bmWidth, int bmHeight, HDC hdcMem);
 	static void TSAPI		DrawDimmedIcon(HDC hdc, LONG left, LONG top, LONG dx, LONG dy, HICON hIcon, BYTE alpha);
 	static DWORD __fastcall HexStringToLong(const TCHAR *szSource);
-	static UINT TSAPI		DrawRichEditFrame(HWND hwnd, const _MessageWindowData *mwdat, UINT skinID, UINT msg, WPARAM wParam, LPARAM lParam, WNDPROC OldWndProc);
-	static UINT TSAPI		NcCalcRichEditFrame(HWND hwnd, const _MessageWindowData *mwdat, UINT skinID, UINT msg, WPARAM wParam, LPARAM lParam, WNDPROC OldWndProc);
+	static UINT TSAPI		DrawRichEditFrame(HWND hwnd, const TWindowData *mwdat, UINT skinID, UINT msg, WPARAM wParam, LPARAM lParam, WNDPROC OldWndProc);
+	static UINT TSAPI		NcCalcRichEditFrame(HWND hwnd, const TWindowData *mwdat, UINT skinID, UINT msg, WPARAM wParam, LPARAM lParam, WNDPROC OldWndProc);
 	static HBITMAP TSAPI 	CreateAeroCompatibleBitmap(const RECT &rc, HDC dc);
 	static int TSAPI		RenderText(HDC hdc, HANDLE hTheme, const TCHAR *szText, RECT *rc, DWORD dtFlags, const int iGlowSize = DEFAULT_GLOW_SIZE, COLORREF clr = 0);
 	static void TSAPI		MapClientToParent(HWND hwndClient, HWND hwndParent, RECT &rc);
-	static void TSAPI		RenderToolbarBG(const _MessageWindowData *dat, HDC hdc, const RECT &rcWindow);
+	static void TSAPI		RenderToolbarBG(const TWindowData *dat, HDC hdc, const RECT &rcWindow);
 	static HBITMAP TSAPI	ResizeBitmap(HBITMAP hBmpSrc, LONG width, LONG height, bool &mustFree);
 	static void	TSAPI		ApplyAeroEffect(const HDC hdc, const RECT* rc, int iEffectArea, HANDLE hbp = 0);
 	static void	TSAPI		setAeroEffect(const LRESULT effect);
@@ -353,7 +353,7 @@ private:
 	bool			m_fLoadOnStartup;						// load the skin on plugin initialization.
 	bool			m_fHaveGlyph;
 	void 			SkinCalcFrameWidth();
-	ICONDESCW		*m_skinIcons;
+	TIconDescW		*m_skinIcons;
 	int				m_nrSkinIcons;
 	DWORD			m_dwmColor;
 
@@ -375,19 +375,19 @@ struct TabControlData {
 	DWORD   cx, cy;
 	HANDLE  hTheme, hThemeButton, hbp;
 	BYTE    m_xpad;
-	ContainerWindowData *pContainer;
+	TContainerData *pContainer;
 	BOOL    bDragging;
 	int     iBeginIndex;
 	int		iHoveredCloseIcon;
 	HWND    hwndDrag;
-	_MessageWindowData *dragDat;
+	TWindowData *dragDat;
 	HIMAGELIST himlDrag;
 	BOOL    bRefreshWithoutClip;
 	BOOL    fSavePos;
 	BOOL    fTipActive;
 	BOOL	fAeroTabs;
 	BOOL	fCloseButton;
-	_MessageWindowData* helperDat;				// points to the client data of the active tab
+	TWindowData* helperDat;				// points to the client data of the active tab
 	CImageItem*			helperItem, *helperGlowItem;				// aero ui, holding the skin image for the tabs
 };
 

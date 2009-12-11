@@ -38,7 +38,7 @@ Event popups for tabSRMM - most of the code taken from NewEventNotify (see copyr
 
 #define MODULE "tabSRMM_NEN"
 
-int tabSRMM_ShowPopup(WPARAM wParam, LPARAM lParam, WORD eventType, int windowOpen, struct ContainerWindowData *pContainer, HWND hwndChild, const char *szProto, struct _MessageWindowData *dat);
+int tabSRMM_ShowPopup(WPARAM wParam, LPARAM lParam, WORD eventType, int windowOpen, struct TContainerData *pContainer, HWND hwndChild, const char *szProto, struct TWindowData *dat);
 
 
 #define DEFAULT_COLBACK RGB(255,255,128)

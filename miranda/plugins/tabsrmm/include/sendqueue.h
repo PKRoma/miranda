@@ -108,29 +108,29 @@ public:
 	SendJob *getJobByIndex(const int index) { return(&m_jobs[index]); }
 
 	void 	TSAPI clearJob					(const int index);
-	int 	TSAPI findNextFailed			(const _MessageWindowData *dat) const;
-	void 	TSAPI handleError				(_MessageWindowData *dat, const int iEntry) const;
-	int 	TSAPI addTo						(_MessageWindowData *dat, const int iLen, int dwFlags);
-	int 	TSAPI sendQueued				(_MessageWindowData *dat, const int iEntry);
-	void 	TSAPI checkQueue 		 		(const _MessageWindowData *dat) const;
-	void 	TSAPI logError					(const _MessageWindowData *dat, int iSendJobIndex,
+	int 	TSAPI findNextFailed			(const TWindowData *dat) const;
+	void 	TSAPI handleError				(TWindowData *dat, const int iEntry) const;
+	int 	TSAPI addTo						(TWindowData *dat, const int iLen, int dwFlags);
+	int 	TSAPI sendQueued				(TWindowData *dat, const int iEntry);
+	void 	TSAPI checkQueue 		 		(const TWindowData *dat) const;
+	void 	TSAPI logError					(const TWindowData *dat, int iSendJobIndex,
 											 const TCHAR *szErrMsg) const;
-	void 	TSAPI recallFailed				(const _MessageWindowData *dat, int iEntry) const;
-	void 	TSAPI showErrorControls			(_MessageWindowData *dat, const int showCmd) const;
-	int 	TSAPI ackMessage				(_MessageWindowData *dat, WPARAM wParam, LPARAM lParam);
-	int		TSAPI sendLater					(int iIndex, _MessageWindowData *dat, HANDLE hContact = 0, bool fIsSendLater = true);
+	void 	TSAPI recallFailed				(const TWindowData *dat, int iEntry) const;
+	void 	TSAPI showErrorControls			(TWindowData *dat, const int showCmd) const;
+	int 	TSAPI ackMessage				(TWindowData *dat, WPARAM wParam, LPARAM lParam);
+	int		TSAPI sendLater					(int iIndex, TWindowData *dat, HANDLE hContact = 0, bool fIsSendLater = true);
 	/*
 	 * static members
 	 */
 #if defined(_UNICODE)
 	static	int TSAPI RTL_Detect				(const wchar_t *pszwText);
 #endif
-	static	char* TSAPI MsgServiceName			(const HANDLE hContact, const _MessageWindowData *dat, int isUnicode);
+	static	char* TSAPI MsgServiceName			(const HANDLE hContact, const TWindowData *dat, int isUnicode);
 	static  int   TSAPI GetProtoIconFromList	(const char *szProto, int iStatus);
 	static  LRESULT TSAPI WarnPendingJobs		(unsigned int uNrMessages);
-	static	void  TSAPI NotifyDeliveryFailure	(const _MessageWindowData *dat);
-	static	void  TSAPI UpdateSaveAndSendButton	(_MessageWindowData *dat);
-	static	void  TSAPI EnableSending			(const _MessageWindowData *dat, const int iMode);
+	static	void  TSAPI NotifyDeliveryFailure	(const TWindowData *dat);
+	static	void  TSAPI UpdateSaveAndSendButton	(TWindowData *dat);
+	static	void  TSAPI EnableSending			(const TWindowData *dat, const int iMode);
 private:
 	SendJob		m_jobs[NR_SENDJOBS];
 	int			m_currentIndex;
@@ -138,8 +138,8 @@ private:
 
 extern SendQueue *sendQueue;
 
-int  TSAPI ActivateExistingTab	(ContainerWindowData *pContainer, HWND hwndChild);
+int  TSAPI ActivateExistingTab	(TContainerData *pContainer, HWND hwndChild);
 void TSAPI ShowMultipleControls	(const HWND hwndDlg, const UINT * controls, int cControls, int state);
-void TSAPI HandleIconFeedback		(_MessageWindowData *dat, HICON iIcon);
+void TSAPI HandleIconFeedback		(TWindowData *dat, HICON iIcon);
 
 #endif /* __SENDQUEUE_H */

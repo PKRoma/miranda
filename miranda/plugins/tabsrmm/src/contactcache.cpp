@@ -294,7 +294,7 @@ void CContactCache::allocStats()
  * @param hwnd:		window handle
  * @param dat:		_MessageWindowData - window data structure
  */
-void CContactCache::setWindowData(const HWND hwnd, _MessageWindowData *dat)
+void CContactCache::setWindowData(const HWND hwnd, TWindowData *dat)
 {
 	m_hwnd = hwnd;
 	m_dat = dat;

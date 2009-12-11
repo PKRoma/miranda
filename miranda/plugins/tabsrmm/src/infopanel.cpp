@@ -45,7 +45,7 @@ TCHAR *xStatusDescr[] = {	_T("Angry"), _T("Duck"), _T("Tired"), _T("Party"), _T(
 InfoPanelConfig CInfoPanel::m_ipConfig = {0};
 WNDPROC CTip::m_OldMessageEditProc = 0;
 
-int CInfoPanel::setPanelHandler(_MessageWindowData *dat, WPARAM wParam, LPARAM lParam)
+int CInfoPanel::setPanelHandler(TWindowData *dat, WPARAM wParam, LPARAM lParam)
 {
 	if(wParam == 0 && lParam == 0) {
 		dat->Panel->getVisibility();
@@ -53,7 +53,7 @@ int CInfoPanel::setPanelHandler(_MessageWindowData *dat, WPARAM wParam, LPARAM l
 		dat->Panel->showHide();
 	}
 	else {
-		_MessageWindowData *SrcDat = (_MessageWindowData *)wParam;
+		TWindowData *SrcDat = (TWindowData *)wParam;
 		if(lParam == 0)
 			dat->Panel->loadHeight();
 		else {

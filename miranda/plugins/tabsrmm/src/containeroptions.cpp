@@ -42,7 +42,7 @@ static void MY_CheckDlgButton(HWND hWnd, UINT id, int iCheck)
 
 static void ReloadGlobalContainerSettings(bool fForceReconfig)
 {
-	struct ContainerWindowData *pC = pFirstContainer;
+	struct TContainerData *pC = pFirstContainer;
 
 	while (pC) {
 		if (!pC->settings->fPrivate) {
@@ -65,7 +65,7 @@ static void ReloadGlobalContainerSettings(bool fForceReconfig)
  * @param mode       int: bit #0 set/clear, any bit from 16-31 indicates that dwFlagsEx should be affected
  * @param fForceResize
  */
-void TSAPI ApplyContainerSetting(ContainerWindowData *pContainer, DWORD flags, UINT mode, bool fForceResize)
+void TSAPI ApplyContainerSetting(TContainerData *pContainer, DWORD flags, UINT mode, bool fForceResize)
 {
 	DWORD dwOld = pContainer->dwFlags;
 	bool  isEx = (mode & 0xffff0000) ? true : false;
@@ -81,7 +81,7 @@ void TSAPI ApplyContainerSetting(ContainerWindowData *pContainer, DWORD flags, U
 		if (flags & CNT_INFOPANEL)
 			BroadCastContainer(pContainer, DM_SETINFOPANEL, 0, 0);
 		if (flags & CNT_SIDEBAR) {
-			struct ContainerWindowData *pC = pFirstContainer;
+			struct TContainerData *pC = pFirstContainer;
 			while (pC) {
 				if (!pC->settings->fPrivate) {
 					SendMessage(pC->hwnd, WM_COMMAND, IDC_TOGGLESIDEBAR, 0);
@@ -150,14 +150,14 @@ static void ShowPage(HWND hwndDlg, int iPage, BOOL fShow)
 
 INT_PTR CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	struct ContainerWindowData *pContainer = 0;
+	struct TContainerData *pContainer = 0;
 	HWND   hwndTree = GetDlgItem(hwndDlg, IDC_SECTIONTREE);
-	pContainer = (struct ContainerWindowData *) GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
+	pContainer = (struct TContainerData *) GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 
 	switch (msg) {
 		case WM_INITDIALOG: {
 			TCHAR 			szNewTitle[128];
-			ContainerWindowData *pContainer = 0;
+			TContainerData *pContainer = 0;
 			int   			i, j;
 			TVINSERTSTRUCT 	tvis = {0};
 			HTREEITEM 		hItem;
@@ -165,7 +165,7 @@ INT_PTR CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, 
 			const 			TSideBarLayout* sblayouts = CSideBar::getLayouts(nr_layouts);
 
 			SetWindowLongPtr(hwndDlg, GWLP_USERDATA, (LONG_PTR) lParam);
-			pContainer = (ContainerWindowData *) lParam;
+			pContainer = (TContainerData *) lParam;
 			pContainer->hWndOptions = hwndDlg;
 			TranslateDialogDefault(hwndDlg);
 			mir_sntprintf(szNewTitle, SIZEOF(szNewTitle), _T("\t%s"), pContainer->szName);

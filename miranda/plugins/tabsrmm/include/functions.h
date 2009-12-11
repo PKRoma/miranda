@@ -55,7 +55,7 @@ LONG_PTR CALLBACK 	HotkeyHandlerDlgProc		(HWND hwndDlg, UINT msg, WPARAM wParam,
 
 int			TSAPI	NEN_ReadOptions				(NEN_OPTIONS *options);
 int			TSAPI	NEN_WriteOptions			(NEN_OPTIONS *options);
-int			TSAPI	UpdateTrayMenu				(const _MessageWindowData *dat, WORD wStatus, const char *szProto,
+int			TSAPI	UpdateTrayMenu				(const TWindowData *dat, WORD wStatus, const char *szProto,
 												 const TCHAR *szStatus, HANDLE hContact, DWORD fromEvent);
 static int  TSAPI	PopupPreview				(NEN_OPTIONS *pluginOptions);
 void        TSAPI	DeletePopupsForContact		(HANDLE hContact, DWORD dwMask);
@@ -66,7 +66,7 @@ void        TSAPI	DeletePopupsForContact		(HANDLE hContact, DWORD dwMask);
 
 void		TSAPI	CreateSystrayIcon			(int create);
 void		TSAPI	FlashTrayIcon				(HICON hIcon);
-void		TSAPI	UpdateTrayMenuState			(_MessageWindowData *dat, BOOL bForced);
+void		TSAPI	UpdateTrayMenuState			(TWindowData *dat, BOOL bForced);
 void        TSAPI	LoadFavoritesAndRecent		();
 void        TSAPI	AddContactToFavorites		(HANDLE hContact, const TCHAR *szNickname, const char *szProto, TCHAR *szStatus,
 												 WORD wStatus, HICON hIcon, BOOL mode, HMENU hMenu);
@@ -78,23 +78,23 @@ void        TSAPI	HandleMenuEntryFromhContact	(int iSelection);
  */
 
 BOOL		TSAPI	IsUtfSendAvailable			(HANDLE hContact);
-HWND		TSAPI	CreateNewTabForContact		(ContainerWindowData *pContainer, HANDLE hContact, int isSend,
+HWND		TSAPI	CreateNewTabForContact		(TContainerData *pContainer, HANDLE hContact, int isSend,
 												 const char *pszInitialText, BOOL bActivateTAb, BOOL bPopupContainer, BOOL bWantPopup, HANDLE hdbEvent);
 int			TSAPI	ActivateTabFromHWND			(HWND hwndTab, HWND hwnd);
-void		TSAPI	FlashContainer				(ContainerWindowData *pContainer, int iMode, int iNum);
+void		TSAPI	FlashContainer				(TContainerData *pContainer, int iMode, int iNum);
 void		TSAPI	CreateImageList				(BOOL bInitial);
-ContainerWindowData* TSAPI FindMatchingContainer(const TCHAR *szName, HANDLE hContact);
-ContainerWindowData* TSAPI CreateContainer		(const TCHAR *name, int iTemp, HANDLE hContactFrom);
-ContainerWindowData* TSAPI FindContainerByName	(const TCHAR *name);
+TContainerData* TSAPI FindMatchingContainer(const TCHAR *szName, HANDLE hContact);
+TContainerData* TSAPI CreateContainer		(const TCHAR *name, int iTemp, HANDLE hContactFrom);
+TContainerData* TSAPI FindContainerByName	(const TCHAR *name);
 int			TSAPI	GetTabIndexFromHWND			(HWND hwndTab, HWND hwnd);
 int			TSAPI	GetTabItemFromMouse			(HWND hwndTab, POINT *pt);
 int			TSAPI	ActivateTabFromHWND			(HWND hwndTab, HWND hwnd);
-void 		TSAPI	AdjustTabClientRect			(ContainerWindowData *pContainer, RECT *rc);
-void 		TSAPI	ReflashContainer			(ContainerWindowData *pContainer);
+void 		TSAPI	AdjustTabClientRect			(TContainerData *pContainer, RECT *rc);
+void 		TSAPI	ReflashContainer			(TContainerData *pContainer);
 HMENU 		TSAPI 	BuildMCProtocolMenu			(HWND hwndDlg);
 
-ContainerWindowData* TSAPI AppendToContainerList(ContainerWindowData *pContainer);
-ContainerWindowData* TSAPI RemoveContainerFromList(ContainerWindowData *pContainer);
+TContainerData* TSAPI AppendToContainerList(TContainerData *pContainer);
+TContainerData* TSAPI RemoveContainerFromList(TContainerData *pContainer);
 
 void        TSAPI	DeleteContainer				(int iIndex);
 void		TSAPI	RenameContainer				(int iIndex, const TCHAR *newName);
@@ -102,11 +102,11 @@ int			TSAPI	GetContainerNameForContact	(HANDLE hContact, TCHAR *szName, int iNam
 HMENU		TSAPI	BuildContainerMenu			();
 void		TSAPI	BuildCodePageList			();
 void		TSAPI	PreTranslateDates			();
-void		TSAPI	ApplyContainerSetting		(ContainerWindowData *pContainer, DWORD flags, UINT mode, bool fForceResize);
-void		TSAPI	BroadCastContainer			(const ContainerWindowData *pContainer, UINT message, WPARAM wParam, LPARAM lParam, BYTE iType = 0);
+void		TSAPI	ApplyContainerSetting		(TContainerData *pContainer, DWORD flags, UINT mode, bool fForceResize);
+void		TSAPI	BroadCastContainer			(const TContainerData *pContainer, UINT message, WPARAM wParam, LPARAM lParam, BYTE iType = 0);
 void		TSAPI	GetDefaultContainerTitleFormat();
 INT_PTR     MessageWindowOpened(WPARAM wParam, LPARAM lParam);
-void		TSAPI	SetAeroMargins				(ContainerWindowData *pContainer);
+void		TSAPI	SetAeroMargins				(TContainerData *pContainer);
 int         		TABSRMM_FireEvent			(HANDLE hContact, HWND hwnd, unsigned int type, unsigned int subType);
 
 LRESULT CALLBACK IEViewSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -131,7 +131,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 
 int			TSAPI	InitOptions					(void);
 INT_PTR 	CALLBACK DlgProcContainer			(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
-int			TSAPI	DbEventIsShown				(_MessageWindowData *dat, DBEVENTINFO *dbei);
+int			TSAPI	DbEventIsShown				(TWindowData *dat, DBEVENTINFO *dbei);
 void		TSAPI	StreamInEvents				(HWND hwndDlg,HANDLE hDbEventFirst,int count,int fAppend, DBEVENTINFO *dbei_s);
 void		TSAPI	LoadLogfont					(int i,LOGFONTA *lf,COLORREF *colour, char *szModule);
 
@@ -155,21 +155,21 @@ int			TSAPI	UnloadTSButtonModule		();
 int         _DebugTraceW(const wchar_t *fmt, ...);
 int         _DebugTraceA(const char *fmt, ...);
 int         _DebugPopup(HANDLE hContact, const TCHAR *fmt, ...);
-int         _DebugMessage(HWND hwndDlg, struct _MessageWindowData *dat, const char *fmt, ...);
+int         _DebugMessage(HWND hwndDlg, struct TWindowData *dat, const char *fmt, ...);
 
 // themes
 
 const TCHAR* TSAPI	GetThemeFileName			(int iMode);
 void 		TSAPI	LoadLogfontFromINI			(int i, char *szKey, LOGFONTA *lf, COLORREF *colour, const char *szIniFilename);
 int			TSAPI	CheckThemeVersion			(const TCHAR *szIniFilename);
-void		TSAPI	WriteThemeToINI				(const TCHAR *szIniFilename, _MessageWindowData *dat);
-void		TSAPI	ReadThemeFromINI			(const TCHAR *szIniFilename, ContainerWindowData *dat, int noAdvanced, DWORD dwFlags);
+void		TSAPI	WriteThemeToINI				(const TCHAR *szIniFilename, TWindowData *dat);
+void		TSAPI	ReadThemeFromINI			(const TCHAR *szIniFilename, TContainerData *dat, int noAdvanced, DWORD dwFlags);
 
 // compatibility
 
 // user prefs
 
-int			TSAPI	LoadLocalFlags				(HWND hwnd, _MessageWindowData *dat);
+int			TSAPI	LoadLocalFlags				(HWND hwnd, TWindowData *dat);
 
 //TypingNotify
 int			TN_ModuleInit						();
@@ -179,7 +179,7 @@ int			TN_TypingMessage					(WPARAM wParam, LPARAM lParam);
 
 // mod plus
 
-int			ChangeClientIconInStatusBar			(const _MessageWindowData *dat);
+int			ChangeClientIconInStatusBar			(const TWindowData *dat);
 
 // hotkeys
 

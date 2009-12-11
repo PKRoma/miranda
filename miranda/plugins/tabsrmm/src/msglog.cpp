@@ -39,10 +39,10 @@
 
 extern      void 	ReleaseRichEditOle(IRichEditOle *ole);
 extern      void 	ImageDataInsertBitmap(IRichEditOle *ole, HBITMAP hBm);
-extern 		int 	CacheIconToBMP(struct MsgLogIcon *theIcon, HICON hIcon, COLORREF backgroundColor, int sizeX, int sizeY);
-extern		void 	DeleteCachedIcon(struct MsgLogIcon *theIcon);
+extern 		int 	CacheIconToBMP(struct TLogIcon *theIcon, HICON hIcon, COLORREF backgroundColor, int sizeX, int sizeY);
+extern		void 	DeleteCachedIcon(struct TLogIcon *theIcon);
 
-struct CPTABLE cpTable[] = {
+struct TCpTable cpTable[] = {
 	{ 874,	_T("Thai")	 },
 	{ 932,	_T("Japanese") },
 	{ 936,	_T("Simplified Chinese") },
@@ -62,8 +62,8 @@ struct CPTABLE cpTable[] = {
 	{   -1,     NULL}
 };
 
-static TCHAR    *Template_MakeRelativeDate(struct _MessageWindowData *dat, time_t check, int groupBreak, TCHAR code);
-static void     ReplaceIcons(HWND hwndDlg, struct _MessageWindowData *dat, LONG startAt, int fAppend, BOOL isSent);
+static TCHAR    *Template_MakeRelativeDate(struct TWindowData *dat, time_t check, int groupBreak, TCHAR code);
+static void     ReplaceIcons(HWND hwndDlg, struct TWindowData *dat, LONG startAt, int fAppend, BOOL isSent);
 
 static TCHAR *weekDays[] = {_T("Sunday"), _T("Monday"), _T("Tuesday"), _T("Wednesday"), _T("Thursday"), _T("Friday"), _T("Saturday")};
 static TCHAR *months[] = {_T("January"), _T("February"), _T("March"), _T("April"), _T("May"), _T("June"), _T("July"), _T("August"), _T("September"), _T("October"), _T("November"), _T("December")};
@@ -108,7 +108,7 @@ struct LogStreamData {
 	int eventsToInsert;
 	int isEmpty;
 	int isAppend;
-	struct _MessageWindowData *dlgDat;
+	struct TWindowData *dlgDat;
 	DBEVENTINFO *dbei;
 };
 
@@ -471,14 +471,14 @@ static int AppendToBufferWithRTF(int mode, char **buffer, int *cbBufferEnd, int 
 	return (int)(_mbslen((unsigned char *)*buffer + *cbBufferEnd));
 }
 
-static void Build_RTF_Header(char **buffer, int *bufferEnd, int *bufferAlloced, struct _MessageWindowData *dat)
+static void Build_RTF_Header(char **buffer, int *bufferEnd, int *bufferAlloced, struct TWindowData *dat)
 {
 	COLORREF 		colour;
 	int      		i;
 	char     		szTemp[30];
 	LOGFONTA*		logFonts = dat->pContainer->theme.logFonts;
 	COLORREF*		fontColors = dat->pContainer->theme.fontColors;
-	MessageWindowTheme *theme = &dat->pContainer->theme;
+	TLogTheme *theme = &dat->pContainer->theme;
 
 	// rtl
 	if (dat->dwFlags & MWF_LOG_RTL)
@@ -546,7 +546,7 @@ static void Build_RTF_Header(char **buffer, int *bufferEnd, int *bufferAlloced, 
 
 
 //free() the return value
-static char *CreateRTFHeader(struct _MessageWindowData *dat)
+static char *CreateRTFHeader(struct TWindowData *dat)
 {
 	char *buffer;
 	int bufferAlloced, bufferEnd;
@@ -561,7 +561,7 @@ static char *CreateRTFHeader(struct _MessageWindowData *dat)
 }
 
 static void AppendTimeStamp(TCHAR *szFinalTimestamp, int isSent, char **buffer, int *bufferEnd, int *bufferAlloced, int skipFont,
-							struct _MessageWindowData *dat, int iFontIDOffset)
+							struct TWindowData *dat, int iFontIDOffset)
 {
 #ifdef _UNICODE
 	if (skipFont)
@@ -579,7 +579,7 @@ static void AppendTimeStamp(TCHAR *szFinalTimestamp, int isSent, char **buffer, 
 }
 
 //free() the return value
-static char *CreateRTFTail(struct _MessageWindowData *dat)
+static char *CreateRTFTail(struct TWindowData *dat)
 {
 	char *buffer;
 	int bufferAlloced, bufferEnd;
@@ -592,7 +592,7 @@ static char *CreateRTFTail(struct _MessageWindowData *dat)
 	return buffer;
 }
 
-int TSAPI DbEventIsShown(struct _MessageWindowData *dat, DBEVENTINFO * dbei)
+int TSAPI DbEventIsShown(struct TWindowData *dat, DBEVENTINFO * dbei)
 {
 	int heFlags;
 
@@ -612,7 +612,7 @@ int TSAPI DbEventIsShown(struct _MessageWindowData *dat, DBEVENTINFO * dbei)
 	return 0;
 }
 
-static char *Template_CreateRTFFromDbEvent(struct _MessageWindowData *dat, HANDLE hContact, HANDLE hDbEvent, int prefixParaBreak, struct LogStreamData *streamData)
+static char *Template_CreateRTFFromDbEvent(struct TWindowData *dat, HANDLE hContact, HANDLE hDbEvent, int prefixParaBreak, struct LogStreamData *streamData)
 {
 	char *buffer, c;
 	TCHAR ci, cc;
@@ -629,7 +629,7 @@ static char *Template_CreateRTFFromDbEvent(struct _MessageWindowData *dat, HANDL
 	time_t final_time;
 	BOOL skipToNext = FALSE, showTime = TRUE, showDate = TRUE, skipFont = FALSE;
 	struct tm event_time;
-	TemplateSet *this_templateset;
+	TTemplateSet *this_templateset;
 	BOOL isBold = FALSE, isItalic = FALSE, isUnderline = FALSE;
 	DWORD dwEffectiveFlags;
 	DWORD dwFormattingParams = MAKELONG(PluginConfig.m_FormatWholeWordsOnly, 0);
@@ -1325,7 +1325,7 @@ static DWORD CALLBACK LogStreamInEvents(DWORD_PTR dwCookie, LPBYTE pbBuff, LONG 
 	return 0;
 }
 
-static void SetupLogFormatting(struct _MessageWindowData *dat)
+static void SetupLogFormatting(struct TWindowData *dat)
 {
 	if (dat->hHistoryEvents) {
 		mir_snprintf(dat->szMicroLf, sizeof(dat->szMicroLf), "%s", "\\v\\cf%d \\ ~-+%d+-~\\v0 ");
@@ -1338,7 +1338,7 @@ void TSAPI StreamInEvents(HWND hwndDlg, HANDLE hDbEventFirst, int count, int fAp
 {
 	EDITSTREAM stream = { 0 };
 	struct LogStreamData streamData = {	0 };
-	struct _MessageWindowData *dat = (struct _MessageWindowData *) GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
+	struct TWindowData *dat = (struct TWindowData *) GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 	CHARRANGE oldSel, sel;
 	HWND hwndrtf;
 	LONG startAt = 0;
@@ -1545,7 +1545,7 @@ void TSAPI StreamInEvents(HWND hwndDlg, HANDLE hDbEventFirst, int count, int fAp
 	if (streamData.buffer) free(streamData.buffer);
 }
 
-static void ReplaceIcons(HWND hwndDlg, struct _MessageWindowData *dat, LONG startAt, int fAppend, BOOL isSent)
+static void ReplaceIcons(HWND hwndDlg, struct TWindowData *dat, LONG startAt, int fAppend, BOOL isSent)
 {
 	FINDTEXTEXA fi;
 	CHARFORMAT2 cf2;
@@ -1553,7 +1553,7 @@ static void ReplaceIcons(HWND hwndDlg, struct _MessageWindowData *dat, LONG star
 	IRichEditOle *ole;
 	TEXTRANGEA tr;
 	COLORREF crDefault;
-	struct MsgLogIcon theIcon;
+	struct TLogIcon theIcon;
 	char trbuffer[40];
 	DWORD dwScale = M->GetDword("iconscale", 0);
 	tr.lpstrText = trbuffer;
@@ -1710,7 +1710,7 @@ void TSAPI BuildCodePageList()
 	EnumSystemCodePages(LangAddCallback, CP_INSTALLED);
 }
 
-static TCHAR *Template_MakeRelativeDate(struct _MessageWindowData *dat, time_t check, int groupBreak, TCHAR code)
+static TCHAR *Template_MakeRelativeDate(struct TWindowData *dat, time_t check, int groupBreak, TCHAR code)
 {
 	static TCHAR szResult[100];
 	DBTIMETOSTRINGT dbtts;

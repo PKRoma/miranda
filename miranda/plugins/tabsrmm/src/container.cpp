@@ -39,8 +39,8 @@
 extern SESSION_INFO*	m_WndList;
 extern ButtonSet 		g_ButtonSet;
 
-ContainerWindowData *pFirstContainer = 0;        // the linked list of struct ContainerWindowData
-ContainerWindowData *pLastActiveContainer = NULL;
+TContainerData *pFirstContainer = 0;        // the linked list of struct ContainerWindowData
+TContainerData *pLastActiveContainer = NULL;
 
 static 	WNDPROC OldContainerWndProc = 0;
 
@@ -64,11 +64,11 @@ static int ServiceParamsOK(ButtonItem *item, WPARAM *wParam, LPARAM *lParam, HAN
  * and outer margins.
  */
 
-void TSAPI SetAeroMargins(ContainerWindowData *pContainer)
+void TSAPI SetAeroMargins(TContainerData *pContainer)
 {
 	if(M->isAero() && pContainer && !CSkin::m_skinEnabled) {
 		MARGINS	m;
-		_MessageWindowData *dat = (_MessageWindowData *)GetWindowLongPtr(pContainer->hwndActive, GWLP_USERDATA);
+		TWindowData *dat = (TWindowData *)GetWindowLongPtr(pContainer->hwndActive, GWLP_USERDATA);
 		RECT	rcWnd;
 		POINT	pt;
 		LONG	sbar_left = 0, sbar_right = 0;
@@ -134,7 +134,7 @@ void TSAPI SetAeroMargins(ContainerWindowData *pContainer)
  * pointer and for removing the struct from the linked list.
  */
 
-struct ContainerWindowData* TSAPI CreateContainer(const TCHAR *name, int iTemp, HANDLE hContactFrom) {
+struct TContainerData* TSAPI CreateContainer(const TCHAR *name, int iTemp, HANDLE hContactFrom) {
 	DBVARIANT dbv;
 	char szCounter[10];
 #if defined (_UNICODE)
@@ -144,9 +144,9 @@ struct ContainerWindowData* TSAPI CreateContainer(const TCHAR *name, int iTemp, 
 #endif
 	int i, iFirstFree = -1, iFound = FALSE;
 
-	struct ContainerWindowData *pContainer = (struct ContainerWindowData *)malloc(sizeof(struct ContainerWindowData));
+	struct TContainerData *pContainer = (struct TContainerData *)malloc(sizeof(struct TContainerData));
 	if (pContainer) {
-		ZeroMemory((void *)pContainer, sizeof(struct ContainerWindowData));
+		ZeroMemory((void *)pContainer, sizeof(struct TContainerData));
 		_tcsncpy(pContainer->szName, name, CONTAINER_NAMELEN + 1);
 		AppendToContainerList(pContainer);
 
@@ -206,7 +206,7 @@ static BOOL CALLBACK ContainerWndProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 {
 	BOOL bSkinned;
 
-	struct ContainerWindowData *pContainer = (struct ContainerWindowData *)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
+	struct TContainerData *pContainer = (struct TContainerData *)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 	bSkinned = CSkin::m_skinEnabled ? TRUE : FALSE;
 
 	switch (msg) {
@@ -279,7 +279,7 @@ static BOOL CALLBACK ContainerWndProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 				 * icon
 				 */
 
-				hIcon = (HICON)SendMessage(hwndDlg, WM_GETICON, ICON_BIG, 0);
+				hIcon = (HICON)SendMessage(hwndDlg, WM_GETICON, ICON_SMALL, 0);
 				DrawIconEx(dcMem, 4 + CSkin::m_SkinnedFrame_left + CSkin::m_bClipBorder + CSkin::m_titleBarLeftOff, rcText.top + (rcText.bottom - rcText.top) / 2 - 8, hIcon, 16, 16, 0, 0, DI_NORMAL);
 
 				// title buttons;
@@ -562,13 +562,13 @@ static BOOL fHaveTipper = FALSE;
 
 static INT_PTR CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	struct ContainerWindowData *pContainer = 0;        // pointer to our struct ContainerWindowData
+	struct TContainerData *pContainer = 0;        // pointer to our struct ContainerWindowData
 	int iItem = 0;
 	TCITEM item;
 	HWND  hwndTab;
 	BOOL  bSkinned;
 
-	pContainer = (struct ContainerWindowData *) GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
+	pContainer = (struct TContainerData *) GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 	bSkinned = CSkin::m_skinEnabled ? TRUE : FALSE;
 	hwndTab = GetDlgItem(hwndDlg, IDC_MSGTABS);
 
@@ -589,7 +589,7 @@ static INT_PTR CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, 
 
 			OldContainerWndProc = (WNDPROC)SetWindowLongPtr(hwndDlg, GWLP_WNDPROC, (LONG_PTR)ContainerWndProc);
 
-			pContainer = (struct ContainerWindowData *) lParam;
+			pContainer = (struct TContainerData *) lParam;
 			SetWindowLongPtr(hwndDlg, GWLP_USERDATA, (LONG_PTR) pContainer);
 
 			pContainer->hwnd = hwndDlg;
@@ -764,7 +764,7 @@ static INT_PTR CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, 
 			pContainer->MenuBar->getClientRect();
 
 			if (pContainer->hwndStatus) {
-				_MessageWindowData *dat = (_MessageWindowData *)GetWindowLongPtr(pContainer->hwndActive, GWLP_USERDATA);
+				TWindowData *dat = (TWindowData *)GetWindowLongPtr(pContainer->hwndActive, GWLP_USERDATA);
 				RECT   rcs;
 
 				SendMessage(pContainer->hwndStatus, WM_USER + 101, 0, (LPARAM)dat);
@@ -828,7 +828,7 @@ static INT_PTR CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, 
 					SetWindowPos((HWND)item.lParam, 0, rcClient.left, rcClient.top, (rcClient.right - rcClient.left), (rcClient.bottom - rcClient.top),
 								 SWP_NOSENDCHANGING|SWP_NOACTIVATE/*|SWP_NOCOPYBITS*/);
 					if (!pContainer->bSizingLoop && sizeChanged) {
-						_MessageWindowData *dat = (_MessageWindowData *)GetWindowLongPtr(pContainer->hwndActive, GWLP_USERDATA);
+						TWindowData *dat = (TWindowData *)GetWindowLongPtr(pContainer->hwndActive, GWLP_USERDATA);
 						DM_ScrollToBottom(dat, 0, 1);
 					}
 				}
@@ -908,7 +908,7 @@ static INT_PTR CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, 
 							nPanel = nm->dwItemSpec;
 panel_found:
 						if (nPanel == 2) {
-							struct _MessageWindowData *dat = (struct _MessageWindowData *)GetWindowLongPtr(pContainer->hwndActive, GWLP_USERDATA);
+							struct TWindowData *dat = (struct TWindowData *)GetWindowLongPtr(pContainer->hwndActive, GWLP_USERDATA);
 							SendMessage(pContainer->hwndStatus, SB_GETRECT, nPanel, (LPARAM)&rc);
 							if (dat)
 								SI_CheckStatusIconClick(dat, pContainer->hwndStatus, nm->pt, rc, 2, ((LPNMHDR)lParam)->code);
@@ -961,7 +961,7 @@ panel_found:
 					int   			iItem;
 					TCITEM 			item;
 					NMTTDISPINFO*	nmtt = (NMTTDISPINFO *) lParam;
-					_MessageWindowData *cdat = 0;
+					TWindowData *cdat = 0;
 					const TCHAR*	contactName = 0;
 					TCHAR 			szTtitle[256];
 
@@ -975,7 +975,7 @@ panel_found:
 					item.mask = TCIF_PARAM;
 					TabCtrl_GetItem(hwndTab, iItem, &item);
 					if (item.lParam) {
-						cdat = (struct _MessageWindowData *) GetWindowLongPtr((HWND)item.lParam, GWLP_USERDATA);
+						cdat = (struct TWindowData *) GetWindowLongPtr((HWND)item.lParam, GWLP_USERDATA);
 						if (cdat) {
 							contactName = cdat->cache->getNick();
 							if (contactName) {
@@ -1006,7 +1006,7 @@ panel_found:
 					POINT pt, pt1;
 					int iSelection, iItem;
 					TCITEM item = {0};
-					struct _MessageWindowData *dat = 0;
+					struct TWindowData *dat = 0;
 
 					GetCursorPos(&pt);
 					pt1 = pt;
@@ -1018,7 +1018,7 @@ panel_found:
 					item.mask = TCIF_PARAM;
 					TabCtrl_GetItem(hwndTab, iItem, &item);
 					if (item.lParam && IsWindow((HWND)item.lParam))
-						dat = (struct _MessageWindowData *)GetWindowLongPtr((HWND)item.lParam, GWLP_USERDATA);
+						dat = (struct TWindowData *)GetWindowLongPtr((HWND)item.lParam, GWLP_USERDATA);
 
 					if (dat)
 						MsgWindowUpdateMenu(dat, subMenu, MENU_TABCONTEXT);
@@ -1093,7 +1093,7 @@ panel_found:
 			pContainer->MenuBar->Cancel();
 
 			HANDLE hContact;
-			_MessageWindowData *dat = (_MessageWindowData *)GetWindowLongPtr(pContainer->hwndActive, GWLP_USERDATA);
+			TWindowData *dat = (TWindowData *)GetWindowLongPtr(pContainer->hwndActive, GWLP_USERDATA);
 			DWORD dwOldFlags = pContainer->dwFlags;
 			int i = 0;
 			ButtonItem *pItem = pContainer->buttonItems;
@@ -1273,7 +1273,7 @@ buttons_done:
 
 			GetClientRect(GetDlgItem(hwndDlg, IDC_MSGTABS), &rc);
 			if (!((rc.right - rc.left) == pContainer->oldSize.cx && (rc.bottom - rc.top) == pContainer->oldSize.cy)) {
-				_MessageWindowData *dat = (_MessageWindowData *)GetWindowLongPtr(pContainer->hwndActive, GWLP_USERDATA);
+				TWindowData *dat = (TWindowData *)GetWindowLongPtr(pContainer->hwndActive, GWLP_USERDATA);
 				DM_ScrollToBottom(dat, 0, 0);
 				SendMessage(pContainer->hwndActive, WM_SIZE, 0, 0);
 			}
@@ -1347,11 +1347,11 @@ buttons_done:
 		case DM_UPDATETITLE: {
 			HANDLE hContact = 0;
 			const TCHAR *szNewTitle = NULL;
-			_MessageWindowData *dat = NULL;
+			TWindowData *dat = NULL;
 
 			if (lParam) {               // lParam != 0 means sent by a chat window
 				TCHAR szText[512];
-				dat = (struct _MessageWindowData *)GetWindowLongPtr((HWND)wParam, GWLP_USERDATA);
+				dat = (struct TWindowData *)GetWindowLongPtr((HWND)wParam, GWLP_USERDATA);
 					GetWindowText((HWND)wParam, szText, SIZEOF(szText));
 					szText[SIZEOF(szText)-1] = 0;
 					SetWindowText(hwndDlg, szText);
@@ -1364,7 +1364,7 @@ buttons_done:
 					SendMessage(pContainer->hwndActive, DM_QUERYHCONTACT, 0, (LPARAM)&hContact);
 				else
 					break;
-				dat = (struct _MessageWindowData *)GetWindowLongPtr(pContainer->hwndActive, GWLP_USERDATA);
+				dat = (struct TWindowData *)GetWindowLongPtr(pContainer->hwndActive, GWLP_USERDATA);
 			}
 			else {
 				HWND hwnd = M->FindWindow((HANDLE)wParam);
@@ -1377,7 +1377,7 @@ buttons_done:
 				}
 				hContact = (HANDLE)wParam;
 				if (hwnd && hContact)
-					dat = (struct _MessageWindowData *)GetWindowLongPtr(hwnd, GWLP_USERDATA);
+					dat = (struct TWindowData *)GetWindowLongPtr(hwnd, GWLP_USERDATA);
 			}
 			if (dat) {
 				SendMessage(hwndDlg, DM_SETICON, (WPARAM)dat, (LPARAM)(dat->hXStatusIcon ? dat->hXStatusIcon : dat->hTabStatusIcon));
@@ -1395,7 +1395,7 @@ buttons_done:
 				int i;
 				TCITEM item = {0};
 				DWORD dwTimeout;
-				struct _MessageWindowData *dat = 0;
+				struct TWindowData *dat = 0;
 
 				item.mask = TCIF_PARAM;
 				if ((dwTimeout = PluginConfig.m_TabAutoClose) > 0) {
@@ -1415,7 +1415,7 @@ buttons_done:
 					}
 					mir_free(hwndClients);
 				}
-				dat = (struct _MessageWindowData *)GetWindowLongPtr(pContainer->hwndActive, GWLP_USERDATA);
+				dat = (struct TWindowData *)GetWindowLongPtr(pContainer->hwndActive, GWLP_USERDATA);
 				if(dat && dat->bType == SESSIONTYPE_IM) {
 					if ((dat->idle || dat->timezone != -1) && pContainer->hwndActive && IsWindow(pContainer->hwndActive))
 						dat->Panel->Invalidate();
@@ -1780,7 +1780,7 @@ buttons_done:
 					SetWindowPos(hwndDlg,  0, rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top, SWP_NOACTIVATE | SWP_FRAMECHANGED | SWP_NOCOPYBITS);
 					RedrawWindow(hwndDlg, NULL, NULL, RDW_INVALIDATE | RDW_FRAME | RDW_UPDATENOW);
 					if (pContainer->hwndActive != 0) {
-						_MessageWindowData *dat = (_MessageWindowData *)GetWindowLongPtr(pContainer->hwndActive, GWLP_USERDATA);
+						TWindowData *dat = (TWindowData *)GetWindowLongPtr(pContainer->hwndActive, GWLP_USERDATA);
 						DM_ScrollToBottom(dat, 0, 0);
 					}
 				}
@@ -1891,7 +1891,7 @@ buttons_done:
 			HICON 		hIconMsg = PluginConfig.g_IconMsgEvent;
 
 			if(Win7Taskbar->haveLargeIcons()) {
-				_MessageWindowData*dat = (_MessageWindowData *)wParam;
+				TWindowData*dat = (TWindowData *)wParam;
 
 				if ((HICON)lParam == PluginConfig.g_buttonBarIcons[ICON_DEFAULT_TYPING] || (HICON)lParam == hIconMsg) {
 					Win7Taskbar->setOverlayIcon(hwndDlg, lParam);
@@ -1912,6 +1912,7 @@ buttons_done:
 					}
 					else {
 						SendMessage(hwndDlg, WM_SETICON, ICON_BIG, lParam);
+						SendMessage(hwndDlg, WM_SETICON, ICON_SMALL, lParam);
 						if(dat->pContainer->hIconTaskbarOverlay)
 							Win7Taskbar->setOverlayIcon(hwndDlg, (LPARAM)dat->pContainer->hIconTaskbarOverlay);
 						else
@@ -1945,7 +1946,7 @@ buttons_done:
 			int id = LOWORD(dis->itemID);
 
 			if (dis->hwndItem == pContainer->hwndStatus && !(pContainer->dwFlags & CNT_NOSTATUSBAR)) {
-				struct _MessageWindowData *dat = (struct _MessageWindowData *)GetWindowLongPtr(pContainer->hwndActive, GWLP_USERDATA);
+				struct TWindowData *dat = (struct TWindowData *)GetWindowLongPtr(pContainer->hwndActive, GWLP_USERDATA);
 				if (dat)
 					DrawStatusIcons(dat, dis->hDC, dis->rcItem, 2);
 				return TRUE;
@@ -1971,7 +1972,7 @@ buttons_done:
 
 			if (PluginConfig.g_FlashAvatarAvail) { // destroy own flash avatar
 				FLASHAVATAR fa = {0};
-				struct _MessageWindowData *dat = (struct _MessageWindowData *)GetWindowLongPtr(pContainer->hwndActive, GWLP_USERDATA);
+				struct TWindowData *dat = (struct TWindowData *)GetWindowLongPtr(pContainer->hwndActive, GWLP_USERDATA);
 
 				fa.id = 25367;
 				fa.cProto = dat ? dat->szProto : NULL;
@@ -2274,8 +2275,8 @@ int TSAPI CutContactName(const TCHAR *oldname, TCHAR *newname, unsigned int size
  * functions for handling the linked list of struct ContainerWindowData *foo
  */
 
-static struct ContainerWindowData* TSAPI AppendToContainerList(struct ContainerWindowData *pContainer) {
-	struct ContainerWindowData *pCurrent = 0;
+static struct TContainerData* TSAPI AppendToContainerList(struct TContainerData *pContainer) {
+	struct TContainerData *pCurrent = 0;
 
 	if (!pFirstContainer) {
 		pFirstContainer = pContainer;
@@ -2291,8 +2292,8 @@ static struct ContainerWindowData* TSAPI AppendToContainerList(struct ContainerW
 	}
 }
 
-struct ContainerWindowData* TSAPI FindContainerByName(const TCHAR *name) {
-	struct ContainerWindowData *pCurrent = pFirstContainer;
+struct TContainerData* TSAPI FindContainerByName(const TCHAR *name) {
+	struct TContainerData *pCurrent = pFirstContainer;
 
 	if (name == NULL || lstrlen(name) == 0)
 		return 0;
@@ -2310,8 +2311,8 @@ struct ContainerWindowData* TSAPI FindContainerByName(const TCHAR *name) {
 	return NULL;
 }
 
-static struct ContainerWindowData* TSAPI RemoveContainerFromList(struct ContainerWindowData *pContainer) {
-	struct ContainerWindowData *pCurrent = pFirstContainer;
+static struct TContainerData* TSAPI RemoveContainerFromList(struct TContainerData *pContainer) {
+	struct TContainerData *pCurrent = pFirstContainer;
 
 	if (pContainer == pFirstContainer) {
 		if (pContainer->pNextContainer != NULL)
@@ -2345,7 +2346,7 @@ static struct ContainerWindowData* TSAPI RemoveContainerFromList(struct Containe
  * rc is the RECT obtained by GetClientRect(hwndTab)
  */
 
-void TSAPI AdjustTabClientRect(struct ContainerWindowData *pContainer, RECT *rc)
+void TSAPI AdjustTabClientRect(struct TContainerData *pContainer, RECT *rc)
 {
 	HWND hwndTab = GetDlgItem(pContainer->hwnd, IDC_MSGTABS);
 	RECT rcTab, rcTabOrig;
@@ -2591,7 +2592,7 @@ HMENU TSAPI BuildMCProtocolMenu(HWND hwndDlg) {
 	int    		iChecked, isForced;
 	WORD   		wStatus;
 
-	struct _MessageWindowData *dat = (struct _MessageWindowData *)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
+	struct TWindowData *dat = (struct TWindowData *)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 	if (dat == NULL)
 		return (HMENU) 0;
 
@@ -2652,7 +2653,7 @@ HMENU TSAPI BuildMCProtocolMenu(HWND hwndDlg) {
  * iMode == 0: turn off flashing
  */
 
-void TSAPI FlashContainer(struct ContainerWindowData *pContainer, int iMode, int iCount) {
+void TSAPI FlashContainer(struct TContainerData *pContainer, int iMode, int iCount) {
 	FLASHWINFO fwi;
 
 	if (CMimAPI::m_MyFlashWindowEx == NULL)
@@ -2681,7 +2682,7 @@ void TSAPI FlashContainer(struct ContainerWindowData *pContainer, int iMode, int
 	CMimAPI::m_MyFlashWindowEx(&fwi);
 }
 
-void TSAPI ReflashContainer(struct ContainerWindowData *pContainer) {
+void TSAPI ReflashContainer(struct TContainerData *pContainer) {
 	DWORD dwStartTime = pContainer->dwFlashingStarted;
 
 	if (GetForegroundWindow() == pContainer->hwnd || GetActiveWindow() == pContainer->hwnd)       // dont care about active windows
@@ -2712,7 +2713,7 @@ void TSAPI ReflashContainer(struct ContainerWindowData *pContainer) {
  * broadcasts a message to all child windows (tabs/sessions)
  */
 
-void TSAPI BroadCastContainer(const ContainerWindowData *pContainer, UINT message, WPARAM wParam, LPARAM lParam, BYTE bType) {
+void TSAPI BroadCastContainer(const TContainerData *pContainer, UINT message, WPARAM wParam, LPARAM lParam, BYTE bType) {
 	int i;
 	TCITEM item;
 
@@ -2728,7 +2729,7 @@ void TSAPI BroadCastContainer(const ContainerWindowData *pContainer, UINT messag
 			if(bType == SESSIONTYPE_ANY)
 				SendMessage((HWND)item.lParam, message, wParam, lParam);
 			else {
-				_MessageWindowData *dat = (_MessageWindowData *)GetWindowLongPtr((HWND)item.lParam, GWLP_USERDATA);
+				TWindowData *dat = (TWindowData *)GetWindowLongPtr((HWND)item.lParam, GWLP_USERDATA);
 				if(dat && dat->bType == bType)
 					SendMessage((HWND)item.lParam, message, wParam, lParam);
 			}

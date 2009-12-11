@@ -51,7 +51,7 @@ char *TemplateNames[] = {
 	"Error message"
 };
 
-TemplateSet LTR_Default = { TRUE,
+TTemplateSet LTR_Default = { TRUE,
 							_T("%I %S %N  %?&D%\\&E%\\!, %\\T%\\!: %?n%?S %?T%?|%M"),
 							_T("%I %S %N  %?&D%\\&E%\\!, %\\T%\\!: %?n%?S %?T%?|%M"),
 							_T("%I %S %N  %?&D%\\&E%\\!, %\\T%\\!: %?n%?S %?T%?|%M"),
@@ -63,7 +63,7 @@ TemplateSet LTR_Default = { TRUE,
 							"Default LTR"
 						  };
 
-TemplateSet RTL_Default = { TRUE,
+TTemplateSet RTL_Default = { TRUE,
 							_T("%I %S %N  %D%n%S %T%|%M"),
 							_T("%I %S %N  %D%n%S %T%|%M"),
 							_T("%I %S %N  %D%n%S %T%|%M"),
@@ -75,7 +75,7 @@ TemplateSet RTL_Default = { TRUE,
 							"Default RTL"
 						  };
 
-TemplateSet LTR_Active, RTL_Active;
+TTemplateSet LTR_Active, RTL_Active;
 static int                      helpActive = 0;
 
 
@@ -84,7 +84,7 @@ static int                      helpActive = 0;
 * templates
 */
 
-static void LoadTemplatesFrom(TemplateSet *tSet, HANDLE hContact, int rtl)
+static void LoadTemplatesFrom(TTemplateSet *tSet, HANDLE hContact, int rtl)
 {
 	DBVARIANT dbv = {0};
 	int i;
@@ -121,11 +121,11 @@ void LoadDefaultTemplates()
 
 INT_PTR CALLBACK DlgProcTemplateEditor(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	struct _MessageWindowData *dat = 0;
+	struct TWindowData *dat = 0;
 	TemplateEditorInfo *teInfo = 0;
-	TemplateSet *tSet;
+	TTemplateSet *tSet;
 	int i;
-	dat = (struct _MessageWindowData *) GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
+	dat = (struct TWindowData *) GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 	/*
 	* since this dialog needs a struct MessageWindowData * but has no container, we can store
 	* the extended info struct in pContainer *)
@@ -140,13 +140,13 @@ INT_PTR CALLBACK DlgProcTemplateEditor(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			TemplateEditorNew *teNew = (TemplateEditorNew *)lParam;
 			COLORREF url_visited = RGB(128, 0, 128);
 			COLORREF url_unvisited = RGB(0, 0, 255);
-			dat = (struct _MessageWindowData *) malloc(sizeof(struct _MessageWindowData));
+			dat = (struct TWindowData *) malloc(sizeof(struct TWindowData));
 
 			TranslateDialogDefault(hwndDlg);
 
-			ZeroMemory((void *) dat, sizeof(struct _MessageWindowData));
-			dat->pContainer = (struct ContainerWindowData *)malloc(sizeof(struct ContainerWindowData));
-			ZeroMemory((void *)dat->pContainer, sizeof(struct ContainerWindowData));
+			ZeroMemory((void *) dat, sizeof(struct TWindowData));
+			dat->pContainer = (struct TContainerData *)malloc(sizeof(struct TContainerData));
+			ZeroMemory((void *)dat->pContainer, sizeof(struct TContainerData));
 			teInfo = (TemplateEditorInfo *)dat->pContainer;
 			ZeroMemory((void *)teInfo, sizeof(TemplateEditorInfo));
 			teInfo->hContact = teNew->hContact;

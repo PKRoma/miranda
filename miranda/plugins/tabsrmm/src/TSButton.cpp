@@ -167,7 +167,7 @@ static void PaintWorker(MButtonCtrl *ctl, HDC hdcPaint)
 		bool 	fVSThemed = (!CSkin::m_skinEnabled && M->isVSThemed());
 		HANDLE 	hbp = 0;
 
-		_MessageWindowData *dat = (_MessageWindowData *)GetWindowLongPtr(GetParent(ctl->hwnd), GWLP_USERDATA);
+		TWindowData *dat = (TWindowData *)GetWindowLongPtr(GetParent(ctl->hwnd), GWLP_USERDATA);
 		GetClientRect(ctl->hwnd, &rcClient);
 		CopyRect(&rcContent, &rcClient);
 
@@ -706,7 +706,7 @@ static LRESULT CALLBACK TSButtonWndProc(HWND hwndDlg, UINT msg,  WPARAM wParam, 
 			bct->dimmed = lParam ? TRUE : FALSE;
 			break;
 		case BUTTONSETASFLATBTN + 12:
-			bct->pContainer = (struct ContainerWindowData *)lParam;
+			bct->pContainer = (struct TContainerData *)lParam;
 			break;
 		case BUTTONSETASFLATBTN + 13:
 			bct->bTitleButton = TRUE;

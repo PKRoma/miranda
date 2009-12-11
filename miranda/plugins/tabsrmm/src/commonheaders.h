@@ -263,6 +263,6 @@ typedef std::basic_string<TCHAR> tstring;
 
 extern	HINSTANCE g_hInst;
 extern CSkinItem SkinItems[];
-extern ContainerWindowData *pFirstContainer, *pLastActiveContainer;
+extern TContainerData *pFirstContainer, *pLastActiveContainer;
 
 #endif /* __COMMONHEADERS_H */

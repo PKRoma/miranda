@@ -165,7 +165,7 @@ void CB_DeInitCustomButtons()
 	DestroyServiceFunction(hButtonsBarRemoveButton);
 }
 
-void CB_DestroyAllButtons(HWND hwndDlg, struct _MessageWindowData *dat)
+void CB_DestroyAllButtons(HWND hwndDlg, struct TWindowData *dat)
 {
 	int i;
 	HWND hwndBtn = NULL;
@@ -186,7 +186,7 @@ void CB_DestroyAllButtons(HWND hwndDlg, struct _MessageWindowData *dat)
 	}
 }
 
-void CB_DestroyButton(HWND hwndDlg, struct _MessageWindowData *dat, DWORD dwButtonCID, DWORD dwFlags)
+void CB_DestroyButton(HWND hwndDlg, struct TWindowData *dat, DWORD dwButtonCID, DWORD dwFlags)
 {
 	HWND hwndBtn = GetDlgItem(hwndDlg, dwButtonCID);
 	RECT rc = {0};
@@ -202,7 +202,7 @@ void CB_DestroyButton(HWND hwndDlg, struct _MessageWindowData *dat, DWORD dwButt
 	}
 }
 
-void CB_ChangeButton(HWND hwndDlg, struct _MessageWindowData *dat, CustomButtonData* cbd)
+void CB_ChangeButton(HWND hwndDlg, struct TWindowData *dat, CustomButtonData* cbd)
 {
 	HWND hwndBtn = GetDlgItem(hwndDlg, cbd->dwButtonCID);
 	if (hwndBtn) {
@@ -498,7 +498,7 @@ static INT_PTR CB_ModifyButton(WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
-void BB_UpdateIcons(HWND hdlg, struct _MessageWindowData *dat)
+void BB_UpdateIcons(HWND hdlg, struct TWindowData *dat)
 {
 	int i;
 	HWND hwndBtn = NULL;
@@ -530,7 +530,7 @@ void BB_UpdateIcons(HWND hdlg, struct _MessageWindowData *dat)
 	}
 }
 
-void TSAPI BB_InitDlgButtons(_MessageWindowData *dat)
+void TSAPI BB_InitDlgButtons(TWindowData *dat)
 {
 	RECT rect;
 	int i;
@@ -640,7 +640,7 @@ void TSAPI BB_InitDlgButtons(_MessageWindowData *dat)
 	dat->bbRSideWidth = rwidth;
 }
 
-BOOL TSAPI BB_SetButtonsPos(_MessageWindowData *dat)
+BOOL TSAPI BB_SetButtonsPos(TWindowData *dat)
 {
 	RECT 			rect;
 	int 			i;
@@ -793,7 +793,7 @@ BOOL TSAPI BB_SetButtonsPos(_MessageWindowData *dat)
 	return (EndDeferWindowPos(hdwp));
 }
 
-void TSAPI BB_CustomButtonClick(struct _MessageWindowData *dat, DWORD idFrom, HWND hwndFrom, BOOL code)
+void TSAPI BB_CustomButtonClick(struct TWindowData *dat, DWORD idFrom, HWND hwndFrom, BOOL code)
 {
 	RECT rc;
 	int i;
@@ -895,7 +895,7 @@ void BB_RegisterSeparators()
 	}
 }
 
-void BB_RefreshTheme(const _MessageWindowData *dat)
+void BB_RefreshTheme(const TWindowData *dat)
 {
 	int i;
 

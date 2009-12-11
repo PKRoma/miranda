@@ -72,11 +72,11 @@ public:
 		CMD_MSGDIALOG = 2,
 		CMD_INFOPANEL = 4,
 	};
-	static	int					TSAPI FindRTLLocale					(_MessageWindowData *dat);
+	static	int					TSAPI FindRTLLocale					(TWindowData *dat);
 	static  TCHAR* 				TSAPI GetPreviewWithEllipsis		(TCHAR *szText, size_t iMaxLen);
 	static	TCHAR* 				TSAPI FilterEventMarkers			(TCHAR *wszText);
-	static  const TCHAR* 		TSAPI FormatRaw						(_MessageWindowData *dat, const TCHAR *msg, int flags, BOOL isSent);
-	static	const TCHAR* 		TSAPI FormatTitleBar				(const _MessageWindowData *dat, const TCHAR *szFormat);
+	static  const TCHAR* 		TSAPI FormatRaw						(TWindowData *dat, const TCHAR *msg, int flags, BOOL isSent);
+	static	const TCHAR* 		TSAPI FormatTitleBar				(const TWindowData *dat, const TCHAR *szFormat);
 #if defined(_UNICODE)
 	static	char* 				TSAPI FilterEventMarkers			(char *szText);
 #endif
@@ -87,18 +87,18 @@ public:
 	static	int 				TSAPI RTFColorToIndex				(int iCol);
 	static	int					TSAPI ReadContainerSettingsFromDB	(const HANDLE hContact, TContainerSettings *cs, const char *szKey = 0);
 	static	int 				TSAPI WriteContainerSettingsToDB	(const HANDLE hContact, TContainerSettings *cs, const char *szKey = 0);
-	static  void 				TSAPI SettingsToContainer			(ContainerWindowData *pContainer);
-	static	void 				TSAPI ContainerToSettings			(ContainerWindowData *pContainer);
-	static	void 				TSAPI ReadPrivateContainerSettings	(ContainerWindowData *pContainer, bool fForce = false);
+	static  void 				TSAPI SettingsToContainer			(TContainerData *pContainer);
+	static	void 				TSAPI ContainerToSettings			(TContainerData *pContainer);
+	static	void 				TSAPI ReadPrivateContainerSettings	(TContainerData *pContainer, bool fForce = false);
 	static	DWORD 		CALLBACK 	  StreamOut(DWORD_PTR dwCookie, LPBYTE pbBuff, LONG cb, LONG * pcb);
-	static	LRESULT				TSAPI CmdDispatcher					(UINT uType, HWND hwndDlg, UINT cmd, WPARAM wParam, LPARAM lParam, _MessageWindowData *dat = 0,
-																	 ContainerWindowData *pContainer = 0);
+	static	LRESULT				TSAPI CmdDispatcher					(UINT uType, HWND hwndDlg, UINT cmd, WPARAM wParam, LPARAM lParam, TWindowData *dat = 0,
+																	 TContainerData *pContainer = 0);
 	static	void 				TSAPI addMenuItem					(const HMENU& m, MENUITEMINFO& mii, HICON hIcon,
 																	 const TCHAR *szText, UINT uID, UINT pos);
 	static	void				TSAPI enableDlgControl				(const HWND hwnd, UINT id, BOOL fEnable = 1);
 	static 	void 				TSAPI showDlgControl				(const HWND hwnd, UINT id, int showCmd);
-	static	int					TSAPI mustPlaySound					(const _MessageWindowData *dat);
-	static 	HICON				TSAPI iconFromAvatar				(const _MessageWindowData *dat);
+	static	int					TSAPI mustPlaySound					(const TWindowData *dat);
+	static 	HICON				TSAPI iconFromAvatar				(const TWindowData *dat);
 
 	template<typename T> static size_t TSAPI CopyToClipBoard(T* _t, const HWND hwndOwner)
 	{

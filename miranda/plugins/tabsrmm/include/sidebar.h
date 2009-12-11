@@ -61,7 +61,7 @@ class CSideBarButton
 {
 public:
 	CSideBarButton(const UINT id, CSideBar *sideBar);
-	CSideBarButton(const _MessageWindowData *dat, CSideBar *sideBar);
+	CSideBarButton(const TWindowData *dat, CSideBar *sideBar);
 	~CSideBarButton();
 
 	LONG  						getHeight() const 			{ return(m_sz.cy); }
@@ -70,7 +70,7 @@ public:
 	const HWND					getHwnd() const 			{ return(m_hwnd); }
 	const UINT					getID() const 				{ return(m_id); }
 	const HANDLE				getContactHandle() const 	{ return(m_dat->hContact); }
-	const _MessageWindowData*	getDat() const 				{ return(m_dat); }
+	const TWindowData*	getDat() const 				{ return(m_dat); }
 	const TSideBarLayout*		getLayout() const 			{ return(m_sideBarLayout); }
 
 	void 						RenderThis					(const HDC hdc) const;
@@ -89,7 +89,7 @@ private:
 private:
 	const TSideBarLayout*		m_sideBarLayout;
 	HWND						m_hwnd;									// window handle for the TSButton object
-	const 						_MessageWindowData*  m_dat;				// session data
+	const 						TWindowData*  m_dat;				// session data
 	UINT						m_id;									// control id
 	bool						m_isTopAligned;
 	SIZE						m_sz;
@@ -125,13 +125,13 @@ public:
 		SIDEBAR_GAP = 2									// gap between sidebar container window and content tab sheet border
 	};
 
-	CSideBar(ContainerWindowData *pContainer);
+	CSideBar(TContainerData *pContainer);
 	~CSideBar();
 
 	void						Init						(const bool fForce = false);
-	void						addSession					(const _MessageWindowData *dat, int position = -1);
-	HRESULT						removeSession				(const _MessageWindowData *dat);
-	void						updateSession				(const _MessageWindowData *dat);
+	void						addSession					(const TWindowData *dat, int position = -1);
+	HRESULT						removeSession				(const TWindowData *dat);
+	void						updateSession				(const TWindowData *dat);
 
 	void						processScrollerButtons		(UINT cmd);
 	void						Layout						(const RECT *rc = 0, bool fOnlyCalc = false);
@@ -140,7 +140,7 @@ public:
 
 	const LONG 					getWidth() const 			{ return(m_isVisible ? m_width + SIDEBAR_GAP : 0); }
 	const DWORD					getFlags() const			{ return(m_dwFlags); }
-	const ContainerWindowData*	getContainer() const 		{ return(m_pContainer); }
+	const TContainerData*	getContainer() const 		{ return(m_pContainer); }
 	const bool					isActive() const 			{ return(m_isActive); }
 	const bool					isVisible() const 			{ return(m_isVisible); }
 	const CSideBarButton* 		getActiveItem() const 		{ return(m_activeItem); }
@@ -167,7 +167,7 @@ public:
 	}
 	HWND								getScrollWnd() const 			{ return(m_hwndScrollWnd); }
 	const CSideBarButton*				getHoveredClose() const 		{ return(m_hoveredClose); }
-	const CSideBarButton* 		 		setActiveItem					(const _MessageWindowData *dat);
+	const CSideBarButton* 		 		setActiveItem					(const TWindowData *dat);
 
 	static const TSideBarLayout* 		getLayouts						(int& uLayoutCount)
 	{
@@ -186,7 +186,7 @@ private:
 	void								populateAll();
 	void								removeAll();
 	void								Invalidate();
-	ButtonIterator 						findSession						(const _MessageWindowData *dat);
+	ButtonIterator 						findSession						(const TWindowData *dat);
 	ButtonIterator						findSession						(const HANDLE hContact);
 
 	LRESULT CALLBACK					wndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -194,7 +194,7 @@ private:
 private:
 	HWND								m_hwndScrollWnd;
 	std::vector<CSideBarButton*> 		m_buttonlist;							// our list of buttons
-	ContainerWindowData*				m_pContainer;							// our master and commander...
+	TContainerData*				m_pContainer;							// our master and commander...
 	LONG								m_width;								// required width of the bar (m_elementWidth + padding)
 	DWORD								m_dwFlags;
 	CSideBarButton*						m_up, *m_down;							// the scroller buttons (up down)

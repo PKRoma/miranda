@@ -59,7 +59,7 @@ extern void GetIconSize(HICON hIcon, int* sizeX, int* sizeY)
 	DeleteObject(ii.hbmColor);
 }
 
-int CacheIconToBMP(struct MsgLogIcon *theIcon, HICON hIcon, COLORREF backgroundColor, int sizeX, int sizeY)
+int CacheIconToBMP(struct TLogIcon *theIcon, HICON hIcon, COLORREF backgroundColor, int sizeX, int sizeY)
 {
 	bool succeeded = false;
 
@@ -95,7 +95,7 @@ int CacheIconToBMP(struct MsgLogIcon *theIcon, HICON hIcon, COLORREF backgroundC
 	return TRUE;
 }
 
-void DeleteCachedIcon(struct MsgLogIcon *theIcon)
+void DeleteCachedIcon(struct TLogIcon *theIcon)
 {
 	DeleteDC(theIcon->hdcMem);
 	DeleteObject(theIcon->hBmp);

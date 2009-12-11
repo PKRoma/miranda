@@ -44,7 +44,7 @@ extern RECT	  			rcLastStatusBarClick;
  * WM_MOUSEMOVE events
  */
 
-void TSAPI DM_DismissTip(_MessageWindowData *dat, const POINT& pt)
+void TSAPI DM_DismissTip(TWindowData *dat, const POINT& pt)
 {
 	RECT rc;
 
@@ -64,7 +64,7 @@ void TSAPI DM_DismissTip(_MessageWindowData *dat, const POINT& pt)
 /**
  * initialize the balloon tooltip for message window notifications
  */
-void TSAPI DM_InitTip(_MessageWindowData *dat)
+void TSAPI DM_InitTip(TWindowData *dat)
 {
 	dat->hwndTip = CreateWindowEx(0, TOOLTIPS_CLASS, NULL, WS_POPUP | TTS_NOPREFIX | TTS_BALLOON, CW_USEDEFAULT, CW_USEDEFAULT,
 								  CW_USEDEFAULT, CW_USEDEFAULT, dat->hwnd, NULL, g_hInst, (LPVOID) NULL);
@@ -85,7 +85,7 @@ void TSAPI DM_InitTip(_MessageWindowData *dat)
  *
  * returns 1 for handled hotkeys, 0 otherwise.
  */
-LRESULT TSAPI DM_GenericHotkeysCheck(MSG *message, _MessageWindowData *dat)
+LRESULT TSAPI DM_GenericHotkeysCheck(MSG *message, TWindowData *dat)
 {
 	LRESULT mim_hotkey_check = CallService(MS_HOTKEY_CHECK, (WPARAM)message, (LPARAM)Translate(TABSRMM_HK_SECTION_GENERIC));
 	HWND	hwndDlg = dat->hwnd;
@@ -131,7 +131,7 @@ LRESULT TSAPI DM_GenericHotkeysCheck(MSG *message, _MessageWindowData *dat)
 	return(0);
 }
 
-LRESULT TSAPI DM_MsgWindowCmdHandler(HWND hwndDlg, ContainerWindowData *m_pContainer, _MessageWindowData *dat, UINT cmd, WPARAM wParam, LPARAM lParam)
+LRESULT TSAPI DM_MsgWindowCmdHandler(HWND hwndDlg, TContainerData *m_pContainer, TWindowData *dat, UINT cmd, WPARAM wParam, LPARAM lParam)
 {
 	HWND	hwndContainer = m_pContainer->hwnd;
 
@@ -559,7 +559,7 @@ LRESULT TSAPI DM_MsgWindowCmdHandler(HWND hwndDlg, ContainerWindowData *m_pConta
 	return(1);
 }
 
-LRESULT TSAPI DM_ContainerCmdHandler(ContainerWindowData *pContainer, UINT cmd, WPARAM wParam, LPARAM lParam)
+LRESULT TSAPI DM_ContainerCmdHandler(TContainerData *pContainer, UINT cmd, WPARAM wParam, LPARAM lParam)
 {
 	if(!pContainer)
 		return(0);
@@ -659,7 +659,7 @@ LRESULT TSAPI DM_ContainerCmdHandler(ContainerWindowData *pContainer, UINT cmd, 
 			return 0;
 		}
 		case ID_VIEW_INFOPANEL: {
-			_MessageWindowData *dat = (_MessageWindowData *)GetWindowLongPtr(pContainer->hwndActive, GWLP_USERDATA);
+			TWindowData *dat = (TWindowData *)GetWindowLongPtr(pContainer->hwndActive, GWLP_USERDATA);
 			if(dat) {
 				RECT	rc;
 				POINT	pt;
@@ -678,7 +678,7 @@ LRESULT TSAPI DM_ContainerCmdHandler(ContainerWindowData *pContainer, UINT cmd, 
 		case ID_MESSAGELOG_IMPORTMESSAGELOGSETTINGS:
 		case ID_MESSAGELOGSETTINGS_FORTHISCONTACT:
 		case ID_MESSAGELOGSETTINGS_GLOBAL: {
-			struct _MessageWindowData *dat = (struct _MessageWindowData *)GetWindowLongPtr(pContainer->hwndActive, GWLP_USERDATA);
+			struct TWindowData *dat = (struct TWindowData *)GetWindowLongPtr(pContainer->hwndActive, GWLP_USERDATA);
 
 			if(dat) {
 				MsgWindowMenuHandler(dat, (int)LOWORD(wParam), MENU_LOGMENU);
@@ -699,7 +699,7 @@ LRESULT TSAPI DM_ContainerCmdHandler(ContainerWindowData *pContainer, UINT cmd, 
  * initialize rich edit control (log and edit control) for both MUC and
  * standard IM session windows.
  */
-void TSAPI DM_InitRichEdit(_MessageWindowData *dat)
+void TSAPI DM_InitRichEdit(TWindowData *dat)
 
 {
 	char*				szStreamOut = NULL;
@@ -826,7 +826,7 @@ void TSAPI DM_InitRichEdit(_MessageWindowData *dat)
 * action and callback procedures for the stock button objects
 */
 
-static void BTN_StockAction(ButtonItem *item, HWND hwndDlg, struct _MessageWindowData *dat, HWND hwndBtn)
+static void BTN_StockAction(ButtonItem *item, HWND hwndDlg, struct TWindowData *dat, HWND hwndBtn)
 {
 	if (item->dwStockFlags & SBI_HANDLEBYCLIENT && IsWindow(hwndDlg) && dat)
 		SendMessage(hwndDlg, WM_COMMAND, MAKELONG(item->uId, BN_CLICKED), (LPARAM)hwndBtn);
@@ -877,7 +877,7 @@ static void BTN_StockAction(ButtonItem *item, HWND hwndDlg, struct _MessageWindo
 	}
 }
 
-static void BTN_StockCallback(ButtonItem *item, HWND hwndDlg, struct _MessageWindowData *dat, HWND hwndBtn)
+static void BTN_StockCallback(ButtonItem *item, HWND hwndDlg, struct TWindowData *dat, HWND hwndBtn)
 {
 }
 
@@ -933,7 +933,7 @@ int TSAPI BTN_GetStockItem(ButtonItem *item, const TCHAR *szName)
 * set the states of defined database action buttons (only if button is a toggle)
 */
 
-void TSAPI DM_SetDBButtonStates(HWND hwndChild, struct _MessageWindowData *dat)
+void TSAPI DM_SetDBButtonStates(HWND hwndChild, struct TWindowData *dat)
 {
 	ButtonItem *buttonItem = dat->pContainer->buttonItems;
 	HANDLE hContact = dat->hContact, hFinalContact = 0;
@@ -996,7 +996,7 @@ void TSAPI DM_SetDBButtonStates(HWND hwndChild, struct _MessageWindowData *dat)
 	}
 }
 
-LRESULT TSAPI DM_ScrollToBottom(_MessageWindowData *dat, WPARAM wParam, LPARAM lParam)
+LRESULT TSAPI DM_ScrollToBottom(TWindowData *dat, WPARAM wParam, LPARAM lParam)
 {
 	if (dat) {
 
@@ -1059,7 +1059,7 @@ static unsigned __stdcall LoadKLThread(LPVOID vParam)
 	return(0);
 }
 
-LRESULT TSAPI DM_LoadLocale(_MessageWindowData *dat)
+LRESULT TSAPI DM_LoadLocale(TWindowData *dat)
 {
 	/*
 	* set locale if saved to contact
@@ -1097,7 +1097,7 @@ LRESULT TSAPI DM_LoadLocale(_MessageWindowData *dat)
 	return 0;
 }
 
-LRESULT TSAPI DM_RecalcPictureSize(_MessageWindowData *dat)
+LRESULT TSAPI DM_RecalcPictureSize(TWindowData *dat)
 {
 	BITMAP bminfo;
 	HBITMAP hbm;
@@ -1116,7 +1116,7 @@ LRESULT TSAPI DM_RecalcPictureSize(_MessageWindowData *dat)
 	return 0;
 }
 
-LRESULT TSAPI DM_UpdateLastMessage(const _MessageWindowData *dat)
+LRESULT TSAPI DM_UpdateLastMessage(const TWindowData *dat)
 {
 	if (dat) {
 		if (dat->pContainer->hwndStatus == 0)
@@ -1169,7 +1169,7 @@ LRESULT TSAPI DM_UpdateLastMessage(const _MessageWindowData *dat)
 * save current keyboard layout for the given contact
 */
 
-LRESULT TSAPI DM_SaveLocale(_MessageWindowData *dat, WPARAM wParam, LPARAM lParam)
+LRESULT TSAPI DM_SaveLocale(TWindowData *dat, WPARAM wParam, LPARAM lParam)
 {
 	if (dat) {
 		if (PluginConfig.m_AutoLocaleSupport && dat->hContact && dat->pContainer->hwndActive == dat->hwnd) {
@@ -1232,7 +1232,7 @@ LRESULT TSAPI DM_WMCopyHandler(HWND hwnd, WNDPROC oldWndProc, WPARAM wParam, LPA
 * create embedded contact list control
 */
 
-HWND TSAPI DM_CreateClist(const _MessageWindowData *dat)
+HWND TSAPI DM_CreateClist(const TWindowData *dat)
 {
 	HWND hwndClist = CreateWindowExA(0, "CListControl", "", WS_TABSTOP | WS_VISIBLE | WS_CHILD | 0x248,
 									 184, 0, 30, 30, dat->hwnd, (HMENU)IDC_CLIST, g_hInst, NULL);
@@ -1266,7 +1266,7 @@ HWND TSAPI DM_CreateClist(const _MessageWindowData *dat)
 	return hwndClist;
 }
 
-LRESULT TSAPI DM_MouseWheelHandler(HWND hwnd, HWND hwndParent, struct _MessageWindowData *mwdat, WPARAM wParam, LPARAM lParam)
+LRESULT TSAPI DM_MouseWheelHandler(HWND hwnd, HWND hwndParent, struct TWindowData *mwdat, WPARAM wParam, LPARAM lParam)
 {
 	RECT rc, rc1;
 	POINT pt;
@@ -1330,7 +1330,7 @@ LRESULT TSAPI DM_MouseWheelHandler(HWND hwnd, HWND hwndParent, struct _MessageWi
 	return 1;
 }
 
-void TSAPI DM_FreeTheme(_MessageWindowData *dat)
+void TSAPI DM_FreeTheme(TWindowData *dat)
 {
 	if(dat) {
 		if (CMimAPI::m_pfnCloseThemeData) {
@@ -1350,7 +1350,7 @@ void TSAPI DM_FreeTheme(_MessageWindowData *dat)
 	}
 }
 
-LRESULT TSAPI DM_ThemeChanged(_MessageWindowData *dat)
+LRESULT TSAPI DM_ThemeChanged(TWindowData *dat)
 {
 	CSkinItem *item_log = &SkinItems[ID_EXTBKHISTORY];
 	CSkinItem *item_msg = &SkinItems[ID_EXTBKINPUTAREA];
@@ -1383,7 +1383,7 @@ LRESULT TSAPI DM_ThemeChanged(_MessageWindowData *dat)
 	return 0;
 }
 
-void TSAPI DM_NotifyTyping(struct _MessageWindowData *dat, int mode)
+void TSAPI DM_NotifyTyping(struct TWindowData *dat, int mode)
 {
 	DWORD protoStatus;
 	DWORD protoCaps;
@@ -1426,13 +1426,13 @@ void TSAPI DM_NotifyTyping(struct _MessageWindowData *dat, int mode)
 	}
 }
 
-void TSAPI DM_OptionsApplied(_MessageWindowData *dat, WPARAM wParam, LPARAM lParam)
+void TSAPI DM_OptionsApplied(TWindowData *dat, WPARAM wParam, LPARAM lParam)
 {
 	if(dat == 0)
 		return;
 
 	HWND 				hwndDlg = dat->hwnd;
-	ContainerWindowData *m_pContainer = dat->pContainer;
+	TContainerData *m_pContainer = dat->pContainer;
 
 	dat->szMicroLf[0] = 0;
 	if (wParam == 1)      // 1 means, the message came from message log options page, so reload the defaults...
@@ -1479,7 +1479,7 @@ void TSAPI DM_OptionsApplied(_MessageWindowData *dat, WPARAM wParam, LPARAM lPar
 }
 
 
-void TSAPI DM_Typing(_MessageWindowData *dat)
+void TSAPI DM_Typing(TWindowData *dat)
 {
 	if(dat == 0)
 		return;
@@ -1497,7 +1497,7 @@ void TSAPI DM_Typing(_MessageWindowData *dat)
 			if (GetForegroundWindow() == hwndContainer)
 				SendMessage(hwndDlg, DM_UPDATEWINICON, 0, 0);
 		} else {
-			struct _MessageWindowData *dat_active = NULL;
+			struct TWindowData *dat_active = NULL;
 			dat->showTyping = 2;
 			dat->nTypeSecs = 86400;
 
@@ -1508,7 +1508,7 @@ void TSAPI DM_Typing(_MessageWindowData *dat)
 
 			SendMessage(hwndDlg, DM_UPDATEWINICON, 0, 0);
 			HandleIconFeedback(dat, (HICON) - 1);
-			dat_active = (struct _MessageWindowData *)GetWindowLongPtr(dat->pContainer->hwndActive, GWLP_USERDATA);
+			dat_active = (struct TWindowData *)GetWindowLongPtr(dat->pContainer->hwndActive, GWLP_USERDATA);
 			if (dat_active && dat_active->bType == SESSIONTYPE_IM)
 				SendMessage(hwndContainer, DM_UPDATETITLE, 0, 0);
 			else
@@ -1563,13 +1563,13 @@ void TSAPI DM_Typing(_MessageWindowData *dat)
  * This cares about private / per container / MUC <> IM splitter syncing and everything.
  * called from IM and MUC windows via DM_SPLITTERGLOBALEVENT
  */
-int TSAPI DM_SplitterGlobalEvent(_MessageWindowData *dat, WPARAM wParam, LPARAM lParam)
+int TSAPI DM_SplitterGlobalEvent(TWindowData *dat, WPARAM wParam, LPARAM lParam)
 {
 	RECT 	rcWin;
 	short 	newMessagePos;
 	LONG	newPos;
-	_MessageWindowData 	*srcDat = PluginConfig.lastSPlitterPos.pSrcDat;
-	ContainerWindowData *srcCnt = PluginConfig.lastSPlitterPos.pSrcContainer;
+	TWindowData 	*srcDat = PluginConfig.lastSPlitterPos.pSrcDat;
+	TContainerData *srcCnt = PluginConfig.lastSPlitterPos.pSrcContainer;
 	bool				fCntGlobal = (!dat->pContainer->settings->fPrivate ? true : false);
 
 	GetWindowRect(dat->hwnd, &rcWin);
@@ -1649,9 +1649,9 @@ int TSAPI DM_SplitterGlobalEvent(_MessageWindowData *dat, WPARAM wParam, LPARAM 
 	return(0);
 }
 
-void TSAPI DM_EventAdded(_MessageWindowData *dat, WPARAM wParam, LPARAM lParam)
+void TSAPI DM_EventAdded(TWindowData *dat, WPARAM wParam, LPARAM lParam)
 {
-	ContainerWindowData *m_pContainer = dat->pContainer;
+	TContainerData *m_pContainer = dat->pContainer;
 	DBEVENTINFO 		dbei = {0};
 	DWORD 				dwTimestamp = 0;
 	BOOL  				fIsStatusChangeEvent = FALSE, fIsNotifyEvent = FALSE;
@@ -1788,7 +1788,7 @@ void TSAPI DM_EventAdded(_MessageWindowData *dat, WPARAM wParam, LPARAM lParam)
 	}
 }
 
-void TSAPI DM_UpdateTitle(_MessageWindowData *dat, WPARAM wParam, LPARAM lParam)
+void TSAPI DM_UpdateTitle(TWindowData *dat, WPARAM wParam, LPARAM lParam)
 {
 	TCHAR 					newtitle[128];
 	TCHAR*					pszNewTitleEnd;
@@ -1801,7 +1801,7 @@ void TSAPI DM_UpdateTitle(_MessageWindowData *dat, WPARAM wParam, LPARAM lParam)
 	HWND 					hwndDlg = dat->hwnd;
 	HWND					hwndTab = GetParent(hwndDlg);
 	HWND					hwndContainer = dat->pContainer->hwnd;
-	ContainerWindowData*	m_pContainer = dat->pContainer;
+	TContainerData*	m_pContainer = dat->pContainer;
 
 	ZeroMemory((void *)newcontactname,  sizeof(newcontactname));
 	dat->szStatus[0] = 0;
@@ -1920,13 +1920,13 @@ void TSAPI DM_UpdateTitle(_MessageWindowData *dat, WPARAM wParam, LPARAM lParam)
 */
 
 static HANDLE hHookIconPressedEvt;
-struct StatusIconListNode *status_icon_list = 0;
+struct TStatusBarIconNode *status_icon_list = 0;
 int status_icon_list_size = 0;
 
 static INT_PTR SI_AddStatusIcon(WPARAM wParam, LPARAM lParam)
 {
 	StatusIconData *sid = (StatusIconData *)lParam;
-	struct StatusIconListNode *siln = (struct StatusIconListNode *)mir_alloc(sizeof(struct StatusIconListNode));
+	struct TStatusBarIconNode *siln = (struct TStatusBarIconNode *)mir_alloc(sizeof(struct TStatusBarIconNode));
 
 	siln->sid.cbSize = sid->cbSize;
 	siln->sid.szModule = mir_strdup(sid->szModule);
@@ -1948,7 +1948,7 @@ static INT_PTR SI_AddStatusIcon(WPARAM wParam, LPARAM lParam)
 static INT_PTR SI_RemoveStatusIcon(WPARAM wParam, LPARAM lParam)
 {
 	StatusIconData *sid = (StatusIconData *)lParam;
-	struct StatusIconListNode *current = status_icon_list, *prev = 0;
+	struct TStatusBarIconNode *current = status_icon_list, *prev = 0;
 
 	while (current) {
 		if (strcmp(current->sid.szModule, sid->szModule) == 0 && current->sid.dwId == sid->dwId) {
@@ -1974,7 +1974,7 @@ static INT_PTR SI_RemoveStatusIcon(WPARAM wParam, LPARAM lParam)
 
 static void SI_RemoveAllStatusIcons(void)
 {
-	struct StatusIconListNode *current;
+	struct TStatusBarIconNode *current;
 
 	while (status_icon_list) {
 		current = status_icon_list;
@@ -1995,7 +1995,7 @@ static INT_PTR SI_ModifyStatusIcon(WPARAM wParam, LPARAM lParam)
 	HANDLE hContact = (HANDLE)wParam;
 
 	StatusIconData *sid = (StatusIconData *)lParam;
-	struct StatusIconListNode *current = status_icon_list;
+	struct TStatusBarIconNode *current = status_icon_list;
 
 	while (current) {
 		if (strcmp(current->sid.szModule, sid->szModule) == 0 && current->sid.dwId == sid->dwId) {
@@ -2025,9 +2025,9 @@ static INT_PTR SI_ModifyStatusIcon(WPARAM wParam, LPARAM lParam)
 				if ((hwnd = M->FindWindow(hContact))) {
 					if (sid->flags&MBF_OWNERSTATE) {
 
-						struct StatusIconListNode *siln = NULL;
-						struct _MessageWindowData *dat = (struct _MessageWindowData *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
-						struct StatusIconListNode *psi = dat->pSINod;
+						struct TStatusBarIconNode *siln = NULL;
+						struct TWindowData *dat = (struct TWindowData *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+						struct TStatusBarIconNode *psi = dat->pSINod;
 						while (psi) {
 							if (strcmp(psi->sid.szModule, sid->szModule) == 0 && psi->sid.dwId == sid->dwId) {
 								siln = psi;
@@ -2036,7 +2036,7 @@ static INT_PTR SI_ModifyStatusIcon(WPARAM wParam, LPARAM lParam)
 							psi = psi->next;
 						}
 						if (!siln) {
-							siln = (struct StatusIconListNode *)mir_alloc(sizeof(struct StatusIconListNode));
+							siln = (struct TStatusBarIconNode *)mir_alloc(sizeof(struct TStatusBarIconNode));
 							siln->sid.szModule = mir_strdup(sid->szModule);
 							siln->sid.dwId = sid->dwId;
 							siln->sid.hIcon = sid->hIcon;
@@ -2072,9 +2072,9 @@ static INT_PTR SI_ModifyStatusIcon(WPARAM wParam, LPARAM lParam)
 	return 1;
 }
 
-void DrawStatusIcons(struct _MessageWindowData *dat, HDC hDC, RECT r, int gap)
+void DrawStatusIcons(struct TWindowData *dat, HDC hDC, RECT r, int gap)
 {
-	StatusIconListNode*	current = status_icon_list;
+	TStatusBarIconNode*	current = status_icon_list;
 	HICON 				hIcon = NULL;
 	char 				buff[256];
 	int 				flags;
@@ -2085,7 +2085,7 @@ void DrawStatusIcons(struct _MessageWindowData *dat, HDC hDC, RECT r, int gap)
 	SetBkMode(hDC, TRANSPARENT);
 	while (current) {
 		if (current->sid.flags&MBF_OWNERSTATE) {
-			struct StatusIconListNode *currentSIN = dat->pSINod;
+			struct TStatusBarIconNode *currentSIN = dat->pSINod;
 			flags = current->sid.flags;
 			hIcon = current->sid.hIcon;
 			while (currentSIN) {
@@ -2139,11 +2139,11 @@ void DrawStatusIcons(struct _MessageWindowData *dat, HDC hDC, RECT r, int gap)
 	DrawIconEx(hDC, x, (r.top + r.bottom - cx_icon) >> 1, PluginConfig.g_sideBarIcons[0], cx_icon, cy_icon, 0, NULL, DI_NORMAL);
 }
 
-void SI_CheckStatusIconClick(struct _MessageWindowData *dat, HWND hwndFrom, POINT pt, RECT r, int gap, int code)
+void SI_CheckStatusIconClick(struct TWindowData *dat, HWND hwndFrom, POINT pt, RECT r, int gap, int code)
 {
 	StatusIconClickData sicd;
-	struct StatusIconListNode *current = status_icon_list;
-	struct StatusIconListNode *clicked = NULL;
+	struct TStatusBarIconNode *current = status_icon_list;
+	struct TStatusBarIconNode *clicked = NULL;
 
 	unsigned int iconNum = (pt.x - (r.left + 0)) / (PluginConfig.m_smcxicon + gap);
 	unsigned int list_icons = 0;
@@ -2159,7 +2159,7 @@ void SI_CheckStatusIconClick(struct _MessageWindowData *dat, HWND hwndFrom, POIN
 	}
 	while (current && dat) {
 		if (current->sid.flags&MBF_OWNERSTATE) {
-			struct StatusIconListNode *currentSIN = dat->pSINod;
+			struct TStatusBarIconNode *currentSIN = dat->pSINod;
 			flags = current->sid.flags;
 			while (currentSIN) {
 				if (strcmp(currentSIN->sid.szModule, current->sid.szModule) == 0 && currentSIN->sid.dwId == current->sid.dwId) {
@@ -2181,7 +2181,7 @@ void SI_CheckStatusIconClick(struct _MessageWindowData *dat, HWND hwndFrom, POIN
 
 	if ((int)iconNum == list_icons && code != NM_RCLICK) {
 		if (GetKeyState(VK_SHIFT) & 0x8000) {
-			struct ContainerWindowData *piContainer = pFirstContainer;
+			struct TContainerData *piContainer = pFirstContainer;
 
 			while (piContainer) {
 				piContainer->dwFlags = ((dat->pContainer->dwFlags & CNT_NOSOUND) ? piContainer->dwFlags | CNT_NOSOUND : piContainer->dwFlags & ~CNT_NOSOUND);

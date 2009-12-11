@@ -226,11 +226,11 @@ typedef struct _settextex {
 #define TEMPLATE_LENGTH 150
 #define CUSTOM_COLORS 5
 
-typedef struct _tagTemplateSet {
+struct TTemplateSet {
 	BOOL valid;             // all templates populated (may still contain crap.. so it's only half-assed safety :)
 	TCHAR szTemplates[TMPL_ERRMSG + 1][TEMPLATE_LENGTH];      // the template strings
 	char szSetName[20];     // everything in this world needs a name. so does this poor template set.
-} TemplateSet;
+};
 
 struct TitleBtn {
 	BOOL isHot;
@@ -252,7 +252,7 @@ class CSideBar;
 class CContactCache;
 
 #define STICK_ICON_MSG 10
-struct MessageWindowTheme {
+struct TLogTheme {
 	COLORREF 	inbg, outbg, bg, oldinbg, oldoutbg, statbg, inputbg;
 	COLORREF 	hgrid;
 	COLORREF 	custom_colors[5];
@@ -277,8 +277,8 @@ struct TContainerSettings {
 	BYTE	reserved[12];
 };
 
-struct ContainerWindowData {
-	ContainerWindowData *pNextContainer;
+struct TContainerData {
+	TContainerData *pNextContainer;
 	TCHAR   szName[CONTAINER_NAMELEN + 4];		// container name
 	HWND    hwndActive;		// active message window
 	HWND    hwnd;				// the container handle
@@ -305,7 +305,7 @@ struct ContainerWindowData {
 	HWND    hWndOptions;
 	BOOL    bSizingLoop;
 	TCHAR   szRelThemeFile[MAX_PATH], szAbsThemeFile[MAX_PATH];
-	TemplateSet *ltr_templates, *rtl_templates;
+	TTemplateSet *ltr_templates, *rtl_templates;
 	HDC     cachedDC;
 	HBITMAP cachedHBM, oldHBM;
 	SIZE    oldDCSize;
@@ -324,7 +324,7 @@ struct ContainerWindowData {
 	SIZE	szOldToolbarSize;
 	SIZE    oldSize, preSIZE;
 	WORD	avatarMode, ownAvatarMode;
-	MessageWindowTheme 	theme;
+	TLogTheme 	theme;
 	TContainerSettings* settings;
 	CTaskbarInteract*	TaskBar;
 	CMenuBar*			MenuBar;
@@ -333,10 +333,10 @@ struct ContainerWindowData {
 
 struct SESSIONINFO_TYPE;
 
-struct _MessageWindowData {
+struct TWindowData {
 	UINT	cbSize;
 	BYTE    bType;
-	struct  ContainerWindowData *pContainer;		// parent container description structure
+	struct  TContainerData *pContainer;		// parent container description structure
 	HWND    hwnd;
 	DWORD   dwFlags;
 	DWORD   dwFlagsEx;
@@ -358,7 +358,7 @@ struct _MessageWindowData {
 	UINT	bbLSideWidth;  //MAD
 	UINT	bbRSideWidth;    //MAD
 	BYTE	kstate[256];
-	struct StatusIconListNode *pSINod;
+	struct TStatusBarIconNode *pSINod;
 	SESSIONINFO_TYPE* si;
 
 	RECT	rcNick, rcUIN, rcStatus, rcPic;
@@ -458,21 +458,21 @@ struct myTabCtrl {
 	int     m_bottomAdjust;
 };
 
-typedef struct _tag_ICONDESC {
+struct TIconDesc {
 	char    *szName;
 	char    *szDesc;
 	HICON   *phIcon;       // where the handle is saved...
 	INT_PTR uId;           // icon ID
 	BOOL    bForceSmall;   // true: force 16x16
-} ICONDESC;
+};
 
-typedef struct _tag_ICONDESCW {
+struct TIconDescW {
 	TCHAR    *szName;
 	TCHAR    *szDesc;
 	HICON   *phIcon;       // where the handle is saved...
 	INT_PTR uId;           // icon ID
 	BOOL    bForceSmall;   // true: force 16x16
-} ICONDESCW;
+};
 
 // menu IDS
 
@@ -503,18 +503,18 @@ typedef struct _tag_ICONDESCW {
 
 #define MIN_PANELHEIGHT 20
 
-struct NewMessageWindowLParam {
-	HANDLE  hContact;
-	int     isWchar;
-	const   char *szInitialText;
-	int     iTabID;
-	int     iTabImage;
-	int     iActivate;
-	TCITEM  item;
-	struct  ContainerWindowData *pContainer;
-	BOOL    bWantPopup;
-	HANDLE  hdbEvent;
-	HKL		hkl;
+struct TNewWindowData {
+	HANDLE  		hContact;
+	int     		isWchar;
+	const   char*	szInitialText;
+	int     		iTabID;
+	int     		iTabImage;
+	int     		iActivate;
+	TCITEM  		item;
+	TContainerData*	pContainer;
+	BOOL    		bWantPopup;
+	HANDLE  		hdbEvent;
+	HKL				hkl;
 };
 
 // flags for the container dwFlags
@@ -863,7 +863,7 @@ extern const int msgDlgFontCount;
 #define HOTKEY_MODIFIERS_CTRLALT 1
 #define HOTKEY_MODIFIERS_ALTSHIFT 2
 
-struct MsgLogIcon {
+struct TLogIcon {
 	HBITMAP hBmp, hoBmp;
 	HDC hdc, hdcMem;
 	HBRUSH hBkgBrush;
@@ -871,7 +871,7 @@ struct MsgLogIcon {
 
 #include "../icons/iconsxp/resource.h"         // icon pack values
 
-struct CPTABLE {
+struct TCpTable {
 	UINT cpId;
 	TCHAR *cpName;
 };
@@ -879,12 +879,12 @@ struct CPTABLE {
 #define LOI_TYPE_FLAG 1
 #define LOI_TYPE_SETTING 2
 
-struct LISTOPTIONSGROUP {
+struct TOptionListGroup {
 	LRESULT handle;
 	TCHAR *szName;
 };
 
-struct LISTOPTIONSITEM {
+struct TOptionListItem {
 	LRESULT handle;
 	TCHAR *szName;
 	UINT id;
@@ -917,8 +917,8 @@ struct SIDEBARITEM {
 	DWORD   dwFlags;
 	HICON   *hIcon, *hIconPressed, *hIconHover;
 	TCHAR   *szName;
-	void (*pfnAction)(ButtonItem *item, HWND hwndDlg, struct _MessageWindowData *dat, HWND hwndItem);
-	void (*pfnCallback)(ButtonItem *item, HWND hwndDlg, struct _MessageWindowData *dat, HWND hwndItem);
+	void (*pfnAction)(ButtonItem *item, HWND hwndDlg, struct TWindowData *dat, HWND hwndItem);
+	void (*pfnCallback)(ButtonItem *item, HWND hwndDlg, struct TWindowData *dat, HWND hwndItem);
 	TCHAR   *tszTip;
 };
 
@@ -970,9 +970,9 @@ struct SIDEBARITEM {
 
 #include "templates.h"
 
-struct StatusIconListNode {
-	struct StatusIconListNode *next;
-	StatusIconData sid;
+struct TStatusBarIconNode {
+	TStatusBarIconNode*	next;
+	StatusIconData 		sid;
 };
 
 struct TABSRMM_SessionInfo {
@@ -1095,8 +1095,8 @@ int SI_InitStatusIcons();
 int SI_DeinitStatusIcons();
 
 int  GetStatusIconsCount();
-void DrawStatusIcons(struct _MessageWindowData *dat, HDC hdc, RECT r, int gap);
-void SI_CheckStatusIconClick(struct _MessageWindowData *dat, HWND hwndFrom, POINT pt, RECT rc, int gap, int code);
+void DrawStatusIcons(struct TWindowData *dat, HDC hdc, RECT r, int gap);
+void SI_CheckStatusIconClick(struct TWindowData *dat, HWND hwndFrom, POINT pt, RECT rc, int gap, int code);
 
 typedef struct _tagSKINDesc {
 	ULONG	ulID;				// resource id

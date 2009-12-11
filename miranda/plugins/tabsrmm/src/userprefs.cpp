@@ -46,7 +46,7 @@
 #define UPREF_ACTION_SWITCHLOGVIEWER 4
 
 extern		HANDLE hUserPrefsWindowList;
-extern		struct CPTABLE cpTable[];
+extern		struct TCpTable cpTable[];
 
 static HWND hCpCombo;
 
@@ -216,7 +216,7 @@ static INT_PTR CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, 
 					Utils::enableDlgControl(hwndDlg, IDC_TRIM, IsDlgButtonChecked(hwndDlg, IDC_ALWAYSTRIM2));
 					break;
 				case WM_USER + 100: {
-					struct	_MessageWindowData *dat = 0;
+					struct	TWindowData *dat = 0;
 					DWORD	*pdwActionToTake = (DWORD *)lParam;
 					int		iIndex = CB_ERR, iMode = -1;
 					DWORD	newCodePage;
@@ -228,7 +228,7 @@ static INT_PTR CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, 
 					BYTE	bAvatarVisible = 0;
 
 					if (hWnd) {
-						dat = (struct _MessageWindowData *)GetWindowLongPtr(hWnd, GWLP_USERDATA);
+						dat = (struct TWindowData *)GetWindowLongPtr(hWnd, GWLP_USERDATA);
 						if (dat)
 							iOldIEView = GetIEViewMode(hWnd, dat->hContact);
 					}
@@ -411,7 +411,7 @@ static struct _checkboxes {
  * ignore temporary bits.
  */
 
-int TSAPI LoadLocalFlags(HWND hwnd, struct _MessageWindowData *dat)
+int TSAPI LoadLocalFlags(HWND hwnd, struct TWindowData *dat)
 {
 	int		i = 0;
 	DWORD	dwMask = M->GetDword(dat->hContact, "mwmask", 0);
@@ -476,11 +476,11 @@ static INT_PTR CALLBACK DlgProcUserPrefsLogOptions(HWND hwndDlg, UINT msg, WPARA
 					int i = 0;
 					LRESULT state;
 					HWND	hwnd = M->FindWindow(hContact);
-					struct	_MessageWindowData *dat = NULL;
+					struct	TWindowData *dat = NULL;
 					DWORD	*dwActionToTake = (DWORD *)lParam, dwMask = 0, dwFlags = 0, maskval;
 
 					if(hwnd)
-						dat = (struct _MessageWindowData *)GetWindowLongPtr(hwnd, GWLP_USERDATA);
+						dat = (struct TWindowData *)GetWindowLongPtr(hwnd, GWLP_USERDATA);
 
 					while(checkboxes[i].uId) {
 						maskval = checkboxes[i].uFlag;
@@ -608,7 +608,7 @@ INT_PTR CALLBACK DlgProcUserPrefsFrame(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 						SendMessage((HWND)tci.lParam, WM_COMMAND, WM_USER + 100, (LPARAM)&dwActionToTake);
 					}
 					if(hwnd) {
-						struct _MessageWindowData *dat = (struct _MessageWindowData *)GetWindowLongPtr(hwnd, GWLP_USERDATA);
+						struct TWindowData *dat = (struct TWindowData *)GetWindowLongPtr(hwnd, GWLP_USERDATA);
 						if(dat) {
 							DWORD	dwOldFlags = (dat->dwFlags & MWF_LOG_ALL);
 

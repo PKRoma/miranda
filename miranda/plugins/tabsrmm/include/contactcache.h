@@ -99,9 +99,9 @@ public:
 	const TCHAR*			getXStatusMsg			() const { return(m_xStatusMsg); }
 	const TCHAR*			getListeningInfo		() const { return(m_ListeningInfo); }
 	BYTE					getXStatusId			() const { return(m_xStatus); }
-	const HWND				getWindowData			(_MessageWindowData*& dat) const { dat = m_dat; return(m_hwnd); }
+	const HWND				getWindowData			(TWindowData*& dat) const { dat = m_dat; return(m_hwnd); }
 	const HWND				getHwnd					() const { return(m_hwnd); }
-	_MessageWindowData*		getDat					() const { return(m_dat); }
+	TWindowData*		getDat					() const { return(m_dat); }
 
 	void					updateStats				(int iType, size_t value = 0);
 	const DWORD				getSessionStart			() const { return(m_stats->started); }
@@ -112,7 +112,7 @@ public:
 	void					updateMeta				();
 	void					updateUIN				();
 	void					updateStatusMsg			(const char *szKey = 0);
-	void					setWindowData			(const HWND hwnd = 0, _MessageWindowData *dat = 0);
+	void					setWindowData			(const HWND hwnd = 0, TWindowData *dat = 0);
 	void					resetMeta				();
 	void					closeWindow				();
 	void					deletedHandler			();
@@ -154,7 +154,7 @@ private:
 	bool				m_isRecent;
 	HWND				m_hwnd;
 	int     			m_iHistoryCurrent, m_iHistoryTop, m_iHistorySize;
-	_MessageWindowData*	m_dat;
+	TWindowData*	m_dat;
 	TSessionStats* 		m_stats;
 	TInputHistory*		m_history;
 };

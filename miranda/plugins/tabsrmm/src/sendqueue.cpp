@@ -51,7 +51,7 @@ static char *pss_msgw = "/SendMsgW";
  *
  * @return (char *) name of the service to send a message to this contact
  */
-char *SendQueue::MsgServiceName(const HANDLE hContact = 0, const _MessageWindowData *dat = 0, int dwFlags = 0)
+char *SendQueue::MsgServiceName(const HANDLE hContact = 0, const TWindowData *dat = 0, int dwFlags = 0)
 {
 #ifdef _UNICODE
 	char	szServiceName[100];
@@ -78,7 +78,7 @@ char *SendQueue::MsgServiceName(const HANDLE hContact = 0, const _MessageWindowD
  * returns: zero-based queue index or -1 if none was found
  */
 
-int SendQueue::findNextFailed(const _MessageWindowData *dat) const
+int SendQueue::findNextFailed(const TWindowData *dat) const
 {
 	if(dat) {
 		int i;
@@ -91,7 +91,7 @@ int SendQueue::findNextFailed(const _MessageWindowData *dat) const
 	}
 	return -1;
 }
-void SendQueue::handleError(_MessageWindowData *dat, const int iEntry) const
+void SendQueue::handleError(TWindowData *dat, const int iEntry) const
 {
 	if(dat) {
 		TCHAR szErrorMsg[500];
@@ -108,7 +108,7 @@ void SendQueue::handleError(_MessageWindowData *dat, const int iEntry) const
  * add a message to the sending queue.
  * iLen = required size of the memory block to hold the message
  */
-int SendQueue::addTo(_MessageWindowData *dat, const int iLen, int dwFlags)
+int SendQueue::addTo(TWindowData *dat, const int iLen, int dwFlags)
 {
 	int iLength = 0, i;
 	int iFound = NR_SENDJOBS;
@@ -360,7 +360,7 @@ static void DoSplitSendA(LPVOID param)
 	mir_free(szBegin);
 }
 
-int SendQueue::sendQueued(_MessageWindowData *dat, const int iEntry)
+int SendQueue::sendQueued(TWindowData *dat, const int iEntry)
 {
 	HWND	hwndDlg = dat->hwnd;
 
@@ -505,19 +505,19 @@ void SendQueue::clearJob(const int iIndex)
  * it removes the completed / canceled send job from the queue and schedules the next job to send (if any)
  */
 
-void SendQueue::checkQueue(const _MessageWindowData *dat) const
+void SendQueue::checkQueue(const TWindowData *dat) const
 {
 	if(dat) {
 		HWND	hwndDlg = dat->hwnd;
 
 		if (dat->iOpenJobs == 0) {
-			::HandleIconFeedback(const_cast<_MessageWindowData *>(dat), (HICON) - 1);
+			::HandleIconFeedback(const_cast<TWindowData *>(dat), (HICON) - 1);
 		}
 		else if (!(dat->sendMode & SMODE_NOACK))
-			::HandleIconFeedback(const_cast<_MessageWindowData *>(dat), PluginConfig.g_IconSend);
+			::HandleIconFeedback(const_cast<TWindowData *>(dat), PluginConfig.g_IconSend);
 
 		if (dat->pContainer->hwndActive == hwndDlg)
-			::UpdateReadChars(const_cast<_MessageWindowData *>(dat));
+			::UpdateReadChars(const_cast<TWindowData *>(dat));
 	}
 }
 
@@ -526,7 +526,7 @@ void SendQueue::checkQueue(const _MessageWindowData *dat) const
  * from the given sendJob (queue index)
  */
 
-void SendQueue::logError(const _MessageWindowData *dat, int iSendJobIndex, const TCHAR *szErrMsg) const
+void SendQueue::logError(const TWindowData *dat, int iSendJobIndex, const TCHAR *szErrMsg) const
 {
 	DBEVENTINFO	dbei = {0};
 	int				iMsgLen;
@@ -566,7 +566,7 @@ void SendQueue::logError(const _MessageWindowData *dat, int iSendJobIndex, const
  * ) send button
  */
 
-void SendQueue::EnableSending(const _MessageWindowData *dat, const int iMode)
+void SendQueue::EnableSending(const TWindowData *dat, const int iMode)
 {
 	if(dat) {
 		HWND hwndDlg = dat->hwnd;
@@ -580,7 +580,7 @@ void SendQueue::EnableSending(const _MessageWindowData *dat, const int iMode)
  * show or hide the error control button bar on top of the window
  */
 
-void SendQueue::showErrorControls(_MessageWindowData *dat, const int showCmd) const
+void SendQueue::showErrorControls(TWindowData *dat, const int showCmd) const
 {
 	UINT	myerrorControls[] = { IDC_STATICERRORICON, IDC_STATICTEXT, IDC_RETRY, IDC_CANCELSEND, IDC_MSGSENDLATER};
 	int		i;
@@ -610,7 +610,7 @@ void SendQueue::showErrorControls(_MessageWindowData *dat, const int showCmd) co
 		EnableSending(dat, TRUE);
 }
 
-void SendQueue::recallFailed(const _MessageWindowData *dat, int iEntry) const
+void SendQueue::recallFailed(const TWindowData *dat, int iEntry) const
 {
 	int		iLen = GetWindowTextLengthA(GetDlgItem(dat->hwnd, IDC_MESSAGE));
 
@@ -628,13 +628,13 @@ void SendQueue::recallFailed(const _MessageWindowData *dat, int iEntry) const
 	#else
 			SetDlgItemTextA(dat->hwnd, IDC_MESSAGE, (char *)m_jobs[iEntry].sendBuffer);
 	#endif
-			UpdateSaveAndSendButton(const_cast<_MessageWindowData *>(dat));
+			UpdateSaveAndSendButton(const_cast<TWindowData *>(dat));
 			SendDlgItemMessage(dat->hwnd, IDC_MESSAGE, EM_SETSEL, (WPARAM) - 1, (LPARAM) - 1);
 		}
 	}
 }
 
-void SendQueue::UpdateSaveAndSendButton(_MessageWindowData *dat)
+void SendQueue::UpdateSaveAndSendButton(TWindowData *dat)
 {
 	if(dat) {
 		int		len;
@@ -693,7 +693,7 @@ static INT_PTR CALLBACK PopupDlgProcError(HWND hWnd, UINT message, WPARAM wParam
 	return DefWindowProc(hWnd, message, wParam, lParam);
 }
 
-void SendQueue::NotifyDeliveryFailure(const _MessageWindowData *dat)
+void SendQueue::NotifyDeliveryFailure(const TWindowData *dat)
 {
 	POPUPDATAT		ppd = {0};
 	int				ibsize = 1023;
@@ -745,13 +745,13 @@ int SendQueue::RTL_Detect(const WCHAR *pszwText)
 }
 #endif
 
-int SendQueue::ackMessage(_MessageWindowData *dat, WPARAM wParam, LPARAM lParam)
+int SendQueue::ackMessage(TWindowData *dat, WPARAM wParam, LPARAM lParam)
 {
 	ACKDATA				*ack = (ACKDATA *) lParam;
 	DBEVENTINFO			dbei = { 0};
 	HANDLE				hNewEvent;
 	int					iFound = SendQueue::NR_SENDJOBS, iNextFailed;
-	ContainerWindowData *m_pContainer = 0;
+	TContainerData *m_pContainer = 0;
 	if (dat)
 		m_pContainer = dat->pContainer;
 
@@ -888,7 +888,7 @@ LRESULT SendQueue::WarnPendingJobs(unsigned int uNrMessages)
  *
  * @return the index on success, -1 on failure
  */
-int SendQueue::sendLater(int iJobIndex, _MessageWindowData *dat, HANDLE hContact, bool fIsSendLater)
+int SendQueue::sendLater(int iJobIndex, TWindowData *dat, HANDLE hContact, bool fIsSendLater)
 {
 	bool  fAvail = PluginConfig.m_SendLaterAvail ? true : false;
 

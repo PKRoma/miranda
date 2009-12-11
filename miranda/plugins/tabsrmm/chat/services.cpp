@@ -452,14 +452,14 @@ static void AddUser(GCEVENT * gce)
 	}
 }
 
-HWND CreateNewRoom(struct ContainerWindowData *pContainer, SESSION_INFO *si, BOOL bActivateTab, BOOL bPopupContainer, BOOL bWantPopup)
+HWND CreateNewRoom(TContainerData *pContainer, SESSION_INFO *si, BOOL bActivateTab, BOOL bPopupContainer, BOOL bWantPopup)
 {
 	TCHAR *contactName = NULL, newcontactname[128];
 	char *szProto, *szStatus;
 	WORD wStatus;
 	int	newItem;
 	HWND hwndNew = 0;
-	struct NewMessageWindowLParam newData = {
+	struct TNewWindowData newData = {
 		0
 	};
 	HANDLE hContact = si->hContact;
@@ -517,7 +517,7 @@ HWND CreateNewRoom(struct ContainerWindowData *pContainer, SESSION_INFO *si, BOO
 		int iCount = TabCtrl_GetItemCount(hwndTab);
 		TCITEM item = {0};
 		HWND hwnd;
-		struct _MessageWindowData *dat;
+		struct TWindowData *dat;
 		int relPos;
 		int i;
 
@@ -527,7 +527,7 @@ HWND CreateNewRoom(struct ContainerWindowData *pContainer, SESSION_INFO *si, BOO
 				item.mask = TCIF_PARAM;
 				TabCtrl_GetItem(hwndTab, i, &item);
 				hwnd = (HWND)item.lParam;
-				dat = (struct _MessageWindowData *)GetWindowLongPtr(hwnd, GWLP_USERDATA);
+				dat = (struct TWindowData *)GetWindowLongPtr(hwnd, GWLP_USERDATA);
 				if (dat) {
 					relPos = M->GetDword(dat->hContact, "tabindex", i * 100);
 					if (iTabIndex_wanted <= relPos)
@@ -550,7 +550,7 @@ HWND CreateNewRoom(struct ContainerWindowData *pContainer, SESSION_INFO *si, BOO
 	newData.hdbEvent = (HANDLE)si;
 	hwndNew = CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_CHANNEL), GetDlgItem(pContainer->hwnd, 1159), RoomWndProc, (LPARAM) & newData);
 	if(pContainer->dwFlags & CNT_SIDEBAR) {
-		_MessageWindowData *dat = (_MessageWindowData *)GetWindowLongPtr(hwndNew, GWLP_USERDATA);
+		TWindowData *dat = (TWindowData *)GetWindowLongPtr(hwndNew, GWLP_USERDATA);
 		if(dat)
 			pContainer->SideBar->addSession(dat, pContainer->iTabIndex);
 	}
@@ -603,7 +603,7 @@ void ShowRoom(SESSION_INFO* si, WPARAM wp, BOOL bSetForeground)
 
 	if (si->hWnd == NULL) {
 		TCHAR szName[CONTAINER_NAMELEN + 2];
-		struct ContainerWindowData *pContainer = si->pContainer;
+		struct TContainerData *pContainer = si->pContainer;
 
 		szName[0] = 0;
 		if (pContainer == NULL) {

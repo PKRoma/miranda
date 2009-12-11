@@ -39,7 +39,7 @@
 #define THEME_COOKIE 25099837
 
 extern char 		*TemplateNames[];
-extern TemplateSet 	LTR_Active, RTL_Active;
+extern TTemplateSet 	LTR_Active, RTL_Active;
 
 
 /*
@@ -118,7 +118,7 @@ int TSAPI CheckThemeVersion(const TCHAR *szIniFilename)
 	return 0;
 }
 
-void TSAPI WriteThemeToINI(const TCHAR *szIniFilenameT, struct _MessageWindowData *dat)
+void TSAPI WriteThemeToINI(const TCHAR *szIniFilenameT, struct TWindowData *dat)
 {
 	int i, n = 0;
 	DBVARIANT dbv;
@@ -218,7 +218,7 @@ void TSAPI WriteThemeToINI(const TCHAR *szIniFilenameT, struct _MessageWindowDat
 #endif
 }
 
-void TSAPI ReadThemeFromINI(const TCHAR *szIniFilenameT, ContainerWindowData *dat, int noAdvanced, DWORD dwFlags)
+void TSAPI ReadThemeFromINI(const TCHAR *szIniFilenameT, TContainerData *dat, int noAdvanced, DWORD dwFlags)
 {
 	char szBuf[512], szTemp[100], szAppname[100];
 	int i, n = 0;

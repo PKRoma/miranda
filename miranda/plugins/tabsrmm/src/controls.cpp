@@ -36,7 +36,7 @@
 static 	WNDPROC OldStatusBarproc = 0;
 
 extern int 		status_icon_list_size;
-extern 			StatusIconListNode *status_icon_list;
+extern 			TStatusBarIconNode *status_icon_list;
 
 bool	 	CMenuBar::m_buttonsInit = false;
 HHOOK		CMenuBar::m_hHook = 0;
@@ -45,11 +45,11 @@ CMenuBar*	CMenuBar::m_Owner = 0;
 HBITMAP		CMenuBar::m_MimIcon = 0;
 int			CMenuBar::m_MimIconRefCount = 0;
 
-CMenuBar::CMenuBar(HWND hwndParent, const ContainerWindowData *pContainer)
+CMenuBar::CMenuBar(HWND hwndParent, const TContainerData *pContainer)
 {
 	RECT Rc;
 
-	m_pContainer = const_cast<ContainerWindowData *>(pContainer);
+	m_pContainer = const_cast<TContainerData *>(pContainer);
 
 	if(m_MimIcon == 0) {
 		HDC		hdc = ::GetDC(m_pContainer->hwnd);
@@ -468,7 +468,7 @@ void CMenuBar::invoke(const int id)
 
 	m_isContactMenu = m_isMainMenu = false;
 
-	_MessageWindowData *dat = (_MessageWindowData *)GetWindowLongPtr(m_pContainer->hwndActive, GWLP_USERDATA);
+	TWindowData *dat = (TWindowData *)GetWindowLongPtr(m_pContainer->hwndActive, GWLP_USERDATA);
 
 	HANDLE hContact = dat ? dat->hContact : 0;
 
@@ -524,7 +524,7 @@ void CMenuBar::Cancel(void)
 
 void CMenuBar::updateState(const HMENU hMenu) const
 {
-	_MessageWindowData *dat = (_MessageWindowData *)GetWindowLongPtr(m_pContainer->hwndActive, GWLP_USERDATA);
+	TWindowData *dat = (TWindowData *)GetWindowLongPtr(m_pContainer->hwndActive, GWLP_USERDATA);
 
 	if(dat) {
 		::CheckMenuItem(hMenu, ID_VIEW_SHOWMENUBAR, MF_BYCOMMAND | m_pContainer->dwFlags & CNT_NOMENUBAR ? MF_UNCHECKED : MF_CHECKED);
@@ -564,7 +564,7 @@ void CMenuBar::updateState(const HMENU hMenu) const
 
 void CMenuBar::configureMenu() const
 {
-	_MessageWindowData *dat = (_MessageWindowData *)::GetWindowLongPtr(m_pContainer->hwndActive, GWLP_USERDATA);
+	TWindowData *dat = (TWindowData *)::GetWindowLongPtr(m_pContainer->hwndActive, GWLP_USERDATA);
 
 	BOOL fDisable = FALSE;
 
@@ -702,7 +702,7 @@ RECT 			rcLastStatusBarClick;		// remembers click (down event) point for status 
 
 LONG_PTR CALLBACK StatusBarSubclassProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	ContainerWindowData *pContainer = (ContainerWindowData *)GetWindowLongPtr(GetParent(hWnd), GWLP_USERDATA);
+	TContainerData *pContainer = (TContainerData *)GetWindowLongPtr(GetParent(hWnd), GWLP_USERDATA);
 
 	if (OldStatusBarproc == 0) {
 		WNDCLASSEX wc = {0};
@@ -768,10 +768,10 @@ LONG_PTR CALLBACK StatusBarSubclassProc(HWND hWnd, UINT msg, WPARAM wParam, LPAR
 
 			BOOL			fAero = M->isAero();
 			HANDLE  		hTheme = fAero ? CMimAPI::m_pfnOpenThemeData(hWnd, L"ButtonStyle") : 0;
-			_MessageWindowData* dat = 0;
+			TWindowData* dat = 0;
 
 			if(pContainer)
-				dat = (_MessageWindowData *)GetWindowLongPtr(pContainer->hwndActive, GWLP_USERDATA);
+				dat = (TWindowData *)GetWindowLongPtr(pContainer->hwndActive, GWLP_USERDATA);
 
 			GetClientRect(hWnd, &rcClient);
 
@@ -863,7 +863,7 @@ LONG_PTR CALLBACK StatusBarSubclassProc(HWND hWnd, UINT msg, WPARAM wParam, LPAR
 				szText[0] = 0;
 				result = SendMessage(hWnd, SB_GETTEXT, i, (LPARAM)szText);
 				if (i == 2 && pContainer) {
-					_MessageWindowData *dat = (_MessageWindowData *)GetWindowLongPtr(pContainer->hwndActive, GWLP_USERDATA);
+					TWindowData *dat = (TWindowData *)GetWindowLongPtr(pContainer->hwndActive, GWLP_USERDATA);
 
 					if (dat)
 						DrawStatusIcons(dat, hdcMem, itemRect, 2);
@@ -913,10 +913,10 @@ LONG_PTR CALLBACK StatusBarSubclassProc(HWND hWnd, UINT msg, WPARAM wParam, LPAR
 		 * needed when an icon is added to or removed from the icon area
 		 */
 		case WM_USER + 101: {
-			struct _MessageWindowData *dat = (struct _MessageWindowData *)lParam;
+			struct TWindowData *dat = (struct TWindowData *)lParam;
 			RECT rcs;
 			int statwidths[5];
-			struct StatusIconListNode *current = status_icon_list;
+			struct TStatusBarIconNode *current = status_icon_list;
 			int    list_icons = 0;
 			char   buff[100];
 			DWORD  flags;
@@ -924,7 +924,7 @@ LONG_PTR CALLBACK StatusBarSubclassProc(HWND hWnd, UINT msg, WPARAM wParam, LPAR
 			while (current && dat) {
 				flags=current->sid.flags;
 				if(current->sid.flags&MBF_OWNERSTATE){
-					struct StatusIconListNode *currentSIN = dat->pSINod;
+					struct TStatusBarIconNode *currentSIN = dat->pSINod;
 
 					while (currentSIN) {
 						if (strcmp(currentSIN->sid.szModule, current->sid.szModule) == 0 && currentSIN->sid.dwId == current->sid.dwId) {
@@ -1012,7 +1012,7 @@ LONG_PTR CALLBACK StatusBarSubclassProc(HWND hWnd, UINT msg, WPARAM wParam, LPAR
 				GetCursorPos(&pt);
 				if (pt.x == ptMouse.x && pt.y == ptMouse.y) {
 					RECT rc;
-					struct _MessageWindowData *dat = (struct _MessageWindowData *)GetWindowLongPtr(pContainer->hwndActive, GWLP_USERDATA);
+					struct TWindowData *dat = (struct TWindowData *)GetWindowLongPtr(pContainer->hwndActive, GWLP_USERDATA);
 //mad
 					SIZE size;
 					TCHAR  szStatusBarText[512];
@@ -1022,9 +1022,9 @@ LONG_PTR CALLBACK StatusBarSubclassProc(HWND hWnd, UINT msg, WPARAM wParam, LPAR
 					SendMessage(hWnd, SB_GETRECT, 2, (LPARAM)&rc);
 					if (dat && PtInRect(&rc, pt)) {
 						int gap = 2;
-						StatusIconListNode *current = status_icon_list;
-						StatusIconListNode *clicked = NULL;
-						StatusIconListNode *currentSIN = NULL;
+						TStatusBarIconNode *current = status_icon_list;
+						TStatusBarIconNode *clicked = NULL;
+						TStatusBarIconNode *currentSIN = NULL;
 
 						unsigned int iconNum = (pt.x - rc.left) / (PluginConfig.m_smcxicon + gap);
 						unsigned int list_icons = 0;
@@ -1033,7 +1033,7 @@ LONG_PTR CALLBACK StatusBarSubclassProc(HWND hWnd, UINT msg, WPARAM wParam, LPAR
 
 						while (current) {
 							if(current->sid.flags&MBF_OWNERSTATE&&dat->pSINod){
-								StatusIconListNode *currentSIN = dat->pSINod;
+								TStatusBarIconNode *currentSIN = dat->pSINod;
 								flags=current->sid.flags;
 								while (currentSIN)	{
 									if (strcmp(currentSIN->sid.szModule, current->sid.szModule) == 0 && currentSIN->sid.dwId == current->sid.dwId) {

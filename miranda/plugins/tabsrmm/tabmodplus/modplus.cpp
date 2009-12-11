@@ -83,7 +83,7 @@ static TCHAR* getMenuEntry(int i)  {
 	return (msg);
 }
 
-int ChangeClientIconInStatusBar(const _MessageWindowData *dat)
+int ChangeClientIconInStatusBar(const TWindowData *dat)
 {
 	if(!ServiceExists(MS_FP_GETCLIENTICON))
 		return(S_FALSE);

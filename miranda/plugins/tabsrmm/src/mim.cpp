@@ -528,7 +528,7 @@ int CMimAPI::TypingMessage(WPARAM wParam, LPARAM lParam)
 {
 	HWND			hwnd = 0;
 	int				issplit = 1, foundWin = 0, preTyping = 0;
-	struct			ContainerWindowData *pContainer = NULL;
+	struct			TContainerData *pContainer = NULL;
 	BOOL			fShowOnClist = TRUE;
 
 	if(wParam) {
@@ -581,7 +581,7 @@ int CMimAPI::TypingMessage(WPARAM wParam, LPARAM lParam)
 						fShow = TRUE;
 					else {
 						if(PluginConfig.m_HideOnClose) {
-							struct	ContainerWindowData *pContainer = 0;
+							struct	TContainerData *pContainer = 0;
 							SendMessage(hwnd, DM_QUERYCONTAINER, 0, (LPARAM)&pContainer);
 							if(pContainer && pContainer->fHidden)
 								fShow = TRUE;
@@ -652,7 +652,7 @@ int CMimAPI::ProtoAck(WPARAM wParam, LPARAM lParam)
 	if (pAck->type == ACKTYPE_MESSAGE) {
 		for (j = 0; j < SendQueue::NR_SENDJOBS; j++) {
 			if (pAck->hProcess == jobs[j].hSendId && pAck->hContact == jobs[j].hOwner) {
-				_MessageWindowData *dat = jobs[j].hwndOwner ? (_MessageWindowData *)GetWindowLongPtr(jobs[j].hwndOwner, GWLP_USERDATA) : NULL;
+				TWindowData *dat = jobs[j].hwndOwner ? (TWindowData *)GetWindowLongPtr(jobs[j].hwndOwner, GWLP_USERDATA) : NULL;
 				if (dat) {
 					if (dat->hContact == jobs[j].hOwner) {
 						iFound = j;
@@ -734,10 +734,10 @@ int CMimAPI::MessageEventAdded(WPARAM wParam, LPARAM lParam)
 	CLISTEVENT cle;
 	DBEVENTINFO dbei;
 	BYTE bAutoPopup = FALSE, bAutoCreate = FALSE, bAutoContainer = FALSE, bAllowAutoCreate = 0;
-	struct ContainerWindowData *pContainer = 0;
+	struct TContainerData *pContainer = 0;
 	TCHAR szName[CONTAINER_NAMELEN + 1];
 	DWORD dwStatusMask = 0;
-	struct _MessageWindowData *mwdat=NULL;
+	struct TWindowData *mwdat=NULL;
 
 	ZeroMemory(&dbei, sizeof(dbei));
 	dbei.cbSize = sizeof(dbei);
@@ -752,7 +752,7 @@ int CMimAPI::MessageEventAdded(WPARAM wParam, LPARAM lParam)
 	CallServiceSync(MS_CLIST_REMOVEEVENT, wParam, (LPARAM) 1);
 		//MaD: hide on close mod, simulating standard behavior for hidden container
 	if (hwnd) {
-		struct ContainerWindowData *pTargetContainer = 0;
+		struct TContainerData *pTargetContainer = 0;
 		WINDOWPLACEMENT wp={0};
 		wp.length = sizeof(wp);
 		SendMessage(hwnd, DM_QUERYCONTAINER, 0, (LPARAM)&pTargetContainer);

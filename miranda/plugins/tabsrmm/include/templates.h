@@ -26,7 +26,7 @@ templates for the message log...
 
 */
 
-typedef struct _tagTemplateEditorInfo {
+struct TemplateEditorInfo {
     BOOL rtl;
     BOOL changed;           // template in edit field is changed
     BOOL selchanging;
@@ -34,16 +34,16 @@ typedef struct _tagTemplateEditorInfo {
     BOOL updateInfo[TMPL_ERRMSG + 1];        // item states...
     HWND hwndParent;
     HANDLE hContact;
-} TemplateEditorInfo;
+};
 
-typedef struct _tagTemplateEditorNew {
+struct TemplateEditorNew {
     HANDLE hContact;
     BOOL   rtl;
     HWND   hwndParent;
-} TemplateEditorNew;
+};
 
 BOOL CALLBACK DlgProcTemplateEdit(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
-static void LoadTemplatesFrom(TemplateSet *tSet, HANDLE hContact, int rtl);
+static void LoadTemplatesFrom(TTemplateSet *tSet, HANDLE hContact, int rtl);
 void LoadDefaultTemplates();
 
 #define DM_UPDATETEMPLATEPREVIEW (WM_USER + 50)

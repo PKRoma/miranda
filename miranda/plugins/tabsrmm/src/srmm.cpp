@@ -37,7 +37,7 @@
 
 extern int 	LoadSendRecvMessageModule(void);
 extern int 	SplitmsgShutdown(void);
-extern void LogErrorMessage(HWND hwndDlg, struct _MessageWindowData *dat, int i, TCHAR *szMsg);
+extern void LogErrorMessage(HWND hwndDlg, struct TWindowData *dat, int i, TCHAR *szMsg);
 extern int  Chat_Load(PLUGINLINK *link), Chat_Unload();
 extern void FreeLogFonts();
 

@@ -130,7 +130,7 @@ void TSAPI HandleMenuEntryFromhContact(int iSelection)
 		return;
 
 	if (hWnd && IsWindow(hWnd)) {
-		struct ContainerWindowData *pContainer = 0;
+		struct TContainerData *pContainer = 0;
 		SendMessage(hWnd, DM_QUERYCONTAINER, 0, (LPARAM)&pContainer);
 		if (pContainer) {
 			ActivateExistingTab(pContainer, hWnd);
@@ -140,7 +140,7 @@ void TSAPI HandleMenuEntryFromhContact(int iSelection)
 			CallService(MS_MSG_SENDMESSAGE, (WPARAM)iSelection, 0);
 	} else if ((si = SM_FindSessionByHCONTACT((HANDLE)iSelection)) != NULL) {
 		if (si->hWnd) {															// session does exist, but no window is open for it
-			struct ContainerWindowData *pContainer = 0;
+			struct TContainerData *pContainer = 0;
 
 			SendMessage(si->hWnd, DM_QUERYCONTAINER, 0, (LPARAM)&pContainer);
 			if (pContainer) {
@@ -230,7 +230,7 @@ LONG_PTR CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 		}
 		case WM_DRAWITEM: {
 			LPDRAWITEMSTRUCT dis = (LPDRAWITEMSTRUCT) lParam;
-			struct _MessageWindowData *dat = 0;
+			struct TWindowData *dat = 0;
 			if (dis->CtlType == ODT_MENU && (dis->hwndItem == (HWND)PluginConfig.g_hMenuFavorites || dis->hwndItem == (HWND)PluginConfig.g_hMenuRecent)) {
 				HICON hIcon = (HICON)dis->itemData;
 
@@ -247,7 +247,7 @@ LONG_PTR CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 				}
 
 				if (hWnd)
-					dat = (struct _MessageWindowData *)GetWindowLongPtr(hWnd, GWLP_USERDATA);
+					dat = (struct TWindowData *)GetWindowLongPtr(hWnd, GWLP_USERDATA);
 
 				if (dis->itemData >= 0) {
 					HICON hIcon;
@@ -363,7 +363,7 @@ LONG_PTR CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 										nen_options.iNoAutoPopup ^= 1;
 										break;
 									case ID_TRAYCONTEXT_HIDEALLMESSAGECONTAINERS: {
-										struct ContainerWindowData *pContainer = pFirstContainer;
+										struct TContainerData *pContainer = pFirstContainer;
 
 										while (pContainer) {
 											ShowWindow(pContainer->hwnd, SW_HIDE);
@@ -372,7 +372,7 @@ LONG_PTR CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 										break;
 									}
 									case ID_TRAYCONTEXT_RESTOREALLMESSAGECONTAINERS: {
-										struct ContainerWindowData *pContainer = pFirstContainer;
+										struct TContainerData *pContainer = pFirstContainer;
 
 										while (pContainer) {
 											ShowWindow(pContainer->hwnd, SW_SHOW);
@@ -381,7 +381,7 @@ LONG_PTR CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 										break;
 									}
 									case ID_TRAYCONTEXT_BE: {
-										struct ContainerWindowData *pContainer = pFirstContainer;
+										struct TContainerData *pContainer = pFirstContainer;
 
 										nen_options.iDisable = 1;
 										nen_options.iNoSounds = 1;
@@ -440,7 +440,7 @@ LONG_PTR CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 		case DM_DOCREATETAB: {
 			HWND hWnd = M->FindWindow((HANDLE)lParam);
 			if (hWnd && IsWindow(hWnd)) {
-				struct ContainerWindowData *pContainer = 0;
+				struct TContainerData *pContainer = 0;
 
 				SendMessage(hWnd, DM_QUERYCONTAINER, 0, (LPARAM)&pContainer);
 				if (pContainer) {
@@ -450,7 +450,7 @@ LONG_PTR CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 					else
 						SendMessage(hWnd, WM_CLOSE, 0, 1);
 
-					CreateNewTabForContact((struct ContainerWindowData *)wParam, (HANDLE)lParam, 0, NULL, TRUE, TRUE, FALSE, 0);
+					CreateNewTabForContact((struct TContainerData *)wParam, (HANDLE)lParam, 0, NULL, TRUE, TRUE, FALSE, 0);
 				}
 			}
 			break;
@@ -459,7 +459,7 @@ LONG_PTR CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			SESSION_INFO *si = SM_FindSessionByHWND((HWND)lParam);
 
 			if (si && IsWindow(si->hWnd)) {
-				struct ContainerWindowData *pContainer = 0;
+				struct TContainerData *pContainer = 0;
 
 				SendMessage(si->hWnd, DM_QUERYCONTAINER, 0, (LPARAM)&pContainer);
 				if (pContainer) {
@@ -469,7 +469,7 @@ LONG_PTR CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 					else
 						SendMessage(si->hWnd, WM_CLOSE, 0, 1);
 
-					si->hWnd = CreateNewRoom((struct ContainerWindowData *)wParam, si, TRUE, 0, 0);
+					si->hWnd = CreateNewRoom((struct TContainerData *)wParam, si, TRUE, 0, 0);
 				}
 			}
 			break;
@@ -501,7 +501,7 @@ LONG_PTR CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			HWND	hWnd = M->FindWindow(hContact);
 
 			if(hWnd) {
-				_MessageWindowData *dat = (_MessageWindowData *)GetWindowLongPtr(hWnd, GWLP_USERDATA);
+				TWindowData *dat = (TWindowData *)GetWindowLongPtr(hWnd, GWLP_USERDATA);
 				if(dat) {
 					DBVARIANT  dbv;
 
@@ -522,7 +522,7 @@ LONG_PTR CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 		case WM_DWMCOMPOSITIONCHANGED: {
 			bool fNewAero = M->getAeroState();					// refresh dwm state
 			SendMessage(hwndDlg, WM_THEMECHANGED, 0, 0);
-			ContainerWindowData *pContainer = pFirstContainer;
+			TContainerData *pContainer = pFirstContainer;
 			CSideBar::unInitBG();
 			if(pContainer)
 				CSideBar::initBG(pContainer->hwnd);
@@ -553,7 +553,7 @@ LONG_PTR CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 		}
 
 		case WM_THEMECHANGED: {
-			struct ContainerWindowData *pContainer = pFirstContainer;
+			struct TContainerData *pContainer = pFirstContainer;
 
 			M->getAeroState();
 			Skin->setupTabCloseBitmap();
@@ -599,7 +599,7 @@ LONG_PTR CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 
 		case WM_POWERBROADCAST:
 		case WM_DISPLAYCHANGE: {
-			struct ContainerWindowData *pContainer = pFirstContainer;
+			struct TContainerData *pContainer = pFirstContainer;
 
 			while (pContainer) {
 				if (CSkin::m_skinEnabled) {             // invalidate cached background DCs for skinned containers
@@ -629,7 +629,7 @@ LONG_PTR CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 				 * send heartbeat to each open container (to manage autoclose
 				 * feature)
 				 */
-				ContainerWindowData *pContainer = pFirstContainer;
+				TContainerData *pContainer = pFirstContainer;
 				while(pContainer) {
 					SendMessage(pContainer->hwnd, WM_TIMER, TIMERID_HEARTBEAT, 0);
 					pContainer = pContainer->pNextContainer;

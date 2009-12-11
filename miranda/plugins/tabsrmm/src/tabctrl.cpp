@@ -372,7 +372,7 @@ static void __stdcall DrawWuLine(HDC pDC, int X0, int Y0, int X1, int Y1, COLORR
 static void DrawItem(struct TabControlData *tabdat, HDC dc, RECT *rcItem, int nHint, int nItem)
 {
 	TCITEM item = {0};
-	struct _MessageWindowData *dat = 0;
+	struct TWindowData *dat = 0;
 	int iSize = 16;
 	DWORD dwTextFlags = DT_SINGLELINE | DT_VCENTER/* | DT_NOPREFIX*/;
 	BOOL leftMost = FALSE;
@@ -385,7 +385,7 @@ static void DrawItem(struct TabControlData *tabdat, HDC dc, RECT *rcItem, int nH
 	 */
 
 	if (IsWindow((HWND)item.lParam) && item.lParam != 0)
-		dat = (struct _MessageWindowData *)GetWindowLongPtr((HWND)item.lParam, GWLP_USERDATA);
+		dat = (struct TWindowData *)GetWindowLongPtr((HWND)item.lParam, GWLP_USERDATA);
 
 	if (dat) {
 		HICON 	 hIcon;
@@ -627,7 +627,7 @@ b_nonskinned:
 				BOOL active = nHint & HINT_ACTIVE_ITEM;
 				HRGN rgn;
 				TCITEM item = {0};
-				struct _MessageWindowData *dat = 0;
+				struct TWindowData *dat = 0;
 				HBRUSH bg;
 				CSkinItem *s_item;
 				int item_id;
@@ -640,7 +640,7 @@ b_nonskinned:
 				 */
 
 				if (IsWindow((HWND)item.lParam) && item.lParam != 0)
-					dat = (struct _MessageWindowData *)GetWindowLongPtr((HWND)item.lParam, GWLP_USERDATA);
+					dat = (struct TWindowData *)GetWindowLongPtr((HWND)item.lParam, GWLP_USERDATA);
 
 				if (active && rc.left > 10)
 					rc.left -= 10;
@@ -756,7 +756,7 @@ b_nonskinned:
 				BOOL active = nHint & HINT_ACTIVE_ITEM;
 				HRGN rgn;
 				TCITEM item = {0};
-				struct _MessageWindowData *dat = 0;
+				struct TWindowData *dat = 0;
 				HBRUSH bg;
 				LONG bendPoint;
 				CSkinItem *s_item;
@@ -766,7 +766,7 @@ b_nonskinned:
 				TabCtrl_GetItem(tabdat->hwnd, iItem, &item);
 
 				if (IsWindow((HWND)item.lParam) && item.lParam != 0)
-					dat = (struct _MessageWindowData *)GetWindowLongPtr((HWND)item.lParam, GWLP_USERDATA);
+					dat = (struct TWindowData *)GetWindowLongPtr((HWND)item.lParam, GWLP_USERDATA);
 
 				if (active && rc.left > 10)
 					rc.left -= 10;
@@ -1138,7 +1138,7 @@ static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
 	tabdat = (struct TabControlData *)GetWindowLongPtr(hwnd, GWLP_USERDATA);
 	if (tabdat) {
 		if (tabdat->pContainer == NULL) {
-			tabdat->pContainer = (ContainerWindowData *)GetWindowLongPtr(GetParent(hwnd), GWLP_USERDATA);
+			tabdat->pContainer = (TContainerData *)GetWindowLongPtr(GetParent(hwnd), GWLP_USERDATA);
 			if(tabdat->pContainer)
 				tabdat->m_moderntabs = (tabdat->pContainer->dwFlagsEx & TCF_STYLED);
 		}
@@ -1349,11 +1349,11 @@ static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
 					i = TabCtrl_HitTest(hwnd, &tci);
 					if (i != -1) {
 						TCITEM tc;
-						struct _MessageWindowData *dat = NULL;
+						struct TWindowData *dat = NULL;
 
 						tc.mask = TCIF_PARAM;
 						TabCtrl_GetItem(hwnd, i, &tc);
-						dat = (struct _MessageWindowData *)GetWindowLongPtr((HWND)tc.lParam, GWLP_USERDATA);
+						dat = (struct TWindowData *)GetWindowLongPtr((HWND)tc.lParam, GWLP_USERDATA);
 						if (dat)	{
 							tabdat->bDragging = TRUE;
 							tabdat->iBeginIndex = i;
@@ -1382,11 +1382,11 @@ static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
 					i = TabCtrl_HitTest(hwnd, &tci);
 					if (i != -1) {
 						TCITEM tc;
-						_MessageWindowData *dat = NULL;
+						TWindowData *dat = NULL;
 
 						tc.mask = TCIF_PARAM;
 						TabCtrl_GetItem(hwnd, i, &tc);
-						dat = (_MessageWindowData *)GetWindowLongPtr((HWND)tc.lParam, GWLP_USERDATA);
+						dat = (TWindowData *)GetWindowLongPtr((HWND)tc.lParam, GWLP_USERDATA);
 						if (dat)	{
 							tabdat->bDragging = TRUE;
 							tabdat->iBeginIndex = i;
@@ -1514,7 +1514,7 @@ static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
 			tabdat->helperDat = 0;
 
 			if(tabdat->fAeroTabs && tabdat->pContainer) {
-				_MessageWindowData *dat = (_MessageWindowData *)GetWindowLongPtr(tabdat->pContainer->hwndActive, GWLP_USERDATA);
+				TWindowData *dat = (TWindowData *)GetWindowLongPtr(tabdat->pContainer->hwndActive, GWLP_USERDATA);
 				if(dat) {
 					tabdat->helperDat = dat;
 				}
@@ -1819,7 +1819,7 @@ skip_tabs:
 				if (abs(pt.x - ptMouseT.x) < 5 && abs(pt.y - ptMouseT.y) < 5) {
 					TCITEM item = {0};
 					int    nItem = 0;
-					struct _MessageWindowData *dat = 0;
+					struct TWindowData *dat = 0;
 
 					ti.ptCursor = pt;
 					//ScreenToClient(hwnd, &pt);
@@ -1833,7 +1833,7 @@ skip_tabs:
 						 */
 
 						if (IsWindow((HWND)item.lParam) && item.lParam != 0)
-							dat = (struct _MessageWindowData *)GetWindowLongPtr((HWND)item.lParam, GWLP_USERDATA);
+							dat = (struct TWindowData *)GetWindowLongPtr((HWND)item.lParam, GWLP_USERDATA);
 						if (dat) {
 							tabdat->fTipActive = TRUE;
 							ti.isGroup = 0;
@@ -2017,7 +2017,7 @@ INT_PTR CALLBACK DlgProcTabConfig(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 							BOOL translated;
 							int  fixedWidth;
 
-							struct ContainerWindowData *pContainer = pFirstContainer;
+							struct TContainerData *pContainer = pFirstContainer;
 
 							DWORD dwFlags =	(IsDlgButtonChecked(hwndDlg, IDC_LABELUSEWINCOLORS) ? TCF_LABELUSEWINCOLORS : 0) |
 											(IsDlgButtonChecked(hwndDlg, IDC_BKGUSEWINCOLORS2) ? TCF_BKGUSEWINCOLORS : 0);

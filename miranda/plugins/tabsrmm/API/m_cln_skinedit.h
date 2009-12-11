@@ -10,7 +10,7 @@
  * data structs
  */
 
-struct _MessageWindowData;
+struct TWindowData;
 class CImageItem;
 
 struct ButtonItem {
@@ -29,12 +29,12 @@ struct ButtonItem {
     char    szModule[256], szSetting[256];
     BYTE    bValuePush[256], bValueRelease[256];
     DWORD   type;
-    void    (*pfnAction)(ButtonItem *item, HWND hwndDlg, _MessageWindowData *dat, HWND hwndItem);
-    void    (*pfnCallback)(ButtonItem *item, HWND hwndDlg, _MessageWindowData *dat, HWND hwndItem);
+    void    (*pfnAction)(ButtonItem *item, HWND hwndDlg, TWindowData *dat, HWND hwndItem);
+    void    (*pfnCallback)(ButtonItem *item, HWND hwndDlg, TWindowData *dat, HWND hwndItem);
     TCHAR   tszLabel[40];
     ButtonItem* nextItem;
 	HANDLE  hContact;
-	_MessageWindowData *dat;
+	TWindowData *dat;
 };
 
 typedef struct _tagButtonSet {

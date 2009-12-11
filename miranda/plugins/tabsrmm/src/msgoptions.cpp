@@ -306,7 +306,7 @@ static INT_PTR CALLBACK DlgProcOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			* fill the list box, create groups first, then add items
 			*/
 
-			LISTOPTIONSGROUP *defaultGroups = CTranslator::getGroupTree(CTranslator::TREE_MSG);
+			TOptionListGroup *defaultGroups = CTranslator::getGroupTree(CTranslator::TREE_MSG);
 
 			while (defaultGroups[i].szName != NULL) {
 				tvi.hParent = 0;
@@ -320,7 +320,7 @@ static INT_PTR CALLBACK DlgProcOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 
 			i = 0;
 
-			LISTOPTIONSITEM *defaultItems = CTranslator::getTree(CTranslator::TREE_MSG);
+			TOptionListItem *defaultItems = CTranslator::getTree(CTranslator::TREE_MSG);
 
 			while (defaultItems[i].szName != 0) {
 				tvi.hParent = (HTREEITEM)defaultGroups[defaultItems[i].uGroup].handle;
@@ -449,7 +449,7 @@ static INT_PTR CALLBACK DlgProcOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 							* scan the tree view and obtain the options...
 							*/
 
-							LISTOPTIONSITEM *defaultItems = CTranslator::getTree(CTranslator::TREE_MSG);
+							TOptionListItem *defaultItems = CTranslator::getTree(CTranslator::TREE_MSG);
 
 							while (defaultItems[i].szName != NULL) {
 								item.mask = TVIF_HANDLE | TVIF_STATE;
@@ -515,7 +515,7 @@ static INT_PTR CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam,
 			* fill the list box, create groups first, then add items
 			*/
 
-			LISTOPTIONSGROUP *lvGroups = CTranslator::getGroupTree(CTranslator::TREE_LOG);
+			TOptionListGroup *lvGroups = CTranslator::getGroupTree(CTranslator::TREE_LOG);
 
 			while (lvGroups[i].szName != NULL) {
 				tvi.hParent = 0;
@@ -529,7 +529,7 @@ static INT_PTR CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam,
 
 			i = 0;
 
-			LISTOPTIONSITEM *lvItems = CTranslator::getTree(CTranslator::TREE_LOG);
+			TOptionListItem *lvItems = CTranslator::getTree(CTranslator::TREE_LOG);
 
 			while (lvItems[i].szName != 0) {
 				tvi.hParent = (HTREEITEM)lvGroups[lvItems[i].uGroup].handle;
@@ -715,7 +715,7 @@ static INT_PTR CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam,
 							/*
 							* scan the tree view and obtain the options...
 							*/
-							LISTOPTIONSITEM *lvItems = CTranslator::getTree(CTranslator::TREE_LOG);
+							TOptionListItem *lvItems = CTranslator::getTree(CTranslator::TREE_LOG);
 
 							while (lvItems[i].szName != NULL) {
 								item.mask = TVIF_HANDLE | TVIF_STATE;
@@ -938,7 +938,7 @@ static INT_PTR CALLBACK DlgProcTabbedOptions(HWND hwndDlg, UINT msg, WPARAM wPar
 			* fill the list box, create groups first, then add items
 			*/
 
-			LISTOPTIONSGROUP *tabGroups = CTranslator::getGroupTree(CTranslator::TREE_TAB);
+			TOptionListGroup *tabGroups = CTranslator::getGroupTree(CTranslator::TREE_TAB);
 
 			while (tabGroups[i].szName != NULL) {
 				tvi.hParent = 0;
@@ -952,7 +952,7 @@ static INT_PTR CALLBACK DlgProcTabbedOptions(HWND hwndDlg, UINT msg, WPARAM wPar
 
 			i = 0;
 
-			LISTOPTIONSITEM *tabItems = CTranslator::getTree(CTranslator::TREE_TAB);
+			TOptionListItem *tabItems = CTranslator::getTree(CTranslator::TREE_TAB);
 
 			while (tabItems[i].szName != 0) {
 				tvi.hParent = (HTREEITEM)tabGroups[tabItems[i].uGroup].handle;
@@ -1046,7 +1046,7 @@ static INT_PTR CALLBACK DlgProcTabbedOptions(HWND hwndDlg, UINT msg, WPARAM wPar
 							* scan the tree view and obtain the options...
 							*/
 
-							LISTOPTIONSITEM *tabItems = CTranslator::getTree(CTranslator::TREE_TAB);
+							TOptionListItem *tabItems = CTranslator::getTree(CTranslator::TREE_TAB);
 
 							while (tabItems[i].szName != NULL) {
 								item.mask = TVIF_HANDLE | TVIF_STATE;
