@@ -1078,7 +1078,7 @@ LPTSTR CJabberNetInterface::GetResourceFeatures( LPCTSTR jid )
 		int i;
 		int iLen = 1; // 1 for extra zero terminator at the end of the string
 		// calculate total necessary string length
-		for ( int i = 0; g_JabberFeatCapPairs[i].szFeature; i++ ) {
+		for ( i = 0; g_JabberFeatCapPairs[i].szFeature; i++ ) {
 			if ( jcb & g_JabberFeatCapPairs[i].jcbCap ) {
 				iLen += lstrlen( g_JabberFeatCapPairs[i].szFeature ) + 1;
 			}
@@ -1092,7 +1092,7 @@ LPTSTR CJabberNetInterface::GetResourceFeatures( LPCTSTR jid )
 		// allocate memory and fill it
 		LPTSTR str = (LPTSTR)mir_alloc( iLen * sizeof(TCHAR) );
 		LPTSTR p = str;
-		for ( int i = 0; g_JabberFeatCapPairs[i].szFeature; i++ ) {
+		for ( i = 0; g_JabberFeatCapPairs[i].szFeature; i++ ) {
 			if ( jcb & g_JabberFeatCapPairs[i].jcbCap ) {
 				lstrcpy( p, g_JabberFeatCapPairs[i].szFeature );
 				p += lstrlen( g_JabberFeatCapPairs[i].szFeature ) + 1;

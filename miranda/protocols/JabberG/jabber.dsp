@@ -260,6 +260,14 @@ SOURCE=.\jabber_menu.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\jabber_message_handlers.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\jabber_message_manager.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\jabber_misc.cpp
 # ADD CPP /Yu
 # End Source File
@@ -280,6 +288,10 @@ SOURCE=.\jabber_opttree.cpp
 
 SOURCE=.\jabber_password.cpp
 # ADD CPP /Yu
+# End Source File
+# Begin Source File
+
+SOURCE=.\jabber_presence_manager.cpp
 # End Source File
 # Begin Source File
 
@@ -305,6 +317,10 @@ SOURCE=.\jabber_search.cpp
 # Begin Source File
 
 SOURCE=.\jabber_secur.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\jabber_send_manager.cpp
 # End Source File
 # Begin Source File
 
@@ -459,6 +475,14 @@ SOURCE=.\icos\addcontact.ico
 # End Source File
 # Begin Source File
 
+SOURCE=.\icos\arrow_down.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\icos\arrow_up.ico
+# End Source File
+# Begin Source File
+
 SOURCE=.\icos\auth_revoke.ico
 # End Source File
 # Begin Source File
@@ -475,7 +499,31 @@ SOURCE=.\icos\command.ico
 # End Source File
 # Begin Source File
 
+SOURCE=.\icos\console.ico
+# End Source File
+# Begin Source File
+
 SOURCE=.\icos\delete.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\icos\disco_fail.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\icos\disco_in_progress.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\icos\disco_ok.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\icos\filter.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\icos\go.ico
 # End Source File
 # Begin Source File
 
@@ -484,6 +532,10 @@ SOURCE=.\icos\grant.ico
 # Begin Source File
 
 SOURCE=.\icos\group.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\icos\home.ico
 # End Source File
 # Begin Source File
 
@@ -499,7 +551,19 @@ SOURCE=.\icos\login.ico
 # End Source File
 # Begin Source File
 
+SOURCE=.\icos\message_allow.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\icos\message_deny.ico
+# End Source File
+# Begin Source File
+
 SOURCE=.\msvc6.rc
+# End Source File
+# Begin Source File
+
+SOURCE=.\icos\notes.ico
 # End Source File
 # Begin Source File
 
@@ -507,11 +571,59 @@ SOURCE=.\icos\open.ico
 # End Source File
 # Begin Source File
 
+SOURCE=.\icos\openid.ico
+# End Source File
+# Begin Source File
+
 SOURCE=.\icos\pages.ico
 # End Source File
 # Begin Source File
 
+SOURCE=.\icos\plist_active.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\icos\plist_any.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\icos\plist_default.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\icos\presence_in_allow.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\icos\presence_in_deny.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\icos\presence_out_allow.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\icos\presence_out_deny.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\icos\privacy_lists.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\icos\query_allow.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\icos\query_deny.ico
+# End Source File
+# Begin Source File
+
 SOURCE=.\icos\refresh.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\icos\refresh_node.ico
 # End Source File
 # Begin Source File
 
@@ -523,7 +635,15 @@ SOURCE=.\icos\request.ico
 # End Source File
 # Begin Source File
 
+SOURCE=.\icos\reset_filter.ico
+# End Source File
+# Begin Source File
+
 SOURCE=.\icos\roster.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\icos\rss.ico
 # End Source File
 # Begin Source File
 
@@ -531,7 +651,43 @@ SOURCE=.\icos\save.ico
 # End Source File
 # Begin Source File
 
+SOURCE=.\icos\send_note.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\icos\server.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\icos\service_discovery.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\icos\store.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\icos\transport.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\icos\transport_local.ico
+# End Source File
+# Begin Source File
+
 SOURCE=.\icos\user2room.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\icos\view_as_list.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\icos\view_as_tree.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\icos\weather.ico
 # End Source File
 # Begin Source File
 
