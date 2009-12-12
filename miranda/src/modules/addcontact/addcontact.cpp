@@ -108,22 +108,27 @@ INT_PTR CALLBACK AddContactDlgProc(HWND hdlg,UINT msg,WPARAM wparam,LPARAM lpara
 		SendDlgItemMessage(hdlg,IDC_GROUP,CB_SETCURSEL,0,0);
 		/* acs->szProto may be NULL don't expect it */
 		{
+			// By default check both checkboxes
+			CheckDlgButton(hdlg,IDC_ADDED,BST_CHECKED);
+			CheckDlgButton(hdlg,IDC_AUTH,BST_CHECKED);
+
 			DWORD flags = (acs->szProto) ? CallProtoService(acs->szProto,PS_GETCAPS,PFLAGNUM_4,0) : 0;
 			if (flags&PF4_FORCEADDED) { // force you were added requests for this protocol
-				CheckDlgButton(hdlg,IDC_ADDED,BST_CHECKED);
 				EnableWindow(GetDlgItem(hdlg,IDC_ADDED),FALSE);
 			}
 			if (flags&PF4_FORCEAUTH) { // force auth requests for this protocol
-				CheckDlgButton(hdlg,IDC_AUTH,BST_CHECKED);
 				EnableWindow(GetDlgItem(hdlg,IDC_AUTH),FALSE);
 			}
 			if (flags&PF4_NOCUSTOMAUTH) {
 				EnableWindow(GetDlgItem(hdlg,IDC_AUTHREQ),FALSE);
 				EnableWindow(GetDlgItem(hdlg,IDC_AUTHGB),FALSE);
-		}	}
-		SetDlgItemText(hdlg,IDC_AUTHREQ,TranslateT("Please authorize my request and add me to your contact list."));
-		EnableWindow(GetDlgItem(hdlg,IDC_AUTHREQ),IsDlgButtonChecked(hdlg,IDC_AUTH));
-		EnableWindow(GetDlgItem(hdlg,IDC_AUTHGB),IsDlgButtonChecked(hdlg,IDC_AUTH));
+			} 
+			else {
+				EnableWindow(GetDlgItem(hdlg,IDC_AUTHREQ),IsDlgButtonChecked(hdlg,IDC_AUTH));
+				EnableWindow(GetDlgItem(hdlg,IDC_AUTHGB),IsDlgButtonChecked(hdlg,IDC_AUTH));
+			}
+			SetDlgItemText(hdlg,IDC_AUTHREQ,TranslateT("Please authorize my request and add me to your contact list."));
+		}
 		break;
 
 	case WM_COMMAND:
