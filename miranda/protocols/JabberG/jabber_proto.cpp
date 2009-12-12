@@ -135,6 +135,7 @@ CJabberProto::CJabberProto( const char* aProtoName, const TCHAR* aUserName ) :
 	JCreateService( PS_GETMYAVATAR, &CJabberProto::JabberGetAvatar );
 	JCreateService( PS_GETAVATARCAPS, &CJabberProto::JabberGetAvatarCaps );
 	JCreateService( PS_SETMYAVATAR, &CJabberProto::JabberSetAvatar );
+	JCreateService( PS_SETMYNICKNAME, &CJabberProto::JabberSetNickname );
 
 	JCreateService( JS_GETADVANCEDSTATUSICON, &CJabberProto::JGetAdvancedStatusIcon );
 	JCreateService( JS_DB_GETEVENTTEXT_CHATSTATES, &CJabberProto::OnGetEventTextChatStates );

@@ -821,6 +821,7 @@ struct CJabberProto : public PROTO_INTERFACE
 	INT_PTR    __cdecl JabberGetAvatarInfo( WPARAM wParam, LPARAM lParam );
 	INT_PTR    __cdecl ServiceSendXML( WPARAM wParam, LPARAM lParam );
 	INT_PTR    __cdecl JabberSetAvatar( WPARAM wParam, LPARAM lParam );
+	INT_PTR    __cdecl JabberSetNickname( WPARAM wParam, LPARAM lParam );
 	INT_PTR    __cdecl JabberSendNudge( WPARAM wParam, LPARAM lParam );
 	INT_PTR    __cdecl JabberGCGetToolTipText( WPARAM wParam, LPARAM lParam );
 	INT_PTR    __cdecl JabberServiceParseXmppURI( WPARAM wParam, LPARAM lParam );

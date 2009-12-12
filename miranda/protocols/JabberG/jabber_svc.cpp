@@ -340,6 +340,19 @@ INT_PTR __cdecl CJabberProto::JabberSetAvatar( WPARAM, LPARAM lParam )
 	return 0;
 }
 
+////////////////////////////////////////////////////////////////////////////////////////
+// JabberSetNickname - sets the user nickname without UI
+
+INT_PTR __cdecl CJabberProto::JabberSetNickname( WPARAM wParam, LPARAM lParam )
+{
+	TCHAR *nickname = ( wParam & SMNN_UNICODE ) ? mir_u2t( (WCHAR *) lParam ) : mir_a2t( (char *) lParam );
+
+	JSetStringT( NULL, "Nick", nickname );
+	SetServerVcard( FALSE, "" );
+
+	return 0;
+}
+
 /////////////////////////////////////////////////////////////////////////////////////////
 // "/SendXML" - Allows external plugins to send XML to the server
 
