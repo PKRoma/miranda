@@ -475,6 +475,54 @@ typedef struct {
 
 #define PS_GETMYAWAYMSG  "/GetMyAwayMsg"
 
+// Set nickname for the user
+// wParam=(WPARAM)SMNN_xxx
+// lParam=(LPARAM)(char *) The new nickname for the user
+// return=0 for success
+
+#define SMNN_UNICODE 1        // return Unicode status
+#if defined( _UNICODE )
+	#define SMNN_TCHAR SMNN_UNICODE
+#else
+	#define SMNN_TCHAR 0
+#endif
+
+#define PS_SETMYNICKNAME "/SetNickname"
+
+// Get the max allowed length for the user nickname
+// Optional, default value is 1024
+// wParam=(WPARAM)0
+// lParam=(LPARAM)0
+// return= <=0 for error, >0 the max length of the nick
+#define PS_GETMYNICKNAMEMAXLENGTH "/GetMyNicknameMaxLength"
+
+// WAYD = What are you doing
+#define WAYD_UNICODE 1        // return Unicode texts
+#if defined( _UNICODE )
+	#define WAYD_TCHAR WAYD_UNICODE
+#else
+	#define WAYD_TCHAR 0
+#endif
+
+// Get the WAYD message for the user
+// wParam=(WPARAM)WAYD_xxx
+// lParam=(LPARAM)0
+// Returns the text or NULL if there is none. Remember to mir_free the return value.
+#define PS_GETMYWAYD "/GetMyWAYD"
+
+// Sets the WAYD message for the user
+// wParam=(WPARAM)WAYD_xxx
+// lParam=(LPARAM)(WCHAR * or char *)The message
+// Returns 0 on success, nonzero on failure
+#define PS_SETMYWAYD "/SetMyWAYD"
+
+// Get the max allowed length that a WAYD message can have
+// Optional, default value is 1024
+// wParam=(WPARAM)0
+// lParam=(LPARAM)0
+// Returns the max length
+#define PS_GETMYWAYDMAXLENGTH "/GetMyWAYDMaxLength"
+
 /****************************** SENDING SERVICES *************************/
 //these should be called with CallContactService()
 
