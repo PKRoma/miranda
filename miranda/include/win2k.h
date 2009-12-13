@@ -460,6 +460,7 @@ File created by Christian Kästner, and tweaked a bit by Richard Hughes*/
 
 
 	#ifndef IDropTargetHelper
+	DEFINE_GUID(CLSID_DragDropHelper,   0x4657278a, 0x411b, 0x11d2, 0x83, 0x9a, 0x0, 0xc0, 0x4f, 0xd9, 0x18, 0xd0);
 	#define INTERFACE IDropTargetHelper
 		DECLARE_INTERFACE_( IDropTargetHelper, IUnknown )
 		{
