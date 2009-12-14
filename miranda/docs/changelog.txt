@@ -14,7 +14,7 @@ Bugfixes:
  - Yahoo: Display fix for email notifications
  - Yahoo: Fixed login issue
 
- 
+
 * New in 0.8.10
 Bugfixes:
  - SSL improvements on Windows 9x
