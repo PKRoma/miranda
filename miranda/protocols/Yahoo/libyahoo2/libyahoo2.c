@@ -689,6 +689,7 @@ static void yahoo_free_data(struct yahoo_data *yd)
 {
 	FREE(yd->user);
 	FREE(yd->password);
+	FREE(yd->pw_token);
 	FREE(yd->cookie_y);
 	FREE(yd->cookie_t);
 	FREE(yd->cookie_c);
