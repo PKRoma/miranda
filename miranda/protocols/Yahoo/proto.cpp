@@ -792,6 +792,10 @@ int __cdecl CYahooProto::OnEvent( PROTOEVENTTYPE eventType, WPARAM wParam, LPARA
 			YAHOO_CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )mainMenuRoot, ( LPARAM )&clmi );
             break;
 		}
+		case EV_PROTO_ONEXIT:
+		case EV_PROTO_ONREADYTOEXIT:
+		case EV_PROTO_ONERASE:
+			break;
 	}	
 	return 1;
 }
