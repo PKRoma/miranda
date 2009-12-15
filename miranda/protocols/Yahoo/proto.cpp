@@ -62,6 +62,7 @@ CYahooProto::~CYahooProto()
 	mir_free( m_tszUserName );
 
 	FREE(m_startMsg);
+	FREE(m_pw_token); 
 	
 	Netlib_CloseHandle( m_hNetlibUser );
 }
