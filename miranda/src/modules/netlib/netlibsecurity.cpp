@@ -162,7 +162,7 @@ char* NtlmCreateResponseFromChallenge(HANDLE hSecurity, char *szChallenge, const
 
 	if (hSecurity == NULL || ntlmCnt == 0) return NULL;
 
-	if (*szChallenge != 0) {
+	if (szChallenge != NULL && szChallenge[0] != '\0') {
 		nlb64.cchEncoded = lstrlenA(szChallenge);
 		nlb64.pszEncoded = szChallenge;
 		nlb64.cbDecoded = Netlib_GetBase64DecodedBufferSize(nlb64.cchEncoded);
