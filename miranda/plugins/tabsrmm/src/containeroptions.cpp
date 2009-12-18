@@ -233,6 +233,10 @@ INT_PTR CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, 
 
 			SendDlgItemMessage(hwndDlg, IDC_TITLEBOX, WM_SETFONT, (WPARAM)hFont, TRUE);
 
+			if(pContainer->isCloned && pContainer->hContactFrom != 0) {
+				Utils::showDlgControl(hwndDlg, IDC_CNTPRIVATE, SW_HIDE);
+				Utils::showDlgControl(hwndDlg, IDC_O_CNTPRIVATE, SW_HIDE);
+			}
 			return FALSE;
 		}
 
@@ -368,8 +372,18 @@ INT_PTR CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, 
 
 					Utils::SettingsToContainer(pContainer);
 
-					if (!IsDlgButtonChecked(hwndDlg, IDC_CNTPRIVATE))
+					if (!IsDlgButtonChecked(hwndDlg, IDC_CNTPRIVATE)) {
 						ReloadGlobalContainerSettings(true);
+						::DBWriteContactSettingBlob(0, SRMSGMOD_T, CNT_KEYNAME, &PluginConfig.globalContainerSettings, sizeof(TContainerSettings));
+					}
+					else {
+#if defined (_UNICODE)
+						char *szSetting = "CNTW_";
+#else
+						char *szSetting = "CNT_";
+#endif
+						Utils::SaveContainerSettings(pContainer, szSetting);
+					}
 
 					SendMessage(pContainer->hwnd, DM_CONFIGURECONTAINER, 0, 0);
 					BroadCastContainer(pContainer, DM_SETINFOPANEL, 0, 0);

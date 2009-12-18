@@ -699,6 +699,28 @@ void Utils::ReadPrivateContainerSettings(TContainerData *pContainer, bool fForce
 		pContainer->settings = &PluginConfig.globalContainerSettings;
 }
 
+void Utils::SaveContainerSettings(TContainerData *pContainer, const char *szSetting)
+{
+	char	szCName[50];
+
+	pContainer->dwFlags &= ~(CNT_DEFERREDCONFIGURE | CNT_CREATE_MINIMIZED | CNT_DEFERREDSIZEREQUEST | CNT_CREATE_CLONED);
+	if(pContainer->settings->fPrivate) {
+		_snprintf(szCName, 40, "%s%d_Blob", szSetting, pContainer->iContainerIndex);
+		WriteContainerSettingsToDB(0, pContainer->settings, szCName);
+	}
+	mir_snprintf(szCName, 40, "%s%d_theme", szSetting, pContainer->iContainerIndex);
+	if (lstrlen(pContainer->szRelThemeFile) > 1) {
+		if(pContainer->fPrivateThemeChanged == TRUE) {
+			M->pathToRelative(pContainer->szRelThemeFile, pContainer->szAbsThemeFile);
+			M->WriteTString(NULL, SRMSGMOD_T, szCName, pContainer->szAbsThemeFile);
+			pContainer->fPrivateThemeChanged = FALSE;
+		}
+	}
+	else {
+		::DBDeleteContactSetting(NULL, SRMSGMOD_T, szCName);
+		pContainer->fPrivateThemeChanged = FALSE;
+	}
+}
 /**
  * convert the avatar bitmap to icon format so that it can be used on the task bar
  * tries to keep correct aspect ratio of the avatar image
@@ -817,11 +839,23 @@ int	TSAPI Utils::mustPlaySound(const TWindowData *dat)
 	bool fActiveTab = (dat->pContainer->hwndActive == dat->hwnd ? true : false);
 	bool fIconic = (::IsIconic(dat->hwnd) ? true : false);
 
-	if(fActiveTab && fActiveWindow)
-		return(dat->pContainer->dwFlagsEx & CNT_EX_SOUNDS_FOCUSED ? 1 : 0);
-
+	/*
+	 * window minimized, check if sound has to be played
+	 */
 	if(fIconic)
 		return(dat->pContainer->dwFlagsEx & CNT_EX_SOUNDS_MINIMIZED ? 1 : 0);
+
+	/*
+	 * window in foreground
+	 */
+	if(fActiveWindow) {
+		if(fActiveTab)
+			return(dat->pContainer->dwFlagsEx & CNT_EX_SOUNDS_FOCUSED ? 1 : 0);
+		else
+			return(dat->pContainer->dwFlagsEx & CNT_EX_SOUNDS_INACTIVETABS ? 1 : 0);
+	}
+	else
+		return(dat->pContainer->dwFlagsEx & CNT_EX_SOUNDS_UNFOCUSED ? 1 : 0);
 
 	return(1);
 }
@@ -861,10 +895,43 @@ DWORD CALLBACK Utils::StreamOut(DWORD_PTR dwCookie, LPBYTE pbBuff, LONG cb, LONG
 }
 
 /**
+ * extract a resource from the given module
+ * tszPath must end with \
+ */
+void TSAPI Utils::extractResource(const HMODULE h, const UINT uID, const TCHAR *tszName, const TCHAR *tszPath,
+								  const TCHAR *tszFilename, bool fForceOverwrite)
+{
+	HRSRC 	hRes;
+	HGLOBAL	hResource;
+	TCHAR	szFilename[MAX_PATH];
+
+	hRes = FindResource(h, MAKEINTRESOURCE(uID), tszName);
+
+	if(hRes) {
+		hResource = LoadResource(h, hRes);
+		if(hResource) {
+			HANDLE  hFile;
+			char 	*pData = (char *)LockResource(hResource);
+			DWORD	dwSize = SizeofResource(g_hInst, hRes), written = 0;
+			mir_sntprintf(szFilename, MAX_PATH, _T("%s%s"), tszPath, tszFilename);
+			if(!fForceOverwrite) {
+				if(PathFileExists(szFilename))
+					return;
+			}
+			if((hFile = CreateFile(szFilename, GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, 0)) != INVALID_HANDLE_VALUE) {
+				WriteFile(hFile, (void *)pData, dwSize, &written, NULL);
+				CloseHandle(hFile);
+			}
+			else
+				throw(CRTException("Error while extracting aero skin images, Aero mode disabled.", szFilename));
+		}
+	}
+}
+
+/**
  * generic command dispatcher
  * used in various places (context menus, info panel menus etc.)
  */
-
 LRESULT Utils::CmdDispatcher(UINT uType, HWND hwndDlg, UINT cmd, WPARAM wParam, LPARAM lParam, TWindowData *dat, TContainerData *pContainer)
 {
 	switch(uType) {

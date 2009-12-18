@@ -196,33 +196,6 @@ AeroEffect  CSkin::m_aeroEffects[AERO_EFFECT_LAST] = {
 	}
 };
 
-class CRTException : public std::runtime_error
-{
-public:
-	CRTException(const char *szMsg, const TCHAR *szParam);
-	~CRTException() {}
-
-	void display() const;
-
-private:
-	TCHAR	m_szParam[MAX_PATH];
-};
-
-CRTException::CRTException(const char *szMsg, const TCHAR *szParam) : std::runtime_error(std::string(szMsg))
-{
- 	mir_sntprintf(m_szParam, MAX_PATH, szParam);
-}
-
-void CRTException::display() const
-{
-	TCHAR*	tszMsg = mir_a2t(what());
-	TCHAR  	tszBoxMsg[500];
-
-	mir_sntprintf(tszBoxMsg, 500, _T("%s\n\n(%s)"), tszMsg, m_szParam);
-	::MessageBox(0, tszBoxMsg, _T("TabSRMM runtime error"), MB_OK | MB_ICONERROR);
-	mir_free(tszMsg);
-}
-
 /*
  * definition of the availbale skin items
  */
@@ -2752,7 +2725,6 @@ void CSkin::setAeroEffect(LRESULT effect)
  */
 void CSkin::extractSkinsAndLogo(bool fForceOverwrite) const
 {
-	TCHAR	szFilename[MAX_PATH];
 	TCHAR 	tszBasePath[MAX_PATH];
 
 	mir_sntprintf(tszBasePath, MAX_PATH, _T("%s"), M->getDataPath());
@@ -2765,32 +2737,8 @@ void CSkin::extractSkinsAndLogo(bool fForceOverwrite) const
 
 	try {
 		if(PluginConfig.m_WinVerMajor >=6) {
-			for(int i = 0; i < safe_sizeof(my_default_skin); i++) {
-				HRSRC 	hRes;
-				HGLOBAL	hResource;
-
-				hRes = FindResource(g_hInst, MAKEINTRESOURCE(my_default_skin[i].ulID), _T("SKIN_GLYPH"));
-
-				if(hRes) {
-					hResource = LoadResource(g_hInst, hRes);
-					if(hResource) {
-						HANDLE  hFile;
-						char 	*pData = (char *)LockResource(hResource);
-						DWORD	dwSize = SizeofResource(g_hInst, hRes), written = 0;
-						mir_sntprintf(szFilename, MAX_PATH, _T("%s%s"), tszBasePath, my_default_skin[i].tszName);
-						if(!fForceOverwrite) {
-							if(PathFileExists(szFilename) && M->GetByte("keepCustomAeroSkins", 1))
-								continue;
-						}
-						if((hFile = CreateFile(szFilename, GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, 0)) != INVALID_HANDLE_VALUE) {
-							WriteFile(hFile, (void *)pData, dwSize, &written, NULL);
-							CloseHandle(hFile);
-						}
-						else
-							throw(CRTException("Error while extracting aero skin images, Aero mode disabled.", szFilename));
-					}
-				}
-			}
+			for(int i = 0; i < safe_sizeof(my_default_skin); i++)
+				Utils::extractResource(g_hInst, my_default_skin[i].ulID, _T("SKIN_GLYPH"), tszBasePath, my_default_skin[i].tszName, fForceOverwrite);
 		}
 	}
 	catch(CRTException& ex) {

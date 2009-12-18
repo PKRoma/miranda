@@ -47,6 +47,19 @@ struct TSplitterBroadCast {
 
 typedef BOOL (WINAPI *pfnSetMenuInfo )( HMENU hmenu, LPCMENUINFO lpcmi );
 
+class CRTException : public std::runtime_error
+{
+public:
+	CRTException(const char *szMsg, const TCHAR *szParam);
+	~CRTException() {}
+
+	void display() const;
+
+private:
+	TCHAR	m_szParam[MAX_PATH];
+};
+
+
 class CGlobals
 {
 public:
@@ -191,7 +204,7 @@ public:
 
 	static HANDLE					m_event_FoldersChanged;
 	static	void					cacheUpdateMetaChanged();
-	static  void 					logStatusChange(const CContactCache *c);
+	static  void 					logStatusChange(WPARAM wParam, const CContactCache *c);
 
 	static  void 			 		Ex_CopyEditToClipboard(HWND hWnd);
 	static  void 			 		Ex_Handler();

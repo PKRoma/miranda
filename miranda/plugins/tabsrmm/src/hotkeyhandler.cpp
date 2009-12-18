@@ -588,7 +588,7 @@ LONG_PTR CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 		}
 
 		case DM_LOGSTATUSCHANGE:
-			CGlobals::logStatusChange(reinterpret_cast<CContactCache *>(lParam));
+			CGlobals::logStatusChange(wParam, reinterpret_cast<CContactCache *>(lParam));
 			return(0);
 
 		case DM_MUCFLASHWORKER: {

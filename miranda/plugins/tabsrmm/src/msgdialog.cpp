@@ -2909,7 +2909,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			SendMessage(hwndContainer, WM_NCHITTEST, wParam, lParam);
 			break;
 		case WM_DRAWITEM:
-			return MsgWindowDrawHandler(wParam, lParam, hwndDlg, dat);
+			return MsgWindowDrawHandler(wParam, lParam, dat);
 		case WM_APPCOMMAND: {
 			DWORD cmd = GET_APPCOMMAND_LPARAM(lParam);
 			if (cmd == APPCOMMAND_BROWSER_BACKWARD || cmd == APPCOMMAND_BROWSER_FORWARD) {

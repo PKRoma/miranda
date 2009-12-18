@@ -1758,7 +1758,7 @@ void TSAPI HandlePasteAndSend(const TWindowData *dat)
  * and the color formatting menu
  */
 
-int TSAPI MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, TWindowData *dat)
+int TSAPI MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, TWindowData *dat)
 {
 	LPDRAWITEMSTRUCT dis = (LPDRAWITEMSTRUCT) lParam;
 
@@ -1766,6 +1766,7 @@ int TSAPI MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, HWND hwndDlg, TWind
 		return 0;
 
 	bool	fAero = M->isAero();
+	HWND	hwndDlg = dat->hwnd;
 
 	if (dis->CtlType == ODT_MENU && dis->hwndItem == (HWND)GetSubMenu(PluginConfig.g_hMenuContext, 7)) {
 		RECT rc = { 0 };

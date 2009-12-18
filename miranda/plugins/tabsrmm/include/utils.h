@@ -90,6 +90,7 @@ public:
 	static  void 				TSAPI SettingsToContainer			(TContainerData *pContainer);
 	static	void 				TSAPI ContainerToSettings			(TContainerData *pContainer);
 	static	void 				TSAPI ReadPrivateContainerSettings	(TContainerData *pContainer, bool fForce = false);
+	static	void				TSAPI SaveContainerSettings			(TContainerData *pContainer, const char *szSetting);
 	static	DWORD 		CALLBACK 	  StreamOut(DWORD_PTR dwCookie, LPBYTE pbBuff, LONG cb, LONG * pcb);
 	static	LRESULT				TSAPI CmdDispatcher					(UINT uType, HWND hwndDlg, UINT cmd, WPARAM wParam, LPARAM lParam, TWindowData *dat = 0,
 																	 TContainerData *pContainer = 0);
@@ -99,6 +100,8 @@ public:
 	static 	void 				TSAPI showDlgControl				(const HWND hwnd, UINT id, int showCmd);
 	static	int					TSAPI mustPlaySound					(const TWindowData *dat);
 	static 	HICON				TSAPI iconFromAvatar				(const TWindowData *dat);
+	static  void 				TSAPI extractResource				(const HMODULE h, const UINT uID, const TCHAR *tszName, const TCHAR *tszPath,
+																	 const TCHAR *tszFilename, bool fForceOverwrite);
 
 	template<typename T> static size_t TSAPI CopyToClipBoard(T* _t, const HWND hwndOwner)
 	{

@@ -184,6 +184,7 @@ private:
 	bool				m_isChat;											// is MUC session
 	bool				m_active;											// panel active and visible
 	bool				m_fPrivateHeight;
+	bool				m_fDialogCreated;
 	TWindowData*	m_dat;												// this one OWNS us...
 	LONG				m_height;											// height (determined by position of IDC_PANELSPLITTER)
 	LONG				m_defaultHeight, m_defaultMUCHeight;				// global values for the info bar height

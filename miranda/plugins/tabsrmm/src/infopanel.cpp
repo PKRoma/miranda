@@ -343,7 +343,7 @@ void CInfoPanel::renderContent(const HDC hdc)
 			dis.rcItem = m_dat->rcPic;
 			dis.hDC = hdc;
 			dis.hwndItem = m_dat->hwnd;
-			if(::MsgWindowDrawHandler(0, (LPARAM)&dis, m_dat->hwnd, m_dat) == 0) {
+			if(::MsgWindowDrawHandler(0, (LPARAM)&dis, m_dat) == 0) {
 				::PostMessage(m_dat->hwnd, WM_SIZE, 0, 1);
 				::PostMessage(m_dat->hwnd, DM_FORCEREDRAW, 0, 0);
 			}
@@ -1183,7 +1183,7 @@ int CInfoPanel::invokeConfigDialog(const POINT& pt)
 
 	if(m_hwndConfig == 0) {
 		m_configDlgBoldFont = m_configDlgFont = 0;
-		m_hwndConfig = ::CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_INFOPANEL), m_dat->pContainer->hwnd,
+		m_hwndConfig = ::CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_INFOPANEL), 0 /*m_dat->pContainer->hwnd */,
 										   ConfigDlgProcStub, (LPARAM)this);
 		if(m_hwndConfig) {
 			RECT	rc, rcLog;
@@ -1195,8 +1195,9 @@ int CInfoPanel::invokeConfigDialog(const POINT& pt)
 			::GetWindowRect(GetDlgItem(m_dat->hwnd, m_isChat ? IDC_CHAT_LOG : IDC_LOG), &rcLog);
 			pt.x = rcLog.left;
 			pt.y = rcLog.top;
-			::ScreenToClient(m_dat->pContainer->hwnd, &pt);
+			//::ScreenToClient(m_dat->pContainer->hwnd, &pt);
 
+			m_fDialogCreated = true;
 			::SetWindowPos(m_hwndConfig, HWND_TOP, pt.x + 10, pt.y - (m_active ? 10 : 0), 0, 0, SWP_NOSIZE | SWP_SHOWWINDOW);
 			return(1);
 		}
@@ -1217,12 +1218,15 @@ void CInfoPanel::dismissConfig(bool fForced)
 	POINT pt;
 	RECT  rc;
 
-	::GetCursorPos(&pt);
-	::GetWindowRect(m_hwndConfig, &rc);
-	if(fForced || !PtInRect(&rc, pt)) {
-		SendMessage(m_hwndConfig, WM_CLOSE, 1, 1);
-		m_hwndConfig = 0;
+	if(!m_fDialogCreated) {
+		::GetCursorPos(&pt);
+		::GetWindowRect(m_hwndConfig, &rc);
+		if(fForced || !PtInRect(&rc, pt)) {
+			SendMessage(m_hwndConfig, WM_CLOSE, 1, 1);
+			m_hwndConfig = 0;
+		}
 	}
+	m_fDialogCreated = false;
 }
 
 /**

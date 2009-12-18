@@ -68,7 +68,7 @@ void	TSAPI LoadOwnAvatar					(TWindowData *dat);
 void	TSAPI LoadContactAvatar				(TWindowData *dat);
 void	TSAPI LoadTimeZone					(TWindowData *dat);
 void	TSAPI HandlePasteAndSend			(const TWindowData *dat);
-int		TSAPI MsgWindowDrawHandler			(WPARAM wParam, LPARAM lParam, HWND hwndDlg, TWindowData *dat);
+int		TSAPI MsgWindowDrawHandler			(WPARAM wParam, LPARAM lParam, TWindowData *dat);
 void	TSAPI LoadOverrideTheme				(TContainerData *pContainer);
 void	TSAPI LoadThemeDefaults				(TContainerData *pContainer);
 void	TSAPI ConfigureSmileyButton			(TWindowData *dat);

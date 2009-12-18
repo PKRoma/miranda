@@ -550,6 +550,7 @@
 #define IDC_O_SOUNDSFOCUSED				1705
 #define IDC_O_TITLEBARFORMAT			1706
 #define IDC_O_EXPLAINGLOBALNOTIFY       1624
+#define IDC_O_CNTPRIVATE				1901
 #define IDC_PLUS_CHECKTREE              2000
 #define IDC_COPYRIGHT                   2002
 #define IDC_PLUS_HELP                   2004

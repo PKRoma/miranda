@@ -788,7 +788,7 @@ static INT_PTR CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, 
 			sbarWidth_left = pContainer->SideBar->getFlags() & CSideBar::SIDEBARORIENTATION_LEFT ? sbarWidth : 0;
 
 			if (lParam) {
-				DWORD	dwSWPFlags = SWP_NOACTIVATE|SWP_NOZORDER|SWP_DEFERERASE | SWP_NOCOPYBITS;// | SWP_NOSENDCHANGING */ | SWP_ASYNCWINDOWPOS;
+				DWORD	dwSWPFlags = SWP_NOACTIVATE|SWP_NOZORDER |SWP_DEFERERASE | SWP_NOCOPYBITS; // | SWP_NOSENDCHANGING  | SWP_ASYNCWINDOWPOS;
 				if (pContainer->dwFlags & CNT_TABSBOTTOM)
 					SetWindowPos(hwndTab, 0, pContainer->tBorder_outer_left + sbarWidth_left, pContainer->tBorder_outer_top + rebarHeight,
 								 (rcClient.right - rcClient.left) - (pContainer->tBorder_outer_left + pContainer->tBorder_outer_right + sbarWidth),
@@ -1685,11 +1685,13 @@ buttons_done:
 			szTitleFormat[0] = 0;
 
 			if (pContainer->isCloned && pContainer->hContactFrom != 0) {
-				if(pContainer->settings == 0)
-					pContainer->settings = (TContainerSettings *)malloc(sizeof(TContainerSettings));
+				//if(pContainer->settings == 0)
+				//	pContainer->settings = (TContainerSettings *)malloc(sizeof(TContainerSettings));
 
-				CopyMemory((void *)pContainer->settings, (void *)&PluginConfig.globalContainerSettings, sizeof(TContainerSettings));
-				Utils::ReadContainerSettingsFromDB(pContainer->hContactFrom, pContainer->settings);
+				//CopyMemory((void *)pContainer->settings, (void *)&PluginConfig.globalContainerSettings, sizeof(TContainerSettings));
+				//Utils::ReadContainerSettingsFromDB(pContainer->hContactFrom, pContainer->settings);
+
+				pContainer->settings = &PluginConfig.globalContainerSettings;
 
 				pContainer->szRelThemeFile[0] = pContainer->szAbsThemeFile[0] = 0;
 				mir_snprintf(szCname, 40, "%s_theme", szSetting);
@@ -2129,7 +2131,7 @@ buttons_done:
 					for (i = 0; i < TabCtrl_GetItemCount(hwndTab); i++) {
 						if (TabCtrl_GetItem(hwndTab, i, &item)) {
 							SendMessage((HWND)item.lParam, DM_QUERYHCONTACT, 0, (LPARAM)&hContact);
-							Utils::WriteContainerSettingsToDB(hContact, pContainer->settings);
+							//Utils::WriteContainerSettingsToDB(hContact, pContainer->settings);
 
 							mir_snprintf(szCName, 40, "%s_theme", szSetting);
 							if (lstrlen(pContainer->szRelThemeFile) > 1) {
@@ -2147,25 +2149,8 @@ buttons_done:
 						}
 					}
 				}
-				else {
-					pContainer->dwFlags &= ~(CNT_DEFERREDCONFIGURE | CNT_CREATE_MINIMIZED | CNT_DEFERREDSIZEREQUEST | CNT_CREATE_CLONED);
-					if(pContainer->settings->fPrivate) {
-						_snprintf(szCName, 40, "%s%d_Blob", szSetting, pContainer->iContainerIndex);
-						Utils::WriteContainerSettingsToDB(0, pContainer->settings, szCName);
-					}
-					mir_snprintf(szCName, 40, "%s%d_theme", szSetting, pContainer->iContainerIndex);
-					if (lstrlen(pContainer->szRelThemeFile) > 1) {
-						if(pContainer->fPrivateThemeChanged == TRUE) {
-							M->pathToRelative(pContainer->szRelThemeFile, pContainer->szAbsThemeFile);
-							M->WriteTString(NULL, SRMSGMOD_T, szCName, pContainer->szAbsThemeFile);
-							pContainer->fPrivateThemeChanged = FALSE;
-						}
-					}
-					else {
-						DBDeleteContactSetting(NULL, SRMSGMOD_T, szCName);
-						pContainer->fPrivateThemeChanged = FALSE;
-					}
-				}
+				else
+					Utils::SaveContainerSettings(pContainer, szSetting);
 				DestroyWindow(hwndDlg);
 			}
 			break;

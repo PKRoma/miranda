@@ -92,6 +92,21 @@ int				 CGlobals::m_exLine = 0;
 	static char *szPrefix = "tabsrmm ";
 
 
+CRTException::CRTException(const char *szMsg, const TCHAR *szParam) : std::runtime_error(std::string(szMsg))
+{
+	mir_sntprintf(m_szParam, MAX_PATH, szParam);
+}
+
+void CRTException::display() const
+{
+	TCHAR*	tszMsg = mir_a2t(what());
+	TCHAR  	tszBoxMsg[500];
+
+	mir_sntprintf(tszBoxMsg, 500, _T("%s\n\n(%s)"), tszMsg, m_szParam);
+	::MessageBox(0, tszBoxMsg, _T("TabSRMM runtime error"), MB_OK | MB_ICONERROR);
+	mir_free(tszMsg);
+}
+
 void CGlobals::RegisterWithUpdater()
 {
 	Update 		upd = {0};
@@ -551,7 +566,8 @@ int CGlobals::DBSettingChanged(WPARAM wParam, LPARAM lParam)
 					PostMessage(c->getHwnd(), DM_UPDATELASTMESSAGE, 0, 0);
 				}
 			}
-			PostMessage(PluginConfig.g_hwndHotkeyHandler, DM_LOGSTATUSCHANGE, 0, (LPARAM)c);
+			if(c)
+				PostMessage(PluginConfig.g_hwndHotkeyHandler, DM_LOGSTATUSCHANGE, MAKELONG(c->getStatus(), c->getOldStatus()), (LPARAM)c);
 		}
 	}
 	return(0);
@@ -734,7 +750,7 @@ void CGlobals::RestoreUnreadMessageAlerts(void)
 	}
 }
 
-void CGlobals::logStatusChange(const CContactCache *c)
+void CGlobals::logStatusChange(WPARAM wParam, const CContactCache *c)
 {
 	if(c == 0)
 		return;
@@ -756,8 +772,8 @@ void CGlobals::logStatusChange(const CContactCache *c)
 
 		WORD	wStatus, wOldStatus;
 
-		wStatus = c->getStatus();
-		wOldStatus = c->getOldStatus();
+		wStatus = LOWORD(wParam);
+		wOldStatus = HIWORD(wParam);
 
 		if(wStatus == wOldStatus)
 			return;
@@ -768,6 +784,9 @@ void CGlobals::logStatusChange(const CContactCache *c)
 
 		TCHAR*	szOldStatus = (TCHAR *)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, (WPARAM)wOldStatus, GCMDF_TCHAR);
 		TCHAR*	szNewStatus = (TCHAR *)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, (WPARAM)wStatus, GCMDF_TCHAR);
+
+		if(szOldStatus == 0 || szNewStatus == 0)
+			return;
 
 		if (c->isValid()) {
 			if (wStatus == ID_STATUS_OFFLINE)
