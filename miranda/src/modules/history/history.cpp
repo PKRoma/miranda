@@ -349,12 +349,17 @@ static INT_PTR CALLBACK DlgProcHistory(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 				ZeroMemory(&dbei,sizeof(dbei));
 				dbei.cbSize=sizeof(dbei);
 				dbei.cbBlob=CallService(MS_DB_EVENT_GETBLOBSIZE,(WPARAM)hDbEvent,0);
-				dbei.pBlob=(PBYTE)mir_alloc(dbei.cbBlob);
-				CallService(MS_DB_EVENT_GET,(WPARAM)hDbEvent,(LPARAM)&dbei);
-				GetObjectDescription(&dbei,str,SIZEOF(str));
-				mir_free(dbei.pBlob);
-				if ( str[0] )
-					SetDlgItemText(hwndDlg, IDC_EDIT, str);
+				if ((int)cbBlob != -1)
+				{
+					dbei.pBlob=(PBYTE)mir_alloc(dbei.cbBlob);
+					if (CallService(MS_DB_EVENT_GET,(WPARAM)hDbEvent,(LPARAM)&dbei) == 0)
+					{
+						GetObjectDescription(&dbei,str,SIZEOF(str));
+						if ( str[0] )
+							SetDlgItemText(hwndDlg, IDC_EDIT, str);
+					}
+					mir_free(dbei.pBlob);
+				}
 			}
 			return TRUE;
 		}
