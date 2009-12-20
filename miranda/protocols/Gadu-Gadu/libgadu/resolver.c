@@ -2,7 +2,7 @@
 /* $Id$ */
 
 /*
- *  (C) Copyright 2001-2008 Wojtek Kaniewski <wojtekka@irc.pl>
+ *  (C) Copyright 2001-2009 Wojtek Kaniewski <wojtekka@irc.pl>
  *                          Robert J. Woźny <speedy@ziew.org>
  *                          Arkadiusz Miśkiewicz <arekm@pld-linux.org>
  *                          Tomasz Chiliński <chilek@chilan.com>
@@ -43,14 +43,23 @@
 #include <errno.h>
 #include <stdlib.h>
 #include <string.h>
-#include <signal.h>
 #ifndef _WIN32
 #include <unistd.h>
 #endif
+#include <signal.h>
 
 #include "libgadu.h"
 #include "resolver.h"
 #include "compat.h"
+
+/** Sposób rozwiązywania nazw serwerów */
+static gg_resolver_t gg_global_resolver_type = GG_RESOLVER_DEFAULT;
+
+/** Funkcja rozpoczynająca rozwiązywanie nazwy */
+static int (*gg_global_resolver_start)(int *fd, void **private_data, const char *hostname);
+
+/** Funkcja zwalniająca zasoby po rozwiązaniu nazwy */
+static void (*gg_global_resolver_cleanup)(void **private_data, int force);
 
 #ifdef GG_CONFIG_HAVE_PTHREAD
 
@@ -86,16 +95,17 @@ static void gg_gethostbyname_cleaner(void *data)
  *
  * \return 0 jeśli się powiodło, -1 w przypadku błędu
  */
-int gg_gethostbyname(const char *hostname, struct in_addr *addr, int pthread)
+int gg_gethostbyname_real(const char *hostname, struct in_addr *addr, int pthread)
 {
 #ifdef GG_CONFIG_HAVE_GETHOSTBYNAME_R
 	char *buf = NULL;
 	char *new_buf = NULL;
 	struct hostent he;
 	struct hostent *he_ptr = NULL;
-	int h_errnop, ret;
 	size_t buf_len = 1024;
 	int result = -1;
+	int h_errnop;
+	int ret = 0;
 #ifdef GG_CONFIG_HAVE_PTHREAD
 	int old_state;
 #endif
@@ -145,21 +155,21 @@ int gg_gethostbyname(const char *hostname, struct in_addr *addr, int pthread)
 
 		if (ret == 0 && he_ptr != NULL) {
 			memcpy(addr, he_ptr->h_addr, sizeof(struct in_addr));
-#ifdef GG_CONFIG_HAVE_PTHREAD
-			if (pthread)
-				pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, &old_state);
-#endif
-
-			free(buf);
-			buf = NULL;
-
-#ifdef GG_CONFIG_HAVE_PTHREAD
-			if (pthread)
-				pthread_setcancelstate(old_state, NULL);
-#endif
-
 			result = 0;
 		}
+
+#ifdef GG_CONFIG_HAVE_PTHREAD
+		if (pthread)
+			pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, &old_state);
+#endif
+
+		free(buf);
+		buf = NULL;
+
+#ifdef GG_CONFIG_HAVE_PTHREAD
+		if (pthread)
+			pthread_setcancelstate(old_state, NULL);
+#endif
 	}
 
 #ifdef GG_CONFIG_HAVE_PTHREAD
@@ -179,6 +189,30 @@ int gg_gethostbyname(const char *hostname, struct in_addr *addr, int pthread)
 
 	return 0;
 #endif /* GG_CONFIG_HAVE_GETHOSTBYNAME_R */
+}
+
+/**
+ * \internal Odpowiednik \c gethostbyname zapewniający współbieżność.
+ *
+ * Jeśli dany system dostarcza \c gethostbyname_r, używa się tej wersji, jeśli
+ * nie, to zwykłej \c gethostbyname.
+ *
+ * \param hostname Nazwa serwera
+ *
+ * \return Zaalokowana struktura \c in_addr lub NULL w przypadku błędu.
+ */
+struct in_addr *gg_gethostbyname(const char *hostname)
+{
+	struct in_addr *addr;
+
+	if (!(addr = malloc(sizeof(struct in_addr))))
+		return NULL;
+
+	if (gg_gethostbyname_real(hostname, addr, 0)) {
+		free(addr);
+		return NULL;
+	}
+	return addr;
 }
 
 /**
@@ -240,22 +274,22 @@ static int gg_resolver_fork_start(int *fd, void **priv_data, const char *hostnam
 	}
 
 	if (data->pid == 0) {
-		close(pipes[0]);
+		gg_sock_close(pipes[0]);
 
 		if ((addr.s_addr = inet_addr(hostname)) == INADDR_NONE) {
-			/* W przypadku błędu gg_gethostbyname() zwróci -1
+			/* W przypadku błędu gg_gethostbyname_real() zwróci -1
                          * i nie zmieni &addr. Tam jest już INADDR_NONE,
                          * więc nie musimy robić nic więcej. */
-			gg_gethostbyname(hostname, &addr, 0);
+			gg_gethostbyname_real(hostname, &addr, 0);
 		}
 
-		if (write(pipes[1], &addr, sizeof(addr)) != sizeof(addr))
+		if (gg_sock_write(pipes[1], &addr, sizeof(addr)) != sizeof(addr))
 			exit(1);
 
 		exit(0);
 	}
 
-	close(pipes[1]);
+	gg_sock_close(pipes[1]);
 
 	gg_debug(GG_DEBUG_MISC, "// gg_resolver_fork_start() %p\n", data);
 
@@ -266,8 +300,8 @@ static int gg_resolver_fork_start(int *fd, void **priv_data, const char *hostnam
 
 cleanup:
 	free(data);
-	close(pipes[0]);
-	close(pipes[1]);
+	gg_sock_close(pipes[0]);
+	gg_sock_close(pipes[1]);
 
 	errno = new_errno;
 
@@ -343,7 +377,7 @@ static void gg_resolver_pthread_cleanup(void **priv_data, int force)
 	data->hostname = NULL;
 
 	if (data->wfd != -1) {
-		close(data->wfd);
+		gg_sock_close(data->wfd);
 		data->wfd = -1;
 	}
 
@@ -363,13 +397,13 @@ static void *gg_resolver_pthread_thread(void *arg)
 	pthread_detach(pthread_self());
 
 	if ((addr.s_addr = inet_addr(data->hostname)) == INADDR_NONE) {
-		/* W przypadku błędu gg_gethostbyname() zwróci -1
+		/* W przypadku błędu gg_gethostbyname_real() zwróci -1
                  * i nie zmieni &addr. Tam jest już INADDR_NONE,
                  * więc nie musimy robić nic więcej. */
-		gg_gethostbyname(data->hostname, &addr, 1);
+		gg_gethostbyname_real(data->hostname, &addr, 1);
 	}
 
-	if (write(data->wfd, &addr, sizeof(addr)) == sizeof(addr))
+	if (gg_sock_write(data->wfd, &addr, sizeof(addr)) == sizeof(addr))
 		pthread_exit(NULL);
 	else 
 		pthread_exit((void*) -1);
@@ -448,8 +482,8 @@ cleanup:
 		free(data);
 	}
 
-	close(pipes[0]);
-	close(pipes[1]);
+	gg_sock_close(pipes[0]);
+	gg_sock_close(pipes[1]);
 
 	errno = new_errno;
 
@@ -474,6 +508,13 @@ int gg_session_set_resolver(struct gg_session *gs, gg_resolver_t type)
 	}
 
 	if (type == GG_RESOLVER_DEFAULT) {
+		if (gg_global_resolver_type != GG_RESOLVER_DEFAULT) {
+			gs->resolver_type = gg_global_resolver_type;
+			gs->resolver_start = gg_global_resolver_start;
+			gs->resolver_cleanup = gg_global_resolver_cleanup;
+			return 0;
+		}
+
 #if !defined(GG_CONFIG_HAVE_PTHREAD) || !defined(GG_CONFIG_PTHREAD_DEFAULT)
 		type = GG_RESOLVER_FORK;
 #else
@@ -520,7 +561,7 @@ gg_resolver_t gg_session_get_resolver(struct gg_session *gs)
 }
 
 /**
- * Ustawia własny rozwiązywania nazw w sesji.
+ * Ustawia własny sposób rozwiązywania nazw w sesji.
  *
  * \param gs Struktura sesji
  * \param resolver_start Funkcja rozpoczynająca rozwiązywanie nazwy
@@ -558,6 +599,13 @@ int gg_http_set_resolver(struct gg_http *gh, gg_resolver_t type)
 	}
 
 	if (type == GG_RESOLVER_DEFAULT) {
+		if (gg_global_resolver_type != GG_RESOLVER_DEFAULT) {
+			gh->resolver_type = gg_global_resolver_type;
+			gh->resolver_start = gg_global_resolver_start;
+			gh->resolver_cleanup = gg_global_resolver_cleanup;
+			return 0;
+		}
+
 #if !defined(GG_CONFIG_HAVE_PTHREAD) || !defined(GG_CONFIG_PTHREAD_DEFAULT)
 		type = GG_RESOLVER_FORK;
 #else
@@ -604,7 +652,7 @@ gg_resolver_t gg_http_get_resolver(struct gg_http *gh)
 }
 
 /**
- * Ustawia własny rozwiązywania nazw połączenia HTTP.
+ * Ustawia własny sposób rozwiązywania nazw połączenia HTTP.
  *
  * \param gh Struktura sesji
  * \param resolver_start Funkcja rozpoczynająca rozwiązywanie nazwy
@@ -622,6 +670,93 @@ int gg_http_set_custom_resolver(struct gg_http *gh, int (*resolver_start)(int*, 
 	gh->resolver_type = GG_RESOLVER_CUSTOM;
 	gh->resolver_start = resolver_start;
 	gh->resolver_cleanup = resolver_cleanup;
+
+	return 0;
+}
+
+/**
+ * Ustawia sposób rozwiązywania nazw globalnie dla biblioteki.
+ *
+ * \param type Sposób rozwiązywania nazw (patrz \ref build-resolver)
+ *
+ * \return 0 jeśli się powiodło, -1 w przypadku błędu
+ */
+int gg_global_set_resolver(gg_resolver_t type)
+{
+	switch (type) {
+		case GG_RESOLVER_DEFAULT:
+			gg_global_resolver_type = type;
+			gg_global_resolver_start = NULL;
+			gg_global_resolver_cleanup = NULL;
+			return 0;
+
+		case GG_RESOLVER_FORK:
+			gg_global_resolver_type = type;
+			gg_global_resolver_start = gg_resolver_fork_start;
+			gg_global_resolver_cleanup = gg_resolver_fork_cleanup;
+			return 0;
+
+#ifdef GG_CONFIG_HAVE_PTHREAD
+		case GG_RESOLVER_PTHREAD:
+			gg_global_resolver_type = type;
+			gg_global_resolver_start = gg_resolver_pthread_start;
+			gg_global_resolver_cleanup = gg_resolver_pthread_cleanup;
+			return 0;
+#endif
+
+		default:
+			errno = EINVAL;
+			return -1;
+	}
+}
+
+/**
+ * Zwraca sposób rozwiązywania nazw globalnie dla biblioteki.
+ *
+ * \return Sposób rozwiązywania nazw
+ */
+gg_resolver_t gg_global_get_resolver(void)
+{
+	return gg_global_resolver_type;
+}
+
+/**
+ * Ustawia własny sposób rozwiązywania nazw globalnie dla biblioteki.
+ *
+ * \param resolver_start Funkcja rozpoczynająca rozwiązywanie nazwy
+ * \param resolver_cleanup Funkcja zwalniająca zasoby
+ *
+ * Parametry funkcji rozpoczynającej rozwiązywanie nazwy wyglądają następująco:
+ *  - \c "int *fd" &mdash; wskaźnik na zmienną, gdzie zostanie umieszczony deskryptor potoku
+ *  - \c "void **priv_data" &mdash; wskaźnik na zmienną, gdzie można umieścić wskaźnik do prywatnych danych na potrzeby rozwiązywania nazwy
+ *  - \c "const char *name" &mdash; nazwa serwera do rozwiązania
+ *
+ * Parametry funkcji zwalniającej zasoby wyglądają następująco:
+ *  - \c "void **priv_data" &mdash; wskaźnik na zmienną przechowującą wskaźnik do prywatnych danych, należy go ustawić na \c NULL po zakończeniu
+ *  - \c "int force" &mdash; flaga mówiąca o tym, że zasoby są zwalniane przed zakończeniem rozwiązywania nazwy, np. z powodu zamknięcia sesji.
+ *
+ * Własny kod rozwiązywania nazwy powinien stworzyć potok, parę gniazd lub
+ * inny deskryptor pozwalający na co najmniej jednostronną komunikację i 
+ * przekazać go w parametrze \c fd. Po zakończeniu rozwiązywania nazwy,
+ * powinien wysłać otrzymany adres IP w postaci sieciowej (big-endian) do
+ * deskryptora. Jeśli rozwiązywanie nazwy się nie powiedzie, należy wysłać
+ * \c INADDR_NONE. Następnie zostanie wywołana funkcja zwalniająca zasoby
+ * z parametrem \c force równym \c 0. Gdyby sesja została zakończona przed
+ * rozwiązaniem nazwy, np. za pomocą funkcji \c gg_logoff(), funkcja
+ * zwalniająca zasoby zostanie wywołana z parametrem \c force równym \c 1.
+ *
+ * \return 0 jeśli się powiodło, -1 w przypadku błędu
+ */
+int gg_global_set_custom_resolver(int (*resolver_start)(int*, void**, const char*), void (*resolver_cleanup)(void**, int))
+{
+	if (resolver_start == NULL || resolver_cleanup == NULL) {
+		errno = EINVAL;
+		return -1;
+	}
+
+	gg_global_resolver_type = GG_RESOLVER_CUSTOM;
+	gg_global_resolver_start = resolver_start;
+	gg_global_resolver_cleanup = resolver_cleanup;
 
 	return 0;
 }

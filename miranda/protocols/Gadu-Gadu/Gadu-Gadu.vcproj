@@ -1151,7 +1151,7 @@
 					</FileConfiguration>
 				</File>
 				<File
-					RelativePath="libgadu\libgadu-config.h">
+					RelativePath="libgadu\internal.h">
 				</File>
 				<File
 					RelativePath="libgadu\libgadu.c">

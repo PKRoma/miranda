@@ -28,6 +28,6 @@
 #include <arpa/inet.h>
 #endif /* _WIN32 */
 
-int gg_gethostbyname(const char *hostname, struct in_addr *result, int pthread);
+int gg_gethostbyname_real(const char *hostname, struct in_addr *result, int pthread);
 
 #endif /* LIBGADU_RESOLVER_H */
