@@ -349,7 +349,7 @@ static INT_PTR CALLBACK DlgProcHistory(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 				ZeroMemory(&dbei,sizeof(dbei));
 				dbei.cbSize=sizeof(dbei);
 				dbei.cbBlob=CallService(MS_DB_EVENT_GETBLOBSIZE,(WPARAM)hDbEvent,0);
-				if ((int)cbBlob != -1)
+				if ((int)dbei.cbBlob != -1)
 				{
 					dbei.pBlob=(PBYTE)mir_alloc(dbei.cbBlob);
 					if (CallService(MS_DB_EVENT_GET,(WPARAM)hDbEvent,(LPARAM)&dbei) == 0)
