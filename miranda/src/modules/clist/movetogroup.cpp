@@ -2,8 +2,8 @@
 
 HANDLE hOnCntMenuBuild;
 HGENMENU hMoveToGroupItem=0, hPriorityItem = 0, hFloatingItem = 0;
-HANDLE *lphGroupsItems = NULL;
-int nGroupsItems = 0, cbGroupsItems = 0;
+
+LIST<HANDLE> lphGroupsItems(5);
 
 //service
 //wparam - hcontact
@@ -28,9 +28,8 @@ static TCHAR* PrepareGroupName( TCHAR* str )
 	return p;
 }
 
-static HANDLE AddGroupItem(HGENMENU hRoot, TCHAR* name,int pos,int param,int checked)
+static void AddGroupItem(HGENMENU hRoot, TCHAR* name, int pos, WPARAM param, bool checked)
 {
-	HANDLE result;
 	CLISTMENUITEM mi = { 0 };
 	mi.cbSize        = sizeof(mi);
 	mi.hParentMenu   = hRoot;
@@ -41,25 +40,15 @@ static HANDLE AddGroupItem(HGENMENU hRoot, TCHAR* name,int pos,int param,int che
 	if ( checked )
 		mi.flags |= CMIF_CHECKED;
 	mi.pszService = MTG_MOVE;
-	result = ( HANDLE )CallService(MS_CLIST_ADDCONTACTMENUITEM, param, (LPARAM)&mi);
+	HANDLE result = ( HANDLE )CallService(MS_CLIST_ADDCONTACTMENUITEM, param, (LPARAM)&mi);
 	mir_free( mi.ptszName );
-	return result;
-}
 
-static void ModifyGroupItem(HANDLE hItem, TCHAR* name,int checked)
-{
-	CLISTMENUITEM mi = {0};
-	mi.cbSize  = sizeof(mi);
-	mi.ptszName = PrepareGroupName( name );
-	mi.flags   = CMIM_NAME | CMIM_FLAGS | CMIF_TCHAR | CMIF_KEEPUNTRANSLATED;
-	if ( checked )
-		mi.flags |= CMIF_CHECKED;
-	CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM)hItem, (LPARAM)&mi);
-	mir_free( mi.ptszName );
+	lphGroupsItems.insert((HANDLE*)result);
 }
 
 static int OnContactMenuBuild(WPARAM wParam,LPARAM)
 {
+	int i;
 	CLISTMENUITEM mi = { 0 };
 	mi.cbSize = sizeof( mi );
 
@@ -72,54 +61,36 @@ static int OnContactMenuBuild(WPARAM wParam,LPARAM)
 		hMoveToGroupItem = (HGENMENU)CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM)&mi);
 	}
 
-	if ( !cbGroupsItems ) {
-		cbGroupsItems = 0x10;
-		lphGroupsItems = (HANDLE*)mir_alloc(cbGroupsItems*sizeof(HANDLE));
-	}
+	for (i = 0; i < lphGroupsItems.getCount(); i++)
+		CallService(MS_CLIST_REMOVECONTACTMENUITEM, (WPARAM)lphGroupsItems[i], 0);
+	lphGroupsItems.destroy();
 
 	TCHAR *szContactGroup = DBGetStringT((HANDLE)wParam, "CList", "Group");
 
-	int i=1, pos = 1000;
-	if ( !nGroupsItems ) {
-		nGroupsItems++;
-		lphGroupsItems[0] = AddGroupItem(hMoveToGroupItem, TranslateT("<Root Group>"), pos++, -1, !szContactGroup);
-	}
-	else ModifyGroupItem( lphGroupsItems[0], TranslateT("<Root Group>"), !szContactGroup);
+	int pos = 1000;
+
+	AddGroupItem(hMoveToGroupItem, TranslateT("<Root Group>"), pos, -1, !szContactGroup);
 
 	pos += 100000; // Separator
 
-	while (TRUE) {
+	for (i = 0; ; ++i) 
+	{
 		char intname[20];
-		_itoa( i-1, intname, 10 );
-		TCHAR *szGroupName = DBGetStringT( 0, "CListGroups", intname );
+		_itoa(i, intname, 10);
 
-		if ( !szGroupName || !szGroupName[0] )
+		DBVARIANT dbv;
+		if (DBGetContactSettingTString(NULL, "CListGroups", intname, &dbv))
 			break;
 
-		int checked = 0;
-		if ( szContactGroup && !_tcscmp( szContactGroup, szGroupName + 1 ))
-			checked = 1;
-
-		if ( nGroupsItems > i )
-			ModifyGroupItem(lphGroupsItems[i], szGroupName + 1, checked);
-		else {
-			nGroupsItems++;
-			if ( cbGroupsItems < nGroupsItems ) {
-				cbGroupsItems += 0x10;
-				lphGroupsItems = (HANDLE*)mir_realloc( lphGroupsItems, cbGroupsItems*sizeof( HANDLE ));
-			}
-			lphGroupsItems[i] = AddGroupItem( hMoveToGroupItem, szGroupName + 1, pos++, i, checked );
+		if (dbv.ptszVal[0])
+		{
+			TCHAR* szGroupName = dbv.ptszVal + 1;
+			bool checked = szContactGroup && !_tcscmp(szContactGroup, szGroupName);
+			AddGroupItem(hMoveToGroupItem, szGroupName, ++pos, i, checked);
 		}
-		i++;
-		mir_free(szGroupName);
+		mir_free(dbv.ptszVal);
 	}
 	mir_free(szContactGroup);
-
-	while (nGroupsItems > i) {
-		nGroupsItems--;
-		CallService(MS_CLIST_REMOVECONTACTMENUITEM, (WPARAM)lphGroupsItems[nGroupsItems], 0);
-		lphGroupsItems[nGroupsItems] = NULL;
-	}
 
 	return 0;
 }
@@ -138,11 +109,8 @@ void MTG_OnmodulesLoad()
 
 int UnloadMoveToGroup(void)
 {
-	if (hOnCntMenuBuild)
-		UnhookEvent(hOnCntMenuBuild);
+	UnhookEvent(hOnCntMenuBuild);
+	lphGroupsItems.destroy();
 
-	nGroupsItems = 0;
-	cbGroupsItems = 0;
-	mir_free(lphGroupsItems);
 	return 0;
 }
