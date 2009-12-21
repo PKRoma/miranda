@@ -38,8 +38,6 @@
 int CIcqProto::StringToListItemId(const char *szSetting,int def)
 {
 	int i;
-	char *szValue;
-	FieldNamesItem *list;
 
 	for(i=0;i<settingCount;i++)
 		if(!strcmpnull(szSetting,setting[i].szDbSetting))
@@ -47,9 +45,9 @@ int CIcqProto::StringToListItemId(const char *szSetting,int def)
 
 	if (i==settingCount) return def;
 
-	list = (FieldNamesItem*)setting[i].pList;
+	FieldNamesItem *list = (FieldNamesItem*)setting[i].pList;
 
-	szValue = getSettingStringUtf(NULL, szSetting, NULL);
+	char *szValue = getSettingStringUtf(NULL, szSetting, NULL);
 	if (!szValue)
 		return def;
 
@@ -57,7 +55,7 @@ int CIcqProto::StringToListItemId(const char *szSetting,int def)
 		if (!strcmpnull(list[i].text, szValue))
 			break;
 
-	SAFE_FREE((void**)&szValue);
+	SAFE_FREE(&szValue);
 	if (!list[i].text) return def;
 
 	return list[i].code;
@@ -81,11 +79,11 @@ int ChangeInfoData::UploadSettings(void)
 		if (strlennull(Password) > 0 && strcmpnull(Password, tmp))
 		{
 			hUpload[1] = (HANDLE)ppro->icq_changeUserPasswordServ(tmp);
-			char szPwd[16] = {0};
+			char szPwd[PASSWORDMAXLEN] = {0};
 
-			if (!ppro->getSettingStringStatic(NULL, "Password", szPwd, 16) && strlennull(szPwd))
+			if (ppro->GetUserStoredPassword(szPwd, sizeof(szPwd)))
 			{ // password is stored in DB, update
-				char ptmp[16];
+				char ptmp[PASSWORDMAXLEN];
 
 				strcpy(ptmp, tmp);
 

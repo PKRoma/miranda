@@ -86,7 +86,7 @@ struct ChangeInfoData
   HWND  hwndList;
   int   editTopIndex;
   int   iEditItem;
-  char  Password[10];
+  char  Password[PASSWORDMAXLEN];
 
   SettingItemData *settingData;
 

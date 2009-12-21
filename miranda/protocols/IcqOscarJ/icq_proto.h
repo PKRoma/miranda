@@ -200,7 +200,7 @@ struct CIcqProto : public PROTO_INTERFACE
 	DWORD m_dwLocalUIN;
   BYTE m_bConnectionLost;
 
-	char m_szPassword[16];
+	char m_szPassword[PASSWORDMAXLEN];
 	BYTE m_bRememberPwd;
 
 	int cheekySearchId;
@@ -923,8 +923,11 @@ struct CIcqProto : public PROTO_INTERFACE
 	//----| utilities.cpp |---------------------------------------------------------------
 	int    BroadcastAck(HANDLE hContact,int type,int result,HANDLE hProcess,LPARAM lParam);
 	char*  ConvertMsgToUserSpecificAnsi(HANDLE hContact, const char* szMsg);
-	WORD   GetMyStatusFlags();
+
+  char*  GetUserStoredPassword(char *szBuffer, int cbSize);
 	char*  GetUserPassword(BOOL bAlways);
+	WORD   GetMyStatusFlags();
+
 	DWORD  ReportGenericSendError(HANDLE hContact, int nType, const char* szErrorMsg);
 	void   SetCurrentStatus(int nStatus);
 

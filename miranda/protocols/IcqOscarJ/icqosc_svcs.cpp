@@ -643,10 +643,10 @@ INT_PTR CIcqProto::SetPassword(WPARAM wParam, LPARAM lParam)
 	char *pwd = (char*)lParam;
 	int len = strlennull(pwd);
 
-	if (len && len <= 8)
+	if (len && len < PASSWORDMAXLEN)
 	{
 		strcpy(m_szPassword, pwd);
-		m_bRememberPwd = 1;
+		m_bRememberPwd = TRUE;
 	}
 	return 0;
 }

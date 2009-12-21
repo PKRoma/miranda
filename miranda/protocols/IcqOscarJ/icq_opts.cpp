@@ -85,11 +85,11 @@ static INT_PTR CALLBACK DlgProcIcqOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			else // keep it empty when no UIN entered
 				SetDlgItemTextA(hwndDlg, IDC_ICQNUM, "");
 
-			char pszPwd[16];
-			if (!ppro->getSettingStringStatic(NULL, "Password", pszPwd, sizeof(pszPwd)))
-			{
-				CallService(MS_DB_CRYPT_DECODESTRING, strlennull(pszPwd) + 1, (LPARAM)pszPwd);
+			SendDlgItemMessage(hwndDlg, IDC_PASSWORD, EM_LIMITTEXT, PASSWORDMAXLEN - 1, 0);
 
+			char pszPwd[PASSWORDMAXLEN];
+			if (ppro->GetUserStoredPassword(pszPwd, sizeof(pszPwd)))
+			{
 				//bit of a security hole here, since it's easy to extract a password from an edit box
 				SetDlgItemTextA(hwndDlg, IDC_PASSWORD, pszPwd);
 			}
