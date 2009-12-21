@@ -1101,7 +1101,7 @@ DWORD CIcqProto::SearchByNames(const char *pszNick, const char *pszFirstName, co
 
 DWORD CIcqProto::SearchByMail(const char* pszEmail)
 {
-	DWORD dwCookie;
+	DWORD dwCookie = 0;
 	WORD wInfoLen = 0;
 	WORD wEmailLen;
 	BYTE *pBuffer;
@@ -1237,7 +1237,6 @@ DWORD CIcqProto::icq_searchAimByEmail(const char* pszEmail, DWORD dwSearchId)
 	icq_packet packet;
 	DWORD dwCookie;
 	cookie_search* pCookie;
-	cookie_search* pMainCookie = NULL;
 	WORD wEmailLen;
 
 	if (!FindCookie(dwSearchId, NULL, (void**)&pCookie))
@@ -1450,7 +1449,7 @@ void CIcqProto::icq_sendChangeVisInvis(HANDLE hContact, DWORD dwUin, char* szUID
 	{
 		int nUinLen;
 		icq_packet packet;
-		WORD wSnac;
+		WORD wSnac = 0;
 
 		if (list && m_iStatus == ID_STATUS_INVISIBLE)
 			return;

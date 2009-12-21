@@ -257,6 +257,9 @@ char** CIcqProto::MirandaStatusToAwayMsg(int nStatus)
 int AwayMsgTypeToStatus(int nMsgType)
 {
 	switch (nMsgType) {
+  case MTYPE_AUTOONLINE:
+    return ID_STATUS_ONLINE;
+
 	case MTYPE_AUTOAWAY:
 		return ID_STATUS_AWAY;
 
@@ -739,6 +742,7 @@ int null_snprintf(WCHAR *buffer, size_t count, const WCHAR *fmt, ...)
   return len;
 }
 
+
 char* __fastcall null_strdup(const char *string)
 {
 	if (string)
@@ -746,6 +750,24 @@ char* __fastcall null_strdup(const char *string)
 
 	return NULL;
 }
+
+
+char* __fastcall null_strcpy(char *dest, const char *src, size_t maxlen)
+{
+  if (!dest)
+    return NULL;
+
+  if (strlennull(src))
+  {
+    strncpy(dest, src, maxlen);
+    dest[maxlen] = '\0';
+  }
+  else
+    dest[0] = '\0';
+
+  return dest;
+}
+
 
 size_t __fastcall null_strcut(char *string, size_t maxlen)
 { // limit the string to max length (null & utf-8 strings ready)
@@ -765,6 +787,7 @@ size_t __fastcall null_strcut(char *string, size_t maxlen)
 
 	return len;
 }
+
 
 void parseServerAddress(char* szServer, WORD* wPort)
 {
@@ -1654,7 +1677,8 @@ BOOL CIcqProto::validateStatusMessageRequest(HANDLE hContact, WORD byMessageType
 	}
 
 	// Dont respond to request for other statuses than your current one
-	if ((byMessageType == MTYPE_AUTOAWAY && m_iStatus != ID_STATUS_AWAY) ||
+	if ((byMessageType == MTYPE_AUTOONLINE && m_iStatus != ID_STATUS_ONLINE) ||
+    (byMessageType == MTYPE_AUTOAWAY && m_iStatus != ID_STATUS_AWAY) ||
 		(byMessageType == MTYPE_AUTOBUSY && m_iStatus != ID_STATUS_OCCUPIED) ||
 		(byMessageType == MTYPE_AUTONA   && m_iStatus != ID_STATUS_NA) ||
 		(byMessageType == MTYPE_AUTODND  && m_iStatus != ID_STATUS_DND) ||
@@ -1900,17 +1924,27 @@ HANDLE CIcqProto::ForkThreadEx( IcqThreadFunc pFunc, void* arg, UINT* threadID )
 	return ( HANDLE )mir_forkthreadowner(( pThreadFuncOwner )*( void** )&pFunc, this, arg, threadID );
 }
 
+
+char* CIcqProto::GetUserStoredPassword(char *szBuffer, int cbSize)
+{
+	if (!getSettingStringStatic(NULL, "Password", szBuffer, cbSize))
+	{
+		CallService(MS_DB_CRYPT_DECODESTRING, strlennull(szBuffer) + 1, (LPARAM)szBuffer);
+
+    if (strlennull(szBuffer))
+      return szBuffer;
+  }
+  return NULL;
+}
+
+
 char* CIcqProto::GetUserPassword(BOOL bAlways)
 {
 	if (m_szPassword[0] != '\0' && (m_bRememberPwd || bAlways))
 		return m_szPassword;
 
-	if (!getSettingStringStatic(NULL, "Password", m_szPassword, sizeof(m_szPassword)))
+	if (GetUserStoredPassword(m_szPassword, sizeof(m_szPassword)))
 	{
-		CallService(MS_DB_CRYPT_DECODESTRING, strlennull(m_szPassword) + 1, (LPARAM)m_szPassword);
-
-		if (!strlennull(m_szPassword)) return NULL;
-
 		m_bRememberPwd = TRUE;
 
 		return m_szPassword;
@@ -1919,13 +1953,14 @@ char* CIcqProto::GetUserPassword(BOOL bAlways)
 	return NULL;
 }
 
+
 WORD CIcqProto::GetMyStatusFlags()
 {
 	WORD wFlags = 0;
 
 	// Webaware setting bit flag
 	if (getSettingByte(NULL, "WebAware", 0))
-		wFlags = STATUS_WEBAWARE;
+		wFlags |= STATUS_WEBAWARE;
 
 	// DC setting bit flag
 	switch (getSettingByte(NULL, "DCType", 0))
@@ -1934,15 +1969,15 @@ WORD CIcqProto::GetMyStatusFlags()
 		break;
 
 	case 1:
-		wFlags = wFlags | STATUS_DCCONT;
+		wFlags |= STATUS_DCCONT;
 		break;
 
 	case 2:
-		wFlags = wFlags | STATUS_DCAUTH;
+		wFlags |= STATUS_DCAUTH;
 		break;
 
 	default:
-		wFlags = wFlags | STATUS_DCDISABLED;
+		wFlags |= STATUS_DCDISABLED;
 		break;
 	}
 	return wFlags;

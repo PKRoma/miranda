@@ -150,10 +150,8 @@ __inline static HANDLE FoldersRegisterCustomPath(const char *section, const char
 	FOLDERSDATA fd = {0};
 	if (!ServiceExists(MS_FOLDERS_REGISTER_PATH)) return 0;
 	fd.cbSize = sizeof(FOLDERSDATA);
-	strncpy(fd.szSection, section, FOLDERS_NAME_MAX_SIZE);
-	fd.szSection[FOLDERS_NAME_MAX_SIZE - 1] = '\0';
-	strncpy(fd.szName, name, FOLDERS_NAME_MAX_SIZE);
-	fd.szName[FOLDERS_NAME_MAX_SIZE - 1] = '\0';
+	null_strcpy(fd.szSection, section, FOLDERS_NAME_MAX_SIZE - 1);
+	null_strcpy(fd.szName, name, FOLDERS_NAME_MAX_SIZE - 1);
 	fd.szFormat = defaultPath;
 	return (HANDLE) CallService(MS_FOLDERS_REGISTER_PATH, 0, (LPARAM) &fd);
 }
@@ -163,10 +161,8 @@ __inline static HANDLE FoldersRegisterCustomPathW(const char *section, const cha
 	FOLDERSDATA fd = {0};
 	if (!ServiceExists(MS_FOLDERS_REGISTER_PATH)) return 0;
 	fd.cbSize = sizeof(FOLDERSDATA);
-	strncpy(fd.szSection, section, FOLDERS_NAME_MAX_SIZE);
-	fd.szSection[FOLDERS_NAME_MAX_SIZE - 1] = '\0'; //make sure it's NULL terminated
-	strncpy(fd.szName, name, FOLDERS_NAME_MAX_SIZE);
-	fd.szName[FOLDERS_NAME_MAX_SIZE - 1] = '\0'; //make sure it's NULL terminated
+	null_strcpy(fd.szSection, section, FOLDERS_NAME_MAX_SIZE - 1);
+	null_strcpy(fd.szName, name, FOLDERS_NAME_MAX_SIZE - 1);
 	fd.szFormatW = defaultPathW;
 	fd.flags = FF_UNICODE;
 	return (HANDLE) CallService(MS_FOLDERS_REGISTER_PATH, 0, (LPARAM) &fd);
@@ -184,7 +180,7 @@ __inline static int FoldersGetCustomPath(HANDLE hFolderEntry, char *path, const 
 		{
 			char buffer[MAX_PATH];
 			CallService(MS_UTILS_PATHTOABSOLUTE, (WPARAM) notFound, (LPARAM) buffer);
-			mir_snprintf(path, size, "%s", buffer);
+			null_snprintf(path, size, "%s", buffer);
 		}
 	return res;
 }
@@ -199,8 +195,9 @@ __inline static int FoldersGetCustomPathW(HANDLE hFolderEntry, wchar_t *pathW, c
 	res = CallService(MS_FOLDERS_GET_PATH, (WPARAM) hFolderEntry, (LPARAM) &fgd);
 	if (res)
 		{
-			wcsncpy(pathW, notFoundW, count);
-			pathW[count - 1] = '\0';
+			WCHAR buffer[MAX_PATH];
+			CallService(MS_UTILS_PATHTOABSOLUTEW, (WPARAM) notFoundW, (LPARAM) buffer);
+			null_snprintf(pathW, count, L"%s", buffer);
 		}
 	return res;
 }

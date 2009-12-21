@@ -36,6 +36,7 @@
 
 #include "icqoscar.h"
 
+
 void CIcqProto::handleMsgFam(BYTE *pBuffer, WORD wBufferLength, snac_header *pSnacHeader)
 {
 	switch (pSnacHeader->wSubtype) {
@@ -78,6 +79,7 @@ void CIcqProto::handleMsgFam(BYTE *pBuffer, WORD wBufferLength, snac_header *pSn
 	}
 }
 
+
 static void setMsgChannelParams(CIcqProto* ppro, WORD wChan, DWORD dwFlags)
 {
 	icq_packet packet;
@@ -94,6 +96,7 @@ static void setMsgChannelParams(CIcqProto* ppro, WORD wChan, DWORD dwFlags)
 	packWord(&packet, 0x0000);              // Unknown
 	ppro->sendServPacket(&packet);
 }
+
 
 void CIcqProto::handleReplyICBM(BYTE *buf, WORD wLen, WORD wFlags, DWORD dwRef)
 { // we don't care about the stuff, just change the params
@@ -204,6 +207,7 @@ void CIcqProto::handleRecvServMsg(BYTE *buf, WORD wLen, WORD wFlags, DWORD dwRef
 
 	}
 }
+
 
 char* CIcqProto::convertMsgToUserSpecificUtf(HANDLE hContact, const char *szMsg)
 {
@@ -335,7 +339,7 @@ void CIcqProto::handleRecvServMsgType1(BYTE *buf, WORD wLen, DWORD dwUin, char *
 							{ // not necessary to convert - appending first part, only set flags
 								char *szUtfMsg = ansi_to_utf8_codepage(szMsg, getSettingWord(hContact, "CodePage", m_wAnsiCodepage));
 
-								SAFE_FREE((void**)&szMsg);
+								SAFE_FREE(&szMsg);
 								szMsg = szUtfMsg;
 							}
 							pre.flags = PREF_UTF;
@@ -344,14 +348,14 @@ void CIcqProto::handleRecvServMsgType1(BYTE *buf, WORD wLen, DWORD dwUin, char *
 						{ // convert message part to utf-8 and append
 							char *szUtfPart = ansi_to_utf8_codepage((char*)szMsgPart, getSettingWord(hContact, "CodePage", m_wAnsiCodepage));
 
-							SAFE_FREE((void**)&szMsgPart);
+							SAFE_FREE(&szMsgPart);
 							szMsgPart = szUtfPart;
 						}
 						// Append the new message part
 						szMsg = (char*)SAFE_REALLOC(szMsg, strlennull(szMsg) + strlennull(szMsgPart) + 1);
 
 						strcat(szMsg, szMsgPart);
-						SAFE_FREE((void**)&szMsgPart);
+						SAFE_FREE(&szMsgPart);
 					}
 					wMsgPart++;
 				}
@@ -367,7 +371,7 @@ void CIcqProto::handleRecvServMsgType1(BYTE *buf, WORD wLen, DWORD dwUin, char *
 						char *usMsg = convertMsgToUserSpecificUtf(hContact, szMsg);
 						if (usMsg)
 						{
-							SAFE_FREE((void**)&szMsg);
+							SAFE_FREE(&szMsg);
 							szMsg = usMsg;
 							pre.flags = PREF_UTF;
 						}
@@ -413,7 +417,7 @@ void CIcqProto::handleRecvServMsgType1(BYTE *buf, WORD wLen, DWORD dwUin, char *
 				else
 					NetLog_Server("Message (format %u) - Ignoring empty message", 1);
 
-				SAFE_FREE((void**)&szMsg);
+				SAFE_FREE(&szMsg);
 			}
 
 			// Free the chain memory
@@ -659,6 +663,7 @@ void CIcqProto::handleRecvServMsgType2(BYTE *buf, WORD wLen, DWORD dwUin, char *
 	SAFE_FREE((void**)&pBuf);
 }
 
+
 void CIcqProto::parseTLV2711(DWORD dwUin, HANDLE hContact, DWORD dwID1, DWORD dwID2, WORD wAckType, oscar_tlv* tlv)
 {
 	BYTE* pDataBuf;
@@ -876,8 +881,6 @@ void CIcqProto::parseTLV2711(DWORD dwUin, HANDLE hContact, DWORD dwID1, DWORD dw
 
 void CIcqProto::parseServerGreeting(BYTE *pDataBuf, WORD wLen, WORD wMsgLen, DWORD dwUin, BYTE bFlags, WORD wStatus, WORD wCookie, WORD wAckType, DWORD dwID1, DWORD dwID2, WORD wVersion)
 {
-	DWORD dwLengthToEnd;
-	DWORD dwDataLen;
 	int typeId;
 	WORD wFunction;
 
@@ -891,6 +894,9 @@ void CIcqProto::parseServerGreeting(BYTE *pDataBuf, WORD wLen, WORD wMsgLen, DWO
 
 	if (wLen > 8)
 	{
+		DWORD dwLengthToEnd;
+		DWORD dwDataLen;
+
 		// Length of remaining data
 		unpackLEDWord(&pDataBuf, &dwLengthToEnd);
 
@@ -941,8 +947,30 @@ void CIcqProto::parseServerGreeting(BYTE *pDataBuf, WORD wLen, WORD wMsgLen, DWO
 			//    handleChatRequest(pDataBuf, wLen, dwUin, wCookie, dwID1, dwID2, szMsg, 8);
 		}
 		else if (typeId == MTYPE_STATUSMSGEXT && wFunction >= 1 && wFunction <= 5)
-		{ // handle ICQ6 status message request
-			handleMessageTypes(dwUin, time(NULL), dwID1, dwID2, wCookie, wVersion, 0xE7 + wFunction, bFlags, wAckType, dwLengthToEnd, 0, (char*)pDataBuf, MTF_PLUGIN, NULL);
+		{ // handle extended status message request
+      int nMsgType = 0;
+
+      switch (wFunction)
+      {
+      case 1: // Away
+        if (m_iStatus == ID_STATUS_ONLINE || m_iStatus == ID_STATUS_INVISIBLE)
+          nMsgType = MTYPE_AUTOONLINE;
+        else if (m_iStatus == ID_STATUS_AWAY)
+          nMsgType = MTYPE_AUTOAWAY;
+        else if (m_iStatus == ID_STATUS_FREECHAT)
+          nMsgType = MTYPE_AUTOFFC;
+        break;
+      case 2: // Busy
+        if (m_iStatus == ID_STATUS_OCCUPIED)
+          nMsgType = MTYPE_AUTOBUSY;
+        else if (m_iStatus == ID_STATUS_DND)
+          nMsgType = MTYPE_AUTODND;
+        break;
+      case 3: // N/A
+        if (m_iStatus == ID_STATUS_NA)
+          nMsgType = MTYPE_AUTONA;
+      }
+			handleMessageTypes(dwUin, time(NULL), dwID1, dwID2, wCookie, wVersion, nMsgType, bFlags, wAckType, dwLengthToEnd, 0, (char*)pDataBuf, MTF_PLUGIN, NULL);
 		}
 		else if (typeId)
 		{
@@ -963,6 +991,7 @@ void CIcqProto::parseServerGreeting(BYTE *pDataBuf, WORD wLen, WORD wMsgLen, DWO
 		}
 	}
 }
+
 
 void CIcqProto::handleRecvServMsgContacts(BYTE *buf, WORD wLen, DWORD dwUin, char *szUID, DWORD dwID1, DWORD dwID2, WORD wCommand)
 {
@@ -1313,6 +1342,7 @@ void CIcqProto::handleRecvServMsgType4(BYTE *buf, WORD wLen, DWORD dwUin, char *
 	SAFE_FREE((void**)&pDataBuf);
 }
 
+
 //
 // Helper functions
 //
@@ -1389,6 +1419,7 @@ static int TypeGUIDToTypeId(DWORD dwGuid1, DWORD dwGuid2, DWORD dwGuid3, DWORD d
 	return nTypeID;
 }
 
+
 int CIcqProto::unpackPluginTypeId(BYTE **pBuffer, WORD *pwLen, int *pTypeId, WORD *pFunctionId, BOOL bThruDC)
 {
 	WORD wLen = *pwLen;
@@ -1448,6 +1479,7 @@ int CIcqProto::unpackPluginTypeId(BYTE **pBuffer, WORD *pwLen, int *pTypeId, WOR
 	return 1; // Success
 }
 
+
 int getPluginTypeIdLen(int nTypeID)
 {
 	switch (nTypeID)
@@ -1458,17 +1490,21 @@ int getPluginTypeIdLen(int nTypeID)
 	case MTYPE_FILEREQ:
 		return 0x2B;
 
+  case MTYPE_AUTOONLINE:
 	case MTYPE_AUTOAWAY:
 	case MTYPE_AUTOBUSY:
-	case MTYPE_AUTONA:
 	case MTYPE_AUTODND:
 	case MTYPE_AUTOFFC:
 		return 0x3C;
+
+	case MTYPE_AUTONA:
+    return 0x3B;
 
 	default:
 		return 0;
 	}
 }
+
 
 void packPluginTypeId(icq_packet *packet, int nTypeID)
 {
@@ -1506,19 +1542,53 @@ void packPluginTypeId(icq_packet *packet, int nTypeID)
 
 		break;
 
+  case MTYPE_AUTOONLINE:
 	case MTYPE_AUTOAWAY:
-	case MTYPE_AUTOBUSY:
-	case MTYPE_AUTONA:
-	case MTYPE_AUTODND:
 	case MTYPE_AUTOFFC:
 		packLEWord(packet, 0x03A);                // Length
 
 		packGUID(packet, MGTYPE_STATUSMSGEXT);    // Message Type GUID
-		packLEWord(packet, (WORD)(nTypeID - 0xE7)); // Function ID
+
+		packLEWord(packet, 1);                    // Function ID
 		packLEDWord(packet, 0x13);                // Request type string
 		packBuffer(packet, (LPBYTE)"Away Status Message", 0x13);
 
 		packDWord(packet, 0x01000000);            // Unknown binary stuff
+		packDWord(packet, 0x00000000);
+		packDWord(packet, 0x00000000);
+		packDWord(packet, 0x00000000);
+		packByte(packet, 0x00);       
+
+		break;
+
+	case MTYPE_AUTOBUSY:
+	case MTYPE_AUTODND:
+		packLEWord(packet, 0x03A);                // Length
+
+		packGUID(packet, MGTYPE_STATUSMSGEXT);    // Message Type GUID
+
+		packLEWord(packet, 2);                    // Function ID
+		packLEDWord(packet, 0x13);                // Request type string
+		packBuffer(packet, (LPBYTE)"Busy Status Message", 0x13);
+
+		packDWord(packet, 0x02000000);            // Unknown binary stuff
+		packDWord(packet, 0x00000000);
+		packDWord(packet, 0x00000000);
+		packDWord(packet, 0x00000000);
+		packByte(packet, 0x00);       
+
+		break;
+
+	case MTYPE_AUTONA:
+		packLEWord(packet, 0x039);                // Length
+
+		packGUID(packet, MGTYPE_STATUSMSGEXT);    // Message Type GUID
+
+		packLEWord(packet, 3);                    // Function ID
+		packLEDWord(packet, 0x12);                // Request type string
+		packBuffer(packet, (LPBYTE)"N/A Status Message", 0x12);
+
+		packDWord(packet, 0x03000000);            // Unknown binary stuff
 		packDWord(packet, 0x00000000);
 		packDWord(packet, 0x00000000);
 		packDWord(packet, 0x00000000);

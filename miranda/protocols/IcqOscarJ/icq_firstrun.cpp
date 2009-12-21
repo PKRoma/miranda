@@ -5,7 +5,7 @@
 // Copyright © 2000-2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001-2002 Jon Keating, Richard Hughes
 // Copyright © 2002-2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004-2008 Joe Kucera
+// Copyright © 2004-2009 Joe Kucera
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -47,8 +47,8 @@ static void accountLoadDetails(CIcqProto *ppro, HWND hwndDlg)
 		SetDlgItemTextA(hwndDlg, IDC_UIN, pszUIN);
 	}
 
-	char* pszPwd = ppro->GetUserPassword(FALSE);
-	if (pszPwd)
+	char pszPwd[PASSWORDMAXLEN];
+	if (ppro->GetUserStoredPassword(pszPwd, PASSWORDMAXLEN))
 		SetDlgItemTextA(hwndDlg, IDC_PW, pszPwd);
 }
 
@@ -66,7 +66,7 @@ INT_PTR CALLBACK icq_FirstRunDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 		{
 			SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)ppro->GetIcon( PLI_PROTOCOL | PLIF_LARGE | PLIF_ICOLIB ));
 
-			SendDlgItemMessage(hwndDlg, IDC_PW, EM_LIMITTEXT, 10, 0);
+			SendDlgItemMessage(hwndDlg, IDC_PW, EM_LIMITTEXT, PASSWORDMAXLEN - 1, 0);
 
       accountLoadDetails(ppro, hwndDlg);
 		}

@@ -58,20 +58,19 @@ static int DrawTextUtf(HDC hDC, char *text, LPRECT lpRect, UINT uFormat, LPSIZE 
 }
 
 
-void ChangeInfoData::PaintItemSetting(HDC hdc, RECT *rc, int i, UINT itemState)
+char* ChangeInfoData::GetItemSettingText(int i, char *buf, size_t bufsize)
 {
-	char *text;
-	int alloced=0;
-	char str[MAX_PATH];
+  char *text = buf;
+  int alloced = 0;
+
+  buf[0] = '\0';
 
 	if (settingData[i].value == 0 && !(setting[i].displayType & LIF_ZEROISVALID))
 	{
-		SetTextColor(hdc, GetSysColor(COLOR_GRAYTEXT));
-
 		if (setting[i].displayType & LIF_CHANGEONLY)
-			text = ICQTranslateUtfStatic(LPGEN("<unremovable once applied>"), str, MAX_PATH);
+			text = ICQTranslateUtfStatic(LPGEN("<unremovable once applied>"), buf, bufsize);
 		else
-			text = ICQTranslateUtfStatic(LPGEN("<empty>"), str, MAX_PATH);
+			text = ICQTranslateUtfStatic(LPGEN("<empty>"), buf, bufsize);
 	}
 	else 
 	{
@@ -79,32 +78,31 @@ void ChangeInfoData::PaintItemSetting(HDC hdc, RECT *rc, int i, UINT itemState)
 		case LI_STRING:
 		case LI_LONGSTRING:
 			text = BinaryToEscapes((char*)settingData[i].value);
-			alloced = 1;
+      alloced = 1;
 			break;
 
 		case LI_NUMBER:
-			text = str;
 			_itoa(settingData[i].value, text, 10);
 			break;
 
 		case LI_LIST:
 			if (setting[i].dbType == DBVT_ASCIIZ) 
-				text = ICQTranslateUtfStatic((char*)settingData[i].value, str, MAX_PATH);
+				text = ICQTranslateUtfStatic((char*)settingData[i].value, buf, bufsize);
 			else 
 			{
-				text = ICQTranslateUtfStatic(LPGEN("Unknown value"), str, MAX_PATH);
+				text = ICQTranslateUtfStatic(LPGEN("Unknown value"), buf, bufsize);
 
         FieldNamesItem *list = (FieldNamesItem*)setting[i].pList;
         for (int j=0; TRUE; j++)
 					if (list[j].code == settingData[i].value) 
 					{
-						text = ICQTranslateUtfStatic(list[j].text, str, MAX_PATH);
+						text = ICQTranslateUtfStatic(list[j].text, buf, bufsize);
 						break;
 					}
           else if (!list[j].text)
           {
             if (list[j].code == settingData[i].value)
-              text = ICQTranslateUtfStatic("Unspecified", str, MAX_PATH);
+              text = ICQTranslateUtfStatic("Unspecified", buf, bufsize);
             break;
           }
 			}
@@ -118,13 +116,34 @@ void ChangeInfoData::PaintItemSetting(HDC hdc, RECT *rc, int i, UINT itemState)
 		else 
 		{
 			if (alloced) 
-			{
-				SAFE_FREE(&text); 
-				alloced=0;
-			}
-			text = "********";
+      {
+				SAFE_FREE(&text);
+        alloced = 0;
+      }
+      text = "********";
 		}
 	}
+  if (text != buf)
+  {
+    char *tmp = text;
+
+    text = null_strcpy(buf, text, bufsize - 1);
+    if (alloced)
+      SAFE_FREE(&tmp);
+  }
+
+  return text;
+}
+
+
+void ChangeInfoData::PaintItemSetting(HDC hdc, RECT *rc, int i, UINT itemState)
+{
+	char str[MAX_PATH];
+	char *text = GetItemSettingText(i, str, SIZEOF(str));
+
+	if (settingData[i].value == 0 && !(setting[i].displayType & LIF_ZEROISVALID))
+		SetTextColor(hdc, GetSysColor(COLOR_GRAYTEXT));
+
 	if ((setting[i].displayType & LIM_TYPE) == LI_LIST && (itemState & CDIS_SELECTED || iEditItem == i)) 
 	{
 		RECT rcBtn;
@@ -136,8 +155,6 @@ void ChangeInfoData::PaintItemSetting(HDC hdc, RECT *rc, int i, UINT itemState)
 		DrawFrameControl(hdc, &rcBtn, DFC_SCROLL, iEditItem == i ? DFCS_SCROLLDOWN|DFCS_PUSHED : DFCS_SCROLLDOWN);
 	}
 	DrawTextUtf(hdc, text, rc, DT_END_ELLIPSIS|DT_LEFT|DT_NOCLIP|DT_NOPREFIX|DT_SINGLELINE|DT_VCENTER, NULL);
-
-	if (alloced) SAFE_FREE(&text);
 }
 
 
@@ -199,11 +216,15 @@ INT_PTR CALLBACK ChangeInfoDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 		}
 		{ // Prepare Setting Items
 			LV_ITEM lvi = {0};
-			lvi.mask = LVIF_PARAM;
+			lvi.mask = LVIF_PARAM | LVIF_TEXT;
 
 			for (lvi.iItem=0; lvi.iItem<settingCount; lvi.iItem++) 
 			{
+        TCHAR text[MAX_PATH];
+
 				lvi.lParam = lvi.iItem;
+        lvi.pszText = text;
+        utf8_to_tchar_static(setting[lvi.iItem].szDescription, text, SIZEOF(text));
 				ListView_InsertItem(dat->hwndList, &lvi);
 			}
 		}
@@ -265,31 +286,42 @@ INT_PTR CALLBACK ChangeInfoDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 
 					switch(cd->nmcd.dwDrawStage) {
 					case CDDS_PREPAINT:
-						SetWindowLongPtr(hwndDlg, DWLP_MSGRESULT, CDRF_NOTIFYSUBITEMDRAW);
+						SetWindowLongPtr(hwndDlg, DWLP_MSGRESULT, CDRF_NOTIFYITEMDRAW);
 						return TRUE;
 
 					case CDDS_ITEMPREPAINT:
 						{
-							RECT rc;
+							RECT rcItem;
 
-							ListView_GetItemRect(dat->hwndList, cd->nmcd.dwItemSpec, &rc, LVIR_BOUNDS);
+							if (dat->iEditItem != -1) 
+							{
+								if (dat->editTopIndex != ListView_GetTopIndex(dat->hwndList)) 
+								{
+									dat->EndStringEdit(1);
+									dat->EndListEdit(1);
+								}
+							}
+
+							ListView_GetItemRect(dat->hwndList, cd->nmcd.dwItemSpec, &rcItem, LVIR_BOUNDS);
 
 							if (GetWindowLong(dat->hwndList, GWL_STYLE) & WS_DISABLED)
 							{  // Disabled List
 								SetTextColor(cd->nmcd.hdc, cd->clrText);
-								FillRect(cd->nmcd.hdc, &rc, GetSysColorBrush(COLOR_3DFACE));
+								FillRect(cd->nmcd.hdc, &rcItem, GetSysColorBrush(COLOR_3DFACE));
 							}
 							else if ((cd->nmcd.uItemState & CDIS_SELECTED || dat->iEditItem == (int)cd->nmcd.dwItemSpec)
 								&& setting[cd->nmcd.lItemlParam].displayType != LI_DIVIDER)
 							{  // Selected item
 								SetTextColor(cd->nmcd.hdc, GetSysColor(COLOR_HIGHLIGHTTEXT));
-								FillRect(cd->nmcd.hdc, &rc, GetSysColorBrush(COLOR_HIGHLIGHT));
+								FillRect(cd->nmcd.hdc, &rcItem, GetSysColorBrush(COLOR_HIGHLIGHT));
 							}
 							else
 							{ // Unselected item
 								SetTextColor(cd->nmcd.hdc, GetSysColor(COLOR_WINDOWTEXT));
-								FillRect(cd->nmcd.hdc, &rc, GetSysColorBrush(COLOR_WINDOW));
+								FillRect(cd->nmcd.hdc, &rcItem, GetSysColorBrush(COLOR_WINDOW));
 							}
+
+							HFONT hoFont = (HFONT)SelectObject(cd->nmcd.hdc, dat->hListFont);
 
 							if (setting[cd->nmcd.lItemlParam].displayType == LI_DIVIDER)
 							{
@@ -297,50 +329,34 @@ INT_PTR CALLBACK ChangeInfoDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 								SIZE textSize;
 								char str[MAX_PATH];
 								char *szText = ICQTranslateUtfStatic(setting[cd->nmcd.lItemlParam].szDescription, str, MAX_PATH);
-								HFONT hoFont;
 
-								hoFont = (HFONT)SelectObject(cd->nmcd.hdc, dat->hListFont);
 								SetTextColor(cd->nmcd.hdc, GetSysColor(COLOR_3DSHADOW));
-								ListView_GetItemRect(dat->hwndList, cd->nmcd.dwItemSpec, &rc, LVIR_BOUNDS);
-								DrawTextUtf(cd->nmcd.hdc, szText, &rc, DT_CENTER|DT_NOCLIP|DT_NOPREFIX|DT_SINGLELINE|DT_VCENTER, &textSize);
-								rcLine.top = (rc.top + rc.bottom)/2-1;
-								rcLine.bottom = rcLine.top+2;
-								rcLine.left = rc.left + 3;
-								rcLine.right = (rc.left+rc.right-textSize.cx)/2-3;
+								DrawTextUtf(cd->nmcd.hdc, szText, &rcItem, DT_CENTER|DT_NOCLIP|DT_NOPREFIX|DT_SINGLELINE|DT_VCENTER, &textSize);
+								rcLine.top = (rcItem.top + rcItem.bottom) / 2 - 1;
+								rcLine.bottom = rcLine.top + 2;
+								rcLine.left = rcItem.left + 3;
+								rcLine.right = (rcItem.left + rcItem.right - textSize.cx) / 2 - 3;
 								DrawEdge(cd->nmcd.hdc, &rcLine, BDR_SUNKENOUTER, BF_RECT);
-								rcLine.left = (rc.left + rc.right + textSize.cx)/2 + 3;
-								rcLine.right = rc.right-3;
+								rcLine.left = (rcItem.left + rcItem.right + textSize.cx) / 2 + 3;
+								rcLine.right = rcItem.right - 3;
 								DrawEdge(cd->nmcd.hdc, &rcLine, BDR_SUNKENOUTER, BF_RECT);
-                SelectObject(cd->nmcd.hdc, hoFont);
-								SetWindowLongPtr(hwndDlg, DWLP_MSGRESULT, CDRF_SKIPDEFAULT);
 							}
 							else
-								SetWindowLongPtr(hwndDlg, DWLP_MSGRESULT, CDRF_NOTIFYSUBITEMDRAW|CDRF_NOTIFYPOSTPAINT);
-
-							return TRUE;
-						}
-
-					case CDDS_SUBITEM|CDDS_ITEMPREPAINT:
-						{  
-							RECT rc;
-							HFONT hoFont;
-
-							hoFont = (HFONT)SelectObject(cd->nmcd.hdc, dat->hListFont);
-							ListView_GetSubItemRect(dat->hwndList, cd->nmcd.dwItemSpec, cd->iSubItem, LVIR_BOUNDS, &rc);
-
-							if (cd->iSubItem==0)  
 							{
-								RECT rc2;
+								RECT rcItemDescr, rcItemValue;
 								char str[MAX_PATH];
 
-								ListView_GetSubItemRect(dat->hwndList, cd->nmcd.dwItemSpec, 1, LVIR_BOUNDS, &rc2);
-								rc.right=rc2.left;
-								rc.left+=2;
-								DrawTextUtf(cd->nmcd.hdc, ICQTranslateUtfStatic(setting[cd->nmcd.lItemlParam].szDescription, str, MAX_PATH), &rc, DT_END_ELLIPSIS|DT_LEFT|DT_NOCLIP|DT_NOPREFIX|DT_SINGLELINE|DT_VCENTER, NULL);
+								ListView_GetSubItemRect(dat->hwndList, cd->nmcd.dwItemSpec, 0, LVIR_BOUNDS, &rcItemDescr);
+								ListView_GetSubItemRect(dat->hwndList, cd->nmcd.dwItemSpec, 1, LVIR_BOUNDS, &rcItemValue);
+
+								rcItemDescr.right = rcItemValue.left;
+								rcItemDescr.left += 2;
+								DrawTextUtf(cd->nmcd.hdc, ICQTranslateUtfStatic(setting[cd->nmcd.lItemlParam].szDescription, str, MAX_PATH), &rcItemDescr, DT_END_ELLIPSIS|DT_LEFT|DT_NOCLIP|DT_NOPREFIX|DT_SINGLELINE|DT_VCENTER, NULL);
+
+								dat->PaintItemSetting(cd->nmcd.hdc, &rcItemValue, cd->nmcd.lItemlParam, cd->nmcd.uItemState);
 							}
-							else 
-								dat->PaintItemSetting(cd->nmcd.hdc, &rc, cd->nmcd.lItemlParam, cd->nmcd.uItemState);
-              SelectObject(cd->nmcd.hdc, hoFont);
+							SelectObject(cd->nmcd.hdc, hoFont);
+
 							SetWindowLongPtr(hwndDlg, DWLP_MSGRESULT, CDRF_SKIPDEFAULT);
 
 							return TRUE;

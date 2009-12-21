@@ -47,7 +47,7 @@ void __cdecl CIcqProto::ServerThread(serverthread_start_info* infoParam)
 
 	info.isLoginServer = 1;
 	info.wAuthKeyLen = infoParam->wPassLen;
-	strncpy((char*)info.szAuthKey, infoParam->szPass, info.wAuthKeyLen);
+	null_strcpy((char*)info.szAuthKey, infoParam->szPass, info.wAuthKeyLen);
 	// store server port
 	info.wServerPort = infoParam->nloc.wPort;
 
@@ -420,9 +420,8 @@ void CIcqProto::icq_login(const char* szPassword)
 
 	// User password
 	stsi->wPassLen = strlennull(szPassword);
-	if (stsi->wPassLen > 9) stsi->wPassLen = 9;
-	strncpy(stsi->szPass, szPassword, stsi->wPassLen);
-	stsi->szPass[stsi->wPassLen] = '\0';
+	if (stsi->wPassLen >= SIZEOF(stsi->szPass)) stsi->wPassLen = SIZEOF(stsi->szPass) - 1;
+	null_strcpy(stsi->szPass, szPassword, stsi->wPassLen);
 
 	// Randomize sequence
 	wLocalSequence = generate_flap_sequence();

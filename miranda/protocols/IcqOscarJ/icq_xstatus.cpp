@@ -371,11 +371,10 @@ void CIcqProto::handleXStatusCaps(HANDLE hContact, BYTE *caps, int capsize, char
 		{
 			char szMoodId[32], szMoodData[32];
 
-			strncpy(szMoodData, moods, moodsize);
-			szMoodData[moodsize] = '\0';
+			null_strcpy(szMoodData, moods, moodsize);
 
 			if (moodXStatus[i] == -1) continue;
-			null_snprintf(szMoodId, 32, "icqmood%d", moodXStatus[i]);
+			null_snprintf(szMoodId, SIZEOF(szMoodId), "icqmood%d", moodXStatus[i]);
 			if (!strcmpnull(szMoodId, szMoodData))
 			{
 				BYTE bXStatusId = (BYTE)(i+1);

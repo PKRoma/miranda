@@ -1052,7 +1052,7 @@ void __cdecl CIcqProto::AvatarThread(avatarthreadstartinfo *atsi)
 #endif
 				if (GetTickCount() > wLastKeepAlive)
 				{ // limit frequency (HACK: on some systems select() does not work well)
-					if (getSettingByte(NULL, "KeepAlive", 0))
+					if (getSettingByte(NULL, "KeepAlive", DEFAULT_KEEPALIVE_ENABLED))
 					{ // send keep-alive packet
 						icq_packet packet;
 
@@ -1485,7 +1485,7 @@ void CIcqProto::handleAvatarFam(BYTE *pBuffer, WORD wBufferLength, snac_header *
 						strcpy(ai.filename, szMyFile);
 
 						out = _open(szMyFile, _O_BINARY | _O_CREAT | _O_TRUNC | _O_WRONLY, _S_IREAD | _S_IWRITE);
-						if (out) 
+						if (out != -1) 
 						{
 							DBVARIANT dbv;
 

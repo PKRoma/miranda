@@ -84,6 +84,12 @@ void ChangeInfoData::LoadSettingsFromDb(int keepChanged)
 			}
 			ICQFreeVariant(&dbv);
 		}
+
+    char buf[MAX_PATH];
+    TCHAR tbuf[MAX_PATH];
+
+    if (utf8_to_tchar_static(GetItemSettingText(i, buf, SIZEOF(buf)), tbuf, SIZEOF(tbuf)))
+      ListView_SetItemText(hwndList, i, 1, tbuf);
 	}
 }
 

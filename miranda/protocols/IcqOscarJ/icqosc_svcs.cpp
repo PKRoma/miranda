@@ -466,8 +466,8 @@ INT_PTR CIcqProto::GetMyAvatar(WPARAM wParam, LPARAM lParam)
 	if (!wParam) return -3;
 
 	char* file = loadMyAvatarFileName();
-	if (file) strncpy((char*)wParam, file, (int)lParam);
-	SAFE_FREE((void**)&file);
+	null_strcpy((char*)wParam, file, (int)lParam - 1);
+	SAFE_FREE(&file);
 	if (!_access((char*)wParam, 0)) return 0;
 	return -1;
 }
@@ -643,10 +643,10 @@ INT_PTR CIcqProto::SetPassword(WPARAM wParam, LPARAM lParam)
 	char *pwd = (char*)lParam;
 	int len = strlennull(pwd);
 
-	if (len && len <= 8)
+	if (len && len < PASSWORDMAXLEN)
 	{
 		strcpy(m_szPassword, pwd);
-		m_bRememberPwd = 1;
+		m_bRememberPwd = TRUE;
 	}
 	return 0;
 }

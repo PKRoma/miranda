@@ -181,7 +181,17 @@ void ChangeInfoData::EndListEdit(int save)
       settingData[iEditItem].changed = ((FieldNamesItem*)setting[iEditItem].pList)[i].code != settingData[iEditItem].value;
       settingData[iEditItem].value = ((FieldNamesItem*)setting[iEditItem].pList)[i].code;
     }
-    if (settingData[iEditItem].changed) EnableDlgItem(GetParent(hwndList), IDC_SAVE, TRUE);
+    if (settingData[iEditItem].changed)
+    {
+      char buf[MAX_PATH];
+      TCHAR tbuf[MAX_PATH];
+
+      if (utf8_to_tchar_static(ICQTranslateUtfStatic(((FieldNamesItem*)setting[iEditItem].pList)[i].text, buf, SIZEOF(buf)), tbuf, SIZEOF(buf)))
+        ListView_SetItemText(hwndList, iEditItem, 1, tbuf);
+
+      EnableDlgItem(GetParent(hwndList), IDC_SAVE, TRUE);
+
+    }
   }
   ListView_RedrawItems(hwndList, iEditItem, iEditItem);
   iEditItem = -1;

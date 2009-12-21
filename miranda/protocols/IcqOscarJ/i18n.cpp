@@ -5,7 +5,7 @@
 // Copyright © 2000-2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001-2002 Jon Keating, Richard Hughes
 // Copyright © 2002-2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004-2008 Joe Kucera
+// Copyright © 2004-2009 Joe Kucera
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -218,7 +218,7 @@ char* __stdcall make_utf8_string(const WCHAR *unicode)
 	return make_utf8_string_static(unicode, out, size + 1);
 }
 
-WCHAR* __stdcall make_unicode_string_static(const char *utf8, WCHAR *unicode, size_t unicode_len)
+WCHAR* __stdcall make_unicode_string_static(const char *utf8, WCHAR *unicode, size_t unicode_size)
 {
 	int index = 0;
 	unsigned int out_index = 0;
@@ -227,7 +227,7 @@ WCHAR* __stdcall make_unicode_string_static(const char *utf8, WCHAR *unicode, si
 	c = utf8[index++];
 	while (c)
 	{
-		if (out_index + 1 >= unicode_len) break;
+		if (out_index + 1 >= unicode_size) break;
 		if((c & 0x80) == 0) 
 		{
 			unicode[out_index++] = c;
@@ -336,11 +336,11 @@ char* __stdcall ansi_to_utf8(const char *szAnsi)
 
 char* __stdcall ansi_to_utf8_codepage(const char *szAnsi, WORD wCp)
 {
-	WCHAR *unicode;
 	int wchars = strlennull(szAnsi);
+	WCHAR *unicode;
 
 	unicode = (WCHAR*)_alloca((wchars + 1) * sizeof(WCHAR));
-	ZeroMemory(unicode, (wchars + 1)*sizeof(WCHAR));
+	ZeroMemory(unicode, (wchars + 1) * sizeof(WCHAR));
 
 	MultiByteToWideChar(wCp, MB_PRECOMPOSED, szAnsi, wchars, unicode, wchars);
 
@@ -361,17 +361,15 @@ int __stdcall utf8_decode_codepage(const char *from, char **to, WORD wCp)
 	// Use the native conversion routines when available
 	if (bHasCP_UTF8)
 	{
-		WCHAR *wszTemp = NULL;
-		int inlen = strlennull(from);
-
-		wszTemp = (WCHAR *)_alloca(sizeof(WCHAR) * (inlen + 1));
+		int inlen = strlennull(from) + 1;
+		WCHAR *wszTemp = (WCHAR *)_alloca(inlen * sizeof(WCHAR));
 
 		// Convert the UTF-8 string to UCS
-		if (MultiByteToWideChar(CP_UTF8, 0, (char*)from, -1, wszTemp, inlen + 1))
+		if (MultiByteToWideChar(CP_UTF8, 0, (char*)from, -1, wszTemp, inlen))
 		{
 			// Convert the UCS string to local ANSI codepage
-			*to = (char*)SAFE_MALLOC(inlen+1);
-			if (WideCharToMultiByte(wCp, 0, wszTemp, -1, *to, inlen+1, NULL, NULL))
+			*to = (char*)SAFE_MALLOC(inlen);
+			if (WideCharToMultiByte(wCp, 0, wszTemp, -1, *to, inlen, NULL, NULL))
 			{
 				nResult = 1;
 			}
@@ -427,7 +425,7 @@ int __stdcall utf8_decode(const char *from, char **to)
 }
 
 // Returns 0 on error, 1 on success
-int __stdcall utf8_decode_static(const char *from, char *to, int to_size)
+int __stdcall utf8_decode_static(const char *from, char *to, size_t to_size)
 {
 	int nResult = 0;
 
@@ -440,13 +438,11 @@ int __stdcall utf8_decode_static(const char *from, char *to, int to_size)
 	// Use the native conversion routines when available
 	if (bHasCP_UTF8)
 	{
-		WCHAR *wszTemp = NULL;
-		int inlen = strlennull(from);
-
-		wszTemp = (WCHAR*)_alloca(sizeof(WCHAR) * (inlen + 1));
+		size_t inlen = strlennull(from) + 1;
+		WCHAR *wszTemp = (WCHAR*)_alloca(inlen * sizeof(WCHAR));
 
 		// Convert the UTF-8 string to UCS
-		if (MultiByteToWideChar(CP_UTF8, 0, (char*)from, -1, wszTemp, inlen + 1))
+		if (MultiByteToWideChar(CP_UTF8, 0, (char*)from, -1, wszTemp, inlen))
 		{
 			// Convert the UCS string to local ANSI codepage
 			if (WideCharToMultiByte(CP_ACP, 0, wszTemp, -1, to, to_size, NULL, NULL))
@@ -457,7 +453,7 @@ int __stdcall utf8_decode_static(const char *from, char *to, int to_size)
 	}
 	else
 	{
-		int chars = strlennull(from) + 1;
+		size_t chars = strlennull(from) + 1;
 		WCHAR *unicode = (WCHAR*)_alloca(chars * sizeof(WCHAR));
 
 		make_unicode_string_static(from, unicode, chars);

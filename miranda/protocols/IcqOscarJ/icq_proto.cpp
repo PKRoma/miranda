@@ -507,6 +507,7 @@ HANDLE __cdecl CIcqProto::AddToListByEvent( int flags, int iContact, HANDLE hDbE
 	return NULL; // Failure
 }
 
+
 ////////////////////////////////////////////////////////////////////////////////////////
 // PS_AuthAllow - processes the successful authorization
 
@@ -530,6 +531,7 @@ int CIcqProto::Authorize( HANDLE hDbEvent )
 
 	return 1; // Failure
 }
+
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // PS_AuthDeny - handles the unsuccessful authorization
@@ -555,6 +557,7 @@ int CIcqProto::AuthDeny( HANDLE hDbEvent, const char* szReason )
 	return 1; // Failure
 }
 
+
 ////////////////////////////////////////////////////////////////////////////////////////
 // PSR_AUTH
 
@@ -564,6 +567,7 @@ int __cdecl CIcqProto::AuthRecv( HANDLE hContact, PROTORECVEVENT* pre )
 	ICQAddRecvEvent( NULL, EVENTTYPE_AUTHREQUEST, pre, pre->lParam, (PBYTE)pre->szMessage, 0 );
 	return 0;
 }
+
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // PSS_AUTHREQUEST
@@ -591,6 +595,7 @@ int __cdecl CIcqProto::AuthRequest( HANDLE hContact, const char* szMessage )
 
 	return 1; // Failure
 }
+
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // ChangeInfo
@@ -677,6 +682,7 @@ int __cdecl CIcqProto::FileCancel( HANDLE hContact, HANDLE hTransfer )
 
 	return 1; // Failure
 }
+
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // PS_FileDeny - denies a file transfer
@@ -1057,6 +1063,7 @@ HWND __cdecl CIcqProto::SearchAdvanced( HWND hwndDlg )
 	return NULL; // Failure
 }
 
+
 ////////////////////////////////////////////////////////////////////////////////////////
 // RecvContacts
 
@@ -1098,6 +1105,7 @@ int __cdecl CIcqProto::RecvContacts( HANDLE hContact, PROTORECVEVENT* pre )
 	return 0;
 }
 
+
 ////////////////////////////////////////////////////////////////////////////////////////
 // RecvFile
 
@@ -1106,6 +1114,7 @@ int __cdecl CIcqProto::RecvFile( HANDLE hContact, PROTORECVFILET* evt )
 	CCSDATA ccs = { hContact, PSR_FILE, 0, ( LPARAM )evt };
 	return CallService( MS_PROTO_RECVFILE, 0, ( LPARAM )&ccs );
 }
+
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // RecvMsg
@@ -1343,7 +1352,7 @@ int __cdecl CIcqProto::SendContacts( HANDLE hContact, int flags, int nContacts, 
 
 						// Finally we need to copy the contact data into the packet body
 						pBuffer = pBody = (char *)SAFE_MALLOC(nBodyLength);
-						strncpy(pBuffer, szCount, nBodyLength);
+						null_strcpy(pBuffer, szCount, nBodyLength - 1);
 						pBuffer += strlennull(pBuffer);
 						*pBuffer++ = (char)0xFE;
 						for (i = 0; i < nContacts; i++)
@@ -1557,7 +1566,6 @@ int __cdecl CIcqProto::SendMsg( HANDLE hContact, int flags, const char* pszSrc )
 {
 	if (hContact && pszSrc)
 	{
-		WORD wRecipientStatus;
 		DWORD dwCookie;
 		char* pszText = NULL;
 		char* puszText = NULL;
@@ -1580,7 +1588,7 @@ int __cdecl CIcqProto::SendMsg( HANDLE hContact, int flags, const char* pszSrc )
 			bNeedFreeU = 1;
 		}
 
-		wRecipientStatus = getContactStatus(hContact);
+		WORD wRecipientStatus = getContactStatus(hContact);
 
 		if (puszText)
 		{ // we have unicode message, check if it is possible and reasonable to send it as unicode
@@ -1671,8 +1679,8 @@ int __cdecl CIcqProto::SendMsg( HANDLE hContact, int flags, const char* pszSrc )
 			cookie_message_data *pCookieData = CreateMessageCookieData(MTYPE_PLAIN, hContact, dwUin, TRUE);
 
 #ifdef _DEBUG
-			NetLog_Server("Send %s message - Message cap is %u", puszText ? "unicode" : "", CheckContactCapabilities(hContact, CAPF_SRV_RELAY));
-			NetLog_Server("Send %s message - Contact status is %u", puszText ? "unicode" : "", wRecipientStatus);
+			NetLog_Server("Send %smessage - Message cap is %u", puszText ? "unicode " : "", CheckContactCapabilities(hContact, CAPF_SRV_RELAY));
+			NetLog_Server("Send %smessage - Contact status is %u", puszText ? "unicode " : "", wRecipientStatus);
 #endif
 			if (dwUin && m_bDCMsgEnabled && IsDirectConnectionOpen(hContact, DIRECTCONN_STANDARD, 0))
 			{ // send thru direct
@@ -1802,6 +1810,7 @@ int __cdecl CIcqProto::SendMsg( HANDLE hContact, int flags, const char* pszSrc )
 
 	return 0; // Failure
 }
+
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // SendUrl
@@ -2146,6 +2155,7 @@ INT_PTR __cdecl CIcqProto::RecvAuth(WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
+
 ////////////////////////////////////////////////////////////////////////////////////////
 // GetAwayMsgThread - return a contact's status message
 
@@ -2171,9 +2181,11 @@ void __cdecl CIcqProto::GetAwayMsgThread( void *pStatusData )
       BroadcastAck(pThreadData->hContact, ACKTYPE_AWAYMSG, ACKRESULT_SUCCESS, pThreadData->hProcess, (LPARAM)szAnsiMsg);
 
     SAFE_FREE(&szAnsiMsg);
+    SAFE_FREE(&pThreadData->szMessage);
     SAFE_FREE((void**)&pThreadData);
   }
 }
+
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // PS_GetAwayMsg - returns a contact's away message
@@ -2259,6 +2271,7 @@ HANDLE __cdecl CIcqProto::GetAwayMsg( HANDLE hContact )
 	return 0; // Failure
 }
 
+
 ////////////////////////////////////////////////////////////////////////////////////////
 // PSR_AWAYMSG
 
@@ -2267,6 +2280,7 @@ int __cdecl CIcqProto::RecvAwayMsg( HANDLE hContact, int statusMode, PROTORECVEV
 	BroadcastAck(hContact, ACKTYPE_AWAYMSG, ACKRESULT_SUCCESS, (HANDLE)evt->lParam, (LPARAM)evt->szMessage);
 	return 0;
 }
+
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // PSS_AWAYMSG
@@ -2284,7 +2298,7 @@ int __cdecl CIcqProto::SetAwayMsg(int status, const char* msg)
 {
 	EnterCriticalSection(&m_modeMsgsMutex);
 
-	char **ppszMsg = MirandaStatusToAwayMsg(status);
+	char **ppszMsg = MirandaStatusToAwayMsg(MirandaStatusToSupported(status));
 	if (!ppszMsg)
 	{
 		LeaveCriticalSection(&m_modeMsgsMutex);
@@ -2328,6 +2342,7 @@ int __cdecl CIcqProto::SetAwayMsg(int status, const char* msg)
 	return 0; // Success
 }
 
+
 /////////////////////////////////////////////////////////////////////////////////////////
 // GetMyAwayMsg - obtain the current away message
 
@@ -2363,6 +2378,7 @@ INT_PTR CIcqProto::GetMyAwayMsg(WPARAM wParam, LPARAM lParam)
 
   return res;
 }
+
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // PS_UserIsTyping - sends a UTN notification

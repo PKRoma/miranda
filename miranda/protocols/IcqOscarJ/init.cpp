@@ -73,11 +73,11 @@ PLUGININFOEX pluginInfo = {
 
 extern "C" PLUGININFOEX __declspec(dllexport) *MirandaPluginInfoEx(DWORD mirandaVersion)
 {
-	// Only load for 0.8.0.29 or greater
-	// We need the core stubs for PS_GETNAME and PS_GETSTATUS
-	if (mirandaVersion < PLUGIN_MAKE_VERSION(0, 8, 0, 29))
+	// Only load for 0.9.0.0 or greater
+	// We need the new Unicode aware File Transfer API
+	if (mirandaVersion < PLUGIN_MAKE_VERSION(0, 9, 0, 0))
 	{
-		MessageBoxA( NULL, "ICQ plugin cannot be loaded. It requires Miranda IM 0.8.0.29 or later.", "ICQ Plugin",
+		MessageBoxA( NULL, "ICQ plugin cannot be loaded. It requires Miranda IM 0.9.0.0 or later.", "ICQ Plugin",
 			MB_OK|MB_ICONWARNING|MB_SETFOREGROUND|MB_TOPMOST );
 		return NULL;
 	}

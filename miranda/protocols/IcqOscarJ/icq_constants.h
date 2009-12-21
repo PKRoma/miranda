@@ -68,13 +68,13 @@
 
 #define DEFAULT_SECURE_LOGIN        1
 #define DEFAULT_SECURE_CONNECTION   0
+#define DEFAULT_KEEPALIVE_ENABLED   1
 #define DEFAULT_AIM_ENABLED         1
 #define DEFAULT_UTF_ENABLED         2 // everything unicode is default
 #define DEFAULT_ANSI_CODEPAGE       CP_ACP
 #define DEFAULT_DCMSG_ENABLED       1 // passive dc messaging is default
 #define DEFAULT_TEMPVIS_ENABLED     1 // temporary visible is enabled by default
 #define DEFAULT_MTN_ENABLED         1
-#define DEFAULT_CAPS                0
 #define DEFAULT_AVATARS_ENABLED     1
 #define DEFAULT_LOAD_AVATARS        1
 #define DEFAULT_BIGGER_AVATARS      1
@@ -238,6 +238,7 @@
 #define MTYPE_EEXPRESS              0x0E // Email express message (0xFE formatted)
 #define MTYPE_CONTACTS              0x13 // Contact list message
 #define MTYPE_PLUGIN                0x1A // Plugin message described by text string
+#define MTYPE_AUTOONLINE            0xE7 // Auto online message (internal only)
 #define MTYPE_AUTOAWAY              0xE8 // Auto away message
 #define MTYPE_AUTOBUSY              0xE9 // Auto occupied message
 #define MTYPE_AUTONA                0xEA // Auto not available message
@@ -635,6 +636,7 @@
 #define CLIENT_MD5_STRING           "AOL Instant Messenger (SM)"
 #define UNIQUEIDSETTING             "UIN"
 #define UINMAXLEN                   11 // DWORD string max len + 1
+#define PASSWORDMAXLEN              16
 #define OSCAR_PROXY_HOST            "ars.oscar.aol.com"
 #define OSCAR_PROXY_VERSION         0x044A
 
