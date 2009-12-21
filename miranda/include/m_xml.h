@@ -30,13 +30,14 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 DECLARE_HANDLE(HXML);
 typedef int XML_ELEMENT_POS; // XML_ELEMENT_POS is not interchangeable with simple indexes
 
-typedef enum XML_ELEMENT_TYPE
+typedef enum
 {
 	XML_ELEM_TYPE_CHILD     = 0,
 	XML_ELEM_TYPE_ATTRIBUTE = 1,
 	XML_ELEM_TYPE_TEXT      = 2,
 	XML_ELEM_TYPE_CLEAR     = 3,
-};
+}
+	XML_ELEMENT_TYPE;
 
 typedef struct
 {
