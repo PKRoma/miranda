@@ -537,7 +537,7 @@ static INT_PTR CALLBACK EditEmailDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam,
 				WORD nFlag;
 
 				SetWindowText( hwndDlg, TranslateT( "Jabber vCard: Edit Email Address" ));
-				wsprintfA( idstr, "e-mail%d", lParam );
+				wsprintfA( idstr, "e-mail%d", dat->id );
 				if ( !DBGetContactSettingString( NULL, dat->ppro->m_szModuleName, idstr, &dbv )) {
 					SetDlgItemTextA( hwndDlg, IDC_EMAIL, dbv.pszVal );
 					JFreeVariant( &dbv );
