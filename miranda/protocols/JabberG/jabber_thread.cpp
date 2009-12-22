@@ -698,6 +698,7 @@ void CJabberProto::OnProcessFeatures( HXML node, ThreadData* info )
 	bool isPlainAvailable = false;
 	bool isMd5available = false;
 	bool isNtlmAvailable = false;
+	bool isKerberosAvailable = false;
 	bool isAuthAvailable = false;
 	bool isXGoogleTokenAvailable = false;
 	bool isRegisterAvailable = false;
@@ -744,6 +745,7 @@ void CJabberProto::OnProcessFeatures( HXML node, ThreadData* info )
 					     if ( !_tcscmp( xmlGetText( c ), _T("PLAIN")))          isPlainAvailable = true;
 					else if ( !_tcscmp( xmlGetText( c ), _T("DIGEST-MD5")))     isMd5available = true;
 					else if ( !_tcscmp( xmlGetText( c ), _T("NTLM")))           isNtlmAvailable = true;
+					else if ( !_tcscmp( xmlGetText( c ), _T("GSSAPI")))         isKerberosAvailable = true;
 					else if ( !_tcscmp( xmlGetText( c ), _T("X-GOOGLE-TOKEN"))) isXGoogleTokenAvailable = true;
 		}	}
 		else if ( !_tcscmp( xmlGetName( n ), _T("register" ))) isRegisterAvailable = true;
@@ -1934,14 +1936,14 @@ ThreadData::ThreadData( CJabberProto* aproto, JABBER_SESSION_TYPE parType )
 	memset( this, 0, sizeof( *this ));
 	type = parType;
 	proto = aproto;
-	InitializeCriticalSection( &iomutex );
+	iomutex = CreateMutex(NULL, FALSE, NULL);
 }
 
 ThreadData::~ThreadData()
 {
 	delete auth;
 	mir_free( zRecvData );
-	DeleteCriticalSection( &iomutex );
+	CloseHandle( iomutex );
 	CloseHandle(hThread);
 }
 
@@ -1980,14 +1982,14 @@ int ThreadData::send( char* buffer, int bufsize )
 
 	int result;
 
-	EnterCriticalSection( &iomutex );
+	WaitForSingleObject( iomutex, 6000 );
 
 	if ( useZlib )
 		result = zlibSend( buffer, bufsize );
 	else
 		result = sendws( buffer, bufsize, MSG_DUMPASTEXT );
 
-	LeaveCriticalSection( &iomutex );
+	ReleaseMutex( iomutex );
 	return result;
 }
 
