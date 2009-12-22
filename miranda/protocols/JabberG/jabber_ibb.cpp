@@ -100,7 +100,8 @@ void CJabberProto::IbbSendThread( JABBER_IBB_TRANSFER *jibb )
 
 	m_ThreadInfo->send(
 		XmlNodeIq( m_iqManager.AddHandler( &CJabberProto::OnIbbInitiateResult, JABBER_IQ_TYPE_SET, jibb->dstJID, 0, -1, jibb ))
-			<< XCHILDNS( _T("open"), _T(JABBER_FEAT_IBB)) << XATTR( _T("sid"), jibb->sid ) << XATTRI( _T("block-size"), JABBER_IBB_BLOCK_SIZE ));
+			<< XCHILDNS( _T("open"), _T(JABBER_FEAT_IBB)) << XATTR( _T("sid"), jibb->sid ) << XATTRI( _T("block-size"), JABBER_IBB_BLOCK_SIZE )
+			<< XATTR( _T("stanza"), _T("message")));
 
 	WaitForSingleObject( jibb->hEvent, INFINITE );
 	CloseHandle( jibb->hEvent );
