@@ -915,11 +915,12 @@ void CJabberDlgPrivacyLists::OnDestroy()
 void CJabberDlgPrivacyLists::OnProtoRefresh(WPARAM, LPARAM)
 {
 	LRESULT sel = SendDlgItemMessage(m_hwnd, IDC_LB_LISTS, LB_GETCURSEL, 0, 0);
-	if ( sel == LB_ERR ) return;
-
-	LRESULT len = SendDlgItemMessage(m_hwnd, IDC_LB_LISTS, LB_GETTEXTLEN, sel, 0) + 1;
-	TCHAR *szCurrentSelectedList = (TCHAR *)_alloca(len * sizeof(TCHAR));
-	SendDlgItemMessage(m_hwnd, IDC_LB_LISTS, LB_GETTEXT, sel, (LPARAM)szCurrentSelectedList);
+	TCHAR *szCurrentSelectedList = NULL;
+	if ( sel != LB_ERR ) {
+		LRESULT len = SendDlgItemMessage(m_hwnd, IDC_LB_LISTS, LB_GETTEXTLEN, sel, 0) + 1;
+		szCurrentSelectedList = (TCHAR *)mir_alloc(len * sizeof(TCHAR));
+		SendDlgItemMessage(m_hwnd, IDC_LB_LISTS, LB_GETTEXT, sel, (LPARAM)szCurrentSelectedList);
+	}
 
 	SendDlgItemMessage( m_hwnd, IDC_LB_LISTS, LB_RESETCONTENT, 0, 0 );
 
@@ -936,8 +937,10 @@ void CJabberDlgPrivacyLists::OnProtoRefresh(WPARAM, LPARAM)
 		pList = pList->GetNext();
 	}
 
-	if ( SendDlgItemMessage( m_hwnd, IDC_LB_LISTS, LB_SELECTSTRING, -1, (LPARAM)szCurrentSelectedList ) == LB_ERR )
+	if ( !szCurrentSelectedList || ( SendDlgItemMessage( m_hwnd, IDC_LB_LISTS, LB_SELECTSTRING, -1, (LPARAM)szCurrentSelectedList ) == LB_ERR ))
 		SendDlgItemMessage( m_hwnd, IDC_LB_LISTS, LB_SETCURSEL, 0, 0 );
+	if ( szCurrentSelectedList )
+		mir_free( szCurrentSelectedList );
 
 	m_proto->m_privacyListManager.Unlock();
 
