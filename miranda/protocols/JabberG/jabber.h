@@ -337,7 +337,7 @@ struct ThreadData
 	// network support
 	JABBER_SOCKET s;
 	BOOL  useSSL;
-	CRITICAL_SECTION iomutex; // protects i/o operations
+	HANDLE iomutex; // protects i/o operations
 	CJabberProto* proto;
 
 	// XEP-0138 (Compression support)

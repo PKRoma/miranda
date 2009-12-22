@@ -1924,14 +1924,14 @@ ThreadData::ThreadData( CJabberProto* aproto, JABBER_SESSION_TYPE parType )
 	memset( this, 0, sizeof( *this ));
 	type = parType;
 	proto = aproto;
-	InitializeCriticalSection( &iomutex );
+	iomutex = CreateMutex(NULL, FALSE, NULL);
 }
 
 ThreadData::~ThreadData()
 {
 	delete auth;
 	mir_free( zRecvData );
-	DeleteCriticalSection( &iomutex );
+	CloseHandle( iomutex );
 	CloseHandle(hThread);
 }
 
@@ -1970,14 +1970,14 @@ int ThreadData::send( char* buffer, int bufsize )
 
 	int result;
 
-	EnterCriticalSection( &iomutex );
+	WaitForSingleObject( iomutex, 6000 );
 
 	if ( useZlib )
 		result = zlibSend( buffer, bufsize );
 	else
 		result = sendws( buffer, bufsize, MSG_DUMPASTEXT );
 
-	LeaveCriticalSection( &iomutex );
+	ReleaseMutex( iomutex );
 	return result;
 }
 
