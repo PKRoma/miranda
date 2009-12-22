@@ -1717,8 +1717,10 @@ protected:
 			m_cbType.SetCurSel(ACC_LJTALK);
 		else if (m_proto->m_options.UseSSL)
 			m_cbType.SetCurSel(ACC_SSL);
-		else if (m_proto->m_options.UseTLS)
+		else if (m_proto->m_options.UseTLS) {
 			m_cbType.SetCurSel(ACC_TLS);
+			m_txtPort.SetInt(5222);
+		}
 		else
 			m_cbType.SetCurSel(ACC_PUBLIC);
 		//cbType_OnChange(&m_cbType);
