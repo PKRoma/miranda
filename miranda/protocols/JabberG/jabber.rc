@@ -130,7 +130,7 @@ BEGIN
     CONTROL         "Keep connection alive",IDC_KEEPALIVE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,158,221,10
     CONTROL         "Automatically delete contacts not in my roster",IDC_ROSTER_SYNC,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,172,221,10
-    LTEXT           "User directory:",IDC_JUD_LABEL,14,188,68,8
+    LTEXT           "User directory:",IDC_JUD_LABEL,14,188,170,8
     EDITTEXT        IDC_JUD,188,185,103,12,ES_AUTOHSCROLL
     LTEXT           "Language for human-readable resources:",IDC_MSGLANG_LABEL,14,203,170,8
     COMBOBOX        IDC_MSGLANG,188,201,103,69,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
