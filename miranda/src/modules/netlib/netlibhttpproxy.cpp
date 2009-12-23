@@ -145,7 +145,6 @@ INT_PTR NetlibHttpGatewayOLDPost(struct NetlibConnection *nlc,const char *buf,in
 
 	nlcSend.handleType=NLH_CONNECTION;
 	nlcSend.nlu=nlc->nlu;
-	nlcSend.hNtlmSecurity=nlc->hNtlmSecurity;
 	nlcSend.s=socket(AF_INET,SOCK_STREAM,0);
 	if(nlcSend.s==INVALID_SOCKET) {
 		Netlib_Logf(nlc->nlu,"%s %d: %s() failed (%u)",__FILE__,__LINE__,"socket",WSAGetLastError());
