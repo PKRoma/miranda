@@ -269,6 +269,12 @@ void CAimProto::add_contact_to_group(HANDLE hContact, const char* new_group)
 
 		aim_ssi_update(hServerConn, seqno, true);
 
+		LOG("Adding buddy %s:%u to the serverside list", dbv.pszVal, item_id);
+		aim_add_contact(hServerConn, seqno, dbv.pszVal, item_id, new_group_id, 0);
+
+		LOG("Modifying group %s:%u on the serverside list", new_group, new_group_id);
+		update_server_group(new_group, new_group_id);
+
 		if (old_group_id)
 		{
 			LOG("Removing buddy %s:%u to the serverside list", dbv.pszVal, item_id);
@@ -277,12 +283,6 @@ void CAimProto::add_contact_to_group(HANDLE hContact, const char* new_group)
 			update_server_group(old_group, old_group_id);
 		}
 
-		LOG("Adding buddy %s:%u to the serverside list", dbv.pszVal, item_id);
-		aim_add_contact(hServerConn, seqno, dbv.pszVal, item_id, new_group_id, 0);
-
-		LOG("Modifying group %s:%u on the serverside list", new_group, new_group_id);
-		update_server_group(new_group, new_group_id);
-		
 		aim_ssi_update(hServerConn, seqno, false);
 
 		DBFreeVariant(&dbv);
