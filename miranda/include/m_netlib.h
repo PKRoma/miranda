@@ -737,15 +737,16 @@ static __inline void Netlib_DestroySecurityProvider( char* szProviderName, HANDL
 #define MS_NETLIB_NTLMCREATERESPONSE "Netlib/NtlmCreateResponse"
 
 typedef struct {
-   char* szChallenge;
+	char* szChallenge;
 	char* userName;
 	char* password;
+	int complete;
 }
 	NETLIBNTLMREQUEST;
 
 static __inline char* Netlib_NtlmCreateResponse( HANDLE hProvider, char* szChallenge, char* login, char* psw )
 {
-	NETLIBNTLMREQUEST temp = { szChallenge, login, psw };
+	NETLIBNTLMREQUEST temp = { szChallenge, login, psw, 0 };
 	return (char*)CallService( MS_NETLIB_NTLMCREATERESPONSE, (WPARAM)hProvider, (LPARAM)&temp );
 }
 
