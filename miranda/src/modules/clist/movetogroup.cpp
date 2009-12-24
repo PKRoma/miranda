@@ -88,7 +88,7 @@ static int OnContactMenuBuild(WPARAM wParam,LPARAM)
 		{
 			TCHAR* szGroupName = dbv.ptszVal + 1;
 			bool checked = szContactGroup && !_tcscmp(szContactGroup, szGroupName);
-			AddGroupItem(hMoveToGroupItem, szGroupName, ++pos, i, checked);
+			AddGroupItem(hMoveToGroupItem, szGroupName, ++pos, i + 1, checked);
 		}
 		mir_free(dbv.ptszVal);
 	}
