@@ -31,18 +31,18 @@ Last change by : $Author$
 /////////////////////////////////////////////////////////////////////////////////////////
 // ntlm auth - LanServer based authorization
 
-TNtlmAuth::TNtlmAuth( ThreadData* info ) :
+TNtlmAuth::TNtlmAuth( ThreadData* info, const char* szProvider ) :
 	TJabberAuth( info )
 {
-	szName = "NTLM";
-	if (( hProvider = Netlib_InitSecurityProvider( "NTLM" )) == NULL )
+	szName = ( char* )szProvider;
+	if (( hProvider = Netlib_InitSecurityProvider( szName )) == NULL )
 		bIsValid = false;
 }
 
 TNtlmAuth::~TNtlmAuth()
 {
 	if ( hProvider != NULL )
-		Netlib_DestroySecurityProvider( "NTLM", hProvider );
+		Netlib_DestroySecurityProvider( szName, hProvider );
 }
 
 char* TNtlmAuth::getInitialRequest()
@@ -50,12 +50,16 @@ char* TNtlmAuth::getInitialRequest()
 	if ( !hProvider )
 		return NULL;
 
-	// use the full auth for the external servers
-	if ( info->password[0] != 0 )
-		return mir_strdup("");
+	// This generates login method advertisement packet
+	char* result;
+	if ( info->password[0] != 0 ) {
+		char* user = mir_t2a( info->username );
+		result = Netlib_NtlmCreateResponse( hProvider, "", user, info->password );
+		mir_free( user );
+	}
+	else result = Netlib_NtlmCreateResponse( hProvider, "", NULL, NULL );
 
-	// use the transparent auth for local servers (password is empty)
-	return Netlib_NtlmCreateResponse( hProvider, "", NULL, NULL );
+	return result;
 }
 
 char* TNtlmAuth::getChallenge( const TCHAR* challenge )

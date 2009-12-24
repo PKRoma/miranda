@@ -244,7 +244,7 @@ void CJabberProto::ServerThread( ThreadData* info )
 	if ( m_options.ManualConnect == TRUE ) {
 		if ( !DBGetContactSettingString( NULL, m_szModuleName, "ManualHost", &dbv )) {
 			strncpy( info->manualHost, dbv.pszVal, SIZEOF( info->manualHost ));
-			info->manualHost[sizeof( info->manualHost )-1] = '\0';
+			info->manualHost[SIZEOF( info->manualHost )-1] = '\0';
 			JFreeVariant( &dbv );
 		}
 		info->port = JGetWord( NULL, "ManualPort", JABBER_DEFAULT_PORT );
@@ -698,6 +698,7 @@ void CJabberProto::OnProcessFeatures( HXML node, ThreadData* info )
 	bool isPlainAvailable = false;
 	bool isMd5available = false;
 	bool isNtlmAvailable = false;
+	bool isSpnegoAvailable = false;
 	bool isKerberosAvailable = false;
 	bool isAuthAvailable = false;
 	bool isXGoogleTokenAvailable = false;
@@ -745,6 +746,7 @@ void CJabberProto::OnProcessFeatures( HXML node, ThreadData* info )
 					     if ( !_tcscmp( xmlGetText( c ), _T("PLAIN")))          isPlainAvailable = true;
 					else if ( !_tcscmp( xmlGetText( c ), _T("DIGEST-MD5")))     isMd5available = true;
 					else if ( !_tcscmp( xmlGetText( c ), _T("NTLM")))           isNtlmAvailable = true;
+					else if ( !_tcscmp( xmlGetText( c ), _T("GSS-SPNEGO")))     isSpnegoAvailable = true;
 					else if ( !_tcscmp( xmlGetText( c ), _T("GSSAPI")))         isKerberosAvailable = true;
 					else if ( !_tcscmp( xmlGetText( c ), _T("X-GOOGLE-TOKEN"))) isXGoogleTokenAvailable = true;
 		}	}
@@ -756,8 +758,22 @@ void CJabberProto::OnProcessFeatures( HXML node, ThreadData* info )
 	if ( areMechanismsDefined ) {
 		TJabberAuth* auth = NULL;
 
-		if ( isNtlmAvailable ) {
-			auth = new TNtlmAuth( info );
+		if ( isSpnegoAvailable ) {
+			auth = new TNtlmAuth( info, "Negotiate" );
+			if ( !auth->isValid() ) {
+				delete auth;
+				auth = NULL;
+		}	}
+
+		if ( auth == NULL && isNtlmAvailable ) {
+			auth = new TNtlmAuth( info, "NTLM" );
+			if ( !auth->isValid() ) {
+				delete auth;
+				auth = NULL;
+		}	}
+
+		if ( auth == NULL && isKerberosAvailable ) {
+			auth = new TNtlmAuth( info, "Kerberos" );
 			if ( !auth->isValid() ) {
 				delete auth;
 				auth = NULL;
