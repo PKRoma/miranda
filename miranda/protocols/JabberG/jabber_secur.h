@@ -87,7 +87,7 @@ class TNtlmAuth : public TJabberAuth
 
 				HANDLE hProvider;
 public:		
-				TNtlmAuth( ThreadData* );
+				TNtlmAuth( ThreadData*, const char* szProvider );
 	virtual ~TNtlmAuth();
 
 	virtual	char* getInitialRequest();
