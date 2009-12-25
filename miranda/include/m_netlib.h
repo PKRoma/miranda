@@ -753,9 +753,9 @@ static __inline HANDLE Netlib_InitSecurityProvider2( const TCHAR* szProviderName
 // Right now only NTLM is supported
 #define MS_NETLIB_DESTROYSECURITYPROVIDER "Netlib/DestroySecurityProvider"
 
-static __inline void Netlib_DestroySecurityProvider( HANDLE hProvider )
+static __inline void Netlib_DestroySecurityProvider( char* szProviderName, HANDLE hProvider )
 {
-	CallService( MS_NETLIB_DESTROYSECURITYPROVIDER, 0, (LPARAM)hProvider );
+	CallService( MS_NETLIB_DESTROYSECURITYPROVIDER, (WPARAM)szProviderName, (LPARAM)hProvider );
 }
 
 // Returns the NTLM response string. The result value should be freed using mir_free
@@ -787,10 +787,12 @@ typedef struct {
 
 #define MS_NETLIB_NTLMCREATERESPONSE2 "Netlib/NtlmCreateResponse2"
 
-static __inline char* Netlib_NtlmCreateResponse2( HANDLE hProvider, char* szChallenge, TCHAR* szLogin, TCHAR* szPass )
+static __inline char* Netlib_NtlmCreateResponse2( HANDLE hProvider, char* szChallenge, TCHAR* szLogin, TCHAR* szPass, unsigned *complete )
 {
 	NETLIBNTLMREQUEST2 temp = { sizeof(temp), szChallenge, szLogin, szPass, 0, NNR_TCHAR };
-	return (char*)CallService( MS_NETLIB_NTLMCREATERESPONSE2, (WPARAM)hProvider, (LPARAM)&temp );
+	char* res = (char*)CallService( MS_NETLIB_NTLMCREATERESPONSE2, (WPARAM)hProvider, (LPARAM)&temp );
+	*complete = temp.complete;
+	return res;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
