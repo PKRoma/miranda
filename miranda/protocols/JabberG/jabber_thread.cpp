@@ -706,6 +706,8 @@ void CJabberProto::OnProcessFeatures( HXML node, ThreadData* info )
 	bool areMechanismsDefined = false;
 	bool isSessionAvailable = false;
 
+	const TCHAR *hostname = NULL;
+
 	for ( int i=0; ;i++ ) {
 		HXML n = xmlGetChild( node ,i);
 		if ( !n )
@@ -741,7 +743,7 @@ void CJabberProto::OnProcessFeatures( HXML node, ThreadData* info )
 				if ( !c )
 					break;
 
-				if ( !_tcscmp( xmlGetName( c ), _T("mechanism")))
+				if ( !_tcscmp( xmlGetName( c ), _T("mechanism"))) {
 					//JabberLog("Mechanism: %s",xmlGetText( c ));
 					     if ( !_tcscmp( xmlGetText( c ), _T("PLAIN")))          isPlainAvailable = true;
 					else if ( !_tcscmp( xmlGetText( c ), _T("DIGEST-MD5")))     isMd5available = true;
@@ -749,6 +751,10 @@ void CJabberProto::OnProcessFeatures( HXML node, ThreadData* info )
 					else if ( !_tcscmp( xmlGetText( c ), _T("GSS-SPNEGO")))     isSpnegoAvailable = true;
 					else if ( !_tcscmp( xmlGetText( c ), _T("GSSAPI")))         isKerberosAvailable = true;
 					else if ( !_tcscmp( xmlGetText( c ), _T("X-GOOGLE-TOKEN"))) isXGoogleTokenAvailable = true;
+				}
+				else if ( !_tcscmp( xmlGetName( c ), _T("hostname"))) {
+					hostname = xmlGetText( c );
+				}
 		}	}
 		else if ( !_tcscmp( xmlGetName( n ), _T("register" ))) isRegisterAvailable = true;
 		else if ( !_tcscmp( xmlGetName( n ), _T("auth"     ))) isAuthAvailable = true;
@@ -759,7 +765,7 @@ void CJabberProto::OnProcessFeatures( HXML node, ThreadData* info )
 		TJabberAuth* auth = NULL;
 
 		if ( isSpnegoAvailable ) {
-			auth = new TNtlmAuth( info, "Negotiate" );
+			auth = new TNtlmAuth( info, "GSS-SPNEGO" );
 			if ( !auth->isValid() ) {
 				delete auth;
 				auth = NULL;
@@ -773,7 +779,7 @@ void CJabberProto::OnProcessFeatures( HXML node, ThreadData* info )
 		}	}
 
 		if ( auth == NULL && isKerberosAvailable ) {
-			auth = new TNtlmAuth( info, "Kerberos" );
+			auth = new TGssApiAuth( info, hostname );
 			if ( !auth->isValid() ) {
 				delete auth;
 				auth = NULL;

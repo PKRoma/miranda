@@ -28,21 +28,35 @@ Last change by : $Author$
 #include "jabber.h"
 #include "jabber_secur.h"
 
+typedef BYTE (WINAPI *GetUserNameExType )( int NameFormat, LPTSTR lpNameBuffer, PULONG nSize );
+
+
 /////////////////////////////////////////////////////////////////////////////////////////
 // ntlm auth - LanServer based authorization
 
-TNtlmAuth::TNtlmAuth( ThreadData* info, const char* szProvider ) :
+TNtlmAuth::TNtlmAuth( ThreadData* info, const char* mechanism ) :
 	TJabberAuth( info )
 {
-	szName = ( char* )szProvider;
-	if (( hProvider = Netlib_InitSecurityProvider( szName )) == NULL )
+	szName = mechanism;
+
+	const TCHAR *szProvider;
+	if ( !strcmp( mechanism, "GSS-SPNEGO" ))
+		szProvider = _T("Negotiate");
+	else if ( !strcmp( mechanism, "NTLM" ))
+		szProvider = _T("NTLM");
+	else {
+		bIsValid = false;
+		return;
+	}
+
+	if (( hProvider = Netlib_InitSecurityProvider2( szProvider, NULL )) == NULL )
 		bIsValid = false;
 }
 
 TNtlmAuth::~TNtlmAuth()
 {
 	if ( hProvider != NULL )
-		Netlib_DestroySecurityProvider( szName, hProvider );
+		Netlib_DestroySecurityProvider( NULL, hProvider );
 }
 
 char* TNtlmAuth::getInitialRequest()
@@ -53,11 +67,11 @@ char* TNtlmAuth::getInitialRequest()
 	// This generates login method advertisement packet
 	char* result;
 	if ( info->password[0] != 0 ) {
-		char* user = mir_t2a( info->username );
-		result = Netlib_NtlmCreateResponse( hProvider, "", user, info->password );
-		mir_free( user );
+		TCHAR* pass = mir_a2t( info->password );
+		result = Netlib_NtlmCreateResponse2( hProvider, "", info->username, pass, &complete );
+		mir_free( pass );
 	}
-	else result = Netlib_NtlmCreateResponse( hProvider, "", NULL, NULL );
+	else result = Netlib_NtlmCreateResponse2( hProvider, "", NULL, NULL, &complete );
 
 	return result;
 }
@@ -69,11 +83,83 @@ char* TNtlmAuth::getChallenge( const TCHAR* challenge )
 
 	char *text = ( !lstrcmp( challenge, _T("="))) ? mir_strdup( "" ) : mir_t2a( challenge ), *result;
 	if ( info->password[0] != 0 ) {
-		char* user = mir_t2a( info->username );
-		result = Netlib_NtlmCreateResponse( hProvider, text, user, info->password );
-		mir_free( user );
+		TCHAR* pass = mir_a2t( info->password );
+		result = Netlib_NtlmCreateResponse2( hProvider, text, info->username, pass, &complete );
+		mir_free( pass );
 	}
-	else result = Netlib_NtlmCreateResponse( hProvider, text, NULL, NULL );
+	else result = Netlib_NtlmCreateResponse2( hProvider, text, NULL, NULL, &complete );
+	
+	mir_free( text );
+	return result;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+// GSSAPI auth - Kerberos V authorization
+
+TGssApiAuth::TGssApiAuth( ThreadData* info, const TCHAR* hostname ) :
+	TJabberAuth( info )
+{
+	szName = "GSSAPI";
+
+	// This not currently logged on user, bye bye
+	if (!info->password[0]) { bIsValid = false; return; }
+
+#ifdef UNICODE
+	GetUserNameExType myGetUserNameEx = 
+		(GetUserNameExType) GetProcAddress(GetModuleHandleA( "secur32.dll" ), "GetUserNameExW");
+#else
+	GetUserNameExType myGetUserNameEx = 
+		(GetUserNameExType) GetProcAddress(GetModuleHandleA( "secur32.dll" ), "GetUserNameExA");
+#endif
+	if (!myGetUserNameEx) { bIsValid = false; return; }
+
+	TCHAR szFullUserName[128] = _T("");
+	ULONG szFullUserNameLen = SIZEOF(szFullUserName);
+	myGetUserNameEx(2, szFullUserName, &szFullUserNameLen);
+
+	TCHAR* name = _tcschr(szFullUserName, '\\');
+	if (name) *name = 0; 
+
+	TCHAR szFullUserNameU[128];
+	_tcscpy(szFullUserNameU, szFullUserName);
+	_tcsupr(szFullUserNameU);
+
+	TCHAR szSpn[256];
+	mir_sntprintf( szSpn, SIZEOF(szSpn), _T("xmpp/%s/%s@%s"), 
+		hostname ? hostname : szFullUserName, szFullUserName, szFullUserNameU );
+
+	if (( hProvider = Netlib_InitSecurityProvider2( _T("Kerberos"), szSpn )) == NULL )
+		bIsValid = false;
+}
+
+TGssApiAuth::~TGssApiAuth()
+{
+	if ( hProvider != NULL )
+		Netlib_DestroySecurityProvider( NULL, hProvider );
+}
+
+char* TGssApiAuth::getInitialRequest()
+{
+	if ( !hProvider )
+		return NULL;
+
+	char* result = Netlib_NtlmCreateResponse2( hProvider, "", NULL, NULL, &complete );
+
+	return result;
+}
+
+char* TGssApiAuth::getChallenge( const TCHAR* challenge )
+{
+	if ( !hProvider )
+		return NULL;
+
+	char *text = ( !lstrcmp( challenge, _T("="))) ? mir_strdup( "" ) : mir_t2a( challenge ), *result;
+	if ( info->password[0] != 0 ) {
+		TCHAR* pass = mir_a2t( info->password );
+		result = Netlib_NtlmCreateResponse2( hProvider, text, info->username, pass, &complete );
+		mir_free( pass );
+	}
+	else result = Netlib_NtlmCreateResponse2( hProvider, text, NULL, NULL, &complete );
 	
 	mir_free( text );
 	return result;
