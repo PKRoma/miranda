@@ -165,9 +165,9 @@ void NetlibUPnPDestroy(void);
 void   NetlibSecurityInit(void);
 void   NetlibSecurityDestroy(void);
 void   NetlibDestroySecurityProvider(HANDLE hSecurity);
-HANDLE NetlibInitSecurityProvider(char* provider);
-char*  NtlmCreateResponseFromChallenge(HANDLE hSecurity, char *szChallenge, const char* login, const char* psw, 
-									   bool http, int& complete);
+HANDLE NetlibInitSecurityProvider(const TCHAR* szProvider, const TCHAR* szPrincipal);
+char*  NtlmCreateResponseFromChallenge(HANDLE hSecurity, const char *szChallenge, const TCHAR* login, const TCHAR* psw, 
+									   bool http, unsigned& complete);
 
 
 static __inline INT_PTR NLSend(struct NetlibConnection *nlc,const char *buf,int len,int flags) {

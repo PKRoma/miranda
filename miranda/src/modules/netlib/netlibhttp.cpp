@@ -205,7 +205,7 @@ INT_PTR NetlibHttpSendRequest(WPARAM wParam,LPARAM lParam)
 	useProxyHttpAuth=nlhr->flags&NLHRF_SMARTAUTHHEADER && nlc->nlu->settings.useProxy && nlc->nlu->settings.useProxyAuth && (nlc->nlu->settings.proxyType==PROXYTYPE_HTTP || nlc->nlu->settings.proxyType==PROXYTYPE_HTTPS);
 
 	HANDLE hNtlmSecurity = NULL;
-	int complete = false;
+	unsigned complete = false;
 	for (int count=5; --count; )
 	{
 		if (!NetlibReconnect(nlc)) { bytesSent = SOCKET_ERROR; break; }
@@ -294,25 +294,37 @@ INT_PTR NetlibHttpSendRequest(WPARAM wParam,LPARAM lParam)
 				{
 					if (!lstrcmpiA(nlhrReply->headers[i].szName,"Proxy-Authenticate"))
 					{
-						char *authStr = nlhrReply->headers[i].szValue;
-						char *authMethod = mir_strdup(authStr);	
-						char *delim = strchr(authMethod, ' '); if (delim) *delim = 0;
+						char *szAuthStr = nlhrReply->headers[i].szValue;
+						char *szChallenge = strchr(szAuthStr, ' '); 
+						if (szChallenge) { *szChallenge = 0; ++szChallenge; }
 
 						if (hNtlmSecurity == NULL)
-							hNtlmSecurity = NetlibInitSecurityProvider(authMethod);
+						{
+							TCHAR *szAuthMethod = mir_a2t(szAuthStr);	
+							hNtlmSecurity = NetlibInitSecurityProvider(szAuthMethod, NULL);
+							mir_free(szAuthMethod);
+						}
 
 						if (hNtlmSecurity)
 						{
 							mir_free(pszProxyAuthorizationHeader);
+
+							TCHAR *szLogin = NULL, *szPassw = NULL;
+
+							if (nlc->nlu->settings.useProxyAuth)
+							{
+								szLogin = mir_a2t(nlc->nlu->settings.szProxyAuthUser);
+								szPassw = mir_a2t(nlc->nlu->settings.szProxyAuthPassword);
+							}
+
 							pszProxyAuthorizationHeader = NtlmCreateResponseFromChallenge(hNtlmSecurity, 
-								delim ? delim + 1 : NULL,
-								nlc->nlu->settings.szProxyAuthUser, nlc->nlu->settings.szProxyAuthPassword, 
-								true, complete);
+								szChallenge, szLogin, szPassw, true, complete);
+
+							mir_free(szLogin);
+							mir_free(szPassw);
 						}
 						else
 							error = ERROR_ACCESS_DENIED;
-
-						mir_free(authMethod);
 					}
 				}
 				NetlibHttpFreeRequestStruct(0,(LPARAM)nlhrReply);

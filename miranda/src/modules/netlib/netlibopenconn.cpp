@@ -549,8 +549,7 @@ static bool DoConnect(NetlibConnection *nlc)
 		if (nlc->hSsl == NULL)
 		{
 			Netlib_Logf(nlu,"(%d %s) Failure to negotiate SSL connection",nlc->s,nloc->szHost);
-			FreePartiallyInitedConnection(nlc);
-			return 0;
+			return false;
 		}
 	}
 

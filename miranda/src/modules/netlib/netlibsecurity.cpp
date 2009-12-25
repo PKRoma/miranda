@@ -34,7 +34,8 @@ typedef struct
 {
 	CtxtHandle hClientContext;
 	CredHandle hClientCredential;
-	char* provider;
+	TCHAR* szProvider;
+	TCHAR* szPrincipal;
 	unsigned cbMaxToken;
 	bool hasDomain;
 }
@@ -90,7 +91,7 @@ static void LoadSecurityLibrary(void)
 
 		unsigned long szSPNLen = szCompNameLen + szUserNameLen + 10;
 		szSPN = (TCHAR*)mir_alloc(szSPNLen * sizeof(TCHAR));
-		mir_sntprintf(szSPN, szSPNLen, _T("Miranda-%s-%s"), szCompName, szUserName);
+		mir_sntprintf(szSPN, szSPNLen, _T("Miranda/%s/%s"), szCompName, szUserName);
 	}
 
 	if (g_pSSPI == NULL) 
@@ -111,14 +112,14 @@ static void FreeSecurityLibrary(void)
 	szSPN = NULL;
 }
 
-HANDLE NetlibInitSecurityProvider(char* provider)
+HANDLE NetlibInitSecurityProvider(const TCHAR* szProvider, const TCHAR* szPrincipal)
 {
 	HANDLE hSecurity = NULL;
 
-	if (strcmp(provider, "Basic") == 0)
+	if (_tcscmp(szProvider, _T("Basic")) == 0)
 	{
 		NtlmHandleType* hNtlm = (NtlmHandleType*)mir_calloc(sizeof(NtlmHandleType));
-		hNtlm->provider = mir_strdup(provider);
+		hNtlm->szProvider = mir_tstrdup(szProvider);
 		SecInvalidateHandle(&hNtlm->hClientContext);
 		SecInvalidateHandle(&hNtlm->hClientCredential);
 		ntlmCnt++;
@@ -137,9 +138,8 @@ HANDLE NetlibInitSecurityProvider(char* provider)
 
 	if (g_pSSPI != NULL) 
 	{
-		TCHAR* tProvider = mir_a2t(provider);
 		PSecPkgInfo ntlmSecurityPackageInfo;
-		SECURITY_STATUS sc = g_pSSPI->QuerySecurityPackageInfo(tProvider, &ntlmSecurityPackageInfo);
+		SECURITY_STATUS sc = g_pSSPI->QuerySecurityPackageInfo((LPTSTR)szProvider, &ntlmSecurityPackageInfo);
 		if (sc == SEC_E_OK)
 		{
 			NtlmHandleType* hNtlm;
@@ -147,12 +147,13 @@ HANDLE NetlibInitSecurityProvider(char* provider)
 			hSecurity = hNtlm = (NtlmHandleType*)mir_calloc(sizeof(NtlmHandleType));
 			hNtlm->cbMaxToken = ntlmSecurityPackageInfo->cbMaxToken;
 			g_pSSPI->FreeContextBuffer(ntlmSecurityPackageInfo);
-			hNtlm->provider = mir_strdup(provider);
+
+			hNtlm->szProvider = mir_tstrdup(szProvider);
+			hNtlm->szPrincipal = szPrincipal ? mir_tstrdup(szPrincipal) : mir_tstrdup(szSPN);
 			SecInvalidateHandle(&hNtlm->hClientContext);
 			SecInvalidateHandle(&hNtlm->hClientCredential);
 			ntlmCnt++;
 		}
-		mir_free(tProvider);
 	}
 
 	ReleaseMutex(hSecMutex);
@@ -170,7 +171,8 @@ void NetlibDestroySecurityProvider(HANDLE hSecurity)
 		NtlmHandleType* hNtlm = (NtlmHandleType*)hSecurity;
 		if (SecIsValidHandle(&hNtlm->hClientContext)) g_pSSPI->DeleteSecurityContext(&hNtlm->hClientContext);
 		if (SecIsValidHandle(&hNtlm->hClientCredential)) g_pSSPI->FreeCredentialsHandle(&hNtlm->hClientCredential);
-		mir_free(hNtlm->provider);
+		mir_free(hNtlm->szProvider);
+		mir_free(hNtlm->szPrincipal);
 
 		--ntlmCnt;
 
@@ -183,8 +185,8 @@ void NetlibDestroySecurityProvider(HANDLE hSecurity)
 	ReleaseMutex(hSecMutex);
 }
 
-char* NtlmCreateResponseFromChallenge(HANDLE hSecurity, char *szChallenge, const char* login, const char* psw, 
-									  bool http, int& complete)
+char* NtlmCreateResponseFromChallenge(HANDLE hSecurity, const char *szChallenge, const TCHAR* login, const TCHAR* psw, 
+									  bool http, unsigned& complete)
 {
 	SECURITY_STATUS sc;
 	SecBufferDesc outputBufferDescriptor,inputBufferDescriptor;
@@ -197,13 +199,13 @@ char* NtlmCreateResponseFromChallenge(HANDLE hSecurity, char *szChallenge, const
 
 	if (hSecurity == NULL || ntlmCnt == 0) return NULL;
 
-	if (strcmp(hNtlm->provider, "Basic"))
+	if (_tcscmp(hNtlm->szProvider, _T("Basic")))
 	{
 		bool hasChallenge = szChallenge != NULL && szChallenge[0] != '\0';
 		if (hasChallenge) 
 		{
 			nlb64.cchEncoded = lstrlenA(szChallenge);
-			nlb64.pszEncoded = szChallenge;
+			nlb64.pszEncoded = (char*)szChallenge;
 			nlb64.cbDecoded = Netlib_GetBase64DecodedBufferSize(nlb64.cchEncoded);
 			nlb64.pbDecoded = (PBYTE)alloca(nlb64.cbDecoded);
 			if (!NetlibBase64Decode(0, (LPARAM)&nlb64)) return NULL;
@@ -221,24 +223,45 @@ char* NtlmCreateResponseFromChallenge(HANDLE hSecurity, char *szChallenge, const
 				NtlmType2packet* pkt = ( NtlmType2packet* )nlb64.pbDecoded;
 				if (!strncmp(pkt->sign, "NTLMSSP", 8) && pkt->type == 2) 
 				{
+#ifdef UNICODE
+					wchar_t* domainName = (wchar_t*)&nlb64.pbDecoded[pkt->targetName.offset];
+					int domainLen = pkt->targetName.len;
+
+					// Negotiate ANSI? if yes, convert the ANSI name to unicode
+					if ((pkt->flags & 1) == 0) 
+					{
+						int bufsz = MultiByteToWideChar(CP_ACP, 0, (char*)domainName, domainLen, NULL, 0);
+						wchar_t* buf = (wchar_t*)alloca(bufsz * sizeof(wchar_t));
+						domainLen = MultiByteToWideChar(CP_ACP, 0, (char*)domainName, domainLen, buf, bufsz) - 1;
+						domainName = buf;
+					}
+					else
+						domainLen /= sizeof(wchar_t);
+#else
 					char* domainName = (char*)&nlb64.pbDecoded[pkt->targetName.offset];
 					int domainLen = pkt->targetName.len;
 
 					// Negotiate Unicode? if yes, convert the unicode name to ANSI
 					if (pkt->flags & 1) 
 					{
-						char* buf = (char*)alloca(domainLen);
-						domainLen = WideCharToMultiByte(CP_ACP, 0, (WCHAR*)domainName, domainLen, buf, domainLen, NULL, NULL);
+						int bufsz =  = WideCharToMultiByte(CP_ACP, 0, (WCHAR*)domainName, domainLen, NULL, 0, NULL, NULL);
+						char* buf = (char*)alloca(bufsz);
+						domainLen = WideCharToMultiByte(CP_ACP, 0, (WCHAR*)domainName, domainLen, buf, bufsz, NULL, NULL) - 1;
 						domainName = buf;
 					}
+#endif
 
 					if (domainLen) 
 					{
-						size_t newLoginLen = strlen(login) + domainLen + 1;
-						char *newLogin = (char*)alloca(newLoginLen);
-						mir_snprintf(newLogin, newLoginLen, "%s\\%s", domainName, login);
+						size_t newLoginLen = _tcslen(login) + domainLen + 1;
+						TCHAR *newLogin = (TCHAR*)alloca(newLoginLen * sizeof(TCHAR));
 
-						NtlmCreateResponseFromChallenge(hSecurity, NULL, newLogin, psw, http, complete);
+						_tcsncpy(newLogin, domainName, domainLen);
+						newLogin[domainLen] = '\\';
+						_tcscpy(newLogin + domainLen + 1, login);
+
+						char* szChl = NtlmCreateResponseFromChallenge(hSecurity, NULL, newLogin, psw, http, complete);
+						mir_free(szChl);
 					}
 				}
 			}
@@ -248,46 +271,54 @@ char* NtlmCreateResponseFromChallenge(HANDLE hSecurity, char *szChallenge, const
 			if (SecIsValidHandle(&hNtlm->hClientContext)) g_pSSPI->DeleteSecurityContext(&hNtlm->hClientContext);
 			if (SecIsValidHandle(&hNtlm->hClientCredential)) g_pSSPI->FreeCredentialsHandle(&hNtlm->hClientCredential);
 
-			SEC_WINNT_AUTH_IDENTITY_A auth;
+			SEC_WINNT_AUTH_IDENTITY auth;
 
 			if (login != NULL && login[0] != '\0') 
 			{
 				memset(&auth, 0, sizeof(auth));
 
-				const char* loginName = login;
-				const char* domainName = strchr(login,'\\');
+				const TCHAR* loginName = login;
+				const TCHAR* domainName = _tcschr(login, '\\');
 				int domainLen = 0;
-				int loginLen = lstrlenA(loginName);
+				int loginLen = lstrlen(loginName);
 				if (domainName != NULL) 
 				{
 					loginName = domainName + 1;
-					loginLen = lstrlenA(loginName);
+					loginLen = lstrlen(loginName);
 					domainLen = domainName - login;
 					domainName = login;
 				}
-				else if ((domainName = strchr(login,'@')) != NULL) 
+				else if ((domainName = _tcschr(login, '@')) != NULL) 
 				{
 					loginName = login;
 					loginLen = domainName - login;
-					domainLen = lstrlenA(++domainName);
+					domainLen = lstrlen(++domainName);
 				}
 
-				auth.User = (unsigned char*)loginName;
+#ifdef UNICODE
+				auth.User = (PWORD)loginName;
 				auth.UserLength = loginLen;
-				auth.Password = (unsigned char*)psw;
-				auth.PasswordLength = lstrlenA(psw);
-				auth.Flags = SEC_WINNT_AUTH_IDENTITY_ANSI;
-				auth.Domain = (unsigned char*)domainName;
+				auth.Password = (PWORD)psw;
+				auth.PasswordLength = lstrlen(psw);
+				auth.Domain = (PWORD)domainName;
 				auth.DomainLength = domainLen;
+				auth.Flags = SEC_WINNT_AUTH_IDENTITY_UNICODE;
+#else
+				auth.User = (PBYTE)loginName;
+				auth.UserLength = loginLen;
+				auth.Password = (PBYTE)psw;
+				auth.PasswordLength = lstrlen(psw);
+				auth.Domain = (PBYTE)domainName;
+				auth.DomainLength = domainLen;
+				auth.Flags = SEC_WINNT_AUTH_IDENTITY_ANSI;
+#endif
 
-				hNtlm->hasDomain = true;
+				hNtlm->hasDomain = domainLen != 0;
 			}
 
-			TCHAR* tProvider = mir_a2t(hNtlm->provider);
-			sc = g_pSSPI->AcquireCredentialsHandle(NULL, tProvider, SECPKG_CRED_OUTBOUND,
+			sc = g_pSSPI->AcquireCredentialsHandle(NULL, hNtlm->szProvider, SECPKG_CRED_OUTBOUND,
 				NULL, hNtlm->hasDomain ? &auth : NULL, NULL, NULL, 
 				&hNtlm->hClientCredential, &tokenExpiration);
-			mir_free(tProvider);
 			if (sc != SEC_E_OK) return NULL;
 		}
 
@@ -300,7 +331,7 @@ char* NtlmCreateResponseFromChallenge(HANDLE hSecurity, char *szChallenge, const
 
 		sc = g_pSSPI->InitializeSecurityContext(&hNtlm->hClientCredential,
 			hasChallenge ? &hNtlm->hClientContext : NULL,
-			szSPN, 0, 0, SECURITY_NATIVE_DREP,
+			hNtlm->szPrincipal, 0, 0, SECURITY_NATIVE_DREP,
 			hasChallenge ? &inputBufferDescriptor : NULL, 0, &hNtlm->hClientContext,
 			&outputBufferDescriptor, &contextAttributes, &tokenExpiration);
 
@@ -319,35 +350,77 @@ char* NtlmCreateResponseFromChallenge(HANDLE hSecurity, char *szChallenge, const
 	}
 	else
 	{
-		size_t authLen = strlen(login) + strlen(psw) + 5;
+		char *szLogin = mir_t2a(login);
+		char *szPassw = mir_t2a(psw);
+
+		size_t authLen = strlen(szLogin) + strlen(szPassw) + 5;
 		char *szAuth = (char*)alloca(authLen);
-		nlb64.cbDecoded = mir_snprintf(szAuth, authLen, "%s:%s", login, psw);
+		
+		nlb64.cbDecoded = mir_snprintf(szAuth, authLen,"%s:%s", szLogin, szPassw);
 		nlb64.pbDecoded=(PBYTE)szAuth;
 		complete = true;
+
+		mir_free(szPassw);
+		mir_free(szLogin);
 	}
 
 	nlb64.cchEncoded = Netlib_GetBase64EncodedBufferSize(nlb64.cbDecoded);
 	nlb64.pszEncoded = (char*)alloca(nlb64.cchEncoded);
 	if (!NetlibBase64Encode(0,(LPARAM)&nlb64)) return NULL;
 
-	nlb64.cchEncoded += (int)strlen(hNtlm->provider) + 10;
-	char* result = (char*)mir_alloc(nlb64.cchEncoded);
+	char* result;
 	if (http)
-		mir_snprintf(result, nlb64.cchEncoded, "%s %s", hNtlm->provider, nlb64.pszEncoded);
+	{
+		char* szProvider = mir_t2a(hNtlm->szProvider);
+		nlb64.cchEncoded += (int)strlen(szProvider) + 10;
+		result = (char*)mir_alloc(nlb64.cchEncoded);
+		mir_snprintf(result, nlb64.cchEncoded, "%s %s", szProvider, nlb64.pszEncoded);
+		mir_free(szProvider);
+	}
 	else
-		strcpy(result, nlb64.pszEncoded);
+		result = mir_strdup(nlb64.pszEncoded);
 
 	return result;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 
-static INT_PTR InitSecurityProviderService( WPARAM, LPARAM lParam )
+static INT_PTR InitSecurityProviderService(WPARAM, LPARAM lParam)
 {
-	return (INT_PTR)NetlibInitSecurityProvider(( char* )lParam );
+	TCHAR* szProvider = mir_a2t((char*)lParam);
+	HANDLE hSecurity = NetlibInitSecurityProvider(szProvider, NULL);
+	mir_free(szProvider);
+	return (INT_PTR)hSecurity;
 }
 
-static INT_PTR DestroySecurityProviderService( WPARAM wParam, LPARAM lParam )
+static INT_PTR InitSecurityProviderService2(WPARAM, LPARAM lParam)
+{
+	NETLIBNTLMINIT2 *req = ( NETLIBNTLMINIT2* )lParam;
+	if (req->cbSize < sizeof(*req)) return 0;
+
+	HANDLE hSecurity;
+
+#ifdef UNICODE
+	if (req->flags & NNR_UNICODE)
+	{
+		hSecurity = NetlibInitSecurityProvider(req->szProviderName, req->szPrincipal);
+	}
+	else
+	{
+		TCHAR *szProvider  = mir_a2t((char*)req->szProviderName);
+		TCHAR *szPrincipal = mir_a2t((char*)req->szPrincipal);
+		hSecurity = NetlibInitSecurityProvider(req->szProviderName, req->szPrincipal);
+		mir_free(szProvider);
+		mir_free(szPrincipal);
+	}
+#else
+	hSecurity = NetlibInitSecurityProvider(req->szProviderName, req->szPrincipal);
+#endif
+
+	return (INT_PTR)hSecurity;
+}
+
+static INT_PTR DestroySecurityProviderService( WPARAM, LPARAM lParam )
 {
 	NetlibDestroySecurityProvider(( HANDLE )lParam );
 	return 0;
@@ -356,8 +429,48 @@ static INT_PTR DestroySecurityProviderService( WPARAM wParam, LPARAM lParam )
 static INT_PTR NtlmCreateResponseService( WPARAM wParam, LPARAM lParam )
 {
 	NETLIBNTLMREQUEST* req = ( NETLIBNTLMREQUEST* )lParam;
-	return (INT_PTR)NtlmCreateResponseFromChallenge(( HANDLE )wParam, req->szChallenge, 
-		req->userName, req->password, false, req->complete );
+	unsigned complete;
+
+	TCHAR *szLogin = mir_a2t(req->userName);
+	TCHAR *szPassw = mir_a2t(req->password);
+
+	char* response = NtlmCreateResponseFromChallenge(( HANDLE )wParam, req->szChallenge, 
+		szLogin, szPassw, false, complete );
+
+	mir_free(szLogin);
+	mir_free(szPassw);
+
+	return (INT_PTR)response;
+}
+
+static INT_PTR NtlmCreateResponseService2( WPARAM wParam, LPARAM lParam )
+{
+	NETLIBNTLMREQUEST2* req = ( NETLIBNTLMREQUEST2* )lParam;
+	if (req->cbSize < sizeof(*req)) return 0;
+
+	char* response;
+
+#ifdef UNICODE
+	if (req->flags & NNR_UNICODE)
+	{
+		response = NtlmCreateResponseFromChallenge(( HANDLE )wParam, req->szChallenge, 
+			req->szUserName, req->szPassword, false, req->complete );
+	}
+	else
+	{
+		TCHAR *szLogin = mir_a2t((char*)req->szUserName);
+		TCHAR *szPassw = mir_a2t((char*)req->szPassword);
+		response = NtlmCreateResponseFromChallenge(( HANDLE )wParam, req->szChallenge, 
+			szLogin, szPassw, false, req->complete );
+		mir_free(szLogin);
+		mir_free(szPassw);
+	}
+#else
+	response = NtlmCreateResponseFromChallenge(( HANDLE )wParam, req->szChallenge, 
+		req->szUserName, req->szPassword, false, req->complete );
+#endif
+
+	return (INT_PTR)response;
 }
 
 void NetlibSecurityInit(void)
@@ -365,8 +478,10 @@ void NetlibSecurityInit(void)
 	hSecMutex = CreateMutex(NULL, FALSE, NULL);
 
 	CreateServiceFunction( MS_NETLIB_INITSECURITYPROVIDER, InitSecurityProviderService );
+	CreateServiceFunction( MS_NETLIB_INITSECURITYPROVIDER2, InitSecurityProviderService2 );
 	CreateServiceFunction( MS_NETLIB_DESTROYSECURITYPROVIDER, DestroySecurityProviderService );
 	CreateServiceFunction( MS_NETLIB_NTLMCREATERESPONSE, NtlmCreateResponseService );
+	CreateServiceFunction( MS_NETLIB_NTLMCREATERESPONSE2, NtlmCreateResponseService2 );
 }
 
 void NetlibSecurityDestroy(void)
