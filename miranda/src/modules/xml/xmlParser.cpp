@@ -1057,6 +1057,8 @@ XMLNode::XMLNode(XMLNodeData *pParent, XMLSTR lpszName, char isDeclaration)
     d->pAttribute= NULL;
     d->pOrder= NULL;
 
+	d->pInnerText= NULL;
+
     updateName_WOSD(lpszName);
 }
 
@@ -1155,6 +1157,7 @@ XMLCSTR XMLNode::addText_priv(int memoryIncrease, XMLSTR lpszValue, int pos)
 {
     if (!lpszValue) return NULL;
     if (!d) { myFree(lpszValue); return NULL; }
+	invalidateInnerText();
     d->pText=(XMLCSTR*)addToOrder(memoryIncrease,&pos,d->nText,d->pText,sizeof(XMLSTR),eNodeText);
     d->pText[pos]=lpszValue;
     d->nText++;
@@ -1166,6 +1169,7 @@ XMLClear *XMLNode::addClear_priv(int memoryIncrease, XMLSTR lpszValue, XMLCSTR l
 {
     if (!lpszValue) return &emptyXMLClear;
     if (!d) { myFree(lpszValue); return &emptyXMLClear; }
+	invalidateInnerText();
     d->pClear=(XMLClear *)addToOrder(memoryIncrease,&pos,d->nClear,d->pClear,sizeof(XMLClear),eNodeClear);
     XMLClear *pNewClear=d->pClear+pos;
     pNewClear->lpszValue = lpszValue;
@@ -2148,6 +2152,7 @@ void XMLNode::emptyTheNode(char force)
         }
         myFree(dd->pAttribute);
         myFree(dd->pOrder);
+		myFree(dd->pInnerText);
         myFree((void*)dd->lpszName);
         dd->nChild=0;    dd->nText=0;    dd->nClear=0;    dd->nAttribute=0;
         dd->pChild=NULL; dd->pText=NULL; dd->pClear=NULL; dd->pAttribute=NULL;
@@ -2158,6 +2163,12 @@ void XMLNode::emptyTheNode(char force)
         free(dd);
         d=NULL;
     }
+}
+void XMLNode::invalidateInnerText()
+{
+	if (!d) return;
+	myFree(d->pInnerText);
+	d->pInnerText= NULL;
 }
 
 XMLNode& XMLNode::operator=( const XMLNode& A )
@@ -2318,6 +2329,7 @@ int XMLNode::indexText(XMLCSTR lpszValue) const
 void XMLNode::deleteText(int i)
 {
     if ((!d)||(i<0)||(i>=d->nText)) return;
+	invalidateInnerText();
     d->nText--;
     XMLCSTR *p=d->pText+i;
     free((void*)*p);
@@ -2331,6 +2343,7 @@ XMLCSTR XMLNode::updateText_WOSD(XMLSTR lpszNewValue, int i)
 {
     if (!d) { if (lpszNewValue) free(lpszNewValue); return NULL; }
     if (i>=d->nText) return addText_WOSD(lpszNewValue);
+	invalidateInnerText();
     XMLCSTR *p=d->pText+i;
     if (*p!=lpszNewValue) { free((void*)*p); *p=lpszNewValue; }
     return lpszNewValue;
@@ -2347,6 +2360,7 @@ XMLCSTR XMLNode::updateText_WOSD(XMLSTR lpszNewValue, XMLCSTR lpszOldValue)
 void XMLNode::deleteClear(int i)
 {
     if ((!d)||(i<0)||(i>=d->nClear)) return;
+	invalidateInnerText();
     d->nClear--;
     XMLClear *p=d->pClear+i;
     free((void*)p->lpszValue);
@@ -2371,6 +2385,7 @@ XMLClear *XMLNode::updateClear_WOSD(XMLSTR lpszNewContent, int i)
 {
     if (!d) { if (lpszNewContent) free(lpszNewContent); return NULL; }
     if (i>=d->nClear) return addClear_WOSD(lpszNewContent);
+	invalidateInnerText();
     XMLClear *p=d->pClear+i;
     if (lpszNewContent!=p->lpszValue) { free((void*)p->lpszValue); p->lpszValue=lpszNewContent; }
     return p;
@@ -2597,6 +2612,47 @@ XMLNodeContents XMLNode::enumContents(int i) const
     default: break;
     }
     return c;
+}
+
+XMLCSTR XMLNode::getInnerText() const
+{
+	if (!d) return NULL;
+	if (nText() <= 1 && nClear() == 0) return getText();
+	if (d->pInnerText) return d->pInnerText;
+
+	int count = nElement();
+	int i, length = 1;
+	for (i = 0; i < count; ++i)
+	{
+		XMLNodeContents c = enumContents(i);
+		switch (c.etype)
+		{
+		case eNodeText:
+			length += xstrlen(c.text);
+			break;
+		case eNodeClear:
+			length += xstrlen(c.clear.lpszValue);
+			break;
+		}
+	}
+	XMLCHAR *buf = (XMLCHAR *)malloc(sizeof(XMLCHAR) * length);
+	XMLCHAR *pos = buf;
+	for (i = 0; i < count; ++i)
+	{
+		XMLNodeContents c = enumContents(i);
+		switch (c.etype)
+		{
+		case eNodeText:
+			xstrcpy(pos, c.text);
+			pos += xstrlen(c.text);
+			break;
+		case eNodeClear:
+			xstrcpy(pos, c.clear.lpszValue);
+			pos += xstrlen(c.clear.lpszValue);
+			break;
+		}
+	}
+	return d->pInnerText = buf;
 }
 
 XMLCSTR XMLNode::getName() const { if (!d) return NULL; return d->lpszName;   }

@@ -135,7 +135,7 @@ static HXML xmlapiGetParent( HXML _n )
 
 static LPCTSTR xmlapiGetText( HXML _n )
 {
-	return XMLNode(_n).getText();
+	return XMLNode(_n).getInnerText();
 }
 
 static LPCTSTR xmlapiGetAttrValue( HXML _n, LPCTSTR attrName )
