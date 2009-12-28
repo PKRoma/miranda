@@ -96,7 +96,7 @@ char* TNtlmAuth::getChallenge( const TCHAR* challenge )
 /////////////////////////////////////////////////////////////////////////////////////////
 // GSSAPI auth - Kerberos V authorization
 
-TGssApiAuth::TGssApiAuth( ThreadData* info, const TCHAR* hostname ) :
+TGssApiAuth::TGssApiAuth( ThreadData* info, const TCHAR* /* hostname */ ) :
 	TJabberAuth( info )
 {
 	szName = "GSSAPI";
@@ -113,20 +113,28 @@ TGssApiAuth::TGssApiAuth( ThreadData* info, const TCHAR* hostname ) :
 #endif
 	if (!myGetUserNameEx) { bIsValid = false; return; }
 
-	TCHAR szFullUserName[128] = _T("");
-	ULONG szFullUserNameLen = SIZEOF(szFullUserName);
-	myGetUserNameEx(2, szFullUserName, &szFullUserNameLen);
+	TCHAR szFullUserName[128] = _T( "" );
+	ULONG szFullUserNameLen = SIZEOF( szFullUserName );
+	if (!myGetUserNameEx( 12, szFullUserName, &szFullUserNameLen )) {
+		szFullUserName[ 0 ] = 0; 
+		szFullUserNameLen = SIZEOF( szFullUserName );
+		myGetUserNameEx( 2, szFullUserName, &szFullUserNameLen );
+	}
 
-	TCHAR* name = _tcschr(szFullUserName, '\\');
-	if (name) *name = 0; 
+	TCHAR* name = _tcsrchr(szFullUserName, '\\');
+	if (name) *name = 0;
+	else { bIsValid = false; return; }
 
-	TCHAR szFullUserNameU[128];
-	_tcscpy(szFullUserNameU, szFullUserName);
-	_tcsupr(szFullUserNameU);
+	_tcsupr(szFullUserName);
+
+	TCHAR* connectHost = mir_a2t( info->manualHost[0] ? info->manualHost : info->server );
+
 
 	TCHAR szSpn[256];
-	mir_sntprintf( szSpn, SIZEOF(szSpn), _T("xmpp/%s/%s@%s"), 
-		hostname ? hostname : szFullUserName, szFullUserName, szFullUserNameU );
+	mir_sntprintf( szSpn, SIZEOF(szSpn), _T("xmpp/%s@%s"), connectHost, szFullUserName );
+
+	mir_free( connectHost );
+	
 
 	if (( hProvider = Netlib_InitSecurityProvider2( _T("Kerberos"), szSpn )) == NULL )
 		bIsValid = false;
