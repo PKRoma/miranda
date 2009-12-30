@@ -138,6 +138,10 @@ void gg_event_free(struct gg_event *e)
 		case GG_EVENT_XML_EVENT:
 			free(e->event.xml_event.data);
 			break;
+
+		case GG_EVENT_XML_ACTION:
+			free(e->event.xml_action.data);
+			break;
 	}
 
 	free(e);
@@ -1280,6 +1284,19 @@ static int gg_watch_fd_connected(struct gg_session *sess, struct gg_event *e)
 			}
 			memcpy(e->event.xml_event.data, p, h->length);
 			e->event.xml_event.data[h->length] = 0;
+			break;
+		}
+
+		case GG_XML_ACTION:
+		{
+			gg_debug_session(sess, GG_DEBUG_MISC, "// gg_watch_fd_connected() received XML action\n");
+			e->type = GG_EVENT_XML_ACTION;
+			if (!(e->event.xml_action.data = (char *) malloc(h->length + 1))) {
+				gg_debug_session(sess, GG_DEBUG_MISC, "// gg_watch_fd_connected() not enough memory for XML action data\n");
+				goto fail;
+			}
+			memcpy(e->event.xml_action.data, p, h->length);
+			e->event.xml_action.data[h->length] = 0;
 			break;
 		}
 

@@ -42,6 +42,8 @@ static const MUUID interfaces[] = {MIID_PROTOCOL, MIID_LAST};
 HINSTANCE hInstance;
 PLUGINLINK *pluginLink;
 struct MM_INTERFACE mmi;
+struct SHA1_INTERFACE sha1i;
+XML_API xi;
 CLIST_INTERFACE *pcli;
 
 // Event hooks
@@ -320,7 +322,7 @@ int gg_event(PROTO_INTERFACE *proto, PROTOEVENTTYPE eventType, WPARAM wParam, LP
 			gg_netlog(gg, "gg_event(EV_PROTO_ONRENAME): renaming account...");
 #endif
 			mir_free(gg->name);
-			gg->name = gg->unicode_core ? mir_u2a((wchar_t *)gg->proto.m_tszUserName) : mir_strdup(gg->proto.m_tszUserName);
+			gg->name = gg_t2a(gg->proto.m_tszUserName);
 
 			mi.cbSize = sizeof(mi);
 			mi.flags = CMIM_NAME | CMIF_TCHAR;
@@ -362,7 +364,7 @@ static GGPROTO *gg_proto_init(const char* pszProtoName, const TCHAR* tszUserName
 	gg->name = gg->proto.m_tszUserName = mir_tstrdup(tszUserName);
 #else
 	gg->proto.m_tszUserName = gg->unicode_core ? (TCHAR *)mir_wstrdup((wchar_t *)tszUserName) : (TCHAR *)mir_strdup((char *)tszUserName);
-	gg->name = gg->unicode_core ? mir_u2a((wchar_t *)tszUserName) : mir_strdup(tszUserName);
+	gg->name = gg_t2a(tszUserName);
 #endif
 
 	// Register services
@@ -431,6 +433,8 @@ int __declspec(dllexport) Load(PLUGINLINK * link)
 
 	pluginLink = link;
 	mir_getMMI(&mmi);
+	mir_getSHA1I(&sha1i);
+	mir_getXI(&xi);
 
 	// Init winsock
 	if (WSAStartup(MAKEWORD( 1, 1 ), &wsaData))
@@ -521,6 +525,7 @@ struct
 	{GG_EVENT_DCC7_PENDING,			"GG_EVENT_DCC7_PENDING"},
 	{GG_EVENT_XML_EVENT,			"GG_EVENT_XML_EVENT"},
 	{GG_EVENT_DISCONNECT_ACK,		"GG_EVENT_DISCONNECT_ACK"},
+	{GG_EVENT_XML_ACTION,			"GG_EVENT_XML_ACTION"},
 	{-1,							"<unknown event>"}
 };
 

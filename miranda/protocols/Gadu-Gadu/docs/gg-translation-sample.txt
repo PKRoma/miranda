@@ -37,6 +37,8 @@ Wiadomoœæ z tagiem [img]
 ;[Show contacts not on my list having me on their list] @ deprecated 0.0.5.3
 [Show links from unknown contacts]
 Pokazuj linki od nieznajomych
+[Enable avatars]
+W³¹cz obs³ugê awatarów
 [Gadu-Gadu Number:]
 Numer Gadu-Gadu:
 [Gadu-Gadu Number]

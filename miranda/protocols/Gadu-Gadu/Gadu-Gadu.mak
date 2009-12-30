@@ -41,6 +41,7 @@ ALL : "..\..\bin\release\plugins\GG.dll" "$(OUTDIR)\Gadu-Gadu.pch"
 
 
 CLEAN :
+	-@erase "$(INTDIR)\avatar.obj"
 	-@erase "$(INTDIR)\common.obj"
 	-@erase "$(INTDIR)\core.obj"
 	-@erase "$(INTDIR)\dcc.obj"
@@ -101,6 +102,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\pubdir50.obj" \
 	"$(INTDIR)\resolver.obj" \
 	"$(INTDIR)\sha1.obj" \
+	"$(INTDIR)\avatar.obj" \
 	"$(INTDIR)\core.obj" \
 	"$(INTDIR)\dialogs.obj" \
 	"$(INTDIR)\dynstuff.obj" \
@@ -137,6 +139,7 @@ ALL : "..\..\bin\debug\plugins\GG.dll" "$(OUTDIR)\Gadu-Gadu.pch"
 
 
 CLEAN :
+	-@erase "$(INTDIR)\avatar.obj"
 	-@erase "$(INTDIR)\common.obj"
 	-@erase "$(INTDIR)\core.obj"
 	-@erase "$(INTDIR)\dcc.obj"
@@ -198,6 +201,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\pubdir50.obj" \
 	"$(INTDIR)\resolver.obj" \
 	"$(INTDIR)\sha1.obj" \
+	"$(INTDIR)\avatar.obj" \
 	"$(INTDIR)\core.obj" \
 	"$(INTDIR)\dialogs.obj" \
 	"$(INTDIR)\dynstuff.obj" \
@@ -504,6 +508,11 @@ CPP_SWITCHES=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../../include" /I "libgadu" /I
 
 
 !ENDIF 
+
+SOURCE=.\avatar.c
+
+"$(INTDIR)\avatar.obj" : $(SOURCE) "$(INTDIR)"
+
 
 SOURCE=.\core.c
 

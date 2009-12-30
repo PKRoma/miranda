@@ -172,6 +172,10 @@ SOURCE=.\libgadu\win32.h
 # End Group
 # Begin Source File
 
+SOURCE=.\avatar.c
+# End Source File
+# Begin Source File
+
 SOURCE=.\core.c
 # End Source File
 # Begin Source File

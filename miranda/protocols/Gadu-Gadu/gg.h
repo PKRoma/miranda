@@ -78,6 +78,8 @@ extern "C" {
 #include <m_imgsrvc.h>
 #include <m_genmenu.h>
 #include <m_file.h>
+#include <m_avatars.h>
+#include <m_xml.h>
 #ifdef DEBUGMODE
 #include <m_popup.h>
 #endif
@@ -213,7 +215,7 @@ typedef struct
 #define GG_KEY_PASSWORD			"Password"		// Password
 #define GG_KEY_EMAIL			"e-mail"		// E-mail
 #define GG_KEY_STATUS			"Status"		// Status
-#define GG_KEY_STARTUPSTATUS	"StartupStatus" // Status used when starting up
+//#define GG_KEY_STARTUPSTATUS	"StartupStatus" // Status used when starting up (deprecated)
 #define GG_KEY_NICK				"Nick"			// Nick
 #define GG_KEY_STATUSDESCR		"StatusMsg" 	// Users status description, to be compatible with MWClist
 												// should be stored in "CList" group
@@ -237,6 +239,14 @@ typedef struct
 #define GG_KEY_SHOWLINKS		"ShowLinks"		// Show links from unknown contacts
 #define GG_KEYDEF_SHOWLINKS		0
 
+#define GG_KEY_ENABLEAVATARS	"EnableAvatars"	// Enable avatars support
+#define GG_KEYDEF_ENABLEAVATARS	1
+
+#define GG_KEY_AVATARHASH		"AvatarHash"	// Contact's avatar hash
+
+#define GG_KEY_AVATARTYPE		"AvatarType"	// Contact's avatar format
+#define GG_KEYDEF_AVATARTYPE	PA_FORMAT_UNKNOWN
+
 #define GG_KEY_SHOWINVISIBLE	"ShowInvisible" // Show invisible users when described
 #define GG_KEYDEF_SHOWINVISIBLE	0
 
@@ -249,22 +259,17 @@ typedef struct
 #define GG_KEY_IMGMETHOD		"PopupImg"		// Popup image window automatically
 #define GG_KEYDEF_IMGMETHOD		1
 
-// Hidden option
-#define GG_KEY_STARTINVISIBLE	"StartInvisible"// Starts as invisible
-#define GG_KEYDEF_STARTINVISIBLE 0
-
-#define GG_KEY_MSGACK			"MessageAck"		// Acknowledge when sending msg
+#define GG_KEY_MSGACK			"MessageAck"	// Acknowledge when sending msg
 #define GG_KEYDEF_MSGACK		1
 
 #define GG_KEY_MANUALHOST		"ManualHost"	// Specify by hand server host/port
 #define GG_KEYDEF_MANUALHOST	0
-// #define GG_KEY_SERVERHOST		"ServerHost"	// Host (depreciated)
-// #define GG_KEY_SERVERPORT		"ServerPort"	// Port (depreciated)
+// #define GG_KEY_SERVERHOST		"ServerHost"	// Host (deprecated)
+// #define GG_KEY_SERVERPORT		"ServerPort"	// Port (deprecated)
 #define GG_KEY_SSLCONN			"SSLConnection" // Use SSL/TLS for connections
 #define GG_KEYDEF_SSLCONN		0
 #define GG_KEY_SERVERHOSTS		"ServerHosts"	// NL separated list of hosts for server connection
 #define GG_KEYDEF_SERVERHOSTS	"91.197.13.54\r\n91.197.13.66\r\n91.197.13.69\r\n91.197.13.72\r\n91.197.13.75\r\n91.197.13.81"
-
 
 #define GG_KEY_CLIENTIP 		"IP"			// Contact IP (by notify)
 #define GG_KEY_CLIENTPORT		"ClientPort"	// Contact port
@@ -392,6 +397,12 @@ int gg_img_displayasmsg(GGPROTO *gg, HANDLE hContact, void *img);
 int gg_event(PROTO_INTERFACE *proto, PROTOEVENTTYPE eventType, WPARAM wParam, LPARAM lParam);
 int gg_recvmessage(PROTO_INTERFACE *proto, HANDLE hContact, PROTORECVEVENT *pre);
 
+/* Avatar functions */
+void gg_getavatarfilename(GGPROTO *gg, HANDLE hContact, char *pszDest, int cbLen);
+void gg_getavatarfileinfo(GGPROTO *gg, uin_t uin, char **avatarurl, int *type);
+void gg_getavatar(GGPROTO *gg, HANDLE hContact, char *szAvatarURL);
+char *gg_avatarhash(char *param);
+
 /* File transfer functions */
 HANDLE gg_fileallow(PROTO_INTERFACE *proto, HANDLE hContact, HANDLE hTransfer, const char* szPath);
 int gg_filecancel(PROTO_INTERFACE *proto, HANDLE hContact, HANDLE hTransfer);
@@ -450,6 +461,10 @@ int gg_gc_changenick(GGPROTO *gg, HANDLE hContact, char *pszNick);
 #define CreateProtoServiceFunction(name, func, proto) CreateServiceFunctionObj(name, (MIRANDASERVICEOBJ)func, proto)
 typedef int (*GGPROTOFUNC)(GGPROTO*,WPARAM,LPARAM);
 void CreateProtoService(const char* szService, GGPROTOFUNC serviceProc, GGPROTO *gg);
+
+/* ANSI <-> Unicode conversion helpers */
+#define gg_a2t(s) gg->unicode_core ? (TCHAR *)mir_a2u(s) : (TCHAR *)mir_strdup(s)
+#define gg_t2a(s) gg->unicode_core ? mir_u2a((wchar_t *)s) : mir_strdup(s)
 
 // Debug functions
 #ifdef DEBUGMODE
