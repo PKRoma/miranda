@@ -102,7 +102,7 @@ TGssApiAuth::TGssApiAuth( ThreadData* info, const TCHAR* /* hostname */ ) :
 	szName = "GSSAPI";
 
 	// This not currently logged on user, bye bye
-	if (!info->password[0]) { bIsValid = false; return; }
+	if ( info->password[0] ) { bIsValid = false; return; }
 
 #ifdef UNICODE
 	GetUserNameExType myGetUserNameEx = 
