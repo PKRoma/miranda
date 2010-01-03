@@ -249,13 +249,14 @@ INT_PTR NetlibHttpSendRequest(WPARAM wParam,LPARAM lParam)
 				bytesSent = SOCKET_ERROR;
 				break;
 			}
-
+/*
 			if ((resultCode<200 || resultCode>=300) && resultCode!=407 && resultCode!=100) 
 			{
 				if (resultCode) NetlibHttpSetLastErrorUsingHttpResult(resultCode);
 				bytesSent = SOCKET_ERROR;
 				break;
 			}
+*/
 			if (resultCode == 407 || resultCode == 100) 	//proxy auth required
 			{
 				NETLIBHTTPREQUEST *nlhrReply;
