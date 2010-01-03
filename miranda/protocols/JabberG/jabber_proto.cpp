@@ -262,6 +262,7 @@ CJabberProto::~CJabberProto()
 		delete m_lstJabberFeatCapPairsDynamic[i];
 	}
 	m_lstJabberFeatCapPairsDynamic.destroy();
+	m_hPrivacyMenuItems.destroy();
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
