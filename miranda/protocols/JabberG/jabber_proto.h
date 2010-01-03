@@ -840,6 +840,19 @@ struct CJabberProto : public PROTO_INTERFACE
 
 	char   m_savedPassword[128];
 
+	typedef struct {
+		bool isPlainAvailable;
+		bool isMd5available;
+		bool isNtlmAvailable;
+		bool isSpnegoAvailable;
+		bool isKerberosAvailable;
+		bool isXGoogleTokenAvailable;
+		bool isAuthAvailable;
+		bool isSessionAvailable;
+	} AUTHMECHS;
+
+	AUTHMECHS m_AuthMechs;
+
 	void   __cdecl ServerThread( ThreadData* info );
 		  
 	void   OnProcessFailure( HXML node, ThreadData *info );
@@ -862,6 +875,7 @@ struct CJabberProto : public PROTO_INTERFACE
 
 	void   PerformRegistration( ThreadData* info );
 	void   PerformIqAuth( ThreadData* info );
+	void   PerformAuthentication( ThreadData* info );
 	void   OnProcessFeatures( HXML node, ThreadData* info );
 
 	void   xmlStreamInitialize( char *which );

@@ -691,20 +691,76 @@ void CJabberProto::OnProcessStreamClosing( HXML node, ThreadData *info )
 		MessageBox( NULL, TranslateTS( xmlGetText( node ) ), TranslateT( "Jabber Connection Error" ), MB_OK|MB_ICONERROR|MB_SETFOREGROUND );
 }
 
+void CJabberProto::PerformAuthentication( ThreadData* info )
+{
+	TJabberAuth* auth = NULL;
+
+	if ( info->auth ) {
+		delete info->auth;
+		info->auth = NULL;
+	}
+
+	if ( m_AuthMechs.isSpnegoAvailable ) {
+		m_AuthMechs.isSpnegoAvailable = false;
+		auth = new TNtlmAuth( info, "GSS-SPNEGO" );
+		if ( !auth->isValid() ) {
+			delete auth;
+			auth = NULL;
+	}	}
+
+	if ( auth == NULL && m_AuthMechs.isNtlmAvailable ) {
+		m_AuthMechs.isNtlmAvailable = false;
+		auth = new TNtlmAuth( info, "NTLM" );
+		if ( !auth->isValid() ) {
+			delete auth;
+			auth = NULL;
+	}	}
+
+	if ( auth == NULL && m_AuthMechs.isKerberosAvailable ) {
+		m_AuthMechs.isKerberosAvailable = false;
+		auth = new TGssApiAuth( info, NULL );
+		if ( !auth->isValid() ) {
+			delete auth;
+			auth = NULL;
+	}	}
+
+	if ( auth == NULL && m_AuthMechs.isMd5available ) {
+		m_AuthMechs.isMd5available = false;
+		auth = new TMD5Auth( info );
+	}
+
+	if ( auth == NULL && m_AuthMechs.isPlainAvailable ) {
+		m_AuthMechs.isPlainAvailable = false;
+		auth = new TPlainAuth( info );
+	}
+
+	if ( auth == NULL ) {
+		if ( m_AuthMechs.isAuthAvailable ) { // no known mechanisms but iq_auth is available
+			m_AuthMechs.isAuthAvailable = false;
+			PerformIqAuth( info );
+			return;
+		}
+
+		MessageBox( NULL, TranslateT("No known auth methods available. Giving up."), TranslateT( "Jabber Authentication" ), MB_OK|MB_ICONSTOP|MB_SETFOREGROUND );
+		info->send( "</stream:stream>" );
+		JSendBroadcast( NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_WRONGPASSWORD );
+		return;
+	}
+
+	info->auth = auth;
+
+	char* request = auth->getInitialRequest();
+	info->send( XmlNode( _T("auth"), _A2T(request)) << XATTR( _T("xmlns"), _T("urn:ietf:params:xml:ns:xmpp-sasl")) 
+		<< XATTR( _T("mechanism"), _A2T(auth->getName() )));
+	mir_free( request );
+}
+
 /////////////////////////////////////////////////////////////////////////////////////////
 
 void CJabberProto::OnProcessFeatures( HXML node, ThreadData* info )
 {
-	bool isPlainAvailable = false;
-	bool isMd5available = false;
-	bool isNtlmAvailable = false;
-	bool isSpnegoAvailable = false;
-	bool isKerberosAvailable = false;
-	bool isAuthAvailable = false;
-	bool isXGoogleTokenAvailable = false;
 	bool isRegisterAvailable = false;
 	bool areMechanismsDefined = false;
-	bool isSessionAvailable = false;
 
 	const TCHAR *hostname = NULL;
 
@@ -745,72 +801,25 @@ void CJabberProto::OnProcessFeatures( HXML node, ThreadData* info )
 
 				if ( !_tcscmp( xmlGetName( c ), _T("mechanism"))) {
 					//JabberLog("Mechanism: %s",xmlGetText( c ));
-					     if ( !_tcscmp( xmlGetText( c ), _T("PLAIN")))          isPlainAvailable = true;
-					else if ( !_tcscmp( xmlGetText( c ), _T("DIGEST-MD5")))     isMd5available = true;
-					else if ( !_tcscmp( xmlGetText( c ), _T("NTLM")))           isNtlmAvailable = true;
-					else if ( !_tcscmp( xmlGetText( c ), _T("GSS-SPNEGO")))     isSpnegoAvailable = true;
-					else if ( !_tcscmp( xmlGetText( c ), _T("GSSAPI")))         isKerberosAvailable = true;
-					else if ( !_tcscmp( xmlGetText( c ), _T("X-GOOGLE-TOKEN"))) isXGoogleTokenAvailable = true;
+					     if ( !_tcscmp( xmlGetText( c ), _T("PLAIN")))          m_AuthMechs.isPlainAvailable = true;
+					else if ( !_tcscmp( xmlGetText( c ), _T("DIGEST-MD5")))     m_AuthMechs.isMd5available = true;
+					else if ( !_tcscmp( xmlGetText( c ), _T("NTLM")))           m_AuthMechs.isNtlmAvailable = true;
+					else if ( !_tcscmp( xmlGetText( c ), _T("GSS-SPNEGO")))     m_AuthMechs.isSpnegoAvailable = true;
+					else if ( !_tcscmp( xmlGetText( c ), _T("GSSAPI")))         m_AuthMechs.isKerberosAvailable = true;
+					else if ( !_tcscmp( xmlGetText( c ), _T("X-GOOGLE-TOKEN"))) m_AuthMechs.isXGoogleTokenAvailable = true;
 				}
 				else if ( !_tcscmp( xmlGetName( c ), _T("hostname"))) {
 					hostname = xmlGetText( c );
 				}
 		}	}
 		else if ( !_tcscmp( xmlGetName( n ), _T("register" ))) isRegisterAvailable = true;
-		else if ( !_tcscmp( xmlGetName( n ), _T("auth"     ))) isAuthAvailable = true;
-		else if ( !_tcscmp( xmlGetName( n ), _T("session"  ))) isSessionAvailable = true;
+		else if ( !_tcscmp( xmlGetName( n ), _T("auth"     ))) m_AuthMechs.isAuthAvailable = true;
+		else if ( !_tcscmp( xmlGetName( n ), _T("session"  ))) m_AuthMechs.isSessionAvailable = true;
 	}
 
 	if ( areMechanismsDefined ) {
-		TJabberAuth* auth = NULL;
-
-		if ( isSpnegoAvailable ) {
-			auth = new TNtlmAuth( info, "GSS-SPNEGO" );
-			if ( !auth->isValid() ) {
-				delete auth;
-				auth = NULL;
-		}	}
-
-		if ( auth == NULL && isNtlmAvailable ) {
-			auth = new TNtlmAuth( info, "NTLM" );
-			if ( !auth->isValid() ) {
-				delete auth;
-				auth = NULL;
-		}	}
-
-		if ( auth == NULL && isKerberosAvailable ) {
-			auth = new TGssApiAuth( info, hostname );
-			if ( !auth->isValid() ) {
-				delete auth;
-				auth = NULL;
-		}	}
-
-		if ( auth == NULL && isMd5available )
-			auth = new TMD5Auth( info );
-
-		if ( auth == NULL && isPlainAvailable )
-			auth = new TPlainAuth( info );
-
-		if ( auth == NULL ) {
-			if ( isAuthAvailable ) { // no known mechanisms but iq_auth is available
-				PerformIqAuth( info );
-				return;
-			}
-
-			MessageBox( NULL, TranslateT("No known auth methods available. Giving up."), TranslateT( "Jabber Authentication" ), MB_OK|MB_ICONSTOP|MB_SETFOREGROUND );
-			info->send( "</stream:stream>" );
-			JSendBroadcast( NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_WRONGPASSWORD );
-			return;
-		}
-
-		if ( info->type == JABBER_SESSION_NORMAL ) {
-			info->auth = auth;
-
-			char* request = auth->getInitialRequest();
-			info->send( XmlNode( _T("auth"), _A2T(request)) << XATTR( _T("xmlns"), _T("urn:ietf:params:xml:ns:xmpp-sasl")) 
-				<< XATTR( _T("mechanism"), _A2T(auth->getName() )));
-			mir_free( request );
-		}
+		if ( info->type == JABBER_SESSION_NORMAL )
+			PerformAuthentication( info );
 		else if ( info->type == JABBER_SESSION_REGISTER )
 			PerformRegistration( info );
 		else
@@ -825,7 +834,7 @@ void CJabberProto::OnProcessFeatures( HXML node, ThreadData* info )
 				<< XCHILDNS( _T("bind"), _T("urn:ietf:params:xml:ns:xmpp-bind" )) 
 				<< XCHILD( _T("resource"), info->resource ));
 
-		if ( isSessionAvailable )
+		if ( m_AuthMechs.isSessionAvailable )
 			info->bIsSessionAvailable = TRUE;
 
 		return;
@@ -841,7 +850,8 @@ void CJabberProto::OnProcessFailure( HXML node, ThreadData* info )
 //failure xmlns=\"urn:ietf:params:xml:ns:xmpp-sasl\"
 	if (( type = xmlGetAttrValue( node, _T("xmlns"))) == NULL ) return;
 	if ( !_tcscmp( type, _T("urn:ietf:params:xml:ns:xmpp-sasl") )) {
-		info->send( "</stream:stream>" );
+		PerformAuthentication( info );
+		if ( info->auth ) return;
 
 		TCHAR text[128];
 		mir_sntprintf( text, SIZEOF( text ), _T("%s %s@")_T(TCHAR_STR_PARAM)_T("."), TranslateT( "Authentication failed for" ), info->username, info->server );
@@ -1963,7 +1973,7 @@ ThreadData::ThreadData( CJabberProto* aproto, JABBER_SESSION_TYPE parType )
 
 ThreadData::~ThreadData()
 {
-	delete auth;
+	if ( auth ) delete auth;
 	mir_free( zRecvData );
 	CloseHandle( iomutex );
 	CloseHandle(hThread);
