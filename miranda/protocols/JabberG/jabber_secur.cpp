@@ -127,14 +127,25 @@ TGssApiAuth::TGssApiAuth( ThreadData* info, const TCHAR* /* hostname */ ) :
 
 	_tcsupr(szFullUserName);
 
-	TCHAR* connectHost = mir_a2t( info->manualHost[0] ? info->manualHost : info->server );
+	char* connectHost = info->manualHost[0] ? info->manualHost : info->server;
 
+	unsigned long ip = inet_addr( connectHost );
+	if ( ip == INADDR_NONE )
+	{
+		PHOSTENT host = gethostbyname( connectHost );
+		if ( host != NULL )
+			ip = (( PIN_ADDR )host->h_addr )->S_un.S_addr;
+	}
+
+	PHOSTENT host = gethostbyaddr(( char* )&ip, 4, AF_INET );
+	if ( !host ) { bIsValid = false; return; }
+
+	TCHAR *connectHostDSN = mir_a2t( host->h_name ); 
 
 	TCHAR szSpn[256];
-	mir_sntprintf( szSpn, SIZEOF(szSpn), _T("xmpp/%s@%s"), connectHost, szFullUserName );
+	mir_sntprintf( szSpn, SIZEOF(szSpn), _T("xmpp/%s@%s"), connectHostDSN, szFullUserName );
 
-	mir_free( connectHost );
-	
+	mir_free( connectHostDSN );
 
 	if (( hProvider = Netlib_InitSecurityProvider2( _T("Kerberos"), szSpn )) == NULL )
 		bIsValid = false;
