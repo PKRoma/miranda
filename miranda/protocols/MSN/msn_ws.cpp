@@ -44,7 +44,7 @@ int ThreadData::send(const char data[], size_t datalen)
 		mGatewayTimeout = 2;
 
 		if (!proto->MyOptions.UseProxy) {
-			TQueueItem* tNewItem = (TQueueItem*)mir_alloc(datalen + sizeof(void*) + sizeof(int) + 1);
+			TQueueItem* tNewItem = (TQueueItem*)mir_alloc(datalen + sizeof(TQueueItem));
 			tNewItem->datalen = datalen;
 			memcpy(tNewItem->data, data, datalen);
 			tNewItem->data[datalen] = 0;
