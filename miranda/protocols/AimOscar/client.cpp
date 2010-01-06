@@ -479,7 +479,7 @@ int CAimProto::aim_set_pd_info(HANDLE hServerConn, unsigned short &seqno)
 int CAimProto::aim_ssi_update_preferences(HANDLE hServerConn, unsigned short &seqno)
 {
 	unsigned short offset = 0;
-	char buf[SNAC_SIZE+TLV_HEADER_SIZE*2+18];
+	char buf[SNAC_SIZE+TLV_HEADER_SIZE*4+100];
 	unsigned short req = 0x09;
 	if (pref1_id == 0)
 	{
