@@ -191,6 +191,10 @@ int CAimProto::aim_set_caps(HANDLE hServerConn,unsigned short &seqno)
 	memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_HOST_STATUS_TEXT_AWARE,AIM_CAPS_LENGTH);
 	memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_SMART_CAPS,AIM_CAPS_LENGTH);
 	memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_FILE_TRANSFER,AIM_CAPS_LENGTH);
+//	memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_HAS_MICROPHONE,AIM_CAPS_LENGTH);
+//	memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_RTCAUDIO,AIM_CAPS_LENGTH);
+//	memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_HAS_CAMERA,AIM_CAPS_LENGTH);
+//	memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_RTCVIDEO,AIM_CAPS_LENGTH);
 	memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_BUDDY_ICON,AIM_CAPS_LENGTH);
 	memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_CHAT,AIM_CAPS_LENGTH);
 	memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_SUPPORT_ICQ,AIM_CAPS_LENGTH);
@@ -479,7 +483,7 @@ int CAimProto::aim_set_pd_info(HANDLE hServerConn, unsigned short &seqno)
 int CAimProto::aim_ssi_update_preferences(HANDLE hServerConn, unsigned short &seqno)
 {
 	unsigned short offset = 0;
-	char buf[SNAC_SIZE+TLV_HEADER_SIZE*2+18];
+	char buf[SNAC_SIZE+TLV_HEADER_SIZE*4+100];
 	unsigned short req = 0x09;
 	if (pref1_id == 0)
 	{
