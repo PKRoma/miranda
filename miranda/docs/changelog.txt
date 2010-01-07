@@ -3,6 +3,18 @@
                    
                            www.miranda-im.org
                              
+* New in 0.8.12
+Bugfixes:
+ - Fixed crash during NTLM authentication
+ - Fixed possible crash in internal history viewer
+ - Fixed "Move to Group" issue
+ - AIM: Fixed crash issue
+ - AIM: Contact lost custom name when moving to different group
+ - Jabber: Fixed rare crashes
+ - Jabber: Privacy lists were missing from the list editor
+ - Jabber: Fixed options UI issues
+ - Yahoo: Fix memory leaks
+
 
 * New in 0.8.11
 Enhancements:
