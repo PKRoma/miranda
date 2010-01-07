@@ -19,6 +19,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 #include "gg.h"
+#include <io.h>
 
 #define HIMETRIC_INCH 2540
 
@@ -775,13 +776,25 @@ GGIMAGEDLGDATA *gg_img_recvdlg(GGPROTO *gg, HANDLE hContact)
 int gg_img_displayasmsg(GGPROTO *gg, HANDLE hContact, void *img)
 {
 	GGIMAGEENTRY *dat = (GGIMAGEENTRY *)img;
-	char szFileName[MAX_PATH], szDir[MAX_PATH];
+	char szPath[MAX_PATH], *path = (char *)alloca(MAX_PATH);
+	int tPathLen;
 	FILE *fp;
 
-	CallService(MS_FILE_GETRECEIVEDFILESFOLDER, (WPARAM)hContact, (LPARAM)szDir);
-	CallService(MS_UTILS_CREATEDIRTREE, 0, (LPARAM)szDir);
-	mir_snprintf(szFileName, sizeof(szFileName), "%s%s", szDir, dat->lpszFileName);
-	fp = fopen(szFileName, "w+b");
+	if (gg->hImagesFolder == NULL || FoldersGetCustomPath(gg->hImagesFolder, path, MAX_PATH, "")) {
+		char *tmpPath = Utils_ReplaceVars("%miranda_userdata%");
+		tPathLen = mir_snprintf(szPath, MAX_PATH, "%s\\%s\\ImageCache", tmpPath, GG_PROTO);
+		mir_free(tmpPath);
+	}
+	else {
+		strcpy(szPath, path);
+		tPathLen = strlen(szPath);
+	}
+
+	if (_access(szPath, 0))
+		CallService(MS_UTILS_CREATEDIRTREE, 0, (LPARAM)szPath);
+
+	mir_snprintf(szPath + tPathLen, MAX_PATH - tPathLen, "\\%s", dat->lpszFileName);
+	fp = fopen(szPath, "w+b");
 	if(fp)
 	{
 		char imgmsg[MAX_PATH+11];
@@ -790,10 +803,10 @@ int gg_img_displayasmsg(GGPROTO *gg, HANDLE hContact, void *img)
 		fwrite(dat->lpData, dat->nSize, 1, fp);
 		fclose(fp);
 #ifdef DEBUGMODE
-		gg_netlog(gg, "gg_img_displayasmsg: Image saved to %s.", szFileName);
+		gg_netlog(gg, "gg_img_displayasmsg: Image saved to %s.", szPath);
 #endif
 
-		mir_snprintf(imgmsg, sizeof(imgmsg), "[img]%s[/img]", szFileName);
+		mir_snprintf(imgmsg, sizeof(imgmsg), "[img]%s[/img]", szPath);
 		pre.flags = 0;
 		pre.timestamp = time(NULL);
 		pre.szMessage = imgmsg;
@@ -802,7 +815,7 @@ int gg_img_displayasmsg(GGPROTO *gg, HANDLE hContact, void *img)
 	}
 #ifdef DEBUGMODE
 	else
-		gg_netlog(gg, "gg_img_displayasmsg: Cannot save image to %s.", szFileName);
+		gg_netlog(gg, "gg_img_displayasmsg: Cannot save image to %s.", szPath);
 #endif
 	return 0;
 }

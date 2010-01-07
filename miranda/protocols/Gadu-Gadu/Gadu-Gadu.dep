@@ -619,6 +619,7 @@
 	".\dynstuff.h"\
 	".\gg.h"\
 	".\libgadu\libgadu.h"\
+	".\m_folders.h"\
 	".\pthread.h"\
 	".\resource.h"\
 	".\ssl.h"\
@@ -698,6 +699,7 @@
 	".\dynstuff.h"\
 	".\gg.h"\
 	".\libgadu\libgadu.h"\
+	".\m_folders.h"\
 	".\pthread.h"\
 	".\resource.h"\
 	".\ssl.h"\
@@ -777,6 +779,7 @@
 	".\dynstuff.h"\
 	".\gg.h"\
 	".\libgadu\libgadu.h"\
+	".\m_folders.h"\
 	".\pthread.h"\
 	".\resource.h"\
 	".\ssl.h"\
@@ -856,6 +859,7 @@
 	".\dynstuff.h"\
 	".\gg.h"\
 	".\libgadu\libgadu.h"\
+	".\m_folders.h"\
 	".\pthread.h"\
 	".\resource.h"\
 	".\ssl.h"\
@@ -935,6 +939,7 @@
 	".\dynstuff.h"\
 	".\gg.h"\
 	".\libgadu\libgadu.h"\
+	".\m_folders.h"\
 	".\pthread.h"\
 	".\resource.h"\
 	".\ssl.h"\
@@ -1014,6 +1019,7 @@
 	".\dynstuff.h"\
 	".\gg.h"\
 	".\libgadu\libgadu.h"\
+	".\m_folders.h"\
 	".\pthread.h"\
 	".\resource.h"\
 	".\ssl.h"\
@@ -1093,6 +1099,7 @@
 	".\dynstuff.h"\
 	".\gg.h"\
 	".\libgadu\libgadu.h"\
+	".\m_folders.h"\
 	".\pthread.h"\
 	".\resource.h"\
 	".\ssl.h"\
@@ -1172,6 +1179,7 @@
 	".\dynstuff.h"\
 	".\gg.h"\
 	".\libgadu\libgadu.h"\
+	".\m_folders.h"\
 	".\pthread.h"\
 	".\resource.h"\
 	".\ssl.h"\
@@ -1251,6 +1259,7 @@
 	".\dynstuff.h"\
 	".\gg.h"\
 	".\libgadu\libgadu.h"\
+	".\m_folders.h"\
 	".\pthread.h"\
 	".\resource.h"\
 	".\ssl.h"\
@@ -1330,6 +1339,7 @@
 	".\dynstuff.h"\
 	".\gg.h"\
 	".\libgadu\libgadu.h"\
+	".\m_folders.h"\
 	".\pthread.h"\
 	".\resource.h"\
 	".\ssl.h"\
@@ -1410,6 +1420,7 @@
 	".\gg.h"\
 	".\libgadu\libgadu.h"\
 	".\m_assocmgr.h"\
+	".\m_folders.h"\
 	".\pthread.h"\
 	".\resource.h"\
 	".\ssl.h"\
@@ -1489,6 +1500,7 @@
 	".\dynstuff.h"\
 	".\gg.h"\
 	".\libgadu\libgadu.h"\
+	".\m_folders.h"\
 	".\pthread.h"\
 	".\resource.h"\
 	".\ssl.h"\
@@ -1568,6 +1580,7 @@
 	".\dynstuff.h"\
 	".\gg.h"\
 	".\libgadu\libgadu.h"\
+	".\m_folders.h"\
 	".\pthread.h"\
 	".\resource.h"\
 	".\ssl.h"\
@@ -1647,6 +1660,7 @@
 	".\dynstuff.h"\
 	".\gg.h"\
 	".\libgadu\libgadu.h"\
+	".\m_folders.h"\
 	".\pthread.h"\
 	".\resource.h"\
 	".\ssl.h"\
@@ -1726,6 +1740,7 @@
 	".\dynstuff.h"\
 	".\gg.h"\
 	".\libgadu\libgadu.h"\
+	".\m_folders.h"\
 	".\pthread.h"\
 	".\resource.h"\
 	".\ssl.h"\
@@ -1805,6 +1820,7 @@
 	".\dynstuff.h"\
 	".\gg.h"\
 	".\libgadu\libgadu.h"\
+	".\m_folders.h"\
 	".\pthread.h"\
 	".\resource.h"\
 	".\ssl.h"\
@@ -1884,6 +1900,7 @@
 	".\dynstuff.h"\
 	".\gg.h"\
 	".\libgadu\libgadu.h"\
+	".\m_folders.h"\
 	".\pthread.h"\
 	".\resource.h"\
 	".\ssl.h"\

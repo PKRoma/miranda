@@ -219,6 +219,22 @@ void gg_cleanuplastplugin(GGPROTO *gg, DWORD version)
 }
 
 //////////////////////////////////////////////////////////
+// Custom folders initialization
+void gg_initcustomfolders(GGPROTO *gg)
+{
+	char szPath[MAX_PATH];
+	char *tmpPath = Utils_ReplaceVars("%miranda_avatarcache%");
+	mir_snprintf(szPath, MAX_PATH, "%s\\%s", tmpPath, GG_PROTO);
+	mir_free(tmpPath);
+	gg->hAvatarsFolder = FoldersRegisterCustomPath(GG_PROTO, "Avatars", szPath);
+
+	tmpPath = Utils_ReplaceVars("%miranda_userdata%");
+	mir_snprintf(szPath, MAX_PATH, "%s\\%s\\ImageCache", tmpPath, GG_PROTO);
+	mir_free(tmpPath);
+	gg->hImagesFolder = FoldersRegisterCustomPath(GG_PROTO, "Images", szPath);
+}
+
+//////////////////////////////////////////////////////////
 // When miranda loaded its modules
 int gg_modulesloaded(WPARAM wParam, LPARAM lParam)
 {
@@ -375,6 +391,7 @@ static GGPROTO *gg_proto_init(const char* pszProtoName, const TCHAR* tszUserName
 		gg_cleanuplastplugin(gg, dwVersion);
 
 	gg_links_instance_init(gg);
+	gg_initcustomfolders(gg);
 
 	return gg;
 }

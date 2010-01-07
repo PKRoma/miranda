@@ -21,35 +21,16 @@
 #include "gg.h"
 #include <io.h>
 #include <fcntl.h>
-#include "m_folders.h"
 
 //////////////////////////////////////////////////////////
 // Avatars support
-
-static HANDLE AvatarsFolder = NULL;
-static BOOL AvatarsInited = FALSE;
-
-void gg_initavatarsfolder(GGPROTO *gg)
-{
-	if (!AvatarsInited) {
-		char szPath[MAX_PATH];
-		char *tmpPath = Utils_ReplaceVars("%miranda_avatarcache%");
-		mir_snprintf(szPath, MAX_PATH, "%s\\%s", tmpPath, GG_PROTO);
-		mir_free(tmpPath);
-		AvatarsFolder = FoldersRegisterCustomPath(GG_PROTO, "Avatars", szPath);
-		AvatarsInited = TRUE;
-	}
-}
-
 void gg_getavatarfilename(GGPROTO *gg, HANDLE hContact, char *pszDest, int cbLen)
 {
 	int tPathLen;
 	char *path = (char *)alloca(cbLen);
 	char *avatartype = NULL;
 
-	gg_initavatarsfolder(gg);
-
-	if (AvatarsFolder == NULL || FoldersGetCustomPath(AvatarsFolder, path, cbLen, "")) {
+	if (gg->hAvatarsFolder == NULL || FoldersGetCustomPath(gg->hAvatarsFolder, path, cbLen, "")) {
 		char *tmpPath = Utils_ReplaceVars("%miranda_avatarcache%");
 		tPathLen = mir_snprintf(pszDest, cbLen, "%s\\%s", tmpPath, GG_PROTO);
 		mir_free(tmpPath);

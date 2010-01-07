@@ -87,6 +87,9 @@ extern "C" {
 // Groupchat is now in miranda headers
 #include <m_chat.h>
 
+// Custom profile folders plugin header
+#include "m_folders.h"
+
 // Visual C++ extras
 #ifdef _MSC_VER
 #define vsnprintf _vsnprintf
@@ -149,6 +152,8 @@ typedef struct
 	HANDLE hMainMenu[7];
 	HANDLE hContactMenu;
 	HANDLE hInstanceMenuItem;
+	HANDLE hAvatarsFolder;
+	HANDLE hImagesFolder;
 } GGPROTO;
 
 typedef struct
