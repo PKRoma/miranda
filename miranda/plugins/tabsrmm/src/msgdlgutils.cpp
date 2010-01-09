@@ -1890,7 +1890,6 @@ int TSAPI MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, TWindowData *dat)
 		int  		iRad = PluginConfig.m_WinVerMajor >= 5 ? 4 : 6;
 		BOOL 		flashAvatar = FALSE;
 		bool 		fInfoPanel = dat->Panel->isActive();
-		COLORREF 	clr2 = 0;
 
 		if (PluginConfig.g_FlashAvatarAvail && (!bPanelPic || (bPanelPic && dat->showInfoPic == 1))) {
 			FLASHAVATAR fa = {0};
@@ -2029,37 +2028,31 @@ int TSAPI MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, TWindowData *dat)
 					COLORREF clr = PluginConfig.m_tbBackgroundHigh ? PluginConfig.m_tbBackgroundHigh :
 									(CSkin::m_pCurrentAeroEffect ? CSkin::m_pCurrentAeroEffect->m_clrToolbar : 0xf0f0f0);
 
-					clr2 = PluginConfig.m_tbBackgroundLow ? PluginConfig.m_tbBackgroundLow :
-							(CSkin::m_pCurrentAeroEffect ? CSkin::m_pCurrentAeroEffect->m_clrToolbar2 : CSkin::m_dwmColorRGB);
-
 					HBRUSH br = CreateSolidBrush(clr);
 					FillRect(hdcDraw, &rcFrame, br);
 					DeleteObject(br);
-					//	::DrawAlpha(hdcDraw, &rcFrame, 0xf0f0f0, 40, CSkin::m_dwmColorRGB, 0, 9, 31, 4, 0);
 				}
 				else
 					FillRect(hdcDraw, &rcFrame, GetSysColorBrush(COLOR_3DFACE));
 			}
 
-			hPenBorder = CreatePen(PS_SOLID, 1, clr2 ? clr2 : CSkin::m_avatarBorderClr);
+			hPenBorder = CreatePen(PS_SOLID, 1, CSkin::m_avatarBorderClr);
 			hPenOld = (HPEN)SelectObject(hdcDraw, hPenBorder);
 
-			if (CSkin::m_bAvatarBorderType == 1 || CSkin::m_bAvatarBorderType == 0)
+			if (CSkin::m_bAvatarBorderType == 1)
 				Rectangle(hdcDraw, rcEdge.left, rcEdge.top, rcEdge.right, rcEdge.bottom);
 			else if (CSkin::m_bAvatarBorderType == 2) {
 				clipRgn = CreateRoundRectRgn(rcEdge.left, rcEdge.top, rcEdge.right + 1, rcEdge.bottom + 1, iRad, iRad);
 				SelectClipRgn(hdcDraw, clipRgn);
 			}
 		}
+
 		if ((((fInfoPanel && dat->pContainer->avatarMode != 3) ? dat->hOwnPic : (dat->ace ? dat->ace->hbmPic : PluginConfig.g_hbmUnknown)) && dat->showPic) || bPanelPic) {
 			HDC hdcMem = CreateCompatibleDC(dis->hDC);
 			HBITMAP hbmAvatar = bPanelPic ? (dat->ace ? dat->ace->hbmPic : PluginConfig.g_hbmUnknown) : ((fInfoPanel && dat->pContainer->avatarMode != 3) ? dat->hOwnPic : (dat->ace ? dat->ace->hbmPic : PluginConfig.g_hbmUnknown));
 			HBITMAP hbmMem = 0;
 			if (bPanelPic) {
-				bool	bBorder = CSkin::m_bAvatarBorderType ? true : false;
-
-				if(dat->hwndPanelPic && bBorder && CSkin::m_bAvatarBorderType != 1)
-					bBorder = false;
+				bool	bBorder = (CSkin::m_bAvatarBorderType ? true : false);
 
 				LONG 	height_off = 0;
 				LONG	border_off = bBorder ? 1 : 0;
@@ -2085,10 +2078,12 @@ int TSAPI MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, TWindowData *dat)
 				rcFrame.top += height_off;
 				rcFrame.bottom += height_off;
 
-				if(!dat->hwndPanelPic)
-					OffsetRect(&rcClient, -2, 0);
-
+				/*
+				 * prepare border drawing (if avatar is rendered by ACC, the parent control will be responsible for
+				 * the border, so skip it here)
+				 */
 				if(dat->hwndPanelPic == 0) {
+					OffsetRect(&rcClient, -2, 0);
 					if (CSkin::m_bAvatarBorderType == 1)
 						clipRgn = CreateRectRgn(rcClient.left + rcFrame.left, rcClient.top + rcFrame.top, rcClient.left + rcFrame.right,
 												rcClient.top + rcFrame.bottom);
@@ -2098,7 +2093,11 @@ int TSAPI MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, TWindowData *dat)
 						SelectClipRgn(dis->hDC, clipRgn);
 					}
 				}
+
 				if(dat->hwndPanelPic) {
+					/*
+					 * paint avatar using ACC
+					 */
 					SendMessage(dat->hwndPanelPic, AVATAR_SETAEROCOMPATDRAWING, 0, fAero ? TRUE : FALSE);
 					SetWindowPos(dat->hwndPanelPic, HWND_TOP, rcFrame.left + border_off, rcFrame.top + border_off,
 								 rb.max_width, rb.max_height, SWP_SHOWWINDOW | SWP_ASYNCWINDOWPOS | SWP_DEFERERASE | SWP_NOSENDCHANGING);

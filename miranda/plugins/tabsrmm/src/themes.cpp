@@ -1081,10 +1081,8 @@ void CSkin::Init(bool fStartup)
 	m_SkinItems = ::SkinItems;
 	m_fLoadOnStartup = false;
 	m_skinEnabled = m_frameSkins = false;
-	m_bAvatarBorderType = (BYTE)M->GetByte("avbordertype", 0);
-	if(m_bAvatarBorderType > 2)
-		m_bAvatarBorderType = 0;
-	m_avatarBorderClr = (COLORREF)M->GetDword("avborderclr", 0);
+	m_bAvatarBorderType = AVBORDER_NORMAL;
+	m_avatarBorderClr = ::GetSysColor(COLOR_3DDKSHADOW);
 
 	m_SkinItems[ID_EXTBKINFOPANELBG] = _defInfoPanel;
 	/*
@@ -1201,12 +1199,10 @@ void CSkin::Unload()
 	M->getAeroState();				// refresh after unload
 	::FreeTabConfig();
 	::ReloadTabConfig();
-	m_bAvatarBorderType = (BYTE)M->GetByte("avbordertype", 0);
-	if(m_bAvatarBorderType > 2)
-		m_bAvatarBorderType = 0;
-	m_avatarBorderClr = (COLORREF)M->GetDword("avborderclr", 0);
 
 	CSideBar::unInitBG();
+	m_bAvatarBorderType = AVBORDER_NORMAL;
+	m_avatarBorderClr = ::GetSysColor(COLOR_3DDKSHADOW);
 }
 
 void CSkin::LoadIcon(const TCHAR *szSection, const TCHAR *name, HICON *hIcon)
@@ -1602,10 +1598,6 @@ void CSkin::Load()
 		m_skinEnabled = false;
 	}
 
-	m_bAvatarBorderType = (BYTE)M->GetByte("avbordertype", 0);
-	if(m_bAvatarBorderType > 2)
-		m_bAvatarBorderType = 0;
-
 	m_fHaveGlyph = false;
 
 	if(m_tszFileName[0]) {
@@ -1674,6 +1666,8 @@ void CSkin::Load()
 
 			GetPrivateProfileString(_T("Avatars"), _T("BorderColor"), _T("000000"), buffer, 20, m_tszFileName);
 			m_avatarBorderClr = (COLORREF)HexStringToLong(buffer);
+
+			m_bAvatarBorderType = GetPrivateProfileInt(_T("Avatars"), _T("BorderType"), 1, m_tszFileName);
 
 			LoadIcon(_T("Global"), _T("CloseGlyph"), &CSkin::m_closeIcon);
 			LoadIcon(_T("Global"), _T("MaximizeGlyph"), &CSkin::m_maxIcon);

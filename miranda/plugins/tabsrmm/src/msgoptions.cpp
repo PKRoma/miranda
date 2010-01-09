@@ -335,17 +335,6 @@ static INT_PTR CALLBACK DlgProcOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 				i++;
 			}
 
-			SendDlgItemMessage(hwndDlg, IDC_AVATARBORDER, CB_INSERTSTRING, -1,
-							   (LPARAM)CTranslator::getOpt(CTranslator::OPT_GEN_NONE));
-			SendDlgItemMessage(hwndDlg, IDC_AVATARBORDER, CB_INSERTSTRING, -1,
-							   (LPARAM)CTranslator::getOpt(CTranslator::OPT_GEN_1PIXEL));
-			SendDlgItemMessage(hwndDlg, IDC_AVATARBORDER, CB_INSERTSTRING, -1,
-							   (LPARAM)CTranslator::getOpt(CTranslator::OPT_GEN_ROUNDED));
-
-			SendDlgItemMessage(hwndDlg, IDC_BKGCOLOUR, CPM_SETCOLOUR, 0, CSkin::m_avatarBorderClr);
-
-			SendDlgItemMessage(hwndDlg, IDC_AVATARBORDER, CB_SETCURSEL, (WPARAM)CSkin::m_bAvatarBorderType, 0);
-
 			SetDlgItemInt(hwndDlg, IDC_MAXAVATARHEIGHT, M->GetDword("avatarheight", 100), FALSE);
 			CheckDlgButton(hwndDlg, IDC_PRESERVEAVATARSIZE, M->GetByte("dontscaleavatars", 0) ? BST_CHECKED : BST_UNCHECKED);
 			SendDlgItemMessage(hwndDlg, IDC_AVATARSPIN, UDM_SETRANGE, 0, MAKELONG(150, 0));
@@ -378,10 +367,6 @@ static INT_PTR CALLBACK DlgProcOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 						return TRUE;
 					break;
 				}
-				case IDC_AVATARBORDER:
-					if (HIWORD(wParam) != CBN_SELCHANGE || (HWND)lParam != GetFocus())
-						return TRUE;
-					break;
 				case IDC_HELP_GENERAL:
 					CallService(MS_UTILS_OPENURL, 1, (LPARAM)"http://wiki.miranda.or.at/GeneralSettings");
 					break;
@@ -427,16 +412,6 @@ static INT_PTR CALLBACK DlgProcOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 							BOOL translated;
 							TVITEM item = {0};
 							int i = 0;
-
-							M->WriteByte(SRMSGMOD_T, "avbordertype", (BYTE) SendDlgItemMessage(hwndDlg, IDC_AVATARBORDER, CB_GETCURSEL, 0, 0));
-							M->WriteDword(SRMSGMOD_T, "avborderclr", SendDlgItemMessage(hwndDlg, IDC_BKGCOLOUR, CPM_GETCOLOUR, 0, 0));
-
-							if(!CSkin::m_skinEnabled) {
-								CSkin::m_bAvatarBorderType = (BYTE)M->GetByte("avbordertype", 0);
-								if(CSkin::m_bAvatarBorderType > 2)
-									CSkin::m_bAvatarBorderType = 0;
-								CSkin::m_avatarBorderClr = (COLORREF)SendDlgItemMessage(hwndDlg, IDC_BKGCOLOUR, CPM_GETCOLOUR, 0, 0);
-							}
 
 							M->WriteDword(SRMSGMOD_T, "avatarheight", GetDlgItemInt(hwndDlg, IDC_MAXAVATARHEIGHT, &translated, FALSE));
 

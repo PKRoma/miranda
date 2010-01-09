@@ -279,7 +279,7 @@ static BOOL CALLBACK ContainerWndProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 				 * icon
 				 */
 
-				hIcon = (HICON)SendMessage(hwndDlg, WM_GETICON, ICON_SMALL, 0);
+				hIcon = (HICON)SendMessage(hwndDlg, WM_GETICON, Win7Taskbar->haveLargeIcons() ? ICON_SMALL : ICON_BIG, 0);
 				DrawIconEx(dcMem, 4 + CSkin::m_SkinnedFrame_left + CSkin::m_bClipBorder + CSkin::m_titleBarLeftOff, rcText.top + (rcText.bottom - rcText.top) / 2 - 8, hIcon, 16, 16, 0, 0, DI_NORMAL);
 
 				// title buttons;

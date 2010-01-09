@@ -182,7 +182,6 @@
 #define IDC_HISTORY                     1111
 #define IDC_CANCELADD                   1112
 #define IDC_FONTSTRIKEOUT               1113
-#define IDC_BKGCOLOUR                   1122
 #define IDC_MATH_BKGCOLOUR              1124
 #define IDC_FONTCOLOR                   1127
 #define IDC_LOGFROZENTEXT               1128
@@ -332,7 +331,6 @@
 #define IDC_AVATARMODE                  1267
 #define IDC_CODEPAGES                   1268
 #define IDC_OWNAVATARMODE               1268
-#define IDC_AVATARBORDER                1269
 #define IDC_TIMEZONE                    1269
 #define IDC_SENDFORMATTING              1270
 #define IDC_EMPTYLINEFIX                1272

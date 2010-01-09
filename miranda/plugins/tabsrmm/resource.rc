@@ -402,10 +402,6 @@ BEGIN
                     UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,101,125,9,
                     11
     LTEXT           "(0 = no limit)",IDC_STATIC,114,128,63,11
-    LTEXT           "Border type",IDC_STATIC,11,145,90,10
-    COMBOBOX        IDC_AVATARBORDER,114,143,149,46,CBS_DROPDOWNLIST | 
-                    WS_VSCROLL | WS_TABSTOP
-    CONTROL         "",IDC_BKGCOLOUR,"ColourPicker",WS_TABSTOP,265,144,24,10
     GROUPBOX        "Automatically close tabs and windows",IDC_STATIC,3,162,
                     300,34
     LTEXT           "Automatically close tabs after",IDC_STATIC,7,173,119,11

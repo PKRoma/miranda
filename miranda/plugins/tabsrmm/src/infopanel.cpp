@@ -251,6 +251,8 @@ void CInfoPanel::mapRealRect(const RECT& rcSrc, RECT& rcDest, const SIZE& sz)
  * in the given device context
  *
  * returns the previosuly selected font
+ *
+ * caller should not forget to delete the font!
  */
 HFONT CInfoPanel::setUnderlinedFont(const HDC hdc, HFONT hFontOrig)
 {

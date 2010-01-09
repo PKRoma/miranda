@@ -77,12 +77,6 @@ typedef struct
 static const CLSID IID_ITextDocument= { 0x8CC497C0,0xA1DF,0x11CE, { 0x80,0x98, 0x00,0xAA, 0x00,0x47,0xBE,0x5D} };
 extern WNDPROC OldIEViewProc, OldHppProc;
 
-static void Chat_ClearLog(const TWindowData *dat)
-{
-	if(dat && dat->si) {
-	}
-}
-
 static void Chat_SetMessageLog(TWindowData *dat)
 {
 	unsigned int iLogMode = M->GetByte("Chat", "useIEView", 0);
@@ -2779,7 +2773,7 @@ LABEL_SHOWWINDOW:
 									break;
 
 								case ID_CLEARLOG:
-									Chat_ClearLog(dat);
+									ClearLog(dat);
 									break;
 
 								case ID_SEARCH_GOOGLE: {

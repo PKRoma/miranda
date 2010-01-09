@@ -236,6 +236,15 @@ public:
 		DEFAULT_GLOW_SIZE = 10
 	};
 
+	/*
+	 * avatar border types (skinned mode only)
+	 */
+	enum {
+		AVBORDER_NONE = 0,
+		AVBORDER_NORMAL = 1,
+		AVBORDER_ROUNDED = 2
+	};
+
 	CSkin()
 	{
 		m_default_bf.SourceConstantAlpha = 255;
