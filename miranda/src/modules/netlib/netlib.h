@@ -51,14 +51,13 @@ struct NetlibHTTPProxyPacketQueue {
 
 struct NetlibConnection {
 	int handleType;
-	SOCKET s;
+	SOCKET s, s2;
 	int usingHttpGateway;
 	struct NetlibUser *nlu;
 	SOCKADDR_IN sinProxy;
 	NETLIBHTTPPROXYINFO nlhpi;
 	PBYTE dataBuffer;
 	int dataBufferLen;
-	DWORD dwLastGetSentTime;
 	CRITICAL_SECTION csHttpSequenceNums;
 	HANDLE hOkToCloseEvent;
 	LONG dontCloseNow;
@@ -110,14 +109,16 @@ INT_PTR NetlibHttpRecvHeaders(WPARAM wParam,LPARAM lParam);
 INT_PTR NetlibHttpFreeRequestStruct(WPARAM wParam,LPARAM lParam);
 INT_PTR NetlibHttpTransaction(WPARAM wParam,LPARAM lParam);
 void NetlibHttpSetLastErrorUsingHttpResult(int result);
-NETLIBHTTPREQUEST* NetlibHttpRecv(HANDLE hConnection, DWORD hflags, DWORD dflags);
+NETLIBHTTPREQUEST* NetlibHttpRecv(NetlibConnection* nlc, DWORD hflags, DWORD dflags);
 
 //netlibhttpproxy.c
 int NetlibInitHttpConnection(struct NetlibConnection *nlc,struct NetlibUser *nlu,NETLIBOPENCONNECTION *nloc);
+int NetlibHttpGatewayRecv(struct NetlibConnection *nlc,char *buf,int len,int flags);
+int NetlibHttpGatewayPost(struct NetlibConnection *nlc,const char *buf,int len,int flags);
+void HttpGatewayRemovePacket(NetlibConnection *nlc, int pck);
+
 INT_PTR NetlibHttpGatewaySetInfo(WPARAM wParam,LPARAM lParam);
 INT_PTR NetlibHttpSetPollingTimeout(WPARAM wParam,LPARAM lParam);
-int NetlibHttpGatewayRecv(struct NetlibConnection *nlc,char *buf,int len,int flags);
-INT_PTR NetlibHttpGatewayPost(struct NetlibConnection *nlc,const char *buf,int len,int flags);
 INT_PTR NetlibHttpSetSticky(WPARAM wParam, LPARAM lParam);
 
 //netliblog.c

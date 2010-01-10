@@ -51,16 +51,26 @@ static void AppendToCharBuffer(struct ResizableCharBuffer *rcb,const char *fmt,.
 	rcb->iEnd+=charsDone;
 }
 
-static int RecvWithTimeoutTime(struct NetlibConnection *nlc,DWORD dwTimeoutTime,char *buf,int len,int flags)
+static int RecvWithTimeoutTime(struct NetlibConnection *nlc, DWORD dwTimeoutTime, char *buf, int len ,int flags)
 {
 	DWORD dwTimeNow;
 
-	dwTimeNow=GetTickCount();
-	if(dwTimeNow>=dwTimeoutTime
-	   || (!si.pending(nlc->hSsl) && !WaitUntilReadable(nlc->s,dwTimeoutTime-dwTimeNow))) 
+	if (!si.pending(nlc->hSsl))
 	{
-		if(dwTimeNow>=dwTimeoutTime) SetLastError(ERROR_TIMEOUT);
-		return SOCKET_ERROR;
+		while ((dwTimeNow = GetTickCount()) < dwTimeoutTime)
+		{
+			DWORD dwDeltaTime = min(dwTimeoutTime - dwTimeNow, 1000);
+			int res = WaitUntilReadable(nlc->s, dwDeltaTime);
+
+		    if (res > 0) break;
+			else if (res == SOCKET_ERROR) return SOCKET_ERROR;
+			if (Miranda_Terminated()) return 0;
+		}
+		if (dwTimeNow >= dwTimeoutTime)
+		{
+			SetLastError(ERROR_TIMEOUT);
+			return SOCKET_ERROR;
+		}
 	}
 	return NLRecv(nlc,buf,len,flags);
 }
@@ -176,7 +186,10 @@ INT_PTR NetlibHttpSendRequest(WPARAM wParam,LPARAM lParam)
 			return SOCKET_ERROR;
 	}
 
-	if(!NetlibEnterNestedCS(nlc,NLNCS_SEND)) return SOCKET_ERROR;
+	if (nlc->nlhpi.szHttpGetUrl == NULL)
+	{
+		if(!NetlibEnterNestedCS(nlc,NLNCS_SEND)) return SOCKET_ERROR;
+	}
 
 	//first line: "GET /index.html HTTP/1.0\r\n"
 	szHost=NULL;
@@ -241,7 +254,8 @@ INT_PTR NetlibHttpSendRequest(WPARAM wParam,LPARAM lParam)
 		{
 			int resultCode=0;
 
-			if(!HttpPeekFirstResponseLine(nlc,GetTickCount()+5000,MSG_PEEK|MSG_DUMPASTEXT|(nlhr->flags&(NLHRF_NODUMP|NLHRF_NODUMPHEADERS)?MSG_NODUMP:(nlhr->flags&NLHRF_DUMPPROXY?MSG_DUMPPROXY:0)),&resultCode,NULL,NULL))
+			DWORD dwTimeOutTime = nlc->nlhpi.szHttpGetUrl && nlhr->requestType == REQUEST_GET ? -1 : GetTickCount() + HTTPRECVHEADERSTIMEOUT;
+			if(!HttpPeekFirstResponseLine(nlc,dwTimeOutTime,MSG_PEEK|MSG_DUMPASTEXT|(nlhr->flags&(NLHRF_NODUMP|NLHRF_NODUMPHEADERS)?MSG_NODUMP:(nlhr->flags&NLHRF_DUMPPROXY?MSG_DUMPPROXY:0)),&resultCode,NULL,NULL))
 			{
 				if (NetlibReconnect(nlc)) continue;
 
@@ -345,7 +359,10 @@ INT_PTR NetlibHttpSendRequest(WPARAM wParam,LPARAM lParam)
 	if (hNtlmSecurity) NetlibDestroySecurityProvider(hNtlmSecurity);
 	mir_free(pszProxyAuthorizationHeader);
 	mir_free(szHost);
-	NetlibLeaveNestedCS(&nlc->ncsSend);
+	if (nlc->nlhpi.szHttpGetUrl == NULL)
+	{
+		NetlibLeaveNestedCS(&nlc->ncsSend);
+	}
 	return bytesSent;
 }
 
@@ -482,15 +499,6 @@ INT_PTR NetlibHttpTransaction(WPARAM wParam,LPARAM lParam)
 		return (INT_PTR)(HANDLE)NULL;
 	}
 
-	if (hConnection)
-	{
-		if (!WaitUntilWritable(((struct NetlibConnection*)hConnection)->s, 0))
-		{
-			NetlibCloseHandle((WPARAM)hConnection,0);
-			hConnection = NULL;
-		}
-	}
-
 	if (hConnection==NULL)
 	{
 		NETLIBOPENCONNECTION nloc={0};
@@ -571,7 +579,7 @@ INT_PTR NetlibHttpTransaction(WPARAM wParam,LPARAM lParam)
 	if (nlhr->requestType == REQUEST_HEAD)
 		nlhrReply = (NETLIBHTTPREQUEST*)NetlibHttpRecvHeaders((WPARAM)hConnection, 0);
 	else
-		nlhrReply = NetlibHttpRecv(hConnection, 0, dflags);
+		nlhrReply = NetlibHttpRecv((NetlibConnection*)hConnection, 0, dflags);
 
     if ((nlhr->flags&NLHRF_PERSISTENT) == 0)
 	    NetlibCloseHandle((WPARAM)hConnection,0);
@@ -641,13 +649,13 @@ char* gzip_decode(char *gzip_data, int *len_ptr, int window)
     return output_data;
 }
 
-int NetlibHttpRecvChunkHeader(HANDLE hConnection, BOOL first)
+static int NetlibHttpRecvChunkHeader(NetlibConnection* nlc, BOOL first)
 {
 	char data[32], *peol1;
 
 	for (;;)
 	{
-		int recvResult = NLRecv((struct NetlibConnection*)hConnection, data, 31, MSG_PEEK);
+		int recvResult = NLRecv(nlc, data, 31, MSG_PEEK);
 		if (recvResult <= 0) return SOCKET_ERROR;
 
 		data[recvResult] = 0;
@@ -658,7 +666,7 @@ int NetlibHttpRecvChunkHeader(HANDLE hConnection, BOOL first)
 			char *peol2 = first ? peol1 : strstr(peol1 + 2, "\r\n");
 			if (peol2 != NULL)
 			{
-				NLRecv((struct NetlibConnection*)hConnection, data, peol2 - data + 2, 0);
+				NLRecv(nlc, data, peol2 - data + 2, 0);
 				return strtol(first ? data : peol1+2, NULL, 16);
 			}
 			else
@@ -668,14 +676,16 @@ int NetlibHttpRecvChunkHeader(HANDLE hConnection, BOOL first)
 	}
 }
 
-NETLIBHTTPREQUEST* NetlibHttpRecv(HANDLE hConnection, DWORD hflags, DWORD dflags)
+NETLIBHTTPREQUEST* NetlibHttpRecv(NetlibConnection* nlc, DWORD hflags, DWORD dflags)
 {
 	int dataLen = -1, i, chunkhdr = 0;
 	int chunked = FALSE;
 	int cenc = 0, cenctype = 0;
 
+//	DWORD dwCompleteTime = GetTickCount() + HTTPGETTIMEOUT;
+
 next:
-	NETLIBHTTPREQUEST *nlhrReply = (NETLIBHTTPREQUEST*)NetlibHttpRecvHeaders((WPARAM)hConnection, hflags);
+	NETLIBHTTPREQUEST *nlhrReply = (NETLIBHTTPREQUEST*)NetlibHttpRecvHeaders((WPARAM)nlc, hflags);
 	if (nlhrReply == NULL) 
 		return NULL;
 
@@ -714,7 +724,7 @@ next:
 
 		if (chunked)
 		{
-			chunksz = NetlibHttpRecvChunkHeader(hConnection, TRUE);
+			chunksz = NetlibHttpRecvChunkHeader(nlc, TRUE);
 			if (chunksz == SOCKET_ERROR) 
 			{
 				NetlibHttpFreeRequestStruct(0, (LPARAM)nlhrReply);
@@ -728,7 +738,13 @@ next:
 		do {
 			for(;;) 
 			{
-				recvResult = NLRecv((struct NetlibConnection*)hConnection, nlhrReply->pData+nlhrReply->dataLength,
+/*
+				unsigned dwTimeNow = GetTickCount();
+				if (dwTimeNow > dwCompleteTime || (!si.pending(nlc->hSsl) && 
+					WaitUntilReadable(nlc->s, dwCompleteTime - dwTimeNow) <= 0)) 
+					return NULL;
+*/
+				recvResult = NLRecv(nlc, nlhrReply->pData+nlhrReply->dataLength,
 					dataBufferAlloced-nlhrReply->dataLength-1, dflags | (cenctype ? MSG_NODUMP : 0));
 
 				if (recvResult == 0) break;
@@ -760,7 +776,7 @@ next:
 
 			if (chunked)
 			{
-				chunksz = NetlibHttpRecvChunkHeader(hConnection, FALSE);
+				chunksz = NetlibHttpRecvChunkHeader(nlc, FALSE);
 				if (chunksz == SOCKET_ERROR) 
 				{
 					NetlibHttpFreeRequestStruct(0, (LPARAM)nlhrReply);
@@ -808,7 +824,7 @@ next:
 
 		if (bufsz > 0)
 		{
-			NetlibDumpData( (NetlibConnection*)hConnection, ( PBYTE )szData, bufsz, 0, dflags );
+			NetlibDumpData(nlc, (PBYTE)szData, bufsz, 0, dflags);
 			mir_free(nlhrReply->pData);
 			nlhrReply->pData = szData;
 			nlhrReply->dataLength = bufsz;

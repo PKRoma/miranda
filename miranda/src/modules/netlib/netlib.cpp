@@ -250,15 +250,7 @@ INT_PTR NetlibCloseHandle(WPARAM wParam, LPARAM)
 			WaitForSingleObject(hConnectionHeaderMutex,INFINITE);
 			if (nlc->usingHttpGateway)
 			{
-				struct NetlibHTTPProxyPacketQueue *p = nlc->pHttpProxyPacketQueue;
-				while (p != NULL) {
-					struct NetlibHTTPProxyPacketQueue *t = p;
-
-					p = p->next;
-
-					mir_free(t->dataBuffer);
-					mir_free(t);
-				}
+				HttpGatewayRemovePacket(nlc, -1);
 			}
 			else
 			{
@@ -276,6 +268,8 @@ INT_PTR NetlibCloseHandle(WPARAM wParam, LPARAM)
 				shutdown(nlc->s, 2);
 				closesocket(nlc->s);
 				nlc->s=INVALID_SOCKET;
+				closesocket(nlc->s2);
+				nlc->s2=INVALID_SOCKET;
 			}
 			ReleaseMutex(hConnectionHeaderMutex);
 
@@ -290,6 +284,7 @@ INT_PTR NetlibCloseHandle(WPARAM wParam, LPARAM)
 				return 0;
 			}
 			nlc->handleType=0;
+			nlc->sinProxy.sin_addr.S_un.S_addr = 0;
 			mir_free(nlc->nlhpi.szHttpPostUrl);
 			mir_free(nlc->nlhpi.szHttpGetUrl);
 			mir_free(nlc->dataBuffer);
@@ -356,6 +351,7 @@ INT_PTR NetlibShutdown(WPARAM wParam, LPARAM)
 					struct NetlibConnection* nlc = (struct NetlibConnection*)wParam;
 					if (nlc->hSsl) si.shutdown(nlc->hSsl);
 					s = nlc->s;
+					nlc->sinProxy.sin_addr.S_un.S_addr = 0;
 				}
 				break;
 			case NLH_BOUNDPORT:

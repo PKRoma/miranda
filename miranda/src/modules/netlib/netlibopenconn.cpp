@@ -47,22 +47,22 @@ DWORD DnsLookup(struct NetlibUser *nlu,const char *szHost)
 	return 0;
 }
 
-int WaitUntilReadable(SOCKET s,DWORD dwTimeout)
+int WaitUntilReadable(SOCKET s, DWORD dwTimeout)
 {
 	fd_set readfd;
 	TIMEVAL tv;
 
-	tv.tv_sec=dwTimeout/1000;
-	tv.tv_usec=(dwTimeout%1000)*1000;
+	if (s == INVALID_SOCKET) return SOCKET_ERROR;
+
+	tv.tv_sec  = dwTimeout / 1000;
+	tv.tv_usec = (dwTimeout % 1000) * 1000;
+
 	FD_ZERO(&readfd);
-	FD_SET(s,&readfd);
-	switch(select(0,&readfd,0,0,&tv)) {
-		case 0:
-			SetLastError(ERROR_TIMEOUT);
-		case SOCKET_ERROR:
-			return 0;
-	}
-	return 1;
+	FD_SET(s, &readfd);
+
+	int result = select(0, &readfd, 0, 0, &tv);
+	if (result == 0 && dwTimeout) SetLastError(ERROR_TIMEOUT);
+	return result;
 }
 
 int WaitUntilWritable(SOCKET s,DWORD dwTimeout)
@@ -70,11 +70,13 @@ int WaitUntilWritable(SOCKET s,DWORD dwTimeout)
 	fd_set writefd;
 	TIMEVAL tv;
 
-	tv.tv_sec=dwTimeout/1000;
-	tv.tv_usec=(dwTimeout%1000)*1000;
+	tv.tv_sec = dwTimeout / 1000;
+	tv.tv_usec = (dwTimeout % 1000) * 1000;
+
 	FD_ZERO(&writefd);
-	FD_SET(s,&writefd);
-	switch(select(0,0,&writefd,0,&tv)) {
+	FD_SET(s, &writefd);
+
+	switch(select(0, 0, &writefd, 0, &tv)) {
 		case 0:
 			SetLastError(ERROR_TIMEOUT);
 		case SOCKET_ERROR:
@@ -83,30 +85,23 @@ int WaitUntilWritable(SOCKET s,DWORD dwTimeout)
 	return 1;
 }
 
-BOOL RecvUntilTimeout(struct NetlibConnection *nlc,char *buf,int len,int flags,DWORD dwTimeout)
+bool RecvUntilTimeout(struct NetlibConnection *nlc, char *buf, int len, int flags, DWORD dwTimeout)
 {
 	int nReceived = 0;
-	DWORD dwStartTime = GetTickCount();
-	while (GetTickCount() - dwStartTime < dwTimeout) {		
-		TIMEVAL timeout = {0, 10000};
-		fd_set fds;
-		FD_ZERO(&fds);
-		FD_SET(nlc->s, &fds);
-		switch( select(0, &fds, NULL, NULL, &timeout )) {
-		case 0:
-			continue;
-		case SOCKET_ERROR:
-			return FALSE;
-		}
+	DWORD dwTimeNow, dwCompleteTime = GetTickCount() + dwTimeout;
+
+	while ((dwTimeNow = GetTickCount()) < dwCompleteTime) 
+	{
+		if (WaitUntilReadable(nlc->s, dwCompleteTime - dwTimeNow) <= 0) return false; 
 		nReceived = NLRecv(nlc, buf, len, flags);
-		if (nReceived <= 0) return FALSE;
+		if (nReceived <= 0) return false;
 
 		buf += nReceived;
 		len -= nReceived;
-		if (len <= 0) return TRUE;
+		if (len <= 0) return true;
 	}
 	SetLastError( ERROR_TIMEOUT );
-	return FALSE;
+	return false;
 }
 
 static int NetlibInitSocks4Connection(struct NetlibConnection *nlc,struct NetlibUser *nlu,NETLIBOPENCONNECTION *nloc)
@@ -469,7 +464,7 @@ retry:
 unblock:	
 	notblocking=0;
 	ioctlsocket(nlc->s, FIONBIO, &notblocking);
-	SetLastError(lasterr);
+	if (lasterr) SetLastError(lasterr);
 	return rc;
 }
 
@@ -559,16 +554,10 @@ static bool DoConnect(NetlibConnection *nlc)
 
 bool NetlibReconnect(NetlibConnection *nlc)
 {
-	fd_set readfd;
-	TIMEVAL tv = {0};
-
-	FD_ZERO(&readfd);
-	FD_SET(nlc->s, &readfd);
-	
 	char buf[4];
 	bool opened;  
 
-	switch (select(0, &readfd, 0, 0, &tv))
+	switch (WaitUntilReadable(nlc->s, 0))
 	{
 	case SOCKET_ERROR:
 		opened = false;
@@ -591,8 +580,9 @@ bool NetlibReconnect(NetlibConnection *nlc)
 			nlc->hSsl = NULL;
 		}
 		closesocket(nlc->s);
-		nlc->s=INVALID_SOCKET;
-		return DoConnect(nlc);
+		nlc->s = INVALID_SOCKET;
+
+		return my_connect(nlc, &nlc->nloc) == 0;
 	}
 	return true;
 }
@@ -621,6 +611,8 @@ INT_PTR NetlibOpenConnection(WPARAM wParam,LPARAM lParam)
 	nlc->nlu=nlu;
 	nlc->nloc = *nloc;
 	nlc->nloc.szHost = mir_strdup(nloc->szHost);
+	nlc->s = INVALID_SOCKET;
+	nlc->s2 = INVALID_SOCKET;
 
 	InitializeCriticalSection(&nlc->csHttpSequenceNums);
 	nlc->hOkToCloseEvent=CreateEvent(NULL,TRUE,TRUE,NULL);

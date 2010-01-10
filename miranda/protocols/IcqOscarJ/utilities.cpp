@@ -1789,9 +1789,7 @@ void NetLib_CloseConnection(HANDLE *hConnection, int bServerConn)
 {
 	if (*hConnection)
 	{
-		int sck = CallService(MS_NETLIB_GETSOCKET, (WPARAM)*hConnection, (LPARAM)0);
-
-		if (sck!=INVALID_SOCKET) shutdown(sck, 2); // close gracefully
+		CallService(MS_NETLIB_SHUTDOWN, (WPARAM)*hConnection, 0);
 
 		NetLib_SafeCloseHandle(hConnection);
 

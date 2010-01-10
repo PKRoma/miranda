@@ -363,6 +363,7 @@ typedef struct {
 	char *szHttpPostUrl;
 	char *szHttpGetUrl;
 	int firstGetSequence,firstPostSequence;
+	int combinePackets;
 } NETLIBHTTPPROXYINFO;
 #define MS_NETLIB_SETHTTPPROXYINFO   "Netlib/SetHttpProxyInfo"
 

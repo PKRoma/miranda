@@ -346,7 +346,7 @@ static SECURITY_STATUS ClientHandshakeLoop(SslHandle *ssl, BOOL fDoInitialRead)
 			// Store remaining data for further use
 			if (InBuffers[1].BufferType == SECBUFFER_EXTRA) 
 			{
-				MoveMemory(ssl->pbIoBuffer,
+				memmove(ssl->pbIoBuffer,
 					ssl->pbIoBuffer + (ssl->cbIoBuffer - InBuffers[1].cbBuffer),
 					InBuffers[1].cbBuffer);
 				ssl->cbIoBuffer = InBuffers[1].cbBuffer;
@@ -374,7 +374,7 @@ static SECURITY_STATUS ClientHandshakeLoop(SslHandle *ssl, BOOL fDoInitialRead)
 		// Copy any leftover data from the buffer, and go around again.
 		if (InBuffers[1].BufferType == SECBUFFER_EXTRA) 
 		{
-			MoveMemory(ssl->pbIoBuffer,
+			memmove(ssl->pbIoBuffer,
 				ssl->pbIoBuffer + (ssl->cbIoBuffer - InBuffers[1].cbBuffer),
 				InBuffers[1].cbBuffer);
 
@@ -738,19 +738,19 @@ int NetlibSslRead(SslHandle *ssl, char *buf, int num, int peek)
 			if (peek)
 			{
 				resNum = bytes = min(num, ssl->cbRecDataBuf);
-				CopyMemory(buf, ssl->pbRecDataBuf, bytes);
+				memcpy(buf, ssl->pbRecDataBuf, bytes);
 			}
 			else
 			{
 				resNum = bytes;
-				CopyMemory(buf, pDataBuffer->pvBuffer, bytes);
+				memcpy(buf, pDataBuffer->pvBuffer, bytes);
 			}
 		}
 
 		// Move any "extra" data to the input buffer.
 		if (pExtraBuffer) 
 		{
-			MoveMemory(ssl->pbIoBuffer, pExtraBuffer->pvBuffer, pExtraBuffer->cbBuffer);
+			memmove(ssl->pbIoBuffer, pExtraBuffer->pvBuffer, pExtraBuffer->cbBuffer);
 			ssl->cbIoBuffer = pExtraBuffer->cbBuffer;
 		}
 		else ssl->cbIoBuffer = 0;
