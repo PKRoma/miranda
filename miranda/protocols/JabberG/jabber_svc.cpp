@@ -501,11 +501,27 @@ INT_PTR __cdecl CJabberProto::JabberServiceParseXmppURI( WPARAM wParam, LPARAM l
 		// message
 		if ( ServiceExists( MS_MSG_SENDMESSAGE )) {
 			HANDLE hContact = HContactFromJID( szJid, TRUE );
+            TCHAR *szMsgBody = NULL;
 			if ( !hContact )
 				hContact = DBCreateContact( szJid, szJid, TRUE, TRUE );
 			if ( !hContact )
 				return 1;
-			CallService( MS_MSG_SENDMESSAGE, (WPARAM)hContact, (LPARAM)NULL );
+
+			if ( szSecondParam ) { //there are parameters to message
+				szMsgBody = _tcsstr(szSecondParam, _T( "body=" ));
+				if ( szMsgBody ) {
+					szMsgBody += 5;
+					TCHAR* szDelim = _tcschr( szMsgBody, _T( ';' )); 
+					if ( szDelim )
+						szDelim = 0;
+					JabberHttpUrlDecode( szMsgBody );
+			}	}
+			#if defined(_UNICODE)
+				CallService(MS_MSG_SENDMESSAGE "W",(WPARAM)hContact, (LPARAM)szMsgBody);
+			#else
+				CallService( MS_MSG_SENDMESSAGE, (WPARAM)hContact, (LPARAM)szMsgBody );
+			#endif
+
 			return 0;
 		}
 		return 1;

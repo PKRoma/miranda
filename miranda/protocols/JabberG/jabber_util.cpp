@@ -463,7 +463,7 @@ void __stdcall JabberHttpUrlDecode( TCHAR* str )
 	if ( str == NULL ) return;
 	for ( p = q = ( TCHAR* )str; *p!='\0'; p++,q++ ) {
 		if ( *p=='%' && *( p+1 )!='\0' && isxdigit( *( p+1 )) && *( p+2 )!='\0' && isxdigit( *( p+2 )) ) {
-			sscanf(( char* )p+1, "%2x", &code );
+			_stscanf(( TCHAR* )p+1, _T("%2x"), &code );
 			*q = ( unsigned char ) code;
 			p += 2;
 		}
