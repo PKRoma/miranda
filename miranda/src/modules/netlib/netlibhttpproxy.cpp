@@ -70,7 +70,6 @@ static int NetlibHttpGatewaySend(struct NetlibConnection *nlc, RequestType reqTy
 	NETLIBHTTPREQUEST nlhrSend = {0};
 	NETLIBHTTPHEADER httpHeaders[4];
 	char szUrl[512];
-	struct NetlibConnection nlcSend;
 
 	nlhrSend.cbSize = sizeof(nlhrSend);
 	nlhrSend.nlc = nlc;
@@ -78,7 +77,7 @@ static int NetlibHttpGatewaySend(struct NetlibConnection *nlc, RequestType reqTy
 	nlhrSend.pData = (char*)buf;
 	nlhrSend.dataLength = len;
 
-	nlhrSend.flags = NLHRF_GENERATEHOST|NLHRF_DUMPPROXY|NLHRF_SMARTAUTHHEADER;
+	nlhrSend.flags = NLHRF_GENERATEHOST | NLHRF_DUMPPROXY | NLHRF_SMARTAUTHHEADER | NLHRF_NOPROXY;
 	if (nlc->nlhpi.flags & NLHPIF_HTTP11) nlhrSend.flags |= NLHRF_HTTP11;
 
 	switch (reqType)
@@ -132,13 +131,8 @@ static int NetlibHttpGatewaySend(struct NetlibConnection *nlc, RequestType reqTy
 	httpHeaders[3].szName  = "Accept-Encoding";
 	httpHeaders[3].szValue = "deflate, gzip";
 
-	nlcSend = *nlc;
-	nlcSend.usingHttpGateway = 0;
-
-	if (NetlibHttpSendRequest((WPARAM)&nlcSend,(LPARAM)&nlhrSend) == SOCKET_ERROR) 
+	if (NetlibHttpSendRequest((WPARAM)nlc,(LPARAM)&nlhrSend) == SOCKET_ERROR) 
 		return 0;
-
-	nlc->s = nlcSend.s;
 
 	return 1;
 }
@@ -437,7 +431,7 @@ int NetlibInitHttpConnection(struct NetlibConnection *nlc, struct NetlibUser *nl
 		return 0;
 	}
 
-	nlc->usingHttpGateway=1;
+	nlc->usingHttpGateway = 1;
 
 	//now properly connected
 	if(nlu->user.pfnHttpGatewayBegin)

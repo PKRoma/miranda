@@ -143,12 +143,20 @@ static int SendHttpRequestAndData(struct NetlibConnection *nlc,struct ResizableC
 	else
 		AppendToCharBuffer(httpRequest,"\r\n");
 
-	int bytesSent=NLSend(nlc,httpRequest->sz,httpRequest->iEnd,MSG_DUMPASTEXT|(nlhr->flags&(NLHRF_NODUMP|NLHRF_NODUMPHEADERS|NLHRF_NODUMPSEND)?MSG_NODUMP:(nlhr->flags&NLHRF_DUMPPROXY?MSG_DUMPPROXY:0)));
+	DWORD hflags = (nlhr->flags & NLHRF_DUMPASTEXT ? MSG_DUMPASTEXT : 0) | 
+		(nlhr->flags & (NLHRF_NODUMP | NLHRF_NODUMPSEND | NLHRF_NODUMPHEADERS) ? 
+			MSG_NODUMP : (nlhr->flags & NLHRF_DUMPPROXY ? MSG_DUMPPROXY : 0)) |
+		(nlhr->flags & NLHRF_NOPROXY ? MSG_RAW : 0);
+
+	int bytesSent=NLSend(nlc,httpRequest->sz,httpRequest->iEnd, hflags);
 	if (bytesSent != SOCKET_ERROR && sendData && nlhr->dataLength) 
 	{
-		int sendResult = NLSend(nlc,nlhr->pData,nlhr->dataLength,
-			(nlhr->flags&NLHRF_DUMPASTEXT?MSG_DUMPASTEXT:0) | 
-			(nlhr->flags&(NLHRF_NODUMP|NLHRF_NODUMPSEND)?MSG_NODUMP:(nlhr->flags&NLHRF_DUMPPROXY?MSG_DUMPPROXY:0)));
+		DWORD sflags = (nlhr->flags & NLHRF_DUMPASTEXT ? MSG_DUMPASTEXT : 0) | 
+			(nlhr->flags & (NLHRF_NODUMP | NLHRF_NODUMPSEND) ? 
+				MSG_NODUMP : (nlhr->flags & NLHRF_DUMPPROXY ? MSG_DUMPPROXY : 0)) |
+			(nlhr->flags & NLHRF_NOPROXY ? MSG_RAW : 0);
+
+		int sendResult = NLSend(nlc,nlhr->pData,nlhr->dataLength, sflags);
 
 		bytesSent = sendResult != SOCKET_ERROR ? bytesSent + sendResult : SOCKET_ERROR;
 	}
@@ -252,10 +260,11 @@ INT_PTR NetlibHttpSendRequest(WPARAM wParam,LPARAM lParam)
 
 		//ntlm reply
 		{
-			int resultCode=0;
+			int resultCode = 0;
 
-			DWORD dwTimeOutTime = nlc->nlhpi.szHttpGetUrl && nlhr->requestType == REQUEST_GET ? -1 : GetTickCount() + HTTPRECVHEADERSTIMEOUT;
-			if(!HttpPeekFirstResponseLine(nlc,dwTimeOutTime,MSG_PEEK|MSG_DUMPASTEXT|(nlhr->flags&(NLHRF_NODUMP|NLHRF_NODUMPHEADERS)?MSG_NODUMP:(nlhr->flags&NLHRF_DUMPPROXY?MSG_DUMPPROXY:0)),&resultCode,NULL,NULL))
+			DWORD fflags = MSG_PEEK | MSG_NODUMP | ((nlhr->flags & NLHRF_NOPROXY) ? MSG_RAW : 0);
+			DWORD dwTimeOutTime = nlc->usingHttpGateway && nlhr->requestType == REQUEST_GET ? -1 : GetTickCount() + HTTPRECVHEADERSTIMEOUT;
+			if(!HttpPeekFirstResponseLine(nlc, dwTimeOutTime, fflags, &resultCode, NULL, NULL))
 			{
 				if (NetlibReconnect(nlc)) continue;
 
@@ -276,8 +285,13 @@ INT_PTR NetlibHttpSendRequest(WPARAM wParam,LPARAM lParam)
 				NETLIBHTTPREQUEST *nlhrReply;
 				int i, error;
 
-				DWORD hflags = nlhr->flags&(NLHRF_NODUMP|NLHRF_NODUMPHEADERS|NLHRF_NODUMPSEND)?MSG_NODUMP:(nlhr->flags&NLHRF_DUMPPROXY?MSG_DUMPPROXY:0);
-				DWORD dflags = nlhr->flags&(NLHRF_NODUMP|NLHRF_NODUMPSEND)?MSG_NODUMP:MSG_DUMPASTEXT|MSG_DUMPPROXY;
+				DWORD hflags = (nlhr->flags & (NLHRF_NODUMP|NLHRF_NODUMPHEADERS|NLHRF_NODUMPSEND) ? 
+					MSG_NODUMP : (nlhr->flags & NLHRF_DUMPPROXY ? MSG_DUMPPROXY : 0)) |
+					(nlhr->flags & NLHRF_NOPROXY ? MSG_RAW : 0);
+
+				DWORD dflags = (nlhr->flags & (NLHRF_NODUMP | NLHRF_NODUMPSEND) ? 
+					MSG_NODUMP : MSG_DUMPASTEXT | MSG_DUMPPROXY) |
+					(nlhr->flags & NLHRF_NOPROXY ? MSG_RAW : 0);
 
 				if (nlhr->requestType == REQUEST_HEAD || resultCode == 100)
 					nlhrReply = (NETLIBHTTPREQUEST*)NetlibHttpRecvHeaders((WPARAM)nlc, hflags);
@@ -573,8 +587,9 @@ INT_PTR NetlibHttpTransaction(WPARAM wParam,LPARAM lParam)
 		if(!doneUserAgentHeader||!doneAcceptEncoding) mir_free(nlhrSend.headers);
 	}
 
-	dflags = (nlhr->flags&NLHRF_DUMPASTEXT?MSG_DUMPASTEXT:0) |
-		(nlhr->flags&NLHRF_NODUMP?MSG_NODUMP:(nlhr->flags&NLHRF_DUMPPROXY?MSG_DUMPPROXY:0));
+	dflags = (nlhr->flags & NLHRF_DUMPASTEXT ? MSG_DUMPASTEXT:0) |
+		(nlhr->flags & NLHRF_NODUMP?MSG_NODUMP : (nlhr->flags & NLHRF_DUMPPROXY ? MSG_DUMPPROXY : 0)) |
+		(nlhr->flags & NLHRF_NOPROXY ? MSG_RAW : 0);
 
 	if (nlhr->requestType == REQUEST_HEAD)
 		nlhrReply = (NETLIBHTTPREQUEST*)NetlibHttpRecvHeaders((WPARAM)hConnection, 0);
