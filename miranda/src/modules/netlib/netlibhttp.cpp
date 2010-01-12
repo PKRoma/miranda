@@ -513,32 +513,51 @@ INT_PTR NetlibHttpTransaction(WPARAM wParam,LPARAM lParam)
 		return (INT_PTR)(HANDLE)NULL;
 	}
 
-	if (hConnection==NULL)
 	{
-		NETLIBOPENCONNECTION nloc={0};
+		NETLIBOPENCONNECTION nloc = {0};
 		char szHost[1024];
-		char *ppath,*phost,*pcolon;
+		char *ppath, *phost, *pcolon;
 		BOOL secur;
 
 		secur = _strnicmp(nlhr->szUrl, "https", 5) == 0 || (nlhr->flags & NLHRF_SSL);
-		phost=strstr(nlhr->szUrl,"://");
-		if(phost==NULL) phost=nlhr->szUrl;
-		else phost+=3;
-		lstrcpynA(szHost,phost,SIZEOF(szHost));
-		ppath=strchr(szHost,'/');
-		if(ppath) *ppath='\0';
-		nloc.cbSize=sizeof(nloc);
-		nloc.szHost=szHost;
-		pcolon=strrchr(szHost,':');
+		phost = strstr(nlhr->szUrl, "://");
+		if (phost == NULL) phost = nlhr->szUrl;
+		else phost += 3;
+		lstrcpynA(szHost, phost, SIZEOF(szHost));
+		ppath = strchr(szHost, '/');
+		if (ppath) *ppath = '\0';
+
+		nloc.cbSize = sizeof(nloc);
+		nloc.szHost = szHost;
+		pcolon = strrchr(szHost, ':');
 		if(pcolon) {
-			*pcolon='\0';
-			nloc.wPort=(WORD)strtol(pcolon+1,NULL,10);
+			*pcolon = '\0';
+			nloc.wPort = (WORD)strtol(pcolon+1, NULL, 10);
 		}
 		else nloc.wPort = secur ? 443 : 80;
         if (secur) nlhr->flags |= NLHRF_SSL;
 		nloc.flags = NLOCF_HTTP | (secur ? NLOCF_SSL : 0);
-		hConnection = (HANDLE)NetlibOpenConnection((WPARAM)nlu, (LPARAM)&nloc);
-		if (hConnection == NULL) return 0;
+
+		if (hConnection != NULL)
+		{
+			bool httpProxy = !secur && nlu->settings.useProxy && nlu->settings.proxyType == PROXYTYPE_HTTP && 
+				nlu->settings.szProxyServer && nlu->settings.szProxyServer[0];
+
+			NetlibConnection *nlc = (NetlibConnection*)hConnection;
+			bool sameHost = lstrcmpA(nlc->nloc.szHost, szHost) == 0 && nlc->nloc.wPort == nloc.wPort;
+
+			if (!httpProxy && !sameHost)
+			{
+				NetlibCloseHandle((WPARAM)hConnection, 0);
+				hConnection = NULL;
+			}
+		}
+
+		if (hConnection == NULL)
+		{
+			hConnection = (HANDLE)NetlibOpenConnection((WPARAM)nlu, (LPARAM)&nloc);
+			if (hConnection == NULL) return 0;
+		}
 	}
 
 	{
@@ -596,8 +615,11 @@ INT_PTR NetlibHttpTransaction(WPARAM wParam,LPARAM lParam)
 	else
 		nlhrReply = NetlibHttpRecv((NetlibConnection*)hConnection, 0, dflags);
 
-    if ((nlhr->flags&NLHRF_PERSISTENT) == 0)
-	    NetlibCloseHandle((WPARAM)hConnection,0);
+    if ((nlhr->flags & NLHRF_PERSISTENT) == 0 || nlhrReply == NULL)
+	    NetlibCloseHandle((WPARAM)hConnection, 0);
+	else
+		nlhrReply->nlc = hConnection;
+
 	return (INT_PTR)nlhrReply;
 }
 
