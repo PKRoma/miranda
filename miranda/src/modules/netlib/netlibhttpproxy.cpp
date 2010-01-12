@@ -175,6 +175,9 @@ static int NetlibHttpGatewayOscarPost(NetlibConnection *nlc, const char *buf, in
 	nlcSend.s			= nlc->s2;
 	nlcSend.sinProxy	= nlc->sinProxy;
 
+	if (!NetlibReconnect(&nlcSend)) return 0;
+	nlc->s2 = nlcSend.s;
+
 	nlcSend.hOkToCloseEvent	= CreateEvent(NULL, TRUE, TRUE, NULL);
 	NetlibInitializeNestedCS(&nlcSend.ncsRecv);
 	NetlibInitializeNestedCS(&nlcSend.ncsSend);
@@ -445,7 +448,10 @@ INT_PTR NetlibHttpGatewaySetInfo(WPARAM wParam,LPARAM lParam)
 	NETLIBHTTPPROXYINFO *nlhpi=(NETLIBHTTPPROXYINFO*)lParam;
 	struct NetlibConnection *nlc=(struct NetlibConnection*)wParam;
 
-	if(GetNetlibHandleType(nlc)!=NLH_CONNECTION || nlhpi==NULL || nlhpi->cbSize!=sizeof(NETLIBHTTPPROXYINFO) || nlhpi->szHttpPostUrl==NULL) {
+	if (GetNetlibHandleType(nlc) != NLH_CONNECTION || nlhpi == NULL ||
+		nlhpi->cbSize < (sizeof(NETLIBHTTPPROXYINFO) - sizeof(int)) || 
+		nlhpi->szHttpPostUrl == NULL) 
+	{
 		SetLastError(ERROR_INVALID_PARAMETER);
 		return 0;
 	}

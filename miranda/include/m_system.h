@@ -572,10 +572,19 @@ of shutting down
 */
 #define MS_SYSTEM_GETBUILDSTRING "Miranda/GetBuildString"
 
+#ifdef _STATIC
+INT_PTR MirandaIsTerminated(WPARAM, LPARAM);
+
+__inline static INT_PTR Miranda_Terminated(void)
+{
+	return MirandaIsTerminated(0, 0);
+}
+#else
 __inline static INT_PTR Miranda_Terminated(void)
 {
 	return CallService(MS_SYSTEM_TERMINATED,0,0);
 }
+#endif
 
 /* Missing service catcher
 Is being called when one calls the non-existent service.
