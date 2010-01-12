@@ -363,7 +363,7 @@ typedef struct {
 	char *szHttpPostUrl;
 	char *szHttpGetUrl;
 	int firstGetSequence,firstPostSequence;
-#if MIRANDA_VER >= 0x0800
+#if MIRANDA_VER >= 0x0900
 	int combinePackets;
 #endif
 } NETLIBHTTPPROXYINFO;
