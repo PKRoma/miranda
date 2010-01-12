@@ -293,6 +293,7 @@ Function VerifyInstallDir
   ${Else}
     StrCpy $INST_UPGRADE 0
   ${EndIf}
+
   !ifdef MIM_BUILD_UNICODE
   ${If} $INST_UPGRADE = 1
     !insertmacro ClearSectionFlag ${pStoreData} ${SF_SELECTED}
@@ -330,6 +331,10 @@ Function VerifyInstallDir
     !insertmacro ClearSectionFlag ${pSCQuickLaunch} ${SF_SELECTED}
   ${Else}
     !insertmacro SetSectionFlag ${pSCQuickLaunch} ${SF_SELECTED}
+  ${EndIf}
+  ${If} ${AtLeastWin7}
+    !insertmacro ClearSectionFlag ${pSCQuickLaunch} ${SF_SELECTED}
+    SectionSetText ${pSCQuickLaunch} ""
   ${EndIf}
 FunctionEnd
 
