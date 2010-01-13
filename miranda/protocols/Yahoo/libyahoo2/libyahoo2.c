@@ -689,6 +689,7 @@ static void yahoo_free_data(struct yahoo_data *yd)
 {
 	FREE(yd->user);
 	FREE(yd->password);
+	FREE(yd->pw_token);
 	FREE(yd->cookie_y);
 	FREE(yd->cookie_t);
 	FREE(yd->cookie_c);
@@ -2496,14 +2497,11 @@ GET /config/pwtoken_login?src=ymsgr&ts=1195577376&token=token HTTP/1.1
 	if (yd->pw_token == NULL ) {
 
 		c = yahoo_urlencode(yd->password);
-		t = yahoo_urlencode(seed);
 		
-		_snprintf(url, sizeof(url), "/config/pwtoken_get?src=ymsgr&ts=%u&login=%s&passwd=%s&chal=%s",
-					time(NULL),sn, c, t);
+		_snprintf(url, sizeof(url), "/config/pwtoken_get?src=ymsgr&login=%s&passwd=%s", sn, c);
 		response = YAHOO_CALLBACK(ext_yahoo_send_https_request)(yd, yss->login_host, url);
 		
 		FREE(c);
-		FREE(t);
 		
 		if (response == NULL) {
 			YAHOO_CALLBACK(ext_yahoo_login_response)(yd->client_id, YAHOO_LOGIN_SOCK, NULL);
@@ -2586,8 +2584,8 @@ GET /config/pwtoken_login?src=ymsgr&ts=1195577376&token=token HTTP/1.1
 		}
 	}
 	
-	_snprintf(url, sizeof(url), "/config/pwtoken_login?src=ymsgr&ts=%lu&token=%s",
-				time(NULL),yd->pw_token);
+	//_snprintf(url, sizeof(url), "/config/pwtoken_login?src=ymsgr&token=%s&ext_err=1",token);
+	_snprintf(url, sizeof(url), "/config/pwtoken_login?src=ymsgr&token=%s",yd->pw_token);
 				
 	/*
 				0
@@ -2834,12 +2832,19 @@ static void yahoo_process_mail(struct yahoo_input_data *yid, struct yahoo_packet
 			LOG(("key: %d => value: '%s'", pair->key, pair->value));
 	}
 
-	if (who && email && subj) {
+	if (email && subj) {
 		char from[1024];
-		snprintf(from, sizeof(from), "%s (%s)", who, email);
+		
+		if (who) {
+			snprintf(from, sizeof(from), "\"%s\" <%s>", who, email);
+		} else {
+			snprintf(from, sizeof(from), "%s", email);
+		}
+		
 		YAHOO_CALLBACK(ext_yahoo_mail_notify)(yd->client_id, from, subj, count);
-	} else 
+	} else {
 		YAHOO_CALLBACK(ext_yahoo_mail_notify)(yd->client_id, NULL, NULL, count);
+	}
 }
 
 static void yahoo_buddy_added_us(struct yahoo_input_data *yid, struct yahoo_packet *pkt)

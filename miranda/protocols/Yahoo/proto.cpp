@@ -62,6 +62,7 @@ CYahooProto::~CYahooProto()
 	mir_free( m_tszUserName );
 
 	FREE(m_startMsg);
+	FREE(m_pw_token); 
 	
 	Netlib_CloseHandle( m_hNetlibUser );
 }
@@ -445,7 +446,7 @@ int __cdecl CYahooProto::RecvContacts( HANDLE /*hContact*/, PROTORECVEVENT* )
 ////////////////////////////////////////////////////////////////////////////////////////
 // RecvFile
 
-int __cdecl CYahooProto::RecvFile( HANDLE hContact, PROTORECVFILE* evt )
+int __cdecl CYahooProto::RecvFile( HANDLE hContact, PROTORECVFILET* evt )
 {
 	DBDeleteContactSetting(hContact, "CList", "Hidden");
 
@@ -791,6 +792,10 @@ int __cdecl CYahooProto::OnEvent( PROTOEVENTTYPE eventType, WPARAM wParam, LPARA
 			YAHOO_CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )mainMenuRoot, ( LPARAM )&clmi );
             break;
 		}
+		case EV_PROTO_ONEXIT:
+		case EV_PROTO_ONREADYTOEXIT:
+		case EV_PROTO_ONERASE:
+			break;
 	}	
 	return 1;
 }

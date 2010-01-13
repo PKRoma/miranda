@@ -13,7 +13,7 @@
 #ifndef _YAHOO_YAHOO_H_
 #define _YAHOO_YAHOO_H_
 
-#define MIRANDA_VER 0x0800
+#define MIRANDA_VER 0x0900
 
 extern "C"
 {
