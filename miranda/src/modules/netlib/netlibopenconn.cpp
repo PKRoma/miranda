@@ -465,6 +465,19 @@ unblock:
 	notblocking=0;
 	ioctlsocket(nlc->s, FIONBIO, &notblocking);
 	if (lasterr) SetLastError(lasterr);
+
+	if ((NLOCF_SSL & nloc->flags) && rc == 0)
+	{
+		Netlib_Logf(nlc->nlu,"(%d) Connected to %s:%d, Starting SSL negotiation",nlc->s,nloc->szHost,nloc->wPort);
+
+		nlc->hSsl = si.connect(nlc->s, nloc->szHost, nlc->nlu->settings.validateSSL);
+		if (nlc->hSsl == NULL)
+		{
+			Netlib_Logf(nlc->nlu,"(%d %s) Failure to negotiate SSL connection",nlc->s,nloc->szHost);
+			return SOCKET_ERROR;
+		}
+	}
+
 	return rc;
 }
 
@@ -534,17 +547,6 @@ static bool DoConnect(NetlibConnection *nlc)
 				SetLastError(ERROR_INVALID_PARAMETER);
 				FreePartiallyInitedConnection(nlc);
 				return false;
-		}
-	}
-	if (NLOCF_SSL & nloc->flags)
-	{
-		Netlib_Logf(nlu,"(%d) Connected to %s:%d, Starting SSL negotiation",nlc->s,nloc->szHost,nloc->wPort);
-
-		nlc->hSsl = si.connect(nlc->s, nloc->szHost, nlu->settings.validateSSL);
-		if (nlc->hSsl == NULL)
-		{
-			Netlib_Logf(nlu,"(%d %s) Failure to negotiate SSL connection",nlc->s,nloc->szHost);
-			return false;
 		}
 	}
 
