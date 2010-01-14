@@ -94,6 +94,9 @@ char* CMsnProto::getSslResult(char** parUrl, const char* parAuthInfo, const char
 		
 		CallService(MS_NETLIB_FREEHTTPREQUESTSTRUCT, 0, (LPARAM)nlhrReply);
 	}
+	else
+		hHttpsConnection = NULL;
+
 	mir_free(nlhr.headers);
 	mHttpsTS = clock();
 
