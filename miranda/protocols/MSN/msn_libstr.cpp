@@ -321,18 +321,21 @@ void stripColorCode(char* src)
 				if (isdigit(ps[3]))
 				{
 					ps += 3;
-					if (ps[0] == '1' && isdigit(ps[1]))
+					if (isdigit(ps[1]))
 					{
 						ps += 2;
-						if (ps[0] == ',' && isdigit(ps[1]))
-						{
-							ps += 2;
-							if (ps[0] == '1' && isdigit(ps[1]))
-								ps += 2;
-						}
 					}
 					else
 						++ps;
+
+						if (ps[0] == ',' && isdigit(ps[1]))
+						{
+							ps += 2;
+						if (isdigit(ps[1]))
+								ps += 2;
+						else
+							++ps;
+					}
 					continue;
 				}
 				else if (ps[3] == '#')

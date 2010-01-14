@@ -185,15 +185,18 @@ struct CMsnProto : public PROTO_INTERFACE
 	unsigned	msnOtherContactsBlocked;
 	int			mUnreadMessages;
 	int			mUnreadJunkEmails;
+	clock_t		mHttpsTS;
 
 	HANDLE		hNetlibUser;
 	HANDLE		hNetlibUserHttps;
+	HANDLE		hHttpsConnection;
 	HANDLE		hInitChat;
 	HANDLE		hMSNNudge;
 
 	HANDLE		hMSNAvatarsFolder;
 	HANDLE		hCustomSmileyFolder;
 	bool		InitCstFldRan;
+
 	void        InitCustomFolders(void);
 
 	void        MSN_DebugLog(const char* fmt, ...);

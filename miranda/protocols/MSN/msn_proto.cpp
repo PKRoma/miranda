@@ -92,7 +92,7 @@ CMsnProto::CMsnProto(const char* aProtoName, const TCHAR* aUserName) :
 	CreateProtoService(PS_GET_LISTENINGTO,       &CMsnProto::GetCurrentMedia);
 	CreateProtoService(PS_SET_LISTENINGTO,       &CMsnProto::SetCurrentMedia);
 
-	CreateProtoService(MSN_SET_NICKNAME,         &CMsnProto::SetNickName);
+	CreateProtoService(PS_SETMYNICKNAME,         &CMsnProto::SetNickName);
 	CreateProtoService(MSN_SEND_NUDGE,           &CMsnProto::SendNudge);
 
 	CreateProtoService(MSN_GETUNREAD_EMAILCOUNT, &CMsnProto::GetUnreadEmailCount);

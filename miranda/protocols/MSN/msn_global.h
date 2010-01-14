@@ -139,8 +139,6 @@ const char MSN_USER_AGENT[] =           "Mozilla/4.0 (compatible; MSIE 6.0; Wind
 #define MS_VIEW_STATUS		"/ViewMsnStatus"
 #define MS_SET_NICKNAME_UI  "/SetNicknameUI"
 
-#define MSN_SET_NICKNAME            "/SetNickname"
-
 #define MSN_GETUNREAD_EMAILCOUNT	"/GetUnreadEmailCount"
 /////////////////////////////////////////////////////////////////////////////////////////
 //	MSN plugin functions

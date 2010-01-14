@@ -50,6 +50,12 @@ void __cdecl CMsnProto::msn_keepAliveThread(void*)
 					keepFlag = keepFlag && msnNsThread->send("PNG\r\n", 5);
 				}
 				p2p_clearDormantSessions();
+				if (hHttpsConnection && (clock() - mHttpsTS) > 60 *	CLOCKS_PER_SEC)
+				{
+					HANDLE hConn = hHttpsConnection;
+					hHttpsConnection = NULL;
+					Netlib_CloseHandle(hConn);
+				}
 				break;
 
 			case WAIT_OBJECT_0:
@@ -324,6 +330,13 @@ void  CMsnProto::MSN_CloseConnections()
 	}
 
 	LeaveCriticalSection(&sttLock);
+
+	if (hHttpsConnection)
+	{
+		HANDLE hConn = hHttpsConnection;
+		hHttpsConnection = NULL;
+		Netlib_CloseHandle(hConn);
+	}
 }
 
 void  CMsnProto::MSN_CloseThreads()
