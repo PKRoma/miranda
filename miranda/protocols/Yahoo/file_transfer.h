@@ -25,7 +25,6 @@ typedef struct {
 	HANDLE hContact;
 	int  cancel;
 	char *url;
-	char *savepath;
 	HANDLE hWaitEvent;
 	DWORD action;
 	int y7;

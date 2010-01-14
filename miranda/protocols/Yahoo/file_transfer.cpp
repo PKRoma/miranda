@@ -119,7 +119,6 @@ static void free_ft(y_filetransfer* ft)
 	FREE(ft->who);
 	FREE(ft->msg);
 	FREE(ft->url);
-	FREE(ft->savepath);
 	FREE(ft->ftoken);
 	FREE(ft->relay);
 	
@@ -141,6 +140,7 @@ static void free_ft(y_filetransfer* ft)
 	
 	FREE(ft->pfts.currentFile);
 	FREE(ft->pfts.files);
+	FREE(ft->pfts.workingDir);
 	FREE(ft);
 	
 	LOG(("[/free_ft]"));
@@ -154,15 +154,11 @@ static void upload_file(int id, int fd, int error, void *data)
 	long size = 0;
 	DWORD dw = 0;
 	int   rw = 0;
-	struct _stat statbuf;
 
 	if (fd < 0) {
 		LOG(("[get_fd] Connect Failed!"));
 		error = 1;
 	}
-
-	if (_stat( fi->filename, &statbuf ) != 0 )
-		error = 1;
 
 	if(!error) {
 		HANDLE myhFile = CreateFileA(fi->filename,
@@ -198,8 +194,8 @@ static void upload_file(int id, int fd, int error, void *data)
 					} else 
 						size += rw;
 
-					if(GetTickCount() >= lNotify + 500 || rw < 1024 || size == statbuf.st_size) {
-						LOG(("DOING UI Notify. Got %lu/%lu", size, statbuf.st_size));
+					if(GetTickCount() >= lNotify + 500 || rw < 1024 || size == fi->filesize) {
+						LOG(("DOING UI Notify. Got %lu/%lu", size, fi->filesize));
 						sf->pfts.totalProgress = size;
 						sf->pfts.currentFileProgress = size;
 
@@ -309,10 +305,8 @@ static void dl_file(int id, int fd, int error,	const char *filename, unsigned lo
     if(!error) {
 		HANDLE myhFile;
 
-		sf->pfts.workingDir = sf->savepath;//ft->savepath;
-			
-		LOG(("dir: %s, file: %s", sf->savepath, fi->filename ));
-		wsprintfA(buf, "%s\\%s", sf->savepath, fi->filename);
+		LOG(("dir: %s, file: %s", sf->pfts.workingDir, fi->filename ));
+		wsprintfA(buf, "%s\\%s", sf->pfts.workingDir, fi->filename);
 		
 		/*
 		 * We need FULL Path for File Resume to work properly!!!
@@ -328,6 +322,8 @@ static void dl_file(int id, int fd, int error,	const char *filename, unsigned lo
 		if ( sf->ppro->SendBroadcast( sf->hContact, ACKTYPE_FILE, ACKRESULT_FILERESUME, sf, ( LPARAM )&sf->pfts )) {
 			WaitForSingleObject( sf->hWaitEvent, INFINITE );
 			
+			LOG(("[dl_file] Got action: %d", sf->action));
+			
 			switch(sf->action){
 				case FILERESUME_RENAME:
 				case FILERESUME_OVERWRITE:	
@@ -341,8 +337,6 @@ static void dl_file(int id, int fd, int error,	const char *filename, unsigned lo
 
 				case FILERESUME_SKIP	:
 				default:
-					//delete this; // per usual dcc objects destroy themselves when they fail or when connection is closed
-					//return FALSE; 
 					sf->cancel = 2;
 					break;
 				}
@@ -352,21 +346,16 @@ static void dl_file(int id, int fd, int error,	const char *filename, unsigned lo
 		
 		if (! sf->cancel) {
 			
-			if (sf->action != FILERESUME_RENAME ) {
-				LOG(("dir: %s, file: %s", sf->savepath, fi->filename ));
-			
-				wsprintfA(buf, "%s\\%s", sf->savepath, fi->filename);
-			} else {
+			if (sf->action == FILERESUME_RENAME ) {
 				LOG(("file: %s", fi->filename ));
-				//wsprintfA(buf, "%s\%s", sf->filename);
 				
 				free(sf->pfts.currentFile);
 				lstrcpyA(buf, fi->filename);
 				sf->pfts.currentFile = strdup(buf);
 			}
 			
-			LOG(("Getting file: %s", buf));
-			myhFile    = CreateFileA(buf,
+			LOG(("Getting file: %s", sf->pfts.currentFile));
+			myhFile    = CreateFileA(sf->pfts.currentFile,
 									GENERIC_WRITE,
 									FILE_SHARE_WRITE,
 									NULL, OPEN_ALWAYS,  FILE_ATTRIBUTE_NORMAL,  0);
@@ -425,7 +414,6 @@ static void dl_file(int id, int fd, int error,	const char *filename, unsigned lo
 				error = 1;
 			}
 			
-			//free(sf->pfts.currentFile);
 		} 
     }
 	
@@ -627,10 +615,7 @@ void CYahooProto::ext_got_files(const char *me, const char *who, const char *ft_
 void CYahooProto::ext_got_file7info(const char *me, const char *who, const char *url, const char *fname, const char *ft_token)
 {
 	y_filetransfer *ft;
-/*	NETLIBHTTPREQUEST nlhr={0},*nlhrReply;
-	NETLIBHTTPHEADER httpHeaders[3];
-	char  z[1024];
-*/	
+
 	LOG(("[ext_yahoo_got_file7info] ident:%s, who: %s, url: %s, fname: %s, ft_token: %s", me, who, url, fname, ft_token));
 	
 	ft = find_ft(ft_token);
@@ -645,48 +630,6 @@ void CYahooProto::ext_got_file7info(const char *me, const char *who, const char 
 	FREE(ft->url);
 	
 	ft->url = strdup(url);
-	
-	//SleepEx(2000, TRUE); // Need to make sure our ACCEPT is delivered before we try to HEAD request
-/*	
-	nlhr.cbSize		= sizeof(nlhr);
-	nlhr.requestType= REQUEST_HEAD;
-	nlhr.flags		= NLHRF_DUMPASTEXT;
-	nlhr.szUrl		= (char *)url;
-	nlhr.headers = httpHeaders;
-	nlhr.headersCount= 4;
-	
-	httpHeaders[0].szName="Cookie";
-	
-	mir_snprintf(z, 1024, "Y=%s; T=%s; B=%s", yahoo_get_cookie(id, "y"), yahoo_get_cookie(id, "t"), yahoo_get_cookie(id, "b"));
-	httpHeaders[0].szValue=z;
-	
-	httpHeaders[1].szName="User-Agent";
-	httpHeaders[1].szValue="Mozilla/4.0 (compatible; MSIE 5.5)";
-	httpHeaders[2].szName="Content-Length";
-	httpHeaders[2].szValue="0";
-	httpHeaders[3].szName="Cache-Control";
-	httpHeaders[3].szValue="no-cache";
-	
-	nlhrReply=(NETLIBHTTPREQUEST*)CallService(MS_NETLIB_HTTPTRANSACTION,(WPARAM)hNetlibUser,(LPARAM)&nlhr);
-
-	if(nlhrReply) {
-		int i;
-		
-		LOG(("Update server returned '%d'. It also sent the following: %s", nlhrReply->resultCode, nlhrReply->szResultDescr));
-		LOG(("Got %d bytes.", nlhrReply->dataLength));
-		LOG(("Got %d headers!", nlhrReply->headersCount));
-		
-		for (i=0; i < nlhrReply->headersCount; i++) {
-			LOG(("%s: %s", nlhrReply->headers[i].szName, nlhrReply->headers[i].szValue));
-		}
-		
-		CallService(MS_NETLIB_FREEHTTPREQUESTSTRUCT,0,(LPARAM)nlhrReply);
-		
-		
-	} else {
-		LOG(("ERROR: No Reply???"));
-	}
-	*/
 	
 	YForkThread(&CYahooProto::recv_filethread, ft);
 }
@@ -722,10 +665,7 @@ void ext_yahoo_send_file7info(int id, const char *me, const char *who, const cha
 		LOG(("DNS Lookup failed. Using Relay IP: %s", ft->relay));
 	}
 	
-	
-	
 	yahoo_send_file7info(id, me, who, ft_token, c, ft->relay );
-		
 }
 
 struct _sfs{
@@ -737,7 +677,6 @@ struct _sfs{
 void CYahooProto::ext_ft7_send_file(const char *me, const char *who, const char *filename, const char *token, const char *ft_token)
 {
 	y_filetransfer *sf;
-	//struct yahoo_file_info *fi;
 	struct _sfs *s;
 	
 	LOG(("[ext_yahoo_send_file7info] ident:%s, who: %s, ft_token: %s", me, who, ft_token));
@@ -863,11 +802,11 @@ HANDLE __cdecl CYahooProto::FileAllow( HANDLE /*hContact*/, HANDLE hTransfer, co
 	DebugLog("[YahooFileAllow]");
 
 	//LOG(LOG_INFO, "[%s] Requesting file from %s", ft->cookie, ft->user);
-	ft->savepath = strdup( szPath );
+	ft->pfts.workingDir = strdup( szPath );
 
-	len = lstrlenA(ft->savepath) - 1;
-	if (ft->savepath[len] == '\\')
-		ft->savepath[len] = '\0';
+	len = lstrlenA(ft->pfts.workingDir) - 1;
+	if (ft->pfts.workingDir[len] == '\\')
+		ft->pfts.workingDir[len] = '\0';
 
 	if (ft->y7) {
 		DebugLog("[YahooFileAllow] Trying to relay Y7 transfer.");
