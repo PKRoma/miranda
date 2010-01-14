@@ -113,7 +113,7 @@ static bool NetlibHttpProcessUrl(NETLIBHTTPREQUEST *nlhr, NetlibUser *nlu, char*
 		nloc.wPort = (WORD)strtol(pcolon+1, NULL, 10);
 	}
 	else nloc.wPort = secur ? 443 : 80;
-    if (secur) nlhr->flags |= NLHRF_SSL;
+    if (secur) nlhr->flags |= NLHRF_SSL; else nlhr->flags &= ~NLHRF_SSL;
 	nloc.flags = NLOCF_HTTP | (secur ? NLOCF_SSL : 0);
 
 	NetlibConnection* nlc = (NetlibConnection*)nlhr->nlc;
