@@ -318,7 +318,6 @@ static void dl_file(int id, int fd, int error,	const char *filename, unsigned lo
 		sf->pfts.tszCurrentFile = _wcsdup(filefull);		
 		
 		ResetEvent(sf->hWaitEvent);
-		MessageBox(NULL, sf->pfts.tszCurrentFile, _T("YAHOO"), MB_OK);
 		
 		if ( sf->ppro->SendBroadcast( sf->hContact, ACKTYPE_FILE, ACKRESULT_FILERESUME, sf, ( LPARAM )&sf->pfts )) {
 			WaitForSingleObject( sf->hWaitEvent, INFINITE );
@@ -347,7 +346,6 @@ static void dl_file(int id, int fd, int error,	const char *filename, unsigned lo
 		
 		if (! sf->cancel) {
 			
-			MessageBox(NULL, sf->pfts.tszCurrentFile, _T("YAHOO"), MB_OK);
 			myhFile    = CreateFile(sf->pfts.tszCurrentFile,
 									GENERIC_WRITE,
 									FILE_SHARE_WRITE,
