@@ -583,8 +583,10 @@ bool NetlibReconnect(NetlibConnection *nlc)
 		closesocket(nlc->s);
 		nlc->s = INVALID_SOCKET;
 
-		return NetlibDoConnect(nlc);
-//		return my_connect(nlc, &nlc->nloc) == 0;
+		if (nlc->usingHttpGateway)
+			return my_connect(nlc, &nlc->nloc) == 0;
+		else
+			return NetlibDoConnect(nlc);
 	}
 	return true;
 }
