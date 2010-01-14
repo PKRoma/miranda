@@ -289,6 +289,7 @@ INT_PTR NetlibCloseHandle(WPARAM wParam, LPARAM)
 			mir_free(nlc->nlhpi.szHttpGetUrl);
 			mir_free(nlc->dataBuffer);
 			mir_free((char*)nlc->nloc.szHost);
+			mir_free(nlc->szNewUrl);
 			NetlibDeleteNestedCS(&nlc->ncsRecv);
 			NetlibDeleteNestedCS(&nlc->ncsSend);
 			CloseHandle(nlc->hOkToCloseEvent);

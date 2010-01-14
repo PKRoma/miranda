@@ -64,6 +64,7 @@ struct NetlibConnection {
 	struct NetlibNestedCriticalSection ncsSend,ncsRecv;
 	HSSL hSsl;
 	struct NetlibHTTPProxyPacketQueue * pHttpProxyPacketQueue;
+	char *szNewUrl;
 	int pollingTimeout;
 	NETLIBOPENCONNECTION nloc;
 };
@@ -131,6 +132,7 @@ void NetlibLogShutdown(void);
 DWORD DnsLookup(struct NetlibUser *nlu,const char *szHost);
 int WaitUntilReadable(SOCKET s,DWORD dwTimeout);
 int WaitUntilWritable(SOCKET s,DWORD dwTimeout);
+bool NetlibDoConnect(NetlibConnection *nlc);
 bool NetlibReconnect(NetlibConnection *nlc);
 INT_PTR NetlibOpenConnection(WPARAM wParam,LPARAM lParam);
 INT_PTR NetlibStartSsl(WPARAM wParam, LPARAM lParam);

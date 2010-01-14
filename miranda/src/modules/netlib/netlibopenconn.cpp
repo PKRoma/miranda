@@ -465,23 +465,10 @@ unblock:
 	notblocking=0;
 	ioctlsocket(nlc->s, FIONBIO, &notblocking);
 	if (lasterr) SetLastError(lasterr);
-
-	if ((NLOCF_SSL & nloc->flags) && rc == 0)
-	{
-		Netlib_Logf(nlc->nlu,"(%d) Connected to %s:%d, Starting SSL negotiation",nlc->s,nloc->szHost,nloc->wPort);
-
-		nlc->hSsl = si.connect(nlc->s, nloc->szHost, nlc->nlu->settings.validateSSL);
-		if (nlc->hSsl == NULL)
-		{
-			Netlib_Logf(nlc->nlu,"(%d %s) Failure to negotiate SSL connection",nlc->s,nloc->szHost);
-			return SOCKET_ERROR;
-		}
-	}
-
 	return rc;
 }
 
-static bool DoConnect(NetlibConnection *nlc)
+bool NetlibDoConnect(NetlibConnection *nlc)
 {
 	NETLIBOPENCONNECTION *nloc = &nlc->nloc;
 	NetlibUser *nlu = nlc->nlu;
@@ -550,6 +537,18 @@ static bool DoConnect(NetlibConnection *nlc)
 		}
 	}
 
+	if (NLOCF_SSL & nloc->flags)
+	{
+		Netlib_Logf(nlc->nlu,"(%d) Connected to %s:%d, Starting SSL negotiation",nlc->s,nloc->szHost,nloc->wPort);
+
+		nlc->hSsl = si.connect(nlc->s, nloc->szHost, nlc->nlu->settings.validateSSL);
+		if (nlc->hSsl == NULL)
+		{
+			Netlib_Logf(nlc->nlu,"(%d %s) Failure to negotiate SSL connection",nlc->s,nloc->szHost);
+			return false;
+		}
+	}
+
 	Netlib_Logf(nlu,"(%d) Connected to %s:%d",nlc->s,nloc->szHost,nloc->wPort);
 	return true;
 }
@@ -584,7 +583,8 @@ bool NetlibReconnect(NetlibConnection *nlc)
 		closesocket(nlc->s);
 		nlc->s = INVALID_SOCKET;
 
-		return my_connect(nlc, &nlc->nloc) == 0;
+		return NetlibDoConnect(nlc);
+//		return my_connect(nlc, &nlc->nloc) == 0;
 	}
 	return true;
 }
@@ -622,7 +622,7 @@ INT_PTR NetlibOpenConnection(WPARAM wParam,LPARAM lParam)
 	NetlibInitializeNestedCS(&nlc->ncsSend);
 	NetlibInitializeNestedCS(&nlc->ncsRecv);
 
-	if (!DoConnect(nlc))
+	if (!NetlibDoConnect(nlc))
 	{
 		FreePartiallyInitedConnection(nlc);		
 		return 0;
