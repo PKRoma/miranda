@@ -300,44 +300,53 @@ static int NetlibInitSocks5Connection(struct NetlibConnection *nlc,struct Netlib
 
 static int NetlibInitHttpsConnection(struct NetlibConnection *nlc,struct NetlibUser *nlu,NETLIBOPENCONNECTION *nloc)
 {	//rfc2817
-	NETLIBHTTPHEADER httpHeaders[3];
-	NETLIBHTTPREQUEST nlhrSend={0},*nlhrReply;
+	NETLIBHTTPHEADER httpHeaders[3] = {0};
+	NETLIBHTTPREQUEST nlhrSend = {0}, *nlhrReply;
 	char szUrl[512];
 
-	memset(httpHeaders,0,sizeof(httpHeaders));
-
-	nlhrSend.cbSize=sizeof(nlhrSend);
-	nlhrSend.requestType=REQUEST_CONNECT;
-	nlhrSend.flags=NLHRF_GENERATEHOST|NLHRF_DUMPPROXY|NLHRF_SMARTAUTHHEADER|NLHRF_HTTP11;
-	if(nlu->settings.dnsThroughProxy) {
-		mir_snprintf(szUrl,SIZEOF(szUrl),"%s:%u",nloc->szHost,nloc->wPort);
-		if(inet_addr(nloc->szHost)==INADDR_NONE) {
-			httpHeaders[0].szName="Host";
-			httpHeaders[0].szValue=szUrl;
+	nlhrSend.cbSize = sizeof(nlhrSend);
+	nlhrSend.requestType = REQUEST_CONNECT;
+	nlhrSend.flags = NLHRF_GENERATEHOST | NLHRF_DUMPPROXY | NLHRF_SMARTAUTHHEADER | NLHRF_HTTP11 | NLHRF_NOPROXY;
+	if (nlu->settings.dnsThroughProxy) 
+	{
+		mir_snprintf(szUrl, SIZEOF(szUrl), "%s:%u", nloc->szHost, nloc->wPort);
+		if (inet_addr(nloc->szHost) == INADDR_NONE) 
+		{
+			httpHeaders[0].szName  = "Host";
+			httpHeaders[0].szValue = szUrl;
 			nlhrSend.headersCount++;
 		}
 	}
-	else {
-		struct in_addr addr;
-		DWORD ip=DnsLookup(nlu,nloc->szHost);
-		if(ip==0) return 0;
-		addr.S_un.S_addr=ip;
-		mir_snprintf(szUrl,SIZEOF(szUrl),"%s:%u",inet_ntoa(addr),nloc->wPort);
+	else 
+	{
+		IN_ADDR addr;
+		DWORD ip = DnsLookup(nlu, nloc->szHost);
+		if (ip == 0) return 0;
+		addr.S_un.S_addr = ip;
+		mir_snprintf(szUrl, SIZEOF(szUrl), "%s:%u", inet_ntoa(addr), nloc->wPort);
 	}
-	nlhrSend.szUrl=szUrl;
-	nlhrSend.headers=httpHeaders;
-	nlhrSend.headersCount=0;
-	if(NetlibHttpSendRequest((WPARAM)nlc,(LPARAM)&nlhrSend)==SOCKET_ERROR)
+	nlhrSend.szUrl = szUrl;
+	nlhrSend.headers = httpHeaders;
+	nlhrSend.headersCount = 0;
+
+	nlc->usingHttpGateway = 1;
+
+	if (NetlibHttpSendRequest((WPARAM)nlc,(LPARAM)&nlhrSend) == SOCKET_ERROR)
+	{
+		nlc->usingHttpGateway = 0;
 		return 0;
-	nlhrReply=(NETLIBHTTPREQUEST*)NetlibHttpRecvHeaders((WPARAM)nlc,MSG_DUMPPROXY);
-	if(nlhrReply==NULL) return 0;
-	if(nlhrReply->resultCode<200 || nlhrReply->resultCode>=300) {
+	}
+	nlhrReply = (NETLIBHTTPREQUEST*)NetlibHttpRecvHeaders((WPARAM)nlc, MSG_DUMPPROXY);
+	nlc->usingHttpGateway = 0;
+	if (nlhrReply == NULL) return 0;
+	if (nlhrReply->resultCode < 200 || nlhrReply->resultCode >= 300)
+	{
 		NetlibHttpSetLastErrorUsingHttpResult(nlhrReply->resultCode);
 		Netlib_Logf(nlu,"%s %d: %s request failed (%u %s)",__FILE__,__LINE__,nlu->settings.proxyType==PROXYTYPE_HTTP?"HTTP":"HTTPS",nlhrReply->resultCode,nlhrReply->szResultDescr);
-		NetlibHttpFreeRequestStruct(0,(LPARAM)nlhrReply);
+		NetlibHttpFreeRequestStruct(0, (LPARAM)nlhrReply);
 		return 0;
 	}
-	NetlibHttpFreeRequestStruct(0,(LPARAM)nlhrReply);
+	NetlibHttpFreeRequestStruct(0, (LPARAM)nlhrReply);
 	//connected
 	return 1;
 }
@@ -510,9 +519,11 @@ bool NetlibDoConnect(NetlibConnection *nlc)
 				break;
 
 			case PROXYTYPE_HTTP:
-				if(!(nlu->user.flags & NUF_HTTPGATEWAY) || (nloc->flags & NLOCF_SSL)) {
+				if(!(nlu->user.flags & NUF_HTTPGATEWAY) || (nloc->flags & NLOCF_SSL))
+				{
 					//NLOCF_HTTP not specified and no HTTP gateway available: try HTTPS
-					if(!NetlibInitHttpsConnection(nlc,nlu,nloc)) {
+					if (!NetlibInitHttpsConnection(nlc,nlu,nloc))
+					{
 						//can't do HTTPS: try direct
 						closesocket(nlc->s);
 

@@ -280,7 +280,8 @@ INT_PTR NetlibHttpSendRequest(WPARAM wParam,LPARAM lParam)
 
 	HANDLE hNtlmSecurity = NULL;
 	unsigned complete = false;
-	for (int count = 6; --count; )
+	int count = 6;
+	while (--count)
 	{
 		if (nlhr->flags & (NLHRF_SMARTREMOVEHOST | NLHRF_REMOVEHOST | NLHRF_GENERATEHOST))
 		{
@@ -483,6 +484,7 @@ INT_PTR NetlibHttpSendRequest(WPARAM wParam,LPARAM lParam)
 			}
 		}
 	}
+	if (count == 0) bytesSent = SOCKET_ERROR; 
 	if (nlhrReply) NetlibHttpFreeRequestStruct(0, (LPARAM)nlhrReply);
 
 	//clean up
