@@ -151,7 +151,7 @@ static void upload_file(int id, int fd, int error, void *data)
 	y_filetransfer *sf = (y_filetransfer*) data;
 	struct yahoo_file_info *fi = (struct yahoo_file_info *)sf->files->data;
 	char buf[1024];
-	long size = 0;
+	unsigned long size = 0;
 	DWORD dw = 0;
 	int   rw = 0;
 
@@ -305,7 +305,7 @@ static void dl_file(int id, int fd, int error,	const char *filename, unsigned lo
     if(!error) {
 		HANDLE myhFile;
 
-		LOG(("dir: %s, file: %s", sf->pfts.workingDir, fi->filename ));
+		//LOG(("dir: %s, file: %s", sf->pfts.workingDir, fi->filename ));
 		wsprintfA(buf, "%s\\%s", sf->pfts.workingDir, fi->filename);
 		
 		/*
@@ -322,7 +322,7 @@ static void dl_file(int id, int fd, int error,	const char *filename, unsigned lo
 		if ( sf->ppro->SendBroadcast( sf->hContact, ACKTYPE_FILE, ACKRESULT_FILERESUME, sf, ( LPARAM )&sf->pfts )) {
 			WaitForSingleObject( sf->hWaitEvent, INFINITE );
 			
-			LOG(("[dl_file] Got action: %d", sf->action));
+			LOG(("[dl_file] Got action: %ld", sf->action));
 			
 			switch(sf->action){
 				case FILERESUME_RENAME:
@@ -345,14 +345,6 @@ static void dl_file(int id, int fd, int error,	const char *filename, unsigned lo
 		
 		
 		if (! sf->cancel) {
-			
-			if (sf->action == FILERESUME_RENAME ) {
-				LOG(("file: %s", fi->filename ));
-				
-				free(sf->pfts.currentFile);
-				lstrcpyA(buf, fi->filename);
-				sf->pfts.currentFile = strdup(buf);
-			}
 			
 			LOG(("Getting file: %s", sf->pfts.currentFile));
 			myhFile    = CreateFileA(sf->pfts.currentFile,
@@ -825,9 +817,15 @@ HANDLE __cdecl CYahooProto::FileAllow( HANDLE /*hContact*/, HANDLE hTransfer, co
 
 int __cdecl CYahooProto::FileCancel( HANDLE /*hContact*/, HANDLE hTransfer )
 {
-	DebugLog("[YahooFileCancel]");
-
 	y_filetransfer* ft = (y_filetransfer*)hTransfer;
+	
+	DebugLog("[YahooFileCancel] id: %d, who: %s, token: %s", ft->id, ft->who, ft->ftoken);
+
+	if (! ft->pfts.sending  && ! ft->cancel) {
+		/* abort FT transfer */
+		yahoo_ft7dc_abort(ft->id, ft->who, ft->ftoken);
+	}
+	
 	if ( ft->hWaitEvent != INVALID_HANDLE_VALUE )
 		SetEvent( ft->hWaitEvent );
 
@@ -887,11 +885,9 @@ int __cdecl CYahooProto::FileResume( HANDLE hTransfer, int* action, const char**
 	DebugLog("[YahooFileResume] Action: %d", *action);
 
 	if ( *action == FILERESUME_RENAME ) {
-		struct yahoo_file_info *fi = (struct yahoo_file_info *)ft->files->data;
-
 		DebugLog("[YahooFileResume] Renamed file!");
-		FREE( fi->filename );
-		fi->filename = strdup( *szFilename );
+		FREE( ft->pfts.currentFile );
+		ft->pfts.currentFile = strdup( *szFilename );
 	}	
 
 	SetEvent( ft->hWaitEvent );
