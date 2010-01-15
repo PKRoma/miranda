@@ -300,7 +300,6 @@ static int NetlibInitSocks5Connection(struct NetlibConnection *nlc,struct Netlib
 
 static int NetlibInitHttpsConnection(struct NetlibConnection *nlc,struct NetlibUser *nlu,NETLIBOPENCONNECTION *nloc)
 {	//rfc2817
-	NETLIBHTTPHEADER httpHeaders[3] = {0};
 	NETLIBHTTPREQUEST nlhrSend = {0}, *nlhrReply;
 	char szUrl[512];
 
@@ -310,12 +309,6 @@ static int NetlibInitHttpsConnection(struct NetlibConnection *nlc,struct NetlibU
 	if (nlu->settings.dnsThroughProxy) 
 	{
 		mir_snprintf(szUrl, SIZEOF(szUrl), "%s:%u", nloc->szHost, nloc->wPort);
-		if (inet_addr(nloc->szHost) == INADDR_NONE) 
-		{
-			httpHeaders[0].szName  = "Host";
-			httpHeaders[0].szValue = szUrl;
-			nlhrSend.headersCount++;
-		}
 	}
 	else 
 	{
@@ -326,8 +319,6 @@ static int NetlibInitHttpsConnection(struct NetlibConnection *nlc,struct NetlibU
 		mir_snprintf(szUrl, SIZEOF(szUrl), "%s:%u", inet_ntoa(addr), nloc->wPort);
 	}
 	nlhrSend.szUrl = szUrl;
-	nlhrSend.headers = httpHeaders;
-	nlhrSend.headersCount = 0;
 
 	nlc->usingHttpGateway = 1;
 
@@ -336,7 +327,7 @@ static int NetlibInitHttpsConnection(struct NetlibConnection *nlc,struct NetlibU
 		nlc->usingHttpGateway = 0;
 		return 0;
 	}
-	nlhrReply = (NETLIBHTTPREQUEST*)NetlibHttpRecvHeaders((WPARAM)nlc, MSG_DUMPPROXY);
+	nlhrReply = (NETLIBHTTPREQUEST*)NetlibHttpRecvHeaders((WPARAM)nlc, MSG_DUMPPROXY | MSG_RAW);
 	nlc->usingHttpGateway = 0;
 	if (nlhrReply == NULL) return 0;
 	if (nlhrReply->resultCode < 200 || nlhrReply->resultCode >= 300)

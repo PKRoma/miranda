@@ -532,7 +532,7 @@ INT_PTR NetlibHttpRecvHeaders(WPARAM wParam,LPARAM lParam)
 	int headersDone=0,firstLineLength;
 
 	if(!NetlibEnterNestedCS(nlc,NLNCS_RECV))
-		return (INT_PTR)(NETLIBHTTPREQUEST*)NULL;
+		return 0;
 	dwRequestTimeoutTime=GetTickCount()+HTTPRECVHEADERSTIMEOUT;
 	nlhr=(NETLIBHTTPREQUEST*)mir_calloc(sizeof(NETLIBHTTPREQUEST));
 	nlhr->cbSize=sizeof(NETLIBHTTPREQUEST);
@@ -569,7 +569,7 @@ INT_PTR NetlibHttpRecvHeaders(WPARAM wParam,LPARAM lParam)
 					NetlibLeaveNestedCS(&nlc->ncsRecv);
 					NetlibHttpFreeRequestStruct(0,(LPARAM)nlhr);
 					if(pbuffer==buffer) SetLastError(ERROR_BUFFER_OVERFLOW);
-					return (INT_PTR)(NETLIBHTTPREQUEST*)NULL;
+					return 0;
 				}
 				Sleep(100);
 				break;
