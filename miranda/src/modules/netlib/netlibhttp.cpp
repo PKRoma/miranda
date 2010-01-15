@@ -768,7 +768,7 @@ char* gzip_decode(char *gzip_data, int *len_ptr, int window)
 
 static int NetlibHttpRecvChunkHeader(NetlibConnection* nlc, BOOL first)
 {
-	char data[32], *peol1;
+	char data[64], *peol1;
 
 	for (;;)
 	{
@@ -783,12 +783,19 @@ static int NetlibHttpRecvChunkHeader(NetlibConnection* nlc, BOOL first)
 			char *peol2 = first ? peol1 : strstr(peol1 + 2, "\r\n");
 			if (peol2 != NULL)
 			{
-				NLRecv(nlc, data, peol2 - data + 2, 0);
-				return strtol(first ? data : peol1+2, NULL, 16);
+				int sz = peol2 - data + 2;
+				int r = strtol(first ? data : peol1 + 2, NULL, 16);
+				if (r == 0)
+				{
+					char *peol3 = strstr(peol2 + 2, "\r\n");
+					if (peol3 == NULL) continue;
+					sz = peol3 - data + 2;
+				}
+				NLRecv(nlc, data, sz, 0);
+				return r;
 			}
 			else
 				if (recvResult >= 31) return SOCKET_ERROR;
-
 		}
 	}
 }
