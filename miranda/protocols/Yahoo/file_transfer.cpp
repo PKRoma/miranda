@@ -153,7 +153,7 @@ static void upload_file(int id, int fd, int error, void *data)
 	y_filetransfer *sf = (y_filetransfer*) data;
 	struct yahoo_file_info *fi = (struct yahoo_file_info *)sf->files->data;
 	char buf[1024];
-	long size = 0;
+	unsigned long size = 0;
 	DWORD dw = 0;
 	int   rw = 0;
 

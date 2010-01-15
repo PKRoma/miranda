@@ -516,9 +516,15 @@ INT_PTR __cdecl CYahooProto::OnPrebuildContactMenu(WPARAM wParam, LPARAM)
 //=======================================================================================
 void CYahooProto::LoadYahooServices( void )
 {
+	char path[MAX_PATH];
+	
 	//----| Events hooking |--------------------------------------------------------------
 	YHookEvent( ME_OPT_INITIALISE, &CYahooProto::OnOptionsInit );
 	YHookEvent( ME_DB_CONTACT_DELETED, &CYahooProto::OnContactDeleted );
+
+	//----| Create nudge event |----------------------------------------------------------
+	mir_snprintf( path, sizeof( path ), "%s/Nudge", m_szModuleName);
+	hYahooNudge = CreateHookableEvent( path );
 
 	//----| Service creation |------------------------------------------------------------
 	YCreateService( PS_CREATEACCMGRUI, &CYahooProto::SvcCreateAccMgrUI);
@@ -534,7 +540,7 @@ void CYahooProto::LoadYahooServices( void )
 	YCreateService( YAHOO_GETUNREAD_EMAILCOUNT, &CYahooProto::GetUnreadEmailCount);
 
 	//----| Set resident variables |------------------------------------------------------
-	char path[MAX_PATH];
+	
 	mir_snprintf( path, sizeof( path ), "%s/Status", m_szModuleName );
 	CallService( MS_DB_SETSETTINGRESIDENT, TRUE, ( LPARAM )path );
 
@@ -559,7 +565,4 @@ void CYahooProto::LoadYahooServices( void )
 	mir_snprintf( path, sizeof( path ), "%s/PictLoading", m_szModuleName );
 	CallService( MS_DB_SETSETTINGRESIDENT, TRUE, ( LPARAM )path );
 
-	//----| Create nudge event |----------------------------------------------------------
-	mir_snprintf( path, sizeof( path ), "%s/Nudge");
-	hYahooNudge = CreateHookableEvent( path );
 }
