@@ -41,6 +41,7 @@ int msn_httpGatewayInit(HANDLE hConn, NETLIBOPENCONNECTION* nloc, NETLIBHTTPREQU
 	nlhpi.szHttpGetUrl = NULL;
 	nlhpi.szHttpPostUrl = "messenger.hotmail.com";
 	nlhpi.flags = NLHPIF_HTTP11;
+	nlhpi.combinePackets = 5;
 	return MSN_CallService(MS_NETLIB_SETHTTPPROXYINFO, (WPARAM)hConn, (LPARAM)&nlhpi);
 }
 

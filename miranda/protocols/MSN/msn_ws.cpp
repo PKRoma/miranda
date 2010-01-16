@@ -431,8 +431,8 @@ LBL_RecvAgain:
 		{
 			int tOldTimeout = MSN_CallService(MS_NETLIB_SETPOLLINGTIMEOUT, WPARAM(s), 2);
 			tOldTimeout += 2;
-			if (tOldTimeout > 8)
-				tOldTimeout = 8;
+			if (tOldTimeout > 20)
+				tOldTimeout = 20;
 
 			MSN_CallService(MS_NETLIB_SETPOLLINGTIMEOUT, WPARAM(s), tOldTimeout);
 			goto LBL_RecvAgain;
