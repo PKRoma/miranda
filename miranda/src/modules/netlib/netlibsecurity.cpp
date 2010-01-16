@@ -63,7 +63,6 @@ typedef struct
 
 static unsigned secCnt = 0, ntlmCnt = 0;
 static HANDLE hSecMutex;
-static TCHAR* szSPN;
 
 static void LoadSecurityLibrary(void)
 {
@@ -80,26 +79,12 @@ static void LoadSecurityLibrary(void)
 	if (pInitSecurityInterface != NULL)
 	{
 		g_pSSPI = pInitSecurityInterface();
-		
-		TCHAR szCompName[128];
-		unsigned long szCompNameLen = SIZEOF(szCompName);
-		GetComputerName(szCompName, &szCompNameLen);
-
-		TCHAR szUserName[128];
-		unsigned long szUserNameLen = SIZEOF(szUserName);
-		GetUserName(szUserName, &szUserNameLen);
-
-		unsigned long szSPNLen = szCompNameLen + szUserNameLen + 10;
-		szSPN = (TCHAR*)mir_alloc(szSPNLen * sizeof(TCHAR));
-		mir_sntprintf(szSPN, szSPNLen, _T("Miranda/%s/%s"), szCompName, szUserName);
 	}
 
 	if (g_pSSPI == NULL) 
 	{
 		FreeLibrary(g_hSecurity);
 		g_hSecurity = NULL;
-		mir_free(szSPN);
-		szSPN = NULL;
 	}
 }
 
@@ -108,8 +93,6 @@ static void FreeSecurityLibrary(void)
 	FreeLibrary(g_hSecurity);
 	g_hSecurity = NULL;
 	g_pSSPI = NULL;
-	mir_free(szSPN);
-	szSPN = NULL;
 }
 
 HANDLE NetlibInitSecurityProvider(const TCHAR* szProvider, const TCHAR* szPrincipal)
@@ -149,7 +132,7 @@ HANDLE NetlibInitSecurityProvider(const TCHAR* szProvider, const TCHAR* szPrinci
 			g_pSSPI->FreeContextBuffer(ntlmSecurityPackageInfo);
 
 			hNtlm->szProvider = mir_tstrdup(szProvider);
-			hNtlm->szPrincipal = szPrincipal ? mir_tstrdup(szPrincipal) : mir_tstrdup(szSPN);
+			hNtlm->szPrincipal = mir_tstrdup(szPrincipal ? szPrincipal : _T(""));
 			SecInvalidateHandle(&hNtlm->hClientContext);
 			SecInvalidateHandle(&hNtlm->hClientCredential);
 			ntlmCnt++;
@@ -159,6 +142,19 @@ HANDLE NetlibInitSecurityProvider(const TCHAR* szProvider, const TCHAR* szPrinci
 	ReleaseMutex(hSecMutex);
 	return hSecurity;
 }
+
+#ifdef UNICODE
+HANDLE NetlibInitSecurityProvider(const char* szProvider, const char* szPrincipal)
+{
+	TCHAR *szProviderT  = mir_a2t(szProvider);
+	TCHAR *szPrincipalT = mir_a2t(szPrincipal);
+	HANDLE hSecurity = NetlibInitSecurityProvider(szProviderT, szPrincipalT);
+	mir_free(szProviderT);
+	mir_free(szPrincipalT);
+
+	return hSecurity;
+}
+#endif
 
 void NetlibDestroySecurityProvider(HANDLE hSecurity)
 {
@@ -387,9 +383,7 @@ char* NtlmCreateResponseFromChallenge(HANDLE hSecurity, const char *szChallenge,
 
 static INT_PTR InitSecurityProviderService(WPARAM, LPARAM lParam)
 {
-	TCHAR* szProvider = mir_a2t((char*)lParam);
-	HANDLE hSecurity = NetlibInitSecurityProvider(szProvider, NULL);
-	mir_free(szProvider);
+	HANDLE hSecurity = NetlibInitSecurityProvider((char*)lParam, NULL);
 	return (INT_PTR)hSecurity;
 }
 
@@ -402,20 +396,10 @@ static INT_PTR InitSecurityProviderService2(WPARAM, LPARAM lParam)
 
 #ifdef UNICODE
 	if (req->flags & NNR_UNICODE)
-	{
 		hSecurity = NetlibInitSecurityProvider(req->szProviderName, req->szPrincipal);
-	}
 	else
-	{
-		TCHAR *szProvider  = mir_a2t((char*)req->szProviderName);
-		TCHAR *szPrincipal = mir_a2t((char*)req->szPrincipal);
-		hSecurity = NetlibInitSecurityProvider(req->szProviderName, req->szPrincipal);
-		mir_free(szProvider);
-		mir_free(szPrincipal);
-	}
-#else
-	hSecurity = NetlibInitSecurityProvider(req->szProviderName, req->szPrincipal);
 #endif
+		hSecurity = NetlibInitSecurityProvider((char*)req->szProviderName, (char*)req->szPrincipal);
 
 	return (INT_PTR)hSecurity;
 }

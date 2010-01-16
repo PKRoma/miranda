@@ -32,6 +32,7 @@ struct NetlibUser {
 	NETLIBUSER user;
 	NETLIBUSERSETTINGS settings;
 	char * szStickyHeaders;
+	char * szAuthMethod;
 	int toLog;
     int inportnum;
     int outportnum;
@@ -53,6 +54,7 @@ struct NetlibConnection {
 	int handleType;
 	SOCKET s, s2;
 	int usingHttpGateway;
+	int proxyAuthNeeded;
 	struct NetlibUser *nlu;
 	SOCKADDR_IN sinProxy;
 	NETLIBHTTPPROXYINFO nlhpi;
@@ -98,6 +100,8 @@ void NetlibLeaveNestedCS(struct NetlibNestedCriticalSection *nlncs);
 INT_PTR NetlibBase64Encode(WPARAM wParam,LPARAM lParam);
 INT_PTR NetlibBase64Decode(WPARAM wParam,LPARAM lParam);
 INT_PTR NetlibHttpUrlEncode(WPARAM wParam,LPARAM lParam);
+
+extern CRITICAL_SECTION csNetlibUser;
 
 //netlibbind.c
 int NetlibFreeBoundPort(struct NetlibBoundPort *nlbp);
@@ -169,6 +173,9 @@ void   NetlibSecurityInit(void);
 void   NetlibSecurityDestroy(void);
 void   NetlibDestroySecurityProvider(HANDLE hSecurity);
 HANDLE NetlibInitSecurityProvider(const TCHAR* szProvider, const TCHAR* szPrincipal);
+#ifdef UNICODE
+HANDLE NetlibInitSecurityProvider(const char* szProvider, const char* szPrincipal);
+#endif
 char*  NtlmCreateResponseFromChallenge(HANDLE hSecurity, const char *szChallenge, const TCHAR* login, const TCHAR* psw, 
 									   bool http, unsigned& complete);
 

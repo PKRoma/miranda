@@ -148,6 +148,48 @@ static bool NetlibHttpProcessUrl(NETLIBHTTPREQUEST *nlhr, NetlibUser *nlu, char*
 	return nlc != NULL;
 }
 
+static char* NetlibHttpSecurityProvider(NetlibConnection *nlc, HANDLE& hNtlmSecurity,
+										const char* szProvider, const char* szChallenge, unsigned& complete)
+{
+	char* szAuthHdr = NULL;
+
+	if (hNtlmSecurity == NULL)
+	{
+		char szSpnStr[256] = "";
+		EnterCriticalSection(&csNetlibUser);
+		if (nlc->nlu->settings.useProxy && nlc->nlu->settings.szProxyServer[0])
+		{
+			mir_snprintf(szSpnStr, SIZEOF(szSpnStr), "HTTP/%s", nlc->nlu->settings.szProxyServer);
+			_strlwr(szSpnStr + 5);
+		}
+ 		LeaveCriticalSection(&csNetlibUser);
+		hNtlmSecurity = NetlibInitSecurityProvider(szProvider, szSpnStr[0] ? szSpnStr : NULL);
+	}
+
+	if (hNtlmSecurity)
+	{
+		TCHAR *szLogin = NULL, *szPassw = NULL;
+
+		if (nlc->nlu->settings.useProxyAuth)
+		{
+			EnterCriticalSection(&csNetlibUser);
+			szLogin = mir_a2t(nlc->nlu->settings.szProxyAuthUser);
+			szPassw = mir_a2t(nlc->nlu->settings.szProxyAuthPassword);
+			LeaveCriticalSection(&csNetlibUser);
+		}
+
+		szAuthHdr = NtlmCreateResponseFromChallenge(hNtlmSecurity, 
+			szChallenge, szLogin, szPassw, true, complete);
+
+		mir_free(szLogin);
+		mir_free(szPassw);
+	}
+	else
+		complete = 1;
+
+	return szAuthHdr;
+}
+
 static int HttpPeekFirstResponseLine(struct NetlibConnection *nlc,DWORD dwTimeoutTime,DWORD recvFlags,int *resultCode,char **ppszResultDescr,int *length)
 {
 	int bytesPeeked=0;
@@ -244,10 +286,11 @@ INT_PTR NetlibHttpSendRequest(WPARAM wParam,LPARAM lParam)
 	struct NetlibConnection *nlc=(struct NetlibConnection*)wParam;
 	NETLIBHTTPREQUEST *nlhr=(NETLIBHTTPREQUEST*)lParam;
 	NETLIBHTTPREQUEST *nlhrReply = NULL;
+	HANDLE hNtlmSecurity = NULL;;
 
 	struct ResizableCharBuffer httpRequest={0};
 	char *pszRequest, *szHost, *pszUrl;
-	char *pszProxyAuthorizationHeader = NULL;
+	char *pszProxyAuthHdr = NULL;
 	int i,doneHostHeader,doneContentLengthHeader,doneProxyAuthHeader;
 	int bytesSent;
 
@@ -278,7 +321,7 @@ INT_PTR NetlibHttpSendRequest(WPARAM wParam,LPARAM lParam)
 	szHost = NULL;
 	pszUrl = nlhr->szUrl;
 
-	HANDLE hNtlmSecurity = NULL;
+	char* szAuthMethodNlu = NULL;
 	unsigned complete = false;
 	int count = 6;
 	while (--count)
@@ -309,6 +352,23 @@ INT_PTR NetlibHttpSendRequest(WPARAM wParam,LPARAM lParam)
 		}
 
 		if (!NetlibReconnect(nlc)) { bytesSent = SOCKET_ERROR; break; }
+
+		if (nlc->proxyAuthNeeded && nlc->nlu->szAuthMethod)
+		{
+			if (szAuthMethodNlu == NULL)
+			{
+				EnterCriticalSection(&csNetlibUser);
+				szAuthMethodNlu = mir_strdup(nlc->nlu->szAuthMethod);
+				LeaveCriticalSection(&csNetlibUser);
+			}
+
+			nlc->proxyAuthNeeded = 0;
+
+			mir_free(pszProxyAuthHdr);
+			pszProxyAuthHdr = NetlibHttpSecurityProvider(nlc, hNtlmSecurity, 
+				szAuthMethodNlu, "", complete); 
+		}
+
 		AppendToCharBuffer(&httpRequest, "%s %s HTTP/1.%d\r\n", pszRequest, pszUrl, (nlhr->flags & NLHRF_HTTP11) != 0);
 
 		//HTTP headers
@@ -321,10 +381,10 @@ INT_PTR NetlibHttpSendRequest(WPARAM wParam,LPARAM lParam)
 			if(nlhr->headers[i].szValue==NULL) continue;
 			AppendToCharBuffer(&httpRequest,"%s: %s\r\n",nlhr->headers[i].szName,nlhr->headers[i].szValue);
 		}
-		if(szHost && !doneHostHeader) AppendToCharBuffer(&httpRequest,"%s: %s\r\n","Host",szHost);
-		if(pszProxyAuthorizationHeader) {
-			if(!doneProxyAuthHeader) AppendToCharBuffer(&httpRequest,"%s: %s\r\n","Proxy-Authorization",pszProxyAuthorizationHeader);
-		}
+		if (szHost && !doneHostHeader) 
+			AppendToCharBuffer(&httpRequest,"%s: %s\r\n","Host",szHost);
+		if (pszProxyAuthHdr && !doneProxyAuthHeader)
+			AppendToCharBuffer(&httpRequest,"%s: %s\r\n","Proxy-Authorization",pszProxyAuthHdr);
 		AppendToCharBuffer(&httpRequest,"%s: %s\r\n","Connection","Keep-Alive");
 		AppendToCharBuffer(&httpRequest,"%s: %s\r\n","Proxy-Connection","Keep-Alive");
 
@@ -343,14 +403,8 @@ INT_PTR NetlibHttpSendRequest(WPARAM wParam,LPARAM lParam)
 
 			DWORD fflags = MSG_PEEK | MSG_NODUMP | ((nlhr->flags & NLHRF_NOPROXY) ? MSG_RAW : 0);
 			DWORD dwTimeOutTime = nlc->usingHttpGateway && nlhr->requestType == REQUEST_GET ? -1 : GetTickCount() + HTTPRECVHEADERSTIMEOUT;
-			if(!HttpPeekFirstResponseLine(nlc, dwTimeOutTime, fflags, &resultCode, NULL, NULL))
-			{
-				if (NetlibReconnect(nlc)) continue;
-
-				if (resultCode) NetlibHttpSetLastErrorUsingHttpResult(resultCode);
-				bytesSent = SOCKET_ERROR;
-				break;
-			}
+			if (!HttpPeekFirstResponseLine(nlc, dwTimeOutTime, fflags, &resultCode, NULL, NULL))
+				continue;
 
 			DWORD hflags = (nlhr->flags & (NLHRF_NODUMP|NLHRF_NODUMPHEADERS|NLHRF_NODUMPSEND) ? 
 				MSG_NODUMP : (nlhr->flags & NLHRF_DUMPPROXY ? MSG_DUMPPROXY : 0)) |
@@ -358,7 +412,7 @@ INT_PTR NetlibHttpSendRequest(WPARAM wParam,LPARAM lParam)
 
 			DWORD dflags = (nlhr->flags & (NLHRF_NODUMP | NLHRF_NODUMPSEND) ? 
 				MSG_NODUMP : MSG_DUMPASTEXT | MSG_DUMPPROXY) |
-				(nlhr->flags & NLHRF_NOPROXY ? MSG_RAW : 0);
+				(nlhr->flags & NLHRF_NOPROXY ? MSG_RAW : 0) | MSG_NODUMP;
 
 			if (resultCode == 100)
 			{
@@ -400,7 +454,6 @@ INT_PTR NetlibHttpSendRequest(WPARAM wParam,LPARAM lParam)
 							bytesSent = SOCKET_ERROR;
 							break;
 						}
-						nlc = (NetlibConnection*)nlhr->nlc;
 					}
 					else
 					{
@@ -439,35 +492,28 @@ INT_PTR NetlibHttpSendRequest(WPARAM wParam,LPARAM lParam)
 					char *szChallenge = strchr(szAuthStr, ' '); 
 					if (szChallenge) { *szChallenge = 0; ++szChallenge; }
 
-					if (hNtlmSecurity == NULL)
+					if (szAuthMethodNlu == NULL || _stricmp(szAuthStr, szAuthMethodNlu))
 					{
-						TCHAR *szAuthMethod = mir_a2t(szAuthStr);	
-						hNtlmSecurity = NetlibInitSecurityProvider(szAuthMethod, NULL);
-						mir_free(szAuthMethod);
-					}
+						mir_free(szAuthMethodNlu);
+						szAuthMethodNlu = mir_strdup(szAuthStr);
 
-					if (hNtlmSecurity)
-					{
-						mir_free(pszProxyAuthorizationHeader);
+						EnterCriticalSection(&csNetlibUser);
+						mir_free(nlc->nlu->szAuthMethod);
+						nlc->nlu->szAuthMethod = mir_strdup(szAuthStr);
+						LeaveCriticalSection(&csNetlibUser);
 
-						TCHAR *szLogin = NULL, *szPassw = NULL;
-
-						if (nlc->nlu->settings.useProxyAuth)
+						if (hNtlmSecurity)
 						{
-							szLogin = mir_a2t(nlc->nlu->settings.szProxyAuthUser);
-							szPassw = mir_a2t(nlc->nlu->settings.szProxyAuthPassword);
+							NetlibDestroySecurityProvider(hNtlmSecurity);
+							hNtlmSecurity = NULL;
 						}
-
-						pszProxyAuthorizationHeader = NtlmCreateResponseFromChallenge(hNtlmSecurity, 
-							szChallenge, szLogin, szPassw, true, complete);
-
-						mir_free(szLogin);
-						mir_free(szPassw);
 					}
-					else
-						error = ERROR_ACCESS_DENIED;
+
+					mir_free(pszProxyAuthHdr);
+					pszProxyAuthHdr = NetlibHttpSecurityProvider(nlc, hNtlmSecurity, 
+						szAuthMethodNlu, szChallenge, complete); 
 				}
-				if (pszProxyAuthorizationHeader == NULL) 
+				if (pszProxyAuthHdr == NULL) 
 				{
 					if (error != ERROR_SUCCESS) SetLastError(error);
 					bytesSent = SOCKET_ERROR;
@@ -489,8 +535,10 @@ INT_PTR NetlibHttpSendRequest(WPARAM wParam,LPARAM lParam)
 
 	//clean up
 	if (hNtlmSecurity) NetlibDestroySecurityProvider(hNtlmSecurity);
-	mir_free(pszProxyAuthorizationHeader);
+	mir_free(pszProxyAuthHdr);
 	mir_free(szHost);
+	mir_free(szAuthMethodNlu);
+
 	if (nlc->nlhpi.szHttpGetUrl == NULL)
 	{
 		NetlibLeaveNestedCS(&nlc->ncsSend);

@@ -473,10 +473,8 @@ INT_PTR NetlibHttpSetSticky(WPARAM wParam, LPARAM lParam)
 {
 	struct NetlibUser * nu = (struct NetlibUser*)wParam;
 	if (GetNetlibHandleType(nu)!=NLH_USER) return ERROR_INVALID_PARAMETER;
-	if (nu->szStickyHeaders) { mir_free(nu->szStickyHeaders); nu->szStickyHeaders=NULL; }
-	if (lParam) {
-		nu->szStickyHeaders=mir_strdup((char*)lParam); // pointer is ours
-	}
+	mir_free(nu->szStickyHeaders); 
+	nu->szStickyHeaders = mir_strdup((char*)lParam); // pointer is ours
 	return 0;
 }
 

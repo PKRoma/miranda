@@ -23,8 +23,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "commonheaders.h"
 #include "netlib.h"
 
-extern CRITICAL_SECTION csNetlibUser;
-
 bool BindSocketToPort(const char *szPorts, SOCKET s, int* portn)
 {
     SOCKADDR_IN sin = {0};

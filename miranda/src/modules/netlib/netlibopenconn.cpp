@@ -473,19 +473,23 @@ bool NetlibDoConnect(NetlibConnection *nlc)
 	NETLIBOPENCONNECTION *nloc = &nlc->nloc;
 	NetlibUser *nlu = nlc->nlu;
 
-	nlc->sinProxy.sin_family=AF_INET;
-	if(nlu->settings.useProxy && nlu->settings.szProxyServer && nlu->settings.szProxyServer[0]) {
-		nlc->sinProxy.sin_port=htons((short)nlu->settings.wProxyPort);
-		nlc->sinProxy.sin_addr.S_un.S_addr=DnsLookup(nlu,nlu->settings.szProxyServer);
+	nlc->proxyAuthNeeded = 1;
+	nlc->sinProxy.sin_family = AF_INET;
+	if(nlu->settings.useProxy && nlu->settings.szProxyServer && nlu->settings.szProxyServer[0]) 
+	{
+		nlc->sinProxy.sin_port = htons(nlu->settings.wProxyPort);
+		nlc->sinProxy.sin_addr.S_un.S_addr = DnsLookup(nlu, nlu->settings.szProxyServer);
 	}
-	else {
-		nlc->sinProxy.sin_port=htons((short)nloc->wPort);
-		nlc->sinProxy.sin_addr.S_un.S_addr=DnsLookup(nlu,nloc->szHost);
+	else 
+	{
+		nlc->sinProxy.sin_port = htons(nloc->wPort);
+		nlc->sinProxy.sin_addr.S_un.S_addr = DnsLookup(nlu, nloc->szHost);
 	}
 
 	if (nlc->sinProxy.sin_addr.S_un.S_addr == 0) return false;
 
-	if (my_connect(nlc, nloc)==SOCKET_ERROR) {
+	if (my_connect(nlc, nloc)==SOCKET_ERROR) 
+	{
 		Netlib_Logf(nlu,"%s %d: %s() failed (%u)",__FILE__,__LINE__,"connect",WSAGetLastError());
 		return false;
 	}

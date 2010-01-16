@@ -25,7 +25,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 extern struct NetlibUser **netlibUser;
 extern int netlibUserCount;
-extern CRITICAL_SECTION csNetlibUser;
 
 struct NetlibTempSettings {
 	DWORD flags;

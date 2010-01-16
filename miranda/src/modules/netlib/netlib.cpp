@@ -132,7 +132,7 @@ static INT_PTR NetlibRegisterUser(WPARAM,LPARAM lParam)
 	   || (!(nlu->flags&NUF_NOOPTIONS) && nlu->szDescriptiveName==NULL)
 	   || (nlu->flags&NUF_HTTPGATEWAY && (nlu->pfnHttpGatewayInit==NULL))) {
 		SetLastError(ERROR_INVALID_PARAMETER);
-		return (INT_PTR)(HANDLE)NULL;
+		return 0;
 	}
 
 	EnterCriticalSection(&csNetlibUser);
@@ -140,7 +140,7 @@ static INT_PTR NetlibRegisterUser(WPARAM,LPARAM lParam)
 		if(!lstrcmpA(netlibUser[i]->user.szSettingsModule,nlu->szSettingsModule)) {
 			LeaveCriticalSection(&csNetlibUser);
 			SetLastError(ERROR_DUP_NAME);
-			return (INT_PTR)(HANDLE)NULL;
+			return 0;
 		}
 	LeaveCriticalSection(&csNetlibUser);
 
@@ -155,7 +155,7 @@ static INT_PTR NetlibRegisterUser(WPARAM,LPARAM lParam)
 	   || (nlu->szDescriptiveName && thisUser->user.ptszDescriptiveName ==NULL)
 	   || (nlu->szHttpGatewayUserAgent && (thisUser->user.szHttpGatewayUserAgent=mir_strdup(nlu->szHttpGatewayUserAgent))==NULL)) {
 		SetLastError(ERROR_OUTOFMEMORY);
-		return (INT_PTR)(HANDLE)NULL;
+		return 0;
 	}
 	if (nlu->szHttpGatewayHello)
 		thisUser->user.szHttpGatewayHello=mir_strdup(nlu->szHttpGatewayHello);
@@ -240,6 +240,7 @@ INT_PTR NetlibCloseHandle(WPARAM wParam, LPARAM)
 			mir_free(nlu->user.szHttpGatewayHello);
 			mir_free(nlu->user.szHttpGatewayUserAgent);
 			mir_free(nlu->szStickyHeaders);
+			mir_free(nlu->szAuthMethod);
 			break;
 		}
 		case NLH_CONNECTION:
