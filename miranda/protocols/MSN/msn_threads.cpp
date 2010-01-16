@@ -679,7 +679,7 @@ void ThreadData::applyGatewayData(HANDLE hConn, bool isPoll)
 	nlhpi.flags = NLHPIF_HTTP11;
 	nlhpi.szHttpGetUrl = NULL;
 	nlhpi.szHttpPostUrl = szHttpPostUrl;
-	nlhpi.firstPostSequence = 1;
+	nlhpi.combinePackets = 5;
 	MSN_CallService(MS_NETLIB_SETHTTPPROXYINFO, (WPARAM)hConn, (LPARAM)&nlhpi);
 }
 
