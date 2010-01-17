@@ -199,7 +199,7 @@ INT_PTR NetlibHttpSendRequest(WPARAM wParam,LPARAM lParam)
 		}
 		if(nlhr->flags&NLHRF_REMOVEHOST
 		   || (nlhr->flags&NLHRF_SMARTREMOVEHOST
-		       && (!nlc->nlu->settings.useProxy
+		       && (nlhr->flags & NLHRF_SSL || !nlc->nlu->settings.useProxy
 			       || !(nlc->nlu->settings.proxyType==PROXYTYPE_HTTP || nlc->nlu->settings.proxyType==PROXYTYPE_HTTPS)))) {
            pszUrl = ppath[0] ? ppath : "/";
 		}
