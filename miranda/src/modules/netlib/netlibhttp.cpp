@@ -345,8 +345,7 @@ INT_PTR NetlibHttpSendRequest(WPARAM wParam,LPARAM lParam)
 
 			NETLIBUSERSETTINGS *setgs = &nlc->nlu->settings;
 			if (nlhr->flags & NLHRF_REMOVEHOST || (nlhr->flags & NLHRF_SMARTREMOVEHOST && 
-				((nlhr->flags & NLHRF_SSL) || 
-				!(setgs->useProxy && (setgs->proxyType == PROXYTYPE_HTTP || setgs->proxyType == PROXYTYPE_HTTPS))))) 
+				(nlhr->flags & NLHRF_SSL || !setgs->useProxy || setgs->proxyType != PROXYTYPE_HTTP))) 
 			{
 			   pszUrl = ppath[0] ? ppath : "/";
 			}
