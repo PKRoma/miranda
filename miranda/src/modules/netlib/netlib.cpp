@@ -240,7 +240,6 @@ INT_PTR NetlibCloseHandle(WPARAM wParam, LPARAM)
 			mir_free(nlu->user.szHttpGatewayHello);
 			mir_free(nlu->user.szHttpGatewayUserAgent);
 			mir_free(nlu->szStickyHeaders);
-			mir_free(nlu->szAuthMethod);
 			break;
 		}
 		case NLH_CONNECTION:

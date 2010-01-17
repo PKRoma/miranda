@@ -31,6 +31,61 @@ struct ResizableCharBuffer {
 	int iEnd,cbAlloced;
 };
 
+struct ProxyAuth
+{
+	char *szServer;
+	char *szMethod;
+
+	ProxyAuth(const char *pszServer, const char *pszMethod)
+	{
+		szServer = mir_strdup(pszServer);
+		szMethod = mir_strdup(pszMethod);
+	}
+	~ProxyAuth()
+	{
+		mir_free(szServer);
+		mir_free(szMethod);
+	}
+	static int Compare(const ProxyAuth* p1, const ProxyAuth* p2 )
+	{	return lstrcmpiA(p1->szServer, p2->szServer); }
+};
+
+struct ProxyAuthList : OBJLIST<ProxyAuth>
+{
+	ProxyAuthList() :  OBJLIST<ProxyAuth>(2, ProxyAuth::Compare) {}
+
+	void add(NetlibUser *nlu, const char *pszMethod)
+	{
+		EnterCriticalSection(&csNetlibUser);
+		if (nlu->settings.useProxy && nlu->settings.szProxyServer[0])
+		{
+			ProxyAuth * rec = OBJLIST<ProxyAuth>::find((ProxyAuth*)&nlu->settings.szProxyServer);
+			if (rec)
+			{ 
+				mir_free(rec->szMethod); rec->szMethod = mir_strdup(pszMethod);
+			}
+			else
+				insert(new ProxyAuth(nlu->settings.szProxyServer, pszMethod));
+		}
+		LeaveCriticalSection(&csNetlibUser);
+	}
+
+	char* find(NetlibUser *nlu)
+	{
+		char * res = NULL;
+		EnterCriticalSection(&csNetlibUser);
+		if (nlu->settings.useProxy && nlu->settings.szProxyServer[0])
+		{
+			ProxyAuth * rec = OBJLIST<ProxyAuth>::find((ProxyAuth*)&nlu->settings.szProxyServer);
+			res = rec ? mir_strdup(rec->szMethod) : NULL;
+		}
+		LeaveCriticalSection(&csNetlibUser);
+		return res;
+	}
+};
+
+ProxyAuthList proxyAuthList;
+
 static void AppendToCharBuffer(struct ResizableCharBuffer *rcb,const char *fmt,...)
 {
 	va_list va;
@@ -353,20 +408,18 @@ INT_PTR NetlibHttpSendRequest(WPARAM wParam,LPARAM lParam)
 
 		if (!NetlibReconnect(nlc)) { bytesSent = SOCKET_ERROR; break; }
 
-		if (nlc->proxyAuthNeeded && nlc->nlu->szAuthMethod)
+		if (nlc->proxyAuthNeeded && proxyAuthList.getCount())
 		{
-			if (szAuthMethodNlu == NULL)
-			{
-				EnterCriticalSection(&csNetlibUser);
-				szAuthMethodNlu = mir_strdup(nlc->nlu->szAuthMethod);
-				LeaveCriticalSection(&csNetlibUser);
-			}
-
 			nlc->proxyAuthNeeded = 0;
+			if (szAuthMethodNlu == NULL) 
+				szAuthMethodNlu = proxyAuthList.find(nlc->nlu);
 
-			mir_free(pszProxyAuthHdr);
-			pszProxyAuthHdr = NetlibHttpSecurityProvider(nlc, hNtlmSecurity, 
-				szAuthMethodNlu, "", complete); 
+			if (szAuthMethodNlu)
+			{
+				mir_free(pszProxyAuthHdr);
+				pszProxyAuthHdr = NetlibHttpSecurityProvider(nlc, hNtlmSecurity, 
+					szAuthMethodNlu, "", complete);
+			}
 		}
 
 		AppendToCharBuffer(&httpRequest, "%s %s HTTP/1.%d\r\n", pszRequest, pszUrl, (nlhr->flags & NLHRF_HTTP11) != 0);
@@ -496,11 +549,7 @@ INT_PTR NetlibHttpSendRequest(WPARAM wParam,LPARAM lParam)
 					{
 						mir_free(szAuthMethodNlu);
 						szAuthMethodNlu = mir_strdup(szAuthStr);
-
-						EnterCriticalSection(&csNetlibUser);
-						mir_free(nlc->nlu->szAuthMethod);
-						nlc->nlu->szAuthMethod = mir_strdup(szAuthStr);
-						LeaveCriticalSection(&csNetlibUser);
+						proxyAuthList.add(nlc->nlu, szAuthMethodNlu);
 
 						if (hNtlmSecurity)
 						{

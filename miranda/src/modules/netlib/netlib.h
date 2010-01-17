@@ -32,7 +32,6 @@ struct NetlibUser {
 	NETLIBUSER user;
 	NETLIBUSERSETTINGS settings;
 	char * szStickyHeaders;
-	char * szAuthMethod;
 	int toLog;
     int inportnum;
     int outportnum;
