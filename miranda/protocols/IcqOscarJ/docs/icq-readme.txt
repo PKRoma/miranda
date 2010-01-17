@@ -17,11 +17,6 @@ ______________
   received twice from some clients (it is a problem of that clients, they do send them
   twice)
 
-- In Invisible mode, when other side is not in visible list messages are not unicode
-  aware. This is because ICQ protocol does not support unicode offline messages.
-  You can partly solve this by setting proper codepage for the contact - database setting
-  WORD "CodePage" in ICQ scope
-
 - When synchronising server-list, users get added with await auth flag or receive added
   message. The way which ICQ servers handle authorizations, we cannot do it better - when
   uploading contacts to server account has to be a new one, then contacts can be added
@@ -72,6 +67,7 @@ Improvements:
   Ability to send/receive contacts to/from ICQ6 and AIM
   Server-list support now groups requests - much more faster & reliable
   Improved ChangeInfo module compatibility with screen readers
+  Client detection improvements
 
 
 0.3.9.5
@@ -466,7 +462,7 @@ Thanks to Angeli-Ka for nice custom status icons.
 License and Copyright
 _____________________
 
-Copyright (C) 2000-2009 Joe Kucera, Martin Öberg, Richard Hughes, Jon Keating
+Copyright (C) 2000-2010 Joe Kucera, Martin Öberg, Richard Hughes, Jon Keating
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License

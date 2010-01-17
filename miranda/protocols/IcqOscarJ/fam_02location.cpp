@@ -5,7 +5,7 @@
 // Copyright © 2000-2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001-2002 Jon Keating, Richard Hughes
 // Copyright © 2002-2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004-2008 Joe Kucera
+// Copyright © 2004-2010 Joe Kucera
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -19,7 +19,7 @@
 // 
 // You should have received a copy of the GNU General Public License
 // along with this program; if not, write to the Free Software
-// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 //
 // -----------------------------------------------------------------------------
 //
@@ -30,7 +30,7 @@
 //
 // DESCRIPTION:
 //
-//  Describe me here please...
+//  Handle packets from Location family
 //
 // -----------------------------------------------------------------------------
 
@@ -39,7 +39,7 @@
 
 static void handleLocationUserInfoReply(BYTE* buf, WORD wLen, DWORD dwCookie);
 
-extern char* cliSpamBot;
+extern const char* cliSpamBot;
 
 void CIcqProto::handleLocationFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pSnacHeader)
 {
@@ -230,10 +230,8 @@ void CIcqProto::handleLocationUserInfoReply(BYTE* buf, WORD wLen, DWORD dwCookie
 				oscar_tlv_chain* pChain;
 				oscar_tlv* pTLV;
 				BYTE *tmp;
-				WORD wClass;
 				WORD wVersion = 0;
 				DWORD dwFT1 = 0, dwFT2 = 0, dwFT3 = 0;
-				DWORD dwOnlineSince;
 				BYTE nTCPFlag = 0;
 				DWORD dwDirectConnCookie = 0;
 				DWORD dwWebPort = 0;
@@ -241,7 +239,7 @@ void CIcqProto::handleLocationUserInfoReply(BYTE* buf, WORD wLen, DWORD dwCookie
 				WORD capLen = 0;
 				char szStrBuf[MAX_PATH];
 				BYTE bClientId = 0;
-				char *szClient;
+				const char *szClient;
 
 				// Syntax check
 				if (wLen < 4)
@@ -253,16 +251,18 @@ void CIcqProto::handleLocationUserInfoReply(BYTE* buf, WORD wLen, DWORD dwCookie
 					return;
 
 				// Get Class word
-				wClass = pChain->getWord(0x01, 1);
+				WORD wClass = pChain->getWord(0x01, 1);
+				int nIsICQ = wClass & CLASS_ICQ;
 
 				if (dwUIN)
 				{ // Get DC info TLV
 					pTLV = pChain->getTLV(0x0C, 1);
 					if (pTLV && (pTLV->wLen >= 15))
 					{
-						BYTE* pBuffer;
+						BYTE *pBuffer = pTLV->pData;
 
-						pBuffer = pTLV->pData;
+						nIsICQ = TRUE;
+
 						pBuffer += 8;
 						unpackByte(&pBuffer,  &nTCPFlag);
 						unpackWord(&pBuffer,  &wVersion);
@@ -279,8 +279,11 @@ void CIcqProto::handleLocationUserInfoReply(BYTE* buf, WORD wLen, DWORD dwCookie
 						}
 					}
 				}
+				else
+					nIsICQ = FALSE;
+
 				// Get Online Since TLV
-				dwOnlineSince = pChain->getDWord(0x03, 1);
+				DWORD dwOnlineSince = pChain->getDWord(0x03, 1);
 
 				disposeChain(&pChain);
 
@@ -298,7 +301,7 @@ void CIcqProto::handleLocationUserInfoReply(BYTE* buf, WORD wLen, DWORD dwCookie
 						  capLen = pTLV->wLen;
 					  }
 				  }
-				  szClient = detectUserClient(hContact, dwUIN, wClass, wVersion, dwFT1, dwFT2, dwFT3, dwOnlineSince, nTCPFlag, dwDirectConnCookie, dwWebPort, capBuf, capLen, &bClientId, szStrBuf);
+				  szClient = detectUserClient(hContact, nIsICQ, dwUIN, wClass, wVersion, dwFT1, dwFT2, dwFT3, dwOnlineSince, nTCPFlag, dwDirectConnCookie, dwWebPort, capBuf, capLen, &bClientId, szStrBuf);
 
 				  // Free TLV chain
 				  disposeChain(&pChain);

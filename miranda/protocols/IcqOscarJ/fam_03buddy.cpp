@@ -5,7 +5,7 @@
 // Copyright © 2000-2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001-2002 Jon Keating, Richard Hughes
 // Copyright © 2002-2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004-2009 Joe Kucera
+// Copyright © 2004-2010 Joe Kucera
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -19,7 +19,7 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with this program; if not, write to the Free Software
-// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 //
 // -----------------------------------------------------------------------------
 //
@@ -37,9 +37,9 @@
 #include "icqoscar.h"
 
 extern capstr capShortCaps;
-extern char* cliSpamBot;
+extern const char* cliSpamBot;
 
-void CIcqProto::handleBuddyFam(BYTE* pBuffer, WORD wBufferLength, snac_header* pSnacHeader, serverthread_info *info)
+void CIcqProto::handleBuddyFam(BYTE *pBuffer, WORD wBufferLength, snac_header *pSnacHeader, serverthread_info *info)
 {
 	switch (pSnacHeader->wSubtype)
 	{
@@ -81,23 +81,17 @@ void CIcqProto::handleBuddyFam(BYTE* pBuffer, WORD wBufferLength, snac_header* p
 
 void CIcqProto::handleReplyBuddy(BYTE *buf, WORD wPackLen)
 {
-	oscar_tlv_chain *pChain;
-
-	pChain = readIntoTLVChain(&buf, wPackLen, 0);
+	oscar_tlv_chain *pChain = readIntoTLVChain(&buf, wPackLen, 0);
 
 	if (pChain)
 	{
-		DWORD wMaxUins;
-		DWORD wMaxWatchers;
-    DWORD wMaxTemporary;
-
-		wMaxUins = pChain->getWord(1, 1);
-		wMaxWatchers = pChain->getWord(2, 1);
-    wMaxTemporary = pChain->getWord(4, 1);
+		DWORD wMaxUins = pChain->getWord(1, 1);
+		DWORD wMaxWatchers = pChain->getWord(2, 1);
+		DWORD wMaxTemporary = pChain->getWord(4, 1);
 
 		NetLog_Server("MaxUINs %u", wMaxUins);
 		NetLog_Server("MaxWatchers %u", wMaxWatchers);
-    NetLog_Server("MaxTemporary %u", wMaxTemporary);
+		NetLog_Server("MaxTemporary %u", wMaxTemporary);
 
 		disposeChain(&pChain);
 	}
@@ -110,9 +104,9 @@ void CIcqProto::handleReplyBuddy(BYTE *buf, WORD wPackLen)
 
 int unpackSessionDataItem(oscar_tlv_chain *pChain, WORD wItemType, BYTE **ppItemData, WORD *pwItemSize, BYTE *pbItemFlags)
 {
-	oscar_tlv* tlv = pChain->getTLV(0x1D, 1);
+	oscar_tlv *tlv = pChain->getTLV(0x1D, 1);
 	int len = 0;
-	BYTE* data;
+	BYTE *data;
 
 	if (tlv) 
 	{
@@ -165,31 +159,25 @@ int unpackSessionDataItem(oscar_tlv_chain *pChain, WORD wItemType, BYTE **ppItem
 // TLV(14) Instance number (AIM only)
 // TLV(19) Short capabilities
 // TLV(1D) Session Data (Avatar, Mood, etc.)
+// TLV(1F) User class (upper bytes)
 
-void CIcqProto::handleUserOnline(BYTE* buf, WORD wLen, serverthread_info* info)
+void CIcqProto::handleUserOnline(BYTE *buf, WORD wLen, serverthread_info *info)
 {
-	HANDLE hContact;
 	DWORD dwPort = 0;
 	DWORD dwRealIP = 0;
-	DWORD dwIP = 0;
 	DWORD dwUIN;
 	uid_str szUID;
 	DWORD dwDirectConnCookie = 0;
 	DWORD dwWebPort = 0;
 	DWORD dwFT1 = 0, dwFT2 = 0, dwFT3 = 0;
-	char *szClient = NULL;
+	const char *szClient = NULL;
 	BYTE bClientId = 0;
 	WORD wVersion = 0;
-	WORD wClass;
 	WORD wTLVCount;
 	WORD wWarningLevel;
 	WORD wStatusFlags;
 	WORD wStatus;
 	BYTE nTCPFlag = 0;
-	DWORD dwOnlineSince;
-	DWORD dwMemberSince;
-	WORD wIdleTimer;
-	time_t tIdleTS = 0;
 	char szStrBuf[MAX_PATH];
 
 	// Unpack the sender's user ID
@@ -208,7 +196,7 @@ void CIcqProto::handleUserOnline(BYTE* buf, WORD wLen, serverthread_info* info)
 	wLen -= 2;
 
 	// Determine contact
-	hContact = HContactFromUID(dwUIN, szUID, NULL);
+	HANDLE hContact = HContactFromUID(dwUIN, szUID, NULL);
 
 	// Ignore status notification if the user is not already on our list
 	if (hContact == INVALID_HANDLE_VALUE)
@@ -220,70 +208,64 @@ void CIcqProto::handleUserOnline(BYTE* buf, WORD wLen, serverthread_info* info)
 	}
 
 	// Read user info TLVs
+	oscar_tlv_chain *pChain;
+	oscar_tlv *pTLV;
+
+	// Syntax check
+	if (wLen < 4)
+		return;
+
+	// Get chain
+	if (!(pChain = readIntoTLVChain(&buf, wLen, wTLVCount)))
+		return;
+
+	// Get Class word
+	WORD wClass = pChain->getWord(0x01, 1);
+	int nIsICQ = wClass & CLASS_ICQ;
+
+	if (dwUIN)
 	{
-		oscar_tlv_chain* pChain;
-		oscar_tlv* pTLV;
-
-		// Syntax check
-		if (wLen < 4)
-			return;
-
-		// Get chain
-		if (!(pChain = readIntoTLVChain(&buf, wLen, wTLVCount)))
-			return;
-
-		// Get Class word
-		wClass = pChain->getWord(0x01, 1);
-
-		if (dwUIN)
+		// Get DC info TLV
+		pTLV = pChain->getTLV(0x0C, 1);
+		if (pTLV && (pTLV->wLen >= 15))
 		{
-			// Get DC info TLV
-			pTLV = pChain->getTLV(0x0C, 1);
-			if (pTLV && (pTLV->wLen >= 15))
-			{
-				BYTE* pBuffer;
+			BYTE *pBuffer = pTLV->pData;
 
-				pBuffer = pTLV->pData;
-				unpackDWord(&pBuffer, &dwRealIP);
-				unpackDWord(&pBuffer, &dwPort);
-				unpackByte(&pBuffer,  &nTCPFlag);
-				unpackWord(&pBuffer,  &wVersion);
-				unpackDWord(&pBuffer, &dwDirectConnCookie);
-				unpackDWord(&pBuffer, &dwWebPort); // Web front port
-				pBuffer += 4; // Client features
+			nIsICQ = TRUE;
 
-				// Get faked time signatures, used to identify clients
-				if (pTLV->wLen >= 0x23)
-				{
-					unpackDWord(&pBuffer, &dwFT1);
-					unpackDWord(&pBuffer, &dwFT2);
-					unpackDWord(&pBuffer, &dwFT3);
-				}
-			}
-			else
-			{
-				// This client doesnt want DCs
-			}
+			unpackDWord(&pBuffer, &dwRealIP);
+			unpackDWord(&pBuffer, &dwPort);
+			unpackByte(&pBuffer,  &nTCPFlag);
+			unpackWord(&pBuffer,  &wVersion);
+			unpackDWord(&pBuffer, &dwDirectConnCookie);
+			unpackDWord(&pBuffer, &dwWebPort); // Web front port
+			pBuffer += 4; // Client features
 
-			// Get Status info TLV
-			pTLV = pChain->getTLV(0x06, 1);
-			if (pTLV && (pTLV->wLen >= 4))
+			// Get faked time signatures, used to identify clients
+			if (pTLV->wLen >= 0x23)
 			{
-				BYTE* pBuffer;
-
-				pBuffer = pTLV->pData;
-				unpackWord(&pBuffer, &wStatusFlags);
-				unpackWord(&pBuffer, &wStatus);
-			}
-			else
-			{
-				// Huh? No status TLV? Lets guess then...
-				wStatusFlags = 0;
-				wStatus = ICQ_STATUS_ONLINE;
+				unpackDWord(&pBuffer, &dwFT1);
+				unpackDWord(&pBuffer, &dwFT2);
+				unpackDWord(&pBuffer, &dwFT3);
 			}
 		}
 		else
 		{
+			// This client doesnt want DCs
+		}
+
+		// Get Status info TLV
+		pTLV = pChain->getTLV(0x06, 1);
+		if (pTLV && (pTLV->wLen >= 4))
+		{
+			BYTE *pBuffer = pTLV->pData;
+
+			unpackWord(&pBuffer, &wStatusFlags);
+			unpackWord(&pBuffer, &wStatus);
+		}
+		else if (!nIsICQ)
+		{
+			// Connected thru AIM client, guess by user class
 			if (wClass & CLASS_AWAY)
 				wStatus = ID_STATUS_AWAY;
 			else if (wClass & CLASS_WIRELESS)
@@ -293,188 +275,231 @@ void CIcqProto::handleUserOnline(BYTE* buf, WORD wLen, serverthread_info* info)
 
 			wStatusFlags = 0;
 		}
+		else
+		{
+			// Huh? No status TLV? Lets guess then...
+			wStatusFlags = 0;
+			wStatus = ICQ_STATUS_ONLINE;
+		}
+	}
+	else
+	{
+		nIsICQ = FALSE;
+
+		if (wClass & CLASS_AWAY)
+			wStatus = ID_STATUS_AWAY;
+		else if (wClass & CLASS_WIRELESS)
+			wStatus = ID_STATUS_ONTHEPHONE;
+		else
+			wStatus = ID_STATUS_ONLINE;
+
+		wStatusFlags = 0;
+	}
 
 #ifdef _DEBUG
-		NetLog_Server("Flags are %x", wStatusFlags);
-		NetLog_Server("Status is %x", wStatus);
+	NetLog_Server("Flags are %x", wStatusFlags);
+	NetLog_Server("Status is %x", wStatus);
 #endif
 
-		// Get IP TLV
-		dwIP = pChain->getDWord(0x0A, 1);
+	// Get IP TLV
+	DWORD dwIP = pChain->getDWord(0x0A, 1);
 
-		// Get Online Since TLV
-		dwOnlineSince = pChain->getDWord(0x03, 1);
+	// Get Online Since TLV
+	DWORD dwOnlineSince = pChain->getDWord(0x03, 1);
 
-		// Get Member Since TLV
-		dwMemberSince = pChain->getDWord(0x05, 1);
+	// Get Member Since TLV
+	DWORD dwMemberSince = pChain->getDWord(0x05, 1);
 
-		// Get Idle timer TLV
-		wIdleTimer = pChain->getWord(0x04, 1);
-		if (wIdleTimer)
-		{
-			time(&tIdleTS);
-			tIdleTS -= (wIdleTimer*60);
-		};
+	// Get Idle timer TLV
+	WORD wIdleTimer = pChain->getWord(0x04, 1);
+	time_t tIdleTS = 0;
+	if (wIdleTimer)
+	{
+		time(&tIdleTS);
+		tIdleTS -= (wIdleTimer*60);
+	};
 
 #ifdef _DEBUG
-		if (wIdleTimer)
-			NetLog_Server("Idle timer is %u.", wIdleTimer);
-		NetLog_Server("Online since %s", time2text(dwOnlineSince));
+	if (wIdleTimer)
+		NetLog_Server("Idle timer is %u.", wIdleTimer);
+	NetLog_Server("Online since %s", time2text(dwOnlineSince));
 #endif
 
-		// Check client capabilities
-		if (hContact != NULL)
+	// Check client capabilities
+	if (hContact != NULL)
+	{
+		WORD wOldStatus = getContactStatus(hContact);
+
+		// Get Avatar Hash TLV
+		pTLV = pChain->getTLV(0x1D, 1);
+		if (pTLV)
+			handleAvatarContactHash(dwUIN, szUID, hContact, pTLV->pData, pTLV->wLen, wOldStatus);
+		else
+			handleAvatarContactHash(dwUIN, szUID, hContact, NULL, 0, wOldStatus);
+
+		// Update the contact's capabilities
+		if (wOldStatus == ID_STATUS_OFFLINE)
 		{
-			WORD wOldStatus;
+			// Delete the capabilities we saved the last time this contact came online
+			ClearAllContactCapabilities(hContact);
 
-			wOldStatus = getContactStatus(hContact);
-
-			// Get Avatar Hash TLV
-			pTLV = pChain->getTLV(0x1D, 1);
-			if (pTLV)
-				handleAvatarContactHash(dwUIN, szUID, hContact, pTLV->pData, pTLV->wLen, wOldStatus);
-			else
-				handleAvatarContactHash(dwUIN, szUID, hContact, NULL, 0, wOldStatus);
-
-			// Update the contact's capabilities
-			if (wOldStatus == ID_STATUS_OFFLINE)
 			{
-				// Delete the capabilities we saved the last time this contact came online
-				ClearAllContactCapabilities(hContact);
+				BYTE *capBuf = NULL;
+				WORD capLen = 0;
 
+				// Get Location Capability Info TLVs
+				oscar_tlv *pFullTLV = pChain->getTLV(0x0D, 1);
+				oscar_tlv *pShortTLV = pChain->getTLV(0x19, 1);
+
+				if (pFullTLV && (pFullTLV->wLen >= BINARY_CAP_SIZE))
+					capLen = pFullTLV->wLen;
+
+				if (pShortTLV && (pShortTLV->wLen >= 2))
+					capLen += (pShortTLV->wLen * 8);
+
+				if (capLen)
 				{
-					BYTE* capBuf = NULL;
-					WORD capLen = 0;
-					oscar_tlv* pNewTLV;
+					BYTE *pCapability = (BYTE*)_alloca(capLen + BINARY_CAP_SIZE);
 
-					// Get Location Capability Info TLVs
-					pTLV = pChain->getTLV(0x0D, 1);
-					pNewTLV = pChain->getTLV(0x19, 1);
+					capBuf = pCapability;
+					capLen = 0; // we need to recount that
 
-					if (pTLV && (pTLV->wLen >= 16))
-						capLen = pTLV->wLen;
+					if (pFullTLV && (pFullTLV->wLen >= BINARY_CAP_SIZE))
+					{ // copy classic Capabilities
+						BYTE *cData = pFullTLV->pData;
+						int cLen = pFullTLV->wLen;
 
-					if (pNewTLV && (pNewTLV->wLen >= 2))
-						capLen += (pNewTLV->wLen * 8);
-
-					if (capLen)
-					{
-						int i;
-						BYTE* pCap;
-
-						capBuf = pCap = (BYTE*)_alloca(capLen + 0x10);
-
-						capLen = 0; // we need to recount that
-
-						if (pTLV && (pTLV->wLen >= 16))
-						{ // copy classic Capabilities
-							char* cData = (char*)pTLV->pData;
-							int cLen = pTLV->wLen;
-
-							while (cLen)
-							{ // ohh, those damned AOL updates.... they broke it again
-								if (!MatchCap(capBuf, capLen, (capstr*)cData, 0x10))
-								{ // not there, add
-									memcpy(pCap, cData, 0x10);
-									capLen += 0x10;
-									pCap += 0x10;
-								}
-								cData += 0x10;
-								cLen -= 0x10;
+						while (cLen)
+						{ // be impervious to duplicates (AOL sends them sometimes)
+							if (!MatchCap(capBuf, capLen, (capstr*)cData, BINARY_CAP_SIZE))
+							{ // not present, add
+								memcpy(pCapability, cData, BINARY_CAP_SIZE);
+								capLen += BINARY_CAP_SIZE;
+								pCapability += BINARY_CAP_SIZE;
 							}
+							cData += BINARY_CAP_SIZE;
+							cLen -= BINARY_CAP_SIZE;
 						}
+					}
 
-						if (pNewTLV && (pNewTLV->wLen >= 2))
-						{ // get new Capabilities
-							capstr tmp;
-							BYTE* capNew = pNewTLV->pData;
+					if (pShortTLV && (pShortTLV->wLen >= 2))
+					{ // copy short Capabilities
+						capstr tmp;
+						BYTE *cData = pShortTLV->pData;
+						int cLen = pShortTLV->wLen;
 
-							memcpy(tmp, capShortCaps, 0x10); 
+						memcpy(tmp, capShortCaps, BINARY_CAP_SIZE); 
 
-							for (i = 0; i<pNewTLV->wLen; i+=2)
-							{
-								tmp[2] = capNew[0];
-								tmp[3] = capNew[1];
+						while (cLen)
+						{ // be impervious to duplicates (AOL sends them sometimes)
+							tmp[2] = cData[0];
+							tmp[3] = cData[1];
 
-								capNew += 2;
-
-								if (!MatchCap(capBuf, capLen, &tmp, 0x10))
-								{ // not present, add
-									memcpy(pCap, tmp, 0x10);
-									pCap += 0x10;
-									capLen += 0x10;
-								}
+							if (!MatchCap(capBuf, capLen, &tmp, BINARY_CAP_SIZE))
+							{ // not present, add
+								memcpy(pCapability, tmp, BINARY_CAP_SIZE);
+								capLen += BINARY_CAP_SIZE;
+								pCapability += BINARY_CAP_SIZE;
 							}
+							cData += 2;
+							cLen -= 2;
 						}
-						AddCapabilitiesFromBuffer(hContact, capBuf, capLen);
 					}
-					else
-					{ // no capability
-						NetLog_Server("No capability info TLVs");
-					}
-
-					{ // handle Xtraz status
-						char* moodData = NULL;
-						WORD moodSize = 0;
-
-						unpackSessionDataItem(pChain, 0x0E, (BYTE**)&moodData, &moodSize, NULL);
-						handleXStatusCaps(hContact, capBuf, capLen, moodData, moodSize);
-					}
-
-					szClient = detectUserClient(hContact, dwUIN, wClass, wVersion, dwFT1, dwFT2, dwFT3, dwOnlineSince, nTCPFlag, dwDirectConnCookie, dwWebPort, capBuf, capLen, &bClientId, (char*)szStrBuf);
+					AddCapabilitiesFromBuffer(hContact, capBuf, capLen);
 				}
-
-#ifdef _DEBUG
-				if (CheckContactCapabilities(hContact, CAPF_SRV_RELAY))
-					NetLog_Server("Supports advanced messages");
 				else
-					NetLog_Server("Does NOT support advanced messages");
-#endif
-
-				if (dwUIN && wVersion < 8)
-				{
-					ClearContactCapabilities(hContact, CAPF_SRV_RELAY);
-					NetLog_Server("Forcing simple messages due to compability issues");
+				{ // no capability
+					NetLog_Server("No capability info TLVs");
 				}
-			}
-			else
-			{
-				szClient = (char*)-1; // we don't want to client be overwritten if no capabilities received
 
-				// Get Capability Info TLV
-				pTLV = pChain->getTLV(0x0D, 1);
-
-				if (pTLV && (pTLV->wLen >= 16))
 				{ // handle Xtraz status
-					char* moodData = NULL;
+					char *moodData = NULL;
 					WORD moodSize = 0;
 
 					unpackSessionDataItem(pChain, 0x0E, (BYTE**)&moodData, &moodSize, NULL);
-					handleXStatusCaps(hContact, pTLV->pData, pTLV->wLen, moodData, moodSize);
+					handleXStatusCaps(hContact, capBuf, capLen, moodData, moodSize);
 				}
+
+				szClient = detectUserClient(hContact, nIsICQ, dwUIN, wClass, wVersion, dwFT1, dwFT2, dwFT3, dwOnlineSince, nTCPFlag, dwDirectConnCookie, dwWebPort, capBuf, capLen, &bClientId, (char*)szStrBuf);
 			}
-      // Process Status Note
-      parseStatusNote(dwUIN, szUID, hContact, pChain);
+
+#ifdef _DEBUG
+			if (CheckContactCapabilities(hContact, CAPF_SRV_RELAY))
+				NetLog_Server("Supports advanced messages");
+			else
+				NetLog_Server("Does NOT support advanced messages");
+#endif
+
+			if (!nIsICQ)
+			{
+				// AIM clients does not advertise these, but do support them
+				SetContactCapabilities(hContact, CAPF_UTF | CAPF_HTML | CAPF_TYPING);
+				// Server relayed messages are only supported by ICQ clients
+				ClearContactCapabilities(hContact, CAPF_SRV_RELAY);
+
+				if (dwUIN)
+					NetLog_Server("Logged in with AIM client");
+			}
+
+			if (nIsICQ && wVersion < 8)
+			{
+				ClearContactCapabilities(hContact, CAPF_SRV_RELAY);
+				NetLog_Server("Forcing simple messages due to compability issues");
+			}
 		}
-		// Free TLV chain
-		disposeChain(&pChain);
+		else
+		{
+			szClient = (char*)-1; // we don't want to client be overwritten if no capabilities received
+
+			// Get Capability Info TLV
+			pTLV = pChain->getTLV(0x0D, 1);
+
+			if (pTLV && (pTLV->wLen >= 16))
+			{ // handle Xtraz status
+				char *moodData = NULL;
+				WORD moodSize = 0;
+
+				unpackSessionDataItem(pChain, 0x0E, (BYTE**)&moodData, &moodSize, NULL);
+				handleXStatusCaps(hContact, pTLV->pData, pTLV->wLen, moodData, moodSize);
+			}
+		}
+		// Process Status Note
+		parseStatusNote(dwUIN, szUID, hContact, pChain);
 	}
+	// Free TLV chain
+	disposeChain(&pChain);
 
 	// Save contacts details in database
 	if (hContact != NULL)
 	{
-		if (!szClient) szClient = ICQTranslateUtfStatic(LPGEN("Unknown"), szStrBuf, MAX_PATH); // if no detection, set uknown
+		if (!szClient)
+		{
+			// if no detection, set unknown
+			if (nIsICQ)
+				szClient = ICQTranslateUtfStatic(LPGEN("Unknown"), szStrBuf, MAX_PATH);
+			else 
+				szClient = ICQTranslateUtfStatic(LPGEN("Unknown AIM"), szStrBuf, MAX_PATH);
+		}
 
 		setSettingDword(hContact, "LogonTS",      dwOnlineSince);
 		if (dwMemberSince)
 			setSettingDword(hContact, "MemberTS",     dwMemberSince);
-		if (dwUIN)
+
+		if (nIsICQ)
 		{ // on AIM these are not used
 			setSettingDword(hContact, "DirectCookie", dwDirectConnCookie);
 			setSettingByte(hContact,  "DCType",       (BYTE)nTCPFlag);
 			setSettingWord(hContact,  "UserPort",     (WORD)(dwPort & 0xffff));
 			setSettingWord(hContact,  "Version",      wVersion);
 		}
+		else
+		{
+			deleteSetting(hContact,   "DirectCookie");
+			deleteSetting(hContact,   "DCType");
+			deleteSetting(hContact,   "UserPort");
+			deleteSetting(hContact,   "Version");
+		}
+
 		if (szClient != (char*)-1)
 		{
 			setSettingStringUtf(hContact, "MirVer",   szClient);
@@ -502,8 +527,10 @@ void CIcqProto::handleUserOnline(BYTE* buf, WORD wLen, serverthread_info* info)
 	}
 
 	// And a small log notice...
-	NetLog_Server("%s changed status to %s (v%d).", strUID(dwUIN, szUID),
-		MirandaStatusToString(IcqStatusToMiranda(wStatus)), wVersion);
+	if (nIsICQ)
+		NetLog_Server("%u changed status to %s (v%d).", dwUIN, MirandaStatusToString(IcqStatusToMiranda(wStatus)), wVersion);
+	else
+		NetLog_Server("%s changed status to %s.", strUID(dwUIN, szUID), MirandaStatusToString(IcqStatusToMiranda(wStatus)));
 
 	if (szClient == cliSpamBot)
 	{
@@ -523,7 +550,6 @@ void CIcqProto::handleUserOnline(BYTE* buf, WORD wLen, serverthread_info* info)
 
 void CIcqProto::handleUserOffline(BYTE *buf, WORD wLen)
 {
-	HANDLE hContact;
 	DWORD dwUIN;
 	uid_str szUID;
 
@@ -561,6 +587,7 @@ void CIcqProto::handleUserOffline(BYTE *buf, WORD wLen)
       if (wTLVType == 0x1D)
       { // read only TLV with Session data into chain
         BYTE *pTLV = buf - 4;
+        disposeChain(&pChain);
         pChain = readIntoTLVChain(&pTLV, wLen + 4, 1);
       }
 
@@ -570,7 +597,7 @@ void CIcqProto::handleUserOffline(BYTE *buf, WORD wLen)
 		}
 
 		// Determine contact
-		hContact = HContactFromUID(dwUIN, szUID, NULL);
+		HANDLE hContact = HContactFromUID(dwUIN, szUID, NULL);
 
 		// Skip contacts that are not already on our list or are already offline
 		if (hContact != INVALID_HANDLE_VALUE)
@@ -668,7 +695,7 @@ void CIcqProto::parseStatusNote(DWORD dwUin, char *szUid, HANDLE hContact, oscar
       deleteSetting(hContact, DBSETTING_STATUS_NOTE);
     setSettingDword(hContact, DBSETTING_STATUS_NOTE_TIME, dwStatusNoteTS);
 
-    { // Broadcase a notification
+    { // Broadcast a notification
       int nNoteLen = strlennull(szStatusNote);
       char *szNoteAnsi = NULL;
 
@@ -680,7 +707,7 @@ void CIcqProto::parseStatusNote(DWORD dwUin, char *szUid, HANDLE hContact, oscar
       BroadcastAck(hContact, ACKTYPE_AWAYMSG, ACKRESULT_SUCCESS, NULL, (LPARAM)szNoteAnsi);
     }
   }
-  SAFE_FREE((void**)&szStatusNote);
+  SAFE_FREE(&szStatusNote);
 }
 
 
@@ -689,8 +716,7 @@ void CIcqProto::handleNotifyRejected(BYTE *buf, WORD wPackLen)
 	DWORD dwUIN;
 	uid_str szUID;
 
-	if (!unpackUID(&buf, &wPackLen, &dwUIN, &szUID))
-		return;
-
-	NetLog_Server("SNAC(x03,x0a) - SRV_NOTIFICATION_REJECTED for %s", strUID(dwUIN, szUID));
+	while (wPackLen)
+		if (unpackUID(&buf, &wPackLen, &dwUIN, &szUID))
+			NetLog_Server("%s status notification rejected.", strUID(dwUIN, szUID));
 }

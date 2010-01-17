@@ -5,7 +5,7 @@
 // Copyright © 2000-2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001-2002 Jon Keating, Richard Hughes
 // Copyright © 2002-2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004-2009 Joe Kucera, George Hazan
+// Copyright © 2004-2010 Joe Kucera, George Hazan
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -19,7 +19,7 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with this program; if not, write to the Free Software
-// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 //
 // -----------------------------------------------------------------------------
 //
@@ -231,9 +231,9 @@ struct CIcqProto : public PROTO_INTERFACE
 	void   handleLoginChannel(BYTE *buf, WORD datalen, serverthread_info *info);
 
 	//----| chan_02data.cpp |-------------------------------------------------------------
-	void   handleDataChannel(unsigned char *buf, WORD wLen, serverthread_info *info);
+	void   handleDataChannel(BYTE *buf, WORD wLen, serverthread_info *info);
 
-	int    unpackSnacHeader(snac_header* pSnacHeader, unsigned char **pBuffer, WORD* pwBufferLength);
+	int    unpackSnacHeader(snac_header *pSnacHeader, BYTE **pBuffer, WORD *pwBufferLength);
 	void   LogFamilyError(WORD wFamily, WORD wError);
 
 	//----| chan_03error.cpp |------------------------------------------------------------
@@ -305,12 +305,12 @@ struct CIcqProto : public PROTO_INTERFACE
 	void   handleLocationUserInfoReply(BYTE* buf, WORD wLen, DWORD dwCookie);
 
 	//----| fam_03buddy.cpp |-------------------------------------------------------------
-	void   handleBuddyFam(BYTE* pBuffer, WORD wBufferLength, snac_header* pSnacHeader, serverthread_info *info);
-	void   handleReplyBuddy(BYTE* buf, WORD wPackLen);
-	void   handleUserOffline(BYTE* buf, WORD wPackLen);
-	void   handleUserOnline(BYTE* buf, WORD wPackLen, serverthread_info* info);
+	void   handleBuddyFam(BYTE *pBuffer, WORD wBufferLength, snac_header *pSnacHeader, serverthread_info *info);
+	void   handleReplyBuddy(BYTE *buf, WORD wPackLen);
+	void   handleUserOffline(BYTE *buf, WORD wPackLen);
+	void   handleUserOnline(BYTE *buf, WORD wPackLen, serverthread_info *info);
   void   parseStatusNote(DWORD dwUin, char *szUid, HANDLE hContact, oscar_tlv_chain *pChain);
-	void   handleNotifyRejected(BYTE* buf, WORD wPackLen);
+	void   handleNotifyRejected(BYTE *buf, WORD wPackLen);
 
 	//----| fam_04message.cpp |-----------------------------------------------------------
 	icq_mode_messages m_modeMsgs;
@@ -451,7 +451,7 @@ struct CIcqProto : public PROTO_INTERFACE
 	void   StopAvatarThread();
 
 	//----| icq_clients.cpp |-------------------------------------------------------------
-	char*  detectUserClient(HANDLE hContact, DWORD dwUin, WORD wUserClass, WORD wVersion, DWORD dwFT1, DWORD dwFT2, DWORD dwFT3, DWORD dwOnlineSince, BYTE bDirectFlag, DWORD dwDirectCookie, DWORD dwWebPort, BYTE* caps, WORD wLen, BYTE* bClientId, char* szClientBuf);
+	const char*  detectUserClient(HANDLE hContact, int nIsICQ, DWORD dwUin, WORD wUserClass, WORD wVersion, DWORD dwFT1, DWORD dwFT2, DWORD dwFT3, DWORD dwOnlineSince, BYTE bDirectFlag, DWORD dwDirectCookie, DWORD dwWebPort, BYTE* caps, WORD wLen, BYTE* bClientId, char* szClientBuf);
 
 	//----| icq_db.cpp |------------------------------------------------------------------
 	HANDLE AddEvent(HANDLE hContact, WORD wType, DWORD dwTime, DWORD flags, DWORD cbBlob, PBYTE pBlob);
