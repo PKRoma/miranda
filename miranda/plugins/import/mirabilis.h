@@ -56,9 +56,6 @@ static int GetIdDatOfs(DWORD id);
 static int GetDatEntryType(DWORD ofs);
 DWORD FindMyDetails(void);
 
-// Helpers for system stuff
-static void SearchForDatabases(HWND hdlg,const char *dbPath,const char *type);
-
 // Parsing functions
 DWORD GetDBVersion();
 int GetEntryVersion(WORD wSeparatorValue);

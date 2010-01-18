@@ -136,41 +136,34 @@ static struct DBSignature dbSignature={"Miranda ICQ DB",0x1A};
 // ====================
 // ====================
 
-static void GetMirandaPath(char *szPath,int cbPath)
-{
-	char *str2;
-
-	GetModuleFileNameA( GetModuleHandle(NULL),szPath,cbPath);
-	str2=strrchr(szPath,'\\');
-	if(str2!=NULL) *str2=0;
-}
-
-static void SearchForLists(HWND hdlg,const char *mirandaPath,const char *pattern,const char *type)
+static void SearchForLists(HWND hdlg, const TCHAR *mirandaPath, const TCHAR *mirandaProf, const TCHAR *pattern, const TCHAR *type)
 {
 	HANDLE hFind;
-	WIN32_FIND_DATAA fd;
-	char szSearchPath[MAX_PATH];
-	char szRootName[MAX_PATH];
-	char* str2;
+	WIN32_FIND_DATA fd;
+	TCHAR szSearchPath[MAX_PATH];
+	TCHAR szRootName[MAX_PATH];
+	TCHAR* str2;
 	int i;
 
-	mir_snprintf(szSearchPath, sizeof(szSearchPath), "%s\\%s", mirandaPath, pattern);
-	hFind = FindFirstFileA(szSearchPath, &fd);
+	mir_sntprintf(szSearchPath, sizeof(szSearchPath), _T("%s\\%s"), mirandaPath, pattern);
+	hFind = FindFirstFile(szSearchPath, &fd);
 	if (hFind != INVALID_HANDLE_VALUE)
 	{
 		do
 		{
-			lstrcpyA(szRootName, fd.cFileName);
-			str2 = strrchr(szRootName, '.');
-			if (str2 != NULL)
-				*str2 = 0;
-			lstrcatA(szRootName, type);
-			i = SendDlgItemMessageA(hdlg, IDC_LIST, LB_ADDSTRING, 0, (LPARAM)szRootName);
-			str2 = (char*)malloc(lstrlenA(mirandaPath) + 2 + lstrlenA(fd.cFileName));
-			wsprintfA(str2, "%s\\%s", mirandaPath, fd.cFileName);
-			SendDlgItemMessage(hdlg, IDC_LIST, LB_SETITEMDATA, i, (LPARAM)str2);
+			_tcscpy(szRootName, fd.cFileName);
+			str2 = _tcsrchr(szRootName, '.');
+			if (str2 != NULL) *str2 = 0;
+			if (mirandaProf == NULL || _tcsicmp(mirandaProf, szRootName))
+			{
+				_tcscat(szRootName, type);
+				i = SendDlgItemMessage(hdlg, IDC_LIST, LB_ADDSTRING, 0, (LPARAM)szRootName);
+				str2 = (TCHAR*)mir_alloc((_tcslen(mirandaPath) + 2 + _tcslen(fd.cFileName)) * sizeof(TCHAR));
+				wsprintf(str2, _T("%s\\%s"), mirandaPath, fd.cFileName);
+				SendDlgItemMessage(hdlg, IDC_LIST, LB_SETITEMDATA, i, (LPARAM)str2);
+			}
 		}
-			while( FindNextFileA( hFind, &fd ));
+		while( FindNextFile( hFind, &fd ));
 
 		FindClose( hFind );
 	}
@@ -180,11 +173,25 @@ INT_PTR CALLBACK MirandaPageProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM lPa
 {
 	switch(message) {
 	case WM_INITDIALOG:
+		TranslateDialogDefault(hdlg);
 		{
-			char szMirandaPath[MAX_PATH];
-			TranslateDialogDefault(hdlg);
-			GetMirandaPath(szMirandaPath,sizeof(szMirandaPath));
-			SearchForLists(hdlg,szMirandaPath,"*.dat"," (Miranda IM v0.x)");
+			TCHAR *pfd, *pfd2, *pfn;
+
+			REPLACEVARSDATA dat = {0};
+			dat.cbSize = sizeof(dat);
+			dat.dwFlags = RVF_TCHAR;
+
+			pfd  = (TCHAR*)CallService(MS_UTILS_REPLACEVARS, (WPARAM)_T("%miranda_path%\\Profiles"), (LPARAM)&dat);
+			pfd2 = (TCHAR*)CallService(MS_UTILS_REPLACEVARS, (WPARAM)_T("%miranda_profile%"), (LPARAM)&dat);
+			pfn  = (TCHAR*)CallService(MS_UTILS_REPLACEVARS, (WPARAM)_T("%miranda_profilename%"), (LPARAM)&dat);
+
+			SearchForLists(hdlg, pfd2, pfn, _T("*.dat"), _T(" (Miranda IM v0.x)"));
+			if (lstrcmpi(pfd, pfd2))
+				SearchForLists(hdlg, pfd, NULL, _T("*.dat"), _T(" (Miranda IM v0.x)"));
+
+			mir_free(pfn);
+			mir_free(pfd2);
+			mir_free(pfd);
 			return TRUE;
 		}
 
@@ -198,7 +205,7 @@ INT_PTR CALLBACK MirandaPageProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM lPa
 			{
 				TCHAR filename[MAX_PATH];
 
-				GetDlgItemText(hdlg, IDC_FILENAME, filename, sizeof(filename) / sizeof(TCHAR));
+				GetDlgItemText(hdlg, IDC_FILENAME, filename, SIZEOF(filename));
 				if (_taccess(filename, 4)) {
 					MessageBox(hdlg, TranslateT("The given file does not exist. Please check that you have entered the name correctly."), TranslateT("Miranda Import"), MB_OK);
 					break;
@@ -216,7 +223,7 @@ INT_PTR CALLBACK MirandaPageProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM lPa
 			if(HIWORD(wParam)==LBN_SELCHANGE) {
 				int sel = SendDlgItemMessage(hdlg, IDC_LIST, LB_GETCURSEL, 0, 0);
 				if (sel == LB_ERR) break;
-				SetDlgItemTextA(hdlg, IDC_FILENAME, (char*)SendDlgItemMessage(hdlg, IDC_LIST, LB_GETITEMDATA, sel, 0));
+				SetDlgItemText(hdlg, IDC_FILENAME, (TCHAR*)SendDlgItemMessage(hdlg, IDC_LIST, LB_GETITEMDATA, sel, 0));
 			}
 			break;
 
@@ -257,7 +264,7 @@ INT_PTR CALLBACK MirandaPageProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM lPa
 			int i;
 
 			for(i=SendDlgItemMessage(hdlg,IDC_LIST,LB_GETCOUNT,0,0)-1;i>=0;i--)
-				free((char*)SendDlgItemMessage(hdlg,IDC_LIST,LB_GETITEMDATA,i,0));
+				mir_free((char*)SendDlgItemMessage(hdlg,IDC_LIST,LB_GETITEMDATA,i,0));
 			break;
 	}	}
 
