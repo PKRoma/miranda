@@ -963,9 +963,10 @@ LRESULT CALLBACK SplitterSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 			return(1);
 		case WM_PAINT: {
 			struct TWindowData *dat = (struct TWindowData *)GetWindowLongPtr(GetParent(hwnd), GWLP_USERDATA);
-			RECT rc;
+			RECT 		rc;
 			PAINTSTRUCT ps;
-			HDC dc = BeginPaint(hwnd, &ps);
+			HDC 		dc = BeginPaint(hwnd, &ps);
+			int 		ctrlId = GetDlgCtrlID(hwnd);
 
 			GetClientRect(hwnd, &rc);
 
@@ -973,7 +974,7 @@ LRESULT CALLBACK SplitterSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 				CSkin::SkinDrawBG(hwnd, dat->pContainer->hwnd, dat->pContainer, &rc, dc);
 			else {
 				if(M->isAero()) {
-					if(GetDlgCtrlID(hwnd) == IDC_PANELSPLITTER) {
+					if(ctrlId == IDC_PANELSPLITTER) {
 						EndPaint(hwnd, &ps);
 						return(0);
 					}

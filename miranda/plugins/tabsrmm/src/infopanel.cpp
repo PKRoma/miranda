@@ -300,11 +300,11 @@ void CInfoPanel::renderBG(const HDC hdc, RECT& rc, CSkinItem *item, bool fAero, 
 			} else {
 				rc.bottom -= 2;
 				::DrawAlpha(hdc, &rc, PluginConfig.m_ipBackgroundGradient, 100, PluginConfig.m_ipBackgroundGradientHigh, 0, 17,
-						  31, 8, 0);
+							0, 2, 0);
 				if(fAutoCalc) {
 					rc.top = rc.bottom - 1;
 					rc.left--; rc.right++;
-					::DrawEdge(hdc, &rc, BDR_SUNKENOUTER, BF_RECT);
+					//::DrawEdge(hdc, &rc, BDR_SUNKENOUTER, BF_RECT);
 				}
 			}
 		}
