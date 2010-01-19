@@ -173,7 +173,7 @@ INT_PTR CALLBACK MirabilisPageProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM l
 
 				GetDlgItemText(hdlg,IDC_FILENAME,str,SIZEOF(str));
 				ZeroMemory(&ofn, sizeof(ofn));
-				ofn.lStructSize = sizeof(ofn);
+				ofn.lStructSize = sizeof(OPENFILENAME_SIZE_VERSION_400);
 				ofn.hwndOwner = hdlg;
 				ofn.hInstance = NULL;
 				ofn.lpstrFilter = text;
