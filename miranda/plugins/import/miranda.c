@@ -175,7 +175,7 @@ INT_PTR CALLBACK MirandaPageProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM lPa
 	case WM_INITDIALOG:
 		TranslateDialogDefault(hdlg);
 		{
-			TCHAR *pfd, *pfd2, *pfn;
+			TCHAR *pfd, *pfd1, *pfd2, *pfn;
 
 			REPLACEVARSDATA dat = {0};
 			dat.cbSize = sizeof(dat);
