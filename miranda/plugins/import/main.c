@@ -33,6 +33,10 @@ BOOL IsDuplicateEvent(HANDLE hContact, DBEVENTINFO dbei);
 int nImportOption;
 int nCustomOptions;
 
+int      cICQAccounts = 0;
+char  ** szICQModuleName = NULL;
+TCHAR ** tszICQAccountName = NULL;
+int      iICQAccount = 0;
 
 static HANDLE hHookModulesLoaded = NULL;
 static HANDLE hHookOnExit = NULL;
@@ -176,6 +180,52 @@ BOOL IsProtocolLoaded(char* pszProtocolName)
 	return CallService(MS_PROTO_ISPROTOCOLLOADED, 0, (LPARAM)pszProtocolName) ? TRUE : FALSE;
 }
 
+BOOL EnumICQAccounts()
+{
+	int count, i = 0;
+	PROTOACCOUNT ** accs;
+	
+	while (cICQAccounts)
+	{
+		cICQAccounts--;
+		free(szICQModuleName[cICQAccounts]);
+		free(tszICQAccountName[cICQAccounts]);
+	}
+	
+	ProtoEnumAccounts(&count, &accs);
+	szICQModuleName   = (char**)realloc(szICQModuleName, count * sizeof(char**));
+	tszICQAccountName = (TCHAR**)realloc(tszICQAccountName, count * sizeof(TCHAR**));
+	while (i < count)
+	{
+		if ((0 == strcmp(ICQOSCPROTONAME, accs[i]->szProtoName)) && accs[i]->bIsEnabled)
+		{
+			szICQModuleName[cICQAccounts] = strdup(accs[i]->szModuleName);
+			tszICQAccountName[cICQAccounts] = _tcsdup(accs[i]->tszAccountName);
+			cICQAccounts++;
+		}
+		i++;
+	}
+	return cICQAccounts != 0;
+}
+
+void FreeICQAccountsList()
+{
+	while (cICQAccounts)
+	{
+		cICQAccounts--;
+		free(szICQModuleName[cICQAccounts]);
+		free(tszICQAccountName[cICQAccounts]);
+	}
+
+	if (szICQModuleName)
+		free(szICQModuleName);
+	if (tszICQAccountName)
+		free(tszICQAccountName);
+
+	szICQModuleName = NULL;
+	tszICQAccountName = NULL;
+}
+
 HANDLE HContactFromNumericID(char* pszProtoName, char* pszSetting, DWORD dwID)
 {
 	char* szProto;
@@ -214,9 +264,9 @@ HANDLE HContactFromID(char* pszProtoName, char* pszSetting, char* pszID)
 	return INVALID_HANDLE_VALUE;
 }
 
-HANDLE HistoryImportFindContact(HWND hdlgProgress, DWORD uin, int addUnknown)
+HANDLE HistoryImportFindContact(HWND hdlgProgress, char* szModuleName, DWORD uin, int addUnknown)
 {
-	HANDLE hContact = HContactFromNumericID(ICQOSCPROTONAME, "UIN", uin);
+	HANDLE hContact = HContactFromNumericID(szModuleName, "UIN", uin);
 	if (hContact == NULL) {
 		AddMessage( LPGEN("Ignored event from/to self"));
 		return INVALID_HANDLE_VALUE;
@@ -229,8 +279,8 @@ HANDLE HistoryImportFindContact(HWND hdlgProgress, DWORD uin, int addUnknown)
 		return INVALID_HANDLE_VALUE;
 
 	hContact = (HANDLE)CallService(MS_DB_CONTACT_ADD, 0, 0);
-	CallService(MS_PROTO_ADDTOCONTACT, (WPARAM)hContact, (LPARAM)ICQOSCPROTONAME);
-	DBWriteContactSettingDword(hContact, ICQOSCPROTONAME, "UIN", uin);
+	CallService(MS_PROTO_ADDTOCONTACT, (WPARAM)hContact, (LPARAM)szModuleName);
+	DBWriteContactSettingDword(hContact, szModuleName, "UIN", uin);
 	AddMessage( LPGEN("Added contact %u (found in history)"), uin );
 	return hContact;
 }

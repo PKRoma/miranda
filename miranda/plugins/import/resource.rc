@@ -108,6 +108,9 @@ BEGIN
     EDITTEXT        IDC_FILENAME,42,86,173,12,ES_AUTOHSCROLL
     CTEXT           "Warning: Mirabilis ICQ running. Import may not be reliable.",
                     IDC_MIRABILISRUNNING,5,101,210,8
+    RTEXT           "&Account:",IDC_STATIC,6,74,34,8
+    COMBOBOX        IDC_MIRABILISACCOUNT,42,71,102,30,CBS_DROPDOWNLIST |
+                    WS_VSCROLL | WS_TABSTOP
 END
 
 IDD_MIRANDADB DIALOGEX 0, 0, 220, 114

@@ -39,31 +39,31 @@ HANDLE AddContact(HWND hdlgProgress, char* pszProtoName, char* pszUniqueSetting,
 // ====================
 // ====================
 
-static void SearchForDatabases(HWND hdlg,const char *dbPath,const char *type)
+static void SearchForDatabases(HWND hdlg, const TCHAR *dbPath, const TCHAR *type)
 {
 	HANDLE hFind;
-	WIN32_FIND_DATAA fd;
-	char szSearchPath[MAX_PATH];
-	char szRootName[MAX_PATH],*str2;
+	WIN32_FIND_DATA fd;
+	TCHAR szSearchPath[MAX_PATH];
+	TCHAR szRootName[MAX_PATH],*str2;
 
 	int i;
 
-	wsprintfA(szSearchPath,"%s\\*.idx",dbPath);
-	hFind=FindFirstFileA(szSearchPath,&fd);
+	wsprintf(szSearchPath, _T("%s\\*.idx"), dbPath);
+	hFind=FindFirstFile(szSearchPath,&fd);
 	if(hFind!=INVALID_HANDLE_VALUE) {
 		do {
-			lstrcpyA(szRootName,fd.cFileName);
-			str2=strrchr(szRootName,'.');
+			lstrcpy(szRootName,fd.cFileName);
+			str2=_tcsrchr(szRootName,'.');
 			if(str2!=NULL) *str2=0;
-			if(lstrlenA(szRootName)>3 && !lstrcmpiA(szRootName+lstrlenA(szRootName)-3,"tmp"))
+			if(lstrlen(szRootName)>3 && !lstrcmpi(szRootName+lstrlen(szRootName)-3,_T("tmp")))
 				continue;
 			lstrcatA(szRootName,type);
 			i=SendDlgItemMessage(hdlg,IDC_LIST,LB_ADDSTRING,0,(LPARAM)szRootName);
-			str2=(char*)malloc(lstrlenA(dbPath)+2+lstrlenA(fd.cFileName));
-			wsprintfA(str2,"%s\\%s",dbPath,fd.cFileName);
+			str2 = (TCHAR*)mir_alloc((lstrlen(dbPath) + 2+lstrlen(fd.cFileName))*sizeof(TCHAR));
+			wsprintf(str2, _T("%s\\%s"), dbPath, fd.cFileName);
 			SendDlgItemMessage(hdlg,IDC_LIST,LB_SETITEMDATA,i,(LPARAM)str2);
 		}
-			while( FindNextFileA( hFind, &fd ));
+			while( FindNextFile( hFind, &fd ));
 
 		FindClose(hFind);
 	}
@@ -76,6 +76,7 @@ INT_PTR CALLBACK MirabilisPageProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM l
 		{
 			HKEY hKey;
 			LONG lResult;
+			int i;
 			TranslateDialogDefault(hdlg);
 			if (ERROR_SUCCESS != (lResult = RegOpenKeyExA(HKEY_CURRENT_USER, "Software\\Mirabilis\\ICQ\\DefaultPrefs", 0, KEY_QUERY_VALUE, &hKey)))
 				lResult = RegOpenKeyExA(HKEY_LOCAL_MACHINE, "Software\\Mirabilis\\ICQ\\DefaultPrefs", 0, KEY_QUERY_VALUE, &hKey);
@@ -109,6 +110,12 @@ INT_PTR CALLBACK MirabilisPageProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM l
 					SearchForDatabases(hdlg,dbPath," (2003a)");
 			}
 
+			for (i = 0; i < cICQAccounts; i++)
+			{
+				SendDlgItemMessage(hdlg, IDC_MIRABILISACCOUNT, CB_ADDSTRING, 0, (LPARAM)tszICQAccountName[i]);
+			}
+			SendDlgItemMessage(hdlg, IDC_MIRABILISACCOUNT, CB_SETCURSEL, 0, 0);
+			
 			SetTimer(hdlg,1,2000,NULL);
 			SendMessage(hdlg,WM_TIMER,0,0);
 			return TRUE;
@@ -130,12 +137,13 @@ INT_PTR CALLBACK MirabilisPageProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM l
 			break;
 		case IDOK:
 			{	TCHAR filename[MAX_PATH];
-				GetDlgItemText(hdlg,IDC_FILENAME,filename,sizeof(filename) / sizeof(TCHAR));
+				GetDlgItemText(hdlg,IDC_FILENAME,filename,SIZEOF(filename));
 				if(_taccess(filename,4)) {
 					MessageBox(hdlg,TranslateT("The given file does not exist. Please check that you have entered the name correctly."),TranslateT("Mirabilis Import"),MB_OK);
 					break;
 				}
 				lstrcpy(importFile,filename);
+				iICQAccount = SendDlgItemMessage(hdlg, IDC_MIRABILISACCOUNT, CB_GETCURSEL, 0, 0);
 				PostMessage(GetParent(hdlg),WIZM_GOTOPAGE,IDD_OPTIONS,(LPARAM)MirabilisOptionsPageProc);
 				break;
 			}
@@ -146,7 +154,7 @@ INT_PTR CALLBACK MirabilisPageProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM l
 			if(HIWORD(wParam)==LBN_SELCHANGE) {
 				int sel=SendDlgItemMessage(hdlg,IDC_LIST,LB_GETCURSEL,0,0);
 				if(sel==LB_ERR) break;
-				SetDlgItemTextA(hdlg,IDC_FILENAME,(char*)SendDlgItemMessage(hdlg,IDC_LIST,LB_GETITEMDATA,sel,0));
+				SetDlgItemText(hdlg,IDC_FILENAME,(TCHAR*)SendDlgItemMessage(hdlg,IDC_LIST,LB_GETITEMDATA,sel,0));
 			}
 			break;
 		case IDC_OTHER:
@@ -165,7 +173,7 @@ INT_PTR CALLBACK MirabilisPageProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM l
 
 				GetDlgItemText(hdlg,IDC_FILENAME,str,SIZEOF(str));
 				ZeroMemory(&ofn, sizeof(ofn));
-				ofn.lStructSize = sizeof(ofn);
+				ofn.lStructSize = sizeof(OPENFILENAME_SIZE_VERSION_400);
 				ofn.hwndOwner = hdlg;
 				ofn.hInstance = NULL;
 				ofn.lpstrFilter = text;
@@ -184,7 +192,7 @@ INT_PTR CALLBACK MirabilisPageProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM l
 	case WM_DESTROY:
 		{	int i;
 			for(i=SendDlgItemMessage(hdlg,IDC_LIST,LB_GETCOUNT,0,0)-1;i>=0;i--)
-				free((char*)SendDlgItemMessage(hdlg,IDC_LIST,LB_GETITEMDATA,i,0));
+				mir_free((char*)SendDlgItemMessage(hdlg,IDC_LIST,LB_GETITEMDATA,i,0));
 			break;
 		}
 	}
@@ -889,7 +897,7 @@ HANDLE ImportContact(DWORD dwOffset)
 		return INVALID_HANDLE_VALUE;
 	}
 
-	if (HContactFromNumericID(ICQOSCPROTONAME, "UIN", dwUIN) == INVALID_HANDLE_VALUE) {
+	if (HContactFromNumericID( szICQModuleName[ iICQAccount ], "UIN", dwUIN) == INVALID_HANDLE_VALUE) {
 		DBVARIANT id, nick, group;
 		id.type = DBVT_DWORD; id.dVal = dwUIN;
 		if ( strNickname != NULL && strlen(strNickname) > 0 )
@@ -897,7 +905,7 @@ HANDLE ImportContact(DWORD dwOffset)
 		else
 			nick.type = DBVT_DELETED;
 		group.type = DBVT_ASCIIZ, group.pszVal = strGroupName;
-		return AddContact(hdlgProgress, ICQOSCPROTONAME, "UIN", &id, &nick, &group);
+		return AddContact(hdlgProgress, szICQModuleName[ iICQAccount ], "UIN", &id, &nick, &group);
 	}
 	else {
 		if ((strNickname != NULL) && (strlen(strNickname) > 0))
@@ -945,7 +953,7 @@ BOOL ImportMessage(DWORD dwOffset)
 		return FALSE;
 
 	// Check if contact exists in Miranda database
-	hContact = HistoryImportFindContact(hdlgProgress, msg->uin, nCustomOptions&IOPT_ADDUNKNOWN);
+	hContact = HistoryImportFindContact(hdlgProgress, szICQModuleName[ iICQAccount ], msg->uin, nCustomOptions&IOPT_ADDUNKNOWN);
 	if (hContact == INVALID_HANDLE_VALUE)
 		return FALSE; // Contact couldn't be found/added
 
@@ -955,11 +963,11 @@ BOOL ImportMessage(DWORD dwOffset)
 	dbei.cbSize = sizeof(dbei);
 	dbei.eventType = EVENTTYPE_MESSAGE;
 	dbei.flags = footer->sent == 1 ? DBEF_SENT : DBEF_READ;
-	dbei.szModule = ICQOSCPROTONAME;
+	dbei.szModule = szICQModuleName[ iICQAccount ];
 	// Convert timestamp
 	dbei.timestamp = footer->timestamp + nUCTOffset;
 	dbei.cbBlob = msg->textLen;
-	dbei.pBlob = (PBYTE)malloc(msg->textLen);
+	dbei.pBlob = (PBYTE)alloca(msg->textLen);
 	CopyMemory(dbei.pBlob, msg->text, dbei.cbBlob);
 	dbei.pBlob[dbei.cbBlob - 1] = 0;
 
@@ -971,7 +979,6 @@ BOOL ImportMessage(DWORD dwOffset)
 		if (CallService(MS_DB_EVENT_ADD, (WPARAM)hContact, (LPARAM)&dbei))
 			nMessagesCount++;
 	}
-	free(dbei.pBlob);
 
 	return TRUE;
 }
@@ -1016,7 +1023,7 @@ BOOL ImportExtendedMessage(DWORD dwOffset)
 		return FALSE;
 
 	// Check if contact exists in Miranda database
-	hContact = HistoryImportFindContact(hdlgProgress, msg->uin, nCustomOptions&IOPT_ADDUNKNOWN);
+	hContact = HistoryImportFindContact(hdlgProgress, szICQModuleName[ iICQAccount ], msg->uin, nCustomOptions&IOPT_ADDUNKNOWN);
 	if (hContact == INVALID_HANDLE_VALUE)
 		return FALSE; // Contact couldn't be found/added
 
@@ -1049,7 +1056,7 @@ BOOL ImportExtendedMessage(DWORD dwOffset)
 	dbei.cbSize = sizeof(dbei);
 	dbei.eventType = EVENTTYPE_MESSAGE;
 	dbei.flags = footer->sent == 1 ? DBEF_SENT : DBEF_READ;
-	dbei.szModule = ICQOSCPROTONAME;
+	dbei.szModule = szICQModuleName[ iICQAccount ];
 	// Convert timestamp
 	dbei.timestamp = footer->timestamp + nUCTOffset;
 	dbei.cbBlob = wLength;
@@ -1109,7 +1116,7 @@ BOOL ImportURLMessage(DWORD dwOffset)
 		return FALSE;
 
 	// Check if contact exists in Miranda database
-	hContact = HistoryImportFindContact(hdlgProgress, msg->uin, nCustomOptions&IOPT_ADDUNKNOWN);
+	hContact = HistoryImportFindContact(hdlgProgress, szICQModuleName[ iICQAccount ], msg->uin, nCustomOptions&IOPT_ADDUNKNOWN);
 	if (hContact == INVALID_HANDLE_VALUE)
 		return FALSE; // Contact couldn't be found/added
 
@@ -1119,11 +1126,11 @@ BOOL ImportURLMessage(DWORD dwOffset)
 	dbei.cbSize = sizeof(dbei);
 	dbei.eventType = EVENTTYPE_URL;
 	dbei.flags = footer->sent == 1 ? DBEF_SENT : DBEF_READ;
-	dbei.szModule = ICQOSCPROTONAME;
+	dbei.szModule = szICQModuleName[ iICQAccount ];
 	// Convert timestamp
 	dbei.timestamp = footer->timestamp + nUCTOffset;
 	dbei.cbBlob = msg->textLen;
-	dbei.pBlob = (PBYTE)malloc(msg->textLen);
+	dbei.pBlob = (PBYTE)alloca(msg->textLen);
 	CopyMemory(dbei.pBlob, msg->text, dbei.cbBlob);
 	dbei.pBlob[dbei.cbBlob - 1] = 0;
 	// Separate URL and description
@@ -1137,7 +1144,6 @@ BOOL ImportURLMessage(DWORD dwOffset)
 	else if (CallService(MS_DB_EVENT_ADD, (WPARAM)hContact, (LPARAM)&dbei))
 		nMessagesCount++;
 
-	free(dbei.pBlob);
 	return TRUE;
 }
 
@@ -1420,8 +1426,8 @@ static void MirabilisImport(HWND hdlgProgressWnd)
 		// Start benchmark timer
 		dwTimer = time(NULL);
 
-		if ( !IsProtocolLoaded( ICQOSCPROTONAME )) {
-			AddMessage( LPGEN("ICQ plugin is not installed."));
+		if ( !IsProtocolLoaded( szICQModuleName[iICQAccount] )) {
+			AddMessage( LPGEN("ICQ account is not installed."));
 			AddMessage( LPGEN("No ICQ contacts or history will be imported."));
 			AddMessage( "" );
 		}

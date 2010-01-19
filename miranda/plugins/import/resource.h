@@ -24,6 +24,7 @@
 #define IDC_PROGRESS                    1008
 #define IDC_STATUS                      1009
 #define IDC_MIRABILISRUNNING            1010
+#define IDC_MIRABILISACCOUNT            1011
 #define IDC_RADIO_ALL                   1016
 #define IDC_RADIO_CONTACTS              1017
 #define IDC_RADIO_CUSTOM                1018

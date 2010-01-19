@@ -33,7 +33,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 // == GLOBAL FUNCTIONS ==
 // ======================
 
-HANDLE HistoryImportFindContact(HWND hdlgProgress,DWORD uin,int addUnknown);
+HANDLE HistoryImportFindContact(HWND hdlgProgress, char* szModuleName, DWORD uin,int addUnknown);
 
 // =====================
 // == LOCAL FUNCTIONS ==
@@ -55,9 +55,6 @@ static int GetHighestIndexEntry(void);
 static int GetIdDatOfs(DWORD id);
 static int GetDatEntryType(DWORD ofs);
 DWORD FindMyDetails(void);
-
-// Helpers for system stuff
-static void SearchForDatabases(HWND hdlg,const char *dbPath,const char *type);
 
 // Parsing functions
 DWORD GetDBVersion();
@@ -88,6 +85,12 @@ extern TCHAR importFile[MAX_PATH];
 extern void (*DoImport)(HWND);
 extern int nImportOption;
 extern int nCustomOptions;
+
+
+extern int      cICQAccounts;
+extern char  ** szICQModuleName;
+extern TCHAR ** tszICQAccountName;
+extern int      iICQAccount;
 
 // =====================
 // == LOCAL VARIABLES ==
