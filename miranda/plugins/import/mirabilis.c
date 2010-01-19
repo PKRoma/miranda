@@ -57,7 +57,7 @@ static void SearchForDatabases(HWND hdlg, const TCHAR *dbPath, const TCHAR *type
 			if(str2!=NULL) *str2=0;
 			if(lstrlen(szRootName)>3 && !lstrcmpi(szRootName+lstrlen(szRootName)-3,_T("tmp")))
 				continue;
-			lstrcatA(szRootName,type);
+			lstrcat(szRootName,type);
 			i=SendDlgItemMessage(hdlg,IDC_LIST,LB_ADDSTRING,0,(LPARAM)szRootName);
 			str2 = (TCHAR*)mir_alloc((lstrlen(dbPath) + 2+lstrlen(fd.cFileName))*sizeof(TCHAR));
 			wsprintf(str2, _T("%s\\%s"), dbPath, fd.cFileName);
@@ -78,36 +78,36 @@ INT_PTR CALLBACK MirabilisPageProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM l
 			LONG lResult;
 			int i;
 			TranslateDialogDefault(hdlg);
-			if (ERROR_SUCCESS != (lResult = RegOpenKeyExA(HKEY_CURRENT_USER, "Software\\Mirabilis\\ICQ\\DefaultPrefs", 0, KEY_QUERY_VALUE, &hKey)))
-				lResult = RegOpenKeyExA(HKEY_LOCAL_MACHINE, "Software\\Mirabilis\\ICQ\\DefaultPrefs", 0, KEY_QUERY_VALUE, &hKey);
+			if (ERROR_SUCCESS != (lResult = RegOpenKeyEx(HKEY_CURRENT_USER, _T("Software\\Mirabilis\\ICQ\\DefaultPrefs"), 0, KEY_QUERY_VALUE, &hKey)))
+				lResult = RegOpenKeyEx(HKEY_LOCAL_MACHINE, _T("Software\\Mirabilis\\ICQ\\DefaultPrefs"), 0, KEY_QUERY_VALUE, &hKey);
 
 			if (lResult == ERROR_SUCCESS) {
-				char dbPath[MAX_PATH];
+				TCHAR dbPath[MAX_PATH];
 				DWORD cch;
 				cch=sizeof(dbPath);
-				if(ERROR_SUCCESS==RegQueryValueExA(hKey,"New Database",NULL,NULL,dbPath,&cch))
-					SearchForDatabases(hdlg,dbPath," (99a)");
+				if(ERROR_SUCCESS==RegQueryValueEx(hKey,_T("New Database"),NULL,NULL,(LPBYTE)dbPath,&cch))
+					SearchForDatabases(hdlg,dbPath,_T(" (99a)"));
 				cch=sizeof(dbPath);
-				if(ERROR_SUCCESS==RegQueryValueExA(hKey,"99b Database",NULL,NULL,dbPath,&cch))
-					SearchForDatabases(hdlg,dbPath," (99b)");
+				if(ERROR_SUCCESS==RegQueryValueEx(hKey,_T("99b Database"),NULL,NULL,(LPBYTE)dbPath,&cch))
+					SearchForDatabases(hdlg,dbPath,_T(" (99b)"));
 				cch=sizeof(dbPath);
-				if(ERROR_SUCCESS==RegQueryValueExA(hKey,"2000a Database",NULL,NULL,dbPath,&cch))
-					SearchForDatabases(hdlg,dbPath," (2000a)");
+				if(ERROR_SUCCESS==RegQueryValueEx(hKey,_T("2000a Database"),NULL,NULL,(LPBYTE)dbPath,&cch))
+					SearchForDatabases(hdlg,dbPath,_T(" (2000a)"));
 				cch=sizeof(dbPath);
-				if(ERROR_SUCCESS==RegQueryValueExA(hKey,"2000b Database",NULL,NULL,dbPath,&cch))
-					SearchForDatabases(hdlg,dbPath," (2000b)");
+				if(ERROR_SUCCESS==RegQueryValueEx(hKey,_T("2000b Database"),NULL,NULL,(LPBYTE)dbPath,&cch))
+					SearchForDatabases(hdlg,dbPath,_T(" (2000b)"));
 				cch=sizeof(dbPath);
-				if(ERROR_SUCCESS==RegQueryValueExA(hKey,"2001a Database",NULL,NULL,dbPath,&cch))
-					SearchForDatabases(hdlg,dbPath," (2001a)");
+				if(ERROR_SUCCESS==RegQueryValueEx(hKey,_T("2001a Database"),NULL,NULL,(LPBYTE)dbPath,&cch))
+					SearchForDatabases(hdlg,dbPath,_T(" (2001a)"));
 				cch=sizeof(dbPath);
-				if(ERROR_SUCCESS==RegQueryValueExA(hKey,"2001b Database",NULL,NULL,dbPath,&cch))
-					SearchForDatabases(hdlg,dbPath," (2001b)");
+				if(ERROR_SUCCESS==RegQueryValueEx(hKey,_T("2001b Database"),NULL,NULL,(LPBYTE)dbPath,&cch))
+					SearchForDatabases(hdlg,dbPath,_T(" (2001b)"));
 				cch=sizeof(dbPath);
-				if(ERROR_SUCCESS==RegQueryValueExA(hKey,"2002a Database",NULL,NULL,dbPath,&cch))
-					SearchForDatabases(hdlg,dbPath," (2002a)");
+				if(ERROR_SUCCESS==RegQueryValueEx(hKey,_T("2002a Database"),NULL,NULL,(LPBYTE)dbPath,&cch))
+					SearchForDatabases(hdlg,dbPath,_T(" (2002a)"));
 				cch=sizeof(dbPath);
-				if(ERROR_SUCCESS==RegQueryValueExA(hKey,"2003a Database",NULL,NULL,dbPath,&cch))
-					SearchForDatabases(hdlg,dbPath," (2003a)");
+				if(ERROR_SUCCESS==RegQueryValueEx(hKey,_T("2003a Database"),NULL,NULL,(LPBYTE)dbPath,&cch))
+					SearchForDatabases(hdlg,dbPath,_T(" (2003a)"));
 			}
 
 			for (i = 0; i < cICQAccounts; i++)

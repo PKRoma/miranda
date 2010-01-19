@@ -182,15 +182,18 @@ INT_PTR CALLBACK MirandaPageProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM lPa
 			dat.dwFlags = RVF_TCHAR;
 
 			pfd  = (TCHAR*)CallService(MS_UTILS_REPLACEVARS, (WPARAM)_T("%miranda_path%\\Profiles"), (LPARAM)&dat);
+			pfd1 = (TCHAR*)CallService(MS_UTILS_REPLACEVARS, (WPARAM)_T("%miranda_path%"), (LPARAM)&dat);
 			pfd2 = (TCHAR*)CallService(MS_UTILS_REPLACEVARS, (WPARAM)_T("%miranda_profile%"), (LPARAM)&dat);
 			pfn  = (TCHAR*)CallService(MS_UTILS_REPLACEVARS, (WPARAM)_T("%miranda_profilename%"), (LPARAM)&dat);
 
 			SearchForLists(hdlg, pfd2, pfn, _T("*.dat"), _T(" (Miranda IM v0.x)"));
+			SearchForLists(hdlg, pfd1, NULL, _T("*.dat"), _T(" (Miranda IM v0.x)"));
 			if (lstrcmpi(pfd, pfd2))
 				SearchForLists(hdlg, pfd, NULL, _T("*.dat"), _T(" (Miranda IM v0.x)"));
 
 			mir_free(pfn);
 			mir_free(pfd2);
+			mir_free(pfd1);
 			mir_free(pfd);
 			return TRUE;
 		}
