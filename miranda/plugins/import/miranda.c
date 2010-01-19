@@ -233,31 +233,37 @@ INT_PTR CALLBACK MirandaPageProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM lPa
 		case IDC_OTHER:
 			{
 				OPENFILENAME ofn;
-				TCHAR str[MAX_PATH], text[256]={0};
-				size_t index = 0;
+				TCHAR str[MAX_PATH], text[256];
+				TCHAR *pfd;
+				int index;
+
+				REPLACEVARSDATA dat = {0};
+				dat.cbSize = sizeof(dat);
+				dat.dwFlags = RVF_TCHAR;
+
+				pfd = (TCHAR*)CallService(MS_UTILS_REPLACEVARS, (WPARAM)_T("%miranda_profile%"), (LPARAM)&dat);
 
 				// TranslateTS doesnt translate \0 separated strings
-				mir_sntprintf(text + index, 64*sizeof(TCHAR), _T("%s (*.dat)"), TranslateT("Miranda IM database"));
-				index += _tcslen(text + index) + 1;
-				_tcscpy(text + index, _T("*.dat"));
-				index += _tcslen(text + index) + 1;
-				mir_sntprintf(text + index, 64*sizeof(TCHAR), _T("%s (*.*)"), TranslateT("All Files"));
-				index += _tcslen( text + index ) + 1;
-				_tcscpy(text + index, _T("*.*"));
+				index = mir_sntprintf(text, 64, _T("%s (*.dat)"), TranslateT("Miranda IM database")) + 1;
+				_tcscpy(text + index, _T("*.dat")); index += 6;
+				index += mir_sntprintf(text + index, 64, _T("%s (*.*)"), TranslateT("All Files")) + 1;
+				_tcscpy(text + index, _T("*.*")); index += 4;
+				text[index] = 0;
 
-				GetDlgItemText(hdlg,IDC_FILENAME,str,SIZEOF(str));
+				GetDlgItemText(hdlg, IDC_FILENAME, str, SIZEOF(str));
 				ZeroMemory(&ofn, sizeof(ofn));
-				ofn.lStructSize = sizeof(OPENFILENAME_SIZE_VERSION_400);
+				ofn.lStructSize = OPENFILENAME_SIZE_VERSION_400;
 				ofn.hwndOwner = hdlg;
-				ofn.hInstance = NULL;
 				ofn.lpstrFilter = text;
 				ofn.lpstrDefExt = _T("dat");
 				ofn.lpstrFile = str;
-				ofn.Flags = OFN_FILEMUSTEXIST;
+				ofn.Flags = OFN_FILEMUSTEXIST | OFN_EXPLORER | OFN_NOCHANGEDIR;
 				ofn.nMaxFile = SIZEOF(str);
-				ofn.nMaxFileTitle = MAX_PATH;
+				ofn.lpstrInitialDir = pfd;
 				if (GetOpenFileName(&ofn))
 					SetDlgItemText(hdlg,IDC_FILENAME,str);
+
+				mir_free(pfd);
 				break;
 			}
 		}
