@@ -240,7 +240,7 @@ char* NtlmCreateResponseFromChallenge(HANDLE hSecurity, const char *szChallenge,
 					// Negotiate Unicode? if yes, convert the unicode name to ANSI
 					if (pkt->flags & 1) 
 					{
-						int bufsz =  = WideCharToMultiByte(CP_ACP, 0, (WCHAR*)domainName, domainLen, NULL, 0, NULL, NULL);
+						int bufsz = WideCharToMultiByte(CP_ACP, 0, (WCHAR*)domainName, domainLen, NULL, 0, NULL, NULL);
 						char* buf = (char*)alloca(bufsz);
 						domainLen = WideCharToMultiByte(CP_ACP, 0, (WCHAR*)domainName, domainLen, buf, bufsz, NULL, NULL) - 1;
 						domainName = buf;

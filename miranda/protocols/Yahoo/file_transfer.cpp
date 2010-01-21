@@ -315,7 +315,7 @@ static void dl_file(int id, int fd, int error,	const char *filename, unsigned lo
 		 */
 		mir_sntprintf(filefull, MAX_PATH, _T("%s\\%s"), sf->pfts.tszWorkingDir, sf->pfts.tszCurrentFile);
 		FREE(sf->pfts.tszCurrentFile);
-		sf->pfts.tszCurrentFile = _wcsdup(filefull);		
+		sf->pfts.tszCurrentFile = _tcsdup(filefull);		
 		
 		ResetEvent(sf->hWaitEvent);
 		

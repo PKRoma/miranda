@@ -41,7 +41,7 @@ static HWND hSearchTip = 0;
 #define TIMERID_STACT  222
 
 // FINDADD search button tooltip create func
-int CreateSearchTip(HWND hwndDlg, HWND hwndParent, WCHAR* pszText)
+int CreateSearchTip(HWND hwndDlg, HWND hwndParent, TCHAR* pszText)
 {
 	if ( !hwndDlg || !hwndParent ) 
 		return 1;
