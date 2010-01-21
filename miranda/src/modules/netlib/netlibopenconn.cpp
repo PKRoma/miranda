@@ -61,7 +61,7 @@ int WaitUntilReadable(SOCKET s, DWORD dwTimeout)
 	FD_SET(s, &readfd);
 
 	int result = select(0, &readfd, 0, 0, &tv);
-	if (result == 0 && dwTimeout) SetLastError(ERROR_TIMEOUT);
+	if (result == 0) SetLastError(ERROR_TIMEOUT);
 	return result;
 }
 
