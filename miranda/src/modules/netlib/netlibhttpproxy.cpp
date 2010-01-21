@@ -169,11 +169,12 @@ static int NetlibHttpGatewayOscarPost(NetlibConnection *nlc, const char *buf, in
 	NETLIBHTTPREQUEST *nlhrReply = NULL;
 	NetlibConnection nlcSend = {0};
 
-	nlcSend.handleType	= NLH_CONNECTION;
-	nlcSend.nlu			= nlc->nlu;
-	nlcSend.nlhpi		= nlc->nlhpi;
-	nlcSend.s			= nlc->s2;
-	nlcSend.sinProxy	= nlc->sinProxy;
+	nlcSend.handleType			= NLH_CONNECTION;
+	nlcSend.nlu					= nlc->nlu;
+	nlcSend.nlhpi				= nlc->nlhpi;
+	nlcSend.s					= nlc->s2;
+	nlcSend.sinProxy			= nlc->sinProxy;
+	nlcSend.usingHttpGateway	= nlc->usingHttpGateway;
 
 	if (!NetlibReconnect(&nlcSend)) return 0;
 	nlc->s2 = nlcSend.s;
