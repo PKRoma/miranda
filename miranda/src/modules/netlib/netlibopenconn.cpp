@@ -47,7 +47,7 @@ DWORD DnsLookup(struct NetlibUser *nlu,const char *szHost)
 	return 0;
 }
 
-int WaitUntilReadable(SOCKET s, DWORD dwTimeout)
+int WaitUntilReadable(SOCKET s, DWORD dwTimeout, bool check)
 {
 	fd_set readfd;
 	TIMEVAL tv;
@@ -61,7 +61,7 @@ int WaitUntilReadable(SOCKET s, DWORD dwTimeout)
 	FD_SET(s, &readfd);
 
 	int result = select(0, &readfd, 0, 0, &tv);
-	if (result == 0) SetLastError(ERROR_TIMEOUT);
+	if (result == 0 && !check) SetLastError(ERROR_TIMEOUT);
 	return result;
 }
 
@@ -564,7 +564,7 @@ bool NetlibReconnect(NetlibConnection *nlc)
 	char buf[4];
 	bool opened;  
 
-	switch (WaitUntilReadable(nlc->s, 0))
+	switch (WaitUntilReadable(nlc->s, 0, true))
 	{
 	case SOCKET_ERROR:
 		opened = false;

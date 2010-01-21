@@ -133,7 +133,7 @@ void NetlibLogShutdown(void);
 
 //netlibopenconn.c
 DWORD DnsLookup(struct NetlibUser *nlu,const char *szHost);
-int WaitUntilReadable(SOCKET s,DWORD dwTimeout);
+int WaitUntilReadable(SOCKET s,DWORD dwTimeout, bool check = false);
 int WaitUntilWritable(SOCKET s,DWORD dwTimeout);
 bool NetlibDoConnect(NetlibConnection *nlc);
 bool NetlibReconnect(NetlibConnection *nlc);
