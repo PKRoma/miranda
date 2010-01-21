@@ -778,14 +778,14 @@ static INT_PTR CALLBACK sttOptionsDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam,
 		ListView_SetExtendedListViewStyle(hwndHotkey, LVS_EX_CHECKBOXES|LVS_EX_SUBITEMIMAGES|LVS_EX_FULLROWSELECT|LVS_EX_DOUBLEBUFFER);
 
 		GetClientRect(hwndHotkey, &rc);
-		colWidth = (rc.right - GetSystemMetrics(SM_CXHTHUMB) - 3*GetSystemMetrics(SM_CXSMICON) - 5)/2;
+		colWidth = rc.right - GetSystemMetrics(SM_CXHTHUMB) - 3*GetSystemMetrics(SM_CXSMICON) - 5;
 
 		lvc.mask = LVCF_WIDTH;
-		lvc.cx = colWidth;
+		lvc.cx = colWidth * 2 / 3;
 		ListView_InsertColumn(hwndHotkey, COL_NAME, &lvc);
 		lvc.cx = GetSystemMetrics(SM_CXSMICON);
 		ListView_InsertColumn(hwndHotkey, COL_TYPE, &lvc);
-		lvc.cx = colWidth;
+		lvc.cx = colWidth / 3;
 		ListView_InsertColumn(hwndHotkey, COL_KEY, &lvc);
 		lvc.cx = GetSystemMetrics(SM_CXSMICON);
 		ListView_InsertColumn(hwndHotkey, COL_RESET, &lvc);
