@@ -201,7 +201,7 @@ echo             VALUE "CompanyName", " \0"                                     
 echo             VALUE "FileDescription", "Miranda IM\0"                           >>..\src\version.rc
 echo             VALUE "FileVersion", "0.%1.%2 alpha build #%3\0"                  >>..\src\version.rc
 echo             VALUE "InternalName", "miranda32\0"                               >>..\src\version.rc
-echo             VALUE "LegalCopyright", "Copyright © 2000-2009 Miranda IM Project. This software is released under the terms of the GNU General Public License.\0"    >>..\src\version.rc
+echo             VALUE "LegalCopyright", "Copyright © 2000-2010 Miranda IM Project. This software is released under the terms of the GNU General Public License.\0"    >>..\src\version.rc
 echo             VALUE "LegalTrademarks", "\0"                                     >>..\src\version.rc
 echo             VALUE "OriginalFilename", "miranda32.exe\0"                       >>..\src\version.rc
 echo             VALUE "PrivateBuild", "\0"                                        >>..\src\version.rc
@@ -231,7 +231,7 @@ echo           ^<language^>en-us^</language^>                                   
 echo           ^<lastBuildDate^>%yy%-%mm%-%dd% %hh%:%mn%^</lastBuildDate^>         >>%temp%\index.xml
 echo           ^<item^>                                                            >>%temp%\index.xml
 echo                ^<title^>Miranda 0.%1.%2 alpha %3^</title^>                    >>%temp%\index.xml
-echo 			   ^<link^>http://files.miranda-im.org/builds/?%yy%%mm%%dd%%hh%%mn%^</link^> >>%temp%\index.xml
+echo         ^<link^>http://files.miranda-im.org/builds/?%yy%%mm%%dd%%hh%%mn%^</link^> >>%temp%\index.xml
 echo                ^<description^>                                                >>%temp%\index.xml
 echo                     Miranda 0.%1.%2 alpha %3 is now available at http://files.miranda-im.org/builds/miranda-v%1a%3.zip >>%temp%\index.xml
 echo                ^</description^>                                               >>%temp%\index.xml

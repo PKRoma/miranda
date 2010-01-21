@@ -28,7 +28,7 @@ BEGIN
             VALUE "FileDescription", "Miranda IM\0"                           
             VALUE "FileVersion", "0.9.0 alpha build #5\0"                  
             VALUE "InternalName", "miranda32\0"                               
-            VALUE "LegalCopyright", "Copyright © 2000-2009 Miranda IM Project. This software is released under the terms of the GNU General Public License.\0"    
+            VALUE "LegalCopyright", "Copyright © 2000-2010 Miranda IM Project. This software is released under the terms of the GNU General Public License.\0"    
             VALUE "LegalTrademarks", "\0"                                     
             VALUE "OriginalFilename", "miranda32.exe\0"                       
             VALUE "PrivateBuild", "\0"                                        
