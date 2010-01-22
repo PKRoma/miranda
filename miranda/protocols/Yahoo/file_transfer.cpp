@@ -259,7 +259,7 @@ static void upload_file(int id, int fd, int error, void *data)
 			struct yahoo_file_info * fi;
 			
 			// Do Next file
-			free(sf->pfts.tszCurrentFile);
+			FREE(sf->pfts.tszCurrentFile);
 			
 			l = sf->files;
 			
@@ -431,7 +431,7 @@ static void dl_file(int id, int fd, int error,	const char *filename, unsigned lo
 			
 			// Do Next file
 			yahoo_ft7dc_nextfile(id, sf->who, sf->ftoken);
-			free(sf->pfts.tszCurrentFile);
+			FREE(sf->pfts.tszCurrentFile);
 			
 			l = sf->files;
 			
@@ -885,11 +885,13 @@ int __cdecl CYahooProto::FileResume( HANDLE hTransfer, int* action, const PROTOC
 
 	ft->action = *action;
 
+	DebugLog("[YahooFileResume] Action: %d", *action);
+
 	if ( *action == FILERESUME_RENAME ) {
 		DebugLog("[YahooFileResume] Renamed file!");
 		
 		FREE(ft->pfts.tszCurrentFile);
-		ft->pfts.tszCurrentFile = mir_tstrdup( *szFilename );;
+		ft->pfts.tszCurrentFile = _tcsdup( *szFilename );
 	}	
 
 	SetEvent( ft->hWaitEvent );
