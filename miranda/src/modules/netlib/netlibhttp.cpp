@@ -599,120 +599,140 @@ INT_PTR NetlibHttpFreeRequestStruct(WPARAM, LPARAM lParam)
 {
 	NETLIBHTTPREQUEST *nlhr=(NETLIBHTTPREQUEST*)lParam;
 
-	if(nlhr==NULL || nlhr->cbSize!=sizeof(NETLIBHTTPREQUEST) || nlhr->requestType!=REQUEST_RESPONSE) {
+	if (nlhr == NULL || nlhr->cbSize != sizeof(NETLIBHTTPREQUEST) || nlhr->requestType != REQUEST_RESPONSE)
+	{
 		SetLastError(ERROR_INVALID_PARAMETER);
 		return 0;
 	}
-	if(nlhr->headers) {
+	if(nlhr->headers) 
+	{
 		int i;
-		for(i=0;i<nlhr->headersCount;i++) {
-			if(nlhr->headers[i].szName) mir_free(nlhr->headers[i].szName);
-			if(nlhr->headers[i].szValue) mir_free(nlhr->headers[i].szValue);
+		for(i=0; i<nlhr->headersCount; i++)
+		{
+			mir_free(nlhr->headers[i].szName);
+			mir_free(nlhr->headers[i].szValue);
 		}
 		mir_free(nlhr->headers);
 	}
-	if(nlhr->pData) mir_free(nlhr->pData);
-	if(nlhr->szResultDescr) mir_free(nlhr->szResultDescr);
-	if(nlhr->szUrl) mir_free(nlhr->szUrl);
+	mir_free(nlhr->pData);
+	mir_free(nlhr->szResultDescr);
+	mir_free(nlhr->szUrl);
 	mir_free(nlhr);
 	return 1;
 }
 
 INT_PTR NetlibHttpRecvHeaders(WPARAM wParam,LPARAM lParam)
 {
-	struct NetlibConnection *nlc=(struct NetlibConnection*)wParam;
+	struct NetlibConnection *nlc = (struct NetlibConnection*)wParam;
 	NETLIBHTTPREQUEST *nlhr;
-	char buffer[8192];
 	int bytesPeeked;
 	DWORD dwRequestTimeoutTime;
-	char *peol,*pbuffer;
-	int headersDone=0,firstLineLength;
+	int firstLineLength, headersCount = 0, bufferSize = 0;
+	char *peol, *pbuffer;
+	char *buffer = NULL;
 
 	if(!NetlibEnterNestedCS(nlc,NLNCS_RECV))
 		return 0;
-	dwRequestTimeoutTime=GetTickCount()+HTTPRECVHEADERSTIMEOUT;
-	nlhr=(NETLIBHTTPREQUEST*)mir_calloc(sizeof(NETLIBHTTPREQUEST));
-	nlhr->cbSize=sizeof(NETLIBHTTPREQUEST);
-	nlhr->nlc=nlc;
-	nlhr->requestType=REQUEST_RESPONSE;
-	if(!HttpPeekFirstResponseLine(nlc,dwRequestTimeoutTime,lParam|MSG_PEEK,&nlhr->resultCode,&nlhr->szResultDescr,&firstLineLength)) {
+	dwRequestTimeoutTime = GetTickCount() + HTTPRECVHEADERSTIMEOUT;
+	nlhr = (NETLIBHTTPREQUEST*)mir_calloc(sizeof(NETLIBHTTPREQUEST));
+	nlhr->cbSize = sizeof(NETLIBHTTPREQUEST);
+	nlhr->nlc = nlc;
+	nlhr->requestType = REQUEST_RESPONSE;
+	if (!HttpPeekFirstResponseLine(nlc, dwRequestTimeoutTime, lParam | MSG_PEEK,
+		&nlhr->resultCode, &nlhr->szResultDescr, &firstLineLength))
+	{
 		NetlibLeaveNestedCS(&nlc->ncsRecv);
-		NetlibHttpFreeRequestStruct(0,(LPARAM)nlhr);
+		NetlibHttpFreeRequestStruct(0, (LPARAM)nlhr);
 		return 0;
 	}
-	bytesPeeked=NLRecv(nlc,buffer,firstLineLength,lParam|MSG_DUMPASTEXT);
-	if(bytesPeeked<firstLineLength) {
+	buffer = (char*)mir_alloc(firstLineLength);
+	bytesPeeked = NLRecv(nlc, buffer, firstLineLength, lParam | MSG_DUMPASTEXT);
+	if (bytesPeeked < firstLineLength) 
+	{
 		NetlibLeaveNestedCS(&nlc->ncsRecv);
-		NetlibHttpFreeRequestStruct(0,(LPARAM)nlhr);
-		if(bytesPeeked!=SOCKET_ERROR) SetLastError(ERROR_HANDLE_EOF);
+		NetlibHttpFreeRequestStruct(0, (LPARAM)nlhr);
+		if (bytesPeeked != SOCKET_ERROR) SetLastError(ERROR_HANDLE_EOF);
 		return 0;
 	}
-	for(;;) {
-		bytesPeeked=RecvWithTimeoutTime(nlc,dwRequestTimeoutTime,buffer,SIZEOF(buffer)-1,MSG_PEEK|lParam);
-        if (bytesPeeked==0) break;
 
-		if(bytesPeeked==SOCKET_ERROR) {
+	// Make sure all headers arrived
+	do
+	{
+		bufferSize += 8192;
+		mir_free(buffer);
+		buffer = (char*)mir_alloc(bufferSize);
+
+		bytesPeeked = RecvWithTimeoutTime(nlc, dwRequestTimeoutTime, buffer, bufferSize - 1, MSG_PEEK | lParam);
+        if (bytesPeeked == 0) break;
+
+		if (bytesPeeked == SOCKET_ERROR || bufferSize > 32 * 1024)
+		{
 			NetlibLeaveNestedCS(&nlc->ncsRecv);
-			NetlibHttpFreeRequestStruct(0,(LPARAM)nlhr);
-			if(bytesPeeked==0) SetLastError(ERROR_HANDLE_EOF);
+			NetlibHttpFreeRequestStruct(0, (LPARAM)nlhr);
+			if (bytesPeeked == 0) SetLastError(ERROR_HANDLE_EOF);
+			mir_free(buffer);
 			return 0;
 		}
-		buffer[bytesPeeked]='\0';
-		for(pbuffer=buffer;;) {
-			peol=strchr(pbuffer,'\n');
-			if(peol==NULL) {
-                if((bytesPeeked == SIZEOF(buffer)-1 && pbuffer==buffer)	//buffer overflow
-				   || (pbuffer!=buffer && NLRecv(nlc,buffer,pbuffer-buffer,lParam|MSG_DUMPASTEXT)==SOCKET_ERROR)) {	 //error removing read bytes from buffer
-					NetlibLeaveNestedCS(&nlc->ncsRecv);
-					NetlibHttpFreeRequestStruct(0,(LPARAM)nlhr);
-					if(pbuffer==buffer) SetLastError(ERROR_BUFFER_OVERFLOW);
-					return 0;
-				}
-				Sleep(100);
+		buffer[bytesPeeked] = 0;
+
+		headersCount = 0;
+		bytesPeeked = 0;
+		for (pbuffer = buffer; ; pbuffer = peol + 2)
+		{
+			peol = strstr(pbuffer, "\r\n");
+			if (peol == NULL) break;
+			if (peol == pbuffer)
+			{
+				bytesPeeked = peol - buffer + 2;
 				break;
 			}
-			if(peol==pbuffer || *--peol!='\r') {
-				NetlibLeaveNestedCS(&nlc->ncsRecv);
-				NetlibHttpFreeRequestStruct(0,(LPARAM)nlhr);
-				SetLastError(ERROR_BAD_FORMAT);
-				return 0;
-			}
-			*peol='\0';
-			{
-				char *pColon;
-				int len;
-				if(peol==pbuffer) {	   //blank line: end of headers
-					if(NLRecv(nlc,buffer,peol+2-buffer,lParam|MSG_DUMPASTEXT)==SOCKET_ERROR) {
-						NetlibLeaveNestedCS(&nlc->ncsRecv);
-						NetlibHttpFreeRequestStruct(0,(LPARAM)nlhr);
-						return (INT_PTR)(NETLIBHTTPREQUEST*)NULL;
-					}
-					headersDone=1;
-					break;
-				}
-				pColon=strchr(pbuffer,':');
-				if(pColon==NULL) {
-					NetlibLeaveNestedCS(&nlc->ncsRecv);
-					NetlibHttpFreeRequestStruct(0,(LPARAM)nlhr);
-					SetLastError(ERROR_INVALID_DATA);
-					return (INT_PTR)(NETLIBHTTPREQUEST*)NULL;
-				}
-				nlhr->headersCount++;
-				nlhr->headers=(NETLIBHTTPHEADER*)mir_realloc(nlhr->headers,sizeof(NETLIBHTTPHEADER)*nlhr->headersCount);
-				nlhr->headers[nlhr->headersCount-1].szName=(char*)mir_alloc(pColon-pbuffer+1);
-				lstrcpynA(nlhr->headers[nlhr->headersCount-1].szName,pbuffer,pColon-pbuffer+1);
-				len=lstrlenA(nlhr->headers[nlhr->headersCount-1].szName);
-				while(len && (nlhr->headers[nlhr->headersCount-1].szName[len-1]==' ' || nlhr->headers[nlhr->headersCount-1].szName[len-1]=='\t'))
-					nlhr->headers[nlhr->headersCount-1].szName[--len]='\0';
-				pColon++;
-				while(*pColon==' ' || *pColon=='\t') pColon++;
-				nlhr->headers[nlhr->headersCount-1].szValue=mir_strdup(pColon);
-			}
-			pbuffer=peol+2;
+			++headersCount;
 		}
-		if(headersDone) break;
 	}
+	while (bytesPeeked == 0);
+
+	// Recieve headers
+	bytesPeeked = NLRecv(nlc, buffer, bytesPeeked, lParam | MSG_DUMPASTEXT);
+	if (bytesPeeked == SOCKET_ERROR)
+	{
+		NetlibLeaveNestedCS(&nlc->ncsRecv);
+		NetlibHttpFreeRequestStruct(0, (LPARAM)nlhr);
+		mir_free(buffer);
+		return 0;
+	}
+	buffer[bytesPeeked] = 0;
+
+	nlhr->headersCount = headersCount;
+	nlhr->headers = (NETLIBHTTPHEADER*)mir_alloc(sizeof(NETLIBHTTPHEADER) * headersCount);
+
+	for (pbuffer = buffer, headersCount = 0; ; pbuffer = peol + 2, ++headersCount) 
+	{
+		peol = strstr(pbuffer, "\r\n");
+		if (peol == NULL || peol == pbuffer) break;
+
+		*peol = 0;
+		{
+			char *pColon, *pSpace;
+
+			pColon = strchr(pbuffer, ':');
+			if (pColon == NULL) 
+			{
+				NetlibHttpFreeRequestStruct(0, (LPARAM)nlhr); nlhr = NULL;
+				SetLastError(ERROR_INVALID_DATA);
+				break;
+			}
+
+			pSpace = pColon;
+			do { *pSpace-- = 0; } while ((*pSpace == ' ' || *pSpace == '\t') && pSpace >= pbuffer);
+			nlhr->headers[headersCount].szName = mir_strdup(pbuffer);
+
+			do { ++pColon; } while (*pColon == ' ' || *pColon == '\t');
+			nlhr->headers[headersCount].szValue = mir_strdup(pColon);
+		}
+	}
+
 	NetlibLeaveNestedCS(&nlc->ncsRecv);
+	mir_free(buffer);
 	return (INT_PTR)nlhr;
 }
 
@@ -730,7 +750,8 @@ INT_PTR NetlibHttpTransaction(WPARAM wParam, LPARAM lParam)
 		return 0;
 	}
 
-	if (!NetlibHttpProcessUrl(nlhr, nlu)) return 0;
+	if (!NetlibHttpProcessUrl(nlhr, nlu)) 
+		return 0;
 	HANDLE hConnection = nlhr->nlc;
 
 	{
@@ -905,7 +926,7 @@ NETLIBHTTPREQUEST* NetlibHttpRecv(NetlibConnection* nlc, DWORD hflags, DWORD dfl
 	bool chunked = false;
 	int cenc = 0, cenctype = 0;
 
-//	DWORD dwCompleteTime = GetTickCount() + HTTPGETTIMEOUT;
+	DWORD dwCompleteTime = GetTickCount() + 10000;
 
 next:
 	NETLIBHTTPREQUEST *nlhrReply = (NETLIBHTTPREQUEST*)NetlibHttpRecvHeaders((WPARAM)nlc, hflags);
@@ -961,17 +982,20 @@ next:
 		do {
 			for(;;) 
 			{
-/*
 				unsigned dwTimeNow = GetTickCount();
 				if (dwTimeNow > dwCompleteTime || (!si.pending(nlc->hSsl) && 
 					WaitUntilReadable(nlc->s, dwCompleteTime - dwTimeNow) <= 0)) 
+				{
+					NetlibHttpFreeRequestStruct(0, (LPARAM)nlhrReply);
 					return NULL;
-*/
+				}
+
 				recvResult = NLRecv(nlc, nlhrReply->pData+nlhrReply->dataLength,
 					dataBufferAlloced-nlhrReply->dataLength-1, dflags | (cenctype ? MSG_NODUMP : 0));
 
 				if (recvResult == 0) break;
-				if (recvResult == SOCKET_ERROR) {
+				if (recvResult == SOCKET_ERROR) 
+				{
 					NetlibHttpFreeRequestStruct(0,(LPARAM)nlhrReply);
 					return NULL;
 				}
