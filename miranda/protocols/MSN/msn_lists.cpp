@@ -121,10 +121,10 @@ int CMsnProto::Lists_Add(int list, int netId, const char* email, HANDLE hContact
 	else
 	{
 		p->list |= list;
-		if (list & LIST_FL) p->netId = netId;
 		if (invite) replaceStr(p->invite, invite);
 		if (hContact) p->hContact = hContact;
-		if ((list & LIST_FL) && netId != NETID_UNKNOWN)
+		if (list & LIST_FL) p->netId = netId;
+		if (p->netId == NETID_UNKNOWN && netId != NETID_UNKNOWN)
 			p->netId = netId;
 	}
 	int result = p->list;
@@ -262,7 +262,7 @@ void CMsnProto::MSN_CreateContList(void)
 			
 			const MsnContact& C = contList[j];
 			
-			if (C.list == LIST_RL)
+			if (C.list == LIST_RL || C.list == LIST_PL)
 			{
 				used[j] = true;
 				continue;
