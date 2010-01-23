@@ -1000,15 +1000,8 @@ next:
 		{
 			for(;;) 
 			{
-				unsigned dwTimeNow = GetTickCount();
-				if (dwTimeNow > dwCompleteTime || (!si.pending(nlc->hSsl) && 
-					WaitUntilReadable(nlc->s, dwCompleteTime - dwTimeNow) <= 0)) 
-				{
-					NetlibHttpFreeRequestStruct(0, (LPARAM)nlhrReply);
-					return NULL;
-				}
-
-				recvResult = NLRecv(nlc, nlhrReply->pData + nlhrReply->dataLength,
+				Netlib_Logf(nlc->nlu, "Data bytes reading %d", dataBufferAlloced - nlhrReply->dataLength - 1); 
+				recvResult = RecvWithTimeoutTime(nlc, dwCompleteTime, nlhrReply->pData + nlhrReply->dataLength,
 					dataBufferAlloced - nlhrReply->dataLength - 1, dflags | (cenctype ? MSG_NODUMP : 0));
 
 				if (recvResult == 0) break;
