@@ -1451,10 +1451,10 @@ LBL_InvalidCommand:
 			break;
 
 		case ' TUO':   //********* OUT: sections 7.10 Connection Close, 8.6 Leaving a Switchboard Session
-			if (!_stricmp(params, "OTH")) {
+			if (!_stricmp(params, "OTH"))
+			{
 				SendBroadcast(NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_OTHERLOCATION);
 				MSN_DebugLog("You have been disconnected from the MSN server because you logged on from another location using the same MSN passport.");
-				if (info->sessionClosed) return 0;
 			}
 
 			if (!_stricmp(params, "MIG")) // ignore it

@@ -251,6 +251,8 @@ void __cdecl CMsnProto::MSNServerThread(void* arg)
 
 					if (handlerResult)
 					{
+						if (info->sessionClosed) goto LBL_Exit;
+
 						info->sendPacket("OUT", NULL);
 						info->termPending = true;
 					}
