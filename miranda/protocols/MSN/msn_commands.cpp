@@ -1454,6 +1454,7 @@ LBL_InvalidCommand:
 			if (!_stricmp(params, "OTH")) {
 				SendBroadcast(NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_OTHERLOCATION);
 				MSN_DebugLog("You have been disconnected from the MSN server because you logged on from another location using the same MSN passport.");
+				if (info->sessionClosed) return 0;
 			}
 
 			if (!_stricmp(params, "MIG")) // ignore it

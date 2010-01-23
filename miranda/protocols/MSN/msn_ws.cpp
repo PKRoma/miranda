@@ -21,15 +21,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "msn_global.h"
 #include "msn_proto.h"
 
-static const char sttGatewayHeader[] =
-	"POST %s HTTP/1.1\r\n"
-	"Accept: */*\r\n"
-	"Content-Type: text/xml; charset=utf-8\r\n"
-	"Content-Length: %d\r\n"
-	"User-Agent: %s\r\n"
-	"Host: %s\r\n"
-	"Connection: Keep-Alive\r\n"
-	"Cache-Control: no-cache\r\n\r\n";
 
 //=======================================================================================
 
@@ -141,160 +132,37 @@ bool ThreadData::isTimeout(void)
 //=======================================================================================
 // Receving data
 //=======================================================================================
-char* ThreadData::httpTransact(char* szCommand, size_t cmdsz, size_t& ressz)
-{
-	NETLIBSELECT tSelect = {0};
-	tSelect.cbSize = sizeof(tSelect);
-	tSelect.dwTimeout = 6000;
-	tSelect.hReadConns[0] = s;
-
-	size_t bufSize = 4096;
-	char* szResult = (char*)mir_alloc(bufSize);
-	char* szBody;
-
-	for (unsigned rc=4; --rc;)
-	{
-		ressz = 0;
-		szBody = NULL;
-
-		if (s == NULL)
-		{
-			NETLIBOPENCONNECTION tConn = { 0 };
-			tConn.cbSize = sizeof(tConn);
-			tConn.flags = NLOCF_V2;
-			tConn.szHost = mGatewayIP;
-			tConn.wPort = MSN_DEFAULT_GATEWAY_PORT;
-			tConn.timeout = 5;
-			proto->MSN_DebugLog("Connecting to gateway: %s:%d", tConn.szHost, tConn.wPort);
-			s = (HANDLE)MSN_CallService(MS_NETLIB_OPENCONNECTION, (WPARAM)proto->hNetlibUser, (LPARAM)&tConn);
-			if (s == NULL) 
-			{
-				Sleep(3000);
-				continue;
-			}
-			tSelect.hReadConns[0] = s;
-		}
-		INT_PTR lstRes = Netlib_Send(s, szCommand, (int)cmdsz, 0);
-		if (lstRes != SOCKET_ERROR)
-		{
-			size_t ackSize = 0;
-			for(;;)
-			{
-				// Wait for the next packet
-				lstRes = MSN_CallService(MS_NETLIB_SELECT, 0, (LPARAM)&tSelect);
-				if (lstRes < 0) { 
-					proto->MSN_DebugLog("Connection failed while waiting.");
-					break; 
-				}
-				else if (lstRes == 0) { 
-					proto->MSN_DebugLog("Receive Timeout. Bytes received: %u %u", ackSize, ressz);
-					lstRes = SOCKET_ERROR; 
-					break; 
-				}
-
-				lstRes = Netlib_Recv(s, szResult + ackSize, (int)(bufSize - ackSize), 0);
-				if (lstRes == 0) 
-					proto->MSN_DebugLog("Connection closed gracefully");
-
-				if (lstRes < 0)
-					proto->MSN_DebugLog("Connection abortively closed, error %d", WSAGetLastError());
-				
-				// Connection closed or aborted, all data received
-				if (lstRes <= 0)break;
-
-				ackSize += lstRes;
-
-				if ((bufSize-1) <= ackSize)
-				{
-					bufSize += 4096;
-					szResult = (char*)mir_realloc(szResult, bufSize);
-				}
-
-				// Insert null terminator to use string functions
-				szResult[ackSize] = 0;
-
-				// HTTP header found?
-				if (szBody == NULL)
-				{
-					unsigned status; 
-					MimeHeaders tHeaders;
-					char *tbuf = NULL, *hdrs = NULL;
-					size_t hdrSize = 0;
-
-					for (;;) 
-					{
-						// Find HTTP header end
-						szBody = strstr(szResult, "\r\n\r\n");
-						if (szBody == NULL) break;
-
-						szBody += 4;
-						hdrSize = szBody - szResult;
-
-						// Make a copy of response headers for processing
-						tbuf = (char*)mir_alloc(hdrSize + 1);
-						memcpy(tbuf, szResult, hdrSize);
-						tbuf[hdrSize] = 0;
-
-						hdrs = httpParseHeader(tbuf, status);
-						if (status != 100) break;
-
-						proto->MSN_DebugLog("Response 100 detected: %d", ackSize);
-						// Remove 100 status response from response buffer
-						ackSize -= hdrSize;
-						memmove(szResult, szResult + hdrSize, ackSize+1);
-						mir_free(tbuf);
-					}
-					if (szBody == NULL) continue;
-
-					tHeaders.readFromBuffer(hdrs);
-
-					// Calculate the size of the response packet
-					const char* contLenHdr = tHeaders["Content-Length"];
-					ressz = hdrSize + (contLenHdr ? atol(contLenHdr) : 0);
-					// Adjust the buffer to hold complete response
-					if (bufSize <= ressz)
-					{
-						bufSize = ressz + 1;
-						szResult = (char*)mir_realloc(szResult, bufSize);
-					}
-					mir_free(tbuf);
-				}
-
-				// Content-Length bytes reached, all data received
-				if (ackSize >= ressz) break;
-			}
-		}
-		else
-			proto->MSN_DebugLog("Send failed: %d", WSAGetLastError());
-
-		if (lstRes > 0) break;
-
-		proto->MSN_DebugLog("Connection closed due to HTTP transaction failure");
-		Netlib_CloseHandle(s);
-		s = NULL;
-
-		if (Miranda_Terminated()) break; 
-	}
-	if (ressz == 0)
-	{
-		mir_free(szResult);
-		szResult = NULL;
-	}
-	return szResult;
-}
-
-
 int ThreadData::recv_dg(char* data, size_t datalen)
 {
+	NETLIBHTTPREQUEST nlhr = {0};
+
+	// initialize the netlib request
+	nlhr.cbSize = sizeof(nlhr);
+	nlhr.requestType = REQUEST_POST;
+	nlhr.flags = NLHRF_HTTP11 | NLHRF_DUMPASTEXT | NLHRF_PERSISTENT;
+	nlhr.nlc = s;
+
+	nlhr.headersCount = 4;
+	nlhr.headers=(NETLIBHTTPHEADER*)alloca(sizeof(NETLIBHTTPHEADER)*nlhr.headersCount);
+	nlhr.headers[0].szName   = "User-Agent";
+	nlhr.headers[0].szValue = (char*)MSN_USER_AGENT;
+	nlhr.headers[1].szName  = "Accept";
+	nlhr.headers[1].szValue = "*/*";
+	nlhr.headers[2].szName  = "Content-Type";
+	nlhr.headers[2].szValue = "text/xml; charset=utf-8";
+	nlhr.headers[3].szName  = "Cache-Control";
+	nlhr.headers[3].szValue = "no-cache";
+
+
 	time_t ts = time(NULL);
 	for(;;)
 	{
 		if (mReadAheadBuffer != NULL) 
 		{
-			size_t datasent = mEhoughData - (mReadAheadBufferPtr - mReadAheadBuffer);
-			size_t tBytesToCopy = (datalen >= datasent) ? datasent : datalen;
+			size_t tBytesToCopy = min(mEhoughData, datalen);
 
-			if (tBytesToCopy == 0) {
+			if (tBytesToCopy == 0) 
+			{
 				mir_free(mReadAheadBuffer);
 				mReadAheadBuffer = NULL;
 				mReadAheadBufferPtr = NULL;
@@ -304,9 +172,11 @@ int ThreadData::recv_dg(char* data, size_t datalen)
 			{
 				memcpy(data, mReadAheadBufferPtr, tBytesToCopy);
 				mReadAheadBufferPtr += tBytesToCopy;
+				mEhoughData -= tBytesToCopy;
 				return (int)tBytesToCopy;
 			}
 		}
+		else if (sessionClosed) return 0;
 
 		char* tBuffer = NULL;
 		size_t cbBytes = 0;
@@ -328,13 +198,11 @@ int ThreadData::recv_dg(char* data, size_t datalen)
 		char szHttpPostUrl[300];
 		getGatewayUrl(szHttpPostUrl, sizeof(szHttpPostUrl), dlen == 0);
 
-		tBuffer = (char*)alloca(dlen + 512);
-		cbBytes = mir_snprintf(tBuffer, dlen + 512, sttGatewayHeader,
-			szHttpPostUrl, dlen, MSN_USER_AGENT, mGatewayIP);
-		
-		for (unsigned j=0; j<np; ++j) {
+		if (dlen) tBuffer = (char*)alloca(dlen);
+		for (unsigned j=0; j<np; ++j)
+		{
 			QI = mFirstQueueItem;
-			memcpy(tBuffer+cbBytes, QI->data, QI->datalen);
+			memcpy(tBuffer + cbBytes, QI->data, QI->datalen);
 			cbBytes += QI->datalen;
 
 			mFirstQueueItem = QI->next;
@@ -343,38 +211,54 @@ int ThreadData::recv_dg(char* data, size_t datalen)
 		}
 		ReleaseMutex(hQueueMutex);
 
-		size_t ressz;
-		char* tResult = httpTransact(tBuffer, cbBytes, ressz);
 
-		if (tResult == NULL) return SOCKET_ERROR;
+		nlhr.szUrl = szHttpPostUrl;
+		nlhr.dataLength = (int)cbBytes;
+		nlhr.pData = tBuffer;
 
-		if (dlen == 0) 
-			mGatewayTimeout = min(mGatewayTimeout + 2, 20);
+		NETLIBHTTPREQUEST *nlhrReply = (NETLIBHTTPREQUEST*)CallService(MS_NETLIB_HTTPTRANSACTION, 
+			(WPARAM)proto->hNetlibUser, (LPARAM)&nlhr);
 
-		unsigned status;
-		MimeHeaders tHeaders;
-
-		char* tBody = httpParseHeader(tResult, status);
-		tBody = tHeaders.readFromBuffer(tBody);
-
-		const char* xMsnHdr = tHeaders["X-MSN-Messenger"]; 
-		if (status != 200 || xMsnHdr == NULL) {
-			mir_free(tResult);
+		if (nlhrReply == NULL)
+		{
+			s = NULL;
 			return SOCKET_ERROR;
 		}
 
-		sessionClosed = strstr(xMsnHdr, "Session=close") != NULL;
-		processSessionData(xMsnHdr);
+		s = nlhrReply->nlc;
+		bool noMsnHdr = true;
+		if (nlhrReply->resultCode == 200)
+		{
+			for (int i=0; i < nlhrReply->headersCount; i++)
+			{
+				NETLIBHTTPHEADER& tHeader = nlhrReply->headers[i];
+				if (_stricmp(tHeader.szName, "X-MSN-Messenger") != 0)
+					continue;
 
-		if (ressz > (size_t)(tBody - tResult))
+				noMsnHdr = false;
+				sessionClosed = strstr(tHeader.szValue, "Session=close") != NULL;
+				processSessionData(tHeader.szValue);
+
+				mReadAheadBufferPtr = mReadAheadBuffer = nlhrReply->pData;
+				mEhoughData = nlhrReply->dataLength;
+
+				nlhrReply->pData = NULL;
+				nlhrReply->dataLength = 0;
+				break;
+			}
+		}
+
+		if (mEhoughData)
 		{
 			mGatewayTimeout = 1;
 			mWaitPeriod = 60;
 		}
+		else if (dlen == 0) 
+			mGatewayTimeout = min(mGatewayTimeout + 2, 20);
 
-		mReadAheadBuffer = tResult;
-		mReadAheadBufferPtr = tBody;
-		mEhoughData = ressz;
+		CallService(MS_NETLIB_FREEHTTPREQUESTSTRUCT, 0, (LPARAM)nlhrReply);
+
+		if (noMsnHdr) return SOCKET_ERROR;
 	}
 }
 

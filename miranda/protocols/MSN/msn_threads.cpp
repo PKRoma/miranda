@@ -79,11 +79,6 @@ void __cdecl CMsnProto::MSNServerThread(void* arg)
 {
 	ThreadData* info = (ThreadData*)arg;
 
-	NETLIBOPENCONNECTION tConn = { 0 };
-	tConn.cbSize = sizeof(tConn);
-	tConn.flags = NLOCF_V2;
-	tConn.timeout = 5;
-
 	char* tPortDelim = strrchr(info->mServer, ':');
 	if (tPortDelim != NULL)
 		*tPortDelim = '\0';
@@ -111,12 +106,14 @@ void __cdecl CMsnProto::MSNServerThread(void* arg)
 
 	if (MyOptions.UseGateway && !MyOptions.UseProxy) 
 	{
-		tConn.szHost = info->mGatewayIP;
-		tConn.wPort = MSN_DEFAULT_GATEWAY_PORT;
 		info->hQueueMutex = CreateMutex(NULL, FALSE, NULL);
 	}
 	else 
 	{
+		NETLIBOPENCONNECTION tConn = { 0 };
+		tConn.cbSize = sizeof(tConn);
+		tConn.flags = NLOCF_V2;
+		tConn.timeout = 5;
 		tConn.szHost = info->mServer;
 		tConn.wPort = MSN_DEFAULT_PORT;
 
@@ -126,38 +123,39 @@ void __cdecl CMsnProto::MSNServerThread(void* arg)
 			if (tPortNumber)
 				tConn.wPort = (WORD)tPortNumber;
 		}	
-	}
 
-	MSN_DebugLog("Thread started: server='%s:%d', type=%d", tConn.szHost, tConn.wPort, info->mType);
+		MSN_DebugLog("Thread started: server='%s:%d', type=%d", tConn.szHost, tConn.wPort, info->mType);
 
-	info->s = (HANDLE)MSN_CallService(MS_NETLIB_OPENCONNECTION, (WPARAM)hNetlibUser, (LPARAM)&tConn);
-	if (info->s == NULL) 
-	{
-		MSN_DebugLog("Connection Failed (%d) server='%s:%d'", WSAGetLastError(), tConn.szHost, tConn.wPort);
-
-		switch (info->mType) 
+		info->s = (HANDLE)MSN_CallService(MS_NETLIB_OPENCONNECTION, (WPARAM)hNetlibUser, (LPARAM)&tConn);
+		if (info->s == NULL) 
 		{
-			case SERVER_NOTIFICATION: 
-			case SERVER_DISPATCH:
-				SendBroadcast(NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_NOSERVER);
-				MSN_GoOffline();
-				msnNsThread = NULL;
-				if (hKeepAliveThreadEvt) 
-				{
-					msnPingTimeout *= -1;
-					SetEvent(hKeepAliveThreadEvt);
-				}
-				break;
+			MSN_DebugLog("Connection Failed (%d) server='%s:%d'", WSAGetLastError(), tConn.szHost, tConn.wPort);
 
-			case SERVER_SWITCHBOARD:
-				if (info->mCaller) msnNsThread->sendPacket("XFR", "SB");
-				break;
+			switch (info->mType) 
+			{
+				case SERVER_NOTIFICATION: 
+				case SERVER_DISPATCH:
+					SendBroadcast(NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_NOSERVER);
+					MSN_GoOffline();
+					msnNsThread = NULL;
+					if (hKeepAliveThreadEvt) 
+					{
+						msnPingTimeout *= -1;
+						SetEvent(hKeepAliveThreadEvt);
+					}
+					break;
+
+				case SERVER_SWITCHBOARD:
+					if (info->mCaller) msnNsThread->sendPacket("XFR", "SB");
+					break;
+			}
+			return;
 		}
-		return;
+
+		if (MyOptions.UseGateway)
+			MSN_CallService(MS_NETLIB_SETPOLLINGTIMEOUT, WPARAM(info->s), 2);
 	}
 
-	if (MyOptions.UseGateway)
-		MSN_CallService(MS_NETLIB_SETPOLLINGTIMEOUT, WPARAM(info->s), 2);
 
 	MSN_DebugLog("Connected with handle=%08X", info->s);
 
@@ -696,13 +694,6 @@ void ThreadData::getGatewayUrl(char* dest, int destlen, bool isPoll)
 	}
 	else
 		mir_snprintf(dest, destlen, isPoll ? pollFmtStr : cmdFmtStr, mGatewayIP, mSessionID);
-
-	if (!proto->MyOptions.UseProxy)
-	{
-		char *slash = strchr(dest+7, '/');
-		size_t len = strlen(dest) - (slash - dest) + 1;
-		memmove(dest, slash, len);
-	}
 }
 
 void ThreadData::processSessionData(const char* str)
@@ -725,13 +716,6 @@ void ThreadData::processSessionData(const char* str)
 	if (!sscanf(tDelim, "GW-IP=%s", tGateIP))
 		return;
 
-//	MSN_DebugLog("msn_httpGatewayUnwrapRecv printed '%s','%s' to %08X (%08X)", tSessionID, tGateIP, s, this);
-	if (strcmp(mGatewayIP, tGateIP) != 0 && proto->MyOptions.UseGateway && !proto->MyOptions.UseProxy)
-	{
-		proto->MSN_DebugLog("IP Changed %s %s", mGatewayIP, tGateIP);
-		Netlib_CloseHandle(s);
-		s = NULL;
-	}
 	strcpy(mGatewayIP, tGateIP);
 	if (gatewayType) strcpy(mServer, tGateIP);
 	strcpy(mSessionID, tSessionID);

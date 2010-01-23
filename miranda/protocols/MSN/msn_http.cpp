@@ -92,6 +92,7 @@ PBYTE msn_httpGatewayUnwrapRecv(NETLIBHTTPREQUEST* nlhr, PBYTE buf, int len, int
 		}
 	}
 
+	T->sessionClosed |= tIsSessionClosed;
 	if (tIsSessionClosed && buf == NULL)
 	{	
 		*outBufLen = 0;

@@ -176,6 +176,13 @@ bool CMsnProto::MSN_AddUser(HANDLE hContact, const char* email, int netId, int f
 			{
 				AddDelUserContList(email, flags, netId, false);
 
+				DBVARIANT dbv;
+				if (!DBGetContactSettingStringUtf(hContact, "CList", "Group", &dbv)) 
+				{
+					MSN_MoveContactToGroup(hContact, dbv.pszVal);
+					MSN_FreeVariant(&dbv);
+				}
+
 				char szContactID[100];
 				if (getStaticString(hContact, "ID", szContactID, sizeof(szContactID)) == 0)
 				{

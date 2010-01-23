@@ -125,7 +125,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define MSN_DEFAULT_GATEWAY_PORT   80
 const char MSN_DEFAULT_LOGIN_SERVER[] = "messenger.hotmail.com";
 const char MSN_DEFAULT_GATEWAY[] =      "gateway.messenger.hotmail.com";
-const char MSN_USER_AGENT[] =           "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1)";
+const char MSN_USER_AGENT[] =           "Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 5.1)";
 
 #define MSN_BLOCK        "/BlockCommand"
 #define MSN_INVITE       "/InviteCommand"
@@ -190,7 +190,6 @@ void        ReleaseIconEx(const char*);
 
 void        MsnInitIcons(void);
 
-char*       httpParseHeader(char* buf, unsigned& status);
 int         sttDivideWords(char* parBuffer, int parMinItems, char** parDest);
 void		MSN_MakeDigest(const char* chl, char* dgst);
 char*		getNewUuid(void);
@@ -475,7 +474,6 @@ struct ThreadData
 	int            recv(char* data, size_t datalen);
 	int            recv_dg(char* data, size_t datalen);
 	bool           isTimeout(void);
-	char*          httpTransact(char* szCommand, size_t cmdsz, size_t& bdysz);
 
 	void           sendCaps(void);
 	LONG           sendMessage(int msgType, const char* email, int netId, const char* msg, int parFlags);

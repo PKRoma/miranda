@@ -476,23 +476,3 @@ int sttDivideWords(char* parBuffer, int parMinItems, char** parDest)
 
 	return i;
 }
-
-
-char* httpParseHeader(char* buf, unsigned& status)
-{
-	status = 0;
-	char* p = strstr(buf, "\r\n");
-	if (p != NULL) 
-	{
-		*p = 0; p += 2;
-
-		union {
-			char* tWords[2];
-			struct { char *method, *status; } data;
-		};
-
-		if (sttDivideWords(buf, 2, tWords) == 2)
-			status = strtoul(data.status, NULL, 10);
-	}
-	return p;
-}
