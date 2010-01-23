@@ -625,19 +625,22 @@ INT_PTR NetlibHttpRecvHeaders(WPARAM wParam,LPARAM lParam)
 {
 	struct NetlibConnection *nlc = (struct NetlibConnection*)wParam;
 	NETLIBHTTPREQUEST *nlhr;
-	int bytesPeeked;
-	DWORD dwRequestTimeoutTime;
-	int firstLineLength, headersCount = 0, bufferSize = 0;
 	char *peol, *pbuffer;
 	char *buffer = NULL;
+	DWORD dwRequestTimeoutTime;
+	int bytesPeeked, firstLineLength = 0;
+	int headersCount = 0, bufferSize = 8192;
+	bool headersCompleted = false;
 
 	if(!NetlibEnterNestedCS(nlc,NLNCS_RECV))
 		return 0;
+
 	dwRequestTimeoutTime = GetTickCount() + HTTPRECVHEADERSTIMEOUT;
 	nlhr = (NETLIBHTTPREQUEST*)mir_calloc(sizeof(NETLIBHTTPREQUEST));
 	nlhr->cbSize = sizeof(NETLIBHTTPREQUEST);
 	nlhr->nlc = nlc;
 	nlhr->requestType = REQUEST_RESPONSE;
+	
 	if (!HttpPeekFirstResponseLine(nlc, dwRequestTimeoutTime, lParam | MSG_PEEK,
 		&nlhr->resultCode, &nlhr->szResultDescr, &firstLineLength))
 	{
@@ -645,9 +648,10 @@ INT_PTR NetlibHttpRecvHeaders(WPARAM wParam,LPARAM lParam)
 		NetlibHttpFreeRequestStruct(0, (LPARAM)nlhr);
 		return 0;
 	}
-	buffer = (char*)mir_alloc(firstLineLength);
-	bytesPeeked = NLRecv(nlc, buffer, firstLineLength, lParam | MSG_DUMPASTEXT);
-	if (bytesPeeked < firstLineLength) 
+
+	buffer = (char*)mir_alloc(bufferSize + 1);
+	bytesPeeked = NLRecv(nlc, buffer, min(firstLineLength, bufferSize), lParam | MSG_DUMPASTEXT);
+	if (bytesPeeked != firstLineLength) 
 	{
 		NetlibLeaveNestedCS(&nlc->ncsRecv);
 		NetlibHttpFreeRequestStruct(0, (LPARAM)nlhr);
@@ -656,40 +660,46 @@ INT_PTR NetlibHttpRecvHeaders(WPARAM wParam,LPARAM lParam)
 	}
 
 	// Make sure all headers arrived
-	do
+	bytesPeeked = 0;
+	while (!headersCompleted)
 	{
-		bufferSize += 8192;
-		mir_free(buffer);
-		buffer = (char*)mir_alloc(bufferSize);
+		if (bytesPeeked >= bufferSize)
+		{
+			bufferSize += 8192;
+			mir_free(buffer);
+			if (bufferSize > 32 * 1024)
+			{
+				NetlibLeaveNestedCS(&nlc->ncsRecv);
+				NetlibHttpFreeRequestStruct(0, (LPARAM)nlhr);
+				return 0;
+			}
+			buffer = (char*)mir_alloc(bufferSize + 1);
+		}
 
-		bytesPeeked = RecvWithTimeoutTime(nlc, dwRequestTimeoutTime, buffer, bufferSize - 1, MSG_PEEK | lParam);
+		bytesPeeked = RecvWithTimeoutTime(nlc, dwRequestTimeoutTime, buffer, bufferSize, MSG_PEEK | lParam);
         if (bytesPeeked == 0) break;
 
-		if (bytesPeeked == SOCKET_ERROR || bufferSize > 32 * 1024)
+		if (bytesPeeked == SOCKET_ERROR)
 		{
 			NetlibLeaveNestedCS(&nlc->ncsRecv);
 			NetlibHttpFreeRequestStruct(0, (LPARAM)nlhr);
-			if (bytesPeeked == 0) SetLastError(ERROR_HANDLE_EOF);
 			mir_free(buffer);
 			return 0;
 		}
 		buffer[bytesPeeked] = 0;
 
-		headersCount = 0;
-		bytesPeeked = 0;
-		for (pbuffer = buffer; ; pbuffer = peol + 2)
+		for (pbuffer = buffer, headersCount = 0; ; pbuffer = peol + 2, ++headersCount)
 		{
 			peol = strstr(pbuffer, "\r\n");
 			if (peol == NULL) break;
 			if (peol == pbuffer)
 			{
 				bytesPeeked = peol - buffer + 2;
+				headersCompleted = true;
 				break;
 			}
-			++headersCount;
 		}
 	}
-	while (bytesPeeked == 0);
 
 	// Recieve headers
 	bytesPeeked = NLRecv(nlc, buffer, bytesPeeked, lParam | MSG_DUMPASTEXT);
@@ -723,7 +733,7 @@ INT_PTR NetlibHttpRecvHeaders(WPARAM wParam,LPARAM lParam)
 			}
 
 			pSpace = pColon;
-			do { *pSpace-- = 0; } while ((*pSpace == ' ' || *pSpace == '\t') && pSpace >= pbuffer);
+			do { *pSpace-- = 0; } while (pSpace >= pbuffer && (*pSpace == ' ' || *pSpace == '\t'));
 			nlhr->headers[headersCount].szName = mir_strdup(pbuffer);
 
 			do { ++pColon; } while (*pColon == ' ' || *pColon == '\t');
