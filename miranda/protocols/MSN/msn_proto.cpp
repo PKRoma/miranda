@@ -266,7 +266,7 @@ int CMsnProto::OnModulesLoaded(WPARAM, LPARAM)
 
 int CMsnProto::OnPreShutdown(WPARAM, LPARAM)
 {
-	MSN_CloseThreads();
+//	MSN_CloseThreads();
 	return 0;
 }
 
