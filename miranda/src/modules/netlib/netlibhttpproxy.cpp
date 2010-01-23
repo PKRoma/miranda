@@ -68,7 +68,6 @@ void HttpGatewayRemovePacket(NetlibConnection *nlc, int pck)
 static int NetlibHttpGatewaySend(struct NetlibConnection *nlc, RequestType reqType, const char *buf, int len)
 {
 	NETLIBHTTPREQUEST nlhrSend = {0};
-	NETLIBHTTPHEADER httpHeaders[4];
 	char szUrl[512];
 
 	nlhrSend.cbSize = sizeof(nlhrSend);
@@ -120,16 +119,16 @@ static int NetlibHttpGatewaySend(struct NetlibConnection *nlc, RequestType reqTy
  		break;
 	}
 	
-	nlhrSend.headers = httpHeaders;
-	nlhrSend.headersCount  = 4;
-	httpHeaders[0].szName  = "User-Agent";
-	httpHeaders[0].szValue = nlc->nlu->user.szHttpGatewayUserAgent;
-	httpHeaders[1].szName  = "Cache-Control";
-	httpHeaders[1].szValue = "no-store, no-cache";
-	httpHeaders[2].szName  = "Pragma";
-	httpHeaders[2].szValue = "no-cache";
-	httpHeaders[3].szName  = "Accept-Encoding";
-	httpHeaders[3].szValue = "deflate, gzip";
+	nlhrSend.headersCount = 3;
+	nlhrSend.headers = (NETLIBHTTPHEADER*)alloca(sizeof(NETLIBHTTPHEADER) * nlhrSend.headersCount);
+	nlhrSend.headers[0].szName  = "User-Agent";
+	nlhrSend.headers[0].szValue = nlc->nlu->user.szHttpGatewayUserAgent;
+	nlhrSend.headers[1].szName  = "Cache-Control";
+	nlhrSend.headers[1].szValue = "no-store, no-cache";
+	nlhrSend.headers[2].szName  = "Pragma";
+	nlhrSend.headers[2].szValue = "no-cache";
+//	nlhrSend.headers[3].szName  = "Accept-Encoding";
+//	nlhrSend.headers[3].szValue = "deflate, gzip";
 
 	if (NetlibHttpSendRequest((WPARAM)nlc,(LPARAM)&nlhrSend) == SOCKET_ERROR) 
 		return 0;
