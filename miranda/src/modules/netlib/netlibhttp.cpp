@@ -106,7 +106,7 @@ static void AppendToCharBuffer(struct ResizableCharBuffer *rcb,const char *fmt,.
 	rcb->iEnd+=charsDone;
 }
 
-static int RecvWithTimeoutTime(struct NetlibConnection *nlc, DWORD dwTimeoutTime, char *buf, int len ,int flags)
+static int RecvWithTimeoutTime(struct NetlibConnection *nlc, DWORD dwTimeoutTime, char *buf, int len, int flags)
 {
 	DWORD dwTimeNow;
 
@@ -117,17 +117,21 @@ static int RecvWithTimeoutTime(struct NetlibConnection *nlc, DWORD dwTimeoutTime
 			DWORD dwDeltaTime = min(dwTimeoutTime - dwTimeNow, 1000);
 			int res = WaitUntilReadable(nlc->s, dwDeltaTime);
 
-		    if (res > 0) break;
-			else if (res == SOCKET_ERROR) return SOCKET_ERROR;
+			switch (res)
+			{
+			case SOCKET_ERROR: 
+				return SOCKET_ERROR;
+			
+			case 1:
+				return NLRecv(nlc, buf, len, flags);
+			}
+
 			if (Miranda_Terminated()) return 0;
 		}
-		if (dwTimeNow >= dwTimeoutTime)
-		{
-			SetLastError(ERROR_TIMEOUT);
-			return SOCKET_ERROR;
-		}
+		SetLastError(ERROR_TIMEOUT);
+		return SOCKET_ERROR;
 	}
-	return NLRecv(nlc,buf,len,flags);
+	return NLRecv(nlc, buf, len, flags);
 }
 
 static char* NetlibHttpFindHeader(NETLIBHTTPREQUEST *nlhrReply, const char *hdr)
@@ -656,6 +660,7 @@ INT_PTR NetlibHttpRecvHeaders(WPARAM wParam,LPARAM lParam)
 		NetlibLeaveNestedCS(&nlc->ncsRecv);
 		NetlibHttpFreeRequestStruct(0, (LPARAM)nlhr);
 		if (bytesPeeked != SOCKET_ERROR) SetLastError(ERROR_HANDLE_EOF);
+		mir_free(buffer);
 		return 0;
 	}
 
@@ -669,22 +674,20 @@ INT_PTR NetlibHttpRecvHeaders(WPARAM wParam,LPARAM lParam)
 			mir_free(buffer);
 			if (bufferSize > 32 * 1024)
 			{
-				NetlibLeaveNestedCS(&nlc->ncsRecv);
-				NetlibHttpFreeRequestStruct(0, (LPARAM)nlhr);
-				return 0;
+				bytesPeeked = 0;
+				break;
 			}
 			buffer = (char*)mir_alloc(bufferSize + 1);
 		}
 
-		bytesPeeked = RecvWithTimeoutTime(nlc, dwRequestTimeoutTime, buffer, bufferSize, MSG_PEEK | lParam);
+		bytesPeeked = RecvWithTimeoutTime(nlc, dwRequestTimeoutTime, buffer, bufferSize, 
+			MSG_PEEK | MSG_NODUMP | lParam);
         if (bytesPeeked == 0) break;
 
 		if (bytesPeeked == SOCKET_ERROR)
 		{
-			NetlibLeaveNestedCS(&nlc->ncsRecv);
-			NetlibHttpFreeRequestStruct(0, (LPARAM)nlhr);
-			mir_free(buffer);
-			return 0;
+			bytesPeeked = 0;
+			break;
 		}
 		buffer[bytesPeeked] = 0;
 
@@ -702,8 +705,9 @@ INT_PTR NetlibHttpRecvHeaders(WPARAM wParam,LPARAM lParam)
 	}
 
 	// Recieve headers
-	bytesPeeked = NLRecv(nlc, buffer, bytesPeeked, lParam | MSG_DUMPASTEXT);
-	if (bytesPeeked == SOCKET_ERROR)
+	if (bytesPeeked > 0)
+		bytesPeeked = NLRecv(nlc, buffer, bytesPeeked, lParam | MSG_DUMPASTEXT);
+	if (bytesPeeked <= 0)
 	{
 		NetlibLeaveNestedCS(&nlc->ncsRecv);
 		NetlibHttpFreeRequestStruct(0, (LPARAM)nlhr);
@@ -796,7 +800,8 @@ INT_PTR NetlibHttpTransaction(WPARAM wParam, LPARAM lParam)
 			else 
 				mir_snprintf(szUserAgent, SIZEOF(szUserAgent), "Miranda/%s", szMirandaVer);
 		}
-        if (!doneAcceptEncoding) {
+        if (!doneAcceptEncoding)
+		{
 			nlhrSend.headers[nlhrSend.headersCount].szName="Accept-Encoding";
 			nlhrSend.headers[nlhrSend.headersCount].szValue="deflate, gzip";
 			++nlhrSend.headersCount;
@@ -855,6 +860,8 @@ void NetlibHttpSetLastErrorUsingHttpResult(int result)
 
 char* gzip_decode(char *gzip_data, int *len_ptr, int window)
 {
+	if (*len_ptr == 0) return NULL;
+
     int gzip_len = *len_ptr * 5;
     char* output_data = NULL;
 
@@ -949,12 +956,12 @@ next:
 		goto next;
 	} 
 
-	for(i=0; i<nlhrReply->headersCount; i++) 
+	for (i=0; i<nlhrReply->headersCount; i++) 
 	{
-		if(!lstrcmpiA(nlhrReply->headers[i].szName, "Content-Length")) 
+		if (!lstrcmpiA(nlhrReply->headers[i].szName, "Content-Length")) 
 			dataLen = atoi(nlhrReply->headers[i].szValue);
 
-		if(!lstrcmpiA(nlhrReply->headers[i].szName, "Content-Encoding")) 
+		if (!lstrcmpiA(nlhrReply->headers[i].szName, "Content-Encoding")) 
 		{
 			cenc = i;
 			if (strstr(nlhrReply->headers[i].szValue, "gzip"))
@@ -963,7 +970,7 @@ next:
 				cenctype = 2;
 		}
 
-		if(!lstrcmpiA(nlhrReply->headers[i].szName, "Transfer-Encoding") && 
+		if (!lstrcmpiA(nlhrReply->headers[i].szName, "Transfer-Encoding") && 
 			!lstrcmpiA(nlhrReply->headers[i].szValue, "chunked"))
 		{
 			chunked = true;
@@ -989,7 +996,8 @@ next:
 		dataBufferAlloced = dataLen < 0 ? 2048 : dataLen + 1;
 		nlhrReply->pData = (char*)mir_realloc(nlhrReply->pData, dataBufferAlloced);
 
-		do {
+		do 
+		{
 			for(;;) 
 			{
 				unsigned dwTimeNow = GetTickCount();
@@ -1000,8 +1008,8 @@ next:
 					return NULL;
 				}
 
-				recvResult = NLRecv(nlc, nlhrReply->pData+nlhrReply->dataLength,
-					dataBufferAlloced-nlhrReply->dataLength-1, dflags | (cenctype ? MSG_NODUMP : 0));
+				recvResult = NLRecv(nlc, nlhrReply->pData + nlhrReply->dataLength,
+					dataBufferAlloced - nlhrReply->dataLength - 1, dflags | (cenctype ? MSG_NODUMP : 0));
 
 				if (recvResult == 0) break;
 				if (recvResult == SOCKET_ERROR) 
