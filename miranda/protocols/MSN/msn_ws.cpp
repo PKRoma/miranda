@@ -142,8 +142,8 @@ int ThreadData::recv_dg(char* data, size_t datalen)
 	nlhr.flags = NLHRF_HTTP11 | NLHRF_DUMPASTEXT | NLHRF_PERSISTENT;
 	nlhr.nlc = s;
 
-	nlhr.headersCount = 4;
-	nlhr.headers=(NETLIBHTTPHEADER*)alloca(sizeof(NETLIBHTTPHEADER)*nlhr.headersCount);
+	nlhr.headersCount = 5;
+	nlhr.headers=(NETLIBHTTPHEADER*)alloca(sizeof(NETLIBHTTPHEADER) * nlhr.headersCount);
 	nlhr.headers[0].szName   = "User-Agent";
 	nlhr.headers[0].szValue = (char*)MSN_USER_AGENT;
 	nlhr.headers[1].szName  = "Accept";
@@ -152,6 +152,8 @@ int ThreadData::recv_dg(char* data, size_t datalen)
 	nlhr.headers[2].szValue = "text/xml; charset=utf-8";
 	nlhr.headers[3].szName  = "Cache-Control";
 	nlhr.headers[3].szValue = "no-cache";
+	nlhr.headers[4].szName  = "Accept-Encoding";
+	nlhr.headers[4].szValue = "identity";
 
 
 	time_t ts = time(NULL);
