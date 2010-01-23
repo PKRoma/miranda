@@ -105,12 +105,9 @@ int CMsnProto::Lists_Add(int list, int netId, const char* email, const char* inv
 	else
 	{
 		p->list |= list;
-		if (invite)
-		{
-			mir_free(p->invite);
-			p->invite = mir_strdup(invite);
-		}
-		if ((list & LIST_FL) && netId != NETID_UNKNOWN)
+		if (invite) replaceStr(p->invite, invite);
+		if (list & LIST_FL) p->netId = netId;
+		if (p->netId == NETID_UNKNOWN && netId != NETID_UNKNOWN)
 			p->netId = netId;
 	}
 	int result = p->list;

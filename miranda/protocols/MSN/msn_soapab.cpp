@@ -854,7 +854,11 @@ bool CMsnProto::MSN_ABFind(const char* szMethod, const char* szGuid, bool deltas
 			if (strcmp(szErr, "PassportAuthFail") == 0 && allowRecurse)
 			{
 				MSN_GetPassportAuth();
-				status = MSN_ABFind(szMethod, szGuid, false) ? 200 : 500;
+				status = MSN_ABFind(szMethod, szGuid, deltas, false) ? 200 : 500;
+			}
+			else if (strcmp(szErr, "FullSyncRequired") == 0 && deltas)
+			{
+				status = MSN_ABFind(szMethod, szGuid, false, false) ? 200 : 500;
 			}
 		}
 		ezxml_free(xmlm);
