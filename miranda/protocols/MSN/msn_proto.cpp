@@ -177,14 +177,10 @@ CMsnProto::CMsnProto(const char* aProtoName, const TCHAR* aUserName) :
 	nlu.szSettingsModule = m_szModuleName;
 	nlu.ptszDescriptiveName = szBuffer;
 
-	if (MyOptions.UseGateway) 
-	{
-		nlu.flags |= NUF_HTTPGATEWAY;
-		nlu.szHttpGatewayUserAgent = (char*)MSN_USER_AGENT;
-		nlu.pfnHttpGatewayInit = msn_httpGatewayInit;
-		nlu.pfnHttpGatewayWrapSend = msn_httpGatewayWrapSend;
-		nlu.pfnHttpGatewayUnwrapRecv = msn_httpGatewayUnwrapRecv;
-	}
+	nlu.szHttpGatewayUserAgent = (char*)MSN_USER_AGENT;
+	nlu.pfnHttpGatewayInit = msn_httpGatewayInit;
+	nlu.pfnHttpGatewayWrapSend = msn_httpGatewayWrapSend;
+	nlu.pfnHttpGatewayUnwrapRecv = msn_httpGatewayUnwrapRecv;
 
 	mir_sntprintf(szBuffer, SIZEOF(szBuffer), TranslateT("%s plugin connections"), m_tszUserName);
 	hNetlibUser = (HANDLE)MSN_CallService(MS_NETLIB_REGISTERUSER, 0, (LPARAM)&nlu);
@@ -192,7 +188,7 @@ CMsnProto::CMsnProto(const char* aProtoName, const TCHAR* aUserName) :
 	if (getByte("UseIeProxy", 0))
 	{
 		if (MyOptions.UseGateway)
-			MyOptions.UseProxy = SetupIeProxy(hNetlibUser, false);
+			SetupIeProxy(hNetlibUser, false);
 		SetupIeProxy(hNetlibUserHttps, true);
 	}
 }
@@ -1115,16 +1111,15 @@ int __cdecl CMsnProto::SetStatus(int iNewStatus)
 			return 0;
 		}	
 
-		MyOptions.UseProxy = getByte("NLUseProxy", FALSE) != 0;
-
 		ThreadData* newThread = new ThreadData;
 
 		newThread->mType = SERVER_DISPATCH;
 		newThread->mIsMainThread = true;
-		{	int oldMode = m_iStatus;
-			m_iStatus = ID_STATUS_CONNECTING;
-			SendBroadcast(NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS, (HANDLE)oldMode, m_iStatus);
-		}
+		
+		int oldMode = m_iStatus;
+		m_iStatus = ID_STATUS_CONNECTING;
+		SendBroadcast(NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS, (HANDLE)oldMode, m_iStatus);
+
 		newThread->startThread(&CMsnProto::MSNServerThread, this);
 	}
 	else 

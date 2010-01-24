@@ -1312,3 +1312,15 @@ bool SetupIeProxy(HANDLE hNetlib, bool secur)
 
 	return enabled != 0;
 }
+
+bool ForceHttpProxy(HANDLE hNetlib)
+{
+	NETLIBUSERSETTINGS nls = {0};
+
+	nls.cbSize = sizeof(NETLIBUSERSETTINGS);
+	if (MSN_CallService(MS_NETLIB_GETUSERSETTINGS, (WPARAM)hNetlib, (LPARAM)&nls))
+	{
+		return nls.useProxy && nls.proxyType == PROXYTYPE_HTTP;
+	}
+	return false;
+}

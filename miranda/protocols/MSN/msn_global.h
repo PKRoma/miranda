@@ -194,6 +194,7 @@ int         sttDivideWords(char* parBuffer, int parMinItems, char** parDest);
 void		MSN_MakeDigest(const char* chl, char* dgst);
 char*		getNewUuid(void);
 bool        SetupIeProxy(HANDLE hNetlib, bool secur);
+bool        ForceHttpProxy(HANDLE hNetlib);
 
 TCHAR* EscapeChatTags(const TCHAR* pszText);
 TCHAR* UnEscapeChatTags(TCHAR* str_in);
@@ -399,13 +400,6 @@ bool p2p_IsDlFileOk(filetransfer* ft);
 /////////////////////////////////////////////////////////////////////////////////////////
 //	Thread handling functions and datatypes
 
-struct TQueueItem
-{
-	TQueueItem* next;
-	size_t  datalen;
-	char data[1];
-};
-
 #define MSG_DISABLE_HDR      1
 #define MSG_REQUIRE_ACK      2
 #define MSG_RTL              4
@@ -428,7 +422,7 @@ struct ThreadData
 	WORD           mIncomingPort;
 	TCHAR          mChatID[10];
 	bool           mIsMainThread;
-	int            mWaitPeriod;
+	clock_t        mWaitPeriod;
 
 	CMsnProto*     proto;
 
@@ -436,16 +430,9 @@ struct ThreadData
 	char           mSessionID[50]; // Gateway session ID
 	char           mGatewayIP[80]; // Gateway IP address
 	int            mGatewayTimeout;
-	char*          mReadAheadBuffer;
-	char*          mReadAheadBufferPtr;
-	size_t         mEhoughData;
 	bool           sessionClosed;
 	bool		   termPending;
 	bool		   gatewayType;
-
-	TQueueItem*	   mFirstQueueItem;
-	unsigned       numQueueItems;
-	HANDLE         hQueueMutex;
 
 	//----| for switchboard servers only |------------------------------------------------
 	int            mCaller;
@@ -472,7 +459,8 @@ struct ThreadData
 
 	int            send(const char data[], size_t datalen);
 	int            recv(char* data, size_t datalen);
-	int            recv_dg(char* data, size_t datalen);
+
+	void           resetTimeout(bool term = false);
 	bool           isTimeout(void);
 
 	void           sendCaps(void);
@@ -577,7 +565,6 @@ typedef struct _tag_MYOPTIONS
 	bool		EnableSounds;
 
 	bool		UseGateway;
-	bool		UseProxy;
 	bool		ShowErrorsAsPopups;
 	bool		AwayAsBrb;
 	bool		SlowSend;

@@ -42,7 +42,7 @@ void __cdecl CMsnProto::msn_keepAliveThread(void*)
 		{
 			case WAIT_TIMEOUT:
 				keepFlag = msnNsThread != NULL;
-				if (MyOptions.UseGateway)
+				if (usingGateway)
 					msnPingTimeout = 45;
 				else 
 				{
@@ -83,9 +83,15 @@ void __cdecl CMsnProto::MSNServerThread(void* arg)
 	if (tPortDelim != NULL)
 		*tPortDelim = '\0';
 
-	if (MyOptions.UseGateway) 
+	if (info->mIsMainThread)
 	{
-		if (*info->mServer == 0)
+		usingGateway = MyOptions.UseGateway || (!MyOptions.UseGateway && ForceHttpProxy(hNetlibUser));
+	}
+
+retry:
+	if (usingGateway) 
+	{
+		if (info->mServer[0] == 0)
 			strcpy(info->mServer, MSN_DEFAULT_LOGIN_SERVER); 
 		else if (info->mIsMainThread)
 			strcpy(info->mGatewayIP, info->mServer);
@@ -94,68 +100,72 @@ void __cdecl CMsnProto::MSNServerThread(void* arg)
 			strcpy(info->mGatewayIP, info->mServer);
 		else
 		{
-			if (info->mGatewayIP[0] == 0 && getStaticString(NULL, "LoginServer", info->mGatewayIP, sizeof(info->mGatewayIP)))
+			if (info->mGatewayIP[0] == 0 && (!MyOptions.UseGateway ||
+				getStaticString(NULL, "LoginServer", info->mGatewayIP, sizeof(info->mGatewayIP))))
 				strcpy(info->mGatewayIP, MSN_DEFAULT_GATEWAY);
 		}
 	}
 	else
 	{
-		if (*info->mServer == 0 && getStaticString(NULL, "LoginServer", info->mServer, sizeof(info->mServer)))
+		if (info->mServer[0] == 0 && getStaticString(NULL, "LoginServer", info->mServer, sizeof(info->mServer)))
 			strcpy(info->mServer, MSN_DEFAULT_LOGIN_SERVER);
 	}
 
-	if (MyOptions.UseGateway && !MyOptions.UseProxy) 
+	NETLIBOPENCONNECTION tConn = { 0 };
+	tConn.cbSize  = sizeof(tConn);
+	tConn.flags   = NLOCF_V2;
+	tConn.timeout = 5;
+
+	if (usingGateway)
 	{
-		info->hQueueMutex = CreateMutex(NULL, FALSE, NULL);
+		tConn.flags  |= NLOCF_HTTPGATEWAY;
+		tConn.szHost  = info->mGatewayIP;
+		tConn.wPort   = MSN_DEFAULT_GATEWAY_PORT;
 	}
-	else 
+	else
 	{
-		NETLIBOPENCONNECTION tConn = { 0 };
-		tConn.cbSize = sizeof(tConn);
-		tConn.flags = NLOCF_V2;
-		tConn.timeout = 5;
-		tConn.szHost = info->mServer;
-		tConn.wPort = MSN_DEFAULT_PORT;
+		tConn.szHost  = info->mServer;
+		tConn.wPort   = MSN_DEFAULT_PORT;
+	}
 
-		if (tPortDelim != NULL) 
+	if (tPortDelim != NULL) 
+	{
+		int tPortNumber = atoi(tPortDelim+1);
+		if (tPortNumber)
+			tConn.wPort = (WORD)tPortNumber;
+	}	
+
+	MSN_DebugLog("Thread started: server='%s:%d', type=%d", tConn.szHost, tConn.wPort, info->mType);
+
+	info->s = (HANDLE)MSN_CallService(MS_NETLIB_OPENCONNECTION, (WPARAM)hNetlibUser, (LPARAM)&tConn);
+	if (info->s == NULL) 
+	{
+		MSN_DebugLog("Connection Failed (%d) server='%s:%d'", WSAGetLastError(), tConn.szHost, tConn.wPort);
+
+		switch (info->mType) 
 		{
-			int tPortNumber = atoi(tPortDelim+1);
-			if (tPortNumber)
-				tConn.wPort = (WORD)tPortNumber;
-		}	
+			case SERVER_NOTIFICATION: 
+			case SERVER_DISPATCH:
+				if (!usingGateway) { usingGateway = true; goto retry; }
+				SendBroadcast(NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_NOSERVER);
+				MSN_GoOffline();
+				msnNsThread = NULL;
+				if (hKeepAliveThreadEvt) 
+				{
+					msnPingTimeout *= -1;
+					SetEvent(hKeepAliveThreadEvt);
+				}
+				break;
 
-		MSN_DebugLog("Thread started: server='%s:%d', type=%d", tConn.szHost, tConn.wPort, info->mType);
-
-		info->s = (HANDLE)MSN_CallService(MS_NETLIB_OPENCONNECTION, (WPARAM)hNetlibUser, (LPARAM)&tConn);
-		if (info->s == NULL) 
-		{
-			MSN_DebugLog("Connection Failed (%d) server='%s:%d'", WSAGetLastError(), tConn.szHost, tConn.wPort);
-
-			switch (info->mType) 
-			{
-				case SERVER_NOTIFICATION: 
-				case SERVER_DISPATCH:
-					SendBroadcast(NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_NOSERVER);
-					MSN_GoOffline();
-					msnNsThread = NULL;
-					if (hKeepAliveThreadEvt) 
-					{
-						msnPingTimeout *= -1;
-						SetEvent(hKeepAliveThreadEvt);
-					}
-					break;
-
-				case SERVER_SWITCHBOARD:
-					if (info->mCaller) msnNsThread->sendPacket("XFR", "SB");
-					break;
-			}
-			return;
+			case SERVER_SWITCHBOARD:
+				if (info->mCaller) msnNsThread->sendPacket("XFR", "SB");
+				break;
 		}
-
-		if (MyOptions.UseGateway)
-			MSN_CallService(MS_NETLIB_SETPOLLINGTIMEOUT, WPARAM(info->s), 2);
+		return;
 	}
 
+	if (usingGateway)
+		MSN_CallService(MS_NETLIB_SETPOLLINGTIMEOUT, WPARAM(info->s), info->mGatewayTimeout);
 
 	MSN_DebugLog("Connected with handle=%08X", info->s);
 
@@ -311,7 +321,7 @@ void  CMsnProto::MSN_CloseConnections()
 		case SERVER_DISPATCH :
 		case SERVER_NOTIFICATION :
 		case SERVER_SWITCHBOARD :
-			if (T->s != NULL)
+			if (T->s != NULL && !T->sessionClosed)
 			{
 				nls.hReadConns[0] = T->s;
 				int res = MSN_CallService(MS_NETLIB_SELECTEX, 0, (LPARAM)&nls);
@@ -598,7 +608,7 @@ ThreadData::ThreadData()
 {
 	memset(this, 0, sizeof(ThreadData));
 	mGatewayTimeout = 2;
-	mWaitPeriod = 60;
+	resetTimeout();
 	hWaitEvent = CreateSemaphore(NULL, 0, 5, NULL);
 }
 
@@ -641,20 +651,6 @@ ThreadData::~ThreadData()
 	}
 
 	mir_free(mJoinedContacts);
-
-	if (hQueueMutex) WaitForSingleObject(hQueueMutex, INFINITE);
-	while (mFirstQueueItem != NULL) 
-	{
-		TQueueItem* QI = mFirstQueueItem;
-		mFirstQueueItem = mFirstQueueItem->next;
-		mir_free(QI);
-		--numQueueItems;
-	}
-	if (hQueueMutex)
-	{
-		ReleaseMutex(hQueueMutex);
-		CloseHandle(hQueueMutex);
-	}
 
 	HANDLE hContact = mInitialContact;
 	mInitialContact = NULL;
@@ -704,7 +700,7 @@ void ThreadData::processSessionData(const char* str)
 
 	char* tDelim = (char*)strchr(str, ';');
 	if (tDelim == NULL)
-		return;
+		return; 
 
 	*tDelim = 0; tDelim += 2;
 

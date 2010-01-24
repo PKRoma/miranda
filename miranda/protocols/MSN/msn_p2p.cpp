@@ -1352,7 +1352,7 @@ LBL_Close:
 			return;
 		}
 
-		if (MyOptions.UseGateway || MyOptions.UseProxy)
+		if (usingGateway)
 			MSN_StartP2PTransferByContact(ft->std.hContact);
 
 		directconnection* dc = new directconnection(ft);

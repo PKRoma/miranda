@@ -474,7 +474,7 @@ static INT_PTR CALLBACK DlgProcMsnConnOpts(HWND hwndDlg, UINT msg, WPARAM wParam
 	case WM_NOTIFY:
 		if (((LPNMHDR)lParam)->code == (UINT)PSN_APPLY) 
 		{
-			bool restartRequired = false, reconnectRequired = false;
+			bool reconnectRequired = false;
 			char str[MAX_PATH];
 
 			CMsnProto* proto = (CMsnProto*)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
@@ -520,9 +520,7 @@ static INT_PTR CALLBACK DlgProcMsnConnOpts(HWND hwndDlg, UINT msg, WPARAM wParam
 				proto->ForkThread(&CMsnProto::MSNConnDetectThread, NULL);
 			}
 
-			if (restartRequired)
-				MessageBox(hwndDlg, TranslateT("The changes you have made require you to restart Miranda IM before they take effect"), TranslateT("MSN Options"), MB_OK);
-			else if (reconnectRequired && proto->msnLoggedIn)
+			if (reconnectRequired && proto->msnLoggedIn)
 				MessageBox(hwndDlg, TranslateT("The changes you have made require you to reconnect to the MSN Messenger network before they take effect"), TranslateT("MSN Options"), MB_OK);
 
 			proto->LoadOptions();
@@ -876,7 +874,6 @@ void  CMsnProto::LoadOptions(void)
 	MyOptions.PopupTimeoutOther = getDword("PopupTimeoutOther", MyOptions.PopupTimeoutHotmail);
 	MyOptions.ShowErrorsAsPopups = getByte("ShowErrorsAsPopups", FALSE) != 0;
 	MyOptions.SlowSend = getByte("SlowSend", FALSE) != 0;
-	MyOptions.UseProxy = getByte("NLUseProxy", FALSE) != 0;
 	MyOptions.UseGateway = getByte("UseGateway", FALSE) != 0;
 	MyOptions.UseWinColors = getByte("UseWinColors", FALSE) != 0;
 	if (getStaticString(NULL, "e-mail", MyOptions.szEmail, sizeof(MyOptions.szEmail)))
