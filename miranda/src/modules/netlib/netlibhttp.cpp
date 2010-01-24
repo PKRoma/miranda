@@ -146,43 +146,50 @@ static char* NetlibHttpFindHeader(NETLIBHTTPREQUEST *nlhrReply, const char *hdr)
 	return NULL;
 }
 
-static bool NetlibHttpProcessUrl(NETLIBHTTPREQUEST *nlhr, NetlibUser *nlu, char* szUrl = NULL)
+void NetlibConnFromUrl(char* szUrl, bool secur, NETLIBOPENCONNECTION &nloc)
 {
-	NETLIBOPENCONNECTION nloc = {0};
-	char szHost[1024];
-	char *ppath, *phost, *pcolon;
-	bool secur;
+	secur = secur || _strnicmp(szUrl, "https", 5) == 0;
+	char* phost = strstr(szUrl, "://");
+	
+	char* szHost = mir_strdup(phost ? phost + 3 : szUrl);
 
-	if (szUrl == NULL) szUrl = nlhr->szUrl;
-
-	secur = _strnicmp(szUrl, "https", 5) == 0 || (nlhr->flags & NLHRF_SSL);
-	phost = strstr(szUrl, "://");
-	if (phost == NULL) phost = szUrl;
-	else phost += 3;
-	lstrcpynA(szHost, phost, SIZEOF(szHost));
-	ppath = strchr(szHost, '/');
+	char* ppath = strchr(szHost, '/');
 	if (ppath) *ppath = '\0';
 
+	memset(&nloc, 0, sizeof(nloc));
 	nloc.cbSize = sizeof(nloc);
 	nloc.szHost = szHost;
-	pcolon = strrchr(szHost, ':');
+
+	char* pcolon = strrchr(szHost, ':');
 	if (pcolon) 
 	{
 		*pcolon = '\0';
 		nloc.wPort = (WORD)strtol(pcolon+1, NULL, 10);
 	}
 	else nloc.wPort = secur ? 443 : 80;
-    if (secur) nlhr->flags |= NLHRF_SSL; else nlhr->flags &= ~NLHRF_SSL;
-	nloc.flags = NLOCF_HTTP | (secur ? NLOCF_SSL : 0);
+	nloc.flags = (secur ? NLOCF_SSL : 0);
+}
+
+static bool NetlibHttpProcessUrl(NETLIBHTTPREQUEST *nlhr, NetlibUser *nlu, char* szUrl = NULL)
+{
+	NETLIBOPENCONNECTION nloc;
+
+	if (szUrl == NULL) 
+		NetlibConnFromUrl(nlhr->szUrl, (nlhr->flags & NLHRF_SSL) != 0, nloc);
+	else
+		NetlibConnFromUrl(szUrl, false, nloc);
+		
+	nloc.flags |= NLOCF_HTTP;
+    if (nloc.flags & NLOCF_SSL) nlhr->flags |= NLHRF_SSL; else nlhr->flags &= ~NLHRF_SSL;
 
 	NetlibConnection* nlc = (NetlibConnection*)nlhr->nlc;
 	if (nlc != NULL)
 	{
 		NETLIBUSERSETTINGS *setgs = &nlc->nlu->settings;
-		bool httpProxy = !secur && setgs->useProxy && setgs->proxyType == PROXYTYPE_HTTP && 
+		bool httpProxy = !(nloc.flags & NLOCF_SSL) && setgs->useProxy && setgs->proxyType == PROXYTYPE_HTTP && 
 			setgs->szProxyServer && setgs->szProxyServer[0];
 
-		bool sameHost = lstrcmpA(nlc->nloc.szHost, szHost) == 0 && nlc->nloc.wPort == nloc.wPort;
+		bool sameHost = lstrcmpA(nlc->nloc.szHost, nloc.szHost) == 0 && nlc->nloc.wPort == nloc.wPort;
 
 		if (!httpProxy && !sameHost)
 		{
@@ -197,12 +204,13 @@ static bool NetlibHttpProcessUrl(NETLIBHTTPREQUEST *nlhr, NetlibUser *nlu, char*
 
 			mir_free((char*)nlc->nloc.szHost);
 			nlc->nloc = nloc;
-			nlc->nloc.szHost = mir_strdup(nloc.szHost);
 			return NetlibDoConnect(nlc);
 		}
 	}
 	else
 		nlhr->nlc = nlc = (NetlibConnection*)NetlibOpenConnection((WPARAM)nlu, (LPARAM)&nloc);
+
+	mir_free((char*)nloc.szHost);
 
 	return nlc != NULL;
 }
@@ -322,7 +330,7 @@ static int SendHttpRequestAndData(struct NetlibConnection *nlc,struct ResizableC
 			MSG_NODUMP : (nlhr->flags & NLHRF_DUMPPROXY ? MSG_DUMPPROXY : 0)) |
 		(nlhr->flags & NLHRF_NOPROXY ? MSG_RAW : 0);
 
-	int bytesSent=NLSend(nlc,httpRequest->sz,httpRequest->iEnd, hflags);
+	int bytesSent = NLSend(nlc, httpRequest->sz, httpRequest->iEnd, hflags);
 	if (bytesSent != SOCKET_ERROR && sendData && nlhr->dataLength) 
 	{
 		DWORD sflags = (nlhr->flags & NLHRF_DUMPASTEXT ? MSG_DUMPASTEXT : 0) | 
@@ -414,7 +422,7 @@ INT_PTR NetlibHttpSendRequest(WPARAM wParam,LPARAM lParam)
 
 		if (nlc->proxyAuthNeeded && proxyAuthList.getCount())
 		{
-			nlc->proxyAuthNeeded = 0;
+			nlc->proxyAuthNeeded = false;
 			if (szAuthMethodNlu == NULL) 
 				szAuthMethodNlu = proxyAuthList.find(nlc->nlu);
 
@@ -429,29 +437,29 @@ INT_PTR NetlibHttpSendRequest(WPARAM wParam,LPARAM lParam)
 		AppendToCharBuffer(&httpRequest, "%s %s HTTP/1.%d\r\n", pszRequest, pszUrl, (nlhr->flags & NLHRF_HTTP11) != 0);
 
 		//HTTP headers
-		doneHostHeader=doneContentLengthHeader=doneProxyAuthHeader=0;
-		for(i=0;i<nlhr->headersCount;i++) {
-			if(!lstrcmpiA(nlhr->headers[i].szName,"Host")) doneHostHeader=1;
-			else if(!lstrcmpiA(nlhr->headers[i].szName,"Content-Length")) doneContentLengthHeader=1;
-			else if(!lstrcmpiA(nlhr->headers[i].szName,"Proxy-Authorization")) doneProxyAuthHeader=1;
-			else if(!lstrcmpiA(nlhr->headers[i].szName,"Connection")) continue;
-			if(nlhr->headers[i].szValue==NULL) continue;
-			AppendToCharBuffer(&httpRequest,"%s: %s\r\n",nlhr->headers[i].szName,nlhr->headers[i].szValue);
+		doneHostHeader = doneContentLengthHeader = doneProxyAuthHeader = 0;
+		for (i=0; i < nlhr->headersCount; i++)
+		{
+			if (!lstrcmpiA(nlhr->headers[i].szName, "Host")) doneHostHeader = 1;
+			else if (!lstrcmpiA(nlhr->headers[i].szName, "Content-Length")) doneContentLengthHeader = 1;
+			else if (!lstrcmpiA(nlhr->headers[i].szName, "Proxy-Authorization")) doneProxyAuthHeader = 1;
+			else if (!lstrcmpiA(nlhr->headers[i].szName, "Connection")) continue;
+			if (nlhr->headers[i].szValue == NULL) continue;
+			AppendToCharBuffer(&httpRequest, "%s: %s\r\n", nlhr->headers[i].szName, nlhr->headers[i].szValue);
 		}
 		if (szHost && !doneHostHeader) 
-			AppendToCharBuffer(&httpRequest,"%s: %s\r\n","Host",szHost);
+			AppendToCharBuffer(&httpRequest, "%s: %s\r\n", "Host", szHost);
 		if (pszProxyAuthHdr && !doneProxyAuthHeader)
-			AppendToCharBuffer(&httpRequest,"%s: %s\r\n","Proxy-Authorization",pszProxyAuthHdr);
-		AppendToCharBuffer(&httpRequest,"%s: %s\r\n","Connection","Keep-Alive");
-		AppendToCharBuffer(&httpRequest,"%s: %s\r\n","Proxy-Connection","Keep-Alive");
+			AppendToCharBuffer(&httpRequest, "%s: %s\r\n", "Proxy-Authorization", pszProxyAuthHdr);
+		AppendToCharBuffer(&httpRequest, "%s: %s\r\n", "Connection", "Keep-Alive");
+		AppendToCharBuffer(&httpRequest, "%s: %s\r\n", "Proxy-Connection", "Keep-Alive");
 
 		// Add Sticky Headers
-		if (nlc->nlu->szStickyHeaders != NULL) {
-			AppendToCharBuffer(&httpRequest,"%s\r\n", nlc->nlu->szStickyHeaders);
-		}
+		if (nlc->nlu->szStickyHeaders != NULL)
+			AppendToCharBuffer(&httpRequest, "%s\r\n", nlc->nlu->szStickyHeaders);
 
 		//send it
-		bytesSent=SendHttpRequestAndData(nlc,&httpRequest,nlhr,!doneContentLengthHeader);
+		bytesSent = SendHttpRequestAndData(nlc, &httpRequest, nlhr, !doneContentLengthHeader);
 		if (bytesSent == SOCKET_ERROR) break;
 
 		//ntlm reply
@@ -1000,7 +1008,6 @@ next:
 		{
 			for(;;) 
 			{
-				Netlib_Logf(nlc->nlu, "Data bytes reading %d", dataBufferAlloced - nlhrReply->dataLength - 1); 
 				recvResult = RecvWithTimeoutTime(nlc, dwCompleteTime, nlhrReply->pData + nlhrReply->dataLength,
 					dataBufferAlloced - nlhrReply->dataLength - 1, dflags | (cenctype ? MSG_NODUMP : 0));
 

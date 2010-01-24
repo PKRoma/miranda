@@ -320,15 +320,15 @@ static int NetlibInitHttpsConnection(struct NetlibConnection *nlc,struct NetlibU
 	}
 	nlhrSend.szUrl = szUrl;
 
-	nlc->usingHttpGateway = 1;
+	nlc->usingHttpGateway = true;
 
 	if (NetlibHttpSendRequest((WPARAM)nlc,(LPARAM)&nlhrSend) == SOCKET_ERROR)
 	{
-		nlc->usingHttpGateway = 0;
+		nlc->usingHttpGateway = false;
 		return 0;
 	}
 	nlhrReply = (NETLIBHTTPREQUEST*)NetlibHttpRecvHeaders((WPARAM)nlc, MSG_DUMPPROXY | MSG_RAW);
-	nlc->usingHttpGateway = 0;
+	nlc->usingHttpGateway = false;
 	if (nlhrReply == NULL) return 0;
 	if (nlhrReply->resultCode < 200 || nlhrReply->resultCode >= 300)
 	{
@@ -472,10 +472,11 @@ bool NetlibDoConnect(NetlibConnection *nlc)
 {
 	NETLIBOPENCONNECTION *nloc = &nlc->nloc;
 	NetlibUser *nlu = nlc->nlu;
+	bool usingProxy = nlu->settings.useProxy && nlu->settings.szProxyServer && nlu->settings.szProxyServer[0];
 
-	nlc->proxyAuthNeeded = 1;
+	nlc->proxyAuthNeeded = true;
 	nlc->sinProxy.sin_family = AF_INET;
-	if(nlu->settings.useProxy && nlu->settings.szProxyServer && nlu->settings.szProxyServer[0]) 
+	if (usingProxy) 
 	{
 		nlc->sinProxy.sin_port = htons(nlu->settings.wProxyPort);
 		nlc->sinProxy.sin_addr.S_un.S_addr = DnsLookup(nlu, nlu->settings.szProxyServer);
@@ -494,46 +495,46 @@ bool NetlibDoConnect(NetlibConnection *nlc)
 		return false;
 	}
 
-	if (nlu->settings.useProxy && nlu->settings.szProxyServer && nlu->settings.szProxyServer[0]
-	   && !((nloc->flags & (NLOCF_HTTP | NLOCF_SSL)) == NLOCF_HTTP
-			&& (nlu->settings.proxyType==PROXYTYPE_HTTP || nlu->settings.proxyType==PROXYTYPE_HTTPS)))
+	if (usingProxy && !((nloc->flags & (NLOCF_HTTP | NLOCF_SSL)) == NLOCF_HTTP && 
+		(nlu->settings.proxyType == PROXYTYPE_HTTP || nlu->settings.proxyType == PROXYTYPE_HTTPS)))
 	{
 		if (!WaitUntilWritable(nlc->s,30000)) return false;
 
-		switch(nlu->settings.proxyType) {
+		switch(nlu->settings.proxyType) 
+		{
 			case PROXYTYPE_SOCKS4:
-				if(!NetlibInitSocks4Connection(nlc,nlu,nloc)) return false;
+				if (!NetlibInitSocks4Connection(nlc, nlu, nloc)) return false;
 				break;
 
 			case PROXYTYPE_SOCKS5:
-				if (!NetlibInitSocks5Connection(nlc,nlu,nloc)) return false;
+				if (!NetlibInitSocks5Connection(nlc, nlu, nloc)) return false;
 				break;
 
 			case PROXYTYPE_HTTPS:
-				if (!NetlibInitHttpsConnection(nlc,nlu,nloc)) return false;
+				if (!NetlibInitHttpsConnection(nlc, nlu, nloc)) return false;
 				break;
 
 			case PROXYTYPE_HTTP:
-				if(!(nlu->user.flags & NUF_HTTPGATEWAY) || (nloc->flags & NLOCF_SSL))
+				if(!(nlu->user.flags & NUF_HTTPGATEWAY) || (nloc->flags & (NLOCF_SSL | NLOCF_HTTPGATEWAY)))
 				{
 					//NLOCF_HTTP not specified and no HTTP gateway available: try HTTPS
-					if (!NetlibInitHttpsConnection(nlc,nlu,nloc))
+					if (!NetlibInitHttpsConnection(nlc, nlu, nloc))
 					{
 						//can't do HTTPS: try direct
 						closesocket(nlc->s);
 
-						nlc->sinProxy.sin_family=AF_INET;
-						nlc->sinProxy.sin_port=htons((short)nloc->wPort);
-						nlc->sinProxy.sin_addr.S_un.S_addr=DnsLookup(nlu,nloc->szHost);
-						if(nlc->sinProxy.sin_addr.S_un.S_addr==0 || my_connect(nlc, nloc)==SOCKET_ERROR) 
+						nlc->sinProxy.sin_family = AF_INET;
+						nlc->sinProxy.sin_port = htons(nloc->wPort);
+						nlc->sinProxy.sin_addr.S_un.S_addr = DnsLookup(nlu, nloc->szHost);
+						if(nlc->sinProxy.sin_addr.S_un.S_addr == 0 || my_connect(nlc, nloc) == SOCKET_ERROR) 
 						{
-							if(nlc->sinProxy.sin_addr.S_un.S_addr)
-								Netlib_Logf(nlu,"%s %d: %s() failed (%u)",__FILE__,__LINE__,"connect",WSAGetLastError());
+							if (nlc->sinProxy.sin_addr.S_un.S_addr)
+								Netlib_Logf(nlu, "%s %d: %s() failed (%u)", __FILE__, __LINE__, "connect", WSAGetLastError());
 							return false;
 						}
 					}
 				}
-				else if (!NetlibInitHttpConnection(nlc,nlu,nloc)) return false;
+				else if (!NetlibInitHttpConnection(nlc, nlu, nloc)) return false;
 				break;
 
 			default:
@@ -542,15 +543,20 @@ bool NetlibDoConnect(NetlibConnection *nlc)
 				return false;
 		}
 	}
+	else if (nloc->flags & NLOCF_HTTPGATEWAY)
+	{
+		if (!NetlibInitHttpConnection(nlc, nlu, nloc)) return false;
+		nlc->usingDirectHttpGateway = true;
+	}
 
 	if (NLOCF_SSL & nloc->flags)
 	{
-		Netlib_Logf(nlc->nlu,"(%d) Connected to %s:%d, Starting SSL negotiation",nlc->s,nloc->szHost,nloc->wPort);
+		Netlib_Logf(nlc->nlu, "(%d) Connected to %s:%d, Starting SSL negotiation", nlc->s, nloc->szHost, nloc->wPort);
 
 		nlc->hSsl = si.connect(nlc->s, nloc->szHost, nlc->nlu->settings.validateSSL);
 		if (nlc->hSsl == NULL)
 		{
-			Netlib_Logf(nlc->nlu,"(%d %s) Failure to negotiate SSL connection",nlc->s,nloc->szHost);
+			Netlib_Logf(nlc->nlu, "(%d %s) Failure to negotiate SSL connection", nlc->s, nloc->szHost);
 			return false;
 		}
 	}

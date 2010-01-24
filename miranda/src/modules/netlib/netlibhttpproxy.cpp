@@ -118,7 +118,33 @@ static int NetlibHttpGatewaySend(struct NetlibConnection *nlc, RequestType reqTy
 		nlhrSend.szUrl = nlc->nlhpi.szHttpPostUrl;
  		break;
 	}
-	
+
+	if (nlc->usingDirectHttpGateway)
+	{
+		NETLIBOPENCONNECTION nloc;
+		NetlibConnFromUrl(nlhrSend.szUrl, false, nloc);
+
+		bool sameHost = lstrcmpA(nlc->nloc.szHost, nloc.szHost) == 0 && nlc->nloc.wPort == nloc.wPort;
+
+		if (!sameHost)
+		{
+			if (nlc->hSsl)
+			{
+				si.shutdown(nlc->hSsl);
+				si.sfree(nlc->hSsl);
+				nlc->hSsl = NULL;
+			}
+			if (nlc->s != INVALID_SOCKET) closesocket(nlc->s);
+			nlc->s = INVALID_SOCKET;
+
+			mir_free((char*)nlc->nloc.szHost);
+			nlc->nloc = nloc;
+			if (!NetlibDoConnect(nlc)) return SOCKET_ERROR;
+		}
+		else
+			mir_free((char*)nloc.szHost);
+	}
+
 	nlhrSend.headersCount = 3;
 	nlhrSend.headers = (NETLIBHTTPHEADER*)alloca(sizeof(NETLIBHTTPHEADER) * nlhrSend.headersCount);
 	nlhrSend.headers[0].szName  = "User-Agent";
@@ -204,6 +230,7 @@ static int NetlibHttpGatewayOscarPost(NetlibConnection *nlc, const char *buf, in
 	CloseHandle(nlcSend.hOkToCloseEvent);
 
 	nlc->s2 = nlcSend.s;
+	nlc->nloc = nlcSend.nloc;
 
 	EnterCriticalSection(&nlc->csHttpSequenceNums);
 
@@ -415,31 +442,32 @@ int NetlibInitHttpConnection(struct NetlibConnection *nlc, struct NetlibUser *nl
 		if (nlhrReply->resultCode != 200) 
 		{
 			NetlibHttpSetLastErrorUsingHttpResult(nlhrReply->resultCode);
-			NetlibHttpFreeRequestStruct(0,(LPARAM)nlhrReply);
+			NetlibHttpFreeRequestStruct(0, (LPARAM)nlhrReply);
 			return 0;
 		}
 	}
-	if (!nlu->user.pfnHttpGatewayInit(nlc,nloc,nlhrReply)) 
+	if (!nlu->user.pfnHttpGatewayInit(nlc, nloc, nlhrReply)) 
 	{
-		NetlibHttpFreeRequestStruct(0,(LPARAM)nlhrReply);
+		NetlibHttpFreeRequestStruct(0, (LPARAM)nlhrReply);
 		return 0;
 	}
-	NetlibHttpFreeRequestStruct(0,(LPARAM)nlhrReply);
+	NetlibHttpFreeRequestStruct(0, (LPARAM)nlhrReply);
 
 	/*
 	 * Gena01 - Ok, we should be able to use just POST. Needed for Yahoo, NO GET requests
 	 */
-	if(nlc->nlhpi.szHttpPostUrl==NULL) {
+	if(nlc->nlhpi.szHttpPostUrl == NULL) 
+	{
 		SetLastError(ERROR_BAD_FORMAT);
 		return 0;
 	}
 
-	nlc->usingHttpGateway = 1;
+	nlc->usingHttpGateway = true;
 
 	//now properly connected
-	if(nlu->user.pfnHttpGatewayBegin)
-		if(!nlu->user.pfnHttpGatewayBegin(nlc,nloc))
-			return 0;
+	if (nlu->user.pfnHttpGatewayBegin && !nlu->user.pfnHttpGatewayBegin(nlc, nloc))
+		return 0;
+
 	return 1;
 }
 

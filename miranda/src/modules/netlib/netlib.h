@@ -37,23 +37,27 @@ struct NetlibUser {
     int outportnum;
 };
 
-struct NetlibNestedCriticalSection {
+struct NetlibNestedCriticalSection
+{
 	HANDLE hMutex;
 	DWORD dwOwningThreadId;
 	int lockCount;
 };
 
-struct NetlibHTTPProxyPacketQueue {
+struct NetlibHTTPProxyPacketQueue 
+{
 	struct NetlibHTTPProxyPacketQueue *next;
 	PBYTE dataBuffer;
 	int dataBufferLen;
 };
 
-struct NetlibConnection {
+struct NetlibConnection 
+{
 	int handleType;
 	SOCKET s, s2;
-	int usingHttpGateway;
-	int proxyAuthNeeded;
+	bool usingHttpGateway;
+	bool usingDirectHttpGateway;
+	bool proxyAuthNeeded;
 	struct NetlibUser *nlu;
 	SOCKADDR_IN sinProxy;
 	NETLIBHTTPPROXYINFO nlhpi;
@@ -114,6 +118,7 @@ INT_PTR NetlibHttpFreeRequestStruct(WPARAM wParam,LPARAM lParam);
 INT_PTR NetlibHttpTransaction(WPARAM wParam,LPARAM lParam);
 void NetlibHttpSetLastErrorUsingHttpResult(int result);
 NETLIBHTTPREQUEST* NetlibHttpRecv(NetlibConnection* nlc, DWORD hflags, DWORD dflags);
+void NetlibConnFromUrl(char* szUrl, bool secur, NETLIBOPENCONNECTION &nloc);
 
 //netlibhttpproxy.c
 int NetlibInitHttpConnection(struct NetlibConnection *nlc,struct NetlibUser *nlu,NETLIBOPENCONNECTION *nloc);
