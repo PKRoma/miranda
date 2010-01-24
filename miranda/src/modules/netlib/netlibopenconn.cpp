@@ -515,7 +515,7 @@ bool NetlibDoConnect(NetlibConnection *nlc)
 				break;
 
 			case PROXYTYPE_HTTP:
-				if(!(nlu->user.flags & NUF_HTTPGATEWAY) || (nloc->flags & (NLOCF_SSL | NLOCF_HTTPGATEWAY)))
+				if (!(nlu->user.flags & NUF_HTTPGATEWAY || nloc->flags & NLOCF_HTTPGATEWAY) || nloc->flags & NLOCF_SSL)
 				{
 					//NLOCF_HTTP not specified and no HTTP gateway available: try HTTPS
 					if (!NetlibInitHttpsConnection(nlc, nlu, nloc))
