@@ -37,8 +37,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 //a pointer, I have decided to diverge from the rest of Miranda and go with
 //the convention that functions return false on failure and nonzero on success.
 
-struct NETLIBHTTPREQUEST;
-struct NETLIBOPENCONNECTION;
+struct NETLIBHTTPREQUEST_tag;
+typedef struct NETLIBHTTPREQUEST_tag NETLIBHTTPREQUEST;
+struct NETLIBOPENCONNECTION_tag;
+typedef struct NETLIBOPENCONNECTION_tag NETLIBOPENCONNECTION;
 
 //Initialises the netlib for a set of connections
 //wParam=0
@@ -319,7 +321,7 @@ typedef struct {
 //    ERROR_INVALID_ADDRESS (socks5 address type not supported)
 //    HTTP: anything from nlu.pfnHttpGatewayInit, nlu.pfnHttpGatewayBegin,
 //          MS_NETLIB_SENDHTTPREQUEST or MS_NETLIB_RECVHTTPHEADERS
-#define NLOCF_HTTP          0x0001  //this connection will be used for HTTP communications. If configured for an HTTP/HTTPS proxy the connection is opened as if there was no proxy.
+#define NLOCF_HTTP          0x0001 //this connection will be used for HTTP communications. If configured for an HTTP/HTTPS proxy the connection is opened as if there was no proxy.
 #define NLOCF_STICKYHEADERS 0x0002 //this connection should send the sticky headers associated with NetLib user apart of any HTTP request
 #define NLOCF_V2            0x0004 //this connection understands the newer structure, newer cbSize isnt enough
 #define NLOCF_UDP           0x0008 // this connection is UDP
@@ -332,8 +334,7 @@ this is attempted, clearing sucking - so now you can set a timeout of any value,
 always reached by Windows, If a timeout occurs, or Miranda is exiting then you will get ERROR_TIMEOUT as soon as possible.
 */ 
 #define NETLIBOPENCONNECTION_V1_SIZE 16 /* old sizeof() is 14 bytes, but there is padding of 2 bytes */
-struct NETLIBOPENCONNECTION
-{
+struct NETLIBOPENCONNECTION_tag {
 	int cbSize;
 	const char *szHost;	  //can contain the string representation of an IP
 	WORD wPort;			  //host byte order
@@ -462,7 +463,7 @@ typedef struct {
 #define NLHRF_DUMPPROXY       0x00040000   //this transaction is a proxy communication. For dump filtering only.
 #define NLHRF_DUMPASTEXT      0x00080000   //dump posted and reply data as text. Headers are always dumped as text.
 #define NLHRF_NODUMPSEND      0x00100000   //do not dump sent message.
-struct NETLIBHTTPREQUEST {
+struct NETLIBHTTPREQUEST_tag {
 	int cbSize;
 	int requestType;	//a REQUEST_
 	DWORD flags;
