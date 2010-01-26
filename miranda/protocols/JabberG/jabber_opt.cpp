@@ -163,10 +163,10 @@ struct { TCHAR *szCode; TCHAR *szDescription; } g_LanguageCodes[] = {
 	{	_T("ng"),	_T("Ndonga")	},
 	{	_T("ne"),	_T("Nepali")	},
 	{	_T("nn"),	_T("Norwegian Nynorsk; Nynorsk, Norwegian")	},
-	{	_T("nb"),	_T("BokmЕl, Norwegian; Norwegian BokmЕl")	},
+	{	_T("nb"),	_T("Bokmaal, Norwegian; Norwegian Bokmaal")	},
 	{	_T("no"),	_T("Norwegian")	},
 	{	_T("ny"),	_T("Chichewa; Chewa; Nyanja")	},
-	{	_T("oc"),	_T("Occitan (post 1500); ProvenГal")	},
+	{	_T("oc"),	_T("Occitan (post 1500); Provencal")	},
 	{	_T("oj"),	_T("Ojibwa")	},
 	{	_T("or"),	_T("Oriya")	},
 	{	_T("om"),	_T("Oromo")	},
@@ -222,7 +222,7 @@ struct { TCHAR *szCode; TCHAR *szDescription; } g_LanguageCodes[] = {
 	{	_T("uz"),	_T("Uzbek")	},
 	{	_T("ve"),	_T("Venda")	},
 	{	_T("vi"),	_T("Vietnamese")	},
-	{	_T("vo"),	_T("VolapЭk")	},
+	{	_T("vo"),	_T("Volapuk")	},
 	{	_T("cy"),	_T("Welsh")	},
 	{	_T("wa"),	_T("Walloon")	},
 	{	_T("wo"),	_T("Wolof")	},
@@ -483,7 +483,7 @@ protected:
 
 			m_cbResource.SetText(dbv.ptszVal);
 			JFreeVariant(&dbv);
-		} 
+		}
 		else m_cbResource.SetText(_T("Miranda"));
 
 		for (i = 0; g_LanguageCodes[i].szCode; ++i)
@@ -519,7 +519,7 @@ protected:
 			JCallService(MS_DB_CRYPT_ENCODESTRING, lstrlenA(text), (LPARAM)text);
 			m_proto->JSetString(NULL, "Password", text);
 			mir_free(text);
-		} 
+		}
 		else m_proto->JDeleteSetting(NULL, "Password");
 
 		int index = m_cbLocale.GetCurSel();
@@ -612,7 +612,7 @@ private:
 			TranslateT("Account removal warning"), MB_YESNOCANCEL);
 
 		if ( res == IDYES )
-			m_proto->m_ThreadInfo->send( 
+			m_proto->m_ThreadInfo->send(
 				XmlNodeIq( _T("set"), m_proto->SerialNext(), m_proto->m_szJabberJID ) << XQUERY( _T(JABBER_FEAT_REGISTER))
 					<< XCHILD( _T("remove")));
 	}
@@ -820,7 +820,7 @@ public:
 		m_otvOptions.AddOption(LPGENT("Other") _T("/") LPGENT("Automatically accept authorization requests"), m_proto->m_options.AutoAcceptAuthorization);
 		m_otvOptions.AddOption(LPGENT("Other") _T("/") LPGENT("Fix incorrect timestamps in incoming messages"), m_proto->m_options.FixIncorrectTimestamps);
 		m_otvOptions.AddOption(LPGENT("Other") _T("/") LPGENT("Disable frame"), m_proto->m_options.DisableFrame);
-		
+
 		m_otvOptions.AddOption(LPGENT("Security") _T("/") LPGENT("Show information about operating system in version replies"), m_proto->m_options.ShowOSVersion);
 		m_otvOptions.AddOption(LPGENT("Security") _T("/") LPGENT("Accept only in band incoming filetransfers (don't disclose own IP)"), m_proto->m_options.BsOnlyIBB);
 		m_otvOptions.AddOption(LPGENT("Security") _T("/") LPGENT("Accept HTTP Authentication requests (XEP-0070)"), m_proto->m_options.AcceptHttpAuth);
@@ -1264,7 +1264,7 @@ void CJabberProto::_RosterExportToFile(HWND hwndDlg)
 	     << XATTR(_T("xmlns:html"), _T("http://www.w3.org/TR/REC-html40"));
 	root << XCHILD(_T("ExcelWorkbook"))
 	     << XATTR(_T("xmlns"), _T("urn:schemas-microsoft-com:office:excel"));
-	HXML table = root << XCHILD(_T("Worksheet")) << XATTR(_T("ss:Name"), _T("Exported roster")) 
+	HXML table = root << XCHILD(_T("Worksheet")) << XATTR(_T("ss:Name"), _T("Exported roster"))
 	                  << XCHILD(_T("Table"));
 
 	for (int index=0; index<ListItemCount; index++)
@@ -1286,10 +1286,10 @@ void CJabberProto::_RosterExportToFile(HWND hwndDlg)
 		node << XCHILD(_T("Cell")) << XCHILD(_T("Data"), subscr) << XATTR(_T("ss:Type"), _T("String"));
 
 	}
-	
+
 	char header[] = "<?xml version=\"1.0\" encoding=\"utf8\"?>\n<?mso-application progid=\"Excel.Sheet\"?>\n";
 	fwrite(header, 1, sizeof(header) - 1 /* for zero terminator */, fp);
-	
+
 	TCHAR *xtmp = xi.toString(root, NULL);
 	char *tmp = mir_utf8encodeT(xtmp);
 	xi.freeMem(xtmp);
@@ -1325,7 +1325,7 @@ void CJabberProto::_RosterImportFromFile(HWND hwndDlg)
 		fclose(fp);
 		return;
 	}
-	
+
 	char* buffer=(char*)mir_calloc(bufsize+1); // zero-terminate it
 	fread(buffer,1,bufsize,fp);
 	fclose(fp);
