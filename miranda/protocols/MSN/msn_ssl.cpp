@@ -42,7 +42,7 @@ char* CMsnProto::getSslResult(char** parUrl, const char* parAuthInfo, const char
 #endif
 
 	nlhr.headersCount = 4;
-	nlhr.headers=(NETLIBHTTPHEADER*)mir_alloc(sizeof(NETLIBHTTPHEADER)*(nlhr.headersCount+5));
+	nlhr.headers=(NETLIBHTTPHEADER*)alloca(sizeof(NETLIBHTTPHEADER) * (nlhr.headersCount + 5));
 	nlhr.headers[0].szName   = "User-Agent";
 	nlhr.headers[0].szValue = (char*)MSN_USER_AGENT;
 	nlhr.headers[1].szName  = "Accept";
@@ -54,6 +54,7 @@ char* CMsnProto::getSslResult(char** parUrl, const char* parAuthInfo, const char
 
 	if (hdrs)
 	{
+		unsigned count = 0;
 		char* hdrprs = NEWSTR_ALLOCA(hdrs);
 		for (;;)
 		{
@@ -68,7 +69,8 @@ char* CMsnProto::getSslResult(char** parUrl, const char* parAuthInfo, const char
 			fnd = strchr(fnd, '\r');
 			*fnd = 0;
 			hdrprs = fnd + 2;
-			nlhr.headersCount++;
+			++nlhr.headersCount;
+			if (++count >= 5) break;
 		}
 	}
 
@@ -87,17 +89,16 @@ char* CMsnProto::getSslResult(char** parUrl, const char* parAuthInfo, const char
 			*parUrl = mir_strdup(nlhrReply->szUrl);
 		}
 
-		const int len = nlhrReply->dataLength;
-		result = (char*)mir_alloc(len+1);
-		memcpy(result, nlhrReply->pData, len);
-		result[len] = 0;
+		result = nlhrReply->pData;
+
+		nlhrReply->dataLength = 0;
+		nlhrReply->pData = NULL;
 		
 		CallService(MS_NETLIB_FREEHTTPREQUESTSTRUCT, 0, (LPARAM)nlhrReply);
 	}
 	else
 		hHttpsConnection = NULL;
 
-	mir_free(nlhr.headers);
 	mHttpsTS = clock();
 
 	return result;
