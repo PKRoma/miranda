@@ -396,12 +396,20 @@ INT_PTR CALLBACK DlgProcFileTransfer(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 					break;
 
 				case IDC_OPENFOLDER:
-					if (dat && dat->transferStatus.tszWorkingDir)
-                    {
-                        TCHAR* path = PFTS_StringToTchar(&dat->transferStatus, dat->transferStatus.tszWorkingDir);
-						if (path) ShellExecute(NULL,_T("open"),path,NULL,NULL,SW_SHOW);
-                        mir_free(path);
-                    }
+					if ( dat ) {
+						TCHAR* path;
+						if ( lstrlen( dat->transferStatus.tszWorkingDir ) > 0 )
+							path = PFTS_StringToTchar(&dat->transferStatus, dat->transferStatus.tszWorkingDir);
+						else {
+							path = PFTS_StringToTchar(&dat->transferStatus, dat->transferStatus.tszCurrentFile );
+							TCHAR* p = _tcsrchr( path, '\\' );
+							if ( p )
+								*p = 0;
+						}
+
+						if ( path ) ShellExecute( NULL, _T("open"), path, NULL, NULL, SW_SHOW );
+						mir_free( path );
+					}
 					break;
 
 				case IDC_OPENFILE:
