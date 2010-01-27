@@ -3,6 +3,21 @@
                    
                            www.miranda-im.org
                              
+* New in 0.8.13
+Enhancements:
+ - ICQ: Improved AIM capabilities detection
+ - ICQ: Added ICQ 7 client detection
+
+Bugfixes:
+ - Incompatible contact list plugins could load on startup
+ - ICQ: Fixed possible memory leak
+ - Jabber: Minor translation fixes
+ - MSN: Fixed issue with SOAP requests
+ - MSN: Fixed issue denying users
+ - Yahoo: Fixed nudges
+ - Yahoo: Support cancelling file transfer in progress
+
+
 * New in 0.8.12
 Bugfixes:
  - Fixed crash during NTLM authentication
