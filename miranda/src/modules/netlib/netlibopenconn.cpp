@@ -395,7 +395,7 @@ retry:
 	// return the socket to non blocking
 	if ( ioctlsocket(nlc->s, FIONBIO, &notblocking) != 0 ) return SOCKET_ERROR;
 
-	if (nlc->nlu->settings.specifyOutgoingPorts && nlc->nlu->settings.szOutgoingPorts) 
+	if (nlc->nlu->settings.specifyOutgoingPorts && nlc->nlu->settings.szOutgoingPorts  && nlc->nlu->settings.szOutgoingPorts[0]) 
 	{
 		if (!BindSocketToPort(nlc->nlu->settings.szOutgoingPorts, nlc->s, &nlc->nlu->inportnum))
 			Netlib_Logf(nlc->nlu,"Netlib connect: Not enough ports for outgoing connections specified");
@@ -594,6 +594,8 @@ bool NetlibReconnect(NetlibConnection *nlc)
 		}
 		closesocket(nlc->s);
 		nlc->s = INVALID_SOCKET;
+
+		if (Miranda_Terminated()) return false;
 
 		if (nlc->usingHttpGateway)
 			return my_connect(nlc, &nlc->nloc) == 0;
