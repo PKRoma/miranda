@@ -54,7 +54,7 @@ const FieldNamesItem countryField[]={
   {61, LPGEN("Australia")},
   {6720, LPGEN("Australia, Antarctic Territory")},	/* added country code 672(0)*/
   {614, LPGEN("Australia, Christmas Island")},	/* rename (from Christmas Island) and change to official county code 61(4) (from 672) */
-  {61891, LPGEN("Australia, Cocos (Keeling) Islands)")},	/* rename and change to official county code 61(891) (from 6102) */
+  {61891, LPGEN("Australia, Cocos (Keeling) Islands")},	/* rename and change to official county code 61(891) (from 6102) */
   {6723 , LPGEN("Australia, Norfolk Island")},	/* rename (from Norfolk Island) and change to official county code 672(3) (from 6722) */
   {43, LPGEN("Austria")},
   {994, LPGEN("Azerbaijan")},
@@ -235,7 +235,7 @@ const FieldNamesItem countryField[]={
   {1784, LPGEN("Saint Vincent and the Grenadines")},
 //{670, LPGEN("Saipan Island")},   /* removed: it is not a country it is part of Northern Mariana Islands, US Territory of */
   {378, LPGEN("San Marino")},
-  {239, LPGEN("Sao Tome & Principe")},
+  {239, LPGEN("Sao Tome and Principe")},
   {966, LPGEN("Saudi Arabia")},
   {442, LPGEN("Scotland")},
   {221, LPGEN("Senegal")},
