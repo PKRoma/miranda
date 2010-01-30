@@ -1,6 +1,6 @@
 /*
 Plugin of Miranda IM for communicating with users of the MSN Messenger protocol.
-Copyright (c) 2006-2009 Boris Krasnovskiy.
+Copyright (c) 2006-2010 Boris Krasnovskiy.
 Copyright (c) 2003-2005 George Hazan.
 Copyright (c) 2002-2003 Richard Hughes (original version).
 
@@ -86,7 +86,8 @@ char* CMsnProto::getSslResult(char** parUrl, const char* parAuthInfo, const char
 		if (nlhrReply->szUrl)
 		{
 			mir_free(*parUrl);
-			*parUrl = mir_strdup(nlhrReply->szUrl);
+			*parUrl = nlhrReply->szUrl;
+			nlhrReply->szUrl = NULL;
 		}
 
 		result = nlhrReply->pData;
