@@ -426,7 +426,7 @@
 		</Configuration>
 		<Configuration
 			Name="Debug Unicode|Win32"
-			OutputDirectory="$(SolutionDir)$(ConfigurationName)/Plugins"
+			OutputDirectory="c:\miranda im\Plugins"
 			IntermediateDirectory="$(SolutionDir)$(ConfigurationName)/Obj/$(ProjectName)"
 			ConfigurationType="2"
 			UseOfMFC="0"
@@ -2821,10 +2821,6 @@
 							PrecompiledHeaderThrough="../commonheaders.h"
 						/>
 					</FileConfiguration>
-				</File>
-				<File
-					RelativePath="CLUIFrames\m_cluiframes.h"
-					>
 				</File>
 				<File
 					RelativePath="CLUIFrames\statusbar.c"
