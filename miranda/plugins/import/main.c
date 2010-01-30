@@ -52,11 +52,11 @@ static HWND hwndWizard = NULL;
 PLUGININFOEX pluginInfo = {
 	sizeof(PLUGININFOEX),
 	"Import contacts and messages",
-	PLUGIN_MAKE_VERSION(0,8,0,1),
+	PLUGIN_MAKE_VERSION(0,9,0,0),
 	"Imports contacts and messages from Mirabilis ICQ and Miranda IM.",
 	"Miranda team",
 	"info@miranda-im.org",
-	"© 2000-2009 Martin Öberg, Richard Hughes, Dmitry Kuzkin, George Hazan",
+	"© 2000-2010 Martin Öberg, Richard Hughes, Dmitry Kuzkin, George Hazan",
 	"http://www.miranda-im.org",
 	UNICODE_AWARE,
 	0,	//{2D77A746-00A6-4343-BFC5-F808CDD772EA}
