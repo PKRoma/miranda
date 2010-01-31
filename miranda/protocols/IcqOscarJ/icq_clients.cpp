@@ -806,7 +806,7 @@ const char* CIcqProto::detectUserClient(HANDLE hContact, int nIsICQ, DWORD dwUin
 								if (MatchCap(caps, wLen, &capIcqLiteNew, 0x10) && MatchShortCap(caps, wLen, &capStatusTextAware) && 
 									MatchShortCap(caps, wLen, &capAimLiveVideo) && MatchShortCap(caps, wLen, &capAimLiveAudio))
 								{
-									szClient = "ICQ 7";
+									strcpy(szClientBuf, "ICQ 7");
 								}
 								else if (CheckContactCapabilities(hContact, CAPF_HTML))
 								{
