@@ -399,11 +399,7 @@ LBL_FatalError:
 	if (( buffer=( char* )mir_alloc( jabberNetworkBufferSize+1 )) == NULL ) {	// +1 is for '\0' when debug logging this buffer
 		Log( "Cannot allocate network buffer, thread ended" );
 		if ( info->type == JABBER_SESSION_NORMAL ) {
-			oldStatus = m_iStatus;
-			m_iStatus = ID_STATUS_OFFLINE;
 			JSendBroadcast( NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_NONETWORK );
-			JSendBroadcast( NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS, ( HANDLE ) oldStatus, m_iStatus );
-			m_ThreadInfo = NULL;
 		}
 		else if ( info->type == JABBER_SESSION_REGISTER ) {
 			SendMessage( info->reg_hwndDlg, WM_JABBER_REGDLG_UPDATE, 100, ( LPARAM )TranslateT( "Error: Not enough memory" ));
@@ -417,11 +413,7 @@ LBL_FatalError:
 		Log( "Connection failed ( %d )", WSAGetLastError());
 		if ( info->type == JABBER_SESSION_NORMAL ) {
 			if ( m_ThreadInfo == info ) {
-				oldStatus = m_iStatus;
-				m_iStatus = ID_STATUS_OFFLINE;
 				JSendBroadcast( NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_NONETWORK );
-				JSendBroadcast( NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS, ( HANDLE ) oldStatus, m_iStatus );
-				m_ThreadInfo = NULL;
 		}	}
 		else if ( info->type == JABBER_SESSION_REGISTER )
 			SendMessage( info->reg_hwndDlg, WM_JABBER_REGDLG_UPDATE, 100, ( LPARAM )TranslateT( "Error: Cannot connect to the server" ));
@@ -448,12 +440,7 @@ LBL_FatalError:
 		if (!JCallService( MS_NETLIB_STARTSSL, ( WPARAM )info->s, 0)) {
 			Log( "SSL intialization failed" );
 			if ( info->type == JABBER_SESSION_NORMAL ) {
-				oldStatus = m_iStatus;
-				m_iStatus = ID_STATUS_OFFLINE;
-				JSendBroadcast( NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS, ( HANDLE ) oldStatus, m_iStatus );
 				JSendBroadcast( NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_NONETWORK );
-				if ( m_ThreadInfo == info )
-					m_ThreadInfo = NULL;
 			}
 			else if ( info->type == JABBER_SESSION_REGISTER ) {
 				SendMessage( info->reg_hwndDlg, WM_JABBER_REGDLG_UPDATE, 100, ( LPARAM )TranslateT( "Error: Cannot connect to the server" ));
@@ -718,7 +705,7 @@ void CJabberProto::PerformAuthentication( ThreadData* info )
 
 	if ( auth == NULL && m_AuthMechs.isKerberosAvailable ) {
 		m_AuthMechs.isKerberosAvailable = false;
-		auth = new TGssApiAuth( info, NULL );
+		auth = new TNtlmAuth( info, "GSSAPI" );
 		if ( !auth->isValid() ) {
 			delete auth;
 			auth = NULL;
@@ -741,9 +728,12 @@ void CJabberProto::PerformAuthentication( ThreadData* info )
 			return;
 		}
 
-		MessageBox( NULL, TranslateT("No known auth methods available. Giving up."), TranslateT( "Jabber Authentication" ), MB_OK|MB_ICONSTOP|MB_SETFOREGROUND );
-		info->send( "</stream:stream>" );
+		TCHAR text[128];
+		mir_sntprintf( text, SIZEOF( text ), _T("%s %s@")_T(TCHAR_STR_PARAM)_T("."), TranslateT( "Authentication failed for" ), info->username, info->server );
+		MessageBox( NULL, text, TranslateT( "Jabber Authentication" ), MB_OK|MB_ICONSTOP|MB_SETFOREGROUND );
 		JSendBroadcast( NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_WRONGPASSWORD );
+		info->send( "</stream:stream>" );
+		m_ThreadInfo = NULL;
 		return;
 	}
 
@@ -851,13 +841,6 @@ void CJabberProto::OnProcessFailure( HXML node, ThreadData* info )
 	if (( type = xmlGetAttrValue( node, _T("xmlns"))) == NULL ) return;
 	if ( !_tcscmp( type, _T("urn:ietf:params:xml:ns:xmpp-sasl") )) {
 		PerformAuthentication( info );
-		if ( info->auth ) return;
-
-		TCHAR text[128];
-		mir_sntprintf( text, SIZEOF( text ), _T("%s %s@")_T(TCHAR_STR_PARAM)_T("."), TranslateT( "Authentication failed for" ), info->username, info->server );
-		MessageBox( NULL, text, TranslateT( "Jabber Authentication" ), MB_OK|MB_ICONSTOP|MB_SETFOREGROUND );
-		JSendBroadcast( NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_WRONGPASSWORD );
-		m_ThreadInfo = NULL;	// To disallow auto reconnect
 }	}
 
 void CJabberProto::OnProcessError( HXML node, ThreadData* info )

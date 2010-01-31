@@ -93,21 +93,6 @@ public:
 
 	virtual	char* getInitialRequest();
 	virtual	char* getChallenge( const TCHAR* challenge );
+
+	bool getSpn( TCHAR* szSpn, size_t dwSpnLen );
 };
-
-class TGssApiAuth : public TJabberAuth
-{
-	typedef TJabberAuth CSuper;
-
-				HANDLE hProvider;
-				unsigned complete;
-public:		
-				TGssApiAuth( ThreadData*, const TCHAR* hostname );
-	virtual ~TGssApiAuth();
-
-	virtual	char* getInitialRequest();
-	virtual	char* getChallenge( const TCHAR* challenge );
-};
-
-
-

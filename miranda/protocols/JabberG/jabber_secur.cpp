@@ -42,6 +42,8 @@ TNtlmAuth::TNtlmAuth( ThreadData* info, const char* mechanism ) :
 	const TCHAR *szProvider;
 	if ( !strcmp( mechanism, "GSS-SPNEGO" ))
 		szProvider = _T("Negotiate");
+	else if ( !strcmp( mechanism, "GSSAPI" ))
+		szProvider = _T("Kerberos");
 	else if ( !strcmp( mechanism, "NTLM" ))
 		szProvider = _T("NTLM");
 	else {
@@ -49,7 +51,14 @@ TNtlmAuth::TNtlmAuth( ThreadData* info, const char* mechanism ) :
 		return;
 	}
 
-	if (( hProvider = Netlib_InitSecurityProvider2( szProvider, NULL )) == NULL )
+	TCHAR szSpn[ 256 ] = _T( "" );
+	if ( strcmp( mechanism, "NTLM" )) {
+		if ( !getSpn( szSpn, SIZEOF( szSpn )) && !strcmp( mechanism, "GSSAPI" )) {
+			bIsValid = false;
+			return;
+	}	}
+
+	if (( hProvider = Netlib_InitSecurityProvider2( szProvider, szSpn )) == NULL )
 		bIsValid = false;
 }
 
@@ -57,6 +66,53 @@ TNtlmAuth::~TNtlmAuth()
 {
 	if ( hProvider != NULL )
 		Netlib_DestroySecurityProvider( NULL, hProvider );
+}
+
+bool TNtlmAuth::getSpn( TCHAR* szSpn, size_t dwSpnLen )
+{
+#ifdef UNICODE
+	GetUserNameExType myGetUserNameEx = 
+		( GetUserNameExType )GetProcAddress( GetModuleHandleA( "secur32.dll" ), "GetUserNameExW" );
+#else
+	GetUserNameExType myGetUserNameEx = 
+		( GetUserNameExType )GetProcAddress( GetModuleHandleA( "secur32.dll" ), "GetUserNameExA" );
+#endif
+	if ( !myGetUserNameEx ) return false;
+
+	TCHAR szFullUserName[128] = _T( "" );
+	ULONG szFullUserNameLen = SIZEOF( szFullUserName );
+	if (!myGetUserNameEx( 12, szFullUserName, &szFullUserNameLen )) {
+		szFullUserName[ 0 ] = 0; 
+		szFullUserNameLen = SIZEOF( szFullUserName );
+		myGetUserNameEx( 2, szFullUserName, &szFullUserNameLen );
+	}
+
+	TCHAR* name = _tcsrchr(szFullUserName, '\\');
+	if (name) *name = 0;
+	else return false; 
+
+	_tcsupr(szFullUserName);
+
+	char* connectHost = info->manualHost[0] ? info->manualHost : info->server;
+
+	unsigned long ip = inet_addr( connectHost );
+	if ( ip == INADDR_NONE )
+	{
+		PHOSTENT host = gethostbyname( connectHost );
+		if ( host != NULL )
+			ip = (( PIN_ADDR )host->h_addr )->S_un.S_addr;
+	}
+
+	PHOSTENT host = gethostbyaddr(( char* )&ip, 4, AF_INET );
+	if ( !host ) return false;
+
+	TCHAR *connectHostDSN = mir_a2t( host->h_name ); 
+
+	mir_sntprintf( szSpn, dwSpnLen, _T( "xmpp/%s@%s" ), connectHostDSN, szFullUserName );
+
+	mir_free( connectHostDSN );
+
+	return true;
 }
 
 char* TNtlmAuth::getInitialRequest()
@@ -77,97 +133,6 @@ char* TNtlmAuth::getInitialRequest()
 }
 
 char* TNtlmAuth::getChallenge( const TCHAR* challenge )
-{
-	if ( !hProvider )
-		return NULL;
-
-	char *text = ( !lstrcmp( challenge, _T("="))) ? mir_strdup( "" ) : mir_t2a( challenge ), *result;
-	if ( info->password[0] != 0 ) {
-		TCHAR* pass = mir_a2t( info->password );
-		result = Netlib_NtlmCreateResponse2( hProvider, text, info->username, pass, &complete );
-		mir_free( pass );
-	}
-	else result = Netlib_NtlmCreateResponse2( hProvider, text, NULL, NULL, &complete );
-	
-	mir_free( text );
-	return result;
-}
-
-/////////////////////////////////////////////////////////////////////////////////////////
-// GSSAPI auth - Kerberos V authorization
-
-TGssApiAuth::TGssApiAuth( ThreadData* info, const TCHAR* /* hostname */ ) :
-	TJabberAuth( info )
-{
-	szName = "GSSAPI";
-
-	// This not currently logged on user, bye bye
-	if ( info->password[0] ) { bIsValid = false; return; }
-
-#ifdef UNICODE
-	GetUserNameExType myGetUserNameEx = 
-		(GetUserNameExType) GetProcAddress(GetModuleHandleA( "secur32.dll" ), "GetUserNameExW");
-#else
-	GetUserNameExType myGetUserNameEx = 
-		(GetUserNameExType) GetProcAddress(GetModuleHandleA( "secur32.dll" ), "GetUserNameExA");
-#endif
-	if (!myGetUserNameEx) { bIsValid = false; return; }
-
-	TCHAR szFullUserName[128] = _T( "" );
-	ULONG szFullUserNameLen = SIZEOF( szFullUserName );
-	if (!myGetUserNameEx( 12, szFullUserName, &szFullUserNameLen )) {
-		szFullUserName[ 0 ] = 0; 
-		szFullUserNameLen = SIZEOF( szFullUserName );
-		myGetUserNameEx( 2, szFullUserName, &szFullUserNameLen );
-	}
-
-	TCHAR* name = _tcsrchr(szFullUserName, '\\');
-	if (name) *name = 0;
-	else { bIsValid = false; return; }
-
-	_tcsupr(szFullUserName);
-
-	char* connectHost = info->manualHost[0] ? info->manualHost : info->server;
-
-	unsigned long ip = inet_addr( connectHost );
-	if ( ip == INADDR_NONE )
-	{
-		PHOSTENT host = gethostbyname( connectHost );
-		if ( host != NULL )
-			ip = (( PIN_ADDR )host->h_addr )->S_un.S_addr;
-	}
-
-	PHOSTENT host = gethostbyaddr(( char* )&ip, 4, AF_INET );
-	if ( !host ) { bIsValid = false; return; }
-
-	TCHAR *connectHostDSN = mir_a2t( host->h_name ); 
-
-	TCHAR szSpn[256];
-	mir_sntprintf( szSpn, SIZEOF(szSpn), _T("xmpp/%s@%s"), connectHostDSN, szFullUserName );
-
-	mir_free( connectHostDSN );
-
-	if (( hProvider = Netlib_InitSecurityProvider2( _T("Kerberos"), szSpn )) == NULL )
-		bIsValid = false;
-}
-
-TGssApiAuth::~TGssApiAuth()
-{
-	if ( hProvider != NULL )
-		Netlib_DestroySecurityProvider( NULL, hProvider );
-}
-
-char* TGssApiAuth::getInitialRequest()
-{
-	if ( !hProvider )
-		return NULL;
-
-	char* result = Netlib_NtlmCreateResponse2( hProvider, "", NULL, NULL, &complete );
-
-	return result;
-}
-
-char* TGssApiAuth::getChallenge( const TCHAR* challenge )
 {
 	if ( !hProvider )
 		return NULL;

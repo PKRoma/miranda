@@ -1276,9 +1276,9 @@ int __cdecl CJabberProto::SetStatus( int iNewStatus )
 		JSendBroadcast( NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS, ( HANDLE ) oldStatus, m_iStatus );
 	}
 	else if ( !m_bJabberConnected && !( m_iStatus >= ID_STATUS_CONNECTING && m_iStatus < ID_STATUS_CONNECTING + MAX_CONNECT_RETRIES )) {
+		m_iStatus = ID_STATUS_CONNECTING;
 		ThreadData* thread = new ThreadData( this, JABBER_SESSION_NORMAL );
 		int oldStatus = m_iStatus;
-		m_iStatus = ID_STATUS_CONNECTING;
 		JSendBroadcast( NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS, ( HANDLE ) oldStatus, m_iStatus );
 		thread->hThread = JForkThreadEx(( JThreadFunc )&CJabberProto::ServerThread, thread );
 
