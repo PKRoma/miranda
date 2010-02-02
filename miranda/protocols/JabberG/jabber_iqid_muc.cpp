@@ -254,7 +254,7 @@ static INT_PTR CALLBACK JabberMucJidListDlgProc( HWND hwndDlg, UINT msg, WPARAM 
 						
 						if (( queryNode = xmlGetChild( iqNode , "query" )) != NULL ) {
 							TCHAR* localFrom = mir_tstrdup( from );
-							mir_sntprintf( title, SIZEOF( title ), _T("%s, %d items (%s)"),
+							mir_sntprintf( title, SIZEOF( title ), TranslateT("%s, %d items (%s)"),
 								( dat->type == MUC_VOICELIST ) ? TranslateT( "Voice List" ) :
 								( dat->type == MUC_MEMBERLIST ) ? TranslateT( "Member List" ) :
 								( dat->type == MUC_MODERATORLIST ) ? TranslateT( "Moderator List" ) :
