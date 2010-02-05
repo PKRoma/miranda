@@ -1929,7 +1929,7 @@ ThreadData::ThreadData( CJabberProto* aproto, JABBER_SESSION_TYPE parType )
 
 ThreadData::~ThreadData()
 {
-	delete auth;
+	if ( auth ) delete auth;
 	mir_free( zRecvData );
 	CloseHandle( iomutex );
 	CloseHandle(hThread);
