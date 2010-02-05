@@ -323,19 +323,27 @@ INT_PTR CALLBACK DlgProcAuthReq(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 		case IDOK:
 			{	
 				HANDLE hDbEvent=(HANDLE)GetWindowLongPtr(hwndDlg,GWLP_USERDATA);
-				DBEVENTINFO dbei;
-				ZeroMemory(&dbei,sizeof(dbei));
+				DBEVENTINFO dbei = {0};
 				dbei.cbSize=sizeof(dbei);
-				dbei.cbBlob=0;
 				CallService(MS_DB_EVENT_GET,(WPARAM)hDbEvent,(LPARAM)&dbei);
 				CallProtoService(dbei.szModule,PS_AUTHALLOW,(WPARAM)hDbEvent,0);
 			}
 			DestroyWindow(hwndDlg);
 			return TRUE;
 		case IDCANCEL:
-			{	
-				HANDLE hDbEvent=(HANDLE)GetWindowLongPtr(hwndDlg,GWLP_USERDATA);
-				DialogBoxParam(hMirandaInst,MAKEINTRESOURCE(IDD_DENYREASON),hwndDlg,DenyReasonProc,(LPARAM)hDbEvent);
+			{
+				DBEVENTINFO dbei = {0};
+				dbei.cbSize = sizeof(dbei);
+
+				HANDLE hDbEvent = (HANDLE)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
+				CallService(MS_DB_EVENT_GET, (WPARAM)hDbEvent, (LPARAM)&dbei);
+
+				DWORD flags = CallProtoService(dbei.szModule, PS_GETCAPS,PFLAGNUM_4, 0);
+				if (flags & PF4_NOAUTHDENYREASON)
+					CallProtoService(dbei.szModule, PS_AUTHDENY, (WPARAM)hDbEvent, 0);
+				else
+					DialogBoxParam(hMirandaInst, MAKEINTRESOURCE(IDD_DENYREASON), hwndDlg,
+						DenyReasonProc, (LPARAM)hDbEvent);
 			}
 			DestroyWindow(hwndDlg);
 			return TRUE;
