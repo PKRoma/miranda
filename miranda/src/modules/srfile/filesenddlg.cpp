@@ -25,8 +25,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <sys/stat.h>
 #include "file.h"
 
-TCHAR* PFTS_StringToTchar( PROTOFILETRANSFERSTATUS* ft, const PROTOCHAR* s );
-
 static void SetFileListAndSizeControls(HWND hwndDlg,struct FileDlgData *dat)
 {
 	int fileCount=0,dirCount=0,totalSize=0,i;

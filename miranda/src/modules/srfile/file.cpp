@@ -23,7 +23,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "commonheaders.h"
 #include "file.h"
 
-TCHAR* PFTS_StringToTchar( PROTOFILETRANSFERSTATUS* ft, const PROTOCHAR* s );
+TCHAR* PFTS_StringToTchar( int flags, const PROTOCHAR* s );
 int PFTS_CompareWithTchar( PROTOFILETRANSFERSTATUS* ft, const PROTOCHAR* s, TCHAR* r );
 
 static HANDLE hSRFileMenuItem;
@@ -192,22 +192,42 @@ void FreeProtoFileTransferStatus(PROTOFILETRANSFERSTATUS *fts)
 	mir_free(fts->tszWorkingDir);
 }
 
-void CopyProtoFileTransferStatus(PROTOFILETRANSFERSTATUS *dest,PROTOFILETRANSFERSTATUS *src)
+void CopyProtoFileTransferStatus(PROTOFILETRANSFERSTATUS *dest, PROTOFILETRANSFERSTATUS *src)
 {
 	*dest=*src;
-	if ( src->tszCurrentFile ) dest->tszCurrentFile = PFTS_StringToTchar(src, src->tszCurrentFile);
+	if ( src->tszCurrentFile ) dest->tszCurrentFile = PFTS_StringToTchar(src->flags, src->tszCurrentFile);
 	if ( src->ptszFiles ) {
 		dest->ptszFiles = (TCHAR**)mir_alloc(sizeof(TCHAR*)*src->totalFiles);
 		for( int i=0; i < src->totalFiles; i++ )
-			dest->ptszFiles[i] = PFTS_StringToTchar(src, src->ptszFiles[i] );
+			dest->ptszFiles[i] = PFTS_StringToTchar(src->flags, src->ptszFiles[i] );
 	}
-	if ( src->tszWorkingDir ) dest->tszWorkingDir = PFTS_StringToTchar(src, src->tszWorkingDir );
+	if ( src->tszWorkingDir ) dest->tszWorkingDir = PFTS_StringToTchar(src->flags, src->tszWorkingDir );
 	dest->flags &= ~PFTS_UTF;
 	dest->flags |= PFTS_TCHAR;
 }
 
-void UpdateProtoFileTransferStatus(PROTOFILETRANSFERSTATUS *dest,PROTOFILETRANSFERSTATUS *src)
+void UpdateProtoFileTransferStatus(PROTOFILETRANSFERSTATUS *dest, PROTOFILETRANSFERSTATUS *src)
 {
+	if (src->cbSize == sizeof(PROTOFILETRANSFERSTATUS_V1))
+	{
+		PROTOFILETRANSFERSTATUS_V1 *src1 = (PROTOFILETRANSFERSTATUS_V1*)src;
+		src = (PROTOFILETRANSFERSTATUS*)alloca(sizeof(PROTOFILETRANSFERSTATUS));
+
+		src->cbSize               = sizeof(PROTOFILETRANSFERSTATUS);
+		src->hContact             = src1->hContact;
+		src->flags                = src1->sending ? PFTS_SENDING : 0;
+		src->pszFiles             = src1->files;
+		src->totalFiles           = src1->totalFiles;
+		src->currentFileNumber    = src1->currentFileNumber;
+		src->totalBytes           = src1->totalBytes;
+		src->totalProgress        = src1->totalProgress;
+		src->szWorkingDir         = src1->workingDir;
+		src->szCurrentFile        = src1->currentFile;
+		src->currentFileSize      = src1->currentFileSize;
+		src->currentFileProgress  = src1->currentFileProgress;
+		src->currentFileTime      = src1->currentFileTime;
+	}
+
 	dest->hContact = src->hContact;
 	dest->flags = src->flags;
 	if ( dest->totalFiles != src->totalFiles ) {
@@ -223,7 +243,7 @@ void UpdateProtoFileTransferStatus(PROTOFILETRANSFERSTATUS *dest,PROTOFILETRANSF
 			if ( !dest->ptszFiles[i] || !src->ptszFiles[i] || PFTS_CompareWithTchar( src, src->ptszFiles[i], dest->ptszFiles[i] )) {
 				mir_free( dest->ptszFiles[i] );
 				if ( src->ptszFiles[i] )
-					dest->ptszFiles[i] = PFTS_StringToTchar( src, src->ptszFiles[i] );
+					dest->ptszFiles[i] = PFTS_StringToTchar( src->flags, src->ptszFiles[i] );
 				else
 					dest->ptszFiles[i] = NULL;
 			}
@@ -241,7 +261,7 @@ void UpdateProtoFileTransferStatus(PROTOFILETRANSFERSTATUS *dest,PROTOFILETRANSF
 	if (src->tszWorkingDir && (!dest->tszWorkingDir || PFTS_CompareWithTchar( src, src->tszWorkingDir, dest->tszWorkingDir))) {
 		mir_free( dest->tszWorkingDir );
 		if ( src->tszWorkingDir )
-			dest->tszWorkingDir = PFTS_StringToTchar( src, src->tszWorkingDir );
+			dest->tszWorkingDir = PFTS_StringToTchar( src->flags, src->tszWorkingDir );
 		else
 			dest->tszWorkingDir = NULL;
 	}
@@ -249,7 +269,7 @@ void UpdateProtoFileTransferStatus(PROTOFILETRANSFERSTATUS *dest,PROTOFILETRANSF
 	if ( !dest->tszCurrentFile || !src->tszCurrentFile || PFTS_CompareWithTchar( src, src->tszCurrentFile, dest->tszCurrentFile )) {
 		mir_free( dest->tszCurrentFile );
 		if ( src->tszCurrentFile )
-			dest->tszCurrentFile = PFTS_StringToTchar( src, src->tszCurrentFile );
+			dest->tszCurrentFile = PFTS_StringToTchar( src->flags, src->tszCurrentFile );
 		else
 			dest->tszCurrentFile = NULL;
 	}

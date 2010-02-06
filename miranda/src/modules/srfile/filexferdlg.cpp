@@ -42,50 +42,50 @@ struct virusscanthreadstartinfo {
 	HWND hwndReply;
 };
 
-TCHAR* PFTS_StringToTchar( PROTOFILETRANSFERSTATUS* ft, const PROTOCHAR* s )
+TCHAR* PFTS_StringToTchar( int flags, const PROTOCHAR* s )
 {
-	#if defined( _UNICODE )
-  	if ( ft->flags & PFTS_UTF )
-			return Utf8DecodeUcs2(( char* )s );
-		else if ( ft->flags & PFTS_UNICODE )
-			return mir_tstrdup( s );
-		else
-			return mir_a2t(( char* )s );
-	#else
-		if ( ft->flags & PFTS_UTF ) {
-            char *szAnsi = mir_strdup(( char* )s );
-			return Utf8Decode(szAnsi, NULL);
-		}
-		else
-			return mir_strdup( s );
-	#endif
+#ifdef  _UNICODE
+	if ( flags & PFTS_UTF )
+		return Utf8DecodeUcs2(( char* )s );
+	else if ( flags & PFTS_UNICODE )
+		return mir_tstrdup( s );
+	else
+		return mir_a2t(( char* )s );
+#else
+	if ( flags & PFTS_UTF ) {
+		char *szAnsi = mir_strdup(( char* )s );
+		return Utf8Decode(szAnsi, NULL);
+	}
+	else
+		return mir_strdup( s );
+#endif
 }
 
 int PFTS_CompareWithTchar( PROTOFILETRANSFERSTATUS* ft, const PROTOCHAR* s, TCHAR* r )
 {
-	#if defined( _UNICODE )
-		if ( ft->flags & PFTS_UTF ) {
-			TCHAR* ts = Utf8DecodeUcs2(( char* )s );
-      int res = _tcscmp( ts, r );
-      mir_free( ts );
-      return res;
-		}
-		else if ( ft->flags & PFTS_UNICODE )
-			return _tcscmp( s, r );
-    else {
-      TCHAR* ts = mir_a2t(( char* )s );
-      int res = _tcscmp( ts, r );
-      mir_free( ts );
-      return res;
-    }
-	#else
-		if ( ft->flags & PFTS_UTF ) {
-      char *ts = NEWSTR_ALLOCA(( char* )s );
-			return _tcscmp( Utf8Decode(( char* )ts, NULL), r );
-		}
-		else
-			return _tcscmp( s, r );
-	#endif
+#ifdef _UNICODE
+	if ( ft->flags & PFTS_UTF ) {
+		TCHAR* ts = Utf8DecodeUcs2(( char* )s );
+		int res = _tcscmp( ts, r );
+		mir_free( ts );
+		return res;
+	}
+	else if ( ft->flags & PFTS_UNICODE )
+		return _tcscmp( s, r );
+	else {
+	  TCHAR* ts = mir_a2t(( char* )s );
+	  int res = _tcscmp( ts, r );
+	  mir_free( ts );
+	  return res;
+	}
+#else
+	if ( ft->flags & PFTS_UTF ) {
+		char *ts = NEWSTR_ALLOCA(( char* )s );
+		return _tcscmp( Utf8Decode(( char* )ts, NULL), r );
+	}
+	else
+		return _tcscmp( s, r );
+#endif
 }
 
 static void SetOpenFileButtonStyle(HWND hwndButton,int enabled)
@@ -158,7 +158,7 @@ static void SetFilenameControls(HWND hwndDlg, struct FileDlgData *dat, PROTOFILE
 	SHFILEINFO shfi = {0};
 
 	if ( fts->tszCurrentFile ) {
-		fnbuf = PFTS_StringToTchar( fts, fts->tszCurrentFile );
+		fnbuf = mir_tstrdup( fts->tszCurrentFile );
 		if (( fn = _tcsrchr( fnbuf, '\\' )) == NULL )
 			fn = fnbuf;
 		else fn++;
@@ -399,9 +399,9 @@ INT_PTR CALLBACK DlgProcFileTransfer(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 					if ( dat ) {
 						TCHAR* path;
 						if ( lstrlen( dat->transferStatus.tszWorkingDir ) > 0 )
-							path = PFTS_StringToTchar(&dat->transferStatus, dat->transferStatus.tszWorkingDir);
+							path = mir_tstrdup( dat->transferStatus.tszWorkingDir );
 						else {
-							path = PFTS_StringToTchar(&dat->transferStatus, dat->transferStatus.tszCurrentFile );
+							path = mir_tstrdup( dat->transferStatus.tszCurrentFile );
 							TCHAR* p = _tcsrchr( path, '\\' );
 							if ( p )
 								*p = 0;
@@ -560,13 +560,11 @@ INT_PTR CALLBACK DlgProcFileTransfer(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 					break;
 				case ACKRESULT_FILERESUME:
 				{
-					PROTOFILETRANSFERSTATUS *fts=(PROTOFILETRANSFERSTATUS*)ack->lParam;
+					UpdateProtoFileTransferStatus(&dat->transferStatus, (PROTOFILETRANSFERSTATUS*)ack->lParam);
+					PROTOFILETRANSFERSTATUS *fts = &dat->transferStatus; 
 
-					UpdateProtoFileTransferStatus(&dat->transferStatus,fts);
 					SetFilenameControls( hwndDlg, dat, fts );
-					TCHAR* tszCurrFile = PFTS_StringToTchar( fts, fts->tszCurrentFile );
-					int res = _taccess( tszCurrFile, 0 );
-					mir_free( tszCurrFile );
+					int res = _taccess( fts->tszCurrentFile, 0 );
 					if ( res )
 						break;
 
@@ -582,7 +580,7 @@ INT_PTR CALLBACK DlgProcFileTransfer(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 						pfr=(PROTOFILERESUME*)mir_alloc(sizeof(PROTOFILERESUME));
 						pfr->action = dat->resumeBehaviour;
 						pfr->szFilename = NULL;
-						PostMessage(hwndDlg,M_FILEEXISTSDLGREPLY,(WPARAM)PFTS_StringToTchar(fts, fts->tszCurrentFile),(LPARAM)pfr);
+						PostMessage(hwndDlg,M_FILEEXISTSDLGREPLY,(WPARAM)mir_tstrdup(fts->tszCurrentFile),(LPARAM)pfr);
 					}
 					SetWindowLongPtr(hwndDlg,DWLP_MSGRESULT,1);
 					return TRUE;
@@ -597,11 +595,20 @@ INT_PTR CALLBACK DlgProcFileTransfer(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 						dat->fileVirusScanned=(int*)mir_calloc(sizeof(int) * fts->totalFiles);
 
 					// This needs to be here - otherwise we get holes in the files array
-					if ( !dat->send ) {
-						if ( dat->files == NULL )
-							dat->files = ( TCHAR** )mir_calloc(( fts->totalFiles+1 )*sizeof( TCHAR* ));
-						if ( fts->currentFileNumber < fts->totalFiles && dat->files[ fts->currentFileNumber ] == NULL )
-							dat->files[ fts->currentFileNumber ] = PFTS_StringToTchar( fts, fts->tszCurrentFile );
+					if (!dat->send) 
+					{
+						if (dat->files == NULL)
+							dat->files = (TCHAR**)mir_calloc((fts->totalFiles + 1) * sizeof(TCHAR*));
+						if (fts->currentFileNumber < fts->totalFiles && dat->files[fts->currentFileNumber] == NULL) 
+						{
+							if (fts->cbSize == sizeof(PROTOFILETRANSFERSTATUS_V1))
+							{
+								PROTOFILETRANSFERSTATUS_V1 *fts1 = (PROTOFILETRANSFERSTATUS_V1*)fts;
+								dat->files[fts->currentFileNumber] = PFTS_StringToTchar(0, (PROTOCHAR*)fts1->currentFile);
+							}
+							else
+								dat->files[fts->currentFileNumber] = PFTS_StringToTchar(fts->flags, fts->tszCurrentFile);
+						}
 					}
 
 					/* HACK: for 0.3.3, limit updates to around 1.1 ack per second */
@@ -610,6 +617,7 @@ INT_PTR CALLBACK DlgProcFileTransfer(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 
 					// Update local transfer status with data from protocol
 					UpdateProtoFileTransferStatus(&dat->transferStatus, fts);
+					fts = &dat->transferStatus;
 
 					bool firstTime = false;
 					if ((GetWindowLong(GetDlgItem(hwndDlg, IDC_ALLFILESPROGRESS), GWL_STYLE) & WS_VISIBLE) == 0)

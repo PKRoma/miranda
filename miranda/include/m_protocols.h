@@ -141,9 +141,7 @@ typedef struct {
 	#define PFTS_TCHAR  0
 #endif
 
-#if MIRANDA_VER < 0x0900
-
-typedef struct tagPROTOFILETRANSFERSTATUS 
+typedef struct tagPROTOFILETRANSFERSTATUS_V1 
 {
 	size_t cbSize;
 	HANDLE hContact;
@@ -159,7 +157,11 @@ typedef struct tagPROTOFILETRANSFERSTATUS
 	unsigned long currentFileProgress;
 	unsigned long currentFileTime;  //as seconds since 1970
 } 
-PROTOFILETRANSFERSTATUS;
+PROTOFILETRANSFERSTATUS_V1;
+
+#if MIRANDA_VER < 0x0900
+
+typedef PROTOFILETRANSFERSTATUS_V1 PROTOFILETRANSFERSTATUS;
 
 #else
 
@@ -181,7 +183,7 @@ typedef struct tagPROTOFILETRANSFERSTATUS
 	unsigned __int64 totalProgress;
 
     union {
-	    char *szWorkingDir;
+	   char *szWorkingDir;
       TCHAR *tszWorkingDir;
       WCHAR *wszWorkingDir;
     };
