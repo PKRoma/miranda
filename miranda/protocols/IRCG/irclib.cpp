@@ -907,7 +907,6 @@ int CDccSession::SetupConnection()
 
 	// Set up stuff needed for the filetransfer dialog (if it is a filetransfer)
 	if ( di->iType == DCC_SEND ) {
-		TCHAR* file[2];
 		file[0] = ( TCHAR* )di->sFileAndPath.c_str();
 		file[1] = 0;
 
@@ -985,7 +984,7 @@ int CDccSession::SetupConnection()
 					pfts.totalBytes = di->dwSize;
 					pfts.currentFileSize = pfts.totalBytes;
 					
-					delete []NewFileName;
+					delete[] NewFileName;
 					NewFileName = NULL;
 				}
 				break;
