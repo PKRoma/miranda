@@ -250,6 +250,17 @@ TCHAR* CTranslator::m_strings[STR_LAST] = {
 	LPGENT("%s disables \'%s\' status for %s"),			/* GEN_MUC_POPUP_STATUS_OFF */
 
 	LPGENT("Sound notifications"),						/* CNT_OPT_TITLE_SOUNDS */
+	LPGENT("%s    Idle: %dh,%02dm"),					/* GEN_IP_IDLENOTICE */
+
+	/**
+	 * template strings for the richedit - based infopanel tooltip.
+	 * Please DO NOT mess with the RTF formatting codes or you may destroy the layout of the
+	 * tooltips, just translate the strings inside
+	 */
+	LPGENT("\\tab \\ul\\b Status message:\\ul0\\b0 \\par %s"), 	/* GEN_INFOTIP_STATUSMSG */
+	LPGENT("\\par\\par\\tab \\ul\\b Extended status information:\\ul0\\b0 \\par "),		/* GEN_INFOTIP_XSTATUS */
+	LPGENT("\\par\\par\\tab \\ul\\b Listening to:\\ul0\\b0 \\par %s"),					/* GEN_INFOTIP_LISTENING */
+	LPGENT("\\par\\par\\ul\\b Client:\\ul0\\b0  %s"),									/* GEN_INFOTIP_CLIENT */
 };
 
 /*

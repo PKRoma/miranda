@@ -24,7 +24,7 @@
  *
  * part of tabSRMM messaging plugin for Miranda.
  *
- * (C) 2005-2009 by silvercircle _at_ gmail _dot_ com and contributors
+ * (C) 2005-2010 by silvercircle _at_ gmail _dot_ com and contributors
  *
  * $Id$
  *
@@ -1814,66 +1814,6 @@ int TSAPI MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, TWindowData *dat)
 		SelectObject(dis->hDC, old);
 		DeleteObject(col);
 		return TRUE;
-	}
-	/*
-	 * parent window of the infopanel ACC control
-	 */
-	else if (dis->hwndItem == dat->hwndPanelPicParent) {
-		RECT 	rc = dis->rcItem;
-
-		if(!IsWindowEnabled(dat->hwndPanelPicParent) || !dat->Panel->isActive())
-			return(TRUE);
-
-		if(fAero) {
-			HDC		hdc;
-			HBITMAP hbm, hbmOld;
-			LONG	cx = rc.right - rc.left;
-			LONG	cy = rc.bottom - rc.top;
-
-			rc.left -= 3; rc.right += 3;
-			hdc = CreateCompatibleDC(dis->hDC);
-			hbm = CSkin::CreateAeroCompatibleBitmap(rc, dis->hDC);
-			hbmOld = (HBITMAP)SelectObject(hdc, hbm);
-
-			if(CSkin::m_pCurrentAeroEffect == 0)
-				FillRect(hdc, &rc, (HBRUSH)GetStockObject(BLACK_BRUSH));
-			else {
-				if(CSkin::m_pCurrentAeroEffect->m_finalAlpha == 0)
-					CSkin::ApplyAeroEffect(hdc, &rc, CSkin::AERO_EFFECT_AREA_INFOPANEL, 0);
-				else {
-					FillRect(hdc, &rc, CSkin::m_BrushBack);
-					CSkin::ApplyAeroEffect(hdc, &rc, CSkin::AERO_EFFECT_AREA_INFOPANEL, 0);
-				}
-			}
-			BitBlt(dis->hDC, 0, 0, cx, cy, hdc, 0, 0, SRCCOPY);
-			SelectObject(hdc, hbmOld);
-			DeleteObject(hbm);
-			DeleteDC(hdc);
-		}
-		else {
-			rc.left -= 3; rc.right += 3;
-			dat->Panel->renderBG(dis->hDC, rc, &SkinItems[ID_EXTBKINFOPANELBG], false);
-		}
-		if(CSkin::m_bAvatarBorderType == 1) {
-			HRGN clipRgn = 0;
-
-			if(dat->hwndPanelPic) {
-				RECT	rcPic;
-				GetClientRect(dat->hwndPanelPic, &rcPic);
-				LONG ix = ((dis->rcItem.right - dis->rcItem.left) - rcPic.right) / 2 - 1;
-				LONG iy = ((dis->rcItem.bottom - dis->rcItem.top) - rcPic.bottom) / 2 - 1;
-
-				clipRgn = CreateRectRgn(ix, iy, ix + rcPic.right + 2, iy + rcPic.bottom + 2);
-			}
-			else
-				clipRgn = CreateRectRgn(dis->rcItem.left, dis->rcItem.top, dis->rcItem.right,
-										dis->rcItem.bottom);
-			HBRUSH hbr = CreateSolidBrush(CSkin::m_avatarBorderClr);
-			FrameRgn(dis->hDC, clipRgn, hbr, 1, 1);
-			DeleteObject(hbr);
-			DeleteObject(clipRgn);
-		}
-		return(TRUE);
 	}
 	else if ((dis->hwndItem == GetDlgItem(hwndDlg, IDC_CONTACTPIC) && (dat->ace ? dat->ace->hbmPic : PluginConfig.g_hbmUnknown) && dat->showPic) || (dis->hwndItem == hwndDlg && dat->Panel->isActive() && (dat->ace ? dat->ace->hbmPic : PluginConfig.g_hbmUnknown))) {
 		HBRUSH 		hOldBrush;

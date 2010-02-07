@@ -1969,7 +1969,7 @@ void CSkin::setupAeroSkins()
 		CImageItem::PreMultiply(hbm, 1);
 
 		GetObject(hbm, sizeof(bm), &bm);
-		m_tabTop = new CImageItem(2, 5, 2, 5, 0, hbm, IMAGE_FLAG_DIVIDED | IMAGE_PERPIXEL_ALPHA,
+		m_tabTop = new CImageItem(4, 4, 4, 4, 0, hbm, IMAGE_FLAG_DIVIDED | IMAGE_PERPIXEL_ALPHA,
 								  0, 255, 30, 80, 50, 100);
 
 		m_tabTop->setAlphaFormat(AC_SRC_ALPHA, 255);
@@ -1990,7 +1990,7 @@ void CSkin::setupAeroSkins()
 		FIF->FI_Unload(fib);
 
 		GetObject(hbm, sizeof(bm), &bm);
-		m_tabBottom = new CImageItem(2, 5, 2, 5, 0, hbm, IMAGE_FLAG_DIVIDED | IMAGE_PERPIXEL_ALPHA,
+		m_tabBottom = new CImageItem(4, 4, 4, 4, 0, hbm, IMAGE_FLAG_DIVIDED | IMAGE_PERPIXEL_ALPHA,
 									 0, 255, 30, 80, 50, 100);
 
 		m_tabBottom->setAlphaFormat(AC_SRC_ALPHA, 255);
@@ -2007,7 +2007,7 @@ void CSkin::setupAeroSkins()
 		CImageItem::PreMultiply(hbm, 1);
 
 		GetObject(hbm, sizeof(bm), &bm);
-		m_tabGlowTop = new CImageItem(2, 5, 2, 5, 0, hbm, IMAGE_FLAG_DIVIDED | IMAGE_PERPIXEL_ALPHA,
+		m_tabGlowTop = new CImageItem(4, 4, 4, 4, 0, hbm, IMAGE_FLAG_DIVIDED | IMAGE_PERPIXEL_ALPHA,
 									  0, 255, 30, 80, 50, 100);
 
 		m_tabGlowTop->setAlphaFormat(AC_SRC_ALPHA, 255);
@@ -2021,7 +2021,7 @@ void CSkin::setupAeroSkins()
 		FIF->FI_Unload(fib);
 
 		GetObject(hbm, sizeof(bm), &bm);
-		m_tabGlowBottom = new CImageItem(2, 5, 2, 5, 0, hbm, IMAGE_FLAG_DIVIDED | IMAGE_PERPIXEL_ALPHA,
+		m_tabGlowBottom = new CImageItem(4, 4, 4, 4, 0, hbm, IMAGE_FLAG_DIVIDED | IMAGE_PERPIXEL_ALPHA,
  										 0, 255, 30, 80, 50, 100);
 
 		m_tabGlowBottom->setAlphaFormat(AC_SRC_ALPHA, 255);
@@ -2038,14 +2038,14 @@ void CSkin::setupAeroSkins()
 
 		hbm  = (HBITMAP)CallService(MS_IMG_LOAD, (WPARAM)tszFilename, IMGL_TCHAR);
 
-		CImageItem::Colorize(hbm, (BYTE)((m_dwmColor & 0x00ff0000) >> 16),
-							 (BYTE)((m_dwmColor & 0x0000ff00) >> 8),
-							 (BYTE)((m_dwmColor & 0x000000ff)));
+		CImageItem::Colorize(hbm, GetRValue(m_dwmColorRGB),
+							 GetGValue(m_dwmColorRGB),
+							 GetBValue(m_dwmColorRGB));
 		CImageItem::PreMultiply(hbm, 1);
 
 		GetObject(hbm, sizeof(bm), &bm);
 
-		m_switchBarItem = new CImageItem(3, 5, 3, 5, 0, hbm, IMAGE_FLAG_DIVIDED | IMAGE_PERPIXEL_ALPHA,
+		m_switchBarItem = new CImageItem(4, 4, 4, 4, 0, hbm, IMAGE_FLAG_DIVIDED | IMAGE_PERPIXEL_ALPHA,
  										 0, 255, 30, 80, 50, 100);
 
 		m_switchBarItem->setAlphaFormat(AC_SRC_ALPHA, 255);

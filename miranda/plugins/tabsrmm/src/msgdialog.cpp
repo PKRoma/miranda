@@ -24,7 +24,7 @@
  *
  * part of tabSRMM messaging plugin for Miranda.
  *
- * (C) 2005-2009 by silvercircle _at_ gmail _dot_ com and contributors
+ * (C) 2005-2010 by silvercircle _at_ gmail _dot_ com and contributors
  *
  * $Id$
  *
@@ -40,7 +40,7 @@
 extern 	TTemplateSet RTL_Active, LTR_Active;
 const 	TCHAR*		pszIDCSAVE_close = 0, *pszIDCSAVE_save = 0;
 
-static  WNDPROC OldMessageEditProc=0, OldAvatarWndProc=0, OldMessageLogProc=0;
+static  WNDPROC OldMessageEditProc=0, OldAvatarWndProc=0, OldMessageLogProc=0, oldAvatarParentWndProc=0;
 		WNDPROC OldIEViewProc = 0, OldHppProc = 0;
 
 WNDPROC OldSplitterProc = 0;
@@ -1317,6 +1317,8 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			CreateWindowEx(0, _T("TSButtonClass"), _T(""), WS_CHILD | WS_VISIBLE | WS_TABSTOP, 0, 0, 6, DPISCALEY(20),
 					hwndDlg, (HMENU)IDC_TOGGLESIDEBAR, g_hInst, NULL);
 			dat->hwndPanelPicParent = CreateWindowEx(WS_EX_TOPMOST, _T("Static"), _T(""), SS_OWNERDRAW | WS_VISIBLE | WS_CHILD, 1, 1, 1, 1, hwndDlg, (HMENU)6000, NULL, NULL);
+			oldAvatarParentWndProc = (WNDPROC)SetWindowLongPtr(dat->hwndPanelPicParent, GWLP_WNDPROC, (INT_PTR)CInfoPanel::avatarParentSubclass);
+
 			dat->showUIElements = m_pContainer->dwFlags & CNT_HIDETOOLBAR ? 0 : 1;
 			dat->sendMode |= M->GetByte(dat->hContact, "forceansi", 0) ? SMODE_FORCEANSI : 0;
 			dat->sendMode |= dat->hContact == 0 ? SMODE_MULTIPLE : 0;
@@ -1783,8 +1785,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 				}
 			}
 			if(dat->hwndPanelPic || dat->hwndFlash) {
-				SetWindowPos(dat->hwndPanelPicParent, HWND_TOP, rc.left - 2, rc.top, rc.right - rc.left, (rc.bottom - rc.top) + 1,
-							 0);
+				SetWindowPos(dat->hwndPanelPicParent, HWND_TOP, rc.left - 2, rc.top, rc.right - rc.left, (rc.bottom - rc.top) + 1, 0);
 				ShowWindow(dat->hwndPanelPicParent, (dat->panelWidth == -1) || !dat->Panel->isActive() ? SW_HIDE : SW_SHOW);
 			}
 
@@ -3773,8 +3774,11 @@ quote_from_last:
 			if(dat->hClientIcon)
 				DestroyIcon(dat->hClientIcon);
 
-			if(dat->hwndPanelPicParent)
+			if(dat->hwndPanelPicParent) {
+				if(oldAvatarParentWndProc)
+					SetWindowLongPtr(dat->hwndPanelPicParent, GWLP_WNDPROC, (LONG_PTR)oldAvatarParentWndProc);
 				DestroyWindow(dat->hwndPanelPicParent);
+			}
 
 			if (dat->cache->isValid()) {
 				TABSRMM_FireEvent(dat->hContact, hwndDlg, MSG_WINDOW_EVT_CLOSING, 0);

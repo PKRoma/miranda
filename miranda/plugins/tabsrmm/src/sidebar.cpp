@@ -1048,7 +1048,6 @@ void __fastcall CSideBar::m_DefaultBackgroundRenderer(const HDC hdc, const RECT 
 	else if(M->isAero()) {
 		if(id == IDC_SIDEBARUP || id == IDC_SIDEBARDOWN) {
 			::FillRect(hdc, const_cast<RECT *>(rc), CSkin::m_BrushBack);
-			//::InflateRect(const_cast<RECT *>(rc), -2, 0);
 			if(stateId == PBS_HOT || stateId == PBS_PRESSED)
 				DrawAlpha(hdc, const_cast<RECT *>(rc), 0xf0f0f0, 75, 0x000000, 0, 9,
 						  31, 4, 0);
@@ -1057,28 +1056,10 @@ void __fastcall CSideBar::m_DefaultBackgroundRenderer(const HDC hdc, const RECT 
 						  31, 4, 0);
 		}
 		else {
-			CSkin::ApplyAeroEffect(hdc, rc, CSkin::AERO_EFFECT_AREA_INFOPANEL, 0);
+			//CSkin::ApplyAeroEffect(hdc, rc, CSkin::AERO_EFFECT_AREA_INFOPANEL, 0);
 			CSkin::m_switchBarItem->setAlphaFormat(AC_SRC_ALPHA,
-												   (stateId == PBS_HOT && !fIsActiveItem) ? 250 : (fIsActiveItem || stateId == PBS_PRESSED ? 250 : 200));
+												   (stateId == PBS_HOT && !fIsActiveItem) ? 250 : (fIsActiveItem || stateId == PBS_PRESSED ? 250 : 230));
 			CSkin::m_switchBarItem->Render(hdc, rc, true);
-			/*
-
-			if(fIsActiveItem) {
-				RECT rcBlend = *rc;
-				::InflateRect(&rcBlend, -1, -1);
-				::DrawAlpha(hdc, &rcBlend, 0xf0f0f0, 255, 0x333333, 0, 9, 31, 8, 0);
-			}
-			if(stateId == PBS_HOT || stateId == PBS_PRESSED) {
-				RECT rcGlow = *rc;
-				rcGlow.left +=2;
-				rcGlow.right -= 2;
-				rcGlow.top += 1;
-				rcGlow.bottom -= 10;
-
-				CSkin::m_tabGlowTop->setAlphaFormat(AC_SRC_ALPHA, stateId == PBS_HOT ? 160 : 200);
-				CSkin::m_tabGlowTop->Render(hdc, &rcGlow, true);
-			}
-			*/
 			if(stateId == PBS_HOT || stateId == PBS_PRESSED || fIsActiveItem) {
  				RECT rcGlow = *rc;
  				rcGlow.top += 1;

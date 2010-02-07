@@ -24,7 +24,7 @@
  *
  * part of tabSRMM messaging plugin for Miranda.
  *
- * (C) 2005-2009 by silvercircle _at_ gmail _dot_ com and contributors
+ * (C) 2005-2010 by silvercircle _at_ gmail _dot_ com and contributors
  *
  * $Id$
  *
@@ -71,7 +71,7 @@ PLUGININFOEX pluginInfo = {
 	"IM and group chat module for Miranda IM.",
 	"The Miranda developers team and contributors",
 	"silvercircle _at_ gmail _dot_ com",
-	"2000-2009 Miranda Project and contributors. See readme.txt for more.",
+	"2000-2010 Miranda Project and contributors. See readme.txt for more.",
 	"http://miranda.or.at",
 	UNICODE_AWARE,
 	DEFMOD_SRMESSAGE,            // replace internal version (if any)

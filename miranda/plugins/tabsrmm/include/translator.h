@@ -240,7 +240,12 @@ public:
 		GEN_MUC_POPUP_STATUS_ON									= 196,
 		GEN_MUC_POPUP_STATUS_OFF								= 197,
 		CNT_OPT_TITLE_SOUNDS									= 198,
-		STR_LAST 												= 199
+		GEN_IP_IDLENOTICE										= 199,
+		GEN_INFOTIP_STATUSMSG									= 200,
+		GEN_INFOTIP_XSTATUS										= 201,
+		GEN_INFOTIP_LISTENING									= 202,
+		GEN_INFOTIP_CLIENT										= 203,
+		STR_LAST 												= 204
 	};
 
 	enum {

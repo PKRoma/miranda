@@ -24,7 +24,7 @@
  *
  * part of tabSRMM messaging plugin for Miranda.
  *
- * (C) 2005-2009 by silvercircle _at_ gmail _dot_ com and contributors
+ * (C) 2005-2010 by silvercircle _at_ gmail _dot_ com and contributors
  *
  * $Id$
  *
@@ -60,6 +60,12 @@ struct InfoPanelConfig {
 
 extern TCHAR *xStatusDescr[];
 
+/**
+ * a simple tooltip class using a richedit control to display its content. Allows
+ * for formatted text and clickable hyperlinks
+ *
+ * Used by: Info panel to display status messages, topics etc.
+ */
 class CTip
 {
 public:
@@ -103,6 +109,12 @@ private:
 
 };
 
+/**
+ * the info panel class definition. The panel itself is not a real window class - it
+ * is implemented as a drawing canvas on the message window background.
+ *
+ * Each message session has its own info panel object
+ */
 class CInfoPanel
 {
 public:
@@ -166,6 +178,7 @@ public:
 public:
 	static						InfoPanelConfig m_ipConfig;
 	static int	 				setPanelHandler				(TWindowData *dat, WPARAM wParam, LPARAM lParam);
+	static INT_PTR CALLBACK		avatarParentSubclass		(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 private:
 	void						mapRealRect					(const RECT& rcSrc, RECT& rcDest, const SIZE& sz);

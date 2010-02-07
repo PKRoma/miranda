@@ -734,7 +734,7 @@ BOOL LogToFile(SESSION_INFO* si, GCEVENT * gce)
 			case GC_EVENT_MESSAGE:
 			case GC_EVENT_MESSAGE | GC_EVENT_HIGHLIGHT:
 				p = '*';
-				mir_sntprintf(szBuffer, SIZEOF(szBuffer), _T("%s * %s"), gce->ptszNick, RemoveFormatting(gce->ptszText));
+				mir_sntprintf(szBuffer, SIZEOF(szBuffer), _T("%s: %s"), gce->ptszNick, RemoveFormatting(gce->ptszText));
 				break;
 			case GC_EVENT_ACTION:
 			case GC_EVENT_ACTION | GC_EVENT_HIGHLIGHT:
@@ -794,10 +794,14 @@ BOOL LogToFile(SESSION_INFO* si, GCEVENT * gce)
 				mir_sntprintf(szBuffer, SIZEOF(szBuffer), CTranslator::get(CTranslator::GEN_MUC_POPUP_STATUS_OFF), gce->ptszText, (char *)gce->pszStatus, gce->ptszNick);
 				break;
 		}
+		/*
+		 * formatting strings don't need to be translatable - changing them via language pack would
+		 * only screw up the log format.
+		 */
 		if (p)
-			mir_sntprintf(szLine, SIZEOF(szLine), TranslateT("%s %c %s\r\n"), szTime, p, szBuffer);
+			mir_sntprintf(szLine, SIZEOF(szLine), _T("%s %c %s\r\n"), szTime, p, szBuffer);
 		else
-			mir_sntprintf(szLine, SIZEOF(szLine), TranslateT("%s %s\r\n"), szTime, szBuffer);
+			mir_sntprintf(szLine, SIZEOF(szLine), _T("%s %s\r\n"), szTime, szBuffer);
 
 		if (szLine[0]) {
 			_fputts(szLine, hFile);

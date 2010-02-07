@@ -24,7 +24,7 @@
  *
  * part of tabSRMM messaging plugin for Miranda.
  *
- * (C) 2005-2009 by silvercircle _at_ gmail _dot_ com and contributors
+ * (C) 2005-2010 by silvercircle _at_ gmail _dot_ com and contributors
  *
  * $Id$
  *
@@ -44,6 +44,8 @@ TCHAR *xStatusDescr[] = {	_T("Angry"), _T("Duck"), _T("Tired"), _T("Party"), _T(
 
 InfoPanelConfig CInfoPanel::m_ipConfig = {0};
 WNDPROC CTip::m_OldMessageEditProc = 0;
+
+static TCHAR _clockCodes[12] = { 0x00c2, 0x00b7, 0x00b8, 0x00b9, 0x00ba, 0x00bb, 0x00bc, 0x00bd, 0x00be, 0x00bf, 0x00c0, 0x00c1 };
 
 int CInfoPanel::setPanelHandler(TWindowData *dat, WPARAM wParam, LPARAM lParam)
 {
@@ -498,7 +500,7 @@ void CInfoPanel::RenderIPUIN(const HDC hdc, RECT& rcItem)
 			time_t diff = time(NULL) - m_dat->idle;
 			int i_hrs = diff / 3600;
 			int i_mins = (diff - i_hrs * 3600) / 60;
-			mir_sntprintf(szBuf, safe_sizeof(szBuf), _T("%s    Idle: %dh,%02dm"), tszUin, i_hrs, i_mins);
+			mir_sntprintf(szBuf, safe_sizeof(szBuf), CTranslator::get(CTranslator::GEN_IP_IDLENOTICE), tszUin, i_hrs, i_mins);
 			::GetTextExtentPoint32(hdc, szBuf, lstrlen(szBuf), &sUIN);
 			mapRealRect(rcItem, m_rcUIN, sUIN);
 			CSkin::RenderText(hdc, m_dat->hThemeIP, szBuf, &rcItem, DT_SINGLELINE | DT_VCENTER, CSkin::m_glowSize, clr);
@@ -574,8 +576,12 @@ void CInfoPanel::RenderIPStatus(const HDC hdc, RECT& rcItem)
 	if(szResult[0]) {
 		HFONT oldFont = (HFONT)SelectObject(hdc, PluginConfig.m_hFontWebdings);
 		base_hour = _ttoi(szResult);
-		base_hour = base_hour > 11 ? base_hour - 12 : base_hour;
-		symbolic_time[0] = (TCHAR)(0xB7 + base_hour);
+		base_hour = base_hour >= 12 ? base_hour - 12 : base_hour;
+
+		if(base_hour > 11 || base_hour < 0)				// make sure to have a valid index
+			base_hour = 0;
+
+		symbolic_time[0] = _clockCodes[base_hour];
 		symbolic_time[1] = 0;
 		CSkin::RenderText(hdc, m_dat->hThemeIP, symbolic_time, &rcItem, DT_SINGLELINE | DT_VCENTER, CSkin::m_glowSize, 0);
 		oldFont = (HFONT)SelectObject(hdc, m_ipConfig.hFonts[IPFONTID_TIME]);
@@ -883,13 +889,11 @@ void CInfoPanel::showTip(UINT ctrlId, const LPARAM lParam) const
 			size_t		pos;
 			BYTE		xStatus = 0;
 
-			/* TODO make this stuff translatable */
-
 			mir_sntprintf(temp, 1024, _T("{\\rtf1\\ansi\\deff0\\pard\\li%u\\fi-%u\\ri%u\\tx%u"), 0, 0, 0, 30*15);
 
 			tstring *str = new tstring(temp);
 
-			mir_sntprintf(temp, 1024, _T("\\tab \\ul\\b Status message:\\ul0\\b0 \\par %s"),
+			mir_sntprintf(temp, 1024, CTranslator::get(CTranslator::GEN_INFOTIP_STATUSMSG),
 						  m_dat->cache->getStatusMsg() ? m_dat->cache->getStatusMsg() : CTranslator::get(CTranslator::GEN_NO_STATUS));
 			str->append(temp);
 
@@ -901,7 +905,7 @@ void CInfoPanel::showTip(UINT ctrlId, const LPARAM lParam) const
 					tszXStatusName = xStatusDescr[xStatus - 1];
 
 				if(tszXStatusName) {
-					str->append(_T("\\par\\par\\tab \\ul\\b Extended status information:\\ul0\\b0 \\par "));
+					str->append(CTranslator::get(CTranslator::GEN_INFOTIP_XSTATUS));
 					mir_sntprintf(temp, 1024, _T("%s%s%s"), tszXStatusName, m_dat->cache->getXStatusMsg() ? _T(" / ") : _T(""),
 								  m_dat->cache->getXStatusMsg() ? m_dat->cache->getXStatusMsg() : _T(""));
 					str->append(temp);
@@ -911,12 +915,12 @@ void CInfoPanel::showTip(UINT ctrlId, const LPARAM lParam) const
 			}
 
 			if(m_dat->cache->getListeningInfo()) {
-				mir_sntprintf(temp, 1024, _T("\\par\\par\\tab \\ul\\b Listening to:\\ul0\\b0 \\par %s"), m_dat->cache->getListeningInfo());
+				mir_sntprintf(temp, 1024, CTranslator::get(CTranslator::GEN_INFOTIP_LISTENING), m_dat->cache->getListeningInfo());
 				str->append(temp);
 			}
 
 			if(0 == M->GetTString(m_dat->cache->getActiveContact(), m_dat->cache->getActiveProto(), "MirVer", &dbv)) {
-				mir_sntprintf(temp, 1024, _T("\\par\\par\\ul\\b Client:\\ul0\\b0  %s"), dbv.ptszVal);
+				mir_sntprintf(temp, 1024, CTranslator::get(CTranslator::GEN_INFOTIP_CLIENT), dbv.ptszVal);
 				::DBFreeVariant(&dbv);
 				str->append(temp);
 			}
@@ -955,12 +959,94 @@ void CInfoPanel::showTip(UINT ctrlId, const LPARAM lParam) const
 }
 
 /**
+ * draw the background (and border) of the parent control that holds the avs-based avatar display
+ * (ACC window class). Only required when support for animated avatars is enabled because
+ * native avatar rendering does not support animated images.
+ * To avoid clipping issues, this is done during WM_ERASEBKGND.
+ */
+INT_PTR CALLBACK CInfoPanel::avatarParentSubclass(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+	switch(msg) {
+		case WM_ERASEBKGND:
+		{
+			/*
+			 * parent window of the infopanel ACC control
+			 */
+				RECT 			rc, rcItem;
+				TWindowData* 	dat = (TWindowData *)GetWindowLongPtr(GetParent(hwnd), GWLP_USERDATA);
+
+				if(dat == 0)
+					break;
+
+				GetClientRect(hwnd, &rcItem);
+				rc = rcItem;
+				if(!IsWindowEnabled(hwnd) || !dat->Panel->isActive())
+					return(TRUE);
+
+				HDC 			dcWin = (HDC)wParam;
+
+				if(M->isAero()) {
+					HDC		hdc;
+					HBITMAP hbm, hbmOld;
+					LONG	cx = rcItem.right - rcItem.left;
+					LONG	cy = rcItem.bottom - rcItem.top;
+
+					rc.left -= 3; rc.right += 3;
+					hdc = CreateCompatibleDC(dcWin);
+					hbm = CSkin::CreateAeroCompatibleBitmap(rc, dcWin);
+					hbmOld = (HBITMAP)SelectObject(hdc, hbm);
+
+					if(CSkin::m_pCurrentAeroEffect == 0)
+						FillRect(hdc, &rc, (HBRUSH)GetStockObject(BLACK_BRUSH));
+					else {
+						if(CSkin::m_pCurrentAeroEffect->m_finalAlpha == 0)
+							CSkin::ApplyAeroEffect(hdc, &rc, CSkin::AERO_EFFECT_AREA_INFOPANEL, 0);
+						else {
+							FillRect(hdc, &rc, CSkin::m_BrushBack);
+							CSkin::ApplyAeroEffect(hdc, &rc, CSkin::AERO_EFFECT_AREA_INFOPANEL, 0);
+						}
+					}
+					BitBlt(dcWin, 0, 0, cx, cy, hdc, 0, 0, SRCCOPY);
+					SelectObject(hdc, hbmOld);
+					DeleteObject(hbm);
+					DeleteDC(hdc);
+				}
+				else {
+					rc.left -= 3; rc.right += 3;
+					dat->Panel->renderBG(dcWin, rc, &SkinItems[ID_EXTBKINFOPANELBG], false);
+				}
+				if(CSkin::m_bAvatarBorderType == 1) {
+					HRGN clipRgn = 0;
+
+					if(dat->hwndPanelPic) {
+						RECT	rcPic;
+						GetClientRect(dat->hwndPanelPic, &rcPic);
+						LONG ix = ((rcItem.right - rcItem.left) - rcPic.right) / 2 - 1;
+						LONG iy = ((rcItem.bottom - rcItem.top) - rcPic.bottom) / 2 - 1;
+
+						clipRgn = CreateRectRgn(ix, iy, ix + rcPic.right + 2, iy + rcPic.bottom + 2);
+					}
+					else
+						clipRgn = CreateRectRgn(rcItem.left, rcItem.top, rcItem.right, rcItem.bottom);
+					HBRUSH hbr = CreateSolidBrush(CSkin::m_avatarBorderClr);
+					FrameRgn(dcWin, clipRgn, hbr, 1, 1);
+					DeleteObject(hbr);
+					DeleteObject(clipRgn);
+				}
+				return(TRUE);
+		}
+		default:
+			break;
+	}
+	return(DefWindowProc(hwnd, msg, wParam, lParam));
+}
+
+/**
  * Stub for the dialog procedure. Just handles INITDIALOG and sets
  * our userdata. Real processing is done by ConfigDlgProc()
  *
  * @params Like a normal dialog procedure
  */
-
 INT_PTR CALLBACK CInfoPanel::ConfigDlgProcStub(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	CInfoPanel *infoPanel = reinterpret_cast<CInfoPanel *>(::GetWindowLongPtr(hwnd, GWLP_USERDATA));

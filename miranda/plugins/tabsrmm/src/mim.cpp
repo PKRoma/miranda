@@ -396,7 +396,7 @@ INT_PTR CMimAPI::foldersPathChanged()
 	CallService(MS_UTILS_CREATEDIRTREET, 0, (LPARAM)m_szSavedAvatarsPath);
 	CallService(MS_UTILS_CREATEDIRTREET, 0, (LPARAM)m_szChatLogsPath);
 
-	Skin->extractSkinsAndLogo();
+	Skin->extractSkinsAndLogo(true);
 	Skin->setupAeroSkins();
 	return 0;
 }

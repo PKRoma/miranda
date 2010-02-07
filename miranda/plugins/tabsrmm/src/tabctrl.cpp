@@ -882,13 +882,10 @@ static HRESULT DrawThemesPartWithAero(const TabControlData *tabdat, HDC hDC, int
 		return 0;
 
 	if(tabdat->fAeroTabs) {
-		int iState = (iStateId == PBS_NORMAL || iStateId == PBS_HOT) ? 2 : 1;
-		if(tabdat->dwStyle & TCS_BOTTOM)// && iStateId == 3)
-			prcBox->top += (iStateId == 3 ? 2 : 1);
-
-
-		if(!(tabdat->dwStyle & TCS_BOTTOM)) {
-			OffsetRect(prcBox, 0, 1);
+		// int iState = (iStateId == PBS_NORMAL || iStateId == PBS_HOT) ? 2 : 1;
+		if(tabdat->dwStyle & TCS_BOTTOM)
+			prcBox->top += (iStateId == 3 ? 2 : 2);
+		else {
 			if(iStateId != 3)
 				prcBox->bottom += 1;
 		}
@@ -899,38 +896,8 @@ static HRESULT DrawThemesPartWithAero(const TabControlData *tabdat, HDC hDC, int
 		tabdat->helperItem->Render(hDC, prcBox, true);
 		tabdat->helperGlowItem->setAlphaFormat(AC_SRC_ALPHA, iStateId == 3 ? 220 : 180);
 
-		/*
-		 * glow effect for hot and/or selected tabs
-		 */
-
-		/*
-		if(iStateId != PBS_NORMAL) {
-			RECT rcGlow = *prcBox;
-			if(tabdat->dwStyle & TCS_BOTTOM) {
-				rcGlow.bottom -= 2;
-				rcGlow.top = rcGlow.bottom - 18;
-			} else {
-				rcGlow.top += 2;
-				rcGlow.bottom = rcGlow.top + 18;
-			}
-			rcGlow.left += 2;
-			rcGlow.right -= 2;
-			tabdat->helperGlowItem->Render(hDC, &rcGlow, true);
-		}*/
 		if(iStateId != PBS_NORMAL)
 			tabdat->helperGlowItem->Render(hDC, prcBox, true);
-
-		/*
-		RECT rcEffect = *prcBox;
-		InflateRect(&rcEffect, -3, 0);
-		if(tabdat->dwStyle & TCS_BOTTOM)
-			rcEffect.bottom -= 2;
-		else
-			rcEffect.top += 2;
-
-		CSkin::ApplyAeroEffect(hDC, prcBox, CSkin::AERO_EFFECT_AREA_TAB_NORMAL |
-							   (tabdat->dwStyle & TCS_BOTTOM ? CSkin::AERO_EFFECT_AREA_TAB_BOTTOM : CSkin::AERO_EFFECT_AREA_TAB_TOP), tabdat->hbp);
-		*/
 	}
 	else {
 		if (tabdat->hTheme != 0)
