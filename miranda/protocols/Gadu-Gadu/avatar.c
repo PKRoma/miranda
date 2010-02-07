@@ -130,73 +130,6 @@ void gg_getavatarfileinfo(GGPROTO *gg, uin_t uin, char **avatarurl, int *type)
 #endif
 }
 
-typedef struct
-{
-	GGPROTO *gg;
-	HANDLE hContact;
-	char *AvatarURL;
-} GGGETAVATARTHREADDATA;
-
-static void *__stdcall gg_getavatarthread(void *threaddata)
-{
-	GGGETAVATARTHREADDATA *data = (GGGETAVATARTHREADDATA *)threaddata;
-	GGPROTO *gg = data->gg;
-	NETLIBHTTPREQUEST req = {0};
-	NETLIBHTTPREQUEST *resp;
-	PROTO_AVATAR_INFORMATION pai = {0};
-	int result = 0;
-
-	SleepEx(100, FALSE);
-	pai.cbSize = sizeof(pai);
-	pai.hContact = data->hContact;
-	pai.format = DBGetContactSettingByte(pai.hContact, GG_PROTO, GG_KEY_AVATARTYPE, GG_KEYDEF_AVATARTYPE);
-
-	req.cbSize = sizeof(req);
-	req.requestType = REQUEST_GET;
-	req.szUrl = data->AvatarURL;
-	req.flags = NLHRF_NODUMP | NLHRF_HTTP11;
-	resp = (NETLIBHTTPREQUEST *)CallService(MS_NETLIB_HTTPTRANSACTION, (WPARAM)gg->netlib, (LPARAM)&req);
-	if (resp) {
-		if (resp->resultCode == 200 && resp->dataLength > 0 && resp->pData) {
-			int file_fd;
-
-			gg_getavatarfilename(gg, pai.hContact, pai.filename, sizeof(pai.filename));
-			file_fd = _open(pai.filename, _O_WRONLY | _O_TRUNC | _O_BINARY | _O_CREAT, _S_IREAD | _S_IWRITE);
-			if (file_fd != -1) {
-				_write(file_fd, resp->pData, resp->dataLength);
-				_close(file_fd);
-				result = 1;
-			}
-		}
-#ifdef DEBUGMODE
-		else gg_netlog(gg, "gg_getavatarthread(): Invalid response code from HTTP request");
-#endif
-		CallService(MS_NETLIB_FREEHTTPREQUESTSTRUCT, 0, (LPARAM)resp);
-	}
-#ifdef DEBUGMODE
-	else gg_netlog(gg, "gg_getavatarthread(): No response from HTTP request");
-#endif
-
-	ProtoBroadcastAck(GG_PROTO, pai.hContact, ACKTYPE_AVATAR,
-		result ? ACKRESULT_SUCCESS : ACKRESULT_FAILED, (HANDLE)&pai, 0);
-
-	mir_free(data->AvatarURL);
-	mir_free(data);
-	return NULL;
-}
-
-void gg_getavatar(GGPROTO *gg, HANDLE hContact, char *szAvatarURL)
-{
-	pthread_t tid;
-	GGGETAVATARTHREADDATA *data = mir_alloc(sizeof(GGGETAVATARTHREADDATA));
-
-	data->gg = gg;
-	data->hContact = hContact;
-	data->AvatarURL = mir_strdup(szAvatarURL);
-	pthread_create(&tid, NULL, gg_getavatarthread, data);
-	pthread_detach(&tid);
-}
-
 char *gg_avatarhash(char *param)
 {
 	mir_sha1_byte_t digest[MIR_SHA1_HASH_SIZE];
@@ -211,4 +144,130 @@ char *gg_avatarhash(char *param)
 		sprintf(result + (i<<1), "%02x", digest[i]);
 
 	return result;
+}
+
+typedef struct
+{
+	HANDLE hContact;
+	char *AvatarURL;
+} GGGETAVATARDATA;
+
+void gg_getavatar(GGPROTO *gg, HANDLE hContact, char *szAvatarURL)
+{
+	if (gg_isonline(gg)) {
+		GGGETAVATARDATA *data = mir_alloc(sizeof(GGGETAVATARDATA));
+		data->hContact = hContact;
+		data->AvatarURL = mir_strdup(szAvatarURL);
+		pthread_mutex_lock(&gg->avatar_mutex);
+		list_add(&gg->avatar_transfers, data, 0);
+		pthread_mutex_unlock(&gg->avatar_mutex);
+	}
+}
+
+void gg_requestavatar(GGPROTO *gg, HANDLE hContact)
+{
+	pthread_mutex_lock(&gg->avatar_mutex);
+	list_add(&gg->avatar_requests, hContact, 0);
+	pthread_mutex_unlock(&gg->avatar_mutex);
+}
+
+static void *__stdcall gg_avatarrequestthread(void *threaddata)
+{
+	GGPROTO *gg = (GGPROTO *)threaddata;
+	list_t l;
+
+	SleepEx(100, FALSE);
+	while (gg_isonline(gg))
+	{
+		pthread_mutex_lock(&gg->avatar_mutex);
+		if (gg->avatar_requests) {
+			char *AvatarURL;
+			int AvatarType;
+			HANDLE hContact;
+
+			hContact = gg->avatar_requests->data;
+			pthread_mutex_unlock(&gg->avatar_mutex);
+
+			gg_getavatarfileinfo(gg, DBGetContactSettingDword(hContact, GG_PROTO, GG_KEY_UIN, 0), &AvatarURL, &AvatarType);
+			if (AvatarURL != NULL && strlen(AvatarURL) > 0)
+				DBWriteContactSettingString(hContact, GG_PROTO, GG_KEY_AVATARURL, AvatarURL);
+			else
+				DBDeleteContactSetting(hContact, GG_PROTO, GG_KEY_AVATARURL);
+			DBWriteContactSettingByte(hContact, GG_PROTO, GG_KEY_AVATARTYPE, (BYTE)AvatarType);
+
+			ProtoBroadcastAck(GG_PROTO, hContact, ACKTYPE_AVATAR, ACKRESULT_STATUS, 0, 0);
+
+			pthread_mutex_lock(&gg->avatar_mutex);
+			list_remove(&gg->avatar_requests, hContact, 0);
+		}
+		pthread_mutex_unlock(&gg->avatar_mutex);
+
+		pthread_mutex_lock(&gg->avatar_mutex);
+		if (gg->avatar_transfers) {
+			GGGETAVATARDATA *data = (GGGETAVATARDATA *)gg->avatar_transfers->data;
+			NETLIBHTTPREQUEST req = {0};
+			NETLIBHTTPREQUEST *resp;
+			PROTO_AVATAR_INFORMATION pai = {0};
+			int result = 0;
+
+			pai.cbSize = sizeof(pai);
+			pai.hContact = data->hContact;
+			pai.format = DBGetContactSettingByte(pai.hContact, GG_PROTO, GG_KEY_AVATARTYPE, GG_KEYDEF_AVATARTYPE);
+
+			req.cbSize = sizeof(req);
+			req.requestType = REQUEST_GET;
+			req.szUrl = data->AvatarURL;
+			req.flags = NLHRF_NODUMP | NLHRF_HTTP11;
+			resp = (NETLIBHTTPREQUEST *)CallService(MS_NETLIB_HTTPTRANSACTION, (WPARAM)gg->netlib, (LPARAM)&req);
+			if (resp) {
+				if (resp->resultCode == 200 && resp->dataLength > 0 && resp->pData) {
+					int file_fd;
+
+					gg_getavatarfilename(gg, pai.hContact, pai.filename, sizeof(pai.filename));
+					file_fd = _open(pai.filename, _O_WRONLY | _O_TRUNC | _O_BINARY | _O_CREAT, _S_IREAD | _S_IWRITE);
+					if (file_fd != -1) {
+						_write(file_fd, resp->pData, resp->dataLength);
+						_close(file_fd);
+						result = 1;
+					}
+				}
+		#ifdef DEBUGMODE
+				else gg_netlog(gg, "gg_avatarrequestthread(): Invalid response code from HTTP request");
+		#endif
+				CallService(MS_NETLIB_FREEHTTPREQUESTSTRUCT, 0, (LPARAM)resp);
+			}
+		#ifdef DEBUGMODE
+			else gg_netlog(gg, "gg_avatarrequestthread(): No response from HTTP request");
+		#endif
+
+			ProtoBroadcastAck(GG_PROTO, pai.hContact, ACKTYPE_AVATAR,
+				result ? ACKRESULT_SUCCESS : ACKRESULT_FAILED, (HANDLE)&pai, 0);
+
+			list_remove(&gg->avatar_transfers, data, 0);
+			mir_free(data->AvatarURL);
+			mir_free(data);
+		}
+		pthread_mutex_unlock(&gg->avatar_mutex);
+		SleepEx(100, FALSE);
+	}
+
+	for (l = gg->avatar_transfers; l; l = l->next) {
+		GGGETAVATARDATA *data = (GGGETAVATARDATA *)gg->avatar_transfers->data;
+		mir_free(data->AvatarURL);
+		mir_free(data);
+	}
+	list_destroy(gg->avatar_requests, 0);
+	list_destroy(gg->avatar_transfers, 0);
+
+	return NULL;
+}
+
+void gg_initavatarrequestthread(GGPROTO *gg)
+{
+	pthread_t tid;
+
+	gg->avatar_requests = gg->avatar_transfers = NULL;
+
+	pthread_create(&tid, NULL, gg_avatarrequestthread, gg);
+	pthread_detach(&tid);
 }

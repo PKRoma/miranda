@@ -119,8 +119,8 @@ typedef struct
 {
 	PROTO_INTERFACE proto;
 	LPTSTR name;
-	pthread_mutex_t ft_mutex, sess_mutex, img_mutex, modemsg_mutex;
-	list_t watches, transfers, requests, chats, imagedlgs;
+	pthread_mutex_t ft_mutex, sess_mutex, img_mutex, modemsg_mutex, avatar_mutex;
+	list_t watches, transfers, requests, chats, imagedlgs, avatar_requests, avatar_transfers;
 	int gc_enabled, gc_id, list_remove, unicode_core;
 	uin_t next_uin;
 	unsigned long last_crc;
@@ -248,6 +248,8 @@ typedef struct
 #define GG_KEYDEF_ENABLEAVATARS	1
 
 #define GG_KEY_AVATARHASH		"AvatarHash"	// Contact's avatar hash
+
+#define GG_KEY_AVATARURL		"AvatarURL"		// Contact's avatar URL
 
 #define GG_KEY_AVATARTYPE		"AvatarType"	// Contact's avatar format
 #define GG_KEYDEF_AVATARTYPE	PA_FORMAT_UNKNOWN
@@ -404,9 +406,10 @@ int gg_recvmessage(PROTO_INTERFACE *proto, HANDLE hContact, PROTORECVEVENT *pre)
 
 /* Avatar functions */
 void gg_getavatarfilename(GGPROTO *gg, HANDLE hContact, char *pszDest, int cbLen);
-void gg_getavatarfileinfo(GGPROTO *gg, uin_t uin, char **avatarurl, int *type);
-void gg_getavatar(GGPROTO *gg, HANDLE hContact, char *szAvatarURL);
 char *gg_avatarhash(char *param);
+void gg_getavatar(GGPROTO *gg, HANDLE hContact, char *szAvatarURL);
+void gg_requestavatar(GGPROTO *gg, HANDLE hContact);
+void gg_initavatarrequestthread(GGPROTO *gg);
 
 /* File transfer functions */
 HANDLE gg_fileallow(PROTO_INTERFACE *proto, HANDLE hContact, HANDLE hTransfer, const char* szPath);

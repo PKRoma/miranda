@@ -794,6 +794,8 @@ INT_PTR gg_getavatarcaps(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
 			return 1;
 		case AF_MAXFILESIZE:
 			return 307200;
+		case AF_FETCHALWAYS:
+			return 1;
 	}
 	return 0;
 }
@@ -803,10 +805,10 @@ INT_PTR gg_getavatarcaps(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
 INT_PTR gg_getavatarinfo(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
 {
 	PROTO_AVATAR_INFORMATION *pai = (PROTO_AVATAR_INFORMATION *)lParam;
-	char *AvatarURL, *AvatarHash = NULL, *AvatarSavedHash = NULL;
+	char *AvatarURL = NULL, *AvatarHash = NULL, *AvatarSavedHash = NULL;
 	INT_PTR result = GAIR_NOAVATAR;
 	DBVARIANT dbv;
-	uin_t uin = (uin_t)DBGetContactSettingDword(pai->hContact, GG_PROTO, GG_KEY_UIN, 0);;
+	uin_t uin = (uin_t)DBGetContactSettingDword(pai->hContact, GG_PROTO, GG_KEY_UIN, 0);
 
 #ifdef DEBUGMODE
 	gg_netlog(gg, "gg_getavatarinfo(): Requesting avatar information for %d.", uin);
@@ -824,7 +826,12 @@ INT_PTR gg_getavatarinfo(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
 		return !_access(pai->filename, 0) ? GAIR_SUCCESS : GAIR_NOAVATAR;
 	}
 
-	gg_getavatarfileinfo(gg, uin, &AvatarURL, &pai->format);
+	pai->format = DBGetContactSettingByte(pai->hContact, GG_PROTO, GG_KEY_AVATARTYPE, GG_KEYDEF_AVATARTYPE);
+
+	if (!DBGetContactSettingString(pai->hContact, GG_PROTO, GG_KEY_AVATARURL, &dbv)) {
+		AvatarURL = mir_strdup(dbv.pszVal);
+		DBFreeVariant(&dbv);
+	}
 
 	if (AvatarURL != NULL && strlen(AvatarURL) > 0) {
 		char *AvatarName = strrchr(AvatarURL, '/');
@@ -840,7 +847,6 @@ INT_PTR gg_getavatarinfo(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
 	if (AvatarHash != NULL && AvatarSavedHash != NULL) {
 		gg_getavatarfilename(gg, pai->hContact, pai->filename, sizeof(pai->filename));
 		if (!strcmp(AvatarHash, AvatarSavedHash) && !_access(pai->filename, 0)) {
-			pai->format = DBGetContactSettingByte(pai->hContact, GG_PROTO, GG_KEY_AVATARTYPE, GG_KEYDEF_AVATARTYPE);
 			result = GAIR_SUCCESS;
 		}
 		else if ((wParam & GAIF_FORCE) != 0) {
@@ -849,7 +855,6 @@ INT_PTR gg_getavatarinfo(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
 #endif
 			remove(pai->filename);
 			DBWriteContactSettingString(pai->hContact, GG_PROTO, GG_KEY_AVATARHASH, AvatarHash);
-			DBWriteContactSettingByte(pai->hContact, GG_PROTO, GG_KEY_AVATARTYPE, (BYTE)pai->format);
 			gg_getavatar(gg, pai->hContact, AvatarURL);
 			result = GAIR_WAITFOR;
 		}
@@ -862,6 +867,7 @@ INT_PTR gg_getavatarinfo(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
 			gg_getavatarfilename(gg, pai->hContact, pai->filename, sizeof(pai->filename));
 			remove(pai->filename);
 			DBDeleteContactSetting(pai->hContact, GG_PROTO, GG_KEY_AVATARHASH);
+			DBDeleteContactSetting(pai->hContact, GG_PROTO, GG_KEY_AVATARURL);
 			DBDeleteContactSetting(pai->hContact, GG_PROTO, GG_KEY_AVATARTYPE);
 		}
 		else if (AvatarHash != NULL && AvatarSavedHash == NULL) {
@@ -869,7 +875,6 @@ INT_PTR gg_getavatarinfo(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
 			gg_netlog(gg, "gg_getavatarinfo(): Contact %d set avatar.", uin);
 #endif
 			DBWriteContactSettingString(pai->hContact, GG_PROTO, GG_KEY_AVATARHASH, AvatarHash);
-			DBWriteContactSettingByte(pai->hContact, GG_PROTO, GG_KEY_AVATARTYPE, (BYTE)pai->format);
 			gg_getavatar(gg, pai->hContact, AvatarURL);
 			result = GAIR_WAITFOR;
 		}

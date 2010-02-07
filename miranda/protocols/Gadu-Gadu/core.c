@@ -528,6 +528,8 @@ retry:
 		pthread_mutex_unlock(&gg->sess_mutex);
 		// Subscribe users status notifications
 		gg_notifyall(gg);
+		// Create avatar request thread
+		gg_initavatarrequestthread(gg);
 		// Set startup status
 		if(gg->proto.m_iDesiredStatus == ID_STATUS_OFFLINE)
 			gg_disconnect(gg);
@@ -610,8 +612,7 @@ retry:
 					gg_changecontactstatus(gg, e->event.notify60[i].uin, e->event.notify60[i].status, e->event.notify60[i].descr,
 						e->event.notify60[i].time, e->event.notify60[i].remote_ip, e->event.notify60[i].remote_port,
 						e->event.notify60[i].version);
-					ProtoBroadcastAck(GG_PROTO, gg_getcontact(gg, e->event.notify60[i].uin, 0, 0, NULL),
-						ACKTYPE_AVATAR, ACKRESULT_STATUS, 0, 0);
+					gg_requestavatar(gg, gg_getcontact(gg, e->event.notify60[i].uin, 0, 0, NULL));
 				}
 				break;
 			}
@@ -757,7 +758,7 @@ retry:
 						e->event.status60.time, e->event.status60.remote_ip, e->event.status60.remote_port, e->event.status60.version);
 
 					if (oldstatus == ID_STATUS_OFFLINE && DBGetContactSettingWord(hContact, GG_PROTO, GG_KEY_STATUS, (WORD)ID_STATUS_OFFLINE) != ID_STATUS_OFFLINE)
-						ProtoBroadcastAck(GG_PROTO, hContact, ACKTYPE_AVATAR, ACKRESULT_STATUS, 0, 0);
+						gg_requestavatar(gg, hContact);
 				}
 				break;
 
@@ -1077,8 +1078,7 @@ retry:
 #ifdef DEBUGMODE
 							gg_netlog(gg, "gg_mainthread(%x): Client %s changed his avatar.", gg, sender);
 #endif
-							ProtoBroadcastAck(GG_PROTO, gg_getcontact(gg, atoi(sender), 0, 0, NULL),
-								ACKTYPE_AVATAR, ACKRESULT_STATUS, 0, 0);
+							gg_requestavatar(gg, gg_getcontact(gg, atoi(sender), 0, 0, NULL));
 						}
 						mir_free(type);
 						mir_free(sender);
@@ -1263,9 +1263,7 @@ int gg_dbsettingchanged(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
 				// Notify user normally this time if added to the list permanently
 				DBDeleteContactSetting(hContact, GG_PROTO, GG_KEY_DELETEUSER); // What is it ?? I don't remember
 				gg_notifyuser(gg, hContact, 1);
-
-				if (DBGetContactSettingWord(hContact, GG_PROTO, GG_KEY_STATUS, (WORD)ID_STATUS_OFFLINE) != ID_STATUS_OFFLINE)
-					ProtoBroadcastAck(GG_PROTO, hContact, ACKTYPE_AVATAR, ACKRESULT_STATUS, 0, 0);
+				gg_requestavatar(gg, hContact);
 			}
 		}
 	}
