@@ -2688,3 +2688,11 @@ int Proto_GetDelayAfterFail(const char *proto)
 
 	return 0;
 }
+
+BOOL Proto_IsFetchingAlwaysAllowed(const char *proto)
+{
+	if (ProtoServiceExists(proto, PS_GETAVATARCAPS))
+		return CallProtoService(proto, PS_GETAVATARCAPS, AF_FETCHALWAYS, 0);
+
+	return FALSE;
+}

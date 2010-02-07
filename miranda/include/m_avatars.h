@@ -41,7 +41,8 @@ The service takes care about protocol capabilites (does not actively fetch avata
 protocols which do not report avatar capabilities via PF4_AVATARS or for protocols which
 have been disabled in the option dialog). It also does not actively fetch avatars for
 protocols which are in invisible status mode (may cause privacy issues and some protocols
-like MSN don't allow any outbound client communication when in invisible status mode).
+like MSN don't allow any outbound client communication when in invisible status mode)
+unless AF_FETCHALWAYS is set.
 
 - TODO
 - maintain recent avatars (store the last hashes to avoid re-fetching)
@@ -338,6 +339,11 @@ return=0 for sucess
 // lParam = 0
 // return = the time, in ms
 #define AF_DELAYAFTERFAIL 7
+
+// Fetching avatars is always possible and allowed
+// lParam = 0
+// return = 1 (always) or 0 (depending on our or contacts status mode)
+#define AF_FETCHALWAYS 8
 
 
 /*
