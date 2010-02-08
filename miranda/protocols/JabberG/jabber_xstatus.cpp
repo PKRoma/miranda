@@ -616,7 +616,7 @@ void CPepMood::InitGui()
 	char szFile[MAX_PATH];
 	GetModuleFileNameA(hInst, szFile, MAX_PATH);
 	if (char *p = strrchr(szFile, '\\'))
-		strcpy( p+1, "..\\Icons\\jabber_xstatus.dll" );
+		strcpy( p+1, "..\\Icons\\xstatus_jabber.dll" );
 
 	TCHAR szSection[100];
 
@@ -1011,7 +1011,7 @@ void CPepActivity::InitGui()
 	char szFile[MAX_PATH];
 	GetModuleFileNameA(hInst, szFile, MAX_PATH);
 	if (char *p = strrchr(szFile, '\\'))
-		strcpy( p+1, "..\\Icons\\jabber_xstatus.dll" );
+		strcpy( p+1, "..\\Icons\\xstatus_jabber.dll" );
 
 	TCHAR szSection[100];
 
