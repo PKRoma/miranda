@@ -281,7 +281,7 @@ int CIrcProto::OnModulesLoaded( WPARAM, LPARAM )
 		if ( IDYES == MessageBox(0,TranslateT("The IRC protocol depends on another plugin called \'Chat\'\n\nDo you want to download it from the Miranda IM web site now?"),TranslateT("Information"),MB_YESNO|MB_ICONINFORMATION ))
 			CallService( MS_UTILS_OPENURL, 1, (LPARAM) "http://www.miranda-im.org/download/");
 	}
-    
+
 	mir_snprintf(szTemp, sizeof(szTemp), "%s\\%s_perform.ini", mirandapath, m_szModuleName);
 	char* pszPerformData = IrcLoadFile( szTemp );
 	if ( pszPerformData != NULL ) {
@@ -552,7 +552,7 @@ DWORD_PTR __cdecl CIrcProto::GetCaps( int type, HANDLE )
 		return PF2_SHORTAWAY;
 
 	case PFLAGNUM_4:
-		return PF4_NOCUSTOMAUTH | PF4_IMSENDUTF;
+		return PF4_NOAUTHDENYREASON | PF4_NOCUSTOMAUTH | PF4_IMSENDUTF;
 
 	case PFLAG_UNIQUEIDTEXT:
 		return (DWORD_PTR) Translate("Nickname");
