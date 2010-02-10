@@ -180,7 +180,6 @@ static void MessageDialogResize(HWND hwndDlg, SESSION_INFO *si, int w, int h) {
 	HDWP hdwp;
 	BOOL      bNick = si->iType!=GCW_SERVER && si->bNicklistEnabled;
 	BOOL      bToolbar = SendMessage(GetParent(hwndDlg), CM_GETTOOLBARSTATUS, 0, 0);
-	MODULEINFO * pInfo = MM_FindModule(si->pszModule);
 	int       buttonVisibility = bToolbar ? g_dat->chatBbuttonVisibility : 0;
 	int		  hSplitterMinTop = TOOLBAR_HEIGHT + si->windowData.minLogBoxHeight, hSplitterMinBottom = si->windowData.minEditBoxHeight;
 	int		  toolbarHeight = bToolbar ? IsToolbarVisible(SIZEOF(toolbarButtons), g_dat->chatBbuttonVisibility) ? TOOLBAR_HEIGHT : TOOLBAR_HEIGHT / 3 : 0;
@@ -1622,8 +1621,8 @@ INT_PTR CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 				if (ui) {
 					char szIndicator = SM_GetStatusIndicator(si, ui);
 					if (szIndicator>'\0') {
-						static TCHAR* ptszBuf[128];
-						mir_sntprintf( (TCHAR*)ptszBuf, SIZEOF(ptszBuf), _T("%c%s"), szIndicator, ui->pszNick);
+						static TCHAR ptszBuf[128];
+						mir_sntprintf( ptszBuf, SIZEOF(ptszBuf), _T("%c%s"), szIndicator, ui->pszNick);
 						SendMessage(GetDlgItem(hwndDlg, IDC_CHAT_LIST), LB_ADDSTRING, 0, (LPARAM)ptszBuf);
 					} else {
 						SendMessage(GetDlgItem(hwndDlg, IDC_CHAT_LIST), LB_ADDSTRING, 0, (LPARAM)ui->pszNick);

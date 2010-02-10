@@ -61,7 +61,7 @@ static BOOL    (WINAPI *MyIsThemeBackgroundPartiallyTransparent)(HANDLE,int,int)
 static CRITICAL_SECTION csRich;
 
 static LRESULT CALLBACK RichUtil_Proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
-static RichUtil_ClearUglyBorder(TRichUtil *ru);
+static void RichUtil_ClearUglyBorder(TRichUtil *ru);
 
 void RichUtil_Load() {
 	li.cbSize = LIST_INTERFACE_V2_SIZE;
@@ -221,7 +221,7 @@ static LRESULT CALLBACK RichUtil_Proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 	return CallWindowProc(ru->origProc, hwnd, msg, wParam, lParam);
 }
 
-static RichUtil_ClearUglyBorder(TRichUtil *ru) {
+static void RichUtil_ClearUglyBorder(TRichUtil *ru) {
 	if (mTheme&&MyIsThemeActive()&&GetWindowLongPtr(ru->hwnd, GWL_EXSTYLE)&WS_EX_STATICEDGE) {
 		ru->hasUglyBorder = 1;
 		SetWindowLongPtr(ru->hwnd, GWL_EXSTYLE, GetWindowLongPtr(ru->hwnd, GWL_EXSTYLE)^WS_EX_STATICEDGE);
