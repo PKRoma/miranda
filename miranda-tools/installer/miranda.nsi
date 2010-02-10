@@ -4,7 +4,7 @@
 !include "LogicLib.nsh"
 
 !define MIM_NAME                "Miranda IM"
-!define MIM_VERSION             "0.8.14"s
+!define MIM_VERSION             "0.8.14"
 !define MIM_PREVIEW             "0" ; 0 for final build
 
 !define MIM_BUILD_ICONS_LOW     "icons\bin\locolor"
