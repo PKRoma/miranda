@@ -2095,6 +2095,7 @@ void CJabberDlgAccMgrUI::setupFB()
 	m_txtManualHost.Disable();
 	m_txtPort.Disable();
 	m_btnRegister.Disable();
+	m_cbResource.Disable();
 }
 
 void CJabberDlgAccMgrUI::RefreshServers( HXML node )
