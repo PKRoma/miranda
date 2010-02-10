@@ -2,7 +2,14 @@
                    ------------------------------------
                    
                            www.miranda-im.org
-                             
+     
+* New in 0.8.14
+Bugfixes:
+ - ICQ: Fixed ICQ7 client detection
+ - Jabber: Fixed possible crash on reconnection attempt
+ - Jabber: Fixed status menu
+ 
+	 
 * New in 0.8.13
 Enhancements:
  - ICQ: Improved AIM capabilities detection
