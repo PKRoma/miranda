@@ -1652,7 +1652,7 @@ public:
 	}
 
 protected:
-	enum { ACC_PUBLIC, ACC_TLS, ACC_SSL, ACC_GTALK, ACC_LJTALK };
+	enum { ACC_PUBLIC, ACC_TLS, ACC_SSL, ACC_GTALK, ACC_LJTALK, ACC_FBOOK };
 
 	void OnInitDialog()
 	{
@@ -1703,6 +1703,7 @@ protected:
 		m_cbType.AddString(TranslateT("Secure XMPP Network (old style)"), ACC_SSL);
 		m_cbType.AddString(TranslateT("Google Talk!"), ACC_GTALK);
 		m_cbType.AddString(TranslateT("LiveJournal Talk"), ACC_LJTALK);
+		m_cbType.AddString(TranslateT("Facebook Chat"), ACC_FBOOK);
 
 		m_cbServer.GetTextA(server, SIZEOF(server));
 		if (!DBGetContactSettingString(NULL, m_proto->m_szModuleName, "ManualHost", &dbv))
@@ -1715,6 +1716,8 @@ protected:
 			m_cbType.SetCurSel(ACC_GTALK);
 		else if (!lstrcmpA(server, "livejournal.com"))
 			m_cbType.SetCurSel(ACC_LJTALK);
+		else if (!lstrcmpA(server, "chat.facebook.com"))
+			m_cbType.SetCurSel(ACC_FBOOK);
 		else if (m_proto->m_options.UseSSL)
 			m_cbType.SetCurSel(ACC_SSL);
 		else if (m_proto->m_options.UseTLS) {
@@ -1803,6 +1806,7 @@ protected:
 		case ACC_TLS:
 		case ACC_GTALK:
 		case ACC_LJTALK:
+		case ACC_FBOOK:
 		{
 			m_proto->m_options.UseSSL = FALSE;
 			m_proto->m_options.UseTLS = TRUE;
@@ -1946,6 +1950,7 @@ private:
 	void setupSecureSSL();
 	void setupGoogle();
 	void setupLJ();
+	void setupFB();
 	void RefreshServers( HXML node);
 	static void QueryServerListThread(void *arg);
 };
@@ -2069,6 +2074,25 @@ void CJabberDlgAccMgrUI::setupLJ()
 	m_txtManualHost.Disable();
 	m_txtPort.Disable();
 	m_btnRegister.Disable();
+}
+
+void CJabberDlgAccMgrUI::setupFB()
+{
+	m_canregister = false;
+	m_gotservers = true;
+	m_cbServer.ResetContent();
+	m_cbServer.SetTextA("chat.facebook.com");
+	m_cbServer.AddStringA("chat.facebook.com");
+	m_chkManualHost.SetState(BST_UNCHECKED);
+	m_txtManualHost.SetTextA("");
+	m_txtPort.SetInt(5222);
+
+	m_cbServer.Disable();
+	m_chkManualHost.Disable();
+	m_txtManualHost.Disable();
+	m_txtPort.Disable();
+	m_btnRegister.Disable();
+	m_cbResource.Disable();
 }
 
 void CJabberDlgAccMgrUI::RefreshServers( HXML node )
