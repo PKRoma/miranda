@@ -4,6 +4,9 @@
                            www.miranda-im.org
      
 * New in 0.8.14
+Enhancements:
+ - Jabber: Added a "Facebook Chat" type to setup Facebook accounts easily
+
 Bugfixes:
  - ICQ: Fixed ICQ7 client detection
  - Jabber: Fixed possible crash on reconnection attempt
