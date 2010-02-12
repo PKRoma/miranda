@@ -56,7 +56,7 @@ static y_filetransfer* new_ft(CYahooProto* ppro, int id, HANDLE hContact, const 
 
 	ft->pfts.totalFiles = y_list_length(fs);
 
-	ft->pfts.ptszFiles = (TCHAR**) calloc(ft->pfts.totalFiles, sizeof(TCHAR *));
+	ft->pfts.ptszFiles = (TCHAR**) mir_calloc(ft->pfts.totalFiles * sizeof(TCHAR *));
 	ft->pfts.totalBytes = 0;
 
 	while(l) {
@@ -71,7 +71,7 @@ static y_filetransfer* new_ft(CYahooProto* ppro, int id, HANDLE hContact, const 
 	ft->pfts.currentFileNumber = 0;
 
 	fi = ( yahoo_file_info* )fs->data; 
-	ft->pfts.tszCurrentFile = mir_utf8decodeT(fi->filename);
+	ft->pfts.tszCurrentFile = _tcsdup(ft->pfts.ptszFiles[ft->pfts.currentFileNumber]);
 	ft->pfts.currentFileSize = fi->filesize; 
 
 	file_transfers = y_list_prepend(file_transfers, ft);
@@ -138,11 +138,11 @@ static void free_ft(y_filetransfer* ft)
 	LOG(("[free_ft] About to free PFTS."));
 	
 	for (i=0; i< ft->pfts.totalFiles; i++)
-		free(ft->pfts.ptszFiles[i]);
+		mir_free(ft->pfts.ptszFiles[i]);
 	
 	FREE(ft->pfts.tszCurrentFile);
 	FREE(ft->pfts.tszWorkingDir);
-	FREE(ft->pfts.ptszFiles);
+	mir_free(ft->pfts.ptszFiles);
 	FREE(ft);
 	
 	LOG(("[/free_ft]"));
@@ -272,7 +272,7 @@ static void upload_file(int id, int fd, int error, void *data)
 			
 			// need to move to the next file on the list and fill the file information
 			fi = ( yahoo_file_info* )sf->files->data; 
-			sf->pfts.tszCurrentFile = mir_utf8decodeT(fi->filename);
+			sf->pfts.tszCurrentFile = _tcsdup(sf->pfts.ptszFiles[sf->pfts.currentFileNumber]);
 			sf->pfts.currentFileSize = fi->filesize; 
 			sf->pfts.currentFileProgress = 0;
 			
@@ -444,7 +444,7 @@ static void dl_file(int id, int fd, int error,	const char *filename, unsigned lo
 			
 			// need to move to the next file on the list and fill the file information
 			fi = ( yahoo_file_info* )sf->files->data; 
-			sf->pfts.tszCurrentFile = mir_utf8decodeT(fi->filename);
+			sf->pfts.tszCurrentFile = _tcsdup(sf->pfts.ptszFiles[sf->pfts.currentFileNumber]);
 			sf->pfts.currentFileSize = fi->filesize; 
 			sf->pfts.currentFileProgress = 0;
 			
