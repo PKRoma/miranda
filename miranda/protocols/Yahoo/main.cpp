@@ -156,6 +156,7 @@ extern "C" int __declspec(dllexport) Unload(void)
 	LOG(( "Unload" ));
 	
 	Netlib_CloseHandle( g_hNetlibUser );
+	g_instances.destroy();
 	return 0;
 }
 
