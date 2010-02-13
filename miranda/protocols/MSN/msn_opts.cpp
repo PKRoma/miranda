@@ -372,7 +372,6 @@ static INT_PTR CALLBACK DlgProcMsnConnOpts(HWND hwndDlg, UINT msg, WPARAM wParam
 				SetDlgItemTextA(hwndDlg, IDC_LOGINSERVER, proto->MyOptions.UseGateway ? MSN_DEFAULT_GATEWAY : MSN_DEFAULT_LOGIN_SERVER);
 			SetDlgItemInt(hwndDlg, IDC_MSNPORT, proto->MyOptions.UseGateway ? MSN_DEFAULT_GATEWAY_PORT : MSN_DEFAULT_PORT, FALSE);
 
-			CheckDlgButton(hwndDlg, IDC_USEIEPROXY,  proto->getByte("UseIeProxy",  0));
 			CheckDlgButton(hwndDlg, IDC_SLOWSEND,    proto->getByte("SlowSend",    0));
 
 			SendDlgItemMessage(hwndDlg, IDC_HOSTOPT, CB_ADDSTRING, 0, (LPARAM)TranslateT("Automatically obtain host/port"));
@@ -439,7 +438,7 @@ static INT_PTR CALLBACK DlgProcMsnConnOpts(HWND hwndDlg, UINT msg, WPARAM wParam
 		{
 			switch(LOWORD(wParam)) 
 			{
-				case IDC_USEIEPROXY:		case IDC_SLOWSEND:
+				case IDC_SLOWSEND:
 					SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
 					break;
 
@@ -491,7 +490,6 @@ static INT_PTR CALLBACK DlgProcMsnConnOpts(HWND hwndDlg, UINT msg, WPARAM wParam
 			else
 				proto->deleteSetting(NULL, "LoginServer");
 
-			proto->setByte("UseIeProxy", (BYTE)IsDlgButtonChecked(hwndDlg, IDC_USEIEPROXY));
 			proto->setByte("SlowSend",   (BYTE)IsDlgButtonChecked(hwndDlg, IDC_SLOWSEND ));
 			if (proto->getByte("SlowSend", FALSE))
 			{

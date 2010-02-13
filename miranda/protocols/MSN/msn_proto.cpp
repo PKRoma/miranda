@@ -184,13 +184,6 @@ CMsnProto::CMsnProto(const char* aProtoName, const TCHAR* aUserName) :
 
 	mir_sntprintf(szBuffer, SIZEOF(szBuffer), TranslateT("%s plugin connections"), m_tszUserName);
 	hNetlibUser = (HANDLE)MSN_CallService(MS_NETLIB_REGISTERUSER, 0, (LPARAM)&nlu);
-
-	if (getByte("UseIeProxy", 0))
-	{
-		if (MyOptions.UseGateway)
-			SetupIeProxy(hNetlibUser, false);
-		SetupIeProxy(hNetlibUserHttps, true);
-	}
 }
 
 CMsnProto::~CMsnProto()

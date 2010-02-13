@@ -147,7 +147,7 @@ retry:
 			case SERVER_NOTIFICATION: 
 			case SERVER_DISPATCH:
 				if (!usingGateway) { usingGateway = true; goto retry; }
-				SendBroadcast(NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_NOSERVER);
+				SendBroadcast(NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_NONETWORK);
 				MSN_GoOffline();
 				msnNsThread = NULL;
 				if (hKeepAliveThreadEvt) 

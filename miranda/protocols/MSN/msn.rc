@@ -67,9 +67,8 @@ BEGIN
     EDITTEXT        IDC_MSNPORT,68,30,44,12,ES_AUTOHSCROLL | ES_NUMBER
     CONTROL         "Use HTTP gateway mode (incompatible with MSN Gateway plugin)",IDC_USEGATEWAY,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,46,286,8
-    CONTROL         "Use IE proxy settings",IDC_USEIEPROXY,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,58,285,8
     CONTROL         "Notify me when a message delivery has failed",IDC_SLOWSEND,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,69,285,8
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,56,285,8
     GROUPBOX        "Incoming file transfers",IDC_STATIC,4,108,298,48
     LTEXT           "Your host (or router):",IDC_STATIC,12,138,90,8
     EDITTEXT        IDC_YOURHOST,105,136,169,12,ES_AUTOHSCROLL

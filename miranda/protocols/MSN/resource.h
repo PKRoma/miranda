@@ -25,7 +25,6 @@
 #define IDD_OPT_MSN                     185
 #define IDD_SETNICKNAME                 226
 #define IDC_STMSNGROUP                  1002
-#define IDC_USEIEPROXY                  1005
 #define IDC_USEWINCOLORS                1007
 #define IDC_LIST                        1015
 #define IDC_ICON_FL                     1016

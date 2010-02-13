@@ -193,7 +193,6 @@ void        MsnInitIcons(void);
 int         sttDivideWords(char* parBuffer, int parMinItems, char** parDest);
 void		MSN_MakeDigest(const char* chl, char* dgst);
 char*		getNewUuid(void);
-bool        SetupIeProxy(HANDLE hNetlib, bool secur);
 bool        ForceHttpProxy(HANDLE hNetlib);
 
 TCHAR* EscapeChatTags(const TCHAR* pszText);
