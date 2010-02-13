@@ -214,26 +214,16 @@ bool NetlibGetIeProxyConn(NetlibConnection *nlc)
 static char szAutoUrlStr[256] = "";
 static AUTO_PROXY_SCRIPT_BUFFER abuf = {0};
 static HANDLE hIeProxyMutex;
+static bool bAutoProxyInit;
 
-
-struct IeProxyParam
+static void NetlibInitAutoProxy(void)
 {
-	char *szUrl;
-	char *szHost;
-	char *szProxy; 
-};
-
-static unsigned __stdcall IeProxyThread(void * arg)
-{
-	IeProxyParam *param = (IeProxyParam*)arg;
-	param->szProxy = NULL;
-
-	WaitForSingleObject(hIeProxyMutex, INFINITE);
+	if (bAutoProxyInit) return;
 
 	if (!hModJS)
 	{
 		if (!(hModJS = LoadLibraryA("jsproxy.dll")))
-			return 0;
+			return;
 
 		pInternetInitializeAutoProxyDll = (pfnInternetInitializeAutoProxyDll)
 			GetProcAddress(hModJS, "InternetInitializeAutoProxyDll");
@@ -245,6 +235,41 @@ static unsigned __stdcall IeProxyThread(void * arg)
 			GetProcAddress(hModJS, "InternetGetProxyInfo");
 	}
 
+	char *loc = strstr(szAutoUrlStr, "file://");
+	if (loc || strstr(szAutoUrlStr, "://") == NULL) 
+	{
+		loc = loc ? loc + 7 : szAutoUrlStr;
+	}
+	else
+	{
+		if (!bAutoProxyInit)
+		{
+			abuf.dwStructSize = sizeof (abuf);
+			GetFile(szAutoUrlStr, abuf);
+		}
+	}
+	bAutoProxyInit = true;
+}
+
+struct IeProxyParam
+{
+	char *szUrl;
+	char *szHost;
+	char *szProxy; 
+};
+
+static unsigned __stdcall NetlibIeProxyThread(void * arg)
+{
+	IeProxyParam *param = (IeProxyParam*)arg;
+	param->szProxy = NULL;
+
+	if (!bAutoProxyInit)
+	{
+		WaitForSingleObject(hIeProxyMutex, INFINITE);
+		NetlibInitAutoProxy();
+		ReleaseMutex(hIeProxyMutex);
+	}
+
 	BOOL res;
 	char *loc = strstr(szAutoUrlStr, "file://");
 	if (loc || strstr(szAutoUrlStr, "://") == NULL) 
@@ -254,16 +279,11 @@ static unsigned __stdcall IeProxyThread(void * arg)
 	}
 	else
 	{
-		if (abuf.dwScriptBufferSize == 0)
-		{
-			abuf.dwStructSize = sizeof (abuf);
-			GetFile(szAutoUrlStr, abuf);
-		}
-
-		res = pInternetInitializeAutoProxyDll(0, NULL, NULL, NULL /*&HelperFunctions*/, &abuf);
+		if (abuf.dwScriptBufferSize)
+			res = pInternetInitializeAutoProxyDll(0, NULL, NULL, NULL /*&HelperFunctions*/, &abuf);
+		else
+			res = false;
 	}
-
-	ReleaseMutex(hIeProxyMutex);
 
 	if (res)
 	{
@@ -274,9 +294,10 @@ static unsigned __stdcall IeProxyThread(void * arg)
 		if (pInternetGetProxyInfo(param->szUrl, (DWORD)strlen(param->szUrl), 
 			param->szHost, (DWORD)strlen(param->szHost), &proxy, &dwProxyLen))
 			param->szProxy = mir_strdup(lrtrim(proxy));
+
+		pInternetDeInitializeAutoProxyDll(NULL, 0);
 	}
 
-	pInternetDeInitializeAutoProxyDll(NULL, 0);
 	return 0;
 }
 
@@ -322,7 +343,7 @@ char* NetlibGetIeProxy(char *szUrl)
 	{
 		unsigned dwThreadId;
 		IeProxyParam param = { szUrl, szHost, NULL };
-		HANDLE hThread = (HANDLE)forkthreadex(NULL, 0, IeProxyThread, 0, &param, &dwThreadId);
+		HANDLE hThread = (HANDLE)forkthreadex(NULL, 0, NetlibIeProxyThread, 0, &param, &dwThreadId);
 		WaitForSingleObject(hThread, INFINITE);
 		res = param.szProxy;
 	}
