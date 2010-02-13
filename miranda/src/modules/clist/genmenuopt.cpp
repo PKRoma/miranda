@@ -29,17 +29,18 @@ typedef struct tagMenuItemOptData
 }
 	MenuItemOptData,*lpMenuItemOptData;
 
-static BOOL GetCurrentMenuObjectID( HWND hwndDlg, int* result )
+static BOOL GetCurrentMenuObjectID(HWND hwndDlg, int* result)
 {
 	TVITEM tvi;
-	HTREEITEM hti = TreeView_GetSelection( GetDlgItem( hwndDlg, IDC_MENUOBJECTS ));
+	HWND hTree = GetDlgItem(hwndDlg, IDC_MENUOBJECTS);
+	HTREEITEM hti = TreeView_GetSelection(hTree);
 	if ( hti == NULL )
 		return FALSE;
 
 	tvi.mask = TVIF_HANDLE | TVIF_PARAM;
 	tvi.hItem = hti;
-	TreeView_GetItem( GetDlgItem( hwndDlg, IDC_MENUOBJECTS ), &tvi );
-	*result = ( int )tvi.lParam;
+	TreeView_GetItem(hTree, &tvi);
+	*result = (int)tvi.lParam;
 	return TRUE;
 }
 
@@ -117,7 +118,7 @@ static int BuildMenuObjectsTree(HWND hwndDlg)
 		return FALSE;
 
 	for ( i=0; i < g_menus.getCount(); i++ ) {
-		if ( g_menus[i]->id == (int)hStatusMenuObject )
+		if ( g_menus[i]->id == (int)hStatusMenuObject  || !g_menus[i]->m_bUseUserDefinedItems )
 			continue;
 
 		tvis.item.lParam  = ( LPARAM )g_menus[i]->id;
