@@ -133,7 +133,6 @@ static INT_PTR CALLBACK DlgProcGenOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			SendDlgItemMessage(hwndDlg,IDC_CYCLETIMESPIN,UDM_SETPOS,0,MAKELONG(DBGetContactSettingWord(NULL,"CList","CycleTime",SETTING_CYCLETIME_DEFAULT),0));
 			{	int i,count,item;
 				PROTOACCOUNT **accs;
-				char szName[64];
 				DBVARIANT dbv={DBVT_DELETED};
 				DBGetContactSettingString(NULL,"CList","PrimaryStatus",&dbv);
 				ProtoEnumAccounts( &count, &accs );
