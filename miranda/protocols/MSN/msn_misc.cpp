@@ -1249,7 +1249,7 @@ bool ForceHttpProxy(HANDLE hNetlib)
 	nls.cbSize = sizeof(NETLIBUSERSETTINGS);
 	if (MSN_CallService(MS_NETLIB_GETUSERSETTINGS, (WPARAM)hNetlib, (LPARAM)&nls))
 	{
-		return nls.useProxy && (nls.proxyType == PROXYTYPE_HTTP && !nls.useIeProxy);
+		return nls.useProxy && nls.proxyType == PROXYTYPE_HTTP;
 	}
 	return false;
 }
