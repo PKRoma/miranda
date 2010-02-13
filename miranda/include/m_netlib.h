@@ -183,22 +183,23 @@ should use the MSG_DUMPPROXY flag so that the logging is neat.
 #define PROXYTYPE_SOCKS5   2
 #define PROXYTYPE_HTTP     3
 #define PROXYTYPE_HTTPS    4
+#define PROXYTYPE_IE       5
 typedef struct {
-	int cbSize;    //to be filled in before calling
-	int useProxy;	  //1 or 0
-	int proxyType;	  //a PROXYTYPE_
-	char *szProxyServer;   //can be NULL
-	int wProxyPort;    //host byte order
-	int useProxyAuth;   //1 or 0. Always 0 for SOCKS4
-	char *szProxyAuthUser;		 //can be NULL, always used by SOCKS4
-	char *szProxyAuthPassword;	 //can be NULL
-	int useProxyAuthNtlm;  //1 or 0, only used by HTTP, HTTPS
-	int dnsThroughProxy;   //1 or 0
-	int specifyIncomingPorts;   //1 or 0
-	char *szIncomingPorts;   //can be NULL. Of form "1024-1050,1060-1070,2000"
-	int specifyOutgoingPorts; // 0.3.3a+
-	char *szOutgoingPorts; // 0.3.3a+
-    int enableUPnP; //0.6.1+ only for NUF_INCOMING
+	int cbSize;                 // to be filled in before calling
+	int useProxy;	            // 1 or 0
+	int proxyType;	            // a PROXYTYPE_
+	char *szProxyServer;        // can be NULL
+	int wProxyPort;             // host byte order
+	int useProxyAuth;           // 1 or 0. Always 0 for SOCKS4
+	char *szProxyAuthUser;      // can be NULL, always used by SOCKS4
+	char *szProxyAuthPassword;  // can be NULL
+	int useProxyAuthNtlm;       // 1 or 0, only used by HTTP, HTTPS
+	int dnsThroughProxy;        // 1 or 0
+	int specifyIncomingPorts;   // 1 or 0
+	char *szIncomingPorts;      // can be NULL. Of form "1024-1050,1060-1070,2000"
+	int specifyOutgoingPorts;   // 0.3.3a+
+	char *szOutgoingPorts;      // 0.3.3a+
+    int enableUPnP;             // 0.6.1+ only for NUF_INCOMING
     int validateSSL;
 } NETLIBUSERSETTINGS;
 #define MS_NETLIB_GETUSERSETTINGS  "Netlib/GetUserSettings"
@@ -326,7 +327,7 @@ typedef struct {
 #define NLOCF_V2            0x0004 //this connection understands the newer structure, newer cbSize isnt enough
 #define NLOCF_UDP           0x0008 // this connection is UDP
 #define NLOCF_SSL           0x0010 // this connection is SSL
-#define NLOCF_HTTPGATEWAY   0x0020 // this connection is SSL
+#define NLOCF_HTTPGATEWAY   0x0020 // this connection is HTTP Gateway
 
 /* Added during 0.4.0+ development!! (2004/11/29) prior to this, connect() blocks til a connection is made or
 a hard timeout is reached, this can be anywhere between 30-60 seconds, and it stops Miranda from unloading whilst

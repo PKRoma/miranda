@@ -25,15 +25,20 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 static BOOL bModuleInitialized = FALSE;
 
-struct NetlibUser **netlibUser=NULL;
-int netlibUserCount=0;
-CRITICAL_SECTION csNetlibUser;
 HANDLE hConnectionHeaderMutex, hConnectionOpenMutex; 
 DWORD g_LastConnectionTick;
 int connectionTimeout;
 HANDLE hSendEvent=NULL, hRecvEvent=NULL;
 
 typedef BOOL (WINAPI *tGetProductInfo)(DWORD, DWORD, DWORD, DWORD, PDWORD);
+
+static int CompareNetlibUser(const NetlibUser* p1, const NetlibUser* p2)
+{
+	return strcmp(p1->user.szSettingsModule, p2->user.szSettingsModule);
+}
+
+LIST<NetlibUser> netlibUser(5, CompareNetlibUser);
+CRITICAL_SECTION csNetlibUser;
 
 SSL_API si;
 
@@ -126,7 +131,6 @@ static INT_PTR NetlibRegisterUser(WPARAM,LPARAM lParam)
 {
 	NETLIBUSER *nlu=(NETLIBUSER*)lParam;
 	struct NetlibUser *thisUser;
-	int i;
 
 	if(nlu==NULL || nlu->cbSize!=sizeof(NETLIBUSER) || nlu->szSettingsModule==NULL
 	   || (!(nlu->flags&NUF_NOOPTIONS) && nlu->szDescriptiveName==NULL)
@@ -135,25 +139,28 @@ static INT_PTR NetlibRegisterUser(WPARAM,LPARAM lParam)
 		return 0;
 	}
 
-	EnterCriticalSection(&csNetlibUser);
-	for(i=0;i<netlibUserCount;i++)
-		if(!lstrcmpA(netlibUser[i]->user.szSettingsModule,nlu->szSettingsModule)) {
-			LeaveCriticalSection(&csNetlibUser);
-			SetLastError(ERROR_DUP_NAME);
-			return 0;
-		}
-	LeaveCriticalSection(&csNetlibUser);
+	thisUser = (struct NetlibUser*)mir_calloc(sizeof(struct NetlibUser));
+	thisUser->handleType = NLH_USER;
+	thisUser->user = *nlu;
 
-	thisUser=(struct NetlibUser*)mir_calloc(sizeof(struct NetlibUser));
-	thisUser->handleType=NLH_USER;
-	thisUser->user=*nlu;
+	EnterCriticalSection(&csNetlibUser);
+	if (netlibUser.getIndex(thisUser) >= 0) 
+	{
+		LeaveCriticalSection(&csNetlibUser);
+		mir_free(thisUser);
+		SetLastError(ERROR_DUP_NAME);
+		return 0;
+	}
+	LeaveCriticalSection(&csNetlibUser);
 
 	if (nlu->szDescriptiveName) {
 		thisUser->user.ptszDescriptiveName = (thisUser->user.flags&NUF_UNICODE ? u2t((WCHAR*)nlu->ptszDescriptiveName) : a2t(nlu->szDescriptiveName));
 	}
 	if((thisUser->user.szSettingsModule=mir_strdup(nlu->szSettingsModule))==NULL
 	   || (nlu->szDescriptiveName && thisUser->user.ptszDescriptiveName ==NULL)
-	   || (nlu->szHttpGatewayUserAgent && (thisUser->user.szHttpGatewayUserAgent=mir_strdup(nlu->szHttpGatewayUserAgent))==NULL)) {
+	   || (nlu->szHttpGatewayUserAgent && (thisUser->user.szHttpGatewayUserAgent=mir_strdup(nlu->szHttpGatewayUserAgent))==NULL)) 
+	{
+		mir_free(thisUser);
 		SetLastError(ERROR_OUTOFMEMORY);
 		return 0;
 	}
@@ -176,7 +183,6 @@ static INT_PTR NetlibRegisterUser(WPARAM,LPARAM lParam)
 	thisUser->settings.useProxyAuth=GetNetlibUserSettingInt(thisUser->user.szSettingsModule,"NLUseProxyAuth",0);
 	thisUser->settings.szProxyAuthUser=GetNetlibUserSettingString(thisUser->user.szSettingsModule,"NLProxyAuthUser",0);
 	thisUser->settings.szProxyAuthPassword=GetNetlibUserSettingString(thisUser->user.szSettingsModule,"NLProxyAuthPassword",1);
-	thisUser->settings.useProxyAuthNtlm=GetNetlibUserSettingInt(thisUser->user.szSettingsModule,"NLUseProxyAuthNtlm",0);
 	thisUser->settings.dnsThroughProxy=GetNetlibUserSettingInt(thisUser->user.szSettingsModule,"NLDnsThroughProxy",1);
 	thisUser->settings.specifyIncomingPorts=GetNetlibUserSettingInt(thisUser->user.szSettingsModule,"NLSpecifyIncomingPorts",0);
 	thisUser->settings.szIncomingPorts=GetNetlibUserSettingString(thisUser->user.szSettingsModule,"NLIncomingPorts",0);
@@ -188,8 +194,7 @@ static INT_PTR NetlibRegisterUser(WPARAM,LPARAM lParam)
 	thisUser->toLog=GetNetlibUserSettingInt(thisUser->user.szSettingsModule,"NLlog",1);
 
 	EnterCriticalSection(&csNetlibUser);
-	netlibUser=(struct NetlibUser**)mir_realloc(netlibUser,sizeof(struct NetlibUser*)*++netlibUserCount);
-	netlibUser[netlibUserCount-1]=thisUser;
+	netlibUser.insert(thisUser);
 	LeaveCriticalSection(&csNetlibUser);
 	return (INT_PTR)thisUser;
 }
@@ -226,14 +231,12 @@ INT_PTR NetlibCloseHandle(WPARAM wParam, LPARAM)
 		case NLH_USER:
 		{	struct NetlibUser *nlu=(struct NetlibUser*)wParam;
 			int i;
+			
 			EnterCriticalSection(&csNetlibUser);
-			for(i=0;i<netlibUserCount;i++)
-				if(!lstrcmpA(netlibUser[i]->user.szSettingsModule,nlu->user.szSettingsModule)) {
-					netlibUserCount--;
-					memmove(netlibUser+i,netlibUser+i+1,(netlibUserCount-i)*sizeof(struct NetlibUser*));
-					break;
-				}
+			i = netlibUser.getIndex(nlu);
+			if (i >= 0) netlibUser.remove(i);
 			LeaveCriticalSection(&csNetlibUser);
+
 			NetlibFreeUserSettingsStruct(&nlu->settings);
 			mir_free(nlu->user.szSettingsModule);
 			mir_free(nlu->user.szDescriptiveName);
@@ -290,6 +293,7 @@ INT_PTR NetlibCloseHandle(WPARAM wParam, LPARAM)
 			mir_free(nlc->dataBuffer);
 			mir_free((char*)nlc->nloc.szHost);
 			mir_free(nlc->szNewUrl);
+			mir_free(nlc->szProxyServer);
 			NetlibDeleteNestedCS(&nlc->ncsRecv);
 			NetlibDeleteNestedCS(&nlc->ncsSend);
 			CloseHandle(nlc->hOkToCloseEvent);
@@ -494,11 +498,13 @@ INT_PTR NetlibBase64Decode(WPARAM, LPARAM lParam)
 
 void UnloadNetlibModule(void)
 {
-	if ( !bModuleInitialized ) return;
+	if (!bModuleInitialized) return;
 
-	if ( hConnectionHeaderMutex != NULL ) {
+	if (hConnectionHeaderMutex != NULL)
+	{
 		int i;
 
+		NetlibUnloadIeProxy();
 		NetlibSecurityDestroy();
 		NetlibUPnPDestroy();
 		NetlibLogShutdown();
@@ -506,16 +512,17 @@ void UnloadNetlibModule(void)
 		DestroyHookableEvent(hRecvEvent); hRecvEvent = NULL;
 		DestroyHookableEvent(hSendEvent); hSendEvent = NULL;
 
-		for ( i = netlibUserCount; i > 0; i-- )
-			NetlibCloseHandle(( WPARAM )netlibUser[i-1], 0 );
+		for (i = netlibUser.getCount(); i > 0; i--)
+			NetlibCloseHandle((WPARAM)netlibUser[i-1], 0);
 
-		mir_free( netlibUser );
+		netlibUser.destroy();
 
 		CloseHandle(hConnectionHeaderMutex);
 		if (hConnectionOpenMutex) CloseHandle(hConnectionOpenMutex);
 		DeleteCriticalSection(&csNetlibUser);
 		WSACleanup();
-}	}
+	}	
+}
 
 int LoadNetlibModule(void)
 {
@@ -615,6 +622,8 @@ int LoadNetlibModule(void)
 
 	NetlibUPnPInit();
 	NetlibSecurityInit();
+	NetlibLoadIeProxy();
+
 	return 0;
 }
 

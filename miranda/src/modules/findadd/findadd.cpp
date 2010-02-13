@@ -87,18 +87,6 @@ void ListView_SetItemTextA( HWND hwndLV, int i, int iSubItem, char* pszText )
 	SendMessageA( hwndLV, LVM_SETITEMTEXTA, i, (LPARAM)&_ms_lvi);
 }
 
-// from msn_libstr.cpp
-static char* FindAddTrimR(char *s) {
-	char* p = s+strlen(s)-1;
-
-	while (p>=s) {
-		if (*p!=' '&&*p!='\t'&&*p!='\n'&&*p!='\r')
-			break;
-		*p--=0;
-   }
-   return s;
-}
-
 static int FindAddDlgResizer(HWND,LPARAM lParam,UTILRESIZECONTROL *urc)
 {
 	static int y,nextY,oldTop;
@@ -720,7 +708,7 @@ static INT_PTR CALLBACK DlgProcFindAdd(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 					else if(IsDlgButtonChecked(hwndDlg,IDC_BYPROTOID)) {
 						char str[256];
 						GetDlgItemTextA(hwndDlg,IDC_PROTOID,str,SIZEOF(str));
-						FindAddTrimR(str);
+						rtrim(str);
 						if(str[0]==0)
 							MessageBox(hwndDlg,sttErrMsg,sttErrTitle,MB_OK);
 						else
@@ -729,7 +717,7 @@ static INT_PTR CALLBACK DlgProcFindAdd(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 					else if(IsDlgButtonChecked(hwndDlg,IDC_BYEMAIL)) {
 						char str[256];
 						GetDlgItemTextA(hwndDlg,IDC_EMAIL,str,SIZEOF(str));
-						FindAddTrimR(str);
+						rtrim(str);
 						if(str[0]==0)
 							MessageBox(hwndDlg,sttErrMsg,sttErrTitle,MB_OK);
 						else

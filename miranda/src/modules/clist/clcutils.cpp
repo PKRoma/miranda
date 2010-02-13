@@ -718,30 +718,25 @@ void fnLoadClcOptions(HWND hwnd, struct ClcData *dat)
 		int i;
 		LOGFONT lf;
 		SIZE fontSize;
-		HDC hdc = GetDC(hwnd);
-		HFONT hFont = ( HFONT )GetCurrentObject(hdc, OBJ_FONT);
-		HFONT holdfont;
 
-		for (i = 0; i <= FONTID_MAX; i++) {
+        HDC hdc = GetDC(hwnd);
+		for (i = 0; i <= FONTID_MAX; i++) 
+        {
 			if (!dat->fontInfo[i].changed)
 				DeleteObject(dat->fontInfo[i].hFont);
+
 			cli.pfnGetFontSetting(i, &lf, &dat->fontInfo[i].colour);
-			{
-				LONG height;
-				HDC hdc = GetDC(NULL);
-				height = lf.lfHeight;
-				lf.lfHeight = -MulDiv(lf.lfHeight, GetDeviceCaps(hdc, LOGPIXELSY), 72);
-				ReleaseDC(NULL, hdc);
-				dat->fontInfo[i].hFont = CreateFontIndirect(&lf);
-				lf.lfHeight = height;
-			}
+			lf.lfHeight = -MulDiv(lf.lfHeight, GetDeviceCaps(hdc, LOGPIXELSY), 72);
+
+			dat->fontInfo[i].hFont = CreateFontIndirect(&lf);
 			dat->fontInfo[i].changed = 0;
-			holdfont = ( HFONT )SelectObject(hdc,dat->fontInfo[i].hFont);
+
+			HFONT holdfont = (HFONT)SelectObject(hdc,dat->fontInfo[i].hFont);
 			GetTextExtentPoint32(hdc, _T("x"), 1, &fontSize);
-			dat->fontInfo[i].fontHeight = fontSize.cy;
-			if (holdfont) SelectObject(hdc, holdfont);
+			SelectObject(hdc, holdfont);
+
+            dat->fontInfo[i].fontHeight = fontSize.cy;
 		}
-		SelectObject(hdc,hFont);
 		ReleaseDC(hwnd, hdc);
 	}
 	dat->leftMargin = DBGetContactSettingByte(NULL, "CLC", "LeftMargin", CLCDEFAULT_LEFTMARGIN);

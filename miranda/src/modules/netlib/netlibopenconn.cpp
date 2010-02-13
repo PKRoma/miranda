@@ -350,6 +350,7 @@ static void FreePartiallyInitedConnection(struct NetlibConnection *nlc)
 	mir_free(nlc->nlhpi.szHttpPostUrl);
 	mir_free(nlc->nlhpi.szHttpGetUrl);
 	mir_free((char*)nlc->nloc.szHost);
+	mir_free(nlc->szProxyServer);
 	NetlibDeleteNestedCS(&nlc->ncsSend);
 	NetlibDeleteNestedCS(&nlc->ncsRecv);
 	CloseHandle(nlc->hOkToCloseEvent);
@@ -472,16 +473,37 @@ bool NetlibDoConnect(NetlibConnection *nlc)
 {
 	NETLIBOPENCONNECTION *nloc = &nlc->nloc;
 	NetlibUser *nlu = nlc->nlu;
-	bool usingProxy = nlu->settings.useProxy && nlu->settings.szProxyServer && nlu->settings.szProxyServer[0];
 
 	nlc->proxyAuthNeeded = true;
 	nlc->sinProxy.sin_family = AF_INET;
+
+	mir_free(nlc->szProxyServer); nlc->szProxyServer = NULL;
+
+	bool usingProxy = false;
+	if (nlu->settings.useProxy)
+	{
+		if (nlu->settings.proxyType == PROXYTYPE_IE)
+		{
+			usingProxy = NetlibGetIeProxyConn(nlc);
+		}
+		else
+		{
+			if (nlu->settings.szProxyServer && nlu->settings.szProxyServer[0])
+			{
+				nlc->szProxyServer = mir_strdup(nlu->settings.szProxyServer);
+				nlc->wProxyPort = nlu->settings.wProxyPort;
+				nlc->proxyType = nlu->settings.proxyType;
+				usingProxy = true;
+			}
+		}
+	}
+
 	if (usingProxy) 
 	{
-		nlc->sinProxy.sin_port = htons(nlu->settings.wProxyPort);
-		nlc->sinProxy.sin_addr.S_un.S_addr = DnsLookup(nlu, nlu->settings.szProxyServer);
+		nlc->sinProxy.sin_port = htons(nlc->wProxyPort);
+		nlc->sinProxy.sin_addr.S_un.S_addr = DnsLookup(nlu, nlc->szProxyServer);
 	}
-	else 
+	else
 	{
 		nlc->sinProxy.sin_port = htons(nloc->wPort);
 		nlc->sinProxy.sin_addr.S_un.S_addr = DnsLookup(nlu, nloc->szHost);
@@ -496,11 +518,11 @@ bool NetlibDoConnect(NetlibConnection *nlc)
 	}
 
 	if (usingProxy && !((nloc->flags & (NLOCF_HTTP | NLOCF_SSL)) == NLOCF_HTTP && 
-		(nlu->settings.proxyType == PROXYTYPE_HTTP || nlu->settings.proxyType == PROXYTYPE_HTTPS)))
+		(nlc->proxyType == PROXYTYPE_HTTP || nlc->proxyType == PROXYTYPE_HTTPS)))
 	{
 		if (!WaitUntilWritable(nlc->s,30000)) return false;
 
-		switch(nlu->settings.proxyType) 
+		switch(nlc->proxyType) 
 		{
 			case PROXYTYPE_SOCKS4:
 				if (!NetlibInitSocks4Connection(nlc, nlu, nloc)) return false;
@@ -607,34 +629,41 @@ bool NetlibReconnect(NetlibConnection *nlc)
 
 INT_PTR NetlibOpenConnection(WPARAM wParam,LPARAM lParam)
 {
-	NETLIBOPENCONNECTION *nloc=(NETLIBOPENCONNECTION*)lParam;
-	struct NetlibUser *nlu=(struct NetlibUser*)wParam;
+	NETLIBOPENCONNECTION *nloc = (NETLIBOPENCONNECTION*)lParam;
+	struct NetlibUser *nlu = (struct NetlibUser*)wParam;
 	struct NetlibConnection *nlc;
 
 	Netlib_Logf(nlu,"Connecting to %s:%d (Flags %x)....", nloc->szHost, nloc->wPort, nloc->flags);
 
-	EnterCriticalSection(&csNetlibUser);
-	if(iUPnPCleanup==0) {
-		forkthread(NetlibUPnPCleanup, 0, NULL);
-		iUPnPCleanup = 1;
+	if (iUPnPCleanup == 0)
+	{
+		EnterCriticalSection(&csNetlibUser);
+		if (iUPnPCleanup == 0) 
+		{
+			iUPnPCleanup = 1;
+			forkthread(NetlibUPnPCleanup, 0, NULL);
+		}
+		LeaveCriticalSection(&csNetlibUser);
 	}
-	LeaveCriticalSection(&csNetlibUser);
-	if(GetNetlibHandleType(nlu)!=NLH_USER || !(nlu->user.flags&NUF_OUTGOING) || nloc==NULL 
-		|| !(nloc->cbSize==NETLIBOPENCONNECTION_V1_SIZE||nloc->cbSize==sizeof(NETLIBOPENCONNECTION)) || nloc->szHost==NULL || nloc->wPort==0) {
+
+	if (GetNetlibHandleType(nlu) != NLH_USER || !(nlu->user.flags & NUF_OUTGOING) || nloc == NULL ||
+		(nloc->cbSize != NETLIBOPENCONNECTION_V1_SIZE && nloc->cbSize != sizeof(NETLIBOPENCONNECTION)) || 
+		nloc->szHost == NULL || nloc->wPort == 0)
+	{
 		SetLastError(ERROR_INVALID_PARAMETER);
 		return 0;
 	}
-	nlc=(struct NetlibConnection*)mir_calloc(sizeof(struct NetlibConnection));
-	nlc->handleType=NLH_CONNECTION;
-	nlc->nlu=nlu;
+	nlc = (struct NetlibConnection*)mir_calloc(sizeof(struct NetlibConnection));
+	nlc->handleType = NLH_CONNECTION;
+	nlc->nlu = nlu;
 	nlc->nloc = *nloc;
 	nlc->nloc.szHost = mir_strdup(nloc->szHost);
 	nlc->s = INVALID_SOCKET;
 	nlc->s2 = INVALID_SOCKET;
 
 	InitializeCriticalSection(&nlc->csHttpSequenceNums);
-	nlc->hOkToCloseEvent=CreateEvent(NULL,TRUE,TRUE,NULL);
-	nlc->dontCloseNow=0;
+	nlc->hOkToCloseEvent = CreateEvent(NULL,TRUE,TRUE,NULL);
+	nlc->dontCloseNow = 0;
 	NetlibInitializeNestedCS(&nlc->ncsSend);
 	NetlibInitializeNestedCS(&nlc->ncsRecv);
 

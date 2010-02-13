@@ -23,24 +23,23 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "commonheaders.h"
 #include "netlib.h"
 
-extern struct NetlibUser **netlibUser;
-extern int netlibUserCount;
-
-struct NetlibTempSettings {
+struct NetlibTempSettings 
+{
 	DWORD flags;
 	char *szSettingsModule;
 	NETLIBUSERSETTINGS settings;
-} static *tempSettings;
-static int tempSettingsCount;
+};
 
-static const UINT outgoingConnectionsControls[]={
+static LIST <NetlibTempSettings> tempSettings(5);
+
+static const UINT outgoingConnectionsControls[] =
+{
 	IDC_STATIC12,
 	IDC_USEPROXY,
 	  IDC_STATIC21,IDC_PROXYTYPE,
 	  IDC_STATIC22,IDC_PROXYHOST,IDC_STATIC23,IDC_PROXYPORT,IDC_STOFTENPORT,
 	  IDC_PROXYAUTH,
 	    IDC_STATIC31,IDC_PROXYUSER,IDC_STATIC32,IDC_PROXYPASS,
-//	    IDC_PROXYAUTHNTLM,
 	  IDC_PROXYDNS,
 	IDC_SPECIFYPORTSO,
 	  IDC_PORTSRANGEO,
@@ -51,7 +50,6 @@ static const UINT useProxyControls[]={
 	IDC_STATIC22,IDC_PROXYHOST,IDC_STATIC23,IDC_PROXYPORT,IDC_STOFTENPORT,
 	IDC_PROXYAUTH,
 	  IDC_STATIC31,IDC_PROXYUSER,IDC_STATIC32,IDC_PROXYPASS,
-//	  IDC_PROXYAUTHNTLM,
 	IDC_PROXYDNS};
 static const UINT specifyOPortsControls[]={
 	IDC_PORTSRANGEO,
@@ -66,8 +64,9 @@ static const UINT incomingConnectionsControls[]={
 static const UINT specifyPortsControls[]={
 	IDC_PORTSRANGE,
 	IDC_STATIC52};
-static const TCHAR* szProxyTypes[]={_T("<mixed>"),_T("SOCKS4"),_T("SOCKS5"),_T("HTTP"),_T("HTTPS")};
-static const WORD oftenProxyPorts[]={1080,1080,1080,8080,8080};
+
+static const TCHAR* szProxyTypes[]={_T("<mixed>"),_T("SOCKS4"),_T("SOCKS5"),_T("HTTP"),_T("HTTPS"),_T("Internet Explorer")};
+static const WORD oftenProxyPorts[]={1080,1080,1080,8080,8080,8080};
 
 #define M_REFRESHALL      (WM_USER+100)
 #define M_REFRESHENABLING (WM_USER+101)
@@ -87,9 +86,9 @@ static void EnableMultipleControls(HWND hwndDlg,const UINT *controls,int cContro
 static void AddProxyTypeItem(HWND hwndDlg,int type,int selectType)
 {
 	int i;
-	i=SendDlgItemMessage(hwndDlg,IDC_PROXYTYPE,CB_ADDSTRING,0,(LPARAM)(type==0?TranslateTS(szProxyTypes[type]):szProxyTypes[type]));
-	SendDlgItemMessage(hwndDlg,IDC_PROXYTYPE,CB_SETITEMDATA,i,type);
-	if(type==selectType) SendDlgItemMessage(hwndDlg,IDC_PROXYTYPE,CB_SETCURSEL,i,0);
+	i = SendDlgItemMessage(hwndDlg,IDC_PROXYTYPE,CB_ADDSTRING,0,(LPARAM)(type==0?TranslateTS(szProxyTypes[type]):szProxyTypes[type]));
+	SendDlgItemMessage(hwndDlg, IDC_PROXYTYPE, CB_SETITEMDATA, i, type);
+	if (type == selectType) SendDlgItemMessage(hwndDlg, IDC_PROXYTYPE, CB_SETCURSEL, i, 0);
 }
 
 static void CopySettingsStruct(NETLIBUSERSETTINGS *dest,NETLIBUSERSETTINGS *source)
@@ -119,7 +118,6 @@ static void CombineSettingsStructs(NETLIBUSERSETTINGS *dest,DWORD *destFlags,NET
 			if(dest->useProxyAuth!=source->useProxyAuth) dest->useProxyAuth=2;
 			CombineSettingsStrings(&dest->szProxyAuthUser,&source->szProxyAuthUser);
 			CombineSettingsStrings(&dest->szProxyAuthPassword,&source->szProxyAuthPassword);
-			if(dest->useProxyAuthNtlm!=source->useProxyAuthNtlm) dest->useProxyAuthNtlm=2;
 			if(dest->dnsThroughProxy!=source->dnsThroughProxy) dest->dnsThroughProxy=2;
 			if(dest->specifyOutgoingPorts!=source->specifyOutgoingPorts) dest->specifyOutgoingPorts=2;
 			CombineSettingsStrings(&dest->szOutgoingPorts,&source->szOutgoingPorts);
@@ -136,11 +134,10 @@ static void CombineSettingsStructs(NETLIBUSERSETTINGS *dest,DWORD *destFlags,NET
 			if(dest->szProxyAuthUser) dest->szProxyAuthUser=mir_strdup(dest->szProxyAuthUser);
 			dest->szProxyAuthPassword=source->szProxyAuthPassword;
 			if(dest->szProxyAuthPassword) dest->szProxyAuthPassword=mir_strdup(dest->szProxyAuthPassword);
-			dest->useProxyAuthNtlm=source->useProxyAuthNtlm;
 			dest->dnsThroughProxy=source->dnsThroughProxy;
 			dest->specifyOutgoingPorts=source->specifyOutgoingPorts;
 			dest->szOutgoingPorts=source->szOutgoingPorts;
-			if(dest->szOutgoingPorts) dest->szOutgoingPorts=mir_strdup(dest->szOutgoingPorts);
+			if (dest->szOutgoingPorts) dest->szOutgoingPorts=mir_strdup(dest->szOutgoingPorts);
 		}
 	}
 	if(sourceFlags&NUF_INCOMING) {
@@ -167,12 +164,13 @@ static void ChangeSettingIntByCheckbox(HWND hwndDlg,UINT ctrlId,int iUser,int me
 
 	newValue=IsDlgButtonChecked(hwndDlg,ctrlId)!=BST_CHECKED;
 	CheckDlgButton(hwndDlg,ctrlId,newValue?BST_CHECKED:BST_UNCHECKED);
-	if(iUser==-1) {
-		for(i=0;i<tempSettingsCount;i++)
-			if(!(tempSettings[i].flags&NUF_NOOPTIONS))
-				*(int*)(((PBYTE)&tempSettings[i].settings)+memberOffset)=newValue;
+	if (iUser == -1)
+	{
+		for (i=0; i<tempSettings.getCount(); i++)
+			if (!(tempSettings[i]->flags & NUF_NOOPTIONS))
+				*(int*)(((PBYTE)&tempSettings[i]->settings) + memberOffset) = newValue;
 	}
-	else *(int*)(((PBYTE)&tempSettings[iUser].settings)+memberOffset)=newValue;
+	else *(int*)(((PBYTE)&tempSettings[iUser]->settings) + memberOffset)=newValue;
 	SendMessage(hwndDlg,M_REFRESHENABLING,0,0);
 }
 
@@ -184,17 +182,19 @@ static void ChangeSettingStringByEdit(HWND hwndDlg,UINT ctrlId,int iUser,int mem
 	newValueLen=GetWindowTextLength(GetDlgItem(hwndDlg,ctrlId));
 	szNewValue=(char*)mir_alloc(newValueLen+1);
 	GetDlgItemTextA(hwndDlg,ctrlId,szNewValue,newValueLen+1);
-	if(iUser==-1) {
-		for(i=0;i<tempSettingsCount;i++)
-			if(!(tempSettings[i].flags&NUF_NOOPTIONS)) {
-				ppszNew=(char**)(((PBYTE)&tempSettings[i].settings)+memberOffset);
+	if (iUser == -1) 
+	{
+		for (i=0; i<tempSettings.getCount(); ++i)
+			if (!(tempSettings[i]->flags & NUF_NOOPTIONS))
+			{
+				ppszNew=(char**)(((PBYTE)&tempSettings[i]->settings)+memberOffset);
 				if(*ppszNew) mir_free(*ppszNew);
 				*ppszNew=mir_strdup(szNewValue);
 			}
 		mir_free(szNewValue);
 	}
 	else {
-		ppszNew=(char**)(((PBYTE)&tempSettings[iUser].settings)+memberOffset);
+		ppszNew=(char**)(((PBYTE)&tempSettings[iUser]->settings)+memberOffset);
 		if(*ppszNew) mir_free(*ppszNew);
 		*ppszNew=szNewValue;
 	}
@@ -214,7 +214,6 @@ static void WriteSettingsStructToDb(const char *szSettingsModule,NETLIBUSERSETTI
 		lstrcpynA(szEncodedPassword,settings->szProxyAuthPassword?settings->szProxyAuthPassword:"",SIZEOF(szEncodedPassword));
 		CallService(MS_DB_CRYPT_ENCODESTRING,SIZEOF(szEncodedPassword),(LPARAM)szEncodedPassword);
 		DBWriteContactSettingString(NULL,szSettingsModule,"NLProxyAuthPassword",szEncodedPassword);
-		DBWriteContactSettingByte(NULL,szSettingsModule,"NLUseProxyAuthNtlm",(BYTE)settings->useProxyAuthNtlm);
 		DBWriteContactSettingByte(NULL,szSettingsModule,"NLDnsThroughProxy",(BYTE)settings->dnsThroughProxy);
 		DBWriteContactSettingByte(NULL,szSettingsModule,"NLSpecifyOutgoingPorts",(BYTE)settings->specifyOutgoingPorts);
 		DBWriteContactSettingString(NULL,szSettingsModule,"NLOutgoingPorts",settings->szOutgoingPorts?settings->szOutgoingPorts:"");
@@ -228,30 +227,35 @@ static void WriteSettingsStructToDb(const char *szSettingsModule,NETLIBUSERSETTI
 
 void NetlibSaveUserSettingsStruct(const char *szSettingsModule,NETLIBUSERSETTINGS *settings)
 {
-	int iUser,i;
+	int i;
 	NETLIBUSERSETTINGS combinedSettings={0};
 	DWORD flags;
 
 	EnterCriticalSection(&csNetlibUser);
-	for(iUser=0;iUser<netlibUserCount;iUser++)
-		if(!lstrcmpA(szSettingsModule,netlibUser[iUser]->user.szSettingsModule)) break;
-	if(iUser==netlibUserCount) {
+	
+	NetlibUser *thisUser, tUser;
+	tUser.user.szSettingsModule = (char*)szSettingsModule;
+	thisUser = netlibUser.find(&tUser);
+
+	if (thisUser == NULL)
+	{
 		LeaveCriticalSection(&csNetlibUser);
 		return;
 	}
-	NetlibFreeUserSettingsStruct(&netlibUser[iUser]->settings);
-	CopySettingsStruct(&netlibUser[iUser]->settings,settings);
-	WriteSettingsStructToDb(netlibUser[iUser]->user.szSettingsModule,&netlibUser[iUser]->settings,netlibUser[iUser]->user.flags);
-	combinedSettings.cbSize=sizeof(combinedSettings);
-	for(i=0,flags=0;i<netlibUserCount;i++) {
-		if(netlibUser[iUser]->user.flags&NUF_NOOPTIONS) continue;
-		CombineSettingsStructs(&combinedSettings,&flags,&netlibUser[iUser]->settings,netlibUser[iUser]->user.flags);
+
+	NetlibFreeUserSettingsStruct(&thisUser->settings);
+	CopySettingsStruct(&thisUser->settings, settings);
+	WriteSettingsStructToDb(thisUser->user.szSettingsModule, &thisUser->settings, thisUser->user.flags);
+	combinedSettings.cbSize = sizeof(combinedSettings);
+	for (i=0, flags=0; i < netlibUser.getCount(); ++i)
+	{
+		if (thisUser->user.flags & NUF_NOOPTIONS) continue;
+		CombineSettingsStructs(&combinedSettings, &flags, &thisUser->settings, thisUser->user.flags);
 	}
     if(combinedSettings.validateSSL==2) combinedSettings.validateSSL=0;
 	if(combinedSettings.useProxy==2) combinedSettings.useProxy=0;
 	if(combinedSettings.proxyType==0) combinedSettings.proxyType=PROXYTYPE_SOCKS5;
 	if(combinedSettings.useProxyAuth==2) combinedSettings.useProxyAuth=0;
-	if(combinedSettings.useProxyAuthNtlm==2) combinedSettings.useProxyAuthNtlm=0;
 	if(combinedSettings.dnsThroughProxy==2) combinedSettings.dnsThroughProxy=1;
     if(combinedSettings.enableUPnP==2) combinedSettings.enableUPnP=1;
 	if(combinedSettings.specifyIncomingPorts==2) combinedSettings.specifyIncomingPorts=0;
@@ -271,55 +275,64 @@ static INT_PTR CALLBACK DlgProcNetlibOpts(HWND hwndDlg, UINT msg, WPARAM wParam,
 			iItem=SendDlgItemMessage(hwndDlg,IDC_NETLIBUSERS,CB_ADDSTRING,0,(LPARAM)TranslateT("<All connections>"));
 			SendDlgItemMessage(hwndDlg,IDC_NETLIBUSERS,CB_SETITEMDATA,iItem,(LPARAM)-1);
 			SendDlgItemMessage(hwndDlg,IDC_NETLIBUSERS,CB_SETCURSEL,iItem,0);
+			
 			EnterCriticalSection(&csNetlibUser);
-			tempSettingsCount=netlibUserCount;
-			tempSettings=(struct NetlibTempSettings*)mir_alloc(sizeof(struct NetlibTempSettings)*tempSettingsCount);
-			for(iUser=0;iUser<netlibUserCount;iUser++) {
-				tempSettings[iUser].flags=netlibUser[iUser]->user.flags;
-				tempSettings[iUser].szSettingsModule=mir_strdup(netlibUser[iUser]->user.szSettingsModule);
-				CopySettingsStruct(&tempSettings[iUser].settings,&netlibUser[iUser]->settings);
-				if(netlibUser[iUser]->user.flags&NUF_NOOPTIONS) continue;
-				iItem = SendDlgItemMessage(hwndDlg,IDC_NETLIBUSERS,CB_ADDSTRING,0,(LPARAM)netlibUser[iUser]->user.ptszDescriptiveName);
-				SendDlgItemMessage(hwndDlg,IDC_NETLIBUSERS,CB_SETITEMDATA,iItem,iUser);
+			for (iUser = 0; iUser < netlibUser.getCount(); ++iUser)
+			{
+				NetlibTempSettings *thisSettings = (NetlibTempSettings*)mir_calloc(sizeof(NetlibTempSettings));
+				thisSettings->flags = netlibUser[iUser]->user.flags;
+				thisSettings->szSettingsModule = mir_strdup(netlibUser[iUser]->user.szSettingsModule);
+				CopySettingsStruct(&thisSettings->settings, &netlibUser[iUser]->settings);
+				tempSettings.insert(thisSettings);
+
+				if (netlibUser[iUser]->user.flags & NUF_NOOPTIONS) continue;
+				iItem = SendDlgItemMessage(hwndDlg, IDC_NETLIBUSERS, CB_ADDSTRING, 0, 
+					(LPARAM)netlibUser[iUser]->user.ptszDescriptiveName);
+				SendDlgItemMessage(hwndDlg, IDC_NETLIBUSERS,CB_SETITEMDATA, iItem, iUser);
 			}
 			LeaveCriticalSection(&csNetlibUser);
+			
 			SendMessage(hwndDlg,M_REFRESHALL,0,0);
 			return TRUE;
 		}
 		case M_REFRESHALL:
 		{	int iUser=SendDlgItemMessage(hwndDlg,IDC_NETLIBUSERS,CB_GETITEMDATA,SendDlgItemMessage(hwndDlg,IDC_NETLIBUSERS,CB_GETCURSEL,0,0),0);
-			NETLIBUSERSETTINGS settings={0};
+			NETLIBUSERSETTINGS settings = {0};
 			DWORD flags;
 
-			if(iUser==-1) {
+			if (iUser == -1)
+			{
 				int i;
 				settings.cbSize=sizeof(settings);
-				for(i=0,flags=0;i<tempSettingsCount;i++) {
-					if(tempSettings[i].flags&NUF_NOOPTIONS) continue;
-					CombineSettingsStructs(&settings,&flags,&tempSettings[i].settings,tempSettings[i].flags);
+				for (i = 0, flags = 0; i < tempSettings.getCount(); ++i) 
+				{
+					if (tempSettings[i]->flags & NUF_NOOPTIONS) continue;
+					CombineSettingsStructs(&settings, &flags, &tempSettings[i]->settings, tempSettings[i]->flags);
 				}
 			}
-			else {
+			else
+			{
 				NetlibFreeUserSettingsStruct(&settings);
-				CopySettingsStruct(&settings,&tempSettings[iUser].settings);
-				flags=tempSettings[iUser].flags;
+				CopySettingsStruct(&settings, &tempSettings[iUser]->settings);
+				flags = tempSettings[iUser]->flags;
 			}
 			ShowMultipleControls(hwndDlg,outgoingConnectionsControls,SIZEOF(outgoingConnectionsControls),flags&NUF_OUTGOING?SW_SHOW:SW_HIDE);
 			CheckDlgButton(hwndDlg,IDC_USEPROXY,settings.useProxy);
 			SendDlgItemMessage(hwndDlg,IDC_PROXYTYPE,CB_RESETCONTENT,0,0);
-			if(settings.proxyType==0) AddProxyTypeItem(hwndDlg,0,settings.proxyType);
-			AddProxyTypeItem(hwndDlg,PROXYTYPE_SOCKS4,settings.proxyType);
-			AddProxyTypeItem(hwndDlg,PROXYTYPE_SOCKS5,settings.proxyType);
-			if(flags&(NUF_HTTPCONNS|NUF_HTTPGATEWAY)) AddProxyTypeItem(hwndDlg,PROXYTYPE_HTTP,settings.proxyType);
-			if(!(flags&NUF_NOHTTPSOPTION)) AddProxyTypeItem(hwndDlg,PROXYTYPE_HTTPS,settings.proxyType);
+			if (settings.proxyType == 0) AddProxyTypeItem(hwndDlg,0,settings.proxyType);
+			AddProxyTypeItem(hwndDlg, PROXYTYPE_SOCKS4, settings.proxyType);
+			AddProxyTypeItem(hwndDlg, PROXYTYPE_SOCKS5, settings.proxyType);
+			if (flags & (NUF_HTTPCONNS | NUF_HTTPGATEWAY)) AddProxyTypeItem(hwndDlg,PROXYTYPE_HTTP,settings.proxyType);
+			if (!(flags & NUF_NOHTTPSOPTION)) AddProxyTypeItem(hwndDlg,PROXYTYPE_HTTPS,settings.proxyType);
+			if (flags & (NUF_HTTPCONNS | NUF_HTTPGATEWAY) || !(flags & NUF_NOHTTPSOPTION)) 
+				AddProxyTypeItem(hwndDlg,PROXYTYPE_IE,settings.proxyType);
 			SetDlgItemTextA(hwndDlg,IDC_PROXYHOST,settings.szProxyServer?settings.szProxyServer:"");
-			if(settings.wProxyPort) SetDlgItemInt(hwndDlg,IDC_PROXYPORT,settings.wProxyPort,FALSE);
+			if (settings.wProxyPort) SetDlgItemInt(hwndDlg,IDC_PROXYPORT,settings.wProxyPort,FALSE);
 			else SetDlgItemTextA(hwndDlg,IDC_PROXYPORT,"");
 			CheckDlgButton(hwndDlg,IDC_PROXYAUTH,settings.useProxyAuth);
 			SetDlgItemTextA(hwndDlg,IDC_PROXYUSER,settings.szProxyAuthUser?settings.szProxyAuthUser:"");
 			SetDlgItemTextA(hwndDlg,IDC_PROXYPASS,settings.szProxyAuthPassword?settings.szProxyAuthPassword:"");
 			CheckDlgButton(hwndDlg,IDC_PROXYDNS,settings.dnsThroughProxy);
-			CheckDlgButton(hwndDlg,IDC_PROXYAUTHNTLM,settings.useProxyAuthNtlm);
 			CheckDlgButton(hwndDlg,IDC_VALIDATESSL,settings.validateSSL);
 
 			ShowMultipleControls(hwndDlg,incomingConnectionsControls,SIZEOF(incomingConnectionsControls),flags&NUF_INCOMING?SW_SHOW:SW_HIDE);
@@ -342,40 +355,48 @@ static INT_PTR CALLBACK DlgProcNetlibOpts(HWND hwndDlg, UINT msg, WPARAM wParam,
 			selectedProxyType=SendDlgItemMessage(hwndDlg,IDC_PROXYTYPE,CB_GETITEMDATA,SendDlgItemMessage(hwndDlg,IDC_PROXYTYPE,CB_GETCURSEL,0,0),0);
 			mir_sntprintf(str, SIZEOF(str), TranslateT("(often %d)"),oftenProxyPorts[selectedProxyType]);
 			SetDlgItemText(hwndDlg,IDC_STOFTENPORT,str);
-			if(IsDlgButtonChecked(hwndDlg,IDC_USEPROXY)!=BST_UNCHECKED) {
-				int enableAuth=0,enableUser=0,enablePass=0,enableNtlm=0;
-				EnableMultipleControls(hwndDlg,useProxyControls,SIZEOF(useProxyControls),TRUE);
-				if(selectedProxyType==0) {
+			if (IsDlgButtonChecked(hwndDlg,IDC_USEPROXY) != BST_UNCHECKED)
+			{
+				int enableAuth = 0, enableUser = 0, enablePass = 0, enableServer = 1;
+				EnableMultipleControls(hwndDlg, useProxyControls, SIZEOF(useProxyControls), TRUE);
+				if (selectedProxyType == 0)
+				{
 					int i;
-					for(i=0;i<tempSettingsCount;i++) {
-						if(tempSettings[i].flags&NUF_NOOPTIONS || !(tempSettings[i].flags&NUF_OUTGOING) || !tempSettings[i].settings.useProxy) continue;
-						if(tempSettings[i].settings.proxyType==PROXYTYPE_SOCKS4) enableUser=1;
-						else {
+					for (i = 0; i < tempSettings.getCount(); ++i)
+					{
+						if (!tempSettings[i]->settings.useProxy ||
+							tempSettings[i]->flags & NUF_NOOPTIONS || !(tempSettings[i]->flags & NUF_OUTGOING))
+							continue;
+
+						if (tempSettings[i]->settings.proxyType==PROXYTYPE_SOCKS4) enableUser=1;
+						else 
+						{
 							enableAuth=1;
-							if(tempSettings[i].settings.useProxyAuth) {
-								if(tempSettings[i].settings.proxyType==PROXYTYPE_HTTP || tempSettings[i].settings.proxyType==PROXYTYPE_HTTPS)
-									enableNtlm=1;
+							if (tempSettings[i]->settings.useProxyAuth)
+							{
 								enableUser=enablePass=1;
 							}
 						}
 					}
 				}
-				else {
-					if(selectedProxyType==PROXYTYPE_SOCKS4) enableUser=1;
-					else {
+				else 
+				{
+					if (selectedProxyType == PROXYTYPE_SOCKS4) enableUser=1;
+					else if (selectedProxyType == PROXYTYPE_IE) enableServer=0;
+					else 
+					{
 						enableAuth=1;
-						if(IsDlgButtonChecked(hwndDlg,IDC_PROXYAUTH)!=BST_UNCHECKED) {
-							enableNtlm=selectedProxyType==PROXYTYPE_HTTP || selectedProxyType==PROXYTYPE_HTTPS;
-							enableUser=enablePass=1;
-						}
+						if (IsDlgButtonChecked(hwndDlg,IDC_PROXYAUTH) != BST_UNCHECKED)
+							enableUser = enablePass = 1;
 					}
 				}
-				EnableWindow(GetDlgItem(hwndDlg,IDC_PROXYAUTH),enableAuth);
-				EnableWindow(GetDlgItem(hwndDlg,IDC_STATIC31),enableUser);
-				EnableWindow(GetDlgItem(hwndDlg,IDC_PROXYUSER),enableUser);
-				EnableWindow(GetDlgItem(hwndDlg,IDC_STATIC32),enablePass);
-				EnableWindow(GetDlgItem(hwndDlg,IDC_PROXYPASS),enablePass);
-				EnableWindow(GetDlgItem(hwndDlg,IDC_PROXYAUTHNTLM),enableNtlm);
+				EnableWindow(GetDlgItem(hwndDlg,IDC_PROXYAUTH), enableAuth);
+				EnableWindow(GetDlgItem(hwndDlg,IDC_STATIC31),  enableUser);
+				EnableWindow(GetDlgItem(hwndDlg,IDC_PROXYUSER), enableUser);
+				EnableWindow(GetDlgItem(hwndDlg,IDC_STATIC32),  enablePass);
+				EnableWindow(GetDlgItem(hwndDlg,IDC_PROXYPASS), enablePass);
+				EnableWindow(GetDlgItem(hwndDlg,IDC_PROXYHOST), enableServer);
+				EnableWindow(GetDlgItem(hwndDlg,IDC_PROXYPORT), enableServer);
 			}
 			else EnableMultipleControls(hwndDlg,useProxyControls,SIZEOF(useProxyControls),FALSE);
 			EnableMultipleControls(hwndDlg,specifyPortsControls,SIZEOF(specifyPortsControls),IsDlgButtonChecked(hwndDlg,IDC_SPECIFYPORTS)!=BST_UNCHECKED);
@@ -384,31 +405,37 @@ static INT_PTR CALLBACK DlgProcNetlibOpts(HWND hwndDlg, UINT msg, WPARAM wParam,
 		}
 		case WM_COMMAND:
 		{	int iUser=SendDlgItemMessage(hwndDlg,IDC_NETLIBUSERS,CB_GETITEMDATA,SendDlgItemMessage(hwndDlg,IDC_NETLIBUSERS,CB_GETCURSEL,0,0),0);
-			switch(LOWORD(wParam)) {
+			switch(LOWORD(wParam)) 
+			{
 				case IDC_NETLIBUSERS:
 					if(HIWORD(wParam)==CBN_SELCHANGE) SendMessage(hwndDlg,M_REFRESHALL,0,0);
 					return 0;
+
 				case IDC_LOGOPTIONS:
 					NetlibLogShowOptions();
 					return 0;
+
 				case IDC_PROXYTYPE:
-					if(HIWORD(wParam)!=CBN_SELCHANGE) return 0;
+					if (HIWORD(wParam) != CBN_SELCHANGE) return 0;
 					{	int newValue,i;
-						newValue=SendDlgItemMessage(hwndDlg,IDC_PROXYTYPE,CB_GETITEMDATA,SendDlgItemMessage(hwndDlg,IDC_PROXYTYPE,CB_GETCURSEL,0,0),0);
-						if(iUser==-1) {
-							if(newValue==0) return 0;
-							for(i=0;i<tempSettingsCount;i++) {
-								if(tempSettings[i].flags&NUF_NOOPTIONS) continue;
-								if(newValue==PROXYTYPE_HTTP && !(tempSettings[i].flags&(NUF_HTTPCONNS|NUF_HTTPGATEWAY)))
-									tempSettings[i].settings.proxyType=PROXYTYPE_HTTPS;
-								else if(newValue==PROXYTYPE_HTTPS && tempSettings[i].flags&NUF_NOHTTPSOPTION)
-									tempSettings[i].settings.proxyType=PROXYTYPE_HTTP;
-								else tempSettings[i].settings.proxyType=newValue;
+						newValue = SendDlgItemMessage(hwndDlg,IDC_PROXYTYPE,CB_GETITEMDATA,SendDlgItemMessage(hwndDlg,IDC_PROXYTYPE,CB_GETCURSEL,0,0),0);
+						if (iUser == -1)
+						{
+							if (newValue == 0) return 0;
+							for (i = 0; i < tempSettings.getCount(); ++i)
+							{
+								if (tempSettings[i]->flags & NUF_NOOPTIONS) continue;
+								if (newValue == PROXYTYPE_HTTP && !(tempSettings[i]->flags & (NUF_HTTPCONNS|NUF_HTTPGATEWAY)))
+									tempSettings[i]->settings.proxyType = PROXYTYPE_HTTPS;
+								else if (newValue == PROXYTYPE_HTTPS && tempSettings[i]->flags & NUF_NOHTTPSOPTION)
+									tempSettings[i]->settings.proxyType = PROXYTYPE_HTTP;
+								else tempSettings[i]->settings.proxyType = newValue;
 							}
-							SendMessage(hwndDlg,M_REFRESHALL,0,0);
+							SendMessage(hwndDlg, M_REFRESHALL, 0, 0);
 						}
-						else {
-							tempSettings[iUser].settings.proxyType=newValue;
+						else 
+						{
+							tempSettings[iUser]->settings.proxyType = newValue;
 							SendMessage(hwndDlg,M_REFRESHENABLING,0,0);
 						}
 					}
@@ -418,9 +445,6 @@ static INT_PTR CALLBACK DlgProcNetlibOpts(HWND hwndDlg, UINT msg, WPARAM wParam,
 					break;
 				case IDC_PROXYAUTH:
 					ChangeSettingIntByCheckbox(hwndDlg,LOWORD(wParam),iUser,offsetof(NETLIBUSERSETTINGS,useProxyAuth));
-					break;
-				case IDC_PROXYAUTHNTLM:
-					ChangeSettingIntByCheckbox(hwndDlg,LOWORD(wParam),iUser,offsetof(NETLIBUSERSETTINGS,useProxyAuthNtlm));
 					break;
 				case IDC_PROXYDNS:
 					ChangeSettingIntByCheckbox(hwndDlg,LOWORD(wParam),iUser,offsetof(NETLIBUSERSETTINGS,dnsThroughProxy));
@@ -445,12 +469,13 @@ static INT_PTR CALLBACK DlgProcNetlibOpts(HWND hwndDlg, UINT msg, WPARAM wParam,
 					if(HIWORD(wParam)!=EN_CHANGE || (HWND)lParam!=GetFocus()) return 0;
 					{	int newValue,i;
 						newValue=GetDlgItemInt(hwndDlg,LOWORD(wParam),NULL,FALSE);
-						if(iUser==-1) {
-							for(i=0;i<tempSettingsCount;i++)
-								if(!(tempSettings[i].flags&NUF_NOOPTIONS))
-									tempSettings[i].settings.wProxyPort=newValue;
+						if (iUser == -1)
+						{
+							for (i = 0; i < tempSettings.getCount(); ++i)
+								if (!(tempSettings[i]->flags & NUF_NOOPTIONS))
+									tempSettings[i]->settings.wProxyPort = newValue;
 						}
-						else tempSettings[iUser].settings.wProxyPort=newValue;
+						else tempSettings[iUser]->settings.wProxyPort = newValue;
 					}
 					break;
 				case IDC_PROXYUSER:
@@ -481,8 +506,9 @@ static INT_PTR CALLBACK DlgProcNetlibOpts(HWND hwndDlg, UINT msg, WPARAM wParam,
 					{
 						case PSN_APPLY:
 						{	int iUser;
-							for(iUser=0;iUser<tempSettingsCount;iUser++)
-								NetlibSaveUserSettingsStruct(tempSettings[iUser].szSettingsModule,&tempSettings[iUser].settings);
+							for (iUser = 0; iUser < tempSettings.getCount(); iUser++)
+								NetlibSaveUserSettingsStruct(tempSettings[iUser]->szSettingsModule, 
+									&tempSettings[iUser]->settings);
 							return TRUE;
 						}
 					}
@@ -491,11 +517,13 @@ static INT_PTR CALLBACK DlgProcNetlibOpts(HWND hwndDlg, UINT msg, WPARAM wParam,
 			break;
 		case WM_DESTROY:
 		{	int iUser;
-			for(iUser=0;iUser<tempSettingsCount;iUser++) {
-				mir_free(tempSettings[iUser].szSettingsModule);
-				NetlibFreeUserSettingsStruct(&tempSettings[iUser].settings);
+			for (iUser = 0; iUser < tempSettings.getCount(); ++iUser) 
+			{
+				mir_free(tempSettings[iUser]->szSettingsModule);
+				NetlibFreeUserSettingsStruct(&tempSettings[iUser]->settings);
+				mir_free(tempSettings[iUser]);
 			}
-			mir_free(tempSettings);
+			tempSettings.destroy();
 			break;
 		}
 	}
@@ -505,15 +533,14 @@ static INT_PTR CALLBACK DlgProcNetlibOpts(HWND hwndDlg, UINT msg, WPARAM wParam,
 static UINT expertOnlyControls[]={IDC_LOGOPTIONS};
 int NetlibOptInitialise(WPARAM wParam,LPARAM)
 {
-	OPTIONSDIALOGPAGE odp={0};
-	int i,optionsCount;
-
+	int optionsCount = 0;
 	EnterCriticalSection(&csNetlibUser);
-	for(i=0,optionsCount=0;i<netlibUserCount;i++)
-		if(!(netlibUser[i]->user.flags&NUF_NOOPTIONS)) optionsCount++;
+	for (int i = 0; i < netlibUser.getCount(); ++i)
+		if (!(netlibUser[i]->user.flags & NUF_NOOPTIONS)) ++optionsCount;
 	LeaveCriticalSection(&csNetlibUser);
-	if ( optionsCount == 0 )
-		return 0;
+	if (optionsCount == 0) return 0;
+
+	OPTIONSDIALOGPAGE odp = { 0 };
 
 	odp.cbSize = sizeof(odp);
 	odp.position = 900000000;

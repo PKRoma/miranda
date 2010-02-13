@@ -46,13 +46,6 @@ struct LangPackStruct {
 	DWORD defaultANSICp;
 } static langPack;
 
-static void TrimString(char *str)
-{
-	int start, len = lstrlenA( rtrim( str ));
-	for( start=0; str[start] && (unsigned char)str[start]<=' '; start++ );
-	MoveMemory(str, str+start, len-start+1);
-}
-
 static int IsEmpty(char *str)
 {
 	int i = 0;
@@ -183,26 +176,26 @@ static int LoadLangPack(const TCHAR *szLangPack)
 	fp = _tfopen(szLangPack,_T("rt"));
 	if(fp==NULL) return 1;
 	fgets(line,SIZEOF(line),fp);
-	TrimString(line);
+	lrtrim(line);
 	if(lstrcmpA(line,"Miranda Language Pack Version 1")) {fclose(fp); return 2;}
 	//headers
 	while(!feof(fp)) {
 		startOfLine=ftell(fp);
 		if(fgets(line,SIZEOF(line),fp)==NULL) break;
-		TrimString(line);
+		lrtrim(line);
 		if(IsEmpty(line) || line[0]==';' || line[0]==0) continue;
 		if(line[0]=='[') break;
 		pszColon=strchr(line,':');
 		if(pszColon==NULL) {fclose(fp); return 3;}
 		*pszColon=0;
-		if(!lstrcmpA(line,"Language")) {mir_snprintf(langPack.language,sizeof(langPack.language),"%s",pszColon+1); TrimString(langPack.language);}
-		else if(!lstrcmpA(line,"Last-Modified-Using")) {mir_snprintf(langPack.lastModifiedUsing,sizeof(langPack.lastModifiedUsing),"%s",pszColon+1); TrimString(langPack.lastModifiedUsing);}
-		else if(!lstrcmpA(line,"Authors")) {mir_snprintf(langPack.authors,sizeof(langPack.authors),"%s",pszColon+1); TrimString(langPack.authors);}
-		else if(!lstrcmpA(line,"Author-email")) {mir_snprintf(langPack.authorEmail,sizeof(langPack.authorEmail),"%s",pszColon+1); TrimString(langPack.authorEmail);}
+		if(!lstrcmpA(line,"Language")) {mir_snprintf(langPack.language,sizeof(langPack.language),"%s",pszColon+1); lrtrim(langPack.language);}
+		else if(!lstrcmpA(line,"Last-Modified-Using")) {mir_snprintf(langPack.lastModifiedUsing,sizeof(langPack.lastModifiedUsing),"%s",pszColon+1); lrtrim(langPack.lastModifiedUsing);}
+		else if(!lstrcmpA(line,"Authors")) {mir_snprintf(langPack.authors,sizeof(langPack.authors),"%s",pszColon+1); lrtrim(langPack.authors);}
+		else if(!lstrcmpA(line,"Author-email")) {mir_snprintf(langPack.authorEmail,sizeof(langPack.authorEmail),"%s",pszColon+1); lrtrim(langPack.authorEmail);}
 		else if(!lstrcmpA(line, "Locale")) {
 			char szBuf[20], *stopped;
 
-			TrimString(pszColon + 1);
+			lrtrim(pszColon + 1);
 			langID = (USHORT)strtol(pszColon + 1, &stopped, 16);
 			langPack.localeID = MAKELCID(langID, 0);
 			GetLocaleInfoA(langPack.localeID, LOCALE_IDEFAULTANSICODEPAGE, szBuf, 10);

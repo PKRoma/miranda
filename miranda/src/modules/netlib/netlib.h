@@ -27,7 +27,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define NLH_BOUNDPORT    'BIND'
 #define NLH_PACKETRECVER 'PCKT'
 
-struct NetlibUser {
+struct NetlibUser 
+{
 	int handleType;
 	NETLIBUSER user;
 	NETLIBUSERSETTINGS settings;
@@ -70,6 +71,9 @@ struct NetlibConnection
 	HSSL hSsl;
 	struct NetlibHTTPProxyPacketQueue * pHttpProxyPacketQueue;
 	char *szNewUrl;
+	char *szProxyServer;
+	WORD wProxyPort;
+	int proxyType;
 	int pollingTimeout;
 	NETLIBOPENCONNECTION nloc;
 };
@@ -105,6 +109,13 @@ INT_PTR NetlibBase64Decode(WPARAM wParam,LPARAM lParam);
 INT_PTR NetlibHttpUrlEncode(WPARAM wParam,LPARAM lParam);
 
 extern CRITICAL_SECTION csNetlibUser;
+extern LIST<NetlibUser> netlibUser;
+
+//netlibautoproxy.c
+void NetlibLoadIeProxy(void);
+void NetlibUnloadIeProxy(void);
+char* NetlibGetIeProxy(char *szUrl);
+bool NetlibGetIeProxyConn(NetlibConnection *nlc);
 
 //netlibbind.c
 int NetlibFreeBoundPort(struct NetlibBoundPort *nlbp);

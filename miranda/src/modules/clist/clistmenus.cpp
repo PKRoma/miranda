@@ -454,26 +454,6 @@ BOOL FindMenuHandleByGlobalID(HMENU hMenu, PMO_IntMenuItem id, MenuItemData* itd
 	return FALSE;
 }
 
-BOOL __inline wildcmp(char * name, char * mask)
-{
-	char * last='\0';
-	for(;; mask++, name++)
-	{
-		if(*mask != '?' && *mask != *name) break;
-		if(*name == '\0') return ((BOOL)!*mask);
-	}
-	if(*mask != '*') return FALSE;
-	for(;; mask++, name++)
-	{
-		while(*mask == '*')
-		{
-			last = mask++;
-			if(*mask == '\0') return ((BOOL)!*mask);   /* true */
-		}
-		if(*name == '\0') return ((BOOL)!*mask);      /* *mask == EOS */
-		if(*mask != '?' && *mask != *name) name -= (size_t)(mask - last) - 1, mask = last;
-}	}
-
 INT_PTR StatusMenuCheckService(WPARAM wParam, LPARAM)
 {
 	PCheckProcParam pcpp = ( PCheckProcParam )wParam;

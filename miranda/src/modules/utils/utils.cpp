@@ -488,32 +488,78 @@ static INT_PTR GenerateRandom(WPARAM wParam, LPARAM lParam)
 /////////////////////////////////////////////////////////////////////////////////////////
 
 #if defined( _UNICODE )
-char* rtrim( char* string )
+char* rtrim(char* str)
 {
-   char* p = string + strlen( string ) - 1;
-
-   while ( p >= string ) {
-		if ( *p != ' ' && *p != '\t' && *p != '\n' && *p != '\r' )
-         break;
-
-		*p-- = 0;
-   }
-   return string;
+	if (str == NULL) return NULL;
+	char* p = strchr(str, 0);
+	while (--p >= str)
+	{
+		switch (*p)
+		{
+		case ' ': case '\t': case '\n': case '\r':
+			*p = 0; break;
+		default:
+			return str;
+		}
+	}
+	return str;
 }
 #endif
 
-TCHAR* rtrim( TCHAR *string )
+TCHAR* rtrim(TCHAR *str)
 {
-   TCHAR* p = string + _tcslen( string ) - 1;
-
-   while ( p >= string ) {
-		if ( *p != ' ' && *p != '\t' && *p != '\n' && *p != '\r' )
-         break;
-
-		*p-- = 0;
-   }
-   return string;
+	if (str == NULL) return NULL;
+	TCHAR* p = _tcschr(str, 0);
+	while (--p >= str)
+	{
+		switch (*p)
+		{
+		case ' ': case '\t': case '\n': case '\r':
+			*p = 0; break;
+		default:
+			return str;
+		}
+	}
+	return str;
 }
+
+char* ltrim(char* str)
+{
+	if (str == NULL) return NULL;
+	char* p = str;
+
+	for (;;)
+	{
+		switch (*p)
+		{
+		case ' ': case '\t': case '\n': case '\r':
+			++p; break;
+		default:
+			memmove(str, p, strlen(p) + 1);
+			return str;
+		}
+	}
+}
+
+bool wildcmp(char * name, char * mask)
+{
+	char * last='\0';
+	for(;; mask++, name++)
+	{
+		if(*mask != '?' && *mask != *name) break;
+		if(*name == '\0') return ((BOOL)!*mask);
+	}
+	if(*mask != '*') return FALSE;
+	for(;; mask++, name++)
+	{
+		while(*mask == '*')
+		{
+			last = mask++;
+			if(*mask == '\0') return ((BOOL)!*mask);   /* true */
+		}
+		if(*name == '\0') return ((BOOL)!*mask);      /* *mask == EOS */
+		if(*mask != '?' && *mask != *name) name -= (size_t)(mask - last) - 1, mask = last;
+}	}
 
 /////////////////////////////////////////////////////////////////////////////////////////
 

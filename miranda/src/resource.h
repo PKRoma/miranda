@@ -235,7 +235,6 @@
 #define IDC_STATIC22                    1157
 #define IDC_STATIC31                    1158
 #define IDC_STATIC32                    1159
-#define IDC_PROXYAUTHNTLM               1160
 #define IDC_CHANGE                      1164
 #define IDC_PREVIEW                     1165
 #define IDC_CHOOSE                      1169

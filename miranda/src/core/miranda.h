@@ -248,6 +248,10 @@ __inline static INT_PTR CallProtoService( const char* szModule, const char* szSe
 /**** utils.c **************************************************************************/
 
 #if defined( _UNICODE )
-	char*  rtrim( char* string );
+	char*  rtrim(char* str);
 #endif
-TCHAR* rtrim( TCHAR* string );
+TCHAR* rtrim(TCHAR* str);
+char*  ltrim(char* str);
+__inline char* lrtrim(char* str) { return ltrim(rtrim(str)); };
+
+bool wildcmp(char * name, char * mask);
