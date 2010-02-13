@@ -1,7 +1,7 @@
 #include "commonheaders.h"
 #include "genmenu.h"
 
-#define STR_SEPARATOR _T("---------------------------------------------")
+#define STR_SEPARATOR _T("-----------------------------------")
 
 extern int DefaultImageListColorDepth;
 long handleCustomDraw(HWND hWndTreeView, LPNMTVCUSTOMDRAW pNMTVCD);
