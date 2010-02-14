@@ -382,9 +382,9 @@ static INT_PTR CALLBACK DlgProcNetlibOpts(HWND hwndDlg, UINT msg, WPARAM wParam,
 				else 
 				{
 					if (selectedProxyType == PROXYTYPE_SOCKS4) enableUser=1;
-					else if (selectedProxyType == PROXYTYPE_IE) enableServer=0;
 					else 
 					{
+						if (selectedProxyType == PROXYTYPE_IE) enableServer=0;
 						enableAuth=1;
 						if (IsDlgButtonChecked(hwndDlg,IDC_PROXYAUTH) != BST_UNCHECKED)
 							enableUser = enablePass = 1;
