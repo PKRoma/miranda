@@ -3,6 +3,12 @@
                    
                            www.miranda-im.org
      
+* New in 0.8.15
+Bugfixes:
+ - Jabber: Disable TLS in the Facebook Chat account type
+ - Yahoo: Improved offline messaging support for Meta plugin
+
+
 * New in 0.8.14
 Enhancements:
  - Jabber: Added a "Facebook Chat" type to setup Facebook accounts easily
