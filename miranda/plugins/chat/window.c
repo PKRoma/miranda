@@ -19,8 +19,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
 #include "chat.h"
-#include <Initguid.h >
-#include <Oleacc.h>
 
 extern HBRUSH		hEditBkgBrush;
 extern HBRUSH		hListBkgBrush;
@@ -42,7 +40,6 @@ static WNDPROC OldTabProc;
 static WNDPROC OldFilterButtonProc;
 static WNDPROC OldLogProc;
 static HKL hkl = NULL;
-static IAccPropServices* pAccPropServicesForNickList = NULL;
 
 typedef struct
 {
@@ -1177,17 +1174,19 @@ static void __cdecl phase2(void * lParam)
 INT_PTR CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 {
 	SESSION_INFO* si;
-	si = (SESSION_INFO*)GetWindowLongPtr(hwndDlg,GWLP_USERDATA);
+
+	si = (SESSION_INFO*)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
+	
 	switch (uMsg) {
 	case WM_INITDIALOG:
 		{
-			SESSION_INFO* psi = (SESSION_INFO*)lParam;
 			int mask;
 			HWND hNickList = GetDlgItem(hwndDlg,IDC_LIST);
-			HRESULT hr = CoCreateInstance(&CLSID_AccPropServices, NULL, CLSCTX_SERVER, &IID_IAccPropServices, /*(void**)*/&pAccPropServicesForNickList);
-			if (FAILED(hr)) pAccPropServicesForNickList=NULL;
+			si = (SESSION_INFO*)lParam;
+			si->pAccPropServicesForNickList = NULL;
+			CoCreateInstance(&CLSID_AccPropServices, NULL, CLSCTX_SERVER, &IID_IAccPropServices, &si->pAccPropServicesForNickList);
 			TranslateDialogDefault(hwndDlg);
-			SetWindowLongPtr(hwndDlg,GWLP_USERDATA,(LONG_PTR)psi);
+			SetWindowLongPtr(hwndDlg, GWLP_USERDATA, (LONG_PTR)si);
 			OldSplitterProc=(WNDPROC)SetWindowLongPtr(GetDlgItem(hwndDlg,IDC_SPLITTERX),GWLP_WNDPROC,(LONG_PTR)SplitterSubclassProc);
 			SetWindowLongPtr(GetDlgItem(hwndDlg,IDC_SPLITTERY),GWLP_WNDPROC,(LONG_PTR)SplitterSubclassProc);
 			OldNicklistProc=(WNDPROC)SetWindowLongPtr(hNickList,GWLP_WNDPROC,(LONG_PTR)NicklistSubclassProc);
@@ -1207,15 +1206,15 @@ INT_PTR CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 			//			RichUtil_SubClass(GetDlgItem(hwndDlg, IDC_MESSAGE));
 			//			RichUtil_SubClass(GetDlgItem(hwndDlg, IDC_LOG));
 
-			psi->hwndStatus = CreateWindowEx(0, STATUSCLASSNAME, NULL, WS_CHILD | WS_VISIBLE | SBARS_SIZEGRIP| SBT_TOOLTIPS , 0, 0, 0, 0, hwndDlg, NULL, g_hInst, NULL);
-			SendMessage(psi->hwndStatus,SB_SETMINHEIGHT,GetSystemMetrics(SM_CYSMICON),0);
+			si->hwndStatus = CreateWindowEx(0, STATUSCLASSNAME, NULL, WS_CHILD | WS_VISIBLE | SBARS_SIZEGRIP| SBT_TOOLTIPS , 0, 0, 0, 0, hwndDlg, NULL, g_hInst, NULL);
+			SendMessage(si->hwndStatus,SB_SETMINHEIGHT,GetSystemMetrics(SM_CYSMICON),0);
 			TabCtrl_SetMinTabWidth(GetDlgItem(hwndDlg, IDC_TAB), 80);
 			TabCtrl_SetImageList(GetDlgItem(hwndDlg, IDC_TAB), hIconsList);
 
 			// enable tooltips
-			psi->iOldItemID = -1;
-			psi->hwndTooltip = CreateWindow(TOOLTIPS_CLASS,NULL,TTS_ALWAYSTIP,CW_USEDEFAULT,CW_USEDEFAULT,CW_USEDEFAULT,CW_USEDEFAULT,hNickList,(HMENU)NULL,g_hInst,NULL);
-			SetWindowPos(psi->hwndTooltip, HWND_TOPMOST,0, 0, 0, 0,SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
+			si->iOldItemID = -1;
+			si->hwndTooltip = CreateWindow(TOOLTIPS_CLASS,NULL,TTS_ALWAYSTIP,CW_USEDEFAULT,CW_USEDEFAULT,CW_USEDEFAULT,CW_USEDEFAULT,hNickList,(HMENU)NULL,g_hInst,NULL);
+			SetWindowPos(si->hwndTooltip, HWND_TOPMOST,0, 0, 0, 0,SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
 			{
 				TOOLINFO ti = {0};
 				ti.cbSize = sizeof(TOOLINFO);
@@ -1225,9 +1224,9 @@ INT_PTR CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 				ti.uId    = (UINT_PTR)hNickList;
 				ti.lpszText  = LPSTR_TEXTCALLBACK;
 				//GetClientRect( hNickList, &ti.rect );
-				SendMessage( psi->hwndTooltip, TTM_ADDTOOL, 0, ( LPARAM )&ti );
-				SendMessage( psi->hwndTooltip, TTM_SETDELAYTIME, TTDT_AUTOPOP, 20000 );
-				SendMessage( psi->hwndTooltip, TTM_SETMAXTIPWIDTH, 0, 300);
+				SendMessage( si->hwndTooltip, TTM_ADDTOOL, 0, ( LPARAM )&ti );
+				SendMessage( si->hwndTooltip, TTM_SETDELAYTIME, TTDT_AUTOPOP, 20000 );
+				SendMessage( si->hwndTooltip, TTM_SETMAXTIPWIDTH, 0, 300);
 
 				//SendMessage( psi->hwndTooltip, TTM_TRACKACTIVATE, TRUE, ( LPARAM )&ti );
 			}
@@ -1903,7 +1902,8 @@ END_REMOVETAB:
 					SetTextColor(dis->hDC, ui->iStatusEx == 0?g_Settings.crUserListColor:g_Settings.crUserListHeadingsColor);
 					TextOut(dis->hDC, dis->rcItem.left+x_offset, dis->rcItem.top, ui->pszNick, lstrlen(ui->pszNick));
 					SelectObject(dis->hDC, hOldFont);
-					if (pAccPropServicesForNickList) pAccPropServicesForNickList->lpVtbl->SetHwndPropStr(pAccPropServicesForNickList,GetDlgItem(hwndDlg,IDC_LIST), OBJID_CLIENT, dis->itemID+1, PROPID_ACC_NAME, ui->pszNick);
+					if (si->pAccPropServicesForNickList) si->pAccPropServicesForNickList->lpVtbl->SetHwndPropStr(si->pAccPropServicesForNickList,
+							GetDlgItem(hwndDlg,IDC_LIST), OBJID_CLIENT, dis->itemID+1, PROPID_ACC_NAME, ui->pszNick);
 				}
 				return TRUE;
 		}	}
@@ -2727,7 +2727,7 @@ LABEL_SHOWWINDOW:
 		}
 		DestroyWindow( si->hwndTooltip );
 		si->hwndTooltip = NULL;
-		if (pAccPropServicesForNickList) pAccPropServicesForNickList->lpVtbl->Release(pAccPropServicesForNickList);
+		if (si->pAccPropServicesForNickList) si->pAccPropServicesForNickList->lpVtbl->Release(si->pAccPropServicesForNickList);
 		SetWindowLongPtr(hwndDlg,GWLP_USERDATA,0);
 		SetWindowLongPtr(GetDlgItem(hwndDlg,IDC_SPLITTERX),GWLP_WNDPROC,(LONG_PTR)OldSplitterProc);
 		SetWindowLongPtr(GetDlgItem(hwndDlg,IDC_SPLITTERY),GWLP_WNDPROC,(LONG_PTR)OldSplitterProc);
