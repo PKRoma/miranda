@@ -708,15 +708,20 @@ typedef struct
 //#include <stdarg.h> and <stdio.h> before including this header in order to
 //use it.
 #if defined va_start && (defined _STDIO_DEFINED || defined _STDIO_H_) && (!defined NETLIB_NOLOGGING)
-static __inline INT_PTR Netlib_Logf(HANDLE hUser,const char *fmt,...)
+static INT_PTR Netlib_Logf(HANDLE hUser,const char *fmt,...)
 {
 	va_list va;
 	char szText[1024];
 
-	va_start(va,fmt);
-	mir_vsnprintf(szText,sizeof(szText),fmt,va);
-	va_end(va);
-	return CallService(MS_NETLIB_LOG,(WPARAM)hUser,(LPARAM)szText);
+	__try
+	{
+		va_start(va,fmt);
+		mir_vsnprintf(szText,sizeof(szText),fmt,va);
+		va_end(va);
+		return CallService(MS_NETLIB_LOG,(WPARAM)hUser,(LPARAM)szText);
+	}
+	__except(EXCEPTION_EXECUTE_HANDLER) {}
+	return 0;
 }
 #endif //defined va_start
 
