@@ -708,7 +708,7 @@ typedef struct
 //#include <stdarg.h> and <stdio.h> before including this header in order to
 //use it.
 #if defined va_start && (defined _STDIO_DEFINED || defined _STDIO_H_) && (!defined NETLIB_NOLOGGING)
-static INT_PTR Netlib_Logf(HANDLE hUser,const char *fmt,...)
+__declspec(noinline) static INT_PTR Netlib_Logf(HANDLE hUser,const char *fmt,...)
 {
 	va_list va;
 	char szText[1024];
