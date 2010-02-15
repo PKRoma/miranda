@@ -180,20 +180,35 @@ static INT_PTR DeleteGroup(WPARAM wParam, LPARAM)
 		pszLastBackslash[0] = '\0';
 	else
 		szNewParent[0] = '\0';
-	hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
-	do {
+
+	CLISTGROUPCHANGE grpChg = { sizeof(CLISTGROUPCHANGE), NULL, NULL };
+
+	for (hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDFIRST, 0, 0); 
+		 hContact ; 
+		 hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM) hContact, 0))
+	{
 		if (DBGetContactSettingTString(hContact, "CList", "Group", &dbv))
 			continue;
-		if (_tcscmp(dbv.ptszVal, name)) {
+
+		if (_tcscmp(dbv.ptszVal, name)) 
+		{
 			DBFreeVariant(&dbv);
 			continue;
 		}
 		DBFreeVariant(&dbv);
+
 		if (szNewParent[0])
+		{
 			DBWriteContactSettingTString(hContact, "CList", "Group", szNewParent);
+			grpChg.pszNewName = szNewParent;
+		}
 		else
+		{
 			DBDeleteContactSetting(hContact, "CList", "Group");
-	} while ((hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM) hContact, 0)) != NULL);
+			grpChg.pszNewName = NULL;
+		}
+		NotifyEventHooks(hGroupChangeEvent, wParam, (LPARAM)&grpChg);
+	} 
 	//shuffle list of groups up to fill gap
 	for (i = wParam - 1;; i++) {
 		_itoa(i + 1, str, 10);
