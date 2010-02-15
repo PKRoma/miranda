@@ -244,6 +244,8 @@ void CAimProto::add_contact_to_group(HANDLE hContact, const char* new_group)
 	if (old_group && strcmp(new_group, old_group) == 0)
 		return;
    
+	aim_ssi_update(hServerConn, seqno, true);
+
 	unsigned short new_group_id = group_list.find_id(new_group);
 	if (new_group_id == 0)
 	{
@@ -267,8 +269,6 @@ void CAimProto::add_contact_to_group(HANDLE hContact, const char* new_group)
 		setGroupId(hContact, 1, new_group_id);
 		DBWriteContactSettingStringUtf(hContact, MOD_KEY_CL, OTH_KEY_GP, new_group);
 
-		aim_ssi_update(hServerConn, seqno, true);
-
 		LOG("Adding buddy %s:%u to the serverside list", dbv.pszVal, item_id);
 		aim_add_contact(hServerConn, seqno, dbv.pszVal, item_id, new_group_id, 0);
 
@@ -283,11 +283,11 @@ void CAimProto::add_contact_to_group(HANDLE hContact, const char* new_group)
 			update_server_group(old_group, old_group_id);
 		}
 
-		aim_ssi_update(hServerConn, seqno, false);
-
 		DBFreeVariant(&dbv);
 		deleteSetting(hContact, AIM_KEY_NC);
 	}
+
+	aim_ssi_update(hServerConn, seqno, true);
 }
 
 void CAimProto::offline_contact(HANDLE hContact, bool remove_settings)
