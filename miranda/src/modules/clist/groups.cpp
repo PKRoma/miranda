@@ -207,7 +207,7 @@ static INT_PTR DeleteGroup(WPARAM wParam, LPARAM)
 			DBDeleteContactSetting(hContact, "CList", "Group");
 			grpChg.pszNewName = NULL;
 		}
-		NotifyEventHooks(hGroupChangeEvent, wParam, (LPARAM)&grpChg);
+		NotifyEventHooks(hGroupChangeEvent, (WPARAM)hContact, (LPARAM)&grpChg);
 	} 
 	//shuffle list of groups up to fill gap
 	for (i = wParam - 1;; i++) {
