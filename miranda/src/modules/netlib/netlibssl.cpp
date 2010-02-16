@@ -108,7 +108,7 @@ static void ReportSslError(SECURITY_STATUS scRet, int line)
 		msg = "Unknown Error"; 
 		break;
 	}
-	Netlib_Logf(NULL, "SSL connection failure (%x): %s", scRet, msg);
+	Netlib_Logf(NULL, "SSL connection failure (%x %u): %s", scRet, line, msg);
 }
 
 static int SSL_library_init(void)
