@@ -952,7 +952,7 @@ int    gg_dummy_authdeny(PROTO_INTERFACE *proto, HANDLE hContact, const char *sz
 int    gg_dummy_authrecv(PROTO_INTERFACE *proto, HANDLE hContact, PROTORECVEVENT *pre) { return 0; }
 int    gg_dummy_authrequest(PROTO_INTERFACE *proto, HANDLE hContact, const char *szMessage) { return 0; }
 HANDLE gg_dummy_changeinfo(PROTO_INTERFACE *proto, int iInfoType, void *pInfoData) { return NULL; }
-int    gg_dummy_fileresume(PROTO_INTERFACE *proto, HANDLE hTransfer, int *action, const char **szFilename) { return 0; }
+int    gg_dummy_fileresume(PROTO_INTERFACE *proto, HANDLE hTransfer, int *action, const PROTOCHAR** szFilename) { return 0; }
 HANDLE gg_dummy_searchbyemail(PROTO_INTERFACE *proto, const char *email) { return NULL; }
 int    gg_dummy_recvcontacts(PROTO_INTERFACE *proto, HANDLE hContact, PROTORECVEVENT *pre) { return 0; }
 int    gg_dummy_recvurl(PROTO_INTERFACE *proto, HANDLE hContact, PROTORECVEVENT *pre) { return 0; }

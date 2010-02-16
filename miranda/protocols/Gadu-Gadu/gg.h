@@ -21,7 +21,7 @@
 #ifndef GG_H
 #define GG_H
 
-#define MIRANDA_VER 0x800
+#define MIRANDA_VER 0x900
 
 #if defined(__DEBUG__) || defined(_DEBUG) || defined(DEBUG)
 #define DEBUGMODE // Debug Mode
@@ -412,11 +412,11 @@ void gg_requestavatar(GGPROTO *gg, HANDLE hContact);
 void gg_initavatarrequestthread(GGPROTO *gg);
 
 /* File transfer functions */
-HANDLE gg_fileallow(PROTO_INTERFACE *proto, HANDLE hContact, HANDLE hTransfer, const char* szPath);
+HANDLE gg_fileallow(PROTO_INTERFACE *proto, HANDLE hContact, HANDLE hTransfer, const PROTOCHAR* szPath);
 int gg_filecancel(PROTO_INTERFACE *proto, HANDLE hContact, HANDLE hTransfer);
-int gg_filedeny(PROTO_INTERFACE *proto, HANDLE hContact, HANDLE hTransfer, const char* szReason);
-int gg_recvfile(PROTO_INTERFACE *proto, HANDLE hContact, PROTORECVFILE *pre);
-HANDLE gg_sendfile(PROTO_INTERFACE *proto, HANDLE hContact, const char* szDescription, char** files);
+int gg_filedeny(PROTO_INTERFACE *proto, HANDLE hContact, HANDLE hTransfer, const PROTOCHAR* szReason);
+int gg_recvfile(PROTO_INTERFACE *proto, HANDLE hContact, PROTOFILEEVENT* pre);
+HANDLE gg_sendfile(PROTO_INTERFACE *proto, HANDLE hContact, const PROTOCHAR* szDescription, PROTOCHAR** ppszFiles);
 
 /* Misc module initializers & destroyers */
 void gg_import_init(GGPROTO *gg);
