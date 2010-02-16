@@ -140,9 +140,9 @@ static void free_ft(y_filetransfer* ft)
 	for (i=0; i< ft->pfts.totalFiles; i++)
 		mir_free(ft->pfts.ptszFiles[i]);
 	
+	mir_free(ft->pfts.ptszFiles);
 	FREE(ft->pfts.tszCurrentFile);
 	FREE(ft->pfts.tszWorkingDir);
-	mir_free(ft->pfts.ptszFiles);
 	FREE(ft);
 	
 	LOG(("[/free_ft]"));
@@ -322,7 +322,7 @@ static void dl_file(int id, int fd, int error,	const char *filename, unsigned lo
 		if ( sf->ppro->SendBroadcast( sf->hContact, ACKTYPE_FILE, ACKRESULT_FILERESUME, sf, ( LPARAM )&sf->pfts )) {
 			WaitForSingleObject( sf->hWaitEvent, INFINITE );
 			
-			LOG(("[dl_file] Got action: %d", sf->action));
+			LOG(("[dl_file] Got action: %ld", sf->action));
 			
 			switch(sf->action){
 				case FILERESUME_RENAME:
@@ -748,13 +748,21 @@ HANDLE __cdecl CYahooProto::SendFile( HANDLE hContact, const PROTOCHAR* szDescri
 		struct yahoo_file_info *fi;
 		YList *fs=NULL;
 		int i=0;
+		char *s;
 	
 		while (ppszFiles[i] != NULL) {
 			if ( _tstat( ppszFiles[i], &statbuf ) == 0 )
 				tFileSize = statbuf.st_size;
 	
 			fi = y_new(struct yahoo_file_info,1);
-			fi->filename = mir_utf8encodeT(ppszFiles[i]);
+			
+			/**
+			 * Need to use regular memory allocator/deallocator, since this is how things are build w/ libyahoo2
+			 */
+			s = mir_utf8encodeT(ppszFiles[i]);
+			fi->filename = strdup(s);
+			mir_free(s);
+			
 			fi->filesize = tFileSize;
 		
 			fs = y_list_append(fs, fi);
