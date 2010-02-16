@@ -122,7 +122,7 @@ extern HINSTANCE		hInstance;
 extern int 				iHTTPGateway;
 #endif
 
-int __stdcall YAHOO_CallService( const char* szSvcName, WPARAM wParam, LPARAM lParam );
+INT_PTR __stdcall YAHOO_CallService( const char* szSvcName, WPARAM wParam, LPARAM lParam );
 
 #define YAHOO_hasnotification() ServiceExists(MS_CLIST_SYSTRAY_NOTIFY)
 
