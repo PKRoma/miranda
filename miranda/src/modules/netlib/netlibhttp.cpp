@@ -250,7 +250,8 @@ static int HttpPeekFirstResponseLine(struct NetlibConnection *nlc,DWORD dwTimeou
 	char buffer[1024];
 	char *peol;
 
-	for(;;) {
+	for(;;) 
+	{
 		bytesPeeked=RecvWithTimeoutTime(nlc,dwTimeoutTime,buffer,SIZEOF(buffer)-1,MSG_PEEK|recvFlags);
 		if(bytesPeeked==0 || bytesPeeked==SOCKET_ERROR) {
 			if(bytesPeeked==0) SetLastError(ERROR_HANDLE_EOF);
@@ -267,6 +268,7 @@ static int HttpPeekFirstResponseLine(struct NetlibConnection *nlc,DWORD dwTimeou
 				SetLastError(ERROR_BUFFER_OVERFLOW);
 				return 0;
 			}
+			if (Miranda_Terminated()) return 0;
 			Sleep(10);
 			continue;
 		}
