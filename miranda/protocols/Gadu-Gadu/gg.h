@@ -467,7 +467,7 @@ int gg_gc_changenick(GGPROTO *gg, HANDLE hContact, char *pszNick);
 /* Event helper */
 #define HookProtoEvent(name, func, proto)             HookEventObj(name, (MIRANDAHOOKOBJ)func, proto)
 #define CreateProtoServiceFunction(name, func, proto) CreateServiceFunctionObj(name, (MIRANDASERVICEOBJ)func, proto)
-typedef int (*GGPROTOFUNC)(GGPROTO*,WPARAM,LPARAM);
+typedef INT_PTR (*GGPROTOFUNC)(GGPROTO*,WPARAM,LPARAM);
 void CreateProtoService(const char* szService, GGPROTOFUNC serviceProc, GGPROTO *gg);
 
 /* ANSI <-> Unicode conversion helpers */

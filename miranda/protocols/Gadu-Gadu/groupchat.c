@@ -197,7 +197,7 @@ int gg_gc_event(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
 			gcevent.pszNick = Translate("Me");
 
 		// Get rid of CRLF at back
-		lc = strlen(gch->pszText) - 1;
+		lc = (int)strlen(gch->pszText) - 1;
 		while(lc >= 0 && (gch->pszText[lc] == '\n' || gch->pszText[lc] == '\r')) gch->pszText[lc --] = 0;
 		gcevent.time = time(NULL);
 		gcevent.bIsMe = 1;

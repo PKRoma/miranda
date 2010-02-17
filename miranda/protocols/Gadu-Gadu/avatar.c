@@ -37,7 +37,7 @@ void gg_getavatarfilename(GGPROTO *gg, HANDLE hContact, char *pszDest, int cbLen
 	}
 	else {
 		strcpy(pszDest, path);
-		tPathLen = strlen(pszDest);
+		tPathLen = (int)strlen(pszDest);
 	}
 
 	if (_access(pszDest, 0))
@@ -139,7 +139,7 @@ char *gg_avatarhash(char *param)
 	if (param == NULL || (result = (char *)mir_alloc(MIR_SHA1_HASH_SIZE * 2 + 1)) == NULL)
 		return NULL;
 
-	mir_sha1_hash(param, strlen(param), digest);
+	mir_sha1_hash(param, (int)strlen(param), digest);
 	for (i = 0; i < MIR_SHA1_HASH_SIZE; i++)
 		sprintf(result + (i<<1), "%02x", digest[i]);
 

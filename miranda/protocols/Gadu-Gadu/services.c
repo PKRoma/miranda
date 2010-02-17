@@ -921,15 +921,15 @@ INT_PTR gg_setmyavatar(GGPROTO *gg, WPARAM wParam, LPARAM lParam) // TODO
 
 //////////////////////////////////////////////////////////
 // gets protocol status message
-int gg_getmyawaymsg(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
+INT_PTR gg_getmyawaymsg(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
 {
-	int res = 0;
+	INT_PTR res = 0;
 	char *szMsg;
 
 	pthread_mutex_lock(&gg->modemsg_mutex);
 	szMsg = gg_getstatusmsg(gg, wParam ? gg_normalizestatus(wParam) : gg->proto.m_iStatus);
 	if(gg_isonline(gg) && szMsg)
-		res = (lParam & SGMA_UNICODE) ? (int)mir_a2u(szMsg) : (int)mir_strdup(szMsg);
+		res = (lParam & SGMA_UNICODE) ? (INT_PTR)mir_a2u(szMsg) : (INT_PTR)mir_strdup(szMsg);
 	pthread_mutex_unlock(&gg->modemsg_mutex);
 	return res;
 }
@@ -938,9 +938,9 @@ int gg_getmyawaymsg(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
 // gets account manager GUI
 extern INT_PTR CALLBACK gg_acc_mgr_guidlgproc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
-static int gg_get_acc_mgr_gui(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
+static INT_PTR gg_get_acc_mgr_gui(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
 {
-	return (int) CreateDialogParam(hInstance, MAKEINTRESOURCE(IDD_ACCMGRUI), (HWND)lParam, gg_acc_mgr_guidlgproc, (LPARAM) gg);
+	return (INT_PTR) CreateDialogParam(hInstance, MAKEINTRESOURCE(IDD_ACCMGRUI), (HWND)lParam, gg_acc_mgr_guidlgproc, (LPARAM) gg);
 }
 
 //////////////////////////////////////////////////////////
