@@ -2,8 +2,8 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2008 Miranda ICQ/IM project, 
-all portions of this codebase are copyrighted to the people 
+Copyright 2000-2008 Miranda ICQ/IM project,
+all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
 This program is free software; you can redistribute it and/or
@@ -94,7 +94,7 @@ typedef struct {
 
 //Assign a Netlib user handle a set of dynamic HTTP headers to be used with all
 //
-//HTTP connections that enable the HTTP-use-sticky headers flag. 
+//HTTP connections that enable the HTTP-use-sticky headers flag.
 //The headers persist until cleared with lParam=NULL.
 //
 //All memory should be allocated by the caller using malloc() from MS_SYSTEM_GET_MMI
@@ -246,14 +246,14 @@ __inline static INT_PTR Netlib_CloseHandle(HANDLE h) {return CallService(MS_NETL
 // will result in an attempt to bind on the port given in wPort
 // if this port is taken then you will get an error, so be sure to check
 // for such conditions.
-// 
+//
 // passing wPort != 0 is for people who need to open a set port for
 // daemon activities, usually passing wPort==0 is what you want and
 // will result in a free port given by the TCP/IP socket layer and/or
 // seeded from the user selected port ranges.
 //
 // also note that wPort if != 0, will have be converted to network byte order
-// 
+//
 /* pExtra was added during 0.3.4+, prior its just two args, since we use the cdecl convention
 it shouldnt matter */
 
@@ -281,7 +281,7 @@ typedef struct {
 	int cbSize;
 	union { // new code should use V2
 		NETLIBNEWCONNECTIONPROC pfnNewConnection;
-		NETLIBNEWCONNECTIONPROC_V2 pfnNewConnectionV2; 		
+		NETLIBNEWCONNECTIONPROC_V2 pfnNewConnectionV2;
 	};
 	     //function to call when there's a new connection. Params are: the
 		 //new connection, IP of remote machine (host byte order)
@@ -333,13 +333,13 @@ typedef struct {
 a hard timeout is reached, this can be anywhere between 30-60 seconds, and it stops Miranda from unloading whilst
 this is attempted, clearing sucking - so now you can set a timeout of any value, there is still a hard limit which is
 always reached by Windows, If a timeout occurs, or Miranda is exiting then you will get ERROR_TIMEOUT as soon as possible.
-*/ 
+*/
 #define NETLIBOPENCONNECTION_V1_SIZE 16 /* old sizeof() is 14 bytes, but there is padding of 2 bytes */
 struct NETLIBOPENCONNECTION_tag {
 	int cbSize;
 	const char *szHost;	  //can contain the string representation of an IP
 	WORD wPort;			  //host byte order
-	DWORD flags;	
+	DWORD flags;
 	unsigned int timeout;
 	/* optional, called in the context of the thread that issued the attempt, if it returns 0 the connection attempt is
 	stopped, the remaining timeout value can also be adjusted */
@@ -631,7 +631,7 @@ typedef struct {
 //Shutdown connection
 //wParam=(WPARAM)(HANDLE)hConnection
 //lParam=(LPARAM)0
-//Returns 0 
+//Returns 0
 #define MS_NETLIB_SHUTDOWN	   "Netlib/Shutdown"
 __inline static void Netlib_Shutdown(HANDLE h) {CallService(MS_NETLIB_SHUTDOWN,(WPARAM)h,0);}
 
@@ -690,13 +690,13 @@ typedef struct {
 //Errors: -1
 #define MS_NETLIB_SETPOLLINGTIMEOUT "Netlib/SetPollingTimeout"
 
-//Makes connection SSL 
+//Makes connection SSL
 //wParam=(WPARAM)(HANDLE)hConn
 //lParam=(LPARAM)(NETLIBSSL*)&nlssl or null if no certficate validation required
 //Returns 0 on failure 1 on success
 #define MS_NETLIB_STARTSSL "Netlib/StartSsl"
 
-typedef struct 
+typedef struct
 {
     int cbSize;
 	const char *host; //Expected host name
@@ -709,6 +709,8 @@ typedef struct
 //use it.
 #if defined va_start && (defined _STDIO_DEFINED || defined _STDIO_H_) && (!defined NETLIB_NOLOGGING)
 #if _MSC_VER > 1200
+	#pragma warning(disable:4505)
+
 __declspec(noinline)
 #endif
 static INT_PTR Netlib_Logf(HANDLE hUser,const char *fmt,...)
@@ -733,7 +735,7 @@ static INT_PTR Netlib_Logf(HANDLE hUser,const char *fmt,...)
 
 #define NNR_UNICODE 1
 
-#ifdef UNICODE 
+#ifdef UNICODE
 #define NNR_TCHAR 1
 #else
 #define NNR_TCHAR 0
