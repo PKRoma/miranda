@@ -374,7 +374,7 @@ INT_PTR CAimProto::GetAvatarInfo(WPARAM wParam, LPARAM lParam)
 {
 	PROTO_AVATAR_INFORMATION* AI = (PROTO_AVATAR_INFORMATION*)lParam;
 	
-	int res = GAIR_NOAVATAR;
+	INT_PTR res = GAIR_NOAVATAR;
 	AI->filename[0] = 0;
 	AI->format = PA_FORMAT_UNKNOWN;
 
@@ -387,7 +387,7 @@ INT_PTR CAimProto::GetAvatarInfo(WPARAM wParam, LPARAM lParam)
 		return (AI->format ? GAIR_SUCCESS : GAIR_NOAVATAR);
 	}
 
-	char* hash=getSetting(AI->hContact, AIM_KEY_AH);
+	char* hash = getSetting(AI->hContact, AIM_KEY_AH);
 	if (hash)
 	{
 		get_avatar_filename(AI->hContact, AI->filename, sizeof(AI->filename), NULL);

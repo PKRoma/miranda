@@ -60,7 +60,7 @@ PLUGININFOEX pluginInfo={
 	"Provides support for AOL® Instant Messenger (AIM) protocol",
 	"Boris Krasnovskiy, Aaron Myles Landwehr",
 	"borkra@miranda-im.org",
-	"© 2008-2009 Boris Krasnovskiy, 2005-2006 Aaron Myles Landwehr",
+	"© 2008-2010 Boris Krasnovskiy, 2005-2006 Aaron Myles Landwehr",
 	"http://www.miranda-im.org",
 	UNICODE_AWARE,		//not transient
 	0,		//doesn't replace anything built-in

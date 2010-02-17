@@ -58,9 +58,9 @@ void CAimProto::avatar_request_handler(HANDLE hContact, char* hash, int hash_siz
 {
 	char* hash_string = bytes_to_string(hash, hash_size);
 
-	if(strcmp(hash_string,"0201d20472"))//gaim default icon fix- we don't want their blank icon displaying.
+	if (strcmp(hash_string, "0201d20472"))//gaim default icon fix- we don't want their blank icon displaying.
 	{
-		char* saved_hash = getSetting(hContact,AIM_KEY_ASH);
+		char* saved_hash = getSetting(hContact, AIM_KEY_ASH);
 		setString(hContact, AIM_KEY_AH, hash_string);
 
 		if (saved_hash == NULL || strcmp(saved_hash, hash_string))
