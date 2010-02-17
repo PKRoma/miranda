@@ -85,10 +85,16 @@ static HIMAGELIST himlCheckBoxes = 0;
 
 static void CreateStateImageList()
 {
+	HICON hIconNoTick = LoadImage(g_hInst, MAKEINTRESOURCE(IDI_NOTICK), IMAGE_ICON, 16, 16, 0);
+	HICON hIconTick = LoadImage(g_hInst, MAKEINTRESOURCE(IDI_TICK), IMAGE_ICON, 16, 16, 0);
+
 	himlCheckBoxes=ImageList_Create(GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),ILC_COLOR32|ILC_MASK,2,2);
-	ImageList_AddIcon(himlCheckBoxes, LoadImage(g_hInst, MAKEINTRESOURCE(IDI_NOTICK), IMAGE_ICON, 16, 16, LR_SHARED));
-	ImageList_AddIcon(himlCheckBoxes, LoadImage(g_hInst, MAKEINTRESOURCE(IDI_TICK), IMAGE_ICON, 16, 16, LR_SHARED));
-	ImageList_AddIcon(himlCheckBoxes, LoadImage(g_hInst, MAKEINTRESOURCE(IDI_NOTICK), IMAGE_ICON, 16, 16, LR_SHARED));
+	ImageList_AddIcon(himlCheckBoxes, hIconNoTick);
+	ImageList_AddIcon(himlCheckBoxes, hIconTick);
+	ImageList_AddIcon(himlCheckBoxes, hIconNoTick);
+
+	DestroyIcon(hIconTick);
+	DestroyIcon(hIconNoTick);
 }
 
 
