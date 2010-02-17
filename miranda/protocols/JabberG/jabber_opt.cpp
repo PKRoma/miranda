@@ -1991,6 +1991,7 @@ void CJabberDlgAccMgrUI::setupConnection(int type)
 		case ACC_SSL: setupSecureSSL(); break;
 		case ACC_GTALK: setupGoogle(); break;
 		case ACC_LJTALK: setupLJ(); break;
+		case ACC_FBOOK: setupFB(); break;
 	}
 }
 
@@ -2092,7 +2093,7 @@ void CJabberDlgAccMgrUI::setupFB()
 	m_txtManualHost.Disable();
 	m_txtPort.Disable();
 	m_btnRegister.Disable();
-	m_cbResource.Disable();
+//	m_cbResource.Disable();
 }
 
 void CJabberDlgAccMgrUI::RefreshServers( HXML node )
