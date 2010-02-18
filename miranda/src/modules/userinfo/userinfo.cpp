@@ -221,7 +221,7 @@ static INT_PTR CALLBACK DlgProcDetails(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 	switch (msg) {
 	case WM_INITDIALOG:
 		TranslateDialogDefault(hwndDlg);
-		Window_SetIcon_IcoLib(hwndDlg, SKINICON_OTHER_USERDETAILS);
+		Window_SetIcon_IcoLib(hwndDlg, SKINICON_OTHER_USERDETAILS, SKINICON_OTHER_USERDETAILS_BIG);
 		{
 			PROPSHEETHEADER *psh=(PROPSHEETHEADER*)lParam;
 			dat=(struct DetailsData*)mir_alloc(sizeof(struct DetailsData));
@@ -241,9 +241,9 @@ static INT_PTR CALLBACK DlgProcDetails(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 				mir_sntprintf( newTitle, SIZEOF(newTitle), oldTitle, name );
 				SetWindowText( hwndDlg, newTitle );
 
-				GetWindowText( GetDlgItem(hwndDlg, IDC_HEADERBAR), oldTitle, SIZEOF( oldTitle ));
+				GetDlgItemText( hwndDlg, IDC_HEADERBAR, oldTitle, SIZEOF( oldTitle ));
 				mir_sntprintf( newTitle, SIZEOF(newTitle), oldTitle, name );
-				SetWindowText( GetDlgItem(hwndDlg, IDC_HEADERBAR), newTitle );
+				SetDlgItemText( hwndDlg, IDC_HEADERBAR, newTitle );
 			}
 			{	LOGFONT lf;
 				HFONT hNormalFont=(HFONT)SendDlgItemMessage(hwndDlg,IDC_NAME,WM_GETFONT,0,0);

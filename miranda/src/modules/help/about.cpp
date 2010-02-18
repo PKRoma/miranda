@@ -61,10 +61,10 @@ INT_PTR CALLBACK DlgProcAbout(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
 			mir_sntprintf(str,SIZEOF(str),_T(STR_VERSION_FORMAT), TranslateT("v"), productVersion, isAnsi?" ANSI":"");
             {
                 TCHAR oldTitle[256], newTitle[256];
-				GetWindowText( GetDlgItem(hwndDlg, IDC_HEADERBAR), oldTitle, SIZEOF( oldTitle ));
+				GetDlgItemText( hwndDlg, IDC_HEADERBAR, oldTitle, SIZEOF( oldTitle ));
 				mir_sntprintf( newTitle, SIZEOF(newTitle), oldTitle, str );
-				SetWindowText( GetDlgItem(hwndDlg, IDC_HEADERBAR), newTitle );
-                SendMessage(GetDlgItem(hwndDlg, IDC_HEADERBAR), WM_SETICON, 0, (WPARAM)LoadIcon(hMirandaInst, MAKEINTRESOURCE(IDI_MIRANDA)));
+				SetDlgItemText( hwndDlg, IDC_HEADERBAR, newTitle );
+                SendMessage(GetDlgItem(hwndDlg, IDC_HEADERBAR), WM_SETICON, 0, (WPARAM)LoadSkinIcon(SKINICON_OTHER_MIRANDA_BIG));
 			}
             
 			mir_sntprintf(str,SIZEOF(str),TranslateT("Built %s %s"),_T(__DATE__),_T(__TIME__));
@@ -80,7 +80,7 @@ INT_PTR CALLBACK DlgProcAbout(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
             SetDlgItemText(hwndDlg,IDC_CREDITSFILE, pszMsg);
 			#endif
 		}
-		Window_SetIcon_IcoLib(hwndDlg, SKINICON_OTHER_MIRANDA);
+		Window_SetIcon_IcoLib(hwndDlg, SKINICON_OTHER_MIRANDA, SKINICON_OTHER_MIRANDA_BIG);
 		return TRUE;
 
 	case WM_COMMAND:
@@ -125,6 +125,7 @@ INT_PTR CALLBACK DlgProcAbout(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
 
 	case WM_DESTROY:
 		Window_FreeIcon_IcoLib( hwndDlg );
+		IconLib_ReleaseIcon((HICON)SendMessage(GetDlgItem(hwndDlg, IDC_HEADERBAR), WM_SETICON, 0, 0), 0);
 		{	
 			HFONT hFont=(HFONT)SendDlgItemMessage(hwndDlg,IDC_VERSION,WM_GETFONT,0,0);
 			SendDlgItemMessage(hwndDlg,IDC_VERSION,WM_SETFONT,SendDlgItemMessage(hwndDlg,IDOK,WM_GETFONT,0,0),0);

@@ -539,7 +539,7 @@ static INT_PTR CALLBACK UpdateNotifyProc(HWND hwndDlg, UINT msg, WPARAM wParam, 
 	switch ( msg ) {
 	case WM_INITDIALOG:
 		TranslateDialogDefault(hwndDlg);
-		Window_SetIcon_IcoLib(hwndDlg, SKINICON_OTHER_MIRANDA);
+		Window_SetIcon_IcoLib(hwndDlg, SKINICON_OTHER_MIRANDA, SKINICON_OTHER_MIRANDA_BIG);
 		{
 			UpdateNotifyData *und = (UpdateNotifyData*)lParam;
 			char szVersion[128], szVersionTmp[128], *p;

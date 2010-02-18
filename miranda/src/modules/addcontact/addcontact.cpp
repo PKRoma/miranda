@@ -34,7 +34,7 @@ INT_PTR CALLBACK AddContactDlgProc(HWND hdlg,UINT msg,WPARAM wparam,LPARAM lpara
 			SetWindowLongPtr(hdlg,GWLP_USERDATA,(LONG_PTR)acs);
 
 			TranslateDialogDefault(hdlg);
-			Window_SetIcon_IcoLib(hdlg,SKINICON_OTHER_ADDCONTACT);
+			Window_SetIcon_IcoLib(hdlg, SKINICON_OTHER_ADDCONTACT, SKINICON_OTHER_ADDCONTACT_BIG);
 			if ( acs->handleType == HANDLE_EVENT ) {
 				DWORD dwUin;
 				DBEVENTINFO dbei = { 0 };

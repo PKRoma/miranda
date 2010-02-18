@@ -38,6 +38,7 @@ __inline static HANDLE LoadSkinnedIconHandle(int id) {return (HANDLE)CallService
 #define SKINICON_EVENT_MESSAGE      100
 #define SKINICON_EVENT_URL          101
 #define SKINICON_EVENT_FILE         102
+
 //other icons
 #define SKINICON_OTHER_MIRANDA      200
 #define SKINICON_OTHER_EXIT         201
@@ -79,6 +80,17 @@ __inline static HANDLE LoadSkinnedIconHandle(int id) {return (HANDLE)CallService
 #define SKINICON_CHAT_LEAVE         237     //v0.8.0.27+
 #define SKINICON_OTHER_STATUS_LOCKED 238    //v0.8.0.28+
 #define SKINICON_OTHER_GROUP        239     //v0.8.0.29+
+
+#define SKINICON_EVENT_MESSAGE_BIG      300
+#define SKINICON_EVENT_URL_BIG          301
+#define SKINICON_EVENT_FILE_BIG         302
+#define SKINICON_OTHER_MIRANDA_BIG      303
+#define SKINICON_OTHER_ADDCONTACT_BIG	304
+#define SKINICON_OTHER_USERDETAILS_BIG  305
+#define SKINICON_OTHER_HISTORY_BIG      306
+#define SKINICON_OTHER_FINDUSER_BIG     307
+#define SKINICON_OTHER_OPTIONS_BIG      308
+#define SKINICON_OTHER_ACCMGR_BIG       309 
 
 //menu icons are owned by the module that uses them so are not and should not
 //be skinnable. Except exit and show/hide

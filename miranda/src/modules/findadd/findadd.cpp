@@ -336,7 +336,7 @@ static INT_PTR CALLBACK DlgProcFindAdd(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			HICON hIcon;
 
 			TranslateDialogDefault(hwndDlg);
-			Window_SetIcon_IcoLib(hwndDlg,SKINICON_OTHER_FINDUSER);
+			Window_SetIcon_IcoLib(hwndDlg, SKINICON_OTHER_FINDUSER, SKINICON_OTHER_FINDUSER_BIG);
 			ListView_SetExtendedListViewStyle(GetDlgItem(hwndDlg,IDC_RESULTS),LVS_EX_FULLROWSELECT|LVS_EX_HEADERDRAGDROP);
 			dat=(struct FindAddDlgData*)mir_alloc(sizeof(struct FindAddDlgData));
 			memset(dat,0,sizeof(struct FindAddDlgData));

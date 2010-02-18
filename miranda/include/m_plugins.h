@@ -73,7 +73,7 @@ typedef struct PLUGIN_DB_ENUM {
 //plugins/getdisabledefaultarray
 //gets an array of the modules that the plugins report they want to replace
 //wParam=lParam=0
-//returns a pointer to an array of ints, with elements 1 or 0 indexed by the
+//returns a pointer to an array of INT_PTR, with elements 1 or 0 indexed by the
 //DEFMOD_ constants. 1 to signify that the default module shouldn't be loaded.
 //this is primarily for use by the core's module initialiser, but could also
 //be used by modules that are doing naughty things that are very

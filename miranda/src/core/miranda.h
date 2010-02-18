@@ -192,7 +192,7 @@ int ImageList_ReplaceIcon_IconLibLoaded(HIMAGELIST hIml, int nIndex, HICON hIcon
 void Button_SetIcon_IcoLib(HWND hDlg, int itemId, int iconId, const char* tooltip);
 void Button_FreeIcon_IcoLib(HWND hDlg, int itemId);
 
-void Window_SetIcon_IcoLib(HWND hWnd, int iconId);
+void Window_SetIcon_IcoLib(HWND hWnd, int iconId, int iconIdBig);
 void Window_SetProtoIcon_IcoLib(HWND hWnd, const char* szProto, int iconId);
 void Window_FreeIcon_IcoLib(HWND hWnd);
 
