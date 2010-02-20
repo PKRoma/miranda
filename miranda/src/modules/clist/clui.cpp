@@ -271,7 +271,7 @@ int LoadCLUIModule(void)
 
 	uMsgProcessProfile = RegisterWindowMessage( _T("Miranda::ProcessProfile"));
 	cli.pfnLoadCluiGlobalOpts();
-	hUserDll = LoadLibraryA("user32.dll");
+	hUserDll = GetModuleHandleA("user32");
 	if (hUserDll) {
 		MySetLayeredWindowAttributes = (BOOL(WINAPI *) (HWND, COLORREF, BYTE, DWORD)) GetProcAddress(hUserDll, "SetLayeredWindowAttributes");
 		MyAnimateWindow = (BOOL(WINAPI *) (HWND, DWORD, DWORD)) GetProcAddress(hUserDll, "AnimateWindow");
@@ -301,7 +301,7 @@ int LoadCLUIModule(void)
 	wndclass.cbClsExtra = 0;
 	wndclass.cbWndExtra = 0;
 	wndclass.hInstance = cli.hInst;
-	wndclass.hIcon = LoadSkinIcon(SKINICON_OTHER_MIRANDA_BIG);
+	wndclass.hIcon = LoadSkinIcon(SKINICON_OTHER_MIRANDA, true);
 	wndclass.hCursor = LoadCursor(NULL, IDC_ARROW);
 	wndclass.hbrBackground = (HBRUSH) (COLOR_3DFACE + 1);
 	wndclass.lpszMenuName = MAKEINTRESOURCE(IDR_CLISTMENU);

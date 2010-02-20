@@ -130,9 +130,9 @@ HRESULT CDropTarget::DragOver(DWORD /*grfKeyState*/, POINTL pt, DWORD * pdwEffec
 	if (dat->selection != hit) {
 		dat->selection = hit;
 		cli.pfnInvalidateRect(hwndCurrentDrag, NULL, FALSE);
-		pDropTargetHelper->Show(FALSE);
+		if (pDropTargetHelper) pDropTargetHelper->Show(FALSE);
 		UpdateWindow(hwndCurrentDrag);
-		pDropTargetHelper->Show(TRUE);
+		if (pDropTargetHelper) pDropTargetHelper->Show(TRUE);
 	}
 
 	return S_OK;
@@ -262,7 +262,9 @@ static VOID CALLBACK CreateDropTargetHelperTimerProc(HWND hwnd, UINT, UINT_PTR i
 
 void InitFileDropping(void)
 {
-	SetTimer(NULL, 1, 1000, CreateDropTargetHelperTimerProc);
+	// Disabled as this function loads tons of dlls for no apparenet reason
+	// we will se what the reaction will be
+//	SetTimer(NULL, 1, 1000, CreateDropTargetHelperTimerProc);
 }
 
 void fnRegisterFileDropping(HWND hwnd)

@@ -892,7 +892,7 @@ static INT_PTR pfnCListTrayNotifyStub(WPARAM, LPARAM lParam )
 
 void fnInitTray( void )
 {
-	HINSTANCE hLib = LoadLibraryA("shell32.dll");
+	HMODULE hLib = GetModuleHandleA("shell32");
 	if ( hLib ) {
 		DLLGETVERSIONPROC proc;
 		dviShell.cbSize = sizeof(dviShell);

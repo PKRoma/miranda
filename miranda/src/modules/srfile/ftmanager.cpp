@@ -305,7 +305,7 @@ static INT_PTR CALLBACK FtMgrDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
 		HWND hwndTab = GetDlgItem(hwnd, IDC_TABS);
 
 		TranslateDialogDefault(hwnd);
-		Window_SetIcon_IcoLib(hwnd, SKINICON_EVENT_FILE, SKINICON_EVENT_FILE_BIG);
+		Window_SetIcon_IcoLib(hwnd, SKINICON_EVENT_FILE);
 
 		dat = (struct TFtMgrData *)mir_calloc(sizeof(struct TFtMgrData));
 

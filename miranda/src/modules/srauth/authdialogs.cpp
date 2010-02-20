@@ -34,7 +34,7 @@ INT_PTR CALLBACK DlgProcAdded(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
 			HANDLE hDbEvent,hcontact;
 
 			TranslateDialogDefault(hwndDlg);
-			Window_SetIcon_IcoLib(hwndDlg, SKINICON_OTHER_MIRANDA, SKINICON_OTHER_MIRANDA_BIG);
+			Window_SetIcon_IcoLib(hwndDlg, SKINICON_OTHER_MIRANDA);
 			Button_SetIcon_IcoLib(hwndDlg, IDC_DETAILS, SKINICON_OTHER_USERDETAILS, "View User's Details");
 			Button_SetIcon_IcoLib(hwndDlg, IDC_ADD, SKINICON_OTHER_ADDCONTACT, "Add Contact Permanently to List");
 			hDbEvent=(HANDLE)lParam;
@@ -200,7 +200,7 @@ INT_PTR CALLBACK DlgProcAuthReq(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 	switch (msg) {
 	case WM_INITDIALOG:
 		TranslateDialogDefault(hwndDlg);
-		Window_SetIcon_IcoLib(hwndDlg, SKINICON_OTHER_MIRANDA, SKINICON_OTHER_MIRANDA_BIG);
+		Window_SetIcon_IcoLib(hwndDlg, SKINICON_OTHER_MIRANDA);
 		Button_SetIcon_IcoLib(hwndDlg, IDC_DETAILS, SKINICON_OTHER_USERDETAILS, "View User's Details");
 		Button_SetIcon_IcoLib(hwndDlg, IDC_ADD, SKINICON_OTHER_ADDCONTACT, "Add Contact Permanently to List");
 		{

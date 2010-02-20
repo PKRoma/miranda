@@ -293,8 +293,8 @@ INT_PTR CALLBACK DlgProcFileTransfer(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 				SendDlgItemMessage(hwndDlg,IDC_CONTACTNAME,WM_SETFONT,(WPARAM)hFont,0);
 			}
 
-			{	SHFILEINFOA shfi = {0};
-				SHGetFileInfoA("", FILE_ATTRIBUTE_DIRECTORY, &shfi, sizeof(shfi), SHGFI_USEFILEATTRIBUTES|SHGFI_ICON|SHGFI_SMALLICON);
+			{	SHFILEINFO shfi = {0};
+				SHGetFileInfo(_T(""), FILE_ATTRIBUTE_DIRECTORY, &shfi, sizeof(shfi), SHGFI_USEFILEATTRIBUTES|SHGFI_ICON|SHGFI_SMALLICON);
 				dat->hIconFolder = shfi.hIcon;
 			}
 

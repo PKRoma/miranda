@@ -473,7 +473,7 @@ INT_PTR CALLBACK AccMgrDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LPARAM 
 			TranslateDialogDefault(hwndDlg);
 			Utils_RestoreWindowPositionNoSize(hwndDlg, NULL, "AccMgr", "");
 
-			Window_SetIcon_IcoLib( hwndDlg, SKINICON_OTHER_ACCMGR, SKINICON_OTHER_ACCMGR_BIG );
+			Window_SetIcon_IcoLib( hwndDlg, SKINICON_OTHER_ACCMGR );
 
 			SendDlgItemMessage( hwndDlg, IDC_ADD, BM_SETIMAGE, IMAGE_ICON, ( LPARAM )LoadSkinIcon( SKINICON_OTHER_ADDCONTACT ));
 			SendDlgItemMessage( hwndDlg, IDC_ADD, BUTTONADDTOOLTIP, (WPARAM)"New account", 0);

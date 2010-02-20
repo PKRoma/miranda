@@ -170,15 +170,15 @@ int CreateDirectoryTree(const char *szDir);
 /**** skin2icons.c *********************************************************************/
 
 HANDLE IcoLib_AddNewIcon( SKINICONDESC* sid );
-HICON  IcoLib_GetIcon( const char* pszIconName );
-HICON  IcoLib_GetIconByHandle( HANDLE hItem );
+HICON  IcoLib_GetIcon( const char* pszIconName, bool big );
+HICON  IcoLib_GetIconByHandle( HANDLE hItem, bool big );
 HANDLE IcoLib_IsManaged( HICON hIcon );
 int    IcoLib_ReleaseIcon( HICON hIcon, char* szIconName );
 
 /**** skinicons.c **********************************************************************/
 
-HICON LoadSkinProtoIcon( const char* szProto, int status );
-HICON LoadSkinIcon( int idx );
+HICON LoadSkinProtoIcon( const char* szProto, int status, bool big = false );
+HICON LoadSkinIcon( int idx, bool big = false );
 HANDLE GetSkinIconHandle( int idx );
 
 HICON LoadIconEx(HINSTANCE hInstance, LPCTSTR lpIconName, BOOL bShared);
@@ -192,7 +192,7 @@ int ImageList_ReplaceIcon_IconLibLoaded(HIMAGELIST hIml, int nIndex, HICON hIcon
 void Button_SetIcon_IcoLib(HWND hDlg, int itemId, int iconId, const char* tooltip);
 void Button_FreeIcon_IcoLib(HWND hDlg, int itemId);
 
-void Window_SetIcon_IcoLib(HWND hWnd, int iconId, int iconIdBig);
+void Window_SetIcon_IcoLib(HWND hWnd, int iconId);
 void Window_SetProtoIcon_IcoLib(HWND hWnd, const char* szProto, int iconId);
 void Window_FreeIcon_IcoLib(HWND hWnd);
 

@@ -274,7 +274,7 @@ static INT_PTR CALLBACK DlgProcHistory(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			mir_sntprintf(str,SIZEOF(str),TranslateT("History for %s"),contactName);
 			SetWindowText(hwndDlg,str);
 		}
-		Window_SetIcon_IcoLib(hwndDlg, SKINICON_OTHER_HISTORY, SKINICON_OTHER_HISTORY_BIG);
+		Window_SetIcon_IcoLib(hwndDlg, SKINICON_OTHER_HISTORY);
 		SendMessage(hwndDlg,DM_HREBUILD,0,0);
 		return TRUE;
 

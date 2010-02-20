@@ -182,19 +182,31 @@ static int getProfile1(TCHAR * szProfile, size_t cch, TCHAR * profiledir, BOOL *
 
 		WIN32_FIND_DATA ffd;
 		HANDLE hFind = FindFirstFile(pfd, &ffd);
-		FindClose(hFind);
-		mir_free(pfd);
 		if (hFind != INVALID_HANDLE_VALUE)
 		{
-			TCHAR buf[256];
-			mir_sntprintf(buf, SIZEOF(buf), 
-				_T("Your database is located in Miranda root folder.\n")
-				_T("Even though your profile folder is %s\n")
-				_T("Profiles are not allowed in the Miranda root folder.\n")
-				_T("Please move Miranda database into the current profile folder."),
-				profiledir);
-			MessageBox(NULL, buf, _T("Miranda IM"), MB_ICONERROR | MB_OK);
+			TCHAR *s = _tcsrchr(pfd, '\\'); *s = 0;
+			do
+			{
+				TCHAR path[MAX_PATH], path2[MAX_PATH];
+				mir_sntprintf(path, SIZEOF(path), _T("%s\\%s"), pfd, ffd.cFileName); 
+				mir_sntprintf(path2, SIZEOF(path2), _T("%s\\Profiles\\%s"), pfd, ffd.cFileName); 
+				if (MoveFile(path, path2) == 0)
+				{
+					TCHAR buf[256];
+					mir_sntprintf(buf, SIZEOF(buf), 
+						_T("Your database is located in Miranda root folder.\n")
+						_T("Even though your profile folder is %s\n")
+						_T("Profiles are not allowed in the Miranda root folder.\n")
+						_T("Please move Miranda database into the current profile folder."),
+						profiledir);
+					MessageBox(NULL, buf, _T("Miranda IM"), MB_ICONERROR | MB_OK);
+					break;
+				}
+			}
+			while(FindNextFile(hFind, &ffd));
 		}
+		FindClose(hFind);
+		mir_free(pfd);
 	}
 
 	return reqfd;

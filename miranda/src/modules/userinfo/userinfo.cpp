@@ -221,7 +221,7 @@ static INT_PTR CALLBACK DlgProcDetails(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 	switch (msg) {
 	case WM_INITDIALOG:
 		TranslateDialogDefault(hwndDlg);
-		Window_SetIcon_IcoLib(hwndDlg, SKINICON_OTHER_USERDETAILS, SKINICON_OTHER_USERDETAILS_BIG);
+		Window_SetIcon_IcoLib(hwndDlg, SKINICON_OTHER_USERDETAILS);
 		{
 			PROPSHEETHEADER *psh=(PROPSHEETHEADER*)lParam;
 			dat=(struct DetailsData*)mir_alloc(sizeof(struct DetailsData));
