@@ -446,7 +446,7 @@ int __cdecl CAimProto::RecvContacts(HANDLE hContact, PROTORECVEVENT*)
 int __cdecl CAimProto::RecvFile(HANDLE hContact, PROTOFILEEVENT* evt)
 {
 	CCSDATA ccs = { hContact, PSR_FILE, 0, (LPARAM)evt };
-	return CallService(MS_PROTO_RECVFILE, 0, (LPARAM)&ccs);
+	return CallService(MS_PROTO_RECVFILET, 0, (LPARAM)&ccs);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////

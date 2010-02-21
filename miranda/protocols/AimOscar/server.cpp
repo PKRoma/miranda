@@ -24,8 +24,8 @@ void CAimProto::snac_md5_authkey(SNAC &snac,HANDLE hServerConn,unsigned short &s
 	if (snac.subcmp(0x0007))//md5 authkey string
 	{
 		unsigned short length=snac.ushort();
-		char* authkey=snac.part(2,length);
-		aim_auth_request(hServerConn,seqno,authkey,AIM_LANGUAGE,AIM_COUNTRY,username, password);
+		char* authkey = snac.part(2, length);
+		aim_auth_request(hServerConn, seqno, authkey, AIM_LANGUAGE, AIM_COUNTRY, username, password);
 		mir_free(authkey);
 	}
 }
@@ -501,22 +501,23 @@ void CAimProto::snac_user_online(SNAC &snac)//family 0x0003
 			}
 			else if (tlv.cmp(0x001d))//avatar
 			{
-				if(hContact)
-					for(int i=0;i<tlv.len();i+=(4+tlv.ubyte(i+3)))
+				if (hContact)
+				{
+					for(int i = 0; i < tlv.len(); i += (4 + tlv.ubyte(i + 3)))
 					{
-						unsigned short type=tlv.ushort(i);
-						if(type==0x0001)
+						unsigned short type = tlv.ushort(i);
+						if (type == 0x0001)
 						{
-							int hash_size=tlv.ubyte(i+3);
-							char* hash=tlv.part(i+4,hash_size);
+							int hash_size = tlv.ubyte(i+3);
+							char* hash = tlv.part(i+4,hash_size);
 							avatar_request_handler(hContact, hash, hash_size);
 							mir_free(hash);
 						}
-						else if(type==0x0002)
+						else if (type == 0x0002)
 						{
 							if ((tlv.ubyte(i+2) & 4) && tlv.ubyte(i+3) && tlv.ubyte(i+5))
 							{
-								unsigned char len=tlv.ubyte(i+5);
+								unsigned char len = tlv.ubyte(i+5);
 								char* msg = tlv.part(i+6,len);
 								char* msg_s = process_status_msg(msg, sn);
 								DBWriteContactSettingStringUtf(hContact, MOD_KEY_CL, OTH_KEY_SM, msg_s);
@@ -528,41 +529,42 @@ void CAimProto::snac_user_online(SNAC &snac)//family 0x0003
 								DBDeleteContactSetting(hContact, MOD_KEY_CL, OTH_KEY_SM);
 						}
 					}
+				}
 			}
 			else if(tlv.cmp(0x0004))//idle tlv
 			{
-				if(hContact)
+				if (hContact)
 				{
 					time_t current_time;
 					time(&current_time);
 					setDword(hContact, AIM_KEY_IT, ((DWORD)current_time) - tlv.ushort() * 60);
 				}
 			}
-			else if(tlv.cmp(0x0003))//online time tlv
+			else if (tlv.cmp(0x0003))//online time tlv
 			{
-				if(hContact)
+				if (hContact)
 					setDword(hContact, AIM_KEY_OT, tlv.ulong());
 			}
-			else if(tlv.cmp(0x0005))//member since 
+			else if (tlv.cmp(0x0005))//member since 
 			{
-				if(hContact) 
+				if (hContact) 
 					setDword(hContact, AIM_KEY_MS, tlv.ulong()); 
 			}  			
 			offset += tlv.len();
 		}
-		if(bot_user)
+		if (bot_user)
 		{
 			setByte(hContact, AIM_KEY_ET, EXTENDED_STATUS_BOT);
 		}
-		else if(hiptop_user)
+		else if (hiptop_user)
 		{
 			setByte(hContact, AIM_KEY_ET, EXTENDED_STATUS_HIPTOP);
 		}
-		if(caps_included)
+		if (caps_included)
 		{
 			set_contact_icon(this, hContact);
 		}
-		if(caps_included || client[0])
+		if (caps_included || client[0])
 			setString(hContact, AIM_KEY_MV, client[0] ? client : "?");
 		else
 			setString(hContact, AIM_KEY_MV, CLIENT_AIMEXPRESS7);
@@ -956,7 +958,7 @@ void CAimProto::snac_received_message(SNAC &snac,HANDLE hServerConn,unsigned sho
 		bool unicode_message=false;
 		bool utf_fname=false;
 		bool unicode_descr=false;
-		short recv_file_type=-1;
+		short rdz_msg_type=-1;
 		unsigned short request_num=0;
 		unsigned long local_ip=0, verified_ip=0, proxy_ip=0;
 		unsigned short port = 0;
@@ -1007,9 +1009,9 @@ void CAimProto::snac_received_message(SNAC &snac,HANDLE hServerConn,unsigned sho
 			{
 				auto_response=1;
 			}
-			if (tlv.cmp(0x0005) && channel == 2)//recv rendervous packet
+			if (channel == 2 && tlv.cmp(0x0005))//recv rendervous packet
 			{
-				recv_file_type = snac.ushort(offset);
+				rdz_msg_type = snac.ushort(offset);
 				icbm_cookie = snac.part(offset+2,8);
 				if (cap_cmp(snac.val(offset+10), AIM_CAP_FILE_TRANSFER) == 0)
 				{
@@ -1088,6 +1090,35 @@ void CAimProto::snac_received_message(SNAC &snac,HANDLE hServerConn,unsigned sho
 						i += TLV_HEADER_SIZE + tlv.len();
 					}
 				}
+				else if (cap_cmp(snac.val(offset+10), AIM_CAP_RTCAUDIO) == 0 || 
+					cap_cmp(snac.val(offset+10), AIM_CAP_RTCVIDEO) == 0)
+				{
+					for (int i = 26; i < tlv.len(); )
+					{
+						TLV tlv(snac.val(offset+i));
+						if (tlv.cmp(0x000A))
+						{
+							request_num=tlv.ushort();//for file transfer
+						}
+						else if(tlv.cmp(0x0002))//proxy ip
+						{
+							proxy_ip = tlv.ulong();
+						}
+						else if(tlv.cmp(0x0003))//client ip
+						{
+							local_ip = tlv.ulong();
+						}
+						else if(tlv.cmp(0x0004))//verified ip
+						{
+							verified_ip = tlv.ulong();
+						}
+						else if(tlv.cmp(0x0005))
+						{
+							port=tlv.ushort();
+						}
+					}
+					return;
+				}
 				else if (cap_cmp(snac.val(offset+10), AIM_CAP_CHAT) == 0)//it's a chat invite request
 				{
 					for(int i=26;i<tlv.len();)
@@ -1113,6 +1144,10 @@ void CAimProto::snac_received_message(SNAC &snac,HANDLE hServerConn,unsigned sho
 				else
 					return;
 			}
+			if (channel == 6 && tlv.cmp(0x0005))//audio/video tunnel
+			{
+				msg_buf = tlv.dup();		
+			}
 			if (tlv.cmp(0x0006))//Offline message flag
 			{
 				is_offline = true;
@@ -1123,7 +1158,7 @@ void CAimProto::snac_received_message(SNAC &snac,HANDLE hServerConn,unsigned sho
 			}
 			offset+=(tlv.len());
 		}
-		if (recv_file_type == -1)//Message not file
+		if (channel == 1)//Message not file
 		{
 			if (auto_response)//this message must be an autoresponse
 			{
@@ -1192,106 +1227,117 @@ void CAimProto::snac_received_message(SNAC &snac,HANDLE hServerConn,unsigned sho
 				setDword(hContact, AIM_KEY_LM, (DWORD)time(NULL));
 			}
 		}
-		else if (recv_file_type == 0 && request_num == 1) //buddy wants to send us a file
+		else if (channel == 2) // File Transfer
 		{
-			LOG("Buddy Wants to Send us a file. Request 1");
-			LOG(force_proxy ? "Forcing a Proxy File transfer." : "Not forcing Proxy File transfer.");
-
-			file_transfer* ft = new file_transfer(hContact, sn, icbm_cookie);
-
-			ft->me_force_proxy = getByte(AIM_KEY_FP, 0) != 0;
-			ft->peer_force_proxy = force_proxy;
-			ft->local_ip = local_ip;
-			ft->verified_ip = verified_ip;
-			ft->proxy_ip = proxy_ip;
-			ft->port = port;
-			ft->max_ver = max_ver;
-			ft->req_num = request_num;
-
-			ft->file = mir_strdup(filename);
-			
-			ft->pfts.totalBytes = file_size;
-			ft->pfts.totalFiles = num_files;
-
-			ft_list.insert(ft);
-
-			if (!descr_included) msg_buf = (char*)mir_calloc(1);
-
-			size_t size = sizeof(DWORD) + _strlens(filename) + strlen(msg_buf) + 4;
-			char* szBlob = (char*)alloca(size);
-			*((PDWORD) szBlob) = 0;
-			strcpy(szBlob + sizeof(DWORD), filename);
-			strcpy(szBlob + sizeof(DWORD) + _strlens(filename) + 1, msg_buf);
-
-			pre.flags = PREF_UTF;
-			pre.timestamp = (DWORD)time(NULL);
-			pre.szMessage = szBlob;
-			pre.lParam = (LPARAM)ft;
-
-			ccs.szProtoService = PSR_FILE;
-			ccs.hContact = hContact;
-			ccs.wParam = 0;
-			ccs.lParam = (LPARAM)&pre;
-			CallService(MS_PROTO_CHAINRECV, 0, (LPARAM)&ccs);
-
-			char cip[20];
-			LOG("Local IP: %s:%u", long_ip_to_char_ip(local_ip, cip), port);
-			LOG("Verified IP: %s:%u", long_ip_to_char_ip(verified_ip, cip), port);
-			LOG("Proxy IP: %s:%u", long_ip_to_char_ip(proxy_ip, cip), port);
-		}
-		else if (recv_file_type == 0)
-		{
-			LOG("We are sending a file. Buddy wants us to connect to them. Request %d", request_num);
-			LOG(force_proxy ? "Forcing a Proxy File transfer." : "Not forcing Proxy File transfer.");
-
-			file_transfer* ft = ft_list.find_by_cookie(icbm_cookie, hContact);
-			if (ft)
+			if (rdz_msg_type == 0 && request_num == 1) //buddy wants to send us a file
 			{
-				ft->hContact = hContact;
+				LOG("Buddy Wants to Send us a file. Request 1");
+				LOG(force_proxy ? "Forcing a Proxy File transfer." : "Not forcing Proxy File transfer.");
 
-				ft->me_force_proxy |= (request_num > 2);
+				file_transfer* ft = new file_transfer(hContact, sn, icbm_cookie);
+
+				ft->me_force_proxy = getByte(AIM_KEY_FP, 0) != 0;
 				ft->peer_force_proxy = force_proxy;
 				ft->local_ip = local_ip;
 				ft->verified_ip = verified_ip;
 				ft->proxy_ip = proxy_ip;
 				ft->port = port;
-				ft->requester = false;
-				ft->req_num = request_num;
 				ft->max_ver = max_ver;
+				ft->req_num = request_num;
+
+				ft->file = mir_strdup(filename);
+				
+				ft->pfts.totalBytes = file_size;
+				ft->pfts.totalFiles = num_files;
+
+				ft_list.insert(ft);
+
+				if (!descr_included) msg_buf = NULL;
+
+				TCHAR* filenameT = mir_utf8decodeT(filename);
+
+				PROTORECVFILET pre = {0};
+				pre.flags = PREF_TCHAR;
+				pre.fileCount = 1;
+				pre.timestamp = time(NULL);
+				pre.tszDescription = mir_utf8decodeT(msg_buf);
+				pre.ptszFiles = &filenameT;
+				pre.lParam = (LPARAM)ft;
+
+				ccs.szProtoService = PSR_FILE;
+				ccs.hContact = hContact;
+				ccs.wParam = 0;
+				ccs.lParam = (LPARAM)&pre;
+				CallService(MS_PROTO_CHAINRECV, 0, (LPARAM)&ccs);
+
+				mir_free(pre.tszDescription);
+				mir_free(filenameT);
 
 				char cip[20];
 				LOG("Local IP: %s:%u", long_ip_to_char_ip(local_ip, cip), port);
 				LOG("Verified IP: %s:%u", long_ip_to_char_ip(verified_ip, cip), port);
 				LOG("Proxy IP: %s:%u", long_ip_to_char_ip(proxy_ip, cip), port);
-
-				ForkThread(&CAimProto::accept_file_thread, ft);
 			}
-			else
+			else if (rdz_msg_type == 0)
 			{
-				LOG("Unknown File transfer, thus denied.");
-				aim_file_ad(hServerConn, seqno, sn, icbm_cookie, true, false);
-			}
-		}
-		else if (recv_file_type == 1)//buddy cancelled or denied file transfer
-		{
-			LOG("File transfer cancelled or denied.");
+				LOG("We are sending a file. Buddy wants us to connect to them. Request %d", request_num);
+				LOG(force_proxy ? "Forcing a Proxy File transfer." : "Not forcing Proxy File transfer.");
 
-			file_transfer* ft = ft_list.find_by_cookie(icbm_cookie, hContact);
-			sendBroadcast(hContact, ACKTYPE_FILE, ACKRESULT_DENIED, ft, 0);
-			ft_list.remove_by_ft(ft);
-		}
-		else if (recv_file_type == 2)//buddy accepts our file transfer request
-		{
-			LOG("File transfer accepted");
-			file_transfer* ft = ft_list.find_by_cookie(icbm_cookie, hContact);
-			if (ft) 
-			{
-				ft->accepted  = true;
-				ft->max_ver = max_ver;
+				file_transfer* ft = ft_list.find_by_cookie(icbm_cookie, hContact);
+				if (ft)
+				{
+					ft->hContact = hContact;
+
+					ft->me_force_proxy |= (request_num > 2);
+					ft->peer_force_proxy = force_proxy;
+					ft->local_ip = local_ip;
+					ft->verified_ip = verified_ip;
+					ft->proxy_ip = proxy_ip;
+					ft->port = port;
+					ft->requester = false;
+					ft->req_num = request_num;
+					ft->max_ver = max_ver;
+
+					char cip[20];
+					LOG("Local IP: %s:%u", long_ip_to_char_ip(local_ip, cip), port);
+					LOG("Verified IP: %s:%u", long_ip_to_char_ip(verified_ip, cip), port);
+					LOG("Proxy IP: %s:%u", long_ip_to_char_ip(proxy_ip, cip), port);
+
+					ForkThread(&CAimProto::accept_file_thread, ft);
+				}
+				else
+				{
+					LOG("Unknown File transfer, thus denied.");
+					aim_file_ad(hServerConn, seqno, sn, icbm_cookie, true, 0);
+				}
 			}
-			else
-				aim_file_ad(hServerConn, seqno, sn, icbm_cookie, true, false);
+			else if (rdz_msg_type == 1)//buddy cancelled or denied file transfer
+			{
+				LOG("File transfer cancelled or denied.");
+
+				file_transfer* ft = ft_list.find_by_cookie(icbm_cookie, hContact);
+				sendBroadcast(hContact, ACKTYPE_FILE, ACKRESULT_DENIED, ft, 0);
+				ft_list.remove_by_ft(ft);
+			}
+			else if (rdz_msg_type == 2)//buddy accepts our file transfer request
+			{
+				LOG("File transfer accepted");
+				file_transfer* ft = ft_list.find_by_cookie(icbm_cookie, hContact);
+				if (ft) 
+				{
+					ft->accepted  = true;
+					ft->max_ver = max_ver;
+				}
+				else
+					aim_file_ad(hServerConn, seqno, sn, icbm_cookie, true, 0);
+			}
 		}
+		else if (channel == 6) // Audio/Video call
+		{
+			aim_file_ad(hServerConn, seqno, sn, icbm_cookie, true, 0);
+			ShowPopup(LPGEN("Contact tried to open an audio/video conference (currently not supported)"), ERROR_POPUP);
+		}
+
 		mir_free(sn);
 		mir_free(msg_buf);
 		mir_free(filename);

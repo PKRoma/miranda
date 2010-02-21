@@ -60,7 +60,7 @@ void __cdecl CAimProto::aim_dc_helper(void* param) //only called when we are ini
 				return;
 			}
 		}
-		aim_file_ad(hServerConn, seqno, ft->sn, ft->icbm_cookie, true, false);
+		aim_file_ad(hServerConn, seqno, ft->sn, ft->icbm_cookie, true, 0);
 		sendBroadcast(ft->hContact, ACKTYPE_FILE, ACKRESULT_FAILED, ft, 0);
 	}
 
