@@ -2,30 +2,30 @@
 !IF "$(CFG)" == ""
 CFG=miranda32 - Win32 Release Unicode
 !MESSAGE No configuration specified. Defaulting to miranda32 - Win32 Release Unicode.
-!ENDIF 
+!ENDIF
 
 !IF "$(CFG)" != "miranda32 - Win32 Release" && "$(CFG)" != "miranda32 - Win32 Debug" && "$(CFG)" != "miranda32 - Win32 Release Unicode" && "$(CFG)" != "miranda32 - Win32 Debug Unicode"
 !MESSAGE Invalid configuration "$(CFG)" specified.
 !MESSAGE You can specify a configuration when running NMAKE
 !MESSAGE by defining the macro CFG on the command line. For example:
-!MESSAGE 
+!MESSAGE
 !MESSAGE NMAKE /f "miranda32.mak" CFG="miranda32 - Win32 Debug Unicode"
-!MESSAGE 
+!MESSAGE
 !MESSAGE Possible choices for configuration are:
-!MESSAGE 
+!MESSAGE
 !MESSAGE "miranda32 - Win32 Release" (based on "Win32 (x86) Application")
 !MESSAGE "miranda32 - Win32 Debug" (based on "Win32 (x86) Application")
 !MESSAGE "miranda32 - Win32 Release Unicode" (based on "Win32 (x86) Application")
 !MESSAGE "miranda32 - Win32 Debug Unicode" (based on "Win32 (x86) Application")
-!MESSAGE 
+!MESSAGE
 !ERROR An invalid configuration is specified.
-!ENDIF 
+!ENDIF
 
 !IF "$(OS)" == "Windows_NT"
 NULL=
-!ELSE 
+!ELSE
 NULL=nul
-!ENDIF 
+!ENDIF
 
 !IF  "$(CFG)" == "miranda32 - Win32 Release"
 
@@ -35,21 +35,21 @@ INTDIR=.\Release
 OutDir=.\Release
 # End Custom Macros
 
-!IF "$(RECURSE)" == "0" 
+!IF "$(RECURSE)" == "0"
 
 ALL : "..\bin\release\miranda32.exe" "$(OUTDIR)\miranda32.bsc"
 
-!ELSE 
+!ELSE
 
 ALL : "zlib - Win32 Release" "..\bin\release\miranda32.exe" "$(OUTDIR)\miranda32.bsc"
 
-!ENDIF 
+!ENDIF
 
-!IF "$(RECURSE)" == "1" 
-CLEAN :"zlib - Win32 ReleaseCLEAN" 
-!ELSE 
+!IF "$(RECURSE)" == "1"
+CLEAN :"zlib - Win32 ReleaseCLEAN"
+!ELSE
 CLEAN :
-!ENDIF 
+!ENDIF
 	-@erase "$(INTDIR)\about.obj"
 	-@erase "$(INTDIR)\about.sbr"
 	-@erase "$(INTDIR)\addcontact.obj"
@@ -283,44 +283,44 @@ CLEAN :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
 CPP=cl.exe
-CPP_PROJ=/nologo /MD /W3 /GX /Zi /O1 /I "../include" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D "_NOSDK" /D "_STATIC" /Fr"$(INTDIR)\\" /Fp"$(INTDIR)\miranda32.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+CPP_PROJ=/nologo /MD /W3 /GX /Zi /O1 /I "../include" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D "_NOSDK" /D "_STATIC" /Fr"$(INTDIR)\\" /Fp"$(INTDIR)\miranda32.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c
 
 .c{$(INTDIR)}.obj::
    $(CPP) @<<
-   $(CPP_PROJ) $< 
+   $(CPP_PROJ) $<
 <<
 
 .cpp{$(INTDIR)}.obj::
    $(CPP) @<<
-   $(CPP_PROJ) $< 
+   $(CPP_PROJ) $<
 <<
 
 .cxx{$(INTDIR)}.obj::
    $(CPP) @<<
-   $(CPP_PROJ) $< 
+   $(CPP_PROJ) $<
 <<
 
 .c{$(INTDIR)}.sbr::
    $(CPP) @<<
-   $(CPP_PROJ) $< 
+   $(CPP_PROJ) $<
 <<
 
 .cpp{$(INTDIR)}.sbr::
    $(CPP) @<<
-   $(CPP_PROJ) $< 
+   $(CPP_PROJ) $<
 <<
 
 .cxx{$(INTDIR)}.sbr::
    $(CPP) @<<
-   $(CPP_PROJ) $< 
+   $(CPP_PROJ) $<
 <<
 
 MTL=midl.exe
-MTL_PROJ=/nologo /D "NDEBUG" /mktyplib203 /o "NUL" /win32 
+MTL_PROJ=/nologo /D "NDEBUG" /mktyplib203 /o "NUL" /win32
 RSC=rc.exe
-RSC_PROJ=/l 0x409 /fo"$(INTDIR)\vc6.res" /d "NDEBUG" 
+RSC_PROJ=/l 0x409 /fo"$(INTDIR)\vc6.res" /d "NDEBUG"
 BSC32=bscmake.exe
-BSC32_FLAGS=/nologo /o"$(OUTDIR)\miranda32.bsc" 
+BSC32_FLAGS=/nologo /o"$(OUTDIR)\miranda32.bsc"
 BSC32_SBRS= \
 	"$(INTDIR)\commonheaders.sbr" \
 	"$(INTDIR)\memory.sbr" \
@@ -439,7 +439,7 @@ BSC32_SBRS= \
 <<
 
 LINK32=link.exe
-LINK32_FLAGS=wsock32.lib kernel32.lib user32.lib gdi32.lib shell32.lib winspool.lib comdlg32.lib advapi32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib winmm.lib version.lib /nologo /subsystem:windows /incremental:no /pdb:"$(OUTDIR)\miranda32.pdb" /map:"$(INTDIR)\miranda32.map" /debug /machine:I386 /out:"../bin/release/miranda32.exe" /fixed /ALIGN:4096 /ignore:4108 
+LINK32_FLAGS=wsock32.lib kernel32.lib user32.lib gdi32.lib shell32.lib winspool.lib comdlg32.lib advapi32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib winmm.lib version.lib /nologo /subsystem:windows /incremental:no /pdb:"$(OUTDIR)\miranda32.pdb" /map:"$(INTDIR)\miranda32.map" /debug /machine:I386 /out:"../bin/release/miranda32.exe" /fixed /ALIGN:4096 /ignore:4108
 LINK32_OBJS= \
 	"$(INTDIR)\commonheaders.obj" \
 	"$(INTDIR)\memory.obj" \
@@ -567,21 +567,21 @@ INTDIR=.\Debug
 OutDir=.\Debug
 # End Custom Macros
 
-!IF "$(RECURSE)" == "0" 
+!IF "$(RECURSE)" == "0"
 
 ALL : "..\bin\debug\miranda32.exe" "$(OUTDIR)\miranda32.bsc"
 
-!ELSE 
+!ELSE
 
 ALL : "zlib - Win32 Debug" "..\bin\debug\miranda32.exe" "$(OUTDIR)\miranda32.bsc"
 
-!ENDIF 
+!ENDIF
 
-!IF "$(RECURSE)" == "1" 
-CLEAN :"zlib - Win32 DebugCLEAN" 
-!ELSE 
+!IF "$(RECURSE)" == "1"
+CLEAN :"zlib - Win32 DebugCLEAN"
+!ELSE
 CLEAN :
-!ENDIF 
+!ENDIF
 	-@erase "$(INTDIR)\about.obj"
 	-@erase "$(INTDIR)\about.sbr"
 	-@erase "$(INTDIR)\addcontact.obj"
@@ -816,44 +816,44 @@ CLEAN :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
 CPP=cl.exe
-CPP_PROJ=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../include" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "_NOSDK" /D "_STATIC" /Fr"$(INTDIR)\\" /Fp"$(INTDIR)\miranda32.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+CPP_PROJ=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../include" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "_NOSDK" /D "_STATIC" /Fr"$(INTDIR)\\" /Fp"$(INTDIR)\miranda32.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c
 
 .c{$(INTDIR)}.obj::
    $(CPP) @<<
-   $(CPP_PROJ) $< 
+   $(CPP_PROJ) $<
 <<
 
 .cpp{$(INTDIR)}.obj::
    $(CPP) @<<
-   $(CPP_PROJ) $< 
+   $(CPP_PROJ) $<
 <<
 
 .cxx{$(INTDIR)}.obj::
    $(CPP) @<<
-   $(CPP_PROJ) $< 
+   $(CPP_PROJ) $<
 <<
 
 .c{$(INTDIR)}.sbr::
    $(CPP) @<<
-   $(CPP_PROJ) $< 
+   $(CPP_PROJ) $<
 <<
 
 .cpp{$(INTDIR)}.sbr::
    $(CPP) @<<
-   $(CPP_PROJ) $< 
+   $(CPP_PROJ) $<
 <<
 
 .cxx{$(INTDIR)}.sbr::
    $(CPP) @<<
-   $(CPP_PROJ) $< 
+   $(CPP_PROJ) $<
 <<
 
 MTL=midl.exe
-MTL_PROJ=/nologo /D "_DEBUG" /mktyplib203 /o "NUL" /win32 
+MTL_PROJ=/nologo /D "_DEBUG" /mktyplib203 /o "NUL" /win32
 RSC=rc.exe
-RSC_PROJ=/l 0x409 /fo"$(INTDIR)\vc6.res" /d "_DEBUG" 
+RSC_PROJ=/l 0x409 /fo"$(INTDIR)\vc6.res" /d "_DEBUG"
 BSC32=bscmake.exe
-BSC32_FLAGS=/nologo /o"$(OUTDIR)\miranda32.bsc" 
+BSC32_FLAGS=/nologo /o"$(OUTDIR)\miranda32.bsc"
 BSC32_SBRS= \
 	"$(INTDIR)\commonheaders.sbr" \
 	"$(INTDIR)\memory.sbr" \
@@ -972,7 +972,7 @@ BSC32_SBRS= \
 <<
 
 LINK32=link.exe
-LINK32_FLAGS=wsock32.lib kernel32.lib user32.lib gdi32.lib shell32.lib winspool.lib comdlg32.lib advapi32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib winmm.lib version.lib /nologo /subsystem:windows /incremental:yes /pdb:"$(OUTDIR)\miranda32.pdb" /map:"$(INTDIR)\miranda32.map" /debug /machine:I386 /out:"../bin/debug/miranda32.exe" 
+LINK32_FLAGS=wsock32.lib kernel32.lib user32.lib gdi32.lib shell32.lib winspool.lib comdlg32.lib advapi32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib winmm.lib version.lib /nologo /subsystem:windows /incremental:yes /pdb:"$(OUTDIR)\miranda32.pdb" /map:"$(INTDIR)\miranda32.map" /debug /machine:I386 /out:"../bin/debug/miranda32.exe"
 LINK32_OBJS= \
 	"$(INTDIR)\commonheaders.obj" \
 	"$(INTDIR)\memory.obj" \
@@ -1100,21 +1100,21 @@ INTDIR=.\Release_Unicode
 OutDir=.\Release_Unicode
 # End Custom Macros
 
-!IF "$(RECURSE)" == "0" 
+!IF "$(RECURSE)" == "0"
 
 ALL : "..\bin\Release Unicode\miranda32.exe" "$(OUTDIR)\miranda32.bsc"
 
-!ELSE 
+!ELSE
 
 ALL : "zlib - Win32 Release Unicode" "..\bin\Release Unicode\miranda32.exe" "$(OUTDIR)\miranda32.bsc"
 
-!ENDIF 
+!ENDIF
 
-!IF "$(RECURSE)" == "1" 
-CLEAN :"zlib - Win32 Release UnicodeCLEAN" 
-!ELSE 
+!IF "$(RECURSE)" == "1"
+CLEAN :"zlib - Win32 Release UnicodeCLEAN"
+!ELSE
 CLEAN :
-!ENDIF 
+!ENDIF
 	-@erase "$(INTDIR)\about.obj"
 	-@erase "$(INTDIR)\about.sbr"
 	-@erase "$(INTDIR)\addcontact.obj"
@@ -1348,44 +1348,44 @@ CLEAN :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
 CPP=cl.exe
-CPP_PROJ=/nologo /MD /W3 /GX /Zi /O1 /I "../include" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D "_NOSDK" /D "UNICODE" /D "_STATIC" /FAs /Fa"$(INTDIR)\\" /Fr"$(INTDIR)\\" /Fp"$(INTDIR)\miranda32.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+CPP_PROJ=/nologo /MD /W3 /GX /Zi /O1 /I "../include" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D "_NOSDK" /D "UNICODE" /D "_STATIC" /FAs /Fa"$(INTDIR)\\" /Fr"$(INTDIR)\\" /Fp"$(INTDIR)\miranda32.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c
 
 .c{$(INTDIR)}.obj::
    $(CPP) @<<
-   $(CPP_PROJ) $< 
+   $(CPP_PROJ) $<
 <<
 
 .cpp{$(INTDIR)}.obj::
    $(CPP) @<<
-   $(CPP_PROJ) $< 
+   $(CPP_PROJ) $<
 <<
 
 .cxx{$(INTDIR)}.obj::
    $(CPP) @<<
-   $(CPP_PROJ) $< 
+   $(CPP_PROJ) $<
 <<
 
 .c{$(INTDIR)}.sbr::
    $(CPP) @<<
-   $(CPP_PROJ) $< 
+   $(CPP_PROJ) $<
 <<
 
 .cpp{$(INTDIR)}.sbr::
    $(CPP) @<<
-   $(CPP_PROJ) $< 
+   $(CPP_PROJ) $<
 <<
 
 .cxx{$(INTDIR)}.sbr::
    $(CPP) @<<
-   $(CPP_PROJ) $< 
+   $(CPP_PROJ) $<
 <<
 
 MTL=midl.exe
-MTL_PROJ=/nologo /D "NDEBUG" /mktyplib203 /o "NUL" /win32 
+MTL_PROJ=/nologo /D "NDEBUG" /mktyplib203 /o "NUL" /win32
 RSC=rc.exe
-RSC_PROJ=/l 0x409 /fo"$(INTDIR)\vc6.res" /d "NDEBUG" 
+RSC_PROJ=/l 0x409 /fo"$(INTDIR)\vc6.res" /d "NDEBUG"
 BSC32=bscmake.exe
-BSC32_FLAGS=/nologo /o"$(OUTDIR)\miranda32.bsc" 
+BSC32_FLAGS=/nologo /o"$(OUTDIR)\miranda32.bsc"
 BSC32_SBRS= \
 	"$(INTDIR)\commonheaders.sbr" \
 	"$(INTDIR)\memory.sbr" \
@@ -1504,7 +1504,7 @@ BSC32_SBRS= \
 <<
 
 LINK32=link.exe
-LINK32_FLAGS=wsock32.lib kernel32.lib user32.lib gdi32.lib shell32.lib winspool.lib comdlg32.lib advapi32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib winmm.lib version.lib /nologo /subsystem:windows /incremental:no /pdb:"$(OUTDIR)\miranda32.pdb" /map:"$(INTDIR)\miranda32.map" /debug /machine:I386 /out:"../bin/Release Unicode/miranda32.exe" /fixed /ALIGN:4096 /ignore:4108 
+LINK32_FLAGS=wsock32.lib kernel32.lib user32.lib gdi32.lib shell32.lib winspool.lib comdlg32.lib advapi32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib winmm.lib version.lib /nologo /subsystem:windows /incremental:no /pdb:"$(OUTDIR)\miranda32.pdb" /map:"$(INTDIR)\miranda32.map" /debug /machine:I386 /out:"../bin/Release Unicode/miranda32.exe" /fixed /ALIGN:4096 /ignore:4108
 LINK32_OBJS= \
 	"$(INTDIR)\commonheaders.obj" \
 	"$(INTDIR)\memory.obj" \
@@ -1632,21 +1632,21 @@ INTDIR=.\Debug_Unicode
 OutDir=.\Debug_Unicode
 # End Custom Macros
 
-!IF "$(RECURSE)" == "0" 
+!IF "$(RECURSE)" == "0"
 
 ALL : "..\bin\Debug Unicode\miranda32.exe" "$(OUTDIR)\miranda32.bsc"
 
-!ELSE 
+!ELSE
 
 ALL : "zlib - Win32 Debug Unicode" "..\bin\Debug Unicode\miranda32.exe" "$(OUTDIR)\miranda32.bsc"
 
-!ENDIF 
+!ENDIF
 
-!IF "$(RECURSE)" == "1" 
-CLEAN :"zlib - Win32 Debug UnicodeCLEAN" 
-!ELSE 
+!IF "$(RECURSE)" == "1"
+CLEAN :"zlib - Win32 Debug UnicodeCLEAN"
+!ELSE
 CLEAN :
-!ENDIF 
+!ENDIF
 	-@erase "$(INTDIR)\about.obj"
 	-@erase "$(INTDIR)\about.sbr"
 	-@erase "$(INTDIR)\addcontact.obj"
@@ -1881,44 +1881,44 @@ CLEAN :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
 CPP=cl.exe
-CPP_PROJ=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../include" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "_NOSDK" /D "UNICODE" /D "_STATIC" /Fr"$(INTDIR)\\" /Fp"$(INTDIR)\miranda32.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+CPP_PROJ=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../include" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "_NOSDK" /D "UNICODE" /D "_STATIC" /Fr"$(INTDIR)\\" /Fp"$(INTDIR)\miranda32.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c
 
 .c{$(INTDIR)}.obj::
    $(CPP) @<<
-   $(CPP_PROJ) $< 
+   $(CPP_PROJ) $<
 <<
 
 .cpp{$(INTDIR)}.obj::
    $(CPP) @<<
-   $(CPP_PROJ) $< 
+   $(CPP_PROJ) $<
 <<
 
 .cxx{$(INTDIR)}.obj::
    $(CPP) @<<
-   $(CPP_PROJ) $< 
+   $(CPP_PROJ) $<
 <<
 
 .c{$(INTDIR)}.sbr::
    $(CPP) @<<
-   $(CPP_PROJ) $< 
+   $(CPP_PROJ) $<
 <<
 
 .cpp{$(INTDIR)}.sbr::
    $(CPP) @<<
-   $(CPP_PROJ) $< 
+   $(CPP_PROJ) $<
 <<
 
 .cxx{$(INTDIR)}.sbr::
    $(CPP) @<<
-   $(CPP_PROJ) $< 
+   $(CPP_PROJ) $<
 <<
 
 MTL=midl.exe
-MTL_PROJ=/nologo /D "_DEBUG" /mktyplib203 /o "NUL" /win32 
+MTL_PROJ=/nologo /D "_DEBUG" /mktyplib203 /o "NUL" /win32
 RSC=rc.exe
-RSC_PROJ=/l 0x409 /fo"$(INTDIR)\vc6.res" /d "_DEBUG" 
+RSC_PROJ=/l 0x409 /fo"$(INTDIR)\vc6.res" /d "_DEBUG"
 BSC32=bscmake.exe
-BSC32_FLAGS=/nologo /o"$(OUTDIR)\miranda32.bsc" 
+BSC32_FLAGS=/nologo /o"$(OUTDIR)\miranda32.bsc"
 BSC32_SBRS= \
 	"$(INTDIR)\commonheaders.sbr" \
 	"$(INTDIR)\memory.sbr" \
@@ -2037,7 +2037,7 @@ BSC32_SBRS= \
 <<
 
 LINK32=link.exe
-LINK32_FLAGS=wsock32.lib kernel32.lib user32.lib gdi32.lib shell32.lib winspool.lib comdlg32.lib advapi32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib winmm.lib version.lib /nologo /subsystem:windows /incremental:yes /pdb:"$(OUTDIR)\miranda32.pdb" /map:"$(INTDIR)\miranda32.map" /debug /machine:I386 /out:"../bin/Debug Unicode/miranda32.exe" 
+LINK32_FLAGS=wsock32.lib kernel32.lib user32.lib gdi32.lib shell32.lib winspool.lib comdlg32.lib advapi32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib winmm.lib version.lib /nologo /subsystem:windows /incremental:yes /pdb:"$(OUTDIR)\miranda32.pdb" /map:"$(INTDIR)\miranda32.map" /debug /machine:I386 /out:"../bin/Debug Unicode/miranda32.exe"
 LINK32_OBJS= \
 	"$(INTDIR)\commonheaders.obj" \
 	"$(INTDIR)\memory.obj" \
@@ -2157,16 +2157,16 @@ LINK32_OBJS= \
   $(LINK32_FLAGS) $(LINK32_OBJS)
 <<
 
-!ENDIF 
+!ENDIF
 
 
 !IF "$(NO_EXTERNAL_DEPS)" != "1"
 !IF EXISTS("miranda32.dep")
 !INCLUDE "miranda32.dep"
-!ELSE 
+!ELSE
 !MESSAGE Warning: cannot find "miranda32.dep"
-!ENDIF 
-!ENDIF 
+!ENDIF
+!ENDIF
 
 
 !IF "$(CFG)" == "miranda32 - Win32 Release" || "$(CFG)" == "miranda32 - Win32 Debug" || "$(CFG)" == "miranda32 - Win32 Release Unicode" || "$(CFG)" == "miranda32 - Win32 Debug Unicode"
@@ -2174,7 +2174,7 @@ SOURCE=.\core\commonheaders.cpp
 
 !IF  "$(CFG)" == "miranda32 - Win32 Release"
 
-CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../include" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D "_NOSDK" /D "_STATIC" /Fr"$(INTDIR)\\" /Fp"$(INTDIR)\miranda32.pch" /Yc"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../include" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D "_NOSDK" /D "_STATIC" /Fr"$(INTDIR)\\" /Fp"$(INTDIR)\miranda32.pch" /Yc"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c
 
 "$(INTDIR)\commonheaders.obj"	"$(INTDIR)\commonheaders.sbr"	"$(INTDIR)\miranda32.pch" : $(SOURCE) "$(INTDIR)"
 	$(CPP) @<<
@@ -2184,7 +2184,7 @@ CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../include" /D "NDEBUG" /D "WIN32" 
 
 !ELSEIF  "$(CFG)" == "miranda32 - Win32 Debug"
 
-CPP_SWITCHES=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../include" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "_NOSDK" /D "_STATIC" /Fr"$(INTDIR)\\" /Fp"$(INTDIR)\miranda32.pch" /Yc"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+CPP_SWITCHES=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../include" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "_NOSDK" /D "_STATIC" /Fr"$(INTDIR)\\" /Fp"$(INTDIR)\miranda32.pch" /Yc"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c
 
 "$(INTDIR)\commonheaders.obj"	"$(INTDIR)\commonheaders.sbr"	"$(INTDIR)\miranda32.pch" : $(SOURCE) "$(INTDIR)"
 	$(CPP) @<<
@@ -2194,7 +2194,7 @@ CPP_SWITCHES=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../include" /D "_DEBUG" /D "WI
 
 !ELSEIF  "$(CFG)" == "miranda32 - Win32 Release Unicode"
 
-CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../include" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D "_NOSDK" /D "UNICODE" /D "_STATIC" /FAs /Fa"$(INTDIR)\\" /Fr"$(INTDIR)\\" /Fp"$(INTDIR)\miranda32.pch" /Yc"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../include" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D "_NOSDK" /D "UNICODE" /D "_STATIC" /FAs /Fa"$(INTDIR)\\" /Fr"$(INTDIR)\\" /Fp"$(INTDIR)\miranda32.pch" /Yc"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c
 
 "$(INTDIR)\commonheaders.obj"	"$(INTDIR)\commonheaders.sbr"	"$(INTDIR)\miranda32.pch" : $(SOURCE) "$(INTDIR)"
 	$(CPP) @<<
@@ -2204,7 +2204,7 @@ CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../include" /D "NDEBUG" /D "WIN32" 
 
 !ELSEIF  "$(CFG)" == "miranda32 - Win32 Debug Unicode"
 
-CPP_SWITCHES=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../include" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "_NOSDK" /D "UNICODE" /D "_STATIC" /Fr"$(INTDIR)\\" /Fp"$(INTDIR)\miranda32.pch" /Yc"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+CPP_SWITCHES=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../include" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "_NOSDK" /D "UNICODE" /D "_STATIC" /Fr"$(INTDIR)\\" /Fp"$(INTDIR)\miranda32.pch" /Yc"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c
 
 "$(INTDIR)\commonheaders.obj"	"$(INTDIR)\commonheaders.sbr"	"$(INTDIR)\miranda32.pch" : $(SOURCE) "$(INTDIR)"
 	$(CPP) @<<
@@ -2212,7 +2212,7 @@ CPP_SWITCHES=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../include" /D "_DEBUG" /D "WI
 <<
 
 
-!ENDIF 
+!ENDIF
 
 SOURCE=.\core\memory.cpp
 
@@ -2224,7 +2224,7 @@ SOURCE=.\core\miranda.cpp
 
 !IF  "$(CFG)" == "miranda32 - Win32 Release"
 
-CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../include" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D "_NOSDK" /D "_STATIC" /Fr"$(INTDIR)\\" /Fp"$(INTDIR)\miranda32.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../include" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D "_NOSDK" /D "_STATIC" /Fr"$(INTDIR)\\" /Fp"$(INTDIR)\miranda32.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c
 
 "$(INTDIR)\miranda.obj"	"$(INTDIR)\miranda.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
 	$(CPP) @<<
@@ -2234,7 +2234,7 @@ CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../include" /D "NDEBUG" /D "WIN32" 
 
 !ELSEIF  "$(CFG)" == "miranda32 - Win32 Debug"
 
-CPP_SWITCHES=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../include" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "_NOSDK" /D "_STATIC" /Fr"$(INTDIR)\\" /Fp"$(INTDIR)\miranda32.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+CPP_SWITCHES=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../include" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "_NOSDK" /D "_STATIC" /Fr"$(INTDIR)\\" /Fp"$(INTDIR)\miranda32.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c
 
 "$(INTDIR)\miranda.obj"	"$(INTDIR)\miranda.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
 	$(CPP) @<<
@@ -2244,7 +2244,7 @@ CPP_SWITCHES=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../include" /D "_DEBUG" /D "WI
 
 !ELSEIF  "$(CFG)" == "miranda32 - Win32 Release Unicode"
 
-CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../include" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D "_NOSDK" /D "UNICODE" /D "_STATIC" /FAs /Fa"$(INTDIR)\\" /Fr"$(INTDIR)\\" /Fp"$(INTDIR)\miranda32.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../include" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D "_NOSDK" /D "UNICODE" /D "_STATIC" /FAs /Fa"$(INTDIR)\\" /Fr"$(INTDIR)\\" /Fp"$(INTDIR)\miranda32.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c
 
 "$(INTDIR)\miranda.obj"	"$(INTDIR)\miranda.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
 	$(CPP) @<<
@@ -2254,7 +2254,7 @@ CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../include" /D "NDEBUG" /D "WIN32" 
 
 !ELSEIF  "$(CFG)" == "miranda32 - Win32 Debug Unicode"
 
-CPP_SWITCHES=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../include" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "_NOSDK" /D "UNICODE" /D "_STATIC" /Fr"$(INTDIR)\\" /Fp"$(INTDIR)\miranda32.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+CPP_SWITCHES=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../include" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "_NOSDK" /D "UNICODE" /D "_STATIC" /Fr"$(INTDIR)\\" /Fp"$(INTDIR)\miranda32.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c
 
 "$(INTDIR)\miranda.obj"	"$(INTDIR)\miranda.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
 	$(CPP) @<<
@@ -2262,13 +2262,13 @@ CPP_SWITCHES=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../include" /D "_DEBUG" /D "WI
 <<
 
 
-!ENDIF 
+!ENDIF
 
 SOURCE=.\core\modules.cpp
 
 !IF  "$(CFG)" == "miranda32 - Win32 Release"
 
-CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../include" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D "_NOSDK" /D "_STATIC" /Fr"$(INTDIR)\\" /Fp"$(INTDIR)\miranda32.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../include" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D "_NOSDK" /D "_STATIC" /Fr"$(INTDIR)\\" /Fp"$(INTDIR)\miranda32.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c
 
 "$(INTDIR)\modules.obj"	"$(INTDIR)\modules.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
 	$(CPP) @<<
@@ -2278,7 +2278,7 @@ CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../include" /D "NDEBUG" /D "WIN32" 
 
 !ELSEIF  "$(CFG)" == "miranda32 - Win32 Debug"
 
-CPP_SWITCHES=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../include" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "_NOSDK" /D "_STATIC" /Fr"$(INTDIR)\\" /Fp"$(INTDIR)\miranda32.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+CPP_SWITCHES=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../include" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "_NOSDK" /D "_STATIC" /Fr"$(INTDIR)\\" /Fp"$(INTDIR)\miranda32.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c
 
 "$(INTDIR)\modules.obj"	"$(INTDIR)\modules.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
 	$(CPP) @<<
@@ -2288,7 +2288,7 @@ CPP_SWITCHES=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../include" /D "_DEBUG" /D "WI
 
 !ELSEIF  "$(CFG)" == "miranda32 - Win32 Release Unicode"
 
-CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../include" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D "_NOSDK" /D "UNICODE" /D "_STATIC" /FAs /Fa"$(INTDIR)\\" /Fr"$(INTDIR)\\" /Fp"$(INTDIR)\miranda32.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../include" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D "_NOSDK" /D "UNICODE" /D "_STATIC" /FAs /Fa"$(INTDIR)\\" /Fr"$(INTDIR)\\" /Fp"$(INTDIR)\miranda32.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c
 
 "$(INTDIR)\modules.obj"	"$(INTDIR)\modules.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
 	$(CPP) @<<
@@ -2298,7 +2298,7 @@ CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../include" /D "NDEBUG" /D "WIN32" 
 
 !ELSEIF  "$(CFG)" == "miranda32 - Win32 Debug Unicode"
 
-CPP_SWITCHES=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../include" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "_NOSDK" /D "UNICODE" /D "_STATIC" /Fr"$(INTDIR)\\" /Fp"$(INTDIR)\miranda32.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+CPP_SWITCHES=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../include" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "_NOSDK" /D "UNICODE" /D "_STATIC" /Fr"$(INTDIR)\\" /Fp"$(INTDIR)\miranda32.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c
 
 "$(INTDIR)\modules.obj"	"$(INTDIR)\modules.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
 	$(CPP) @<<
@@ -2306,13 +2306,13 @@ CPP_SWITCHES=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../include" /D "_DEBUG" /D "WI
 <<
 
 
-!ENDIF 
+!ENDIF
 
 SOURCE=.\modules\addcontact\addcontact.cpp
 
 !IF  "$(CFG)" == "miranda32 - Win32 Release"
 
-CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../include" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D "_NOSDK" /D "_STATIC" /Fr"$(INTDIR)\\" /Fp"$(INTDIR)\miranda32.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../include" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D "_NOSDK" /D "_STATIC" /Fr"$(INTDIR)\\" /Fp"$(INTDIR)\miranda32.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c
 
 "$(INTDIR)\addcontact.obj"	"$(INTDIR)\addcontact.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
 	$(CPP) @<<
@@ -2322,7 +2322,7 @@ CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../include" /D "NDEBUG" /D "WIN32" 
 
 !ELSEIF  "$(CFG)" == "miranda32 - Win32 Debug"
 
-CPP_SWITCHES=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../include" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "_NOSDK" /D "_STATIC" /Fr"$(INTDIR)\\" /Fp"$(INTDIR)\miranda32.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+CPP_SWITCHES=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../include" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "_NOSDK" /D "_STATIC" /Fr"$(INTDIR)\\" /Fp"$(INTDIR)\miranda32.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c
 
 "$(INTDIR)\addcontact.obj"	"$(INTDIR)\addcontact.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
 	$(CPP) @<<
@@ -2332,7 +2332,7 @@ CPP_SWITCHES=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../include" /D "_DEBUG" /D "WI
 
 !ELSEIF  "$(CFG)" == "miranda32 - Win32 Release Unicode"
 
-CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../include" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D "_NOSDK" /D "UNICODE" /D "_STATIC" /FAs /Fa"$(INTDIR)\\" /Fr"$(INTDIR)\\" /Fp"$(INTDIR)\miranda32.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../include" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D "_NOSDK" /D "UNICODE" /D "_STATIC" /FAs /Fa"$(INTDIR)\\" /Fr"$(INTDIR)\\" /Fp"$(INTDIR)\miranda32.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c
 
 "$(INTDIR)\addcontact.obj"	"$(INTDIR)\addcontact.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
 	$(CPP) @<<
@@ -2342,7 +2342,7 @@ CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../include" /D "NDEBUG" /D "WIN32" 
 
 !ELSEIF  "$(CFG)" == "miranda32 - Win32 Debug Unicode"
 
-CPP_SWITCHES=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../include" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "_NOSDK" /D "UNICODE" /D "_STATIC" /Fr"$(INTDIR)\\" /Fp"$(INTDIR)\miranda32.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+CPP_SWITCHES=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../include" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "_NOSDK" /D "UNICODE" /D "_STATIC" /Fr"$(INTDIR)\\" /Fp"$(INTDIR)\miranda32.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c
 
 "$(INTDIR)\addcontact.obj"	"$(INTDIR)\addcontact.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
 	$(CPP) @<<
@@ -2350,7 +2350,7 @@ CPP_SWITCHES=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../include" /D "_DEBUG" /D "WI
 <<
 
 
-!ENDIF 
+!ENDIF
 
 SOURCE=.\modules\autoaway\autoaway.cpp
 
@@ -2380,7 +2380,7 @@ SOURCE=.\modules\database\dbini.cpp
 
 !IF  "$(CFG)" == "miranda32 - Win32 Release"
 
-CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../include" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D "_NOSDK" /D "_STATIC" /Fr"$(INTDIR)\\" /Fp"$(INTDIR)\miranda32.pch" /Yu"../../core/commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../include" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D "_NOSDK" /D "_STATIC" /Fr"$(INTDIR)\\" /Fp"$(INTDIR)\miranda32.pch" /Yu"../../core/commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c
 
 "$(INTDIR)\dbini.obj"	"$(INTDIR)\dbini.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
 	$(CPP) @<<
@@ -2390,7 +2390,7 @@ CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../include" /D "NDEBUG" /D "WIN32" 
 
 !ELSEIF  "$(CFG)" == "miranda32 - Win32 Debug"
 
-CPP_SWITCHES=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../include" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "_NOSDK" /D "_STATIC" /Fr"$(INTDIR)\\" /Fp"$(INTDIR)\miranda32.pch" /Yu"../../core/commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+CPP_SWITCHES=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../include" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "_NOSDK" /D "_STATIC" /Fr"$(INTDIR)\\" /Fp"$(INTDIR)\miranda32.pch" /Yu"../../core/commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c
 
 "$(INTDIR)\dbini.obj"	"$(INTDIR)\dbini.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
 	$(CPP) @<<
@@ -2400,7 +2400,7 @@ CPP_SWITCHES=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../include" /D "_DEBUG" /D "WI
 
 !ELSEIF  "$(CFG)" == "miranda32 - Win32 Release Unicode"
 
-CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../include" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D "_NOSDK" /D "UNICODE" /D "_STATIC" /FAs /Fa"$(INTDIR)\\" /Fr"$(INTDIR)\\" /Fp"$(INTDIR)\miranda32.pch" /Yu"../../core/commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../include" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D "_NOSDK" /D "UNICODE" /D "_STATIC" /FAs /Fa"$(INTDIR)\\" /Fr"$(INTDIR)\\" /Fp"$(INTDIR)\miranda32.pch" /Yu"../../core/commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c
 
 "$(INTDIR)\dbini.obj"	"$(INTDIR)\dbini.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
 	$(CPP) @<<
@@ -2410,7 +2410,7 @@ CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../include" /D "NDEBUG" /D "WIN32" 
 
 !ELSEIF  "$(CFG)" == "miranda32 - Win32 Debug Unicode"
 
-CPP_SWITCHES=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../include" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "_NOSDK" /D "UNICODE" /D "_STATIC" /Fr"$(INTDIR)\\" /Fp"$(INTDIR)\miranda32.pch" /Yu"../../core/commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+CPP_SWITCHES=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../include" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "_NOSDK" /D "UNICODE" /D "_STATIC" /Fr"$(INTDIR)\\" /Fp"$(INTDIR)\miranda32.pch" /Yu"../../core/commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c
 
 "$(INTDIR)\dbini.obj"	"$(INTDIR)\dbini.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
 	$(CPP) @<<
@@ -2418,7 +2418,7 @@ CPP_SWITCHES=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../include" /D "_DEBUG" /D "WI
 <<
 
 
-!ENDIF 
+!ENDIF
 
 SOURCE=.\modules\database\dblists.cpp
 
@@ -2994,7 +2994,7 @@ SOURCE=.\modules\icolib\extracticon.cpp
 
 !IF  "$(CFG)" == "miranda32 - Win32 Release"
 
-CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../include" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D "_NOSDK" /D "_STATIC" /Fr"$(INTDIR)\\" /Fp"$(INTDIR)\miranda32.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../include" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D "_NOSDK" /D "_STATIC" /Fr"$(INTDIR)\\" /Fp"$(INTDIR)\miranda32.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c
 
 "$(INTDIR)\extracticon.obj"	"$(INTDIR)\extracticon.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
 	$(CPP) @<<
@@ -3004,7 +3004,7 @@ CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../include" /D "NDEBUG" /D "WIN32" 
 
 !ELSEIF  "$(CFG)" == "miranda32 - Win32 Debug"
 
-CPP_SWITCHES=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../include" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "_NOSDK" /D "_STATIC" /Fr"$(INTDIR)\\" /Fp"$(INTDIR)\miranda32.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+CPP_SWITCHES=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../include" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "_NOSDK" /D "_STATIC" /Fr"$(INTDIR)\\" /Fp"$(INTDIR)\miranda32.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c
 
 "$(INTDIR)\extracticon.obj"	"$(INTDIR)\extracticon.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
 	$(CPP) @<<
@@ -3014,7 +3014,7 @@ CPP_SWITCHES=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../include" /D "_DEBUG" /D "WI
 
 !ELSEIF  "$(CFG)" == "miranda32 - Win32 Release Unicode"
 
-CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../include" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D "_NOSDK" /D "UNICODE" /D "_STATIC" /FAs /Fa"$(INTDIR)\\" /Fr"$(INTDIR)\\" /Fp"$(INTDIR)\miranda32.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../include" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D "_NOSDK" /D "UNICODE" /D "_STATIC" /FAs /Fa"$(INTDIR)\\" /Fr"$(INTDIR)\\" /Fp"$(INTDIR)\miranda32.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c
 
 "$(INTDIR)\extracticon.obj"	"$(INTDIR)\extracticon.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
 	$(CPP) @<<
@@ -3024,7 +3024,7 @@ CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../include" /D "NDEBUG" /D "WIN32" 
 
 !ELSEIF  "$(CFG)" == "miranda32 - Win32 Debug Unicode"
 
-CPP_SWITCHES=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../include" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "_NOSDK" /D "UNICODE" /D "_STATIC" /Fr"$(INTDIR)\\" /Fp"$(INTDIR)\miranda32.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+CPP_SWITCHES=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../include" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "_NOSDK" /D "UNICODE" /D "_STATIC" /Fr"$(INTDIR)\\" /Fp"$(INTDIR)\miranda32.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c
 
 "$(INTDIR)\extracticon.obj"	"$(INTDIR)\extracticon.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
 	$(CPP) @<<
@@ -3032,7 +3032,7 @@ CPP_SWITCHES=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../include" /D "_DEBUG" /D "WI
 <<
 
 
-!ENDIF 
+!ENDIF
 
 SOURCE=.\modules\icolib\skin2icons.cpp
 
@@ -3066,54 +3066,53 @@ SOURCE=.\vc6.rc
 
 !IF  "$(CFG)" == "miranda32 - Win32 Release"
 
-"zlib - Win32 Release" : 
-   cd "\Miranda9\miranda\plugins\zlib"
-   $(MAKE) /$(MAKEFLAGS) /F .\zlib.mak CFG="zlib - Win32 Release" 
+"zlib - Win32 Release" :
+   cd "..\plugins\zlib"
+   $(MAKE) /$(MAKEFLAGS) /F .\zlib.mak CFG="zlib - Win32 Release"
    cd "..\..\src"
 
-"zlib - Win32 ReleaseCLEAN" : 
-   cd "\Miranda9\miranda\plugins\zlib"
-   $(MAKE) /$(MAKEFLAGS) /F .\zlib.mak CFG="zlib - Win32 Release" RECURSE=1 CLEAN 
+"zlib - Win32 ReleaseCLEAN" :
+   cd "..\plugins\zlib"
+   $(MAKE) /$(MAKEFLAGS) /F .\zlib.mak CFG="zlib - Win32 Release" RECURSE=1 CLEAN
    cd "..\..\src"
 
 !ELSEIF  "$(CFG)" == "miranda32 - Win32 Debug"
 
-"zlib - Win32 Debug" : 
-   cd "\Miranda9\miranda\plugins\zlib"
-   $(MAKE) /$(MAKEFLAGS) /F .\zlib.mak CFG="zlib - Win32 Debug" 
+"zlib - Win32 Debug" :
+   cd "..\plugins\zlib"
+   $(MAKE) /$(MAKEFLAGS) /F .\zlib.mak CFG="zlib - Win32 Debug"
    cd "..\..\src"
 
-"zlib - Win32 DebugCLEAN" : 
-   cd "\Miranda9\miranda\plugins\zlib"
-   $(MAKE) /$(MAKEFLAGS) /F .\zlib.mak CFG="zlib - Win32 Debug" RECURSE=1 CLEAN 
+"zlib - Win32 DebugCLEAN" :
+   cd "..\plugins\zlib"
+   $(MAKE) /$(MAKEFLAGS) /F .\zlib.mak CFG="zlib - Win32 Debug" RECURSE=1 CLEAN
    cd "..\..\src"
 
 !ELSEIF  "$(CFG)" == "miranda32 - Win32 Release Unicode"
 
-"zlib - Win32 Release Unicode" : 
-   cd "\Miranda9\miranda\plugins\zlib"
-   $(MAKE) /$(MAKEFLAGS) /F .\zlib.mak CFG="zlib - Win32 Release Unicode" 
+"zlib - Win32 Release Unicode" :
+   cd "..\plugins\zlib"
+   $(MAKE) /$(MAKEFLAGS) /F .\zlib.mak CFG="zlib - Win32 Release Unicode"
    cd "..\..\src"
 
-"zlib - Win32 Release UnicodeCLEAN" : 
-   cd "\Miranda9\miranda\plugins\zlib"
-   $(MAKE) /$(MAKEFLAGS) /F .\zlib.mak CFG="zlib - Win32 Release Unicode" RECURSE=1 CLEAN 
+"zlib - Win32 Release UnicodeCLEAN" :
+   cd "..\plugins\zlib"
+   $(MAKE) /$(MAKEFLAGS) /F .\zlib.mak CFG="zlib - Win32 Release Unicode" RECURSE=1 CLEAN
    cd "..\..\src"
 
 !ELSEIF  "$(CFG)" == "miranda32 - Win32 Debug Unicode"
 
-"zlib - Win32 Debug Unicode" : 
-   cd "\Miranda9\miranda\plugins\zlib"
-   $(MAKE) /$(MAKEFLAGS) /F .\zlib.mak CFG="zlib - Win32 Debug Unicode" 
+"zlib - Win32 Debug Unicode" :
+   cd "..\plugins\zlib"
+   $(MAKE) /$(MAKEFLAGS) /F .\zlib.mak CFG="zlib - Win32 Debug Unicode"
    cd "..\..\src"
 
-"zlib - Win32 Debug UnicodeCLEAN" : 
-   cd "\Miranda9\miranda\plugins\zlib"
-   $(MAKE) /$(MAKEFLAGS) /F .\zlib.mak CFG="zlib - Win32 Debug Unicode" RECURSE=1 CLEAN 
+"zlib - Win32 Debug UnicodeCLEAN" :
+   cd "..\plugins\zlib"
+   $(MAKE) /$(MAKEFLAGS) /F .\zlib.mak CFG="zlib - Win32 Debug Unicode" RECURSE=1 CLEAN
    cd "..\..\src"
 
-!ENDIF 
+!ENDIF
 
 
-!ENDIF 
-
+!ENDIF
