@@ -1083,22 +1083,15 @@ void CMsnProto::p2p_InitFileTransfer(
 				ft->std.totalBytes = ft->std.currentFileSize = ((HFileContext*)szContext)->dwSize;
 				ft->std.totalFiles = 1;
 
-				char* fname = mir_utf8encodeT(ft->std.tszCurrentFile);
+				TCHAR tComment[40];
+				mir_sntprintf(tComment, SIZEOF(tComment), TranslateT("%I64u bytes"), ft->std.currentFileSize);
 
-				size_t tFileNameLen = strlen(fname);
-				char tComment[40];
-				int tCommentLen = mir_snprintf(tComment, sizeof(tComment), "%I64u bytes", ft->std.currentFileSize);
-				char* szBlob = (char*)alloca(sizeof(DWORD) + tFileNameLen + tCommentLen + 2);
-				*(PDWORD)szBlob = 0;
-				strcpy(szBlob + sizeof(DWORD), fname);
-				strcpy(szBlob + sizeof(DWORD) + tFileNameLen + 1, tComment);
-
-				mir_free(fname);
-
-				PROTORECVEVENT pre;
-				pre.flags = PREF_UTF;
-				pre.timestamp = (DWORD)time(NULL);
-				pre.szMessage = (char*)szBlob;
+				PROTORECVFILET pre = {0};
+				pre.flags = PREF_TCHAR;
+				pre.fileCount = 1;
+				pre.timestamp = time(NULL);
+				pre.tszDescription = tComment;
+				pre.ptszFiles = &ft->std.tszCurrentFile;
 				pre.lParam = (LPARAM)ft;
 
 				CCSDATA ccs;

@@ -784,7 +784,7 @@ int __cdecl CMsnProto::RecvContacts(HANDLE hContact, PROTORECVEVENT*)
 int __cdecl CMsnProto::RecvFile(HANDLE hContact, PROTOFILEEVENT* evt)
 {
 	CCSDATA ccs = { hContact, PSR_FILE, 0, (LPARAM)evt };
-	return MSN_CallService(MS_PROTO_RECVFILE, 0, (LPARAM)&ccs);
+	return MSN_CallService(MS_PROTO_RECVFILET, 0, (LPARAM)&ccs);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////

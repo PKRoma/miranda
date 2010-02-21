@@ -148,18 +148,15 @@ void CMsnProto::sttInviteMessage(ThreadData* info, char* msgBody, char* email, c
 		ft->std.totalFiles = 1;
 		ft->szInvcookie = mir_strdup(Invcookie);
 
-		size_t tFileNameLen = strlen(Appfile);
-		char tComment[40];
-		int tCommentLen = mir_snprintf(tComment, sizeof(tComment), "%I64u bytes", ft->std.currentFileSize);
-		char* szBlob = (char*)mir_alloc(sizeof(DWORD) + tFileNameLen + tCommentLen + 2);
-		*(PDWORD)szBlob = 0;
-		strcpy(szBlob + sizeof(DWORD), Appfile);
-		strcpy(szBlob + sizeof(DWORD) + tFileNameLen + 1, tComment);
+		TCHAR tComment[40];
+		mir_sntprintf(tComment, SIZEOF(tComment), TranslateT("%I64u bytes"), ft->std.currentFileSize);
 
-		PROTORECVEVENT pre;
-		pre.flags = PREF_UTF;
-		pre.timestamp = (DWORD)time(NULL);
-		pre.szMessage = (char*)szBlob;
+		PROTORECVFILET pre = {0};
+		pre.flags = PREF_TCHAR;
+		pre.fileCount = 1;
+		pre.timestamp = time(NULL);
+		pre.tszDescription = tComment;
+		pre.ptszFiles = &ft->std.tszCurrentFile;
 		pre.lParam = (LPARAM)ft;
 
 		CCSDATA ccs;
@@ -168,7 +165,6 @@ void CMsnProto::sttInviteMessage(ThreadData* info, char* msgBody, char* email, c
 		ccs.wParam = 0;
 		ccs.lParam = (LPARAM)&pre;
 		MSN_CallService(MS_PROTO_CHAINRECV, 0, (LPARAM)&ccs);
-		mir_free(pre.szMessage);
 		return;
 	}
 
