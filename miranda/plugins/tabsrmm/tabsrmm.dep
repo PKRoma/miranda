@@ -53,23 +53,25 @@
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
 	".\chat\muchighlight.h"\
+	".\include\contactcache.h"\
+	".\include\controls.h"\
+	".\include\functions.h"\
+	".\include\generic_msghandlers.h"\
+	".\include\globals.h"\
+	".\include\infopanel.h"\
+	".\include\mim.h"\
+	".\include\msgdlgutils.h"\
+	".\include\msgs.h"\
+	".\include\nen.h"\
+	".\include\sendqueue.h"\
+	".\include\sidebar.h"\
+	".\include\taskbar.h"\
+	".\include\templates.h"\
+	".\include\themes.h"\
+	".\include\translator.h"\
+	".\include\typingnotify.h"\
+	".\include\utils.h"\
 	".\src\commonheaders.h"\
-	".\src\controls.h"\
-	".\src\functions.h"\
-	".\src\generic_msghandlers.h"\
-	".\src\globals.h"\
-	".\src\infopanel.h"\
-	".\src\mim.h"\
-	".\src\msgdlgutils.h"\
-	".\src\msgs.h"\
-	".\src\nen.h"\
-	".\src\sendqueue.h"\
-	".\src\sidebar.h"\
-	".\src\taskbar.h"\
-	".\src\templates.h"\
-	".\src\themes.h"\
-	".\src\translator.h"\
-	".\src\typingnotify.h"\
 	
 
 .\chat\colorchooser.cpp : \
@@ -125,23 +127,25 @@
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
 	".\chat\muchighlight.h"\
+	".\include\contactcache.h"\
+	".\include\controls.h"\
+	".\include\functions.h"\
+	".\include\generic_msghandlers.h"\
+	".\include\globals.h"\
+	".\include\infopanel.h"\
+	".\include\mim.h"\
+	".\include\msgdlgutils.h"\
+	".\include\msgs.h"\
+	".\include\nen.h"\
+	".\include\sendqueue.h"\
+	".\include\sidebar.h"\
+	".\include\taskbar.h"\
+	".\include\templates.h"\
+	".\include\themes.h"\
+	".\include\translator.h"\
+	".\include\typingnotify.h"\
+	".\include\utils.h"\
 	".\src\commonheaders.h"\
-	".\src\controls.h"\
-	".\src\functions.h"\
-	".\src\generic_msghandlers.h"\
-	".\src\globals.h"\
-	".\src\infopanel.h"\
-	".\src\mim.h"\
-	".\src\msgdlgutils.h"\
-	".\src\msgs.h"\
-	".\src\nen.h"\
-	".\src\sendqueue.h"\
-	".\src\sidebar.h"\
-	".\src\taskbar.h"\
-	".\src\templates.h"\
-	".\src\themes.h"\
-	".\src\translator.h"\
-	".\src\typingnotify.h"\
 	
 
 .\chat\log.cpp : \
@@ -197,23 +201,25 @@
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
 	".\chat\muchighlight.h"\
+	".\include\contactcache.h"\
+	".\include\controls.h"\
+	".\include\functions.h"\
+	".\include\generic_msghandlers.h"\
+	".\include\globals.h"\
+	".\include\infopanel.h"\
+	".\include\mim.h"\
+	".\include\msgdlgutils.h"\
+	".\include\msgs.h"\
+	".\include\nen.h"\
+	".\include\sendqueue.h"\
+	".\include\sidebar.h"\
+	".\include\taskbar.h"\
+	".\include\templates.h"\
+	".\include\themes.h"\
+	".\include\translator.h"\
+	".\include\typingnotify.h"\
+	".\include\utils.h"\
 	".\src\commonheaders.h"\
-	".\src\controls.h"\
-	".\src\functions.h"\
-	".\src\generic_msghandlers.h"\
-	".\src\globals.h"\
-	".\src\infopanel.h"\
-	".\src\mim.h"\
-	".\src\msgdlgutils.h"\
-	".\src\msgs.h"\
-	".\src\nen.h"\
-	".\src\sendqueue.h"\
-	".\src\sidebar.h"\
-	".\src\taskbar.h"\
-	".\src\templates.h"\
-	".\src\themes.h"\
-	".\src\translator.h"\
-	".\src\typingnotify.h"\
 	
 
 .\chat\main.cpp : \
@@ -269,23 +275,25 @@
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
 	".\chat\muchighlight.h"\
+	".\include\contactcache.h"\
+	".\include\controls.h"\
+	".\include\functions.h"\
+	".\include\generic_msghandlers.h"\
+	".\include\globals.h"\
+	".\include\infopanel.h"\
+	".\include\mim.h"\
+	".\include\msgdlgutils.h"\
+	".\include\msgs.h"\
+	".\include\nen.h"\
+	".\include\sendqueue.h"\
+	".\include\sidebar.h"\
+	".\include\taskbar.h"\
+	".\include\templates.h"\
+	".\include\themes.h"\
+	".\include\translator.h"\
+	".\include\typingnotify.h"\
+	".\include\utils.h"\
 	".\src\commonheaders.h"\
-	".\src\controls.h"\
-	".\src\functions.h"\
-	".\src\generic_msghandlers.h"\
-	".\src\globals.h"\
-	".\src\infopanel.h"\
-	".\src\mim.h"\
-	".\src\msgdlgutils.h"\
-	".\src\msgs.h"\
-	".\src\nen.h"\
-	".\src\sendqueue.h"\
-	".\src\sidebar.h"\
-	".\src\taskbar.h"\
-	".\src\templates.h"\
-	".\src\themes.h"\
-	".\src\translator.h"\
-	".\src\typingnotify.h"\
 	
 
 .\chat\manager.cpp : \
@@ -341,23 +349,25 @@
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
 	".\chat\muchighlight.h"\
+	".\include\contactcache.h"\
+	".\include\controls.h"\
+	".\include\functions.h"\
+	".\include\generic_msghandlers.h"\
+	".\include\globals.h"\
+	".\include\infopanel.h"\
+	".\include\mim.h"\
+	".\include\msgdlgutils.h"\
+	".\include\msgs.h"\
+	".\include\nen.h"\
+	".\include\sendqueue.h"\
+	".\include\sidebar.h"\
+	".\include\taskbar.h"\
+	".\include\templates.h"\
+	".\include\themes.h"\
+	".\include\translator.h"\
+	".\include\typingnotify.h"\
+	".\include\utils.h"\
 	".\src\commonheaders.h"\
-	".\src\controls.h"\
-	".\src\functions.h"\
-	".\src\generic_msghandlers.h"\
-	".\src\globals.h"\
-	".\src\infopanel.h"\
-	".\src\mim.h"\
-	".\src\msgdlgutils.h"\
-	".\src\msgs.h"\
-	".\src\nen.h"\
-	".\src\sendqueue.h"\
-	".\src\sidebar.h"\
-	".\src\taskbar.h"\
-	".\src\templates.h"\
-	".\src\themes.h"\
-	".\src\translator.h"\
-	".\src\typingnotify.h"\
 	
 
 .\chat\message.cpp : \
@@ -413,23 +423,25 @@
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
 	".\chat\muchighlight.h"\
+	".\include\contactcache.h"\
+	".\include\controls.h"\
+	".\include\functions.h"\
+	".\include\generic_msghandlers.h"\
+	".\include\globals.h"\
+	".\include\infopanel.h"\
+	".\include\mim.h"\
+	".\include\msgdlgutils.h"\
+	".\include\msgs.h"\
+	".\include\nen.h"\
+	".\include\sendqueue.h"\
+	".\include\sidebar.h"\
+	".\include\taskbar.h"\
+	".\include\templates.h"\
+	".\include\themes.h"\
+	".\include\translator.h"\
+	".\include\typingnotify.h"\
+	".\include\utils.h"\
 	".\src\commonheaders.h"\
-	".\src\controls.h"\
-	".\src\functions.h"\
-	".\src\generic_msghandlers.h"\
-	".\src\globals.h"\
-	".\src\infopanel.h"\
-	".\src\mim.h"\
-	".\src\msgdlgutils.h"\
-	".\src\msgs.h"\
-	".\src\nen.h"\
-	".\src\sendqueue.h"\
-	".\src\sidebar.h"\
-	".\src\taskbar.h"\
-	".\src\templates.h"\
-	".\src\themes.h"\
-	".\src\translator.h"\
-	".\src\typingnotify.h"\
 	
 
 .\chat\muchighlight.cpp : \
@@ -485,23 +497,25 @@
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
 	".\chat\muchighlight.h"\
+	".\include\contactcache.h"\
+	".\include\controls.h"\
+	".\include\functions.h"\
+	".\include\generic_msghandlers.h"\
+	".\include\globals.h"\
+	".\include\infopanel.h"\
+	".\include\mim.h"\
+	".\include\msgdlgutils.h"\
+	".\include\msgs.h"\
+	".\include\nen.h"\
+	".\include\sendqueue.h"\
+	".\include\sidebar.h"\
+	".\include\taskbar.h"\
+	".\include\templates.h"\
+	".\include\themes.h"\
+	".\include\translator.h"\
+	".\include\typingnotify.h"\
+	".\include\utils.h"\
 	".\src\commonheaders.h"\
-	".\src\controls.h"\
-	".\src\functions.h"\
-	".\src\generic_msghandlers.h"\
-	".\src\globals.h"\
-	".\src\infopanel.h"\
-	".\src\mim.h"\
-	".\src\msgdlgutils.h"\
-	".\src\msgs.h"\
-	".\src\nen.h"\
-	".\src\sendqueue.h"\
-	".\src\sidebar.h"\
-	".\src\taskbar.h"\
-	".\src\templates.h"\
-	".\src\themes.h"\
-	".\src\translator.h"\
-	".\src\typingnotify.h"\
 	
 
 .\chat\options.cpp : \
@@ -557,23 +571,25 @@
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
 	".\chat\muchighlight.h"\
+	".\include\contactcache.h"\
+	".\include\controls.h"\
+	".\include\functions.h"\
+	".\include\generic_msghandlers.h"\
+	".\include\globals.h"\
+	".\include\infopanel.h"\
+	".\include\mim.h"\
+	".\include\msgdlgutils.h"\
+	".\include\msgs.h"\
+	".\include\nen.h"\
+	".\include\sendqueue.h"\
+	".\include\sidebar.h"\
+	".\include\taskbar.h"\
+	".\include\templates.h"\
+	".\include\themes.h"\
+	".\include\translator.h"\
+	".\include\typingnotify.h"\
+	".\include\utils.h"\
 	".\src\commonheaders.h"\
-	".\src\controls.h"\
-	".\src\functions.h"\
-	".\src\generic_msghandlers.h"\
-	".\src\globals.h"\
-	".\src\infopanel.h"\
-	".\src\mim.h"\
-	".\src\msgdlgutils.h"\
-	".\src\msgs.h"\
-	".\src\nen.h"\
-	".\src\sendqueue.h"\
-	".\src\sidebar.h"\
-	".\src\taskbar.h"\
-	".\src\templates.h"\
-	".\src\themes.h"\
-	".\src\translator.h"\
-	".\src\typingnotify.h"\
 	
 
 .\chat\services.cpp : \
@@ -629,23 +645,25 @@
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
 	".\chat\muchighlight.h"\
+	".\include\contactcache.h"\
+	".\include\controls.h"\
+	".\include\functions.h"\
+	".\include\generic_msghandlers.h"\
+	".\include\globals.h"\
+	".\include\infopanel.h"\
+	".\include\mim.h"\
+	".\include\msgdlgutils.h"\
+	".\include\msgs.h"\
+	".\include\nen.h"\
+	".\include\sendqueue.h"\
+	".\include\sidebar.h"\
+	".\include\taskbar.h"\
+	".\include\templates.h"\
+	".\include\themes.h"\
+	".\include\translator.h"\
+	".\include\typingnotify.h"\
+	".\include\utils.h"\
 	".\src\commonheaders.h"\
-	".\src\controls.h"\
-	".\src\functions.h"\
-	".\src\generic_msghandlers.h"\
-	".\src\globals.h"\
-	".\src\infopanel.h"\
-	".\src\mim.h"\
-	".\src\msgdlgutils.h"\
-	".\src\msgs.h"\
-	".\src\nen.h"\
-	".\src\sendqueue.h"\
-	".\src\sidebar.h"\
-	".\src\taskbar.h"\
-	".\src\templates.h"\
-	".\src\themes.h"\
-	".\src\translator.h"\
-	".\src\typingnotify.h"\
 	
 
 .\chat\tools.cpp : \
@@ -701,23 +719,25 @@
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
 	".\chat\muchighlight.h"\
+	".\include\contactcache.h"\
+	".\include\controls.h"\
+	".\include\functions.h"\
+	".\include\generic_msghandlers.h"\
+	".\include\globals.h"\
+	".\include\infopanel.h"\
+	".\include\mim.h"\
+	".\include\msgdlgutils.h"\
+	".\include\msgs.h"\
+	".\include\nen.h"\
+	".\include\sendqueue.h"\
+	".\include\sidebar.h"\
+	".\include\taskbar.h"\
+	".\include\templates.h"\
+	".\include\themes.h"\
+	".\include\translator.h"\
+	".\include\typingnotify.h"\
+	".\include\utils.h"\
 	".\src\commonheaders.h"\
-	".\src\controls.h"\
-	".\src\functions.h"\
-	".\src\generic_msghandlers.h"\
-	".\src\globals.h"\
-	".\src\infopanel.h"\
-	".\src\mim.h"\
-	".\src\msgdlgutils.h"\
-	".\src\msgs.h"\
-	".\src\nen.h"\
-	".\src\sendqueue.h"\
-	".\src\sidebar.h"\
-	".\src\taskbar.h"\
-	".\src\templates.h"\
-	".\src\themes.h"\
-	".\src\translator.h"\
-	".\src\typingnotify.h"\
 	
 
 .\chat\window.cpp : \
@@ -773,23 +793,25 @@
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
 	".\chat\muchighlight.h"\
+	".\include\contactcache.h"\
+	".\include\controls.h"\
+	".\include\functions.h"\
+	".\include\generic_msghandlers.h"\
+	".\include\globals.h"\
+	".\include\infopanel.h"\
+	".\include\mim.h"\
+	".\include\msgdlgutils.h"\
+	".\include\msgs.h"\
+	".\include\nen.h"\
+	".\include\sendqueue.h"\
+	".\include\sidebar.h"\
+	".\include\taskbar.h"\
+	".\include\templates.h"\
+	".\include\themes.h"\
+	".\include\translator.h"\
+	".\include\typingnotify.h"\
+	".\include\utils.h"\
 	".\src\commonheaders.h"\
-	".\src\controls.h"\
-	".\src\functions.h"\
-	".\src\generic_msghandlers.h"\
-	".\src\globals.h"\
-	".\src\infopanel.h"\
-	".\src\mim.h"\
-	".\src\msgdlgutils.h"\
-	".\src\msgs.h"\
-	".\src\nen.h"\
-	".\src\sendqueue.h"\
-	".\src\sidebar.h"\
-	".\src\taskbar.h"\
-	".\src\templates.h"\
-	".\src\themes.h"\
-	".\src\translator.h"\
-	".\src\typingnotify.h"\
 	{$(INCLUDE)}"tom.h"\
 	
 
@@ -846,23 +868,99 @@
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
 	".\chat\muchighlight.h"\
+	".\include\contactcache.h"\
+	".\include\controls.h"\
+	".\include\functions.h"\
+	".\include\generic_msghandlers.h"\
+	".\include\globals.h"\
+	".\include\infopanel.h"\
+	".\include\mim.h"\
+	".\include\msgdlgutils.h"\
+	".\include\msgs.h"\
+	".\include\nen.h"\
+	".\include\sendqueue.h"\
+	".\include\sidebar.h"\
+	".\include\taskbar.h"\
+	".\include\templates.h"\
+	".\include\themes.h"\
+	".\include\translator.h"\
+	".\include\typingnotify.h"\
+	".\include\utils.h"\
 	".\src\commonheaders.h"\
-	".\src\controls.h"\
-	".\src\functions.h"\
-	".\src\generic_msghandlers.h"\
-	".\src\globals.h"\
-	".\src\infopanel.h"\
-	".\src\mim.h"\
-	".\src\msgdlgutils.h"\
-	".\src\msgs.h"\
-	".\src\nen.h"\
-	".\src\sendqueue.h"\
-	".\src\sidebar.h"\
-	".\src\taskbar.h"\
-	".\src\templates.h"\
-	".\src\themes.h"\
-	".\src\translator.h"\
-	".\src\typingnotify.h"\
+	
+
+.\src\contactcache.cpp : \
+	"..\..\include\m_acc.h"\
+	"..\..\include\m_addcontact.h"\
+	"..\..\include\m_avatars.h"\
+	"..\..\include\m_button.h"\
+	"..\..\include\m_chat.h"\
+	"..\..\include\m_clc.h"\
+	"..\..\include\m_clist.h"\
+	"..\..\include\m_clui.h"\
+	"..\..\include\m_contacts.h"\
+	"..\..\include\m_database.h"\
+	"..\..\include\m_file.h"\
+	"..\..\include\m_fontservice.h"\
+	"..\..\include\m_freeimage.h"\
+	"..\..\include\m_genmenu.h"\
+	"..\..\include\m_history.h"\
+	"..\..\include\m_hotkeys.h"\
+	"..\..\include\m_icolib.h"\
+	"..\..\include\m_imgsrvc.h"\
+	"..\..\include\m_langpack.h"\
+	"..\..\include\m_message.h"\
+	"..\..\include\m_options.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protomod.h"\
+	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_skin.h"\
+	"..\..\include\m_stdhdr.h"\
+	"..\..\include\m_system.h"\
+	"..\..\include\m_userinfo.h"\
+	"..\..\include\m_utils.h"\
+	"..\..\include\newpluginapi.h"\
+	"..\..\include\statusmodes.h"\
+	"..\..\include\win2k.h"\
+	".\API\m_buttonbar.h"\
+	".\API\m_cln_skinedit.h"\
+	".\API\m_fingerprint.h"\
+	".\API\m_flash.h"\
+	".\API\m_folders.h"\
+	".\API\m_historyevents.h"\
+	".\API\m_ieview.h"\
+	".\API\m_mathmodule.h"\
+	".\API\m_metacontacts.h"\
+	".\API\m_msg_buttonsbar.h"\
+	".\API\m_nudge.h"\
+	".\API\m_popup.h"\
+	".\API\m_smileyadd.h"\
+	".\API\m_spellchecker.h"\
+	".\API\m_toptoolbar.h"\
+	".\API\m_updater.h"\
+	".\chat\chat.h"\
+	".\chat\chatprototypes.h"\
+	".\chat\muchighlight.h"\
+	".\include\contactcache.h"\
+	".\include\controls.h"\
+	".\include\functions.h"\
+	".\include\generic_msghandlers.h"\
+	".\include\globals.h"\
+	".\include\infopanel.h"\
+	".\include\mim.h"\
+	".\include\msgdlgutils.h"\
+	".\include\msgs.h"\
+	".\include\nen.h"\
+	".\include\sendqueue.h"\
+	".\include\sidebar.h"\
+	".\include\taskbar.h"\
+	".\include\templates.h"\
+	".\include\themes.h"\
+	".\include\translator.h"\
+	".\include\typingnotify.h"\
+	".\include\utils.h"\
+	".\src\commonheaders.h"\
 	
 
 .\src\container.cpp : \
@@ -918,23 +1016,25 @@
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
 	".\chat\muchighlight.h"\
+	".\include\contactcache.h"\
+	".\include\controls.h"\
+	".\include\functions.h"\
+	".\include\generic_msghandlers.h"\
+	".\include\globals.h"\
+	".\include\infopanel.h"\
+	".\include\mim.h"\
+	".\include\msgdlgutils.h"\
+	".\include\msgs.h"\
+	".\include\nen.h"\
+	".\include\sendqueue.h"\
+	".\include\sidebar.h"\
+	".\include\taskbar.h"\
+	".\include\templates.h"\
+	".\include\themes.h"\
+	".\include\translator.h"\
+	".\include\typingnotify.h"\
+	".\include\utils.h"\
 	".\src\commonheaders.h"\
-	".\src\controls.h"\
-	".\src\functions.h"\
-	".\src\generic_msghandlers.h"\
-	".\src\globals.h"\
-	".\src\infopanel.h"\
-	".\src\mim.h"\
-	".\src\msgdlgutils.h"\
-	".\src\msgs.h"\
-	".\src\nen.h"\
-	".\src\sendqueue.h"\
-	".\src\sidebar.h"\
-	".\src\taskbar.h"\
-	".\src\templates.h"\
-	".\src\themes.h"\
-	".\src\translator.h"\
-	".\src\typingnotify.h"\
 	
 
 .\src\containeroptions.cpp : \
@@ -990,23 +1090,25 @@
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
 	".\chat\muchighlight.h"\
+	".\include\contactcache.h"\
+	".\include\controls.h"\
+	".\include\functions.h"\
+	".\include\generic_msghandlers.h"\
+	".\include\globals.h"\
+	".\include\infopanel.h"\
+	".\include\mim.h"\
+	".\include\msgdlgutils.h"\
+	".\include\msgs.h"\
+	".\include\nen.h"\
+	".\include\sendqueue.h"\
+	".\include\sidebar.h"\
+	".\include\taskbar.h"\
+	".\include\templates.h"\
+	".\include\themes.h"\
+	".\include\translator.h"\
+	".\include\typingnotify.h"\
+	".\include\utils.h"\
 	".\src\commonheaders.h"\
-	".\src\controls.h"\
-	".\src\functions.h"\
-	".\src\generic_msghandlers.h"\
-	".\src\globals.h"\
-	".\src\infopanel.h"\
-	".\src\mim.h"\
-	".\src\msgdlgutils.h"\
-	".\src\msgs.h"\
-	".\src\nen.h"\
-	".\src\sendqueue.h"\
-	".\src\sidebar.h"\
-	".\src\taskbar.h"\
-	".\src\templates.h"\
-	".\src\themes.h"\
-	".\src\translator.h"\
-	".\src\typingnotify.h"\
 	
 
 .\src\controls.cpp : \
@@ -1062,23 +1164,25 @@
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
 	".\chat\muchighlight.h"\
+	".\include\contactcache.h"\
+	".\include\controls.h"\
+	".\include\functions.h"\
+	".\include\generic_msghandlers.h"\
+	".\include\globals.h"\
+	".\include\infopanel.h"\
+	".\include\mim.h"\
+	".\include\msgdlgutils.h"\
+	".\include\msgs.h"\
+	".\include\nen.h"\
+	".\include\sendqueue.h"\
+	".\include\sidebar.h"\
+	".\include\taskbar.h"\
+	".\include\templates.h"\
+	".\include\themes.h"\
+	".\include\translator.h"\
+	".\include\typingnotify.h"\
+	".\include\utils.h"\
 	".\src\commonheaders.h"\
-	".\src\controls.h"\
-	".\src\functions.h"\
-	".\src\generic_msghandlers.h"\
-	".\src\globals.h"\
-	".\src\infopanel.h"\
-	".\src\mim.h"\
-	".\src\msgdlgutils.h"\
-	".\src\msgs.h"\
-	".\src\nen.h"\
-	".\src\sendqueue.h"\
-	".\src\sidebar.h"\
-	".\src\taskbar.h"\
-	".\src\templates.h"\
-	".\src\themes.h"\
-	".\src\translator.h"\
-	".\src\typingnotify.h"\
 	
 
 .\src\eventpopups.cpp : \
@@ -1099,7 +1203,6 @@
 	"..\..\include\m_history.h"\
 	"..\..\include\m_hotkeys.h"\
 	"..\..\include\m_icolib.h"\
-	"..\..\include\m_icq.h"\
 	"..\..\include\m_imgsrvc.h"\
 	"..\..\include\m_langpack.h"\
 	"..\..\include\m_message.h"\
@@ -1135,95 +1238,25 @@
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
 	".\chat\muchighlight.h"\
+	".\include\contactcache.h"\
+	".\include\controls.h"\
+	".\include\functions.h"\
+	".\include\generic_msghandlers.h"\
+	".\include\globals.h"\
+	".\include\infopanel.h"\
+	".\include\mim.h"\
+	".\include\msgdlgutils.h"\
+	".\include\msgs.h"\
+	".\include\nen.h"\
+	".\include\sendqueue.h"\
+	".\include\sidebar.h"\
+	".\include\taskbar.h"\
+	".\include\templates.h"\
+	".\include\themes.h"\
+	".\include\translator.h"\
+	".\include\typingnotify.h"\
+	".\include\utils.h"\
 	".\src\commonheaders.h"\
-	".\src\controls.h"\
-	".\src\functions.h"\
-	".\src\generic_msghandlers.h"\
-	".\src\globals.h"\
-	".\src\infopanel.h"\
-	".\src\mim.h"\
-	".\src\msgdlgutils.h"\
-	".\src\msgs.h"\
-	".\src\nen.h"\
-	".\src\sendqueue.h"\
-	".\src\sidebar.h"\
-	".\src\taskbar.h"\
-	".\src\templates.h"\
-	".\src\themes.h"\
-	".\src\translator.h"\
-	".\src\typingnotify.h"\
-	
-
-.\src\formatting.cpp : \
-	"..\..\include\m_acc.h"\
-	"..\..\include\m_addcontact.h"\
-	"..\..\include\m_avatars.h"\
-	"..\..\include\m_button.h"\
-	"..\..\include\m_chat.h"\
-	"..\..\include\m_clc.h"\
-	"..\..\include\m_clist.h"\
-	"..\..\include\m_clui.h"\
-	"..\..\include\m_contacts.h"\
-	"..\..\include\m_database.h"\
-	"..\..\include\m_file.h"\
-	"..\..\include\m_fontservice.h"\
-	"..\..\include\m_freeimage.h"\
-	"..\..\include\m_genmenu.h"\
-	"..\..\include\m_history.h"\
-	"..\..\include\m_hotkeys.h"\
-	"..\..\include\m_icolib.h"\
-	"..\..\include\m_imgsrvc.h"\
-	"..\..\include\m_langpack.h"\
-	"..\..\include\m_message.h"\
-	"..\..\include\m_options.h"\
-	"..\..\include\m_plugins.h"\
-	"..\..\include\m_protocols.h"\
-	"..\..\include\m_protomod.h"\
-	"..\..\include\m_protosvc.h"\
-	"..\..\include\m_skin.h"\
-	"..\..\include\m_stdhdr.h"\
-	"..\..\include\m_system.h"\
-	"..\..\include\m_userinfo.h"\
-	"..\..\include\m_utils.h"\
-	"..\..\include\newpluginapi.h"\
-	"..\..\include\statusmodes.h"\
-	"..\..\include\win2k.h"\
-	".\API\m_buttonbar.h"\
-	".\API\m_cln_skinedit.h"\
-	".\API\m_fingerprint.h"\
-	".\API\m_flash.h"\
-	".\API\m_folders.h"\
-	".\API\m_historyevents.h"\
-	".\API\m_ieview.h"\
-	".\API\m_mathmodule.h"\
-	".\API\m_metacontacts.h"\
-	".\API\m_msg_buttonsbar.h"\
-	".\API\m_nudge.h"\
-	".\API\m_popup.h"\
-	".\API\m_smileyadd.h"\
-	".\API\m_spellchecker.h"\
-	".\API\m_toptoolbar.h"\
-	".\API\m_updater.h"\
-	".\chat\chat.h"\
-	".\chat\chatprototypes.h"\
-	".\chat\muchighlight.h"\
-	".\src\commonheaders.h"\
-	".\src\controls.h"\
-	".\src\functions.h"\
-	".\src\generic_msghandlers.h"\
-	".\src\globals.h"\
-	".\src\infopanel.h"\
-	".\src\mim.h"\
-	".\src\msgdlgutils.h"\
-	".\src\msgs.h"\
-	".\src\nen.h"\
-	".\src\sendqueue.h"\
-	".\src\sidebar.h"\
-	".\src\taskbar.h"\
-	".\src\templates.h"\
-	".\src\themes.h"\
-	".\src\translator.h"\
-	".\src\typingnotify.h"\
 	
 
 .\src\generic_msghandlers.cpp : \
@@ -1279,23 +1312,25 @@
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
 	".\chat\muchighlight.h"\
+	".\include\contactcache.h"\
+	".\include\controls.h"\
+	".\include\functions.h"\
+	".\include\generic_msghandlers.h"\
+	".\include\globals.h"\
+	".\include\infopanel.h"\
+	".\include\mim.h"\
+	".\include\msgdlgutils.h"\
+	".\include\msgs.h"\
+	".\include\nen.h"\
+	".\include\sendqueue.h"\
+	".\include\sidebar.h"\
+	".\include\taskbar.h"\
+	".\include\templates.h"\
+	".\include\themes.h"\
+	".\include\translator.h"\
+	".\include\typingnotify.h"\
+	".\include\utils.h"\
 	".\src\commonheaders.h"\
-	".\src\controls.h"\
-	".\src\functions.h"\
-	".\src\generic_msghandlers.h"\
-	".\src\globals.h"\
-	".\src\infopanel.h"\
-	".\src\mim.h"\
-	".\src\msgdlgutils.h"\
-	".\src\msgs.h"\
-	".\src\nen.h"\
-	".\src\sendqueue.h"\
-	".\src\sidebar.h"\
-	".\src\taskbar.h"\
-	".\src\templates.h"\
-	".\src\themes.h"\
-	".\src\translator.h"\
-	".\src\typingnotify.h"\
 	
 
 .\src\globals.cpp : \
@@ -1351,23 +1386,25 @@
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
 	".\chat\muchighlight.h"\
+	".\include\contactcache.h"\
+	".\include\controls.h"\
+	".\include\functions.h"\
+	".\include\generic_msghandlers.h"\
+	".\include\globals.h"\
+	".\include\infopanel.h"\
+	".\include\mim.h"\
+	".\include\msgdlgutils.h"\
+	".\include\msgs.h"\
+	".\include\nen.h"\
+	".\include\sendqueue.h"\
+	".\include\sidebar.h"\
+	".\include\taskbar.h"\
+	".\include\templates.h"\
+	".\include\themes.h"\
+	".\include\translator.h"\
+	".\include\typingnotify.h"\
+	".\include\utils.h"\
 	".\src\commonheaders.h"\
-	".\src\controls.h"\
-	".\src\functions.h"\
-	".\src\generic_msghandlers.h"\
-	".\src\globals.h"\
-	".\src\infopanel.h"\
-	".\src\mim.h"\
-	".\src\msgdlgutils.h"\
-	".\src\msgs.h"\
-	".\src\nen.h"\
-	".\src\sendqueue.h"\
-	".\src\sidebar.h"\
-	".\src\taskbar.h"\
-	".\src\templates.h"\
-	".\src\themes.h"\
-	".\src\translator.h"\
-	".\src\typingnotify.h"\
 	
 
 .\src\hotkeyhandler.cpp : \
@@ -1423,23 +1460,25 @@
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
 	".\chat\muchighlight.h"\
+	".\include\contactcache.h"\
+	".\include\controls.h"\
+	".\include\functions.h"\
+	".\include\generic_msghandlers.h"\
+	".\include\globals.h"\
+	".\include\infopanel.h"\
+	".\include\mim.h"\
+	".\include\msgdlgutils.h"\
+	".\include\msgs.h"\
+	".\include\nen.h"\
+	".\include\sendqueue.h"\
+	".\include\sidebar.h"\
+	".\include\taskbar.h"\
+	".\include\templates.h"\
+	".\include\themes.h"\
+	".\include\translator.h"\
+	".\include\typingnotify.h"\
+	".\include\utils.h"\
 	".\src\commonheaders.h"\
-	".\src\controls.h"\
-	".\src\functions.h"\
-	".\src\generic_msghandlers.h"\
-	".\src\globals.h"\
-	".\src\infopanel.h"\
-	".\src\mim.h"\
-	".\src\msgdlgutils.h"\
-	".\src\msgs.h"\
-	".\src\nen.h"\
-	".\src\sendqueue.h"\
-	".\src\sidebar.h"\
-	".\src\taskbar.h"\
-	".\src\templates.h"\
-	".\src\themes.h"\
-	".\src\translator.h"\
-	".\src\typingnotify.h"\
 	
 
 .\src\ImageDataObject.cpp : \
@@ -1495,24 +1534,26 @@
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
 	".\chat\muchighlight.h"\
+	".\include\contactcache.h"\
+	".\include\controls.h"\
+	".\include\functions.h"\
+	".\include\generic_msghandlers.h"\
+	".\include\globals.h"\
+	".\include\ImageDataObject.h"\
+	".\include\infopanel.h"\
+	".\include\mim.h"\
+	".\include\msgdlgutils.h"\
+	".\include\msgs.h"\
+	".\include\nen.h"\
+	".\include\sendqueue.h"\
+	".\include\sidebar.h"\
+	".\include\taskbar.h"\
+	".\include\templates.h"\
+	".\include\themes.h"\
+	".\include\translator.h"\
+	".\include\typingnotify.h"\
+	".\include\utils.h"\
 	".\src\commonheaders.h"\
-	".\src\controls.h"\
-	".\src\functions.h"\
-	".\src\generic_msghandlers.h"\
-	".\src\globals.h"\
-	".\src\ImageDataObject.h"\
-	".\src\infopanel.h"\
-	".\src\mim.h"\
-	".\src\msgdlgutils.h"\
-	".\src\msgs.h"\
-	".\src\nen.h"\
-	".\src\sendqueue.h"\
-	".\src\sidebar.h"\
-	".\src\taskbar.h"\
-	".\src\templates.h"\
-	".\src\themes.h"\
-	".\src\translator.h"\
-	".\src\typingnotify.h"\
 	
 
 .\src\infopanel.cpp : \
@@ -1568,23 +1609,25 @@
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
 	".\chat\muchighlight.h"\
+	".\include\contactcache.h"\
+	".\include\controls.h"\
+	".\include\functions.h"\
+	".\include\generic_msghandlers.h"\
+	".\include\globals.h"\
+	".\include\infopanel.h"\
+	".\include\mim.h"\
+	".\include\msgdlgutils.h"\
+	".\include\msgs.h"\
+	".\include\nen.h"\
+	".\include\sendqueue.h"\
+	".\include\sidebar.h"\
+	".\include\taskbar.h"\
+	".\include\templates.h"\
+	".\include\themes.h"\
+	".\include\translator.h"\
+	".\include\typingnotify.h"\
+	".\include\utils.h"\
 	".\src\commonheaders.h"\
-	".\src\controls.h"\
-	".\src\functions.h"\
-	".\src\generic_msghandlers.h"\
-	".\src\globals.h"\
-	".\src\infopanel.h"\
-	".\src\mim.h"\
-	".\src\msgdlgutils.h"\
-	".\src\msgs.h"\
-	".\src\nen.h"\
-	".\src\sendqueue.h"\
-	".\src\sidebar.h"\
-	".\src\taskbar.h"\
-	".\src\templates.h"\
-	".\src\themes.h"\
-	".\src\translator.h"\
-	".\src\typingnotify.h"\
 	
 
 .\src\mim.cpp : \
@@ -1640,23 +1683,25 @@
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
 	".\chat\muchighlight.h"\
+	".\include\contactcache.h"\
+	".\include\controls.h"\
+	".\include\functions.h"\
+	".\include\generic_msghandlers.h"\
+	".\include\globals.h"\
+	".\include\infopanel.h"\
+	".\include\mim.h"\
+	".\include\msgdlgutils.h"\
+	".\include\msgs.h"\
+	".\include\nen.h"\
+	".\include\sendqueue.h"\
+	".\include\sidebar.h"\
+	".\include\taskbar.h"\
+	".\include\templates.h"\
+	".\include\themes.h"\
+	".\include\translator.h"\
+	".\include\typingnotify.h"\
+	".\include\utils.h"\
 	".\src\commonheaders.h"\
-	".\src\controls.h"\
-	".\src\functions.h"\
-	".\src\generic_msghandlers.h"\
-	".\src\globals.h"\
-	".\src\infopanel.h"\
-	".\src\mim.h"\
-	".\src\msgdlgutils.h"\
-	".\src\msgs.h"\
-	".\src\nen.h"\
-	".\src\sendqueue.h"\
-	".\src\sidebar.h"\
-	".\src\taskbar.h"\
-	".\src\templates.h"\
-	".\src\themes.h"\
-	".\src\translator.h"\
-	".\src\typingnotify.h"\
 	
 
 .\tabmodplus\modplus.cpp : \
@@ -1712,23 +1757,25 @@
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
 	".\chat\muchighlight.h"\
+	".\include\contactcache.h"\
+	".\include\controls.h"\
+	".\include\functions.h"\
+	".\include\generic_msghandlers.h"\
+	".\include\globals.h"\
+	".\include\infopanel.h"\
+	".\include\mim.h"\
+	".\include\msgdlgutils.h"\
+	".\include\msgs.h"\
+	".\include\nen.h"\
+	".\include\sendqueue.h"\
+	".\include\sidebar.h"\
+	".\include\taskbar.h"\
+	".\include\templates.h"\
+	".\include\themes.h"\
+	".\include\translator.h"\
+	".\include\typingnotify.h"\
+	".\include\utils.h"\
 	".\src\commonheaders.h"\
-	".\src\controls.h"\
-	".\src\functions.h"\
-	".\src\generic_msghandlers.h"\
-	".\src\globals.h"\
-	".\src\infopanel.h"\
-	".\src\mim.h"\
-	".\src\msgdlgutils.h"\
-	".\src\msgs.h"\
-	".\src\nen.h"\
-	".\src\sendqueue.h"\
-	".\src\sidebar.h"\
-	".\src\taskbar.h"\
-	".\src\templates.h"\
-	".\src\themes.h"\
-	".\src\translator.h"\
-	".\src\typingnotify.h"\
 	
 
 .\src\msgdialog.cpp : \
@@ -1784,23 +1831,25 @@
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
 	".\chat\muchighlight.h"\
+	".\include\contactcache.h"\
+	".\include\controls.h"\
+	".\include\functions.h"\
+	".\include\generic_msghandlers.h"\
+	".\include\globals.h"\
+	".\include\infopanel.h"\
+	".\include\mim.h"\
+	".\include\msgdlgutils.h"\
+	".\include\msgs.h"\
+	".\include\nen.h"\
+	".\include\sendqueue.h"\
+	".\include\sidebar.h"\
+	".\include\taskbar.h"\
+	".\include\templates.h"\
+	".\include\themes.h"\
+	".\include\translator.h"\
+	".\include\typingnotify.h"\
+	".\include\utils.h"\
 	".\src\commonheaders.h"\
-	".\src\controls.h"\
-	".\src\functions.h"\
-	".\src\generic_msghandlers.h"\
-	".\src\globals.h"\
-	".\src\infopanel.h"\
-	".\src\mim.h"\
-	".\src\msgdlgutils.h"\
-	".\src\msgs.h"\
-	".\src\nen.h"\
-	".\src\sendqueue.h"\
-	".\src\sidebar.h"\
-	".\src\taskbar.h"\
-	".\src\templates.h"\
-	".\src\themes.h"\
-	".\src\translator.h"\
-	".\src\typingnotify.h"\
 	
 
 .\src\msgdlgutils.cpp : \
@@ -1856,23 +1905,25 @@
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
 	".\chat\muchighlight.h"\
+	".\include\contactcache.h"\
+	".\include\controls.h"\
+	".\include\functions.h"\
+	".\include\generic_msghandlers.h"\
+	".\include\globals.h"\
+	".\include\infopanel.h"\
+	".\include\mim.h"\
+	".\include\msgdlgutils.h"\
+	".\include\msgs.h"\
+	".\include\nen.h"\
+	".\include\sendqueue.h"\
+	".\include\sidebar.h"\
+	".\include\taskbar.h"\
+	".\include\templates.h"\
+	".\include\themes.h"\
+	".\include\translator.h"\
+	".\include\typingnotify.h"\
+	".\include\utils.h"\
 	".\src\commonheaders.h"\
-	".\src\controls.h"\
-	".\src\functions.h"\
-	".\src\generic_msghandlers.h"\
-	".\src\globals.h"\
-	".\src\infopanel.h"\
-	".\src\mim.h"\
-	".\src\msgdlgutils.h"\
-	".\src\msgs.h"\
-	".\src\nen.h"\
-	".\src\sendqueue.h"\
-	".\src\sidebar.h"\
-	".\src\taskbar.h"\
-	".\src\templates.h"\
-	".\src\themes.h"\
-	".\src\translator.h"\
-	".\src\typingnotify.h"\
 	
 
 .\src\msglog.cpp : \
@@ -1928,23 +1979,25 @@
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
 	".\chat\muchighlight.h"\
+	".\include\contactcache.h"\
+	".\include\controls.h"\
+	".\include\functions.h"\
+	".\include\generic_msghandlers.h"\
+	".\include\globals.h"\
+	".\include\infopanel.h"\
+	".\include\mim.h"\
+	".\include\msgdlgutils.h"\
+	".\include\msgs.h"\
+	".\include\nen.h"\
+	".\include\sendqueue.h"\
+	".\include\sidebar.h"\
+	".\include\taskbar.h"\
+	".\include\templates.h"\
+	".\include\themes.h"\
+	".\include\translator.h"\
+	".\include\typingnotify.h"\
+	".\include\utils.h"\
 	".\src\commonheaders.h"\
-	".\src\controls.h"\
-	".\src\functions.h"\
-	".\src\generic_msghandlers.h"\
-	".\src\globals.h"\
-	".\src\infopanel.h"\
-	".\src\mim.h"\
-	".\src\msgdlgutils.h"\
-	".\src\msgs.h"\
-	".\src\nen.h"\
-	".\src\sendqueue.h"\
-	".\src\sidebar.h"\
-	".\src\taskbar.h"\
-	".\src\templates.h"\
-	".\src\themes.h"\
-	".\src\translator.h"\
-	".\src\typingnotify.h"\
 	
 
 .\src\msgoptions.cpp : \
@@ -2001,23 +2054,25 @@
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
 	".\chat\muchighlight.h"\
+	".\include\contactcache.h"\
+	".\include\controls.h"\
+	".\include\functions.h"\
+	".\include\generic_msghandlers.h"\
+	".\include\globals.h"\
+	".\include\infopanel.h"\
+	".\include\mim.h"\
+	".\include\msgdlgutils.h"\
+	".\include\msgs.h"\
+	".\include\nen.h"\
+	".\include\sendqueue.h"\
+	".\include\sidebar.h"\
+	".\include\taskbar.h"\
+	".\include\templates.h"\
+	".\include\themes.h"\
+	".\include\translator.h"\
+	".\include\typingnotify.h"\
+	".\include\utils.h"\
 	".\src\commonheaders.h"\
-	".\src\controls.h"\
-	".\src\functions.h"\
-	".\src\generic_msghandlers.h"\
-	".\src\globals.h"\
-	".\src\infopanel.h"\
-	".\src\mim.h"\
-	".\src\msgdlgutils.h"\
-	".\src\msgs.h"\
-	".\src\nen.h"\
-	".\src\sendqueue.h"\
-	".\src\sidebar.h"\
-	".\src\taskbar.h"\
-	".\src\templates.h"\
-	".\src\themes.h"\
-	".\src\translator.h"\
-	".\src\typingnotify.h"\
 	
 
 .\tabmodplus\msgoptions_plus.cpp : \
@@ -2073,23 +2128,25 @@
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
 	".\chat\muchighlight.h"\
+	".\include\contactcache.h"\
+	".\include\controls.h"\
+	".\include\functions.h"\
+	".\include\generic_msghandlers.h"\
+	".\include\globals.h"\
+	".\include\infopanel.h"\
+	".\include\mim.h"\
+	".\include\msgdlgutils.h"\
+	".\include\msgs.h"\
+	".\include\nen.h"\
+	".\include\sendqueue.h"\
+	".\include\sidebar.h"\
+	".\include\taskbar.h"\
+	".\include\templates.h"\
+	".\include\themes.h"\
+	".\include\translator.h"\
+	".\include\typingnotify.h"\
+	".\include\utils.h"\
 	".\src\commonheaders.h"\
-	".\src\controls.h"\
-	".\src\functions.h"\
-	".\src\generic_msghandlers.h"\
-	".\src\globals.h"\
-	".\src\infopanel.h"\
-	".\src\mim.h"\
-	".\src\msgdlgutils.h"\
-	".\src\msgs.h"\
-	".\src\nen.h"\
-	".\src\sendqueue.h"\
-	".\src\sidebar.h"\
-	".\src\taskbar.h"\
-	".\src\templates.h"\
-	".\src\themes.h"\
-	".\src\translator.h"\
-	".\src\typingnotify.h"\
 	
 
 .\src\msgs.cpp : \
@@ -2145,23 +2202,25 @@
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
 	".\chat\muchighlight.h"\
+	".\include\contactcache.h"\
+	".\include\controls.h"\
+	".\include\functions.h"\
+	".\include\generic_msghandlers.h"\
+	".\include\globals.h"\
+	".\include\infopanel.h"\
+	".\include\mim.h"\
+	".\include\msgdlgutils.h"\
+	".\include\msgs.h"\
+	".\include\nen.h"\
+	".\include\sendqueue.h"\
+	".\include\sidebar.h"\
+	".\include\taskbar.h"\
+	".\include\templates.h"\
+	".\include\themes.h"\
+	".\include\translator.h"\
+	".\include\typingnotify.h"\
+	".\include\utils.h"\
 	".\src\commonheaders.h"\
-	".\src\controls.h"\
-	".\src\functions.h"\
-	".\src\generic_msghandlers.h"\
-	".\src\globals.h"\
-	".\src\infopanel.h"\
-	".\src\mim.h"\
-	".\src\msgdlgutils.h"\
-	".\src\msgs.h"\
-	".\src\nen.h"\
-	".\src\sendqueue.h"\
-	".\src\sidebar.h"\
-	".\src\taskbar.h"\
-	".\src\templates.h"\
-	".\src\themes.h"\
-	".\src\translator.h"\
-	".\src\typingnotify.h"\
 	
 
 .\src\selectcontainer.cpp : \
@@ -2217,23 +2276,25 @@
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
 	".\chat\muchighlight.h"\
+	".\include\contactcache.h"\
+	".\include\controls.h"\
+	".\include\functions.h"\
+	".\include\generic_msghandlers.h"\
+	".\include\globals.h"\
+	".\include\infopanel.h"\
+	".\include\mim.h"\
+	".\include\msgdlgutils.h"\
+	".\include\msgs.h"\
+	".\include\nen.h"\
+	".\include\sendqueue.h"\
+	".\include\sidebar.h"\
+	".\include\taskbar.h"\
+	".\include\templates.h"\
+	".\include\themes.h"\
+	".\include\translator.h"\
+	".\include\typingnotify.h"\
+	".\include\utils.h"\
 	".\src\commonheaders.h"\
-	".\src\controls.h"\
-	".\src\functions.h"\
-	".\src\generic_msghandlers.h"\
-	".\src\globals.h"\
-	".\src\infopanel.h"\
-	".\src\mim.h"\
-	".\src\msgdlgutils.h"\
-	".\src\msgs.h"\
-	".\src\nen.h"\
-	".\src\sendqueue.h"\
-	".\src\sidebar.h"\
-	".\src\taskbar.h"\
-	".\src\templates.h"\
-	".\src\themes.h"\
-	".\src\translator.h"\
-	".\src\typingnotify.h"\
 	
 
 .\src\sendqueue.cpp : \
@@ -2289,23 +2350,25 @@
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
 	".\chat\muchighlight.h"\
+	".\include\contactcache.h"\
+	".\include\controls.h"\
+	".\include\functions.h"\
+	".\include\generic_msghandlers.h"\
+	".\include\globals.h"\
+	".\include\infopanel.h"\
+	".\include\mim.h"\
+	".\include\msgdlgutils.h"\
+	".\include\msgs.h"\
+	".\include\nen.h"\
+	".\include\sendqueue.h"\
+	".\include\sidebar.h"\
+	".\include\taskbar.h"\
+	".\include\templates.h"\
+	".\include\themes.h"\
+	".\include\translator.h"\
+	".\include\typingnotify.h"\
+	".\include\utils.h"\
 	".\src\commonheaders.h"\
-	".\src\controls.h"\
-	".\src\functions.h"\
-	".\src\generic_msghandlers.h"\
-	".\src\globals.h"\
-	".\src\infopanel.h"\
-	".\src\mim.h"\
-	".\src\msgdlgutils.h"\
-	".\src\msgs.h"\
-	".\src\nen.h"\
-	".\src\sendqueue.h"\
-	".\src\sidebar.h"\
-	".\src\taskbar.h"\
-	".\src\templates.h"\
-	".\src\themes.h"\
-	".\src\translator.h"\
-	".\src\typingnotify.h"\
 	
 
 .\src\sidebar.cpp : \
@@ -2361,23 +2424,25 @@
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
 	".\chat\muchighlight.h"\
+	".\include\contactcache.h"\
+	".\include\controls.h"\
+	".\include\functions.h"\
+	".\include\generic_msghandlers.h"\
+	".\include\globals.h"\
+	".\include\infopanel.h"\
+	".\include\mim.h"\
+	".\include\msgdlgutils.h"\
+	".\include\msgs.h"\
+	".\include\nen.h"\
+	".\include\sendqueue.h"\
+	".\include\sidebar.h"\
+	".\include\taskbar.h"\
+	".\include\templates.h"\
+	".\include\themes.h"\
+	".\include\translator.h"\
+	".\include\typingnotify.h"\
+	".\include\utils.h"\
 	".\src\commonheaders.h"\
-	".\src\controls.h"\
-	".\src\functions.h"\
-	".\src\generic_msghandlers.h"\
-	".\src\globals.h"\
-	".\src\infopanel.h"\
-	".\src\mim.h"\
-	".\src\msgdlgutils.h"\
-	".\src\msgs.h"\
-	".\src\nen.h"\
-	".\src\sendqueue.h"\
-	".\src\sidebar.h"\
-	".\src\taskbar.h"\
-	".\src\templates.h"\
-	".\src\themes.h"\
-	".\src\translator.h"\
-	".\src\typingnotify.h"\
 	
 
 .\src\srmm.cpp : \
@@ -2433,23 +2498,26 @@
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
 	".\chat\muchighlight.h"\
+	".\include\contactcache.h"\
+	".\include\controls.h"\
+	".\include\functions.h"\
+	".\include\generic_msghandlers.h"\
+	".\include\globals.h"\
+	".\include\infopanel.h"\
+	".\include\mim.h"\
+	".\include\msgdlgutils.h"\
+	".\include\msgs.h"\
+	".\include\nen.h"\
+	".\include\sendqueue.h"\
+	".\include\sidebar.h"\
+	".\include\taskbar.h"\
+	".\include\templates.h"\
+	".\include\themes.h"\
+	".\include\translator.h"\
+	".\include\typingnotify.h"\
+	".\include\utils.h"\
+	".\include\version.h"\
 	".\src\commonheaders.h"\
-	".\src\controls.h"\
-	".\src\functions.h"\
-	".\src\generic_msghandlers.h"\
-	".\src\globals.h"\
-	".\src\infopanel.h"\
-	".\src\mim.h"\
-	".\src\msgdlgutils.h"\
-	".\src\msgs.h"\
-	".\src\nen.h"\
-	".\src\sendqueue.h"\
-	".\src\sidebar.h"\
-	".\src\taskbar.h"\
-	".\src\templates.h"\
-	".\src\themes.h"\
-	".\src\translator.h"\
-	".\src\typingnotify.h"\
 	
 
 .\src\tabctrl.cpp : \
@@ -2505,23 +2573,25 @@
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
 	".\chat\muchighlight.h"\
+	".\include\contactcache.h"\
+	".\include\controls.h"\
+	".\include\functions.h"\
+	".\include\generic_msghandlers.h"\
+	".\include\globals.h"\
+	".\include\infopanel.h"\
+	".\include\mim.h"\
+	".\include\msgdlgutils.h"\
+	".\include\msgs.h"\
+	".\include\nen.h"\
+	".\include\sendqueue.h"\
+	".\include\sidebar.h"\
+	".\include\taskbar.h"\
+	".\include\templates.h"\
+	".\include\themes.h"\
+	".\include\translator.h"\
+	".\include\typingnotify.h"\
+	".\include\utils.h"\
 	".\src\commonheaders.h"\
-	".\src\controls.h"\
-	".\src\functions.h"\
-	".\src\generic_msghandlers.h"\
-	".\src\globals.h"\
-	".\src\infopanel.h"\
-	".\src\mim.h"\
-	".\src\msgdlgutils.h"\
-	".\src\msgs.h"\
-	".\src\nen.h"\
-	".\src\sendqueue.h"\
-	".\src\sidebar.h"\
-	".\src\taskbar.h"\
-	".\src\templates.h"\
-	".\src\themes.h"\
-	".\src\translator.h"\
-	".\src\typingnotify.h"\
 	
 
 .\src\taskbar.cpp : \
@@ -2577,23 +2647,25 @@
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
 	".\chat\muchighlight.h"\
+	".\include\contactcache.h"\
+	".\include\controls.h"\
+	".\include\functions.h"\
+	".\include\generic_msghandlers.h"\
+	".\include\globals.h"\
+	".\include\infopanel.h"\
+	".\include\mim.h"\
+	".\include\msgdlgutils.h"\
+	".\include\msgs.h"\
+	".\include\nen.h"\
+	".\include\sendqueue.h"\
+	".\include\sidebar.h"\
+	".\include\taskbar.h"\
+	".\include\templates.h"\
+	".\include\themes.h"\
+	".\include\translator.h"\
+	".\include\typingnotify.h"\
+	".\include\utils.h"\
 	".\src\commonheaders.h"\
-	".\src\controls.h"\
-	".\src\functions.h"\
-	".\src\generic_msghandlers.h"\
-	".\src\globals.h"\
-	".\src\infopanel.h"\
-	".\src\mim.h"\
-	".\src\msgdlgutils.h"\
-	".\src\msgs.h"\
-	".\src\nen.h"\
-	".\src\sendqueue.h"\
-	".\src\sidebar.h"\
-	".\src\taskbar.h"\
-	".\src\templates.h"\
-	".\src\themes.h"\
-	".\src\translator.h"\
-	".\src\typingnotify.h"\
 	
 
 .\src\templates.cpp : \
@@ -2649,23 +2721,25 @@
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
 	".\chat\muchighlight.h"\
+	".\include\contactcache.h"\
+	".\include\controls.h"\
+	".\include\functions.h"\
+	".\include\generic_msghandlers.h"\
+	".\include\globals.h"\
+	".\include\infopanel.h"\
+	".\include\mim.h"\
+	".\include\msgdlgutils.h"\
+	".\include\msgs.h"\
+	".\include\nen.h"\
+	".\include\sendqueue.h"\
+	".\include\sidebar.h"\
+	".\include\taskbar.h"\
+	".\include\templates.h"\
+	".\include\themes.h"\
+	".\include\translator.h"\
+	".\include\typingnotify.h"\
+	".\include\utils.h"\
 	".\src\commonheaders.h"\
-	".\src\controls.h"\
-	".\src\functions.h"\
-	".\src\generic_msghandlers.h"\
-	".\src\globals.h"\
-	".\src\infopanel.h"\
-	".\src\mim.h"\
-	".\src\msgdlgutils.h"\
-	".\src\msgs.h"\
-	".\src\nen.h"\
-	".\src\sendqueue.h"\
-	".\src\sidebar.h"\
-	".\src\taskbar.h"\
-	".\src\templates.h"\
-	".\src\themes.h"\
-	".\src\translator.h"\
-	".\src\typingnotify.h"\
 	
 
 .\src\themeio.cpp : \
@@ -2721,23 +2795,25 @@
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
 	".\chat\muchighlight.h"\
+	".\include\contactcache.h"\
+	".\include\controls.h"\
+	".\include\functions.h"\
+	".\include\generic_msghandlers.h"\
+	".\include\globals.h"\
+	".\include\infopanel.h"\
+	".\include\mim.h"\
+	".\include\msgdlgutils.h"\
+	".\include\msgs.h"\
+	".\include\nen.h"\
+	".\include\sendqueue.h"\
+	".\include\sidebar.h"\
+	".\include\taskbar.h"\
+	".\include\templates.h"\
+	".\include\themes.h"\
+	".\include\translator.h"\
+	".\include\typingnotify.h"\
+	".\include\utils.h"\
 	".\src\commonheaders.h"\
-	".\src\controls.h"\
-	".\src\functions.h"\
-	".\src\generic_msghandlers.h"\
-	".\src\globals.h"\
-	".\src\infopanel.h"\
-	".\src\mim.h"\
-	".\src\msgdlgutils.h"\
-	".\src\msgs.h"\
-	".\src\nen.h"\
-	".\src\sendqueue.h"\
-	".\src\sidebar.h"\
-	".\src\taskbar.h"\
-	".\src\templates.h"\
-	".\src\themes.h"\
-	".\src\translator.h"\
-	".\src\typingnotify.h"\
 	
 
 .\src\themes.cpp : \
@@ -2793,23 +2869,25 @@
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
 	".\chat\muchighlight.h"\
+	".\include\contactcache.h"\
+	".\include\controls.h"\
+	".\include\functions.h"\
+	".\include\generic_msghandlers.h"\
+	".\include\globals.h"\
+	".\include\infopanel.h"\
+	".\include\mim.h"\
+	".\include\msgdlgutils.h"\
+	".\include\msgs.h"\
+	".\include\nen.h"\
+	".\include\sendqueue.h"\
+	".\include\sidebar.h"\
+	".\include\taskbar.h"\
+	".\include\templates.h"\
+	".\include\themes.h"\
+	".\include\translator.h"\
+	".\include\typingnotify.h"\
+	".\include\utils.h"\
 	".\src\commonheaders.h"\
-	".\src\controls.h"\
-	".\src\functions.h"\
-	".\src\generic_msghandlers.h"\
-	".\src\globals.h"\
-	".\src\infopanel.h"\
-	".\src\mim.h"\
-	".\src\msgdlgutils.h"\
-	".\src\msgs.h"\
-	".\src\nen.h"\
-	".\src\sendqueue.h"\
-	".\src\sidebar.h"\
-	".\src\taskbar.h"\
-	".\src\templates.h"\
-	".\src\themes.h"\
-	".\src\translator.h"\
-	".\src\typingnotify.h"\
 	
 
 .\src\translator.cpp : \
@@ -2865,23 +2943,25 @@
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
 	".\chat\muchighlight.h"\
+	".\include\contactcache.h"\
+	".\include\controls.h"\
+	".\include\functions.h"\
+	".\include\generic_msghandlers.h"\
+	".\include\globals.h"\
+	".\include\infopanel.h"\
+	".\include\mim.h"\
+	".\include\msgdlgutils.h"\
+	".\include\msgs.h"\
+	".\include\nen.h"\
+	".\include\sendqueue.h"\
+	".\include\sidebar.h"\
+	".\include\taskbar.h"\
+	".\include\templates.h"\
+	".\include\themes.h"\
+	".\include\translator.h"\
+	".\include\typingnotify.h"\
+	".\include\utils.h"\
 	".\src\commonheaders.h"\
-	".\src\controls.h"\
-	".\src\functions.h"\
-	".\src\generic_msghandlers.h"\
-	".\src\globals.h"\
-	".\src\infopanel.h"\
-	".\src\mim.h"\
-	".\src\msgdlgutils.h"\
-	".\src\msgs.h"\
-	".\src\nen.h"\
-	".\src\sendqueue.h"\
-	".\src\sidebar.h"\
-	".\src\taskbar.h"\
-	".\src\templates.h"\
-	".\src\themes.h"\
-	".\src\translator.h"\
-	".\src\typingnotify.h"\
 	
 
 .\src\trayicon.cpp : \
@@ -2937,23 +3017,25 @@
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
 	".\chat\muchighlight.h"\
+	".\include\contactcache.h"\
+	".\include\controls.h"\
+	".\include\functions.h"\
+	".\include\generic_msghandlers.h"\
+	".\include\globals.h"\
+	".\include\infopanel.h"\
+	".\include\mim.h"\
+	".\include\msgdlgutils.h"\
+	".\include\msgs.h"\
+	".\include\nen.h"\
+	".\include\sendqueue.h"\
+	".\include\sidebar.h"\
+	".\include\taskbar.h"\
+	".\include\templates.h"\
+	".\include\themes.h"\
+	".\include\translator.h"\
+	".\include\typingnotify.h"\
+	".\include\utils.h"\
 	".\src\commonheaders.h"\
-	".\src\controls.h"\
-	".\src\functions.h"\
-	".\src\generic_msghandlers.h"\
-	".\src\globals.h"\
-	".\src\infopanel.h"\
-	".\src\mim.h"\
-	".\src\msgdlgutils.h"\
-	".\src\msgs.h"\
-	".\src\nen.h"\
-	".\src\sendqueue.h"\
-	".\src\sidebar.h"\
-	".\src\taskbar.h"\
-	".\src\templates.h"\
-	".\src\themes.h"\
-	".\src\translator.h"\
-	".\src\typingnotify.h"\
 	
 
 .\src\TSButton.cpp : \
@@ -3009,23 +3091,25 @@
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
 	".\chat\muchighlight.h"\
+	".\include\contactcache.h"\
+	".\include\controls.h"\
+	".\include\functions.h"\
+	".\include\generic_msghandlers.h"\
+	".\include\globals.h"\
+	".\include\infopanel.h"\
+	".\include\mim.h"\
+	".\include\msgdlgutils.h"\
+	".\include\msgs.h"\
+	".\include\nen.h"\
+	".\include\sendqueue.h"\
+	".\include\sidebar.h"\
+	".\include\taskbar.h"\
+	".\include\templates.h"\
+	".\include\themes.h"\
+	".\include\translator.h"\
+	".\include\typingnotify.h"\
+	".\include\utils.h"\
 	".\src\commonheaders.h"\
-	".\src\controls.h"\
-	".\src\functions.h"\
-	".\src\generic_msghandlers.h"\
-	".\src\globals.h"\
-	".\src\infopanel.h"\
-	".\src\mim.h"\
-	".\src\msgdlgutils.h"\
-	".\src\msgs.h"\
-	".\src\nen.h"\
-	".\src\sendqueue.h"\
-	".\src\sidebar.h"\
-	".\src\taskbar.h"\
-	".\src\templates.h"\
-	".\src\themes.h"\
-	".\src\translator.h"\
-	".\src\typingnotify.h"\
 	
 
 .\src\typingnotify.cpp : \
@@ -3081,23 +3165,25 @@
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
 	".\chat\muchighlight.h"\
+	".\include\contactcache.h"\
+	".\include\controls.h"\
+	".\include\functions.h"\
+	".\include\generic_msghandlers.h"\
+	".\include\globals.h"\
+	".\include\infopanel.h"\
+	".\include\mim.h"\
+	".\include\msgdlgutils.h"\
+	".\include\msgs.h"\
+	".\include\nen.h"\
+	".\include\sendqueue.h"\
+	".\include\sidebar.h"\
+	".\include\taskbar.h"\
+	".\include\templates.h"\
+	".\include\themes.h"\
+	".\include\translator.h"\
+	".\include\typingnotify.h"\
+	".\include\utils.h"\
 	".\src\commonheaders.h"\
-	".\src\controls.h"\
-	".\src\functions.h"\
-	".\src\generic_msghandlers.h"\
-	".\src\globals.h"\
-	".\src\infopanel.h"\
-	".\src\mim.h"\
-	".\src\msgdlgutils.h"\
-	".\src\msgs.h"\
-	".\src\nen.h"\
-	".\src\sendqueue.h"\
-	".\src\sidebar.h"\
-	".\src\taskbar.h"\
-	".\src\templates.h"\
-	".\src\themes.h"\
-	".\src\translator.h"\
-	".\src\typingnotify.h"\
 	
 
 .\src\userprefs.cpp : \
@@ -3153,23 +3239,99 @@
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
 	".\chat\muchighlight.h"\
+	".\include\contactcache.h"\
+	".\include\controls.h"\
+	".\include\functions.h"\
+	".\include\generic_msghandlers.h"\
+	".\include\globals.h"\
+	".\include\infopanel.h"\
+	".\include\mim.h"\
+	".\include\msgdlgutils.h"\
+	".\include\msgs.h"\
+	".\include\nen.h"\
+	".\include\sendqueue.h"\
+	".\include\sidebar.h"\
+	".\include\taskbar.h"\
+	".\include\templates.h"\
+	".\include\themes.h"\
+	".\include\translator.h"\
+	".\include\typingnotify.h"\
+	".\include\utils.h"\
 	".\src\commonheaders.h"\
-	".\src\controls.h"\
-	".\src\functions.h"\
-	".\src\generic_msghandlers.h"\
-	".\src\globals.h"\
-	".\src\infopanel.h"\
-	".\src\mim.h"\
-	".\src\msgdlgutils.h"\
-	".\src\msgs.h"\
-	".\src\nen.h"\
-	".\src\sendqueue.h"\
-	".\src\sidebar.h"\
-	".\src\taskbar.h"\
-	".\src\templates.h"\
-	".\src\themes.h"\
-	".\src\translator.h"\
-	".\src\typingnotify.h"\
+	
+
+.\src\utils.cpp : \
+	"..\..\include\m_acc.h"\
+	"..\..\include\m_addcontact.h"\
+	"..\..\include\m_avatars.h"\
+	"..\..\include\m_button.h"\
+	"..\..\include\m_chat.h"\
+	"..\..\include\m_clc.h"\
+	"..\..\include\m_clist.h"\
+	"..\..\include\m_clui.h"\
+	"..\..\include\m_contacts.h"\
+	"..\..\include\m_database.h"\
+	"..\..\include\m_file.h"\
+	"..\..\include\m_fontservice.h"\
+	"..\..\include\m_freeimage.h"\
+	"..\..\include\m_genmenu.h"\
+	"..\..\include\m_history.h"\
+	"..\..\include\m_hotkeys.h"\
+	"..\..\include\m_icolib.h"\
+	"..\..\include\m_imgsrvc.h"\
+	"..\..\include\m_langpack.h"\
+	"..\..\include\m_message.h"\
+	"..\..\include\m_options.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protomod.h"\
+	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_skin.h"\
+	"..\..\include\m_stdhdr.h"\
+	"..\..\include\m_system.h"\
+	"..\..\include\m_userinfo.h"\
+	"..\..\include\m_utils.h"\
+	"..\..\include\newpluginapi.h"\
+	"..\..\include\statusmodes.h"\
+	"..\..\include\win2k.h"\
+	".\API\m_buttonbar.h"\
+	".\API\m_cln_skinedit.h"\
+	".\API\m_fingerprint.h"\
+	".\API\m_flash.h"\
+	".\API\m_folders.h"\
+	".\API\m_historyevents.h"\
+	".\API\m_ieview.h"\
+	".\API\m_mathmodule.h"\
+	".\API\m_metacontacts.h"\
+	".\API\m_msg_buttonsbar.h"\
+	".\API\m_nudge.h"\
+	".\API\m_popup.h"\
+	".\API\m_smileyadd.h"\
+	".\API\m_spellchecker.h"\
+	".\API\m_toptoolbar.h"\
+	".\API\m_updater.h"\
+	".\chat\chat.h"\
+	".\chat\chatprototypes.h"\
+	".\chat\muchighlight.h"\
+	".\include\contactcache.h"\
+	".\include\controls.h"\
+	".\include\functions.h"\
+	".\include\generic_msghandlers.h"\
+	".\include\globals.h"\
+	".\include\infopanel.h"\
+	".\include\mim.h"\
+	".\include\msgdlgutils.h"\
+	".\include\msgs.h"\
+	".\include\nen.h"\
+	".\include\sendqueue.h"\
+	".\include\sidebar.h"\
+	".\include\taskbar.h"\
+	".\include\templates.h"\
+	".\include\themes.h"\
+	".\include\translator.h"\
+	".\include\typingnotify.h"\
+	".\include\utils.h"\
+	".\src\commonheaders.h"\
 	
 
 .\tabsrmm_private.rc : \
