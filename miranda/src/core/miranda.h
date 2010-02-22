@@ -196,7 +196,7 @@ void Window_SetIcon_IcoLib(HWND hWnd, int iconId);
 void Window_SetProtoIcon_IcoLib(HWND hWnd, const char* szProto, int iconId);
 void Window_FreeIcon_IcoLib(HWND hWnd);
 
-#define IconLib_ReleaseIcon(hIcon, szName) CallService(MS_SKIN2_RELEASEICON,(WPARAM)hIcon, (LPARAM)szName)
+#define IconLib_ReleaseIcon(hIcon, szName) IcoLib_ReleaseIcon(hIcon, szName);
 #define Safe_DestroyIcon(hIcon) if (hIcon) DestroyIcon(hIcon)
 
 /**** clistmenus.c **********************************************************************/

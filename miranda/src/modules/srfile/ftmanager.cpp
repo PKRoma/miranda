@@ -543,7 +543,7 @@ HWND FtMgr_Show(bool bForceActivate, bool bFromMenu)
  		SetForegroundWindow(hwndFtMgr);
  		return hwndFtMgr;
  	}
-	else if (bAutoMin) /* lqbe */
+	else if (bAutoMin && bJustCreated) /* lqbe */
  	{
  		ShowWindow(hwndFtMgr, SW_HIDE);
  		ShowWindow(hwndFtMgr, SW_MINIMIZE);

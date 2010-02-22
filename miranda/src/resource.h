@@ -144,6 +144,7 @@
 #define IDC_AUTOMIN                     1005
 #define IDC_DATE                        1006
 #define IDC_DUMPRECV                    1006
+#define IDC_AUTOCLEAR                   1007
 #define IDC_MSG                         1008
 #define IDC_PROXYDNS                    1008
 #define IDC_NAME                        1009
