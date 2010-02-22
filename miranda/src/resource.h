@@ -5,6 +5,7 @@
 #define IDC_AUTHICON                    1
 #define IDC_NOTOALL                     3
 #define IDC_APPLY                       3
+#define IDC_DECIDELATER                 3
 #define IDI_MIRANDA                     102
 #define IDD_ABOUT                       103
 #define IDI_SMS                         103
