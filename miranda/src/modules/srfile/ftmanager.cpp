@@ -460,6 +460,10 @@ static INT_PTR CALLBACK FtMgrDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
 
 	case WM_CLOSE:
 		ShowWindow(hwnd, SW_HIDE);
+		if (DBGetContactSettingByte(NULL, "SRFile", "AutoClear", 1)) {
+			PostMessage(dat->hwndIncoming, WM_FT_CLEANUP, 0, 0);
+			PostMessage(dat->hwndOutgoing, WM_FT_CLEANUP, 0, 0);
+		}
 		return TRUE; /* Disable default IDCANCEL notification */
 
 	case WM_DESTROY:
@@ -542,7 +546,7 @@ HWND FtMgr_Show(bool bForceActivate, bool bFromMenu)
  		SetForegroundWindow(hwndFtMgr);
  		return hwndFtMgr;
  	}
-	else if (bAutoMin) /* lqbe */
+	else if (bAutoMin && bJustCreated) /* lqbe */
  	{
  		ShowWindow(hwndFtMgr, SW_HIDE);
  		ShowWindow(hwndFtMgr, SW_MINIMIZE);
