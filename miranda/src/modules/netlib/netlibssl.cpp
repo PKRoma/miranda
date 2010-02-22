@@ -70,6 +70,7 @@ static void ReportSslError(SECURITY_STATUS scRet, int line)
 	switch (scRet)
 	{
 	case 0:
+	case ERROR_NOT_READY:
 		return;
 
 	case SEC_E_INVALID_TOKEN:
@@ -234,7 +235,7 @@ static SECURITY_STATUS ClientHandshakeLoop(SslHandle *ssl, BOOL fDoInitialRead)
 		{
 			if (fDoRead) 
 			{
-				TIMEVAL tv = {10, 0};
+				TIMEVAL tv = {6, 0};
 				fd_set fd;
 
 				// If buffer not large enough reallocate buffer
@@ -248,7 +249,8 @@ static SECURITY_STATUS ClientHandshakeLoop(SslHandle *ssl, BOOL fDoInitialRead)
 				FD_SET(ssl->s, &fd);
 				if (select(1, &fd, NULL, NULL, &tv) != 1)
 				{
-					scRet = SEC_E_INTERNAL_ERROR;
+					Netlib_Logf(NULL, "SSL Negotiation failure recieving data (timeout) (bytes %u)", ssl->cbIoBuffer);
+					scRet = ERROR_NOT_READY;
 					break;
 				}
 
@@ -256,13 +258,13 @@ static SECURITY_STATUS ClientHandshakeLoop(SslHandle *ssl, BOOL fDoInitialRead)
 				if (cbData == SOCKET_ERROR) 
 				{
 					Netlib_Logf(NULL, "SSL Negotiation failure recieving data (%d)", WSAGetLastError());
-					scRet = SEC_E_INTERNAL_ERROR;
+					scRet = ERROR_NOT_READY;
 					break;
 				}
 				if (cbData == 0) 
 				{
 					Netlib_Logf(NULL, "SSL Negotiation connection gracefully closed");
-					scRet = SEC_E_INTERNAL_ERROR;
+					scRet = ERROR_NOT_READY;
 					break;
 				}
 
