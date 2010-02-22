@@ -209,6 +209,7 @@ static INT_PTR Proto_RecvFileT(WPARAM,LPARAM lParam)
 		for ( int i=0; i < pre->fileCount; i++ )
 			mir_free( pszFiles[i] );
 	}
+	mir_free( szDescr );
 
 	HANDLE hdbe = ( HANDLE )CallService( MS_DB_EVENT_ADD, ( WPARAM )ccs->hContact, ( LPARAM )&dbei );
 

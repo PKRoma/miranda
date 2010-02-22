@@ -154,7 +154,6 @@ static void SetFilenameControls(HWND hwndDlg, struct FileDlgData *dat, PROTOFILE
 {
 	TCHAR msg[MAX_PATH];
 	TCHAR *fnbuf = NULL, *fn = NULL;
-	HICON hIcon = NULL;
 	SHFILEINFO shfi = {0};
 
 	if ( fts->tszCurrentFile ) {
@@ -164,30 +163,32 @@ static void SetFilenameControls(HWND hwndDlg, struct FileDlgData *dat, PROTOFILE
 		else fn++;
 	}
 
+	if (dat->hIcon) DestroyIcon(dat->hIcon); dat->hIcon = NULL;
+
 	if (fn && (fts->totalFiles > 1)) {
 		mir_sntprintf(msg, SIZEOF(msg), _T("%s: %s (%d %s %d)"),
 			cli.pfnGetContactDisplayName( fts->hContact, 0 ),
 			fn, fts->currentFileNumber+1, TranslateT("of"), fts->totalFiles);
 
-		if (dat->hIcon) DestroyIcon(dat->hIcon);
 		SHGetFileInfo(fn, FILE_ATTRIBUTE_DIRECTORY, &shfi, sizeof(shfi), SHGFI_USEFILEATTRIBUTES|SHGFI_ICON|SHGFI_SMALLICON);
-		hIcon = dat->hIcon = shfi.hIcon;
+		dat->hIcon = shfi.hIcon;
 	} 
 	else if (fn) {
 		mir_sntprintf(msg, SIZEOF(msg), _T("%s: %s"), cli.pfnGetContactDisplayName( fts->hContact, 0 ), fn);
 
-		if (dat->hIcon) DestroyIcon(dat->hIcon);
 		SHGetFileInfo(fn, FILE_ATTRIBUTE_NORMAL, &shfi, sizeof(shfi), SHGFI_USEFILEATTRIBUTES|SHGFI_ICON|SHGFI_SMALLICON);
-		hIcon = dat->hIcon = shfi.hIcon;
+		dat->hIcon = shfi.hIcon;
 	} 
 	else {
 		lstrcpyn(msg, cli.pfnGetContactDisplayName( fts->hContact, 0 ), SIZEOF(msg));
-		hIcon = LoadSkinIcon(SKINICON_OTHER_DOWNARROW);
+		HICON hIcon = LoadSkinIcon(SKINICON_OTHER_DOWNARROW);
+		dat->hIcon = CopyIcon(hIcon);
+		IconLib_ReleaseIcon(hIcon, NULL);
 	}
 
 	mir_free( fnbuf );
 	
-	SendDlgItemMessage(hwndDlg, IDC_FILEICON, STM_SETIMAGE, IMAGE_ICON, (LPARAM)hIcon);
+	SendDlgItemMessage(hwndDlg, IDC_FILEICON, STM_SETIMAGE, IMAGE_ICON, (LPARAM)dat->hIcon);
 	SetDlgItemText(hwndDlg, IDC_CONTACTNAME, msg);
 }
 
@@ -300,23 +301,19 @@ INT_PTR CALLBACK DlgProcFileTransfer(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 
 			dat->hIcon = NULL;
 
-			SendDlgItemMessage( hwndDlg, IDC_CONTACT, BM_SETIMAGE, IMAGE_ICON,
+			SendDlgItemMessage(hwndDlg, IDC_CONTACT, BM_SETIMAGE, IMAGE_ICON,
 				(LPARAM)LoadSkinnedProtoIcon((char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)dat->hContact, 0), ID_STATUS_ONLINE));
-			SendDlgItemMessage( hwndDlg, IDC_CONTACT, BUTTONADDTOOLTIP, (WPARAM)"Contact menu", 0);
-			SendDlgItemMessage( hwndDlg, IDC_CONTACT, BUTTONSETASFLATBTN, 0, 0);
+			SendDlgItemMessage(hwndDlg, IDC_CONTACT, BUTTONADDTOOLTIP, (WPARAM)"Contact menu", 0);
+			SendDlgItemMessage(hwndDlg, IDC_CONTACT, BUTTONSETASFLATBTN, 0, 0);
 
-			SendDlgItemMessage( hwndDlg, IDC_OPENFILE, BM_SETIMAGE, IMAGE_ICON, (LPARAM)LoadSkinIcon( SKINICON_OTHER_DOWNARROW ));
-			SendDlgItemMessage( hwndDlg, IDC_OPENFILE, BUTTONADDTOOLTIP, (WPARAM)"Open...", 0);
-			SendDlgItemMessage( hwndDlg, IDC_OPENFILE, BUTTONSETASFLATBTN, 0, 0);
-			SendDlgItemMessage( hwndDlg, IDC_OPENFILE, BUTTONSETASPUSHBTN, 0, 0);
+			Button_SetIcon_IcoLib(hwndDlg, IDC_OPENFILE, SKINICON_OTHER_DOWNARROW, "Open..." );
+			SendDlgItemMessage(hwndDlg, IDC_OPENFILE, BUTTONSETASPUSHBTN, 0, 0);
 
-			SendDlgItemMessage( hwndDlg, IDC_OPENFOLDER, BM_SETIMAGE, IMAGE_ICON, (LPARAM)dat->hIconFolder);
-			SendDlgItemMessage( hwndDlg, IDC_OPENFOLDER, BUTTONADDTOOLTIP, (WPARAM)"Open folder", 0);
-			SendDlgItemMessage( hwndDlg, IDC_OPENFOLDER, BUTTONSETASFLATBTN, 0, 0);
-			
-			SendDlgItemMessage( hwndDlg, IDCANCEL, BM_SETIMAGE, IMAGE_ICON, ( LPARAM )LoadSkinIcon( SKINICON_OTHER_DELETE ));
-			SendDlgItemMessage( hwndDlg, IDCANCEL, BUTTONADDTOOLTIP, (WPARAM)"Cancel", 0);
-			SendDlgItemMessage( hwndDlg, IDCANCEL, BUTTONSETASFLATBTN, 0, 0);
+			SendDlgItemMessage(hwndDlg, IDC_OPENFOLDER, BM_SETIMAGE, IMAGE_ICON, (LPARAM)dat->hIconFolder);
+			SendDlgItemMessage(hwndDlg, IDC_OPENFOLDER, BUTTONADDTOOLTIP, (WPARAM)"Open folder", 0);
+			SendDlgItemMessage(hwndDlg, IDC_OPENFOLDER, BUTTONSETASFLATBTN, 0, 0);
+		
+			Button_SetIcon_IcoLib(hwndDlg, IDCANCEL, SKINICON_OTHER_DELETE, "Cancel");
 
 			SetDlgItemText(hwndDlg, IDC_CONTACTNAME, cli.pfnGetContactDisplayName( dat->hContact, 0 ));
 
@@ -759,10 +756,14 @@ INT_PTR CALLBACK DlgProcFileTransfer(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 			break;
 		}
 		case WM_DESTROY:
-			KillTimer(hwndDlg,1);
+			KillTimer(hwndDlg, 1);
 
 			HFONT hFont = (HFONT)SendDlgItemMessage(hwndDlg,IDC_CONTACTNAME,WM_GETFONT,0,0);
 			DeleteObject(hFont);
+
+			Button_FreeIcon_IcoLib(hwndDlg, IDC_CONTACT);
+			Button_FreeIcon_IcoLib(hwndDlg, IDC_OPENFILE);
+			Button_FreeIcon_IcoLib(hwndDlg, IDCANCEL);
 
 			FreeFileDlgData(dat);
 			break;
@@ -776,18 +777,15 @@ void FreeFileDlgData( FileDlgData* dat )
 		CallContactService(dat->hContact,PSS_FILECANCEL,(WPARAM)dat->fs,0);
 	dat->fs = NULL;
 
-	if (dat->hNotifyEvent) {
-		UnhookEvent(dat->hNotifyEvent);
-		dat->hNotifyEvent=NULL;
-	}
+	if (dat->hPreshutdownEvent) UnhookEvent(dat->hPreshutdownEvent);
+	if (dat->hNotifyEvent) UnhookEvent(dat->hNotifyEvent);
+	dat->hNotifyEvent = NULL;
 
 	FreeProtoFileTransferStatus(&dat->transferStatus);
+	FreeFilesMatrix(&dat->files);
 
-	if(!dat->send) FreeFilesMatrix(&dat->files);
-	if(dat->fileVirusScanned) mir_free(dat->fileVirusScanned);
-	if ( dat->hPreshutdownEvent ) UnhookEvent(dat->hPreshutdownEvent);
-	if (dat->send) FreeFilesMatrix(&dat->files);
-	if (dat->hIcon) DestroyIcon(dat->hIcon);
-	if (dat->hIconFolder) DestroyIcon(dat->hIconFolder);
+	mir_free(dat->fileVirusScanned);
+	Safe_DestroyIcon(dat->hIcon);
+	Safe_DestroyIcon(dat->hIconFolder);
 	mir_free(dat);
 }
