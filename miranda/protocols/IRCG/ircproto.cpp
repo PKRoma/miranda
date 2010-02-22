@@ -554,7 +554,7 @@ DWORD_PTR __cdecl CIrcProto::GetCaps( int type, HANDLE )
 		return PF2_SHORTAWAY;
 
 	case PFLAGNUM_4:
-		return PF4_NOCUSTOMAUTH | PF4_IMSENDUTF;
+		return PF4_NOAUTHDENYREASON | PF4_NOCUSTOMAUTH | PF4_IMSENDUTF;
 
 	case PFLAG_UNIQUEIDTEXT:
 		return (DWORD_PTR) Translate("Nickname");

@@ -1,6 +1,6 @@
 /*
 Plugin of Miranda IM for communicating with users of the MSN Messenger protocol.
-Copyright (c) 2008-2009 Boris Krasnovskiy.
+Copyright (c) 2008-2010 Boris Krasnovskiy.
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -752,7 +752,8 @@ DWORD_PTR __cdecl CMsnProto::GetCaps(int type, HANDLE hContact)
 				 PF2_ONTHEPHONE | PF2_OUTTOLUNCH;
 
 	case PFLAGNUM_4:
-		return PF4_SUPPORTTYPING | PF4_AVATARS | PF4_SUPPORTIDLE | PF4_IMSENDUTF | PF4_IMSENDOFFLINE;
+		return PF4_SUPPORTTYPING | PF4_AVATARS | PF4_SUPPORTIDLE | PF4_IMSENDUTF | 
+			PF4_IMSENDOFFLINE | PF4_NOAUTHDENYREASON;
 
 	case PFLAG_UNIQUEIDTEXT:
 		return (UINT_PTR)MSN_Translate("Live ID");
