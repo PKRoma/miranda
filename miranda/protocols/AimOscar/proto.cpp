@@ -162,7 +162,7 @@ int CAimProto::Authorize(HANDLE hContact)
 ////////////////////////////////////////////////////////////////////////////////////////
 // AuthDeny - handles the unsuccessful authorization
 
-int CAimProto::AuthDeny(HANDLE hContact, const char* szReason)
+int CAimProto::AuthDeny(HANDLE hContact, const TCHAR* szReason)
 {
 	return 0;
 }
@@ -178,7 +178,7 @@ int __cdecl CAimProto::AuthRecv(HANDLE hContact, PROTORECVEVENT* evt)
 ////////////////////////////////////////////////////////////////////////////////////////
 // PSS_AUTHREQUEST
 
-int __cdecl CAimProto::AuthRequest(HANDLE hContact, const char* szMessage)
+int __cdecl CAimProto::AuthRequest(HANDLE hContact, const TCHAR* szMessage)
 {	
 	//Not a real authrequest- only used b/c we don't know the group until now.
 	if (state != 1)
