@@ -248,7 +248,7 @@ int CYahooProto::Authorize( HANDLE hdbe )
 ////////////////////////////////////////////////////////////////////////////////////////
 // AuthDeny - handles the unsuccessful authorization
 
-int CYahooProto::AuthDeny( HANDLE hdbe, const char* reason )
+int CYahooProto::AuthDeny( HANDLE hdbe, const TCHAR* reason )
 {
 	DebugLog("[YahooAuthDeny]");
 	if ( !m_bLoggedIn )
@@ -285,10 +285,16 @@ int CYahooProto::AuthDeny( HANDLE hdbe, const char* reason )
 	/* Need to remove the buddy from our Miranda Lists */
 	DBVARIANT dbv;
 	if (hContact != NULL && !DBGetContactSettingString( hContact, m_szModuleName, YAHOO_LOGINID, &dbv )){
-		DebugLog("Rejecting buddy:%s msg: %s", dbv.pszVal, reason);    
-		reject(dbv.pszVal, GetWord(hContact, "yprotoid", 0), reason);
+		char *u_reason;
+		
+		u_reason = mir_utf8encodeT(reason);
+		
+		DebugLog("Rejecting buddy:%s msg: %s", dbv.pszVal, u_reason);    
+		reject(dbv.pszVal, GetWord(hContact, "yprotoid", 0), u_reason);
 		DBFreeVariant(&dbv);
 		YAHOO_CallService( MS_DB_CONTACT_DELETE, (WPARAM) hContact, 0);
+		
+		mir_free(u_reason);
 	}
 	return 0;
 }
@@ -306,6 +312,7 @@ int __cdecl CYahooProto::AuthRecv( HANDLE hContact, PROTORECVEVENT* pre )
 	dbei.szModule = m_szModuleName;
 	dbei.timestamp = pre->timestamp;
 	dbei.flags = pre->flags & (PREF_CREATEREAD?DBEF_READ:0);
+	dbei.flags |= (pre->flags & PREF_UTF) ? DBEF_UTF : 0;
 	dbei.eventType = EVENTTYPE_AUTHREQUEST;
 
 	/* Just copy the Blob from PSR_AUTH event. */
@@ -320,7 +327,7 @@ int __cdecl CYahooProto::AuthRecv( HANDLE hContact, PROTORECVEVENT* pre )
 ////////////////////////////////////////////////////////////////////////////////////////
 // PSS_AUTHREQUEST
 
-int __cdecl CYahooProto::AuthRequest( HANDLE hContact, const char* msg )
+int __cdecl CYahooProto::AuthRequest( HANDLE hContact, const TCHAR* msg )
 {	
 	DebugLog("[YahooSendAuthRequest]");
 	
@@ -328,11 +335,15 @@ int __cdecl CYahooProto::AuthRequest( HANDLE hContact, const char* msg )
 		if (hContact) {
 			DBVARIANT dbv;
 			if (!DBGetContactSettingString(hContact, m_szModuleName, YAHOO_LOGINID, &dbv )) {
-				DebugLog("Adding buddy:%s Auth:%s", dbv.pszVal, msg);
-				AddBuddy( dbv.pszVal, GetWord(hContact, "yprotoid", 0), "miranda", msg );
+				char *u_msg;
+				
+				u_msg = mir_utf8encodeT(msg);
+				DebugLog("Adding buddy:%s Auth:%s", dbv.pszVal, u_msg);
+				AddBuddy( dbv.pszVal, GetWord(hContact, "yprotoid", 0), "miranda", u_msg );
 				SetString(hContact, "YGroup", "miranda");
 				DBFreeVariant( &dbv );
 				
+				mir_free(u_msg);
 				return 0; // Success
 			}
 		}

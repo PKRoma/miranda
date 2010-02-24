@@ -774,7 +774,7 @@ void CYahooProto::ext_contact_added(const char *myid, const char *who, const cha
 	ccs.hContact		= hContact;
 	ccs.wParam			= 0;
 	ccs.lParam			= (LPARAM) &pre;
-	pre.flags			= 0;
+	pre.flags			= PREF_UTF;
 	pre.timestamp		= time(NULL);
 	
 	pre.lParam = sizeof(DWORD)*2+lstrlenA(who)+lstrlenA(nick)+5;
