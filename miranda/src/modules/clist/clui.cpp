@@ -26,6 +26,8 @@
 #define TM_AUTOALPHA  1
 #define MENU_MIRANDAMENU         0xFFFF1234
 
+extern BOOL(WINAPI * MySetProcessWorkingSetSize) (HANDLE, SIZE_T, SIZE_T);
+
 static HMODULE hUserDll;
 static HANDLE hContactDraggingEvent, hContactDroppedEvent, hContactDragStopEvent;
 static int transparentFocus = 1;
@@ -580,6 +582,9 @@ LRESULT CALLBACK fnContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 			}
 			else
 				DBWriteContactSettingByte(NULL, "CList", "State", SETTING_STATE_MINIMIZED);
+			
+			if (MySetProcessWorkingSetSize != NULL && DBGetContactSettingByte(NULL, "CList", "DisableWorkingSet", 1))
+				MySetProcessWorkingSetSize(GetCurrentProcess(), -1, -1);
 		}
 		// drop thru
 	case WM_MOVE:
