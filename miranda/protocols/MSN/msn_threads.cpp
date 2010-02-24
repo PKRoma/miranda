@@ -126,14 +126,13 @@ retry:
 	{
 		tConn.szHost  = info->mServer;
 		tConn.wPort   = MSN_DEFAULT_PORT;
+		if (tPortDelim != NULL) 
+		{
+			int tPortNumber = atoi(tPortDelim + 1);
+			if (tPortNumber)
+				tConn.wPort = (WORD)tPortNumber;
+		}	
 	}
-
-	if (tPortDelim != NULL) 
-	{
-		int tPortNumber = atoi(tPortDelim+1);
-		if (tPortNumber)
-			tConn.wPort = (WORD)tPortNumber;
-	}	
 
 	MSN_DebugLog("Thread started: server='%s:%d', type=%d", tConn.szHost, tConn.wPort, info->mType);
 
