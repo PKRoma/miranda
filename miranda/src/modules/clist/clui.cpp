@@ -27,7 +27,6 @@
 #define MENU_MIRANDAMENU         0xFFFF1234
 
 static HMODULE hUserDll;
-static HIMAGELIST himlMirandaIcon;
 static HANDLE hContactDraggingEvent, hContactDroppedEvent, hContactDragStopEvent;
 static int transparentFocus = 1;
 UINT uMsgProcessProfile;
@@ -83,7 +82,6 @@ static void DisconnectAll()
 
 static int CluiIconsChanged(WPARAM, LPARAM)
 {
-	ImageList_ReplaceIcon_IconLibLoaded(himlMirandaIcon, 0, LoadSkinIcon( SKINICON_OTHER_MIRANDA ));
 	DrawMenuBar(cli.hwndContactList);
 	return 0;
 }
@@ -487,8 +485,6 @@ LRESULT CALLBACK fnContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 		ZeroMemory(&mii, sizeof(mii));
 		mii.cbSize = MENUITEMINFO_V4_SIZE;
 		mii.fMask = MIIM_TYPE | MIIM_DATA;
-		himlMirandaIcon = ImageList_Create(g_IconWidth, g_IconHeight, ILC_COLOR32 | ILC_MASK, 1, 1);
-		ImageList_AddIcon_IconLibLoaded(himlMirandaIcon, SKINICON_OTHER_MIRANDA );
 		mii.dwItemData = MENU_MIRANDAMENU;
 		mii.fType = MFT_OWNERDRAW;
 		mii.dwTypeData = NULL;
@@ -1031,7 +1027,7 @@ LRESULT CALLBACK fnContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 			}
 			else if (dis->CtlType == ODT_MENU) {
 				if (dis->itemData == MENU_MIRANDAMENU) {
-					HICON hIcon = ImageList_GetIcon(himlMirandaIcon, 0, ILD_NORMAL);
+					HICON hIcon = CopyIcon(LoadSkinnedIcon(SKINICON_OTHER_MIRANDA));
 					fnDrawMenuItem(dis, hIcon, NULL);
 					return TRUE;
 				}
@@ -1072,7 +1068,6 @@ LRESULT CALLBACK fnContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 
 		ShowWindow(hwnd, SW_HIDE);
 		DestroyWindow(cli.hwndContactTree);
-		ImageList_Destroy(himlMirandaIcon);
 		FreeLibrary(hUserDll);
 		PostQuitMessage(0);
 	default:
