@@ -327,7 +327,8 @@ int CMsnProto::AuthRecv(HANDLE hContact, PROTORECVEVENT* pre)
 	dbei.cbSize = sizeof(dbei);
 	dbei.szModule = m_szModuleName;
 	dbei.timestamp = pre->timestamp;
-	dbei.flags = pre->flags & (PREF_CREATEREAD ? DBEF_READ : 0);
+	dbei.flags = (pre->flags & PREF_CREATEREAD) ? DBEF_READ : 0;
+	dbei.flags = (pre->flags & PREF_UTF) ? DBEF_UTF : 0;
 	dbei.eventType = EVENTTYPE_AUTHREQUEST;
 
 	/* Just copy the Blob from PSR_AUTH event. */
@@ -341,7 +342,7 @@ int CMsnProto::AuthRecv(HANDLE hContact, PROTORECVEVENT* pre)
 ////////////////////////////////////////////////////////////////////////////////////////
 // PSS_AUTHREQUEST
 
-int __cdecl CMsnProto::AuthRequest(HANDLE hContact, const char* szMessage)
+int __cdecl CMsnProto::AuthRequest(HANDLE hContact, const TCHAR* szMessage)
 {	
 	return 1;
 }
@@ -399,7 +400,7 @@ int CMsnProto::Authorize(HANDLE hDbEvent)
 /////////////////////////////////////////////////////////////////////////////////////////
 // MsnAuthDeny - called after unsuccessful authorization
 
-int CMsnProto::AuthDeny(HANDLE hDbEvent, const char* szReason)
+int CMsnProto::AuthDeny(HANDLE hDbEvent, const TCHAR* szReason)
 {
 	if (!msnLoggedIn)
 		return 1;

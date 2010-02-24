@@ -125,33 +125,36 @@ void  CMsnProto::MSN_AddAuthRequest(const char *email, const char *nick, const c
 	//blob is: UIN=0(DWORD), hContact(DWORD), nick(ASCIIZ), ""(ASCIIZ), ""(ASCIIZ), email(ASCIIZ), ""(ASCIIZ)
 
 	HANDLE hContact = MSN_HContactFromEmail(email, nick, true, false);
-	char *reasona = mir_utf8decodeA(reason);
+	
+	int emaillen = (int)strlen(email);
+	int nicklen = (int)strlen(nick);
+
+	if (reason == NULL) reason = "";
+	int reasonlen = (int)strlen(reason);
 
 	CCSDATA ccs = { 0 };
 	PROTORECVEVENT pre = { 0 };
 
+	pre.flags = PREF_UTF;
 	pre.timestamp = (DWORD)time(NULL);
-	pre.lParam = sizeof(DWORD) * 2 + strlen(nick) + strlen(email) + 5 + (reasona ? strlen(reasona) : 0);
+	pre.lParam = sizeof(DWORD) * 2 + nicklen + emaillen + 5 + reasonlen;
 
 	ccs.szProtoService = PSR_AUTH;
 	ccs.hContact = hContact;
 	ccs.lParam = (LPARAM)&pre;
 
-	PBYTE pCurBlob = (PBYTE)alloca(pre.lParam);
-	pre.szMessage = (char*)pCurBlob;
+	char* pCurBlob = (char*)alloca(pre.lParam);
+	pre.szMessage = pCurBlob;
 
-	*(PDWORD)pCurBlob = 0; pCurBlob+=sizeof(DWORD);
-	*(PDWORD)pCurBlob = (DWORD)hContact; pCurBlob+=sizeof(DWORD);
-	strcpy((char*)pCurBlob, nick); pCurBlob += strlen(nick)+1;
-	*pCurBlob = '\0'; pCurBlob++;	   //firstName
-	*pCurBlob = '\0'; pCurBlob++;	   //lastName
-	strcpy((char*)pCurBlob, email); pCurBlob += strlen(email)+1;
-	if (reasona) strcpy((char*)pCurBlob, reasona);
-	else *pCurBlob = '\0';         	   //reason
+	*(PDWORD)pCurBlob = 0; pCurBlob += sizeof(DWORD);               // UID
+	*(PDWORD)pCurBlob = (DWORD)hContact; pCurBlob += sizeof(DWORD); // Contact Handle
+	strcpy(pCurBlob, nick); pCurBlob += nicklen + 1;                // Nickname
+	*pCurBlob = '\0'; pCurBlob++;                                   // First Name
+	*pCurBlob = '\0'; pCurBlob++;	                                // Last Name
+	strcpy(pCurBlob, email); pCurBlob += emaillen + 1;              // E-mail
+	strcpy(pCurBlob, reason);                                       // Reason
 
 	MSN_CallService(MS_PROTO_CHAINRECV, 0, (LPARAM)&ccs);
-
-	mir_free(reasona);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
