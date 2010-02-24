@@ -137,7 +137,7 @@ void  CMsnProto::MSN_AddAuthRequest(const char *email, const char *nick, const c
 
 	pre.flags = PREF_UTF;
 	pre.timestamp = (DWORD)time(NULL);
-	pre.lParam = sizeof(DWORD) * 2 + nicklen + emaillen + 5 + reasonlen;
+	pre.lParam = sizeof(DWORD) + sizeof(HANDLE) + nicklen + emaillen + 5 + reasonlen;
 
 	ccs.szProtoService = PSR_AUTH;
 	ccs.hContact = hContact;
@@ -147,7 +147,7 @@ void  CMsnProto::MSN_AddAuthRequest(const char *email, const char *nick, const c
 	pre.szMessage = pCurBlob;
 
 	*(PDWORD)pCurBlob = 0; pCurBlob += sizeof(DWORD);               // UID
-	*(PDWORD)pCurBlob = (DWORD)hContact; pCurBlob += sizeof(DWORD); // Contact Handle
+	*(PHANDLE)pCurBlob = hContact; pCurBlob += sizeof(HANDLE);      // Contact Handle
 	strcpy(pCurBlob, nick); pCurBlob += nicklen + 1;                // Nickname
 	*pCurBlob = '\0'; pCurBlob++;                                   // First Name
 	*pCurBlob = '\0'; pCurBlob++;	                                // Last Name
