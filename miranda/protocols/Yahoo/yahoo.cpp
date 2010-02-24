@@ -465,6 +465,9 @@ void CYahooProto::ext_status_logon(const char *who, int protocol, int stat, cons
 	case 4194239:
 		s = "Yahoo 9.0";
 		break;
+	case 8388543:
+		s = "Yahoo 10.0";
+		break;
 	}
 	
 	if (s != NULL) 
