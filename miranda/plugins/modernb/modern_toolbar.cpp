@@ -1133,7 +1133,9 @@ static LRESULT CALLBACK ToolBar_OptDlgProc(HWND hwndDlg,UINT msg,WPARAM wParam,L
 					HTREEITEM hti;
 					MTB_BUTTONINFO * mtbi = (MTB_BUTTONINFO*) tbdat.listOfButtons->items[i];
 					TCHAR * szTempName=mir_a2t(mtbi->szButtonName);
-					int index=ImageList_AddIcon(himlButtonIcons,(HICON)CallService(MS_SKIN2_GETICONBYHANDLE,0, (LPARAM) mtbi->hPrimaryIconHandle));
+					HICON hIcon = (HICON)CallService(MS_SKIN2_GETICONBYHANDLE, 0, (LPARAM)mtbi->hPrimaryIconHandle)
+					int index = ImageList_AddIcon(himlButtonIcons, hIcon);
+					CallService(MS_SKIN2_RELEASEICON, (WPARAM)hIcon, 0);
 					tvis.hParent=NULL;
 					tvis.hInsertAfter=TVI_LAST;
 					tvis.item.mask=TVIF_PARAM|TVIF_TEXT|TVIF_IMAGE|TVIF_SELECTEDIMAGE|TVIF_STATE;	
