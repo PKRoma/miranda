@@ -1439,7 +1439,6 @@ int CLUI_SyncSmoothAnimation(WPARAM wParam, LPARAM lParam)
 int CLUI_IconsChanged(WPARAM wParam,LPARAM lParam)
 {
 	if (MirandaExiting()) return 0;
-	ImageList_ReplaceIcon(himlMirandaIcon,0,LoadSkinnedIcon(SKINICON_OTHER_MIRANDA));
 	DrawMenuBar(pcli->hwndContactList);
 	ExtraImage_ReloadExtraIcons();
 	ExtraImage_SetAllExtraIcons(pcli->hwndContactTree,0);
@@ -2222,8 +2221,6 @@ LRESULT CLUI::OnCreate( UINT msg, WPARAM wParam, LPARAM lParam )
 	ZeroMemory(&mii,sizeof(mii));
 	mii.cbSize=MENUITEMINFO_V4_SIZE;
 	mii.fMask=MIIM_TYPE|MIIM_DATA;
-	himlMirandaIcon=ImageList_Create(GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),ILC_COLOR32|ILC_MASK,1,1);
-	ImageList_AddIcon(himlMirandaIcon,LoadSkinnedIcon(SKINICON_OTHER_MIRANDA));
 	mii.dwItemData=MENU_MIRANDAMENU;
 	mii.fType=MFT_OWNERDRAW;
 	mii.dwTypeData=NULL;
@@ -2907,12 +2904,12 @@ LRESULT CLUI::OnDrawItem( UINT msg, WPARAM wParam, LPARAM lParam )
 			{	
 				char buf[255]={0};	
 				short dx=1+(dis->itemState&ODS_SELECTED?1:0)-(dis->itemState&ODS_HOTLIGHT?1:0);
-				HICON hIcon=ske_ImageList_GetIcon(himlMirandaIcon,0,ILD_NORMAL);
+				HICON hIcon=LoadSkinnedIcon(SKINICON_OTHER_MIRANDA);
 				CLUI_DrawMenuBackGround(m_hWnd, dis->hDC, 1, dis->itemState);
 				_snprintf(buf,sizeof(buf),"Main,ID=MainMenu,Selected=%s,Hot=%s",(dis->itemState&ODS_SELECTED)?"True":"False",(dis->itemState&ODS_HOTLIGHT)?"True":"False");
 				SkinDrawGlyph(dis->hDC,&dis->rcItem,&dis->rcItem,buf);
 				DrawState(dis->hDC,NULL,NULL,(LPARAM)hIcon,0,(dis->rcItem.right+dis->rcItem.left-GetSystemMetrics(SM_CXSMICON))/2+dx,(dis->rcItem.bottom+dis->rcItem.top-GetSystemMetrics(SM_CYSMICON))/2+dx,0,0,DST_ICON|(dis->itemState&ODS_INACTIVE&&FALSE?DSS_DISABLED:DSS_NORMAL));
-				DestroyIcon_protect(hIcon);         
+				CallService(MS_SKIN2_RELEASEICON, (WPARAM)hIcon, 0);
 				nMirMenuState=dis->itemState;
 			} else {
 				nMirMenuState=dis->itemState;
@@ -2950,12 +2947,12 @@ LRESULT CLUI::OnDrawItem( UINT msg, WPARAM wParam, LPARAM lParam )
 			//TODO check if caption is visible
 			char buf[255]={0};	
 			short dx=1+(dis->itemState&ODS_SELECTED?1:0)-(dis->itemState&ODS_HOTLIGHT?1:0);
-			HICON hIcon=ske_ImageList_GetIcon(himlMirandaIcon,0,ILD_NORMAL);
+			HICON hIcon = LoadSkinnedIcon(SKINICON_OTHER_MIRANDA);
 			CLUI_DrawMenuBackGround(m_hWnd, dis->hDC, 3, dis->itemState);
 			_snprintf(buf,sizeof(buf),"Main,ID=MainMenu,Selected=%s,Hot=%s",(dis->itemState&ODS_SELECTED)?"True":"False",(dis->itemState&ODS_HOTLIGHT)?"True":"False");
 			SkinDrawGlyph(dis->hDC,&dis->rcItem,&dis->rcItem,buf);
 			DrawState(dis->hDC,NULL,NULL,(LPARAM)hIcon,0,(dis->rcItem.right+dis->rcItem.left-GetSystemMetrics(SM_CXSMICON))/2+dx,(dis->rcItem.bottom+dis->rcItem.top-GetSystemMetrics(SM_CYSMICON))/2+dx,0,0,DST_ICON|(dis->itemState&ODS_INACTIVE&&FALSE?DSS_DISABLED:DSS_NORMAL));
-			DestroyIcon_protect(hIcon);         
+			CallService(MS_SKIN2_RELEASEICON, (WPARAM)hIcon, 0);
 			nMirMenuState=dis->itemState;
 		}
 
@@ -3027,7 +3024,6 @@ LRESULT CLUI::OnDestroy( UINT msg, WPARAM wParam, LPARAM lParam )
 	UnLoadCLUIFramesModule();
 	//ExtFrames_Uninit();
 	TRACE("CLUI.c: WM_DESTROY - UnLoadCLUIFramesModule DONE\n");
-	ImageList_Destroy(himlMirandaIcon);
 	ModernWriteSettingByte(NULL,"CList","State",(BYTE)state);
 	ske_UnloadSkin(&g_SkinObjectList);
 

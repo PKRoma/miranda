@@ -191,9 +191,6 @@ static HANDLE hSettingChangedHook=NULL;
 
 static UINT uMsgGetProfile=0;
 
-
-static HIMAGELIST himlMirandaIcon;
-
 static int nLastRequiredHeight=0,
            nRequiredHeight=0,
            nMirMenuState=0,
