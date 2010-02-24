@@ -512,7 +512,7 @@ int CJabberProto::Authorize( HANDLE hContact )
 ////////////////////////////////////////////////////////////////////////////////////////
 // JabberAuthDeny - handles the unsuccessful authorization
 
-int CJabberProto::AuthDeny( HANDLE hContact, const char* /*szReason*/ )
+int CJabberProto::AuthDeny( HANDLE hContact, const TCHAR* /*szReason*/ )
 {
 	DBEVENTINFO dbei;
 	char* nick, *firstName, *lastName, *jid;
@@ -564,7 +564,7 @@ int __cdecl CJabberProto::AuthRecv( HANDLE, PROTORECVEVENT* )
 ////////////////////////////////////////////////////////////////////////////////////////
 // PSS_AUTHREQUEST
 
-int __cdecl CJabberProto::AuthRequest( HANDLE, const char* )
+int __cdecl CJabberProto::AuthRequest( HANDLE, const TCHAR* )
 {	
 	return 1;
 }
@@ -690,7 +690,7 @@ DWORD_PTR __cdecl CJabberProto::GetCaps( int type, HANDLE /*hContact*/ )
 	case PFLAGNUM_3:
 		return PF2_ONLINE | PF2_SHORTAWAY | PF2_LONGAWAY | PF2_HEAVYDND | PF2_FREECHAT;
 	case PFLAGNUM_4:
-		return PF4_FORCEAUTH | PF4_NOCUSTOMAUTH | PF4_SUPPORTTYPING | PF4_AVATARS | PF4_IMSENDUTF;
+		return PF4_FORCEAUTH | PF4_NOCUSTOMAUTH | PF4_NOAUTHDENYREASON | PF4_SUPPORTTYPING | PF4_AVATARS | PF4_IMSENDUTF;
 	case PFLAG_UNIQUEIDTEXT:
 		return ( DWORD_PTR ) JTranslate( "JID" );
 	case PFLAG_UNIQUEIDSETTING:
