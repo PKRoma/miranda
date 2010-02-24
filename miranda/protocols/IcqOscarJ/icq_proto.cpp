@@ -524,7 +524,7 @@ int CIcqProto::Authorize( HANDLE hDbEvent )
 		if (getContactUid(hContact, &uin, &uid))
 			return 1;
 
-		icq_sendAuthResponseServ(uin, uid, 1, "");
+		icq_sendAuthResponseServ(uin, uid, 1, _T(""));
 
 		return 0; // Success
 	}
@@ -536,7 +536,7 @@ int CIcqProto::Authorize( HANDLE hDbEvent )
 ////////////////////////////////////////////////////////////////////////////////////////
 // PS_AuthDeny - handles the unsuccessful authorization
 
-int CIcqProto::AuthDeny( HANDLE hDbEvent, const char* szReason )
+int CIcqProto::AuthDeny( HANDLE hDbEvent, const TCHAR* szReason )
 {
 	if (icqOnline() && hDbEvent)
 	{
@@ -572,7 +572,7 @@ int __cdecl CIcqProto::AuthRecv( HANDLE hContact, PROTORECVEVENT* pre )
 ////////////////////////////////////////////////////////////////////////////////////////
 // PSS_AUTHREQUEST
 
-int __cdecl CIcqProto::AuthRequest( HANDLE hContact, const char* szMessage )
+int __cdecl CIcqProto::AuthRequest( HANDLE hContact, const TCHAR* szMessage )
 {
 	if ( !icqOnline())
 		return 1;
@@ -586,7 +586,7 @@ int __cdecl CIcqProto::AuthRequest( HANDLE hContact, const char* szMessage )
 
 		if (dwUin && szMessage)
 		{
-			char *utf = ansi_to_utf8(szMessage); // Miranda is ANSI only here
+			char *utf = tchar_to_utf8(szMessage); // Miranda is ANSI only here
 			icq_sendAuthReqServ(dwUin, szUid, utf);
 			SAFE_FREE(&utf);
 			return 0; // Success

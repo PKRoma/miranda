@@ -80,9 +80,9 @@ struct CIcqProto : public PROTO_INTERFACE
 	virtual	HANDLE __cdecl AddToListByEvent( int flags, int iContact, HANDLE hDbEvent );
 
 	virtual	int    __cdecl Authorize( HANDLE hContact );
-	virtual	int    __cdecl AuthDeny( HANDLE hContact, const char* szReason );
+	virtual	int    __cdecl AuthDeny( HANDLE hContact, const TCHAR* szReason );
 	virtual	int    __cdecl AuthRecv( HANDLE hContact, PROTORECVEVENT* );
-	virtual	int    __cdecl AuthRequest( HANDLE hContact, const char* szMessage );
+	virtual	int    __cdecl AuthRequest( HANDLE hContact, const TCHAR* szMessage );
 
 	virtual	HANDLE __cdecl ChangeInfo( int iInfoType, void* pInfoData );
 
@@ -780,7 +780,7 @@ struct CIcqProto : public PROTO_INTERFACE
 	void   icq_sendRevokeAuthServ(DWORD dwUin, char *szUid);
 	void   icq_sendGrantAuthServ(DWORD dwUin, const char *szUid, const char *szMsg);
 	void   icq_sendAuthReqServ(DWORD dwUin, char* szUid, const char *szMsg);
-	void   icq_sendAuthResponseServ(DWORD dwUin, char* szUid,int auth,const char *szReason);
+	void   icq_sendAuthResponseServ(DWORD dwUin, char* szUid,int auth,const TCHAR *szReason);
 	void   icq_sendYouWereAddedServ(DWORD,DWORD);
 
 	DWORD  sendDirectorySearchPacket(const BYTE *pSearchData, WORD wDataLen, WORD wPage, BOOL bOnlineUsersOnly);

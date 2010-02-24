@@ -696,6 +696,9 @@ void CIcqProto::ICQAddRecvEvent(HANDLE hContact, WORD wType, PROTORECVEVENT* pre
 	if (pre->flags & PREF_CREATEREAD) 
 		flags |= DBEF_READ;
 
+	if (pre->flags & PREF_UTF) 
+		flags |= DBEF_UTF;
+
 	if (hContact && DBGetContactSettingByte(hContact, "CList", "Hidden", 0))
 	{
 		DWORD dwUin;

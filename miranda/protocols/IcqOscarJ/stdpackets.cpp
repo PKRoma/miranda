@@ -1534,7 +1534,7 @@ void CIcqProto::icq_sendAuthReqServ(DWORD dwUin, char *szUid, const char *szMsg)
 	sendServPacket(&packet);
 }
 
-void CIcqProto::icq_sendAuthResponseServ(DWORD dwUin, char* szUid, int auth, const char *szReason)
+void CIcqProto::icq_sendAuthResponseServ(DWORD dwUin, char* szUid, int auth, const TCHAR *szReason)
 {
 	icq_packet packet;
 	WORD nReasonlen;
@@ -1544,7 +1544,7 @@ void CIcqProto::icq_sendAuthResponseServ(DWORD dwUin, char* szUid, int auth, con
 	nUinlen = getUIDLen(dwUin, szUid);
 
 	// Prepare custom utf-8 reason
-	szUtfReason = ansi_to_utf8(szReason);
+	szUtfReason = tchar_to_utf8(szReason);
 	nReasonlen = strlennull(szUtfReason);
 
 	serverPacketInit(&packet, (WORD)(16 + nUinlen + nReasonlen));
