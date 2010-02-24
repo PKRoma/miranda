@@ -554,7 +554,7 @@ int ModernDrawStatusBarWorker(HWND hWnd, HDC hDC)
 								{
 									hIcon=(HICON)CLUI_GetConnectingIconService((WPARAM)ProtosData[i].AccountName,0);
 									if (hIcon) NeedDestroy=TRUE;
-									else LoadSkinnedProtoIcon(ProtosData[i].AccountName,ProtosData[i].ProtoStatus);
+									else hIcon=LoadSkinnedProtoIcon(ProtosData[i].AccountName,ProtosData[i].ProtoStatus);
 								}
 								else hIcon=LoadSkinnedProtoIcon(ProtosData[i].AccountName,ProtosData[i].ProtoStatus);
 							}
@@ -607,12 +607,12 @@ int ModernDrawStatusBarWorker(HWND hWnd, HDC hDC)
 									if (hLockOverlay != NULL)
 									{
 										mod_DrawIconEx_helper(hDC, x, iconY, hLockOverlay, GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),0,NULL,DI_NORMAL);
-									}
-									
+										CallService(MS_SKIN2_RELEASEICON, (WPARAM)hLockOverlay, 0);									}
 								}
 							}
 							if (hxIcon) DestroyIcon_protect(hxIcon);
 							if (NeedDestroy) DestroyIcon_protect(hIcon);
+							else CallService(MS_SKIN2_RELEASEICON, (WPARAM)hIcon, 0);
 							x+=GetSystemMetrics(SM_CXSMICON)+1;
 
 							if (ProtosData[i].showProtoName)

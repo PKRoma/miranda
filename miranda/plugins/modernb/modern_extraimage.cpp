@@ -187,18 +187,30 @@ void ExtraImage_ReloadExtraIcons()
 
 	if (!HasExtraIconsService())
 	{
-		//adding protocol icons
-		ProtoEnumAccounts( &count, &accs );
+		HICON hIcon;
 
 		//loading icons
-		ExtraImageIconsIndex[0]=ImageList_AddIcon(hExtraImageList,LoadSkinnedIcon( SKINICON_OTHER_SENDEMAIL ) );
-		ExtraImageIconsIndex[1]=ImageList_AddIcon(hExtraImageList,LoadSkinnedIcon( SKINICON_OTHER_SMS) );
-		ExtraImageIconsIndex[2]=ImageList_AddIcon(hExtraImageList,LoadSkinnedIcon( SKINICON_EVENT_URL) );
+		hIcon = LoadSkinnedIcon(SKINICON_OTHER_SENDEMAIL);
+		ExtraImageIconsIndex[0]=ImageList_AddIcon(hExtraImageList, hIcon);
+		CallService(MS_SKIN2_RELEASEICON, (WPARAM)hIcon, 0);
+		hIcon = LoadSkinnedIcon(SKINICON_OTHER_SMS);
+		ExtraImageIconsIndex[1]=ImageList_AddIcon(hExtraImageList, hIcon);
+		CallService(MS_SKIN2_RELEASEICON, (WPARAM)hIcon, 0);
+		hIcon = LoadSkinnedIcon(SKINICON_EVENT_URL);
+		ExtraImageIconsIndex[2]=ImageList_AddIcon(hExtraImageList, hIcon);
+		CallService(MS_SKIN2_RELEASEICON, (WPARAM)hIcon, 0);
 		
 		//calc only needed protocols
-		for(i=0;i<count;i++) {
-            if (!IsAccountEnabled( accs[i] ) || CallProtoService(accs[i]->szModuleName,PS_GETCAPS,PFLAGNUM_2,0)==0) continue;
-			ImageList_AddIcon(hExtraImageList,LoadSkinnedProtoIcon(accs[i]->szModuleName,ID_STATUS_ONLINE));
+		//adding protocol icons
+		ProtoEnumAccounts( &count, &accs );
+		for(i=0;i<count;i++)
+		{
+            if (!IsAccountEnabled(accs[i]) || CallProtoService(accs[i]->szModuleName, PS_GETCAPS,PFLAGNUM_2, 0 )== 0) 
+				continue;
+			
+			hIcon = LoadSkinnedProtoIcon(accs[i]->szModuleName,ID_STATUS_ONLINE);
+			ImageList_AddIcon(hExtraImageList, hIcon);
+			CallService(MS_SKIN2_RELEASEICON, (WPARAM)hIcon, 0);
 		}
 
 		hicon=CLUI_LoadIconFromExternalFile("clisticons.dll",5,TRUE,TRUE,"AlwaysVis","Contact List",Translate("Always Visible"),-IDI_ALWAYSVIS,&needFree);

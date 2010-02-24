@@ -27,7 +27,6 @@
 #define MENU_MIRANDAMENU         0xFFFF1234
 
 static HMODULE hUserDll;
-static HIMAGELIST himlMirandaIcon;
 static HANDLE hContactDraggingEvent, hContactDroppedEvent, hContactDragStopEvent;
 static int transparentFocus = 1;
 UINT uMsgProcessProfile;
@@ -83,7 +82,6 @@ static void DisconnectAll()
 
 static int CluiIconsChanged(WPARAM, LPARAM)
 {
-	ImageList_ReplaceIcon_IconLibLoaded(himlMirandaIcon, 0, IsWinVer7Plus() ? LoadIcon(hMirandaInst, MAKEINTRESOURCE(IDI_MIRANDA)) : LoadSkinIcon( SKINICON_OTHER_MIRANDA ) );
 	DrawMenuBar(cli.hwndContactList);
 	return 0;
 }
@@ -265,13 +263,12 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 
 int LoadCLUIModule(void)
 {
-	WNDCLASS wndclass;
 	DBVARIANT dbv;
 	TCHAR titleText[256];
 
 	uMsgProcessProfile = RegisterWindowMessage( _T("Miranda::ProcessProfile"));
 	cli.pfnLoadCluiGlobalOpts();
-	hUserDll = LoadLibraryA("user32.dll");
+	hUserDll = GetModuleHandleA("user32");
 	if (hUserDll) {
 		MySetLayeredWindowAttributes = (BOOL(WINAPI *) (HWND, COLORREF, BYTE, DWORD)) GetProcAddress(hUserDll, "SetLayeredWindowAttributes");
 		MyAnimateWindow = (BOOL(WINAPI *) (HWND, DWORD, DWORD)) GetProcAddress(hUserDll, "AnimateWindow");
@@ -284,6 +281,8 @@ int LoadCLUIModule(void)
 	hContactDragStopEvent = CreateHookableEvent(ME_CLUI_CONTACTDRAGSTOP);
 	LoadCluiServices();
 
+	WNDCLASSEX wndclass;
+	wndclass.cbSize = sizeof(wndclass);
 	wndclass.style = CS_HREDRAW | CS_VREDRAW | CS_DBLCLKS | CS_GLOBALCLASS;
 	wndclass.lpfnWndProc = cli.pfnContactListControlWndProc;
 	wndclass.cbClsExtra = 0;
@@ -294,19 +293,22 @@ int LoadCLUIModule(void)
 	wndclass.hbrBackground = NULL;
 	wndclass.lpszMenuName = NULL;
 	wndclass.lpszClassName = CLISTCONTROL_CLASS;
-	RegisterClass(&wndclass);
+	wndclass.hIconSm = NULL;
+	RegisterClassEx(&wndclass);
 
-	wndclass.style = CS_HREDRAW | CS_VREDRAW | (IsWinVerXPPlus() && DBGetContactSettingByte(NULL, "CList", "WindowShadow", 0) == 1 ? CS_DROPSHADOW : 0);
+	wndclass.style = CS_HREDRAW | CS_VREDRAW | ((IsWinVerXPPlus() && 
+		DBGetContactSettingByte(NULL, "CList", "WindowShadow", 0) == 1) ? CS_DROPSHADOW : 0);
 	wndclass.lpfnWndProc = ContactListWndProc;
 	wndclass.cbClsExtra = 0;
 	wndclass.cbWndExtra = 0;
 	wndclass.hInstance = cli.hInst;
-	wndclass.hIcon = IsWinVer7Plus() ? LoadIcon(hMirandaInst, MAKEINTRESOURCE(IDI_MIRANDA)) : LoadSkinIcon( SKINICON_OTHER_MIRANDA );
+	wndclass.hIcon = LoadIcon(hMirandaInst, MAKEINTRESOURCE(IDI_MIRANDA));
 	wndclass.hCursor = LoadCursor(NULL, IDC_ARROW);
 	wndclass.hbrBackground = (HBRUSH) (COLOR_3DFACE + 1);
 	wndclass.lpszMenuName = MAKEINTRESOURCE(IDR_CLISTMENU);
 	wndclass.lpszClassName = _T(MIRANDACLASS);
-	RegisterClass(&wndclass);  
+	wndclass.hIconSm = LoadSkinIcon(SKINICON_OTHER_MIRANDA);
+	RegisterClassEx(&wndclass);  
 
 	if (DBGetContactSettingTString(NULL, "CList", "TitleText", &dbv))
 		lstrcpyn(titleText, _T(MIRANDANAME), SIZEOF( titleText ));
@@ -315,16 +317,21 @@ int LoadCLUIModule(void)
 		DBFreeVariant(&dbv);
 	}
 
+	RECT pos;
+	pos.left = (int) DBGetContactSettingDword(NULL, "CList", "x", 700);
+	pos.top = (int) DBGetContactSettingDword(NULL, "CList", "y", 221);
+	pos.right = pos.left + (int) DBGetContactSettingDword(NULL, "CList", "Width", 108);
+	pos.bottom = pos.top + (int) DBGetContactSettingDword(NULL, "CList", "Height", 310);
+
+	Utils_AssertInsideScreen(&pos);
+
 	cli.hwndContactList = CreateWindowEx(
 		DBGetContactSettingByte(NULL, "CList", "ToolWindow", SETTING_TOOLWINDOW_DEFAULT) ? WS_EX_TOOLWINDOW : 0,
 		_T(MIRANDACLASS),
 		titleText,
 		(DBGetContactSettingByte(NULL, "CLUI", "ShowCaption", SETTING_SHOWCAPTION_DEFAULT) ?
 			WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX : 0) | WS_POPUPWINDOW | WS_THICKFRAME | WS_CLIPCHILDREN,
-		(int) DBGetContactSettingDword(NULL, "CList", "x", 700),
-		(int) DBGetContactSettingDword(NULL, "CList", "y", 221),
-		(int) DBGetContactSettingDword(NULL, "CList", "Width", 108),
-		(int) DBGetContactSettingDword(NULL, "CList", "Height", 310),
+		pos.left, pos.top, pos.right - pos.left, pos.bottom - pos.top,
 		NULL, NULL, cli.hInst, NULL);
 
 	if (DBGetContactSettingByte(NULL, "CList", "OnDesktop", 0)) {
@@ -478,8 +485,6 @@ LRESULT CALLBACK fnContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 		ZeroMemory(&mii, sizeof(mii));
 		mii.cbSize = MENUITEMINFO_V4_SIZE;
 		mii.fMask = MIIM_TYPE | MIIM_DATA;
-		himlMirandaIcon = ImageList_Create(g_IconWidth, g_IconHeight, ILC_COLOR32 | ILC_MASK, 1, 1);
-		ImageList_AddIcon_IconLibLoaded(himlMirandaIcon, SKINICON_OTHER_MIRANDA );
 		mii.dwItemData = MENU_MIRANDAMENU;
 		mii.fType = MFT_OWNERDRAW;
 		mii.dwTypeData = NULL;
@@ -1022,7 +1027,7 @@ LRESULT CALLBACK fnContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 			}
 			else if (dis->CtlType == ODT_MENU) {
 				if (dis->itemData == MENU_MIRANDAMENU) {
-					HICON hIcon = ImageList_GetIcon(himlMirandaIcon, 0, ILD_NORMAL);
+					HICON hIcon = CopyIcon(LoadSkinnedIcon(SKINICON_OTHER_MIRANDA));
 					fnDrawMenuItem(dis, hIcon, NULL);
 					return TRUE;
 				}
@@ -1063,7 +1068,6 @@ LRESULT CALLBACK fnContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 
 		ShowWindow(hwnd, SW_HIDE);
 		DestroyWindow(cli.hwndContactTree);
-		ImageList_Destroy(himlMirandaIcon);
 		FreeLibrary(hUserDll);
 		PostQuitMessage(0);
 	default:
