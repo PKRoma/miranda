@@ -328,7 +328,7 @@ int CMsnProto::AuthRecv(HANDLE hContact, PROTORECVEVENT* pre)
 	dbei.szModule = m_szModuleName;
 	dbei.timestamp = pre->timestamp;
 	dbei.flags = (pre->flags & PREF_CREATEREAD) ? DBEF_READ : 0;
-	dbei.flags = (pre->flags & PREF_UTF) ? DBEF_UTF : 0;
+	dbei.flags |= (pre->flags & PREF_UTF) ? DBEF_UTF : 0;
 	dbei.eventType = EVENTTYPE_AUTHREQUEST;
 
 	/* Just copy the Blob from PSR_AUTH event. */
