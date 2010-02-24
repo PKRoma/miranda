@@ -451,7 +451,7 @@ HANDLE __cdecl CJabberProto::AddToListByEvent( int flags, int /*iContact*/, HAND
 	lastName = firstName + strlen( firstName ) + 1;
 	jid = lastName + strlen( lastName ) + 1;
 
-	TCHAR* newJid = mir_a2t( jid );
+	TCHAR* newJid = dbei.flags & DBEF_UTF ? mir_utf8decodeT( jid ) : mir_a2t( jid );
 	hContact = ( HANDLE ) AddToListByJID( newJid, flags );
 	mir_free( newJid );
 	return hContact;
