@@ -265,7 +265,6 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 
 int LoadCLUIModule(void)
 {
-	WNDCLASS wndclass;
 	DBVARIANT dbv;
 	TCHAR titleText[256];
 
@@ -284,6 +283,8 @@ int LoadCLUIModule(void)
 	hContactDragStopEvent = CreateHookableEvent(ME_CLUI_CONTACTDRAGSTOP);
 	LoadCluiServices();
 
+	WNDCLASSEX wndclass;
+	wndclass.cbSize = sizeof(wndclass);
 	wndclass.style = CS_HREDRAW | CS_VREDRAW | CS_DBLCLKS | CS_GLOBALCLASS;
 	wndclass.lpfnWndProc = cli.pfnContactListControlWndProc;
 	wndclass.cbClsExtra = 0;
@@ -294,9 +295,11 @@ int LoadCLUIModule(void)
 	wndclass.hbrBackground = NULL;
 	wndclass.lpszMenuName = NULL;
 	wndclass.lpszClassName = CLISTCONTROL_CLASS;
-	RegisterClass(&wndclass);
+	wndclass.hIconSm = NULL;
+	RegisterClassEx(&wndclass);
 
-	wndclass.style = CS_HREDRAW | CS_VREDRAW | (IsWinVerXPPlus() && DBGetContactSettingByte(NULL, "CList", "WindowShadow", 0) == 1 ? CS_DROPSHADOW : 0);
+	wndclass.style = CS_HREDRAW | CS_VREDRAW | ((IsWinVerXPPlus() && 
+		DBGetContactSettingByte(NULL, "CList", "WindowShadow", 0) == 1) ? CS_DROPSHADOW : 0);
 	wndclass.lpfnWndProc = ContactListWndProc;
 	wndclass.cbClsExtra = 0;
 	wndclass.cbWndExtra = 0;
@@ -306,7 +309,8 @@ int LoadCLUIModule(void)
 	wndclass.hbrBackground = (HBRUSH) (COLOR_3DFACE + 1);
 	wndclass.lpszMenuName = MAKEINTRESOURCE(IDR_CLISTMENU);
 	wndclass.lpszClassName = _T(MIRANDACLASS);
-	RegisterClass(&wndclass);  
+	wndclass.hIconSm = LoadSkinIcon(SKINICON_OTHER_MIRANDA);
+	RegisterClassEx(&wndclass);  
 
 	if (DBGetContactSettingTString(NULL, "CList", "TitleText", &dbv))
 		lstrcpyn(titleText, _T(MIRANDANAME), SIZEOF( titleText ));
