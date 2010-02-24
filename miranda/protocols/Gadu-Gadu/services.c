@@ -948,9 +948,9 @@ static INT_PTR gg_get_acc_mgr_gui(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
 
 HANDLE gg_dummy_addtolistbyevent(PROTO_INTERFACE *proto, int flags, int iContact, HANDLE hDbEvent) { return NULL; }
 int    gg_dummy_authorize(PROTO_INTERFACE *proto, HANDLE hContact) { return 0; }
-int    gg_dummy_authdeny(PROTO_INTERFACE *proto, HANDLE hContact, const char *szReason) { return 0; }
+int    gg_dummy_authdeny(PROTO_INTERFACE *proto, HANDLE hContact, const TCHAR *szReason) { return 0; }
 int    gg_dummy_authrecv(PROTO_INTERFACE *proto, HANDLE hContact, PROTORECVEVENT *pre) { return 0; }
-int    gg_dummy_authrequest(PROTO_INTERFACE *proto, HANDLE hContact, const char *szMessage) { return 0; }
+int    gg_dummy_authrequest(PROTO_INTERFACE *proto, HANDLE hContact, const TCHAR *szMessage) { return 0; }
 HANDLE gg_dummy_changeinfo(PROTO_INTERFACE *proto, int iInfoType, void *pInfoData) { return NULL; }
 int    gg_dummy_fileresume(PROTO_INTERFACE *proto, HANDLE hTransfer, int *action, const PROTOCHAR** szFilename) { return 0; }
 HANDLE gg_dummy_searchbyemail(PROTO_INTERFACE *proto, const char *email) { return NULL; }
