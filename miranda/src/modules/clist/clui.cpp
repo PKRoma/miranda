@@ -1027,8 +1027,9 @@ LRESULT CALLBACK fnContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 			}
 			else if (dis->CtlType == ODT_MENU) {
 				if (dis->itemData == MENU_MIRANDAMENU) {
-					HICON hIcon = CopyIcon(LoadSkinnedIcon(SKINICON_OTHER_MIRANDA));
-					fnDrawMenuItem(dis, hIcon, NULL);
+					HICON hIcon = LoadSkinnedIcon(SKINICON_OTHER_MAINMENU);
+					fnDrawMenuItem(dis, hIcon, CopyIcon(hIcon));
+					IconLib_ReleaseIcon(hIcon, NULL);
 					return TRUE;
 				}
 				return CallService(MS_CLIST_MENUDRAWITEM, wParam, lParam);
