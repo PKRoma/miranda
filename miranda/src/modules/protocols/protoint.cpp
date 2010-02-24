@@ -46,7 +46,7 @@ struct DEFAULT_PROTO_INTERFACE : public PROTO_INTERFACE
 	{	return ( int )MyCallProtoService( m_szModuleName, PS_AUTHALLOW, (WPARAM)hContact, 0 );
 	}
 
-	int __cdecl AuthDeny( HANDLE hContact, const char* szReason )
+	int __cdecl AuthDeny( HANDLE hContact, const TCHAR* szReason )
 	{	return ( int )MyCallProtoService( m_szModuleName, PS_AUTHDENY, (WPARAM)hContact, (LPARAM)szReason );
 	}
 

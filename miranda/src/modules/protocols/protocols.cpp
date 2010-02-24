@@ -351,7 +351,7 @@ INT_PTR CallProtoServiceInt( HANDLE hContact, const char *szModule, const char *
 					case  1: return ( INT_PTR )ppi->AddToList( wParam, (PROTOSEARCHRESULT*)lParam ); break;
 					case  2: return ( INT_PTR )ppi->AddToListByEvent( LOWORD(wParam), HIWORD(wParam), (HANDLE)lParam ); break;
 					case  3: return ( INT_PTR )ppi->Authorize( ( HANDLE )wParam ); break;
-					case  4: return ( INT_PTR )ppi->AuthDeny( ( HANDLE )wParam, ( const char* )lParam ); break;
+					case  4: return ( INT_PTR )ppi->AuthDeny( ( HANDLE )wParam, ( const TCHAR* )lParam ); break;
 					case  5: return ( INT_PTR )ppi->AuthRecv( hContact, ( PROTORECVEVENT* )lParam ); break;
 					case  6: return ( INT_PTR )ppi->AuthRequest( hContact, ( TCHAR* )lParam ); break;
 					case  7: return ( INT_PTR )ppi->ChangeInfo( wParam, ( void* )lParam ); break;

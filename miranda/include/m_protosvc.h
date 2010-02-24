@@ -267,7 +267,7 @@ will pick this up and everything will be good.
 
 //Deny an authorisation request
 //wParam=(WPARAM)(HANDLE)hDbEvent
-//lParam=(LPARAM)(const char*)szReason
+//lParam=(LPARAM)(const TCHAR*)szReason
 //Returns 0 on success, nonzero on failure
 //Protocol modules must be able to cope with szReason=NULL
 #define PS_AUTHDENY    "/AuthDeny"
@@ -648,7 +648,7 @@ typedef struct {
 
 // Send an auth request
 // wParam=0
-// lParam=(const char *)szMessage
+// lParam=(const TCHAR *)szMessage
 // Returns 0 on success, nonzero on failure
 #define PSS_AUTHREQUEST    "/AuthRequest"
 
@@ -688,7 +688,7 @@ typedef struct {
 	LPARAM lParam;     //extra space for the network level protocol module
 } PROTORECVEVENT;
 #define PREF_CREATEREAD   1     //create the database event with the 'read' flag set
-#define PREF_UNICODE	     2
+#define PREF_UNICODE	  2
 #define PREF_RTL          4     // 0.5+ addition: support for right-to-left messages
 #define PREF_UTF          8     // message is in utf-8 (0.7.0+)
 

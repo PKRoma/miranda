@@ -183,8 +183,8 @@ INT_PTR CALLBACK DenyReasonProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 
 				if (LOWORD(wParam) == IDOK)
 				{
-					char szReason[256];
-					GetDlgItemTextA(hwndDlg, IDC_REASON, szReason, SIZEOF(szReason));
+					TCHAR szReason[256];
+					GetDlgItemText(hwndDlg, IDC_REASON, szReason, SIZEOF(szReason));
 					CallProtoService(dbei.szModule, PS_AUTHDENY, (WPARAM)hDbEvent, (LPARAM)szReason);
 				}
 				else

@@ -50,9 +50,9 @@ typedef struct tagPROTO_INTERFACE_VTBL
 	HANDLE    ( *AddToListByEvent )( struct tagPROTO_INTERFACE*, int flags, int iContact, HANDLE hDbEvent );
 
 	int       ( *Authorize )( struct tagPROTO_INTERFACE*, HANDLE hContact );
-	int       ( *AuthDeny )( struct tagPROTO_INTERFACE*, HANDLE hContact, const char* szReason );
+	int       ( *AuthDeny )( struct tagPROTO_INTERFACE*, HANDLE hContact, const TCHAR* szReason );
 	int       ( *AuthRecv )( struct tagPROTO_INTERFACE*, HANDLE hContact, PROTORECVEVENT* );
-	int       ( *AuthRequest )( struct tagPROTO_INTERFACE*, HANDLE hContact, const char* szMessage );
+	int       ( *AuthRequest )( struct tagPROTO_INTERFACE*, HANDLE hContact, const TCHAR* szMessage );
 
 	HANDLE    ( *ChangeInfo )( struct tagPROTO_INTERFACE*, int iInfoType, void* pInfoData );
 
@@ -117,9 +117,9 @@ typedef struct tagPROTO_INTERFACE
 	virtual	HANDLE   __cdecl AddToListByEvent( int flags, int iContact, HANDLE hDbEvent ) = 0;
 
 	virtual	int      __cdecl Authorize( HANDLE hDbEvent ) = 0;
-	virtual	int      __cdecl AuthDeny( HANDLE hDbEvent, const char* szReason ) = 0;
+	virtual	int      __cdecl AuthDeny( HANDLE hDbEvent, const TCHAR* szReason ) = 0;
 	virtual	int      __cdecl AuthRecv( HANDLE hContact, PROTORECVEVENT* ) = 0;
-	virtual	int      __cdecl AuthRequest( HANDLE hContact, const char* szMessage ) = 0;
+	virtual	int      __cdecl AuthRequest( HANDLE hContact, const TCHAR* szMessage ) = 0;
 
 	virtual	HANDLE   __cdecl ChangeInfo( int iInfoType, void* pInfoData ) = 0;
 
