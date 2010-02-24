@@ -693,7 +693,7 @@ static void CALLBACK TrayToolTipTimerProc(HWND hwnd, UINT, UINT_PTR id, DWORD)
 			#if defined( _UNICODE )
 	        if (CallService( "mToolTip/ShowTipW", (WPARAM)szTipCur, (LPARAM)&ti ) == CALLSERVICE_NOTFOUND)
 			{	
-				char* p = u2a( szTipCur );
+				char* p = mir_u2a( szTipCur );
 	        	CallService( "mToolTip/ShowTip", (WPARAM)p, (LPARAM)&ti );
 				mir_free( p );
 			}

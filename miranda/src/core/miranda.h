@@ -125,14 +125,24 @@ char* Utf8DecodeCP( char* str, int codepage, wchar_t** ucs2 );
 
 wchar_t* Utf8DecodeUcs2( const char* str );
 
+__forceinline char* Utf8DecodeA(const char* src)
+{
+    char* tmp = mir_strdup(src);
+    Utf8Decode(tmp, NULL);
+    return tmp;
+}
+
+
 char* Utf8Encode( const char* str );
 char* Utf8EncodeCP( const char* src, int codepage );
 
 char* Utf8EncodeUcs2( const wchar_t* str );
 
 #if defined( _UNICODE )
+	#define Utf8DecodeT Utf8DecodeUcs2
 	#define Utf8EncodeT Utf8EncodeUcs2
 #else
+	#define Utf8DecodeT Utf8DecodeA
 	#define Utf8EncodeT Utf8Encode
 #endif
 
@@ -142,12 +152,6 @@ int    LangPackGetDefaultCodePage();
 int    LangPackGetDefaultLocale();
 TCHAR* LangPackPcharToTchar( const char* pszStr );
 char*  LangPackTranslateString(const char *szEnglish, const int W);
-
-TCHAR*   a2t( const char* str );
-char*    t2a( const TCHAR* src );
-TCHAR*   u2t( const wchar_t* src );
-char*    u2a( const wchar_t* src );
-wchar_t* a2u( const char* src );
 
 /**** path.c ***************************************************************************/
 

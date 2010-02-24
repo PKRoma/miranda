@@ -523,7 +523,7 @@ static INT_PTR CALLBACK DlgProcFindAdd(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 					szUniqueId=(char*)CallProtoService(szProto,PS_GETCAPS,PFLAG_UNIQUEIDTEXT,0);
 					if(szUniqueId) {
 						#if defined( _UNICODE )
-							TCHAR* p = a2u(szUniqueId);
+							TCHAR* p = mir_a2u(szUniqueId);
 							SetDlgItemText(hwndDlg,IDC_BYPROTOID,p);
 							mir_free(p);
 						#else
@@ -886,7 +886,7 @@ static INT_PTR CALLBACK DlgProcFindAdd(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 					}
 					i=ListView_InsertItem(hwndList, &lvi);
 					for (col=0; col<csr->nFieldCount; col++) {
-						char * szTemp=t2a(csr->pszFields[col]);
+						char * szTemp=mir_t2a(csr->pszFields[col]);
 						if (szTemp)	{
 							SetListItemText(hwndDlg, i, col+1 , szTemp );
 							mir_free( szTemp );

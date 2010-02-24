@@ -170,7 +170,7 @@ static void GetObjectSummary( DBEVENTINFO *dbei, TCHAR* str, int cbStr )
 		{
 			DBEVENTTYPEDESCR* et = ( DBEVENTTYPEDESCR* )CallService( MS_DB_EVENT_GETTYPE, ( WPARAM )dbei->szModule, ( LPARAM )dbei->eventType );
 			if ( et && ( et->flags & DETF_HISTORY )) {
-				pszTmp = a2t( et->descr );
+				pszTmp = mir_a2t( et->descr );
 				pszSrc = TranslateTS( pszTmp );
 				break;
 			}

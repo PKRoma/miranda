@@ -329,7 +329,7 @@ static INT_PTR AddContactMenuItem(WPARAM, LPARAM lParam)
 	{
 		if (tmi.flags&CMIF_UNICODE)
 		{
-			char * temp=t2a(mi->ptszName);
+			char * temp = mir_t2a(mi->ptszName);
 			mir_snprintf( buf, SIZEOF(buf), "%s/NoService/%s", (mi->pszContactOwner) ? mi->pszContactOwner : "", temp );
 			mir_free(temp);
 		}
@@ -531,7 +531,7 @@ INT_PTR StatusMenuCheckService(WPARAM wParam, LPARAM)
 		else
 		{
 			#ifdef UNICODE
-				char *prn=u2a(timi->mi.ptszName);
+				char *prn=mir_u2a(timi->mi.ptszName);
 				prot = NEWSTR_ALLOCA( prn );
 				if (prn) mir_free(prn);
 			#else

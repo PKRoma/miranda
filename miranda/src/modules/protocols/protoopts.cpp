@@ -184,7 +184,7 @@ static INT_PTR CALLBACK AccFormDlgProc(HWND hwndDlg,UINT message, WPARAM wParam,
                     if (!pa->tszAccountName[0])
                     {
 					    mir_free(pa->tszAccountName);
-                        pa->tszAccountName = a2t(buf);
+                        pa->tszAccountName = mir_a2t(buf);
                     }
 
 					DBWriteContactSettingString( NULL, pa->szModuleName, "AM_BaseProto", pa->szProtoName );

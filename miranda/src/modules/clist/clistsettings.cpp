@@ -142,7 +142,7 @@ TCHAR* fnGetContactDisplayName( HANDLE hContact, int mode )
 
 			cacheEntry->name = ci.pszVal;
 			#if defined( _UNICODE )
-				cacheEntry->szName = u2a( ci.pszVal );
+				cacheEntry->szName = mir_u2a( ci.pszVal );
 			#endif
 			return ci.pszVal;
 		}
@@ -158,7 +158,7 @@ TCHAR* fnGetContactDisplayName( HANDLE hContact, int mode )
 				_ltot(ci.dVal, buffer, 10 );
 				cacheEntry->name = buffer;
 				#if defined( _UNICODE )
-					cacheEntry->szName = u2a( buffer );
+					cacheEntry->szName = mir_u2a( buffer );
 				#endif
 				return buffer;
 	}	}	}
@@ -198,7 +198,7 @@ INT_PTR GetContactDisplayName(WPARAM wParam, LPARAM lParam)
 		if (ci.type == CNFT_ASCIIZ) {
 			if (cacheEntry == NULL) {
 				#if defined( _UNICODE )
-					buffer = u2a( ci.pszVal );
+					buffer = mir_u2a( ci.pszVal );
 					mir_free(ci.pszVal);
 				#else
 					buffer = ci.pszVal;
@@ -208,7 +208,7 @@ INT_PTR GetContactDisplayName(WPARAM wParam, LPARAM lParam)
 			else {
 				cacheEntry->name = ci.pszVal;
 				#if defined( _UNICODE )
-					cacheEntry->szName = u2a( ci.pszVal );
+					cacheEntry->szName = mir_u2a( ci.pszVal );
 					return (INT_PTR)cacheEntry->szName;
 				#else
 					return (INT_PTR)cacheEntry->name;
@@ -226,7 +226,7 @@ INT_PTR GetContactDisplayName(WPARAM wParam, LPARAM lParam)
 				_ltoa(ci.dVal, buffer, 10 );
 				#if defined( _UNICODE )
 					cacheEntry->szName = buffer;
-					cacheEntry->name = a2u( buffer );
+					cacheEntry->name = mir_a2u( buffer );
 				#else
 					cacheEntry->name = buffer;
 				#endif

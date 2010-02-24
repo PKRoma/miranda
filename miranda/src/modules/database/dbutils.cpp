@@ -107,12 +107,7 @@ static INT_PTR DbEventGetText(WPARAM wParam, LPARAM lParam)
 		switch ( egt->datatype ) {
 		case DBVT_WCHAR:
 			return ( INT_PTR )(( dbei->flags & DBEF_UTF ) ? 
-				#if defined( _UNICODE )
-					Utf8DecodeUcs2( str ) 
-				#else
-					Utf8Decode( mir_strdup( str ), NULL )
-				#endif
-					: a2t( str ));
+					Utf8DecodeT( str ) : mir_a2t( str ));
 		case DBVT_ASCIIZ:
 			return ( INT_PTR )(( dbei->flags & DBEF_UTF ) ? Utf8Decode( mir_strdup( str ), NULL ) : mir_strdup( str ));
 		}

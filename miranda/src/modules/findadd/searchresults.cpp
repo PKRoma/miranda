@@ -103,7 +103,7 @@ void LoadColumnSizes(HWND hwndResults,const char *szProto)
 			else if( i == COLUMNID_HANDLE ) {
 				#if defined( _UNICODE )
 					bNeedsFree = TRUE;
-					lvc.pszText = a2u((char*)CallProtoService(szProto,PS_GETCAPS,PFLAG_UNIQUEIDTEXT,0));
+					lvc.pszText = mir_a2u((char*)CallProtoService(szProto,PS_GETCAPS,PFLAG_UNIQUEIDTEXT,0));
 				#else
 					lvc.pszText = (char*)CallProtoService(szProto,PS_GETCAPS,PFLAG_UNIQUEIDTEXT,0);
 				#endif

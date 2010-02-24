@@ -61,7 +61,7 @@ INT_PTR CALLBACK DlgProcAdded(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
 			email = last  + strlen(last)  + 1;
 
 			if (*uin) 
-				SetDlgItemInt(hwndDlg,IDC_NAME,*uin,FALSE);
+				SetDlgItemInt(hwndDlg, IDC_NAME, *uin, FALSE);
 			else {
                 if (hContact == INVALID_HANDLE_VALUE)
                     SetDlgItemText(hwndDlg, IDC_UIN, TranslateT("(Unknown)"));
@@ -89,7 +89,6 @@ INT_PTR CALLBACK DlgProcAdded(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
                     SetDlgItemText(hwndDlg, IDC_UIN, buf[0] ? buf : TranslateT("(Unknown)"));
                 }
             }
-			SetWindowLongPtr(GetDlgItem(hwndDlg, IDC_DETAILS), GWLP_USERDATA, (LONG_PTR)hContact);
 			return TRUE;
 		}
 	case WM_DRAWITEM:
@@ -235,11 +234,14 @@ INT_PTR CALLBACK DlgProcAuthReq(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			email    = last  + strlen(last)  + 1;
 			reason   = email + strlen(email) + 1;
 
-			SetDlgItemTextA(hwndDlg, IDC_NAME, nick[0] ? nick : Translate("(Unknown)"));
+			TCHAR* nickT = dbei.flags & DBEF_UTF ? Utf8DecodeT(nick) : mir_a2t(nick);
+			SetDlgItemText(hwndDlg, IDC_NAME, nickT[0] ? nickT : TranslateT("(Unknown)"));
+			mir_free(nickT);
+
 			if (hContact == INVALID_HANDLE_VALUE || !DBGetContactSettingByte(hContact, "CList", "NotOnList", 0))
-				ShowWindow(GetDlgItem(hwndDlg,IDC_ADD),FALSE);
+				ShowWindow(GetDlgItem(hwndDlg,IDC_ADD), FALSE);
 			if (uin)
-				SetDlgItemInt(hwndDlg,IDC_UIN,uin,FALSE);
+				SetDlgItemInt(hwndDlg, IDC_UIN, uin, FALSE);
 			else 
 			{
 				if (hContact == INVALID_HANDLE_VALUE)
@@ -272,8 +274,15 @@ INT_PTR CALLBACK DlgProcAuthReq(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 					SetDlgItemText(hwndDlg, IDC_PROTONAME, acc->tszAccountName);
 				}
 			}
-			SetDlgItemTextA(hwndDlg, IDC_MAIL, email[0] ? email : Translate("(Unknown)"));
-			SetDlgItemTextA(hwndDlg, IDC_REASON, reason);
+
+			TCHAR* emailT = dbei.flags & DBEF_UTF ? Utf8DecodeT(email) : mir_a2t(email);
+			SetDlgItemText(hwndDlg, IDC_MAIL, emailT[0] ? emailT : TranslateT("(Unknown)"));
+			mir_free(emailT);
+
+			TCHAR* reasonT = dbei.flags & DBEF_UTF ? Utf8DecodeT(reason) : mir_a2t(reason);
+			SetDlgItemText(hwndDlg, IDC_REASON, reasonT);
+			mir_free(reasonT);
+
 			SetWindowLongPtr(GetDlgItem(hwndDlg,IDC_DETAILS), GWLP_USERDATA, (LONG_PTR)hContact);
 		}
 		return TRUE;

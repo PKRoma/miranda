@@ -249,7 +249,7 @@ static void FindFilterStrings(int enableKeywordFiltering, int current, HWND hWnd
 	
 	TCHAR * PluginFullName = NULL;
 	char * temp = GetPluginNameByInstance( page->hInst );
-	if ( temp ) PluginFullName = a2t( temp );
+	if ( temp ) PluginFullName = mir_a2t( temp );
 	GetDialogStrings(enableKeywordFiltering, key, GetPluginName(page->hInst, pluginName, SIZEOF(pluginName)), hWnd, page->pszGroup, page->pszTitle, page->pszTab, PluginFullName );
 	if ( PluginFullName ) mir_free( PluginFullName ) ;
 	
@@ -488,7 +488,7 @@ static void FillFilterCombo(int enableKeywordFiltering, HWND hDlg, struct Option
 		{
 			char * name = GetPluginNameByInstance( inst );
 			if ( name )
-				dllName = a2t( name ); 
+				dllName = mir_a2t( name ); 
 		}
 
 		if (!dllName) dllName = mir_tstrdup( _tcsrchr(tszModuleName,_T('\\')) );

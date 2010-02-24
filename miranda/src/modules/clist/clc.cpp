@@ -425,7 +425,7 @@ LRESULT CALLBACK fnContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam,
 
 				if ( dbcws->value.type == DBVT_ASCIIZ ) {
 					#if defined( UNICODE )
-						WCHAR* wszGrpName = a2u(dbcws->value.pszVal+1);
+						WCHAR* wszGrpName = mir_a2u(dbcws->value.pszVal+1);
 						eq = !lstrcmp( szFullName, wszGrpName );
 						mir_free( wszGrpName );
 					#else

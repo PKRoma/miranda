@@ -1039,8 +1039,8 @@ static int MO_RegisterIcon( PMO_IntMenuItem pmi, void* )
 	uname = pmi->UniqName;
 	if ( uname == NULL )
 		#ifdef UNICODE
-			uname = u2a(pmi->CustomName);
-			descr = u2a(pmi->mi.ptszName);
+			uname = mir_u2a(pmi->CustomName);
+			descr = mir_u2a(pmi->mi.ptszName);
 		#else
 			uname = pmi->CustomName;
 			descr = pmi->mi.pszName;
