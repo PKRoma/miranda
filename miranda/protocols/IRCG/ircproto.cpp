@@ -408,7 +408,7 @@ int __cdecl CIrcProto::Authorize( HANDLE )
 ////////////////////////////////////////////////////////////////////////////////////////
 // AuthDeny - handles the unsuccessful authorization
 
-int __cdecl CIrcProto::AuthDeny( HANDLE, const char* )
+int __cdecl CIrcProto::AuthDeny( HANDLE, const TCHAR* )
 {
 	return 0;
 }
@@ -424,7 +424,7 @@ int __cdecl CIrcProto::AuthRecv( HANDLE, PROTORECVEVENT* )
 ////////////////////////////////////////////////////////////////////////////////////////
 // PSS_AUTHREQUEST
 
-int __cdecl CIrcProto::AuthRequest( HANDLE, const char* )
+int __cdecl CIrcProto::AuthRequest( HANDLE, const TCHAR* )
 {
 	return 1;
 }

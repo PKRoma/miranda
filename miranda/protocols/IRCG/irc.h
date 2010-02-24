@@ -292,9 +292,9 @@ struct CIrcProto : public PROTO_INTERFACE, public CCallocBase
 	virtual	HANDLE __cdecl AddToListByEvent( int flags, int iContact, HANDLE hDbEvent );
 
 	virtual	int    __cdecl Authorize( HANDLE hContact );
-	virtual	int    __cdecl AuthDeny( HANDLE hContact, const char* szReason );
+	virtual	int    __cdecl AuthDeny( HANDLE hContact, const TCHAR* szReason );
 	virtual	int    __cdecl AuthRecv( HANDLE hContact, PROTORECVEVENT* );
-	virtual	int    __cdecl AuthRequest( HANDLE hContact, const char* szMessage );
+	virtual	int    __cdecl AuthRequest( HANDLE hContact, const TCHAR* szMessage );
 
 	virtual	HANDLE __cdecl ChangeInfo( int iInfoType, void* pInfoData );
 
