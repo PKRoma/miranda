@@ -353,7 +353,7 @@ INT_PTR CallProtoServiceInt( HANDLE hContact, const char *szModule, const char *
 					case  3: return ( INT_PTR )ppi->Authorize( ( HANDLE )wParam ); break;
 					case  4: return ( INT_PTR )ppi->AuthDeny( ( HANDLE )wParam, ( const char* )lParam ); break;
 					case  5: return ( INT_PTR )ppi->AuthRecv( hContact, ( PROTORECVEVENT* )lParam ); break;
-					case  6: return ( INT_PTR )ppi->AuthRequest( hContact, ( char* )lParam ); break;
+					case  6: return ( INT_PTR )ppi->AuthRequest( hContact, ( TCHAR* )lParam ); break;
 					case  7: return ( INT_PTR )ppi->ChangeInfo( wParam, ( void* )lParam ); break;
 					case  8: return ( INT_PTR )ppi->FileAllow( hContact, ( HANDLE )wParam, ( PROTOCHAR* )lParam ); break;
 					case  9: return ( INT_PTR )ppi->FileCancel( hContact, ( HANDLE )wParam ); break;

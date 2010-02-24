@@ -55,7 +55,7 @@ struct DEFAULT_PROTO_INTERFACE : public PROTO_INTERFACE
 		return ( int )Proto_CallContactService( 0, (LPARAM)&ccs );
 	}
 
-	int __cdecl AuthRequest( HANDLE hContact, const char* szMessage )
+	int __cdecl AuthRequest( HANDLE hContact, const TCHAR* szMessage )
 	{	CCSDATA ccs = { hContact, PSS_AUTHREQUEST, 0, (LPARAM)szMessage };
 		return ( int )Proto_CallContactService( 0, (LPARAM)&ccs );
 	}
