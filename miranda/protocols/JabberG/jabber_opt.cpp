@@ -1713,12 +1713,22 @@ protected:
 			JFreeVariant(&dbv);
 		}
 
+		m_canregister = true;
 		if (!lstrcmpA(manualServer, "talk.google.com"))
+		{
 			m_cbType.SetCurSel(ACC_GTALK);
+			m_canregister = false;
+		}
 		else if (!lstrcmpA(server, "livejournal.com"))
+		{
 			m_cbType.SetCurSel(ACC_LJTALK);
+			m_canregister = false;
+		}
 		else if (!lstrcmpA(server, "chat.facebook.com"))
+		{
 			m_cbType.SetCurSel(ACC_FBOOK);
+			m_canregister = false;
+		}
 		else if (m_proto->m_options.UseSSL)
 			m_cbType.SetCurSel(ACC_SSL);
 		else if (m_proto->m_options.UseTLS) {
