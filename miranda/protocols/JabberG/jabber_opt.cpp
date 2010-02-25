@@ -1642,6 +1642,7 @@ public:
 		CreateLink(m_chkSavePassword, proto->m_options.SavePassword);
 		CreateLink(m_cbResource, "Resource", _T("Miranda"));
 		CreateLink(m_cbServer, "LoginServer", _T("jabber.org"));
+		CreateLink(m_txtPort, "Port", DBVT_WORD, 5222);
 
 		// Bind events
 		m_cbType.OnChange = Callback(this, &CJabberDlgAccMgrUI::cbType_OnChange);
@@ -1957,8 +1958,7 @@ private:
 
 void CJabberDlgAccMgrUI::CheckRegistration()
 {
-	if (!m_canregister)
-	{
+	if ( !m_canregister ) {
 		m_btnRegister.Disable();
 		return;
 	}
@@ -1969,14 +1969,11 @@ void CJabberDlgAccMgrUI::CheckRegistration()
 	m_cbServer.GetTextA(regInfo.server, SIZEOF(regInfo.server));
 	regInfo.port = (WORD)m_txtPort.GetInt();
 	if (m_chkManualHost.GetState() == BST_CHECKED)
-	{
 		m_txtManualHost.GetTextA(regInfo.manualHost, SIZEOF(regInfo.manualHost));
-	} else
-	{
+	else
 		regInfo.manualHost[0] = '\0';
-	}
 
-	if (regInfo.username[0] && regInfo.password[0] && regInfo.server[0] && regInfo.port>0 && ( (m_chkManualHost.GetState() != BST_CHECKED) || regInfo.manualHost[0] ))
+	if (regInfo.username[0] && regInfo.password[0] && regInfo.server[0] && regInfo.port > 0 && ( (m_chkManualHost.GetState() != BST_CHECKED) || regInfo.manualHost[0] ))
 		m_btnRegister.Enable();
 	else
 		m_btnRegister.Disable();
