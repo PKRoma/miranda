@@ -160,7 +160,8 @@ void NetlibConnFromUrl(char* szUrl, bool secur, NETLIBOPENCONNECTION &nloc)
 	nloc.flags = (secur ? NLOCF_SSL : 0);
 }
 
-static NetlibConnection* NetlibHttpProcessUrl(NETLIBHTTPREQUEST *nlhr, NetlibUser *nlu, char* szUrl = NULL)
+static NetlibConnection* NetlibHttpProcessUrl(NETLIBHTTPREQUEST *nlhr, NetlibUser *nlu, NetlibConnection* nlc, 
+											  char* szUrl = NULL)
 {
 	NETLIBOPENCONNECTION nloc;
 
@@ -172,7 +173,6 @@ static NetlibConnection* NetlibHttpProcessUrl(NETLIBHTTPREQUEST *nlhr, NetlibUse
 	nloc.flags |= NLOCF_HTTP;
     if (nloc.flags & NLOCF_SSL) nlhr->flags |= NLHRF_SSL; else nlhr->flags &= ~NLHRF_SSL;
 
-	NetlibConnection* nlc = (NetlibConnection*)nlhr->nlc;
 	if (nlc != NULL)
 	{
 		bool httpProxy = !(nloc.flags & NLOCF_SSL) && nlc->proxyType == PROXYTYPE_HTTP;
@@ -503,7 +503,7 @@ INT_PTR NetlibHttpSendRequest(WPARAM wParam,LPARAM lParam)
 						strcpy(nlc->szNewUrl + rlen, tmpUrl); 
 						pszUrl = nlc->szNewUrl;
 
-						if (NetlibHttpProcessUrl(nlhr, nlc->nlu, pszUrl) == NULL)
+						if (NetlibHttpProcessUrl(nlhr, nlc->nlu, nlc, pszUrl) == NULL)
 						{
 							bytesSent = SOCKET_ERROR;
 							break;
@@ -763,7 +763,7 @@ INT_PTR NetlibHttpTransaction(WPARAM wParam, LPARAM lParam)
 		return 0;
 	}
 
-	NetlibConnection* nlc = NetlibHttpProcessUrl(nlhr, nlu); 
+	NetlibConnection* nlc = NetlibHttpProcessUrl(nlhr, nlu, (NetlibConnection*)nlhr->nlc); 
 	if (nlc == NULL) return 0;
 
 	{
