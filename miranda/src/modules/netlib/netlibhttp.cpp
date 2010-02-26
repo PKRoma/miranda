@@ -160,7 +160,7 @@ void NetlibConnFromUrl(char* szUrl, bool secur, NETLIBOPENCONNECTION &nloc)
 	nloc.flags = (secur ? NLOCF_SSL : 0);
 }
 
-static bool NetlibHttpProcessUrl(NETLIBHTTPREQUEST *nlhr, NetlibUser *nlu, char* szUrl = NULL)
+static NetlibConnection* NetlibHttpProcessUrl(NETLIBHTTPREQUEST *nlhr, NetlibUser *nlu, char* szUrl = NULL)
 {
 	NETLIBOPENCONNECTION nloc;
 
@@ -191,15 +191,15 @@ static bool NetlibHttpProcessUrl(NETLIBHTTPREQUEST *nlhr, NetlibUser *nlu, char*
 
 			mir_free((char*)nlc->nloc.szHost);
 			nlc->nloc = nloc;
-			return NetlibDoConnect(nlc);
+			return NetlibDoConnect(nlc) ? nlc : NULL;
 		}
 	}
 	else
-		nlhr->nlc = nlc = (NetlibConnection*)NetlibOpenConnection((WPARAM)nlu, (LPARAM)&nloc);
+		nlc = (NetlibConnection*)NetlibOpenConnection((WPARAM)nlu, (LPARAM)&nloc);
 
 	mir_free((char*)nloc.szHost);
 
-	return nlc != NULL;
+	return nlc;
 }
 
 static char* NetlibHttpSecurityProvider(NetlibConnection *nlc, HANDLE& hNtlmSecurity,
@@ -503,7 +503,7 @@ INT_PTR NetlibHttpSendRequest(WPARAM wParam,LPARAM lParam)
 						strcpy(nlc->szNewUrl + rlen, tmpUrl); 
 						pszUrl = nlc->szNewUrl;
 
-						if (!NetlibHttpProcessUrl(nlhr, nlc->nlu, pszUrl))
+						if (NetlibHttpProcessUrl(nlhr, nlc->nlu, pszUrl) == NULL)
 						{
 							bytesSent = SOCKET_ERROR;
 							break;
@@ -763,9 +763,8 @@ INT_PTR NetlibHttpTransaction(WPARAM wParam, LPARAM lParam)
 		return 0;
 	}
 
-	if (!NetlibHttpProcessUrl(nlhr, nlu)) 
-		return 0;
-	HANDLE hConnection = nlhr->nlc;
+	NetlibConnection* nlc = NetlibHttpProcessUrl(nlhr, nlu); 
+	if (nlc == NULL) return 0;
 
 	{
 		NETLIBHTTPREQUEST nlhrSend;
@@ -805,10 +804,10 @@ INT_PTR NetlibHttpTransaction(WPARAM wParam, LPARAM lParam)
 			nlhrSend.headers[nlhrSend.headersCount].szValue="deflate, gzip";
 			++nlhrSend.headersCount;
         }
-		if(NetlibHttpSendRequest((WPARAM)hConnection, (LPARAM)&nlhrSend) == SOCKET_ERROR) 
+		if (NetlibHttpSendRequest((WPARAM)nlc, (LPARAM)&nlhrSend) == SOCKET_ERROR) 
 		{
-			if(!doneUserAgentHeader||!doneAcceptEncoding) mir_free(nlhrSend.headers);
-			NetlibCloseHandle((WPARAM)hConnection, 0);
+			if (!doneUserAgentHeader || !doneAcceptEncoding) mir_free(nlhrSend.headers);
+			NetlibCloseHandle((WPARAM)nlc, 0);
 			return 0;
 		}
 		if (!doneUserAgentHeader || !doneAcceptEncoding) mir_free(nlhrSend.headers);
@@ -819,20 +818,20 @@ INT_PTR NetlibHttpTransaction(WPARAM wParam, LPARAM lParam)
 		(nlhr->flags & NLHRF_NOPROXY ? MSG_RAW : 0);
 
 	if (nlhr->requestType == REQUEST_HEAD)
-		nlhrReply = (NETLIBHTTPREQUEST*)NetlibHttpRecvHeaders((WPARAM)hConnection, 0);
+		nlhrReply = (NETLIBHTTPREQUEST*)NetlibHttpRecvHeaders((WPARAM)nlc, 0);
 	else
-		nlhrReply = NetlibHttpRecv((NetlibConnection*)hConnection, 0, dflags);
+		nlhrReply = NetlibHttpRecv(nlc, 0, dflags);
 
 	if (nlhrReply)
 	{
-		nlhrReply->szUrl = ((NetlibConnection*)hConnection)->szNewUrl;
-		((NetlibConnection*)hConnection)->szNewUrl = NULL;
+		nlhrReply->szUrl = nlc->szNewUrl;
+		nlc->szNewUrl = NULL;
 	}
 
 	if ((nlhr->flags & NLHRF_PERSISTENT) == 0 || nlhrReply == NULL)
-	    NetlibCloseHandle((WPARAM)hConnection, 0);
+	    NetlibCloseHandle((WPARAM)nlc, 0);
 	else
-		nlhrReply->nlc = hConnection;
+		nlhrReply->nlc = nlc;
 
 	return (INT_PTR)nlhrReply;
 }
