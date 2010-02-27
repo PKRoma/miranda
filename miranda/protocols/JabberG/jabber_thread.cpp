@@ -386,6 +386,7 @@ LBL_FatalError:
 		strncpy( connectHost, info->server, SIZEOF(info->server));
 		if ( port_temp = xmpp_client_query( connectHost )) { // port_temp will be > 0 if resolution is successful
 			Log("%s%s resolved to %s:%d","_xmpp-client._tcp.",info->server,connectHost,port_temp);
+			mir_snprintf( info->manualHost, SIZEOF( info->manualHost ), "%s", connectHost );
 			if (info->port==0 || info->port==5222)
 				info->port = port_temp;
 		}

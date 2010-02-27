@@ -93,22 +93,26 @@ bool TNtlmAuth::getSpn( TCHAR* szSpn, size_t dwSpnLen )
 
 	_tcsupr(szFullUserName);
 
-	char* connectHost = info->manualHost[0] ? info->manualHost : info->server;
+	const char* connectHost = info->manualHost[0] ? info->manualHost : info->server;
+	TCHAR *connectHostDSN = mir_a2t( connectHost );
 
 	unsigned long ip = inet_addr( connectHost );
-	if ( ip == INADDR_NONE )
-	{
+	if ( ip == INADDR_NONE && !strchr(connectHost, '.' )) {
 		PHOSTENT host = gethostbyname( connectHost );
 		if ( host != NULL )
 			ip = (( PIN_ADDR )host->h_addr )->S_un.S_addr;
 	}
 
-	PHOSTENT host = gethostbyaddr(( char* )&ip, 4, AF_INET );
-	if ( !host ) return false;
-
-	TCHAR *connectHostDSN = mir_a2t( host->h_name ); 
+	if ( ip != INADDR_NONE ) {
+		PHOSTENT host = gethostbyaddr(( char* )&ip, 4, AF_INET );
+		if ( host ) {
+			mir_free( connectHostDSN );
+			connectHostDSN = mir_a2t( host->h_name );
+		}
+	}
 
 	mir_sntprintf( szSpn, dwSpnLen, _T( "xmpp/%s@%s" ), connectHostDSN, szFullUserName );
+	Netlib_Logf( NULL, "SPN: " TCHAR_STR_PARAM, szSpn );
 
 	mir_free( connectHostDSN );
 
