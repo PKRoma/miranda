@@ -79,7 +79,7 @@ void CAimProto::chat_event(const char* id, const char* sn, int evt, const TCHAR*
 
 	HANDLE hContact = contact_from_sn(sn);
 	TCHAR* nick = hContact ? (TCHAR*)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, 
-		WPARAM(hContact), GCDNF_TCHAR) : NULL;
+		WPARAM(hContact), GCDNF_TCHAR) : snt;
 
 	GCDEST gcd = { m_szModuleName, { NULL },  evt };
 	gcd.ptszID = idt;
@@ -88,7 +88,7 @@ void CAimProto::chat_event(const char* id, const char* sn, int evt, const TCHAR*
 	gce.cbSize = sizeof(gce);
 	gce.dwFlags = GC_TCHAR | GCEF_ADDTOLOG;
 	gce.pDest = &gcd;
-	gce.ptszNick = nick ? nick : snt;
+	gce.ptszNick = nick;
 	gce.ptszUID = snt;
 	gce.bIsMe = _stricmp(sn, username) == 0;
 	gce.ptszStatus = gce.bIsMe ? TranslateT("Me") : TranslateT("Others");
@@ -96,7 +96,6 @@ void CAimProto::chat_event(const char* id, const char* sn, int evt, const TCHAR*
 	gce.time = time(NULL);
 	CallServiceSync(MS_GC_EVENT, 0, (LPARAM)&gce);
 
-	mir_free(nick);
 	mir_free(snt);
 	mir_free(idt);
 }
