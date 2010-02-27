@@ -309,8 +309,8 @@ HANDLE __cdecl CMsnProto::AddToListByEvent(int flags, int iContact, HANDLE hDbEv
 
 	dbei.pBlob=(PBYTE) alloca(dbei.cbBlob);
 	if (MSN_CallService(MS_DB_EVENT_GET, (WPARAM)hDbEvent, (LPARAM)&dbei))	return NULL;
-	if (strcmp(dbei.szModule, m_szModuleName))					return NULL;
-	if (dbei.eventType != EVENTTYPE_AUTHREQUEST)					return NULL;
+	if (strcmp(dbei.szModule, m_szModuleName)) return NULL;
+	if (dbei.eventType != EVENTTYPE_AUTHREQUEST) return NULL;
 
 	char* nick = (char *) (dbei.pBlob + sizeof(DWORD) + sizeof(HANDLE));
 	char* firstName = nick + strlen(nick) + 1;
@@ -379,7 +379,7 @@ int CMsnProto::Authorize(HANDLE hDbEvent)
 	if (strcmp(dbei.szModule, m_szModuleName))
 		return 1;
 
-	char* nick = (char*)(dbei.pBlob + sizeof(DWORD)*2);
+	char* nick = (char*)(dbei.pBlob + sizeof(DWORD) + sizeof(HANDLE));
 	char* firstName = nick + strlen(nick) + 1;
 	char* lastName = firstName + strlen(firstName) + 1;
 	char* email = lastName + strlen(lastName) + 1;
@@ -421,7 +421,7 @@ int CMsnProto::AuthDeny(HANDLE hDbEvent, const TCHAR* szReason)
 	if (strcmp(dbei.szModule, m_szModuleName))
 		return 1;
 
-	char* nick = (char*)(dbei.pBlob + sizeof(DWORD)*2);
+	char* nick = (char*)(dbei.pBlob + sizeof(DWORD) + sizeof(HANDLE));
 	char* firstName = nick + strlen(nick) + 1;
 	char* lastName = firstName + strlen(firstName) + 1;
 	char* email = lastName + strlen(lastName) + 1;
