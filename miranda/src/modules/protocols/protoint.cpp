@@ -132,7 +132,7 @@ struct DEFAULT_PROTO_INTERFACE : public PROTO_INTERFACE
 	}
 
 	int __cdecl SendContacts( HANDLE hContact, int flags, int nContacts, HANDLE* hContactsList )
-	{	return ( int )MyCallProtoService( m_szModuleName, PSS_FILE, MAKEWPARAM( flags, nContacts ), ( LPARAM )hContactsList );
+	{	return ( int )MyCallProtoService( m_szModuleName, PSS_CONTACTS, MAKEWPARAM( flags, nContacts ), ( LPARAM )hContactsList );
 	}
 
 	HANDLE __cdecl SendFile( HANDLE hContact, const PROTOCHAR* szDescription, PROTOCHAR** ppszFiles )
