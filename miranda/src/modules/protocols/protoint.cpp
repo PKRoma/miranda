@@ -23,8 +23,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "commonheaders.h"
 
-INT_PTR Proto_CallContactService(WPARAM wParam,LPARAM lParam);
-
 static INT_PTR MyCallProtoService( const char *szModule, const char *szService, WPARAM wParam, LPARAM lParam )
 {
 	char str[MAXMODULELABELLENGTH];
@@ -90,8 +88,7 @@ struct DEFAULT_PROTO_INTERFACE : public PROTO_INTERFACE
 	}
 
 	int __cdecl GetInfo( HANDLE hContact, int flags )
-	{	CCSDATA ccs = { hContact, PSS_GETINFO, flags, 0 };
-		return Proto_CallContactService( 0, (LPARAM)&ccs );
+	{	return ( HANDLE )MyCallProtoService( m_szModuleName, PSS_GETINFO, flags, 0 );
 	}
 
 	HANDLE __cdecl SearchBasic( const char* id )
