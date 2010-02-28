@@ -574,17 +574,28 @@ void CInfoPanel::RenderIPStatus(const HDC hdc, RECT& rcItem)
 	rc.right -=3;
 
 	if(szResult[0]) {
-		HFONT oldFont = (HFONT)SelectObject(hdc, PluginConfig.m_hFontWebdings);
+		HFONT oldFont = 0;
+
+		if(PluginConfig.m_hFontWebdings)
+			oldFont = (HFONT)SelectObject(hdc, PluginConfig.m_hFontWebdings);
+
 		base_hour = _ttoi(szResult);
-		base_hour = base_hour >= 12 ? base_hour - 12 : base_hour;
+		base_hour = (base_hour >= 12 ? base_hour - 12 : base_hour);
 
 		if(base_hour > 11 || base_hour < 0)				// make sure to have a valid index
 			base_hour = 0;
 
 		symbolic_time[0] = _clockCodes[base_hour];
 		symbolic_time[1] = 0;
-		CSkin::RenderText(hdc, m_dat->hThemeIP, symbolic_time, &rcItem, DT_SINGLELINE | DT_VCENTER, CSkin::m_glowSize, 0);
-		oldFont = (HFONT)SelectObject(hdc, m_ipConfig.hFonts[IPFONTID_TIME]);
+
+		if(PluginConfig.m_hFontWebdings)
+			CSkin::RenderText(hdc, m_dat->hThemeIP, symbolic_time, &rcItem, DT_SINGLELINE | DT_VCENTER, CSkin::m_glowSize, 0);
+
+		if(oldFont)
+			SelectObject(hdc, m_ipConfig.hFonts[IPFONTID_TIME]);
+		else
+			oldFont = (HFONT)SelectObject(hdc, m_ipConfig.hFonts[IPFONTID_TIME]);
+
 		clr = m_ipConfig.clrs[IPFONTID_TIME];
 		rcItem.left += 16;
 		CSkin::RenderText(hdc, m_dat->hThemeIP, szResult, &rcItem, DT_SINGLELINE | DT_VCENTER, CSkin::m_glowSize, clr);

@@ -24,7 +24,7 @@
  *
  * part of tabSRMM messaging plugin for Miranda.
  *
- * (C) 2005-2009 by silvercircle _at_ gmail _dot_ com and contributors
+ * (C) 2005-2010 by silvercircle _at_ gmail _dot_ com and contributors
  *
  * $Id$
  *
@@ -115,8 +115,6 @@ int TSAPI NEN_ReadOptions(NEN_OPTIONS *options)
 	options->iDelayMsg = (int)M->GetDword(MODULE, OPT_DELAY_MESSAGE, (DWORD)DEFAULT_DELAY);
 	options->iDelayOthers = (int)M->GetDword(MODULE, OPT_DELAY_OTHERS, (DWORD)DEFAULT_DELAY);
 	options->iDelayDefault = (int)DBGetContactSettingRangedWord(NULL, "PopUp", "Seconds", SETTING_LIFETIME_DEFAULT, SETTING_LIFETIME_MIN, SETTING_LIFETIME_MAX);
-	options->bShowDate = (BYTE)M->GetByte(MODULE, OPT_SHOW_DATE, FALSE);
-	options->bShowTime = (BYTE)M->GetByte(MODULE, OPT_SHOW_TIME, FALSE);
 	options->bShowHeaders = (BYTE)M->GetByte(MODULE, OPT_SHOW_HEADERS, FALSE);
 	options->bNoRSS = (BOOL)M->GetByte(MODULE, OPT_NORSS, FALSE);
 	options->iDisable = (BYTE)M->GetByte(MODULE, OPT_DISABLE, 0);
@@ -149,8 +147,6 @@ int TSAPI NEN_WriteOptions(NEN_OPTIONS *options)
 	M->WriteByte(MODULE, OPT_MERGEPOPUP, (BYTE)options->bMergePopup);
 	M->WriteDword(MODULE, OPT_DELAY_MESSAGE, (DWORD)options->iDelayMsg);
 	M->WriteDword(MODULE, OPT_DELAY_OTHERS, (DWORD)options->iDelayOthers);
-	M->WriteByte(MODULE, OPT_SHOW_DATE, (BYTE)options->bShowDate);
-	M->WriteByte(MODULE, OPT_SHOW_TIME, (BYTE)options->bShowTime);
 	M->WriteByte(MODULE, OPT_SHOW_HEADERS, (BYTE)options->bShowHeaders);
 	M->WriteByte(MODULE, OPT_DISABLE, (BYTE)options->iDisable);
 	M->WriteByte(MODULE, OPT_MUCDISABLE, (BYTE)options->iMUCDisable);
@@ -574,8 +570,8 @@ static int PopupUpdateT(HANDLE hContact, HANDLE hEvent)
 	PLUGIN_DATAT 	*pdata = 0;
 	DBEVENTINFO 	dbe;
 	TCHAR 			lpzText[MAX_SECONDLINE] = _T("");
-	TCHAR			timestamp[50] = _T("\0");
-	TCHAR			formatTime[50] = _T("\0");
+	TCHAR			timestamp[MAX_DATASIZE] = _T("\0");
+	TCHAR			formatTime[MAX_DATASIZE] = _T("\0");
 	int 			iEvent = 0;
 	TCHAR			*p = lpzText;
 	int  			available = 0, i;
@@ -601,15 +597,12 @@ static int PopupUpdateT(HANDLE hContact, HANDLE hEvent)
 			dbe.pBlob = (PBYTE)malloc(dbe.cbBlob);
 		}
 		CallService(MS_DB_EVENT_GET, (WPARAM)hEvent, (LPARAM)&dbe);
-		if (pdata->pluginOptions->bShowDate || pdata->pluginOptions->bShowTime) {
-			formatTime[0] = 0;
-			if (pdata->pluginOptions->bShowDate)
-				_tcsncpy(formatTime, _T("%Y.%m.%d "), MAX_DATASIZE);
-			if (pdata->pluginOptions->bShowTime)
-				_tcsncat(formatTime, _T("%H:%M"), MAX_DATASIZE);
-			_tcsftime(timestamp, MAX_DATASIZE, formatTime, _localtime32((__time32_t *)&dbe.timestamp));
-			mir_sntprintf(pdata->eventData[pdata->nrMerged].szText, MAX_SECONDLINE, _T("\n[b][i]%s[/i][/b]\n"), timestamp);
-		}
+
+		formatTime[0] = 0;
+		_tcsncpy(formatTime, _T("%Y.%m.%d %H:%M"), MAX_DATASIZE);
+		_tcsftime(timestamp, MAX_DATASIZE, formatTime, _localtime32((__time32_t *)&dbe.timestamp));
+		mir_sntprintf(pdata->eventData[pdata->nrMerged].szText, MAX_SECONDLINE, _T("\n-----\n[b][i]%s[/i][/b]\n"), timestamp);
+
 		szPreview = GetPreviewT(dbe.eventType, &dbe);
 		if (szPreview) {
 			_tcsncat(pdata->eventData[pdata->nrMerged].szText, szPreview, MAX_SECONDLINE);

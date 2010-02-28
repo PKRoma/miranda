@@ -46,7 +46,7 @@ END
 
 IDD_INFOPANEL DIALOGEX 0, 0, 282, 176
 STYLE DS_FIXEDSYS | WS_POPUP | WS_BORDER
-EXSTYLE WS_EX_CONTROLPARENT | WS_EX_TOOLWINDOW
+EXSTYLE WS_EX_TOOLWINDOW | WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     LTEXT           "",IDC_STATIC,0,0,281,175
@@ -106,13 +106,13 @@ BEGIN
                     14
 END
 
-IDD_POPUP_OPT DIALOGEX 0, 0, 314, 241
+IDD_POPUP_OPT DIALOG DISCARDABLE  0, 0, 314, 241
 STYLE DS_FIXEDSYS | DS_CONTROL | WS_CHILD
-FONT 8, "MS Shell Dlg", 0, 0, 0x1
+FONT 8, "MS Shell Dlg"
 BEGIN
     GROUPBOX        "Event notify options",IDC_STATIC,3,0,310,157
     CONTROL         "Limit message preview to",IDC_LIMITPREVIEW,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,11,123,120,12
+                    BS_AUTOCHECKBOX | WS_TABSTOP,11,123,138,12
     EDITTEXT        IDC_MESSAGEPREVIEWLIMIT,153,123,37,13,ES_AUTOHSCROLL
     CONTROL         "",IDC_MESSAGEPREVIEWLIMITSPIN,"msctls_updown32",
                     UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | 
@@ -131,14 +131,14 @@ BEGIN
     CONTROL         "",IDC_COLBACK_MESSAGE,"ColourPicker",WS_TABSTOP,92,179,
                     24,13
     CONTROL         "Default colors",IDC_CHKDEFAULTCOL_MESSAGE,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,126,179,62,12
+                    BS_AUTOCHECKBOX | WS_TABSTOP,123,179,72,12
     LTEXT           "Others",IDC_STATIC,12,197,44,11
     CONTROL         "",IDC_COLTEXT_OTHERS,"ColourPicker",WS_TABSTOP,56,195,
                     24,13
     CONTROL         "",IDC_COLBACK_OTHERS,"ColourPicker",WS_TABSTOP,92,195,
                     24,13
     CONTROL         "Default colors",IDC_CHKDEFAULTCOL_OTHERS,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,126,195,62,12
+                    BS_AUTOCHECKBOX | WS_TABSTOP,123,195,72,12
     EDITTEXT        IDC_DELAY_MESSAGE,210,179,46,12,ES_AUTOHSCROLL | 
                     ES_NUMBER
     CONTROL         "",IDC_DELAY_MESSAGE_SPIN,"msctls_updown32",
@@ -157,7 +157,7 @@ BEGIN
     CONTROL         "",IDC_COLBACK_MUC,"ColourPicker",WS_TABSTOP,92,211,24,
                     13
     CONTROL         "Default colors",IDC_CHKDEFAULTCOL_MUC,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,126,211,62,12
+                    BS_AUTOCHECKBOX | WS_TABSTOP,123,211,72,12
     LTEXT           "Group chats",IDC_STATIC,12,212,44,11
     EDITTEXT        IDC_DELAY_MUC,210,211,46,12,ES_AUTOHSCROLL | ES_NUMBER
     CONTROL         "",IDC_DELAY_MESSAGE_MUC_SPIN,"msctls_updown32",
@@ -305,8 +305,8 @@ BEGIN
                     BS_AUTOCHECKBOX | WS_TABSTOP,135,101,156,10
     CONTROL         "Hide the tool bar",IDC_HIDETOOLBAR,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,135,113,156,10
-    CONTROL         "Place the tool bar at the bottom",IDC_BOTTOMTOOLBAR,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,135,125,156,10
+    CONTROL         "Place the tool bar at the bottom",IDC_BOTTOMTOOLBAR,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,135,125,156,10
     CONTROL         "Show the info panel",IDC_INFOPANEL,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,135,137,156,10
     CONTROL         "Hide title bar",IDC_O_HIDETITLE,"Button",
@@ -370,38 +370,37 @@ BEGIN
                     12
     COMBOBOX        IDC_OWNAVATARMODE,120,98,196,14,CBS_DROPDOWNLIST | 
                     WS_VSCROLL | WS_TABSTOP
-
     CONTROL         "Enable sound effects",IDC_O_ENABLESOUNDS,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,135,65,156,10
-    CONTROL         "Play sounds when minimized",IDC_O_SOUNDSMINIMIZED,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,135,77,156,10
+    CONTROL         "Play sounds when minimized",IDC_O_SOUNDSMINIMIZED,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,135,77,156,10
     CONTROL         "Play sounds when not focused",IDC_O_SOUNDSUNFOCUSED,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,135,89,156,10
     CONTROL         "Play sounds for inactive tabs in active containers",
-                    IDC_O_SOUNDSINACTIVE,"Button",BS_AUTOCHECKBOX |
+                    IDC_O_SOUNDSINACTIVE,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,135,101,184,10
     CONTROL         "Play sounds for the active tab / window",
-                    IDC_O_SOUNDSFOCUSED,"Button",BS_AUTOCHECKBOX |
+                    IDC_O_SOUNDSFOCUSED,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,135,113,184,10
-
 END
 
-IDD_OPT_MSGDLG DIALOGEX 0, 0, 303, 226
+IDD_OPT_MSGDLG DIALOG DISCARDABLE  0, 0, 303, 226
 STYLE DS_FIXEDSYS | DS_CONTROL | WS_CHILD | WS_VISIBLE
-FONT 8, "MS Shell Dlg", 0, 0, 0x1
+FONT 8, "MS Shell Dlg"
 BEGIN
     GROUPBOX        "Message window options",IDC_STATIC,3,0,300,112
     CONTROL         "",IDC_WINDOWOPTIONS,"SysTreeView32",TVS_DISABLEDRAGDROP | 
                     TVS_SHOWSELALWAYS | WS_BORDER | WS_TABSTOP,6,9,294,100
     GROUPBOX        "Avatar options (size and scaling only for bottom avatar display)",
                     IDC_STATIC,3,117,300,42
-    LTEXT           "Max. height",IDC_STATIC,10,129,50,10
-    EDITTEXT        IDC_MAXAVATARHEIGHT,66,127,35,12,ES_AUTOHSCROLL | 
+    LTEXT           "Maximum display height (pixels)",IDC_STATIC,10,129,160,
+                    10
+    EDITTEXT        IDC_MAXAVATARHEIGHT,174,127,35,12,ES_AUTOHSCROLL | 
                     ES_NUMBER
     CONTROL         "",IDC_AVATARSPIN,"msctls_updown32",UDS_SETBUDDYINT | 
-                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,101,125,9,
+                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,209,125,9,
                     11
-    LTEXT           "(0 = no limit)",IDC_STATIC,114,128,63,11
+    LTEXT           "(0 = no limit)",IDC_STATIC,224,128,75,11
     GROUPBOX        "Automatically close tabs and windows",IDC_STATIC,3,162,
                     300,34
     LTEXT           "Automatically close tabs after",IDC_STATIC,7,173,119,11
@@ -409,18 +408,18 @@ BEGIN
                     ES_NUMBER
     CONTROL         "",IDC_AUTOCLOSETABSPIN,"msctls_updown32",
                     UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | 
-                    UDS_ARROWKEYS,155,153,11,11
+                    UDS_ARROWKEYS,155,171,11,11
     LTEXT           "minutes of inactivity (0 = disable)",IDC_STATIC,173,172,
                     122,11
     CONTROL         "Also auto-close the last tab and its container",
                     IDC_AUTOCLOSELAST,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
-                    9,184,280,10
+                    7,184,280,10
     GROUPBOX        "Miscellaneous options",IDC_STATIC,3,198,300,27
     LTEXT           "Send text formatting:",IDC_STATIC,9,211,132,11
     COMBOBOX        IDC_SENDFORMATTING,143,209,74,46,CBS_DROPDOWNLIST | 
                     WS_VSCROLL | WS_TABSTOP
     CONTROL         "Try to keep original size",IDC_PRESERVEAVATARSIZE,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,187,128,105,9
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,143,285,9
     CONTROL         "Help on this",IDC_HELP_GENERAL,"Hyperlink",WS_TABSTOP | 
                     0x1,224,211,67,9
 END
@@ -520,9 +519,9 @@ BEGIN
                     WS_TABSTOP | 0x1,9,237,262,9
 END
 
-IDD_OPT_TABBEDMSG DIALOGEX 0, 0, 303, 226
+IDD_OPT_TABBEDMSG DIALOG DISCARDABLE  0, 0, 303, 226
 STYLE DS_FIXEDSYS | DS_CONTROL | WS_CHILD
-FONT 8, "MS Shell Dlg", 0, 0, 0x1
+FONT 8, "MS Shell Dlg"
 BEGIN
     GROUPBOX        "Tab options",IDC_STATIC,3,0,300,147
     CONTROL         "",IDC_TABMSGOPTIONS,"SysTreeView32",TVS_DISABLEDRAGDROP | 
@@ -530,7 +529,7 @@ BEGIN
                     6,9,294,134
     GROUPBOX        "Miscellaneous options",IDC_STATIC,3,149,300,75
     PUSHBUTTON      "Setup status modes for automatic tab creation...",
-                    IDC_SETUPAUTOCREATEMODES,35,189,228,14
+                    IDC_SETUPAUTOCREATEMODES,8,189,291,14
     CONTROL         "Limit nicknames on tabs to",IDC_CUT_TABTITLE,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,12,210,135,10
     EDITTEXT        IDC_CUT_TITLEMAX,166,208,30,12,ES_AUTOHSCROLL
@@ -539,7 +538,7 @@ BEGIN
                     UDS_ARROWKEYS,191,208,11,13
     LTEXT           "characters",IDC_STATIC,208,210,88,9
     LTEXT           "ESC key behavior",IDC_STATIC,38,161,135,9
-    COMBOBOX        IDC_ESCMODE,36,172,227,46,CBS_DROPDOWNLIST | WS_VSCROLL | 
+    COMBOBOX        IDC_ESCMODE,8,172,291,46,CBS_DROPDOWNLIST | WS_VSCROLL | 
                     WS_TABSTOP
 END
 
@@ -563,7 +562,7 @@ END
 
 IDD_OPT_TOOLBAR DIALOGEX 0, 0, 303, 226
 STYLE DS_FIXEDSYS | DS_CONTROL | WS_CHILD | WS_VISIBLE
-FONT 8, "MS Shell Dlg", 0, 0, 0x1
+FONT 8, "MS Shell Dlg"
 BEGIN
     CONTROL         "",IDC_TOOLBARTREE,"SysTreeView32",TVS_SHOWSELALWAYS | 
                     TVS_NOTOOLTIPS | TVS_FULLROWSELECT | WS_TABSTOP,16,23,
@@ -580,12 +579,12 @@ BEGIN
     CONTROL         "Hide if there is not enough space",IDC_CANBEHIDDEN,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,144,77,155,10
     PUSHBUTTON      "Reset",IDC_BBRESET,82,204,50,14
-    PUSHBUTTON      "Insert Separator",IDC_SEPARATOR,144,142,86,14
+    PUSHBUTTON      "Insert Separator",IDC_SEPARATOR,144,142,125,14
 END
 
-IDD_OPT_CONTAINERS DIALOGEX 0, 0, 303, 226
+IDD_OPT_CONTAINERS DIALOG DISCARDABLE  0, 0, 303, 226
 STYLE DS_FIXEDSYS | DS_CONTROL | WS_CHILD
-FONT 8, "MS Shell Dlg", 0, 0, 0x1
+FONT 8, "MS Shell Dlg"
 BEGIN
     LTEXT           "To set container options, please use the container settings dialog. It is available by:\n1. choosing ""container settings"" from the system menu of a container.\n2. right clicking the tab or the button bar in any message window.",
                     IDC_STATIC,7,2,298,25
@@ -607,18 +606,18 @@ BEGIN
                     IDC_DEFAULTCONTAINERMODE,"Button",BS_AUTORADIOBUTTON,6,
                     75,293,12
     GROUPBOX        "Container flashing",IDC_STATIC,3,90,300,39
-    LTEXT           "Flash containers",IDC_STATIC,6,101,102,11
-    EDITTEXT        IDC_NRFLASH,111,99,34,12,ES_AUTOHSCROLL
+    LTEXT           "Flash containers",IDC_STATIC,6,101,135,11
+    EDITTEXT        IDC_NRFLASH,150,99,34,12,ES_AUTOHSCROLL
     CONTROL         "",IDC_NRFLASHSPIN,"msctls_updown32",UDS_SETBUDDYINT | 
-                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,143,100,
+                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,182,100,
                     14,11
-    LTEXT           "times",IDC_STATIC,166,101,83,11
-    LTEXT           "Flash interval",IDC_STATIC,6,114,99,11
-    EDITTEXT        IDC_FLASHINTERVAL,111,112,34,12,ES_AUTOHSCROLL
+    LTEXT           "times",IDC_STATIC,205,101,83,11
+    LTEXT           "Flash interval",IDC_STATIC,6,114,137,11
+    EDITTEXT        IDC_FLASHINTERVAL,150,112,34,12,ES_AUTOHSCROLL
     CONTROL         "",IDC_FLASHINTERVALSPIN,"msctls_updown32",
                     UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | 
-                    UDS_ARROWKEYS,149,115,10,10
-    LTEXT           "milliseconds",IDC_STATIC,166,113,81,12
+                    UDS_ARROWKEYS,185,115,10,10
+    LTEXT           "milliseconds",IDC_STATIC,205,113,81,12
     CONTROL         "Help on containers",IDC_HELP_CONTAINERS,"Hyperlink",
                     WS_TABSTOP | 0x1,21,210,262,9
     COMBOBOX        IDC_AEROEFFECT,9,183,158,36,CBS_DROPDOWNLIST | CBS_SORT | 
@@ -814,7 +813,7 @@ BEGIN
     LTEXT           "",IDC_STATIC,0,30,228,110,NOT WS_GROUP
     CONTROL         "",IDC_HEADERBAR,"MHeaderbarCtrl",WS_TABSTOP,0,0,228,30
     DEFPUSHBUTTON   "OK",IDOK,168,123,55,14
-    CTEXT           "Copyright © 2004-2009 by the Miranda IM project. More  \ndetailed copyright information can be found in the included README file.\n\nThis software is distributed and licensed under the terms of the GNU General Public License V2 or any later version.",
+    CTEXT           "Copyright © 2004-2010 by the Miranda IM project. More  \ndetailed copyright information can be found in the included README file.\n\nThis software is distributed and licensed under the terms of the GNU General Public License V2 or any later version.",
                     IDC_COPYRIGHT,5,39,217,47
     CTEXT           "",IDC_BUILDTIME,37,105,150,11
     CONTROL         "Support and latest version information",IDC_SUPPORT,

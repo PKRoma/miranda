@@ -24,7 +24,7 @@
  *
  * part of tabSRMM messaging plugin for Miranda.
  *
- * (C) 2005-2009 by silvercircle _at_ gmail _dot_ com and contributors
+ * (C) 2005-2010 by silvercircle _at_ gmail _dot_ com and contributors
  *
  * $Id$
  *
@@ -117,7 +117,7 @@ AeroEffect* 	CSkin::m_pCurrentAeroEffect = 0;
 
 AeroEffect  CSkin::m_aeroEffects[AERO_EFFECT_LAST] = {
 	{
-		_T("No effect"), 0, 0, 0, 0, 0, 0, 0, 10
+		_T("No effect"), 0, 0, 0, 0, 0, 0, 0, 10, 0, 0, 0, 0
 	},
 	{
 		_T("Milky Glass"),
@@ -132,7 +132,7 @@ AeroEffect  CSkin::m_aeroEffects[AERO_EFFECT_LAST] = {
 		0,											/* background color (black = transparency) */
 		0xf0f0f0,									/* toolbar first color (if 0, use custom gradient color) */
 		0, 											/* toolbar 2nd gradient color (0 = use aero theme color, -1 = use custom gradient color  */
-		AeroEffectCallback_Milk
+		AeroEffectCallback_Milk						/* callback function to render the effect */
 	},
 	{
 		_T("Carbon"),

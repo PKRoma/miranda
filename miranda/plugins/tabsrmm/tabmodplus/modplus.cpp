@@ -129,7 +129,7 @@ static int RegisterCustomButton(WPARAM wParam,LPARAM lParam)
 		bbd.dwDefPos =200;
 		bbd.hIcon = PluginConfig.g_buttonBarIconHandles[3];
 		bbd.pszModuleName = (char *)"Tabmodplus";
-		bbd.ptszTooltip = (TCHAR *)_T("Insert [img] tag / surround selected text with [img][/img]");
+		bbd.ptszTooltip = const_cast<TCHAR *>(CTranslator::get(CTranslator::GEN_BB_IMGTOOLTIP));
 
 		return (CallService(MS_BB_ADDBUTTON, 0, (LPARAM)&bbd));
 	}

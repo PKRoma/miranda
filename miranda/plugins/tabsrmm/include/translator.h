@@ -24,7 +24,7 @@
  *
  * part of tabSRMM messaging plugin for Miranda.
  *
- * (C) 2005-2009 by silvercircle _at_ gmail _dot_ com and contributors
+ * (C) 2005-2010 by silvercircle _at_ gmail _dot_ com and contributors
  *
  * $Id$
  *
@@ -38,6 +38,11 @@
 class CTranslator {
 
 public:
+
+	enum {
+		NR_WEEKDAYS = 7,
+		NR_MONTHS = 12
+	};
 
 	enum {
 		CNT_MENU_STAYONTOP 										= 0,
@@ -245,7 +250,8 @@ public:
 		GEN_INFOTIP_XSTATUS										= 201,
 		GEN_INFOTIP_LISTENING									= 202,
 		GEN_INFOTIP_CLIENT										= 203,
-		STR_LAST 												= 204
+		GEN_BB_IMGTOOLTIP										= 204,
+		STR_LAST 												= 205
 	};
 
 	enum {
@@ -378,6 +384,16 @@ public:
 		return(m_OptTranslated[id]);
 	}
 
+	inline static const TCHAR *getWeekday(const UINT id)
+	{
+		return(weekDays_translated[id]);
+	}
+
+	inline static const TCHAR *getMonth(const UINT id)
+	{
+		return(months_translated[id]);
+	}
+
 	static void preTranslateAll()
 	{
 		int i;
@@ -399,6 +415,12 @@ public:
 		translateOptionTree(m_lvItemsMsg);
 		translateOptionTree(m_lvItemsTab);
 		translateOptionTree(m_lvItemsLog);
+
+		for(i = 0; i < NR_WEEKDAYS; i++)
+			weekDays_translated[i] = TranslateTS(weekDays[i]);
+
+		for(i = 0; i < NR_MONTHS; i++)
+			months_translated[i] = TranslateTS(months[i]);
 	}
 
 	static void translateGroupTree(TOptionListGroup *groups);
@@ -413,6 +435,12 @@ private:
 
 	static TCHAR *m_OptStrings[OPT_LAST];
 	static TCHAR *m_OptTranslated[OPT_LAST];
+
+	static TCHAR *weekDays[7];
+	static TCHAR *months[12];
+
+	static TCHAR *weekDays_translated[7];
+	static TCHAR *months_translated[12];
 
 	static TOptionListGroup		m_lvGroupsModPlus[], m_lvGroupsNEN[], m_lvGroupsMsg[], m_lvGroupsLog[], m_lvGroupsTab[];
 	static TOptionListItem		m_lvItemsModPlus[], m_lvItemsNEN[], m_lvItemsMsg[], m_lvItemsLog[], m_lvItemsTab[];

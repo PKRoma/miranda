@@ -24,7 +24,7 @@
  *
  * part of tabSRMM messaging plugin for Miranda.
  *
- * (C) 2005-2009 by silvercircle _at_ gmail _dot_ com and contributors
+ * (C) 2005-2010 by silvercircle _at_ gmail _dot_ com and contributors
  *
  * $Id$
  *
@@ -91,7 +91,7 @@ public:
 	static	void 				TSAPI ContainerToSettings			(TContainerData *pContainer);
 	static	void 				TSAPI ReadPrivateContainerSettings	(TContainerData *pContainer, bool fForce = false);
 	static	void				TSAPI SaveContainerSettings			(TContainerData *pContainer, const char *szSetting);
-	static	DWORD 		CALLBACK 	  StreamOut(DWORD_PTR dwCookie, LPBYTE pbBuff, LONG cb, LONG * pcb);
+	static	DWORD CALLBACK 	  		  StreamOut						(DWORD_PTR dwCookie, LPBYTE pbBuff, LONG cb, LONG * pcb);
 	static	LRESULT				TSAPI CmdDispatcher					(UINT uType, HWND hwndDlg, UINT cmd, WPARAM wParam, LPARAM lParam, TWindowData *dat = 0,
 																	 TContainerData *pContainer = 0);
 	static	void 				TSAPI addMenuItem					(const HMENU& m, MENUITEMINFO& mii, HICON hIcon,

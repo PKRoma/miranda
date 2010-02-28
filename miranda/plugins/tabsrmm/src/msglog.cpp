@@ -24,7 +24,7 @@
  *
  * part of tabSRMM messaging plugin for Miranda.
  *
- * (C) 2005-2009 by silvercircle _at_ gmail _dot_ com and contributors
+ * (C) 2005-2010 by silvercircle _at_ gmail _dot_ com and contributors
  *
  * $Id$
  *
@@ -64,12 +64,6 @@ struct TCpTable cpTable[] = {
 
 static TCHAR    *Template_MakeRelativeDate(struct TWindowData *dat, time_t check, int groupBreak, TCHAR code);
 static void     ReplaceIcons(HWND hwndDlg, struct TWindowData *dat, LONG startAt, int fAppend, BOOL isSent);
-
-static TCHAR *weekDays[] = {_T("Sunday"), _T("Monday"), _T("Tuesday"), _T("Wednesday"), _T("Thursday"), _T("Friday"), _T("Saturday")};
-static TCHAR *months[] = {_T("January"), _T("February"), _T("March"), _T("April"), _T("May"), _T("June"), _T("July"), _T("August"), _T("September"), _T("October"), _T("November"), _T("December")};
-
-static TCHAR weekDays_translated[7][30];
-static TCHAR months_translated[12][30];
 
 static time_t today;
 
@@ -222,26 +216,6 @@ void TSAPI CacheMsgLogIcons()
 	Logicons[4] = PluginConfig.g_iconIn;
 	Logicons[5] = PluginConfig.g_iconStatus;
 	Logicons[6] = PluginConfig.g_iconErr;
-}
-
-/*
- * pre-translate day and month names to significantly reduce he number of Translate()
- * service calls while building the message log
- */
-
-void TSAPI PreTranslateDates()
-{
-	int i;
-	TCHAR *szTemp;
-
-	for (i = 0; i <= 6; i++) {
-		szTemp = TranslateTS(weekDays[i]);
-		mir_sntprintf(weekDays_translated[i], 28, _T("%s"), szTemp);
-	}
-	for (i = 0; i <= 11; i++) {
-		szTemp = TranslateTS(months[i]);
-		mir_sntprintf(months_translated[i], 28, _T("%s"), szTemp);
-	}
 }
 
 static int TSAPI GetColorIndex(char *rtffont)
@@ -943,10 +917,12 @@ static char *Template_CreateRTFFromDbEvent(struct TWindowData *dat, HANDLE hCont
 					if (showTime && showDate) {
 #ifdef _UNICODE
 						if (skipFont)
-							AppendUnicodeToBuffer(&buffer, &bufferEnd, &bufferAlloced, months_translated[event_time.tm_mon], MAKELONG(isSent, dat->isHistory));
+							AppendUnicodeToBuffer(&buffer, &bufferEnd, &bufferAlloced, const_cast<TCHAR *>(CTranslator::getMonth(event_time.tm_mon)),
+												  MAKELONG(isSent, dat->isHistory));
 						else {
 							AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s ", GetRTFFont(isSent ? MSGFONTID_MYTIME + iFontIDOffset : MSGFONTID_YOURTIME + iFontIDOffset));
-							AppendUnicodeToBuffer(&buffer, &bufferEnd, &bufferAlloced, months_translated[event_time.tm_mon], MAKELONG(isSent, dat->isHistory));
+							AppendUnicodeToBuffer(&buffer, &bufferEnd, &bufferAlloced, const_cast<TCHAR *>(CTranslator::getMonth(event_time.tm_mon)),
+												  MAKELONG(isSent, dat->isHistory));
 						}
 #else
 						if (skipFont)
@@ -970,10 +946,10 @@ static char *Template_CreateRTFFromDbEvent(struct TWindowData *dat, HANDLE hCont
 					if (showTime && showDate) {
 #ifdef _UNICODE
 						if (skipFont)
-							AppendUnicodeToBuffer(&buffer, &bufferEnd, &bufferAlloced, weekDays_translated[event_time.tm_wday], MAKELONG(isSent, dat->isHistory));
+							AppendUnicodeToBuffer(&buffer, &bufferEnd, &bufferAlloced, const_cast<TCHAR *>(CTranslator::getWeekday(event_time.tm_wday)), MAKELONG(isSent, dat->isHistory));
 						else {
 							AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s ", GetRTFFont(isSent ? MSGFONTID_MYTIME + iFontIDOffset : MSGFONTID_YOURTIME + iFontIDOffset));
-							AppendUnicodeToBuffer(&buffer, &bufferEnd, &bufferAlloced, weekDays_translated[event_time.tm_wday], MAKELONG(isSent, dat->isHistory));
+							AppendUnicodeToBuffer(&buffer, &bufferEnd, &bufferAlloced, const_cast<TCHAR *>(CTranslator::getWeekday(event_time.tm_wday)), MAKELONG(isSent, dat->isHistory));
 						}
 #else
 						if (skipFont)

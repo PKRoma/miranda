@@ -1,34 +1,44 @@
 /*
-  Name: NewEventNotify - Plugin for Miranda ICQ
-  File: neweventnotify.h - Main Header File
-  Version: 0.0.4
-  Description: Notifies you when you receive a message
-  Author: icebreaker, <icebreaker@newmail.net>
-  Date: 18.07.02 13:59 / Update: 16.09.02 17:45
-  Copyright: (C) 2002 Starzinger Michael
-
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-
-$Id$
-
-Event popups for tabSRMM - most of the code taken from NewEventNotify (see copyright above)
-
-  Code modified and adapted for tabSRMM by Nightwish (silvercircle@gmail.com)
-  Additional code (popup merging, options) by Prezes
-
-*/
+ * astyle --force-indent=tab=4 --brackets=linux --indent-switches
+ *		  --pad=oper --one-line=keep-blocks  --unpad=paren
+ *
+ * Miranda IM: the free IM client for Microsoft* Windows*
+ *
+ * Copyright 2000-2009 Miranda ICQ/IM project,
+ * all portions of this codebase are copyrighted to the people
+ * listed in contributors.txt.
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * you should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ *
+ * part of tabSRMM messaging plugin for Miranda.
+ *
+ * (C) 2005-2010 by silvercircle _at_ gmail _dot_ com and contributors
+ *
+ * $Id$
+ *
+ * This implements the event notification module for tabSRMM. The code
+ * is largely based on the NewEventNotify plugin for Miranda IM. See
+ * notices below for original copyright
+ *
+ *  Name: NewEventNotify - Plugin for Miranda ICQ
+ * 	Description: Notifies you when you receive a message
+ * 	Author: icebreaker, <icebreaker@newmail.net>
+ * 	Date: 18.07.02 13:59 / Update: 16.09.02 17:45
+ * 	Copyright: (C) 2002 Starzinger Michael
+ *
+ */
 
 #ifndef _NEN_H_
 #define _NEN_H_
@@ -80,8 +90,6 @@ int tabSRMM_ShowPopup(WPARAM wParam, LPARAM lParam, WORD eventType, int windowOp
 #define OPT_MERGEPOPUP "MergePopup"
 #define OPT_DELAY_MESSAGE "DelayMessage"
 #define OPT_DELAY_OTHERS "DelayOthers"
-#define OPT_SHOW_DATE "ShowDate"
-#define OPT_SHOW_TIME "ShowTime"
 #define OPT_SHOW_HEADERS "ShowHeaders"
 #define OPT_NORSS "NoRSSAnnounces"
 #define OPT_DISABLE "Disabled"
@@ -106,8 +114,6 @@ struct NEN_OPTIONS {
 	int iDelayOthers;
 	int iDelayDefault;
 	BOOL bMergePopup;
-	BOOL bShowDate;
-	BOOL bShowTime;
 	BOOL bShowHeaders;
 	BOOL bNoRSS;
     int  iDisable;

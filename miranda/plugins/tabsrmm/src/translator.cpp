@@ -24,7 +24,7 @@
  *
  * part of tabSRMM messaging plugin for Miranda.
  *
- * (C) 2005-2009 by silvercircle _at_ gmail _dot_ com and contributors
+ * (C) 2005-2010 by silvercircle _at_ gmail _dot_ com and contributors
  *
  * $Id$
  *
@@ -33,6 +33,18 @@
  */
 
 #include "commonheaders.h"
+
+TCHAR* CTranslator::weekDays[7] = {LPGENT("Sunday"), LPGENT("Monday"),
+		LPGENT("Tuesday"), LPGENT("Wednesday"),
+		LPGENT("Thursday"), LPGENT("Friday"), LPGENT("Saturday")};
+
+TCHAR* CTranslator::months[12] = {LPGENT("January"), LPGENT("February"),
+		LPGENT("March"), LPGENT("April"), LPGENT("May"),
+		LPGENT("June"), LPGENT("July"), LPGENT("August"),
+		LPGENT("September"), LPGENT("October"), LPGENT("November"), LPGENT("December")};
+
+TCHAR* CTranslator::weekDays_translated[7];
+TCHAR* CTranslator::months_translated[12];
 
 TCHAR* CTranslator::m_strings[STR_LAST] = {
 	LPGENT("Stay on Top"),								/* CNT_MENU_STAYONTOP */
@@ -261,6 +273,8 @@ TCHAR* CTranslator::m_strings[STR_LAST] = {
 	LPGENT("\\par\\par\\tab \\ul\\b Extended status information:\\ul0\\b0 \\par "),		/* GEN_INFOTIP_XSTATUS */
 	LPGENT("\\par\\par\\tab \\ul\\b Listening to:\\ul0\\b0 \\par %s"),					/* GEN_INFOTIP_LISTENING */
 	LPGENT("\\par\\par\\ul\\b Client:\\ul0\\b0  %s"),									/* GEN_INFOTIP_CLIENT */
+
+	LPGENT("Insert [img] tag / surround selected text with [img][/img]"),				/* GEN_BB_IMGTOOLTIP */
 };
 
 /*
@@ -400,8 +414,6 @@ TOptionListItem CTranslator::m_lvItemsNEN [] = {
 	0, LPGENT("Don't announce events from RSS protocols"), IDC_NORSS, LOI_TYPE_SETTING, (UINT_PTR)&nen_options.bNoRSS, 1,
 	0, LPGENT("Enable the system tray icon"), IDC_ENABLETRAYSUPPORT, LOI_TYPE_SETTING, (UINT_PTR)&nen_options.bTraySupport, 2,
 	0, LPGENT("Merge new events for the same contact into existing popup"), 1, LOI_TYPE_SETTING, (UINT_PTR)&nen_options.bMergePopup, 6,
-	0, LPGENT("Show date for merged popups"), IDC_CHKSHOWDATE, LOI_TYPE_SETTING, (UINT_PTR)&nen_options.bShowDate, 6,
-	0, LPGENT("Show time for merged popups"), IDC_CHKSHOWTIME, LOI_TYPE_SETTING, (UINT_PTR)&nen_options.bShowTime, 6,
 	0, LPGENT("Show headers"), IDC_CHKSHOWHEADERS, LOI_TYPE_SETTING, (UINT_PTR)&nen_options.bShowHeaders, 6,
 	0, LPGENT("Dismiss popup"), MASK_DISMISS, LOI_TYPE_FLAG, (UINT_PTR)&nen_options.maskActL, 3,
 	0, LPGENT("Open event"), MASK_OPEN, LOI_TYPE_FLAG, (UINT_PTR)&nen_options.maskActL, 3,

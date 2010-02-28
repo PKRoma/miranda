@@ -663,8 +663,10 @@ void CheckColorsInModule(const char* pszModule)
 TCHAR* my_strstri(const TCHAR* s1, const TCHAR* s2)
 {
 	int i, j, k;
+
+	_tsetlocale(LC_ALL, _T(""));
 	for (i = 0;s1[i];i++)
-		for (j = i, k = 0; tolower(s1[j]) == tolower(s2[k]);j++, k++)
+		for (j = i, k = 0; _totlower(s1[j]) == _totlower(s2[k]);j++, k++)
 			if (!s2[k+1])
 				return (TCHAR*)(s1 + i);
 
