@@ -88,7 +88,7 @@ struct DEFAULT_PROTO_INTERFACE : public PROTO_INTERFACE
 	}
 
 	int __cdecl GetInfo( HANDLE hContact, int flags )
-	{	return ( HANDLE )MyCallProtoService( m_szModuleName, PSS_GETINFO, flags, 0 );
+	{	return ( int )MyCallProtoService( m_szModuleName, PSS_GETINFO, flags, 0 );
 	}
 
 	HANDLE __cdecl SearchBasic( const char* id )
