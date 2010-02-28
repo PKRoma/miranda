@@ -51,13 +51,11 @@ struct DEFAULT_PROTO_INTERFACE : public PROTO_INTERFACE
 	}
 
 	int __cdecl AuthRecv( HANDLE hContact, PROTORECVEVENT* evt )
-	{	CCSDATA ccs = { hContact, PSR_AUTH, 0, (LPARAM)evt };
-		return ( int )Proto_CallContactService( 0, (LPARAM)&ccs );
+	{	return ( int )MyCallProtoService( m_szModuleName, PSR_AUTH, 0, ( LPARAM )evt );
 	}
 
 	int __cdecl AuthRequest( HANDLE hContact, const TCHAR* szMessage )
-	{	CCSDATA ccs = { hContact, PSS_AUTHREQUEST, 0, (LPARAM)szMessage };
-		return ( int )Proto_CallContactService( 0, (LPARAM)&ccs );
+	{	return ( int )MyCallProtoService( m_szModuleName, PSS_AUTHREQUEST, 0, ( LPARAM )szMessage );
 	}
 
 	HANDLE __cdecl ChangeInfo( int iInfoType, void* pInfoData )
@@ -65,18 +63,15 @@ struct DEFAULT_PROTO_INTERFACE : public PROTO_INTERFACE
 	}
 
 	HANDLE __cdecl FileAllow( HANDLE hContact, HANDLE hTransfer, const PROTOCHAR* szPath )
-	{	CCSDATA ccs = { hContact, PSS_FILEALLOW, (WPARAM)hTransfer, (LPARAM)szPath };
-		return ( HANDLE )Proto_CallContactService( 0, (LPARAM)&ccs );
+	{	return ( HANDLE )MyCallProtoService( m_szModuleName, PSS_FILEALLOW, ( WPARAM )hTransfer, ( LPARAM )szPath );
 	}
 
 	int __cdecl FileCancel( HANDLE hContact, HANDLE hTransfer )
-	{	CCSDATA ccs = { hContact, PSS_FILECANCEL, (WPARAM)hTransfer, 0 };
-		return ( int )Proto_CallContactService( 0, (LPARAM)&ccs );
+	{	return ( int )MyCallProtoService( m_szModuleName, PSS_FILECANCEL, ( WPARAM )hTransfer, 0 );
 	}
 
 	int __cdecl FileDeny( HANDLE hContact, HANDLE hTransfer, const PROTOCHAR* szReason )
-	{	CCSDATA ccs = { hContact, PSS_FILEDENY, (WPARAM)hTransfer, (LPARAM)szReason };
-		return ( int )Proto_CallContactService( 0, (LPARAM)&ccs );
+	{	return ( int )MyCallProtoService( m_szModuleName, PSS_FILEDENY, ( WPARAM )hTransfer, ( LPARAM )szReason );
 	}
 
 	int __cdecl FileResume( HANDLE hTransfer, int* action, const PROTOCHAR** szFilename )
@@ -124,48 +119,39 @@ struct DEFAULT_PROTO_INTERFACE : public PROTO_INTERFACE
 	}
 
 	int __cdecl RecvContacts( HANDLE hContact, PROTORECVEVENT* evt )
-	{	CCSDATA ccs = { hContact, PSR_CONTACTS, 0, (LPARAM)evt };
-		return ( int )Proto_CallContactService( 0, (LPARAM)&ccs );
+	{	return ( int )MyCallProtoService( m_szModuleName, PSR_CONTACTS, 0, ( LPARAM )evt );
 	}
 
 	int __cdecl RecvFile( HANDLE hContact, PROTOFILEEVENT* evt )
-	{	CCSDATA ccs = { hContact, PSR_FILE, 0, (LPARAM)evt };
-		return Proto_CallContactService( 0, (LPARAM)&ccs );
+	{	return ( int )MyCallProtoService( m_szModuleName, PSR_FILE, 0, ( LPARAM )evt );
 	}
 
 	int __cdecl RecvMsg( HANDLE hContact, PROTORECVEVENT* evt )
-	{	CCSDATA ccs = { hContact, PSR_MESSAGE, 0, (LPARAM)evt };
-		return ( int )Proto_CallContactService( 0, (LPARAM)&ccs );
+	{	return ( int )MyCallProtoService( m_szModuleName, PSR_MESSAGE, 0, ( LPARAM )evt );
 	}
 
 	int __cdecl RecvUrl( HANDLE hContact, PROTORECVEVENT* evt )
-	{	CCSDATA ccs = { hContact, PSR_URL, 0, (LPARAM)evt };
-		return ( int )Proto_CallContactService( 0, (LPARAM)&ccs );
+	{	return ( int )MyCallProtoService( m_szModuleName, PSR_URL, 0, ( LPARAM )evt );
 	}
 
 	int __cdecl SendContacts( HANDLE hContact, int flags, int nContacts, HANDLE* hContactsList )
-	{	CCSDATA ccs = { hContact, PSS_CONTACTS, MAKEWPARAM(flags,nContacts), (LPARAM)hContactsList };
-		return ( int )Proto_CallContactService( 0, (LPARAM)&ccs );
+	{	return ( int )MyCallProtoService( m_szModuleName, PSS_FILE, MAKEWPARAM( flags, nContacts ), ( LPARAM )hContactsList );
 	}
 
 	HANDLE __cdecl SendFile( HANDLE hContact, const PROTOCHAR* szDescription, PROTOCHAR** ppszFiles )
-	{	CCSDATA ccs = { hContact, PSS_FILE, (WPARAM)szDescription, (LPARAM)ppszFiles };
-		return ( HANDLE )Proto_CallContactService( 0, (LPARAM)&ccs );
+	{	return ( HANDLE )MyCallProtoService( m_szModuleName, PSS_FILE, ( WPARAM )szDescription, ( LPARAM )ppszFiles );
 	}
 
 	int __cdecl SendMsg( HANDLE hContact, int flags, const char* msg )
-	{	CCSDATA ccs = { hContact, PSS_MESSAGE, flags, (LPARAM)msg };
-		return ( int )Proto_CallContactService( 0, (LPARAM)&ccs );
+	{	return ( int )MyCallProtoService( m_szModuleName, PSS_MESSAGE, flags, ( LPARAM )msg );
 	}
 
 	int __cdecl SendUrl( HANDLE hContact, int flags, const char* url )
-	{	CCSDATA ccs = { hContact, PSS_URL, flags, (LPARAM)url };
-		return ( int )Proto_CallContactService( 0, (LPARAM)&ccs );
+	{	return ( int )MyCallProtoService( m_szModuleName, PSS_URL, flags, ( LPARAM )url );
 	}
 
 	int __cdecl SetApparentMode( HANDLE hContact, int mode )
-	{	CCSDATA ccs = { hContact, PSS_SETAPPARENTMODE, mode, 0 };
-		return ( int )Proto_CallContactService( 0, (LPARAM)&ccs );
+	{	return ( int )MyCallProtoService( m_szModuleName, PSS_SETAPPARENTMODE, mode, 0 );
 	}
 
 	int __cdecl SetStatus( int iNewStatus )
@@ -173,18 +159,15 @@ struct DEFAULT_PROTO_INTERFACE : public PROTO_INTERFACE
 	}
 
 	HANDLE __cdecl GetAwayMsg( HANDLE hContact )
-	{	CCSDATA ccs = { hContact, PSS_GETAWAYMSG, 0, 0 };
-		return ( HANDLE )Proto_CallContactService( 0, (LPARAM)&ccs );
+	{	return ( HANDLE )MyCallProtoService( m_szModuleName, PSS_GETAWAYMSG, 0, 0 );
 	}
 
 	int __cdecl RecvAwayMsg( HANDLE hContact, int statusMode, PROTORECVEVENT* evt )
-	{	CCSDATA ccs = { hContact, PSR_AWAYMSG, statusMode, (LPARAM)evt };
-		return ( int )Proto_CallContactService( 0, (LPARAM)&ccs );
+	{	return ( int )MyCallProtoService( m_szModuleName, PSR_AWAYMSG, statusMode, ( LPARAM )evt );
 	}
 
 	int __cdecl SendAwayMsg( HANDLE hContact, HANDLE hProcess, const char* msg )
-	{	CCSDATA ccs = { hContact, PSS_AWAYMSG, (WPARAM)hProcess, (LPARAM)msg };
-		return ( int )Proto_CallContactService( 0, (LPARAM)&ccs );
+	{	return ( int )MyCallProtoService( m_szModuleName, PSS_AWAYMSG, ( WPARAM )hProcess, ( LPARAM )msg );
 	}
 
 	int __cdecl SetAwayMsg( int iStatus, const char* msg )
@@ -192,13 +175,11 @@ struct DEFAULT_PROTO_INTERFACE : public PROTO_INTERFACE
 	}
 
 	int __cdecl UserIsTyping( HANDLE hContact, int type )
-	{	CCSDATA ccs = { hContact, PSS_USERISTYPING, (WPARAM)hContact, type };
-		return Proto_CallContactService( 0, (LPARAM)&ccs );
+	{	return ( int )MyCallProtoService( m_szModuleName, PSS_USERISTYPING, ( WPARAM )hContact, type );
 	}
 
 	int __cdecl OnEvent( PROTOEVENTTYPE, WPARAM, LPARAM )
-	{
-		return 0;
+	{	return 0;
 	}
 };
 
