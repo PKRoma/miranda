@@ -312,6 +312,11 @@ static INT_PTR stub19( PROTO_INTERFACE* ppi, WPARAM, LPARAM lParam )
 {	return ( INT_PTR )ppi->CreateExtendedSearchUI (( HWND )lParam );
 }
 
+static INT_PTR stub22( PROTO_INTERFACE* ppi, WPARAM, LPARAM lParam )
+{	CCSDATA *ccs = ( CCSDATA* )lParam;
+	return ( INT_PTR )ppi->RecvMsg( ccs->hContact, ( PROTORECVEVENT* )ccs->lParam );
+}
+
 static INT_PTR stub29( PROTO_INTERFACE* ppi, WPARAM wParam, LPARAM )
 {	return ( INT_PTR )ppi->SetStatus( wParam );
 }
@@ -366,6 +371,7 @@ BOOL ActivateAccount( PROTOACCOUNT* pa )
 	CreateProtoServiceEx( pa->szModuleName, PS_SEARCHBYNAME, (MIRANDASERVICEOBJ)stub17, pa->ppro );
 	CreateProtoServiceEx( pa->szModuleName, PS_SEARCHBYADVANCED, (MIRANDASERVICEOBJ)stub18, pa->ppro );
 	CreateProtoServiceEx( pa->szModuleName, PS_CREATEADVSEARCHUI, (MIRANDASERVICEOBJ)stub19, pa->ppro );
+	CreateProtoServiceEx( pa->szModuleName, PSR_MESSAGE, (MIRANDASERVICEOBJ)stub22, pa->ppro );
 	CreateProtoServiceEx( pa->szModuleName, PS_SETSTATUS, (MIRANDASERVICEOBJ)stub29, pa->ppro );
 	CreateProtoServiceEx( pa->szModuleName, PS_SETAWAYMSG, (MIRANDASERVICEOBJ)stub33, pa->ppro );
 	CreateProtoServiceEx( pa->szModuleName, PS_GETNAME, (MIRANDASERVICEOBJ)stub41, pa->ppro );
