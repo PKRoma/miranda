@@ -470,7 +470,7 @@ int __cdecl CAimProto::RecvMsg(HANDLE hContact, PROTORECVEVENT* pre)
     mir_free(bbuf);
 	pre->szMessage = omsg;
 
-	return res;
+	return ( int )res;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
