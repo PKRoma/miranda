@@ -24,8 +24,8 @@ void CAimProto::snac_md5_authkey(SNAC &snac,HANDLE hServerConn,unsigned short &s
 	if (snac.subcmp(0x0007))//md5 authkey string
 	{
 		unsigned short length=snac.ushort();
-		char* authkey=snac.part(2,length);
-		aim_auth_request(hServerConn,seqno,authkey,AIM_LANGUAGE,AIM_COUNTRY,username, password);
+		char* authkey = snac.part(2, length);
+		aim_auth_request(hServerConn, seqno, authkey, AIM_LANGUAGE, AIM_COUNTRY, username, password);
 		mir_free(authkey);
 	}
 }
@@ -501,22 +501,23 @@ void CAimProto::snac_user_online(SNAC &snac)//family 0x0003
 			}
 			else if (tlv.cmp(0x001d))//avatar
 			{
-				if(hContact)
-					for(int i=0;i<tlv.len();i+=(4+tlv.ubyte(i+3)))
+				if (hContact)
+				{
+					for(int i = 0; i < tlv.len(); i += (4 + tlv.ubyte(i + 3)))
 					{
-						unsigned short type=tlv.ushort(i);
-						if(type==0x0001)
+						unsigned short type = tlv.ushort(i);
+						if (type == 0x0001)
 						{
-							int hash_size=tlv.ubyte(i+3);
-							char* hash=tlv.part(i+4,hash_size);
+							int hash_size = tlv.ubyte(i+3);
+							char* hash = tlv.part(i+4,hash_size);
 							avatar_request_handler(hContact, hash, hash_size);
 							mir_free(hash);
 						}
-						else if(type==0x0002)
+						else if (type == 0x0002)
 						{
 							if ((tlv.ubyte(i+2) & 4) && tlv.ubyte(i+3) && tlv.ubyte(i+5))
 							{
-								unsigned char len=tlv.ubyte(i+5);
+								unsigned char len = tlv.ubyte(i+5);
 								char* msg = tlv.part(i+6,len);
 								char* msg_s = process_status_msg(msg, sn);
 								DBWriteContactSettingStringUtf(hContact, MOD_KEY_CL, OTH_KEY_SM, msg_s);
@@ -528,41 +529,42 @@ void CAimProto::snac_user_online(SNAC &snac)//family 0x0003
 								DBDeleteContactSetting(hContact, MOD_KEY_CL, OTH_KEY_SM);
 						}
 					}
+				}
 			}
 			else if(tlv.cmp(0x0004))//idle tlv
 			{
-				if(hContact)
+				if (hContact)
 				{
 					time_t current_time;
 					time(&current_time);
 					setDword(hContact, AIM_KEY_IT, ((DWORD)current_time) - tlv.ushort() * 60);
 				}
 			}
-			else if(tlv.cmp(0x0003))//online time tlv
+			else if (tlv.cmp(0x0003))//online time tlv
 			{
-				if(hContact)
+				if (hContact)
 					setDword(hContact, AIM_KEY_OT, tlv.ulong());
 			}
 			else if(tlv.cmp(0x0005))//member since 
 			{
-				if(hContact) 
+				if (hContact) 
 					setDword(hContact, AIM_KEY_MS, tlv.ulong()); 
 			}  			
 			offset += tlv.len();
 		}
-		if(bot_user)
+		if (bot_user)
 		{
 			setByte(hContact, AIM_KEY_ET, EXTENDED_STATUS_BOT);
 		}
-		else if(hiptop_user)
+		else if (hiptop_user)
 		{
 			setByte(hContact, AIM_KEY_ET, EXTENDED_STATUS_HIPTOP);
 		}
-		if(caps_included)
+		if (caps_included)
 		{
 			set_contact_icon(this, hContact);
 		}
-		if(caps_included || client[0])
+		if (caps_included || client[0])
 			setString(hContact, AIM_KEY_MV, client[0] ? client : "?");
 		else
 			setString(hContact, AIM_KEY_MV, CLIENT_AIMEXPRESS7);
@@ -1138,16 +1140,6 @@ void CAimProto::snac_received_message(SNAC &snac,HANDLE hServerConn,unsigned sho
 
 			// Okay we are setting up the structure to give the message back to miranda's core
 			pre.flags = unicode_message ? PREF_UTF : 0;
-
-			if(getByte( AIM_KEY_FI, 0)) 		
-			{
-				LOG("Converting from html to bbcodes then stripping leftover html.");
-				char* bbuf = html_to_bbcodes(msg_buf);
-				mir_free(msg_buf);
-				msg_buf = bbuf;
-			}
-			LOG("Stripping html.");
-			html_decode(msg_buf);
 
 			if (is_offline)
 				pre.timestamp = offline_timestamp;

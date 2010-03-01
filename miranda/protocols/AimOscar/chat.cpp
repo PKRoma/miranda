@@ -23,11 +23,11 @@ void CAimProto::chat_register(void)
 {
 	GCREGISTER gcr = {0};
 	gcr.cbSize = sizeof(gcr);
-	gcr.dwFlags = GC_TYPNOTIF | GC_CHANMGR;
+	gcr.dwFlags = GC_TYPNOTIF | GC_CHANMGR | GC_TCHAR;
 	gcr.iMaxText = 0;
 	gcr.nColors = 16;
 	gcr.pColors = (COLORREF*)crCols;
-	gcr.pszModuleDispName = m_szModuleName;
+	gcr.ptszModuleDispName = m_tszUserName;
 	gcr.pszModule = m_szModuleName;
 	CallServiceSync(MS_GC_REGISTER, 0, (LPARAM)&gcr);
 
@@ -77,6 +77,10 @@ void CAimProto::chat_event(const char* id, const char* sn, int evt, const TCHAR*
 	TCHAR* idt = mir_a2t(id);
 	TCHAR* snt = mir_a2t(sn);
 
+	HANDLE hContact = contact_from_sn(sn);
+	TCHAR* nick = hContact ? (TCHAR*)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, 
+		WPARAM(hContact), GCDNF_TCHAR) : snt;
+
 	GCDEST gcd = { m_szModuleName, { NULL },  evt };
 	gcd.ptszID = idt;
 
@@ -84,7 +88,7 @@ void CAimProto::chat_event(const char* id, const char* sn, int evt, const TCHAR*
 	gce.cbSize = sizeof(gce);
 	gce.dwFlags = GC_TCHAR | GCEF_ADDTOLOG;
 	gce.pDest = &gcd;
-	gce.ptszNick = snt;
+	gce.ptszNick = nick;
 	gce.ptszUID = snt;
 	gce.bIsMe = _stricmp(sn, username) == 0;
 	gce.ptszStatus = gce.bIsMe ? TranslateT("Me") : TranslateT("Others");

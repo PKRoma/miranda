@@ -17,6 +17,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 #ifndef PACKETS_H
 #define PACKETS_H
+
 struct flap_header
 {
     unsigned char ast;

@@ -55,7 +55,7 @@ int CAimProto::aim_auth_request(HANDLE hServerConn,unsigned short &seqno,const c
 	char client_id[64];
 	int client_id_len = mir_snprintf(client_id, sizeof(client_id), "Miranda AIM, version %s", __VERSION_STRING);
 
-	char* buf=(char*)alloca(SNAC_SIZE+TLV_HEADER_SIZE*14+MD5_HASH_LENGTH+strlen(username)+client_id_len+15+strlen(language)+strlen(country));
+	char* buf=(char*)alloca(SNAC_SIZE+TLV_HEADER_SIZE*14+MD5_HASH_LENGTH+strlen(username)+client_id_len+30+strlen(language)+strlen(country));
 
 	aim_writesnac(0x17,0x02,offset,buf);
 	aim_writetlv(0x01,(unsigned short)strlen(username),username,offset,buf);

@@ -348,7 +348,13 @@ DWORD_PTR __cdecl CAimProto::GetCaps(int type, HANDLE hContact)
 
 HICON __cdecl CAimProto::GetIcon(int iconIndex)
 {
-	return (LOWORD(iconIndex) == PLI_PROTOCOL) ? CopyIcon(LoadIconEx("aim")) : 0;
+	if (LOWORD(iconIndex) == PLI_PROTOCOL)
+	{
+		HICON hIcon =  CopyIcon(LoadIconEx("aim"));
+		ReleaseIconEx("aim");
+		return hIcon;
+	}
+	return NULL;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -450,7 +456,19 @@ int __cdecl CAimProto::RecvMsg(HANDLE hContact, PROTORECVEVENT* pre)
 {
 	CCSDATA ccs = { hContact, PSR_MESSAGE, 0, (LPARAM)pre };
 
-    int res = (int)CallService(MS_PROTO_RECVMSG, 0, (LPARAM)&ccs);
+	char *omsg = pre->szMessage;
+	char *bbuf = NULL;
+	if (getByte(AIM_KEY_FI, 0)) 		
+	{
+		LOG("Converting from html to bbcodes then stripping leftover html.");
+		pre->szMessage = bbuf = html_to_bbcodes(pre->szMessage);
+	}
+	LOG("Stripping html.");
+	html_decode(pre->szMessage);
+
+	HANDLE res = (HANDLE)CallService(MS_PROTO_RECVMSG, 0, (LPARAM)&ccs);
+    mir_free(bbuf);
+	pre->szMessage = omsg;
 
     return res;
 }

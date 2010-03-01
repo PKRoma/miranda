@@ -96,10 +96,7 @@ int CAimProto::aim_set_statusmsg(HANDLE hServerConn,unsigned short &seqno,const 
 	aim_writesnac(0x01,0x1e,offset,buf);
 	aim_writetlv(0x1d,msgoffset,msgbuf,offset,buf);
 	
-	if(aim_sendflap(hServerConn,0x02,offset,buf,seqno)==0)
-		return 0;
-	else
-		return -1;
+	return aim_sendflap(hServerConn,0x02,offset,buf,seqno);
 }
 
 int CAimProto::aim_query_away_message(HANDLE hServerConn,unsigned short &seqno,const char* sn)

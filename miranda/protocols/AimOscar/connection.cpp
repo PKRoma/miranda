@@ -130,10 +130,10 @@ void CAimProto::aim_connection_authorization(void)
 				if(!flap.len())
 					break;
 				flap_length+=FLAP_SIZE+flap.len();
-				if(flap.cmp(0x01))
+				if (flap.cmp(0x01))
 				{
-					if( aim_send_connection_packet(hServerConn,seqno,flap.val())==0)//cookie challenge
-						aim_authkey_request(hServerConn,seqno);//md5 authkey request
+					if (aim_send_connection_packet(hServerConn, seqno,flap.val())==0)//cookie challenge
+						aim_authkey_request(hServerConn, seqno);//md5 authkey request
 				}
 				else if(flap.cmp(0x02))
 				{
@@ -141,7 +141,7 @@ void CAimProto::aim_connection_authorization(void)
 					if(snac.cmp(0x0017))
 					{
 						snac_md5_authkey(snac,hServerConn,seqno, username, password);
-						int authres=snac_authorization_reply(snac);
+						int authres = snac_authorization_reply(snac);
 						if(authres==1)
 						{
 							mir_free(password);
