@@ -314,7 +314,8 @@ static INT_PTR stub19( PROTO_INTERFACE* ppi, WPARAM, LPARAM lParam )
 
 static INT_PTR stub22( PROTO_INTERFACE* ppi, WPARAM, LPARAM lParam )
 {	CCSDATA *ccs = ( CCSDATA* )lParam;
-	return ( INT_PTR )ppi->RecvMsg( ccs->hContact, ( PROTORECVEVENT* )ccs->lParam );
+	ppi->RecvMsg( ccs->hContact, ( PROTORECVEVENT* )ccs->lParam );
+	return 0;
 }
 
 static INT_PTR stub29( PROTO_INTERFACE* ppi, WPARAM wParam, LPARAM )
