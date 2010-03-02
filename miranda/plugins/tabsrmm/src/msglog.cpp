@@ -926,9 +926,9 @@ static char *Template_CreateRTFFromDbEvent(struct TWindowData *dat, HANDLE hCont
 						}
 #else
 						if (skipFont)
-							AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s", months_translated[event_time.tm_mon]);
+							AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s", const_cast<TCHAR *>(CTranslator::getMonth(event_time.tm_mon)));
 						else
-							AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s %s", GetRTFFont(isSent ? MSGFONTID_MYTIME + iFontIDOffset : MSGFONTID_YOURTIME + iFontIDOffset), months_translated[event_time.tm_mon]);
+							AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s %s", GetRTFFont(isSent ? MSGFONTID_MYTIME + iFontIDOffset : MSGFONTID_YOURTIME + iFontIDOffset), const_cast<TCHAR *>(CTranslator::getMonth(event_time.tm_mon)));
 #endif
 					} else
 						skipToNext = TRUE;
@@ -953,9 +953,9 @@ static char *Template_CreateRTFFromDbEvent(struct TWindowData *dat, HANDLE hCont
 						}
 #else
 						if (skipFont)
-							AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s", weekDays_translated[event_time.tm_wday]);
+							AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s", const_cast<TCHAR *>(CTranslator::getWeekday(event_time.tm_wday)));
 						else
-							AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s %s", GetRTFFont(isSent ? MSGFONTID_MYTIME + iFontIDOffset : MSGFONTID_YOURTIME + iFontIDOffset), weekDays_translated[event_time.tm_wday]);
+							AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s %s", GetRTFFont(isSent ? MSGFONTID_MYTIME + iFontIDOffset : MSGFONTID_YOURTIME + iFontIDOffset), const_cast<TCHAR *>(CTranslator::getWeekday(event_time.tm_wday)));
 #endif
 					} else
 						skipToNext = TRUE;

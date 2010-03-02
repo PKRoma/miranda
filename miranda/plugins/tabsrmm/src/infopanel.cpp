@@ -45,7 +45,8 @@ TCHAR *xStatusDescr[] = {	_T("Angry"), _T("Duck"), _T("Tired"), _T("Party"), _T(
 InfoPanelConfig CInfoPanel::m_ipConfig = {0};
 WNDPROC CTip::m_OldMessageEditProc = 0;
 
-static TCHAR _clockCodes[12] = { 0x00c2, 0x00b7, 0x00b8, 0x00b9, 0x00ba, 0x00bb, 0x00bc, 0x00bd, 0x00be, 0x00bf, 0x00c0, 0x00c1 };
+static TCHAR _clockCodes[12] = { (TCHAR)0xc2, (TCHAR)0xb7, (TCHAR)0xb8, (TCHAR)0xb9, (TCHAR)0xba,
+		(TCHAR)0xbb, (TCHAR)0xbc, (TCHAR)0xbd, (TCHAR)0xbe, (TCHAR)0xbf, (TCHAR)0xc0, (TCHAR)0xc1 };
 
 int CInfoPanel::setPanelHandler(TWindowData *dat, WPARAM wParam, LPARAM lParam)
 {
