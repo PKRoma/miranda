@@ -1,22 +1,22 @@
 // ---------------------------------------------------------------------------80
 //                ICQ plugin for Miranda Instant Messenger
 //                ________________________________________
-// 
+//
 // Copyright © 2000-2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001-2002 Jon Keating, Richard Hughes
 // Copyright © 2002-2004 Martin Öberg, Sam Kothari, Robert Rainwater
 // Copyright © 2004-2008 Joe Kucera
-// 
+//
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
 // as published by the Free Software Foundation; either version 2
 // of the License, or (at your option) any later version.
-// 
+//
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
@@ -47,7 +47,7 @@ void InitPopUps()
 }
 
 static const UINT icqPopupsControls[] = {
-	IDC_POPUPS_LOG_ENABLED, IDC_POPUPS_SPAM_ENABLED, IDC_PREVIEW, IDC_USEWINCOLORS, IDC_USESYSICONS, IDC_POPUP_LOG0_TIMEOUT, 
+	IDC_POPUPS_LOG_ENABLED, IDC_POPUPS_SPAM_ENABLED, IDC_PREVIEW, IDC_USEWINCOLORS, IDC_USESYSICONS, IDC_POPUP_LOG0_TIMEOUT,
 	IDC_POPUP_LOG1_TIMEOUT, IDC_POPUP_LOG2_TIMEOUT, IDC_POPUP_LOG3_TIMEOUT, IDC_POPUP_SPAM_TIMEOUT
 };
 
@@ -226,10 +226,10 @@ int CIcqProto::ShowPopUpMsg(HANDLE hContact, const char *szTitle, const char *sz
 		// due to Popup Plug bug in ADDPOPUPW implementation
 		if ( ServiceExists( MS_POPUP_ADDPOPUPW ))
 		{
-			char str[MAX_PATH];
+			char str[4096];
 
-			make_unicode_string_static(ICQTranslateUtfStatic(szTitle, str, MAX_PATH), ppdw.lpwzContactName, MAX_CONTACTNAME);
-			make_unicode_string_static(ICQTranslateUtfStatic(szMsg, str, MAX_PATH), ppdw.lpwzText, MAX_SECONDLINE);
+			make_unicode_string_static(ICQTranslateUtfStatic(szTitle, str, sizeof(str)), ppdw.lpwzContactName, MAX_CONTACTNAME);
+			make_unicode_string_static(ICQTranslateUtfStatic(szMsg, str, sizeof(str)), ppdw.lpwzText, MAX_SECONDLINE);
 			ppdw.lchContact = hContact;
 			ppdw.lchIcon = ppd.lchIcon;
 			ppdw.colorBack = ppd.colorBack;
@@ -239,7 +239,7 @@ int CIcqProto::ShowPopUpMsg(HANDLE hContact, const char *szTitle, const char *sz
 			ppdw.iSeconds = ppd.iSeconds;
 			return CallService(MS_POPUP_ADDPOPUPW, (WPARAM)&ppdw, 0);
 		}
-		else 
+		else
 #endif
 		{
 			char str[MAX_PATH];
