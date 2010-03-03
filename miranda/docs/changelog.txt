@@ -2,7 +2,21 @@
                    ------------------------------------
                    
                            www.miranda-im.org
-     
+
+* New in 0.8.16
+Enhancements:
+ - Added options to clear completed file transfers on window close
+ 
+Bugfixes:
+ - Fix for deleting groups with contacts
+ - Fix for moving contacts through groups
+ - Fix main menu icon reference
+ - Fix for main window off screen positioning
+ - Fixed authorization dialog behaviors
+ - ICQ: Fix for long error messages
+ - Yahoo: Added Yahoo 10.0 client detection
+ 
+						   
 * New in 0.8.15
 Bugfixes:
  - Jabber: Disable TLS in the Facebook Chat account type

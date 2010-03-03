@@ -4,8 +4,8 @@
 !include "LogicLib.nsh"
 
 !define MIM_NAME                "Miranda IM"
-!define MIM_VERSION             "0.8.15"
-!define MIM_PREVIEW             "0" ; 0 for final build
+!define MIM_VERSION             "0.8.16"
+!define MIM_PREVIEW             "1" ; 0 for final build
 
 !define MIM_BUILD_ICONS_LOW     "icons\bin\locolor"
 !define MIM_BUILD_ICONS_HI      "icons\bin\hicolor"
@@ -111,7 +111,7 @@ var INST_SUCCESS
   WriteINIStr "$INSTDIR\${MIM_BUILD_OPTIONS_FILE}" "${MIM_BUILD_OPTIONS_SECT}" "${IniValue}" "${IniOption}"
 !macroend
 
-Section "Miranda IM"
+Section "Miranda IM (core)"
   SectionIn RO
   !insertmacro PrintInstallerDetails "Installing Miranda IM Core Files..."
   
