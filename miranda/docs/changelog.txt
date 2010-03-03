@@ -13,6 +13,8 @@ Bugfixes:
  - Fix main menu icon reference
  - Fix for main window off screen positioning
  - Fixed authorization dialog behaviors
+ - AIM: Display nickname instead of screenname in chat
+ - AIM: Fixed encrypted and formatted messages with Metacontacts
  - ICQ: Fix for long error messages
  - Yahoo: Added Yahoo 10.0 client detection
  
