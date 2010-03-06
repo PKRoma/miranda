@@ -75,54 +75,54 @@ static INT_PTR srvRetrieveInterface( WPARAM, LPARAM lParam )
 		cli.pfnUnregisterFileDropping          = fnUnregisterFileDropping;
 
 		cli.pfnGetRowsPriorTo                  = fnGetRowsPriorTo;
-		cli.pfnFindItem						      = fnFindItem;
+		cli.pfnFindItem                        = fnFindItem;
 		cli.pfnGetRowByIndex                   = fnGetRowByIndex;
-		cli.pfnContactToHItem				      = fnContactToHItem;
+		cli.pfnContactToHItem                  = fnContactToHItem;
 		cli.pfnContactToItemHandle             = fnContactToItemHandle;
 
 		cli.pfnAddGroup                        = fnAddGroup;
 		cli.pfnAddItemToGroup                  = fnAddItemToGroup;
 		cli.pfnCreateClcContact                = fnCreateClcContact;
-		cli.pfnRemoveItemFromGroup		         = fnRemoveItemFromGroup;
+		cli.pfnRemoveItemFromGroup             = fnRemoveItemFromGroup;
 		cli.pfnFreeContact                     = fnFreeContact;
-		cli.pfnFreeGroup					         = fnFreeGroup;
-		cli.pfnAddInfoItemToGroup		         = fnAddInfoItemToGroup;
+		cli.pfnFreeGroup                       = fnFreeGroup;
+		cli.pfnAddInfoItemToGroup              = fnAddInfoItemToGroup;
 		cli.pfnAddContactToGroup               = fnAddContactToGroup;
 		cli.pfnAddContactToTree                = fnAddContactToTree;
-		cli.pfnDeleteItemFromTree		         = fnDeleteItemFromTree;
-		cli.pfnRebuildEntireList			      = fnRebuildEntireList;
-		cli.pfnGetGroupContentsCount	         = fnGetGroupContentsCount;
-		cli.pfnSortCLC						         = fnSortCLC;
+		cli.pfnDeleteItemFromTree              = fnDeleteItemFromTree;
+		cli.pfnRebuildEntireList               = fnRebuildEntireList;
+		cli.pfnGetGroupContentsCount           = fnGetGroupContentsCount;
+		cli.pfnSortCLC                         = fnSortCLC;
 		cli.pfnSaveStateAndRebuildList         = fnSaveStateAndRebuildList;
 
-		cli.pfnProcessExternalMessages	      = fnProcessExternalMessages;
+		cli.pfnProcessExternalMessages         = fnProcessExternalMessages;
 
 		cli.pfnPaintClc                        = fnPaintClc;
 
-		cli.pfnGetGroupCountsText		         = fnGetGroupCountsText;
+		cli.pfnGetGroupCountsText              = fnGetGroupCountsText;
 		cli.pfnHitTest                         = fnHitTest;
-		cli.pfnScrollTo						      = fnScrollTo;
-		cli.pfnEnsureVisible				         = fnEnsureVisible;
-		cli.pfnRecalcScrollBar			         = fnRecalcScrollBar;
-		cli.pfnSetGroupExpand				      = fnSetGroupExpand;
+		cli.pfnScrollTo                        = fnScrollTo;
+		cli.pfnEnsureVisible                   = fnEnsureVisible;
+		cli.pfnRecalcScrollBar                 = fnRecalcScrollBar;
+		cli.pfnSetGroupExpand                  = fnSetGroupExpand;
 		cli.pfnDoSelectionDefaultAction        = fnDoSelectionDefaultAction;
-		cli.pfnFindRowByText				         = fnFindRowByText;
-		cli.pfnEndRename					         = fnEndRename;
-		cli.pfnDeleteFromContactList	         = fnDeleteFromContactList;
-		cli.pfnBeginRenameSelection		      = fnBeginRenameSelection;
+		cli.pfnFindRowByText                   = fnFindRowByText;
+		cli.pfnEndRename                       = fnEndRename;
+		cli.pfnDeleteFromContactList           = fnDeleteFromContactList;
+		cli.pfnBeginRenameSelection            = fnBeginRenameSelection;
 		cli.pfnCalcEipPosition                 = fnCalcEipPosition;
 		cli.pfnGetDropTargetInformation        = fnGetDropTargetInformation;
-		cli.pfnClcStatusToPf2				      = fnClcStatusToPf2;
-		cli.pfnIsHiddenMode				         = fnIsHiddenMode;
-		cli.pfnHideInfoTip					      = fnHideInfoTip;
-		cli.pfnNotifyNewContact			         = fnNotifyNewContact;
+		cli.pfnClcStatusToPf2                  = fnClcStatusToPf2;
+		cli.pfnIsHiddenMode                    = fnIsHiddenMode;
+		cli.pfnHideInfoTip                     = fnHideInfoTip;
+		cli.pfnNotifyNewContact                = fnNotifyNewContact;
 		cli.pfnGetDefaultExStyle               = fnGetDefaultExStyle;
 		cli.pfnGetDefaultFontSetting           = fnGetDefaultFontSetting;
-		cli.pfnGetFontSetting					   = fnGetFontSetting;
-		cli.pfnLoadClcOptions					   = fnLoadClcOptions;
+		cli.pfnGetFontSetting                  = fnGetFontSetting;
+		cli.pfnLoadClcOptions                  = fnLoadClcOptions;
 		cli.pfnRecalculateGroupCheckboxes	   = fnRecalculateGroupCheckboxes;
 		cli.pfnSetGroupChildCheckboxes		   = fnSetGroupChildCheckboxes;
-		cli.pfnInvalidateItem					   = fnInvalidateItem;
+		cli.pfnInvalidateItem                  = fnInvalidateItem;
 		cli.pfnGetRowBottomY                   = fnGetRowBottomY;
 		cli.pfnGetRowHeight                    = fnGetRowHeight;
 		cli.pfnGetRowTopY                      = fnGetRowTopY;
@@ -138,7 +138,7 @@ static INT_PTR srvRetrieveInterface( WPARAM, LPARAM lParam )
 		cli.pfnGetImlIconIndex                 = fnGetImlIconIndex;
 		cli.pfnRemoveEvent                     = fnRemoveEvent;
 
-		cli.pfnGetContactDisplayName			   = fnGetContactDisplayName;
+		cli.pfnGetContactDisplayName           = fnGetContactDisplayName;
 		cli.pfnInvalidateDisplayNameCacheEntry = fnInvalidateDisplayNameCacheEntry;
 		cli.pfnCreateCacheItem                 = fnCreateCacheItem;
 		cli.pfnCheckCacheItem                  = fnCheckCacheItem;
@@ -156,30 +156,30 @@ static INT_PTR srvRetrieveInterface( WPARAM, LPARAM lParam )
 		cli.pfnTrayIconDestroy                 = fnTrayIconDestroy;
 		cli.pfnTrayIconIconsChanged            = fnTrayIconIconsChanged;
 		cli.pfnTrayIconInit                    = fnTrayIconInit;
-		cli.pfnTrayIconMakeTooltip              = fnTrayIconMakeTooltip;
-		cli.pfnTrayIconPauseAutoHide			   = fnTrayIconPauseAutoHide;
-		cli.pfnTrayIconProcessMessage			   = fnTrayIconProcessMessage;
+		cli.pfnTrayIconMakeTooltip             = fnTrayIconMakeTooltip;
+		cli.pfnTrayIconPauseAutoHide           = fnTrayIconPauseAutoHide;
+		cli.pfnTrayIconProcessMessage          = fnTrayIconProcessMessage;
 		cli.pfnTrayIconRemove                  = fnTrayIconRemove;
 		cli.pfnTrayIconSetBaseInfo             = fnTrayIconSetBaseInfo;
-		cli.pfnTrayIconSetToBase					= fnTrayIconSetToBase;
+		cli.pfnTrayIconSetToBase               = fnTrayIconSetToBase;
 		cli.pfnTrayIconTaskbarCreated          = fnTrayIconTaskbarCreated;
 		cli.pfnTrayIconUpdate                  = fnTrayIconUpdate;
-		cli.pfnTrayIconUpdateBase				   = fnTrayIconUpdateBase;
+		cli.pfnTrayIconUpdateBase              = fnTrayIconUpdateBase;
 		cli.pfnTrayIconUpdateWithImageList	   = fnTrayIconUpdateWithImageList;
 		cli.pfnCListTrayNotify                 = fnCListTrayNotify;
 
-		cli.pfnContactListWndProc				   = fnContactListWndProc;
+		cli.pfnContactListWndProc              = fnContactListWndProc;
 		cli.pfnLoadCluiGlobalOpts              = fnLoadCluiGlobalOpts;
 		cli.pfnCluiProtocolStatusChanged       = fnCluiProtocolStatusChanged;
 		cli.pfnDrawMenuItem                    = fnDrawMenuItem;
 		cli.pfnInvalidateRect                  = fnInvalidateRect;
 		cli.pfnOnCreateClc                     = fnOnCreateClc;
 
-		cli.pfnChangeContactIcon					= fnChangeContactIcon;
-		cli.pfnLoadContactTree					   = fnLoadContactTree;
-		cli.pfnCompareContacts					   = fnCompareContacts;
-		cli.pfnSortContacts						   = fnSortContacts;
-		cli.pfnSetHideOffline					   = fnSetHideOffline;
+		cli.pfnChangeContactIcon               = fnChangeContactIcon;
+		cli.pfnLoadContactTree                 = fnLoadContactTree;
+		cli.pfnCompareContacts                 = fnCompareContacts;
+		cli.pfnSortContacts                    = fnSortContacts;
+		cli.pfnSetHideOffline                  = fnSetHideOffline;
 
 		cli.pfnDocking_ProcessWindowMessage	   = fnDocking_ProcessWindowMessage;
 
@@ -189,13 +189,13 @@ static INT_PTR srvRetrieveInterface( WPARAM, LPARAM lParam )
 		cli.pfnShowHide                        = fnShowHide;
 		cli.pfnGetStatusModeDescription        = fnGetStatusModeDescription;
 
-		cli.pfnGetGroupName						   = fnGetGroupName;
+		cli.pfnGetGroupName                    = fnGetGroupName;
 		cli.pfnRenameGroup                     = fnRenameGroup;
 
-		cli.pfnHotKeysRegister					   = fnHotKeysRegister;
-		cli.pfnHotKeysUnregister					= fnHotKeysUnregister;
-		cli.pfnHotKeysProcess						= fnHotKeysProcess;
-		cli.pfnHotkeysProcessMessage			   = fnHotkeysProcessMessage;
+		cli.pfnHotKeysRegister                 = fnHotKeysRegister;
+		cli.pfnHotKeysUnregister               = fnHotKeysUnregister;
+		cli.pfnHotKeysProcess                  = fnHotKeysProcess;
+		cli.pfnHotkeysProcessMessage           = fnHotkeysProcessMessage;
 
 		cli.pfnGetProtocolVisibility           = fnGetProtocolVisibility;
 		cli.pfnGetProtoIndexByPos              = fnGetProtoIndexByPos;
