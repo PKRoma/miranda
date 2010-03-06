@@ -167,6 +167,7 @@ int CMsnProto::MSN_GetPassportAuth(void)
 		{
 			case 200: 
 			{
+				const char *errurl = NULL; 
 				ezxml_t xml = ezxml_parse_str(tResult, strlen(tResult));
 
 				ezxml_t tokr = ezxml_get(xml, "S:Body", 0, 
@@ -177,40 +178,11 @@ int CMsnProto::MSN_GetPassportAuth(void)
 				{
 					ezxml_t toks = ezxml_get(tokr, "wst:RequestedSecurityToken", 0, 
 						"wsse:BinarySecurityToken", -1);
-					if (toks != NULL) 
-					{
-						const char* id = ezxml_attr(toks, "Id");
-						if (strcmp(id, "Compact1")==0)
-						{
-							ezxml_t node = ezxml_get(tokr, "wst:RequestedProofToken", 0, 
-								"wst:BinarySecret", -1);
-							replaceStr(authStrToken, ezxml_txt(toks));
-							replaceStr(authSecretToken, ezxml_txt(node)); 
-							retVal = 0;
-						}
-						if (strcmp(id, "PPToken2")==0)
-						{
-							const char* tok = ezxml_txt(toks);
-							char* ch = (char*)strchr(tok, '&');
-							*ch = 0;
-							replaceStr(tAuthToken, tok+2);
-							replaceStr(pAuthToken, ch+3);
-							*ch = '&';
-						}
-						else if (strcmp(id, "Compact3")==0)
-						{
-							replaceStr(authContactToken, ezxml_txt(toks));
-						}
-						else if (strcmp(id, "Compact4")==0)
-						{
-							replaceStr(oimSendToken, ezxml_txt(toks));
-						}
-						else if (strcmp(id, "Compact6")==0)
-						{
-							replaceStr(authStorageToken, ezxml_txt(toks));
-						}
-					}
-					else
+					
+					const char* addr = ezxml_txt(ezxml_get(tokr, "wsp:AppliesTo", 0, 
+						"wsa:EndpointReference", 0, "wsa:Address", -1));
+
+					if (strcmp(addr, "http://Passport.NET/tb") == 0)
 					{
 						ezxml_t node = ezxml_get(tokr, "wst:RequestedSecurityToken", 0, "EncryptedData", -1);
 						free(hotAuthToken);
@@ -219,12 +191,54 @@ int CMsnProto::MSN_GetPassportAuth(void)
 						node = ezxml_get(tokr, "wst:RequestedProofToken", 0, "wst:BinarySecret", -1);
 						replaceStr(hotSecretToken, ezxml_txt(node));
 					}
+					else if (strcmp(addr, "messengerclear.live.com") == 0)
+					{
+						ezxml_t node = ezxml_get(tokr, "wst:RequestedProofToken", 0, 
+							"wst:BinarySecret", -1);
+						if (toks)
+						{
+							replaceStr(authStrToken, ezxml_txt(toks));
+							replaceStr(authSecretToken, ezxml_txt(node)); 
+							retVal = 0;
+						}
+						else
+						{
+							errurl = ezxml_txt(ezxml_get(tokr, "S:Fault", 0, "psf:pp", 0, "psf:flowurl", -1));
+						}
+					}
+					else if (strcmp(addr, "messenger.msn.com") == 0 && toks)
+					{
+						const char* tok = ezxml_txt(toks);
+						char* ch = (char*)strchr(tok, '&');
+						*ch = 0;
+						replaceStr(tAuthToken, tok+2);
+						replaceStr(pAuthToken, ch+3);
+						*ch = '&';
+					}
+					else if (strcmp(addr, "contacts.msn.com") == 0 && toks)
+					{
+						replaceStr(authContactToken, ezxml_txt(toks));
+					}
+					else if (strcmp(addr, "messengersecure.live.com") == 0 && toks)
+					{
+						replaceStr(oimSendToken, ezxml_txt(toks));
+					}
+					else if (strcmp(addr, "storage.msn.com") == 0 && toks)
+					{
+						replaceStr(authStorageToken, ezxml_txt(toks));
+					}
 
 					tokr = ezxml_next(tokr); 
 				}
 
 				if (retVal != 0)
 				{
+					if (errurl)
+					{
+						MSN_DebugLog("Starting URL: '%s'", errurl);
+						MSN_CallService(MS_UTILS_OPENURL, 1, (LPARAM)errurl);
+					}
+
 					ezxml_t tokrdr = ezxml_get(xml, "S:Fault", 0, "psf:redirectUrl", -1);
 					if (tokrdr != NULL)
 					{
