@@ -283,6 +283,10 @@ INT_PTR CALLBACK DlgProcFileExists(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 			pfr.action=FILERESUME_OVERWRITEALL;
 			break;
 
+		case IDC_AUTORENAME:
+			pfr.action = FILERESUME_RENAMEALL;
+			break;
+
 		case IDC_SAVEAS:
 		{	
 			OPENFILENAME ofn={0};
