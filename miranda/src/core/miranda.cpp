@@ -36,6 +36,11 @@ void UnloadDefaultModules(void);
 
 HINSTANCE GetInstByAddress( void* codePtr );
 
+pfnMyMonitorFromPoint MyMonitorFromPoint;
+pfnMyMonitorFromRect MyMonitorFromRect;
+pfnMyMonitorFromWindow MyMonitorFromWindow;
+pfnMyGetMonitorInfo MyGetMonitorInfo;
+
 typedef DWORD (WINAPI *pfnMsgWaitForMultipleObjectsEx)(DWORD,CONST HANDLE*,DWORD,DWORD,DWORD);
 pfnMsgWaitForMultipleObjectsEx MyMsgWaitForMultipleObjectsEx;
 
