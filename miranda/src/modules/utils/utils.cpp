@@ -341,24 +341,10 @@ static INT_PTR AssertInsideScreen(WPARAM wParam, LPARAM lParam)
 	if (!IsWinVer98Plus()) 
 		return -1;
 
-	static BOOL loaded = FALSE;
-	static HMONITOR (WINAPI *MyMonitorFromRect)(LPCRECT,DWORD) = NULL;
-	static BOOL (WINAPI *MyGetMonitorInfo)(HMONITOR,LPMONITORINFO) = NULL;
-
-	if (!loaded) {
-		HMODULE hUser32 = GetModuleHandleA("user32");
-		if (hUser32) {
-			MyMonitorFromRect = (HMONITOR(WINAPI*)(LPCRECT,DWORD))GetProcAddress(hUser32,"MonitorFromRect");
-			MyGetMonitorInfo = (BOOL(WINAPI*)(HMONITOR,LPMONITORINFO))GetProcAddress(hUser32,"GetMonitorInfoA");
-			if (MyGetMonitorInfo == NULL)
-				MyGetMonitorInfo = (BOOL(WINAPI*)(HMONITOR,LPMONITORINFO))GetProcAddress(hUser32,"GetMonitorInfo");
-		}
-		loaded = TRUE;
-	}
-
 	if (MyMonitorFromRect == NULL || MyGetMonitorInfo == NULL) 
 		return -1;
 
+	RECT rct;
 	HMONITOR hMonitor;
 	MONITORINFO mi;
 	INT_PTR ret = 0;
@@ -366,6 +352,9 @@ static INT_PTR AssertInsideScreen(WPARAM wParam, LPARAM lParam)
 	hMonitor = MyMonitorFromRect(rc, MONITOR_DEFAULTTONEAREST);
 	mi.cbSize = sizeof(mi);
 	MyGetMonitorInfo(hMonitor, &mi);
+
+	if (IntersectRect(&rct, rc, &mi.rcWork))
+		return ret;
 
 	if (rc->bottom > mi.rcWork.bottom) {
 		OffsetRect(rc, 0, mi.rcWork.bottom - rc->bottom);

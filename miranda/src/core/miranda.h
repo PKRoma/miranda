@@ -23,6 +23,18 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #define NEWSTR_ALLOCA(A) (A==NULL)?NULL:strcpy((char*)alloca(strlen(A)+1),A)
 
+typedef HMONITOR (WINAPI *pfnMyMonitorFromPoint)(POINT, DWORD);
+extern pfnMyMonitorFromPoint MyMonitorFromPoint;
+
+typedef HMONITOR (WINAPI *pfnMyMonitorFromRect)(LPCRECT, DWORD);
+extern pfnMyMonitorFromRect MyMonitorFromRect;
+
+typedef HMONITOR(WINAPI *pfnMyMonitorFromWindow) (HWND, DWORD);
+extern pfnMyMonitorFromWindow MyMonitorFromWindow;
+
+typedef BOOL(WINAPI *pfnMyGetMonitorInfo) (HMONITOR, LPMONITORINFO);
+extern pfnMyGetMonitorInfo MyGetMonitorInfo;
+
 typedef HRESULT (STDAPICALLTYPE *pfnSHAutoComplete)(HWND,DWORD);
 extern pfnSHAutoComplete shAutoComplete;
 

@@ -40,10 +40,6 @@ void FreeDisplayNameCache(void);
 int LoadCLUIModule(void);
 int InitClistHotKeys(void);
 
-pfnMyMonitorFromPoint  MyMonitorFromPoint = NULL;
-pfnMyMonitorFromWindow MyMonitorFromWindow = NULL;
-pfnMyGetMonitorInfo    MyGetMonitorInfo = NULL;
-
 HANDLE hContactDoubleClicked, hContactIconChangedEvent;
 HIMAGELIST hCListImages;
 BOOL(WINAPI * MySetProcessWorkingSetSize) (HANDLE, SIZE_T, SIZE_T);
@@ -526,16 +522,6 @@ int LoadContactListModule2(void)
 	InitCListEvents();
 	InitGroupServices();
 	cli.pfnInitTray();
-	{
-		HINSTANCE hUser = GetModuleHandleA("USER32");
-		MyMonitorFromPoint  = ( pfnMyMonitorFromPoint )GetProcAddress( hUser,"MonitorFromPoint" );
-		MyMonitorFromWindow = ( pfnMyMonitorFromWindow )GetProcAddress( hUser, "MonitorFromWindow" );
-		#if defined( _UNICODE )
-			MyGetMonitorInfo = ( pfnMyGetMonitorInfo )GetProcAddress( hUser, "GetMonitorInfoW");
-		#else
-			MyGetMonitorInfo = ( pfnMyGetMonitorInfo )GetProcAddress( hUser, "GetMonitorInfoA");
-		#endif
-	}
 
 	hCListImages = ImageList_Create(16, 16, ILC_MASK | (IsWinVerXPPlus()? ILC_COLOR32 : ILC_COLOR16), 13, 0);
 	HookEvent(ME_SKIN_ICONSCHANGED, CListIconsChanged);

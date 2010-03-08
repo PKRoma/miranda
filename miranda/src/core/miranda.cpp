@@ -36,6 +36,11 @@ void UnloadDefaultModules(void);
 
 HINSTANCE GetInstByAddress( void* codePtr );
 
+pfnMyMonitorFromPoint MyMonitorFromPoint;
+pfnMyMonitorFromRect MyMonitorFromRect;
+pfnMyMonitorFromWindow MyMonitorFromWindow;
+pfnMyGetMonitorInfo MyGetMonitorInfo;
+
 typedef DWORD (WINAPI *pfnMsgWaitForMultipleObjectsEx)(DWORD,CONST HANDLE*,DWORD,DWORD,DWORD);
 pfnMsgWaitForMultipleObjectsEx MyMsgWaitForMultipleObjectsEx;
 
@@ -550,6 +555,15 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int )
 	openInputDesktop = (pfnOpenInputDesktop)GetProcAddress (hUser32, "OpenInputDesktop");
 	closeDesktop = (pfnCloseDesktop)GetProcAddress (hUser32, "CloseDesktop");
 	MyMsgWaitForMultipleObjectsEx = (pfnMsgWaitForMultipleObjectsEx)GetProcAddress(hUser32,"MsgWaitForMultipleObjectsEx");
+
+	MyMonitorFromPoint = (pfnMyMonitorFromPoint)GetProcAddress(hUser32, "MonitorFromPoint");
+	MyMonitorFromRect = (pfnMyMonitorFromRect)GetProcAddress(hUser32, "MonitorFromRect");
+	MyMonitorFromWindow = (pfnMyMonitorFromWindow)GetProcAddress(hUser32, "MonitorFromWindow");
+	#ifdef _UNICODE
+		MyGetMonitorInfo = (pfnMyGetMonitorInfo)GetProcAddress(hUser32, "GetMonitorInfoW");
+	#else
+		MyGetMonitorInfo = (pfnMyGetMonitorInfo)GetProcAddress(hUser32, "GetMonitorInfoA");
+	#endif
 
     hShFolder = GetModuleHandleA("shell32");
 	shGetSpecialFolderPathA = (pfnSHGetSpecialFolderPathA)GetProcAddress(hShFolder,"SHGetSpecialFolderPathA");
