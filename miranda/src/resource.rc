@@ -587,6 +587,7 @@ BEGIN
     PUSHBUTTON      "Overwrite",IDC_OVERWRITE,76,144,65,14
     PUSHBUTTON      "Overwrite all",IDC_OVERWRITEALL,76,162,65,14
     PUSHBUTTON      "Save as...",IDC_SAVEAS,147,144,65,14
+    PUSHBUTTON      "Auto rename",IDC_AUTORENAME,147,162,65,14
     PUSHBUTTON      "Skip",IDC_SKIP,218,144,65,14
     PUSHBUTTON      "Cancel transfer",IDCANCEL,218,162,65,14
     LTEXT           "You are about to receive the file",IDC_STATIC,5,5,278,8

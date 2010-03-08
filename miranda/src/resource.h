@@ -382,6 +382,7 @@
 #define IDC_NEWDATE                     1511
 #define IDC_NEWTYPE                     1512
 #define IDC_SAVEAS                      1513
+#define IDC_AUTORENAME                  1514
 #define IDC_ASK                         1516
 #define IDC_RENAME                      1519
 #define IDC_VIRUSSCANNERGROUP           1520
