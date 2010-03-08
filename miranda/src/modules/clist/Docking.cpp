@@ -164,8 +164,14 @@ int fnDocking_ProcessWindowMessage(WPARAM wParam, LPARAM lParam)
 				
 				RECT rc = {0};
 				GetWindowRect(msg->hwnd, &rc);
+				int cx = rc.right - rc.left + 1;
 				if (!(wp->flags & SWP_NOMOVE)) { rc.left = wp->x; rc.top = wp->y; }
-				if (!(wp->flags & SWP_NOSIZE)) { rc.right = rc.left + wp->cx - 1; rc.bottom = rc.top + wp->cy - 1; }
+				if (!(wp->flags & SWP_NOSIZE)) 
+				{ 
+					rc.right = rc.left + wp->cx - 1; 
+					rc.bottom = rc.top + wp->cy - 1; 
+					addbar |= (cx != wp->cx); 
+				}
 				
 				Docking_SetSize(msg->hwnd, &rc, !addbar);
 
