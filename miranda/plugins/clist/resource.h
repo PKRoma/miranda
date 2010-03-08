@@ -1,5 +1,5 @@
 //{{NO_DEPENDENCIES}}
-// Microsoft Developer Studio generated include file.
+// Microsoft Visual C++ generated include file.
 // Used by resource.rc
 //
 #define IDD_OPT_CLIST                   126
@@ -133,6 +133,7 @@
 #define IDC_TXT_TITLE1                  1617
 #define IDC_TXT_TITLE2                  1618
 #define IDC_ONDESKTOP                   1657
+#define IDC_DISABLEDOCKING              1658
 #define IDC_WINCOLOUR                   1659
 #define IDC_ICONBLINK                   1660
 #define IDC_STMSDELAY                   1661
@@ -149,7 +150,6 @@
 #define POPUP_NEWGROUP                  40050
 #define POPUP_RENAMEGROUP               40052
 #define POPUP_DELETEGROUP               40053
-#define IDC_STATIC						-1
 
 // Next default values for new objects
 // 
