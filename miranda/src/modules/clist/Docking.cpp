@@ -93,22 +93,20 @@ static UINT_PTR Docking_Command(HWND hwnd, int cmd)
 	return SHAppBarMessage(cmd, &abd);
 }
 
-static void Docking_SetSize(HWND hwnd)
-{
-	RECT rc, rcMonitor;
-
-	GetWindowRect(hwnd, &rc); 
-	Docking_GetMonitorRectFromPoint((LPPOINT)&rc, &rcMonitor);
-
-	Docking_AdjustPosition(hwnd, &rcMonitor, &rc, false);
-	MoveWindow(hwnd, rc.left, rc.top, rc.right - rc.left + 1, rc.bottom - rc.top + 1, TRUE);
-}
-
 static void Docking_SetSize(HWND hwnd, LPRECT rc, bool query)
 {
 	RECT rcMonitor;
 	Docking_GetMonitorRectFromPoint((LPPOINT)rc, &rcMonitor);
 	Docking_AdjustPosition(hwnd, &rcMonitor, rc, query);
+}
+
+static void Docking_SetSize(HWND hwnd)
+{
+	RECT rc;
+
+	GetWindowRect(hwnd, &rc); 
+	Docking_SetSize(hwnd, &rc, false);
+	MoveWindow(hwnd, rc.left, rc.top, rc.right - rc.left + 1, rc.bottom - rc.top + 1, TRUE);
 }
 
 static bool Docking_IsWindowVisible(HWND hwnd)
