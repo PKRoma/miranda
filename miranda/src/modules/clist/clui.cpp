@@ -239,7 +239,7 @@ static INT_PTR MenuItem_AddContactToList(WPARAM wParam, LPARAM)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// this is the smalles available window procedure
+// this is the smallest available window procedure
 
 #ifndef CS_DROPSHADOW
 #define CS_DROPSHADOW 0x00020000
