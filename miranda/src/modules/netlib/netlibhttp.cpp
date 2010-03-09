@@ -345,7 +345,7 @@ INT_PTR NetlibHttpSendRequest(WPARAM wParam,LPARAM lParam)
 	HANDLE hNtlmSecurity = NULL;;
 
 	struct ResizableCharBuffer httpRequest={0};
-	char *pszRequest, *szHost, *pszUrl;
+	char *pszRequest, *szHost, *pszUrl, *pszFullUrl;
 	char *pszProxyAuthHdr = NULL;
 	int i,doneHostHeader,doneContentLengthHeader,doneProxyAuthHeader;
 	int bytesSent;
@@ -375,7 +375,7 @@ INT_PTR NetlibHttpSendRequest(WPARAM wParam,LPARAM lParam)
 
 	//first line: "GET /index.html HTTP/1.0\r\n"
 	szHost = NULL;
-	pszUrl = nlhr->szUrl;
+	pszFullUrl = pszUrl = nlhr->szUrl;
 
 	char* szAuthMethodNlu = NULL;
 	unsigned complete = false;
@@ -491,19 +491,19 @@ INT_PTR NetlibHttpSendRequest(WPARAM wParam,LPARAM lParam)
 						if (tmpUrl[0] == '/')
 						{
 							char* szPath;
-							char* szPref = strstr(pszUrl, "://");
-							szPref = szPref ? szPref + 3 : pszUrl;
+							char* szPref = strstr(pszFullUrl, "://");
+							szPref = szPref ? szPref + 3 : pszFullUrl;
 							szPath = strchr(szPref, '/');
-							rlen = szPath != NULL ? szPath - pszUrl : strlen(pszUrl); 
+							rlen = szPath != NULL ? szPath - pszFullUrl : strlen(pszFullUrl); 
 						}
 
 						nlc->szNewUrl = (char*)mir_realloc(nlc->szNewUrl, rlen + strlen(tmpUrl) * 3 + 1);
 
-						strncpy(nlc->szNewUrl, pszUrl, rlen);
+						strncpy(nlc->szNewUrl, pszFullUrl, rlen);
 						strcpy(nlc->szNewUrl + rlen, tmpUrl); 
-						pszUrl = nlc->szNewUrl;
+						pszFullUrl = pszUrl = nlc->szNewUrl;
 
-						if (NetlibHttpProcessUrl(nlhr, nlc->nlu, nlc, pszUrl) == NULL)
+						if (NetlibHttpProcessUrl(nlhr, nlc->nlu, nlc, pszFullUrl) == NULL)
 						{
 							bytesSent = SOCKET_ERROR;
 							break;
