@@ -5,7 +5,7 @@
 // Copyright © 2000-2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001-2002 Jon Keating, Richard Hughes
 // Copyright © 2002-2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004-2009 Joe Kucera
+// Copyright © 2004-2010 Joe Kucera
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -19,7 +19,7 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with this program; if not, write to the Free Software
-// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 //
 // -----------------------------------------------------------------------------
 //
@@ -620,7 +620,7 @@ void CIcqProto::handleRecvServMsgOFT(BYTE *buf, WORD wLen, DWORD dwUin, char *sz
 
 					ft->wReqNum = wAckType;
 
-					if (ft->sending)
+					if (ft->flags & OFTF_SENDING)
 					{
 						ReleaseOscarListener((oscar_listener**)&ft->listener);
 
@@ -726,12 +726,18 @@ void CIcqProto::handleRecvServMsgOFT(BYTE *buf, WORD wLen, DWORD dwUin, char *sz
 		{
 			NetLog_Direct("OFT: Session established.");
 			// Init connection
-			if (ft->sending)
+			if (ft->flags & OFTF_SENDING)
 			{
-				if (ft->connection && ((oscar_connection*)(ft->connection))->status == OCS_CONNECTED)
-					oft_sendPeerInit((oscar_connection*)ft->connection);
-				else
-					ft->initialized = 1; // accept was received
+				if (ft->connection && ft->connection->status == OCS_CONNECTED)
+        {
+          if (!(ft->flags & OFTF_FILE_REQUEST_SENT))
+          {
+            ft->flags |= OFTF_FILE_REQUEST_SENT;
+            // proceed with first file
+					  oft_sendPeerInit(ft->connection);
+          }
+        }
+				ft->flags |= OFTF_INITIALIZED; // accept was received
 			}
 			else
 				NetLog_Server("Warning: Received invalid rendezvous accept");
@@ -822,7 +828,7 @@ static void oft_newConnectionReceived(HANDLE hNewConnection, DWORD dwRemoteIP, v
 	oscarthreadstartinfo *otsi = (oscarthreadstartinfo*)SAFE_MALLOC(sizeof(oscarthreadstartinfo));
 	oscar_listener *listener = (oscar_listener*)pExtra;
 
-	otsi->type = listener->ft->sending ? OCT_NORMAL : OCT_REVERSE;
+	otsi->type = listener->ft->flags & OFTF_SENDING ? OCT_NORMAL : OCT_REVERSE;
 	otsi->incoming = 1;
 	otsi->hConnection = hNewConnection;
 	otsi->dwRemoteIP = dwRemoteIP;
@@ -922,7 +928,7 @@ HANDLE CIcqProto::oftInitTransfer(HANDLE hContact, DWORD dwUin, char* szUid, con
 	NetLog_Server("OFT: Found %d files.", ft->wFilesCount);
 
 	ft->szDescription = tchar_to_utf8(pszDesc);
-	ft->sending = 1;
+	ft->flags = OFTF_SENDING;
 	ft->fileId = -1;
 	ft->iCurrentFile = 0;
 	ft->dwCookie = AllocateCookie(CKT_FILE, ICQ_MSG_SRV_SEND, hContact, ft);
@@ -948,7 +954,7 @@ HANDLE CIcqProto::oftInitTransfer(HANDLE hContact, DWORD dwUin, char* szUid, con
 
 		if (ft->wFilesCount == 1)
 		{ // transfering single file, give filename
-			pszFiles = ExtractFileName(ft->files[0].szFile);
+			pszFiles = (char*)ExtractFileName(ft->files[0].szFile);
 		}
 		else 
 		{ // check if transfering one directory
@@ -1104,7 +1110,7 @@ void CIcqProto::oftFileResume(oscar_filetransfer *ft, int action, const TCHAR *s
 	if (ft->connection == NULL)
 		return;
 
-	oscar_connection *oc = (oscar_connection*)ft->connection;
+	oscar_connection *oc = ft->connection;
 
 #ifdef _DEBUG
 	NetLog_Direct("OFT: Resume Transfer, Action: %d, FileName: '%s'", action, szFilename);
@@ -1155,7 +1161,7 @@ void CIcqProto::oftFileResume(oscar_filetransfer *ft, int action, const TCHAR *s
 #endif
 		icq_LogMessage(LOG_ERROR, LPGEN("Your file receive has been aborted because Miranda could not open the destination file in order to write to it. You may be trying to save to a read-only folder."));
 
-		BroadcastAck(oc->ft->hContact, ACKTYPE_FILE, ACKRESULT_FAILED, oc->ft, 0);
+		BroadcastAck(ft->hContact, ACKTYPE_FILE, ACKRESULT_FAILED, ft, 0);
 		// Release transfer
 		SafeReleaseFileTransfer((void**)&oc->ft);
 		return;
@@ -1189,6 +1195,7 @@ void CIcqProto::oftFileResume(oscar_filetransfer *ft, int action, const TCHAR *s
 	else
 	{ // Send "we are ready"
 		oc->status = OCS_DATA;
+    ft->flags |= OFTF_FILE_RECEIVING;
 
 		sendOFT2FramePacket(oc, OFT_TYPE_READY);
 	}
@@ -1207,8 +1214,8 @@ static void oft_buildProtoFileTransferStatus(oscar_filetransfer* ft, PROTOFILETR
 	ZeroMemory(pfts, sizeof(PROTOFILETRANSFERSTATUS));
 	pfts->cbSize = sizeof(PROTOFILETRANSFERSTATUS);
 	pfts->hContact = ft->hContact;
-	pfts->flags = PFTS_UTF + ((ft->sending) ? PFTS_SENDING : PFTS_RECEIVING);
-	if (ft->sending)
+	pfts->flags = PFTS_UTF + ((ft->flags & OFTF_SENDING) ? PFTS_SENDING : PFTS_RECEIVING);
+	if (ft->flags & OFTF_SENDING)
 		pfts->pszFiles = ft->files_list;
 	else
 		pfts->pszFiles = NULL;  /* FIXME */
@@ -1504,8 +1511,12 @@ void __cdecl CIcqProto::oft_connectionThread( oscarthreadstartinfo *otsi )
 		BroadcastAck(oc.ft->hContact, ACKTYPE_FILE, ACKRESULT_INITIALISING, oc.ft, 0);
 
 		// send init OFT frame - just for different order of packets (just like Trillian)
-		if (oc.status == OCS_CONNECTED && oc.ft->sending && (oc.ft->initialized || oc.type == OCT_REVERSE))
-			oft_sendPeerInit((oscar_connection*)oc.ft->connection);
+		if (oc.status == OCS_CONNECTED && (oc.ft->flags & OFTF_SENDING) && ((oc.ft->flags & OFTF_INITIALIZED) || oc.type == OCT_REVERSE) && !(oc.ft->flags & OFTF_FILE_REQUEST_SENT))
+    {
+      oc.ft->flags |= OFTF_FILE_REQUEST_SENT;
+      // proceed with first file
+			oft_sendPeerInit(&oc);
+    }
 	}
 	hPacketRecver = (HANDLE)CallService(MS_NETLIB_CREATEPACKETRECVER, (WPARAM)oc.hConnection, 8192);
 	packetRecv.cbSize = sizeof(packetRecv);
@@ -1611,14 +1622,11 @@ void CIcqProto::sendOscarPacket(oscar_connection *oc, icq_packet *packet)
 
 int CIcqProto::oft_handlePackets(oscar_connection *oc, BYTE *buf, int len)
 {
-	DWORD dwHead;
-	WORD datalen;
-	WORD datatype;
 	int bytesUsed = 0;
 
 	while (len > 0)
 	{
-		if (oc->status == OCS_DATA && !oc->ft->sending)
+    if (oc->status == OCS_DATA && (oc->ft->flags & OFTF_FILE_RECEIVING))
 		{
 			return oft_handleFileData(oc, buf, len);
 		}
@@ -1630,6 +1638,7 @@ int CIcqProto::oft_handlePackets(oscar_connection *oc, BYTE *buf, int len)
 			break;
 
 		BYTE *pBuf = buf;
+		DWORD dwHead;
 		unpackDWord(&pBuf, &dwHead);
 		if (dwHead != 0x4F465432)
 		{ // bad packet
@@ -1639,11 +1648,13 @@ int CIcqProto::oft_handlePackets(oscar_connection *oc, BYTE *buf, int len)
 			break;
 		}
 
+		WORD datalen;
 		unpackWord(&pBuf, &datalen);
 
 		if (len < datalen) // wait for whole packet
 			break;
 
+		WORD datatype;
 		unpackWord(&pBuf, &datatype);
 #ifdef _DEBUG
 		NetLog_Direct("OFT2: Type %u, Length %u bytes", datatype, datalen);
@@ -1762,14 +1773,18 @@ int CIcqProto::oft_handleProxyData(oscar_connection *oc, BYTE *buf, int len)
 			if (oc->type == OCT_PROXY_RECV)
 			{
 				oft_sendFileAccept(oc->dwUin, oc->szUid, ft);
-				if (ft->sending) // accept processed (sending only)
-					ft->initialized = 1;
+				if (ft->flags & OFTF_SENDING) // connection is ready for transfer (sending only)
+					ft->flags |= OFTF_INITIALIZED;
 			}
 
 			NetLog_Server("Proxy Tunnel established");
 
-			if (ft->initialized && ft->sending)
-				oft_sendPeerInit((oscar_connection*)ft->connection);
+			if ((ft->flags & OFTF_INITIALIZED) && (ft->flags & OFTF_SENDING) && !(ft->flags & OFTF_FILE_REQUEST_SENT))
+      {
+        ft->flags |= OFTF_FILE_REQUEST_SENT;
+        // proceed with first file
+				oft_sendPeerInit(ft->connection);
+      }
 			break;
 
 		default:
@@ -1816,11 +1831,13 @@ int CIcqProto::oft_handleFileData(oscar_connection *oc, BYTE *buf, int len)
 
 		oft_buildProtoFileTransferStatus(ft, &pfts);
 		BroadcastAck(ft->hContact, ACKTYPE_FILE, ACKRESULT_DATA, ft, (LPARAM)&pfts);
-		oc->ft->dwLastNotify = GetTickCount();
+		ft->dwLastNotify = GetTickCount();
 	}
 	if (ft->qwFileBytesDone == ft->qwThisFileSize)
 	{
 		/* EOF */
+    ft->flags &= ~OFTF_FILE_RECEIVING;
+
 #ifdef _DEBUG
 		NetLog_Direct("OFT: _close(%u)", ft->fileId);
 #endif
@@ -1869,6 +1886,7 @@ int CIcqProto::oft_handleFileData(oscar_connection *oc, BYTE *buf, int len)
 
 void CIcqProto::handleOFT2FramePacket(oscar_connection *oc, WORD datatype, BYTE *pBuffer, WORD wLen)
 {
+	oscar_filetransfer *ft = oc->ft;
 	DWORD dwID1;
 	DWORD dwID2;
 
@@ -1883,13 +1901,13 @@ void CIcqProto::handleOFT2FramePacket(oscar_connection *oc, WORD datatype, BYTE 
 	unpackLEDWord(&pBuffer, &dwID2);
 	wLen -= 4;
 
-	if (datatype == OFT_TYPE_REQUEST && !oc->ft->initialized)
+	if (datatype == OFT_TYPE_REQUEST && !(ft->flags & OFTF_FILE_REQUEST_RECEIVED))
 	{ // first request does not contain MsgIDs we need to send them in ready packet
-		dwID1 = oc->ft->pMessage.dwMsgID1;
-		dwID2 = oc->ft->pMessage.dwMsgID2;
+		dwID1 = ft->pMessage.dwMsgID1;
+		dwID2 = ft->pMessage.dwMsgID2;
 	}
 
-	if (oc->ft->pMessage.dwMsgID1 != dwID1 || oc->ft->pMessage.dwMsgID2 != dwID2)
+	if (ft->pMessage.dwMsgID1 != dwID1 || ft->pMessage.dwMsgID2 != dwID2)
 	{ // this is not the right packet - bad Message IDs
 		NetLog_Direct("Error: Invalid Packet Cookie, closing.");
 		CloseOscarConnection(oc);
@@ -1901,9 +1919,7 @@ void CIcqProto::handleOFT2FramePacket(oscar_connection *oc, WORD datatype, BYTE 
 
 	case OFT_TYPE_REQUEST:
 		{ // Sender ready
-			oscar_filetransfer *ft = oc->ft;
-
-			if (ft->sending)
+			if (ft->flags & OFTF_SENDING)
 			{ // just sanity check - this is only for receiving client
 				NetLog_Direct("Error: Invalid Packet, closing.");
 				CloseOscarConnection(oc);
@@ -1911,7 +1927,7 @@ void CIcqProto::handleOFT2FramePacket(oscar_connection *oc, WORD datatype, BYTE 
 			}
 
 			// Read Frame data
-			if (!ft->initialized)
+			if (!(ft->flags & OFTF_FILE_REQUEST_RECEIVED))
 			{
 				unpackWord(&pBuffer, &ft->wEncrypt);
 				unpackWord(&pBuffer, &ft->wCompress);
@@ -1920,13 +1936,13 @@ void CIcqProto::handleOFT2FramePacket(oscar_connection *oc, WORD datatype, BYTE 
 			else
 				pBuffer += 6;
 			unpackWord(&pBuffer, &ft->wFilesLeft);
-			ft->iCurrentFile = ft->wFilesCount - oc->ft->wFilesLeft;
-			if (!ft->initialized)
+			ft->iCurrentFile = ft->wFilesCount - ft->wFilesLeft;
+			if (!(ft->flags & OFTF_FILE_REQUEST_RECEIVED))
 				unpackWord(&pBuffer, &ft->wPartsCount);
 			else
 				pBuffer += 2;
 			unpackWord(&pBuffer, &ft->wPartsLeft);
-			if (!ft->initialized)
+			if (!(ft->flags & OFTF_FILE_REQUEST_RECEIVED))
 			{ // just check it
 				DWORD dwSize;
 
@@ -1957,14 +1973,14 @@ void CIcqProto::handleOFT2FramePacket(oscar_connection *oc, WORD datatype, BYTE 
 			unpackDWord(&pBuffer, &ft->dwThisForkCheck);
 			pBuffer += 4; // File Bytes Done
 			unpackDWord(&pBuffer, &ft->dwRecvFileCheck);
-			if (!ft->initialized)
+			if (!(ft->flags & OFTF_FILE_REQUEST_RECEIVED))
 				unpackString(&pBuffer, ft->rawIDString, 32);
 			else
 				pBuffer += 32;
 			unpackByte(&pBuffer, &ft->bHeaderFlags);
 			unpackByte(&pBuffer, &ft->bNameOff);
 			unpackByte(&pBuffer, &ft->bSizeOff);
-			if (!ft->initialized)
+			if (!(ft->flags & OFTF_FILE_REQUEST_RECEIVED))
 			{
 				unpackString(&pBuffer, (char*)ft->rawDummy, 69);
 				unpackString(&pBuffer, (char*)ft->rawMacInfo, 16);
@@ -1997,7 +2013,7 @@ void CIcqProto::handleOFT2FramePacket(oscar_connection *oc, WORD datatype, BYTE 
 				}
 			}
 
-			ft->initialized = 1; // First Frame Processed
+			ft->flags |= OFTF_FILE_REQUEST_RECEIVED; // First Frame Processed
 
 			NetLog_Direct("File '%s', %I64u Bytes", ft->szThisFile, ft->qwThisFileSize);
 
@@ -2073,6 +2089,7 @@ void CIcqProto::handleOFT2FramePacket(oscar_connection *oc, WORD datatype, BYTE 
 			}
 			// Send "we are ready"
 			oc->status = OCS_DATA;
+      ft->flags |= OFTF_FILE_RECEIVING;
 
 			sendOFT2FramePacket(oc, OFT_TYPE_READY);
 			BroadcastAck(ft->hContact, ACKTYPE_FILE, ACKRESULT_NEXTFILE, ft, 0);
@@ -2088,10 +2105,9 @@ void CIcqProto::handleOFT2FramePacket(oscar_connection *oc, WORD datatype, BYTE 
 	case OFT_TYPE_READY:
 	case OFT_TYPE_RESUMEACK:
 		{ // Receiver is ready
-			oscar_filetransfer *ft = oc->ft;
-
 			oc->status = OCS_DATA;
 			oc->wantIdleTime = 1;
+      ft->flags |= OFTF_FILE_SENDING;
 
 			NetLog_Direct("OFT: Receiver ready.");
 		}
@@ -2099,10 +2115,9 @@ void CIcqProto::handleOFT2FramePacket(oscar_connection *oc, WORD datatype, BYTE 
 
 	case OFT_TYPE_RESUMEREQUEST:
 		{ // Receiver wants to resume file transfer from point
-			oscar_filetransfer *ft = oc->ft;
 			DWORD dwResumeCheck, dwResumeOffset, dwFileCheck;
 
-			if (!ft->sending)
+			if (!(ft->flags & OFTF_SENDING))
 			{ // just sanity check - this is only for sending client
 				NetLog_Direct("Error: Invalid Packet, closing.");
 				CloseOscarConnection(oc);
@@ -2133,10 +2148,9 @@ void CIcqProto::handleOFT2FramePacket(oscar_connection *oc, WORD datatype, BYTE 
 
 	case OFT_TYPE_RESUMEREADY:
 		{ // Process Smart-resume reply
-			oscar_filetransfer *ft = oc->ft;
 			DWORD dwResumeOffset, dwResumeCheck;
 
-			if (ft->sending)
+			if (ft->flags & OFTF_SENDING)
 			{ // just sanity check - this is only for receiving client
 				NetLog_Direct("Error: Invalid Packet, closing.");
 				CloseOscarConnection(oc);
@@ -2181,10 +2195,10 @@ void CIcqProto::handleOFT2FramePacket(oscar_connection *oc, WORD datatype, BYTE 
 
 	case OFT_TYPE_DONE:
 		{ // File done
-			oscar_filetransfer *ft = oc->ft;
-
 			oc->status = OCS_NEGOTIATION;
 			oc->wantIdleTime = 0;
+
+      ft->flags &= ~OFTF_FILE_SENDING;
 
 			NetLog_Direct("OFT: File sent successfully.");
 
@@ -2286,13 +2300,13 @@ void CIcqProto::oft_sendFileData(oscar_connection *oc)
   {
 		icq_packet packet;
 
-	packet.wLen = bytesRead;
-	init_generic_packet(&packet, 0);
-	packBuffer(&packet, buf, (WORD)bytesRead); // we are sending raw data
-	sendOscarPacket(oc, &packet);
+		packet.wLen = bytesRead;
+		init_generic_packet(&packet, 0);
+		packBuffer(&packet, buf, (WORD)bytesRead); // we are sending raw data
+		sendOscarPacket(oc, &packet);
 
-	ft->qwBytesDone += bytesRead;
-	ft->qwFileBytesDone += bytesRead;
+		ft->qwBytesDone += bytesRead;
+		ft->qwFileBytesDone += bytesRead;
   }
 
 	if (GetTickCount() > ft->dwLastNotify + 700 || oc->wantIdleTime == 0 || ft->qwFileBytesDone == ft->qwThisFileSize)

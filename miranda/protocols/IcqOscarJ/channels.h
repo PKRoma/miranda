@@ -2,10 +2,10 @@
 //                ICQ plugin for Miranda Instant Messenger
 //                ________________________________________
 // 
-// Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
-// Copyright © 2001,2002 Jon Keating, Richard Hughes
-// Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005,2006 Joe Kucera
+// Copyright © 2000-2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
+// Copyright © 2001-2002 Jon Keating, Richard Hughes
+// Copyright © 2002-2004 Martin Öberg, Sam Kothari, Robert Rainwater
+// Copyright © 2004-2010 Joe Kucera
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -19,22 +19,36 @@
 // 
 // You should have received a copy of the GNU General Public License
 // along with this program; if not, write to the Free Software
-// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 //
 // -----------------------------------------------------------------------------
 //
-// File name      : $Source: /cvsroot/miranda/miranda/protocols/IcqOscarJ/channels.h,v $
+// File name      : $URL$
 // Revision       : $Revision$
 // Last change on : $Date$
 // Last change by : $Author$
 //
 // DESCRIPTION:
 //
-//  Describe me here please...
+//  Header for FLAP Channel packet handlers
 //
 // -----------------------------------------------------------------------------
 
 #ifndef __CHANNELS_H
 #define __CHANNELS_H
+
+
+struct snac_header 
+{
+  BOOL  bValid;
+  WORD  wFamily;
+  WORD  wSubtype;
+  WORD  wFlags;
+  DWORD dwRef;
+  WORD  wVersion;
+};
+
+int unpackSnacHeader(snac_header *pSnacHeader, BYTE **pBuffer, WORD *pwBufferLength);
+
 
 #endif /* __CHANNELS_H */

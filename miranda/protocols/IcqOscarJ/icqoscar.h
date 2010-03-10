@@ -5,7 +5,7 @@
 // Copyright © 2000-2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001-2002 Jon Keating, Richard Hughes
 // Copyright © 2002-2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004-2009 Joe Kucera
+// Copyright © 2004-2010 Joe Kucera
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -19,7 +19,7 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with this program; if not, write to the Free Software
-// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 //
 // -----------------------------------------------------------------------------
 //
@@ -102,7 +102,6 @@
 #include "i18n.h"
 #include "icq_db.h"
 #include "cookies.h"
-#include "capabilities.h"
 #include "icq_packet.h"
 #include "utilities.h"
 #include "oscar_filetransfer.h"
@@ -115,24 +114,26 @@
 #include "icq_http.h"
 #include "icq_fieldnames.h"
 #include "icq_constants.h"
+#include "capabilities.h"
 #include "guids.h"
 #include "icq_infoupdate.h"
-#include "icq_avatar.h"
 #include "init.h"
 #include "stdpackets.h"
 #include "directpackets.h"
 #include "tlv.h"
+#include "channels.h"
 #include "families.h"
 #include "m_icq.h"
 #include "icq_advsearch.h"
 #include "icq_uploadui.h"
 #include "log.h"
-#include "channels.h"
 #include "UI/askauthentication.h"
 #include "UI/userinfotab.h"
 #include "UI/loginpassword.h"
 
 #include "icq_rates.h"
+
+#include "icq_avatar.h"
 
 #include "changeinfo/changeinfo.h"
 #include "icq_popups.h"

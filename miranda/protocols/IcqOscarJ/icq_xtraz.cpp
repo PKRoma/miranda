@@ -5,7 +5,7 @@
 // Copyright © 2000-2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001-2002 Jon Keating, Richard Hughes
 // Copyright © 2002-2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004-2009 Joe Kucera
+// Copyright © 2004-2010 Joe Kucera
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -19,7 +19,7 @@
 // 
 // You should have received a copy of the GNU General Public License
 // along with this program; if not, write to the Free Software
-// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 //
 // -----------------------------------------------------------------------------
 //
@@ -36,22 +36,21 @@
 
 #include "icqoscar.h"
 
+
 void CIcqProto::handleXtrazNotify(DWORD dwUin, DWORD dwMID, DWORD dwMID2, WORD wCookie, char* szMsg, int nMsgLen, BOOL bThruDC)
 {
-	char *szWork, *szEnd, *szNotify, *szQuery;
-	int nNotifyLen, nQueryLen;
-	HANDLE hContact;
+	char *szNotify = strstrnull(szMsg, "<NOTIFY>");
+	char *szQuery = strstrnull(szMsg, "<QUERY>");
 
-	szNotify = strstrnull(szMsg, "<NOTIFY>");
-	szQuery = strstrnull(szMsg, "<QUERY>");
-
-	hContact = HContactFromUIN(dwUin, NULL);
+	HANDLE hContact = HContactFromUIN(dwUin, NULL);
 	if (hContact) // user sent us xtraz, he supports it
 		SetContactCapabilities(hContact, CAPF_XTRAZ);
 
 	if (szNotify && szQuery)
-	{
-		// valid request
+  { // valid request
+		char *szWork, *szEnd;
+		int nNotifyLen, nQueryLen;
+
 		szNotify += 8;
 		szQuery += 7;
 		szEnd = strstrnull(szMsg, "</NOTIFY>");
@@ -75,8 +74,8 @@ void CIcqProto::handleXtrazNotify(DWORD dwUin, DWORD dwMID, DWORD dwMID2, WORD w
 
 			if (!stricmpnull(szWork, "srvMng") && strstrnull(szNotify, "AwayStat"))
 			{
-				char* szSender = strstrnull(szNotify, "<senderId>");
-				char* szEndSend = strstrnull(szNotify, "</senderId>");
+				char *szSender = strstrnull(szNotify, "<senderId>");
+				char *szEndSend = strstrnull(szNotify, "</senderId>");
 
 				if (szSender && szEndSend)
 				{
@@ -85,27 +84,24 @@ void CIcqProto::handleXtrazNotify(DWORD dwUin, DWORD dwMID, DWORD dwMID2, WORD w
 
 					if ((DWORD)atoi(szSender) == dwUin)
 					{
-						char *szResponse;
-						int nResponseLen;
-						char *szXName, *szXMsg;
-						char *tmp;
-						BYTE dwXId = getContactXStatus(NULL);
+            BYTE dwXId = m_bXStatusEnabled ? getContactXStatus(NULL) : 0;
 
 						if (dwXId && validateStatusMessageRequest(hContact, MTYPE_SCRIPT_NOTIFY))
 						{ // apply privacy rules
-							NotifyEventHooks(hsmsgrequest, (WPARAM)MTYPE_SCRIPT_NOTIFY, (LPARAM)dwUin);
+							NotifyEventHooks(m_modeMsgsEvent, (WPARAM)MTYPE_SCRIPT_NOTIFY, (LPARAM)dwUin);
 
-							tmp = getSettingStringUtf(NULL, DBSETTING_XSTATUS_NAME, "");
-							szXName = MangleXml((char*)tmp, strlennull(tmp));
-							SAFE_FREE((void**)&tmp);
+							char *tmp = getSettingStringUtf(NULL, DBSETTING_XSTATUS_NAME, "");
+							char *szXName = MangleXml(tmp, strlennull(tmp));
+							SAFE_FREE(&tmp);
+
 							tmp = getSettingStringUtf(NULL, DBSETTING_XSTATUS_MSG, "");
-							szXMsg = MangleXml((char*)tmp, strlennull(tmp));
-							SAFE_FREE((void**)&tmp);
+							char *szXMsg = MangleXml(tmp, strlennull(tmp));
+							SAFE_FREE(&tmp);
 
-							nResponseLen = 212 + strlennull(szXName) + strlennull(szXMsg) + UINMAXLEN + 2;
-							szResponse = (char*)_alloca(nResponseLen + 1);
+							int nResponseLen = 212 + strlennull(szXName) + strlennull(szXMsg) + UINMAXLEN + 2;
+							char *szResponse = (char*)_alloca(nResponseLen + 1);
 							// send response
-							nResponseLen = null_snprintf(szResponse, nResponseLen, 
+							null_snprintf(szResponse, nResponseLen, 
 								"<ret event='OnRemoteNotification'>"
 								"<srv><id>cAwaySrv</id>"
 								"<val srv_id='cAwaySrv'><Root>"
@@ -116,26 +112,53 @@ void CIcqProto::handleXtrazNotify(DWORD dwUin, DWORD dwMID, DWORD dwMID2, WORD w
 								"<desc>%s</desc></Root></val></srv></ret>",
 								m_dwLocalUIN, dwXId, szXName, szXMsg);
 
-							SAFE_FREE((void**)&szXName);
-							SAFE_FREE((void**)&szXMsg);
+							SAFE_FREE(&szXName);
+							SAFE_FREE(&szXMsg);
 
-							{
-								rate_record rr = {0};
+              struct rates_xstatus_response: public rates_queue_item {
+              protected:
+                virtual rates_queue_item* copyItem(rates_queue_item *aDest = NULL) {
+                  rates_xstatus_response *pDest = (rates_xstatus_response*)aDest;
+                  if (!pDest)
+                    pDest = new rates_xstatus_response(ppro, wGroup);
 
-								rr.bType = RIT_XSTATUS_RESPONSE;
-								rr.dwUin = dwUin;
-								rr.dwMid1 = dwMID;
-								rr.dwMid2 = dwMID2;
-								rr.wCookie = wCookie;
-								rr.szData = szResponse;
-								rr.bThruDC = bThruDC;
-								rr.nRequestType = 0x102;
-								EnterCriticalSection(&ratesMutex);
-								rr.wGroup = m_rates->getGroupFromSNAC(ICQ_MSG_FAMILY, ICQ_MSG_RESPONSE);
-								LeaveCriticalSection(&ratesMutex);
-								if (bThruDC || !handleRateItem(&rr, TRUE))
-									SendXtrazNotifyResponse(dwUin, dwMID, dwMID2, wCookie, szResponse, nResponseLen, bThruDC);
-							}
+                  pDest->bThruDC = bThruDC;
+                  pDest->dwMsgID1 = dwMsgID1;
+                  pDest->dwMsgID2 = dwMsgID2;
+                  pDest->wCookie = wCookie;
+                  pDest->szResponse = null_strdup(szResponse);
+
+                  return rates_queue_item::copyItem(pDest);
+                };
+              public:
+                rates_xstatus_response(CIcqProto *ppro, WORD wGroup): rates_queue_item(ppro, wGroup), szResponse(NULL) { };
+                virtual ~rates_xstatus_response() { if (bCreated) SAFE_FREE(&szResponse); };
+
+                virtual void execute() {
+									ppro->SendXtrazNotifyResponse(dwUin, dwMsgID1, dwMsgID2, wCookie, szResponse, strlennull(szResponse), bThruDC);
+                };
+
+                BOOL bThruDC;
+                DWORD dwMsgID1;
+                DWORD dwMsgID2;
+                WORD wCookie;
+                char *szResponse;
+              };
+
+				      EnterCriticalSection(&m_ratesMutex);
+              WORD wGroup = m_rates->getGroupFromSNAC(ICQ_MSG_FAMILY, ICQ_MSG_RESPONSE);
+				      LeaveCriticalSection(&m_ratesMutex);
+
+      				rates_xstatus_response rr(this, wGroup);
+              rr.hContact = hContact;
+				      rr.dwUin = dwUin;
+              rr.bThruDC = bThruDC;
+				      rr.dwMsgID1 = dwMID;
+				      rr.dwMsgID2 = dwMID2;
+				      rr.wCookie = wCookie;
+              rr.szResponse = szResponse;
+
+      				handleRateItem(&rr, RQT_RESPONSE, 0, !bThruDC);
 						}
 						else if (dwXId)
 							NetLog_Server("Privacy: Ignoring XStatus request");
@@ -154,12 +177,13 @@ void CIcqProto::handleXtrazNotify(DWORD dwUin, DWORD dwMID, DWORD dwMID2, WORD w
 		else 
 			NetLog_Server("Error: Missing PluginID in Xtraz message");
 
-		SAFE_FREE((void**)&szNotify);
-		SAFE_FREE((void**)&szQuery);
+		SAFE_FREE(&szNotify);
+		SAFE_FREE(&szQuery);
 	}
 	else 
 		NetLog_Server("Error: Invalid Xtraz Notify message");
 }
+
 
 void CIcqProto::handleXtrazNotifyResponse(DWORD dwUin, HANDLE hContact, WORD wCookie, char* szMsg, int nMsgLen)
 {
@@ -240,9 +264,9 @@ NextVal:
 							szOldXName = getSettingStringUtf(hContact, DBSETTING_XSTATUS_NAME, NULL);
 							if (strcmpnull(szOldXName, szXName))
 								bChanged = TRUE;
-							SAFE_FREE((void**)&szOldXName);
+							SAFE_FREE(&szOldXName);
 							setSettingStringUtf(hContact, DBSETTING_XSTATUS_NAME, szXName);
-							SAFE_FREE((void**)&szXName);
+							SAFE_FREE(&szXName);
 							*szEnd = ' ';
 						}
 						szNode = strstrnull(szWork, "<desc>");
@@ -259,9 +283,9 @@ NextVal:
 							szOldXMsg = getSettingStringUtf(hContact, DBSETTING_XSTATUS_NAME, NULL);
 							if (strcmpnull(szOldXMsg, szXMsg))
 								bChanged = TRUE;
-							SAFE_FREE((void**)&szOldXMsg);
+							SAFE_FREE(&szOldXMsg);
 							setSettingStringUtf(hContact, DBSETTING_XSTATUS_MSG, szXMsg);
-							SAFE_FREE((void**)&szXMsg);
+							SAFE_FREE(&szXMsg);
 						}
 						BroadcastAck(hContact, ICQACKTYPE_XSTATUS_RESPONSE, ACKRESULT_SUCCESS, (HANDLE)wCookie, 0);
 
@@ -290,11 +314,12 @@ NextVal:
 		else
 			NetLog_Server("Error: Missing serverId in Xtraz response");
 
-		SAFE_FREE((void**)&szMem);
+		SAFE_FREE(&szMem);
 	}
 	else
 		NetLog_Server("Error: Invalid Xtraz Notify response");
 }
+
 
 static char* getXmlPidItem(const char* szData, int nLen)
 {
@@ -311,6 +336,7 @@ static char* getXmlPidItem(const char* szData, int nLen)
 	}
 	return NULL;
 }
+
 
 void CIcqProto::handleXtrazInvitation(DWORD dwUin, DWORD dwMID, DWORD dwMID2, WORD wCookie, char* szMsg, int nMsgLen, BOOL bThruDC)
 {
@@ -329,8 +355,9 @@ void CIcqProto::handleXtrazInvitation(DWORD dwUin, DWORD dwMID, DWORD dwMID2, WO
 	{
 		NetLog_Uni(bThruDC, "Error: Unknown plugin \"%s\" in Xtraz message", szPluginID);
 	}
-	SAFE_FREE((void**)&szPluginID);
+	SAFE_FREE(&szPluginID);
 }
+
 
 void CIcqProto::handleXtrazData(DWORD dwUin, DWORD dwMID, DWORD dwMID2, WORD wCookie, char* szMsg, int nMsgLen, BOOL bThruDC)
 {
@@ -390,7 +417,7 @@ void CIcqProto::handleXtrazData(DWORD dwUin, DWORD dwMID, DWORD dwMID2, WORD wCo
 
 					CallService(MS_PROTO_CHAINRECV, 0, (LPARAM)&ccs);
 				}
-				SAFE_FREE((void**)&szWork);
+				SAFE_FREE(&szWork);
 			}
 			else
 				NetLog_Uni(bThruDC, "Error: Non-standard greeting card message");
@@ -402,8 +429,9 @@ void CIcqProto::handleXtrazData(DWORD dwUin, DWORD dwMID, DWORD dwMID2, WORD wCo
 	{
 		NetLog_Uni(bThruDC, "Error: Unknown plugin \"%s\" in Xtraz message", szPluginID);
 	}
-	SAFE_FREE((void**)&szPluginID);
+	SAFE_FREE(&szPluginID);
 }
+
 
 // Functions really sending Xtraz stuff
 DWORD CIcqProto::SendXtrazNotifyRequest(HANDLE hContact, char* szQuery, char* szNotify, int bForced)
@@ -442,6 +470,7 @@ DWORD CIcqProto::SendXtrazNotifyRequest(HANDLE hContact, char* szQuery, char* sz
 	return dwCookie;
 }
 
+
 void CIcqProto::SendXtrazNotifyResponse(DWORD dwUin, DWORD dwMID, DWORD dwMID2, WORD wCookie, char* szResponse, int nResponseLen, BOOL bThruDC)
 {
 	char *szResBody = MangleXml(szResponse, nResponseLen);
@@ -451,12 +480,12 @@ void CIcqProto::SendXtrazNotifyResponse(DWORD dwUin, DWORD dwMID, DWORD dwMID2, 
 
 	if (hContact != INVALID_HANDLE_VALUE && !CheckContactCapabilities(hContact, CAPF_XTRAZ))
 	{
-		SAFE_FREE((void**)&szResBody);
+		SAFE_FREE(&szResBody);
 		return; // Contact does not support xtraz, do not send anything
 	}
 
 	nBodyLen = null_snprintf(szBody, nBodyLen, "<NR><RES>%s</RES></NR>", szResBody);
-	SAFE_FREE((void**)&szResBody);
+	SAFE_FREE(&szResBody);
 
 	// Was request received thru DC and have we a open DC, send through that
 	if (bThruDC && IsDirectConnectionOpen(hContact, DIRECTCONN_STANDARD, 0))

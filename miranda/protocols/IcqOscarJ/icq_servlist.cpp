@@ -5,7 +5,7 @@
 // Copyright © 2000-2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001-2002 Jon Keating, Richard Hughes
 // Copyright © 2002-2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004-2009 Joe Kucera
+// Copyright © 2004-2010 Joe Kucera
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -19,7 +19,7 @@
 // 
 // You should have received a copy of the GNU General Public License
 // along with this program; if not, write to the Free Software
-// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 //
 // -----------------------------------------------------------------------------
 //
@@ -132,7 +132,7 @@ void __cdecl CIcqProto::servlistQueueThread(void *param)
     wItemAction = (WORD)(pItem->pItems[0]->dwOperation & SSOF_ACTIONMASK);
     bItemDouble = pItem->pItems[0]->dwOperation & SSOG_DOUBLE;
     // check item rate - too high -> sleep
-    EnterCriticalSection(&ratesMutex);
+    EnterCriticalSection(&m_ratesMutex);
     {
       WORD wRateGroup = m_rates->getGroupFromSNAC(ICQ_LISTS_FAMILY, wItemAction);
       int nRateLevel = bItemDouble ? RML_IDLE_30 : RML_IDLE_10;
@@ -141,7 +141,7 @@ void __cdecl CIcqProto::servlistQueueThread(void *param)
       { // the rate is higher, keep sleeping
         int nDelay = m_rates->getDelayToLimitLevel(wRateGroup, nRateLevel);
 
-        LeaveCriticalSection(&ratesMutex);
+        LeaveCriticalSection(&m_ratesMutex);
         // do not keep the queue frozen
         LeaveCriticalSection(&servlistQueueMutex);
         if (nDelay < 10) nDelay = 10;
@@ -151,10 +151,10 @@ void __cdecl CIcqProto::servlistQueueThread(void *param)
         SleepEx(nDelay, FALSE);
         // check if the rate is now ok
         EnterCriticalSection(&servlistQueueMutex);
-        EnterCriticalSection(&ratesMutex);
+        EnterCriticalSection(&m_ratesMutex);
       }    
     }
-    LeaveCriticalSection(&ratesMutex);
+    LeaveCriticalSection(&m_ratesMutex);
     { // setup group packet(s) & cookie
       int totalSize = 0;
       int i;
@@ -1602,9 +1602,7 @@ void CIcqProto::setServListGroupLinkID(const char *szPath, WORD wGroupID)
 int CIcqProto::getCListGroupHandle(const char *szGroup)
 {
   char *pszGroup = (char*)szGroup;
-  TCHAR *tszGroup = NULL;
-  int hParentGroup = 0;
-  int hGroup;
+  int hParentGroup = 0, hGroup = 0;
 
   if (!strlennull(szGroup)) return 0; // no group
 
@@ -1619,13 +1617,11 @@ int CIcqProto::getCListGroupHandle(const char *szGroup)
     pszGroup = ++szSeparator;
   }
 
-  if (gbUnicodeCore)
-    tszGroup = (TCHAR*)make_unicode_string(pszGroup);
-  else
-    utf8_decode(pszGroup, (char**)&tszGroup);
+  int size = strlennull(szGroup) + 2;
+  TCHAR *tszGroup = (TCHAR*)_alloca(size * sizeof(TCHAR));
 
-  hGroup = CallService(MS_CLIST_GROUPCREATE, hParentGroup, (LPARAM)tszGroup); // 0.7+
-  SAFE_FREE((void**)&tszGroup);
+  if (utf8_to_tchar_static(pszGroup, tszGroup, size))
+    hGroup = CallService(MS_CLIST_GROUPCREATE, hParentGroup, (LPARAM)tszGroup); // 0.7+
 
 #ifdef _DEBUG
   NetLog_Server("Obtained CList group \"%s\" handle %x", szGroup, hGroup);
@@ -1633,6 +1629,7 @@ int CIcqProto::getCListGroupHandle(const char *szGroup)
 
   return hGroup;
 }
+
 
 // determine if the specified clist group path exists
 //!! this function is not thread-safe due to the use of cli->pfnGetGroupName()
@@ -1644,37 +1641,33 @@ int CIcqProto::getCListGroupExists(const char *szGroup)
   if (ServiceExists(MS_CLIST_RETRIEVE_INTERFACE))
     clint = (CLIST_INTERFACE*)CallService(MS_CLIST_RETRIEVE_INTERFACE, 0, 0);
 
-  if (gbUnicodeCore && clint && clint->version >= 1)
-  { // we've got unicode interface, use it
-    int i;
-    WCHAR *usGroup = make_unicode_string(szGroup);
+  if (clint && clint->version >= 1)
+  { // we've got clist interface, use it
+    int size = strlennull(szGroup) + 2;
+    TCHAR *tszGroup = (TCHAR*)_alloca(size);
 
-    if (usGroup)
-    {
-      for (i = 1; TRUE; i++)
+    if (utf8_to_tchar_static(szGroup, tszGroup, size))
+      for (int i = 1; TRUE; i++)
       {
-        WCHAR *pusGroup = (WCHAR*)clint->pfnGetGroupName(i, NULL);
+        TCHAR *tszGroupName = (TCHAR*)clint->pfnGetGroupName(i, NULL);
 
-        if (!pusGroup) break;
+        if (!tszGroupName) break;
 
-        if (!wcscmp(usGroup, pusGroup))
-        { // we found the group
+        if (!_tcscmp(tszGroup, tszGroupName))
+        { // we have found the group
           hGroup = i;
           break;
         }
       }
-    }
-    SAFE_FREE((void**)&usGroup);
   }
   else
   { // old ansi version - no other way
     int size = strlennull(szGroup) + 2;
-    char* aszGroup = (char*)_alloca(size);
-    int i;
+    char *aszGroup = (char*)_alloca(size);
 
     utf8_decode_static(szGroup, aszGroup, size);
 
-    for (i = 1; TRUE; i++)
+    for (int i = 1; TRUE; i++)
     {
       char *paszGroup = (char*)CallService(MS_CLIST_GROUPGETNAME, i, 0);
 
@@ -2823,7 +2816,7 @@ int CIcqProto::ServListDbContactDeleted(WPARAM wParam, LPARAM lParam)
 int CIcqProto::ServListCListGroupChange(WPARAM wParam, LPARAM lParam)
 {
   HANDLE hContact = (HANDLE)wParam;
-  CLISTGROUPCHANGE* grpchg = (CLISTGROUPCHANGE*)lParam;
+  CLISTGROUPCHANGE *grpchg = (CLISTGROUPCHANGE*)lParam;
 	
   if (!icqOnline() || !m_bSsiEnabled || bIsSyncingCL)
     return 0;
@@ -2837,19 +2830,19 @@ int CIcqProto::ServListCListGroupChange(WPARAM wParam, LPARAM lParam)
   { // change made to group
     if (grpchg->pszNewName == NULL && grpchg->pszOldName != NULL)
     { // group removed
-      char* szOldName = mtchar_to_utf8(grpchg->pszOldName);
+      char *szOldName = tchar_to_utf8(grpchg->pszOldName);
       WORD wGroupId = getServListGroupLinkID(szOldName);
       if (wGroupId)
       { // the group is known, remove from server
         servlistPostPacket(NULL, 0, SSO_BEGIN_OPERATION, 100); // start server modifications here
         servlistRemoveGroup(szOldName, wGroupId);
       }
-			SAFE_FREE((void**)&szOldName);
+			SAFE_FREE(&szOldName);
 		}
 		else if (grpchg->pszNewName != NULL && grpchg->pszOldName != NULL)
 		{ // group renamed
-			char* szNewName = mtchar_to_utf8(grpchg->pszNewName);
-			char* szOldName = mtchar_to_utf8(grpchg->pszOldName);
+			char *szNewName = tchar_to_utf8(grpchg->pszNewName);
+			char *szOldName = tchar_to_utf8(grpchg->pszOldName);
 			WORD wGroupId = getServListGroupLinkID(szOldName);
 
 #ifdef _DEBUG
@@ -2859,18 +2852,18 @@ int CIcqProto::ServListCListGroupChange(WPARAM wParam, LPARAM lParam)
 			{ // group is known, rename on server
 			  servlistRenameGroup(szOldName, wGroupId, szNewName);
       }
-			SAFE_FREE((void**)&szOldName);
-			SAFE_FREE((void**)&szNewName);
+			SAFE_FREE(&szOldName);
+			SAFE_FREE(&szNewName);
 		}
 	}
 	else
 	{ // change to contact
 		if (IsICQContact(hContact))
 		{ // our contact, fine move on the server as well
-			char* szNewName = grpchg->pszNewName ? mtchar_to_utf8(grpchg->pszNewName) : NULL;
+			char *szNewName = grpchg->pszNewName ? tchar_to_utf8(grpchg->pszNewName) : NULL;
 			
       servlistMoveContact(hContact, szNewName);
-			SAFE_FREE((void**)&szNewName);
+			SAFE_FREE(&szNewName);
 		}
 	}
 	return 0;

@@ -5,7 +5,7 @@
 // Copyright © 2000-2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001-2002 Jon Keating, Richard Hughes
 // Copyright © 2002-2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004-2009 Joe Kucera
+// Copyright © 2004-2010 Joe Kucera
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -19,7 +19,7 @@
 // 
 // You should have received a copy of the GNU General Public License
 // along with this program; if not, write to the Free Software
-// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 //
 // -----------------------------------------------------------------------------
 //
@@ -380,7 +380,8 @@ static BOOL CALLBACK FillCpCombo(LPSTR str)
 
 static const UINT icqUnicodeControls[] = {IDC_UTFALL,IDC_UTFSTATIC,IDC_UTFCODEPAGE};
 static const UINT icqDCMsgControls[] = {IDC_DCPASSIVE};
-static const UINT icqXStatusControls[] = {IDC_XSTATUSAUTO,IDC_XSTATUSRESET};
+static const UINT icqXStatusControls[] = {IDC_XSTATUSAUTO};
+static const UINT icqCustomStatusControls[] = {IDC_XSTATUSRESET};
 static const UINT icqAimControls[] = {IDC_AIMENABLE};
 
 static INT_PTR CALLBACK DlgProcIcqFeaturesOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
@@ -394,20 +395,23 @@ static INT_PTR CALLBACK DlgProcIcqFeaturesOpts(HWND hwndDlg, UINT msg, WPARAM wP
 		ppro = (CIcqProto*)lParam;
 		SetWindowLongPtr( hwndDlg, GWLP_USERDATA, lParam );
 		{
-			BYTE bData = ppro->getSettingByte(NULL, "UtfEnabled", DEFAULT_UTF_ENABLED);
-			CheckDlgButton(hwndDlg, IDC_UTFENABLE, bData?TRUE:FALSE);
-			CheckDlgButton(hwndDlg, IDC_UTFALL, bData==2?TRUE:FALSE);
-			icq_EnableMultipleControls(hwndDlg, icqUnicodeControls, SIZEOF(icqUnicodeControls), bData?TRUE:FALSE);
+			BYTE byData = ppro->getSettingByte(NULL, "UtfEnabled", DEFAULT_UTF_ENABLED);
+			CheckDlgButton(hwndDlg, IDC_UTFENABLE, byData?TRUE:FALSE);
+			CheckDlgButton(hwndDlg, IDC_UTFALL, byData==2?TRUE:FALSE);
+			icq_EnableMultipleControls(hwndDlg, icqUnicodeControls, SIZEOF(icqUnicodeControls), byData?TRUE:FALSE);
 			LoadDBCheckState(ppro, hwndDlg, IDC_TEMPVISIBLE, "TempVisListEnabled",DEFAULT_TEMPVIS_ENABLED);
 			LoadDBCheckState(ppro, hwndDlg, IDC_SLOWSEND, "SlowSend", DEFAULT_SLOWSEND);
 			LoadDBCheckState(ppro, hwndDlg, IDC_ONLYSERVERACKS, "OnlyServerAcks", DEFAULT_ONLYSERVERACKS);
-			bData = ppro->getSettingByte(NULL, "DirectMessaging", DEFAULT_DCMSG_ENABLED);
-			CheckDlgButton(hwndDlg, IDC_DCENABLE, bData?TRUE:FALSE);
-			CheckDlgButton(hwndDlg, IDC_DCPASSIVE, bData==1?TRUE:FALSE);
-			icq_EnableMultipleControls(hwndDlg, icqDCMsgControls, SIZEOF(icqDCMsgControls), bData?TRUE:FALSE);
-			bData = ppro->getSettingByte(NULL, "XStatusEnabled", DEFAULT_XSTATUS_ENABLED);
-			CheckDlgButton(hwndDlg, IDC_XSTATUSENABLE, bData);
-			icq_EnableMultipleControls(hwndDlg, icqXStatusControls, SIZEOF(icqXStatusControls), bData);
+			byData = ppro->getSettingByte(NULL, "DirectMessaging", DEFAULT_DCMSG_ENABLED);
+			CheckDlgButton(hwndDlg, IDC_DCENABLE, byData?TRUE:FALSE);
+			CheckDlgButton(hwndDlg, IDC_DCPASSIVE, byData==1?TRUE:FALSE);
+			icq_EnableMultipleControls(hwndDlg, icqDCMsgControls, SIZEOF(icqDCMsgControls), byData?TRUE:FALSE);
+			BYTE byXStatusEnabled = ppro->getSettingByte(NULL, "XStatusEnabled", DEFAULT_XSTATUS_ENABLED);
+			CheckDlgButton(hwndDlg, IDC_XSTATUSENABLE, byXStatusEnabled);
+      BYTE byMoodsEnabled = ppro->getSettingByte(NULL, "MoodsEnabled", DEFAULT_MOODS_ENABLED);
+			CheckDlgButton(hwndDlg, IDC_MOODSENABLE, byMoodsEnabled);
+			icq_EnableMultipleControls(hwndDlg, icqXStatusControls, SIZEOF(icqXStatusControls), byXStatusEnabled);
+      icq_EnableMultipleControls(hwndDlg, icqCustomStatusControls, SIZEOF(icqCustomStatusControls), byXStatusEnabled || byMoodsEnabled);
 			LoadDBCheckState(ppro, hwndDlg, IDC_XSTATUSAUTO, "XStatusAuto", DEFAULT_XSTATUS_AUTO);
 			LoadDBCheckState(ppro, hwndDlg, IDC_XSTATUSRESET, "XStatusReset", DEFAULT_XSTATUS_RESET);
 			LoadDBCheckState(ppro, hwndDlg, IDC_KILLSPAMBOTS, "KillSpambots", DEFAULT_KILLSPAM_ENABLED);
@@ -444,7 +448,8 @@ static INT_PTR CALLBACK DlgProcIcqFeaturesOpts(HWND hwndDlg, UINT msg, WPARAM wP
 			break;
 		case IDC_XSTATUSENABLE:
 			icq_EnableMultipleControls(hwndDlg, icqXStatusControls, SIZEOF(icqXStatusControls), IsDlgButtonChecked(hwndDlg, IDC_XSTATUSENABLE));
-			break;
+    case IDC_MOODSENABLE:
+      icq_EnableMultipleControls(hwndDlg, icqCustomStatusControls, SIZEOF(icqCustomStatusControls), IsDlgButtonChecked(hwndDlg, IDC_XSTATUSENABLE) || IsDlgButtonChecked(hwndDlg, IDC_MOODSENABLE));
 		}
 		OptDlgChanged(hwndDlg);
 		break;
@@ -473,6 +478,8 @@ static INT_PTR CALLBACK DlgProcIcqFeaturesOpts(HWND hwndDlg, UINT msg, WPARAM wP
 			ppro->setSettingByte(NULL, "DirectMessaging", ppro->m_bDCMsgEnabled);
 			ppro->m_bXStatusEnabled = (BYTE)IsDlgButtonChecked(hwndDlg, IDC_XSTATUSENABLE);
 			ppro->setSettingByte(NULL, "XStatusEnabled", ppro->m_bXStatusEnabled);
+      ppro->m_bMoodsEnabled = (BYTE)IsDlgButtonChecked(hwndDlg, IDC_MOODSENABLE);
+      ppro->setSettingByte(NULL, "MoodsEnabled", ppro->m_bMoodsEnabled);
 			StoreDBCheckState(ppro, hwndDlg, IDC_XSTATUSAUTO, "XStatusAuto");
 			StoreDBCheckState(ppro, hwndDlg, IDC_XSTATUSRESET, "XStatusReset");
 			StoreDBCheckState(ppro, hwndDlg, IDC_KILLSPAMBOTS , "KillSpambots");

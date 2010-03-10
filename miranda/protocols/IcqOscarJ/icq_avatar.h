@@ -5,7 +5,7 @@
 // Copyright © 2000-2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001-2002 Jon Keating, Richard Hughes
 // Copyright © 2002-2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004-2009 Joe Kucera
+// Copyright © 2004-2010 Joe Kucera
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -19,7 +19,7 @@
 // 
 // You should have received a copy of the GNU General Public License
 // along with this program; if not, write to the Free Software
-// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 //
 // -----------------------------------------------------------------------------
 //
@@ -30,23 +30,99 @@
 //
 // DESCRIPTION:
 //
-//  Describe me here please...
+//  Avatars connection support declarations
 //
 // -----------------------------------------------------------------------------
 
 #ifndef __ICQ_AVATAR_H
 #define __ICQ_AVATAR_H
 
-extern BOOL AvatarsReady;
 
 extern BYTE hashEmptyAvatar[9];
 
+#define AVATAR_HASH_MINI    0x00
 #define AVATAR_HASH_STATIC  0x01
 #define AVATAR_HASH_FLASH   0x08
 #define AVATAR_HASH_PHOTO   0x0C
 
+struct CIcqProto;
+
+struct avatars_server_connection : public lockable_struct
+{
+protected:
+	CIcqProto *ppro;
+	HANDLE hConnection;  // handle to the connection
+	HANDLE hPacketRecver;
+	WORD   wLocalSequence;
+	CRITICAL_SECTION localSeqMutex;
+
+  BOOL   isLoggedIn;
+  BOOL   isActive;
+	BOOL   stopThread; // horrible, but simple - signal for thread to stop
+
+  char  *pCookie;     // auth to server
+	WORD   wCookieLen;
+
+	int    sendServerPacket(icq_packet *pPacket);
+
+	int    handleServerPackets(BYTE *buf, int buflen);
+
+	void   handleLoginChannel(BYTE *buf, WORD datalen);
+	void   handleDataChannel(BYTE *buf, WORD datalen);
+
+	void   handleServiceFam(BYTE *pBuffer, WORD wBufferLength, snac_header *pSnacHeader);
+	void   handleAvatarFam(BYTE *pBuffer, WORD wBufferLength, snac_header *pSnacHeader);
+
+	rates *m_rates;
+  CRITICAL_SECTION m_ratesMutex;
+
+	int    NetLog_Server(const char *fmt,...);
+
+	HANDLE runContact[4];
+	DWORD  runTime[4];
+	int    runCount;
+  void   checkRequestQueue();
+public:
+  avatars_server_connection(CIcqProto *ppro, HANDLE hConnection, char *pCookie, WORD wCookieLen);
+  virtual ~avatars_server_connection();
+
+  void connectionThread();
+  void closeConnection();
+
+  __inline BOOL isPending() { return !isLoggedIn; };
+  __inline BOOL isReady() { return isLoggedIn && isActive && !stopThread; };
+
+  DWORD  sendGetAvatarRequest(HANDLE hContact, DWORD dwUin, char *szUid, const BYTE *hash, unsigned int hashlen, const char *file);
+  DWORD  sendUploadAvatarRequest(HANDLE hContact, WORD wRef, const BYTE *data, unsigned int datalen);
+};
+
+
+struct avatars_request : public void_struct
+{
+	int    type;
+	HANDLE hContact;
+	DWORD  dwUin;
+	uid_str szUid;
+	BYTE  *hash;
+	unsigned int hashlen;
+	char  *szFile;
+	BYTE  *pData;
+	unsigned int cbData;
+	WORD   wRef;
+	DWORD  timeOut;
+	avatars_request *pNext;
+public:
+  avatars_request(int type);
+  virtual ~avatars_request();
+};
+
+#define ART_GET     1
+#define ART_UPLOAD  2
+#define ART_BLOCK   4
+
+
 int  DetectAvatarFormat(const char *szFile);
-void AddAvatarExt(int dwFormat, char* pszDest);
+void AddAvatarExt(int dwFormat, char *pszDest);
 
 BYTE* calcMD5HashOfFile(const char *szFile);
 

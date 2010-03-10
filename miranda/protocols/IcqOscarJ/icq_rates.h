@@ -5,7 +5,7 @@
 // Copyright © 2000-2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001-2002 Jon Keating, Richard Hughes
 // Copyright © 2002-2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004-2009 Joe Kucera
+// Copyright © 2004-2010 Joe Kucera
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -19,7 +19,7 @@
 // 
 // You should have received a copy of the GNU General Public License
 // along with this program; if not, write to the Free Software
-// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 //
 // -----------------------------------------------------------------------------
 //
@@ -30,7 +30,7 @@
 //
 // DESCRIPTION:
 //
-//  Describe me here please...
+//  Rate management
 //
 // -----------------------------------------------------------------------------
 
@@ -54,7 +54,7 @@ struct rates_group
   int nPairs;
 };
 
-struct rates
+struct rates : public void_struct
 {
 private:
   CIcqProto *ppro;
@@ -79,36 +79,75 @@ public:
   void initAckPacket(icq_packet *pPacket);
 };
 
-#define RML_CLEAR   1
-#define RML_ALERT   2
-#define RML_LIMIT   3
-#define RML_IDLE_10 0x10
-#define RML_IDLE_30 0x11
-#define RML_IDLE_50 0x12
-#define RML_IDLE_70 0x13
+#define RML_CLEAR       0x01
+#define RML_ALERT       0x02
+#define RML_LIMIT       0x03
+#define RML_IDLE_10     0x10
+#define RML_IDLE_30     0x11
+#define RML_IDLE_50     0x12
+#define RML_IDLE_70     0x13
 
 // Rates - Level 2
 
-#define RIT_AWAYMSG_RESPONSE 0x01   // response to status msg request
+// queue types
+#define RQT_DEFAULT     0 // standard - pushes all items without much delay
+#define RQT_REQUEST     1 // request - pushes only first item on duplicity
+#define RQT_RESPONSE    2 // response - pushes only last item on duplicity
 
-#define RIT_XSTATUS_REQUEST  0x10   // schedule xstatus details requests
-#define RIT_XSTATUS_RESPONSE 0x11   // response to xstatus details request
-
-struct rate_record
+//
+// generic queue item
+//
+struct rates_queue_item : public void_struct
 {
-  BYTE bType;         // type of request
+  friend struct rates_queue;
+protected:
+  CIcqProto *ppro;
+  BOOL bCreated;
   WORD wGroup;
-  int nRequestType;
-  int nMinDelay;
+
+  virtual BOOL isEqual(rates_queue_item *pItem);
+  virtual rates_queue_item* copyItem(rates_queue_item *pDest = NULL);
+public:
+  rates_queue_item(CIcqProto *ppro, WORD wGroup);
+  virtual ~rates_queue_item();
+
+  BOOL isOverRate(int nLevel);
+
+  virtual void execute();
+
   HANDLE hContact;
   DWORD dwUin;
-  DWORD dwMid1;
-  DWORD dwMid2;
-  WORD wCookie;
-  WORD wVersion;
-  BOOL bThruDC;
-  char *szData;
-  BYTE msgType;
+  char *szUid;
 };
+
+struct rates_queue;
+typedef void (rates_queue::*IcqRateFunc)(void);
+
+//
+// generic item queue (FIFO)
+//
+struct rates_queue : public void_struct
+{
+private:
+  CIcqProto *ppro;
+  const char *szDescr;
+  CRITICAL_SECTION listsMutex;  // we need to be thread safe
+	int pendingListSize;
+	rates_queue_item **pendingList;
+  int duplicates;
+protected:
+  void cleanup();
+  void processQueue();
+  void initDelay(int nDelay, IcqRateFunc delaycode);
+public:
+  rates_queue(CIcqProto *ppro, const char *szDescr, int nLimitLevel, int nWaitLevel, int nDuplicates = 0);
+  ~rates_queue();
+
+  void putItem(rates_queue_item *pItem, int nMinDelay); 
+
+  int limitLevel; // RML_*
+  int waitLevel;
+};
+
 
 #endif /* __ICQ_RATES_H */

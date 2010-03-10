@@ -5,7 +5,7 @@
 // Copyright © 2000-2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001-2002 Jon Keating, Richard Hughes
 // Copyright © 2002-2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004-2009 Joe Kucera
+// Copyright © 2004-2010 Joe Kucera
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -19,7 +19,7 @@
 // 
 // You should have received a copy of the GNU General Public License
 // along with this program; if not, write to the Free Software
-// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 //
 // -----------------------------------------------------------------------------
 //
@@ -88,6 +88,8 @@ size_t __fastcall null_strcut(char *string, size_t maxlen);
 
 size_t __fastcall strlennull(const WCHAR *string);
 int null_snprintf(WCHAR *buffer, size_t count, const WCHAR *fmt, ...);
+WCHAR* __fastcall null_strdup(const WCHAR *string);
+WCHAR* __fastcall null_strcpy(WCHAR *dest, const WCHAR *src, size_t maxlen);
 
 void parseServerAddress(char *szServer, WORD* wPort);
 
@@ -110,6 +112,30 @@ void* __fastcall SAFE_MALLOC(size_t size);
 void* __fastcall SAFE_REALLOC(void* p, size_t size);
 
 __inline static void SAFE_FREE(char** str) { SAFE_FREE((void**)str); }
+__inline static void SAFE_FREE(WCHAR** str) { SAFE_FREE((void**)str); }
+
+struct void_struct
+{
+  __inline void* operator new(size_t size) { return SAFE_MALLOC(size); }
+  __inline void operator delete(void *p) { SAFE_FREE(&p); }
+
+  virtual ~void_struct() {};
+};
+
+struct lockable_struct: public void_struct
+{
+private:
+  int nLockCount;
+public:
+  lockable_struct(): void_struct() { _Lock(); };
+  virtual ~lockable_struct() {};
+
+  void _Lock() { nLockCount++; };
+  void _Release() { nLockCount--; if (!nLockCount) delete this; };
+};
+
+void __fastcall SAFE_DELETE(void_struct **p);
+void __fastcall SAFE_DELETE(lockable_struct **p);
 
 DWORD ICQWaitForSingleObject(HANDLE hHandle, DWORD dwMilliseconds, int bWaitAlways = FALSE);
 
@@ -127,9 +153,10 @@ WORD GetMyStatusFlags();
 /* Unicode FS utility functions */
 
 int IsValidRelativePath(const char *filename);
-char *ExtractFileName(const char *fullname);
-char *FileNameToUtf(const TCHAR *filename);
+const char* ExtractFileName(const char *fullname);
+char* FileNameToUtf(const TCHAR *filename);
 
+int FileAccessUtf(const char *path, int mode);
 int FileStatUtf(const char *path, struct _stati64 *buffer);
 int MakeDirUtf(const char *dir);
 int OpenFileUtf(const char *filename, int oflag, int pmode);

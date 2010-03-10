@@ -163,12 +163,12 @@ FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     GROUPBOX        "Messaging",IDC_STATIC,4,0,302,94
     CONTROL         "Enable unicode messaging support",IDC_UTFENABLE,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,12,14,288,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,12,12,288,10
     CONTROL         "Send all messages in unicode if possible",IDC_UTFALL,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,26,288,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,24,288,10
     RTEXT           "Use this codepage for Ansi <-> Unicode translation :",
-                    IDC_UTFSTATIC,12,40,174,10
-    COMBOBOX        IDC_UTFCODEPAGE,190,38,107,51,CBS_DROPDOWNLIST | 
+                    IDC_UTFSTATIC,12,38,174,10
+    COMBOBOX        IDC_UTFCODEPAGE,190,36,107,51,CBS_DROPDOWNLIST | 
                     WS_VSCROLL | WS_TABSTOP
     CONTROL         "Make me temporarily visible to contacts I send message to",
                     IDC_TEMPVISIBLE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,
@@ -179,25 +179,25 @@ BEGIN
     CONTROL         "Use only server's acknowledgement (faster)",
                     IDC_ONLYSERVERACKS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
                     12,77,288,10
-    GROUPBOX        "Peer-to-peer Messaging",IDC_STATIC,4,95,302,43
+    GROUPBOX        "Peer-to-peer Messaging",IDC_STATIC,4,95,302,41
     CONTROL         "Enable peer-to-peer message connections",IDC_DCENABLE,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,109,288,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,107,288,10
     CONTROL         "Passive mode, i.e. do not initiate new connections",
                     IDC_DCPASSIVE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,
-                    121,288,10
-    GROUPBOX        "Extra Features",IDC_STATIC,4,139,302,91
-    CONTROL         "Enable Custom status support",IDC_XSTATUSENABLE,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,12,153,288,10
+                    119,288,10
+    GROUPBOX        "Extra Features",IDC_STATIC,4,137,302,93
+    CONTROL         "Enable Custom status support for xtraz",IDC_XSTATUSENABLE,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,12,149,288,10
+    CONTROL         "Enable Custom status support for moods",IDC_MOODSENABLE,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,12,161,288,10
     CONTROL         "Reset Custom status on status change",IDC_XSTATUSRESET,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,165,288, 10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,175,288, 10
     CONTROL         "Auto-retrieve Custom status details",IDC_XSTATUSAUTO,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,177,288,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,187,288,10
     CONTROL         "Block known Spam Bots",IDC_KILLSPAMBOTS,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,12,191,288,10
-    CONTROL         "Enable AIM support",IDC_AIMENABLE,"Button",
-                    BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,12,205,288,10
-    LTEXT           "Note: The support is VERY limited, only messaging and status supported.",
-                    IDC_STATIC,12,217,288,10,WS_DISABLED
+                    BS_AUTOCHECKBOX | WS_TABSTOP,12,201,288,10
+    CONTROL         "Enable AIM contacts support",IDC_AIMENABLE,"Button",
+                    BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,12,215,288,10
 END
 
 IDD_OPT_ICQPRIVACY DIALOGEX 0, 0, 310, 234
@@ -647,8 +647,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 0,5,1,1
- PRODUCTVERSION 0,8,0,0
+ FILEVERSION 0,5,1,4
+ PRODUCTVERSION 0,9,0,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -665,12 +665,12 @@ BEGIN
         BEGIN
             VALUE "Comments", "Licensed under the terms of the GNU General Public License"
             VALUE "FileDescription", "ICQ protocol plugin for Miranda IM, enhanced"
-            VALUE "FileVersion", "0, 5, 1, 1"
+            VALUE "FileVersion", "0, 5, 1, 4"
             VALUE "InternalName", "ICQJ protocol plugin for Miranda IM"
-            VALUE "LegalCopyright", "Copyright (C) 2000-2009 Joe Kucera, Angeli-Ka, Bio, Martin Öberg, Richard Hughes, Jon Keating"
+            VALUE "LegalCopyright", "Copyright (C) 2000-2010 Joe Kucera, Angeli-Ka, Bio, Martin Öberg, Richard Hughes, Jon Keating"
             VALUE "OriginalFilename", "ICQ.dll"
             VALUE "ProductName", "ICQ Protocol Support"
-            VALUE "ProductVersion", "0, 8, 0, 0"
+            VALUE "ProductVersion", "0, 9, 0, 0"
         END
     END
     BLOCK "VarFileInfo"

@@ -5,7 +5,7 @@
 // Copyright © 2000-2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001-2002 Jon Keating, Richard Hughes
 // Copyright © 2002-2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004-2009 Joe Kucera
+// Copyright © 2004-2010 Joe Kucera
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -19,7 +19,7 @@
 // 
 // You should have received a copy of the GNU General Public License
 // along with this program; if not, write to the Free Software
-// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 //
 // -----------------------------------------------------------------------------
 //
@@ -30,7 +30,7 @@
 //
 // DESCRIPTION:
 //
-//  Describe me here please...
+//  OSCAR File-Transfers headers
 //
 // -----------------------------------------------------------------------------
 
@@ -58,11 +58,19 @@ struct oft_file_record
 char *FindFilePathContainer(const char **files, int iFile, char *szContainer);
 
 
+// file-transfer status flags
+#define OFTF_INITIALIZED            0x0001  // connection established (ack received)
+#define OFTF_SENDING                0x0002  // sending files (receiving otherwise)
+#define OFTF_FILE_REQUEST_SENT      0x0004  // request sent (sending only)
+#define OFTF_FILE_REQUEST_RECEIVED  0x0008  // first request processed (receiving only)
+#define OFTF_FILE_SENDING           0x0010  // sending file contents
+#define OFTF_FILE_RECEIVING         0x0020  // receiving file contents
+#define OFTF_FILE_DONE              0x0040  // file finished
+
 struct oscar_filetransfer: public basic_filetransfer
 {
 	HANDLE hContact;
-	int initialized;
-	int sending;
+	int flags; // combination of OFTF_*
 	int containerCount;
 	char **file_containers;
 	oft_file_record *files;
@@ -111,12 +119,12 @@ struct oscar_filetransfer: public basic_filetransfer
 	int resumeAction;
 };
 
-#define OFT_TYPE_REQUEST        0x0101 // I am going to send you this file, is that ok?
-#define OFT_TYPE_READY          0x0202 // Yes, it is ok for you to send me that file
-#define OFT_TYPE_DONE           0x0204 // I received that file with no problems
-#define OFT_TYPE_RESUMEREQUEST  0x0205 // Resume transferring from position
-#define OFT_TYPE_RESUMEREADY    0x0106 // Ok, I am ready to send it
-#define OFT_TYPE_RESUMEACK      0x0207 // Fine, ready to receive
+#define OFT_TYPE_REQUEST            0x0101 // I am going to send you this file, is that ok?
+#define OFT_TYPE_READY              0x0202 // Yes, it is ok for you to send me that file
+#define OFT_TYPE_DONE               0x0204 // I received that file with no problems
+#define OFT_TYPE_RESUMEREQUEST      0x0205 // Resume transferring from position
+#define OFT_TYPE_RESUMEREADY        0x0106 // Ok, I am ready to send it
+#define OFT_TYPE_RESUMEACK          0x0207 // Fine, ready to receive
 
 void SafeReleaseFileTransfer(void **ft);
 

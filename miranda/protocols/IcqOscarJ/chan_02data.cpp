@@ -5,7 +5,7 @@
 // Copyright © 2000-2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001-2002 Jon Keating, Richard Hughes
 // Copyright © 2002-2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004-2008 Joe Kucera
+// Copyright © 2004-2010 Joe Kucera
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -19,7 +19,7 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with this program; if not, write to the Free Software
-// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 //
 // -----------------------------------------------------------------------------
 //
@@ -36,7 +36,8 @@
 
 #include "icqoscar.h"
 
-void CIcqProto::handleDataChannel(unsigned char *pBuffer, WORD wBufferLength, serverthread_info *info)
+
+void CIcqProto::handleDataChannel(BYTE *pBuffer, WORD wBufferLength, serverthread_info *info)
 {
 	snac_header snacHeader = {0};
 
@@ -47,7 +48,10 @@ void CIcqProto::handleDataChannel(unsigned char *pBuffer, WORD wBufferLength, se
 	else
 	{
 #ifdef _DEBUG
-		NetLog_Server(" Received SNAC(x%02X,x%02X)", snacHeader.wFamily, snacHeader.wSubtype);
+		if (snacHeader.wFlags & 0x8000)
+			NetLog_Server(" Received SNAC(x%02X,x%02X), version %u", snacHeader.wFamily, snacHeader.wSubtype, snacHeader.wVersion);
+    else
+			NetLog_Server(" Received SNAC(x%02X,x%02X)", snacHeader.wFamily, snacHeader.wSubtype);
 #endif
 
 		switch (snacHeader.wFamily) {
@@ -100,7 +104,8 @@ void CIcqProto::handleDataChannel(unsigned char *pBuffer, WORD wBufferLength, se
 	}
 }
 
-int CIcqProto::unpackSnacHeader(snac_header* pSnacHeader, unsigned char **pBuffer, WORD* pwBufferLength)
+
+int unpackSnacHeader(snac_header *pSnacHeader, BYTE **pBuffer, WORD *pwBufferLength)
 {
 	WORD wRef1, wRef2;
 
@@ -179,6 +184,7 @@ int CIcqProto::unpackSnacHeader(snac_header* pSnacHeader, unsigned char **pBuffe
 
 	return 1;
 }
+
 
 void CIcqProto::LogFamilyError(WORD wFamily, WORD wError)
 {

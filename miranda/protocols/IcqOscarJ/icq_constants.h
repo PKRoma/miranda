@@ -5,7 +5,7 @@
 // Copyright © 2000-2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001-2002 Jon Keating, Richard Hughes
 // Copyright © 2002-2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004-2009 Joe Kucera
+// Copyright © 2004-2010 Joe Kucera
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -19,7 +19,7 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with this program; if not, write to the Free Software
-// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 //
 // -----------------------------------------------------------------------------
 //
@@ -79,10 +79,10 @@
 #define DEFAULT_LOAD_AVATARS        1
 #define DEFAULT_BIGGER_AVATARS      1
 #define DEFAULT_AVATARS_CHECK       1
-#define DEFAULT_XSTATUS_ENABLED     1
+#define DEFAULT_XSTATUS_ENABLED     0
 #define DEFAULT_XSTATUS_AUTO        1
 #define DEFAULT_XSTATUS_RESET       0
-#define DEFAULT_XSTATUS_STATUS_NOTE 1 // use Custom Status message as Status Note
+#define DEFAULT_MOODS_ENABLED       1
 #define DEFAULT_KILLSPAM_ENABLED    1
 
 #define DEFAULT_SLOWSEND            1
@@ -180,8 +180,11 @@
 #define CAP_HTMLMSGS                "{0138CA7B-769A-4915-88F2-13FC00979EA8}"
 #define CAP_UTF8MSGS                "{0946134E-4C7F-11D1-8222-444553540000}"
 
-// Binary Capability IDs
+// Binary Capability Sizes
 #define BINARY_CAP_SIZE             16
+#define BINARY_SHORT_CAP_SIZE       2
+
+// Binary Capability IDs
 #define CAP_SRV_RELAY               0x09, 0x46, 0x13, 0x49, 0x4c, 0x7f, 0x11, 0xd1, 0x82, 0x22, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00
 #define CAP_UTF                     0x09, 0x46, 0x13, 0x4e, 0x4c, 0x7f, 0x11, 0xd1, 0x82, 0x22, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00
 #define CAP_RTF                     0x97, 0xb1, 0x27, 0x51, 0x24, 0x3c, 0x43, 0x34, 0xad, 0x22, 0xd6, 0xab, 0xf7, 0x3f, 0x14, 0x92
@@ -202,7 +205,7 @@
 #define CAPF_ICQDIRECT              0x00000080
 #define CAPF_XTRAZ                  0x00000100
 #define CAPF_OSCAR_FILE             0x00000400
-#define CAPF_STATUSMSG_EXT          0x01000000
+#define CAPF_STATUS_MESSAGES        0x10000000
 #define CAPF_STATUS_MOOD            0x40000000
 #define CAPF_XSTATUS                0x80000000
 
@@ -342,8 +345,8 @@
 #define ICQ_USER_NOTIFY_REJECTED    0x000a
 #define ICQ_USER_ONLINE             0x000b
 #define ICQ_USER_OFFLINE            0x000c
-#define ICQ_USER_ADDTOLIST2         0x000f
-#define ICQ_USER_REMOVEFROMLIST2    0x0010
+#define ICQ_USER_ADDTOTEMPLIST      0x000f
+#define ICQ_USER_REMOVEFROMTEMPLIST 0x0010
 
 /* Subtypes for Message Family 0x0004 */
 #define ICQ_MSG_SRV_ERROR           0x0001
@@ -620,7 +623,7 @@
 
 // Internal Constants
 #define ICQ_PROTOCOL_NAME           LPGEN("ICQ")
-#define ICQ_PLUG_VERSION            0x80050102
+#define ICQ_PLUG_VERSION            0x80050104
 #define ICQ_VERSION                 8         // Protocol version
 #define DC_TYPE                     DC_NORMAL // Used for DC settings
 #define MAX_CONTACTSSEND            15
@@ -631,7 +634,7 @@
 #define WEBFRONTPORT                0x50
 #define CLIENTFEATURES              0x3
 #define URL_FORGOT_PASSWORD         "https://www.icq.com/password/"
-#define URL_REGISTER                "http://lite.icq.com/register"
+#define URL_REGISTER                "https://www.icq.com/register/"
 #define FLAP_MARKER                 0x2a
 #define CLIENT_MD5_STRING           "AOL Instant Messenger (SM)"
 #define UNIQUEIDSETTING             "UIN"
@@ -645,7 +648,7 @@
 #define CLIENT_VERSION_MAJOR        0x0006
 #define CLIENT_VERSION_MINOR        0x0005
 #define CLIENT_VERSION_LESSER       0x0000
-#define CLIENT_VERSION_BUILD        0x0412
+#define CLIENT_VERSION_BUILD        0x07e8
 #define CLIENT_DISTRIBUTION         0x00007537
 #define CLIENT_LANGUAGE             "en"
 #define CLIENT_COUNTRY              "us"
