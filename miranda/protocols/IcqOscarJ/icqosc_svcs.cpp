@@ -486,7 +486,7 @@ INT_PTR CIcqProto::GetMyAvatar(WPARAM wParam, LPARAM lParam)
 
 	char *szFile = GetOwnerAvatarFileName();
 
-	if (!FileAccessUtf(szFile, 0)) 
+	if (szFile && !FileAccessUtf(szFile, 0)) 
   {
     utf8_decode_static(szFile, (char*)wParam, (int)lParam); // Avatar API does not support unicode :-(
     SAFE_FREE(&szFile);
