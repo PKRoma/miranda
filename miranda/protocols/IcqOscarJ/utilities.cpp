@@ -754,7 +754,7 @@ char* __fastcall null_strcpy(char *dest, const char *src, size_t maxlen)
   if (!dest)
     return NULL;
 
-  if (strlennull(src))
+  if (src && src[0])
   {
     strncpy(dest, src, maxlen);
     dest[maxlen] = '\0';
