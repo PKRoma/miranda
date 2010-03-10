@@ -588,6 +588,11 @@ SOURCE=.\links.c
 "$(INTDIR)\links.obj" : $(SOURCE) "$(INTDIR)"
 
 
+SOURCE=.\oauth.c
+
+"$(INTDIR)\oauth.obj" : $(SOURCE) "$(INTDIR)"
+
+
 SOURCE=.\ownerinfo.c
 
 "$(INTDIR)\ownerinfo.obj" : $(SOURCE) "$(INTDIR)"

@@ -784,7 +784,7 @@ INT_PTR gg_getavatarcaps(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
 {
 	switch (wParam) {
 		case AF_MAXSIZE:
-			((POINT *)lParam)->x = ((POINT *)lParam)->y = 70;
+			((POINT *)lParam)->x = ((POINT *)lParam)->y = 200;
 			return 0;
 		case AF_FORMATSUPPORTED:
 			return (lParam == PA_FORMAT_JPEG || lParam == PA_FORMAT_GIF || lParam == PA_FORMAT_PNG);
@@ -817,14 +817,14 @@ INT_PTR gg_getavatarinfo(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
 	pai->filename[0] = 0;
 	pai->format = PA_FORMAT_UNKNOWN;
 
-	if (!DBGetContactSettingByte(NULL, GG_PROTO, GG_KEY_ENABLEAVATARS, GG_KEYDEF_ENABLEAVATARS))
+	if (!uin || !DBGetContactSettingByte(NULL, GG_PROTO, GG_KEY_ENABLEAVATARS, GG_KEYDEF_ENABLEAVATARS))
 		return GAIR_NOAVATAR;
 
-	if (pai->hContact == NULL) {
-		gg_getavatarfilename(gg, NULL, pai->filename, sizeof(pai->filename));
-		pai->format = DBGetContactSettingByte(NULL, GG_PROTO, GG_KEY_AVATARTYPE, GG_KEYDEF_AVATARTYPE);
-		return !_access(pai->filename, 0) ? GAIR_SUCCESS : GAIR_NOAVATAR;
+	if (!DBGetContactSettingByte(pai->hContact, GG_PROTO, GG_KEY_AVATARREQUESTED, GG_KEYDEF_AVATARREQUESTED)) {
+		gg_requestavatar(gg, pai->hContact);
+		return (wParam & GAIF_FORCE) != 0 ? GAIR_WAITFOR : GAIR_NOAVATAR;
 	}
+	DBDeleteContactSetting(pai->hContact, GG_PROTO, GG_KEY_AVATARREQUESTED);
 
 	pai->format = DBGetContactSettingByte(pai->hContact, GG_PROTO, GG_KEY_AVATARTYPE, GG_KEYDEF_AVATARTYPE);
 
@@ -891,32 +891,54 @@ INT_PTR gg_getavatarinfo(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
 // gets avatar
 INT_PTR gg_getmyavatar(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
 {
-	char *filename = (char *)wParam;
+	char *szFilename = (char *)wParam;
 	int len = (int)lParam;
 
 #ifdef DEBUGMODE
 	gg_netlog(gg, "gg_getmyavatar(): Requesting user avatar.");
 #endif
 
-	if (filename == NULL || len <= 0)
+	if (szFilename == NULL || len <= 0)
 		return -1;
 
 	if (!DBGetContactSettingByte(NULL, GG_PROTO, GG_KEY_ENABLEAVATARS, GG_KEYDEF_ENABLEAVATARS))
 		return -2;
 
-	gg_getavatarfilename(gg, NULL, filename, len);
-	return _access(filename, 0);
+	gg_getavatarfilename(gg, NULL, szFilename, len);
+	return _access(szFilename, 0);
 }
 
 //////////////////////////////////////////////////////////
 // sets avatar
-INT_PTR gg_setmyavatar(GGPROTO *gg, WPARAM wParam, LPARAM lParam) // TODO
+INT_PTR gg_setmyavatar(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
 {
-#ifdef DEBUGMODE
-	gg_netlog(gg, "gg_setmyavatar(): Trying to set user avatar.");
-#endif
+	char *szFilename = (char *)lParam;
+	INT_PTR res = -1;
 
-	return -1;
+	if (!DBGetContactSettingByte(NULL, GG_PROTO, GG_KEY_ENABLEAVATARS, GG_KEYDEF_ENABLEAVATARS))
+		return -2;
+
+	if (szFilename == NULL) {
+		MessageBox(
+			NULL,
+			Translate("To remove your Gadu-Gadu avatar, you must use the MojaGeneracja.pl website."),
+			GG_PROTONAME, MB_OK | MB_ICONINFORMATION);
+	}
+	else {
+		char filename[MAX_PATH];
+		gg_getavatarfilename(gg, NULL, filename, sizeof(filename));
+		if (strcmp(szFilename, filename) && !CopyFileA(szFilename, filename, FALSE)) {
+#ifdef DEBUGMODE
+			gg_netlog(gg, "gg_setmyavatar(): Failed to set user avatar. File %s could not be created/overwritten.", filename);
+#endif
+			return res;
+		}
+		remove(filename);
+		if (gg_setavatar(gg, szFilename)) res = 0;
+		gg_getuseravatar(gg); // Update user's avatar
+	}
+
+	return res;
 }
 
 //////////////////////////////////////////////////////////

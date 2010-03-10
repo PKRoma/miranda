@@ -330,3 +330,7 @@ jeœli ca³kowita liczba uczestników przekracza:
 jeœli liczba nieznanych przekracza:
 [in other case]
 w innym wypadku
+
+; Delete avatar
+[To remove your Gadu-Gadu avatar, you must use the MojaGeneracja.pl website.]
+Aby usun¹æ swój awatar Gadu-Gadu musisz u¿yæ serwisu MojaGeneracja.pl.

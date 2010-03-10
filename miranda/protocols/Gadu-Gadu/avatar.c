@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 // Gadu-Gadu Plugin for Miranda IM
 //
-// Copyright (c) 2009 Bartosz Bia³ek
+// Copyright (c) 2009-2010 Bartosz Bia³ek
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -21,6 +21,7 @@
 #include "gg.h"
 #include <io.h>
 #include <fcntl.h>
+#include "protocol.h"
 
 //////////////////////////////////////////////////////////
 // Avatars support
@@ -94,11 +95,11 @@ void gg_getavatarfileinfo(GGPROTO *gg, uin_t uin, char **avatarurl, int *type)
 				blank = node != NULL ? gg_t2a(xi.getAttrValue(node, tag)) : NULL;
 
 				if (blank != NULL && strcmp(blank, "1")) {
-					mir_free(tag); tag = gg_a2t("users/user/avatars/avatar/smallAvatar");
+					mir_free(tag); tag = gg_a2t("users/user/avatars/avatar/bigAvatar");
 					node = xi.getChildByPath(hXml, tag, 0);
 					*avatarurl = node != NULL ? gg_t2a(xi.getText(node)) : NULL;
 
-					mir_free(tag); tag = gg_a2t("users/user/avatars/avatar/originSmallAvatar");
+					mir_free(tag); tag = gg_a2t("users/user/avatars/avatar/originBigAvatar");
 					node = xi.getChildByPath(hXml, tag, 0);
 					if (node != NULL) {
 						char *orgavurl = gg_t2a(xi.getText(node));
@@ -154,7 +155,7 @@ typedef struct
 
 void gg_getavatar(GGPROTO *gg, HANDLE hContact, char *szAvatarURL)
 {
-	if (gg_isonline(gg)) {
+	if (gg->pth_avatar.dwThreadId) {
 		GGGETAVATARDATA *data = mir_alloc(sizeof(GGGETAVATARDATA));
 		data->hContact = hContact;
 		data->AvatarURL = mir_strdup(szAvatarURL);
@@ -166,9 +167,12 @@ void gg_getavatar(GGPROTO *gg, HANDLE hContact, char *szAvatarURL)
 
 void gg_requestavatar(GGPROTO *gg, HANDLE hContact)
 {
-	pthread_mutex_lock(&gg->avatar_mutex);
-	list_add(&gg->avatar_requests, hContact, 0);
-	pthread_mutex_unlock(&gg->avatar_mutex);
+	if (DBGetContactSettingByte(NULL, GG_PROTO, GG_KEY_ENABLEAVATARS, GG_KEYDEF_ENABLEAVATARS)
+		&& gg->pth_avatar.dwThreadId) {
+		pthread_mutex_lock(&gg->avatar_mutex);
+		list_add(&gg->avatar_requests, hContact, 0);
+		pthread_mutex_unlock(&gg->avatar_mutex);
+	}
 }
 
 static void *__stdcall gg_avatarrequestthread(void *threaddata)
@@ -176,8 +180,11 @@ static void *__stdcall gg_avatarrequestthread(void *threaddata)
 	GGPROTO *gg = (GGPROTO *)threaddata;
 	list_t l;
 
-	SleepEx(100, FALSE);
-	while (gg_isonline(gg))
+#ifdef DEBUGMODE
+	gg_netlog(gg, "gg_avatarrequestthread(): Avatar Request Thread Starting");
+#endif
+
+	while (gg->pth_avatar.dwThreadId)
 	{
 		pthread_mutex_lock(&gg->avatar_mutex);
 		if (gg->avatar_requests) {
@@ -194,6 +201,7 @@ static void *__stdcall gg_avatarrequestthread(void *threaddata)
 			else
 				DBDeleteContactSetting(hContact, GG_PROTO, GG_KEY_AVATARURL);
 			DBWriteContactSettingByte(hContact, GG_PROTO, GG_KEY_AVATARTYPE, (BYTE)AvatarType);
+			DBWriteContactSettingByte(hContact, GG_PROTO, GG_KEY_AVATARREQUESTED, 1);
 
 			ProtoBroadcastAck(GG_PROTO, hContact, ACKTYPE_AVATAR, ACKRESULT_STATUS, 0, 0);
 
@@ -231,17 +239,20 @@ static void *__stdcall gg_avatarrequestthread(void *threaddata)
 						result = 1;
 					}
 				}
-		#ifdef DEBUGMODE
+#ifdef DEBUGMODE
 				else gg_netlog(gg, "gg_avatarrequestthread(): Invalid response code from HTTP request");
-		#endif
+#endif
 				CallService(MS_NETLIB_FREEHTTPREQUESTSTRUCT, 0, (LPARAM)resp);
 			}
-		#ifdef DEBUGMODE
+#ifdef DEBUGMODE
 			else gg_netlog(gg, "gg_avatarrequestthread(): No response from HTTP request");
-		#endif
+#endif
 
 			ProtoBroadcastAck(GG_PROTO, pai.hContact, ACKTYPE_AVATAR,
 				result ? ACKRESULT_SUCCESS : ACKRESULT_FAILED, (HANDLE)&pai, 0);
+
+			if (!pai.hContact)
+				CallService(MS_AV_REPORTMYAVATARCHANGED, (WPARAM)GG_PROTO, 0);
 
 			list_remove(&gg->avatar_transfers, data, 0);
 			mir_free(data->AvatarURL);
@@ -264,10 +275,188 @@ static void *__stdcall gg_avatarrequestthread(void *threaddata)
 
 void gg_initavatarrequestthread(GGPROTO *gg)
 {
-	pthread_t tid;
+	DWORD exitCode = 0;
 
-	gg->avatar_requests = gg->avatar_transfers = NULL;
+	GetExitCodeThread(gg->pth_avatar.hThread, &exitCode);
+	if (exitCode != STILL_ACTIVE) {
+		gg->avatar_requests = gg->avatar_transfers = NULL;
+		pthread_create(&gg->pth_avatar, NULL, gg_avatarrequestthread, gg);
+	}
+}
 
-	pthread_create(&tid, NULL, gg_avatarrequestthread, gg);
-	pthread_detach(&tid);
+void gg_uninitavatarrequestthread(GGPROTO *gg)
+{
+	gg->pth_avatar.dwThreadId = 0;
+	gg_threadwait(gg, &gg->pth_avatar);
+}
+
+static void *__stdcall gg_getuseravatarthread(void *threaddata)
+{
+	GGPROTO *gg = (GGPROTO *)threaddata;
+	PROTO_AVATAR_INFORMATION pai = {0};
+	char *AvatarURL;
+	int AvatarType;
+
+	gg_getavatarfileinfo(gg, DBGetContactSettingDword(NULL, GG_PROTO, GG_KEY_UIN, 0), &AvatarURL, &AvatarType);
+	if (AvatarURL != NULL && strlen(AvatarURL) > 0)
+		DBWriteContactSettingString(NULL, GG_PROTO, GG_KEY_AVATARURL, AvatarURL);
+	else
+		DBDeleteContactSetting(NULL, GG_PROTO, GG_KEY_AVATARURL);
+	DBWriteContactSettingByte(NULL, GG_PROTO, GG_KEY_AVATARTYPE, (BYTE)AvatarType);
+	DBWriteContactSettingByte(NULL, GG_PROTO, GG_KEY_AVATARREQUESTED, 1);
+
+	pai.cbSize = sizeof(pai);
+	pai.hContact = NULL;
+	gg_getavatarinfo(gg, (WPARAM)GAIF_FORCE, (LPARAM)&pai);
+
+	return NULL;
+}
+
+void gg_getuseravatar(GGPROTO *gg)
+{
+	if (DBGetContactSettingByte(NULL, GG_PROTO, GG_KEY_ENABLEAVATARS, GG_KEYDEF_ENABLEAVATARS)
+		&& DBGetContactSettingDword(NULL, GG_PROTO, GG_KEY_UIN, 0)) {
+		pthread_t tid;
+
+		pthread_create(&tid, NULL, gg_getuseravatarthread, gg);
+		pthread_detach(&tid);
+	}
+}
+
+int gg_setavatar(GGPROTO *gg, const char *szFilename)
+{
+	NETLIBHTTPHEADER httpHeaders[4];
+	NETLIBHTTPREQUEST req = {0};
+	NETLIBHTTPREQUEST *resp;
+	const char *contentend = "\r\n--AaB03x--\r\n";
+	char szUrl[128], uin[32], *authHeader, *data, *avatardata, content[256],
+		*fileext, image_ext[4], image_type[11];
+	int file_fd, avatardatalen, datalen, contentlen, contentendlen, res = 0, repeat = 0;
+
+#ifdef DEBUGMODE
+	gg_netlog(gg, "gg_setvatar(): Trying to set user avatar using %s...", szFilename);
+#endif
+
+	UIN2ID(DBGetContactSettingDword(NULL, GG_PROTO, GG_KEY_UIN, 0), uin);
+
+	file_fd = _open(szFilename, _O_RDONLY | _O_BINARY, _S_IREAD);
+	if (file_fd == -1) {
+#ifdef DEBUGMODE
+		gg_netlog(gg, "gg_setavatar(): Wrong filename.");
+#endif
+		return 0;
+	}
+	avatardatalen = _filelength(file_fd);
+	avatardata = (char *)mir_alloc(avatardatalen);
+
+	_read(file_fd, avatardata, avatardatalen);
+	_close(file_fd);
+
+	fileext = strrchr(szFilename, '.');
+	fileext++;
+	if (!_stricmp(fileext, "jpg")) {
+		strcpy(image_ext, "jpg");
+		strcpy(image_type, "image/jpeg");
+	}
+	else if (!_stricmp(fileext, "gif")) {
+		strcpy(image_ext, "gif");
+		strcpy(image_type, "image/gif");
+	}
+	else /*if (!_stricmp(fileext, "png"))*/ {
+		strcpy(image_ext, "png");
+		strcpy(image_type, "image/png");
+	}
+
+	mir_snprintf(content, 256, "--AaB03x\r\nContent-Disposition: form-data; name=\"_method\"\r\n\r\nPUT\r\n--AaB03x\r\nContent-Disposition: form-data; name=\"avatar\"; filename=\"%s.%s\"\r\nContent-Type: %s\r\n\r\n",
+		uin, image_ext, image_type);
+	contentlen = (int)strlen(content);
+	contentendlen = (int)strlen(contentend);
+
+	datalen = contentlen + avatardatalen + contentendlen;
+	data = (char *)mir_alloc(datalen);
+	memcpy(data, content, contentlen);
+	memcpy(data + contentlen, avatardata, avatardatalen);
+	memcpy(data + contentlen + avatardatalen, contentend, contentendlen);
+
+	mir_snprintf(szUrl, 128, "http://api.gadu-gadu.pl/avatars/%s/0.xml", uin);
+	gg_oauth_checktoken(gg, 0);
+	authHeader = gg_oauth_header(gg, "PUT", szUrl);
+
+	req.cbSize = sizeof(req);
+	req.requestType = REQUEST_POST;
+	req.szUrl = szUrl;
+	req.flags = NLHRF_NODUMP | NLHRF_HTTP11;
+	req.headersCount = 4;
+	req.headers = httpHeaders;
+	httpHeaders[0].szName   = "User-Agent";
+	httpHeaders[0].szValue = GG8_VERSION;
+	httpHeaders[1].szName  = "Authorization";
+	httpHeaders[1].szValue = authHeader;
+	httpHeaders[2].szName  = "Accept";
+	httpHeaders[2].szValue = "*/*";
+	httpHeaders[3].szName  = "Content-Type";
+	httpHeaders[3].szValue = "multipart/form-data; boundary=AaB03x";
+	req.pData = data;
+	req.dataLength = datalen;
+
+	resp = (NETLIBHTTPREQUEST *)CallService(MS_NETLIB_HTTPTRANSACTION, (WPARAM)gg->netlib, (LPARAM)&req);
+	if (resp) {
+		if (resp->resultCode == 200 && resp->dataLength > 0 && resp->pData) {
+			gg_netlog(gg, "%s", resp->pData);
+			res = 1;
+		}
+#ifdef DEBUGMODE
+		else gg_netlog(gg, "gg_setavatar(): Invalid response code from HTTP request");
+#endif
+		if (resp->resultCode == 403 || resp->resultCode == 401)
+			repeat = 1;
+		CallService(MS_NETLIB_FREEHTTPREQUESTSTRUCT, 0, (LPARAM)resp);
+	}
+#ifdef DEBUGMODE
+	else gg_netlog(gg, "gg_setavatar(): No response from HTTP request");
+#endif
+
+	if (repeat) { // Access Token expired - we need to obtain new
+		mir_free(authHeader);
+		gg_oauth_checktoken(gg, 1);
+		authHeader = gg_oauth_header(gg, "PUT", szUrl);
+
+		ZeroMemory(&req, sizeof(req));
+		req.cbSize = sizeof(req);
+		req.requestType = REQUEST_POST;
+		req.szUrl = szUrl;
+		req.flags = NLHRF_NODUMP | NLHRF_HTTP11;
+		req.headersCount = 4;
+		req.headers = httpHeaders;
+		req.pData = data;
+		req.dataLength = datalen;
+
+		resp = (NETLIBHTTPREQUEST *)CallService(MS_NETLIB_HTTPTRANSACTION, (WPARAM)gg->netlib, (LPARAM)&req);
+		if (resp) {
+			if (resp->resultCode == 200 && resp->dataLength > 0 && resp->pData) {
+				gg_netlog(gg, "%s", resp->pData);
+				res = 1;
+			}
+#ifdef DEBUGMODE
+			else gg_netlog(gg, "gg_setavatar(): Invalid response code from HTTP request");
+#endif
+			CallService(MS_NETLIB_FREEHTTPREQUESTSTRUCT, 0, (LPARAM)resp);
+		}
+#ifdef DEBUGMODE
+		else gg_netlog(gg, "gg_setavatar(): No response from HTTP request");
+#endif
+	}
+
+	mir_free(authHeader);
+	mir_free(avatardata);
+	mir_free(data);
+
+#ifdef DEBUGMODE
+	if (res)
+		gg_netlog(gg, "gg_setavatar(): User avatar set successfully.");
+	else
+		gg_netlog(gg, "gg_setavatar(): Failed to set user avatar.");
+#endif
+
+	return res;
 }

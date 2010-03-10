@@ -54,6 +54,9 @@
     <ClCompile Include="links.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="oauth.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="ownerinfo.c">
       <Filter>Source Files</Filter>
     </ClCompile>

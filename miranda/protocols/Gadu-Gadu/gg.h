@@ -126,12 +126,11 @@ typedef struct
 	unsigned long last_crc;
 	pthread_t pth_dcc;
 	pthread_t pth_sess;
+	pthread_t pth_avatar;
 	struct gg_session *sess;
 	struct gg_dcc *dcc;
 	HANDLE event;
 	UINT_PTR timer;
-	char *token_id;
-	char *token_val;
 	struct
 	{
 		char *online;
@@ -195,7 +194,6 @@ typedef struct
 #define GGDEF_PROTONAME  "Gadu-Gadu" // Default ProtoName
 
 
-
 // Process handles / seqs
 #define GG_SEQ_INFO				100
 #define GG_SEQ_SEARCH			200
@@ -224,6 +222,9 @@ typedef struct
 #define GG_KEY_NICK				"Nick"			// Nick
 #define GG_KEY_STATUSDESCR		"StatusMsg" 	// Users status description, to be compatible with MWClist
 												// should be stored in "CList" group
+#define GG_KEY_TOKEN			"Token"			// OAuth Access Token
+#define GG_KEY_TOKENSECRET		"TokenSecret"	// OAuth Access Token Secret
+
 #define GG_KEY_KEEPALIVE		"KeepAlive" 	// Keep-alive support
 #define GG_KEYDEF_KEEPALIVE		1
 
@@ -254,6 +255,9 @@ typedef struct
 #define GG_KEY_AVATARTYPE		"AvatarType"	// Contact's avatar format
 #define GG_KEYDEF_AVATARTYPE	PA_FORMAT_UNKNOWN
 
+#define GG_KEY_AVATARREQUESTED		"AvatarRequested"	// When contact's avatar is requested
+#define GG_KEYDEF_AVATARREQUESTED	0
+
 #define GG_KEY_SHOWINVISIBLE	"ShowInvisible" // Show invisible users when described
 #define GG_KEYDEF_SHOWINVISIBLE	0
 
@@ -280,7 +284,7 @@ typedef struct
 
 #define GG_KEY_CLIENTIP 		"IP"			// Contact IP (by notify)
 #define GG_KEY_CLIENTPORT		"ClientPort"	// Contact port
-#define GG_KEY_CLIENTVERSION "ClientVersion"	// Contact app version
+#define GG_KEY_CLIENTVERSION	"ClientVersion"	// Contact app version
 
 #define GG_KEY_DIRECTCONNS		"DirectConns"	// Use direct connections
 #define GG_KEYDEF_DIRECTCONNS	1
@@ -343,6 +347,7 @@ typedef struct
 extern HINSTANCE hInstance;
 extern PLUGINLINK *pluginLink;
 extern CLIST_INTERFACE *pcli;
+extern struct LIST_INTERFACE li;
 extern DWORD gMirandaVersion;
 extern HANDLE hNetlib;
 #ifdef GG_CONFIG_HAVE_OPENSSL
@@ -410,6 +415,10 @@ char *gg_avatarhash(char *param);
 void gg_getavatar(GGPROTO *gg, HANDLE hContact, char *szAvatarURL);
 void gg_requestavatar(GGPROTO *gg, HANDLE hContact);
 void gg_initavatarrequestthread(GGPROTO *gg);
+void gg_uninitavatarrequestthread(GGPROTO *gg);
+void gg_getuseravatar(GGPROTO *gg);
+int gg_setavatar(GGPROTO *gg, const char *szFilename);
+INT_PTR gg_getavatarinfo(GGPROTO *gg, WPARAM wParam, LPARAM lParam);
 
 /* File transfer functions */
 HANDLE gg_fileallow(PROTO_INTERFACE *proto, HANDLE hContact, HANDLE hTransfer, const PROTOCHAR* szPath);
@@ -450,6 +459,10 @@ void gg_links_init();
 void gg_links_destroy();
 void gg_links_instance_init(GGPROTO* gg);
 void gg_links_instance_destroy(GGPROTO* gg);
+
+/* OAuth functions */
+char *gg_oauth_header(GGPROTO *gg, const char *httpmethod, const char *url);
+int gg_oauth_checktoken(GGPROTO *gg, int force);
 
 /* UI page initializers */
 int gg_options_init(GGPROTO *gg, WPARAM wParam, LPARAM lParam);

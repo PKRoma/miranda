@@ -657,6 +657,7 @@
     <ClCompile Include="import.c" />
     <ClCompile Include="keepalive.c" />
     <ClCompile Include="links.c" />
+    <ClCompile Include="oauth.c" />
     <ClCompile Include="ownerinfo.c" />
     <ClCompile Include="pthread.c" />
     <ClCompile Include="services.c" />

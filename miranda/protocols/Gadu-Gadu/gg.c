@@ -43,6 +43,8 @@ HINSTANCE hInstance;
 PLUGINLINK *pluginLink;
 struct MM_INTERFACE mmi;
 struct SHA1_INTERFACE sha1i;
+struct MD5_INTERFACE md5i;
+struct LIST_INTERFACE li;
 XML_API xi;
 CLIST_INTERFACE *pcli;
 
@@ -286,23 +288,6 @@ int gg_event(PROTO_INTERFACE *proto, PROTOEVENTTYPE eventType, WPARAM wParam, LP
 	{
 		case EV_PROTO_ONLOAD:
 		{
-			NETLIBUSER nlu = { 0 };
-
-			nlu.cbSize = sizeof(nlu);
-			nlu.flags = NUF_OUTGOING | NUF_INCOMING | NUF_HTTPCONNS;
-			nlu.szSettingsModule = gg->proto.m_szModuleName;
-			if (gg->unicode_core) {
-				WCHAR name[128];
-				_snwprintf(name, sizeof(name)/sizeof(name[0]), TranslateW(L"%s connection"), gg->proto.m_tszUserName);
-				nlu.ptszDescriptiveName = (char *)name;
-				nlu.flags |= NUF_UNICODE;
-			} else {
-				char name[128];
-				mir_snprintf(name, sizeof(name)/sizeof(name[0]), Translate("%s connection"), gg->proto.m_tszUserName);
-				nlu.ptszDescriptiveName = name;
-			}
-
-			gg->netlib = (HANDLE) CallService(MS_NETLIB_REGISTERUSER, 0, (LPARAM) & nlu);
 			gg->hookOptsInit = HookProtoEvent(ME_OPT_INITIALISE, gg_options_init, gg);
 			gg->hookUserInfoInit = HookProtoEvent(ME_USERINFO_INITIALISE, gg_details_init, gg);
 			gg->hookSettingDeleted = HookProtoEvent(ME_DB_CONTACT_DELETED, gg_userdeleted, gg);
@@ -324,9 +309,12 @@ int gg_event(PROTO_INTERFACE *proto, PROTOEVENTTYPE eventType, WPARAM wParam, LP
 #ifdef DEBUGMODE
 			gg_netlog(gg, "gg_event(EV_PROTO_ONEXIT)/gg_preshutdown(): signalling shutdown...");
 #endif
+			// Stop avatar request thread
+			gg_uninitavatarrequestthread(gg);
 			// Stop main connection session thread
 			gg_threadwait(gg, &gg->pth_sess);
 			gg_img_shutdown(gg);
+
 			break;
 		case EV_PROTO_ONOPTIONS:
 			return gg_options_init(gg, wParam, lParam);
@@ -358,6 +346,8 @@ static GGPROTO *gg_proto_init(const char* pszProtoName, const TCHAR* tszUserName
 	DWORD dwVersion;
 	GGPROTO *gg = (GGPROTO *)mir_alloc(sizeof(GGPROTO));
 	char szVer[MAX_PATH];
+	NETLIBUSER nlu = { 0 };
+
 	ZeroMemory(gg, sizeof(GGPROTO));
 	gg->proto.vtbl = (PROTO_INTERFACE_VTBL*)mir_alloc(sizeof(PROTO_INTERFACE_VTBL));
 	// Are we running under unicode Miranda core ?
@@ -384,6 +374,22 @@ static GGPROTO *gg_proto_init(const char* pszProtoName, const TCHAR* tszUserName
 	gg->name = gg_t2a(tszUserName);
 #endif
 
+	// Register netlib user
+	nlu.cbSize = sizeof(nlu);
+	nlu.flags = NUF_OUTGOING | NUF_INCOMING | NUF_HTTPCONNS;
+	nlu.szSettingsModule = gg->proto.m_szModuleName;
+	if (gg->unicode_core) {
+		WCHAR name[128];
+		_snwprintf(name, sizeof(name)/sizeof(name[0]), TranslateW(L"%s connection"), gg->proto.m_tszUserName);
+		nlu.ptszDescriptiveName = (char *)name;
+		nlu.flags |= NUF_UNICODE;
+	} else {
+		char name[128];
+		mir_snprintf(name, sizeof(name)/sizeof(name[0]), Translate("%s connection"), gg->proto.m_tszUserName);
+		nlu.ptszDescriptiveName = name;
+	}
+	gg->netlib = (HANDLE)CallService(MS_NETLIB_REGISTERUSER, 0, (LPARAM)&nlu);
+
 	// Register services
 	gg_registerservices(gg);
 	gg_setalloffline(gg);
@@ -393,6 +399,9 @@ static GGPROTO *gg_proto_init(const char* pszProtoName, const TCHAR* tszUserName
 
 	gg_links_instance_init(gg);
 	gg_initcustomfolders(gg);
+
+	gg_initavatarrequestthread(gg);
+	gg_getuseravatar(gg);
 
 	return gg;
 }
@@ -453,6 +462,8 @@ int __declspec(dllexport) Load(PLUGINLINK * link)
 	pluginLink = link;
 	mir_getMMI(&mmi);
 	mir_getSHA1I(&sha1i);
+	mir_getMD5I(&md5i);
+	mir_getLI(&li);
 	mir_getXI(&xi);
 
 	// Init winsock

@@ -237,7 +237,9 @@ void gg_threadwait(GGPROTO *gg, pthread_t *thread)
 		return;
 
 #ifdef DEBUGMODE
-	gg_netlog(gg, "gg_threadwait(): Waiting until %s finished, if needed.", thread->hThread == gg->pth_dcc.hThread ? "DCC Server Thread" : "Server Thread");
+	gg_netlog(gg, "gg_threadwait(): Waiting until %s finished, if needed.",
+		thread->hThread == gg->pth_dcc.hThread ? "DCC Server Thread" : 
+		thread->hThread == gg->pth_avatar.hThread ? "Avatar Request Thread" : "Server Thread");
 #endif
 	while (WaitForSingleObjectEx(thread->hThread, INFINITE, TRUE) != WAIT_OBJECT_0);
 	pthread_detach(thread);
@@ -528,8 +530,6 @@ retry:
 		pthread_mutex_unlock(&gg->sess_mutex);
 		// Subscribe users status notifications
 		gg_notifyall(gg);
-		// Create avatar request thread
-		gg_initavatarrequestthread(gg);
 		// Set startup status
 		if(gg->proto.m_iDesiredStatus == ID_STATUS_OFFLINE)
 			gg_disconnect(gg);
@@ -1199,6 +1199,14 @@ int gg_dbsettingchanged(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
 	DBCONTACTWRITESETTING *cws = (DBCONTACTWRITESETTING *) lParam;
 	HANDLE hContact = (HANDLE) wParam;
 	char *szProto = NULL;
+
+	// If user UIN changed
+	if(!hContact && !strcmp(cws->szModule, GG_PROTO) && !strcmp(cws->szSetting, GG_KEY_UIN)
+		&& cws->value.dVal)
+	{
+		// Get user's avatar
+		gg_getuseravatar(gg);
+	}
 
 	// Check if the contact is NULL or we are not online
 	if(!hContact || !gg_isonline(gg))

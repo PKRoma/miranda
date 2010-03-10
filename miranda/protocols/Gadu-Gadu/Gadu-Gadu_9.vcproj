@@ -975,6 +975,10 @@
 				>
 			</File>
 			<File
+				RelativePath="oauth.c"
+				>
+			</File>
+			<File
 				RelativePath="ownerinfo.c"
 				>
 			</File>
