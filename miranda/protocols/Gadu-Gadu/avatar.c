@@ -402,7 +402,9 @@ int gg_setavatar(GGPROTO *gg, const char *szFilename)
 	resp = (NETLIBHTTPREQUEST *)CallService(MS_NETLIB_HTTPTRANSACTION, (WPARAM)gg->netlib, (LPARAM)&req);
 	if (resp) {
 		if (resp->resultCode == 200 && resp->dataLength > 0 && resp->pData) {
+#ifdef DEBUGMODE
 			gg_netlog(gg, "%s", resp->pData);
+#endif
 			res = 1;
 		}
 #ifdef DEBUGMODE
@@ -434,7 +436,9 @@ int gg_setavatar(GGPROTO *gg, const char *szFilename)
 		resp = (NETLIBHTTPREQUEST *)CallService(MS_NETLIB_HTTPTRANSACTION, (WPARAM)gg->netlib, (LPARAM)&req);
 		if (resp) {
 			if (resp->resultCode == 200 && resp->dataLength > 0 && resp->pData) {
+#ifdef DEBUGMODE
 				gg_netlog(gg, "%s", resp->pData);
+#endif
 				res = 1;
 			}
 #ifdef DEBUGMODE
