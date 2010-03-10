@@ -2031,7 +2031,7 @@ int IsValidRelativePath(const char *filename)
 
 const char* ExtractFileName(const char *fullname)
 {
-	char *szFileName;
+	const char *szFileName;
 
 	 // already is only filename
 	if (((szFileName = strrchr(fullname, '\\')) == NULL) && ((szFileName = strrchr(fullname, '/')) == NULL))
