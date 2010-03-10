@@ -289,8 +289,8 @@ rates_queue_item::~rates_queue_item()
 
 
 BOOL rates_queue_item::isEqual(rates_queue_item *pItem)
-{
-  return (pItem->hContact == this->hContact) && (pItem->execute == this->execute);
+{ // the same event (equal address of _vftable) for the same contact
+  return (pItem->hContact == this->hContact) && (*(void**)pItem == *(void**)this);
 }
 
 
