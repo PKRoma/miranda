@@ -45,9 +45,6 @@ TCHAR *xStatusDescr[] = {	_T("Angry"), _T("Duck"), _T("Tired"), _T("Party"), _T(
 InfoPanelConfig CInfoPanel::m_ipConfig = {0};
 WNDPROC CTip::m_OldMessageEditProc = 0;
 
-static TCHAR _clockCodes[12] = { (TCHAR)0xc2, (TCHAR)0xb7, (TCHAR)0xb8, (TCHAR)0xb9, (TCHAR)0xba,
-		(TCHAR)0xbb, (TCHAR)0xbc, (TCHAR)0xbd, (TCHAR)0xbe, (TCHAR)0xbf, (TCHAR)0xc0, (TCHAR)0xc1 };
-
 int CInfoPanel::setPanelHandler(TWindowData *dat, WPARAM wParam, LPARAM lParam)
 {
 	if(wParam == 0 && lParam == 0) {
@@ -532,8 +529,6 @@ void CInfoPanel::RenderIPStatus(const HDC hdc, RECT& rcItem)
 	CSkinItem 	*item = &SkinItems[ID_EXTBKINFOPANEL];
 	const TCHAR *szFinalProto = NULL;
 	TCHAR 		szResult[80];
-	int 		base_hour;
-	TCHAR 		symbolic_time[3];
 	COLORREF	clr = 0;
 
 	szResult[0] = 0;
@@ -577,25 +572,9 @@ void CInfoPanel::RenderIPStatus(const HDC hdc, RECT& rcItem)
 	if(szResult[0]) {
 		HFONT oldFont = 0;
 
-		if(PluginConfig.m_hFontWebdings)
-			oldFont = (HFONT)SelectObject(hdc, PluginConfig.m_hFontWebdings);
+		::DrawIconEx(hdc, rcItem.left, (rcItem.bottom - rcItem.top) / 2 - 8 + rcItem.top, PluginConfig.g_iconClock, 16, 16, 0, 0, DI_NORMAL);
 
-		base_hour = _ttoi(szResult);
-		base_hour = (base_hour >= 12 ? base_hour - 12 : base_hour);
-
-		if(base_hour > 11 || base_hour < 0)				// make sure to have a valid index
-			base_hour = 0;
-
-		symbolic_time[0] = _clockCodes[base_hour];
-		symbolic_time[1] = 0;
-
-		if(PluginConfig.m_hFontWebdings)
-			CSkin::RenderText(hdc, m_dat->hThemeIP, symbolic_time, &rcItem, DT_SINGLELINE | DT_VCENTER, CSkin::m_glowSize, 0);
-
-		if(oldFont)
-			SelectObject(hdc, m_ipConfig.hFonts[IPFONTID_TIME]);
-		else
-			oldFont = (HFONT)SelectObject(hdc, m_ipConfig.hFonts[IPFONTID_TIME]);
+		oldFont = (HFONT)SelectObject(hdc, m_ipConfig.hFonts[IPFONTID_TIME]);
 
 		clr = m_ipConfig.clrs[IPFONTID_TIME];
 		rcItem.left += 16;

@@ -443,8 +443,6 @@ int CGlobals::ModulesLoaded(WPARAM wParam, LPARAM lParam)
 	mi.pszService = MS_TABMSG_SETUSERPREFS;
 	PluginConfig.m_UserMenuItem = (HANDLE)CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM) & mi);
 
-	PluginConfig.m_hFontWebdings = CreateFontA(-16, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, SYMBOL_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, FF_DONTCARE | DEFAULT_PITCH, "Wingdings");
-
 	RestoreUnreadMessageAlerts();
 
 	RegisterWithUpdater();

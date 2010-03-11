@@ -512,7 +512,7 @@ void CContactCache::updateStatusMsg(const char *szKey)
 		m_szStatusMsg = 0;
 		res = M->GetTString(m_hContact, "CList", "StatusMsg", &dbv);
 		if(res == 0) {
-			m_szStatusMsg = (lstrlen(dbv.ptszVal) > 0 ? mir_tstrdup(dbv.ptszVal) : 0);
+			m_szStatusMsg = (lstrlen(dbv.ptszVal) > 0 ? getNormalizedStatusMsg(dbv.ptszVal) : 0);
 			DBFreeVariant(&dbv);
 		}
 	}
@@ -584,4 +584,38 @@ CContactCache* CContactCache::getContactCache(const HANDLE hContact)
 	}
 	m_cCache = _c;
 	return(_c);
+}
+
+/**
+ * normalize the status message with proper cr/lf sequences.
+ * @param src TCHAR*: original status message
+ * @return TCHAR*:    converted status message. CALLER is responsible to free it, MUST use mir_free()
+ */
+TCHAR* CContactCache::getNormalizedStatusMsg(const TCHAR *src)
+{
+	size_t	k = 0, i = 0;
+	TCHAR*  tszResult = 0;
+
+	if(src == 0 || lstrlen(src) < 2)
+		return(0);
+
+	tstring dest;
+
+	for(i = 0; i < _tcslen(src); i++) {
+		if(src[i] == 0x0d || src[i] == '\t') {
+			continue;
+		}
+		if(i && src[i] == (TCHAR)0x0a) {
+			dest.append(_T("\n"));
+			continue;
+		}
+		dest += src[i];
+	}
+
+	if(i) {
+		tszResult = (TCHAR *)mir_alloc((dest.length() + 1) * sizeof(TCHAR));
+		_tcscpy(tszResult, dest.c_str());
+		tszResult[dest.length()] = 0;
+	}
+	return(tszResult);
 }

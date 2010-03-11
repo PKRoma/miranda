@@ -135,6 +135,7 @@ private:
 	void					initPhaseTwo			();
 	void					allocHistory			();
 	void					releaseAlloced			();
+	TCHAR*					getNormalizedStatusMsg  (const TCHAR *src);
 
 private:
 	size_t				m_accessCount;

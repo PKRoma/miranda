@@ -601,7 +601,7 @@ static int PopupUpdateT(HANDLE hContact, HANDLE hEvent)
 		formatTime[0] = 0;
 		_tcsncpy(formatTime, _T("%Y.%m.%d %H:%M"), MAX_DATASIZE);
 		_tcsftime(timestamp, MAX_DATASIZE, formatTime, _localtime32((__time32_t *)&dbe.timestamp));
-		mir_sntprintf(pdata->eventData[pdata->nrMerged].szText, MAX_SECONDLINE, _T("\n-----\n[b][i]%s[/i][/b]\n"), timestamp);
+		mir_sntprintf(pdata->eventData[pdata->nrMerged].szText, MAX_SECONDLINE, _T("\n-----\n%s\n"), timestamp);
 
 		szPreview = GetPreviewT(dbe.eventType, &dbe);
 		if (szPreview) {

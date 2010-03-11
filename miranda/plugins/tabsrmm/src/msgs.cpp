@@ -36,6 +36,8 @@
 #include "commonheaders.h"
 #pragma hdrstop
 
+#define IDI_CORE_LOAD	132					// icon id for the "connecting" icon
+
 REOLECallback*		mREOLECallback;
 NEN_OPTIONS 		nen_options;
 extern PLUGININFOEX pluginInfo;
@@ -411,7 +413,6 @@ int SplitmsgShutdown(void)
 	DestroyCursor(PluginConfig.hCurSplitNS);
 	DestroyCursor(PluginConfig.hCurHyperlinkHand);
 	DestroyCursor(PluginConfig.hCurSplitWE);
-	DeleteObject(PluginConfig.m_hFontWebdings);
 	FreeLibrary(GetModuleHandleA("riched20"));
 	if (g_hIconDLL)
 		FreeLibrary(g_hIconDLL);
@@ -831,11 +832,17 @@ HWND TSAPI CreateNewTabForContact(struct TContainerData *pContainer, HANDLE hCon
 	if (bActivateTab) {
 		ActivateExistingTab(pContainer, hwndNew);
 		SetFocus(hwndNew);
-		RedrawWindow(pContainer->hwnd, NULL, NULL, RDW_INVALIDATE);
+		RedrawWindow(pContainer->hwnd, NULL, NULL, RDW_ERASENOW);
 		UpdateWindow(pContainer->hwnd);
 		if (GetForegroundWindow() != pContainer->hwnd && bPopupContainer == TRUE)
 			SetForegroundWindow(pContainer->hwnd);
 	}
+	else if(!IsIconic(pContainer->hwnd) && IsWindowVisible(pContainer->hwnd)){
+		SendMessage(pContainer->hwndActive, WM_SIZE, 0, 0);
+		RedrawWindow(pContainer->hwndActive, NULL, NULL, RDW_INVALIDATE | RDW_ALLCHILDREN | RDW_UPDATENOW);
+		RedrawWindow(pContainer->hwndActive, NULL, NULL, RDW_ERASENOW | RDW_UPDATENOW);
+	}
+
 	//MaD
 	if (PluginConfig.m_HideOnClose&&!IsWindowVisible(pContainer->hwnd)){
 		WINDOWPLACEMENT wp={0};
@@ -1116,6 +1123,21 @@ static int TSAPI SetupIconLibConfig()
 	sid.iDefaultIndex = -IDI_FEATURE_ENABLED;
 	CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
 
+#if defined(_WIN64)
+	strncpy(szFilename, "miranda64.exe", MAX_PATH);
+#else
+	strncpy(szFilename, "miranda32.exe", MAX_PATH);
+#endif
+
+	sid.pszDefaultFile = szFilename;
+	sid.pszSection = "TabSRMM/Default";
+
+	sid.pszName = "tabSRMM_clock_symbol";
+	sid.cx = sid.cy = 16;
+	sid.pszDescription = "Clock symbol (for thei info panel clock)";
+	sid.iDefaultIndex = -IDI_CORE_LOAD;
+	CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
+
 	return 1;
 }
 
@@ -1146,6 +1168,8 @@ static int TSAPI LoadFromIconLib()
 
 	PluginConfig.g_iconOverlayEnabled = (HICON)CallService(MS_SKIN2_GETICON, 0, (LPARAM)"tabSRMM_overlay_enabled");
 	PluginConfig.g_iconOverlayDisabled = (HICON)CallService(MS_SKIN2_GETICON, 0, (LPARAM)"tabSRMM_overlay_disabled");
+
+	PluginConfig.g_iconClock = (HICON)CallService(MS_SKIN2_GETICON, 0, (LPARAM)"tabSRMM_clock_symbol");
 
 	CacheMsgLogIcons();
 	M->BroadcastMessage(DM_LOADBUTTONBARICONS, 0, 0);

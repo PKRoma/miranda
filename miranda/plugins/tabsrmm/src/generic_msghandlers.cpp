@@ -1059,6 +1059,7 @@ static unsigned __stdcall LoadKLThread(LPVOID vParam)
 	return(0);
 }
 
+
 LRESULT TSAPI DM_LoadLocale(TWindowData *dat)
 {
 	/*
@@ -1074,8 +1075,13 @@ LRESULT TSAPI DM_LoadLocale(TWindowData *dat)
 			TCHAR szKLName[KL_NAMELENGTH+1];
 			UINT  flags = KLF_ACTIVATE;
 
-			res = DBGetContactSettingString(dat->hContact, SRMSGMOD_T, "locale", &dbv);
+			res = DBGetContactSettingTString(dat->hContact, SRMSGMOD_T, "locale", &dbv);
 			if (res == 0) {
+
+				/*
+				dat->hkl = LoadKeyboardLayout(dbv.ptszVal, KLF_REPLACELANG | KLF_NOTELLSHELL);
+				GetLocaleID(dat, dbv.ptszVal);
+				PostMessage(dat->hwnd, DM_SETLOCALE, 0, 0);*/
 				DBFreeVariant(&dbv);
 				CloseHandle((HANDLE)mir_forkthreadex(LoadKLThread, reinterpret_cast<void *>(dat->hContact), 16000, NULL));
 			} else {
@@ -1090,6 +1096,9 @@ LRESULT TSAPI DM_LoadLocale(TWindowData *dat)
 					GetKeyboardLayoutName(szKLName);
 					M->WriteTString(dat->hContact, SRMSGMOD_T, "locale", szKLName);
 				}
+				/*dat->hkl = LoadKeyboardLayout(szKLName, KLF_NOTELLSHELL | KLF_REPLACELANG);
+				GetLocaleID(dat, szKLName);
+				PostMessage(dat->hwnd, DM_SETLOCALE, 0, 0);*/
 				CloseHandle((HANDLE)mir_forkthreadex(LoadKLThread, reinterpret_cast<void *>(dat->hContact), 16000, NULL));
 			}
 		}

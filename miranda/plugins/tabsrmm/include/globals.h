@@ -107,7 +107,7 @@ public:
 
 	HWND        g_hwndHotkeyHandler;
 	HICON       g_iconIn, g_iconOut, g_iconErr, g_iconContainer, g_iconStatus;
-	HICON		g_iconOverlayDisabled, g_iconOverlayEnabled;
+	HICON		g_iconOverlayDisabled, g_iconOverlayEnabled, g_iconClock;
 	HCURSOR     hCurSplitNS, hCurSplitWE, hCurHyperlinkHand;
 	HBITMAP     g_hbmUnknown;
 	int         g_MetaContactsAvail, g_SmileyAddAvail, g_WantIEView, g_PopupAvail, g_PopupWAvail, g_WantHPP;
@@ -172,7 +172,6 @@ public:
 	DWORD       local_gmt_diff;
 	int         m_PasteAndSend;
 	TCHAR       *m_szNoStatus;
-	HFONT       m_hFontWebdings;
 	COLORREF    crDefault, crIncoming, crOutgoing, crOldIncoming, crOldOutgoing, crStatus;
 	BOOL        bUnicodeBuild;
 	HFONT       hFontCaption;
