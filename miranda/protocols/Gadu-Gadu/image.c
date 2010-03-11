@@ -75,12 +75,13 @@ int gg_img_init(GGPROTO *gg)
 
 	ZeroMemory(&mi,sizeof(mi));
 	mi.cbSize = sizeof(mi);
+	mi.flags = CMIF_ICONFROMICOLIB;
 
 	// Send image contact menu item
 	mir_snprintf(service, sizeof(service), GGS_SENDIMAGE, GG_PROTO);
 	CreateProtoServiceFunction(service, gg_img_sendimg, gg);
 	mi.position = -2000010000;
-	mi.hIcon = LoadIconEx(IDI_IMAGE);
+	mi.icolibItem = GetIconHandle(IDI_IMAGE);
 	mi.pszName = LPGEN("&Image");
 	mi.pszService = service;
 	mi.pszContactOwner = GG_PROTO;
@@ -412,18 +413,16 @@ static INT_PTR CALLBACK gg_img_dlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 				SendDlgItemMessage(hwndDlg, IDC_IMG_SAVE,	BUTTONSETASFLATBTN, 0, 0);
 				SendDlgItemMessage(hwndDlg, IDC_IMG_PREV,	BUTTONSETASFLATBTN, 0, 0);
 				SendDlgItemMessage(hwndDlg, IDC_IMG_NEXT,	BUTTONSETASFLATBTN, 0, 0);
-				SendDlgItemMessage(hwndDlg, IDC_IMG_SCALE,	BUTTONSETASFLATBTN, 0, 0);
 				SendDlgItemMessage(hwndDlg, IDC_IMG_DELETE,	BUTTONSETASFLATBTN, 0, 0);
 
 				// Setting images for buttons
-				SendDlgItemMessage(hwndDlg, IDC_IMG_PREV,	BM_SETIMAGE, IMAGE_ICON, (LPARAM)LoadIconEx(IDI_PREV));
-				SendDlgItemMessage(hwndDlg, IDC_IMG_NEXT,	BM_SETIMAGE, IMAGE_ICON, (LPARAM)LoadIconEx(IDI_NEXT));
-				SendDlgItemMessage(hwndDlg, IDC_IMG_DELETE,	BM_SETIMAGE, IMAGE_ICON, (LPARAM)LoadIconEx(IDI_DELETE));
-				SendDlgItemMessage(hwndDlg, IDC_IMG_SAVE,	BM_SETIMAGE, IMAGE_ICON, (LPARAM)LoadIconEx(IDI_SAVE));
-				SendDlgItemMessage(hwndDlg, IDC_IMG_SCALE,	BM_SETIMAGE, IMAGE_ICON, (LPARAM)LoadIconEx(IDI_SCALE));
+				SendDlgItemMessage(hwndDlg, IDC_IMG_PREV,	BM_SETIMAGE, IMAGE_ICON, (LPARAM)LoadIconEx("previous"));
+				SendDlgItemMessage(hwndDlg, IDC_IMG_NEXT,	BM_SETIMAGE, IMAGE_ICON, (LPARAM)LoadIconEx("next"));
+				SendDlgItemMessage(hwndDlg, IDC_IMG_DELETE,	BM_SETIMAGE, IMAGE_ICON, (LPARAM)LoadIconEx("delete"));
+				SendDlgItemMessage(hwndDlg, IDC_IMG_SAVE,	BM_SETIMAGE, IMAGE_ICON, (LPARAM)LoadIconEx("save"));
 
 				// Set main window image
-				SendMessage(hwndDlg,WM_SETICON,ICON_BIG,(LPARAM)LoadIconEx(IDI_IMAGE));
+				SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)LoadIconEx("image"));
 				szName = (char *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)dat->hContact, 0);
 
 				if(dat->bReceiving)
@@ -551,7 +550,11 @@ static INT_PTR CALLBACK gg_img_dlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 					img = img->lpNext;
 					gg_img_releasepicture(temp);
 				}
-
+				ReleaseIconEx("previous");
+				ReleaseIconEx("next");
+				ReleaseIconEx("delete");
+				ReleaseIconEx("save");
+				ReleaseIconEx("image");
 				pthread_mutex_lock(&gg->img_mutex);
 				list_remove(&gg->imagedlgs, dat, 1);
 				pthread_mutex_unlock(&gg->img_mutex);

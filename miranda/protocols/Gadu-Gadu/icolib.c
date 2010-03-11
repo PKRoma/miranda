@@ -20,14 +20,13 @@
 
 #include "gg.h"
 
-struct
+struct tagiconList
 {
-	char*  szDescr;
-	char*  szName;
-	int    defIconID;
-	HANDLE hIconLibItem;
+	const char*	szDescr;
+	const char*	szName;
+	int			defIconID;
 }
-static iconList[] =
+static const iconList[] =
 {
 	{ LPGEN("Protocol icon"),				"main",			IDI_GG					},
 	{ LPGEN("Import list from server"),		"importserver",	IDI_IMPORT_SERVER		},
@@ -45,15 +44,16 @@ static iconList[] =
 	{ LPGEN("Clear ignored conferences"),	"clearignored",	IDI_CLEAR_CONFERENCE	}
 };
 
+HANDLE hIconLibItem[sizeof(iconList) / sizeof(iconList[0])];
+
 void gg_icolib_init()
 {
 	SKINICONDESC sid = {0};
 	char szFile[MAX_PATH];
-	int i;
 	char szSectionName[100];
+	int i;
 
 	mir_snprintf(szSectionName, sizeof( szSectionName ), "%s/%s", LPGEN("Protocols"), LPGEN(GGDEF_PROTO));
-
 	GetModuleFileNameA(hInstance, szFile, MAX_PATH);
 
 	sid.cbSize = sizeof(SKINICONDESC);
@@ -65,20 +65,17 @@ void gg_icolib_init()
 		char szSettingName[100];
 		mir_snprintf(szSettingName, sizeof(szSettingName), "%s_%s", GGDEF_PROTO, iconList[i].szName);
 		sid.pszName = szSettingName;
-		sid.pszDescription = Translate(iconList[i].szDescr);
+		sid.pszDescription = (char*)iconList[i].szDescr;
 		sid.iDefaultIndex = -iconList[i].defIconID;
-		iconList[i].hIconLibItem = (HANDLE) CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
+		hIconLibItem[i] = (HANDLE) CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
 	}
 }
 
-HICON LoadIconEx(int iconId)
+HICON LoadIconEx(const char* name)
 {
-	int i;
-	for(i = 0; i < sizeof(iconList) / sizeof(iconList[0]); i++)
-		if(iconList[i].defIconID == iconId)
-			return (HICON) CallService(MS_SKIN2_GETICONBYHANDLE, 0, (LPARAM)iconList[i].hIconLibItem);
-
-	return NULL;
+	char szSettingName[100];
+	mir_snprintf(szSettingName, sizeof(szSettingName), "%s_%s", GGDEF_PROTO, name);
+	return (HICON)CallService(MS_SKIN2_GETICON, 0, (LPARAM)szSettingName);
 }
 
 HANDLE GetIconHandle(int iconId)
@@ -86,6 +83,13 @@ HANDLE GetIconHandle(int iconId)
 	int i;
 	for(i = 0; i < sizeof(iconList) / sizeof(iconList[0]); i++)
 		if (iconList[i].defIconID == iconId)
-			return iconList[i].hIconLibItem;
+			return hIconLibItem[i];
 	return NULL;
+}
+
+void ReleaseIconEx(const char* name)
+{
+	char szSettingName[100];
+	mir_snprintf(szSettingName, sizeof(szSettingName), "%s_%s", GGDEF_PROTO, name);
+	CallService(MS_SKIN2_RELEASEICON, 0, (LPARAM)szSettingName);
 }

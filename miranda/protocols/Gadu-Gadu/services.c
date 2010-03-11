@@ -75,8 +75,12 @@ DWORD_PTR gg_getcaps(PROTO_INTERFACE *proto, int type, HANDLE hContact)
 // loads protocol icon
 HICON gg_loadicon(PROTO_INTERFACE *proto, int iconIndex)
 {
-	if((iconIndex & 0xffff) == PLI_PROTOCOL)
-		return CopyIcon(LoadIconEx(IDI_GG));
+	if (LOWORD(iconIndex) == PLI_PROTOCOL)
+	{
+		HICON hIcon =  CopyIcon(LoadIconEx("main"));
+		ReleaseIconEx("main");
+		return hIcon;
+	}
 
 	return (HICON) NULL;
 }

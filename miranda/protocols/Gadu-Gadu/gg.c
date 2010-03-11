@@ -267,10 +267,10 @@ void gg_menus_init(GGPROTO *gg)
 
 	strcpy(service, gg->proto.m_szModuleName);
 	mi.cbSize = sizeof(mi);
-	mi.flags = CMIF_TCHAR;
+	mi.flags = CMIF_ICONFROMICOLIB | CMIF_TCHAR;
 	mi.ptszPopupName = NULL;
 	mi.position = 500090000;
-	mi.hIcon = LoadIconEx(IDI_GG);
+	mi.icolibItem = GetIconHandle(IDI_GG);
 	mi.ptszName = GG_PROTONAME;
 	mi.pszService = service;
 	gg->hMenuRoot = (HANDLE)CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM) &mi);

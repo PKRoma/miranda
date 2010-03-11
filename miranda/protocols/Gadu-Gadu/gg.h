@@ -427,12 +427,9 @@ int gg_filedeny(PROTO_INTERFACE *proto, HANDLE hContact, HANDLE hTransfer, const
 int gg_recvfile(PROTO_INTERFACE *proto, HANDLE hContact, PROTOFILEEVENT* pre);
 HANDLE gg_sendfile(PROTO_INTERFACE *proto, HANDLE hContact, const PROTOCHAR* szDescription, PROTOCHAR** ppszFiles);
 
-/* Misc module initializers & destroyers */
+/* Import module */
 void gg_import_init(GGPROTO *gg);
 void gg_import_shutdown(GGPROTO *gg);
-void gg_chpass_init(GGPROTO *gg);
-void gg_userinfo_init(GGPROTO *gg);
-void gg_userinfo_destroy(GGPROTO *gg);
 
 /* Keep-alive module */
 void gg_keepalive_init(GGPROTO *gg);
@@ -450,8 +447,9 @@ void *__stdcall gg_img_dlgthread(void *empty);
 
 /* IcoLib functions */
 void gg_icolib_init();
-HICON LoadIconEx(int iconId);
+HICON LoadIconEx(const char* name);
 HANDLE GetIconHandle(int iconId);
+void ReleaseIconEx(const char* name);
 
 /* URI parser functions */
 void gg_links_instancemenu_init();
