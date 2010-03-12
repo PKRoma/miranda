@@ -1065,6 +1065,8 @@ static INT_PTR CALLBACK DlgProcClistBehaviourOpts(HWND hwndDlg, UINT msg, WPARAM
 
 		SendDlgItemMessage(hwndDlg,IDC_MAXSIZESPIN,UDM_SETRANGE,0,MAKELONG(100,0));
 		SendDlgItemMessage(hwndDlg,IDC_MAXSIZESPIN,UDM_SETPOS,0,ModernGetSettingByte(NULL,"CLUI","MaxSizeHeight",SETTING_MAXSIZEHEIGHT_DEFAULT));
+		SendDlgItemMessage(hwndDlg,IDC_MINSIZESPIN,UDM_SETRANGE,0,MAKELONG(100,0));
+		SendDlgItemMessage(hwndDlg,IDC_MINSIZESPIN,UDM_SETPOS,0,ModernGetSettingByte(NULL,"CLUI","MinSizeHeight",SETTING_MINSIZEHEIGHT_DEFAULT));
 		CheckDlgButton(hwndDlg, IDC_AUTOSIZEUPWARD, ModernGetSettingByte(NULL,"CLUI","AutoSizeUpward",SETTING_AUTOSIZEUPWARD_DEFAULT) ? BST_CHECKED : BST_UNCHECKED);
 		CheckDlgButton(hwndDlg, IDC_SNAPTOEDGES, ModernGetSettingByte(NULL,"CLUI","SnapToEdges",SETTING_SNAPTOEDGES_DEFAULT) ? BST_CHECKED : BST_UNCHECKED);
 		CheckDlgButton(hwndDlg, IDC_DOCKTOSIDES, ModernGetSettingByte(NULL,"CLUI","DockToSides",SETTING_DOCKTOSIDES_DEFAULT) ? BST_CHECKED : BST_UNCHECKED);
@@ -1115,6 +1117,8 @@ static INT_PTR CALLBACK DlgProcClistBehaviourOpts(HWND hwndDlg, UINT msg, WPARAM
 			EnableWindow(GetDlgItem(hwndDlg,IDC_STATIC22),FALSE);
 			EnableWindow(GetDlgItem(hwndDlg,IDC_MAXSIZEHEIGHT),FALSE);
 			EnableWindow(GetDlgItem(hwndDlg,IDC_MAXSIZESPIN),FALSE);
+			EnableWindow(GetDlgItem(hwndDlg,IDC_MINSIZEHEIGHT),FALSE);
+			EnableWindow(GetDlgItem(hwndDlg,IDC_MINSIZESPIN),FALSE);
 			EnableWindow(GetDlgItem(hwndDlg,IDC_AUTOSIZEUPWARD),FALSE);
 		}
 		return TRUE;
@@ -1135,6 +1139,8 @@ static INT_PTR CALLBACK DlgProcClistBehaviourOpts(HWND hwndDlg, UINT msg, WPARAM
 			EnableWindow(GetDlgItem(hwndDlg,IDC_STATIC22),IsDlgButtonChecked(hwndDlg,IDC_AUTOSIZE));
 			EnableWindow(GetDlgItem(hwndDlg,IDC_MAXSIZEHEIGHT),IsDlgButtonChecked(hwndDlg,IDC_AUTOSIZE));
 			EnableWindow(GetDlgItem(hwndDlg,IDC_MAXSIZESPIN),IsDlgButtonChecked(hwndDlg,IDC_AUTOSIZE));
+			EnableWindow(GetDlgItem(hwndDlg,IDC_MINSIZEHEIGHT),IsDlgButtonChecked(hwndDlg,IDC_AUTOSIZE));
+			EnableWindow(GetDlgItem(hwndDlg,IDC_MINSIZESPIN),IsDlgButtonChecked(hwndDlg,IDC_AUTOSIZE));
 			EnableWindow(GetDlgItem(hwndDlg,IDC_AUTOSIZEUPWARD),IsDlgButtonChecked(hwndDlg,IDC_AUTOSIZE));
 		}
 		else if (LOWORD(wParam)==IDC_HIDEMETHOD)
@@ -1153,7 +1159,7 @@ static INT_PTR CALLBACK DlgProcClistBehaviourOpts(HWND hwndDlg, UINT msg, WPARAM
 			EnableWindow(GetDlgItem(hwndDlg,IDC_STATIC10),mode!=0);
 			EnableWindow(GetDlgItem(hwndDlg,IDC_STATIC13),mode!=0);
 		}
-		if ((LOWORD(wParam)==IDC_HIDETIME || LOWORD(wParam)==IDC_HIDEDELAY2 ||LOWORD(wParam)==IDC_HIDEDELAY ||LOWORD(wParam)==IDC_SHOWDELAY || LOWORD(wParam)==IDC_MAXSIZEHEIGHT) &&
+		if ((LOWORD(wParam)==IDC_HIDETIME || LOWORD(wParam)==IDC_HIDEDELAY2 ||LOWORD(wParam)==IDC_HIDEDELAY ||LOWORD(wParam)==IDC_SHOWDELAY || LOWORD(wParam)==IDC_MAXSIZEHEIGHT || LOWORD(wParam)==IDC_MINSIZEHEIGHT) &&
 			(HIWORD(wParam)!=EN_CHANGE || (HWND)lParam!=GetFocus()))
 			return 0;
 		// Enable apply button
@@ -1184,6 +1190,7 @@ static INT_PTR CALLBACK DlgProcClistBehaviourOpts(HWND hwndDlg, UINT msg, WPARAM
 			ModernWriteSettingByte(NULL,"CLUI","AutoSize",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_AUTOSIZE));
 			ModernWriteSettingByte(NULL,"CLUI","LockSize",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_LOCKSIZING));
 			ModernWriteSettingByte(NULL,"CLUI","MaxSizeHeight",(BYTE)GetDlgItemInt(hwndDlg,IDC_MAXSIZEHEIGHT,NULL,FALSE));               
+			ModernWriteSettingByte(NULL,"CLUI","MinSizeHeight",(BYTE)GetDlgItemInt(hwndDlg,IDC_MINSIZEHEIGHT,NULL,FALSE));               
 			ModernWriteSettingByte(NULL,"CLUI","AutoSizeUpward",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_AUTOSIZEUPWARD));
 			ModernWriteSettingByte(NULL,"CLUI","SnapToEdges",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_SNAPTOEDGES));
 			
@@ -1392,7 +1399,7 @@ static INT_PTR CALLBACK DlgProcClistWindowOpts(HWND hwndDlg, UINT msg, WPARAM wP
 			else CheckDlgButton(hwndDlg, IDC_BORDER,BST_UNCHECKED); 
 
 		}
-		if ((LOWORD(wParam)==IDC_TITLETEXT || LOWORD(wParam)==IDC_MAXSIZEHEIGHT || LOWORD(wParam)==IDC_FRAMESGAP || LOWORD(wParam)==IDC_CAPTIONSGAP ||
+		if ((LOWORD(wParam)==IDC_TITLETEXT || LOWORD(wParam)==IDC_MAXSIZEHEIGHT || LOWORD(wParam)==IDC_MINSIZEHEIGHT || LOWORD(wParam)==IDC_FRAMESGAP || LOWORD(wParam)==IDC_CAPTIONSGAP ||
 			LOWORD(wParam)==IDC_LEFTMARGIN || LOWORD(wParam)==IDC_RIGHTMARGIN|| LOWORD(wParam)==IDC_TOPMARGIN || LOWORD(wParam)==IDC_BOTTOMMARGIN) 
 			&&(HIWORD(wParam)!=EN_CHANGE || (HWND)lParam!=GetFocus()))
 			return 0;
@@ -1480,6 +1487,7 @@ static INT_PTR CALLBACK DlgProcClistWindowOpts(HWND hwndDlg, UINT msg, WPARAM wP
 			//DBWriteContactSettingByte(NULL,"CLUI","AutoSize",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_AUTOSIZE));
 			//DBWriteContactSettingByte(NULL,"CLUI","LockSize",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_LOCKSIZING));
 			//DBWriteContactSettingByte(NULL,"CLUI","MaxSizeHeight",(BYTE)GetDlgItemInt(hwndDlg,IDC_MAXSIZEHEIGHT,NULL,FALSE));               
+			//DBWriteContactSettingByte(NULL,"CLUI","MinSizeHeight",(BYTE)GetDlgItemInt(hwndDlg,IDC_MINSIZEHEIGHT,NULL,FALSE));               
 			{
 				int i1;
 				int i2;

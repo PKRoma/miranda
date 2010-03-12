@@ -76,6 +76,7 @@
 #define IDD_CREDITS                     265
 #define IDD_OPT_IDLE                    268
 #define IDD_OPT_META_CLC                279
+#define IDI_ACCMGR                      281
 #define IDI_NEWGROUP                    282
 #define IDI_NEWGROUP2                   283
 #define IDD_MODERNOPTS                  288
@@ -148,7 +149,6 @@
 #define IDI_FAVORITE_3                  503
 #define IDI_SETVIEW                     504
 #define IDI_RESETVIEW                   505
-#define IDI_ACCMGR                      282
 #define IDD_OPT_TOOLBAR                 507
 #define IDC_RESETPROTOCOLDATA           1000
 #define IDC_SAVE                        1001
@@ -272,6 +272,7 @@
 #define IDC_STATIC21                    1156
 #define IDC_STATIC22                    1157
 #define IDC_STATIC31                    1158
+#define IDC_STATIC24                    1158
 #define IDC_STATIC32                    1159
 #define IDC_PROXYAUTHNTLM               1160
 #define IDC_HKSHOWHIDE                  1162
@@ -353,7 +354,10 @@
 #define IDC_MAXSIZEHEIGHT               1254
 #define IDC_MAXSIZESPIN                 1255
 #define IDC_FONTID                      1256
+#define IDC_MINSIZEHEIGHT               1256
 #define IDC_SAMETYPE                    1257
+#define IDC_MAXSIZESPIN2                1257
+#define IDC_MINSIZESPIN                 1257
 #define IDC_SAMESTYLE                   1258
 #define IDC_SAMECOLOUR                  1259
 #define IDC_SAMEAS                      1260
