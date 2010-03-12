@@ -42,7 +42,9 @@ SetOverWrite                    on
 BrandingText                    "miranda-im.org"
 
 VAR INST_UPGRADE
-var INST_SUCCESS
+VAR INST_SUCCESS
+VAR INST_MODE
+VAR INST_DIR
 
 !define MUI_HEADERIMAGE
 !define MUI_HEADERIMAGE_BITMAP "Graphics\header.bmp"
@@ -64,6 +66,8 @@ var INST_SUCCESS
 
 !insertmacro MUI_PAGE_WELCOME
 !insertmacro MUI_PAGE_LICENSE "${MIM_BUILD_SRC}\docs\license.txt"
+Page Custom CustomInstallPage CustomInstallPageLeave
+!define MUI_DIRECTORYPAGE_VARIABLE $INST_DIR
 !define MUI_PAGE_CUSTOMFUNCTION_LEAVE VerifyInstallDir
 !insertmacro MUI_PAGE_DIRECTORY
 !insertmacro MUI_PAGE_COMPONENTS
@@ -134,7 +138,19 @@ Section "Miranda IM (core)"
     File "${MIM_BUILD_SRC}\docs\mirandaboot.ini"
     SetOverWrite on
   ${EndIf}
-
+  ${If} ${FileExists} "$INSTDIR\mirandaboot.ini"
+    ${If} $INST_UPGRADE = 0
+      ${If} $INST_MODE = 0
+	    !ifdef MIM_BUILD_UNICODE
+          WriteINIStr "$INSTDIR\mirandaboot.ini" "Database" "ProfileDir" "%APPDATA%\Miranda"
+		!endif
+  	  ${ElseIf} $INST_MODE = 1
+  	    CreateDirectory "$INSTDIR\Profiles"
+	    WriteINIStr "$INSTDIR\mirandaboot.ini" "Database" "ProfileDir" "Profiles"
+	  ${EndIf}
+    ${EndIf}
+  ${EndIf}
+  
   !insertmacro InstallMirandaPlugin "clist_classic.dll"
   !insertmacro InstallMirandaPlugin "srmm.dll"
   !insertmacro InstallMirandaPlugin "avs.dll"
@@ -146,11 +162,13 @@ Section "Miranda IM (core)"
   !endif
   !insertmacro InstallMirandaPlugin "chat.dll"
   
-  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Miranda IM" "DisplayName" "Miranda IM ${MIM_VERSION}" 
-  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Miranda IM" "UninstallString" "$INSTDIR\Uninstall.exe"
-  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\App Paths\miranda32.exe" "" "$INSTDIR\miranda32.exe"
-  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\App Paths\miranda32.exe" "Path" "$INSTDIR"
-
+  ${If} $INST_MODE = 0
+   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Miranda IM" "DisplayName" "Miranda IM ${MIM_VERSION}" 
+   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Miranda IM" "UninstallString" "$INSTDIR\Uninstall.exe"
+   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\App Paths\miranda32.exe" "" "$INSTDIR\miranda32.exe"
+   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\App Paths\miranda32.exe" "Path" "$INSTDIR"
+  ${EndIf}
+  
   ; AIM
   !insertmacro PrintInstallerDetails "Installing AIM Protocol..."
   !insertmacro InstallMirandaPlugin "Aim.dll"
@@ -195,13 +213,16 @@ Section "Miranda IM (core)"
   !insertmacro InstallMirandaPlugin "yahoo.dll"
   !insertmacro InstallMirandaProtoIcon "Yahoo"
   
-  WriteUninstaller "$INSTDIR\Uninstall.exe"
-SectionEnd
-
-Section "Import Plugin" pImport
-  !insertmacro PrintInstallerDetails "Installing Import Plugin..."
-  !insertmacro WriteInstallerOption "1" "Import"
-  !insertmacro InstallMirandaPlugin "import.dll"
+  ; Import (installs automatically on new installs and if the file exists)
+  ${If} ${FileExists} "$INSTDIR\plugins\import.dll"
+    !insertmacro InstallMirandaPlugin "import.dll"
+  ${ElseIf} $INST_UPGRADE = 0
+    !insertmacro InstallMirandaPlugin "import.dll"
+  ${EndIf}
+  
+  ${If} $INST_MODE = 0
+    WriteUninstaller "$INSTDIR\Uninstall.exe"
+  ${EndIf}
 SectionEnd
 
 SubSection /e "Options" pOptions
@@ -230,15 +251,6 @@ SubSection /e "Options" pOptions
     SetOutPath "$INSTDIR"
     CreateShortCut  "$QUICKLAUNCH\Miranda IM.lnk" "$INSTDIR\miranda32.exe"
   SectionEnd
-
-  !ifdef MIM_BUILD_UNICODE
-  Section /o "Store profile data in user home directory" pStoreData
-    !insertmacro PrintInstallerDetails "Configuring profile directory..."
-    ${If} $INST_UPGRADE = 0
-      WriteINIStr "$INSTDIR\mirandaboot.ini" "Database" "ProfileDir" "%APPDATA%\Miranda"
-    ${EndIf}
-  SectionEnd
-  !endif
 SubSectionEnd
 
 Section Uninstall
@@ -281,6 +293,7 @@ Function .onInit
   Sleep 1000
   norun:
   StrCpy $INST_SUCCESS 0
+  StrCpy $INST_MODE 0
 FunctionEnd
 
 Function .onInstSuccess
@@ -293,48 +306,66 @@ Function VerifyInstallDir
   ${Else}
     StrCpy $INST_UPGRADE 0
   ${EndIf}
-
-  !ifdef MIM_BUILD_UNICODE
-  ${If} $INST_UPGRADE = 1
-    !insertmacro ClearSectionFlag ${pStoreData} ${SF_SELECTED}
-    SectionSetText ${pStoreData} ""
-    !insertmacro SetSectionFlag ${pOptions} ${SF_EXPAND}
-  ${Else}
-    SectionSetText ${pStoreData} "Store profile data in user home directory"
-    !insertmacro SetSectionFlag ${pStoreData} ${SF_SELECTED}
-  ${EndIf}
-  !endif
-  
-  ReadINIStr $0 "$INSTDIR\${MIM_BUILD_OPTIONS_FILE}" ${MIM_BUILD_OPTIONS_SECT} "Import"
-  ${If} $0 == "0"
-    !insertmacro ClearSectionFlag ${pImport} ${SF_SELECTED}
-  ${Else}
-    !insertmacro SetSectionFlag ${pImport} ${SF_SELECTED}
-  ${EndIf}
-  ${If} ${FileExists} "$INSTDIR\plugins\import.dll"
-    !insertmacro SetSectionFlag ${pImport} ${SF_SELECTED}
-  ${EndIf}
-  ReadINIStr $0 "$INSTDIR\${MIM_BUILD_OPTIONS_FILE}" ${MIM_BUILD_OPTIONS_SECT} "StartMenuShortCut"
-  ${If} $0 == "0"
+  ${If} $INST_MODE = 1
     !insertmacro ClearSectionFlag ${pSCStartMenu} ${SF_SELECTED}
-  ${Else}
-    !insertmacro SetSectionFlag ${pSCStartMenu} ${SF_SELECTED}
-  ${EndIf}
-  ReadINIStr $0 "$INSTDIR\${MIM_BUILD_OPTIONS_FILE}" ${MIM_BUILD_OPTIONS_SECT} "DesktopShortCut"
-  ${If} $0 == "0"
-    !insertmacro ClearSectionFlag ${pSCDesktop} ${SF_SELECTED}
-  ${Else}
-    !insertmacro SetSectionFlag ${pSCDesktop} ${SF_SELECTED}
-  ${EndIf}
-  ReadINIStr $0 "$INSTDIR\${MIM_BUILD_OPTIONS_FILE}" ${MIM_BUILD_OPTIONS_SECT} "QuickLaunchShortCut"
-  ${If} $0 == "0"
-    !insertmacro ClearSectionFlag ${pSCQuickLaunch} ${SF_SELECTED}
-  ${Else}
-    !insertmacro SetSectionFlag ${pSCQuickLaunch} ${SF_SELECTED}
-  ${EndIf}
-  ${If} ${AtLeastWin7}
-    !insertmacro ClearSectionFlag ${pSCQuickLaunch} ${SF_SELECTED}
+    SectionSetText ${pSCStartMenu} ""
+	!insertmacro ClearSectionFlag ${pSCDesktop} ${SF_SELECTED}
+    SectionSetText ${pSCDesktop} ""
+	!insertmacro ClearSectionFlag ${pSCQuickLaunch} ${SF_SELECTED}
     SectionSetText ${pSCQuickLaunch} ""
-  ${EndIf}
+	!insertmacro ClearSectionFlag ${pOptions} ${SF_SELECTED}
+    SectionSetText ${pOptions} ""
+  ${Else}
+    ReadINIStr $0 "$INSTDIR\${MIM_BUILD_OPTIONS_FILE}" ${MIM_BUILD_OPTIONS_SECT} "StartMenuShortCut"
+    ${If} $0 == "0"
+      !insertmacro ClearSectionFlag ${pSCStartMenu} ${SF_SELECTED}
+    ${Else}
+      !insertmacro SetSectionFlag ${pSCStartMenu} ${SF_SELECTED}
+    ${EndIf}
+    ReadINIStr $0 "$INSTDIR\${MIM_BUILD_OPTIONS_FILE}" ${MIM_BUILD_OPTIONS_SECT} "DesktopShortCut"
+    ${If} $0 == "0"
+      !insertmacro ClearSectionFlag ${pSCDesktop} ${SF_SELECTED}
+    ${Else}
+      !insertmacro SetSectionFlag ${pSCDesktop} ${SF_SELECTED}
+    ${EndIf}
+    ReadINIStr $0 "$INSTDIR\${MIM_BUILD_OPTIONS_FILE}" ${MIM_BUILD_OPTIONS_SECT} "QuickLaunchShortCut"
+    ${If} $0 == "0"
+      !insertmacro ClearSectionFlag ${pSCQuickLaunch} ${SF_SELECTED}
+    ${Else}
+      !insertmacro SetSectionFlag ${pSCQuickLaunch} ${SF_SELECTED}
+    ${EndIf}
+    ${If} ${AtLeastWin7}
+      !insertmacro ClearSectionFlag ${pSCQuickLaunch} ${SF_SELECTED}
+      SectionSetText ${pSCQuickLaunch} ""
+    ${EndIf}
+  ${Endif}
 FunctionEnd
 
+
+Function CustomInstallPage
+  !insertmacro MUI_HEADER_TEXT "Installation Mode" "Select the type of installation to perform."
+  ReserveFile "miranda-ui-type.ini"
+  !insertmacro MUI_INSTALLOPTIONS_EXTRACT "miranda-ui-type.ini"
+  ${If} $INST_MODE = 0
+    !insertmacro MUI_INSTALLOPTIONS_WRITE "miranda-ui-type.ini" "Field 2" "State" "1"
+    !insertmacro MUI_INSTALLOPTIONS_WRITE "miranda-ui-type.ini" "Field 3" "State" "0"
+  ${Else}
+    !insertmacro MUI_INSTALLOPTIONS_WRITE "miranda-ui-type.ini" "Field 2" "State" "0"
+    !insertmacro MUI_INSTALLOPTIONS_WRITE "miranda-ui-type.ini" "Field 3" "State" "1"
+  ${EndIf}
+  !insertmacro MUI_INSTALLOPTIONS_DISPLAY "miranda-ui-type.ini"
+FunctionEnd
+
+Function CustomInstallPageLeave
+  !insertmacro MUI_INSTALLOPTIONS_READ $INST_MODE "miranda-ui-type.ini" "Field 3" "State"
+  ${If} $INST_MODE = 1
+	StrCpy $INST_DIR "$DESKTOP\Miranda IM"
+  ${Else}
+	ReadRegStr $0 HKLM "Software\Microsoft\Windows\CurrentVersion\App Paths\miranda32.exe" "Path"
+	${If} $0 == ""
+      StrCpy $INST_DIR "$PROGRAMFILES\Miranda IM"
+	${Else}
+	  StrCpy $INST_DIR $0
+	${EndIf}
+  ${EndIf}
+FunctionEnd
