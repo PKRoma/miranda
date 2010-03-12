@@ -105,7 +105,7 @@ void CIcqProto::InitAvatars()
 			null_snprintf(szPath, MAX_PATH * 2, _T("%s\\") _T(TCHAR_STR_PARAM) _T("\\"), tmpPath, m_szModuleName);
 			mir_free(tmpPath);
 
-			hAvatarsFolder = FoldersRegisterCustomPathT(m_szModuleName, ICQTranslate("Avatars Cache"), szPath);
+			hAvatarsFolder = FoldersRegisterCustomPathT(m_szModuleName, "Avatars Cache", szPath);
 		}
 	}
 }
