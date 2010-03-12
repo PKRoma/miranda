@@ -1134,7 +1134,7 @@ static int TSAPI SetupIconLibConfig()
 
 	sid.pszName = "tabSRMM_clock_symbol";
 	sid.cx = sid.cy = 16;
-	sid.pszDescription = "Clock symbol (for thei info panel clock)";
+	sid.pszDescription = "Clock symbol (for the info panel clock)";
 	sid.iDefaultIndex = -IDI_CORE_LOAD;
 	CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
 
