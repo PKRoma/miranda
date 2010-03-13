@@ -56,7 +56,7 @@
 static gg_resolver_t gg_global_resolver_type = GG_RESOLVER_DEFAULT;
 
 /** Funkcja rozpoczynająca rozwiązywanie nazwy */
-static int (*gg_global_resolver_start)(int *fd, void **private_data, const char *hostname);
+static int (*gg_global_resolver_start)(SOCKET *fd, void **private_data, const char *hostname);
 
 /** Funkcja zwalniająca zasoby po rozwiązaniu nazwy */
 static void (*gg_global_resolver_cleanup)(void **private_data, int force);
@@ -239,7 +239,7 @@ struct gg_resolver_fork_data {
  *
  * \return 0 jeśli się powiodło, -1 w przypadku błędu
  */
-static int gg_resolver_fork_start(int *fd, void **priv_data, const char *hostname)
+static int gg_resolver_fork_start(SOCKET *fd, void **priv_data, const char *hostname)
 {
 	struct gg_resolver_fork_data *data = NULL;
 	struct in_addr addr;
@@ -426,7 +426,7 @@ static void *gg_resolver_pthread_thread(void *arg)
  *
  * \return 0 jeśli się powiodło, -1 w przypadku błędu
  */
-static int gg_resolver_pthread_start(int *fd, void **priv_data, const char *hostname)
+static int gg_resolver_pthread_start(SOCKET *fd, void **priv_data, const char *hostname)
 {
 	struct gg_resolver_pthread_data *data = NULL;
 	int pipes[2], new_errno;
@@ -569,7 +569,7 @@ gg_resolver_t gg_session_get_resolver(struct gg_session *gs)
  *
  * \return 0 jeśli się powiodło, -1 w przypadku błędu
  */
-int gg_session_set_custom_resolver(struct gg_session *gs, int (*resolver_start)(int*, void**, const char*), void (*resolver_cleanup)(void**, int))
+int gg_session_set_custom_resolver(struct gg_session *gs, int (*resolver_start)(SOCKET*, void**, const char*), void (*resolver_cleanup)(void**, int))
 {
 	if (gs == NULL || resolver_start == NULL || resolver_cleanup == NULL) {
 		errno = EINVAL;
@@ -660,7 +660,7 @@ gg_resolver_t gg_http_get_resolver(struct gg_http *gh)
  *
  * \return 0 jeśli się powiodło, -1 w przypadku błędu
  */
-int gg_http_set_custom_resolver(struct gg_http *gh, int (*resolver_start)(int*, void**, const char*), void (*resolver_cleanup)(void**, int))
+int gg_http_set_custom_resolver(struct gg_http *gh, int (*resolver_start)(SOCKET*, void**, const char*), void (*resolver_cleanup)(void**, int))
 {
 	if (gh == NULL || resolver_start == NULL || resolver_cleanup == NULL) {
 		errno = EINVAL;
@@ -727,7 +727,7 @@ gg_resolver_t gg_global_get_resolver(void)
  * \param resolver_cleanup Funkcja zwalniająca zasoby
  *
  * Parametry funkcji rozpoczynającej rozwiązywanie nazwy wyglądają następująco:
- *  - \c "int *fd" &mdash; wskaźnik na zmienną, gdzie zostanie umieszczony deskryptor potoku
+ *  - \c "SOCKET *fd" &mdash; wskaźnik na zmienną, gdzie zostanie umieszczony deskryptor potoku
  *  - \c "void **priv_data" &mdash; wskaźnik na zmienną, gdzie można umieścić wskaźnik do prywatnych danych na potrzeby rozwiązywania nazwy
  *  - \c "const char *name" &mdash; nazwa serwera do rozwiązania
  *
@@ -747,7 +747,7 @@ gg_resolver_t gg_global_get_resolver(void)
  *
  * \return 0 jeśli się powiodło, -1 w przypadku błędu
  */
-int gg_global_set_custom_resolver(int (*resolver_start)(int*, void**, const char*), void (*resolver_cleanup)(void**, int))
+int gg_global_set_custom_resolver(int (*resolver_start)(SOCKET*, void**, const char*), void (*resolver_cleanup)(void**, int))
 {
 	if (resolver_start == NULL || resolver_cleanup == NULL) {
 		errno = EINVAL;

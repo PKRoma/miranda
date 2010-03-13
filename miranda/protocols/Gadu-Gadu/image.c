@@ -780,7 +780,7 @@ int gg_img_displayasmsg(GGPROTO *gg, HANDLE hContact, void *img)
 {
 	GGIMAGEENTRY *dat = (GGIMAGEENTRY *)img;
 	char szPath[MAX_PATH], *path = (char *)alloca(MAX_PATH);
-	int tPathLen;
+	size_t tPathLen;
 	FILE *fp;
 
 	if (gg->hImagesFolder == NULL || FoldersGetCustomPath(gg->hImagesFolder, path, MAX_PATH, "")) {

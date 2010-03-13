@@ -303,7 +303,7 @@ char *gg_get_line(char **ptr)
  *
  * \return Zwraca \c buf jeśli się powiodło, lub \c NULL w przypadku błędu.
  */
-char *gg_read_line(int sock, char *buf, int length)
+char *gg_read_line(SOCKET sock, char *buf, int length)
 {
 	int ret;
 
@@ -344,9 +344,10 @@ char *gg_read_line(int sock, char *buf, int length)
  *
  * \ingroup helper
  */
-int gg_connect(void *addr, int port, int async)
+SOCKET gg_connect(void *addr, int port, int async)
 {
-	int sock, one = 1, errno2;
+	SOCKET sock;
+	int one = 1, errno2;
 	struct sockaddr_in sin;
 	struct in_addr *a = addr;
 	struct sockaddr_in myaddr;
@@ -418,7 +419,7 @@ int gg_connect(void *addr, int port, int async)
  */
 void gg_chomp(char *line)
 {
-	int len;
+	size_t len;
 
 	if (!line)
 		return;
@@ -619,7 +620,7 @@ static char gg_base64_charset[] =
 char *gg_base64_encode(const char *buf)
 {
 	char *out, *res;
-	unsigned int i = 0, j = 0, k = 0, len = strlen(buf);
+	unsigned int i = 0, j = 0, k = 0, len = (unsigned int)strlen(buf);
 
 	res = out = malloc((len / 3 + 1) * 4 + 2);
 
@@ -736,7 +737,7 @@ char *gg_base64_decode(const char *buf)
 char *gg_proxy_auth()
 {
 	char *tmp, *enc, *out;
-	unsigned int tmp_size;
+	size_t tmp_size;
 
 	if (!gg_proxy_enabled || !gg_proxy_username || !gg_proxy_password)
 		return NULL;
@@ -952,7 +953,7 @@ char *gg_utf8_to_cp(const char *b)
 	int len;
 	int i, j;
 
-	len = strlen(b);
+	len = (int)strlen(b);
 
 	for (i = 0; i < len; newlen++) {
 		uint16_t discard;

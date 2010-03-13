@@ -136,7 +136,8 @@ void *__stdcall gg_dccmainthread(void *empty)
 	struct gg_event *e;
 	struct timeval tv;
 	fd_set rd, wd;
-	int ret, maxfd;
+	int ret;
+	SOCKET maxfd;
 	DWORD tick;
 	list_t l;
 	char filename[MAX_PATH];

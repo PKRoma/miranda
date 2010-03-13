@@ -1131,7 +1131,7 @@ static int gg_change_status_common(struct gg_session *sess, int status, const ch
 	}
 
 	if (descr) {
-		descr_len = strlen((new_descr) ? new_descr : descr);
+		descr_len = (int)strlen((new_descr) ? new_descr : descr);
 
 		if (descr_len > descr_len_max)
 			descr_len = descr_len_max;
@@ -1580,7 +1580,7 @@ int gg_send_message_confer_richtext(struct gg_session *sess, int msgclass, int r
 		// wiadomości w ciągu jednej sekundy, zwiększamy poprzednią
 		// wartość, żeby każda wiadomość miała unikalny numer.
 
-		seq_no = time(NULL);
+		seq_no = (int)time(NULL);
 
 		if (seq_no <= sess->seq)
 			seq_no = sess->seq + 1;
@@ -1605,8 +1605,8 @@ int gg_send_message_confer_richtext(struct gg_session *sess, int msgclass, int r
 
 		s80.seq = gg_fix32(seq_no);
 		s80.msgclass = gg_fix32(msgclass);
-		s80.offset_plain = gg_fix32(sizeof(s80) + strlen(html_msg) + 1);
-		s80.offset_attr = gg_fix32(sizeof(s80) + strlen(html_msg) + 1 + strlen(cp_msg) + 1);
+		s80.offset_plain = gg_fix32(sizeof(s80) + (uint32_t)strlen(html_msg) + 1);
+		s80.offset_attr = gg_fix32(sizeof(s80) + (uint32_t)strlen(html_msg) + 1 + (uint32_t)strlen(cp_msg) + 1);
 	}
 
 	if (recipients_count > 1) {
@@ -1865,7 +1865,7 @@ int gg_image_reply(struct gg_session *sess, uin_t recipient, const char *filenam
 		/* w pierwszym kawałku jest nazwa pliku */
 		if (r->flag == 0x05) {
 			strcpy(buf + buflen, filename);
-			buflen += strlen(filename) + 1;
+			buflen += (int)strlen(filename) + 1;
 		}
 
 		chunklen = (size >= (int)sizeof(buf) - buflen) ? ((int)sizeof(buf) - buflen) : size;
@@ -2179,7 +2179,7 @@ int gg_userlist_request(struct gg_session *sess, char type, const char *request)
 		return gg_send_packet(sess, GG_USERLIST_REQUEST, &type, sizeof(type), NULL);
 	}
 
-	len = strlen(request);
+	len = (int)strlen(request);
 
 	sess->userlist_blocks = 0;
 

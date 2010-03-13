@@ -197,7 +197,7 @@ static int gg_dcc7_connect(struct gg_session *sess, struct gg_dcc7 *dcc)
 static int gg_dcc7_listen(struct gg_dcc7 *dcc, uint16_t port)
 {
 	struct sockaddr_in sin;
-	int fd;
+	SOCKET fd;
 
 	gg_debug_session((dcc) ? (dcc)->sess : NULL, GG_DEBUG_FUNCTION, "** gg_dcc7_listen(%p, %d)\n", dcc, port);
 
@@ -390,7 +390,7 @@ static struct gg_dcc7 *gg_dcc7_send_file_common(struct gg_session *sess, uin_t r
 	dcc->uin = sess->uin;
 	dcc->peer_uin = rcpt;
 	dcc->file_fd = fd;
-	dcc->size = size;
+	dcc->size = (unsigned int)size;
 	dcc->seek = seek;
 
 	strncpy((char*) dcc->filename, filename1250, GG_DCC7_FILENAME_LEN - 1);
@@ -961,7 +961,8 @@ struct gg_event *gg_dcc7_watch_fd(struct gg_dcc7 *dcc)
 		case GG_STATE_LISTENING:
 		{
 			struct sockaddr_in sin;
-			int fd, one = 1;
+			SOCKET fd;
+			int one = 1;
 			unsigned int sin_len = sizeof(sin);
 
 			gg_debug_session((dcc) ? (dcc)->sess : NULL, GG_DEBUG_MISC, "// gg_dcc7_watch_fd() GG_STATE_LISTENING\n");

@@ -236,7 +236,7 @@ static void gg_image_queue_parse(struct gg_event *e, char *p, unsigned int len, 
 			return;
 		}
 
-		len -= strlen(p) + 1;
+		len -= (unsigned int)strlen(p) + 1;
 		p += strlen(p) + 1;
 	} else {
 		len -= sizeof(struct gg_msg_image_reply);
@@ -1255,7 +1255,7 @@ static int gg_watch_fd_connected(struct gg_session *sess, struct gg_event *e)
 			gg_debug_session(sess, GG_DEBUG_MISC, "// gg_watch_fd_connected() received a pong\n");
 
 			e->type = GG_EVENT_PONG;
-			sess->last_pong = time(NULL);
+			sess->last_pong = (int)time(NULL);
 
 			break;
 		}
@@ -1326,7 +1326,7 @@ static int gg_watch_fd_connected(struct gg_session *sess, struct gg_event *e)
 
 			if (h->length > 1) {
 				char *tmp;
-				unsigned int len = (sess->userlist_reply) ? strlen(sess->userlist_reply) : 0;
+				unsigned int len = (sess->userlist_reply) ? (unsigned int)strlen(sess->userlist_reply) : 0;
 
 				gg_debug_session(sess, GG_DEBUG_MISC, "userlist_reply=%p, len=%d\n", sess->userlist_reply, len);
 
@@ -1627,7 +1627,7 @@ struct gg_event *gg_watch_fd(struct gg_session *sess)
 			/* zapytanie jest krótkie, więc zawsze zmieści się
 			 * do bufora gniazda. jeśli write() zwróci mniej,
 			 * stało się coś złego. */
-			if (gg_sock_write(sess->fd, buf, strlen(buf)) < (signed)strlen(buf)) {
+			if (gg_sock_write(sess->fd, buf, (int)strlen(buf)) < (signed)strlen(buf)) {
 				gg_debug_session(sess, GG_DEBUG_MISC, "// gg_watch_fd() sending query failed\n");
 
 				e->type = GG_EVENT_CONN_FAILED;
@@ -1691,7 +1691,7 @@ struct gg_event *gg_watch_fd(struct gg_session *sess)
 					else
 						strcat(sysmsg_buf, tmp);
 
-					len += strlen(tmp);
+					len += (int)strlen(tmp);
 				}
 
 				e->type = GG_EVENT_MSG;
@@ -1861,7 +1861,7 @@ struct gg_event *gg_watch_fd(struct gg_session *sess)
 				/* wysyłamy zapytanie. jest ono na tyle krótkie,
 				 * że musi się zmieścić w buforze gniazda. jeśli
 				 * write() zawiedzie, stało się coś złego. */
-				if (gg_sock_write(sess->fd, buf, strlen(buf)) < (signed)strlen(buf)) {
+				if (gg_sock_write(sess->fd, buf, (int)strlen(buf)) < (signed)strlen(buf)) {
 					gg_debug_session(sess, GG_DEBUG_MISC, "// gg_watch_fd() can't send proxy request\n");
 					free(auth);
 					goto fail_connecting;
@@ -1869,7 +1869,7 @@ struct gg_event *gg_watch_fd(struct gg_session *sess)
 
 				if (auth) {
 					gg_debug_session(sess, GG_DEBUG_MISC, "//   %s", auth);
-					if (gg_sock_write(sess->fd, auth, strlen(auth)) < (signed)strlen(auth)) {
+					if (gg_sock_write(sess->fd, auth, (int)strlen(auth)) < (signed)strlen(auth)) {
 						gg_debug_session(sess, GG_DEBUG_MISC, "// gg_watch_fd() can't send proxy request\n");
 						free(auth);
 						goto fail_connecting;
@@ -1886,7 +1886,7 @@ struct gg_event *gg_watch_fd(struct gg_session *sess)
 
 #ifdef GG_CONFIG_HAVE_OPENSSL
 			if (sess->ssl) {
-				SSL_set_fd(sess->ssl, sess->fd);
+				SSL_set_fd(sess->ssl, (int)sess->fd);
 
 				sess->state = GG_STATE_TLS_NEGOTIATION;
 				sess->check = GG_CHECK_WRITE;
@@ -2101,8 +2101,8 @@ struct gg_event *gg_watch_fd(struct gg_session *sess)
 			if (sess->protocol_version >= 0x2e) {
 				struct gg_login80 l;
 
-				uint32_t tmp_version_len	= gg_fix32(strlen(GG8_VERSION));
-				uint32_t tmp_descr_len		= gg_fix32((sess->initial_descr) ? strlen(sess->initial_descr) : 0);
+				uint32_t tmp_version_len	= gg_fix32((uint32_t)strlen(GG8_VERSION));
+				uint32_t tmp_descr_len		= gg_fix32((sess->initial_descr) ? (uint32_t)strlen(sess->initial_descr) : 0);
 				
 				memset(&l, 0, sizeof(l));
 				l.uin           = gg_fix32(sess->uin);
@@ -2247,7 +2247,7 @@ struct gg_event *gg_watch_fd(struct gg_session *sess)
 		{
 			gg_debug_session(sess, GG_DEBUG_MISC, "// gg_watch_fd() GG_STATE_CONNECTED\n");
 
-			sess->last_event = time(NULL);
+			sess->last_event = (int)time(NULL);
 
 			if ((res = gg_watch_fd_connected(sess, e)) == -1) {
 

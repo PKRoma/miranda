@@ -73,7 +73,7 @@
  * \param buf Bufor z danumi
  * \param size Rozmiar bufora z danymi
  */
-static void gg_dcc_debug_data(const char *prefix, int fd, const void *buf, unsigned int size)
+static void gg_dcc_debug_data(const char *prefix, SOCKET fd, const void *buf, unsigned int size)
 {
 	unsigned int i;
 
@@ -117,7 +117,7 @@ int gg_dcc_request(struct gg_session *sess, uin_t uin)
  * \param ut Czas w postaci uniksowej
  * \param ft Czas w postaci API WIN32
  */
-static void gg_dcc_fill_filetime(uint32_t ut, uint32_t *ft)
+static void gg_dcc_fill_filetime(time_t ut, uint32_t *ft)
 {
 #ifdef GG_CONFIG_HAVE_LONG_LONG
 	unsigned long long tmp;
@@ -422,7 +422,8 @@ struct gg_dcc *gg_dcc_socket_create(uin_t uin, uint16_t port)
 {
 	struct gg_dcc *c;
 	struct sockaddr_in sin;
-	int sock, bound = 0, errno2;
+	SOCKET sock;
+	int bound = 0, errno2;
 
 	gg_debug(GG_DEBUG_FUNCTION, "** gg_create_dcc_socket(%d, %d);\n", uin, port);
 
@@ -617,7 +618,8 @@ struct gg_event *gg_dcc_watch_fd(struct gg_dcc *h)
 	if (h->type == GG_SESSION_DCC_SOCKET) {
 		struct sockaddr_in sin;
 		struct gg_dcc *c;
-		int fd, one = 1;
+		SOCKET fd;
+		int one = 1;
 		unsigned int sin_len = sizeof(sin);
 
 		if ((fd = accept(h->fd, (struct sockaddr*) &sin, &sin_len)) == -1) {

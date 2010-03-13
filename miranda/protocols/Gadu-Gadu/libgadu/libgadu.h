@@ -168,6 +168,7 @@ typedef   signed int    int32_t;
 #  define gg_sock_close(sock)			closesocket(sock)
 #  define gg_getsockopt(sock,level,name,val,len) getsockopt(sock,level,name,(char *)val,len)
 #else
+   typedef int				SOCKET;
 #  define gg_sock_write		write
 #  define gg_sock_read		read
 #  define gg_sock_close		close
@@ -192,7 +193,7 @@ typedef struct {
  * Makro deklarujące pola wspólne dla struktur sesji.
  */
 #define gg_common_head(x) \
-	int fd;			/**< Obserwowany deskryptor */ \
+	SOCKET fd;		/**< Obserwowany deskryptor */ \
 	int check;		/**< Informacja o żądaniu odczytu/zapisu (patrz \ref gg_check_t) */ \
 	int state;		/**< Aktualny stan połączenia (patrz \ref gg_state_t) */ \
 	int error;		/**< Kod błędu dla \c GG_STATE_ERROR (patrz \ref gg_error_t) */ \
@@ -316,7 +317,7 @@ struct gg_session {
 	gg_encoding_t encoding;		/**< Rodzaj kodowania znaków */
 
 	gg_resolver_t resolver_type;	/**< Sposób rozwiązywania nazw serwerów */
-	int (*resolver_start)(int *fd, void **private_data, const char *hostname);	/**< Funkcja rozpoczynająca rozwiązywanie nazwy */
+	int (*resolver_start)(SOCKET *fd, void **private_data, const char *hostname);	/**< Funkcja rozpoczynająca rozwiązywanie nazwy */
 	void (*resolver_cleanup)(void **private_data, int force);	/**< Funkcja zwalniająca zasoby po rozwiązaniu nazwy */
 
 	int protocol_features;	/**< Opcje protokołu */
@@ -352,7 +353,7 @@ struct gg_http {
 	unsigned int body_done;	/**< Liczba odebranych bajtów strony */
 
 	gg_resolver_t resolver_type;	/**< Sposób rozwiązywania nazw serwerów */
-	int (*resolver_start)(int *fd, void **private_data, const char *hostname);	/**< Funkcja rozpoczynająca rozwiązywanie nazwy */
+	int (*resolver_start)(SOCKET *fd, void **private_data, const char *hostname);	/**< Funkcja rozpoczynająca rozwiązywanie nazwy */
 	void (*resolver_cleanup)(void **private_data, int force);	/**< Funkcja zwalniająca zasoby po rozwiązaniu nazwy */
 };
 
@@ -659,15 +660,15 @@ uint32_t gg_crc32(uint32_t crc, const unsigned char *buf, int len);
 
 int gg_session_set_resolver(struct gg_session *gs, gg_resolver_t type);
 gg_resolver_t gg_session_get_resolver(struct gg_session *gs);
-int gg_session_set_custom_resolver(struct gg_session *gs, int (*resolver_start)(int*, void**, const char*), void (*resolver_cleanup)(void**, int));
+int gg_session_set_custom_resolver(struct gg_session *gs, int (*resolver_start)(SOCKET*, void**, const char*), void (*resolver_cleanup)(void**, int));
 
 int gg_http_set_resolver(struct gg_http *gh, gg_resolver_t type);
 gg_resolver_t gg_http_get_resolver(struct gg_http *gh);
-int gg_http_set_custom_resolver(struct gg_http *gh, int (*resolver_start)(int*, void**, const char*), void (*resolver_cleanup)(void**, int));
+int gg_http_set_custom_resolver(struct gg_http *gh, int (*resolver_start)(SOCKET*, void**, const char*), void (*resolver_cleanup)(void**, int));
 
 int gg_global_set_resolver(gg_resolver_t type);
 gg_resolver_t gg_global_get_resolver(void);
-int gg_global_set_custom_resolver(int (*resolver_start)(int*, void**, const char*), void (*resolver_cleanup)(void**, int));
+int gg_global_set_custom_resolver(int (*resolver_start)(SOCKET*, void**, const char*), void (*resolver_cleanup)(void**, int));
 
 /**
  * Rodzaj zdarzenia.
@@ -1367,9 +1368,9 @@ char *gg_vsaprintf(const char *format, va_list ap) GG_DEPRECATED;
 
 char *gg_get_line(char **ptr) GG_DEPRECATED;
 
-int gg_connect(void *addr, int port, int async) GG_DEPRECATED;
+SOCKET gg_connect(void *addr, int port, int async) GG_DEPRECATED;
 struct in_addr *gg_gethostbyname(const char *hostname) GG_DEPRECATED;
-char *gg_read_line(int sock, char *buf, int length) GG_DEPRECATED;
+char *gg_read_line(SOCKET sock, char *buf, int length) GG_DEPRECATED;
 void gg_chomp(char *line) GG_DEPRECATED;
 char *gg_urlencode(const char *str) GG_DEPRECATED;
 int gg_http_hash(const char *format, ...) GG_DEPRECATED;

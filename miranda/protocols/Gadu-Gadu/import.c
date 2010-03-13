@@ -78,7 +78,7 @@ char *CreateGroup(char *groupName)
 	// Is this a duplicate?
 	if (!GroupNameExists(groupName))
 	{
-		lstrcpyn(groupName2 + 1, groupName, strlen(groupName) + 1);
+		lstrcpyn(groupName2 + 1, groupName, (int)strlen(groupName) + 1);
 
 		// Find an unused id
 		for (groupId = 0; ; groupId++) {
