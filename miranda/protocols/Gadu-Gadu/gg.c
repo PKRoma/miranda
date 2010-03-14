@@ -19,17 +19,18 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 #include "gg.h"
+#include "version.h"
 #include <errno.h>
 
 // Plugin info
 PLUGININFOEX pluginInfo = {
 	sizeof(PLUGININFOEX),
 	"Gadu-Gadu Protocol",
-	PLUGIN_MAKE_VERSION(0, 0, 5, 3),
+	__VERSION_DWORD,
 	"Provides support for Gadu-Gadu protocol",
-	"Adam Strzelecki, Bartosz Bia쿮k",
+	"Bartosz Bia쿮k, Adam Strzelecki",
 	"dezred"/*antispam*/"@"/*antispam*/"gmail"/*antispam*/"."/*antispam*/"com",
-	"Copyright � 2003-2009 Adam Strzelecki, Bartosz Bia쿮k",
+	"� 2009-2010 Bartosz Bia쿮k, 2003-2009 Adam Strzelecki",
 	"http://www.miranda-im.pl/",
 	0,
 	0,
@@ -140,11 +141,11 @@ const char *http_error_string(int h)
 DWORD gMirandaVersion = 0;
 __declspec(dllexport) PLUGININFOEX *MirandaPluginInfoEx(DWORD mirandaVersion)
 {
-	if (mirandaVersion < PLUGIN_MAKE_VERSION(0, 8, 0, 29))
+	if (mirandaVersion < PLUGIN_MAKE_VERSION(0, 9, 0, 0))
 	{
 		MessageBox(
 			NULL,
-			"The Gadu-Gadu protocol plugin cannot be loaded. It requires Miranda IM 0.8.0.29 or later.",
+			"The Gadu-Gadu protocol plugin cannot be loaded. It requires Miranda IM 0.9.0.0 or later.",
 			"Gadu-Gadu Protocol Plugin",
 			MB_OK | MB_ICONWARNING | MB_SETFOREGROUND | MB_TOPMOST
 		);

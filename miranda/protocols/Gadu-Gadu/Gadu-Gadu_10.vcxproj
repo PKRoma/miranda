@@ -857,6 +857,7 @@
     <ClInclude Include="pthread.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="ssl.h" />
+    <ClInclude Include="version.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="icos\ArrowLeft.ico" />

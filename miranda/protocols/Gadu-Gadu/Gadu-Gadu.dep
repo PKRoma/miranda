@@ -944,6 +944,7 @@
 	".\pthread.h"\
 	".\resource.h"\
 	".\ssl.h"\
+	".\version.h"\
 	
 
 .\groupchat.c : \
@@ -2004,4 +2005,6 @@
 	".\icons\save.ico"\
 	".\icons\settings.ico"\
 	".\resource.h"\
+	".\version.h"\
+	".\version.rc"\
 	
