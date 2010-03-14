@@ -709,8 +709,8 @@ HANDLE gg_sendfile(PROTO_INTERFACE *proto, HANDLE hContact, const PROTOCHAR* szD
 	uin = DBGetContactSettingDword(hContact, GG_PROTO, GG_KEY_UIN, 0);
 	ver = DBGetContactSettingDword(hContact, GG_PROTO, GG_KEY_CLIENTVERSION, 0);
 
-	// Use DCC7 if a contact is using at least version 7.6
-	if ((ver & 0x00ffffff) >= 0x29) {
+	// Use DCC7 if a contact is using at least version 7.6 or unknown version
+	if ((ver & 0x00ffffff) >= 0x29 || !ver) {
 		struct gg_dcc7 *dcc7;
 
 		pthread_mutex_lock(&gg->sess_mutex);

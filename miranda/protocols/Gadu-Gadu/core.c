@@ -298,7 +298,7 @@ void *__stdcall gg_mainthread(void *empty)
 	// Client version and misc settings
 	p.client_version = "8.0.0.8731";
 	p.protocol_version = 0x2e;
-	p.protocol_features = GG_FEATURE_STATUS77 | 0x01 | GG_FEATURE_MSG80 | GG_FEATURE_DND_FFC;
+	p.protocol_features = GG_FEATURE_DND_FFC;
 	p.encoding = GG_ENCODING_CP1250;
 	if (DBGetContactSettingByte(NULL, GG_PROTO, GG_KEY_SHOWLINKS, GG_KEYDEF_SHOWLINKS))
 		p.protocol_flags80 = 0x800000;
