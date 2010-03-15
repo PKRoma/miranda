@@ -35,11 +35,9 @@ Name                            "${MIM_NAME} ${MIM_VERSION}"
 OutFile                         "..\..\miranda\bin\miranda-im-v${MIM_VERSION}-${MIM_BUILD_TYPE}.exe"
 !endif
 
-InstallDir                      "$PROGRAMFILES\Miranda IM"
-InstallDirRegKey                HKLM "Software\Microsoft\Windows\CurrentVersion\App Paths\miranda32.exe" "Path"
 SetCompressor                   lzma
 SetOverWrite                    on
-BrandingText                    "miranda-im.org"
+BrandingText                    "www.miranda-im.org"
 
 VAR INST_UPGRADE
 VAR INST_SUCCESS
@@ -64,7 +62,6 @@ VAR INST_DIR
 !define MUI_FINISHPAGE_LINK "Support Miranda IM"
 !define MUI_FINISHPAGE_LINK_LOCATION "http://www.miranda-im.org/donate/"
 
-!insertmacro MUI_PAGE_WELCOME
 !insertmacro MUI_PAGE_LICENSE "${MIM_BUILD_SRC}\docs\license.txt"
 Page Custom CustomInstallPage CustomInstallPageLeave
 !define MUI_DIRECTORYPAGE_VARIABLE $INST_DIR
@@ -157,8 +154,10 @@ Section "Miranda IM (core)"
   !insertmacro InstallMirandaPluginANSI "advaimg.dll"
   !ifdef MIM_BUILD_UNICODE
   !insertmacro InstallMirandaPlugin "dbx_mmap.dll"
+  Delete "$INSTDIR\Plugins\dbx_3x.dll"
   !else
   !insertmacro InstallMirandaPluginANSI "dbx_3x.dll"
+  Delete "$INSTDIR\Plugins\dbx_mmap.dll"
   !endif
   !insertmacro InstallMirandaPlugin "chat.dll"
   
@@ -359,7 +358,8 @@ FunctionEnd
 Function CustomInstallPageLeave
   !insertmacro MUI_INSTALLOPTIONS_READ $INST_MODE "miranda-ui-type.ini" "Field 3" "State"
   ${If} $INST_MODE = 1
-	StrCpy $INST_DIR "$DESKTOP\Miranda IM"
+	StrCpy $R0 $WINDIR 2
+	StrCpy $INST_DIR "$R0\Miranda IM"
   ${Else}
 	ReadRegStr $0 HKLM "Software\Microsoft\Windows\CurrentVersion\App Paths\miranda32.exe" "Path"
 	${If} $0 == ""
