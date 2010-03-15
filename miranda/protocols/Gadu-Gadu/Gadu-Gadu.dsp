@@ -126,6 +126,10 @@ SOURCE=.\libgadu\http.c
 # End Source File
 # Begin Source File
 
+SOURCE=.\libgadu\internal.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\libgadu\libgadu.c
 # SUBTRACT CPP /YX
 # End Source File

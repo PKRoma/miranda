@@ -34,11 +34,15 @@
 #include <arpa/inet.h>
 #endif /* _WIN32 */
 
+#include "compat.h"
+#include "libgadu.h"
+#include "resolver.h"
+
 #include <ctype.h>
 #include <errno.h>
 #ifndef _WIN32
 #include <netdb.h>
-#endif
+#endif /* _WIN32 */
 #include <signal.h>
 #include <stdarg.h>
 #include <stdio.h>
@@ -46,11 +50,7 @@
 #include <string.h>
 #ifndef _WIN32
 #include <unistd.h>
-#endif
-
-#include "compat.h"
-#include "libgadu.h"
-#include "resolver.h"
+#endif /* _WIN32 */
 
 /**
  * Rozpoczyna połączenie HTTP.
@@ -139,14 +139,14 @@ struct gg_http *gg_http_connect(const char *hostname, int port, int async, const
 	} else {
 		struct in_addr addr;
 
-		if (gg_gethostbyname(hostname, &addr, 0) == -1) {
+		if (gg_gethostbyname_real(hostname, &addr, 0) == -1) {
 			gg_debug(GG_DEBUG_MISC, "// gg_http_connect() host not found\n");
 			gg_http_free(h);
 			errno = ENOENT;
 			return NULL;
 		}
 
-		if (!(h->fd = gg_connect(&addr, port, 0)) == -1) {
+		if ((h->fd = gg_connect(&addr, port, 0)) == -1) {
 			gg_debug(GG_DEBUG_MISC, "// gg_http_connect() connection failed (errno=%d, %s)\n", errno, strerror(errno));
 			gg_http_free(h);
 			return NULL;

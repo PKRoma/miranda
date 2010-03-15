@@ -179,6 +179,7 @@
 	"..\..\include\openssl\x509.h"\
 	"..\..\include\openssl\x509_vfy.h"\
 	".\libgadu\compat.h"\
+	".\libgadu\internal.h"\
 	".\libgadu\libgadu.h"\
 	".\libgadu\protocol.h"\
 	".\libgadu\win32.h"\
@@ -275,6 +276,7 @@
 	"..\..\include\openssl\x509.h"\
 	"..\..\include\openssl\x509_vfy.h"\
 	".\libgadu\compat.h"\
+	".\libgadu\internal.h"\
 	".\libgadu\libgadu.h"\
 	".\libgadu\protocol.h"\
 	".\libgadu\resolver.h"\
@@ -366,6 +368,7 @@
 	"..\..\include\openssl\tls1.h"\
 	"..\..\include\openssl\x509.h"\
 	"..\..\include\openssl\x509_vfy.h"\
+	".\libgadu\internal.h"\
 	".\libgadu\libgadu.h"\
 	".\libgadu\win32.h"\
 	".\ssl.h"\
