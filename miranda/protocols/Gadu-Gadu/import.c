@@ -136,6 +136,7 @@ char *gg_makecontacts(GGPROTO *gg, int cr)
 					string_append(s, dbv.pszVal);
 				string_append_c(s, ';');
 				string_append(s, dbv.pszVal);
+				DBFreeVariant(&dbv);
 			}
 			else
 				string_append_c(s, ';');
@@ -646,14 +647,14 @@ void gg_import_init(GGPROTO *gg)
 
 	ZeroMemory(&mi, sizeof(mi));
 	mi.cbSize = sizeof(mi);
-	mi.flags = CMIF_ROOTHANDLE;
+	mi.flags = CMIF_ICONFROMICOLIB | CMIF_ROOTHANDLE;
 	mi.hParentMenu = gg->hMenuRoot;
 
 	// Import from server item
 	mir_snprintf(service, sizeof(service), GGS_IMPORT_SERVER, GG_PROTO);
 	CreateProtoServiceFunction(service, gg_import_server, gg);
 	mi.position = 600090000;
-	mi.hIcon = LoadIconEx(IDI_IMPORT_SERVER);
+	mi.icolibItem = GetIconHandle(IDI_IMPORT_SERVER);
 	mi.pszName = LPGEN("Import List From &Server");
 	mi.pszService = service;
  	gg->hMainMenu[2] = (HANDLE)CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM) &mi);
@@ -662,7 +663,7 @@ void gg_import_init(GGPROTO *gg)
 	mir_snprintf(service, sizeof(service), GGS_IMPORT_TEXT, GG_PROTO);
 	CreateProtoServiceFunction(service, gg_import_text, gg);
 	mi.position = 600090001;
-	mi.hIcon = LoadIconEx(IDI_IMPORT_TEXT);
+	mi.icolibItem = GetIconHandle(IDI_IMPORT_TEXT);
 	mi.pszName = LPGEN("Import List From &Text File...");
 	mi.pszService = service;
 	gg->hMainMenu[3] = (HANDLE)CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM) &mi);
@@ -671,7 +672,7 @@ void gg_import_init(GGPROTO *gg)
 	mir_snprintf(service, sizeof(service), GGS_REMOVE_SERVER, GG_PROTO);
 	CreateProtoServiceFunction(service, gg_remove_server, gg);
 	mi.position = 600090002;
-	mi.hIcon = LoadIconEx(IDI_REMOVE_SERVER);
+	mi.icolibItem = GetIconHandle(IDI_REMOVE_SERVER);
 	mi.pszName = LPGEN("&Remove List From Server");
 	mi.pszService = service;
 	gg->hMainMenu[4] = (HANDLE)CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM) &mi);
@@ -680,7 +681,7 @@ void gg_import_init(GGPROTO *gg)
 	mir_snprintf(service, sizeof(service), GGS_EXPORT_SERVER, GG_PROTO);
 	CreateProtoServiceFunction(service, gg_export_server, gg);
 	mi.position = 700090000;
-	mi.hIcon = LoadIconEx(IDI_EXPORT_SERVER);
+	mi.icolibItem = GetIconHandle(IDI_EXPORT_SERVER);
 	mi.pszName = LPGEN("Export List To &Server");
 	mi.pszService = service;
 	gg->hMainMenu[5] = (HANDLE)CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM) &mi);
@@ -689,7 +690,7 @@ void gg_import_init(GGPROTO *gg)
 	mir_snprintf(service, sizeof(service), GGS_EXPORT_TEXT, GG_PROTO);
 	CreateProtoServiceFunction(service, gg_export_text, gg);
 	mi.position = 700090001;
-	mi.hIcon = LoadIconEx(IDI_EXPORT_TEXT);
+	mi.icolibItem = GetIconHandle(IDI_EXPORT_TEXT);
 	mi.pszName = LPGEN("Export List To &Text File...");
 	mi.pszService = service;
 	gg->hMainMenu[6] = (HANDLE)CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM) &mi);

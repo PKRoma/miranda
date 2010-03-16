@@ -77,14 +77,14 @@ void gg_gc_menus_init(GGPROTO *gg)
 
 		ZeroMemory(&mi,sizeof(mi));
 		mi.cbSize = sizeof(mi);
-		mi.flags = CMIF_ROOTHANDLE;
+		mi.flags = CMIF_ICONFROMICOLIB | CMIF_ROOTHANDLE;
 		mi.hParentMenu = gg->hMenuRoot;
 
 		// Conferencing
 		mir_snprintf(service, sizeof(service), GGS_OPEN_CONF, GG_PROTO);
 		CreateProtoServiceFunction(service, gg_gc_openconf, gg);
 		mi.position = 500090000;
-		mi.hIcon = LoadIconEx(IDI_CONFERENCE);
+		mi.icolibItem = GetIconHandle(IDI_CONFERENCE);
 		mi.pszName = LPGEN("Open &conference...");
 		mi.pszService = service;
 		gg->hMainMenu[0] = (HANDLE)CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM) &mi);
@@ -92,7 +92,7 @@ void gg_gc_menus_init(GGPROTO *gg)
 		mir_snprintf(service, sizeof(service), GGS_CLEAR_IGNORED, GG_PROTO);
 		CreateProtoServiceFunction(service, gg_gc_clearignored, gg);
 		mi.position = 500090001;
-		mi.hIcon = LoadIconEx(IDI_CLEAR_CONFERENCE);
+		mi.icolibItem = GetIconHandle(IDI_CLEAR_CONFERENCE);
 		mi.pszName = LPGEN("&Clear ignored conferences");
 		mi.pszService = service;
 		gg->hMainMenu[1] = (HANDLE)CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM) &mi);
@@ -171,6 +171,7 @@ int gg_gc_event(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
 			{
 				if(dbv.pszVal && !strcmp(gch->pDest->pszID, dbv.pszVal))
 					CallService(MS_DB_CONTACT_DELETE, (WPARAM)hContact, 0);
+				DBFreeVariant(&dbv);
 			}
 			hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM)hContact, 0);
 		}
