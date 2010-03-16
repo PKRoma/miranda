@@ -197,6 +197,7 @@ char* NtlmCreateResponseFromChallenge(HANDLE hSecurity, const char *szChallenge,
 
 	if (_tcscmp(hNtlm->szProvider, _T("Basic")))
 	{
+		bool isKerberos = _tcsicmp(hNtlm->szProvider, _T("Kerberos")) == 0;
 		bool hasChallenge = szChallenge != NULL && szChallenge[0] != '\0';
 		if (hasChallenge) 
 		{
@@ -312,7 +313,8 @@ char* NtlmCreateResponseFromChallenge(HANDLE hSecurity, const char *szChallenge,
 				hNtlm->hasDomain = domainLen != 0;
 			}
 
-			sc = g_pSSPI->AcquireCredentialsHandle(NULL, hNtlm->szProvider, SECPKG_CRED_OUTBOUND,
+			sc = g_pSSPI->AcquireCredentialsHandle(NULL, hNtlm->szProvider, 
+				isKerberos ? SECPKG_CRED_BOTH : SECPKG_CRED_OUTBOUND,
 				NULL, hNtlm->hasDomain ? &auth : NULL, NULL, NULL, 
 				&hNtlm->hClientCredential, &tokenExpiration);
 			if (sc != SEC_E_OK) return NULL;
@@ -327,7 +329,7 @@ char* NtlmCreateResponseFromChallenge(HANDLE hSecurity, const char *szChallenge,
 
 		sc = g_pSSPI->InitializeSecurityContext(&hNtlm->hClientCredential,
 			hasChallenge ? &hNtlm->hClientContext : NULL,
-			hNtlm->szPrincipal, 0, 0, SECURITY_NATIVE_DREP,
+			hNtlm->szPrincipal, isKerberos ? ISC_REQ_MUTUAL_AUTH : 0, 0, SECURITY_NATIVE_DREP,
 			hasChallenge ? &inputBufferDescriptor : NULL, 0, &hNtlm->hClientContext,
 			&outputBufferDescriptor, &contextAttributes, &tokenExpiration);
 
