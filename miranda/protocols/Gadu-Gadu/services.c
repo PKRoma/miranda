@@ -208,10 +208,12 @@ int gg_setstatus(PROTO_INTERFACE *proto, int iNewStatus)
 		gg_refreshstatus(gg, nNewStatus);
 	}
 	// Miranda will always ask for a new status message
+	else {
 #ifdef DEBUGMODE
-	else
 		gg_netlog(gg, "gg_setstatus(): Postponed to gg_setawaymsg().");
 #endif
+		gg->statusPostponed = 1;
+	}
 	return 0;
 }
 
@@ -542,8 +544,9 @@ int gg_setawaymsg(PROTO_INTERFACE *proto, int iStatus, const char *msg)
 #ifdef DEBUGMODE
 	gg_netlog(gg, "gg_setawaymsg(): Requesting away message set to \"%s\".", msg);
 #endif
-	pthread_mutex_lock(&gg->modemsg_mutex);
+	gg->statusPostponed = 0;
 
+	pthread_mutex_lock(&gg->modemsg_mutex);
 	// Select proper msg
 	switch(status)
 	{
