@@ -66,6 +66,7 @@ VAR INST_DIR
 Page Custom CustomInstallPage CustomInstallPageLeave
 !define MUI_DIRECTORYPAGE_VARIABLE $INST_DIR
 !define MUI_PAGE_CUSTOMFUNCTION_LEAVE VerifyInstallDir
+!define MUI_PAGE_CUSTOMFUNCTION_PRE VerifyDirectoryDisplay
 !insertmacro MUI_PAGE_DIRECTORY
 !define MUI_PAGE_CUSTOMFUNCTION_PRE VerifyComponentDisplay
 !insertmacro MUI_PAGE_COMPONENTS
@@ -342,6 +343,13 @@ Function VerifyInstallDir
   ${Endif}
 FunctionEnd
 
+Function VerifyDirectoryDisplay
+  ${If} $INST_MODE = 1
+    GetDlgItem $1 $HWNDPARENT 1
+    SendMessage $1 ${WM_SETTEXT} 0 "STR:$(^InstallBtn)"
+  ${EndIf}
+FunctionEnd
+
 Function CustomInstallPage
   !insertmacro MUI_HEADER_TEXT "Installation Mode" "Select the type of installation to perform."
   ReserveFile "miranda-ui-type.ini"
@@ -372,8 +380,7 @@ Function CustomInstallPageLeave
 FunctionEnd
 
 Function VerifyComponentDisplay
-  ;TODO: Change "Next" button text to "Install" (aka $(^InstallBtn))
-  ;${If} $INST_MODE = 1
-  ;  Abort
-  ;${EndIf}
+  ${If} $INST_MODE = 1
+    Abort
+  ${EndIf}
 FunctionEnd
