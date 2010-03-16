@@ -635,8 +635,8 @@ void CIcqProto::handleUserOffline(BYTE *buf, WORD wLen)
       }
       else if (wTLVType = 0x29 && wTLVLen == sizeof(DWORD))
       { // get Away Since value
-        unpackDWord(&buf, &dwAwaySince);
-        wTLVLen = 0;
+        BYTE *pData = buf;
+        unpackDWord(&pData, &dwAwaySince);
       }
 
 			buf += wTLVLen;
