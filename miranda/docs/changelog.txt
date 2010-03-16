@@ -3,6 +3,23 @@
                    
                            www.miranda-im.org
 
+* New in 0.8.17
+Enhancements:
+ - Installer now includes a portable mode option
+ - Added auto rename button to file transfer file exists prompt
+ 
+Bugfixes:
+ - Minor fix for off screen positioning
+ - Fixed docking issues with contact list
+ - Gadu-Gadu: Improved message handling
+ - Gadu-Gadu: Fixed memory leaks
+ - Gadu-Gadu: Improved message handling
+ - Gadu-Gadu: Support contacts with large UINs
+ - Gadu-Gadu: Fixed idle issues with empty status messages
+ - MSN: Added handling of authentication failure due to incomplete profile
+ - Jabber: Translation improvements
+
+
 * New in 0.8.16
 Enhancements:
  - Added options to clear completed file transfers on window close
