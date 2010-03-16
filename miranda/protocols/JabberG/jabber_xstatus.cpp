@@ -165,6 +165,7 @@ private:
 		bool m_subitem;
 
 		CStatusMode(LPARAM id, char *name, HICON hIcon, TCHAR *title, bool subitem): m_id(id), m_name(name), m_hIcon(hIcon), m_title(title), m_subitem(subitem) {}
+		~CStatusMode() { g_ReleaseIcon( m_hIcon ); }
 	};
 
 	OBJLIST<CStatusMode> m_modes;
@@ -1909,7 +1910,7 @@ void CJabberInfoFrame::PaintCompact(HDC hdc)
 				if (hIcon)
 				{
 					DrawIconEx(hdc, SZ_FRAMEPADDING, (rc.bottom-cy_icon)/2, hIcon, cx_icon, cy_icon, 0, NULL, DI_NORMAL);
-					CallService(MS_SKIN2_RELEASEICON, (WPARAM)hIcon, 0);
+					g_ReleaseIcon(hIcon);
 				}
 			}
 
@@ -1926,7 +1927,7 @@ void CJabberInfoFrame::PaintCompact(HDC hdc)
 					DrawIconEx(hdc, cx, (rc.bottom-cy_icon)/2, hIcon, cx_icon, cy_icon, 0, NULL, DI_NORMAL);
 					cx -= cx_icon;
 
-					CallService(MS_SKIN2_RELEASEICON, (WPARAM)hIcon, 0);
+					g_ReleaseIcon(hIcon);
 
 					SetToolTip(item.m_tooltipId, &item.m_rcItem, item.m_pszText);
 				}
@@ -1975,7 +1976,7 @@ void CJabberInfoFrame::PaintNormal(HDC hdc)
 				DrawIconEx(hdc, cx, cy + (line_height-cy_icon)/2, hIcon, cx_icon, cy_icon, 0, NULL, DI_NORMAL);
 				cx += cx_icon + SZ_ICONSPACING;
 
-				CallService(MS_SKIN2_RELEASEICON, (WPARAM)hIcon, 0);
+				g_ReleaseIcon(hIcon);
 			}
 		}
 

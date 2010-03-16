@@ -207,6 +207,7 @@ static HTREEITEM sttFillInfoLine( HWND hwndTree, HTREEITEM htiRoot, HICON hIcon,
 		tvis.itemex.mask |= TVIF_IMAGE|TVIF_SELECTEDIMAGE;
 		tvis.itemex.iImage =
 		tvis.itemex.iSelectedImage = ImageList_AddIcon( himl, hIcon );
+		g_ReleaseIcon( hIcon );
 	}
 
 	if (hti)
@@ -492,7 +493,7 @@ static INT_PTR CALLBACK JabberUserInfoDlgProc( HWND hwndDlg, UINT msg, WPARAM wP
 			MoveWindow( GetDlgItem( hwndDlg, IDC_TV_INFO ), 5, 5, rc.right-10, rc.bottom-10, TRUE );
 
 			HIMAGELIST himl = ImageList_Create(GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), ILC_COLOR|ILC_COLOR32|ILC_MASK, 5, 1);
-			ImageList_AddIcon(himl, LoadSkinnedIcon(SKINICON_OTHER_SMALLDOT));
+			ImageList_AddIcon_Icolib(himl, LoadSkinnedIcon(SKINICON_OTHER_SMALLDOT));
 			TreeView_SetImageList(GetDlgItem(hwndDlg, IDC_TV_INFO), himl, TVSIL_NORMAL);
 
 			SetWindowLongPtr(hwndDlg, GWLP_USERDATA, (LONG_PTR)dat);
@@ -652,8 +653,8 @@ static INT_PTR CALLBACK JabberUserPhotoDlgProc( HWND hwndDlg, UINT msg, WPARAM w
 		photoInfo->ppro = NULL;
 		photoInfo->hBitmap = NULL;
 		SetWindowLongPtr( hwndDlg, GWLP_USERDATA, ( LONG_PTR ) photoInfo );
-		SendMessage( GetDlgItem( hwndDlg, IDC_SAVE ), BM_SETIMAGE, IMAGE_ICON, ( LPARAM )LoadImage( hInst, MAKEINTRESOURCE( IDI_SAVE ), IMAGE_ICON, GetSystemMetrics( SM_CXSMICON ), GetSystemMetrics( SM_CYSMICON ), 0 ));
-		SendMessage( GetDlgItem( hwndDlg, IDC_SAVE ), BUTTONSETASFLATBTN, 0, 0);
+		SendDlgItemMessage( hwndDlg, IDC_SAVE, BM_SETIMAGE, IMAGE_ICON, ( LPARAM )LoadImage( hInst, MAKEINTRESOURCE( IDI_SAVE ), IMAGE_ICON, GetSystemMetrics( SM_CXSMICON ), GetSystemMetrics( SM_CYSMICON ), 0 ));
+		SendDlgItemMessage( hwndDlg, IDC_SAVE, BUTTONSETASFLATBTN, 0, 0);
 		ShowWindow( GetDlgItem( hwndDlg, IDC_LOAD ), SW_HIDE );
 		ShowWindow( GetDlgItem( hwndDlg, IDC_DELETE ), SW_HIDE );
 		return TRUE;
@@ -857,6 +858,7 @@ static INT_PTR CALLBACK JabberUserPhotoDlgProc( HWND hwndDlg, UINT msg, WPARAM w
 		break;
 
 	case WM_DESTROY:
+		DestroyIcon(( HICON )SendDlgItemMessage( hwndDlg, IDC_SAVE, BM_SETIMAGE, IMAGE_ICON, 0 ));
 		if ( photoInfo->hBitmap ) {
 			photoInfo->ppro->Log( "Delete bitmap" );
 			DeleteObject( photoInfo->hBitmap );

@@ -689,15 +689,19 @@ void CJabberDlgDiscovery::OnInitDialog()
 	TreeList_AddIcon(hwndList, m_proto->LoadIconEx("main"), 0);
 	for (i = 0; i < SIZEOF(sttNodeIcons); ++i)
 	{
+		bool needDestroy = false;
 		HICON hIcon;
-		if ((sttNodeIcons[i].iconIndex == SKINICON_STATUS_ONLINE) && sttNodeIcons[i].iconName)
+		if ((sttNodeIcons[i].iconIndex == SKINICON_STATUS_ONLINE) && sttNodeIcons[i].iconName) {
 			hIcon = (HICON)CallProtoService(sttNodeIcons[i].iconName, PS_LOADICON, PLI_PROTOCOL|PLIF_SMALL, 0);
+			needDestroy = true;
+		}
 		else if (sttNodeIcons[i].iconName)
 			hIcon = m_proto->LoadIconEx(sttNodeIcons[i].iconName);
 		else if (sttNodeIcons[i].iconIndex)
 			hIcon = LoadSkinnedIcon(sttNodeIcons[i].iconIndex);
 		else continue;
 		sttNodeIcons[i].listIndex = TreeList_AddIcon(hwndList, hIcon, 0);
+		if (needDestroy) DestroyIcon(hIcon);
 	}
 	TreeList_AddIcon(hwndList, m_proto->LoadIconEx("disco_fail"), SD_OVERLAY_FAIL);
 	TreeList_AddIcon(hwndList, m_proto->LoadIconEx("disco_progress"), SD_OVERLAY_PROGRESS);

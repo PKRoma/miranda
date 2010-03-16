@@ -529,6 +529,7 @@ static INT_PTR CALLBACK JabberAdHoc_CommandDlgProc( HWND hwndDlg, UINT msg, WPAR
 	case WM_DESTROY:
 		{
 			JabberFormDestroyUI(GetDlgItem(hwndDlg, IDC_FRAME));
+			g_ReleaseIcon(( HICON )SendMessage( hwndDlg, WM_SETICON, ICON_BIG, 0 ));
 
 			dat->proto->m_hwndCommandWindow = NULL;
 			mir_free( dat->ResponderJID );

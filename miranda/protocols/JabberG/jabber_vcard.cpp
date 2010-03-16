@@ -248,10 +248,10 @@ static INT_PTR CALLBACK PhotoDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 	case WM_INITDIALOG:
 		if (!lParam) break; // Launched from userinfo
 		TranslateDialogDefault( hwndDlg );
-		SendMessage( GetDlgItem( hwndDlg, IDC_LOAD ), BM_SETIMAGE, IMAGE_ICON, ( LPARAM )LoadImage( hInst, MAKEINTRESOURCE( IDI_OPEN ), IMAGE_ICON, GetSystemMetrics( SM_CXSMICON ), GetSystemMetrics( SM_CYSMICON ), 0 ));
-		SendMessage( GetDlgItem( hwndDlg, IDC_LOAD ), BUTTONSETASFLATBTN, 0, 0);
-		SendMessage( GetDlgItem( hwndDlg, IDC_DELETE ), BM_SETIMAGE, IMAGE_ICON, ( LPARAM )LoadImage( hInst, MAKEINTRESOURCE( IDI_DELETE ), IMAGE_ICON, GetSystemMetrics( SM_CXSMICON ), GetSystemMetrics( SM_CYSMICON ), 0 ));
-		SendMessage( GetDlgItem( hwndDlg, IDC_DELETE ), BUTTONSETASFLATBTN, 0, 0);
+		SendDlgItemMessage( hwndDlg, IDC_LOAD, BM_SETIMAGE, IMAGE_ICON, ( LPARAM )LoadImage( hInst, MAKEINTRESOURCE( IDI_OPEN ), IMAGE_ICON, GetSystemMetrics( SM_CXSMICON ), GetSystemMetrics( SM_CYSMICON ), 0 ));
+		SendDlgItemMessage( hwndDlg, IDC_LOAD, BUTTONSETASFLATBTN, 0, 0);
+		SendDlgItemMessage( hwndDlg, IDC_DELETE, BM_SETIMAGE, IMAGE_ICON, ( LPARAM )LoadImage( hInst, MAKEINTRESOURCE( IDI_DELETE ), IMAGE_ICON, GetSystemMetrics( SM_CXSMICON ), GetSystemMetrics( SM_CYSMICON ), 0 ));
+		SendDlgItemMessage( hwndDlg, IDC_DELETE, BUTTONSETASFLATBTN, 0, 0);
 		ShowWindow( GetDlgItem( hwndDlg, IDC_SAVE ), SW_HIDE );
 		{
 			dat = new PhotoDlgProcData;
@@ -450,6 +450,8 @@ static INT_PTR CALLBACK PhotoDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 		break;
 
 	case WM_DESTROY:
+		DestroyIcon(( HICON )SendDlgItemMessage( hwndDlg, IDC_LOAD, BM_SETIMAGE, IMAGE_ICON, 0 ));
+		DestroyIcon(( HICON )SendDlgItemMessage( hwndDlg, IDC_DELETE, BM_SETIMAGE, IMAGE_ICON, 0 ));
 		dat->ppro->WindowUnsubscribe(hwndDlg);
 		if ( dat->hBitmap ) {
 			dat->ppro->Log( "Delete bitmap" );

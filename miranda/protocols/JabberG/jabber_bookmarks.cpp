@@ -286,7 +286,7 @@ void CJabberDlgBookmarks::OnInitDialog()
 	CSuper::OnInitDialog();
 
 	SendMessage(m_hwnd, WM_SETICON, ICON_BIG, (LPARAM)m_proto->LoadIconEx("bookmarks"));
-	SendDlgItemMessage(m_hwnd, IDC_HEADERBAR, WM_SETICON, ICON_BIG, (LPARAM)g_LoadIconEx32("bookmarks"));
+	SendDlgItemMessage(m_hwnd, IDC_HEADERBAR, WM_SETICON, ICON_BIG, (LPARAM)g_LoadIconEx("bookmarks", true));
 
 	m_btnAdd.Disable();
 	m_btnEdit.Disable();
@@ -295,8 +295,8 @@ void CJabberDlgBookmarks::OnInitDialog()
 	m_lvBookmarks.SetExtendedListViewStyle(LVS_EX_FULLROWSELECT|LVS_EX_GRIDLINES|LVS_EX_HEADERDRAGDROP | (IsWinVerXPPlus() ? LVS_EX_DOUBLEBUFFER : 0));
 
 	HIMAGELIST hIml = m_lvBookmarks.CreateImageList(LVSIL_SMALL);
-	ImageList_AddIcon(hIml, m_proto->LoadIconEx("group"));
-	ImageList_AddIcon(hIml, LoadSkinnedIcon(SKINICON_EVENT_URL));
+	ImageList_AddIcon_Icolib(hIml, m_proto->LoadIconEx("group"));
+	ImageList_AddIcon_Icolib(hIml, LoadSkinnedIcon(SKINICON_EVENT_URL));
 
 	m_lvBookmarks.AddColumn(0, TranslateT("Bookmark Name"),			m_proto->JGetWord(NULL, "bookmarksWnd_cx0", 120));
 	m_lvBookmarks.AddColumn(1, TranslateT("Address (JID or URL)"),	m_proto->JGetWord(NULL, "bookmarksWnd_cx1", 210));

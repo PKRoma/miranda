@@ -138,7 +138,6 @@ void CIconPool::RegisterIcon(const char *name, const char *filename, int iconid,
 	SKINICONDESC sid = {0};
 	sid.cbSize = sizeof(SKINICONDESC);
 	sid.pszDefaultFile = (char *)filename;	// kill const flag for compiler to shut up
-	sid.cx = sid.cy = 16;
 	sid.pszName = szSettingName;
 	sid.ptszSection = szSection;
 	sid.ptszDescription = szDescription;
@@ -254,7 +253,6 @@ void CJabberProto::IconsInit( void )
 
 	sid.cbSize = sizeof(SKINICONDESC);
 	sid.pszDefaultFile = szFile;
-	sid.cx = sid.cy = 16;
 	sid.flags = SIDF_TCHAR;
 
 	char szSettingName[100];
@@ -415,8 +413,6 @@ static HICON LoadTransportIcon(char *filename,int i,char *IconName,TCHAR *SectNa
 	if (hi && nf) DestroyIcon(hi);
 	if ( IconName != NULL && SectName != NULL)  {
 		sid.cbSize = sizeof(sid);
-		sid.cx=16;
-		sid.cy=16;
 		sid.hDefaultIcon = (has_proto_icon)?NULL:(HICON)CallService(MS_SKIN_LOADPROTOICON,(WPARAM)NULL,(LPARAM)(-internalidx));
 		sid.ptszSection = SectName;
 		sid.pszName=IconName;
@@ -666,7 +662,7 @@ static TIconListItem sharedIconList[] =
 	{   LPGEN("Deny Queries"),          "pl_iq_deny",       IDI_PL_QUERY_DENY,      LPGEN("Dialogs/Privacy") },
 };
 
-static void sttProcessIcons( int iAmount, int iSize )
+static void sttProcessIcons( int iAmount )
 {
 	char szFile[MAX_PATH];
 	GetModuleFileNameA(hInst, szFile, MAX_PATH);
@@ -674,7 +670,6 @@ static void sttProcessIcons( int iAmount, int iSize )
 	SKINICONDESC sid = {0};
 	sid.cbSize = sizeof(SKINICONDESC);
 	sid.pszDefaultFile = szFile;
-	sid.cx = sid.cy = iSize;
 
 	char szRootSection[100];
 	mir_snprintf( szRootSection, SIZEOF(szRootSection), "%s/%s", LPGEN("Protocols"), LPGEN("Jabber") );
@@ -682,9 +677,8 @@ static void sttProcessIcons( int iAmount, int iSize )
 	for ( int i = 0; i < iAmount; i++ ) {
 		char szSettingName[100], szSectionName[100];
 
-		mir_snprintf( szSettingName, sizeof( szSettingName ), "%s_%s%s", 
-			GLOBAL_SETTING_PREFIX, sharedIconList[i].szName,
-			( iSize == 16 ) ? "" : "32" );
+		mir_snprintf( szSettingName, sizeof( szSettingName ), "%s_%s", 
+			GLOBAL_SETTING_PREFIX, sharedIconList[i].szName);
 
 		if ( sharedIconList[i].szSection ) {
 			mir_snprintf( szSectionName, sizeof( szSectionName ), "%s/%s", szRootSection, sharedIconList[i].szSection );
@@ -695,16 +689,12 @@ static void sttProcessIcons( int iAmount, int iSize )
 		sid.pszName = szSettingName;
 		sid.pszDescription = sharedIconList[i].szDescr;
 		sid.iDefaultIndex = -sharedIconList[i].defIconID;
-		if ( iSize == 16 )
-			sharedIconList[i].hIcon = ( HANDLE )CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
-		else
-			CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
+		sharedIconList[i].hIcon = ( HANDLE )CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
 }	}
 
 void g_IconsInit()
 {
-	sttProcessIcons( SIZEOF(sharedIconList), 16 );
-	sttProcessIcons( 5, 32 );
+	sttProcessIcons( SIZEOF( sharedIconList ));
 }
 
 HANDLE g_GetIconHandle( int iconId )
@@ -716,16 +706,20 @@ HANDLE g_GetIconHandle( int iconId )
 	return NULL;
 }
 
-HICON g_LoadIconEx( const char* name )
+HICON g_LoadIconEx( const char* name, bool big )
 {
 	char szSettingName[100];
 	mir_snprintf( szSettingName, sizeof( szSettingName ), "%s_%s", GLOBAL_SETTING_PREFIX, name );
-	return ( HICON )JCallService( MS_SKIN2_GETICON, 0, (LPARAM)szSettingName );
+	return ( HICON )JCallService( MS_SKIN2_GETICON, big, (LPARAM)szSettingName );
 }
 
-HICON g_LoadIconEx32( const char* name )
+void g_ReleaseIcon( HICON hIcon )
 {
-	char szSettingName[100];
-	mir_snprintf( szSettingName, sizeof( szSettingName ), "%s_%s32", GLOBAL_SETTING_PREFIX, name );
-	return ( HICON )JCallService( MS_SKIN2_GETICON, 0, (LPARAM)szSettingName );
+	if ( hIcon ) CallService(MS_SKIN2_RELEASEICON, (WPARAM)hIcon, 0);
+}
+
+void ImageList_AddIcon_Icolib( HIMAGELIST hIml, HICON hIcon )
+{
+	ImageList_AddIcon( hIml, hIcon );
+	g_ReleaseIcon( hIcon );
 }

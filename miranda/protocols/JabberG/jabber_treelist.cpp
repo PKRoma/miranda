@@ -140,9 +140,9 @@ void TreeList_Create(HWND hwnd)
 	ListView_SetImageList (hwnd, hIml, LVSIL_SMALL);
 
 	hIml = ImageList_Create(16, 16, ILC_MASK + ( IsWinVerXPPlus() ? ILC_COLOR32 : ILC_COLOR16 ), 2, 1);
-	ImageList_AddIcon(hIml, (HICON)JCallService( MS_SKIN_LOADICON, SKINICON_OTHER_GROUPOPEN, 0 ));
-	ImageList_AddIcon(hIml, (HICON)JCallService( MS_SKIN_LOADICON, SKINICON_OTHER_GROUPSHUT, 0 ));
-	ImageList_AddIcon(hIml, (HICON)JCallService( MS_SKIN_LOADICON, SKINICON_OTHER_DOWNARROW, 0 ));
+	ImageList_AddIcon_Icolib(hIml, (HICON)JCallService( MS_SKIN_LOADICON, SKINICON_OTHER_GROUPOPEN, 0 ));
+	ImageList_AddIcon_Icolib(hIml, (HICON)JCallService( MS_SKIN_LOADICON, SKINICON_OTHER_GROUPSHUT, 0 ));
+	ImageList_AddIcon_Icolib(hIml, (HICON)JCallService( MS_SKIN_LOADICON, SKINICON_OTHER_DOWNARROW, 0 ));
 	ListView_SetImageList (hwnd, hIml, LVSIL_STATE);
 }
 
@@ -254,6 +254,7 @@ int TreeList_AddIcon(HWND hwnd, HICON hIcon, int iOverlay)
 {
 	HIMAGELIST hIml = ListView_GetImageList(hwnd, LVSIL_SMALL);
 	int idx = ImageList_AddIcon(hIml, hIcon);
+	g_ReleaseIcon(hIcon);
 	if (iOverlay) ImageList_SetOverlayImage(hIml, idx, iOverlay);
 	return idx;
 }

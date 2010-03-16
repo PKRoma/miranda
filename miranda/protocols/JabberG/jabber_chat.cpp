@@ -777,8 +777,8 @@ public:
 		TCHAR buf[256];
 		mir_sntprintf(buf, SIZEOF(buf), _T("%s\n%s"), m_room, TranslateT("Send groupchat invitation.") );
 		SetDlgItemText( m_hwnd, IDC_HEADERBAR, buf );
-		SendMessage( m_hwnd, WM_SETICON, ICON_BIG, ( LPARAM )m_proto->LoadIconEx( "group" ));
-		SendDlgItemMessage(m_hwnd, IDC_HEADERBAR, WM_SETICON, 0, (LPARAM)g_LoadIconEx32("group"));
+		SendMessage( m_hwnd, WM_SETICON, ICON_SMALL, ( LPARAM )m_proto->LoadIconEx( "group" ));
+		SendDlgItemMessage(m_hwnd, IDC_HEADERBAR, WM_SETICON, 0, (LPARAM)g_LoadIconEx("group", true));
 
 		SetWindowLong(GetDlgItem(m_hwnd, IDC_CLIST), GWL_STYLE,
 			GetWindowLong(GetDlgItem(m_hwnd, IDC_CLIST), GWL_STYLE)|CLS_HIDEOFFLINE|CLS_CHECKBOXES|CLS_HIDEEMPTYGROUPS|CLS_USEGROUPS|CLS_GREYALTERNATE|CLS_GROUPCHECKBOXES);
@@ -899,7 +899,7 @@ static LRESULT CALLBACK sttUserInfoDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam
 		dat = (TUserInfoData *)lParam;
 
 		SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)dat->ppro->LoadIconEx("group"));
-		SendDlgItemMessage(hwndDlg, IDC_HEADERBAR, WM_SETICON, 0, (LPARAM)g_LoadIconEx32("group"));
+		SendDlgItemMessage(hwndDlg, IDC_HEADERBAR, WM_SETICON, 0, (LPARAM)g_LoadIconEx("group", true));
 
 		LOGFONT lf;
 		GetObject((HFONT)SendDlgItemMessage(hwndDlg, IDC_TXT_NICK, WM_GETFONT, 0, 0), sizeof(lf), &lf);
@@ -1034,6 +1034,8 @@ static LRESULT CALLBACK sttUserInfoDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam
 
 	case WM_DESTROY:
 		{
+			g_ReleaseIcon(( HICON )SendDlgItemMessage( hwndDlg, IDC_BTN_AFFILIATION, BM_SETIMAGE, IMAGE_ICON, 0 ));
+			g_ReleaseIcon(( HICON )SendDlgItemMessage( hwndDlg, IDC_BTN_ROLE, BM_SETIMAGE, IMAGE_ICON, 0 ));
 			TUserInfoData *dat = (TUserInfoData *)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 			if (!dat)break;
 			SetWindowLongPtr(hwndDlg, GWLP_USERDATA, 0);

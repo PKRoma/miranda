@@ -447,7 +447,7 @@ void CJabberDlgGcJoin::OnInitDialog()
 	CSuper::OnInitDialog();
 
 	SendMessage(m_hwnd, WM_SETICON, ICON_BIG, (LPARAM)m_proto->LoadIconEx("group"));
-	SendDlgItemMessage(m_hwnd, IDC_HEADERBAR, WM_SETICON, 0, (LPARAM)g_LoadIconEx32("group"));
+	SendDlgItemMessage(m_hwnd, IDC_HEADERBAR, WM_SETICON, 0, (LPARAM)g_LoadIconEx("group", true));
 
 	JabberGcRecentInfo *info = NULL;
 	if ( m_jid )
@@ -541,6 +541,7 @@ void CJabberDlgGcJoin::OnDestroy()
 	if ( str != NULL )
 		mir_free( str );
 
+	g_ReleaseIcon(( HICON )SendDlgItemMessage( m_hwnd, IDC_BOOKMARKS, BM_SETIMAGE, IMAGE_ICON, 0 ));
 	m_proto->m_pDlgJabberJoinGroupchat = NULL;
 	DeleteObject((HFONT)SendDlgItemMessage(m_hwnd, IDC_TXT_RECENT, WM_GETFONT, 0, 0));
 
@@ -1191,7 +1192,7 @@ public:
 		mir_free( myNick );
 
 		SendMessage( m_hwnd, WM_SETICON, ICON_BIG, ( LPARAM )m_proto->LoadIconEx( "group" ));
-		SendDlgItemMessage(m_hwnd, IDC_HEADERBAR, WM_SETICON, 0, (LPARAM)g_LoadIconEx32("group"));
+		SendDlgItemMessage(m_hwnd, IDC_HEADERBAR, WM_SETICON, 0, (LPARAM)g_LoadIconEx("group", true));
 
 		SetFocus(GetDlgItem(m_hwnd, IDC_NICK));
 	}
