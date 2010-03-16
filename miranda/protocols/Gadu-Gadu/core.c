@@ -1279,6 +1279,16 @@ int gg_dbsettingchanged(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
 }
 
 ////////////////////////////////////////////////////////////
+// When idle changed
+int gg_idlechanged(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
+{
+	if (gg_isonline(gg) && gg->statusPostponed)
+		gg_refreshstatus(gg, lParam & IDF_ISIDLE ? gg->proto.m_iDesiredStatus : ID_STATUS_ONLINE);
+
+	return 0;
+}
+
+////////////////////////////////////////////////////////////
 // All users set offline
 void gg_setalloffline(GGPROTO *gg)
 {

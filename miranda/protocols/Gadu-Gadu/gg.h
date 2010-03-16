@@ -80,12 +80,11 @@ extern "C" {
 #include <m_file.h>
 #include <m_avatars.h>
 #include <m_xml.h>
+#include <m_chat.h>
+#include <m_idle.h>
 #ifdef DEBUGMODE
 #include <m_popup.h>
 #endif
-
-// Groupchat is now in miranda headers
-#include <m_chat.h>
 
 // Custom profile folders plugin header
 #include "m_folders.h"
@@ -121,7 +120,7 @@ typedef struct
 	LPTSTR name;
 	pthread_mutex_t ft_mutex, sess_mutex, img_mutex, modemsg_mutex, avatar_mutex;
 	list_t watches, transfers, requests, chats, imagedlgs, avatar_requests, avatar_transfers;
-	int gc_enabled, gc_id, list_remove, unicode_core;
+	int gc_enabled, gc_id, list_remove, unicode_core, statusPostponed;
 	uin_t next_uin;
 	unsigned long last_crc;
 	pthread_t pth_dcc;
@@ -145,6 +144,7 @@ typedef struct
 		hookUserInfoInit,
 		hookSettingDeleted,
 		hookSettingChanged,
+		hookIdleChanged,
 		hookGCUserEvent,
 		hookGCMenuBuild;
 	HANDLE hMenuRoot;
@@ -385,6 +385,7 @@ void gg_registerservices(GGPROTO *gg);
 void gg_threadwait(GGPROTO *gg, pthread_t *thread);
 void *__stdcall gg_mainthread(void *empty);
 int gg_isonline(GGPROTO *gg);
+int gg_refreshstatus(GGPROTO *gg, int status);
 
 #ifdef DEBUGMODE
 int gg_netlog(const GGPROTO *gg, const char *fmt, ...);
@@ -393,6 +394,7 @@ int gg_netlog(const GGPROTO *gg, const char *fmt, ...);
 void gg_broadcastnewstatus(GGPROTO *gg, int newStatus);
 int gg_userdeleted(GGPROTO *gg, WPARAM wParam, LPARAM lParam);
 int gg_dbsettingchanged(GGPROTO *gg, WPARAM wParam, LPARAM lParam);
+int gg_idlechanged(GGPROTO *gg, WPARAM wParam, LPARAM lParam);
 void gg_notifyall(GGPROTO *gg);
 void gg_changecontactstatus(GGPROTO *gg, uin_t uin, int status, const char *idescr, int time, uint32_t remote_ip, uint16_t remote_port, uint32_t version);
 char *gg_getstatusmsg(GGPROTO *gg, int status);

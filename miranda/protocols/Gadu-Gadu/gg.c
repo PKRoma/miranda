@@ -293,6 +293,7 @@ int gg_event(PROTO_INTERFACE *proto, PROTOEVENTTYPE eventType, WPARAM wParam, LP
 			gg->hookUserInfoInit = HookProtoEvent(ME_USERINFO_INITIALISE, gg_details_init, gg);
 			gg->hookSettingDeleted = HookProtoEvent(ME_DB_CONTACT_DELETED, gg_userdeleted, gg);
 			gg->hookSettingChanged = HookProtoEvent(ME_DB_CONTACT_SETTINGCHANGED, gg_dbsettingchanged, gg);
+			gg->hookIdleChanged = HookProtoEvent(ME_IDLE_CHANGED, gg_idlechanged, gg);
 #ifdef DEBUGMODE
 			gg_netlog(gg, "gg_event(EV_PROTO_ONLOAD): loading modules...");
 #endif
@@ -425,8 +426,10 @@ static int gg_proto_uninit(PROTO_INTERFACE *proto)
 
 	// Close handles
 	LocalEventUnhook(gg->hookOptsInit);
+	LocalEventUnhook(gg->hookUserInfoInit);
 	LocalEventUnhook(gg->hookSettingDeleted);
 	LocalEventUnhook(gg->hookSettingChanged);
+	LocalEventUnhook(gg->hookIdleChanged);
 	Netlib_CloseHandle(gg->netlib);
 
 	// Destroy mutex
