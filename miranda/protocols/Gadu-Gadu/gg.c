@@ -20,16 +20,17 @@
 
 #include "gg.h"
 #include <errno.h>
+#include "version.h"
 
 // Plugin info
 PLUGININFOEX pluginInfo = {
 	sizeof(PLUGININFOEX),
 	"Gadu-Gadu Protocol",
-	PLUGIN_MAKE_VERSION(0, 0, 5, 3),
+	__VERSION_DWORD,
 	"Provides support for Gadu-Gadu protocol",
-	"Adam Strzelecki, Bartosz Bia쿮k",
+	"Bartosz Bia쿮k, Adam Strzelecki",
 	"dezred"/*antispam*/"@"/*antispam*/"gmail"/*antispam*/"."/*antispam*/"com",
-	"Copyright � 2003-2009 Adam Strzelecki, Bartosz Bia쿮k",
+	"� 2009-2010 Bartosz Bia쿮k, 2003-2009 Adam Strzelecki",
 	"http://www.miranda-im.pl/",
 	0,
 	0,

@@ -20,6 +20,7 @@
 
 #include <windows.h>
 #include "resource.h"
+#include "version.rc"
 
 IDI_GG				ICON DISCARDABLE "icons/gg.ico"
 IDI_IMPORT_SERVER	ICON DISCARDABLE "icons/import_list_from_server.ico"

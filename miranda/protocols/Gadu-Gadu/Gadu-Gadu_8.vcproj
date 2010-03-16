@@ -946,6 +946,10 @@
 				RelativePath="ssl.h"
 				>
 			</File>
+			<File
+				RelativePath="version.h"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Resource Files"
