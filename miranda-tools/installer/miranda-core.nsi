@@ -110,8 +110,10 @@ Page Custom CustomInstallPage CustomInstallPageLeave
 !macroend
 
 !macro WriteInstallerOption IniOption IniValue
-  SetOutPath "$INSTDIR"
-  WriteINIStr "$INSTDIR\${MIM_BUILD_OPTIONS_FILE}" "${MIM_BUILD_OPTIONS_SECT}" "${IniValue}" "${IniOption}"
+  ${If} $INST_MODE = 0
+    SetOutPath "$INSTDIR"
+    WriteINIStr "$INSTDIR\${MIM_BUILD_OPTIONS_FILE}" "${MIM_BUILD_OPTIONS_SECT}" "${IniValue}" "${IniOption}"
+  ${EndIf}
 !macroend
 
 Section "Miranda IM (core)"
