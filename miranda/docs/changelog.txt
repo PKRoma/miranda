@@ -1,7 +1,7 @@
                    Miranda Instant Messenger Change Log
                    ------------------------------------
-                   
                            www.miranda-im.org
+
 
 * New in 0.8.17
 Enhancements:
