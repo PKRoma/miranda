@@ -100,15 +100,6 @@ static void Docking_SetSize(HWND hwnd, LPRECT rc, bool query)
 	Docking_AdjustPosition(hwnd, &rcMonitor, rc, query);
 }
 
-static void Docking_SetSize(HWND hwnd)
-{
-	RECT rc;
-
-	GetWindowRect(hwnd, &rc); 
-	Docking_SetSize(hwnd, &rc, false);
-	MoveWindow(hwnd, rc.left, rc.top, rc.right - rc.left + 1, rc.bottom - rc.top + 1, TRUE);
-}
-
 static bool Docking_IsWindowVisible(HWND hwnd)
 {
 	LONG style = GetWindowLong(hwnd, GWL_STYLE);
@@ -134,10 +125,9 @@ int fnDocking_ProcessWindowMessage(WPARAM wParam, LPARAM lParam)
 	switch (msg->message) 
 	{
 	case WM_CREATE:
-		docked = (char) DBGetContactSettingByte(NULL, "CList", "Docked", 0);
-		if (!DBGetContactSettingByte(NULL, "CLUI", "DockToSides", 1))
-			docked = 0;
 		draggingTitle = 0;
+		docked = DBGetContactSettingByte(NULL, "CLUI", "DockToSides", 1) ? 
+			(char) DBGetContactSettingByte(NULL, "CList", "Docked", 0) : 0;
 		break;
 
 	case WM_ACTIVATE:
@@ -227,14 +217,17 @@ int fnDocking_ProcessWindowMessage(WPARAM wParam, LPARAM lParam)
 			GetCursorPos(&ptCursor);
 			Docking_GetMonitorRectFromPoint(&ptCursor, &rcMonitor);
 
-			if ((ptCursor.x < rcMonitor.left + EDGESENSITIVITY) || 
-				(ptCursor.x >= rcMonitor.right - EDGESENSITIVITY) &&
+			if (((ptCursor.x < rcMonitor.left + EDGESENSITIVITY) || 
+				(ptCursor.x >= rcMonitor.right - EDGESENSITIVITY)) &&
 				DBGetContactSettingByte(NULL, "CLUI", "DockToSides", 1)) 
 			{
 				docked = (ptCursor.x < rcMonitor.left + EDGESENSITIVITY) ? DOCKED_LEFT : DOCKED_RIGHT;
 				PostMessage(msg->hwnd, WM_LBUTTONUP, 0, MAKELPARAM(ptCursor.x, ptCursor.y));
+
 				Docking_Command(msg->hwnd, ABM_NEW);
-				Docking_SetSize(msg->hwnd);
+				Docking_AdjustPosition(msg->hwnd, &rcMonitor, (LPRECT)msg->lParam, false);
+
+				*((LRESULT *) lParam) = TRUE; 
 				return TRUE;
 			}
 		}
