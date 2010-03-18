@@ -323,8 +323,8 @@ static void ActivateChild(ParentWindowData *dat, HWND child) {
 	RECT rcChild;
 	GetChildWindowRect(dat, &rcChild);
 	SetWindowPos(child, HWND_TOP, rcChild.left, rcChild.top, rcChild.right-rcChild.left, rcChild.bottom - rcChild.top, SWP_NOSIZE);
-
-	i = GetTabFromHWND(dat, child);
+	
+    i = GetTabFromHWND(dat, child);
 	if ( i == -1 )
 		return;
 	else {
@@ -779,7 +779,7 @@ INT_PTR CALLBACK DlgProcParentWindow(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 			ActivateChild(dat, dat->hwndActive);
 			g_dat->hFocusWnd = dat->hwndActive;
 			PostMessage(dat->hwndActive, DM_SETFOCUS, 0, msg);
-		}
+        }
 		if (KillTimer(hwndDlg, TIMERID_FLASHWND)) {
 			FlashWindow(hwndDlg, FALSE);
 			dat->nFlash = 0;
@@ -1408,17 +1408,18 @@ BOOL CALLBACK TabCtrlProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 									MoveWindow(hParent, rc.left, rc.top, rc.right, rc.bottom, FALSE);
 
 								}
+								NotifyLocalWinEvent(hContact, hChild, MSG_WINDOW_EVT_CLOSING);
+								NotifyLocalWinEvent(hContact, hChild, MSG_WINDOW_EVT_CLOSE);
 								SetParent(hChild, hParent);
 								SendMessage(GetParent(hwnd), CM_REMOVECHILD, 0, (LPARAM) hChild);
 								SendMessage(hChild, DM_SETPARENT, 0, (LPARAM) hParent);
 								SendMessage(hParent, CM_ADDCHILD, (WPARAM)hChild, (LPARAM) hContact);
 								SendMessage(hChild, DM_UPDATETABCONTROL, 0, 0);
 								SendMessage(hParent, CM_ACTIVATECHILD, 0, (LPARAM) hChild);
-								NotifyLocalWinEvent(hContact, hChild, MSG_WINDOW_EVT_CLOSING);
-								NotifyLocalWinEvent(hContact, hChild, MSG_WINDOW_EVT_CLOSE);
 								NotifyLocalWinEvent(hContact, hChild, MSG_WINDOW_EVT_OPENING);
 								NotifyLocalWinEvent(hContact, hChild, MSG_WINDOW_EVT_OPEN);
 								ShowWindow(hParent, SW_SHOWNA);
+                                EnableWindow(hParent, TRUE);
 							}
 						}
 					} else {
