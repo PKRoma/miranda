@@ -43,7 +43,7 @@ static const char *chatButtonIcons[] = {"scriver_CLOSEX",
 									"chat_bold", "chat_italics", "chat_underline", 
 									"chat_fgcol", "chat_bkgcol", 
 									"chat_smiley", "chat_history", 
-									"chat_settings", "chat_filter", "chat_nicklist", "scriver_CANCEL", "scriver_SEND"};
+									"chat_filter", "chat_settings", "chat_nicklist", "scriver_CANCEL", "scriver_SEND"};
 
 typedef struct IconDefStruct 
 {
