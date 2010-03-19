@@ -552,7 +552,7 @@ INT_PTR MO_RemoveMenuItem(WPARAM wParam, LPARAM)
 	pimi->parent->freeItem( pimi );
 
 	LeaveCriticalSection( &csMenuHook );
-	return -1;
+	return 0;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

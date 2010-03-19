@@ -2156,7 +2156,7 @@ void XMLNode::emptyTheNode(char force)
         myFree((void*)dd->lpszName);
         dd->nChild=0;    dd->nText=0;    dd->nClear=0;    dd->nAttribute=0;
         dd->pChild=NULL; dd->pText=NULL; dd->pClear=NULL; dd->pAttribute=NULL;
-        dd->pOrder=NULL; dd->lpszName=NULL; dd->pParent=NULL;
+        dd->pOrder=NULL; dd->pInnerText=NULL; dd->lpszName=NULL; dd->pParent=NULL;
     }
     if (dd->ref_count==0)
     {
