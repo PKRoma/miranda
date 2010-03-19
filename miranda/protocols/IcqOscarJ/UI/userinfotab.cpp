@@ -5,7 +5,7 @@
 // Copyright © 2000-2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001-2002 Jon Keating, Richard Hughes
 // Copyright © 2002-2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004-2009 Joe Kucera
+// Copyright © 2004-2010 Joe Kucera
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -19,7 +19,7 @@
 // 
 // You should have received a copy of the GNU General Public License
 // along with this program; if not, write to the Free Software
-// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 //
 // -----------------------------------------------------------------------------
 //
@@ -125,10 +125,9 @@ static void SetValue(CIcqProto* ppro, HWND hwndDlg, int idCtrl, HANDLE hContact,
 			else if (special == SVS_STATUSID)
 			{
 				char *pXName;
-				char *pszStatus;
+				char *pszStatus = MirandaStatusToStringUtf(dbv.wVal);
 				BYTE bXStatus = ppro->getContactXStatus(hContact);
 
-				pszStatus = MirandaStatusToStringUtf(dbv.wVal);
 				if (bXStatus)
 				{
 					pXName = ppro->getSettingStringUtf(hContact, DBSETTING_XSTATUS_NAME, NULL);
@@ -140,10 +139,10 @@ static void SetValue(CIcqProto* ppro, HWND hwndDlg, int idCtrl, HANDLE hContact,
 					SAFE_FREE((void**)&pXName);
 				}
 				else
-					null_snprintf(str, sizeof(str), (char*)pszStatus);
+					null_snprintf(str, sizeof(str), pszStatus);
 
 				bUtf = 1;
-				SAFE_FREE((void**)&pszStatus);
+				SAFE_FREE(&pszStatus);
 				pstr = str;
 				unspecified = 0;
 			}
@@ -207,7 +206,7 @@ static void SetValue(CIcqProto* ppro, HWND hwndDlg, int idCtrl, HANDLE hContact,
 		ICQFreeVariant(&dbv);
 
 	if (bAlloc)
-		SAFE_FREE((void**)&pstr);
+		SAFE_FREE(&pstr);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -267,7 +266,7 @@ static INT_PTR CALLBACK IcqDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 
 						SetValue(ppro, hwndDlg, IDC_PORT, hContact, (char*)DBVT_WORD, (char*)ppro->wListenPort, SVS_ZEROISUNSPEC);
 						SetValue(ppro, hwndDlg, IDC_VERSION, hContact, (char*)DBVT_WORD, (char*)ICQ_VERSION, SVS_ICQVERSION);
-						SetValue(ppro, hwndDlg, IDC_MIRVER, hContact, (char*)DBVT_ASCIIZ, MirandaVersionToString((char*)str, gbUnicodeCore, ICQ_PLUG_VERSION, MIRANDA_VERSION), SVS_ZEROISUNSPEC);
+						SetValue(ppro, hwndDlg, IDC_MIRVER, hContact, (char*)DBVT_ASCIIZ, MirandaVersionToString(str, gbUnicodeCore, ICQ_PLUG_VERSION, MIRANDA_VERSION), SVS_ZEROISUNSPEC);
 						SetDlgItemTextUtf(hwndDlg, IDC_SUPTIME, ICQTranslateUtfStatic(LPGEN("Member since:"), str, MAX_PATH));
 						SetValue(ppro, hwndDlg, IDC_SYSTEMUPTIME, hContact, szProto, "MemberTS", SVS_TIMESTAMP);
 						SetValue(ppro, hwndDlg, IDC_STATUS, hContact, (char*)DBVT_WORD, (char*)ppro->m_iStatus, SVS_STATUSID);
@@ -312,7 +311,7 @@ int CIcqProto::OnUserInfoInit(WPARAM wParam, LPARAM lParam)
 	if (!lParam)
 	{
 		TCHAR buf[200];
-		mir_sntprintf( buf, SIZEOF(buf), _T("%s Details"), m_tszUserName );
+		null_snprintf(buf, SIZEOF(buf), TranslateT("%s Details"), m_tszUserName);
 		odp.ptszTitle = buf;
 
 		odp.position = -1899999999;
