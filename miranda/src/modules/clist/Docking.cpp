@@ -214,7 +214,7 @@ int fnDocking_ProcessWindowMessage(WPARAM wParam, LPARAM lParam)
 			GetCursorPos(&ptCursor);
 			Docking_GetMonitorRectFromPoint(&ptCursor, &rcMonitor);
 
-			if (((ptCursor.x < rcMonitor.left + EDGESENSITIVITY) || 
+			if (((ptCursor.x <= rcMonitor.left + EDGESENSITIVITY) || 
 				(ptCursor.x >= rcMonitor.right - EDGESENSITIVITY)) &&
 				DBGetContactSettingByte(NULL, "CLUI", "DockToSides", 1)) 
 			{
