@@ -285,23 +285,7 @@ HANDLE CMsnProto::AddToListByEmail(const char *email, DWORD flags)
 	}
 	else 
 	{
-		if (msnLoggedIn) 
-		{
-//			int netId = Lists_GetNetId(email);
-//			if (netId == NETID_UNKNOWN)
-			int netId = strncmp(email, "tel:", 4) == 0 ? NETID_MOB : NETID_MSN;
-			if (MSN_AddUser(hContact, email, netId, LIST_FL))
-			{
-				MSN_AddUser(hContact, email, netId, LIST_PL + LIST_REMOVE);
-				MSN_AddUser(hContact, email, netId, LIST_BL + LIST_REMOVE);
-				MSN_AddUser(hContact, email, netId, LIST_AL);
-				DBDeleteContactSetting(hContact, "CList", "Hidden");
-			}
-			MSN_SetContactDb(hContact, email);
-
-			if (MSN_IsMeByContact(hContact)) displayEmailCount(hContact);
-		}
-		else hContact = NULL;
+		DBDeleteContactSetting(hContact, "CList", "Hidden");
 	}
 	return hContact;
 }
@@ -320,8 +304,8 @@ HANDLE __cdecl CMsnProto::AddToListByEvent(int flags, int iContact, HANDLE hDbEv
 
 	dbei.pBlob=(PBYTE) alloca(dbei.cbBlob);
 	if (MSN_CallService(MS_DB_EVENT_GET, (WPARAM)hDbEvent, (LPARAM)&dbei))	return NULL;
-	if (strcmp(dbei.szModule, m_szModuleName))					return NULL;
-	if (dbei.eventType != EVENTTYPE_AUTHREQUEST)					return NULL;
+	if (strcmp(dbei.szModule, m_szModuleName)) return NULL;
+	if (dbei.eventType != EVENTTYPE_AUTHREQUEST) return NULL;
 
 	char* nick = (char *) (dbei.pBlob + sizeof(DWORD) + sizeof(HANDLE));
 	char* firstName = nick + strlen(nick) + 1;
@@ -354,6 +338,29 @@ int CMsnProto::AuthRecv(HANDLE hContact, PROTORECVEVENT* pre)
 
 int __cdecl CMsnProto::AuthRequest(HANDLE hContact, const char* szMessage)
 {	
+	if (msnLoggedIn) 
+	{
+		char email[MSN_MAX_EMAIL_LEN];
+		if (getStaticString(hContact, "e-mail", email, sizeof(email))) 
+			return 1;
+
+		char* szMsg = mir_utf8encode(szMessage);
+
+//			int netId = Lists_GetNetId(email);
+//			if (netId == NETID_UNKNOWN)
+		int netId = strncmp(email, "tel:", 4) == 0 ? NETID_MOB : NETID_MSN;
+		if (MSN_AddUser(hContact, email, netId, LIST_FL, szMsg))
+		{
+			MSN_AddUser(hContact, email, netId, LIST_PL + LIST_REMOVE);
+			MSN_AddUser(hContact, email, netId, LIST_BL + LIST_REMOVE);
+			MSN_AddUser(hContact, email, netId, LIST_AL);
+		}
+		MSN_SetContactDb(hContact, email);
+		mir_free(szMsg);
+
+		if (MSN_IsMeByContact(hContact)) displayEmailCount(hContact);
+		return 0;
+	}
 	return 1;
 }
 
@@ -389,7 +396,7 @@ int CMsnProto::Authorize(HANDLE hDbEvent)
 	if (strcmp(dbei.szModule, m_szModuleName))
 		return 1;
 
-	char* nick = (char*)(dbei.pBlob + sizeof(DWORD)*2);
+	char* nick = (char*)(dbei.pBlob + sizeof(DWORD) + sizeof(HANDLE));
 	char* firstName = nick + strlen(nick) + 1;
 	char* lastName = firstName + strlen(firstName) + 1;
 	char* email = lastName + strlen(lastName) + 1;

@@ -30,15 +30,15 @@ typedef INT_PTR (__cdecl CMsnProto::*MsnServiceFuncParam)(WPARAM, LPARAM, LPARAM
 
 struct CMsnProto : public PROTO_INTERFACE
 {
-		CMsnProto(const char*, const TCHAR*);
-		~CMsnProto();
+	CMsnProto(const char*, const TCHAR*);
+	~CMsnProto();
 
-		__inline void* operator new(size_t size)
-		{	return calloc(1, size);
-		}
-		__inline void operator delete(void* p)
-		{	free(p);
-		}
+	__inline void* operator new(size_t size)
+	{	return calloc(1, size);
+	}
+	__inline void operator delete(void* p)
+	{	free(p);
+	}
 
 	//====================================================================================
 	// PROTO_INTERFACE
@@ -159,7 +159,7 @@ struct CMsnProto : public PROTO_INTERFACE
 	int msnPingTimeout;
 	HANDLE hKeepAliveThreadEvt;
 
-	char*    msnModeMsgs[ MSN_NUM_MODES ];
+	char*    msnModeMsgs[MSN_NUM_MODES];
 
 	LISTENINGTOINFO     msnCurrentMedia;
 	MYOPTIONS			MyOptions;
@@ -444,7 +444,7 @@ struct CMsnProto : public PROTO_INTERFACE
 
 	bool	 MSN_IsMyContact(HANDLE hContact);
 	bool	 MSN_IsMeByContact(HANDLE hContact, char* szEmail  = NULL);
-	bool     MSN_AddUser(HANDLE hContact, const char* email, int netId, int flags);
+	bool     MSN_AddUser(HANDLE hContact, const char* email, int netId, int flags, const char *msg = NULL);
 	void     MSN_AddAuthRequest(const char *email, const char *nick, const char *reason);
 	void	 MSN_SetContactDb(HANDLE hContact, const char *szEmail);
 	HANDLE	 MSN_HContactFromEmail(const char* msnEmail, const char* msnNick, bool addIfNeeded, bool temporary);
