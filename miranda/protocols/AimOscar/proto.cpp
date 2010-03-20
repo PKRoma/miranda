@@ -20,7 +20,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "m_genmenu.h"
 
 CAimProto::CAimProto(const char* aProtoName, const TCHAR* aUserName)
-    : chat_rooms(5)
+	: chat_rooms(5)
 {
 	m_tszUserName = mir_tstrdup(aUserName);
 	m_szModuleName = mir_strdup(aProtoName);
@@ -57,22 +57,22 @@ CAimProto::CAimProto(const char* aProtoName, const TCHAR* aUserName)
 
 	InitMenus();
 	init_custom_folders();
-   	offline_contacts();
+	offline_contacts();
 
 	TCHAR descr[MAX_PATH];
 
-    NETLIBUSER nlu = {0};
+	NETLIBUSER nlu = {0};
 	nlu.cbSize = sizeof(nlu);
 	nlu.flags = NUF_OUTGOING | NUF_HTTPCONNS | NUF_TCHAR;
 	nlu.szSettingsModule = m_szModuleName;
-    mir_sntprintf(descr, SIZEOF(descr), TranslateT("%s server connection"), m_tszUserName);
+	mir_sntprintf(descr, SIZEOF(descr), TranslateT("%s server connection"), m_tszUserName);
 	nlu.ptszDescriptiveName = descr;
 	hNetlib = (HANDLE) CallService(MS_NETLIB_REGISTERUSER, 0, (LPARAM)&nlu);
 
 	char szP2P[128];
 	mir_snprintf(szP2P, sizeof(szP2P), "%sP2P", m_szModuleName);
 	nlu.flags = NUF_OUTGOING | NUF_INCOMING | NUF_TCHAR;
-    mir_sntprintf(descr, SIZEOF(descr), TranslateT("%s Client-to-client connection"), m_tszUserName);
+	mir_sntprintf(descr, SIZEOF(descr), TranslateT("%s Client-to-client connection"), m_tszUserName);
 	nlu.szSettingsModule = szP2P;
 	nlu.minIncomingPorts = 1;
 	hNetlibPeer = (HANDLE) CallService(MS_NETLIB_REGISTERUSER, 0, (LPARAM)&nlu);
@@ -80,7 +80,7 @@ CAimProto::CAimProto(const char* aProtoName, const TCHAR* aUserName)
 
 CAimProto::~CAimProto()
 {
-    RemoveMenus();
+	RemoveMenus();
 
 	if(hDirectBoundPort)
 		Netlib_CloseHandle(hDirectBoundPort);
@@ -105,7 +105,7 @@ CAimProto::~CAimProto()
 	CloseHandle(hChatNavEvent);
 	CloseHandle(hAdminEvent);
 
-    ft_list.destroy();
+	ft_list.destroy();
 
 	for (int i=0; i<9; ++i)
 		mir_free(modeMsgs[i]);
@@ -131,7 +131,7 @@ int CAimProto::OnModulesLoaded(WPARAM wParam, LPARAM lParam)
 	HookProtoEvent(ME_IDLE_CHANGED,             &CAimProto::OnIdleChanged);
 	HookProtoEvent(ME_MSG_WINDOWEVENT,          &CAimProto::OnWindowEvent);
 
-    chat_register();
+	chat_register();
 
 	return 0;
 }
@@ -185,8 +185,8 @@ int __cdecl CAimProto::AuthRequest(HANDLE hContact, const char* szMessage)
 		return 1;
 
 	DBVARIANT dbv;
-	if (!DBGetContactSettingStringUtf(hContact, MOD_KEY_CL, OTH_KEY_GP, &dbv)) 
-    {
+	if (!DBGetContactSettingStringUtf(hContact, MOD_KEY_CL, OTH_KEY_GP, &dbv) && dbv.pszVal[0]) 
+	{
 		add_contact_to_group(hContact, dbv.pszVal);
 		DBFreeVariant(&dbv);
 	}
@@ -581,12 +581,12 @@ int __cdecl CAimProto::SendMsg(HANDLE hContact, int flags, const char* pszSrc)
 		msg = mir_utf8encodeW((wchar_t*)p);
 	}
 	else if (flags & PREF_UTF)
-        msg = mir_strdup(pszSrc);
-    else
+		msg = mir_strdup(pszSrc);
+	else
 		msg = mir_utf8encode(pszSrc);
 
 	char* smsg = html_encode(msg);
-    mir_free(msg);
+	mir_free(msg);
 
 	if (getByte(AIM_KEY_FO, 0)) 
 	{
@@ -605,7 +605,7 @@ int __cdecl CAimProto::SendMsg(HANDLE hContact, int flags, const char* pszSrc)
 	if (res && 0 == getByte(AIM_KEY_DC, 1))
 		ForkThread(&CAimProto::msg_ack_success, hContact);
 
-    return res;
+	return res;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -632,31 +632,31 @@ int __cdecl CAimProto::SetStatus(int iNewStatus)
 	if (iNewStatus == m_iStatus)
 		return 0;
 
-    if (iNewStatus == ID_STATUS_OFFLINE)
-    {
-       	char** msgptr = getStatusMsgLoc(iNewStatus);
-        if (msgptr && *msgptr)
-        {
-            if (m_iStatus == ID_STATUS_AWAY)
-		        aim_set_away(hServerConn,seqno,NULL);//unset away message
-            else
-		        aim_set_statusmsg(hServerConn,seqno,NULL);//unset status message
-        }
+	if (iNewStatus == ID_STATUS_OFFLINE)
+	{
+		char** msgptr = getStatusMsgLoc(iNewStatus);
+		if (msgptr && *msgptr)
+		{
+			if (m_iStatus == ID_STATUS_AWAY)
+				aim_set_away(hServerConn,seqno,NULL);//unset away message
+			else
+				aim_set_statusmsg(hServerConn,seqno,NULL);//unset status message
+		}
 		broadcast_status(ID_STATUS_OFFLINE);
-        return 0;
-    }
+		return 0;
+	}
 
-    m_iDesiredStatus = iNewStatus;
-    if (m_iStatus == ID_STATUS_OFFLINE)
-    {
+	m_iDesiredStatus = iNewStatus;
+	if (m_iStatus == ID_STATUS_OFFLINE)
+	{
 		broadcast_status(ID_STATUS_CONNECTING);
-	    ForkThread(&CAimProto::start_connection, (void*)iNewStatus);
-    }
-    else if (m_iStatus > ID_STATUS_OFFLINE)
-    {
-	    char** msgptr = getStatusMsgLoc(iNewStatus);
+		ForkThread(&CAimProto::start_connection, (void*)iNewStatus);
+	}
+	else if (m_iStatus > ID_STATUS_OFFLINE)
+	{
+		char** msgptr = getStatusMsgLoc(iNewStatus);
 		switch(iNewStatus) 
-        {
+		{
 		case ID_STATUS_ONLINE:
 		case ID_STATUS_FREECHAT:
 			broadcast_status(ID_STATUS_ONLINE);
@@ -678,14 +678,14 @@ int __cdecl CAimProto::SetStatus(int iNewStatus)
 		case ID_STATUS_ONTHEPHONE:
 			broadcast_status(ID_STATUS_AWAY);
 			if (m_iStatus != ID_STATUS_AWAY) 
-            {
-                aim_set_away(hServerConn,seqno,*msgptr?*msgptr:DEFAULT_AWAY_MSG);//set actual away message
+			{
+				aim_set_away(hServerConn,seqno,*msgptr?*msgptr:DEFAULT_AWAY_MSG);//set actual away message
 				aim_set_invis(hServerConn,seqno,AIM_STATUS_AWAY,AIM_STATUS_NULL);//away not invis
 			}
 			//see SetAwayMsg for m_iStatus away
 			break;
-	    }	
-    }
+		}	
+	}
 
 	return 0;
 }
@@ -700,7 +700,7 @@ void __cdecl CAimProto::get_online_msg_thread(void* arg)
 	const HANDLE hContact = arg;
 	DBVARIANT dbv;
 	if (!DBGetContactSettingString(hContact, MOD_KEY_CL, OTH_KEY_SM, &dbv)) 
-    {
+	{
 		sendBroadcast(hContact, ACKTYPE_AWAYMSG, ACKRESULT_SUCCESS, (HANDLE)1, (LPARAM)dbv.pszVal);
 		DBFreeVariant(&dbv);
 	}
@@ -713,16 +713,16 @@ HANDLE __cdecl CAimProto::GetAwayMsg(HANDLE hContact)
 		return 0;
 
 	int status = getWord(hContact, AIM_KEY_ST, ID_STATUS_OFFLINE);
-    switch (status)
-    {
-    case ID_STATUS_AWAY:
-    case ID_STATUS_ONLINE:
-	    ForkThread(&CAimProto::get_online_msg_thread, hContact);
-        break;
+	switch (status)
+	{
+	case ID_STATUS_AWAY:
+	case ID_STATUS_ONLINE:
+		ForkThread(&CAimProto::get_online_msg_thread, hContact);
+		break;
 
-    default:
-        return 0;
-    }
+	default:
+		return 0;
+	}
 
 	return (HANDLE)1;
 }
@@ -752,29 +752,29 @@ int __cdecl CAimProto::SetAwayMsg(int status, const char* msg)
 	char** msgptr = getStatusMsgLoc(status);
 	if (msgptr==NULL) return 1;
 
-    mir_free(*msgptr);
-    *msgptr = mir_utf8encode(msg);
+	mir_free(*msgptr);
+	*msgptr = mir_utf8encode(msg);
 
 	if (state == 1 && status == m_iDesiredStatus)
-    {
+	{
 		switch(status) 
-        {
+		{
 		case ID_STATUS_ONLINE:
 		case ID_STATUS_FREECHAT:
 		case ID_STATUS_INVISIBLE:
-            aim_set_statusmsg(hServerConn, seqno, *msgptr);
-            break;
+			aim_set_statusmsg(hServerConn, seqno, *msgptr);
+			break;
 
-        case ID_STATUS_AWAY:
+		case ID_STATUS_AWAY:
 		case ID_STATUS_OUTTOLUNCH:
 		case ID_STATUS_NA:
 		case ID_STATUS_DND:
 		case ID_STATUS_OCCUPIED:
 		case ID_STATUS_ONTHEPHONE:
-            aim_set_away(hServerConn, seqno, *msgptr?*msgptr:DEFAULT_AWAY_MSG); //set actual away message
-            break;
+			aim_set_away(hServerConn, seqno, *msgptr?*msgptr:DEFAULT_AWAY_MSG); //set actual away message
+			break;
 		}
-    }
+	}
 	return 0;
 }
 
@@ -785,12 +785,12 @@ int __cdecl CAimProto::UserIsTyping(HANDLE hContact, int type)
 {
 	if (state != 1) return 0;
 
-    if (getWord(hContact, AIM_KEY_ST, ID_STATUS_OFFLINE) == ID_STATUS_ONTHEPHONE)
-        return 0;
+	if (getWord(hContact, AIM_KEY_ST, ID_STATUS_OFFLINE) == ID_STATUS_ONTHEPHONE)
+		return 0;
 
 	DBVARIANT dbv;
 	if (!getString(hContact, AIM_KEY_SN, &dbv)) 
-    {
+	{
 		if (type == PROTOTYPE_SELFTYPING_ON)
 			aim_typing_notification(hServerConn, seqno, dbv.pszVal, 0x0002);
 		else if (type == PROTOTYPE_SELFTYPING_OFF)
@@ -806,23 +806,23 @@ int __cdecl CAimProto::UserIsTyping(HANDLE hContact, int type)
 int __cdecl CAimProto::OnEvent(PROTOEVENTTYPE eventType, WPARAM wParam, LPARAM lParam)
 {
 	switch (eventType) 
-    {
+	{
 		case EV_PROTO_ONLOAD:    
-            return OnModulesLoaded(0, 0);
+			return OnModulesLoaded(0, 0);
 
 //		case EV_PROTO_ONEXIT:    
 //            return OnPreShutdown(0, 0);
 
 		case EV_PROTO_ONOPTIONS: 
-            return OnOptionsInit(wParam, lParam);
+			return OnOptionsInit(wParam, lParam);
 
-        case EV_PROTO_ONERASE:
-        {
-            char szDbsettings[64];
-            mir_snprintf(szDbsettings, sizeof(szDbsettings), "%sP2P", m_szModuleName);
-            CallService(MS_DB_MODULE_DELETE, 0, (LPARAM)szDbsettings);
-            break;
-        }
+		case EV_PROTO_ONERASE:
+		{
+			char szDbsettings[64];
+			mir_snprintf(szDbsettings, sizeof(szDbsettings), "%sP2P", m_szModuleName);
+			CallService(MS_DB_MODULE_DELETE, 0, (LPARAM)szDbsettings);
+			break;
+		}
 
 		case EV_PROTO_ONRENAME:
 		{	
@@ -831,7 +831,7 @@ int __cdecl CAimProto::OnEvent(PROTOEVENTTYPE eventType, WPARAM wParam, LPARAM l
 			clmi.flags = CMIM_NAME | CMIF_TCHAR;
 			clmi.ptszName = m_tszUserName;
 			CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM)hMenuRoot, (LPARAM)&clmi);
-            break;
+			break;
 		}
 	}
 	return 1;
