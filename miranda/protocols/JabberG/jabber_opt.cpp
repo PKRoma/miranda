@@ -497,6 +497,8 @@ protected:
 		EnableWindow(GetDlgItem(m_hwnd, IDC_UNREGISTER), m_proto->m_bJabberOnline);
 
 		m_chkUseTls.Enable(!m_proto->m_options.UseSSL);
+		m_chkUseTls.Enable(!m_proto->m_options.Disable3920auth);
+		if (m_proto->m_options.Disable3920auth) m_chkUseTls.SetState(BST_UNCHECKED);
 
 		if (m_proto->m_options.ManualConnect)
 		{
@@ -676,7 +678,7 @@ private:
 				m_txtPort.SetInt(5223);
 			} else
 			{
-				m_chkUseTls.Enable();
+				if (!m_proto->m_options.Disable3920auth) m_chkUseTls.Enable();
 				m_txtPort.SetInt(5222);
 			}
 		}
