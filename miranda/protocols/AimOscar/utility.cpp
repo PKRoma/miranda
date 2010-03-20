@@ -224,9 +224,9 @@ void CAimProto::update_server_group(const char* group, unsigned short group_id)
 			user_id_array[i] = _htons(group_list[i].item_id);
 	}
 
-	//mod the group so that aim knows we want updates on the user's m_iStatus during this session			
 	LOG("Modifying group %s:%u on the serverside list",group, group_id);
-	aim_mod_group(hServerConn, seqno, group, group_id, (char*)user_id_array, user_id_array_size);
+	aim_mod_group(hServerConn, seqno, group, group_id, (char*)user_id_array, 
+		user_id_array_size * sizeof(unsigned short));
 
 	mir_free(user_id_array);
 }
@@ -256,35 +256,38 @@ void CAimProto::add_contact_to_group(HANDLE hContact, const char* new_group)
 		aim_add_contact(hServerConn, seqno, new_group, 0, new_group_id, 1);//add the group server-side even if it exist
 	}
 
-	unsigned short item_id = getBuddyId(hContact, 1);
-	if (!item_id)
+	DBVARIANT dbv;
+	char *nick = NULL;
+	if (!DBGetContactSettingStringUtf(hContact, MOD_KEY_CL, "MyHandle", &dbv))
 	{
-		LOG("Contact %u not on list.", hContact);
-		item_id = search_for_free_item_id(hContact);
+		nick = NEWSTR_ALLOCA(dbv.pszVal);
+		DBFreeVariant(&dbv);
 	}
 
-	DBVARIANT dbv;
 	if (!getString(hContact, AIM_KEY_SN, &dbv))
 	{
+		unsigned short item_id = getBuddyId(hContact, 1);
+		unsigned short new_item_id = search_for_free_item_id(hContact);
+
+		if (!item_id)
+			LOG("Contact %u not on list.", hContact);
+
 		setGroupId(hContact, 1, new_group_id);
 		if (new_group && strcmp(new_group, AIM_DEFAULT_GROUP))
 			DBWriteContactSettingStringUtf(hContact, MOD_KEY_CL, OTH_KEY_GP, new_group);
 		else
 			DBDeleteContactSetting(hContact, MOD_KEY_CL, OTH_KEY_GP);
 
-		LOG("Adding buddy %s:%u to the serverside list", dbv.pszVal, item_id);
-		aim_add_contact(hServerConn, seqno, dbv.pszVal, item_id, new_group_id, 0);
-
-		LOG("Modifying group %s:%u on the serverside list", new_group, new_group_id);
-		update_server_group(new_group, new_group_id);
-
-		if (old_group_id)
+		if (old_group_id && item_id)
 		{
-			LOG("Removing buddy %s:%u to the serverside list", dbv.pszVal, item_id);
+			LOG("Removing buddy %s:%u %s:%u from the serverside list", dbv.pszVal, item_id, old_group, old_group_id);
 			aim_delete_contact(hServerConn, seqno, dbv.pszVal, item_id, old_group_id, 0);
-			LOG("Modifying group %s:%u on the serverside list", old_group, old_group_id);
 			update_server_group(old_group, old_group_id);
 		}
+
+		LOG("Adding buddy %s:%u %s:%u to the serverside list", dbv.pszVal, new_item_id, new_group, new_group_id);
+		aim_add_contact(hServerConn, seqno, dbv.pszVal, new_item_id, new_group_id, 0, nick);
+		update_server_group(new_group, new_group_id);
 
 		DBFreeVariant(&dbv);
 		deleteSetting(hContact, AIM_KEY_NC);
