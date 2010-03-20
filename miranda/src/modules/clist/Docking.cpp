@@ -87,6 +87,14 @@ static UINT_PTR Docking_Command(HWND hwnd, int cmd)
 	return SHAppBarMessage(cmd, &abd);
 }
 
+static void Docking_SetSize(HWND hwnd, LPRECT rc, bool query)
+{
+	RECT rcMonitor;
+	Docking_GetMonitorRectFromPoint(
+		docked == DOCKED_LEFT && !query ? (LPPOINT)&rc->right : (LPPOINT)rc, &rcMonitor);
+	Docking_AdjustPosition(hwnd, &rcMonitor, rc, query);
+}
+
 static bool Docking_IsWindowVisible(HWND hwnd)
 {
 	LONG style = GetWindowLong(hwnd, GWL_STYLE);
@@ -137,7 +145,7 @@ int fnDocking_ProcessWindowMessage(WPARAM wParam, LPARAM lParam)
 			{
 				bool addbar = Docking_Command(msg->hwnd, ABM_NEW) != 0;
 				
-				RECT rcMonitor, rc = {0};
+				RECT rc = {0};
 				GetWindowRect(msg->hwnd, &rc);
 
 				int cx = rc.right - rc.left + 1;
@@ -149,8 +157,7 @@ int fnDocking_ProcessWindowMessage(WPARAM wParam, LPARAM lParam)
 					addbar |= (cx != wp->cx); 
 				}
 				
-				Docking_GetMonitorRectFromPoint((LPPOINT)&rc, &rcMonitor);
-				Docking_AdjustPosition(msg->hwnd, &rcMonitor, &rc, !addbar);
+				Docking_SetSize(msg->hwnd, &rc, !addbar);
 
 				if (!(wp->flags & SWP_NOMOVE)) { wp->x = rc.left; wp->y = rc.top; }
 				if (!(wp->flags & SWP_NOSIZE)) wp->cy = rc.bottom - rc.top + 1;
@@ -162,14 +169,9 @@ int fnDocking_ProcessWindowMessage(WPARAM wParam, LPARAM lParam)
 			{
 				if ((wp->flags & SWP_SHOWWINDOW) && Docking_Command(msg->hwnd, ABM_NEW)) 
 				{
-					RECT rcMonitor, rc = {0};
+					RECT rc = {0};
 					GetWindowRect(msg->hwnd, &rc);
-
-					if (docked == DOCKED_LEFT)
-						Docking_GetMonitorRectFromPoint((LPPOINT)&rc.right, &rcMonitor);
-					else 
-						Docking_GetMonitorRectFromPoint((LPPOINT)&rc, &rcMonitor);
-					Docking_AdjustPosition(msg->hwnd, &rcMonitor, &rc, false);
+					Docking_SetSize(msg->hwnd, &rc, false);
 
 					wp->x = rc.left; 
 					wp->y = rc.top; 
