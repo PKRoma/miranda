@@ -195,10 +195,27 @@ int fnDocking_ProcessWindowMessage(WPARAM wParam, LPARAM lParam)
 
 		if (!vis)
 			Docking_Command(msg->hwnd, ABM_REMOVE);
-
-		Docking_Command(msg->hwnd, ABM_WINDOWPOSCHANGED);
+		else
+			Docking_Command(msg->hwnd, ABM_WINDOWPOSCHANGED);
 		break;
 	}
+
+	case WM_DISPLAYCHANGE:
+		if (Docking_IsWindowVisible(msg->hwnd))
+		{
+			RECT rc = {0};
+			GetWindowRect(msg->hwnd, &rc);
+			int x = (int) DBGetContactSettingDword(NULL, "CList", "x", 700);
+			int y = (int) DBGetContactSettingDword(NULL, "CList", "y", 221);
+			rc.right += x - rc.left; 
+			rc.left = x;
+			rc.bottom += y - rc.top;
+			rc.top = y;
+			Docking_SetSize(msg->hwnd, &rc, false);
+			MoveWindow(msg->hwnd, rc.left, rc.top, rc.right - rc.left + 1, 
+				rc.bottom - rc.top + 1, TRUE);
+		}
+		break;
 
 	case WM_MOVING:
 		if (!docked)
