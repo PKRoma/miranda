@@ -332,7 +332,7 @@ int __cdecl CMsnProto::AuthRequest(HANDLE hContact, const TCHAR* szMessage)
 	{
 		char email[MSN_MAX_EMAIL_LEN];
 		if (getStaticString(hContact, "e-mail", email, sizeof(email))) 
-			return 0;
+			return 1;
 
 		char* szMsg = mir_utf8encodeT(szMessage);
 
