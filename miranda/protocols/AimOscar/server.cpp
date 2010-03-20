@@ -620,12 +620,12 @@ void CAimProto::process_ssi_list(SNAC &snac, int &offset)
 				}
 				if (i == 1 && getByte(AIM_KEY_MG, 1))
 				{
-					char* group = group_list.find_name(group_id);
+					const char* group = group_list.find_name(group_id);
 					if (group)
 					{
 						bool ok = false;
 						DBVARIANT dbv;
-						if (!DBGetContactSettingStringUtf(hContact, MOD_KEY_CL, OTH_KEY_GP, &dbv)) 
+						if (!DBGetContactSettingStringUtf(hContact, MOD_KEY_CL, OTH_KEY_GP, &dbv) && dbv.pszVal[0]) 
 						{
 							ok = strcmp(group, dbv.pszVal) == 0;
 							if (strcmp(dbv.pszVal, "MetaContacts Hidden Group") == 0)
@@ -640,8 +640,17 @@ void CAimProto::process_ssi_list(SNAC &snac, int &offset)
 							else
 								DBFreeVariant(&dbv);
 						}
+						else
+						{
+							ok = strcmp(group, AIM_DEFAULT_GROUP) == 0;
+						}
 						if (!ok)
-							DBWriteContactSettingStringUtf(hContact, MOD_KEY_CL, OTH_KEY_GP, group);
+						{
+							if (strcmp(group, AIM_DEFAULT_GROUP))
+								DBWriteContactSettingStringUtf(hContact, MOD_KEY_CL, OTH_KEY_GP, group);
+							else
+								DBDeleteContactSetting(hContact, MOD_KEY_CL, OTH_KEY_GP);
+						}
 					}
 				}
 				setWord(hContact, AIM_KEY_ST, ID_STATUS_OFFLINE);

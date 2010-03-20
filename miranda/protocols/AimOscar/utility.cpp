@@ -267,7 +267,10 @@ void CAimProto::add_contact_to_group(HANDLE hContact, const char* new_group)
 	if (!getString(hContact, AIM_KEY_SN, &dbv))
 	{
 		setGroupId(hContact, 1, new_group_id);
-		DBWriteContactSettingStringUtf(hContact, MOD_KEY_CL, OTH_KEY_GP, new_group);
+		if (new_group && strcmp(new_group, AIM_DEFAULT_GROUP))
+			DBWriteContactSettingStringUtf(hContact, MOD_KEY_CL, OTH_KEY_GP, new_group);
+		else
+			DBDeleteContactSetting(hContact, MOD_KEY_CL, OTH_KEY_GP);
 
 		LOG("Adding buddy %s:%u to the serverside list", dbv.pszVal, item_id);
 		aim_add_contact(hServerConn, seqno, dbv.pszVal, item_id, new_group_id, 0);
@@ -373,6 +376,8 @@ void CAimProto::execute_cmd(const char* arg)
 
 void create_group(const char *group)
 {
+	if (strcmp(group, AIM_DEFAULT_GROUP) == 0) return;
+
 	TCHAR* szGroupName = mir_utf8decodeT(group);
 	CallService(MS_CLIST_GROUPCREATE, 0, (LPARAM)szGroupName);
 	mir_free(szGroupName);

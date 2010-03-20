@@ -185,7 +185,7 @@ int __cdecl CAimProto::AuthRequest(HANDLE hContact, const TCHAR* szMessage)
 		return 1;
 
 	DBVARIANT dbv;
-	if (!DBGetContactSettingStringUtf(hContact, MOD_KEY_CL, OTH_KEY_GP, &dbv)) 
+	if (!DBGetContactSettingStringUtf(hContact, MOD_KEY_CL, OTH_KEY_GP, &dbv) && dbv.pszVal[0]) 
 	{
 		add_contact_to_group(hContact, dbv.pszVal);
 		DBFreeVariant(&dbv);

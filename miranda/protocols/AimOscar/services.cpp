@@ -127,7 +127,7 @@ int CAimProto::OnSettingChanged(WPARAM wParam,LPARAM lParam)
 			if (cws->value.type == DBVT_DELETED && is_my_contact(hContact))
 			{
 				DBVARIANT dbv;
-				if(!DBGetContactSettingStringUtf(hContact, MOD_KEY_CL, OTH_KEY_GP, &dbv))
+				if(!DBGetContactSettingStringUtf(hContact, MOD_KEY_CL, OTH_KEY_GP, &dbv) && dbv.pszVal[0])
 				{
 					add_contact_to_group(hContact, dbv.pszVal);
 					DBFreeVariant(&dbv);
@@ -249,7 +249,7 @@ int CAimProto::OnGroupChange(WPARAM wParam,LPARAM lParam)
 				mir_free(szNewName);
 			}
 			else
-				ShowPopup(LPGEN("Buddies without group are not allowed"), ERROR_POPUP);
+				add_contact_to_group(hContact, AIM_DEFAULT_GROUP);
 		}
 	}
 	return 0;
@@ -261,12 +261,13 @@ INT_PTR CAimProto::AddToServerList(WPARAM wParam, LPARAM /*lParam*/)
 
 	HANDLE hContact = (HANDLE)wParam;
 	DBVARIANT dbv;
-	if (!DBGetContactSettingStringUtf(hContact, MOD_KEY_CL, OTH_KEY_GP, &dbv))
+	if (!DBGetContactSettingStringUtf(hContact, MOD_KEY_CL, OTH_KEY_GP, &dbv) && dbv.pszVal[0])
 	{
 		add_contact_to_group(hContact, dbv.pszVal);
 		DBFreeVariant(&dbv);
 	}
-	else add_contact_to_group(hContact, AIM_DEFAULT_GROUP);
+	else 
+		add_contact_to_group(hContact, AIM_DEFAULT_GROUP);
 	return 0;
 }
 
