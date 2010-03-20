@@ -264,7 +264,7 @@ void CAimProto::add_contact_to_group(HANDLE hContact, const char* new_group)
 	}
 
 	DBVARIANT dbv;
-	if (!getString(hContact, AIM_KEY_SN,&dbv))
+	if (!getString(hContact, AIM_KEY_SN, &dbv))
 	{
 		setGroupId(hContact, 1, new_group_id);
 		DBWriteContactSettingStringUtf(hContact, MOD_KEY_CL, OTH_KEY_GP, new_group);
@@ -287,7 +287,7 @@ void CAimProto::add_contact_to_group(HANDLE hContact, const char* new_group)
 		deleteSetting(hContact, AIM_KEY_NC);
 	}
 
-	aim_ssi_update(hServerConn, seqno, true);
+	aim_ssi_update(hServerConn, seqno, false);
 }
 
 void CAimProto::offline_contact(HANDLE hContact, bool remove_settings)
