@@ -286,7 +286,7 @@ INT_PTR CALLBACK DlgProcFileExists(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 					ofn.lpstrFile=str;
 					ofn.nMaxFile=SIZEOF(str);
 					ofn.nMaxFileTitle=MAX_PATH;
-					if(!GetSaveFileNameA(&ofn)) break;
+					if(!GetSaveFileNameA(&ofn)) return FALSE;
 					pfr.szFilename=mir_strdup(str);
 					pfr.action=FILERESUME_RENAME;
 					break;
