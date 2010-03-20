@@ -451,7 +451,7 @@ struct CMsnProto : public PROTO_INTERFACE
 
 	bool	 MSN_IsMyContact(HANDLE hContact);
 	bool	 MSN_IsMeByContact(HANDLE hContact, char* szEmail  = NULL);
-	bool     MSN_AddUser(HANDLE hContact, const char* email, int netId, int flags);
+	bool     MSN_AddUser(HANDLE hContact, const char* email, int netId, int flags, const char *msg = NULL);
 	void     MSN_AddAuthRequest(const char *email, const char *nick, const char *reason);
 	void	 MSN_SetContactDb(HANDLE hContact, const char *szEmail);
 	HANDLE	 MSN_HContactFromEmail(const char* msnEmail, const char* msnNick, bool addIfNeeded, bool temporary);

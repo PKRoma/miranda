@@ -274,23 +274,7 @@ HANDLE CMsnProto::AddToListByEmail(const char *email, DWORD flags)
 	}
 	else 
 	{
-		if (msnLoggedIn) 
-		{
-//			int netId = Lists_GetNetId(email);
-//			if (netId == NETID_UNKNOWN)
-			int netId = strncmp(email, "tel:", 4) == 0 ? NETID_MOB : NETID_MSN;
-			if (MSN_AddUser(hContact, email, netId, LIST_FL))
-			{
-				MSN_AddUser(hContact, email, netId, LIST_PL + LIST_REMOVE);
-				MSN_AddUser(hContact, email, netId, LIST_BL + LIST_REMOVE);
-				MSN_AddUser(hContact, email, netId, LIST_AL);
-				DBDeleteContactSetting(hContact, "CList", "Hidden");
-			}
-			MSN_SetContactDb(hContact, email);
-
-			if (MSN_IsMeByContact(hContact)) displayEmailCount(hContact);
-		}
-		else hContact = NULL;
+		DBDeleteContactSetting(hContact, "CList", "Hidden");
 	}
 	return hContact;
 }
@@ -344,7 +328,30 @@ int CMsnProto::AuthRecv(HANDLE hContact, PROTORECVEVENT* pre)
 
 int __cdecl CMsnProto::AuthRequest(HANDLE hContact, const TCHAR* szMessage)
 {	
-	return 1;
+	if (msnLoggedIn) 
+	{
+		char email[MSN_MAX_EMAIL_LEN];
+		if (getStaticString(hContact, "e-mail", email, sizeof(email))) 
+			return 0;
+
+		char* szMsg = mir_utf8encodeT(szMessage);
+
+//			int netId = Lists_GetNetId(email);
+//			if (netId == NETID_UNKNOWN)
+		int netId = strncmp(email, "tel:", 4) == 0 ? NETID_MOB : NETID_MSN;
+		if (MSN_AddUser(hContact, email, netId, LIST_FL, szMsg))
+		{
+			MSN_AddUser(hContact, email, netId, LIST_PL + LIST_REMOVE);
+			MSN_AddUser(hContact, email, netId, LIST_BL + LIST_REMOVE);
+			MSN_AddUser(hContact, email, netId, LIST_AL);
+		}
+		MSN_SetContactDb(hContact, email);
+		mir_free(szMsg);
+
+		if (MSN_IsMeByContact(hContact)) displayEmailCount(hContact);
+		return 1;
+	}
+	return 0;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -732,7 +739,7 @@ DWORD_PTR __cdecl CMsnProto::GetCaps(int type, HANDLE hContact)
 				 PF2_ONTHEPHONE | PF2_OUTTOLUNCH;
 
 	case PFLAGNUM_4:
-		return PF4_SUPPORTTYPING | PF4_AVATARS | PF4_SUPPORTIDLE | PF4_IMSENDUTF | 
+		return PF4_FORCEAUTH | PF4_FORCEADDED | PF4_SUPPORTTYPING | PF4_AVATARS | PF4_SUPPORTIDLE | PF4_IMSENDUTF | 
 			PF4_IMSENDOFFLINE | PF4_NOAUTHDENYREASON;
 
 	case PFLAG_UNIQUEIDTEXT:
@@ -800,7 +807,8 @@ int __cdecl CMsnProto::RecvMsg(HANDLE hContact, PROTORECVEVENT* pre)
 		DBDeleteContactSetting(hContact, "CList", "Hidden");
 
 	CCSDATA ccs = { hContact, PSR_MESSAGE, 0, (LPARAM)pre };
-	return MSN_CallService(MS_PROTO_RECVMSG, 0, (LPARAM)&ccs);
+	MSN_CallService(MS_PROTO_RECVMSG, 0, (LPARAM)&ccs);
+	return 0;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
