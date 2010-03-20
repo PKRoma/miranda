@@ -11,6 +11,20 @@ LIST<HANDLE> lphGroupsItems(5);
 
 #define MTG_MOVE "MoveToGroup/Move"
 
+struct GroupItemSort
+{
+	TCHAR* name;
+	int position;
+
+	GroupItemSort(TCHAR* pname, int pos)
+		: name(mir_tstrdup(pname)), position(pos) {}
+
+	~GroupItemSort() { mir_free(name); }
+
+	static int compare(const GroupItemSort* d1, const GroupItemSort* d2)
+	{ return _tcscoll(d1->name, d2->name); }
+};
+
 static TCHAR* PrepareGroupName( TCHAR* str )
 {
 	TCHAR* p = _tcschr( str, '&' ), *d;
@@ -49,6 +63,7 @@ static void AddGroupItem(HGENMENU hRoot, TCHAR* name, int pos, WPARAM param, boo
 static int OnContactMenuBuild(WPARAM wParam,LPARAM)
 {
 	int i;
+	OBJLIST<GroupItemSort> groups(10, GroupItemSort::compare);	
 
 	if (!hMoveToGroupItem) 
 	{
@@ -85,13 +100,18 @@ static int OnContactMenuBuild(WPARAM wParam,LPARAM)
 			break;
 
 		if (dbv.ptszVal[0])
-		{
-			TCHAR* szGroupName = dbv.ptszVal + 1;
-			bool checked = szContactGroup && !_tcscmp(szContactGroup, szGroupName);
-			AddGroupItem(hMoveToGroupItem, szGroupName, ++pos, i + 1, checked);
-		}
+			groups.insert(new GroupItemSort(dbv.ptszVal + 1, i + 1));
+
 		mir_free(dbv.ptszVal);
 	}
+
+	for (i = 0; i < groups.getCount(); ++i)
+	{
+		bool checked = szContactGroup && !_tcscmp(szContactGroup, groups[i].name);		
+		AddGroupItem(hMoveToGroupItem, groups[i].name, ++pos, groups[i].position, checked);
+	}
+
+	groups.destroy();
 	mir_free(szContactGroup);
 
 	return 0;
