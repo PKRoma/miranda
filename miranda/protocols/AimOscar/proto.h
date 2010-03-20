@@ -269,7 +269,7 @@ struct CAimProto : public PROTO_INTERFACE
 	int    aim_send_message(HANDLE hServerConn,unsigned short &seqno,const char* sn,char* amsg,bool auto_response);
 	int    aim_query_profile(HANDLE hServerConn,unsigned short &seqno,char* sn);
 	int    aim_delete_contact(HANDLE hServerConn,unsigned short &seqno,char* sn,unsigned short item_id,unsigned short group_id,unsigned short list);
-	int    aim_add_contact(HANDLE hServerConn,unsigned short &seqno,const char* sn,unsigned short item_id,unsigned short group_id,unsigned short list);
+	int    aim_add_contact(HANDLE hServerConn,unsigned short &seqno,const char* sn,unsigned short item_id,unsigned short group_id,unsigned short list,char* nick=NULL, char* note=NULL);
 	int    aim_mod_group(HANDLE hServerConn,unsigned short &seqno,const char* name,unsigned short group_id,char* members,unsigned short members_length);
 	int    aim_mod_buddy(HANDLE hServerConn,unsigned short &seqno,const char* sn,unsigned short buddy_id,unsigned short group_id,char* nick,char* note);
 	int    aim_ssi_update(HANDLE hServerConn, unsigned short &seqno, bool start);
