@@ -349,9 +349,9 @@ int __cdecl CMsnProto::AuthRequest(HANDLE hContact, const TCHAR* szMessage)
 		mir_free(szMsg);
 
 		if (MSN_IsMeByContact(hContact)) displayEmailCount(hContact);
-		return 1;
+		return 0;
 	}
-	return 0;
+	return 1;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
