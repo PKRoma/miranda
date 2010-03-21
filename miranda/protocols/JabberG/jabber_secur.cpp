@@ -260,9 +260,9 @@ TPlainAuth::~TPlainAuth()
 char* TPlainAuth::getInitialRequest()
 {
 	char *temp = mir_t2a(info->username);
-	size_t size = strlen(temp)*2+strlen(info->server)+strlen(info->password)+3;
+	size_t size = strlen(temp)+strlen(info->password)+2;
 	char *toEncode = ( char* )alloca( size+1 );
-	mir_snprintf( toEncode, size+1, "%s@%s%c%s%c%s", temp, info->server, 0, temp, 0, info->password );
+	mir_snprintf( toEncode, size+1, "%c%s%c%s", 0, temp, 0, info->password );
 	char* result = JabberBase64Encode( toEncode, (int)size );
 	mir_free(temp);
 	return result;
