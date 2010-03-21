@@ -351,7 +351,7 @@ int __cdecl CMsnProto::AuthRequest(HANDLE hContact, const char* szMessage)
 		int netId = strncmp(email, "tel:", 4) == 0 ? NETID_MOB : NETID_MSN;
 		MSN_AddUser(hContact, email, netId, LIST_BL + LIST_REMOVE);
 		MSN_AddUser(hContact, email, netId, LIST_AL);
-		MSN_AddUser(hContact, email, netId, LIST_FL, szMsg))
+		MSN_AddUser(hContact, email, netId, LIST_FL, szMsg);
 		MSN_AddUser(hContact, email, netId, LIST_PL + LIST_REMOVE);
 		MSN_SetContactDb(hContact, email);
 		mir_free(szMsg);
