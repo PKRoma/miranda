@@ -18,7 +18,8 @@ Bugfixes:
  - Jabber: Fix authentication issues
  - Jabber: Disabled TLS option when SASL authentication disabled
  - MSN: Fix issues with setting long status message
- 
+
+
 * New in 0.8.17
 Enhancements:
  - Installer now includes a portable mode option
