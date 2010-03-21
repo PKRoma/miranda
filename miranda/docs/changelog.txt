@@ -3,6 +3,22 @@
                            www.miranda-im.org
 
 
+* New in 0.8.18
+Enhancements:
+ - MSN: Added ability to send authorization request message
+ 
+Bugfixes:
+ - Fixed docking with multiple monitors
+ - Move to Group wasn't sorted correctly
+ - Improved error handling in file exists dialog
+ - AIM: Fixed storing custom nickname on server when adding contact
+ - AIM: Fixed random "Service not available" popups
+ - AIM: Mapped "Miranda Merged" server group into Miranda root group
+ - AIM: Fixed adding contacts
+ - Jabber: Fix authentication issues
+ - Jabber: Disabled TLS option when SASL authentication disabled
+ - MSN: Fix issues with setting long status message
+ 
 * New in 0.8.17
 Enhancements:
  - Installer now includes a portable mode option
