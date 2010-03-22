@@ -199,15 +199,16 @@ int fnDocking_ProcessWindowMessage(WPARAM wParam, LPARAM lParam)
 
 				int cx = rc.right - rc.left;
 				if (!(wp->flags & SWP_NOMOVE)) { rc.left = wp->x; rc.top = wp->y; }
+
+				if (addbar) 
+					Docking_RectToDock(&rc);
+
 				if (!(wp->flags & SWP_NOSIZE)) 
 				{ 
 					rc.right = rc.left + wp->cx; 
 					rc.bottom = rc.top + wp->cy; 
 					addbar |= (cx != wp->cx); 
 				}
-
-				if (addbar) 
-					Docking_RectToDock(&rc);
 
 				Docking_SetSize(msg->hwnd, &rc, !addbar, false);
 
