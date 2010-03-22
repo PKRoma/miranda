@@ -38,7 +38,7 @@ static void Docking_GetMonitorRectFromPoint(LPPOINT pt, LPRECT rc)
 	{
 		MONITORINFO monitorInfo;
 		HMONITOR hMonitor = MyMonitorFromPoint(*pt, MONITOR_DEFAULTTONEAREST); // always returns a valid value
-		monitorInfo.cbSize = sizeof(MONITORINFO);
+		monitorInfo.cbSize = sizeof(monitorInfo);
 
 		if (MyGetMonitorInfo(hMonitor, &monitorInfo)) 
 		{
@@ -54,25 +54,14 @@ static void Docking_GetMonitorRectFromPoint(LPPOINT pt, LPRECT rc)
 	rc->right = GetSystemMetrics(SM_CXSCREEN);
 }
 
-static void Docking_AdjustPosition(HWND hwnd, LPRECT rcDisplay, LPRECT rc, bool query)
+static void Docking_PosCommand(HWND hwnd, LPRECT rc, bool query)
 {
 	APPBARDATA abd = {0};
 
 	abd.cbSize = sizeof(abd);
 	abd.hWnd = hwnd;
 	abd.uEdge = docked == DOCKED_LEFT ? ABE_LEFT : ABE_RIGHT;
-	abd.rc.top = rcDisplay->top;
-	abd.rc.bottom = rcDisplay->bottom;
-	if (docked == DOCKED_LEFT) 
-	{
-		abd.rc.right = rcDisplay->left + (rc->right - rc->left);
-		abd.rc.left = rcDisplay->left;
-	}
-	else
-	{
-		abd.rc.left = rcDisplay->right - (rc->right - rc->left);
-		abd.rc.right = rcDisplay->right;
-	}
+	abd.rc = *rc;
 	SHAppBarMessage(query ? ABM_QUERYPOS : ABM_SETPOS, &abd);
 	*rc = abd.rc;
 }
@@ -85,6 +74,32 @@ static UINT_PTR Docking_Command(HWND hwnd, int cmd)
 	abd.hWnd = hwnd;
 	abd.uCallbackMessage = WM_DOCKCALLBACK;
 	return SHAppBarMessage(cmd, &abd);
+}
+
+static void Docking_AdjustPosition(HWND hwnd, LPRECT rcDisplay, LPRECT rc, bool query)
+{
+	int cx = rc->right - rc->left;
+
+	rc->top = rcDisplay->top;
+	rc->bottom = rcDisplay->bottom;
+	if (docked == DOCKED_LEFT) 
+	{
+		rc->right = rcDisplay->left + (rc->right - rc->left);
+		rc->left = rcDisplay->left;
+	}
+	else
+	{
+		rc->left = rcDisplay->right - (rc->right - rc->left);
+		rc->right = rcDisplay->right;
+	}
+	Docking_PosCommand(hwnd, rc, true);
+
+	if (docked == DOCKED_LEFT)
+		rc->right = rc->left + cx;
+	else
+		rc->left = rc->right - cx;
+
+	if (!query) Docking_PosCommand(hwnd, rc, false);
 }
 
 static void Docking_SetSize(HWND hwnd, LPRECT rc, bool query)
@@ -148,19 +163,19 @@ int fnDocking_ProcessWindowMessage(WPARAM wParam, LPARAM lParam)
 				RECT rc = {0};
 				GetWindowRect(msg->hwnd, &rc);
 
-				int cx = rc.right - rc.left + 1;
+				int cx = rc.right - rc.left;
 				if (!(wp->flags & SWP_NOMOVE)) { rc.left = wp->x; rc.top = wp->y; }
 				if (!(wp->flags & SWP_NOSIZE)) 
 				{ 
-					rc.right = rc.left + wp->cx - 1; 
-					rc.bottom = rc.top + wp->cy - 1; 
+					rc.right = rc.left + wp->cx; 
+					rc.bottom = rc.top + wp->cy; 
 					addbar |= (cx != wp->cx); 
 				}
 				
 				Docking_SetSize(msg->hwnd, &rc, !addbar);
 
 				if (!(wp->flags & SWP_NOMOVE)) { wp->x = rc.left; wp->y = rc.top; }
-				if (!(wp->flags & SWP_NOSIZE)) wp->cy = rc.bottom - rc.top + 1;
+				if (!(wp->flags & SWP_NOSIZE)) wp->cy = rc.bottom - rc.top;
 
 				*((LRESULT *) lParam) = TRUE; 
 				return TRUE;
@@ -175,8 +190,8 @@ int fnDocking_ProcessWindowMessage(WPARAM wParam, LPARAM lParam)
 
 					wp->x = rc.left; 
 					wp->y = rc.top; 
-					wp->cy = rc.bottom - rc.top + 1;
-					wp->cx = rc.right - rc.left + 1;
+					wp->cy = rc.bottom - rc.top;
+					wp->cx = rc.right - rc.left;
 					wp->flags &=  ~(SWP_NOSIZE | SWP_NOMOVE);
 				}
 			}
@@ -212,8 +227,8 @@ int fnDocking_ProcessWindowMessage(WPARAM wParam, LPARAM lParam)
 			rc.bottom += y - rc.top;
 			rc.top = y;
 			Docking_SetSize(msg->hwnd, &rc, false);
-			MoveWindow(msg->hwnd, rc.left, rc.top, rc.right - rc.left + 1, 
-				rc.bottom - rc.top + 1, TRUE);
+			MoveWindow(msg->hwnd, rc.left, rc.top, rc.right - rc.left, 
+				rc.bottom - rc.top, TRUE);
 		}
 		break;
 
@@ -228,7 +243,10 @@ int fnDocking_ProcessWindowMessage(WPARAM wParam, LPARAM lParam)
 				return 0;
 
 			// GetMessagePos() is no good, position is always unsigned
-			GetCursorPos(&ptCursor);
+//			GetCursorPos(&ptCursor);
+			DWORD pos = GetMessagePos();
+			ptCursor.x = GET_X_LPARAM(pos);
+			ptCursor.y = GET_Y_LPARAM(pos);
 			Docking_GetMonitorRectFromPoint(&ptCursor, &rcMonitor);
 
 			if (((ptCursor.x < rcMonitor.left + EDGESENSITIVITY) || 
@@ -324,6 +342,13 @@ int fnDocking_ProcessWindowMessage(WPARAM wParam, LPARAM lParam)
 			break;
 
 		case ABN_POSCHANGED:
+		{
+			RECT rc = {0};
+			GetWindowRect(msg->hwnd, &rc);
+			Docking_SetSize(msg->hwnd, &rc, false);
+			MoveWindow(msg->hwnd, rc.left, rc.top, rc.right - rc.left, 
+				rc.bottom - rc.top, TRUE);
+		}
 			break;
 		}
 		return 1;
