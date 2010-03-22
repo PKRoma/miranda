@@ -382,31 +382,32 @@ int fnShowHide(WPARAM, LPARAM)
 	}
 	if (bShow == TRUE) {
 		RECT rcScreen, rcWindow;
-		int offScreen = 0;
+		bool offScreen = false;
 
-		SystemParametersInfo(SPI_GETWORKAREA, 0, &rcScreen, FALSE);
 		ShowWindow(cli.hwndContactList, SW_RESTORE);
 		SetWindowPos(cli.hwndContactList, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
 		if (!DBGetContactSettingByte(NULL, "CList", "OnTop", SETTING_ONTOP_DEFAULT))
 			SetWindowPos(cli.hwndContactList, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE);
 		SetForegroundWindow(cli.hwndContactList);
 		DBWriteContactSettingByte(NULL, "CList", "State", SETTING_STATE_NORMAL);
+
 		//this forces the window onto the visible screen
 		GetWindowRect(cli.hwndContactList, &rcWindow);
 		if (MyMonitorFromWindow) {
-			if (MyMonitorFromWindow(cli.hwndContactList, 0) == NULL) {
+			if (MyMonitorFromWindow(cli.hwndContactList, MONITOR_DEFAULTTONULL) == NULL) {
 				MONITORINFO mi = { 0 };
-				HMONITOR hMonitor = MyMonitorFromWindow(cli.hwndContactList, 2);
+				HMONITOR hMonitor = MyMonitorFromWindow(cli.hwndContactList, MONITOR_DEFAULTTONEAREST);
 				mi.cbSize = sizeof(mi);
 				MyGetMonitorInfo(hMonitor, &mi);
 				rcScreen = mi.rcWork;
-				offScreen = 1;
+				offScreen = true;
 			}
 		}
 		else {
 			RECT rcDest;
+			SystemParametersInfo(SPI_GETWORKAREA, 0, &rcScreen, FALSE);
 			if (IntersectRect(&rcDest, &rcScreen, &rcWindow) == 0)
-				offScreen = 1;
+				offScreen = true;
 		}
 		if (offScreen) {
 			if (rcWindow.top >= rcScreen.bottom)

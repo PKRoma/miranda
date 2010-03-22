@@ -839,7 +839,17 @@ LRESULT CALLBACK fnContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 					maxHeight = DBGetContactSettingByte(NULL, "CLUI", "MaxSizeHeight", 75);
 					GetWindowRect(hwnd, &rcWindow);
 					GetWindowRect(cli.hwndContactTree, &rcTree);
+					
 					SystemParametersInfo(SPI_GETWORKAREA, 0, &rcWorkArea, FALSE);
+					if (MyMonitorFromWindow)
+					{
+ 						HMONITOR hMon = MyMonitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST);
+						MONITORINFO mi;
+						mi.cbSize = sizeof(mi);
+						if (MyGetMonitorInfo(hMon, &mi))
+ 							rcWorkArea = mi.rcWork;
+					}
+
 					newHeight = max(nmc->pt.y, 9) + 1 + (rcWindow.bottom - rcWindow.top) - (rcTree.bottom - rcTree.top);
 					if (newHeight > (rcWorkArea.bottom - rcWorkArea.top) * maxHeight / 100)
 						newHeight = (rcWorkArea.bottom - rcWorkArea.top) * maxHeight / 100;
