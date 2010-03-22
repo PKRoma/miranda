@@ -26,6 +26,8 @@
 #define TM_AUTOALPHA  1
 #define MENU_MIRANDAMENU         0xFFFF1234
 
+extern BOOL(WINAPI * MySetProcessWorkingSetSize) (HANDLE, SIZE_T, SIZE_T);
+
 static HMODULE hUserDll;
 static HANDLE hContactDraggingEvent, hContactDroppedEvent, hContactDragStopEvent;
 static int transparentFocus = 1;
@@ -237,7 +239,7 @@ static INT_PTR MenuItem_AddContactToList(WPARAM wParam, LPARAM)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// this is the smalles available window procedure
+// this is the smallest available window procedure
 
 #ifndef CS_DROPSHADOW
 #define CS_DROPSHADOW 0x00020000
@@ -580,6 +582,9 @@ LRESULT CALLBACK fnContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 			}
 			else
 				DBWriteContactSettingByte(NULL, "CList", "State", SETTING_STATE_MINIMIZED);
+			
+			if (MySetProcessWorkingSetSize != NULL && DBGetContactSettingByte(NULL, "CList", "DisableWorkingSet", 1))
+				MySetProcessWorkingSetSize(GetCurrentProcess(), -1, -1);
 		}
 		// drop thru
 	case WM_MOVE:
@@ -834,7 +839,17 @@ LRESULT CALLBACK fnContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 					maxHeight = DBGetContactSettingByte(NULL, "CLUI", "MaxSizeHeight", 75);
 					GetWindowRect(hwnd, &rcWindow);
 					GetWindowRect(cli.hwndContactTree, &rcTree);
+					
 					SystemParametersInfo(SPI_GETWORKAREA, 0, &rcWorkArea, FALSE);
+					if (MyMonitorFromWindow)
+					{
+ 						HMONITOR hMon = MyMonitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST);
+						MONITORINFO mi;
+						mi.cbSize = sizeof(mi);
+						if (MyGetMonitorInfo(hMon, &mi))
+ 							rcWorkArea = mi.rcWork;
+					}
+
 					newHeight = max(nmc->pt.y, 9) + 1 + (rcWindow.bottom - rcWindow.top) - (rcTree.bottom - rcTree.top);
 					if (newHeight > (rcWorkArea.bottom - rcWorkArea.top) * maxHeight / 100)
 						newHeight = (rcWorkArea.bottom - rcWorkArea.top) * maxHeight / 100;
@@ -980,7 +995,7 @@ LRESULT CALLBACK fnContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 			LPDRAWITEMSTRUCT dis = (LPDRAWITEMSTRUCT) lParam;
 			if (dis->hwndItem == cli.hwndStatus) {
 				char *szProto = (char *) dis->itemData;
-                if (szProto == NULL) return 0;
+				if (szProto == NULL) return 0;
 				int status, x;
 				SIZE textSize;
 				BYTE showOpts = DBGetContactSettingByte(NULL, "CLUI", "SBarShow", 1);
