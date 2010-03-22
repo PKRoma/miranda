@@ -35,6 +35,8 @@ Name                            "${MIM_NAME} ${MIM_VERSION}"
 OutFile                         "..\..\miranda\bin\miranda-im-v${MIM_VERSION}-${MIM_BUILD_TYPE}.exe"
 !endif
 
+InstallDir                      "$PROGRAMFILES\Miranda IM"
+InstallDirRegKey                HKLM "Software\Microsoft\Windows\CurrentVersion\App Paths\miranda32.exe" "Path"
 SetCompressor                   lzma
 SetOverWrite                    on
 BrandingText                    "www.miranda-im.org"
