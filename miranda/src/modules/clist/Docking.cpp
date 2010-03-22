@@ -63,7 +63,6 @@ static void Docking_RectToDock(LPRECT rc)
 	rc->top = dockPos.y;
 }
 
-
 static void Docking_PosCommand(HWND hwnd, LPRECT rc, bool query)
 {
 	APPBARDATA abd = {0};
