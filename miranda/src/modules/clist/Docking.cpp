@@ -31,7 +31,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define DOCKED_RIGHT   2
 
 static char docked;
-static int dockPosX;
+static POINT dockPos;
 
 static void Docking_GetMonitorRectFromPoint(LPPOINT pt, LPRECT rc)
 {
@@ -54,6 +54,15 @@ static void Docking_GetMonitorRectFromPoint(LPPOINT pt, LPRECT rc)
 	rc->bottom = GetSystemMetrics(SM_CYSCREEN);
 	rc->right = GetSystemMetrics(SM_CXSCREEN);
 }
+
+static void Docking_RectToDock(LPRECT rc)
+{
+	rc->right += dockPos.x - rc->left; 
+	rc->left = dockPos.x;
+	rc->bottom += dockPos.y - rc->top; 
+	rc->top = dockPos.y;
+}
+
 
 static void Docking_PosCommand(HWND hwnd, LPRECT rc, bool query)
 {
@@ -103,7 +112,7 @@ static void Docking_AdjustPosition(HWND hwnd, LPRECT rcDisplay, LPRECT rc, bool 
 	if (!query) 
 	{
 		Docking_PosCommand(hwnd, rc, false);
-		dockPosX = rc->left;
+		dockPos = *(LPPOINT)rc;
 	}
 
 	if (move)
@@ -142,12 +151,14 @@ int fnDocking_ProcessWindowMessage(WPARAM wParam, LPARAM lParam)
 		if (docked)
 		{
 			DBWriteContactSettingByte(NULL, "CList", "Docked", (BYTE) docked);
-			DBWriteContactSettingDword(NULL, "CList", "DockX", (DWORD) dockPosX);
+			DBWriteContactSettingDword(NULL, "CList", "DockX", (DWORD) dockPos.x);
+			DBWriteContactSettingDword(NULL, "CList", "DockY", (DWORD) dockPos.y);
 		}
 		else
 		{
 			DBDeleteContactSetting(NULL, "CList", "Docked");
 			DBDeleteContactSetting(NULL, "CList", "DockX");
+			DBDeleteContactSetting(NULL, "CList", "DockY");
 		}
 	}
 
@@ -160,7 +171,8 @@ int fnDocking_ProcessWindowMessage(WPARAM wParam, LPARAM lParam)
 		draggingTitle = 0;
 		docked = DBGetContactSettingByte(NULL, "CLUI", "DockToSides", 1) ? 
 			(char) DBGetContactSettingByte(NULL, "CList", "Docked", 0) : 0;
-		dockPosX = (int) DBGetContactSettingDword(NULL, "CList", "DockX", 0);
+		dockPos.x = (int) DBGetContactSettingDword(NULL, "CList", "DockX", 0);
+		dockPos.y = (int) DBGetContactSettingDword(NULL, "CList", "DockY", 0);
 		break;
 
 	case WM_ACTIVATE:
@@ -195,11 +207,8 @@ int fnDocking_ProcessWindowMessage(WPARAM wParam, LPARAM lParam)
 					addbar |= (cx != wp->cx); 
 				}
 
-				if (addbar)
-				{
-					rc.right += dockPosX - rc.left; 
-					rc.left = dockPosX;
-				}
+				if (addbar) 
+					Docking_RectToDock(&rc);
 
 				Docking_SetSize(msg->hwnd, &rc, !addbar, false);
 
@@ -215,8 +224,7 @@ int fnDocking_ProcessWindowMessage(WPARAM wParam, LPARAM lParam)
 				{
 					RECT rc = {0};
 					GetWindowRect(msg->hwnd, &rc);
-					rc.right += dockPosX - rc.left; 
-					rc.left = dockPosX;
+					Docking_RectToDock(&rc);
 
 					Docking_SetSize(msg->hwnd, &rc, false, false);
 
@@ -252,8 +260,7 @@ int fnDocking_ProcessWindowMessage(WPARAM wParam, LPARAM lParam)
 		{
 			RECT rc = {0};
 			GetWindowRect(msg->hwnd, &rc);
-			rc.right += dockPosX - rc.left; 
-			rc.left = dockPosX;
+			Docking_RectToDock(&rc);
 			Docking_SetSize(msg->hwnd, &rc, false, true);
 		}
 		break;
