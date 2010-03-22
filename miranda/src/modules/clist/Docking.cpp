@@ -31,6 +31,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define DOCKED_RIGHT   2
 
 static char docked;
+static int dockPosX;
 
 static void Docking_GetMonitorRectFromPoint(LPPOINT pt, LPRECT rc)
 {
@@ -76,7 +77,7 @@ static UINT_PTR Docking_Command(HWND hwnd, int cmd)
 	return SHAppBarMessage(cmd, &abd);
 }
 
-static void Docking_AdjustPosition(HWND hwnd, LPRECT rcDisplay, LPRECT rc, bool query)
+static void Docking_AdjustPosition(HWND hwnd, LPRECT rcDisplay, LPRECT rc, bool query, bool move)
 {
 	int cx = rc->right - rc->left;
 
@@ -99,15 +100,25 @@ static void Docking_AdjustPosition(HWND hwnd, LPRECT rcDisplay, LPRECT rc, bool 
 	else
 		rc->left = rc->right - cx;
 
-	if (!query) Docking_PosCommand(hwnd, rc, false);
+	if (!query) 
+	{
+		Docking_PosCommand(hwnd, rc, false);
+		dockPosX = rc->left;
+	}
+
+	if (move)
+	{
+		MoveWindow(hwnd, rc->left, rc->top, rc->right - rc->left, 
+			rc->bottom - rc->top, TRUE);
+	}
 }
 
-static void Docking_SetSize(HWND hwnd, LPRECT rc, bool query)
+static void Docking_SetSize(HWND hwnd, LPRECT rc, bool query, bool move)
 {
 	RECT rcMonitor;
 	Docking_GetMonitorRectFromPoint(
 		docked == DOCKED_LEFT && !query ? (LPPOINT)&rc->right : (LPPOINT)rc, &rcMonitor);
-	Docking_AdjustPosition(hwnd, &rcMonitor, rc, query);
+	Docking_AdjustPosition(hwnd, &rcMonitor, rc, query, move);
 }
 
 static bool Docking_IsWindowVisible(HWND hwnd)
@@ -126,8 +137,19 @@ int fnDocking_ProcessWindowMessage(WPARAM wParam, LPARAM lParam)
 	static int draggingTitle;
 	MSG *msg = (MSG *) wParam;
 
-	if (msg->message == WM_DESTROY)
-		DBWriteContactSettingByte(NULL, "CList", "Docked", (BYTE) docked);
+	if (msg->message == WM_DESTROY) 
+	{
+		if (docked)
+		{
+			DBWriteContactSettingByte(NULL, "CList", "Docked", (BYTE) docked);
+			DBWriteContactSettingDword(NULL, "CList", "DockX", (DWORD) dockPosX);
+		}
+		else
+		{
+			DBDeleteContactSetting(NULL, "CList", "Docked");
+			DBDeleteContactSetting(NULL, "CList", "DockX");
+		}
+	}
 
 	if (!docked && msg->message != WM_CREATE && msg->message != WM_MOVING)
 		return 0;
@@ -138,6 +160,7 @@ int fnDocking_ProcessWindowMessage(WPARAM wParam, LPARAM lParam)
 		draggingTitle = 0;
 		docked = DBGetContactSettingByte(NULL, "CLUI", "DockToSides", 1) ? 
 			(char) DBGetContactSettingByte(NULL, "CList", "Docked", 0) : 0;
+		dockPosX = (int) DBGetContactSettingDword(NULL, "CList", "DockX", 0);
 		break;
 
 	case WM_ACTIVATE:
@@ -171,8 +194,14 @@ int fnDocking_ProcessWindowMessage(WPARAM wParam, LPARAM lParam)
 					rc.bottom = rc.top + wp->cy; 
 					addbar |= (cx != wp->cx); 
 				}
-				
-				Docking_SetSize(msg->hwnd, &rc, !addbar);
+
+				if (addbar)
+				{
+					rc.right += dockPosX - rc.left; 
+					rc.left = dockPosX;
+				}
+
+				Docking_SetSize(msg->hwnd, &rc, !addbar, false);
 
 				if (!(wp->flags & SWP_NOMOVE)) { wp->x = rc.left; wp->y = rc.top; }
 				if (!(wp->flags & SWP_NOSIZE)) wp->cy = rc.bottom - rc.top;
@@ -186,7 +215,10 @@ int fnDocking_ProcessWindowMessage(WPARAM wParam, LPARAM lParam)
 				{
 					RECT rc = {0};
 					GetWindowRect(msg->hwnd, &rc);
-					Docking_SetSize(msg->hwnd, &rc, false);
+					rc.right += dockPosX - rc.left; 
+					rc.left = dockPosX;
+
+					Docking_SetSize(msg->hwnd, &rc, false, false);
 
 					wp->x = rc.left; 
 					wp->y = rc.top; 
@@ -220,15 +252,9 @@ int fnDocking_ProcessWindowMessage(WPARAM wParam, LPARAM lParam)
 		{
 			RECT rc = {0};
 			GetWindowRect(msg->hwnd, &rc);
-			int x = (int) DBGetContactSettingDword(NULL, "CList", "x", 700);
-			int y = (int) DBGetContactSettingDword(NULL, "CList", "y", 221);
-			rc.right += x - rc.left; 
-			rc.left = x;
-			rc.bottom += y - rc.top;
-			rc.top = y;
-			Docking_SetSize(msg->hwnd, &rc, false);
-			MoveWindow(msg->hwnd, rc.left, rc.top, rc.right - rc.left, 
-				rc.bottom - rc.top, TRUE);
+			rc.right += dockPosX - rc.left; 
+			rc.left = dockPosX;
+			Docking_SetSize(msg->hwnd, &rc, false, true);
 		}
 		break;
 
@@ -257,7 +283,7 @@ int fnDocking_ProcessWindowMessage(WPARAM wParam, LPARAM lParam)
 				PostMessage(msg->hwnd, WM_LBUTTONUP, 0, MAKELPARAM(ptCursor.x, ptCursor.y));
 
 				Docking_Command(msg->hwnd, ABM_NEW);
-				Docking_AdjustPosition(msg->hwnd, &rcMonitor, (LPRECT)msg->lParam, false);
+				Docking_AdjustPosition(msg->hwnd, &rcMonitor, (LPRECT)msg->lParam, false, true);
 
 				*((LRESULT *) lParam) = TRUE; 
 				return TRUE;
@@ -342,13 +368,11 @@ int fnDocking_ProcessWindowMessage(WPARAM wParam, LPARAM lParam)
 			break;
 
 		case ABN_POSCHANGED:
-		{
-			RECT rc = {0};
-			GetWindowRect(msg->hwnd, &rc);
-			Docking_SetSize(msg->hwnd, &rc, false);
-			MoveWindow(msg->hwnd, rc.left, rc.top, rc.right - rc.left, 
-				rc.bottom - rc.top, TRUE);
-		}
+			{
+				RECT rc = {0};
+				GetWindowRect(msg->hwnd, &rc);
+				Docking_SetSize(msg->hwnd, &rc, false, true);
+			}
 			break;
 		}
 		return 1;
