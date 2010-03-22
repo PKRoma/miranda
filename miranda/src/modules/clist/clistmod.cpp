@@ -328,6 +328,9 @@ int fnGetWindowVisibleState(HWND hWnd, int iStepX, int iStepY)
 	if (IsIconic(hWnd) || !IsWindowVisible(hWnd))
 		return GWVS_HIDDEN;
 	else {
+		if (CallService(MS_CLIST_DOCKINGISDOCKED, 0, 0))
+			return GWVS_VISIBLE;
+
 		GetWindowRect(hWnd, &rc);
 		width = rc.right - rc.left;
 		height = rc.bottom - rc.top;
