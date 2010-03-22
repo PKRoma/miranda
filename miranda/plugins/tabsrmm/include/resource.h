@@ -376,7 +376,6 @@
 #define IDC_UPREFS_BBCODE               1299
 #define IDC_AUTOCLOSELAST               1300
 #define IDC_SECTIONTREE                 1300
-#define IDC_UPREFS_MULTIPLEBG           1300
 #define IDC_UPREFS_RTL                  1301
 #define IDC_CHECKICONDLL                1302
 #define IDC_UPREFS_LOGSTATUS            1302

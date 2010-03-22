@@ -72,7 +72,7 @@ static int ReadInteger(const char* p, int* result)
 {
 	char temp[10];
 	int i = 0;
-	while (isdigit(*p))
+	while (isdigit(*p) && i < 9)
 		temp[i++] = *p++;
 	temp[i] = 0;
 

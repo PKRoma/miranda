@@ -884,9 +884,6 @@ BEGIN
                     BS_AUTO3STATE | WS_TABSTOP,147,142,121,11
     CONTROL         "Support BBCODE",IDC_UPREFS_BBCODE,"Button",
                     BS_AUTO3STATE | WS_TABSTOP,147,155,121,11
-    CONTROL         "Use different background colors for incoming and outgoing messages",
-                    IDC_UPREFS_MULTIPLEBG,"Button",BS_AUTO3STATE | 
-                    WS_TABSTOP,15,169,257,11
     GROUPBOX        "Misc",IDC_STATIC,8,186,266,52
     CONTROL         "RTL is default text direction",IDC_UPREFS_RTL,"Button",
                     BS_AUTO3STATE | WS_TABSTOP,15,196,248,11

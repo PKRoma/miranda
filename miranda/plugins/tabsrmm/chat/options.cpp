@@ -85,8 +85,8 @@ struct ColorOptionsList {
 };
 
 static ColorOptionsList _clrs[] = {
-	0, LPGENT("TabSRMM"), LPGENT("Log background"), SRMSGSET_BKGCOLOUR, SRMSGDEFSET_BKGCOLOUR,
-	1, LPGENT("TabSRMM/Common colors"), LPGENT("Input area background"), "inputbg", SRMSGDEFSET_BKGCOLOUR,
+	0, LPGENT("TabSRMM/Group Chats"), LPGENT("Log background"), SRMSGSET_BKGCOLOUR, SRMSGDEFSET_BKGCOLOUR,
+	1, LPGENT("TabSRMM"), LPGENT("Input area background"), "inputbg", SRMSGDEFSET_BKGCOLOUR,
 	0, LPGENT("TabSRMM/Single Messaging"), LPGENT("Outgoing background"), "outbg", SRMSGDEFSET_BKGOUTCOLOUR,
 	1, LPGENT("TabSRMM/Single Messaging"), LPGENT("Incoming background"), "inbg", SRMSGDEFSET_BKGINCOLOUR,
 	2, LPGENT("TabSRMM/Single Messaging"), LPGENT("Status background"), "statbg", SRMSGDEFSET_BKGCOLOUR,
@@ -728,7 +728,7 @@ void RegisterFontServiceFonts() {
 				break;
 			case 18:
 				_tcsncpy(fid.backgroundGroup, _T("TabSRMM"), SIZEOF(fid.backgroundGroup));
-				_tcsncpy(fid.backgroundName, _T("Log Background"), SIZEOF(fid.backgroundName));
+				_tcsncpy(fid.backgroundName, _T("Log background"), SIZEOF(fid.backgroundName));
 				break;
  			case 19:
  				_tcsncpy(fid.backgroundName, _T(""), SIZEOF(fid.backgroundName));
@@ -739,24 +739,6 @@ void RegisterFontServiceFonts() {
 			}
 		CallService(MS_FONT_REGISTERT, (WPARAM)&fid, 0);
 		}
-
-	strncpy(cid.dbSettingsGroup, FONTMODULE, SIZEOF(fid.dbSettingsGroup));
-
-	/*
-	 * static colors (info panel, tool bar background etc...)
-	 */
-
-	for(i = 0; i < (sizeof(_clrs) / sizeof(_clrs[0])); i++) {
-		cid.order = _clrs[i].order;
-		_tcsncpy(cid.group, _clrs[i].tszGroup, SIZEOF(fid.group));
-	 	_tcsncpy(cid.name, _clrs[i].tszName, SIZEOF(cid.name));
-	 	strncpy(cid.setting, _clrs[i].szSetting, SIZEOF(cid.setting));
-	 	if(_clrs[i].def & 0xff000000)
-	 		cid.defcolour = GetSysColor(_clrs[i].def & 0x000000ff);
-	 	else
-	 		cid.defcolour = _clrs[i].def;
-	 	CallService(MS_COLOUR_REGISTERT, (WPARAM)&cid, 0);
-	}
 
 	fontOptionsList = IP_fontOptionsList;
 	fid.flags = FIDF_DEFAULTVALID|FIDF_ALLOWEFFECTS;
@@ -786,12 +768,11 @@ void RegisterFontServiceFonts() {
 		}
 
 	fontOptionsList = CHAT_fontOptionsList;
+	fid.flags = FIDF_DEFAULTVALID|FIDF_ALLOWEFFECTS;
 	fid.flags&=~FIDF_SAVEPOINTSIZE;
 	_tcsncpy(fid.group, _T("TabSRMM/Group Chats"), SIZEOF(fid.group));
-	_tcsncpy(fid.backgroundGroup, _T("TabSRMM"), SIZEOF(fid.backgroundGroup));
-	_tcsncpy(fid.backgroundName, _T("Log Background"), SIZEOF(fid.backgroundName));
 	strncpy(fid.dbSettingsGroup, CHAT_FONTMODULE, SIZEOF(fid.dbSettingsGroup));
-	for (i =0; i < msgDlgFontCount; i++) {
+	for (i = 0; i < msgDlgFontCount; i++) {
 		LoadMsgDlgFont(FONTSECTION_CHAT, i , &lf, &fontOptionsList[i].colour, CHAT_FONTMODULE);
 		mir_snprintf(szTemp, SIZEOF(szTemp), "Font%d", i);
 		strncpy(fid.prefix, szTemp, SIZEOF(fid.prefix));
@@ -803,8 +784,12 @@ void RegisterFontServiceFonts() {
 		fid.flags = fid.flags & ~FIDF_CLASSMASK | (fid.deffontsettings.style&FONTF_BOLD ? FIDF_CLASSHEADER : FIDF_CLASSGENERAL);
 		fid.deffontsettings.charset = lf.lfCharSet;
 		_tcsncpy(fid.deffontsettings.szFace, lf.lfFaceName, LF_FACESIZE);
+		_tcsncpy(fid.backgroundGroup, _T("TabSRMM/Group Chats"), SIZEOF(fid.backgroundGroup));
+		_tcsncpy(fid.backgroundName, _T("Log background"), SIZEOF(fid.backgroundName));
+		if(i == 18 || i == 19)
+			_tcsncpy(fid.backgroundName, _T("Userlist background"), SIZEOF(fid.backgroundName));
 		CallService(MS_FONT_REGISTERT, (WPARAM)&fid, 0);
-		}
+	}
 
 	_tcsncpy(cid.group, _T("TabSRMM/Group Chats"), SIZEOF(cid.group));
 	strncpy(cid.dbSettingsGroup, "Chat", SIZEOF(cid.dbSettingsGroup));
@@ -831,6 +816,24 @@ void RegisterFontServiceFonts() {
 	strncpy(cid.setting, "ColorNicklistBG", SIZEOF(cid.setting));
 	cid.defcolour = SRMSGDEFSET_BKGCOLOUR;
 	CallService(MS_COLOUR_REGISTERT, (WPARAM)&cid, 0);
+
+	/*
+	 * static colors (info panel, tool bar background etc...)
+	 */
+	strncpy(fid.dbSettingsGroup, FONTMODULE, SIZEOF(fid.dbSettingsGroup));
+	strncpy(cid.dbSettingsGroup, FONTMODULE, SIZEOF(fid.dbSettingsGroup));
+
+	for(i = 0; i < (sizeof(_clrs) / sizeof(_clrs[0])); i++) {
+		cid.order = _clrs[i].order;
+		_tcsncpy(cid.group, _clrs[i].tszGroup, SIZEOF(fid.group));
+	 	_tcsncpy(cid.name, _clrs[i].tszName, SIZEOF(cid.name));
+	 	strncpy(cid.setting, _clrs[i].szSetting, SIZEOF(cid.setting));
+	 	if(_clrs[i].def & 0xff000000)
+	 		cid.defcolour = GetSysColor(_clrs[i].def & 0x000000ff);
+	 	else
+	 		cid.defcolour = _clrs[i].def;
+	 	CallService(MS_COLOUR_REGISTERT, (WPARAM)&cid, 0);
+	}
 }
 
 int FontServiceFontsChanged(WPARAM wParam, LPARAM lParam)

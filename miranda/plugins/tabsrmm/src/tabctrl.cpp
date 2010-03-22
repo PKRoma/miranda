@@ -2022,7 +2022,6 @@ INT_PTR CALLBACK DlgProcTabConfig(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 								pContainer = pContainer->pNextContainer;
 							}
 							M->WriteDword(SRMSGMOD_T, "aeroGlow", (DWORD)SendDlgItemMessage(hwndDlg, IDC_AEROGLOW, CPM_GETCOLOUR, 0, 0));
-							M->WriteDword(SRMSGMOD_T, CSkin::m_skinEnabled ? tabcolors[i].szSkinnedKey : tabcolors[i].szKey, clr);
 							Skin->setupAeroSkins();  // re-colorize
 							return TRUE;
 						}

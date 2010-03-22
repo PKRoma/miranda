@@ -402,6 +402,11 @@ const TCHAR* Utils::FormatTitleBar(const TWindowData *dat, const TCHAR *szFormat
 					title.insert(tempmark + 2, dat->cache->getStatusMsg());
 					curpos = tempmark + lstrlen(dat->cache->getStatusMsg());
 				}
+				else {
+					const TCHAR* tszStatusMsg = CTranslator::get(CTranslator::GEN_NO_STATUS);
+					title.insert(tempmark + 2, tszStatusMsg);
+					curpos = tempmark + lstrlen(tszStatusMsg);
+				}
 				title.erase(tempmark, 2);
 				break;
 

@@ -708,15 +708,10 @@ static char *Template_CreateRTFFromDbEvent(struct TWindowData *dat, HANDLE hCont
 		AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\ltrpar");
 
 	/* OnO: highlight start */
-	if (dwEffectiveFlags & MWF_LOG_INDIVIDUALBKG){
-		if(fIsStatusChangeEvent)
-			AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\highlight%d\\cf%d", MSGDLGFONTCOUNT + 7, MSGDLGFONTCOUNT + 7);
-		else
-			AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\highlight%d\\cf%d", MSGDLGFONTCOUNT + (dat->isHistory?5:1) + ((isSent) ? 1 : 0), MSGDLGFONTCOUNT + (dat->isHistory?5:1) + ((isSent) ? 1 : 0));
-	}else if (dwEffectiveFlags & MWF_LOG_GRID)
- 		AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\highlight%d\\cf%d", MSGDLGFONTCOUNT + 3, MSGDLGFONTCOUNT + 3);
- 	else
-		AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\highlight%d\\cf%d", MSGDLGFONTCOUNT + 3, MSGDLGFONTCOUNT + 3);
+	if(fIsStatusChangeEvent)
+		AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\highlight%d\\cf%d", MSGDLGFONTCOUNT + 7, MSGDLGFONTCOUNT + 7);
+	else
+		AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\highlight%d\\cf%d", MSGDLGFONTCOUNT + (dat->isHistory?5:1) + ((isSent) ? 1 : 0), MSGDLGFONTCOUNT + (dat->isHistory?5:1) + ((isSent) ? 1 : 0));
 
 	streamData->isEmpty = FALSE;
 
@@ -1153,7 +1148,7 @@ static char *Template_CreateRTFFromDbEvent(struct TWindowData *dat, HANDLE hCont
 						AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\highlight%d", MSGDLGFONTCOUNT + 8 + (color - '0'));
 						i++;
 					} else
-						AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\highlight%d", (dwEffectiveFlags & MWF_LOG_INDIVIDUALBKG) ? (MSGDLGFONTCOUNT + (dat->isHistory?5:1) + ((isSent) ? 1 : 0)) : MSGDLGFONTCOUNT + 3);
+						AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\highlight%d", (MSGDLGFONTCOUNT + (dat->isHistory?5:1) + ((isSent) ? 1 : 0)));
 					break;
 				}
 				case '|':       // tab
@@ -1476,11 +1471,8 @@ void TSAPI StreamInEvents(HWND hwndDlg, HANDLE hDbEventFirst, int count, int fAp
 	dat->hDbEventLast = streamData.hDbEventLast;
 
 	if (dat->isAutoRTL & 1) {
-		if (dat->dwFlags & MWF_LOG_INDIVIDUALBKG)
- 			SendMessage(hwndrtf, EM_SETBKGNDCOLOR, 0, LOWORD(dat->iLastEventType) & DBEF_SENT ? (fAppend?dat->pContainer->theme.outbg : dat->pContainer->theme.oldoutbg) :
-						(fAppend?dat->pContainer->theme.inbg : dat->pContainer->theme.oldinbg));
-		else
-			SendMessage(hwndrtf, EM_SETBKGNDCOLOR, 0, dat->pContainer->theme.bg);
+		SendMessage(hwndrtf, EM_SETBKGNDCOLOR, 0, LOWORD(dat->iLastEventType) & DBEF_SENT ? (fAppend?dat->pContainer->theme.outbg : dat->pContainer->theme.oldoutbg) :
+					(fAppend?dat->pContainer->theme.inbg : dat->pContainer->theme.oldinbg));
 	}
 
 	if (!(dat->isAutoRTL & 1)) {
@@ -1593,7 +1585,7 @@ static void ReplaceIcons(HWND hwndDlg, struct TWindowData *dat, LONG startAt, in
 			}
 			bDirection = trbuffer[1];
 			SendMessage(hwndrtf, EM_GETCHARFORMAT, SCF_SELECTION, (LPARAM)&cf2);
-			crDefault = cf2.crBackColor == 0 ? (dat->dwFlags & MWF_LOG_INDIVIDUALBKG ? (bDirection == '>' ? (fAppend ? dat->pContainer->theme.outbg : dat->pContainer->theme.oldoutbg) :
+			crDefault = cf2.crBackColor == 0 ? (true ? (bDirection == '>' ? (fAppend ? dat->pContainer->theme.outbg : dat->pContainer->theme.oldoutbg) :
 						(fAppend ? dat->pContainer->theme.inbg : dat->pContainer->theme.oldinbg)) : dat->pContainer->theme.bg) : cf2.crBackColor;
 			CacheIconToBMP(&theIcon, Logicons[bIconIndex], crDefault, dwScale, dwScale);
 			ImageDataInsertBitmap(ole, theIcon.hBmp);

@@ -116,7 +116,7 @@ TCHAR* CTranslator::m_strings[STR_LAST] = {
 	LPGENT("Message"),									/* GEN_POPUPS_MESSAGE */
 	LPGENT("Unknown event"),							/* GEN_POPUPS_UNKNOWN */
 	LPGENT("New messages: "),							/* GEN_POPUPS_NEW */
-	LPGENT("No status message available"), 				/* GEN_NO_STATUS */
+	LPGENT("No status message"),		 				/* GEN_NO_STATUS */
 	LPGENT("%s is typing a message."), 					/* GEN_MTN_STARTWITHNICK */
 	LPGENT("Typing Notification"),						/* GEN_MTN_TTITLE */
 	LPGENT("Message from %s"),							/* GEN_MSG_TTITLE */
@@ -506,7 +506,6 @@ TOptionListItem CTranslator::m_lvItemsLog[] = {
 //
 	0, LPGENT("Log status changes"), 1, LOI_TYPE_FLAG, MWF_LOG_STATUSCHANGES, 2,
 	0, LPGENT("Automatically copy selected text"), 0, LOI_TYPE_SETTING, (UINT_PTR)"autocopy", 2,
-	0, LPGENT("Use multiple background colors"), 1, LOI_TYPE_FLAG, (UINT_PTR)MWF_LOG_INDIVIDUALBKG, 0,
 	0, LPGENT("Use normal templates (uncheck to use simple templates if your template set supports them)"), 1, LOI_TYPE_FLAG, MWF_LOG_NORMALTEMPLATES, 0,
 	0, NULL, 0, 0, 0, 0
 };
