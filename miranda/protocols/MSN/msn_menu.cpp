@@ -133,10 +133,10 @@ INT_PTR CMsnProto::MsnInviteCommand(WPARAM wParam, LPARAM)
 		{
 			if (IsChatHandle(tActiveThreads[i]->mJoinedContacts[0])) 
 			{
-				char sessionName[255];
-				mir_snprintf(sessionName, sizeof(sessionName), "%s %s%s",
-					m_szModuleName, MSN_Translate("Chat #"), tActiveThreads[i]->mChatID);
-				::AppendMenuA(tMenu, MF_STRING, (UINT_PTR)(i+1), sessionName);
+				TCHAR sessionName[255];
+				mir_snprintf(sessionName, SIZEOF(sessionName), "%s %s%s",
+					m_szUserName, TranslateT("Chat #"), tActiveThreads[i]->mChatID);
+				::AppendMenu(tMenu, MF_STRING, (UINT_PTR)(i+1), sessionName);
 			}
 			else ::AppendMenu(tMenu, MF_STRING, (UINT_PTR)(i+1), MSN_GetContactNameT(*tActiveThreads[i]->mJoinedContacts));
 		}
