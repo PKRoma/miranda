@@ -342,7 +342,7 @@ int fnGetWindowVisibleState(HWND hWnd, int iStepX, int iStepY)
 				hAux = WindowFromPoint(pt);
 				while (GetParent(hAux) != NULL)
 					hAux = GetParent(hAux);
-				if (hAux != hWnd)       //There's another window!
+				if (hAux != hWnd && hAux != NULL)       //There's another window!
 					bPartiallyCovered = TRUE;
 				else
 					iNotCoveredDots++;  //Let's count the not covered dots.
