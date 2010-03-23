@@ -285,8 +285,12 @@ size_t CMimAPI::pathToRelative(const TCHAR *pSrc, TCHAR *pOut, const TCHAR *szBa
 
 		mir_sntprintf(szTmp, SIZEOF(szTmp), _T("%s"), pSrc);
 		if (StriStr(szTmp, tszBase)) {
-			mir_sntprintf(pOut, MAX_PATH, _T("%s"), pSrc + lstrlen(tszBase) - 1);
-			pOut[0]='.';
+			if(tszBase[lstrlen(tszBase) - 1] == '\\')
+				mir_sntprintf(pOut, MAX_PATH, _T("%s"), pSrc + lstrlen(tszBase));
+			else {
+				mir_sntprintf(pOut, MAX_PATH, _T("%s"), pSrc + lstrlen(tszBase)  + 1 );
+				//pOut[0]='.';
+			}
 			return(lstrlen(pOut));
 		} else {
 			mir_sntprintf(pOut, MAX_PATH, _T("%s"), pSrc);
@@ -383,7 +387,7 @@ INT_PTR CMimAPI::foldersPathChanged()
 		mir_sntprintf(m_szProfilePath, MAX_PATH, _T("%s"), szTemp);
 
 		FoldersGetCustomPathT(m_hSkinsPath, szTemp, MAX_PATH, const_cast<TCHAR *>(getSkinPath()));
-		mir_sntprintf(m_szSkinsPath, MAX_PATH, _T("%s"), szTemp);
+		mir_sntprintf(m_szSkinsPath, MAX_PATH, _T("%s\\"), szTemp);
 
 		FoldersGetCustomPathT(m_hAvatarsPath, szTemp, MAX_PATH, const_cast<TCHAR *>(getSavedAvatarPath()));
 		mir_sntprintf(m_szSavedAvatarsPath, MAX_PATH, _T("%s"), szTemp);

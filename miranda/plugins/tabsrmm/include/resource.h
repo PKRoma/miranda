@@ -68,9 +68,7 @@
 #define IDC_MAXIMIZE                    1001
 #define IDC_SKINFILE                    1002
 #define IDC_MESSAGE                     1002
-#define IDC_SELECTSKINFILE              1003
 #define IDC_HYPERLINKHAND               1003
-#define IDC_SKINFILENAME                1004
 #define IDC_EXPORT                      1005
 #define IDC_IMPORT                      1006
 #define IDC_PREVIEW                     1006
@@ -483,6 +481,7 @@
 #define IDC_SEPARATOR                   1415
 #define IDC_PLUS_REVERT                 1415
 #define IDC_SIZECOMPACT                 1415
+#define IDC_RESCANSKIN                  1415
 #define IDC_TIMEOUTSPIN                 1416
 #define IDC_SIZENORMAL                  1416
 #define IDC_SIZELARGE                   1417
@@ -525,7 +524,9 @@
 #define IDC_EXPLAINMSGLOGSETTINGS       1437
 #define IDC_NOTIFYFILE                  1438
 #define IDC_PANELPICTUREVIS             1438
+#define IDC_SKINNAME                    1438
 #define IDC_NOTIFYURL                   1439
+#define IDC_SKINROOTFOLDER              1439
 #define IDC_NOTIFYOTHER                 1440
 #define IDC_STYLEDTABS                  1482
 #define IDC_FLASHICON                   1489
@@ -540,14 +541,14 @@
 #define IDC_TXT_TITLE4                  1620
 #define IDC_TXT_TITLE5                  1622
 #define IDC_TXT_TITLE3                  1623
-#define IDC_O_ENABLESOUNDS				1701
-#define IDC_O_SOUNDSMINIMIZED			1702
-#define IDC_O_SOUNDSUNFOCUSED			1703
-#define IDC_O_SOUNDSINACTIVE			1704
-#define IDC_O_SOUNDSFOCUSED				1705
-#define IDC_O_TITLEBARFORMAT			1706
 #define IDC_O_EXPLAINGLOBALNOTIFY       1624
-#define IDC_O_CNTPRIVATE				1901
+#define IDC_O_ENABLESOUNDS              1701
+#define IDC_O_SOUNDSMINIMIZED           1702
+#define IDC_O_SOUNDSUNFOCUSED           1703
+#define IDC_O_SOUNDSINACTIVE            1704
+#define IDC_O_SOUNDSFOCUSED             1705
+#define IDC_O_TITLEBARFORMAT            1706
+#define IDC_O_CNTPRIVATE                1901
 #define IDC_PLUS_CHECKTREE              2000
 #define IDC_COPYRIGHT                   2002
 #define IDC_PLUS_HELP                   2004
@@ -764,17 +765,13 @@
 #define ID_MESSAGELOGSETTINGS_FORTHISCONTACT 40252
 #define ID_MESSAGELOG_MESSAGELOGSETTINGS 40253
 
-#ifndef IDC_STATIC
-	#define IDC_STATIC -1
-#endif
-
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        15
 #define _APS_NEXT_COMMAND_VALUE         40256
-#define _APS_NEXT_CONTROL_VALUE         1438
+#define _APS_NEXT_CONTROL_VALUE         1440
 #define _APS_NEXT_SYMED_VALUE           40283
 #endif
 #endif

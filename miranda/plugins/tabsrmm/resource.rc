@@ -562,7 +562,7 @@ END
 
 IDD_OPT_TOOLBAR DIALOGEX 0, 0, 303, 226
 STYLE DS_FIXEDSYS | DS_CONTROL | WS_CHILD | WS_VISIBLE
-FONT 8, "MS Shell Dlg"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     CONTROL         "",IDC_TOOLBARTREE,"SysTreeView32",TVS_SHOWSELALWAYS | 
                     TVS_NOTOOLTIPS | TVS_FULLROWSELECT | WS_TABSTOP,16,23,
@@ -820,25 +820,30 @@ BEGIN
                     "Hyperlink",WS_TABSTOP | 0x1,18,91,192,12
 END
 
-IDD_OPT_SKIN DIALOGEX 0, 0, 303, 200
+IDD_OPT_SKIN DIALOG DISCARDABLE  0, 0, 303, 200
 STYLE DS_FIXEDSYS | DS_CONTROL | WS_CHILD
-FONT 8, "MS Shell Dlg", 0, 0, 0x1
+FONT 8, "MS Shell Dlg"
 BEGIN
-    GROUPBOX        "Message window skin",IDC_STATIC,3,6,297,68
-    EDITTEXT        IDC_SKINFILENAME,11,19,256,14,ES_AUTOHSCROLL | 
-                    ES_READONLY
-    PUSHBUTTON      "...",IDC_SELECTSKINFILE,271,19,25,13
+    LTEXT           "Static",IDC_SKINROOTFOLDER,10,11,284,33
+    GROUPBOX        "Selected skin",IDC_STATIC,7,49,289,36
+    COMBOBOX        IDC_SKINNAME,12,60,183,14,CBS_DROPDOWNLIST | CBS_SORT | 
+                    WS_VSCROLL | WS_TABSTOP
+    PUSHBUTTON      "Rescan",IDC_RESCANSKIN,202,60,90,14
     CONTROL         "Load this skin on startup",IDC_USESKIN,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,11,40,188,10
-    PUSHBUTTON      "Apply skin now",IDC_RELOADSKIN,10,54,90,14
-    PUSHBUTTON      "Unload skin",IDC_UNLOAD,206,54,90,14
-    GROUPBOX        "Skin options",IDC_STATIC,3,77,297,105
+                    BS_AUTOCHECKBOX | WS_TABSTOP,11,87,188,10
+    PUSHBUTTON      "Apply skin now",IDC_RELOADSKIN,11,101,90,14
+    PUSHBUTTON      "Unload skin",IDC_UNLOAD,202,101,90,14
+    GROUPBOX        "Skin options",IDC_STATIC,3,125,297,71
     CONTROL         "Load fonts and colors provided by skin",
                     IDC_SKIN_LOADFONTS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
-                    11,89,281,11
+                    11,137,281,11
     CONTROL         "Load templates provided by skin (use with care, will overwrite your templates)",
                     IDC_SKIN_LOADTEMPLATES,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,11,100,281,11
+                    WS_TABSTOP,11,148,281,11
+    GROUPBOX        "Skin root folder",IDC_STATIC,7,2,289,45
+    CONTROL         "Help on this",IDC_HELP_GENERAL,"Hyperlink",WS_TABSTOP |
+                    0x1,224,211,67,9
+
 END
 
 IDD_USERPREFS_FRAME DIALOGEX 0, 0, 289, 316

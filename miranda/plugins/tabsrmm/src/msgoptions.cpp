@@ -179,15 +179,136 @@ HIMAGELIST g_himlOptions;
 
 static HWND hwndTabConfig = 0;
 
+/**
+ * scan a single skin directory and find the .TSK file. Fill the combobox and set the
+ * relative path name as item extra data.
+ *
+ * If available, read the Name property from the [Global] section and use it in the
+ * combo box. If such property is not found, the base filename (without .tsk extension)
+ * will be used as the name of the skin.
+ */
+static int TSAPI ScanSkinDir(const TCHAR* tszFolder, HWND hwndCombobox)
+{
+	WIN32_FIND_DATA			fd = {0};
+	bool					fValid = false;
+	TCHAR					tszMask[MAX_PATH];
+
+	mir_sntprintf(tszMask, MAX_PATH, _T("%s*.*"), tszFolder);
+
+	HANDLE h = FindFirstFile(tszMask, &fd);
+
+	while(h != INVALID_HANDLE_VALUE) {
+		if(lstrlen(fd.cFileName) >= 5 && !_tcsncmp(fd.cFileName + lstrlen(fd.cFileName) - 4, _T(".tsk"), 4)) {
+			fValid = true;
+			break;
+		}
+	    if(FindNextFile(h, &fd) == 0)
+	    	break;
+	}
+	if(h != INVALID_HANDLE_VALUE)
+		FindClose(h);
+
+	if(fValid) {
+		TCHAR	tszFinalName[MAX_PATH], tszRel[MAX_PATH];
+		LRESULT lr;
+		TCHAR	szBuf[255];
+
+		mir_sntprintf(tszFinalName, MAX_PATH, _T("%s%s"), tszFolder, fd.cFileName);
+
+		GetPrivateProfileString(_T("Global"), _T("Name"), _T("None"), szBuf, 500, tszFinalName);
+		if(!_tcscmp(szBuf, _T("None"))) {
+			fd.cFileName[lstrlen(fd.cFileName) - 4] = 0;
+			mir_sntprintf(szBuf, 255, _T("%s"), fd.cFileName);
+		}
+
+		M->pathToRelative(tszFinalName, tszRel, M->getSkinPath());
+		if((lr = SendMessage(hwndCombobox, CB_INSERTSTRING, -1, (LPARAM)szBuf)) != CB_ERR) {
+			TCHAR *idata = (TCHAR *)malloc((lstrlen(tszRel) + 1) * sizeof(TCHAR));
+
+			_tcscpy(idata, tszRel);
+			SendMessage(hwndCombobox, CB_SETITEMDATA, lr, (LPARAM)idata);
+		}
+	}
+	return(0);
+}
+
+/**
+ * scan the skin root folder for subfolder. Each folder is supposed to contain a single
+ * skin. This function won't dive deeper into the folder structure, so the folder
+ * structure should be:
+ * $SKINS_ROOT/skin_folder/skin_name.tsk
+ */
+static int TSAPI RescanSkins(HWND hwndCombobox)
+{
+	WIN32_FIND_DATA			fd = {0};
+	TCHAR					tszSkinRoot[MAX_PATH], tszFindMask[MAX_PATH];
+	DBVARIANT 				dbv = {0};
+
+
+	if(!M->haveFoldersPlugin())
+		mir_sntprintf(tszSkinRoot, MAX_PATH, _T("%sTabSRMM\\skins\\"), M->getSkinPath());
+	else
+		mir_sntprintf(tszSkinRoot, MAX_PATH, _T("%s"), M->getSkinPath());
+
+	SetDlgItemText(GetParent(hwndCombobox), IDC_SKINROOTFOLDER, tszSkinRoot);
+	mir_sntprintf(tszFindMask, MAX_PATH, _T("%s*.*"), tszSkinRoot);
+
+	SendMessage(hwndCombobox, CB_RESETCONTENT, 0, 0);
+	SendMessage(hwndCombobox, CB_INSERTSTRING, -1, (LPARAM)CTranslator::getOpt(CTranslator::OPT_SKIN_NOSKINSELECT));
+
+	HANDLE h = FindFirstFile(tszFindMask, &fd);
+	while (h != INVALID_HANDLE_VALUE) {
+		if(fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY && fd.cFileName[0] != '.') {
+			TCHAR	tszSubDir[MAX_PATH];
+			mir_sntprintf(tszSubDir, MAX_PATH, _T("%s%s\\"), tszSkinRoot, fd.cFileName);
+			ScanSkinDir(tszSubDir, hwndCombobox);
+		}
+	    if(FindNextFile(h, &fd) == 0)
+	    	break;
+	}
+	if(h != INVALID_HANDLE_VALUE)
+		FindClose(h);
+
+
+	SendMessage(hwndCombobox, CB_SETCURSEL, 0, 0);
+	if(0 == M->GetTString(0, SRMSGMOD_T, "ContainerSkin", &dbv)) {
+		LRESULT lr = SendMessage(hwndCombobox, CB_GETCOUNT, 0, 0);
+		for(int i = 1; i < lr; i++) {
+
+			TCHAR* idata = (TCHAR *)SendMessage(hwndCombobox, CB_GETITEMDATA, i, 0);
+			if(idata && idata != (TCHAR *)CB_ERR) {
+				if(!_tcsicmp(dbv.ptszVal, idata)) {
+					SendMessage(hwndCombobox, CB_SETCURSEL, i, 0);
+					break;
+				}
+			}
+		}
+		DBFreeVariant(&dbv);
+	}
+	return(0);
+}
+
+static void TSAPI FreeComboData(HWND hwndCombobox)
+{
+	LRESULT lr = SendMessage(hwndCombobox, CB_GETCOUNT, 0, 0);
+
+	for(int i = 1; i < lr; i++) {
+		void *idata = (void *)SendMessage(hwndCombobox, CB_GETITEMDATA, i, 0);
+
+		if(idata && idata != (void *)CB_ERR)
+			free(idata);
+	}
+}
+
 static INT_PTR CALLBACK DlgProcSkinOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch (msg) {
 		case WM_INITDIALOG: {
-			DBVARIANT dbv;
-			static UINT _ctrls[] = { IDC_SKINFILENAME, IDC_SELECTSKINFILE, IDC_USESKIN, IDC_UNLOAD, IDC_RELOADSKIN,
+			static UINT _ctrls[] = { IDC_SKINNAME, IDC_SKINROOTFOLDER, IDC_RESCANSKIN, IDC_USESKIN, IDC_UNLOAD, IDC_RELOADSKIN,
 									 IDC_SKIN_LOADFONTS, IDC_SKIN_LOADTEMPLATES, 0
 								   };
 
+			RescanSkins(GetDlgItem(hwndDlg, IDC_SKINNAME));
 			BYTE loadMode = M->GetByte("skin_loadmode", 0);
 			TranslateDialogDefault(hwndDlg);
 
@@ -195,12 +316,6 @@ static INT_PTR CALLBACK DlgProcSkinOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 			CheckDlgButton(hwndDlg, IDC_SKIN_LOADFONTS, loadMode & THEME_READ_FONTS);
 			CheckDlgButton(hwndDlg, IDC_SKIN_LOADTEMPLATES, loadMode & THEME_READ_TEMPLATES);
 
-			if (!M->GetTString(NULL, SRMSGMOD_T, "ContainerSkin", &dbv)) {
-				if (lstrlen(dbv.ptszVal) > 4)
-					SetDlgItemText(hwndDlg, IDC_SKINFILENAME, dbv.ptszVal);
-				DBFreeVariant(&dbv);
-			} else
-				SetDlgItemText(hwndDlg, IDC_SKINFILENAME, _T(""));
 			return TRUE;
 		}
 		case WM_COMMAND:
@@ -208,66 +323,61 @@ static INT_PTR CALLBACK DlgProcSkinOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 				case IDC_USESKIN:
 					M->WriteByte(SRMSGMOD_T, "useskin", (BYTE)(IsDlgButtonChecked(hwndDlg, IDC_USESKIN) ? 1 : 0));
 					break;
+
 				case IDC_SKIN_LOADFONTS: {
 					BYTE loadMode = M->GetByte("skin_loadmode", 0);
 					loadMode = IsDlgButtonChecked(hwndDlg, IDC_SKIN_LOADFONTS) ? loadMode | THEME_READ_FONTS : loadMode & ~THEME_READ_FONTS;
 					M->WriteByte(SRMSGMOD_T, "skin_loadmode", loadMode);
 					break;
 				}
+
 				case IDC_SKIN_LOADTEMPLATES: {
 					BYTE loadMode = M->GetByte("skin_loadmode", 0);
 					loadMode = IsDlgButtonChecked(hwndDlg, IDC_SKIN_LOADTEMPLATES) ? loadMode | THEME_READ_TEMPLATES : loadMode & ~THEME_READ_TEMPLATES;
 					M->WriteByte(SRMSGMOD_T, "skin_loadmode", loadMode);
 					break;
 				}
+
 				case IDC_UNLOAD:
 					Skin->Unload();
 					SendMessage(hwndTabConfig, WM_USER + 100, 0, 0);
 					break;
-				case IDC_SELECTSKINFILE: {
-					OPENFILENAME ofn = {0};
-					TCHAR str[MAX_PATH] = _T("*.tsk"), final_path[MAX_PATH], initDir[MAX_PATH];
 
-					mir_sntprintf(initDir, MAX_PATH, _T("%s"), M->getSkinPath());
-
-					ofn.lStructSize = OPENFILENAME_SIZE_VERSION_400;
-					ofn.hwndOwner = hwndDlg;
-					ofn.hInstance = NULL;
-					ofn.lpstrFilter = _T("*.tsk");
-					ofn.lpstrFile = str;
-					ofn.lpstrInitialDir = initDir;
-					ofn.Flags = OFN_FILEMUSTEXIST;
-					ofn.nMaxFile = safe_sizeof(str);
-					ofn.nMaxFileTitle = MAX_PATH;
-					ofn.lpstrDefExt = _T("");
-					if (!GetOpenFileName(&ofn))
-						break;
-					M->pathToRelative(str, final_path, M->getUserDir());
-					if (PathFileExists(str)) {
-						int skinChanged = 0;
-						DBVARIANT dbv = {0};
-
-						if (!DBGetContactSettingString(NULL, SRMSGMOD_T, "ContainerSkin", &dbv)) {
-							if (_tcscmp(dbv.ptszVal, final_path))
-								skinChanged = TRUE;
-							DBFreeVariant(&dbv);
-						} else
-							skinChanged = TRUE;
-
-						M->WriteTString(NULL, SRMSGMOD_T, "ContainerSkin", final_path);
-						M->WriteByte(SRMSGMOD_T, "skin_changed", (BYTE)skinChanged);
-						SetDlgItemText(hwndDlg, IDC_SKINFILENAME, final_path);
-					}
-					break;
-				}
 				case IDC_RELOADSKIN:
 					Skin->setFileName();
 					Skin->Load();
 					SendMessage(hwndTabConfig, WM_USER + 100, 0, 0);
 					break;
+
+				case IDC_RESCANSKIN:
+					FreeComboData(GetDlgItem(hwndDlg, IDC_SKINNAME));
+					RescanSkins(GetDlgItem(hwndDlg, IDC_SKINNAME));
+					break;
+
+				case IDC_HELP_GENERAL:
+					CallService(MS_UTILS_OPENURL, 1, (LPARAM)"http://blog.miranda.or.at/tabsrmm/skin-selection-changes/");
+					break;
+
+				case IDC_SKINNAME: {
+					if(HIWORD(wParam) == CBN_SELCHANGE) {
+						LRESULT lr = SendDlgItemMessage(hwndDlg, IDC_SKINNAME, CB_GETCURSEL, 0 ,0);
+						if(lr != CB_ERR && lr > 1) {
+							TCHAR	*tszRelPath = (TCHAR *)SendDlgItemMessage(hwndDlg, IDC_SKINNAME, CB_GETITEMDATA, lr, 0);
+							if(tszRelPath && tszRelPath != (TCHAR *)CB_ERR)
+								M->WriteTString(0, SRMSGMOD_T, "ContainerSkin", tszRelPath);
+						}
+						else if(lr == 1) {
+							DBDeleteContactSetting(0, SRMSGMOD_T, "ContainerSkin");
+							Skin->Unload();
+							SendMessage(hwndTabConfig, WM_USER + 100, 0, 0);
+						}
+						return(0);
+					}
+					break;
+				}
 			}
-			if ((LOWORD(wParam) == IDC_SKINFILE || LOWORD(wParam) == IDC_SKINFILENAME)
-					&& (HIWORD(wParam) != EN_CHANGE || (HWND) lParam != GetFocus()))
+			if ((LOWORD(wParam) == IDC_SKINNAME)
+					&& (HIWORD(wParam) != CBN_SELCHANGE || (HWND) lParam != GetFocus()))
 				return 0;
 			SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
 			break;
@@ -280,6 +390,10 @@ static INT_PTR CALLBACK DlgProcSkinOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 					}
 					break;
 			}
+			break;
+
+		case WM_DESTROY:
+			FreeComboData(GetDlgItem(hwndDlg, IDC_SKINNAME));
 			break;
 	}
 	return FALSE;

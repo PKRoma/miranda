@@ -356,7 +356,8 @@ public:
 		OPT_TABS_MUC_EVENTS										= 98,
 		OPT_TABS_MUC_HIGHLIGHT									= 99,
 		OPT_MSGLOG_EXPLAINSETTINGS								= 100,
-		OPT_LAST												= 101
+		OPT_SKIN_NOSKINSELECT									= 101,
+		OPT_LAST												= 102
 	};
 
 	/*

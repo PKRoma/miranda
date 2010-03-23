@@ -84,6 +84,7 @@ struct ColorOptionsList {
 	COLORREF 	def;
 };
 
+
 static ColorOptionsList _clrs[] = {
 	0, LPGENT("TabSRMM/Group Chats"), LPGENT("Log background"), SRMSGSET_BKGCOLOUR, SRMSGDEFSET_BKGCOLOUR,
 	1, LPGENT("TabSRMM"), LPGENT("Input area background"), "inputbg", SRMSGDEFSET_BKGCOLOUR,

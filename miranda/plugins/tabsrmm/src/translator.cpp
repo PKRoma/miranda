@@ -383,6 +383,7 @@ TCHAR* CTranslator::m_OptStrings[OPT_LAST] = {
 	LPGENT("Events and filters"),									/* OPT_TABS_MUC_EVENTS */
 	LPGENT("Highlighting"),											/* OPT_TABS_MUC_HIGHLIGHT */
 	LPGENT("You have chosen to use an external plugin for displaying the message history in the chat window. Most of the settings on this page are for the standard message log viewer only and will have no effect. To change the appearance of the message log, you must configure either IEView or History++."),									/* OPT_MSGLOG_EXPLAINSETTINGS */
+	LPGENT("<no skin>"),											/* OPT_SKIN_NOSKINSELECT */
 };
 TCHAR* CTranslator::m_translated[STR_LAST];
 TCHAR* CTranslator::m_OptTranslated[OPT_LAST];
