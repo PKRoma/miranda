@@ -135,7 +135,7 @@ INT_PTR CMsnProto::MsnInviteCommand(WPARAM wParam, LPARAM)
 			{
 				TCHAR sessionName[255];
 				mir_sntprintf(sessionName, SIZEOF(sessionName), "%s %s%s",
-					m_szUserName, TranslateT("Chat #"), tActiveThreads[i]->mChatID);
+					m_tszUserName, TranslateT("Chat #"), tActiveThreads[i]->mChatID);
 				::AppendMenu(tMenu, MF_STRING, (UINT_PTR)(i+1), sessionName);
 			}
 			else ::AppendMenu(tMenu, MF_STRING, (UINT_PTR)(i+1), MSN_GetContactNameT(*tActiveThreads[i]->mJoinedContacts));
