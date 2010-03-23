@@ -3,6 +3,13 @@
                            www.miranda-im.org
 
 
+* New in 0.8.19
+Bugfixes:
+ - More docking issues fixed
+ - Updated zlib to version 1.2.4
+ - MSN: Converted chat invitation menu to Unicode
+ 
+ 
 * New in 0.8.18
 Enhancements:
  - MSN: Added ability to send authorization request message
