@@ -338,54 +338,54 @@ static INT_PTR AssertInsideScreen(WPARAM wParam, LPARAM lParam)
 	if (rc == NULL)
 		return -1;
 
-	if (!IsWinVer98Plus()) 
-		return -1;
-
-	if (MyMonitorFromRect == NULL || MyGetMonitorInfo == NULL) 
-		return -1;
-
-	RECT rct;
-	HMONITOR hMonitor;
-	MONITORINFO mi;
 	INT_PTR ret = 0;
+	RECT rct, rcWork;
 
-	hMonitor = MyMonitorFromRect(rc, MONITOR_DEFAULTTONEAREST);
-	mi.cbSize = sizeof(mi);
-	MyGetMonitorInfo(hMonitor, &mi);
+	SystemParametersInfo(SPI_GETWORKAREA, 0, &rcWork, FALSE);
+	if (MyMonitorFromRect)
+	{
+		HMONITOR hMonitor;
+		MONITORINFO mi;
 
-	if (IntersectRect(&rct, rc, &mi.rcWork))
+		hMonitor = MyMonitorFromRect(rc, MONITOR_DEFAULTTONEAREST);
+		mi.cbSize = sizeof(mi);
+		if (MyGetMonitorInfo(hMonitor, &mi))
+			rcWork = mi.rcWork;
+	}
+
+	if (IntersectRect(&rct, rc, &rcWork))
 		return ret;
 
-	if (rc->bottom > mi.rcWork.bottom) {
-		OffsetRect(rc, 0, mi.rcWork.bottom - rc->bottom);
+	if (rc->bottom > rcWork.bottom) {
+		OffsetRect(rc, 0, rcWork.bottom - rc->bottom);
 		ret = 1;
 	}
-	if (rc->bottom < mi.rcWork.top) {
-		OffsetRect(rc, 0, mi.rcWork.top - rc->top);
+	if (rc->bottom < rcWork.top) {
+		OffsetRect(rc, 0, rcWork.top - rc->top);
 		ret = 1;
 	}
-	if (rc->top > mi.rcWork.bottom) {
-		OffsetRect(rc, 0, mi.rcWork.bottom - rc->bottom);
+	if (rc->top > rcWork.bottom) {
+		OffsetRect(rc, 0, rcWork.bottom - rc->bottom);
 		ret = 1;
 	}
-	if (rc->top < mi.rcWork.top) {
-		OffsetRect(rc, 0, mi.rcWork.top - rc->top);
+	if (rc->top < rcWork.top) {
+		OffsetRect(rc, 0, rcWork.top - rc->top);
 		ret = 1;
 	}
-	if (rc->right > mi.rcWork.right) {
-		OffsetRect(rc, mi.rcWork.right - rc->right, 0);
+	if (rc->right > rcWork.right) {
+		OffsetRect(rc, rcWork.right - rc->right, 0);
 		ret = 1;
 	}
-	if (rc->right < mi.rcWork.left) {
-		OffsetRect(rc, mi.rcWork.left - rc->left, 0);
+	if (rc->right < rcWork.left) {
+		OffsetRect(rc, rcWork.left - rc->left, 0);
 		ret = 1;
 	}
-	if (rc->left > mi.rcWork.right) {
-		OffsetRect(rc, mi.rcWork.right - rc->right, 0);
+	if (rc->left > rcWork.right) {
+		OffsetRect(rc, rcWork.right - rc->right, 0);
 		ret = 1;
 	}
-	if (rc->left < mi.rcWork.left) {
-		OffsetRect(rc, mi.rcWork.left - rc->left, 0);
+	if (rc->left < rcWork.left) {
+		OffsetRect(rc, rcWork.left - rc->left, 0);
 		ret = 1;
 	}
 	
