@@ -237,7 +237,7 @@ int ShowHide(WPARAM wParam, LPARAM lParam)
 		GetWindowRect(pcli->hwndContactList, &rcWindow);
 		if (Utils_AssertInsideScreen(&rcWindow) == 1)
 		{
-			MoveWindow(cli.hwndContactList, rcWindow.left, rcWindow.top, 
+			MoveWindow(pcli->hwndContactList, rcWindow.left, rcWindow.top, 
 				rcWindow.right - rcWindow.left, rcWindow.bottom - rcWindow.top, TRUE);
 		}
 
