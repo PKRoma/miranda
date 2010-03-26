@@ -323,62 +323,41 @@ static INT_PTR SaveWindowPosition(WPARAM, LPARAM lParam)
 
 static INT_PTR AssertInsideScreen(WPARAM wParam, LPARAM lParam)
 {
-	RECT *rc = (RECT *) wParam;
+	LPRECT rc = (LPRECT) wParam;
 	if (rc == NULL)
 		return -1;
 
-	if (!IsWinVer98Plus()) 
-		return -1;
+	RECT rcScreen;
+	SystemParametersInfo(SPI_GETWORKAREA, 0, &rcScreen, FALSE);
 
-	if (MyMonitorFromRect == NULL || MyGetMonitorInfo == NULL) 
-		return -1;
+	if (MyMonitorFromWindow) 
+	{
+		if (MyMonitorFromRect(rc, MONITOR_DEFAULTTONULL))
+			return 0;
 
-	RECT rct;
-			HMONITOR hMonitor;
-			MONITORINFO mi;
-	INT_PTR ret = 0;
+		MONITORINFO mi = {0};
+		HMONITOR hMonitor = MyMonitorFromRect(rc, MONITOR_DEFAULTTONEAREST);
+		mi.cbSize = sizeof(mi);
+		if (MyGetMonitorInfo(hMonitor, &mi))
+			rcScreen = mi.rcWork;
+	}
+	else 
+	{
+		RECT rcDest;
+		if (IntersectRect(&rcDest, &rcScreen, rc))
+			return 0;
+	}
 
-	hMonitor = MyMonitorFromRect(rc, MONITOR_DEFAULTTONEAREST);
-			mi.cbSize = sizeof(mi);
-			MyGetMonitorInfo(hMonitor, &mi);
+	if (rc->top >= rcScreen.bottom)
+		OffsetRect(rc, 0, rcScreen.bottom - rc->bottom);
+	else if (rc->bottom <= rcScreen.top)
+		OffsetRect(rc, 0, rcScreen.top - rc->top);
+	if (rc->left >= rcScreen.right)
+		OffsetRect(rc, rcScreen.right - rc->right, 0);
+	else if (rc->right <= rcScreen.left)
+		OffsetRect(rc, rc->left - rc->left, 0);
 
-	if (IntersectRect(&rct, rc, &mi.rcWork))
-		return ret;
-
-	if (rc->bottom > mi.rcWork.bottom) {
-		OffsetRect(rc, 0, mi.rcWork.bottom - rc->bottom);
-		ret = 1;
-	}
-	if (rc->bottom < mi.rcWork.top) {
-		OffsetRect(rc, 0, mi.rcWork.top - rc->top);
-		ret = 1;
-	}
-	if (rc->top > mi.rcWork.bottom) {
-		OffsetRect(rc, 0, mi.rcWork.bottom - rc->bottom);
-		ret = 1;
-	}
-	if (rc->top < mi.rcWork.top) {
-		OffsetRect(rc, 0, mi.rcWork.top - rc->top);
-		ret = 1;
-	}
-	if (rc->right > mi.rcWork.right) {
-		OffsetRect(rc, mi.rcWork.right - rc->right, 0);
-		ret = 1;
-	}
-	if (rc->right < mi.rcWork.left) {
-		OffsetRect(rc, mi.rcWork.left - rc->left, 0);
-		ret = 1;
-	}
-	if (rc->left > mi.rcWork.right) {
-		OffsetRect(rc, mi.rcWork.right - rc->right, 0);
-		ret = 1;
-	}
-	if (rc->left < mi.rcWork.left) {
-		OffsetRect(rc, mi.rcWork.left - rc->left, 0);
-		ret = 1;
-	}
-	
-	return ret;
+	return 1;
 }
 
 
