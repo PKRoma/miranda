@@ -381,45 +381,23 @@ int fnShowHide(WPARAM, LPARAM)
 		return 0;
 	}
 	if (bShow == TRUE) {
-		RECT rcScreen, rcWindow;
-		bool offScreen = false;
+		RECT rcWindow;
 
 		ShowWindow(cli.hwndContactList, SW_RESTORE);
-		SetWindowPos(cli.hwndContactList, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
 		if (!DBGetContactSettingByte(NULL, "CList", "OnTop", SETTING_ONTOP_DEFAULT))
 			SetWindowPos(cli.hwndContactList, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE);
+		else
+			SetWindowPos(cli.hwndContactList, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
+
 		SetForegroundWindow(cli.hwndContactList);
 		DBWriteContactSettingByte(NULL, "CList", "State", SETTING_STATE_NORMAL);
 
 		//this forces the window onto the visible screen
 		GetWindowRect(cli.hwndContactList, &rcWindow);
-		if (MyMonitorFromWindow) {
-			if (MyMonitorFromWindow(cli.hwndContactList, MONITOR_DEFAULTTONULL) == NULL) {
-				MONITORINFO mi = { 0 };
-				HMONITOR hMonitor = MyMonitorFromWindow(cli.hwndContactList, MONITOR_DEFAULTTONEAREST);
-				mi.cbSize = sizeof(mi);
-				MyGetMonitorInfo(hMonitor, &mi);
-				rcScreen = mi.rcWork;
-				offScreen = true;
-			}
-		}
-		else {
-			RECT rcDest;
-			SystemParametersInfo(SPI_GETWORKAREA, 0, &rcScreen, FALSE);
-			if (IntersectRect(&rcDest, &rcScreen, &rcWindow) == 0)
-				offScreen = true;
-		}
-		if (offScreen) {
-			if (rcWindow.top >= rcScreen.bottom)
-				OffsetRect(&rcWindow, 0, rcScreen.bottom - rcWindow.bottom);
-			else if (rcWindow.bottom <= rcScreen.top)
-				OffsetRect(&rcWindow, 0, rcScreen.top - rcWindow.top);
-			if (rcWindow.left >= rcScreen.right)
-				OffsetRect(&rcWindow, rcScreen.right - rcWindow.right, 0);
-			else if (rcWindow.right <= rcScreen.left)
-				OffsetRect(&rcWindow, rcScreen.left - rcWindow.left, 0);
-			SetWindowPos(cli.hwndContactList, 0, rcWindow.left, rcWindow.top, rcWindow.right - rcWindow.left, rcWindow.bottom - rcWindow.top,
-				SWP_NOZORDER);
+		if (Utils_AssertInsideScreen(&rcWindow) == 1)
+		{
+			MoveWindow(cli.hwndContactList, rcWindow.left, rcWindow.top, 
+				rcWindow.right - rcWindow.left, rcWindow.bottom - rcWindow.top, TRUE);
 		}
 	}
 	else {                      //It needs to be hidden
