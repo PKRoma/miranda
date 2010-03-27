@@ -182,7 +182,7 @@ int GetWindowVisibleState(HWND hWnd, int iStepX, int iStepY)
 				hAux = WindowFromPoint(pt);
 				while (GetParent(hAux) != NULL)
 					hAux = GetParent(hAux);
-				if (hAux != hWnd) //There's another window!
+				if (hAux != hWnd && hAux) //There's another window!
 					bPartiallyCovered = TRUE;
 				else
 					iNotCoveredDots++; //Let's count the not covered dots.
@@ -240,7 +240,6 @@ int ShowHide(WPARAM wParam, LPARAM lParam)
 			MoveWindow(pcli->hwndContactList, rcWindow.left, rcWindow.top, 
 				rcWindow.right - rcWindow.left, rcWindow.bottom - rcWindow.top, TRUE);
 		}
-
 	}
 	else {                      //It needs to be hidden
 		ShowWindow(pcli->hwndContactList, SW_HIDE);
