@@ -99,7 +99,6 @@ extern "C" {
 #endif
 
 // Plugin headers
-#include "pthread.h"
 #include "resource.h"
 
 // libgadu headers
@@ -116,16 +115,22 @@ typedef struct
 
 typedef struct
 {
+	HANDLE hThread;
+	DWORD dwThreadId;
+} GGTHREAD;
+
+typedef struct
+{
 	PROTO_INTERFACE proto;
 	LPTSTR name;
-	pthread_mutex_t ft_mutex, sess_mutex, img_mutex, modemsg_mutex, avatar_mutex;
+	CRITICAL_SECTION ft_mutex, sess_mutex, img_mutex, modemsg_mutex, avatar_mutex;
 	list_t watches, transfers, requests, chats, imagedlgs, avatar_requests, avatar_transfers;
 	int gc_enabled, gc_id, list_remove, unicode_core, statusPostponed;
 	uin_t next_uin;
 	unsigned long last_crc;
-	pthread_t pth_dcc;
-	pthread_t pth_sess;
-	pthread_t pth_avatar;
+	GGTHREAD pth_dcc;
+	GGTHREAD pth_sess;
+	GGTHREAD pth_avatar;
 	struct gg_session *sess;
 	struct gg_dcc *dcc;
 	HANDLE event;
@@ -179,11 +184,13 @@ typedef struct
 	char val[256];
 } GGTOKEN;
 
-typedef struct
-{
-	GGPROTO *gg;
-	HANDLE hContact;
-} GGCONTEXT;
+// GG Thread Function
+typedef void (__cdecl GGThreadFunc)(void*, void*);
+
+#if 0 /* #ifdef DEBUGMODE */
+#define EnterCriticalSection(lpCS)	{gg_netlog(gg,"EnterCriticalSection @ %s:%d", __FILE__, __LINE__); EnterCriticalSection(lpCS);}
+#define LeaveCriticalSection(lpCS)	{gg_netlog(gg,"LeaveCriticalSection @ %s:%d", __FILE__, __LINE__); LeaveCriticalSection(lpCS);}
+#endif
 
 
 // Wrappers of the old interface
@@ -376,14 +383,18 @@ char *ws_strerror(int code);
 uint32_t swap32(uint32_t x);
 const char *gg_version2string(int v);
 
+/* Thread functions */
+void gg_forkthread(GGPROTO *gg, GGThreadFunc pFunc, void *param);
+HANDLE gg_forkthreadex(GGPROTO *gg, GGThreadFunc pFunc, void *param, UINT *threadId);
+void gg_threadwait(GGPROTO *gg, GGTHREAD *thread);
+
 /* Global GG functions */
 void gg_notifyuser(GGPROTO *gg, HANDLE hContact, int refresh);
 void gg_setalloffline(GGPROTO *gg);
 void gg_disconnect(GGPROTO *gg);
 HANDLE gg_getcontact(GGPROTO *gg, uin_t uin, int create, int inlist, char *nick);
 void gg_registerservices(GGPROTO *gg);
-void gg_threadwait(GGPROTO *gg, pthread_t *thread);
-void *__stdcall gg_mainthread(void *empty);
+void __cdecl gg_mainthread(GGPROTO *gg, void *empty);
 int gg_isonline(GGPROTO *gg);
 int gg_refreshstatus(GGPROTO *gg, int status);
 
@@ -445,7 +456,6 @@ INT_PTR gg_img_recvimage(GGPROTO *gg, WPARAM wParam, LPARAM lParam);
 INT_PTR gg_img_sendimage(GGPROTO *gg, WPARAM wParam, LPARAM lParam);
 int gg_img_sendonrequest(GGPROTO *gg, struct gg_event* e);
 BOOL gg_img_opened(GGPROTO *gg, uin_t uin);
-void *__stdcall gg_img_dlgthread(void *empty);
 
 /* IcoLib functions */
 void gg_icolib_init();

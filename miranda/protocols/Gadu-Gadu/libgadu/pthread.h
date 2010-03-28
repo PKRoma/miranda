@@ -18,6 +18,10 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
+
+#ifndef PTHREAD_H
+#define PTHREAD_H
+
 #include <windows.h>
 
 // Minipthread code from Miranda IM source
@@ -40,14 +44,13 @@ int pthread_detach(pthread_t *tid);
 /* get calling thread's ID */
 pthread_t *pthread_self(void);
 /* cancel execution of a thread */
+int pthread_cancel(pthread_t *thread);
+/* terminate thread */
 void pthread_exit(void *value_ptr);
 
 #define pthread_mutex_init(pmutex, pattr)	 InitializeCriticalSection(pmutex)
 #define pthread_mutex_destroy(pmutex)		 DeleteCriticalSection(pmutex)
-#ifdef DEBUGMODE
-#define pthread_mutex_lock(pmutex)			 {gg_netlog(gg,"pthread_mutex_lock @ %s:%d", __FILE__, __LINE__); EnterCriticalSection(pmutex);}
-#define pthread_mutex_unlock(pmutex)		 {gg_netlog(gg,"pthread_mutex_unlock @ %s:%d", __FILE__, __LINE__); LeaveCriticalSection(pmutex);}
-#else
 #define pthread_mutex_lock(pmutex)			 EnterCriticalSection(pmutex)
 #define pthread_mutex_unlock(pmutex)		 LeaveCriticalSection(pmutex)
+
 #endif

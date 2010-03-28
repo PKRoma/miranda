@@ -55,10 +55,10 @@ extern "C" {
 #undef GG_CONFIG_HAVE_GETHOSTBYNAME_R
 
 /* Defined if libgadu was compiled and linked with pthread support. */
-#undef GG_CONFIG_HAVE_PTHREAD
+#define GG_CONFIG_HAVE_PTHREAD
 
 /* Defined if pthread resolver is the default one. */
-#undef GG_CONFIG_PTHREAD_DEFAULT 
+#define GG_CONFIG_PTHREAD_DEFAULT 
 
 /* Defined if this machine has C99-compiliant vsnprintf(). */
 #undef GG_CONFIG_HAVE_C99_VSNPRINTF

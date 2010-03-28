@@ -159,9 +159,9 @@ void gg_getavatar(GGPROTO *gg, HANDLE hContact, char *szAvatarURL)
 		GGGETAVATARDATA *data = mir_alloc(sizeof(GGGETAVATARDATA));
 		data->hContact = hContact;
 		data->AvatarURL = mir_strdup(szAvatarURL);
-		pthread_mutex_lock(&gg->avatar_mutex);
+		EnterCriticalSection(&gg->avatar_mutex);
 		list_add(&gg->avatar_transfers, data, 0);
-		pthread_mutex_unlock(&gg->avatar_mutex);
+		LeaveCriticalSection(&gg->avatar_mutex);
 	}
 }
 
@@ -169,31 +169,29 @@ void gg_requestavatar(GGPROTO *gg, HANDLE hContact)
 {
 	if (DBGetContactSettingByte(NULL, GG_PROTO, GG_KEY_ENABLEAVATARS, GG_KEYDEF_ENABLEAVATARS)
 		&& gg->pth_avatar.dwThreadId) {
-		pthread_mutex_lock(&gg->avatar_mutex);
+		EnterCriticalSection(&gg->avatar_mutex);
 		list_add(&gg->avatar_requests, hContact, 0);
-		pthread_mutex_unlock(&gg->avatar_mutex);
+		LeaveCriticalSection(&gg->avatar_mutex);
 	}
 }
 
-static void *__stdcall gg_avatarrequestthread(void *threaddata)
+void __cdecl gg_avatarrequestthread(GGPROTO *gg, void *empty)
 {
-	GGPROTO *gg = (GGPROTO *)threaddata;
 	list_t l;
 
 #ifdef DEBUGMODE
 	gg_netlog(gg, "gg_avatarrequestthread(): Avatar Request Thread Starting");
 #endif
-
 	while (gg->pth_avatar.dwThreadId)
 	{
-		pthread_mutex_lock(&gg->avatar_mutex);
+		EnterCriticalSection(&gg->avatar_mutex);
 		if (gg->avatar_requests) {
 			char *AvatarURL;
 			int AvatarType;
 			HANDLE hContact;
 
 			hContact = gg->avatar_requests->data;
-			pthread_mutex_unlock(&gg->avatar_mutex);
+			LeaveCriticalSection(&gg->avatar_mutex);
 
 			gg_getavatarfileinfo(gg, DBGetContactSettingDword(hContact, GG_PROTO, GG_KEY_UIN, 0), &AvatarURL, &AvatarType);
 			if (AvatarURL != NULL && strlen(AvatarURL) > 0)
@@ -205,12 +203,12 @@ static void *__stdcall gg_avatarrequestthread(void *threaddata)
 
 			ProtoBroadcastAck(GG_PROTO, hContact, ACKTYPE_AVATAR, ACKRESULT_STATUS, 0, 0);
 
-			pthread_mutex_lock(&gg->avatar_mutex);
+			EnterCriticalSection(&gg->avatar_mutex);
 			list_remove(&gg->avatar_requests, hContact, 0);
 		}
-		pthread_mutex_unlock(&gg->avatar_mutex);
+		LeaveCriticalSection(&gg->avatar_mutex);
 
-		pthread_mutex_lock(&gg->avatar_mutex);
+		EnterCriticalSection(&gg->avatar_mutex);
 		if (gg->avatar_transfers) {
 			GGGETAVATARDATA *data = (GGGETAVATARDATA *)gg->avatar_transfers->data;
 			NETLIBHTTPREQUEST req = {0};
@@ -258,7 +256,7 @@ static void *__stdcall gg_avatarrequestthread(void *threaddata)
 			mir_free(data->AvatarURL);
 			mir_free(data);
 		}
-		pthread_mutex_unlock(&gg->avatar_mutex);
+		LeaveCriticalSection(&gg->avatar_mutex);
 		SleepEx(100, FALSE);
 	}
 
@@ -269,8 +267,9 @@ static void *__stdcall gg_avatarrequestthread(void *threaddata)
 	}
 	list_destroy(gg->avatar_requests, 0);
 	list_destroy(gg->avatar_transfers, 0);
-
-	return NULL;
+#ifdef DEBUGMODE
+	gg_netlog(gg, "gg_avatarrequestthread(): Avatar Request Thread Ending");
+#endif
 }
 
 void gg_initavatarrequestthread(GGPROTO *gg)
@@ -280,19 +279,21 @@ void gg_initavatarrequestthread(GGPROTO *gg)
 	GetExitCodeThread(gg->pth_avatar.hThread, &exitCode);
 	if (exitCode != STILL_ACTIVE) {
 		gg->avatar_requests = gg->avatar_transfers = NULL;
-		pthread_create(&gg->pth_avatar, NULL, gg_avatarrequestthread, gg);
+		gg->pth_avatar.hThread = gg_forkthreadex(gg, gg_avatarrequestthread, NULL, &gg->pth_avatar.dwThreadId);
 	}
 }
 
 void gg_uninitavatarrequestthread(GGPROTO *gg)
 {
 	gg->pth_avatar.dwThreadId = 0;
+#ifdef DEBUGMODE
+	gg_netlog(gg, "gg_uninitavatarrequestthread(): Waiting until Avatar Request Thread finished, if needed.");
+#endif
 	gg_threadwait(gg, &gg->pth_avatar);
 }
 
-static void *__stdcall gg_getuseravatarthread(void *threaddata)
+void __cdecl gg_getuseravatarthread(GGPROTO *gg, void *empty)
 {
-	GGPROTO *gg = (GGPROTO *)threaddata;
 	PROTO_AVATAR_INFORMATION pai = {0};
 	char *AvatarURL;
 	int AvatarType;
@@ -308,19 +309,13 @@ static void *__stdcall gg_getuseravatarthread(void *threaddata)
 	pai.cbSize = sizeof(pai);
 	pai.hContact = NULL;
 	gg_getavatarinfo(gg, (WPARAM)GAIF_FORCE, (LPARAM)&pai);
-
-	return NULL;
 }
 
 void gg_getuseravatar(GGPROTO *gg)
 {
 	if (DBGetContactSettingByte(NULL, GG_PROTO, GG_KEY_ENABLEAVATARS, GG_KEYDEF_ENABLEAVATARS)
-		&& DBGetContactSettingDword(NULL, GG_PROTO, GG_KEY_UIN, 0)) {
-		pthread_t tid;
-
-		pthread_create(&tid, NULL, gg_getuseravatarthread, gg);
-		pthread_detach(&tid);
-	}
+		&& DBGetContactSettingDword(NULL, GG_PROTO, GG_KEY_UIN, 0))
+		gg_forkthread(gg, gg_getuseravatarthread, NULL);
 }
 
 int gg_setavatar(GGPROTO *gg, const char *szFilename)

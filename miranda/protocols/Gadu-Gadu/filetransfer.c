@@ -23,7 +23,7 @@
 #include <io.h>
 #include <fcntl.h>
 
-void *__stdcall gg_dccmainthread(void *empty);
+void __cdecl gg_dccmainthread(GGPROTO *gg, void *empty);
 
 void gg_dccstart(GGPROTO *gg)
 {
@@ -55,7 +55,7 @@ void gg_dccstart(GGPROTO *gg)
 	}
 
 	// Start thread
-	pthread_create(&gg->pth_dcc, NULL, gg_dccmainthread, gg);
+	gg->pth_dcc.hThread = gg_forkthreadex(gg, gg_dccmainthread, NULL, &gg->pth_dcc.dwThreadId);
 }
 
 void gg_dccconnect(GGPROTO *gg, uin_t uin)
@@ -83,9 +83,9 @@ void gg_dccconnect(GGPROTO *gg, uin_t uin)
 		return;
 
 	// Add client dcc to watches
-	pthread_mutex_lock(&gg->ft_mutex);
+	EnterCriticalSection(&gg->ft_mutex);
 	list_add(&gg->watches, dcc, 0);
-	pthread_mutex_unlock(&gg->ft_mutex);
+	LeaveCriticalSection(&gg->ft_mutex);
 }
 
 //////////////////////////////////////////////////////////
@@ -94,23 +94,19 @@ struct ftfaildata
 {
 	HANDLE hContact;
 	HANDLE hProcess;
-	GGPROTO *gg;
 };
-static void *__stdcall gg_ftfailthread(void *empty)
+void __cdecl gg_ftfailthread(GGPROTO *gg, void *param)
 {
-	struct ftfaildata *ft = (struct ftfaildata *)empty;
-	const GGPROTO *gg = ft->gg;
+	struct ftfaildata *ft = (struct ftfaildata *)param;
 	SleepEx(100, FALSE);
 #ifdef DEBUGMODE
 	gg_netlog(gg, "gg_ftfailthread(): Sending failed file transfer.");
 #endif
 	ProtoBroadcastAck(GG_PROTO, ft->hContact, ACKTYPE_FILE, ACKRESULT_FAILED, ft->hProcess, 0);
 	free(ft);
-	return NULL;
 }
 HANDLE ftfail(GGPROTO *gg, HANDLE hContact)
 {
-	pthread_t tid;
 	struct ftfaildata *ft = malloc(sizeof(struct ftfaildata));
 #ifdef DEBUGMODE
 	gg_netlog(gg, "gg_ftfail(): Failing file transfer...");
@@ -118,9 +114,7 @@ HANDLE ftfail(GGPROTO *gg, HANDLE hContact)
 	srand(time(NULL));
 	ft->hProcess = (HANDLE)rand();
 	ft->hContact = hContact;
-	ft->gg = gg;
-	pthread_create(&tid, NULL, gg_ftfailthread, ft);
-	pthread_detach(&tid);
+	gg_forkthread(gg, gg_ftfailthread, ft);
 	return ft->hProcess;
 }
 
@@ -130,7 +124,7 @@ HANDLE ftfail(GGPROTO *gg, HANDLE hContact)
 // Info refresh min time (msec) / half-sec
 #define GGSTATREFRESHEVERY	500
 
-void *__stdcall gg_dccmainthread(void *empty)
+void __cdecl gg_dccmainthread(GGPROTO *gg, void *empty)
 {
 	uin_t uin;
 	struct gg_event *e;
@@ -141,7 +135,6 @@ void *__stdcall gg_dccmainthread(void *empty)
 	DWORD tick;
 	list_t l;
 	char filename[MAX_PATH];
-	GGPROTO *gg = empty;
 
 	// Zero up lists
 	gg->watches = gg->transfers = gg->requests = l = NULL;
@@ -157,7 +150,7 @@ void *__stdcall gg_dccmainthread(void *empty)
 		gg_netlog(gg, "gg_dccmainthread(): No Gadu-Gadu number specified. Exiting.");
 #endif
 		if(gg->event) SetEvent(gg->event);
-		return NULL;
+		return;
 	}
 
 	// Create listen socket on config direct port
@@ -168,7 +161,7 @@ void *__stdcall gg_dccmainthread(void *empty)
 #endif
 		// Signalize mainthread we haven't start
 		if(gg->event) SetEvent(gg->event);
-		return NULL;
+		return;
 	}
 
 	gg_dcc_port = gg->dcc->port;
@@ -229,7 +222,7 @@ void *__stdcall gg_dccmainthread(void *empty)
 
 		// Process watches (carefull with l)
 		l = gg->watches;
-		pthread_mutex_lock(&gg->ft_mutex);
+		EnterCriticalSection(&gg->ft_mutex);
 		while (l)
 		{
 			struct gg_common *c = l->data;
@@ -621,7 +614,7 @@ void *__stdcall gg_dccmainthread(void *empty)
 					break;
 			}
 		}
-		pthread_mutex_unlock(&gg->ft_mutex);
+		LeaveCriticalSection(&gg->ft_mutex);
 	}
 
 	// Close all dcc client sockets
@@ -674,8 +667,6 @@ void *__stdcall gg_dccmainthread(void *empty)
 #ifdef DEBUGMODE
 	gg_netlog(gg, "gg_dccmainthread(): DCC Server Thread Ending");
 #endif
-
-	return NULL;
 }
 
 ////////////////////////////////////////////////////////////
@@ -713,16 +704,16 @@ HANDLE gg_sendfile(PROTO_INTERFACE *proto, HANDLE hContact, const PROTOCHAR* szD
 	if ((ver & 0x00ffffff) >= 0x29 || !ver) {
 		struct gg_dcc7 *dcc7;
 
-		pthread_mutex_lock(&gg->sess_mutex);
+		EnterCriticalSection(&gg->sess_mutex);
 		if (!(dcc7 = gg_dcc7_send_file(gg->sess, uin, filename, NULL, NULL))) {
-			pthread_mutex_unlock(&gg->sess_mutex);
+			LeaveCriticalSection(&gg->sess_mutex);
 #ifdef DEBUGMODE
 			gg_netlog(gg, "gg_sendfile(): Failed to send file \"%s\".", filename);
 #endif
 			mir_free(filename);
 			return ftfail(gg, hContact);
 		}
-		pthread_mutex_unlock(&gg->sess_mutex);
+		LeaveCriticalSection(&gg->sess_mutex);
 
 #ifdef DEBUGMODE
 		gg_netlog(gg, "gg_sendfile(): Sending file \"%s\" to %d.", filename, uin);
@@ -769,9 +760,9 @@ HANDLE gg_sendfile(PROTO_INTERFACE *proto, HANDLE hContact, const PROTOCHAR* szD
 #ifdef DEBUGMODE
 		gg_netlog(gg, "gg_sendfile(): Requesting user to connect us and scheduling gg_dcc struct for a later use.");
 #endif
-		pthread_mutex_lock(&gg->sess_mutex);
+		EnterCriticalSection(&gg->sess_mutex);
 		gg_dcc_request(gg->sess, uin);
-		pthread_mutex_unlock(&gg->sess_mutex);
+		LeaveCriticalSection(&gg->sess_mutex);
 		list_add(&gg->requests, dcc, 0);
 	}
 
@@ -819,9 +810,9 @@ HANDLE gg_dccfileallow(GGPROTO *gg, HANDLE hTransfer, const PROTOCHAR* szPath)
 	mir_free(path);
 
 	// Remove transfer from waiting list
-	pthread_mutex_lock(&gg->ft_mutex);
+	EnterCriticalSection(&gg->ft_mutex);
 	list_remove(&gg->transfers, dcc, 0);
-	pthread_mutex_unlock(&gg->ft_mutex);
+	LeaveCriticalSection(&gg->ft_mutex);
 
 	// Open file for appending and check if ok
 	if((dcc->file_fd = _open(fileName, _O_WRONLY | _O_APPEND | _O_BINARY | _O_CREAT, _S_IREAD | _S_IWRITE)) == -1)
@@ -839,9 +830,9 @@ HANDLE gg_dccfileallow(GGPROTO *gg, HANDLE hTransfer, const PROTOCHAR* szPath)
 	dcc->offset = _lseek(dcc->file_fd, 0, SEEK_END);
 
 	// Add to watches and start transfer
-	pthread_mutex_lock(&gg->ft_mutex);
+	EnterCriticalSection(&gg->ft_mutex);
 	list_add(&gg->watches, dcc, 0);
-	pthread_mutex_unlock(&gg->ft_mutex);
+	LeaveCriticalSection(&gg->ft_mutex);
 
 #ifdef DEBUGMODE
 	gg_netlog(gg, "gg_dccfileallow(): Receiving file \"%s\" from %d.", dcc->file_info.filename, dcc->peer_uin);
@@ -861,9 +852,9 @@ HANDLE gg_dcc7fileallow(GGPROTO *gg, HANDLE hTransfer, const PROTOCHAR* szPath)
 	mir_free(path);
 
 	// Remove transfer from waiting list
-	pthread_mutex_lock(&gg->ft_mutex);
+	EnterCriticalSection(&gg->ft_mutex);
 	list_remove(&gg->transfers, dcc7, 0);
-	pthread_mutex_unlock(&gg->ft_mutex);
+	LeaveCriticalSection(&gg->ft_mutex);
 
 	// Open file for appending and check if ok
 	if((dcc7->file_fd = _open(fileName, _O_WRONLY | _O_APPEND | _O_BINARY | _O_CREAT, _S_IREAD | _S_IWRITE)) == -1)
@@ -882,9 +873,9 @@ HANDLE gg_dcc7fileallow(GGPROTO *gg, HANDLE hTransfer, const PROTOCHAR* szPath)
 	gg_dcc7_accept(dcc7, dcc7->offset);
 
 	// Add to watches and start transfer
-	pthread_mutex_lock(&gg->ft_mutex);
+	EnterCriticalSection(&gg->ft_mutex);
 	list_add(&gg->watches, dcc7, 0);
-	pthread_mutex_unlock(&gg->ft_mutex);
+	LeaveCriticalSection(&gg->ft_mutex);
 
 #ifdef DEBUGMODE
 	gg_netlog(gg, "gg_dcc7fileallow(): Receiving file \"%s\" from %d.", dcc7->filename, dcc7->peer_uin);
@@ -913,11 +904,11 @@ int gg_dccfiledeny(GGPROTO *gg, HANDLE hTransfer)
 	struct gg_dcc *dcc = (struct gg_dcc *) hTransfer;
 
 	// Remove transfer from any list
-	pthread_mutex_lock(&gg->ft_mutex);
+	EnterCriticalSection(&gg->ft_mutex);
 	if(gg->watches) list_remove(&gg->watches, dcc, 0);
 	if(gg->requests) list_remove(&gg->requests, dcc, 0);
 	if(gg->transfers) list_remove(&gg->transfers, dcc, 0);
-	pthread_mutex_unlock(&gg->ft_mutex);
+	LeaveCriticalSection(&gg->ft_mutex);
 
 #ifdef DEBUGMODE
 	gg_netlog(gg, "gg_dccfiledeny(): Rejected file \"%s\" from/to %d.", dcc->file_info.filename, dcc->peer_uin);
@@ -936,10 +927,10 @@ int gg_dcc7filedeny(GGPROTO *gg, HANDLE hTransfer)
 	gg_dcc7_reject(dcc7, GG_DCC7_REJECT_USER);
 
 	// Remove transfer from any list
-	pthread_mutex_lock(&gg->ft_mutex);
+	EnterCriticalSection(&gg->ft_mutex);
 	if(gg->watches) list_remove(&gg->watches, dcc7, 0);
 	if(gg->transfers) list_remove(&gg->transfers, dcc7, 0);
-	pthread_mutex_unlock(&gg->ft_mutex);
+	LeaveCriticalSection(&gg->ft_mutex);
 
 #ifdef DEBUGMODE
 	gg_netlog(gg, "gg_dcc7filedeny(): Rejected file \"%s\" from/to %d.", dcc7->filename, dcc7->peer_uin);
@@ -971,11 +962,11 @@ int gg_dccfilecancel(GGPROTO *gg, HANDLE hTransfer)
 	struct gg_dcc *dcc = (struct gg_dcc *) hTransfer;
 
 	// Remove transfer from any list
-	pthread_mutex_lock(&gg->ft_mutex);
+	EnterCriticalSection(&gg->ft_mutex);
 	if(gg->watches) list_remove(&gg->watches, dcc, 0);
 	if(gg->requests) list_remove(&gg->requests, dcc, 0);
 	if(gg->transfers) list_remove(&gg->transfers, dcc, 0);
-	pthread_mutex_unlock(&gg->ft_mutex);
+	LeaveCriticalSection(&gg->ft_mutex);
 
 	// Send failed info
 	ProtoBroadcastAck(GG_PROTO, dcc->contact, ACKTYPE_FILE, ACKRESULT_FAILED, dcc, 0);
@@ -1001,10 +992,10 @@ int gg_dcc7filecancel(GGPROTO *gg, HANDLE hTransfer)
 	struct gg_dcc7 *dcc7 = (struct gg_dcc7 *) hTransfer;
 
 	// Remove transfer from any list
-	pthread_mutex_lock(&gg->ft_mutex);
+	EnterCriticalSection(&gg->ft_mutex);
 	if(gg->watches) list_remove(&gg->watches, dcc7, 0);
 	if(gg->transfers) list_remove(&gg->transfers, dcc7, 0);
-	pthread_mutex_unlock(&gg->ft_mutex);
+	LeaveCriticalSection(&gg->ft_mutex);
 
 	// Send failed info
 	ProtoBroadcastAck(GG_PROTO, dcc7->contact, ACKTYPE_FILE, ACKRESULT_FAILED, dcc7, 0);

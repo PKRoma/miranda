@@ -555,9 +555,9 @@ static INT_PTR CALLBACK gg_img_dlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 				ReleaseIconEx("delete");
 				ReleaseIconEx("save");
 				ReleaseIconEx("image");
-				pthread_mutex_lock(&gg->img_mutex);
+				EnterCriticalSection(&gg->img_mutex);
 				list_remove(&gg->imagedlgs, dat, 1);
-				pthread_mutex_unlock(&gg->img_mutex);
+				LeaveCriticalSection(&gg->img_mutex);
 			}
 			return TRUE;
 
@@ -665,9 +665,9 @@ static INT_PTR CALLBACK gg_img_dlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 							len = sizeof(struct gg_msg_richtext_format) + sizeof(struct gg_msg_richtext_image);
 							((struct gg_msg_richtext*)format)->length = len;
 
-							pthread_mutex_lock(&gg->sess_mutex);
+							EnterCriticalSection(&gg->sess_mutex);
 							gg_send_message_richtext(gg->sess, GG_CLASS_CHAT, (uin_t)uin,(unsigned char*)msg,format,len+sizeof(struct gg_msg_richtext));
-							pthread_mutex_unlock(&gg->sess_mutex);
+							LeaveCriticalSection(&gg->sess_mutex);
 
 							// Protect dat from releasing
 							SetWindowLongPtr(hwndDlg, GWLP_USERDATA, (LONG_PTR)0);
@@ -743,12 +743,12 @@ static INT_PTR CALLBACK gg_img_dlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 }
 
 ////////////////////////////////////////////////////////////////////////////
-// Calls opening of the dialog
-void gg_img_dlgcall(void *empty)
+// Image dialog call thread
+void __cdecl gg_img_dlgcallthread(GGPROTO *gg, void *param)
 {
 	HWND hMIWnd = 0; //(HWND) CallService(MS_CLUI_GETHWND, 0, 0);
 
-	GGIMAGEDLGDATA *dat = (GGIMAGEDLGDATA *)empty;
+	GGIMAGEDLGDATA *dat = (GGIMAGEDLGDATA *)param;
 	DialogBoxParam(hInstance, dat->bReceiving ? MAKEINTRESOURCE(IDD_IMAGE_RECV) : MAKEINTRESOURCE(IDD_IMAGE_SEND),
 		hMIWnd, gg_img_dlgproc, (LPARAM) dat);
 }
@@ -757,8 +757,6 @@ void gg_img_dlgcall(void *empty)
 // Open dialog receive for specified contact
 GGIMAGEDLGDATA *gg_img_recvdlg(GGPROTO *gg, HANDLE hContact)
 {
-	pthread_t dwThreadID;
-
 	// Create dialog data
 	GGIMAGEDLGDATA *dat = (GGIMAGEDLGDATA *)malloc(sizeof(GGIMAGEDLGDATA));
 	ZeroMemory(dat, sizeof(GGIMAGEDLGDATA));
@@ -770,7 +768,7 @@ GGIMAGEDLGDATA *gg_img_recvdlg(GGPROTO *gg, HANDLE hContact)
 	dat->bReceiving = TRUE;
 	dat->gg = gg;
 	ResetEvent(dat->hEvent);
-	pthread_create(&dwThreadID, NULL, gg_img_dlgthread, (void *)dat);
+	gg_forkthread(gg, gg_img_dlgcallthread, dat);
 	return dat;
 }
 
@@ -848,7 +846,7 @@ gg_img_display(GGPROTO *gg, HANDLE hContact, void *img)
 	if(!img) return FALSE;
 
 	// Look for already open dialog
-	pthread_mutex_lock(&gg->img_mutex);
+	EnterCriticalSection(&gg->img_mutex);
 	while(l)
 	{
 		dat = (GGIMAGEDLGDATA *)l->data;
@@ -870,7 +868,7 @@ gg_img_display(GGPROTO *gg, HANDLE hContact, void *img)
 
 		list_add(&gg->imagedlgs, dat, 0);
 	}
-	pthread_mutex_unlock(&gg->img_mutex);
+	LeaveCriticalSection(&gg->img_mutex);
 
 	SendMessage(dat->hWnd, WM_ADDIMAGE, 0, (LPARAM)img);
 	if(/*DBGetContactSettingByte(NULL, "Chat", "FlashWindowHighlight", 0) != 0 && */
@@ -1038,9 +1036,9 @@ int gg_img_add(GGIMAGEDLGDATA *dat)
 	if(!dat) return FALSE;
 
 	gg = dat->gg;
-	pthread_mutex_lock(&gg->img_mutex);
+	EnterCriticalSection(&gg->img_mutex);
 	list_add(&gg->imagedlgs, dat, 0);
-	pthread_mutex_unlock(&gg->img_mutex);
+	LeaveCriticalSection(&gg->img_mutex);
 
 	return FALSE;
 }
@@ -1055,7 +1053,7 @@ int gg_img_remove(GGIMAGEDLGDATA *dat)
 	if(!dat) return FALSE;
 	gg = dat->gg;
 
-	pthread_mutex_lock(&gg->img_mutex);
+	EnterCriticalSection(&gg->img_mutex);
 
 	// Remove the structure
 	img = dat->lpImages;
@@ -1069,7 +1067,7 @@ int gg_img_remove(GGIMAGEDLGDATA *dat)
 
 	// Remove from list
 	list_remove(&gg->imagedlgs, dat, 1);
-	pthread_mutex_unlock(&gg->img_mutex);
+	LeaveCriticalSection(&gg->img_mutex);
 
 	return TRUE;
 }
@@ -1082,7 +1080,7 @@ GGIMAGEDLGDATA *gg_img_find(GGPROTO *gg, uin_t uin, uint32_t crc32)
 	list_t l = gg->imagedlgs;
 	GGIMAGEDLGDATA *dat;
 
-	pthread_mutex_lock(&gg->img_mutex);
+	EnterCriticalSection(&gg->img_mutex);
 	while(l)
 	{
 		uin_t c_uin;
@@ -1094,13 +1092,13 @@ GGIMAGEDLGDATA *gg_img_find(GGPROTO *gg, uin_t uin, uint32_t crc32)
 
 		if (!dat->bReceiving && dat->lpImages && dat->lpImages->crc32 == crc32 && c_uin == uin)
 		{
-			pthread_mutex_unlock(&gg->img_mutex);
+			LeaveCriticalSection(&gg->img_mutex);
 			return dat;
 		}
 
 		l = l->next;
 	}
-	pthread_mutex_unlock(&gg->img_mutex);
+	LeaveCriticalSection(&gg->img_mutex);
 
 #ifdef DEBUGMODE
 	gg_netlog(gg, "gg_img_find(): Image not found on the list. It might be released before calling this function.");
@@ -1117,9 +1115,9 @@ BOOL gg_img_sendonrequest(GGPROTO *gg, struct gg_event* e)
 
 	if(!gg || !dat || !gg_isonline(gg)) return FALSE;
 
-	pthread_mutex_lock(&gg->sess_mutex);
+	EnterCriticalSection(&gg->sess_mutex);
 	gg_image_reply(gg->sess, e->event.image_request.sender, dat->lpImages->lpszFileName, dat->lpImages->lpData, dat->lpImages->nSize);
-	pthread_mutex_unlock(&gg->sess_mutex);
+	LeaveCriticalSection(&gg->sess_mutex);
 
 	gg_img_remove(dat);
 
@@ -1130,11 +1128,10 @@ BOOL gg_img_sendonrequest(GGPROTO *gg, struct gg_event* e)
 // Send Image : Run (Thread and main)
 INT_PTR gg_img_sendimg(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
 {
-	pthread_t dwThreadID;
 	HANDLE hContact = (HANDLE)wParam;
 	GGIMAGEDLGDATA *dat = NULL;
 
-	pthread_mutex_lock(&gg->img_mutex);
+	EnterCriticalSection(&gg->img_mutex);
 	if(!dat)
 	{
 		dat = (GGIMAGEDLGDATA *)malloc(sizeof(GGIMAGEDLGDATA));
@@ -1148,7 +1145,7 @@ INT_PTR gg_img_sendimg(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
 		ResetEvent(dat->hEvent);
 
 		// Create new dialog
-		pthread_create(&dwThreadID, NULL, gg_img_dlgthread, (void *)dat);
+		gg_forkthread(gg, gg_img_dlgcallthread, dat);
 
 		while (WaitForSingleObjectEx(dat->hEvent, INFINITE, TRUE) != WAIT_OBJECT_0);
 		CloseHandle(dat->hEvent);
@@ -1159,7 +1156,7 @@ INT_PTR gg_img_sendimg(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
 
 	// Request choose dialog
 	SendMessage(dat->hWnd, WM_CHOOSEIMG, 0, 0);
-	pthread_mutex_unlock(&gg->img_mutex);
+	LeaveCriticalSection(&gg->img_mutex);
 
 	return 0;
 }

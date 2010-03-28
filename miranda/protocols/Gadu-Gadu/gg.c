@@ -314,6 +314,9 @@ int gg_event(PROTO_INTERFACE *proto, PROTOEVENTTYPE eventType, WPARAM wParam, LP
 			// Stop avatar request thread
 			gg_uninitavatarrequestthread(gg);
 			// Stop main connection session thread
+#ifdef DEBUGMODE
+			gg_netlog(gg, "gg_event(EV_PROTO_ONEXIT): Waiting until Server Thread finished, if needed.");
+#endif
 			gg_threadwait(gg, &gg->pth_sess);
 			gg_img_shutdown(gg);
 
@@ -358,11 +361,11 @@ static GGPROTO *gg_proto_init(const char* pszProtoName, const TCHAR* tszUserName
 	gg->unicode_core = (strstr(szVer, "unicode") != NULL);
 
 	// Init mutex
-	pthread_mutex_init(&gg->sess_mutex, NULL);
-	pthread_mutex_init(&gg->ft_mutex, NULL);
-	pthread_mutex_init(&gg->img_mutex, NULL);
-	pthread_mutex_init(&gg->modemsg_mutex, NULL);
-	pthread_mutex_init(&gg->avatar_mutex, NULL);
+	InitializeCriticalSection(&gg->sess_mutex);
+	InitializeCriticalSection(&gg->ft_mutex);
+	InitializeCriticalSection(&gg->img_mutex);
+	InitializeCriticalSection(&gg->modemsg_mutex);
+	InitializeCriticalSection(&gg->avatar_mutex);
 
 	// Init instance names
 	gg->proto.m_szModuleName = mir_strdup(pszProtoName);
@@ -433,11 +436,11 @@ static int gg_proto_uninit(PROTO_INTERFACE *proto)
 	Netlib_CloseHandle(gg->netlib);
 
 	// Destroy mutex
-	pthread_mutex_destroy(&gg->sess_mutex);
-	pthread_mutex_destroy(&gg->ft_mutex);
-	pthread_mutex_destroy(&gg->img_mutex);
-	pthread_mutex_destroy(&gg->modemsg_mutex);
-	pthread_mutex_destroy(&gg->avatar_mutex);
+	DeleteCriticalSection(&gg->sess_mutex);
+	DeleteCriticalSection(&gg->ft_mutex);
+	DeleteCriticalSection(&gg->img_mutex);
+	DeleteCriticalSection(&gg->modemsg_mutex);
+	DeleteCriticalSection(&gg->avatar_mutex);
 
 	// Free status messages
 	if(gg->modemsg.online)    free(gg->modemsg.online);
@@ -496,7 +499,7 @@ int __declspec(dllexport) Load(PLUGINLINK * link)
 }
 
 //////////////////////////////////////////////////////////
-// when plugin is unloaded
+// When plugin is unloaded
 int __declspec(dllexport) Unload()
 {
 	LocalEventUnhook(hHookModulesLoaded);
@@ -511,6 +514,29 @@ int __declspec(dllexport) Unload()
 	return 0;
 }
 
+//////////////////////////////////////////////////////////
+// Forks a thread
+void gg_forkthread(GGPROTO *gg, GGThreadFunc pFunc, void *param)
+{
+	CloseHandle((HANDLE)mir_forkthreadowner((pThreadFuncOwner)&pFunc, gg, param, NULL));
+}
+
+//////////////////////////////////////////////////////////
+// Forks a thread and returns a pseudo handle for it
+HANDLE gg_forkthreadex(GGPROTO *gg, GGThreadFunc pFunc, void *param, UINT *threadId)
+{
+	return (HANDLE)mir_forkthreadowner((pThreadFuncOwner)&pFunc, gg, param, threadId);
+}
+
+////////////////////////////////////////////////////////////
+// Wait for thread to stop
+void gg_threadwait(GGPROTO *gg, GGTHREAD *thread)
+{
+	if (!thread->hThread) return;
+	while (WaitForSingleObjectEx(thread->hThread, INFINITE, TRUE) != WAIT_OBJECT_0);
+	CloseHandle(thread->hThread);
+	ZeroMemory(thread, sizeof(GGTHREAD));
+}
 
 //////////////////////////////////////////////////////////
 // DEBUGING FUNCTIONS
@@ -520,7 +546,8 @@ struct
 {
 	int type;
 	char *text;
-} ggdebug_eventype2string[] =
+}
+static const ggdebug_eventype2string[] =
 {
 	{GG_EVENT_NONE,					"GG_EVENT_NONE"},
 	{GG_EVENT_MSG,					"GG_EVENT_MSG"},
@@ -602,15 +629,6 @@ int gg_netlog(const GGPROTO *gg, const char *fmt, ...)
 }
 
 #endif
-
-////////////////////////////////////////////////////////////////////////////
-// Image dialog call thread
-void gg_img_dlgcall(void *empty);
-void *__stdcall gg_img_dlgthread(void *empty)
-{
-	gg_img_dlgcall(empty);
-	return NULL;
-}
 
 //////////////////////////////////////////////////////////
 // main DLL function

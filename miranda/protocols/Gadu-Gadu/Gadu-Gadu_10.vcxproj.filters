@@ -60,9 +60,6 @@
     <ClCompile Include="ownerinfo.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="pthread.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="services.c">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -93,6 +90,9 @@
     <ClCompile Include="libgadu\libgadu.c">
       <Filter>Source Files\libgadu</Filter>
     </ClCompile>
+    <ClCompile Include="libgadu\pthread.c">
+      <Filter>Source Files\libgadu</Filter>
+    </ClCompile>
     <ClCompile Include="libgadu\pubdir.c">
       <Filter>Source Files\libgadu</Filter>
     </ClCompile>
@@ -119,6 +119,9 @@
     <ClInclude Include="libgadu\protocol.h">
       <Filter>Source Files\libgadu</Filter>
     </ClInclude>
+    <ClInclude Include="libgadu\pthread.h">
+      <Filter>Source Files\libgadu</Filter>
+    </ClInclude>
     <ClInclude Include="libgadu\resolver.h">
       <Filter>Source Files\libgadu</Filter>
     </ClInclude>
@@ -129,9 +132,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="gg.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="pthread.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="resource.h">
@@ -145,43 +145,46 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="icos\ArrowLeft.ico">
+    <None Include="icons\clear_ignored_conference.ico">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="icos\Conference.ico">
+    <None Include="icons\conference.ico">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="icos\delete.ico">
+    <None Include="icons\delete.ico">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="icos\Fedex.ico">
+    <None Include="icons\export_list_to_server.ico">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="icos\gg.ico">
+    <None Include="icons\export_list_to_txt_file.ico">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="icos\Image.ico">
+    <None Include="icons\gg.ico">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="icos\InBox.ico">
+    <None Include="icons\image.ico">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="icos\Lime.ico">
+    <None Include="icons\import_list_from_server.ico">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="icos\Next.ico">
+    <None Include="icons\import_list_from_txt_file.ico">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="icos\OutBox.ico">
+    <None Include="icons\next.ico">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="icos\Prev.ico">
+    <None Include="icons\previous.ico">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="icos\save.ico">
+    <None Include="icons\remove_list_from_server.ico">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="icos\Strawberry.ico">
+    <None Include="icons\save.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="icons\settings.ico">
       <Filter>Resource Files</Filter>
     </None>
     <None Include="docs\build-howto.txt" />

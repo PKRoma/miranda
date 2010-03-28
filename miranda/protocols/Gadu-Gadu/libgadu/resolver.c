@@ -65,6 +65,7 @@ static void (*gg_global_resolver_cleanup)(void **private_data, int force);
 
 #include <pthread.h>
 
+#ifdef GG_CONFIG_HAVE_GETHOSTBYNAME_R
 /**
  * \internal Funkcja pomocnicza zwalniająca zasoby po rozwiązywaniu nazwy
  * w wątku.
@@ -80,7 +81,7 @@ static void gg_gethostbyname_cleaner(void *data)
 		*buf_ptr = NULL;
 	}
 }
-
+#endif
 #endif /* GG_CONFIG_HAVE_PTHREAD */
 
 /**
@@ -369,8 +370,8 @@ static void gg_resolver_pthread_cleanup(void **priv_data, int force)
 	*priv_data = NULL;
 
 	if (force) {
-		pthread_cancel(data->thread);
-		pthread_join(data->thread, NULL);
+		pthread_cancel(&data->thread);
+		pthread_join(&data->thread, NULL);
 	}
 
 	free(data->hostname);
@@ -389,7 +390,7 @@ static void gg_resolver_pthread_cleanup(void **priv_data, int force)
  *
  * \param arg Wskaźnik na strukturę \c gg_resolver_pthread_data
  */
-static void *gg_resolver_pthread_thread(void *arg)
+static void *__stdcall gg_resolver_pthread_thread(void *arg)
 {
 	struct gg_resolver_pthread_data *data = arg;
 	struct in_addr addr;

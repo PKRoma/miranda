@@ -22,7 +22,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="../../include,libgadu,libgadu/win32"
+				AdditionalIncludeDirectories="../../include,libgadu"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;GG_EXPORTS"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -94,7 +94,7 @@
 				GlobalOptimizations="TRUE"
 				InlineFunctionExpansion="1"
 				FavorSizeOrSpeed="2"
-				AdditionalIncludeDirectories="../../include,libgadu,libgadu/win32"
+				AdditionalIncludeDirectories="../../include,libgadu"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;GG_EXPORTS"
 				StringPooling="TRUE"
 				RuntimeLibrary="2"
@@ -161,7 +161,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="../../include,libgadu,libgadu/win32"
+				AdditionalIncludeDirectories="../../include,libgadu"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;GG_EXPORTS"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -235,7 +235,7 @@
 				InlineFunctionExpansion="1"
 				FavorSizeOrSpeed="2"
 				OmitFramePointers="TRUE"
-				AdditionalIncludeDirectories="../../include,libgadu,libgadu/win32"
+				AdditionalIncludeDirectories="../../include,libgadu"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;GG_EXPORTS"
 				StringPooling="TRUE"
 				RuntimeLibrary="2"
@@ -829,43 +829,6 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="pthread.c">
-				<FileConfiguration
-					Name="Debug|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="0"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_MBCS;_USRDLL;GG_EXPORTS;$(NoInherit)"
-						BasicRuntimeChecks="3"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="1"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;GG_EXPORTS;$(NoInherit)"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug Unicode|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="0"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_MBCS;_USRDLL;GG_EXPORTS;$(NoInherit)"
-						BasicRuntimeChecks="3"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release Unicode|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="1"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;GG_EXPORTS;$(NoInherit)"/>
-				</FileConfiguration>
-			</File>
-			<File
 				RelativePath="services.c">
 				<FileConfiguration
 					Name="Debug|Win32">
@@ -1275,6 +1238,50 @@
 					RelativePath="libgadu\protocol.h">
 				</File>
 				<File
+					RelativePath="libgadu\pthread.c">
+					<FileConfiguration
+						Name="Debug|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="0"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_MBCS;_USRDLL;GG_EXPORTS;$(NoInherit)"
+							BasicRuntimeChecks="3"
+							UsePrecompiledHeader="0"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="1"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;GG_EXPORTS;$(NoInherit)"
+							UsePrecompiledHeader="0"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug Unicode|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="0"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_MBCS;_USRDLL;GG_EXPORTS;$(NoInherit)"
+							BasicRuntimeChecks="3"
+							UsePrecompiledHeader="0"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release Unicode|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="1"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;GG_EXPORTS;$(NoInherit)"
+							UsePrecompiledHeader="0"/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath="libgadu\pthread.h">
+				</File>
+				<File
 					RelativePath="libgadu\pubdir.c">
 					<FileConfiguration
 						Name="Debug|Win32">
@@ -1453,9 +1460,6 @@
 				RelativePath="gg.h">
 			</File>
 			<File
-				RelativePath="pthread.h">
-			</File>
-			<File
 				RelativePath="resource.h">
 			</File>
 			<File
@@ -1469,28 +1473,49 @@
 			Name="Resource Files"
 			Filter="ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe">
 			<File
-				RelativePath="icos\Conference.ico">
+				RelativePath="icons\clear_ignored_conference.ico">
 			</File>
 			<File
-				RelativePath="icos\delete.ico">
+				RelativePath="icons\conference.ico">
 			</File>
 			<File
-				RelativePath="icos\gg.ico">
+				RelativePath="icons\delete.ico">
 			</File>
 			<File
-				RelativePath="icos\Image.ico">
+				RelativePath="icons\export_list_to_server.ico">
 			</File>
 			<File
-				RelativePath="icos\Next.ico">
+				RelativePath="icons\export_list_to_txt_file.ico">
 			</File>
 			<File
-				RelativePath="icos\Prev.ico">
+				RelativePath="icons\gg.ico">
+			</File>
+			<File
+				RelativePath="icons\image.ico">
+			</File>
+			<File
+				RelativePath="icons\import_list_from_server.ico">
+			</File>
+			<File
+				RelativePath="icons\import_list_from_txt_file.ico">
+			</File>
+			<File
+				RelativePath="icons\next.ico">
+			</File>
+			<File
+				RelativePath="icons\previous.ico">
+			</File>
+			<File
+				RelativePath="icons\remove_list_from_server.ico">
 			</File>
 			<File
 				RelativePath="resource.rc">
 			</File>
 			<File
-				RelativePath="icos\save.ico">
+				RelativePath="icons\save.ico">
+			</File>
+			<File
+				RelativePath="icons\settings.ico">
 			</File>
 		</Filter>
 		<File

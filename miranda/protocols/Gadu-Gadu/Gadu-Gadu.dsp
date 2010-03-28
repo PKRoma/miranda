@@ -43,7 +43,7 @@ RSC=rc.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MT /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "GG_EXPORTS" /YX /FD /c
-# ADD CPP /nologo /MD /W3 /GX /Zi /O1 /I "../../include" /I "libgadu" /I "libgadu/win32" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "GG_EXPORTS" /FAcs /YX /FD /c
+# ADD CPP /nologo /MD /W3 /GX /Zi /O1 /I "../../include" /I "libgadu" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "GG_EXPORTS" /FAcs /YX /FD /c
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x409 /d "NDEBUG"
@@ -70,7 +70,7 @@ LINK32=link.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MTd /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "GG_EXPORTS" /YX /FD /GZ /c
-# ADD CPP /nologo /MDd /W3 /Gm /GX /ZI /Od /I "../../include" /I "libgadu" /I "libgadu/win32" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "GG_EXPORTS" /FAcs /YX /FD /GZ /c
+# ADD CPP /nologo /MDd /W3 /Gm /GX /ZI /Od /I "../../include" /I "libgadu" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "GG_EXPORTS" /FAcs /YX /FD /GZ /c
 # ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x409 /d "_DEBUG"
@@ -140,6 +140,15 @@ SOURCE=.\libgadu\libgadu.h
 # Begin Source File
 
 SOURCE=.\libgadu\protocol.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\libgadu\pthread.c
+# SUBTRACT CPP /YX
+# End Source File
+# Begin Source File
+
+SOURCE=.\libgadu\pthread.h
 # End Source File
 # Begin Source File
 
@@ -229,10 +238,6 @@ SOURCE=.\ownerinfo.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\pthread.c
-# End Source File
-# Begin Source File
-
 SOURCE=.\services.c
 # End Source File
 # Begin Source File
@@ -261,10 +266,6 @@ SOURCE=.\gg.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\pthread.h
-# End Source File
-# Begin Source File
-
 SOURCE=.\resource.h
 # End Source File
 # Begin Source File
@@ -281,27 +282,51 @@ SOURCE=.\version.h
 # PROP Default_Filter "ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe"
 # Begin Source File
 
-SOURCE=.\icos\Conference.ico
+SOURCE=.\icons\clear_ignored_conference.ico
 # End Source File
 # Begin Source File
 
-SOURCE=.\icos\delete.ico
+SOURCE=.\icons\conference.ico
 # End Source File
 # Begin Source File
 
-SOURCE=.\icos\gg.ico
+SOURCE=.\icons\delete.ico
 # End Source File
 # Begin Source File
 
-SOURCE=.\icos\Image.ico
+SOURCE=.\icons\export_list_to_server.ico
 # End Source File
 # Begin Source File
 
-SOURCE=.\icos\Next.ico
+SOURCE=.\icons\export_list_to_txt_file.ico
 # End Source File
 # Begin Source File
 
-SOURCE=.\icos\Prev.ico
+SOURCE=.\icons\gg.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\icons\image.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\icons\import_list_from_server.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\icons\import_list_from_txt_file.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\icons\next.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\icons\previous.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\icons\remove_list_from_server.ico
 # End Source File
 # Begin Source File
 
@@ -309,7 +334,11 @@ SOURCE=.\resource.rc
 # End Source File
 # Begin Source File
 
-SOURCE=.\icos\save.ico
+SOURCE=.\icons\save.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\icons\settings.ico
 # End Source File
 # End Group
 # Begin Source File

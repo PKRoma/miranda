@@ -845,9 +845,9 @@ static INT_PTR CALLBACK gg_detailsdlgproc(HWND hwndDlg, UINT msg, WPARAM wParam,
 
 				// Run update
 				gg_pubdir50_seq_set(req, GG_SEQ_CHINFO);
-				pthread_mutex_lock(&gg->sess_mutex);
+				EnterCriticalSection(&gg->sess_mutex);
 				gg_pubdir50(gg->sess, req);
-				pthread_mutex_unlock(&gg->sess_mutex);
+				LeaveCriticalSection(&gg->sess_mutex);
 				dat->updating = TRUE;
 
 				gg_pubdir50_free(req);

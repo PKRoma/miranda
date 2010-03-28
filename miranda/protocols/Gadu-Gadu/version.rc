@@ -38,7 +38,7 @@ BEGIN
     BEGIN
         BLOCK "000004b0"
         BEGIN
-            VALUE "Comments", "Licensed under the terms of the GNU General Public License\0"
+            VALUE "Comments", "Licensed under the terms of the GNU General Public License"
             VALUE "CompanyName", "Bartosz Bia³ek, Adam Strzelecki"
             VALUE "FileDescription", "Gadu-Gadu Protocol Plugin for Miranda IM"
             VALUE "FileVersion", __VERSION_STRING
