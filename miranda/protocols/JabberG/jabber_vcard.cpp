@@ -77,7 +77,7 @@ static INT_PTR CALLBACK PersonalDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, 
 		SetWindowLongPtr( hwndDlg, GWLP_USERDATA, lParam );
 		SendMessage( hwndDlg, WM_JABBER_REFRESH_VCARD, 0, 0 );
 		ppro->WindowSubscribe(hwndDlg);
-		return TRUE;
+		break;
 	case WM_JABBER_REFRESH_VCARD:
 	{
 		SetDialogField( ppro, hwndDlg, IDC_FULLNAME, "FullName" );
@@ -133,7 +133,7 @@ static INT_PTR CALLBACK HomeDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 		SetWindowLongPtr( hwndDlg, GWLP_USERDATA, lParam );
 		SendMessage( hwndDlg, WM_JABBER_REFRESH_VCARD, 0, 0 );
 		ppro->WindowSubscribe(hwndDlg);
-		return TRUE;
+		break;
 	case WM_JABBER_REFRESH_VCARD:
 	{
 		SetDialogField( ppro, hwndDlg, IDC_ADDRESS1, "Street" );
@@ -185,7 +185,7 @@ static INT_PTR CALLBACK WorkDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 		SetWindowLongPtr( hwndDlg, GWLP_USERDATA, lParam );
 		SendMessage( hwndDlg, WM_JABBER_REFRESH_VCARD, 0, 0 );
 		ppro->WindowSubscribe(hwndDlg);
-		return TRUE;
+		break;
 	case WM_JABBER_REFRESH_VCARD:
 	{
 		SetDialogField( ppro, hwndDlg, IDC_COMPANY, "Company" );
@@ -262,7 +262,7 @@ static INT_PTR CALLBACK PhotoDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 			dat->ppro->WindowSubscribe(hwndDlg);
 		}
 		SendMessage( hwndDlg, WM_JABBER_REFRESH_VCARD, 0, 0 );
-		return TRUE;
+		break;
 
 	case WM_JABBER_REFRESH_VCARD:
 		if ( dat->hBitmap ) {
@@ -479,7 +479,7 @@ static INT_PTR CALLBACK NoteDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 		SetWindowLongPtr( hwndDlg, GWLP_USERDATA, lParam );
 		SendMessage( hwndDlg, WM_JABBER_REFRESH_VCARD, 0, 0 );
 		ppro->WindowSubscribe(hwndDlg);
-		return TRUE;
+		break;
 	case WM_JABBER_REFRESH_VCARD:
 	{
 		SetDialogField( ppro, hwndDlg, IDC_DESC, "About" );
@@ -550,7 +550,7 @@ static INT_PTR CALLBACK EditEmailDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam,
 					if ( nFlag & JABBER_VCEMAIL_INTERNET ) CheckDlgButton( hwndDlg, IDC_INTERNET, TRUE );
 					if ( nFlag & JABBER_VCEMAIL_X400 ) CheckDlgButton( hwndDlg, IDC_X400, TRUE );
 		}	}	}
-		return TRUE;
+		break;
 
 	case WM_COMMAND:
 		switch ( LOWORD( wParam )) {
@@ -624,7 +624,7 @@ static INT_PTR CALLBACK EditPhoneDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam,
 					if ( nFlag & JABBER_VCTEL_ISDN ) CheckDlgButton( hwndDlg, IDC_ISDN, TRUE );
 					if ( nFlag & JABBER_VCTEL_PCS ) CheckDlgButton( hwndDlg, IDC_PCS, TRUE );
 		}	}	}
-		return TRUE;
+		break;
 
 	case WM_COMMAND:
 		switch ( LOWORD( wParam )) {
@@ -705,7 +705,7 @@ static INT_PTR CALLBACK ContactDlgProc( HWND hwndDlg, UINT msg, WPARAM, LPARAM l
 
 			ppro->WindowSubscribe(hwndDlg);
 		}
-		return TRUE;
+		break;
 	case M_REMAKELISTS:
 		{
 			LVITEM lvi;

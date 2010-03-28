@@ -1375,7 +1375,7 @@ static void OpenOptionsNow(const char *pszGroup,const char *pszPage,const char *
 			psh.ppsp = (PROPSHEETPAGE*)opi.odp;		  //blatent misuse of the structure, but what the hell
 			hwndOptions = CreateDialogParam(hMirandaInst, 
 				MAKEINTRESOURCE(bSinglePage ? IDD_OPTIONSPAGE : IDD_OPTIONS),
-				(HWND)CallService(MS_CLUI_GETHWND, 0, 0), OptionsDlgProc, (LPARAM)&psh);
+				cli.hwndContactList, OptionsDlgProc, (LPARAM)&psh);
 
 			FreeOptionsData( &opi );
 }	}	}

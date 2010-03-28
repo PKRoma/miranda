@@ -254,7 +254,7 @@ bool CMsnProto::MSN_RefreshContactList(void)
 	MSN_CleanupLists();
 
 	if (m_iDesiredStatus == ID_STATUS_OFFLINE) return false;
-		
+
 	msnLoggedIn = true;
 
 	MSN_CreateContList();

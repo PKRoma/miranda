@@ -126,7 +126,7 @@ void CluiProtocolStatusChanged( int parStatus, const char* szProto )
             {
 		        TCHAR szName[64];
                 mir_sntprintf(szName, SIZEOF(szName), _T("%s%s"), accs[ind]->tszAccountName, showOpts&4 ? _T(" ") : _T(""));
-				GetTextExtentPoint32(hdc, szName, _tcslen(szName), &textSize);
+				GetTextExtentPoint32(hdc, szName, (int)_tcslen(szName), &textSize);
 				x += textSize.cx;
 			}
 			if (showOpts&4) 
@@ -134,7 +134,7 @@ void CluiProtocolStatusChanged( int parStatus, const char* szProto )
                 int status  = CallProtoService(accs[ind]->szModuleName, PS_GETSTATUS, 0, 0);
 		        TCHAR *szStatus = pcli->pfnGetStatusModeDescription(status, 0);
 		        if (!szStatus) szStatus = _T("");
-			    GetTextExtentPoint32(hdc, szStatus, _tcslen(szStatus), &textSize);
+			    GetTextExtentPoint32(hdc, szStatus, (int)_tcslen(szStatus), &textSize);
 			    x += textSize.cx;
 			}
 			if (showOpts&6) x += 2; 

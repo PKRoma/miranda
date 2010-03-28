@@ -499,7 +499,7 @@ static INT_PTR CALLBACK JabberUserInfoDlgProc( HWND hwndDlg, UINT msg, WPARAM wP
 			SetWindowLongPtr(hwndDlg, GWLP_USERDATA, (LONG_PTR)dat);
 			WindowList_Add(hUserInfoList, hwndDlg, dat->hContact);
 		}
-		return TRUE;
+		break;
 
 	case WM_JABBER_REFRESH:
 		if ( !dat ) break;
@@ -657,7 +657,7 @@ static INT_PTR CALLBACK JabberUserPhotoDlgProc( HWND hwndDlg, UINT msg, WPARAM w
 		SendDlgItemMessage( hwndDlg, IDC_SAVE, BUTTONSETASFLATBTN, 0, 0);
 		ShowWindow( GetDlgItem( hwndDlg, IDC_LOAD ), SW_HIDE );
 		ShowWindow( GetDlgItem( hwndDlg, IDC_DELETE ), SW_HIDE );
-		return TRUE;
+		break;
 
 	case WM_NOTIFY:
 		switch ((( LPNMHDR )lParam )->idFrom ) {

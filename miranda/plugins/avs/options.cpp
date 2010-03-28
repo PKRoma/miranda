@@ -729,7 +729,7 @@ INT_PTR CALLBACK DlgProcAvatarUserInfo(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 
 			LoadTransparentData(hwndDlg, GetContactThatHaveTheAvatar(hContact));
 		}
-		return TRUE;
+		break;
 
 	case WM_COMMAND:
 		switch(LOWORD(wParam)) {
@@ -1018,7 +1018,7 @@ INT_PTR CALLBACK DlgProcAvatarProtoInfo(HWND hwndDlg, UINT msg, WPARAM wParam, L
 			CheckDlgButton(hwndDlg, IDC_PER_PROTO, DBGetContactSettingByte(NULL, AVS_MODULE, "PerProtocolUserAvatars", 1));
 			EnableDisableProtocols(hwndDlg, TRUE);
 		}
-		return TRUE;
+		break;
 
 	case WM_NOTIFY:
 		{

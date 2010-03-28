@@ -113,7 +113,7 @@ void DrawDataForStatusBar(LPDRAWITEMSTRUCT dis)
 
         PROTOACCOUNT* pa = ProtoGetAccount(szProto);
         mir_sntprintf(szName, SIZEOF(szName), _T("%s%s"), pa->tszAccountName, showOpts&4 ? _T(" ") : _T(""));
-		GetTextExtentPoint32(dis->hDC, szName, _tcslen(szName), &textSize);
+		GetTextExtentPoint32(dis->hDC, szName, (int)_tcslen(szName), &textSize);
        
 		TextOut(dis->hDC,x,(dis->rcItem.top+dis->rcItem.bottom-textSize.cy)>>1,szName,lstrlen(szName));
 		x+=textSize.cx;
