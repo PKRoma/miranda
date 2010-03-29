@@ -154,7 +154,7 @@ extern "C" int __declspec(dllexport) Load(PLUGINLINK *link)
 #else
 	  if (strstrnull(szVer, "unicode") != NULL)
     {
-      MessageBox(NULL, Translate("You cannot use Ansi version of ICQ Protocol plug-in with Unicode version of Miranda IM.", Translate("ICQ Plugin"),
+      MessageBox(NULL, Translate("You cannot use Ansi version of ICQ Protocol plug-in with Unicode version of Miranda IM."), Translate("ICQ Plugin"),
   			MB_OK|MB_ICONWARNING|MB_SETFOREGROUND|MB_TOPMOST);
       return 1; // Failure
     }

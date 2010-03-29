@@ -141,7 +141,7 @@ typedef struct{
 #ifndef FOLDERS_NO_HELPER_FUNCTIONS
 
 #ifndef M_UTILS_H__
-#error The helper functions require that m_utils.h be included in the project. Please include that file if you want to use the helper functions. If you don't want to use the functions just define FOLDERS_NO_HELPER_FUNCTIONS.
+#error The helper functions require that m_utils.h be included in the project. Please include that file if you want to use the helper functions. If you don''t want to use the functions just define FOLDERS_NO_HELPER_FUNCTIONS.
 #endif
 //#include "../../../include/newpluginapi.h"
 
@@ -150,8 +150,10 @@ __inline static HANDLE FoldersRegisterCustomPath(const char *section, const char
 	FOLDERSDATA fd = {0};
 	if (!ServiceExists(MS_FOLDERS_REGISTER_PATH)) return 0;
 	fd.cbSize = sizeof(FOLDERSDATA);
-	null_strcpy(fd.szSection, section, FOLDERS_NAME_MAX_SIZE - 1);
-	null_strcpy(fd.szName, name, FOLDERS_NAME_MAX_SIZE - 1);
+	strncpy(fd.szSection, section, FOLDERS_NAME_MAX_SIZE);
+	fd.szSection[FOLDERS_NAME_MAX_SIZE - 1] = '\0';
+	strncpy(fd.szName, name, FOLDERS_NAME_MAX_SIZE);
+	fd.szName[FOLDERS_NAME_MAX_SIZE - 1] = '\0';
 	fd.szFormat = defaultPath;
 	return (HANDLE) CallService(MS_FOLDERS_REGISTER_PATH, 0, (LPARAM) &fd);
 }
@@ -161,52 +163,117 @@ __inline static HANDLE FoldersRegisterCustomPathW(const char *section, const cha
 	FOLDERSDATA fd = {0};
 	if (!ServiceExists(MS_FOLDERS_REGISTER_PATH)) return 0;
 	fd.cbSize = sizeof(FOLDERSDATA);
-	null_strcpy(fd.szSection, section, FOLDERS_NAME_MAX_SIZE - 1);
-	null_strcpy(fd.szName, name, FOLDERS_NAME_MAX_SIZE - 1);
+	strncpy(fd.szSection, section, FOLDERS_NAME_MAX_SIZE);
+	fd.szSection[FOLDERS_NAME_MAX_SIZE - 1] = '\0'; //make sure it's NULL terminated
+	strncpy(fd.szName, name, FOLDERS_NAME_MAX_SIZE);
+	fd.szName[FOLDERS_NAME_MAX_SIZE - 1] = '\0'; //make sure it's NULL terminated
 	fd.szFormatW = defaultPathW;
 	fd.flags = FF_UNICODE;
 	return (HANDLE) CallService(MS_FOLDERS_REGISTER_PATH, 0, (LPARAM) &fd);
 }
 
-__inline static int FoldersGetCustomPath(HANDLE hFolderEntry, char *path, const int size, char *notFound)
+__inline static INT_PTR FoldersGetCustomPath(HANDLE hFolderEntry, char *path, const int size, const char *notFound)
 {
 	FOLDERSGETDATA fgd = {0};
-	int res;
+	INT_PTR res;
 	fgd.cbSize = sizeof(FOLDERSGETDATA);
 	fgd.nMaxPathSize = size;
 	fgd.szPath = path;
 	res = CallService(MS_FOLDERS_GET_PATH, (WPARAM) hFolderEntry, (LPARAM) &fgd);
 	if (res)
-		{
-			char buffer[MAX_PATH];
-			CallService(MS_UTILS_PATHTOABSOLUTE, (WPARAM) notFound, (LPARAM) buffer);
-			null_snprintf(path, size, "%s", buffer);
-		}
+	{
+		char buffer[MAX_PATH];
+		CallService(MS_UTILS_PATHTOABSOLUTE, (WPARAM) notFound, (LPARAM) buffer);
+		mir_snprintf(path, size, "%s", buffer);
+	}
+		
 	return res;
 }
 
-__inline static int FoldersGetCustomPathW(HANDLE hFolderEntry, wchar_t *pathW, const int count, wchar_t *notFoundW)
+__inline static INT_PTR FoldersGetCustomPathW(HANDLE hFolderEntry, wchar_t *pathW, const int count, const wchar_t *notFoundW)
 {
 	FOLDERSGETDATA fgd = {0};
-	int res;
+	INT_PTR res;
 	fgd.cbSize = sizeof(FOLDERSGETDATA);
 	fgd.nMaxPathSize = count;
 	fgd.szPathW = pathW;
 	res = CallService(MS_FOLDERS_GET_PATH, (WPARAM) hFolderEntry, (LPARAM) &fgd);
 	if (res)
-		{
-			WCHAR buffer[MAX_PATH];
-			CallService(MS_UTILS_PATHTOABSOLUTEW, (WPARAM) notFoundW, (LPARAM) buffer);
-			null_snprintf(pathW, count, L"%s", buffer);
-		}
+	{
+		wcsncpy(pathW, notFoundW, count);
+		pathW[count - 1] = '\0';
+	}
+		
+	return res;
+}
+
+__inline static INT_PTR FoldersGetCustomPathEx(HANDLE hFolderEntry, char *path, const int size, char *notFound, char *fileName)
+{
+	FOLDERSGETDATA fgd = {0};
+	INT_PTR res;
+	fgd.cbSize = sizeof(FOLDERSGETDATA);
+	fgd.nMaxPathSize = size;
+	fgd.szPath = path;
+	res = CallService(MS_FOLDERS_GET_PATH, (WPARAM) hFolderEntry, (LPARAM) &fgd);
+	if (res)
+	{
+		char buffer[MAX_PATH];
+		CallService(MS_UTILS_PATHTOABSOLUTE, (WPARAM) notFound, (LPARAM) buffer);
+		mir_snprintf(path, size, "%s", buffer);
+	}
+	if (strlen(path) > 0)
+	{
+		strcat(path, "\\");
+	}
+	else{
+		path[0] = '\0';
+	}
+	
+	if (fileName)
+	{
+		strcat(path, fileName);
+	}
+	
+	return res;
+}
+
+__inline static INT_PTR FoldersGetCustomPathExW(HANDLE hFolderEntry, wchar_t *pathW, const int count, wchar_t *notFoundW, wchar_t *fileNameW)
+{
+	FOLDERSGETDATA fgd = {0};
+	INT_PTR res;
+	fgd.cbSize = sizeof(FOLDERSGETDATA);
+	fgd.nMaxPathSize = count;
+	fgd.szPathW = pathW;
+	res = CallService(MS_FOLDERS_GET_PATH, (WPARAM) hFolderEntry, (LPARAM) &fgd);
+	if (res)
+	{
+		wcsncpy(pathW, notFoundW, count);
+		pathW[count - 1] = '\0';
+	}
+	
+	if (wcslen(pathW) > 0)
+	{
+		wcscat(pathW, L"\\");
+	}
+	else{
+		pathW[0] = L'\0';
+	}
+	
+	if (fileNameW)
+	{
+		wcscat(pathW, fileNameW);
+	}
+	
 	return res;
 }
 
 # ifdef _UNICODE
 #  define FoldersGetCustomPathT FoldersGetCustomPathW
+#  define FoldersGetCustomPathExT FoldersGetCustomPathExW
 #  define FoldersRegisterCustomPathT FoldersRegisterCustomPathW
 #else
 #  define FoldersGetCustomPathT FoldersGetCustomPath
+#  define FoldersGetCustomPathExT FoldersGetCustomPath
 #  define FoldersRegisterCustomPathT FoldersRegisterCustomPath
 #endif
 
