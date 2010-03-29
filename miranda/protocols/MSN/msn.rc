@@ -84,7 +84,7 @@ BEGIN
     GROUPBOX        "Server List Manager",IDC_STATIC,4,0,298,224
     CONTROL         "",IDC_LIST,"CListControl",WS_TABSTOP | 0x1f3,9,12,287,169,WS_EX_CLIENTEDGE
     ICON            "",IDC_ICON_LC,10,184,20,20,SS_REALSIZEIMAGE
-    LTEXT           "Contact  is on your local list",IDC_STATIC,28,184,144,8
+    LTEXT           "Contact is on your local list",IDC_STATIC,28,184,144,8
     ICON            "",IDC_ICON_FL,10,197,20,20,SS_REALSIZEIMAGE
     LTEXT           "Contact is included into your server list",IDC_STATIC,28,197,144,8
     ICON            "",IDC_ICON_AL,187,184,20,20,SS_REALSIZEIMAGE
