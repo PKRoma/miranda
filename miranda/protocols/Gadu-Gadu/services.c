@@ -73,16 +73,26 @@ DWORD_PTR gg_getcaps(PROTO_INTERFACE *proto, int type, HANDLE hContact)
 
 //////////////////////////////////////////////////////////
 // loads protocol icon
-HICON gg_loadicon(PROTO_INTERFACE *proto, int iconIndex)
+HICON gg_geticon(PROTO_INTERFACE *proto, int iconIndex)
 {
 	if (LOWORD(iconIndex) == PLI_PROTOCOL)
 	{
-		HICON hIcon =  CopyIcon(LoadIconEx("main"));
+		HICON hIcon;
+
+		if (iconIndex & PLIF_ICOLIBHANDLE)
+			return (HICON)GetIconHandle(IDI_GG);
+
+		hIcon = LoadIconEx("main");
+
+		if (iconIndex & PLIF_ICOLIB)
+			return hIcon;
+
+		hIcon = CopyIcon(hIcon);
 		ReleaseIconEx("main");
 		return hIcon;
 	}
 
-	return (HICON) NULL;
+	return (HICON)NULL;
 }
 
 //////////////////////////////////////////////////////////
@@ -978,7 +988,7 @@ void gg_registerservices(GGPROTO *gg)
 	gg->proto.vtbl->FileResume             = gg_dummy_fileresume;
 
 	gg->proto.vtbl->GetCaps                = gg_getcaps;
-	gg->proto.vtbl->GetIcon                = gg_loadicon;
+	gg->proto.vtbl->GetIcon                = gg_geticon;
 	gg->proto.vtbl->GetInfo                = gg_getinfo;
 
 	gg->proto.vtbl->SearchBasic            = gg_basicsearch;
