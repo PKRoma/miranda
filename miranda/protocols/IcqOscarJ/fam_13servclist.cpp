@@ -1659,13 +1659,14 @@ void CIcqProto::handleRecvAuthRequest(unsigned char *buf, WORD wLen)
 	{
 		memcpy(szReason, buf, wReasonLen);
 		szReason[wReasonLen] = '\0';
-		szReason = detect_decode_utf8((char*)szReason); // detect & decode UTF-8
+		pre.flags = UTF8_IsValid(szReason) ? PREF_UTF : 0;
 	}
 	nReasonLen = strlennull(szReason);
 	// Read nick name from DB
 	if (dwUin)
 	{
-		if (getSettingString(hcontact, "Nick", &dbv))
+		if (pre.flags ? DBGetContactSettingUTF8String(hcontact, m_szModuleName, "Nick", &dbv) : 
+			getSettingString(hcontact, "Nick", &dbv))
 			nNickLen = 0;
 		else
 		{

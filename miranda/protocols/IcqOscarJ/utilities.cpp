@@ -612,7 +612,7 @@ HANDLE CIcqProto::HContactFromAuthEvent(HANDLE hEvent)
 
 	ZeroMemory(&dbei, sizeof(dbei));
 	dbei.cbSize = sizeof(dbei);
-	dbei.cbBlob = sizeof(DWORD)*2;
+	dbei.cbBlob = sizeof(DWORD) + sizeof(HANDLE);
 	dbei.pBlob = (PBYTE)&body;
 
 	if (CallService(MS_DB_EVENT_GET, (WPARAM)hEvent, (LPARAM)&dbei))
