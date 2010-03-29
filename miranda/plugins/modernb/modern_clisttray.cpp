@@ -263,10 +263,8 @@ void cliTrayIconUpdateBase(const char *szChangedProto)
 									hIcon=(HICON)CLUI_GetConnectingIconService((WPARAM)GLOBAL_PROTO_NAME/*(WPARAM)szChangedProto*/,1);
 							else
 								hIcon=(HICON)CLUI_GetConnectingIconService((WPARAM)szChangedProto,0);
-							if (hIcon) {
+							if (hIcon)
 								changed=pcli->pfnTrayIconSetBaseInfo(hIcon,NULL);
-								break;
-							}
 						}
 					}
 					else
@@ -293,11 +291,7 @@ void cliTrayIconUpdateBase(const char *szChangedProto)
 							HICON hIcon;
 							hIcon=(HICON)CLUI_GetConnectingIconService((WPARAM)szChangedProto,0);;
 							if (hIcon)
-							{
 								changed=pcli->pfnTrayIconSetBaseInfo(hIcon,szChangedProto);
-								pcli->pfnTrayIconUpdate(hIcon,NULL,szChangedProto,1);
-								DestroyIcon_protect(hIcon);
-							}
 						}
 						else
 							changed=pcli->pfnTrayIconSetBaseInfo(cliGetIconFromStatusMode(NULL,szChangedProto,CallProtoService(szChangedProto,PS_GETSTATUS,0,0)),szChangedProto);
@@ -322,8 +316,6 @@ void cliTrayIconUpdateBase(const char *szChangedProto)
 							hIcon=(HICON)CLUI_GetConnectingIconService((WPARAM)szChangedProto,0);;
 							if (hIcon) {
 								changed=pcli->pfnTrayIconSetBaseInfo(hIcon,szChangedProto);
-								pcli->pfnTrayIconUpdate(hIcon,NULL,szChangedProto,1);
-								DestroyIcon_protect(hIcon);
 				}	}	}	}
 				break;
 		}	}
@@ -333,19 +325,14 @@ void cliTrayIconUpdateBase(const char *szChangedProto)
 		DBVARIANT dbv={DBVT_DELETED};
 		char *szProto;
 		int status=CallProtoService(szChangedProto,PS_GETSTATUS,0,0);
-		BOOL workAround=(status>=ID_STATUS_OFFLINE && status<=ID_STATUS_IDLE);
 		
 		if ((g_StatusBarData.connectingIcon==1)&&status>=ID_STATUS_CONNECTING&&status<=ID_STATUS_CONNECTING+MAX_CONNECT_RETRIES) 
 		{
 			HICON hIcon = ( HICON )CLUI_GetConnectingIconService((WPARAM)szChangedProto,0);;
 			if (hIcon) 
-			{
 				changed=pcli->pfnTrayIconSetBaseInfo(hIcon,NULL);
-				pcli->pfnTrayIconUpdate(hIcon,NULL,NULL,1);
-				DestroyIcon_protect(hIcon);
-			}	
 		}
-		if (workAround) 
+		else if (status>=ID_STATUS_OFFLINE && status<=ID_STATUS_IDLE) 
 		{
 			if(ModernGetSettingString(NULL,"CList","PrimaryStatus",&dbv))
 				szProto=NULL;
@@ -357,7 +344,7 @@ void cliTrayIconUpdateBase(const char *szChangedProto)
 		}
 	}
 
-	if(changed!=-1) // && pcli->trayIcon[changed].isBase)
+	if (changed != -1) // && pcli->trayIcon[changed].isBase)
 		pcli->pfnTrayIconUpdate(pcli->trayIcon[changed].hBaseIcon,NULL,szChangedProto,1);  // by FYR (No suitable protocol)
 	{ pcli->pfnUnlockTray(); return; }
 }
