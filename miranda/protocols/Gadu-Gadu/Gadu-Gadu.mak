@@ -60,6 +60,7 @@ CLEAN :
 	-@erase "$(INTDIR)\keepalive.obj"
 	-@erase "$(INTDIR)\libgadu.obj"
 	-@erase "$(INTDIR)\links.obj"
+	-@erase "$(INTDIR)\oauth.obj"
 	-@erase "$(INTDIR)\ownerinfo.obj"
 	-@erase "$(INTDIR)\pthread.obj"
 	-@erase "$(INTDIR)\pubdir.obj"
@@ -115,6 +116,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\import.obj" \
 	"$(INTDIR)\keepalive.obj" \
 	"$(INTDIR)\links.obj" \
+	"$(INTDIR)\oauth.obj" \
 	"$(INTDIR)\ownerinfo.obj" \
 	"$(INTDIR)\services.obj" \
 	"$(INTDIR)\ssl.obj" \
@@ -158,6 +160,7 @@ CLEAN :
 	-@erase "$(INTDIR)\keepalive.obj"
 	-@erase "$(INTDIR)\libgadu.obj"
 	-@erase "$(INTDIR)\links.obj"
+	-@erase "$(INTDIR)\oauth.obj"
 	-@erase "$(INTDIR)\ownerinfo.obj"
 	-@erase "$(INTDIR)\pthread.obj"
 	-@erase "$(INTDIR)\pubdir.obj"
@@ -214,6 +217,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\import.obj" \
 	"$(INTDIR)\keepalive.obj" \
 	"$(INTDIR)\links.obj" \
+	"$(INTDIR)\oauth.obj" \
 	"$(INTDIR)\ownerinfo.obj" \
 	"$(INTDIR)\services.obj" \
 	"$(INTDIR)\ssl.obj" \
@@ -403,7 +407,7 @@ CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /I "libgadu" /D "WIN
 
 !ELSEIF  "$(CFG)" == "GG - Win32 Debug"
 
-CPP_SWITCHES=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../../include" /I "libgadu"" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "GG_EXPORTS" /FAcs /Fa"$(INTDIR)\\" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
+CPP_SWITCHES=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../../include" /I "libgadu" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "GG_EXPORTS" /FAcs /Fa"$(INTDIR)\\" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
 
 "$(INTDIR)\libgadu.obj" : $(SOURCE) "$(INTDIR)"
 	$(CPP) @<<
