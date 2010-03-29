@@ -704,8 +704,19 @@ DWORD_PTR __cdecl CJabberProto::GetCaps( int type, HANDLE /*hContact*/ )
 
 HICON __cdecl CJabberProto::GetIcon( int iconIndex )
 {
-	if (( iconIndex & 0xffff ) == PLI_PROTOCOL )
-		return CopyIcon( LoadIconEx( "main" ));
+	if (( iconIndex & 0xffff ) == PLI_PROTOCOL ) {
+		if ( iconIndex & PLIF_ICOLIBHANDLE )
+			return (HICON)GetIconHandle( IDI_JABBER );
+		
+		HICON hIcon = LoadIconEx( "main" );
+
+		if ( iconIndex & PLIF_ICOLIB )
+			return hIcon;
+
+		HICON hIcon2 = CopyIcon( hIcon );
+		g_ReleaseIcon( hIcon );
+		return hIcon2;
+	}
 
 	return NULL;
 }
