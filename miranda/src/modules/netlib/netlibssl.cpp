@@ -885,4 +885,5 @@ int LoadSslModule(void)
 void UnloadSslModule(void)
 {
 	CloseHandle(g_hSslMutex);
+	if (g_hSchannel) FreeLibrary(g_hSchannel);
 }
