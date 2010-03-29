@@ -567,7 +567,7 @@ HANDLE IcoLib_AddNewIcon( SKINICONDESC* sid )
 		#ifdef _UNICODE
 			item->section = IcoLib_AddSection( sid->pwszSection, TRUE );
 		#else
-			char* pszSection = sid->pwszSection ? u2a( sid->pwszSection ) : NULL;
+			char* pszSection = sid->pwszSection ? mir_u2a( sid->pwszSection ) : NULL;
 			item->section = IcoLib_AddSection( pszSection, TRUE );
 			SAFE_FREE(( void** )&pszSection );
 		#endif
@@ -598,7 +598,7 @@ HANDLE IcoLib_AddNewIcon( SKINICONDESC* sid )
 				pathToAbsoluteW( sid->pwszDefaultFile, fileFull, NULL );
 				item->default_file = mir_wstrdup( fileFull );
 			#else
-				char* file = u2a( sid->pwszDefaultFile );
+				char* file = mir_u2a( sid->pwszDefaultFile );
 				char fileFull[ MAX_PATH ];
 
 				pathToAbsolute( file, fileFull, NULL );

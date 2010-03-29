@@ -634,7 +634,7 @@ static INT_PTR CALLBACK OptionsDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPAR
 					#if defined ( _UNICODE )
 						opd->pszTitle = ( TCHAR* )mir_wstrdup( odp->ptszTitle );
 					#else
-						opd->pszTitle = u2a(( WCHAR* )odp->ptszTitle );
+						opd->pszTitle = mir_u2a(( WCHAR* )odp->ptszTitle );
 					#endif
 				}
 				else opd->pszTitle = ( TCHAR* )mir_strdup( odp->pszTitle );
@@ -645,7 +645,7 @@ static INT_PTR CALLBACK OptionsDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPAR
 					#if defined ( _UNICODE )
 						opd->pszGroup = ( TCHAR* )mir_wstrdup( odp->ptszGroup );
 					#else
-						opd->pszGroup = u2a(( WCHAR* )odp->ptszGroup );
+						opd->pszGroup = mir_u2a(( WCHAR* )odp->ptszGroup );
 					#endif
 				}
 				else opd->pszGroup = ( TCHAR* )mir_strdup( odp->pszGroup );
@@ -656,7 +656,7 @@ static INT_PTR CALLBACK OptionsDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPAR
 					#if defined ( _UNICODE )
 						opd->pszTab = ( TCHAR* )mir_wstrdup( odp->ptszTab );
 					#else
-						opd->pszTab = u2a(( WCHAR* )odp->ptszTab );
+						opd->pszTab = mir_u2a(( WCHAR* )odp->ptszTab );
 					#endif
 				}
 				else opd->pszTab = ( TCHAR* )mir_strdup( odp->pszTab );
