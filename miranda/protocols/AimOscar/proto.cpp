@@ -351,8 +351,17 @@ HICON __cdecl CAimProto::GetIcon(int iconIndex)
 {
 	if (LOWORD(iconIndex) == PLI_PROTOCOL)
 	{
-		HICON hIcon =  CopyIcon(LoadIconEx("aim"));
-		ReleaseIconEx("aim");
+		if (iconIndex & PLIF_ICOLIBHANDLE)
+			return (HICON)GetIconHandle("aim");
+		
+		bool big = (iconIndex & PLIF_LARGE) != 0;
+		HICON hIcon = LoadIconEx("aim", big);
+
+		if (iconIndex & PLIF_ICOLIB)
+			return hIcon;
+
+		hIcon =  CopyIcon(hIcon);
+		ReleaseIconEx("aim", big);
 		return hIcon;
 	}
 	return NULL;

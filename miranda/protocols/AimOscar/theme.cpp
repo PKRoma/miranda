@@ -113,11 +113,11 @@ HANDLE GetIconHandle(const char* name)
 	return NULL;
 }
 
-void ReleaseIconEx(const char* name)
+void ReleaseIconEx(const char* name, bool big)
 {
 	char szSettingName[100];
 	mir_snprintf(szSettingName, sizeof(szSettingName ), "%s_%s", "AIM", name);
-	CallService(MS_SKIN2_RELEASEICON, 0, (LPARAM)szSettingName);
+	CallService(big ? MS_SKIN2_RELEASEICONBIG : MS_SKIN2_RELEASEICON, 0, (LPARAM)szSettingName);
 }
 
 void WindowSetIcon(HWND hWnd, const char* name)

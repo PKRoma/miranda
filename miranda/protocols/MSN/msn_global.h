@@ -185,8 +185,8 @@ char*       MSN_Translate(const char* str);
 unsigned    MSN_GenRandom(void);
 
 HANDLE      GetIconHandle(int iconId);
-HICON       LoadIconEx(const char*);
-void        ReleaseIconEx(const char*);
+HICON       LoadIconEx(const char* name, bool big = false);
+void        ReleaseIconEx(const char* name, bool big = false);
 
 void        MsnInitIcons(void);
 

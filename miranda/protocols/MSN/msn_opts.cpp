@@ -64,7 +64,6 @@ void MsnInitIcons(void)
 	SKINICONDESC sid = {0};
 	sid.cbSize = sizeof(SKINICONDESC);
 	sid.ptszDefaultFile = szFile;
-	sid.cx = sid.cy = 16;
 	sid.pszSection = szSectionName;
 	sid.flags = SIDF_PATH_TCHAR;
 
@@ -79,11 +78,11 @@ void MsnInitIcons(void)
 	}	
 }
 
-HICON LoadIconEx(const char* name)
+HICON LoadIconEx(const char* name, bool big)
 {
 	char szSettingName[100];
 	mir_snprintf(szSettingName, sizeof(szSettingName), "MSN_%s", name);
-	return (HICON)MSN_CallService(MS_SKIN2_GETICON, 0, (LPARAM)szSettingName);
+	return (HICON)MSN_CallService(MS_SKIN2_GETICON, big, (LPARAM)szSettingName);
 }
 
 HANDLE GetIconHandle(int iconId)
@@ -95,11 +94,11 @@ HANDLE GetIconHandle(int iconId)
 	return NULL;
 }
 
-void  ReleaseIconEx(const char* name)
+void  ReleaseIconEx(const char* name, bool big)
 {
 	char szSettingName[100];
 	mir_snprintf(szSettingName, sizeof(szSettingName), "MSN_%s", name);
-	MSN_CallService(MS_SKIN2_RELEASEICON, 0, (LPARAM)szSettingName);
+	MSN_CallService(big ? MS_SKIN2_RELEASEICONBIG : MS_SKIN2_RELEASEICON, 0, (LPARAM)szSettingName);
 }
 
 INT_PTR CALLBACK DlgProcMsnServLists(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);

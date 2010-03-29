@@ -32,7 +32,7 @@ void DestroyExtraIcons(void);
 
 HICON  LoadIconEx(const char* name, bool big = false);
 HANDLE GetIconHandle(const char* name);
-void   ReleaseIconEx(const char* name);
+void   ReleaseIconEx(const char* name, bool big = false);
 void   WindowSetIcon(HWND hWnd, const char* name);
 void   WindowFreeIcon(HWND hWnd);
 

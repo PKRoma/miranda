@@ -1530,7 +1530,6 @@ INT_PTR CALLBACK chat_request_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 		param = (invite_chat_req_param*)lParam;
 
 		WindowSetIcon(hwndDlg, "aol");
-		SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)LoadIconEx("aol"));
 
 		SetDlgItemTextA(hwndDlg, IDC_ROOMNAME, strrchr(param->cnp->id, '-')+1);
 		SetDlgItemTextA(hwndDlg, IDC_SCREENNAME,  param->name);
