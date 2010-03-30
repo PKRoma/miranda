@@ -397,12 +397,17 @@ const TCHAR* Utils::FormatTitleBar(const TWindowData *dat, const TCHAR *szFormat
 				title.erase(tempmark, 2);
 				break;
 			}
+			/*
+			 * status message (%T will skip the "No status message" for empty
+			 * messages)
+			 */
 			case 't':
+			case 'T':
 				if(dat->cache->getStatusMsg()) {
 					title.insert(tempmark + 2, dat->cache->getStatusMsg());
 					curpos = tempmark + lstrlen(dat->cache->getStatusMsg());
 				}
-				else {
+				else if(title[curpos] == 't') {
 					const TCHAR* tszStatusMsg = CTranslator::get(CTranslator::GEN_NO_STATUS);
 					title.insert(tempmark + 2, tszStatusMsg);
 					curpos = tempmark + lstrlen(tszStatusMsg);
@@ -533,7 +538,7 @@ int Utils::FindRTLLocale(TWindowData *dat)
 		GetKeyboardLayoutList(20, layouts);
 		for (i = 0; i < 20 && layouts[i]; i++) {
 			lcid = MAKELCID(LOWORD(layouts[i]), 0);
-			GetStringTypeA(lcid, CT_CTYPE2, "äöü", 3, wCtype2);
+			GetStringTypeA(lcid, CT_CTYPE2, "ï¿½ï¿½ï¿½", 3, wCtype2);
 			if (wCtype2[0] == C2_RIGHTTOLEFT || wCtype2[1] == C2_RIGHTTOLEFT || wCtype2[2] == C2_RIGHTTOLEFT)
 				result = 1;
 		}
@@ -780,8 +785,8 @@ HICON Utils::iconFromAvatar(const TWindowData *dat)
 			ReleaseDC(dat->pContainer->hwnd, hdc);
 
 			HBITMAP hbmNew = CSkin::CreateAeroCompatibleBitmap(rc, dc);
-			HBITMAP hbmOld = (HBITMAP)::SelectObject(dc, hbmNew);
-			HBITMAP hbmOldResized = (HBITMAP)::SelectObject(dcResized, hbmResized);
+			HBITMAP hbmOld = reinterpret_cast<HBITMAP>(::SelectObject(dc, hbmNew));
+			HBITMAP hbmOldResized = reinterpret_cast<HBITMAP>(::SelectObject(dcResized, hbmResized));
 
 			LONG	ix = (lIconSize - (LONG)dNewWidth) / 2;
 			LONG	iy = (lIconSize - (LONG)dNewHeight) / 2;

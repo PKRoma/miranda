@@ -188,7 +188,7 @@ extern struct LIST_INTERFACE li;
 #include "../API/m_cln_skinedit.h"
 #include "../API/m_flash.h"
 #include "../API/m_spellchecker.h"
-#include "../API/m_MathModule.h"
+#include "../API/m_mathmodule.h"
 #include "../API/m_historyevents.h"
 #include "../API/m_buttonbar.h"
 #include "../API/m_toptoolbar.h"

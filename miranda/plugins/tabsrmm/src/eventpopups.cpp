@@ -82,7 +82,7 @@ static void PU_CleanUp()
 				if((*it)->eventData)
 					free((*it)->eventData);
 				free(*it);
-				PopupList.erase(it);
+				it = PopupList.erase(it);
 				continue;
 			}
 			it++;

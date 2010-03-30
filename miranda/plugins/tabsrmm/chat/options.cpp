@@ -244,10 +244,18 @@ void LoadMsgDlgFont(int section, int i, LOGFONT *lf, COLORREF* colour, char *szM
 		lf->lfOrientation = 0;
 		wsprintfA(str, "Font%dSty", i);
 		style = M->GetByte(szMod, str, fol[j].defStyle);
-		lf->lfWeight = style & FONTF_BOLD ? FW_BOLD : FW_NORMAL;
-		lf->lfItalic = style & FONTF_ITALIC ? 1 : 0;
-		lf->lfUnderline = style & FONTF_UNDERLINE ? 1 : 0;
-		lf->lfStrikeOut =  style & FONTF_STRIKEOUT ? 1 : 0;
+		if(i == MSGFONTID_MESSAGEAREA && section == FONTSECTION_IM) {
+			lf->lfWeight = FW_NORMAL;
+			lf->lfItalic = 0;
+			lf->lfUnderline = 0;
+			lf->lfStrikeOut = 0;
+		}
+		else {
+			lf->lfWeight = style & FONTF_BOLD ? FW_BOLD : FW_NORMAL;
+			lf->lfItalic = style & FONTF_ITALIC ? 1 : 0;
+			lf->lfUnderline = style & FONTF_UNDERLINE ? 1 : 0;
+			lf->lfStrikeOut =  style & FONTF_STRIKEOUT ? 1 : 0;
+		}
 		wsprintfA(str, "Font%dSet", i);
 		lf->lfCharSet = M->GetByte(szMod, str, fol[j].defCharset);
 		lf->lfOutPrecision = OUT_DEFAULT_PRECIS;

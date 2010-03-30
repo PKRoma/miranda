@@ -262,7 +262,7 @@ HFONT CInfoPanel::setUnderlinedFont(const HDC hdc, HFONT hFontOrig)
 	lf.lfUnderline = 1;
 
 	HFONT hFontNew = ::CreateFontIndirect(&lf);
-	return((HFONT)::SelectObject(hdc, hFontNew));
+	return(reinterpret_cast<HFONT>(::SelectObject(hdc, hFontNew)));
 }
 /**
  * Render the info panel background.

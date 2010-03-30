@@ -288,6 +288,10 @@ static int TSAPI RescanSkins(HWND hwndCombobox)
 	return(0);
 }
 
+/**
+ * free the item extra data (used to store the skin filenames for
+ * each entry).
+ */
 static void TSAPI FreeComboData(HWND hwndCombobox)
 {
 	LRESULT lr = SendMessage(hwndCombobox, CB_GETCOUNT, 0, 0);

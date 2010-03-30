@@ -369,13 +369,13 @@ static void __stdcall DrawWuLine(HDC pDC, int X0, int Y0, int X1, int Y1, COLORR
  * icon handle in dat->hTabIcon
  */
 
-static void DrawItem(struct TabControlData *tabdat, HDC dc, RECT *rcItem, int nHint, int nItem)
+static void DrawItem(TabControlData *tabdat, HDC dc, RECT *rcItem, int nHint, int nItem)
 {
-	TCITEM item = {0};
-	struct TWindowData *dat = 0;
-	int iSize = 16;
-	DWORD dwTextFlags = DT_SINGLELINE | DT_VCENTER/* | DT_NOPREFIX*/;
-	BOOL leftMost = FALSE;
+	TCITEM			item = {0};
+	TWindowData*	dat = 0;
+	int				iSize = 16;
+	DWORD			dwTextFlags = DT_SINGLELINE | DT_VCENTER/* | DT_NOPREFIX*/;
+	BOOL			leftMost = FALSE;
 
 	item.mask = TCIF_PARAM;
 	TabCtrl_GetItem(tabdat->hwnd, nItem, &item);

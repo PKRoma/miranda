@@ -763,13 +763,6 @@ static CSkinItem StatusItem_Default = {
 	CLCDEFAULT_MRGN_TOP, CLCDEFAULT_MRGN_RIGHT, CLCDEFAULT_MRGN_BOTTOM, CLCDEFAULT_IGNORE
 };
 
-static HBITMAP LoadPNG(const TCHAR *szFilename)
-{
-	HBITMAP hBitmap = 0;
-	hBitmap = (HBITMAP)CallService(MS_IMG_LOAD, (WPARAM)szFilename, IMGL_TCHAR);
-	return hBitmap;
-}
-
 static struct {
 	TCHAR *szIniKey, *szIniName;
 	char *szSetting;
@@ -791,7 +784,7 @@ static struct {
 
 void CImageItem::Create(const TCHAR *szImageFile)
 {
-	HBITMAP hbm = ::LoadPNG(szImageFile);
+	HBITMAP hbm = LoadPNG(szImageFile);
 	BITMAP bm;
 
 	m_hdc = 0;
@@ -1049,6 +1042,17 @@ void CImageItem::Colorize(HBITMAP hBitmap, BYTE dr, BYTE dg, BYTE db, BYTE alpha
 	}
 }
 
+/**
+ * load PNG image using core service (advaimg)
+ */
+
+HBITMAP TSAPI CImageItem::LoadPNG(const TCHAR *szFilename)
+{
+	HBITMAP hBitmap = 0;
+	hBitmap = (HBITMAP)CallService(MS_IMG_LOAD, (WPARAM)szFilename, IMGL_TCHAR);
+	return hBitmap;
+}
+
 
 /**
  * set filename and load parameters from the database
@@ -1060,8 +1064,7 @@ void CSkin::setFileName()
 {
 	DBVARIANT dbv;
 	if(0 == M->GetTString(0, SRMSGMOD_T, "ContainerSkin", &dbv)) {
-		const TCHAR *tszBase = M->haveFoldersPlugin() ? M->getSkinPath() : M->getUserDir();
-		M->pathToAbsolute(dbv.ptszVal, m_tszFileName, tszBase);
+		M->pathToAbsolute(dbv.ptszVal, m_tszFileName, M->getSkinPath());
 		m_tszFileName[MAX_PATH - 1] = 0;
 		DBFreeVariant(&dbv);
 	}
@@ -1848,10 +1851,10 @@ void CSkin::setupTabCloseBitmap()
 	else
 		m_tabCloseBitmap = ::CreateCompatibleBitmap(dc, 20, 20);
 
-	m_tabCloseOldBitmap = (HBITMAP)::SelectObject(m_tabCloseHDC, m_tabCloseBitmap);
+	m_tabCloseOldBitmap = reinterpret_cast<HBITMAP>(::SelectObject(m_tabCloseHDC, m_tabCloseBitmap));
 
 	if(M->isVSThemed() || M->isAero()) {
-		::FillRect(m_tabCloseHDC, &rc, M->isAero() ? (HBRUSH)::GetStockObject(BLACK_BRUSH) : ::GetSysColorBrush(COLOR_3DFACE));
+		::FillRect(m_tabCloseHDC, &rc, M->isAero() ? reinterpret_cast<HBRUSH>(::GetStockObject(BLACK_BRUSH)) : ::GetSysColorBrush(COLOR_3DFACE));
 
 		HANDLE hTheme = CMimAPI::m_pfnOpenThemeData(PluginConfig.g_hwndHotkeyHandler, L"BUTTON");
 		rc.left--; rc.right++;
@@ -1871,7 +1874,7 @@ void CSkin::setupTabCloseBitmap()
 	::DeleteObject(m_tabCloseBitmap);
 	m_tabCloseBitmap = hbmTemp;
 	CImageItem::PreMultiply(m_tabCloseBitmap, 1);
-	m_tabCloseOldBitmap = (HBITMAP)::SelectObject(m_tabCloseHDC, m_tabCloseBitmap);
+	m_tabCloseOldBitmap = reinterpret_cast<HBITMAP>(::SelectObject(m_tabCloseHDC, m_tabCloseBitmap));
 
 	::ReleaseDC(PluginConfig.g_hwndHotkeyHandler, dc);
 }
@@ -2165,13 +2168,13 @@ void CSkin::DrawDimmedIcon(HDC hdc, LONG left, LONG top, LONG dx, LONG dy, HICON
 	HDC dcMem = ::CreateCompatibleDC(hdc);
 	HBITMAP hbm = ::CreateCompatibleBitmap(hdc, dx, dy), hbmOld = 0;
 
-	hbmOld = (HBITMAP)::SelectObject(dcMem, hbm);
+	hbmOld = reinterpret_cast<HBITMAP>(::SelectObject(dcMem, hbm));
 	::DrawIconEx(dcMem, 0, 0, hIcon, dx, dy, 0, 0, DI_NORMAL);
 	m_default_bf.SourceConstantAlpha = alpha;
 	if (CMimAPI::m_MyAlphaBlend) {
 		HBITMAP hbm = (HBITMAP)SelectObject(dcMem, hbmOld);
 		CImageItem::PreMultiply(hbm, 1);						// for AlphaBlend()...
-		hbmOld = (HBITMAP)SelectObject(dcMem, hbm);
+		hbmOld = reinterpret_cast<HBITMAP>(::SelectObject(dcMem, hbm));
 		CMimAPI::m_MyAlphaBlend(hdc, left, top, dx, dy, dcMem, 0, 0, dx, dy, m_default_bf);
 	}
 	else {
@@ -2527,7 +2530,7 @@ void CSkin::RenderToolbarBG(const TWindowData *dat, HDC hdc, const RECT &rcWindo
 				::DeleteObject(dat->pContainer->hbmToolbarBG);
 			}
 			dat->pContainer->hbmToolbarBG = ::CreateCompatibleBitmap(hdc, cx, cy);
-			dat->pContainer->oldhbmToolbarBG = (HBITMAP)::SelectObject(dat->pContainer->cachedToolbarDC, dat->pContainer->hbmToolbarBG);
+			dat->pContainer->oldhbmToolbarBG = reinterpret_cast<HBITMAP>(::SelectObject(dat->pContainer->cachedToolbarDC, dat->pContainer->hbmToolbarBG));
 		}
 		dat->pContainer->szOldToolbarSize.cx = cx;
 		dat->pContainer->szOldToolbarSize.cy = cy;

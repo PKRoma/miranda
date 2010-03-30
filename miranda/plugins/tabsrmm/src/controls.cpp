@@ -59,7 +59,7 @@ CMenuBar::CMenuBar(HWND hwndParent, const TContainerData *pContainer)
 
 		RECT rc = {0,0,16,16};
 		m_MimIcon = CSkin::CreateAeroCompatibleBitmap(rc, hdcTemp);
-		HBITMAP hbmOld = (HBITMAP)::SelectObject(hdcTemp, m_MimIcon);
+		HBITMAP hbmOld = reinterpret_cast<HBITMAP>(::SelectObject(hdcTemp, m_MimIcon));
 		::DrawIconEx(hdcTemp, 0, 0, (HICON)hIcon, 16, 16, 0, 0, DI_NORMAL);
 		::SelectObject(hdcTemp, hbmOld);
 
@@ -318,7 +318,7 @@ LONG_PTR CMenuBar::customDrawWorker(NMCUSTOMDRAW *nm)
 						m_hbmDraw = CSkin::CreateAeroCompatibleBitmap(m_rcItem, nmtb->nmcd.hdc);
 						m_hbmOld = reinterpret_cast<HBITMAP>(::SelectObject(m_hdcDraw, m_hbmDraw));
 						m_hTheme = M->isAero() || M->isVSThemed() ? CMimAPI::m_pfnOpenThemeData(m_hwndToolbar, L"REBAR") : 0;
-						m_hOldFont = (HFONT)::SelectObject(m_hdcDraw, (HFONT)::GetStockObject(DEFAULT_GUI_FONT));
+						m_hOldFont = reinterpret_cast<HFONT>(::SelectObject(m_hdcDraw, reinterpret_cast<HFONT>(::GetStockObject(DEFAULT_GUI_FONT))));
 						if(m_isAero) {
 							nm->rc.bottom--;
 							CSkin::ApplyAeroEffect(m_hdcDraw, &m_rcItem, CSkin::AERO_EFFECT_AREA_MENUBAR);
