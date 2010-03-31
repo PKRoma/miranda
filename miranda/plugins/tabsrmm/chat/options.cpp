@@ -892,7 +892,6 @@ INT_PTR CALLBACK DlgProcOptions2(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
 
 			TranslateDialogDefault(hwndDlg);
 
-			g_Settings.crLogBackground = (BOOL)M->GetDword("Chat", "ColorLogBG", SRMSGDEFSET_BKGCOLOUR);
 			if (PluginConfig.m_chat_enabled) {
 
 				SendDlgItemMessage(hwndDlg, IDC_CHAT_SPIN2, UDM_SETRANGE, 0, MAKELONG(5000, 0));
@@ -1259,7 +1258,6 @@ void LoadGlobalSettings(void)
 	g_Settings.crUserListColor = (BOOL)M->GetDword(CHAT_FONTMODULE, "Font18Col", RGB(0, 0, 0));
 	g_Settings.crUserListBGColor = (BOOL)M->GetDword("Chat", "ColorNicklistBG", SRMSGDEFSET_BKGCOLOUR);
 	g_Settings.crUserListHeadingsColor = (BOOL)M->GetDword(CHAT_FONTMODULE, "Font19Col", RGB(170, 170, 170));
-	g_Settings.crLogBackground = (BOOL)M->GetDword("Chat", "ColorLogBG", SRMSGDEFSET_BKGCOLOUR);
 	g_Settings.StripFormat = (BOOL)M->GetByte("Chat", "StripFormatting", 0);
 	g_Settings.TrayIconInactiveOnly = (BOOL)M->GetByte("Chat", "TrayIconInactiveOnly", 1);
 	g_Settings.BBCodeInPopups = (BOOL)M->GetByte("Chat", "BBCodeInPopups", 0);

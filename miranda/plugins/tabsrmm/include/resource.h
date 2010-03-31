@@ -471,7 +471,7 @@
 #define IDC_DESC                        1404
 #define IDC_LABEL_PRIVATETHEME          1405
 #define IDC_MSGLOGDIDSPLAY              1407
-#define IDC_TOOLBARTREE                 1409
+#define IDC_TOOLBARTREE                 1444
 #define IDC_IMCHECK                     1410
 #define IDC_CHATCHECK                   1411
 #define IDC_CANBEHIDDEN                 1412

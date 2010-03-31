@@ -114,6 +114,24 @@ static void __stdcall ShowRoomFromPopup(void * pi)
 	ShowRoom(si, WINDOW_VISIBLE, TRUE);
 }
 
+static void TSAPI Chat_OpenPopup(SESSION_INFO* si, HWND hwndPopup)
+{
+	CallFunctionAsync(ShowRoomFromPopup, si);
+	PUDeletePopUp(hwndPopup);
+}
+
+static void TSAPI Chat_DismissPopup(const SESSION_INFO* si, HWND hwndPopup)
+{
+	if (si->hContact)
+		if (CallService(MS_CLIST_GETEVENT, (WPARAM)si->hContact, (LPARAM)0))
+			CallService(MS_CLIST_REMOVEEVENT, (WPARAM)si->hContact, (LPARAM)szChatIconString);
+
+	if (si->hWnd && KillTimer(si->hWnd, TIMERID_FLASHWND))
+		FlashWindow(si->hWnd, FALSE);
+
+	PUDeletePopUp(hwndPopup);
+}
+
 static INT_PTR CALLBACK PopupDlgProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	switch (message) {
@@ -121,22 +139,24 @@ static INT_PTR CALLBACK PopupDlgProc(HWND hWnd, UINT message, WPARAM wParam, LPA
 			if (HIWORD(wParam) == STN_CLICKED) {
 				SESSION_INFO* si = (SESSION_INFO*)CallService(MS_POPUP_GETPLUGINDATA, (WPARAM)hWnd, (LPARAM)0);;
 
-				CallFunctionAsync(ShowRoomFromPopup, si);
-
-				PUDeletePopUp(hWnd);
+				if(si) {
+					if(nen_options.maskActL & MASK_OPEN)
+						Chat_OpenPopup(si, hWnd);
+					else
+						Chat_DismissPopup(si, hWnd);
+				}
 				return TRUE;
 			}
 			break;
 		case WM_CONTEXTMENU: {
 			SESSION_INFO* si = (SESSION_INFO*)CallService(MS_POPUP_GETPLUGINDATA, (WPARAM)hWnd, (LPARAM)0);
-			if (si->hContact)
-				if (CallService(MS_CLIST_GETEVENT, (WPARAM)si->hContact, (LPARAM)0))
-					CallService(MS_CLIST_REMOVEEVENT, (WPARAM)si->hContact, (LPARAM)szChatIconString);
 
-			if (si->hWnd && KillTimer(si->hWnd, TIMERID_FLASHWND))
-				FlashWindow(si->hWnd, FALSE);
-
-			PUDeletePopUp(hWnd);
+			if(si && si->hContact) {
+				if(nen_options.maskActR & MASK_OPEN)
+					Chat_OpenPopup(si, hWnd);
+				else
+					Chat_DismissPopup(si, hWnd);
+			}
 		}
 		break;
 	}
@@ -175,7 +195,7 @@ static int ShowPopup(HANDLE hContact, SESSION_INFO* si, HICON hIcon,  char* pszP
 		pd.colorBack = g_Settings.crPUBkgColour;
 		pd.colorText = g_Settings.crPUTextColour;
 	} else {
-		pd.colorBack = g_Settings.crLogBackground;
+		pd.colorBack = M->GetDword(FONTMODULE, SRMSGSET_BKGCOLOUR, SRMSGDEFSET_BKGCOLOUR);
 		pd.colorText = crBkg;
 	}
 

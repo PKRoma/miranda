@@ -300,7 +300,6 @@ struct TMUCSettings {
 	LONG		iNickListFontHeight;
 	HFONT		UserListFont, UserListHeadingsFont;
 	HFONT       NameFont;
-	COLORREF    crLogBackground;
 	COLORREF    crUserListColor;
 	COLORREF    crUserListBGColor;
 	COLORREF    crUserListHeadingsColor;

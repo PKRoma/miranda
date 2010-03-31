@@ -1196,11 +1196,12 @@ static int BuildMenuObjectsTree(HWND hToolBarTree)
 	int i;
 	tvis.hParent = NULL;
 	tvis.hInsertAfter = TVI_LAST;
-	tvis.item.mask = TVIF_PARAM | TVIF_TEXT | TVIF_IMAGE | TVIF_SELECTEDIMAGE;
+	tvis.item.mask = TVIF_PARAM | TVIF_TEXT | TVIF_SELECTEDIMAGE | TVIF_IMAGE;
 
 	TreeView_DeleteAllItems(hToolBarTree);
 
 	himgl = ImageList_Create(GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), ILC_COLOR32 | ILC_MASK, 2, 2);
+	ImageList_AddIcon(himgl, reinterpret_cast<HICON>(CallService(MS_SKIN2_GETICON, 0, (LPARAM)"core_main_24")));
 	HIMAGELIST himl = TreeView_GetImageList(hToolBarTree, TVSIL_NORMAL);
 	ImageList_Destroy(himl);
 	TreeView_SetImageList(hToolBarTree, himgl, TVSIL_NORMAL);
@@ -1217,7 +1218,7 @@ static int BuildMenuObjectsTree(HWND hToolBarTree)
 
 		if (cbd->bDummy) {
 			tvis.item.pszText = TranslateTS(_T("<Separator>"));
-			tvis.item.iImage  = tvis.item.iSelectedImage = -1;
+			tvis.item.iImage  = tvis.item.iSelectedImage = 0;
 		} else {
 			tvis.item.pszText = TranslateTS(cbd->ptszTooltip);
 			iImage = ImageList_AddIcon(himgl, (HICON)CallService(MS_SKIN2_GETICONBYHANDLE, 0, (LPARAM)cbd->hIcon));
@@ -1276,7 +1277,7 @@ INT_PTR CALLBACK DlgProcToolBar(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM l
 			hToolBarTree = GetDlgItem(hwndDlg, IDC_TOOLBARTREE);
 
 			style = GetWindowLongPtr(hToolBarTree, GWL_STYLE);
-			//style ^= TVS_CHECKBOXES;
+			style ^= TVS_CHECKBOXES;
 			SetWindowLongPtr(hToolBarTree, GWL_STYLE, style);
 			style |= TVS_CHECKBOXES;
 			style |= TVS_NOHSCROLL;
@@ -1471,14 +1472,17 @@ INT_PTR CALLBACK DlgProcToolBar(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM l
 				case IDC_TOOLBARTREE:
 					switch (((LPNMHDR)lParam)->code) {
 
-						case TVN_BEGINDRAG:
+						case TVN_BEGINDRAGA:
+						case TVN_BEGINDRAGW:
 							SetCapture(hwndDlg);
 							drag = 1;
 							hDragItem = ((LPNMTREEVIEW)lParam)->itemNew.hItem;
 							TreeView_SelectItem(hToolBarTree, hDragItem);
 							break;
 
-						case TVN_SELCHANGING: {
+						case TVN_SELCHANGINGA:
+						case TVN_SELCHANGINGW:
+						{
 							TVITEM tvi;
 							HTREEITEM hti;
 							TCHAR strbuf[128];
@@ -1508,7 +1512,8 @@ INT_PTR CALLBACK DlgProcToolBar(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM l
 						}
 						break;
 
-						case TVN_SELCHANGED: {
+						case TVN_SELCHANGEDW:
+						case TVN_SELCHANGEDA: {
 							TVITEM tvi;
 							HTREEITEM hti;
 							TCHAR strbuf[128];
@@ -1524,6 +1529,7 @@ INT_PTR CALLBACK DlgProcToolBar(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM l
 							tvi.mask = TVIF_TEXT | TVIF_HANDLE | TVIF_PARAM;
 							tvi.hItem = hti;
 							TreeView_GetItem(hToolBarTree, &tvi);
+
 
 							if (!TreeView_GetCheckState(hToolBarTree, tvi.hItem) || !_tcscmp(tvi.pszText, MIDDLE_SEPARATOR)) {
 								Utils::enableDlgControl(hwndDlg, IDC_IMCHECK, FALSE);
@@ -1554,11 +1560,12 @@ INT_PTR CALLBACK DlgProcToolBar(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM l
 						break;
 
 						case NM_CLICK: {
+							break;
 							TVHITTESTINFO hti;
 							hti.pt.x = (short)LOWORD(GetMessagePos());
 							hti.pt.y = (short)HIWORD(GetMessagePos());
 							ScreenToClient(hToolBarTree, &hti.pt);
-							if (TreeView_HitTest(hToolBarTree, &hti))
+							if (TreeView_HitTest(hToolBarTree, &hti)) {
 								if (hti.flags&TVHT_ONITEMSTATEICON) {
 									SendMessage(GetParent(hwndDlg), PSM_CHANGED, (WPARAM)hwndDlg, 0);
 									if (TreeView_GetCheckState(hToolBarTree, hti.hItem)) {
@@ -1566,15 +1573,14 @@ INT_PTR CALLBACK DlgProcToolBar(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM l
 										Utils::enableDlgControl(hwndDlg, IDC_CHATCHECK, FALSE);
 										Utils::enableDlgControl(hwndDlg, IDC_CANBEHIDDEN, FALSE);
 										CheckDlgButton(hwndDlg, IDC_IMCHECK, 1);
-										//CheckDlgButton(hwndDlg,IDC_CHATCHECK,1);
 									} else {
 										Utils::enableDlgControl(hwndDlg, IDC_IMCHECK, TRUE);
 										Utils::enableDlgControl(hwndDlg, IDC_CHATCHECK, TRUE);
 										Utils::enableDlgControl(hwndDlg, IDC_CANBEHIDDEN, TRUE);
 									}
-
 									TreeView_SelectItem(hToolBarTree, hti.hItem);
 								}
+							}
 						}
 						break;
 
