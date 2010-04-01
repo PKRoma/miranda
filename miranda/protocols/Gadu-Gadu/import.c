@@ -104,7 +104,7 @@ char *gg_makecontacts(GGPROTO *gg, int cr)
 	while (hContact)
 	{
 		char *szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
-		if (szProto != NULL && !strcmp(szProto, GG_PROTO))
+		if (szProto != NULL && !strcmp(szProto, GG_PROTO) && !DBGetContactSettingByte(hContact, GG_PROTO, "ChatRoom", 0))
 		{
 			DBVARIANT dbv;
 
