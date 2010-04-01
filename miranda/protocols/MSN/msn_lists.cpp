@@ -142,7 +142,8 @@ void  CMsnProto::Lists_Remove(int list, const char* email)
 		MsnContact& p = contList[i];
 		p.list &= ~list;
 		if (list & LIST_PL) { mir_free(p.invite); p.invite = NULL; }
-		if (p.list == 0) contList.remove(i);
+		if (p.list == 0 && p.hContact == NULL) 
+			contList.remove(i);
 	}
 	LeaveCriticalSection(&csLists);
 }

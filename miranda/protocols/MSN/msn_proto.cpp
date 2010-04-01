@@ -394,11 +394,11 @@ int CMsnProto::Authorize(HANDLE hDbEvent)
 	HANDLE hContact = MSN_HContactFromEmail(email, nick, true, 0);
 	int netId = Lists_GetNetId(email);
 
-	MSN_AddUser(hContact, email, netId, LIST_PL + LIST_REMOVE);
-	MSN_AddUser(hContact, email, netId, LIST_BL + LIST_REMOVE);
 	MSN_AddUser(hContact, email, netId, LIST_AL);
+	MSN_AddUser(hContact, email, netId, LIST_BL + LIST_REMOVE);
 	MSN_AddUser(hContact, email, netId, LIST_FL);
 	MSN_AddUser(hContact, email, netId, LIST_RL);
+	MSN_AddUser(hContact, email, netId, LIST_PL + LIST_REMOVE);
 
 	MSN_SetContactDb(hContact, email);
 	return 0;
@@ -433,16 +433,17 @@ int CMsnProto::AuthDeny(HANDLE hDbEvent, const TCHAR* szReason)
 	char* lastName = firstName + strlen(firstName) + 1;
 	char* email = lastName + strlen(lastName) + 1;
 
-	int netId = Lists_GetNetId(email);
+	MsnContact* msc = Lists_Get(email);
+	if (msc == NULL) return 0;
 
-	MSN_AddUser(NULL, email, netId, LIST_PL + LIST_REMOVE);
-	MSN_AddUser(NULL, email, netId, LIST_BL);
-	MSN_AddUser(NULL, email, netId, LIST_RL);
+	MSN_AddUser(NULL, email, msc->netId, LIST_RL);
+	MSN_AddUser(NULL, email, msc->netId, LIST_BL);
+	MSN_AddUser(NULL, email, msc->netId, LIST_PL + LIST_REMOVE);
 
-	if (!(Lists_GetMask(email) & (LIST_FL | LIST_LL)))
+	if (!(msc->list & (LIST_FL | LIST_LL)))
 	{
-		HANDLE hContact = MSN_HContactFromEmail(email, nick, false, false);
-		if (hContact) MSN_CallService(MS_DB_CONTACT_DELETE, (WPARAM)hContact, 0);
+		if (msc->hContact) MSN_CallService(MS_DB_CONTACT_DELETE, (WPARAM)msc->hContact, 0);
+		msc->hContact = NULL;
 	}
 
 	return 0;

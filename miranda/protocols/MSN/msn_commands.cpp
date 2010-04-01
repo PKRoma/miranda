@@ -732,7 +732,10 @@ void CMsnProto::sttProcessRemove(char* buf, size_t len)
 			if (msc == NULL || (msc->list & (LIST_RL | LIST_FL | LIST_LL)) == 0) 
 			{
 				if (msc->hContact && strcmp(szEmail, MyOptions.szEmail))
+				{
 					MSN_CallService(MS_DB_CONTACT_DELETE, (WPARAM)msc->hContact, 0);
+					msc->hContact = NULL;
+				}
 			}
 
 			cont = ezxml_next(cont);
