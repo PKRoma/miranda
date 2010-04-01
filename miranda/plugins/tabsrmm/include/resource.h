@@ -471,7 +471,6 @@
 #define IDC_DESC                        1404
 #define IDC_LABEL_PRIVATETHEME          1405
 #define IDC_MSGLOGDIDSPLAY              1407
-#define IDC_TOOLBARTREE                 1444
 #define IDC_IMCHECK                     1410
 #define IDC_CHATCHECK                   1411
 #define IDC_CANBEHIDDEN                 1412
@@ -528,6 +527,8 @@
 #define IDC_NOTIFYURL                   1439
 #define IDC_SKINROOTFOLDER              1439
 #define IDC_NOTIFYOTHER                 1440
+#define IDC_SKIN_WARN                   1440
+#define IDC_TOOLBARTREE                 1444
 #define IDC_STYLEDTABS                  1482
 #define IDC_FLASHICON                   1489
 #define IDC_FLASHLABEL                  1490
@@ -771,7 +772,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        15
 #define _APS_NEXT_COMMAND_VALUE         40256
-#define _APS_NEXT_CONTROL_VALUE         1440
+#define _APS_NEXT_CONTROL_VALUE         1441
 #define _APS_NEXT_SYMED_VALUE           40283
 #endif
 #endif

@@ -24,7 +24,7 @@
  *
  * part of tabSRMM messaging plugin for Miranda.
  *
- * (C) 2005-2009 by silvercircle _at_ gmail _dot_ com and contributors
+ * (C) 2005-2010 by silvercircle _at_ gmail _dot_ com and contributors
  *
  * $Id$
  *
@@ -186,6 +186,8 @@ static HWND hwndTabConfig = 0;
  * If available, read the Name property from the [Global] section and use it in the
  * combo box. If such property is not found, the base filename (without .tsk extension)
  * will be used as the name of the skin.
+ *
+ * [Global]/Name property is new in TabSRMM version 3.
  */
 static int TSAPI ScanSkinDir(const TCHAR* tszFolder, HWND hwndCombobox)
 {
@@ -233,10 +235,13 @@ static int TSAPI ScanSkinDir(const TCHAR* tszFolder, HWND hwndCombobox)
 }
 
 /**
- * scan the skin root folder for subfolder. Each folder is supposed to contain a single
+ * scan the skin root folder for subfolder(s). Each folder is supposed to contain a single
  * skin. This function won't dive deeper into the folder structure, so the folder
- * structure should be:
+ * structure for any VALID skin should be:
  * $SKINS_ROOT/skin_folder/skin_name.tsk
+ *
+ * By default, $SKINS_ROOT is set to %miranda_userdata% or custom folder
+ * selected by the folders plugin.
  */
 static int TSAPI RescanSkins(HWND hwndCombobox)
 {
@@ -304,14 +309,16 @@ static void TSAPI FreeComboData(HWND hwndCombobox)
 	}
 }
 
+/*
+ * controls to disable when loading or unloading a skin is not possible (because
+ * of at least one message window being open).
+ */
+static UINT _ctrls[] = { IDC_SKINNAME, IDC_RESCANSKIN, IDC_RESCANSKIN, IDC_RELOADSKIN, 0 };
+
 static INT_PTR CALLBACK DlgProcSkinOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch (msg) {
 		case WM_INITDIALOG: {
-			static UINT _ctrls[] = { IDC_SKINNAME, IDC_SKINROOTFOLDER, IDC_RESCANSKIN, IDC_USESKIN, IDC_UNLOAD, IDC_RELOADSKIN,
-									 IDC_SKIN_LOADFONTS, IDC_SKIN_LOADTEMPLATES, 0
-								   };
-
 			RescanSkins(GetDlgItem(hwndDlg, IDC_SKINNAME));
 			BYTE loadMode = M->GetByte("skin_loadmode", 0);
 			TranslateDialogDefault(hwndDlg);
@@ -320,8 +327,40 @@ static INT_PTR CALLBACK DlgProcSkinOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 			CheckDlgButton(hwndDlg, IDC_SKIN_LOADFONTS, loadMode & THEME_READ_FONTS);
 			CheckDlgButton(hwndDlg, IDC_SKIN_LOADTEMPLATES, loadMode & THEME_READ_TEMPLATES);
 
+			SendMessage(hwndDlg, WM_USER + 100, 0, 0);
+			SetTimer(hwndDlg, 1000, 100, 0);
 			return TRUE;
 		}
+
+		case WM_CTLCOLORSTATIC:
+			if((HWND)lParam == GetDlgItem(hwndDlg, IDC_SKIN_WARN)) {
+				SetTextColor((HDC)wParam, RGB(255, 50, 50));
+				return(0);
+			}
+			break;
+
+			/*
+			 * self - configure the dialog, don't let the user load or unload
+			 * a skin while a message window is open. Show the warning that all
+			 * windows must be closed.
+			 */
+		case WM_USER + 100: {
+			bool	fWindowsOpen = (pFirstContainer != 0 ? true : false);
+			UINT	i = 0;
+
+			while(_ctrls[i]) {
+				Utils::enableDlgControl(hwndDlg, _ctrls[i], fWindowsOpen ? FALSE : TRUE);
+				i++;
+			}
+			Utils::showDlgControl(hwndDlg, IDC_SKIN_WARN, fWindowsOpen ? SW_SHOW : SW_HIDE);
+			return(0);
+		}
+
+		case WM_TIMER:
+			if(wParam == 1000)
+				SendMessage(hwndDlg, WM_USER + 100, 0, 0);
+			break;
+
 		case WM_COMMAND:
 			switch (LOWORD(wParam)) {
 				case IDC_USESKIN:
@@ -365,12 +404,13 @@ static INT_PTR CALLBACK DlgProcSkinOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 				case IDC_SKINNAME: {
 					if(HIWORD(wParam) == CBN_SELCHANGE) {
 						LRESULT lr = SendDlgItemMessage(hwndDlg, IDC_SKINNAME, CB_GETCURSEL, 0 ,0);
-						if(lr != CB_ERR && lr > 1) {
+						if(lr != CB_ERR && lr > 0) {
 							TCHAR	*tszRelPath = (TCHAR *)SendDlgItemMessage(hwndDlg, IDC_SKINNAME, CB_GETITEMDATA, lr, 0);
 							if(tszRelPath && tszRelPath != (TCHAR *)CB_ERR)
 								M->WriteTString(0, SRMSGMOD_T, "ContainerSkin", tszRelPath);
+							SendMessage(hwndDlg, WM_COMMAND, IDC_RELOADSKIN, 0);
 						}
-						else if(lr == 1) {
+						else if(lr == 0) {		// selected the <no skin> entry
 							DBDeleteContactSetting(0, SRMSGMOD_T, "ContainerSkin");
 							Skin->Unload();
 							SendMessage(hwndTabConfig, WM_USER + 100, 0, 0);
@@ -397,6 +437,7 @@ static INT_PTR CALLBACK DlgProcSkinOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 			break;
 
 		case WM_DESTROY:
+			KillTimer(hwndDlg, 1000);
 			FreeComboData(GetDlgItem(hwndDlg, IDC_SKINNAME));
 			break;
 	}

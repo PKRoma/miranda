@@ -410,11 +410,11 @@ void CInfoPanel::RenderIPNickname(const HDC hdc, RECT& rcItem)
 		}
 
 		if(fShowUin) {
-			hOldFont = (HFONT)::SelectObject(hdc, m_ipConfig.hFonts[IPFONTID_UIN]);
+			hOldFont = reinterpret_cast<HFONT>(::SelectObject(hdc, m_ipConfig.hFonts[IPFONTID_UIN]));
 			clr = m_ipConfig.clrs[IPFONTID_UIN];
 		}
 		else {
-			hOldFont = (HFONT)::SelectObject(hdc, m_ipConfig.hFonts[IPFONTID_NICK]);
+			hOldFont = reinterpret_cast<HFONT>(::SelectObject(hdc, m_ipConfig.hFonts[IPFONTID_NICK]));
 			clr = m_ipConfig.clrs[IPFONTID_NICK];
 		}
 
@@ -437,7 +437,7 @@ void CInfoPanel::RenderIPNickname(const HDC hdc, RECT& rcItem)
 
 			CSkin::RenderText(hdc, m_dat->hThemeIP, szTextToShow, &rcItem, dtFlagsNick, CSkin::m_glowSize, clr);
 
-			HFONT hFont = (HFONT)::SelectObject(hdc, m_ipConfig.hFonts[IPFONTID_STATUS]);
+			HFONT hFont = reinterpret_cast<HFONT>(::SelectObject(hdc, m_ipConfig.hFonts[IPFONTID_STATUS]));
 			if(m_hoverFlags & HOVER_NICK)
 				::DeleteObject(hFont);
 
@@ -489,7 +489,7 @@ void CInfoPanel::RenderIPUIN(const HDC hdc, RECT& rcItem)
 	if(m_hoverFlags & HOVER_UIN)
 		hOldFont = setUnderlinedFont(hdc, m_ipConfig.hFonts[IPFONTID_UIN]);
 	else
-		hOldFont = (HFONT)::SelectObject(hdc, m_ipConfig.hFonts[IPFONTID_UIN]);
+		hOldFont = reinterpret_cast<HFONT>(::SelectObject(hdc, m_ipConfig.hFonts[IPFONTID_UIN]));
 	clr = m_ipConfig.clrs[IPFONTID_UIN];
 
 	if (tszUin[0]) {
@@ -633,13 +633,13 @@ void CInfoPanel::Chat_RenderIPNickname(const HDC hdc, RECT& rcItem)
 		mir_sntprintf(tszText, 256, CTranslator::get(CTranslator::GEN_MUC_TOPIC_IS), si->ptszTopic ? si->ptszTopic :
 					  CTranslator::get(CTranslator::GEN_MUC_NO_TOPIC));
 
-		hOldFont = (HFONT)::SelectObject(hdc, m_ipConfig.hFonts[IPFONTID_UIN]);
+		hOldFont = reinterpret_cast<HFONT>(::SelectObject(hdc, m_ipConfig.hFonts[IPFONTID_UIN]));
 		CSkin::RenderText(hdc, m_dat->hThemeIP, tszText, &rcItem, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX | DT_VCENTER,
 						  CSkin::m_glowSize, m_ipConfig.clrs[IPFONTID_UIN]);
 	} else {
 		const TCHAR	*tszNick = m_dat->cache->getNick();
 
-		hOldFont = (HFONT)::SelectObject(hdc, m_ipConfig.hFonts[IPFONTID_NICK]);
+		hOldFont = reinterpret_cast<HFONT>(::SelectObject(hdc, m_ipConfig.hFonts[IPFONTID_NICK]));
 		::GetTextExtentPoint32(hdc, tszNick, lstrlen(tszNick), &m_szNick);
 		mapRealRect(rcItem, m_rcNick, m_szNick);
 
@@ -686,7 +686,7 @@ void CInfoPanel::Chat_RenderIPSecondLine(const HDC hdc, RECT& rcItem)
 	if(si == 0)
 		return;
 
-	hOldFont = (HFONT)::SelectObject(hdc, m_ipConfig.hFonts[IPFONTID_UIN]);
+	hOldFont = reinterpret_cast<HFONT>(::SelectObject(hdc, m_ipConfig.hFonts[IPFONTID_UIN]));
 	clr = m_ipConfig.clrs[IPFONTID_UIN];
 
 	const TCHAR *szTopicTitle = CTranslator::get(CTranslator::GEN_MUC_TOPIC_IS);
@@ -1132,7 +1132,7 @@ INT_PTR CALLBACK CInfoPanel::ConfigDlgProc(HWND hwnd, UINT msg, WPARAM wParam, L
 				::SendMessage(hwndChild, WM_SETFONT, (WPARAM)m_configDlgBoldFont, FALSE);
 
 			::SetBkColor((HDC)wParam, ::GetSysColor(COLOR_WINDOW));
-			return (INT_PTR)::GetSysColorBrush(COLOR_WINDOW);
+			return reinterpret_cast<INT_PTR>(::GetSysColorBrush(COLOR_WINDOW));
 		}
 
 		case WM_COMMAND: {
@@ -1532,7 +1532,7 @@ INT_PTR CALLBACK CTip::WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam
 				rc.left -= 4;rc.right += 4;
 				HBRUSH br = ::CreateSolidBrush(PluginConfig.m_ipBackgroundGradientHigh);
 				if(M->isAero()) {
-					::FillRect(hdcMem, &rc, (HBRUSH)::GetStockObject(BLACK_BRUSH));
+					::FillRect(hdcMem, &rc, reinterpret_cast<HBRUSH>(::GetStockObject(BLACK_BRUSH)));
 					CSkin::ApplyAeroEffect(hdcMem, &rcText, CSkin::AERO_EFFECT_AREA_MENUBAR, 0);
 					::FillRect(hdcMem, &m_rcRich, br);
 

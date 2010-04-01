@@ -24,7 +24,7 @@
  *
  * part of tabSRMM messaging plugin for Miranda.
  *
- * (C) 2005-2009 by silvercircle _at_ gmail _dot_ com and contributors
+ * (C) 2005-2010 by silvercircle _at_ gmail _dot_ com and contributors
  *
  * $Id$
  *
@@ -387,7 +387,14 @@ INT_PTR CMimAPI::foldersPathChanged()
 		mir_sntprintf(m_szProfilePath, MAX_PATH, _T("%s"), szTemp);
 
 		FoldersGetCustomPathT(m_hSkinsPath, szTemp, MAX_PATH, const_cast<TCHAR *>(getSkinPath()));
-		mir_sntprintf(m_szSkinsPath, MAX_PATH, _T("%s\\"), szTemp);
+		mir_sntprintf(m_szSkinsPath, MAX_PATH - 1, _T("%s"), szTemp);
+
+		/*
+		 * make sure skins root path always ends with a '\' - this is assumed by the skin
+		 * selection code.
+		 */
+		if(m_szSkinsPath[lstrlen(m_szSkinsPath) - 1] != '\\')
+			_tcscat(m_szSkinsPath, _T("\\"));
 
 		FoldersGetCustomPathT(m_hAvatarsPath, szTemp, MAX_PATH, const_cast<TCHAR *>(getSavedAvatarPath()));
 		mir_sntprintf(m_szSavedAvatarsPath, MAX_PATH, _T("%s"), szTemp);

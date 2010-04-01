@@ -24,7 +24,7 @@
  *
  * part of tabSRMM messaging plugin for Miranda.
  *
- * (C) 2005-2009 by silvercircle _at_ gmail _dot_ com and contributors
+ * (C) 2005-2010 by silvercircle _at_ gmail _dot_ com and contributors
  *
  * $Id$
  *
@@ -137,7 +137,7 @@ const SIZE& CSideBarButton::measureItem()
 		HDC dc = ::GetDC(m_hwnd);
 		TCHAR	 tszLabel[255];
 
-		HFONT oldFont = (HFONT)::SelectObject(dc, ::GetStockObject(DEFAULT_GUI_FONT));
+		HFONT oldFont = reinterpret_cast<HFONT>(::SelectObject(dc, ::GetStockObject(DEFAULT_GUI_FONT)));
 
 		mir_sntprintf(tszLabel, 255, _T("%s"), m_dat->newtitle);
 		::GetTextExtentPoint32(dc, tszLabel, lstrlen(tszLabel), &sz);
@@ -192,9 +192,9 @@ void CSideBarButton::RenderThis(const HDC hdc) const
 	else
 		hbmMem = CSkin::CreateAeroCompatibleBitmap(rc, hdcMem);
 
-	hbmOld = (HBITMAP)::SelectObject(hdcMem, hbmMem);
+	hbmOld = reinterpret_cast<HBITMAP>(::SelectObject(hdcMem, hbmMem));
 
-	HFONT hFontOld = (HFONT)::SelectObject(hdcMem, ::GetStockObject(DEFAULT_GUI_FONT));
+	HFONT hFontOld = reinterpret_cast<HFONT>(::SelectObject(hdcMem, ::GetStockObject(DEFAULT_GUI_FONT)));
 
 	m_sideBarLayout->pfnBackgroundRenderer(hdcMem, &rc, this);
 	m_sideBarLayout->pfnContentRenderer(hdcMem, &rc, this);
@@ -215,7 +215,7 @@ void CSideBarButton::RenderThis(const HDC hdc) const
 		::DeleteObject(hbmMem);
 		hbmMem = FIF->FI_CreateHBITMAPFromDIB(fib_new);
 		FIF->FI_Unload(fib_new);
-		hbmOld =(HBITMAP)::SelectObject(hdcMem, hbmMem);
+		hbmOld =reinterpret_cast<HBITMAP>(::SelectObject(hdcMem, hbmMem));
 		::BitBlt(hdc, 0, 0, cy, cx, hdcMem, 0, 0, SRCCOPY);
 		::SelectObject(hdcMem, hbmOld);
 		::DeleteObject(hbmMem);
