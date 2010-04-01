@@ -1075,6 +1075,7 @@ retry:
 		gg_free_event(e);
 	}
 
+	gg_broadcastnewstatus(gg, ID_STATUS_OFFLINE);
 	gg_setalloffline(gg);
 
 	// If it was unwanted disconnection reconnect
@@ -1088,7 +1089,6 @@ retry:
 		gg_broadcastnewstatus(gg, ID_STATUS_CONNECTING);
 		goto retry;
 	}
-	gg_broadcastnewstatus(gg, ID_STATUS_OFFLINE);
 
 	free(p.password);
 	free(p.status_descr);

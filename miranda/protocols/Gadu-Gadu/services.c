@@ -131,7 +131,9 @@ int gg_refreshstatus(GGPROTO *gg, int status)
 
 	if(!gg_isonline(gg))
 	{
-		if (gg->proto.m_iStatus != ID_STATUS_OFFLINE)
+		DWORD exitCode = 0;
+		GetExitCodeThread(gg->pth_sess.hThread, &exitCode);
+		if (exitCode == STILL_ACTIVE)
 			return TRUE;
 #ifdef DEBUGMODE
 		gg_netlog(gg, "gg_refreshstatus(): Going to connect...");
