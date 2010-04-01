@@ -432,7 +432,7 @@ BOOL FindMenuHandleByGlobalID(HMENU hMenu, PMO_IntMenuItem id, MenuItemData* itd
 	if (!itdat)
 		return FALSE;
 
-	mii.cbSize = sizeof(MENUITEMINFO);
+	mii.cbSize = MENUITEMINFO_V4_SIZE;
 	mii.fMask = MIIM_SUBMENU | MIIM_DATA;
 	for ( i = GetMenuItemCount( hMenu )-1; i >= 0; i-- ) {
 		GetMenuItemInfo(hMenu,i,TRUE,&mii);
@@ -703,7 +703,7 @@ BOOL FindMenuHanleByGlobalID(HMENU hMenu, PMO_IntMenuItem id, MenuItemData* itda
 	if ( !itdat )
 		return FALSE;
 
-	mii.cbSize = sizeof(MENUITEMINFO);
+	mii.cbSize = MENUITEMINFO_V4_SIZE;
 	mii.fMask = MIIM_SUBMENU | MIIM_DATA;
 	for ( i = GetMenuItemCount( hMenu )-1; i >= 0; i-- ) {
 		GetMenuItemInfo( hMenu, i, TRUE, &mii );
