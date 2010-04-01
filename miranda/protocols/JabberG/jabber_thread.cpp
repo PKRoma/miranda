@@ -861,7 +861,7 @@ void CJabberProto::OnProcessError( HXML node, ThreadData* info )
 		if ( !n )
 			break;
 
-		pos += mir_sntprintf( buff+pos, 1024-pos, _T(TCHAR_STR_PARAM)_T(": %s\n"), xmlGetName( n ), xmlGetText( n ));
+		pos += mir_sntprintf( buff+pos, 1024-pos, _T("%s: %s\n"), xmlGetName( n ), xmlGetText( n ));
 		if ( !_tcscmp( xmlGetName( n ), _T("conflict")))
 			JSendBroadcast( NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_OTHERLOCATION);
 	}
