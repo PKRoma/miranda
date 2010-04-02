@@ -682,6 +682,7 @@ void CJabberProto::OnProcessStreamClosing( HXML node, ThreadData *info )
 void CJabberProto::PerformAuthentication( ThreadData* info )
 {
 	TJabberAuth* auth = NULL;
+	char* request = NULL;
 
 	if ( info->auth ) {
 		delete info->auth;
@@ -710,7 +711,12 @@ void CJabberProto::PerformAuthentication( ThreadData* info )
 		if ( !auth->isValid() ) {
 			delete auth;
 			auth = NULL;
-	}	}
+		} else {
+			request = auth->getInitialRequest();
+			if ( !request ) {
+				delete auth;
+				auth = NULL;
+	}	}	}
 
 	if ( auth == NULL && m_AuthMechs.isMd5available ) {
 		m_AuthMechs.isMd5available = false;
@@ -740,7 +746,7 @@ void CJabberProto::PerformAuthentication( ThreadData* info )
 
 	info->auth = auth;
 
-	char* request = auth->getInitialRequest();
+	if ( !request ) request = auth->getInitialRequest();
 	info->send( XmlNode( _T("auth"), _A2T(request)) << XATTR( _T("xmlns"), _T("urn:ietf:params:xml:ns:xmpp-sasl")) 
 		<< XATTR( _T("mechanism"), _A2T(auth->getName() )));
 	mir_free( request );
