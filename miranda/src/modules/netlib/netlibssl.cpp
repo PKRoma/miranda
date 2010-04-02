@@ -78,11 +78,11 @@ static void ReportSslError(SECURITY_STATUS scRet, int line)
 		break;
 
 	case SEC_E_WRONG_PRINCIPAL:
-		msg = "Host we connecting to is not the one certificate was issued for";
+		msg = "Host we are connecting to is not the one certificate was issued for";
 		break;
 
 	case SEC_E_UNTRUSTED_ROOT:
-		msg = "The certificate chain was issued by an authority that is not trusted";
+		msg = "The certificate chain was issued by not trusted authority";
 		break;
 
 	case SEC_E_ILLEGAL_MESSAGE:

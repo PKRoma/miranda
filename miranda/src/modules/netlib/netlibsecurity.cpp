@@ -64,6 +64,17 @@ typedef struct
 static unsigned secCnt = 0, ntlmCnt = 0;
 static HANDLE hSecMutex;
 
+static void ReportSecError(SECURITY_STATUS scRet, int line)
+{
+	char szMsgBuf[256];
+	FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+		NULL, scRet, LANG_USER_DEFAULT, szMsgBuf, SIZEOF(szMsgBuf), NULL);
+
+	char *p = strchr(szMsgBuf, 13); if (p) *p = 0;
+
+	Netlib_Logf(NULL, "Security error 0x%x on line %u (%s)", scRet, line, szMsgBuf);
+}
+
 static void LoadSecurityLibrary(void)
 {
 	INIT_SECURITY_INTERFACE pInitSecurityInterface;
@@ -195,7 +206,7 @@ char* NtlmCreateResponseFromChallenge(HANDLE hSecurity, const char *szChallenge,
 
 	if (hSecurity == NULL || ntlmCnt == 0) return NULL;
 
-	if (_tcscmp(hNtlm->szProvider, _T("Basic")))
+ 	if (_tcscmp(hNtlm->szProvider, _T("Basic")))
 	{
 		bool isKerberos = _tcsicmp(hNtlm->szProvider, _T("Kerberos")) == 0;
 		bool hasChallenge = szChallenge != NULL && szChallenge[0] != '\0';
@@ -273,6 +284,8 @@ char* NtlmCreateResponseFromChallenge(HANDLE hSecurity, const char *szChallenge,
 			if (login != NULL && login[0] != '\0') 
 			{
 				memset(&auth, 0, sizeof(auth));
+				Netlib_Logf(NULL, "Security login requested");
+
 
 				const TCHAR* loginName = login;
 				const TCHAR* domainName = _tcschr(login, '\\');
@@ -314,10 +327,13 @@ char* NtlmCreateResponseFromChallenge(HANDLE hSecurity, const char *szChallenge,
 			}
 
 			sc = g_pSSPI->AcquireCredentialsHandle(NULL, hNtlm->szProvider, 
-				isKerberos ? SECPKG_CRED_BOTH : SECPKG_CRED_OUTBOUND,
-				NULL, hNtlm->hasDomain ? &auth : NULL, NULL, NULL, 
+				SECPKG_CRED_OUTBOUND, NULL, hNtlm->hasDomain ? &auth : NULL, NULL, NULL, 
 				&hNtlm->hClientCredential, &tokenExpiration);
-			if (sc != SEC_E_OK) return NULL;
+			if (sc != SEC_E_OK) 
+			{
+				ReportSecError(sc, __LINE__);
+				return NULL;
+			}
 		}
 
 		outputBufferDescriptor.cBuffers = 1;
@@ -329,7 +345,7 @@ char* NtlmCreateResponseFromChallenge(HANDLE hSecurity, const char *szChallenge,
 
 		sc = g_pSSPI->InitializeSecurityContext(&hNtlm->hClientCredential,
 			hasChallenge ? &hNtlm->hClientContext : NULL,
-			hNtlm->szPrincipal, isKerberos ? ISC_REQ_MUTUAL_AUTH : 0, 0, SECURITY_NATIVE_DREP,
+			hNtlm->szPrincipal, isKerberos ? ISC_REQ_MUTUAL_AUTH | ISC_REQ_STREAM : 0, 0, SECURITY_NATIVE_DREP,
 			hasChallenge ? &inputBufferDescriptor : NULL, 0, &hNtlm->hClientContext,
 			&outputBufferDescriptor, &contextAttributes, &tokenExpiration);
 
@@ -341,7 +357,10 @@ char* NtlmCreateResponseFromChallenge(HANDLE hSecurity, const char *szChallenge,
 		}
 
 		if (sc != SEC_E_OK && sc != SEC_I_CONTINUE_NEEDED)
+		{
+			ReportSecError(sc, __LINE__);
 			return NULL;
+		}
 
 		nlb64.cbDecoded = outputSecurityToken.cbBuffer;
 		nlb64.pbDecoded = (PBYTE)outputSecurityToken.pvBuffer;
