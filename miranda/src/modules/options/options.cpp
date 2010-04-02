@@ -2,7 +2,7 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2009 Miranda ICQ/IM project,
+Copyright 2000-2010 Miranda ICQ/IM project,
 all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
@@ -1373,9 +1373,14 @@ static void OpenOptionsNow(const char *pszGroup,const char *pszPage,const char *
 			psh.pStartPage = (LPCTSTR)&ood;	  //more structure misuse
 			psh.pszCaption = TranslateT("Miranda IM Options");
 			psh.ppsp = (PROPSHEETPAGE*)opi.odp;		  //blatent misuse of the structure, but what the hell
+
+			bool tl = !(GetWindowLong(cli.hwndContactList, GWL_STYLE) & (WS_CHILD | WS_POPUP)) && 
+				!(GetWindowLong(cli.hwndContactList, GWL_EXSTYLE) & WS_EX_TOOLWINDOW);
+			HWND hwndParent = tl ? cli.hwndContactList : NULL;
+
 			hwndOptions = CreateDialogParam(hMirandaInst, 
 				MAKEINTRESOURCE(bSinglePage ? IDD_OPTIONSPAGE : IDD_OPTIONS),
-				cli.hwndContactList, OptionsDlgProc, (LPARAM)&psh);
+				hwndParent, OptionsDlgProc, (LPARAM)&psh);
 
 			FreeOptionsData( &opi );
 }	}	}
