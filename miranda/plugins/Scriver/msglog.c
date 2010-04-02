@@ -193,18 +193,17 @@ EventData *getEventFromDB(struct MessageWindowData *dat, HANDLE hContact, HANDLE
 		mir_free(dbei.pBlob);
 		return NULL;
 	}
-    int isCustom = DbEventIsCustomForMsgWindow(&dbei);
-	if (!(dbei.flags & DBEF_SENT) && (dbei.eventType == EVENTTYPE_MESSAGE || dbei.eventType == EVENTTYPE_URL || isCustom)) {
+	event = (EventData *) mir_alloc(sizeof(EventData));
+	memset(event, 0, sizeof(EventData));
+        event->custom = DbEventIsCustomForMsgWindow(&dbei);
+	if (!(dbei.flags & DBEF_SENT) && (dbei.eventType == EVENTTYPE_MESSAGE || dbei.eventType == EVENTTYPE_URL || event->custom)) {
 		CallService(MS_DB_EVENT_MARKREAD, (WPARAM) hContact, (LPARAM) hDbEvent);
 		CallService(MS_CLIST_REMOVEEVENT, (WPARAM) hContact, (LPARAM) hDbEvent);
 	} else if (dbei.eventType == EVENTTYPE_STATUSCHANGE || dbei.eventType == EVENTTYPE_JABBER_CHATSTATES ||
 		dbei.eventType == EVENTTYPE_JABBER_PRESENCE) {
 		CallService(MS_DB_EVENT_MARKREAD, (WPARAM) hContact, (LPARAM) hDbEvent);
 	}
-	event = (EventData *) mir_alloc(sizeof(EventData));
-	memset(event, 0, sizeof(EventData));
-    event->custom = isCustom;
-	event->eventType = isCustom ? EVENTTYPE_MESSAGE : dbei.eventType;
+	event->eventType = event->custom ? EVENTTYPE_MESSAGE : dbei.eventType;
 	event->dwFlags = (dbei.flags & DBEF_READ ? IEEDF_READ : 0) | (dbei.flags & DBEF_SENT ? IEEDF_SENT : 0) | (dbei.flags & DBEF_RTL ? IEEDF_RTL : 0);
 #if defined( _UNICODE )
 	event->dwFlags |= IEEDF_UNICODE_TEXT | IEEDF_UNICODE_NICK | IEEDF_UNICODE_TEXT2;
