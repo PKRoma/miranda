@@ -129,12 +129,13 @@ static void patchDir( TCHAR* str, size_t strSize )
 		lstrcpy( str+len, _T("\\") );
 }
 
-void GetContactReceivedFilesDir(HANDLE hContact,TCHAR *szDir,int cchDir, BOOL patchVars)
+void GetContactReceivedFilesDir(HANDLE hContact, TCHAR *szDir, int cchDir, BOOL patchVars)
 {
 	DBVARIANT dbv;
 	TCHAR szTemp[MAX_PATH];
 	szTemp[0] = 0;
 
+	GetReceivedFilesDir(szTemp, SIZEOF(szTemp));
 	if ( !DBGetContactSettingTString( NULL, "SRFile", "RecvFilesDirAdv", &dbv)) {
 		if ( lstrlen( dbv.ptszVal ) > 0 )
 			lstrcpyn( szTemp, dbv.ptszVal, SIZEOF( szTemp ));
@@ -142,7 +143,11 @@ void GetContactReceivedFilesDir(HANDLE hContact,TCHAR *szDir,int cchDir, BOOL pa
 	}
 
 	if ( !szTemp[0] )
-		mir_sntprintf( szTemp, SIZEOF(szTemp), _T("%%miranda_path%%\\%s\\%%userid%%"), TranslateT("Received Files"));
+#ifdef _UNICODE
+		mir_sntprintf( szTemp, SIZEOF(szTemp), _T("%%mydocuments%%\\%s\\%%userid%%"), TranslateT("My Received Files"));
+#else
+		mir_sntprintf( szTemp, SIZEOF(szTemp), _T("%%mydocuments%%\\%s\\%%userid%%"), "My Received Files");
+#endif
 
 	if ( hContact ) {
 		REPLACEVARSDATA dat = { 0 };
@@ -176,7 +181,7 @@ void GetContactReceivedFilesDir(HANDLE hContact,TCHAR *szDir,int cchDir, BOOL pa
 	lstrcpyn( szDir, szTemp, cchDir );
 }
 
-void GetReceivedFilesDir(TCHAR *szDir,int cchDir)
+void GetReceivedFilesDir(TCHAR *szDir, int cchDir)
 {
 	DBVARIANT dbv;
 	TCHAR szTemp[MAX_PATH];
@@ -189,7 +194,11 @@ void GetReceivedFilesDir(TCHAR *szDir,int cchDir)
 	}
 
 	if ( !szTemp[0] )
-		mir_sntprintf( szTemp, SIZEOF(szTemp), _T("%%miranda_path%%\\%s"), TranslateT("Received Files"));
+#ifdef _UNICODE
+		mir_sntprintf( szTemp, SIZEOF(szTemp), _T("%%mydocuments%%\\%s"), TranslateT("My Received Files"));
+#else
+		mir_sntprintf( szTemp, SIZEOF(szTemp), _T("%%mydocuments%%\\%s"), "My Received Files");
+#endif
 
 	patchDir( szTemp, SIZEOF(szTemp));
 	RemoveInvalidPathChars(szTemp);
