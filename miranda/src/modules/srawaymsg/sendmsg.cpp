@@ -92,7 +92,7 @@ static TCHAR* GetAwayMessage(int statusMode, char *szProto)
 
 		for (i=0; dbv.ptszVal[i]; i++) 
 		{
-			if (dbv.pszVal[i] != '%') continue;
+			if (dbv.ptszVal[i] != '%') continue;
 			if (!_tcsnicmp(dbv.ptszVal + i, _T("%time%"), 6)) 
 			{
 				MIRANDA_IDLE_INFO mii = {0};
@@ -116,8 +116,8 @@ static TCHAR* GetAwayMessage(int statusMode, char *szProto)
 				GetDateFormat(LOCALE_USER_DEFAULT, DATE_SHORTDATE, NULL, NULL, substituteStr, SIZEOF(substituteStr));
 			else continue;
 			if (lstrlen(substituteStr) > 6) 
-				dbv.ptszVal = (TCHAR*)mir_realloc(dbv.pszVal, (lstrlen(dbv.ptszVal) + 1 + lstrlen(substituteStr) - 6) * sizeof(TCHAR));
-			MoveMemory(dbv.pszVal + i + lstrlen(substituteStr), dbv.ptszVal + i + 6, (lstrlen(dbv.ptszVal) - i - 5) * sizeof(TCHAR));
+				dbv.ptszVal = (TCHAR*)mir_realloc(dbv.ptszVal, (lstrlen(dbv.ptszVal) + 1 + lstrlen(substituteStr) - 6) * sizeof(TCHAR));
+			MoveMemory(dbv.ptszVal + i + lstrlen(substituteStr), dbv.ptszVal + i + 6, (lstrlen(dbv.ptszVal) - i - 5) * sizeof(TCHAR));
 			CopyMemory(dbv.ptszVal+i, substituteStr, lstrlen(substituteStr) * sizeof(TCHAR));
 		}
 	}
