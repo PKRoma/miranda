@@ -127,7 +127,11 @@ void GetContactReceivedFilesDir(HANDLE hContact,char *szDir,int cchDir, BOOL pat
 	}
 
 	if ( !szTemp[0] )
-		mir_snprintf( szTemp, SIZEOF(szTemp), "%%miranda_path%%\\%s\\%%userid%%", Translate("Received Files"));
+#ifdef _UNICODE
+		mir_snprintf( szTemp, SIZEOF(szTemp), "%%mydocuments%%\\%s\\%%userid%%", Translate("My Received Files"));
+#else
+		mir_snprintf( szTemp, SIZEOF(szTemp), "%%mydocuments%%\\%s\\%%userid%%", "My Received Files");
+#endif
 
 	if ( hContact ) {
 		REPLACEVARSDATA dat = { 0 };
@@ -157,7 +161,11 @@ void GetReceivedFilesDir(char *szDir,int cchDir)
 	}
 
 	if ( !szTemp[0] )
-		mir_snprintf( szTemp, SIZEOF(szTemp), "%%miranda_path%%\\%s", Translate("Received Files"));
+#ifdef _UNICODE
+		mir_snprintf( szTemp, SIZEOF(szTemp), "%%mydocuments%%\\%s", Translate("My Received Files"));
+#else
+		mir_snprintf( szTemp, SIZEOF(szTemp), "%%mydocuments%%\\%s", "My Received Files");
+#endif
 
 	patchDir( szTemp, SIZEOF(szTemp));
 	lstrcpynA( szDir, szTemp, cchDir );
