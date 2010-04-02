@@ -284,8 +284,11 @@ char* NtlmCreateResponseFromChallenge(HANDLE hSecurity, const char *szChallenge,
 			if (login != NULL && login[0] != '\0') 
 			{
 				memset(&auth, 0, sizeof(auth));
-				Netlib_Logf(NULL, "Security login requested");
-
+#ifdef _UNICODE
+				Netlib_Logf(NULL, "Security login requested, user: %S pssw: %s", login, psw ? "(exist)" : "(no psw)");
+#else
+				Netlib_Logf(NULL, "Security login requested, user: %s pssw: %s", login, psw ? "(exist)" : "(no psw)");
+#endif
 
 				const TCHAR* loginName = login;
 				const TCHAR* domainName = _tcschr(login, '\\');
