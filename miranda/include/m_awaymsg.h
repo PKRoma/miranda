@@ -33,9 +33,16 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 //returns the default status message for a status
 //wParam=(int)status
-//lParam=0
+//lParam=(LPARAM)(char*)szProto
 //returns status msg.  Remember to free the return value
-#define MS_AWAYMSG_GETSTATUSMSG  "SRAway/GetStatusMessage"
+#define MS_AWAYMSG_GETSTATUSMSG   "SRAway/GetStatusMessage"
+#define MS_AWAYMSG_GETSTATUSMSGW  "SRAway/GetStatusMessageW"
+
+#ifdef _UNICODE
+#define MS_AWAYMSG_GETSTATUSMSGT MS_AWAYMSG_GETSTATUSMSG
+#else
+#define MS_AWAYMSG_GETSTATUSMSGT MS_AWAYMSG_GETSTATUSMSGW
+#endif
 
 #endif // M_AWAYMSG_H__
 
