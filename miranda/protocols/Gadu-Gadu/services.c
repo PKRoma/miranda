@@ -952,6 +952,17 @@ static INT_PTR gg_get_acc_mgr_gui(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
 }
 
 //////////////////////////////////////////////////////////
+// leaves (terminates) conference
+INT_PTR gg_leavechat(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
+{
+	HANDLE hContact = (HANDLE)wParam;
+	if(hContact)
+		CallService(MS_DB_CONTACT_DELETE, (WPARAM)hContact, 0);
+
+	return 0;
+}
+
+//////////////////////////////////////////////////////////
 // Dummies for function that have to be implemented
 
 HANDLE gg_dummy_addtolistbyevent(PROTO_INTERFACE *proto, int flags, int iContact, HANDLE hDbEvent) { return NULL; }
@@ -1028,4 +1039,6 @@ void gg_registerservices(GGPROTO *gg)
 
 	CreateProtoService(PS_GETMYAWAYMSG, gg_getmyawaymsg, gg);
 	CreateProtoService(PS_CREATEACCMGRUI, gg_get_acc_mgr_gui, gg);
+
+	CreateProtoService(PS_LEAVECHAT, gg_leavechat, gg);
 }
