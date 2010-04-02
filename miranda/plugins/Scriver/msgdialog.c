@@ -962,7 +962,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 					DBEVENTINFO dbei = { 0 };
 					dbei.cbSize = sizeof(dbei);
 					CallService(MS_DB_EVENT_GET, (WPARAM) dat->hDbEventFirst, (LPARAM) & dbei);
-					if (dbei.eventType == EVENTTYPE_MESSAGE && !(dbei.flags & DBEF_READ) && !(dbei.flags & DBEF_SENT)) {
+					if (DbEventIsMessageOrCustom(&dbei) && !(dbei.flags & DBEF_READ) && !(dbei.flags & DBEF_SENT)) {
 						notifyUnread = 1;
 					}
 				}
@@ -1485,7 +1485,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 				dbei.cbSize = sizeof(dbei);
 				dbei.cbBlob = 0;
 				CallService(MS_DB_EVENT_GET, (WPARAM) hDbEvent, (LPARAM) & dbei);
-				if (!(dbei.flags & DBEF_SENT) && (dbei.eventType == EVENTTYPE_MESSAGE || dbei.eventType == EVENTTYPE_URL)) {
+				if (!(dbei.flags & DBEF_SENT) && (DbEventIsMessageOrCustom(&dbei) || dbei.eventType == EVENTTYPE_URL)) {
 					CallService(MS_CLIST_REMOVEEVENT, (WPARAM) dat->windowData.hContact, (LPARAM) hDbEvent);
 				}
 				hDbEvent = (HANDLE) CallService(MS_DB_EVENT_FINDNEXT, (WPARAM) hDbEvent, 0);
@@ -1628,7 +1628,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 				if (heFlags != -1 && (heFlags & HISTORYEVENTS_FLAG_DEFAULT))
 					heFlags = -1;
 
-				if (dbei.eventType == EVENTTYPE_MESSAGE && !(dbei.flags & (DBEF_SENT))) {
+				if (DbEventIsMessageOrCustom(&dbei) && !(dbei.flags & (DBEF_SENT))) {
 					/* store the event when the container is hidden so that clist notifications can be removed */
 					if (!IsWindowVisible(GetParent(hwndDlg)) && dat->hDbUnreadEventFirst == NULL)
 						dat->hDbUnreadEventFirst = (HANDLE) lParam;
@@ -2075,7 +2075,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
                     if (dbei.cbBlob == 0xFFFFFFFF) break;
                     dbei.pBlob = (PBYTE) mir_alloc(dbei.cbBlob);
                     CallService(MS_DB_EVENT_GET, (WPARAM)  dat->hDbEventLast, (LPARAM) & dbei);
-                    if (dbei.eventType == EVENTTYPE_MESSAGE || dbei.eventType == EVENTTYPE_STATUSCHANGE) {
+                    if (DbEventIsMessageOrCustom(&dbei) || dbei.eventType == EVENTTYPE_STATUSCHANGE) {
                         TCHAR *buffer = DbGetEventTextT( &dbei, CP_ACP );
                         if (buffer!=NULL) {
                             TCHAR *quotedBuffer = GetQuotedTextW(buffer);

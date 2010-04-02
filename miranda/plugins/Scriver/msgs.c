@@ -63,6 +63,9 @@ const CLSID IID_IRichEditOleCallback=
 
 #endif
 
+#define EVENTTYPE_SCRIVER 2010
+#define SCRIVER_DB_GETEVENTTEXT "Scriver/GetText"
+
 static int SRMMStatusToPf2(int status)
 {
     switch (status) {
@@ -141,7 +144,7 @@ static int MessageEventAdded(WPARAM wParam, LPARAM lParam)
 	if (hwnd) {
 		SendMessage(hwnd, HM_DBEVENTADDED, wParam, lParam);
 	}
-	if (dbei.flags & DBEF_SENT || dbei.eventType != EVENTTYPE_MESSAGE)
+	if (dbei.flags & DBEF_SENT || !DbEventIsMessageOrCustom(&dbei))
 		return 0;
 
 	CallServiceSync(MS_CLIST_REMOVEEVENT, wParam, (LPARAM) 1);
@@ -358,7 +361,7 @@ static void RestoreUnreadMessageAlerts(void)
       while (hDbEvent) {
          dbei.cbBlob = 0;
          CallService(MS_DB_EVENT_GET, (WPARAM) hDbEvent, (LPARAM) & dbei);
-         if (!(dbei.flags & (DBEF_SENT | DBEF_READ)) && dbei.eventType == EVENTTYPE_MESSAGE) {
+         if (!(dbei.flags & (DBEF_SENT | DBEF_READ)) && DbEventIsMessageOrCustom(&dbei)) {
             windowAlreadyExists = WindowList_Find(g_dat->hMessageWindowList, hContact) != NULL;
             if (windowAlreadyExists)
                continue;

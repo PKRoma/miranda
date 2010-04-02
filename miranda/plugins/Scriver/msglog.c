@@ -70,6 +70,7 @@ typedef struct EventDataStruct {
 	DWORD	time;
 	DWORD	eventType;
 	int		codePage;
+    BOOL    custom;
     struct EventDataStruct *next;
 }EventData;
 
@@ -142,6 +143,17 @@ TCHAR *GetNickname(HANDLE hContact, const char* szProto) {
     return mir_tstrdup(TranslateT("Unknown Contact"));
 }
 
+int DbEventIsCustomForMsgWindow(DBEVENTINFO *dbei)
+{
+	DBEVENTTYPEDESCR* et = ( DBEVENTTYPEDESCR* )CallService( MS_DB_EVENT_GETTYPE, ( WPARAM )dbei->szModule, ( LPARAM )dbei->eventType );
+	return et && ( et->flags & DETF_MSGWINDOW );
+}
+
+int DbEventIsMessageOrCustom(DBEVENTINFO* dbei)
+{
+    return dbei->eventType == EVENTTYPE_MESSAGE || DbEventIsCustomForMsgWindow(dbei);
+}
+
 int DbEventIsShown(DBEVENTINFO * dbei, struct MessageWindowData *dat)
 {
 	int heFlags;
@@ -166,8 +178,7 @@ int DbEventIsShown(DBEVENTINFO * dbei, struct MessageWindowData *dat)
 	heFlags = HistoryEvents_GetFlags(dbei->eventType);
 	if (heFlags != -1)
 		return (heFlags & HISTORYEVENTS_FLAG_SHOW_IM_SRMM) == HISTORYEVENTS_FLAG_SHOW_IM_SRMM;
-
-	return 0;
+    return DbEventIsCustomForMsgWindow(dbei);
 }
 
 EventData *getEventFromDB(struct MessageWindowData *dat, HANDLE hContact, HANDLE hDbEvent) {
@@ -182,17 +193,18 @@ EventData *getEventFromDB(struct MessageWindowData *dat, HANDLE hContact, HANDLE
 		mir_free(dbei.pBlob);
 		return NULL;
 	}
-	if (!(dbei.flags & DBEF_SENT) && (dbei.eventType == EVENTTYPE_MESSAGE || dbei.eventType == EVENTTYPE_URL)) {
+    int isCustom = DbEventIsCustomForMsgWindow(&dbei);
+	if (!(dbei.flags & DBEF_SENT) && (dbei.eventType == EVENTTYPE_MESSAGE || dbei.eventType == EVENTTYPE_URL || isCustom)) {
 		CallService(MS_DB_EVENT_MARKREAD, (WPARAM) hContact, (LPARAM) hDbEvent);
 		CallService(MS_CLIST_REMOVEEVENT, (WPARAM) hContact, (LPARAM) hDbEvent);
-	}
-	else if (dbei.eventType == EVENTTYPE_STATUSCHANGE || dbei.eventType == EVENTTYPE_JABBER_CHATSTATES ||
+	} else if (dbei.eventType == EVENTTYPE_STATUSCHANGE || dbei.eventType == EVENTTYPE_JABBER_CHATSTATES ||
 		dbei.eventType == EVENTTYPE_JABBER_PRESENCE) {
 		CallService(MS_DB_EVENT_MARKREAD, (WPARAM) hContact, (LPARAM) hDbEvent);
 	}
 	event = (EventData *) mir_alloc(sizeof(EventData));
 	memset(event, 0, sizeof(EventData));
-	event->eventType = dbei.eventType;
+    event->custom = isCustom;
+	event->eventType = isCustom ? EVENTTYPE_MESSAGE : dbei.eventType;
 	event->dwFlags = (dbei.flags & DBEF_READ ? IEEDF_READ : 0) | (dbei.flags & DBEF_SENT ? IEEDF_SENT : 0) | (dbei.flags & DBEF_RTL ? IEEDF_RTL : 0);
 #if defined( _UNICODE )
 	event->dwFlags |= IEEDF_UNICODE_TEXT | IEEDF_UNICODE_NICK | IEEDF_UNICODE_TEXT2;
@@ -585,10 +597,6 @@ static int DetectURL(wchar_t *text, BOOL firstChar) {
 		}
 	}
 	return 0;
-}
-
-static void ChangeLinksAndBBCodes() {
-
 }
 
 static void AppendWithCustomLinks(EventData *event, int style, char **buffer, int *bufferEnd, int *bufferAlloced) {
