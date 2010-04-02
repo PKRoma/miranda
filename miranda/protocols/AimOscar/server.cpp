@@ -1711,17 +1711,22 @@ void CAimProto::snac_mail_response(SNAC &snac)//family 0x0018
 			}
 			position += TLV_HEADER_SIZE + tlv.len();
 		}
-		if (new_mail)
+		if (new_mail && num_msgs)
 		{
-			char msg[1024];
-			int len = mir_snprintf(msg, SIZEOF(msg), "%s@%s (%d)\r\n%s", sn, address, num_msgs,
-				Translate(new_mail ? "You've got mail! Checked at " : "No new mail!!!!! Checked at "));
+			TCHAR msg[1024];
+#ifdef _UNICODE
+			int len = mir_sntprintf(msg, SIZEOF(msg), _T("%S@%S (%d)\r\n%s "), sn, address, num_msgs,
+				TranslateT("You've got mail! Checked at")) ;
+#else
+			int len = mir_sntprintf(msg, SIZEOF(msg), _T("%s@%s (%d)\r\n%s "), sn, address, num_msgs,
+				TranslateT("You've got mail! Checked at")) ;
+#endif
 
 			SYSTEMTIME stLocal;
 			GetLocalTime(&stLocal);
-			GetTimeFormatA(LOCALE_USER_DEFAULT, 0, &stLocal, NULL, msg+len, SIZEOF(msg)-len);
+			GetTimeFormat(LOCALE_USER_DEFAULT, 0, &stLocal, NULL, msg + len, SIZEOF(msg) - len);
 
-			ShowPopup(msg, MAIL_POPUP, url);
+			ShowPopup((char*)msg, MAIL_POPUP | TCHAR_POPUP, url);
 		}
 		mir_free(sn);
 		mir_free(address);
