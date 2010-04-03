@@ -135,7 +135,6 @@ void GetContactReceivedFilesDir(HANDLE hContact, TCHAR *szDir, int cchDir, BOOL 
 	TCHAR szTemp[MAX_PATH];
 	szTemp[0] = 0;
 
-	GetReceivedFilesDir(szTemp, SIZEOF(szTemp));
 	if ( !DBGetContactSettingTString( NULL, "SRFile", "RecvFilesDirAdv", &dbv)) {
 		if ( lstrlen( dbv.ptszVal ) > 0 )
 			lstrcpyn( szTemp, dbv.ptszVal, SIZEOF( szTemp ));
@@ -401,7 +400,7 @@ INT_PTR CALLBACK DlgProcRecvFile(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
             break;
 
 		case IDCANCEL:
-			if (dat->fs) CallContactService(dat->hContact,PSS_FILEDENY,(WPARAM)dat->fs,(LPARAM)Translate("Cancelled"));
+			if (dat->fs) CallContactService(dat->hContact,PSS_FILEDENYT,(WPARAM)dat->fs,(LPARAM)TranslateT("Cancelled"));
 			dat->fs=NULL; /* the protocol will free the handle */
 			DestroyWindow(hwndDlg);
             break;
