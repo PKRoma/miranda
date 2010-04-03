@@ -22,6 +22,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 CAimProto::CAimProto(const char* aProtoName, const TCHAR* aUserName)
 	: chat_rooms(5)
 {
+	m_iVersion = 2; 
 	m_tszUserName = mir_tstrdup(aUserName);
 	m_szModuleName = mir_strdup(aProtoName);
 	m_szProtoName = mir_strdup(aProtoName);
@@ -530,7 +531,6 @@ HANDLE __cdecl CAimProto::SendFile(HANDLE hContact, const PROTOCHAR* szDescripti
 						++ft->pfts.totalFiles;
 					}
 				}
-
 			}
 
 			if (ft->pfts.totalFiles == 0)
@@ -756,13 +756,13 @@ int __cdecl CAimProto::SendAwayMsg(HANDLE hContact, HANDLE hProcess, const char*
 ////////////////////////////////////////////////////////////////////////////////////////
 // SetAwayMsg - sets the away m_iStatus message
 
-int __cdecl CAimProto::SetAwayMsg(int status, const char* msg)
+int __cdecl CAimProto::SetAwayMsg(int status, const TCHAR* msg)
 {
 	char** msgptr = getStatusMsgLoc(status);
 	if (msgptr==NULL) return 1;
 
 	mir_free(*msgptr);
-	*msgptr = mir_utf8encode(msg);
+	*msgptr = mir_utf8encodeT(msg);
 
 	if (state == 1 && status == m_iDesiredStatus)
 	{

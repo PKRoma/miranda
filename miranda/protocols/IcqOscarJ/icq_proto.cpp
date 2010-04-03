@@ -87,6 +87,7 @@ CIcqProto::CIcqProto( const char* aProtoName, const TCHAR* aUserName ) :
 	contactsCache(10, CompareContactsCache),
 	cheekySearchId( -1 )
 {
+	m_iVersion = 2;
 	m_iStatus = ID_STATUS_OFFLINE;
 	m_tszUserName = mir_tstrdup( aUserName );
 	m_szModuleName = mir_strdup( aProtoName );
@@ -2301,7 +2302,7 @@ int __cdecl CIcqProto::SendAwayMsg( HANDLE hContact, HANDLE hProcess, const char
 ////////////////////////////////////////////////////////////////////////////////////////
 // PS_SetAwayMsg - sets the away status message
 
-int __cdecl CIcqProto::SetAwayMsg(int status, const char* msg)
+int __cdecl CIcqProto::SetAwayMsg(int status, const TCHAR* msg)
 {
 	EnterCriticalSection(&m_modeMsgsMutex);
 
@@ -2313,7 +2314,7 @@ int __cdecl CIcqProto::SetAwayMsg(int status, const char* msg)
 	}
 
 	// Prepare UTF-8 status message
-	char *szNewUtf = ansi_to_utf8(msg);
+	char *szNewUtf = tchar_to_utf8(msg);
 
 	if (strcmpnull(szNewUtf, *ppszMsg))
 	{

@@ -45,6 +45,7 @@ HANDLE hStatusMenuObject = 0;
 int UnloadMoveToGroup(void);
 
 int statustopos(int status);
+void Proto_SetStatus(const char* szProto, unsigned status);
 
 bool prochotkey;
 
@@ -607,7 +608,7 @@ INT_PTR StatusMenuExecService(WPARAM wParam, LPARAM)
 					InvalidateRect( cli.hwndStatus, NULL, TRUE );
 			}
 			else if ( smep->proto != NULL ) {
-				CallProtoService(smep->proto,PS_SETSTATUS,smep->status,0);
+				Proto_SetStatus(smep->proto, smep->status);
 				NotifyEventHooks(hStatusModeChangeEvent, smep->status, (LPARAM)smep->proto);
 			}
 			else {
@@ -626,7 +627,7 @@ INT_PTR StatusMenuExecService(WPARAM wParam, LPARAM)
 		            if ( MenusProtoCount > 1 && Proto_IsAccountLocked( pa ))
 			            continue;
 
-		            CallProtoService( pa->szModuleName, PS_SETSTATUS, cli.currentDesiredStatusMode, 0 );
+					Proto_SetStatus(pa->szModuleName, cli.currentDesiredStatusMode);
 	            }
 	            NotifyEventHooks( hStatusModeChangeEvent, cli.currentDesiredStatusMode, 0 );
 	            DBWriteContactSettingWord( NULL, "CList", "Status", ( WORD )cli.currentDesiredStatusMode );

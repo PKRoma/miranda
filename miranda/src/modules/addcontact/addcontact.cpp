@@ -188,11 +188,11 @@ INT_PTR CALLBACK AddContactDlgProc(HWND hdlg,UINT msg,WPARAM wparam,LPARAM lpara
 				if ( IsDlgButtonChecked( hdlg, IDC_AUTH )) {
 					DWORD flags = CallProtoService( acs->szProto, PS_GETCAPS, PFLAGNUM_4, 0 );
 					if ( flags & PF4_NOCUSTOMAUTH )
-						CallContactService( hcontact, PSS_AUTHREQUEST, 0, 0 );
+						CallContactService( hcontact, PSS_AUTHREQUESTT, 0, 0 );
 					else {
 						TCHAR szReason[256];
 						GetDlgItemText(hdlg,IDC_AUTHREQ,szReason,256);
-						CallContactService(hcontact,PSS_AUTHREQUEST,0,(LPARAM)szReason);
+						CallContactService(hcontact, PSS_AUTHREQUESTT, 0, (LPARAM)szReason);
 				}	}
 
 				DBDeleteContactSetting(hcontact,"CList","NotOnList");

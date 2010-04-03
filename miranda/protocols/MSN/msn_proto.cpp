@@ -54,6 +54,7 @@ CMsnProto::CMsnProto(const char* aProtoName, const TCHAR* aUserName) :
 {
 	char path[MAX_PATH];
 
+	m_iVersion = 2;
 	m_tszUserName = mir_tstrdup(aUserName);
 	m_szModuleName = mir_strdup(aProtoName);
 	m_szProtoName = mir_strdup(aProtoName);
@@ -1059,7 +1060,7 @@ int __cdecl CMsnProto::SendMsg(HANDLE hContact, int flags, const char* pszSrc)
 /////////////////////////////////////////////////////////////////////////////////////////
 // MsnSetAwayMsg - sets the current status message for a user
 
-int __cdecl CMsnProto::SetAwayMsg(int status, const char* msg)
+int __cdecl CMsnProto::SetAwayMsg(int status, const TCHAR* msg)
 {
 	char** msgptr = GetStatusMsgLoc(status);
 
@@ -1067,7 +1068,7 @@ int __cdecl CMsnProto::SetAwayMsg(int status, const char* msg)
 		return 1;
 
 	mir_free(*msgptr);
-	char* buf = *msgptr = mir_utf8encode(msg);
+	char* buf = *msgptr = mir_utf8encodeT(msg);
 	if (buf && strlen(buf) > 1859)
 	{
 		buf[1859] = 0;

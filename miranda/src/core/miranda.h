@@ -271,3 +271,40 @@ char*  ltrim(char* str);
 __inline char* lrtrim(char* str) { return ltrim(rtrim(str)); };
 
 bool wildcmp(char * name, char * mask);
+
+#ifdef _UNICODE
+class StrConvT
+{
+private:
+	wchar_t* m_body;
+
+public:
+	StrConvT( const char* pSrc ) :
+		m_body( mir_a2u( pSrc )) {}
+
+    ~StrConvT() {  mir_free( m_body ); }
+	operator const wchar_t* () const { return m_body; }
+};
+
+class StrConvA
+{
+private:
+	char* m_body;
+
+public:
+	StrConvA( const wchar_t* pSrc ) :
+		m_body( mir_u2a( pSrc )) {}
+
+    ~StrConvA() {  mir_free( m_body ); }
+	operator const char*  () const { return m_body; }
+	operator const wchar_t* () const { return ( wchar_t* )m_body; }  // type cast to fake the interface definition
+	operator const LPARAM () const { return ( LPARAM )m_body; }
+};
+
+#else
+
+#define StrConvT( x ) x
+#define StrConvA( x ) x
+
+#endif
+

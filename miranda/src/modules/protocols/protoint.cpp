@@ -23,7 +23,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "commonheaders.h"
 
-static INT_PTR MyCallProtoService( const char *szModule, const char *szService, WPARAM wParam, LPARAM lParam )
+char** __fastcall Proto_FilesMatrixA( TCHAR **files );
+void FreeFilesMatrix( TCHAR ***files );
+
+INT_PTR __fastcall MyCallProtoService( const char *szModule, const char *szService, WPARAM wParam, LPARAM lParam )
 {
 	char str[MAXMODULELABELLENGTH];
 	mir_snprintf( str, sizeof(str), "%s%s", szModule, szService );
@@ -45,7 +48,7 @@ struct DEFAULT_PROTO_INTERFACE : public PROTO_INTERFACE
 	}
 
 	int __cdecl AuthDeny( HANDLE hContact, const TCHAR* szReason )
-	{	return ( int )MyCallProtoService( m_szModuleName, PS_AUTHDENY, (WPARAM)hContact, (LPARAM)szReason );
+	{	return ( int )MyCallProtoService( m_szModuleName, PS_AUTHDENY, (WPARAM)hContact, (LPARAM)StrConvA(szReason));
 	}
 
 	int __cdecl AuthRecv( HANDLE hContact, PROTORECVEVENT* evt )
@@ -55,7 +58,10 @@ struct DEFAULT_PROTO_INTERFACE : public PROTO_INTERFACE
 
 	int __cdecl AuthRequest( HANDLE hContact, const TCHAR* szMessage )
 	{	CCSDATA ccs = { hContact, PSS_AUTHREQUEST, 0, (LPARAM)szMessage };
-		return ( int )MyCallProtoService( m_szModuleName, PSS_AUTHREQUEST, 0, (LPARAM)&ccs );
+		ccs.lParam = ( LPARAM )mir_t2a( szMessage ); 
+		int res = ( int )MyCallProtoService( m_szModuleName, PSS_AUTHREQUEST, 0, (LPARAM)&ccs );
+		mir_free(( char* )ccs.lParam );
+		return res;
 	}
 
 	HANDLE __cdecl ChangeInfo( int iInfoType, void* pInfoData )
@@ -64,7 +70,14 @@ struct DEFAULT_PROTO_INTERFACE : public PROTO_INTERFACE
 
 	HANDLE __cdecl FileAllow( HANDLE hContact, HANDLE hTransfer, const PROTOCHAR* szPath )
 	{	CCSDATA ccs = { hContact, PSS_FILEALLOW, (WPARAM)hTransfer, (LPARAM)szPath };
+#ifdef _UNICODE
+		ccs.lParam = ( LPARAM )mir_t2a( szPath ); 
+		HANDLE res = ( HANDLE )MyCallProtoService( m_szModuleName, PSS_FILEALLOW, 0, (LPARAM)&ccs );
+		mir_free(( char* )ccs.lParam );
+		return res;
+#else
 		return ( HANDLE )MyCallProtoService( m_szModuleName, PSS_FILEALLOW, 0, (LPARAM)&ccs );
+#endif
 	}
 
 	int __cdecl FileCancel( HANDLE hContact, HANDLE hTransfer )
@@ -74,13 +87,27 @@ struct DEFAULT_PROTO_INTERFACE : public PROTO_INTERFACE
 
 	int __cdecl FileDeny( HANDLE hContact, HANDLE hTransfer, const PROTOCHAR* szReason )
 	{	CCSDATA ccs = { hContact, PSS_FILEDENY, (WPARAM)hTransfer, (LPARAM)szReason };
+#ifdef _UNICODE
+		ccs.lParam = ( LPARAM )mir_t2a( szReason ); 
+		int res = ( int )MyCallProtoService( m_szModuleName, PSS_FILEDENY, 0, (LPARAM)&ccs );
+		mir_free(( char* )ccs.lParam );
+		return res;
+#else
 		return ( int )MyCallProtoService( m_szModuleName, PSS_FILEDENY, 0, (LPARAM)&ccs );
+#endif
 	}
 
 	int __cdecl FileResume( HANDLE hTransfer, int* action, const PROTOCHAR** szFilename )
 	{	PROTOFILERESUME pfr = { *action, *szFilename };
+#ifdef _UNICODE
+		pfr.szFilename = ( PROTOCHAR* )mir_t2a( pfr.szFilename );
+		int res = ( int )MyCallProtoService( m_szModuleName, PS_FILERESUME, ( WPARAM )hTransfer, ( LPARAM )&pfr);
+		mir_free(( PROTOCHAR* )*szFilename );
+		*action = pfr.action; *szFilename = (PROTOCHAR*)pfr.szFilename;
+#else
 		int res = ( int )MyCallProtoService( m_szModuleName, PS_FILERESUME, ( WPARAM )hTransfer, ( LPARAM )&pfr );
 		*action = pfr.action; *szFilename = (PROTOCHAR*)pfr.szFilename;
+#endif
 		return res;
 	}
 
@@ -148,7 +175,16 @@ struct DEFAULT_PROTO_INTERFACE : public PROTO_INTERFACE
 
 	HANDLE __cdecl SendFile( HANDLE hContact, const PROTOCHAR* szDescription, PROTOCHAR** ppszFiles )
 	{	CCSDATA ccs = { hContact, PSS_FILE, (WPARAM)szDescription, (LPARAM)ppszFiles };
+#ifdef _UNICODE
+		ccs.wParam = ( WPARAM )mir_t2a( szDescription ); 
+		ccs.lParam = ( LPARAM )Proto_FilesMatrixA( ppszFiles );
+		HANDLE res = ( HANDLE )MyCallProtoService( m_szModuleName, PSS_FILE, 0, ( LPARAM )&ccs );
+		if ( res == 0 ) FreeFilesMatrix(( TCHAR*** )&ccs.lParam );
+		mir_free(( char* )ccs.wParam );
+		return res;
+#else
 		return ( HANDLE )MyCallProtoService( m_szModuleName, PSS_FILE, 0, (LPARAM)&ccs );
+#endif
 	}
 
 	int __cdecl SendMsg( HANDLE hContact, int flags, const char* msg )
@@ -185,8 +221,8 @@ struct DEFAULT_PROTO_INTERFACE : public PROTO_INTERFACE
 		return ( int )MyCallProtoService( m_szModuleName, PSS_AWAYMSG, 0, (LPARAM)&ccs );
 	}
 
-	int __cdecl SetAwayMsg( int iStatus, const char* msg )
-	{	return ( int )MyCallProtoService( m_szModuleName, PS_SETAWAYMSG, iStatus, ( LPARAM )msg );
+	int __cdecl SetAwayMsg( int iStatus, const TCHAR* msg )
+	{	return ( int )MyCallProtoService( m_szModuleName, PS_SETAWAYMSG, iStatus, (LPARAM)StrConvA(msg));
 	}
 
 	int __cdecl UserIsTyping( HANDLE hContact, int type )

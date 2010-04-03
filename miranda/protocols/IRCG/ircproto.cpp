@@ -36,6 +36,7 @@ CIrcProto::CIrcProto( const char* szModuleName, const TCHAR* tszUserName ) :
 	vUserhostReasons( 10, NULL ),
 	vWhoInProgress( 10, NULL )
 {
+	m_iVersion = 2;
 	m_tszUserName = mir_tstrdup( tszUserName );
 	m_szModuleName = mir_strdup( szModuleName );
 
@@ -1019,7 +1020,7 @@ int __cdecl CIrcProto::SendAwayMsg( HANDLE, HANDLE, const char* )
 ////////////////////////////////////////////////////////////////////////////////////////
 // SetAwayMsg - sets the away status message
 
-int __cdecl CIrcProto::SetAwayMsg( int status, const char* msg )
+int __cdecl CIrcProto::SetAwayMsg( int status, const TCHAR* msg )
 {
 	switch( status ) {
 	case ID_STATUS_ONLINE:     case ID_STATUS_INVISIBLE:   case ID_STATUS_FREECHAT:
@@ -1027,7 +1028,7 @@ int __cdecl CIrcProto::SetAwayMsg( int status, const char* msg )
 		break;
 
 	default:
-		CMString newStatus = _A2T( msg, getCodepage());
+		CMString newStatus = msg;
 		ReplaceString( newStatus, _T("\r\n"), _T(" "));
 		if ( m_statusMessage.IsEmpty() || msg == NULL || m_statusMessage != newStatus ) {
 			if ( msg == NULL || *( char* )msg == '\0')

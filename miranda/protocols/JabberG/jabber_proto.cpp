@@ -95,6 +95,7 @@ CJabberProto::CJabberProto( const char* aProtoName, const TCHAR* aUserName ) :
 
 	m_szXmlStreamToBeInitialized = NULL;
 
+	m_iVersion = 2;
 	m_tszUserName = mir_tstrdup( aUserName );
 	m_szModuleName = mir_strdup( aProtoName );
 	m_szProtoName = mir_strdup( aProtoName );
@@ -1386,9 +1387,9 @@ int __cdecl CJabberProto::SendAwayMsg( HANDLE /*hContact*/, HANDLE /*hProcess*/,
 ////////////////////////////////////////////////////////////////////////////////////////
 // JabberSetAwayMsg - sets the away status message
 
-int __cdecl CJabberProto::SetAwayMsg( int status, const char* msg )
+int __cdecl CJabberProto::SetAwayMsg( int status, const TCHAR* msg )
 {
-	Log( "SetAwayMsg called, wParam=%d lParam=%s", status, msg );
+	Log( "SetAwayMsg called, wParam=%d lParam=" TCHAR_STR_PARAM, status, msg );
 
 	EnterCriticalSection( &m_csModeMsgMutex );
 
@@ -1420,7 +1421,7 @@ int __cdecl CJabberProto::SetAwayMsg( int status, const char* msg )
 		return 1;
 	}
 
-	TCHAR* newModeMsg = mir_a2t( msg );
+	TCHAR* newModeMsg = mir_tstrdup( msg );
 
 	if (( *szMsg == NULL && newModeMsg == NULL ) ||
 		( *szMsg != NULL && newModeMsg != NULL && !lstrcmp( *szMsg, newModeMsg )) ) {

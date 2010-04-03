@@ -164,9 +164,8 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd,UINT msg,WPARAM wParam
 	return CallWindowProc(OldMessageEditProc, hwnd, msg, wParam, lParam);
 }
 
-void ChangeAllProtoMessages(char *szProto, int statusMode, TCHAR *msgt)
+void ChangeAllProtoMessages(char *szProto, int statusMode, TCHAR *msg)
 {
-	char* msg = mir_t2a(msgt);
 	if (szProto == NULL) 
 	{
 		for (int i=0; i < accounts.getCount(); i++)
@@ -175,13 +174,11 @@ void ChangeAllProtoMessages(char *szProto, int statusMode, TCHAR *msgt)
 			if (!Proto_IsAccountEnabled(pa)) continue;
 			if ((CallProtoService(pa->szModuleName, PS_GETCAPS, PFLAGNUM_1, 0) & PF1_MODEMSGSEND) && 
 				!Proto_IsAccountLocked(pa))
-				CallProtoService(pa->szModuleName, PS_SETAWAYMSG, statusMode, (LPARAM)msg);
+				CallProtoService(pa->szModuleName, PS_SETAWAYMSGT, statusMode, (LPARAM)msg);
 		}
 	}
 	else 
-		CallProtoService(szProto, PS_SETAWAYMSG, statusMode,(LPARAM)msg);
-
-	mir_free(msg);
+		CallProtoService(szProto, PS_SETAWAYMSGT, statusMode,(LPARAM)msg);
 }
 
 struct SetAwayMsgData {

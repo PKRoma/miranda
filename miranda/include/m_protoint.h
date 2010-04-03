@@ -87,7 +87,7 @@ typedef struct tagPROTO_INTERFACE_VTBL
 	HANDLE    ( *GetAwayMsg )( struct tagPROTO_INTERFACE*, HANDLE hContact );
 	int       ( *RecvAwayMsg )( struct tagPROTO_INTERFACE*, HANDLE hContact, int mode, PROTORECVEVENT* evt );
 	int       ( *SendAwayMsg )( struct tagPROTO_INTERFACE*, HANDLE hContact, HANDLE hProcess, const char* msg );
-	int       ( *SetAwayMsg )( struct tagPROTO_INTERFACE*, int iStatus, const char* msg );
+	int       ( *SetAwayMsg )( struct tagPROTO_INTERFACE*, int iStatus, const PROTOCHAR* msg );
 
 	int       ( *UserIsTyping )( struct tagPROTO_INTERFACE*, HANDLE hContact, int type );
 
@@ -103,9 +103,9 @@ typedef struct tagPROTO_INTERFACE
 	#endif
 
 	int    m_iStatus,
-          m_iDesiredStatus,
-          m_iXStatus,
-			 m_iVersion;
+	       m_iDesiredStatus,
+	       m_iXStatus,
+	       m_iVersion;
 	TCHAR* m_tszUserName;
 	char*  m_szProtoName;
 	char*  m_szModuleName;
@@ -117,9 +117,9 @@ typedef struct tagPROTO_INTERFACE
 	virtual	HANDLE   __cdecl AddToListByEvent( int flags, int iContact, HANDLE hDbEvent ) = 0;
 
 	virtual	int      __cdecl Authorize( HANDLE hDbEvent ) = 0;
-	virtual	int      __cdecl AuthDeny( HANDLE hDbEvent, const TCHAR* szReason ) = 0;
+	virtual	int      __cdecl AuthDeny( HANDLE hDbEvent, const PROTOCHAR* szReason ) = 0;
 	virtual	int      __cdecl AuthRecv( HANDLE hContact, PROTORECVEVENT* ) = 0;
-	virtual	int      __cdecl AuthRequest( HANDLE hContact, const TCHAR* szMessage ) = 0;
+	virtual	int      __cdecl AuthRequest( HANDLE hContact, const PROTOCHAR* szMessage ) = 0;
 
 	virtual	HANDLE   __cdecl ChangeInfo( int iInfoType, void* pInfoData ) = 0;
 
@@ -154,7 +154,7 @@ typedef struct tagPROTO_INTERFACE
 	virtual	HANDLE    __cdecl GetAwayMsg( HANDLE hContact ) = 0;
 	virtual	int       __cdecl RecvAwayMsg( HANDLE hContact, int mode, PROTORECVEVENT* evt ) = 0;
 	virtual	int       __cdecl SendAwayMsg( HANDLE hContact, HANDLE hProcess, const char* msg ) = 0;
-	virtual	int       __cdecl SetAwayMsg( int iStatus, const char* msg ) = 0;
+	virtual	int       __cdecl SetAwayMsg( int iStatus, const TCHAR* msg ) = 0;
 
 	virtual	int       __cdecl UserIsTyping( HANDLE hContact, int type ) = 0;
 

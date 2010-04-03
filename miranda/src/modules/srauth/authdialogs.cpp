@@ -185,10 +185,10 @@ INT_PTR CALLBACK DenyReasonProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 				{
 					TCHAR szReason[256];
 					GetDlgItemText(hwndDlg, IDC_REASON, szReason, SIZEOF(szReason));
-					CallProtoService(dbei.szModule, PS_AUTHDENY, (WPARAM)hDbEvent, (LPARAM)szReason);
+					CallProtoService(dbei.szModule, PS_AUTHDENYT, (WPARAM)hDbEvent, (LPARAM)szReason);
 				}
 				else
-					CallProtoService(dbei.szModule, PS_AUTHDENY, (WPARAM)hDbEvent, 0);
+					CallProtoService(dbei.szModule, PS_AUTHDENYT, (WPARAM)hDbEvent, 0);
 			}
             // fall through
 
@@ -359,7 +359,7 @@ INT_PTR CALLBACK DlgProcAuthReq(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 
 				DWORD flags = CallProtoService(dbei.szModule, PS_GETCAPS,PFLAGNUM_4, 0);
 				if (flags & PF4_NOAUTHDENYREASON)
-					CallProtoService(dbei.szModule, PS_AUTHDENY, (WPARAM)hDbEvent, 0);
+					CallProtoService(dbei.szModule, PS_AUTHDENYT, (WPARAM)hDbEvent, 0);
 				else
 					DialogBoxParam(hMirandaInst, MAKEINTRESOURCE(IDD_DENYREASON), hwndDlg,
 						DenyReasonProc, (LPARAM)hDbEvent);

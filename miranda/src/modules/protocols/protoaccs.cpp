@@ -323,7 +323,7 @@ static INT_PTR stub29( PROTO_INTERFACE* ppi, WPARAM wParam, LPARAM )
 }
 
 static INT_PTR stub33( PROTO_INTERFACE* ppi, WPARAM wParam, LPARAM lParam )
-{	return ( INT_PTR )ppi->SetAwayMsg( wParam, ( const char* )lParam );
+{	return ( INT_PTR )ppi->SetAwayMsg( wParam, StrConvT(( const char* )lParam ));
 }
 
 static INT_PTR stub41( PROTO_INTERFACE* ppi, WPARAM wParam, LPARAM lParam )

@@ -244,7 +244,8 @@ will pick this up and everything will be good.
 //the operation of away messages
 //Protocol modules must support szMessage=NULL. It may either mean to use an
 //empty message, or (preferably) to not reply at all to any requests
-#define PS_SETAWAYMSG  "/SetAwayMsg"
+#define PS_SETAWAYMSG   "/SetAwayMsg"
+#define PS_SETAWAYMSGW  "/SetAwayMsgW"
 
 //Get the status mode that a protocol is currently in
 //wParam=lParam=0
@@ -271,6 +272,7 @@ will pick this up and everything will be good.
 //Returns 0 on success, nonzero on failure
 //Protocol modules must be able to cope with szReason=NULL
 #define PS_AUTHDENY    "/AuthDeny"
+#define PS_AUTHDENYW   "/AuthDenyW"
 
 // Send a "You were added" event
 // wParam=lParam=0
@@ -308,7 +310,8 @@ typedef struct {
 	char *firstName;
 	char *lastName;
 	char *email;
-	char reserved[16];
+	int flags;
+	char reserved[12];
 	//Protocols may extend this structure with extra members at will and supply
 	//a larger cbSize to reflect the new information, but they must not change
 	//any elements above this comment
@@ -434,6 +437,7 @@ typedef struct {
 	const FNAMECHAR *szFilename;  //full path. Only valid if action==FILERESUME_RENAME
 } PROTOFILERESUME;
 #define PS_FILERESUME     "/FileResume"
+#define PS_FILERESUMEW    "/FileResumeW"
 
 //Asks a protocol to join the chatroom from contact  v0.8.0+
 //wParam=(WPARAM)(HANDLE)hContact
@@ -603,7 +607,7 @@ typedef struct {
 
 //Allows a file transfer to begin
 //wParam=(WPARAM)(HANDLE)hTransfer
-//lParam=(LPARAM)(const char*)szPath
+//lParam=(LPARAM)(const TCHAR*)szPath
 //Returns a new handle to the transfer, to be used from now on
 //If szPath does not point to a directory then:
 //  if a single file is being transferred and the protocol supports file
@@ -615,12 +619,14 @@ typedef struct {
 //DWORD hTransfer
 //ASCIIZ filename(s), description
 #define PSS_FILEALLOW   "/FileAllow"
+#define PSS_FILEALLOWW  "/FileAllowW"
 
 //Refuses a file transfer request
 //wParam=(WPARAM)(HANDLE)hTransfer
-//lParam=(LPARAM)(const char*)szReason
+//lParam=(LPARAM)(const TCHAR*)szReason
 //Returns 0 on success, nonzero on failure
 #define PSS_FILEDENY    "/FileDeny"
+#define PSS_FILEDENYW   "/FileDenyW"
 
 //Cancel an in-progress file transfer
 //wParam=(WPARAM)(HANDLE)hTransfer
@@ -629,12 +635,13 @@ typedef struct {
 #define PSS_FILECANCEL  "/FileCancel"
 
 //Initiate a file send
-//wParam=(WPARAM)(const char*)szDescription
-//lParam=(LPARAM)(char **)ppszFiles
+//wParam=(WPARAM)(const TCHAR*)szDescription
+//lParam=(LPARAM)(TCHAR **)ppszFiles
 //Returns a transfer handle on success, NULL on failure
 //All notification is done through acks, with type=ACKTYPE_FILE
 //If result=ACKRESULT_FAILED then lParam=(LPARAM)(const char*)szReason
 #define PSS_FILE    "/SendFile"
+#define PSS_FILEW   "/SendFileW"
 
 //Set the status mode you will appear in to a user
 //wParam=statusMode
@@ -651,6 +658,7 @@ typedef struct {
 // lParam=(const TCHAR *)szMessage
 // Returns 0 on success, nonzero on failure
 #define PSS_AUTHREQUEST    "/AuthRequest"
+#define PSS_AUTHREQUESTW   "/AuthRequestW"
 
 // Send "User is Typing" (user is typing a message to the user) v0.3.3+
 // wParam=(WPARAM)(HANDLE)hContact
@@ -680,7 +688,7 @@ typedef struct {
 //wParam=0
 //lParam=(LPARAM)(PROTORECVEVENT*)&pre
 //DB event: EVENTTYPE_MESSAGE, blob contains szMessage without 0 terminator
-//Returns a handle to the newly added event, or NULL on failure
+//Return 0 - success, other failure
 typedef struct {
 	DWORD flags;
 	DWORD timestamp;   //unix time
@@ -771,5 +779,28 @@ typedef struct {
 //pre.szMessage is same format as blob
 //pre.lParam is the size of the blob
 #define PSR_AUTH		"/RecvAuth"
+
+
+#ifdef _UNICODE
+
+#define PS_SETAWAYMSGT   PS_SETAWAYMSGW
+#define PSS_FILET        PSS_FILEW
+#define PSS_FILEALLOWT   PSS_FILEALLOWW
+#define PSS_FILEDENYT    PSS_FILEDENYW
+#define PSS_AUTHREQUESTT PSS_AUTHREQUESTW
+#define PS_AUTHDENYT     PS_AUTHDENYW
+#define PS_FILERESUMET   PS_FILERESUMEW
+
+#else
+
+#define PS_SETAWAYMSGT   PS_SETAWAYMSG
+#define PSS_FILET        PSS_FILE
+#define PSS_FILEALLOWT   PSS_FILEALLOW
+#define PSS_FILEDENYT    PSS_FILEDENY
+#define PSS_AUTHREQUESTT PSS_AUTHREQUEST
+#define PS_AUTHDENYT     PS_AUTHDENY
+#define PS_FILERESUMET   PS_FILERESUME
+
+#endif
 
 #endif  // M_PROTOSVC_H__
