@@ -310,7 +310,7 @@ HANDLE CJabberProto::GetIconHandle( int iconId )
 
 HICON CJabberProto::LoadIconEx( const char* name, bool big )
 {
-	if (HICON result = g_LoadIconEx(name))
+	if (HICON result = g_LoadIconEx(name, big))
 		return result;
 
 	char szSettingName[100];
