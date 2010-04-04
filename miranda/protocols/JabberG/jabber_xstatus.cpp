@@ -233,7 +233,7 @@ void CJabberDlgPepSimple::OnInitDialog()
 {
 	CSuper::OnInitDialog();
 
-	SendMessage(m_hwnd, WM_SETICON, ICON_BIG, (LPARAM)m_proto->LoadIconEx("main"));
+	WindowSetIcon( m_hwnd, m_proto, "main" );
 	SetWindowText(m_hwnd, m_title);
 
 	m_txtDescription.Enable(false);

@@ -675,7 +675,7 @@ public:
 	{
 		CSuper::OnInitDialog();
 
-		SendMessage(m_hwnd, WM_SETICON, ICON_BIG, (LPARAM)m_proto->LoadIconEx("openid"));
+		WindowSetIcon( m_hwnd, m_proto, "openid" );
 		SendDlgItemMessage(m_hwnd, IDC_HEADERBAR, WM_SETICON, 0, (LPARAM)m_proto->LoadIconEx("openid"));
 
 		SetDlgItemText(m_hwnd, IDC_TXT_URL, m_pParams->m_szUrl);

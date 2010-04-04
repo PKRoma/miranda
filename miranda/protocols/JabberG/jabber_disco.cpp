@@ -637,7 +637,7 @@ void CJabberDlgDiscovery::OnInitDialog()
 	CSuper::OnInitDialog();
 
 //	TranslateDialogDefault( m_hwnd );
-	SendMessage( m_hwnd, WM_SETICON, ICON_BIG, ( LPARAM )m_proto->LoadIconEx( "servicediscovery" ));
+	WindowSetIcon( m_hwnd, m_proto, "servicediscovery" );
 
 	int i;
 

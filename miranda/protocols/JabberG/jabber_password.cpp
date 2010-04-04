@@ -49,7 +49,7 @@ static INT_PTR CALLBACK JabberChangePasswordDlgProc( HWND hwndDlg, UINT msg, WPA
 		ppro = (CJabberProto*)lParam;
 		SetWindowLongPtr( hwndDlg, GWLP_USERDATA, ( LONG_PTR )lParam );
 
-		SendMessage( hwndDlg, WM_SETICON, ICON_BIG, ( LPARAM )ppro->LoadIconEx( "key" ));
+		WindowSetIcon( hwndDlg, ppro, "key" );
 		TranslateDialogDefault( hwndDlg );
 		if ( ppro->m_bJabberOnline && ppro->m_ThreadInfo!=NULL ) {
 			TCHAR text[128];
@@ -96,6 +96,7 @@ static INT_PTR CALLBACK JabberChangePasswordDlgProc( HWND hwndDlg, UINT msg, WPA
 		break;
 	case WM_DESTROY:
 		ppro->m_hwndJabberChangePassword = NULL;
+		WindowFreeIcon( hwndDlg );
 		break;
 	}
 

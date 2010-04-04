@@ -308,14 +308,14 @@ HANDLE CJabberProto::GetIconHandle( int iconId )
 	return NULL;
 }
 
-HICON CJabberProto::LoadIconEx( const char* name )
+HICON CJabberProto::LoadIconEx( const char* name, bool big )
 {
 	if (HICON result = g_LoadIconEx(name))
 		return result;
 
 	char szSettingName[100];
 	mir_snprintf( szSettingName, sizeof( szSettingName ), "%s_%s", m_szModuleName, name );
-	return ( HICON )JCallService( MS_SKIN2_GETICON, 0, (LPARAM)szSettingName );
+	return ( HICON )JCallService( MS_SKIN2_GETICON, big, (LPARAM)szSettingName );
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -722,4 +722,16 @@ void ImageList_AddIcon_Icolib( HIMAGELIST hIml, HICON hIcon )
 {
 	ImageList_AddIcon( hIml, hIcon );
 	g_ReleaseIcon( hIcon );
+}
+
+void WindowSetIcon(HWND hWnd, CJabberProto *proto, const char* name)
+{
+	SendMessage(hWnd, WM_SETICON, ICON_BIG, ( LPARAM )proto->LoadIconEx( name, true ));
+	SendMessage(hWnd, WM_SETICON, ICON_SMALL, ( LPARAM )proto->LoadIconEx( name ));
+}
+
+void WindowFreeIcon(HWND hWnd)
+{
+	g_ReleaseIcon(( HICON )SendMessage(hWnd, WM_SETICON, ICON_BIG, 0));
+	g_ReleaseIcon(( HICON )SendMessage(hWnd, WM_SETICON, ICON_SMALL, 0));
 }

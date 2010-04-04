@@ -253,7 +253,7 @@ CJabberDlgNoteItem::CJabberDlgNoteItem(CJabberProto *proto, CNoteItem *pNote, TF
 void CJabberDlgNoteItem::OnInitDialog()
 {
 	CSuper::OnInitDialog();
-	SendMessage(m_hwnd, WM_SETICON, ICON_BIG, (LPARAM)m_proto->LoadIconEx("notes"));
+	WindowSetIcon( m_hwnd, m_proto, "notes" );
 
 	if (m_fnProcess)
 	{
@@ -673,7 +673,7 @@ void CJabberDlgNotes::UpdateData()
 void CJabberDlgNotes::OnInitDialog()
 {
 	CSuper::OnInitDialog();
-	SendMessage(m_hwnd, WM_SETICON, ICON_BIG, (LPARAM)m_proto->LoadIconEx("notes"));
+	WindowSetIcon( m_hwnd, m_proto, "notes" );
 	SendDlgItemMessage(m_hwnd, IDC_HEADERBAR, WM_SETICON, 0, (LPARAM)g_LoadIconEx("notes", true));
 
 	LOGFONT lf, lfTmp;

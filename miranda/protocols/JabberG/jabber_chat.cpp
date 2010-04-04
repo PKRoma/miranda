@@ -898,7 +898,7 @@ static LRESULT CALLBACK sttUserInfoDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam
 		SetWindowLongPtr(hwndDlg, GWLP_USERDATA, lParam);
 		dat = (TUserInfoData *)lParam;
 
-		SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)dat->ppro->LoadIconEx("group"));
+		WindowSetIcon( hwndDlg, dat->ppro, "group" );
 		SendDlgItemMessage(hwndDlg, IDC_HEADERBAR, WM_SETICON, 0, (LPARAM)g_LoadIconEx("group", true));
 
 		LOGFONT lf;
@@ -1034,8 +1034,10 @@ static LRESULT CALLBACK sttUserInfoDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam
 
 	case WM_DESTROY:
 		{
+			WindowFreeIcon( hwndDlg );
 			g_ReleaseIcon(( HICON )SendDlgItemMessage( hwndDlg, IDC_BTN_AFFILIATION, BM_SETIMAGE, IMAGE_ICON, 0 ));
 			g_ReleaseIcon(( HICON )SendDlgItemMessage( hwndDlg, IDC_BTN_ROLE, BM_SETIMAGE, IMAGE_ICON, 0 ));
+			g_ReleaseIcon(( HICON )SendDlgItemMessage( hwndDlg, IDC_HEADERBAR, WM_SETICON, ICON_BIG, 0 ));
 			TUserInfoData *dat = (TUserInfoData *)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 			if (!dat)break;
 			SetWindowLongPtr(hwndDlg, GWLP_USERDATA, 0);

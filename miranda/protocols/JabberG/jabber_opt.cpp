@@ -1484,6 +1484,8 @@ static INT_PTR CALLBACK JabberRosterOptDlgProc( HWND hwndDlg, UINT msg, WPARAM w
 		{
 			Utils_SaveWindowPosition(hwndDlg, NULL, ppro->m_szModuleName, "rosterCtrlWnd_");
 			ppro->rrud.hwndDlg = NULL;
+			WindowFreeIcon(hwndDlg);
+			g_ReleaseIcon(( HICON )SendDlgItemMessage(hwndDlg, IDC_HEADERBAR, WM_SETICON, ICON_BIG, 0 ));
 			break;
 		}
 	case WM_INITDIALOG:
@@ -1492,7 +1494,7 @@ static INT_PTR CALLBACK JabberRosterOptDlgProc( HWND hwndDlg, UINT msg, WPARAM w
 			SetWindowLongPtr( hwndDlg, GWLP_USERDATA, lParam );
 
 			TranslateDialogDefault( hwndDlg );
-			SendMessage( hwndDlg, WM_SETICON, ICON_BIG, ( LPARAM )ppro->LoadIconEx( "Agents" ));
+			WindowSetIcon( hwndDlg, ppro, "Agents" );
 			SendDlgItemMessage( hwndDlg, IDC_HEADERBAR, WM_SETICON, 0, (LPARAM)g_LoadIconEx("Agents", true));
 
 			Utils_RestoreWindowPosition(hwndDlg, NULL, ppro->m_szModuleName, "rosterCtrlWnd_");

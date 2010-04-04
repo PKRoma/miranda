@@ -414,7 +414,7 @@ void CJabberDlgConsole::OnInitDialog()
 
 	int i;
 
-	SendMessage(m_hwnd, WM_SETICON, ICON_BIG, (LPARAM)m_proto->LoadIconEx("xmlconsole"));
+	WindowSetIcon( m_hwnd, m_proto, "xmlconsole" );
 	SendDlgItemMessage(m_hwnd, IDC_CONSOLE, EM_SETEDITSTYLE, SES_EXTENDBACKCOLOR, SES_EXTENDBACKCOLOR);
 	SendDlgItemMessage(m_hwnd, IDC_CONSOLE, EM_EXLIMITTEXT, 0, 0x80000000);
 
