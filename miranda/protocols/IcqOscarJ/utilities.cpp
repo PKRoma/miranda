@@ -608,7 +608,7 @@ HANDLE CIcqProto::HContactFromUID(DWORD dwUin, const char *szUid, int *Added)
 HANDLE CIcqProto::HContactFromAuthEvent(HANDLE hEvent)
 {
 	DBEVENTINFO dbei;
-	DWORD body[2];
+	DWORD body[3];
 
 	ZeroMemory(&dbei, sizeof(dbei));
 	dbei.cbSize = sizeof(dbei);
@@ -624,7 +624,7 @@ HANDLE CIcqProto::HContactFromAuthEvent(HANDLE hEvent)
 	if (strcmpnull(dbei.szModule, m_szModuleName))
 		return INVALID_HANDLE_VALUE;
 
-	return (HANDLE)body[1]; // this is bad - needs new auth system
+	return *(HANDLE*)&body[1]; // this is bad - needs new auth system
 }
 
 char *NickFromHandle(HANDLE hContact)
