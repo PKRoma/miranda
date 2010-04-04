@@ -5,7 +5,7 @@
 // Copyright © 2000-2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001-2002 Jon Keating, Richard Hughes
 // Copyright © 2002-2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004-2009 Joe Kucera
+// Copyright © 2004-2010 Joe Kucera
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -19,7 +19,7 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with this program; if not, write to the Free Software
-// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 //
 // -----------------------------------------------------------------------------
 //
@@ -1617,19 +1617,8 @@ void CIcqProto::handleServerCListItemDelete(const char *szRecordName, WORD wGrou
 
 void CIcqProto::handleRecvAuthRequest(unsigned char *buf, WORD wLen)
 {
-	WORD wReasonLen;
 	DWORD dwUin;
 	uid_str szUid;
-	HANDLE hcontact;
-	CCSDATA ccs;
-	PROTORECVEVENT pre;
-	char* szReason;
-	int nReasonLen;
-	char* szNick;
-	int nNickLen;
-	char* szBlob;
-	char* pCurBlob;
-	DBVARIANT dbv = { 0 };
 	int bAdded;
 
 	if (!unpackUID(&buf, &wLen, &dwUin, &szUid)) return;
@@ -1640,84 +1629,87 @@ void CIcqProto::handleRecvAuthRequest(unsigned char *buf, WORD wLen)
 		return;
 	}
 
+	WORD wReasonLen;
 	unpackWord(&buf, &wReasonLen);
 	wLen -= 2;
 	if (wReasonLen > wLen)
 		return;
 
-	hcontact = HContactFromUID(dwUin, szUid, &bAdded);
+	HANDLE hContact = HContactFromUID(dwUin, szUid, &bAdded);
+	CCSDATA ccs;
+	PROTORECVEVENT pre;
 
-	ccs.szProtoService=PSR_AUTH;
-	ccs.hContact=hcontact;
-	ccs.wParam=0;
-	ccs.lParam=(LPARAM)&pre;
-	pre.flags=0;
-	pre.timestamp=time(NULL);
-	pre.lParam=sizeof(DWORD)+sizeof(HANDLE)+wReasonLen+5;
-	szReason = (char*)SAFE_MALLOC(wReasonLen+1);
+	ccs.szProtoService = PSR_AUTH;
+	ccs.hContact = hContact;
+	ccs.wParam = 0;
+	ccs.lParam = (LPARAM)&pre;
+	pre.flags = 0;
+	pre.timestamp = time(NULL);
+	pre.lParam = sizeof(DWORD) + sizeof(HANDLE) + 5;
+	// Prepare reason
+	char *szReason = (char*)SAFE_MALLOC(wReasonLen + 1);
+	int nReasonLen = 0;
 	if (szReason)
 	{
 		memcpy(szReason, buf, wReasonLen);
 		szReason[wReasonLen] = '\0';
-		pre.flags = UTF8_IsValid(szReason) ? PREF_UTF : 0;
+		nReasonLen = strlennull(szReason);
+
+		char *temp = (char*)_alloca(nReasonLen + 2);
+		if (!IsUSASCII(szReason, nReasonLen) && UTF8_IsValid(szReason) && utf8_decode_static(szReason, temp, nReasonLen + 1)) 
+			pre.flags |= PREF_UTF;
 	}
-	nReasonLen = strlennull(szReason);
 	// Read nick name from DB
+	char *szNick = NULL;
 	if (dwUin)
 	{
-		if (pre.flags ? DBGetContactSettingUTF8String(hcontact, m_szModuleName, "Nick", &dbv) : 
-			getSettingString(hcontact, "Nick", &dbv))
-			nNickLen = 0;
-		else
+		DBVARIANT dbv = { 0 };
+		if (pre.flags & PREF_UTF)
+			szNick = getSettingStringUtf(hContact, "Nick", NULL);
+		else if (!getSettingString(hContact, "Nick", &dbv))
 		{
-			szNick = dbv.pszVal;
-			nNickLen = strlennull(szNick);
+			szNick = null_strdup(dbv.pszVal);
+			ICQFreeVariant(&dbv);
 		}
 	}
 	else
-		nNickLen = strlennull(szUid);
+		szNick = null_strdup(szUid);
+	int nNickLen = strlennull(szNick);
+
 	pre.lParam += nNickLen + nReasonLen;
 
 	setSettingByte(ccs.hContact, "Grant", 1);
 
 	/*blob is: uin(DWORD), hcontact(HANDLE), nick(ASCIIZ), first(ASCIIZ), last(ASCIIZ), email(ASCIIZ), reason(ASCIIZ)*/
-	pCurBlob=szBlob=(char *)_alloca(pre.lParam);
-	memcpy(pCurBlob,&dwUin,sizeof(DWORD)); pCurBlob+=sizeof(DWORD);
-	memcpy(pCurBlob,&hcontact,sizeof(HANDLE)); pCurBlob+=sizeof(HANDLE);
-	if (nNickLen && dwUin) 
+	char *szBlob = (char *)_alloca(pre.lParam);
+	char *pCurBlob = szBlob;
+	memcpy(pCurBlob, &dwUin, sizeof(DWORD)); pCurBlob += sizeof(DWORD);
+	memcpy(pCurBlob, &hContact, sizeof(HANDLE)); pCurBlob += sizeof(HANDLE);
+	if (nNickLen) 
 	{ // if we have nick we add it, otherwise keep trailing zero
 		memcpy(pCurBlob, szNick, nNickLen);
-		pCurBlob+=nNickLen;
+		pCurBlob += nNickLen;
 	}
-	else
-	{
-		memcpy(pCurBlob, szUid, nNickLen);
-		pCurBlob+=nNickLen;
-	}
-	*(char *)pCurBlob = 0; pCurBlob++;
-	*(char *)pCurBlob = 0; pCurBlob++;
-	*(char *)pCurBlob = 0; pCurBlob++;
-	*(char *)pCurBlob = 0; pCurBlob++;
+	*pCurBlob = 0; pCurBlob++; // Nick
+	*pCurBlob = 0; pCurBlob++; // FirstName
+	*pCurBlob = 0; pCurBlob++; // LastName
+	*pCurBlob = 0; pCurBlob++; // email
 	if (nReasonLen)
 	{
 		memcpy(pCurBlob, szReason, nReasonLen);
 		pCurBlob += nReasonLen;
 	}
-	else
-	{
-		memcpy(pCurBlob, buf, wReasonLen); 
-		pCurBlob += wReasonLen;
-	}
-	*(char *)pCurBlob = 0;
-	pre.szMessage=(char *)szBlob;
+	*pCurBlob = 0; // Reason
+	pre.szMessage = szBlob;
 
 	// TODO: Change for new auth system, include all known informations
 	CallService(MS_PROTO_CHAINRECV,0,(LPARAM)&ccs);
 
-	SAFE_FREE((void**)&szReason);
-	ICQFreeVariant(&dbv);
+	SAFE_FREE(&szNick);
+	SAFE_FREE(&szReason);
 	return;
 }
+
 
 void CIcqProto::handleRecvAdded(unsigned char *buf, WORD wLen)
 {
@@ -1725,7 +1717,6 @@ void CIcqProto::handleRecvAdded(unsigned char *buf, WORD wLen)
 	uid_str szUid;
 	DWORD cbBlob;
 	PBYTE pBlob,pCurBlob;
-	HANDLE hContact;
 	int bAdded;
 	char* szNick;
 	int nNickLen;
@@ -1739,7 +1730,7 @@ void CIcqProto::handleRecvAdded(unsigned char *buf, WORD wLen)
 		return;
 	}
 
-	hContact=HContactFromUID(dwUin, szUid, &bAdded);
+	HANDLE hContact = HContactFromUID(dwUin, szUid, &bAdded);
 
 	deleteSetting(hContact, "Grant");
 
@@ -1783,18 +1774,17 @@ void CIcqProto::handleRecvAdded(unsigned char *buf, WORD wLen)
 	AddEvent(NULL, EVENTTYPE_ADDED, time(NULL), 0, cbBlob, pBlob);
 }
 
+
 void CIcqProto::handleRecvAuthResponse(unsigned char *buf, WORD wLen)
 {
-	BYTE bResponse;
 	DWORD dwUin;
 	uid_str szUid;
-	HANDLE hContact;
-	char* szNick;
+	char* szNick = NULL;
 	WORD nReasonLen;
 	char* szReason;
 	int bAdded;
 
-	bResponse = 0xFF;
+	BYTE bResponse = 0xFF;
 
 	if (!unpackUID(&buf, &wLen, &dwUin, &szUid)) return;
 
@@ -1804,7 +1794,7 @@ void CIcqProto::handleRecvAuthResponse(unsigned char *buf, WORD wLen)
 		return;
 	}
 
-	hContact = HContactFromUID(dwUin, szUid, &bAdded);
+	HANDLE hContact = HContactFromUID(dwUin, szUid, &bAdded);
 
 	if (hContact != INVALID_HANDLE_VALUE) szNick = NickFromHandle(hContact);
 
@@ -1844,8 +1834,9 @@ void CIcqProto::handleRecvAuthResponse(unsigned char *buf, WORD wLen)
 		break;
 
 	}
-	SAFE_FREE((void**)&szNick);
+	SAFE_FREE(&szNick);
 }
+
 
 // Updates the visibility code used while in SSI mode. If a server ID is
 // not stored in the local DB, a new ID will be added to the server list.
