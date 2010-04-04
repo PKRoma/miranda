@@ -370,6 +370,7 @@ static GGPROTO *gg_proto_init(const char* pszProtoName, const TCHAR* tszUserName
 	// Init instance names
 	gg->proto.m_szModuleName = mir_strdup(pszProtoName);
 	gg->proto.m_szProtoName = GGDEF_PROTONAME;
+	gg->proto.m_iVersion = 2;
 
 /* Anyway we won't get Unicode in GG yet */
 #ifdef _UNICODE

@@ -512,11 +512,12 @@ HANDLE gg_getawaymsg(PROTO_INTERFACE *proto, HANDLE hContact)
 
 //////////////////////////////////////////////////////////
 // when away message is beging set
-int gg_setawaymsg(PROTO_INTERFACE *proto, int iStatus, const char *msg)
+int gg_setawaymsg(PROTO_INTERFACE *proto, int iStatus, const TCHAR *msgt)
 {
 	GGPROTO *gg = (GGPROTO *)proto;
 	int status = gg_normalizestatus(iStatus);
 	char **szMsg;
+	char* msg = mir_t2a(msgt);
 
 #ifdef DEBUGMODE
 	gg_netlog(gg, "gg_setawaymsg(): Requesting away message set to \"%s\".", msg);
@@ -544,6 +545,7 @@ int gg_setawaymsg(PROTO_INTERFACE *proto, int iStatus, const char *msg)
 			break;
 		default:
 			LeaveCriticalSection(&gg->modemsg_mutex);
+			mir_free(msg);
 			return 1;
 	}
 
@@ -557,6 +559,7 @@ int gg_setawaymsg(PROTO_INTERFACE *proto, int iStatus, const char *msg)
 			gg_netlog(gg, "gg_setawaymsg(): Message hasn't been changed, return.");
 #endif
 			LeaveCriticalSection(&gg->modemsg_mutex);
+			mir_free(msg);
 			return 0;
 		}
 	}
@@ -584,6 +587,7 @@ int gg_setawaymsg(PROTO_INTERFACE *proto, int iStatus, const char *msg)
 	}
 #endif
 
+	mir_free(msg);
 	return 0;
 }
 
