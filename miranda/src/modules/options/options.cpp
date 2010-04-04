@@ -1374,13 +1374,9 @@ static void OpenOptionsNow(const char *pszGroup,const char *pszPage,const char *
 			psh.pszCaption = TranslateT("Miranda IM Options");
 			psh.ppsp = (PROPSHEETPAGE*)opi.odp;		  //blatent misuse of the structure, but what the hell
 
-			bool tl = !(GetWindowLong(cli.hwndContactList, GWL_STYLE) & (WS_CHILD | WS_POPUP)) && 
-				!(GetWindowLong(cli.hwndContactList, GWL_EXSTYLE) & WS_EX_TOOLWINDOW);
-			HWND hwndParent = tl ? cli.hwndContactList : NULL;
-
 			hwndOptions = CreateDialogParam(hMirandaInst, 
 				MAKEINTRESOURCE(bSinglePage ? IDD_OPTIONSPAGE : IDD_OPTIONS),
-				hwndParent, OptionsDlgProc, (LPARAM)&psh);
+				NULL, OptionsDlgProc, (LPARAM)&psh);
 
 			FreeOptionsData( &opi );
 }	}	}

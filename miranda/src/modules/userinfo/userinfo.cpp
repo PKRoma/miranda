@@ -100,11 +100,7 @@ static INT_PTR ShowDetailsDialogCommand(WPARAM wParam,LPARAM)
 	psh.pszCaption = (TCHAR*)wParam;	  //more abuses of structure: this is hContact
 	psh.ppsp = (PROPSHEETPAGE*)opi.odp;		  //blatent misuse of the structure, but what the hell
 
-	bool tl = !(GetWindowLong(cli.hwndContactList, GWL_STYLE) & (WS_CHILD | WS_POPUP)) && 
-		!(GetWindowLong(cli.hwndContactList, GWL_EXSTYLE) & WS_EX_TOOLWINDOW);
-	HWND hwndParent = tl ? cli.hwndContactList : NULL;
-
-	CreateDialogParam(hMirandaInst,MAKEINTRESOURCE(IDD_DETAILS), hwndParent, DlgProcDetails, (LPARAM)&psh);
+	CreateDialogParam(hMirandaInst,MAKEINTRESOURCE(IDD_DETAILS), NULL, DlgProcDetails, (LPARAM)&psh);
 	for(i=0;i<opi.pageCount;i++) {
 		//cleanup moved to WM_DESTROY
 		//mir_free((char*)opi.odp[i].pszTitle);
