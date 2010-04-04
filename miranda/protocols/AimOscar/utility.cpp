@@ -278,16 +278,16 @@ void CAimProto::add_contact_to_group(HANDLE hContact, const char* new_group)
 		else
 			DBDeleteContactSetting(hContact, MOD_KEY_CL, OTH_KEY_GP);
 
+		LOG("Adding buddy %s:%u %s:%u to the serverside list", dbv.pszVal, new_item_id, new_group, new_group_id);
+		aim_add_contact(hServerConn, seqno, dbv.pszVal, new_item_id, new_group_id, 0, nick);
+		update_server_group(new_group, new_group_id);
+
 		if (old_group_id && item_id)
 		{
 			LOG("Removing buddy %s:%u %s:%u from the serverside list", dbv.pszVal, item_id, old_group, old_group_id);
 			aim_delete_contact(hServerConn, seqno, dbv.pszVal, item_id, old_group_id, 0);
 			update_server_group(old_group, old_group_id);
 		}
-
-		LOG("Adding buddy %s:%u %s:%u to the serverside list", dbv.pszVal, new_item_id, new_group, new_group_id);
-		aim_add_contact(hServerConn, seqno, dbv.pszVal, new_item_id, new_group_id, 0, nick);
-		update_server_group(new_group, new_group_id);
 
 		DBFreeVariant(&dbv);
 		deleteSetting(hContact, AIM_KEY_NC);
