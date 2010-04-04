@@ -93,7 +93,7 @@ void CWhoisDlg::OnInitDialog()
 
 	CCoolIrcDlg::OnInitDialog();
 
-	SendMessage( m_hwnd, WM_SETICON, ICON_BIG,(LPARAM)m_proto->LoadIconEx(IDI_WHOIS)); // Tell the dialog to use it
+	m_proto->WindowSetIcon( m_hwnd, IDI_WHOIS );
 }
 
 void CWhoisDlg::OnClose()
@@ -214,7 +214,7 @@ CNickDlg::CNickDlg(CIrcProto *_pro) :
 void CNickDlg::OnInitDialog()
 {
 	CCoolIrcDlg::OnInitDialog();
-	SendMessage( m_hwnd, WM_SETICON, ICON_BIG,(LPARAM)m_proto->LoadIconEx(IDI_RENAME)); // Tell the dialog to use it
+	m_proto->WindowSetIcon( m_hwnd, IDI_RENAME );
 
 	DBVARIANT dbv;
 	if ( !m_proto->getTString( "RecentNicks", &dbv)) {
@@ -297,8 +297,7 @@ void CListDlg::OnInitDialog()
 
 	m_list.SetExtendedListViewStyle( LVS_EX_FULLROWSELECT );
 	m_list2.SetExtendedListViewStyle( LVS_EX_FULLROWSELECT );
-	SendMessage( m_hwnd,WM_SETICON,ICON_BIG,(LPARAM)m_proto->LoadIconEx(IDI_LIST)); // Tell the dialog to use it
-	
+	m_proto->WindowSetIcon( m_hwnd, IDI_LIST );
 	m_status.SetText( TranslateT( "Please wait..." ));
 }
 
@@ -718,6 +717,13 @@ CQuestionDlg::CQuestionDlg(CIrcProto *_pro, CManagerDlg* owner ) :
 	m_Ok.OnClick = Callback( this, &CQuestionDlg::OnOk );
 }
 
+void CQuestionDlg::OnInitDialog()
+{
+	CCoolIrcDlg::OnInitDialog();
+
+	m_proto->WindowSetIcon( m_hwnd, IDI_IRCQUESTION );
+}
+
 void CQuestionDlg::OnClose()
 {
 	if ( m_owner )
@@ -873,7 +879,7 @@ void CManagerDlg::OnInitDialog()
 	HWND hwndEdit = ChildWindowFromPoint( m_topic.GetHwnd(), pt); 
 	OldMgrEditProc = (WNDPROC)SetWindowLongPtr(hwndEdit, GWLP_WNDPROC,(LONG_PTR)MgrEditSubclassProc); 
 	
-	SendMessage( m_hwnd,WM_SETICON,ICON_BIG,(LPARAM)m_proto->LoadIconEx(IDI_MANAGER));
+	m_proto->WindowSetIcon( m_hwnd, IDI_MANAGER );
 
 	m_list.SendMsg( LB_SETHORIZONTALEXTENT, 750, NULL );
 	m_radio1.SetState( true );
@@ -1383,8 +1389,6 @@ void CCoolIrcDlg::OnInitDialog()
 	SendDlgItemMessage( m_hwnd,IDC_CAPTION,WM_SETFONT,(WPARAM)hFont,0);
 
 	SendDlgItemMessage( m_hwnd, IDC_LOGO, STM_SETICON,(LPARAM)(HICON)m_proto->LoadIconEx(IDI_LOGO), 0);
-	SendMessage( m_hwnd, WM_SETICON, ICON_BIG,(LPARAM)m_proto->LoadIconEx(IDI_IRCQUESTION)); // Tell the dialog to use it
-
 }
 
 void CCoolIrcDlg::OnDestroy()
@@ -1392,6 +1396,9 @@ void CCoolIrcDlg::OnDestroy()
 	HFONT hFont = (HFONT)SendDlgItemMessage( m_hwnd,IDC_CAPTION,WM_GETFONT,0,0);
 	SendDlgItemMessage( m_hwnd,IDC_CAPTION,WM_SETFONT,SendDlgItemMessage( m_hwnd,IDOK,WM_GETFONT,0,0),0);
 	DeleteObject(hFont);
+
+	m_proto->ReleaseIconEx((HICON)SendDlgItemMessage(m_hwnd, IDC_LOGO, STM_SETICON, 0, 0));
+	m_proto->WindowFreeIcon(m_hwnd);
 }
 
 INT_PTR CCoolIrcDlg::DlgProc(UINT msg, WPARAM wParam, LPARAM lParam)

@@ -308,12 +308,13 @@ INT_PTR __cdecl CIrcProto::OnQuickConnectMenuCommand(WPARAM, LPARAM)
 	if ( !m_quickDlg ) {
 		m_quickDlg = new CQuickDlg( this );
 		m_quickDlg->Show();
+
+		SetWindowText( m_quickDlg->GetHwnd(), TranslateT( "Quick connect" ));
+		SetDlgItemText( m_quickDlg->GetHwnd(), IDC_TEXT, TranslateT( "Please select IRC network and enter the password if needed" ));
+		SetDlgItemText( m_quickDlg->GetHwnd(), IDC_CAPTION, TranslateT( "Quick connect" ));
+		WindowSetIcon( m_quickDlg->GetHwnd(), IDI_QUICK );
 	}
 
-	SetWindowText( m_quickDlg->GetHwnd(), TranslateT( "Quick connect" ));
-	SetDlgItemText( m_quickDlg->GetHwnd(), IDC_TEXT, TranslateT( "Please select IRC network and enter the password if needed" ));
-	SetDlgItemText( m_quickDlg->GetHwnd(), IDC_CAPTION, TranslateT( "Quick connect" ));
-	SendMessage( m_quickDlg->GetHwnd(), WM_SETICON, ICON_BIG, ( LPARAM )LoadIconEx( IDI_QUICK ));
 	ShowWindow( m_quickDlg->GetHwnd(), SW_SHOW );
 	SetActiveWindow( m_quickDlg->GetHwnd() );
 	return 0;

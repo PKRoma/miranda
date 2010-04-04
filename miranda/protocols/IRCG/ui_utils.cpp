@@ -556,6 +556,11 @@ CCtrlMButton::CCtrlMButton( CDlgBase* dlg, int ctrlId, int iCoreIcon, const char
 {
 }
 
+CCtrlMButton::~CCtrlMButton()
+{
+	if ( m_hIcon ) CallService( MS_SKIN2_RELEASEICON, (WPARAM)m_hIcon, 0 );
+}
+
 void CCtrlMButton::OnInit()
 {
 	CCtrlButton::OnInit();

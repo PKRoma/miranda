@@ -246,7 +246,7 @@ void CIrcProto::AddIcons(void)
 		hIconLibItems[i] = ( HANDLE )CallService( MS_SKIN2_ADDICON, 0, ( LPARAM )&sid );
 }	}
 
-HICON CIrcProto::LoadIconEx( int iconId )
+HICON CIrcProto::LoadIconEx( int iconId, bool big )
 {
 	for ( int i=0; i < SIZEOF(iconList); i++ )
 		if ( iconList[i].defIconID == iconId )
@@ -263,6 +263,24 @@ HANDLE CIrcProto::GetIconHandle( int iconId )
 
 	return NULL;
 }
+
+void CIrcProto::ReleaseIconEx( HICON hIcon )
+{
+	if ( hIcon ) CallService(MS_SKIN2_RELEASEICON, (WPARAM)hIcon, 0);
+}
+
+void CIrcProto::WindowSetIcon( HWND hWnd, int iconId )
+{
+	SendMessage(hWnd, WM_SETICON, ICON_BIG, ( LPARAM )LoadIconEx( iconId, true ));
+	SendMessage(hWnd, WM_SETICON, ICON_SMALL, ( LPARAM )LoadIconEx( iconId ));
+}
+
+void CIrcProto::WindowFreeIcon( HWND hWnd )
+{
+	ReleaseIconEx(( HICON )SendMessage(hWnd, WM_SETICON, ICON_BIG, 0));
+	ReleaseIconEx(( HICON )SendMessage(hWnd, WM_SETICON, ICON_SMALL, 0));
+}
+
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // code page handler

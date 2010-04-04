@@ -928,8 +928,7 @@ int CIrcProto::SetStatusInternal( int iNewStatus, bool bIsInternal )
 			SetWindowTextA(hwnd, "Miranda IRC");
 			SetWindowText(GetDlgItem(hwnd, IDC_TEXT), TranslateT("Please choose an IRC-network to go online. This network will be the default."));
 			SetWindowText(GetDlgItem(hwnd, IDC_CAPTION), TranslateT("Default network"));
-			HICON hIcon = LoadIconEx(IDI_MAIN);
-			SendMessage(hwnd, WM_SETICON, ICON_BIG,(LPARAM)hIcon);
+			WindowSetIcon(hwnd, IDI_MAIN);
 			ShowWindow(hwnd, SW_SHOW);
 			SetActiveWindow(hwnd);
 		}
