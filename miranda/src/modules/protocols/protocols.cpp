@@ -288,15 +288,14 @@ static INT_PTR Proto_ContactIsTyping(WPARAM wParam,LPARAM lParam)
 
 void Proto_SetStatus(const char* szProto, unsigned status)
 {
-//	if ( CallProtoService( szProto, PS_GETCAPS, PFLAGNUM_1, 0 ) & PF1_MODEMSGSEND ) {
-	{
+	if ( CallProtoService( szProto, PS_GETCAPS, PFLAGNUM_1, 0 ) & PF1_MODEMSGSEND ) {
 		TCHAR* awayMsg = ( TCHAR* )CallService( MS_AWAYMSG_GETSTATUSMSGW, (WPARAM) status, (LPARAM) szProto );
 		if (( INT_PTR )awayMsg == CALLSERVICE_NOTFOUND ) {
 			char* awayMsgA = ( char* )CallService( MS_AWAYMSG_GETSTATUSMSG, (WPARAM) status, (LPARAM) szProto );
 			awayMsg = mir_a2t( awayMsgA );
 			mir_free( awayMsgA );
 		}
-		if (( INT_PTR ) awayMsg != CALLSERVICE_NOTFOUND /*&& awayMsg != NULL*/ ) {
+		if (( INT_PTR ) awayMsg != CALLSERVICE_NOTFOUND ) {
 			CallProtoService( szProto, PS_SETAWAYMSGT, status, (LPARAM) awayMsg );
 			mir_free( awayMsg );
 	}	}
