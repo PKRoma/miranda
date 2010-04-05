@@ -250,7 +250,7 @@ SOURCE=.\res\avatar.ico
 # End Source File
 # Begin Source File
 
-SOURCE=.\avs.rc
+SOURCE=.\vc6.rc
 # End Source File
 # End Group
 # End Target

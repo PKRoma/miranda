@@ -1,7 +1,7 @@
 # Microsoft Developer Studio Generated NMAKE File, Based on avs.dsp
 !IF "$(CFG)" == ""
-CFG=avs - Win32 Debug Unicode
-!MESSAGE No configuration specified. Defaulting to avs - Win32 Debug Unicode.
+CFG=avs - Win32 Release Unicode
+!MESSAGE No configuration specified. Defaulting to avs - Win32 Release Unicode.
 !ENDIF 
 
 !IF "$(CFG)" != "avs - Win32 Release" && "$(CFG)" != "avs - Win32 Debug" && "$(CFG)" != "avs - Win32 Release Unicode" && "$(CFG)" != "avs - Win32 Debug Unicode"
@@ -485,7 +485,7 @@ SOURCE=.\poll.cpp
 
 !ENDIF 
 
-SOURCE=.\avs.rc
+SOURCE=.\vc6.rc
 
 "$(INTDIR)\avs.res" : $(SOURCE) "$(INTDIR)"
 	$(RSC) $(RSC_PROJ) $(SOURCE)
