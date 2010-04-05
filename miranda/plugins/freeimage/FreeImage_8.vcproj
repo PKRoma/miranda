@@ -1067,6 +1067,10 @@
 				RelativePath="Source\Utilities.h"
 				>
 			</File>
+			<File
+				RelativePath=".\Miranda\version.h"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Toolkit Files"

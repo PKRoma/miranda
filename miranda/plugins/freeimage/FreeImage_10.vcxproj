@@ -737,6 +737,7 @@
     <ClInclude Include="Source\ToneMapping.h" />
     <ClInclude Include="Source\Utilities.h" />
     <ClInclude Include="Source\FreeImageToolkit\Resize.h" />
+    <ClInclude Include="Miranda\version.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Todo.txt" />
