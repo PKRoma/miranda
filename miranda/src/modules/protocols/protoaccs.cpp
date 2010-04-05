@@ -271,7 +271,7 @@ static INT_PTR stub3( PROTO_INTERFACE* ppi, WPARAM wParam, LPARAM )
 }
 
 static INT_PTR stub4( PROTO_INTERFACE* ppi, WPARAM wParam, LPARAM lParam )
-{	return ( INT_PTR )ppi->AuthDeny(( HANDLE )wParam, ( const TCHAR* )lParam );
+{	return ( INT_PTR )ppi->AuthDeny(( HANDLE )wParam, StrConvT(( const char* )lParam ));
 }
 
 static INT_PTR stub7( PROTO_INTERFACE* ppi, WPARAM wParam, LPARAM lParam )
