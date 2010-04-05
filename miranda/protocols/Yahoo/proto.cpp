@@ -60,8 +60,7 @@ CYahooProto::~CYahooProto()
 	
 	mir_free( m_szModuleName );
 	mir_free( m_tszUserName );
-
-	FREE(m_startMsg);
+	mir_free( m_startMsg );
 	FREE(m_pw_token); 
 	
 	Netlib_CloseHandle( m_hNetlibUser );
@@ -595,7 +594,7 @@ int __cdecl CYahooProto::SetStatus( int iNewStatus )
 	}
 	else {
 		/* clear out our message just in case, STUPID AA! */
-		FREE(m_startMsg);
+		mir_free(m_startMsg);
 
 		/* now tell miranda that we are Online, don't tell Yahoo server yet though! */
 		BroadcastStatus(iNewStatus);
@@ -702,24 +701,23 @@ int __cdecl CYahooProto::SendAwayMsg( HANDLE /*hContact*/, HANDLE /*hProcess*/, 
 ////////////////////////////////////////////////////////////////////////////////////////
 // SetAwayMsg - sets the away status message
 
-int __cdecl CYahooProto::SetAwayMsg( int status, const char* msg )
+int __cdecl CYahooProto::SetAwayMsg( int status, const TCHAR* msg )
 {
-	char *c = (char *)msg;
-	if (c != NULL) 
-		if (*c == '\0')
-			c = NULL;
+	if (msg != NULL) 
+		if (*msg == '\0')
+			msg = NULL;
 		
-	DebugLog("[YahooSetAwayMessage] Status: %s, Msg: %s",(char *) CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, status, 0), (char*) c);
+	DebugLog("[YahooSetAwayMessage] Status: %s, Msg: %S",(char *) CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, status, 0), msg);
 	
     if(!m_bLoggedIn){
 		if (m_iStatus == ID_STATUS_OFFLINE) {
 			DebugLog("[YahooSetAwayMessage] WARNING: WE ARE OFFLINE!"); 
 			return 1;
 		} else {
-			if (m_startMsg) free(m_startMsg);
+			if (m_startMsg) mir_free(m_startMsg);
 			
-			if (c != NULL) 
-				m_startMsg = strdup(c);
+			if (msg != NULL) 
+				m_startMsg = mir_t2a(msg);
 			else
 				m_startMsg = NULL;
 			
@@ -730,15 +728,15 @@ int __cdecl CYahooProto::SetAwayMsg( int status, const char* msg )
 	/* need to tell ALL plugins that we are changing status */
 	BroadcastStatus(status);
 	
-	if (m_startMsg) free(m_startMsg);
+	if (m_startMsg) mir_free(m_startMsg);
 	
 	/* now decide what we tell the server */
-	if (c != 0) {
-		m_startMsg = strdup(c);
+	if (msg != 0) {
+		m_startMsg = mir_t2a(msg);
 		if(status == ID_STATUS_ONLINE) {
-			set_status(YAHOO_CUSTOM_STATUS, c, 0);
+			set_status(YAHOO_CUSTOM_STATUS, m_startMsg, 0);
 		} else if(status != ID_STATUS_INVISIBLE){ 
-			set_status(YAHOO_CUSTOM_STATUS, c, 1);
+			set_status(YAHOO_CUSTOM_STATUS, m_startMsg, 1);
 		}
     } else {
 		set_status(status, NULL, 0);

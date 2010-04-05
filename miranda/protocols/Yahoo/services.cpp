@@ -169,8 +169,8 @@ static INT_PTR CALLBACK DlgProcSetCustStat(HWND hwndDlg, UINT msg, WPARAM wParam
 				ppro->SetByte("BusyCustStat", ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_CUSTSTATBUSY ));
 
 				/* set for Idle/AA */
-				if (ppro->m_startMsg) free(ppro->m_startMsg);
-				ppro->m_startMsg = strdup(str);
+				if (ppro->m_startMsg) mir_free(ppro->m_startMsg);
+				ppro->m_startMsg = mir_strdup(str);
 
 				/* notify Server about status change */
 				ppro->set_status(YAHOO_CUSTOM_STATUS, str, ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_CUSTSTATBUSY ));
