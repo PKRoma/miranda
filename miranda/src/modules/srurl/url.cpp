@@ -26,7 +26,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 HANDLE hUrlWindowList = NULL;
 static HANDLE hEventContactSettingChange = NULL;
-HANDLE hContactDeleted=NULL;
+static HANDLE hContactDeleted = NULL;
+static HANDLE hSRUrlMenuItem = NULL;
 
 INT_PTR CALLBACK DlgProcUrlSend(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 INT_PTR CALLBACK DlgProcUrlRecv(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -112,47 +113,46 @@ static int ContactSettingChanged(WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
-static void AddContactMenuItem( PROTOACCOUNT* pa )
+static int SRUrlPreBuildMenu(WPARAM wParam, LPARAM)
 {
-    if (Proto_IsAccountEnabled(pa) && (pa->ppro->GetCaps(PFLAGNUM_1, 0) & PF1_URLSEND)) {
-		CLISTMENUITEM mi = { 0 };
-		mi.cbSize = sizeof(mi);
-		mi.position = -2000040000;
-		mi.flags = CMIF_ICONFROMICOLIB;
-		mi.icolibItem = GetSkinIconHandle( SKINICON_EVENT_URL );
-		mi.pszName = LPGEN("Web Page Address (&URL)");
-		mi.pszService = MS_URL_SENDURL;
-		mi.pszContactOwner = pa->szModuleName;
-		CallService( MS_CLIST_ADDCONTACTMENUITEM, 0, ( LPARAM )&mi );
-}	}
+	CLISTMENUITEM mi = { 0 };
+	mi.cbSize = sizeof(mi);
+	mi.flags = CMIM_FLAGS | CMIF_HIDDEN;
+
+	char *szProto = (char*)CallService(MS_PROTO_GETCONTACTBASEPROTO, wParam, 0);
+	if ( szProto != NULL )
+		if ( CallProtoService(szProto, PS_GETCAPS, PFLAGNUM_1, 0) & PF1_URLSEND )
+			mi.flags = CMIM_FLAGS;
+
+	CallService( MS_CLIST_MODIFYMENUITEM, (WPARAM)hSRUrlMenuItem, (LPARAM)&mi );
+	return 0;
+}
 
 static int SRUrlModulesLoaded(WPARAM, LPARAM)
 {
-	for ( int i = 0; i < accounts.getCount(); i++ )
-		AddContactMenuItem( accounts[i] );
+	CLISTMENUITEM mi = { 0 };
+	mi.cbSize = sizeof(mi);
+	mi.position = -2000040000;
+	mi.flags = CMIF_ICONFROMICOLIB;
+	mi.icolibItem = GetSkinIconHandle( SKINICON_EVENT_URL );
+	mi.pszName = LPGEN("Web Page Address (&URL)");
+	mi.pszService = MS_URL_SENDURL;
+	hSRUrlMenuItem = (HANDLE)CallService( MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM)&mi );
 
 	RestoreUnreadUrlAlerts();
 	return 0;
 }
 
-static int SRUrlAccountsChanged( WPARAM eventCode, LPARAM lParam )
-{
-	if ( eventCode == PRAC_ADDED || (eventCode == PRAC_CHECKED && Proto_IsAccountEnabled((PROTOACCOUNT*)lParam)))
-		AddContactMenuItem(( PROTOACCOUNT* )lParam );
-
-	return 0;
-}
-
 static int SRUrlShutdown(WPARAM, LPARAM)
 {
-	if (hEventContactSettingChange)
-		UnhookEvent(hEventContactSettingChange);
+	if ( hEventContactSettingChange )
+		UnhookEvent( hEventContactSettingChange );
 
-	if (hContactDeleted)
-		UnhookEvent(hContactDeleted);
+	if ( hContactDeleted )
+		UnhookEvent( hContactDeleted );
 
-	if (hUrlWindowList)
-		WindowList_BroadcastAsync(hUrlWindowList,WM_CLOSE,0,0);
+	if ( hUrlWindowList )
+		WindowList_BroadcastAsync( hUrlWindowList, WM_CLOSE, 0, 0 );
 
 	return 0;
 }
@@ -160,7 +160,7 @@ static int SRUrlShutdown(WPARAM, LPARAM)
 int UrlContactDeleted(WPARAM wParam, LPARAM)
 {
 	HWND h = WindowList_Find(hUrlWindowList,(HANDLE)wParam);
-	if (h)
+	if ( h )
 		SendMessage(h,WM_CLOSE,0,0);
 
 	return 0;
@@ -170,8 +170,8 @@ int LoadSendRecvUrlModule(void)
 {
 	hUrlWindowList=(HANDLE)CallService(MS_UTILS_ALLOCWINDOWLIST,0,0);
 	HookEvent(ME_SYSTEM_MODULESLOADED,SRUrlModulesLoaded);
-	HookEvent(ME_PROTO_ACCLISTCHANGED,SRUrlAccountsChanged);
 	HookEvent(ME_DB_EVENT_ADDED,UrlEventAdded);
+	HookEvent(ME_CLIST_PREBUILDCONTACTMENU,SRUrlPreBuildMenu);
 	hEventContactSettingChange = HookEvent(ME_DB_CONTACT_SETTINGCHANGED, ContactSettingChanged);
 	hContactDeleted = HookEvent(ME_DB_CONTACT_DELETED, UrlContactDeleted);
 	HookEvent(ME_SYSTEM_PRESHUTDOWN,SRUrlShutdown);
