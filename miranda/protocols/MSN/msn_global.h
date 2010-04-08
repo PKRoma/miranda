@@ -212,7 +212,7 @@ void   replaceStr(wchar_t*& dest, const wchar_t* src);
 
 #else
 
-extern LONG (WINAPI *MyInterlockedIncrement)(PLONG pVal);
+extern LONG (WINAPI *MyInterlockedIncrement)(LONG volatile* pVal);
 
 #endif
 
