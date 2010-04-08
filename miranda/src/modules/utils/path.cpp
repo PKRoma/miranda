@@ -105,7 +105,7 @@ int CreateDirectoryTree( const char *szDir )
 	char *pszLastBackslash, szTestDir[ MAX_PATH ];
 
 	lstrcpynA( szTestDir, szDir, SIZEOF( szTestDir ));
-	if (( dwAttributes = GetFileAttributesA( szTestDir )) != 0xffffffff && ( dwAttributes & FILE_ATTRIBUTE_DIRECTORY ))
+	if (( dwAttributes = GetFileAttributesA( szTestDir )) != INVALID_FILE_ATTRIBUTES && ( dwAttributes & FILE_ATTRIBUTE_DIRECTORY ))
 		return ERROR_ACCESS_DENIED;
 
 	pszLastBackslash = strrchr( szTestDir, '\\' );
@@ -204,7 +204,7 @@ int CreateDirectoryTreeW( const WCHAR* szDir )
 	WCHAR* pszLastBackslash, szTestDir[ MAX_PATH ];
 
 	lstrcpynW( szTestDir, szDir, SIZEOF( szTestDir ));
-	if (( dwAttributes = GetFileAttributesW( szTestDir )) != 0xffffffff && ( dwAttributes & FILE_ATTRIBUTE_DIRECTORY ))
+	if (( dwAttributes = GetFileAttributesW( szTestDir )) != INVALID_FILE_ATTRIBUTES && ( dwAttributes & FILE_ATTRIBUTE_DIRECTORY ))
 		return ERROR_ACCESS_DENIED;
 
 	pszLastBackslash = wcsrchr( szTestDir, '\\' );

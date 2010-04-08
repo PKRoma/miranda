@@ -37,7 +37,7 @@ static void GetLowestExistingDirName(const TCHAR *szTestDir,TCHAR *szExistingDir
 	TCHAR *pszLastBackslash;
 
 	lstrcpyn(szExistingDir,szTestDir,cchExistingDir);
-	while((dwAttributes=GetFileAttributes(szExistingDir))!=0xffffffff && !(dwAttributes&FILE_ATTRIBUTE_DIRECTORY)) {
+	while((dwAttributes=GetFileAttributes(szExistingDir))!=INVALID_FILE_ATTRIBUTES && !(dwAttributes&FILE_ATTRIBUTE_DIRECTORY)) {
 		pszLastBackslash=_tcsrchr(szExistingDir,'\\');
 		if(pszLastBackslash==NULL) {*szExistingDir='\0'; break;}
 		*pszLastBackslash='\0';
