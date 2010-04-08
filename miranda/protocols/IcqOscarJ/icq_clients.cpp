@@ -154,6 +154,7 @@ const capstr capBayan     = {'b', 'a', 'y', 'a', 'n', 'I', 'C', 'Q', 0, 0, 0, 0,
 const capstr capJabberJIT = {'J', 'I', 'T', ' ', 0x76, 0x2E, 0x31, 0x2E, 0x78, 0x2E, 0x78, 0x00, 0x00, 0x00, 0x00, 0x00};
 const capstr capIcqKid2   = {'I', 'c', 'q', 'K', 'i', 'd', '2', 0x00, 0x05, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 const capstr capWebIcqPro = {'W', 'e', 'b', 'I', 'c', 'q', 'P', 'r', 'o', ' ', 0, 0, 0, 0, 0, 0};
+const capstr capMraJava   = {0x4a, 0x32, 0x4d, 0x45, 0x20, 0x6d, 0x40, 0x61, 0x67, 0x65, 0x6e, 0x74, 0x00, 0x00, 0x00, 0x00};
 const capstr capMacIcq    = {0xdd, 0x16, 0xf2, 0x02, 0x84, 0xe6, 0x11, 0xd4, 0x90, 0xdb, 0x00, 0x10, 0x4b, 0x9b, 0x4b, 0x7d};
 const capstr capIs2001    = {0x2e, 0x7a, 0x64, 0x75, 0xfa, 0xdf, 0x4d, 0xc8, 0x88, 0x6f, 0xea, 0x35, 0x95, 0xfd, 0xb6, 0xdf};
 const capstr capIs2002    = {0x10, 0xcf, 0x40, 0xd1, 0x4c, 0x7f, 0x11, 0xd1, 0x82, 0x22, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00};
@@ -387,6 +388,13 @@ const char* CIcqProto::detectUserClient(HANDLE hContact, int nIsICQ, WORD wUserC
 			{ // detect icqj plus mod
 				szClient = MirandaModToString(szClientBuf, capId, dwFT3 == 0x80000000, "ICQ Plus");
 				bMirandaIM = TRUE;
+			}
+			else if (capId = MatchCapability(caps, wLen, &capMraJava, 12))
+			{
+				unsigned ver1 = (*capId)[13];
+				unsigned ver2 = (*capId)[14];
+
+				szClient = makeClientVersion(szClientBuf, "Mail.ru Agent (Java) v", ver1, ver2, 0, 0);
 			}
 			else if (MatchCapability(caps, wLen, &capTrillian) || MatchCapability(caps, wLen, &capTrilCrypt))
 			{ // this is Trillian, check for new versions
@@ -831,8 +839,13 @@ const char* CIcqProto::detectUserClient(HANDLE hContact, int nIsICQ, WORD wUserC
 								NetLog_Server("Forcing simple messages (QNext client).");
 								szClient = "Qnext";
 							}
-              else if (CheckContactCapabilities(hContact, CAPF_HTML) && CheckContactCapabilities(hContact, CAPF_TYPING) && MatchCapability(caps, wLen, &captZers))
-                szClient = "fring";
+							else if (CheckContactCapabilities(hContact, CAPF_HTML | CAPF_TYPING) && MatchCapability(caps, wLen, &captZers))
+							{
+								if (CheckContactCapabilities(hContact, CAPF_SRV_RELAY | CAPF_UTF) && MatchShortCapability(caps, wLen, &capAimLiveAudio))
+									szClient = "Mail.ru Agent (PC)";
+								else
+									szClient = "Fring";
+							}
 							else
 								szClient = "pyICQ";
             }
@@ -884,6 +897,13 @@ const char* CIcqProto::detectUserClient(HANDLE hContact, int nIsICQ, WORD wUserC
 					else if (!CheckContactCapabilities(hContact, CAPF_RTF) && CheckContactCapabilities(hContact, CAPF_UTF) && !dwFT1 && !dwFT2 && !dwFT3)
 					{ // not really good, but no other option
 						szClient = "NanoICQ";
+					}
+				}
+				else if (wVersion == 0xB)
+				{
+					if (CheckContactCapabilities(hContact, CAPF_XTRAZ | CAPF_SRV_RELAY | CAPF_TYPING | CAPF_UTF) && MatchShortCapability(caps, wLen, &capIcqDevils))
+					{
+						szClient = "Mail.ru Agent (Symbian)";
 					}
 				}
 				else if (wVersion == 0)
