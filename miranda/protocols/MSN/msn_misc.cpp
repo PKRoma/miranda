@@ -24,7 +24,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #if !defined(_UNICODE) && !defined(_WIN64)
 
-typedef LONG (WINAPI pIncrementFunc)(PLONG);
+typedef LONG (WINAPI pIncrementFunc)(LONG volatile*);
 static pIncrementFunc  MyInterlockedIncrement95;
 static pIncrementFunc  MyInterlockedIncrementInit;
 
@@ -35,7 +35,7 @@ static CRITICAL_SECTION csInterlocked95;
 /////////////////////////////////////////////////////////////////////////////////////////
 // InterlockedIncrement emulation
 
-static LONG WINAPI MyInterlockedIncrement95(PLONG pVal)
+static LONG WINAPI MyInterlockedIncrement95(LONG volatile* pVal)
 {
 	DWORD ret;
 	EnterCriticalSection(&csInterlocked95);
@@ -45,7 +45,7 @@ static LONG WINAPI MyInterlockedIncrement95(PLONG pVal)
 }
 
 //there's a possible hole here if too many people call this at the same time, but that doesn't happen
-static LONG WINAPI MyInterlockedIncrementInit(PLONG pVal)
+static LONG WINAPI MyInterlockedIncrementInit(LONG volatile* pVal)
 {
 	DWORD ver = GetVersion();
 	if ((ver & 0x80000000) && LOWORD(ver) == 0x0004)
