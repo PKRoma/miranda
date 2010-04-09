@@ -282,8 +282,9 @@ void __cdecl gg_mainthread(GGPROTO *gg, void *empty)
 	p.protocol_version = 0x2e;
 	p.protocol_features = GG_FEATURE_DND_FFC;
 	p.encoding = GG_ENCODING_CP1250;
+	p.status_flags = GG_STATUS_FLAG_UNKNOWN;
 	if (DBGetContactSettingByte(NULL, GG_PROTO, GG_KEY_SHOWLINKS, GG_KEYDEF_SHOWLINKS))
-		p.protocol_flags80 = 0x800000;
+		p.status_flags |= GG_STATUS_FLAG_SPAM;
 
 	// Use audio
 	/* p.has_audio = 1; */

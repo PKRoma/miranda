@@ -150,6 +150,32 @@ void gg_debug_session(struct gg_session *sess, int level, const char *format, ..
 	errno = old_errno;
 }
 
+/**
+ * \internal Przekazuje informację odpluskwiania związane z zawartością pamięci.
+ *
+ * \param sess Struktura sesji
+ * \param buf Adres w pamięci
+ * \param buf_length Ilość danych do wyświetlenia
+ * \param format Format wiadomości (zgodny z \c printf)
+ *
+ * \ingroup debug
+ */
+void gg_debug_dump_session(struct gg_session *sess, const char *buf, unsigned int buf_length, const char *format, ...)
+{
+	va_list ap;
+
+	if ((gg_debug_level & GG_DEBUG_DUMP)) {
+		  unsigned int i;
+
+		  va_start(ap, format);
+		  gg_debug_common(sess, GG_DEBUG_DUMP, format, ap);
+		  for (i = 0; i < buf_length; ++i)
+			  gg_debug_session(sess, GG_DEBUG_DUMP, " %.2x", (unsigned char) buf[i]);
+		  gg_debug_session(sess, GG_DEBUG_DUMP, "\n");
+		  va_end(ap);
+	  }
+}
+
 #endif
 
 /**
@@ -312,7 +338,7 @@ char *gg_read_line(SOCKET sock, char *buf, int length)
 
 	for (; length > 1; buf++, length--) {
 		do {
-			if ((ret = gg_sock_read(sock, buf, 1)) == -1 && errno != EINTR) {
+			if ((ret = gg_sock_read(sock, buf, 1)) == -1 && errno != EINTR && errno != EAGAIN) {
 				gg_debug(GG_DEBUG_MISC, "// gg_read_line() error on read (errno=%d, %s)\n", errno, strerror(errno));
 				*buf = 0;
 				return NULL;
@@ -321,7 +347,7 @@ char *gg_read_line(SOCKET sock, char *buf, int length)
 				*buf = 0;
 				return NULL;
 			}
-		} while (ret == -1 && errno == EINTR);
+		} while (ret == -1 && (errno == EINTR || errno == EAGAIN));
 
 		if (*buf == '\n') {
 			buf++;

@@ -1595,14 +1595,14 @@ struct gg_event *gg_watch_fd(struct gg_session *sess)
 			auth = gg_proxy_auth();
 
 #ifdef GG_CONFIG_HAVE_OPENSSL
-			if (sess->ssl) {
+			if (sess->ssl != NULL) {
 				snprintf(buf, sizeof(buf) - 1,
-					"GET %s/appsvc/appmsg3.asp?fmnumber=%u&version=%s&lastmsg=%d HTTP/1.0\r\n"
+					"GET %s/appsvc/appmsg_ver10.asp?fmnumber=%u&fmt=2&lastmsg=%d&version=%s HTTP/1.0\r\n"
 					"Host: " GG_APPMSG_HOST "\r\n"
 					"User-Agent: " GG_HTTP_USERAGENT "\r\n"
 					"Pragma: no-cache\r\n"
 					"%s"
-					"\r\n", host, sess->uin, client, sess->last_sysmsg, (auth) ? auth : "");
+					"\r\n", host, sess->uin, sess->last_sysmsg, client, (auth) ? auth : "");
 			} else
 #endif
 			{
@@ -1707,15 +1707,10 @@ struct gg_event *gg_watch_fd(struct gg_session *sess)
 			/* analizujemy otrzymane dane. */
 			tmp = buf;
 
-#ifdef GG_CONFIG_HAVE_OPENSSL
-			if (!sess->ssl)
-#endif
-			{
-				while (*tmp && *tmp != ' ')
-					tmp++;
-				while (*tmp && *tmp == ' ')
-					tmp++;
-			}
+			while (*tmp && *tmp != ' ')
+				tmp++;
+			while (*tmp && *tmp == ' ')
+				tmp++;
 			while (*tmp && *tmp != ' ')
 				tmp++;
 			while (*tmp && *tmp == ' ')
@@ -1755,6 +1750,67 @@ struct gg_event *gg_watch_fd(struct gg_session *sess)
 			}
 
 			sess->port = port;
+
+			/* Jeśli podano nazwę, nie adres serwera... */
+			if (sess->server_addr == INADDR_NONE) {
+				if (sess->resolver_start(&sess->fd, &sess->resolver, host) == -1) {
+					gg_debug(GG_DEBUG_MISC, "// gg_login() resolving failed (errno=%d, %s)\n", errno, strerror(errno));
+					goto fail_resolving;
+				}
+
+				sess->state = GG_STATE_RESOLVING_GG;
+				sess->check = GG_CHECK_READ;
+				sess->timeout = GG_DEFAULT_TIMEOUT;
+				break;
+			}
+
+			/* łączymy się z właściwym serwerem. */
+			if ((sess->fd = gg_connect(&addr, sess->port, sess->async)) == -1) {
+				gg_debug_session(sess, GG_DEBUG_MISC, "// gg_watch_fd() connection failed (errno=%d, %s), trying https\n", errno, strerror(errno));
+
+				sess->port = GG_HTTPS_PORT;
+
+				/* nie wyszło? próbujemy portu 443. */
+				if ((sess->fd = gg_connect(&addr, GG_HTTPS_PORT, sess->async)) == -1) {
+					/* ostatnia deska ratunku zawiodła?
+					 * w takim razie zwijamy manatki. */
+					gg_debug_session(sess, GG_DEBUG_MISC, "// gg_watch_fd() connection failed (errno=%d, %s)\n", errno, strerror(errno));
+					goto fail_connecting;
+				}
+			}
+
+			sess->state = GG_STATE_CONNECTING_GG;
+			sess->check = GG_CHECK_WRITE;
+			sess->timeout = GG_DEFAULT_TIMEOUT;
+			sess->soft_timeout = 1;
+
+			break;
+		}
+
+		case GG_STATE_RESOLVING_GG:
+		{
+			struct in_addr addr;
+			int failed = 0;
+
+			gg_debug_session(sess, GG_DEBUG_MISC, "// gg_watch_fd() GG_STATE_RESOLVING_GG\n");
+
+			if (gg_sock_read(sess->fd, &addr, sizeof(addr)) < (signed)sizeof(addr) || addr.s_addr == INADDR_NONE) {
+				gg_debug_session(sess, GG_DEBUG_MISC, "// gg_watch_fd() resolving failed\n");
+				failed = 1;
+				errno2 = errno;
+			}
+
+			gg_sock_close(sess->fd);
+			sess->fd = -1;
+
+			sess->resolver_cleanup(&sess->resolver, 0);
+
+			if (failed) {
+				errno = errno2;
+				goto fail_resolving;
+			}
+
+			sess->server_addr = addr.s_addr;
 
 			/* łączymy się z właściwym serwerem. */
 			if ((sess->fd = gg_connect(&addr, sess->port, sess->async)) == -1) {
@@ -1812,7 +1868,7 @@ struct gg_event *gg_watch_fd(struct gg_session *sess)
 				 * trzeba by się bawić w tworzenie na nowo
 				 * SSL i SSL_CTX. */
 
-				if (sess->ssl) {
+				if (sess->ssl != NULL) {
 					gg_debug_session(sess, GG_DEBUG_MISC, "// gg_watch_fd() connection failed (errno=%d, %s)\n", res, strerror(res));
 					goto fail_connecting;
 				}
@@ -1885,7 +1941,7 @@ struct gg_event *gg_watch_fd(struct gg_session *sess)
 			}
 
 #ifdef GG_CONFIG_HAVE_OPENSSL
-			if (sess->ssl) {
+			if (sess->ssl != NULL) {
 				SSL_set_fd(sess->ssl, (int)sess->fd);
 
 				sess->state = GG_STATE_TLS_NEGOTIATION;
@@ -1942,7 +1998,7 @@ struct gg_event *gg_watch_fd(struct gg_session *sess)
 
 					break;
 				} else {
-					char buf[1024];
+					char buf[256];
 
 					ERR_error_string_n(ERR_get_error(), buf, sizeof(buf));
 
@@ -1964,7 +2020,7 @@ struct gg_event *gg_watch_fd(struct gg_session *sess)
 			if (!peer)
 				gg_debug_session(sess, GG_DEBUG_MISC, "//   WARNING! unable to get peer certificate!\n");
 			else {
-				char buf[1024];
+				char buf[256];
 
 				X509_NAME_oneline(X509_get_subject_name(peer), buf, sizeof(buf));
 				gg_debug_session(sess, GG_DEBUG_MISC, "//   cert subject: %s\n", buf);
@@ -2110,7 +2166,7 @@ struct gg_event *gg_watch_fd(struct gg_session *sess)
 				l.hash_type     = sess->hash_type;
 				memcpy(l.hash, login_hash, sizeof(login_hash));
 				l.status        = gg_fix32(sess->initial_status ? sess->initial_status : GG_STATUS_AVAIL);
-				l.flags		= gg_fix32(sess->protocol_flags80 | 0x01);
+				l.flags		= gg_fix32(sess->status_flags);
 				l.features	= gg_fix32(sess->protocol_features);
 				l.image_size    = sess->image_size;
 				l.dunno2        = 0x64;

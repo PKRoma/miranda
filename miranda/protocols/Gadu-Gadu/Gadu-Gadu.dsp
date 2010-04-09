@@ -176,6 +176,11 @@ SOURCE=.\libgadu\sha1.c
 # End Source File
 # Begin Source File
 
+SOURCE=.\libgadu\win32.c
+# SUBTRACT CPP /YX
+# End Source File
+# Begin Source File
+
 SOURCE=.\libgadu\win32.h
 # End Source File
 # End Group

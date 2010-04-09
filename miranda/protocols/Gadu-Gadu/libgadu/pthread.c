@@ -74,5 +74,5 @@ int pthread_cancel(pthread_t *thread)
 /* terminate thread */
 void pthread_exit(void *value_ptr)
 {
-	_endthreadex((unsigned)value_ptr);
+//	_endthreadex((unsigned)value_ptr);
 }

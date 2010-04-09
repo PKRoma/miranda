@@ -72,6 +72,7 @@ CLEAN :
 	-@erase "$(INTDIR)\ssl.obj"
 	-@erase "$(INTDIR)\token.obj"
 	-@erase "$(INTDIR)\userutils.obj"
+	-@erase "$(INTDIR)\win32.obj"
 	-@erase "$(INTDIR)\vc60.idb"
 	-@erase "$(INTDIR)\vc60.pdb"
 	-@erase "$(OUTDIR)\GG.exp"
@@ -104,6 +105,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\pubdir50.obj" \
 	"$(INTDIR)\resolver.obj" \
 	"$(INTDIR)\sha1.obj" \
+	"$(INTDIR)\win32.obj" \
 	"$(INTDIR)\avatar.obj" \
 	"$(INTDIR)\core.obj" \
 	"$(INTDIR)\dialogs.obj" \
@@ -172,6 +174,7 @@ CLEAN :
 	-@erase "$(INTDIR)\ssl.obj"
 	-@erase "$(INTDIR)\token.obj"
 	-@erase "$(INTDIR)\userutils.obj"
+	-@erase "$(INTDIR)\win32.obj"
 	-@erase "$(INTDIR)\vc60.idb"
 	-@erase "$(INTDIR)\vc60.pdb"
 	-@erase "$(OUTDIR)\GG.exp"
@@ -205,6 +208,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\pubdir50.obj" \
 	"$(INTDIR)\resolver.obj" \
 	"$(INTDIR)\sha1.obj" \
+	"$(INTDIR)\win32.obj" \
 	"$(INTDIR)\avatar.obj" \
 	"$(INTDIR)\core.obj" \
 	"$(INTDIR)\dialogs.obj" \
@@ -530,6 +534,30 @@ CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /I "libgadu" /D "WIN
 CPP_SWITCHES=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../../include" /I "libgadu" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "GG_EXPORTS" /FAcs /Fa"$(INTDIR)\\" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
 
 "$(INTDIR)\sha1.obj" : $(SOURCE) "$(INTDIR)"
+	$(CPP) @<<
+  $(CPP_SWITCHES) $(SOURCE)
+<<
+
+
+!ENDIF 
+
+SOURCE=.\libgadu\win32.c
+
+!IF  "$(CFG)" == "GG - Win32 Release"
+
+CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /I "libgadu" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "GG_EXPORTS" /FAcs /Fa"$(INTDIR)\\" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+
+"$(INTDIR)\win32.obj" : $(SOURCE) "$(INTDIR)"
+	$(CPP) @<<
+  $(CPP_SWITCHES) $(SOURCE)
+<<
+
+
+!ELSEIF  "$(CFG)" == "GG - Win32 Debug"
+
+CPP_SWITCHES=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../../include" /I "libgadu" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "GG_EXPORTS" /FAcs /Fa"$(INTDIR)\\" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
+
+"$(INTDIR)\win32.obj" : $(SOURCE) "$(INTDIR)"
 	$(CPP) @<<
   $(CPP_SWITCHES) $(SOURCE)
 <<

@@ -244,7 +244,8 @@ static int gg_resolver_fork_start(SOCKET *fd, void **priv_data, const char *host
 {
 	struct gg_resolver_fork_data *data = NULL;
 	struct in_addr addr;
-	int pipes[2], new_errno;
+	int new_errno;
+	SOCKET pipes[2];
 
 	gg_debug(GG_DEBUG_FUNCTION, "** gg_resolver_fork_start(%p, %p, \"%s\");\n", fd, priv_data, hostname);
 
@@ -345,8 +346,8 @@ void gg_resolver_fork_cleanup(void **priv_data, int force)
 struct gg_resolver_pthread_data {
 	pthread_t thread;	/*< Identyfikator wątku */
 	char *hostname;		/*< Nazwa serwera */
-	int rfd;		/*< Deskryptor do odczytu */
-	int wfd;		/*< Deskryptor do zapisu */
+	SOCKET rfd;		/*< Deskryptor do odczytu */
+	SOCKET wfd;		/*< Deskryptor do zapisu */
 };
 
 /**
@@ -430,7 +431,8 @@ static void *__stdcall gg_resolver_pthread_thread(void *arg)
 static int gg_resolver_pthread_start(SOCKET *fd, void **priv_data, const char *hostname)
 {
 	struct gg_resolver_pthread_data *data = NULL;
-	int pipes[2], new_errno;
+	int new_errno;
+	SOCKET pipes[2];
 
 	gg_debug(GG_DEBUG_FUNCTION, "** gg_resolver_pthread_start(%p, %p, \"%s\");\n", fd, priv_data, hostname);
 

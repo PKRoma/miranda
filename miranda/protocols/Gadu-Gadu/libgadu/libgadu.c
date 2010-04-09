@@ -2,7 +2,7 @@
 /* $Id$ */
 
 /*
- *  (C) Copyright 2001-2009 Wojtek Kaniewski <wojtekka@irc.pl>
+ *  (C) Copyright 2001-2010 Wojtek Kaniewski <wojtekka@irc.pl>
  *                          Robert J. Woźny <speedy@ziew.org>
  *                          Arkadiusz Miśkiewicz <arekm@pld-linux.org>
  *                          Tomasz Chiliński <chilek@chilan.com>
@@ -282,7 +282,9 @@ unsigned int gg_login_hash(const unsigned char *password, unsigned int seed)
 /**
  * \internal Odbiera od serwera dane binarne.
  *
- * Funkcja odbiera dane od serwera zajmując się TLS w razie konieczności.
+ * Funkcja odbiera dane od serwera zajmując się SSL/TLS w razie konieczności.
+ * Obsługuje EINTR, więc użytkownik nie musi się przejmować przerwanymi
+ * wywołaniami systemowymi.
  *
  * \param sess Struktura sesji
  * \param buf Bufor na danymi
@@ -292,27 +294,80 @@ unsigned int gg_login_hash(const unsigned char *password, unsigned int seed)
  */
 int gg_read(struct gg_session *sess, char *buf, int length)
 {
-	int res;
-
 #ifdef GG_CONFIG_HAVE_OPENSSL
-	if (sess->ssl) {
-		int err;
+	if (sess->ssl != NULL) {
+		for (;;) {
+			int res, err;
 
-		res = SSL_read(sess->ssl, buf, length);
+			res = SSL_read(sess->ssl, buf, length);
 
-		if (res < 0) {
-			err = SSL_get_error(sess->ssl, res);
+			if (res < 0) {
+				err = SSL_get_error(sess->ssl, res);
 
-			if (err == SSL_ERROR_WANT_READ)
-				errno = EAGAIN;
+				if (err == SSL_ERROR_SYSCALL && errno == EINTR)
+					continue;
 
-			return -1;
+				if (err == SSL_ERROR_WANT_READ)
+					errno = EAGAIN;
+				else if (err != SSL_ERROR_SYSCALL)
+					errno = EINVAL;
+
+				return -1;
+			}
+
+			return res;
 		}
-	} else
+	}
 #endif
-		res = gg_sock_read(sess->fd, buf, length);
 
-	return res;
+	return gg_sock_read(sess->fd, buf, length);
+}
+
+/**
+ * \internal Wysyła do serwera dane binarne.
+ *
+ * Funkcja wysyła dane do serwera zajmując się SSL/TLS w razie konieczności.
+ * Obsługuje EINTR, więc użytkownik nie musi się przejmować przerwanymi
+ * wywołaniami systemowymi.
+ *
+ * \note Funkcja nie zajmuje się buforowaniem wysyłanych danych (patrz
+ * gg_write()).
+ *
+ * \param sess Struktura sesji
+ * \param buf Bufor z danymi
+ * \param length Długość bufora
+ *
+ * \return To samo co funkcja systemowa \c write
+ */
+static int gg_write_common(struct gg_session *sess, const char *buf, int length)
+{
+#ifdef GG_CONFIG_HAVE_OPENSSL
+	if (sess->ssl != NULL) {
+		for (;;) {
+			int res, err;
+
+			res = SSL_write(sess->ssl, (void *)buf, length);
+
+			if (res < 0) {
+				err = SSL_get_error(sess->ssl, res);
+
+				if (err == SSL_ERROR_SYSCALL && errno == EINTR)
+					continue;
+
+				if (err == SSL_ERROR_WANT_WRITE)
+					errno = EAGAIN;
+				else if (err != SSL_ERROR_SYSCALL)
+					errno = EINVAL;
+
+				return -1;
+			}
+
+			return res;
+		}
+	}
+#endif
+
+	return gg_sock_write(sess->fd, buf, length);
 }
 
 /**
@@ -330,66 +385,41 @@ int gg_write(struct gg_session *sess, const char *buf, int length)
 {
 	int res = 0;
 
-#ifdef GG_CONFIG_HAVE_OPENSSL
-	if (sess->ssl) {
-		int err;
+	if (!sess->async) {
+		int written = 0;
 
-		res = SSL_write(sess->ssl, (void *)buf, length);
+		while (written < length) {
+			res = gg_write_common(sess, buf + written, length - written);
 
-		if (res < 0) {
-			err = SSL_get_error(sess->ssl, res);
+			if (res == -1)
+				return -1;
 
-			if (err == SSL_ERROR_WANT_WRITE)
-				errno = EAGAIN;
-
-			return -1;
+			written += res;
+			res = written;
 		}
-	} else
-#endif
-	{
-		if (!sess->async) {
-			int written = 0;
+	} else {
+		res = 0;
 
-			while (written < length) {
-				res = gg_sock_write(sess->fd, buf + written, length - written);
+		if (sess->send_buf == NULL) {
+			res = gg_write_common(sess, buf, length);
 
-				if (res == -1) {
-					if (errno != EINTR)
-						break;
+			if (res == -1)
+				return -1;
+		}
 
-					continue;
-				}
+		if (res < length) {
+			char *tmp;
 
-				written += res;
-				res = written;
-			}
-		} else {
-			if (!sess->send_buf)
-				res = gg_sock_write(sess->fd, buf, length);
-			else
-				res = 0;
-
-			if (res == -1) {
-				if (errno != EAGAIN)
-					return res;
-
-				res = 0;
+			if (!(tmp = realloc(sess->send_buf, sess->send_left + length - res))) {
+				errno = ENOMEM;
+				return -1;
 			}
 
-			if (res < length) {
-				char *tmp;
+			sess->send_buf = tmp;
 
-				if (!(tmp = realloc(sess->send_buf, sess->send_left + length - res))) {
-					errno = ENOMEM;
-					return -1;
-				}
+			memcpy(sess->send_buf + sess->send_left, buf + res, length - res);
 
-				sess->send_buf = tmp;
-
-				memcpy(sess->send_buf + sess->send_left, buf + res, length - res);
-
-				sess->send_left += length - res;
-			}
+			sess->send_left += length - res;
 		}
 	}
 
@@ -445,11 +475,6 @@ void *gg_recv_packet(struct gg_session *sess)
 			}
 
 			if (ret == -1) {
-				if (errno == EINTR) {
-					gg_debug_session(sess, GG_DEBUG_MISC, "// gg_recv_packet() header recv() interrupted system call, resuming\n");
-					continue;
-				}
-
 				if (errno == EAGAIN) {
 					gg_debug_session(sess, GG_DEBUG_MISC, "// gg_recv_packet() header recv() incomplete header received\n");
 
@@ -527,23 +552,15 @@ void *gg_recv_packet(struct gg_session *sess)
 				sess->recv_done = offset;
 				return NULL;
 			}
-			if (errno != EINTR) {
-				free(buf);
-				return NULL;
-			}
+
+			free(buf);
+			return NULL;
 		}
 	}
 
 	sess->recv_left = 0;
 
-	if ((gg_debug_level & GG_DEBUG_DUMP)) {
-		unsigned int i;
-
-		gg_debug_session(sess, GG_DEBUG_DUMP, "// gg_recv_packet(%.2x)", h.type);
-		for (i = 0; i < sizeof(h) + h.length; i++)
-			gg_debug_session(sess, GG_DEBUG_DUMP, " %.2x", (unsigned char) buf[i]);
-		gg_debug_session(sess, GG_DEBUG_DUMP, "\n");
-	}
+	gg_debug_dump_session(sess, buf, sizeof(h) + h.length, "// gg_recv_packet(0x%.2x)", h.type);
 
 	return buf;
 }
@@ -611,14 +628,7 @@ int gg_send_packet(struct gg_session *sess, int type, ...)
 	h->type = gg_fix32(type);
 	h->length = gg_fix32(tmp_length - sizeof(struct gg_header));
 
-	if ((gg_debug_level & GG_DEBUG_DUMP)) {
-		unsigned int i;
-
-		gg_debug_session(sess, GG_DEBUG_DUMP, "// gg_send_packet(0x%.2x)", gg_fix32(h->type));
-		for (i = 0; i < tmp_length; ++i)
-			gg_debug_session(sess, GG_DEBUG_DUMP, " %.2x", (unsigned char) tmp[i]);
-		gg_debug_session(sess, GG_DEBUG_DUMP, "\n");
-	}
+	gg_debug_dump_session(sess, tmp, tmp_length, "// gg_send_packet(0x%.2x)", gg_fix32(h->type));
 
 	res = gg_write(sess, tmp, tmp_length);
 
@@ -750,7 +760,9 @@ struct gg_session *gg_login(const struct gg_login_params *p)
 	if (!(p->protocol_features & GG_FEATURE_MSG77))
 		sess->protocol_features |= GG_FEATURE_MSG80;
 
-	sess->protocol_flags80 = p->protocol_flags80;
+	if (!(sess->status_flags = p->status_flags))
+		sess->status_flags = GG_STATUS_FLAG_UNKNOWN | GG_STATUS_FLAG_SPAM;
+
 	sess->protocol_version = (p->protocol_version) ? p->protocol_version : GG_DEFAULT_PROTOCOL_VERSION;
 
 	if (p->era_omnix)
@@ -813,7 +825,7 @@ struct gg_session *gg_login(const struct gg_login_params *p)
 			RAND_seed((void *) &rstruct, sizeof(rstruct));
 		}
 
-		sess->ssl_ctx = SSL_CTX_new(TLSv1_client_method());
+		sess->ssl_ctx = SSL_CTX_new(SSLv3_client_method());
 
 		if (!sess->ssl_ctx) {
 			ERR_error_string_n(ERR_get_error(), buf, sizeof(buf));
@@ -825,7 +837,7 @@ struct gg_session *gg_login(const struct gg_login_params *p)
 
 		sess->ssl = SSL_new(sess->ssl_ctx);
 
-		if (!sess->ssl) {
+		if (sess->ssl == NULL) {
 			ERR_error_string_n(ERR_get_error(), buf, sizeof(buf));
 			gg_debug(GG_DEBUG_MISC, "// gg_login() SSL_new() failed: %s\n", buf);
 			goto fail;
@@ -982,7 +994,10 @@ int gg_ping(struct gg_session *sess)
  *
  * \note Jeśli w buforze nadawczym połączenia z serwerem znajdują się jeszcze
  * dane (np. z powodu strat pakietów na łączu), prawdopodobnie zostaną one
- * utracone przy zrywaniu połączenia.
+ * utracone przy zrywaniu połączenia. Aby mieć pewność, że opis statusu
+ * zostanie zachowany, należy ustawić stan \c GG_STATUS_NOT_AVAIL_DESCR
+ * za pomocą funkcji \c gg_change_status_descr() i poczekać na zdarzenie
+ * \c GG_EVENT_DISCONNECT_ACK.
  *
  * \param sess Struktura sesji
  *
@@ -995,11 +1010,8 @@ void gg_logoff(struct gg_session *sess)
 
 	gg_debug_session(sess, GG_DEBUG_FUNCTION, "** gg_logoff(%p);\n", sess);
 
-	if (GG_S_NA(sess->status))
-		gg_change_status(sess, GG_STATUS_NOT_AVAIL);
-
 #ifdef GG_CONFIG_HAVE_OPENSSL
-	if (sess->ssl)
+	if (sess->ssl != NULL)
 		SSL_shutdown(sess->ssl);
 #endif
 
@@ -1042,7 +1054,7 @@ void gg_free_session(struct gg_session *sess)
 	free(sess->header_buf);
 
 #ifdef GG_CONFIG_HAVE_OPENSSL
-	if (sess->ssl)
+	if (sess->ssl != NULL)
 		SSL_free(sess->ssl);
 
 	if (sess->ssl_ctx)
@@ -1146,7 +1158,7 @@ static int gg_change_status_common(struct gg_session *sess, int status, const ch
 		struct gg_new_status80 p;
 
 		p.status		= gg_fix32(status);
-		p.flags			= gg_fix32(sess->protocol_flags80 | 0x01);
+		p.flags			= gg_fix32(sess->status_flags);
 		p.description_size	= gg_fix32(descr_len);
 		res = gg_send_packet(sess,
 				packet_type,
@@ -1231,6 +1243,33 @@ int gg_change_status_descr_time(struct gg_session *sess, int status, const char 
 	gg_debug_session(sess, GG_DEBUG_FUNCTION, "** gg_change_status_descr_time(%p, %d, \"%s\", %d);\n", sess, status, descr, time);
 
 	return gg_change_status_common(sess, status, descr, time);
+}
+
+/**
+ * Funkcja zmieniająca flagi statusu.
+ *
+ * \param sess Struktura sesji
+ * \param flags Nowe flagi statusu
+ *
+ * \return 0 jeśli się powiodło, -1 w przypadku błędu
+ *
+ * \note Aby zmiany weszły w życie, należy ponownie ustawić status za pomocą
+ * funkcji z rodziny \c gg_change_status().
+ *
+ * \ingroup status
+ */
+int gg_change_status_flags(struct gg_session *sess, int flags)
+{
+	gg_debug_session(sess, GG_DEBUG_FUNCTION, "** gg_change_status_flags(%p, 0x%08x);\n", sess, flags);
+
+	if (sess == NULL) {
+		errno = EFAULT;
+		return -1;
+	}
+
+	sess->status_flags = flags;
+
+	return 0;
 }
 
 /**
@@ -1322,63 +1361,66 @@ static void gg_append(char *dst, int *pos, const void *src, int len)
  * \internal Zamienia tekst z formatowaniem Gadu-Gadu na HTML.
  *
  * \param dst Bufor wynikowy (może być \c NULL)
- * \param utf_msg Tekst źródłowy
+ * \param src Tekst źródłowy w UTF-8
  * \param format Atrybuty tekstu źródłowego
  * \param format_len Długość bloku atrybutów tekstu źródłowego
+ *
+ * \note Wynikowy tekst nie jest idealnym kodem HTML, ponieważ ma jak
+ * dokładniej odzwierciedlać to, co wygenerowałby oryginalny klient.
  *
  * \note Dokleja \c \\0 na końcu bufora wynikowego.
  *
  * \return Długość tekstu wynikowego bez \c \\0 (nawet jeśli \c dst to \c NULL).
  */
-static int gg_convert_to_html(char *dst, const char *utf_msg, const unsigned char *format, int format_len)
+static int gg_convert_to_html(char *dst, const char *src, const unsigned char *format, int format_len)
 {
 	const char span_fmt[] = "<span style=\"color:#%02x%02x%02x; font-family:'MS Shell Dlg 2'; font-size:9pt; \">";
 	const int span_len = 75;
 	const char img_fmt[] = "<img name=\"%02x%02x%02x%02x%02x%02x%02x%02x\">";
 	const int img_len = 29;
 	int char_pos = 0;
-	int format_idx = 3;
+	int format_idx = 0;
 	unsigned char old_attr = 0;
 	const unsigned char *color = (const unsigned char*) "\x00\x00\x00";
 	int len, i;
+	const unsigned char *format_ = (const unsigned char*) format;
 
 	len = 0;
 
-	if (!strcmp(utf_msg, "\xC2\xA0\0")) { /* Przesyłany jest sam obrazek */
-		unsigned char attr = format[format_idx + 2];
-		int imgformat_idx = format_idx + 3;
+	/* Nie mamy atrybutów dla pierwsze znaku, a tekst nie jest pusty, więc
+	 * tak czy inaczej trzeba otworzyć <span>. */
 
-		if (((attr & GG_FONT_IMAGE) != 0) && (imgformat_idx + 10 <= format_len)) {
-			if (dst != NULL) {
-				sprintf(&dst[0], img_fmt,
-					format[imgformat_idx + 9],
-					format[imgformat_idx + 8], 
-					format[imgformat_idx + 7],
-					format[imgformat_idx + 6], 
-					format[imgformat_idx + 5],
-					format[imgformat_idx + 4],
-					format[imgformat_idx + 3],
-					format[imgformat_idx + 2]);
-				dst[img_len] = 0;
-			}
+	if (src[0] != 0 && (format_idx + 3 > format_len || (format_[format_idx] | (format_[format_idx + 1] << 8)) != 0)) {
+		if (dst != NULL)
+			sprintf(&dst[len], span_fmt, 0, 0, 0);
 
-			return img_len;
-		}
+		len += span_len;
 	}
 
-	for (i = 0; utf_msg[i] != 0; i++) {
-		unsigned char attr;
-		int attr_pos;
+	/* Pętla przechodzi też przez kończące \0, żeby móc dokleić obrazek
+	 * na końcu tekstu. */
 
-		if (format_idx + 3 <= format_len) {
-			attr_pos = format[format_idx] | (format[format_idx + 1] << 8);
-			attr = format[format_idx + 2];
-		} else {
-			attr_pos = -1;
-			attr = 0;
-		}
+	for (i = 0; ; i++) {
+		/* Analizuj atrybuty tak długo jak dotyczą aktualnego znaku. */
+		for (;;) {
+			unsigned char attr;
+			int attr_pos;
 
-		if (attr_pos == char_pos) {
+			if (format_idx + 3 > format_len)
+				break;
+
+			attr_pos = format_[format_idx] | (format_[format_idx + 1] << 8);
+
+			if (attr_pos != char_pos)
+				break;
+
+			attr = format_[format_idx + 2];
+
+			/* Nie doklejaj atrybutów na końcu, co najwyżej obrazki. */
+
+			if (src[i] == 0)
+				attr &= ~(GG_FONT_BOLD | GG_FONT_ITALIC | GG_FONT_UNDERLINE | GG_FONT_COLOR);
+
 			format_idx += 3;
 
 			if ((attr & (GG_FONT_BOLD | GG_FONT_ITALIC | GG_FONT_UNDERLINE | GG_FONT_COLOR)) != 0) {
@@ -1396,16 +1438,16 @@ static int gg_convert_to_html(char *dst, const char *utf_msg, const unsigned cha
 				}
 
 				if (((attr & GG_FONT_COLOR) != 0) && (format_idx + 3 <= format_len)) {
-					color = &format[format_idx];
+					color = &format_[format_idx];
 					format_idx += 3;
 				} else {
-					color = (const unsigned char*) "\x00\x00\x00";
+					color = (unsigned char*) "\x00\x00\x00";
 				}
 
 				if (dst != NULL)
 					sprintf(&dst[len], span_fmt, color[0], color[1], color[2]);
 				len += span_len;
-			} else if (char_pos == 0) {
+			} else if (char_pos == 0 && src[0] != 0) {
 				if (dst != NULL)
 					sprintf(&dst[len], span_fmt, 0, 0, 0);
 				len += span_len;
@@ -1423,14 +1465,14 @@ static int gg_convert_to_html(char *dst, const char *utf_msg, const unsigned cha
 			if (((attr & GG_FONT_IMAGE) != 0) && (format_idx + 10 <= format_len)) {
 				if (dst != NULL) {
 					sprintf(&dst[len], img_fmt,
-						format[format_idx + 9],
-						format[format_idx + 8], 
-						format[format_idx + 7],
-						format[format_idx + 6], 
-						format[format_idx + 5],
-						format[format_idx + 4],
-						format[format_idx + 3],
-						format[format_idx + 2]);
+						format_[format_idx + 9],
+						format_[format_idx + 8], 
+						format_[format_idx + 7],
+						format_[format_idx + 6], 
+						format_[format_idx + 5],
+						format_[format_idx + 4],
+						format_[format_idx + 3],
+						format_[format_idx + 2]);
 				}
 
 				len += img_len;
@@ -1438,14 +1480,11 @@ static int gg_convert_to_html(char *dst, const char *utf_msg, const unsigned cha
 			}
 
 			old_attr = attr;
-		} else if (i == 0) {
-			if (dst != NULL)
-				sprintf(&dst[len], span_fmt, 0, 0, 0);
-
-			len += span_len;
 		}
 
-		switch (utf_msg[i]) {
+		/* Doklej znak zachowując htmlowe escapowanie. */
+
+		switch (src[i]) {
 			case '&':
 				gg_append(dst, &len, "&amp;", 5);
 				break;
@@ -1465,18 +1504,24 @@ static int gg_convert_to_html(char *dst, const char *utf_msg, const unsigned cha
 				gg_append(dst, &len, "<br>", 4);
 				break;
 			case '\r':
+			case 0:
 				break;
 			default:
 				if (dst != NULL)
-					dst[len] = utf_msg[i];
+					dst[len] = src[i];
 				len++;
 		}
 
 		/* Sprawdź, czy bajt nie jest kontynuacją znaku unikodowego. */
 
-		if ((utf_msg[i] & 0xc0) != 0xc0)
+		if ((src[i] & 0xc0) != 0xc0)
 			char_pos++;
+
+		if (src[i] == 0)
+			break;
 	}
+
+	/* Zamknij tagi. */
 
 	if ((old_attr & GG_FONT_UNDERLINE) != 0)
 		gg_append(dst, &len, "</u>", 4);
@@ -1487,16 +1532,8 @@ static int gg_convert_to_html(char *dst, const char *utf_msg, const unsigned cha
 	if ((old_attr & GG_FONT_BOLD) != 0)
 		gg_append(dst, &len, "</b>", 4);
 
-	/* Dla pustych tekstów dodaj pusty <span>. */
-
-	if (i == 0) {
-		if (dst != NULL)
-			sprintf(&dst[len], span_fmt, 0, 0, 0);
-
-		len += span_len;
-	}
-
-	gg_append(dst, &len, "</span>", 7);
+	if (src[0] != 0)
+		gg_append(dst, &len, "</span>", 7);
 
 	if (dst != NULL)
 		dst[len] = 0;
@@ -1592,7 +1629,7 @@ int gg_send_message_confer_richtext(struct gg_session *sess, int msgclass, int r
 			formatlen = 9;
 		}
 
-		len = gg_convert_to_html(NULL, utf_msg, format, formatlen);
+		len = gg_convert_to_html(NULL, utf_msg, format + 3, formatlen - 3);
 
 		html_msg = malloc(len + 1);
 
@@ -1601,7 +1638,7 @@ int gg_send_message_confer_richtext(struct gg_session *sess, int msgclass, int r
 			goto cleanup;
 		}
 
-		gg_convert_to_html(html_msg, utf_msg, format, formatlen);
+		gg_convert_to_html(html_msg, utf_msg, format + 3, formatlen - 3);
 
 		s80.seq = gg_fix32(seq_no);
 		s80.msgclass = gg_fix32(msgclass);

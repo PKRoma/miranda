@@ -105,6 +105,9 @@
     <ClCompile Include="libgadu\sha1.c">
       <Filter>Source Files\libgadu</Filter>
     </ClCompile>
+    <ClCompile Include="libgadu\win32.c">
+      <Filter>Source Files\libgadu</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="libgadu\compat.h">
