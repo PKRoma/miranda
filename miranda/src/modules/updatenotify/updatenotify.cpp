@@ -586,6 +586,7 @@ static INT_PTR CALLBACK UpdateNotifyProc(HWND hwndDlg, UINT msg, WPARAM wParam, 
 				hFont = CreateFontIndirect(&lf);
 				SendDlgItemMessage(hwndDlg, IDC_NEWVERSIONLABEL, WM_SETFONT, (WPARAM)hFont, 0);
 			}
+			SetFocus(GetDlgItem(hwndDlg, IDOK));
 			SetWindowLongPtr(hwndDlg, GWLP_USERDATA, lParam);
 		}
 		break;
