@@ -1,3 +1,5 @@
-#define __FILEVERSION_STRING        0,8,10,0
-#define __VERSION_STRING            "0.8.10.0"
-#define __VERSION_DWORD             PLUGIN_MAKE_VERSION(0, 8, 10, 0)
+#include <m_version.h>
+
+#define __FILEVERSION_STRING        MIRANDA_VERSION_FILEVERSION
+#define __VERSION_STRING            MIRANDA_VERSION_STRING
+#define __VERSION_DWORD             MIRANDA_VERSION_DWORD

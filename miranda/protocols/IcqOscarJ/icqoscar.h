@@ -97,6 +97,7 @@
 #include "resource.h"
 
 // ICQ plugin includes
+#include "version.h"
 #include "iconlib.h"
 #include "globals.h"
 #include "i18n.h"

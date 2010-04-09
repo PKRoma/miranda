@@ -351,6 +351,14 @@ SOURCE=.\commonheaders.h
 
 SOURCE=.\database.h
 # End Source File
+# Begin Source File
+
+SOURCE=.\encryption.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\version.h
+# End Source File
 # End Group
 # Begin Group "Resource Files"
 

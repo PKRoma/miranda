@@ -237,6 +237,10 @@ SOURCE=.\m_chat.h
 
 SOURCE=.\richutil.h
 # End Source File
+# Begin Source File
+
+SOURCE=.\version.h
+# End Source File
 # End Group
 # Begin Group "Resource Files"
 

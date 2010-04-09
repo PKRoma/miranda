@@ -2,8 +2,8 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2003 Miranda ICQ/IM project,
-all portions of this codebase are copyrighted to the people
+Copyright 2000-2010 Miranda ICQ/IM project, 
+all portions of this codebase are copyrighted to the people 
 listed in contributors.txt.
 
 This program is free software; you can redistribute it and/or
@@ -20,39 +20,16 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
+#ifndef M_VERSION_H__
+#define M_VERSION_H__
 
-#define MIRANDA_VER 0x0800
-
-#define _WIN32_WINNT 0x0501
-
-#include "m_stdhdr.h"
-
-#include <windows.h>
-#include <commctrl.h>
-#include <stdio.h>
-#include <string.h>
-#include <time.h>
-#include <stddef.h>
-#include <process.h>
-#include <io.h>
-#include <string.h>
-#include <direct.h>
-#include "resource.h"
-#include <newpluginapi.h>
-#include <win2k.h>
-#include <m_system.h>
-#include <m_database.h>
-#include <m_langpack.h>
-#include "version.h"
-
-extern PLUGINLINK *pluginLink;
-
-extern struct LIST_INTERFACE li;
-
-#ifdef __GNUC__
-#define mir_i64(x) (x##LL)
-#else
-#define mir_i64(x) (x##i64)
+#ifndef MIRANDA_MAKE_VERSION
+#define MIRANDA_MAKE_VERSION(a,b,c,d)   (((((DWORD)(a))&0xFF)<<24)|((((DWORD)(b))&0xFF)<<16)|((((DWORD)(c))&0xFF)<<8)|(((DWORD)(d))&0xFF))
 #endif
 
-#define NEWSTR_ALLOCA(A) (A==NULL)?NULL:strcpy((char*)alloca(strlen(A)+1),A)
+#define MIRANDA_VERSION_FILEVERSION 0,8,20,0
+#define MIRANDA_VERSION_STRING      "0.8.20.0"
+#define MIRANDA_VERSION_DISPLAY     "0.8.20"
+#define MIRANDA_VERSION_DWORD       MIRANDA_MAKE_VERSION(0, 8, 20, 0)
+
+#endif // M_VERSION_H__

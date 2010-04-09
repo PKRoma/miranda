@@ -662,6 +662,10 @@ SOURCE=.\Source\ToneMapping.h
 
 SOURCE=.\Source\Utilities.h
 # End Source File
+# Begin Source File
+
+SOURCE=.\Miranda\version.h
+# End Source File
 # End Group
 # Begin Group "Toolkit Files"
 
