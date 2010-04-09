@@ -1,6 +1,8 @@
 #include <windows.h>                                                         
 #include <winres.h>                   
-#include <m_version.h>                                              
+
+#include "../include/m_version.h"
+
 #ifndef _MAC                                                                  
 ///////////////////////////////////////////////////////////////////////////// 
 //                                                                            
