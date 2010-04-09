@@ -34,7 +34,7 @@
 
 #include "../src/commonheaders.h"
 
-#define __HLT_PERFSTATS 0
+//#define __HLT_PERFSTATS 0
 
 void CMUCHighlight::cleanup()
 {
