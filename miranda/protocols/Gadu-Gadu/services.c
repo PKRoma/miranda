@@ -511,13 +511,13 @@ HANDLE gg_getawaymsg(PROTO_INTERFACE *proto, HANDLE hContact)
 }
 
 //////////////////////////////////////////////////////////
-// when away message is beging set
+// when away message is being set
 int gg_setawaymsg(PROTO_INTERFACE *proto, int iStatus, const TCHAR *msgt)
 {
 	GGPROTO *gg = (GGPROTO *)proto;
 	int status = gg_normalizestatus(iStatus);
 	char **szMsg;
-	char* msg = mir_t2a(msgt);
+	char* msg = gg_t2a(msgt);
 
 #ifdef DEBUGMODE
 	gg_netlog(gg, "gg_setawaymsg(): Requesting away message set to \"%s\".", msg);
