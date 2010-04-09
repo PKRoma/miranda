@@ -1,6 +1,7 @@
 // Microsoft Visual C++ generated resource script.
 //
 #include "resource.h"
+#include "version.h"
 
 #define APSTUDIO_READONLY_SYMBOLS
 /////////////////////////////////////////////////////////////////////////////
@@ -647,8 +648,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 0,5,1,4
- PRODUCTVERSION 0,9,0,0
+ FILEVERSION __FILEVERSION_STRING
+ PRODUCTVERSION __FILEVERSION_STRING
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -665,12 +666,12 @@ BEGIN
         BEGIN
             VALUE "Comments", "Licensed under the terms of the GNU General Public License"
             VALUE "FileDescription", "ICQ protocol plugin for Miranda IM, enhanced"
-            VALUE "FileVersion", "0, 5, 1, 4"
+            VALUE "FileVersion", __VERSION_STRING
             VALUE "InternalName", "ICQJ protocol plugin for Miranda IM"
             VALUE "LegalCopyright", "Copyright (C) 2000-2010 Joe Kucera, Angeli-Ka, Bio, Martin Öberg, Richard Hughes, Jon Keating"
             VALUE "OriginalFilename", "ICQ.dll"
             VALUE "ProductName", "ICQ Protocol Support"
-            VALUE "ProductVersion", "0, 9, 0, 0"
+            VALUE "ProductVersion", __VERSION_STRING
         END
     END
     BLOCK "VarFileInfo"

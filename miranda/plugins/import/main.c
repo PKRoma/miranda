@@ -21,7 +21,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
 #include "import.h"
-
+#include "version.h"
 #include "resource.h"
 
 void FreeVariant( DBVARIANT* dbv );
@@ -52,7 +52,7 @@ static HWND hwndWizard = NULL;
 PLUGININFOEX pluginInfo = {
 	sizeof(PLUGININFOEX),
 	"Import contacts and messages",
-	PLUGIN_MAKE_VERSION(0,9,0,0),
+	__VERSION_DWORD,
 	"Imports contacts and messages from Mirabilis ICQ and Miranda IM.",
 	"Miranda team",
 	"info@miranda-im.org",

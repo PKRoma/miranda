@@ -1,9 +1,9 @@
 Microsoft Developer Studio Workspace File, Format Version 6.00
-# WARNUNG: DIESE ARBEITSBEREICHSDATEI DARF NICHT BEARBEITET ODER GELÖSCHT WERDEN!
+# WARNING: DO NOT EDIT OR DELETE THIS WORKSPACE FILE!
 
 ###############################################################################
 
-Project: "FreeImage"=.\FreeImage.dsp - Package Owner=<4>
+Project: "FreeImage"=".\FreeImage.dsp" - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -24,7 +24,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "FreeImageLib"=.\SOURCE\FreeImageLib\FreeImageLib.dsp - Package Owner=<4>
+Project: "FreeImageLib"=".\SOURCE\FreeImageLib\FreeImageLib.dsp" - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -45,22 +45,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "FreeImagePlus"=.\Wrapper\FreeImagePlus\FreeImagePlus.dsp - Package Owner=<4>
-
-Package=<5>
-{{{
-}}}
-
-Package=<4>
-{{{
-    Begin Project Dependency
-    Project_Dep_Name FreeImage
-    End Project Dependency
-}}}
-
-###############################################################################
-
-Project: "LibJPEG"=.\Source\LibJPEG\LibJPEG.dsp - Package Owner=<4>
+Project: "LibJPEG"=".\Source\LibJPEG\LibJPEG.dsp" - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -72,7 +57,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "LibPNG"=.\Source\LibPNG\LibPNG.dsp - Package Owner=<4>
+Project: "LibPNG"=".\Source\LibPNG\LibPNG.dsp" - Package Owner=<4>
 
 Package=<5>
 {{{

@@ -1,3 +1,5 @@
-#define __FILEVERSION_STRING        0,8,0,0
-#define __VERSION_STRING            "0.8.0.0"
-#define __VERSION_DWORD             0x00080000
+#include <m_version.h>
+
+#define __FILEVERSION_STRING        MIRANDA_VERSION_FILEVERSION
+#define __VERSION_STRING            MIRANDA_VERSION_STRING
+#define __VERSION_DWORD             MIRANDA_VERSION_DWORD

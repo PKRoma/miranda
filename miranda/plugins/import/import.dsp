@@ -201,6 +201,10 @@ SOURCE=.\mirabilis.h
 
 SOURCE=.\mirandadb0700.h
 # End Source File
+# Begin Source File
+
+SOURCE=.\version.h
+# End Source File
 # End Group
 # Begin Group "Resource Files"
 

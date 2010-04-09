@@ -1,6 +1,6 @@
 /*
 Plugin of Miranda IM for communicating with users of the MSN Messenger protocol.
-Copyright (c) 2008-2010 Boris Krasnovskiy.
+Copyright (c) 2008-2009 Boris Krasnovskiy.
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -15,8 +15,8 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include <m_version.h>
 
-#define __FILEVERSION_STRING        0,9,0,0
-#define __VERSION_STRING            "0.9.0.0"
-#define __VERSION_DWORD             PLUGIN_MAKE_VERSION(0, 9, 0, 0)
-
+#define __FILEVERSION_STRING        MIRANDA_VERSION_FILEVERSION
+#define __VERSION_STRING            MIRANDA_VERSION_STRING
+#define __VERSION_DWORD             MIRANDA_VERSION_DWORD
