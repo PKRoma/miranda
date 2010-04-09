@@ -10,6 +10,14 @@ all:
 	$(CC) -c -o icons.o icons.c
 	$(CC) -shared -o bin\locolor\proto_AIM.dll icons.o resource.res
 	del resource.res
+	$(RC) --input-format rc --output-format coff -DICO_GGHI -o resource.res -i resource.rc
+	$(CC) -c -o icons.o icons.c
+	$(CC) -shared -o bin\hicolor\proto_GG.dll icons.o resource.res
+	del resource.res
+	$(RC) --input-format rc --output-format coff -DICO_GGLO -o resource.res -i resource.rc
+	$(CC) -c -o icons.o icons.c
+	$(CC) -shared -o bin\locolor\proto_GG.dll icons.o resource.res
+	del resource.res
 	$(RC) --input-format rc --output-format coff -DICO_ICQHI -o resource.res -i resource.rc
 	$(CC) -c -o icons.o icons.c
 	$(CC) -shared -o bin\hicolor\proto_ICQ.dll icons.o resource.res

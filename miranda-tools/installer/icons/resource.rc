@@ -27,6 +27,26 @@ IDI_INVISIBLE   ICON DISCARDABLE "res\\AIM\\8_aim_Invisible.ico"
 IDI_ONTHEPHONE  ICON DISCARDABLE "res\\AIM\\8_aim_Phone.ico"
 #endif
 
+#ifdef ICO_GGHI
+IDI_OFFLINE      ICON DISCARDABLE "res\\GG\\32_gg_Offline.ico"
+IDI_ONLINE       ICON DISCARDABLE "res\\GG\\32_gg_Online.ico"
+IDI_AWAY         ICON DISCARDABLE "res\\GG\\32_gg_Away.ico"
+IDI_INVISIBLE    ICON DISCARDABLE "res\\GG\\32_gg_Invisible.ico"
+IDI_NA	         ICON DISCARDABLE "res\\GG\\32_gg_NA.ico"
+IDI_DND          ICON DISCARDABLE "res\\GG\\32_gg_DND.ico"
+IDI_FREE4CHAT    ICON DISCARDABLE "res\\GG\\32_gg_FFC.ico"
+#endif
+
+#ifdef ICO_GGLO
+IDI_OFFLINE      ICON DISCARDABLE "res\\GG\\8_gg_Offline.ico"
+IDI_ONLINE       ICON DISCARDABLE "res\\GG\\8_gg_Online.ico"
+IDI_AWAY         ICON DISCARDABLE "res\\GG\\8_gg_Away.ico"
+IDI_INVISIBLE    ICON DISCARDABLE "res\\GG\\8_gg_Invisible.ico"
+IDI_NA	         ICON DISCARDABLE "res\\GG\\8_gg_NA.ico"
+IDI_DND          ICON DISCARDABLE "res\\GG\\8_gg_DND.ico"
+IDI_FREE4CHAT    ICON DISCARDABLE "res\\GG\\8_gg_FFC.ico"
+#endif
+
 #ifdef ICO_ICQHI
 IDI_OFFLINE      ICON DISCARDABLE "res\\ICQ\\32_icq_Offline.ico"
 IDI_ONLINE       ICON DISCARDABLE "res\\ICQ\\32_icq_Online.ico"
