@@ -993,7 +993,6 @@ static INT_PTR FindAddCommand(WPARAM, LPARAM)
 		SetFocus(hwndFindAdd);
 	}
 	else {
-		INITCOMMONCONTROLSEX icce={0};
 		int netProtoCount, i;
 
 		// Make sure we have some networks to search on. This is not ideal since
@@ -1009,13 +1008,9 @@ static INT_PTR FindAddCommand(WPARAM, LPARAM)
 			if ( protoCaps&PF1_BASICSEARCH || protoCaps&PF1_SEARCHBYEMAIL || protoCaps&PF1_SEARCHBYNAME
 				|| protoCaps&PF1_EXTSEARCHUI ) netProtoCount++;
 		}
-		if (netProtoCount > 0) {
-			icce.dwSize=sizeof(icce);
-			icce.dwICC=ICC_USEREX_CLASSES;
-			InitCommonControlsEx(&icce);
-			
+		if (netProtoCount > 0)
 			hwndFindAdd=CreateDialog(hMirandaInst, MAKEINTRESOURCE(IDD_FINDADD), NULL, DlgProcFindAdd);
-	}	}
+	}
 	return 0;
 }
 
