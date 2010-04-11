@@ -319,8 +319,9 @@ typedef struct {
 	FNAMECHAR *firstName;
 	FNAMECHAR *lastName;
 	FNAMECHAR *email;
+	FNAMECHAR *id;
 	int flags;
-	char reserved[12];
+	char reserved[8*sizeof(HANDLE)/sizeof(DWORD)];
 	//Protocols may extend this structure with extra members at will and supply
 	//a larger cbSize to reflect the new information, but they must not change
 	//any elements above this comment
