@@ -318,7 +318,7 @@ static void CheckSearchTypeRadioButton(HWND hwndDlg,int idControl)
 
 static void SetListItemText( HWND hwndList, int idx, int col, TCHAR* szText )
 {
-	if ( szText[0] )
+	if ( szText && szText[0] )
 	{
 		ListView_SetItemText( hwndList, idx, col, szText );
 	}
@@ -934,10 +934,10 @@ static INT_PTR CALLBACK DlgProcFindAdd(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 				}
 				i=ListView_InsertItem(hwndList, &lvi);
 				col=1;
-				SetListItemText(hwndList, i, col++, psr->nick );
-				SetListItemText(hwndList, i, col++, psr->firstName );
-				SetListItemText(hwndList, i, col++, psr->lastName );
-				SetListItemText(hwndList, i, col++, psr->email );
+				SetListItemText(hwndList, i, col++, lsr->psr.nick );
+				SetListItemText(hwndList, i, col++, lsr->psr.firstName );
+				SetListItemText(hwndList, i, col++, lsr->psr.lastName );
+				SetListItemText(hwndList, i, col++, lsr->psr.email );
 				if(!lstrcmpA(ack->szModule,"ICQ")) {
 					TCHAR str[15];
 					ICQSEARCHRESULT *isr=(ICQSEARCHRESULT*)psr;
