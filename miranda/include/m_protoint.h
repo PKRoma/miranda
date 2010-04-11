@@ -65,9 +65,9 @@ typedef struct tagPROTO_INTERFACE_VTBL
 	HICON     ( *GetIcon )( struct tagPROTO_INTERFACE*, int iconIndex );
 	int       ( *GetInfo )( struct tagPROTO_INTERFACE*, HANDLE hContact, int infoType );
 
-	HANDLE    ( *SearchBasic )( struct tagPROTO_INTERFACE*, const char* id );
-	HANDLE    ( *SearchByEmail )( struct tagPROTO_INTERFACE*, const char* email );
-	HANDLE    ( *SearchByName )( struct tagPROTO_INTERFACE*, const char* nick, const char* firstName, const char* lastName );
+	HANDLE    ( *SearchBasic )( struct tagPROTO_INTERFACE*, const PROTOCHAR* id );
+	HANDLE    ( *SearchByEmail )( struct tagPROTO_INTERFACE*, const PROTOCHAR* email );
+	HANDLE    ( *SearchByName )( struct tagPROTO_INTERFACE*, const PROTOCHAR* nick, const PROTOCHAR* firstName, const PROTOCHAR* lastName );
 	HWND      ( *SearchAdvanced )( struct tagPROTO_INTERFACE*, HWND owner );
 	HWND      ( *CreateExtendedSearchUI )( struct tagPROTO_INTERFACE*, HWND owner );
 
