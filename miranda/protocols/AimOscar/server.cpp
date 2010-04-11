@@ -1768,7 +1768,7 @@ void CAimProto::snac_email_search_results(SNAC &snac)//family 0x000A
 		{
 			TLV tlv(snac.val(offset));
 			offset+=TLV_HEADER_SIZE;
-			psr.nick = (TCHAR*)tlv.dup();
+			psr.id = (TCHAR*)tlv.dup();
 			offset+=tlv.len();
 			sendBroadcast(NULL, ACKTYPE_SEARCH, ACKRESULT_DATA, (HANDLE) 1, (LPARAM) & psr);
 			mir_free(psr.nick);

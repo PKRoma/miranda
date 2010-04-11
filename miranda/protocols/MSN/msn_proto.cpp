@@ -282,8 +282,9 @@ HANDLE CMsnProto::AddToListByEmail(const char *email, const char *nick, DWORD fl
 
 HANDLE __cdecl CMsnProto::AddToList(int flags, PROTOSEARCHRESULT* psr)
 {
+	TCHAR *id = psr->id ? psr->id : psr->email;
 	return AddToListByEmail(
-		psr->flags & PSR_UNICODE ? UTF8((wchar_t*)psr->email) : UTF8((char*)psr->email), 
+		psr->flags & PSR_UNICODE ? UTF8((wchar_t*)id) : UTF8((char*)id), 
 		psr->flags & PSR_UNICODE ? UTF8((wchar_t*)psr->nick) : UTF8((char*)psr->nick), 
 		flags);
 }
@@ -479,6 +480,7 @@ void __cdecl CMsnProto::MsnSearchAckThread(void* arg)
 			PROTOSEARCHRESULT isr = {0};
 			isr.cbSize = sizeof(isr);
 			isr.flags = PSR_TCHAR;
+			isr.id  = (TCHAR*)emailT;
 			isr.nick  = (TCHAR*)emailT;
 			isr.email = (TCHAR*)emailT;
 

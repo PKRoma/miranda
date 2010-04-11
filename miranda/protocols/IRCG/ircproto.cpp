@@ -360,8 +360,10 @@ HANDLE __cdecl CIrcProto::AddToList( int, PROTOSEARCHRESULT* psr )
 	if ( m_iDesiredStatus == ID_STATUS_OFFLINE || m_iDesiredStatus == ID_STATUS_CONNECTING )
 		return 0;
 
-	TCHAR* nick = psr->flags & PSR_UNICODE ? mir_u2t((wchar_t*)psr->nick) : mir_a2t((char*)psr->nick);
-	CONTACT user = { nick, NULL, NULL, true, false, false };
+	TCHAR *id = psr->id ? psr->id : psr->nick;
+	id = psr->flags & PSR_UNICODE ? mir_u2t((wchar_t*)id) : mir_a2t((char*)id);
+
+	CONTACT user = { id, NULL, NULL, true, false, false };
 	HANDLE hContact = CList_AddContact( &user, true, false );
 
 	if ( hContact ) {
@@ -387,7 +389,7 @@ HANDLE __cdecl CIrcProto::AddToList( int, PROTOSEARCHRESULT* psr )
 			PostIrcMessage( _T("/PRIVMSG %s \001VERSION\001"), user.name);
 	}
 
-	mir_free(nick);
+	mir_free(id);
 	return hContact;
 }
 
@@ -601,6 +603,7 @@ void __cdecl CIrcProto::AckBasicSearch( void* param )
 	PROTOSEARCHRESULT psr = { 0 };
 	psr.cbSize = sizeof(psr);
 	psr.flags = PSR_TCHAR;
+	psr.id = (( AckBasicSearchParam* )param )->buf;
 	psr.nick = (( AckBasicSearchParam* )param )->buf;
 	ProtoBroadcastAck( m_szModuleName, NULL, ACKTYPE_SEARCH, ACKRESULT_DATA, (HANDLE) 1, (LPARAM) & psr);
 	ProtoBroadcastAck( m_szModuleName, NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, (HANDLE) 1, 0);

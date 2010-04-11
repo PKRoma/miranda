@@ -143,7 +143,8 @@ int CAimProto::OnModulesLoaded(WPARAM wParam, LPARAM lParam)
 HANDLE CAimProto::AddToList(int flags, PROTOSEARCHRESULT* psr)
 {
 	if (state != 1) return 0;
-	char *sn = psr->flags & PSR_UNICODE ? mir_u2a((wchar_t*)psr->nick) : mir_strdup((char*)psr->nick);
+	TCHAR *id = psr->id ? psr->id : psr->nick;
+	char *sn = psr->flags & PSR_UNICODE ? mir_u2a((wchar_t*)id) : mir_strdup((char*)id);
 	HANDLE hContact = contact_from_sn(sn, true, (flags & PALF_TEMPORARY) != 0);
 	mir_free(sn);
 	return hContact; //See authrequest for serverside addition
@@ -394,7 +395,7 @@ void __cdecl CAimProto::basic_search_ack_success(void* p)
 		{
 			PROTOSEARCHRESULT psr = {0};
 			psr.cbSize = sizeof(psr);
-			psr.nick = (TCHAR*)sn;
+			psr.id = (TCHAR*)sn;
 			sendBroadcast(NULL, ACKTYPE_SEARCH, ACKRESULT_DATA, (HANDLE) 1, (LPARAM) & psr);
 			sendBroadcast(NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, (HANDLE) 1, 0);
 		}

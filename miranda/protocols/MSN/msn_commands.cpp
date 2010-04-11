@@ -636,6 +636,7 @@ void CMsnProto::sttProcessYFind(char* buf, size_t len)
 			PROTOSEARCHRESULT isr = {0};
 			isr.cbSize = sizeof(isr);
 			isr.flags = PSR_TCHAR;
+			isr.id = szEmailT;
 			isr.nick = szEmailT;
 			isr.email = szEmailT;
 
