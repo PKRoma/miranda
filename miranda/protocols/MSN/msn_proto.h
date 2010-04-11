@@ -455,7 +455,7 @@ struct CMsnProto : public PROTO_INTERFACE
 	void     MSN_AddAuthRequest(const char *email, const char *nick, const char *reason);
 	void	 MSN_SetContactDb(HANDLE hContact, const char *szEmail);
 	HANDLE	 MSN_HContactFromEmail(const char* msnEmail, const char* msnNick, bool addIfNeeded, bool temporary);
-	HANDLE	 AddToListByEmail(const char *email, DWORD flags);
+	HANDLE	 AddToListByEmail(const char *email, const char *nick, DWORD flags);
 
 	/////////////////////////////////////////////////////////////////////////////////////////
 	//	MSN server groups

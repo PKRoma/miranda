@@ -264,9 +264,9 @@ int CMsnProto::OnPreShutdown(WPARAM, LPARAM)
 /////////////////////////////////////////////////////////////////////////////////////////
 // MsnAddToList - adds contact to the server list
 
-HANDLE CMsnProto::AddToListByEmail(const char *email, DWORD flags)
+HANDLE CMsnProto::AddToListByEmail(const char *email, const char *nick, DWORD flags)
 {
-	HANDLE hContact = MSN_HContactFromEmail(email, email, true, flags & PALF_TEMPORARY);
+	HANDLE hContact = MSN_HContactFromEmail(email, nick, true, flags & PALF_TEMPORARY);
 
 	if (flags & PALF_TEMPORARY) 
 	{
@@ -282,7 +282,10 @@ HANDLE CMsnProto::AddToListByEmail(const char *email, DWORD flags)
 
 HANDLE __cdecl CMsnProto::AddToList(int flags, PROTOSEARCHRESULT* psr)
 {
-	return AddToListByEmail(UTF8(psr->email), flags);
+	return AddToListByEmail(
+		psr->flags & PSR_UNICODE ? UTF8((wchar_t*)psr->email) : UTF8((char*)psr->email), 
+		psr->flags & PSR_UNICODE ? UTF8((wchar_t*)psr->nick) : UTF8((char*)psr->nick), 
+		flags);
 }
 
 HANDLE __cdecl CMsnProto::AddToListByEvent(int flags, int iContact, HANDLE hDbEvent)
@@ -302,7 +305,7 @@ HANDLE __cdecl CMsnProto::AddToListByEvent(int flags, int iContact, HANDLE hDbEv
 	char* lastName = firstName + strlen(firstName) + 1;
 	char* email = lastName + strlen(lastName) + 1;
 
-	return AddToListByEmail(email, flags);
+	return AddToListByEmail(email, nick, flags);
 }
 
 int CMsnProto::AuthRecv(HANDLE hContact, PROTORECVEVENT* pre)
