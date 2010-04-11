@@ -730,14 +730,14 @@ int __cdecl CIrcProto::GCEventHook(WPARAM wParam,LPARAM lParam)
 						{
 							PROTOSEARCHRESULT psr = { 0 };
 							psr.cbSize = sizeof(psr);
-							psr.nick = mir_t2a_cp( gch->ptszUID, getCodepage());
+							psr.flags = PSR_TCHAR;
+							psr.nick = gch->ptszUID;
 
 							ADDCONTACTSTRUCT acs = { 0 };
 							acs.handleType = HANDLE_SEARCHRESULT;
 							acs.szProto = m_szModuleName;
 							acs.psr = &psr;
 							CallService( MS_ADDCONTACT_SHOW, (WPARAM)NULL, (LPARAM)&acs);
-							mir_free( psr.nick );
 						}
 						break;
 					case 31:	//slap

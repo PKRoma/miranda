@@ -360,7 +360,7 @@ HANDLE __cdecl CIrcProto::AddToList( int, PROTOSEARCHRESULT* psr )
 	if ( m_iDesiredStatus == ID_STATUS_OFFLINE || m_iDesiredStatus == ID_STATUS_CONNECTING )
 		return 0;
 
-	CONTACT user = { mir_a2t( psr->nick ), NULL, NULL, true, false, false };
+	CONTACT user = { psr->nick, NULL, NULL, true, false, false };
 	HANDLE hContact = CList_AddContact( &user, true, false );
 
 	if ( hContact ) {
@@ -386,7 +386,6 @@ HANDLE __cdecl CIrcProto::AddToList( int, PROTOSEARCHRESULT* psr )
 			PostIrcMessage( _T("/PRIVMSG %s \001VERSION\001"), user.name);
 	}
 
-	mir_free( user.name );
 	return hContact;
 }
 
@@ -592,25 +591,27 @@ int __cdecl CIrcProto::GetInfo( HANDLE, int )
 
 struct AckBasicSearchParam
 {
-	char buf[ 50 ];
+	PROTOCHAR buf[ 50 ];
 };
 
 void __cdecl CIrcProto::AckBasicSearch( void* param )
 {
 	PROTOSEARCHRESULT psr = { 0 };
 	psr.cbSize = sizeof(psr);
+	psr.flags = PSR_TCHAR;
 	psr.nick = (( AckBasicSearchParam* )param )->buf;
 	ProtoBroadcastAck( m_szModuleName, NULL, ACKTYPE_SEARCH, ACKRESULT_DATA, (HANDLE) 1, (LPARAM) & psr);
 	ProtoBroadcastAck( m_szModuleName, NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, (HANDLE) 1, 0);
 	delete param;
 }
 
-HANDLE __cdecl CIrcProto::SearchBasic( const char* szId )
+HANDLE __cdecl CIrcProto::SearchBasic( const PROTOCHAR* szId )
 {
 	if ( szId ) {
-		if (m_iDesiredStatus != ID_STATUS_OFFLINE && m_iDesiredStatus != ID_STATUS_CONNECTING && lstrlenA(szId) > 0 && !IsChannel(szId)) {
+		if (m_iDesiredStatus != ID_STATUS_OFFLINE && m_iDesiredStatus != ID_STATUS_CONNECTING && 
+			szId && szId[0] && !IsChannel(szId)) {
 			AckBasicSearchParam* param = new AckBasicSearchParam;
-			lstrcpynA( param->buf, szId, 50 );
+			lstrcpyn( param->buf, szId, 50 );
 			ircFork( &CIrcProto::AckBasicSearch, param );
 			return ( HANDLE )1;
 	}	}
@@ -621,7 +622,7 @@ HANDLE __cdecl CIrcProto::SearchBasic( const char* szId )
 ////////////////////////////////////////////////////////////////////////////////////////
 // SearchByEmail - searches the contact by its e-mail
 
-HANDLE __cdecl CIrcProto::SearchByEmail( const char* )
+HANDLE __cdecl CIrcProto::SearchByEmail( const PROTOCHAR* )
 {
 	return NULL;
 }
@@ -629,7 +630,7 @@ HANDLE __cdecl CIrcProto::SearchByEmail( const char* )
 ////////////////////////////////////////////////////////////////////////////////////////
 // upsupported search functions
 
-HANDLE __cdecl CIrcProto::SearchByName( const char*, const char*, const char* )
+HANDLE __cdecl CIrcProto::SearchByName( const PROTOCHAR*, const PROTOCHAR*, const PROTOCHAR* )
 {
 	return NULL;
 }
