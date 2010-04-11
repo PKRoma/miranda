@@ -68,9 +68,9 @@ struct CYahooProto : public PROTO_INTERFACE
 	virtual	HICON  __cdecl GetIcon( int iconIndex );
 	virtual	int    __cdecl GetInfo( HANDLE hContact, int infoType );
 
-	virtual	HANDLE __cdecl SearchBasic( const char* id );
-	virtual	HANDLE __cdecl SearchByEmail( const char* email );
-	virtual	HANDLE __cdecl SearchByName( const char* nick, const char* firstName, const char* lastName );
+	virtual	HANDLE __cdecl SearchBasic( const TCHAR* id );
+	virtual	HANDLE __cdecl SearchByEmail( const TCHAR* email );
+	virtual	HANDLE __cdecl SearchByName( const TCHAR* nick, const TCHAR* firstName, const TCHAR* lastName );
 	virtual	HWND   __cdecl SearchAdvanced( HWND owner );
 	virtual	HWND   __cdecl CreateExtendedSearchUI( HWND owner );
 
@@ -227,6 +227,7 @@ struct CYahooProto : public PROTO_INTERFACE
 	
 	void   SetString( const char* name, const char* value );
 	void   SetString( HANDLE hContact, const char* name, const char* value );
+	void   SetStringT( HANDLE hContact, const char* name, const TCHAR* value );
 	DWORD  SetStringUtf( HANDLE hContact, const char* valueName, const char* parValue );
 	
 	DWORD  GetDword( const char* valueName, DWORD parDefltValue );
@@ -254,8 +255,14 @@ struct CYahooProto : public PROTO_INTERFACE
 
 	//====| yahoo.cpp |===================================================================
 	HANDLE add_buddy( const char *yahoo_id, const char *yahoo_name, int protocol, DWORD flags );
+	#if defined( _UNICODE )
+		HANDLE add_buddy( const TCHAR *yahoo_id, const TCHAR *yahoo_name, int protocol, DWORD flags );
+	#endif
 	const char *find_buddy( const char *yahoo_id);
 	HANDLE getbuddyH(const char *yahoo_id);
+	#if defined( _UNICODE )
+		HANDLE getbuddyH(const TCHAR *yahoo_id);
+	#endif
 	void   remove_buddy(const char *who, int protocol);
 
 	void   logout();

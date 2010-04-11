@@ -284,6 +284,36 @@ HANDLE CYahooProto::getbuddyH(const char *yahoo_id)
 	return NULL;
 }
 
+#if defined( _UNICODE )
+HANDLE CYahooProto::getbuddyH(const TCHAR *yahoo_id)
+{
+	char  *szProto;
+	HANDLE hContact;
+
+	for ( hContact = ( HANDLE )YAHOO_CallService( MS_DB_CONTACT_FINDFIRST, 0, 0 );
+		hContact != NULL;
+		hContact = ( HANDLE )YAHOO_CallService( MS_DB_CONTACT_FINDNEXT, ( WPARAM )hContact, 0 ))
+	{
+		szProto = ( char* )YAHOO_CallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM )hContact, 0 );
+		if ( szProto != NULL && !lstrcmpA( szProto, m_szModuleName ))
+		{
+			DBVARIANT dbv;
+			if ( DBGetContactSettingTString( hContact, m_szModuleName, YAHOO_LOGINID, &dbv ))
+				continue;
+
+			int tCompareResult = lstrcmpi( dbv.ptszVal, yahoo_id );
+			DBFreeVariant( &dbv );
+			if ( tCompareResult )
+				continue;
+
+			return hContact;
+		}	
+	}
+
+	return NULL;
+}
+#endif
+
 HANDLE CYahooProto::add_buddy( const char *yahoo_id, const char *yahoo_name, int protocol, DWORD flags )
 {
 	HANDLE hContact;
@@ -326,6 +356,51 @@ HANDLE CYahooProto::add_buddy( const char *yahoo_id, const char *yahoo_name, int
 	FREE(yid);
 	return hContact;
 }
+
+#if defined( _UNICODE )
+HANDLE CYahooProto::add_buddy( const TCHAR *yahoo_id, const TCHAR *yahoo_name, int protocol, DWORD flags )
+{
+	HANDLE hContact;
+	TCHAR *yid = _tcsdup(yahoo_id);
+	
+	_tcslwr(yid);
+	
+	hContact = getbuddyH(yid);
+	if (hContact != NULL) {
+		LOG(("[add_buddy] Found buddy id: %S, handle: %lu", yid, (DWORD)hContact));
+		if ( !( flags & PALF_TEMPORARY ) && DBGetContactSettingByte( hContact, "CList", "NotOnList", 1 )) 
+		{
+			LOG(("[add_buddy] Making Perm id: %S, flags: %lu", yahoo_id, flags));
+			DBDeleteContactSetting( hContact, "CList", "NotOnList" );
+			DBDeleteContactSetting( hContact, "CList", "Hidden" );
+
+		}
+		
+		FREE(yid);
+		return hContact;
+	}
+
+	//not already there: add
+	LOG(("[add_buddy] Adding buddy id: %S (Nick: %S), flags: %lu", yid, yahoo_name, flags));
+	hContact = ( HANDLE )YAHOO_CallService( MS_DB_CONTACT_ADD, 0, 0 );
+	YAHOO_CallService( MS_PROTO_ADDTOCONTACT, ( WPARAM )hContact,( LPARAM )m_szModuleName );
+	SetStringT( hContact, YAHOO_LOGINID, yid );
+	Set_Protocol( hContact, protocol );
+
+	if (lstrlen(yahoo_name) > 0)
+		SetStringT( hContact, "Nick", yahoo_name );
+	else
+		SetStringT( hContact, "Nick", yahoo_id );
+
+	if (flags & PALF_TEMPORARY ) {
+		DBWriteContactSettingByte( hContact, "CList", "NotOnList", 1 );
+		DBWriteContactSettingByte( hContact, "CList", "Hidden", 1 );
+	}	
+	
+	FREE(yid);
+	return hContact;
+}
+#endif
 
 const char* CYahooProto::find_buddy( const char *yahoo_id)
 {

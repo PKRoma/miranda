@@ -190,6 +190,10 @@ void CYahooProto::SetString( HANDLE hContact, const char* name, const char* valu
 {	DBWriteContactSettingString(hContact, m_szModuleName, name, value );
 }
 
+void CYahooProto::SetStringT( HANDLE hContact, const char* name, const TCHAR* value )
+{	DBWriteContactSettingTString(hContact, m_szModuleName, name, value );
+}
+
 DWORD CYahooProto::SetStringUtf( HANDLE hContact, const char* valueName, const char* parValue )
 {
 	return DBWriteContactSettingStringUtf( hContact, m_szModuleName, valueName, parValue );

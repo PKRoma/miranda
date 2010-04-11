@@ -432,7 +432,7 @@ int __cdecl CYahooProto::GetInfo( HANDLE hContact, int /*infoType*/ )
 ////////////////////////////////////////////////////////////////////////////////////////
 // SearchByEmail - searches the contact by its e-mail
 
-HANDLE __cdecl CYahooProto::SearchByEmail( const char* email )
+HANDLE __cdecl CYahooProto::SearchByEmail( const TCHAR* email )
 {
 	return 0;
 }
@@ -440,7 +440,7 @@ HANDLE __cdecl CYahooProto::SearchByEmail( const char* email )
 ////////////////////////////////////////////////////////////////////////////////////////
 // SearchByName - searches the contact by its first or last name, or by a nickname
 
-HANDLE __cdecl CYahooProto::SearchByName( const char* nick, const char* firstName, const char* lastName )
+HANDLE __cdecl CYahooProto::SearchByName( const TCHAR* nick, const TCHAR* firstName, const TCHAR* lastName )
 {
 	return 0;
 }
