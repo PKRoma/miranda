@@ -171,13 +171,8 @@ call :WriteVer2 %Version% %SubVersion% %3
 goto :eof
 
 :WriteVer2
-echo #ifndef M_VERSION_H__                                                          >..\include\m_version.h
-echo #define M_VERSION_H__                                                         >>..\include\m_version.h
-echo.                                                                              >>..\include\m_version.h
-echo #ifndef MIRANDA_MAKE_VERSION                                                  >>..\include\m_version.h
-echo #define MIRANDA_MAKE_VERSION(a,b,c,d)   (((((DWORD)(a))&0xFF)<<24)|((((DWORD)(b))&0xFF)<<16)|((((DWORD)(c))&0xFF)<<8)|(((DWORD)(d))&0xFF)) >>..\include\m_version.h
-echo #endif                                                                        >>..\include\m_version.h
-echo.                                                                              >>..\include\m_version.h
+copy m_version.h.in ..\include\m_version.h
+
 echo #define MIRANDA_VERSION_FILEVERSION 0,%1,%2,%3                                >>..\include\m_version.h
 echo #define MIRANDA_VERSION_STRING      "0.%1.%2.%3"                              >>..\include\m_version.h
 echo #define MIRANDA_VERSION_DISPLAY     "0.%1.%2 alpha build #%3"                 >>..\include\m_version.h

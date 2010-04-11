@@ -290,10 +290,11 @@ static LRESULT MHeaderbar_OnPaint(HWND hwndDlg, MHeaderbarCtrl *mit, UINT  msg, 
 	GetObject(hFont, sizeof(lf), &lf);
 	lf.lfWeight = FW_BOLD;
 	HFONT hFntBold = CreateFontIndirect(&lf);
-    
-    if (mit->hIcon)
-        DrawIcon(tempDC, 10, iTopSpace, mit->hIcon);
-    else DrawIcon(tempDC, 10, iTopSpace, LoadIcon(hMirandaInst, MAKEINTRESOURCE(IDI_DETAILSLOGO)));
+
+	if (mit->hIcon)
+		DrawIcon(tempDC, 10, iTopSpace, mit->hIcon);
+	else 
+		DrawIcon(tempDC, 10, iTopSpace, LoadIcon(hMirandaInst, MAKEINTRESOURCE(IDI_DETAILSLOGO)));
 
 	RECT textRect;
 	textRect.left=50;
@@ -310,18 +311,18 @@ static LRESULT MHeaderbar_OnPaint(HWND hwndDlg, MHeaderbarCtrl *mit, UINT  msg, 
 		HANDLE hTheme = openThemeData(hwndDlg, L"Window");
 		textRect.left=50;
 		SelectObject(tempDC, hFntBold);
-        
-        wchar_t *szTitleW = mir_t2u(szTitle);
+
+		wchar_t *szTitleW = mir_t2u(szTitle);
 		drawThemeTextEx(hTheme, tempDC, WP_CAPTION, CS_ACTIVE, szTitleW, -1, DT_TOP|DT_LEFT|DT_SINGLELINE|DT_NOPREFIX|DT_NOCLIP|DT_END_ELLIPSIS, &textRect, &dto);
-        mir_free(szTitleW);
+		mir_free(szTitleW);
 
 		if (szSubTitle) {
 			textRect.left=66;
 			SelectObject(tempDC, hFont);
 
-            wchar_t *szSubTitleW = mir_t2u(szSubTitle);
+			wchar_t *szSubTitleW = mir_t2u(szSubTitle);
 			drawThemeTextEx(hTheme, tempDC, WP_CAPTION, CS_ACTIVE, szSubTitleW, -1, DT_BOTTOM|DT_LEFT|DT_SINGLELINE|DT_NOPREFIX|DT_NOCLIP|DT_END_ELLIPSIS, &textRect, &dto);
-            mir_free(szSubTitleW);
+			mir_free(szSubTitleW);
 		}
 		closeThemeData(hTheme);
 	}
