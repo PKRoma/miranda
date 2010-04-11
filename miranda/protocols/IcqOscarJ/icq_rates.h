@@ -131,7 +131,7 @@ struct rates_queue : public void_struct
 private:
   CIcqProto *ppro;
   const char *szDescr;
-  CRITICAL_SECTION listsMutex;  // we need to be thread safe
+  icq_critical_section *listsMutex;  // we need to be thread safe
 	int pendingListSize;
 	rates_queue_item **pendingList;
   int duplicates;

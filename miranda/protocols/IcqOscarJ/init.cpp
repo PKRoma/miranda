@@ -51,6 +51,7 @@ IcqIconHandle hStaticIcons[4];
 HANDLE hStaticHooks[1];;
 HANDLE hExtraXStatus = NULL;
 
+extern CRITICAL_SECTION criticalSectionMutex;
 
 PLUGININFOEX pluginInfo = {
 	sizeof(PLUGININFOEX),
@@ -72,11 +73,11 @@ PLUGININFOEX pluginInfo = {
 
 extern "C" PLUGININFOEX __declspec(dllexport) *MirandaPluginInfoEx(DWORD mirandaVersion)
 {
-	// Only load for 0.9.0.6 or greater
-	// We need the new Unicode aware Authorization API
-	if (mirandaVersion < PLUGIN_MAKE_VERSION(0, 9, 0, 6))
+	// Only load for 0.9.0.8 or greater
+	// We need the new Unicode aware Contact Search API
+	if (mirandaVersion < PLUGIN_MAKE_VERSION(0, 9, 0, 8))
 	{
-		MessageBoxA( NULL, "ICQ plugin cannot be loaded. It requires Miranda IM 0.9.0.6 or later.", "ICQ Plugin",
+		MessageBoxA( NULL, "ICQ plugin cannot be loaded. It requires Miranda IM 0.9.0.8 or later.", "ICQ Plugin",
 			MB_OK|MB_ICONWARNING|MB_SETFOREGROUND|MB_TOPMOST );
 		return NULL;
 	}
@@ -103,17 +104,20 @@ static PROTO_INTERFACE* icqProtoInit( const char* pszProtoName, const TCHAR* tsz
 	return new CIcqProto( pszProtoName, tszUserName );
 }
 
+
 static int icqProtoUninit( PROTO_INTERFACE* ppro )
 {
 	delete ( CIcqProto* )ppro;
 	return 0;
 }
 
+
 static int OnModulesLoaded( WPARAM, LPARAM )
 {
 	hExtraXStatus = ExtraIcon_Register("xstatus", "ICQ XStatus");
 	return 0;
 }
+
 
 extern "C" int __declspec(dllexport) Load(PLUGINLINK *link)
 {
@@ -164,6 +168,9 @@ extern "C" int __declspec(dllexport) Load(PLUGINLINK *link)
 	srand(time(NULL));
 	_tzset();
 
+  // Initialize generic critical section
+  InitializeCriticalSection(&criticalSectionMutex);
+
 	// Register the module
 	PROTOCOLDESCRIPTOR pd = {0};
 	pd.cbSize   = sizeof(pd);
@@ -200,6 +207,7 @@ extern "C" int __declspec(dllexport) Load(PLUGINLINK *link)
 	return 0;
 }
 
+
 extern "C" int __declspec(dllexport) Unload(void)
 {
   int i;
@@ -218,8 +226,12 @@ extern "C" int __declspec(dllexport) Unload(void)
     if (hStaticServices[i])
       DestroyServiceFunction(hStaticServices[i]);
 
+  // Finalize critical section
+  DeleteCriticalSection(&criticalSectionMutex);
+
 	return 0;
 }
+
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // OnPrebuildContactMenu event

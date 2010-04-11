@@ -954,39 +954,40 @@ void CIcqProto::icq_sendFileDenyServ(DWORD dwUin, filetransfer *ft, const char *
 
 void CIcqProto::icq_sendAwayMsgReplyServ(DWORD dwUin, DWORD dwMsgID1, DWORD dwMsgID2, WORD wCookie, WORD wVersion, BYTE msgType, char** szMsg)
 {
-	icq_packet packet;
 	HANDLE hContact = HContactFromUIN(dwUin, NULL);
 
 	if (validateStatusMessageRequest(hContact, msgType))
 	{
 		NotifyEventHooks(m_modeMsgsEvent, (WPARAM)msgType, (LPARAM)dwUin);
 
-		EnterCriticalSection(&m_modeMsgsMutex);
+		icq_lock l(m_modeMsgsMutex);
 
 		if (szMsg && *szMsg)
 		{
-			char *pszMsg = NULL, *szAnsiMsg = NULL;
-			WORD wMsgLen;
+			char *pszMsg = NULL;
 			WORD wReplyVersion = ICQ_VERSION;
 
 			if (wVersion == 9)
 			{
-				pszMsg = (char*)*szMsg;
+				pszMsg = *szMsg;
 				wReplyVersion = 9;
 			}
 			else
 			{ // only v9 protocol supports UTF-8 mode messagees
-				wMsgLen = strlennull(*szMsg) + 1;
-				szAnsiMsg = (char*)_alloca(wMsgLen);
+				WORD wMsgLen = strlennull(*szMsg) + 1;
+				char *szAnsiMsg = (char*)_alloca(wMsgLen);
+
 				utf8_decode_static(*szMsg, szAnsiMsg, wMsgLen);
 				pszMsg = szAnsiMsg;
 			}
 
-			wMsgLen = strlennull(pszMsg);
+			WORD wMsgLen = strlennull(pszMsg);
 
 			// limit msg len to max snac size - we get disconnected if exceeded
 			if (wMsgLen > MAX_MESSAGESNACSIZE)
 				wMsgLen = MAX_MESSAGESNACSIZE;
+
+			icq_packet packet;
 
 			packServAdvancedMsgReply(&packet, dwUin, NULL, dwMsgID1, dwMsgID2, wCookie, wReplyVersion, msgType, 3, (WORD)(wMsgLen + 3));
 			packLEWord(&packet, (WORD)(wMsgLen + 1));
@@ -995,26 +996,39 @@ void CIcqProto::icq_sendAwayMsgReplyServ(DWORD dwUin, DWORD dwMsgID1, DWORD dwMs
 
 			sendServPacket(&packet);
 		}
-
-		LeaveCriticalSection(&m_modeMsgsMutex);
 	}
 }
 
 
 void CIcqProto::icq_sendAwayMsgReplyServExt(DWORD dwUin, char *szUID, DWORD dwMsgID1, DWORD dwMsgID2, WORD wCookie, WORD wVersion, BYTE msgType, char **szMsg)
 {
-	icq_packet packet;
 	HANDLE hContact = HContactFromUID(dwUin, szUID, NULL);
 
 	if (validateStatusMessageRequest(hContact, msgType))
 	{
 		NotifyEventHooks(m_modeMsgsEvent, (WPARAM)msgType, (LPARAM)dwUin);
 
-		EnterCriticalSection(&m_modeMsgsMutex);
+		icq_lock l(m_modeMsgsMutex);
 
 		if (szMsg && *szMsg)
 		{
-			char *pszMsg = *szMsg;
+			char *pszMsg = NULL;
+			WORD wReplyVersion = ICQ_VERSION;
+
+			if (wVersion == 9)
+			{
+				pszMsg = *szMsg;
+				wReplyVersion = 9;
+			}
+			else
+			{ // only v9 protocol supports UTF-8 mode messagees
+				WORD wMsgLen = strlennull(*szMsg) + 1;
+				char *szAnsiMsg = (char*)_alloca(wMsgLen);
+
+				utf8_decode_static(*szMsg, szAnsiMsg, wMsgLen);
+				pszMsg = szAnsiMsg;
+			}
+      // convert to HTML 
 			char *mng = MangleXml(pszMsg, strlennull(pszMsg));
 			pszMsg = (char*)SAFE_MALLOC(strlennull(mng) + 28);
 			strcpy(pszMsg, "<HTML><BODY>"); /// TODO: add support for RTL & user customizable font
@@ -1028,7 +1042,9 @@ void CIcqProto::icq_sendAwayMsgReplyServExt(DWORD dwUin, char *szUID, DWORD dwMs
 			if (wMsgLen > MAX_MESSAGESNACSIZE)
 				wMsgLen = MAX_MESSAGESNACSIZE;
 
-			packServAdvancedMsgReply(&packet, dwUin, szUID, dwMsgID1, dwMsgID2, wCookie, ICQ_VERSION, MTYPE_PLUGIN, 0, wMsgLen + 27 + getPluginTypeIdLen(msgType));
+			icq_packet packet;
+
+			packServAdvancedMsgReply(&packet, dwUin, szUID, dwMsgID1, dwMsgID2, wCookie, wReplyVersion, MTYPE_PLUGIN, 0, wMsgLen + 27 + getPluginTypeIdLen(msgType));
 			packLEWord(&packet, 0);   // Message size
       packPluginTypeId(&packet, msgType);
 
@@ -1041,8 +1057,6 @@ void CIcqProto::icq_sendAwayMsgReplyServExt(DWORD dwUin, char *szUID, DWORD dwMs
 
 			sendServPacket(&packet);
 		}
-
-		LeaveCriticalSection(&m_modeMsgsMutex);
 	}
 }
 

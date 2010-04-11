@@ -145,9 +145,9 @@ void CIcqProto::handleXtrazNotify(DWORD dwUin, DWORD dwMID, DWORD dwMID2, WORD w
                 char *szResponse;
               };
 
-				      EnterCriticalSection(&m_ratesMutex);
+				      m_ratesMutex->Enter();
               WORD wGroup = m_rates->getGroupFromSNAC(ICQ_MSG_FAMILY, ICQ_MSG_RESPONSE);
-				      LeaveCriticalSection(&m_ratesMutex);
+				      m_ratesMutex->Leave();
 
       				rates_xstatus_response rr(this, wGroup);
               rr.hContact = hContact;

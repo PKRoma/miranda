@@ -324,7 +324,7 @@ void CIcqProto::StartAvatarThread(HANDLE hConn, char *cookie, WORD cookieLen) //
 {
 	if (!hConn)
 	{
-    EnterCriticalSection(&m_avatarsMutex); // place avatars lock
+    icq_lock l(m_avatarsMutex); // place avatars lock
 
 		if (m_avatarsConnection && m_avatarsConnection->isPending())
 		{
@@ -332,7 +332,6 @@ void CIcqProto::StartAvatarThread(HANDLE hConn, char *cookie, WORD cookieLen) //
 
       SAFE_FREE((void**)&cookie);
 
-      LeaveCriticalSection(&m_avatarsMutex);
 			return;
 		}
 		NetLog_Server("Avatars: Connection failed");
@@ -361,11 +360,10 @@ void CIcqProto::StartAvatarThread(HANDLE hConn, char *cookie, WORD cookieLen) //
 		}
 		SAFE_FREE((void**)&cookie);
 
-		LeaveCriticalSection(&m_avatarsMutex);
 		return;
 	}
 
-  EnterCriticalSection(&m_avatarsMutex);
+  icq_lock l(m_avatarsMutex);
 
 	if (m_avatarsConnection && m_avatarsConnection->isPending())
 	{
@@ -375,7 +373,6 @@ void CIcqProto::StartAvatarThread(HANDLE hConn, char *cookie, WORD cookieLen) //
 
 		SAFE_FREE((void**)&cookie);
 
-    LeaveCriticalSection(&m_avatarsMutex);
 		return;
 	}
   else if (m_avatarsConnection)
@@ -385,21 +382,18 @@ void CIcqProto::StartAvatarThread(HANDLE hConn, char *cookie, WORD cookieLen) //
 
   // connection object created, remove the connection request pending flag
   m_avatarsConnectionPending = FALSE;
-
-  LeaveCriticalSection(&m_avatarsMutex);
 }
 
 
 void CIcqProto::StopAvatarThread()
 {
-	EnterCriticalSection(&m_avatarsMutex); // the connection is about to close
+	icq_lock l(m_avatarsMutex); // the connection is about to close
 
 	if (m_avatarsConnection)
 	{
 		m_avatarsConnection->closeConnection(); // make the thread stop
 		m_avatarsConnection = NULL; // the thread will finish in background
 	}
-  LeaveCriticalSection(&m_avatarsMutex);
 
 	return;
 }
@@ -755,21 +749,19 @@ void CIcqProto::handleAvatarContactHash(DWORD dwUIN, char *szUID, HANDLE hContac
 		{
 			if (bJob == TRUE)
 			{ // Remove possible block - hash changed, try again.
-				EnterCriticalSection(&m_avatarsMutex);
-				{
-					avatars_request *ar = m_avatarsQueue;
+				icq_lock l(m_avatarsMutex);
 
-					while (ar)
-					{
-						if (ar->hContact == hContact && ar->type == ART_BLOCK)
-						{ // found one, remove
-							ReleaseAvatarRequestInQueue(ar);
-							break;
-						}
-						ar = ar->pNext;
+				avatars_request *ar = m_avatarsQueue;
+
+				while (ar)
+				{
+					if (ar->hContact == hContact && ar->type == ART_BLOCK)
+					{ // found one, remove
+						ReleaseAvatarRequestInQueue(ar);
+						break;
 					}
+					ar = ar->pNext;
 				}
-				LeaveCriticalSection(&m_avatarsMutex);
 			}
 
 			setSettingBlob(hContact, "AvatarHash", pAvatarHash, cbAvatarHash);
@@ -809,7 +801,7 @@ void CIcqProto::handleAvatarContactHash(DWORD dwUIN, char *szUID, HANDLE hContac
 // request avatar data from server
 int CIcqProto::GetAvatarData(HANDLE hContact, DWORD dwUin, char *szUid, const BYTE *hash, unsigned int hashlen, const char *file)
 {
-	EnterCriticalSection(&m_avatarsMutex);
+	m_avatarsMutex->Enter();
 
 	if (m_avatarsConnection && m_avatarsConnection->isReady()) // check if we are ready
 	{	// check if requests for this user are not blocked
@@ -825,7 +817,7 @@ int CIcqProto::GetAvatarData(HANDLE hContact, DWORD dwUin, char *szUid, const BY
 					ar = ReleaseAvatarRequestInQueue(ar);
 					continue;
 				}
-				LeaveCriticalSection(&m_avatarsMutex);
+				m_avatarsMutex->Leave();
 				NetLog_Server("Avatars: Requests for %s avatar are blocked.", strUID(dwUin, szUid));
 
         return 0;
@@ -836,16 +828,16 @@ int CIcqProto::GetAvatarData(HANDLE hContact, DWORD dwUin, char *szUid, const BY
     avatars_server_connection *pConnection = m_avatarsConnection;
 
     pConnection->_Lock();
-    LeaveCriticalSection(&m_avatarsMutex);
+    m_avatarsMutex->Leave();
 
     DWORD dwCookie = pConnection->sendGetAvatarRequest(hContact, dwUin, szUid, hash, hashlen, file);
 
-    EnterCriticalSection(&m_avatarsMutex);
+    m_avatarsMutex->Enter();
     pConnection->_Release();
 
     if (dwCookie)
     { // return now if the request was sent successfully
-      LeaveCriticalSection(&m_avatarsMutex);
+      m_avatarsMutex->Leave();
       return dwCookie;
     }
 	}
@@ -863,7 +855,7 @@ int CIcqProto::GetAvatarData(HANDLE hContact, DWORD dwUin, char *szUid, const BY
 				ar = ReleaseAvatarRequestInQueue(ar);
 				continue;
 			}
-			LeaveCriticalSection(&m_avatarsMutex);
+			m_avatarsMutex->Leave();
 			NetLog_Server("Avatars: Ignoring duplicate get %s avatar request.", strUID(dwUin, szUid));
 
       // make sure avatar connection is in progress
@@ -876,7 +868,7 @@ int CIcqProto::GetAvatarData(HANDLE hContact, DWORD dwUin, char *szUid, const BY
 	ar = new avatars_request(ART_GET); // get avatar
 	if (!ar)
 	{ // out of memory, go away
-		LeaveCriticalSection(&m_avatarsMutex);
+		m_avatarsMutex->Leave();
 		return 0;
 	}
 	ar->hContact = hContact;
@@ -886,7 +878,7 @@ int CIcqProto::GetAvatarData(HANDLE hContact, DWORD dwUin, char *szUid, const BY
 	ar->hash = (BYTE*)SAFE_MALLOC(hashlen);
 	if (!ar->hash)
 	{ // alloc failed
-		LeaveCriticalSection(&m_avatarsMutex);
+		m_avatarsMutex->Leave();
 		SAFE_DELETE((void_struct**)&ar);
 		return 0;
 	}
@@ -895,7 +887,7 @@ int CIcqProto::GetAvatarData(HANDLE hContact, DWORD dwUin, char *szUid, const BY
 	ar->szFile = null_strdup(file); // duplicate the string
 	ar->pNext = m_avatarsQueue;
 	m_avatarsQueue = ar;
-	LeaveCriticalSection(&m_avatarsMutex);
+	m_avatarsMutex->Leave();
 
 	NetLog_Server("Avatars: Request to get %s image added to queue.", strUID(dwUin, szUid));
 
@@ -909,23 +901,23 @@ int CIcqProto::GetAvatarData(HANDLE hContact, DWORD dwUin, char *szUid, const BY
 // upload avatar data to server
 int CIcqProto::SetAvatarData(HANDLE hContact, WORD wRef, const BYTE *data, unsigned int datalen)
 { 
-	EnterCriticalSection(&m_avatarsMutex);
+	m_avatarsMutex->Enter();
 
 	if (m_avatarsConnection && m_avatarsConnection->isReady()) // check if we are ready
 	{
     avatars_server_connection *pConnection = m_avatarsConnection;
 
     pConnection->_Lock();
-    LeaveCriticalSection(&m_avatarsMutex);
+    m_avatarsMutex->Leave();
 
     DWORD dwCookie = pConnection->sendUploadAvatarRequest(hContact, wRef, data, datalen);
 
-    EnterCriticalSection(&m_avatarsMutex);
+    m_avatarsMutex->Enter();
     pConnection->_Release();
 
     if (dwCookie)
     { // return now if the request was sent successfully
-      LeaveCriticalSection(&m_avatarsMutex);
+      m_avatarsMutex->Leave();
       return dwCookie;
     }
 	}
@@ -939,7 +931,7 @@ int CIcqProto::SetAvatarData(HANDLE hContact, WORD wRef, const BYTE *data, unsig
 	{
 		if (ar->hContact == hContact && ar->type == ART_UPLOAD)
 		{ // we found it, return error
-			LeaveCriticalSection(&m_avatarsMutex);
+			m_avatarsMutex->Leave();
 			NetLog_Server("Avatars: Ignoring duplicate upload avatar request.");
 
       // make sure avatar connection is in progress
@@ -952,14 +944,14 @@ int CIcqProto::SetAvatarData(HANDLE hContact, WORD wRef, const BYTE *data, unsig
 	ar = new avatars_request(ART_UPLOAD); // upload avatar
 	if (!ar)
 	{ // out of memory, go away
-		LeaveCriticalSection(&m_avatarsMutex);
+		m_avatarsMutex->Leave();
 		return 0;
 	}
 	ar->hContact = hContact;
 	ar->pData = (BYTE*)SAFE_MALLOC(datalen);
 	if (!ar->pData)
 	{ // alloc failed
-		LeaveCriticalSection(&m_avatarsMutex);
+		m_avatarsMutex->Leave();
 		SAFE_DELETE((void_struct**)&ar);
 		return 0;
 	}
@@ -968,7 +960,7 @@ int CIcqProto::SetAvatarData(HANDLE hContact, WORD wRef, const BYTE *data, unsig
 	ar->wRef = wRef;
 	ar->pNext = m_avatarsQueue;
 	m_avatarsQueue = ar;
-	LeaveCriticalSection(&m_avatarsMutex);
+	m_avatarsMutex->Leave();
 
 	NetLog_Server("Avatars: Request to upload image added to queue.");
 
@@ -981,16 +973,16 @@ int CIcqProto::SetAvatarData(HANDLE hContact, WORD wRef, const BYTE *data, unsig
 
 void CIcqProto::requestAvatarConnection()
 {
-  EnterCriticalSection(&m_avatarsMutex);
+  m_avatarsMutex->Enter();
 	if (!m_avatarsConnectionPending && (!m_avatarsConnection || (!m_avatarsConnection->isPending() && !m_avatarsConnection->isReady())))
 	{ // avatar connection is not pending, request new one
 		m_avatarsConnectionPending = TRUE;
-    LeaveCriticalSection(&m_avatarsMutex);
+    m_avatarsMutex->Leave();
 
 		icq_requestnewfamily(ICQ_AVATAR_FAMILY, &CIcqProto::StartAvatarThread);
 	}
   else
-    LeaveCriticalSection(&m_avatarsMutex);
+    m_avatarsMutex->Leave();
 }
 
 
@@ -1001,16 +993,16 @@ void __cdecl CIcqProto::AvatarThread(avatars_server_connection *pInfo)
   // Execute connection handler
   pInfo->connectionThread();
 
-  // Remove connection reference
-  EnterCriticalSection(&m_avatarsMutex);
-	if (m_avatarsConnection == pInfo)
-		m_avatarsConnection = NULL;
-  LeaveCriticalSection(&m_avatarsMutex);
+	{ // Remove connection reference
+		icq_lock l(m_avatarsMutex);
+		if (m_avatarsConnection == pInfo)
+			m_avatarsConnection = NULL;
+	}
 
-  // Release connection handler
-  EnterCriticalSection(&m_avatarsMutex);
-	SAFE_DELETE((lockable_struct**)&pInfo);
-  LeaveCriticalSection(&m_avatarsMutex);
+	{ // Release connection handler
+	  icq_lock l(m_avatarsMutex);
+		SAFE_DELETE((lockable_struct**)&pInfo);
+	}
 
 	NetLog_Server("%s thread ended.", "Avatar");
 }
@@ -1027,11 +1019,11 @@ avatars_server_connection::avatars_server_connection(CIcqProto *ppro, HANDLE hCo
   this->wCookieLen = wCookieLen;
 
   // Initialize packet sequence
-  InitializeCriticalSection(&localSeqMutex);
+  localSeqMutex = new icq_critical_section();
 	wLocalSequence = generate_flap_sequence();
 
 	// Initialize rates
-	InitializeCriticalSection(&m_ratesMutex);
+	m_ratesMutex = new icq_critical_section();
 
   // Create connection thread
 	ppro->ForkThread(( IcqThreadFunc )&CIcqProto::AvatarThread, this);
@@ -1040,8 +1032,8 @@ avatars_server_connection::avatars_server_connection(CIcqProto *ppro, HANDLE hCo
 
 avatars_server_connection::~avatars_server_connection()
 {
-  DeleteCriticalSection(&m_ratesMutex);
-  DeleteCriticalSection(&localSeqMutex);
+  SAFE_DELETE(&m_ratesMutex);
+  SAFE_DELETE(&localSeqMutex);
 }
 
 
@@ -1062,10 +1054,9 @@ void avatars_server_connection::closeConnection()
 {
   stopThread = TRUE;
 
-  EnterCriticalSection(&localSeqMutex);
+  icq_lock l(localSeqMutex);
   if (hConnection)
     NetLib_SafeCloseHandle(&hConnection);
-  LeaveCriticalSection(&localSeqMutex);
 }
 
 
@@ -1074,7 +1065,7 @@ DWORD avatars_server_connection::sendGetAvatarRequest(HANDLE hContact, DWORD dwU
 	int i;
 	DWORD dwNow = GetTickCount();
 
-  EnterCriticalSection(&ppro->m_avatarsMutex);
+  ppro->m_avatarsMutex->Enter();
 
 	for(i = 0; i < runCount;)
 	{ // look for timeouted requests
@@ -1092,7 +1083,7 @@ DWORD avatars_server_connection::sendGetAvatarRequest(HANDLE hContact, DWORD dwU
 	{
 		if (runContact[i] == hContact)
 		{
-			LeaveCriticalSection(&ppro->m_avatarsMutex);
+			ppro->m_avatarsMutex->Leave();
 			NetLog_Server("Ignoring duplicate get %s image request.", strUID(dwUin, szUid));
 
 			return -1; // Success: request ignored
@@ -1103,8 +1094,8 @@ DWORD avatars_server_connection::sendGetAvatarRequest(HANDLE hContact, DWORD dwU
 	{ // 4 concurent requests at most
 		int bSendNow = TRUE;
 
-		EnterCriticalSection(&m_ratesMutex);
 		{ // rate management
+      icq_lock l(m_ratesMutex);
 			WORD wGroup = m_rates->getGroupFromSNAC(ICQ_AVATAR_FAMILY, ICQ_AVATAR_GET_REQUEST);
 
 			if (m_rates->getNextRateLevel(wGroup) < m_rates->getLimitLevel(wGroup, RML_ALERT))
@@ -1115,7 +1106,6 @@ DWORD avatars_server_connection::sendGetAvatarRequest(HANDLE hContact, DWORD dwU
 #endif
 			}
 		}
-		LeaveCriticalSection(&m_ratesMutex);
 
 		if (bSendNow)
 		{
@@ -1123,7 +1113,7 @@ DWORD avatars_server_connection::sendGetAvatarRequest(HANDLE hContact, DWORD dwU
 			runTime[runCount] = GetTickCount() + 30000; // 30sec to complete request
 			runCount++;
 
-			LeaveCriticalSection(&ppro->m_avatarsMutex);
+			ppro->m_avatarsMutex->Leave();
 
 			int nUinLen = getUIDLen(dwUin, szUid);
 
@@ -1158,10 +1148,10 @@ DWORD avatars_server_connection::sendGetAvatarRequest(HANDLE hContact, DWORD dwU
 			SAFE_FREE((void**)&ack);
 		}
 		else
-			LeaveCriticalSection(&ppro->m_avatarsMutex);
+			ppro->m_avatarsMutex->Leave();
 	}
 	else
-		LeaveCriticalSection(&ppro->m_avatarsMutex);
+		ppro->m_avatarsMutex->Leave();
 
   return 0; // Failure
 }
@@ -1201,14 +1191,14 @@ void avatars_server_connection::checkRequestQueue()
   NetLog_Server("Checking request queue...");
 #endif
 
-	EnterCriticalSection(&ppro->m_avatarsMutex);
+	ppro->m_avatarsMutex->Enter();
 
 	while (ppro->m_avatarsQueue && runCount < 3) // pick up an request and send it - happens immediatelly after login
 	{ // do not fill queue to top, leave one place free
 		avatars_request *pRequest = ppro->m_avatarsQueue;
 
-		EnterCriticalSection(&m_ratesMutex);
 		{ // rate management
+      icq_lock l(m_ratesMutex);
 			WORD wGroup = m_rates->getGroupFromSNAC(ICQ_AVATAR_FAMILY, (WORD)(pRequest->type == ART_UPLOAD ? ICQ_AVATAR_GET_REQUEST : ICQ_AVATAR_UPLOAD_REQUEST));
 
 			if (m_rates->getNextRateLevel(wGroup) < m_rates->getLimitLevel(wGroup, RML_ALERT))
@@ -1216,11 +1206,9 @@ void avatars_server_connection::checkRequestQueue()
 #ifdef _DEBUG
 				NetLog_Server("Rates: Leaving avatar queue processing");
 #endif
-				LeaveCriticalSection(&m_ratesMutex);
 				break;
 			}
 		}
-		LeaveCriticalSection(&m_ratesMutex);
 
     if (pRequest->type == ART_BLOCK)
     { // block contact processing
@@ -1244,7 +1232,7 @@ void avatars_server_connection::checkRequestQueue()
     else
 		  ppro->m_avatarsQueue = pRequest->pNext;
 
-    LeaveCriticalSection(&ppro->m_avatarsMutex);
+    ppro->m_avatarsMutex->Leave();
 
 #ifdef _DEBUG
 		NetLog_Server("Picked up the %s request from queue.", strUID(pRequest->dwUin, pRequest->szUid));
@@ -1261,10 +1249,10 @@ void avatars_server_connection::checkRequestQueue()
 		}
 		SAFE_DELETE((void_struct**)&pRequest);
 
-    EnterCriticalSection(&ppro->m_avatarsMutex);
+    ppro->m_avatarsMutex->Enter();
 	}
 
-	LeaveCriticalSection(&ppro->m_avatarsMutex);
+	ppro->m_avatarsMutex->Leave();
 }
 
 
@@ -1339,15 +1327,16 @@ void avatars_server_connection::connectionThread()
       checkRequestQueue();
 		}
 	}
-  EnterCriticalSection(&localSeqMutex);
-	NetLib_SafeCloseHandle(&hPacketRecver); // Close the packet receiver 
-	NetLib_CloseConnection(&hConnection, FALSE); // Close the connection
-  LeaveCriticalSection(&localSeqMutex);
+  { // release connection
+		icq_lock l(localSeqMutex);
+		NetLib_SafeCloseHandle(&hPacketRecver); // Close the packet receiver 
+		NetLib_CloseConnection(&hConnection, FALSE); // Close the connection
+	}
 
-	// release rates
-	EnterCriticalSection(&m_ratesMutex);
-  SAFE_DELETE((void_struct**)&m_rates);
-	LeaveCriticalSection(&m_ratesMutex);
+	{ // release rates
+		icq_lock l(m_ratesMutex);
+		SAFE_DELETE((void_struct**)&m_rates);
+  }
 
 	SAFE_FREE((void**)&pCookie);
 }
@@ -1358,7 +1347,7 @@ int avatars_server_connection::sendServerPacket(icq_packet *pPacket)
 	int lResult = 0;
 
 	// This critsec makes sure that the sequence order doesn't get screwed up
-	EnterCriticalSection(&localSeqMutex);
+	localSeqMutex->Enter();
 
 	if (hConnection)
 	{
@@ -1393,10 +1382,9 @@ int avatars_server_connection::sendServerPacket(icq_packet *pPacket)
 		{
 			lResult = 1; // packet sent successfully
 
-			EnterCriticalSection(&m_ratesMutex);
+			icq_lock l(m_ratesMutex);
 			if (m_rates)
 				m_rates->packetSent(pPacket);
-			LeaveCriticalSection(&m_ratesMutex);
 		}
 	}
 	else
@@ -1404,7 +1392,7 @@ int avatars_server_connection::sendServerPacket(icq_packet *pPacket)
 		NetLog_Server("Error: Failed to send packet (no connection)");
 	}
 
-	LeaveCriticalSection(&localSeqMutex);
+	localSeqMutex->Leave();
 
 	SAFE_FREE((void**)&pPacket->pData);
 
@@ -1604,21 +1592,21 @@ void avatars_server_connection::handleAvatarFam(BYTE *pBuffer, WORD wBufferLengt
 			if (ppro->FindCookie(pSnacHeader->dwRef, NULL, (void**)&pCookieData))
 			{
         PROTO_AVATAR_INFORMATION ai = {0};
-				int i;
 				BYTE bResult;
 
-				EnterCriticalSection(&ppro->m_avatarsMutex);
-				for(i = 0; i < runCount; i++)
-				{ // look for our record
-					if (runContact[i] == pCookieData->hContact)
-					{ // found, remove
-						runContact[i] = runContact[runCount - 1];
-						runTime[i] = runTime[runCount - 1];
-						runCount--;
-						break;
+        { // remove from active request list
+          icq_lock l(ppro->m_avatarsMutex);
+					for(int i = 0; i < runCount; i++)
+					{ // look for our record
+						if (runContact[i] == pCookieData->hContact)
+						{ // found, remove
+							runContact[i] = runContact[runCount - 1];
+							runTime[i] = runTime[runCount - 1];
+							runCount--;
+							break;
+						}
 					}
 				}
-				LeaveCriticalSection(&ppro->m_avatarsMutex);
 
 				ai.cbSize = sizeof(PROTO_AVATAR_INFORMATION);
 				ai.format = PA_FORMAT_JPEG; // this is for error only
@@ -1741,8 +1729,9 @@ void avatars_server_connection::handleAvatarFam(BYTE *pBuffer, WORD wBufferLengt
 						{
 							avatars_request *ar = new avatars_request(ART_BLOCK);
 
-							EnterCriticalSection(&ppro->m_avatarsMutex);
-							if (ar)
+							icq_lock l(ppro->m_avatarsMutex);
+
+              if (ar)
 							{
 								avatars_request *last = ppro->m_avatarsQueue;
 
@@ -1756,7 +1745,6 @@ void avatars_server_connection::handleAvatarFam(BYTE *pBuffer, WORD wBufferLengt
 								else
 									ppro->m_avatarsQueue = ar;
 							}
-							LeaveCriticalSection(&ppro->m_avatarsMutex);
 						}
 						ppro->BroadcastAck(pCookieData->hContact, ACKTYPE_AVATAR, ACKRESULT_FAILED, (HANDLE)&ai, 0);
 					}

@@ -93,9 +93,9 @@ struct CIcqProto : public PROTO_INTERFACE
 	virtual	HICON  __cdecl GetIcon( int iconIndex );
 	virtual	int    __cdecl GetInfo( HANDLE hContact, int infoType );
 
-	virtual	HANDLE __cdecl SearchBasic( const char* id );
-	virtual	HANDLE __cdecl SearchByEmail( const char* email );
-	virtual	HANDLE __cdecl SearchByName(const char *nick, const char *firstName, const char *lastName);
+	virtual	HANDLE __cdecl SearchBasic( const PROTOCHAR *id );
+	virtual	HANDLE __cdecl SearchByEmail( const PROTOCHAR *email );
+	virtual	HANDLE __cdecl SearchByName(const PROTOCHAR *nick, const PROTOCHAR *firstName, const PROTOCHAR *lastName);
 	virtual	HWND   __cdecl SearchAdvanced( HWND owner );
 	virtual	HWND   __cdecl CreateExtendedSearchUI( HWND owner );
 
@@ -192,8 +192,8 @@ struct CIcqProto : public PROTO_INTERFACE
 	BYTE m_bXStatusEnabled;
   BYTE m_bMoodsEnabled;
 	
-	CRITICAL_SECTION localSeqMutex;
-	CRITICAL_SECTION connectionHandleMutex;
+	icq_critical_section *localSeqMutex;
+	icq_critical_section *connectionHandleMutex;
 
 	int   m_bIdleAllow;
 	DWORD m_dwLocalUIN;
@@ -257,7 +257,7 @@ struct CIcqProto : public PROTO_INTERFACE
 	void   StopKeepAlive(serverthread_info *info);
 
 	//----| cookies.cpp |-----------------------------------------------------------------
-	CRITICAL_SECTION cookieMutex; // we want this in avatar thread, used as queue lock
+	icq_critical_section *cookieMutex; // we want this in avatar thread, used as queue lock
 	LIST<icq_cookie_info> cookies;
 	WORD   wCookieSeq;
 
@@ -315,7 +315,7 @@ struct CIcqProto : public PROTO_INTERFACE
 
 	//----| fam_04message.cpp |-----------------------------------------------------------
 	icq_mode_messages m_modeMsgs;
-	CRITICAL_SECTION  m_modeMsgsMutex;
+	icq_critical_section *m_modeMsgsMutex;
 	HANDLE m_modeMsgsEvent;
 
 	void   handleMsgFam(BYTE *pBuffer, WORD wBufferLength, snac_header *pSnacHeader);
@@ -417,7 +417,7 @@ struct CIcqProto : public PROTO_INTERFACE
 	void   sendClientAuth(const char *szKey, WORD wKeyLen, BOOL bSecure);
 
 	//----| icq_avatars.cpp |-------------------------------------------------------------
-  CRITICAL_SECTION m_avatarsMutex;
+  icq_critical_section *m_avatarsMutex;
 	avatars_request *m_avatarsQueue;
 
   BOOL   m_avatarsConnectionPending;
@@ -485,10 +485,10 @@ struct CIcqProto : public PROTO_INTERFACE
   int    setContactHidden(HANDLE hContact, BYTE bHidden);
 
 	//----| icq_direct.cpp |--------------------------------------------------------------
-	CRITICAL_SECTION directConnListMutex;
+	icq_critical_section *directConnListMutex;
 	LIST<directconnect> directConns;
 
-	CRITICAL_SECTION expectedFileRecvMutex;
+	icq_critical_section *expectedFileRecvMutex;
 	LIST<filetransfer> expectedFileRecvs;
 
 	void   __cdecl icq_directThread(struct directthreadstartinfo* dtsi);
@@ -530,7 +530,7 @@ struct CIcqProto : public PROTO_INTERFACE
 	void   handleFileTransferIdle(directconnect *dc);
 
 	//----| icq_infoupdate.cpp |----------------------------------------------------------
-	CRITICAL_SECTION infoUpdateMutex;
+	icq_critical_section *infoUpdateMutex;
 	HANDLE hInfoQueueEvent;
 	int    nInfoUserCount;
 	int    bInfoPendingUsers;
@@ -583,7 +583,7 @@ struct CIcqProto : public PROTO_INTERFACE
   char*  PrepareStatusNote(int nStatus);
 
 	//----| icq_rates.cpp |---------------------------------------------------------------
-	CRITICAL_SECTION m_ratesMutex;
+	icq_critical_section *m_ratesMutex;
 	rates  *m_rates;
 
 	rates_queue *m_ratesQueue_Request; // rate queue for xtraz requests
@@ -620,14 +620,14 @@ struct CIcqProto : public PROTO_INTERFACE
 	HANDLE hHookSettingChanged;
 	HANDLE hHookContactDeleted;
 	HANDLE hHookCListGroupChange;
-	CRITICAL_SECTION servlistMutex;
+	icq_critical_section *servlistMutex;
 
 	DWORD* pdwServerIDList;
 	int    nServerIDListCount;
 	int    nServerIDListSize;
 
 	// server-list update board
-	CRITICAL_SECTION servlistQueueMutex;
+	icq_critical_section *servlistQueueMutex;
 	int    servlistQueueCount;
 	int    servlistQueueSize;
 	ssiqueueditems **servlistQueueList;
@@ -862,7 +862,7 @@ struct CIcqProto : public PROTO_INTERFACE
 	void   RequestPassword();
 
 	//----| oscar_filetransfer.cpp |------------------------------------------------------
-	CRITICAL_SECTION oftMutex;
+	icq_critical_section *oftMutex;
 	int fileTransferCount;
 	basic_filetransfer** fileTransferList;
 
@@ -938,7 +938,7 @@ struct CIcqProto : public PROTO_INTERFACE
 	int    NetLog_Direct(const char *fmt,...);
 	int    NetLog_Uni(BOOL bDC, const char *fmt,...);
 
-	CRITICAL_SECTION contactsCacheMutex;
+	icq_critical_section *contactsCacheMutex;
 	LIST<icq_contacts_cache> contactsCache;
 
 	void   AddToContactsCache(HANDLE hContact, DWORD dwUin, const char *szUid);

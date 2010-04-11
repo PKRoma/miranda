@@ -106,12 +106,10 @@ void __cdecl CIcqProto::ServerThread(serverthread_start_info *infoParam)
 
   // Initialize rate limiting queues
   { 
-    EnterCriticalSection(&m_ratesMutex);
+    icq_lock l(m_ratesMutex);
 
     m_ratesQueue_Request = new rates_queue(this, "request", RML_IDLE_30, RML_IDLE_50, 1);
     m_ratesQueue_Response = new rates_queue(this, "response", RML_IDLE_10, RML_IDLE_30, -1);
-
-    LeaveCriticalSection(&m_ratesMutex);
   }
 
 	// This is the "infinite" loop that receives the packets from the ICQ server
@@ -219,11 +217,13 @@ void __cdecl CIcqProto::ServerThread(serverthread_start_info *infoParam)
 
 	servlistPendingFlushOperations(); // clear pending operations list
 	
-  EnterCriticalSection(&m_ratesMutex);
-  SAFE_DELETE((void_struct**)&m_ratesQueue_Request); // release rates queues
-  SAFE_DELETE((void_struct**)&m_ratesQueue_Response);
-  SAFE_DELETE((void_struct**)&m_rates);
-	LeaveCriticalSection(&m_ratesMutex);
+  { // release rates queues
+    icq_lock l(m_ratesMutex);
+
+    SAFE_DELETE((void_struct**)&m_ratesQueue_Request);
+    SAFE_DELETE((void_struct**)&m_ratesQueue_Response);
+    SAFE_DELETE((void_struct**)&m_rates);
+  }
 
 	FlushServerIDs();         // clear server IDs list
 
@@ -233,12 +233,12 @@ void __cdecl CIcqProto::ServerThread(serverthread_start_info *infoParam)
 
 void CIcqProto::icq_serverDisconnect(BOOL bBlock)
 {
-	EnterCriticalSection(&connectionHandleMutex);
+	connectionHandleMutex->Enter();
 
 	if (hServerConn)
 	{
 		NetLib_CloseConnection(&hServerConn, TRUE);
-		LeaveCriticalSection(&connectionHandleMutex);
+		connectionHandleMutex->Leave();
 
 		// Not called from network thread?
 		if (bBlock && GetCurrentThreadId() != serverThreadId)
@@ -250,7 +250,7 @@ void CIcqProto::icq_serverDisconnect(BOOL bBlock)
 			CloseHandle(serverThreadHandle);
 	}
 	else
-		LeaveCriticalSection(&connectionHandleMutex);
+		connectionHandleMutex->Leave();
 }
 
 
@@ -324,14 +324,14 @@ int CIcqProto::handleServerPackets(BYTE *buf, int len, serverthread_info *info)
 void CIcqProto::sendServPacket(icq_packet *pPacket)
 {
   // make sure to have the connection handle
-  EnterCriticalSection(&connectionHandleMutex);
+  connectionHandleMutex->Enter();
 
 	if (hServerConn)
 	{
 		int nSendResult;
 
     // This critsec makes sure that the sequence order doesn't get screwed up
-    EnterCriticalSection(&localSeqMutex);
+    localSeqMutex->Enter();
 
 		// :IMPORTANT:
 		// The FLAP sequence must be a WORD. When it reaches 0xFFFF it should wrap to
@@ -352,13 +352,14 @@ void CIcqProto::sendServPacket(icq_packet *pPacket)
 			Sleep(1000);
 		}
 
-    LeaveCriticalSection(&localSeqMutex);
-    LeaveCriticalSection(&connectionHandleMutex);
+    localSeqMutex->Leave();
+    connectionHandleMutex->Leave();
 
-		// Rates management
-		EnterCriticalSection(&m_ratesMutex);
-		m_rates->packetSent(pPacket);
-		LeaveCriticalSection(&m_ratesMutex);
+		{ // Rates management
+			icq_lock l(m_ratesMutex);
+
+			m_rates->packetSent(pPacket);
+		}
 
 		// Send error
 		if (nSendResult == SOCKET_ERROR)
@@ -374,7 +375,7 @@ void CIcqProto::sendServPacket(icq_packet *pPacket)
 	}
 	else
 	{
-    LeaveCriticalSection(&connectionHandleMutex);
+    connectionHandleMutex->Leave();
 
 		NetLog_Server("Error: Failed to send packet (no connection)");
 	}
@@ -403,20 +404,18 @@ void CIcqProto::sendServPacketAsync(icq_packet *packet)
 
 int CIcqProto::IsServerOverRate(WORD wFamily, WORD wCommand, int nLevel)
 {
-	int result = FALSE;
+	icq_lock l(m_ratesMutex);
 
-	EnterCriticalSection(&m_ratesMutex);
   if (m_rates)
   {
 	  WORD wGroup = m_rates->getGroupFromSNAC(wFamily, wCommand);
 
 	  // check if the rate is not over specified level
 	  if (m_rates->getNextRateLevel(wGroup) < m_rates->getLimitLevel(wGroup, nLevel))
-		  result = TRUE;
+		  return TRUE;
   }
-	LeaveCriticalSection(&m_ratesMutex);
 
-	return result;
+	return FALSE;
 }
 
 

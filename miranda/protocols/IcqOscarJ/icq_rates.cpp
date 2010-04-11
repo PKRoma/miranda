@@ -318,21 +318,18 @@ void rates_queue_item::execute()
 
 BOOL rates_queue_item::isOverRate(int nLevel)
 {
-  BOOL result = FALSE;
+  icq_lock l(ppro->m_ratesMutex);
 
-  EnterCriticalSection(&ppro->m_ratesMutex);
   if (ppro->m_rates)
-    result = ppro->m_rates->getNextRateLevel(wGroup) < ppro->m_rates->getLimitLevel(wGroup, nLevel);
+    return ppro->m_rates->getNextRateLevel(wGroup) < ppro->m_rates->getLimitLevel(wGroup, nLevel);
 
-  LeaveCriticalSection(&ppro->m_ratesMutex);
-
-  return result;
+  return FALSE;
 }
 
 
 rates_queue::rates_queue(CIcqProto *ppro, const char *szDescr, int nLimitLevel, int nWaitLevel, int nDuplicates)
 {
-	InitializeCriticalSection(&listsMutex);
+	this->listsMutex = new icq_critical_section();
   this->ppro = ppro;
   this->szDescr = szDescr;
   limitLevel = nLimitLevel;
@@ -344,7 +341,7 @@ rates_queue::rates_queue(CIcqProto *ppro, const char *szDescr, int nLimitLevel, 
 rates_queue::~rates_queue()
 {
   cleanup();
-  DeleteCriticalSection(&listsMutex);
+  SAFE_DELETE(&listsMutex);
 }
 
 
@@ -381,7 +378,8 @@ void rates_queue::initDelay(int nDelay, IcqRateFunc delaycode)
 
 void rates_queue::cleanup()
 {
-  EnterCriticalSection(&listsMutex);
+  icq_lock l(listsMutex);
+
   if (pendingListSize)
     ppro->NetLog_Server("Rates: Purging %d %s(s).", pendingListSize, szDescr);
 
@@ -389,40 +387,39 @@ void rates_queue::cleanup()
     SAFE_DELETE((void_struct**)&pendingList[i]);
 	SAFE_FREE((void**)&pendingList);
 	pendingListSize = 0;
-  LeaveCriticalSection(&listsMutex);
 }
 
 
 void rates_queue::processQueue()
 {
-	EnterCriticalSection(&listsMutex);
+	listsMutex->Enter();
 	if (!pendingList)
 	{
-		LeaveCriticalSection(&listsMutex);
+		listsMutex->Leave();
 		return;
 	}
 
 	if (!ppro->icqOnline())
 	{
     cleanup();
-		LeaveCriticalSection(&listsMutex);
+		listsMutex->Leave();
 		return;
 	}
 	// take from queue, execute
 	rates_queue_item *item = pendingList[0];
 
-	EnterCriticalSection(&ppro->m_ratesMutex);
+	ppro->m_ratesMutex->Enter();
 	if (item->isOverRate(limitLevel))
 	{ // the rate is higher, keep sleeping
 		int nDelay = ppro->m_rates->getDelayToLimitLevel(item->wGroup, ppro->m_rates->getLimitLevel(item->wGroup, waitLevel));
 
-		LeaveCriticalSection(&ppro->m_ratesMutex);
-		LeaveCriticalSection(&listsMutex);
+		ppro->m_ratesMutex->Leave();
+		listsMutex->Leave();
 		if (nDelay < 10) nDelay = 10;
 		initDelay(nDelay, &rates_queue::processQueue);
 		return;
 	}
-	LeaveCriticalSection(&ppro->m_ratesMutex);
+	ppro->m_ratesMutex->Leave();
 
 	if (pendingListSize > 1)
 	{ // we need to keep order
@@ -437,7 +434,7 @@ void rates_queue::processQueue()
 	if (pendingListSize)
 		bSetupTimer = 1;
 
-	LeaveCriticalSection(&listsMutex);
+	listsMutex->Leave();
 
 	if (ppro->icqOnline())
 	{
@@ -450,9 +447,9 @@ void rates_queue::processQueue()
 	if (bSetupTimer)
 	{
 		// in queue remained some items, setup timer
-		EnterCriticalSection(&ppro->m_ratesMutex);
+		ppro->m_ratesMutex->Enter();
 		int nDelay = ppro->m_rates->getDelayToLimitLevel(item->wGroup, waitLevel);
-		LeaveCriticalSection(&ppro->m_ratesMutex);
+		ppro->m_ratesMutex->Leave();
 
 		if (nDelay < 10) nDelay = 10;
 		initDelay(nDelay, &rates_queue::processQueue);
@@ -470,7 +467,7 @@ void rates_queue::putItem(rates_queue_item *pItem, int nMinDelay)
 
 	ppro->NetLog_Server("Rates: Delaying %s.", szDescr);
 
-  EnterCriticalSection(&listsMutex);
+  listsMutex->Enter();
 	if (pendingListSize)
 	{
 		for (int i = 0; i < pendingListSize; i++)
@@ -485,7 +482,7 @@ void rates_queue::putItem(rates_queue_item *pItem, int nMinDelay)
         }
         else if (duplicates == 1)
         { // keep existing, ignore new
-          LeaveCriticalSection(&listsMutex);
+          listsMutex->Leave();
           return;
         }
         // otherwise keep existing and append new
@@ -501,17 +498,17 @@ void rates_queue::putItem(rates_queue_item *pItem, int nMinDelay)
 
 	if (pendingListSize == 1)
 	{ // queue was empty setup timer
-    LeaveCriticalSection(&listsMutex);
-		EnterCriticalSection(&ppro->m_ratesMutex);
+    listsMutex->Leave();
+		ppro->m_ratesMutex->Enter();
 		int nDelay = ppro->m_rates->getDelayToLimitLevel(pItem->wGroup, waitLevel);
-		LeaveCriticalSection(&ppro->m_ratesMutex);
+		ppro->m_ratesMutex->Leave();
 
 		if (nDelay < 10) nDelay = 10;
 		if (nDelay < nMinDelay) nDelay = nMinDelay;
 		initDelay(nDelay, &rates_queue::processQueue);
 	}
   else
-    LeaveCriticalSection(&listsMutex);
+    listsMutex->Leave();
 }
 
 
@@ -519,7 +516,7 @@ int CIcqProto::handleRateItem(rates_queue_item *item, int nQueueType, int nMinDe
 {
   rates_queue *pQueue = NULL;
 
-  EnterCriticalSection(&m_ratesMutex);
+  m_ratesMutex->Enter();
   switch (nQueueType) 
   {
   case RQT_REQUEST: 
@@ -536,11 +533,11 @@ int CIcqProto::handleRateItem(rates_queue_item *item, int nQueueType, int nMinDe
 		{ // limit reached or min delay configured, add to queue
 			pQueue->putItem(item, nMinDelay);
 
-      LeaveCriticalSection(&m_ratesMutex);
+      m_ratesMutex->Leave();
 			return 1;
 		}
   }
-  LeaveCriticalSection(&m_ratesMutex);
+  m_ratesMutex->Leave();
 
   item->execute();
 	return 0;

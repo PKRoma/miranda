@@ -109,7 +109,7 @@ void CIcqProto::icq_sendAwayMsgReplyDirect(directconnect* dc, WORD wCookie, BYTE
 	{
 		NotifyEventHooks(m_modeMsgsEvent, (WPARAM)msgType, (LPARAM)dc->dwRemoteUin);
 
-		EnterCriticalSection(&m_modeMsgsMutex);
+		icq_lock l(m_modeMsgsMutex);
 
 		if (szMsg && *szMsg)
 		{
@@ -126,8 +126,6 @@ void CIcqProto::icq_sendAwayMsgReplyDirect(directconnect* dc, WORD wCookie, BYTE
 
 			sendDirectPacket(dc, &packet);
 		}
-
-		LeaveCriticalSection(&m_modeMsgsMutex);
 	}
 }
 

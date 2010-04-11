@@ -5,7 +5,7 @@
 // Copyright © 2000-2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001-2002 Jon Keating, Richard Hughes
 // Copyright © 2002-2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004-2008 Joe Kucera
+// Copyright © 2004-2010 Joe Kucera
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -19,7 +19,7 @@
 // 
 // You should have received a copy of the GNU General Public License
 // along with this program; if not, write to the Free Software
-// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 //
 // -----------------------------------------------------------------------------
 //
@@ -57,7 +57,7 @@ static char client_check_data[] = {
 
 void CIcqProto::CloseContactDirectConns(HANDLE hContact)
 {
-	EnterCriticalSection(&directConnListMutex);
+	icq_lock l(directConnListMutex);
 
 	for ( int i = 0; i < directConns.getCount(); i++)
 	{
@@ -69,14 +69,13 @@ void CIcqProto::CloseContactDirectConns(HANDLE hContact)
 			NetLib_CloseConnection(&hConnection, FALSE);
 		}
 	}
-
-	LeaveCriticalSection(&directConnListMutex);
 }
+
 
 directconnect* CIcqProto::FindFileTransferDC(filetransfer* ft)
 {
 	directconnect* dc = NULL;
-	EnterCriticalSection(&directConnListMutex);
+	icq_lock l(directConnListMutex);
 
 	for (int i = 0; i < directConns.getCount(); i++)
 	{
@@ -87,15 +86,14 @@ directconnect* CIcqProto::FindFileTransferDC(filetransfer* ft)
 		}
 	}
 
-	LeaveCriticalSection(&directConnListMutex);
 	return dc;
 }
+
 
 filetransfer* CIcqProto::FindExpectedFileRecv(DWORD dwUin, DWORD dwTotalSize)
 {
 	filetransfer* pFt = NULL;
-
-	EnterCriticalSection(&expectedFileRecvMutex);
+	icq_lock l(expectedFileRecvMutex);
 
 	for (int i = 0; i < expectedFileRecvs.getCount(); i++)
 	{
@@ -107,10 +105,9 @@ filetransfer* CIcqProto::FindExpectedFileRecv(DWORD dwUin, DWORD dwTotalSize)
 		}
 	}
 
-	LeaveCriticalSection(&expectedFileRecvMutex);
-
 	return pFt;
 }
+
 
 int CIcqProto::sendDirectPacket(directconnect* dc, icq_packet* pkt)
 {
@@ -143,31 +140,29 @@ directthreadstartinfo* CreateDTSI(HANDLE hContact, HANDLE hConnection, int type)
 // 'type' to the specified contact
 BOOL CIcqProto::IsDirectConnectionOpen(HANDLE hContact, int type, int bPassive)
 {
-	int i;
 	BOOL bIsOpen = FALSE, bIsCreated = FALSE;
 
+  {
+    icq_lock l(directConnListMutex);
 
-	EnterCriticalSection(&directConnListMutex);
-
-	for (i = 0; i < directConns.getCount(); i++)
-	{
-		if (directConns[i] && (directConns[i]->type == type))
-		{
-			if (directConns[i]->hContact == hContact)
-				if (directConns[i]->initialised)
-				{
-					// Connection is OK
-					bIsOpen = TRUE;
-					// we are going to use the conn, so prevent timeout
-					directConns[i]->packetPending = 1;
-					break;
-				}
-				else
-					bIsCreated = TRUE; // we found pending connection
-		}
-	}
-
-	LeaveCriticalSection(&directConnListMutex);
+	  for (int i = 0; i < directConns.getCount(); i++)
+	  {
+		  if (directConns[i] && (directConns[i]->type == type))
+		  {
+			  if (directConns[i]->hContact == hContact)
+				  if (directConns[i]->initialised)
+				  {
+					  // Connection is OK
+					  bIsOpen = TRUE;
+					  // we are going to use the conn, so prevent timeout
+					  directConns[i]->packetPending = 1;
+					  break;
+				  }
+				  else
+					  bIsCreated = TRUE; // we found pending connection
+		  }
+	  }
+  }
 
 	if (!bPassive && !bIsCreated && !bIsOpen && type == DIRECTCONN_STANDARD && m_bDCMsgEnabled == 2)
 	{ // do not try to open DC to offline contact
@@ -205,15 +200,13 @@ void CIcqProto::OpenDirectConnection(HANDLE hContact, int type, void* pvExtra)
 // Safely close NetLib connection - do not corrupt direct connection list
 void CIcqProto::CloseDirectConnection(directconnect *dc)
 {
-	EnterCriticalSection(&directConnListMutex);
+	icq_lock l(directConnListMutex);
 
 	NetLib_CloseConnection(&dc->hConnection, FALSE);
 #ifdef _DEBUG
 	if (dc->hConnection)
 		NetLog_Direct("Direct conn closed (%p)", dc->hConnection);
 #endif
-
-	LeaveCriticalSection(&directConnListMutex);
 }
 
 // Called from icq_newConnectionReceived when a new incomming dc is done
@@ -232,9 +225,10 @@ void __cdecl CIcqProto::icq_directThread( directthreadstartinfo *dtsi )
 
 	srand(time(NULL));
 
-	EnterCriticalSection(&directConnListMutex);
-	directConns.insert( &dc );
-	LeaveCriticalSection(&directConnListMutex);
+  { // add to DC connection list
+		icq_lock l(directConnListMutex);
+		directConns.insert( &dc );
+	}
 
 	// Initialize DC struct
 	dc.hContact = dtsi->hContact;
@@ -513,10 +507,12 @@ void __cdecl CIcqProto::icq_directThread( directthreadstartinfo *dtsi )
 	}
 
 LBL_Exit:
-	EnterCriticalSection(&directConnListMutex);
-	directConns.remove( &dc );
-	LeaveCriticalSection(&directConnListMutex);
+  { // remove from DC connection list
+		icq_lock l(directConnListMutex);
+		directConns.remove( &dc );
+	}
 }
+
 
 void CIcqProto::handleDirectPacket(directconnect* dc, PBYTE buf, WORD wLen)
 {
@@ -1030,7 +1026,7 @@ int DecryptDirectPacket(directconnect* dc, PBYTE buf, WORD wLen)
 // This should be called only if connection already exists
 int CIcqProto::SendDirectMessage(HANDLE hContact, icq_packet *pkt)
 {
-	EnterCriticalSection(&directConnListMutex);
+	icq_lock l(directConnListMutex);
 
 	for (int i = 0; i < directConns.getCount(); i++)
 	{
@@ -1050,15 +1046,11 @@ int CIcqProto::SendDirectMessage(HANDLE hContact, icq_packet *pkt)
 				sendDirectPacket(directConns[i], pkt);
 				directConns[i]->packetPending = 0; // packet done
 
-				LeaveCriticalSection(&directConnListMutex);
-
 				return TRUE; // Success
 			}
 			break; // connection not ready, use server instead
 		}
 	}
-
-	LeaveCriticalSection(&directConnListMutex);
 
 	return FALSE; // connection pending, we failed, use server instead
 }

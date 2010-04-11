@@ -5,7 +5,7 @@
 // Copyright © 2000-2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001-2002 Jon Keating, Richard Hughes
 // Copyright © 2002-2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004-2008 Joe Kucera
+// Copyright © 2004-2010 Joe Kucera
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -19,7 +19,7 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with this program; if not, write to the Free Software
-// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 //
 // -----------------------------------------------------------------------------
 //
@@ -77,7 +77,7 @@ void CIcqProto::handleLookupFam(BYTE *pBuffer, WORD wBufferLength, snac_header* 
 void CIcqProto::ReleaseLookupCookie(DWORD dwCookie, cookie_search *pCookie)
 {
 	FreeCookie(dwCookie);
-	SAFE_FREE((void**)&pCookie->szObject);
+	SAFE_FREE(&pCookie->szObject);
 
 	if (pCookie->dwMainId && !pCookie->dwStatus)
 	{ // we need to wait for main search
@@ -97,7 +97,7 @@ void CIcqProto::ReleaseLookupCookie(DWORD dwCookie, cookie_search *pCookie)
 void CIcqProto::handleLookupEmailReply(BYTE* buf, WORD wLen, DWORD dwCookie)
 {
 	ICQSEARCHRESULT sr = {0};
-	oscar_tlv_chain* pChain;
+	oscar_tlv_chain *pChain;
 	cookie_search *pCookie;
 
 	if (!FindCookie(dwCookie, NULL, (void**)&pCookie))
@@ -109,25 +109,28 @@ void CIcqProto::handleLookupEmailReply(BYTE* buf, WORD wLen, DWORD dwCookie)
 	NetLog_Server("SNAC(0x0A,0x3): Lookup reply");
 
 	sr.hdr.cbSize = sizeof(sr);
-	sr.hdr.email = pCookie->szObject;
+  sr.hdr.flags = PSR_TCHAR;
+	sr.hdr.email = ansi_to_tchar(pCookie->szObject);
 
 	// Syntax check, read chain
 	if (wLen >= 4 && (pChain = readIntoTLVChain(&buf, wLen, 0)))
 	{
 		for (WORD i = 1; TRUE; i++)
 		{ // collect the results
-			sr.hdr.nick = pChain->getString(0x01, i);
-			if (!sr.hdr.nick) break;
-			sr.uid = sr.hdr.nick;
+			sr.uid = pChain->getString(0x01, i);
+			if (!sr.uid) break;
+			sr.hdr.nick = ansi_to_tchar(sr.uid);
 			// broadcast the result
 			if (pCookie->dwMainId)
 				BroadcastAck(NULL, ACKTYPE_SEARCH, ACKRESULT_DATA, (HANDLE)pCookie->dwMainId, (LPARAM)&sr);
 			else
 				BroadcastAck(NULL, ACKTYPE_SEARCH, ACKRESULT_DATA, (HANDLE)dwCookie, (LPARAM)&sr);
-			SAFE_FREE((void**)&sr.hdr.nick);
+			SAFE_FREE(&sr.hdr.nick);
+      SAFE_FREE(&sr.uid);
 		}
 		disposeChain(&pChain);
 	}
+  SAFE_FREE(&sr.hdr.email);
 
 	ReleaseLookupCookie(dwCookie, pCookie);
 }

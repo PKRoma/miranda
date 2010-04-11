@@ -37,6 +37,7 @@
 #ifndef __UTILITIES_H
 #define __UTILITIES_H
 
+
 struct icq_ack_args
 {
 	HANDLE hContact;
@@ -132,12 +133,40 @@ public:
 
   void _Lock() { nLockCount++; };
   void _Release() { nLockCount--; if (!nLockCount) delete this; };
+
+  int getLockCount() { return nLockCount; };
 };
 
 void __fastcall SAFE_DELETE(void_struct **p);
 void __fastcall SAFE_DELETE(lockable_struct **p);
 
 DWORD ICQWaitForSingleObject(HANDLE hHandle, DWORD dwMilliseconds, int bWaitAlways = FALSE);
+
+
+struct icq_critical_section: public lockable_struct
+{
+private:
+  CRITICAL_SECTION hMutex;
+  HANDLE hEvent;
+public:
+  icq_critical_section();
+  virtual ~icq_critical_section();
+
+  void Enter();
+  void Leave();
+};
+
+__inline static void SAFE_DELETE(icq_critical_section **p) { SAFE_DELETE((lockable_struct**)p); }
+
+struct icq_lock
+{
+private:
+  icq_critical_section *pMutex;
+public:
+  icq_lock(icq_critical_section *mutex) { pMutex = mutex; pMutex->Enter(); };
+  ~icq_lock() { pMutex->Leave(); pMutex = NULL; };
+};
+
 
 HANDLE NetLib_OpenConnection(HANDLE hUser, const char* szIdent, NETLIBOPENCONNECTION* nloc);
 void NetLib_CloseConnection(HANDLE *hConnection, int bServerConn);

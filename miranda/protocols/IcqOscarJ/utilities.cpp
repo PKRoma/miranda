@@ -36,14 +36,14 @@
 
 #include "icqoscar.h"
 
+
 struct gateway_index
 {
 	HANDLE hConn;
 	DWORD  dwIndex;
 };
 
-static int gatewayMutexRef = 0;
-static CRITICAL_SECTION gatewayMutex;
+static icq_critical_section *gatewayMutex = NULL;
 
 static gateway_index *gateways = NULL;
 static int gatewayCount = 0;
@@ -277,16 +277,16 @@ int AwayMsgTypeToStatus(int nMsgType)
 	}
 }
 
+
 void SetGatewayIndex(HANDLE hConn, DWORD dwIndex)
 {
-	EnterCriticalSection(&gatewayMutex);
+	icq_lock l(gatewayMutex);
 
 	for (int i = 0; i < gatewayCount; i++)
 	{
 		if (hConn == gateways[i].hConn)
 		{
 			gateways[i].dwIndex = dwIndex;
-			LeaveCriticalSection(&gatewayMutex);
 			return;
 		}
 	}
@@ -295,33 +295,26 @@ void SetGatewayIndex(HANDLE hConn, DWORD dwIndex)
 	gateways[gatewayCount].hConn = hConn;
 	gateways[gatewayCount].dwIndex = dwIndex;
 	gatewayCount++;
-
-	LeaveCriticalSection(&gatewayMutex);
-	return;
 }
+
 
 DWORD GetGatewayIndex(HANDLE hConn)
 {
-	int i;
+	icq_lock l(gatewayMutex);
 
-	EnterCriticalSection(&gatewayMutex);
-
-	for (i = 0; i < gatewayCount; i++)
+	for (int i = 0; i < gatewayCount; i++)
 	{
 		if (hConn == gateways[i].hConn)
-		{
-			LeaveCriticalSection(&gatewayMutex);
 			return gateways[i].dwIndex;
-		}
 	}
 
-	LeaveCriticalSection(&gatewayMutex);
 	return 1; // this is default
 }
 
+
 void FreeGatewayIndex(HANDLE hConn)
 {
-	EnterCriticalSection(&gatewayMutex);
+	icq_lock l(gatewayMutex);
 
 	for (int i = 0; i < gatewayCount; i++)
 	{
@@ -335,39 +328,32 @@ void FreeGatewayIndex(HANDLE hConn)
 			break;
 		}
 	}
-
-	LeaveCriticalSection(&gatewayMutex);
 }
+
 
 void CIcqProto::AddToSpammerList(DWORD dwUIN)
 {
-	EnterCriticalSection(&cookieMutex);
+	icq_lock l(gatewayMutex);
 
 	spammerList = (DWORD *)SAFE_REALLOC(spammerList, sizeof(DWORD) * (spammerListCount + 1));
 	spammerList[spammerListCount] = dwUIN;
 	spammerListCount++;
-
-	LeaveCriticalSection(&cookieMutex);
 }
+
 
 BOOL CIcqProto::IsOnSpammerList(DWORD dwUIN)
 {
-	EnterCriticalSection(&cookieMutex);
+	icq_lock l(gatewayMutex);
 
 	for (int i = 0; i < spammerListCount; i++)
 	{
 		if (dwUIN == spammerList[i])
-		{
-			LeaveCriticalSection(&cookieMutex);
-
 			return TRUE;
-		}
 	}
-
-	LeaveCriticalSection(&cookieMutex);
 
 	return FALSE;
 }
+
 
 // ICQ contacts cache
 
@@ -386,20 +372,21 @@ void CIcqProto::AddToContactsCache(HANDLE hContact, DWORD dwUin, const char *szU
   if (!dwUin)
     cache_item->szUid = null_strdup(szUid);
 
-	EnterCriticalSection(&contactsCacheMutex);
+	icq_lock l(contactsCacheMutex);
   contactsCache.insert(cache_item);
-	LeaveCriticalSection(&contactsCacheMutex);
 }
 
 
 void CIcqProto::InitContactsCache()
 {
-	InitializeCriticalSection(&contactsCacheMutex);
-  if (!gatewayMutexRef++)
-	  InitializeCriticalSection(&gatewayMutex);
+	contactsCacheMutex = new icq_critical_section();
+  if (!gatewayMutex)
+	  gatewayMutex = new icq_critical_section();
+  else
+    gatewayMutex->_Lock();
 
 	// build cache
-	EnterCriticalSection(&contactsCacheMutex);
+	icq_lock l(contactsCacheMutex);
 
   HANDLE hContact = FindFirstContact();
 
@@ -413,14 +400,12 @@ void CIcqProto::InitContactsCache()
 
 		hContact = FindNextContact(hContact);
 	}
-
-	LeaveCriticalSection(&contactsCacheMutex);
 }
 
 
 void CIcqProto::UninitContactsCache(void)
 {
-  EnterCriticalSection(&contactsCacheMutex);
+  icq_lock l(contactsCacheMutex);
   // cleanup the cache
 	for (int i = 0; i < contactsCache.getCount(); i++)
   {
@@ -430,16 +415,18 @@ void CIcqProto::UninitContactsCache(void)
     SAFE_FREE((void**)&cache_item);
   }
   contactsCache.destroy();
-  LeaveCriticalSection(&contactsCacheMutex);
-	DeleteCriticalSection(&contactsCacheMutex);
-  if (!--gatewayMutexRef)
-	  DeleteCriticalSection(&gatewayMutex);
+	SAFE_DELETE(&contactsCacheMutex);
+
+  if (gatewayMutex && gatewayMutex->getLockCount() > 1)
+	  gatewayMutex->_Release();
+  else
+    SAFE_DELETE(&gatewayMutex);
 }
 
 
 void CIcqProto::DeleteFromContactsCache(HANDLE hContact)
 {
-  EnterCriticalSection(&contactsCacheMutex);
+  icq_lock l(contactsCacheMutex);
 
 	for (int i = 0; i < contactsCache.getCount(); i++)
 	{
@@ -457,23 +444,20 @@ void CIcqProto::DeleteFromContactsCache(HANDLE hContact)
 			break;
     }
   }
-  LeaveCriticalSection(&contactsCacheMutex);
 }
 
 
 HANDLE CIcqProto::HandleFromCacheByUid(DWORD dwUin, const char *szUid)
 {
-	HANDLE hContact = NULL;
   icq_contacts_cache cache_item = {NULL, dwUin, szUid};
 
-	EnterCriticalSection(&contactsCacheMutex);
+	icq_lock l(contactsCacheMutex);
   // find in list
   int i = contactsCache.getIndex(&cache_item);
   if (i != -1)
-		hContact = contactsCache[i]->hContact;
-  LeaveCriticalSection(&contactsCacheMutex);
+		return contactsCache[i]->hContact;
 
-	return hContact;
+	return NULL;
 }
 
 
@@ -1167,13 +1151,13 @@ void __cdecl CIcqProto::SetStatusNoteThread(void *pDelay)
   if (pDelay)
     SleepEx((DWORD)pDelay, TRUE);
 
-  EnterCriticalSection(&cookieMutex);
+  cookieMutex->Enter();
 
   if (icqOnline() && (setStatusNoteText || setStatusMoodData))
   { // send status note change packets, write status note to database
     if (setStatusNoteText)
     { // change status note in directory
-		  EnterCriticalSection(&m_ratesMutex);
+		  m_ratesMutex->Enter();
 		  if (m_rates)
 		  { // rate management
         WORD wGroup = m_rates->getGroupFromSNAC(ICQ_EXTENSIONS_FAMILY, ICQ_META_CLI_REQUEST);
@@ -1182,19 +1166,19 @@ void __cdecl CIcqProto::SetStatusNoteThread(void *pDelay)
 	  		{ // we are over rate, need to wait before sending
 		  		int nDelay = m_rates->getDelayToLimitLevel(wGroup, RML_IDLE_10);
 
-  				LeaveCriticalSection(&m_ratesMutex);
-          LeaveCriticalSection(&cookieMutex);
+  				m_ratesMutex->Leave();
+          cookieMutex->Leave();
 #ifdef _DEBUG
 		  		NetLog_Server("Rates: SetStatusNote delayed %dms", nDelay);
 #endif
 			  	SleepEx(nDelay, TRUE); // do not keep things locked during sleep
-          EnterCriticalSection(&cookieMutex);
-  				EnterCriticalSection(&m_ratesMutex);
+          cookieMutex->Enter();
+  				m_ratesMutex->Enter();
 	  			if (!m_rates) // we lost connection when we slept, go away
 		  			break;
 			  }
       }
-      LeaveCriticalSection(&m_ratesMutex);
+      m_ratesMutex->Leave();
 
       BYTE *pBuffer = NULL;
       int cbBuffer = 0;
@@ -1207,7 +1191,7 @@ void __cdecl CIcqProto::SetStatusNoteThread(void *pDelay)
 
     if (setStatusNoteText || setStatusMoodData)
     { // change status note and mood in session data
-      EnterCriticalSection(&m_ratesMutex);
+      m_ratesMutex->Enter();
       if (m_rates)
       { // rate management
         WORD wGroup = m_rates->getGroupFromSNAC(ICQ_SERVICE_FAMILY, ICQ_CLIENT_SET_STATUS);
@@ -1216,19 +1200,19 @@ void __cdecl CIcqProto::SetStatusNoteThread(void *pDelay)
         { // we are over rate, need to wait before sending
           int nDelay = m_rates->getDelayToLimitLevel(wGroup, RML_IDLE_10);
 
-          LeaveCriticalSection(&m_ratesMutex);
-          LeaveCriticalSection(&cookieMutex);
+          m_ratesMutex->Leave();
+          cookieMutex->Leave();
 #ifdef _DEBUG
           NetLog_Server("Rates: SetStatusNote delayed %dms", nDelay);
 #endif
           SleepEx(nDelay, TRUE); // do not keep things locked during sleep
-          EnterCriticalSection(&cookieMutex);
-          EnterCriticalSection(&m_ratesMutex);
+          cookieMutex->Enter();
+          m_ratesMutex->Enter();
           if (!m_rates) // we lost connection when we slept, go away
             break;
         }
       }
-      LeaveCriticalSection(&m_ratesMutex);
+      m_ratesMutex->Leave();
 
       // check if the session data were not updated already
       char *szCurrentStatusNote = getSettingStringUtf(NULL, DBSETTING_STATUS_NOTE, NULL);
@@ -1283,7 +1267,7 @@ void __cdecl CIcqProto::SetStatusNoteThread(void *pDelay)
   SAFE_FREE(&setStatusNoteText);
   SAFE_FREE(&setStatusMoodData);
 
-  LeaveCriticalSection(&cookieMutex);
+  cookieMutex->Leave();
 }
 
 
@@ -1296,7 +1280,7 @@ int CIcqProto::SetStatusNote(const char *szStatusNote, DWORD dwDelay, int bForce
   if (!bForce && !icqOnline()) return bChanged;
 
   // reuse generic critical section (used for cookies list and object variables locks)
-  EnterCriticalSection(&cookieMutex);
+  icq_lock l(cookieMutex);
 
   if (!setStatusNoteText && (!m_bMoodsEnabled || !setStatusMoodData))
   { // check if the status note was changed and if yes, create thread to change it
@@ -1323,7 +1307,6 @@ int CIcqProto::SetStatusNote(const char *szStatusNote, DWORD dwDelay, int bForce
 
     bChanged = TRUE;
   }
-  LeaveCriticalSection(&cookieMutex);
 
   return bChanged;
 }
@@ -1336,7 +1319,7 @@ int CIcqProto::SetStatusMood(const char *szMoodData, DWORD dwDelay)
   if (!icqOnline()) return bChanged;
 
   // reuse generic critical section (used for cookies list and object variables locks)
-  EnterCriticalSection(&cookieMutex);
+  icq_lock l(cookieMutex);
 
   if (!setStatusNoteText && !setStatusMoodData)
   { // check if the status mood was changed and if yes, create thread to change it
@@ -1366,7 +1349,6 @@ int CIcqProto::SetStatusMood(const char *szMoodData, DWORD dwDelay)
 
     bChanged = TRUE;
   }
-  LeaveCriticalSection(&cookieMutex);
 
   return bChanged;
 }
@@ -1782,44 +1764,97 @@ DWORD ICQWaitForSingleObject(HANDLE hObject, DWORD dwMilliseconds, int bWaitAlwa
 }
 
 
+CRITICAL_SECTION criticalSectionMutex;
+
+icq_critical_section::icq_critical_section()
+{
+  InitializeCriticalSection(&hMutex);
+}
+
+
+icq_critical_section::~icq_critical_section()
+{
+  DeleteCriticalSection(&hMutex);
+}
+
+
+void icq_critical_section::Enter()
+{
+  EnterCriticalSection(&criticalSectionMutex);
+
+  _Lock();
+
+  if (TryEnterCriticalSection(&hMutex))
+  { // entered successfuly
+    LeaveCriticalSection(&criticalSectionMutex);
+    return;
+  }
+  if (hEvent)
+  { // recursively entering locked critical section,
+    // wait for critical section in alertable state
+    do {
+      ICQWaitForSingleObject(hEvent, INFINITE, FALSE);
+    } while (!TryEnterCriticalSection(&hMutex) && !Miranda_Terminated());
+    // reset event state
+    ResetEvent(hEvent);
+  }
+  else
+  { // trying to enter locked critical section, create event, wait for it
+    hEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
+    LeaveCriticalSection(&criticalSectionMutex);
+    // wait for critical section in alertable state
+    do {
+      ICQWaitForSingleObject(hEvent, INFINITE, FALSE);
+    } while (!TryEnterCriticalSection(&hMutex) && !Miranda_Terminated());
+    // critical section lock acquired, destroy waiting event
+    EnterCriticalSection(&criticalSectionMutex);
+    CloseHandle(hEvent);
+    hEvent = NULL;
+    LeaveCriticalSection(&criticalSectionMutex);
+  }
+}
+
+
+void icq_critical_section::Leave()
+{
+  LeaveCriticalSection(&hMutex);
+  EnterCriticalSection(&criticalSectionMutex);
+  if (hEvent)
+    SetEvent(hEvent);
+
+  _Release();
+  LeaveCriticalSection(&criticalSectionMutex);
+}
+
+
 HANDLE NetLib_OpenConnection(HANDLE hUser, const char* szIdent, NETLIBOPENCONNECTION* nloc)
 {
-	HANDLE hConnection;
-
 	Netlib_Logf(hUser, "%sConnecting to %s:%u", szIdent?szIdent:"", nloc->szHost, nloc->wPort);
 
 	nloc->cbSize = sizeof(NETLIBOPENCONNECTION);
 	nloc->flags |= NLOCF_V2;
 
-	hConnection = (HANDLE)CallService(MS_NETLIB_OPENCONNECTION, (WPARAM)hUser, (LPARAM)nloc);
-	if (!hConnection && (GetLastError() == 87))
-	{ // this ensures, an old Miranda will be able to connect also
-		nloc->cbSize = NETLIBOPENCONNECTION_V1_SIZE;
-		hConnection = (HANDLE)CallService(MS_NETLIB_OPENCONNECTION, (WPARAM)hUser, (LPARAM)nloc);
-	}
-	return hConnection;
+	return (HANDLE)CallService(MS_NETLIB_OPENCONNECTION, (WPARAM)hUser, (LPARAM)nloc);
 }
+
 
 HANDLE CIcqProto::NetLib_BindPort(NETLIBNEWCONNECTIONPROC_V2 pFunc, void* lParam, WORD* pwPort, DWORD* pdwIntIP)
 {
 	NETLIBBIND nlb = {0};
-	HANDLE hBoundPort;
 
 	nlb.cbSize = sizeof(NETLIBBIND); 
 	nlb.pfnNewConnectionV2 = pFunc;
 	nlb.pExtra = lParam;
 	SetLastError(ERROR_INVALID_PARAMETER); // this must be here - NetLib does not set any error :((
-	hBoundPort = (HANDLE)CallService(MS_NETLIB_BINDPORT, (WPARAM)m_hDirectNetlibUser, (LPARAM)&nlb);
-	if (!hBoundPort && (GetLastError() == ERROR_INVALID_PARAMETER))
-	{ // this ensures older Miranda also can bind a port for a dc - pre 0.6
-		nlb.cbSize = NETLIBBIND_SIZEOF_V2;
-		hBoundPort = (HANDLE)CallService(MS_NETLIB_BINDPORT, (WPARAM)m_hDirectNetlibUser, (LPARAM)&nlb);
-	}
-	if (pwPort) *pwPort = nlb.wPort;
+
+	HANDLE hBoundPort = (HANDLE)CallService(MS_NETLIB_BINDPORT, (WPARAM)m_hDirectNetlibUser, (LPARAM)&nlb);
+
+  if (pwPort) *pwPort = nlb.wPort;
 	if (pdwIntIP) *pdwIntIP = nlb.dwInternalIP;
 
 	return hBoundPort;
 }
+
 
 void NetLib_CloseConnection(HANDLE *hConnection, int bServerConn)
 {
@@ -1834,6 +1869,7 @@ void NetLib_CloseConnection(HANDLE *hConnection, int bServerConn)
 	}
 }
 
+
 void NetLib_SafeCloseHandle(HANDLE *hConnection)
 {
 	if (*hConnection)
@@ -1842,6 +1878,7 @@ void NetLib_SafeCloseHandle(HANDLE *hConnection)
 		*hConnection = NULL;
 	}
 }
+
 
 int CIcqProto::NetLog_Server(const char *fmt,...)
 {

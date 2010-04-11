@@ -1099,7 +1099,8 @@ void CIcqProto::handleRecvServMsgContacts(BYTE *buf, WORD wLen, DWORD dwUin, cha
 						}
 						contacts[iContact] = (ICQSEARCHRESULT*)SAFE_MALLOC(sizeof(ICQSEARCHRESULT));
 						contacts[iContact]->hdr.cbSize = sizeof(ICQSEARCHRESULT);
-						contacts[iContact]->hdr.nick = null_strdup("");
+            contacts[iContact]->hdr.flags = PSR_TCHAR;
+						contacts[iContact]->hdr.nick = null_strdup(_T(""));
 						contacts[iContact]->uid = (char*)SAFE_MALLOC(wUidLen + 1);
 						unpackString(&pBuffer, contacts[iContact]->uid, wUidLen);
 						nLen -= wUidLen;
@@ -1174,13 +1175,13 @@ void CIcqProto::handleRecvServMsgContacts(BYTE *buf, WORD wLen, DWORD dwUin, cha
 						if (nLen >= wNickLen)
 						{
 							WORD wNickTLV, wNickTLVLen;
-							char* pNick = NULL;
+							char *pNick = NULL;
 
 							unpackTypedTLV(pBuffer, wNickLen, 0x01, &wNickTLV, &wNickTLVLen, (LPBYTE*)&pNick);
 							if (wNickTLV == 0x01)
 							{
 								SAFE_FREE(&contacts[iContact]->hdr.nick);
-								contacts[iContact]->hdr.nick = pNick;
+								contacts[iContact]->hdr.nick = utf8_to_tchar(pNick);
 							}
 							else
 								SAFE_FREE(&pNick);
@@ -1220,7 +1221,7 @@ void CIcqProto::handleRecvServMsgContacts(BYTE *buf, WORD wLen, DWORD dwUin, cha
 				pre.timestamp = (DWORD)time(NULL);
 				pre.szMessage = (char *)contacts;
 				pre.lParam = nContacts;
-				pre.flags = PREF_UTF;
+				pre.flags = PREF_TCHAR;
 				CallService(MS_PROTO_CHAINRECV, 0, (LPARAM)&ccs);
 			}
 
@@ -1680,11 +1681,10 @@ HANDLE CIcqProto::handleMessageAck(DWORD dwUin, char *szUID, WORD wCookie, WORD 
 {
 	if (bFlags == 3)
 	{
-		HANDLE hContact;
 		HANDLE hCookieContact;
 		cookie_message_data *pCookieData = NULL;
 
-		hContact = HContactFromUID(dwUin, szUID, NULL);
+		HANDLE hContact = HContactFromUID(dwUin, szUID, NULL);
 
 		if (!FindCookie(wCookie, &hCookieContact, (void**)&pCookieData))
 		{
@@ -2000,6 +2000,7 @@ void CIcqProto::handleMessageTypes(DWORD dwUin, char *szUID, DWORD dwTimestamp, 
 			{
 				isrList[i] = (ICQSEARCHRESULT*)SAFE_MALLOC(sizeof(ICQSEARCHRESULT));
 				isrList[i]->hdr.cbSize = sizeof(ICQSEARCHRESULT);
+        isrList[i]->hdr.flags = PSR_TCHAR;
 				if (IsStringUIN(pszMsgField[1 + i * 2]))
 				{ // icq contact
 					isrList[i]->uin = atoi(pszMsgField[1 + i * 2]);
@@ -2012,7 +2013,7 @@ void CIcqProto::handleMessageTypes(DWORD dwUin, char *szUID, DWORD dwTimestamp, 
 					if (!strlennull(isrList[i]->uid))
 						valid = 0;
 				}
-				isrList[i]->hdr.nick = pszMsgField[2 + i * 2];
+				isrList[i]->hdr.nick = ansi_to_tchar(pszMsgField[2 + i * 2]);
 			}
 
 			if (!valid)
@@ -2031,11 +2032,15 @@ void CIcqProto::handleMessageTypes(DWORD dwUin, char *szUID, DWORD dwTimestamp, 
 				pre.timestamp = dwTimestamp;
 				pre.szMessage = (char *)isrList;
 				pre.lParam = nContacts;
+				pre.flags = PREF_TCHAR;
 				CallService(MS_PROTO_CHAINRECV, 0, (LPARAM)&ccs);
 			}
 
 			for (i = 0; i < nContacts; i++)
+      {
+        SAFE_FREE(&isrList[i]->hdr.nick);
 				SAFE_FREE((void**)&isrList[i]);
+      }
 		}
 		break;
 
@@ -2191,9 +2196,9 @@ void CIcqProto::handleMessageTypes(DWORD dwUin, char *szUID, DWORD dwTimestamp, 
           int nMsgType;
         };
 
-				EnterCriticalSection(&m_ratesMutex);
+				m_ratesMutex->Enter();
         WORD wGroup = m_rates->getGroupFromSNAC(ICQ_MSG_FAMILY, ICQ_MSG_RESPONSE);
-				LeaveCriticalSection(&m_ratesMutex);
+				m_ratesMutex->Leave();
 
 				rates_status_message_response rr(this, wGroup);
         rr.bExtended = (nMsgFlags & MTF_STATUS_EXTENDED) == MTF_STATUS_EXTENDED;

@@ -101,7 +101,7 @@ oscar_filetransfer* CIcqProto::CreateOscarTransfer()
 	// Init members
 	ft->fileId = -1;
 
-	EnterCriticalSection(&oftMutex);
+	icq_lock l(oftMutex);
 
 	fileTransferList = (basic_filetransfer**)SAFE_REALLOC(fileTransferList, sizeof(basic_filetransfer*)*(fileTransferCount + 1));
 	fileTransferList[fileTransferCount++] = ft;
@@ -109,7 +109,6 @@ oscar_filetransfer* CIcqProto::CreateOscarTransfer()
 #ifdef _DEBUG
 	NetLog_Direct("OFT: FT struct 0x%x created", ft);
 #endif
-	LeaveCriticalSection(&oftMutex);
 
 	return ft;
 }
@@ -121,7 +120,7 @@ filetransfer *CIcqProto::CreateIcqFileTransfer()
 
 	ft->ft_magic = FT_MAGIC_ICQ;
 
-	EnterCriticalSection(&oftMutex);
+	icq_lock l(oftMutex);
 
 	fileTransferList = (basic_filetransfer**)SAFE_REALLOC(fileTransferList, sizeof(basic_filetransfer*)*(fileTransferCount + 1));
 	fileTransferList[fileTransferCount++] = (basic_filetransfer*)ft;
@@ -129,7 +128,6 @@ filetransfer *CIcqProto::CreateIcqFileTransfer()
 #ifdef _DEBUG
 	NetLog_Direct("FT struct 0x%x created", ft);
 #endif
-	LeaveCriticalSection(&oftMutex);
 
 	return ft;
 }
@@ -161,36 +159,28 @@ void CIcqProto::ReleaseFileTransfer(void *ft)
 
 int CIcqProto::IsValidFileTransfer(void *ft)
 {
-	int res = 0;
+	icq_lock l(oftMutex);
 
-	EnterCriticalSection(&oftMutex);
+	if (getFileTransferIndex(ft) != -1) return 1;
 
-	if (getFileTransferIndex(ft) != -1) res = 1;
-
-	LeaveCriticalSection(&oftMutex);
-
-	return res;
+	return 0;
 }
 
 
 int CIcqProto::IsValidOscarTransfer(void *ft)
 {
-	int res = 0;
-
-	EnterCriticalSection(&oftMutex);
+	icq_lock l(oftMutex);
 
 	if (getFileTransferIndex(ft) != -1 && ((basic_filetransfer*)ft)->ft_magic == FT_MAGIC_OSCAR)
-		res = 1;
+		return 1;
 
-	LeaveCriticalSection(&oftMutex);
-
-	return res;
+	return 0;
 }
 
 
 oscar_filetransfer* CIcqProto::FindOscarTransfer(HANDLE hContact, DWORD dwID1, DWORD dwID2)
 {
-	EnterCriticalSection(&oftMutex);
+	icq_lock l(oftMutex);
 
 	for (int i = 0; i < fileTransferCount; i++)
 	{
@@ -199,15 +189,9 @@ oscar_filetransfer* CIcqProto::FindOscarTransfer(HANDLE hContact, DWORD dwID1, D
 			oscar_filetransfer *oft = (oscar_filetransfer*)fileTransferList[i];
 
 			if (oft->hContact == hContact && oft->pMessage.dwMsgID1 == dwID1 && oft->pMessage.dwMsgID2 == dwID2)
-			{
-				LeaveCriticalSection(&oftMutex);
-
 				return oft;
-			}
 		}
 	}
-
-	LeaveCriticalSection(&oftMutex);
 
 	return NULL;
 }
@@ -218,14 +202,11 @@ void CIcqProto::SafeReleaseFileTransfer(void **ft)
 {
 	basic_filetransfer **bft = (basic_filetransfer**)ft;
 
-	EnterCriticalSection(&oftMutex);
+  icq_lock l(oftMutex);
 
 	// Check for filetransfer validity
 	if (getFileTransferIndex(*ft) == -1)
-	{
-		LeaveCriticalSection(&oftMutex);
 		return;
-	}
 
 	if (*bft)
 	{
@@ -304,7 +285,6 @@ void CIcqProto::SafeReleaseFileTransfer(void **ft)
 			SAFE_FREE((void**)ft);
 		}
 	}
-	LeaveCriticalSection(&oftMutex);
 }
 
 
@@ -1233,7 +1213,7 @@ static void oft_buildProtoFileTransferStatus(oscar_filetransfer* ft, PROTOFILETR
 
 void CIcqProto::CloseOscarConnection(oscar_connection *oc)
 {
-	EnterCriticalSection(&oftMutex);
+	icq_lock l(oftMutex);
 
 	if (oc)
 	{
@@ -1244,7 +1224,6 @@ void CIcqProto::CloseOscarConnection(oscar_connection *oc)
 			NetLib_CloseConnection(&oc->hConnection, FALSE);
 		}
 	}
-	LeaveCriticalSection(&oftMutex);
 }
 
 
@@ -1569,13 +1548,12 @@ void __cdecl CIcqProto::oft_connectionThread( oscarthreadstartinfo *otsi )
 
 	CloseOscarConnection(&oc);
 
-	// Clean up
-	EnterCriticalSection(&oftMutex);
-	if (getFileTransferIndex(oc.ft) != -1)
-	{
-		oc.ft->connection = NULL; // release link
+	{ // Clean up
+		icq_lock l(oftMutex);
+
+		if (getFileTransferIndex(oc.ft) != -1)
+			oc.ft->connection = NULL; // release link
 	}
-	LeaveCriticalSection(&oftMutex);
 	// Give server some time for abort/cancel to arrive
 	SleepEx(1000, TRUE);
 	// Error handling

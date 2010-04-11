@@ -395,7 +395,7 @@ void CIcqProto::parseSearchReplies(unsigned char *databuf, WORD wPacketLen, WORD
 			{
 				if (wPacketLen < wLen || (databuf[wLen-1] != 0))
 					break;
-				sr.hdr.nick = (char*)databuf;
+				sr.hdr.nick = (FNAMECHAR*)databuf;
 				databuf += wLen;
 			}
 			else
@@ -412,7 +412,7 @@ void CIcqProto::parseSearchReplies(unsigned char *databuf, WORD wPacketLen, WORD
 			{
 				if (wPacketLen < wLen || (databuf[wLen-1] != 0))
 					break;
-				sr.hdr.firstName = (char*)databuf;
+				sr.hdr.firstName = (FNAMECHAR*)databuf;
 				databuf += wLen;
 			}
 			else
@@ -429,7 +429,7 @@ void CIcqProto::parseSearchReplies(unsigned char *databuf, WORD wPacketLen, WORD
 			{
 				if (wPacketLen < wLen || (databuf[wLen-1] != 0))
 					break;
-				sr.hdr.lastName = (char*)databuf;
+				sr.hdr.lastName = (FNAMECHAR*)databuf;
 				databuf += wLen;
 			}
 			else
@@ -446,7 +446,7 @@ void CIcqProto::parseSearchReplies(unsigned char *databuf, WORD wPacketLen, WORD
 			{
 				if (wPacketLen < wLen || (databuf[wLen-1] != 0))
 					break;
-				sr.hdr.email = (char*)databuf;
+				sr.hdr.email = (FNAMECHAR*)databuf;
 				databuf += wLen;
 			}
 			else
@@ -477,7 +477,6 @@ void CIcqProto::parseSearchReplies(unsigned char *databuf, WORD wPacketLen, WORD
 				}
 				ReleaseSearchCookie(wCookie, pCookie);
 			}
-
 			bParsingOK = TRUE;
 		}
 		else 
@@ -1050,13 +1049,13 @@ void CIcqProto::parseDirectoryUserDetailsData(HANDLE hContact, oscar_tlv_chain *
 void CIcqProto::parseDirectorySearchData(oscar_tlv_chain *cDetails, DWORD dwCookie, cookie_directory_data *pCookieData, WORD wReplySubType)
 {
 	ICQSEARCHRESULT isr = {0};
-	oscar_tlv *pTLV;
 	char *szUin = cDetails->getString(0x32, 1); // User ID
 
 #ifdef _DEBUG
 	NetLog_Server("Directory Search: Found user %s", szUin);
 #endif
 	isr.hdr.cbSize = sizeof(ICQSEARCHRESULT);
+  isr.hdr.flags = PSR_TCHAR;
 
 	if (IsStringUIN(szUin))
 	{
@@ -1069,23 +1068,31 @@ void CIcqProto::parseDirectorySearchData(oscar_tlv_chain *cDetails, DWORD dwCook
 		isr.uid = szUin;
 	}
 
-	pTLV = cDetails->getTLV(0x50, 1);
-	if (pTLV && pTLV->wLen > 0)
-		isr.hdr.email = cDetails->getString(0x50, 1); // Verified e-mail
-	else
-		isr.hdr.email = cDetails->getString(0x55, 1); // Pending e-mail
-	if (!strlennull(isr.hdr.email))
-		SAFE_FREE(&isr.hdr.email);
+	oscar_tlv *pTLV = cDetails->getTLV(0x50, 1);
+  char *szData = NULL;
 
-	isr.firstName = cDetails->getString(0x64, 1); // First Name
-	if (!utf8_decode(isr.firstName, &isr.hdr.firstName))
-		SAFE_FREE(&isr.firstName);
-	isr.lastName = cDetails->getString(0x6E, 1); // Last Name
-	if (!utf8_decode(isr.lastName, &isr.hdr.lastName))
-		SAFE_FREE(&isr.lastName);
-	isr.nick = cDetails->getString(0x78, 1); // Nick
-	if (!utf8_decode(isr.nick, &isr.hdr.nick))
-		SAFE_FREE(&isr.nick);
+	if (pTLV && pTLV->wLen > 0)
+		szData = cDetails->getString(0x50, 1); // Verified e-mail
+	else
+		szData = cDetails->getString(0x55, 1); // Pending e-mail
+	if (strlennull(szData))
+    isr.hdr.email = ansi_to_tchar(szData);
+	SAFE_FREE(&szData);
+
+	szData = cDetails->getString(0x64, 1); // First Name
+	if (strlennull(szData))
+		isr.hdr.firstName = utf8_to_tchar(szData);
+  SAFE_FREE(&szData);
+
+	szData = cDetails->getString(0x6E, 1); // Last Name
+	if (strlennull(szData))
+		isr.hdr.lastName = utf8_to_tchar(szData);
+  SAFE_FREE(&szData);
+
+	szData = cDetails->getString(0x78, 1); // Nick
+	if (strlennull(szData))
+    isr.hdr.nick = utf8_to_tchar(szData);
+	SAFE_FREE(&szData);
 
 	switch (cDetails->getNumber(0x82, 1)) // Gender
 	{
@@ -1117,9 +1124,7 @@ void CIcqProto::parseDirectorySearchData(oscar_tlv_chain *cDetails, DWORD dwCook
 	BroadcastAck(NULL, ACKTYPE_SEARCH, ACKRESULT_DATA, (HANDLE)dwCookie, (LPARAM)&isr);
 
 	// Release memory
-	SAFE_FREE(&isr.nick); /// FIXME: Reduce memory allocation
-	SAFE_FREE(&isr.firstName);
-	SAFE_FREE(&isr.lastName);
+  SAFE_FREE(&isr.uid);
 	SAFE_FREE(&isr.hdr.nick);
 	SAFE_FREE(&isr.hdr.firstName);
 	SAFE_FREE(&isr.hdr.lastName);

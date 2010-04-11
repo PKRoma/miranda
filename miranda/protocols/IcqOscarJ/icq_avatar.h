@@ -54,7 +54,7 @@ protected:
 	HANDLE hConnection;  // handle to the connection
 	HANDLE hPacketRecver;
 	WORD   wLocalSequence;
-	CRITICAL_SECTION localSeqMutex;
+	icq_critical_section *localSeqMutex;
 
   BOOL   isLoggedIn;
   BOOL   isActive;
@@ -74,7 +74,7 @@ protected:
 	void   handleAvatarFam(BYTE *pBuffer, WORD wBufferLength, snac_header *pSnacHeader);
 
 	rates *m_rates;
-  CRITICAL_SECTION m_ratesMutex;
+  icq_critical_section *m_ratesMutex;
 
 	int    NetLog_Server(const char *fmt,...);
 

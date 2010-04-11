@@ -106,9 +106,9 @@ DWORD CIcqProto::requestXStatusDetails(HANDLE hContact, BOOL bAllowDelay)
     DWORD dwCookie;
   };
 
-	EnterCriticalSection(&m_ratesMutex);
+  m_ratesMutex->Enter();
   WORD wGroup = m_rates->getGroupFromSNAC(ICQ_MSG_FAMILY, ICQ_MSG_SRV_SEND);
-	LeaveCriticalSection(&m_ratesMutex);
+  m_ratesMutex->Leave();
 
 	rates_xstatus_request rr(this, wGroup);
   rr.bForced = !bAllowDelay;
@@ -536,10 +536,10 @@ void CIcqProto::updateServerCustomStatus(int fullUpdate)
   { // retrieve standard status message (e.g. custom status set to none)
     char **pszMsg = MirandaStatusToAwayMsg(m_iStatus);
 
-    EnterCriticalSection(&m_modeMsgsMutex);
+    m_modeMsgsMutex->Enter();
     if (pszMsg)
       szStatusNote = null_strdup(*pszMsg);
-    LeaveCriticalSection(&m_modeMsgsMutex);
+    m_modeMsgsMutex->Leave();
     // no default status message, set empty
     if (!szStatusNote)
       szStatusNote = null_strdup("");

@@ -337,9 +337,9 @@ void CIcqProto::handleServiceFam(BYTE *pBuffer, WORD wBufferLength, snac_header 
 			pBuffer += 20;
 			unpackDWord(&pBuffer, &dwLevel);
 
-			EnterCriticalSection(&m_ratesMutex);
+			m_ratesMutex->Enter();
 			m_rates->updateLevel(wClass, dwLevel);
-			LeaveCriticalSection(&m_ratesMutex);
+			m_ratesMutex->Leave();
 
 			if (wStatus == 2 || wStatus == 3)
 			{ // this is only the simplest solution, needs rate management to every section
@@ -958,12 +958,11 @@ void CIcqProto::handleServUINSettings(int nPort, serverthread_info *info)
 	if (m_bAimEnabled)
 	{
 		char **szAwayMsg = NULL;
+		icq_lock l(m_modeMsgsMutex);
 
-		EnterCriticalSection(&m_modeMsgsMutex);
     if (m_iStatus == ID_STATUS_AWAY)
       szAwayMsg = MirandaStatusToAwayMsg(m_iStatus);
 		if (szAwayMsg)
 			icq_sendSetAimAwayMsgServ(*szAwayMsg);
-		LeaveCriticalSection(&m_modeMsgsMutex);
 	}
 }
