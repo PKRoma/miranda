@@ -531,7 +531,7 @@ INT_PTR __cdecl CJabberProto::JabberServiceParseXmppURI( WPARAM wParam, LPARAM l
 		if ( !HContactFromJID( szJid )) {
 			JABBER_SEARCH_RESULT jsr = { 0 };
 			jsr.hdr.cbSize = sizeof( JABBER_SEARCH_RESULT );
-			jsr.hdr.nick = mir_t2a( szJid );
+			jsr.hdr.nick = szJid;
 			_tcsncpy( jsr.jid, szJid, SIZEOF(jsr.jid) - 1 );
 
 			ADDCONTACTSTRUCT acs;
@@ -539,7 +539,6 @@ INT_PTR __cdecl CJabberProto::JabberServiceParseXmppURI( WPARAM wParam, LPARAM l
 			acs.szProto = m_szModuleName;
 			acs.psr = &jsr.hdr;
 			CallService( MS_ADDCONTACT_SHOW, (WPARAM)NULL, (LPARAM)&acs );
-			mir_free( jsr.hdr.nick );
 		}
 		return 0;
 	}

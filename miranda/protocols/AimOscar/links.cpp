@@ -80,7 +80,7 @@ static INT_PTR ServiceParseAimLink(WPARAM /*wParam*/,LPARAM lParam)
 			acs.psr=&psr;
 			ZeroMemory(&psr,sizeof(PROTOSEARCHRESULT));
 			psr.cbSize=sizeof(PROTOSEARCHRESULT);
-			psr.nick=sn;
+			psr.nick=(TCHAR*)sn;
 			CallService(MS_ADDCONTACT_SHOW,(WPARAM)NULL,(LPARAM)&acs);
 		}
 		return 0;

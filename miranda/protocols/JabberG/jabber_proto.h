@@ -186,9 +186,9 @@ struct CJabberProto : public PROTO_INTERFACE
 	virtual	HICON  __cdecl GetIcon( int iconIndex );
 	virtual	int    __cdecl GetInfo( HANDLE hContact, int infoType );
 
-	virtual	HANDLE __cdecl SearchBasic( const char* id );
-	virtual	HANDLE __cdecl SearchByEmail( const char* email );
-	virtual	HANDLE __cdecl SearchByName( const char* nick, const char* firstName, const char* lastName );
+	virtual	HANDLE __cdecl SearchBasic( const TCHAR* id );
+	virtual	HANDLE __cdecl SearchByEmail( const TCHAR* email );
+	virtual	HANDLE __cdecl SearchByName( const TCHAR* nick, const TCHAR* firstName, const TCHAR* lastName );
 	virtual	HWND   __cdecl SearchAdvanced( HWND owner );
 	virtual	HWND   __cdecl CreateExtendedSearchUI( HWND owner );
 

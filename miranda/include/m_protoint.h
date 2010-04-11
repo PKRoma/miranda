@@ -132,9 +132,9 @@ typedef struct tagPROTO_INTERFACE
 	virtual	HICON     __cdecl GetIcon( int iconIndex ) = 0;
 	virtual	int       __cdecl GetInfo( HANDLE hContact, int infoType ) = 0;
 
-	virtual	HANDLE    __cdecl SearchBasic( const char* id ) = 0;
-	virtual	HANDLE    __cdecl SearchByEmail( const char* email ) = 0;
-	virtual	HANDLE    __cdecl SearchByName( const char* nick, const char* firstName, const char* lastName ) = 0;
+	virtual	HANDLE    __cdecl SearchBasic( const PROTOCHAR* id ) = 0;
+	virtual	HANDLE    __cdecl SearchByEmail( const PROTOCHAR* email ) = 0;
+	virtual	HANDLE    __cdecl SearchByName( const PROTOCHAR* nick, const PROTOCHAR* firstName, const PROTOCHAR* lastName ) = 0;
 	virtual	HWND      __cdecl SearchAdvanced( HWND owner ) = 0;
 	virtual	HWND      __cdecl CreateExtendedSearchUI( HWND owner ) = 0;
 

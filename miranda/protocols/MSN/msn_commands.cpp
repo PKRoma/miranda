@@ -632,12 +632,14 @@ void CMsnProto::sttProcessYFind(char* buf, size_t len)
 	{
 		if (szNetId != NULL)
 		{
+			TCHAR* szEmailT = mir_utf8decodeT(szEmail);
 			PROTOSEARCHRESULT isr = {0};
 			isr.cbSize = sizeof(isr);
-			isr.nick = szEmail;
-			isr.email = szEmail;
+			isr.nick = szEmailT;
+			isr.email = szEmailT;
 
 			SendBroadcast(NULL, ACKTYPE_SEARCH, ACKRESULT_DATA, msnSearchId, (LPARAM)&isr);
+			mir_free(szEmailT);
 		}
 		SendBroadcast(NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, msnSearchId, 0);
 	

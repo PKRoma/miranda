@@ -46,11 +46,10 @@ INT_PTR CALLBACK AddContactDlgProc(HWND hdlg,UINT msg,WPARAM wparam,LPARAM lpara
 				acs->szProto = dbei.szModule;
 			}
 			{
-				TCHAR* szName = NULL;
+				TCHAR *szName = NULL, *tmpStr = NULL;
 				if ( acs->handleType == HANDLE_CONTACT )
 					szName = cli.pfnGetContactDisplayName( acs->handle, GCDNF_TCHAR );
 				else {
-					char *p;
 					int isSet = 0;
 
 					if (acs->handleType == HANDLE_EVENT) {
@@ -70,21 +69,16 @@ INT_PTR CALLBACK AddContactDlgProc(HWND hdlg,UINT msg,WPARAM wparam,LPARAM lpara
 						}
 					}
 					if (!isSet) {
-						p = (acs->handleType == HANDLE_EVENT) ? szUin : acs->psr->nick;
-						#if defined( _UNICODE )
-							szName =( TCHAR* )alloca( 128*sizeof( TCHAR ));
-							MultiByteToWideChar( CP_ACP, 0, p, -1, szName, 128 );
-						#else
-							szName = p;
-						#endif
+						szName = (acs->handleType == HANDLE_EVENT) ? (tmpStr = mir_a2t(szUin)) : acs->psr->nick;
 				}	}
 
-				if ( lstrlen( szName )) {
+				if ( szName[0] ) {
 					TCHAR  szTitle[128];
 					mir_sntprintf( szTitle, SIZEOF(szTitle), TranslateT("Add %s"), szName );
 					SetWindowText( hdlg, szTitle );
 				}
 				else SetWindowText( hdlg, TranslateT("Add Contact"));
+				mir_free(tmpStr);
 		}	}
 
 		if ( acs->handleType == HANDLE_CONTACT && acs->handle )
@@ -244,10 +238,11 @@ INT_PTR AddContactDialog(WPARAM wParam,LPARAM lParam)
 			/* bad! structures that are bigger than psr will cause crashes if they define pointers within unreachable structural space */
 			psr = (PROTOSEARCHRESULT *)mir_alloc(acs->psr->cbSize);
 			memmove(psr,acs->psr,acs->psr->cbSize);
-			psr->nick = mir_strdup(psr->nick);
-			psr->firstName = mir_strdup(psr->firstName);
-			psr->lastName = mir_strdup(psr->lastName);
-			psr->email = mir_strdup(psr->email);
+			psr->nick = psr->flags & PSR_UNICODE ? mir_u2t((wchar_t*)psr->nick) : mir_a2t((char*)psr->nick);
+			psr->firstName = psr->flags & PSR_UNICODE ? mir_u2t((wchar_t*)psr->firstName) : mir_a2t((char*)psr->firstName);
+			psr->lastName = psr->flags & PSR_UNICODE ? mir_u2t((wchar_t*)psr->lastName) : mir_a2t((char*)psr->lastName);
+			psr->email = psr->flags & PSR_UNICODE ? mir_u2t((wchar_t*)psr->email) : mir_a2t((char*)psr->email);
+			psr->flags = psr->flags & ~PSR_UNICODE | PSR_TCHAR;
 			acs->psr = psr;
 			/* copied the passed acs structure, the psr structure with, the pointers within that  */
 		}

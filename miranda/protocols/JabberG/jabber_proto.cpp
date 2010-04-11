@@ -489,9 +489,9 @@ int CJabberProto::Authorize( HANDLE hContact )
 
 	Log( "Send 'authorization allowed' to " TCHAR_STR_PARAM, jid );
 
-	m_ThreadInfo->send( XmlNode( _T("presence")) << XATTR( _T("to"), _A2T(jid)) << XATTR( _T("type"), _T("subscribed")));
+	TCHAR* newJid = dbei.flags & DBEF_UTF ? mir_utf8decodeT( jid ) : mir_a2t( jid );
 
-	TCHAR* newJid = mir_a2t( jid );
+	m_ThreadInfo->send( XmlNode( _T("presence")) << XATTR( _T("to"), newJid) << XATTR( _T("type"), _T("subscribed")));
 
 	// Automatically add this user to my roster if option is enabled
 	if ( m_options.AutoAdd == TRUE ) {
@@ -548,8 +548,11 @@ int CJabberProto::AuthDeny( HANDLE hContact, const TCHAR* /*szReason*/ )
 
 	Log( "Send 'authorization denied' to " TCHAR_STR_PARAM, jid );
 
-	m_ThreadInfo->send( XmlNode( _T("presence")) << XATTR( _T("to"), _A2T(jid)) << XATTR( _T("type"), _T("unsubscribed")));
+	TCHAR* newJid = dbei.flags & DBEF_UTF ? mir_utf8decodeT( jid ) : mir_a2t( jid );
 
+	m_ThreadInfo->send( XmlNode( _T("presence")) << XATTR( _T("to"), newJid) << XATTR( _T("type"), _T("unsubscribed")));
+
+	mir_free( newJid );
 	mir_free( dbei.pBlob );
 	return 0;
 }
@@ -685,7 +688,7 @@ DWORD_PTR __cdecl CJabberProto::GetCaps( int type, HANDLE /*hContact*/ )
 {
 	switch( type ) {
 	case PFLAGNUM_1:
-		return PF1_IM | PF1_AUTHREQ | PF1_CHAT | PF1_SERVERCLIST | PF1_MODEMSG|PF1_BASICSEARCH | PF1_EXTSEARCH | PF1_FILE;
+		return PF1_IM | PF1_AUTHREQ | PF1_CHAT | PF1_SERVERCLIST | PF1_MODEMSG | PF1_BASICSEARCH | PF1_EXTSEARCH | PF1_FILE;
 	case PFLAGNUM_2:
 		return PF2_ONLINE | PF2_INVISIBLE | PF2_SHORTAWAY | PF2_LONGAWAY | PF2_HEAVYDND | PF2_FREECHAT;
 	case PFLAGNUM_3:
@@ -823,7 +826,7 @@ int __cdecl CJabberProto::GetInfo( HANDLE hContact, int /*infoType*/ )
 
 struct JABBER_SEARCH_BASIC
 {	int hSearch;
-	char jid[128];
+	TCHAR jid[128];
 };
 
 void __cdecl CJabberProto::BasicSearchThread( JABBER_SEARCH_BASIC *jsb )
@@ -832,14 +835,13 @@ void __cdecl CJabberProto::BasicSearchThread( JABBER_SEARCH_BASIC *jsb )
 
 	JABBER_SEARCH_RESULT jsr = { 0 };
 	jsr.hdr.cbSize = sizeof( JABBER_SEARCH_RESULT );
-	jsr.hdr.nick = "";
-	jsr.hdr.firstName = "";
-	jsr.hdr.lastName = "";
+	jsr.hdr.nick = jsb->jid;
+	jsr.hdr.firstName = _T("");
+	jsr.hdr.lastName = _T("");
 	jsr.hdr.email = jsb->jid;
+	jsr.hdr.flags = PSR_TCHAR;
 
-	TCHAR* jid = mir_a2t(jsb->jid);
-	_tcsncpy( jsr.jid, jid, SIZEOF( jsr.jid ));
-	mir_free( jid );
+	_tcsncpy( jsr.jid, jsb->jid, SIZEOF( jsr.jid ));
 
 	jsr.jid[SIZEOF( jsr.jid )-1] = '\0';
 	JSendBroadcast( NULL, ACKTYPE_SEARCH, ACKRESULT_DATA, ( HANDLE ) jsb->hSearch, ( LPARAM )&jsr );
@@ -847,7 +849,7 @@ void __cdecl CJabberProto::BasicSearchThread( JABBER_SEARCH_BASIC *jsb )
 	mir_free( jsb );
 }
 
-HANDLE __cdecl CJabberProto::SearchBasic( const char* szJid )
+HANDLE __cdecl CJabberProto::SearchBasic( const TCHAR* szJid )
 {
 	Log( "JabberBasicSearch called with lParam = '%s'", szJid );
 
@@ -855,18 +857,21 @@ HANDLE __cdecl CJabberProto::SearchBasic( const char* szJid )
 	if ( !m_bJabberOnline || ( jsb=( JABBER_SEARCH_BASIC * ) mir_alloc( sizeof( JABBER_SEARCH_BASIC )) )==NULL )
 		return 0;
 
-	if ( strchr( szJid, '@' ) == NULL ) {
-		const char* p = strstr( szJid, m_ThreadInfo->server );
+	if ( _tcschr( szJid, '@' ) == NULL ) {
+		TCHAR *szServer = mir_a2t( m_ThreadInfo->server );
+		const TCHAR* p = _tcsstr( szJid, szServer );
 		if ( !p ) {
-			char szServer[ 100 ];
-			if ( JGetStaticString( "LoginServer", NULL, szServer, sizeof szServer ))
-				strcpy( szServer, "jabber.org" );
+			mir_free( szServer );
+			szServer = JGetStringT( NULL, "LoginServer" ); 
+			if ( !szServer )
+				szServer = mir_tstrdup( _T( "jabber.org" ));
 
-			mir_snprintf( jsb->jid, SIZEOF(jsb->jid), "%s@%s", szJid, szServer );
+			mir_sntprintf( jsb->jid, SIZEOF(jsb->jid), _T("%s@%s"), szJid, szServer );
 		}
-		else strncpy( jsb->jid, szJid, SIZEOF(jsb->jid));
+		else _tcsncpy( jsb->jid, szJid, SIZEOF(jsb->jid));
+		mir_free( szServer );
 	}
-	else strncpy( jsb->jid, szJid, SIZEOF(jsb->jid));
+	else _tcsncpy( jsb->jid, szJid, SIZEOF(jsb->jid));
 
 	Log( "Adding '%s' without validation", jsb->jid );
 	jsb->hSearch = SerialNext();
@@ -877,7 +882,7 @@ HANDLE __cdecl CJabberProto::SearchBasic( const char* szJid )
 ////////////////////////////////////////////////////////////////////////////////////////
 // SearchByEmail - searches the contact by its e-mail
 
-HANDLE __cdecl CJabberProto::SearchByEmail( const char* email )
+HANDLE __cdecl CJabberProto::SearchByEmail( const TCHAR* email )
 {
 	if ( !m_bJabberOnline ) return 0;
 	if ( email == NULL ) return 0;
@@ -889,14 +894,14 @@ HANDLE __cdecl CJabberProto::SearchByEmail( const char* email )
 	int iqId = SerialNext();
 	IqAdd( iqId, IQ_PROC_GETSEARCH, &CJabberProto::OnIqResultSetSearch );
 	m_ThreadInfo->send( XmlNodeIq( _T("set"), iqId, _A2T(szServerName)) << XQUERY( _T("jabber:iq:search")) 
-		<< XCHILD( _T("email"), _A2T(email)));
+		<< XCHILD( _T("email"), email));
 	return ( HANDLE )iqId;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // JabberSearchByName - searches the contact by its first or last name, or by a nickname
 
-HANDLE __cdecl CJabberProto::SearchByName( const char* nick, const char* firstName, const char* lastName )
+HANDLE __cdecl CJabberProto::SearchByName( const TCHAR* nick, const TCHAR* firstName, const TCHAR* lastName )
 {
 	if ( !m_bJabberOnline )
 		return NULL;
@@ -919,24 +924,24 @@ HANDLE __cdecl CJabberProto::SearchByName( const char* nick, const char* firstNa
 
 		HXML x = query << XCHILDNS( _T("x"), _T(JABBER_FEAT_DATA_FORMS)) << XATTR( _T("type"), _T("submit"));
 		if ( nick[0] != '\0' )
-			x << XCHILD( _T("field")) << XATTR( _T("var"), _T("user")) << XATTR( _T("value"), _A2T(nick));
+			x << XCHILD( _T("field")) << XATTR( _T("var"), _T("user")) << XATTR( _T("value"), nick);
 
 		if ( firstName[0] != '\0' )
-			x << XCHILD( _T("field")) << XATTR( _T("var"), _T("fn")) << XATTR( _T("value"), _A2T(firstName));
+			x << XCHILD( _T("field")) << XATTR( _T("var"), _T("fn")) << XATTR( _T("value"), firstName);
 
 		if ( lastName[0] != '\0' )
-			x << XCHILD( _T("field")) << XATTR( _T("var"), _T("given")) << XATTR( _T("value"), _A2T(lastName));
+			x << XCHILD( _T("field")) << XATTR( _T("var"), _T("given")) << XATTR( _T("value"), lastName);
 	}
 	else {
 		IqAdd( iqId, IQ_PROC_GETSEARCH, &CJabberProto::OnIqResultSetSearch );
 		if ( nick[0] != '\0' )
-			query << XCHILD( _T("nick"), _A2T(nick));
+			query << XCHILD( _T("nick"), nick);
 
 		if ( firstName[0] != '\0' )
-			query << XCHILD( _T("first"), _A2T(firstName));
+			query << XCHILD( _T("first"), firstName);
 
 		if ( lastName[0] != '\0' )
-			query << XCHILD( _T("last"), _A2T(lastName));
+			query << XCHILD( _T("last"), lastName);
 	}
 
 	m_ThreadInfo->send( iq );

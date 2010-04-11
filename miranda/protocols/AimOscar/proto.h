@@ -42,9 +42,9 @@ struct CAimProto : public PROTO_INTERFACE
 	virtual	HICON  __cdecl GetIcon( int iconIndex );
 	virtual	int    __cdecl GetInfo( HANDLE hContact, int infoType );
 
-	virtual	HANDLE __cdecl SearchBasic( const char* id );
-	virtual	HANDLE __cdecl SearchByEmail( const char* email );
-	virtual	HANDLE __cdecl SearchByName( const char* nick, const char* firstName, const char* lastName );
+	virtual	HANDLE __cdecl SearchBasic( const PROTOCHAR* id );
+	virtual	HANDLE __cdecl SearchByEmail( const PROTOCHAR* email );
+	virtual	HANDLE __cdecl SearchByName( const PROTOCHAR* nick, const PROTOCHAR* firstName, const PROTOCHAR* lastName );
 	virtual	HWND   __cdecl SearchAdvanced( HWND owner );
 	virtual	HWND   __cdecl CreateExtendedSearchUI( HWND owner );
 

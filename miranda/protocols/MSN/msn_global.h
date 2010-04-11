@@ -161,7 +161,8 @@ void		stripBBCode(char* src);
 void		stripColorCode(char* src);
 char*		MSN_Base64Decode(const char* str);
 
-void     	UrlDecode(char* str);
+template <class chartype> void UrlDecode(chartype* str);
+
 void     	UrlEncode(const char* src, char* dest, size_t cbDest);
 
 void		__cdecl MSN_ConnectionProc(HANDLE hNewConnection, DWORD dwRemoteIP, void*);

@@ -249,6 +249,7 @@ void CJabberProto::SearchReturnResults( HANDLE  id, void * pvUsersInfo, U_TCHAR_
 	Results.jsr.hdr.cbSize = sizeof(Results.jsr); // sending user data
 
 	for ( i=0; i < nUsersFound; i++ ) {
+	   TCHAR buff[200]=_T("");
 	   Results.jsr.jid[0]=_T('\0');
 	   U_TCHAR_MAP * pmUserData = (U_TCHAR_MAP *) plUsersInfo->operator [](i);
 	   for ( int j=0; j < nFieldCount; j++ ) {
@@ -266,15 +267,14 @@ void CJabberProto::SearchReturnResults( HANDLE  id, void * pvUsersInfo, U_TCHAR_
 		   TCHAR * nick=NULL;
 		   int k=0;
 		   while (nickfields[k] && !nick)   nick=pmUserData->operator [](nickfields[k++]);
-		   TCHAR buff[200]={0};
 		   if (_tcsicmp(nick, Results.jsr.jid))
 			   _sntprintf(buff,SIZEOF(buff),_T("%s ( %s )"),nick, Results.jsr.jid);
 		   else
 				_tcsncpy(buff, nick, SIZEOF(buff));
-		   Results.jsr.hdr.nick=nick ? mir_t2a(buff): NULL;
+		   Results.jsr.hdr.nick=nick ? buff : NULL;
+		   Results.jsr.hdr.flags = PSR_TCHAR;
 	   }
 	   JSendBroadcast( NULL, ACKTYPE_SEARCH, ACKRESULT_SEARCHRESULT, id, (LPARAM) &Results );
-	   if (Results.jsr.hdr.nick) mir_free(Results.jsr.hdr.nick);
 	   Results.jsr.hdr.nick=NULL;
 
 	}

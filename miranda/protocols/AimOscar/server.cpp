@@ -1769,7 +1769,7 @@ void CAimProto::snac_email_search_results(SNAC &snac)//family 0x000A
 		{
 			TLV tlv(snac.val(offset));
 			offset+=TLV_HEADER_SIZE;
-			psr.nick = tlv.dup();
+			psr.nick = (TCHAR*)tlv.dup();
 			offset+=tlv.len();
 			sendBroadcast(NULL, ACKTYPE_SEARCH, ACKRESULT_DATA, (HANDLE) 1, (LPARAM) & psr);
 		}

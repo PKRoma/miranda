@@ -173,13 +173,13 @@ int CALLBACK SearchResultsCompareFunc(LPARAM lParam1, LPARAM lParam2, LPARAM lPa
 		case COLUMNID_PROTO:
 			return lstrcmpA(lsr1->szProto, lsr2->szProto)*sortMultiplier;
 		case COLUMNID_NICK:
-			return lstrcmpiA(lsr1->psr.nick, lsr2->psr.nick)*sortMultiplier;
+			return lstrcmpi(lsr1->psr.nick, lsr2->psr.nick)*sortMultiplier;
 		case COLUMNID_FIRST:
-			return lstrcmpiA(lsr1->psr.firstName, lsr2->psr.firstName)*sortMultiplier;
+			return lstrcmpi(lsr1->psr.firstName, lsr2->psr.firstName)*sortMultiplier;
 		case COLUMNID_LAST:
-			return lstrcmpiA(lsr1->psr.lastName, lsr2->psr.lastName)*sortMultiplier;
+			return lstrcmpi(lsr1->psr.lastName, lsr2->psr.lastName)*sortMultiplier;
 		case COLUMNID_EMAIL:
-			return lstrcmpiA(lsr1->psr.email, lsr2->psr.email)*sortMultiplier;
+			return lstrcmpi(lsr1->psr.email, lsr2->psr.email)*sortMultiplier;
 		case COLUMNID_HANDLE:
 			if(!lstrcmpA(lsr1->szProto,lsr2->szProto)) {
 				if(!lstrcmpA(lsr1->szProto,"ICQ")) {

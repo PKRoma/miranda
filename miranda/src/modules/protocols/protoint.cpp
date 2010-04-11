@@ -124,20 +124,31 @@ struct DEFAULT_PROTO_INTERFACE : public PROTO_INTERFACE
 		return MyCallProtoService( m_szModuleName, PSS_GETINFO, 0, (LPARAM)&ccs );
 	}
 
-	HANDLE __cdecl SearchBasic( const char* id )
-	{	return ( HANDLE )MyCallProtoService( m_szModuleName, PS_BASICSEARCH, 0, ( LPARAM )id );
+	HANDLE __cdecl SearchBasic( const PROTOCHAR* id )
+	{	return ( HANDLE )MyCallProtoService( m_szModuleName, PS_BASICSEARCH, 0, ( LPARAM )StrConvA( id ));
 	}
 
-	HANDLE __cdecl SearchByEmail( const char* email )
-	{	return ( HANDLE )MyCallProtoService( m_szModuleName, PS_SEARCHBYEMAIL, 0, ( LPARAM )email );
+	HANDLE __cdecl SearchByEmail( const PROTOCHAR* email )
+	{	return ( HANDLE )MyCallProtoService( m_szModuleName, PS_SEARCHBYEMAIL, 0, ( LPARAM )StrConvA( email ));
 	}
 
-	HANDLE __cdecl SearchByName( const char* nick, const char* firstName, const char* lastName )
+	HANDLE __cdecl SearchByName( const PROTOCHAR* nick, const PROTOCHAR* firstName, const PROTOCHAR* lastName )
 	{	PROTOSEARCHBYNAME psn;
+#ifdef _UNICODE
+		psn.pszNick = ( PROTOCHAR* )mir_t2a( nick );
+		psn.pszFirstName = ( PROTOCHAR* )mir_t2a( firstName );
+		psn.pszLastName = ( PROTOCHAR* )mir_t2a( lastName );
+		HANDLE res = ( HANDLE )MyCallProtoService( m_szModuleName, PS_SEARCHBYNAME, 0, ( LPARAM )&psn );
+		mir_free( psn.pszNick );
+		mir_free( psn.pszFirstName );
+		mir_free( psn.pszLastName );
+		return res;
+#else
 		psn.pszNick = ( char* )nick;
 		psn.pszFirstName = ( char* )firstName;
 		psn.pszLastName = ( char* )lastName;
 		return ( HANDLE )MyCallProtoService( m_szModuleName, PS_SEARCHBYNAME, 0, ( LPARAM )&psn );
+#endif
 	}
 
 	HWND __cdecl SearchAdvanced( HWND owner )

@@ -109,7 +109,7 @@ typedef struct {
 #define ACKRESULT_NEXTFILE     105  //file transfer went to next file
 #define ACKRESULT_FILERESUME   106  //a file is about to be received, see PS_FILERESUME
 #define ACKRESULT_DENIED       107  //a file send has been denied
-#define ACKRESULT_STATUS	    108  //an ack or a series of acks to do with a task have a status change
+#define ACKRESULT_STATUS	   108  //an ack or a series of acks to do with a task have a status change
 #define ACKRESULT_LISTENING    109  //waiting for connection
 #define ACKRESULT_CONNECTPROXY 110 //connecting to file proxy
 #define ACKRESULT_SEARCHRESULT 111 //result of extended search

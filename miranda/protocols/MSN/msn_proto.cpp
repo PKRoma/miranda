@@ -282,7 +282,7 @@ HANDLE CMsnProto::AddToListByEmail(const char *email, DWORD flags)
 
 HANDLE __cdecl CMsnProto::AddToList(int flags, PROTOSEARCHRESULT* psr)
 {
-	return AddToListByEmail(psr->email, flags);
+	return AddToListByEmail(UTF8(psr->email), flags);
 }
 
 HANDLE __cdecl CMsnProto::AddToListByEvent(int flags, int iContact, HANDLE hDbEvent)
@@ -455,14 +455,13 @@ int CMsnProto::AuthDeny(HANDLE hDbEvent, const TCHAR* szReason)
 
 void __cdecl CMsnProto::MsnSearchAckThread(void* arg)
 {
-	const char* email = (char*)arg;
+	const TCHAR* emailT = (TCHAR*)arg;
+	char *email = mir_utf8encodeT(emailT);
 
 	if (Lists_IsInList(LIST_FL, email))
 	{
-		TCHAR *title = mir_a2t(email);
-		MSN_ShowPopup(title, _T("Contact already in your contact list"), MSN_ALLOW_MSGBOX, NULL);
+		MSN_ShowPopup(emailT, _T("Contact already in your contact list"), MSN_ALLOW_MSGBOX, NULL);
 		SendBroadcast(NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, arg, 0);
-		mir_free(title);
 		mir_free(arg);
 		return;
 	}
@@ -476,8 +475,9 @@ void __cdecl CMsnProto::MsnSearchAckThread(void* arg)
 		{
 			PROTOSEARCHRESULT isr = {0};
 			isr.cbSize = sizeof(isr);
-			isr.nick = (char*)arg;
-			isr.email = (char*)arg;
+			isr.nick  = (TCHAR*)emailT;
+			isr.email = (TCHAR*)emailT;
+			isr.flags = PSR_TCHAR;
 
 			SendBroadcast(NULL, ACKTYPE_SEARCH, ACKRESULT_DATA, arg, (LPARAM)&isr);
 			SendBroadcast(NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, arg, 0);
@@ -498,27 +498,28 @@ void __cdecl CMsnProto::MsnSearchAckThread(void* arg)
 		SendBroadcast(NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, arg, 0);
 		break;
 	}
+	mir_free(email);
 	mir_free(arg);
 }
 
 
-HANDLE __cdecl CMsnProto::SearchBasic(const char* id)
+HANDLE __cdecl CMsnProto::SearchBasic(const PROTOCHAR* id)
 {
 	if (!msnLoggedIn) return 0;
 	
-	char* email = mir_strdup(id); 
+	TCHAR* email = mir_tstrdup(id); 
 	ForkThread(&CMsnProto::MsnSearchAckThread, email);
 
 	return email;
 }
 
-HANDLE __cdecl CMsnProto::SearchByEmail(const char* email)
+HANDLE __cdecl CMsnProto::SearchByEmail(const PROTOCHAR* email)
 {
 	return SearchBasic(email);
 }
 
 
-HANDLE __cdecl CMsnProto::SearchByName(const char* nick, const char* firstName, const char* lastName)
+HANDLE __cdecl CMsnProto::SearchByName(const PROTOCHAR* nick, const PROTOCHAR* firstName, const PROTOCHAR* lastName)
 {
 	return NULL;
 }

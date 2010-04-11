@@ -435,11 +435,23 @@ INT_PTR CallProtoServiceInt( HANDLE hContact, const char *szModule, const char *
 					case 12: return ( INT_PTR )ppi->GetCaps( wParam, (HANDLE)lParam );
 					case 13: return ( INT_PTR )ppi->GetIcon( wParam );
 					case 14: return ( INT_PTR )ppi->GetInfo( hContact, wParam );;
-					case 15: return ( INT_PTR )ppi->SearchBasic( ( char* )lParam ); 
-					case 16: return ( INT_PTR )ppi->SearchByEmail( ( char* )lParam ); 
+					case 15: 
+						if ( ppi->m_iVersion > 1 )
+							return ( INT_PTR )ppi->SearchBasic( StrConvT(( char* )lParam ));
+						else
+							return ( INT_PTR )ppi->SearchBasic(( TCHAR* )lParam ); 
+					case 16: 
+						if ( ppi->m_iVersion > 1 )
+							return ( INT_PTR )ppi->SearchByEmail( StrConvT(( char* )lParam ));
+						else
+							return ( INT_PTR )ppi->SearchByEmail(( TCHAR* )lParam ); 
 					case 17: {
 						PROTOSEARCHBYNAME* psbn = ( PROTOSEARCHBYNAME* )lParam;
-						return ( INT_PTR )ppi->SearchByName( psbn->pszNick, psbn->pszFirstName, psbn->pszLastName ); 
+						if ( ppi->m_iVersion > 1 )
+							return ( INT_PTR )ppi->SearchByName( StrConvT(( char* )psbn->pszNick ), 
+								StrConvT(( char* )psbn->pszFirstName ), StrConvT(( char* )psbn->pszLastName ));
+						else
+							return ( INT_PTR )ppi->SearchByName( psbn->pszNick, psbn->pszFirstName, psbn->pszLastName ); 
 					}
 					case 18: return ( INT_PTR )ppi->SearchAdvanced( ( HWND )lParam ); 
 					case 19: return ( INT_PTR )ppi->CreateExtendedSearchUI ( ( HWND )lParam ); 
@@ -522,6 +534,25 @@ INT_PTR CallProtoServiceInt( HANDLE hContact, const char *szModule, const char *
 							return ( INT_PTR )ppi->AuthDeny(( HANDLE )wParam, ( const TCHAR* )lParam );
 						else
 							return ( INT_PTR )ppi->AuthDeny(( HANDLE )wParam, StrConvA(( const TCHAR* )lParam )); 
+					case 108:
+						if ( ppi->m_iVersion > 1 )
+							return ( INT_PTR )ppi->SearchBasic(( const TCHAR* )lParam );
+						else
+							return ( INT_PTR )ppi->SearchBasic(StrConvA(( const TCHAR* )lParam )); 
+					case 109: {
+						PROTOSEARCHBYNAME* psbn = ( PROTOSEARCHBYNAME* )lParam;
+						if ( ppi->m_iVersion > 1 )
+							return ( INT_PTR )ppi->SearchByName( psbn->pszNick, psbn->pszFirstName, psbn->pszLastName ); 
+						else
+							return ( INT_PTR )ppi->SearchByName( StrConvA(( TCHAR* )psbn->pszNick ), 
+								StrConvT(( char* )psbn->pszFirstName ), StrConvA(( TCHAR* )psbn->pszLastName ));
+					}
+					case 110:
+						if ( ppi->m_iVersion > 1 )
+							return ( INT_PTR )ppi->SearchByEmail(( const TCHAR* )lParam );
+						else
+							return ( INT_PTR )ppi->SearchByEmail(StrConvA(( const TCHAR* )lParam )); 
+
 #endif
 	}	}	}	}
 
@@ -667,6 +698,9 @@ int LoadProtocolsModule(void)
 	InsertServiceListItem( 105, PS_FILERESUMEW );
 	InsertServiceListItem( 106, PSS_AUTHREQUESTW );
 	InsertServiceListItem( 107, PS_AUTHDENYW );
+	InsertServiceListItem( 108, PS_BASICSEARCHW );
+	InsertServiceListItem( 109, PS_SEARCHBYNAMEW );
+	InsertServiceListItem( 110, PS_SEARCHBYEMAILW );
 #endif
 
 	hAckEvent = CreateHookableEvent(ME_PROTO_ACK);

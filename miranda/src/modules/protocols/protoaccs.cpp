@@ -292,16 +292,17 @@ static INT_PTR stub13( PROTO_INTERFACE* ppi, WPARAM wParam, LPARAM )
 }
 
 static INT_PTR stub15( PROTO_INTERFACE* ppi, WPARAM, LPARAM lParam )
-{	return ( INT_PTR )ppi->SearchBasic(( char* )lParam );
+{	return ( INT_PTR )ppi->SearchBasic( StrConvT(( char* )lParam ));
 }
 
 static INT_PTR stub16( PROTO_INTERFACE* ppi, WPARAM, LPARAM lParam )
-{	return ( INT_PTR )ppi->SearchByEmail(( char* )lParam );
+{	return ( INT_PTR )ppi->SearchByEmail( StrConvT(( char* )lParam ));
 }
 
 static INT_PTR stub17( PROTO_INTERFACE* ppi, WPARAM, LPARAM lParam )
 {	PROTOSEARCHBYNAME* psbn = ( PROTOSEARCHBYNAME* )lParam;
-	return ( INT_PTR )ppi->SearchByName( psbn->pszNick, psbn->pszFirstName, psbn->pszLastName );
+	return ( INT_PTR )ppi->SearchByName( StrConvT(( char* )psbn->pszNick ), 
+		StrConvT(( char* )psbn->pszFirstName ), StrConvT(( char* )psbn->pszLastName ));
 }
 
 static INT_PTR stub18( PROTO_INTERFACE* ppi, WPARAM, LPARAM lParam )

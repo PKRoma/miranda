@@ -143,7 +143,7 @@ int CAimProto::OnModulesLoaded(WPARAM wParam, LPARAM lParam)
 HANDLE CAimProto::AddToList(int flags, PROTOSEARCHRESULT* psr)
 {
 	if (state != 1) return 0;
-	HANDLE hContact = contact_from_sn(psr->nick, true, (flags & PALF_TEMPORARY) != 0);
+	HANDLE hContact = contact_from_sn((char*)psr->nick, true, (flags & PALF_TEMPORARY) != 0);
 	return hContact; //See authrequest for serverside addition
 }
 
@@ -390,10 +390,9 @@ void __cdecl CAimProto::basic_search_ack_success(void* p)
 		}
 		else 
 		{
-			PROTOSEARCHRESULT psr;
-			ZeroMemory(&psr, sizeof(psr));
+			PROTOSEARCHRESULT psr = {0};
 			psr.cbSize = sizeof(psr);
-			psr.nick = sn;
+			psr.nick = (TCHAR*)sn;
 			sendBroadcast(NULL, ACKTYPE_SEARCH, ACKRESULT_DATA, (HANDLE) 1, (LPARAM) & psr);
 			sendBroadcast(NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, (HANDLE) 1, 0);
 		}
@@ -402,33 +401,35 @@ void __cdecl CAimProto::basic_search_ack_success(void* p)
 	mir_free(p);
 }
 
-HANDLE __cdecl CAimProto::SearchBasic(const char* szId)
+HANDLE __cdecl CAimProto::SearchBasic(const PROTOCHAR* szId)
 {
 	if (state != 1)
 		return 0;
 
 	//duplicating the parameter so that it isn't deleted before it's needed- e.g. this function ends before it's used
-	ForkThread(&CAimProto::basic_search_ack_success, mir_strdup(szId));
+	ForkThread(&CAimProto::basic_search_ack_success, mir_t2a(szId));
 	return (HANDLE)1;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // SearchByEmail - searches the contact by its e-mail
 
-HANDLE __cdecl CAimProto::SearchByEmail(const char* email)
+HANDLE __cdecl CAimProto::SearchByEmail(const PROTOCHAR* email)
 {
 	// Maximum email size should really be 320, but the char string is limited to 255.
-	if (state != 1 || email == NULL || strlen(email) >= 254)
+	if (state != 1 || email == NULL || _tcslen(email) >= 254)
 		return NULL;
 
-	aim_search_by_email(hServerConn,seqno,email);
+	char* szEmail = mir_t2a(email);
+	aim_search_by_email(hServerConn, seqno, szEmail);
+	mir_free(szEmail);
 	return (HANDLE)1;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // SearchByName - searches the contact by its first or last name, or by a nickname
 
-HANDLE __cdecl CAimProto::SearchByName(const char* nick, const char* firstName, const char* lastName)
+HANDLE __cdecl CAimProto::SearchByName(const PROTOCHAR* nick, const PROTOCHAR* firstName, const PROTOCHAR* lastName)
 {
 	return NULL;
 }

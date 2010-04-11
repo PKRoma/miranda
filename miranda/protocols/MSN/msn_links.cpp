@@ -25,15 +25,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 static HANDLE hServiceParseLink;
 
-static HANDLE GetContact(char *arg, char **email, CMsnProto *proto)
+static HANDLE GetContact(TCHAR *arg, TCHAR **email, CMsnProto *proto)
 {
-	*email = NULL;
 	do 
 	{
-		char *tok = strchr(arg, '&'); /* next token */
+		TCHAR *tok = _tcschr(arg, '&'); /* next token */
 		if (tok != NULL) *tok++ = '\0';
 
-		if (_strnicmp(arg, "contact=", 8) == 0)
+		if (_tcsnicmp(arg, _T("contact="), 8) == 0)
 		{
 			arg += 8;
 			UrlDecode(arg);
@@ -43,12 +42,13 @@ static HANDLE GetContact(char *arg, char **email, CMsnProto *proto)
 	} 
 	while(arg != NULL);
 
-	if (*email == NULL || **email == '\0')
+	if (*email == NULL || *email[0] == '\0')
 	{
 		*email = NULL;
 		return NULL;
 	}
-	return proto->MSN_HContactFromEmail(*email, *email, false, false);
+	HANDLE hContact = proto->MSN_HContactFromEmail(UTF8(*email), NULL, false, false);
+	return hContact;
 }
 
 /* 
@@ -62,15 +62,15 @@ static INT_PTR ServiceParseMsnimLink(WPARAM, LPARAM lParam)
 {
 	if (lParam == 0) return 1; /* sanity check */
 
-	char *arg = (char*)lParam;
+	TCHAR *arg = (TCHAR*)lParam;
 
 	/* skip leading prefix */
-	arg = strchr(arg, ':');
+	arg = _tcschr(arg, ':');
 	if (arg == NULL) return 1; /* parse failed */
 
 	for (++arg; *arg == '/'; ++arg) {}
 
-	arg = NEWSTR_ALLOCA(arg);
+	arg = NEWTSTR_ALLOCA(arg);
 
 	if (g_Instances.getCount() == 0) return 0;
 
@@ -87,11 +87,11 @@ static INT_PTR ServiceParseMsnimLink(WPARAM, LPARAM lParam)
 
 
 	/* add a contact to the list */
-	if(_strnicmp(arg, "add?", 4) == 0) 
+	if(_tcsnicmp(arg, _T("add?"), 4) == 0) 
 	{ 
 		arg += 4;
 
-		char *email;
+		TCHAR *email;
 		HANDLE hContact = GetContact(arg, &email, proto);
 		if (email == NULL) return 1;
 
@@ -114,12 +114,11 @@ static INT_PTR ServiceParseMsnimLink(WPARAM, LPARAM lParam)
 	}
 	/* send a message to a contact */
 	/* "voice" and "video" not yet implemented, perform same action as "chat" */
-	else if(_strnicmp(arg, "chat?", 5) == 0)
+	else if(_tcsnicmp(arg, _T("chat?"), 5) == 0)
 	{
 		arg += 5;
 
-		char *email;
-		HANDLE hContact = GetContact(arg, &email, proto);
+		HANDLE hContact = GetContact(arg, NULL, proto);
 
 		if (hContact != NULL)
 		{
@@ -127,12 +126,11 @@ static INT_PTR ServiceParseMsnimLink(WPARAM, LPARAM lParam)
 			return 0;
 		}
 	}
-	else if(_strnicmp(arg, "voice?", 6) == 0)
+	else if(_tcsnicmp(arg, _T("voice?"), 6) == 0)
 	{
 		arg += 6;
 
-		char *email;
-		HANDLE hContact = GetContact(arg, &email, proto);
+		HANDLE hContact = GetContact(arg, NULL, proto);
 
 		if (hContact != NULL)
 		{
@@ -140,12 +138,11 @@ static INT_PTR ServiceParseMsnimLink(WPARAM, LPARAM lParam)
 			return 0;
 		}
 	}
-	else if(_strnicmp(arg,"video?", 6) == 0)
+	else if(_tcsnicmp(arg, _T("video?"), 6) == 0)
 	{
 		arg += 6;
 
-		char *email;
-		HANDLE hContact = GetContact(arg, &email, proto);
+		HANDLE hContact = GetContact(arg, NULL, proto);
 
 		if (hContact != NULL)
 		{
@@ -161,7 +158,7 @@ void MsnLinks_Init(void)
 	static const char szService[] = "MSN/ParseMsnimLink";
 
 	hServiceParseLink = CreateServiceFunction(szService, ServiceParseMsnimLink);
-	AssocMgr_AddNewUrlType("msnim:", Translate("MSN Link Protocol"), hInst, IDI_MSN, szService, 0);
+	AssocMgr_AddNewUrlTypeT("msnim:", TranslateT("MSN Link Protocol"), hInst, IDI_MSN, szService, 0);
 }
 
 void MsnLinks_Destroy(void)

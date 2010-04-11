@@ -290,7 +290,7 @@ will pick this up and everything will be good.
 
 //Send a basic search request
 //wParam=0
-//lParam=(LPARAM)(const char*)szId
+//lParam=(LPARAM)(const TCHAR*)szId
 //Returns a handle for the search, or zero on failure
 //All protocols identify users uniquely by a single field. This service will
 //search by that field.
@@ -304,12 +304,21 @@ will pick this up and everything will be good.
 //type=ACKTYPE_SEARCH, result=ACKRESULT_SUCCESS, lParam=0
 //Note that the pointers in the structure are not guaranteed to be valid after
 //the ack is complete.
+
+#define PSR_UNICODE 1        // return Unicode status
+#if defined( _UNICODE )
+	#define PSR_TCHAR PSR_UNICODE
+#else
+	#define PSR_TCHAR 0
+#endif
+
+
 typedef struct {
 	int cbSize;
-	char *nick;
-	char *firstName;
-	char *lastName;
-	char *email;
+	FNAMECHAR *nick;
+	FNAMECHAR *firstName;
+	FNAMECHAR *lastName;
+	FNAMECHAR *email;
 	int flags;
 	char reserved[12];
 	//Protocols may extend this structure with extra members at will and supply
@@ -321,10 +330,11 @@ typedef struct {
 	//they put there will be retained by anyone trying to save this structure.
 } PROTOSEARCHRESULT;
 #define PS_BASICSEARCH  "/BasicSearch"
+#define PS_BASICSEARCHW "/BasicSearchW"
 
 //Search for users by e-mail address           v0.1.2.1+
 //wParam=0
-//lParam=(LPARAM)(char*)szEmail
+//lParam=(LPARAM)(TCHAR*)szEmail
 //Returns a HANDLE to the search, or NULL on failure
 //Results are returned as for PS_BASICSEARCH.
 //This function is only available if the PF1_SEARCHBYEMAIL capability is set
@@ -332,6 +342,7 @@ typedef struct {
 //PS_BASICSEARCH should have the same result (and it's best if they are the
 //same function).
 #define PS_SEARCHBYEMAIL    "/SearchByEmail"
+#define PS_SEARCHBYEMAILW   "/SearchByEmailW"
 
 //Search for users by name           v0.1.2.1+
 //wParam=0
@@ -340,11 +351,12 @@ typedef struct {
 //Results are returned as for PS_BASICSEARCH.
 //This function is only available if the PF1_SEARCHBYNAME capability is set
 typedef struct {
-	char *pszNick;
-	char *pszFirstName;
-	char *pszLastName;
+	TCHAR *pszNick;
+	TCHAR *pszFirstName;
+	TCHAR *pszLastName;
 } PROTOSEARCHBYNAME;
 #define PS_SEARCHBYNAME    "/SearchByName"
+#define PS_SEARCHBYNAMEW   "/SearchByNameW"
 
 //Create the advanced search dialog box     v0.1.2.1+
 //wParam=0
@@ -783,23 +795,29 @@ typedef struct {
 
 #ifdef _UNICODE
 
-#define PS_SETAWAYMSGT   PS_SETAWAYMSGW
-#define PSS_FILET        PSS_FILEW
-#define PSS_FILEALLOWT   PSS_FILEALLOWW
-#define PSS_FILEDENYT    PSS_FILEDENYW
-#define PSS_AUTHREQUESTT PSS_AUTHREQUESTW
-#define PS_AUTHDENYT     PS_AUTHDENYW
-#define PS_FILERESUMET   PS_FILERESUMEW
+#define PS_SETAWAYMSGT    PS_SETAWAYMSGW
+#define PSS_FILET         PSS_FILEW
+#define PSS_FILEALLOWT    PSS_FILEALLOWW
+#define PSS_FILEDENYT     PSS_FILEDENYW
+#define PSS_AUTHREQUESTT  PSS_AUTHREQUESTW
+#define PS_AUTHDENYT      PS_AUTHDENYW
+#define PS_FILERESUMET    PS_FILERESUMEW
+#define PS_BASICSEARCHT   PS_BASICSEARCHW
+#define PS_SEARCHBYNAMET  PS_SEARCHBYNAMEW
+#define PS_SEARCHBYEMAILT PS_SEARCHBYEMAILW
 
 #else
 
-#define PS_SETAWAYMSGT   PS_SETAWAYMSG
-#define PSS_FILET        PSS_FILE
-#define PSS_FILEALLOWT   PSS_FILEALLOW
-#define PSS_FILEDENYT    PSS_FILEDENY
-#define PSS_AUTHREQUESTT PSS_AUTHREQUEST
-#define PS_AUTHDENYT     PS_AUTHDENY
-#define PS_FILERESUMET   PS_FILERESUME
+#define PS_SETAWAYMSGT    PS_SETAWAYMSG
+#define PSS_FILET         PSS_FILE
+#define PSS_FILEALLOWT    PSS_FILEALLOW
+#define PSS_FILEDENYT     PSS_FILEDENY
+#define PSS_AUTHREQUESTT  PSS_AUTHREQUEST
+#define PS_AUTHDENYT      PS_AUTHDENY
+#define PS_FILERESUMET    PS_FILERESUME
+#define PS_BASICSEARCHT   PS_BASICSEARCH
+#define PS_SEARCHBYNAMET  PS_SEARCHBYNAME
+#define PS_SEARCHBYEMAILT PS_SEARCHBYEMAIL
 
 #endif
 
