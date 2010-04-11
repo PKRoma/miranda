@@ -143,7 +143,7 @@ int CAimProto::OnModulesLoaded(WPARAM wParam, LPARAM lParam)
 HANDLE CAimProto::AddToList(int flags, PROTOSEARCHRESULT* psr)
 {
 	if (state != 1) return 0;
-	char *sn = psr->flags & PSR_UNICODE ? mir_u2a((wchar_t*)psr.nick) : mir_strdup((char*)psr->nick);
+	char *sn = psr->flags & PSR_UNICODE ? mir_u2a((wchar_t*)psr->nick) : mir_strdup((char*)psr->nick);
 	HANDLE hContact = contact_from_sn(sn, true, (flags & PALF_TEMPORARY) != 0);
 	mir_free(sn);
 	return hContact; //See authrequest for serverside addition

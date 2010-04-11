@@ -835,11 +835,11 @@ void __cdecl CJabberProto::BasicSearchThread( JABBER_SEARCH_BASIC *jsb )
 
 	JABBER_SEARCH_RESULT jsr = { 0 };
 	jsr.hdr.cbSize = sizeof( JABBER_SEARCH_RESULT );
+	jsr.hdr.flags = PSR_TCHAR;
 	jsr.hdr.nick = jsb->jid;
 	jsr.hdr.firstName = _T("");
 	jsr.hdr.lastName = _T("");
 	jsr.hdr.email = jsb->jid;
-	jsr.hdr.flags = PSR_TCHAR;
 
 	_tcsncpy( jsr.jid, jsb->jid, SIZEOF( jsr.jid ));
 

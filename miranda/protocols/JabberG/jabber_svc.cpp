@@ -531,6 +531,7 @@ INT_PTR __cdecl CJabberProto::JabberServiceParseXmppURI( WPARAM wParam, LPARAM l
 		if ( !HContactFromJID( szJid )) {
 			JABBER_SEARCH_RESULT jsr = { 0 };
 			jsr.hdr.cbSize = sizeof( JABBER_SEARCH_RESULT );
+			jsr.hdr.flags = PSR_TCHAR;
 			jsr.hdr.nick = szJid;
 			_tcsncpy( jsr.jid, szJid, SIZEOF(jsr.jid) - 1 );
 

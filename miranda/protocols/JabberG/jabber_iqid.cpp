@@ -1318,14 +1318,10 @@ void CJabberProto::OnIqResultExtSearch( HXML iqNode )
 				}
 				else if ( !lstrcmp( fieldName, _T("nickname")))
 					jsr.hdr.nick = ( xmlGetText( n ) != NULL ) ? xmlGetText( n ) : _T( "" );
-				else if ( !lstrcmp( fieldName, _T("fn"))) {
-					mir_free( jsr.hdr.firstName );
+				else if ( !lstrcmp( fieldName, _T("fn")))
 					jsr.hdr.firstName = ( xmlGetText( n ) != NULL ) ? xmlGetText( n ) : _T( "" );
-				}
-				else if ( !lstrcmp( fieldName, _T("given"))) {
-					mir_free( jsr.hdr.firstName );
+				else if ( !lstrcmp( fieldName, _T("given")))
 					jsr.hdr.firstName = ( xmlGetText( n ) != NULL ) ? xmlGetText( n ) : _T( "" );
-				}
 				else if ( !lstrcmp( fieldName, _T("family")))
 					jsr.hdr.lastName = ( xmlGetText( n ) != NULL ) ? xmlGetText( n ) : _T( "" );
 				else if ( !lstrcmp( fieldName, _T("email")))

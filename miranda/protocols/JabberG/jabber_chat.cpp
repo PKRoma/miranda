@@ -1104,7 +1104,7 @@ static void sttNickListHook( CJabberProto* ppro, JABBER_LIST_ITEM* item, GCHOOK*
 	case IDM_VCARD:
 	{
 		HANDLE hContact;
-		JABBER_SEARCH_RESULT jsr;
+		JABBER_SEARCH_RESULT jsr = {0};
 		mir_sntprintf(jsr.jid, SIZEOF(jsr.jid), _T("%s/%s"), item->jid, him->resourceName );
 		jsr.hdr.cbSize = sizeof( JABBER_SEARCH_RESULT );
 		
@@ -1251,7 +1251,7 @@ static void sttNickListHook( CJabberProto* ppro, JABBER_LIST_ITEM* item, GCHOOK*
 		if (him->szRealJid && *him->szRealJid)
 		{
 			HANDLE hContact;
-			JABBER_SEARCH_RESULT jsr;
+			JABBER_SEARCH_RESULT jsr ={0};
 			jsr.hdr.cbSize = sizeof( JABBER_SEARCH_RESULT );
 			mir_sntprintf(jsr.jid, SIZEOF(jsr.jid), _T("%s"), him->szRealJid);
 			if (TCHAR *tmp = _tcschr(jsr.jid, _T('/'))) *tmp = 0;

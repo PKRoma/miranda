@@ -271,7 +271,7 @@ void CJabberProto::SearchReturnResults( HANDLE  id, void * pvUsersInfo, U_TCHAR_
 			   _sntprintf(buff,SIZEOF(buff),_T("%s ( %s )"),nick, Results.jsr.jid);
 		   else
 				_tcsncpy(buff, nick, SIZEOF(buff));
-		   Results.jsr.hdr.nick=nick ? buff : NULL;
+		   Results.jsr.hdr.nick = nick ? buff : NULL;
 		   Results.jsr.hdr.flags = PSR_TCHAR;
 	   }
 	   JSendBroadcast( NULL, ACKTYPE_SEARCH, ACKRESULT_SEARCHRESULT, id, (LPARAM) &Results );

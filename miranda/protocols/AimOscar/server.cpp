@@ -1760,8 +1760,7 @@ void CAimProto::snac_email_search_results(SNAC &snac)//family 0x000A
 {
 	if (snac.subcmp(0x0003)) // Found some buddies
 	{
-		PROTOSEARCHRESULT psr;
-		ZeroMemory(&psr, sizeof(psr));
+		PROTOSEARCHRESULT psr = {0};
 		psr.cbSize = sizeof(psr);
 
 		unsigned short offset=0;
@@ -1772,6 +1771,7 @@ void CAimProto::snac_email_search_results(SNAC &snac)//family 0x000A
 			psr.nick = (TCHAR*)tlv.dup();
 			offset+=tlv.len();
 			sendBroadcast(NULL, ACKTYPE_SEARCH, ACKRESULT_DATA, (HANDLE) 1, (LPARAM) & psr);
+			mir_free(psr.nick);
 		}
 		sendBroadcast(NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, (HANDLE) 1, 0);
 	}

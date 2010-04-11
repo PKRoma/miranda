@@ -57,11 +57,9 @@ static INT_PTR ServiceParseAimLink(WPARAM /*wParam*/,LPARAM lParam)
 		open chatroom: aim:gochat?roomname=ROOM&exchange=NUM
 	*/
 	/* add a contact to the list */
-	if (!_strnicmp(arg,"addbuddy?",9)) 
+	if (!_strnicmp(arg, "addbuddy?",9)) 
 	{
 		char *tok,*tok2,*sn=NULL,*group=NULL;
-		ADDCONTACTSTRUCT acs;
-		PROTOSEARCHRESULT psr;
 		
 		for (tok=arg+8;tok!=NULL;tok=tok2) 
 		{
@@ -75,12 +73,13 @@ static INT_PTR ServiceParseAimLink(WPARAM /*wParam*/,LPARAM lParam)
 		if (sn==NULL) return 1; /* parse failed */
 		if (proto->contact_from_sn(sn)==NULL) /* does not yet check if sn is current user */
 		{
-			acs.handleType=HANDLE_SEARCHRESULT;
-			acs.szProto=proto->m_szModuleName;
-			acs.psr=&psr;
-			ZeroMemory(&psr,sizeof(PROTOSEARCHRESULT));
-			psr.cbSize=sizeof(PROTOSEARCHRESULT);
-			psr.nick=(TCHAR*)sn;
+			ADDCONTACTSTRUCT acs = {0};
+			PROTOSEARCHRESULT psr = {0};
+			acs.handleType = HANDLE_SEARCHRESULT;
+			acs.szProto = proto->m_szModuleName;
+			acs.psr = &psr;
+			psr.cbSize = sizeof(PROTOSEARCHRESULT);
+			psr.nick = (TCHAR*)sn;
 			CallService(MS_ADDCONTACT_SHOW,(WPARAM)NULL,(LPARAM)&acs);
 		}
 		return 0;

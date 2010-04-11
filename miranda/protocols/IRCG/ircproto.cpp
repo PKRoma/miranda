@@ -360,7 +360,8 @@ HANDLE __cdecl CIrcProto::AddToList( int, PROTOSEARCHRESULT* psr )
 	if ( m_iDesiredStatus == ID_STATUS_OFFLINE || m_iDesiredStatus == ID_STATUS_CONNECTING )
 		return 0;
 
-	CONTACT user = { psr->nick, NULL, NULL, true, false, false };
+	TCHAR* nick = psr->flags & PSR_UNICODE ? mir_u2t((wchar_t*)psr->nick) : mir_a2t((char*)psr->nick);
+	CONTACT user = { nick, NULL, NULL, true, false, false };
 	HANDLE hContact = CList_AddContact( &user, true, false );
 
 	if ( hContact ) {
@@ -386,6 +387,7 @@ HANDLE __cdecl CIrcProto::AddToList( int, PROTOSEARCHRESULT* psr )
 			PostIrcMessage( _T("/PRIVMSG %s \001VERSION\001"), user.name);
 	}
 
+	mir_free(nick);
 	return hContact;
 }
 

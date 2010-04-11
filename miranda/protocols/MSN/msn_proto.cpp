@@ -478,9 +478,9 @@ void __cdecl CMsnProto::MsnSearchAckThread(void* arg)
 		{
 			PROTOSEARCHRESULT isr = {0};
 			isr.cbSize = sizeof(isr);
+			isr.flags = PSR_TCHAR;
 			isr.nick  = (TCHAR*)emailT;
 			isr.email = (TCHAR*)emailT;
-			isr.flags = PSR_TCHAR;
 
 			SendBroadcast(NULL, ACKTYPE_SEARCH, ACKRESULT_DATA, arg, (LPARAM)&isr);
 			SendBroadcast(NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, arg, 0);
