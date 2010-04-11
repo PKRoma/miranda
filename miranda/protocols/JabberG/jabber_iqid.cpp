@@ -1317,15 +1317,15 @@ void CJabberProto::OnIqResultExtSearch( HXML iqNode )
 					Log( "Result jid = " TCHAR_STR_PARAM, jsr.jid );
 				}
 				else if ( !lstrcmp( fieldName, _T("nickname")))
-					jsr.hdr.nick = ( xmlGetText( n ) != NULL ) ? xmlGetText( n ) : _T( "" );
+					jsr.hdr.nick = ( xmlGetText( n ) != NULL ) ? ( TCHAR* )xmlGetText( n ) : _T( "" );
 				else if ( !lstrcmp( fieldName, _T("fn")))
-					jsr.hdr.firstName = ( xmlGetText( n ) != NULL ) ? xmlGetText( n ) : _T( "" );
+					jsr.hdr.firstName = ( xmlGetText( n ) != NULL ) ? ( TCHAR* )xmlGetText( n ) : _T( "" );
 				else if ( !lstrcmp( fieldName, _T("given")))
-					jsr.hdr.firstName = ( xmlGetText( n ) != NULL ) ? xmlGetText( n ) : _T( "" );
+					jsr.hdr.firstName = ( xmlGetText( n ) != NULL ) ? ( TCHAR* )xmlGetText( n ) : _T( "" );
 				else if ( !lstrcmp( fieldName, _T("family")))
-					jsr.hdr.lastName = ( xmlGetText( n ) != NULL ) ? xmlGetText( n ) : _T( "" );
+					jsr.hdr.lastName = ( xmlGetText( n ) != NULL ) ? ( TCHAR* )xmlGetText( n ) : _T( "" );
 				else if ( !lstrcmp( fieldName, _T("email")))
-					jsr.hdr.email = ( xmlGetText( n ) != NULL ) ? xmlGetText( n ) : _T( "" );
+					jsr.hdr.email = ( xmlGetText( n ) != NULL ) ? ( TCHAR* )xmlGetText( n ) : _T( "" );
 			}
 
 			JSendBroadcast( NULL, ACKTYPE_SEARCH, ACKRESULT_DATA, ( HANDLE ) id, ( LPARAM )&jsr );
