@@ -416,7 +416,8 @@ HANDLE CJabberProto::AddToList( int flags, PROTOSEARCHRESULT* psr )
 		return NULL;
 
 	JABBER_SEARCH_RESULT* jsr = ( JABBER_SEARCH_RESULT* )psr;
-	return AddToListByJID( jsr->jid, flags );
+	TCHAR *jid = jsr->hdr.id ? jid = jsr->hdr.id : jsr->jid;
+	return AddToListByJID( jid, flags );
 }
 
 HANDLE __cdecl CJabberProto::AddToListByEvent( int flags, int /*iContact*/, HANDLE hDbEvent )
@@ -839,7 +840,7 @@ void __cdecl CJabberProto::BasicSearchThread( JABBER_SEARCH_BASIC *jsb )
 	jsr.hdr.nick = jsb->jid;
 	jsr.hdr.firstName = _T("");
 	jsr.hdr.lastName = _T("");
-	jsr.hdr.email = jsb->jid;
+	jsr.hdr.id = jsb->jid;
 
 	_tcsncpy( jsr.jid, jsb->jid, SIZEOF( jsr.jid ));
 

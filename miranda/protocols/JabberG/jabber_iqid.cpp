@@ -1243,6 +1243,7 @@ void CJabberProto::OnIqResultSetSearch( HXML iqNode )
 				if (( jid=xmlGetAttrValue( itemNode, _T("jid"))) != NULL ) {
 					_tcsncpy( jsr.jid, jid, SIZEOF( jsr.jid ));
 					jsr.jid[ SIZEOF( jsr.jid )-1] = '\0';
+					jsr.hdr.id  = (TCHAR*)jid;
 					Log( "Result jid = " TCHAR_STR_PARAM, jid );
 					if (( n=xmlGetChild( itemNode , "nick" ))!=NULL && xmlGetText( n )!=NULL )
 						jsr.hdr.nick = ( TCHAR* )xmlGetText( n );

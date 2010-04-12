@@ -533,6 +533,7 @@ INT_PTR __cdecl CJabberProto::JabberServiceParseXmppURI( WPARAM wParam, LPARAM l
 			jsr.hdr.cbSize = sizeof( JABBER_SEARCH_RESULT );
 			jsr.hdr.flags = PSR_TCHAR;
 			jsr.hdr.nick = szJid;
+			jsr.hdr.id = szJid;
 			_tcsncpy( jsr.jid, szJid, SIZEOF(jsr.jid) - 1 );
 
 			ADDCONTACTSTRUCT acs;
