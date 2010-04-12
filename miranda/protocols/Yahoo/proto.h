@@ -68,9 +68,9 @@ struct CYahooProto : public PROTO_INTERFACE
 	virtual	HICON  __cdecl GetIcon( int iconIndex );
 	virtual	int    __cdecl GetInfo( HANDLE hContact, int infoType );
 
-	virtual	HANDLE __cdecl SearchBasic( const TCHAR* id );
-	virtual	HANDLE __cdecl SearchByEmail( const TCHAR* email );
-	virtual	HANDLE __cdecl SearchByName( const TCHAR* nick, const TCHAR* firstName, const TCHAR* lastName );
+	virtual	HANDLE __cdecl SearchBasic( const PROTOCHAR* id );
+	virtual	HANDLE __cdecl SearchByEmail( const PROTOCHAR* email );
+	virtual	HANDLE __cdecl SearchByName( const PROTOCHAR* nick, const PROTOCHAR* firstName, const PROTOCHAR* lastName );
 	virtual	HWND   __cdecl SearchAdvanced( HWND owner );
 	virtual	HWND   __cdecl CreateExtendedSearchUI( HWND owner );
 
@@ -90,7 +90,7 @@ struct CYahooProto : public PROTO_INTERFACE
 	virtual	HANDLE __cdecl GetAwayMsg( HANDLE hContact );
 	virtual	int    __cdecl RecvAwayMsg( HANDLE hContact, int mode, PROTORECVEVENT* evt );
 	virtual	int    __cdecl SendAwayMsg( HANDLE hContact, HANDLE hProcess, const char* msg );
-	virtual	int    __cdecl SetAwayMsg( int m_iStatus, const TCHAR* msg );
+	virtual	int    __cdecl SetAwayMsg( int m_iStatus, const PROTOCHAR* msg );
 	virtual INT_PTR __cdecl GetMyAwayMsg(WPARAM wParam, LPARAM lParam);
 	
 	virtual	int    __cdecl UserIsTyping( HANDLE hContact, int type );

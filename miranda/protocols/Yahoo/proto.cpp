@@ -30,6 +30,7 @@
 CYahooProto::CYahooProto( const char* aProtoName, const TCHAR* aUserName ) :
 	m_bLoggedIn( FALSE ), poll_loop( 0 ) 
 {
+	m_iVersion = 2;
 	m_tszUserName = mir_tstrdup( aUserName );
 	m_szModuleName = mir_strdup( aProtoName );
 
@@ -60,7 +61,8 @@ CYahooProto::~CYahooProto()
 	
 	mir_free( m_szModuleName );
 	mir_free( m_tszUserName );
-	mir_free( m_startMsg );
+
+	FREE(m_startMsg);
 	FREE(m_pw_token); 
 	
 	Netlib_CloseHandle( m_hNetlibUser );
@@ -123,22 +125,26 @@ HANDLE CYahooProto::AddToList( int flags, PROTOSEARCHRESULT* psr )
 		return 0;
 	}
 
-	HANDLE hContact = getbuddyH(psr->nick);
+	char *id = psr->flags & PSR_UNICODE ? mir_u2a((wchar_t*)psr->nick) : mir_strdup((char*)psr->nick);
+	HANDLE hContact = getbuddyH(id);
 	if (hContact != NULL) {
 		if (DBGetContactSettingByte(hContact, "CList", "NotOnList", 0)) {
-			DebugLog("[YahooAddToList] Temporary Buddy:%s already on our buddy list", psr->nick);
+			DebugLog("[YahooAddToList] Temporary Buddy:%s already on our buddy list", id);
 			//return 0;
 		} else {
-			DebugLog("[YahooAddToList] Buddy:%s already on our buddy list", psr->nick);
+			DebugLog("[YahooAddToList] Buddy:%s already on our buddy list", id);
+			mir_free(id);
 			return 0;
 		}
 	} else if (flags & PALF_TEMPORARY ) { /* not on our list */
-		DebugLog("[YahooAddToList] Adding Temporary Buddy:%s ", psr->nick);
+		DebugLog("[YahooAddToList] Adding Temporary Buddy:%s ", id);
 	}
 
 	int protocol = psr->reserved[0];
-	DebugLog("Adding buddy:%s", psr->nick);
-	return add_buddy(psr->nick, psr->nick, protocol, flags);
+	DebugLog("Adding buddy:%s", id);
+	hContact = add_buddy(id, id, protocol, flags);
+	mir_free(id);
+	return hContact;
 }
 
 HANDLE __cdecl CYahooProto::AddToListByEvent( int flags, int /*iContact*/, HANDLE hDbEvent )
@@ -432,7 +438,7 @@ int __cdecl CYahooProto::GetInfo( HANDLE hContact, int /*infoType*/ )
 ////////////////////////////////////////////////////////////////////////////////////////
 // SearchByEmail - searches the contact by its e-mail
 
-HANDLE __cdecl CYahooProto::SearchByEmail( const TCHAR* email )
+HANDLE __cdecl CYahooProto::SearchByEmail( const PROTOCHAR* email )
 {
 	return 0;
 }
@@ -440,7 +446,7 @@ HANDLE __cdecl CYahooProto::SearchByEmail( const TCHAR* email )
 ////////////////////////////////////////////////////////////////////////////////////////
 // SearchByName - searches the contact by its first or last name, or by a nickname
 
-HANDLE __cdecl CYahooProto::SearchByName( const TCHAR* nick, const TCHAR* firstName, const TCHAR* lastName )
+HANDLE __cdecl CYahooProto::SearchByName( const PROTOCHAR* nick, const PROTOCHAR* firstName, const PROTOCHAR* lastName )
 {
 	return 0;
 }
@@ -594,7 +600,7 @@ int __cdecl CYahooProto::SetStatus( int iNewStatus )
 	}
 	else {
 		/* clear out our message just in case, STUPID AA! */
-		mir_free(m_startMsg);
+		FREE(m_startMsg);
 
 		/* now tell miranda that we are Online, don't tell Yahoo server yet though! */
 		BroadcastStatus(iNewStatus);
@@ -701,26 +707,23 @@ int __cdecl CYahooProto::SendAwayMsg( HANDLE /*hContact*/, HANDLE /*hProcess*/, 
 ////////////////////////////////////////////////////////////////////////////////////////
 // SetAwayMsg - sets the away status message
 
-int __cdecl CYahooProto::SetAwayMsg( int status, const TCHAR* msg )
+int __cdecl CYahooProto::SetAwayMsg( int status, const PROTOCHAR* msg )
 {
-	if (msg != NULL) 
-		if (*msg == '\0')
-			msg = NULL;
+	char *c = msg && msg[0] ? mir_utf8encodeT(msg) : NULL;
 		
-	DebugLog("[YahooSetAwayMessage] Status: %s, Msg: %S",(char *) CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, status, 0), msg);
+	DebugLog("[YahooSetAwayMessage] Status: %s, Msg: %s",(char *) CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, status, 0), (char*) c);
 	
     if(!m_bLoggedIn){
 		if (m_iStatus == ID_STATUS_OFFLINE) {
 			DebugLog("[YahooSetAwayMessage] WARNING: WE ARE OFFLINE!"); 
+			mir_free(c);
 			return 1;
 		} else {
-			if (m_startMsg) mir_free(m_startMsg);
-			
-			if (msg != NULL) 
-				m_startMsg = mir_t2a(msg);
-			else
-				m_startMsg = NULL;
-			
+			if (m_startMsg) free(m_startMsg);
+
+			m_startMsg = c ? strdup(c) : NULL;
+
+			mir_free(c);
 			return 0;
 		}
 	}              
@@ -728,21 +731,22 @@ int __cdecl CYahooProto::SetAwayMsg( int status, const TCHAR* msg )
 	/* need to tell ALL plugins that we are changing status */
 	BroadcastStatus(status);
 	
-	if (m_startMsg) mir_free(m_startMsg);
+	if (m_startMsg) free(m_startMsg);
 	
 	/* now decide what we tell the server */
-	if (msg != 0) {
-		m_startMsg = mir_t2a(msg);
+	if (c != 0) {
+		m_startMsg = strdup(c);
 		if(status == ID_STATUS_ONLINE) {
-			set_status(YAHOO_CUSTOM_STATUS, m_startMsg, 0);
+			set_status(YAHOO_CUSTOM_STATUS, c, 0);
 		} else if(status != ID_STATUS_INVISIBLE){ 
-			set_status(YAHOO_CUSTOM_STATUS, m_startMsg, 1);
+			set_status(YAHOO_CUSTOM_STATUS, c, 1);
 		}
     } else {
 		set_status(status, NULL, 0);
 		m_startMsg = NULL;
 	}
 	
+	mir_free(c);
 	return 0;
 }
 
