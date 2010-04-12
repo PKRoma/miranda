@@ -274,8 +274,6 @@ void CContactCache::updateStats(int iType, size_t value)
 			m_stats->iSentBytes += (unsigned int)value;
 			break;
 	}
-	//_DebugTraceW(_T("%s stats dump: %d (%d bytes) in, %d (%d bytes) out, total count: %d"), m_szNick, m_stats->iReceived, m_stats->iReceivedBytes,
-	//			 m_stats->iSent, m_stats->iSentBytes, m_stats->messageCount);
 }
 
 void CContactCache::allocStats()
@@ -429,6 +427,10 @@ void CContactCache::inputHistoryEvent(WPARAM wParam)
 /**
  * allocate the input history (on-demand, when it is requested by
  * opening a message window for this contact).
+ *
+ * note: it allocs historysize + 1 elements, because the + 1 is used
+ * for the temporary buffer which saves the current input line when
+ * using input history scrolling.
  */
 void CContactCache::allocHistory()
 {

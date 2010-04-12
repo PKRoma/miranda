@@ -491,13 +491,16 @@ BOOL DoSoundsFlashPopupTrayStuff(SESSION_INFO* si, GCEVENT * gce, BOOL bHighligh
 	FLASH_PARAMS* params;
 	struct TWindowData *dat = 0;
 
-	if (!gce || si == NULL || gce->bIsMe || si->iType == GCW_SERVER)
+	if (gce == 0 || si == 0 || gce->bIsMe || si->iType == GCW_SERVER)
 		return FALSE;
-
 
 	params = (FLASH_PARAMS*)calloc(1, sizeof(FLASH_PARAMS));
 	params->hContact = si->hContact;
 	params->bInactive = TRUE;
+	if(si->hWnd && si->dat) {
+		if((si->hWnd == si->dat->pContainer->hwndActive) && GetForegroundWindow() == si->dat->pContainer->hwnd)
+			params->bInactive = FALSE;
+	}
 	params->bActiveTab = params->bMustFlash = params->bMustAutoswitch = FALSE;
 
 	params->iEvent = gce->pDest->iType;

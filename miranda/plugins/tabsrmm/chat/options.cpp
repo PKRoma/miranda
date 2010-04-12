@@ -244,7 +244,7 @@ void LoadMsgDlgFont(int section, int i, LOGFONT *lf, COLORREF* colour, char *szM
 		lf->lfOrientation = 0;
 		wsprintfA(str, "Font%dSty", i);
 		style = M->GetByte(szMod, str, fol[j].defStyle);
-		if(i == MSGFONTID_MESSAGEAREA && section == FONTSECTION_IM) {
+		if(i == MSGFONTID_MESSAGEAREA && section == FONTSECTION_IM && M->GetByte(0, SRMSGMOD_T, "inputFontFix", 1) == 1) {
 			lf->lfWeight = FW_NORMAL;
 			lf->lfItalic = 0;
 			lf->lfUnderline = 0;

@@ -1,7 +1,8 @@
 				tabbed  SRMM plugin for Miranda IM 0.9.0
 				----------------------------------------
 
-Online resources at: http://miranda.or.at
+Online resources at: http://wiki.miranda.or.at, http://blog.miranda.or.at and
+http://forum.miranda.or.at
 
 ----------------------------------------------------------
 

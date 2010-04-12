@@ -19,13 +19,6 @@ later are the only supported platforms.
 The x64 Version will require a 64bit Windows XP, Vista or Windows 7 AND can
 only work with a 64bit Miranda installation.
 
-Users of Windows 98 or ME may try the ANSI build, but this is a totally
-unsupported configuration. There are many known issues and a lot of features
-are not available on Windows 98 or ME.
-
-Windows 95 and Windows NT4 are not supported.
-
-
 HOW TO INSTALL
 --------------
 

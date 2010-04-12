@@ -454,6 +454,7 @@
 #define IDC_BKGUSEWINCOLORS2            1392
 #define IDC_HELPTEXT                    1392
 #define IDC_TITLEFORMAT                 1393
+#define IDC_O_HELP_TITLEFORMAT			2064
 #define IDC_LIGHTSHADOW                 1393
 #define IDC_EDIT1                       1394
 #define IDC_THEME                       1394

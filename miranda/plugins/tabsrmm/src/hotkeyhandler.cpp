@@ -675,7 +675,7 @@ LONG_PTR CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 					if((*g_jobs)->fSuccess || (*g_jobs)->fFailed) {
 						//_DebugTraceA("Removing successful job %s", (*g_jobs)->szId);
 						delete *g_jobs;
-						sendLaterJobList.erase(g_jobs);
+						g_jobs = sendLaterJobList.erase(g_jobs);
 					}
 					else {
 						//_DebugTraceA("Sending job: %s", (*g_jobs)->szId);

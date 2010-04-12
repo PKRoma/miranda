@@ -586,7 +586,7 @@ static int PopupUpdateT(HANDLE hContact, HANDLE hEvent)
 
 	if (hEvent) {
 		if (pdata->pluginOptions->bShowHeaders) {
-			mir_sntprintf(pdata->szHeader, safe_sizeof(pdata->szHeader), _T("[b]%s %d[/b]\n"),
+			mir_sntprintf(pdata->szHeader, safe_sizeof(pdata->szHeader), _T("%s %d\n"),
 						  CTranslator::get(CTranslator::GEN_POPUPS_NEW), pdata->nrMerged + 1);
 			pdata->szHeader[255] = 0;
 		}
@@ -601,7 +601,7 @@ static int PopupUpdateT(HANDLE hContact, HANDLE hEvent)
 		formatTime[0] = 0;
 		_tcsncpy(formatTime, _T("%Y.%m.%d %H:%M"), MAX_DATASIZE);
 		_tcsftime(timestamp, MAX_DATASIZE, formatTime, _localtime32((__time32_t *)&dbe.timestamp));
-		mir_sntprintf(pdata->eventData[pdata->nrMerged].szText, MAX_SECONDLINE, _T("\n-----\n%s\n"), timestamp);
+		mir_sntprintf(pdata->eventData[pdata->nrMerged].szText, MAX_SECONDLINE, _T("\n\n%s\n"), timestamp);
 
 		szPreview = GetPreviewT(dbe.eventType, &dbe);
 		if (szPreview) {

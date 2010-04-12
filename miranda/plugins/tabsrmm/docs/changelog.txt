@@ -31,6 +31,17 @@ are currently no downloads for it, you'll have to compile it from source.
 			Detailed change log
 			===================
 
+Version 3.0.0.22 - 2010/04/01
+
+	* Alpha snapshot released to my googlecode site.
+	* many bug fixes and small improvements, new skin selection dialog
+	* still INCOMPLETE and not all features are fully working.
+	
+Version 3.0.0.8  - 3.0.0.21
+
+	* again, many, many changes and new things. Refer to the Wiki page 
+	  (http://miranda.or.at/TabSrmm:Development3_0_KnownIssues) for more information.
+
 Version 3.0.0.4  - 3.0.0.8
 
 	* Ongoing rewrite of the plugin. New infopanel, MUC highlighting, aero effects
