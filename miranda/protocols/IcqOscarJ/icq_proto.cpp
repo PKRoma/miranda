@@ -904,30 +904,25 @@ int __cdecl CIcqProto::GetInfo(HANDLE hContact, int infoType)
 
 void CIcqProto::CheekySearchThread( void* )
 {
+	char buf[30];
 	ICQSEARCHRESULT isr = {0};
-
 	isr.hdr.cbSize = sizeof(isr);
-  isr.hdr.flags = PSR_TCHAR;
 
 	if ( cheekySearchUin )
 	{
-		isr.hdr.nick = null_strdup(_T(""));
-		isr.uid = NULL;
+		_itoa(cheekySearchUin, buf, 10);
+		isr.hdr.id = (TCHAR*)buf;
 	}
 	else
 	{
-		isr.hdr.nick = ansi_to_tchar(cheekySearchUid);
+		isr.hdr.id = (TCHAR*)cheekySearchUid;
 		isr.uid = cheekySearchUid;
 	}
-	isr.hdr.firstName = _T("");
-	isr.hdr.lastName = _T("");
-	isr.hdr.email = _T("");
 	isr.uin = cheekySearchUin;
 
 	BroadcastAck(NULL, ACKTYPE_SEARCH, ACKRESULT_DATA, (HANDLE)cheekySearchId, (LPARAM)&isr);
 	BroadcastAck(NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, (HANDLE)cheekySearchId, 0);
 	cheekySearchId = -1;
-  SAFE_FREE(&isr.hdr.nick);
 }
 
 HANDLE __cdecl CIcqProto::SearchBasic( const PROTOCHAR *pszSearch )
