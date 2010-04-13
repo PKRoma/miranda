@@ -366,7 +366,7 @@ static INT_PTR AssertInsideScreen(WPARAM wParam, LPARAM lParam)
 	if (rc->left >= rcScreen.right)
 		OffsetRect(rc, rcScreen.right - rc->right, 0);
 	else if (rc->right <= rcScreen.left)
-		OffsetRect(rc, rc->left - rc->left, 0);
+		OffsetRect(rc, rcScreen.left - rc->left, 0);
 
 	return 1;
 }
