@@ -438,10 +438,19 @@ HANDLE CIcqProto::AddToList( int flags, PROTOSEARCHRESULT* psr )
 		ICQSEARCHRESULT *isr = (ICQSEARCHRESULT*)psr;
 		if (isr->hdr.cbSize == sizeof(ICQSEARCHRESULT))
 		{
-			if (!isr->uin)
-				return AddToListByUID(isr->uid, flags);
-			else
+			if (isr->uin)
 				return AddToListByUIN(isr->uin, flags);
+			else
+      { // aim contact
+        char szUid[MAX_PATH];
+
+        if (isr->hdr.flags & PSR_UNICODE)
+          unicode_to_ansi_static((WCHAR*)isr->hdr.id, szUid, MAX_PATH);
+        else
+          null_strcpy(szUid, (char*)isr->hdr.id, MAX_PATH);
+
+				return AddToListByUID(szUid, flags);
+      }
 		}
 	}
 
@@ -904,19 +913,18 @@ int __cdecl CIcqProto::GetInfo(HANDLE hContact, int infoType)
 
 void CIcqProto::CheekySearchThread( void* )
 {
-	char buf[30];
+	char szUin[UINMAXLEN];
 	ICQSEARCHRESULT isr = {0};
 	isr.hdr.cbSize = sizeof(isr);
 
-	if ( cheekySearchUin )
+	if (cheekySearchUin)
 	{
-		_itoa(cheekySearchUin, buf, 10);
-		isr.hdr.id = (TCHAR*)buf;
+		_itoa(cheekySearchUin, szUin, 10);
+		isr.hdr.id = (FNAMECHAR*)szUin;
 	}
 	else
 	{
-		isr.hdr.id = (TCHAR*)cheekySearchUid;
-		isr.uid = cheekySearchUid;
+		isr.hdr.id = (FNAMECHAR*)cheekySearchUid;
 	}
 	isr.uin = cheekySearchUin;
 
@@ -924,6 +932,7 @@ void CIcqProto::CheekySearchThread( void* )
 	BroadcastAck(NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, (HANDLE)cheekySearchId, 0);
 	cheekySearchId = -1;
 }
+
 
 HANDLE __cdecl CIcqProto::SearchBasic( const PROTOCHAR *pszSearch )
 {
@@ -951,6 +960,9 @@ HANDLE __cdecl CIcqProto::SearchBasic( const PROTOCHAR *pszSearch )
 		{ // we remove spaces and slashes
 			if ((pszSearch[i]!=0x20) && (pszSearch[i]!='-'))
 			{
+#ifdef _UNICODE
+				if (pszSearch[i] >= 0x80) continue;
+#endif
 				pszUIN[j] = pszSearch[i];
 				j++;
 			}
@@ -1076,7 +1088,7 @@ HWND __cdecl CIcqProto::SearchAdvanced( HWND hwndDlg )
 
 int __cdecl CIcqProto::RecvContacts( HANDLE hContact, PROTORECVEVENT* pre )
 {
-	ICQSEARCHRESULT** isrList = (ICQSEARCHRESULT**)pre->szMessage;
+	ICQSEARCHRESULT **isrList = (ICQSEARCHRESULT**)pre->szMessage;
 	int i;
 	DWORD cbBlob = 0;
 	DWORD flags = 0;
@@ -1087,19 +1099,21 @@ int __cdecl CIcqProto::RecvContacts( HANDLE hContact, PROTORECVEVENT* pre )
 	for (i = 0; i < pre->lParam; i++)
 	{
 		if (pre->flags & PREF_UNICODE)
-			cbBlob += get_utf8_size(isrList[i]->hdr.nick) + 2;
+			cbBlob += get_utf8_size((WCHAR*)isrList[i]->hdr.nick) + 2;
 		else
 			cbBlob += strlennull((char*)isrList[i]->hdr.nick) + 2; // both trailing zeros
 		if (isrList[i]->uin)
 			cbBlob += getUINLen(isrList[i]->uin);
-		else
-			cbBlob += strlennull(isrList[i]->uid);
+		else if (pre->flags & PREF_UNICODE)
+      cbBlob += strlennull((WCHAR*)isrList[i]->hdr.id);
+    else
+			cbBlob += strlennull((char*)isrList[i]->hdr.id);
 	}
 	PBYTE pBlob = (PBYTE)_alloca(cbBlob), pCurBlob;
 	for (i = 0, pCurBlob = pBlob; i < pre->lParam; i++)
 	{
     if (pre->flags & PREF_UNICODE)
-      make_utf8_string_static(isrList[i]->hdr.nick, (char*)pCurBlob, cbBlob - (pCurBlob - pBlob));
+      make_utf8_string_static((WCHAR*)isrList[i]->hdr.nick, (char*)pCurBlob, cbBlob - (pCurBlob - pBlob));
     else
 			strcpy((char*)pCurBlob, (char*)isrList[i]->hdr.nick);
 		pCurBlob += strlennull((char*)pCurBlob) + 1;
@@ -1109,8 +1123,13 @@ int __cdecl CIcqProto::RecvContacts( HANDLE hContact, PROTORECVEVENT* pre )
 			_itoa(isrList[i]->uin, szUin, 10);
 			strcpy((char*)pCurBlob, szUin);
 		}
-		else // aim contact
-			strcpy((char*)pCurBlob, isrList[i]->uid);
+		else
+    { // aim contact
+      if (pre->flags & PREF_UNICODE)
+        unicode_to_ansi_static((WCHAR*)isrList[i]->hdr.id, (char*)pCurBlob, cbBlob - (pCurBlob - pBlob));
+      else
+				strcpy((char*)pCurBlob, (char*)isrList[i]->hdr.id);
+    }
 		pCurBlob += strlennull((char*)pCurBlob) + 1;
 	}
 

@@ -1092,6 +1092,10 @@ void CIcqProto::handleRecvServMsgContacts(BYTE *buf, WORD wLen, DWORD dwUin, cha
 					nLen -= 2;
 					if (nLen >= wUidLen)
 					{
+						char *szUid = (char*)SAFE_MALLOC(wUidLen + 1);
+						unpackString(&pBuffer, szUid, wUidLen);
+						nLen -= wUidLen;
+
 						if (iContact >= nContacts)
 						{ // the list is too small, resize it
 							nContacts += 0x10;
@@ -1101,24 +1105,22 @@ void CIcqProto::handleRecvServMsgContacts(BYTE *buf, WORD wLen, DWORD dwUin, cha
 						contacts[iContact]->hdr.cbSize = sizeof(ICQSEARCHRESULT);
             contacts[iContact]->hdr.flags = PSR_TCHAR;
 						contacts[iContact]->hdr.nick = null_strdup(_T(""));
-						contacts[iContact]->uid = (char*)SAFE_MALLOC(wUidLen + 1);
-						unpackString(&pBuffer, contacts[iContact]->uid, wUidLen);
-						nLen -= wUidLen;
+						contacts[iContact]->hdr.id = ansi_to_tchar(szUid);
 
-						if (IsStringUIN(contacts[iContact]->uid))
+						if (IsStringUIN(szUid))
 						{ // icq contact
-							contacts[iContact]->uin = atoi(contacts[iContact]->uid);
+							contacts[iContact]->uin = atoi(szUid);
 							if (contacts[iContact]->uin == 0)
 								valid = 0;
-
-							SAFE_FREE(&contacts[iContact]->uid);
 						}
 						else
 						{ // aim contact
-							if (!strlennull(contacts[iContact]->uid))
+							if (!strlennull(szUid))
 								valid = 0;
 						}
 						iContact++;
+
+            SAFE_FREE(&szUid);
 					}
 					else 
 					{
@@ -1135,7 +1137,7 @@ void CIcqProto::handleRecvServMsgContacts(BYTE *buf, WORD wLen, DWORD dwUin, cha
 				disposeChain(&chain);
 				for (int i = 0; i < iContact; i++)
 				{
-					SAFE_FREE(&contacts[i]->uid);
+					SAFE_FREE(&contacts[i]->hdr.id);
 					SAFE_FREE(&contacts[i]->hdr.nick);
 					SAFE_FREE((void**)&contacts[i]);
 				}
@@ -1227,7 +1229,7 @@ void CIcqProto::handleRecvServMsgContacts(BYTE *buf, WORD wLen, DWORD dwUin, cha
 
 			for (int i = 0; i < iContact; i++)
 			{
-				SAFE_FREE(&contacts[i]->uid);
+				SAFE_FREE(&contacts[i]->hdr.id);
 				SAFE_FREE(&contacts[i]->hdr.nick);
 				SAFE_FREE((void**)&contacts[i]);
 			}
@@ -2009,10 +2011,10 @@ void CIcqProto::handleMessageTypes(DWORD dwUin, char *szUID, DWORD dwTimestamp, 
 				}
 				else
 				{ // aim contact
-					isrList[i]->uid = pszMsgField[1 + i * 2];
-					if (!strlennull(isrList[i]->uid))
+					if (!strlennull(pszMsgField[1 + i * 2]))
 						valid = 0;
 				}
+				isrList[i]->hdr.id = ansi_to_tchar(pszMsgField[1 + i * 2]);
 				isrList[i]->hdr.nick = ansi_to_tchar(pszMsgField[2 + i * 2]);
 			}
 
@@ -2038,6 +2040,7 @@ void CIcqProto::handleMessageTypes(DWORD dwUin, char *szUID, DWORD dwTimestamp, 
 
 			for (i = 0; i < nContacts; i++)
       {
+        SAFE_FREE(&isrList[i]->hdr.id);
         SAFE_FREE(&isrList[i]->hdr.nick);
 				SAFE_FREE((void**)&isrList[i]);
       }

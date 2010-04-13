@@ -44,7 +44,6 @@ typedef struct {
   PROTOSEARCHRESULT hdr;
   DWORD uin;
   BYTE auth;
-  char *uid;
   BYTE gender;
   BYTE age;
   DWORD country;

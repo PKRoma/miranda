@@ -288,23 +288,25 @@ WCHAR* __stdcall make_unicode_string(const char *utf8)
 
 int __stdcall utf8_encode(const char *from, char **to)
 {
-	int wchars = MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, from,
-		strlennull(from), NULL, 0);
+	int wchars = MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, from, strlennull(from), NULL, 0);
 
 	if (wchars == 0)
 	{
+#ifdef _DEBUG
 		fprintf(stderr, "Unicode translation error %d\n", GetLastError());
+#endif
 		return -1;
 	}
 
 	WCHAR *unicode = (WCHAR*)_alloca((wchars + 1) * sizeof(WCHAR));
-	unicode[wchars] = 0;
+	ZeroMemory(unicode, (wchars + 1) * sizeof(WCHAR));
 
-	int err = MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, from,
-		strlennull(from), unicode, wchars);
+	int err = MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, from, strlennull(from), unicode, wchars);
 	if (err != wchars)
 	{
+#ifdef _DEBUG
 		fprintf(stderr, "Unicode translation error %d\n", GetLastError());
+#endif
 		return -1;
 	}
 
@@ -316,13 +318,13 @@ int __stdcall utf8_encode(const char *from, char **to)
 }
 
 
-char* __stdcall ansi_to_utf8(const char *szAnsi)
+char* __stdcall ansi_to_utf8(const char *ansi)
 {
 	char *szUtf = NULL;
 
-	if (strlennull(szAnsi))
+	if (strlennull(ansi))
 	{
-		utf8_encode(szAnsi, &szUtf);
+		utf8_encode(ansi, &szUtf);
 		return szUtf;
 	}
 
@@ -330,15 +332,13 @@ char* __stdcall ansi_to_utf8(const char *szAnsi)
 }
 
 
-char* __stdcall ansi_to_utf8_codepage(const char *szAnsi, WORD wCp)
+char* __stdcall ansi_to_utf8_codepage(const char *ansi, WORD wCp)
 {
-	int wchars = strlennull(szAnsi);
-	WCHAR *unicode;
-
-	unicode = (WCHAR*)_alloca((wchars + 1) * sizeof(WCHAR));
+	int wchars = strlennull(ansi);
+	WCHAR *unicode = (WCHAR*)_alloca((wchars + 1) * sizeof(WCHAR));
 	ZeroMemory(unicode, (wchars + 1) * sizeof(WCHAR));
 
-	MultiByteToWideChar(wCp, MB_PRECOMPOSED, szAnsi, wchars, unicode, wchars);
+	MultiByteToWideChar(wCp, MB_PRECOMPOSED, ansi, wchars, unicode, wchars);
 
 	return make_utf8_string(unicode);
 }
@@ -360,6 +360,7 @@ int __stdcall utf8_decode_codepage(const char *from, char **to, WORD wCp)
 	{
 		int inlen = strlennull(from) + 1;
 		WCHAR *wszTemp = (WCHAR *)_alloca(inlen * sizeof(WCHAR));
+    ZeroMemory(wszTemp, inlen * sizeof(WCHAR));
 
 		// Convert the UTF-8 string to UCS
 		if (MultiByteToWideChar(CP_UTF8, 0, from, -1, wszTemp, inlen))
@@ -386,21 +387,27 @@ int __stdcall utf8_decode_codepage(const char *from, char **to, WORD wCp)
 
 		if (chars == 0)
 		{
+#ifdef _DEBUG
 			fprintf(stderr, "Unicode translation error %d\n", GetLastError());
+#endif
 			return 0;
 		}
 
-		*to = (char*)SAFE_MALLOC((chars + 1)*sizeof(unsigned char));
+		*to = (char*)SAFE_MALLOC((chars + 1)*sizeof(char));
 		if (*to == NULL)
 		{
+#ifdef _DEBUG
 			fprintf(stderr, "Out of memory processing string to local charset\n");
+#endif
 			return 0;
 		}
 
 		int err = WideCharToMultiByte(wCp, WC_COMPOSITECHECK, unicode, -1, *to, chars, NULL, NULL);
 		if (err != chars)
 		{
+#ifdef _DEBUG
 			fprintf(stderr, "Unicode translation error %d\n", GetLastError());
+#endif
 			SAFE_FREE(to);
 			return 0;
 		}
@@ -430,11 +437,15 @@ int __stdcall utf8_decode_static(const char *from, char *to, size_t to_size)
 	if (!UTF8_IsValid(from))
 		return 0;
 
+  // Clear target
+  ZeroMemory(to, to_size);
+
 	// Use the native conversion routines when available
 	if (bHasCP_UTF8)
 	{
 		size_t inlen = strlennull(from) + 1;
 		WCHAR *wszTemp = (WCHAR*)_alloca(inlen * sizeof(WCHAR));
+    ZeroMemory(wszTemp, inlen * sizeof(WCHAR));
 
 		// Convert the UTF-8 string to UCS
 		if (MultiByteToWideChar(CP_UTF8, 0, from, -1, wszTemp, inlen))
@@ -462,63 +473,73 @@ int __stdcall utf8_decode_static(const char *from, char *to, size_t to_size)
 }
 
 
-TCHAR* __stdcall ansi_to_tchar(const char *szAnsi)
+WCHAR* __stdcall ansi_to_unicode(const char *ansi)
 {
-#ifdef _UNICODE
-	int wchars = MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, szAnsi, strlennull(szAnsi), NULL, 0);
+	int wchars = MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, ansi, strlennull(ansi), NULL, 0);
 
 	if (wchars == 0)
 	{
+#ifdef _DEBUG
 		fprintf(stderr, "Unicode translation error %d\n", GetLastError());
+#endif
 		return NULL;
 	}
 
 	WCHAR *unicode = (WCHAR*)SAFE_MALLOC((wchars + 1) * sizeof(WCHAR));
-	unicode[wchars] = 0;
 
-	int err = MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, szAnsi, strlennull(szAnsi), unicode, wchars);
+	int err = MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, ansi, strlennull(ansi), unicode, wchars);
 	if (err != wchars)
 	{
+#ifdef _DEBUG
 		fprintf(stderr, "Unicode translation error %d\n", GetLastError());
+#endif
     SAFE_FREE(&unicode);
 		return NULL;
 	}
   return unicode;
-#else
-  return null_strdup(szAnsi);
-#endif
 }
 
 
-char* __stdcall tchar_to_ansi(const TCHAR *szUnicode)
+char* __stdcall unicode_to_ansi_static(const WCHAR *unicode, char *ansi, size_t ansi_size)
 {
-#ifdef _UNICODE
-	int chars = WideCharToMultiByte(CP_ACP, WC_COMPOSITECHECK, szUnicode, strlennull(szUnicode), NULL, 0, NULL, NULL);
+  ZeroMemory(ansi, ansi_size);
+
+	if (WideCharToMultiByte(CP_ACP, WC_COMPOSITECHECK, unicode, strlennull(unicode), ansi, ansi_size, NULL, NULL) > 1)
+		return ansi;
+
+  return NULL;
+}
+
+
+char* __stdcall unicode_to_ansi(const WCHAR *unicode)
+{
+	int chars = WideCharToMultiByte(CP_ACP, WC_COMPOSITECHECK, unicode, strlennull(unicode), NULL, 0, NULL, NULL);
 
 	if (chars == 0)
 	{
+#ifdef _DEBUG
 		fprintf(stderr, "Unicode translation error %d\n", GetLastError());
+#endif
 		return NULL;
 	}
 
 	char* ansi = (char*)SAFE_MALLOC((chars + 1)*sizeof(char));
 	if (ansi == NULL)
 	{
+#ifdef _DEBUG
 		fprintf(stderr, "Out of memory processing string to local charset\n");
+#endif
 		return NULL;
 	}
 
-	int err = WideCharToMultiByte(CP_ACP, WC_COMPOSITECHECK, szUnicode, strlennull(szUnicode), ansi, chars, NULL, NULL);
+	int err = WideCharToMultiByte(CP_ACP, WC_COMPOSITECHECK, unicode, strlennull(unicode), ansi, chars, NULL, NULL);
 	if (err != chars)
 	{
+#ifdef _DEBUG
 		fprintf(stderr, "Unicode translation error %d\n", GetLastError());
-		SAFE_FREE(&ansi);
+#endif
 		return NULL;
 	}
 
 	return ansi;
-#else
-  return null_strdup(szUnicode);
-#endif
 }
-

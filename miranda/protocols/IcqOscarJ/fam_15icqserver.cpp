@@ -365,6 +365,7 @@ void CIcqProto::parseSearchReplies(unsigned char *databuf, WORD wPacketLen, WORD
 		{
 			ICQSEARCHRESULT sr = {0};
 			DWORD dwUin;
+      char szUin[UINMAXLEN];
 			WORD wLen;
 
 			sr.hdr.cbSize = sizeof(sr);
@@ -385,6 +386,8 @@ void CIcqProto::parseSearchReplies(unsigned char *databuf, WORD wPacketLen, WORD
 			unpackLEDWord(&databuf, &dwUin); // Uin
 			wPacketLen -= 4;
 			sr.uin = dwUin;
+      _itoa(dwUin, szUin, 10);
+      sr.hdr.id = (FNAMECHAR*)szUin;
 
 			// Nick
 			if (wPacketLen < 2)
@@ -459,7 +462,6 @@ void CIcqProto::parseSearchReplies(unsigned char *databuf, WORD wPacketLen, WORD
 				break;
 			unpackByte(&databuf, &sr.auth);
 
-			sr.uid = NULL; // icq contact
 			// Finally, broadcast the result
 			BroadcastAck(NULL, ACKTYPE_SEARCH, ACKRESULT_DATA, (HANDLE)wCookie, (LPARAM)&sr);
 
@@ -1049,24 +1051,21 @@ void CIcqProto::parseDirectoryUserDetailsData(HANDLE hContact, oscar_tlv_chain *
 void CIcqProto::parseDirectorySearchData(oscar_tlv_chain *cDetails, DWORD dwCookie, cookie_directory_data *pCookieData, WORD wReplySubType)
 {
 	ICQSEARCHRESULT isr = {0};
-	char *szUin = cDetails->getString(0x32, 1); // User ID
+	char *szUid = cDetails->getString(0x32, 1); // User ID
 
 #ifdef _DEBUG
-	NetLog_Server("Directory Search: Found user %s", szUin);
+	NetLog_Server("Directory Search: Found user %s", szUid);
 #endif
 	isr.hdr.cbSize = sizeof(ICQSEARCHRESULT);
   isr.hdr.flags = PSR_TCHAR;
+  isr.hdr.id = ansi_to_tchar(szUid);
 
-	if (IsStringUIN(szUin))
-	{
-		isr.uin = atoi(szUin);
-		SAFE_FREE(&szUin);
-	}
+  if (IsStringUIN(szUid))
+		isr.uin = atoi(szUid);
 	else
-	{
 		isr.uin = 0;
-		isr.uid = szUin;
-	}
+
+	SAFE_FREE(&szUid);
 
 	oscar_tlv *pTLV = cDetails->getTLV(0x50, 1);
   char *szData = NULL;
@@ -1124,7 +1123,7 @@ void CIcqProto::parseDirectorySearchData(oscar_tlv_chain *cDetails, DWORD dwCook
 	BroadcastAck(NULL, ACKTYPE_SEARCH, ACKRESULT_DATA, (HANDLE)dwCookie, (LPARAM)&isr);
 
 	// Release memory
-  SAFE_FREE(&isr.uid);
+  SAFE_FREE(&isr.hdr.id);
 	SAFE_FREE(&isr.hdr.nick);
 	SAFE_FREE(&isr.hdr.firstName);
 	SAFE_FREE(&isr.hdr.lastName);

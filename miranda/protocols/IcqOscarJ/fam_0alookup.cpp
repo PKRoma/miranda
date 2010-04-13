@@ -117,16 +117,17 @@ void CIcqProto::handleLookupEmailReply(BYTE* buf, WORD wLen, DWORD dwCookie)
 	{
 		for (WORD i = 1; TRUE; i++)
 		{ // collect the results
-			sr.uid = pChain->getString(0x01, i);
-			if (!sr.uid) break;
-			sr.hdr.nick = ansi_to_tchar(sr.uid);
+			char *szUid = pChain->getString(0x01, i);
+			if (!szUid) break;
+      sr.hdr.id = ansi_to_tchar(szUid);
+			sr.hdr.nick = sr.hdr.id;
 			// broadcast the result
 			if (pCookie->dwMainId)
 				BroadcastAck(NULL, ACKTYPE_SEARCH, ACKRESULT_DATA, (HANDLE)pCookie->dwMainId, (LPARAM)&sr);
 			else
 				BroadcastAck(NULL, ACKTYPE_SEARCH, ACKRESULT_DATA, (HANDLE)dwCookie, (LPARAM)&sr);
-			SAFE_FREE(&sr.hdr.nick);
-      SAFE_FREE(&sr.uid);
+			SAFE_FREE(&sr.hdr.id);
+      SAFE_FREE(&szUid);
 		}
 		disposeChain(&pChain);
 	}
