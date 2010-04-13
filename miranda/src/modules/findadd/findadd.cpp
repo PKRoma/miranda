@@ -299,14 +299,14 @@ static void HideAdvancedSearchDlg(HWND hwndDlg,struct FindAddDlgData *dat)
 
 void EnableResultButtons(HWND hwndDlg,int enable)
 {
-	EnableWindow(GetDlgItem(hwndDlg,IDC_ADD),enable);
+	EnableWindow(GetDlgItem(hwndDlg,IDC_ADD), enable || IsDlgButtonChecked(hwndDlg, IDC_BYPROTOID));
 	EnableWindow(GetDlgItem(hwndDlg,IDC_MOREOPTIONS),enable);
 }
 
 static void CheckSearchTypeRadioButton(HWND hwndDlg,int idControl)
 {
 	int i;
-	int controls[]={IDC_BYPROTOID,IDC_BYEMAIL,IDC_BYNAME,IDC_BYADVANCED,IDC_BYCUSTOM};
+	static const int controls[]={IDC_BYPROTOID,IDC_BYEMAIL,IDC_BYNAME,IDC_BYADVANCED,IDC_BYCUSTOM};
 	for( i=0; i < SIZEOF(controls); i++ )
 		CheckDlgButton(hwndDlg,controls[i],idControl==controls[i]?BST_CHECKED:BST_UNCHECKED);
 }
