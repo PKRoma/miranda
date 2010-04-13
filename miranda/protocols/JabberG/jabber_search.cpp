@@ -615,7 +615,7 @@ static INT_PTR CALLBACK JabberSearchAdvancedDlgProc(HWND hwndDlg, UINT msg, WPAR
 	case WM_USER+11:
 		{
 			dat->fSearchRequestIsXForm=TRUE;
-			dat->xNode = xi.copyNode(( HXML )wParam );
+			dat->xNode = ( HXML )wParam;
 			JabberFormCreateUI( GetDlgItem(hwndDlg, IDC_FRAME), dat->xNode, &dat->CurrentHeight,TRUE);
 			ShowWindow(GetDlgItem(hwndDlg, IDC_FRAME), SW_SHOW);
 			dat->nJSInfCount=1;
