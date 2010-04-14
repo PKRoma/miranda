@@ -297,10 +297,11 @@ void __cdecl gg_searchthread(GGPROTO *gg, void *empty)
 #endif
 	ProtoBroadcastAck(GG_PROTO, NULL, ACKTYPE_SEARCH, ACKRESULT_FAILED, (HANDLE)1, 0);
 }
-HANDLE gg_basicsearch(PROTO_INTERFACE *proto, const char *id)
+HANDLE gg_basicsearch(PROTO_INTERFACE *proto, const PROTOCHAR *id)
 {
 	GGPROTO *gg = (GGPROTO *)proto;
 	gg_pubdir50_t req;
+	char *ida;
 
 	if(!gg_isonline(gg))
 		return (HANDLE)0;
@@ -311,9 +312,13 @@ HANDLE gg_basicsearch(PROTO_INTERFACE *proto, const char *id)
 		return (HANDLE)1;
 	}
 
+	ida = gg_t2a(id); 
+
 	// Add uin and search it
-	gg_pubdir50_add(req, GG_PUBDIR50_UIN, id);
+	gg_pubdir50_add(req, GG_PUBDIR50_UIN, ida);
 	gg_pubdir50_seq_set(req, GG_SEQ_SEARCH);
+
+	mir_free(ida);
 
 	EnterCriticalSection(&gg->sess_mutex);
 	if(!gg_pubdir50(gg->sess, req))
@@ -330,7 +335,7 @@ HANDLE gg_basicsearch(PROTO_INTERFACE *proto, const char *id)
 
 	return (HANDLE)1;
 }
-static HANDLE gg_searchbydetails(PROTO_INTERFACE *proto, const char *nick, const char *firstName, const char *lastName)
+static HANDLE gg_searchbydetails(PROTO_INTERFACE *proto, const PROTOCHAR *nick, const PROTOCHAR *firstName, const PROTOCHAR *lastName)
 {
 	GGPROTO *gg = (GGPROTO *)proto;
 	gg_pubdir50_t req;
@@ -353,22 +358,28 @@ static HANDLE gg_searchbydetails(PROTO_INTERFACE *proto, const char *nick, const
 	// Add uin and search it
 	if(nick)
 	{
-		gg_pubdir50_add(req, GG_PUBDIR50_NICKNAME, nick);
+		char *nickA = gg_t2a(nick); 
+		gg_pubdir50_add(req, GG_PUBDIR50_NICKNAME, nickA);
 		strncat(data, nick, sizeof(data) - strlen(data));
+		mir_free(nickA);
 	}
 	strncat(data, ".", sizeof(data) - strlen(data));
 
 	if(firstName)
 	{
-		gg_pubdir50_add(req, GG_PUBDIR50_FIRSTNAME, firstName);
-		strncat(data, firstName, sizeof(data) - strlen(data));
+		char *firstNameA = gg_t2a(firstName); 
+		gg_pubdir50_add(req, GG_PUBDIR50_FIRSTNAME, firstNameA);
+		strncat(data, firstNameA, sizeof(data) - strlen(data));
+		mir_free(firstNameA);
 	}
 	strncat(data, ".", sizeof(data) - strlen(data));
 
 	if(lastName)
 	{
-		gg_pubdir50_add(req, GG_PUBDIR50_LASTNAME, lastName);
-		strncat(data, lastName, sizeof(data) - strlen(data));
+		char *lastNameA = gg_t2a(lastName); 
+		gg_pubdir50_add(req, GG_PUBDIR50_LASTNAME, lastNameA);
+		strncat(data, lastNameA, sizeof(data) - strlen(data));
+		mir_free(lastNameA);
 	}
 	strncat(data, ".", sizeof(data) - strlen(data));
 
@@ -404,7 +415,14 @@ HANDLE gg_addtolist(PROTO_INTERFACE *proto, int flags, PROTOSEARCHRESULT *psr)
 {
 	GGPROTO *gg = (GGPROTO *)proto;
 	GGSEARCHRESULT *sr = (GGSEARCHRESULT *)psr;
-	return gg_getcontact(gg, sr->uin, 1, flags & PALF_TEMPORARY ? 0 : 1, sr->hdr.nick);
+	uin_t uin;
+	
+	if (psr->cbSize == sizeof(GGSEARCHRESULT))
+		uin = sr->uin;
+	else
+		uin = psr->flags & PSR_UNICODE ? _wtoi((wchar_t*)psr->id) : atoi(psr->id);
+
+	return gg_getcontact(gg, uin, 1, flags & PALF_TEMPORARY ? 0 : 1, sr->hdr.nick);
 }
 
 //////////////////////////////////////////////////////////
@@ -976,7 +994,7 @@ int    gg_dummy_authrecv(PROTO_INTERFACE *proto, HANDLE hContact, PROTORECVEVENT
 int    gg_dummy_authrequest(PROTO_INTERFACE *proto, HANDLE hContact, const TCHAR *szMessage) { return 0; }
 HANDLE gg_dummy_changeinfo(PROTO_INTERFACE *proto, int iInfoType, void *pInfoData) { return NULL; }
 int    gg_dummy_fileresume(PROTO_INTERFACE *proto, HANDLE hTransfer, int *action, const PROTOCHAR** szFilename) { return 0; }
-HANDLE gg_dummy_searchbyemail(PROTO_INTERFACE *proto, const char *email) { return NULL; }
+HANDLE gg_dummy_searchbyemail(PROTO_INTERFACE *proto, const PROTOCHAR *email) { return NULL; }
 int    gg_dummy_recvcontacts(PROTO_INTERFACE *proto, HANDLE hContact, PROTORECVEVENT *pre) { return 0; }
 int    gg_dummy_recvurl(PROTO_INTERFACE *proto, HANDLE hContact, PROTORECVEVENT *pre) { return 0; }
 int    gg_dummy_sendcontacts(PROTO_INTERFACE *proto, HANDLE hContact, int flags, int nContacts, HANDLE *hContactsList) { return 0; }

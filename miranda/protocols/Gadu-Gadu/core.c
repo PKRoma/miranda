@@ -664,13 +664,13 @@ retry:
 									strncat(strFmt2, strFmt1, sizeof(strFmt2) - strlen(strFmt2));
 								}
 							}
-							mir_snprintf(strFmt1, sizeof(strFmt1), "GG: %d", uin);
 
 							sr.hdr.cbSize = sizeof(sr);
 							sr.hdr.nick = (char *)__nick;
 							sr.hdr.firstName = (char *)__firstname;
-							sr.hdr.lastName = strFmt1;
+							sr.hdr.lastName = (char *)__lastname;
 							sr.hdr.email = strFmt2;
+							sr.hdr.id = _ultoa(uin, strFmt1, 10);
 							sr.uin = uin;
 
 							ProtoBroadcastAck(GG_PROTO, NULL, ACKTYPE_SEARCH, ACKRESULT_DATA, (HANDLE) 1, (LPARAM)&sr);
