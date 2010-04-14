@@ -412,11 +412,11 @@ HANDLE CJabberProto::AddToListByJID( const TCHAR* newJid, DWORD flags )
 
 HANDLE CJabberProto::AddToList( int flags, PROTOSEARCHRESULT* psr )
 {
-	if ( psr->cbSize != sizeof( JABBER_SEARCH_RESULT ))
+	if ( psr->cbSize != sizeof( JABBER_SEARCH_RESULT ) && jsr->hdr.id == NULL )
 		return NULL;
 
 	JABBER_SEARCH_RESULT* jsr = ( JABBER_SEARCH_RESULT* )psr;
-	TCHAR *jid = jsr->hdr.id ? jid = jsr->hdr.id : jsr->jid;
+	TCHAR *jid = jsr->hdr.id ? jsr->hdr.id : jsr->jid;
 	return AddToListByJID( jid, flags );
 }
 
