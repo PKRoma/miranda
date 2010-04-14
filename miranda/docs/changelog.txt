@@ -3,6 +3,20 @@
                            www.miranda-im.org
 
 
+* New in 0.8.20
+Bugfixes:
+ - Fixed menus in Windows 95
+ - Moved default directory for receiving files into location not protected by UAC (My Documents\My Received Files)
+ - Fixed focus issue in update notification dialog
+ - AIM: Mask spurious mail notification
+ - AIM: Fixed authorization request on moving contact from group to group
+ - Gadu-Gadu: Fixed offlining all contacts when going offline
+ - Gadu-Gadu: Fixed exporting group chats
+ - Gadu-Gadu: Added 'Leave chat' support
+ - Jabber: Fixed formatting of error notification message box
+ - Jabber: Fixed memory leak in search
+
+ 
 * New in 0.8.19
 Bugfixes:
  - More docking issues fixed
