@@ -69,10 +69,11 @@ INT_PTR CALLBACK AddContactDlgProc(HWND hdlg,UINT msg,WPARAM wparam,LPARAM lpara
 						}
 					}
 					if (!isSet) {
-						szName = (acs->handleType == HANDLE_EVENT) ? (tmpStr = mir_a2t(szUin)) : acs->psr->nick;
+						szName = (acs->handleType == HANDLE_EVENT) ? (tmpStr = mir_a2t(szUin)) : 
+							(acs->psr->id ? acs->psr->id : acs->psr->nick);
 				}	}
 
-				if ( szName[0] ) {
+				if ( szName && szName[0] ) {
 					TCHAR  szTitle[128];
 					mir_sntprintf( szTitle, SIZEOF(szTitle), TranslateT("Add %s"), szName );
 					SetWindowText( hdlg, szTitle );
