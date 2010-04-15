@@ -312,7 +312,7 @@ BEGIN
     CONTROL         "Hide title bar",IDC_O_HIDETITLE,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,135,66,111,10
     CONTROL         "Use static container icon",IDC_STATICICON,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,135,78,121,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,135,78,130,10
     LTEXT           "Title bar format",IDC_O_TITLEBARFORMAT,135,91,160,11
     EDITTEXT        IDC_TITLEFORMAT,135,103,123,13,ES_AUTOHSCROLL
     CONTROL         "Available formats",IDC_O_HELP_TITLEFORMAT,"Hyperlink",WS_TABSTOP |
@@ -321,7 +321,7 @@ BEGIN
     PUSHBUTTON      "...",IDC_SELECTTHEME,263,64,27,13
     CONTROL         "Use global container size and position",
                     IDC_USEGLOBALSIZE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
-                    135,129,139,9
+                    135,129,145,9
     PUSHBUTTON      "Save current as global",IDC_SAVESIZEASGLOBAL,134,140,
                     109,14
     CONTROL         "Enable transparency",IDC_TRANSPARENCY,"Button",
@@ -330,7 +330,7 @@ BEGIN
     CONTROL         "",IDC_TRANSPARENCY_ACTIVE,"msctls_trackbar32",TBS_BOTH | 
                     WS_TABSTOP,174,87,95,20
     LTEXT           "Statisch",IDC_TLABEL_ACTIVE,269,94,19,9
-    LTEXT           "inactive",IDC_TSLABEL_INACTIVE,146,112,28,9
+    LTEXT           "inactive",IDC_TSLABEL_INACTIVE,140,112,35,9
     CONTROL         "",IDC_TRANSPARENCY_INACTIVE,"msctls_trackbar32",
                     TBS_BOTH | WS_TABSTOP,174,105,95,19
     LTEXT           "Statisch",IDC_TLABEL_INACTIVE,269,112,19,9
@@ -358,11 +358,11 @@ BEGIN
     CONTROL         "Single row tab control",IDC_SINGLEROWTAB,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,120,138,130,12
     CONTROL         "Close button",IDC_CLOSEBUTTONONTABS,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,260,138,60,12
+                    BS_AUTOCHECKBOX | WS_TABSTOP,260,138,75,12
     CONTROL         "Use button tabs",IDC_BUTTONTABS,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,120,149,130,12
     CONTROL         "Styled tabs",IDC_STYLEDTABS,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,260,149,60,12
+                    WS_TABSTOP,260,149,75,12
     LTEXT           "You have chosen to disable all event notifications for open message windows.",
                     IDC_O_EXPLAINGLOBALNOTIFY,103,127,240,30
     LTEXT           "Show contact avatars",IDC_O_STATIC_AVATAR,121,63,83,12
@@ -533,7 +533,7 @@ BEGIN
     PUSHBUTTON      "Setup status modes for automatic tab creation...",
                     IDC_SETUPAUTOCREATEMODES,8,189,291,14
     CONTROL         "Limit nicknames on tabs to",IDC_CUT_TABTITLE,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,12,210,135,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,12,210,150,10
     EDITTEXT        IDC_CUT_TITLEMAX,166,208,30,12,ES_AUTOHSCROLL
     CONTROL         "",IDC_CUT_TITLEMAXSPIN,"msctls_updown32",
                     UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | 
@@ -632,45 +632,45 @@ STYLE DS_FIXEDSYS | WS_CHILD
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    GROUPBOX        "PopUps",IDC_STATIC,6,6,164,127
+    GROUPBOX        "PopUps",IDC_STATIC,0,6,164,127
     CONTROL         "...is &typing",IDC_START,"Button",BS_AUTOCHECKBOX | 
-                    BS_NOTIFY | WS_TABSTOP,12,22,80,13
+                    BS_NOTIFY | WS_TABSTOP,6,22,80,13
     CONTROL         "...stopped t&yping",IDC_STOP,"Button",BS_AUTOCHECKBOX | 
-                    BS_NOTIFY | WS_TABSTOP,12,36,80,13
-    CTEXT           "Back",IDC_STATIC,114,13,24,8
-    CTEXT           "Text",IDC_STATIC,140,13,24,8
-    CONTROL         "",IDC_TYPEON_BG,"ColourPicker",WS_TABSTOP,114,22,24,12
-    CONTROL         "",IDC_TYPEON_TX,"ColourPicker",WS_TABSTOP,140,22,24,12
-    CONTROL         "",IDC_TYPEOFF_BG,"ColourPicker",WS_TABSTOP,114,36,24,12
-    CONTROL         "",IDC_TYPEOFF_TX,"ColourPicker",WS_TABSTOP,140,36,24,12
+                    BS_NOTIFY | WS_TABSTOP,6,36,80,13
+    CTEXT           "Back",IDC_STATIC,108,13,24,8
+    CTEXT           "Text",IDC_STATIC,134,13,24,8
+    CONTROL         "",IDC_TYPEON_BG,"ColourPicker",WS_TABSTOP,108,22,24,12
+    CONTROL         "",IDC_TYPEON_TX,"ColourPicker",WS_TABSTOP,134,22,24,12
+    CONTROL         "",IDC_TYPEOFF_BG,"ColourPicker",WS_TABSTOP,108,36,24,12
+    CONTROL         "",IDC_TYPEOFF_TX,"ColourPicker",WS_TABSTOP,134,36,24,12
     CONTROL         "U&se Popup colours",IDC_USEPOPUPCOLORS,"Button",
-                    BS_AUTOCHECKBOX | BS_NOTIFY | WS_TABSTOP,12,52,154,13
+                    BS_AUTOCHECKBOX | BS_NOTIFY | WS_TABSTOP,6,52,154,13
     CONTROL         "&Use Windows colours",IDC_USEWINCOLORS,"Button",
-                    BS_AUTOCHECKBOX | BS_NOTIFY | WS_TABSTOP,12,66,133,13
+                    BS_AUTOCHECKBOX | BS_NOTIFY | WS_TABSTOP,6,66,133,13
     CONTROL         "Only &one popup for each contact",IDC_ONEPOPUP,"Button",
-                    BS_AUTOCHECKBOX | BS_NOTIFY | WS_TABSTOP,12,96,156,13
+                    BS_AUTOCHECKBOX | BS_NOTIFY | WS_TABSTOP,6,96,156,13
     CONTROL         "Show &entry in the main menu",IDC_SHOWMENU,"Button",
-                    BS_AUTOCHECKBOX | BS_NOTIFY | WS_TABSTOP,12,110,155,13
-    GROUPBOX        "PopUp timeout (is typing)",IDC_STATIC,175,6,140,58,
+                    BS_AUTOCHECKBOX | BS_NOTIFY | WS_TABSTOP,6,110,155,13
+    GROUPBOX        "PopUp timeout (is typing)",IDC_STATIC,165,6,148,58,
                     WS_GROUP
     CONTROL         "From PopUp plugin",IDC_TIMEOUT_POPUP,"Button",
-                    BS_AUTORADIOBUTTON,181,16,130,10
+                    BS_AUTORADIOBUTTON,177,16,130,10
     CONTROL         "From protocol",IDC_TIMEOUT_PROTO,"Button",
-                    BS_AUTORADIOBUTTON,181,27,130,10
+                    BS_AUTORADIOBUTTON,177,27,130,10
     CONTROL         "Permanent",IDC_TIMEOUT_PERMANENT,"Button",
-                    BS_AUTORADIOBUTTON,181,38,130,10
+                    BS_AUTORADIOBUTTON,177,38,130,10
     CONTROL         "Custom",IDC_TIMEOUT_CUSTOM,"Button",BS_AUTORADIOBUTTON,
-                    181,49,95,10
-    EDITTEXT        IDC_TIMEOUT_VALUE,286,48,21,12,ES_AUTOHSCROLL | 
+                    177,49,95,10
+    EDITTEXT        IDC_TIMEOUT_VALUE,282,48,21,12,ES_AUTOHSCROLL | 
                     ES_NUMBER
-    GROUPBOX        "PopUp timeout (stopped typing)",IDC_STATIC,175,68,140,
+    GROUPBOX        "PopUp timeout (stopped typing)",IDC_STATIC,165,68,148,
                     47,WS_GROUP
     CONTROL         "From PopUp plugin",IDC_TIMEOUT_POPUP2,"Button",
-                    BS_AUTORADIOBUTTON,181,78,130,10
+                    BS_AUTORADIOBUTTON,177,78,130,10
     CONTROL         "Permanent",IDC_TIMEOUT_PERMANENT2,"Button",
-                    BS_AUTORADIOBUTTON,181,89,130,10
+                    BS_AUTORADIOBUTTON,177,89,130,10
     CONTROL         "Custom",IDC_TIMEOUT_CUSTOM2,"Button",BS_AUTORADIOBUTTON,
-                    181,100,95,10
+                    177,100,95,10
     EDITTEXT        IDC_TIMEOUT_VALUE2,286,99,21,12,ES_AUTOHSCROLL | 
                     ES_NUMBER
     PUSHBUTTON      "Preview",IDC_PREVIEW,244,120,68,14
@@ -749,7 +749,7 @@ BEGIN
                     IDC_STATIC,13,90,285,14
     GROUPBOX        "Other options",IDC_STATIC,3,101,297,124
     LTEXT           "Default width for fixed (single row) tabs",IDC_STATIC,
-                    15,121,134,11
+                    15,118,134,18
     EDITTEXT        IDC_TABWIDTH,163,119,36,13,ES_AUTOHSCROLL
     CONTROL         "",IDC_TABWIDTHSPIN,"msctls_updown32",UDS_SETBUDDYINT | 
                     UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,195,118,
@@ -766,12 +766,12 @@ BEGIN
                     UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,292,137,
                     11,13
     LTEXT           "Tab page padding:",IDC_STATIC,14,165,84,11
-    RTEXT           "inner",IDC_STATIC,93,165,21,11
+    RTEXT           "inner",IDC_STATIC,90,165,31,11
     EDITTEXT        IDC_TABBORDER,127,163,28,13,ES_AUTOHSCROLL
     CONTROL         "",IDC_TABBORDERSPIN,"msctls_updown32",UDS_SETBUDDYINT | 
                     UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,154,162,
                     11,13
-    LTEXT           "outer",IDC_STATIC,175,164,21,11
+    RTEXT           "outer",IDC_STATIC,166,164,30,11
     EDITTEXT        IDC_TABBORDEROUTER,199,163,28,13,ES_AUTOHSCROLL
     CONTROL         "",IDC_TABBORDERSPINOUTER,"msctls_updown32",
                     UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | 
