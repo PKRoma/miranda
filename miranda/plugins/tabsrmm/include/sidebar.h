@@ -140,7 +140,7 @@ public:
 
 	const LONG 					getWidth() const 			{ return(m_isVisible ? m_width + SIDEBAR_GAP : 0); }
 	const DWORD					getFlags() const			{ return(m_dwFlags); }
-	const TContainerData*	getContainer() const 		{ return(m_pContainer); }
+	const TContainerData*		getContainer() const 		{ return(m_pContainer); }
 	const bool					isActive() const 			{ return(m_isActive); }
 	const bool					isVisible() const 			{ return(m_isVisible); }
 	const CSideBarButton* 		getActiveItem() const 		{ return(m_activeItem); }

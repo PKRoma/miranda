@@ -1418,7 +1418,7 @@ buttons_done:
 				dat = (struct TWindowData *)GetWindowLongPtr(pContainer->hwndActive, GWLP_USERDATA);
 				if(dat && dat->bType == SESSIONTYPE_IM) {
 					if ((dat->idle || dat->timezone != -1) && pContainer->hwndActive && IsWindow(pContainer->hwndActive))
-						dat->Panel->Invalidate();
+						dat->Panel->Invalidate(TRUE);
 				}
 				else if(dat)
 					SendMessage(dat->hwnd, GC_UPDATESTATUSBAR, 0, 0);
