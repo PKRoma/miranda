@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 // Gadu-Gadu Plugin for Miranda IM
 //
-// Copyright (c) 2009 Bartosz Bia³ek
+// Copyright (c) 2009-2010 Bartosz Bia³ek
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -65,7 +65,7 @@ static INT_PTR gg_parselink(WPARAM wParam, LPARAM lParam)
 	if (!uin)
 		return 1;
 
-	for(mi.cbSize = sizeof(mi); l; l = l->next)
+	for (mi.cbSize = sizeof(mi); l; l = l->next)
 	{
 		GGPROTO *gginst = l->data;
 
@@ -78,9 +78,14 @@ static INT_PTR gg_parselink(WPARAM wParam, LPARAM lParam)
 			mi.hIcon = LoadSkinnedProtoIcon(GG_PROTO, gg->proto.m_iStatus);
 		}
 		else
+		{
 			mi.flags |= CMIF_HIDDEN;
+			mi.hIcon = NULL;
+		}
 
 		CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM)gginst->hInstanceMenuItem, (LPARAM)&mi);
+		if (mi.hIcon)
+			CallService(MS_SKIN2_RELEASEICON, (WPARAM)mi.hIcon, 0);
 	}
 
 	if (items > 1)
