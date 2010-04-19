@@ -434,23 +434,39 @@ int CIcqProto::OnPreShutdown(WPARAM wParam,LPARAM lParam)
 HANDLE CIcqProto::AddToList( int flags, PROTOSEARCHRESULT* psr )
 {
 	if (psr)
-	{	// this should be only from search
-		ICQSEARCHRESULT *isr = (ICQSEARCHRESULT*)psr;
-		if (isr->hdr.cbSize == sizeof(ICQSEARCHRESULT))
+	{
+		if (psr->cbSize == sizeof(ICQSEARCHRESULT))
 		{
+			ICQSEARCHRESULT *isr = (ICQSEARCHRESULT*)psr;
 			if (isr->uin)
 				return AddToListByUIN(isr->uin, flags);
 			else
-      { // aim contact
-        char szUid[MAX_PATH];
+			{ // aim contact
+				char szUid[MAX_PATH];
 
-        if (isr->hdr.flags & PSR_UNICODE)
-          unicode_to_ansi_static((WCHAR*)isr->hdr.id, szUid, MAX_PATH);
-        else
-          null_strcpy(szUid, (char*)isr->hdr.id, MAX_PATH);
+				if (isr->hdr.flags & PSR_UNICODE)
+					unicode_to_ansi_static((WCHAR*)isr->hdr.id, szUid, MAX_PATH);
+				else
+					null_strcpy(szUid, (char*)isr->hdr.id, MAX_PATH);
 
+				if (szUid[0] == 0) return 0;
 				return AddToListByUID(szUid, flags);
-      }
+			}
+		}
+		else
+		{
+			char szUid[MAX_PATH];
+
+			if (psr->flags & PSR_UNICODE)
+				unicode_to_ansi_static((WCHAR*)psr->id, szUid, MAX_PATH);
+			else
+				null_strcpy(szUid, (char*)psr->id, MAX_PATH);
+
+			if (szUid[0] == 0) return 0;
+			if (IsStringUIN(szUid))
+				return AddToListByUIN(atoi(szUid), flags);
+			else
+				return AddToListByUID(szUid, flags);
 		}
 	}
 
@@ -941,7 +957,7 @@ HANDLE __cdecl CIcqProto::SearchBasic( const PROTOCHAR *pszSearch )
 
 	char pszUIN[255];
 	int nHandle = 0;
-	unsigned int i, j;
+	int i, j;
 
 	if (!m_bAimEnabled)
 	{

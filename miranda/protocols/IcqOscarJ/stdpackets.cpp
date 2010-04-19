@@ -375,7 +375,7 @@ DWORD CIcqProto::icq_SendChannel1MessageW(DWORD dwUin, char *szUID, HANDLE hCont
 	WCHAR *ppText;
 	int i;
 
-	wMessageLen = strlennull(pszText) * sizeof(WCHAR);
+	wMessageLen = strlennull(pszText) * (int)sizeof(WCHAR);
 	dwCookie = AllocateCookie(CKT_MESSAGE, 0, hContact, (void*)pCookieData);
 
 	if (pCookieData->nAckType == ACKTYPE_SERVER)

@@ -323,7 +323,7 @@ DWORD oft_calc_file_checksum(int hFile, __int64 maxSize)
 	DWORD dwCheck = 0xFFFF0000;
 
 	_lseek(hFile, 0, SEEK_SET);
-  bytesRead = _read(hFile, buf, (maxSize < sizeof(buf)) ? maxSize : sizeof(buf));
+	bytesRead = _read(hFile, buf, (maxSize < sizeof(buf)) ? maxSize : (unsigned)sizeof(buf));
 	if (bytesRead == -1)
 		return dwCheck;
 
@@ -1983,7 +1983,7 @@ void CIcqProto::handleOFT2FramePacket(oscar_connection *oc, WORD datatype, BYTE 
 			}
 
 			{ // convert dir markings to normal backslashes
-				DWORD i;
+				int i;
 
 				for (i = 0; i < strlennull(ft->szThisFile); i++)
 				{
@@ -2333,7 +2333,7 @@ void CIcqProto::oft_sendPeerInit(oscar_connection *oc)
 		strcat(pszThisFileName, ExtractFileName(ft->szThisFile));
 	}
 	{ // convert backslashes to dir markings
-		DWORD i;
+		int i;
 		for (i = 0; i < strlennull(pszThisFileName); i++)
 			if (pszThisFileName[i] == '\\' || pszThisFileName[i] == '/')
 				pszThisFileName[i] = 0x01;
@@ -2381,7 +2381,7 @@ void CIcqProto::oft_sendPeerInit(oscar_connection *oc)
 		ft->wEncoding = 2; // ucs-2
 		WCHAR *pwsThisFile = make_unicode_string(pszThisFileName);
 		SAFE_FREE((void**)&pszThisFileName);
-		ft->cbRawFileName = strlennull(pwsThisFile) * sizeof(WCHAR) + 2;
+		ft->cbRawFileName = strlennull(pwsThisFile) * (int)sizeof(WCHAR) + 2;
 		if (ft->cbRawFileName < 64) ft->cbRawFileName = 64;
 		ft->rawFileName = (char*)SAFE_MALLOC(ft->cbRawFileName);
 		// convert to LE ordered string

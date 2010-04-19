@@ -538,7 +538,7 @@ HANDLE CIcqProto::HContactFromUID(DWORD dwUin, const char *szUid, int *Added)
 
 	if (!m_bAimEnabled) return INVALID_HANDLE_VALUE;
 
-  HANDLE hContact = HandleFromCacheByUid(dwUin, szUid);
+	HANDLE hContact = HandleFromCacheByUid(dwUin, szUid);
 	if (hContact) return hContact;
 
 	hContact = FindFirstContact();
@@ -637,20 +637,20 @@ char *strUID(DWORD dwUIN, char *pszUID)
 
 
 /* a strlen() that likes NULL */
-size_t __fastcall strlennull(const char *string)
+int __fastcall strlennull(const char *string)
 {
 	if (string)
-		return strlen(string);
+		return (int)strlen(string);
 
 	return 0;
 }
 
 
 /* a wcslen() that likes NULL */
-size_t __fastcall strlennull(const WCHAR *string)
+int __fastcall strlennull(const WCHAR *string)
 {
   if (string)
-    return wcslen(string);
+    return (int)wcslen(string);
 
   return 0;
 }
@@ -765,9 +765,9 @@ WCHAR* __fastcall null_strcpy(WCHAR *dest, const WCHAR *src, size_t maxlen)
 }
 
 
-size_t __fastcall null_strcut(char *string, size_t maxlen)
+int __fastcall null_strcut(char *string, int maxlen)
 { // limit the string to max length (null & utf-8 strings ready)
-	size_t len = strlennull(string);
+	int len = (int)strlennull(string);
 
 	if (len < maxlen) 
 		return len;

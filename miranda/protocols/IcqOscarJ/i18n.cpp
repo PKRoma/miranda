@@ -103,9 +103,9 @@ int __stdcall UTF8_IsValid(const char *pszInput)
 }
 
 
-size_t __stdcall get_utf8_size(const WCHAR *unicode)
+int __stdcall get_utf8_size(const WCHAR *unicode)
 {
-	size_t size = 0;
+	int size = 0;
 	int index = 0;
 	/* calculate the size of the utf-8 string */
 	WCHAR c = unicode[index++];
@@ -206,7 +206,7 @@ char* __stdcall make_utf8_string(const WCHAR *unicode)
 	if (!unicode) return NULL;
 
 	/* first calculate the size of the target string */
-  size_t size = get_utf8_size(unicode);
+	size_t size = get_utf8_size(unicode);
 
 	char *out = (char*)SAFE_MALLOC(size + 1);
 	if (!out)
@@ -427,7 +427,7 @@ int __stdcall utf8_decode(const char *from, char **to)
 
 
 // Returns 0 on error, 1 on success
-int __stdcall utf8_decode_static(const char *from, char *to, size_t to_size)
+int __stdcall utf8_decode_static(const char *from, char *to, int to_size)
 {
 	int nResult = 0;
 
@@ -443,9 +443,9 @@ int __stdcall utf8_decode_static(const char *from, char *to, size_t to_size)
 	// Use the native conversion routines when available
 	if (bHasCP_UTF8)
 	{
-		size_t inlen = strlennull(from) + 1;
+		int inlen = strlennull(from) + 1;
 		WCHAR *wszTemp = (WCHAR*)_alloca(inlen * sizeof(WCHAR));
-    ZeroMemory(wszTemp, inlen * sizeof(WCHAR));
+		ZeroMemory(wszTemp, inlen * sizeof(WCHAR));
 
 		// Convert the UTF-8 string to UCS
 		if (MultiByteToWideChar(CP_UTF8, 0, from, -1, wszTemp, inlen))
@@ -500,7 +500,7 @@ WCHAR* __stdcall ansi_to_unicode(const char *ansi)
 }
 
 
-char* __stdcall unicode_to_ansi_static(const WCHAR *unicode, char *ansi, size_t ansi_size)
+char* __stdcall unicode_to_ansi_static(const WCHAR *unicode, char *ansi, int ansi_size)
 {
   ZeroMemory(ansi, ansi_size);
 
