@@ -2147,12 +2147,12 @@ INT_PTR CALLBACK RoomWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 						else if(diff > 59) {
 							DWORD hours = diff / 60;
 							DWORD minutes = diff % 60;
-							mir_sntprintf(mi->tszIdleMsg, 30, CTranslator::get(CTranslator::MUC_SBAR_IDLEFORMAT), hours, hours > 1 ?
+							mir_sntprintf(mi->tszIdleMsg, 60, CTranslator::get(CTranslator::MUC_SBAR_IDLEFORMAT), hours, hours > 1 ?
 										  CTranslator::get(CTranslator::GEN_STRING_HOURS) : CTranslator::get(CTranslator::GEN_STRING_HOUR),
 										  minutes, minutes > 1 ? CTranslator::get(CTranslator::GEN_STRING_MINUTES) : CTranslator::get(CTranslator::GEN_STRING_MINUTE));
 						}
 						else
-							mir_sntprintf(mi->tszIdleMsg, 30, CTranslator::get(CTranslator::MUC_SBAR_IDLEFORMAT_SHORT),
+							mir_sntprintf(mi->tszIdleMsg, 60, CTranslator::get(CTranslator::MUC_SBAR_IDLEFORMAT_SHORT),
 										  diff, diff > 1 ? CTranslator::get(CTranslator::GEN_STRING_MINUTES) : CTranslator::get(CTranslator::GEN_STRING_MINUTE));
 					}
 					mir_sntprintf(szFinalStatusBarText, SIZEOF(szFinalStatusBarText), CTranslator::get(CTranslator::MUC_SBAR_ON_SERVER), dat->szMyNickname, mi->ptszModDispName, mi->tszIdleMsg);

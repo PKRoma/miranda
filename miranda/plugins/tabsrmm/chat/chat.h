@@ -137,7 +137,7 @@ typedef struct  MODULE_INFO_TYPE
 	int			iMaxText;
 	DWORD		idleTimeStamp;
 	DWORD		lastIdleCheck;
-	TCHAR		tszIdleMsg[30];
+	TCHAR		tszIdleMsg[60];
 	CMUCHighlight* Highlight;
 	struct MODULE_INFO_TYPE *next;
 }
