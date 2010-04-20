@@ -121,7 +121,7 @@ static MODERNEFFECT meCurrentEffect={-1,{0},0,0};
 //////////////////////////////////////////////////////////////////////////
 // Ini file parser
 //////////////////////////////////////////////////////////////////////////
-IniParser::IniParser( TCHAR * tcsFileName ) 
+IniParser::IniParser( TCHAR * tcsFileName, BYTE flags ) : _Flags( flags )
 {
 	_DoInit();
 	if ( !tcsFileName ) return;
@@ -142,7 +142,7 @@ IniParser::IniParser( TCHAR * tcsFileName )
 	}
 }
 
-IniParser::IniParser( HINSTANCE hInst, const char *  resourceName, const char * resourceType )
+IniParser::IniParser( HINSTANCE hInst, const char *  resourceName, const char * resourceType, BYTE flags ) : _Flags( flags )
 {
 	_DoInit();
 	_LoadResourceIni( hInst, resourceName, resourceType );
@@ -165,12 +165,12 @@ IniParser::~IniParser()
 	_eType = IT_UNKNOWN;
 }
 
-HRESULT IniParser::Parse( ParserCallback_t pLineCallBackProc, LPARAM lParam )
+HRESULT IniParser::Parse( ParserCallback_t pLineCallBackProc, LPARAM SecCheck )
 {
 	if ( _isValid && pLineCallBackProc )
 	{	
 		_pLineCallBackProc = pLineCallBackProc;
-		_lParam = lParam;
+		_SecCheck = SecCheck;
 		switch ( _eType )
 		{
 		case IT_FILE:
@@ -183,13 +183,17 @@ HRESULT IniParser::Parse( ParserCallback_t pLineCallBackProc, LPARAM lParam )
 }
 
 
-HRESULT IniParser::WriteStrToDb( const char * szSection, const char * szName, const char * szValue, LPARAM SecCheck )
+HRESULT IniParser::WriteStrToDb( const char * szSection, const char * szName, const char * szValue, IniParser * This )
 {
-	if (SecCheck)
+	if ( This->_SecCheck)
 	{
 		//TODO check security here
 		if ( wildcmp( szSection,"Skin_Description_Section",1 ) ) return S_OK;
 	}
+	if ( ( This->_Flags == IniParser::FLAG_ONLY_OBJECTS ) && !wildcmp( szSection, DEFAULTSKINSECTION,1 ) )
+		return S_OK;					 // skip not objects
+
+
 //	if ( strlen(szValue)>0 && szValue[strlen(szValue)-1]=='\n' ) 
 //		szValue[strlen(szValue)-1]='\0';  //kill linefeed at the end  
 
@@ -276,7 +280,7 @@ void IniParser::_DoInit()
 	_dwSizeOfRes = 0;
 	_pPosition   = NULL;
 	_pLineCallBackProc = NULL;
-	_lParam		 = 0;
+	_SecCheck		 = 0;
 
 }
 
@@ -436,7 +440,7 @@ BOOL IniParser::_DoParseLine( char * szLine )
 			while (j>0 && (keyValue[j]==' ' || keyValue[j]=='\t' || keyValue[j]=='\n')) j--;
 			if (j>=0) keyValue[j+1]='\0';
 		}
-		_pLineCallBackProc( _szSection, keyName, keyValue, _lParam );
+		_pLineCallBackProc( _szSection, keyName, keyValue, this );
 	}
 	return TRUE;
 }
@@ -2616,7 +2620,7 @@ static BOOL ske_ParseLineOfIniFile(char * Line, BOOL bOnlyObjects)
 static int ske_LoadSkinFromResource(BOOL bOnlyObjects)
 {
 
-	IniParser parser(g_hInst, MAKEINTRESOURCEA(IDR_MSF_DEFAULT_SKIN), "MSF");
+	IniParser parser(g_hInst, MAKEINTRESOURCEA(IDR_MSF_DEFAULT_SKIN), "MSF", bOnlyObjects ? IniParser::FLAG_ONLY_OBJECTS : IniParser::FLAG_WITH_SETTINGS );
 	if ( !parser.CheckOK() ) return 0;
 
 	ske_DeleteAllSettingInSection("ModernSkin");
@@ -2634,7 +2638,7 @@ int ske_LoadSkinFromIniFile(TCHAR * szFileName, BOOL bOnlyObjects)
 	if (_tcschr(szFileName,_T('%'))) 
 		return ske_LoadSkinFromResource( bOnlyObjects );
 
-	IniParser parser( szFileName );
+	IniParser parser( szFileName, bOnlyObjects ? IniParser::FLAG_ONLY_OBJECTS : IniParser::FLAG_WITH_SETTINGS  );
 	if ( !parser.CheckOK() ) return 0;
 
 	ske_DeleteAllSettingInSection("ModernSkin");
@@ -3701,7 +3705,15 @@ static INT_PTR ske_Service_InvalidateFrameImage(WPARAM wParam, LPARAM lParam)   
 				{
 					HRGN r2;
 					if (!IsRectEmpty(&pr->rcUpdate))
-						r2=CreateRectRgn(pr->rcUpdate.left,pr->rcUpdate.top,pr->rcUpdate.right,pr->rcUpdate.bottom);
+					{
+						RECT rcClient;
+						RECT rcUpdate;
+						GetClientRect(frm->hWnd,&rcClient);
+						IntersectRect( &rcUpdate, &rcClient, &pr->rcUpdate );
+						if ( IsRectEmpty( &rcUpdate ) )
+							return 0;
+						r2=CreateRectRgn( rcUpdate.left, rcUpdate.top, rcUpdate.right, rcUpdate.bottom );
+					}
 					else
 					{
 						RECT r;
