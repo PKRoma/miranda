@@ -101,15 +101,6 @@ INT_PTR CMsnProto::MsnEditProfile(WPARAM, LPARAM)
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
-// MsnViewServiceStatus - display MSN services status
-
-INT_PTR CMsnProto::MsnViewServiceStatus(WPARAM, LPARAM)
-{
-	MSN_CallService(MS_UTILS_OPENURL, 1, (LPARAM)"http://messenger.msn.com/Status.aspx");
-	return 0;
-}
-
-/////////////////////////////////////////////////////////////////////////////////////////
 // MsnInviteCommand - invite command callback function
 
 INT_PTR CMsnProto::MsnInviteCommand(WPARAM wParam, LPARAM)
@@ -384,14 +375,6 @@ void CMsnProto::MsnInitMenus(void)
 	mi.icolibItem = GetIconHandle(IDI_PROFILE);
 	mi.pszName = LPGEN("Setup Live &Alerts");
 	menuItemsAll[2] = (HANDLE)MSN_CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM)&mi);
-
-	strcpy(tDest, MS_VIEW_STATUS);
-	CreateProtoService(MS_VIEW_STATUS, &CMsnProto::MsnViewServiceStatus);
-	mi.position = 2000060004;
-	mi.icolibItem = GetIconHandle(IDI_SERVICES);
-	mi.pszName = LPGEN("View MSN Services &Status");
-	menuItemsAll[3] = (HANDLE)MSN_CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM)&mi);
-
 
 	//////////////////////////////////////////////////////////////////////////////////////
 	// Contact menu initialization

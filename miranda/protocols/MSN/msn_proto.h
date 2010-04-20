@@ -274,7 +274,6 @@ struct CMsnProto : public PROTO_INTERFACE
 	INT_PTR __cdecl SetNicknameUI(WPARAM wParam, LPARAM lParam);
 	INT_PTR __cdecl MsnViewProfile(WPARAM wParam, LPARAM lParam);
 	INT_PTR __cdecl MsnSetupAlerts(WPARAM wParam, LPARAM lParam);
-	INT_PTR __cdecl MsnViewServiceStatus(WPARAM wParam, LPARAM lParam);
 
 	/////////////////////////////////////////////////////////////////////////////////////////
 	// MSN thread functions
