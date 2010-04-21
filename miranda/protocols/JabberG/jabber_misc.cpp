@@ -406,6 +406,9 @@ void CJabberProto::SetServerStatus( int iNewStatus )
 		return;
 	}
 
+	if ( m_iStatus == oldStatus )
+		return;
+
 	// send presence update
 	SendPresence( m_iStatus, true );
 	JSendBroadcast( NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS, ( HANDLE ) oldStatus, m_iStatus );
