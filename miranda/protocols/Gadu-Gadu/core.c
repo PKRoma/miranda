@@ -234,17 +234,17 @@ int gg_decodehosts(char *var, GGHOST *hosts, int max)
 void __cdecl gg_mainthread(GGPROTO *gg, void *empty)
 {
 	// Miranda variables
-	CCSDATA ccs;
-	PROTORECVEVENT pre;
+	NETLIBUSERSETTINGS nlus;
 	DBVARIANT dbv;
 	// Gadu-Gadu variables
-	struct gg_login_params p;
+	struct gg_login_params p = {0};
 	struct gg_event *e;
+	struct gg_session *sess;
 	// Host cycling variables
 	int hostnum = 0, hostcount = 0;
 	GGHOST hosts[64];
 	// Gadu-gadu login errors
-	struct { int type; char *str; } reason[] = {
+	static const struct tagReason { int type; char *str; } reason[] = {
 		{ GG_FAILURE_RESOLVING, 	"Miranda was unable to resolve the name of the Gadu-Gadu server to its numeric address." },
 		{ GG_FAILURE_CONNECTING,	"Miranda was unable to make a connection with a server. It is likely that the server is down, in which case you should wait for a while and try again later." },
 		{ GG_FAILURE_INVALID,		"Received invalid server response." },
@@ -258,11 +258,6 @@ void __cdecl gg_mainthread(GGPROTO *gg, void *empty)
 		{ GG_FAILURE_UNAVAILABLE,	"Gadu-Gadu servers are now down. Try again later." },
 		{ 0,						"Unknown" }
 	};
-	struct gg_session *sess;
-#if 1 // GG_CONFIG_MIRANDA
-	NETLIBUSERSETTINGS nlus;
-#endif
-
 	// Time deviation (300s)
 	time_t timeDeviation = DBGetContactSettingWord(NULL, GG_PROTO, GG_KEY_TIMEDEVIATION, GG_KEYDEF_TIMEDEVIATION);
 
@@ -272,7 +267,6 @@ void __cdecl gg_mainthread(GGPROTO *gg, void *empty)
 #else
 	gg_debug_level = 0;
 #endif
-	memset(&p, 0, sizeof(p));
 
 	// Broadcast that service is connecting
 	gg_broadcastnewstatus(gg, ID_STATUS_CONNECTING);
@@ -325,7 +319,6 @@ void __cdecl gg_mainthread(GGPROTO *gg, void *empty)
 	// Check out manual host setting
 	if(DBGetContactSettingByte(NULL, GG_PROTO, GG_KEY_MANUALHOST, GG_KEYDEF_MANUALHOST))
 	{
-		DBVARIANT dbv;
 		if(!DBGetContactSettingString(NULL, GG_PROTO, GG_KEY_SERVERHOSTS, &dbv))
 		{
 			hostcount = gg_decodehosts(dbv.pszVal, hosts, 64);
@@ -388,7 +381,6 @@ void __cdecl gg_mainthread(GGPROTO *gg, void *empty)
 	// Check if dcc is running and setup forwarding port
 	if(gg->dcc && DBGetContactSettingByte(NULL, GG_PROTO, GG_KEY_FORWARDING, GG_KEYDEF_FORWARDING))
 	{
-		DBVARIANT dbv;
 		if(!DBGetContactSettingString(NULL, GG_PROTO, GG_KEY_FORWARDHOST, &dbv))
 		{
 			if(!(p.external_addr = gg_dnslookup(gg, dbv.pszVal)))
@@ -819,6 +811,8 @@ retry:
 					// Check if not empty message ( who needs it? )
 					else if(!e->event.msg.recipients_count && strlen(e->event.msg.message) && strcmp(e->event.msg.message, "\xA0\0"))
 					{
+						CCSDATA ccs;
+						PROTORECVEVENT pre;
 						time_t t = time(NULL);
 						ccs.szProtoService = PSR_MESSAGE;
 						ccs.hContact = gg_getcontact(gg, e->event.msg.sender, 1, 0, NULL);
@@ -888,23 +882,20 @@ retry:
 					}
 					else
 					{
-						CLISTEVENT cle;
-						char service[128]; mir_snprintf(service, sizeof(service), GGS_RECVIMAGE, GG_PROTO);
+						CLISTEVENT cle = {0};
+						char service[128];
+						mir_snprintf(service, sizeof(service), GGS_RECVIMAGE, GG_PROTO);
 
-						cle.cbSize = sizeof(CLISTEVENT);
+						cle.cbSize = sizeof(cle);
 						cle.hContact = hContact;
-						cle.hIcon = (HICON) LoadImage(hInstance,
-							MAKEINTRESOURCE(IDI_IMAGE),
-							IMAGE_ICON,
-							GetSystemMetrics(SM_CXSMICON),
-							GetSystemMetrics(SM_CYSMICON),
-							0);
+						cle.hIcon = LoadIconEx("image");
 						cle.flags = CLEF_URGENT;
-						cle.hDbEvent = (HANDLE)("img");
-						cle.lParam = (LPARAM) img;
+						cle.hDbEvent = (HANDLE)"img";
+						cle.lParam = (LPARAM)img;
 						cle.pszService = service;
 						cle.pszTooltip = Translate("Image received");
 						CallService(MS_CLIST_ADDEVENT, 0, (LPARAM)&cle);
+						ReleaseIconEx("image");
 					}
 				}
 				break;
