@@ -40,7 +40,6 @@ static WNDPROC		OldTabControlClassProc;
 extern ButtonSet	g_ButtonSet;
 
 static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
-extern void GetIconSize(HICON hIcon, int* sizeX, int* sizeY);
 
 #define FIXED_TAB_SIZE 100
 
@@ -442,7 +441,7 @@ static void DrawItem(TabControlData *tabdat, HDC dc, RECT *rcItem, int nHint, in
 				int sizeX, sizeY;
 
 				hIcon = dat->iFlashIcon;
-				GetIconSize(hIcon, &sizeX, &sizeY);
+				Utils::getIconSize(hIcon, sizeX, sizeY);
 				iSize = sizeX;
 			} else if (dat->hTabIcon == dat->hTabStatusIcon && dat->hXStatusIcon)
 				hIcon = dat->hXStatusIcon;

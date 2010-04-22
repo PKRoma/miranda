@@ -59,8 +59,6 @@ static char		*szDivider = "\\strike---------------------------------------------
 static char		CHAT_rtfFontsGlobal[OPTIONS_FONTCOUNT + 2][RTFCACHELINESIZE];
 static char		*CHAT_rtffonts = 0;
 
-void GetIconSize(HICON hIcon, int* sizeX, int* sizeY);
-
 /*
  * ieview MUC support - mostly from scriver
  */
@@ -1291,7 +1289,7 @@ void LoadMsgLogBitmaps(void)
 	int sizeX = 0, sizeY = 0;
 
 	if (hIcons[0])
-		GetIconSize(hIcons[0], &sizeX, &sizeY);
+		Utils::getIconSize(hIcons[0], sizeX, sizeY);
 	else
 		sizeX = 16;
 

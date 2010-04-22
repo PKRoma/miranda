@@ -486,6 +486,7 @@ int AvatarChanged(WPARAM wParam, LPARAM lParam)
 				SendMessage(dat->hwnd, WM_SIZE, 0, 1);
 			ShowPicture(dat, TRUE);
 			dat->dwFlagsEx |= MWF_EX_AVATARCHANGED;
+			dat->pContainer->SideBar->updateSession(dat);
 		}
 	}
 	return 0;

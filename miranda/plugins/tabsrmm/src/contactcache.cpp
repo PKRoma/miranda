@@ -593,7 +593,7 @@ CContactCache* CContactCache::getContactCache(const HANDLE hContact)
  * @param src TCHAR*: original status message
  * @return TCHAR*:    converted status message. CALLER is responsible to free it, MUST use mir_free()
  */
-TCHAR* CContactCache::getNormalizedStatusMsg(const TCHAR *src)
+TCHAR* CContactCache::getNormalizedStatusMsg(const TCHAR *src, bool fStripAll)
 {
 	size_t	k = 0, i = 0;
 	TCHAR*  tszResult = 0;
@@ -604,10 +604,13 @@ TCHAR* CContactCache::getNormalizedStatusMsg(const TCHAR *src)
 	tstring dest;
 
 	for(i = 0; i < _tcslen(src); i++) {
-		if(src[i] == 0x0d || src[i] == '\t') {
+		if(src[i] == 0x0d || src[i] == '\t')
 			continue;
-		}
 		if(i && src[i] == (TCHAR)0x0a) {
+			if(fStripAll) {
+				dest.append(_T(" "));
+				continue;
+			}
 			dest.append(_T("\n"));
 			continue;
 		}
@@ -620,4 +623,34 @@ TCHAR* CContactCache::getNormalizedStatusMsg(const TCHAR *src)
 		tszResult[dest.length()] = 0;
 	}
 	return(tszResult);
+}
+
+/**
+ * retrieve the icon for the corresponding session.
+ */
+HICON CContactCache::getIcon(int& iSize) const
+{
+	HICON	hIcon;
+
+	if(m_dat && m_hwnd) {
+		if (m_dat->dwFlags & MWF_ERRORSTATE)
+			hIcon = PluginConfig.g_iconErr;
+		else if (m_dat->mayFlashTab)
+			hIcon = m_dat->iFlashIcon;
+		else {
+			if (m_dat->si && m_dat->iFlashIcon) {
+				int sizeX, sizeY;
+
+				hIcon = m_dat->iFlashIcon;
+				Utils::getIconSize(hIcon, sizeX, sizeY);
+				iSize = sizeX;
+			} else if (m_dat->hTabIcon == m_dat->hTabStatusIcon && m_dat->hXStatusIcon)
+				hIcon = m_dat->hXStatusIcon;
+			else
+				hIcon = m_dat->hTabIcon;
+		}
+	}
+	else
+		hIcon = LoadSkinnedProtoIcon(m_szProto, m_wStatus);
+	return(hIcon);
 }

@@ -402,10 +402,12 @@ const TCHAR* Utils::FormatTitleBar(const TWindowData *dat, const TCHAR *szFormat
 			 * messages)
 			 */
 			case 't':
-			case 'T':
-				if(dat->cache->getStatusMsg()) {
-					title.insert(tempmark + 2, dat->cache->getStatusMsg());
-					curpos = tempmark + lstrlen(dat->cache->getStatusMsg());
+			case 'T': {
+				TCHAR	*tszStatusMsg = dat->cache->getNormalizedStatusMsg(dat->cache->getStatusMsg(), true);
+
+				if(tszStatusMsg) {
+					title.insert(tempmark + 2, tszStatusMsg);
+					curpos = tempmark + lstrlen(tszStatusMsg);
 				}
 				else if(title[curpos] == 't') {
 					const TCHAR* tszStatusMsg = CTranslator::get(CTranslator::GEN_NO_STATUS);
@@ -413,8 +415,10 @@ const TCHAR* Utils::FormatTitleBar(const TWindowData *dat, const TCHAR *szFormat
 					curpos = tempmark + lstrlen(tszStatusMsg);
 				}
 				title.erase(tempmark, 2);
+				if(tszStatusMsg)
+					mir_free(tszStatusMsg);
 				break;
-
+			}
 			default:
 				title.erase(tempmark, 1);
 				break;
@@ -731,6 +735,31 @@ void Utils::SaveContainerSettings(TContainerData *pContainer, const char *szSett
 		pContainer->fPrivateThemeChanged = FALSE;
 	}
 }
+
+void Utils::scaleAvatarHeightLimited(const HBITMAP hBm, double& dNewWidth, double& dNewHeight, LONG maxHeight)
+{
+	BITMAP	bm;
+	double	dAspect;
+
+	GetObject(hBm, sizeof(bm), &bm);
+
+	if (bm.bmHeight > bm.bmWidth) {
+		if (bm.bmHeight > 0)
+			dAspect = (double)(maxHeight) / (double)bm.bmHeight;
+		else
+			dAspect = 1.0;
+		dNewWidth = (double)bm.bmWidth * dAspect;
+		dNewHeight = (double)maxHeight;
+	} else {
+		if (bm.bmWidth > 0)
+			dAspect = (double)(maxHeight) / (double)bm.bmWidth;
+		else
+			dAspect = 1.0;
+		dNewHeight = (double)bm.bmHeight * dAspect;
+		dNewWidth = (double)maxHeight;
+	}
+}
+
 /**
  * convert the avatar bitmap to icon format so that it can be used on the task bar
  * tries to keep correct aspect ratio of the avatar image
@@ -740,8 +769,7 @@ void Utils::SaveContainerSettings(TContainerData *pContainer, const char *szSett
  */
 HICON Utils::iconFromAvatar(const TWindowData *dat)
 {
-	BITMAP		bm;
-	double		dAspect, dNewWidth, dNewHeight;
+	double		dNewWidth, dNewHeight;
 	bool		fFree = false;
 	HIMAGELIST 	hIml_c = 0;
 	HICON		hIcon = 0;
@@ -751,23 +779,7 @@ HICON Utils::iconFromAvatar(const TWindowData *dat)
 		LONG	lIconSize = Win7Taskbar->getIconSize();
 
 		if(ace && ace->hbmPic) {
-			GetObject(ace->hbmPic, sizeof(bm), &bm);
-
-			if (bm.bmHeight > bm.bmWidth) {
-				if (bm.bmHeight > 0)
-					dAspect = (double)(lIconSize) / (double)bm.bmHeight;
-				else
-					dAspect = 1.0;
-				dNewWidth = (double)bm.bmWidth * dAspect;
-				dNewHeight = (double)lIconSize;
-			} else {
-				if (bm.bmWidth > 0)
-					dAspect = (double)(lIconSize) / (double)bm.bmWidth;
-				else
-					dAspect = 1.0;
-				dNewHeight = (double)bm.bmHeight * dAspect;
-				dNewWidth = (double)lIconSize;
-			}
+			scaleAvatarHeightLimited(ace->hbmPic, dNewWidth, dNewHeight, lIconSize);
 			/*
 			 * resize picture to fit it on the task bar, use an image list for converting it to
 			 * 32bpp icon format
@@ -810,6 +822,19 @@ HICON Utils::iconFromAvatar(const TWindowData *dat)
 	}
 	return(hIcon);
 }
+
+void Utils::getIconSize(HICON hIcon, int& sizeX, int& sizeY)
+{
+	ICONINFO ii;
+	BITMAP bm;
+	::GetIconInfo(hIcon, &ii);
+	::GetObject(ii.hbmColor, sizeof(bm), &bm);
+	sizeX = bm.bmWidth;
+	sizeY = bm.bmHeight;
+	::DeleteObject(ii.hbmMask);
+	::DeleteObject(ii.hbmColor);
+}
+
 /**
  * add a menu item to a ownerdrawn menu. mii must be pre-initialized
  *

@@ -65,7 +65,7 @@
     <UseOfMfc>false</UseOfMfc>
     <CharacterSet>Unicode</CharacterSet>
     <WholeProgramOptimization>true</WholeProgramOptimization>
-    <PlatformToolset>v100</PlatformToolset>
+    <PlatformToolset>v90</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
@@ -92,7 +92,7 @@
     <UseOfMfc>false</UseOfMfc>
     <CharacterSet>Unicode</CharacterSet>
     <WholeProgramOptimization>true</WholeProgramOptimization>
-    <PlatformToolset>Windows7SDK</PlatformToolset>
+    <PlatformToolset>v90</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
@@ -875,6 +875,7 @@
     <None Include="chat\Icons\5.ico" />
     <None Include="chat\Icons\6.ico" />
     <None Include="chat\Icons\action.ico" />
+    <None Include="ClassDiagram1.cd" />
     <None Include="res\angeli-icons\Add.ico" />
     <None Include="..\..\Miranda-IM\res\addcontact.ico" />
     <None Include="chat\Icons\addmode.ico" />

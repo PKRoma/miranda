@@ -66,6 +66,7 @@ ButtonSet 	g_ButtonSet = {0};
 
 int 		  CSkin::m_bAvatarBorderType = 0;
 COLORREF	  CSkin::m_avatarBorderClr = 0;
+COLORREF	  CSkin::m_sideBarContainerBG;
 BLENDFUNCTION CSkin::m_default_bf = {0};				// a global blend function, used in various places
 														// when you use it, reset SourceConstantAlpha to 255 and
 														// the blending mode to AC_SRC_ALPHA.
@@ -297,6 +298,10 @@ CSkinItem SkinItems[] = {
 		8, CLCDEFAULT_CORNER,
 		0xf0f0f0, 0x42b1ff, 1, CLCDEFAULT_TEXTCOLOR, 40, CLCDEFAULT_MRGN_LEFT,
 		CLCDEFAULT_MRGN_TOP, CLCDEFAULT_MRGN_RIGHT, CLCDEFAULT_MRGN_BOTTOM, CLCDEFAULT_IGNORE
+	}, {_T("Sidebar Background"), "TSKIN_SIDEBARBG", ID_EXTBKSIDEBARBG,
+		CLCDEFAULT_GRADIENT, CLCDEFAULT_CORNER,
+		0xb2e1ff, 0xb2e1ff, 1, CLCDEFAULT_TEXTCOLOR, 40, CLCDEFAULT_MRGN_LEFT,
+		CLCDEFAULT_MRGN_TOP, CLCDEFAULT_MRGN_RIGHT, CLCDEFAULT_MRGN_BOTTOM, 0
 	}
 };
 
@@ -1086,6 +1091,7 @@ void CSkin::Init(bool fStartup)
 	m_skinEnabled = m_frameSkins = false;
 	m_bAvatarBorderType = AVBORDER_NORMAL;
 	m_avatarBorderClr = ::GetSysColor(COLOR_3DDKSHADOW);
+	m_sideBarContainerBG = ::GetSysColor(COLOR_3DFACE);
 
 	m_SkinItems[ID_EXTBKINFOPANELBG] = _defInfoPanel;
 	/*
@@ -1206,6 +1212,7 @@ void CSkin::Unload()
 	CSideBar::unInitBG();
 	m_bAvatarBorderType = AVBORDER_NORMAL;
 	m_avatarBorderClr = ::GetSysColor(COLOR_3DDKSHADOW);
+	m_sideBarContainerBG = ::GetSysColor(COLOR_3DFACE);
 }
 
 void CSkin::LoadIcon(const TCHAR *szSection, const TCHAR *name, HICON *hIcon)
@@ -1669,6 +1676,12 @@ void CSkin::Load()
 
 			GetPrivateProfileString(_T("Avatars"), _T("BorderColor"), _T("000000"), buffer, 20, m_tszFileName);
 			m_avatarBorderClr = (COLORREF)HexStringToLong(buffer);
+			
+			GetPrivateProfileString(_T("Global"), _T("SideBarBG"), _T("None"), buffer, 20, m_tszFileName);
+			if(_tcscmp(buffer, _T("None")))
+				m_sideBarContainerBG = (COLORREF)HexStringToLong(buffer);
+			else
+				m_sideBarContainerBG = SkinItems[ID_EXTBKSIDEBARBG].COLOR;
 
 			m_bAvatarBorderType = GetPrivateProfileInt(_T("Avatars"), _T("BorderType"), 1, m_tszFileName);
 
@@ -2100,6 +2113,7 @@ void CSkin::SkinDrawBG(HWND hwndClient, HWND hwnd, struct TContainerData *pConta
 		dc = pContainer->cachedDC;
 	else
 		dc = ::GetDC(hwnd);
+	pt.y = max(pt.y, 0);
 	::BitBlt(hdcTarget, rcClient->left, rcClient->top, width, height, dc, pt.x, pt.y, SRCCOPY);
 	if (!pContainer)
 		::ReleaseDC(hwnd, dc);

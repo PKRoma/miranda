@@ -19,7 +19,10 @@
       <UniqueIdentifier>{c6aa9273-8563-4007-afa1-63e8d2164122}</UniqueIdentifier>
       <Extensions>ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe</Extensions>
     </Filter>
-    <Filter Include="Misc Files">
+    <Filter Include="BuildScripts">
+      <UniqueIdentifier>{196b0a74-3839-43b9-a9e8-8220bd015468}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Docs">
       <UniqueIdentifier>{34490cba-faaa-4738-91b7-f3f60bc24992}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
@@ -622,28 +625,32 @@
       <Filter>Resource Files</Filter>
     </None>
     <None Include="docs\changelog.txt">
-      <Filter>Misc Files</Filter>
+      <Filter>Docs</Filter>
     </None>
     <None Include="docs\INSTALL">
-      <Filter>Misc Files</Filter>
+      <Filter>Docs</Filter>
     </None>
     <None Include="langpacks\langpack_tabsrmm_german.txt">
-      <Filter>Misc Files</Filter>
+      <Filter>Docs</Filter>
     </None>
     <None Include="Makefile.ansi">
-      <Filter>Misc Files</Filter>
+      <Filter>Docs</Filter>
     </None>
     <None Include="docs\Popups.txt">
-      <Filter>Misc Files</Filter>
+      <Filter>Docs</Filter>
     </None>
     <None Include="docs\Readme.icons">
-      <Filter>Misc Files</Filter>
+      <Filter>Docs</Filter>
     </None>
     <None Include="docs\readme.txt">
-      <Filter>Misc Files</Filter>
+      <Filter>Docs</Filter>
     </None>
     <None Include="skin\tabsrmm.tsk">
-      <Filter>Misc Files</Filter>
+      <Filter>Docs</Filter>
     </None>
+    <None Include="BuildScripts\VS_2010_Toolset9.bat">
+      <Filter>BuildScripts</Filter>
+    </None>
+    <None Include="ClassDiagram1.cd" />
   </ItemGroup>
 </Project>

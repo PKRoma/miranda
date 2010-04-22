@@ -34,7 +34,6 @@
 
 #include "commonheaders.h"
 
-extern void GetIconSize(HICON hIcon, int* sizeX, int* sizeY);
 extern int TSAPI TBStateConvert2Flat(int state);
 extern int TSAPI RBStateConvert2Flat(int state);
 
@@ -60,6 +59,26 @@ TSideBarLayout CSideBar::m_layouts[CSideBar::NR_LAYOUTS] = {
 		NULL,
 		NULL,
 		SIDEBARLAYOUT_NORMAL
+	},
+	{
+		_T("Advanced layout with avatars"),
+		140, 40,
+		SIDEBARLAYOUT_NOCLOSEBUTTONS,
+		CSideBar::m_AdvancedContentRenderer,
+		CSideBar::m_DefaultBackgroundRenderer,
+		NULL,
+		NULL,
+		SIDEBARLAYOUT_NORMAL
+	},
+	{
+		_T("Advanced with avatars, vertical orientation"),
+		40, 40,
+		SIDEBARLAYOUT_DYNHEIGHT | SIDEBARLAYOUT_VERTICALORIENTATION | SIDEBARLAYOUT_NOCLOSEBUTTONS,
+		CSideBar::m_AdvancedContentRenderer,
+		CSideBar::m_DefaultBackgroundRenderer,
+		CSideBar::m_measureAdvancedVertical,
+		NULL,
+		SIDEBARLAYOUT_VERTICAL
 	}
 };
 
@@ -110,7 +129,6 @@ CSideBarButton::~CSideBarButton()
 	if(m_hwnd) {
 		::SendMessage(m_hwnd, BUTTONSETASSIDEBARBUTTON, 0, 0);		// make sure, the button will no longer call us back
 		::DestroyWindow(m_hwnd);
-		//_DebugTraceA("button item %d destroyed", m_id);
 	}
 }
 
@@ -146,7 +164,10 @@ const SIZE& CSideBarButton::measureItem()
 		if(m_dat->pContainer->dwFlagsEx & TCF_CLOSEBUTTON)
 			sz.cx += 20;
 
-		m_sz.cy = sz.cx;
+		if(m_sideBarLayout->dwFlags & CSideBar::SIDEBARLAYOUT_VERTICALORIENTATION)
+			m_sz.cy = sz.cx;
+		else
+			m_sz.cx = sz.cx;
 
 		::SelectObject(dc, oldFont);
 		::ReleaseDC(m_hwnd, dc);
@@ -247,22 +268,7 @@ void CSideBarButton::renderIconAndNick(const HDC hdc, const RECT *rcItem) const
 	const 	TContainerData *pContainer = m_sideBar->getContainer();
 
 	if(m_dat && pContainer) {
-		if (m_dat->dwFlags & MWF_ERRORSTATE)
-			hIcon = PluginConfig.g_iconErr;
-		else if (m_dat->mayFlashTab)
-			hIcon = m_dat->iFlashIcon;
-		else {
-			if (m_dat->si && m_dat->iFlashIcon) {
-				int sizeX, sizeY;
-
-				hIcon = m_dat->iFlashIcon;
-				::GetIconSize(hIcon, &sizeX, &sizeY);
-				iSize = sizeX;
-			} else if (m_dat->hTabIcon == m_dat->hTabStatusIcon && m_dat->hXStatusIcon)
-				hIcon = m_dat->hXStatusIcon;
-			else
-				hIcon = m_dat->hTabIcon;
-		}
+		hIcon = m_dat->cache->getIcon(iSize);
 
 		if (m_dat->mayFlashTab == FALSE || (m_dat->mayFlashTab == TRUE && m_dat->bTabFlash != 0) || !(pContainer->dwFlagsEx & TCF_FLASHICON)) {
 			DWORD ix = rc.left + 4;
@@ -317,7 +323,7 @@ int CSideBarButton::testCloseButton() const
 	if(m_id == IDC_SIDEBARUP || m_id == IDC_SIDEBARDOWN)							// scroller buttons don't have a close button
 		return(-1);
 
-	if(m_sideBar->getContainer()->dwFlagsEx & TCF_CLOSEBUTTON) {
+	if(m_sideBar->getContainer()->dwFlagsEx & TCF_CLOSEBUTTON && !(getLayout()->dwFlags & CSideBar::SIDEBARLAYOUT_NOCLOSEBUTTONS)) {
 		POINT pt;
 		::GetCursorPos(&pt);
 		::ScreenToClient(m_hwnd, &pt);
@@ -952,6 +958,21 @@ void CSideBar::resizeScrollWnd(LONG x, LONG y, LONG width, LONG height) const
 				   SWP_NOCOPYBITS | SWP_NOZORDER | SWP_SHOWWINDOW | SWP_NOSENDCHANGING | SWP_DEFERERASE | SWP_ASYNCWINDOWPOS);
 }
 
+void CSideBar::invalidateButton(const TWindowData* dat)
+{
+	if(m_isActive && m_isVisible) {
+		ButtonIterator it = findSession(dat);
+
+		if(it != this->m_buttonlist.end())
+			RedrawWindow((*it)->m_buttonControl->hwnd, 0, 0, RDW_INVALIDATE | RDW_UPDATENOW);
+	}
+}
+
+/**
+ * the window procedure for the sidebar container window (the window which
+ * acts as a parent for the actual buttons). itself, this window is a child
+ * of the container window.
+ */
 LRESULT CALLBACK CSideBar::wndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch(msg) {
@@ -961,8 +982,14 @@ LRESULT CALLBACK CSideBar::wndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lP
 			HDC hdc = (HDC)wParam;
 			RECT rc;
 			::GetClientRect(hwnd, &rc);
-			if (CSkin::m_skinEnabled)
-				CSkin::SkinDrawBG(hwnd, m_pContainer->hwnd, m_pContainer, &rc, hdc);
+			if (CSkin::m_skinEnabled) {
+				CSkinItem *item = &SkinItems[ID_EXTBKSIDEBARBG];
+
+				if(item->IGNORED)
+					CSkin::SkinDrawBG(hwnd, m_pContainer->hwnd, m_pContainer, &rc, hdc);
+				else
+					CSkin::DrawItem(hdc, &rc, item);
+			}
 			else if (M->isAero() || M->isVSThemed()) {
 				HDC		hdcMem, hdcBG;
 				HANDLE  hbp = 0;
@@ -1040,10 +1067,23 @@ void __fastcall CSideBar::m_DefaultBackgroundRenderer(const HDC hdc, const RECT 
 	bool	fIsActiveItem = (item->m_sideBar->getActiveItem() == item);
 
 	if(CSkin::m_skinEnabled) {
-		int 	id = stateId == PBS_PRESSED || fIsActiveItem ? ID_EXTBKBUTTONSPRESSED : (stateId == PBS_HOT ? ID_EXTBKBUTTONSMOUSEOVER : ID_EXTBKBUTTONSNPRESSED);
-		CSkinItem *item = &SkinItems[id];
+		const		TWindowData*	dat = item->getDat();
+		int 		id = stateId == PBS_PRESSED || fIsActiveItem ? ID_EXTBKBUTTONSPRESSED : (stateId == PBS_HOT ? ID_EXTBKBUTTONSMOUSEOVER : ID_EXTBKBUTTONSNPRESSED);
+		CSkinItem*	skinItem = &SkinItems[id];
+		HWND		hwnd;
 
-		CSkin::DrawItem(hdc, rc, item);
+		if(id == IDC_SIDEBARUP)
+			hwnd = item->m_sideBar->getScrollUp()->m_buttonControl->hwnd;
+		else if(id == IDC_SIDEBARDOWN)
+			hwnd = item->m_sideBar->getScrollDown()->m_buttonControl->hwnd;
+		else
+			hwnd = item->m_buttonControl->hwnd;
+
+		HBRUSH br = ::CreateSolidBrush(CSkin::m_sideBarContainerBG);
+		::FillRect(hdc, const_cast<RECT *>(rc), br);
+		::DeleteObject(br);
+
+		CSkin::DrawItem(hdc, rc, skinItem);
 	}
 	else if(M->isAero()) {
 		if(id == IDC_SIDEBARUP || id == IDC_SIDEBARDOWN) {
@@ -1056,7 +1096,6 @@ void __fastcall CSideBar::m_DefaultBackgroundRenderer(const HDC hdc, const RECT 
 						  31, 4, 0);
 		}
 		else {
-			//CSkin::ApplyAeroEffect(hdc, rc, CSkin::AERO_EFFECT_AREA_INFOPANEL, 0);
 			CSkin::m_switchBarItem->setAlphaFormat(AC_SRC_ALPHA,
 												   (stateId == PBS_HOT && !fIsActiveItem) ? 250 : (fIsActiveItem || stateId == PBS_PRESSED ? 250 : 230));
 			CSkin::m_switchBarItem->Render(hdc, rc, true);
@@ -1114,9 +1153,9 @@ void __fastcall CSideBar::m_DefaultBackgroundRenderer(const HDC hdc, const RECT 
 void __fastcall CSideBar::m_DefaultContentRenderer(const HDC hdc, const RECT *rcBox,
 												   const CSideBarButton *item)
 {
-	UINT 						id = item->getID();
+	UINT 				id = item->getID();
 	const TWindowData* 	dat = item->getDat();
-	int	  						stateID = item->m_buttonControl->stateId;
+	int	  				stateID = item->m_buttonControl->stateId;
 
 	LONG	cx = rcBox->right - rcBox->left;
 	LONG	cy = rcBox->bottom - rcBox->top;
@@ -1131,3 +1170,115 @@ void __fastcall CSideBar::m_DefaultContentRenderer(const HDC hdc, const RECT *rc
 		item->renderIconAndNick(hdc, rcBox);
 }
 
+/**
+ * content renderer for the advanced side bar button layout. includes
+ * avatars
+ */
+void __fastcall CSideBar::m_AdvancedContentRenderer(const HDC hdc, const RECT *rcBox,
+	const CSideBarButton *item)
+{
+	UINT				id = item->getID();
+	const TWindowData*	dat = item->getDat();
+	int					stateID = item->m_buttonControl->stateId;
+
+	LONG	cx = rcBox->right - rcBox->left;
+	LONG	cy = rcBox->bottom - rcBox->top;
+	SIZE	szFirstLine, szSecondLine;
+
+	if(id == IDC_SIDEBARUP || id == IDC_SIDEBARDOWN)
+		m_DefaultContentRenderer(hdc, rcBox, item);
+	else if(dat) {
+		RECT rc = *rcBox;
+
+		if(dat->ace && dat->ace->hbmPic) {		// we have an avatar
+			double	dNewHeight, dNewWidth;
+			LONG	maxHeight = cy - 8;
+			bool	fFree = false;
+
+			Utils::scaleAvatarHeightLimited(dat->ace->hbmPic, dNewWidth, dNewHeight, maxHeight);
+
+			HBITMAP hbmResized = CSkin::ResizeBitmap(dat->ace->hbmPic, dNewWidth, dNewHeight, fFree);
+			HDC		dc = CreateCompatibleDC(hdc);
+			HBITMAP hbmOld = reinterpret_cast<HBITMAP>(::SelectObject(dc, hbmResized));
+
+			LONG	xOff = (cx - maxHeight) + (maxHeight - (LONG)dNewWidth) / 2 - 4;
+			LONG	yOff = (cy - (LONG)dNewHeight) / 2;
+
+			CMimAPI::m_MyAlphaBlend(hdc, xOff, yOff, (LONG)dNewWidth, (LONG)dNewHeight, dc, 0, 0, (LONG)dNewWidth, (LONG)dNewHeight, CSkin::m_default_bf);
+			::SelectObject(dc, hbmOld);
+			::DeleteObject(hbmResized);
+			::DeleteDC(dc);
+			rc.right -= (maxHeight + 6);
+		}
+
+		/*
+		 * calculate metrics based on font configuration. Determine if we have enough
+		 * space for both lines
+		 */
+
+		rc.left += 3;
+		HFONT	hOldFont = reinterpret_cast<HFONT>(::SelectObject(hdc, CInfoPanel::m_ipConfig.hFonts[IPFONTID_NICK]));
+		::GetTextExtentPoint32A(hdc, "A", 1, &szFirstLine);
+		::SelectObject(hdc, CInfoPanel::m_ipConfig.hFonts[IPFONTID_STATUS]);
+		::GetTextExtentPoint32A(hdc, "A", 1, &szSecondLine);
+		szSecondLine.cy = max(szSecondLine.cy, 18);
+
+		LONG	required = szFirstLine.cy + szSecondLine.cy;
+		bool	fSecondLine = (required < cy ? true : false);
+
+		DWORD	dtFlags = DT_SINGLELINE | DT_WORD_ELLIPSIS | DT_END_ELLIPSIS | (!fSecondLine ? DT_VCENTER : 0);
+
+		::SelectObject(hdc, CInfoPanel::m_ipConfig.hFonts[IPFONTID_NICK]);
+		rc.top++;
+		::SetBkMode(hdc, TRANSPARENT);
+		CSkin::RenderText(hdc, dat->hThemeIP, dat->cache->getNick(), &rc, 
+						  dtFlags, CSkin::m_glowSize, CInfoPanel::m_ipConfig.clrs[IPFONTID_NICK]);
+
+		if(fSecondLine) {
+			int		iSize;
+			HICON	hIcon = dat->cache->getIcon(iSize);
+
+			rc.top = rc.bottom - szSecondLine.cy - 2;
+			::DrawIconEx(hdc, rc.left, rc.top + (rc.bottom - rc.top) / 2 - 8, hIcon, 16, 16, 0, 0, DI_NORMAL);
+			rc.left += 18;
+			::SelectObject(hdc, CInfoPanel::m_ipConfig.hFonts[IPFONTID_STATUS]);
+			CSkin::RenderText(hdc, dat->hThemeIP, dat->szStatus, &rc, 
+							  dtFlags | DT_VCENTER, CSkin::m_glowSize, CInfoPanel::m_ipConfig.clrs[IPFONTID_STATUS]);
+		}
+		::SelectObject(hdc, hOldFont);
+	}
+}
+
+/**
+ * measure callback for the advanced sidebar button layout (vertical mode
+ * with variable height buttons)
+ */
+const SIZE& __fastcall CSideBar::m_measureAdvancedVertical(CSideBarButton* item)
+{
+	const TWindowData*	dat = item->getDat();
+
+	SIZE sz = {0};
+
+	if(dat) {
+		SIZE szFirstLine, szSecondLine;
+
+		if(dat->ace && dat->ace->hbmPic)
+			sz.cy = item->getLayout()->width;
+
+		HDC	dc = ::GetDC(dat->hwnd);
+
+		HFONT	hOldFont = reinterpret_cast<HFONT>(::SelectObject(dc, CInfoPanel::m_ipConfig.hFonts[IPFONTID_NICK]));
+		::GetTextExtentPoint32(dc, dat->cache->getNick(), lstrlen(dat->cache->getNick()), &szFirstLine);
+		::SelectObject(dc, CInfoPanel::m_ipConfig.hFonts[IPFONTID_STATUS]);
+		::GetTextExtentPoint32(dc, dat->szStatus, lstrlen(dat->szStatus), &szSecondLine);
+		::SelectObject(dc, hOldFont);
+		ReleaseDC(dat->hwnd, dc);
+
+		szSecondLine.cx += 18;				// icon space
+
+		sz.cy += max(szFirstLine.cx + 4, szSecondLine.cx + 4);
+		sz.cy += 2;
+	}
+	item->setSize(sz);
+	return(item->getSize());
+}

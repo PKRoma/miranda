@@ -100,8 +100,11 @@ public:
 	static 	void 				TSAPI showDlgControl				(const HWND hwnd, UINT id, int showCmd);
 	static	int					TSAPI mustPlaySound					(const TWindowData *dat);
 	static 	HICON				TSAPI iconFromAvatar				(const TWindowData *dat);
+	static	void				TSAPI getIconSize					(HICON hIcon, int& sizeX, int& sizeY);
+
 	static  void 				TSAPI extractResource				(const HMODULE h, const UINT uID, const TCHAR *tszName, const TCHAR *tszPath,
 																	 const TCHAR *tszFilename, bool fForceOverwrite);
+	static	void scaleAvatarHeightLimited(const HBITMAP hBm, double& dNewWidth, double& dNewHeight, LONG maxHeight);
 
 	template<typename T> static size_t TSAPI CopyToClipBoard(T* _t, const HWND hwndOwner)
 	{
@@ -154,7 +157,6 @@ public:
 			}
 		}
 	}
-
 public:
 	static	TRTFColorTable*		rtf_ctable;
 	static	int					rtf_ctable_size;

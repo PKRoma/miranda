@@ -323,6 +323,7 @@ public:
 	static SIZE		m_titleBarButtonSize;
 	static int		m_bAvatarBorderType;
 	static COLORREF m_avatarBorderClr;
+	static COLORREF m_sideBarContainerBG;
 	static COLORREF m_ContainerColorKey, m_DefaultFontColor;
 	static HBRUSH 	m_ContainerColorKeyBrush, m_MenuBGBrush;
 	static bool		m_skinEnabled;

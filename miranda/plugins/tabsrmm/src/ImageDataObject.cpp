@@ -47,18 +47,6 @@ extern void ImageDataInsertBitmap(IRichEditOle *ole, HBITMAP hBm)
 	CImageDataObject::InsertBitmap(ole, hBm);
 }
 
-extern void GetIconSize(HICON hIcon, int* sizeX, int* sizeY)
-{
-	ICONINFO ii;
-	BITMAP bm;
-	GetIconInfo(hIcon, &ii);
-	GetObject(ii.hbmColor, sizeof(bm), &bm);
-	if (sizeX != NULL) *sizeX = bm.bmWidth;
-	if (sizeY != NULL) *sizeY = bm.bmHeight;
-	DeleteObject(ii.hbmMask);
-	DeleteObject(ii.hbmColor);
-}
-
 int CacheIconToBMP(struct TLogIcon *theIcon, HICON hIcon, COLORREF backgroundColor, int sizeX, int sizeY)
 {
 	bool succeeded = false;
@@ -67,9 +55,11 @@ int CacheIconToBMP(struct TLogIcon *theIcon, HICON hIcon, COLORREF backgroundCol
 	int IconSizeY = sizeY;
 
 	if ((IconSizeX == 0) || (IconSizeY == 0)) {
-		GetIconSize(hIcon, &IconSizeX, &IconSizeY);
-		if (sizeX != 0) IconSizeX = sizeX;
-		if (sizeY != 0) IconSizeY = sizeY;
+		Utils::getIconSize(hIcon, IconSizeX, IconSizeY);
+		if (sizeX != 0) 
+			IconSizeX = sizeX;
+		if (sizeY != 0) 
+			IconSizeY = sizeY;
 	}
 	RECT rc;
 	BITMAPINFOHEADER bih = {0};

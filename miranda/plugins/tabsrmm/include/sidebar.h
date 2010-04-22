@@ -50,7 +50,7 @@ struct TSideBarLayout {
 	 */
 	void		(__fastcall *pfnContentRenderer)(const HDC hdc, const RECT *rc, const CSideBarButton *item);
 	void		(__fastcall *pfnBackgroundRenderer)(const HDC hdc, const RECT *rc, const CSideBarButton *item);
-	void		(__fastcall *pfnMeasureItem)(const CSideBarButton *item);
+	const SIZE&	(__fastcall *pfnMeasureItem)(CSideBarButton *item);
 	void		(__fastcall *pfnLayout)(const CSideBar *sideBar, RECT *rc);
 	UINT		uId;						// numeric id by which the layout is identified. basically, the index into the array.
 };
@@ -66,6 +66,7 @@ public:
 
 	LONG  						getHeight() const 			{ return(m_sz.cy); }
 	const SIZE&					getSize() const 			{ return(m_sz); }
+	void						setSize(const SIZE& newSize){ m_sz = newSize; }
 	const bool					isTopAligned() const 		{ return(m_isTopAligned); }
 	const HWND					getHwnd() const 			{ return(m_hwnd); }
 	const UINT					getID() const 				{ return(m_id); }
@@ -101,7 +102,7 @@ class CSideBar
 {
 public:
 	enum {
-		NR_LAYOUTS = 2
+		NR_LAYOUTS = 4
 	};
 
 	enum {
@@ -118,7 +119,8 @@ public:
 		SIDEBARORIENTATION_RIGHT = 16,
 
 		SIDEBARLAYOUT_DYNHEIGHT = 32,
-		SIDEBARLAYOUT_VERTICALORIENTATION = 64
+		SIDEBARLAYOUT_VERTICALORIENTATION = 64,
+		SIDEBARLAYOUT_NOCLOSEBUTTONS = 128
 	};
 
 	enum {
@@ -144,8 +146,11 @@ public:
 	const bool					isActive() const 			{ return(m_isActive); }
 	const bool					isVisible() const 			{ return(m_isVisible); }
 	const CSideBarButton* 		getActiveItem() const 		{ return(m_activeItem); }
+	const CSideBarButton*		getScrollUp() const			{ return(m_up); }
+	const CSideBarButton*		getScrollDown() const		{ return(m_down); }
 	bool						isSkinnedContainer() const 	{ return(CSkin::m_skinEnabled ? true : false); }
 	const UINT					getLayoutId() const 		{ return(m_uLayout); }
+	void						invalidateButton			(const TWindowData* dat);
 
 	const CSideBarButton* 		setActiveItem				(const CSideBarButton *newItem)
 	{
@@ -194,7 +199,7 @@ private:
 private:
 	HWND								m_hwndScrollWnd;
 	std::vector<CSideBarButton*> 		m_buttonlist;							// our list of buttons
-	TContainerData*				m_pContainer;							// our master and commander...
+	TContainerData*						m_pContainer;							// our master and commander...
 	LONG								m_width;								// required width of the bar (m_elementWidth + padding)
 	DWORD								m_dwFlags;
 	CSideBarButton*						m_up, *m_down;							// the scroller buttons (up down)
@@ -220,6 +225,9 @@ private:
 	static					TSideBarLayout 	m_layouts[NR_LAYOUTS];
 	static void __fastcall  m_DefaultBackgroundRenderer(const HDC hdc, const RECT *rc, const CSideBarButton *item);
 	static void __fastcall  m_DefaultContentRenderer(const HDC hdc, const RECT *rc, const CSideBarButton *item);
+	static void __fastcall  m_AdvancedContentRenderer(const HDC hdc, const RECT *rc, const CSideBarButton *item);
+	
+	static const SIZE& __fastcall	m_measureAdvancedVertical(CSideBarButton *item);
 };
 
 inline void	CSideBarButton::setLayout(const TSideBarLayout *newLayout)

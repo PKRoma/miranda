@@ -60,7 +60,6 @@ static int g_status_events[] = {
 	EVENTTYPE_WAT_ANSWER,
 	EVENTTYPE_JABBER_CHATSTATES,
 	EVENTTYPE_JABBER_PRESENCE
-
 };
 
 static int g_status_events_size = 0;
@@ -2337,7 +2336,8 @@ void TSAPI GetMyNick(TWindowData *dat)
 
 HICON TSAPI MY_GetContactIcon(const TWindowData *dat)
 {
-	return(LoadSkinnedProtoIcon(dat->cache->getActiveProto(), dat->cache->getActiveStatus()));
+	//return(LoadSkinnedProtoIcon(dat->cache->getActiveProto(), dat->cache->getActiveStatus()));
+	return(LoadSkinnedProtoIcon(dat->cache->getActiveProto(), dat->cache->getStatus()));
 }
 
 static void TSAPI MTH_updatePreview(const TWindowData *dat)

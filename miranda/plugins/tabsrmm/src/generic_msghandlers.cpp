@@ -1658,6 +1658,10 @@ int TSAPI DM_SplitterGlobalEvent(TWindowData *dat, WPARAM wParam, LPARAM lParam)
 	return(0);
 }
 
+/**
+ * incoming event handler
+ */
+
 void TSAPI DM_EventAdded(TWindowData *dat, WPARAM wParam, LPARAM lParam)
 {
 	TContainerData *m_pContainer = dat->pContainer;
