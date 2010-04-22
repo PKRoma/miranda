@@ -227,7 +227,7 @@ void CJabberProto::OnIqResultGetAuth( HXML iqNode )
 		HXML query = iq << XQUERY( _T("jabber:iq:auth"));
 		query << XCHILD( _T("username"), m_ThreadInfo->username );
 		if ( xmlGetChild( queryNode, "digest" ) != NULL && m_szStreamId ) {
-			char* str = mir_utf8encode( m_ThreadInfo->password );
+			char* str = mir_utf8encodeT( m_ThreadInfo->password );
 			char text[200];
 			mir_snprintf( text, SIZEOF(text), "%s%s", m_szStreamId, str );
 			mir_free( str );
@@ -237,7 +237,7 @@ void CJabberProto::OnIqResultGetAuth( HXML iqNode )
 			}
 		}
 		else if ( xmlGetChild( queryNode, "password" ) != NULL )
-			query << XCHILD( _T("password"), _A2T(m_ThreadInfo->password));
+			query << XCHILD( _T("password"), m_ThreadInfo->password );
 		else {
 			Log( "No known authentication mechanism accepted by the server." );
 
@@ -1347,7 +1347,7 @@ void CJabberProto::OnIqResultSetPassword( HXML iqNode )
 		return;
 
 	if ( !lstrcmp( type, _T("result"))) {
-		strncpy( m_ThreadInfo->password, m_ThreadInfo->newPassword, SIZEOF( m_ThreadInfo->password ));
+		_tcsncpy( m_ThreadInfo->password, m_ThreadInfo->newPassword, SIZEOF( m_ThreadInfo->password ));
 		MessageBox( NULL, TranslateT( "Password is successfully changed. Don't forget to update your password in the Jabber protocol option." ), TranslateT( "Change Password" ), MB_OK|MB_ICONINFORMATION|MB_SETFOREGROUND );
 	}
 	else if ( !lstrcmp( type, _T("error")))

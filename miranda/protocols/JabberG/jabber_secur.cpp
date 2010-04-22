@@ -126,12 +126,10 @@ char* TNtlmAuth::getInitialRequest()
 
 	// This generates login method advertisement packet
 	char* result;
-	if ( info->password[0] != 0 ) {
-		TCHAR* pass = mir_a2t( info->password );
-		result = Netlib_NtlmCreateResponse2( hProvider, "", info->username, pass, &complete );
-		mir_free( pass );
-	}
-	else result = Netlib_NtlmCreateResponse2( hProvider, "", NULL, NULL, &complete );
+	if ( info->password[0] != 0 )
+		result = Netlib_NtlmCreateResponse2( hProvider, "", info->username, info->password, &complete );
+	else 
+		result = Netlib_NtlmCreateResponse2( hProvider, "", NULL, NULL, &complete );
 
 	return result;
 }
@@ -142,12 +140,10 @@ char* TNtlmAuth::getChallenge( const TCHAR* challenge )
 		return NULL;
 
 	char *text = ( !lstrcmp( challenge, _T("="))) ? mir_strdup( "" ) : mir_t2a( challenge ), *result;
-	if ( info->password[0] != 0 ) {
-		TCHAR* pass = mir_a2t( info->password );
-		result = Netlib_NtlmCreateResponse2( hProvider, text, info->username, pass, &complete );
-		mir_free( pass );
-	}
-	else result = Netlib_NtlmCreateResponse2( hProvider, text, NULL, NULL, &complete );
+	if ( info->password[0] != 0 )
+		result = Netlib_NtlmCreateResponse2( hProvider, text, info->username, info->password, &complete );
+	else 
+		result = Netlib_NtlmCreateResponse2( hProvider, text, NULL, NULL, &complete );
 	
 	mir_free( text );
 	return result;
@@ -192,8 +188,8 @@ char* TMD5Auth::getChallenge( const TCHAR* challenge )
 	sprintf( cnonce, "%08x%08x%08x%08x", htonl(digest[0]), htonl(digest[1]), htonl(digest[2]), htonl(digest[3]));
 
 	char *uname = mir_utf8encodeT( info->username ), 
-		  *passw = mir_utf8encode( info->password ), 
-		  *serv  = mir_utf8encode( info->server );
+		 *passw = mir_utf8encodeT( info->password ), 
+		 *serv  = mir_utf8encode( info->server );
 
 	mir_md5_init( &ctx );
 	mir_md5_append( &ctx, ( BYTE* )uname,  (int)strlen( uname ));
@@ -259,13 +255,17 @@ TPlainAuth::~TPlainAuth()
 
 char* TPlainAuth::getInitialRequest()
 {
-	char *temp = mir_t2a(info->username);
-	size_t size = strlen(temp)+strlen(info->password)+2;
-	char *toEncode = ( char* )alloca( size+1 );
-	mir_snprintf( toEncode, size+1, "%c%s%c%s", 0, temp, 0, info->password );
-	char* result = JabberBase64Encode( toEncode, (int)size );
-	mir_free(temp);
-	return result;
+	char *uname = mir_utf8encodeT( info->username ), 
+		 *passw = mir_utf8encodeT( info->password ); 
+
+	const size_t size = strlen(uname) + strlen(passw) + 3;
+	char *toEncode = ( char* )alloca( size );
+	mir_snprintf( toEncode, size, "%c%s%c%s", 0, uname, 0, passw );
+	
+	mir_free( uname );
+	mir_free( passw );
+
+	return JabberBase64Encode( toEncode, (int)size - 1 );
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////

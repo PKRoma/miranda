@@ -838,7 +838,7 @@ struct CJabberProto : public PROTO_INTERFACE
 
 	//---- jabber_thread.c ----------------------------------------------
 
-	char   m_savedPassword[128];
+	TCHAR   m_savedPassword[128];
 
 	typedef struct {
 		bool isPlainAvailable;

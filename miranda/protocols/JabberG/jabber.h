@@ -364,13 +364,13 @@ struct ThreadData
 
 	// connection & login data
 	TCHAR username[128];
-	char  password[128];
+	TCHAR password[128];
 	char  server[128];
 	char  manualHost[128];
 	TCHAR resource[128];
 	TCHAR fullJID[256];
 	WORD  port;
-	char  newPassword[128];
+	TCHAR newPassword[128];
 
 	void  close( void );
 	int   recv( char* buf, size_t len );

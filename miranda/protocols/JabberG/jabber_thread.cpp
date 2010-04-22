@@ -63,7 +63,7 @@ struct JabberPasswordDlgParam
 
 	BOOL   saveOnlinePassword;
 	WORD   dlgResult;
-	char   onlinePassword[128];
+	TCHAR  onlinePassword[128];
 	HANDLE hEventPasswdDlg;
 	TCHAR* ptszJid;
 };
@@ -94,7 +94,7 @@ static INT_PTR CALLBACK JabberPasswordDlgProc( HWND hwndDlg, UINT msg, WPARAM wP
 			param->saveOnlinePassword = IsDlgButtonChecked( hwndDlg, IDC_SAVEPASSWORD );
 			param->pro->JSetByte( NULL, "SaveSessionPassword", param->saveOnlinePassword );
 
-			GetDlgItemTextA( hwndDlg, IDC_PASSWORD, param->onlinePassword, SIZEOF( param->onlinePassword ));
+			GetDlgItemText( hwndDlg, IDC_PASSWORD, param->onlinePassword, SIZEOF( param->onlinePassword ));
 			// Fall through
 		case IDCANCEL:
 			param->dlgResult = LOWORD( wParam );
@@ -327,7 +327,7 @@ LBL_FatalError:
 
 		if ( m_options.SavePassword == FALSE ) {
 			if (*m_savedPassword) {
-				strncpy( info->password, m_savedPassword, SIZEOF( info->password ));
+				_tcsncpy( info->password, m_savedPassword, SIZEOF( info->password ));
 				info->password[ SIZEOF( info->password )-1] = '\0';
 			} 
 			else {
@@ -347,23 +347,22 @@ LBL_FatalError:
 					goto LBL_FatalError;
 				}
 
-				if ( param.saveOnlinePassword ) lstrcpyA(m_savedPassword, param.onlinePassword);
+				if ( param.saveOnlinePassword ) lstrcpy(m_savedPassword, param.onlinePassword);
 				else *m_savedPassword = 0;
 
-				strncpy( info->password, param.onlinePassword, SIZEOF( info->password ));
+				_tcsncpy( info->password, param.onlinePassword, SIZEOF( info->password ));
 				info->password[ SIZEOF( info->password )-1] = '\0';
 			}
 		}
 		else {
-			if ( DBGetContactSettingString( NULL, m_szModuleName, "Password", &dbv )) {
+			TCHAR *passw = JGetStringCrypt(NULL, "Password");
+			if ( passw == NULL ) {
 				JSendBroadcast( NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_BADUSERID );
 				Log( "Thread ended, password is not configured" );
 				goto LBL_FatalError;
 			}
-			JCallService( MS_DB_CRYPT_DECODESTRING, strlen( dbv.pszVal )+1, ( LPARAM )dbv.pszVal );
-			strncpy( info->password, dbv.pszVal, SIZEOF( info->password ));
+			_tcsncpy( info->password, passw, SIZEOF( info->password ));
 			info->password[SIZEOF( info->password )-1] = '\0';
-			JFreeVariant( &dbv );
 	}	}
 
 	else if ( info->type == JABBER_SESSION_REGISTER ) {
@@ -1927,7 +1926,7 @@ void CJabberProto::OnProcessRegIq( HXML node, ThreadData* info )
 
 			XmlNodeIq iq( _T("set"), iqIdRegSetReg );
 			HXML query = iq << XQUERY( _T(JABBER_FEAT_REGISTER));
-			query << XCHILD( _T("password"), _A2T(info->password));
+			query << XCHILD( _T("password"), info->password );
 			query << XCHILD( _T("username"), info->username );
 			info->send( iq );
 

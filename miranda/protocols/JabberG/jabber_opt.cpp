@@ -295,7 +295,7 @@ private:
 
 		ThreadData *thread = new ThreadData( m_regInfo->proto, JABBER_SESSION_REGISTER );
 		_tcsncpy( thread->username, m_regInfo->username, SIZEOF( thread->username ));
-		strncpy( thread->password, m_regInfo->password, SIZEOF( thread->password ));
+		_tcsncpy( thread->password, m_regInfo->password, SIZEOF( thread->password ));
 		strncpy( thread->server, m_regInfo->server, SIZEOF( thread->server ));
 		strncpy( thread->manualHost, m_regInfo->manualHost, SIZEOF( thread->manualHost ));
 		thread->port = m_regInfo->port;
@@ -517,9 +517,8 @@ protected:
 
 		if (m_chkSavePassword.GetState() == BST_CHECKED)
 		{
-			char *text = m_txtPassword.GetTextA();
-			JCallService(MS_DB_CRYPT_ENCODESTRING, lstrlenA(text), (LPARAM)text);
-			m_proto->JSetString(NULL, "Password", text);
+			TCHAR *text = m_txtPassword.GetText();
+			m_proto->JSetStringCrypt(NULL, "Password", text);
 			mir_free(text);
 		}
 		else m_proto->JDeleteSetting(NULL, "Password");
@@ -587,7 +586,7 @@ private:
 
 		ThreadData regInfo(m_proto, JABBER_SESSION_NORMAL);
 		m_txtUsername.GetText(regInfo.username, SIZEOF(regInfo.username));
-		m_txtPassword.GetTextA(regInfo.password, SIZEOF(regInfo.password));
+		m_txtPassword.GetText(regInfo.password, SIZEOF(regInfo.password));
 		m_cbServer.GetTextA(regInfo.server, SIZEOF(regInfo.server));
 		if (m_chkManualHost.GetState() == BST_CHECKED)
 		{
@@ -688,7 +687,7 @@ private:
 	{
 		ThreadData regInfo(m_proto, JABBER_SESSION_NORMAL);
 		m_txtUsername.GetText(regInfo.username, SIZEOF(regInfo.username));
-		m_txtPassword.GetTextA(regInfo.password, SIZEOF(regInfo.password));
+		m_txtPassword.GetText(regInfo.password, SIZEOF(regInfo.password));
 		m_cbServer.GetTextA(regInfo.server, SIZEOF(regInfo.server));
 		if (m_chkManualHost.GetState() == BST_CHECKED)
 		{
@@ -1801,9 +1800,8 @@ protected:
 
 		if (m_chkSavePassword.GetState() == BST_CHECKED)
 		{
-			char *text = m_txtPassword.GetTextA();
-			JCallService(MS_DB_CRYPT_ENCODESTRING, lstrlenA(text), (LPARAM)text);
-			m_proto->JSetString(NULL, "Password", text);
+			TCHAR *text = m_txtPassword.GetText();
+			m_proto->JSetStringCrypt(NULL, "Password", text);
 			mir_free(text);
 		} else
 		{
@@ -1906,7 +1904,7 @@ private:
 
 		ThreadData regInfo(m_proto, JABBER_SESSION_NORMAL);
 		m_txtUsername.GetText(regInfo.username, SIZEOF(regInfo.username));
-		m_txtPassword.GetTextA(regInfo.password, SIZEOF(regInfo.password));
+		m_txtPassword.GetText(regInfo.password, SIZEOF(regInfo.password));
 		m_cbServer.GetTextA(regInfo.server, SIZEOF(regInfo.server));
 		regInfo.port = (WORD)m_txtPort.GetInt();
 		if (m_chkManualHost.GetState() == BST_CHECKED)
@@ -1979,7 +1977,7 @@ void CJabberDlgAccMgrUI::CheckRegistration()
 
 	ThreadData regInfo(m_proto, JABBER_SESSION_NORMAL);
 	m_txtUsername.GetText(regInfo.username, SIZEOF(regInfo.username));
-	m_txtPassword.GetTextA(regInfo.password, SIZEOF(regInfo.password));
+	m_txtPassword.GetText(regInfo.password, SIZEOF(regInfo.password));
 	m_cbServer.GetTextA(regInfo.server, SIZEOF(regInfo.server));
 	regInfo.port = (WORD)m_txtPort.GetInt();
 	if (m_chkManualHost.GetState() == BST_CHECKED)
