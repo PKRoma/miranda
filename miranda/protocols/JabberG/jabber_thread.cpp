@@ -355,7 +355,7 @@ LBL_FatalError:
 			}
 		}
 		else {
-			TCHAR *passw = JGetStringCrypt(NULL, "Password");
+			TCHAR *passw = JGetStringCrypt(NULL, "LoginPassword");
 			if ( passw == NULL ) {
 				JSendBroadcast( NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_BADUSERID );
 				Log( "Thread ended, password is not configured" );

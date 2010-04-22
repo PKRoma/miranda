@@ -454,13 +454,11 @@ protected:
 
 		SendDlgItemMessage(m_hwnd, IDC_PRIORITY_SPIN, UDM_SETRANGE, 0, (LPARAM)MAKELONG(127, -128));
 
-		if (!DBGetContactSettingString(NULL, m_proto->m_szModuleName, "Password", &dbv))
+		TCHAR *passw = m_proto->JGetStringCrypt(NULL, "LoginPassword");
+		if (passw) 
 		{
-			JCallService(MS_DB_CRYPT_DECODESTRING, lstrlenA(dbv.pszVal) + 1, (LPARAM)dbv.pszVal);
-			TCHAR *tmp = mir_a2t(dbv.pszVal);
-			m_txtPassword.SetText(tmp);
-			mir_free(tmp);
-			JFreeVariant(&dbv);
+			m_txtPassword.SetText(passw);
+			mir_free(passw);
 		}
 
 		m_cbServer.AddString(TranslateT("Loading..."));
@@ -518,10 +516,10 @@ protected:
 		if (m_chkSavePassword.GetState() == BST_CHECKED)
 		{
 			TCHAR *text = m_txtPassword.GetText();
-			m_proto->JSetStringCrypt(NULL, "Password", text);
+			m_proto->JSetStringCrypt(NULL, "LoginPassword", text);
 			mir_free(text);
 		}
-		else m_proto->JDeleteSetting(NULL, "Password");
+		else m_proto->JDeleteSetting(NULL, "LoginPassword");
 
 		int index = m_cbLocale.GetCurSel();
 		if ( index >= 0 )
@@ -1668,13 +1666,11 @@ protected:
 
 		m_gotservers = false;
 
-		if (!DBGetContactSettingString(NULL, m_proto->m_szModuleName, "Password", &dbv))
+		TCHAR *passw = m_proto->JGetStringCrypt(NULL, "LoginPassword");
+		if (passw) 
 		{
-			JCallService(MS_DB_CRYPT_DECODESTRING, lstrlenA(dbv.pszVal) + 1, (LPARAM)dbv.pszVal);
-			TCHAR *tmp = mir_a2t(dbv.pszVal);
-			m_txtPassword.SetText(tmp);
-			mir_free(tmp);
-			JFreeVariant(&dbv);
+			m_txtPassword.SetText(passw);
+			mir_free(passw);
 		}
 
 		m_cbServer.AddString(TranslateT("Loading..."));
@@ -1801,11 +1797,11 @@ protected:
 		if (m_chkSavePassword.GetState() == BST_CHECKED)
 		{
 			TCHAR *text = m_txtPassword.GetText();
-			m_proto->JSetStringCrypt(NULL, "Password", text);
+			m_proto->JSetStringCrypt(NULL, "LoginPassword", text);
 			mir_free(text);
 		} else
 		{
-			m_proto->JDeleteSetting(NULL, "Password");
+			m_proto->JDeleteSetting(NULL, "LoginPassword");
 		}
 
 		switch (m_cbType.GetItemData(m_cbType.GetCurSel()))

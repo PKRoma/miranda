@@ -204,6 +204,17 @@ CJabberProto::CJabberProto( const char* aProtoName, const TCHAR* aUserName ) :
 		JFreeVariant( &dbv );
 	}
 	else m_tszSelectedLang = mir_tstrdup( _T( "en" ));
+
+	if (!DBGetContactSettingString(NULL, m_szModuleName, "Password", &dbv))
+	{
+		JCallService(MS_DB_CRYPT_DECODESTRING, lstrlenA(dbv.pszVal) + 1, (LPARAM)dbv.pszVal);
+		TCHAR *pssw = mir_a2t(dbv.pszVal);
+		JSetStringCrypt(NULL, "LoginPassword", pssw);
+		mir_free(pssw);
+		JFreeVariant(&dbv);
+		JDeleteSetting(NULL, "Password");
+	}
+
 	
 	CleanLastResourceMap();
 }
