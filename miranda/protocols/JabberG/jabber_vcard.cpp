@@ -1177,7 +1177,7 @@ void CJabberProto::OnUserInfoInit_VCard( WPARAM wParam, LPARAM )
 	odp.cbSize = sizeof(odp);
 	odp.hInstance = hInst;
 	odp.dwInitParam = (LPARAM)this;
-	odp.flags = ODPF_TCHAR|ODPF_USERINFOTAB;
+	odp.flags = ODPF_TCHAR|ODPF_USERINFOTAB|ODPF_DONTTRANSLATE;
 	odp.ptszTitle = m_tszUserName;
 
 	odp.pfnDlgProc = PersonalDlgProc;

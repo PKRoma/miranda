@@ -139,7 +139,7 @@ int gg_options_init(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
 	odp.pszTab = LPGEN("General");
 	odp.pszTemplate = MAKEINTRESOURCE(IDD_OPT_GG_GENERAL);
 	odp.pfnDlgProc = gg_genoptsdlgproc;
-	odp.flags = ODPF_BOLDGROUPS;
+	odp.flags = ODPF_BOLDGROUPS | ODPF_DONTTRANSLATE;
 	CallService(MS_OPT_ADDPAGE, wParam, (LPARAM) & odp);
 
 	odp.pszTab = LPGEN("Conference");
@@ -150,7 +150,7 @@ int gg_options_init(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
 	odp.pszTab = LPGEN("Advanced");
 	odp.pszTemplate = MAKEINTRESOURCE(IDD_OPT_GG_ADVANCED);
 	odp.pfnDlgProc = gg_advoptsdlgproc;
-	odp.flags = ODPF_BOLDGROUPS | ODPF_EXPERTONLY;
+	odp.flags = ODPF_BOLDGROUPS | ODPF_EXPERTONLY | ODPF_DONTTRANSLATE;
 	CallService(MS_OPT_ADDPAGE, wParam, (LPARAM) & odp);
 
 	return 0;
@@ -888,6 +888,7 @@ int gg_details_init(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
 		OPTIONSDIALOGPAGE odp = {0};
 
 		odp.cbSize = sizeof(odp);
+		odp.flags = ODPF_DONTTRANSLATE;
 		odp.hIcon = NULL;
 		odp.hInstance = hInstance;
 		odp.pfnDlgProc = gg_detailsdlgproc;

@@ -815,7 +815,7 @@ int CMsnProto::OnOptionsInit(WPARAM wParam,LPARAM lParam)
 	odp.ptszTitle   = m_tszUserName;
 	odp.ptszGroup   = LPGENT("Network");
 	odp.ptszTab     = LPGENT("Account");
-	odp.flags       = ODPF_BOLDGROUPS | ODPF_TCHAR;
+	odp.flags       = ODPF_BOLDGROUPS | ODPF_TCHAR | ODPF_DONTTRANSLATE;
 	odp.pfnDlgProc  = DlgProcMsnOpts;
 	odp.dwInitParam = (LPARAM)this;
 	MSN_CallService(MS_OPT_ADDPAGE, wParam,(LPARAM)&odp);

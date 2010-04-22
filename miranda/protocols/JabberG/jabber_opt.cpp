@@ -1576,7 +1576,7 @@ int CJabberProto::OnOptionsInit( WPARAM wParam, LPARAM )
 	odp.hInstance   = hInst;
 	odp.ptszGroup   = LPGENT("Network");
 	odp.ptszTitle   = m_tszUserName;	// title!!!!!!!!!!!
-	odp.flags       = ODPF_BOLDGROUPS|ODPF_TCHAR;
+	odp.flags       = ODPF_BOLDGROUPS|ODPF_TCHAR|ODPF_DONTTRANSLATE;
 
 	odp.ptszTab     = LPGENT("Account");
 	odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_JABBER);

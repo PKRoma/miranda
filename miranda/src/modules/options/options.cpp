@@ -1439,16 +1439,30 @@ static INT_PTR AddOptionsPage(WPARAM wParam,LPARAM lParam)
 	memcpy( dst, odp, odp->cbSize );
 
 	if ( odp->ptszTitle != NULL ) {
-		#if defined( _UNICODE )
-			if ( odp->flags & ODPF_UNICODE )
-				dst->ptszTitle = mir_wstrdup( TranslateW( odp->ptszTitle ));
-			else {
-				dst->ptszTitle = LangPackPcharToTchar( odp->pszTitle );
-				dst->flags |= ODPF_UNICODE;
-			}
-		#else
-			dst->pszTitle = mir_strdup( Translate( odp->pszTitle ));
-		#endif
+		if ( odp->flags & ODPF_DONTTRANSLATE ) {
+			#if defined( _UNICODE )
+				if ( odp->flags & ODPF_UNICODE )
+					dst->ptszTitle = mir_wstrdup( odp->ptszTitle );
+				else {
+					dst->ptszTitle = mir_a2u( odp->pszTitle );
+					dst->flags |= ODPF_UNICODE;
+				}
+			#else
+				dst->pszTitle = mir_strdup( odp->pszTitle );
+			#endif
+		}
+		else {
+			#if defined( _UNICODE )
+				if ( odp->flags & ODPF_UNICODE )
+					dst->ptszTitle = mir_wstrdup( TranslateW( odp->ptszTitle ));
+				else {
+					dst->ptszTitle = LangPackPcharToTchar( odp->pszTitle );
+					dst->flags |= ODPF_UNICODE;
+				}
+			#else
+				dst->pszTitle = mir_strdup( Translate( odp->pszTitle ));
+			#endif
+		}
 	}
 
 	if ( odp->ptszGroup != NULL ) {

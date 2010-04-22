@@ -141,7 +141,10 @@ static INT_PTR AddDetailsPage(WPARAM wParam,LPARAM lParam)
 	else
 	#endif
 	{
-		dst->ptszTitle = (odp->pszTitle==0) ? NULL : LangPackPcharToTchar(odp->pszTitle);
+		if ( odp->flags & ODPF_DONTTRANSLATE )
+			dst->ptszTitle = (odp->pszTitle==0) ? NULL : mir_a2u(odp->pszTitle);
+		else
+			dst->ptszTitle = (odp->pszTitle==0) ? NULL : LangPackPcharToTchar(odp->pszTitle);
 		dst->ptszTab = (!(odp->flags & ODPF_USERINFOTAB) || !odp->pszTab) ? NULL : LangPackPcharToTchar(odp->pszTab);
 	}
 
@@ -288,7 +291,10 @@ static INT_PTR CALLBACK DlgProcDetails(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 					tvis.hInsertAfter = TVI_LAST;
 					tvis.item.mask = TVIF_TEXT | TVIF_PARAM;
 					tvis.item.lParam = (LPARAM) i;
-					tvis.item.pszText = TranslateTS(odp[i].ptszTitle);
+					if (!odp[i].flags & ODPF_DONTTRANSLATE)
+						tvis.item.pszText = TranslateTS(odp[i].ptszTitle);
+					else
+						tvis.item.pszText = mir_wstrdup(odp[i].ptszTitle);
 					if ( dbv.type != DBVT_DELETED && !lstrcmp( tvis.item.pszText, dbv.ptszVal ))
 						dat->currentPage = i;
 					dat->opd[i].hItem = TreeView_InsertItem(hwndTree, &tvis);

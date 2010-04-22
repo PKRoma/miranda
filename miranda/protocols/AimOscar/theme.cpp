@@ -447,7 +447,7 @@ void CAimProto::InitMenus(void)
 
 	mi.popupPosition = 500090000;
 	mi.position = 500090000;
-	mi.flags = CMIF_ROOTPOPUP | CMIF_ICONFROMICOLIB | CMIF_TCHAR;
+	mi.flags = CMIF_ROOTPOPUP | CMIF_ICONFROMICOLIB | CMIF_TCHAR | CMIF_KEEPUNTRANSLATED;
 	mi.icolibItem = GetIconHandle("aim");
 	mi.ptszName = m_tszUserName;
 	mi.pszPopupName = (char *)-1;

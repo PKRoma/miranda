@@ -1143,7 +1143,7 @@ int CAimProto::OnOptionsInit(WPARAM wParam,LPARAM lParam)
 	odp.ptszGroup = LPGENT("Network");
 	odp.ptszTitle = m_tszUserName;
 	odp.dwInitParam = LPARAM(this);
-	odp.flags = ODPF_BOLDGROUPS | ODPF_TCHAR;
+	odp.flags = ODPF_BOLDGROUPS | ODPF_TCHAR | ODPF_DONTTRANSLATE;
 
 	odp.ptszTab   = LPGENT("Basic");
 	odp.pszTemplate = MAKEINTRESOURCEA(IDD_AIM);

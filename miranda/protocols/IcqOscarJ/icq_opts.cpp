@@ -589,7 +589,7 @@ int CIcqProto::OnOptionsInit(WPARAM wParam, LPARAM lParam)
 	odp.ptszGroup = LPGENT("Network");
 	odp.dwInitParam = LPARAM(this);
 	odp.ptszTitle = m_tszUserName;
-	odp.flags = ODPF_BOLDGROUPS | ODPF_TCHAR;
+	odp.flags = ODPF_BOLDGROUPS | ODPF_TCHAR | ODPF_DONTTRANSLATE;
 
 	odp.ptszTab = LPGENT("Account");
 	odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_ICQ);

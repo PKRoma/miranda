@@ -210,6 +210,7 @@ int __cdecl CIrcProto::OnInitUserInfo(WPARAM wParam, LPARAM lParam)
 
 	OPTIONSDIALOGPAGE odp = { 0 };
 	odp.cbSize = sizeof(odp);
+	odp.flags = ODPF_DONTTRANSLATE;
 	odp.pszTitle = m_szModuleName;
 	odp.hIcon = NULL;
 	odp.dwInitParam = ( LPARAM )this;

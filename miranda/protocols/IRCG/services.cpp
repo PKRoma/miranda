@@ -38,11 +38,11 @@ void CIrcProto::InitMenus()
 		mi.ptszName = m_tszUserName;
 		mi.position = -1999901010;
 		mi.pszPopupName = (char *)-1;
-		mi.flags |= CMIF_ROOTPOPUP | CMIF_TCHAR;
+		mi.flags |= CMIF_ROOTPOPUP | CMIF_TCHAR | CMIF_KEEPUNTRANSLATED;
 		mi.icolibItem = GetIconHandle(IDI_MAIN);
 		hMenuRoot = (HANDLE)CallService( MS_CLIST_ADDMAINMENUITEM,  (WPARAM)0, (LPARAM)&mi);
 		
-		mi.flags &= ~(CMIF_ROOTPOPUP | CMIF_TCHAR);
+		mi.flags &= ~(CMIF_ROOTPOPUP | CMIF_TCHAR | CMIF_KEEPUNTRANSLATED);
 		mi.flags |= CMIF_CHILDPOPUP;
 
 		mi.pszName = LPGEN("&Quick connect");

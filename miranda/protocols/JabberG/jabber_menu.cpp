@@ -910,7 +910,7 @@ void CJabberProto::MenuInit()
 
 	TMO_MenuItem tmi = { 0 };
 	tmi.cbSize = sizeof(tmi);
-	tmi.flags = CMIF_TCHAR;
+	tmi.flags = CMIF_TCHAR | CMIF_KEEPUNTRANSLATED;
 	tmi.ownerdata = this;
 	tmi.position = iChooserMenuPos++;
 	tmi.ptszName = m_tszUserName;

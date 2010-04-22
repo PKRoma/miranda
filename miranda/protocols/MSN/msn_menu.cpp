@@ -340,7 +340,7 @@ void CMsnProto::MsnInitMenus(void)
 
 	mi.popupPosition = 500085000;
 	mi.pszPopupName = (char *)-1;
-	mi.flags = CMIF_ICONFROMICOLIB | CMIF_ROOTPOPUP | CMIF_TCHAR;
+	mi.flags = CMIF_ICONFROMICOLIB | CMIF_ROOTPOPUP | CMIF_TCHAR | CMIF_KEEPUNTRANSLATED;
 	mi.icolibItem = GetIconHandle(IDI_MSN);
 	mi.ptszName = m_tszUserName;
 	mainMenuRoot = (HANDLE)MSN_CallService(MS_CLIST_ADDMAINMENUITEM,  (WPARAM)0, (LPARAM)&mi);

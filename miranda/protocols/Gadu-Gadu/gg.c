@@ -268,7 +268,7 @@ void gg_menus_init(GGPROTO *gg)
 
 	strcpy(service, gg->proto.m_szModuleName);
 	mi.cbSize = sizeof(mi);
-	mi.flags = CMIF_ICONFROMICOLIB | CMIF_TCHAR;
+	mi.flags = CMIF_ICONFROMICOLIB | CMIF_TCHAR | CMIF_KEEPUNTRANSLATED;
 	mi.ptszPopupName = NULL;
 	mi.position = 500090000;
 	mi.icolibItem = GetIconHandle(IDI_GG);
@@ -334,7 +334,7 @@ int gg_event(PROTO_INTERFACE *proto, PROTOEVENTTYPE eventType, WPARAM wParam, LP
 			gg->name = gg_t2a(gg->proto.m_tszUserName);
 
 			mi.cbSize = sizeof(mi);
-			mi.flags = CMIM_NAME | CMIF_TCHAR;
+			mi.flags = CMIM_NAME | CMIF_TCHAR | CMIF_KEEPUNTRANSLATED;
 			mi.ptszName = GG_PROTONAME;
 			CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM)gg->hMenuRoot, (LPARAM)&mi);
 

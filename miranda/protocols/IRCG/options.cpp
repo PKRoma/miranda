@@ -1720,7 +1720,7 @@ int CIrcProto::OnInitOptionsPages(WPARAM wParam, LPARAM)
 	odp.ptszTitle = m_tszUserName;
 	odp.ptszGroup = LPGENT("Network");
 	odp.ptszTab = LPGENT("Account");
-	odp.flags = ODPF_BOLDGROUPS | ODPF_TCHAR;
+	odp.flags = ODPF_BOLDGROUPS | ODPF_TCHAR | ODPF_DONTTRANSLATE;
 	odp.pfnDlgProc = CDlgBase::DynamicDlgProc;
 	odp.dwInitParam = (LPARAM)&OptCreateAccount;
 	OptCreateAccount.create = CConnectPrefsDlg::Create;

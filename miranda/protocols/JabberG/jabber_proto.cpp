@@ -1570,7 +1570,7 @@ int __cdecl CJabberProto::OnEvent( PROTOEVENTTYPE eventType, WPARAM wParam, LPAR
 		{	
 			CLISTMENUITEM clmi = { 0 };
 			clmi.cbSize = sizeof( CLISTMENUITEM );
-			clmi.flags = CMIM_NAME | CMIF_TCHAR;
+			clmi.flags = CMIM_NAME | CMIF_TCHAR | CMIF_KEEPUNTRANSLATED;
 			clmi.ptszName = m_tszUserName;
 			JCallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )m_hMenuRoot, ( LPARAM )&clmi );
 	}	}	

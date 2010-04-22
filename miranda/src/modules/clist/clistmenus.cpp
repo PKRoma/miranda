@@ -888,7 +888,7 @@ void RebuildMenuOrder( void )
 		//adding root
 		TMO_MenuItem tmi = { 0 };
 		tmi.cbSize = sizeof(tmi);
-		tmi.flags = CMIF_TCHAR | CMIF_ROOTHANDLE;
+		tmi.flags = CMIF_TCHAR | CMIF_ROOTHANDLE | CMIF_KEEPUNTRANSLATED;
 		tmi.position = pos++;
 		tmi.hIcon=(HICON)CallProtoService( pa->szModuleName, PS_LOADICON, PLI_PROTOCOL | PLIF_SMALL, 0 );
 		ic = tmi.hIcon;
@@ -904,7 +904,7 @@ void RebuildMenuOrder( void )
 
 		memset(&tmi,0,sizeof(tmi));
 		tmi.cbSize = sizeof(tmi);
-		tmi.flags = CMIF_TCHAR | CMIF_ROOTHANDLE;
+		tmi.flags = CMIF_TCHAR | CMIF_ROOTHANDLE | CMIF_KEEPUNTRANSLATED;
 		tmi.root = rootmenu;
 		tmi.position = pos++;
 		tmi.hIcon = ic;
