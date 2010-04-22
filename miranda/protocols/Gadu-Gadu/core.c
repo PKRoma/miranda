@@ -587,7 +587,7 @@ retry:
 					gg_changecontactstatus(gg, e->event.notify60[i].uin, e->event.notify60[i].status, e->event.notify60[i].descr,
 						e->event.notify60[i].time, e->event.notify60[i].remote_ip, e->event.notify60[i].remote_port,
 						e->event.notify60[i].version);
-					gg_requestavatar(gg, gg_getcontact(gg, e->event.notify60[i].uin, 0, 0, NULL));
+					gg_requestavatar(gg, gg_getcontact(gg, e->event.notify60[i].uin, 0, 0, NULL), 0);
 				}
 				break;
 			}
@@ -733,7 +733,7 @@ retry:
 						e->event.status60.time, e->event.status60.remote_ip, e->event.status60.remote_port, e->event.status60.version);
 
 					if (oldstatus == ID_STATUS_OFFLINE && DBGetContactSettingWord(hContact, GG_PROTO, GG_KEY_STATUS, (WORD)ID_STATUS_OFFLINE) != ID_STATUS_OFFLINE)
-						gg_requestavatar(gg, hContact);
+						gg_requestavatar(gg, hContact, 0);
 				}
 				break;
 
@@ -1052,7 +1052,7 @@ retry:
 #ifdef DEBUGMODE
 							gg_netlog(gg, "gg_mainthread(%x): Client %s changed his avatar.", gg, sender);
 #endif
-							gg_requestavatar(gg, gg_getcontact(gg, atoi(sender), 0, 0, NULL));
+							gg_requestavatar(gg, gg_getcontact(gg, atoi(sender), 0, 0, NULL), 0);
 						}
 						mir_free(type);
 						mir_free(sender);
@@ -1248,7 +1248,7 @@ int gg_dbsettingchanged(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
 				// Notify user normally this time if added to the list permanently
 				DBDeleteContactSetting(hContact, GG_PROTO, GG_KEY_DELETEUSER); // What is it ?? I don't remember
 				gg_notifyuser(gg, hContact, 1);
-				gg_requestavatar(gg, hContact);
+				gg_requestavatar(gg, hContact, 0);
 			}
 		}
 	}

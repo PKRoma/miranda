@@ -829,7 +829,7 @@ INT_PTR gg_getavatarinfo(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
 		return GAIR_NOAVATAR;
 
 	if (!DBGetContactSettingByte(pai->hContact, GG_PROTO, GG_KEY_AVATARREQUESTED, GG_KEYDEF_AVATARREQUESTED)) {
-		gg_requestavatar(gg, pai->hContact);
+		gg_requestavatar(gg, pai->hContact, 1);
 		return (wParam & GAIF_FORCE) != 0 ? GAIR_WAITFOR : GAIR_NOAVATAR;
 	}
 	DBDeleteContactSetting(pai->hContact, GG_PROTO, GG_KEY_AVATARREQUESTED);

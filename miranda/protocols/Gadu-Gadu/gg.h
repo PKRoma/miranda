@@ -426,7 +426,7 @@ int gg_recvmessage(PROTO_INTERFACE *proto, HANDLE hContact, PROTORECVEVENT *pre)
 void gg_getavatarfilename(GGPROTO *gg, HANDLE hContact, char *pszDest, int cbLen);
 char *gg_avatarhash(char *param);
 void gg_getavatar(GGPROTO *gg, HANDLE hContact, char *szAvatarURL);
-void gg_requestavatar(GGPROTO *gg, HANDLE hContact);
+void gg_requestavatar(GGPROTO *gg, HANDLE hContact, int iWaitFor);
 void gg_initavatarrequestthread(GGPROTO *gg);
 void gg_uninitavatarrequestthread(GGPROTO *gg);
 void gg_getuseravatar(GGPROTO *gg);

@@ -165,12 +165,21 @@ void gg_getavatar(GGPROTO *gg, HANDLE hContact, char *szAvatarURL)
 	}
 }
 
-void gg_requestavatar(GGPROTO *gg, HANDLE hContact)
+typedef struct
+{
+	HANDLE hContact;
+	int iWaitFor;
+} GGREQUESTAVATARDATA;
+
+void gg_requestavatar(GGPROTO *gg, HANDLE hContact, int iWaitFor)
 {
 	if (DBGetContactSettingByte(NULL, GG_PROTO, GG_KEY_ENABLEAVATARS, GG_KEYDEF_ENABLEAVATARS)
 		&& gg->pth_avatar.dwThreadId) {
+		GGREQUESTAVATARDATA *data = mir_alloc(sizeof(GGREQUESTAVATARDATA));
+		data->hContact = hContact;
+		data->iWaitFor = iWaitFor;
 		EnterCriticalSection(&gg->avatar_mutex);
-		list_add(&gg->avatar_requests, hContact, 0);
+		list_add(&gg->avatar_requests, data, 0);
 		LeaveCriticalSection(&gg->avatar_mutex);
 	}
 }
@@ -186,11 +195,13 @@ void __cdecl gg_avatarrequestthread(GGPROTO *gg, void *empty)
 	{
 		EnterCriticalSection(&gg->avatar_mutex);
 		if (gg->avatar_requests) {
+			GGREQUESTAVATARDATA *data = (GGREQUESTAVATARDATA *)gg->avatar_requests->data;
 			char *AvatarURL;
-			int AvatarType;
-			HANDLE hContact;
+			int AvatarType, iWaitFor = data->iWaitFor;
+			HANDLE hContact = data->hContact;
 
-			hContact = gg->avatar_requests->data;
+			list_remove(&gg->avatar_requests, data, 0);
+			mir_free(data);
 			LeaveCriticalSection(&gg->avatar_mutex);
 
 			gg_getavatarfileinfo(gg, DBGetContactSettingDword(hContact, GG_PROTO, GG_KEY_UIN, 0), &AvatarURL, &AvatarType);
@@ -201,12 +212,16 @@ void __cdecl gg_avatarrequestthread(GGPROTO *gg, void *empty)
 			DBWriteContactSettingByte(hContact, GG_PROTO, GG_KEY_AVATARTYPE, (BYTE)AvatarType);
 			DBWriteContactSettingByte(hContact, GG_PROTO, GG_KEY_AVATARREQUESTED, 1);
 
-			ProtoBroadcastAck(GG_PROTO, hContact, ACKTYPE_AVATAR, ACKRESULT_STATUS, 0, 0);
-
-			EnterCriticalSection(&gg->avatar_mutex);
-			list_remove(&gg->avatar_requests, hContact, 0);
+			if (iWaitFor) {
+				PROTO_AVATAR_INFORMATION pai = {0};
+				pai.cbSize = sizeof(pai);
+				pai.hContact = hContact;
+				if (gg_getavatarinfo(gg, (WPARAM)GAIF_FORCE, (LPARAM)&pai) != GAIR_WAITFOR)
+					ProtoBroadcastAck(GG_PROTO, hContact, ACKTYPE_AVATAR, ACKRESULT_SUCCESS, (HANDLE)&pai, 0);
+			}
+			else ProtoBroadcastAck(GG_PROTO, hContact, ACKTYPE_AVATAR, ACKRESULT_STATUS, 0, 0);
 		}
-		LeaveCriticalSection(&gg->avatar_mutex);
+		else LeaveCriticalSection(&gg->avatar_mutex);
 
 		EnterCriticalSection(&gg->avatar_mutex);
 		if (gg->avatar_transfers) {
@@ -260,6 +275,10 @@ void __cdecl gg_avatarrequestthread(GGPROTO *gg, void *empty)
 		SleepEx(100, FALSE);
 	}
 
+	for (l = gg->avatar_requests; l; l = l->next) {
+		GGREQUESTAVATARDATA *data = (GGREQUESTAVATARDATA *)gg->avatar_requests->data;
+		mir_free(data);
+	}
 	for (l = gg->avatar_transfers; l; l = l->next) {
 		GGGETAVATARDATA *data = (GGGETAVATARDATA *)gg->avatar_transfers->data;
 		mir_free(data->AvatarURL);
