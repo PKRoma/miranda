@@ -371,7 +371,7 @@ static INT_PTR CALLBACK DlgProcFindAdd(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 					if (textSize.cx>cbwidth) cbwidth = textSize.cx;
 					cbei.iImage=cbei.iSelectedImage=ImageList_AddIcon_IconLibLoaded(dat->himlComboIcons, SKINICON_OTHER_SEARCHALL);
 					cbei.lParam=0;
-					SendDlgItemMessageA(hwndDlg,IDC_PROTOLIST,CBEM_INSERTITEM,0,(LPARAM)&cbei);
+					SendDlgItemMessage(hwndDlg,IDC_PROTOLIST,CBEM_INSERTITEM,0,(LPARAM)&cbei);
 					cbei.iItem++;
 				}
 				for( i=0; i < accounts.getCount(); i++ ) {
