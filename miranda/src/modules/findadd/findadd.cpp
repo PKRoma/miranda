@@ -33,50 +33,6 @@ static HANDLE hHookModulesLoaded = 0;
 static HANDLE hMainMenuItem = NULL;
 static int OnSystemModulesLoaded(WPARAM wParam,LPARAM lParam);
 
-// FINDADD button tooltip handle
-static HWND hSearchTip = 0;
-// FINDADD button tooltip timer
-#define TIMERID_STACT  222
-
-// FINDADD search button tooltip create func
-int CreateSearchTip(HWND hwndDlg, HWND hwndParent, TCHAR* pszText)
-{
-	if ( !hwndDlg || !hwndParent ) 
-		return 1;
-	
-	if ( hSearchTip ) {
-		KillTimer(hwndDlg, TIMERID_STACT);
-		DestroyWindow(hSearchTip);
-	}
-
-	TOOLINFO ti = { 0 };
-
-	hSearchTip = CreateWindowEx(WS_EX_TOPMOST,
-		TOOLTIPS_CLASS,
-		NULL,
-		WS_POPUP | TTS_NOPREFIX | TTS_ALWAYSTIP,
-		CW_USEDEFAULT, CW_USEDEFAULT,
-		CW_USEDEFAULT, CW_USEDEFAULT,
-		hwndParent, NULL, hMirandaInst, NULL);
-
-	SetWindowPos(hSearchTip, HWND_TOPMOST, 0, 0, 0, 0,
-		SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
-
-	ti.cbSize = sizeof(TOOLINFO);
-	ti.uFlags = TTF_SUBCLASS | TTS_BALLOON;
-	ti.hwnd = hwndParent;
-	ti.hinst = hMirandaInst;
-	ti.lpszText = TranslateT("Press Ctrl + Search to add a contact without searching.");
-	GetClientRect(hwndParent, &ti.rect);
-
-	SendMessage(hSearchTip, TTM_ADDTOOL, 0, (LPARAM) (LPTOOLINFO) &ti);
-	SendMessage(hSearchTip, TTM_SETTITLE, 1, (LPARAM)TranslateT("Hint"));
-	if ( hSearchTip )
-		SetTimer(hwndDlg, TIMERID_STACT, 3000, NULL);
-
-	return 0;
-}
-
 void ListView_SetItemTextA( HWND hwndLV, int i, int iSubItem, char* pszText )
 {
 	LV_ITEMA _ms_lvi;
@@ -447,8 +403,6 @@ static INT_PTR CALLBACK DlgProcFindAdd(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			SendMessage(hwndDlg,M_SETGROUPVISIBILITIES,0,0);
 			Utils_RestoreWindowPosition(hwndDlg,NULL,"FindAdd","");
 
-			// FINDADD button tooltip INITIALIZE
-			CreateSearchTip(hwndDlg,GetDlgItem(hwndDlg,IDOK), TranslateT("Press Ctrl + Search to add a contact without searching."));
 			return TRUE;
 		}
 		case WM_SIZE:
@@ -587,9 +541,6 @@ static INT_PTR CALLBACK DlgProcFindAdd(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 				RenderThrobber(hdc,&rc,&dat->throbbing,&dat->pivot);
 				ReleaseDC(GetDlgItem(hwndDlg,IDC_STATUSBAR),hdc);
 			}
-			// FINDADD tolltip autoclose disable trick
-			if(IsWindow(hSearchTip))
-				KillTimer(hSearchTip, 4);
 			break;
 		case WM_DRAWITEM:
 		{	DRAWITEMSTRUCT *dis=(DRAWITEMSTRUCT*)lParam;
@@ -693,9 +644,6 @@ static INT_PTR CALLBACK DlgProcFindAdd(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 					break;
 				case IDOK:
 				{	
-					// FINDADD button tooltip REinitialize
-					CreateSearchTip(hwndDlg,GetDlgItem(hwndDlg,IDOK), TranslateT("Press Ctrl + Search to add a contact without searching."));
-
 					HideAdvancedSearchDlg(hwndDlg,dat);
 					if(dat->searchCount) {	 //cancel search
 						SetDlgItemText(hwndDlg,IDOK,TranslateT("&Search"));
@@ -996,13 +944,6 @@ static INT_PTR CALLBACK DlgProcFindAdd(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			mir_free(dat);
 			Window_FreeIcon_IcoLib(hwndDlg);
 			Utils_SaveWindowPosition(hwndDlg,NULL,"FindAdd","");
-
-			// FINDADD tooltip timer destroying
-			if (hSearchTip) {
-				KillTimer(hwndDlg, TIMERID_STACT);
-				DestroyWindow(hSearchTip);
-				hSearchTip = 0;
-			}
 
 			break;
 	}
