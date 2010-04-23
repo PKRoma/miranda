@@ -142,7 +142,7 @@ static INT_PTR AddDetailsPage(WPARAM wParam,LPARAM lParam)
 	#endif
 	{
 		if ( odp->flags & ODPF_DONTTRANSLATE )
-			dst->ptszTitle = (odp->pszTitle==0) ? NULL : mir_a2u(odp->pszTitle);
+			dst->ptszTitle = (odp->pszTitle==0) ? NULL : mir_a2t(odp->pszTitle);
 		else
 			dst->ptszTitle = (odp->pszTitle==0) ? NULL : LangPackPcharToTchar(odp->pszTitle);
 		dst->ptszTab = (!(odp->flags & ODPF_USERINFOTAB) || !odp->pszTab) ? NULL : LangPackPcharToTchar(odp->pszTab);
@@ -183,7 +183,7 @@ static void CreateDetailsTabs( HWND hwndDlg, struct DetailsData* dat, struct Det
 		pages++;
 	}
 	TabCtrl_SetCurSel(hwndTab,sel);
-	
+
 	LONG style = GetWindowLong(hwndTab, GWL_STYLE);
 	SetWindowLong(hwndTab, GWL_STYLE, pages > 1 ? style | WS_TABSTOP : style & ~WS_TABSTOP);
 }
@@ -195,7 +195,7 @@ static void CreateDetailsPageWindow( HWND hwndDlg, struct DetailsData* dat, stru
 	ThemeDialogBackground(ppg->hwnd);
 	SetWindowPos(ppg->hwnd, HWND_TOP, rc->left, rc->top, rc->right - rc->left, rc->bottom - rc->top, 0);
 	SetWindowPos(ppg->hwnd, HWND_TOP, rc->left, rc->top, rc->right - rc->left, rc->bottom - rc->top, 0);
-	{	
+	{
 		PSHNOTIFY pshn;
 		pshn.hdr.code = PSN_PARAMCHANGED;
 		pshn.hdr.hwndFrom = ppg->hwnd;
@@ -294,7 +294,7 @@ static INT_PTR CALLBACK DlgProcDetails(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 					if (!odp[i].flags & ODPF_DONTTRANSLATE)
 						tvis.item.pszText = TranslateTS(odp[i].ptszTitle);
 					else
-						tvis.item.pszText = mir_wstrdup(odp[i].ptszTitle);
+						tvis.item.pszText = mir_tstrdup(odp[i].ptszTitle);
 					if ( dbv.type != DBVT_DELETED && !lstrcmp( tvis.item.pszText, dbv.ptszVal ))
 						dat->currentPage = i;
 					dat->opd[i].hItem = TreeView_InsertItem(hwndTree, &tvis);
@@ -302,9 +302,9 @@ static INT_PTR CALLBACK DlgProcDetails(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 				DBFreeVariant(&dbv);
 			}
 
-			{	
+			{
 				HWND hwndTab = GetDlgItem(hwndDlg, IDC_TABS);
-				
+
 				TCITEM tci;
 				tci.mask = TCIF_TEXT | TCIF_IMAGE;
 				tci.iImage = -1;
@@ -438,27 +438,27 @@ static INT_PTR CALLBACK DlgProcDetails(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 		switch(wParam) {
 		case IDC_TABS:
 		case IDC_PAGETREE:
-			switch(((LPNMHDR)lParam)->code) 
+			switch(((LPNMHDR)lParam)->code)
 			{
 			case TCN_SELCHANGING:
 			case TVN_SELCHANGING:
 				if (dat->currentPage != -1 && dat->opd[dat->currentPage].hwnd != NULL)
-				{	
+				{
 					PSHNOTIFY pshn;
 					pshn.hdr.code = PSN_KILLACTIVE;
 					pshn.hdr.hwndFrom = dat->opd[dat->currentPage].hwnd;
 					pshn.hdr.idFrom = 0;
 					pshn.lParam = (LPARAM)dat->hContact;
-					if (SendMessage(dat->opd[dat->currentPage].hwnd, WM_NOTIFY, 0, (LPARAM)&pshn)) 
+					if (SendMessage(dat->opd[dat->currentPage].hwnd, WM_NOTIFY, 0, (LPARAM)&pshn))
 					{
 						SetWindowLongPtr(hwndDlg, DWLP_MSGRESULT, TRUE);
 						return TRUE;
-					}	
+					}
 				}
 				break;
 
 			case TCN_SELCHANGE:
-				if (dat->currentPage != -1 && dat->opd[dat->currentPage].hwnd != NULL) 
+				if (dat->currentPage != -1 && dat->opd[dat->currentPage].hwnd != NULL)
 				{
 					HWND hwndTab = GetDlgItem(hwndDlg, IDC_TABS);
 					ShowWindow(dat->opd[dat->currentPage].hwnd, SW_HIDE);
@@ -475,17 +475,17 @@ static INT_PTR CALLBACK DlgProcDetails(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 					tvi.lParam = dat->currentPage;
 					TreeView_SetItem(GetDlgItem(hwndDlg,IDC_PAGETREE), &tvi);
 
-					if (dat->currentPage != -1) 
+					if (dat->currentPage != -1)
 					{
 						if (dat->opd[dat->currentPage].hwnd == NULL)
 							CreateDetailsPageWindow(hwndDlg, dat, &dat->opd[dat->currentPage]);
 						ShowWindow(dat->opd[dat->currentPage].hwnd, SW_SHOWNA);
-					}	
+					}
 				}
 				break;
 
 			case TVN_SELCHANGED:
-				if (dat->currentPage != -1 && dat->opd[dat->currentPage].hwnd != NULL) 
+				if (dat->currentPage != -1 && dat->opd[dat->currentPage].hwnd != NULL)
 					ShowWindow(dat->opd[dat->currentPage].hwnd, SW_HIDE);
 
 				{
@@ -493,14 +493,14 @@ static INT_PTR CALLBACK DlgProcDetails(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 					TVITEM tvi = pnmtv->itemNew;
 					dat->currentPage = tvi.lParam;
 
-					if(dat->currentPage != -1) 
+					if(dat->currentPage != -1)
 					{
 						CreateDetailsTabs(hwndDlg, dat, &dat->opd[dat->currentPage]);
 						if (dat->opd[dat->currentPage].hwnd == NULL)
 							CreateDetailsPageWindow(hwndDlg, dat, &dat->opd[dat->currentPage]);
 						ShowWindow(dat->opd[dat->currentPage].hwnd, SW_SHOWNA);
 
-					}	
+					}
 				}
 				break;
 			}
@@ -625,7 +625,7 @@ int LoadUserInfoModule(void)
 	mi.icolibItem = GetSkinIconHandle( SKINICON_OTHER_USERDETAILS );
 	mi.pszName = LPGEN("User &Details");
 	mi.pszService = MS_USERINFO_SHOWDIALOG;
-	CallService(MS_CLIST_ADDCONTACTMENUITEM,0,(LPARAM)&mi);   
+	CallService(MS_CLIST_ADDCONTACTMENUITEM,0,(LPARAM)&mi);
 
 	mi.position = 500050000;
 	mi.pszName = LPGEN("View/Change My &Details...");
