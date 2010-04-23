@@ -3,6 +3,12 @@
                            www.miranda-im.org
 
 
+* New in 0.8.21
+Bugfixes:
+ - Jabber: Fixed PLAIN authentication with Unicode usernames/passwords
+ - Gadu-Gadu: Fixed memory leaks
+
+
 * New in 0.8.20
 Bugfixes:
  - Fixed menus in Windows 95

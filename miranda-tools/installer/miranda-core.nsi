@@ -11,6 +11,7 @@
 !define MIM_BUILD_ICONS_HI      "icons\bin\hicolor"
 !define MIM_BUILD_OPTIONS_FILE  "miranda32.lst"
 !define MIM_BUILD_OPTIONS_SECT  "InstalledSections"
+!define MIM_BUILD_SUCCESS       "http://www.miranda-im.org/donate/"
 
 !ifdef MIM_BUILD_UNICODE
 !define MIM_BUILD_TYPE          "unicode"
@@ -303,6 +304,12 @@ FunctionEnd
 
 Function .onInstSuccess
   StrCpy $INST_SUCCESS 1
+FunctionEnd
+
+Function .onGUIEnd
+  ${If} $INST_SUCCESS = 1
+    ExecShell "open" "${MIM_BUILD_SUCCESS}"
+  ${EndIf}
 FunctionEnd
 
 Function VerifyInstallDir
