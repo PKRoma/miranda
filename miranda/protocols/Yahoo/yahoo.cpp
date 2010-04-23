@@ -505,24 +505,37 @@ void CYahooProto::ext_status_logon(const char *who, int protocol, int stat, cons
 	case 2:
 		s = "Yahoo Mobile";
 		break;
+	
+	case 6:
+		s = "Yahoo PingBox";
+		break;
+		
 	case 3075:
 		s = "Yahoo Web Messenger";
 		break;
 
+	case 35846:
+		s = "iPhone Y! Messenger"; // iPhone Y! Messenger 1.5
+		break;
+		
 	case 262651: 
 		s = "libyahoo2"; 
 		break;
+		
 	case 262655: 
 		s = "< Yahoo 6.x (Yahoo 5.x?)"; 
 		break;
+		
 	case 278527: 
 		s = "Yahoo 6.x"; 
 		break;
+		
 	case 524223: 
 		//Yahoo 7.4
 		//Yahoo 7.5
 		s = "Yahoo 7.x"; 
 		break;
+		
 	case 888327:
 		s = "Yahoo 9.0 for Vista";
 		break;
@@ -536,10 +549,12 @@ void CYahooProto::ext_status_logon(const char *who, int protocol, int stat, cons
 	case 2097087: /* 8.1.0.195 */ 
 		s = "Yahoo 8.x"; 
 		break;
+		
 	case 2088895:
 	case 4194239:
 		s = "Yahoo 9.0";
 		break;
+		
 	case 8388543:
 		s = "Yahoo 10.0";
 		break;

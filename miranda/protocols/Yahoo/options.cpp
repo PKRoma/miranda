@@ -55,8 +55,7 @@ static INT_PTR CALLBACK DlgProcYahooOpts(HWND hwndDlg, UINT msg, WPARAM wParam, 
 			DBFreeVariant( &dbv );
 		}
 
-		SetButtonCheck( hwndDlg, IDC_YAHOO_JAPAN, ppro->GetByte( "YahooJapan", 0 ) );
-		SetButtonCheck( hwndDlg, IDC_DISABLE_UTF8, ppro->GetByte( "DisableUTF8", 0 )); 
+		//SetButtonCheck( hwndDlg, IDC_DISABLE_UTF8, ppro->GetByte( "DisableUTF8", 0 )); 
 		SetButtonCheck( hwndDlg, IDC_USE_YAB, ppro->GetByte( "UseYAB", 1 )); 
 		SetButtonCheck( hwndDlg, IDC_SHOW_AVATARS, ppro->GetByte( "ShowAvatars", 1 )); 
 		SetButtonCheck( hwndDlg, IDC_MAIL_AUTOLOGIN, ppro->GetByte( "MailAutoLogin", 0 )); 
@@ -75,14 +74,7 @@ static INT_PTR CALLBACK DlgProcYahooOpts(HWND hwndDlg, UINT msg, WPARAM wParam, 
 					(LPARAM)"http://edit.yahoo.com/config/eval_register" );
  			return TRUE;
  
-		case IDC_YAHOO_JAPAN:
-			SetDlgItemTextA( hwndDlg, IDC_LOGINSERVER, 
-				(IsDlgButtonChecked(hwndDlg,IDC_YAHOO_JAPAN)==BST_CHECKED)
-				? YAHOO_DEFAULT_JAPAN_LOGIN_SERVER
-				: YAHOO_DEFAULT_LOGIN_SERVER );
-				// fall through and enable apply button
-			
-		case IDC_DISABLE_UTF8: 
+		//case IDC_DISABLE_UTF8: 
 		case IDC_USE_YAB:	
 		case IDC_SHOW_AVATARS:
 		case IDC_MAIL_AUTOLOGIN:
@@ -131,8 +123,7 @@ static INT_PTR CALLBACK DlgProcYahooOpts(HWND hwndDlg, UINT msg, WPARAM wParam, 
 			GetDlgItemTextA( hwndDlg, IDC_NICK, str, sizeof( str ));
 			ppro->SetString( "Nick", str );
 
-			ppro->SetByte("YahooJapan", ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_YAHOO_JAPAN ));
-			ppro->SetByte("DisableUTF8", ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_DISABLE_UTF8 )); 
+			//ppro->SetByte("DisableUTF8", ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_DISABLE_UTF8 )); 
 			ppro->SetByte("UseYAB", ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_USE_YAB )); 
 			ppro->SetByte("ShowAvatars", ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_SHOW_AVATARS )); 
 			ppro->SetByte("MailAutoLogin", ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_MAIL_AUTOLOGIN )); 
@@ -176,7 +167,10 @@ static INT_PTR CALLBACK DlgProcYahooOptsConn(HWND hwndDlg, UINT msg, WPARAM wPar
 			SetDlgItemTextA( hwndDlg, IDC_LOGINSERVER, dbv.pszVal );
 			DBFreeVariant( &dbv );
 		}
-		else SetDlgItemTextA( hwndDlg, IDC_LOGINSERVER, YAHOO_DEFAULT_LOGIN_SERVER );
+		else SetDlgItemTextA( hwndDlg, IDC_LOGINSERVER, 
+						ppro->GetByte( "YahooJapan", 0 ) 
+						?  YAHOO_DEFAULT_JAPAN_LOGIN_SERVER
+						: YAHOO_DEFAULT_LOGIN_SERVER );
 
 		SetDlgItemInt( hwndDlg, IDC_YAHOOPORT, ppro->GetWord( NULL, YAHOO_LOGINPORT, YAHOO_DEFAULT_PORT ), FALSE );
 		

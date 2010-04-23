@@ -38,9 +38,9 @@ BEGIN
 	// Expert Section [Server/Port/etc]
     GROUPBOX        "Expert",IDC_STATIC,8,84,280,80
 	
-	CONTROL         "Disable UTF8 encoding",IDC_DISABLE_UTF8,"Button",
+	/*CONTROL         "Disable UTF8 encoding",IDC_DISABLE_UTF8,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,16,94,140,10 					
-
+	*/
 	CONTROL         "Use Yahoo Address Book (YAB)",IDC_USE_YAB,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,16,104,140,10
 	

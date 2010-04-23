@@ -276,10 +276,13 @@ static const value_string ymsg_service_vals[] = {
 	{YAHOO_SERVICE_Y7_CHANGE_GROUP, "Y7 Change Group"},
 	{YAHOO_SERVICE_Y8_STATUS_UPDATE, "Y8 Buddy Status Update"},
 	{YAHOO_SERVICE_Y8_LIST, "Y8 Buddy List"},
+	{YAHOO_SERVICE_Y9_MESSAGE_ACK, "Y9 Message Ack"},
+	{YAHOO_SERVICE_Y9_PINGBOX_LIST, "Y9 Pingbox List"},
+	{YAHOO_SERVICE_Y9_PINGBOX_GUEST_STATUS, "Y9 Pingbox Guest Status"},
+	{YAHOO_SERVICE_Y9_PINGBOX_NA, "Y9 Pingbox ???"},
 	{YAHOO_SERVICE_WEBLOGIN, "Web Login"},
 	{YAHOO_SERVICE_SMS_MSG, "SMS Message"},
 	{YAHOO_SERVICE_Y7_DISCONNECTED, "Y7 Disconnected"},
-	{YAHOO_SERVICE_Y9_MESSAGE_ACK, "Y9 Message Ack"},
 	{0, NULL}
 };
 
@@ -346,6 +349,8 @@ static const value_string packet_keys[]={
 	{ 87, "buds/groups"},
 	{ 88, "ignore list"},
 	{ 89, "identities"},
+	{ 91, "pingbox nick"},
+	{ 92, "pingbox id"},
 	{ 94, "auth seed"},
 	{ 96, "auth token 2"},
 	{ 97, "utf8"},
@@ -1372,6 +1377,7 @@ static void yahoo_process_filetransfer7(struct yahoo_input_data *yid, struct yah
 		YAHOO_CALLBACK(ext_yahoo_send_file7info)(yd->client_id, to, from, ft_token);
 		break;
 	case 4: // FT7 Declined
+		
 		break;
 	}
 }
@@ -1877,6 +1883,7 @@ static void yahoo_process_message(struct yahoo_input_data *yid, struct yahoo_pac
 	} *message = y_new0(struct m, 1);
 
 	message->buddy_icon = -1; // no info
+	message->utf8		= 1 ; // default value for utf-8. (Seems a ton of clients/pingbox/etc.. don't send this)
 	
 	for (l = pkt->hash; l; l = l->next) {
 		struct yahoo_pair *pair = (struct yahoo_pair *) l->data;
@@ -2538,6 +2545,28 @@ GET /config/pwtoken_login?src=ymsgr&ts=1195577376&token=token HTTP/1.1
 						YAHOO_CALLBACK(ext_yahoo_login_response)(yd->client_id, YAHOO_LOGIN_UNAME, NULL);
 						break;
 				
+				case 1221:
+					c = strstr(response,"url=");
+		
+					if (c != NULL) {
+						t = c + 6;
+			
+						while ( (*c) != '\0' && (*c) != '\r' && (*c) != '\n') c++;
+				
+						i = c - t;
+						
+						if (i > 1000) 
+							i = 1000;
+						
+						strncpy(url, t, i);
+						url[i] = '\0';
+					} else {
+						url[0] = '\0';
+					}
+				
+					YAHOO_CALLBACK(ext_yahoo_login_response)(yd->client_id, YAHOO_LOGIN_LOCK, url);
+					break;
+						
 				case 1214:
 				case 1236: /* indicates a lock of some description */
 						YAHOO_CALLBACK(ext_yahoo_login_response)(yd->client_id, YAHOO_LOGIN_LOCK, "Yahoo! website");
@@ -4902,7 +4931,7 @@ int yahoo_get_fd(int id)
 		return yid->fd;
 }
 
-void yahoo_send_im(int id, const char *from, const char *who, int protocol, const char *what, int utf8, int buddy_icon)
+void yahoo_send_im(int id, const char *from, const char *who, int protocol, const char *msg, int utf8, int buddy_icon)
 {
 	struct yahoo_input_data *yid = find_input_by_id_and_type(id, YAHOO_CONNECTION_PAGER);
 	struct yahoo_packet *pkt = NULL;
@@ -4920,10 +4949,12 @@ void yahoo_send_im(int id, const char *from, const char *who, int protocol, cons
 		yahoo_packet_hash(pkt, 0, yd->user);
 	yahoo_packet_hash(pkt, 1, from?from:yd->user);
 	yahoo_packet_hash(pkt, 5, who);
-	yahoo_packet_hash(pkt, 14, what);
 
 	if(utf8)
 		yahoo_packet_hash(pkt, 97, "1");
+
+	yahoo_packet_hash(pkt, 14, msg);
+
 
 	/* GAIM does doodle so they allow/enable imvironments (that get rejected?)
 	 63 - imvironment  string;11

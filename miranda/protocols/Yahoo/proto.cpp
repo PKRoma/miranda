@@ -837,6 +837,8 @@ INT_PTR CALLBACK first_run_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 				SetDlgItemTextA(hwndDlg, IDC_PASSWORD, dbv.pszVal);
 				DBFreeVariant(&dbv);
 			}
+			
+			SetButtonCheck( hwndDlg, IDC_YAHOO_JAPAN, ppro->GetByte( "YahooJapan", 0 ) );
 			return TRUE;
 		}
 
@@ -856,6 +858,7 @@ INT_PTR CALLBACK first_run_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 			switch( LOWORD( wParam )) {
 			case IDC_HANDLE:			
 			case IDC_PASSWORD:
+			case IDC_YAHOO_JAPAN:
 				SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
 			}
 		}

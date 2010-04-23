@@ -42,7 +42,7 @@ PLUGININFOEX pluginInfo={
 		"Yahoo Protocol support via libyahoo2 library. [Built: "__DATE__" "__TIME__"]",
 		"Gennady Feldman",
 		"gena01@miranda-im.org",
-		"© 2003-2009 Gennady Feldman, Laurent Marechal",
+		"© 2003-2010 Gennady Feldman, Laurent Marechal",
 		"http://www.miranda-im.org",
 		UNICODE_AWARE, //not transient
 		0, //DEFMOD_PROTOCOLYAHOO - no core yahoo protocol
