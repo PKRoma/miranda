@@ -129,37 +129,37 @@ static WNDPROC OldMessageEditProc;
 static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam)
 {
 	switch(msg) {
-		case WM_CHAR:
-			if(wParam=='\n' && GetKeyState(VK_CONTROL)&0x8000) {
-				PostMessage(GetParent(hwnd),WM_COMMAND,IDOK,0);
-				return 0;
-			}
-            if (wParam == 1 && GetKeyState(VK_CONTROL) & 0x8000) {      //ctrl-a
-                SendMessage(hwnd, EM_SETSEL, 0, -1);
-                return 0;
-            }
-            if (wParam == 23 && GetKeyState(VK_CONTROL) & 0x8000) {     // ctrl-w
-                SendMessage(GetParent(hwnd), WM_CLOSE, 0, 0);
-                return 0;
-            }
-            if (wParam == 127 && GetKeyState(VK_CONTROL) & 0x8000) {    //ctrl-backspace
-                DWORD start, end;
-                TCHAR *text;
-                int textLen;
-                SendMessage(hwnd, EM_GETSEL, (WPARAM) & end, (LPARAM) (PDWORD) NULL);
-                SendMessage(hwnd, WM_KEYDOWN, VK_LEFT, 0);
-                SendMessage(hwnd, EM_GETSEL, (WPARAM) & start, (LPARAM) (PDWORD) NULL);
-                textLen = GetWindowTextLength(hwnd);
-                text = (TCHAR *) mir_alloc(sizeof(TCHAR) * (textLen + 1));
-                GetWindowText(hwnd, text, textLen + 1);
-                MoveMemory(text + start, text + end, sizeof(TCHAR) * (textLen + 1 - end));
-                SetWindowText(hwnd, text);
-                mir_free(text);
-                SendMessage(hwnd, EM_SETSEL, start, start);
-                SendMessage(GetParent(hwnd), WM_COMMAND, MAKEWPARAM(GetDlgCtrlID(hwnd), EN_CHANGE), (LPARAM) hwnd);
-                return 0;
-            }
-			break;
+	case WM_CHAR:
+		if(wParam=='\n' && GetKeyState(VK_CONTROL)&0x8000) {
+			PostMessage(GetParent(hwnd),WM_COMMAND,IDOK,0);
+			return 0;
+		}
+		if (wParam == 1 && GetKeyState(VK_CONTROL) & 0x8000) {      //ctrl-a
+			SendMessage(hwnd, EM_SETSEL, 0, -1);
+			return 0;
+		}
+		if (wParam == 23 && GetKeyState(VK_CONTROL) & 0x8000) {     // ctrl-w
+			SendMessage(GetParent(hwnd), WM_CLOSE, 0, 0);
+			return 0;
+		}
+		if (wParam == 127 && GetKeyState(VK_CONTROL) & 0x8000) {    //ctrl-backspace
+			DWORD start, end;
+			TCHAR *text;
+			int textLen;
+			SendMessage(hwnd, EM_GETSEL, (WPARAM) & end, (LPARAM) (PDWORD) NULL);
+			SendMessage(hwnd, WM_KEYDOWN, VK_LEFT, 0);
+			SendMessage(hwnd, EM_GETSEL, (WPARAM) & start, (LPARAM) (PDWORD) NULL);
+			textLen = GetWindowTextLength(hwnd);
+			text = (TCHAR *) mir_alloc(sizeof(TCHAR) * (textLen + 1));
+			GetWindowText(hwnd, text, textLen + 1);
+			MoveMemory(text + start, text + end, sizeof(TCHAR) * (textLen + 1 - end));
+			SetWindowText(hwnd, text);
+			mir_free(text);
+			SendMessage(hwnd, EM_SETSEL, start, start);
+			SendMessage(GetParent(hwnd), WM_COMMAND, MAKEWPARAM(GetDlgCtrlID(hwnd), EN_CHANGE), (LPARAM) hwnd);
+			return 0;
+		}
+		break;
 	}
 	return CallWindowProc(OldMessageEditProc, hwnd, msg, wParam, lParam);
 }
@@ -234,41 +234,41 @@ static INT_PTR CALLBACK SetAwayMsgDlgProc(HWND hwndDlg,UINT message,WPARAM wPara
 			mir_sntprintf(str, SIZEOF(str), dat->okButtonFormat, dat->countdown);
 			SetDlgItemText(hwndDlg, IDOK, str);
 		}
-        else {
-   		    KillTimer(hwndDlg, 1);
-            PostMessage(hwndDlg, WM_CLOSE, 0, 0);
-        }
-        break;
+		else {
+			KillTimer(hwndDlg, 1);
+			PostMessage(hwndDlg, WM_CLOSE, 0, 0);
+		}
+		break;
 
 	case WM_CLOSE:
 		{	TCHAR *msg = GetAwayMessage(dat->statusMode, dat->szProto);
-	        ChangeAllProtoMessages(dat->szProto, dat->statusMode, msg);
-		    mir_free(msg);
-	    }
+			ChangeAllProtoMessages(dat->szProto, dat->statusMode, msg);
+			mir_free(msg);
+		}
 		DestroyWindow(hwndDlg);
-        break;
+		break;
 
     case WM_COMMAND:
-		switch(LOWORD(wParam)) {
-			case IDOK:
-		        if (dat->countdown < 0) {	
-                    TCHAR str[1024];
-			        GetDlgItemText(hwndDlg, IDC_MSG, str, SIZEOF(str));
-			        ChangeAllProtoMessages(dat->szProto, dat->statusMode, str);
-			        DBWriteContactSettingTString(NULL, "SRAway", StatusModeToDbSetting(dat->statusMode, "Msg"), str);
-				    DestroyWindow(hwndDlg);
-		        }
-                else
-                    PostMessage(hwndDlg, WM_CLOSE, 0, 0);
-				break;
+		 switch(LOWORD(wParam)) {
+		 case IDOK:
+			 if (dat->countdown < 0) {	
+				 TCHAR str[1024];
+				 GetDlgItemText(hwndDlg, IDC_MSG, str, SIZEOF(str));
+				 ChangeAllProtoMessages(dat->szProto, dat->statusMode, str);
+				 DBWriteContactSettingTString(NULL, "SRAway", StatusModeToDbSetting(dat->statusMode, "Msg"), str);
+				 DestroyWindow(hwndDlg);
+			 }
+			 else
+				 PostMessage(hwndDlg, WM_CLOSE, 0, 0);
+			 break;
 
-            case IDC_MSG:
-				KillTimer(hwndDlg, 1);
-				SetDlgItemText(hwndDlg, IDOK, TranslateT("OK"));
-                dat->countdown = -1;
-				break;
-		}
-		break;
+		 case IDC_MSG:
+			 KillTimer(hwndDlg, 1);
+			 SetDlgItemText(hwndDlg, IDOK, TranslateT("OK"));
+			 dat->countdown = -1;
+			 break;
+		 }
+		 break;
 
 	case DM_SRAWAY_SHUTDOWN:
 		DestroyWindow(hwndDlg);
@@ -276,11 +276,11 @@ static INT_PTR CALLBACK SetAwayMsgDlgProc(HWND hwndDlg,UINT message,WPARAM wPara
 
 	case WM_DESTROY:
 		KillTimer(hwndDlg, 1);
-        UnhookEvent(dat->hPreshutdown); 
+		UnhookEvent(dat->hPreshutdown); 
 		Window_FreeIcon_IcoLib(hwndDlg);
 		SetWindowLongPtr(GetDlgItem(hwndDlg,IDC_MSG), GWLP_WNDPROC, (LONG_PTR)OldMessageEditProc);
 		mir_free(dat);
-        hwndStatusMsg = NULL;
+		hwndStatusMsg = NULL;
 		break;
 	}
 	return FALSE;
@@ -296,10 +296,9 @@ static int StatusModeChange(WPARAM wParam, LPARAM lParam)
 
 	// If its a global change check the complete PFLAGNUM_3 flags to see if a popup might be needed
 	if (!szProto) 
-	{
 		if (!(protoModeMsgFlags & Proto_Status2Flag(statusMode)))
 			return 0;
-	}
+
 	// If its a single protocol check the PFLAGNUM_3 for the single protocol
 	else if (!(CallProtoService(szProto, PS_GETCAPS,PFLAGNUM_1, 0) & PF1_MODEMSGSEND)||
 		!(CallProtoService(szProto, PS_GETCAPS, PFLAGNUM_3, 0) & Proto_Status2Flag(statusMode)))
@@ -321,7 +320,8 @@ static int StatusModeChange(WPARAM wParam, LPARAM lParam)
 		SetAwasMsgNewData *newdat = (SetAwasMsgNewData*)mir_alloc(sizeof(SetAwasMsgNewData));
 		newdat->szProto = szProto;
 		newdat->statusMode = statusMode;
-        if (hwndStatusMsg) DestroyWindow(hwndStatusMsg);
+		if (hwndStatusMsg)
+			DestroyWindow(hwndStatusMsg);
 		hwndStatusMsg = CreateDialogParam(hMirandaInst, MAKEINTRESOURCE(IDD_SETAWAYMSG),
 			NULL, SetAwayMsgDlgProc, (LPARAM)newdat);
 	}
