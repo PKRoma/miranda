@@ -1181,7 +1181,8 @@ void CAimProto::snac_received_message(SNAC &snac,HANDLE hServerConn,unsigned sho
 			}
 
 			// Okay we are setting up the structure to give the message back to miranda's core
-			pre.flags = unicode_message ? PREF_UTF : 0;
+//			pre.flags = unicode_message ? PREF_UTF : 0;
+			pre.flags = PREF_UTF;
 
 			if (is_offline)
 				pre.timestamp = offline_timestamp;
