@@ -186,7 +186,7 @@ int __cdecl CYahooProto::SendMsg( HANDLE hContact, int flags, const char* pszSrc
 	char *msg;
 	int  bANSI;
 
-	bANSI = GetByte( "DisableUTF8", 0 );
+	bANSI = 0;/*GetByte( "DisableUTF8", 0 );*/
 
 	if (!m_bLoggedIn) {/* don't send message if we not connected! */
 		YForkThread( &CYahooProto::im_sendackfail, hContact );
