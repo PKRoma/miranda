@@ -109,7 +109,7 @@ public:
 	void					updateState				();
 	bool					updateStatus			();
 	bool					updateNick				();
-	void					updateMeta				();
+	void					updateMeta				(bool fForce = false);
 	void					updateUIN				();
 	void					updateStatusMsg			(const char *szKey = 0);
 	void					setWindowData			(const HWND hwnd = 0, TWindowData *dat = 0);

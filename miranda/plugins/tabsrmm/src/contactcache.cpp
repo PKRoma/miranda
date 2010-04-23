@@ -36,6 +36,7 @@
  */
 
 #include "commonheaders.h"
+#include <regex>
 
 CContactCache* CContactCache::m_cCache = 0;
 
@@ -103,7 +104,7 @@ void CContactCache::initPhaseTwo()
 				i++;
 			} while(true);
 			*/
-			updateMeta();
+			updateMeta(true);
 		}
 		updateState();
 		updateFavorite();
@@ -184,11 +185,11 @@ bool CContactCache::updateStatus()
  * MC protocol fires one of its events OR when a relevant database value changes
  * in the master contact.
  */
-void CContactCache::updateMeta()
+void CContactCache::updateMeta(bool fForce)
 {
 	if(m_Valid) {
 		HANDLE hSubContact = (HANDLE)CallService(MS_MC_GETMOSTONLINECONTACT, (WPARAM)m_hContact, 0);
-		if (hSubContact && hSubContact != m_hSubContact) {
+		if (hSubContact && (hSubContact != m_hSubContact || fForce)) {
 			m_hSubContact = hSubContact;
 			m_szMetaProto = (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)m_hSubContact, 0);
 			if (m_szMetaProto) {
@@ -371,7 +372,6 @@ void CContactCache::saveHistory(WPARAM wParam, LPARAM lParam)
 	}
 	if (szFromStream)
 		free(szFromStream);
-
 	if (oldTop)
 		m_iHistoryTop = oldTop;
 }
@@ -539,21 +539,6 @@ void CContactCache::updateStatusMsg(const char *szKey)
 		}
 	}
 	m_xStatus = M->GetByte(m_hContact, m_szProto, "XStatusId", 0);
-
-	/*
-	if (bStatusMsgValid > STATUSMSG_XSTATUSNAME) {
-		int j = 0, i, iLen;
-		iLen = lstrlen(dbv.ptszVal);
-		for (i = 0; i < iLen && j < 1024; i++) {
-			if (dbv.ptszVal[i] == (TCHAR)0x0d)
-				continue;
-			dat->statusMsg[j] = dbv.ptszVal[i] == (TCHAR)0x0a ? (TCHAR)' ' : dbv.ptszVal[i];
-			j++;
-		}
-		dat->statusMsg[j] = (TCHAR)0;
-		mir_free(dbv.ptszVal);
-	}
-	*/
 }
 
 /**

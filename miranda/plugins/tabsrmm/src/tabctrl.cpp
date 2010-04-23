@@ -1501,11 +1501,13 @@ static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
 
 			/*
 			 * switchbar is active, don't paint a single pixel, the tab control won't be visible at all
+			 * same when we have only ONE tab and do not want it to be visible because of the container
+			 * option "Show tab bar only when needed".
 			 */
 
-			if(tabdat->pContainer->dwFlags & CNT_SIDEBAR) {
+			if((tabdat->pContainer->dwFlags & CNT_SIDEBAR) || (nCount == 1 && tabdat->pContainer->dwFlags & CNT_HIDETABS)) {
 				if(nCount == 0)
-					FillRect(hdcreal, &ps.rcPaint, GetSysColorBrush(COLOR_3DFACE));
+					FillRect(hdcreal, &ps.rcPaint, GetSysColorBrush(COLOR_3DFACE)); // avoid flickering/ugly black background during container creation
 				EndPaint(hwnd, &ps);
 				return(0);
 			}
@@ -1535,7 +1537,6 @@ static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
 			if (CSkin::m_skinEnabled)
 				CSkin::SkinDrawBG(hwnd, tabdat->pContainer->hwnd, tabdat->pContainer, &rctPage, hdc);
 			else
-				//FillRect(hdc, &ps.rcPaint, GetSysColorBrush(COLOR_3DFACE));
 				FillRect(hdc, &rctPage, GetSysColorBrush(COLOR_3DFACE));
 
 			if (dwStyle & TCS_BUTTONS) {
@@ -1562,6 +1563,8 @@ static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
 				rctClip = rctPage;
 				InflateRect(&rctClip, -tabdat->pContainer->tBorder, -tabdat->pContainer->tBorder);
 			}
+			else
+				ZeroMemory(&rctClip, sizeof(RECT));
 
 			hPenOld = (HPEN)SelectObject(hdc, PluginConfig.tabConfig.m_hPenLight);
 			/*
@@ -1571,6 +1574,8 @@ static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
 			CopyRect(&rcTabPage, &rctPage);
 			if (!tabdat->bRefreshWithoutClip)
 				ExcludeClipRect(hdc, rctClip.left, rctClip.top, rctClip.right, rctClip.bottom);
+			else
+				ZeroMemory(&rctClip, sizeof(RECT));
 			if (!bClassicDraw && IntersectRect(&rectTemp, &rctPage, &ps.rcPaint)) {
 				RECT rcClient = rctPage;
 				if (dwStyle & TCS_BOTTOM) {

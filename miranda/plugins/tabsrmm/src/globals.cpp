@@ -183,6 +183,12 @@ void CGlobals::reloadSystemStartup()
 	hookSystemEvents();
 }
 
+/**
+ * this runs ONCE at startup when the Modules Loaded event is fired
+ * by the core. all plugins are loaded and ready to use.
+ * 
+ * any initialation for 3rd party plugins must go here.
+ */
 void CGlobals::reloadSystemModulesChanged()
 {
 	BOOL				bIEView = FALSE;
@@ -537,7 +543,7 @@ int CGlobals::DBSettingChanged(WPARAM wParam, LPARAM lParam)
 		if (lstrlenA(setting) > 6 && lstrlenA(setting) < 9 && !strncmp(setting, "Status", 6)) {
 			fChanged = true;
 			if(c) {
-				c->updateMeta();
+				c->updateMeta(true);
 				c->updateUIN();
 			}
 		}
@@ -594,7 +600,7 @@ int CGlobals::MetaContactEvent(WPARAM wParam, LPARAM lParam)
 	if(wParam) {
 		CContactCache *c = CContactCache::getContactCache((HANDLE)wParam);
 		if(c) {
-			c->updateMeta();
+			c->updateMeta(true);
 			if(c->getHwnd()) {
 				c->updateUIN();								// only do this for open windows, not needed normally
 				::PostMessage(c->getHwnd(), DM_UPDATETITLE, 0, 0);
@@ -615,10 +621,8 @@ int CGlobals::PreshutdownSendRecv(WPARAM wParam, LPARAM lParam)
 	::TN_ModuleDeInit();
 
 	while(pFirstContainer){
-		//MaD: fix for correct closing hidden contacts
 		if (PluginConfig.m_HideOnClose)
 			PluginConfig.m_HideOnClose = FALSE;
-		//
 		::SendMessage(pFirstContainer->hwnd, WM_CLOSE, 0, 1);
 	}
 

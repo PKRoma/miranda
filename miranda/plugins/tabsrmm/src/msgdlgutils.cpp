@@ -2336,8 +2336,8 @@ void TSAPI GetMyNick(TWindowData *dat)
 
 HICON TSAPI MY_GetContactIcon(const TWindowData *dat)
 {
-	//return(LoadSkinnedProtoIcon(dat->cache->getActiveProto(), dat->cache->getActiveStatus()));
-	return(LoadSkinnedProtoIcon(dat->cache->getActiveProto(), dat->cache->getStatus()));
+	return(LoadSkinnedProtoIcon(dat->cache->getActiveProto(), dat->cache->getActiveStatus()));
+	//return(LoadSkinnedProtoIcon(dat->cache->getActiveProto(), dat->cache->getStatus()));
 }
 
 static void TSAPI MTH_updatePreview(const TWindowData *dat)

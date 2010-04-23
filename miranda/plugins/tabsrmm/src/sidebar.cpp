@@ -1238,6 +1238,11 @@ void __fastcall CSideBar::m_AdvancedContentRenderer(const HDC hdc, const RECT *r
 			int		iSize;
 			HICON	hIcon = dat->cache->getIcon(iSize);
 
+			/*
+			 * TODO support larger icons at a later time. This side bar button
+			 * could use 32x32 icons as well.
+			 */
+
 			rc.top = rc.bottom - szSecondLine.cy - 2;
 			::DrawIconEx(hdc, rc.left, rc.top + (rc.bottom - rc.top) / 2 - 8, hIcon, 16, 16, 0, 0, DI_NORMAL);
 			rc.left += 18;

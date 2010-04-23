@@ -1253,6 +1253,9 @@ int CInfoPanel::invokeConfigDialog(const POINT& pt)
 	RECT 	rc;
 	POINT	ptTest = pt;
 
+	if(!m_active)
+		return(0);
+
 	::GetWindowRect(m_dat->hwnd, &rc);
 	rc.bottom = rc.top + m_height;
 	rc.right -= m_dat->panelWidth;

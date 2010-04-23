@@ -517,10 +517,8 @@ static LRESULT CALLBACK MessageLogSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
 {
 	HWND hwndParent = GetParent(hwnd);
 	TWindowData *mwdat = (TWindowData *)GetWindowLongPtr(hwndParent, GWLP_USERDATA);
-	//MAD
 	BOOL isCtrl, isShift, isAlt;
 	KbdState(mwdat, isShift, isCtrl, isAlt);
-	//MAD_
 
 	switch (msg) {
 		case WM_KILLFOCUS: {
@@ -1302,7 +1300,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			dat->szProto = const_cast<char *>(dat->cache->getProto());
 			dat->bIsMeta = dat->cache->isMeta() ? TRUE : FALSE;
 			if(dat->bIsMeta)
-				dat->cache->updateMeta();
+				dat->cache->updateMeta(true);
 			dat->cache->updateUIN();
 
 			if (dat->hContact && dat->szProto != NULL) {
