@@ -22,35 +22,27 @@
 
 void __cdecl CYahooProto::search_simplethread(void *snsearch)
 {
-	TCHAR *nick = (TCHAR *) snsearch;
-	static TCHAR m[255];
+	TCHAR *id = (TCHAR *) snsearch;
 
-	if (lstrlen(nick) < 4) {
+	if (lstrlen(id) < 4) {
 		SendBroadcast(NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, (HANDLE) 1, 0);
 		MessageBoxA(NULL, "Please enter a valid ID to search for.", "Search", MB_OK);
 		return;
 	}
 
-	TCHAR *c = _tcschr(nick, '@');
-	if (c != NULL){
-		int l =  c - nick;
-
-		_tcsncpy(m, nick, l);
-		m[l] = '\0';        
-	}
-	else _tcscpy(m, nick);
+	TCHAR *c = _tcschr(id, '@');
+	if (c) *c = 0;
 
 	PROTOSEARCHRESULT psr = { 0 };
 	psr.cbSize = sizeof(psr);
-	psr.nick = _tcslwr(_tcsdup(nick));
+	psr.flags = PSR_TCHAR;
+	psr.id = (TCHAR*)_tcslwr(id);
 	psr.reserved[0] = YAHOO_IM_YAHOO;
 
 	SendBroadcast(NULL, ACKTYPE_SEARCH, ACKRESULT_DATA, (HANDLE) 1, (LPARAM) & psr);
 
 	//yahoo_search(m_id, YAHOO_SEARCH_YID, m, YAHOO_GENDER_NONE, YAHOO_AGERANGE_NONE, 0, 1);
 
-	FREE(nick);
-	
 	SendBroadcast(NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, (HANDLE) 1, 0);
 }
 
@@ -82,6 +74,7 @@ void CYahooProto::ext_got_search_result(int found, int start, int total, YList *
 		
 	PROTOSEARCHRESULT psr = { 0 };
 	psr.cbSize = sizeof(psr);
+	psr.flags = PSR_TCHAR;
 	psr.reserved[0] = YAHOO_IM_YAHOO;
 	
 	while (en) {
@@ -91,11 +84,11 @@ void CYahooProto::ext_got_search_result(int found, int start, int total, YList *
 			LOG(("[%d] Empty record?",i++));
 		} else {
 			LOG(("[%d] id: '%s', online: %d, age: %d, sex: '%s', location: '%s'", i++, yct->id, yct->online, yct->age, yct->gender, yct->location));
-			psr.nick = ( TCHAR* )yct->id;
+			psr.id = ( TCHAR* )yct->id;
 			TCHAR *c = ( TCHAR* )malloc(10);
 			
 			if (yct->gender[0] != 5)
-				psr.firstName = mir_a2t( yct->gender );
+				psr.firstName = mir_utf8decodeT( yct->gender );
 			
 			if (yct->age > 0) {
 				_itot(yct->age, c,10);
@@ -103,7 +96,7 @@ void CYahooProto::ext_got_search_result(int found, int start, int total, YList *
 			}
 			
 			if (yct->location[0] != 5)
-				psr.email = mir_a2t( yct->location );
+				psr.email = mir_utf8decodeT( yct->location );
     
 			//void yahoo_search(int id, enum yahoo_search_type t, const char *text, enum yahoo_search_gender g, enum yahoo_search_agerange ar, 
 			//	int photo, int yahoo_only)
@@ -162,7 +155,8 @@ void __cdecl CYahooProto::searchadv_thread(void *pHWND)
 
 	PROTOSEARCHRESULT psr = { 0 };
 	psr.cbSize = sizeof(psr);
-	psr.nick = _tcslwr(searchid);
+	psr.flags = PSR_TCHAR;
+	psr.id = _tcslwr(searchid);
 
 	int pid = SendDlgItemMessage(hwndDlg , IDC_SEARCH_PROTOCOL, CB_GETCURSEL, 0, 0);
 	switch (pid){

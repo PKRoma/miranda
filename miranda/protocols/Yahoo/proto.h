@@ -255,14 +255,8 @@ struct CYahooProto : public PROTO_INTERFACE
 
 	//====| yahoo.cpp |===================================================================
 	HANDLE add_buddy( const char *yahoo_id, const char *yahoo_name, int protocol, DWORD flags );
-	#if defined( _UNICODE )
-		HANDLE add_buddy( const TCHAR *yahoo_id, const TCHAR *yahoo_name, int protocol, DWORD flags );
-	#endif
 	const char *find_buddy( const char *yahoo_id);
 	HANDLE getbuddyH(const char *yahoo_id);
-	#if defined( _UNICODE )
-		HANDLE getbuddyH(const TCHAR *yahoo_id);
-	#endif
 	void   remove_buddy(const char *who, int protocol);
 
 	void   logout();

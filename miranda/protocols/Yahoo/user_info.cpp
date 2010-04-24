@@ -31,7 +31,7 @@ static INT_PTR CALLBACK YahooUserInfoDlgProc( HWND hwndDlg, UINT msg, WPARAM wPa
 		//SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)LoadSkinnedIcon(SKINICON_OTHER_USERDETAILS));
 
 		
-		return TRUE;
+		break;
 
 	case WM_NOTIFY:
 		if (( ( LPNMHDR )lParam )->idFrom == 0 ) {

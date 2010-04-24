@@ -382,7 +382,7 @@ void CYahooProto::MenuInit( void )
 		
 	mi.position = 500015000;
 	mi.pszPopupName = (char *)-1;
-	mi.flags = CMIF_ICONFROMICOLIB | CMIF_ROOTPOPUP | CMIF_TCHAR;
+	mi.flags = CMIF_ICONFROMICOLIB | CMIF_ROOTPOPUP | CMIF_TCHAR | CMIF_KEEPUNTRANSLATED;
 	mi.icolibItem = GetIconHandle( IDI_YAHOO );
 	mi.ptszName = m_tszUserName;
 	mainMenuRoot = (HANDLE)YAHOO_CallService( MS_CLIST_ADDMAINMENUITEM,  (WPARAM)0, (LPARAM)&mi);

@@ -125,7 +125,7 @@ HANDLE CYahooProto::AddToList( int flags, PROTOSEARCHRESULT* psr )
 		return 0;
 	}
 
-	char *id = psr->flags & PSR_UNICODE ? mir_u2a((wchar_t*)psr->nick) : mir_strdup((char*)psr->nick);
+	char *id = psr->flags & PSR_UNICODE ? mir_utf8encodeW((wchar_t*)psr->id) : mir_utf8encode((char*)psr->id);
 	HANDLE hContact = getbuddyH(id);
 	if (hContact != NULL) {
 		if (DBGetContactSettingByte(hContact, "CList", "NotOnList", 0)) {
@@ -800,7 +800,7 @@ int __cdecl CYahooProto::OnEvent( PROTOEVENTTYPE eventType, WPARAM wParam, LPARA
 		{	
 			CLISTMENUITEM clmi = { 0 };
 			clmi.cbSize = sizeof( CLISTMENUITEM );
-			clmi.flags = CMIM_NAME | CMIF_TCHAR;
+			clmi.flags = CMIM_NAME | CMIF_TCHAR | CMIF_KEEPUNTRANSLATED;
 			clmi.ptszName = m_tszUserName;
 			YAHOO_CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )mainMenuRoot, ( LPARAM )&clmi );
             break;
