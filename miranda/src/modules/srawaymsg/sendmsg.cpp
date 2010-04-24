@@ -296,13 +296,17 @@ static int StatusModeChange(WPARAM wParam, LPARAM lParam)
 
 	// If its a global change check the complete PFLAGNUM_3 flags to see if a popup might be needed
 	if (!szProto) 
+	{
 		if (!(protoModeMsgFlags & Proto_Status2Flag(statusMode)))
 			return 0;
-
-	// If its a single protocol check the PFLAGNUM_3 for the single protocol
-	else if (!(CallProtoService(szProto, PS_GETCAPS,PFLAGNUM_1, 0) & PF1_MODEMSGSEND)||
-		!(CallProtoService(szProto, PS_GETCAPS, PFLAGNUM_3, 0) & Proto_Status2Flag(statusMode)))
-		return 0;
+	}
+	else
+	{
+		// If its a single protocol check the PFLAGNUM_3 for the single protocol
+		if (!(CallProtoService(szProto, PS_GETCAPS,PFLAGNUM_1, 0) & PF1_MODEMSGSEND) ||
+			!(CallProtoService(szProto, PS_GETCAPS, PFLAGNUM_3, 0) & Proto_Status2Flag(statusMode)))
+			return 0;
+	}
 
 	SystemParametersInfo(SPI_GETSCREENSAVERRUNNING, 0, &bScreenSaverRunning, FALSE);
 	if (DBGetContactSettingByte(NULL, "SRAway", StatusModeToDbSetting(statusMode, "Ignore"), 0))
