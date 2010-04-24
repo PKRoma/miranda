@@ -84,24 +84,34 @@ void CYahooProto::ext_got_search_result(int found, int start, int total, YList *
 			LOG(("[%d] Empty record?",i++));
 		} else {
 			LOG(("[%d] id: '%s', online: %d, age: %d, sex: '%s', location: '%s'", i++, yct->id, yct->online, yct->age, yct->gender, yct->location));
-			psr.id = ( TCHAR* )yct->id;
-			TCHAR *c = ( TCHAR* )malloc(10);
+			psr.id = mir_utf8decodeT( yct->id );
 			
 			if (yct->gender[0] != 5)
 				psr.firstName = mir_utf8decodeT( yct->gender );
+			else
+				psr.firstName = NULL;
 			
+			TCHAR c[10];
 			if (yct->age > 0) {
 				_itot(yct->age, c,10);
 				psr.lastName = ( TCHAR* )c;
 			}
+			else
+				psr.lastName = NULL;
 			
 			if (yct->location[0] != 5)
 				psr.email = mir_utf8decodeT( yct->location );
+			else
+				psr.email = NULL;
     
 			//void yahoo_search(int id, enum yahoo_search_type t, const char *text, enum yahoo_search_gender g, enum yahoo_search_agerange ar, 
 			//	int photo, int yahoo_only)
 
 			SendBroadcast(NULL, ACKTYPE_SEARCH, ACKRESULT_DATA, (HANDLE) 1, (LPARAM) & psr);
+
+			mir_free(psr.id);
+			mir_free(psr.firstName);
+			mir_free(psr.email);
 		}
 		en = y_list_next(en);
 	}
