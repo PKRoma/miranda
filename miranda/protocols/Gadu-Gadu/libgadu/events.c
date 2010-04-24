@@ -1300,6 +1300,21 @@ static int gg_watch_fd_connected(struct gg_session *sess, struct gg_event *e)
 			break;
 		}
 
+		case GG_TYPING_NOTIFY:
+		{
+			struct gg_typing_notify *tn = (void*) p;
+
+			gg_debug_session(sess, GG_DEBUG_MISC, "// gg_watch_fd_connected() received typing notify\n");
+
+			if (h->length == sizeof(*tn)) {
+				e->type = GG_EVENT_TYPING_NOTIFY;
+				memcpy(&e->event.typing_notify, p, sizeof(*tn));
+				e->event.typing_notify.msg_len = gg_fix16(e->event.typing_notify.msg_len);
+				e->event.typing_notify.uin = gg_fix32(e->event.typing_notify.uin);
+			}
+			break;
+		}
+
 		case GG_PUBDIR50_REPLY:
 		{
 			gg_debug_session(sess, GG_DEBUG_MISC, "// gg_watch_fd_connected() received pubdir/search reply\n");

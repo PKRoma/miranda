@@ -274,7 +274,7 @@ void __cdecl gg_mainthread(GGPROTO *gg, void *empty)
 	// Client version and misc settings
 	p.client_version = "8.0.0.8731";
 	p.protocol_version = 0x2e;
-	p.protocol_features = GG_FEATURE_DND_FFC;
+	p.protocol_features = GG_FEATURE_DND_FFC | GG_FEATURE_TYPING_NOTIFY;
 	p.encoding = GG_ENCODING_CP1250;
 	p.status_flags = GG_STATUS_FLAG_UNKNOWN;
 	if (DBGetContactSettingByte(NULL, GG_PROTO, GG_KEY_SHOWLINKS, GG_KEYDEF_SHOWLINKS))
@@ -1060,6 +1060,17 @@ retry:
 					}
 					mir_free(tag);
 					mir_free(xmlAction);
+				}
+				break;
+			case GG_EVENT_TYPING_NOTIFY:
+				{
+					HANDLE hContact = gg_getcontact(gg, e->event.typing_notify.uin, 0, 0, NULL);
+#ifdef DEBUGMODE
+					gg_netlog(gg, "gg_mainthread(%x): Typing notify from %d (%d).", gg,
+						e->event.typing_notify.uin, e->event.typing_notify.msg_len);
+#endif
+					CallService(MS_PROTO_CONTACTISTYPING, (WPARAM)hContact,
+						(LPARAM)e->event.typing_notify.msg_len > 0 ? PROTOTYPE_CONTACTTYPING_INFINITE : PROTOTYPE_CONTACTTYPING_OFF);
 				}
 				break;
 		}

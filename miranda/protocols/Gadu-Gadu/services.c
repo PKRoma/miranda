@@ -60,7 +60,7 @@ DWORD_PTR gg_getcaps(PROTO_INTERFACE *proto, int type, HANDLE hContact)
 		case PFLAGNUM_3:
 			return PF2_ONLINE | PF2_SHORTAWAY | PF2_HEAVYDND | PF2_FREECHAT | PF2_INVISIBLE;
 		case PFLAGNUM_4:
-			return PF4_NOCUSTOMAUTH | PF4_AVATARS | PF4_IMSENDOFFLINE;
+			return PF4_NOCUSTOMAUTH | PF4_AVATARS | PF4_IMSENDOFFLINE | PF4_SUPPORTTYPING;
 		case PFLAGNUM_5:
 			return PF2_LONGAWAY;
 		case PFLAG_UNIQUEIDTEXT:
@@ -985,6 +985,29 @@ INT_PTR gg_leavechat(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
 }
 
 //////////////////////////////////////////////////////////
+// sends a notification that the user is typing a message
+int gg_useristyping(PROTO_INTERFACE *proto, HANDLE hContact, int type)
+{
+	GGPROTO *gg = (GGPROTO *)proto;
+	struct gg_typing_notify tn = {0};
+	uin_t uin = DBGetContactSettingDword(hContact, GG_PROTO, GG_KEY_UIN, 0);
+
+	if(!uin || !gg_isonline(gg)) return 0;
+
+	if (type == PROTOTYPE_SELFTYPING_ON)
+		tn.msg_len = gg_fix16(0x01);
+	tn.uin = gg_fix32(uin);
+
+	if (type == PROTOTYPE_SELFTYPING_ON || type == PROTOTYPE_SELFTYPING_OFF) {
+		EnterCriticalSection(&gg->sess_mutex);
+		gg_send_packet(gg->sess, GG_TYPING_NOTIFY, &tn, sizeof(tn), NULL);
+		LeaveCriticalSection(&gg->sess_mutex);
+	}
+
+	return 0;
+}
+
+//////////////////////////////////////////////////////////
 // Dummies for function that have to be implemented
 
 HANDLE gg_dummy_addtolistbyevent(PROTO_INTERFACE *proto, int flags, int iContact, HANDLE hDbEvent) { return NULL; }
@@ -1001,7 +1024,6 @@ int    gg_dummy_sendcontacts(PROTO_INTERFACE *proto, HANDLE hContact, int flags,
 int    gg_dummy_sendurl(PROTO_INTERFACE *proto, HANDLE hContact, int flags, const char *url) { return 0; }
 int    gg_dummy_recvawaymsg(PROTO_INTERFACE *proto, HANDLE hContact, int mode, PROTORECVEVENT *evt) { return 0; }
 int    gg_dummy_sendawaymsg(PROTO_INTERFACE *proto, HANDLE hContact, HANDLE hProcess, const char *msg) { return 0; }
-int    gg_dummy_useristyping(PROTO_INTERFACE *proto, HANDLE hContact, int type) { return 0; }
 
 //////////////////////////////////////////////////////////
 // Register services
@@ -1050,7 +1072,7 @@ void gg_registerservices(GGPROTO *gg)
 	gg->proto.vtbl->SendAwayMsg            = gg_dummy_sendawaymsg;
 	gg->proto.vtbl->SetAwayMsg             = gg_setawaymsg;
 
-	gg->proto.vtbl->UserIsTyping           = gg_dummy_useristyping;
+	gg->proto.vtbl->UserIsTyping           = gg_useristyping;
 
 	gg->proto.vtbl->OnEvent                = gg_event;
 

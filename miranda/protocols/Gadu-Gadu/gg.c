@@ -588,6 +588,7 @@ static const ggdebug_eventype2string[] =
 	{GG_EVENT_XML_EVENT,			"GG_EVENT_XML_EVENT"},
 	{GG_EVENT_DISCONNECT_ACK,		"GG_EVENT_DISCONNECT_ACK"},
 	{GG_EVENT_XML_ACTION,			"GG_EVENT_XML_ACTION"},
+	{GG_EVENT_TYPING_NOTIFY,		"GG_EVENT_TYPING_NOTIFY"},
 	{-1,							"<unknown event>"}
 };
 
