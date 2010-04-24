@@ -291,10 +291,10 @@ static INT_PTR CALLBACK DlgProcDetails(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 					tvis.hInsertAfter = TVI_LAST;
 					tvis.item.mask = TVIF_TEXT | TVIF_PARAM;
 					tvis.item.lParam = (LPARAM) i;
-					if (!odp[i].flags & ODPF_DONTTRANSLATE)
-						tvis.item.pszText = TranslateTS(odp[i].ptszTitle);
-					else
+					if (odp[i].flags & ODPF_DONTTRANSLATE)
 						tvis.item.pszText = mir_tstrdup(odp[i].ptszTitle);
+					else
+						tvis.item.pszText = TranslateTS(odp[i].ptszTitle);
 					if ( dbv.type != DBVT_DELETED && !lstrcmp( tvis.item.pszText, dbv.ptszVal ))
 						dat->currentPage = i;
 					dat->opd[i].hItem = TreeView_InsertItem(hwndTree, &tvis);
