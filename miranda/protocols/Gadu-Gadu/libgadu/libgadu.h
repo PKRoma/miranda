@@ -717,6 +717,7 @@ enum gg_event_t {
 
 	GG_EVENT_XML_EVENT,		/**< Otrzymano komunikat systemowy (7.7) */
 	GG_EVENT_DISCONNECT_ACK,	/**< \brief Potwierdzenie zakończenia sesji. Informuje o tym, że zmiana stanu na niedostępny z opisem dotarła do serwera i można zakończyć połączenie TCP. */
+	GG_EVENT_TYPING_NOTIFY
 };
 
 #define GG_EVENT_SEARCH50_REPLY GG_EVENT_PUBDIR50_SEARCH_REPLY
@@ -912,6 +913,14 @@ struct gg_event_xml_event {
 };
 
 /**
+ * Opis zdarzenia \c GG_EVENT_TYPING_NOTIFY.
+ */
+struct gg_event_typing_notify {
+	uint16_t msg_len;
+	uint32_t uin;
+};
+
+/**
  * Opis zdarzenia \c GG_EVENT_DCC7_CONNECTED.
  */
 struct gg_event_dcc7_connected {
@@ -967,6 +976,7 @@ union gg_event_union {
 	struct gg_event_userlist userlist;	/**< Odpowiedź listy kontaktów (\c GG_EVENT_USERLIST) */
 	gg_pubdir50_t pubdir50;	/**< Odpowiedź katalogu publicznego (\c GG_EVENT_PUBDIR50_*) */
 	struct gg_event_xml_event xml_event;	/**< Zdarzenie systemowe (\c GG_EVENT_XML_EVENT) */
+	struct gg_event_typing_notify typing_notify;	/**< Powiadomienie o pisaniu (\c GG_EVENT_TYPING_NOTIFY) */
 	struct gg_dcc *dcc_new;	/**< Nowe połączenie bezpośrednie (\c GG_EVENT_DCC_NEW) */
 	enum gg_error_t dcc_error;	/**< Błąd połączenia bezpośredniego (\c GG_EVENT_DCC_ERROR) */
 	struct gg_event_dcc_voice_data dcc_voice_data;	/**< Dane połączenia głosowego (\c GG_EVENT_DCC_VOICE_DATA) */
@@ -1427,6 +1437,7 @@ int gg_dcc7_handle_reject(struct gg_session *sess, struct gg_event *e, void *pay
 #define GG_FEATURE_STATUS77		0x02
 #define GG_FEATURE_DND_FFC		0x10
 #define GG_FEATURE_IMAGE_DESCR		0x20
+#define GG_FEATURE_TYPING_NOTIFY	0x2000
 
 /* Poniższe makra zostały zachowane dla zgodności API */
 #define GG_FEATURE_MSG80		0
@@ -1948,6 +1959,13 @@ struct gg_recv_msg {
 #define GG_USERLIST_REQUEST 0x0016
 
 #define GG_XML_EVENT 0x0027
+
+#define GG_TYPING_NOTIFY 0x0059
+
+struct gg_typing_notify {
+	uint16_t msg_len;
+	uint32_t uin;
+} GG_PACKED;
 
 #ifndef DOXYGEN
 
