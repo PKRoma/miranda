@@ -692,17 +692,7 @@ b_nonskinned:
 				if (active || rc.left < 10) {
 					DrawWuLine(dc, pt[0].x, pt[0].y, pt[1].x, pt[1].y, PluginConfig.tabConfig.colors[9]);
 					DrawWuLine(dc, pt[1].x, pt[1].y, pt[2].x, pt[2].y, PluginConfig.tabConfig.colors[9]);
-					/*
-					short basecolor;
-					COLORREF clr = GetSysColor(COLOR_3DDKSHADOW);
-					basecolor = (GetRValue(clr) + GetBValue(clr) + GetGValue(clr)) / 3;
-					DrawWuLineBW(dc, pt[0].x, pt[0].y, pt[1].x, pt[1].y, basecolor, 256, 8);
-					DrawWuLineBW(dc, pt[1].x, pt[1].y, pt[2].x, pt[2].y, basecolor, 256, 8);
-					*/
 					MoveToEx(dc, pt[2].x, pt[2].y, &pts);
-					//MoveToEx(dc, pt[0].x, pt[0].y, &pts);
-					//LineTo(dc, pt[1].x, pt[1].y);
-					//LineTo(dc, pt[2].x, pt[2].y);
 				} else {
 					MoveToEx(dc, pt[1].x, pt[1].y, &pts);
 					LineTo(dc, pt[2].x, pt[2].y);
@@ -715,17 +705,8 @@ b_nonskinned:
 				LineTo(dc, pt[3].x - 1, pt[3].y - 1);
 				LineTo(dc, pt[2].x, pt[2].y - 1);
 				if (active || rc.left < 10) {
-					/*
-					short basecolor;
-					COLORREF clr = GetSysColor(COLOR_3DHILIGHT);
-					basecolor = (GetRValue(clr) + GetBValue(clr) + GetGValue(clr)) / 3;
-					DrawWuLineBW(dc, pt[2].x, pt[2].y - 1, pt[1].x, pt[1].y - 1, basecolor, 256, 8);
-					DrawWuLineBW(dc, pt[1].x, pt[1].y - 1, pt[0].x + 1, pt[0].y, basecolor, 256, 8);
-					*/
 					DrawWuLine(dc, pt[2].x, pt[2].y - 1, pt[1].x + 1, pt[1].y - 1, PluginConfig.tabConfig.colors[8]);
 					DrawWuLine(dc, pt[1].x + 1, pt[1].y - 1, pt[0].x + 1, pt[0].y, PluginConfig.tabConfig.colors[8]);
-					//LineTo(dc, pt[1].x, pt[1].y - 1);
-					//LineTo(dc, pt[0].x + 1, pt[0].y);
 					if (rc.top > rcTabPage.bottom + 10 && !active) {
 						DrawWuLine(dc, pt[0].x, pt[0].y - 1, pt[4].x, pt[4].y - 1, PluginConfig.tabConfig.colors[9]);
 						DrawWuLine(dc, pt[0].x + 1, pt[0].y, pt[4].x - 1, pt[4].y, PluginConfig.tabConfig.colors[8]);

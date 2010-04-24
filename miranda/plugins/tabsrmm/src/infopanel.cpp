@@ -864,7 +864,7 @@ void CInfoPanel::trackMouse(POINT& pt)
  */
 void CInfoPanel::showTip(UINT ctrlId, const LPARAM lParam) const
 {
-	if (m_dat->hwndTip) {
+	if (m_active && m_dat->hwndTip) {
 		RECT 	rc;
 		TCHAR 	szTitle[256];
 		HWND	hwndDlg = m_dat->hwnd;

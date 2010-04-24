@@ -1667,10 +1667,8 @@ void TSAPI GetLocaleID(TWindowData *dat, const TCHAR *szKLName)
 
 void TSAPI LoadContactAvatar(TWindowData *dat)
 {
-	if (ServiceExists(MS_AV_GETAVATARBITMAP) && dat)
-		dat->ace = (AVATARCACHEENTRY *)CallService(MS_AV_GETAVATARBITMAP, (WPARAM)dat->hContact, 0);
-	else if (dat)
-		dat->ace = NULL;
+	if(dat)
+		dat->ace = Utils::loadAvatarFromAVS(dat->hContact);
 
 	if (dat && (!(dat->Panel->isActive()) || dat->pContainer->avatarMode == 3)) {
 		BITMAP bm;

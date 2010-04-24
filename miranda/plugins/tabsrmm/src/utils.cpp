@@ -736,6 +736,12 @@ void Utils::SaveContainerSettings(TContainerData *pContainer, const char *szSett
 	}
 }
 
+/**
+ * calculate new width and height values for a user picture (avatar)
+ * 
+ * @param: maxHeight -	determines maximum height for the picture, width will
+ *						be scaled accordingly.
+ */
 void Utils::scaleAvatarHeightLimited(const HBITMAP hBm, double& dNewWidth, double& dNewHeight, LONG maxHeight)
 {
 	BITMAP	bm;
@@ -773,6 +779,9 @@ HICON Utils::iconFromAvatar(const TWindowData *dat)
 	bool		fFree = false;
 	HIMAGELIST 	hIml_c = 0;
 	HICON		hIcon = 0;
+
+	if(!ServiceExists(MS_AV_GETAVATARBITMAP))
+		return(0);
 
 	if(dat) {
 		AVATARCACHEENTRY *ace = (AVATARCACHEENTRY *)CallService(MS_AV_GETAVATARBITMAP, (WPARAM)dat->hContact, 0);
@@ -821,6 +830,14 @@ HICON Utils::iconFromAvatar(const TWindowData *dat)
 		}
 	}
 	return(hIcon);
+}
+
+AVATARCACHEENTRY* Utils::loadAvatarFromAVS(const HANDLE hContact)
+{
+	if(ServiceExists(MS_AV_GETAVATARBITMAP))
+		return(reinterpret_cast<AVATARCACHEENTRY *>(CallService(MS_AV_GETAVATARBITMAP, (WPARAM)hContact, 0)));
+	else
+		return(0);
 }
 
 void Utils::getIconSize(HICON hIcon, int& sizeX, int& sizeY)

@@ -3476,7 +3476,7 @@ quote_from_last:
 			SendMessage(hwndDlg, DM_REMAKELOG, 0, 0);
 			break;
 		case DM_PROTOAVATARCHANGED:
-			dat->ace = (AVATARCACHEENTRY *)CallService(MS_AV_GETAVATARBITMAP, (WPARAM)dat->hContact, 0);
+			dat->ace = Utils::loadAvatarFromAVS(dat->hContact);
 			dat->panelWidth = -1;				// force new size calculations
 			ShowPicture(dat, TRUE);
 			if (dat->Panel->isActive()) {
@@ -3778,7 +3778,7 @@ quote_from_last:
 				DestroyWindow(dat->hwndPanelPicParent);
 			}
 
-			if (dat->cache->isValid()) {
+			if (dat->cache->isValid()) { // not valid means the contact was deleted
 				TABSRMM_FireEvent(dat->hContact, hwndDlg, MSG_WINDOW_EVT_CLOSING, 0);
 				AddContactToFavorites(dat->hContact, dat->cache->getNick(), dat->cache->getActiveProto(), dat->szStatus, dat->wStatus,
 									  LoadSkinnedProtoIcon(dat->cache->getActiveProto(), dat->cache->getActiveStatus()), 1, PluginConfig.g_hMenuRecent);
@@ -3862,8 +3862,6 @@ quote_from_last:
 
 			SetWindowLongPtr(GetDlgItem(hwndDlg, IDC_SPLITTER), GWLP_WNDPROC, (LONG_PTR) OldSplitterProc);
 			SetWindowLongPtr(GetDlgItem(hwndDlg, IDC_CONTACTPIC), GWLP_WNDPROC, (LONG_PTR) OldAvatarWndProc);
-
-			/* remove temporary contacts... */
 
 			{
 				HFONT hFont;

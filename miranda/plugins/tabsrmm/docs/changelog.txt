@@ -6,6 +6,10 @@ Homepage: http://miranda.or.at
 Download: http://code.google.com/p/silvercircle/downloads/list
 Source:   http://code.google.com/p/miranda     (tabSRMM code is in Miranda SVN)
 
+Addtional annoucements can be found at my blog:
+	http://blog.miranda.or.at
+
+
 + : new feature
 * : changed
 ! : bugfix
@@ -30,6 +34,13 @@ are currently no downloads for it, you'll have to compile it from source.
 
 			Detailed change log
 			===================
+
+Version 3.0.0.25 - 2010/04/23
+
+	* bug fixes
+	* added two new switch bar layouts (more complex, allow showing avatars
+	  on the switch bar buttons).
+	* fix for a crash when AVS plugin is not available.
 
 Version 3.0.0.22 - 2010/04/01
 
