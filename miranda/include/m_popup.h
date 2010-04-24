@@ -279,7 +279,7 @@ static int __inline PUChange(HWND hWndPopUp, POPUPDATAEX *newData) {
 
 #define MS_POPUP_CHANGEW "PopUp/ChangeW"
 static int __inline PUChangeW(HWND hWndPopUp, POPUPDATAW *newData) {
-	return (int)CallService(MS_POPUP_CHANGE, (WPARAM)hWndPopUp, (LPARAM)newData);
+	return (int)CallService(MS_POPUP_CHANGEW, (WPARAM)hWndPopUp, (LPARAM)newData);
 }
 
 #if defined(_UNICODE) || defined(UNICODE)
@@ -332,11 +332,11 @@ Returns: 0 if the popup was shown, -1 in case of failure.
 #define MS_POPUP_SHOWMESSAGE "PopUp/ShowMessage"
 #define MS_POPUP_SHOWMESSAGEW "PopUp/ShowMessageW"
 
-static int __inline PUShowMessage(char *lpzText, BYTE kind) {
+static int __inline PUShowMessage(char *lpzText, DWORD kind) {
 	return (int)CallService(MS_POPUP_SHOWMESSAGE, (WPARAM)lpzText,(LPARAM)kind);
 }
 
-static int __inline PUShowMessageW(wchar_t *lpwzText, BYTE kind) {
+static int __inline PUShowMessageW(wchar_t *lpwzText, DWORD kind) {
 	return (int)CallService(MS_POPUP_SHOWMESSAGEW, (WPARAM)lpwzText,(LPARAM)kind);
 }
 
