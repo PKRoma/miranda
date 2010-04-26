@@ -1390,6 +1390,7 @@ buttons_done:
 			return 0;
 		}
 
+
 		case WM_TIMER:
 			if (wParam == TIMERID_HEARTBEAT) {
 				int i;

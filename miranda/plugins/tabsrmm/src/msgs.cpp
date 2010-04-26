@@ -564,7 +564,7 @@ int LoadSendRecvMessageModule(void)
 	INITCOMMONCONTROLSEX 	icex;
 
 	if(FIF == 0) {
-		MessageBox(0, _T("The image service plugin was not found. TabSRMM is disabled"), _T("TabSRMM fatal error"), MB_OK);
+		MessageBox(0, _T("The image service plugin is not installed. TabSRMM cannot be loaded."), _T("TabSRMM fatal error"), MB_OK);
 		return(1);
 	}
 	icex.dwSize = sizeof(INITCOMMONCONTROLSEX);

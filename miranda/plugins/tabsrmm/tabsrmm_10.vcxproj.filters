@@ -651,6 +651,5 @@
     <None Include="BuildScripts\VS_2010_Toolset9.bat">
       <Filter>BuildScripts</Filter>
     </None>
-    <None Include="ClassDiagram1.cd" />
   </ItemGroup>
 </Project>

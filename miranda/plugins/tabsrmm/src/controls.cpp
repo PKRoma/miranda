@@ -47,8 +47,6 @@ int			CMenuBar::m_MimIconRefCount = 0;
 
 CMenuBar::CMenuBar(HWND hwndParent, const TContainerData *pContainer)
 {
-	RECT Rc;
-
 	m_pContainer = const_cast<TContainerData *>(pContainer);
 
 	if(m_MimIcon == 0) {
@@ -139,8 +137,6 @@ CMenuBar::CMenuBar(HWND hwndParent, const TContainerData *pContainer)
 	::SendMessage(m_hwndToolbar, TB_ADDBUTTONS, sizeof(m_TbButtons)/sizeof(TBBUTTON), (LPARAM)m_TbButtons);
 
 	m_size_y = HIWORD(::SendMessage(m_hwndToolbar, TB_GETBUTTONSIZE, 0, 0));
-
-	::GetWindowRect(m_hwndToolbar, &Rc);
 
 	TBADDBITMAP tb;
 	tb.nID = (UINT_PTR)m_MimIcon;

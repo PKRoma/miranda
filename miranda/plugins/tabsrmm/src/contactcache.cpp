@@ -574,8 +574,9 @@ CContactCache* CContactCache::getContactCache(const HANDLE hContact)
 
 /**
  * normalize the status message with proper cr/lf sequences.
- * @param src TCHAR*: original status message
- * @return TCHAR*:    converted status message. CALLER is responsible to free it, MUST use mir_free()
+ * @param src TCHAR*:		original status message
+ * @param fStripAll bool:	strip all cr/lf sequences and replace them with spaces (use for title bar)
+ * @return TCHAR*:			converted status message. CALLER is responsible to free it, MUST use mir_free()
  */
 TCHAR* CContactCache::getNormalizedStatusMsg(const TCHAR *src, bool fStripAll)
 {

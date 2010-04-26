@@ -96,7 +96,6 @@ public:
 	static		HBITMAP   m_MimIcon;
 
 private:
-	HWND		m_hwndRebar;
 	HWND		m_hwndToolbar;
 	RECT		m_rcClient;
 	TContainerData *m_pContainer;

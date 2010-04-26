@@ -875,7 +875,6 @@
     <None Include="chat\Icons\5.ico" />
     <None Include="chat\Icons\6.ico" />
     <None Include="chat\Icons\action.ico" />
-    <None Include="ClassDiagram1.cd" />
     <None Include="res\angeli-icons\Add.ico" />
     <None Include="..\..\Miranda-IM\res\addcontact.ico" />
     <None Include="chat\Icons\addmode.ico" />
