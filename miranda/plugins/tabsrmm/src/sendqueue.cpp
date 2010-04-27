@@ -375,7 +375,7 @@ int SendQueue::sendQueued(TWindowData *dat, const int iEntry)
 		do {
 			hItem = (HANDLE) SendDlgItemMessage(hwndDlg, IDC_CLIST, CLM_FINDCONTACT, (WPARAM) hContact, 0);
 			if (hItem && SendDlgItemMessage(hwndDlg, IDC_CLIST, CLM_GETCHECKMARK, (WPARAM) hItem, 0))
-				sendLater(iEntry, 0, hContact, false);
+				doSendLater(iEntry, 0, hContact, false);
 		}
 		while (hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM) hContact, 0));
 		sendQueue->clearJob(iEntry);
@@ -451,7 +451,7 @@ send_unsplitted:
 			m_jobs[iEntry].iStatus = SQ_INPROGRESS;
 			m_jobs[iEntry].iAcksNeeded = 1;
 			if(dat->sendMode & SMODE_SENDLATER) {
-				sendLater(iEntry, dat);
+				doSendLater(iEntry, dat);
 				clearJob(iEntry);
 				return(0);
 			}
@@ -670,7 +670,7 @@ void SendQueue::UpdateSaveAndSendButton(TWindowData *dat)
 	}
 }
 
-static INT_PTR CALLBACK PopupDlgProcError(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK PopupDlgProcError(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	HANDLE hContact = (HANDLE)CallService(MS_POPUP_GETPLUGINDATA, (WPARAM)hWnd, (LPARAM)&hContact);
 
@@ -888,9 +888,9 @@ LRESULT SendQueue::WarnPendingJobs(unsigned int uNrMessages)
  *
  * @return the index on success, -1 on failure
  */
-int SendQueue::sendLater(int iJobIndex, TWindowData *dat, HANDLE hContact, bool fIsSendLater)
+int SendQueue::doSendLater(int iJobIndex, TWindowData *dat, HANDLE hContact, bool fIsSendLater)
 {
-	bool  fAvail = PluginConfig.m_SendLaterAvail ? true : false;
+	bool  fAvail = sendLater->isAvail();
 
 	const TCHAR *szNote = 0;
 
@@ -952,7 +952,7 @@ int SendQueue::sendLater(int iJobIndex, TWindowData *dat, HANDLE hContact, bool 
 			}
 			else {
 				mir_snprintf(tszMsg, required, "%s%s", utf_header, job->sendBuffer);
-				SendLater_AddJob(tszMsg, (LPARAM)hContact);
+				sendLater->addJob(tszMsg, (LPARAM)hContact);
 			}
 			mir_free(utf_header);
 			mir_free(tszMsg);
@@ -972,7 +972,7 @@ int SendQueue::sendLater(int iJobIndex, TWindowData *dat, HANDLE hContact, bool 
 			if(fIsSendLater)
 				DBWriteContactSettingString(hContact ? hContact : job->hOwner, "SendLater", szKeyName, utf);
 			else
-				SendLater_AddJob(utf, (LPARAM)hContact);
+				sendLater->addJob(utf, (LPARAM)hContact);
 			mir_free(utf);
 			mir_free(tszMsg);
 		}
@@ -980,52 +980,9 @@ int SendQueue::sendLater(int iJobIndex, TWindowData *dat, HANDLE hContact, bool 
 			int iCount = M->GetDword(hContact ? hContact : job->hOwner, "SendLater", "count", 0);
 			iCount++;
 			M->WriteDword(hContact ? hContact : job->hOwner, "SendLater", "count", iCount);
-			SendLater_Add(hContact ? hContact : job->hOwner);
+			sendLater->addContact(hContact ? hContact : job->hOwner);
 		}
 		return(iJobIndex);
 	}
 	return(-1);
-}
-
-SendLaterJob::SendLaterJob()
-{
-	ZeroMemory(this, sizeof(SendLaterJob));
-	fSuccess = false;
-}
-SendLaterJob::~SendLaterJob()
-{
-	if(fSuccess || fFailed) {
-		POPUPDATAT ppd = {0};
-
-		if(!M->GetByte("adv_noSendLaterPopups", 0)) {
-
-			if (PluginConfig.g_PopupAvail) {
-				TCHAR	*tszName = (TCHAR *)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)hContact, GCDNF_TCHAR);
-
-				ZeroMemory((void *)&ppd, sizeof(ppd));
-				ppd.lchContact = hContact;
-				ppd.cbSize = sizeof(ppd);
-				mir_sntprintf(ppd.lptzContactName, MAX_CONTACTNAME, _T("%s"), tszName ? tszName : CTranslator::get(CTranslator::GEN_UNKNOWN_CONTACT));
-				if(fSuccess && szId[0] == 'S') {
-#if defined(_UNICODE)
-					TCHAR *msgPreview = Utils::GetPreviewWithEllipsis(reinterpret_cast<TCHAR *>(&pBuf[lstrlenA((char *)pBuf) + 1]), 100);
-#else
-					TCHAR *msgPreview = Utils::GetPreviewWithEllipsis(reinterpret_cast<TCHAR *>(pBuf), 100);
-#endif
-					mir_sntprintf(ppd.lptzText, MAX_SECONDLINE, CTranslator::get(CTranslator::GEN_SQ_SENDLATER_SUCCESS_POPUP),
-								  msgPreview);
-					mir_free(msgPreview);
-				}
-				ppd.colorText = fFailed ? M->GetByte("adv_PopupText_failedjob", RGB(255, 245, 225)) : M->GetByte("adv_PopupText_successjob", RGB(255, 245, 225));
-				ppd.colorBack = fFailed ? M->GetByte("adv_PopupBG_failedjob", RGB(191, 0, 0)) : M->GetByte("adv_PopupBG_successjob", RGB(0, 121, 0));
-				ppd.PluginWindowProc = (WNDPROC)PopupDlgProcError;
-				ppd.lchIcon = PluginConfig.g_iconErr;
-				ppd.PluginData = (void *)hContact;
-				ppd.iSeconds = -1;
-				CallService(MS_POPUP_ADDPOPUPW, (WPARAM)&ppd, 0);
-			}
-		}
-		mir_free(sendBuffer);
-		mir_free(pBuf);
-	}
 }

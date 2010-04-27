@@ -191,7 +191,6 @@ public:
 	COLORREF	m_ipBackgroundGradient;
 	COLORREF	m_ipBackgroundGradientHigh;
 	COLORREF	m_tbBackgroundHigh, m_tbBackgroundLow;
-	BOOL		m_SendLaterAvail;
 	BYTE		g_bClientInStatusBar;
 	BYTE		m_dontUseDefaultKbd;
 	HANDLE		hSvc[SERVICE_LAST];

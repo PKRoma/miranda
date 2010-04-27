@@ -132,7 +132,9 @@ extern "C" int __declspec(dllexport) Unload(void)
 	FreeLogFonts();
 	Chat_Unload();
 	int iRet = SplitmsgShutdown();
+	Skin->setupTabCloseBitmap(true);
 	delete Skin;
+	delete sendLater;
 	delete sendQueue;
 	delete M;
 	return iRet;

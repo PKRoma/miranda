@@ -214,7 +214,9 @@ extern 	NEN_OPTIONS	nen_options;
 #include "../include/controls.h"
 #include "../include/infopanel.h"
 #include "../include/sidebar.h"
-#include  "../include/utils.h"
+#include "../include/utils.h"
+#include "../include/sendlater.h"
+
 #include "../chat/muchighlight.h"
 
 #if !defined(_WIN64) && !defined(_USE_32BIT_TIME_T)

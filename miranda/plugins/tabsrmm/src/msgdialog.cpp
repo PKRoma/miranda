@@ -932,7 +932,6 @@ LRESULT CALLBACK SplitterSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 			if (hwnd == GetDlgItem(hwndParent, IDC_SPLITTER) || hwnd == GetDlgItem(hwndParent, IDC_SPLITTERY)) {
 				RECT rc;
 
-				struct TWindowData *dat = (struct TWindowData *)GetWindowLongPtr(hwndParent, GWLP_USERDATA);
 				if (dat) {
 					GetClientRect(hwnd, &rc);
 					dat->savedSplitter = rc.right > rc.bottom ? (short) HIWORD(GetMessagePos()) + rc.bottom / 2 : (short) LOWORD(GetMessagePos()) + rc.right / 2;
@@ -960,7 +959,6 @@ LRESULT CALLBACK SplitterSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 		case WM_ERASEBKGND:
 			return(1);
 		case WM_PAINT: {
-			struct TWindowData *dat = (struct TWindowData *)GetWindowLongPtr(GetParent(hwnd), GWLP_USERDATA);
 			RECT 		rc;
 			PAINTSTRUCT ps;
 			HDC 		dc = BeginPaint(hwnd, &ps);
@@ -2655,7 +2653,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 						break;
 
 					if (wParam == MSGERROR_SENDLATER)
-						sendQueue->sendLater(dat->iCurrentQueueError, dat);							// to be implemented at a later time
+						sendQueue->doSendLater(dat->iCurrentQueueError, dat);							// to be implemented at a later time
 					dat->iOpenJobs--;
 					sendQueue->dec();
 					if (dat->iCurrentQueueError >= 0 && dat->iCurrentQueueError < SendQueue::NR_SENDJOBS)
@@ -3208,7 +3206,7 @@ quote_from_last:
 				}
 
 				case IDC_ADD: {
-					ADDCONTACTSTRUCT acs = { 0};
+					ADDCONTACTSTRUCT acs = {0};
 
 					acs.handle = dat->hContact;
 					acs.handleType = HANDLE_CONTACT;

@@ -1273,7 +1273,10 @@ static INT_PTR CALLBACK FilterWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LP
 	return(FALSE);
 }
 
-
+/**
+ * subclass for some tool bar buttons which must perform special actions
+ * on right click.
+ */
 static LRESULT CALLBACK ButtonSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	HWND hwndParent = GetParent(hwnd);
@@ -1943,9 +1946,7 @@ INT_PTR CALLBACK RoomWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 			dat->codePage = M->GetDword(dat->hContact, "ANSIcodepage", CP_ACP);
 			dat->Panel->getVisibility();
 			dat->Panel->Configure();
-			//MAD
 			M->AddWindow(hwndDlg, dat->hContact);
-			//
 			BroadCastContainer(dat->pContainer, DM_REFRESHTABINDEX, 0, 0);
 
 			SendDlgItemMessage(hwndDlg, IDC_CHAT_LOG, EM_SETOLECALLBACK, 0, (LPARAM) mREOLECallback);

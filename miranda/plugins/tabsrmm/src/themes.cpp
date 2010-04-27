@@ -1765,6 +1765,8 @@ void CSkin::Load()
 	}
 }
 
+#define SECT_BUFFER_SIZE 2500
+
 /**
  * Load additional skin items (like image items, buttons, icons etc.)
  * This is called AFTER ReadItems() has read the basic skin items
@@ -1783,10 +1785,12 @@ void CSkin::LoadItems()
 	ZeroMemory(m_skinIcons, sizeof(TIconDesc) * NR_MAXSKINICONS);
 	m_nrSkinIcons = 0;
 
-	szSections = (TCHAR *)malloc(5004);
-	ZeroMemory(szSections, 5004);
+	szSections = (TCHAR *)malloc((SECT_BUFFER_SIZE + 2) * sizeof(TCHAR));
+	ZeroMemory(szSections, (SECT_BUFFER_SIZE + 2) * sizeof(TCHAR));
 
-	GetPrivateProfileSection(_T("Icons"), szSections, 2500, m_tszFileName);
+	GetPrivateProfileSection(_T("Icons"), szSections, SECT_BUFFER_SIZE, m_tszFileName);
+	szSections[SECT_BUFFER_SIZE] = 0;
+
 	p = szSections;
 	while (lstrlen(p) > 1) {
 		p1 = _tcschr(p, (int)'=');
@@ -1808,11 +1812,10 @@ void CSkin::LoadItems()
 		p += (lstrlen(p) + 1);
 	}
 
-	ZeroMemory(szSections, 5004);
-	p = szSections;
-	GetPrivateProfileSectionNames(szSections, 2500, m_tszFileName);
+	ZeroMemory(szSections, (SECT_BUFFER_SIZE + 2) * sizeof(TCHAR));
+	GetPrivateProfileSectionNames(szSections, SECT_BUFFER_SIZE, m_tszFileName);
+	szSections[SECT_BUFFER_SIZE] = 0;
 
-	szSections[2500] = szSections[2501] = 0;
 	p = szSections;
 	while (lstrlen(p) > 1) {
 		if (p[0] == '$')
@@ -1843,15 +1846,18 @@ void CSkin::LoadItems()
  * ) theme changes
  * ) icons change (via ico lib service)
  *
- * TODO: in skinned mode, use skinned button elements instead of visual
- * styles.
+ * @param fDeleteOnly:	only delete GDI resources (this is ONLY used at plugin shutdown)
  */
-void CSkin::setupTabCloseBitmap()
+void CSkin::setupTabCloseBitmap(bool fDeleteOnly)
 {
-	if(m_tabCloseHDC) {
-		::SelectObject(m_tabCloseHDC, m_tabCloseOldBitmap);
-		::DeleteObject(m_tabCloseBitmap);
-		::DeleteDC(m_tabCloseHDC);
+	if(m_tabCloseHDC || fDeleteOnly) {
+		if(m_tabCloseHDC) {
+			::SelectObject(m_tabCloseHDC, m_tabCloseOldBitmap);
+			::DeleteObject(m_tabCloseBitmap);
+			::DeleteDC(m_tabCloseHDC);
+		}
+		if(fDeleteOnly)
+			return;
 	}
 
 	bool fFree = false;
@@ -1876,6 +1882,8 @@ void CSkin::setupTabCloseBitmap()
 		CMimAPI::m_pfnDrawThemeBackground(hTheme, m_tabCloseHDC, 1, 1, &rc, &rc);
 		CMimAPI::m_pfnCloseThemeData(hTheme);
 	}
+	else if(CSkin::m_skinEnabled)
+		CSkin::DrawItem(m_tabCloseHDC, &rc, &SkinItems[ID_EXTBKBUTTONSNPRESSED]);
 	else {
 		::FillRect(m_tabCloseHDC, &rc, ::GetSysColorBrush(COLOR_3DFACE));
 		::DrawFrameControl(m_tabCloseHDC, &rc, DFC_BUTTON, DFCS_BUTTONPUSH | DFCS_MONO);
@@ -2048,7 +2056,6 @@ void CSkin::setupAeroSkins()
 
 		/*
 		 * background item for the button switch bar
-		 *
 		 */
 		mir_sntprintf(tszFilename, MAX_PATH, _T("%stabskin_aero_button.png"), tszBasePath);
 

@@ -62,23 +62,6 @@ struct SendJob {
 	DWORD   dwTime;
 };
 
-class SendLaterJob {
-public:
-	SendLaterJob();
-	~SendLaterJob();
-	char	szId[20];									// database key name (time stamp of original send)
-	HANDLE	hContact;									// original contact where the message has been assigned
-	HANDLE  hTargetContact;								// *real* contact (can be different for metacontacts, e.g).
-	HANDLE	hProcess;									// returned from the protocols sending service. needed to find it in the ACK handler
-	time_t	created;									// job was created at this time (important to kill jobs, that are too old)
-	time_t	lastSent;									// time at which the delivery was initiated. used to handle timeouts
-	char	*sendBuffer;								// utf-8 send buffer
-	PBYTE	pBuf;										// conventional send buffer (for non-utf8 protocols)
-	DWORD	dwFlags;
-	int		iSendCount;									// # of times we tried to send it...
-	bool	fSuccess, fFailed;
-};
-
 class SendQueue {
 public:
 	enum {
@@ -107,18 +90,18 @@ public:
 
 	SendJob *getJobByIndex(const int index) { return(&m_jobs[index]); }
 
-	void 	TSAPI clearJob					(const int index);
-	int 	TSAPI findNextFailed			(const TWindowData *dat) const;
-	void 	TSAPI handleError				(TWindowData *dat, const int iEntry) const;
-	int 	TSAPI addTo						(TWindowData *dat, const int iLen, int dwFlags);
-	int 	TSAPI sendQueued				(TWindowData *dat, const int iEntry);
-	void 	TSAPI checkQueue 		 		(const TWindowData *dat) const;
-	void 	TSAPI logError					(const TWindowData *dat, int iSendJobIndex,
-											 const TCHAR *szErrMsg) const;
-	void 	TSAPI recallFailed				(const TWindowData *dat, int iEntry) const;
-	void 	TSAPI showErrorControls			(TWindowData *dat, const int showCmd) const;
-	int 	TSAPI ackMessage				(TWindowData *dat, WPARAM wParam, LPARAM lParam);
-	int		TSAPI sendLater					(int iIndex, TWindowData *dat, HANDLE hContact = 0, bool fIsSendLater = true);
+	void 	clearJob					(const int index);
+	int 	findNextFailed				(const TWindowData *dat) const;
+	void 	handleError					(TWindowData *dat, const int iEntry) const;
+	int 	addTo						(TWindowData *dat, const int iLen, int dwFlags);
+	int 	sendQueued					(TWindowData *dat, const int iEntry);
+	void 	checkQueue 		 			(const TWindowData *dat) const;
+	void 	logError					(const TWindowData *dat, int iSendJobIndex,
+										 const TCHAR *szErrMsg) const;
+	void 	recallFailed				(const TWindowData *dat, int iEntry) const;
+	void 	showErrorControls			(TWindowData *dat, const int showCmd) const;
+	int 	ackMessage					(TWindowData *dat, WPARAM wParam, LPARAM lParam);
+	int		doSendLater					(int iIndex, TWindowData *dat, HANDLE hContact = 0, bool fIsSendLater = true);
 	/*
 	 * static members
 	 */

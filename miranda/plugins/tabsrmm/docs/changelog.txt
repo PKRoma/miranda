@@ -35,6 +35,13 @@ are currently no downloads for it, you'll have to compile it from source.
 			Detailed change log
 			===================
 
+Version 3.0.0.26 - 2010/04/XX
+
+	* fixed the painting of close buttons on tabs when using a skin (they
+	  were incorrectly using visual styles instead of the button skin)
+
+	* new skin item for the switch bar background
+
 Version 3.0.0.25 - 2010/04/23
 
 	* bug fixes

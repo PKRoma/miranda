@@ -289,7 +289,7 @@ public:
 
 	void					setupAeroSkins();
 	void 					extractSkinsAndLogo(bool fForceOverwrite = false) const;
-	void					setupTabCloseBitmap();
+	void					setupTabCloseBitmap(bool fDeleteOnly = false);
 
 	/*
 	 * static member functions

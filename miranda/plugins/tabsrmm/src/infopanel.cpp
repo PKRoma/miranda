@@ -42,7 +42,7 @@ TCHAR *xStatusDescr[] = {	_T("Angry"), _T("Duck"), _T("Tired"), _T("Party"), _T(
 							};
 
 
-InfoPanelConfig CInfoPanel::m_ipConfig = {0};
+TInfoPanelConfig CInfoPanel::m_ipConfig = {0};
 WNDPROC CTip::m_OldMessageEditProc = 0;
 
 int CInfoPanel::setPanelHandler(TWindowData *dat, WPARAM wParam, LPARAM lParam)
@@ -53,15 +53,15 @@ int CInfoPanel::setPanelHandler(TWindowData *dat, WPARAM wParam, LPARAM lParam)
 		dat->Panel->showHide();
 	}
 	else {
-		TWindowData *SrcDat = (TWindowData *)wParam;
+		TWindowData *srcDat = (TWindowData *)wParam;
 		if(lParam == 0)
 			dat->Panel->loadHeight();
 		else {
-			if(SrcDat && lParam && dat != SrcDat && !dat->Panel->isPrivateHeight()) {
-				if(SrcDat->bType != dat->bType && M->GetByte("syncAllPanels", 0) == 0)
+			if(srcDat && lParam && dat != srcDat && !dat->Panel->isPrivateHeight()) {
+				if(srcDat->bType != dat->bType && M->GetByte("syncAllPanels", 0) == 0)
 					return(0);
 
-				if(dat->pContainer->settings->fPrivate && SrcDat->pContainer != dat->pContainer)
+				if(dat->pContainer->settings->fPrivate && srcDat->pContainer != dat->pContainer)
 					return(0);
 				dat->panelWidth = -1;
 				dat->Panel->setHeight((LONG)lParam);
@@ -560,7 +560,6 @@ void CInfoPanel::RenderIPStatus(const HDC hdc, RECT& rcItem)
 
 	if(m_dat->panelStatusCX != oldPanelStatusCX) {
 		SendMessage(m_dat->hwnd, WM_SIZE, 0, 0);
-		//CSkin::MapClientToParent(GetDlgItem(m_dat->hwnd, IDC_PANELSTATUS), m_dat->hwnd, rcItem);
 		rcItem = m_dat->rcStatus;
 	}
 

@@ -1715,20 +1715,23 @@ void TSAPI LoadOwnAvatar(TWindowData *dat)
 
 void TSAPI LoadTimeZone(TWindowData *dat)
 {
-	if(ServiceExists("TZ/GetInfoByContact")) {
-		MIM_TIMEZONE  *tzi;
-		tzi = (MIM_TIMEZONE *)CallService("TZ/GetInfoByContact", (WPARAM)dat->hContact, 0);
-		if(tzi) {
-			dat->timediff = tzi->Offset;
-			dat->timezone = 1;
-			return;
+	if(dat) {
+		dat->timezone = -1;
+		if(ServiceExists("TZ/GetInfoByContact")) {
+			MIM_TIMEZONE  *tzi;
+			tzi = (MIM_TIMEZONE *)CallService("TZ/GetInfoByContact", (WPARAM)dat->hContact, 0);
+			if(tzi) {
+				dat->timediff = tzi->Offset;
+				dat->timezone = 1;
+				return;
+			}
 		}
-	}
-	dat->timezone = (DWORD)(M->GetByte(dat->hContact, "UserInfo", "Timezone", M->GetByte(dat->hContact, dat->szProto, "Timezone", -1)));
-	if (dat->timezone != -1) {
-		DWORD contact_gmt_diff;
-		contact_gmt_diff = dat->timezone > 128 ? 256 - dat->timezone : 0 - dat->timezone;
-		dat->timediff = (int)PluginConfig.local_gmt_diff - (int)contact_gmt_diff * 60 * 60 / 2;
+		dat->timezone = (DWORD)(M->GetByte(dat->hContact, "UserInfo", "Timezone", M->GetByte(dat->hContact, dat->szProto, "Timezone", -1)));
+		if (dat->timezone != -1) {
+			DWORD contact_gmt_diff;
+			contact_gmt_diff = dat->timezone > 128 ? 256 - dat->timezone : 0 - dat->timezone;
+			dat->timediff = (int)PluginConfig.local_gmt_diff - (int)contact_gmt_diff * 60 * 60 / 2;
+		}
 	}
 }
 

@@ -50,7 +50,7 @@
 #define CMD_IP_ROOMPREFS					20002
 #define CMD_IP_HISTORY						20003
 
-struct InfoPanelConfig {
+struct TInfoPanelConfig {
 	HFONT       hFonts[IPFONTCOUNT];
 	COLORREF    clrs[IPFONTCOUNT];
 	COLORREF    clrClockSymbol, clrBackground;
@@ -176,7 +176,7 @@ public:
 	void						dismissConfig				(bool fForced = false);
 
 public:
-	static						InfoPanelConfig m_ipConfig;
+	static						TInfoPanelConfig			m_ipConfig;
 	static int	 				setPanelHandler				(TWindowData *dat, WPARAM wParam, LPARAM lParam);
 	static INT_PTR CALLBACK		avatarParentSubclass		(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 

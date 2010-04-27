@@ -112,7 +112,7 @@ TCHAR* CTranslator::m_strings[STR_LAST] = {
 	LPGENT("Choose your options for the tabbed user interface. Not all options can be applied to open windows. You may need to close and re-open them."), /* CNT_OPT_DESC_TABS */
 	LPGENT("Select, when you want to see event notifications (popups) for this window. The settings apply to all tabs within this window."), /*CNT_OPT_DESC_NOTIFY */
 	LPGENT("You can select a private theme (.tabsrmm file) for this container which will then override the default message log theme. You will have to close and re-open all message windows after changing this option."), /* CNT_OPT_DESC_THEME */
-	LPGENT("This feature requires Windows 2000 or later and is not available when custom container skins are in use"), /* CNT_OPT_DESC_TRANS */
+	LPGENT("This feature requires Windows 2000 or later and may be unavailable when using a container skin."), /* CNT_OPT_DESC_TRANS */
 	LPGENT("Message"),									/* GEN_POPUPS_MESSAGE */
 	LPGENT("Unknown event"),							/* GEN_POPUPS_UNKNOWN */
 	LPGENT("New messages: "),							/* GEN_POPUPS_NEW */

@@ -8,7 +8,7 @@
  * all portions of this codebase are copyrighted to the people
  * listed in contributors.txt.
  *
- * This program is free software; you can redistribute it and/or
+ * This programm is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
@@ -315,7 +315,6 @@ void CContactCache::setWindowData(const HWND hwnd, TWindowData *dat)
 			m_xStatusMsg = 0;
 		}
 	}
-
 }
 
 /**
@@ -611,7 +610,7 @@ TCHAR* CContactCache::getNormalizedStatusMsg(const TCHAR *src, bool fStripAll)
 }
 
 /**
- * retrieve the icon for the corresponding session.
+ * retrieve the tab/title icon for the corresponding session.
  */
 HICON CContactCache::getIcon(int& iSize) const
 {

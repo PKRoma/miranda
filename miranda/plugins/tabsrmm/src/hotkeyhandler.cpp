@@ -28,16 +28,15 @@
  *
  * $Id$
  *
- * The hotkeyhandler is a small, invisible window which cares about a few things:
+ * The hotkeyhandler is a small, invisible window which handles the following things:
 
     a) event notify stuff, messages posted from the popups to avoid threading
        issues.
 
-    b) tray icon handling - cares about the events sent by the tray icon, handles
-       the menus, doubleclicks and so on.
+    b) tray icon handling
 
-    c) send later job management. The send later queue is also used for
-       multisend.
+    c) send later job management. Periodically process the queue of open
+	   deferred send jobs.
  */
 
 #include "commonheaders.h"
@@ -49,12 +48,6 @@ extern INT_PTR		SendMessageCommand_W(WPARAM wParam, LPARAM lParam);
 
 static UINT 	WM_TASKBARCREATED;
 static HANDLE 	hSvcHotkeyProcessor = 0;
-
-#define TIMERID_SENDLATER 12000
-#define TIMERID_SENDLATER_TICK 13000
-
-#define TIMEOUT_SENDLATER 10000
-#define TIMEOUT_SENDLATER_TICK 200
 
 static HOTKEYDESC _hotkeydescs[] = {
 	0, "tabsrmm_mostrecent", "Most recent unread session", TABSRMM_HK_SECTION_IM, MS_TABMSG_HOTKEYPROCESS, HOTKEYCODE(HOTKEYF_CONTROL|HOTKEYF_SHIFT, 'R'), TABSRMM_HK_LASTUNREAD,
@@ -84,17 +77,7 @@ static HOTKEYDESC _hotkeydescs[] = {
 
 };
 
-std::vector<HANDLE> sendLaterContactList;
-std::vector<SendLaterJob *> sendLaterJobList;
-
-typedef std::vector<SendLaterJob *>::iterator SendLaterJobIterator;
 static 	SendLaterJobIterator g_jobs;
-
-int TSAPI SendLater_SendIt(SendLaterJob *job);
-
-#define SENDLATER_AGE_THRESHOLD (86400 * 3)				// 3 days, older messages will be removed from the db.
-#define SENDLATER_RESEND_THRESHOLD 180					// timeouted messages should be resent after that many seconds
-#define SENDLATER_PROCESS_INTERVAL 50					// process the list of waiting job every this many seconds
 
 LRESULT ProcessHotkeysByMsgFilter(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam, UINT_PTR ctrlId)
 {
@@ -161,17 +144,11 @@ nothing_open:
 void TSAPI DrawMenuItem(DRAWITEMSTRUCT *dis, HICON hIcon, DWORD dwIdle)
 {
 	FillRect(dis->hDC, &dis->rcItem, GetSysColorBrush(COLOR_MENU));
-	/*if (dis->itemState & ODS_HOTLIGHT)
-		DrawEdge(dis->hDC, &dis->rcItem, BDR_RAISEDINNER, BF_RECT);
-	else if (dis->itemState & ODS_SELECTED)
-		DrawEdge(dis->hDC, &dis->rcItem, BDR_SUNKENOUTER, BF_RECT);*/
 	if (dwIdle) {
 		CSkin::DrawDimmedIcon(dis->hDC, 2, (dis->rcItem.bottom + dis->rcItem.top - 16) / 2, 16, 16, hIcon, 180);
 	} else
 		DrawIconEx(dis->hDC, 2, (dis->rcItem.bottom + dis->rcItem.top - 16) / 2, hIcon, 16, 16, 0, 0, DI_NORMAL | DI_COMPAT);
 }
-
-static time_t t_last_sendlater_processed = 0;
 
 LONG_PTR CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
@@ -190,13 +167,8 @@ LONG_PTR CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 
 			for(i = 0; i < safe_sizeof(_hotkeydescs); i++) {
 				_hotkeydescs[i].cbSize = sizeof(HOTKEYDESC);
-				_hotkeydescs[i].pszSection = Translate(_hotkeydescs[i].pszSection);
-				_hotkeydescs[i].pszDescription = Translate(_hotkeydescs[i].pszDescription);
 				CallService(MS_HOTKEY_REGISTER, 0, (LPARAM)&_hotkeydescs[i]);
 			}
-			t_last_sendlater_processed = time(0);
-
-			sendLaterContactList.clear();
 
 			WM_TASKBARCREATED = RegisterWindowMessageA("TaskbarCreated");
 			ShowWindow(hwndDlg, SW_HIDE);
@@ -630,33 +602,34 @@ LONG_PTR CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 				 * feature)
 				 */
 				TContainerData *pContainer = pFirstContainer;
+				/*
+				 * send heartbeat to each container, they use this to update
+				 * dynamic content (i.e. local time in the info panel).
+				 */
 				while(pContainer) {
 					SendMessage(pContainer->hwnd, WM_TIMER, TIMERID_HEARTBEAT, 0);
 					pContainer = pContainer->pNextContainer;
 				}
-				if(PluginConfig.m_SendLaterAvail && (time(0) - t_last_sendlater_processed) > SENDLATER_PROCESS_INTERVAL) {
+				/*
+				 * process send later contacts and jobs, if enough time has elapsed
+				 */
+				if(sendLater->isAvail() && (time(0) - sendLater->lastProcessed()) > CSendLater::SENDLATER_PROCESS_INTERVAL) {
 					time_t now;
-					t_last_sendlater_processed = now = time(0);
+					now = time(0);
+					sendLater->setLastProcessed(now);
 
 					/*
 					 * check the list of contacts that may have new send later jobs
 					 * (added on user's request)
 					 */
-					if(!sendLaterContactList.empty()) {
-						std::vector<HANDLE>::iterator it = sendLaterContactList.begin();
-						while(it != sendLaterContactList.end()) {
-							SendLater_Process(*it);
-							it++;
-						}
-						sendLaterContactList.clear();
-					}
+					sendLater->processContacts();
 
 					/*
 					 * start processing the job list
 					 */
-					if(!sendLaterJobList.empty()) {
+					if(!sendLater->isJobListEmpty()) {
 						KillTimer(hwndDlg, wParam);
-						g_jobs = sendLaterJobList.begin();
+						sendLater->startJobListProcess();
 						SetTimer(hwndDlg, TIMERID_SENDLATER_TICK, TIMEOUT_SENDLATER_TICK, 0);
 					}
 				}
@@ -667,323 +640,22 @@ LONG_PTR CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			 * queue.
 			 */
 			else if(wParam == TIMERID_SENDLATER_TICK) {
-				if(sendLaterJobList.empty() || g_jobs == sendLaterJobList.end()) {
+				if(!sendLater->haveJobs()) {
 					KillTimer(hwndDlg, wParam);
 					SetTimer(hwndDlg, TIMERID_SENDLATER, TIMEOUT_SENDLATER, 0);
 				}
-				else {
-					if((*g_jobs)->fSuccess || (*g_jobs)->fFailed) {
-						//_DebugTraceA("Removing successful job %s", (*g_jobs)->szId);
-						delete *g_jobs;
-						g_jobs = sendLaterJobList.erase(g_jobs);
-					}
-					else {
-						//_DebugTraceA("Sending job: %s", (*g_jobs)->szId);
-						SendLater_SendIt(*g_jobs);
-						g_jobs++;
-					}
-				}
+				else
+					sendLater->processCurrentJob();
 			}
 			break;
 
 		case WM_DESTROY: {
+			KillTimer(hwndDlg, TIMERID_SENDLATER_TICK);
 			KillTimer(hwndDlg, TIMERID_SENDLATER);
 			DestroyServiceFunction(hSvcHotkeyProcessor);
 			break;
 		}
 	}
 	return(DefWindowProc(hwndDlg, msg, wParam, lParam));
-}
-
-/*
- * send later functions
- */
-
-void TSAPI SendLater_Add(const HANDLE hContact)
-{
-	if(!PluginConfig.m_SendLaterAvail)
-		return;
-
-	std::vector<HANDLE>::iterator it = sendLaterContactList.begin();
-
-	if(sendLaterContactList.empty()) {
-		sendLaterContactList.push_back(hContact);
-		t_last_sendlater_processed = 0;								// force processing at next tick
-		return;
-	}
-
-	/*
-	 * this list should not have duplicate entries
-	 */
-
-	while(it != sendLaterContactList.end()) {
-		if(*it == hContact)
-			return;
-		it++;
-	}
-	sendLaterContactList.push_back(hContact);
-	t_last_sendlater_processed = 0;								// force processing at next tick
-}
-
-#if defined(_UNICODE)
-	#define U_PREF_UNICODE PREF_UNICODE
-#else
-	#define U_PREF_UNICODE 0
-#endif
-
-/**
- * This function adds a new job to the list of messages to send unattended
- * used by the send later feature and multisend
- *
- * @param 	szSetting is either the name of the database key for a send later
- * 		  	job OR the utf-8 encoded message for a multisend job prefixed with
- * 			a 'M+timestamp'. Send later job ids start with "S".
- *
- * @param 	lParam: a contact handle for which the job should be scheduled
- * @return 	0 on failure, 1 otherwise
- */
-int _cdecl SendLater_AddJob(const char *szSetting, LPARAM lParam)
-{
-	HANDLE 		hContact = (HANDLE)lParam;
-	DBVARIANT 	dbv = {0};
-	char		*szOrig_Utf = 0;
-
-	if(!szSetting || !strcmp(szSetting, "count") || lstrlenA(szSetting) < 8)
-		return(0);
-
-	if(szSetting[0] != 'S' && szSetting[0] != 'M')
-		return(0);
-
-	SendLaterJobIterator it = sendLaterJobList.begin();
-
-	/*
-	 * check for possible dupes
-	 */
-	while(it != sendLaterJobList.end()) {
-		if((*it)->hContact == hContact && !strcmp((*it)->szId, szSetting)) {
-			//_DebugTraceA("%s for %d is already on the job list.", szSetting, hContact);
-			return(0);
-		}
-		it++;
-	}
-
-	if(szSetting[0] == 'S') {
-		if(0 == DBGetContactSettingString(hContact, "SendLater", szSetting, &dbv))
-			szOrig_Utf = dbv.pszVal;
-		else
-			return(0);
-	}
-	else if(szSetting[0] == 'M') {
-		char *szSep = strchr(const_cast<char *>(szSetting), '|');
-		if(!szSep)
-			return(0);
-		*szSep = 0;
-		szOrig_Utf = szSep + 1;
-	}
-	else
-		return(0);
-
-	SendLaterJob *job = new SendLaterJob;
-
-	strncpy(job->szId, szSetting, 20);
-	job->szId[19] = 0;
-	job->hContact = hContact;
-	job->created = atol(&szSetting[1]);
-
-	char	*szAnsi = 0;
-	wchar_t *szWchar = 0;
-	UINT	required = 0;
-
-	int iLen = lstrlenA(szOrig_Utf);
-	job->sendBuffer = reinterpret_cast<char *>(mir_alloc(iLen + 1));
-	strncpy(job->sendBuffer, szOrig_Utf, iLen);
-	job->sendBuffer[iLen] = 0;
-
-	/*
-	 * construct conventional send buffer
-	 */
-
-	szAnsi = M->utf8_decodecp(szOrig_Utf, CP_ACP, &szWchar);
-	iLen = lstrlenA(szAnsi);
-	if(szWchar)
-		required = iLen + 1 + ((lstrlenW(szWchar) + 1) * sizeof(wchar_t));
-	else
-		required = iLen + 1;
-
-	job->pBuf = (PBYTE)mir_calloc(required);
-
-	strncpy((char *)job->pBuf, szAnsi, iLen);
-	job->pBuf[iLen] = 0;
-	if(szWchar)
-		wcsncpy((wchar_t *)&job->pBuf[iLen + 1], szWchar, lstrlenW(szWchar));
-
-	else if(szSetting[0] == 'S')
-		DBFreeVariant(&dbv);
-
-	mir_free(szWchar);
-
-	sendLaterJobList.push_back(job);
-
-	return(1);
-}
-
-/**
- * Try to send an open job from the job list
- * this is ONLY called from the WM_TIMER handler and should never be executed
- * directly.
- */
-static int TSAPI SendLater_SendIt(SendLaterJob *job)
-{
-	HANDLE 		hContact = job->hContact;
-	time_t 		now = time(0);
-	DWORD   	dwFlags = 0;
-	DBVARIANT 	dbv = {0};
-	const char* szProto = 0;
-
-
-	if(job->fSuccess || job->fFailed || job->lastSent > now)
-		return(0);											// this one is frozen or done (will be removed soon), don't process it now.
-
-	if(now - job->created > SENDLATER_AGE_THRESHOLD) {		// too old, this will be discarded and user informed by popup
-		job->fFailed = true;
-		return(0);
-	}
-
-	if(job->iSendCount == 5) {
-		job->iSendCount = 0;
-		job->lastSent = now + 3600;							// after 5 unsuccessful resends, freeze it for an hour
-		return(0);
-	}
-
-	if(job->iSendCount > 0 && (now - job->lastSent < SENDLATER_RESEND_THRESHOLD)) {
-		//_DebugTraceA("Send it: message %s for %s RESEND but not old enough", job->szId, (char *)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)hContact, 0));
-		return(0);											// this one was sent, but probably failed. Resend it after a while
-	}
-
-	CContactCache *c = CContactCache::getContactCache(hContact);
-	if(!c)
-		return(0);
-
-	hContact = c->getActiveContact();
-	szProto = c->getActiveProto();
-
-	if(!hContact || szProto == 0)
-		return(0);
-
-	WORD wMyStatus = (WORD)CallProtoService(szProto, PS_GETSTATUS, 0, 0);
-	WORD wContactStatus = c->getActiveStatus();
-
-	if(job->szId[0] == 'S') {
-		if(!(wMyStatus == ID_STATUS_ONLINE || wMyStatus == ID_STATUS_FREECHAT)) {
-			return(0);
-		}
-	}
-	if(wContactStatus == ID_STATUS_OFFLINE)
-		return(0);
-
-	dwFlags = IsUtfSendAvailable(hContact) ? PREF_UTF : U_PREF_UNICODE;
-
-	char *svcName = SendQueue::MsgServiceName(hContact, 0, dwFlags);
-
-	job->lastSent = now;
-	job->iSendCount++;
-	job->hTargetContact = hContact;
-
-	if(dwFlags & PREF_UTF)
-		job->hProcess = (HANDLE)CallContactService(hContact, svcName, dwFlags, (LPARAM)job->sendBuffer);
-	else
-		job->hProcess = (HANDLE)CallContactService(hContact, svcName, dwFlags, (LPARAM)job->pBuf);
-	return(0);
-}
-/**
- * Process a single contact from the list of contacts with open send later jobs
- * enum the "SendLater" module and add all jobs to the list of open jobs.
- * SendLater_AddJob() will deal with possible duplicates
- * @param hContact HANDLE: contact's handle
- */
-static void TSAPI SendLater_Process(const HANDLE hContact)
-{
-	int iCount = M->GetDword(hContact, "SendLater", "count", 0);
-
-	if(iCount) {
-		DBCONTACTENUMSETTINGS ces = {0};
-
-		ces.pfnEnumProc = SendLater_AddJob;
-		ces.szModule = "SendLater";
-		ces.lParam = (LPARAM)hContact;
-
-		CallService(MS_DB_CONTACT_ENUMSETTINGS, (WPARAM)hContact, (LPARAM)&ces);
-	}
-}
-
-/**
- * process ACK messages for the send later job list. Called from the proto ack
- * handler when it does not find a match in the normal send queue
- *
- * Add the message to the database and mark it as successful. The job will be
- * removed later by the job list processing code.
- */
-HANDLE TSAPI SendLater_ProcessAck(const ACKDATA *ack)
-{
-	if(sendLaterJobList.empty())
-		return(0);
-
-	SendLaterJobIterator it = sendLaterJobList.begin();
-
-	while(it != sendLaterJobList.end()) {
-		if((*it)->hProcess == ack->hProcess && (*it)->hTargetContact == ack->hContact && !((*it)->fSuccess || (*it)->fFailed)) {
-			DBEVENTINFO dbei = {0};
-
-			if(!(*it)->fSuccess) {
-				//_DebugTraceA("ack for: hProcess: %d, job id: %s, job hProcess: %d", ack->hProcess, (*it)->szId, (*it)->hProcess);
-				dbei.cbSize = sizeof(dbei);
-				dbei.eventType = EVENTTYPE_MESSAGE;
-				dbei.flags = DBEF_SENT;
-				dbei.szModule = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)((*it)->hContact), 0);
-				dbei.timestamp = time(NULL);
-				dbei.cbBlob = lstrlenA((*it)->sendBuffer) + 1;
-
-	#if defined( _UNICODE )
-				dbei.flags |= DBEF_UTF;
-	#endif
-				dbei.pBlob = (PBYTE)((*it)->sendBuffer);
-				HANDLE hNewEvent = (HANDLE) CallService(MS_DB_EVENT_ADD, (WPARAM)((*it)->hContact), (LPARAM)&dbei);
-
-				if((*it)->szId[0] == 'S') {
-					DBDeleteContactSetting((*it)->hContact, "SendLater", (*it)->szId);
-					int iCount = M->GetDword((*it)->hContact, "SendLater", "count", 0);
-					if(iCount)
-						iCount--;
-					M->WriteDword((*it)->hContact, "SendLater", "count", iCount);
-				}
-			}
-			(*it)->fSuccess = true;					// mark as successful, job list processing code will remove it later
-			(*it)->hProcess = (HANDLE)-1;
-			return(0);
-		}
-		it++;
-	}
-	return(0);
-}
-
-/**
- * clear all open send jobs. Only called on system shutdown to remove
- * the jobs from memory. Must _NOT_ delete any sendlater related stuff from
- * the database.
- */
-void TSAPI SendLater_ClearAll()
-{
-	if(sendLaterJobList.empty())
-		return;
-
-	SendLaterJobIterator it = sendLaterJobList.begin();
-
-	while(it != sendLaterJobList.end()) {
-		mir_free((*it)->sendBuffer);
-		mir_free((*it)->pBuf);
-		(*it)->fSuccess = false;					// avoid clearing jobs from the database
-		delete *it;
-		it++;
-	}
 }
 

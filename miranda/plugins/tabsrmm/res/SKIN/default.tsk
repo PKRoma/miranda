@@ -270,16 +270,24 @@ Top=4
 Right=4
 Bottom=4
 Item0=Buttonnotpressed
-Item1=Buttonpressed
 PERPIXEL=1
 
 [$Buttonmouseover]
-Glyph=0,21,19,41
+Glyph=0,59,19,79
 Left=4
 Top=4
 Right=4
 Bottom=4
 Item0=Buttonmouseover
+PERPIXEL=1
+
+[$Buttonpressed]
+Glyph=0,21,19,41
+Left=4
+Top=4
+Right=4
+Bottom=4
+Item0=Buttonpressed
 PERPIXEL=1
 
 [Global]
@@ -301,6 +309,7 @@ TabTextHottrack=787878
 MenuBarBG=f5f5f5
 NoScrollbars=0
 SbarHeight=15
+Name=Default Skin for TabSRMM 3
 
 [WindowFrame]
 Left=7
@@ -326,7 +335,7 @@ Bottom=2
 Inner=2
 
 [Avatars]
-BorderType=4
+BorderType=1
 BorderColor=787878
 
 [Theme]

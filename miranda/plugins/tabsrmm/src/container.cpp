@@ -1416,7 +1416,7 @@ buttons_done:
 					}
 					mir_free(hwndClients);
 				}
-				dat = (struct TWindowData *)GetWindowLongPtr(pContainer->hwndActive, GWLP_USERDATA);
+				dat = (TWindowData *)GetWindowLongPtr(pContainer->hwndActive, GWLP_USERDATA);
 				if(dat && dat->bType == SESSIONTYPE_IM) {
 					if ((dat->idle || dat->timezone != -1) && pContainer->hwndActive && IsWindow(pContainer->hwndActive))
 						dat->Panel->Invalidate(TRUE);

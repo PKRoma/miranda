@@ -610,6 +610,8 @@ tzdone:
 	PluginConfig.hUserPrefsWindowList = (HANDLE) CallService(MS_UTILS_ALLOCWINDOWLIST, 0, 0);
 	sendQueue = new SendQueue;
 	Skin = new CSkin;
+	sendLater = new CSendLater;
+
 	InitOptions();
 
 	InitAPI();

@@ -335,7 +335,6 @@ void CGlobals::reloadSettings()
 		CallService(MS_LANGPACK_TRANSLATEMENU, WPARAM(m_MenuBar), 0);
 	}
 
-	m_SendLaterAvail = 					M->GetByte("sendLaterAvail", 0);
 	m_ipBackgroundGradient = 			M->GetDword(FONTMODULE, "ipfieldsbg", 0x62caff);
 	m_ipBackgroundGradientHigh = 		M->GetDword(FONTMODULE, "ipfieldsbgHigh", 0xf0f0f0);
 	m_tbBackgroundHigh = 				M->GetDword(FONTMODULE, "tbBgHigh", 0);
@@ -692,7 +691,6 @@ int CGlobals::OkToExit(WPARAM wParam, LPARAM lParam)
 		UnhookEvent(m_event_ME_MC_UNFORCESEND);
 	}
 	::ModPlus_PreShutdown(wParam, lParam);
-	::SendLater_ClearAll();
 	PluginConfig.globalContainerSettings.fPrivate = false;
 #if defined(_UNICODE)
 	::DBWriteContactSettingBlob(0, SRMSGMOD_T, CNT_KEYNAME, &PluginConfig.globalContainerSettings, sizeof(TContainerSettings));
@@ -727,7 +725,7 @@ void CGlobals::RestoreUnreadMessageAlerts(void)
 	while (hContact) {
 
 		if(M->GetDword(hContact, "SendLater", "count", 0))
-		   SendLater_Add(hContact);
+		   sendLater->addContact(hContact);
 
 		hDbEvent = (HANDLE) CallService(MS_DB_EVENT_FINDFIRSTUNREAD, (WPARAM) hContact, 0);
 		while (hDbEvent) {
