@@ -410,7 +410,7 @@
 		</Configuration>
 		<Configuration
 			Name="Debug Unicode|Win32"
-			OutputDirectory="$(SolutionDir)$(ConfigurationName)/Plugins"
+			OutputDirectory="c:\miranda im 32/Plugins"
 			IntermediateDirectory="$(SolutionDir)$(ConfigurationName)/Obj/$(ProjectName)"
 			ConfigurationType="2"
 			UseOfMFC="0"
@@ -563,7 +563,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="wsock32.lib"
-				OutputFile="$(OutDir)\$(ProjectName).dll"
+				OutputFile="c:\miranda im\plugins\$(ProjectName).dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
 				GenerateDebugInformation="true"
@@ -1122,10 +1122,6 @@
 			</File>
 			<File
 				RelativePath=".\links.h"
-				>
-			</File>
-			<File
-				RelativePath=".\m_cluiframes.h"
 				>
 			</File>
 			<File
