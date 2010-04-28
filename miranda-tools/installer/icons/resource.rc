@@ -56,6 +56,7 @@ IDI_NA	         ICON DISCARDABLE "res\\ICQ\\32_icq_Na.ico"
 IDI_DND          ICON DISCARDABLE "res\\ICQ\\32_icq_Dnd.ico"
 IDI_OCCUPIED     ICON DISCARDABLE "res\\ICQ\\32_icq_Occupied.ico"
 IDI_FREE4CHAT    ICON DISCARDABLE "res\\ICQ\\32_icq_FFC.ico"
+IDI_ONTHEPHONE   ICON DISCARDABLE "res\\ICQ\\32_icq_Phone.ico"
 #endif
 
 #ifdef ICO_ICQLO
@@ -67,6 +68,7 @@ IDI_NA	         ICON DISCARDABLE "res\\ICQ\\8_icq_Na.ico"
 IDI_DND          ICON DISCARDABLE "res\\ICQ\\8_icq_Dnd.ico"
 IDI_OCCUPIED     ICON DISCARDABLE "res\\ICQ\\8_icq_Occupied.ico"
 IDI_FREE4CHAT    ICON DISCARDABLE "res\\ICQ\\8_icq_FFC.ico"
+IDI_ONTHEPHONE   ICON DISCARDABLE "res\\ICQ\\8_icq_Phone.ico"
 #endif
 
 #ifdef ICO_IRCHI
