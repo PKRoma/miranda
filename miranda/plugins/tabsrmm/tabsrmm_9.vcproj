@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="9,00"
+	Version="9.00"
 	Name="tabsrmm"
 	ProjectGUID="{99D26CA1-BFD4-4E77-9A1E-919E54CF33F7}"
 	RootNamespace="srmm"
@@ -1055,6 +1055,10 @@
 			</File>
 			<File
 				RelativePath=".\src\selectcontainer.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\src\sendlater.cpp"
 				>
 			</File>
 			<File
@@ -2213,11 +2217,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\res\dropuser.cur"
+				RelativePath="..\..\Miranda-IM\res\dropuser.cur"
 				>
 			</File>
 			<File
-				RelativePath="..\..\Miranda-IM\res\dropuser.cur"
+				RelativePath="..\..\src\res\dropuser.cur"
 				>
 			</File>
 			<File
@@ -2241,11 +2245,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\Miranda-IM\res\history.ico"
+				RelativePath=".\res\angeli-icons\History.ico"
 				>
 			</File>
 			<File
-				RelativePath=".\res\angeli-icons\History.ico"
+				RelativePath="..\..\Miranda-IM\res\history.ico"
 				>
 			</File>
 			<File
@@ -2269,11 +2273,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\res\icon1.ico"
+				RelativePath=".\res\icon1.ico"
 				>
 			</File>
 			<File
-				RelativePath=".\res\icon1.ico"
+				RelativePath="..\..\src\res\icon1.ico"
 				>
 			</File>
 			<File
@@ -2293,11 +2297,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\res\angeli-icons\Info.ico"
+				RelativePath=".\chat\Icons\info.ico"
 				>
 			</File>
 			<File
-				RelativePath=".\chat\Icons\info.ico"
+				RelativePath=".\res\angeli-icons\Info.ico"
 				>
 			</File>
 			<File
@@ -2465,11 +2469,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\res\angeli-icons\Save.ico"
+				RelativePath=".\res\save.ico"
 				>
 			</File>
 			<File
-				RelativePath=".\res\save.ico"
+				RelativePath=".\res\angeli-icons\Save.ico"
 				>
 			</File>
 			<File
