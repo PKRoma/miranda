@@ -759,9 +759,9 @@ INT_PTR __cdecl CYahooProto::GetMyAwayMsg(WPARAM wParam, LPARAM lParam)
 		return 0;
 	
 	if (lParam & SGMA_UNICODE)  {
-		return (INT_PTR) mir_a2u(m_startMsg);
+		return (INT_PTR) mir_utf8decodeW(m_startMsg);
 	} else {
-		return (INT_PTR) m_startMsg;
+		return (INT_PTR) mir_utf8decodeA(m_startMsg);
 	}
 }
 
