@@ -2699,19 +2699,11 @@
 			Filter="ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe"
 			>
 			<File
-				RelativePath=".\res\clients\&amp;RQ.ico"
+				RelativePath=".\res\accounts.ico"
 				>
 			</File>
 			<File
 				RelativePath=".\res\addgoupp.ico"
-				>
-			</File>
-			<File
-				RelativePath=".\res\clients\AgileMobile.ico"
-				>
-			</File>
-			<File
-				RelativePath=".\res\clients\AlIcq.ico"
 				>
 			</File>
 			<File
@@ -2724,10 +2716,6 @@
 			</File>
 			<File
 				RelativePath="res\blank.ico"
-				>
-			</File>
-			<File
-				RelativePath=".\res\clients\Center.ico"
 				>
 			</File>
 			<File
@@ -2759,18 +2747,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\res\clients\Gaim.ico"
-				>
-			</File>
-			<File
-				RelativePath=".\res\globus.ico"
-				>
-			</File>
-			<File
-				RelativePath=".\res\clients\Gnomeicu.ico"
-				>
-			</File>
-			<File
 				RelativePath=".\res\groups.ico"
 				>
 			</File>
@@ -2779,71 +2755,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\res\clients\ico00001.ico"
-				>
-			</File>
-			<File
-				RelativePath=".\res\clients\ico00002.ico"
-				>
-			</File>
-			<File
-				RelativePath=".\res\clients\ico00003.ico"
-				>
-			</File>
-			<File
-				RelativePath=".\res\clients\ico00004.ico"
-				>
-			</File>
-			<File
-				RelativePath=".\res\clients\ico00005.ico"
-				>
-			</File>
-			<File
-				RelativePath=".\res\clients\icon2.ico"
-				>
-			</File>
-			<File
-				RelativePath=".\res\clients\IcqMac.ico"
-				>
-			</File>
-			<File
-				RelativePath=".\res\clients\IM+.ico"
-				>
-			</File>
-			<File
-				RelativePath=".\res\clients\IM2.ico"
-				>
-			</File>
-			<File
-				RelativePath=".\res\overlay\invisible.ico"
-				>
-			</File>
-			<File
 				RelativePath="res\invisible.ico"
 				>
 			</File>
 			<File
-				RelativePath=".\res\clients\Kopete.ico"
-				>
-			</File>
-			<File
-				RelativePath=".\res\clients\L.ico"
-				>
-			</File>
-			<File
-				RelativePath=".\res\clients\L4.ico"
-				>
-			</File>
-			<File
-				RelativePath=".\res\clients\L5.ico"
-				>
-			</File>
-			<File
-				RelativePath=".\res\clients\LibIcq2000.ico"
-				>
-			</File>
-			<File
-				RelativePath=".\res\clients\Licq.ico"
+				RelativePath=".\res\overlay\invisible.ico"
 				>
 			</File>
 			<File
@@ -2859,15 +2775,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\res\clients\Mob2Icq.ico"
-				>
-			</File>
-			<File
 				RelativePath=".\res\overlay\NA.ico"
-				>
-			</File>
-			<File
-				RelativePath=".\res\clients\NICQ2.ico"
 				>
 			</File>
 			<File
@@ -2904,14 +2812,6 @@
 			</File>
 			<File
 				RelativePath=".\res\overlay\phone.ico"
-				>
-			</File>
-			<File
-				RelativePath=".\res\clients\PSI.ico"
-				>
-			</File>
-			<File
-				RelativePath=".\res\clients\QIP.ico"
 				>
 			</File>
 			<File
@@ -2995,19 +2895,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="res\sendmail.ico"
-				>
-			</File>
-			<File
-				RelativePath=".\res\clients\Sim.ico"
-				>
-			</File>
-			<File
 				RelativePath=".\res\slist.ico"
-				>
-			</File>
-			<File
-				RelativePath="res\sms.ico"
 				>
 			</File>
 			<File
@@ -3019,43 +2907,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\res\clients\Spambot.ico"
-				>
-			</File>
-			<File
-				RelativePath=".\res\clients\Sticq.ico"
-				>
-			</File>
-			<File
-				RelativePath=".\res\clients\Stricq.ico"
-				>
-			</File>
-			<File
 				RelativePath=".\res\tabsrmm_menu.ico"
 				>
 			</File>
 			<File
-				RelativePath=".\res\clients\Trillian.ico"
-				>
-			</File>
-			<File
-				RelativePath=".\res\clients\Vicq.ico"
-				>
-			</File>
-			<File
 				RelativePath=".\res\visible.ico"
-				>
-			</File>
-			<File
-				RelativePath=".\res\clients\WebIcq.ico"
-				>
-			</File>
-			<File
-				RelativePath=".\res\clients\Yamigo.ico"
-				>
-			</File>
-			<File
-				RelativePath=".\res\clients\Ysm.ico"
 				>
 			</File>
 		</Filter>
