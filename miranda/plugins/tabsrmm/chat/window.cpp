@@ -2363,6 +2363,7 @@ INT_PTR CALLBACK RoomWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 						if (g_Settings.ShowContactStatus && g_Settings.ContactStatusFirst && ui->ContactStatus) {
 							HICON hIcon = LoadSkinnedProtoIcon(si->pszModule, ui->ContactStatus);
 							DrawIconEx(dis->hDC, x_offset, dis->rcItem.top + offset - 8, hIcon, 16, 16, 0, NULL, DI_NORMAL);
+							CallService(MS_SKIN2_RELEASEICON, (WPARAM)hIcon, 0);
 							x_offset += 18;
 						}
 
@@ -2385,6 +2386,7 @@ INT_PTR CALLBACK RoomWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 						if (g_Settings.ShowContactStatus && !g_Settings.ContactStatusFirst && ui->ContactStatus) {
 							HICON hIcon = LoadSkinnedProtoIcon(si->pszModule, ui->ContactStatus);
 							DrawIconEx(dis->hDC, x_offset, dis->rcItem.top + offset - 8, hIcon, 16, 16, 0, NULL, DI_NORMAL);
+							CallService(MS_SKIN2_RELEASEICON, (WPARAM)hIcon, 0);
 							x_offset += 18;
 						}
 
