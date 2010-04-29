@@ -1,10 +1,11 @@
 //{{NO_DEPENDENCIES}}
-// Microsoft Developer Studio generated include file.
+// Microsoft Visual C++ generated include file.
 // Used by C:\tabsrmm\trunk\miranda\plugins\tabsrmm\resource.rc
 //
 #define IDD_TEMPLATEEDIT                1
 #define IDD_USERPREFS                   2
 #define IDOK2                           2
+#define IDC_QMGR_REMOVE                 2
 #define IDD_USERPREFS1                  3
 #define IDD_TABCONFIG                   4
 #define IDD_ABOUT                       7
@@ -16,6 +17,7 @@
 #define IDR_SKIN1                       13
 #define IDR_SKIN_AERO                   14
 #define IDR_SKIN_AERO_GLOW              15
+#define IDD_SENDLATER_QMGR              15
 #define IDR_SKIN_AERO_SWITCHBAR         16
 #define IDR_SKIN_LOGO                   20
 #define IDI_IMGOPEN                     102
@@ -454,7 +456,6 @@
 #define IDC_BKGUSEWINCOLORS2            1392
 #define IDC_HELPTEXT                    1392
 #define IDC_TITLEFORMAT                 1393
-#define IDC_O_HELP_TITLEFORMAT			2064
 #define IDC_LIGHTSHADOW                 1393
 #define IDC_EDIT1                       1394
 #define IDC_THEME                       1394
@@ -529,6 +530,8 @@
 #define IDC_SKINROOTFOLDER              1439
 #define IDC_NOTIFYOTHER                 1440
 #define IDC_SKIN_WARN                   1440
+#define IDC_QMGR_LIST                   1441
+#define IDC_QMGR_FILTER                 1442
 #define IDC_TOOLBARTREE                 1444
 #define IDC_STYLEDTABS                  1482
 #define IDC_FLASHICON                   1489
@@ -555,6 +558,7 @@
 #define IDC_COPYRIGHT                   2002
 #define IDC_PLUS_HELP                   2004
 #define IDC_BUILDTIME                   2005
+#define IDC_O_HELP_TITLEFORMAT          2064
 #define IDC_OPTIONSTAB                  2111
 #define IDC_HEADERBAR                   2397
 #define IDD_OPT_TYPINGNOTIFYPOPUP       30159
@@ -771,9 +775,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        15
+#define _APS_NEXT_RESOURCE_VALUE        16
 #define _APS_NEXT_COMMAND_VALUE         40256
-#define _APS_NEXT_CONTROL_VALUE         1441
+#define _APS_NEXT_CONTROL_VALUE         1444
 #define _APS_NEXT_SYMED_VALUE           40283
 #endif
 #endif

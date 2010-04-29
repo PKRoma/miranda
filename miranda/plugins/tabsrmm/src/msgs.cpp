@@ -531,7 +531,8 @@ static struct _svcdef {
 	MS_MSG_MOD_MESSAGEDIALOGOPENED, MessageWindowOpened, &PluginConfig.hSvc[CGlobals::H_MS_MSG_MOD_MESSAGEDIALOGOPENED],
 	MS_TABMSG_SETUSERPREFS,	SetUserPrefs,			&PluginConfig.hSvc[CGlobals::H_MS_TABMSG_SETUSERPREFS],
 	MS_TABMSG_TRAYSUPPORT,	Service_OpenTrayMenu,	&PluginConfig.hSvc[CGlobals::H_MS_TABMSG_TRAYSUPPORT],
-	MS_MSG_MOD_GETWINDOWFLAGS, GetMessageWindowFlags, &PluginConfig.hSvc[CGlobals::H_MSG_MOD_GETWINDOWFLAGS]
+	MS_MSG_MOD_GETWINDOWFLAGS, GetMessageWindowFlags, &PluginConfig.hSvc[CGlobals::H_MSG_MOD_GETWINDOWFLAGS],
+	MS_TABMSG_SLQMGR,		CSendLater::svcQMgr,	&PluginConfig.hSvc[CGlobals::H_MS_TABMSG_SLQMGR]
 };
 
 static void TSAPI InitAPI()

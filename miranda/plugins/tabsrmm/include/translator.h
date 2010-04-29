@@ -251,7 +251,17 @@ public:
 		GEN_INFOTIP_LISTENING									= 202,
 		GEN_INFOTIP_CLIENT										= 203,
 		GEN_BB_IMGTOOLTIP										= 204,
-		STR_LAST 												= 205
+		QMGR_COL_ODATE											= 205,
+		QMGR_COL_MESSAGETEXT									= 206,
+		QMGR_COL_STATUS											= 207,
+		QMGR_COL_LASTSENDINFO									= 208,
+		QMGR_FILTER_ALLCONTACTS									= 209,
+		QMGR_STATUS_FAILED										= 210,
+		QMGR_STATUS_SENTOK										= 211,
+		QMGR_STATUS_PENDING										= 212,
+		QMGR_STATUS_WAITACK										= 213,
+		QMGR_ERROR_NOMULTISEND									= 214,
+		STR_LAST 												= 215
 	};
 
 	enum {

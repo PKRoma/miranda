@@ -657,5 +657,17 @@
     <None Include="BuildScripts\VS_2010_Toolset9.bat">
       <Filter>BuildScripts</Filter>
     </None>
+    <None Include="..\..\src\res\cursor_drag_copy.CUR">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\overlay_disabled.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\overlay_enabled.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\SKIN\tabskin_aero.png" />
+    <None Include="res\SKIN\tabskin_aero_glow.png" />
+    <None Include="res\SKIN\tabskin_aero_button.png" />
   </ItemGroup>
 </Project>

@@ -422,8 +422,11 @@ LRESULT TSAPI DM_MsgWindowCmdHandler(HWND hwndDlg, TContainerData *m_pContainer,
 			switch (iSelection) {
 				case ID_SENDMENU_SENDTOMULTIPLEUSERS:
 					dat->sendMode ^= SMODE_MULTIPLE;
-					if (dat->sendMode & SMODE_MULTIPLE) {
-						HWND hwndClist = DM_CreateClist(dat);;
+					if (dat->sendMode & SMODE_MULTIPLE)
+						HWND hwndClist = DM_CreateClist(dat);
+					else {
+						if (IsWindow(GetDlgItem(hwndDlg, IDC_CLIST)))
+							DestroyWindow(GetDlgItem(hwndDlg, IDC_CLIST));
 					}
 					break;
 				case ID_SENDMENU_SENDNUDGE:
@@ -1241,8 +1244,13 @@ LRESULT TSAPI DM_WMCopyHandler(HWND hwnd, WNDPROC oldWndProc, WPARAM wParam, LPA
 * create embedded contact list control
 */
 
-HWND TSAPI DM_CreateClist(const TWindowData *dat)
+HWND TSAPI DM_CreateClist(TWindowData *dat)
 {
+	if(!sendLater->isAvail()) {
+		SendMessage(dat->hwnd, DM_ACTIVATETOOLTIP, IDC_MESSAGE, (LPARAM)CTranslator::get(CTranslator::QMGR_ERROR_NOMULTISEND));
+		dat->sendMode &= ~SMODE_MULTIPLE;
+		return(0);
+	}
 	HWND hwndClist = CreateWindowExA(0, "CListControl", "", WS_TABSTOP | WS_VISIBLE | WS_CHILD | 0x248,
 									 184, 0, 30, 30, dat->hwnd, (HMENU)IDC_CLIST, g_hInst, NULL);
 

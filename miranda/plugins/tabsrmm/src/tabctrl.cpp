@@ -1087,7 +1087,7 @@ static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
 		if (tabdat->pContainer == NULL) {
 			tabdat->pContainer = (TContainerData *)GetWindowLongPtr(GetParent(hwnd), GWLP_USERDATA);
 			if(tabdat->pContainer)
-				tabdat->m_moderntabs = (tabdat->pContainer->dwFlagsEx & TCF_STYLED);
+				tabdat->m_moderntabs = ((tabdat->pContainer->dwFlagsEx & TCF_STYLED) && !CSkin::m_skinEnabled);
 		}
 		tabdat->dwStyle = GetWindowLongPtr(hwnd, GWL_STYLE);
 	}

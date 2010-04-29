@@ -448,6 +448,15 @@ int CGlobals::ModulesLoaded(WPARAM wParam, LPARAM lParam)
 	mi.pszService = MS_TABMSG_SETUSERPREFS;
 	PluginConfig.m_UserMenuItem = (HANDLE)CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM) & mi);
 
+	if(sendLater->isAvail()) {
+		mi.cbSize = sizeof(mi);
+		mi.position = -500050006;
+		mi.hIcon = 0;
+		mi.pszContactOwner = NULL;
+		mi.pszName = LPGEN("&Send later job list...");
+		mi.pszService = MS_TABMSG_SLQMGR;
+		PluginConfig.m_UserMenuItem = (HANDLE)CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM) & mi);
+	}
 	RestoreUnreadMessageAlerts();
 
 	RegisterWithUpdater();

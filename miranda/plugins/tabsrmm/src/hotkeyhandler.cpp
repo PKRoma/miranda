@@ -643,6 +643,7 @@ LONG_PTR CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 				if(!sendLater->haveJobs()) {
 					KillTimer(hwndDlg, wParam);
 					SetTimer(hwndDlg, TIMERID_SENDLATER, TIMEOUT_SENDLATER, 0);
+					sendLater->qMgrUpdate();
 				}
 				else
 					sendLater->processCurrentJob();

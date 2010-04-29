@@ -365,7 +365,9 @@ int SendQueue::sendQueued(TWindowData *dat, const int iEntry)
 	HWND	hwndDlg = dat->hwnd;
 
 	if (dat->sendMode & SMODE_MULTIPLE) {
-		HANDLE hContact, hItem;
+		HANDLE	hContact, hItem;
+		int		iJobs = 0;
+
 		hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
 
 		m_jobs[iEntry].hOwner = dat->hContact;
@@ -374,11 +376,15 @@ int SendQueue::sendQueued(TWindowData *dat, const int iEntry)
 
 		do {
 			hItem = (HANDLE) SendDlgItemMessage(hwndDlg, IDC_CLIST, CLM_FINDCONTACT, (WPARAM) hContact, 0);
-			if (hItem && SendDlgItemMessage(hwndDlg, IDC_CLIST, CLM_GETCHECKMARK, (WPARAM) hItem, 0))
+			if (hItem && SendDlgItemMessage(hwndDlg, IDC_CLIST, CLM_GETCHECKMARK, (WPARAM) hItem, 0)) {
 				doSendLater(iEntry, 0, hContact, false);
+				iJobs++;
+			}
 		}
 		while (hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM) hContact, 0));
 		sendQueue->clearJob(iEntry);
+		if(iJobs)
+			sendLater->setLastProcessed(0);							// force queue processing
 		return(0);
 	}
 	else {

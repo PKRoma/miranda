@@ -1006,6 +1006,7 @@ typedef struct {
 // callback for the user menu entry
 
 #define MS_TABMSG_SETUSERPREFS "SRMsg_MOD/SetUserPrefs"
+#define MS_TABMSG_SLQMGR		"SRMsg_MOD/InvokeQmgr"
 
 // show one of the tray menus
 // wParam = 0 -> session list

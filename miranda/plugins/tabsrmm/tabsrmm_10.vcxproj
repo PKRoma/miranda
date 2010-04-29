@@ -869,6 +869,7 @@
     <ResourceCompile Include="resource.rc" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\..\src\res\cursor_drag_copy.CUR" />
     <None Include="BuildScripts\VS_2010_Toolset9.bat" />
     <None Include="chat\Icons\1.ico" />
     <None Include="chat\Icons\2.ico" />
@@ -915,6 +916,11 @@
     <None Include="..\..\src\res\hyperlin.cur" />
     <None Include="..\..\src\res\icon1.ico" />
     <None Include="res\icon1.ico" />
+    <None Include="res\overlay_disabled.ico" />
+    <None Include="res\overlay_enabled.ico" />
+    <None Include="res\SKIN\tabskin_aero.png" />
+    <None Include="res\SKIN\tabskin_aero_button.png" />
+    <None Include="res\SKIN\tabskin_aero_glow.png" />
     <None Include="tabmodplus\icons\imgclose.ico" />
     <None Include="tabmodplus\icons\imgopen.ico" />
     <None Include="res\in.ico" />

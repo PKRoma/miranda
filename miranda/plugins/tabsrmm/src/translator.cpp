@@ -275,6 +275,16 @@ TCHAR* CTranslator::m_strings[STR_LAST] = {
 	LPGENT("\\par\\par\\ul\\b Client:\\ul0\\b0  %s"),									/* GEN_INFOTIP_CLIENT */
 
 	LPGENT("Insert [img] tag / surround selected text with [img][/img]"),				/* GEN_BB_IMGTOOLTIP */
+	LPGENT("Original timestamp"),														/* QMGR_COL_ODATE */
+	LPGENT("Message text"),																/* QMGR_COL_MESSAGETEXT */
+	LPGENT("Status"),																	/* QMGR_COL_STATUS */
+	LPGENT("Last send info"),															/* QMGR_COL_LASTSENDINFO */
+	LPGENT("<All contacts>"),															/* QMGR_FILTER_ALLCONTACTS */
+	LPGENT("Failed"),																	/* QMGR_STATUS_FAILED */
+	LPGENT("Sent OK"),																	/* QMGR_STATUS_SENTOK */
+	LPGENT("Pending"),																	/* QMGR_STATUS_PENDING */
+	LPGENT("Wait ACK"),																	/* QMGR_STATUS_WAITACK */
+	LPGENT("Multisend is unavailable, because the unattended send feature has not been enabled"), /* QMGR_ERROR_NOMULTISEND */
 };
 
 /*
@@ -406,6 +416,7 @@ TOptionListItem CTranslator::m_lvItemsModPlus[] = {
 	0, LPGENT("Use Aero Glass for the message window (Vista+)"), 1, LOI_TYPE_SETTING, (UINT_PTR)"useAero", 0,
 	0, LPGENT("Use Windows 7 task bar features (*)"), 1, LOI_TYPE_SETTING, (UINT_PTR)"useW7Taskbar", 0,
 	0, LPGENT("Automatic keyboard layout: Do not load the system default for new contacts"), 1, LOI_TYPE_SETTING, (UINT_PTR)"adv_leaveKeyboardAlone", 0,
+	0, LPGENT("Enable unattended send (experimental, required for multisend and send later, possibly buggy) (*)"), 1, LOI_TYPE_SETTING, (UINT_PTR)"sendLaterAvail", 0,
 	0, NULL, 0, 0, 0, 0
 };
 

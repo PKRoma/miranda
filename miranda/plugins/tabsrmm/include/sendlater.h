@@ -43,6 +43,14 @@
 class CSendLaterJob {
 
 public:
+	enum {
+		INVALID_CONTACT = 'I',
+		JOB_DEFERRED = 'D',
+		JOB_AGE = 'O',
+		JOB_MYSTATUS = 'M',
+		JOB_STATUS = 'S',
+		JOB_WAITACK = 'A'
+	};
 	CSendLaterJob();
 	~CSendLaterJob();
 	char	szId[20];									// database key name (time stamp of original send)
@@ -56,6 +64,7 @@ public:
 	DWORD	dwFlags;
 	int		iSendCount;									// # of times we tried to send it...
 	bool	fSuccess, fFailed;
+	BYTE	bCode;										// error/progress code (for the UI)
 };
 
 typedef std::vector<CSendLaterJob *>::iterator SendLaterJobIterator;
@@ -66,7 +75,7 @@ public:
 	enum {
 		SENDLATER_AGE_THRESHOLD = (86400 * 3),				// 3 days, older messages will be removed from the db.
 		SENDLATER_RESEND_THRESHOLD = 180,					// timeouted messages should be resent after that many seconds
-		SENDLATER_PROCESS_INTERVAL = 50					// process the list of waiting job every this many seconds
+		SENDLATER_PROCESS_INTERVAL = 50						// process the list of waiting job every this many seconds
 	};
 
 	CSendLater();
@@ -89,15 +98,32 @@ public:
 	void											addContact(const HANDLE hContact);
 	static int _cdecl								addStub(const char *szSetting, LPARAM lParam);
 	HANDLE											processAck(const ACKDATA *ack);
+
+	void											invokeQueueMgrDlg();
+	void											qMgrUpdate();
+	static INT_PTR									svcQMgr(WPARAM wParam, LPARAM lParam);
+
 private:
 	void											processSingleContact(const HANDLE hContact);
 	int												sendIt(CSendLaterJob *job);
+
+	INT_PTR	CALLBACK								DlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+	static INT_PTR CALLBACK	 						DlgProcStub(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+	void											qMgrFillList(bool fClear = true);
+	void											qMgrSetupColumns();
+	void											qMgrSaveColumns();
+	LRESULT											qMgrAddFilter(const HANDLE hContact, const TCHAR* tszNick);
 
 	std::vector<HANDLE>								m_sendLaterContactList;
 	std::vector<CSendLaterJob *>					m_sendLaterJobList;
 	bool											m_fAvail;
 	time_t											m_last_sendlater_processed;
 	SendLaterJobIterator							m_jobIterator;
+
+	HWND											m_hwndDlg;
+	HWND											m_hwndList, m_hwndFilter;
+	HANDLE											m_hFilter;		// contact handle to filter the qmgr list (0 = no filter, show all)
+	LRESULT											m_sel;			// index of the combo box entry corresponding to the contact filter;
 };
 
 extern CSendLater* sendLater;
