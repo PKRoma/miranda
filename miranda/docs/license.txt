@@ -1,11 +1,3 @@
-           Content
-
-1. Source code license.
-2. Artwork license.
-
-Source code license :
-
-
  NOTE: This copyright does *not* cover dynamically linked plugin libraries
  that link to Miranda - this is merely considered normal use of the
  programme, and does *not* fall under the heading of "derived work".
@@ -357,15 +349,3 @@ proprietary programs.  If your program is a subroutine library, you may
 consider it more useful to permit linking proprietary applications with the
 library.  If this is what you want to do, use the GNU Library General
 Public License instead of this License.
-
-Artwork License:
-
-Artwork (icons) is licensed by Angeli-Ka to be used for commercial and 
-non-commercial purposes only if used by Miranda IM application, plugin 
-or protocol.
-
-All other uses need to comply with Creative Commons 
-Attribution-Noncommercial-No Derivative Works 3.0 License
-
-The full text can be found here:
-http://creativecommons.org/licenses/by-nc-nd/3.0/
