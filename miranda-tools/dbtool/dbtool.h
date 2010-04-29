@@ -42,6 +42,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
                       //       Remember to update this when releasing new dbtool versions.
 #include "resource.h"
 
+
+#define WinVerMajor()      LOBYTE(LOWORD(GetVersion()))
+#define IsWinVerXPPlus()   (WinVerMajor()>=5 && LOWORD(GetVersion())!=5)
+
 #define WZM_GOTOPAGE   (WM_USER+1)
 #define WZN_PAGECHANGING  (WM_USER+1221)
 #define WZN_CANCELCLICKED (WM_USER+1222)

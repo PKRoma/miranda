@@ -137,7 +137,8 @@ INT_PTR CALLBACK SelectDbDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM lPa
 			TCHAR szMirandaPath[MAX_PATH];
 			szMirandaPath[ 0 ] = 0;
 			{	HIMAGELIST hIml;
-				hIml=ImageList_Create(GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),ILC_COLOR8|ILC_MASK,3,3);
+				hIml=ImageList_Create(GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON),
+					(IsWinVerXPPlus() ? ILC_COLOR32 : ILC_COLOR16) | ILC_MASK, 3, 3);
 				ImageList_AddIcon(hIml,LoadIcon(hInst,MAKEINTRESOURCE(IDI_PROFILEGREEN)));
 				ImageList_AddIcon(hIml,LoadIcon(hInst,MAKEINTRESOURCE(IDI_PROFILEYELLOW)));
 				ImageList_AddIcon(hIml,LoadIcon(hInst,MAKEINTRESOURCE(IDI_PROFILERED)));
