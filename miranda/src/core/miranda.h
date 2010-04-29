@@ -49,11 +49,17 @@ extern pfnSHGetSpecialFolderPathW shGetSpecialFolderPathW;
 #define shGetSpecialFolderPath shGetSpecialFolderPathA
 #endif
 
-typedef HDESK (WINAPI* pfnOpenInputDesktop)( DWORD, BOOL, DWORD );
+typedef HDESK (WINAPI* pfnOpenInputDesktop)(DWORD, BOOL, DWORD);
 extern pfnOpenInputDesktop openInputDesktop;
 
-typedef HDESK (WINAPI* pfnCloseDesktop)( HDESK );
+typedef HDESK (WINAPI* pfnCloseDesktop)(HDESK);
 extern pfnCloseDesktop closeDesktop;
+
+typedef BOOL (WINAPI* pfnAnimateWindow)(HWND, DWORD, DWORD);
+extern pfnAnimateWindow animateWindow;
+
+typedef BOOL (WINAPI * pfnSetLayeredWindowAttributes) (HWND, COLORREF, BYTE, DWORD);
+extern pfnSetLayeredWindowAttributes setLayeredWindowAttributes;
 
 typedef HTHEME  ( STDAPICALLTYPE *pfnOpenThemeData )( HWND, LPCWSTR );
 typedef HRESULT ( STDAPICALLTYPE *pfnIsThemeBackgroundPartiallyTransparent )( HTHEME, int, int );

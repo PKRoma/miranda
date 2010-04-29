@@ -474,6 +474,7 @@ INT_PTR CALLBACK AccMgrDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LPARAM 
 			Utils_RestoreWindowPositionNoSize(hwndDlg, NULL, "AccMgr", "");
 
 			Window_SetIcon_IcoLib( hwndDlg, SKINICON_OTHER_ACCMGR );
+			SendMessage(GetDlgItem(hwndDlg, IDC_HEADERBAR), WM_SETICON, 0, (WPARAM)LoadSkinIcon(SKINICON_OTHER_ACCMGR, true));
 
 			SendDlgItemMessage( hwndDlg, IDC_ADD, BM_SETIMAGE, IMAGE_ICON, ( LPARAM )LoadSkinIcon( SKINICON_OTHER_ADDCONTACT ));
 			SendDlgItemMessage( hwndDlg, IDC_ADD, BUTTONADDTOOLTIP, (WPARAM)"New account", 0);
@@ -1003,6 +1004,7 @@ INT_PTR CALLBACK AccMgrDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LPARAM 
 		}	}	}
 
 		Window_FreeIcon_IcoLib( hwndDlg );
+		IconLib_ReleaseIcon((HICON)SendMessage(GetDlgItem(hwndDlg, IDC_HEADERBAR), WM_SETICON, 0, 0), 0);
 		Button_FreeIcon_IcoLib( hwndDlg, IDC_ADD );
 		Button_FreeIcon_IcoLib( hwndDlg, IDC_EDIT );
 		Button_FreeIcon_IcoLib( hwndDlg, IDC_REMOVE );

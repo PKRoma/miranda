@@ -42,7 +42,7 @@ pfnMyMonitorFromWindow MyMonitorFromWindow;
 pfnMyGetMonitorInfo MyGetMonitorInfo;
 
 typedef DWORD (WINAPI *pfnMsgWaitForMultipleObjectsEx)(DWORD,CONST HANDLE*,DWORD,DWORD,DWORD);
-pfnMsgWaitForMultipleObjectsEx MyMsgWaitForMultipleObjectsEx;
+pfnMsgWaitForMultipleObjectsEx msgWaitForMultipleObjectsEx;
 
 pfnSHAutoComplete shAutoComplete;
 pfnSHGetSpecialFolderPathA shGetSpecialFolderPathA;
@@ -50,6 +50,9 @@ pfnSHGetSpecialFolderPathW shGetSpecialFolderPathW;
 
 pfnOpenInputDesktop openInputDesktop;
 pfnCloseDesktop closeDesktop;
+
+pfnAnimateWindow animateWindow;
+pfnSetLayeredWindowAttributes setLayeredWindowAttributes;
 
 pfnOpenThemeData openThemeData;
 pfnIsThemeBackgroundPartiallyTransparent isThemeBackgroundPartiallyTransparent;
@@ -476,8 +479,8 @@ static DWORD MsgWaitForMultipleObjectsExWorkaround(DWORD nCount, const HANDLE *p
 	DWORD dwMsecs, DWORD dwWakeMask, DWORD dwFlags)
 {
 	DWORD rc;
-	if ( MyMsgWaitForMultipleObjectsEx != NULL )
-		return MyMsgWaitForMultipleObjectsEx(nCount, pHandles, dwMsecs, dwWakeMask, dwFlags);
+	if ( msgWaitForMultipleObjectsEx != NULL )
+		return msgWaitForMultipleObjectsEx(nCount, pHandles, dwMsecs, dwWakeMask, dwFlags);
 	rc=MsgWaitForMultipleObjects(nCount, pHandles, FALSE, 50, QS_ALLINPUT);
 	if ( rc == WAIT_TIMEOUT ) rc=WaitForMultipleObjectsEx(nCount, pHandles, FALSE, 20, TRUE);
 	return rc;
@@ -554,7 +557,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int )
 	hUser32 = GetModuleHandleA("user32");
 	openInputDesktop = (pfnOpenInputDesktop)GetProcAddress (hUser32, "OpenInputDesktop");
 	closeDesktop = (pfnCloseDesktop)GetProcAddress (hUser32, "CloseDesktop");
-	MyMsgWaitForMultipleObjectsEx = (pfnMsgWaitForMultipleObjectsEx)GetProcAddress(hUser32,"MsgWaitForMultipleObjectsEx");
+	msgWaitForMultipleObjectsEx = (pfnMsgWaitForMultipleObjectsEx)GetProcAddress(hUser32, "MsgWaitForMultipleObjectsEx");
+	animateWindow =(pfnAnimateWindow)GetProcAddress(hUser32, "AnimateWindow");
+	setLayeredWindowAttributes =(pfnSetLayeredWindowAttributes)GetProcAddress(hUser32, "SetLayeredWindowAttributes");
 
 	MyMonitorFromPoint = (pfnMyMonitorFromPoint)GetProcAddress(hUser32, "MonitorFromPoint");
 	MyMonitorFromRect = (pfnMyMonitorFromRect)GetProcAddress(hUser32, "MonitorFromRect");

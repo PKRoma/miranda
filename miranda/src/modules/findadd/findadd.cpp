@@ -198,7 +198,6 @@ static void StopThrobber(HWND hwndDlg,struct FindAddDlgData *dat)
 static void ShowAdvancedSearchDlg(HWND hwndDlg,struct FindAddDlgData *dat)
 {
 	char *szProto=(char*)SendDlgItemMessage(hwndDlg,IDC_PROTOLIST,CB_GETITEMDATA,SendDlgItemMessage(hwndDlg,IDC_PROTOLIST,CB_GETCURSEL,0,0),0);
-	BOOL (WINAPI *MyAnimateWindow)(HWND hWnd,DWORD dwTime,DWORD dwFlags);
 
 	if(szProto==NULL) return;
 	if(dat->hwndAdvSearch==NULL) {
@@ -207,9 +206,8 @@ static void ShowAdvancedSearchDlg(HWND hwndDlg,struct FindAddDlgData *dat)
 		GetWindowRect(GetDlgItem(hwndDlg,IDC_RESULTS),&rc);
 		SetWindowPos(dat->hwndAdvSearch,0,rc.left,rc.top,0,0,SWP_NOZORDER|SWP_NOSIZE);
 	}
-	MyAnimateWindow=(BOOL (WINAPI*)(HWND,DWORD,DWORD))GetProcAddress(GetModuleHandleA("USER32"),"AnimateWindow");
-	if(MyAnimateWindow) {
-		MyAnimateWindow(dat->hwndAdvSearch,150,AW_ACTIVATE|AW_SLIDE|AW_HOR_POSITIVE);
+	if(animateWindow) {
+		animateWindow(dat->hwndAdvSearch,150,AW_ACTIVATE|AW_SLIDE|AW_HOR_POSITIVE);
 		RedrawWindow(dat->hwndAdvSearch,NULL,NULL,RDW_INVALIDATE|RDW_UPDATENOW|RDW_ALLCHILDREN);
 	} else ShowWindow(dat->hwndAdvSearch,SW_SHOW);
 	CheckDlgButton(hwndDlg,IDC_ADVANCED,BST_CHECKED);
@@ -243,12 +241,9 @@ static void ShowTinySearchDlg(HWND hwndDlg,struct FindAddDlgData *dat)
 
 static void HideAdvancedSearchDlg(HWND hwndDlg,struct FindAddDlgData *dat)
 {
-	BOOL (WINAPI *MyAnimateWindow)(HWND hWnd,DWORD dwTime,DWORD dwFlags);
-
 	if(dat->hwndAdvSearch==NULL) return;
-	MyAnimateWindow=(BOOL (WINAPI*)(HWND,DWORD,DWORD))GetProcAddress(GetModuleHandleA("USER32"),"AnimateWindow");
-	if(MyAnimateWindow && IsWinVerXPPlus())  //blending is quite slow on win2k
-		MyAnimateWindow(dat->hwndAdvSearch,150,AW_HIDE|AW_BLEND);
+	if(animateWindow && IsWinVerXPPlus())  //blending is quite slow on win2k
+		animateWindow(dat->hwndAdvSearch,150,AW_HIDE|AW_BLEND);
 	else ShowWindow(dat->hwndAdvSearch,SW_HIDE);
 	CheckDlgButton(hwndDlg,IDC_ADVANCED,BST_UNCHECKED);
 }
@@ -296,6 +291,7 @@ static INT_PTR CALLBACK DlgProcFindAdd(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 
 			TranslateDialogDefault(hwndDlg);
 			Window_SetIcon_IcoLib(hwndDlg, SKINICON_OTHER_FINDUSER);
+            SendMessage(GetDlgItem(hwndDlg, IDC_HEADERBAR), WM_SETICON, 0, (WPARAM)LoadSkinIcon(SKINICON_OTHER_FINDUSER, true));
 			ListView_SetExtendedListViewStyle(hwndList,LVS_EX_FULLROWSELECT|LVS_EX_HEADERDRAGDROP);
 			dat=(struct FindAddDlgData*)mir_alloc(sizeof(struct FindAddDlgData));
 			memset(dat,0,sizeof(struct FindAddDlgData));
@@ -943,6 +939,7 @@ static INT_PTR CALLBACK DlgProcFindAdd(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			DeleteObject(dat->hBmpSortUp);
 			mir_free(dat);
 			Window_FreeIcon_IcoLib(hwndDlg);
+			IconLib_ReleaseIcon((HICON)SendMessage(GetDlgItem(hwndDlg, IDC_HEADERBAR), WM_SETICON, 0, 0), 0);
 			Utils_SaveWindowPosition(hwndDlg,NULL,"FindAdd","");
 
 			break;
