@@ -61,13 +61,13 @@ void CYahooProto::IconsInit( void )
 	}
 }
 
-HICON CYahooProto::LoadIconEx( const char* name )
+HICON CYahooProto::LoadIconEx( const char* name, bool big )
 {
 	char szSettingName[100];
 	
 	mir_snprintf( szSettingName, sizeof( szSettingName ), "YAHOO_%s", name );
 	
-	return ( HICON )CallService( MS_SKIN2_GETICON, 0, (LPARAM)szSettingName );
+	return ( HICON )CallService( MS_SKIN2_GETICON, big, (LPARAM)szSettingName );
 }
 
 HANDLE CYahooProto::GetIconHandle(int iconId)
@@ -79,9 +79,9 @@ HANDLE CYahooProto::GetIconHandle(int iconId)
 	return NULL;
 }
 
-void CYahooProto::ReleaseIconEx(const char* name)
+void CYahooProto::ReleaseIconEx(const char* name, bool big)
 {
 	char szSettingName[100];
 	mir_snprintf(szSettingName, sizeof(szSettingName), "YAHOO_%s", name);
-	YAHOO_CallService(MS_SKIN2_RELEASEICON, 0, (LPARAM)szSettingName);
+	YAHOO_CallService(big ? MS_SKIN2_RELEASEICONBIG : MS_SKIN2_RELEASEICON, 0, (LPARAM)szSettingName);
 }

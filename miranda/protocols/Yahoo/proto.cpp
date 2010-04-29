@@ -409,15 +409,22 @@ DWORD_PTR __cdecl CYahooProto::GetCaps( int type, HANDLE /*hContact*/ )
 
 HICON __cdecl CYahooProto::GetIcon( int iconIndex )
 {
-	UINT id;
+	if (LOWORD(iconIndex) == PLI_PROTOCOL)
+	{
+		if (iconIndex & PLIF_ICOLIBHANDLE)
+			return (HICON)GetIconHandle(IDI_YAHOO);
+		
+		bool big = (iconIndex & PLIF_LARGE) != 0;
+		HICON hIcon = LoadIconEx("yahoo", big);
 
-	switch( iconIndex & 0xFFFF ) {
-		case PLI_PROTOCOL: id=IDI_YAHOO; break; // IDI_MAIN is the main icon for the protocol
-		default: return NULL;	
+		if (iconIndex & PLIF_ICOLIB)
+			return hIcon;
+
+		hIcon =  CopyIcon(hIcon);
+		ReleaseIconEx("yahoo", big);
+		return hIcon;
 	}
-	return ( HICON )LoadImage(hInstance, MAKEINTRESOURCE(id), IMAGE_ICON,
-		GetSystemMetrics( iconIndex & PLIF_SMALL ? SM_CXSMICON : SM_CXICON ),
-		GetSystemMetrics( iconIndex & PLIF_SMALL ? SM_CYSMICON : SM_CYICON ),0);
+	return NULL;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////

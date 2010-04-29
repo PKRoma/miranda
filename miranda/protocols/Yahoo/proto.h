@@ -173,9 +173,9 @@ struct CYahooProto : public PROTO_INTERFACE
 
 	//====| icolib.cpp |==================================================================
 	void   IconsInit( void );
-	HICON  LoadIconEx( const char* name );
+	HICON  LoadIconEx(const char* name, bool big = false);
 	HANDLE GetIconHandle(int iconId);
-	void   ReleaseIconEx(const char* name);
+	void   ReleaseIconEx(const char* name, bool big = false);
 	
 	//====| ignore.cpp |==================================================================
 	const YList* GetIgnoreList(void);
