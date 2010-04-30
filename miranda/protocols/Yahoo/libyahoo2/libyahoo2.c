@@ -1980,7 +1980,7 @@ static void yahoo_process_logon(struct yahoo_input_data *yid, struct yahoo_packe
 	struct yahoo_data *yd = yid->yd;
 	char *name = NULL;
 	int state = 0, away = 0, idle = 0, mobile = 0, cksum = 0, buddy_icon = -1, protocol = 0,
-		client_version = 0, utf8 = 0;
+		client_version = 0, utf8 = 1;
 	char *msg = NULL;
 	
 	for (l = pkt->hash; l; l = l->next) {
@@ -2004,7 +2004,8 @@ static void yahoo_process_logon(struct yahoo_input_data *yid, struct yahoo_packe
 			if (name != NULL) {
 				YAHOO_CALLBACK(ext_yahoo_status_logon)(yd->client_id, name, 0, state, msg, away, idle, mobile, cksum, buddy_icon, client_version, utf8);
 				msg = NULL;
-				utf8 = protocol = client_version = cksum = state = away = idle = mobile = 0;
+				utf8 = 1;
+				protocol = client_version = cksum = state = away = idle = mobile = 0;
 				buddy_icon = -1;
 			}
 			name = pair->value;
@@ -2099,7 +2100,7 @@ static void yahoo_process_status(struct yahoo_input_data *yid, struct yahoo_pack
 	struct yahoo_data *yd = yid->yd;
 	char *name = NULL;
 	int state = YAHOO_STATUS_AVAILABLE;
-	int away = 0, idle = 0, mobile = 0, protocol = 0, utf8 = 0;
+	int away = 0, idle = 0, mobile = 0, protocol = 0, utf8 = 1;
 	int login_status=YAHOO_LOGIN_LOGOFF;
 	char *msg = NULL;
 	char *errmsg = NULL;
@@ -2135,7 +2136,8 @@ static void yahoo_process_status(struct yahoo_input_data *yid, struct yahoo_pack
 			if (name != NULL) {
 				YAHOO_CALLBACK(ext_yahoo_status_changed)(yd->client_id, name, protocol, state, msg, away, idle, mobile, utf8);
 				msg = NULL;
-				utf8 = protocol = away = idle = mobile = 0;
+				utf8 = 1;
+				protocol = away = idle = mobile = 0;
 				state = (pkt->service == YAHOO_SERVICE_LOGOFF) ? YAHOO_STATUS_OFFLINE : YAHOO_STATUS_AVAILABLE;
 			}
 			name = pair->value;
