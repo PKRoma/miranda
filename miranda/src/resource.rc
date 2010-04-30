@@ -15,11 +15,13 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// English (United States) resources
+// English (U.S.) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 #pragma code_page(1252)
+#endif //_WIN32
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -152,7 +154,7 @@ STYLE DS_SETFONT | DS_MODALFRAME | DS_SETFOREGROUND | DS_FIXEDSYS | DS_CENTER | 
 CAPTION "Miranda IM Profile Manager"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    CONTROL         "",IDC_NAME,"MHeaderbarCtrl",0,0,0,400,25
+    CONTROL         "",IDC_NAME,"MHeaderbarCtrl",0x0,0,0,400,25
     CONTROL         "Tab1",IDC_TABS,"SysTabControl32",TCS_HOTTRACK | WS_TABSTOP,4,31,393,160
     PUSHBUTTON      "&Run",IDOK,298,194,48,14
     PUSHBUTTON      "&Exit",IDCANCEL,348,194,48,14
@@ -1309,7 +1311,7 @@ END
 //
 
 #ifdef APSTUDIO_INVOKED
-GUIDELINES DESIGNINFO
+GUIDELINES DESIGNINFO 
 BEGIN
     IDD_AUTHREQ, DIALOG
     BEGIN
@@ -1938,6 +1940,8 @@ IDI_STATUS_LOCKED       ICON                    "res/status_locked.ico"
 IDI_SHOWHIDE            ICON                    "res/Icon_show_hide.ico"
 IDI_EXIT                ICON                    "res/Icon_exit.ico"
 IDI_MOVETOGROUP         ICON                    "res/contact_groups.ico"
+IDI_ON                  ICON                    "res\\On.ico"
+IDI_OFF                 ICON                    "res\\Off.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -1953,7 +1957,7 @@ IDC_DROPUSER            CURSOR                  "res/cursor_drop_user.cur"
 // Menu
 //
 
-IDR_CLISTMENU MENU
+IDR_CLISTMENU MENU 
 BEGIN
     POPUP "&¤"
     BEGIN
@@ -1975,7 +1979,7 @@ BEGIN
     END
 END
 
-IDR_CONTEXT MENU
+IDR_CONTEXT MENU 
 BEGIN
     POPUP "Tray"
     BEGIN
@@ -2029,7 +2033,7 @@ BEGIN
     END
 END
 
-IDR_ICOLIB_CONTEXT MENU
+IDR_ICOLIB_CONTEXT MENU 
 BEGIN
     POPUP "IconOptions"
     BEGIN
@@ -2053,7 +2057,7 @@ IDR_CREDITS             TEXT                    "../docs/contributors.txt"
 
 IDB_SORTCOLUP           BITMAP                  "res/arrow_sort_column_up.bmp"
 IDB_SORTCOLDOWN         BITMAP                  "res/arrow_sort_column_down.bmp"
-#endif    // English (United States) resources
+#endif    // English (U.S.) resources
 /////////////////////////////////////////////////////////////////////////////
 
 

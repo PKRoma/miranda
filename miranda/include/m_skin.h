@@ -81,6 +81,8 @@ __inline static HICON LoadSkinnedIconLarge(int id) {return (HICON)CallService(MS
 #define SKINICON_CHAT_LEAVE         237     //v0.8.0.27+
 #define SKINICON_OTHER_STATUS_LOCKED 238    //v0.8.0.28+
 #define SKINICON_OTHER_GROUP        239     //v0.8.0.29+
+#define SKINICON_OTHER_ON           240     //v0.9.0.9+
+#define SKINICON_OTHER_OFF          241     //v0.9.0.9+
 
 //menu icons are owned by the module that uses them so are not and should not
 //be skinnable. Except exit and show/hide

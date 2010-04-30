@@ -136,6 +136,8 @@
 #define IDD_OPT_ERRORS                  301
 #define IDD_OPTIONSPAGE                 318
 #define IDI_MOVETOGROUP                 319
+#define IDI_ON                          320
+#define IDI_OFF                         322
 #define IDC_SAVE                        1001
 #define IDI_ONTHEPHONE                  1002
 #define IDC_MESSAGE                     1002
@@ -514,7 +516,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        320
+#define _APS_NEXT_RESOURCE_VALUE        323
 #define _APS_NEXT_COMMAND_VALUE         40018
 #define _APS_NEXT_CONTROL_VALUE         1739
 #define _APS_NEXT_SYMED_VALUE           101

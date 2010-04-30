@@ -590,11 +590,11 @@ INT_PTR CALLBACK AccMgrDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LPARAM 
 
 			if ( acc->bOldProto )
 			{
-                tmp = SKINICON_OTHER_LOADED;
+                tmp = SKINICON_OTHER_ON;
 			} 
 			else if ( acc->bDynDisabled )
 			{
-                tmp = SKINICON_OTHER_NOTLOADED;
+                tmp = SKINICON_OTHER_OFF;
 			} 
             else
 			{
