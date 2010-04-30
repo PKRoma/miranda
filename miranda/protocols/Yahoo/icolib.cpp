@@ -46,7 +46,6 @@ void CYahooProto::IconsInit( void )
 	SKINICONDESC sid = {0};
 	sid.cbSize = sizeof(SKINICONDESC);
 	sid.ptszDefaultFile = szFile;
-	sid.cx = sid.cy = 16;
 	sid.pszSection = szSectionName;
 	sid.flags = SIDF_PATH_TCHAR;
 
