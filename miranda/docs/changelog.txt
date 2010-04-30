@@ -3,6 +3,17 @@
                            www.miranda-im.org
 
 
+* New in 0.8.22
+Enhancements:
+ - Gadu-Gadu: Added typing notifications support
+ - Yahoo: Enabled UTF-8 by default
+ 
+Bugfixes:
+ - Update zlib library to 1.2.5
+ - ICQ: Added missing mobile icon to installer icon pack
+ - Yahoo: Fixed issues with Yahoo Japan setting getting reset
+
+ 
 * New in 0.8.21
 Bugfixes:
  - Jabber: Fixed PLAIN authentication with Unicode usernames/passwords
