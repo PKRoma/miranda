@@ -35,12 +35,14 @@ are currently no downloads for it, you'll have to compile it from source.
 			Detailed change log
 			===================
 
-Version 3.0.0.26 - 2010/04/XX
+Version 3.0.0.26 - 2010/04/30
 
 	* fixed the painting of close buttons on tabs when using a skin (they
 	  were incorrectly using visual styles instead of the button skin)
 
 	* new skin item for the switch bar background
+
+	* send later out of hidden state (see: http://wiki.miranda.or.at/SendLater)
 
 Version 3.0.0.25 - 2010/04/23
 

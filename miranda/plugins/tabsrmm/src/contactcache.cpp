@@ -510,7 +510,7 @@ void CContactCache::updateStatusMsg(const char *szKey)
 		if(m_szStatusMsg)
 			mir_free(m_szStatusMsg);
 		m_szStatusMsg = 0;
-		res = M->GetTString(m_hContact, "CList", szKey, &dbv);
+		res = M->GetTString(m_hContact, "CList", "StatusMsg", &dbv);
 		if(res == 0) {
 			m_szStatusMsg = (lstrlen(dbv.ptszVal) > 0 ? getNormalizedStatusMsg(dbv.ptszVal) : 0);
 			DBFreeVariant(&dbv);
@@ -520,7 +520,7 @@ void CContactCache::updateStatusMsg(const char *szKey)
 		if(m_ListeningInfo)
 			mir_free(m_ListeningInfo);
 		m_ListeningInfo = 0;
-		res = M->GetTString(m_hContact, m_szProto, szKey, &dbv);
+		res = M->GetTString(m_hContact, m_szProto, "ListeningTo", &dbv);
 		if(res == 0) {
 			m_ListeningInfo = (lstrlen(dbv.ptszVal) > 0 ? mir_tstrdup(dbv.ptszVal) : 0);
 			DBFreeVariant(&dbv);
@@ -530,7 +530,7 @@ void CContactCache::updateStatusMsg(const char *szKey)
 		if(m_xStatusMsg)
 			mir_free(m_xStatusMsg);
 		m_xStatusMsg = 0;
-		res = M->GetTString(m_hContact, m_szProto, szKey, &dbv);
+		res = M->GetTString(m_hContact, m_szProto, "XStatusMsg", &dbv);
 		if(res == 0) {
 			m_xStatusMsg = (lstrlen(dbv.ptszVal) > 0 ? mir_tstrdup(dbv.ptszVal) : 0);
 			DBFreeVariant(&dbv);

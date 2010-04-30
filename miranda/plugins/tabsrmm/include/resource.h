@@ -5,7 +5,6 @@
 #define IDD_TEMPLATEEDIT                1
 #define IDD_USERPREFS                   2
 #define IDOK2                           2
-#define IDC_QMGR_REMOVE                 2
 #define IDD_USERPREFS1                  3
 #define IDD_TABCONFIG                   4
 #define IDD_ABOUT                       7
@@ -60,6 +59,7 @@
 #define IDD_OPT_SKIN                    313
 #define IDD_OPTIONS_PLUS                333
 #define IDD_EXCEPTION                   400
+#define IDC_QMGR_REMOVE                 1000
 #define IDC_EXCEPTION_DETAILS           1000
 #define IDC_UNLOAD                      1000
 #define IDC_READNEXT                    1000
@@ -533,6 +533,7 @@
 #define IDC_QMGR_LIST                   1441
 #define IDC_QMGR_FILTER                 1442
 #define IDC_TOOLBARTREE                 1444
+#define IDC_QMGR_HELP                   1444
 #define IDC_STYLEDTABS                  1482
 #define IDC_FLASHICON                   1489
 #define IDC_FLASHLABEL                  1490
@@ -770,14 +771,20 @@
 #define ID_MESSAGELOGSETTINGS_GLOBAL    40251
 #define ID_MESSAGELOGSETTINGS_FORTHISCONTACT 40252
 #define ID_MESSAGELOG_MESSAGELOGSETTINGS 40253
+#define ID_QUEUEMANAGER_MARKSELECTEDFORREMOVAL 40256
+#define ID_QUEUEMANAGER_RESETSELECTED   40257
+#define ID_QUEUEMANAGER_HOLDSELECTED    40258
+#define ID_QUEUEMANAGER_RESUMESELECTED  40259
+#define ID_QUEUEMANAGER_CANCELALLMULTISENDJOBS 40260
+#define ID_QUEUEMANAGER_COPYMESSAGETOCLIPBOARD 40261
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        16
-#define _APS_NEXT_COMMAND_VALUE         40256
-#define _APS_NEXT_CONTROL_VALUE         1444
+#define _APS_NEXT_COMMAND_VALUE         40262
+#define _APS_NEXT_CONTROL_VALUE         1445
 #define _APS_NEXT_SYMED_VALUE           40283
 #endif
 #endif

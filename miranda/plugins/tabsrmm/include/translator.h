@@ -261,7 +261,12 @@ public:
 		QMGR_STATUS_PENDING										= 212,
 		QMGR_STATUS_WAITACK										= 213,
 		QMGR_ERROR_NOMULTISEND									= 214,
-		STR_LAST 												= 215
+		QMGR_STATUS_REMOVED										= 215,
+		QMGR_WARNING_REMOVAL									= 216,
+		QMGR_TITLE												= 217,
+		QMGR_STATUS_HOLD										= 218,
+		QMGR_STATUS_DEFERRED									= 219,
+		STR_LAST 												= 220
 	};
 
 	enum {

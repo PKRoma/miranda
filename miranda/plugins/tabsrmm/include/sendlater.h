@@ -49,8 +49,19 @@ public:
 		JOB_AGE = 'O',
 		JOB_MYSTATUS = 'M',
 		JOB_STATUS = 'S',
-		JOB_WAITACK = 'A'
+		JOB_WAITACK = 'A',
+		JOB_REMOVABLE = 'R',
+		JOB_HOLD = 'H',
 	};
+	enum {
+		SLF_SUSPEND = 1,
+		SLF_INVALID = 2
+	};
+	void	readFlags();
+	void	writeFlags();
+	void	cleanDB();
+	bool	isPersistentJob();
+	bool	mustDelete();
 	CSendLaterJob();
 	~CSendLaterJob();
 	char	szId[20];									// database key name (time stamp of original send)

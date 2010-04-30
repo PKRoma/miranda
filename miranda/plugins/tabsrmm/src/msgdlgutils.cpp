@@ -1615,33 +1615,52 @@ void TSAPI GetSendFormat(TWindowData *dat, int mode)
 }
 
 /*
- * get 2-digit locale id from current keyboard layout
+ * get user-readable locale information for the currently selected
+ * keyboard layout.
+ *
+ * GetLocaleInfo() should no longer be used on Vista and later
  */
 
 void TSAPI GetLocaleID(TWindowData *dat, const TCHAR *szKLName)
 {
-	TCHAR szLI[20], *stopped = NULL;
+	TCHAR szLI[256], *stopped = NULL;
 	USHORT langID;
 	WORD   wCtype2[3];
 	_PARAFORMAT2 pf2;
 	BOOL fLocaleNotSet;
 	char szTest[4] = {(char)0xe4, (char)0xf6, (char)0xfc, 0 };
 
-	LCTYPE infoType;
-
-	if(PluginConfig.m_bIsVista)
-		infoType = LOCALE_SISO639LANGNAME2;
-	else
-		infoType = LOCALE_SISO639LANGNAME;
-
 	szLI[0] = 0;
 
 	ZeroMemory(&pf2, sizeof(_PARAFORMAT2));
 	langID = (USHORT)_tcstol(szKLName, &stopped, 16);
 	dat->lcid = MAKELCID(langID, 0);
-	GetLocaleInfo(dat->lcid, infoType , szLI, 10);
+	/*
+	 * Vista+: read ISO locale names from the registry
+	 */
+	if(PluginConfig.m_bIsVista && CMimAPI::m_pfnGetLocaleInfoEx != 0) {
+		HKEY	hKey = 0;
+		TCHAR	szKey[20];
+		DWORD	dwLID = _tcstoul(szKLName, &stopped, 16);
+
+		mir_sntprintf(szKey, 20, _T("%04.04x"), LOWORD(dwLID));
+		if(ERROR_SUCCESS == RegOpenKeyEx(HKEY_CLASSES_ROOT, _T("MIME\\Database\\Rfc1766"), 0, KEY_READ, &hKey)) {
+			DWORD dwLength = 255;
+			if(ERROR_SUCCESS == RegQueryValueEx(hKey, szKey, 0, 0, (unsigned char *)szLI, &dwLength)) {
+				TCHAR*	p;
+
+				szLI[255] = 0;
+				if((p = _tcschr(szLI, ';')) != 0)
+					*p = 0;
+			}
+			RegCloseKey(hKey);
+		}
+	}
+	else {
+		GetLocaleInfo(dat->lcid, LOCALE_SISO639LANGNAME, szLI, 10);
+		_tcsupr(szLI);
+	}
 	fLocaleNotSet = (dat->lcID[0] == 0 && dat->lcID[1] == 0);
-	_tcsupr(szLI);
 	mir_sntprintf(dat->lcID, safe_sizeof(dat->lcID), szLI);
 	GetStringTypeA(dat->lcid, CT_CTYPE2, szTest, 3, wCtype2);
 	pf2.cbSize = sizeof(pf2);

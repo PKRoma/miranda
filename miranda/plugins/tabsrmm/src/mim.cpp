@@ -63,6 +63,7 @@ EBP		CMimAPI::m_pfnEndBufferedPaint = 0;
 BBW		CMimAPI::m_pfnDwmBlurBehindWindow = 0;
 DGC		CMimAPI::m_pfnDwmGetColorizationColor = 0;
 BPSA	CMimAPI::m_pfnBufferedPaintSetAlpha = 0;
+GLIX	CMimAPI::m_pfnGetLocaleInfoEx = 0;
 
 bool	CMimAPI::m_shutDown = 0;
 TCHAR	CMimAPI::m_userDir[] = _T("\0");
@@ -526,6 +527,7 @@ void CMimAPI::InitAPI()
 			if(m_haveBufferedPaint)
 				m_pfnBufferedPaintInit();
 		}
+		m_pfnGetLocaleInfoEx = (GLIX)GetProcAddress(GetModuleHandleA("kernel32"), "GetLocaleInfoEx");
     }
 	else
 		m_haveBufferedPaint = false;

@@ -69,6 +69,7 @@ typedef HRESULT (WINAPI *BPU)(void);
 typedef HRESULT (WINAPI *BBW)(HWND, DWM_BLURBEHIND *);
 typedef HRESULT (WINAPI *DGC)(DWORD *, BOOL *);
 typedef HRESULT (WINAPI *BPSA)(HANDLE, const RECT *, BYTE);
+typedef int		(WINAPI *GLIX)(LPCWSTR, LCTYPE, LPCWSTR, int);
 
 /*
  * used to encapsulate some parts of the Miranda API
@@ -250,6 +251,7 @@ public:
 	static BBW 		m_pfnDwmBlurBehindWindow;
 	static DGC		m_pfnDwmGetColorizationColor;
 	static BPSA		m_pfnBufferedPaintSetAlpha;
+	static GLIX		m_pfnGetLocaleInfoEx;
 	static bool		m_shutDown, m_haveBufferedPaint;
 
 	static DWORD	m_MimVersion;

@@ -285,6 +285,11 @@ TCHAR* CTranslator::m_strings[STR_LAST] = {
 	LPGENT("Pending"),																	/* QMGR_STATUS_PENDING */
 	LPGENT("Wait ACK"),																	/* QMGR_STATUS_WAITACK */
 	LPGENT("Multisend is unavailable, because the unattended send feature has not been enabled"), /* QMGR_ERROR_NOMULTISEND */
+	LPGENT("Removed"),																	/* QMGR_STATUS_REMOVED */
+	LPGENT("You are about to modify the state of one or more items in the\nunattended send queue. The requested action(s) will be executed at the next scheduled queue processing.\n\nThis action cannot be made undone."),	/* QMGR_WARNING_REMOVAL */
+	LPGENT("Queue manager"),															/* QMGR_TITLE */
+	LPGENT("Suspended"),																/* QMGR_STATUS_HOLD */
+	LPGENT("Deferred"),																	/* QMGR_STATUS_DEFERRED */
 };
 
 /*
