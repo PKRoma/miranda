@@ -161,7 +161,7 @@ static INT_PTR AddDetailsPage(WPARAM wParam,LPARAM lParam)
 static void ThemeDialogBackground(HWND hwnd)
 {
 	if (enableThemeDialogTexture)
-		enableThemeDialogTexture(hwnd,0x00000002|0x00000004); //0x00000002|0x00000004=ETDT_ENABLETAB
+		enableThemeDialogTexture(hwnd, ETDT_ENABLETAB);
 }
 
 static void CreateDetailsTabs( HWND hwndDlg, struct DetailsData* dat, struct DetailsPageData* ppg )

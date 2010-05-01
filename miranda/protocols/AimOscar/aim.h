@@ -25,6 +25,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 //System includes
 #include <windows.h>
+#include <vssym32.h>
+
 #include <ctype.h>
 #include <fcntl.h>
 #include <io.h>

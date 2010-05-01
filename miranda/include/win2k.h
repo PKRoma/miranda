@@ -89,41 +89,6 @@ File created by Christian Kästner, and tweaked a bit by Richard Hughes*/
 #endif
 
 #if _MSC_VER
-	// uxtheme.h defines
-	#ifndef THEMEMGR_VERSION
-		#define WM_THEMECHANGED		0x031A // when windows changes themes
-		#define BP_PUSHBUTTON		1  // Push Button Type
-		#define PBS_NORMAL			1
-		#define PBS_HOT				2
-		#define PBS_PRESSED			3
-		#define PBS_DISABLED		4
-		#define PBS_DEFAULTED		5
-		#define BP_CHECKBOX			3  // CheckBox Type
-		#define TP_BUTTON           1
-		#define TS_NORMAL           1
-		#define TS_HOT              2
-		#define TS_PRESSED          3
-		#define TS_DISABLED         4
-		#define TS_CHECKED          5
-		#define TS_HOTCHECKED       6
-		#define CBS_UNCHECKEDNORMAL 1
-		#define CBS_UNCHECKEDHOT    2
-		#define CBS_CHECKEDNORMAL   5
-		#define CBS_CHECKEDHOT      6
-		#define SP_PANE				1	// STATUS
-		#define	SP_GRIPPERPANE		2
-		#define SP_GRIPPER			3
-		#define EP_EDITTEXT			1 // Edit
-		#define EP_CARET			2
-        #define EP_BACKGROUND       3
-		#define ETS_NORMAL			1
-		#define ETS_HOT				2
-		#define ETS_SELECTED		3
-		#define ETS_DISABLED		4
-		#define ETS_FOCUSED			5
-		#define ETS_READONLY		6
-		#define ETS_ASSIST			7
-	#endif
 	#if !defined(DTBG_CLIPRECT)
 		#define DTBG_CLIPRECT           0x00000001  // rcClip has been specified
 		#define DTBG_DRAWSOLID          0x00000002  // DEPRECATED: draw transparent/alpha images as solid

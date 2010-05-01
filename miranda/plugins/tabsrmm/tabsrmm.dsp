@@ -1,26 +1,26 @@
 # Microsoft Developer Studio Project File - Name="tabSRMM" - Package Owner=<4>
 # Microsoft Developer Studio Generated Build File, Format Version 6.00
-# ** NICHT BEARBEITEN **
+# ** DO NOT EDIT **
 
 # TARGTYPE "Win32 (x86) Dynamic-Link Library" 0x0102
 
 CFG=tabSRMM - Win32 Debug
-!MESSAGE Dies ist kein gültiges Makefile. Zum Erstellen dieses Projekts mit NMAKE
-!MESSAGE verwenden Sie den Befehl "Makefile exportieren" und führen Sie den Befehl
+!MESSAGE This is not a valid makefile. To build this project using NMAKE,
+!MESSAGE use the Export Makefile command and run
 !MESSAGE 
 !MESSAGE NMAKE /f "tabsrmm.mak".
 !MESSAGE 
-!MESSAGE Sie können beim Ausführen von NMAKE eine Konfiguration angeben
-!MESSAGE durch Definieren des Makros CFG in der Befehlszeile. Zum Beispiel:
+!MESSAGE You can specify a configuration when running NMAKE
+!MESSAGE by defining the macro CFG on the command line. For example:
 !MESSAGE 
 !MESSAGE NMAKE /f "tabsrmm.mak" CFG="tabSRMM - Win32 Debug"
 !MESSAGE 
-!MESSAGE Für die Konfiguration stehen zur Auswahl:
+!MESSAGE Possible choices for configuration are:
 !MESSAGE 
-!MESSAGE "tabSRMM - Win32 Debug" (basierend auf  "Win32 (x86) Dynamic-Link Library")
-!MESSAGE "tabSRMM - Win32 Release Unicode" (basierend auf  "Win32 (x86) Dynamic-Link Library")
-!MESSAGE "tabSRMM - Win32 Release" (basierend auf  "Win32 (x86) Dynamic-Link Library")
-!MESSAGE "tabSRMM - Win32 Debug Unicode" (basierend auf  "Win32 (x86) Dynamic-Link Library")
+!MESSAGE "tabSRMM - Win32 Debug" (based on "Win32 (x86) Dynamic-Link Library")
+!MESSAGE "tabSRMM - Win32 Release Unicode" (based on "Win32 (x86) Dynamic-Link Library")
+!MESSAGE "tabSRMM - Win32 Release" (based on "Win32 (x86) Dynamic-Link Library")
+!MESSAGE "tabSRMM - Win32 Debug Unicode" (based on "Win32 (x86) Dynamic-Link Library")
 !MESSAGE 
 
 # Begin Project
@@ -45,7 +45,7 @@ RSC=rc.exe
 # PROP Ignore_Export_Lib 1
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MDd /W3 /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "_MBCS" /Fp".\Debug/srmm.pch" /YX /GZ /c
-# ADD CPP /nologo /MDd /W3 /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "_MBCS" /Fp".\Debug/srmm.pch" /Yu"commonheaders.h" /GZ /c
+# ADD CPP /nologo /MDd /W3 /GX /ZI /Od /I "../../include" /I "../../include/msapi" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "_MBCS" /Fp".\Debug/srmm.pch" /Yu"commonheaders.h" /GZ /c
 # ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x809 /d "_DEBUG"
@@ -73,7 +73,7 @@ LINK32=link.exe
 # PROP Ignore_Export_Lib 1
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MT /W3 /GX /O1 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "UNICODE" /D "_MBCS" /Fp".\Release_Unicode/srmm.pch" /YX /GF /c
-# ADD CPP /nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "UNICODE" /Fp".\Release_Unicode/srmm.pch" /Yu"commonheaders.h" /GF /c
+# ADD CPP /nologo /MD /W3 /GX /Zi /O1 /I "../../include" /I "../../include/msapi" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "UNICODE" /Fp".\Release_Unicode/srmm.pch" /Yu"commonheaders.h" /GF /c
 # SUBTRACT CPP /Fr
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
@@ -101,7 +101,7 @@ LINK32=link.exe
 # PROP Ignore_Export_Lib 1
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MT /W3 /GX /O1 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "_MBCS" /Fp".\Release/srmm.pch" /YX /GF /c
-# ADD CPP /nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "_MBCS" /Fp".\Release/srmm.pch" /Yu"commonheaders.h" /GF /c
+# ADD CPP /nologo /MD /W3 /GX /Zi /O1 /I "../../include" /I "../../include/msapi" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "_MBCS" /Fp".\Release/srmm.pch" /Yu"commonheaders.h" /GF /c
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x809 /d "NDEBUG"
@@ -128,7 +128,7 @@ LINK32=link.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MDd /W3 /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "UNICODE" /D "_MBCS" /FR /Fp".\Debug_Unicode/srmm.pch" /YX /GZ /c
-# ADD CPP /nologo /MDd /W3 /GX /Zi /Od /I "../" /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "UNICODE" /GZ /c
+# ADD CPP /nologo /MDd /W3 /GX /Zi /Od /I "../" /I "../../include" /I "../../include/msapi" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "UNICODE" /GZ /c
 # SUBTRACT CPP /Fr /YX /Yc /Yu
 # ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "_DEBUG" /mktyplib203 /win32
@@ -203,6 +203,8 @@ DEP_CPP_CLIST=\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
+	"..\..\include\msapi\vsstyle.h"\
+	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
@@ -235,6 +237,7 @@ DEP_CPP_CLIST=\
 	".\include\msgdlgutils.h"\
 	".\include\msgs.h"\
 	".\include\nen.h"\
+	".\include\sendlater.h"\
 	".\include\sendqueue.h"\
 	".\include\sidebar.h"\
 	".\include\taskbar.h"\
@@ -244,9 +247,7 @@ DEP_CPP_CLIST=\
 	".\include\typingnotify.h"\
 	".\include\utils.h"\
 	".\src\commonheaders.h"\
-	
-NODEP_CPP_CLIST=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # ADD CPP /Yu"../src/commonheaders.h"
 # End Source File
@@ -284,6 +285,8 @@ DEP_CPP_COLOR=\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
+	"..\..\include\msapi\vsstyle.h"\
+	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
@@ -316,6 +319,7 @@ DEP_CPP_COLOR=\
 	".\include\msgdlgutils.h"\
 	".\include\msgs.h"\
 	".\include\nen.h"\
+	".\include\sendlater.h"\
 	".\include\sendqueue.h"\
 	".\include\sidebar.h"\
 	".\include\taskbar.h"\
@@ -325,9 +329,7 @@ DEP_CPP_COLOR=\
 	".\include\typingnotify.h"\
 	".\include\utils.h"\
 	".\src\commonheaders.h"\
-	
-NODEP_CPP_COLOR=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # ADD CPP /Yu"../src/commonheaders.h"
 # End Source File
@@ -365,6 +367,8 @@ DEP_CPP_LOG_C=\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
+	"..\..\include\msapi\vsstyle.h"\
+	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
@@ -397,6 +401,7 @@ DEP_CPP_LOG_C=\
 	".\include\msgdlgutils.h"\
 	".\include\msgs.h"\
 	".\include\nen.h"\
+	".\include\sendlater.h"\
 	".\include\sendqueue.h"\
 	".\include\sidebar.h"\
 	".\include\taskbar.h"\
@@ -406,9 +411,7 @@ DEP_CPP_LOG_C=\
 	".\include\typingnotify.h"\
 	".\include\utils.h"\
 	".\src\commonheaders.h"\
-	
-NODEP_CPP_LOG_C=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # ADD CPP /Yu"../src/commonheaders.h"
 # End Source File
@@ -446,6 +449,8 @@ DEP_CPP_MAIN_=\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
+	"..\..\include\msapi\vsstyle.h"\
+	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
@@ -478,6 +483,7 @@ DEP_CPP_MAIN_=\
 	".\include\msgdlgutils.h"\
 	".\include\msgs.h"\
 	".\include\nen.h"\
+	".\include\sendlater.h"\
 	".\include\sendqueue.h"\
 	".\include\sidebar.h"\
 	".\include\taskbar.h"\
@@ -487,9 +493,7 @@ DEP_CPP_MAIN_=\
 	".\include\typingnotify.h"\
 	".\include\utils.h"\
 	".\src\commonheaders.h"\
-	
-NODEP_CPP_MAIN_=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # ADD CPP /Yu"../src/commonheaders.h"
 # End Source File
@@ -527,6 +531,8 @@ DEP_CPP_MANAG=\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
+	"..\..\include\msapi\vsstyle.h"\
+	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
@@ -559,6 +565,7 @@ DEP_CPP_MANAG=\
 	".\include\msgdlgutils.h"\
 	".\include\msgs.h"\
 	".\include\nen.h"\
+	".\include\sendlater.h"\
 	".\include\sendqueue.h"\
 	".\include\sidebar.h"\
 	".\include\taskbar.h"\
@@ -568,9 +575,7 @@ DEP_CPP_MANAG=\
 	".\include\typingnotify.h"\
 	".\include\utils.h"\
 	".\src\commonheaders.h"\
-	
-NODEP_CPP_MANAG=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # ADD CPP /Yu"../src/commonheaders.h"
 # End Source File
@@ -608,6 +613,8 @@ DEP_CPP_MESSA=\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
+	"..\..\include\msapi\vsstyle.h"\
+	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
@@ -640,6 +647,7 @@ DEP_CPP_MESSA=\
 	".\include\msgdlgutils.h"\
 	".\include\msgs.h"\
 	".\include\nen.h"\
+	".\include\sendlater.h"\
 	".\include\sendqueue.h"\
 	".\include\sidebar.h"\
 	".\include\taskbar.h"\
@@ -649,9 +657,7 @@ DEP_CPP_MESSA=\
 	".\include\typingnotify.h"\
 	".\include\utils.h"\
 	".\src\commonheaders.h"\
-	
-NODEP_CPP_MESSA=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # ADD CPP /Yu"../src/commonheaders.h"
 # End Source File
@@ -689,6 +695,8 @@ DEP_CPP_MUCHI=\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
+	"..\..\include\msapi\vsstyle.h"\
+	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
@@ -721,6 +729,7 @@ DEP_CPP_MUCHI=\
 	".\include\msgdlgutils.h"\
 	".\include\msgs.h"\
 	".\include\nen.h"\
+	".\include\sendlater.h"\
 	".\include\sendqueue.h"\
 	".\include\sidebar.h"\
 	".\include\taskbar.h"\
@@ -730,9 +739,7 @@ DEP_CPP_MUCHI=\
 	".\include\typingnotify.h"\
 	".\include\utils.h"\
 	".\src\commonheaders.h"\
-	
-NODEP_CPP_MUCHI=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
@@ -790,6 +797,8 @@ DEP_CPP_OPTIO=\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
+	"..\..\include\msapi\vsstyle.h"\
+	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
@@ -822,6 +831,7 @@ DEP_CPP_OPTIO=\
 	".\include\msgdlgutils.h"\
 	".\include\msgs.h"\
 	".\include\nen.h"\
+	".\include\sendlater.h"\
 	".\include\sendqueue.h"\
 	".\include\sidebar.h"\
 	".\include\taskbar.h"\
@@ -831,9 +841,7 @@ DEP_CPP_OPTIO=\
 	".\include\typingnotify.h"\
 	".\include\utils.h"\
 	".\src\commonheaders.h"\
-	
-NODEP_CPP_OPTIO=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # ADD CPP /Yu"../src/commonheaders.h"
 # End Source File
@@ -871,6 +879,8 @@ DEP_CPP_SERVI=\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
+	"..\..\include\msapi\vsstyle.h"\
+	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
@@ -903,6 +913,7 @@ DEP_CPP_SERVI=\
 	".\include\msgdlgutils.h"\
 	".\include\msgs.h"\
 	".\include\nen.h"\
+	".\include\sendlater.h"\
 	".\include\sendqueue.h"\
 	".\include\sidebar.h"\
 	".\include\taskbar.h"\
@@ -912,9 +923,7 @@ DEP_CPP_SERVI=\
 	".\include\typingnotify.h"\
 	".\include\utils.h"\
 	".\src\commonheaders.h"\
-	
-NODEP_CPP_SERVI=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # ADD CPP /Yu"../src/commonheaders.h"
 # End Source File
@@ -952,6 +961,8 @@ DEP_CPP_TOOLS=\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
+	"..\..\include\msapi\vsstyle.h"\
+	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
@@ -984,6 +995,7 @@ DEP_CPP_TOOLS=\
 	".\include\msgdlgutils.h"\
 	".\include\msgs.h"\
 	".\include\nen.h"\
+	".\include\sendlater.h"\
 	".\include\sendqueue.h"\
 	".\include\sidebar.h"\
 	".\include\taskbar.h"\
@@ -993,9 +1005,7 @@ DEP_CPP_TOOLS=\
 	".\include\typingnotify.h"\
 	".\include\utils.h"\
 	".\src\commonheaders.h"\
-	
-NODEP_CPP_TOOLS=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # ADD CPP /Yu"../src/commonheaders.h"
 # End Source File
@@ -1033,6 +1043,8 @@ DEP_CPP_WINDO=\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
+	"..\..\include\msapi\vsstyle.h"\
+	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
@@ -1065,6 +1077,7 @@ DEP_CPP_WINDO=\
 	".\include\msgdlgutils.h"\
 	".\include\msgs.h"\
 	".\include\nen.h"\
+	".\include\sendlater.h"\
 	".\include\sendqueue.h"\
 	".\include\sidebar.h"\
 	".\include\taskbar.h"\
@@ -1074,10 +1087,8 @@ DEP_CPP_WINDO=\
 	".\include\typingnotify.h"\
 	".\include\utils.h"\
 	".\src\commonheaders.h"\
-	
-NODEP_CPP_WINDO=\
-	".\om.h"\
-	".\xtheme.h"\
+	{$(INCLUDE)}"tom.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # ADD CPP /Yu"../src/commonheaders.h"
 # End Source File
@@ -1180,6 +1191,8 @@ DEP_CPP_BUTTO=\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
+	"..\..\include\msapi\vsstyle.h"\
+	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
@@ -1212,6 +1225,7 @@ DEP_CPP_BUTTO=\
 	".\include\msgdlgutils.h"\
 	".\include\msgs.h"\
 	".\include\nen.h"\
+	".\include\sendlater.h"\
 	".\include\sendqueue.h"\
 	".\include\sidebar.h"\
 	".\include\taskbar.h"\
@@ -1221,9 +1235,7 @@ DEP_CPP_BUTTO=\
 	".\include\typingnotify.h"\
 	".\include\utils.h"\
 	".\src\commonheaders.h"\
-	
-NODEP_CPP_BUTTO=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # End Source File
 # Begin Source File
@@ -1260,6 +1272,8 @@ DEP_CPP_CONTA=\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
+	"..\..\include\msapi\vsstyle.h"\
+	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
@@ -1292,6 +1306,7 @@ DEP_CPP_CONTA=\
 	".\include\msgdlgutils.h"\
 	".\include\msgs.h"\
 	".\include\nen.h"\
+	".\include\sendlater.h"\
 	".\include\sendqueue.h"\
 	".\include\sidebar.h"\
 	".\include\taskbar.h"\
@@ -1301,9 +1316,7 @@ DEP_CPP_CONTA=\
 	".\include\typingnotify.h"\
 	".\include\utils.h"\
 	".\src\commonheaders.h"\
-	
-NODEP_CPP_CONTA=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # End Source File
 # Begin Source File
@@ -1340,6 +1353,8 @@ DEP_CPP_CONTAI=\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
+	"..\..\include\msapi\vsstyle.h"\
+	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
@@ -1372,6 +1387,7 @@ DEP_CPP_CONTAI=\
 	".\include\msgdlgutils.h"\
 	".\include\msgs.h"\
 	".\include\nen.h"\
+	".\include\sendlater.h"\
 	".\include\sendqueue.h"\
 	".\include\sidebar.h"\
 	".\include\taskbar.h"\
@@ -1381,9 +1397,7 @@ DEP_CPP_CONTAI=\
 	".\include\typingnotify.h"\
 	".\include\utils.h"\
 	".\src\commonheaders.h"\
-	
-NODEP_CPP_CONTAI=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # End Source File
 # Begin Source File
@@ -1420,6 +1434,8 @@ DEP_CPP_CONTAIN=\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
+	"..\..\include\msapi\vsstyle.h"\
+	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
@@ -1452,6 +1468,7 @@ DEP_CPP_CONTAIN=\
 	".\include\msgdlgutils.h"\
 	".\include\msgs.h"\
 	".\include\nen.h"\
+	".\include\sendlater.h"\
 	".\include\sendqueue.h"\
 	".\include\sidebar.h"\
 	".\include\taskbar.h"\
@@ -1461,9 +1478,7 @@ DEP_CPP_CONTAIN=\
 	".\include\typingnotify.h"\
 	".\include\utils.h"\
 	".\src\commonheaders.h"\
-	
-NODEP_CPP_CONTAIN=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # End Source File
 # Begin Source File
@@ -1500,6 +1515,8 @@ DEP_CPP_CONTR=\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
+	"..\..\include\msapi\vsstyle.h"\
+	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
@@ -1532,6 +1549,7 @@ DEP_CPP_CONTR=\
 	".\include\msgdlgutils.h"\
 	".\include\msgs.h"\
 	".\include\nen.h"\
+	".\include\sendlater.h"\
 	".\include\sendqueue.h"\
 	".\include\sidebar.h"\
 	".\include\taskbar.h"\
@@ -1541,9 +1559,7 @@ DEP_CPP_CONTR=\
 	".\include\typingnotify.h"\
 	".\include\utils.h"\
 	".\src\commonheaders.h"\
-	
-NODEP_CPP_CONTR=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # End Source File
 # Begin Source File
@@ -1580,6 +1596,8 @@ DEP_CPP_EVENT=\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
+	"..\..\include\msapi\vsstyle.h"\
+	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
@@ -1612,6 +1630,7 @@ DEP_CPP_EVENT=\
 	".\include\msgdlgutils.h"\
 	".\include\msgs.h"\
 	".\include\nen.h"\
+	".\include\sendlater.h"\
 	".\include\sendqueue.h"\
 	".\include\sidebar.h"\
 	".\include\taskbar.h"\
@@ -1621,9 +1640,7 @@ DEP_CPP_EVENT=\
 	".\include\typingnotify.h"\
 	".\include\utils.h"\
 	".\src\commonheaders.h"\
-	
-NODEP_CPP_EVENT=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # End Source File
 # Begin Source File
@@ -1660,6 +1677,8 @@ DEP_CPP_GENER=\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
+	"..\..\include\msapi\vsstyle.h"\
+	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
@@ -1692,6 +1711,7 @@ DEP_CPP_GENER=\
 	".\include\msgdlgutils.h"\
 	".\include\msgs.h"\
 	".\include\nen.h"\
+	".\include\sendlater.h"\
 	".\include\sendqueue.h"\
 	".\include\sidebar.h"\
 	".\include\taskbar.h"\
@@ -1701,9 +1721,7 @@ DEP_CPP_GENER=\
 	".\include\typingnotify.h"\
 	".\include\utils.h"\
 	".\src\commonheaders.h"\
-	
-NODEP_CPP_GENER=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # End Source File
 # Begin Source File
@@ -1740,6 +1758,8 @@ DEP_CPP_GLOBA=\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
+	"..\..\include\msapi\vsstyle.h"\
+	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
@@ -1772,6 +1792,7 @@ DEP_CPP_GLOBA=\
 	".\include\msgdlgutils.h"\
 	".\include\msgs.h"\
 	".\include\nen.h"\
+	".\include\sendlater.h"\
 	".\include\sendqueue.h"\
 	".\include\sidebar.h"\
 	".\include\taskbar.h"\
@@ -1781,9 +1802,7 @@ DEP_CPP_GLOBA=\
 	".\include\typingnotify.h"\
 	".\include\utils.h"\
 	".\src\commonheaders.h"\
-	
-NODEP_CPP_GLOBA=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # End Source File
 # Begin Source File
@@ -1820,6 +1839,8 @@ DEP_CPP_HOTKE=\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
+	"..\..\include\msapi\vsstyle.h"\
+	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
@@ -1852,6 +1873,7 @@ DEP_CPP_HOTKE=\
 	".\include\msgdlgutils.h"\
 	".\include\msgs.h"\
 	".\include\nen.h"\
+	".\include\sendlater.h"\
 	".\include\sendqueue.h"\
 	".\include\sidebar.h"\
 	".\include\taskbar.h"\
@@ -1861,9 +1883,7 @@ DEP_CPP_HOTKE=\
 	".\include\typingnotify.h"\
 	".\include\utils.h"\
 	".\src\commonheaders.h"\
-	
-NODEP_CPP_HOTKE=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # End Source File
 # Begin Source File
@@ -1900,6 +1920,8 @@ DEP_CPP_IMAGE=\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
+	"..\..\include\msapi\vsstyle.h"\
+	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
@@ -1933,6 +1955,7 @@ DEP_CPP_IMAGE=\
 	".\include\msgdlgutils.h"\
 	".\include\msgs.h"\
 	".\include\nen.h"\
+	".\include\sendlater.h"\
 	".\include\sendqueue.h"\
 	".\include\sidebar.h"\
 	".\include\taskbar.h"\
@@ -1942,9 +1965,7 @@ DEP_CPP_IMAGE=\
 	".\include\typingnotify.h"\
 	".\include\utils.h"\
 	".\src\commonheaders.h"\
-	
-NODEP_CPP_IMAGE=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # SUBTRACT CPP /YX /Yc /Yu
 # End Source File
@@ -1982,6 +2003,8 @@ DEP_CPP_INFOP=\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
+	"..\..\include\msapi\vsstyle.h"\
+	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
@@ -2014,6 +2037,7 @@ DEP_CPP_INFOP=\
 	".\include\msgdlgutils.h"\
 	".\include\msgs.h"\
 	".\include\nen.h"\
+	".\include\sendlater.h"\
 	".\include\sendqueue.h"\
 	".\include\sidebar.h"\
 	".\include\taskbar.h"\
@@ -2023,9 +2047,7 @@ DEP_CPP_INFOP=\
 	".\include\typingnotify.h"\
 	".\include\utils.h"\
 	".\src\commonheaders.h"\
-	
-NODEP_CPP_INFOP=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # End Source File
 # Begin Source File
@@ -2062,6 +2084,8 @@ DEP_CPP_MIM_C=\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
+	"..\..\include\msapi\vsstyle.h"\
+	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
@@ -2094,6 +2118,7 @@ DEP_CPP_MIM_C=\
 	".\include\msgdlgutils.h"\
 	".\include\msgs.h"\
 	".\include\nen.h"\
+	".\include\sendlater.h"\
 	".\include\sendqueue.h"\
 	".\include\sidebar.h"\
 	".\include\taskbar.h"\
@@ -2103,9 +2128,7 @@ DEP_CPP_MIM_C=\
 	".\include\typingnotify.h"\
 	".\include\utils.h"\
 	".\src\commonheaders.h"\
-	
-NODEP_CPP_MIM_C=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # End Source File
 # Begin Source File
@@ -2142,6 +2165,8 @@ DEP_CPP_MODPL=\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
+	"..\..\include\msapi\vsstyle.h"\
+	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
@@ -2174,6 +2199,7 @@ DEP_CPP_MODPL=\
 	".\include\msgdlgutils.h"\
 	".\include\msgs.h"\
 	".\include\nen.h"\
+	".\include\sendlater.h"\
 	".\include\sendqueue.h"\
 	".\include\sidebar.h"\
 	".\include\taskbar.h"\
@@ -2183,9 +2209,7 @@ DEP_CPP_MODPL=\
 	".\include\typingnotify.h"\
 	".\include\utils.h"\
 	".\src\commonheaders.h"\
-	
-NODEP_CPP_MODPL=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # ADD CPP /Yu"../src/commonheaders.h"
 # End Source File
@@ -2223,6 +2247,8 @@ DEP_CPP_MSGDI=\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
+	"..\..\include\msapi\vsstyle.h"\
+	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
@@ -2255,6 +2281,7 @@ DEP_CPP_MSGDI=\
 	".\include\msgdlgutils.h"\
 	".\include\msgs.h"\
 	".\include\nen.h"\
+	".\include\sendlater.h"\
 	".\include\sendqueue.h"\
 	".\include\sidebar.h"\
 	".\include\taskbar.h"\
@@ -2264,9 +2291,7 @@ DEP_CPP_MSGDI=\
 	".\include\typingnotify.h"\
 	".\include\utils.h"\
 	".\src\commonheaders.h"\
-	
-NODEP_CPP_MSGDI=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # End Source File
 # Begin Source File
@@ -2303,6 +2328,8 @@ DEP_CPP_MSGDL=\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
+	"..\..\include\msapi\vsstyle.h"\
+	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
@@ -2335,6 +2362,7 @@ DEP_CPP_MSGDL=\
 	".\include\msgdlgutils.h"\
 	".\include\msgs.h"\
 	".\include\nen.h"\
+	".\include\sendlater.h"\
 	".\include\sendqueue.h"\
 	".\include\sidebar.h"\
 	".\include\taskbar.h"\
@@ -2344,9 +2372,7 @@ DEP_CPP_MSGDL=\
 	".\include\typingnotify.h"\
 	".\include\utils.h"\
 	".\src\commonheaders.h"\
-	
-NODEP_CPP_MSGDL=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # End Source File
 # Begin Source File
@@ -2383,6 +2409,8 @@ DEP_CPP_MSGLO=\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
+	"..\..\include\msapi\vsstyle.h"\
+	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
@@ -2415,6 +2443,7 @@ DEP_CPP_MSGLO=\
 	".\include\msgdlgutils.h"\
 	".\include\msgs.h"\
 	".\include\nen.h"\
+	".\include\sendlater.h"\
 	".\include\sendqueue.h"\
 	".\include\sidebar.h"\
 	".\include\taskbar.h"\
@@ -2424,9 +2453,7 @@ DEP_CPP_MSGLO=\
 	".\include\typingnotify.h"\
 	".\include\utils.h"\
 	".\src\commonheaders.h"\
-	
-NODEP_CPP_MSGLO=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # End Source File
 # Begin Source File
@@ -2464,6 +2491,8 @@ DEP_CPP_MSGOP=\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
+	"..\..\include\msapi\vsstyle.h"\
+	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
@@ -2496,6 +2525,7 @@ DEP_CPP_MSGOP=\
 	".\include\msgdlgutils.h"\
 	".\include\msgs.h"\
 	".\include\nen.h"\
+	".\include\sendlater.h"\
 	".\include\sendqueue.h"\
 	".\include\sidebar.h"\
 	".\include\taskbar.h"\
@@ -2505,9 +2535,7 @@ DEP_CPP_MSGOP=\
 	".\include\typingnotify.h"\
 	".\include\utils.h"\
 	".\src\commonheaders.h"\
-	
-NODEP_CPP_MSGOP=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # End Source File
 # Begin Source File
@@ -2544,6 +2572,8 @@ DEP_CPP_MSGOPT=\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
+	"..\..\include\msapi\vsstyle.h"\
+	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
@@ -2576,6 +2606,7 @@ DEP_CPP_MSGOPT=\
 	".\include\msgdlgutils.h"\
 	".\include\msgs.h"\
 	".\include\nen.h"\
+	".\include\sendlater.h"\
 	".\include\sendqueue.h"\
 	".\include\sidebar.h"\
 	".\include\taskbar.h"\
@@ -2585,9 +2616,7 @@ DEP_CPP_MSGOPT=\
 	".\include\typingnotify.h"\
 	".\include\utils.h"\
 	".\src\commonheaders.h"\
-	
-NODEP_CPP_MSGOPT=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # ADD CPP /Yu"../src/commonheaders.h"
 # End Source File
@@ -2625,6 +2654,8 @@ DEP_CPP_MSGS_=\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
+	"..\..\include\msapi\vsstyle.h"\
+	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
@@ -2657,6 +2688,7 @@ DEP_CPP_MSGS_=\
 	".\include\msgdlgutils.h"\
 	".\include\msgs.h"\
 	".\include\nen.h"\
+	".\include\sendlater.h"\
 	".\include\sendqueue.h"\
 	".\include\sidebar.h"\
 	".\include\taskbar.h"\
@@ -2666,9 +2698,7 @@ DEP_CPP_MSGS_=\
 	".\include\typingnotify.h"\
 	".\include\utils.h"\
 	".\src\commonheaders.h"\
-	
-NODEP_CPP_MSGS_=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # End Source File
 # Begin Source File
@@ -2705,6 +2735,8 @@ DEP_CPP_SELEC=\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
+	"..\..\include\msapi\vsstyle.h"\
+	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
@@ -2737,6 +2769,7 @@ DEP_CPP_SELEC=\
 	".\include\msgdlgutils.h"\
 	".\include\msgs.h"\
 	".\include\nen.h"\
+	".\include\sendlater.h"\
 	".\include\sendqueue.h"\
 	".\include\sidebar.h"\
 	".\include\taskbar.h"\
@@ -2746,14 +2779,89 @@ DEP_CPP_SELEC=\
 	".\include\typingnotify.h"\
 	".\include\utils.h"\
 	".\src\commonheaders.h"\
-	
-NODEP_CPP_SELEC=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\sendlater.cpp
+DEP_CPP_SENDL=\
+	"..\..\include\m_acc.h"\
+	"..\..\include\m_addcontact.h"\
+	"..\..\include\m_avatars.h"\
+	"..\..\include\m_button.h"\
+	"..\..\include\m_chat.h"\
+	"..\..\include\m_clc.h"\
+	"..\..\include\m_clist.h"\
+	"..\..\include\m_clui.h"\
+	"..\..\include\m_contacts.h"\
+	"..\..\include\m_database.h"\
+	"..\..\include\m_file.h"\
+	"..\..\include\m_fontservice.h"\
+	"..\..\include\m_freeimage.h"\
+	"..\..\include\m_genmenu.h"\
+	"..\..\include\m_history.h"\
+	"..\..\include\m_hotkeys.h"\
+	"..\..\include\m_icolib.h"\
+	"..\..\include\m_imgsrvc.h"\
+	"..\..\include\m_langpack.h"\
+	"..\..\include\m_message.h"\
+	"..\..\include\m_options.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protomod.h"\
+	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_skin.h"\
+	"..\..\include\m_stdhdr.h"\
+	"..\..\include\m_system.h"\
+	"..\..\include\m_userinfo.h"\
+	"..\..\include\m_utils.h"\
+	"..\..\include\msapi\vsstyle.h"\
+	"..\..\include\msapi\vssym32.h"\
+	"..\..\include\newpluginapi.h"\
+	"..\..\include\statusmodes.h"\
+	"..\..\include\win2k.h"\
+	".\API\m_buttonbar.h"\
+	".\API\m_cln_skinedit.h"\
+	".\API\m_fingerprint.h"\
+	".\API\m_flash.h"\
+	".\API\m_folders.h"\
+	".\API\m_historyevents.h"\
+	".\API\m_ieview.h"\
+	".\API\m_mathmodule.h"\
+	".\API\m_metacontacts.h"\
+	".\API\m_msg_buttonsbar.h"\
+	".\API\m_nudge.h"\
+	".\API\m_popup.h"\
+	".\API\m_smileyadd.h"\
+	".\API\m_spellchecker.h"\
+	".\API\m_toptoolbar.h"\
+	".\API\m_updater.h"\
+	".\chat\chat.h"\
+	".\chat\chatprototypes.h"\
+	".\chat\muchighlight.h"\
+	".\include\contactcache.h"\
+	".\include\controls.h"\
+	".\include\functions.h"\
+	".\include\generic_msghandlers.h"\
+	".\include\globals.h"\
+	".\include\infopanel.h"\
+	".\include\mim.h"\
+	".\include\msgdlgutils.h"\
+	".\include\msgs.h"\
+	".\include\nen.h"\
+	".\include\sendlater.h"\
+	".\include\sendqueue.h"\
+	".\include\sidebar.h"\
+	".\include\taskbar.h"\
+	".\include\templates.h"\
+	".\include\themes.h"\
+	".\include\translator.h"\
+	".\include\typingnotify.h"\
+	".\include\utils.h"\
+	".\src\commonheaders.h"\
+	{$(INCLUDE)}"uxtheme.h"\
+	
 # End Source File
 # Begin Source File
 
@@ -2789,6 +2897,8 @@ DEP_CPP_SENDQ=\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
+	"..\..\include\msapi\vsstyle.h"\
+	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
@@ -2821,6 +2931,7 @@ DEP_CPP_SENDQ=\
 	".\include\msgdlgutils.h"\
 	".\include\msgs.h"\
 	".\include\nen.h"\
+	".\include\sendlater.h"\
 	".\include\sendqueue.h"\
 	".\include\sidebar.h"\
 	".\include\taskbar.h"\
@@ -2830,9 +2941,7 @@ DEP_CPP_SENDQ=\
 	".\include\typingnotify.h"\
 	".\include\utils.h"\
 	".\src\commonheaders.h"\
-	
-NODEP_CPP_SENDQ=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # End Source File
 # Begin Source File
@@ -2869,6 +2978,8 @@ DEP_CPP_SIDEB=\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
+	"..\..\include\msapi\vsstyle.h"\
+	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
@@ -2901,6 +3012,7 @@ DEP_CPP_SIDEB=\
 	".\include\msgdlgutils.h"\
 	".\include\msgs.h"\
 	".\include\nen.h"\
+	".\include\sendlater.h"\
 	".\include\sendqueue.h"\
 	".\include\sidebar.h"\
 	".\include\taskbar.h"\
@@ -2910,9 +3022,7 @@ DEP_CPP_SIDEB=\
 	".\include\typingnotify.h"\
 	".\include\utils.h"\
 	".\src\commonheaders.h"\
-	
-NODEP_CPP_SIDEB=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # End Source File
 # Begin Source File
@@ -2949,6 +3059,8 @@ DEP_CPP_SRMM_=\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
+	"..\..\include\msapi\vsstyle.h"\
+	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
@@ -2981,6 +3093,7 @@ DEP_CPP_SRMM_=\
 	".\include\msgdlgutils.h"\
 	".\include\msgs.h"\
 	".\include\nen.h"\
+	".\include\sendlater.h"\
 	".\include\sendqueue.h"\
 	".\include\sidebar.h"\
 	".\include\taskbar.h"\
@@ -2991,9 +3104,7 @@ DEP_CPP_SRMM_=\
 	".\include\utils.h"\
 	".\include\version.h"\
 	".\src\commonheaders.h"\
-	
-NODEP_CPP_SRMM_=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # ADD CPP /Yc"commonheaders.h"
 # End Source File
@@ -3031,6 +3142,8 @@ DEP_CPP_TABCT=\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
+	"..\..\include\msapi\vsstyle.h"\
+	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
@@ -3063,6 +3176,7 @@ DEP_CPP_TABCT=\
 	".\include\msgdlgutils.h"\
 	".\include\msgs.h"\
 	".\include\nen.h"\
+	".\include\sendlater.h"\
 	".\include\sendqueue.h"\
 	".\include\sidebar.h"\
 	".\include\taskbar.h"\
@@ -3072,9 +3186,7 @@ DEP_CPP_TABCT=\
 	".\include\typingnotify.h"\
 	".\include\utils.h"\
 	".\src\commonheaders.h"\
-	
-NODEP_CPP_TABCT=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # End Source File
 # Begin Source File
@@ -3111,6 +3223,8 @@ DEP_CPP_TASKB=\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
+	"..\..\include\msapi\vsstyle.h"\
+	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
@@ -3143,6 +3257,7 @@ DEP_CPP_TASKB=\
 	".\include\msgdlgutils.h"\
 	".\include\msgs.h"\
 	".\include\nen.h"\
+	".\include\sendlater.h"\
 	".\include\sendqueue.h"\
 	".\include\sidebar.h"\
 	".\include\taskbar.h"\
@@ -3152,9 +3267,7 @@ DEP_CPP_TASKB=\
 	".\include\typingnotify.h"\
 	".\include\utils.h"\
 	".\src\commonheaders.h"\
-	
-NODEP_CPP_TASKB=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # End Source File
 # Begin Source File
@@ -3191,6 +3304,8 @@ DEP_CPP_TEMPL=\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
+	"..\..\include\msapi\vsstyle.h"\
+	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
@@ -3223,6 +3338,7 @@ DEP_CPP_TEMPL=\
 	".\include\msgdlgutils.h"\
 	".\include\msgs.h"\
 	".\include\nen.h"\
+	".\include\sendlater.h"\
 	".\include\sendqueue.h"\
 	".\include\sidebar.h"\
 	".\include\taskbar.h"\
@@ -3232,9 +3348,7 @@ DEP_CPP_TEMPL=\
 	".\include\typingnotify.h"\
 	".\include\utils.h"\
 	".\src\commonheaders.h"\
-	
-NODEP_CPP_TEMPL=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # End Source File
 # Begin Source File
@@ -3271,6 +3385,8 @@ DEP_CPP_THEME=\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
+	"..\..\include\msapi\vsstyle.h"\
+	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
@@ -3303,6 +3419,7 @@ DEP_CPP_THEME=\
 	".\include\msgdlgutils.h"\
 	".\include\msgs.h"\
 	".\include\nen.h"\
+	".\include\sendlater.h"\
 	".\include\sendqueue.h"\
 	".\include\sidebar.h"\
 	".\include\taskbar.h"\
@@ -3312,9 +3429,7 @@ DEP_CPP_THEME=\
 	".\include\typingnotify.h"\
 	".\include\utils.h"\
 	".\src\commonheaders.h"\
-	
-NODEP_CPP_THEME=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # End Source File
 # Begin Source File
@@ -3351,6 +3466,8 @@ DEP_CPP_THEMES=\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
+	"..\..\include\msapi\vsstyle.h"\
+	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
@@ -3383,6 +3500,7 @@ DEP_CPP_THEMES=\
 	".\include\msgdlgutils.h"\
 	".\include\msgs.h"\
 	".\include\nen.h"\
+	".\include\sendlater.h"\
 	".\include\sendqueue.h"\
 	".\include\sidebar.h"\
 	".\include\taskbar.h"\
@@ -3392,9 +3510,7 @@ DEP_CPP_THEMES=\
 	".\include\typingnotify.h"\
 	".\include\utils.h"\
 	".\src\commonheaders.h"\
-	
-NODEP_CPP_THEMES=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # End Source File
 # Begin Source File
@@ -3431,6 +3547,8 @@ DEP_CPP_TRANS=\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
+	"..\..\include\msapi\vsstyle.h"\
+	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
@@ -3463,6 +3581,7 @@ DEP_CPP_TRANS=\
 	".\include\msgdlgutils.h"\
 	".\include\msgs.h"\
 	".\include\nen.h"\
+	".\include\sendlater.h"\
 	".\include\sendqueue.h"\
 	".\include\sidebar.h"\
 	".\include\taskbar.h"\
@@ -3472,9 +3591,7 @@ DEP_CPP_TRANS=\
 	".\include\typingnotify.h"\
 	".\include\utils.h"\
 	".\src\commonheaders.h"\
-	
-NODEP_CPP_TRANS=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # End Source File
 # Begin Source File
@@ -3511,6 +3628,8 @@ DEP_CPP_TRAYI=\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
+	"..\..\include\msapi\vsstyle.h"\
+	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
@@ -3543,6 +3662,7 @@ DEP_CPP_TRAYI=\
 	".\include\msgdlgutils.h"\
 	".\include\msgs.h"\
 	".\include\nen.h"\
+	".\include\sendlater.h"\
 	".\include\sendqueue.h"\
 	".\include\sidebar.h"\
 	".\include\taskbar.h"\
@@ -3552,9 +3672,7 @@ DEP_CPP_TRAYI=\
 	".\include\typingnotify.h"\
 	".\include\utils.h"\
 	".\src\commonheaders.h"\
-	
-NODEP_CPP_TRAYI=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # End Source File
 # Begin Source File
@@ -3591,6 +3709,8 @@ DEP_CPP_TSBUT=\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
+	"..\..\include\msapi\vsstyle.h"\
+	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
@@ -3623,6 +3743,7 @@ DEP_CPP_TSBUT=\
 	".\include\msgdlgutils.h"\
 	".\include\msgs.h"\
 	".\include\nen.h"\
+	".\include\sendlater.h"\
 	".\include\sendqueue.h"\
 	".\include\sidebar.h"\
 	".\include\taskbar.h"\
@@ -3632,9 +3753,7 @@ DEP_CPP_TSBUT=\
 	".\include\typingnotify.h"\
 	".\include\utils.h"\
 	".\src\commonheaders.h"\
-	
-NODEP_CPP_TSBUT=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # End Source File
 # Begin Source File
@@ -3671,6 +3790,8 @@ DEP_CPP_TYPIN=\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
+	"..\..\include\msapi\vsstyle.h"\
+	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
@@ -3703,6 +3824,7 @@ DEP_CPP_TYPIN=\
 	".\include\msgdlgutils.h"\
 	".\include\msgs.h"\
 	".\include\nen.h"\
+	".\include\sendlater.h"\
 	".\include\sendqueue.h"\
 	".\include\sidebar.h"\
 	".\include\taskbar.h"\
@@ -3712,9 +3834,7 @@ DEP_CPP_TYPIN=\
 	".\include\typingnotify.h"\
 	".\include\utils.h"\
 	".\src\commonheaders.h"\
-	
-NODEP_CPP_TYPIN=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # End Source File
 # Begin Source File
@@ -3751,6 +3871,8 @@ DEP_CPP_USERP=\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
+	"..\..\include\msapi\vsstyle.h"\
+	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
@@ -3783,6 +3905,7 @@ DEP_CPP_USERP=\
 	".\include\msgdlgutils.h"\
 	".\include\msgs.h"\
 	".\include\nen.h"\
+	".\include\sendlater.h"\
 	".\include\sendqueue.h"\
 	".\include\sidebar.h"\
 	".\include\taskbar.h"\
@@ -3792,9 +3915,7 @@ DEP_CPP_USERP=\
 	".\include\typingnotify.h"\
 	".\include\utils.h"\
 	".\src\commonheaders.h"\
-	
-NODEP_CPP_USERP=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # End Source File
 # Begin Source File
@@ -3831,6 +3952,8 @@ DEP_CPP_UTILS=\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
+	"..\..\include\msapi\vsstyle.h"\
+	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
@@ -3863,6 +3986,7 @@ DEP_CPP_UTILS=\
 	".\include\msgdlgutils.h"\
 	".\include\msgs.h"\
 	".\include\nen.h"\
+	".\include\sendlater.h"\
 	".\include\sendqueue.h"\
 	".\include\sidebar.h"\
 	".\include\taskbar.h"\
@@ -3872,9 +3996,7 @@ DEP_CPP_UTILS=\
 	".\include\typingnotify.h"\
 	".\include\utils.h"\
 	".\src\commonheaders.h"\
-	
-NODEP_CPP_UTILS=\
-	".\xtheme.h"\
+	{$(INCLUDE)}"uxtheme.h"\
 	
 # End Source File
 # End Group

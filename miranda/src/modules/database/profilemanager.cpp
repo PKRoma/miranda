@@ -72,7 +72,7 @@ void SetServiceModePlugin( int idx );
 static void ThemeDialogBackground(HWND hwnd)
 {
 	if (enableThemeDialogTexture)
-		enableThemeDialogTexture(hwnd,0x00000002|0x00000004); //0x00000002|0x00000004=ETDT_ENABLETAB
+		enableThemeDialogTexture(hwnd, ETDT_ENABLETAB);
 }
 
 static int findProfiles(TCHAR * szProfileDir, ENUMPROFILECALLBACK callback, LPARAM lParam)

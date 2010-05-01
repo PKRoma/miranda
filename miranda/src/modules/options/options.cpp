@@ -194,7 +194,7 @@ static void SaveOptionsTreeState(HWND hdlg)
 static void ThemeDialogBackground(HWND hwnd, BOOL tabbed)
 {
 	if (enableThemeDialogTexture)
-		enableThemeDialogTexture(hwnd,(tabbed?0x00000002:0x00000001)|0x00000004); //0x00000002|0x00000004=ETDT_ENABLETAB
+		enableThemeDialogTexture(hwnd, (tabbed ? ETDT_ENABLE : ETDT_DISABLE) | ETDT_USETABTEXTURE);
 }
 
 static int lstrcmpnull(TCHAR *str1, TCHAR *str2)

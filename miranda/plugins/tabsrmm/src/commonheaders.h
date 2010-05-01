@@ -41,12 +41,9 @@
 #endif
 
 #define WINVER 0x0600
-#if _MSC_VER >= 1500
-	#define _WIN32_WINNT 0x0600
-#else
-	#define _WIN32_WINNT 0x0501
-#endif
+#define _WIN32_WINNT 0x0600
 #define _WIN32_IE 0x0501
+#define WIN32_LEAN_AND_MEAN
 
 #define MIRANDA_VER 0x0700
 
@@ -54,7 +51,10 @@
 
 #include <windows.h>
 #include <commctrl.h>
+#include <commdlg.h>
+#include <shellapi.h>
 #include <uxtheme.h>
+#include <vssym32.h>
 
 #define TSAPI __stdcall
 #define FASTCALL __fastcall
@@ -134,15 +134,6 @@
 #include <assert.h>
 
 #include "../include/resource.h"
-
-#ifdef _MSC_VER
-#ifdef WM_THEMECHANGED
-#undef WM_THEMECHANGED
-#endif
-#ifdef CDRF_NOTIFYSUBITEMDRAW
-#undef CDRF_NOTIFYSUBITEMDRAW
-#endif
-#endif
 
 /* State of icon with such flag will not be saved, and you must set it manually */
 #define MBF_OWNERSTATE        0x04
