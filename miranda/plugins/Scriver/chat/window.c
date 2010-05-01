@@ -1133,47 +1133,6 @@ int GetTextPixelSize( TCHAR* pszText, HFONT hFont, BOOL bWidth)
    return bWidth ? rc.right - rc.left : rc.bottom - rc.top;
 }
 
-struct FORK_ARG {
-   HANDLE hEvent;
-   void (__cdecl *threadcode)(void*);
-   unsigned (__stdcall *threadcodeex)(void*);
-   void *arg;
-};
-
-static void __cdecl forkthread_r(void *param)
-{
-   struct FORK_ARG *fa=(struct FORK_ARG*)param;
-   void (*callercode)(void*)=fa->threadcode;
-   void *arg=fa->arg;
-
-   CallService(MS_SYSTEM_THREAD_PUSH,0,0);
-
-   SetEvent(fa->hEvent);
-
-   __try {
-      callercode(arg);
-   } __finally {
-      CallService(MS_SYSTEM_THREAD_POP,0,0);
-}   }
-
-static unsigned long forkthread (   void (__cdecl *threadcode)(void*),unsigned long stacksize,void *arg)
-{
-   unsigned long rc;
-   struct FORK_ARG fa;
-
-   fa.hEvent=CreateEvent(NULL,FALSE,FALSE,NULL);
-   fa.threadcode=threadcode;
-   fa.arg=arg;
-
-   rc=_beginthread(forkthread_r,stacksize,&fa);
-
-   if ((unsigned long)-1L != rc)
-      WaitForSingleObject(fa.hEvent,INFINITE);
-
-   CloseHandle(fa.hEvent);
-   return rc;
-}
-
 static void __cdecl phase2(void * lParam)
 {
    SESSION_INFO* si = (SESSION_INFO*) lParam;
@@ -1430,7 +1389,7 @@ INT_PTR CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
                   index++;
             }
             Log_StreamInEvent(hwndDlg, pLog, si, TRUE);
-            forkthread(phase2, 0, (void *)si);
+            mir_forkthread(phase2, si);
          }
          else Log_StreamInEvent(hwndDlg, si->pLogEnd, si, TRUE);
       }
@@ -1594,6 +1553,7 @@ INT_PTR CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 		   		if (g_Settings.ShowContactStatus && g_Settings.ContactStatusFirst && ui->ContactStatus) {
 					HICON hIcon = LoadSkinnedProtoIcon(si->pszModule, ui->ContactStatus);
 					DrawIconEx(dis->hDC, x_offset, dis->rcItem.top+offset-3,hIcon,16,16,0,NULL, DI_NORMAL);
+					CallService(MS_SKIN2_RELEASEICON,(WPARAM)hIcon, 0);
 					x_offset += 18;
 				}
 				DrawIconEx(dis->hDC,x_offset, dis->rcItem.top + offset,hIcon,10,10,0,NULL, DI_NORMAL);
@@ -1601,6 +1561,7 @@ INT_PTR CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 				if (g_Settings.ShowContactStatus && !g_Settings.ContactStatusFirst && ui->ContactStatus) {
 					HICON hIcon = LoadSkinnedProtoIcon(si->pszModule, ui->ContactStatus);
 					DrawIconEx(dis->hDC, x_offset, dis->rcItem.top+offset-3,hIcon,16,16,0,NULL, DI_NORMAL);
+					CallService(MS_SKIN2_RELEASEICON,(WPARAM)hIcon, 0);
 					x_offset += 18;
 				}
 

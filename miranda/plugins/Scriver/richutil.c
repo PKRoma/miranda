@@ -49,14 +49,17 @@ static int RichUtil_CmpVal(void *p1, void *p2) {
 }
 
 // UxTheme Stuff
-static HMODULE mTheme = 0;
-static HANDLE  (WINAPI *MyOpenThemeData)(HWND,LPCWSTR) = 0;
-static HRESULT (WINAPI *MyCloseThemeData)(HANDLE) = 0;
-static BOOL    (WINAPI *MyIsThemeActive)() = 0;
-static HRESULT (WINAPI *MyDrawThemeBackground)(HANDLE,HDC,int,int,const RECT*,const RECT *) = 0;
-static HRESULT (WINAPI *MyGetThemeBackgroundContentRect)(HANDLE,HDC,int,int,const RECT *,RECT *) = 0;
-static HRESULT (WINAPI *MyDrawThemeParentBackground)(HWND,HDC,RECT*) = 0;
-static BOOL    (WINAPI *MyIsThemeBackgroundPartiallyTransparent)(HANDLE,int,int) = 0;
+HMODULE mTheme = 0;
+BOOL    (WINAPI *MyIsAppThemed)(VOID) = 0;
+BOOL    (WINAPI *MyIsThemeActive)() = 0;
+BOOL    (WINAPI *MyIsThemeBackgroundPartiallyTransparent)(HANDLE,int,int) = 0;
+HANDLE  (WINAPI *MyOpenThemeData)(HWND,LPCWSTR) = 0;
+HRESULT (WINAPI *MyCloseThemeData)(HANDLE) = 0;
+HRESULT (WINAPI *MyDrawThemeBackground)(HANDLE,HDC,int,int,const RECT*,const RECT *) = 0;
+HRESULT (WINAPI *MyGetThemeBackgroundContentRect)(HANDLE,HDC,int,int,const RECT *,RECT *) = 0;
+HRESULT (WINAPI *MyDrawThemeParentBackground)(HWND,HDC,RECT*) = 0;
+HRESULT (WINAPI *MyDrawThemeText)(HANDLE, HDC, int, int, LPCWSTR, int, DWORD, DWORD, const RECT *) = 0;
+HRESULT (WINAPI *MyEnableThemeDialogTexture)(HWND, DWORD) = 0;
 
 static CRITICAL_SECTION csRich;
 
@@ -75,10 +78,13 @@ void RichUtil_Load() {
 	MyOpenThemeData = (HANDLE (WINAPI *)(HWND, LPCWSTR))GetProcAddress(mTheme, "OpenThemeData");
 	MyCloseThemeData = (HRESULT (WINAPI *)(HANDLE))GetProcAddress(mTheme, "CloseThemeData");
 	MyIsThemeActive = (BOOL (WINAPI *)())GetProcAddress(mTheme, "IsThemeActive");
+	MyIsAppThemed = (BOOL (WINAPI *)(VOID))GetProcAddress(mTheme, "IsAppThemed");
 	MyDrawThemeBackground = (HRESULT (WINAPI *)(HANDLE, HDC, int, int, const RECT*, const RECT *))GetProcAddress(mTheme, "DrawThemeBackground");
 	MyGetThemeBackgroundContentRect = (HRESULT (WINAPI *)(HANDLE, HDC, int, int,  const RECT *, RECT *))GetProcAddress(mTheme, "GetThemeBackgroundContentRect");
 	MyDrawThemeParentBackground = (HRESULT (WINAPI *)(HWND, HDC, RECT*))GetProcAddress(mTheme, "DrawThemeParentBackground");
 	MyIsThemeBackgroundPartiallyTransparent = (BOOL (WINAPI *)(HANDLE, int, int))GetProcAddress(mTheme, "IsThemeBackgroundPartiallyTransparent");
+	MyDrawThemeText = (HRESULT (WINAPI *)(HANDLE, HDC, int, int, LPCWSTR, int, DWORD, DWORD, const RECT *))GetProcAddress(mTheme, "DrawThemeText");
+	MyEnableThemeDialogTexture = (HRESULT (WINAPI *)(HWND, DWORD))GetProcAddress(mTheme, "EnableThemeDialogTexture");
 	if (!MyOpenThemeData||
 			!MyCloseThemeData||
 			!MyIsThemeActive||

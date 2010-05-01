@@ -369,6 +369,9 @@ static void AddChild(ParentWindowData *dat, HWND hwnd, HANDLE hContact)
 //	ActivateChild(dat, mdat->hwnd);
 	SetWindowPos(mwtd->hwnd, HWND_TOP, dat->childRect.left, dat->childRect.top, dat->childRect.right-dat->childRect.left, dat->childRect.bottom - dat->childRect.top, SWP_HIDEWINDOW);
 	SendMessage(dat->hwnd, WM_SIZE, 0, 0);
+
+	if (MyEnableThemeDialogTexture)
+		MyEnableThemeDialogTexture(hwnd, ETDT_ENABLETAB);
 }
 
 static void RemoveChild(ParentWindowData *dat, HWND child)
@@ -1174,6 +1177,8 @@ static void DrawTab(ParentWindowData *dat, HWND hwnd, WPARAM wParam, LPARAM lPar
 	int	iTabIndex = lpDIS->itemID;
 	tcdat = (TabCtrlData *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 	if (iTabIndex >= 0) {
+		HANDLE hTheme = NULL;
+		int tstate;
 		TCHAR szLabel[1024];
 		tci.mask = TCIF_TEXT | TCIF_IMAGE | TCIF_STATE;
 		tci.pszText = szLabel;
@@ -1183,14 +1188,37 @@ static void DrawTab(ParentWindowData *dat, HWND hwnd, WPARAM wParam, LPARAM lPar
 			IMAGEINFO info;
 			RECT rIcon = lpDIS->rcItem;
 			RECT rect = lpDIS->rcItem;
+			RECT rectTab = lpDIS->rcItem;
 			int bSelected = lpDIS->itemState & ODS_SELECTED;
-			int	iOldBkMode = SetBkMode(lpDIS->hDC, TRANSPARENT);
 			int atTop = (GetWindowLong(hwnd, GWL_STYLE) & TCS_BOTTOM) == 0;
 			UINT dwFormat;
-			if (!pfnIsAppThemed) {
+			if (!MyIsAppThemed || !MyIsAppThemed()) {
 				FillRect(lpDIS->hDC, &rect, GetSysColorBrush(COLOR_BTNFACE));
-			} else if (!pfnIsAppThemed()) {
-				FillRect(lpDIS->hDC, &rect, GetSysColorBrush(COLOR_BTNFACE));
+			}
+			else
+			{
+				if (lpDIS->itemState & ODS_SELECTED)
+					tstate = TTIS_SELECTED;
+				else if (lpDIS->itemState & ODS_FOCUS)
+					tstate = TTIS_FOCUSED;
+				else if (lpDIS->itemState & ODS_HOTLIGHT)
+					tstate = TTIS_HOT;
+				else
+					tstate = TTIS_NORMAL;
+
+				if (atTop)
+					rectTab.bottom += GetSystemMetrics(SM_CYEDGE);
+				else
+					rectTab.top -= GetSystemMetrics(SM_CYEDGE);
+				if (!bSelected)
+				{
+					rectTab.right += 1;
+					rectTab.left -= 1;
+				}
+				hTheme = MyOpenThemeData(hwnd, L"TAB");
+				if(MyIsThemeBackgroundPartiallyTransparent(hTheme, TABP_TABITEM, tstate))
+					MyDrawThemeParentBackground(hwnd, lpDIS->hDC, &rectTab);
+ 				MyDrawThemeBackground(hTheme, lpDIS->hDC, TABP_TABITEM, tstate, &rectTab, NULL);
 			}
 			if (atTop) {
 				dwFormat = DT_SINGLELINE|DT_TOP|DT_CENTER|DT_NOPREFIX|DT_NOCLIP;
@@ -1226,8 +1254,10 @@ static void DrawTab(ParentWindowData *dat, HWND hwnd, WPARAM wParam, LPARAM lPar
 				}
 				rect.bottom -= GetSystemMetrics(SM_CYEDGE) + 2;
 			}
-			DrawText(lpDIS->hDC, szLabel, -1, &rect, dwFormat);
-			SetBkMode(lpDIS->hDC, iOldBkMode);
+			if (hTheme)
+				MyDrawThemeText(hTheme, lpDIS->hDC, TABP_TABITEM, tstate, szLabel, -1, dwFormat, 0, &rect);
+			else
+				DrawText(lpDIS->hDC, szLabel, -1, &rect, dwFormat);
 			if (tcdat->bDragged && iTabIndex == tcdat->destTab && iTabIndex != tcdat->srcTab) {
 				RECT hlRect = lpDIS->rcItem;
 				if (bSelected) {
@@ -1251,6 +1281,7 @@ static void DrawTab(ParentWindowData *dat, HWND hwnd, WPARAM wParam, LPARAM lPar
 				hlRect.bottom--;
 				FrameRect(lpDIS->hDC, &hlRect, GetSysColorBrush(COLOR_HIGHLIGHT));
 			}
+			if (hTheme) MyCloseThemeData(hTheme);
 		}
 	}
 }
