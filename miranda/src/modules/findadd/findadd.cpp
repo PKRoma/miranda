@@ -106,6 +106,8 @@ static int FindAddDlgResizer(HWND,LPARAM lParam,UTILRESIZECONTROL *urc)
 		case IDC_ADVANCED:
 			OffsetRect(&urc->rcItem,0,y-oldTop);
 			return RD_ANCHORX_LEFT|RD_ANCHORY_CUSTOM;
+		case IDC_HEADERBAR:
+			return RD_ANCHORX_LEFT|RD_ANCHORY_TOP|RD_ANCHORX_WIDTH;
 	}
 	return RD_ANCHORX_LEFT|RD_ANCHORY_TOP;
 }
