@@ -252,7 +252,7 @@ int CJabberProto::ListAddResource( JABBER_LIST list, const TCHAR* jid, int statu
 			for ( j=0; j < LI->resourceCount; j++, r++ ) {
 				if ( !_tcscmp( r->resourceName, resource )) {
 					// Already exist, update status and statusMessage
-					r->status = status;
+					if (status) r->status = status;
 					replaceStr( r->statusMessage, statusMessage );
 					r->priority = priority;
 					break;
@@ -264,7 +264,7 @@ int CJabberProto::ListAddResource( JABBER_LIST list, const TCHAR* jid, int statu
 				bIsNewResource = true;
 				r = LI->resource + LI->resourceCount++;
 				memset( r, 0, sizeof( JABBER_RESOURCE_STATUS ));
-				r->status = status;
+				r->status = status ? status : ID_STATUS_OFFLINE;
 				r->affiliation = AFFILIATION_NONE;
 				r->role = ROLE_NONE;
 				r->resourceName = mir_tstrdup( resource );
