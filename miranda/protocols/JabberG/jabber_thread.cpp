@@ -1599,7 +1599,7 @@ void CJabberProto::OnProcessPresence( HXML node, ThreadData* info )
 			ListAdd( LIST_ROSTER, from );
 		}
 		DBCheckIsTransportedContact( from, hContact );
-		int status = type ? ID_STATUS_ONLINE : 0;
+		int status = ID_STATUS_ONLINE;
 		if (( showNode = xmlGetChild( node , "show" )) != NULL ) {
 			if (( show = xmlGetText( showNode ) ) != NULL ) {
 				if ( !_tcscmp( show, _T("away"))) status = ID_STATUS_AWAY;
@@ -1626,9 +1626,7 @@ void CJabberProto::OnProcessPresence( HXML node, ThreadData* info )
 		if ( _tcschr( from, '@' )==NULL ) {
 			UI_SAFE_NOTIFY(m_pDlgServiceDiscovery, WM_JABBER_TRANSPORT_REFRESH);
 		}
-		if (status)
-			Log( TCHAR_STR_PARAM " ( " TCHAR_STR_PARAM " ) online, set contact status to %s", nick, from, 
-				JCallService( MS_CLIST_GETSTATUSMODEDESCRIPTION, (WPARAM)status, 0 ));
+		Log( TCHAR_STR_PARAM " ( " TCHAR_STR_PARAM " ) online, set contact status to %s", nick, from, JCallService(MS_CLIST_GETSTATUSMODEDESCRIPTION,(WPARAM)status,0 ));
 		mir_free( nick );
 
 		HXML xNode;
