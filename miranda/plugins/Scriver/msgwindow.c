@@ -1206,15 +1206,9 @@ static void DrawTab(ParentWindowData *dat, HWND hwnd, WPARAM wParam, LPARAM lPar
 				else
 					tstate = TTIS_NORMAL;
 
-				if (atTop)
-					rectTab.bottom += GetSystemMetrics(SM_CYEDGE);
-				else
-					rectTab.top -= GetSystemMetrics(SM_CYEDGE);
 				if (!bSelected)
-				{
-					rectTab.right += 1;
-					rectTab.left -= 1;
-				}
+					InflateRect(&rectTab, 1, 1);
+
 				hTheme = MyOpenThemeData(hwnd, L"TAB");
 				if(MyIsThemeBackgroundPartiallyTransparent(hTheme, TABP_TABITEM, tstate))
 					MyDrawThemeParentBackground(hwnd, lpDIS->hDC, &rectTab);
