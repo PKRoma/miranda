@@ -405,6 +405,7 @@ void __cdecl gg_mainthread(GGPROTO *gg, void *empty)
 	// Setup client port
 	if(gg->dcc) p.client_port = gg->dcc->port;
 
+retry:
 	// Loadup startup status & description
 	EnterCriticalSection(&gg->modemsg_mutex);
 	p.status_descr = _strdup(gg_getstatusmsg(gg, gg->proto.m_iDesiredStatus));
@@ -416,7 +417,6 @@ void __cdecl gg_mainthread(GGPROTO *gg, void *empty)
 #endif
 	LeaveCriticalSection(&gg->modemsg_mutex);
 
-retry:
 	// Check manual hosts
 	if(hostnum < hostcount)
 	{
@@ -454,6 +454,7 @@ retry:
 			char error[128], *perror = NULL;
 			int i;
 
+			gg_broadcastnewstatus(gg, ID_STATUS_OFFLINE);
 			// Lookup for error desciption
 			if(errno == EACCES)
 			{
@@ -485,11 +486,12 @@ retry:
 		// Reconnect to the next server on the list
 		if(gg->proto.m_iDesiredStatus != ID_STATUS_OFFLINE
 			&& errno == EACCES
-			&& (gg_failno == GG_FAILURE_CONNECTING || gg_failno == GG_FAILURE_READING || gg_failno == GG_FAILURE_WRITING)
+			&& (gg_failno >= GG_FAILURE_RESOLVING && gg_failno != GG_FAILURE_PASSWORD && gg_failno != GG_FAILURE_INTRUDER && gg_failno != GG_FAILURE_UNAVAILABLE)
 			&& (DBGetContactSettingByte(NULL, GG_PROTO, GG_KEY_ARECONNECT, GG_KEYDEF_ARECONNECT)
 				|| (hostnum < hostcount - 1)))
 		{
 			if(hostnum < hostcount - 1) hostnum ++;
+			gg_broadcastnewstatus(gg, ID_STATUS_CONNECTING);
 			goto retry;
 		}
 		// We cannot do more about this
@@ -506,8 +508,8 @@ retry:
 		// Subscribe users status notifications
 		gg_notifyall(gg);
 		// Set startup status
-		if(gg->proto.m_iDesiredStatus == ID_STATUS_OFFLINE)
-			gg_disconnect(gg);
+		if (gg->proto.m_iDesiredStatus != status_gg2m(gg, p.status))
+			gg_refreshstatus(gg, gg->proto.m_iDesiredStatus);
 		else
 			gg_broadcastnewstatus(gg, gg->proto.m_iDesiredStatus);
 	}
@@ -978,12 +980,11 @@ retry:
 				}
 				break;
 
-#ifdef DEBUGMODE
 			// Direct connection error
 			case GG_EVENT_DCC7_ERROR:
 				{
 					struct gg_dcc7 *dcc7 = e->event.dcc7_error_ex.dcc7;
-
+#ifdef DEBUGMODE
 					switch (e->event.dcc7_error)
 					{
 						case GG_ERROR_DCC7_HANDSHAKE:
@@ -1004,7 +1005,7 @@ retry:
 						default:
 							gg_netlog(gg, "gg_mainthread(%x): Client: %d, Unknown error.", gg, dcc7 ? dcc7->peer_uin : 0);
 					}
-
+#endif
 					if (!dcc7) break;
 
 					// Remove from watches
@@ -1020,7 +1021,7 @@ retry:
 					gg_dcc7_free(dcc7);
 				}
 				break;
-#endif
+
 			case GG_EVENT_XML_ACTION:
 				if (DBGetContactSettingByte(NULL, GG_PROTO, GG_KEY_ENABLEAVATARS, GG_KEYDEF_ENABLEAVATARS)) {
 					HXML hXml;
@@ -1062,6 +1063,7 @@ retry:
 					mir_free(xmlAction);
 				}
 				break;
+
 			case GG_EVENT_TYPING_NOTIFY:
 				{
 					HANDLE hContact = gg_getcontact(gg, e->event.typing_notify.uin, 0, 0, NULL);
