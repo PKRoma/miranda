@@ -334,7 +334,6 @@ static char *CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE hContact
 		case EVENTTYPE_MESSAGE:
 		{	
 			TCHAR* msg = DbGetEventTextT( &dbei, CP_ACP );
-MessageBoxA(0,"Got here","",0);
 			AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, " %s ", SetToStyle(dbei.flags & DBEF_SENT ? MSGFONTID_MYMSG : MSGFONTID_YOURMSG));
 			AppendToBufferWithRTF(&buffer, &bufferEnd, &bufferAlloced, msg);
 
