@@ -99,14 +99,14 @@ typedef struct {
 
 //
 //  Retrieve an icolib handle for icon by name specified in lParam
-//  wParam = (WPARAM)0 - small 1 - big
+//  wParam = (WPARAM)0
 //  lParam = (LPARAM)(char*)pszName
 //
 #define MS_SKIN2_GETICONHANDLE "Skin2/Icons/GetIconHandle"
 
 //
 //  Retrieve HICON with HANDLE specified in lParam
-//  wParam = (WPARAM)0
+//  wParam = (WPARAM)0 - small 1 - big
 //  lParam = (LPARAM)(HANDLE)hIcoLibIcon
 //  Returned HICON SHOULDN'T be destroyed, it is managed by IcoLib
 //
