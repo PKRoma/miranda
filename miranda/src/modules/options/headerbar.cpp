@@ -205,8 +205,12 @@ static LRESULT MHeaderbar_OnPaint(HWND hwndDlg, MHeaderbarCtrl *mit, UINT  msg, 
 
 	if (mit->hIcon)
 		DrawIcon(tempDC, 10, iTopSpace, mit->hIcon);
-	else 
-		DrawIcon(tempDC, 10, iTopSpace, LoadIcon(hMirandaInst, MAKEINTRESOURCE(IDI_DETAILSLOGO)));
+	else  {
+		HICON hIcon = (HICON)SendMessage(GetParent(hwndDlg), WM_GETICON, ICON_BIG, 0);
+		if (hIcon == NULL)
+			hIcon = (HICON)SendMessage(GetParent(hwndDlg), WM_GETICON, ICON_SMALL, 0);
+		DrawIcon(tempDC, 10, iTopSpace, hIcon);
+	}
 
 	RECT textRect;
 	textRect.left=50;

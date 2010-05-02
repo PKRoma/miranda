@@ -293,7 +293,6 @@ static INT_PTR CALLBACK DlgProcFindAdd(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 
 			TranslateDialogDefault(hwndDlg);
 			Window_SetIcon_IcoLib(hwndDlg, SKINICON_OTHER_FINDUSER);
-            SendMessage(GetDlgItem(hwndDlg, IDC_HEADERBAR), WM_SETICON, 0, (WPARAM)LoadSkinIcon(SKINICON_OTHER_FINDUSER, true));
 			ListView_SetExtendedListViewStyle(hwndList,LVS_EX_FULLROWSELECT|LVS_EX_HEADERDRAGDROP);
 			dat=(struct FindAddDlgData*)mir_alloc(sizeof(struct FindAddDlgData));
 			memset(dat,0,sizeof(struct FindAddDlgData));
@@ -941,7 +940,6 @@ static INT_PTR CALLBACK DlgProcFindAdd(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			DeleteObject(dat->hBmpSortUp);
 			mir_free(dat);
 			Window_FreeIcon_IcoLib(hwndDlg);
-			IconLib_ReleaseIcon((HICON)SendMessage(GetDlgItem(hwndDlg, IDC_HEADERBAR), WM_SETICON, 0, 0), 0);
 			Utils_SaveWindowPosition(hwndDlg,NULL,"FindAdd","");
 
 			break;

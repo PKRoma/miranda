@@ -229,7 +229,6 @@ static INT_PTR CALLBACK DlgProcDetails(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 	case WM_INITDIALOG:
 		TranslateDialogDefault(hwndDlg);
 		Window_SetIcon_IcoLib(hwndDlg, SKINICON_OTHER_USERDETAILS);
-		SendMessage(GetDlgItem(hwndDlg, IDC_HEADERBAR), WM_SETICON, 0, (WPARAM)LoadSkinIcon(SKINICON_OTHER_USERDETAILS, true));
 		{
 			PROPSHEETHEADER *psh = (PROPSHEETHEADER*)lParam;
 			dat = (DetailsData*)mir_calloc(sizeof(DetailsData));
@@ -583,7 +582,6 @@ static INT_PTR CALLBACK DlgProcDetails(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			DBWriteContactSettingTString(NULL,"UserInfo","LastTab", name);
 		}
 		Window_FreeIcon_IcoLib(hwndDlg);
-		IconLib_ReleaseIcon((HICON)SendMessage(GetDlgItem(hwndDlg, IDC_HEADERBAR), WM_SETICON, 0, 0), 0);
 		SendDlgItemMessage(hwndDlg,IDC_NAME,WM_SETFONT,SendDlgItemMessage(hwndDlg,IDC_WHITERECT,WM_GETFONT,0,0),0);
 		DeleteObject(dat->hBoldFont);
 		WindowList_Remove(hWindowList,hwndDlg);

@@ -64,7 +64,6 @@ INT_PTR CALLBACK DlgProcAbout(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
 				GetDlgItemText( hwndDlg, IDC_HEADERBAR, oldTitle, SIZEOF( oldTitle ));
 				mir_sntprintf( newTitle, SIZEOF(newTitle), oldTitle, str );
 				SetDlgItemText( hwndDlg, IDC_HEADERBAR, newTitle );
-                SendMessage(GetDlgItem(hwndDlg, IDC_HEADERBAR), WM_SETICON, 0, (WPARAM)LoadSkinIcon(SKINICON_OTHER_MIRANDA, true));
 			}
             
 			mir_sntprintf(str,SIZEOF(str),TranslateT("Built %s %s"),_T(__DATE__),_T(__TIME__));
@@ -125,7 +124,6 @@ INT_PTR CALLBACK DlgProcAbout(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
 
 	case WM_DESTROY:
 		Window_FreeIcon_IcoLib( hwndDlg );
-		IconLib_ReleaseIcon((HICON)SendMessage(GetDlgItem(hwndDlg, IDC_HEADERBAR), WM_SETICON, 0, 0), 0);
 		{	
 			HFONT hFont=(HFONT)SendDlgItemMessage(hwndDlg,IDC_VERSION,WM_GETFONT,0,0);
 			SendDlgItemMessage(hwndDlg,IDC_VERSION,WM_SETFONT,SendDlgItemMessage(hwndDlg,IDOK,WM_GETFONT,0,0),0);

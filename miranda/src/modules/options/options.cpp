@@ -551,7 +551,6 @@ static INT_PTR CALLBACK OptionsDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPAR
 
 			Utils_RestoreWindowPositionNoSize(hdlg, NULL, "Options", "");
 			TranslateDialogDefault(hdlg);
-			SendMessage(GetDlgItem(hdlg, IDC_HEADERBAR), WM_SETICON, 0, (LPARAM)LoadSkinIcon(SKINICON_OTHER_OPTIONS, true));
 			Window_SetIcon_IcoLib(hdlg, SKINICON_OTHER_OPTIONS);
 			CheckDlgButton(hdlg,IDC_EXPERT,DBGetContactSettingByte(NULL,"Options","Expert",SETTING_SHOWEXPERT_DEFAULT)?BST_CHECKED:BST_UNCHECKED);
 			EnableWindow(GetDlgItem(hdlg,IDC_APPLY),FALSE);
@@ -1254,7 +1253,6 @@ static INT_PTR CALLBACK OptionsDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPAR
 
 		SaveOptionsTreeState( hdlg );
 		Window_FreeIcon_IcoLib( hdlg );
-		IconLib_ReleaseIcon((HICON)SendMessage(GetDlgItem(hdlg, IDC_HEADERBAR), WM_SETICON, 0, 0), 0);
 
 		if ( dat->currentPage != -1 ) {
 			if ( dat->opd[dat->currentPage].pszTab )
