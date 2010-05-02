@@ -1658,10 +1658,10 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 				GetDlgItemText(hwndDlg, IDC_MESSAGE, temp, bufSize);
 				if (!temp[0]) break;
 
+				dat->bIsRtl = dat->bIsUtf = 0;
 				if (RTL_Detect(temp)) { flags |= PREF_RTL; dat->bIsRtl = 1; }
 				dat->cmdList = tcmdlist_append(dat->cmdList, temp);
 
-				dat->bIsRtl = dat->bIsUtf = 0;
 				if (IsUtfSendAvailable( dat->hContact)) {
 					flags = PREF_UTF;
 					dat->bIsUtf = TRUE;
