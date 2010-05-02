@@ -176,6 +176,13 @@ static LRESULT MHeaderbar_OnPaint(HWND hwndDlg, MHeaderbarCtrl *mit, UINT  msg, 
 		temprc.top=0;
 		temprc.bottom=mit->width;
 		FillRect(tempDC, &temprc, (HBRUSH)GetStockObject(BLACK_BRUSH));
+
+		MARGINS margins = {0,0,mit->height,0};
+		dwmExtendFrameIntoClientArea(GetParent(hwndDlg), &margins);
+
+		WTA_OPTIONS opts;
+		opts.dwFlags = opts.dwMask = WTNCA_NODRAWCAPTION | WTNCA_NODRAWICON;
+		setWindowThemeAttribute(GetParent(hwndDlg), WTA_NONCLIENT, &opts, sizeof(opts));
 	} 
 	else {
 		if (IsVSMode())
@@ -293,16 +300,6 @@ static LRESULT CALLBACK MHeaderbarWndProc(HWND hwndDlg, UINT  msg, WPARAM wParam
 		SetWindowLongPtr(hwndDlg, 0, (LONG_PTR)itc);
 		MHeaderbar_SetupColors(itc);
 
-		if (IsAeroMode()) {
-			RECT rc; GetWindowRect(hwndDlg, &rc);
-			MARGINS margins = {0,0,rc.bottom-rc.top,0};
-			dwmExtendFrameIntoClientArea(GetParent(hwndDlg), &margins);
-
-			WTA_OPTIONS opts;
-			opts.dwFlags = opts.dwMask = WTNCA_NODRAWCAPTION | WTNCA_NODRAWICON;
-			setWindowThemeAttribute(GetParent(hwndDlg), WTA_NONCLIENT, &opts, sizeof(opts));
-		}
-
 		{	HWND hParent = GetParent(hwndDlg);
 			RECT rcWnd; GetWindowRect(hwndDlg, &rcWnd);
 			itc->controlsToRedraw = 0;
@@ -346,8 +343,10 @@ static LRESULT CALLBACK MHeaderbarWndProc(HWND hwndDlg, UINT  msg, WPARAM wParam
 		return 0;
     
     case WM_SETICON:
-		itc->hIcon = (HICON)lParam;
-        InvalidateRect(hwndDlg, NULL, FALSE);
+		if (wParam < 3) {
+			itc->hIcon = (HICON)lParam;
+			InvalidateRect(hwndDlg, NULL, FALSE);
+		}
 		break;
         
 	case WM_ERASEBKGND:
