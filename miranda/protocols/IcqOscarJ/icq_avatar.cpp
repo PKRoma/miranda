@@ -1591,11 +1591,11 @@ void avatars_server_connection::handleAvatarFam(BYTE *pBuffer, WORD wBufferLengt
 
 			if (ppro->FindCookie(pSnacHeader->dwRef, NULL, (void**)&pCookieData))
 			{
-        PROTO_AVATAR_INFORMATION ai = {0};
+				PROTO_AVATAR_INFORMATION ai = {0};
 				BYTE bResult;
 
-        { // remove from active request list
-          icq_lock l(ppro->m_avatarsMutex);
+				{ // remove from active request list
+					icq_lock l(ppro->m_avatarsMutex);
 					for(int i = 0; i < runCount; i++)
 					{ // look for our record
 						if (runContact[i] == pCookieData->hContact)
@@ -1611,7 +1611,7 @@ void avatars_server_connection::handleAvatarFam(BYTE *pBuffer, WORD wBufferLengt
 				ai.cbSize = sizeof(PROTO_AVATAR_INFORMATION);
 				ai.format = PA_FORMAT_JPEG; // this is for error only
 				ai.hContact = pCookieData->hContact;
-        utf8_decode_static(pCookieData->szFile, ai.filename, SIZEOF(ai.filename)); // Avatar API does not support unicode :-(
+				utf8_decode_static(pCookieData->szFile, ai.filename, SIZEOF(ai.filename)); // Avatar API does not support unicode :-(
 				AddAvatarExt(PA_FORMAT_JPEG, ai.filename); 
 
 				ppro->FreeCookie(pSnacHeader->dwRef);
@@ -1667,35 +1667,35 @@ void avatars_server_connection::handleAvatarFam(BYTE *pBuffer, WORD wBufferLengt
 						NetLog_Server("Received user avatar, storing (%d bytes).", datalen);
 
 						int dwPaFormat = DetectAvatarFormatBuffer((char*)pBuffer);
-            char *szImageFile = (char*)_alloca(strlennull(pCookieData->szFile) + 2);
+						char *szImageFile = (char*)_alloca(strlennull(pCookieData->szFile) + 6);
 
-            strcpy(szImageFile, pCookieData->szFile);
+						strcpy(szImageFile, pCookieData->szFile);
 						AddAvatarExt(dwPaFormat, szImageFile);
 
 						ppro->setSettingByte(pCookieData->hContact, "AvatarType", (BYTE)dwPaFormat);
 						ai.format = dwPaFormat; // set the format
-            utf8_decode_static(szImageFile, ai.filename, SIZEOF(ai.filename)); // Avatar API does not support unicode :-(
+						utf8_decode_static(szImageFile, ai.filename, SIZEOF(ai.filename)); // Avatar API does not support unicode :-(
 
 						int out = OpenFileUtf(szImageFile, _O_BINARY | _O_CREAT | _O_TRUNC | _O_WRONLY, _S_IREAD | _S_IWRITE);
 						if (out != -1) 
 						{
-              DBVARIANT dbv = {DBVT_DELETED};
+							DBVARIANT dbv = {DBVT_DELETED};
 
 							_write(out, pBuffer, datalen);
 							_close(out);
 
 							if (!pCookieData->hContact) // our avatar, set filename
 							{
-                int size = strlennull(szImageFile) + 2;
-                TCHAR *tszImageFile = (TCHAR*)_alloca(size * sizeof(TCHAR));
+								int size = strlennull(szImageFile) + 2;
+								TCHAR *tszImageFile = (TCHAR*)_alloca(size * sizeof(TCHAR));
 
-              	if (utf8_to_tchar_static(szImageFile, tszImageFile, size))
-	              {
-              		TCHAR tmp[MAX_PATH * 2];
+								if (utf8_to_tchar_static(szImageFile, tszImageFile, size))
+								{
+									TCHAR tmp[MAX_PATH * 2];
 
-  								CallService(MS_UTILS_PATHTORELATIVET, (WPARAM)tszImageFile, (LPARAM)tmp);
-								  ppro->setSettingStringT(NULL, "AvatarFile", tmp);
-                }
+									CallService(MS_UTILS_PATHTORELATIVET, (WPARAM)tszImageFile, (LPARAM)tmp);
+									ppro->setSettingStringT(NULL, "AvatarFile", tmp);
+								}
 							}
 							else
 							{ // contact's avatar set hash
@@ -1731,7 +1731,7 @@ void avatars_server_connection::handleAvatarFam(BYTE *pBuffer, WORD wBufferLengt
 
 							icq_lock l(ppro->m_avatarsMutex);
 
-              if (ar)
+							if (ar)
 							{
 								avatars_request *last = ppro->m_avatarsQueue;
 
