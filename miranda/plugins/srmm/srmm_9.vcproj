@@ -909,115 +909,31 @@
 			Filter="ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe"
 			>
 			<File
-				RelativePath="..\..\src\res\addcontact.ico"
+				RelativePath=".\res\dragcopy.cur"
 				>
 			</File>
 			<File
-				RelativePath="..\..\Miranda-IM\res\addcontact.ico"
+				RelativePath=".\res\dropuser.cur"
 				>
 			</File>
 			<File
-				RelativePath="res\Clock32.ico"
+				RelativePath=".\res\hyperlin.cur"
 				>
 			</File>
 			<File
-				RelativePath="res\Clock8.ico"
+				RelativePath=".\res\incoming.ico"
 				>
 			</File>
 			<File
-				RelativePath="res\Details32.ico"
+				RelativePath=".\res\notice.ico"
 				>
 			</File>
 			<File
-				RelativePath="res\Details8.ico"
-				>
-			</File>
-			<File
-				RelativePath="..\..\Miranda-IM\res\downarrow.ico"
-				>
-			</File>
-			<File
-				RelativePath="res\Downarrow32.ico"
-				>
-			</File>
-			<File
-				RelativePath="res\Downarrow8.ico"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\res\dragcopy.cur"
-				>
-			</File>
-			<File
-				RelativePath="..\..\Miranda-IM\res\dragcopy.cur"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\res\dropuser.cur"
-				>
-			</File>
-			<File
-				RelativePath="..\..\Miranda-IM\res\dropuser.cur"
-				>
-			</File>
-			<File
-				RelativePath="..\..\Miranda-IM\res\history.ico"
-				>
-			</File>
-			<File
-				RelativePath="res\History32.ico"
-				>
-			</File>
-			<File
-				RelativePath="res\History8.ico"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\res\hyperlin.cur"
-				>
-			</File>
-			<File
-				RelativePath="..\..\Miranda-IM\res\hyperlin.cur"
-				>
-			</File>
-			<File
-				RelativePath="..\..\Miranda-IM\res\multisend.ico"
-				>
-			</File>
-			<File
-				RelativePath="res\Multisend32.ico"
-				>
-			</File>
-			<File
-				RelativePath="res\Multisend8.ico"
-				>
-			</File>
-			<File
-				RelativePath="..\..\Miranda-IM\res\rename.ico"
+				RelativePath=".\res\outgoing.ico"
 				>
 			</File>
 			<File
 				RelativePath="resource.rc"
-				>
-			</File>
-			<File
-				RelativePath="..\..\Miranda-IM\res\timestamp.ico"
-				>
-			</File>
-			<File
-				RelativePath="..\..\Miranda-IM\res\typing.ico"
-				>
-			</File>
-			<File
-				RelativePath="res\Typing32.ico"
-				>
-			</File>
-			<File
-				RelativePath="res\Typing8.ico"
-				>
-			</File>
-			<File
-				RelativePath="..\..\Miranda-IM\res\viewdetails.ico"
 				>
 			</File>
 		</Filter>

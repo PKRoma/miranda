@@ -22,7 +22,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "commonheaders.h"
 #include "statusicon.h"
 #pragma hdrstop
-#include "m_fontservice.h"
 
 /* Missing MinGW GUIDs */
 #ifdef __MINGW32__
@@ -33,7 +32,7 @@ const CLSID IID_IRichEditOleCallback = { 0x00020D03, 0x00, 0x00, { 0xC0, 0x00, 0
 static void InitREOleCallback(void);
 
 HCURSOR hCurSplitNS, hCurSplitWE, hCurHyperlinkHand;
-HANDLE hHookWinEvt = NULL, hMsgMenuItem = NULL;
+HANDLE hHookWinEvt, hHookWinPopup, hMsgMenuItem;
 static HANDLE hServices[7];
 static HANDLE hHooks[8];
 
@@ -78,7 +77,7 @@ static int MessageEventAdded(WPARAM wParam, LPARAM lParam)
 	dbei.cbBlob = 0;
 	CallService(MS_DB_EVENT_GET, lParam, (LPARAM) & dbei);
 
-	if (dbei.flags & DBEF_SENT || dbei.eventType != EVENTTYPE_MESSAGE || dbei.flags & DBEF_READ)
+	if (dbei.flags & DBEF_SENT || !( dbei.eventType == EVENTTYPE_MESSAGE || DbEventIsForMsgWindow(&dbei) ) || dbei.flags & DBEF_READ)
 		return 0;
 
 	CallServiceSync(MS_CLIST_REMOVEEVENT, wParam, (LPARAM) 1);
@@ -295,7 +294,7 @@ static void RestoreUnreadMessageAlerts(void)
 			autoPopup = 0;
 			dbei.cbBlob = 0;
 			CallService(MS_DB_EVENT_GET, (WPARAM) hDbEvent, (LPARAM) & dbei);
-			if (!(dbei.flags & (DBEF_SENT | DBEF_READ)) && dbei.eventType == EVENTTYPE_MESSAGE) {
+			if (!(dbei.flags & (DBEF_SENT | DBEF_READ)) && ( dbei.eventType == EVENTTYPE_MESSAGE || DbEventIsForMsgWindow(&dbei) )) {
 				windowAlreadyExists = WindowList_Find(g_dat->hMessageWindowList, hContact) != NULL;
 				if (windowAlreadyExists)
 					continue;
@@ -481,6 +480,7 @@ int LoadSendRecvMessageModule(void)
 	hServices[5] = CreateServiceFunction("SRMsg/ReadMessage", ReadMessageCommand);
 	hServices[6] = CreateServiceFunction("SRMsg/TypingMessage", TypingMessageCommand);
 	hHookWinEvt=CreateHookableEvent(ME_MSG_WINDOWEVENT);
+	hHookWinPopup=CreateHookableEvent(ME_MSG_WINDOWPOPUP);
 	SkinAddNewSoundEx("RecvMsgActive", Translate("Messages"), Translate("Incoming (Focused Window)"));
 	SkinAddNewSoundEx("RecvMsgInactive", Translate("Messages"), Translate("Incoming (Unfocused Window)"));
 	SkinAddNewSoundEx("AlertMsg", Translate("Messages"), Translate("Incoming (New Session)"));

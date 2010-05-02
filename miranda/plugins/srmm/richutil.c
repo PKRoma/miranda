@@ -104,9 +104,8 @@ int RichUtil_SubClass(HWND hwndEdit) {
 	if (IsWindow(hwndEdit)) {
 		int idx;
 
-		TRichUtil *ru = (TRichUtil*)malloc(sizeof(TRichUtil));
+		TRichUtil *ru = (TRichUtil*)mir_calloc(sizeof(TRichUtil));
 		
-		ZeroMemory(ru, sizeof(TRichUtil));
 		ru->hwnd = hwndEdit;
 		ru->hasUglyBorder = 0;
 		EnterCriticalSection(&csRich);
@@ -223,7 +222,7 @@ static LRESULT CALLBACK RichUtil_Proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 			EnterCriticalSection(&csRich);
 			li.List_Remove(&sListInt, idx);
 			LeaveCriticalSection(&csRich);
-			if (ru) free(ru);
+			mir_free(ru);
 			return ret;
 		}
 	}

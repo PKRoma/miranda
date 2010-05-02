@@ -110,6 +110,7 @@ struct CREOleCallback
 INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 int InitOptions(void);
 INT_PTR CALLBACK ErrorDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+int DbEventIsForMsgWindow(DBEVENTINFO *dbei);
 int DbEventIsShown(DBEVENTINFO * dbei, struct MessageWindowData *dat);
 void StreamInEvents(HWND hwndDlg, HANDLE hDbEventFirst, int count, int fAppend);
 void LoadMsgLogIcons(void);

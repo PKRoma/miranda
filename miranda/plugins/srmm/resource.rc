@@ -7,8 +7,8 @@
 //
 // Generated from the TEXTINCLUDE 2 resource.
 //
-#include <windows.h>
 #include <winres.h>
+#include <richedit.h> 
 #include "../../include/statusmodes.h"
 
 /////////////////////////////////////////////////////////////////////////////
@@ -82,8 +82,18 @@ EXSTYLE WS_EX_ACCEPTFILES
 CAPTION "Message Session"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    EDITTEXT        IDC_MESSAGE,1,49,141,13,ES_MULTILINE | ES_AUTOVSCROLL | ES_WANTRETURN | WS_VSCROLL,WS_EX_ACCEPTFILES
-    DEFPUSHBUTTON   "&Send",IDOK,143,48,39,15
+#if defined(UNICODE)
+    CONTROL         "",IDC_MESSAGE,"RichEdit20W",ES_MULTILINE | 
+                    ES_AUTOVSCROLL | ES_NOHIDESEL | ES_WANTRETURN | 
+                    WS_VSCROLL | WS_TABSTOP,1,49,141,13,WS_EX_ACCEPTFILES | 
+                    WS_EX_STATICEDGE
+#else
+    CONTROL         "",IDC_MESSAGE,"RichEdit20A",ES_MULTILINE | 
+                    ES_AUTOVSCROLL | ES_NOHIDESEL | ES_WANTRETURN | 
+                    WS_VSCROLL | WS_TABSTOP,1,49,141,13,WS_EX_ACCEPTFILES | 
+                    WS_EX_STATICEDGE
+#endif
+	DEFPUSHBUTTON   "&Send",IDOK,143,48,39,15
     PUSHBUTTON      "Close",IDCANCEL,129,0,54,15,NOT WS_VISIBLE
     CONTROL         "",IDC_PROTOCOL,"Button",BS_OWNERDRAW,2,5,12,12
     CONTROL         "",IDC_NAME,"MButtonClass",WS_TABSTOP,15,2,95,14,WS_EX_NOACTIVATE | 0x10000000L
@@ -102,10 +112,10 @@ EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     GROUPBOX        "Message Window Event Log",IDC_STMSGLOGGROUP,5,5,295,109
-    CONTROL         "Show icons",IDC_SHOWLOGICONS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,17,141,10
-    CONTROL         "Show names",IDC_SHOWNAMES,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,33,141,10
-    CONTROL         "Show timestamp",IDC_SHOWTIMES,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,49,141,10
-    CONTROL         "Show dates",IDC_SHOWDATES,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,26,80,130,10
+    CONTROL         "Show icons",IDC_SHOWLOGICONS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,17,154,10
+    CONTROL         "Show names",IDC_SHOWNAMES,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,33,154,10
+    CONTROL         "Show timestamp",IDC_SHOWTIMES,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,49,154,10
+    CONTROL         "Show dates",IDC_SHOWDATES,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,26,80,143,10
     CONTROL         "Load unread events only",IDC_LOADUNREAD,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,15,133,138,10
     CONTROL         "Load number of previous events",IDC_LOADCOUNT,"Button",BS_AUTORADIOBUTTON,15,149,138,10
     EDITTEXT        IDC_LOADCOUNTN,158,147,33,12,ES_RIGHT | ES_NUMBER | WS_DISABLED
@@ -114,8 +124,8 @@ BEGIN
     EDITTEXT        IDC_LOADTIMEN,158,163,33,12,ES_RIGHT | ES_NUMBER | WS_DISABLED
     CONTROL         "Spin1",IDC_LOADTIMESPIN,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | UDS_NOTHOUSANDS | UDS_HOTTRACK | WS_DISABLED,181,163,11,14
     LTEXT           "minutes old",IDC_STMINSOLD,196,165,82,8,WS_DISABLED
-    CONTROL         "Show status changes",IDC_SHOWSTATUSCHANGES,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,97,141,10
-    CONTROL         "Show seconds",IDC_SHOWSECS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,26,64,127,10
+    CONTROL         "Show status changes",IDC_SHOWSTATUSCHANGES,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,97,154,10
+    CONTROL         "Show seconds",IDC_SHOWSECS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,26,64,143,10
     GROUPBOX        "Load History Events",IDC_STATIC,5,117,295,65
 END
 
@@ -269,9 +279,9 @@ END
 
 2 TEXTINCLUDE 
 BEGIN
-    "#include <windows.h>\r\n"
     "#include <winres.h>\r\n"
-    "#include ""../../include/statusmodes.h""\r\n"
+	"#include <richedit.h>\r\n" 
+	"#include ""../../include/statusmodes.h""\r\n"
     "\0"
 END
 

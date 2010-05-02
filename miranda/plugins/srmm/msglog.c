@@ -21,11 +21,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 #include "commonheaders.h"
 #pragma hdrstop
-#include <ctype.h>
-#include <malloc.h>
-#include <mbstring.h>
 
 extern HINSTANCE g_hInst;
+extern HANDLE hIconLibItem[];
 
 static int logPixelSY;
 #define LOGICON_MSG_IN      0
@@ -33,7 +31,6 @@ static int logPixelSY;
 #define LOGICON_MSG_NOTICE  2
 static PBYTE pLogIconBmpBits[3];
 static int logIconBmpSize[ SIZEOF(pLogIconBmpBits) ];
-static HIMAGELIST g_hImageList;
 
 #define STREAMSTAGE_HEADER  0
 #define STREAMSTAGE_EVENTS  1
@@ -64,7 +61,7 @@ static void AppendToBuffer(char **buffer, int *cbBufferEnd, int *cbBufferAlloced
 		if (charsDone >= 0)
 			break;
 		*cbBufferAlloced += 1024;
-		*buffer = (char *) realloc(*buffer, *cbBufferAlloced);
+		*buffer = (char *) mir_realloc(*buffer, *cbBufferAlloced);
 	}
 	va_end(va);
 	*cbBufferEnd += charsDone;
@@ -82,7 +79,7 @@ static int AppendToBufferWithRTF(char **buffer, int *cbBufferEnd, int *cbBufferA
 	lineLen = (int)_tcslen(line) * 9 + 8;
 	if (*cbBufferEnd + lineLen > *cbBufferAlloced) {
 		cbBufferAlloced[0] += (lineLen + 1024 - lineLen % 1024);
-		*buffer = (char *) realloc(*buffer, *cbBufferAlloced);
+		*buffer = (char *) mir_realloc(*buffer, *cbBufferAlloced);
 	}
 
 	d = *buffer + *cbBufferEnd;
@@ -140,7 +137,7 @@ static char *CreateRTFHeader(struct MessageWindowData *dat)
 	ReleaseDC(NULL, hdc);
 	bufferEnd = 0;
 	bufferAlloced = 1024;
-	buffer = (char *) malloc(bufferAlloced);
+	buffer = (char *) mir_alloc(bufferAlloced);
 	buffer[0] = '\0';
 	AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "{\\rtf1\\ansi\\deff0{\\fonttbl");
 
@@ -163,7 +160,7 @@ static char *CreateRTFHeader(struct MessageWindowData *dat)
 	return buffer;
 }
 
-//free() the return value
+//mir_free() the return value
 static char *CreateRTFTail(struct MessageWindowData *dat)
 {
 	char *buffer;
@@ -171,7 +168,7 @@ static char *CreateRTFTail(struct MessageWindowData *dat)
 
 	bufferEnd = 0;
 	bufferAlloced = 1024;
-	buffer = (char *) malloc(bufferAlloced);
+	buffer = (char *) mir_alloc(bufferAlloced);
 	buffer[0] = '\0';
 	AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "}");
 	return buffer;
@@ -188,6 +185,12 @@ static char *SetToStyle(int style)
 	return szStyle;
 }
 
+int DbEventIsForMsgWindow(DBEVENTINFO *dbei)
+{
+	DBEVENTTYPEDESCR* et = ( DBEVENTTYPEDESCR* )CallService( MS_DB_EVENT_GETTYPE, ( WPARAM )dbei->szModule, ( LPARAM )dbei->eventType );
+	return et && ( et->flags & DETF_MSGWINDOW );
+}
+
 int DbEventIsShown(DBEVENTINFO * dbei, struct MessageWindowData *dat)
 {
 	switch (dbei->eventType) {
@@ -201,10 +204,10 @@ int DbEventIsShown(DBEVENTINFO * dbei, struct MessageWindowData *dat)
 				return 0;
 			return 1;
 	}
-	return 0;
+	return DbEventIsForMsgWindow(dbei);
 }
 
-//free() the return value
+//mir_free() the return value
 static char *CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE hContact, HANDLE hDbEvent, struct LogStreamData *streamData)
 {
 	char *buffer;
@@ -216,13 +219,13 @@ static char *CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE hContact
 	dbei.cbBlob = CallService(MS_DB_EVENT_GETBLOBSIZE, (WPARAM) hDbEvent, 0);
 	if (dbei.cbBlob == -1)
 		return NULL;
-	dbei.pBlob = (PBYTE) malloc(dbei.cbBlob);
+	dbei.pBlob = (PBYTE) mir_alloc(dbei.cbBlob);
 	CallService(MS_DB_EVENT_GET, (WPARAM) hDbEvent, (LPARAM) & dbei);
 	if (!DbEventIsShown(&dbei, dat)) {
-		free(dbei.pBlob);
+		mir_free(dbei.pBlob);
 		return NULL;
 	}
-	if (!(dbei.flags & DBEF_SENT) && dbei.eventType == EVENTTYPE_MESSAGE) {
+	if (!(dbei.flags & DBEF_SENT) && ( dbei.eventType == EVENTTYPE_MESSAGE || DbEventIsForMsgWindow(&dbei) )) {
 		CallService(MS_DB_EVENT_MARKREAD, (WPARAM) hContact, (LPARAM) hDbEvent);
 		CallService(MS_CLIST_REMOVEEVENT, (WPARAM) hContact, (LPARAM) hDbEvent);
 	}
@@ -231,7 +234,7 @@ static char *CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE hContact
 	}
 	bufferEnd = 0;
 	bufferAlloced = 1024;
-	buffer = (char *) malloc(bufferAlloced);
+	buffer = (char *) mir_alloc(bufferAlloced);
 	buffer[0] = '\0';
 
 	if (!dat->bIsAutoRTL && !streamData->isEmpty)
@@ -270,13 +273,14 @@ static char *CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE hContact
 			case EVENTTYPE_JABBER_PRESENCE:
 			case EVENTTYPE_STATUSCHANGE:
 			case EVENTTYPE_FILE:
+			default:
 				i = LOGICON_MSG_NOTICE;
 				break;
 		}
 		AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\f0\\fs14");
 		while (bufferAlloced - bufferEnd < logIconBmpSize[i])
 			bufferAlloced += 1024;
-		buffer = (char *) realloc(buffer, bufferAlloced);
+		buffer = (char *) mir_realloc(buffer, bufferAlloced);
 		CopyMemory(buffer + bufferEnd, pLogIconBmpBits[i], logIconBmpSize[i]);
 		bufferEnd += logIconBmpSize[i];
 	}
@@ -326,10 +330,11 @@ static char *CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE hContact
 		AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s :", SetToStyle(dbei.flags & DBEF_SENT ? MSGFONTID_MYCOLON : MSGFONTID_YOURCOLON));
 
 	switch (dbei.eventType) {
+		default:
 		case EVENTTYPE_MESSAGE:
-		{
+		{	
 			TCHAR* msg = DbGetEventTextT( &dbei, CP_ACP );
-
+MessageBoxA(0,"Got here","",0);
 			AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, " %s ", SetToStyle(dbei.flags & DBEF_SENT ? MSGFONTID_MYMSG : MSGFONTID_YOURMSG));
 			AppendToBufferWithRTF(&buffer, &bufferEnd, &bufferAlloced, msg);
 
@@ -412,7 +417,7 @@ static char *CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE hContact
 		AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\par");
 
 	dat->lastEventType = dbei.flags;
-	free(dbei.pBlob);
+	mir_free(dbei.pBlob);
 	return buffer;
 }
 
@@ -458,7 +463,7 @@ static DWORD CALLBACK LogStreamInEvents(DWORD_PTR dwCookie, LPBYTE pbBuff, LONG 
 	CopyMemory(pbBuff, dat->buffer + dat->bufferOffset, *pcb);
 	dat->bufferOffset += *pcb;
 	if (dat->bufferOffset == dat->bufferLen) {
-		free(dat->buffer);
+		mir_free(dat->buffer);
 		dat->buffer = NULL;
 	}
 	return 0;
@@ -510,7 +515,6 @@ void LoadMsgLogIcons(void)
 	int rtfHeaderSize;
 	PBYTE pBmpBits;
 
-	g_hImageList = ImageList_Create(10, 10, IsWinVerXPPlus()? ILC_COLOR32 | ILC_MASK : ILC_COLOR8 | ILC_MASK, SIZEOF(pLogIconBmpBits), 0);
 	hBkgBrush = CreateSolidBrush(DBGetContactSettingDword(NULL, SRMMMOD, SRMSGSET_BKGCOLOUR, SRMSGDEFSET_BKGCOLOUR));
 	bih.biSize = sizeof(bih);
 	bih.biBitCount = 24;
@@ -525,37 +529,20 @@ void LoadMsgLogIcons(void)
 	hdc = GetDC(NULL);
 	hBmp = CreateCompatibleBitmap(hdc, bih.biWidth, bih.biHeight);
 	hdcMem = CreateCompatibleDC(hdc);
-	pBmpBits = (PBYTE) malloc(widthBytes * bih.biHeight);
+	pBmpBits = (PBYTE) mir_alloc(widthBytes * bih.biHeight);
+
 	for (i = 0; i < SIZEOF(pLogIconBmpBits); i++) {
-		switch (i) {
-			case LOGICON_MSG_IN:
-				hIcon = LoadImage(g_hInst, MAKEINTRESOURCE(IDI_INCOMING), IMAGE_ICON, 0, 0, 0);
-				ImageList_AddIcon(g_hImageList, hIcon);
-				DestroyIcon(hIcon);
-				hIcon = ImageList_GetIcon(g_hImageList, LOGICON_MSG_IN, ILD_NORMAL);
-				break;
-			case LOGICON_MSG_OUT:
-				hIcon = LoadImage(g_hInst, MAKEINTRESOURCE(IDI_OUTGOING), IMAGE_ICON, 0, 0, 0);
-				ImageList_AddIcon(g_hImageList, hIcon);
-				DestroyIcon(hIcon);
-				hIcon = ImageList_GetIcon(g_hImageList, LOGICON_MSG_OUT, ILD_NORMAL);
-				break;
-			case LOGICON_MSG_NOTICE:
-				hIcon = LoadImage(g_hInst, MAKEINTRESOURCE(IDI_NOTICE), IMAGE_ICON, 0, 0, 0);
-				ImageList_AddIcon(g_hImageList, hIcon);
-				DestroyIcon(hIcon);
-				hIcon = ImageList_GetIcon(g_hImageList, LOGICON_MSG_NOTICE, ILD_NORMAL);
-				break;
-		}
-		pLogIconBmpBits[i] = (PBYTE) malloc(RTFPICTHEADERMAXSIZE + (bih.biSize + widthBytes * bih.biHeight) * 2);
+		hIcon = (HANDLE)CallService(MS_SKIN2_GETICONBYHANDLE, 0, (LPARAM)hIconLibItem[i]);
+		pLogIconBmpBits[i] = (PBYTE) mir_alloc(RTFPICTHEADERMAXSIZE + (bih.biSize + widthBytes * bih.biHeight) * 2);
 		//I can't seem to get binary mode working. No matter.
 		rtfHeaderSize = sprintf(pLogIconBmpBits[i], "{\\pict\\dibitmap0\\wbmbitspixel%u\\wbmplanes1\\wbmwidthbytes%u\\picw%u\\pich%u ", bih.biBitCount, widthBytes, bih.biWidth, bih.biHeight);
 		hoBmp = (HBITMAP) SelectObject(hdcMem, hBmp);
 		FillRect(hdcMem, &rc, hBkgBrush);
 		DrawIconEx(hdcMem, 0, 0, hIcon, bih.biWidth, bih.biHeight, 0, NULL, DI_NORMAL);
+		CallService(MS_SKIN2_RELEASEICON, (WPARAM)hIcon, 0);
+
 		SelectObject(hdcMem, hoBmp);
 		GetDIBits(hdc, hBmp, 0, bih.biHeight, pBmpBits, (BITMAPINFO *) & bih, DIB_RGB_COLORS);
-		DestroyIcon(hIcon);
 		{
 			int n;
 			for (n = 0; n < sizeof(BITMAPINFOHEADER); n++)
@@ -566,7 +553,7 @@ void LoadMsgLogIcons(void)
 		logIconBmpSize[i] = rtfHeaderSize + (bih.biSize + widthBytes * bih.biHeight) * 2 + 1;
 		pLogIconBmpBits[i][logIconBmpSize[i] - 1] = '}';
 	}
-	free(pBmpBits);
+	mir_free(pBmpBits);
 	DeleteDC(hdcMem);
 	DeleteObject(hBmp);
 	ReleaseDC(NULL, hdc);
@@ -577,7 +564,5 @@ void FreeMsgLogIcons(void)
 {
 	int i;
 	for (i = 0; i < SIZEOF(pLogIconBmpBits); i++)
-		free(pLogIconBmpBits[i]);
-	ImageList_RemoveAll(g_hImageList);
-	ImageList_Destroy(g_hImageList);
+		mir_free(pLogIconBmpBits[i]);
 }

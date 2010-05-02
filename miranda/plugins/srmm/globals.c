@@ -21,28 +21,83 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 #include "commonheaders.h"
 
-struct GlobalMessageData *g_dat=NULL;
 extern HINSTANCE g_hInst;
-static HANDLE g_hDbEvent = 0, g_hAck = 0;
+
+struct GlobalMessageData *g_dat;
+static HANDLE g_hDbEvent, g_hAck, g_hIconsChanged;
+
 static int dbaddedevent(WPARAM wParam, LPARAM lParam);
 static int ackevent(WPARAM wParam, LPARAM lParam);
 
+typedef struct IconDefStruct 
+{
+	const char *szName;
+	const char *szDescr;
+	int defIconID;
+} IconList;
+
+static const IconList iconList[] = 
+{
+	{ "INCOMING", LPGEN("Incoming message (10x10)"), IDI_INCOMING },
+	{ "OUTGOING", LPGEN("Outgoing message (10x10)"), IDI_OUTGOING },
+	{ "NOTICE",   LPGEN("Notice (10x10)"),           IDI_NOTICE   },
+};
+
+
+HANDLE hIconLibItem[SIZEOF(iconList)];
+
+static void InitIcons(void)
+{
+	TCHAR szFile[MAX_PATH];
+	char szSettingName[100];
+	SKINICONDESC sid = {0};
+	unsigned i;
+
+	GetModuleFileName(g_hInst, szFile, SIZEOF(szFile));
+
+	sid.cbSize = sizeof(SKINICONDESC);
+	sid.ptszDefaultFile = szFile;
+	sid.pszName = szSettingName;
+	sid.pszSection = LPGEN("Messaging");
+	sid.flags = SIDF_PATH_TCHAR;
+	sid.cx = 10; sid.cy = 10;
+
+	for (i = 0; i < SIZEOF(iconList); i++) 
+	{
+		mir_snprintf(szSettingName, sizeof(szSettingName), "SRMM_%s", iconList[i].szName);
+		sid.pszDescription = (char*)iconList[i].szDescr;
+		sid.iDefaultIndex = -iconList[i].defIconID;
+		hIconLibItem[i] = (HANDLE)CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
+	}	
+}
+
+static int IconsChanged(WPARAM wParam, LPARAM lParam)
+{
+	FreeMsgLogIcons();
+	LoadMsgLogIcons();
+	
+	return 0;
+}
+
 void InitGlobals()
 {
-	g_dat = (struct GlobalMessageData *)malloc(sizeof(struct GlobalMessageData));
+	g_dat = (struct GlobalMessageData *)mir_alloc(sizeof(struct GlobalMessageData));
 	g_dat->hMessageWindowList = (HANDLE) CallService(MS_UTILS_ALLOCWINDOWLIST, 0, 0);
 	g_hDbEvent = HookEvent(ME_DB_EVENT_ADDED, dbaddedevent);
 	g_hAck = HookEvent(ME_PROTO_ACK, ackevent);
+	g_hIconsChanged = HookEvent(ME_SKIN2_ICONSCHANGED, IconsChanged);
+
 	ReloadGlobals();
+	InitIcons();
 }
 
 void FreeGlobals()
 {
-	if (g_dat)
-		free(g_dat);
+	mir_free(g_dat);
 
 	if (g_hDbEvent) UnhookEvent(g_hDbEvent);
 	if (g_hAck) UnhookEvent(g_hAck);
+	if (g_hIconsChanged) UnhookEvent(g_hIconsChanged);
 }
 
 void ReloadGlobals()
