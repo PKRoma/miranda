@@ -349,6 +349,7 @@ struct TWindowData {
 	WORD    wStatus;
 	char    *sendBuffer;
 	int     iSendBufferSize;
+	int		iSendLength;				// message length in utf-8 octets
 	HICON   hTabIcon, hTabStatusIcon, hXStatusIcon, hClientIcon, hTaskbarIcon;
 	HICON   iFlashIcon;
 	BOOL    mayFlashTab;
@@ -545,7 +546,7 @@ struct TNewWindowData {
 #define CNT_NOSTATUSBAR 0x1000000
 #define CNT_NOMENUBAR 0x2000000
 #define CNT_TABSBOTTOM 0x4000000
-#define CNT_STATICICON 0x8000000
+// #define CNT_STATICICON 0x8000000 **free**
 #define CNT_BOTTOMTOOLBAR 0x10000000
 #define CNT_HIDETOOLBAR 0x20000000
 #define CNT_UINSTATUSBAR 0x40000000

@@ -290,6 +290,8 @@ TCHAR* CTranslator::m_strings[STR_LAST] = {
 	LPGENT("Queue manager"),															/* QMGR_TITLE */
 	LPGENT("Suspended"),																/* QMGR_STATUS_HOLD */
 	LPGENT("Deferred"),																	/* QMGR_STATUS_DEFERRED */
+	LPGENT("A send later job failed to complete.\nThe original message: %s"),			/* GEN_SQ_SENDLATER_FAILED_POPUP */
+	LPGENT("The message cannot be sent delayed or to multiple contacts, because it exceeds the maximum allowed message length of %d bytes"), /* GEN_SQ_SENDLATER_ERROR_MSG_TOO_LONG */
 };
 
 /*
@@ -417,7 +419,6 @@ TOptionListItem CTranslator::m_lvItemsModPlus[] = {
 	0, LPGENT("Close current tab on send"), 0, LOI_TYPE_SETTING, (UINT_PTR)"adv_AutoClose_2", 0,
 	0, LPGENT("Enable icon pack version check (*)"), 1, LOI_TYPE_SETTING, (UINT_PTR)"adv_IconpackWarning", 0,
 	0, LPGENT("Disable error popups on sending failures"), 0, LOI_TYPE_SETTING, (UINT_PTR)"adv_noErrorPopups", 1,
-	0, LPGENT("Disable popups for send later and multisend jobs"), 0, LOI_TYPE_SETTING, (UINT_PTR)"adv_noSendLaterPopups", 1,
 	0, LPGENT("Use Aero Glass for the message window (Vista+)"), 1, LOI_TYPE_SETTING, (UINT_PTR)"useAero", 0,
 	0, LPGENT("Use Windows 7 task bar features (*)"), 1, LOI_TYPE_SETTING, (UINT_PTR)"useW7Taskbar", 0,
 	0, LPGENT("Automatic keyboard layout: Do not load the system default for new contacts"), 1, LOI_TYPE_SETTING, (UINT_PTR)"adv_leaveKeyboardAlone", 0,

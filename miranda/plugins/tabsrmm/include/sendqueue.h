@@ -49,7 +49,8 @@ $Id$
 struct SendJob {
 	HANDLE  hSendId;
 	char    *sendBuffer;
-	int     dwLen;        // actual buffer length (checked for reallocs()
+	int     dwLen;			// actual buffer length (checked for reallocs()
+	int		iSendLength;	// length of message in utf-8 octets (used to check maxlen)
 	int     sendCount;
 	HANDLE  hOwner;
 	HWND    hwndOwner;
@@ -95,6 +96,7 @@ public:
 	void 	handleError					(TWindowData *dat, const int iEntry) const;
 	int 	addTo						(TWindowData *dat, const int iLen, int dwFlags);
 	int 	sendQueued					(TWindowData *dat, const int iEntry);
+	int		getSendLength				(const int iEntry, const int sendMode);
 	void 	checkQueue 		 			(const TWindowData *dat) const;
 	void 	logError					(const TWindowData *dat, int iSendJobIndex,
 										 const TCHAR *szErrMsg) const;

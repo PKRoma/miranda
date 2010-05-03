@@ -101,6 +101,8 @@ public:
 	BYTE					getXStatusId			() const { return(m_xStatus); }
 	const HWND				getWindowData			(TWindowData*& dat) const { dat = m_dat; return(m_hwnd); }
 	const HWND				getHwnd					() const { return(m_hwnd); }
+	int						getMaxMessageLength		();
+
 	TWindowData*		getDat					() const { return(m_dat); }
 
 	void					updateStats				(int iType, size_t value = 0);
@@ -155,6 +157,7 @@ private:
 	bool				m_isFavorite;
 	bool				m_isRecent;
 	HWND				m_hwnd;
+	int					m_nMax;
 	int     			m_iHistoryCurrent, m_iHistoryTop, m_iHistorySize;
 	TWindowData*	m_dat;
 	TSessionStats* 		m_stats;

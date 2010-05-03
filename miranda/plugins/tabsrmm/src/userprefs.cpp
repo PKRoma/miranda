@@ -448,29 +448,33 @@ static INT_PTR CALLBACK DlgProcUserPrefsLogOptions(HWND hwndDlg, UINT msg, WPARA
 	HANDLE hContact = (HANDLE)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 	switch(msg) {
 		case WM_INITDIALOG: {
-			DWORD	dwLocalFlags, dwLocalMask, maskval;
-			int		i = 0;
 
 			hContact = (HANDLE)lParam;
 			TranslateDialogDefault(hwndDlg);
 			SetWindowLongPtr(hwndDlg, GWLP_USERDATA, (LONG_PTR)hContact);
-
-			dwLocalFlags = M->GetDword(hContact, "mwflags", 0);
-			dwLocalMask = M->GetDword(hContact, "mwmask", 0);
-
-			while(checkboxes[i].uId) {
-				maskval = checkboxes[i].uFlag;
-
-				if(dwLocalMask & maskval)
-					CheckDlgButton(hwndDlg, checkboxes[i].uId, (dwLocalFlags & maskval) ? BST_CHECKED : BST_UNCHECKED);
-				else
-					CheckDlgButton(hwndDlg, checkboxes[i].uId, BST_INDETERMINATE);
-				i++;
-			}
+			SendMessage(hwndDlg, WM_COMMAND, WM_USER + 200, 0);
 			return TRUE;
 		}
 		case WM_COMMAND:
 			switch(LOWORD(wParam)) {
+				case WM_USER + 200: {
+					DWORD	dwLocalFlags, dwLocalMask, maskval;
+					int		i = 0;
+
+					dwLocalFlags = M->GetDword(hContact, "mwflags", 0);
+					dwLocalMask = M->GetDword(hContact, "mwmask", 0);
+
+					while(checkboxes[i].uId) {
+						maskval = checkboxes[i].uFlag;
+
+						if(dwLocalMask & maskval)
+							CheckDlgButton(hwndDlg, checkboxes[i].uId, (dwLocalFlags & maskval) ? BST_CHECKED : BST_UNCHECKED);
+						else
+							CheckDlgButton(hwndDlg, checkboxes[i].uId, BST_INDETERMINATE);
+						i++;
+					}
+					break;
+				}
 				case WM_USER + 100: {
 					int i = 0;
 					LRESULT state;
@@ -507,6 +511,11 @@ static INT_PTR CALLBACK DlgProcUserPrefsLogOptions(HWND hwndDlg, UINT msg, WPARA
 					}
 					break;
 				}
+				case IDC_REVERTGLOBAL:
+					DBDeleteContactSetting(hContact, SRMSGMOD_T, "mwmask");
+					DBDeleteContactSetting(hContact, SRMSGMOD_T, "mwflags");
+					SendMessage(hwndDlg, WM_COMMAND, WM_USER + 200, 0);
+					break;
 			}
 			break;
 	}

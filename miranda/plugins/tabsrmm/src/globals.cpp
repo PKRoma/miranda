@@ -72,20 +72,20 @@ int				 CGlobals::m_exLine = 0;
 #if defined(_WIN64)
 	static char szCurrentVersion[30];
 	static char *szVersionUrl = "http://download.miranda.or.at/tabsrmm/3/version.txt";
-	static char *szUpdateUrl = "http://download.miranda.or.at/tabsrmm/3/tabsrmm_x64.zip";
+	static char *szUpdateUrl = "http://silvercircle.googlecode.com/files/tabsrmm-3_x64.zip";
 	static char *szFLVersionUrl = "http://addons.miranda-im.org/details.php?action=viewfile&id=3699";
 	static char *szFLUpdateurl = "http://addons.miranda-im.org/feed.php?dlfile=3699";
 #else
 	static char szCurrentVersion[30];
 	static char *szVersionUrl = "http://download.miranda.or.at/tabsrmm/3/version.txt";
-	static char *szUpdateUrl = "http://download.miranda.or.at/tabsrmm/3/tabsrmmW.zip";
+	static char *szUpdateUrl = "http://silvercircle.googlecode.com/files/tabsrmm-3_x86.zip";
 	static char *szFLVersionUrl = "http://addons.miranda-im.org/details.php?action=viewfile&id=3699";
 	static char *szFLUpdateurl = "http://addons.miranda-im.org/feed.php?dlfile=3699";
 #endif
 #else
 	static char szCurrentVersion[30];
 	static char *szVersionUrl = "http://download.miranda.or.at/tabsrmm/3/version.txt";
-	static char *szUpdateUrl = "http://download.miranda.or.at/tabsrmm/3/tabsrmm.zip";
+	static char *szUpdateUrl = "http://silvercircle.googlecode.com/files/tabsrmm-3_ansi_x86.zip";
 	static char *szFLVersionUrl = "http://addons.miranda-im.org/details.php?action=viewfile&id=3698";
 	static char *szFLUpdateurl = "http://addons.miranda-im.org/feed.php?dlfile=3698";
 #endif

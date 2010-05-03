@@ -1655,6 +1655,8 @@ void TSAPI GetLocaleID(TWindowData *dat, const TCHAR *szKLName)
 			}
 			RegCloseKey(hKey);
 		}
+		szLI[0] = _totupper(szLI[0]);
+		szLI[1] = _totupper(szLI[1]);
 	}
 	else {
 		GetLocaleInfo(dat->lcid, LOCALE_SISO639LANGNAME, szLI, 10);
@@ -2289,30 +2291,6 @@ void TSAPI GetClientIcon(TWindowData *dat)
 		if (!DBGetContactSettingString(dat->cache->getActiveContact(), dat->cache->getActiveProto(), "MirVer", &dbv)) {
 			dat->hClientIcon = (HICON)CallService(MS_FP_GETCLIENTICON, (WPARAM)dbv.pszVal, 1);
 			DBFreeVariant(&dbv);
-		}
-	}
-}
-void TSAPI GetMaxMessageLength(TWindowData *dat)
-{
-	HANDLE 	hContact;
-	const 	char*		szProto;
-
-	hContact = dat->cache->getActiveContact();
-	szProto = dat->cache->getActiveProto();
-
-	if (dat->szProto) {
-		int nMax;
-
-		nMax = CallProtoService(szProto, PS_GETCAPS, PFLAG_MAXLENOFMESSAGE, (LPARAM)hContact);
-		if (nMax) {
-			if (M->GetByte("autosplit", 0))
-				SendDlgItemMessage(dat->hwnd, IDC_MESSAGE, EM_EXLIMITTEXT, 0, 20000);
-			else
-				SendDlgItemMessage(dat->hwnd, IDC_MESSAGE, EM_EXLIMITTEXT, 0, (LPARAM)nMax);
-			dat->nMax = nMax;
-		} else {
-			SendDlgItemMessage(dat->hwnd, IDC_MESSAGE, EM_EXLIMITTEXT, 0, (LPARAM)20000);
-			dat->nMax = 20000;
 		}
 	}
 }

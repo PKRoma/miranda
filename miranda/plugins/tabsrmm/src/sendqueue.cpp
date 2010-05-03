@@ -360,13 +360,37 @@ static void DoSplitSendA(LPVOID param)
 	mir_free(szBegin);
 }
 
+/**
+ * return effective length of the message in bytes (utf-8 encoded)
+ */
+int SendQueue::getSendLength(const int iEntry, int sendMode)
+{
+	if(m_jobs[iEntry].dwFlags & PREF_UNICODE && !(sendMode & SMODE_FORCEANSI)) {
+		int     iLen;
+		WCHAR   *wszBuf;
+		char    *utf8;
+		iLen = lstrlenA(m_jobs[iEntry].sendBuffer);
+		wszBuf = (WCHAR *) & m_jobs[iEntry].sendBuffer[iLen + 1];
+		utf8 = M->utf8_encodeW(wszBuf);
+		m_jobs[iEntry].iSendLength = lstrlenA(utf8);
+		mir_free(utf8);
+		return(m_jobs[iEntry].iSendLength);
+	}
+	else {
+		m_jobs[iEntry].iSendLength = lstrlenA(m_jobs[iEntry].sendBuffer);
+		return(m_jobs[iEntry].iSendLength);
+	}
+}
+
 int SendQueue::sendQueued(TWindowData *dat, const int iEntry)
 {
 	HWND	hwndDlg = dat->hwnd;
 
 	if (dat->sendMode & SMODE_MULTIPLE) {
-		HANDLE	hContact, hItem;
-		int		iJobs = 0;
+		HANDLE			hContact, hItem;
+		int				iJobs = 0;
+		int				iMinLength = 0;
+		CContactCache*	c = 0;
 
 		hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
 
@@ -374,22 +398,45 @@ int SendQueue::sendQueued(TWindowData *dat, const int iEntry)
 		m_jobs[iEntry].iStatus = SQ_INPROGRESS;
 		m_jobs[iEntry].hwndOwner = hwndDlg;
 
+		int	iSendLength = getSendLength(iEntry, dat->sendMode);
+
+		do {
+			hItem = (HANDLE) SendDlgItemMessage(hwndDlg, IDC_CLIST, CLM_FINDCONTACT, (WPARAM) hContact, 0);
+			if (hItem && SendDlgItemMessage(hwndDlg, IDC_CLIST, CLM_GETCHECKMARK, (WPARAM) hItem, 0)) {
+				c = CContactCache::getContactCache(hContact);
+				if(c)
+					iMinLength = (iMinLength == 0 ? c->getMaxMessageLength() : min(c->getMaxMessageLength(), iMinLength));
+			}
+		} while (hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM) hContact, 0));
+
+		if(iSendLength >= iMinLength) {
+			TCHAR	tszError[256];
+
+			mir_sntprintf(tszError, 256, CTranslator::get(CTranslator::GEN_SQ_SENDLATER_ERROR_MSG_TOO_LONG), iMinLength);
+			::SendMessage(dat->hwnd, DM_ACTIVATETOOLTIP, IDC_MESSAGE, reinterpret_cast<LPARAM>(tszError));
+			sendQueue->clearJob(iEntry);
+			return(0);
+		}
+
+		hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
 		do {
 			hItem = (HANDLE) SendDlgItemMessage(hwndDlg, IDC_CLIST, CLM_FINDCONTACT, (WPARAM) hContact, 0);
 			if (hItem && SendDlgItemMessage(hwndDlg, IDC_CLIST, CLM_GETCHECKMARK, (WPARAM) hItem, 0)) {
 				doSendLater(iEntry, 0, hContact, false);
 				iJobs++;
 			}
-		}
-		while (hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM) hContact, 0));
+		} while (hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM) hContact, 0));
+
 		sendQueue->clearJob(iEntry);
 		if(iJobs)
-			sendLater->setLastProcessed(0);							// force queue processing
+			sendLater->flushQueue();							// force queue processing
 		return(0);
 	}
 	else {
 		if (dat->hContact == NULL)
 			return 0;  //never happens
+
+		dat->nMax = dat->cache->getMaxMessageLength();                      // refresh length info
 
 		if (dat->sendMode & SMODE_FORCEANSI && M->GetByte(dat->cache->getActiveContact(), dat->cache->getActiveProto(), "UnicodeSend", 1))
 			M->WriteByte(dat->cache->getActiveContact(), dat->cache->getActiveProto(), "UnicodeSend", 0);
@@ -400,30 +447,11 @@ int SendQueue::sendQueued(TWindowData *dat, const int iEntry)
 			BOOL    fSplit = FALSE;
 			DWORD   dwOldFlags;
 
-			::GetMaxMessageLength(dat);                      // refresh length info
 			/*
-			 + determine send buffer length
-			*/
-#if defined(_UNICODE)
-			if (m_jobs[iEntry].dwFlags & PREF_UNICODE && !(dat->sendMode & SMODE_FORCEANSI)) {
-				int     iLen;
-				WCHAR   *wszBuf;
-				char    *utf8;
-				iLen = lstrlenA(m_jobs[iEntry].sendBuffer);
-				wszBuf = (WCHAR *) & m_jobs[iEntry].sendBuffer[iLen + 1];
-				utf8 = M->utf8_encodeW(wszBuf);
-				if (lstrlenA(utf8) >= dat->nMax)
-					fSplit = TRUE;
-				mir_free(utf8);
-			}
-			else {
-				if (lstrlenA(m_jobs[iEntry].sendBuffer) >= dat->nMax)
-					fSplit = TRUE;
-			}
-#else
-			if (lstrlenA(m_jobs[iEntry].sendBuffer) >= dat->nMax)
-				fSplit = TRUE;
-#endif
+			 * determine send buffer length
+			 */
+			if(getSendLength(iEntry, dat->sendMode) >= dat->nMax)
+				fSplit = true;
 
 			if (!fSplit)
 				goto send_unsplitted;
@@ -457,6 +485,15 @@ send_unsplitted:
 			m_jobs[iEntry].iStatus = SQ_INPROGRESS;
 			m_jobs[iEntry].iAcksNeeded = 1;
 			if(dat->sendMode & SMODE_SENDLATER) {
+				TCHAR	tszError[256];
+
+				int iSendLength = getSendLength(iEntry, dat->sendMode);
+				if(iSendLength >= dat->nMax) {
+					mir_sntprintf(tszError, 256, CTranslator::get(CTranslator::GEN_SQ_SENDLATER_ERROR_MSG_TOO_LONG), dat->nMax);
+					SendMessage(dat->hwnd, DM_ACTIVATETOOLTIP, IDC_MESSAGE, reinterpret_cast<LPARAM>(tszError));
+					clearJob(iEntry);
+					return(0);
+				}
 				doSendLater(iEntry, dat);
 				clearJob(iEntry);
 				return(0);
@@ -501,6 +538,7 @@ void SendQueue::clearJob(const int iIndex)
 	m_jobs[iIndex].chunkSize = 0;
 	m_jobs[iIndex].dwTime = 0;
 	m_jobs[iIndex].hSendId = 0;
+	m_jobs[iIndex].iSendLength = 0;
 }
 
 /*
@@ -676,29 +714,6 @@ void SendQueue::UpdateSaveAndSendButton(TWindowData *dat)
 	}
 }
 
-INT_PTR CALLBACK PopupDlgProcError(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
-{
-	HANDLE hContact = (HANDLE)CallService(MS_POPUP_GETPLUGINDATA, (WPARAM)hWnd, (LPARAM)&hContact);
-
-	switch (message) {
-		case WM_COMMAND:
-			PostMessage(PluginConfig.g_hwndHotkeyHandler, DM_HANDLECLISTEVENT, (WPARAM)hContact, 0);
-			PUDeletePopUp(hWnd);
-			break;
-		case WM_CONTEXTMENU:
-			PostMessage(PluginConfig.g_hwndHotkeyHandler, DM_HANDLECLISTEVENT, (WPARAM)hContact, 0);
-			PUDeletePopUp(hWnd);
-			break;
-		case WM_MOUSEWHEEL:
-			break;
-		case WM_SETCURSOR:
-			break;
-		default:
-			break;
-	}
-	return DefWindowProc(hWnd, message, wParam, lParam);
-}
-
 void SendQueue::NotifyDeliveryFailure(const TWindowData *dat)
 {
 	POPUPDATAT		ppd = {0};
@@ -714,7 +729,7 @@ void SendQueue::NotifyDeliveryFailure(const TWindowData *dat)
 		mir_sntprintf(ppd.lptzText, MAX_SECONDLINE, _T("%s"), CTranslator::get(CTranslator::GEN_SQ_DELIVERYFAILED));
 		ppd.colorText = RGB(255, 245, 225);
 		ppd.colorBack = RGB(191, 0, 0);
-		ppd.PluginWindowProc = (WNDPROC)PopupDlgProcError;
+		ppd.PluginWindowProc = reinterpret_cast<WNDPROC>(Utils::PopupDlgProcError);
 		ppd.lchIcon = PluginConfig.g_iconErr;
 		ppd.PluginData = (void *)dat->hContact;
 		ppd.iSeconds = -1;

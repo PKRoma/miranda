@@ -29,9 +29,6 @@
  * $Id$
  *
  * the sendlater class implementation
- *
- * TODO: create a simple UI to give the user control over the jobs in the
- *       send later queue.
  */
 
 #include "commonheaders.h"
@@ -42,8 +39,6 @@
 #else
 	#define U_PREF_UNICODE 0
 #endif
-
-INT_PTR CALLBACK PopupDlgProcError(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
 /*
  * implementation of the CSendLaterJob class
@@ -132,38 +127,53 @@ void CSendLaterJob::writeFlags()
 	}
 }
 
+/**
+ * delete a send later job
+ */
 CSendLaterJob::~CSendLaterJob()
 {
 	if(fSuccess || fFailed) {
 		POPUPDATAT ppd = {0};
 
-		if(!M->GetByte("adv_noSendLaterPopups", 0)) {
+		if((sendLater->haveErrorPopups() && fFailed) || (sendLater->haveSuccessPopups() && fSuccess)) {
+			bool fShowPopup = true;
+
+			if(fFailed && bCode == JOB_REMOVABLE)	// no popups for jobs removed on user's request
+				fShowPopup = false;
 			/*
 			 * show a popup notification, unless they are disabled
 			 */
-			if (PluginConfig.g_PopupAvail) {
+			if (PluginConfig.g_PopupAvail && fShowPopup) {
 				TCHAR	*tszName = (TCHAR *)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)hContact, GCDNF_TCHAR);
 
 				ZeroMemory((void *)&ppd, sizeof(ppd));
 				ppd.lchContact = hContact;
 				ppd.cbSize = sizeof(ppd);
 				mir_sntprintf(ppd.lptzContactName, MAX_CONTACTNAME, _T("%s"), tszName ? tszName : CTranslator::get(CTranslator::GEN_UNKNOWN_CONTACT));
-				if(fSuccess && szId[0] == 'S') {
 #if defined(_UNICODE)
-					TCHAR *msgPreview = Utils::GetPreviewWithEllipsis(reinterpret_cast<TCHAR *>(&pBuf[lstrlenA((char *)pBuf) + 1]), 100);
+				TCHAR *msgPreview = Utils::GetPreviewWithEllipsis(reinterpret_cast<TCHAR *>(&pBuf[lstrlenA((char *)pBuf) + 1]), 100);
 #else
-					TCHAR *msgPreview = Utils::GetPreviewWithEllipsis(reinterpret_cast<TCHAR *>(pBuf), 100);
+				TCHAR *msgPreview = Utils::GetPreviewWithEllipsis(reinterpret_cast<TCHAR *>(pBuf), 100);
 #endif
+				if(fSuccess) {
 					mir_sntprintf(ppd.lptzText, MAX_SECONDLINE, CTranslator::get(CTranslator::GEN_SQ_SENDLATER_SUCCESS_POPUP),
+								  msgPreview);
+					mir_free(msgPreview);
+				}
+				else if(fFailed) {
+					mir_sntprintf(ppd.lptzText, MAX_SECONDLINE, CTranslator::get(CTranslator::GEN_SQ_SENDLATER_FAILED_POPUP),
 						msgPreview);
 					mir_free(msgPreview);
 				}
-				ppd.colorText = fFailed ? M->GetByte("adv_PopupText_failedjob", RGB(255, 245, 225)) : M->GetByte("adv_PopupText_successjob", RGB(255, 245, 225));
-				ppd.colorBack = fFailed ? M->GetByte("adv_PopupBG_failedjob", RGB(191, 0, 0)) : M->GetByte("adv_PopupBG_successjob", RGB(0, 121, 0));
-				ppd.PluginWindowProc = (WNDPROC)PopupDlgProcError;
-				ppd.lchIcon = PluginConfig.g_iconErr;
+				/*
+				 * use message settings (timeout/colors) for success popups
+				 */
+				ppd.colorText = fFailed ? RGB(255, 245, 225) : nen_options.colTextMsg;
+				ppd.colorBack = fFailed ? RGB(191, 0, 0) : nen_options.colBackMsg;
+				ppd.PluginWindowProc = reinterpret_cast<WNDPROC>(Utils::PopupDlgProcError);
+				ppd.lchIcon = fFailed ? PluginConfig.g_iconErr : PluginConfig.g_IconMsgEvent;
 				ppd.PluginData = (void *)hContact;
-				ppd.iSeconds = -1;
+				ppd.iSeconds = fFailed ? -1 : nen_options.iDelayMsg;
 				CallService(MS_POPUP_ADDPOPUPW, (WPARAM)&ppd, 0);
 			}
 		}
@@ -181,6 +191,9 @@ CSendLater::CSendLater()
 	m_fAvail = M->GetByte("sendLaterAvail", 0) ? true : false;
 	m_last_sendlater_processed = time(0);
 	m_hwndDlg = 0;
+
+	m_fErrorPopups = M->GetByte(0, SRMSGMOD_T, "qmgrErrorPopups", 0) ? true : false;
+	m_fSuccessPopups = M->GetByte(0, SRMSGMOD_T, "qmgrSuccessPopups", 0) ? true : false;
 }
 
 /**
@@ -207,6 +220,14 @@ CSendLater::~CSendLater()
 	}
 }
 
+void CSendLater::startJobListProcess()
+{ 
+	m_jobIterator = m_sendLaterJobList.begin(); 
+			
+	if (m_hwndDlg)
+		Utils::enableDlgControl(m_hwndDlg, IDC_QMGR_LIST, false);
+}
+
 /**
  * checks if the current job in the timer-based process queue is subject
  * for deletion (that is, it has failed or succeeded)
@@ -227,8 +248,9 @@ bool CSendLater::processCurrentJob()
 		if((*m_jobIterator)->mustDelete()) {
 			delete *m_jobIterator;
 			m_jobIterator = m_sendLaterJobList.erase(m_jobIterator);
-			qMgrUpdate();
 		}
+		else
+			m_jobIterator++;
 		return(m_jobIterator == m_sendLaterJobList.end() ? false : true);
 	}
 	sendIt(*m_jobIterator);
@@ -313,7 +335,6 @@ int CSendLater::addJob(const char *szSetting, LPARAM lParam)
 	 */
 	while(it != m_sendLaterJobList.end()) {
 		if((*it)->hContact == hContact && !strcmp((*it)->szId, szSetting)) {
-			//_DebugTraceA("%s for %d is already on the job list.", szSetting, hContact);
 			return(0);
 		}
 		it++;
@@ -520,7 +541,6 @@ HANDLE CSendLater::processAck(const ACKDATA *ack)
 			DBEVENTINFO dbei = {0};
 
 			if(!(*it)->fSuccess) {
-				//_DebugTraceA("ack for: hProcess: %d, job id: %s, job hProcess: %d", ack->hProcess, (*it)->szId, (*it)->hProcess);
 				dbei.cbSize = sizeof(dbei);
 				dbei.eventType = EVENTTYPE_MESSAGE;
 				dbei.flags = DBEF_SENT;
@@ -551,10 +571,13 @@ HANDLE CSendLater::processAck(const ACKDATA *ack)
  * UI stuff (dialog procedures for the queue manager dialog
  */
 
-void CSendLater::qMgrUpdate()
+void CSendLater::qMgrUpdate(bool fReEnable)
 {
-	if(m_hwndDlg)
+	if(m_hwndDlg) {
+		if(fReEnable)
+			Utils::enableDlgControl(m_hwndDlg, IDC_QMGR_LIST, true);
 		::SendMessage(m_hwndDlg, WM_USER + 100, 0, 0);		// if qmgr is open, tell it to update
+	}
 }
 
 LRESULT CSendLater::qMgrAddFilter(const HANDLE hContact, const TCHAR* tszNick)
@@ -692,7 +715,7 @@ void CSendLater::qMgrFillList(bool fClear)
 #define QMGR_LIST_NRCOLUMNS 5
 
 static char*  szColFormat = "%d;%d;%d;%d;%d";
-static char*  szColDefault = "80;120;80;80;120";
+static char*  szColDefault = "100;120;80;120;120";
 
 void CSendLater::qMgrSetupColumns()
 {
@@ -784,9 +807,17 @@ INT_PTR CALLBACK CSendLater::DlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
 			m_hFilter = reinterpret_cast<HANDLE>(M->GetDword(0, SRMSGMOD_T, "qmgrFilterContact", 0));
 
 			::SetWindowLongPtr(m_hwndList, GWL_STYLE, ::GetWindowLongPtr(m_hwndList, GWL_STYLE) | LVS_SHOWSELALWAYS);
-			::SendMessage(m_hwndList, LVM_SETEXTENDEDLISTVIEWSTYLE, 0, LVS_EX_FULLROWSELECT|LVS_EX_GRIDLINES|LVS_EX_LABELTIP);
+			::SendMessage(m_hwndList, LVM_SETEXTENDEDLISTVIEWSTYLE, 0, LVS_EX_FULLROWSELECT|LVS_EX_GRIDLINES|LVS_EX_LABELTIP|LVS_EX_DOUBLEBUFFER);
 			qMgrSetupColumns();
 			qMgrFillList();
+			if(PluginConfig.g_PopupAvail) {
+				::CheckDlgButton(m_hwndDlg, IDC_QMGR_SUCCESSPOPUPS, m_fSuccessPopups ? BST_CHECKED : BST_UNCHECKED);
+				::CheckDlgButton(m_hwndDlg, IDC_QMGR_ERRORPOPUPS, m_fErrorPopups ? BST_CHECKED : BST_UNCHECKED);
+			}
+			else {
+				Utils::showDlgControl(m_hwndDlg, IDC_QMGR_ERRORPOPUPS, SW_HIDE);
+				Utils::showDlgControl(m_hwndDlg, IDC_QMGR_SUCCESSPOPUPS, SW_HIDE);
+			}
 			::ShowWindow(hwnd, SW_NORMAL);
 			return(FALSE);
 
@@ -807,6 +838,7 @@ INT_PTR CALLBACK CSendLater::DlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
 						if(::SendMessage(m_hwndList, LVM_GETSELECTEDCOUNT, 0, 0) == 1)
 							::EnableMenuItem(hSubMenu, ID_QUEUEMANAGER_COPYMESSAGETOCLIPBOARD, MF_ENABLED);
 
+						m_fIsInteractive = true;
 						int selection = ::TrackPopupMenu(hSubMenu, TPM_RETURNCMD, pt.x, pt.y, 0, m_hwndDlg, NULL);
 						if(selection == ID_QUEUEMANAGER_CANCELALLMULTISENDJOBS) {
 							SendLaterJobIterator it = m_sendLaterJobList.begin();
@@ -818,9 +850,12 @@ INT_PTR CALLBACK CSendLater::DlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
 								it++;
 							}
 						}
-						else if(selection != 0)
+						else if(selection != 0) {
 							::SendMessage(hwnd, WM_COMMAND, MAKEWPARAM(IDC_QMGR_REMOVE, LOWORD(selection)), 0);
+							m_last_sendlater_processed = 0;			// force a queue check
+						}
 						::DestroyMenu(hMenu);
+						m_fIsInteractive = false;
 						break;
 					}
 					default:
@@ -844,6 +879,16 @@ INT_PTR CALLBACK CSendLater::DlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
 				case IDCANCEL:
 					qMgrSaveColumns();
 					::DestroyWindow(hwnd);
+					break;
+
+				case IDC_QMGR_SUCCESSPOPUPS:
+					m_fSuccessPopups = ::IsDlgButtonChecked(m_hwndDlg, IDC_QMGR_SUCCESSPOPUPS) ? true : false;
+					M->WriteByte(0, SRMSGMOD_T, "qmgrSuccessPopups", m_fSuccessPopups ? 1 : 0);
+					break;
+
+				case IDC_QMGR_ERRORPOPUPS:
+					m_fErrorPopups = ::IsDlgButtonChecked(m_hwndDlg, IDC_QMGR_ERRORPOPUPS) ? true : false;
+					M->WriteByte(0, SRMSGMOD_T, "qmgrErrorPopups", m_fErrorPopups ? 1 : 0);
 					break;
 
 				case IDC_QMGR_HELP:
@@ -932,12 +977,14 @@ INT_PTR CALLBACK CSendLater::DlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
 	return(FALSE);
 }
 
+/**
+ * invoke queue manager dialog - do nothing if this dialog is already open
+ */
 void CSendLater::invokeQueueMgrDlg()
 {
-	if(m_hwndDlg == 0) {
+	if(m_hwndDlg == 0)
 		m_hwndDlg = ::CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_SENDLATER_QMGR), 0, CSendLater::DlgProcStub, 
 										reinterpret_cast<LPARAM>(this));
-	}
 }
 
 /*

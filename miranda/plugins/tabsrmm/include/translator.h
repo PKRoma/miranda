@@ -266,7 +266,9 @@ public:
 		QMGR_TITLE												= 217,
 		QMGR_STATUS_HOLD										= 218,
 		QMGR_STATUS_DEFERRED									= 219,
-		STR_LAST 												= 220
+		GEN_SQ_SENDLATER_FAILED_POPUP							= 220,
+		GEN_SQ_SENDLATER_ERROR_MSG_TOO_LONG						= 221,
+		STR_LAST 												= 222
 	};
 
 	enum {

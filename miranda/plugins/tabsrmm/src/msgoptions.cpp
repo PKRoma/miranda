@@ -353,6 +353,7 @@ static INT_PTR CALLBACK DlgProcSkinOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 				i++;
 			}
 			Utils::showDlgControl(hwndDlg, IDC_SKIN_WARN, fWindowsOpen ? SW_SHOW : SW_HIDE);
+			Utils::showDlgControl(hwndDlg, IDC_SKIN_CLOSENOW, fWindowsOpen ? SW_SHOW : SW_HIDE);
 			return(0);
 		}
 
@@ -401,6 +402,19 @@ static INT_PTR CALLBACK DlgProcSkinOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 					CallService(MS_UTILS_OPENURL, 1, (LPARAM)"http://blog.miranda.or.at/tabsrmm/skin-selection-changes/");
 					break;
 
+				case IDC_SKIN_CLOSENOW: {
+					BOOL fOldHideSetting = PluginConfig.m_HideOnClose;
+
+					PluginConfig.m_HideOnClose = FALSE;
+
+					while(pFirstContainer) {
+						if(pFirstContainer->hwnd)
+							SendMessage(pFirstContainer->hwnd, WM_CLOSE, 0, 1);
+					}
+
+					PluginConfig.m_HideOnClose = fOldHideSetting;
+					break;
+				}
 				case IDC_SKINNAME: {
 					if(HIWORD(wParam) == CBN_SELCHANGE) {
 						LRESULT lr = SendDlgItemMessage(hwndDlg, IDC_SKINNAME, CB_GETCURSEL, 0 ,0);

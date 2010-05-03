@@ -213,7 +213,6 @@ BEGIN
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,135,125,156,10
     CONTROL         "Show the info panel",IDC_INFOPANEL,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,135,137,156,10
     CONTROL         "Hide title bar",IDC_O_HIDETITLE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,135,66,111,10
-    CONTROL         "Use static container icon",IDC_STATICICON,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,135,78,130,10
     LTEXT           "Title bar format",IDC_O_TITLEBARFORMAT,135,91,160,11
     EDITTEXT        IDC_TITLEFORMAT,135,103,123,13,ES_AUTOHSCROLL
     CONTROL         "Available formats",IDC_O_HELP_TITLEFORMAT,"Hyperlink",WS_TABSTOP,136,120,200,12
@@ -562,7 +561,7 @@ BEGIN
                     "Hyperlink",WS_TABSTOP | 0x1,18,91,192,12
 END
 
-IDD_OPT_SKIN DIALOGEX 0, 0, 303, 200
+IDD_OPT_SKIN DIALOGEX 0, 0, 303, 224
 STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
@@ -580,6 +579,7 @@ BEGIN
     GROUPBOX        "Skin root folder",IDC_STATIC,7,2,289,45
     CONTROL         "Help on this",IDC_HELP_GENERAL,"Hyperlink",WS_TABSTOP | 0x1,224,211,67,9
     CTEXT           "Before you can load or unload a skin, you must close all message windows.",IDC_SKIN_WARN,9,173,283,20
+    PUSHBUTTON      "Close open message windows now",IDC_SKIN_CLOSENOW,9,209,174,12
 END
 
 IDD_USERPREFS_FRAME DIALOGEX 0, 0, 289, 316
@@ -841,12 +841,7 @@ BEGIN
             MENUITEM "Show Tool Bar",               40078
             MENUITEM "Place ToolBar at bottom",     40171
         END
-        POPUP "Title Bar"
-        BEGIN
-            MENUITEM "Show Title Bar",              40083
-            MENUITEM SEPARATOR
-            MENUITEM "Use static container Icon",   40126
-        END
+        MENUITEM "Title Bar",                   40083
         MENUITEM "Tabs at Bottom",              40093
         MENUITEM "Vertical maximize",           40143
         MENUITEM SEPARATOR
@@ -914,7 +909,15 @@ IDI_FEATURE_ENABLED     ICON                    "res/overlay_enabled.ico"
 #ifdef APSTUDIO_INVOKED
 GUIDELINES DESIGNINFO
 BEGIN
+    IDD_OPT_SKIN, DIALOG
+    BEGIN
+    END
+
     IDD_USERPREFS_FRAME, DIALOG
+    BEGIN
+    END
+
+    IDD_USERPREFS1, DIALOG
     BEGIN
     END
 END
@@ -936,17 +939,21 @@ LANGUAGE LANG_GERMAN, SUBLANG_GERMAN
 // Dialog
 //
 
-IDD_SENDLATER_QMGR DIALOGEX 0, 0, 445, 257
+IDD_SENDLATER_QMGR DIALOGEX 0, 0, 484, 258
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Queued send jobs"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    DEFPUSHBUTTON   "Close",IDOK,352,235,86,14
-    CONTROL         "",IDC_QMGR_LIST,"SysListView32",LVS_REPORT | LVS_SHOWSELALWAYS | LVS_ALIGNLEFT | WS_BORDER | WS_TABSTOP,6,40,432,185
-    GROUPBOX        "Queued jobs",IDC_STATIC,3,29,438,202
-    RTEXT           "Filter by contact:",IDC_STATIC,9,17,288,12
-    COMBOBOX        IDC_QMGR_FILTER,303,15,132,15,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    CONTROL         "Help on this",IDC_QMGR_HELP,"Hyperlink",WS_TABSTOP | 0x1,15,237,141,12
+    DEFPUSHBUTTON   "Close",IDOK,391,239,86,14
+    CONTROL         "",IDC_QMGR_LIST,"SysListView32",LVS_REPORT | LVS_SHOWSELALWAYS | LVS_ALIGNLEFT | WS_BORDER | WS_TABSTOP,6,33,471,183
+    GROUPBOX        "Queued jobs",IDC_STATIC,3,24,477,198
+    RTEXT           "Filter by contact:",IDC_STATIC,9,8,324,12
+    COMBOBOX        IDC_QMGR_FILTER,345,6,132,15,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "Help on this",IDC_QMGR_HELP,"Hyperlink",WS_TABSTOP,246,240,141,12
+    CONTROL         "Display popups for failed jobs",IDC_QMGR_ERRORPOPUPS,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,228,210,12
+    CONTROL         "Display popups for completed jobs",IDC_QMGR_SUCCESSPOPUPS,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,242,210,12
 END
 
 
@@ -961,9 +968,9 @@ BEGIN
     IDD_SENDLATER_QMGR, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 438
+        RIGHTMARGIN, 477
         TOPMARGIN, 7
-        BOTTOMMARGIN, 253
+        BOTTOMMARGIN, 254
     END
 END
 #endif    // APSTUDIO_INVOKED

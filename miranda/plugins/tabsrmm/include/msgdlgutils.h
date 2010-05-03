@@ -79,7 +79,6 @@ LRESULT TSAPI GetSendButtonState			(HWND hwnd);
 HICON	TSAPI GetXStatusIcon				(const TWindowData *dat);
 void	TSAPI FlashTab						(TWindowData *dat, HWND hwndTab, int iTabindex, BOOL *bState, BOOL mode, HICON origImage);
 void	TSAPI GetClientIcon					(TWindowData *dat);
-void	TSAPI GetMaxMessageLength			(TWindowData *dat);
 void	TSAPI RearrangeTab					(HWND hwndDlg, const TWindowData *dat, int iMode, BOOL fSavePos);
 void	TSAPI GetCachedStatusMsg			(TWindowData *dat);
 BOOL	TSAPI IsStatusEvent					(int eventType);

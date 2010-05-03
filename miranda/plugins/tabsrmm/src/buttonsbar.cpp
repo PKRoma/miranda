@@ -1454,6 +1454,7 @@ INT_PTR CALLBACK DlgProcToolBar(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM l
 
 							M->WriteByte(SRMSGMOD_T, "ButtonsBarGap", PluginConfig.g_iButtonsBarGap);
 
+							BuildMenuObjectsTree((HWND)hToolBarTree);
 							Utils::enableDlgControl(hwndDlg, IDC_IMCHECK, FALSE);
 							Utils::enableDlgControl(hwndDlg, IDC_CHATCHECK, FALSE);
 							Utils::enableDlgControl(hwndDlg, IDC_CANBEHIDDEN, FALSE);
@@ -1508,6 +1509,10 @@ INT_PTR CALLBACK DlgProcToolBar(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM l
 								cbd->opFlags = (IsDlgButtonChecked(hwndDlg, IDC_IMCHECK)) ? BBSF_IMBUTTON : 0;
 								cbd->opFlags |= (IsDlgButtonChecked(hwndDlg, IDC_CHATCHECK)) ? BBSF_CHATBUTTON : 0;
 								cbd->opFlags |= (IsDlgButtonChecked(hwndDlg, IDC_CANBEHIDDEN)) ? BBSF_CANBEHIDDEN : 0;
+								
+								cbd->bIMButton = (IsDlgButtonChecked(hwndDlg, IDC_IMCHECK) ? TRUE : FALSE);
+								cbd->bChatButton = (IsDlgButtonChecked(hwndDlg, IDC_CHATCHECK) ? TRUE : FALSE);
+								cbd->bCanBeHidden = (IsDlgButtonChecked(hwndDlg, IDC_CANBEHIDDEN) ? TRUE : FALSE);
 							}
 						}
 						break;
@@ -1546,24 +1551,16 @@ INT_PTR CALLBACK DlgProcToolBar(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM l
 								Utils::enableDlgControl(hwndDlg, IDC_IMCHECK, TRUE);
 								Utils::enableDlgControl(hwndDlg, IDC_CHATCHECK, TRUE);
 								Utils::enableDlgControl(hwndDlg, IDC_CANBEHIDDEN, TRUE);
-								if (cbd->opFlags) {
-									CheckDlgButton(hwndDlg, IDC_IMCHECK, (cbd->opFlags&BBSF_IMBUTTON) ? 1 : 0);
-									CheckDlgButton(hwndDlg, IDC_CHATCHECK, (cbd->opFlags&BBSF_CHATBUTTON) ? 1 : 0);
-									CheckDlgButton(hwndDlg, IDC_CANBEHIDDEN, (cbd->opFlags&BBSF_CANBEHIDDEN) ? 1 : 0);
-								} else {
-									CheckDlgButton(hwndDlg, IDC_IMCHECK, cbd->bIMButton);
-									CheckDlgButton(hwndDlg, IDC_CHATCHECK, cbd->bChatButton);
-									CheckDlgButton(hwndDlg, IDC_CANBEHIDDEN, cbd->bCanBeHidden);
-								}
+								CheckDlgButton(hwndDlg, IDC_IMCHECK, (cbd->bIMButton) ? 1 : 0);
+								CheckDlgButton(hwndDlg, IDC_CHATCHECK, (cbd->bChatButton) ? 1 : 0);
+								CheckDlgButton(hwndDlg, IDC_CANBEHIDDEN, (cbd->bCanBeHidden) ? 1 : 0);
 							}
 						}
 						break;
 
 						case NM_CLICK: {
-							break;
-							TVHITTESTINFO hti;
-							hti.pt.x = (short)LOWORD(GetMessagePos());
-							hti.pt.y = (short)HIWORD(GetMessagePos());
+							TVHITTESTINFO hti = {0};
+							GetCursorPos(&hti.pt);
 							ScreenToClient(hToolBarTree, &hti.pt);
 							if (TreeView_HitTest(hToolBarTree, &hti)) {
 								if (hti.flags&TVHT_ONITEMSTATEICON) {

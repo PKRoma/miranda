@@ -392,7 +392,6 @@
 #define IDC_LOADONLYACTUAL              1311
 #define IDC_MICROLF                     1312
 #define IDC_EVENTAPI                    1313
-#define IDC_STATICICON                  1314
 #define IDC_MINIMIZETOTRAY              1316
 #define IDC_DELETETEMP                  1318
 #define IDC_FORMATTING                  1319
@@ -534,6 +533,11 @@
 #define IDC_QMGR_FILTER                 1442
 #define IDC_TOOLBARTREE                 1444
 #define IDC_QMGR_HELP                   1444
+#define IDC_QMGR_ERRORPOPUPS            1445
+#define IDC_QMGR_ERRORPOPUPS2           1446
+#define IDC_QMGR_SUCCESSPOPUPS          1446
+#define IDC_BUTTON2                     1446
+#define IDC_SKIN_CLOSENOW               1446
 #define IDC_STYLEDTABS                  1482
 #define IDC_FLASHICON                   1489
 #define IDC_FLASHLABEL                  1490
@@ -783,8 +787,8 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        16
-#define _APS_NEXT_COMMAND_VALUE         40262
-#define _APS_NEXT_CONTROL_VALUE         1445
+#define _APS_NEXT_COMMAND_VALUE         40263
+#define _APS_NEXT_CONTROL_VALUE         1447
 #define _APS_NEXT_SYMED_VALUE           40283
 #endif
 #endif

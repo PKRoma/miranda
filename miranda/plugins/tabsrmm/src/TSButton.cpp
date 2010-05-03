@@ -786,12 +786,16 @@ static LRESULT CALLBACK TSButtonWndProc(HWND hwndDlg, UINT msg,  WPARAM wParam, 
 				bct->sitem->activateSession();
 			}
 
-			if (bct->arrow && bct->stateId != PBS_DISABLED) {
+			if (bct->arrow) {
 				GetClientRect(bct->hwnd, &rc);
-				if (LOWORD(lParam) < rc.right - 12)
+				if (LOWORD(lParam) < rc.right - 12 && bct->stateId != PBS_DISABLED)
 					bct->stateId = PBS_PRESSED;
-				else
-					bct->stateId = PBS_PUSHDOWNPRESSED;
+				else if(LOWORD(lParam) > rc.right - 12) {
+					if(GetDlgCtrlID(hwndDlg) == IDOK || bct->stateId != PBS_DISABLED) {
+						WORD w = (WORD)((int)bct->arrow & 0x0000ffff);
+						SendMessage(GetParent(hwndDlg), WM_COMMAND, MAKELONG(w, BN_CLICKED), (LPARAM)hwndDlg);
+					}
+				}
 				InvalidateRect(bct->hwnd, NULL, TRUE);
 			} else if (bct->stateId != PBS_DISABLED) {
 				bct->stateId = PBS_PRESSED;
@@ -800,8 +804,8 @@ static LRESULT CALLBACK TSButtonWndProc(HWND hwndDlg, UINT msg,  WPARAM wParam, 
 			break;
 		}
 		case WM_LBUTTONUP: {
-			RECT rc;
 			int  showClick = 0;
+
 			if (bct->sitem) {
 				if(bct->sitem->testCloseButton() != -1) {
 					SendMessage(bct->sitem->getDat()->hwnd, WM_CLOSE, 1, 0);
@@ -813,23 +817,13 @@ static LRESULT CALLBACK TSButtonWndProc(HWND hwndDlg, UINT msg,  WPARAM wParam, 
 				else bct->pbState = 1;
 			}
 			if (bct->stateId != PBS_DISABLED) { // don't change states if disabled
-				if(bct->stateId == PBS_PRESSED || bct->stateId == PBS_PUSHDOWNPRESSED)
+				if(bct->stateId == PBS_PRESSED)
 					showClick = 1;
 				if (msg == WM_LBUTTONUP)
 					bct->stateId = PBS_HOT;
 				else
 					bct->stateId = PBS_NORMAL;
 				InvalidateRect(bct->hwnd, NULL, TRUE);
-			}
-			if (bct->arrow) {
-				GetClientRect(bct->hwnd, &rc);
-				if (LOWORD(lParam) > rc.right - 12) {
-					if(showClick) {
-						WORD w = (WORD)((int)bct->arrow & 0x0000ffff);
-						SendMessage(GetParent(hwndDlg), WM_COMMAND, MAKELONG(w, BN_CLICKED), (LPARAM)hwndDlg);
-					}
-					break;
-				}
 			}
 			if(showClick)
 		          SendMessage(GetParent(hwndDlg), WM_COMMAND, MAKELONG(GetDlgCtrlID(hwndDlg), BN_CLICKED), (LPARAM)hwndDlg);

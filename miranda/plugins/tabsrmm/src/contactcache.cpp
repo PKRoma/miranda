@@ -48,6 +48,7 @@ CContactCache::CContactCache(const HANDLE hContact)
 	m_wOldStatus = m_wStatus = m_wMetaStatus = ID_STATUS_OFFLINE;
 
 	m_szStatusMsg = m_ListeningInfo = m_xStatusMsg = 0;
+	m_nMax = 0;
 
 	if(hContact) {
 		m_szProto = reinterpret_cast<char *>(::CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)m_hContact, 0));
@@ -637,4 +638,33 @@ HICON CContactCache::getIcon(int& iSize) const
 	else
 		hIcon = LoadSkinnedProtoIcon(m_szProto, m_wStatus);
 	return(hIcon);
+}
+
+int CContactCache::getMaxMessageLength()
+{
+	HANDLE 	hContact;
+	const 	char*		szProto;
+
+	hContact = getActiveContact();
+	szProto = getActiveProto();
+
+	if (szProto) {
+
+		m_nMax = CallProtoService(szProto, PS_GETCAPS, PFLAG_MAXLENOFMESSAGE, reinterpret_cast<LPARAM>(hContact));
+		if (m_nMax) {
+			if (M->GetByte("autosplit", 0)) {
+				if(m_hwnd)
+					::SendDlgItemMessage(m_hwnd, IDC_MESSAGE, EM_EXLIMITTEXT, 0, 20000);
+			}
+			else {
+				if(m_hwnd)
+					::SendDlgItemMessage(m_hwnd, IDC_MESSAGE, EM_EXLIMITTEXT, 0, (LPARAM)m_nMax);
+			}
+		} else {
+			if(m_hwnd)
+				::SendDlgItemMessage(m_hwnd, IDC_MESSAGE, EM_EXLIMITTEXT, 0, 20000);
+			m_nMax = 20000;
+		}
+	}
+	return(m_nMax);
 }

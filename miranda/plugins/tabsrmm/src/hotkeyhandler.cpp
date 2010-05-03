@@ -490,7 +490,11 @@ LONG_PTR CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			}
 			return(0);
 		}
-
+		/*
+		 * react to changes in the desktop composition state
+		 * (enable/disable DWM, change to a non-aero visual style
+		 * or classic Windows theme
+		 */
 		case WM_DWMCOMPOSITIONCHANGED: {
 			bool fNewAero = M->getAeroState();					// refresh dwm state
 			SendMessage(hwndDlg, WM_THEMECHANGED, 0, 0);
@@ -517,13 +521,23 @@ LONG_PTR CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			break;
 		}
 
+		/*
+		 * this message is fired when the user changes desktop color
+		 * settings (Desktop->personalize)
+		 * the handler reconfigures the aero-related skin images for
+		 * tabs and buttons to match the new desktop color theme.
+		 */
 		case WM_DWMCOLORIZATIONCOLORCHANGED: {
 			M->getAeroState();
 			Skin->setupAeroSkins();
 			CSkin::initAeroEffect();
 			break;
 		}
-
+		
+		/*
+		 * user has changed the visual style or switched to/from
+		 * classic Windows theme
+		 */
 		case WM_THEMECHANGED: {
 			struct TContainerData *pContainer = pFirstContainer;
 
@@ -541,6 +555,7 @@ LONG_PTR CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			}
 			break;
 		}
+
 		case DM_SPLITSENDACK: {
 			ACKDATA ack = {0};
 			struct SendJob *job = sendQueue->getJobByIndex((int)wParam);
@@ -613,10 +628,8 @@ LONG_PTR CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 				/*
 				 * process send later contacts and jobs, if enough time has elapsed
 				 */
-				if(sendLater->isAvail() && (time(0) - sendLater->lastProcessed()) > CSendLater::SENDLATER_PROCESS_INTERVAL) {
-					time_t now;
-					now = time(0);
-					sendLater->setLastProcessed(now);
+				if(sendLater->isAvail() && !sendLater->isInteractive() && (time(0) - sendLater->lastProcessed()) > CSendLater::SENDLATER_PROCESS_INTERVAL) {
+					sendLater->setLastProcessed(time(0));
 
 					/*
 					 * check the list of contacts that may have new send later jobs
@@ -643,7 +656,7 @@ LONG_PTR CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 				if(!sendLater->haveJobs()) {
 					KillTimer(hwndDlg, wParam);
 					SetTimer(hwndDlg, TIMERID_SENDLATER, TIMEOUT_SENDLATER, 0);
-					sendLater->qMgrUpdate();
+					sendLater->qMgrUpdate(true);
 				}
 				else
 					sendLater->processCurrentJob();
@@ -659,4 +672,3 @@ LONG_PTR CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 	}
 	return(DefWindowProc(hwndDlg, msg, wParam, lParam));
 }
-

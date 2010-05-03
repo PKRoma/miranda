@@ -108,6 +108,8 @@ public:
 
 	static	AVATARCACHEENTRY*	TSAPI loadAvatarFromAVS				(const HANDLE hContact);
 
+	static	INT_PTR CALLBACK		  PopupDlgProcError				(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+
 	template<typename T> static size_t TSAPI CopyToClipBoard(T* _t, const HWND hwndOwner)
 	{
 		HGLOBAL	hData;
@@ -115,16 +117,19 @@ public:
 		if (!OpenClipboard(hwndOwner) || _t == 0)
 			return(0);
 
+		std::basic_string<T> *s = new std::basic_string<T>(_t);
 		size_t _s = sizeof(T);
-		size_t  s = _s * ((_s == 1 ? lstrlenA(reinterpret_cast<char *>(_t)) : lstrlenW(reinterpret_cast<wchar_t*>(_t))) + 1);
-		EmptyClipboard();
-		hData = ::GlobalAlloc(GMEM_MOVEABLE | GMEM_SHARE, s);
+		size_t i = _s * (s->length() + 1);
 
-		CopyMemory((void *)GlobalLock(hData), (void *)_t, s);
+		EmptyClipboard();
+		hData = ::GlobalAlloc(GMEM_MOVEABLE | GMEM_SHARE, i);
+
+		CopyMemory((void *)GlobalLock(hData), (void *)_t, i);
 		GlobalUnlock(hData);
-		SetClipboardData(_s == 1 ? CF_TEXT : CF_UNICODETEXT, hData);
+		SetClipboardData(_s == sizeof(char) ? CF_TEXT : CF_UNICODETEXT, hData);
 		CloseClipboard();
-		return(s);
+		delete s;
+		return(i);
 	}
 
 	template<typename T> static void AddToFileList(T ***pppFiles, int *totalCount, const TCHAR* szFilename)

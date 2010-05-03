@@ -639,6 +639,32 @@ int Utils::RTFColorToIndex(int iCol)
 }
 
 /**
+ * generic error popup dialog procedure
+ */
+INT_PTR CALLBACK Utils::PopupDlgProcError(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+{
+	HANDLE hContact = (HANDLE)CallService(MS_POPUP_GETPLUGINDATA, (WPARAM)hWnd, (LPARAM)&hContact);
+
+	switch (message) {
+	case WM_COMMAND:
+		PostMessage(PluginConfig.g_hwndHotkeyHandler, DM_HANDLECLISTEVENT, (WPARAM)hContact, 0);
+		PUDeletePopUp(hWnd);
+		break;
+	case WM_CONTEXTMENU:
+		PostMessage(PluginConfig.g_hwndHotkeyHandler, DM_HANDLECLISTEVENT, (WPARAM)hContact, 0);
+		PUDeletePopUp(hWnd);
+		break;
+	case WM_MOUSEWHEEL:
+		break;
+	case WM_SETCURSOR:
+		break;
+	default:
+		break;
+	}
+	return DefWindowProc(hWnd, message, wParam, lParam);
+}
+
+/**
  * read a blob from db into the container settings structure
  * @param hContact:	contact handle (0 = read global)
  * @param cs		TContainerSettings* target structure

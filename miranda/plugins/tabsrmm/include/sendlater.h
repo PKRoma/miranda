@@ -92,10 +92,14 @@ public:
 	CSendLater();
 	~CSendLater();
 	bool											isAvail() const { return(m_fAvail); }
+	bool											isInteractive() const { return(m_fIsInteractive); }
 	bool											isJobListEmpty() const { return(m_sendLaterJobList.empty() ? true : false); }
-	void											startJobListProcess() { m_jobIterator = m_sendLaterJobList.begin(); }
+	bool											haveErrorPopups() const { return(m_fErrorPopups); }
+	bool											haveSuccessPopups() const { return(m_fSuccessPopups); }
+	void											startJobListProcess();
 	time_t											lastProcessed() const { return(m_last_sendlater_processed); }
 	void											setLastProcessed(const time_t _t) { m_last_sendlater_processed = _t; }
+	void											flushQueue() { m_last_sendlater_processed = 0; }
 	bool											haveJobs() const
 		{
 			if(m_sendLaterJobList.empty() || m_jobIterator == m_sendLaterJobList.end())
@@ -111,7 +115,7 @@ public:
 	HANDLE											processAck(const ACKDATA *ack);
 
 	void											invokeQueueMgrDlg();
-	void											qMgrUpdate();
+	void											qMgrUpdate(bool fReEnable = false);
 	static INT_PTR									svcQMgr(WPARAM wParam, LPARAM lParam);
 
 private:
@@ -128,6 +132,9 @@ private:
 	std::vector<HANDLE>								m_sendLaterContactList;
 	std::vector<CSendLaterJob *>					m_sendLaterJobList;
 	bool											m_fAvail;
+	bool											m_fIsInteractive;
+	bool											m_fErrorPopups;
+	bool											m_fSuccessPopups;
 	time_t											m_last_sendlater_processed;
 	SendLaterJobIterator							m_jobIterator;
 

@@ -1932,9 +1932,6 @@ buttons_done:
 				break;
 			}
 
-			if ((HICON)lParam != hIconMsg && pContainer->dwFlags & CNT_STATICICON && PluginConfig.g_iconContainer != 0)
-				lParam = (LPARAM)PluginConfig.g_iconContainer;
-
 			if (pContainer->hIcon == STICK_ICON_MSG && (HICON)lParam != hIconMsg && pContainer->dwFlags & CNT_NEED_UPDATETITLE)
 				lParam = (LPARAM)hIconMsg;
 			//break;          // don't overwrite the new message indicator flag

@@ -614,9 +614,6 @@ LRESULT TSAPI DM_ContainerCmdHandler(TContainerData *pContainer, UINT cmd, WPARA
 		case ID_VIEW_TABSATBOTTOM:
 			ApplyContainerSetting(pContainer, CNT_TABSBOTTOM, pContainer->dwFlags & CNT_TABSBOTTOM ? 0 : 1, false);
 			break;
-		case ID_TITLEBAR_USESTATICCONTAINERICON:
-			ApplyContainerSetting(pContainer, CNT_STATICICON, pContainer->dwFlags & CNT_STATICICON ? 0 : 1, false);
-			break;
 		case ID_VIEW_SHOWMULTISENDCONTACTLIST:
 			SendMessage(pContainer->hwndActive, WM_COMMAND, MAKEWPARAM(IDC_SENDMENU, ID_SENDMENU_SENDTOMULTIPLEUSERS), 0);
 			break;
