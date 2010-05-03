@@ -279,6 +279,7 @@ void LoadInfobarFonts()
 }
 
 void InitGlobals() {
+	HDC hdc = GetDC(NULL);
 	g_dat = (struct GlobalMessageData *)mir_alloc(sizeof(struct GlobalMessageData));
 	ZeroMemory(g_dat, sizeof(struct GlobalMessageData));
 	g_dat->hMessageWindowList = (HANDLE) CallService(MS_UTILS_ALLOCWINDOWLIST, 0, 0);
@@ -301,7 +302,10 @@ void InitGlobals() {
 	g_dat->hSearchEngineIconList = ImageList_Create(16, 16, IsWinVerXPPlus() ? ILC_COLOR32 | ILC_MASK : ILC_COLOR8 | ILC_MASK, 0, 0);
 	g_dat->draftList = NULL;
 	g_dat->splitterY = (int) DBGetContactSettingDword(NULL, SRMMMOD, "splitterPos", (DWORD) -1);
+	g_dat->logPixelSX = GetDeviceCaps(hdc, LOGPIXELSX);
+	g_dat->logPixelSY = GetDeviceCaps(hdc, LOGPIXELSY);
 	LoadInfobarFonts();
+	ReleaseDC(NULL, hdc);
 }
 
 void FreeGlobals() {

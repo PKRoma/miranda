@@ -118,6 +118,8 @@ struct GlobalMessageData
 	int        splitterY;
 	HWND       hFocusWnd;
     DWORD      logLineColour;
+	int        logPixelSX;
+	int        logPixelSY;
 };
 
 int IconsChanged(WPARAM wParam, LPARAM lParam);

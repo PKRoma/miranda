@@ -42,9 +42,6 @@ static const char *logIconNames[14] = {
 };
 static int logIconBmpSize[ SIZEOF(pLogIconBmpBits) ];
 
-static int logPixelSY = 0;
-static int logPixelSX = 0;
-
 static int EventToIndex(LOGINFO * lin)
 {
 	switch (lin->iType) {
@@ -96,7 +93,7 @@ static int EventToIcon(LOGINFO * lin)
 static char *Log_SetStyle(int style, int fontindex)
 {
 	static char szStyle[128];
-	mir_snprintf(szStyle, SIZEOF(szStyle), "\\f%u\\cf%u\\ul0\\highlight0\\b%d\\i%d\\fs%u", style, style+1, aFonts[fontindex].lf.lfWeight >= FW_BOLD ? 1 : 0, aFonts[fontindex].lf.lfItalic, 2 * abs(aFonts[fontindex].lf.lfHeight) * 74 / logPixelSY);
+	mir_snprintf(szStyle, SIZEOF(szStyle), "\\f%u\\cf%u\\ul0\\highlight0\\b%d\\i%d\\fs%u", style, style+1, aFonts[fontindex].lf.lfWeight >= FW_BOLD ? 1 : 0, aFonts[fontindex].lf.lfItalic, 2 * abs(aFonts[fontindex].lf.lfHeight) * 74 / g_dat->logPixelSY);
 	return szStyle;
 }
 
@@ -671,13 +668,13 @@ static char* Log_CreateRTF(LOGSTREAMDATA *streamData, BOOL ieviewMode)
 					if (lin->ptszNick && lin->iType == GC_EVENT_MESSAGE)
 					{
 						iii = lin->bIsHighlighted?16:(lin->bIsMe ? 2 : 1);
-						mir_snprintf(szStyle, SIZEOF(szStyle), "\\f0\\cf%u\\ul0\\highlight0\\b%d\\i%d\\fs%u", iii+1, aFonts[0].lf.lfWeight >= FW_BOLD ? 1 : 0, aFonts[0].lf.lfItalic, 2 * abs(aFonts[0].lf.lfHeight) * 74 / logPixelSY);
+						mir_snprintf(szStyle, SIZEOF(szStyle), "\\f0\\cf%u\\ul0\\highlight0\\b%d\\i%d\\fs%u", iii+1, aFonts[0].lf.lfWeight >= FW_BOLD ? 1 : 0, aFonts[0].lf.lfItalic, 2 * abs(aFonts[0].lf.lfHeight) * 74 / g_dat->logPixelSY);
 						AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s ", szStyle);
 					}
 					else
 					{
 						iii = lin->bIsHighlighted?16:EventToIndex(lin);
-						mir_snprintf(szStyle, SIZEOF(szStyle), "\\f0\\cf%u\\ul0\\highlight0\\b%d\\i%d\\fs%u", iii+1, aFonts[0].lf.lfWeight >= FW_BOLD ? 1 : 0, aFonts[0].lf.lfItalic, 2 * abs(aFonts[0].lf.lfHeight) * 74 / logPixelSY);
+						mir_snprintf(szStyle, SIZEOF(szStyle), "\\f0\\cf%u\\ul0\\highlight0\\b%d\\i%d\\fs%u", iii+1, aFonts[0].lf.lfWeight >= FW_BOLD ? 1 : 0, aFonts[0].lf.lfItalic, 2 * abs(aFonts[0].lf.lfHeight) * 74 / g_dat->logPixelSY);
 						AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s ", szStyle);
 					}
 				}
@@ -818,11 +815,6 @@ void Log_StreamInEvent(HWND hwndDlg,  LOGINFO* lin, SESSION_INFO* si, BOOL bRedr
 		//get the number of pixels per logical inch
 		if (bRedraw)
 		{
-			HDC hdc;
-			hdc = GetDC(NULL);
-			logPixelSY = GetDeviceCaps(hdc, LOGPIXELSY);
-			logPixelSX = GetDeviceCaps(hdc, LOGPIXELSX);
-			ReleaseDC (NULL, hdc);
 			SendMessage(hwndRich, WM_SETREDRAW, FALSE, 0);
 			bFlag = TRUE;
 //			SetCursor(LoadCursor(NULL, IDC_CHAT_ARROW));
@@ -905,15 +897,6 @@ char * Log_CreateRtfHeader(MODULEINFO * mi, SESSION_INFO* si)
 	buffer = (char *) mir_realloc(si->pszHeader, bufferAlloced);
 	buffer[0] = '\0';
 
-	//get the number of pixels per logical inch
-	{
-		HDC hdc;
-		hdc = GetDC(NULL);
-		logPixelSY = GetDeviceCaps(hdc, LOGPIXELSY);
-		logPixelSX = GetDeviceCaps(hdc, LOGPIXELSX);
-		ReleaseDC(NULL, hdc);
-	}
-
 	// ### RTF HEADER
 
 	// font table
@@ -939,12 +922,12 @@ char * Log_CreateRtfHeader(MODULEINFO * mi, SESSION_INFO* si)
 
 		if (g_Settings.dwIconFlags)
 		{
-			iIndent += (14*1440)/logPixelSX;
+			iIndent += (14*1440)/g_dat->logPixelSX;
 			AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\tx%u", iIndent);
 		}
 		if (g_Settings.ShowTime)
 		{
-			int iSize = (g_Settings.LogTextIndent*1440)/logPixelSX;
+			int iSize = (g_Settings.LogTextIndent*1440)/g_dat->logPixelSX;
 			AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\tx%u", iIndent + iSize );
 			if (g_Settings.LogIndentEnabled)
 				iIndent += iSize;

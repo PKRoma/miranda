@@ -1359,13 +1359,13 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			cf2.dwEffects = ((lf.lfWeight >= FW_BOLD) ? CFE_BOLD : 0) | (lf.lfItalic ? CFE_ITALIC : 0);
 			cf2.wWeight = (WORD)lf.lfWeight;
 			cf2.bPitchAndFamily = lf.lfPitchAndFamily;
-			cf2.yHeight = abs(lf.lfHeight) * 15;
+			cf2.yHeight = abs(lf.lfHeight) * 1440 / g_dat->logPixelSY;
 			SendDlgItemMessageA(hwndDlg, IDC_MESSAGE, EM_SETCHARFORMAT, 0, (LPARAM)&cf2);
 			SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_SETLANGOPTIONS, 0, (LPARAM) SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_GETLANGOPTIONS, 0, 0) & ~IMF_AUTOKEYBOARD);
 
 			pf2.cbSize = sizeof(pf2);
 			pf2.dwMask = PFM_OFFSET;
-			pf2.dxOffset = (g_dat->flags & SMF_INDENTTEXT) ? g_dat->indentSize * 15 : 0;
+			pf2.dxOffset = (g_dat->flags & SMF_INDENTTEXT) ? g_dat->indentSize * 1440 / g_dat->logPixelSX : 0;
  			SetDlgItemText(hwndDlg, IDC_LOG, _T(""));
 			SendDlgItemMessage(hwndDlg, IDC_LOG, EM_SETPARAFORMAT, 0, (LPARAM)&pf2);
 			SendDlgItemMessage(hwndDlg, IDC_LOG, EM_SETLANGOPTIONS, 0, (LPARAM) SendDlgItemMessage(hwndDlg, IDC_LOG, EM_GETLANGOPTIONS, 0, 0) & ~(IMF_AUTOKEYBOARD | IMF_AUTOFONTSIZEADJUST));

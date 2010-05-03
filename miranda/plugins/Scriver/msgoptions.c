@@ -728,7 +728,7 @@ static void ShowPreview(HWND hwndDlg)
     gdat.indentSize = (int) SendDlgItemMessage(hwndDlg, IDC_INDENTSPIN, UDM_GETPOS, 0, 0);
 	pf2.cbSize = sizeof(pf2);
 	pf2.dwMask = PFM_OFFSET;
-	pf2.dxOffset = (gdat.flags & SMF_INDENTTEXT) ? gdat.indentSize * 15 : 0;
+	pf2.dxOffset = (gdat.flags & SMF_INDENTTEXT) ? gdat.indentSize * 1440 /g_dat->logPixelSX : 0;
 	SetDlgItemText(hwndDlg, IDC_LOG, _T(""));
 	SendDlgItemMessage(hwndDlg, IDC_LOG, EM_SETPARAFORMAT, 0, (LPARAM)&pf2);
     StreamInTestEvents(GetDlgItem(hwndDlg, IDC_LOG), &gdat);

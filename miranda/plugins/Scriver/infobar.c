@@ -42,7 +42,7 @@ void SetupInfobar(InfobarWindowData* idat) {
     cf2.dwEffects = ((lf.lfWeight >= FW_BOLD) ? CFE_BOLD : 0) | (lf.lfItalic ? CFE_ITALIC : 0);
     cf2.wWeight = (WORD)lf.lfWeight;
     cf2.bPitchAndFamily = lf.lfPitchAndFamily;
-    cf2.yHeight = abs(lf.lfHeight) * 15;
+	cf2.yHeight = abs(lf.lfHeight) * 1440 / g_dat->logPixelSY;
     SendDlgItemMessageA(hwnd, IDC_INFOBAR_NAME, EM_SETCHARFORMAT, 0, (LPARAM)&cf2);
 
     LoadMsgDlgFont(MSGFONTID_INFOBAR_STATUS, &lf, &colour);
@@ -54,7 +54,7 @@ void SetupInfobar(InfobarWindowData* idat) {
     cf2.dwEffects = ((lf.lfWeight >= FW_BOLD) ? CFE_BOLD : 0) | (lf.lfItalic ? CFE_ITALIC : 0);
     cf2.wWeight = (WORD)lf.lfWeight;
     cf2.bPitchAndFamily = lf.lfPitchAndFamily;
-    cf2.yHeight = abs(lf.lfHeight) * 15;
+    cf2.yHeight = abs(lf.lfHeight) * 1440 / g_dat->logPixelSY;
     SendDlgItemMessageA(hwnd, IDC_INFOBAR_STATUS, EM_SETCHARFORMAT, 0, (LPARAM)&cf2);
 
     RefreshInfobar(idat);
