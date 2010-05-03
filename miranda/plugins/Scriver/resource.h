@@ -218,7 +218,7 @@
 #define IDC_CHAT_INSTAMP                     5041
 #define IDC_CHAT_OUTSTAMP                    5043
 #define IDC_CHAT_TIMESTAMP                   5046
-#define IDC_CHAT_FONTCHOOSE                  5047
+#define IDC_CHAT_LOGDIRCHOOSE                5047
 #define IDC_CHAT_LOGDIRECTORY                5048
 #define IDC_CHAT_LIMIT                       5050
 #define IDC_CHAT_LOGTIMESTAMP                5051

@@ -932,15 +932,6 @@ char * Log_CreateRtfHeader(MODULEINFO * mi, SESSION_INFO* si)
 			if (g_Settings.LogIndentEnabled)
 				iIndent += iSize;
 		}
-		/*
-		{ // text indent
-		int iSize = (135*1440)/logPixelSX;
-		Log_Append(&buffer, &bufferEnd, &bufferAlloced, "\\tx%u", iIndent + iSize );
-		if (g_Settings.LogIndentEnabled)
-		iIndent += iSize;
-
-		}
-		*/
 		AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\fi-%u\\li%u", iIndent, iIndent);
 	}
 	return buffer;

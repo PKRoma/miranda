@@ -1232,7 +1232,19 @@ INT_PTR CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
          SendMessage(hwndDlg, DM_UPDATETITLEBAR, 0, 0);
          SendMessage(hwndDlg, GC_FIXTABICONS, 0, 0);
 
-         SendMessage(GetDlgItem(hwndDlg, IDC_CHAT_LOG), EM_SETBKGNDCOLOR , 0, g_Settings.crLogBackground);
+		 { // log
+			//int iIndent = 0;
+			//PARAFORMAT2 pf2;
+			//if (g_Settings.dwIconFlags)
+			//	iIndent += (14*1440)/g_dat->logPixelSX;
+			//if (g_Settings.ShowTime && g_Settings.LogIndentEnabled) 
+			//	iIndent += g_Settings.LogTextIndent*1440/g_dat->logPixelSX;
+			//pf2.cbSize = sizeof(pf2);
+			//pf2.dwMask = PFM_OFFSET;
+			//pf2.dxOffset = iIndent * 1440 / g_dat->logPixelSX;
+			//SendDlgItemMessage(hwndDlg, IDC_CHAT_LOG, EM_SETPARAFORMAT, 0, (LPARAM)&pf2);
+			SendMessage(GetDlgItem(hwndDlg, IDC_CHAT_LOG), EM_SETBKGNDCOLOR , 0, g_Settings.crLogBackground);
+		 }
 
          { //messagebox
             COLORREF   crFore;

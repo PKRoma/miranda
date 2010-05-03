@@ -869,6 +869,7 @@ void MM_IconsChanged(void)
 void MM_FontsChanged(void)
 {
 	SESSION_INFO* pTemp = m_WndList;
+	SetIndentSize();
 	while (pTemp != NULL)
 	{
 		pTemp->pszHeader = Log_CreateRtfHeader(MM_FindModule(pTemp->pszModule), pTemp);

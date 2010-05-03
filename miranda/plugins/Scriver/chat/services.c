@@ -66,19 +66,6 @@ int Chat_FontsChanged(WPARAM wParam,LPARAM lParam)
 {
 	LoadLogFonts();
 	LoadMsgLogBitmaps();
-	{
-		LOGFONT lf;
-		HFONT hFont;
-		int iText;
-
-		LoadMsgDlgFont(0, &lf, NULL);
-		hFont = CreateFontIndirect(&lf);
-		iText = GetTextPixelSize(MakeTimeStamp(g_Settings.pszTimeStamp, time(NULL)),hFont, TRUE);
-		DeleteObject(hFont);
-		g_Settings.LogTextIndent = iText;
-		g_Settings.LogTextIndent = g_Settings.LogTextIndent*12/10;
-		g_Settings.LogIndentEnabled = (DBGetContactSettingByte(NULL, "Chat", "LogIndentEnabled", 1) != 0)?TRUE:FALSE;
-	}
 	MM_FontsChanged();
 	MM_FixColors();
 	SM_BroadcastMessage(NULL, GC_SETWNDPROPS, 0, 0, TRUE);

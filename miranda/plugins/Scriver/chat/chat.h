@@ -319,6 +319,7 @@ int    OptionsUnInit(void);
 void   Chat_LoadMsgDlgFont(int i, LOGFONT * lf, COLORREF * colour);
 void   LoadGlobalSettings(void);
 void   LoadLogFonts(void);
+void   SetIndentSize();
 
 //services.c
 void   HookEvents(void);
