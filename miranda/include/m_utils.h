@@ -230,21 +230,21 @@ __inline static INT_PTR Utils_SaveWindowPosition(HWND hwnd,HANDLE hContact,const
 #define RWPF_NOSIZE 	1  //don't use stored size info: leave dialog same size
 #define RWPF_NOMOVE 	2  //don't use stored position
 #define RWPF_NOACTIVATE 4  //show but don't activate v0.3.3.0+
+#define RWPF_HIDDEN		8  //make it hidden
 #define MS_UTILS_RESTOREWINDOWPOSITION	"Utils/RestoreWindowPos"
-__inline static INT_PTR Utils_RestoreWindowPosition(HWND hwnd,HANDLE hContact,const char *szModule,const char *szNamePrefix) {
+__inline static INT_PTR Utils_RestoreWindowPositionEx(HWND hwnd,int flags,HANDLE hContact,const char *szModule,const char *szNamePrefix) {
 	SAVEWINDOWPOS swp;
 	swp.hwnd=hwnd; swp.hContact=hContact; swp.szModule=szModule; swp.szNamePrefix=szNamePrefix;
-	return CallService(MS_UTILS_RESTOREWINDOWPOSITION,0,(LPARAM)&swp);
+	return CallService(MS_UTILS_RESTOREWINDOWPOSITION,flags,(LPARAM)&swp);
+}
+__inline static INT_PTR Utils_RestoreWindowPosition(HWND hwnd,HANDLE hContact,const char *szModule,const char *szNamePrefix) {
+	return Utils_RestoreWindowPositionEx(hwnd, 0, hContact, szModule, szNamePrefix);
 }
 __inline static INT_PTR Utils_RestoreWindowPositionNoSize(HWND hwnd,HANDLE hContact,const char *szModule,const char *szNamePrefix) {
-	SAVEWINDOWPOS swp;
-	swp.hwnd=hwnd; swp.hContact=hContact; swp.szModule=szModule; swp.szNamePrefix=szNamePrefix;
-	return CallService(MS_UTILS_RESTOREWINDOWPOSITION,RWPF_NOSIZE,(LPARAM)&swp);
+	return Utils_RestoreWindowPositionEx(hwnd, RWPF_NOSIZE, hContact, szModule, szNamePrefix);
 }
 __inline static INT_PTR Utils_RestoreWindowPositionNoMove(HWND hwnd,HANDLE hContact,const char *szModule,const char *szNamePrefix) {
-	SAVEWINDOWPOS swp;
-	swp.hwnd=hwnd; swp.hContact=hContact; swp.szModule=szModule; swp.szNamePrefix=szNamePrefix;
-	return CallService(MS_UTILS_RESTOREWINDOWPOSITION,RWPF_NOMOVE,(LPARAM)&swp);
+	return Utils_RestoreWindowPositionEx(hwnd, RWPF_NOMOVE, hContact, szModule, szNamePrefix);
 }
 
 //Moves a RECT inside screen if it is outside.It works with multiple monitors	 v0.9.0.4+

@@ -398,10 +398,12 @@ static INT_PTR RestoreWindowPosition(WPARAM wParam,LPARAM lParam)
 		wp.rcNormalPosition.bottom=wp.rcNormalPosition.top+DBGetContactSettingDword(swp->hContact,swp->szModule,szSettingName,-1);
 	}
 	wp.flags=0;
-	if(wParam&RWPF_NOACTIVATE)
+	if (wParam & RWPF_HIDDEN)
+		wp.showCmd = SW_HIDE;
+	if (wParam & RWPF_NOACTIVATE)
 		wp.showCmd = SW_SHOWNOACTIVATE;
 
-	if(!(wParam&RWPF_NOMOVE))
+	if (!(wParam & RWPF_NOMOVE))
 		AssertInsideScreen((WPARAM) &wp.rcNormalPosition, 0);
 
 	SetWindowPlacement(swp->hwnd,&wp);
