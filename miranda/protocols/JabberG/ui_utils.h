@@ -1296,7 +1296,6 @@ protected:
 				break;
 			case WM_DESTROY:
 				WindowFreeIcon(m_hwnd);
-				g_ReleaseIcon(( HICON )SendDlgItemMessage(m_hwnd, IDC_HEADERBAR, WM_SETICON, ICON_BIG, 0 ));
 				m_proto->WindowUnsubscribe(m_hwnd);
 				break;
 		}
