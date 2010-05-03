@@ -33,6 +33,7 @@ struct NewMessageWindowLParam
 	HANDLE hContact;
 	const char *szInitialText;
 	int isWchar;
+	int noActivate;
 };
 
 struct MessageWindowData

@@ -134,7 +134,6 @@ static void ShowMultipleControls(HWND hwndDlg, const UINT * controls, int cContr
 static void SetDialogToType(HWND hwndDlg)
 {
 	struct MessageWindowData *dat;
-	WINDOWPLACEMENT pl = { 0 };
 	int icons_width;
 	RECT rc;
 
@@ -184,11 +183,6 @@ static void SetDialogToType(HWND hwndDlg)
 		ShowWindow(GetDlgItem(hwndDlg, IDC_AVATAR), SW_HIDE);
 	SendMessage(hwndDlg, DM_UPDATETITLE, 0, 0);
 	SendMessage(hwndDlg, WM_SIZE, 0, 0);
-	pl.length = sizeof(pl);
-	GetWindowPlacement(hwndDlg, &pl);
-	if (!IsWindowVisible(hwndDlg))
-		pl.showCmd = SW_HIDE;
-	SetWindowPlacement(hwndDlg, &pl);   //in case size is smaller than new minimum
 }
 
 struct SavedMessageData
@@ -873,20 +867,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 						}
 						break;
 			}	}	}
-			SendMessage(hwndDlg, DM_OPTIONSAPPLIED, 1, 0);
-			{
-				int savePerContact = DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_SAVEPERCONTACT, SRMSGDEFSET_SAVEPERCONTACT);
-				if (Utils_RestoreWindowPosition(hwndDlg, savePerContact ? dat->hContact : NULL, SRMMMOD, "")) {
-					if (savePerContact) {
-						if (Utils_RestoreWindowPositionNoMove(hwndDlg, NULL, SRMMMOD, ""))
-							SetWindowPos(hwndDlg, 0, 0, 0, 450, 300, SWP_NOZORDER | SWP_NOMOVE);
-					}
-					else
-						SetWindowPos(hwndDlg, 0, 0, 0, 450, 300, SWP_NOZORDER | SWP_NOMOVE);
-				}
-				if (!savePerContact && DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_CASCADE, SRMSGDEFSET_CASCADE))
-					WindowList_Broadcast(g_dat->hMessageWindowList, DM_CASCADENEWWINDOW, (WPARAM) hwndDlg, (LPARAM) & dat->windowWasCascaded);
-			}
+
 			{
 				DBEVENTINFO dbei = { 0 };
 				HANDLE hdbEvent;
@@ -907,27 +888,45 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 						while (hdbEvent = (HANDLE) CallService(MS_DB_EVENT_FINDPREV, (WPARAM) hdbEvent, 0));
 			}	}
 
+			SendMessage(hwndDlg, DM_OPTIONSAPPLIED, 1, 0);
+
+			{
+				int flag = newData->noActivate ? RWPF_HIDDEN : 0;
+				int savePerContact = DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_SAVEPERCONTACT, SRMSGDEFSET_SAVEPERCONTACT);
+				if (Utils_RestoreWindowPositionEx(hwndDlg, flag, savePerContact ? dat->hContact : NULL, SRMMMOD, "")) {
+					if (savePerContact) {
+						if (Utils_RestoreWindowPositionEx(hwndDlg, flag | RWPF_NOMOVE, NULL, SRMMMOD, ""))
+							SetWindowPos(hwndDlg, 0, 0, 0, 450, 300, SWP_NOZORDER | SWP_NOMOVE | SWP_SHOWWINDOW);
+					}
+					else
+						SetWindowPos(hwndDlg, 0, 0, 0, 450, 300, SWP_NOZORDER | SWP_NOMOVE | SWP_SHOWWINDOW);
+				}
+				if (!savePerContact && DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_CASCADE, SRMSGDEFSET_CASCADE))
+					WindowList_Broadcast(g_dat->hMessageWindowList, DM_CASCADENEWWINDOW, (WPARAM) hwndDlg, (LPARAM) & dat->windowWasCascaded);
+			}
+			if (newData->noActivate)
+				SetWindowPos(hwndDlg, HWND_BOTTOM, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE | SWP_SHOWWINDOW);
+
 			SendMessage(hwndDlg, DM_GETAVATAR, 0, 0);
-			ShowWindow(hwndDlg, SW_SHOWNORMAL);
 			//restore saved msg if any...
 			if(dat->hContact) {
 				DBVARIANT dbv;
 				if(!DBGetContactSettingTString(dat->hContact, SRMSGMOD, DBSAVEDMSG, &dbv)) {
-					int len;
-					SETTEXTEX stx = {ST_DEFAULT, CP_UTF8};
-					if(dbv.ptszVal && lstrlen(dbv.ptszVal) > 0){
+					if (dbv.ptszVal[0]) {
+						int len;
+						SETTEXTEX stx = {ST_DEFAULT, CP_UTF8};
 						SetDlgItemText(hwndDlg, IDC_MESSAGE, dbv.ptszVal);
-						DBFreeVariant(&dbv);
 						len = GetWindowTextLength(GetDlgItem(hwndDlg, IDC_MESSAGE));
 						EnableWindow(GetDlgItem(hwndDlg, IDOK), len != 0);
 						UpdateReadChars(hwndDlg, dat->hwndStatus);
 						PostMessage(GetDlgItem(hwndDlg, IDC_MESSAGE), EM_SETSEL, (WPARAM) - 1, (LPARAM) - 1);
 					}
+					DBFreeVariant(&dbv);
 				}
 			}
 			NotifyLocalWinEvent(dat->hContact, hwndDlg, MSG_WINDOW_EVT_OPEN);
 		}
-		return TRUE;
+		break;
 
 	case WM_CONTEXTMENU:
 		if (dat->hwndStatus && dat->hwndStatus == (HWND) wParam) {
@@ -1662,6 +1661,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 				if (RTL_Detect(temp)) { flags |= PREF_RTL; dat->bIsRtl = 1; }
 				dat->cmdList = tcmdlist_append(dat->cmdList, temp);
 
+				mir_free(dat->sendBuffer);
 				if (IsUtfSendAvailable( dat->hContact)) {
 					flags = PREF_UTF;
 					dat->bIsUtf = TRUE;
@@ -1987,10 +1987,9 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 
 		if (dat->hBkgBrush)
 			DeleteObject(dat->hBkgBrush);
-		if (dat->sendBuffer != NULL)
-			mir_free(dat->sendBuffer);
 		if (dat->hwndStatus)
 			DestroyWindow(dat->hwndStatus);
+		mir_free(dat->sendBuffer);
 		tcmdlist_free(dat->cmdList);
 		WindowList_Remove(g_dat->hMessageWindowList, hwndDlg);
 		DBWriteContactSettingDword(DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_SAVEPERCONTACT, SRMSGDEFSET_SAVEPERCONTACT)?dat->hContact:NULL, SRMMMOD, "splitterPos", dat->splitterPos);

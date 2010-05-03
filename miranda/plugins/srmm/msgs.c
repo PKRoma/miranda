@@ -96,6 +96,7 @@ static int MessageEventAdded(WPARAM wParam, LPARAM lParam)
 		if (szProto && (g_dat->openFlags & SRMMStatusToPf2(CallProtoService(szProto, PS_GETSTATUS, 0, 0)))) {
 			struct NewMessageWindowLParam newData = { 0 };
 			newData.hContact = (HANDLE) wParam;
+			newData.noActivate = 1;
 			CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_MSG), NULL, DlgProcMessage, (LPARAM) & newData);
 			return 0;
 		}
@@ -117,91 +118,59 @@ static int MessageEventAdded(WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
-#if defined(_UNICODE)
-static INT_PTR SendMessageCommand_W(WPARAM wParam, LPARAM lParam)
+static INT_PTR SendMessageCmd(HANDLE hContact, char* msg, int isWchar)
 {
+	char *szProto;
 	HWND hwnd;
-	struct NewMessageWindowLParam newData = { 0 };
 
-	{
-		/* does the HCONTACT's protocol support IM messages? */
-		char *szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, wParam, 0);
-		if (szProto) {
-			if (!CallProtoService(szProto, PS_GETCAPS, PFLAGNUM_1, 0) & PF1_IMSEND)
-				return 1;
-		}
-		else {
-			/* unknown contact */
-			return 1;
-		}                       //if
-	}
+	/* does the HCONTACT's protocol support IM messages? */
+	szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
+	if (!szProto || (!CallProtoService(szProto, PS_GETCAPS, PFLAGNUM_1, 0) & PF1_IMSEND))
+		return 1;
 
-	if (hwnd = WindowList_Find(g_dat->hMessageWindowList, (HANDLE) wParam)) {
-		if (lParam) {
+	if (hwnd = WindowList_Find(g_dat->hMessageWindowList, hContact)) {
+		if (msg) {
 			HWND hEdit;
 			hEdit = GetDlgItem(hwnd, IDC_MESSAGE);
 			SendMessage(hEdit, EM_SETSEL, -1, SendMessage(hEdit, WM_GETTEXTLENGTH, 0, 0));
-			SendMessage(hEdit, EM_REPLACESEL, FALSE, (LPARAM) (char *) lParam);
+			if (isWchar)
+				SendMessage(hEdit, EM_REPLACESEL, FALSE, (LPARAM)msg);
+			else
+				SendMessageA(hEdit, EM_REPLACESEL, FALSE, (LPARAM)msg);
 		}
-		ShowWindow(hwnd, SW_SHOWNORMAL);
-		SetForegroundWindow(hwnd);
+//		ShowWindow(hwnd, SW_SHOWNORMAL);
+		SetActiveWindow(hwnd);
 		SetFocus(hwnd);
 	}
 	else {
-		newData.hContact = (HANDLE) wParam;
-		newData.szInitialText = (const char *) lParam;
-		newData.isWchar = 1;
-		CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_MSG), NULL, DlgProcMessage, (LPARAM) & newData);
+		struct NewMessageWindowLParam newData = { 0 };
+		newData.hContact = hContact;
+		newData.szInitialText = msg;
+		newData.isWchar = isWchar;
+		CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_MSG), NULL, DlgProcMessage, (LPARAM)&newData);
 	}
 	return 0;
+}
+
+#if defined(_UNICODE)
+static INT_PTR SendMessageCommand_W(WPARAM wParam, LPARAM lParam)
+{
+	return SendMessageCmd((HANDLE)wParam, (char*)lParam, TRUE);
 }
 #endif
 
 static INT_PTR SendMessageCommand(WPARAM wParam, LPARAM lParam)
 {
-	HWND hwnd;
-	struct NewMessageWindowLParam newData = { 0 };
-
-	{
-		/* does the HCONTACT's protocol support IM messages? */
-		char *szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, wParam, 0);
-		if (szProto) {
-			if (!CallProtoService(szProto, PS_GETCAPS, PFLAGNUM_1, 0) & PF1_IMSEND)
-				return 1;
-		}
-		else {
-			/* unknown contact */
-			return 1;
-		}                       //if
-	}
-
-	if (hwnd = WindowList_Find(g_dat->hMessageWindowList, (HANDLE) wParam)) {
-		if (lParam) {
-			HWND hEdit;
-			hEdit = GetDlgItem(hwnd, IDC_MESSAGE);
-			SendMessage(hEdit, EM_SETSEL, -1, SendMessage(hEdit, WM_GETTEXTLENGTH, 0, 0));
-			SendMessageA(hEdit, EM_REPLACESEL, FALSE, (LPARAM) (char *) lParam);
-		}
-		ShowWindow(hwnd, SW_SHOWNORMAL);
-		SetForegroundWindow(hwnd);
-		SetFocus(hwnd);
-	}
-	else {
-		newData.hContact = (HANDLE) wParam;
-		newData.szInitialText = (const char *) lParam;
-		newData.isWchar = 0;
-		CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_MSG), NULL, DlgProcMessage, (LPARAM) & newData);
-	}
-	return 0;
+	return SendMessageCmd((HANDLE)wParam, (char*)lParam, FALSE);
 }
 
 static INT_PTR TypingMessageCommand(WPARAM wParam, LPARAM lParam)
 {
 	CLISTEVENT *cle = (CLISTEVENT *) lParam;
 
-	if (!cle)
-		return 0;
-	SendMessageCommand((WPARAM) cle->hContact, 0);
+	if (cle)
+		SendMessageCommand((WPARAM) cle->hContact, 0);
+
 	return 0;
 }
 
@@ -307,6 +276,7 @@ static void RestoreUnreadMessageAlerts(void)
 				if (autoPopup && !windowAlreadyExists) {
 					struct NewMessageWindowLParam newData = { 0 };
 					newData.hContact = hContact;
+					newData.noActivate = 1;
 					CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_MSG), NULL, DlgProcMessage, (LPARAM) & newData);
 				}
 				else {
