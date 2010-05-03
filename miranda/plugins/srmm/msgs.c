@@ -57,12 +57,17 @@ static int SRMMStatusToPf2(int status)
 
 static INT_PTR ReadMessageCommand(WPARAM wParam, LPARAM lParam)
 {
-	struct NewMessageWindowLParam newData = { 0 };
-	HWND hwndExisting;
+	HWND hwnd = WindowList_Find(g_dat->hMessageWindowList, ((CLISTEVENT *) lParam)->hContact);
+	if (hwnd == NULL) {
+		struct NewMessageWindowLParam newData = { 0 };
+		newData.hContact = ((CLISTEVENT *) lParam)->hContact;
+		hwnd = CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_MSG), NULL, DlgProcMessage, (LPARAM) & newData);
+	}
+	else
+		ShowWindow(hwnd, SW_SHOWNORMAL);
 
-	hwndExisting = WindowList_Find(g_dat->hMessageWindowList, ((CLISTEVENT *) lParam)->hContact);
-	newData.hContact = ((CLISTEVENT *) lParam)->hContact;
-	CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_MSG), NULL, DlgProcMessage, (LPARAM) & newData);
+	SetFocus(hwnd);
+
 	return 0;
 }
 
@@ -138,9 +143,7 @@ static INT_PTR SendMessageCmd(HANDLE hContact, char* msg, int isWchar)
 			else
 				SendMessageA(hEdit, EM_REPLACESEL, FALSE, (LPARAM)msg);
 		}
-//		ShowWindow(hwnd, SW_SHOWNORMAL);
-		SetActiveWindow(hwnd);
-		SetFocus(hwnd);
+		ShowWindow(hwnd, SW_SHOWNORMAL);
 	}
 	else {
 		struct NewMessageWindowLParam newData = { 0 };
@@ -149,6 +152,7 @@ static INT_PTR SendMessageCmd(HANDLE hContact, char* msg, int isWchar)
 		newData.isWchar = isWchar;
 		CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_MSG), NULL, DlgProcMessage, (LPARAM)&newData);
 	}
+	SetFocus(hwnd);
 	return 0;
 }
 
