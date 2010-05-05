@@ -424,6 +424,8 @@ static void MsgWindowUpdateState(TWindowData *dat, UINT msg)
 					if (OldIEViewProc == 0)
 						OldIEViewProc = wndProc;
 					dat->oldIEViewProc = wndProc;
+					SetWindowPos(dat->hwndIEView, 0, 0, 0, 0, 0, SWP_FRAMECHANGED|SWP_NOMOVE|SWP_NOSIZE|SWP_NOZORDER|SWP_DRAWFRAME);
+					RedrawWindow(dat->hwndIEView, 0, 0, RDW_FRAME|RDW_INVALIDATE|RDW_UPDATENOW);
 				}
 			}
 			dat->hwndIWebBrowserControl = WindowFromPoint(pt);
@@ -500,7 +502,7 @@ void TSAPI SetDialogToType(HWND hwndDlg)
 	GetAvatarVisibility(hwndDlg, dat);
 
 	Utils::showDlgControl(hwndDlg, IDC_CONTACTPIC, dat->showPic ? SW_SHOW : SW_HIDE);
-	Utils::showDlgControl(hwndDlg, IDC_SPLITTER, SW_SHOW);
+	Utils::showDlgControl(hwndDlg, IDC_SPLITTER, dat->fIsAutosizingInput ? SW_HIDE : SW_SHOW);
 	Utils::showDlgControl(hwndDlg, IDC_MULTISPLITTER, (dat->sendMode & SMODE_MULTIPLE) ? SW_SHOW : SW_HIDE);
 
 	EnableSendButton(dat, GetWindowTextLength(GetDlgItem(hwndDlg, IDC_MESSAGE)) != 0);
@@ -952,8 +954,7 @@ LRESULT CALLBACK SplitterSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 				RECT rc;
 				GetClientRect(hwnd, &rc);
 				SendMessage(hwndParent, DM_SPLITTERMOVED, rc.right > rc.bottom ? (short) HIWORD(GetMessagePos()) + rc.bottom / 2 : (short) LOWORD(GetMessagePos()) + rc.right / 2, (LPARAM) hwnd);
-				if (CSkin::m_skinEnabled)
-					InvalidateRect(hwndParent, NULL, FALSE);
+				RedrawWindow(hwndParent, 0, 0, RDW_ALLCHILDREN|RDW_ERASE|RDW_INVALIDATE|RDW_UPDATENOW);
 			}
 			return 0;
 		case WM_ERASEBKGND:
@@ -975,10 +976,11 @@ LRESULT CALLBACK SplitterSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 						return(0);
 					}
 					else if(GetDlgCtrlID(hwnd) == IDC_SPLITTER || GetDlgCtrlID(hwnd) == IDC_SPLITTERY) {
-						rc.bottom--;
+						FillRect(dc, &rc, GetSysColorBrush(COLOR_3DFACE));
+						/*rc.bottom--;
 						FillRect(dc, &rc, GetSysColorBrush(COLOR_3DDKSHADOW));
 						rc.top++; rc.bottom++;
-						FillRect(dc, &rc, GetSysColorBrush(COLOR_3DSHADOW));
+						FillRect(dc, &rc, GetSysColorBrush(COLOR_3DSHADOW));*/
 					}
 					else
 						FillRect(dc, &rc, GetSysColorBrush(COLOR_3DFACE));
@@ -1011,7 +1013,14 @@ LRESULT CALLBACK SplitterSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 				if (hwndCapture != hwnd || dat->savedSplitter == (rc.right > rc.bottom ? (short) HIWORD(messagePos) + rc.bottom / 2 : (short) LOWORD(messagePos) + rc.right / 2))
 					break;
 				GetCursorPos(&pt);
+#if defined(__FEAT_EXP_AUTOSPLITTER)
+				if(dat->fIsAutosizingInput)
+					selection = ID_SPLITTERCONTEXT_SETPOSITIONFORTHISSESSION;
+				else
+					selection = TrackPopupMenu(hMenu, TPM_RETURNCMD, pt.x, pt.y, 0, hwndParent, NULL);
+#else
 				selection = TrackPopupMenu(hMenu, TPM_RETURNCMD, pt.x, pt.y, 0, hwndParent, NULL);
+#endif
 				switch (selection) {
 					case ID_SPLITTERCONTEXT_SAVEFORTHISCONTACTONLY: {
 						HWND hwndParent = GetParent(hwnd);
@@ -1023,6 +1032,13 @@ LRESULT CALLBACK SplitterSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 						break;
 					}
 					case ID_SPLITTERCONTEXT_SETPOSITIONFORTHISSESSION:
+#if defined(__FEAT_EXP_AUTOSPLITTER)
+						if(dat->fIsAutosizingInput) {
+							RECT	rc;
+							GetWindowRect(GetDlgItem(dat->hwnd, IDC_MESSAGE), &rc);
+							dat->iInputAreaHeight = 0;
+						}
+#endif
 						break;
 					case ID_SPLITTERCONTEXT_SAVEGLOBALFORALLSESSIONS: {
 
@@ -1073,13 +1089,13 @@ LRESULT CALLBACK SplitterSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 
 static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * urc)
 {
-	struct TWindowData *dat = (struct TWindowData *) lParam;
-	int iClistOffset = 0;
-	RECT rc, rcButton;
-	static int uinWidth, msgTop = 0, msgBottom = 0;
+	TWindowData*		dat = (TWindowData *) lParam;
+	RECT				rc, rcButton;
+	static int			uinWidth, msgTop = 0, msgBottom = 0;
 
-	int showToolbar = dat->pContainer->dwFlags & CNT_HIDETOOLBAR ? 0 : 1;
-	BOOL bBottomToolbar = dat->pContainer->dwFlags & CNT_BOTTOMTOOLBAR ? 1 : 0;
+	int					showToolbar = dat->pContainer->dwFlags & CNT_HIDETOOLBAR ? 0 : 1;
+	BOOL				bBottomToolbar = dat->pContainer->dwFlags & CNT_BOTTOMTOOLBAR ? 1 : 0;
+	static LONG			rcLogBottom;
 
 	int 	panelHeight = dat->Panel->getHeight() + 1;
 	int 	s_offset = 0;
@@ -1089,7 +1105,6 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
 	GetClientRect(GetDlgItem(hwndDlg, IDC_LOG), &rc);
 	GetClientRect(GetDlgItem(hwndDlg, IDC_PROTOCOL), &rcButton);
 
-	iClistOffset = rc.bottom;
 	if (dat->panelStatusCX == 0)
 		dat->panelStatusCX = 80;
 
@@ -1122,6 +1137,7 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
 					urc->rcItem.bottom -= item->MARGIN_BOTTOM;
 				}
 			}
+			rcLogBottom = urc->rcItem.bottom;
 			return RD_ANCHORX_WIDTH | RD_ANCHORY_HEIGHT;
 		case IDC_CONTACTPIC:{
 			RECT rc;
@@ -1134,8 +1150,13 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
 			} else
 				dat->fMustOffset = FALSE;
 
-			if(showToolbar && bBottomToolbar && (PluginConfig.m_AlwaysFullToolbarWidth || ((dat->pic.cy-DPISCALEY(6)) < rc.bottom)))
+			if(showToolbar && bBottomToolbar && (PluginConfig.m_AlwaysFullToolbarWidth || ((dat->pic.cy - DPISCALEY(6)) < rc.bottom))) {
 				urc->rcItem.bottom -= DPISCALEY(22);
+				if(dat->fIsAutosizingInput) {
+					urc->rcItem.left--;
+					urc->rcItem.top--;
+				}
+			}
 
 			//Bolshevik: resizes avatar control _FIXED
 			if( dat->hwndContactPic ) //if Panel control was created?
@@ -1171,7 +1192,10 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
 			urc->rcItem.top -= dat->splitterY - dat->originalSplitterY;
 			if (bBottomToolbar&&showToolbar)
 				urc->rcItem.bottom -= DPISCALEY(22);
-			//
+
+			if(dat->fIsAutosizingInput)
+				urc->rcItem.top -= DPISCALEY_S(1);
+
 			msgTop = urc->rcItem.top;
 			msgBottom = urc->rcItem.bottom;
 			if (CSkin::m_skinEnabled) {
@@ -1189,8 +1213,8 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
 				urc->rcItem.top += panelHeight;
 			urc->rcItem.left -= dat->multiSplitterX;
 			urc->rcItem.right -= dat->multiSplitterX;
-			urc->rcItem.bottom = iClistOffset;
-			return RD_ANCHORX_RIGHT | RD_ANCHORY_CUSTOM;
+			urc->rcItem.bottom = rcLogBottom;
+			return RD_ANCHORX_RIGHT | RD_ANCHORY_HEIGHT;
 		case IDC_LOGFROZENTEXT:
 			urc->rcItem.right = urc->dlgNewSize.cx - 50;
 			urc->rcItem.bottom = msgTop - (bBottomToolbar ? 0 : 28);
@@ -1290,6 +1314,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 
 			dat->hContact = newData->hContact;
 
+			dat->fIsAutosizingInput = IsAutoSplitEnabled(dat);
 			dat->cache = CContactCache::getContactCache(dat->hContact);
 			dat->cache->updateState();
 			dat->cache->setWindowData(hwndDlg, dat);
@@ -1342,7 +1367,6 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 				SendMessage(hwndDlg, DM_UPDATEWINICON, 0, 0);
 			dat->bTabFlash = FALSE;
 			dat->mayFlashTab = FALSE;
-			//dat->iTabImage = newData->iTabImage;
 			GetMyNick(dat);
 
 			dat->multiSplitterX = (int) M->GetDword(SRMSGMOD, "multisplit", 150);
@@ -1398,9 +1422,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			dat->minEditBoxSize.cx = rc.right - rc.left;
 			dat->minEditBoxSize.cy = rc.bottom - rc.top;
 
-			//mad
 			BB_InitDlgButtons(dat);
-			//
 			SendMessage(hwndDlg, DM_LOADBUTTONBARICONS, 0, 0);
 
 			if (CSkin::m_skinEnabled && !SkinItems[ID_EXTBKBUTTONSNPRESSED].IGNORED &&
@@ -1436,7 +1458,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 
 			SendDlgItemMessage(hwndDlg, IDC_LOG, EM_SETUNDOLIMIT, 0, 0);
 			SendDlgItemMessage(hwndDlg, IDC_LOG, EM_SETEVENTMASK, 0, ENM_MOUSEEVENTS | ENM_KEYEVENTS | ENM_LINK);
-			SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_SETEVENTMASK, 0, ENM_MOUSEEVENTS | ENM_SCROLL | ENM_KEYEVENTS | ENM_CHANGE);
+			SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_SETEVENTMASK, 0, ENM_REQUESTRESIZE | ENM_MOUSEEVENTS | ENM_SCROLL | ENM_KEYEVENTS | ENM_CHANGE);
 
 			dat->bActualHistory = M->GetByte(dat->hContact, "ActualHistory", 0);
 
@@ -1454,7 +1476,6 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 
 			SendDlgItemMessage(hwndDlg, IDC_LOG, EM_AUTOURLDETECT, (WPARAM) TRUE, 0);
 			SendDlgItemMessage(hwndDlg, IDC_LOG, EM_EXLIMITTEXT, 0, 0x80000000);
-
 			/*
 			 * subclassing stuff
 			 */
@@ -1579,7 +1600,6 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			SendMessage(hwndContainer, DM_REPORTMINHEIGHT, (WPARAM) hwndDlg, (LPARAM) dat->uMinHeight);
 			dat->dwLastActivity = GetTickCount() - 1000;
 			m_pContainer->dwLastActivity = dat->dwLastActivity;
-			//MAD
 			if(dat->hwndHPP) {
 				if(dat->oldIEViewProc == 0) {
 					WNDPROC wndProc = (WNDPROC)SetWindowLongPtr(dat->hwndHPP, GWLP_WNDPROC, (LONG_PTR)HPPKFSubclassProc);
@@ -1590,7 +1610,6 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 
 			}
 			dat->dwFlags &= ~MWF_INITMODE;
-			//MAD_
 			TABSRMM_FireEvent(dat->hContact, hwndDlg, MSG_WINDOW_EVT_OPEN, 0);
 
 			if(PluginConfig.g_bClientInStatusBar)
@@ -1642,6 +1661,9 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 				UINT item_ids[2] = {ID_EXTBKHISTORY, ID_EXTBKINPUTAREA};
 				UINT ctl_ids[2] = {IDC_LOG, IDC_MESSAGE};
 				int  i;
+				BOOL isEditNotesReason = dat->fEditNotesActive;
+				BOOL isSendLaterReason = (dat->sendMode & SMODE_SENDLATER);
+				BOOL isMultipleReason = (dat->sendMode & SMODE_MULTIPLE || dat->sendMode & SMODE_CONTAINER);
 
 				CSkin::SkinDrawBG(hwndDlg, hwndContainer, m_pContainer, &rcClient, hdcMem);
 
@@ -1658,7 +1680,13 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 						rc.top = pt.y - item->MARGIN_TOP;
 						rc.right = rc.left + item->MARGIN_RIGHT + (rcWindow.right - rcWindow.left) + item->MARGIN_LEFT;
 						rc.bottom = rc.top + item->MARGIN_BOTTOM + (rcWindow.bottom - rcWindow.top) + item->MARGIN_TOP;
-						CSkin::DrawItem(hdcMem, &rc, item);
+						if (item_ids[i] == ID_EXTBKINPUTAREA && (isMultipleReason || isEditNotesReason || isSendLaterReason)) {
+							HBRUSH br = CreateSolidBrush(isMultipleReason ? RGB(255, 130, 130) : (isEditNotesReason ? RGB(80, 255, 80) : RGB(80, 80, 255)));
+							FillRect(hdcMem, &rc, br);
+							DeleteObject(br);
+						}
+						else
+							CSkin::DrawItem(hdcMem, &rc, item);
 					}
 				}
 			}
@@ -1810,13 +1838,11 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 				GetClientRect(hwndDlg, &rcClient);
 				GetClientRect(GetDlgItem(hwndDlg, IDC_LOG), &rcLog);
 				rc.top = 0;
-				rc.right = rcClient.right - 3;
+				rc.right = rcClient.right;
 				rc.left = rcClient.right - dat->multiSplitterX;
 				rc.bottom = rcLog.bottom;
 				if (dat->Panel->isActive())
-					rc.top += dat->Panel->getHeight();
-				if (dat->dwFlagsEx & MWF_SHOW_SCROLLINGDISABLED)
-					rc.top += 24;
+					rc.top += (dat->Panel->getHeight() + 1);
 				MoveWindow(GetDlgItem(hwndDlg, IDC_CLIST), rc.left, rc.top, rc.right - rc.left, rcLog.bottom - rcLog.top, FALSE);
 			}
 
@@ -1899,6 +1925,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 										dat->sendMode ^= SMODE_SENDLATER;
 										SetWindowPos(GetDlgItem(hwndDlg, IDC_MESSAGE), 0, 0, 0, 0, 0, SWP_DRAWFRAME|SWP_FRAMECHANGED|SWP_NOZORDER|
 													 SWP_NOMOVE|SWP_NOSIZE|SWP_NOCOPYBITS);
+										RedrawWindow(hwndDlg, 0, 0, RDW_INVALIDATE|RDW_ERASE|RDW_UPDATENOW|RDW_ALLCHILDREN);
 										return(_dlgReturn(hwndDlg, 1));
 									case TABSRMM_HK_TOGGLERTL:
 									{
@@ -1949,6 +1976,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 											SetFocus(GetDlgItem(hwndDlg, IDC_CLIST));
 										else
 											SetFocus(GetDlgItem(hwndDlg, IDC_MESSAGE));
+										RedrawWindow(hwndDlg, 0, 0, RDW_INVALIDATE|RDW_ERASE|RDW_UPDATENOW|RDW_ALLCHILDREN);
 										return(_dlgReturn(hwndDlg, 1));
 									}
 									default:
@@ -2210,6 +2238,14 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 							}
 							break;
 						}
+
+#if defined(__FEAT_EXP_AUTOSPLITTER)
+						case EN_REQUESTRESIZE: {
+							REQRESIZE *rr = (REQRESIZE *)lParam;
+							DM_HandleAutoSizeRequest(dat, rr);
+							break;
+						}
+#endif
 						case EN_LINK:
 							switch (((ENLINK *) lParam)->msg) {
 								case WM_SETCURSOR:
@@ -3918,6 +3954,10 @@ quote_from_last:
 		case DM_FORCEREDRAW:
 			RedrawWindow(hwndDlg, NULL, NULL, RDW_INVALIDATE | RDW_ERASE | RDW_UPDATENOW);
 			return(0);
+
+		case DM_CHECKINFOTIP:
+			dat->Panel->hideTip();
+			break;
 
 		case WM_NCDESTROY:
 			if (dat) {

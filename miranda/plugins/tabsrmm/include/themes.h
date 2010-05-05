@@ -322,7 +322,7 @@ public:
 					m_titleBarRightOff, m_sidebarTopOffset, m_sidebarBottomOffset, m_bRoundedCorner;
 	static SIZE		m_titleBarButtonSize;
 	static int		m_bAvatarBorderType;
-	static COLORREF m_avatarBorderClr;
+	static COLORREF m_avatarBorderClr, m_tmp_tb_low, m_tmp_tb_high;
 	static COLORREF m_sideBarContainerBG;
 	static COLORREF m_ContainerColorKey, m_DefaultFontColor;
 	static HBRUSH 	m_ContainerColorKeyBrush, m_MenuBGBrush;
@@ -380,7 +380,9 @@ private:
 
 struct TabControlData {
 	BOOL    m_VisualStyles;
+#if defined(__FEAT_DEPRECATED_MODERNTABS)
 	BOOL    m_moderntabs;
+#endif
 	HWND    hwnd;
 	DWORD   dwStyle;
 	DWORD   cx, cy;

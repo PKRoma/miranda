@@ -120,7 +120,7 @@ static struct _tagPages {
 	UINT idDesc;
 	UINT uIds[10];
 } o_pages[] = {
-	{ CTranslator::CNT_OPT_TITLE_GEN, CTranslator::STR_LAST, IDC_O_NOTABS, IDC_O_STICKY, IDC_VERTICALMAX, 0, 0, 0, 0, 0, 0, 0},
+	{ CTranslator::CNT_OPT_TITLE_GEN, CTranslator::STR_LAST, IDC_O_NOTABS, IDC_O_STICKY, IDC_VERTICALMAX, IDC_AUTOSPLITTER, 0, 0, 0, 0, 0, 0},
 	{ CTranslator::CNT_OPT_TITLE_LAYOUT, CTranslator::STR_LAST, IDC_CNTNOSTATUSBAR, IDC_HIDEMENUBAR, IDC_UIDSTATUSBAR, IDC_HIDETOOLBAR, IDC_INFOPANEL, IDC_BOTTOMTOOLBAR, 0, 0, 0, 0},
 	{ CTranslator::CNT_OPT_TITLE_TABS, CTranslator::CNT_OPT_DESC_TABS, IDC_TABMODE, IDC_O_TABMODE, IDC_O_SBARLAYOUT, IDC_SBARLAYOUT, IDC_FLASHICON, IDC_FLASHLABEL, IDC_SINGLEROWTAB, IDC_BUTTONTABS, IDC_STYLEDTABS, IDC_CLOSEBUTTONONTABS},
 	{ CTranslator::CNT_OPT_TITLE_NOTIFY, CTranslator::CNT_OPT_DESC_NOTIFY, IDC_O_DONTREPORT, IDC_DONTREPORTUNFOCUSED2, IDC_ALWAYSPOPUPSINACTIVE, IDC_O_EXPLAINGLOBALNOTIFY, 0, 0, 0, 0, 0, 0},
@@ -146,6 +146,16 @@ static void ShowPage(HWND hwndDlg, int iPage, BOOL fShow)
 			SetDlgItemText(hwndDlg, IDC_DESC, _T(""));
 	}
 	Utils::showDlgControl(hwndDlg, IDC_O_EXPLAINGLOBALNOTIFY, (iPage == 3 && nen_options.bWindowCheck) ? SW_SHOW : SW_HIDE);
+
+#if !defined(__FEAT_EXP_AUTOSPLITTER)
+	if(iPage == 0)
+		Utils::showDlgControl(hwndDlg, IDC_AUTOSPLITTER, SW_HIDE);
+#endif
+
+#if !defined(__FEAT_DEPRECATED_MODERNTABS)
+	if(iPage == 2)
+		Utils::showDlgControl(hwndDlg, IDC_STYLEDTABS, SW_HIDE);
+#endif
 }
 
 INT_PTR CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
@@ -449,6 +459,9 @@ do_apply:
 			MY_CheckDlgButton(hwndDlg, IDC_BOTTOMTOOLBAR, dwFlags & CNT_BOTTOMTOOLBAR);
 			MY_CheckDlgButton(hwndDlg, IDC_UIDSTATUSBAR, dwFlags & CNT_UINSTATUSBAR);
 			MY_CheckDlgButton(hwndDlg, IDC_VERTICALMAX, dwFlags & CNT_VERTICALMAX);
+#if defined(__FEAT_EXP_AUTOSPLITTER)
+			MY_CheckDlgButton(hwndDlg, IDC_AUTOSPLITTER, dwFlags & CNT_AUTOSPLITTER);
+#endif
 			MY_CheckDlgButton(hwndDlg, IDC_INFOPANEL, dwFlags & CNT_INFOPANEL);
 			MY_CheckDlgButton(hwndDlg, IDC_USEGLOBALSIZE, dwFlags & CNT_GLOBALSIZE);
 
@@ -537,6 +550,9 @@ do_apply:
 						 (IsDlgButtonChecked(hwndDlg, IDC_INFOPANEL) ? CNT_INFOPANEL : 0) |
 						 (IsDlgButtonChecked(hwndDlg, IDC_O_ENABLESOUNDS) ? 0 : CNT_NOSOUND) |
 						 (IsDlgButtonChecked(hwndDlg, IDC_VERTICALMAX) ? CNT_VERTICALMAX : 0) |
+#if defined(__FEAT_EXP_AUTOSPLITTER)
+						 (IsDlgButtonChecked(hwndDlg, IDC_AUTOSPLITTER) ? CNT_AUTOSPLITTER : 0) |
+#endif
 						 (CNT_NEWCONTAINERFLAGS);
 
 			LRESULT iTabMode = SendDlgItemMessage(hwndDlg, IDC_TABMODE, CB_GETCURSEL, 0, 0);

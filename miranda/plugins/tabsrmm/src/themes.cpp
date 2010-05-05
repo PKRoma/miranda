@@ -66,6 +66,7 @@ ButtonSet 	g_ButtonSet = {0};
 
 int 		  CSkin::m_bAvatarBorderType = 0;
 COLORREF	  CSkin::m_avatarBorderClr = 0;
+COLORREF	  CSkin::m_tmp_tb_low = 0, CSkin::m_tmp_tb_high = 0;
 COLORREF	  CSkin::m_sideBarContainerBG;
 BLENDFUNCTION CSkin::m_default_bf = {0};				// a global blend function, used in various places
 														// when you use it, reset SourceConstantAlpha to 255 and
@@ -2223,9 +2224,8 @@ UINT CSkin::NcCalcRichEditFrame(HWND hwnd, const TWindowData *mwdat, UINT skinID
 
 	if (mwdat && CSkin::m_skinEnabled && !mwdat->bFlatMsgLog) {
 		CSkinItem *item = &SkinItems[skinID];
-		if (!item->IGNORED) {
+		if (!item->IGNORED)
 			return WVR_REDRAW;
-		}
 	}
 	if (mwdat && mwdat->hTheme && wParam && CMimAPI::m_pfnGetThemeBackgroundContentRect) {
 		RECT rcClient;
@@ -2499,7 +2499,7 @@ void CSkin::RenderToolbarBG(const TWindowData *dat, HDC hdc, const RECT &rcWindo
 			return;
 
 		bool	 fAero = M->isAero();
-		COLORREF clr1, clr2;
+		bool	 fTbColorsValid = PluginConfig.m_tbBackgroundHigh && PluginConfig.m_tbBackgroundLow;
 		BYTE	 bAlphaOffset = 0;
 
 		RECT 	rc, rcToolbar;;
@@ -2526,13 +2526,13 @@ void CSkin::RenderToolbarBG(const TWindowData *dat, HDC hdc, const RECT &rcWindo
 			}
 
 			::GetWindowRect(::GetDlgItem(dat->hwnd, dat->bType == SESSIONTYPE_CHAT ? IDC_CHAT_MESSAGE : IDC_MESSAGE), &rc);
-			pt.y = rc.top - 2;
+			pt.y = rc.top - (dat->fIsAutosizingInput ? 1 : 2);
 			::ScreenToClient(dat->hwnd, &pt);
 			rcToolbar.bottom = pt.y;
 		}
 		else {
 			GetWindowRect(::GetDlgItem(dat->hwnd, dat->bType == SESSIONTYPE_CHAT ? IDC_CHAT_MESSAGE : IDC_MESSAGE), &rc);
-			pt.y = rc.bottom - (dat->bType == SESSIONTYPE_IM ? 2 : 0);;
+			pt.y = rc.bottom - (dat->bType == SESSIONTYPE_IM ? 2 : 2);
 			ScreenToClient(dat->hwnd, &pt);
 			rcToolbar.top = pt.y + 1;
 			rcToolbar.left = 0;
@@ -2556,14 +2556,14 @@ void CSkin::RenderToolbarBG(const TWindowData *dat, HDC hdc, const RECT &rcWindo
 		dat->pContainer->szOldToolbarSize.cx = cx;
 		dat->pContainer->szOldToolbarSize.cy = cy;
 
-		if(fAero) {
-			clr1 = PluginConfig.m_tbBackgroundHigh ? PluginConfig.m_tbBackgroundHigh :
+		if(fAero || (M->isVSThemed() && fTbColorsValid)) {
+			m_tmp_tb_high = PluginConfig.m_tbBackgroundHigh ? PluginConfig.m_tbBackgroundHigh :
 					(m_pCurrentAeroEffect ? m_pCurrentAeroEffect->m_clrToolbar : 0xf0f0f0);
-			clr2 = PluginConfig.m_tbBackgroundLow ? PluginConfig.m_tbBackgroundLow :
+			m_tmp_tb_low = PluginConfig.m_tbBackgroundLow ? PluginConfig.m_tbBackgroundLow :
 					(m_pCurrentAeroEffect ? m_pCurrentAeroEffect->m_clrToolbar2 : m_dwmColorRGB);
 
 			bAlphaOffset = PluginConfig.m_tbBackgroundHigh ? 40 : 0;
-			::DrawAlpha(hdc, &rcToolbar, clr1, 45 + bAlphaOffset, clr2, 0, 9, 31, 4, 0);
+			::DrawAlpha(hdc, &rcToolbar, m_tmp_tb_high, 45 + bAlphaOffset, m_tmp_tb_low, 0, 9, 31, 4, 0);
 		} else
 			CMimAPI::m_pfnDrawThemeBackground(dat->hThemeToolbar, hdc, PluginConfig.m_bIsVista ? 12 : 6,  PluginConfig.m_bIsVista ? 2 : 1,
 											  &rcToolbar, &rcToolbar);
@@ -2572,9 +2572,9 @@ void CSkin::RenderToolbarBG(const TWindowData *dat, HDC hdc, const RECT &rcWindo
 		rcCachedToolbar.right = cx;
 		rcCachedToolbar.bottom = cy;
 
-		if(fAero) {
+		if(fAero || (M->isVSThemed() && fTbColorsValid)) {
 			::FillRect(dat->pContainer->cachedToolbarDC, &rcCachedToolbar, ::GetSysColorBrush(COLOR_3DFACE));
-			::DrawAlpha(dat->pContainer->cachedToolbarDC, &rcCachedToolbar, clr1, 55 + bAlphaOffset, clr2, 0, 9, 31, 4, 0);
+			::DrawAlpha(dat->pContainer->cachedToolbarDC, &rcCachedToolbar, m_tmp_tb_high, 55 + bAlphaOffset, m_tmp_tb_low, 0, 9, 31, 4, 0);
 		} else
 			CMimAPI::m_pfnDrawThemeBackground(dat->hThemeToolbar, dat->pContainer->cachedToolbarDC, PluginConfig.m_bIsVista ? 12 : 6,  PluginConfig.m_bIsVista ? 2 : 1,
 											  &rcCachedToolbar, &rcCachedToolbar);

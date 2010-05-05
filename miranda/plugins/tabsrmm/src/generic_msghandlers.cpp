@@ -437,6 +437,7 @@ LRESULT TSAPI DM_MsgWindowCmdHandler(HWND hwndDlg, TContainerData *m_pContainer,
 					break;
 				case ID_SENDMENU_SENDTOCONTAINER:
 					dat->sendMode ^= SMODE_CONTAINER;
+					RedrawWindow(hwndDlg, 0, 0, RDW_ERASENOW|RDW_UPDATENOW);
 					break;
 				case ID_SENDMENU_FORCEANSISEND:
 					dat->sendMode ^= SMODE_FORCEANSI;
@@ -455,14 +456,17 @@ LRESULT TSAPI DM_MsgWindowCmdHandler(HWND hwndDlg, TContainerData *m_pContainer,
 			M->WriteByte(dat->hContact, SRMSGMOD_T, "no_ack", (BYTE)(dat->sendMode & SMODE_NOACK ? 1 : 0));
 			M->WriteByte(dat->hContact, SRMSGMOD_T, "forceansi", (BYTE)(dat->sendMode & SMODE_FORCEANSI ? 1 : 0));
 			SetWindowPos(GetDlgItem(hwndDlg, IDC_MESSAGE), 0, 0, 0, 0, 0, SWP_FRAMECHANGED | SWP_NOSIZE | SWP_NOMOVE);
-			if (dat->sendMode & SMODE_MULTIPLE || dat->sendMode & SMODE_CONTAINER)
+			if (dat->sendMode & SMODE_MULTIPLE || dat->sendMode & SMODE_CONTAINER) {
 				SetWindowPos(GetDlgItem(hwndDlg, IDC_MESSAGE), 0, 0, 0, 0, 0, SWP_DRAWFRAME|SWP_FRAMECHANGED|SWP_NOZORDER|
 							 SWP_NOMOVE|SWP_NOSIZE|SWP_NOCOPYBITS);
+				RedrawWindow(hwndDlg, 0, 0, RDW_INVALIDATE|RDW_ERASE|RDW_UPDATENOW|RDW_ALLCHILDREN);
+			}
 			else {
 				if (IsWindow(GetDlgItem(hwndDlg, IDC_CLIST)))
 					DestroyWindow(GetDlgItem(hwndDlg, IDC_CLIST));
 				SetWindowPos(GetDlgItem(hwndDlg, IDC_MESSAGE), 0, 0, 0, 0, 0, SWP_DRAWFRAME|SWP_FRAMECHANGED|SWP_NOZORDER|
 							 SWP_NOMOVE|SWP_NOSIZE|SWP_NOCOPYBITS);
+				RedrawWindow(hwndDlg, 0, 0, RDW_INVALIDATE|RDW_ERASE|RDW_UPDATENOW|RDW_ALLCHILDREN);
 			}
 			SendMessage(hwndContainer, DM_QUERYCLIENTAREA, 0, (LPARAM)&rc);
 			SendMessage(hwndDlg, WM_SIZE, 0, 0);
@@ -513,6 +517,7 @@ LRESULT TSAPI DM_MsgWindowCmdHandler(HWND hwndDlg, TContainerData *m_pContainer,
 			}
 			SetWindowPos(GetDlgItem(hwndDlg, IDC_MESSAGE), 0, 0, 0, 0, 0, SWP_DRAWFRAME|SWP_FRAMECHANGED|SWP_NOZORDER|
 						 SWP_NOMOVE|SWP_NOSIZE|SWP_NOCOPYBITS);
+			RedrawWindow(hwndDlg, 0, 0, RDW_INVALIDATE|RDW_ERASE|RDW_FRAME|RDW_UPDATENOW|RDW_ALLCHILDREN);
 			break;
 		}
 		case IDM_CLEAR:
@@ -1412,7 +1417,7 @@ void TSAPI DM_NotifyTyping(struct TWindowData *dat, int mode)
 		// Don't send to users who are not visible and
 		// Don't send to users who are not on the visible list when you are in invisible mode.
 
-		if(dat->fEditNotesActive)							// don't send them when editing user notes, pretty scary, huh? :)
+		if(dat->fEditNotesActive || dat->sendMode & SMODE_SENDLATER)	// don't send them when editing user notes or send later is manually activated
 			return;
 
 		if (!M->GetByte(dat->hContact, SRMSGMOD, SRMSGSET_TYPING, M->GetByte(SRMSGMOD, SRMSGSET_TYPINGNEW, SRMSGDEFSET_TYPINGNEW)))
@@ -1806,6 +1811,54 @@ void TSAPI DM_EventAdded(TWindowData *dat, WPARAM wParam, LPARAM lParam)
 	}
 }
 
+void TSAPI DM_HandleAutoSizeRequest(TWindowData *dat, REQRESIZE* rr)
+{
+	if(dat && rr && GetForegroundWindow() == dat->pContainer->hwnd) {
+		if(dat->fIsAutosizingInput) {
+			if(dat->iInputAreaHeight == 0) {
+				RECT	rc;
+				GetClientRect(GetDlgItem(dat->hwnd, dat->bType == SESSIONTYPE_IM ? IDC_MESSAGE : IDC_CHAT_MESSAGE), &rc);
+				dat->iInputAreaHeight = rr->rc.bottom - rr->rc.top;
+			}
+			LONG iNewHeight = rr->rc.bottom - rr->rc.top;
+
+			if(CSkin::m_skinEnabled && !SkinItems[ID_EXTBKINPUTAREA].IGNORED) 
+				iNewHeight += (SkinItems[ID_EXTBKINPUTAREA].MARGIN_TOP + SkinItems[ID_EXTBKINPUTAREA].MARGIN_BOTTOM - 2);
+
+			if(iNewHeight != dat->iInputAreaHeight) {
+				RECT	rc;
+
+				GetClientRect(dat->hwnd, &rc);
+				LONG cy = rc.bottom - rc.top;
+				LONG panelHeight = (dat->Panel->isActive() ? dat->Panel->getHeight() : 0);
+
+				if(iNewHeight > (cy - panelHeight) / 2)
+					iNewHeight = (cy - panelHeight) / 2;
+
+				if(dat->bType == SESSIONTYPE_IM) {
+					dat->dynaSplitter = rc.bottom - (rc.bottom - iNewHeight + DPISCALEY_S(2));
+					if(dat->pContainer->dwFlags & CNT_BOTTOMTOOLBAR)
+						dat->dynaSplitter += DPISCALEY_S(22);
+					dat->splitterY = dat->dynaSplitter + DPISCALEY_S(34);
+					DM_RecalcPictureSize(dat);
+				}
+				else if (dat->si) {
+					dat->si->iSplitterY = (rc.bottom - (rc.bottom - iNewHeight + DPISCALEY_S(3))) + DPISCALEY_S(34);
+					if(!(dat->pContainer->dwFlags & CNT_BOTTOMTOOLBAR))
+						dat->si->iSplitterY -= DPISCALEY_S(22);
+				}
+				dat->iInputAreaHeight = iNewHeight;
+				SendMessage(dat->hwnd, WM_SIZE, 0, 0);
+				if(M->isAero() || M->isVSThemed())
+					RedrawWindow(dat->hwnd, 0, 0, RDW_ERASE|RDW_INVALIDATE|RDW_UPDATENOW);
+				else
+					RedrawWindow(dat->hwnd, 0, 0, RDW_ERASE|RDW_INVALIDATE|RDW_UPDATENOW|RDW_ALLCHILDREN);
+				DM_ScrollToBottom(dat, 1, 0);
+			}
+		}
+	}
+}
+
 void TSAPI DM_UpdateTitle(TWindowData *dat, WPARAM wParam, LPARAM lParam)
 {
 	TCHAR 					newtitle[128];
@@ -2099,7 +2152,10 @@ void DrawStatusIcons(struct TWindowData *dat, HDC hDC, RECT r, int gap)
 	int 				x = r.left;
 	LONG 				cx_icon = PluginConfig.m_smcxicon;
 	LONG				cy_icon = PluginConfig.m_smcyicon;
+	LONG				y = (r.top + r.bottom - cx_icon) >> 1;
 
+	if(!CSkin::m_skinEnabled && !M->isAero())
+		y--;
 	SetBkMode(hDC, TRANSPARENT);
 	while (current) {
 		if (current->sid.flags&MBF_OWNERSTATE) {
@@ -2126,35 +2182,35 @@ void DrawStatusIcons(struct TWindowData *dat, HDC hDC, RECT r, int gap)
 				hIcon = current->sid.hIcon;
 
 			if (flags & MBF_DISABLED && current->sid.hIconDisabled == (HICON)0)
-				CSkin::DrawDimmedIcon(hDC, x, (r.top + r.bottom - cx_icon) >> 1, cx_icon, cy_icon, hIcon, 50);
+				CSkin::DrawDimmedIcon(hDC, x, y, cx_icon, cy_icon, hIcon, 50);
 			else
-				DrawIconEx(hDC, x, (r.top + r.bottom - 16) >> 1, hIcon, 16, 16, 0, NULL, DI_NORMAL);
+				DrawIconEx(hDC, x, y, hIcon, 16, 16, 0, NULL, DI_NORMAL);
 
 			x += 16 + gap;
 		}
 		current = current->next;
 	}
-	DrawIconEx(hDC, x, (r.top + r.bottom - 16) >> 1, PluginConfig.g_buttonBarIcons[ICON_DEFAULT_SOUNDS],
+	DrawIconEx(hDC, x, y, PluginConfig.g_buttonBarIcons[ICON_DEFAULT_SOUNDS],
 			   cx_icon, cy_icon, 0, NULL, DI_NORMAL);
 
-	DrawIconEx(hDC, x, (r.top + r.bottom - 16) >> 1, dat->pContainer->dwFlags & CNT_NOSOUND ?
+	DrawIconEx(hDC, x, y, dat->pContainer->dwFlags & CNT_NOSOUND ?
 			   PluginConfig.g_iconOverlayDisabled : PluginConfig.g_iconOverlayEnabled,
 			   cx_icon, cy_icon, 0, NULL, DI_NORMAL);
 
 	x += (cx_icon + gap);
 
 	if (dat->bType == SESSIONTYPE_IM) {
-		DrawIconEx(hDC, x, (r.top + r.bottom - cx_icon) >> 1,
+		DrawIconEx(hDC, x, y,
 				   PluginConfig.g_buttonBarIcons[ICON_DEFAULT_TYPING], cx_icon, cy_icon, 0, NULL, DI_NORMAL);
-		DrawIconEx(hDC, x, (r.top + r.bottom - cx_icon) >> 1, M->GetByte(dat->hContact, SRMSGMOD, SRMSGSET_TYPING, M->GetByte(SRMSGMOD, SRMSGSET_TYPINGNEW, SRMSGDEFSET_TYPINGNEW)) ?
+		DrawIconEx(hDC, x, y, M->GetByte(dat->hContact, SRMSGMOD, SRMSGSET_TYPING, M->GetByte(SRMSGMOD, SRMSGSET_TYPINGNEW, SRMSGDEFSET_TYPINGNEW)) ?
 				   PluginConfig.g_iconOverlayEnabled : PluginConfig.g_iconOverlayDisabled, cx_icon, cy_icon, 0, NULL, DI_NORMAL);
 	}
 	else
-		CSkin::DrawDimmedIcon(hDC, x, (r.top + r.bottom - cx_icon) >> 1, cx_icon, cy_icon,
+		CSkin::DrawDimmedIcon(hDC, x, y, cx_icon, cy_icon,
 					   PluginConfig.g_buttonBarIcons[ICON_DEFAULT_TYPING], 50);
 
 	x += (cx_icon + gap);
-	DrawIconEx(hDC, x, (r.top + r.bottom - cx_icon) >> 1, PluginConfig.g_sideBarIcons[0], cx_icon, cy_icon, 0, NULL, DI_NORMAL);
+	DrawIconEx(hDC, x, y, PluginConfig.g_sideBarIcons[0], cx_icon, cy_icon, 0, NULL, DI_NORMAL);
 }
 
 void SI_CheckStatusIconClick(struct TWindowData *dat, HWND hwndFrom, POINT pt, RECT r, int gap, int code)

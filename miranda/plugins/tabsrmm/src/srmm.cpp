@@ -33,7 +33,6 @@
  */
 
 #include "commonheaders.h"
-#include "../include/version.h"
 
 extern int 	LoadSendRecvMessageModule(void);
 extern int 	SplitmsgShutdown(void);

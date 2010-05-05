@@ -84,6 +84,7 @@ public:
 			mir_free(m_pszText);
 	}
 	void						show						(const RECT& rc, POINT& pt, const HICON hIcon = 0, const TCHAR *szTitle = 0);
+	const HWND					getHwnd						() const { return(m_hwnd); }
 
 	static void					registerClass				();
 private:
@@ -143,6 +144,7 @@ public:
 		m_defaultMUCHeight = PluginConfig.m_MUCpanelHeight;
 		m_hwndConfig = 0;
 		m_hoverFlags = 0;
+		m_tip = 0;
 	}
 
 	~CInfoPanel()
@@ -171,7 +173,8 @@ public:
 	void 						trackMouse					(POINT& pt);
 	int							hitTest						(POINT  pt);
 	void						handleClick					(const POINT& pt);
-	void						showTip						(UINT ctrlId, const LPARAM lParam) const;
+	void						showTip						(UINT ctrlId, const LPARAM lParam);
+	void						hideTip						();
 	int							invokeConfigDialog			(const POINT& pt);
 	void						dismissConfig				(bool fForced = false);
 
@@ -211,6 +214,7 @@ private:
 	RECT				m_rcUIN;
 	RECT				m_rcStatus;
 	DWORD				m_hoverFlags;
+	CTip*				m_tip;
 };
 
 #endif /* __INFOPANEL_H */

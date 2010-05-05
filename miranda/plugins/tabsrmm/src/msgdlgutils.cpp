@@ -259,6 +259,7 @@ void TSAPI CalcDynamicAvatarSize(TWindowData *dat, BITMAP *bminfo)
 	BOOL bBottomToolBar=dat->pContainer->dwFlags & CNT_BOTTOMTOOLBAR;
 	BOOL bToolBar=dat->pContainer->dwFlags & CNT_HIDETOOLBAR?0:1;
 	bool fInfoPanel = dat->Panel->isActive();
+	int	 iSplitOffset = dat->fIsAutosizingInput ? 1 : 0;
 
 	if (PluginConfig.g_FlashAvatarAvail) {
 		FLASHAVATAR fa = {0};
@@ -282,14 +283,12 @@ void TSAPI CalcDynamicAvatarSize(TWindowData *dat, BITMAP *bminfo)
 		picAspect = (double)(bminfo->bmWidth / (double)bminfo->bmHeight);
 	picProjectedWidth = (double)((dat->dynaSplitter-((bBottomToolBar && bToolBar)? DPISCALEX(24):0) + ((dat->showUIElements != 0) ? DPISCALEX(28) : DPISCALEX(2)))) * picAspect;
 
-	//MaD: by changing dat->iButtonBarReallyNeeds to dat->iButtonBarNeeds
-	//	   we can change resize priority to buttons, if needed...
-	if (((rc.right) - (int)picProjectedWidth) > (dat->iButtonBarReallyNeeds) && !PluginConfig.m_AlwaysFullToolbarWidth && bToolBar)
-		dat->iRealAvatarHeight = dat->dynaSplitter + 3 /*4 */ + (dat->showUIElements ? DPISCALEY(28):DPISCALEY(2));
+	if ((rc.right - (int)picProjectedWidth) > (dat->iButtonBarReallyNeeds) && !PluginConfig.m_AlwaysFullToolbarWidth && bToolBar)
+		dat->iRealAvatarHeight = dat->dynaSplitter + 3 + (dat->showUIElements ? DPISCALEY(28):DPISCALEY(2));
 	else
-		dat->iRealAvatarHeight = dat->dynaSplitter + DPISCALEY(6);
-	//mad
-	dat->iRealAvatarHeight-=((bBottomToolBar&&bToolBar)? DPISCALEY(22):0);
+		dat->iRealAvatarHeight = dat->dynaSplitter + DPISCALEY(6) + DPISCALEY_S(iSplitOffset);
+
+	dat->iRealAvatarHeight-=((bBottomToolBar&&bToolBar) ? DPISCALEY(22) : 0);
 
 	if (PluginConfig.m_LimitStaticAvatarHeight > 0)
 		dat->iRealAvatarHeight = min(dat->iRealAvatarHeight, PluginConfig.m_LimitStaticAvatarHeight);
@@ -1553,6 +1552,10 @@ void TSAPI SaveSplitter(TWindowData *dat)
 	if(dat->bType == SESSIONTYPE_CHAT)
 		return;
 
+#if defined(__FEAT_EXP_AUTOSPLITTER)
+	if(dat->fIsAutosizingInput)
+		return;
+#endif
 	if (dat->splitterY < DPISCALEY_S(MINSPLITTERY) || dat->splitterY < 0)
 		dat->splitterY = DPISCALEY_S(MINSPLITTERY);
 
@@ -1568,6 +1571,12 @@ void TSAPI SaveSplitter(TWindowData *dat)
 
 void TSAPI LoadSplitter(TWindowData *dat)
 {
+#if defined(__FEAT_EXP_AUTOSPLITTER)
+	if (dat->fIsAutosizingInput) {
+		dat->splitterY = GetDefaultMinimumInputHeight(dat);
+		return;
+	}
+#endif
 	if (!(dat->dwFlagsEx & MWF_SHOW_SPLITTEROVERRIDE))
 		if(!dat->pContainer->settings->fPrivate)
 			dat->splitterY = (int)M->GetDword("splitsplity", (DWORD) 60);
@@ -1630,7 +1639,7 @@ void TSAPI GetLocaleID(TWindowData *dat, const TCHAR *szKLName)
 	BOOL fLocaleNotSet;
 	char szTest[4] = {(char)0xe4, (char)0xf6, (char)0xfc, 0 };
 
-	szLI[0] = 0;
+	szLI[0] = szLI[1] = 0;
 
 	ZeroMemory(&pf2, sizeof(_PARAFORMAT2));
 	langID = (USHORT)_tcstol(szKLName, &stopped, 16);
@@ -1638,7 +1647,7 @@ void TSAPI GetLocaleID(TWindowData *dat, const TCHAR *szKLName)
 	/*
 	 * Vista+: read ISO locale names from the registry
 	 */
-	if(PluginConfig.m_bIsVista && CMimAPI::m_pfnGetLocaleInfoEx != 0) {
+	if(PluginConfig.m_bIsVista) {
 		HKEY	hKey = 0;
 		TCHAR	szKey[20];
 		DWORD	dwLID = _tcstoul(szKLName, &stopped, 16);
@@ -1983,7 +1992,7 @@ int TSAPI MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, TWindowData *dat)
 			top = (cy - dat->pic.cy) / 2;
 			RECT rcEdge = {0, top, dat->pic.cx, top + dat->pic.cy};
 			if (CSkin::m_skinEnabled)
-				CSkin::SkinDrawBG(dis->hwndItem, dat->pContainer->hwnd, dat->pContainer, &rcEdge, hdcDraw);
+				CSkin::SkinDrawBG(dis->hwndItem, dat->pContainer->hwnd, dat->pContainer, &dis->rcItem, hdcDraw);
 			else {
 				if(fAero && CSkin::m_pCurrentAeroEffect) {
 					COLORREF clr = PluginConfig.m_tbBackgroundHigh ? PluginConfig.m_tbBackgroundHigh :
@@ -2423,3 +2432,30 @@ void TSAPI ClearLog(TWindowData *dat)
 		}
 	}
 }
+
+bool TSAPI IsAutoSplitEnabled(const TWindowData* dat)
+{
+#if defined(__FEAT_EXP_AUTOSPLITTER)
+	return((dat && dat->pContainer->dwFlags & CNT_AUTOSPLITTER) ? true : false);
+#else
+	return(false);
+#endif
+}
+
+#if defined(__FEAT_EXP_AUTOSPLITTER)
+LONG TSAPI GetDefaultMinimumInputHeight(const TWindowData* dat)
+{
+	LONG height = MINSPLITTERY;
+
+	if(dat) {
+		if(dat->bType == SESSIONTYPE_IM) 
+			height = ((dat->pContainer->dwFlags & CNT_BOTTOMTOOLBAR) ? DPISCALEY_S(46 + 22) : DPISCALEY_S(46));
+		else
+			height = ((dat->pContainer->dwFlags & CNT_BOTTOMTOOLBAR) ? DPISCALEY_S(22 + 46) : DPISCALEY_S(46)) - DPISCALEY_S(23);
+		
+		if(CSkin::m_skinEnabled && !SkinItems[ID_EXTBKINPUTAREA].IGNORED)
+			height += (SkinItems[ID_EXTBKINPUTAREA].MARGIN_BOTTOM + SkinItems[ID_EXTBKINPUTAREA].MARGIN_TOP - 2);
+	}
+	return(height);
+}
+#endif

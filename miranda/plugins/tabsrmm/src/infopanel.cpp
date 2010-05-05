@@ -324,18 +324,6 @@ void CInfoPanel::renderContent(const HDC hdc)
 		if(!m_isChat) {
 			RECT rc;
 
-			rc = m_dat->rcNick;
-			if(m_height >= DEGRADE_THRESHOLD) {
-				rc.top -= 2;// rc.bottom += 6;
-			}
-			RenderIPNickname(hdc, rc);
-			if(m_height >= DEGRADE_THRESHOLD) {
-				rc = m_dat->rcUIN;
-				RenderIPUIN(hdc, rc);
-			}
-			rc = m_dat->rcStatus;
-			RenderIPStatus(hdc, rc);
-
 			/*
 			 * panel picture
 			 */
@@ -349,6 +337,18 @@ void CInfoPanel::renderContent(const HDC hdc)
 				::PostMessage(m_dat->hwnd, WM_SIZE, 0, 1);
 				::PostMessage(m_dat->hwnd, DM_FORCEREDRAW, 0, 0);
 			}
+
+			rc = m_dat->rcNick;
+			if(m_height >= DEGRADE_THRESHOLD) {
+				rc.top -= 2;// rc.bottom += 6;
+			}
+			RenderIPNickname(hdc, rc);
+			if(m_height >= DEGRADE_THRESHOLD) {
+				rc = m_dat->rcUIN;
+				RenderIPUIN(hdc, rc);
+			}
+			rc = m_dat->rcStatus;
+			RenderIPStatus(hdc, rc);
 		}
 		else {
 			RECT rc;
@@ -861,7 +861,7 @@ void CInfoPanel::trackMouse(POINT& pt)
  * @param ctrlId : control id
  * @param lParam : typically a TCHAR * for the tooltip text
  */
-void CInfoPanel::showTip(UINT ctrlId, const LPARAM lParam) const
+void CInfoPanel::showTip(UINT ctrlId, const LPARAM lParam)
 {
 	if (m_active && m_dat->hwndTip) {
 		RECT 	rc;
@@ -933,9 +933,9 @@ void CInfoPanel::showTip(UINT ctrlId, const LPARAM lParam) const
 			POINT pt;
 			RECT  rc = {0, 0, 400, 600};
 			GetCursorPos(&pt);
-			CTip *tip = new CTip(m_dat->hwnd, m_dat->hContact, str->c_str(), this);
+			m_tip = new CTip(m_dat->hwnd, m_dat->hContact, str->c_str(), this);
 			delete str;
-			tip->show(rc, pt, m_dat->hTabIcon, m_dat->szStatus);
+			m_tip->show(rc, pt, m_dat->hTabIcon, m_dat->szStatus);
 			return;
 		}
 		mir_sntprintf(szTitle, safe_sizeof(szTitle), CTranslator::get(CTranslator::GEN_IP_TIP_TITLE));
@@ -945,6 +945,19 @@ void CInfoPanel::showTip(UINT ctrlId, const LPARAM lParam) const
 		::SendMessage(m_dat->hwndTip, TTM_SETTITLE, 1, (LPARAM)szTitle);
 		::SendMessage(m_dat->hwndTip, TTM_TRACKACTIVATE, TRUE, (LPARAM)&m_dat->ti);
 		::GetCursorPos(&m_dat->ptTipActivation);
+	}
+}
+
+/**
+ * hide a tooltip (if it was created)
+ * this is only used from outside (i.e. container window dialog)
+ */
+void CInfoPanel::hideTip()
+{
+	if(m_tip) {
+		if(IsWindow(m_tip->getHwnd()))
+			::DestroyWindow(m_tip->getHwnd());
+		m_tip = 0;
 	}
 }
 

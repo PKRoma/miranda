@@ -436,6 +436,8 @@ struct TWindowData {
 	BYTE    bWasDeleted;
 	BOOL	bActualHistory;
 	POINT	ptTipActivation;
+	LONG	iInputAreaHeight;
+	bool	fIsAutosizingInput;
 };
 
 #define MESSAGE_WINDOW_DATA_SIZE offsetof(_MessageWindowData, hdbEventFirst);
@@ -533,7 +535,7 @@ struct TNewWindowData {
 #define CNT_GLOBALSIZE 0x800
 #define CNT_INFOPANEL 0x1000
 #define CNT_NOSOUND 0x2000
-// #define CNT_SYNCSOUNDS 0x4000
+#define CNT_AUTOSPLITTER 0x4000
 #define CNT_DEFERREDCONFIGURE 0x8000
 #define CNT_CREATE_MINIMIZED 0x10000
 #define CNT_NEED_UPDATETITLE 0x20000
@@ -608,7 +610,7 @@ struct TNewWindowData {
 #define DM_MUCFLASHWORKER    (WM_USER+32)
 #define DM_CALCMINHEIGHT     (WM_USER+33)       // msgdialog asked to recalculate its minimum height
 #define DM_REPORTMINHEIGHT   (WM_USER+34)       // msg dialog reports its minimum height to the container
-//#define DM_QUERYMINHEIGHT    (WM_USER+35)       // container queries msg dialog about minimum height
+#define DM_CHECKINFOTIP		 (WM_USER+35) 
 #define DM_SAVESIZE          (WM_USER+36)
 #define DM_CHECKSIZE         (WM_USER+37)
 #define DM_FORCEREDRAW       (WM_USER+38)

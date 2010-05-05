@@ -1,6 +1,6 @@
 // Microsoft Visual C++ generated resource script.
 //
-#include "include/resource.h"
+#include "include\resource.h"
 
 #define APSTUDIO_READONLY_SYMBOLS
 /////////////////////////////////////////////////////////////////////////////
@@ -9,7 +9,8 @@
 //
 #include <windows.h>
 #include <winres.h>
-#include "../../include/statusmodes.h"
+#include "../../include/statusmodes.h"
+
 
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
@@ -197,6 +198,7 @@ BEGIN
     CONTROL         "Only show tab bar when it's needed",IDC_O_NOTABS,"Button",BS_AUTOCHECKBOX | NOT WS_VISIBLE | WS_TABSTOP,135,65,156,10
     CONTROL         "Container stays on top",IDC_O_STICKY,"Button",BS_AUTOCHECKBOX | NOT WS_VISIBLE | WS_TABSTOP,135,77,156,10
     CONTROL         "Vertical maximize",IDC_VERTICALMAX,"Button",BS_AUTOCHECKBOX | NOT WS_VISIBLE | WS_TABSTOP,135,88,156,10
+    CONTROL         "Automatically size input area",IDC_AUTOSPLITTER,"Button",BS_AUTOCHECKBOX | NOT WS_VISIBLE | WS_TABSTOP,135,99,156,10
     CONTROL         "Use default setting",IDC_O_FLASHDEFAULT,"Button",BS_AUTORADIOBUTTON | WS_GROUP,135,64,101,11
     CONTROL         "Flash until focused",IDC_O_FLASHALWAYS,"Button",BS_AUTORADIOBUTTON,135,75,98,12
     CONTROL         "Disable flashing",IDC_O_FLASHNEVER,"Button",BS_AUTORADIOBUTTON,135,88,100,11
@@ -1071,14 +1073,15 @@ END
 
 1 TEXTINCLUDE 
 BEGIN
-    "include/resource.h\0"
+    "include\\resource.h\0"
 END
 
 2 TEXTINCLUDE 
 BEGIN
     "#include <windows.h>\r\n"
     "#include <winres.h>\r\n"
-    "#include ""../../include/statusmodes.h""\r\r\n"
+    "#include ""../../include/statusmodes.h""\r\n"
+    "\r\r\n"
     "\r\0"
 END
 

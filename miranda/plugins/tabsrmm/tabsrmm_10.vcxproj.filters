@@ -218,9 +218,6 @@
     <ClInclude Include="include\nen.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\resource.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="include\sendqueue.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -297,6 +294,9 @@
       <Filter>Header Files\API</Filter>
     </ClInclude>
     <ClInclude Include="include\sendlater.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\resource.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

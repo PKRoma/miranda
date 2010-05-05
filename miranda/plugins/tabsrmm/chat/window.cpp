@@ -434,6 +434,9 @@ static int RoomWndResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL *urc)
 	GetClientRect(hwndDlg, &rcTabs);
 	TabHeight = rcTabs.bottom - rcTabs.top;
 
+	if(dat->fIsAutosizingInput)
+		Utils::showDlgControl(hwndDlg, IDC_SPLITTERY, SW_HIDE);
+
 	if (si->iType != GCW_SERVER) {
 		Utils::showDlgControl(hwndDlg, IDC_LIST, si->bNicklistEnabled ? SW_SHOW : SW_HIDE);
 		Utils::showDlgControl(hwndDlg, IDC_SPLITTERX, si->bNicklistEnabled ? SW_SHOW : SW_HIDE);
@@ -501,7 +504,7 @@ static int RoomWndResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL *urc)
 		case IDC_SPLITTERX:
 			urc->rcItem.right = urc->dlgNewSize.cx - si->iSplitterX + 2;
 			urc->rcItem.left = urc->dlgNewSize.cx - si->iSplitterX;
-			urc->rcItem.bottom = (bToolbar&&!bBottomToolbar) ? (urc->dlgNewSize.cy - si->iSplitterY - DPISCALEY(23)) : (urc->dlgNewSize.cy - si->iSplitterY - DPISCALEY(2));
+			urc->rcItem.bottom = (bToolbar&&!bBottomToolbar) ? (urc->dlgNewSize.cy - si->iSplitterY - DPISCALEY(22)) : (urc->dlgNewSize.cy - si->iSplitterY - DPISCALEY(2));
 			urc->rcItem.top = 0;
 			if (fInfoPanel)
 				urc->rcItem.top += panelHeight;
@@ -521,11 +524,13 @@ static int RoomWndResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL *urc)
 			urc->rcItem.top = urc->dlgNewSize.cy - si->iSplitterY + 3;
 			urc->rcItem.bottom = urc->dlgNewSize.cy; // - 1 ;
 			msgBottom = urc->rcItem.bottom;
+
+			if(dat->fIsAutosizingInput)
+				urc->rcItem.top -= DPISCALEY_S(1);
+
 			msgTop = urc->rcItem.top;
-			//mad
 			if (bBottomToolbar&&bToolbar)
-				urc->rcItem.bottom -= DPISCALEY(24);
-			//
+				urc->rcItem.bottom -= DPISCALEY(22);
 			if (CSkin::m_skinEnabled) {
 				CSkinItem *item = &SkinItems[ID_EXTBKINPUTAREA];
 				if (!item->IGNORED) {
@@ -1922,7 +1927,7 @@ INT_PTR CALLBACK RoomWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 			dat->cache = CContactCache::getContactCache(dat->hContact);
 			dat->cache->updateState();
 			dat->cache->updateUIN();
-
+			dat->fIsAutosizingInput = IsAutoSplitEnabled(dat);
 			SetWindowLongPtr(hwndDlg, GWLP_USERDATA, (LONG_PTR)dat);
 			newData->item.lParam = (LPARAM) hwndDlg;
 			TabCtrl_SetItem(hwndTab, newData->iTabID, &newData->item);
@@ -1940,7 +1945,10 @@ INT_PTR CALLBACK RoomWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 				else
 					psi->iSplitterY = g_Settings.iSplitterY;
 			}
-
+#if defined(__FEAT_EXP_AUTOSPLITTER)
+			if(dat->fIsAutosizingInput)
+				psi->iSplitterY = GetDefaultMinimumInputHeight(dat);
+#endif
 			dat->fInsertMode = FALSE;
 
 			dat->codePage = M->GetDword(dat->hContact, "ANSIcodepage", CP_ACP);
@@ -1972,7 +1980,7 @@ INT_PTR CALLBACK RoomWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 			mask = (int)SendDlgItemMessage(hwndDlg, IDC_CHAT_LOG, EM_GETEVENTMASK, 0, 0);
 			SendDlgItemMessage(hwndDlg, IDC_CHAT_LOG, EM_SETEVENTMASK, 0, mask | ENM_LINK | ENM_MOUSEEVENTS | ENM_KEYEVENTS);
 
-			SendDlgItemMessage(hwndDlg, IDC_CHAT_MESSAGE, EM_SETEVENTMASK, 0, ENM_MOUSEEVENTS | ENM_SCROLL | ENM_KEYEVENTS | ENM_CHANGE);
+			SendDlgItemMessage(hwndDlg, IDC_CHAT_MESSAGE, EM_SETEVENTMASK, 0, ENM_REQUESTRESIZE | ENM_MOUSEEVENTS | ENM_SCROLL | ENM_KEYEVENTS | ENM_CHANGE);
 
 			SendDlgItemMessage(hwndDlg, IDC_CHAT_LOG, EM_LIMITTEXT, (WPARAM)0x7FFFFFFF, 0);
 			SendDlgItemMessage(hwndDlg, IDC_CHAT_MESSAGE, EM_SETMARGINS, EC_LEFTMARGIN | EC_RIGHTMARGIN, MAKELONG(3, 3));
@@ -2814,6 +2822,15 @@ LABEL_SHOWWINDOW:
 					}
 					break;
 				}
+
+				case EN_REQUESTRESIZE: {
+					if(pNmhdr->idFrom == IDC_CHAT_MESSAGE) {
+						REQRESIZE *rr = (REQRESIZE *)lParam;
+						DM_HandleAutoSizeRequest(dat, rr);
+					}
+					break;
+				}
+
 				case EN_LINK:
 					if (pNmhdr->idFrom == IDC_CHAT_LOG) {
 						switch (((ENLINK *) lParam)->msg) {
@@ -3720,8 +3737,10 @@ LABEL_SHOWWINDOW:
 
 			TABSRMM_FireEvent(dat->hContact, hwndDlg, MSG_WINDOW_EVT_CLOSING, 0);
 
-			DBWriteContactSettingWord(NULL, "Chat", "SplitterX", (WORD)g_Settings.iSplitterX);
-			if(dat->pContainer->settings->fPrivate)
+			if(!dat->fIsAutosizingInput)
+				DBWriteContactSettingWord(NULL, "Chat", "SplitterX", (WORD)g_Settings.iSplitterX);
+			
+			if(dat->pContainer->settings->fPrivate && !IsAutoSplitEnabled(dat))
 				DBWriteContactSettingWord(NULL, "Chat", "splitY", (WORD)g_Settings.iSplitterY);
 
 			DM_FreeTheme(dat);

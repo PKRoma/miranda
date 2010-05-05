@@ -823,6 +823,7 @@
     <ClInclude Include="chat\chat_resource.h" />
     <ClInclude Include="chat\chatprototypes.h" />
     <ClInclude Include="chat\muchighlight.h" />
+    <ClInclude Include="include\resource.h" />
     <ClInclude Include="include\sendlater.h" />
     <ClInclude Include="src\commonheaders.h" />
     <ClInclude Include="include\contactcache.h" />
@@ -836,7 +837,6 @@
     <ClInclude Include="include\msgdlgutils.h" />
     <ClInclude Include="include\msgs.h" />
     <ClInclude Include="include\nen.h" />
-    <ClInclude Include="include\resource.h" />
     <ClInclude Include="include\sendqueue.h" />
     <ClInclude Include="include\sidebar.h" />
     <ClInclude Include="include\taskbar.h" />

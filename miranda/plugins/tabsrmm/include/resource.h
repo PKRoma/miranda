@@ -411,6 +411,7 @@
 #define IDC_STATUSGROUP                 1338
 #define IDC_ALLOWSENDBUTTONHIDE         1340
 #define IDC_VERTICALMAX                 1341
+#define IDC_AUTOSPLITTER				1342
 #define IDC_ICONDLLNAME                 1343
 #define IDC_SAVETEMPLATE                1344
 #define IDC_SELECTICONDLL               1345

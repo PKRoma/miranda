@@ -87,7 +87,8 @@ HICON	TSAPI MY_GetContactIcon				(const TWindowData *dat);
 void	TSAPI CheckAndDestroyIEView			(TWindowData *dat);
 void 	TSAPI KbdState						(TWindowData *dat, BOOL& isShift, BOOL& isControl, BOOL& isAlt);
 void 	TSAPI ClearLog						(TWindowData *dat);
-
+bool	TSAPI IsAutoSplitEnabled			(const TWindowData* dat);
+LONG	TSAPI GetDefaultMinimumInputHeight	(const TWindowData* dat);
 // mathmod
 
 void	TSAPI MTH_updateMathWindow			(const TWindowData *dat);

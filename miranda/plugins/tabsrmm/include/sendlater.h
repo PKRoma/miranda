@@ -43,6 +43,9 @@
 class CSendLaterJob {
 
 public:
+	/*
+	 * job status/error codes
+	 */
 	enum {
 		INVALID_CONTACT = 'I',
 		JOB_DEFERRED = 'D',
@@ -53,6 +56,9 @@ public:
 		JOB_REMOVABLE = 'R',
 		JOB_HOLD = 'H',
 	};
+	/*
+	 * internal flags
+	 */
 	enum {
 		SLF_SUSPEND = 1,
 		SLF_INVALID = 2

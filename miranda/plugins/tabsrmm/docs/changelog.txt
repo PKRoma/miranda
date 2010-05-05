@@ -42,6 +42,11 @@ Version 3.0.0.27 - 2010/05/XX
 
 	* fixed few problems with tool bar configuration dialog.
 
+	* send later UI improved
+
+	* skin selection dialog improved (added button for quickly closing
+	  all open message windows when loading or unloading a skin).
+
 Version 3.0.0.26 - 2010/04/30
 
 	* fixed the painting of close buttons on tabs when using a skin (they

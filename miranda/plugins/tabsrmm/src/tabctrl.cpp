@@ -191,6 +191,7 @@ static struct colOptions {
  * used by the "styled" tabs which look similar to visual studio UI tabs.
  */
 
+#if defined(__FEAT_DEPRECATED_MODERNTABS)
 static void __stdcall DrawWuLine(HDC pDC, int X0, int Y0, int X1, int Y1, COLORREF clrLine)
 {
 	int XDir, DeltaX, DeltaY;
@@ -361,6 +362,7 @@ static void __stdcall DrawWuLine(HDC pDC, int X0, int Y0, int X1, int Y1, COLORR
 	}
 	SetPixel(pDC, X1, Y1, clrLine);
 }
+#endif
 /*
  * draws the item contents (icon and label)
  * it obtains the label and icon handle directly from the message window data
@@ -424,10 +426,12 @@ static void DrawItem(TabControlData *tabdat, HDC dc, RECT *rcItem, int nHint, in
 		rcItem->top++;
 		rcItem->bottom--;
 
+#if defined(__FEAT_DEPRECATED_MODERNTABS)
 		if (tabdat->m_moderntabs && rcItem->left < 10) {
 			leftMost = TRUE;
 			rcItem->left += 10;
 		}
+#endif
 
 		if (!(dwStyle & TCS_BOTTOM))
 			OffsetRect(rcItem, 0, 1);
@@ -565,29 +569,21 @@ b_nonskinned:
 
 		if (nHint & HINT_ACTIVE_ITEM) {
 			if (dwStyle & TCS_BOTTOM) {
-				/*
-				if(tabdat->pContainer->bSkinned)
-					SkinDrawBG(tabdat->hwnd, tabdat->pContainer->hwnd, tabdat->pContainer, rcItem, dc);
-				else
-					FillRect(dc, rcItem, GetSysColorBrush(COLOR_3DFACE));
-				*/
+#if defined(__FEAT_DEPRECATED_MODERNTABS)
 				if (!CSkin::m_skinEnabled && !tabdat->m_moderntabs)
+#else
+				if (!CSkin::m_skinEnabled)
+#endif
 					FillRect(dc, rcItem, GetSysColorBrush(COLOR_3DFACE));
-				//else if(tabdat->pContainer->bSkinned)
-				//    SkinDrawBG(tabdat->hwnd, tabdat->pContainer->hwnd, tabdat->pContainer, rcItem, dc);
 				rcItem->bottom += 2;
 			} else {
 				rcItem->bottom += 2;
-				/*
-				if(tabdat->pContainer->bSkinned)
-					SkinDrawBG(tabdat->hwnd, tabdat->pContainer->hwnd, tabdat->pContainer, rcItem, dc);
-				else
-					FillRect(dc, rcItem, GetSysColorBrush(COLOR_3DFACE));
-				*/
+#if defined(__FEAT_DEPRECATED_MODERNTABS)
 				if (!CSkin::m_skinEnabled && !tabdat->m_moderntabs)
+#else
+				if (!CSkin::m_skinEnabled)
+#endif
 					FillRect(dc, rcItem, GetSysColorBrush(COLOR_3DFACE));
-				//else if(tabdat->pContainer->bSkinned)
-				//    SkinDrawBG(tabdat->hwnd, tabdat->pContainer->hwnd, tabdat->pContainer, rcItem, dc);
 				rcItem->bottom--;
 				rcItem->top -= 2;
 			}
@@ -620,6 +616,7 @@ b_nonskinned:
 			}
 		}
 		if (dwStyle & TCS_BOTTOM) {
+#if defined(__FEAT_DEPRECATED_MODERNTABS)
 			if (tabdat->m_moderntabs) {
 				RECT rc = *rcItem;
 				POINT pt[5], pts;
@@ -715,6 +712,7 @@ b_nonskinned:
 					LineTo(dc, pt[1].x, pt[1].y - 1);
 				DeleteObject(rgn);
 			} else {
+#endif
 				MoveToEx(dc, rcItem->left, rcItem->top - (nHint & HINT_ACTIVE_ITEM ? 1 : 0), &pt);
 				LineTo(dc, rcItem->left, rcItem->bottom - 2);
 				LineTo(dc, rcItem->left + 2, rcItem->bottom);
@@ -728,8 +726,11 @@ b_nonskinned:
 				LineTo(dc, rcItem->right - 2, rcItem->bottom - 1);
 				MoveToEx(dc, rcItem->right - 3, rcItem->bottom - 1, &pt);
 				LineTo(dc, rcItem->left + 2, rcItem->bottom - 1);
+#if defined(__FEAT_DEPRECATED_MODERNTABS)
 			}
+#endif
 		} else {
+#if defined(__FEAT_DEPRECATED_MODERNTABS)
 			if (tabdat->m_moderntabs) {
 				RECT rc = *rcItem;
 				POINT pt[5], pts;
@@ -830,6 +831,7 @@ b_nonskinned:
 					LineTo(dc, pt[1].x, pt[1].y + 1);
 				DeleteObject(rgn);
 			} else {
+#endif
 				MoveToEx(dc, rcItem->left, rcItem->bottom, &pt);
 				LineTo(dc, rcItem->left, rcItem->top + 2);
 				LineTo(dc, rcItem->left + 2, rcItem->top);
@@ -841,7 +843,9 @@ b_nonskinned:
 				SelectObject(dc, PluginConfig.tabConfig.m_hPenShadow);
 				MoveToEx(dc, rcItem->right - 1, rcItem->top + 2, &pt);
 				LineTo(dc, rcItem->right - 1, rcItem->bottom + 1);
+#if defined(__FEAT_DEPRECATED_MODERNTABS)
 			}
+#endif
 		}
 	}
 }
@@ -1086,8 +1090,10 @@ static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
 	if (tabdat) {
 		if (tabdat->pContainer == NULL) {
 			tabdat->pContainer = (TContainerData *)GetWindowLongPtr(GetParent(hwnd), GWLP_USERDATA);
+#if defined(__FEAT_DEPRECATED_MODERNTABS)
 			if(tabdat->pContainer)
 				tabdat->m_moderntabs = ((tabdat->pContainer->dwFlagsEx & TCF_STYLED) && !CSkin::m_skinEnabled);
+#endif
 		}
 		tabdat->dwStyle = GetWindowLongPtr(hwnd, GWL_STYLE);
 	}
@@ -1147,8 +1153,10 @@ static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
 			BOOL bClassicDraw = (tabdat->m_VisualStyles == FALSE);
 			if ((tabdat->dwStyle & TCS_BOTTOM) && !bClassicDraw && PluginConfig.tabConfig.m_bottomAdjust != 0)
 				InvalidateRect(hwnd, NULL, FALSE);
+#if defined(__FEAT_DEPRECATED_MODERNTABS)
 			else if (tabdat->m_moderntabs)
 				InvalidateRect(hwnd, NULL, FALSE);
+#endif
 			break;
 		}
 		case EM_REFRESHWITHOUTCLIP:
@@ -1163,9 +1171,8 @@ static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
 		case TCM_GETITEMRECT: {
 			RECT *rc = (RECT *)lParam;
 			LRESULT result = CallWindowProc(OldTabControlClassProc, hwnd, msg, wParam, lParam);
+#if defined(__FEAT_DEPRECATED_MODERNTABS)
 			RECT rcControl;
-
-
 			if (tabdat->m_moderntabs && tabdat->dwStyle & TCS_MULTILINE) {
 				GetClientRect(hwnd, &rcControl);
 				if (rc->left < 10)
@@ -1175,6 +1182,7 @@ static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
 				else
 					OffsetRect(rc, 10, 0);
 			}
+#endif
 			return result;
 		}
 		case TCM_INSERTITEM:
@@ -1449,9 +1457,11 @@ static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
 			DWORD cx, cy;
 			bool  isAero = M->isAero();
 			HANDLE hpb = 0;
-
+#if defined(__FEAT_DEPRECATED_MODERNTABS)
 			BOOL bClassicDraw = !isAero && (tabdat->m_VisualStyles == FALSE || tabdat->m_moderntabs || CSkin::m_skinEnabled);
-
+#else
+			BOOL bClassicDraw = !isAero && (tabdat->m_VisualStyles == FALSE || CSkin::m_skinEnabled);
+#endif
 			if(GetUpdateRect(hwnd, NULL, TRUE) == 0)
 				break;
 
@@ -1474,9 +1484,11 @@ static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
 			else
 				tabdat->fAeroTabs = FALSE;
 
+#if defined(__FEAT_DEPRECATED_MODERNTABS)
 			if(tabdat->pContainer)
 				tabdat->m_moderntabs = !tabdat->fAeroTabs && (tabdat->pContainer->dwFlagsEx & TCF_STYLED) &&
 				!(tabdat->dwStyle & TCS_BUTTONS) && !(CSkin::m_skinEnabled);
+#endif
 
 			hdcreal = BeginPaint(hwnd, &ps);
 
@@ -1600,9 +1612,10 @@ static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
 					} else {
 						rectTemp = rctPage;
 
+#if defined(__FEAT_DEPRECATED_MODERNTABS)
 						if (tabdat->m_moderntabs)
 							SelectObject(hdc, PluginConfig.tabConfig.m_hPenItemShadow);
-
+#endif
 						MoveToEx(hdc, rectTemp.left, rectTemp.bottom - 1, &pt);
 						LineTo(hdc, rectTemp.left, rectTemp.top);
 
@@ -1614,13 +1627,17 @@ static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
 							MoveToEx(hdc, rctActive.left - 2, rectTemp.bottom - 1, &pt);
 							LineTo(hdc, rectTemp.left - 1, rectTemp.bottom - 1);
 							SelectObject(hdc, PluginConfig.tabConfig.m_hPenItemShadow);
+#if defined(__FEAT_DEPRECATED_MODERNTABS)
 							if (!tabdat->m_moderntabs) {
+#endif
 								MoveToEx(hdc, rectTemp.right - 2, rectTemp.top + 1, &pt);
 								LineTo(hdc, rectTemp.right - 2, rectTemp.bottom - 2);
 								LineTo(hdc, rctActive.right, rectTemp.bottom - 2);
 								MoveToEx(hdc, rctActive.left - 2, rectTemp.bottom - 2, &pt);
 								LineTo(hdc, rectTemp.left, rectTemp.bottom - 2);
+#if defined(__FEAT_DEPRECATED_MODERNTABS)
 							}
+#endif
 						} else {
 							if (rctActive.left >= 0) {
 								LineTo(hdc, rctActive.left, rctActive.bottom);
@@ -1632,20 +1649,32 @@ static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
 									else
 										MoveToEx(hdc, rctActive.right, rctActive.bottom, &pt);
 								}
+#if defined(__FEAT_DEPRECATED_MODERNTABS)
 								LineTo(hdc, rectTemp.right - (tabdat->m_moderntabs ? 1 : 2), rctActive.bottom);
+#else
+								LineTo(hdc, rectTemp.right - 2, rctActive.bottom);
+#endif
 							} else {
 								RECT rectItemLeftmost;
 								UINT nItemLeftmost = FindLeftDownItem(hwnd);
 								TabCtrl_GetItemRect(hwnd, nItemLeftmost, &rectItemLeftmost);
 								LineTo(hdc, rectTemp.right - 2, rctActive.bottom);
 							}
+#if defined(__FEAT_DEPRECATED_MODERNTABS)
 							if (!tabdat->m_moderntabs) {
+#endif
 								SelectObject(hdc, PluginConfig.tabConfig.m_hPenItemShadow);
 								LineTo(hdc, rectTemp.right - 2, rectTemp.bottom - 2);
 								LineTo(hdc, rectTemp.left, rectTemp.bottom - 2);
+#if defined(__FEAT_DEPRECATED_MODERNTABS)
 							}
+#endif
 
+#if defined(__FEAT_DEPRECATED_MODERNTABS)
 							SelectObject(hdc, tabdat->m_moderntabs ? PluginConfig.tabConfig.m_hPenItemShadow : PluginConfig.tabConfig.m_hPenShadow);
+#else
+							SelectObject(hdc, PluginConfig.tabConfig.m_hPenShadow);
+#endif
 							MoveToEx(hdc, rectTemp.right - 1, rctActive.bottom, &pt);
 							LineTo(hdc, rectTemp.right - 1, rectTemp.bottom - 1);
 							LineTo(hdc, rectTemp.left - 2, rectTemp.bottom - 1);

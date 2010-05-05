@@ -1498,8 +1498,10 @@ buttons_done:
 							ShowWindow((HWND)item.lParam, SW_SHOW);
 							SetFocus(pContainer->hwndActive);
 						}
+#if defined(__FEAT_DEPRECATED_MODERNTABS)
 						if(tabdat && tabdat->m_moderntabs)
                               InvalidateRect(hwndTab, NULL, TRUE);
+#endif
 					}
 					break;
 			}
@@ -1531,8 +1533,11 @@ buttons_done:
 			if (pContainer == NULL)
 				break;
 
-			if (PluginConfig.m_MathModAvail && LOWORD(wParam == WA_INACTIVE))
-				CallService(MTH_HIDE, 0, 0);
+			if (LOWORD(wParam == WA_INACTIVE)) {
+				BroadCastContainer(pContainer, DM_CHECKINFOTIP, wParam, 0);
+				if(PluginConfig.m_MathModAvail)
+					CallService(MTH_HIDE, 0, 0);
+			}
 
 			if (LOWORD(wParam == WA_INACTIVE) && (HWND)lParam != PluginConfig.g_hwndHotkeyHandler && GetParent((HWND)lParam) != hwndDlg) {
 				BOOL fTransAllowed = !bSkinned || PluginConfig.m_bIsVista;
