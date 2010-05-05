@@ -1549,9 +1549,9 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 					SendMessage(dat->hwndStatus, SB_SETTEXT, 0, (LPARAM) szBuf);
 					SendMessage(dat->hwndStatus, SB_SETICON, 0, (LPARAM) hTyping);
 					if (( g_dat->flags & SMF_SHOWTYPINGWIN ) && GetForegroundWindow() != hwndDlg) {
-						HICON hIcon = (HICON)SendMessage(hwndDlg, WM_SETICON, ICON_SMALL, 0);
-						CallService(MS_SKIN2_RELEASEICON, (WPARAM)hIcon, 0);
+						HICON hIcon = (HICON)SendMessage(hwndDlg, WM_GETICON, ICON_SMALL, 0);
 						SendMessage(hwndDlg, WM_SETICON, ( WPARAM )ICON_SMALL, ( LPARAM )hTyping );
+						CallService(MS_SKIN2_RELEASEICON, (WPARAM)hIcon, 0);
 					}
 					dat->showTyping = 1;
 		}	}	}
@@ -1610,10 +1610,10 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 							hImageList = ImageList_Create(GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON), IsWinVerXPPlus()? ILC_COLOR32 | ILC_MASK : ILC_COLOR16 | ILC_MASK, 1, 0);
 							ImageList_AddIcon(hImageList, hIcon);
 							ImageList_DrawEx(hImageList, 0, dis->hDC, dis->rcItem.left, dis->rcItem.top, 0, 0, CLR_NONE, CLR_NONE, ILD_SELECTED);
-							ImageList_RemoveAll(hImageList);
 							ImageList_Destroy(hImageList);
 						}
-						else DrawIconEx(dis->hDC, dis->rcItem.left, dis->rcItem.top, hIcon, GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), 0, NULL, DI_NORMAL);
+						else 
+							DrawIconEx(dis->hDC, dis->rcItem.left, dis->rcItem.top, hIcon, GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), 0, NULL, DI_NORMAL);
 						CallService(MS_SKIN2_RELEASEICON,(WPARAM)hIcon, 0);
 				}	}
 			}
