@@ -163,6 +163,9 @@ void cliTrayIconUpdateBase(const char *szChangedProto)
 	HWND hwnd=pcli->hwndContactList;
 
 	if (!szChangedProto) return;
+
+	if (!pcli->pfnGetProtocolVisibility(szChangedProto)) return;
+
 	pcli->pfnLockTray();	
 	if ( pcli->cycleTimerId ) {
 		KillTimer( NULL, pcli->cycleTimerId);
