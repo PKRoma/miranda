@@ -391,32 +391,53 @@ INT_PTR CallProtoServiceInt( HANDLE hContact, const char *szModule, const char *
 			TServiceListItem *item = serviceItems.find(( TServiceListItem* )&szService );
 			if ( item ) {
 				switch( item->id ) {
-					case  1: return ( INT_PTR )ppi->AddToList( wParam, (PROTOSEARCHRESULT*)lParam ); 
+					case  1: 
+						if ( ppi->m_iVersion > 1 || !((( PROTOSEARCHRESULT* )lParam)->flags & PSR_UNICODE))
+							return ( INT_PTR )ppi->AddToList( wParam, (PROTOSEARCHRESULT*)lParam ); 
+						else {
+							PROTOSEARCHRESULT *psr = ( PROTOSEARCHRESULT* )lParam;
+							PROTOSEARCHRESULT *psra =( PROTOSEARCHRESULT* )mir_alloc( psr->cbSize );
+							memcpy( psra, psr, psr->cbSize );
+							psra->nick      = ( PROTOCHAR* )mir_u2a( psr->nick );
+							psra->firstName = ( PROTOCHAR* )mir_u2a( psr->firstName );
+							psra->lastName  = ( PROTOCHAR* )mir_u2a( psr->lastName );
+							psra->email     = ( PROTOCHAR* )mir_u2a( psr->email );
+							
+							INT_PTR res = ( INT_PTR )ppi->AddToList( wParam, psra );
+							
+							mir_free( psra->nick );
+							mir_free( psra->firstName );
+							mir_free( psra->lastName );
+							mir_free( psra->email );
+							mir_free( psra );
+							
+							return res;
+						}
 					case  2: return ( INT_PTR )ppi->AddToListByEvent( LOWORD(wParam), HIWORD(wParam), (HANDLE)lParam ); 
 					case  3: return ( INT_PTR )ppi->Authorize( ( HANDLE )wParam ); 
 					case  4:
 						if ( ppi->m_iVersion > 1 )
 							return ( INT_PTR )ppi->AuthDeny(( HANDLE )wParam,  StrConvT(( char* )lParam )); 
 						else
-							return ( INT_PTR )ppi->AuthDeny(( HANDLE )wParam, ( TCHAR* )lParam ); 
+							return ( INT_PTR )ppi->AuthDeny(( HANDLE )wParam, ( PROTOCHAR* )lParam ); 
 					case  5: return ( INT_PTR )ppi->AuthRecv( hContact, ( PROTORECVEVENT* )lParam ); 
 					case  6:
 						if ( ppi->m_iVersion > 1 )
 							return ( INT_PTR )ppi->AuthRequest( hContact,  StrConvT(( char* )lParam )); 
 						else
-							return ( INT_PTR )ppi->AuthRequest( hContact, ( TCHAR* )lParam ); 
+							return ( INT_PTR )ppi->AuthRequest( hContact, ( PROTOCHAR* )lParam ); 
 					case  7: return ( INT_PTR )ppi->ChangeInfo( wParam, ( void* )lParam ); 
 					case  8:
 						if ( ppi->m_iVersion > 1 )
 							return ( INT_PTR )ppi->FileAllow( hContact, ( HANDLE )wParam,  StrConvT(( char* )lParam )); 
 						else
-							return ( INT_PTR )ppi->FileAllow( hContact, ( HANDLE )wParam, ( TCHAR* )lParam ); 
+							return ( INT_PTR )ppi->FileAllow( hContact, ( HANDLE )wParam, ( PROTOCHAR* )lParam ); 
 					case  9: return ( INT_PTR )ppi->FileCancel( hContact, ( HANDLE )wParam ); 
 					case  10:
 						if ( ppi->m_iVersion > 1 )
 							return ( INT_PTR )ppi->FileDeny( hContact, ( HANDLE )wParam,  StrConvT(( char* )lParam )); 
 						else
-							return ( INT_PTR )ppi->FileDeny( hContact, ( HANDLE )wParam, ( TCHAR* )lParam ); 
+							return ( INT_PTR )ppi->FileDeny( hContact, ( HANDLE )wParam, ( PROTOCHAR* )lParam ); 
 					case 11: {
 						PROTOFILERESUME* pfr = ( PROTOFILERESUME* )lParam;
 #ifdef _UNICODE
@@ -555,6 +576,27 @@ INT_PTR CallProtoServiceInt( HANDLE hContact, const char *szModule, const char *
 
 #endif
 	}	}	}	}
+
+	if ( strcmp( szService, PS_ADDTOLIST ) == 0 ) {
+		PROTOSEARCHRESULT *psr = ( PROTOSEARCHRESULT* )lParam;
+		PROTOSEARCHRESULT *psra =( PROTOSEARCHRESULT* )mir_alloc( psr->cbSize );
+		memcpy( psra, psr, psr->cbSize );
+		psra->nick      = ( PROTOCHAR* )mir_u2a( psr->nick );
+		psra->firstName = ( PROTOCHAR* )mir_u2a( psr->firstName );
+		psra->lastName  = ( PROTOCHAR* )mir_u2a( psr->lastName );
+		psra->email     = ( PROTOCHAR* )mir_u2a( psr->email );
+		
+		INT_PTR res = MyCallProtoService( szModule, szService, wParam, ( LPARAM )psra );
+		
+		mir_free( psra->nick );
+		mir_free( psra->firstName );
+		mir_free( psra->lastName );
+		mir_free( psra->email );
+		mir_free( psra );
+		
+		return res;
+	}
+
 
 	INT_PTR res = MyCallProtoService( szModule, szService, wParam, lParam );
 
