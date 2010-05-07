@@ -75,24 +75,19 @@ int fnHitTest(HWND hwnd, struct ClcData *dat, int testx, int testy, struct ClcCo
 	HFONT hFont;
 	DWORD style = GetWindowLongPtr(hwnd, GWL_STYLE);
 	POINT pt;
-	HWND hwndTmp, hwndRoot;
+	HWND hwndRoot, hwndDesk;
 
 	if ( flags )
 		*flags = 0;
 
 	pt.x = testx;
 	pt.y = testy;
-	MapWindowPoints(hwnd, GetDesktopWindow(), &pt, 1);
 
-	hwndRoot = hwnd;
-	while (hwndTmp = GetParent(hwndRoot))
-		hwndRoot = hwndTmp;
-	hwndTmp = ChildWindowFromPointEx(GetDesktopWindow(), pt, CWP_SKIPINVISIBLE|CWP_SKIPTRANSPARENT);
-	if (// [our root window is not under cursor]
-		(hwndTmp != hwndRoot) &&
-		// AND [desktop ("Progman" class) is not under cursor OR our root window is not it's child located under cursor (pinned mode)]
-		!(hwndTmp == FindWindowA("Progman",0)) && (ChildWindowFromPointEx(hwndTmp, pt, CWP_SKIPINVISIBLE|CWP_SKIPTRANSPARENT) == hwndRoot))
-		return -1;
+	hwndDesk = GetDesktopWindow();
+
+	MapWindowPoints(hwnd, hwndDesk, &pt, 1);
+	hwndRoot = ChildWindowFromPointEx(hwndDesk, pt, CWP_SKIPINVISIBLE|CWP_SKIPTRANSPARENT);
+	if (hwndRoot != cli.hwndContactList) return -1;
 
 	GetClientRect(hwnd, &clRect);
 	if ( testx < 0 || testy < 0 || testy >= clRect.bottom || testx >= clRect.right ) {
