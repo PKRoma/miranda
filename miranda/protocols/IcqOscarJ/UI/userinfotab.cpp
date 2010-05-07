@@ -216,7 +216,7 @@ static INT_PTR CALLBACK IcqDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 	switch (msg) {
 	case WM_INITDIALOG:
 		ICQTranslateDialog(hwndDlg);
-		return TRUE;
+		break;
 
 	case WM_NOTIFY:
 		switch (((LPNMHDR)lParam)->idFrom) {
