@@ -151,6 +151,7 @@ struct MessageWindowData
 	int		isMixed;
 	int		sendAllConfirm;
 	HICON   statusIcon;
+	HICON   statusIconBig;
 	HICON   statusIconOverlay;
 	CommonWindowData windowData;
 	InfobarWindowData* infobarData;

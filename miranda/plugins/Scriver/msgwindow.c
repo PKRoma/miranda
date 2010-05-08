@@ -884,8 +884,6 @@ INT_PTR CALLBACK DlgProcParentWindow(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 				mir_free((MessageWindowTabData *) tci.lParam);
 				ReleaseIcon(tci.iImage);
 			}
-			DestroyIcon((HICON)SendMessage(hwndDlg, WM_SETICON, (WPARAM) ICON_BIG, 0));
-			DestroyIcon((HICON)SendMessage(hwndDlg, WM_SETICON, (WPARAM) ICON_SMALL, 0));
 			SetWindowLongPtr(hwndDlg, GWLP_USERDATA, 0);
 			WindowList_Remove(g_dat->hParentWindowList, hwndDlg);
 			if (savePerContact)
@@ -1037,8 +1035,8 @@ INT_PTR CALLBACK DlgProcParentWindow(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 					}
 				}
 				if (tbd->iFlags & TBDF_ICON) {
-					DestroyIcon((HICON)SendMessage(hwndDlg, WM_SETICON, (WPARAM) ICON_SMALL, (LPARAM) CopyIcon(tbd->hIcon)));
-					DestroyIcon((HICON)SendMessage(hwndDlg, WM_SETICON, (WPARAM) ICON_BIG, (LPARAM) CopyIcon(tbd->hIcon)));
+					SendMessage(hwndDlg, WM_SETICON, ICON_SMALL, (LPARAM) tbd->hIcon);
+					SendMessage(hwndDlg, WM_SETICON, ICON_BIG,   (LPARAM) tbd->hIconBig);
 				}
 			}
 			break;

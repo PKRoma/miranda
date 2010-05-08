@@ -294,11 +294,12 @@ static void SetDialogToType(HWND hwndDlg)
 
 void SetStatusIcon(struct MessageWindowData *dat) {
 	if (dat->szProto != NULL) {
-		HICON hIcon;
-		HICON hStatusIcon = NULL;
 		char *szProto = dat->szProto;
 		HANDLE hContact = dat->windowData.hContact;
-		if (strcmp(dat->szProto, "MetaContacts") == 0 && DBGetContactSettingByte(NULL,"CLC","Meta",0) == 0) {
+		
+		char* szMetaProto = (char*)CallService(MS_MC_GETPROTOCOLNAME, 0, 0);
+		if ((INT_PTR)szMetaProto != CALLSERVICE_NOTFOUND && strcmp(dat->szProto, szMetaProto) == 0 && 
+			DBGetContactSettingByte(NULL,"CLC","Meta",0) == 0) {
 			hContact = (HANDLE)CallService(MS_MC_GETMOSTONLINECONTACT,(WPARAM)dat->windowData.hContact, 0);
 			if (hContact != NULL) {
 				szProto = (char*)CallService(MS_PROTO_GETCONTACTBASEPROTO,(WPARAM)hContact,0);
@@ -306,23 +307,16 @@ void SetStatusIcon(struct MessageWindowData *dat) {
 				hContact = dat->windowData.hContact;
 			}
 		}
-		if (ServiceExists(MS_CLIST_GETCONTACTICON) && ServiceExists(MS_CLIST_GETICONSIMAGELIST)) {
-			HIMAGELIST iml = (HIMAGELIST)CallService(MS_CLIST_GETICONSIMAGELIST,0,0);
-			int index = CallService(MS_CLIST_GETCONTACTICON,(WPARAM)dat->windowData.hContact,0);
-			if (iml && index>=0)
-				hStatusIcon = ImageList_GetIcon(iml,index,ILD_NORMAL);
-		}
-		if (hStatusIcon == NULL) {
-			hIcon = LoadSkinnedProtoIcon(szProto, dat->wStatus);
-			hStatusIcon = CopyIcon(hIcon);
-			CallService(MS_SKIN2_RELEASEICON,(WPARAM)hIcon , 0);
-		}
 
-		if (dat->statusIcon != NULL) DestroyIcon(dat->statusIcon);
+		CallService(MS_SKIN2_RELEASEICON, (WPARAM)dat->statusIcon, 0);
+		dat->statusIcon = LoadSkinnedProtoIcon(szProto, dat->wStatus);
+
+		CallService(MS_SKIN2_RELEASEICON, (WPARAM)dat->statusIconBig, 0);
+		dat->statusIconBig = LoadSkinnedProtoIconBig(szProto, dat->wStatus);
+
 		if (dat->statusIconOverlay != NULL) DestroyIcon(dat->statusIconOverlay);
-		dat->statusIcon = hStatusIcon;
 		{
-			int index = ImageList_ReplaceIcon(g_dat->hHelperIconList, 0, hStatusIcon);
+			int index = ImageList_ReplaceIcon(g_dat->hHelperIconList, 0, dat->statusIcon);
 			dat->statusIconOverlay = ImageList_GetIcon(g_dat->hHelperIconList, index, ILD_TRANSPARENT|INDEXTOOVERLAYMASK(1));
 		}
 	}
@@ -1202,6 +1196,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			TabControlData tcd;
 			tbd.iFlags = TBDF_ICON;
 			tbd.hIcon = GetTitlebarIcon(dat);
+			tbd.hIconBig = dat->statusIconBig;
 			SendMessage(dat->hwndParent, CM_UPDATETITLEBAR, (WPARAM)&tbd, (LPARAM)hwndDlg);
 			tcd.iFlags = TCDF_ICON;
 			tcd.hIcon = GetTabIcon(dat);
@@ -1225,6 +1220,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			TitleBarData tbd;
 			tbd.iFlags = TBDF_TEXT | TBDF_ICON;
 			tbd.hIcon = GetTitlebarIcon(dat);
+			tbd.hIconBig = dat->statusIconBig;
 			tbd.pszText = GetWindowTitle(dat->windowData.hContact, dat->szProto);
 			SendMessage(dat->hwndParent, CM_UPDATETITLEBAR, (WPARAM)&tbd, (LPARAM)hwndDlg);
 			mir_free(tbd.pszText);
@@ -2218,7 +2214,8 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 		if (dat->nTypeMode == PROTOTYPE_SELFTYPING_ON) {
 			NotifyTyping(dat, PROTOTYPE_SELFTYPING_OFF);
 		}
-		if (dat->statusIcon != NULL) DestroyIcon(dat->statusIcon);
+		CallService(MS_SKIN2_RELEASEICON, (WPARAM)dat->statusIcon, 0);
+		CallService(MS_SKIN2_RELEASEICON, (WPARAM)dat->statusIconBig , 0);
 		if (dat->statusIconOverlay != NULL) DestroyIcon(dat->statusIconOverlay);
 		dat->statusIcon = NULL;
 		dat->statusIconOverlay = NULL;
