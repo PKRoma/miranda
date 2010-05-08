@@ -249,6 +249,8 @@ enum {
 #define JE_CUSTOMSTATUS_EXTRAICON_CHANGED "/XStatusExtraIconChanged"
 #define JE_CUSTOMSTATUS_CHANGED						"/XStatusChanged"
 
+#define LR_BIGICON                 0x40
+
 #define JS_SENDXML                 "/SendXML" // Warning: This service is obsolete. Use IJabberNetInterface::SendXmlNode() instead.
 #define JS_GETADVANCEDSTATUSICON   "/GetAdvancedStatusIcon"
 #define JS_GETCUSTOMSTATUSICON     "/GetXStatusIcon"

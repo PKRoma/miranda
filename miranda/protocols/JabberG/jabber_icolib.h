@@ -42,7 +42,7 @@ public:
 
 	HANDLE GetIcolibHandle(const char *name);
 	char *GetIcolibName(const char *name);
-	HICON GetIcon(const char *name);
+	HICON GetIcon(const char *name, bool big = false);
 	HANDLE GetClistHandle(const char *name);
 
 private:

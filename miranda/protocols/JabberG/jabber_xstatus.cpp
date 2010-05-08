@@ -1194,7 +1194,7 @@ void CPepActivity::ShowSetDialog()
 HICON CJabberProto::GetXStatusIcon(int bStatus, UINT flags)
 {
 	CPepMood *pepMood = (CPepMood *)m_pepServices.Find(_T(JABBER_FEAT_USER_MOOD));
-	HICON icon = pepMood->m_icons.GetIcon(g_arrMoods[bStatus].szTag);
+	HICON icon = pepMood->m_icons.GetIcon(g_arrMoods[bStatus].szTag, (flags & LR_BIGICON) != 0);
 	return ( flags & LR_SHARED ) ? icon : CopyIcon( icon );
 }
 
@@ -1241,10 +1241,11 @@ INT_PTR __cdecl CJabberProto::OnGetXStatusIcon( WPARAM wParam, LPARAM lParam )
 	if ( wParam < 1 || wParam >= SIZEOF(g_arrMoods) )
 		return 0;
 
-	if ( lParam & LR_SHARED )
-		return (INT_PTR)GetXStatusIcon( wParam, LR_SHARED );
+	int flags = 0;
+	if ( lParam & LR_SHARED )  flags |= LR_SHARED;
+	if ( lParam & LR_BIGICON ) flags |= LR_BIGICON;
 
-	return (INT_PTR)GetXStatusIcon( wParam, 0 );
+	return (INT_PTR)GetXStatusIcon( wParam, flags );
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////

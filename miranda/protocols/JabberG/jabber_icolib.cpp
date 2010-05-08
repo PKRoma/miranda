@@ -164,10 +164,10 @@ char *CIconPool::GetIcolibName(const char *name)
 	return NULL;
 }
 
-HICON CIconPool::GetIcon(const char *name)
+HICON CIconPool::GetIcon(const char *name, bool big)
 {
 	if (CPoolItem *item = FindItemByName(name))
-		return (HICON)CallService(MS_SKIN2_GETICONBYHANDLE, 0, (LPARAM)item->m_hIcolibItem);
+		return (HICON)CallService(MS_SKIN2_GETICONBYHANDLE, big, (LPARAM)item->m_hIcolibItem);
 
 	return NULL;
 }

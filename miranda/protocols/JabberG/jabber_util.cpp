@@ -1288,7 +1288,7 @@ static INT_PTR CALLBACK sttEnterStringDlgProc( HWND hwndDlg, UINT msg, WPARAM wP
 	{
 		//SetWindowPos( hwndDlg, HWND_TOPMOST ,0,0,0,0,SWP_NOSIZE|SWP_NOMOVE );
 		TranslateDialogDefault( hwndDlg );
-		SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)LoadSkinnedIconLarge(SKINICON_OTHER_RENAME));
+		SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)LoadSkinnedIconBig(SKINICON_OTHER_RENAME));
 		SendMessage(hwndDlg, WM_SETICON, ICON_SMALL, (LPARAM)LoadSkinnedIcon(SKINICON_OTHER_RENAME));
 		JabberEnterStringParams *params = (JabberEnterStringParams *)lParam;
 		SetWindowLongPtr( hwndDlg, GWLP_USERDATA, ( LONG_PTR )params );
