@@ -119,15 +119,15 @@ __inline static HICON LoadSkinnedProtoIconBig(const char *szProto,int status) {r
 typedef struct {
 	int cbSize;
 	const char *pszName;		   //name to refer to sound when playing and in db
-	const char *pszDescription;	   //description for options dialog
+	const char *pszDescription;	   //[TRANSLATED-BY-CORE] description for options dialog
     const char *pszDefaultFile;    //default sound file to use
-    const char *pszSection;        //section name used to group sounds (NULL is acceptable) (added during 0.3.4+ (2004/10/*))
+    const char *pszSection;        //[TRANSLATED-BY-CORE] section name used to group sounds (NULL is acceptable) (added during 0.3.4+ (2004/10/*))
 } SKINSOUNDDESCEX;
 // Old struct pre 0.3.4
 typedef struct {
 	int cbSize;
 	const char *pszName;		   //name to refer to sound when playing and in db
-	const char *pszDescription;	   //description for options dialog
+	const char *pszDescription;	   //[TRANSLATED-BY-CORE] description for options dialog
 	const char *pszDefaultFile;	   //default sound file to use
 } SKINSOUNDDESC;
 #define MS_SKIN_ADDNEWSOUND      "Skin/Sounds/AddNew"
