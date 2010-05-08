@@ -53,7 +53,6 @@ IcqIconHandle IconLibDefine(const char *desc, const char *section, const char *m
   sid.pszName = szName;
   sid.ptszDefaultFile = (TCHAR*)def_file;
   sid.iDefaultIndex = def_idx;
-  sid.cx = sid.cy = 16;
 
   IcqIconHandle hIcon = (IcqIconHandle)SAFE_MALLOC(sizeof(IcqIconHandle_s));
   hIcon->szName = null_strdup(sid.pszName);
@@ -88,11 +87,16 @@ HANDLE IcqIconHandle_s::Handle()
 }
 
 
-HICON IcqIconHandle_s::GetIcon()
+HICON IcqIconHandle_s::GetIcon(bool big)
 {
   if (this)
-    return (HICON)CallService(MS_SKIN2_GETICONBYHANDLE, 0, (LPARAM)hIcoLib);
+    return (HICON)CallService(MS_SKIN2_GETICONBYHANDLE, big, (LPARAM)hIcoLib);
 
   return NULL;
+}
+
+void IcqIconHandle_s::ReleaseIcon(bool big)
+{
+	CallService(big ? MS_SKIN2_RELEASEICONBIG : MS_SKIN2_RELEASEICON, 0, (LPARAM)szName);
 }
 

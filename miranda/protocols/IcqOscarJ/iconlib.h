@@ -44,7 +44,8 @@ struct IcqIconHandle_s
   HANDLE hIcoLib;
 
   HANDLE Handle();
-  HICON GetIcon();
+  HICON GetIcon(bool big = false);
+  void ReleaseIcon(bool big = false);
 };
 
 typedef IcqIconHandle_s *IcqIconHandle;

@@ -64,13 +64,19 @@ INT_PTR CALLBACK icq_FirstRunDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 		ppro = (CIcqProto*)lParam;
 		SetWindowLongPtr( hwndDlg, GWLP_USERDATA, lParam );
 		{
-			SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)ppro->GetIcon( PLI_PROTOCOL | PLIF_LARGE | PLIF_ICOLIB ));
+			SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)ppro->m_hIconProtocol->GetIcon(true));
+			SendMessage(hwndDlg, WM_SETICON, ICON_SMALL, (LPARAM)ppro->m_hIconProtocol->GetIcon());
 
 			SendDlgItemMessage(hwndDlg, IDC_PW, EM_LIMITTEXT, PASSWORDMAXLEN - 1, 0);
 
-      accountLoadDetails(ppro, hwndDlg);
+			accountLoadDetails(ppro, hwndDlg);
 		}
 		return TRUE;
+
+	case WM_DESTROY:
+		ppro->m_hIconProtocol->ReleaseIcon(true);
+		ppro->m_hIconProtocol->ReleaseIcon();
+		break;
 
 	case WM_CLOSE:
 		EndDialog(hwndDlg, 0);

@@ -881,22 +881,23 @@ DWORD_PTR __cdecl CIcqProto::GetCaps( int type, HANDLE hContact )
 
 HICON __cdecl CIcqProto::GetIcon( int iconIndex )
 {
-	IcqIconHandle hIcon = NULL;
+	if (LOWORD(iconIndex) == PLI_PROTOCOL)
+	{
+		if (iconIndex & PLIF_ICOLIBHANDLE)
+			return (HICON)m_hIconProtocol->Handle();
+		
+		bool big = (iconIndex & PLIF_LARGE) != 0;
+		HICON hIcon = m_hIconProtocol->GetIcon(big);
 
-	switch (iconIndex & 0xFFFF) {
-	case PLI_PROTOCOL:
-		hIcon = m_hIconProtocol;
-		break;
+		if (iconIndex & PLIF_ICOLIB)
+			return hIcon;
 
-	default:
-		return 0; // Failure
+		hIcon = CopyIcon(hIcon);
+		m_hIconProtocol->ReleaseIcon(big);
+		return hIcon;
+
 	}
-
-	if ( iconIndex & PLIF_ICOLIBHANDLE )
-		return ( HICON )hIcon->Handle();
-	
-	HICON icon = hIcon->GetIcon();
-	return (iconIndex & PLIF_ICOLIB) ? icon : CopyIcon(icon);
+	return NULL;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////

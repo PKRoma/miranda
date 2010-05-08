@@ -128,7 +128,7 @@ struct CIcqProto : public PROTO_INTERFACE
 	INT_PTR  __cdecl GetAvatarCaps(WPARAM wParam, LPARAM lParam);
 	INT_PTR  __cdecl GetAvatarInfo(WPARAM wParam, LPARAM lParam);
 	INT_PTR  __cdecl GetMyAvatar(WPARAM wParam, LPARAM lParam);	
-  INT_PTR  __cdecl GetMyAwayMsg(WPARAM wParam, LPARAM lParam);
+	INT_PTR  __cdecl GetMyAwayMsg(WPARAM wParam, LPARAM lParam);
 	INT_PTR  __cdecl GetXStatus(WPARAM wParam, LPARAM lParam);
 	INT_PTR  __cdecl GetXStatusEx(WPARAM wParam, LPARAM lParam);
 	INT_PTR  __cdecl GetXStatusIcon(WPARAM wParam, LPARAM lParam);
@@ -174,13 +174,13 @@ struct CIcqProto : public PROTO_INTERFACE
 
 	//====| Data |========================================================================
 	IcqIconHandle m_hIconProtocol;
-  HANDLE m_hContactMenuItems[5];
+	HANDLE m_hContactMenuItems[5];
 	HANDLE m_hServerNetlibUser, m_hDirectNetlibUser;
 	HANDLE hxstatuschanged, hxstatusiconchanged;
 
 	BYTE m_bGatewayMode;
 	BYTE m_bSecureLogin;
-  BYTE m_bSecureConnection;
+	BYTE m_bSecureConnection;
 	BYTE m_bAimEnabled;
 	BYTE m_bUtfEnabled;
 	WORD m_wAnsiCodepage;
@@ -190,14 +190,14 @@ struct CIcqProto : public PROTO_INTERFACE
 	BYTE m_bSsiSimpleGroups;
 	BYTE m_bAvatarsEnabled;
 	BYTE m_bXStatusEnabled;
-  BYTE m_bMoodsEnabled;
+	BYTE m_bMoodsEnabled;
 	
 	icq_critical_section *localSeqMutex;
 	icq_critical_section *connectionHandleMutex;
 
 	int   m_bIdleAllow;
 	DWORD m_dwLocalUIN;
-  BYTE m_bConnectionLost;
+	BYTE m_bConnectionLost;
 
 	char m_szPassword[PASSWORDMAXLEN];
 	BYTE m_bRememberPwd;
@@ -271,7 +271,7 @@ struct CIcqProto : public PROTO_INTERFACE
 
 	int    FindCookie(DWORD wCookie, HANDLE *phContact, void **ppvExtra);
 	int    FindCookieByData(void *pvExtra, DWORD *pdwCookie, HANDLE *phContact);
-  int    FindCookieByType(BYTE bType, DWORD *pdwCookie, HANDLE *phContact, void **ppvExtra);
+	int    FindCookieByType(BYTE bType, DWORD *pdwCookie, HANDLE *phContact, void **ppvExtra);
 	int    FindMessageCookie(DWORD dwMsgID1, DWORD dwMsgID2, DWORD *pdwCookie, HANDLE *phContact, cookie_message_data **ppvExtra);
 
 	void   InitMessageCookie(cookie_message_data *pCookie);
@@ -293,7 +293,7 @@ struct CIcqProto : public PROTO_INTERFACE
 	void   icq_sendXtrazResponseDirect(HANDLE hContact, WORD wCookie, char* szBody, int nBodyLen, WORD wType);
 
 	//----| fam_01service.cpp |-----------------------------------------------------------
-  HANDLE m_hNotifyNameInfoEvent;
+	HANDLE m_hNotifyNameInfoEvent;
 
 	void   handleServiceFam(BYTE *pBuffer, WORD wBufferLength, snac_header *pSnacHeader, serverthread_info *info);
 	char*  buildUinList(int subtype, WORD wMaxLen, HANDLE *hContactResume);
@@ -310,7 +310,7 @@ struct CIcqProto : public PROTO_INTERFACE
 	void   handleReplyBuddy(BYTE *buf, WORD wPackLen);
 	void   handleUserOffline(BYTE *buf, WORD wPackLen);
 	void   handleUserOnline(BYTE *buf, WORD wPackLen, serverthread_info *info);
-  void   parseStatusNote(DWORD dwUin, char *szUid, HANDLE hContact, oscar_tlv_chain *pChain);
+	void   parseStatusNote(DWORD dwUin, char *szUid, HANDLE hContact, oscar_tlv_chain *pChain);
 	void   handleNotifyRejected(BYTE *buf, WORD wPackLen);
 
 	//----| fam_04message.cpp |-----------------------------------------------------------
@@ -369,12 +369,12 @@ struct CIcqProto : public PROTO_INTERFACE
 	WORD   m_wServerListRecordNameMaxLength;
 
 	void   handleServCListFam(BYTE *pBuffer, WORD wBufferLength, snac_header* pSnacHeader, serverthread_info *info);
-  void   handleServerCListRightsReply(BYTE *buf, WORD wLen);
+	void   handleServerCListRightsReply(BYTE *buf, WORD wLen);
 	void   handleServerCListAck(cookie_servlist_action* sc, WORD wError);
 	void   handleServerCListReply(BYTE *buf, WORD wLen, WORD wFlags, serverthread_info *info);
-  void   handleServerCListItemAdd(const char *szRecordName, WORD wGroupId, WORD wItemId, WORD wItemType, oscar_tlv_chain *pItemData);
-  void   handleServerCListItemUpdate(const char *szRecordName, WORD wGroupId, WORD wItemId, WORD wItemType, oscar_tlv_chain *pItemData);
-  void   handleServerCListItemDelete(const char *szRecordName, WORD wGroupId, WORD wItemId, WORD wItemType, oscar_tlv_chain *pItemData);
+	void   handleServerCListItemAdd(const char *szRecordName, WORD wGroupId, WORD wItemId, WORD wItemType, oscar_tlv_chain *pItemData);
+	void   handleServerCListItemUpdate(const char *szRecordName, WORD wGroupId, WORD wItemId, WORD wItemType, oscar_tlv_chain *pItemData);
+	void   handleServerCListItemDelete(const char *szRecordName, WORD wGroupId, WORD wItemId, WORD wItemType, oscar_tlv_chain *pItemData);
 	void   handleRecvAuthRequest(BYTE *buf, WORD wLen);
 	void   handleRecvAuthResponse(BYTE *buf, WORD wLen);
 	void   handleRecvAdded(BYTE *buf, WORD wLen);
@@ -397,13 +397,13 @@ struct CIcqProto : public PROTO_INTERFACE
 	void   handleExtensionServerInfo(BYTE *buf, WORD wPackLen, WORD wFlags);
 	void   handleExtensionMetaResponse(BYTE *databuf, WORD wPacketLen, WORD wCookie, WORD wFlags);
 
-  int    parseUserInfoRecord(HANDLE hContact, oscar_tlv *pData, UserInfoRecordItem pRecordDef[], int nRecordDef, int nMaxRecords);
+	int    parseUserInfoRecord(HANDLE hContact, oscar_tlv *pData, UserInfoRecordItem pRecordDef[], int nRecordDef, int nMaxRecords);
 
-  void   handleDirectoryQueryResponse(BYTE *databuf, WORD wPacketLen, WORD wCookie, WORD wReplySubtype, WORD wFlags);
-  void   handleDirectoryUpdateResponse(BYTE *databuf, WORD wPacketLen, WORD wCookie, WORD wReplySubtype);
+	void   handleDirectoryQueryResponse(BYTE *databuf, WORD wPacketLen, WORD wCookie, WORD wReplySubtype, WORD wFlags);
+	void   handleDirectoryUpdateResponse(BYTE *databuf, WORD wPacketLen, WORD wCookie, WORD wReplySubtype);
 
-  void   parseDirectoryUserDetailsData(HANDLE hContact, oscar_tlv_chain *cDetails, DWORD dwCookie, cookie_directory_data *pCookieData, WORD wReplySubType);
-  void   parseDirectorySearchData(oscar_tlv_chain *cDetails, DWORD dwCookie, cookie_directory_data *pCookieData, WORD wReplySubType);
+	void   parseDirectoryUserDetailsData(HANDLE hContact, oscar_tlv_chain *cDetails, DWORD dwCookie, cookie_directory_data *pCookieData, WORD wReplySubType);
+	void   parseDirectorySearchData(oscar_tlv_chain *cDetails, DWORD dwCookie, cookie_directory_data *pCookieData, WORD wReplySubType);
 
 	void   parseSearchReplies(unsigned char *databuf, WORD wPacketLen, WORD wCookie, WORD wReplySubtype, BYTE bResultCode);
 	void   parseUserInfoUpdateAck(unsigned char *databuf, WORD wPacketLen, WORD wCookie, WORD wReplySubtype, BYTE bResultCode);
@@ -417,19 +417,19 @@ struct CIcqProto : public PROTO_INTERFACE
 	void   sendClientAuth(const char *szKey, WORD wKeyLen, BOOL bSecure);
 
 	//----| icq_avatars.cpp |-------------------------------------------------------------
-  icq_critical_section *m_avatarsMutex;
+	icq_critical_section *m_avatarsMutex;
 	avatars_request *m_avatarsQueue;
 
-  BOOL   m_avatarsConnectionPending;
+	BOOL   m_avatarsConnectionPending;
 	avatars_server_connection *m_avatarsConnection;
 
 	int    bAvatarsFolderInited;
 	HANDLE hAvatarsFolder;
 
-  void   requestAvatarConnection();
+	void   requestAvatarConnection();
 	void   __cdecl AvatarThread(avatars_server_connection *pInfo);
 
-  void   handleAvatarOwnerHash(WORD wItemID, BYTE bFlags, BYTE *pData, BYTE nDataLen);
+	void   handleAvatarOwnerHash(WORD wItemID, BYTE bFlags, BYTE *pData, BYTE nDataLen);
 	void   handleAvatarContactHash(DWORD dwUIN, char *szUID, HANDLE hContact, BYTE *pHash, int nHashLen, WORD wOldStatus);
 
 	void   InitAvatars();
@@ -460,9 +460,9 @@ struct CIcqProto : public PROTO_INTERFACE
 	BYTE   getSettingByte(HANDLE hContact, const char *szSetting, BYTE byDef);
 	WORD   getSettingWord(HANDLE hContact, const char *szSetting, WORD wDef);
 	DWORD  getSettingDword(HANDLE hContact, const char *szSetting, DWORD dwDef);
-  double getSettingDouble(HANDLE hContact, const char *szSetting, double dDef);
+	double getSettingDouble(HANDLE hContact, const char *szSetting, double dDef);
 	int    getSettingString(HANDLE hContact, const char *szSetting, DBVARIANT *dbv);
-  int    getSettingStringW(HANDLE hContact, const char *szSetting, DBVARIANT *dbv);
+	int    getSettingStringW(HANDLE hContact, const char *szSetting, DBVARIANT *dbv);
 	int    getSettingStringStatic(HANDLE hContact, const char *szSetting, char *dest, int dest_len);
 	char*  getSettingStringUtf(HANDLE hContact, const char *szModule, const char *szSetting, char *szDef);
 	char*  getSettingStringUtf(HANDLE hContact, const char *szSetting, char *szDef);
@@ -476,13 +476,13 @@ struct CIcqProto : public PROTO_INTERFACE
 	int    setSettingByte(HANDLE hContact, const char *szSetting, BYTE byValue);	
 	int    setSettingWord(HANDLE hContact, const char *szSetting, WORD wValue);
 	int    setSettingDword(HANDLE hContact, const char *szSetting, DWORD dwValue);
-  int    setSettingDouble(HANDLE hContact, const char *szSetting, double dValue);
+	int    setSettingDouble(HANDLE hContact, const char *szSetting, double dValue);
 	int    setSettingString(HANDLE hContact, const char *szSetting, const char *szValue);
-  int    setSettingStringW(HANDLE hContact, const char *szSetting, const WCHAR *wszValue);
+	int    setSettingStringW(HANDLE hContact, const char *szSetting, const WCHAR *wszValue);
 	int    setSettingStringUtf(HANDLE hContact, const char *szModule, const char *szSetting, const char *szValue);
 	int    setSettingStringUtf(HANDLE hContact, const char *szSetting, const char *szValue);
 	int    setSettingBlob(HANDLE hContact, const char *szSetting, const BYTE *pValue, const int cbValue);
-  int    setContactHidden(HANDLE hContact, BYTE bHidden);
+	int    setContactHidden(HANDLE hContact, BYTE bHidden);
 
 	//----| icq_direct.cpp |--------------------------------------------------------------
 	icq_critical_section *directConnListMutex;
@@ -537,7 +537,7 @@ struct CIcqProto : public PROTO_INTERFACE
 	BOOL   bInfoUpdateEnabled;
 	BOOL   bInfoUpdateRunning;
 	HANDLE hInfoThread;
-  DWORD  dwInfoActiveRequest;
+	DWORD  dwInfoActiveRequest;
 	userinfo m_infoUpdateList[LISTSIZE];
 
 	void   __cdecl InfoUpdateThread(void*);
@@ -550,7 +550,7 @@ struct CIcqProto : public PROTO_INTERFACE
 	void   icq_EnableUserLookup(BOOL bEnable); // Enable/disable user info lookups
 
 	//----| log.cpp |-----------------------------------------------------------------
-  BOOL   bErrorBoxVisible;
+	BOOL   bErrorBoxVisible;
 
 	void   __cdecl icq_LogMessageThread(void* arg);
 
@@ -563,12 +563,12 @@ struct CIcqProto : public PROTO_INTERFACE
 	void   ppackLETLVWordLNTSfromDB(PBYTE *buf, int *buflen, WORD w, const char *szSetting, WORD wType);
 	void   ppackLETLVLNTSBytefromDB(PBYTE *buf, int *buflen, const char *szSetting, BYTE b, WORD wType);
 
-  void   ppackTLVStringFromDB(PBYTE *buf, int *buflen, const char *szSetting, WORD wType);
-  void   ppackTLVStringUtfFromDB(PBYTE *buf, int *buflen, const char *szSetting, WORD wType);
-  void   ppackTLVDateFromDB(PBYTE *buf, int *buflen, const char *szSettingYear, const char *szSettingMonth, const char *szSettingDay, WORD wType);
+	void   ppackTLVStringFromDB(PBYTE *buf, int *buflen, const char *szSetting, WORD wType);
+	void   ppackTLVStringUtfFromDB(PBYTE *buf, int *buflen, const char *szSetting, WORD wType);
+	void   ppackTLVDateFromDB(PBYTE *buf, int *buflen, const char *szSettingYear, const char *szSettingMonth, const char *szSettingDay, WORD wType);
 
-  int    ppackTLVWordStringItemFromDB(PBYTE *buf, int *buflen, const char *szSetting, WORD wTypeID, WORD wTypeData, WORD wID);
-  int    ppackTLVWordStringUtfItemFromDB(PBYTE *buf, int *buflen, const char *szSetting, WORD wTypeID, WORD wTypeData, WORD wID);
+	int    ppackTLVWordStringItemFromDB(PBYTE *buf, int *buflen, const char *szSetting, WORD wTypeID, WORD wTypeData, WORD wID);
+	int    ppackTLVWordStringUtfItemFromDB(PBYTE *buf, int *buflen, const char *szSetting, WORD wTypeID, WORD wTypeData, WORD wID);
 
 	BOOL   unpackUID(BYTE **ppBuf, WORD *pwLen, DWORD *pdwUIN, uid_str *ppszUID);
 
@@ -578,9 +578,9 @@ struct CIcqProto : public PROTO_INTERFACE
 	//----| icq_proto.cpp |--------------------------------------------------------------
 	void   __cdecl CheekySearchThread( void* );
 
-  void   __cdecl GetAwayMsgThread( void *pStatusData );
+	void   __cdecl GetAwayMsgThread( void *pStatusData );
 
-  char*  PrepareStatusNote(int nStatus);
+	char*  PrepareStatusNote(int nStatus);
 
 	//----| icq_rates.cpp |---------------------------------------------------------------
 	icq_critical_section *m_ratesMutex;
@@ -679,7 +679,7 @@ struct CIcqProto : public PROTO_INTERFACE
 	BOOL   CheckServerID(WORD wID, unsigned int wCount);
 	void   FlushServerIDs();
 	void   LoadServerIDs();
-  void   StoreServerIDs();
+	void   StoreServerIDs();
 
 	void*  collectGroups(int *count);
 	void*  collectBuddyGroup(WORD wGroupID, int *count);
@@ -758,14 +758,14 @@ struct CIcqProto : public PROTO_INTERFACE
 
 	DWORD  icq_sendAdvancedSearchServ(BYTE *fieldsBuffer,int bufferLen);
 	DWORD  icq_changeUserPasswordServ(const char *szPassword);
-  DWORD  icq_changeUserDirectoryInfoServ(const BYTE *pData, WORD wDataLen, BYTE bRequestType);
+	DWORD  icq_changeUserDirectoryInfoServ(const BYTE *pData, WORD wDataLen, BYTE bRequestType);
 	void   icq_sendGenericContact(DWORD dwUin, const char *szUid, WORD wFamily, WORD wSubType);
 	void   icq_sendNewContact(DWORD dwUin, const char *szUid);
-  void   icq_sendRemoveContact(DWORD dwUin, const char *szUid);
+	void   icq_sendRemoveContact(DWORD dwUin, const char *szUid);
 	void   icq_sendChangeVisInvis(HANDLE hContact, DWORD dwUin, char* szUID, int list, int add);
 	void   icq_sendEntireVisInvisList(int);
 	void   icq_sendAwayMsgReplyServ(DWORD, DWORD, DWORD, WORD, WORD, BYTE, char **);
-  void   icq_sendAwayMsgReplyServExt(DWORD dwUin, char *szUID, DWORD dwMsgID1, DWORD dwMsgID2, WORD wCookie, WORD wVersion, BYTE msgType, char **szMsg);
+	void   icq_sendAwayMsgReplyServExt(DWORD dwUin, char *szUID, DWORD dwMsgID1, DWORD dwMsgID2, WORD wCookie, WORD wVersion, BYTE msgType, char **szMsg);
 
 	DWORD  icq_sendSMSServ(const char *szPhoneNumber, const char *szMsg);
 	void   icq_sendMessageCapsServ(DWORD dwUin);
@@ -776,9 +776,9 @@ struct CIcqProto : public PROTO_INTERFACE
 	void   icq_sendYouWereAddedServ(DWORD,DWORD);
 
 	DWORD  sendDirectorySearchPacket(const BYTE *pSearchData, WORD wDataLen, WORD wPage, BOOL bOnlineUsersOnly);
-  DWORD  sendTLVSearchPacket(BYTE bType, char* pSearchDataBuf, WORD wSearchType, WORD wInfoLen, BOOL bOnlineUsersOnly);
+	DWORD  sendTLVSearchPacket(BYTE bType, char* pSearchDataBuf, WORD wSearchType, WORD wInfoLen, BOOL bOnlineUsersOnly);
 	void   sendOwnerInfoRequest(void);
-  DWORD  sendUserInfoMultiRequest(BYTE *pRequestData, WORD wDataLen, int nItems);
+	DWORD  sendUserInfoMultiRequest(BYTE *pRequestData, WORD wDataLen, int nItems);
 
 	DWORD  icq_SendChannel1Message(DWORD dwUin, char *szUID, HANDLE hContact, char *pszText, cookie_message_data *pCookieData);
 	DWORD  icq_SendChannel1MessageW(DWORD dwUin, char *szUID, HANDLE hContact, WCHAR *pszText, cookie_message_data *pCookieData); // UTF-16
@@ -821,10 +821,10 @@ struct CIcqProto : public PROTO_INTERFACE
 	int    m_bHideXStatusUI;
 	int    m_bHideXStatusMenu;
 	int    bStatusMenu;
+	int    bXStatusExtraIconsReady;
 	HANDLE hHookExtraIconsRebuild;
 	HANDLE hHookStatusBuild;
 	HANDLE hHookExtraIconsApply;
-  int    bXStatusExtraIconsReady;
 	HANDLE hXStatusExtraIcons[XSTATUS_COUNT];
 	IcqIconHandle hXStatusIcons[XSTATUS_COUNT];
 	HANDLE hXStatusItems[XSTATUS_COUNT + 1];
@@ -837,13 +837,14 @@ struct CIcqProto : public PROTO_INTERFACE
 	DWORD  sendXStatusDetailsRequest(HANDLE hContact, int bForced);
 	DWORD  requestXStatusDetails(HANDLE hContact, BOOL bAllowDelay);
 	HICON  getXStatusIcon(int bStatus, UINT flags);
+	void   releaseXStatusIcon(int bStatus, UINT flags);
 	void   setXStatusEx(BYTE bXStatus, BYTE bQuiet);
 	void   setContactExtraIcon(HANDLE hContact, int xstatus);
 	void   handleXStatusCaps(DWORD dwUIN, char *szUID, HANDLE hContact, BYTE *caps, int capsize, char *moods, int moodsize);
 	void   updateServerCustomStatus(int fullUpdate);
 
 	void   InitXStatusIcons();
-  void   UninitXStatusIcons();
+	void   UninitXStatusIcons();
 
 	//----| icq_xtraz.cpp |---------------------------------------------------------------
 	void   handleXtrazNotify(DWORD dwUin, DWORD dwMID, DWORD dwMID2, WORD wCookie, char* szMsg, int nMsgLen, BOOL bThruDC);
@@ -916,7 +917,7 @@ struct CIcqProto : public PROTO_INTERFACE
 	int    BroadcastAck(HANDLE hContact,int type,int result,HANDLE hProcess,LPARAM lParam);
 	char*  ConvertMsgToUserSpecificAnsi(HANDLE hContact, const char* szMsg);
 
-  char*  GetUserStoredPassword(char *szBuffer, int cbSize);
+	char*  GetUserStoredPassword(char *szBuffer, int cbSize);
 	char*  GetUserPassword(BOOL bAlways);
 	WORD   GetMyStatusFlags();
 
@@ -960,12 +961,12 @@ struct CIcqProto : public PROTO_INTERFACE
 	void   ResetSettingsOnConnect();
 	void   ResetSettingsOnLoad();
 
-  int    IsMetaInfoChanged(HANDLE hContact);
+	int    IsMetaInfoChanged(HANDLE hContact);
 
-  char   *setStatusNoteText, *setStatusMoodData;
-  void   __cdecl SetStatusNoteThread(void *pArguments);
-  int    SetStatusNote(const char *szStatusNote, DWORD dwDelay, int bForced);
-  int    SetStatusMood(const char *szMoodData, DWORD dwDelay);
+	char   *setStatusNoteText, *setStatusMoodData;
+	void   __cdecl SetStatusNoteThread(void *pArguments);
+	int    SetStatusNote(const char *szStatusNote, DWORD dwDelay, int bForced);
+	int    SetStatusMood(const char *szMoodData, DWORD dwDelay);
 
 	BOOL   writeDbInfoSettingString(HANDLE hContact, const char* szSetting, char** buf, WORD* pwLength);
 	BOOL   writeDbInfoSettingWord(HANDLE hContact, const char *szSetting, char **buf, WORD* pwLength);
@@ -973,16 +974,16 @@ struct CIcqProto : public PROTO_INTERFACE
 	BOOL   writeDbInfoSettingByte(HANDLE hContact, const char *pszSetting, char **buf, WORD* pwLength);
 	BOOL   writeDbInfoSettingByteWithTable(HANDLE hContact, const char *szSetting, const FieldNamesItem *table, char **buf, WORD* pwLength);
 
-  void   writeDbInfoSettingTLVStringUtf(HANDLE hContact, const char *szSetting, oscar_tlv_chain *chain, WORD wTlv);
-  void   writeDbInfoSettingTLVString(HANDLE hContact, const char *szSetting, oscar_tlv_chain *chain, WORD wTlv);
-  void   writeDbInfoSettingTLVWord(HANDLE hContact, const char *szSetting, oscar_tlv_chain *chain, WORD wTlv);
-  void   writeDbInfoSettingTLVByte(HANDLE hContact, const char *szSetting, oscar_tlv_chain *chain, WORD wTlv);
-  void   writeDbInfoSettingTLVDouble(HANDLE hContact, const char *szSetting, oscar_tlv_chain *chain, WORD wTlv);
-  void   writeDbInfoSettingTLVDate(HANDLE hContact, const char *szSettingYear, const char *szSettingMonth, const char *szSettingDay, oscar_tlv_chain *chain, WORD wTlv);
-  void   writeDbInfoSettingTLVTimestamp(HANDLE hContact, const char *szSetting, oscar_tlv_chain *chain, WORD wTlv);
-  void   writeDbInfoSettingTLVBlob(HANDLE hContact, const char *szSetting, oscar_tlv_chain *chain, WORD wTlv);
+	void   writeDbInfoSettingTLVStringUtf(HANDLE hContact, const char *szSetting, oscar_tlv_chain *chain, WORD wTlv);
+	void   writeDbInfoSettingTLVString(HANDLE hContact, const char *szSetting, oscar_tlv_chain *chain, WORD wTlv);
+	void   writeDbInfoSettingTLVWord(HANDLE hContact, const char *szSetting, oscar_tlv_chain *chain, WORD wTlv);
+	void   writeDbInfoSettingTLVByte(HANDLE hContact, const char *szSetting, oscar_tlv_chain *chain, WORD wTlv);
+	void   writeDbInfoSettingTLVDouble(HANDLE hContact, const char *szSetting, oscar_tlv_chain *chain, WORD wTlv);
+	void   writeDbInfoSettingTLVDate(HANDLE hContact, const char *szSettingYear, const char *szSettingMonth, const char *szSettingDay, oscar_tlv_chain *chain, WORD wTlv);
+	void   writeDbInfoSettingTLVTimestamp(HANDLE hContact, const char *szSetting, oscar_tlv_chain *chain, WORD wTlv);
+	void   writeDbInfoSettingTLVBlob(HANDLE hContact, const char *szSetting, oscar_tlv_chain *chain, WORD wTlv);
 
-  char** MirandaStatusToAwayMsg(int nStatus);
+	char** MirandaStatusToAwayMsg(int nStatus);
 
 	BOOL   validateStatusMessageRequest(HANDLE hContact, WORD byMessageType);
 };
