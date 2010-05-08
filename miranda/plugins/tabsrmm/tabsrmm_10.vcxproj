@@ -819,6 +819,7 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="API\m_timezones.h" />
     <ClInclude Include="chat\chat.h" />
     <ClInclude Include="chat\chat_resource.h" />
     <ClInclude Include="chat\chatprototypes.h" />
@@ -860,7 +861,6 @@
     <ClInclude Include="API\m_popup.h" />
     <ClInclude Include="API\m_smileyadd.h" />
     <ClInclude Include="API\m_spellchecker.h" />
-    <ClInclude Include="API\m_toptoolbar.h" />
     <ClInclude Include="API\m_updater.h" />
   </ItemGroup>
   <ItemGroup>

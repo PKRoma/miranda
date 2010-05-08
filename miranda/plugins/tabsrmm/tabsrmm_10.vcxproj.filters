@@ -287,9 +287,6 @@
     <ClInclude Include="API\m_spellchecker.h">
       <Filter>Header Files\API</Filter>
     </ClInclude>
-    <ClInclude Include="API\m_toptoolbar.h">
-      <Filter>Header Files\API</Filter>
-    </ClInclude>
     <ClInclude Include="API\m_updater.h">
       <Filter>Header Files\API</Filter>
     </ClInclude>
@@ -298,6 +295,9 @@
     </ClInclude>
     <ClInclude Include="include\resource.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="API\m_timezones.h">
+      <Filter>Header Files\API</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

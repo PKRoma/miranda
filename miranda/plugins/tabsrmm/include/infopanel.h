@@ -174,7 +174,7 @@ public:
 	int							hitTest						(POINT  pt);
 	void						handleClick					(const POINT& pt);
 	void						showTip						(UINT ctrlId, const LPARAM lParam);
-	void						hideTip						();
+	void						hideTip						(const HWND hWndNew);
 	int							invokeConfigDialog			(const POINT& pt);
 	void						dismissConfig				(bool fForced = false);
 

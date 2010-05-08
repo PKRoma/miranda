@@ -57,7 +57,6 @@
 #include <commdlg.h>
 #include <shellapi.h>
 #include <uxtheme.h>
-#include <vssym32.h>
 
 #define TSAPI __stdcall
 #define FASTCALL __fastcall
@@ -186,9 +185,9 @@ extern struct LIST_INTERFACE li;
 #include "../API/m_mathmodule.h"
 #include "../API/m_historyevents.h"
 #include "../API/m_buttonbar.h"
-#include "../API/m_toptoolbar.h"
 #include "../API/m_updater.h"
 #include "../API/m_smileyadd.h"
+#include "../API/m_timezones.h"
 
 #include "../include/msgs.h"
 #include "../include/msgdlgutils.h"

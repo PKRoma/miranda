@@ -953,8 +953,6 @@ void TSAPI ShowPicture(TWindowData *dat, BOOL showNewPic)
 	else
 		SendMessage(hwndDlg, WM_SIZE, 0, 0);
 
-	SendMessage(hwndDlg, DM_CALCMINHEIGHT, 0, 0);
-	SendMessage(dat->pContainer->hwnd, DM_REPORTMINHEIGHT, (WPARAM) hwndDlg, (LPARAM) dat->uMinHeight);
 }
 
 void TSAPI FlashOnClist(HWND hwndDlg, struct TWindowData *dat, HANDLE hEvent, DBEVENTINFO *dbei)
@@ -1993,6 +1991,11 @@ int TSAPI MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, TWindowData *dat)
 			RECT rcEdge = {0, top, dat->pic.cx, top + dat->pic.cy};
 			if (CSkin::m_skinEnabled)
 				CSkin::SkinDrawBG(dis->hwndItem, dat->pContainer->hwnd, dat->pContainer, &dis->rcItem, hdcDraw);
+			else if (PluginConfig.m_fillColor) {
+				HBRUSH br = CreateSolidBrush(PluginConfig.m_fillColor);
+				FillRect(hdcDraw, &rcFrame, br);
+				DeleteObject(br);
+			}
 			else {
 				if(fAero && CSkin::m_pCurrentAeroEffect) {
 					COLORREF clr = PluginConfig.m_tbBackgroundHigh ? PluginConfig.m_tbBackgroundHigh :
@@ -2433,10 +2436,33 @@ void TSAPI ClearLog(TWindowData *dat)
 	}
 }
 
+/**
+ * calculate the minimum required client height for the given message
+ * window layout
+
+ * the container will use this in its WM_GETMINMAXINFO handler to set
+ * minimum tracking height.
+ */
+void TSAPI DetermineMinHeight(TWindowData* dat)
+{
+	if(dat) {
+		RECT rc;
+
+		LONG height = (dat->Panel->isActive() ? dat->Panel->getHeight() + 2 : 0);
+		if(!(dat->pContainer->dwFlags & CNT_HIDETOOLBAR))
+			height += DPISCALEY_S(24);								// toolbar
+		GetClientRect(GetDlgItem(dat->hwnd, dat->bType == SESSIONTYPE_IM ? IDC_MESSAGE : IDC_CHAT_MESSAGE), &rc);
+		height += rc.bottom;										// input area
+		height += 40;												// min space for log area and some padding
+
+		dat->pContainer->uChildMinHeight = height;
+	}
+}
+
 bool TSAPI IsAutoSplitEnabled(const TWindowData* dat)
 {
 #if defined(__FEAT_EXP_AUTOSPLITTER)
-	return((dat && dat->pContainer->dwFlags & CNT_AUTOSPLITTER) ? true : false);
+	return((dat && (dat->pContainer->dwFlags & CNT_AUTOSPLITTER) && !(dat->dwFlagsEx & MWF_SHOW_SPLITTEROVERRIDE)) ? true : false);
 #else
 	return(false);
 #endif

@@ -339,6 +339,8 @@ void CGlobals::reloadSettings()
 	m_ipBackgroundGradientHigh = 		M->GetDword(FONTMODULE, "ipfieldsbgHigh", 0xf0f0f0);
 	m_tbBackgroundHigh = 				M->GetDword(FONTMODULE, "tbBgHigh", 0);
 	m_tbBackgroundLow = 				M->GetDword(FONTMODULE, "tbBgLow", 0);
+	m_fillColor =						M->GetDword(FONTMODULE, "fillColor", 0);
+	m_cRichBorders =					M->GetDword(FONTMODULE, "cRichBorders", 0);
 
 	::CopyMemory(&globalContainerSettings, &_cnt_default, sizeof(TContainerSettings));
 	Utils::ReadContainerSettingsFromDB(0, &globalContainerSettings);

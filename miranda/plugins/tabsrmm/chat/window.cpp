@@ -274,6 +274,12 @@ static void Chat_UpdateWindowState(TWindowData *dat, UINT msg)
 		}
 	}
 
+#if defined(__FEAT_EXP_AUTOSPLITTER)
+	if(dat->fIsAutosizingInput && dat->iInputAreaHeight == -1) {
+		dat->iInputAreaHeight = 0;
+		SendDlgItemMessage(hwndDlg, IDC_CHAT_MESSAGE, EM_REQUESTRESIZE, 0, 0);
+	}
+#endif
 	dat->Panel->dismissConfig();
 
 	if (dat->pContainer->hwndSaved == hwndDlg || dat->bWasDeleted)
@@ -504,7 +510,7 @@ static int RoomWndResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL *urc)
 		case IDC_SPLITTERX:
 			urc->rcItem.right = urc->dlgNewSize.cx - si->iSplitterX + 2;
 			urc->rcItem.left = urc->dlgNewSize.cx - si->iSplitterX;
-			urc->rcItem.bottom = (bToolbar&&!bBottomToolbar) ? (urc->dlgNewSize.cy - si->iSplitterY - DPISCALEY(22)) : (urc->dlgNewSize.cy - si->iSplitterY - DPISCALEY(2));
+			urc->rcItem.bottom = (bToolbar&&!bBottomToolbar) ? (urc->dlgNewSize.cy - si->iSplitterY - DPISCALEY(23)) : (urc->dlgNewSize.cy - si->iSplitterY - DPISCALEY(2));
 			urc->rcItem.top = 0;
 			if (fInfoPanel)
 				urc->rcItem.top += panelHeight;
@@ -1927,7 +1933,6 @@ INT_PTR CALLBACK RoomWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 			dat->cache = CContactCache::getContactCache(dat->hContact);
 			dat->cache->updateState();
 			dat->cache->updateUIN();
-			dat->fIsAutosizingInput = IsAutoSplitEnabled(dat);
 			SetWindowLongPtr(hwndDlg, GWLP_USERDATA, (LONG_PTR)dat);
 			newData->item.lParam = (LPARAM) hwndDlg;
 			TabCtrl_SetItem(hwndTab, newData->iTabID, &newData->item);
@@ -1937,6 +1942,8 @@ INT_PTR CALLBACK RoomWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 			dat->hwnd = hwndDlg;
 			psi->hWnd = hwndDlg;
 			psi->dat = dat;
+			dat->fIsAutosizingInput = IsAutoSplitEnabled(dat);
+			dat->iInputAreaHeight = -1;
 			if(!dat->pContainer->settings->fPrivate)
 				psi->iSplitterY = g_Settings.iSplitterY;
 			else {
@@ -2016,7 +2023,6 @@ INT_PTR CALLBACK RoomWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 			ShowWindow(hwndDlg, SW_SHOW);
 			PostMessage(hwndDlg, GC_UPDATENICKLIST, 0, 0);
 			dat->pContainer->hwndActive = hwndDlg;
-			//mad
 			BB_SetButtonsPos(dat);
 			TABSRMM_FireEvent(dat->hContact, hwndDlg, MSG_WINDOW_EVT_OPEN, 0);
 		}
@@ -2221,7 +2227,7 @@ INT_PTR CALLBACK RoomWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 
 			if (dat->hwndIEView || dat->hwndHPP)
 				Chat_ResizeIeView(dat);
-
+			DetermineMinHeight(dat);
 		}
 		break;
 
@@ -2516,9 +2522,11 @@ LABEL_SHOWWINDOW:
 				if (si->iSplitterX > rc.right - rc.left - 35)
 					si->iSplitterX = rc.right - rc.left - 35;
 				g_Settings.iSplitterX = si->iSplitterX;
+				SendMessage(dat->hwnd, WM_SIZE, 0, 0);
 			} else if ((HWND)lParam == GetDlgItem(hwndDlg, IDC_SPLITTERY) || lParam == -1) {
 				int oldSplitterY;
 				GetClientRect(hwndDlg, &rc);
+				rc.top += (dat->Panel->isActive() ? dat->Panel->getHeight() + 40 : 30);
 				pt.x = 0;
 				pt.y = wParam;
 				ScreenToClient(hwndDlg, &pt);
@@ -2530,25 +2538,24 @@ LABEL_SHOWWINDOW:
 				if (si->iSplitterY > rc.bottom - rc.top - DPISCALEY_S(40))
 					si->iSplitterY = rc.bottom - rc.top - DPISCALEY_S(40);
 				g_Settings.iSplitterY = si->iSplitterY;
+				CSkin::UpdateToolbarBG(dat, RDW_ALLCHILDREN);
+				SendMessage(dat->hwnd, WM_SIZE, 0, 0);
 			} else if ((HWND) lParam == GetDlgItem(hwndDlg, IDC_PANELSPLITTER)) {
 				RECT rc;
 				POINT pt;
 				pt.x = 0;
 				pt.y = wParam;
 				ScreenToClient(hwndDlg, &pt);
-				GetClientRect(hwndDlg, &rc);
-				if (pt.y + 2 >= MIN_PANELHEIGHT+2 && pt.y + 2 < 100)
+				GetClientRect(GetDlgItem(hwndDlg, IDC_CHAT_LOG), &rc);
+				if ((pt.y + 2 >= MIN_PANELHEIGHT + 2) && (pt.y + 2 < 100) && (pt.y + 2 < rc.bottom - 30))
 					dat->Panel->setHeight(pt.y + 2);
 				dat->panelWidth = -1;
-				RedrawWindow(hwndDlg, NULL, NULL, RDW_ALLCHILDREN | RDW_INVALIDATE | RDW_UPDATENOW | RDW_ERASE);
-				SetAeroMargins(dat->pContainer);
+				RedrawWindow(hwndDlg, NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW | RDW_ERASE);
 				if(M->isAero())
 					InvalidateRect(GetParent(hwndDlg), NULL, FALSE);
 				SendMessage(hwndDlg, WM_SIZE, DM_SPLITTERMOVED, 0);
 				break;
 			}
-			SendMessage(hwndDlg, WM_SIZE, 0, 0);
-			RedrawWindow(hwndDlg, NULL, NULL, RDW_INVALIDATE|RDW_UPDATENOW|RDW_ERASE);
 		}
 		break;
 
@@ -3368,10 +3375,17 @@ LABEL_SHOWWINDOW:
 				}
 			}
 			else {
-				FillRect(hdcMem, &rcClient, GetSysColorBrush(COLOR_3DFACE));
+				if(PluginConfig.m_fillColor) {
+					HBRUSH br = CreateSolidBrush(PluginConfig.m_fillColor);
+					FillRect(hdcMem, &rcClient, br);
+					DeleteObject(br);
+				}
+				else
+					FillRect(hdcMem, &rcClient, GetSysColorBrush(COLOR_3DFACE));
+				
 				if(M->isAero()) {
 					LONG temp = rcClient.bottom;
-					rcClient.bottom = 120;
+					rcClient.bottom = dat->Panel->isActive() ? dat->Panel->getHeight() + 5 : 5;
 					FillRect(hdcMem, &rcClient, (HBRUSH)GetStockObject(BLACK_BRUSH));
 					rcClient.bottom = temp;
 				}
@@ -3394,7 +3408,8 @@ LABEL_SHOWWINDOW:
 				DeleteObject(hbm);
 				DeleteDC(hdcMem);
 			}
-			SetAeroMargins(dat->pContainer);
+			if(!(dat->dwFlagsEx & MWF_EX_LIMITEDUPDATE))
+				SetAeroMargins(dat->pContainer);
 			return(1);
 		}
 

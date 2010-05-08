@@ -51,81 +51,6 @@
 	#define CF_TEXTT CF_TEXT
 #endif
 
-#ifdef __GNUWIN32__
-#define COLOR_HOTLIGHT 26
-#if !defined(SB_SETICON)
-	#define SB_SETICON (WM_USER+15)
-	#define SB_SETTIPTEXTA (WM_USER+16)
-	#define TCS_BOTTOM 0x0002
-
-	#define TVS_NOHSCROLL 0x8000
-	#define TVS_CHECKBOXES          0x0100
-#endif // SB_SETICON
-
-#define BS_TYPEMASK         0x0000000FL
-#define CFM_ALL (CFM_EFFECTS | CFM_SIZE | CFM_FACE | CFM_OFFSET | CFM_CHARSET)
-#define SES_EXTENDBACKCOLOR 4           // missing from the mingw32 headers
-#define GT_SELECTION 2
-#define ST_SELECTION 2
-#define ST_DEFAULT 0
-#define ST_KEEPUNDO 1
-#define SBT_TOOLTIPS 0x0800
-#define DFCS_HOT 0x1000
-
-#define FLASHW_STOP 0
-#define IMF_AUTOKEYBOARD 0x0001
-#define ODS_INACTIVE        0x0080
-#define NIN_BALLOONUSERCLICK (WM_USER + 5)
-#define NIN_BALLOONTIMEOUT (WM_USER + 4)
-#define IMF_AUTOFONTSIZEADJUST	0x0010
-
-#define __time32_t time_t
-#define _malloca alloca
-#define _localtime32 localtime
-
-typedef struct __gettextex {
-	DWORD	cb;				// Count of bytes in the string
-	DWORD	flags;			// Flags (see the GT_XXX defines
-	UINT	codepage;		// Code page for translation (CP_ACP for sys default,
-	//  1200 for Unicode, -1 for control default)
-	LPCSTR	lpDefaultChar;	// Replacement for unmappable chars
-	LPBOOL	lpUsedDefChar;	// Pointer to flag set when def char used
-} _GETTEXTEX;
-
-#define WM_APPCOMMAND                   0x0319
-#define APPCOMMAND_BROWSER_BACKWARD       1
-#define APPCOMMAND_BROWSER_FORWARD        2
-#define FAPPCOMMAND_MASK  0xF000
-#define GET_APPCOMMAND_LPARAM(lParam) ((short)(HIWORD(lParam) & ~FAPPCOMMAND_MASK))
-
-#ifndef _WIN32_IE
-typedef struct tagNMMOUSE {
-	NMHDR       hdr;
-	DWORD_PTR   dwItemSpec;
-	DWORD_PTR   dwItemData;
-	POINT       pt;
-	LPARAM      dwHitInfo; // any specifics about where on the item or control the mouse is
-} NMMOUSE, *LPNMMOUSE;
-#endif
-
-#define CFE_LINK		0x0020
-
-#define __try
-#define __except(x) if (0) /* don't execute handler */
-#define __finally
-
-#define _try __try
-#define _except __except
-#define _finally __finally
-
-/*
-typedef struct _settextex {
-    DWORD	flags;
-    UINT	codepage;
-} SETTEXTEX;
-*/
-#endif
-
 #include <richedit.h>
 #include <richole.h>
 #include "m_avatars.h"
@@ -166,11 +91,8 @@ typedef struct _settextex {
 #define MWF_LOG_BBCODE		 1
 #define MWF_LOG_STATUSCHANGES 32
 #define MWF_LOG_LOCALTIME	 64
-//_MAD
-
 
 #define MWF_LOG_SHOWICONS 262144
-
 #define MWF_LOG_SYMBOLS 0x200000
 #define MWF_INITMODE  0x400000
 #define MWF_NEEDCHECKSIZE 0x800000
@@ -198,6 +120,7 @@ typedef struct _settextex {
 #define MWF_EX_DELAYEDSPLITTER 32768
 #define MWF_EX_AVATARCHANGED 65536
 #define MWF_EX_WARNCLOSE     0x20000
+#define MWF_EX_LIMITEDUPDATE 0x40000
 
 #define SMODE_DEFAULT 0
 #define SMODE_MULTIPLE 1
@@ -291,7 +214,7 @@ struct TContainerData {
 	BOOL    bDontSmartClose;      // if set, do not search and select the next possible tab after closing one.
 	DWORD   dwFlags;
 	DWORD   dwFlagsEx;
-	UINT    uChildMinHeight;
+	LONG    uChildMinHeight;
 	int     tBorder;
 	int	    tBorder_outer_left, tBorder_outer_right, tBorder_outer_top, tBorder_outer_bottom;
 	HANDLE  hContactFrom;
@@ -381,7 +304,6 @@ struct TWindowData {
 	SIZE    pic;
 	int     showPic, showInfoPic;
 	BOOL    fMustOffset;
-	UINT    uMinHeight;
 	BOOL    isHistory;
 	int     doSmileys;
 	UINT    codePage;
@@ -608,8 +530,8 @@ struct TNewWindowData {
 #define DM_UPDATEPICLAYOUT   (WM_USER+30)
 #define DM_QUERYCONTAINER    (WM_USER+31)
 #define DM_MUCFLASHWORKER    (WM_USER+32)
-#define DM_CALCMINHEIGHT     (WM_USER+33)       // msgdialog asked to recalculate its minimum height
-#define DM_REPORTMINHEIGHT   (WM_USER+34)       // msg dialog reports its minimum height to the container
+//#define DM_CALCMINHEIGHT     (WM_USER+33)       // msgdialog asked to recalculate its minimum height
+//#define DM_REPORTMINHEIGHT   (WM_USER+34)       // msg dialog reports its minimum height to the container
 #define DM_CHECKINFOTIP		 (WM_USER+35) 
 #define DM_SAVESIZE          (WM_USER+36)
 #define DM_CHECKSIZE         (WM_USER+37)
@@ -829,7 +751,7 @@ extern const int msgDlgFontCount;
 #define SRMSGSET_SHOWTYPINGCLIST    "ShowTypingClist"
 #define SRMSGDEFSET_SHOWTYPINGCLIST 1
 
-// xxx rtl support
+// rtl support
 #define SRMSGDEFSET_MOD_RTL                      0
 
 #define TIMERID_FLASHWND     1
@@ -999,8 +921,6 @@ typedef struct {
 	void *local; // used to store pointer to custom data
 } MessageWindowOutputData;
 
-#define MS_MSG_FORWARDMESSAGE  "SRMsg/ForwardMessage"
-
 #define MS_MSG_GETWINDOWDATA "MessageAPI/GetWindowData"
 //wparam=(MessageWindowInputData*)
 //lparam=(MessageWindowData*)
@@ -1008,16 +928,18 @@ typedef struct {
 
 // callback for the user menu entry
 
-#define MS_TABMSG_SETUSERPREFS "SRMsg_MOD/SetUserPrefs"
+#define MS_TABMSG_SETUSERPREFS	"SRMsg_MOD/SetUserPrefs"
 #define MS_TABMSG_SLQMGR		"SRMsg_MOD/InvokeQmgr"
 
 // show one of the tray menus
 // wParam = 0 -> session list
 // wParam = 1 -> tray menu
 // lParam must be 0
-//
 #define MS_TABMSG_TRAYSUPPORT "SRMsg_MOD/Show_TrayMenu"
 
+/*
+ * the service which processes globally registered hotkeys
+ */
 #define MS_TABMSG_HOTKEYPROCESS "SRMsg_MOD/ProcessHotkey"
 
 #define MBF_DISABLED		0x01
@@ -1126,40 +1048,6 @@ typedef struct _tagSKINDesc {
 #define ICON_BUTTON_CANCEL				6
 #define ICON_BUTTON_SAVE				7
 
-/*
- * FIXME (tz stuff needed to compile (taken from m_timezones.h)
- */
+#endif /* _MSGS_H */
 
-#define MIM_TZ_PLF_CB		1				// UI element is assumed to be a combo box
-#define MIM_TZ_PLF_LB		2				// UI element is assumed to be a list box
-#define MIM_TZ_NAMELEN 64
-#define MIM_TZ_DISPLAYLEN 128
-
-typedef struct _tagTimeZone {
-	DWORD	cbSize;						// caller must supply this
-	TCHAR	tszName[MIM_TZ_NAMELEN];				// windows name for the time zone
-	TCHAR	tszDisplay[MIM_TZ_DISPLAYLEN];			// more descriptive display name (that's what usually appears in dialogs)
-	LONG	Bias;						// Standardbias (gmt offset)
-	LONG	DaylightBias;				// daylight Bias (dst offset, relative to standard bias, -60 for most time zones)
-	SYSTEMTIME StandardTime;			// when DST ends (month/dayofweek/time)
-	SYSTEMTIME DaylightTime;			// when DST begins (month/dayofweek/time)
-	char	GMT_Offset;					// simple GMT offset (+/-, measured in half-hours, may be incorrect for DST timezones)
-	LONG	Offset;						// time offset to local time, in seconds. It is relativ to the current local time, NOT GMT
-										// the sign is inverted, so you have to subtract it from the current time.
-	SYSTEMTIME CurrentTime;				// current system time. only updated when forced by the caller
-	time_t	   now;						// same in unix time format (seconds since 1970).
-} MIM_TIMEZONE;
-
-typedef struct _tagPrepareList {
-	DWORD	cbSize;									// caller must supply this
-	HWND	hWnd;									// window handle of the combo or list box
-	TCHAR	tszName[MIM_TZ_NAMELEN];				// tz name (for preselecting)
-	DWORD	dwFlags;								// flags - if neither PLF_CB or PLF_LB is set, the window class name will be used
-													// to figure out the type of control.
-	HANDLE	hContact;								// contact handle (for preselecting)
-} MIM_TZ_PREPARELIST;
-#define MS_TZ_PREPARELIST "TZ/PrepareList"
-#define MIM_TZ_PLF_CB 1
-
-#endif
 

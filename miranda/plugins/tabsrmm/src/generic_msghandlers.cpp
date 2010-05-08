@@ -491,10 +491,12 @@ LRESULT TSAPI DM_MsgWindowCmdHandler(HWND hwndDlg, TContainerData *m_pContainer,
 					dat->fEditNotesActive = false;
 					break;
 				}
-				dat->iSplitterSaved = dat->splitterY;
 
-				dat->splitterY = rc.bottom / 2;
-				SendMessage(hwndDlg, WM_SIZE, 1, 1);
+				if(!dat->fIsAutosizingInput) {
+					dat->iSplitterSaved = dat->splitterY;
+					dat->splitterY = rc.bottom / 2;
+					SendMessage(hwndDlg, WM_SIZE, 1, 1);
+				}
 
 				DBVARIANT dbv = {0};
 
@@ -511,9 +513,12 @@ LRESULT TSAPI DM_MsgWindowCmdHandler(HWND hwndDlg, TContainerData *m_pContainer,
 				GetDlgItemText(hwndDlg, IDC_MESSAGE, buf, iLen + 1);
 				M->WriteTString(dat->hContact, "UserInfo", "MyNotes", buf);
 				SetDlgItemText(hwndDlg, IDC_MESSAGE, _T(""));
-				dat->splitterY = dat->iSplitterSaved;
-				SendMessage(hwndDlg, WM_SIZE, 0, 0);
-				DM_ScrollToBottom(dat, 0, 1);
+				
+				if(!dat->fIsAutosizingInput) {
+					dat->splitterY = dat->iSplitterSaved;
+					SendMessage(hwndDlg, WM_SIZE, 0, 0);
+					DM_ScrollToBottom(dat, 0, 1);
+				}
 			}
 			SetWindowPos(GetDlgItem(hwndDlg, IDC_MESSAGE), 0, 0, 0, 0, 0, SWP_DRAWFRAME|SWP_FRAMECHANGED|SWP_NOZORDER|
 						 SWP_NOMOVE|SWP_NOSIZE|SWP_NOCOPYBITS);
@@ -709,7 +714,8 @@ void TSAPI DM_InitRichEdit(TWindowData *dat)
 {
 	char*				szStreamOut = NULL;
 	SETTEXTEX 			stx = {ST_DEFAULT, CP_UTF8};
-	COLORREF 			colour = M->GetDword(FONTMODULE, SRMSGSET_BKGCOLOUR, SRMSGDEFSET_BKGCOLOUR);
+	COLORREF 			colour = dat->bType == SESSIONTYPE_IM ? M->GetDword(FONTMODULE, "inbg", SRMSGDEFSET_BKGCOLOUR) :
+								 M->GetDword(FONTMODULE, SRMSGSET_BKGCOLOUR, SRMSGDEFSET_BKGCOLOUR);
 	COLORREF 			inputcharcolor;
 	CHARFORMAT2A 		cf2;
 	LOGFONTA 			lf;
@@ -1397,7 +1403,7 @@ LRESULT TSAPI DM_ThemeChanged(TWindowData *dat)
 			SetWindowLongPtr(GetDlgItem(hwnd, IDC_CHAT_MESSAGE), GWL_EXSTYLE, GetWindowLongPtr(GetDlgItem(hwnd, IDC_CHAT_MESSAGE), GWL_EXSTYLE) & ~WS_EX_STATICEDGE);
 	}
 	dat->hThemeIP = M->isAero() ? CMimAPI::m_pfnOpenThemeData(hwnd, L"ButtonStyle") : 0;
-	dat->hThemeToolbar = (M->isAero() || (!CSkin::m_skinEnabled && M->isVSThemed())) ? (PluginConfig.m_bIsVista ? CMimAPI::m_pfnOpenThemeData(hwnd, L"STARTPANEL") : CMimAPI::m_pfnOpenThemeData(hwnd, L"REBAR")) : 0;
+	dat->hThemeToolbar = (M->isAero() || (!CSkin::m_skinEnabled && M->isVSThemed())) ? CMimAPI::m_pfnOpenThemeData(hwnd, L"REBAR") : 0;
 
 	return 0;
 }
@@ -1584,12 +1590,17 @@ void TSAPI DM_Typing(TWindowData *dat)
  */
 int TSAPI DM_SplitterGlobalEvent(TWindowData *dat, WPARAM wParam, LPARAM lParam)
 {
-	RECT 	rcWin;
-	short 	newMessagePos;
-	LONG	newPos;
-	TWindowData 	*srcDat = PluginConfig.lastSPlitterPos.pSrcDat;
-	TContainerData *srcCnt = PluginConfig.lastSPlitterPos.pSrcContainer;
-	bool				fCntGlobal = (!dat->pContainer->settings->fPrivate ? true : false);
+	RECT 			rcWin;
+	short 			newMessagePos;
+	LONG			newPos;
+	TWindowData*	srcDat = PluginConfig.lastSPlitterPos.pSrcDat;
+	TContainerData*	srcCnt = PluginConfig.lastSPlitterPos.pSrcContainer;
+	bool			fCntGlobal = (!dat->pContainer->settings->fPrivate ? true : false);
+
+#if defined(__FEAT_EXP_AUTOSPLITTER)
+	if(dat->fIsAutosizingInput)
+		return(0);
+#endif
 
 	GetWindowRect(dat->hwnd, &rcWin);
 
@@ -1814,16 +1825,15 @@ void TSAPI DM_EventAdded(TWindowData *dat, WPARAM wParam, LPARAM lParam)
 void TSAPI DM_HandleAutoSizeRequest(TWindowData *dat, REQRESIZE* rr)
 {
 	if(dat && rr && GetForegroundWindow() == dat->pContainer->hwnd) {
-		if(dat->fIsAutosizingInput) {
-			if(dat->iInputAreaHeight == 0) {
-				RECT	rc;
-				GetClientRect(GetDlgItem(dat->hwnd, dat->bType == SESSIONTYPE_IM ? IDC_MESSAGE : IDC_CHAT_MESSAGE), &rc);
-				dat->iInputAreaHeight = rr->rc.bottom - rr->rc.top;
-			}
+		if(dat->fIsAutosizingInput && dat->iInputAreaHeight != -1) {
+			LONG heightLimit = M->GetDword("autoSplitMinLimit", 0);
 			LONG iNewHeight = rr->rc.bottom - rr->rc.top;
 
 			if(CSkin::m_skinEnabled && !SkinItems[ID_EXTBKINPUTAREA].IGNORED) 
 				iNewHeight += (SkinItems[ID_EXTBKINPUTAREA].MARGIN_TOP + SkinItems[ID_EXTBKINPUTAREA].MARGIN_BOTTOM - 2);
+
+			if(heightLimit && iNewHeight < heightLimit)
+				iNewHeight = heightLimit;
 
 			if(iNewHeight != dat->iInputAreaHeight) {
 				RECT	rc;
@@ -1846,13 +1856,13 @@ void TSAPI DM_HandleAutoSizeRequest(TWindowData *dat, REQRESIZE* rr)
 					dat->si->iSplitterY = (rc.bottom - (rc.bottom - iNewHeight + DPISCALEY_S(3))) + DPISCALEY_S(34);
 					if(!(dat->pContainer->dwFlags & CNT_BOTTOMTOOLBAR))
 						dat->si->iSplitterY -= DPISCALEY_S(22);
+					SendMessage(dat->hwnd, WM_SIZE, 0, 0);
 				}
 				dat->iInputAreaHeight = iNewHeight;
-				SendMessage(dat->hwnd, WM_SIZE, 0, 0);
-				if(M->isAero() || M->isVSThemed())
-					RedrawWindow(dat->hwnd, 0, 0, RDW_ERASE|RDW_INVALIDATE|RDW_UPDATENOW);
-				else
-					RedrawWindow(dat->hwnd, 0, 0, RDW_ERASE|RDW_INVALIDATE|RDW_UPDATENOW|RDW_ALLCHILDREN);
+				CSkin::UpdateToolbarBG(dat);
+
+				if(dat->bType == SESSIONTYPE_IM)
+					SendMessage(dat->hwnd, WM_SIZE, 0, 0);
 				DM_ScrollToBottom(dat, 1, 0);
 			}
 		}

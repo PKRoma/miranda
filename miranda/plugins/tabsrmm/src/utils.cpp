@@ -915,7 +915,7 @@ int	TSAPI Utils::mustPlaySound(const TWindowData *dat)
 
 	bool fActiveWindow = (dat->pContainer->hwnd == ::GetForegroundWindow() ? true : false);
 	bool fActiveTab = (dat->pContainer->hwndActive == dat->hwnd ? true : false);
-	bool fIconic = (::IsIconic(dat->hwnd) ? true : false);
+	bool fIconic = (::IsIconic(dat->pContainer->hwnd) ? true : false);
 
 	/*
 	 * window minimized, check if sound has to be played

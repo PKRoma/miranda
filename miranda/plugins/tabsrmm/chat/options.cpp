@@ -96,8 +96,10 @@ static ColorOptionsList _clrs[] = {
 	5, LPGENT("TabSRMM/Single Messaging"), LPGENT("Horizontal Grid Lines"), "hgrid", RGB(224, 224, 224),
 	0, LPGENT("TabSRMM/Info Panel"), LPGENT("Panel background low"), "ipfieldsbg", 0xff000000 | COLOR_HOTLIGHT,
 	1, LPGENT("TabSRMM/Info Panel"), LPGENT("Panel background high"), "ipfieldsbgHigh", 0xff000000 | COLOR_3DFACE,
-	2, LPGENT("TabSRMM/Common colors"), LPGENT("Toolbar background high (Aero mode only)"), "tbBgHigh", 0,
-	3, LPGENT("TabSRMM/Common colors"), LPGENT("Toolbar background low (Aero mode only)"), "tbBgLow", 0,
+	2, LPGENT("TabSRMM/Common colors"), LPGENT("Toolbar background high"), "tbBgHigh", 0,
+	3, LPGENT("TabSRMM/Common colors"), LPGENT("Toolbar background low"), "tbBgLow", 0,
+	4, LPGENT("TabSRMM/Common colors"), LPGENT("Window fill color"), "fillColor", 0,
+	5, LPGENT("TabSRMM/Common colors"), LPGENT("Text area borders"), "cRichBorders", 0,
 };
 
 extern LOGFONT lfDefault;

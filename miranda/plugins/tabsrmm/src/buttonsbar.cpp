@@ -540,7 +540,6 @@ void TSAPI BB_InitDlgButtons(TWindowData *dat)
 	POINT ptSplitter;
 	int splitterY;
 	BYTE gap = DPISCALEX(PluginConfig.g_iButtonsBarGap);
-	BOOL isFlat = M->GetByte("tbflat", 1);
 	BOOL isThemed = PluginConfig.m_bIsXP;
 	int cx = 0, cy = 0;
 	int lcount = LButtonsList->realCount;
@@ -550,7 +549,6 @@ void TSAPI BB_InitDlgButtons(TWindowData *dat)
 	if (dat == 0 || hdlg == 0) {return;}
 	if (CSkin::m_skinEnabled && !SkinItems[ID_EXTBKBUTTONSNPRESSED].IGNORED &&
 			!SkinItems[ID_EXTBKBUTTONSPRESSED].IGNORED && !SkinItems[ID_EXTBKBUTTONSMOUSEOVER].IGNORED) {
-		isFlat = TRUE;
 		isThemed = FALSE;
 	}
 
@@ -575,7 +573,7 @@ void TSAPI BB_InitDlgButtons(TWindowData *dat)
 			if (!cbd->bDummy && !GetDlgItem(hdlg, cbd->dwButtonCID))
 				hwndBtn = CreateWindowEx(0, _T("TSButtonClass"), _T(""), WS_CHILD | WS_VISIBLE | WS_TABSTOP, rect.right - rwidth + gap, splitterY, cbd->iButtonWidth, DPISCALEY(22), hdlg, (HMENU) cbd->dwButtonCID, g_hInst, NULL);
 			if (!cbd->bDummy && hwndBtn) {
-				SendMessage(hwndBtn, BUTTONSETASFLATBTN, 0, isFlat ? 0 : 1);
+				SendMessage(hwndBtn, BUTTONSETASFLATBTN, 0, 0);
 				SendMessage(hwndBtn, BUTTONSETASFLATBTN + 10, 0, isThemed ? 1 : 0);
 				if (cbd->hIcon)
 					SendMessage(hwndBtn, BM_SETIMAGE, IMAGE_ICON, (LPARAM)CallService(MS_SKIN2_GETICONBYHANDLE, 0, (LPARAM)cbd->hIcon));
@@ -613,7 +611,7 @@ void TSAPI BB_InitDlgButtons(TWindowData *dat)
 			if (!cbd->bHidden && !cbd->bCanBeHidden)
 				dat->iButtonBarReallyNeeds += cbd->iButtonWidth + gap;
 			if (!cbd->bDummy && hwndBtn) {
-				SendMessage(hwndBtn, BUTTONSETASFLATBTN, 0, isFlat ? 0 : 1);
+				SendMessage(hwndBtn, BUTTONSETASFLATBTN, 0, 0);
 				SendMessage(hwndBtn, BUTTONSETASFLATBTN + 10, 0, isThemed ? 1 : 0);
 				if (cbd->hIcon)
 					SendMessage(hwndBtn, BM_SETIMAGE, IMAGE_ICON, (LPARAM)CallService(MS_SKIN2_GETICONBYHANDLE, 0, (LPARAM)cbd->hIcon));
@@ -638,6 +636,33 @@ void TSAPI BB_InitDlgButtons(TWindowData *dat)
 
 	dat->bbLSideWidth = lwidth;
 	dat->bbRSideWidth = rwidth;
+}
+
+void TSAPI BB_RedrawButtons(TWindowData *dat)
+{
+	int					i;
+	CustomButtonData*	cbd;
+	HWND				hwnd;
+
+	for (i = 0; i < LButtonsList->realCount; i++) {
+		cbd = reinterpret_cast<CustomButtonData *>(LButtonsList->items[i]);
+		if(cbd) {
+			hwnd = GetDlgItem(dat->hwnd, cbd->dwButtonCID);
+			if(hwnd)
+				InvalidateRect(hwnd, 0, TRUE);
+		}
+	}
+	for (i = 0; i < RButtonsList->realCount; i++) {
+		cbd = reinterpret_cast<CustomButtonData *>(RButtonsList->items[i]);
+		if(cbd) {
+			hwnd = GetDlgItem(dat->hwnd, cbd->dwButtonCID);
+			if(hwnd)
+				InvalidateRect(hwnd, 0, TRUE);
+		}
+	}
+	HWND hwndToggleSideBar = GetDlgItem(dat->hwnd, dat->bType == SESSIONTYPE_IM ? IDC_TOGGLESIDEBAR : IDC_CHAT_TOGGLESIDEBAR);
+	if(hwndToggleSideBar && IsWindow(hwndToggleSideBar))
+		InvalidateRect(hwndToggleSideBar, 0, TRUE);
 }
 
 BOOL TSAPI BB_SetButtonsPos(TWindowData *dat)

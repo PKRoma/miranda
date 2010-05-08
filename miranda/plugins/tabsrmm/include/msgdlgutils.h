@@ -89,6 +89,7 @@ void 	TSAPI KbdState						(TWindowData *dat, BOOL& isShift, BOOL& isControl, BOO
 void 	TSAPI ClearLog						(TWindowData *dat);
 bool	TSAPI IsAutoSplitEnabled			(const TWindowData* dat);
 LONG	TSAPI GetDefaultMinimumInputHeight	(const TWindowData* dat);
+void	TSAPI DetermineMinHeight			(TWindowData* dat);
 // mathmod
 
 void	TSAPI MTH_updateMathWindow			(const TWindowData *dat);

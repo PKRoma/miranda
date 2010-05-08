@@ -274,7 +274,7 @@ HFONT CInfoPanel::setUnderlinedFont(const HDC hdc, HFONT hFontOrig)
  */
 void CInfoPanel::renderBG(const HDC hdc, RECT& rc, CSkinItem *item, bool fAero, bool fAutoCalc) const
 {
-	if(m_active) {
+	if(m_active && !(m_dat->dwFlags & MWF_EX_LIMITEDUPDATE)) {
 
 		if(fAutoCalc)
 			rc.bottom = m_height + 1;
@@ -714,9 +714,11 @@ void CInfoPanel::Invalidate(BOOL fErase) const
 {
 	RECT	rc;
 
-	::GetClientRect(m_dat->hwnd, &rc);
-	rc.bottom = m_height;
-	::InvalidateRect(m_dat->hwnd, &rc, fErase);
+	if(m_active) {
+		::GetClientRect(m_dat->hwnd, &rc);
+		rc.bottom = m_height;
+		::InvalidateRect(m_dat->hwnd, &rc, fErase);
+	}
 }
 
 /**
@@ -951,11 +953,15 @@ void CInfoPanel::showTip(UINT ctrlId, const LPARAM lParam)
 /**
  * hide a tooltip (if it was created)
  * this is only used from outside (i.e. container window dialog)
+ * 
+ * hwndNew = window to become active (as reported by WM_ACTIVATE).
  */
-void CInfoPanel::hideTip()
+void CInfoPanel::hideTip(const HWND hwndNew)
 {
 	if(m_tip) {
-		if(IsWindow(m_tip->getHwnd()))
+		if(hwndNew == m_tip->getHwnd())
+			return;
+		if(::IsWindow(m_tip->getHwnd()))
 			::DestroyWindow(m_tip->getHwnd());
 		m_tip = 0;
 	}
@@ -1336,7 +1342,7 @@ CTip::CTip(const HWND hwndParent, const HANDLE hContact, const TCHAR *pszText, c
 	m_hwnd = ::CreateWindowEx(WS_EX_TOOLWINDOW, _T("RichEditTipClass"), _T(""), (M->isAero() ? WS_THICKFRAME : WS_BORDER)|WS_POPUPWINDOW|WS_TABSTOP | WS_CLIPCHILDREN | WS_CLIPSIBLINGS,
 							  0, 0, 40, 40, 0, 0, g_hInst, this);
 
-	m_hRich = ::CreateWindowEx(WS_EX_TRANSPARENT, RICHEDIT_CLASS, _T(""), WS_CHILD | ES_MULTILINE | ES_AUTOVSCROLL | ES_NOHIDESEL | ES_READONLY | WS_VSCROLL | WS_TABSTOP,
+	m_hRich = ::CreateWindowEx(0, RICHEDIT_CLASS, _T(""), WS_CHILD | ES_MULTILINE | ES_AUTOVSCROLL | ES_NOHIDESEL | ES_READONLY | WS_VSCROLL | WS_TABSTOP,
 							   0, 0, 40, 40, m_hwnd, reinterpret_cast<HMENU>(1000), g_hInst, NULL);
 
 	::SendMessage(m_hRich, EM_AUTOURLDETECT, (WPARAM) TRUE, 0);
@@ -1515,11 +1521,15 @@ INT_PTR CALLBACK CTip::WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam
 		case WM_SETCURSOR:
 			::KillTimer(hwnd, 1000);
 			::SetTimer(hwnd, 1000, 200, 0);
+
+			if(msg == WM_ACTIVATE && LOWORD(wParam) == WA_INACTIVE)
+				::DestroyWindow(hwnd);
 			break;
 
 			/* prevent resizing */
 		case WM_NCHITTEST:
 			return(HTCLIENT);
+			break;
 
 		case WM_ERASEBKGND: {
 			HDC 		hdc = (HDC) wParam;

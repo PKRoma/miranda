@@ -1280,16 +1280,32 @@ buttons_done:
 			pContainer->bSizingLoop = FALSE;
 			break;
 		}
+		/*
+		 * determine minimum and maximum size limits
+		 * 1) for maximizing the window when the "vertical maximize" option is set
+		 * 2) to limit the minimum height when manually resizing the window
+		 *    (this avoids overlapping of controls inside the window and ensures
+		 *    that at least 2 lines of the message log are always visible).
+		 */
 		case WM_GETMINMAXINFO: {
-			RECT rc;
+			RECT rc, rcWindow, rcClient;
 			POINT pt;
 			MINMAXINFO *mmi = (MINMAXINFO *) lParam;
 
 			mmi->ptMinTrackSize.x = 275;
 
 			GetClientRect(GetDlgItem(hwndDlg, IDC_MSGTABS), &rc);
+			GetClientRect(pContainer->hwndActive, &rcClient);
+			GetWindowRect(hwndDlg, &rcWindow);
 			pt.y = rc.top;
 			TabCtrl_AdjustRect(GetDlgItem(hwndDlg, IDC_MSGTABS), FALSE, &rc);
+			/*
+			 * uChildMinHeight holds the min height for the client window only
+			 * so let's add the container's vertical padding (title bar, tab bar, 
+			 * window border, status bar) to this value
+			 */
+			mmi->ptMinTrackSize.y = pContainer->uChildMinHeight + ((rcWindow.bottom - rcWindow.top) - rcClient.bottom);
+
 			if (pContainer->dwFlags & CNT_VERTICALMAX || (GetKeyState(VK_CONTROL) & 0x8000)) {
 				RECT rcDesktop = {0};
 				BOOL fDesktopValid = FALSE;
@@ -1534,7 +1550,7 @@ buttons_done:
 				break;
 
 			if (LOWORD(wParam == WA_INACTIVE)) {
-				BroadCastContainer(pContainer, DM_CHECKINFOTIP, wParam, 0);
+				BroadCastContainer(pContainer, DM_CHECKINFOTIP, wParam, lParam);
 				if(PluginConfig.m_MathModAvail)
 					CallService(MTH_HIDE, 0, 0);
 			}
@@ -1609,8 +1625,6 @@ buttons_done:
 			}
 			else if (curItem >= 0)
 				SendMessage((HWND) item.lParam, WM_ACTIVATE, WA_ACTIVE, 0);
-			if (GetMenu(hwndDlg) != 0)
-				DrawMenuBar(hwndDlg);
 			break;
 		}
 		case DM_CLOSETABATMOUSE: {
@@ -1888,12 +1902,6 @@ buttons_done:
 			}
 			return(0);
 		}
-		/*
-		 * msg dialog children are required to report their minimum height requirements
-		 */
-		case DM_REPORTMINHEIGHT:
-			pContainer->uChildMinHeight = ((UINT) lParam > pContainer->uChildMinHeight) ? (UINT) lParam : pContainer->uChildMinHeight;
-			return(0);
 
 		case DM_SETICON: {
 			HICON 		hIconMsg = PluginConfig.g_IconMsgEvent;
@@ -1987,7 +1995,6 @@ buttons_done:
 			pContainer->hwnd = 0;
 			pContainer->hwndActive = 0;
 			pContainer->hMenuContext = 0;
-			SetMenu(hwndDlg, NULL);
 			if (pContainer->hwndStatus)
 				DestroyWindow(pContainer->hwndStatus);
 

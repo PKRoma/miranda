@@ -191,7 +191,7 @@ public:
 	HMENU		m_MenuBar;
 	COLORREF	m_ipBackgroundGradient;
 	COLORREF	m_ipBackgroundGradientHigh;
-	COLORREF	m_tbBackgroundHigh, m_tbBackgroundLow;
+	COLORREF	m_tbBackgroundHigh, m_tbBackgroundLow, m_fillColor, m_cRichBorders;
 	BYTE		g_bClientInStatusBar;
 	BYTE		m_dontUseDefaultKbd;
 	HANDLE		hSvc[SERVICE_LAST];

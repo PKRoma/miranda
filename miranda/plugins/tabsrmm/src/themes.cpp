@@ -2070,7 +2070,7 @@ void CSkin::setupAeroSkins()
 		GetObject(hbm, sizeof(bm), &bm);
 
 		m_switchBarItem = new CImageItem(4, 4, 4, 4, 0, hbm, IMAGE_FLAG_DIVIDED | IMAGE_PERPIXEL_ALPHA,
- 										 0, 255, 30, 80, 50, 100);
+ 										 0, 255, 2, 12, 10, 20);
 
 		m_switchBarItem->setAlphaFormat(AC_SRC_ALPHA, 255);
 		m_switchBarItem->setMetrics(bm.bmWidth, bm.bmHeight);
@@ -2307,8 +2307,15 @@ UINT CSkin::DrawRichEditFrame(HWND hwnd, const TWindowData *mwdat, UINT skinID, 
 				HBRUSH br = CreateSolidBrush(isMultipleReason ? RGB(255, 130, 130) : (isEditNotesReason ? RGB(80, 255, 80) : RGB(80, 80, 255)));
 				FillRect(hdc, &rcWindow, br);
 				DeleteObject(br);
-			} else
-				CMimAPI::m_pfnDrawThemeBackground(mwdat->hTheme, hdc, 1, 1, &rcWindow, &rcWindow);
+			} else {
+				if(PluginConfig.m_cRichBorders) {
+					HBRUSH br = CreateSolidBrush(PluginConfig.m_cRichBorders);
+					FillRect(hdc, &rcWindow, br);
+					DeleteObject(br);
+				}
+				else
+					CMimAPI::m_pfnDrawThemeBackground(mwdat->hTheme, hdc, 1, 1, &rcWindow, &rcWindow);
+			}
 		}
 		ReleaseDC(hwnd, hdc);
 		return result;
@@ -2563,21 +2570,23 @@ void CSkin::RenderToolbarBG(const TWindowData *dat, HDC hdc, const RECT &rcWindo
 					(m_pCurrentAeroEffect ? m_pCurrentAeroEffect->m_clrToolbar2 : m_dwmColorRGB);
 
 			bAlphaOffset = PluginConfig.m_tbBackgroundHigh ? 40 : 0;
-			::DrawAlpha(hdc, &rcToolbar, m_tmp_tb_high, 45 + bAlphaOffset, m_tmp_tb_low, 0, 9, 31, 4, 0);
+			::DrawAlpha(hdc, &rcToolbar, m_tmp_tb_high, 45 + bAlphaOffset, m_tmp_tb_low, 0, 9, 0, 0, 0);
 		} else
-			CMimAPI::m_pfnDrawThemeBackground(dat->hThemeToolbar, hdc, PluginConfig.m_bIsVista ? 12 : 6,  PluginConfig.m_bIsVista ? 2 : 1,
-											  &rcToolbar, &rcToolbar);
+			CMimAPI::m_pfnDrawThemeBackground(dat->hThemeToolbar, hdc, 6, 1,
+				&rcToolbar, &rcToolbar);
 
 		RECT rcCachedToolbar = {0};
 		rcCachedToolbar.right = cx;
 		rcCachedToolbar.bottom = cy;
 
 		if(fAero || (M->isVSThemed() && fTbColorsValid)) {
-			::FillRect(dat->pContainer->cachedToolbarDC, &rcCachedToolbar, ::GetSysColorBrush(COLOR_3DFACE));
-			::DrawAlpha(dat->pContainer->cachedToolbarDC, &rcCachedToolbar, m_tmp_tb_high, 55 + bAlphaOffset, m_tmp_tb_low, 0, 9, 31, 4, 0);
+			//::FillRect(dat->pContainer->cachedToolbarDC, &rcCachedToolbar, ::GetSysColorBrush(COLOR_3DFACE));
+			::DrawAlpha(dat->pContainer->cachedToolbarDC, &rcCachedToolbar, m_tmp_tb_high, 55 + bAlphaOffset, m_tmp_tb_low, 0, 9, 0, 0, 0);
+			//::BitBlt(dat->pContainer->cachedToolbarDC, 0, 0, cx, cy, hdc,
+				//	 rcToolbar.left, rcToolbar.top, SRCCOPY);
 		} else
-			CMimAPI::m_pfnDrawThemeBackground(dat->hThemeToolbar, dat->pContainer->cachedToolbarDC, PluginConfig.m_bIsVista ? 12 : 6,  PluginConfig.m_bIsVista ? 2 : 1,
-											  &rcCachedToolbar, &rcCachedToolbar);
+			CMimAPI::m_pfnDrawThemeBackground(dat->hThemeToolbar, dat->pContainer->cachedToolbarDC, 6, 1,
+				&rcCachedToolbar, &rcCachedToolbar);
 	}
 }
 
@@ -2762,6 +2771,36 @@ void CSkin::extractSkinsAndLogo(bool fForceOverwrite) const
 	catch(CRTException& ex) {
 		ex.display();
 		m_fAeroSkinsValid = false;
+	}
+}
+
+/**
+ * redraw the splitter area between the message input and message log
+ * area only
+ */
+void CSkin::UpdateToolbarBG(TWindowData* dat, DWORD dwRdwOptFlags)
+{
+	RECT	rcUpdate, rcTmp;
+	POINT	pt;
+
+	if(dat) {
+		::GetWindowRect(::GetDlgItem(dat->hwnd, dat->bType == SESSIONTYPE_IM ? IDC_LOG : IDC_CHAT_LOG), &rcTmp);
+
+		pt.x = rcTmp.left;
+		pt.y = rcTmp.top;
+		::ScreenToClient(dat->hwnd, &pt);
+
+		rcUpdate.left = 0;
+		rcUpdate.top = pt.y;
+
+		::GetClientRect(dat->hwnd, &rcTmp);
+		rcUpdate.right = rcTmp.right;
+		rcUpdate.bottom = rcTmp.bottom;
+
+		dat->dwFlagsEx |= MWF_EX_LIMITEDUPDATE;
+		::RedrawWindow(dat->hwnd, &rcUpdate, 0, RDW_ERASE|RDW_INVALIDATE|RDW_UPDATENOW|dwRdwOptFlags);
+		::BB_RedrawButtons(dat);
+		dat->dwFlagsEx &= ~MWF_EX_LIMITEDUPDATE;
 	}
 }
 

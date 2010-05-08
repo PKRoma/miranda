@@ -1,4 +1,4 @@
-/*
+ta/*
  * astyle --force-indent=tab=4 --brackets=linux --indent-switches
  *		  --pad=oper --one-line=keep-blocks  --unpad=paren
  *
@@ -339,6 +339,12 @@ static void MsgWindowUpdateState(TWindowData *dat, UINT msg)
 				CMimAPI::m_pSetLayeredWindowAttributes(dat->pContainer->hwnd, 0, (BYTE)trans, (dat->pContainer->dwFlags & CNT_TRANSPARENCY ? LWA_ALPHA : 0));
 			}
 		}
+#if defined(__FEAT_EXP_AUTOSPLITTER)
+		if(dat->fIsAutosizingInput && dat->iInputAreaHeight == -1) {
+			dat->iInputAreaHeight = 0;
+			SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_REQUESTRESIZE, 0, 0);
+		}
+#endif
 		dat->Panel->dismissConfig();
 		if (dat->pContainer->hwndSaved == hwndDlg)
 			return;
@@ -446,6 +452,7 @@ static void MsgWindowUpdateState(TWindowData *dat, UINT msg)
 			InvalidateRect(hwndTab, NULL, FALSE);
 		if(dat->pContainer->dwFlags & CNT_SIDEBAR)
 			dat->pContainer->SideBar->setActiveItem(dat);
+
 	}
 }
 
@@ -954,7 +961,6 @@ LRESULT CALLBACK SplitterSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 				RECT rc;
 				GetClientRect(hwnd, &rc);
 				SendMessage(hwndParent, DM_SPLITTERMOVED, rc.right > rc.bottom ? (short) HIWORD(GetMessagePos()) + rc.bottom / 2 : (short) LOWORD(GetMessagePos()) + rc.right / 2, (LPARAM) hwnd);
-				RedrawWindow(hwndParent, 0, 0, RDW_ALLCHILDREN|RDW_ERASE|RDW_INVALIDATE|RDW_UPDATENOW);
 			}
 			return 0;
 		case WM_ERASEBKGND:
@@ -969,25 +975,21 @@ LRESULT CALLBACK SplitterSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 
 			if (dat && CSkin::m_skinEnabled)
 				CSkin::SkinDrawBG(hwnd, dat->pContainer->hwnd, dat->pContainer, &rc, dc);
-			else {
-				if(M->isAero()) {
-					if(ctrlId == IDC_PANELSPLITTER) {
-						EndPaint(hwnd, &ps);
-						return(0);
-					}
-					else if(GetDlgCtrlID(hwnd) == IDC_SPLITTER || GetDlgCtrlID(hwnd) == IDC_SPLITTERY) {
-						FillRect(dc, &rc, GetSysColorBrush(COLOR_3DFACE));
-						/*rc.bottom--;
-						FillRect(dc, &rc, GetSysColorBrush(COLOR_3DDKSHADOW));
-						rc.top++; rc.bottom++;
-						FillRect(dc, &rc, GetSysColorBrush(COLOR_3DSHADOW));*/
-					}
-					else
-						FillRect(dc, &rc, GetSysColorBrush(COLOR_3DFACE));
+			else if(M->isAero() || M->isVSThemed()) {
+				if(ctrlId == IDC_PANELSPLITTER) {
+					EndPaint(hwnd, &ps);
+					return(0);
+				}
+				if(PluginConfig.m_fillColor) {
+					HBRUSH br = ::CreateSolidBrush(PluginConfig.m_fillColor);
+					::FillRect(dc, &rc, br);
+					::DeleteObject(br);
 				}
 				else
 					FillRect(dc, &rc, GetSysColorBrush(COLOR_3DFACE));
 			}
+			else
+				FillRect(dc, &rc, GetSysColorBrush(COLOR_3DFACE));
 			EndPaint(hwnd, &ps);
 			return 0;
 		}
@@ -1072,6 +1074,7 @@ LRESULT CALLBACK SplitterSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 							si->iSplitterY = dat->savedSplitY;
 							dat->splitterY =si->iSplitterY + DPISCALEY(22);
 						}
+						CSkin::UpdateToolbarBG(dat);
 						SendMessage(hwndParent, WM_SIZE, 0, 0);
 						DM_ScrollToBottom(dat, 0, 1);
 						break;
@@ -1276,7 +1279,6 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			RECT rc;
 			POINT pt;
 			int i;
-			BOOL	isFlat = M->GetByte("tbflat", 1);
 			BOOL	isThemed = PluginConfig.m_bIsXP;
 			int		dwLocalSmAdd = 0;
 			DBVARIANT dbv = {0};
@@ -1314,7 +1316,6 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 
 			dat->hContact = newData->hContact;
 
-			dat->fIsAutosizingInput = IsAutoSplitEnabled(dat);
 			dat->cache = CContactCache::getContactCache(dat->hContact);
 			dat->cache->updateState();
 			dat->cache->setWindowData(hwndDlg, dat);
@@ -1398,6 +1399,8 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			dat->Panel->getVisibility();
 
 			dat->dwFlagsEx |= M->GetByte(dat->hContact, "splitoverride", 0) ? MWF_SHOW_SPLITTEROVERRIDE : 0;
+			dat->fIsAutosizingInput = IsAutoSplitEnabled(dat);
+			dat->iInputAreaHeight = -1;
 			SetMessageLog(dat);
 			dat->panelWidth = -1;
 			if (dat->hContact) {
@@ -1427,7 +1430,6 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 
 			if (CSkin::m_skinEnabled && !SkinItems[ID_EXTBKBUTTONSNPRESSED].IGNORED &&
 					!SkinItems[ID_EXTBKBUTTONSPRESSED].IGNORED && !SkinItems[ID_EXTBKBUTTONSMOUSEOVER].IGNORED) {
-				isFlat = TRUE;
 				isThemed = FALSE;
 			}
 
@@ -1595,9 +1597,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 				PostMessage(hwndContainer, DM_UPDATETITLE, (WPARAM)dat->hContact, 0);
 			}
 
-			SendMessage(hwndDlg, DM_CALCMINHEIGHT, 0, 0);
 			DM_RecalcPictureSize(dat);
-			SendMessage(hwndContainer, DM_REPORTMINHEIGHT, (WPARAM) hwndDlg, (LPARAM) dat->uMinHeight);
 			dat->dwLastActivity = GetTickCount() - 1000;
 			m_pContainer->dwLastActivity = dat->dwLastActivity;
 			if(dat->hwndHPP) {
@@ -1691,10 +1691,17 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 				}
 			}
 			else {
-				FillRect(hdcMem, &rcClient, GetSysColorBrush(COLOR_3DFACE));
+				if(PluginConfig.m_fillColor) {
+					HBRUSH br = CreateSolidBrush(PluginConfig.m_fillColor);
+					FillRect(hdcMem, &rcClient, br);
+					DeleteObject(br);
+				}
+				else
+					FillRect(hdcMem, &rcClient, GetSysColorBrush(COLOR_3DFACE));
+
 				if(M->isAero()) {
 					LONG temp = rcClient.bottom;
-					rcClient.bottom = 120;
+					rcClient.bottom = dat->Panel->isActive() ? dat->Panel->getHeight() + 5 : 5;
 					FillRect(hdcMem, &rcClient, (HBRUSH)GetStockObject(BLACK_BRUSH));
 					rcClient.bottom = temp;
 				}
@@ -1726,7 +1733,8 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 				DeleteObject(hbm);
 				DeleteDC(hdcMem);
 			}
-			SetAeroMargins(dat->pContainer);
+			if(!(dat->dwFlagsEx & MWF_EX_LIMITEDUPDATE))
+				SetAeroMargins(dat->pContainer);
 			return(1);
 		}
 		case WM_NCPAINT:
@@ -1764,7 +1772,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			if (dat->ipFieldHeight == 0)
 				dat->ipFieldHeight = CInfoPanel::m_ipConfig.height2;
 
-			if (dat->uMinHeight > 0 && HIWORD(lParam) >= dat->uMinHeight) {
+			if (dat->pContainer->uChildMinHeight > 0 && HIWORD(lParam) >= dat->pContainer->uChildMinHeight) {
 				if (dat->splitterY > HIWORD(lParam) - DPISCALEY(MINLOGHEIGHT)) {
 					dat->splitterY = HIWORD(lParam) - DPISCALEY(MINLOGHEIGHT);
 					dat->dynaSplitter = dat->splitterY - DPISCALEY(34);
@@ -1850,6 +1858,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 				ResizeIeView(dat, 0, 0, 0, 0);
 
 			dat->Panel->Invalidate();
+			DetermineMinHeight(dat);
 			break;
 		}
 
@@ -2478,11 +2487,12 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 
 				if (dat->multiSplitterX > ((rc.right - rc.left) - 80))
 					dat->multiSplitterX = oldSplitterX;
-
+				SendMessage(dat->hwnd, WM_SIZE, 0, 0);
 			} else if ((HWND) lParam == GetDlgItem(hwndDlg, IDC_SPLITTER)) {
 				int oldSplitterY, oldDynaSplitter;
 				int bottomtoolbarH=0;
 				GetClientRect(hwndDlg, &rc);
+				rc.top += (dat->Panel->isActive() ? dat->Panel->getHeight() + 40 : 30);
 				pt.x = 0;
 				pt.y = wParam;
 				ScreenToClient(hwndDlg, &pt);
@@ -2504,7 +2514,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 					dat->dynaSplitter = dat->splitterY - DPISCALEY(34);
 					DM_RecalcPictureSize(dat);
 				}
-				else if (dat->splitterY > ((rc.bottom - rc.top) - 50)) {
+				else if (dat->splitterY > (rc.bottom - rc.top)) {
 					dat->splitterY = oldSplitterY;
 					dat->dynaSplitter = oldDynaSplitter;
 					DM_RecalcPictureSize(dat);
@@ -2513,15 +2523,17 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 					dat->dynaSplitter = (rc.bottom - pt.y) - DPISCALEY(11);
 					DM_RecalcPictureSize(dat);
 				}
-				RedrawWindow(hwndDlg, NULL, NULL, RDW_INVALIDATE|RDW_UPDATENOW|RDW_ERASE);
+				CSkin::UpdateToolbarBG(dat);
+				SendMessage(dat->hwnd, WM_SIZE, 0, 0);
 			} else if ((HWND) lParam == GetDlgItem(hwndDlg, IDC_PANELSPLITTER)) {
-				RECT rc;
-				POINT pt;
+				RECT	rc;
+				POINT	pt;
+
+				GetClientRect(GetDlgItem(hwndDlg, IDC_LOG), &rc);
 				pt.x = 0;
 				pt.y = wParam;
 				ScreenToClient(hwndDlg, &pt);
-				GetClientRect(hwndDlg, &rc);
-				if (pt.y + 2 >= MIN_PANELHEIGHT+2 && pt.y + 2 < 100)
+				if ((pt.y + 2 >= MIN_PANELHEIGHT + 2) && (pt.y + 2 < 100) && (pt.y + 2 < rc.bottom - 30))
 					dat->Panel->setHeight(pt.y + 2, true);
 				dat->panelWidth = -1;
 				//SetAeroMargins(dat->pContainer);
@@ -2530,7 +2542,6 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 					InvalidateRect(GetParent(hwndDlg), NULL, FALSE);
 				break;
 			}
-			SendMessage(hwndDlg, WM_SIZE, DM_SPLITTERMOVED, 0);
 			return 0;
 		}
 		/*
@@ -2773,25 +2784,6 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			HANDLE *phContact = (HANDLE *) lParam;
 			if (phContact)
 				*phContact = dat->hContact;
-			return 0;
-		}
-
-		case DM_CALCMINHEIGHT: {
-			UINT height = 0;
-
-			if (dat->showPic)
-				height += (dat->pic.cy > MINSPLITTERY) ? dat->pic.cy : MINSPLITTERY;
-			else
-				height += MINSPLITTERY;
-			if (dat->showUIElements != 0)
-				height += 30;
-
-			height += (MINLOGHEIGHT + 30);          // log and padding for statusbar etc.
-			if (m_pContainer->dwFlags & CNT_INFOPANEL)
-				height += dat->Panel->getHeight();
-			if (!(m_pContainer->dwFlags & CNT_NOMENUBAR))
-				height += PluginConfig.m_ncm.iMenuHeight;
-			dat->uMinHeight = height;
 			return 0;
 		}
 
@@ -3956,8 +3948,8 @@ quote_from_last:
 			return(0);
 
 		case DM_CHECKINFOTIP:
-			dat->Panel->hideTip();
-			break;
+			dat->Panel->hideTip(reinterpret_cast<HWND>(lParam));
+			return(0);
 
 		case WM_NCDESTROY:
 			if (dat) {
