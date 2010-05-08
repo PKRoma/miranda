@@ -33,7 +33,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 //nice function to wrap this:
 __inline static HICON LoadSkinnedIcon(int id) {return (HICON)CallService(MS_SKIN_LOADICON,id,0);}
 __inline static HANDLE LoadSkinnedIconHandle(int id) {return (HANDLE)CallService(MS_SKIN_LOADICON,id,1);}
-__inline static HICON LoadSkinnedIconLarge(int id) {return (HICON)CallService(MS_SKIN_LOADICON,id,2);}
+__inline static HICON LoadSkinnedIconBig(int id) {return (HICON)CallService(MS_SKIN_LOADICON,id,2);}
 
 //event icons
 #define SKINICON_EVENT_MESSAGE      100
