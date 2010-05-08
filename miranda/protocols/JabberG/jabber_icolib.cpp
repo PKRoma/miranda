@@ -194,6 +194,7 @@ HANDLE CIconPool::GetClistHandle(const char *name)
 
 		HICON hIcon = (HICON)CallService(MS_SKIN2_GETICONBYHANDLE, 0, (LPARAM)item->m_hIcolibItem);
 		item->m_hClistItem = (HANDLE)CallService(MS_CLIST_EXTRA_ADD_ICON, (WPARAM)hIcon, 0);
+		g_ReleaseIcon(hIcon);
 		return item->m_hClistItem;
 	}
 
