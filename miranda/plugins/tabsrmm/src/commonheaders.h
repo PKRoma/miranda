@@ -57,6 +57,7 @@
 #include <commdlg.h>
 #include <shellapi.h>
 #include <uxtheme.h>
+#include <vsstyle.h>
 
 #define TSAPI __stdcall
 #define FASTCALL __fastcall
