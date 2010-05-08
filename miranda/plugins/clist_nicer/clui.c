@@ -2179,11 +2179,14 @@ buttons_done:
 					else if (pd->statusbarpos == nParts - 1)
 						x -= (g_CluiData.bCRight / 2);
 					DrawIconEx(dis->hDC, x, (dis->rcItem.top + dis->rcItem.bottom - 16) >> 1, hIcon, 16, 16, 0, NULL, DI_NORMAL);
+					CallService(MS_SKIN2_RELEASEICON, (WPARAM)hIcon, 0);
+
 					if (DBGetContactSettingByte(NULL, "CLUI", "sbar_showlocked", 1)) {
 						if (DBGetContactSettingByte(NULL, szProto, "LockMainStatus", 0)) {
 							hIcon = LoadSkinnedIcon(SKINICON_OTHER_STATUS_LOCKED);
 							if (hIcon != NULL) {
 								DrawIconEx(dis->hDC, x, (dis->rcItem.top + dis->rcItem.bottom - 16) >> 1, hIcon, 16, 16, 0, NULL, DI_NORMAL);
+								CallService(MS_SKIN2_RELEASEICON, (WPARAM)hIcon, 0);
 							}
 						}
 					}
