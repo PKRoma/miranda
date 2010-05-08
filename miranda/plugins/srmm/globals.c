@@ -134,9 +134,11 @@ void ReloadGlobals()
 
 static int dbaddedevent(WPARAM wParam, LPARAM lParam)
 {
-	if (wParam) {
-		HWND h = WindowList_Find(g_dat->hMessageWindowList, (HANDLE)wParam);
-		if(h) SendMessage(h, HM_DBEVENTADDED, wParam, lParam);
+	HANDLE hContact = (HANDLE)wParam;
+	if (hContact) 
+	{
+		HWND h = WindowList_Find(g_dat->hMessageWindowList, hContact);
+		if (h) SendMessage(h, HM_DBEVENTADDED, (WPARAM)hContact, lParam);
 	}
 	return 0;
 }

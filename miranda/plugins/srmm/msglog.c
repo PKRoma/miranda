@@ -200,9 +200,7 @@ int DbEventIsShown(DBEVENTINFO * dbei, struct MessageWindowData *dat)
 		case EVENTTYPE_JABBER_PRESENCE:
 		case EVENTTYPE_STATUSCHANGE:
 		case EVENTTYPE_FILE:
-			if (dbei->flags & DBEF_READ)
-				return 0;
-			return 1;
+			return (dbei->flags & DBEF_READ) == 0;
 	}
 	return DbEventIsForMsgWindow(dbei);
 }
@@ -225,7 +223,8 @@ static char *CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE hContact
 		mir_free(dbei.pBlob);
 		return NULL;
 	}
-	if (!(dbei.flags & DBEF_SENT) && ( dbei.eventType == EVENTTYPE_MESSAGE || DbEventIsForMsgWindow(&dbei) )) {
+	if (!(dbei.flags & DBEF_SENT) && (dbei.eventType == EVENTTYPE_MESSAGE || DbEventIsForMsgWindow(&dbei)))
+	{
 		CallService(MS_DB_EVENT_MARKREAD, (WPARAM) hContact, (LPARAM) hDbEvent);
 		CallService(MS_CLIST_REMOVEEVENT, (WPARAM) hContact, (LPARAM) hDbEvent);
 	}
@@ -424,16 +423,21 @@ static DWORD CALLBACK LogStreamInEvents(DWORD_PTR dwCookie, LPBYTE pbBuff, LONG 
 {
 	struct LogStreamData *dat = (struct LogStreamData *) dwCookie;
 
-	if (dat->buffer == NULL) {
+	if (dat->buffer == NULL) 
+	{
 		dat->bufferOffset = 0;
-		switch (dat->stage) {
+		switch (dat->stage) 
+		{
 			case STREAMSTAGE_HEADER:
 				dat->buffer = CreateRTFHeader(dat->dlgDat);
 				dat->stage = STREAMSTAGE_EVENTS;
 				break;
+
 			case STREAMSTAGE_EVENTS:
-				if (dat->eventsToInsert) {
-					do {
+				if (dat->eventsToInsert) 
+				{
+					do 
+					{
 						dat->buffer = CreateRTFFromDbEvent(dat->dlgDat, dat->hContact, dat->hDbEvent, dat);
 						if (dat->buffer)
 							dat->hDbEventLast = dat->hDbEvent;
@@ -441,7 +445,8 @@ static DWORD CALLBACK LogStreamInEvents(DWORD_PTR dwCookie, LPBYTE pbBuff, LONG 
 						if (--dat->eventsToInsert == 0)
 							break;
 					} while (dat->buffer == NULL && dat->hDbEvent);
-					if (dat->buffer) {
+					if (dat->buffer) 
+					{
 						dat->isEmpty = 0;
 						break;
 					}
@@ -461,7 +466,8 @@ static DWORD CALLBACK LogStreamInEvents(DWORD_PTR dwCookie, LPBYTE pbBuff, LONG 
 	*pcb = min(cb, dat->bufferLen - dat->bufferOffset);
 	CopyMemory(pbBuff, dat->buffer + dat->bufferOffset, *pcb);
 	dat->bufferOffset += *pcb;
-	if (dat->bufferOffset == dat->bufferLen) {
+	if (dat->bufferOffset == dat->bufferLen) 
+	{
 		mir_free(dat->buffer);
 		dat->buffer = NULL;
 	}

@@ -63,7 +63,7 @@ static int MessageEventAdded(WPARAM wParam, LPARAM lParam)
 	dbei.cbSize = sizeof(dbei);
 	CallService(MS_DB_EVENT_GET, lParam, (LPARAM) & dbei);
 
-	if (dbei.flags & DBEF_SENT || !( dbei.eventType == EVENTTYPE_MESSAGE || DbEventIsForMsgWindow(&dbei) ) || dbei.flags & DBEF_READ)
+	if (dbei.flags & (DBEF_SENT | DBEF_READ) || !( dbei.eventType == EVENTTYPE_MESSAGE || DbEventIsForMsgWindow(&dbei)))
 		return 0;
 
 	CallServiceSync(MS_CLIST_REMOVEEVENT, wParam, (LPARAM) 1);
