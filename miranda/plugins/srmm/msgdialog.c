@@ -212,10 +212,8 @@ static void SaveKeyboardMessage(struct MsgEditSubclassData *dat, UINT message, W
 
 static void SetEditorText(HWND hwnd, const TCHAR* txt)
 {
-	SendMessage(hwnd, WM_SETREDRAW, FALSE, 0);
 	SetWindowText(hwnd, txt);
-	SendMessage(hwnd, EM_SCROLLCARET, 0,0);
-	SendMessage(hwnd, WM_SETREDRAW, TRUE, 0);
+	SendMessage(hwnd, EM_SETSEL, -1, -1);
 }
 
 #define EM_REPLAYSAVEDKEYSTROKES  (WM_USER+0x100)
@@ -316,7 +314,8 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
 		break;
 
 	case WM_KEYUP:
-		if (GetWindowLongPtr(hwnd, GWL_STYLE) & ES_READONLY) {
+		if (GetWindowLongPtr(hwnd, GWL_STYLE) & ES_READONLY) 
+		{
 			int i;
 			//mustn't allow keyups for which there is no keydown
 			for (i = 0; i < dat->msgQueueCount; i++)
@@ -338,9 +337,11 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
 			SaveKeyboardMessage(dat, msg, wParam, lParam);
 			return 0;
 		}
+		break;
 
 	case WM_KEYDOWN:
-		if (GetWindowLongPtr(hwnd, GWL_STYLE) & ES_READONLY) {
+		if (GetWindowLongPtr(hwnd, GWL_STYLE) & ES_READONLY) 
+		{
 	#ifdef EDITMSGQUEUE_PASSTHRUCLIPBOARD
 			if (GetKeyState(VK_CONTROL) & 0x8000) {
 				if (wParam == 'X' || wParam == 'C' || wParam == 'V' || wParam == VK_INSERT)
@@ -374,45 +375,49 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
 		else
 			dat->lastEnterTime = 0; 		
 
-		if (wParam == VK_UP && (GetKeyState(VK_CONTROL) & 0x8000) && DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_CTRLSUPPORT, SRMSGDEFSET_CTRLSUPPORT) && !DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_AUTOCLOSE, SRMSGDEFSET_AUTOCLOSE)) {
-			if (pdat->cmdList) {
-				int len;
-				if (!pdat->cmdListCurrent) {
-					len = GetWindowTextLength(hwnd)+1;
-					if(pdat->lastMsg){
-						mir_free(pdat->lastMsg);
-						pdat->lastMsg = 0;
-					}
-					pdat->lastMsg = (TCHAR*)mir_alloc(sizeof(TCHAR)*len);
+		if (wParam == VK_UP && (GetKeyState(VK_CONTROL) & 0x8000) && 
+			DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_CTRLSUPPORT, SRMSGDEFSET_CTRLSUPPORT) && 
+			!DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_AUTOCLOSE, SRMSGDEFSET_AUTOCLOSE))
+		{
+			if (pdat->cmdList) 
+			{
+				if (!pdat->cmdListCurrent) 
+				{
+					int len = GetWindowTextLength(hwnd) + 1;
+					mir_free(pdat->lastMsg);
+					pdat->lastMsg = (TCHAR*)mir_alloc(sizeof(TCHAR) * len);
 					SendMessage(hwnd, WM_GETTEXT, (WPARAM) len, (LPARAM)pdat->lastMsg);
 					pdat->cmdListCurrent = tcmdlist_last(pdat->cmdList);
 					SetEditorText(hwnd, pdat->cmdListCurrent->szCmd);
 				}
-				else if (pdat->cmdListCurrent->prev) {
+				else if (pdat->cmdListCurrent->prev) 
+				{
 					pdat->cmdListCurrent = pdat->cmdListCurrent->prev;
 					SetEditorText(hwnd, pdat->cmdListCurrent->szCmd);
 				}
-				len = GetWindowTextLength(hwnd);
-				SendMessage(hwnd, EM_SETSEL, (WPARAM) len, (LPARAM) len);
 			}
+			EnableWindow(GetDlgItem(GetParent(hwnd), IDOK), GetWindowTextLength(hwnd) != 0);
+			UpdateReadChars(GetParent(hwnd), pdat->hwndStatus);
+			SaveKeyboardMessage(dat, msg, wParam, lParam);
+			return 0;
 		}
-		else if (wParam == VK_DOWN && (GetKeyState(VK_CONTROL) & 0x8000) && DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_CTRLSUPPORT, SRMSGDEFSET_CTRLSUPPORT) && !DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_AUTOCLOSE, SRMSGDEFSET_AUTOCLOSE)) {
-			if (pdat->cmdList && pdat->cmdListCurrent) {
-				if (pdat->cmdListCurrent->next) {
+		else if (wParam == VK_DOWN && (GetKeyState(VK_CONTROL) & 0x8000) && 
+			DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_CTRLSUPPORT, SRMSGDEFSET_CTRLSUPPORT) && 
+			!DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_AUTOCLOSE, SRMSGDEFSET_AUTOCLOSE))
+		{
+			if (pdat->cmdList && pdat->cmdListCurrent) 
+			{
+				if (pdat->cmdListCurrent->next)
+				{
 					pdat->cmdListCurrent = pdat->cmdListCurrent->next;
 					SetEditorText(hwnd, pdat->cmdListCurrent->szCmd);
 				}
-				else {
-					int len;
+				else 
+				{
 					pdat->cmdListCurrent = 0;
-					if(pdat->lastMsg)
-						SetEditorText(hwnd, pdat->lastMsg);
-					else
-						SendMessage(hwnd, WM_SETTEXT, (WPARAM) 0, (LPARAM)_T(""));
-
-					len = GetWindowTextLength(hwnd);
-					SendMessage(hwnd, EM_SETSEL, (WPARAM) len, (LPARAM) len);
-			}	}
+					SetEditorText(hwnd,  pdat->lastMsg ? pdat->lastMsg : _T(""));
+				}	
+			}
 
 			EnableWindow(GetDlgItem(GetParent(hwnd), IDOK), GetWindowTextLength(hwnd) != 0);
 			UpdateReadChars(GetParent(hwnd), pdat->hwndStatus);
@@ -1077,7 +1082,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 		break;
 
 	case DM_TYPING:
-		dat->nTypeSecs = (int) lParam > 0 ? (int) lParam : 0;
+		dat->nTypeSecs = (INT_PTR)lParam > 0 ? (int)lParam : 0;
 		break;
 
 	case DM_UPDATEWINICON:
@@ -1347,7 +1352,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			GetWindowRect((HWND) wParam, &rcNew);
 			if (abs(rcThis.left - rcNew.left) < 3 && abs(rcThis.top - rcNew.top) < 3) {
 				int offset = GetSystemMetrics(SM_CYCAPTION) + GetSystemMetrics(SM_CYFRAME);
-				SetWindowPos((HWND) wParam, 0, rcNew.left + offset, rcNew.top + offset, 0, 0, SWP_NOZORDER | SWP_NOSIZE);
+				SetWindowPos((HWND) wParam, 0, rcNew.left + offset, rcNew.top + offset, 0, 0, SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOSIZE);
 				*(int *) lParam = 1;
 			}
 		}

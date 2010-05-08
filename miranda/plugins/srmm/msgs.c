@@ -55,31 +55,12 @@ static int SRMMStatusToPf2(int status)
 	return 0;
 }
 
-static INT_PTR ReadMessageCommand(WPARAM wParam, LPARAM lParam)
-{
-	HWND hwnd = WindowList_Find(g_dat->hMessageWindowList, ((CLISTEVENT *) lParam)->hContact);
-	if (hwnd == NULL) {
-		struct NewMessageWindowLParam newData = { 0 };
-		newData.hContact = ((CLISTEVENT *) lParam)->hContact;
-		hwnd = CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_MSG), NULL, DlgProcMessage, (LPARAM) & newData);
-	}
-	else
-		ShowWindow(hwnd, SW_SHOWNORMAL);
-
-	SetFocus(hwnd);
-
-	return 0;
-}
-
 static int MessageEventAdded(WPARAM wParam, LPARAM lParam)
 {
-	CLISTEVENT cle;
-	DBEVENTINFO dbei;
+	DBEVENTINFO dbei = {0};
 	HWND hwnd;
 
-	ZeroMemory(&dbei, sizeof(dbei));
 	dbei.cbSize = sizeof(dbei);
-	dbei.cbBlob = 0;
 	CallService(MS_DB_EVENT_GET, lParam, (LPARAM) & dbei);
 
 	if (dbei.flags & DBEF_SENT || !( dbei.eventType == EVENTTYPE_MESSAGE || DbEventIsForMsgWindow(&dbei) ) || dbei.flags & DBEF_READ)
@@ -89,9 +70,10 @@ static int MessageEventAdded(WPARAM wParam, LPARAM lParam)
 	/* does a window for the contact exist? */
 	hwnd = WindowList_Find(g_dat->hMessageWindowList, (HANDLE) wParam);
 	if (hwnd) {
-		if (GetForegroundWindow()==hwnd)
+		if (GetForegroundWindow() == hwnd)
 			SkinPlaySound("RecvMsgActive");
-		else SkinPlaySound("RecvMsgInactive");
+		else 
+			SkinPlaySound("RecvMsgInactive");
 		return 0;
 	}
 	/* new message */
@@ -108,7 +90,7 @@ static int MessageEventAdded(WPARAM wParam, LPARAM lParam)
 	}
 	{
 		TCHAR toolTip[256], *contactName;
-		ZeroMemory(&cle, sizeof(cle));
+		CLISTEVENT cle = {0};
 		cle.cbSize = sizeof(cle);
 		cle.hContact = (HANDLE) wParam;
 		cle.hDbEvent = (HANDLE) lParam;
@@ -133,8 +115,10 @@ static INT_PTR SendMessageCmd(HANDLE hContact, char* msg, int isWchar)
 	if (!szProto || (!CallProtoService(szProto, PS_GETCAPS, PFLAGNUM_1, 0) & PF1_IMSEND))
 		return 1;
 
-	if (hwnd = WindowList_Find(g_dat->hMessageWindowList, hContact)) {
-		if (msg) {
+	if (hwnd = WindowList_Find(g_dat->hMessageWindowList, hContact)) 
+	{
+		if (msg) 
+		{
 			HWND hEdit;
 			hEdit = GetDlgItem(hwnd, IDC_MESSAGE);
 			SendMessage(hEdit, EM_SETSEL, -1, SendMessage(hEdit, WM_GETTEXTLENGTH, 0, 0));
@@ -145,14 +129,14 @@ static INT_PTR SendMessageCmd(HANDLE hContact, char* msg, int isWchar)
 		}
 		ShowWindow(hwnd, SW_SHOWNORMAL);
 	}
-	else {
+	else 
+	{
 		struct NewMessageWindowLParam newData = { 0 };
 		newData.hContact = hContact;
 		newData.szInitialText = msg;
 		newData.isWchar = isWchar;
-		CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_MSG), NULL, DlgProcMessage, (LPARAM)&newData);
+		hwnd = CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_MSG), NULL, DlgProcMessage, (LPARAM)&newData);
 	}
-	SetFocus(hwnd);
 	return 0;
 }
 
@@ -168,12 +152,12 @@ static INT_PTR SendMessageCommand(WPARAM wParam, LPARAM lParam)
 	return SendMessageCmd((HANDLE)wParam, (char*)lParam, FALSE);
 }
 
-static INT_PTR TypingMessageCommand(WPARAM wParam, LPARAM lParam)
+static INT_PTR ReadMessageCommand(WPARAM wParam, LPARAM lParam)
 {
 	CLISTEVENT *cle = (CLISTEVENT *) lParam;
 
 	if (cle)
-		SendMessageCommand((WPARAM) cle->hContact, 0);
+		SendMessageCmd(cle->hContact, NULL, 0);
 
 	return 0;
 }
@@ -203,19 +187,19 @@ static int TypingMessage(WPARAM wParam, LPARAM lParam)
 			tn.dwInfoFlags = NIIF_INFO | NIIF_INTERN_UNICODE;
 #else
 			tn.dwInfoFlags = NIIF_INFO;
-#endif			tn.uTimeout = 1000 * 4;
+#endif			
+			tn.uTimeout = 1000 * 4;
 			CallService(MS_CLIST_SYSTRAY_NOTIFY, 0, (LPARAM) & tn);
 		}
 		else {
-			CLISTEVENT cle;
+			CLISTEVENT cle = {0};
 
-			ZeroMemory(&cle, sizeof(cle));
 			cle.cbSize = sizeof(cle);
 			cle.hContact = (HANDLE) wParam;
 			cle.hDbEvent = (HANDLE) 1;
 			cle.flags = CLEF_ONLYAFEW | CLEF_TCHAR;
 			cle.hIcon = LoadSkinnedIcon( SKINICON_OTHER_TYPING );
-			cle.pszService = "SRMsg/TypingMessage";
+			cle.pszService = "SRMsg/ReadMessage";
 			cle.ptszTooltip = szTip;
 			CallServiceSync(MS_CLIST_REMOVEEVENT, wParam, (LPARAM) 1);
 			CallServiceSync(MS_CLIST_ADDEVENT, wParam, (LPARAM) & cle);
@@ -250,7 +234,7 @@ static void RestoreUnreadMessageAlerts(void)
 {
 	CLISTEVENT cle = { 0 };
 	DBEVENTINFO dbei = { 0 };
-	char toolTip[256];
+	TCHAR toolTip[256];
 	int windowAlreadyExists;
 	HANDLE hDbEvent, hContact;
 	int autoPopup;
@@ -259,6 +243,8 @@ static void RestoreUnreadMessageAlerts(void)
 	cle.cbSize = sizeof(cle);
 	cle.hIcon = LoadSkinnedIcon(SKINICON_EVENT_MESSAGE);
 	cle.pszService = "SRMsg/ReadMessage";
+	cle.flags = CLEF_TCHAR;
+	cle.ptszTooltip = toolTip;
 
 	hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
 	while (hContact) {
@@ -286,8 +272,7 @@ static void RestoreUnreadMessageAlerts(void)
 				else {
 					cle.hContact = hContact;
 					cle.hDbEvent = hDbEvent;
-					mir_snprintf(toolTip, SIZEOF(toolTip), Translate("Message from %s"), (char *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM) hContact, 0));
-					cle.pszTooltip = toolTip;
+					mir_sntprintf(toolTip, SIZEOF(toolTip), TranslateT("Message from %s"), (TCHAR *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM) hContact, GCDNF_TCHAR));
 					CallService(MS_CLIST_ADDEVENT, 0, (LPARAM) & cle);
 				}
 			}
@@ -423,18 +408,20 @@ int LoadSendRecvMessageModule(void)
 {
 	if (LoadLibraryA("riched20.dll") == NULL) {
 		if (IDYES !=
-			MessageBoxA(0,
-			Translate
+			MessageBox(0,
+			TranslateT
 			("Miranda could not load the built-in message module, riched20.dll is missing. If you are using Windows 95 or WINE please make sure you have riched20.dll installed. Press 'Yes' to continue loading Miranda."),
-			Translate("Information"), MB_YESNO | MB_ICONINFORMATION))
+			TranslateT("Information"), MB_YESNO | MB_ICONINFORMATION))
 			return 1;
 		return 0;
 	}
+
 	InitGlobals();
 	RichUtil_Load();
 	OleInitialize(NULL);
 	InitREOleCallback();
 	InitOptions();
+
 	hHooks[0] = HookEvent(ME_DB_EVENT_ADDED, MessageEventAdded);
 	hHooks[1] = HookEvent(ME_DB_CONTACT_SETTINGCHANGED, MessageSettingChanged);
 	hHooks[2] = HookEvent(ME_DB_CONTACT_DELETED, ContactDeleted);
@@ -452,13 +439,15 @@ int LoadSendRecvMessageModule(void)
 	hServices[3] = CreateServiceFunction(MS_MSG_GETWINDOWCLASS, GetWindowClass);
 	hServices[4] = CreateServiceFunction(MS_MSG_GETWINDOWDATA, GetWindowData);
 	hServices[5] = CreateServiceFunction("SRMsg/ReadMessage", ReadMessageCommand);
-	hServices[6] = CreateServiceFunction("SRMsg/TypingMessage", TypingMessageCommand);
-	hHookWinEvt=CreateHookableEvent(ME_MSG_WINDOWEVENT);
-	hHookWinPopup=CreateHookableEvent(ME_MSG_WINDOWPOPUP);
-	SkinAddNewSoundEx("RecvMsgActive", Translate("Messages"), Translate("Incoming (Focused Window)"));
-	SkinAddNewSoundEx("RecvMsgInactive", Translate("Messages"), Translate("Incoming (Unfocused Window)"));
-	SkinAddNewSoundEx("AlertMsg", Translate("Messages"), Translate("Incoming (New Session)"));
-	SkinAddNewSoundEx("SendMsg", Translate("Messages"), Translate("Outgoing"));
+
+	hHookWinEvt   = CreateHookableEvent(ME_MSG_WINDOWEVENT);
+	hHookWinPopup = CreateHookableEvent(ME_MSG_WINDOWPOPUP);
+	
+	SkinAddNewSoundEx("RecvMsgActive", "Messages", "Incoming (Focused Window)");
+	SkinAddNewSoundEx("RecvMsgInactive", "Messages", "Incoming (Unfocused Window)");
+	SkinAddNewSoundEx("AlertMsg", "Messages", "Incoming (New Session)");
+	SkinAddNewSoundEx("SendMsg", "Messages", "Outgoing");
+	
 	hCurSplitNS = LoadCursor(NULL, IDC_SIZENS);
 	hCurSplitWE = LoadCursor(NULL, IDC_SIZEWE);
 	hCurHyperlinkHand = LoadCursor(NULL, IDC_HAND);
