@@ -241,9 +241,11 @@ typedef struct {
 //return = 0 (for success)
 #define PS_ICQ_GETCUSTOMSTATUSEX "/GetXStatusEx"
 
+#define LR_BIGICON 0x40
+
 // Retrieves specified custom status icon
 //wParam = (int)N  // custom status id (1-32), 0 = my current custom status
-//lParam = flags   // use LR_SHARED for shared HICON
+//lParam = flags   // use LR_SHARED for shared HICON, LR_BIGICON for 32x32 icon
 //return = HICON   // custom status icon (use DestroyIcon to release resources if not LR_SHARED)
 #define PS_ICQ_GETCUSTOMSTATUSICON "/GetXStatusIcon"
 
