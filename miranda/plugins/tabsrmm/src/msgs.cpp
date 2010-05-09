@@ -1100,7 +1100,6 @@ static int TSAPI SetupIconLibConfig()
 		sid.pszSection = ICONBLOCKS[n].szSection;
 		while (ICONBLOCKS[n].idesc[i].szDesc) {
 			sid.pszName = ICONBLOCKS[n].idesc[i].szName;
-			sid.cx = sid.cy = 16;
 			sid.pszDescription = ICONBLOCKS[n].idesc[i].szDesc;
 			sid.iDefaultIndex = ICONBLOCKS[n].idesc[i].uId == -IDI_HISTORY ? 0 : ICONBLOCKS[n].idesc[i].uId;        // workaround problem /w icoLib and a resource id of 1 (actually, a Windows problem)
 			i++;
@@ -1111,36 +1110,26 @@ static int TSAPI SetupIconLibConfig()
 		}
 		n++;
 	}
-	strncpy(szFilename, "plugins\\tabsrmm.dll", MAX_PATH);
-	sid.pszDefaultFile = szFilename;
+
 	sid.pszSection = "TabSRMM/Default";
 
+	sid.pszName = "tabSRMM_clock_symbol";
+	sid.pszDescription = "Clock symbol (for the info panel clock)";
+	sid.iDefaultIndex = -IDI_CLOCK;
+	CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
+
+	strncpy(szFilename, "plugins\\tabsrmm.dll", MAX_PATH);
+
 	sid.pszName = "tabSRMM_overlay_disabled";
-	sid.cx = sid.cy = 16;
 	sid.pszDescription = "Feature disabled (used as overlay)";
 	sid.iDefaultIndex = -IDI_FEATURE_DISABLED;
 	CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
 
 	sid.pszName = "tabSRMM_overlay_enabled";
-	sid.cx = sid.cy = 16;
 	sid.pszDescription = "Feature enabled (used as overlay)";
 	sid.iDefaultIndex = -IDI_FEATURE_ENABLED;
 	CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
 
-#if defined(_WIN64)
-	strncpy(szFilename, "miranda64.exe", MAX_PATH);
-#else
-	strncpy(szFilename, "miranda32.exe", MAX_PATH);
-#endif
-
-	sid.pszDefaultFile = szFilename;
-	sid.pszSection = "TabSRMM/Default";
-
-	sid.pszName = "tabSRMM_clock_symbol";
-	sid.cx = sid.cy = 16;
-	sid.pszDescription = "Clock symbol (for the info panel clock)";
-	sid.iDefaultIndex = -IDI_CORE_LOAD;
-	CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
 
 	return 1;
 }

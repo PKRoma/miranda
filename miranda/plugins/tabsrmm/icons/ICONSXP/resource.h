@@ -2,7 +2,6 @@
 // Microsoft Visual C++ generated include file.
 // Used by ICONSXP.rc
 //
-#define IDI_HISTORY                     1
 
 // standard toolbar icons
 
@@ -17,6 +16,7 @@
 #define IDI_CONTACTPIC      9           /* avatar button */
 #define IDI_CLOSEMSGDLG     10          /* close tab (when message area is empty) */
 #define IDI_USERMENU        11          /* user menu pulldown */
+#define IDI_CLOCK           12          /* clock for infobar */
 
 // extended toolbar icons (formatting, etc..)
 
@@ -37,11 +37,11 @@
 
 // misc icons, status bar etc.
 
-#define IDI_SELFTYPING_ON   130         /* sending typing notify is on */
-#define IDI_SELFTYPING_OFF  131         /* sending typing notify is off */
+#define IDI_SELFTYPING_ON     130       /* sending typing notify is on */
+#define IDI_SELFTYPING_OFF    131       /* sending typing notify is off */
 #define IDI_SECUREIM_ENABLED  132       /* connection is secured via secureim */
 #define IDI_SECUREIM_DISABLED 133       /* connection is not secured */
-#define IDI_SOUNDSON        134         /* msg window sounds are enabled */
+#define IDI_SOUNDSON          134       /* msg window sounds are enabled */
 
 #define IDI_CONTAINER       136         /* static container icon */
 
