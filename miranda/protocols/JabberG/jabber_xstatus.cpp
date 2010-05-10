@@ -442,6 +442,7 @@ void CPepService::ForceRepublishOnLogin()
 
 ///////////////////////////////////////////////////////////////////////////////
 // CPepGuiService base class
+
 CPepGuiService::CPepGuiService(CJabberProto *proto, char *name, TCHAR *node):
 	CPepService(proto, name, node),
 	m_bGuiOpen(false),
@@ -536,68 +537,91 @@ struct
 	char* szTag;
 } static g_arrMoods[] =
 {
-	{ LPGENT("None"),			NULL					},
-	{ LPGENT("Afraid"),			"afraid"		},
-	{ LPGENT("Amazed"),			"amazed"		},
-	{ LPGENT("Angry"),			"angry"		},
-	{ LPGENT("Annoyed"),		"annoyed"		},
-	{ LPGENT("Anxious"),		"anxious"		},
-	{ LPGENT("Aroused"),		"aroused"		},
-	{ LPGENT("Ashamed"),		"ashamed"		},
-	{ LPGENT("Bored"),			"bored"		},
-	{ LPGENT("Brave"),			"brave"		},
-	{ LPGENT("Calm"),			"calm"		},
-	{ LPGENT("Cold"),			"cold"		},
-	{ LPGENT("Confused"),		"confused"	},
-	{ LPGENT("Contented"),		"contented"	},
-	{ LPGENT("Cranky"),			"cranky"		},
-	{ LPGENT("Curious"),		"curious"		},
-	{ LPGENT("Depressed"),		"depressed"	},
-	{ LPGENT("Disappointed"),	"disappointed"},
-	{ LPGENT("Disgusted"),		"disgusted"	},
-	{ LPGENT("Distracted"),		"distracted"	},
-	{ LPGENT("Embarrassed"),	"embarrassed"	},
-	{ LPGENT("Excited"),		"excited"		},
-	{ LPGENT("Flirtatious"),	"flirtatious"	},
-	{ LPGENT("Frustrated"),		"frustrated"	},
-	{ LPGENT("Grumpy"),			"grumpy"		},
-	{ LPGENT("Guilty"),			"guilty"		},
-	{ LPGENT("Happy"),			"happy"		},
-	{ LPGENT("Hot"),			"hot"			},
-	{ LPGENT("Humbled"),		"humbled"		},
-	{ LPGENT("Humiliated"),		"humiliated"	},
-	{ LPGENT("Hungry"),			"hungry"		},
-	{ LPGENT("Hurt"),			"hurt"		},
-	{ LPGENT("Impressed"),		"impressed"	},
-	{ LPGENT("In awe"),			"in_awe"		},
-	{ LPGENT("In love"),		"in_love"		},
-	{ LPGENT("Indignant"),		"indignant"	},
-	{ LPGENT("Interested"),		"interested"	},
-	{ LPGENT("Intoxicated"),	"intoxicated"	},
-	{ LPGENT("Invincible"),		"invincible"	},
-	{ LPGENT("Jealous"),		"jealous"		},
-	{ LPGENT("Lonely"),			"lonely"		},
-	{ LPGENT("Mean"),			"mean"		},
-	{ LPGENT("Moody"),			"moody"		},
-	{ LPGENT("Nervous"),		"nervous"		},
-	{ LPGENT("Neutral"),		"neutral"		},
-	{ LPGENT("Offended"),		"offended"	},
-	{ LPGENT("Playful"),		"playful"		},
-	{ LPGENT("Proud"),			"proud"		},
-	{ LPGENT("Relieved"),		"relieved"	},
-	{ LPGENT("Remorseful"),		"remorseful"	},
-	{ LPGENT("Restless"),		"restless"	},
-	{ LPGENT("Sad"),			"sad"			},
-	{ LPGENT("Sarcastic"),		"sarcastic"	},
-	{ LPGENT("Serious"),		"serious"		},
-	{ LPGENT("Shocked"),		"shocked"		},
-	{ LPGENT("Shy"),			"shy"			},
-	{ LPGENT("Sick"),			"sick"		},
-	{ LPGENT("Sleepy"),			"sleepy"		},
-	{ LPGENT("Stressed"),		"stressed"	},
-	{ LPGENT("Surprised"),		"surprised"	},
-	{ LPGENT("Thirsty"),		"thirsty"		},
-	{ LPGENT("Worried"),		"worried"		},
+	{ LPGENT("None"),         NULL            },
+	{ LPGENT("Afraid"),       "afraid"        },
+	{ LPGENT("Amazed"),       "amazed"        },
+	{ LPGENT("Amorous"),      "amorous"       },
+	{ LPGENT("Angry"),        "angry"         },
+	{ LPGENT("Annoyed"),      "annoyed"       },
+	{ LPGENT("Anxious"),      "anxious"       },
+	{ LPGENT("Aroused"),      "aroused"       },
+	{ LPGENT("Ashamed"),      "ashamed"       },
+	{ LPGENT("Bored"),        "bored"         },
+	{ LPGENT("Brave"),        "brave"         },
+	{ LPGENT("Calm"),         "calm"          },
+	{ LPGENT("Cautious"),     "cautious"      },
+	{ LPGENT("Cold"),         "cold"          },
+	{ LPGENT("Confident"),    "confident"     },
+	{ LPGENT("Confused"),     "confused"      },
+	{ LPGENT("Contemplative"),"contemplative" },
+	{ LPGENT("Contented"),    "contented"     },
+	{ LPGENT("Cranky"),       "cranky"        },
+	{ LPGENT("Crazy"),        "crazy"         },
+	{ LPGENT("Creative"),     "creative"      },
+	{ LPGENT("Curious"),      "curious"       },
+	{ LPGENT("Dejected"),     "dejected"      },
+	{ LPGENT("Depressed"),    "depressed"     },
+	{ LPGENT("Disappointed"), "disappointed"  },
+	{ LPGENT("Disgusted"),    "disgusted"     },
+	{ LPGENT("Dismayed"),     "dismayed"      },
+	{ LPGENT("Distracted"),   "distracted"    },
+	{ LPGENT("Embarrassed"),  "embarrassed"   },
+	{ LPGENT("Envious"),      "envious"       },
+	{ LPGENT("Excited"),      "excited"       },
+	{ LPGENT("Flirtatious"),  "flirtatious"   },
+	{ LPGENT("Frustrated"),   "frustrated"    },
+	{ LPGENT("Grateful"),     "grateful"      }, 
+	{ LPGENT("Grieving"),     "grieving"      },
+	{ LPGENT("Grumpy"),       "grumpy"        },
+	{ LPGENT("Guilty"),       "guilty"        },
+	{ LPGENT("Happy"),        "happy"         },
+	{ LPGENT("Hopeful"),      "hopeful"       },
+	{ LPGENT("Hot"),          "hot"           },
+	{ LPGENT("Humbled"),      "humbled"       },
+	{ LPGENT("Humiliated"),   "humiliated"    },
+	{ LPGENT("Hungry"),       "hungry"        },
+	{ LPGENT("Hurt"),         "hurt"          },
+	{ LPGENT("Impressed"),    "impressed"     },
+	{ LPGENT("In awe"),       "in_awe"        },
+	{ LPGENT("In love"),      "in_love"       },
+	{ LPGENT("Indignant"),    "indignant"     },
+	{ LPGENT("Interested"),   "interested"    },
+	{ LPGENT("Intoxicated"),  "intoxicated"   },
+	{ LPGENT("Invincible"),   "invincible"    },
+	{ LPGENT("Jealous"),      "jealous"       },
+	{ LPGENT("Lonely"),       "lonely"        },
+	{ LPGENT("Lost"),         "lost"          },
+	{ LPGENT("Lucky"),        "lucky"         },
+	{ LPGENT("Mean"),         "mean"          },
+	{ LPGENT("Moody"),        "moody"         },
+	{ LPGENT("Nervous"),      "nervous"       },
+	{ LPGENT("Neutral"),      "neutral"       },
+	{ LPGENT("Offended"),     "offended"      },
+	{ LPGENT("Outraged"),     "outraged"      },
+	{ LPGENT("Playful"),      "playful"       },
+	{ LPGENT("Proud"),        "proud"         },
+	{ LPGENT("Relaxed"),      "relaxed"       },
+	{ LPGENT("Relieved"),     "relieved"      },
+	{ LPGENT("Remorseful"),   "remorseful"    },
+	{ LPGENT("Restless"),     "restless"      },
+	{ LPGENT("Sad"),          "sad"           },
+	{ LPGENT("Sarcastic"),    "sarcastic"     },
+	{ LPGENT("Satisfied"),    "satisfied"     },
+	{ LPGENT("Serious"),      "serious"       },
+	{ LPGENT("Shocked"),      "shocked"       },
+	{ LPGENT("Shy"),          "shy"           },
+	{ LPGENT("Sick"),         "sick"          },
+	{ LPGENT("Sleepy"),       "sleepy"        },
+	{ LPGENT("Spontaneous"),  "spontaneous"   },
+	{ LPGENT("Stressed"),     "stressed"      },
+	{ LPGENT("Strong"),       "strong"        },
+	{ LPGENT("Surprised"),    "surprised"     },
+	{ LPGENT("Thankful"),     "thankful"      },
+	{ LPGENT("Thirsty"),      "thirsty"       },
+	{ LPGENT("Tired"),        "tired"         },
+	{ LPGENT("Undefined"),    "undefined"     },
+	{ LPGENT("Weak"),         "weak"          },
+	{ LPGENT("Worried"),      "worried"       },
 };
 
 CPepMood::CPepMood(CJabberProto *proto):
@@ -794,7 +818,7 @@ void CPepMood::ShowSetDialog()
 
 ///////////////////////////////////////////////////////////////////////////////
 // CPepActivity
-#define ACTIVITY_ICON(section, item)	-(300 + (section) * 20)
+#define ACTIVITY_ICON(section, item)	-(300 + (section) * 20 + (item))
 
 struct
 {
@@ -825,13 +849,14 @@ struct
 	{ NULL, "having_lunch",       _T("having lunch"),       ACTIVITY_ICON( 2,  4) },
 	{ "exercising", NULL,         _T("Exercising"),         ACTIVITY_ICON( 3,  0) },
 	{ NULL, "cycling",            _T("cycling"),            ACTIVITY_ICON( 3,  1) },
-	{ NULL, "hiking",             _T("hiking"),             ACTIVITY_ICON( 3,  2) },
-	{ NULL, "jogging",            _T("jogging"),            ACTIVITY_ICON( 3,  3) },
-	{ NULL, "playing_sports",     _T("playing sports"),     ACTIVITY_ICON( 3,  4) },
-	{ NULL, "running",            _T("running"),            ACTIVITY_ICON( 3,  5) },
-	{ NULL, "skiing",             _T("skiing"),             ACTIVITY_ICON( 3,  6) },
-	{ NULL, "swimming",           _T("swimming"),           ACTIVITY_ICON( 3,  7) },
-	{ NULL, "working_out",        _T("working out"),        ACTIVITY_ICON( 3,  8) },
+	{ NULL, "dancing",            _T("dancing"),            ACTIVITY_ICON( 3,  2) },
+	{ NULL, "hiking",             _T("hiking"),             ACTIVITY_ICON( 3,  3) },
+	{ NULL, "jogging",            _T("jogging"),            ACTIVITY_ICON( 3,  4) },
+	{ NULL, "playing_sports",     _T("playing sports"),     ACTIVITY_ICON( 3,  5) },
+	{ NULL, "running",            _T("running"),            ACTIVITY_ICON( 3,  6) },
+	{ NULL, "skiing",             _T("skiing"),             ACTIVITY_ICON( 3,  7) },
+	{ NULL, "swimming",           _T("swimming"),           ACTIVITY_ICON( 3,  8) },
+	{ NULL, "working_out",        _T("working out"),        ACTIVITY_ICON( 3,  9) },
 	{ "grooming", NULL,           _T("Grooming"),           ACTIVITY_ICON( 4,  0) },
 	{ NULL, "at_the_spa",         _T("at the spa"),         ACTIVITY_ICON( 4,  1) },
 	{ NULL, "brushing_teeth",     _T("brushing teeth"),     ACTIVITY_ICON( 4,  2) },
@@ -843,20 +868,25 @@ struct
 	{ "inactive", NULL,           _T("Inactive"),           ACTIVITY_ICON( 6,  0) },
 	{ NULL, "day_off",            _T("day off"),            ACTIVITY_ICON( 6,  1) },
 	{ NULL, "hanging_out",        _T("hanging out"),        ACTIVITY_ICON( 6,  2) },
-	{ NULL, "on_vacation",        _T("on vacation"),        ACTIVITY_ICON( 6,  3) },
-	{ NULL, "scheduled_holiday",  _T("scheduled holiday"),  ACTIVITY_ICON( 6,  4) },
-	{ NULL, "sleeping",           _T("sleeping"),           ACTIVITY_ICON( 6,  5) },
+	{ NULL, "hiding",             _T("hiding"),             ACTIVITY_ICON( 6,  3) },
+	{ NULL, "on_vacation",        _T("on vacation"),        ACTIVITY_ICON( 6,  4) },
+	{ NULL, "praying",            _T("praying"),            ACTIVITY_ICON( 6,  5) },
+	{ NULL, "scheduled_holiday",  _T("scheduled holiday"),  ACTIVITY_ICON( 6,  6) },
+	{ NULL, "sleeping",           _T("sleeping"),           ACTIVITY_ICON( 6,  7) },
+	{ NULL, "thinking",           _T("thinking"),           ACTIVITY_ICON( 6,  8) },
 	{ "relaxing", NULL,           _T("Relaxing"),           ACTIVITY_ICON( 7,  0) },
-	{ NULL, "gaming",             _T("gaming"),             ACTIVITY_ICON( 7,  1) },
-	{ NULL, "going_out",          _T("going out"),          ACTIVITY_ICON( 7,  2) },
-	{ NULL, "partying",           _T("partying"),           ACTIVITY_ICON( 7,  3) },
-	{ NULL, "reading",            _T("reading"),            ACTIVITY_ICON( 7,  4) },
-	{ NULL, "rehearsing",         _T("rehearsing"),         ACTIVITY_ICON( 7,  5) },
-	{ NULL, "shopping",           _T("shopping"),           ACTIVITY_ICON( 7,  6) },
-	{ NULL, "socializing",        _T("socializing"),        ACTIVITY_ICON( 7,  7) },
-	{ NULL, "sunbathing",         _T("sunbathing"),         ACTIVITY_ICON( 7,  8) },
-	{ NULL, "watching_tv",        _T("watching TV"),        ACTIVITY_ICON( 7,  9) },
-	{ NULL, "watching_a_movie",   _T("watching a movie"),   ACTIVITY_ICON( 7, 10) },
+	{ NULL, "fishing",            _T("fishing"),            ACTIVITY_ICON( 7,  1) },
+	{ NULL, "gaming",             _T("gaming"),             ACTIVITY_ICON( 7,  2) },
+	{ NULL, "going_out",          _T("going out"),          ACTIVITY_ICON( 7,  3) },
+	{ NULL, "partying",           _T("partying"),           ACTIVITY_ICON( 7,  4) },
+	{ NULL, "reading",            _T("reading"),            ACTIVITY_ICON( 7,  5) },
+	{ NULL, "rehearsing",         _T("rehearsing"),         ACTIVITY_ICON( 7,  6) },
+	{ NULL, "shopping",           _T("shopping"),           ACTIVITY_ICON( 7,  7) },
+	{ NULL, "smoking",            _T("smoking"),            ACTIVITY_ICON( 7,  8) },
+	{ NULL, "socializing",        _T("socializing"),        ACTIVITY_ICON( 7,  9) },
+	{ NULL, "sunbathing",         _T("sunbathing"),         ACTIVITY_ICON( 7,  10) },
+	{ NULL, "watching_tv",        _T("watching TV"),        ACTIVITY_ICON( 7,  11) },
+	{ NULL, "watching_a_movie",   _T("watching a movie"),   ACTIVITY_ICON( 7,  12) },
 	{ "talking", NULL,            _T("Talking"),            ACTIVITY_ICON( 8,  0) },
 	{ NULL, "in_real_life",       _T("in real life"),       ACTIVITY_ICON( 8,  1) },
 	{ NULL, "on_the_phone",       _T("on the phone"),       ACTIVITY_ICON( 8,  2) },
@@ -922,6 +952,13 @@ static int ActivityCheck( LPCTSTR szFirstNode, LPCTSTR szSecondNode )
 
 	return nFirst;
 }
+
+char *returnActivity (int id){
+	if (g_arrActivities[id].szFirst)
+			return g_arrActivities[id].szFirst;
+	if (g_arrActivities[id].szSecond)
+			return g_arrActivities[id].szSecond;
+	return NULL;}
 
 char *ActivityGetFirst(int id)
 {
@@ -1022,9 +1059,12 @@ void CPepActivity::InitGui()
 	TCHAR szSection[100];
 
 	mir_sntprintf(szSection, SIZEOF(szSection), _T("Status Icons/%s/Activities"), m_proto->m_tszUserName);
-	for (int i = 0; i < SIZEOF(g_arrActivities); i++)
+	for (int i = 0; i < SIZEOF(g_arrActivities); i++){
 		if (g_arrActivities[i].szFirst)
 			m_icons.RegisterIcon(g_arrActivities[i].szFirst, szFile, g_arrActivities[i].iconid, szSection, TranslateTS(g_arrActivities[i].szTitle));
+		if (g_arrActivities[i].szSecond)
+			m_icons.RegisterIcon(g_arrActivities[i].szSecond, szFile, g_arrActivities[i].iconid, szSection, TranslateTS(g_arrActivities[i].szTitle));}
+			
 }
 
 void CPepActivity::ProcessItems(const TCHAR *from, HXML itemsNode)
@@ -1101,13 +1141,13 @@ void CPepActivity::SetExtraIcon(HANDLE hContact, char *szActivity)
 	if (hExtraActivity != NULL)
 	{
 		ExtraIcon_SetIcon(hExtraActivity, hContact, 
-						  szActivity == NULL ? NULL : m_icons.GetIcolibName(ActivityGetFirst(szActivity)));
+						  szActivity == NULL ? NULL : m_icons.GetIcolibName(szActivity));
 	}
 	else
 	{
 		IconExtraColumn iec;
 		iec.cbSize = sizeof(iec);
-		iec.hImage = m_icons.GetClistHandle(ActivityGetFirst(szActivity));
+		iec.hImage = m_icons.GetClistHandle(szActivity);
 		iec.ColumnType = EXTRA_ICON_ADV2;
 		CallService(MS_CLIST_EXTRA_SET_ICON, (WPARAM)hContact, (LPARAM)&iec);
 	}
@@ -1132,13 +1172,13 @@ void CPepActivity::SetActivity(HANDLE hContact, LPCTSTR szFirst, LPCTSTR szSecon
 		m_mode = activity;
 		replaceStr(m_text, szText);
 
-		HANDLE hIcon = (activity >= 0) ? m_icons.GetIcolibHandle(ActivityGetFirst(activity)) : LoadSkinnedIconHandle(SKINICON_OTHER_SMALLDOT);
+		HANDLE hIcon = (activity >= 0) ? m_icons.GetIcolibHandle(returnActivity(activity)) : LoadSkinnedIconHandle(SKINICON_OTHER_SMALLDOT);
 		TCHAR title[128];
 
 		if (activity >= 0)
 		{
 			mir_sntprintf(title, SIZEOF(title), TranslateT("Activity: %s"), activityTitle);
-			m_proto->m_pInfoFrame->UpdateInfoItem("$/PEP/activity", m_icons.GetIcolibHandle(ActivityGetFirst(activity)), activityTitle);
+			m_proto->m_pInfoFrame->UpdateInfoItem("$/PEP/activity", m_icons.GetIcolibHandle(returnActivity(activity)), activityTitle);
 		} else
 		{
 			lstrcpy(title, LPGENT("Set activity..."));
@@ -1148,13 +1188,13 @@ void CPepActivity::SetActivity(HANDLE hContact, LPCTSTR szFirst, LPCTSTR szSecon
 		UpdateMenuItem(hIcon, title);
 	} else
 	{
-		SetExtraIcon(hContact, activity < 0 ? NULL : ActivityGetFirst(activity));
+		SetExtraIcon(hContact, activity < 0 ? NULL : returnActivity(activity));
 	}
 
 
 	if (activity >= 0) {
 		TCHAR* p = mir_a2t( ActivityGetId(activity));
-		m_proto->WriteAdvStatus(hContact, ADVSTATUS_ACTIVITY, p, m_icons.GetIcolibName(ActivityGetFirst(activity)), activityTitle, szText);
+		m_proto->WriteAdvStatus(hContact, ADVSTATUS_ACTIVITY, p, m_icons.GetIcolibName(returnActivity(activity)), activityTitle, szText);
 		mir_free( p );
 	}
 	else
@@ -1165,8 +1205,8 @@ void CPepActivity::ShowSetDialog()
 {
 	CJabberDlgPepSimple dlg(m_proto, TranslateT("Set Activity"));
 	for (int i = 0; i < SIZEOF(g_arrActivities); ++i)
-		if (g_arrActivities[i].szFirst || g_arrActivities[i].szSecond)
-			dlg.AddStatusMode(i, ActivityGetId(i), m_icons.GetIcon(ActivityGetFirst(i)), TranslateTS(g_arrActivities[i].szTitle), g_arrActivities[i].szSecond ? true : false);
+		if (g_arrActivities[i].szFirst || g_arrActivities[i].szSecond)			
+			dlg.AddStatusMode(i, ActivityGetId(i), m_icons.GetIcon(returnActivity(i)), TranslateTS(g_arrActivities[i].szTitle), false);
 	dlg.SetActiveStatus(m_mode, m_text);
 	dlg.DoModal();
 
@@ -1178,8 +1218,8 @@ void CPepActivity::ShowSetDialog()
 		replaceStr(m_text, dlg.GetStatusText());
 		Publish();
 
-		UpdateMenuItem(m_icons.GetIcolibHandle(ActivityGetFirst(m_mode)), g_arrActivities[m_mode].szTitle);
-		m_proto->m_pInfoFrame->UpdateInfoItem("$/PEP/activity", m_icons.GetIcolibHandle(ActivityGetFirst(m_mode)), TranslateTS(g_arrActivities[m_mode].szTitle));
+		UpdateMenuItem(m_icons.GetIcolibHandle(returnActivity(m_mode)), g_arrActivities[m_mode].szTitle);
+		m_proto->m_pInfoFrame->UpdateInfoItem("$/PEP/activity", m_icons.GetIcolibHandle(returnActivity(m_mode)), TranslateTS(g_arrActivities[m_mode].szTitle));
 	} else
 	{
 		Retract();
