@@ -889,7 +889,7 @@ void CInfoPanel::showTip(UINT ctrlId, const LPARAM lParam)
 						  m_dat->cache->getStatusMsg() ? m_dat->cache->getStatusMsg() : CTranslator::get(CTranslator::GEN_NO_STATUS));
 			str->append(temp);
 
-			if(xStatus = m_dat->cache->getXStatusId()) {
+			if((xStatus = m_dat->cache->getXStatusId())) {
 				TCHAR	*tszXStatusName = 0;
 				if(0 == M->GetTString(m_dat->cache->getContact(), m_dat->cache->getProto(), "XStatusName", &dbv))
 					tszXStatusName = dbv.ptszVal;

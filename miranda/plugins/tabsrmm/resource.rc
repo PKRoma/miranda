@@ -195,45 +195,44 @@ CAPTION "   "
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     CONTROL         "",IDC_HEADERBAR,"MHeaderbarCtrl",WS_TABSTOP,0,0,354,24
-    LTEXT           "",IDC_STATIC,0,24,354,178
+    LTEXT           "",IDC_STATIC,0,24,354,177
     CONTROL         "",IDC_SECTIONTREE,"SysTreeView32",TVS_DISABLEDRAGDROP | TVS_SHOWSELALWAYS | TVS_NOTOOLTIPS | TVS_TRACKSELECT | TVS_FULLROWSELECT | TVS_NONEVENHEIGHT | WS_BORDER | WS_HSCROLL | WS_TABSTOP,1,30,87,167
-    CONTROL         "Only show tab bar when it's needed",IDC_O_NOTABS,"Button",BS_AUTOCHECKBOX | NOT WS_VISIBLE | WS_TABSTOP,135,65,156,10
-    CONTROL         "Container stays on top",IDC_O_STICKY,"Button",BS_AUTOCHECKBOX | NOT WS_VISIBLE | WS_TABSTOP,135,77,156,10
-    CONTROL         "Vertical maximize",IDC_VERTICALMAX,"Button",BS_AUTOCHECKBOX | NOT WS_VISIBLE | WS_TABSTOP,135,88,156,10
-    CONTROL         "Automatically size input area (*)",IDC_AUTOSPLITTER,"Button",BS_AUTOCHECKBOX | NOT WS_VISIBLE | WS_TABSTOP,135,99,156,10
-    CONTROL         "Use default setting",IDC_O_FLASHDEFAULT,"Button",BS_AUTORADIOBUTTON | WS_GROUP,135,64,101,11
-    CONTROL         "Flash until focused",IDC_O_FLASHALWAYS,"Button",BS_AUTORADIOBUTTON,135,75,98,12
-    CONTROL         "Disable flashing",IDC_O_FLASHNEVER,"Button",BS_AUTORADIOBUTTON,135,88,100,11
-    CONTROL         "Enable popups if minimized",IDC_O_DONTREPORT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,135,65,156,10
+    CONTROL         "Only show tab bar when it's needed",IDC_O_NOTABS,"Button",BS_AUTOCHECKBOX | NOT WS_VISIBLE | WS_TABSTOP,105,65,233,10
+    CONTROL         "Container stays on top",IDC_O_STICKY,"Button",BS_AUTOCHECKBOX | NOT WS_VISIBLE | WS_TABSTOP,105,77,233,10
+    CONTROL         "Vertical maximize",IDC_VERTICALMAX,"Button",BS_AUTOCHECKBOX | NOT WS_VISIBLE | WS_TABSTOP,105,88,233,10
+    CONTROL         "Automatically size input area (*)",IDC_AUTOSPLITTER,
+                    "Button",BS_AUTOCHECKBOX | NOT WS_VISIBLE | WS_TABSTOP,105,99,233,10
+    CONTROL         "Use default setting",IDC_O_FLASHDEFAULT,"Button",BS_AUTORADIOBUTTON | WS_GROUP,105,64,233,11
+    CONTROL         "Flash until focused",IDC_O_FLASHALWAYS,"Button",BS_AUTORADIOBUTTON,105,75,233,12
+    CONTROL         "Disable flashing",IDC_O_FLASHNEVER,"Button",BS_AUTORADIOBUTTON,105,88,233,11
+    CONTROL         "Enable popups if minimized",IDC_O_DONTREPORT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,105,65,233,10
     CONTROL         "Enable popups if unfocused",IDC_DONTREPORTUNFOCUSED2,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,135,77,156,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,105,77,233,10
     CONTROL         "Show popups for inactive tabs in active containers",IDC_ALWAYSPOPUPSINACTIVE,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,135,89,184,10
-    CONTROL         "Hide the status bar",IDC_CNTNOSTATUSBAR,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,135,77,156,10
-    CONTROL         "Hide the menu bar",IDC_HIDEMENUBAR,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,135,89,156,10
-    CONTROL         "User ID in status bar",IDC_UIDSTATUSBAR,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,135,101,156,10
-    CONTROL         "Hide the tool bar",IDC_HIDETOOLBAR,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,135,113,156,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,105,89,233,10
+    CONTROL         "Hide the status bar",IDC_CNTNOSTATUSBAR,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,105,77,233,10
+    CONTROL         "Hide the menu bar",IDC_HIDEMENUBAR,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,105,89,233,10
+    CONTROL         "User ID in status bar",IDC_UIDSTATUSBAR,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,105,101,233,10
+    CONTROL         "Hide the tool bar",IDC_HIDETOOLBAR,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,105,113,233,10
     CONTROL         "Place the tool bar at the bottom (*)",IDC_BOTTOMTOOLBAR,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,135,125,156,10
-    CONTROL         "Show the info panel",IDC_INFOPANEL,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,135,137,156,10
-    CONTROL         "Hide title bar",IDC_O_HIDETITLE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,135,66,111,10
-    LTEXT           "Title bar format",IDC_O_TITLEBARFORMAT,135,91,160,11
-    EDITTEXT        IDC_TITLEFORMAT,135,103,123,13,ES_AUTOHSCROLL
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,105,125,233,10
+    CONTROL         "Show the info panel",IDC_INFOPANEL,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,105,137,233,10
+    CONTROL         "Hide title bar",IDC_O_HIDETITLE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,105,66,233,10
+    LTEXT           "Title bar format",IDC_O_TITLEBARFORMAT,105,91,233,11
+    EDITTEXT        IDC_TITLEFORMAT,105,103,233,13,ES_AUTOHSCROLL
     CONTROL         "Available formats",IDC_O_HELP_TITLEFORMAT,"Hyperlink",WS_TABSTOP,136,120,200,12
     EDITTEXT        IDC_THEME,135,64,123,13,ES_AUTOHSCROLL
     PUSHBUTTON      "...",IDC_SELECTTHEME,263,64,27,13
     LTEXT           "Use this to specify a private message log theme for this container. This will have no effect when using IEView or another message log viewer and should NOT be confused with skins.",IDC_TSLABEL_EXPLAINTHEME,110,85,220,40
     CONTROL         "Use global container size and position",IDC_USEGLOBALSIZE,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,135,129,145,9
-    PUSHBUTTON      "Save current as global",IDC_SAVESIZEASGLOBAL,134,140,109,14
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,105,129,233,9
+    PUSHBUTTON      "Save current as global",IDC_SAVESIZEASGLOBAL,105,140,160,14
     CONTROL         "Enable transparency",IDC_TRANSPARENCY,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,145,75,143,11
     LTEXT           "active",IDC_TSLABEL_ACTIVE,146,94,26,11
     CONTROL         "",IDC_TRANSPARENCY_ACTIVE,"msctls_trackbar32",TBS_BOTH | WS_TABSTOP,174,87,95,20
-    LTEXT           "Statisch",IDC_TLABEL_ACTIVE,269,94,19,9
-    LTEXT           "inactive",IDC_TSLABEL_INACTIVE,140,112,35,9
-    CONTROL         "",IDC_TRANSPARENCY_INACTIVE,"msctls_trackbar32",TBS_BOTH | WS_TABSTOP,174,105,95,19
-    LTEXT           "Statisch",IDC_TLABEL_INACTIVE,269,112,19,9
-    CONTROL         "Container settings are private",IDC_CNTPRIVATE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,96,170,158,10
+    LTEXT           "inactive",IDC_TSLABEL_INACTIVE,140,127,35,9
+    CONTROL         "",IDC_TRANSPARENCY_INACTIVE,"msctls_trackbar32",TBS_BOTH | WS_TABSTOP,174,120,95,20
+    CONTROL         "Container settings are private",IDC_CNTPRIVATE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,96,170,233,10
     LTEXT           "Check if you don't want this container to use the global container options. Window position can always be private.",IDC_O_CNTPRIVATE,107,180,238,18
     DEFPUSHBUTTON   "OK",IDOK,194,205,50,14
     PUSHBUTTON      "Cancel",IDCANCEL,249,205,50,14
@@ -251,19 +250,19 @@ BEGIN
     CONTROL         "Use button tabs (*)",IDC_BUTTONTABS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,120,149,130,12
     CONTROL         "Styled tabs (*)",IDC_STYLEDTABS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,260,149,75,12
     LTEXT           "You have chosen to disable all event notifications for open message windows.",IDC_O_EXPLAINGLOBALNOTIFY,103,127,240,30
-    LTEXT           "Show contact avatars",IDC_O_STATIC_AVATAR,121,63,83,12
-    COMBOBOX        IDC_AVATARMODE,120,72,196,14,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Show my own avatars",IDC_O_STATIC_OWNAVATAR,121,88,212,12
-    COMBOBOX        IDC_OWNAVATARMODE,120,98,196,14,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    CONTROL         "Enable sound effects",IDC_O_ENABLESOUNDS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,135,65,156,10
+    LTEXT           "Show contact avatars",IDC_O_STATIC_AVATAR,105,63,233,12
+    COMBOBOX        IDC_AVATARMODE,105,72,220,14,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Show my own avatars",IDC_O_STATIC_OWNAVATAR,105,88,233,12
+    COMBOBOX        IDC_OWNAVATARMODE,105,98,220,14,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "Enable sound effects",IDC_O_ENABLESOUNDS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,105,65,233,10
     CONTROL         "Play sounds when minimized",IDC_O_SOUNDSMINIMIZED,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,135,77,156,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,105,77,233,10
     CONTROL         "Play sounds when not focused",IDC_O_SOUNDSUNFOCUSED,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,135,89,156,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,105,89,233,10
     CONTROL         "Play sounds for inactive tabs in active containers",IDC_O_SOUNDSINACTIVE,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,135,101,184,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,105,101,233,10
     CONTROL         "Play sounds for the active tab / window",IDC_O_SOUNDSFOCUSED,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,135,113,184,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,105,113,233,10
     LTEXT           "Options marked with an asterisk (*) may not take effect in open message windows or tabs.",IDC_TSLABEL_REOPENWARN,6,203,171,18
 END
 

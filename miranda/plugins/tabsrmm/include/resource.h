@@ -302,8 +302,6 @@
 #define IDC_O_TITLESUFFIX               1240
 #define IDC_TRANSPARENCY_ACTIVE         1241
 #define IDC_TRANSPARENCY_INACTIVE       1242
-#define IDC_TLABEL_ACTIVE               1243
-#define IDC_TLABEL_INACTIVE             1244
 #define IDC_INDENTSPIN                  1250
 #define IDC_TABBORDER                   1251
 #define IDC_SPIN2                       1252
