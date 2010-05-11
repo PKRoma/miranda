@@ -1,26 +1,26 @@
 # Microsoft Developer Studio Project File - Name="tabSRMM" - Package Owner=<4>
 # Microsoft Developer Studio Generated Build File, Format Version 6.00
-# ** DO NOT EDIT **
+# ** NICHT BEARBEITEN **
 
 # TARGTYPE "Win32 (x86) Dynamic-Link Library" 0x0102
 
 CFG=tabSRMM - Win32 Debug
-!MESSAGE This is not a valid makefile. To build this project using NMAKE,
-!MESSAGE use the Export Makefile command and run
+!MESSAGE Dies ist kein gültiges Makefile. Zum Erstellen dieses Projekts mit NMAKE
+!MESSAGE verwenden Sie den Befehl "Makefile exportieren" und führen Sie den Befehl
 !MESSAGE 
 !MESSAGE NMAKE /f "tabsrmm.mak".
 !MESSAGE 
-!MESSAGE You can specify a configuration when running NMAKE
-!MESSAGE by defining the macro CFG on the command line. For example:
+!MESSAGE Sie können beim Ausführen von NMAKE eine Konfiguration angeben
+!MESSAGE durch Definieren des Makros CFG in der Befehlszeile. Zum Beispiel:
 !MESSAGE 
 !MESSAGE NMAKE /f "tabsrmm.mak" CFG="tabSRMM - Win32 Debug"
 !MESSAGE 
-!MESSAGE Possible choices for configuration are:
+!MESSAGE Für die Konfiguration stehen zur Auswahl:
 !MESSAGE 
-!MESSAGE "tabSRMM - Win32 Debug" (based on "Win32 (x86) Dynamic-Link Library")
-!MESSAGE "tabSRMM - Win32 Release Unicode" (based on "Win32 (x86) Dynamic-Link Library")
-!MESSAGE "tabSRMM - Win32 Release" (based on "Win32 (x86) Dynamic-Link Library")
-!MESSAGE "tabSRMM - Win32 Debug Unicode" (based on "Win32 (x86) Dynamic-Link Library")
+!MESSAGE "tabSRMM - Win32 Debug" (basierend auf  "Win32 (x86) Dynamic-Link Library")
+!MESSAGE "tabSRMM - Win32 Release Unicode" (basierend auf  "Win32 (x86) Dynamic-Link Library")
+!MESSAGE "tabSRMM - Win32 Release" (basierend auf  "Win32 (x86) Dynamic-Link Library")
+!MESSAGE "tabSRMM - Win32 Debug Unicode" (basierend auf  "Win32 (x86) Dynamic-Link Library")
 !MESSAGE 
 
 # Begin Project
@@ -203,8 +203,6 @@ DEP_CPP_CLIST=\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
-	"..\..\include\msapi\vsstyle.h"\
-	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
@@ -247,7 +245,11 @@ DEP_CPP_CLIST=\
 	".\include\typingnotify.h"\
 	".\include\utils.h"\
 	".\src\commonheaders.h"\
-	{$(INCLUDE)}"uxtheme.h"\
+	
+NODEP_CPP_CLIST=\
+	"..\..\include\msapi\vsstyle.h"\
+	"..\..\include\msapi\vssym32.h"\
+	".\xtheme.h"\
 	
 # ADD CPP /Yu"../src/commonheaders.h"
 # End Source File
@@ -285,8 +287,6 @@ DEP_CPP_COLOR=\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
-	"..\..\include\msapi\vsstyle.h"\
-	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
@@ -329,7 +329,11 @@ DEP_CPP_COLOR=\
 	".\include\typingnotify.h"\
 	".\include\utils.h"\
 	".\src\commonheaders.h"\
-	{$(INCLUDE)}"uxtheme.h"\
+	
+NODEP_CPP_COLOR=\
+	"..\..\include\msapi\vsstyle.h"\
+	"..\..\include\msapi\vssym32.h"\
+	".\xtheme.h"\
 	
 # ADD CPP /Yu"../src/commonheaders.h"
 # End Source File
@@ -367,8 +371,6 @@ DEP_CPP_LOG_C=\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
-	"..\..\include\msapi\vsstyle.h"\
-	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
@@ -411,7 +413,11 @@ DEP_CPP_LOG_C=\
 	".\include\typingnotify.h"\
 	".\include\utils.h"\
 	".\src\commonheaders.h"\
-	{$(INCLUDE)}"uxtheme.h"\
+	
+NODEP_CPP_LOG_C=\
+	"..\..\include\msapi\vsstyle.h"\
+	"..\..\include\msapi\vssym32.h"\
+	".\xtheme.h"\
 	
 # ADD CPP /Yu"../src/commonheaders.h"
 # End Source File
@@ -449,8 +455,6 @@ DEP_CPP_MAIN_=\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
-	"..\..\include\msapi\vsstyle.h"\
-	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
@@ -493,7 +497,11 @@ DEP_CPP_MAIN_=\
 	".\include\typingnotify.h"\
 	".\include\utils.h"\
 	".\src\commonheaders.h"\
-	{$(INCLUDE)}"uxtheme.h"\
+	
+NODEP_CPP_MAIN_=\
+	"..\..\include\msapi\vsstyle.h"\
+	"..\..\include\msapi\vssym32.h"\
+	".\xtheme.h"\
 	
 # ADD CPP /Yu"../src/commonheaders.h"
 # End Source File
@@ -531,8 +539,6 @@ DEP_CPP_MANAG=\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
-	"..\..\include\msapi\vsstyle.h"\
-	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
@@ -575,7 +581,11 @@ DEP_CPP_MANAG=\
 	".\include\typingnotify.h"\
 	".\include\utils.h"\
 	".\src\commonheaders.h"\
-	{$(INCLUDE)}"uxtheme.h"\
+	
+NODEP_CPP_MANAG=\
+	"..\..\include\msapi\vsstyle.h"\
+	"..\..\include\msapi\vssym32.h"\
+	".\xtheme.h"\
 	
 # ADD CPP /Yu"../src/commonheaders.h"
 # End Source File
@@ -613,8 +623,6 @@ DEP_CPP_MESSA=\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
-	"..\..\include\msapi\vsstyle.h"\
-	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
@@ -657,7 +665,11 @@ DEP_CPP_MESSA=\
 	".\include\typingnotify.h"\
 	".\include\utils.h"\
 	".\src\commonheaders.h"\
-	{$(INCLUDE)}"uxtheme.h"\
+	
+NODEP_CPP_MESSA=\
+	"..\..\include\msapi\vsstyle.h"\
+	"..\..\include\msapi\vssym32.h"\
+	".\xtheme.h"\
 	
 # ADD CPP /Yu"../src/commonheaders.h"
 # End Source File
@@ -695,8 +707,6 @@ DEP_CPP_MUCHI=\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
-	"..\..\include\msapi\vsstyle.h"\
-	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
@@ -739,7 +749,11 @@ DEP_CPP_MUCHI=\
 	".\include\typingnotify.h"\
 	".\include\utils.h"\
 	".\src\commonheaders.h"\
-	{$(INCLUDE)}"uxtheme.h"\
+	
+NODEP_CPP_MUCHI=\
+	"..\..\include\msapi\vsstyle.h"\
+	"..\..\include\msapi\vssym32.h"\
+	".\xtheme.h"\
 	
 
 !IF  "$(CFG)" == "tabSRMM - Win32 Debug"
@@ -797,8 +811,6 @@ DEP_CPP_OPTIO=\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
-	"..\..\include\msapi\vsstyle.h"\
-	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
@@ -841,7 +853,11 @@ DEP_CPP_OPTIO=\
 	".\include\typingnotify.h"\
 	".\include\utils.h"\
 	".\src\commonheaders.h"\
-	{$(INCLUDE)}"uxtheme.h"\
+	
+NODEP_CPP_OPTIO=\
+	"..\..\include\msapi\vsstyle.h"\
+	"..\..\include\msapi\vssym32.h"\
+	".\xtheme.h"\
 	
 # ADD CPP /Yu"../src/commonheaders.h"
 # End Source File
@@ -879,8 +895,6 @@ DEP_CPP_SERVI=\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
-	"..\..\include\msapi\vsstyle.h"\
-	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
@@ -923,7 +937,11 @@ DEP_CPP_SERVI=\
 	".\include\typingnotify.h"\
 	".\include\utils.h"\
 	".\src\commonheaders.h"\
-	{$(INCLUDE)}"uxtheme.h"\
+	
+NODEP_CPP_SERVI=\
+	"..\..\include\msapi\vsstyle.h"\
+	"..\..\include\msapi\vssym32.h"\
+	".\xtheme.h"\
 	
 # ADD CPP /Yu"../src/commonheaders.h"
 # End Source File
@@ -961,8 +979,6 @@ DEP_CPP_TOOLS=\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
-	"..\..\include\msapi\vsstyle.h"\
-	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
@@ -1005,7 +1021,11 @@ DEP_CPP_TOOLS=\
 	".\include\typingnotify.h"\
 	".\include\utils.h"\
 	".\src\commonheaders.h"\
-	{$(INCLUDE)}"uxtheme.h"\
+	
+NODEP_CPP_TOOLS=\
+	"..\..\include\msapi\vsstyle.h"\
+	"..\..\include\msapi\vssym32.h"\
+	".\xtheme.h"\
 	
 # ADD CPP /Yu"../src/commonheaders.h"
 # End Source File
@@ -1043,8 +1063,6 @@ DEP_CPP_WINDO=\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
-	"..\..\include\msapi\vsstyle.h"\
-	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
@@ -1087,8 +1105,12 @@ DEP_CPP_WINDO=\
 	".\include\typingnotify.h"\
 	".\include\utils.h"\
 	".\src\commonheaders.h"\
-	{$(INCLUDE)}"tom.h"\
-	{$(INCLUDE)}"uxtheme.h"\
+	
+NODEP_CPP_WINDO=\
+	"..\..\include\msapi\vsstyle.h"\
+	"..\..\include\msapi\vssym32.h"\
+	".\om.h"\
+	".\xtheme.h"\
 	
 # ADD CPP /Yu"../src/commonheaders.h"
 # End Source File
@@ -1154,6 +1176,10 @@ SOURCE=.\API\m_spellchecker.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\API\m_timezones.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\API\m_updater.h
 # End Source File
 # End Group
@@ -1191,8 +1217,6 @@ DEP_CPP_BUTTO=\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
-	"..\..\include\msapi\vsstyle.h"\
-	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
@@ -1235,7 +1259,11 @@ DEP_CPP_BUTTO=\
 	".\include\typingnotify.h"\
 	".\include\utils.h"\
 	".\src\commonheaders.h"\
-	{$(INCLUDE)}"uxtheme.h"\
+	
+NODEP_CPP_BUTTO=\
+	"..\..\include\msapi\vsstyle.h"\
+	"..\..\include\msapi\vssym32.h"\
+	".\xtheme.h"\
 	
 # End Source File
 # Begin Source File
@@ -1272,8 +1300,6 @@ DEP_CPP_CONTA=\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
-	"..\..\include\msapi\vsstyle.h"\
-	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
@@ -1316,7 +1342,11 @@ DEP_CPP_CONTA=\
 	".\include\typingnotify.h"\
 	".\include\utils.h"\
 	".\src\commonheaders.h"\
-	{$(INCLUDE)}"uxtheme.h"\
+	
+NODEP_CPP_CONTA=\
+	"..\..\include\msapi\vsstyle.h"\
+	"..\..\include\msapi\vssym32.h"\
+	".\xtheme.h"\
 	
 # End Source File
 # Begin Source File
@@ -1353,8 +1383,6 @@ DEP_CPP_CONTAI=\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
-	"..\..\include\msapi\vsstyle.h"\
-	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
@@ -1397,7 +1425,11 @@ DEP_CPP_CONTAI=\
 	".\include\typingnotify.h"\
 	".\include\utils.h"\
 	".\src\commonheaders.h"\
-	{$(INCLUDE)}"uxtheme.h"\
+	
+NODEP_CPP_CONTAI=\
+	"..\..\include\msapi\vsstyle.h"\
+	"..\..\include\msapi\vssym32.h"\
+	".\xtheme.h"\
 	
 # End Source File
 # Begin Source File
@@ -1434,8 +1466,6 @@ DEP_CPP_CONTAIN=\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
-	"..\..\include\msapi\vsstyle.h"\
-	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
@@ -1478,7 +1508,11 @@ DEP_CPP_CONTAIN=\
 	".\include\typingnotify.h"\
 	".\include\utils.h"\
 	".\src\commonheaders.h"\
-	{$(INCLUDE)}"uxtheme.h"\
+	
+NODEP_CPP_CONTAIN=\
+	"..\..\include\msapi\vsstyle.h"\
+	"..\..\include\msapi\vssym32.h"\
+	".\xtheme.h"\
 	
 # End Source File
 # Begin Source File
@@ -1515,8 +1549,6 @@ DEP_CPP_CONTR=\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
-	"..\..\include\msapi\vsstyle.h"\
-	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
@@ -1559,7 +1591,11 @@ DEP_CPP_CONTR=\
 	".\include\typingnotify.h"\
 	".\include\utils.h"\
 	".\src\commonheaders.h"\
-	{$(INCLUDE)}"uxtheme.h"\
+	
+NODEP_CPP_CONTR=\
+	"..\..\include\msapi\vsstyle.h"\
+	"..\..\include\msapi\vssym32.h"\
+	".\xtheme.h"\
 	
 # End Source File
 # Begin Source File
@@ -1596,8 +1632,6 @@ DEP_CPP_EVENT=\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
-	"..\..\include\msapi\vsstyle.h"\
-	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
@@ -1640,7 +1674,11 @@ DEP_CPP_EVENT=\
 	".\include\typingnotify.h"\
 	".\include\utils.h"\
 	".\src\commonheaders.h"\
-	{$(INCLUDE)}"uxtheme.h"\
+	
+NODEP_CPP_EVENT=\
+	"..\..\include\msapi\vsstyle.h"\
+	"..\..\include\msapi\vssym32.h"\
+	".\xtheme.h"\
 	
 # End Source File
 # Begin Source File
@@ -1677,8 +1715,6 @@ DEP_CPP_GENER=\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
-	"..\..\include\msapi\vsstyle.h"\
-	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
@@ -1721,7 +1757,11 @@ DEP_CPP_GENER=\
 	".\include\typingnotify.h"\
 	".\include\utils.h"\
 	".\src\commonheaders.h"\
-	{$(INCLUDE)}"uxtheme.h"\
+	
+NODEP_CPP_GENER=\
+	"..\..\include\msapi\vsstyle.h"\
+	"..\..\include\msapi\vssym32.h"\
+	".\xtheme.h"\
 	
 # End Source File
 # Begin Source File
@@ -1758,8 +1798,6 @@ DEP_CPP_GLOBA=\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
-	"..\..\include\msapi\vsstyle.h"\
-	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
@@ -1802,7 +1840,11 @@ DEP_CPP_GLOBA=\
 	".\include\typingnotify.h"\
 	".\include\utils.h"\
 	".\src\commonheaders.h"\
-	{$(INCLUDE)}"uxtheme.h"\
+	
+NODEP_CPP_GLOBA=\
+	"..\..\include\msapi\vsstyle.h"\
+	"..\..\include\msapi\vssym32.h"\
+	".\xtheme.h"\
 	
 # End Source File
 # Begin Source File
@@ -1839,8 +1881,6 @@ DEP_CPP_HOTKE=\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
-	"..\..\include\msapi\vsstyle.h"\
-	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
@@ -1883,7 +1923,11 @@ DEP_CPP_HOTKE=\
 	".\include\typingnotify.h"\
 	".\include\utils.h"\
 	".\src\commonheaders.h"\
-	{$(INCLUDE)}"uxtheme.h"\
+	
+NODEP_CPP_HOTKE=\
+	"..\..\include\msapi\vsstyle.h"\
+	"..\..\include\msapi\vssym32.h"\
+	".\xtheme.h"\
 	
 # End Source File
 # Begin Source File
@@ -1920,8 +1964,6 @@ DEP_CPP_IMAGE=\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
-	"..\..\include\msapi\vsstyle.h"\
-	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
@@ -1965,7 +2007,11 @@ DEP_CPP_IMAGE=\
 	".\include\typingnotify.h"\
 	".\include\utils.h"\
 	".\src\commonheaders.h"\
-	{$(INCLUDE)}"uxtheme.h"\
+	
+NODEP_CPP_IMAGE=\
+	"..\..\include\msapi\vsstyle.h"\
+	"..\..\include\msapi\vssym32.h"\
+	".\xtheme.h"\
 	
 # SUBTRACT CPP /YX /Yc /Yu
 # End Source File
@@ -2003,8 +2049,6 @@ DEP_CPP_INFOP=\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
-	"..\..\include\msapi\vsstyle.h"\
-	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
@@ -2047,7 +2091,11 @@ DEP_CPP_INFOP=\
 	".\include\typingnotify.h"\
 	".\include\utils.h"\
 	".\src\commonheaders.h"\
-	{$(INCLUDE)}"uxtheme.h"\
+	
+NODEP_CPP_INFOP=\
+	"..\..\include\msapi\vsstyle.h"\
+	"..\..\include\msapi\vssym32.h"\
+	".\xtheme.h"\
 	
 # End Source File
 # Begin Source File
@@ -2084,8 +2132,6 @@ DEP_CPP_MIM_C=\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
-	"..\..\include\msapi\vsstyle.h"\
-	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
@@ -2128,7 +2174,11 @@ DEP_CPP_MIM_C=\
 	".\include\typingnotify.h"\
 	".\include\utils.h"\
 	".\src\commonheaders.h"\
-	{$(INCLUDE)}"uxtheme.h"\
+	
+NODEP_CPP_MIM_C=\
+	"..\..\include\msapi\vsstyle.h"\
+	"..\..\include\msapi\vssym32.h"\
+	".\xtheme.h"\
 	
 # End Source File
 # Begin Source File
@@ -2165,8 +2215,6 @@ DEP_CPP_MODPL=\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
-	"..\..\include\msapi\vsstyle.h"\
-	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
@@ -2209,7 +2257,11 @@ DEP_CPP_MODPL=\
 	".\include\typingnotify.h"\
 	".\include\utils.h"\
 	".\src\commonheaders.h"\
-	{$(INCLUDE)}"uxtheme.h"\
+	
+NODEP_CPP_MODPL=\
+	"..\..\include\msapi\vsstyle.h"\
+	"..\..\include\msapi\vssym32.h"\
+	".\xtheme.h"\
 	
 # ADD CPP /Yu"../src/commonheaders.h"
 # End Source File
@@ -2247,8 +2299,6 @@ DEP_CPP_MSGDI=\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
-	"..\..\include\msapi\vsstyle.h"\
-	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
@@ -2291,7 +2341,11 @@ DEP_CPP_MSGDI=\
 	".\include\typingnotify.h"\
 	".\include\utils.h"\
 	".\src\commonheaders.h"\
-	{$(INCLUDE)}"uxtheme.h"\
+	
+NODEP_CPP_MSGDI=\
+	"..\..\include\msapi\vsstyle.h"\
+	"..\..\include\msapi\vssym32.h"\
+	".\xtheme.h"\
 	
 # End Source File
 # Begin Source File
@@ -2328,8 +2382,6 @@ DEP_CPP_MSGDL=\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
-	"..\..\include\msapi\vsstyle.h"\
-	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
@@ -2372,7 +2424,11 @@ DEP_CPP_MSGDL=\
 	".\include\typingnotify.h"\
 	".\include\utils.h"\
 	".\src\commonheaders.h"\
-	{$(INCLUDE)}"uxtheme.h"\
+	
+NODEP_CPP_MSGDL=\
+	"..\..\include\msapi\vsstyle.h"\
+	"..\..\include\msapi\vssym32.h"\
+	".\xtheme.h"\
 	
 # End Source File
 # Begin Source File
@@ -2409,8 +2465,6 @@ DEP_CPP_MSGLO=\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
-	"..\..\include\msapi\vsstyle.h"\
-	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
@@ -2453,7 +2507,11 @@ DEP_CPP_MSGLO=\
 	".\include\typingnotify.h"\
 	".\include\utils.h"\
 	".\src\commonheaders.h"\
-	{$(INCLUDE)}"uxtheme.h"\
+	
+NODEP_CPP_MSGLO=\
+	"..\..\include\msapi\vsstyle.h"\
+	"..\..\include\msapi\vssym32.h"\
+	".\xtheme.h"\
 	
 # End Source File
 # Begin Source File
@@ -2491,8 +2549,6 @@ DEP_CPP_MSGOP=\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
-	"..\..\include\msapi\vsstyle.h"\
-	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
@@ -2535,7 +2591,11 @@ DEP_CPP_MSGOP=\
 	".\include\typingnotify.h"\
 	".\include\utils.h"\
 	".\src\commonheaders.h"\
-	{$(INCLUDE)}"uxtheme.h"\
+	
+NODEP_CPP_MSGOP=\
+	"..\..\include\msapi\vsstyle.h"\
+	"..\..\include\msapi\vssym32.h"\
+	".\xtheme.h"\
 	
 # End Source File
 # Begin Source File
@@ -2572,8 +2632,6 @@ DEP_CPP_MSGOPT=\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
-	"..\..\include\msapi\vsstyle.h"\
-	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
@@ -2616,7 +2674,11 @@ DEP_CPP_MSGOPT=\
 	".\include\typingnotify.h"\
 	".\include\utils.h"\
 	".\src\commonheaders.h"\
-	{$(INCLUDE)}"uxtheme.h"\
+	
+NODEP_CPP_MSGOPT=\
+	"..\..\include\msapi\vsstyle.h"\
+	"..\..\include\msapi\vssym32.h"\
+	".\xtheme.h"\
 	
 # ADD CPP /Yu"../src/commonheaders.h"
 # End Source File
@@ -2654,8 +2716,6 @@ DEP_CPP_MSGS_=\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
-	"..\..\include\msapi\vsstyle.h"\
-	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
@@ -2698,7 +2758,11 @@ DEP_CPP_MSGS_=\
 	".\include\typingnotify.h"\
 	".\include\utils.h"\
 	".\src\commonheaders.h"\
-	{$(INCLUDE)}"uxtheme.h"\
+	
+NODEP_CPP_MSGS_=\
+	"..\..\include\msapi\vsstyle.h"\
+	"..\..\include\msapi\vssym32.h"\
+	".\xtheme.h"\
 	
 # End Source File
 # Begin Source File
@@ -2735,8 +2799,6 @@ DEP_CPP_SELEC=\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
-	"..\..\include\msapi\vsstyle.h"\
-	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
@@ -2779,7 +2841,11 @@ DEP_CPP_SELEC=\
 	".\include\typingnotify.h"\
 	".\include\utils.h"\
 	".\src\commonheaders.h"\
-	{$(INCLUDE)}"uxtheme.h"\
+	
+NODEP_CPP_SELEC=\
+	"..\..\include\msapi\vsstyle.h"\
+	"..\..\include\msapi\vssym32.h"\
+	".\xtheme.h"\
 	
 # End Source File
 # Begin Source File
@@ -2816,8 +2882,6 @@ DEP_CPP_SENDL=\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
-	"..\..\include\msapi\vsstyle.h"\
-	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
@@ -2860,7 +2924,11 @@ DEP_CPP_SENDL=\
 	".\include\typingnotify.h"\
 	".\include\utils.h"\
 	".\src\commonheaders.h"\
-	{$(INCLUDE)}"uxtheme.h"\
+	
+NODEP_CPP_SENDL=\
+	"..\..\include\msapi\vsstyle.h"\
+	"..\..\include\msapi\vssym32.h"\
+	".\xtheme.h"\
 	
 # End Source File
 # Begin Source File
@@ -2897,8 +2965,6 @@ DEP_CPP_SENDQ=\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
-	"..\..\include\msapi\vsstyle.h"\
-	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
@@ -2941,7 +3007,11 @@ DEP_CPP_SENDQ=\
 	".\include\typingnotify.h"\
 	".\include\utils.h"\
 	".\src\commonheaders.h"\
-	{$(INCLUDE)}"uxtheme.h"\
+	
+NODEP_CPP_SENDQ=\
+	"..\..\include\msapi\vsstyle.h"\
+	"..\..\include\msapi\vssym32.h"\
+	".\xtheme.h"\
 	
 # End Source File
 # Begin Source File
@@ -2978,8 +3048,6 @@ DEP_CPP_SIDEB=\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
-	"..\..\include\msapi\vsstyle.h"\
-	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
@@ -3022,7 +3090,11 @@ DEP_CPP_SIDEB=\
 	".\include\typingnotify.h"\
 	".\include\utils.h"\
 	".\src\commonheaders.h"\
-	{$(INCLUDE)}"uxtheme.h"\
+	
+NODEP_CPP_SIDEB=\
+	"..\..\include\msapi\vsstyle.h"\
+	"..\..\include\msapi\vssym32.h"\
+	".\xtheme.h"\
 	
 # End Source File
 # Begin Source File
@@ -3059,8 +3131,6 @@ DEP_CPP_SRMM_=\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
-	"..\..\include\msapi\vsstyle.h"\
-	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
@@ -3104,7 +3174,11 @@ DEP_CPP_SRMM_=\
 	".\include\utils.h"\
 	".\include\version.h"\
 	".\src\commonheaders.h"\
-	{$(INCLUDE)}"uxtheme.h"\
+	
+NODEP_CPP_SRMM_=\
+	"..\..\include\msapi\vsstyle.h"\
+	"..\..\include\msapi\vssym32.h"\
+	".\xtheme.h"\
 	
 # ADD CPP /Yc"commonheaders.h"
 # End Source File
@@ -3142,8 +3216,6 @@ DEP_CPP_TABCT=\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
-	"..\..\include\msapi\vsstyle.h"\
-	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
@@ -3186,7 +3258,11 @@ DEP_CPP_TABCT=\
 	".\include\typingnotify.h"\
 	".\include\utils.h"\
 	".\src\commonheaders.h"\
-	{$(INCLUDE)}"uxtheme.h"\
+	
+NODEP_CPP_TABCT=\
+	"..\..\include\msapi\vsstyle.h"\
+	"..\..\include\msapi\vssym32.h"\
+	".\xtheme.h"\
 	
 # End Source File
 # Begin Source File
@@ -3223,8 +3299,6 @@ DEP_CPP_TASKB=\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
-	"..\..\include\msapi\vsstyle.h"\
-	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
@@ -3267,7 +3341,11 @@ DEP_CPP_TASKB=\
 	".\include\typingnotify.h"\
 	".\include\utils.h"\
 	".\src\commonheaders.h"\
-	{$(INCLUDE)}"uxtheme.h"\
+	
+NODEP_CPP_TASKB=\
+	"..\..\include\msapi\vsstyle.h"\
+	"..\..\include\msapi\vssym32.h"\
+	".\xtheme.h"\
 	
 # End Source File
 # Begin Source File
@@ -3304,8 +3382,6 @@ DEP_CPP_TEMPL=\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
-	"..\..\include\msapi\vsstyle.h"\
-	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
@@ -3348,7 +3424,11 @@ DEP_CPP_TEMPL=\
 	".\include\typingnotify.h"\
 	".\include\utils.h"\
 	".\src\commonheaders.h"\
-	{$(INCLUDE)}"uxtheme.h"\
+	
+NODEP_CPP_TEMPL=\
+	"..\..\include\msapi\vsstyle.h"\
+	"..\..\include\msapi\vssym32.h"\
+	".\xtheme.h"\
 	
 # End Source File
 # Begin Source File
@@ -3385,8 +3465,6 @@ DEP_CPP_THEME=\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
-	"..\..\include\msapi\vsstyle.h"\
-	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
@@ -3429,7 +3507,11 @@ DEP_CPP_THEME=\
 	".\include\typingnotify.h"\
 	".\include\utils.h"\
 	".\src\commonheaders.h"\
-	{$(INCLUDE)}"uxtheme.h"\
+	
+NODEP_CPP_THEME=\
+	"..\..\include\msapi\vsstyle.h"\
+	"..\..\include\msapi\vssym32.h"\
+	".\xtheme.h"\
 	
 # End Source File
 # Begin Source File
@@ -3466,8 +3548,6 @@ DEP_CPP_THEMES=\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
-	"..\..\include\msapi\vsstyle.h"\
-	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
@@ -3510,7 +3590,11 @@ DEP_CPP_THEMES=\
 	".\include\typingnotify.h"\
 	".\include\utils.h"\
 	".\src\commonheaders.h"\
-	{$(INCLUDE)}"uxtheme.h"\
+	
+NODEP_CPP_THEMES=\
+	"..\..\include\msapi\vsstyle.h"\
+	"..\..\include\msapi\vssym32.h"\
+	".\xtheme.h"\
 	
 # End Source File
 # Begin Source File
@@ -3547,8 +3631,6 @@ DEP_CPP_TRANS=\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
-	"..\..\include\msapi\vsstyle.h"\
-	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
@@ -3591,7 +3673,11 @@ DEP_CPP_TRANS=\
 	".\include\typingnotify.h"\
 	".\include\utils.h"\
 	".\src\commonheaders.h"\
-	{$(INCLUDE)}"uxtheme.h"\
+	
+NODEP_CPP_TRANS=\
+	"..\..\include\msapi\vsstyle.h"\
+	"..\..\include\msapi\vssym32.h"\
+	".\xtheme.h"\
 	
 # End Source File
 # Begin Source File
@@ -3628,8 +3714,6 @@ DEP_CPP_TRAYI=\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
-	"..\..\include\msapi\vsstyle.h"\
-	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
@@ -3672,7 +3756,11 @@ DEP_CPP_TRAYI=\
 	".\include\typingnotify.h"\
 	".\include\utils.h"\
 	".\src\commonheaders.h"\
-	{$(INCLUDE)}"uxtheme.h"\
+	
+NODEP_CPP_TRAYI=\
+	"..\..\include\msapi\vsstyle.h"\
+	"..\..\include\msapi\vssym32.h"\
+	".\xtheme.h"\
 	
 # End Source File
 # Begin Source File
@@ -3709,8 +3797,6 @@ DEP_CPP_TSBUT=\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
-	"..\..\include\msapi\vsstyle.h"\
-	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
@@ -3753,7 +3839,11 @@ DEP_CPP_TSBUT=\
 	".\include\typingnotify.h"\
 	".\include\utils.h"\
 	".\src\commonheaders.h"\
-	{$(INCLUDE)}"uxtheme.h"\
+	
+NODEP_CPP_TSBUT=\
+	"..\..\include\msapi\vsstyle.h"\
+	"..\..\include\msapi\vssym32.h"\
+	".\xtheme.h"\
 	
 # End Source File
 # Begin Source File
@@ -3790,8 +3880,6 @@ DEP_CPP_TYPIN=\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
-	"..\..\include\msapi\vsstyle.h"\
-	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
@@ -3834,7 +3922,11 @@ DEP_CPP_TYPIN=\
 	".\include\typingnotify.h"\
 	".\include\utils.h"\
 	".\src\commonheaders.h"\
-	{$(INCLUDE)}"uxtheme.h"\
+	
+NODEP_CPP_TYPIN=\
+	"..\..\include\msapi\vsstyle.h"\
+	"..\..\include\msapi\vssym32.h"\
+	".\xtheme.h"\
 	
 # End Source File
 # Begin Source File
@@ -3871,8 +3963,6 @@ DEP_CPP_USERP=\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
-	"..\..\include\msapi\vsstyle.h"\
-	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
@@ -3915,7 +4005,11 @@ DEP_CPP_USERP=\
 	".\include\typingnotify.h"\
 	".\include\utils.h"\
 	".\src\commonheaders.h"\
-	{$(INCLUDE)}"uxtheme.h"\
+	
+NODEP_CPP_USERP=\
+	"..\..\include\msapi\vsstyle.h"\
+	"..\..\include\msapi\vssym32.h"\
+	".\xtheme.h"\
 	
 # End Source File
 # Begin Source File
@@ -3952,8 +4046,6 @@ DEP_CPP_UTILS=\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
-	"..\..\include\msapi\vsstyle.h"\
-	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
@@ -3996,7 +4088,11 @@ DEP_CPP_UTILS=\
 	".\include\typingnotify.h"\
 	".\include\utils.h"\
 	".\src\commonheaders.h"\
-	{$(INCLUDE)}"uxtheme.h"\
+	
+NODEP_CPP_UTILS=\
+	"..\..\include\msapi\vsstyle.h"\
+	"..\..\include\msapi\vssym32.h"\
+	".\xtheme.h"\
 	
 # End Source File
 # End Group

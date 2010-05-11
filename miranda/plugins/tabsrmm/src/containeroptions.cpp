@@ -237,7 +237,6 @@ INT_PTR CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, 
 			LOGFONT lf = {0};
 
 			GetObject(hFont, sizeof(lf), &lf);
-			//lf.lfWeight = FW_BOLD;
 			lf.lfHeight = (int)(lf.lfHeight * 1.2);
 			hFont = CreateFontIndirect(&lf);
 
@@ -260,6 +259,8 @@ INT_PTR CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, 
 				::SetTextColor((HDC)wParam, RGB(60, 60, 150));
 			} else if(hwndChild == GetDlgItem(hwndDlg, IDC_DESC))
 				::SetTextColor((HDC)wParam, RGB(160, 50, 50));
+			if(id == IDC_TSLABEL_REOPENWARN)
+				break;
 			SetBkColor((HDC)wParam, GetSysColor(COLOR_WINDOW));
 			return (INT_PTR)GetSysColorBrush(COLOR_WINDOW);
 		}

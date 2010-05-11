@@ -560,7 +560,10 @@ b_nonskinned:
 						DrawEdge(dc, rcItem, EDGE_RAISED, BF_RECT | BF_SOFT);
 				}
 			} else {
-				FillRect(dc, rcItem, (M->isAero() && !(dwStyle & TCS_BOTTOM)) ? CSkin::m_BrushBack : GetSysColorBrush(COLOR_3DFACE));
+				if(M->isAero() && !(dwStyle & TCS_BOTTOM))
+					FillRect(dc, rcItem, CSkin::m_BrushBack);
+				else
+					CSkin::FillBack(dc, rcItem);
 				CMimAPI::m_pfnDrawThemeBackground(tabdat->hThemeButton, dc, 1, nHint & HINT_ACTIVE_ITEM ? 3 : (nHint & HINT_HOTTRACK ? 2 : 1), rcItem, rcItem);
 			}
 			return;
@@ -574,7 +577,7 @@ b_nonskinned:
 #else
 				if (!CSkin::m_skinEnabled)
 #endif
-					FillRect(dc, rcItem, GetSysColorBrush(COLOR_3DFACE));
+					CSkin::FillBack(dc, rcItem);
 				rcItem->bottom += 2;
 			} else {
 				rcItem->bottom += 2;
@@ -583,7 +586,7 @@ b_nonskinned:
 #else
 				if (!CSkin::m_skinEnabled)
 #endif
-					FillRect(dc, rcItem, GetSysColorBrush(COLOR_3DFACE));
+					CSkin::FillBack(dc, rcItem);
 				rcItem->bottom--;
 				rcItem->top -= 2;
 			}
@@ -861,20 +864,19 @@ static int DWordAlign(int n)
 static HRESULT DrawThemesPartWithAero(const TabControlData *tabdat, HDC hDC, int iPartId, int iStateId, LPRECT prcBox)
 {
 	HRESULT hResult = 0;
-
-	if (CMimAPI::m_pfnDrawThemeBackground == 0)
-		return 0;
+	bool	fAero = M->isAero();
 
 	if(tabdat->fAeroTabs) {
 		// int iState = (iStateId == PBS_NORMAL || iStateId == PBS_HOT) ? 2 : 1;
 		if(tabdat->dwStyle & TCS_BOTTOM)
-			prcBox->top += (iStateId == 3 ? 2 : 2);
-		else {
-			if(iStateId != 3)
-				prcBox->bottom += 1;
-		}
+			prcBox->top += (fAero ? 2 : iStateId == PBS_PRESSED ? 1 : 0);
+		else if (!fAero)
+			prcBox->bottom -= (iStateId == PBS_PRESSED ? 1 : 0);
 
-		FillRect(hDC, prcBox, CSkin::m_BrushBack);
+		if(fAero)
+			FillRect(hDC, prcBox, CSkin::m_BrushBack);
+		else
+			CSkin::FillBack(hDC, prcBox);
 
 		tabdat->helperItem->setAlphaFormat(AC_SRC_ALPHA, iStateId == 3 ? 255 : 240);
 		tabdat->helperItem->Render(hDC, prcBox, true);
@@ -883,7 +885,7 @@ static HRESULT DrawThemesPartWithAero(const TabControlData *tabdat, HDC hDC, int
 		if(iStateId != PBS_NORMAL)
 			tabdat->helperGlowItem->Render(hDC, prcBox, true);
 	}
-	else {
+	else if(CMimAPI::m_pfnDrawThemeBackground) {
 		if (tabdat->hTheme != 0)
 			hResult = CMimAPI::m_pfnDrawThemeBackground(tabdat->hTheme, hDC, iPartId, iStateId, prcBox, NULL);
 	}
@@ -935,7 +937,6 @@ static void DrawThemesXpTabItem(HDC pDC, int ixItem, RECT *rcItem, UINT uiFlag, 
 	 * for top row tabs, it's easy. Just draw to the provided dc (it's a mem dc already)
 	 */
 
-	//FillRect(pDC, rcItem, GetSysColorBrush(COLOR_3DFACE));
 	if (!bBottom) {
 		if (bBody) {
 			if(PluginConfig.m_bIsVista) {
@@ -989,7 +990,7 @@ static void DrawThemesXpTabItem(HDC pDC, int ixItem, RECT *rcItem, UINT uiFlag, 
 	 */
 
 	if (!bSel)
-		FillRect(dcMem, &rcMem, GetSysColorBrush(COLOR_3DFACE));        // only active (bSel == TRUE) tabs can overwrite others. for inactive, it's enough to fill with bg color
+		CSkin::FillBack(dcMem, &rcMem);
 	else {
 		/*
 		 * mirror the background horizontally for bottom selected tabs (they can overwrite others)
@@ -1029,7 +1030,7 @@ static void DrawThemesXpTabItem(HDC pDC, int ixItem, RECT *rcItem, UINT uiFlag, 
 		nBmpWdtPS = DWordAlign(100 * 3);
 		nSzBuffPS = ((nBmpWdtPS * 50) / 8 + 2) * 8;
 
-		FillRect(hdcTemp, &rcTemp, GetSysColorBrush(COLOR_3DFACE));
+		CSkin::FillBack(hdcTemp, &rcTemp);
 		DrawThemesPart(tabdat, hdcTemp, 9, 0, &rcTemp);	// TABP_PANE id = 9
 		pcImg = (BYTE *)mir_alloc(nSzBuffPS);
 		if (pcImg)	{									// get bits:
@@ -1465,7 +1466,7 @@ static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
 			if(GetUpdateRect(hwnd, NULL, TRUE) == 0)
 				break;
 
-			tabdat->fAeroTabs = isAero ? TRUE : FALSE;
+			tabdat->fAeroTabs = (CSkin::m_fAeroSkinsValid && (isAero || PluginConfig.m_fillColor)) ? TRUE : FALSE;
 			tabdat->fCloseButton = tabdat->pContainer ? (tabdat->pContainer->dwFlagsEx & TCF_CLOSEBUTTON ? TRUE : FALSE) : FALSE;
 
 			tabdat->helperDat = 0;
@@ -1530,7 +1531,7 @@ static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
 			if (CSkin::m_skinEnabled)
 				CSkin::SkinDrawBG(hwnd, tabdat->pContainer->hwnd, tabdat->pContainer, &rctPage, hdc);
 			else
-				FillRect(hdc, &rctPage, GetSysColorBrush(COLOR_3DFACE));
+				CSkin::FillBack(hdc, &rctPage);
 
 			if (dwStyle & TCS_BUTTONS) {
 				RECT rc1;
@@ -1687,7 +1688,7 @@ page_done:
 			 * if aero is active _and_ the infopanel is visible in the current window, we "flatten" out the top area
 			 * of the tab page by overpainting it black (thus it will appear transparent)
 			 */
-			if(tabdat->fAeroTabs && tabdat->helperDat) {
+			if(isAero && tabdat->helperDat) {
 				RECT	rcLog, rcPage;
 				POINT	pt;
 

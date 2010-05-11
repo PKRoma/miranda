@@ -35,12 +35,53 @@
 #include "commonheaders.h"
 #pragma hdrstop
 
-#define CURRENT_THEME_VERSION 4
+#define CURRENT_THEME_VERSION 5
 #define THEME_COOKIE 25099837
 
 extern char 		*TemplateNames[];
 extern TTemplateSet 	LTR_Active, RTL_Active;
 
+
+static struct _tagExtSettings {
+	char*	szIniSection;
+	char*	szIniName;
+	char*	szDbModule;
+	char*	szDbSetting;
+	DWORD	dwDef;
+} _extSettings[12] = {
+	"Message Log", "BackgroundColor", FONTMODULE, SRMSGSET_BKGCOLOUR, SRMSGDEFSET_BKGCOLOUR,
+	"Message Log", "IncomingBG", FONTMODULE, "inbg", SRMSGDEFSET_BKGINCOLOUR,
+	"Message Log", "OutgoingBG", FONTMODULE, "outbg", SRMSGDEFSET_BKGOUTCOLOUR,
+	"Message Log", "OldIncomingBG", FONTMODULE, "oldinbg", SRMSGDEFSET_BKGINCOLOUR,
+	"Message Log", "OldOutgoingBG", FONTMODULE, "oldoutbg", SRMSGDEFSET_BKGOUTCOLOUR,
+	"Message Log", "StatusBG", FONTMODULE, "statbg", SRMSGDEFSET_BKGCOLOUR,
+	"Message Log", "InputBG", FONTMODULE, "inputbg", SRMSGDEFSET_BKGCOLOUR,
+	"Message Log", "HgridColor", FONTMODULE, "hgrid", SRMSGDEFSET_BKGCOLOUR,
+	"Message Log", "DWFlags", SRMSGMOD_T, "mwflags", MWF_LOG_DEFAULT,
+	"Chat", "UserListBG", "Chat", "ColorNicklistBG", SRMSGDEFSET_BKGCOLOUR,
+	"Message Log", "LeftIndent", SRMSGMOD_T, "IndentAmount", 20,
+	"Message Log", "RightIndent", SRMSGMOD_T, "RightIndent", 20,
+};
+
+/**
+ * new in TabSRMM3 / theme version 5
+ * don't read these values from themes with version < 5
+ */
+static struct _tagExtSettings_v5 {
+	char*	szIniSection;
+	char*	szIniName;
+	char*	szDbModule;
+	char*	szDbSetting;
+	DWORD	dwDef;
+} _extSettings_v5[7] = {
+		"CommonClrs", "IP_High", FONTMODULE, "ipfieldsbgHigh", 0xf0f0f0,
+		"CommonClrs", "IP_Low", FONTMODULE, "ipfieldsbg", 0x62caff,
+		"CommonClrs", "TB_High", FONTMODULE, "tbBgHigh", 0,
+		"CommonClrs", "TB_Low", FONTMODULE, "tbBgLow", 0,
+		"CommonClrs", "FillColor", FONTMODULE, "fillColor", 0,
+		"CommonClrs", "RichBorders", FONTMODULE, "cRichBorders", 0,
+		"AeroMode", "Style", SRMSGMOD_T, "aerostyle", CSkin::AERO_EFFECT_MILK
+};
 
 /*
  * this loads a font definition from an INI file.
@@ -92,6 +133,17 @@ static void TSAPI LoadLogfontFromINI(int i, char *szKey, LOGFONTA *lf, COLORREF 
 			lf->lfCharSet = SYMBOL_CHARSET;
 		} else
 			GetPrivateProfileStringA(szKey, "Face", "Tahoma", lf->lfFaceName, LF_FACESIZE - 1, szIniFilename);
+
+		/*
+		 * filter out font attributes from the message input area font
+		 * (can be disabled by db tweak)
+		 */
+		if(!strcmp(szKey, "Font16") && M->GetByte(0, SRMSGMOD_T, "inputFontFix", 1) == 1) {
+			lf->lfWeight = FW_NORMAL;
+			lf->lfItalic = 0;
+			lf->lfUnderline = 0;
+			lf->lfStrikeOut = 0;
+		}
 	}
 }
 
@@ -158,25 +210,18 @@ void TSAPI WriteThemeToINI(const TCHAR *szIniFilenameT, struct TWindowData *dat)
 	}
 	def = SRMSGDEFSET_BKGCOLOUR;
 
-	WritePrivateProfileStringA("Message Log", "BackgroundColor", _itoa(M->GetDword(FONTMODULE, SRMSGSET_BKGCOLOUR, def), szBuf, 10), szIniFilename);
-	WritePrivateProfileStringA("Message Log", "IncomingBG", _itoa(M->GetDword(FONTMODULE, "inbg", SRMSGDEFSET_BKGINCOLOUR), szBuf, 10), szIniFilename);
-	WritePrivateProfileStringA("Message Log", "OutgoingBG", _itoa(M->GetDword(FONTMODULE, "outbg", SRMSGDEFSET_BKGOUTCOLOUR), szBuf, 10), szIniFilename);
+	for(i = 0; i < safe_sizeof(_extSettings); i++) {
+		WritePrivateProfileStringA(_extSettings[i].szIniSection, _extSettings[i].szIniName, 
+			_itoa(M->GetDword(_extSettings[i].szDbModule, _extSettings[i].szDbSetting, _extSettings[i].dwDef), szBuf, 10), szIniFilename);
+	}
 
-	WritePrivateProfileStringA("Message Log", "OldIncomingBG", _itoa(M->GetDword(FONTMODULE, "oldinbg", SRMSGDEFSET_BKGINCOLOUR), szBuf, 10), szIniFilename);
-	WritePrivateProfileStringA("Message Log", "OldOutgoingBG", _itoa(M->GetDword(FONTMODULE, "oldoutbg", SRMSGDEFSET_BKGOUTCOLOUR), szBuf, 10), szIniFilename);
-	WritePrivateProfileStringA("Message Log", "StatusBG", _itoa(M->GetDword(FONTMODULE, "statbg", def), szBuf, 10), szIniFilename);
+	for(i = 0; i < safe_sizeof(_extSettings_v5); i++) {
+		WritePrivateProfileStringA(_extSettings_v5[i].szIniSection, _extSettings_v5[i].szIniName,
+			_itoa(M->GetDword(_extSettings_v5[i].szDbModule, _extSettings_v5[i].szDbSetting, _extSettings_v5[i].dwDef), szBuf, 10), szIniFilename);
+	}
 
-	WritePrivateProfileStringA("Message Log", "InputBG", _itoa(M->GetDword(FONTMODULE, "inputbg", def), szBuf, 10), szIniFilename);
-	WritePrivateProfileStringA("Message Log", "HgridColor", _itoa(M->GetDword(FONTMODULE, "hgrid", def), szBuf, 10), szIniFilename);
-	WritePrivateProfileStringA("Message Log", "DWFlags", _itoa(M->GetDword("mwflags", MWF_LOG_DEFAULT), szBuf, 10), szIniFilename);
 	WritePrivateProfileStringA("Message Log", "VGrid", _itoa(M->GetByte("wantvgrid", 0), szBuf, 10), szIniFilename);
 	WritePrivateProfileStringA("Message Log", "ExtraMicroLF", _itoa(M->GetByte("extramicrolf", 0), szBuf, 10), szIniFilename);
-	WritePrivateProfileStringA("Chat", "UserListBG", _itoa(M->GetDword("Chat", "ColorNicklistBG", def), szBuf, 10), szIniFilename);
-
-	WritePrivateProfileStringA("Message Log", "LeftIndent", _itoa(M->GetDword("IndentAmount", 20), szBuf, 10), szIniFilename);
-	WritePrivateProfileStringA("Message Log", "RightIndent", _itoa(M->GetDword("RightIndent", 20), szBuf, 10), szIniFilename);
-
-	WritePrivateProfileStringA("Custom Colors", "InfopanelBG", _itoa(M->GetDword(FONTMODULE, "ipfieldsbg", GetSysColor(COLOR_3DFACE)), szBuf, 10), szIniFilename);
 
 	for (i = 0; i <= TMPL_ERRMSG; i++) {
 #if defined(_UNICODE)
@@ -285,30 +330,24 @@ void TSAPI ReadThemeFromINI(const TCHAR *szIniFilenameT, TContainerData *dat, in
 		}
 		def = SRMSGDEFSET_BKGCOLOUR;
 		ReleaseDC(NULL, hdc);
-		M->WriteDword(FONTMODULE, "ipfieldsbg",
-								   GetPrivateProfileIntA("Custom Colors", "InfopanelBG", GetSysColor(COLOR_3DFACE), szIniFilename));
+
 		if (dwFlags & THEME_READ_FONTS) {
 			COLORREF defclr;
 
-			M->WriteDword(FONTMODULE, SRMSGSET_BKGCOLOUR, GetPrivateProfileIntA("Message Log", "BackgroundColor", def, szIniFilename));
-			M->WriteDword("Chat", "ColorLogBG", GetPrivateProfileIntA("Message Log", "BackgroundColor", def, szIniFilename));
-			M->WriteDword(FONTMODULE, "inbg", GetPrivateProfileIntA("Message Log", "IncomingBG", def, szIniFilename));
-			M->WriteDword(FONTMODULE, "outbg", GetPrivateProfileIntA("Message Log", "OutgoingBG", def, szIniFilename));
-			M->WriteDword(FONTMODULE, "inputbg", GetPrivateProfileIntA("Message Log", "InputBG", def, szIniFilename));
+			for(i = 0; i < safe_sizeof(_extSettings); i++) {
+				M->WriteDword(_extSettings[i].szDbModule, _extSettings[i].szDbSetting, 
+					GetPrivateProfileIntA(_extSettings[i].szIniSection, _extSettings[i].szIniName, _extSettings[i].dwDef, szIniFilename));
+			}
 
-			M->WriteDword(FONTMODULE, "oldinbg", GetPrivateProfileIntA("Message Log", "OldIncomingBG", def, szIniFilename));
-			M->WriteDword(FONTMODULE, "oldoutbg", GetPrivateProfileIntA("Message Log", "OldOutgoingBG", def, szIniFilename));
-			M->WriteDword(FONTMODULE, "statbg", GetPrivateProfileIntA("Message Log", "StatusBG", def, szIniFilename));
+			if(version >= 5) {
+				for(i = 0; i < safe_sizeof(_extSettings_v5); i++) {
+					M->WriteDword(_extSettings_v5[i].szDbModule, _extSettings_v5[i].szDbSetting,
+						GetPrivateProfileIntA(_extSettings_v5[i].szIniSection, _extSettings_v5[i].szIniName, _extSettings_v5[i].dwDef, szIniFilename));
+				}
+			}
 
-			M->WriteDword(FONTMODULE, "hgrid", GetPrivateProfileIntA("Message Log", "HgridColor", def, szIniFilename));
-			M->WriteDword(SRMSGMOD_T, "mwflags", GetPrivateProfileIntA("Message Log", "DWFlags", MWF_LOG_DEFAULT, szIniFilename));
 			M->WriteByte(SRMSGMOD_T, "wantvgrid", (BYTE)(GetPrivateProfileIntA("Message Log", "VGrid", 0, szIniFilename)));
 			M->WriteByte(SRMSGMOD_T, "extramicrolf", (BYTE)(GetPrivateProfileIntA("Message Log", "ExtraMicroLF", 0, szIniFilename)));
-
-			M->WriteDword(SRMSGMOD_T, "IndentAmount", GetPrivateProfileIntA("Message Log", "LeftIndent", 0, szIniFilename));
-			M->WriteDword(SRMSGMOD_T, "RightIndent", GetPrivateProfileIntA("Message Log", "RightIndent", 0, szIniFilename));
-
-			M->WriteDword("Chat", "ColorNicklistBG", GetPrivateProfileIntA("Chat", "UserListBG", def, szIniFilename));
 
 			for (i = 0; i < CUSTOM_COLORS; i++) {
 				sprintf(szTemp, "cc%d", i + 1);

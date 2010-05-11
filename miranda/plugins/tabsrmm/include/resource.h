@@ -438,6 +438,7 @@
 #define IDC_RTLTEMPLOVERRIDE            1373
 #define IDC_SELECTTHEME                 1376
 #define IDC_TSLABEL_EXPLAINTHEME		3123
+#define IDC_TSLABEL_REOPENWARN			3124
 #define IDC_RELOAD                      1376
 #define IDC_LOGOPTIONS                  1377
 #define IDC_WINDOWOPTIONS               1378

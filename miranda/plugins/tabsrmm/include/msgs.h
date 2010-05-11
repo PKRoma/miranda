@@ -120,7 +120,6 @@
 #define MWF_EX_DELAYEDSPLITTER 32768
 #define MWF_EX_AVATARCHANGED 65536
 #define MWF_EX_WARNCLOSE     0x20000
-#define MWF_EX_LIMITEDUPDATE 0x40000
 
 #define SMODE_DEFAULT 0
 #define SMODE_MULTIPLE 1
@@ -360,6 +359,7 @@ struct TWindowData {
 	POINT	ptTipActivation;
 	LONG	iInputAreaHeight;
 	bool	fIsAutosizingInput;
+	bool	fLimitedUpdate;
 };
 
 #define MESSAGE_WINDOW_DATA_SIZE offsetof(_MessageWindowData, hdbEventFirst);

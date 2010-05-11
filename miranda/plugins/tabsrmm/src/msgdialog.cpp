@@ -980,13 +980,7 @@ LRESULT CALLBACK SplitterSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 					EndPaint(hwnd, &ps);
 					return(0);
 				}
-				if(PluginConfig.m_fillColor) {
-					HBRUSH br = ::CreateSolidBrush(PluginConfig.m_fillColor);
-					::FillRect(dc, &rc, br);
-					::DeleteObject(br);
-				}
-				else
-					FillRect(dc, &rc, GetSysColorBrush(COLOR_3DFACE));
+				CSkin::FillBack(dc, &rc);
 			}
 			else
 				FillRect(dc, &rc, GetSysColorBrush(COLOR_3DFACE));
@@ -1301,7 +1295,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 
 			dat->bType = SESSIONTYPE_IM;
 			dat->fInsertMode = FALSE;
-
+			dat->fLimitedUpdate = false;
 			dat->Panel = new CInfoPanel(dat);
 
 			newData->item.lParam = (LPARAM) hwndDlg;
@@ -1691,13 +1685,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 				}
 			}
 			else {
-				if(PluginConfig.m_fillColor) {
-					HBRUSH br = CreateSolidBrush(PluginConfig.m_fillColor);
-					FillRect(hdcMem, &rcClient, br);
-					DeleteObject(br);
-				}
-				else
-					FillRect(hdcMem, &rcClient, GetSysColorBrush(COLOR_3DFACE));
+				CSkin::FillBack(hdcMem, &rcClient);
 
 				if(M->isAero()) {
 					LONG temp = rcClient.bottom;
@@ -1733,7 +1721,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 				DeleteObject(hbm);
 				DeleteDC(hdcMem);
 			}
-			if(!(dat->dwFlagsEx & MWF_EX_LIMITEDUPDATE))
+			if(!dat->fLimitedUpdate)
 				SetAeroMargins(dat->pContainer);
 			return(1);
 		}

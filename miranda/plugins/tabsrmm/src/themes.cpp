@@ -40,7 +40,7 @@
 static SKINDESC my_default_skin[] = {
 	IDR_SKIN_AERO, _T("tabskin_aero.png"),
 	IDR_SKIN_AERO_GLOW, _T("tabskin_aero_glow.png"),
-	IDR_SKIN_AERO_SWITCHBAR, _T("tabskin_aero_button.png"),
+	IDR_SKIN_AERO_SWITCHBAR, _T("tabskin_aero_button.png")
 };
 
 CSkin* Skin = 0;
@@ -1100,7 +1100,7 @@ void CSkin::Init(bool fStartup)
 	 */
 
 	setFileName();
-	m_aeroEffect = M->GetByte("aerostyle", AERO_EFFECT_MILK);
+	m_aeroEffect = M->GetDword("aerostyle", AERO_EFFECT_MILK);
 	if(m_fLoadOnStartup && fStartup)
 		Load();
 }
@@ -1210,7 +1210,6 @@ void CSkin::Unload()
 	::FreeTabConfig();
 	::ReloadTabConfig();
 
-	CSideBar::unInitBG();
 	m_bAvatarBorderType = AVBORDER_NORMAL;
 	m_avatarBorderClr = ::GetSysColor(COLOR_3DDKSHADOW);
 	m_sideBarContainerBG = ::GetSysColor(COLOR_3DFACE);
@@ -1672,7 +1671,6 @@ void CSkin::Load()
 			if (j > 0) {
 				m_skinEnabled = true;
 				M->getAeroState();		// refresh aero state (set to false when a skin is successfully loaded and active)
-				CSideBar::unInitBG();
 			}
 
 			GetPrivateProfileString(_T("Avatars"), _T("BorderColor"), _T("000000"), buffer, 20, m_tszFileName);
@@ -1930,151 +1928,156 @@ void CSkin::setupAeroSkins()
 
 	m_tabTop = m_tabBottom = m_tabGlowBottom = m_tabGlowTop = 0;
 
-	if(IsWinVerVistaPlus()) {
 
-		BOOL	isOpaque;
-		HBITMAP hbm;
-		BITMAP  bm;
+	BOOL	isOpaque;
+	HBITMAP hbm;
+	BITMAP  bm;
 
-		if(!m_fAeroSkinsValid)
-			return;
+	if(!m_fAeroSkinsValid)
+		return;
 
-		mir_sntprintf(tszBasePath, MAX_PATH, _T("%s"), M->getDataPath());
-		if(tszBasePath[lstrlen(tszBasePath) - 1] != '\\')
-			_tcscat(tszBasePath, _T("\\"));
+	mir_sntprintf(tszBasePath, MAX_PATH, _T("%s"), M->getDataPath());
+	if(tszBasePath[lstrlen(tszBasePath) - 1] != '\\')
+		_tcscat(tszBasePath, _T("\\"));
 
-		mir_sntprintf(tszFilename, MAX_PATH, _T("%stabskin_aero.png"), tszBasePath);
+	mir_sntprintf(tszFilename, MAX_PATH, _T("%stabskin_aero.png"), tszBasePath);
 
+	if(CMimAPI::m_pfnDwmGetColorizationColor && M->isAero())
 		CMimAPI::m_pfnDwmGetColorizationColor(&m_dwmColor, &isOpaque);
+	else
+		m_dwmColor = PluginConfig.m_fillColor;
 
-		float fr = (float)((m_dwmColor & 0x00ff0000) >> 16);
-		float fg = (float)((m_dwmColor & 0x0000ff00) >> 8);
-		float fb = (float)((m_dwmColor & 0x000000ff));
-		BYTE alphafactor = 255 - ((m_dwmColor & 0xff000000) >> 24);
+	float fr = (float)((m_dwmColor & 0x00ff0000) >> 16);
+	float fg = (float)((m_dwmColor & 0x0000ff00) >> 8);
+	float fb = (float)((m_dwmColor & 0x000000ff));
+	BYTE alphafactor = 255 - ((m_dwmColor & 0xff000000) >> 24);
 
-		/*
-		 * a bit tricky, because for low alpha settings (high DWM transparency), the dwm
-		 * color is almost dark gray, so we need to intensify the strongest color a bit more than
-		 * the others. This will give us a good match for the dwm color that can be used
-		 * to render non transparent stuff (i.e. the tool bar).
-		 *
-		 * TODO: this isn't perfect yet, for some colors, the result is a bit off...
-		 */
+	/*
+	 * a bit tricky, because for low alpha settings (high DWM transparency), the dwm
+	 * color is almost dark gray, so we need to intensify the strongest color a bit more than
+	 * the others. This will give us a good match for the dwm color that can be used
+	 * to render non transparent stuff (i.e. the tool bar).
+	 *
+	 * TODO: this isn't perfect yet, for some colors, the result is a bit off...
+	 */
 
-		if(!isOpaque && alphafactor > 150 && !(fr == fg && fg == fb)) {
-			float fmax =  max(max(fr,fg), fb);
+	if(!isOpaque && alphafactor > 150 && !(fr == fg && fg == fb)) {
+		float fmax =  max(max(fr,fg), fb);
 
-			if(fmax == fr) {
-				fr *= (alphafactor / 100 * 2.2);
-				fr = min(fr, 255);
-				fb = min(fb * alphafactor / 100, 255);
-				fg = min(fg * alphafactor / 100, 255);
-			} else if(fmax == fg) {
-				fg *= (alphafactor / 100 * 2.2);
-				fg = min(fg, 255);
-				fr = min(fr * alphafactor / 100, 255);
-				fb = min(fb * alphafactor / 100, 255);
-			} else {
-				fb *= (alphafactor / 100 * 2.2);
-				fb = min(fb, 255);
-				fr = min(fr * alphafactor / 100, 255);
-				fg = min(fg * alphafactor / 100, 255);
-			}
+		if(fmax == fr) {
+			fr *= (alphafactor / 100 * 2.2);
+			fr = min(fr, 255);
+			fb = min(fb * alphafactor / 100, 255);
+			fg = min(fg * alphafactor / 100, 255);
+		} else if(fmax == fg) {
+			fg *= (alphafactor / 100 * 2.2);
+			fg = min(fg, 255);
+			fr = min(fr * alphafactor / 100, 255);
+			fb = min(fb * alphafactor / 100, 255);
+		} else {
+			fb *= (alphafactor / 100 * 2.2);
+			fb = min(fb, 255);
+			fr = min(fr * alphafactor / 100, 255);
+			fg = min(fg * alphafactor / 100, 255);
 		}
+	}
 
-		m_dwmColorRGB = RGB((BYTE)fr, (BYTE)fg, (BYTE)fb);
+	m_dwmColorRGB = RGB((BYTE)fr, (BYTE)fg, (BYTE)fb);
 
-		FIBITMAP *fib = (FIBITMAP *)CallService(MS_IMG_LOAD, (WPARAM)tszFilename, IMGL_TCHAR | IMGL_RETURNDIB);
+	FIBITMAP *fib = (FIBITMAP *)CallService(MS_IMG_LOAD, (WPARAM)tszFilename, IMGL_TCHAR | IMGL_RETURNDIB);
 
-		hbm = FIF->FI_CreateHBITMAPFromDIB(fib);
-		CImageItem::Colorize(hbm, GetRValue(m_dwmColorRGB),
-							 GetGValue(m_dwmColorRGB),
-							 GetBValue(m_dwmColorRGB));
+	hbm = FIF->FI_CreateHBITMAPFromDIB(fib);
 
-		CImageItem::PreMultiply(hbm, 1);
+	CImageItem::Colorize(hbm, GetRValue(m_dwmColorRGB),
+						 GetGValue(m_dwmColorRGB),
+						 GetBValue(m_dwmColorRGB));
 
-		GetObject(hbm, sizeof(bm), &bm);
-		m_tabTop = new CImageItem(4, 4, 4, 4, 0, hbm, IMAGE_FLAG_DIVIDED | IMAGE_PERPIXEL_ALPHA,
+	CImageItem::PreMultiply(hbm, 1);
+
+	GetObject(hbm, sizeof(bm), &bm);
+	m_tabTop = new CImageItem(4, 4, 4, 4, 0, hbm, IMAGE_FLAG_DIVIDED | IMAGE_PERPIXEL_ALPHA,
+							  0, 255, 30, 80, 50, 100);
+
+	m_tabTop->setAlphaFormat(AC_SRC_ALPHA, 255);
+	m_tabTop->setMetrics(bm.bmWidth, bm.bmHeight);
+
+
+	/*
+	 * created inverted bitmap for bottom tabs
+	 */
+
+	FIF->FI_FlipVertical(fib);
+
+	hbm = FIF->FI_CreateHBITMAPFromDIB(fib);
+
+	CImageItem::Colorize(hbm, GetRValue(m_dwmColorRGB),
+						 GetGValue(m_dwmColorRGB),
+						 GetBValue(m_dwmColorRGB));
+
+	CImageItem::PreMultiply(hbm, 1);
+	FIF->FI_Unload(fib);
+
+	GetObject(hbm, sizeof(bm), &bm);
+	m_tabBottom = new CImageItem(4, 4, 4, 4, 0, hbm, IMAGE_FLAG_DIVIDED | IMAGE_PERPIXEL_ALPHA,
+								 0, 255, 30, 80, 50, 100);
+
+	m_tabBottom->setAlphaFormat(AC_SRC_ALPHA, 255);
+	m_tabBottom->setMetrics(bm.bmWidth, bm.bmHeight);
+
+
+	mir_sntprintf(tszFilename, MAX_PATH, _T("%stabskin_aero_glow.png"), tszBasePath);
+
+	fib = (FIBITMAP *)CallService(MS_IMG_LOAD, (WPARAM)tszFilename, IMGL_TCHAR | IMGL_RETURNDIB);
+
+	COLORREF glowColor = M->GetDword("aeroGlow", RGB(40, 40, 255));
+	hbm = FIF->FI_CreateHBITMAPFromDIB(fib);
+	CImageItem::Colorize(hbm, GetRValue(glowColor), GetGValue(glowColor), GetBValue(glowColor));
+	CImageItem::PreMultiply(hbm, 1);
+
+	GetObject(hbm, sizeof(bm), &bm);
+	m_tabGlowTop = new CImageItem(4, 4, 4, 4, 0, hbm, IMAGE_FLAG_DIVIDED | IMAGE_PERPIXEL_ALPHA,
 								  0, 255, 30, 80, 50, 100);
 
-		m_tabTop->setAlphaFormat(AC_SRC_ALPHA, 255);
-		m_tabTop->setMetrics(bm.bmWidth, bm.bmHeight);
+	m_tabGlowTop->setAlphaFormat(AC_SRC_ALPHA, 255);
+	m_tabGlowTop->setMetrics(bm.bmWidth, bm.bmHeight);
 
+	FIF->FI_FlipVertical(fib);
 
-		/*
-		 * created inverted bitmap for bottom tabs
-		 */
+	hbm = FIF->FI_CreateHBITMAPFromDIB(fib);
+	CImageItem::Colorize(hbm, GetRValue(glowColor), GetGValue(glowColor), GetBValue(glowColor));
+	CImageItem::PreMultiply(hbm, 1);
+	FIF->FI_Unload(fib);
 
-		FIF->FI_FlipVertical(fib);
-
-		hbm = FIF->FI_CreateHBITMAPFromDIB(fib);
-		CImageItem::Colorize(hbm, GetRValue(m_dwmColorRGB),
-							 GetGValue(m_dwmColorRGB),
-							 GetBValue(m_dwmColorRGB));
-		CImageItem::PreMultiply(hbm, 1);
-		FIF->FI_Unload(fib);
-
-		GetObject(hbm, sizeof(bm), &bm);
-		m_tabBottom = new CImageItem(4, 4, 4, 4, 0, hbm, IMAGE_FLAG_DIVIDED | IMAGE_PERPIXEL_ALPHA,
+	GetObject(hbm, sizeof(bm), &bm);
+	m_tabGlowBottom = new CImageItem(4, 4, 4, 4, 0, hbm, IMAGE_FLAG_DIVIDED | IMAGE_PERPIXEL_ALPHA,
 									 0, 255, 30, 80, 50, 100);
 
-		m_tabBottom->setAlphaFormat(AC_SRC_ALPHA, 255);
-		m_tabBottom->setMetrics(bm.bmWidth, bm.bmHeight);
+	m_tabGlowBottom->setAlphaFormat(AC_SRC_ALPHA, 255);
+	m_tabGlowBottom->setMetrics(bm.bmWidth, bm.bmHeight);
 
+	if(m_switchBarItem)
+		delete m_switchBarItem;
 
-		mir_sntprintf(tszFilename, MAX_PATH, _T("%stabskin_aero_glow.png"), tszBasePath);
+	/*
+	 * background item for the button switch bar
+	 */
+	mir_sntprintf(tszFilename, MAX_PATH, _T("%stabskin_aero_button.png"), tszBasePath);
 
-		fib = (FIBITMAP *)CallService(MS_IMG_LOAD, (WPARAM)tszFilename, IMGL_TCHAR | IMGL_RETURNDIB);
+	hbm  = (HBITMAP)CallService(MS_IMG_LOAD, (WPARAM)tszFilename, IMGL_TCHAR);
 
-		COLORREF glowColor = M->GetDword("aeroGlow", RGB(40, 40, 255));
-		hbm = FIF->FI_CreateHBITMAPFromDIB(fib);
-		CImageItem::Colorize(hbm, GetRValue(glowColor), GetGValue(glowColor), GetBValue(glowColor));
-		CImageItem::PreMultiply(hbm, 1);
+	CImageItem::Colorize(hbm, GetRValue(m_dwmColorRGB),
+					 	 GetGValue(m_dwmColorRGB),
+					 	 GetBValue(m_dwmColorRGB));
 
-		GetObject(hbm, sizeof(bm), &bm);
-		m_tabGlowTop = new CImageItem(4, 4, 4, 4, 0, hbm, IMAGE_FLAG_DIVIDED | IMAGE_PERPIXEL_ALPHA,
-									  0, 255, 30, 80, 50, 100);
+	CImageItem::PreMultiply(hbm, 1);
 
-		m_tabGlowTop->setAlphaFormat(AC_SRC_ALPHA, 255);
-		m_tabGlowTop->setMetrics(bm.bmWidth, bm.bmHeight);
+	GetObject(hbm, sizeof(bm), &bm);
 
-		FIF->FI_FlipVertical(fib);
+	m_switchBarItem = new CImageItem(4, 4, 4, 4, 0, hbm, IMAGE_FLAG_DIVIDED | IMAGE_PERPIXEL_ALPHA,
+									 0, 255, 2, 12, 10, 20);
 
-		hbm = FIF->FI_CreateHBITMAPFromDIB(fib);
-		CImageItem::Colorize(hbm, GetRValue(glowColor), GetGValue(glowColor), GetBValue(glowColor));
-		CImageItem::PreMultiply(hbm, 1);
-		FIF->FI_Unload(fib);
-
-		GetObject(hbm, sizeof(bm), &bm);
-		m_tabGlowBottom = new CImageItem(4, 4, 4, 4, 0, hbm, IMAGE_FLAG_DIVIDED | IMAGE_PERPIXEL_ALPHA,
- 										 0, 255, 30, 80, 50, 100);
-
-		m_tabGlowBottom->setAlphaFormat(AC_SRC_ALPHA, 255);
-		m_tabGlowBottom->setMetrics(bm.bmWidth, bm.bmHeight);
-
-		if(m_switchBarItem)
-			delete m_switchBarItem;
-
-		/*
-		 * background item for the button switch bar
-		 */
-		mir_sntprintf(tszFilename, MAX_PATH, _T("%stabskin_aero_button.png"), tszBasePath);
-
-		hbm  = (HBITMAP)CallService(MS_IMG_LOAD, (WPARAM)tszFilename, IMGL_TCHAR);
-
-		CImageItem::Colorize(hbm, GetRValue(m_dwmColorRGB),
-							 GetGValue(m_dwmColorRGB),
-							 GetBValue(m_dwmColorRGB));
-		CImageItem::PreMultiply(hbm, 1);
-
-		GetObject(hbm, sizeof(bm), &bm);
-
-		m_switchBarItem = new CImageItem(4, 4, 4, 4, 0, hbm, IMAGE_FLAG_DIVIDED | IMAGE_PERPIXEL_ALPHA,
- 										 0, 255, 2, 12, 10, 20);
-
-		m_switchBarItem->setAlphaFormat(AC_SRC_ALPHA, 255);
-		m_switchBarItem->setMetrics(bm.bmWidth, bm.bmHeight);
-	}
+	m_switchBarItem->setAlphaFormat(AC_SRC_ALPHA, 255);
+	m_switchBarItem->setMetrics(bm.bmWidth, bm.bmHeight);
 }
 
 /**
@@ -2253,7 +2256,7 @@ UINT CSkin::NcCalcRichEditFrame(HWND hwnd, const TWindowData *mwdat, UINT skinID
 
 /*
  * process WM_NCPAINT for the rich edit control. Draw a visual style border and avoid classic static edge / client edge
- * may also draw a skin item around the rich edit control.
+ * may also draw a colorized border around the control
  */
 
 UINT CSkin::DrawRichEditFrame(HWND hwnd, const TWindowData *mwdat, UINT skinID, UINT msg, WPARAM wParam, LPARAM lParam, WNDPROC OldWndProc)
@@ -2348,8 +2351,6 @@ DWORD __fastcall CSkin::HexStringToLong(const TCHAR *szSource)
  * @return
  */
 
-static POINT ptShadow = {2,2};
-
 int CSkin::RenderText(HDC hdc, HANDLE hTheme, const TCHAR *szText, RECT *rc, DWORD dtFlags, const int iGlowSize, COLORREF clr)
 {
 #if defined(_UNICODE)
@@ -2363,11 +2364,6 @@ int CSkin::RenderText(HDC hdc, HANDLE hTheme, const TCHAR *szText, RECT *rc, DWO
 		else {
 			dto.dwFlags = DTT_TEXTCOLOR|DTT_COMPOSITED;//|DTT_SHADOWTYPE|DTT_SHADOWOFFSET|DTT_SHADOWCOLOR|DTT_BORDERSIZE|DTT_BORDERCOLOR;
 			dto.crText = clr;
-			/*dto.crShadow = 0;
-			dto.iTextShadowType = TST_CONTINUOUS;
-			dto.fApplyOverlay = FALSE;
-			dto.ptShadowOffset = ptShadow;
-			dto.crBorder = 0;*/
 		}
 		dto.iBorderSize = 10;
 		return(CMimAPI::m_pfnDrawThemeTextEx(hTheme, hdc, BP_PUSHBUTTON, PBS_NORMAL, szText, -1, dtFlags, rc, &dto));
@@ -2563,7 +2559,9 @@ void CSkin::RenderToolbarBG(const TWindowData *dat, HDC hdc, const RECT &rcWindo
 		dat->pContainer->szOldToolbarSize.cx = cx;
 		dat->pContainer->szOldToolbarSize.cy = cy;
 
-		if(fAero || (M->isVSThemed() && fTbColorsValid)) {
+		BOOL fMustDrawNonThemed = ((fAero || (M->isVSThemed() && fTbColorsValid)) && !M->GetByte(SRMSGMOD_T, "forceThemedToolbar", 0));
+
+		if(fMustDrawNonThemed) {
 			m_tmp_tb_high = PluginConfig.m_tbBackgroundHigh ? PluginConfig.m_tbBackgroundHigh :
 					(m_pCurrentAeroEffect ? m_pCurrentAeroEffect->m_clrToolbar : 0xf0f0f0);
 			m_tmp_tb_low = PluginConfig.m_tbBackgroundLow ? PluginConfig.m_tbBackgroundLow :
@@ -2579,8 +2577,7 @@ void CSkin::RenderToolbarBG(const TWindowData *dat, HDC hdc, const RECT &rcWindo
 		rcCachedToolbar.right = cx;
 		rcCachedToolbar.bottom = cy;
 
-		if(fAero || (M->isVSThemed() && fTbColorsValid)) {
-			//::FillRect(dat->pContainer->cachedToolbarDC, &rcCachedToolbar, ::GetSysColorBrush(COLOR_3DFACE));
+		if(fMustDrawNonThemed) {
 			::DrawAlpha(dat->pContainer->cachedToolbarDC, &rcCachedToolbar, m_tmp_tb_high, 55 + bAlphaOffset, m_tmp_tb_low, 0, 9, 0, 0, 0);
 			//::BitBlt(dat->pContainer->cachedToolbarDC, 0, 0, cx, cy, hdc,
 				//	 rcToolbar.left, rcToolbar.top, SRCCOPY);
@@ -2722,9 +2719,6 @@ void CSkin::initAeroEffect()
 
 	TContainerData *pContainer = pFirstContainer;
 
-	if(pContainer)
-		CSideBar::initBG(pContainer->hwnd);
-
 	while (pContainer) {
 		InvalidateRect(GetDlgItem(pContainer->hwnd, IDC_MSGTABS), NULL, TRUE);
 		InvalidateRect(pContainer->hwnd, NULL, TRUE);
@@ -2736,13 +2730,16 @@ void CSkin::initAeroEffect()
 
 void CSkin::setAeroEffect(LRESULT effect)
 {
+	if(effect == -1)
+		effect = static_cast<LRESULT>(M->GetDword(SRMSGMOD_T, "aerostyle", AERO_EFFECT_NONE));
+
 	if(effect >= 0 && effect < AERO_EFFECT_LAST)
 		m_aeroEffect = (UINT)effect;
 	else
 		m_aeroEffect = AERO_EFFECT_NONE;
 
 	initAeroEffect();
-	M->WriteByte(SRMSGMOD_T, "aerostyle", m_aeroEffect);
+	M->WriteDword(SRMSGMOD_T, "aerostyle", m_aeroEffect);
 }
 
 /**
@@ -2763,10 +2760,8 @@ void CSkin::extractSkinsAndLogo(bool fForceOverwrite) const
 	m_fAeroSkinsValid = true;
 
 	try {
-		if(PluginConfig.m_WinVerMajor >=6) {
-			for(int i = 0; i < safe_sizeof(my_default_skin); i++)
-				Utils::extractResource(g_hInst, my_default_skin[i].ulID, _T("SKIN_GLYPH"), tszBasePath, my_default_skin[i].tszName, fForceOverwrite);
-		}
+		for(int i = 0; i < safe_sizeof(my_default_skin); i++)
+			Utils::extractResource(g_hInst, my_default_skin[i].ulID, _T("SKIN_GLYPH"), tszBasePath, my_default_skin[i].tszName, fForceOverwrite);
 	}
 	catch(CRTException& ex) {
 		ex.display();
@@ -2797,10 +2792,21 @@ void CSkin::UpdateToolbarBG(TWindowData* dat, DWORD dwRdwOptFlags)
 		rcUpdate.right = rcTmp.right;
 		rcUpdate.bottom = rcTmp.bottom;
 
-		dat->dwFlagsEx |= MWF_EX_LIMITEDUPDATE;
+		if(M->isAero() || M->isDwmActive())
+			dat->fLimitedUpdate = true; 	// skip unrelevant window updates when we have buffered paint avail
 		::RedrawWindow(dat->hwnd, &rcUpdate, 0, RDW_ERASE|RDW_INVALIDATE|RDW_UPDATENOW|dwRdwOptFlags);
 		::BB_RedrawButtons(dat);
-		dat->dwFlagsEx &= ~MWF_EX_LIMITEDUPDATE;
+		dat->fLimitedUpdate = false;
 	}
 }
 
+void CSkin::FillBack(const HDC hdc, RECT* rc)
+{
+	if(PluginConfig.m_fillColor) {
+		HBRUSH br = CreateSolidBrush(PluginConfig.m_fillColor);
+		FillRect(hdc, rc, br);
+		DeleteObject(br);
+	}
+	else
+		FillRect(hdc, rc, GetSysColorBrush(COLOR_3DFACE));
+}

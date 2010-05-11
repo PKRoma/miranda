@@ -714,8 +714,7 @@ void TSAPI DM_InitRichEdit(TWindowData *dat)
 {
 	char*				szStreamOut = NULL;
 	SETTEXTEX 			stx = {ST_DEFAULT, CP_UTF8};
-	COLORREF 			colour = dat->bType == SESSIONTYPE_IM ? M->GetDword(FONTMODULE, "inbg", SRMSGDEFSET_BKGCOLOUR) :
-								 M->GetDword(FONTMODULE, SRMSGSET_BKGCOLOUR, SRMSGDEFSET_BKGCOLOUR);
+	COLORREF 			colour;
 	COLORREF 			inputcharcolor;
 	CHARFORMAT2A 		cf2;
 	LOGFONTA 			lf;
@@ -728,6 +727,7 @@ void TSAPI DM_InitRichEdit(TWindowData *dat)
 	ZeroMemory(&cf2, sizeof(CHARFORMAT2A));
 
 	dat->inputbg = fIsChat ? M->GetDword(FONTMODULE, "inputbg", SRMSGDEFSET_BKGCOLOUR) : dat->pContainer->theme.inputbg;
+	colour = fIsChat ? M->GetDword(FONTMODULE, SRMSGSET_BKGCOLOUR, SRMSGDEFSET_BKGCOLOUR) : dat->pContainer->theme.bg;
 
 	if(!fIsChat) {
 		if (GetWindowTextLengthA(hwndEdit) > 0)
@@ -1287,7 +1287,8 @@ HWND TSAPI DM_CreateClist(TWindowData *dat)
 		SendMessage(hwndClist, CLM_SETHIDEEMPTYGROUPS, (WPARAM) FALSE, 0);
 	SendMessage(hwndClist, CLM_FIRST + 106, 0, 1);
 	SendMessage(hwndClist, CLM_AUTOREBUILD, 0, 0);
-
+	if(hwndClist)
+		RedrawWindow(hwndClist, 0, 0, RDW_INVALIDATE|RDW_ERASE|RDW_UPDATENOW);
 	return hwndClist;
 }
 
@@ -1744,7 +1745,7 @@ void TSAPI DM_EventAdded(TWindowData *dat, WPARAM wParam, LPARAM lParam)
 
 		if ((HANDLE) lParam != dat->hDbEventFirst) {
 			HANDLE nextEvent = (HANDLE) CallService(MS_DB_EVENT_FINDNEXT, lParam, 0);
-			if (PluginConfig.m_FixFutureTimestamps || nextEvent == 0) {
+			if (1 || nextEvent == 0) {
 				if (!(dat->dwFlagsEx & MWF_SHOW_SCROLLINGDISABLED))
 					SendMessage(hwndDlg, DM_APPENDTOLOG, lParam, 0);
 				else {
@@ -2164,8 +2165,6 @@ void DrawStatusIcons(struct TWindowData *dat, HDC hDC, RECT r, int gap)
 	LONG				cy_icon = PluginConfig.m_smcyicon;
 	LONG				y = (r.top + r.bottom - cx_icon) >> 1;
 
-	if(!CSkin::m_skinEnabled && !M->isAero())
-		y--;
 	SetBkMode(hDC, TRANSPARENT);
 	while (current) {
 		if (current->sid.flags&MBF_OWNERSTATE) {

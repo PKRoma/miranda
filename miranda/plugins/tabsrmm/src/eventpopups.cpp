@@ -653,7 +653,6 @@ static int PopupShowT(NEN_OPTIONS *pluginOptions, HANDLE hContact, HANDLE hEvent
 	DBEVENTINFO 	dbe;
 	long 			iSeconds = 0;
 	TCHAR 			*szPreview = NULL;
-	DWORD 			codePage;
 
 	//there has to be a maximum number of popups shown at the same time
 	if(PopupList.size() >= MAX_POPUPS)
@@ -708,8 +707,6 @@ static int PopupShowT(NEN_OPTIONS *pluginOptions, HANDLE hContact, HANDLE hEvent
 	pud.lchContact = hContact;
 	pud.PluginWindowProc = (WNDPROC)PopupDlgProc;
 	pud.PluginData = pdata;
-
-	codePage = M->GetDword(hContact, "ANSIcodepage", PluginConfig.m_LangPackCP);
 
 	if (hContact)
 		mir_sntprintf(pud.lptzContactName, MAX_CONTACTNAME, _T("%s"), (TCHAR *)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)hContact, GCDNF_TCHAR));
@@ -837,7 +834,6 @@ int TSAPI UpdateTrayMenu(const TWindowData *dat, WORD wStatus, const char *szPro
 				SetEvent(g_hEvent);
 			SetMenuItemInfo(PluginConfig.g_hMenuTrayUnread, (UINT_PTR)hContact, FALSE, &mii);
 		} else {
-			UINT codePage = M->GetDword(hContact, "ANSIcodepage", PluginConfig.m_LangPackCP);
 			szNick = (TCHAR *)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)hContact, GCDNF_TCHAR);
 			if (CheckMenuItem(PluginConfig.g_hMenuTrayUnread, (UINT_PTR)hContact, MF_BYCOMMAND | MF_UNCHECKED) == -1) {
 				mir_sntprintf(szMenuEntry, safe_sizeof(szMenuEntry), _T("%s: %s (%s) [%d]"), tszFinalProto, szNick, szMyStatus, fromEvent ? 1 : 0);

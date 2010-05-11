@@ -1,6 +1,6 @@
-#define VER_PLAIN	"3,0,0,28"
+#define VER_PLAIN	"3,0,0,29"
 #define _VER_MAJOR	3
 #define _VER_MINOR  0
 #define _VER_REVISION 0
-#define _VER_BUILD	28
+#define _VER_BUILD	29
 

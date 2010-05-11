@@ -35,7 +35,20 @@ are currently no downloads for it, you'll have to compile it from source.
 			Detailed change log
 			===================
 
-Version 3.0.0.27 - 2010/05/XX
+Version 3.0.0.29 - 2010/05/XX
+
+	* fixed a number of drawing problems
+	
+	* DB tweak to force tool bar always use visual styles
+	
+	* added 2 new common colors for painting the UI in aero and visual styles
+	  mode.
+	  
+	* improved exporting and importing of theme files to support UI settings that
+	  are new in TabSRMM 3.
+	  
+	   
+Version 3.0.0.27 - 2010/05/06
 
 	* send menu pulldown button is now always available, even if the
 	  send button itself is disabled.

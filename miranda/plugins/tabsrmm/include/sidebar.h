@@ -182,8 +182,6 @@ public:
 	void								scrollIntoView					(const CSideBarButton *item = 0);
 	void								resizeScrollWnd					(LONG x, LONG y, LONG width, LONG height) const;
 	static LRESULT CALLBACK 			wndProcStub						(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
-	static void							initBG							(const HWND hwnd);
-	static void							unInitBG						();
 
 private:
 	void								createScroller();
@@ -214,8 +212,6 @@ private:
 	bool								m_isVisible;							// visible aswell (not collapsed)
 	TSideBarLayout*						m_currentLayout;						// the layout in use. will be passed to new button items
 	UINT								m_uLayout;								// layout id number, currently in use
-
-	static HBITMAP						m_BGhbm;
 
 private:
 	/*

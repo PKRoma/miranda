@@ -499,9 +499,6 @@ LONG_PTR CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			bool fNewAero = M->getAeroState();					// refresh dwm state
 			SendMessage(hwndDlg, WM_THEMECHANGED, 0, 0);
 			TContainerData *pContainer = pFirstContainer;
-			CSideBar::unInitBG();
-			if(pContainer)
-				CSideBar::initBG(pContainer->hwnd);
 
 			while (pContainer) {
 				if(fNewAero)

@@ -264,7 +264,7 @@ BEGIN
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,135,101,184,10
     CONTROL         "Play sounds for the active tab / window",IDC_O_SOUNDSFOCUSED,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,135,113,184,10
-    LTEXT           "Options marked with an asterisk (*) may not take effect in open message windows or tabs.",IDC_STATIC,6,203,171,18
+    LTEXT           "Options marked with an asterisk (*) may not take effect in open message windows or tabs.",IDC_TSLABEL_REOPENWARN,6,203,171,18
 END
 
 IDD_OPT_MSGDLG DIALOGEX 0, 0, 303, 226

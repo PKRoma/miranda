@@ -522,6 +522,8 @@ int TSAPI MsgWindowMenuHandler(TWindowData *dat, int selection, int menuId)
 					ReadThemeFromINI(szFilename, 0, 0, dwFlags);
 					CacheLogFonts();
 					CacheMsgLogIcons();
+					PluginConfig.reloadSettings();
+					CSkin::setAeroEffect(-1);
 					M->BroadcastMessage(DM_OPTIONSAPPLIED, 1, 0);
 					M->BroadcastMessage(DM_FORCEDREMAKELOG, (WPARAM)hwndDlg, (LPARAM)(dat->dwFlags & MWF_LOG_ALL));
 				}

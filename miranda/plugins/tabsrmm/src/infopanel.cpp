@@ -274,7 +274,7 @@ HFONT CInfoPanel::setUnderlinedFont(const HDC hdc, HFONT hFontOrig)
  */
 void CInfoPanel::renderBG(const HDC hdc, RECT& rc, CSkinItem *item, bool fAero, bool fAutoCalc) const
 {
-	if(m_active && !(m_dat->dwFlags & MWF_EX_LIMITEDUPDATE)) {
+	if(m_active) {
 
 		if(fAutoCalc)
 			rc.bottom = m_height + 1;

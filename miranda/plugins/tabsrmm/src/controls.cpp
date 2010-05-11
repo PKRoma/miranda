@@ -790,10 +790,16 @@ LONG_PTR CALLBACK StatusBarSubclassProc(HWND hWnd, UINT msg, WPARAM wParam, LPAR
 				FillRect(hdcMem, &rcClient, CSkin::m_BrushBack);
 				CSkin::ApplyAeroEffect(hdcMem, &rcClient, CSkin::AERO_EFFECT_AREA_STATUSBAR);
 			} else {
-				FillRect(hdcMem, &rcClient, GetSysColorBrush(COLOR_3DFACE));
+				CSkin::FillBack(hdcMem, &rcClient);
 				RECT rcFrame = rcClient;
-				InflateRect(&rcFrame, -1, -1);
-				DrawEdge(hdcMem, &rcClient, BDR_RAISEDINNER | BDR_SUNKENOUTER, BF_RECT);
+				if(PluginConfig.m_fillColor == 0) {
+					InflateRect(&rcFrame, -2, -1);
+					DrawEdge(hdcMem, &rcClient, BDR_RAISEDINNER | BDR_SUNKENOUTER, BF_RECT);
+				}
+				else {
+					CSkin::m_switchBarItem->setAlphaFormat(AC_SRC_ALPHA, 180);
+					CSkin::m_switchBarItem->Render(hdcMem, &rcFrame, true);
+				}
 			}
 			for (i = 0; i < (int)nParts; i++) {
 				SendMessage(hWnd, SB_GETRECT, (WPARAM)i, (LPARAM)&itemRect);

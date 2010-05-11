@@ -100,7 +100,7 @@ public:
 	void		reloadAdv();
 	void		reloadSystemStartup();
 	void		reloadSystemModulesChanged();
-	void		reloadSettings();
+	void		reloadSettings(bool fReloadSkins = true);
 
 	void		hookSystemEvents();
 
@@ -142,7 +142,6 @@ public:
 	int         m_LimitStaticAvatarHeight;
 	int         m_SendFormat;
 	int         m_FormatWholeWordsOnly;
-	int         m_FixFutureTimestamps;
 	int         m_RTLDefault;
 	int         m_MathModAvail;
 	TCHAR       m_MathModStartDelimiter[40];

@@ -1943,6 +1943,7 @@ INT_PTR CALLBACK RoomWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 			psi->hWnd = hwndDlg;
 			psi->dat = dat;
 			dat->fIsAutosizingInput = IsAutoSplitEnabled(dat);
+			dat->fLimitedUpdate = false;
 			dat->iInputAreaHeight = -1;
 			if(!dat->pContainer->settings->fPrivate)
 				psi->iSplitterY = g_Settings.iSplitterY;
@@ -3375,13 +3376,7 @@ LABEL_SHOWWINDOW:
 				}
 			}
 			else {
-				if(PluginConfig.m_fillColor) {
-					HBRUSH br = CreateSolidBrush(PluginConfig.m_fillColor);
-					FillRect(hdcMem, &rcClient, br);
-					DeleteObject(br);
-				}
-				else
-					FillRect(hdcMem, &rcClient, GetSysColorBrush(COLOR_3DFACE));
+				CSkin::FillBack(hdcMem, &rcClient);
 				
 				if(M->isAero()) {
 					LONG temp = rcClient.bottom;
@@ -3408,7 +3403,7 @@ LABEL_SHOWWINDOW:
 				DeleteObject(hbm);
 				DeleteDC(hdcMem);
 			}
-			if(!(dat->dwFlagsEx & MWF_EX_LIMITEDUPDATE))
+			if(!dat->fLimitedUpdate)
 				SetAeroMargins(dat->pContainer);
 			return(1);
 		}

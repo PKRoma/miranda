@@ -835,10 +835,9 @@ static INT_PTR CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, 
 				else if (sizeChanged)
 					SendMessage((HWND)item.lParam, DM_CHECKSIZE, 0, 0);
 			}
-			//SetAeroMargins(pContainer);  FIXME maybe
 			pContainer->SideBar->scrollIntoView();
 
-			if(!M->isDwmActive()) {					// aero mode uses buffered paint, no forced redraw needed
+			if(!M->isAero()) {					// aero mode uses buffered paint, no forced redraw needed
 				RedrawWindow(hwndTab, NULL, NULL, RDW_INVALIDATE | (pContainer->bSizingLoop ? RDW_ERASE : 0));
 				RedrawWindow(hwndDlg, NULL, NULL, (bSkinned ? RDW_FRAME : 0) | RDW_INVALIDATE | ((pContainer->bSizingLoop || wParam == SIZE_RESTORED ) ? RDW_ERASE : 0));
 			}
@@ -956,6 +955,7 @@ panel_found:
 				/*
 				 * tooltips
 				 */
+#if defined(__FEAT_DEPRECATED_TABTIPS)
 				case TTN_GETDISPINFO: {
 					POINT 			pt;
 					int   			iItem;
@@ -1001,6 +1001,7 @@ panel_found:
 					}
 					break;
 				}
+#endif
 				case NM_RCLICK: {
 					HMENU subMenu;
 					POINT pt, pt1;
@@ -1685,9 +1686,21 @@ buttons_done:
 				FillRect(hdcMem, &rc, CSkin::m_BrushBack);
 				CSkin::FinalizeBufferedPaint(hbp, &rc);
 			}
-			else
-				FillRect(hdc, &rc, GetSysColorBrush(COLOR_3DFACE));
+			else {
+				CSkin::FillBack(hdc, &rc);
+				if(pContainer->SideBar->isActive() && pContainer->SideBar->isVisible()) {
 
+					HPEN hPen = ::CreatePen(PS_SOLID, 1, PluginConfig.m_cRichBorders ? PluginConfig.m_cRichBorders : ::GetSysColor(COLOR_3DSHADOW));
+					HPEN hOldPen = reinterpret_cast<HPEN>(::SelectObject(hdc, hPen));
+					LONG x = (pContainer->SideBar->getFlags() & CSideBar::SIDEBARORIENTATION_LEFT ? pContainer->SideBar->getWidth() - 2 + pContainer->tBorder_outer_left :
+								rc.right - pContainer->SideBar->getWidth() + 1 - pContainer->tBorder_outer_right);
+					::MoveToEx(hdc, x, rc.top, 0);
+					::LineTo(hdc, x, rc.bottom);
+					::SelectObject(hdc, hOldPen);
+					::DeleteObject(hPen);
+
+				}
+			}
 			SetWindowLongPtr(hwndDlg, DWLP_MSGRESULT, 1);
 			return TRUE;
 		}

@@ -178,7 +178,7 @@ void CGlobals::reloadSystemStartup()
 	g_DPIscaleY = 						GetDeviceCaps(hScrnDC, LOGPIXELSY) / 96.0;
 	ReleaseDC(0, hScrnDC);
 
-	reloadSettings();
+	reloadSettings(false);
 	reloadAdv();
 	hookSystemEvents();
 }
@@ -281,7 +281,7 @@ void CGlobals::reloadSystemModulesChanged()
  * reload plugin settings on startup and runtime. Most of these setttings can be
  * changed while plugin is running.
  */
-void CGlobals::reloadSettings()
+void CGlobals::reloadSettings(bool fReloadSkins)
 {
 	m_ncm.cbSize = sizeof(NONCLIENTMETRICS);
 	SystemParametersInfo(SPI_GETNONCLIENTMETRICS, sizeof(NONCLIENTMETRICS), &m_ncm, 0);
@@ -316,7 +316,6 @@ void CGlobals::reloadSettings()
 	m_LimitStaticAvatarHeight = 		(int)M->GetDword("avatarheight", 96);
 	m_SendFormat = 						(int)M->GetByte("sendformat", 0);
 	m_FormatWholeWordsOnly = 1;
-	m_FixFutureTimestamps = 			(int)M->GetByte("do_fft", 1);
 	m_RTLDefault = 						(int)M->GetByte("rtldefault", 0);
 	m_TabAppearance = 					(int)M->GetDword("tabconfig", TCF_FLASHICON | TCF_SINGLEROWTABCONTROL);
 	m_panelHeight = 					(DWORD)M->GetDword("panelheight", CInfoPanel::DEGRADE_THRESHOLD);
@@ -345,6 +344,8 @@ void CGlobals::reloadSettings()
 	::CopyMemory(&globalContainerSettings, &_cnt_default, sizeof(TContainerSettings));
 	Utils::ReadContainerSettingsFromDB(0, &globalContainerSettings);
 	globalContainerSettings.fPrivate = false;
+	if(fReloadSkins)
+		Skin->setupAeroSkins();
 }
 
 /**
