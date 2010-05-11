@@ -387,7 +387,7 @@ LBL_FatalError:
 		if ( port_temp = xmpp_client_query( connectHost )) { // port_temp will be > 0 if resolution is successful
 			Log("%s%s resolved to %s:%d","_xmpp-client._tcp.",info->server,connectHost,port_temp);
 			mir_snprintf( info->manualHost, SIZEOF( info->manualHost ), "%s", connectHost );
-			if (info->port==0 || info->port==5222 || info->port==5223)
+			if (info->port==0 || info->port==5222)
 				info->port = port_temp;
 		}
 		else Log("%s%s not resolved", "_xmpp-client._tcp.", connectHost);
@@ -870,8 +870,6 @@ void CJabberProto::OnProcessError( HXML node, ThreadData* info )
 		pos += mir_sntprintf( buff+pos, 1024-pos, _T("%s: %s\n"), xmlGetName( n ), xmlGetText( n ));
 		if ( !_tcscmp( xmlGetName( n ), _T("conflict")))
 			JSendBroadcast( NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_OTHERLOCATION);
-		else if ( !_tcscmp( xmlGetName( n ), _T("see-other-host"))) {
-		}
 	}
 	MessageBox( NULL, buff, TranslateT( "Jabber Error" ), MB_OK|MB_ICONSTOP|MB_SETFOREGROUND );
 	mir_free(buff);
