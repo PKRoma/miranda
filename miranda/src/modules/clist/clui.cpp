@@ -325,7 +325,7 @@ int LoadCLUIModule(void)
 		_T(MIRANDACLASS),
 		titleText,
 		(DBGetContactSettingByte(NULL, "CLUI", "ShowCaption", SETTING_SHOWCAPTION_DEFAULT) ?
-			WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX : 0) | WS_POPUPWINDOW | WS_THICKFRAME | WS_CLIPCHILDREN,
+			WS_CAPTION | WS_SYSMENU : 0) | WS_POPUPWINDOW | WS_THICKFRAME | WS_CLIPCHILDREN,
 		pos.left, pos.top, pos.right - pos.left, pos.bottom - pos.top,
 		NULL, NULL, cli.hInst, NULL);
 
@@ -715,8 +715,18 @@ LRESULT CALLBACK fnContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 		return DefWindowProc(hwnd, msg, wParam, lParam);
 	}
 	case WM_SYSCOMMAND:
-		if (wParam == SC_MAXIMIZE)
+		switch (wParam)
+		{
+		case SC_MAXIMIZE:
 			return 0;
+
+		case SC_CLOSE:
+			if (DBGetContactSettingByte(NULL, "CList", "ToolWindow", SETTING_TOOLWINDOW_DEFAULT))
+				cli.pfnShowHide(0, 0);
+			else
+				PostMessage(hwnd,  WM_SYSCOMMAND, SC_MINIMIZE, lParam);
+			return 0;
+		}
 		return DefWindowProc(hwnd, msg, wParam, lParam);
 
 	case WM_COMMAND:
@@ -1045,12 +1055,10 @@ LRESULT CALLBACK fnContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 		return 0;
 
 	case WM_CLOSE:
-		if (DBGetContactSettingByte(NULL, "CList", "ToolWindow", SETTING_TOOLWINDOW_DEFAULT))
-			CallService(MS_CLIST_SHOWHIDE, 0, 0);
-		else
-			SendMessage(hwnd, WM_COMMAND, ID_ICQ_EXIT, 0);
-
+		if (CallService(MS_SYSTEM_OKTOEXIT, 0, 0))
+			DestroyWindow(hwnd);
 		return FALSE;
+
 	case WM_DESTROY:
 		if (!IsIconic(hwnd)) {
 			RECT rc;
