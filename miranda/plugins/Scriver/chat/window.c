@@ -1285,7 +1285,7 @@ INT_PTR CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 
     case DM_UPDATETITLEBAR:
     {
-        TitleBarData tbd;
+        TitleBarData tbd = {0};
         TCHAR szTemp [100];
 		HICON hIcon = GetCachedIcon("chat_window");
         if (g_dat->flags & SMF_STATUSICON) {

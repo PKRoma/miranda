@@ -1036,7 +1036,9 @@ INT_PTR CALLBACK DlgProcParentWindow(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 				}
 				if (tbd->iFlags & TBDF_ICON) {
 					SendMessage(hwndDlg, WM_SETICON, ICON_SMALL, (LPARAM) tbd->hIcon);
-					SendMessage(hwndDlg, WM_SETICON, ICON_BIG,   (LPARAM) tbd->hIconBig);
+                    if (tbd->hIconBig != NULL) {
+                        SendMessage(hwndDlg, WM_SETICON, ICON_BIG,   (LPARAM) tbd->hIconBig);
+                    }
 				}
 			}
 			break;

@@ -1192,7 +1192,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 
 	case DM_UPDATEICON:
 		{
-			TitleBarData tbd;
+			TitleBarData tbd = {0};
 			TabControlData tcd;
 			tbd.iFlags = TBDF_ICON;
 			tbd.hIcon = GetTitlebarIcon(dat);
@@ -1217,7 +1217,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 		break;
 	case DM_UPDATETITLEBAR:
 		{
-			TitleBarData tbd;
+			TitleBarData tbd = {0};
 			tbd.iFlags = TBDF_TEXT | TBDF_ICON;
 			tbd.hIcon = GetTitlebarIcon(dat);
 			tbd.hIconBig = dat->statusIconBig;
