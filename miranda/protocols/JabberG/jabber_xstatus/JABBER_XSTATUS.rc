@@ -189,6 +189,7 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 501                     ICON    DISCARDABLE     "icos/activities/coding.ico"
 502                     ICON    DISCARDABLE     "icos/activities/in_a_meeting.ico"
 503                     ICON    DISCARDABLE     "icos/activities/studying.ico"
+504                     ICON    DISCARDABLE     "icos/activities/writing.ico"
 
 
 
