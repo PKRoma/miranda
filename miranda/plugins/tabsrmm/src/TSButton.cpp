@@ -241,7 +241,7 @@ flat_themed:
 					if (clip)
 						state = PBS_NORMAL;
 
-					FillRect(hdcMem, &rc, (HBRUSH)GetSysColor(COLOR_3DFACE));
+					CSkin::FillBack(hdcMem, &rc);
 					if (rc.right < 20 || rc.bottom < 20)
 						InflateRect(&rc, 2, 2);
 					if((fAero || fVSThemed) && ctl->bToolbarButton) {
@@ -271,20 +271,32 @@ flat_themed:
 					HBRUSH hbr;
 					RECT rc = rcClient;
 
-					if (ctl->stateId == PBS_PRESSED || ctl->stateId == PBS_HOT) {
-						hbr = GetSysColorBrush(COLOR_3DLIGHT);
-						FillRect(hdcMem, &rc, hbr);
-					} else {
-						HDC dc;
-						HWND hwndParent;
-
-						hwndParent = GetParent(ctl->hwnd);
-						dc = GetDC(hwndParent);
-						hbr = (HBRUSH)SendMessage(hwndParent, WM_CTLCOLORDLG, (WPARAM)dc, (LPARAM)hwndParent);
-						ReleaseDC(hwndParent, dc);
-						if (hbr) {
+					CSkin::FillBack(hdcMem, &rc);
+					if(PluginConfig.m_fillColor && dat && ctl->bToolbarButton) {
+						RECT	rcWin;
+						GetWindowRect(ctl->hwnd, &rcWin);
+						POINT 	pt;
+						pt.x = rcWin.left;
+						ScreenToClient(dat->hwnd, &pt);
+						BitBlt(hdcMem, rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top,
+							   dat->pContainer->cachedToolbarDC, pt.x, 1, SRCCOPY);
+					}
+					else {
+						if (ctl->stateId == PBS_PRESSED || ctl->stateId == PBS_HOT) {
+							hbr = GetSysColorBrush(COLOR_3DLIGHT);
 							FillRect(hdcMem, &rc, hbr);
-							DeleteObject(hbr);
+						} else {
+							HDC dc;
+							HWND hwndParent;
+
+							hwndParent = GetParent(ctl->hwnd);
+							dc = GetDC(hwndParent);
+							hbr = (HBRUSH)SendMessage(hwndParent, WM_CTLCOLORDLG, (WPARAM)dc, (LPARAM)hwndParent);
+							ReleaseDC(hwndParent, dc);
+							if (hbr) {
+								FillRect(hdcMem, &rc, hbr);
+								DeleteObject(hbr);
+							}
 						}
 					}
 					if (ctl->stateId == PBS_HOT || ctl->focus) {

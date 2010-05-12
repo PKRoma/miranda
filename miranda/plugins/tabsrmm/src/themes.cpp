@@ -857,7 +857,7 @@ TCHAR* CImageItem::Read(const TCHAR *szFilename)
 		_tsplitpath(szFilename, szDrive, szPath, NULL, NULL);
 		mir_sntprintf(szFinalName, MAX_PATH, _T("%s\\%s%s"), szDrive, szPath, buffer);
 		if(!PathFileExists(szFinalName)) {
-			delete szFinalName;
+			delete[] szFinalName;
 			szFinalName = 0;
 		}
 		m_alpha = GetPrivateProfileInt(m_szName, _T("Alpha"), 100, szFilename);
@@ -883,7 +883,7 @@ TCHAR* CImageItem::Read(const TCHAR *szFilename)
 			m_bf.AlphaFormat = AC_SRC_ALPHA;
 			if (m_inner_height <= 0 || m_inner_width <= 0) {
 				if(szFinalName) {
-					delete szFinalName;
+					delete[] szFinalName;
 					szFinalName = 0;
 				}
 				return(szFinalName);
@@ -1099,6 +1099,8 @@ void CSkin::Init(bool fStartup)
 	 * read current skin name from db
 	 */
 
+	m_DisableScrollbars = M->GetByte("disableVScroll", 0) ? true : false;
+
 	setFileName();
 	m_aeroEffect = M->GetDword("aerostyle", AERO_EFFECT_MILK);
 	if(m_fLoadOnStartup && fStartup)
@@ -1213,6 +1215,8 @@ void CSkin::Unload()
 	m_bAvatarBorderType = AVBORDER_NORMAL;
 	m_avatarBorderClr = ::GetSysColor(COLOR_3DDKSHADOW);
 	m_sideBarContainerBG = ::GetSysColor(COLOR_3DFACE);
+
+	m_DisableScrollbars = M->GetByte("disableVScroll", 0) ? true : false;
 }
 
 void CSkin::LoadIcon(const TCHAR *szSection, const TCHAR *name, HICON *hIcon)
@@ -1325,7 +1329,7 @@ void CSkin::ReadImageItem(const TCHAR *itemname)
 			m_fHaveGlyph = true;
 		}
 		tmpItem.Clear();
-		delete szImageFileName;
+		delete[] szImageFileName;
 		return;
 	}
 
@@ -1646,7 +1650,7 @@ void CSkin::Load()
 				i++;
 			}
 
-			m_DisableScrollbars = false;
+			m_DisableScrollbars = M->GetByte("disableVScroll", 0) ? true : false;
 
 			ZeroMemory(szSections, 6000);
 			p = szSections;
@@ -2504,9 +2508,10 @@ void CSkin::RenderToolbarBG(const TWindowData *dat, HDC hdc, const RECT &rcWindo
 		bool	 fAero = M->isAero();
 		bool	 fTbColorsValid = PluginConfig.m_tbBackgroundHigh && PluginConfig.m_tbBackgroundLow;
 		BYTE	 bAlphaOffset = 0;
-
+		BOOL 	fMustDrawNonThemed = ((fAero || fTbColorsValid) && !M->GetByte(SRMSGMOD_T, "forceThemedToolbar", 0));
 		RECT 	rc, rcToolbar;;
 		POINT	pt;
+
 		if(!(dat->pContainer->dwFlags & CNT_BOTTOMTOOLBAR)) {
 			::GetWindowRect(::GetDlgItem(dat->hwnd, dat->bType == SESSIONTYPE_CHAT ? IDC_CHAT_LOG : IDC_LOG), &rc);
 			pt.y = rc.bottom + 0;
@@ -2558,8 +2563,6 @@ void CSkin::RenderToolbarBG(const TWindowData *dat, HDC hdc, const RECT &rcWindo
 		}
 		dat->pContainer->szOldToolbarSize.cx = cx;
 		dat->pContainer->szOldToolbarSize.cy = cy;
-
-		BOOL fMustDrawNonThemed = ((fAero || (M->isVSThemed() && fTbColorsValid)) && !M->GetByte(SRMSGMOD_T, "forceThemedToolbar", 0));
 
 		if(fMustDrawNonThemed) {
 			m_tmp_tb_high = PluginConfig.m_tbBackgroundHigh ? PluginConfig.m_tbBackgroundHigh :

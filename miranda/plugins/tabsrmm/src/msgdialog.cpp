@@ -1706,7 +1706,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			 * draw aero related stuff
 			*/
 
-			if(fAero || (M->isVSThemed() && !CSkin::m_skinEnabled))
+			if(!CSkin::m_skinEnabled)
 				CSkin::RenderToolbarBG(dat, hdcMem, rcClient);
 			/*
 			 * render info panel fields

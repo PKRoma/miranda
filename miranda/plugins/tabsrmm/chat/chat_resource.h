@@ -1,5 +1,5 @@
 //{{NO_DEPENDENCIES}}
-// Microsoft Developer Studio generated include file.
+// Microsoft Visual C++ generated include file.
 // Used by chat.rc
 //
 #define IDR_MENU                        151
@@ -72,6 +72,7 @@
 #define IDC_ADDHIGHLIGHTTITLE           1093
 #define IDC_ADDHIGHLIGHTEXPLAIN         1094
 #define IDC_ADDHIGHLIGHTEDITLIST        1095
+#define IDC_MUC_OPENLOGBASEDIR          1096
 #define IDC_CHAT_BOLD                   1106
 #define IDC_ITALICS                     1107
 #define IDC_CHAT_UNDERLINE              1108
@@ -147,12 +148,12 @@
 #define ID_WIKIPEDIA_                   40029
 
 // Next default values for new objects
-//
+// 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        163
 #define _APS_NEXT_COMMAND_VALUE         40030
-#define _APS_NEXT_CONTROL_VALUE         1096
+#define _APS_NEXT_CONTROL_VALUE         1097
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

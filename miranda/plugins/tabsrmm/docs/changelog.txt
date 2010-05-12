@@ -35,7 +35,18 @@ are currently no downloads for it, you'll have to compile it from source.
 			Detailed change log
 			===================
 
-Version 3.0.0.29 - 2010/05/XX
+Version 3.0.0.30 - 2010/05/12
+
+	* MUC: replaced (non working) log truncating with log rotation. Old log files
+	  are archived when the size exceeds the maximum allowed length for a single
+	  channel log file.
+	  
+	* updated some dialogs to make more space for translations.
+	
+	* added UI button for quickly opening the MUC logs base folder.
+	
+
+Version 3.0.0.29 - 2010/05/11
 
 	* fixed a number of drawing problems
 	

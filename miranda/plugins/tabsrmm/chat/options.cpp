@@ -969,6 +969,43 @@ INT_PTR CALLBACK DlgProcOptions2(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
 					&& (HIWORD(wParam) != EN_CHANGE || (HWND)lParam != GetFocus()))	return 0;
 
 			switch (LOWORD(wParam)) {
+				/*
+				 * open the base directory for MUC logs, using a standard file selector
+				 * dialog. Simply allows the user to view what log files are there
+				 * and possibly delete archived logs.
+				 */
+				case IDC_MUC_OPENLOGBASEDIR: {
+					OPENFILENAME ofn = {0};
+					SESSION_INFO si = {0};
+					/*
+					 * create a dummy room to retrieve a valid log file name
+					 */
+					si.hContact = reinterpret_cast<HANDLE>(CallService(MS_DB_CONTACT_FINDFIRST, 0, 0));
+					GetChatLogsFilename(&si, time(0));
+
+					if(si.pszLogFileName[0]) {
+						TCHAR	tszReturnName[MAX_PATH];
+						TCHAR	tszDrive[_MAX_DRIVE], tszPath[_MAX_PATH], tszFilename[_MAX_FNAME], tszExt[_MAX_EXT];
+						TCHAR	tszInitialDir[_MAX_DRIVE + _MAX_PATH + 10];
+
+						_tsplitpath(si.pszLogFileName, tszDrive, tszPath, tszFilename, tszExt);
+						mir_sntprintf(tszInitialDir, _MAX_DRIVE + _MAX_PATH + 10, _T("%s%s"), tszDrive, tszPath);
+						tszReturnName[0] = 0;
+
+						ofn.lpstrFilter = _T("All files\0*.*\0\0");
+						ofn.lStructSize = OPENFILENAME_SIZE_VERSION_400;
+						ofn.hwndOwner = 0;
+						ofn.lpstrFile = tszReturnName;
+						ofn.lpstrInitialDir = tszInitialDir;
+						ofn.nMaxFile = MAX_PATH;
+						ofn.nMaxFileTitle = MAX_PATH;
+						ofn.Flags = OFN_HIDEREADONLY | OFN_DONTADDTORECENT;
+						ofn.lpstrDefExt = _T("log");
+						GetOpenFileName(&ofn);
+					}
+					break;
+				}
+
 				case  IDC_FONTCHOOSE: {
 					TCHAR tszDirectory[MAX_PATH];
 					LPITEMIDLIST idList;

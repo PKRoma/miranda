@@ -838,40 +838,40 @@ BOOL LogToFile(SESSION_INFO* si, GCEVENT * gce)
 				fseek(hFile, 0, SEEK_END);
 				dwSize = ftell(hFile);
 				rewind(hFile);
-				trimlimit = g_Settings.LoggingLimit * 1024 + 1024 * 10;
+
+				trimlimit = g_Settings.LoggingLimit * 1024;
 				if (dwSize > trimlimit) {
-					BYTE * pBuffer = 0;
-					BYTE * pBufferTemp = 0;
-					size_t read = 0;
+					TCHAR tszDrive[_MAX_DRIVE];
+					TCHAR tszDir[_MAX_DIR];
+					TCHAR tszName[_MAX_FNAME];
+					TCHAR tszExt[_MAX_EXT];
+					TCHAR tszNewName[_MAX_DRIVE + _MAX_DIR + _MAX_FNAME + _MAX_EXT + 20];
+					TCHAR tszNewPath[_MAX_DRIVE + _MAX_DIR + _MAX_FNAME + _MAX_EXT + 20];
+					TCHAR tszTimestamp[20];
+					time_t now = time(0);
 
-					pBuffer = (BYTE *)mir_alloc(g_Settings.LoggingLimit * 1024 + 1);
-					pBuffer[g_Settings.LoggingLimit*1023] = '\0';
-					pBuffer[g_Settings.LoggingLimit*1024] = '\0';
-					fseek(hFile, -g_Settings.LoggingLimit*1024, SEEK_END);
-					//read = fread(pBuffer, 1UL, g_Settings.LoggingLimit * 1024, hFile);
-					read = fread(pBuffer, sizeof(TCHAR), g_Settings.LoggingLimit * 1024, hFile);
+					_tcsftime(tszTimestamp, 20, _T("%Y%m%d-%H%M%S"), _localtime32((__time32_t *)&now));
+					tszTimestamp[19] = 0;
+					/*
+					 * max size reached, rotate the log
+					 * move old logs to /archived sub folder just inside the log root folder.
+					 * add a time stamp to the file name.
+					 */
+					_tsplitpath(si->pszLogFileName, tszDrive, tszDir, tszName, tszExt);
+
+					mir_sntprintf(tszNewPath, _MAX_DRIVE + _MAX_DIR + _MAX_FNAME + _MAX_EXT + 20, _T("%s%sarchived\\"),
+							tszDrive, tszDir);
+
+					CallService(MS_UTILS_CREATEDIRTREET, 0, (LPARAM)tszNewPath);
+					mir_sntprintf(tszNewName, _MAX_DRIVE + _MAX_DIR + _MAX_FNAME + _MAX_EXT + 20, _T("%s%s-%s%s"), tszNewPath, tszName, tszTimestamp, tszExt);
 					fclose(hFile);
-					hFile = NULL;
-
-					// trim to whole lines, should help with broken log files I hope.
-					pBufferTemp = (BYTE*)_tcschr((TCHAR*)pBuffer, _T('\n'));
-					if (pBufferTemp) {
-						pBufferTemp+= sizeof(TCHAR);
-						read = read - (pBufferTemp - pBuffer);
-					} else pBufferTemp = pBuffer;
-
-					if (read > 0) {
-						hFile = _tfopen(si->pszLogFileName, _T("wb"));
-						if (hFile) {
-#ifdef _UNICODE
-							fputws((const wchar_t*)"\377\376", hFile);		//UTF-16 LE BOM == FF FE
-#endif
-							fwrite(pBufferTemp, sizeof(TCHAR), read, hFile);
-							fclose(hFile);
-							hFile = NULL;
-					}	}
-					mir_free(pBuffer);
-		}	}	}
+					hFile = 0;
+					if(!PathFileExists(tszNewName))
+						CopyFile(si->pszLogFileName, tszNewName, TRUE);
+					DeleteFile(si->pszLogFileName);
+				}
+			}
+		}
 
 		if (hFile)
 			fclose(hFile);

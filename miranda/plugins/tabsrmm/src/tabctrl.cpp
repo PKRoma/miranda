@@ -515,16 +515,17 @@ static void DrawItemRect(struct TabControlData *tabdat, HDC dc, RECT *rcItem, in
 			// draw frame controls for button or bottom tabs
 			if (dwStyle & TCS_BOTTOM)
 				rcItem->top++;
-			//else
-			//	rcItem->bottom--;
 
 			rcItem->right += 6;
 			if(tabdat->fAeroTabs) {
-				InflateRect(rcItem, 2, 0);
-				FillRect(dc, rcItem, CSkin::m_BrushBack);
-				//CSkin::ApplyAeroEffect(dc, rcItem, CSkin::AERO_EFFECT_AREA_TAB_NORMAL |
-				//					   (dwStyle & TCS_BOTTOM ? CSkin::AERO_EFFECT_AREA_TAB_BOTTOM : CSkin::AERO_EFFECT_AREA_TAB_TOP), 0);
-
+				if(M->isAero()) {
+					InflateRect(rcItem, 2, 0);
+					FillRect(dc, rcItem, CSkin::m_BrushBack);
+				}
+				else {
+					InflateRect(rcItem, 1, 0);
+					CSkin::FillBack(dc, rcItem);
+				}
 				CSkin::m_switchBarItem->setAlphaFormat(AC_SRC_ALPHA, nHint & HINT_ACTIVE_ITEM ? 255 : 200);
 				CSkin::m_switchBarItem->Render(dc, rcItem, true);
 
@@ -867,7 +868,6 @@ static HRESULT DrawThemesPartWithAero(const TabControlData *tabdat, HDC hDC, int
 	bool	fAero = M->isAero();
 
 	if(tabdat->fAeroTabs) {
-		// int iState = (iStateId == PBS_NORMAL || iStateId == PBS_HOT) ? 2 : 1;
 		if(tabdat->dwStyle & TCS_BOTTOM)
 			prcBox->top += (fAero ? 2 : iStateId == PBS_PRESSED ? 1 : 0);
 		else if (!fAero)
@@ -878,9 +878,9 @@ static HRESULT DrawThemesPartWithAero(const TabControlData *tabdat, HDC hDC, int
 		else
 			CSkin::FillBack(hDC, prcBox);
 
-		tabdat->helperItem->setAlphaFormat(AC_SRC_ALPHA, iStateId == 3 ? 255 : 240);
+		tabdat->helperItem->setAlphaFormat(AC_SRC_ALPHA, iStateId == PBS_PRESSED ? 255 : (fAero ? 240 : 255));
 		tabdat->helperItem->Render(hDC, prcBox, true);
-		tabdat->helperGlowItem->setAlphaFormat(AC_SRC_ALPHA, iStateId == 3 ? 220 : 180);
+		tabdat->helperGlowItem->setAlphaFormat(AC_SRC_ALPHA, iStateId == PBS_PRESSED ? 220 : 180);
 
 		if(iStateId != PBS_NORMAL)
 			tabdat->helperGlowItem->Render(hDC, prcBox, true);
@@ -1735,7 +1735,10 @@ page_done:
 							DrawThemesXpTabItem(hdc, i, &rcItem, uiFlags | uiBottom | (i == hotItem ? 4 : 0), tabdat);
 							DrawItem(tabdat, hdc, &rcItem, nHint | (i == hotItem ? HINT_HOTTRACK : 0), i);
 						} else {
-							DrawItemRect(tabdat, hdc, &rcItem, nHint | (i == hotItem ? HINT_HOTTRACK : 0), i);
+							if(tabdat->fAeroTabs && !CSkin::m_skinEnabled)
+								DrawThemesPartWithAero(tabdat, hdc, 0, (i == hotItem ? PBS_HOT : PBS_NORMAL), &rcItem);
+							else
+								DrawItemRect(tabdat, hdc, &rcItem, nHint | (i == hotItem ? HINT_HOTTRACK : 0), i);
 							DrawItem(tabdat, hdc, &rcItem, nHint | (i == hotItem ? HINT_HOTTRACK : 0), i);
 						}
 					}
@@ -1763,7 +1766,15 @@ page_done:
 						} else
 							InflateRect(&rcItem, 2, 0);
 					}
-					DrawItemRect(tabdat, hdc, &rcItem, HINT_ACTIVATE_RIGHT_SIDE | HINT_ACTIVE_ITEM | nHint, iActive);
+					if(tabdat->fAeroTabs && !CSkin::m_skinEnabled) {
+						if(dwStyle & TCS_BOTTOM)
+							rcItem.bottom+= 2;
+						else
+							rcItem.top-= 2;
+						DrawThemesPartWithAero(tabdat, hdc, 0, PBS_PRESSED, &rcItem);
+					}
+					else
+						DrawItemRect(tabdat, hdc, &rcItem, HINT_ACTIVATE_RIGHT_SIDE | HINT_ACTIVE_ITEM | nHint, iActive);
 					DrawItem(tabdat, hdc, &rcItem, HINT_ACTIVE_ITEM | nHint, iActive);
 				}
 			}

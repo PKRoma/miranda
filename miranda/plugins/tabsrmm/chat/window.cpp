@@ -3392,7 +3392,7 @@ LABEL_SHOWWINDOW:
 
 			dat->Panel->renderContent(hdcMem);
 
-			if(fAero || (M->isVSThemed() && !CSkin::m_skinEnabled))
+			if(!CSkin::m_skinEnabled)
 				CSkin::RenderToolbarBG(dat, hdcMem, rcClient);
 
 			if(hbp)
