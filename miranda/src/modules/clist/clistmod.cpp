@@ -401,8 +401,17 @@ int fnShowHide(WPARAM, LPARAM)
 		}
 	}
 	else {                      //It needs to be hidden
-		ShowWindow(cli.hwndContactList, SW_HIDE);
-		DBWriteContactSettingByte(NULL, "CList", "State", SETTING_STATE_HIDDEN);
+		if (DBGetContactSettingByte(NULL, "CList", "ToolWindow", SETTING_TOOLWINDOW_DEFAULT))
+		{
+			ShowWindow(cli.hwndContactList, SW_HIDE);
+			DBWriteContactSettingByte(NULL, "CList", "State", SETTING_STATE_HIDDEN);
+		}
+		else
+		{
+			ShowWindow(cli.hwndContactList, SW_MINIMIZE);
+			DBWriteContactSettingByte(NULL, "CList", "State", SETTING_STATE_MINIMIZED);
+		}
+
 		if (MySetProcessWorkingSetSize != NULL && DBGetContactSettingByte(NULL, "CList", "DisableWorkingSet", 1))
 			MySetProcessWorkingSetSize(GetCurrentProcess(), -1, -1);
 	}
