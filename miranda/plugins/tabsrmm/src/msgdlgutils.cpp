@@ -1119,7 +1119,7 @@ BOOL TSAPI DoRtfToTags(TCHAR * pszText, const TWindowData *dat)
 						bJustRemovedRTF = TRUE;
 						iRemoveChars = 5;
 						_sntprintf(InsertThis, safe_sizeof(InsertThis), _T("\n"));
-					} else if (p1 == _tcsstr(p1, _T("\\endash"), 7)) {
+					} else if (p1 == _tcsstr(p1, _T("\\endash"))) {
 						bTextHasStarted = bJustRemovedRTF = TRUE;
 						iRemoveChars = 7;
 #if defined(_UNICODE)
