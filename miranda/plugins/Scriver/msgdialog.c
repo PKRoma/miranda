@@ -37,7 +37,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 extern HCURSOR hCurSplitNS, hCurSplitWE, hCurHyperlinkHand, hDragCursor;
 extern HANDLE hHookWinEvt;
 extern HANDLE hHookWinPopup;
-extern HICON hMsgIcon;
 extern struct CREOleCallback reOleCallback, reOleCallback2;
 extern HINSTANCE g_hInst;
 
@@ -313,7 +312,9 @@ void SetStatusIcon(struct MessageWindowData *dat) {
 
 		CallService(MS_SKIN2_RELEASEICON, (WPARAM)dat->statusIconBig, 0);
 		dat->statusIconBig = LoadSkinnedProtoIconBig(szProto, dat->wStatus);
-
+        if ((int)dat->statusIconBig == CALLSERVICE_NOTFOUND) {
+            dat->statusIconBig = NULL;
+        }
 		if (dat->statusIconOverlay != NULL) DestroyIcon(dat->statusIconOverlay);
 		{
 			int index = ImageList_ReplaceIcon(g_dat->hHelperIconList, 0, dat->statusIcon);
@@ -328,7 +329,16 @@ HICON GetTitlebarIcon(struct MessageWindowData *dat) {
 	} else if ((g_dat->flags & SMF_STATUSICON) && ! (dat->showUnread && (GetActiveWindow() != dat->hwndParent || GetForegroundWindow() != dat->hwndParent))) {
 		return dat->statusIcon;
 	}
-	return hMsgIcon;
+	return g_dat->hMsgIcon;
+}
+
+HICON GetTitlebarIconBig(struct MessageWindowData *dat) {
+	if (dat->showTyping && (g_dat->flags2&SMF2_SHOWTYPINGWIN)) {
+		return GetCachedIconBySize("scriver_TYPING", TRUE);
+	} else if ((g_dat->flags & SMF_STATUSICON) && ! (dat->showUnread && (GetActiveWindow() != dat->hwndParent || GetForegroundWindow() != dat->hwndParent))) {
+		return dat->statusIconBig;
+	}
+	return g_dat->hMsgIconBig;
 }
 
 HICON GetTabIcon(struct MessageWindowData *dat) {
@@ -1196,7 +1206,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			TabControlData tcd;
 			tbd.iFlags = TBDF_ICON;
 			tbd.hIcon = GetTitlebarIcon(dat);
-			tbd.hIconBig = dat->statusIconBig;
+			tbd.hIconBig = GetTitlebarIconBig(dat);
 			SendMessage(dat->hwndParent, CM_UPDATETITLEBAR, (WPARAM)&tbd, (LPARAM)hwndDlg);
 			tcd.iFlags = TCDF_ICON;
 			tcd.hIcon = GetTabIcon(dat);
@@ -1220,7 +1230,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			TitleBarData tbd = {0};
 			tbd.iFlags = TBDF_TEXT | TBDF_ICON;
 			tbd.hIcon = GetTitlebarIcon(dat);
-			tbd.hIconBig = dat->statusIconBig;
+			tbd.hIconBig = GetTitlebarIconBig(dat);
 			tbd.pszText = GetWindowTitle(dat->windowData.hContact, dat->szProto);
 			SendMessage(dat->hwndParent, CM_UPDATETITLEBAR, (WPARAM)&tbd, (LPARAM)hwndDlg);
 			mir_free(tbd.pszText);
