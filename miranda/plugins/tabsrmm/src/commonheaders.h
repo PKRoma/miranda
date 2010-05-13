@@ -40,7 +40,7 @@
 	#define _UNICODE
 #endif
 
-//#define __FEAT_EXP_AUTOSPLITTER 1
+#define __FEAT_EXP_AUTOSPLITTER 1
 //#define __FEAT_DEPRECATED_MODERNTABS
 //#define __FEAT_DEPRECATED_TABTIPS
 

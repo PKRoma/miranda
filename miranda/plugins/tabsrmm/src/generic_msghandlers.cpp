@@ -1025,15 +1025,6 @@ LRESULT TSAPI DM_ScrollToBottom(TWindowData *dat, WPARAM wParam, LPARAM lParam)
 			return 0;
 		} else {
 			HWND hwnd = GetDlgItem(dat->hwnd, dat->bType == SESSIONTYPE_IM ? IDC_LOG : IDC_CHAT_LOG);
-			/*SCROLLINFO scroll = {0};
-
-			scroll.cbSize = sizeof(SCROLLINFO);
-			scroll.fMask = SIF_RANGE | SIF_POS | SIF_PAGE;
-			GetScrollInfo(hwnd, SB_VERT, &scroll);
-
-			if(!((UINT)scroll.nPos >= (UINT)scroll.nMax - scroll.nPage - 5 || scroll.nMax - scroll.nMin - scroll.nPage < 50))
-				return(0);*/
-
 			if (lParam)
 				SendMessage(hwnd, WM_SIZE, 0, 0);
 
@@ -1861,9 +1852,6 @@ void TSAPI DM_HandleAutoSizeRequest(TWindowData *dat, REQRESIZE* rr)
 				}
 				dat->iInputAreaHeight = iNewHeight;
 				CSkin::UpdateToolbarBG(dat);
-
-				if(dat->bType == SESSIONTYPE_IM)
-					SendMessage(dat->hwnd, WM_SIZE, 0, 0);
 				DM_ScrollToBottom(dat, 1, 0);
 			}
 		}

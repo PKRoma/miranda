@@ -787,6 +787,19 @@ static LRESULT CALLBACK TSButtonWndProc(HWND hwndDlg, UINT msg,  WPARAM wParam, 
 			}
 			break;
 		}
+
+		case WM_CONTEXTMENU:
+			if(bct->sitem)
+				bct->sitem->invokeContextMenu();
+			break;
+
+		case WM_MBUTTONUP:
+			if(bct->sitem) {
+				if(bct->sitem->getDat())
+					SendMessage(bct->sitem->getDat()->hwnd, WM_CLOSE, 1, 0);
+			}
+			break;
+
 		case WM_LBUTTONDOWN: {
 			RECT rc;
 

@@ -1,4 +1,4 @@
-ta/*
+/*
  * astyle --force-indent=tab=4 --brackets=linux --indent-switches
  *		  --pad=oper --one-line=keep-blocks  --unpad=paren
  *

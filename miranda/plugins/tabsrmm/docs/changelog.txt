@@ -45,7 +45,9 @@ Version 3.0.0.30 - 2010/05/12
 	
 	* added UI button for quickly opening the MUC logs base folder.
 	
-
+	* implemented right and middle click actions for side bar buttons (close/context
+	  menu)
+	  
 Version 3.0.0.29 - 2010/05/11
 
 	* fixed a number of drawing problems

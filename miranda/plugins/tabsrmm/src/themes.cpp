@@ -105,7 +105,7 @@ HICON			CSkin::m_closeIcon = 0, CSkin::m_maxIcon = 0, CSkin::m_minIcon = 0;
 
 UINT 			CSkin::m_aeroEffect = 0;
 DWORD 			CSkin::m_glowSize = 0;
-HBRUSH  		CSkin::m_BrushBack = 0;
+HBRUSH  		CSkin::m_BrushBack = 0, CSkin::m_BrushFill = 0;
 
 HBITMAP 		CSkin::m_tabCloseBitmap = 0, CSkin::m_tabCloseOldBitmap = 0;
 HDC				CSkin::m_tabCloseHDC = 0;
@@ -2797,19 +2797,28 @@ void CSkin::UpdateToolbarBG(TWindowData* dat, DWORD dwRdwOptFlags)
 
 		if(M->isAero() || M->isDwmActive())
 			dat->fLimitedUpdate = true; 	// skip unrelevant window updates when we have buffered paint avail
-		::RedrawWindow(dat->hwnd, &rcUpdate, 0, RDW_ERASE|RDW_INVALIDATE|RDW_UPDATENOW|dwRdwOptFlags);
+		::RedrawWindow(dat->hwnd, &rcUpdate, 0, RDW_INVALIDATE|RDW_ERASE|RDW_UPDATENOW);
 		::BB_RedrawButtons(dat);
 		dat->fLimitedUpdate = false;
 	}
 }
 
+/**
+ * fill a background area with the default color. This can be either the configured
+ * fill color or default system color.
+ *
+ * @param hdc: device context
+ * @param rc:  area to fill.
+ */
 void CSkin::FillBack(const HDC hdc, RECT* rc)
 {
-	if(PluginConfig.m_fillColor) {
-		HBRUSH br = CreateSolidBrush(PluginConfig.m_fillColor);
-		FillRect(hdc, rc, br);
-		DeleteObject(br);
+	if(0 == CSkin::m_BrushFill) {
+		if(PluginConfig.m_fillColor)
+			CSkin::m_BrushFill = ::CreateSolidBrush(PluginConfig.m_fillColor);
 	}
+
+	if(PluginConfig.m_fillColor)
+		::FillRect(hdc, rc, CSkin::m_BrushFill);
 	else
-		FillRect(hdc, rc, GetSysColorBrush(COLOR_3DFACE));
+		::FillRect(hdc, rc, GetSysColorBrush(COLOR_3DFACE));
 }

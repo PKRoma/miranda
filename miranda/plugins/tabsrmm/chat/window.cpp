@@ -2005,6 +2005,7 @@ INT_PTR CALLBACK RoomWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 			CreateWindowEx(0, _T("TSButtonClass"), _T(""), WS_CHILD | WS_VISIBLE | WS_TABSTOP, 0, 0, 6, DPISCALEY(20),
 					hwndDlg, (HMENU)IDC_CHAT_TOGGLESIDEBAR, g_hInst, NULL);
 
+			GetMYUIN(dat);
 			GetMyNick(dat);
 			SendDlgItemMessage(hwndDlg, IDC_CHAT_TOGGLESIDEBAR, BUTTONSETASFLATBTN + 10, 0, PluginConfig.m_bIsXP);
 			SendDlgItemMessage(hwndDlg, IDC_CHAT_TOGGLESIDEBAR, BUTTONSETASFLATBTN + 12, 0, (LPARAM)dat->pContainer);

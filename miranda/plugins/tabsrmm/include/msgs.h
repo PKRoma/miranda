@@ -375,10 +375,10 @@ typedef struct _recentinfo {
  */
 
 struct myTabCtrl {
-	HPEN    m_hPenShadow, m_hPenItemShadow, m_hPenLight, m_hPenStyledLight, m_hPenStyledDark;
+	HPEN    m_hPenShadow, m_hPenItemShadow, m_hPenLight;
 	HFONT   m_hMenuFont;
 	COLORREF colors[10];
-	HBRUSH  m_hBrushDefault, m_hBrushActive, m_hBrushUnread, m_hBrushHottrack;
+	HBRUSH  m_brushes[4];
 	DWORD   m_fixedwidth;
 	int     m_bottomAdjust;
 };
@@ -419,12 +419,12 @@ struct TIconDescW {
 #define TCF_FLASHICON 8
 #define TCF_FLASHLABEL 16
 #define TCF_SINGLEROWTABCONTROL 32
-#define TCF_LABELUSEWINCOLORS 64
-#define TCF_BKGUSEWINCOLORS 128
+//#define TCF_LABELUSEWINCOLORS 64
+//#define TCF_BKGUSEWINCOLORS 128
 #define TCF_SBARLEFT 256
 #define TCF_SBARRIGHT 512
 
-#define TCF_DEFAULT (TCF_FLASHICON | TCF_LABELUSEWINCOLORS | TCF_BKGUSEWINCOLORS)
+#define TCF_DEFAULT (TCF_FLASHICON)
 
 #define MIN_PANELHEIGHT 20
 

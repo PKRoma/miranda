@@ -1003,23 +1003,34 @@ panel_found:
 				}
 #endif
 				case NM_RCLICK: {
-					HMENU subMenu;
-					POINT pt, pt1;
-					int iSelection, iItem;
-					TCITEM item = {0};
-					struct TWindowData *dat = 0;
+					HMENU 	subMenu;
+					POINT 	pt, pt1;
+					int 	iSelection, iItem;
+					TCITEM 	item = {0};
+					struct 	TWindowData *dat = 0;
+					bool	fFromSidebar = false;
 
 					GetCursorPos(&pt);
 					pt1 = pt;
 					subMenu = GetSubMenu(pContainer->hMenuContext, 0);
 
-					if ((iItem = GetTabItemFromMouse(hwndTab, &pt)) == -1)
-						break;
+					if(pNMHDR->idFrom == IDC_MSGTABS) {
+						if ((iItem = GetTabItemFromMouse(hwndTab, &pt)) == -1)
+							break;
 
-					item.mask = TCIF_PARAM;
-					TabCtrl_GetItem(hwndTab, iItem, &item);
-					if (item.lParam && IsWindow((HWND)item.lParam))
-						dat = (struct TWindowData *)GetWindowLongPtr((HWND)item.lParam, GWLP_USERDATA);
+						item.mask = TCIF_PARAM;
+						TabCtrl_GetItem(hwndTab, iItem, &item);
+						if (item.lParam && IsWindow((HWND)item.lParam))
+							dat = (struct TWindowData *)GetWindowLongPtr((HWND)item.lParam, GWLP_USERDATA);
+					}
+					/*
+					 * sent from a sidebar button (RMB click) instead of the tab control
+					 */
+					else if(pNMHDR->idFrom == 5000) {
+						TSideBarNotify* n = reinterpret_cast<TSideBarNotify *>(lParam);
+						dat = const_cast<TWindowData *>(n->dat);
+						fFromSidebar = true;
+					}
 
 					if (dat)
 						MsgWindowUpdateMenu(dat, subMenu, MENU_TABCONTEXT);
@@ -1044,7 +1055,10 @@ panel_found:
 					}
 					switch (iSelection) {
 						case ID_TABMENU_CLOSETAB:
-							SendMessage(hwndDlg, DM_CLOSETABATMOUSE, 0, (LPARAM)&pt1);
+							if(fFromSidebar)
+								SendMessage(dat->hwnd, WM_CLOSE, 1, 0);
+							else
+								SendMessage(hwndDlg, DM_CLOSETABATMOUSE, 0, (LPARAM)&pt1);
 							break;
 						case ID_TABMENU_SAVETABPOSITION:
 							M->WriteDword(dat->hContact, SRMSGMOD_T, "tabindex", dat->iTabID * 100);

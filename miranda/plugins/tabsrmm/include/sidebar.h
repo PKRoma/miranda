@@ -35,6 +35,10 @@
 #ifndef __SIDEBAR_H
 #define  __SIDEBAR_H
 
+struct TSideBarNotify {
+	NMHDR 				nmHdr;
+	const TWindowData*	dat;
+};
 /* layout descrtiption structure */
 
 struct TSideBarLayout {
@@ -81,6 +85,7 @@ public:
 	void						activateSession() const;
 	const SIZE&					measureItem();
 	void						setLayout(const TSideBarLayout *newLayout);
+	void						invokeContextMenu();
 
 public:
 	CSideBar* 					m_sideBar;

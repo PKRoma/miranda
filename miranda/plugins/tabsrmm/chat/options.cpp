@@ -102,6 +102,18 @@ static ColorOptionsList _clrs[] = {
 	5, LPGENT("TabSRMM/Common colors"), LPGENT("Text area borders"), "cRichBorders", 0,
 };
 
+static ColorOptionsList _tabclrs[] = {
+	0, LPGENT("TabSRMM/Tabs"), LPGENT("Normal text"), "tab_txt_normal", 0xff000000 | COLOR_BTNTEXT,
+	1, LPGENT("TabSRMM/Tabs"), LPGENT("Active text"), "tab_txt_active", 0xff000000 | COLOR_BTNTEXT,
+	2, LPGENT("TabSRMM/Tabs"), LPGENT("Hovered text"), "tab_txt_hottrack", 0xff000000 | COLOR_HOTLIGHT,
+	3, LPGENT("TabSRMM/Tabs"), LPGENT("Unread text"), "tab_txt_unread", 0xff000000 | COLOR_HOTLIGHT,
+
+	4, LPGENT("TabSRMM/Tabs"), LPGENT("Normal background"), "tab_bg_normal", 0xff000000 | COLOR_3DFACE,
+	5, LPGENT("TabSRMM/Tabs"), LPGENT("Active background"), "tab_bg_active", 0xff000000 | COLOR_3DFACE,
+	6, LPGENT("TabSRMM/Tabs"), LPGENT("Hovered background"), "tab_bg_hottrack", 0xff000000 | COLOR_3DFACE,
+	7, LPGENT("TabSRMM/Tabs"), LPGENT("Unread background"), "tab_bg_unread", 0xff000000 | COLOR_3DFACE
+};
+
 extern LOGFONT lfDefault;
 
 //remember to put these in the Translate( ) template file too
@@ -845,6 +857,24 @@ void RegisterFontServiceFonts() {
 	 		cid.defcolour = _clrs[i].def;
 	 	CallService(MS_COLOUR_REGISTERT, (WPARAM)&cid, 0);
 	}
+
+	strncpy(cid.dbSettingsGroup, SRMSGMOD_T, SIZEOF(fid.dbSettingsGroup));
+
+	/*
+	 * text and background colors for tabs
+	 */
+	for(i = 0; i < (sizeof(_tabclrs) / sizeof(_tabclrs[0])); i++) {
+		cid.order = _tabclrs[i].order;
+		_tcsncpy(cid.group, _tabclrs[i].tszGroup, SIZEOF(fid.group));
+	 	_tcsncpy(cid.name, _tabclrs[i].tszName, SIZEOF(cid.name));
+	 	strncpy(cid.setting, _tabclrs[i].szSetting, SIZEOF(cid.setting));
+	 	if(_tabclrs[i].def & 0xff000000)
+	 		cid.defcolour = GetSysColor(_tabclrs[i].def & 0x000000ff);
+	 	else
+	 		cid.defcolour = _tabclrs[i].def;
+
+	 	CallService(MS_COLOUR_REGISTERT, (WPARAM)&cid, 0);
+	}
 }
 
 int FontServiceFontsChanged(WPARAM wParam, LPARAM lParam)
@@ -876,6 +906,8 @@ int FontServiceFontsChanged(WPARAM wParam, LPARAM lParam)
 	CSkin::initAeroEffect();
 	CacheMsgLogIcons();
 	CacheLogFonts();
+	FreeTabConfig();
+	ReloadTabConfig();
 	M->BroadcastMessage(DM_OPTIONSAPPLIED, 1, 0);
 	return 0;
 }

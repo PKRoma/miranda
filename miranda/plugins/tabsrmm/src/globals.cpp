@@ -339,6 +339,10 @@ void CGlobals::reloadSettings(bool fReloadSkins)
 	m_tbBackgroundHigh = 				M->GetDword(FONTMODULE, "tbBgHigh", 0);
 	m_tbBackgroundLow = 				M->GetDword(FONTMODULE, "tbBgLow", 0);
 	m_fillColor =						M->GetDword(FONTMODULE, "fillColor", 0);
+	if(CSkin::m_BrushFill) {
+		::DeleteObject(CSkin::m_BrushFill);
+		CSkin::m_BrushFill = 0;
+	}
 	m_cRichBorders =					M->GetDword(FONTMODULE, "cRichBorders", 0);
 
 	::CopyMemory(&globalContainerSettings, &_cnt_default, sizeof(TContainerSettings));

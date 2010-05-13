@@ -36,6 +36,7 @@
 
 extern int TSAPI TBStateConvert2Flat(int state);
 extern int TSAPI RBStateConvert2Flat(int state);
+extern void TSAPI FillTabBackground(const HDC hdc, int iStateId, const TWindowData* dat, RECT* rc);
 
 TSideBarLayout CSideBar::m_layouts[CSideBar::NR_LAYOUTS] = {
 	{
@@ -350,6 +351,23 @@ void CSideBarButton::activateSession() const
 {
 	if(m_dat)
 		::SendMessage(m_dat->hwnd, DM_ACTIVATEME, 0, 0);					// the child window will activate itself
+}
+
+/**
+ * show the context menu (same as on tabs
+ */
+void CSideBarButton::invokeContextMenu()
+{
+	const TContainerData* pContainer = m_sideBar->getContainer();
+
+	if(pContainer) {
+		TSideBarNotify tsn = {0};
+		tsn.nmHdr.code = NM_RCLICK;
+		tsn.nmHdr.idFrom = 5000;
+		tsn.nmHdr.hwndFrom = ::GetDlgItem(pContainer->hwnd, 5000);
+		tsn.dat = m_dat;
+		::SendMessage(pContainer->hwnd, WM_NOTIFY, 0, reinterpret_cast<LPARAM>(&tsn));
+	}
 }
 
 CSideBar::CSideBar(TContainerData *pContainer)
@@ -1007,7 +1025,7 @@ void __fastcall CSideBar::m_DefaultBackgroundRenderer(const HDC hdc, const RECT 
 
 		CSkin::DrawItem(hdc, rc, skinItem);
 	}
-	else if(M->isAero()) {
+	else if(M->isAero() || PluginConfig.m_fillColor) {
 		if(id == IDC_SIDEBARUP || id == IDC_SIDEBARDOWN) {
 			::FillRect(hdc, const_cast<RECT *>(rc), CSkin::m_BrushBack);
 			if(stateId == PBS_HOT || stateId == PBS_PRESSED)
@@ -1018,6 +1036,9 @@ void __fastcall CSideBar::m_DefaultBackgroundRenderer(const HDC hdc, const RECT 
 						  31, 4, 0);
 		}
 		else {
+			if(PluginConfig.m_fillColor)
+				FillTabBackground(hdc, stateId, item->getDat(), const_cast<RECT *>(rc));
+
 			CSkin::m_switchBarItem->setAlphaFormat(AC_SRC_ALPHA,
 												   (stateId == PBS_HOT && !fIsActiveItem) ? 250 : (fIsActiveItem || stateId == PBS_PRESSED ? 250 : 230));
 			CSkin::m_switchBarItem->Render(hdc, rc, true);

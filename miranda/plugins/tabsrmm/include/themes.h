@@ -350,7 +350,7 @@ public:
 	static AeroEffect	m_currentAeroEffect;
 	static AeroEffect*	m_pCurrentAeroEffect;
 	static DWORD		m_glowSize;
-	static HBRUSH		m_BrushBack;
+	static HBRUSH		m_BrushBack, m_BrushFill;
 
 	static COLORREF		m_dwmColorRGB;
 

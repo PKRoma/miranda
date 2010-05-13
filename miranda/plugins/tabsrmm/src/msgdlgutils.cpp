@@ -1321,6 +1321,7 @@ void TSAPI GetMYUIN(TWindowData *dat)
 	ci.cbSize = sizeof(ci);
 	ci.hContact = 0;
 	ci.szProto = const_cast<char *>(dat->cache->getActiveProto());
+	ci.dwFlag = CNF_TCHAR | CNF_DISPLAYUID;
 
 	if (!CallService(MS_CONTACT_GETCONTACTINFO, 0, (LPARAM) & ci)) {
 		switch (ci.type) {
@@ -2331,7 +2332,7 @@ void TSAPI GetMyNick(TWindowData *dat)
 		if (ci.type == CNFT_ASCIIZ) {
 			if (lstrlen(reinterpret_cast<TCHAR *>(ci.pszVal)) < 1 || !_tcscmp(reinterpret_cast<TCHAR *>(ci.pszVal),
 																			  CTranslator::get(CTranslator::GEN_UNKNOWN_CONTACT))) {
-				mir_sntprintf(dat->szMyNickname, safe_sizeof(dat->szMyNickname), _T("%s"), dat->cache->getUIN());
+				mir_sntprintf(dat->szMyNickname, safe_sizeof(dat->szMyNickname), _T("%s"), dat->myUin[0] ? dat->myUin : CTranslator::get(CTranslator::GEN_UNKNOWN_CONTACT));
 				if (ci.pszVal) {
 					mir_free(ci.pszVal);
 					ci.pszVal = NULL;
