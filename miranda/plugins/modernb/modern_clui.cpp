@@ -690,11 +690,11 @@ void CLUI_ChangeWindowMode()
 		else if (ModernGetSettingByte(NULL,"CLUI","ShowCaption",SETTING_SHOWCAPTION_DEFAULT) && ModernGetSettingByte(NULL,"CList","ToolWindow",SETTING_TOOLWINDOW_DEFAULT))
 		{
 			styleEx=WS_EX_TOOLWINDOW/*|WS_EX_WINDOWEDGE*/;
-			style=WS_CAPTION|WS_MINIMIZEBOX|WS_POPUPWINDOW|WS_CLIPCHILDREN|WS_THICKFRAME;
+			style=WS_CAPTION|WS_POPUPWINDOW|WS_CLIPCHILDREN|WS_THICKFRAME;
 		}
 		else if (ModernGetSettingByte(NULL,"CLUI","ShowCaption",SETTING_SHOWCAPTION_DEFAULT))
 		{
-			style=WS_CAPTION|WS_SYSMENU|WS_MINIMIZEBOX|WS_POPUPWINDOW|WS_CLIPCHILDREN|WS_THICKFRAME;
+			style=WS_CAPTION|WS_SYSMENU|WS_POPUPWINDOW|WS_CLIPCHILDREN|WS_THICKFRAME;
 		}
 		else 
 		{
@@ -2650,8 +2650,15 @@ LRESULT CLUI::OnShowWindow( UINT msg, WPARAM wParam, LPARAM lParam )
 
 LRESULT CLUI::OnSysCommand( UINT msg, WPARAM wParam, LPARAM lParam )
 {
-	if( wParam == SC_MAXIMIZE ) 
-		return FALSE;
+		switch (wParam)
+		{
+		case SC_MAXIMIZE:
+			return 0;
+
+		case SC_CLOSE:
+			PostMessage(m_hWnd, msg, SC_MINIMIZE, lParam);
+			return 0;
+		}
 
 	DefWindowProc(m_hWnd, msg, wParam, lParam);
 	if (ModernGetSettingByte(NULL,"CList","OnDesktop",SETTING_ONDESKTOP_DEFAULT))
