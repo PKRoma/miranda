@@ -682,7 +682,6 @@ int TSAPI GetAvatarVisibility(HWND hwndDlg, struct TWindowData *dat)
 				break;
 			case 0:
 				dat->showInfoPic = 1;
-				break;
 			case 1: {
 				FLASHAVATAR fa = {0};
 				HBITMAP hbm = ((dat->ace && !(dat->ace->dwFlags & AVS_HIDEONCLIST)) ? dat->ace->hbmPic : 0);
@@ -706,10 +705,12 @@ int TSAPI GetAvatarVisibility(HWND hwndDlg, struct TWindowData *dat)
 					if(dat->hwndPanelPic)
 						SendMessage(dat->hwndPanelPic, AVATAR_SETAEROCOMPATDRAWING, 0, TRUE);
 				}
-				if ((hbm && hbm != PluginConfig.g_hbmUnknown) || (fa.hWindow != NULL))
-					dat->showInfoPic = 1;
-				else
-					dat->showInfoPic = 0;
+				if(bAvatarMode != 0) {
+					if ((hbm && hbm != PluginConfig.g_hbmUnknown) || (fa.hWindow != NULL))
+						dat->showInfoPic = 1;
+					else
+						dat->showInfoPic = 0;
+				}
 				break;
 			}
 		}

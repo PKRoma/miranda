@@ -1001,6 +1001,8 @@ INT_PTR CALLBACK CInfoPanel::avatarParentSubclass(HWND hwnd, UINT msg, WPARAM wP
 					LONG	cy = rcItem.bottom - rcItem.top;
 
 					rc.left -= 3; rc.right += 3;
+					rc.bottom++;
+
 					hdc = CreateCompatibleDC(dcWin);
 					hbm = CSkin::CreateAeroCompatibleBitmap(rc, dcWin);
 					hbmOld = (HBITMAP)SelectObject(hdc, hbm);
@@ -1021,8 +1023,9 @@ INT_PTR CALLBACK CInfoPanel::avatarParentSubclass(HWND hwnd, UINT msg, WPARAM wP
 					DeleteDC(hdc);
 				}
 				else {
+					rc.bottom++;
 					rc.left -= 3; rc.right += 3;
-					dat->Panel->renderBG(dcWin, rc, &SkinItems[ID_EXTBKINFOPANELBG], false);
+					dat->Panel->renderBG(dcWin, rc, &SkinItems[ID_EXTBKINFOPANELBG], M->isAero(), false);
 				}
 				if(CSkin::m_bAvatarBorderType == 1) {
 					HRGN clipRgn = 0;

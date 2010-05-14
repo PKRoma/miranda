@@ -35,6 +35,19 @@ are currently no downloads for it, you'll have to compile it from source.
 			Detailed change log
 			===================
 
+Version 3.0.0.31 - 2010/05/xx
+
+	* fixed drawing problem with animated info panel avatars 
+	
+	* moved all legacy color settings to font service
+	
+	* added theme support for new color settings (+ updated theme version to
+	  v5).
+	  
+	* fixed issue with own nickname when it has not been set on the protocol's
+	  option page (use own UID instead).
+	  
+	  	  
 Version 3.0.0.30 - 2010/05/12
 
 	* MUC: replaced (non working) log truncating with log rotation. Old log files
@@ -47,6 +60,7 @@ Version 3.0.0.30 - 2010/05/12
 	
 	* implemented right and middle click actions for side bar buttons (close/context
 	  menu)
+	  
 	  
 Version 3.0.0.29 - 2010/05/11
 

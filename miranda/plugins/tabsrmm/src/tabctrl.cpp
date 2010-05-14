@@ -503,7 +503,7 @@ static void DrawItemRect(struct TabControlData *tabdat, HDC dc, RECT *rcItem, in
 					InflateRect(rcItem, 2, 0);
 					FillRect(dc, rcItem, CSkin::m_BrushBack);
 				}
-				else {
+				else if(dat) {
 					int iStateId = (nHint & HINT_ACTIVE_ITEM ? PBS_PRESSED : 0) | (nHint & HINT_HOTTRACK ? PBS_HOT : 0);
 
 					InflateRect(rcItem, 1, 0);
@@ -858,7 +858,7 @@ static HRESULT DrawThemesPartWithAero(const TabControlData *tabdat, HDC hDC, int
 
 		if(fAero)
 			FillRect(hDC, prcBox, CSkin::m_BrushBack);
-		else
+		else if(dat)
 			FillTabBackground(hDC, iStateId, dat, prcBox);
 
 		tabdat->helperItem->setAlphaFormat(AC_SRC_ALPHA, iStateId == PBS_PRESSED ? 255 : (fAero ? 240 : 255));
@@ -1961,7 +1961,6 @@ INT_PTR CALLBACK DlgProcTabConfig(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 			SendDlgItemMessage(hwndDlg, IDC_SPIN3, UDM_SETPOS, 0, (LPARAM)M->GetByte("x-pad", 4));
 			SetDlgItemInt(hwndDlg, IDC_TABPADDING, (int)M->GetByte("y-pad", 3), FALSE);;
 			SetDlgItemInt(hwndDlg, IDC_HTABPADDING, (int)M->GetByte("x-pad", 4), FALSE);;
-			SendDlgItemMessage(hwndDlg, IDC_AEROGLOW, CPM_SETCOLOUR, 0, (LPARAM)M->GetDword("aeroGlow", RGB(40, 40, 255)));
 			return 0;
 		}
 		case WM_NOTIFY:
@@ -1994,8 +1993,6 @@ INT_PTR CALLBACK DlgProcTabConfig(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 								RedrawWindow(GetDlgItem(pContainer->hwnd, IDC_MSGTABS), NULL, NULL, RDW_INVALIDATE | RDW_ERASE);
 								pContainer = pContainer->pNextContainer;
 							}
-							M->WriteDword(SRMSGMOD_T, "aeroGlow", (DWORD)SendDlgItemMessage(hwndDlg, IDC_AEROGLOW, CPM_GETCOLOUR, 0, 0));
-							Skin->setupAeroSkins();  // re-colorize
 							return TRUE;
 						}
 					}

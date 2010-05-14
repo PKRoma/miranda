@@ -96,10 +96,11 @@ static ColorOptionsList _clrs[] = {
 	5, LPGENT("TabSRMM/Single Messaging"), LPGENT("Horizontal Grid Lines"), "hgrid", RGB(224, 224, 224),
 	0, LPGENT("TabSRMM/Info Panel"), LPGENT("Panel background low"), "ipfieldsbg", 0xff000000 | COLOR_HOTLIGHT,
 	1, LPGENT("TabSRMM/Info Panel"), LPGENT("Panel background high"), "ipfieldsbgHigh", 0xff000000 | COLOR_3DFACE,
-	2, LPGENT("TabSRMM/Common colors"), LPGENT("Toolbar background high"), "tbBgHigh", 0,
-	3, LPGENT("TabSRMM/Common colors"), LPGENT("Toolbar background low"), "tbBgLow", 0,
-	4, LPGENT("TabSRMM/Common colors"), LPGENT("Window fill color"), "fillColor", 0,
-	5, LPGENT("TabSRMM/Common colors"), LPGENT("Text area borders"), "cRichBorders", 0,
+	0, LPGENT("TabSRMM/Common colors"), LPGENT("Toolbar background high"), "tbBgHigh", 0,
+	1, LPGENT("TabSRMM/Common colors"), LPGENT("Toolbar background low"), "tbBgLow", 0,
+	2, LPGENT("TabSRMM/Common colors"), LPGENT("Window fill color"), "fillColor", 0,
+	3, LPGENT("TabSRMM/Common colors"), LPGENT("Text area borders"), "cRichBorders", 0,
+	4, LPGENT("TabSRMM/Common colors"), LPGENT("Aero glow effect"), "aeroGlow", RGB(40, 40, 255),
 };
 
 static ColorOptionsList _tabclrs[] = {
@@ -908,6 +909,7 @@ int FontServiceFontsChanged(WPARAM wParam, LPARAM lParam)
 	CacheLogFonts();
 	FreeTabConfig();
 	ReloadTabConfig();
+	Skin->setupAeroSkins();
 	M->BroadcastMessage(DM_OPTIONSAPPLIED, 1, 0);
 	return 0;
 }
@@ -1009,32 +1011,40 @@ INT_PTR CALLBACK DlgProcOptions2(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
 				case IDC_MUC_OPENLOGBASEDIR: {
 					OPENFILENAME ofn = {0};
 					SESSION_INFO si = {0};
-					/*
-					 * create a dummy room to retrieve a valid log file name
-					 */
-					si.hContact = reinterpret_cast<HANDLE>(CallService(MS_DB_CONTACT_FINDFIRST, 0, 0));
-					GetChatLogsFilename(&si, time(0));
+					TCHAR	tszReturnName[MAX_PATH];
+					TCHAR	tszInitialDir[_MAX_DRIVE + _MAX_PATH + 10];
+					TCHAR	tszTemp[MAX_PATH + 20], *p = 0, *p1 = 0;
 
-					if(si.pszLogFileName[0]) {
-						TCHAR	tszReturnName[MAX_PATH];
-						TCHAR	tszDrive[_MAX_DRIVE], tszPath[_MAX_PATH], tszFilename[_MAX_FNAME], tszExt[_MAX_EXT];
-						TCHAR	tszInitialDir[_MAX_DRIVE + _MAX_PATH + 10];
+					mir_sntprintf(tszTemp, MAX_PATH + 20, _T("%s"), g_Settings.pszLogDir);
 
-						_tsplitpath(si.pszLogFileName, tszDrive, tszPath, tszFilename, tszExt);
-						mir_sntprintf(tszInitialDir, _MAX_DRIVE + _MAX_PATH + 10, _T("%s%s"), tszDrive, tszPath);
-						tszReturnName[0] = 0;
+					p = tszTemp;
+					while(*p && (*p == '\\' || *p == '.'))
+						p++;
 
-						ofn.lpstrFilter = _T("All files\0*.*\0\0");
-						ofn.lStructSize = OPENFILENAME_SIZE_VERSION_400;
-						ofn.hwndOwner = 0;
-						ofn.lpstrFile = tszReturnName;
-						ofn.lpstrInitialDir = tszInitialDir;
-						ofn.nMaxFile = MAX_PATH;
-						ofn.nMaxFileTitle = MAX_PATH;
-						ofn.Flags = OFN_HIDEREADONLY | OFN_DONTADDTORECENT;
-						ofn.lpstrDefExt = _T("log");
-						GetOpenFileName(&ofn);
+					if(*p) {
+						if((p1 = _tcschr(p, '\\')))
+							*p1 = 0;
 					}
+
+					mir_sntprintf(tszInitialDir, MAX_PATH, _T("%s%s"), M->getChatLogPath(), p);
+					if(PathFileExists(tszInitialDir))
+						ofn.lpstrInitialDir = tszInitialDir;
+					else {
+						mir_sntprintf(tszInitialDir, MAX_PATH, _T("%s"), M->getChatLogPath());
+						ofn.lpstrInitialDir = tszInitialDir;
+					}
+
+					tszReturnName[0] = 0;
+
+					ofn.lpstrFilter = _T("All files\0*.*\0\0");
+					ofn.lStructSize = OPENFILENAME_SIZE_VERSION_400;
+					ofn.hwndOwner = 0;
+					ofn.lpstrFile = tszReturnName;
+					ofn.nMaxFile = MAX_PATH;
+					ofn.nMaxFileTitle = MAX_PATH;
+					ofn.Flags = OFN_HIDEREADONLY | OFN_DONTADDTORECENT;
+					ofn.lpstrDefExt = _T("log");
+					GetOpenFileName(&ofn);
 					break;
 				}
 

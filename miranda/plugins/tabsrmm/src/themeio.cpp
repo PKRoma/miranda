@@ -73,14 +73,25 @@ static struct _tagExtSettings_v5 {
 	char*	szDbModule;
 	char*	szDbSetting;
 	DWORD	dwDef;
-} _extSettings_v5[7] = {
+} _extSettings_v5[16] = {
 		"CommonClrs", "IP_High", FONTMODULE, "ipfieldsbgHigh", 0xf0f0f0,
 		"CommonClrs", "IP_Low", FONTMODULE, "ipfieldsbg", 0x62caff,
 		"CommonClrs", "TB_High", FONTMODULE, "tbBgHigh", 0,
 		"CommonClrs", "TB_Low", FONTMODULE, "tbBgLow", 0,
 		"CommonClrs", "FillColor", FONTMODULE, "fillColor", 0,
 		"CommonClrs", "RichBorders", FONTMODULE, "cRichBorders", 0,
-		"AeroMode", "Style", SRMSGMOD_T, "aerostyle", CSkin::AERO_EFFECT_MILK
+		"AeroMode", "Style", SRMSGMOD_T, "aerostyle", CSkin::AERO_EFFECT_MILK,
+		"AeroMode", "AeroGlowColor", FONTMODULE, "aeroGlow", RGB(40, 40, 255),
+
+		"Colored Tabs", "NormalText", SRMSGMOD_T, "tab_txt_normal", RGB(1, 1, 1),
+		"Colored Tabs", "ActiveText", SRMSGMOD_T, "tab_txt_active", RGB(1, 1, 1),
+		"Colored Tabs", "HottrackText", SRMSGMOD_T, "tab_txt_hottrack", RGB(1, 1, 1),
+		"Colored Tabs", "UnreadText", SRMSGMOD_T, "tab_txt_unread", RGB(1, 1, 1),
+
+		"Colored Tabs", "NormalBG", SRMSGMOD_T, "tab_bg_normal", 0xf0f0f0,
+		"Colored Tabs", "ActiveBG", SRMSGMOD_T, "tab_bg_active", 0xf0f0f0,
+		"Colored Tabs", "HottrackBG", SRMSGMOD_T, "tab_bg_hottrack", 0xf0f0f0,
+		"Colored Tabs", "UnreadBG", SRMSGMOD_T, "tab_bg_unread", 0xf0f0f0
 };
 
 /*

@@ -448,7 +448,6 @@
 #define IDC_TITLEFORMAT                 1393
 #define IDC_THEME                       1394
 #define IDC_INFOPANEL                   1395
-#define IDC_AEROGLOW                    1395
 #define IDC_SUPPORT                     1396
 #define IDC_SHOWAVATAR                  1396
 #define IDC_NOPOPUPAVAIL                1398

@@ -1817,13 +1817,13 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			rc.top = rc.bottom - dat->ipFieldHeight;
 			dat->rcStatus = rc;
 
-			rc.left = panelHeight <= CInfoPanel::LEFT_OFFSET_LOGO ? panelHeight : CInfoPanel::LEFT_OFFSET_LOGO;
+			rc.left = CInfoPanel::LEFT_OFFSET_LOGO;
 			rc.right = cx - dat->panelWidth - (panelHeight < CInfoPanel::DEGRADE_THRESHOLD ? (dat->rcStatus.right - dat->rcStatus.left) + 3 : 0);
 			rc.bottom = panelHeight - (panelHeight >= CInfoPanel::DEGRADE_THRESHOLD ? dat->ipFieldHeight : 0) - 1;;
 			rc.top = 1;
 			dat->rcNick = rc;
 
-			rc.left = panelHeight <= CInfoPanel::LEFT_OFFSET_LOGO ? panelHeight : CInfoPanel::LEFT_OFFSET_LOGO;
+			rc.left = CInfoPanel::LEFT_OFFSET_LOGO;
 			rc.right = cx - (dat->panelWidth + 2) - dat->panelStatusCX;
 			rc.bottom = panelHeight - 3;
 			rc.top = rc.bottom - dat->ipFieldHeight;
