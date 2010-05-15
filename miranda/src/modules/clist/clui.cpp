@@ -721,10 +721,7 @@ LRESULT CALLBACK fnContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 			return 0;
 
 		case SC_CLOSE:
-			if (DBGetContactSettingByte(NULL, "CList", "ToolWindow", SETTING_TOOLWINDOW_DEFAULT))
-				cli.pfnShowHide(0, 0);
-			else
-				PostMessage(hwnd,  WM_SYSCOMMAND, SC_MINIMIZE, lParam);
+			PostMessage(hwnd, WM_SYSCOMMAND, SC_MINIMIZE, lParam);
 			return 0;
 		}
 		return DefWindowProc(hwnd, msg, wParam, lParam);

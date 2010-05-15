@@ -401,7 +401,8 @@ int fnShowHide(WPARAM, LPARAM)
 		}
 	}
 	else {                      //It needs to be hidden
-		if (DBGetContactSettingByte(NULL, "CList", "ToolWindow", SETTING_TOOLWINDOW_DEFAULT))
+		if (DBGetContactSettingByte(NULL, "CList", "ToolWindow", SETTING_TOOLWINDOW_DEFAULT) || 
+			DBGetContactSettingByte(NULL, "CList", "Min2Tray", SETTING_MIN2TRAY_DEFAULT))
 		{
 			ShowWindow(cli.hwndContactList, SW_HIDE);
 			DBWriteContactSettingByte(NULL, "CList", "State", SETTING_STATE_HIDDEN);
