@@ -858,6 +858,7 @@ void CJabberProto::OnProcessError( HXML node, ThreadData* info )
 	TCHAR *buff;
 	int i;
 	int pos;
+	bool skipMsg = false;
 
 	//failure xmlns=\"urn:ietf:params:xml:ns:xmpp-sasl\"
 	if ( !xmlGetChild( node ,0))
@@ -874,9 +875,10 @@ void CJabberProto::OnProcessError( HXML node, ThreadData* info )
 		if ( !_tcscmp( xmlGetName( n ), _T("conflict")))
 			JSendBroadcast( NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_OTHERLOCATION);
 		else if ( !_tcscmp( xmlGetName( n ), _T("see-other-host"))) {
+			skipMsg = true;
 		}
 	}
-	MessageBox( NULL, buff, TranslateT( "Jabber Error" ), MB_OK|MB_ICONSTOP|MB_SETFOREGROUND );
+	if (!skipMsg) MessageBox( NULL, buff, TranslateT( "Jabber Error" ), MB_OK|MB_ICONSTOP | MB_SETFOREGROUND );
 	mir_free(buff);
 	info->send( "</stream:stream>" );
 }
