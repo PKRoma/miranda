@@ -60,6 +60,7 @@ void __cdecl CIcqProto::ServerThread(serverthread_start_info *infoParam)
 	NetLog_Server("Authenticating to server");
 	{
 		NETLIBOPENCONNECTION nloc = infoParam->nloc;
+		nloc.timeout = 6;
 
 		hServerConn = NetLib_OpenConnection(m_hServerNetlibUser, NULL, &nloc);
 
