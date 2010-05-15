@@ -137,38 +137,47 @@ void CJabberProto::OnPingReply( HXML, CJabberIqInfo* pInfo )
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-typedef DNS_STATUS (WINAPI *DNSQUERYA)(IN PCSTR pszName, IN WORD wType, IN DWORD Options, IN PIP4_ARRAY aipServers OPTIONAL, IN OUT PDNS_RECORD *ppQueryResults OPTIONAL, IN OUT PVOID *pReserved OPTIONAL);
-typedef void (WINAPI *DNSFREELIST)(IN OUT PDNS_RECORD pRecordList, IN DNS_FREE_TYPE FreeType);
+typedef DNS_STATUS (WINAPI *DNSQUERYA)(IN PCSTR pszName, IN WORD wType, IN DWORD Options, IN PIP4_ARRAY aipServers OPTIONAL, IN OUT PDNS_RECORDA *ppQueryResults OPTIONAL, IN OUT PVOID *pReserved OPTIONAL);
+typedef void (WINAPI *DNSFREELIST)(IN OUT PDNS_RECORDA pRecordList, IN DNS_FREE_TYPE FreeType);
 
-static int xmpp_client_query( char* domain )
+void ThreadData::xmpp_client_query( void )
 {
-	HINSTANCE hDnsapi = LoadLibraryA( "dnsapi.dll" );
+	HMODULE hDnsapi = LoadLibraryA( "dnsapi.dll" );
 	if ( hDnsapi == NULL )
-		return 0;
+		return;
 
 	DNSQUERYA pDnsQuery = (DNSQUERYA)GetProcAddress(hDnsapi, "DnsQuery_A");
 	DNSFREELIST pDnsRecordListFree = (DNSFREELIST)GetProcAddress(hDnsapi, "DnsRecordListFree");
 	if ( pDnsQuery == NULL ) {
 		//dnsapi.dll is not the needed dnsapi ;)
 		FreeLibrary( hDnsapi );
-		return 0;
+		return;
 	}
 
-   char temp[256];
-	mir_snprintf( temp, SIZEOF(temp), "_xmpp-client._tcp.%s", domain );
+	char temp[256];
+	mir_snprintf( temp, SIZEOF(temp), "_xmpp-client._tcp.%s", server );
 
-	DNS_RECORD *results = NULL;
+	DNS_RECORDA *results = NULL;
 	DNS_STATUS status = pDnsQuery(temp, DNS_TYPE_SRV, DNS_QUERY_STANDARD, NULL, &results, NULL);
-	if (FAILED(status)||!results || results[0].Data.Srv.pNameTarget == 0||results[0].wType != DNS_TYPE_SRV) {
-		FreeLibrary(hDnsapi);
-		return NULL;
-	}
+	if (SUCCEEDED(status) && results) {
+		for (DNS_RECORDA *rec = results; rec; rec = rec->pNext) {
+			if (rec->Data.Srv.pNameTarget && rec->wType == DNS_TYPE_SRV) {
+				WORD dnsPort = port == 0 || port == 5222 ? rec->Data.Srv.wPort : port;
+				char* dnsHost = rec->Data.Srv.pNameTarget;
 
-	strncpy(domain, (char*)results[0].Data.Srv.pNameTarget, 127);
-	int port = results[0].Data.Srv.wPort;
-	pDnsRecordListFree(results, DnsFreeRecordList);
+				proto->Log("%s%s resolved to %s:%d", "_xmpp-client._tcp.", server, dnsHost, dnsPort);
+				s = proto->WsConnect(dnsHost, dnsPort);
+				if (s) {
+					mir_snprintf( manualHost, SIZEOF( manualHost ), "%s", dnsHost );
+					port = dnsPort;
+					break;
+		}	}	}
+		pDnsRecordListFree(results, DnsFreeRecordList);
+	}
+	else
+		proto->Log("%s not resolved", temp);
+
 	FreeLibrary(hDnsapi);
-	return port;
 }
 
 void CJabberProto::xmlStreamInitialize(char *szWhich)
@@ -380,22 +389,6 @@ LBL_FatalError:
 		goto LBL_FatalError;
 	}
 
-	char connectHost[128];
-	if ( info->manualHost[0] == 0 ) {
-		int port_temp;
-		strncpy( connectHost, info->server, SIZEOF(info->server));
-		if ( port_temp = xmpp_client_query( connectHost )) { // port_temp will be > 0 if resolution is successful
-			Log("%s%s resolved to %s:%d","_xmpp-client._tcp.",info->server,connectHost,port_temp);
-			mir_snprintf( info->manualHost, SIZEOF( info->manualHost ), "%s", connectHost );
-			if (info->port==0 || info->port==5222)
-				info->port = port_temp;
-		}
-		else Log("%s%s not resolved", "_xmpp-client._tcp.", connectHost);
-	}
-	else strncpy( connectHost, info->manualHost, SIZEOF(connectHost)); // do not resolve if manual host is selected
-
-	Log( "Thread type=%d server='%s' port='%d'", info->type, connectHost, info->port );
-
 	int jabberNetworkBufferSize = 2048;
 	if (( buffer=( char* )mir_alloc( jabberNetworkBufferSize+1 )) == NULL ) {	// +1 is for '\0' when debug logging this buffer
 		Log( "Cannot allocate network buffer, thread ended" );
@@ -409,7 +402,17 @@ LBL_FatalError:
 		goto LBL_FatalError;
 	}
 
-	info->s = WsConnect( connectHost, info->port );
+	if ( info->manualHost[0] == 0 ) {
+		info->xmpp_client_query();
+		if ( info->s == NULL ) {
+			strncpy( info->manualHost, info->server, SIZEOF(info->manualHost));
+			info->s = WsConnect( info->manualHost, info->port );
+		}
+	}
+	else 
+		info->s = WsConnect( info->manualHost, info->port );
+
+	Log( "Thread type=%d server='%s' port='%d'", info->type, info->manualHost, info->port );
 	if ( info->s == NULL ) {
 		Log( "Connection failed ( %d )", WSAGetLastError());
 		if ( info->type == JABBER_SESSION_NORMAL ) {
@@ -870,6 +873,8 @@ void CJabberProto::OnProcessError( HXML node, ThreadData* info )
 		pos += mir_sntprintf( buff+pos, 1024-pos, _T("%s: %s\n"), xmlGetName( n ), xmlGetText( n ));
 		if ( !_tcscmp( xmlGetName( n ), _T("conflict")))
 			JSendBroadcast( NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_OTHERLOCATION);
+		else if ( !_tcscmp( xmlGetName( n ), _T("see-other-host"))) {
+		}
 	}
 	MessageBox( NULL, buff, TranslateT( "Jabber Error" ), MB_OK|MB_ICONSTOP|MB_SETFOREGROUND );
 	mir_free(buff);

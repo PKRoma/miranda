@@ -854,7 +854,7 @@ struct CJabberProto : public PROTO_INTERFACE
 	AUTHMECHS m_AuthMechs;
 
 	void   __cdecl ServerThread( ThreadData* info );
-		  
+
 	void   OnProcessFailure( HXML node, ThreadData *info );
 	void   OnProcessError( HXML node, ThreadData *info );
 	void   OnProcessSuccess( HXML node, ThreadData *info );

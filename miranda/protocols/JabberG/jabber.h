@@ -347,10 +347,12 @@ struct ThreadData
 	int      zRecvDatalen;
 	char*    zRecvData;
 
+	void     xmpp_client_query( void );
+
 	BOOL     zlibInit( void );
 	void     zlibUninit();
-   int      zlibSend( char* data, int datalen );
-   int      zlibRecv( char* data, long datalen );
+	int      zlibSend( char* data, int datalen );
+	int      zlibRecv( char* data, long datalen );
 
 	// for nick names resolving
 	int    resolveID;
