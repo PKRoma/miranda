@@ -31,6 +31,7 @@ extern BOOL(WINAPI * MySetProcessWorkingSetSize) (HANDLE, SIZE_T, SIZE_T);
 int GetAverageMode(int* pNetProtoCount = NULL);
 
 static UINT WM_TASKBARCREATED;
+static UINT WM_TASKBARBUTTONCREATED;
 static BOOL mToolTipTrayTips = FALSE;
 static UINT_PTR cycleTimerId = 0;
 static int cycleStep = 0;
@@ -70,6 +71,7 @@ static TCHAR* sttGetXStatus( const char* szProto )
 	return result;
 }
 
+static HICON lastTaskBarIcon;
 static void SetTaskBarIcon(const HICON hIcon, const TCHAR *szNewTip)
 {
 	if (pTaskbarInterface)
@@ -77,6 +79,7 @@ static void SetTaskBarIcon(const HICON hIcon, const TCHAR *szNewTip)
 		wchar_t *szTip = mir_t2u(szNewTip);
 		pTaskbarInterface->SetOverlayIcon(cli.hwndContactList, hIcon, szTip);
 		mir_free(szTip);
+		lastTaskBarIcon = hIcon;
 	}
 }
 
@@ -714,6 +717,7 @@ INT_PTR fnTrayIconProcessMessage(WPARAM wParam, LPARAM lParam)
 	switch (msg->message) {
 	case WM_CREATE: {
 		WM_TASKBARCREATED = RegisterWindowMessage( _T("TaskbarCreated"));
+		WM_TASKBARBUTTONCREATED = RegisterWindowMessage( _T("TaskbarButtonCreated"));
 		PostMessage(msg->hwnd, TIM_CREATE, 0, 0);
 		break;
 	}
@@ -799,11 +803,17 @@ INT_PTR fnTrayIconProcessMessage(WPARAM wParam, LPARAM lParam)
 		return TRUE;
 
 	default:
-		if ( msg->message == WM_TASKBARCREATED ) {
+		if (msg->message == WM_TASKBARCREATED) {
 			cli.pfnTrayIconTaskbarCreated(msg->hwnd);
 			*((LRESULT *) lParam) = 0;
 			return TRUE;
-	}	}
+		}
+		else if (msg->message == WM_TASKBARBUTTONCREATED) { 
+			SetTaskBarIcon(lastTaskBarIcon, NULL);
+			*((LRESULT *) lParam) = 0;
+			return TRUE;
+		}
+	}
 
 	return FALSE;
 }

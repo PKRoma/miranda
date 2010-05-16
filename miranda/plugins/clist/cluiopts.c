@@ -228,11 +228,6 @@ static INT_PTR CALLBACK DlgProcCluiOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 			else SetWindowLong(pcli->hwndContactList, GWL_EXSTYLE, GetWindowLong(pcli->hwndContactList, GWL_EXSTYLE) & ~WS_EX_LAYERED);
 
 			SendMessage(pcli->hwndContactTree, WM_SIZE, 0, 0);        //forces it to send a cln_listsizechanged
-			if (!IsDlgButtonChecked(hwndDlg, IDC_TOOLWND)) {
-				pcli->pfnTrayIconDestroy(pcli->hwndContactList);
-				pcli->pfnTrayIconInit(pcli->hwndContactList);
-			}
-
 
 			return TRUE;
 		}
