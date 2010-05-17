@@ -314,7 +314,10 @@ void CMsnProto::MSN_SyncContactToServerGroup(HANDLE hContact, const char* szCont
 
 void  CMsnProto::MSN_SendNicknameUtf(const char* nickname)
 {
-	setStringUtf(NULL, "Nick", nickname);
+	if (nickname[0])
+		setStringUtf(NULL, "Nick", nickname);
+	else
+		deleteSetting(NULL, "Nick");
 	
 	MSN_SetNicknameUtf(nickname);
 	MSN_StoreUpdateProfile(nickname, false);
