@@ -320,9 +320,20 @@ LONG_PTR CMenuBar::customDrawWorker(NMCUSTOMDRAW *nm)
 							CSkin::ApplyAeroEffect(m_hdcDraw, &m_rcItem, CSkin::AERO_EFFECT_AREA_MENUBAR);
 							nm->rc.bottom++;
 						}
-						else if(M->isVSThemed() && !CSkin::m_skinEnabled) {
-							m_rcItem.bottom -= 2;
-							M->m_pfnDrawThemeBackground(m_hTheme, m_hdcDraw, 6, 1, &m_rcItem, &m_rcItem);
+						else if((PluginConfig.m_fillColor || M->isVSThemed()) && !CSkin::m_skinEnabled) {
+							if(PluginConfig.m_fillColor && PluginConfig.m_tbBackgroundHigh && PluginConfig.m_tbBackgroundLow) {
+								::DrawAlpha(m_hdcDraw, &m_rcItem, PluginConfig.m_tbBackgroundHigh, 100, PluginConfig.m_tbBackgroundLow, 0,
+										GRADIENT_TB, 0, 0, 0);
+							}
+							else {
+								m_rcItem.bottom--;
+								if(PluginConfig.m_fillColor)
+									CSkin::FillBack(m_hdcDraw, &m_rcItem);
+								else if(M->isVSThemed())
+									M->m_pfnDrawThemeBackground(m_hTheme, m_hdcDraw, 6, 1, &m_rcItem, &m_rcItem);
+								else
+									FillRect(m_hdcDraw, &m_rcItem, GetSysColorBrush(COLOR_3DFACE));
+							}
 						}
 						else if(CSkin::m_MenuBGBrush)
 							::FillRect(m_hdcDraw, &nm->rc, CSkin::m_MenuBGBrush);

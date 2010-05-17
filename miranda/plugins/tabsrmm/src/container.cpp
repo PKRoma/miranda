@@ -657,7 +657,7 @@ static INT_PTR CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, 
 			ws = GetWindowLongPtr(GetDlgItem(hwndDlg, IDC_MSGTABS), GWL_EXSTYLE);
 			SetWindowLongPtr(GetDlgItem(hwndDlg, IDC_MSGTABS), GWL_EXSTYLE, ws | WS_EX_CONTROLPARENT);
 
-			LONG x_pad = M->GetByte("x-pad", 3) + (pContainer->dwFlagsEx & TCF_CLOSEBUTTON ? 6 : 0);
+			LONG x_pad = M->GetByte("x-pad", 3) + (pContainer->dwFlagsEx & TCF_CLOSEBUTTON ? 7 : 0);
 			LONG y_pad = M->GetByte("y-pad", 3) + ((pContainer->dwFlags & CNT_TABSBOTTOM) ? 1 : 0);
 
 			if(pContainer->dwFlagsEx & TCF_FLAT)
@@ -2589,9 +2589,9 @@ HMENU TSAPI BuildContainerMenu()
 			break;
 
 		if (dbv.type == DBVT_ASCIIZ || dbv.type == DBVT_WCHAR) {
-			if (_tcsncmp(dbv.ptszVal, _T("**free**"), CONTAINER_NAMELEN)) {
-				AppendMenu(hMenu, MF_STRING, IDM_CONTAINERMENU + i, TranslateTS(dbv.ptszVal));
-			}
+			if (_tcsncmp(dbv.ptszVal, _T("**free**"), CONTAINER_NAMELEN))
+				AppendMenu(hMenu, MF_STRING, IDM_CONTAINERMENU + i, !_tcscmp(dbv.ptszVal, _T("default")) ?
+						   CTranslator::get(CTranslator::GEN_DEFAULT_CONTAINER_NAME) : dbv.ptszVal);
 		}
 		DBFreeVariant(&dbv);
 		i++;

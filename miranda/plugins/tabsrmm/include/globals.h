@@ -201,6 +201,7 @@ public:
 	TContainerSettings		globalContainerSettings;
 
 	static HANDLE					m_event_FoldersChanged;
+	static TCHAR*					m_default_container_name;
 	static	void					cacheUpdateMetaChanged();
 	static  void 					logStatusChange(WPARAM wParam, const CContactCache *c);
 

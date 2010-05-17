@@ -107,6 +107,7 @@ public:
 	static	void				TSAPI scaleAvatarHeightLimited		(const HBITMAP hBm, double& dNewWidth, double& dNewHeight, LONG maxHeight);
 
 	static	AVATARCACHEENTRY*	TSAPI loadAvatarFromAVS				(const HANDLE hContact);
+	static	void				TSAPI sanitizeFilename				(TCHAR *tszFilename);
 
 	static	INT_PTR CALLBACK		  PopupDlgProcError				(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 

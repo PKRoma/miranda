@@ -58,6 +58,7 @@ HANDLE		CGlobals::m_event_PreShutdown = 0, CGlobals::m_event_OkToExit = 0;
 HANDLE		CGlobals::m_event_IcoLibChanged = 0, CGlobals::m_event_AvatarChanged = 0, CGlobals::m_event_MyAvatarChanged = 0, CGlobals::m_event_FontsChanged = 0;
 HANDLE		CGlobals::m_event_SmileyAdd = 0, CGlobals::m_event_IEView = 0, CGlobals::m_event_FoldersChanged = 0;
 HANDLE 		CGlobals::m_event_ME_MC_SUBCONTACTSCHANGED = 0, CGlobals::m_event_ME_MC_FORCESEND = 0, CGlobals::m_event_ME_MC_UNFORCESEND = 0;
+TCHAR*		CGlobals::m_default_container_name = _T("default");
 
 extern 		HANDLE 	hHookButtonPressedEvt;
 extern		HANDLE 	hHookToolBarLoadedEvt;
@@ -133,7 +134,7 @@ void CGlobals::RegisterWithUpdater()
 	upd.cpbVersion 			= 	lstrlenA(szCurrentVersion);
  	upd.pbBetaVersionPrefix	= 	(BYTE *)szPrefix;
  	upd.cpbBetaVersionPrefix= 	(int)(strlen((char *)upd.pbBetaVersionPrefix));
- 	upd.szBetaChangelogURL  =	"http://miranda.radicaled.ru/public/tabsrmm/chglogeng.txt";
+ 	upd.szBetaChangelogURL  =	"http://blog.miranda.or.at/tabsrmm-articles/tabsrmm-version-3-changelog";
 
  	CallService(MS_UPDATE_REGISTER, 0, (LPARAM)&upd);
 }
@@ -335,7 +336,13 @@ void CGlobals::reloadSettings(bool fReloadSkins)
 	}
 
 	m_ipBackgroundGradient = 			M->GetDword(FONTMODULE, "ipfieldsbg", 0x62caff);
+	if(0 == m_ipBackgroundGradient)
+		m_ipBackgroundGradient = 0x62caff;
+
 	m_ipBackgroundGradientHigh = 		M->GetDword(FONTMODULE, "ipfieldsbgHigh", 0xf0f0f0);
+	if(0 == m_ipBackgroundGradientHigh)
+		m_ipBackgroundGradientHigh = 0xf0f0f0;
+
 	m_tbBackgroundHigh = 				M->GetDword(FONTMODULE, "tbBgHigh", 0);
 	m_tbBackgroundLow = 				M->GetDword(FONTMODULE, "tbBgLow", 0);
 	m_fillColor =						M->GetDword(FONTMODULE, "fillColor", 0);

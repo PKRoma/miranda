@@ -1804,10 +1804,12 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 					CallService(MS_FAVATAR_RESIZE, (WPARAM)&fa, (LPARAM)&rc1);
 				}
 			}
-			if(dat->hwndPanelPic || dat->hwndFlash) {
+			if(dat->showInfoPic && (dat->hwndPanelPic || dat->hwndFlash)) {
 				SetWindowPos(dat->hwndPanelPicParent, HWND_TOP, rc.left - 2, rc.top, rc.right - rc.left, (rc.bottom - rc.top) + 1, 0);
 				ShowWindow(dat->hwndPanelPicParent, (dat->panelWidth == -1) || !dat->Panel->isActive() ? SW_HIDE : SW_SHOW);
 			}
+			else if(dat->hwndPanelPicParent)
+				ShowWindow(dat->hwndPanelPicParent, SW_HIDE);
 
 			dat->rcPic = rc;
 
@@ -3341,6 +3343,10 @@ quote_from_last:
 		case DM_CONTAINERSELECTED: {
 			struct TContainerData *pNewContainer = 0;
 			TCHAR *szNewName = (TCHAR *)lParam;
+
+			if(!_tcscmp(szNewName, CTranslator::get(CTranslator::GEN_DEFAULT_CONTAINER_NAME)))
+				szNewName = CGlobals::m_default_container_name;
+
 			int iOldItems = TabCtrl_GetItemCount(hwndTab);
 			if (!_tcsncmp(m_pContainer->szName, szNewName, CONTAINER_NAMELEN))
 				break;
@@ -3396,57 +3402,10 @@ quote_from_last:
 			/*
 			 * save the contents of the log as rtf file
 			 */
-		case DM_SAVEMESSAGELOG: {
-			TCHAR szFilename[MAX_PATH];
-			OPENFILENAME ofn = {0};
-			EDITSTREAM stream = { 0 };
-			TCHAR szFilter[MAX_PATH];
+		case DM_SAVEMESSAGELOG:
+			DM_SaveLogAsRTF(dat);
+			return(0);
 
-			if (dat->hwndIEView != 0) {
-				IEVIEWEVENT event = {0};
-
-				event.cbSize = sizeof(IEVIEWEVENT);
-				event.hwnd = dat->hwndIEView;
-				event.hContact = dat->hContact;
-				event.iType = IEE_SAVE_DOCUMENT;
-				event.dwFlags = 0;
-				event.count = 0;
-				event.codepage = 0;
-				CallService(MS_IEVIEW_EVENT, 0, (LPARAM)&event);
-			} else {
-				static TCHAR *forbiddenCharacters = _T("%/\\'");
-				TCHAR  szInitialDir[MAX_PATH];
-				int    i;
-
-				_tcsncpy(szFilter, _T("Rich Edit file\0*.rtf"), MAX_PATH);
-				mir_sntprintf(szFilename, MAX_PATH, _T("%s.rtf"), dat->cache->getNick());
-
-				for (i = 0; i < lstrlen(forbiddenCharacters); i++) {
-					TCHAR *szFound = 0;
-
-					while ((szFound = _tcschr(szFilename, (int)forbiddenCharacters[i])) != NULL)
-						*szFound = '_';
-				}
-				mir_sntprintf(szInitialDir, MAX_PATH, _T("%s%s\\"), M->getDataPath(), _T("Saved message logs"));
-				if (!PathFileExists(szInitialDir))
-					CreateDirectory(szInitialDir, NULL);
-				ofn.lStructSize = sizeof(ofn);
-				ofn.hwndOwner = hwndDlg;
-				ofn.lpstrFile = szFilename;
-				ofn.lpstrFilter = szFilter;
-				ofn.lpstrInitialDir = szInitialDir;
-				ofn.nMaxFile = MAX_PATH;
-				ofn.Flags = OFN_HIDEREADONLY;
-				ofn.lpstrDefExt = _T("rtf");
-				if (GetSaveFileName(&ofn)) {
-					stream.dwCookie = (DWORD_PTR)szFilename;
-					stream.dwError = 0;
-					stream.pfnCallback = Utils::StreamOut;
-					SendDlgItemMessage(hwndDlg, IDC_LOG, EM_STREAMOUT, SF_RTF | SF_USECODEPAGE, (LPARAM) & stream);
-				}
-			}
-			break;
-		}
 		/*
 		 * sent from the containers heartbeat timer
 		 * wParam = inactivity timer in seconds

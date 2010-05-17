@@ -94,8 +94,8 @@ INT_PTR CALLBACK SelectContainerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, L
 
 					if ((iItem = SendDlgItemMessage(hwndDlg, IDC_CNTLIST, LB_GETCURSEL, 0, 0)) != LB_ERR) {
 						SendDlgItemMessage(hwndDlg, IDC_CNTLIST, LB_GETTEXT, (WPARAM) iItem, (LPARAM) szName);
-						if (!_tcsncmp(szName, _T("default"), CONTAINER_NAMELEN))
-							MessageBox(hwndDlg, CTranslator::get(CTranslator::CNT_SELECT_DELETEERROR), _T("Error"), MB_OK);
+						if (!_tcsncmp(szName, _T("default"), CONTAINER_NAMELEN) || !_tcsncmp(szName, CTranslator::get(CTranslator::GEN_DEFAULT_CONTAINER_NAME), CONTAINER_NAMELEN))
+							MessageBox(hwndDlg, CTranslator::get(CTranslator::CNT_SELECT_DELETEERROR), _T("Error"), MB_OK | MB_ICONERROR);
 						else {
 							int iIndex = SendDlgItemMessage(hwndDlg, IDC_CNTLIST, LB_GETITEMDATA, (WPARAM)iItem, 0);
 							DeleteContainer(iIndex);
@@ -114,20 +114,25 @@ INT_PTR CALLBACK SelectContainerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, L
 					iLen = GetWindowTextLength(GetDlgItem(hwndDlg, IDC_NEWCONTAINERNAME));
 					if (iLen) {
 						GetWindowText(GetDlgItem(hwndDlg, IDC_NEWCONTAINERNAME), szNewName, CONTAINER_NAMELEN * sizeof(TCHAR));
+						if(!_tcsncmp(szNewName, CGlobals::m_default_container_name, CONTAINER_NAMELEN) || !_tcsncmp(szNewName, CTranslator::get(CTranslator::GEN_DEFAULT_CONTAINER_NAME), CONTAINER_NAMELEN)) {
+							MessageBox(hwndDlg, CTranslator::get(CTranslator::CNT_SELECT_RENAMEERROR), _T("Error"), MB_OK | MB_ICONERROR);
+							break;
+						}
+
 						iItem = SendDlgItemMessage(hwndDlg, IDC_CNTLIST, LB_FINDSTRING, (WPARAM) - 1, (LPARAM) szNewName);
 						if (iItem != LB_ERR) {
 							TCHAR szOldName[CONTAINER_NAMELEN + 1];
 							SendDlgItemMessage(hwndDlg, IDC_CNTLIST, LB_GETTEXT, (WPARAM) iItem, (LPARAM) szOldName);
 							if (lstrlen(szOldName) == lstrlen(szNewName)) {
-								MessageBox(0, CTranslator::get(CTranslator::CNT_SELECT_INUSE), _T("Error"), MB_OK);
+								MessageBox(0, CTranslator::get(CTranslator::CNT_SELECT_INUSE), _T("Error"), MB_OK | MB_ICONERROR);
 								SetFocus(GetDlgItem(hwndDlg, IDC_NEWCONTAINERNAME));
 								break;
 							}
 						}
 						if ((iItem = SendDlgItemMessage(hwndDlg, IDC_CNTLIST, LB_GETCURSEL, 0, 0)) != LB_ERR) {
 							SendDlgItemMessage(hwndDlg, IDC_CNTLIST, LB_GETTEXT, (WPARAM) iItem, (LPARAM) szName);
-							if (!_tcsncmp(szName, _T("default"), CONTAINER_NAMELEN))
-								MessageBox(hwndDlg, CTranslator::get(CTranslator::CNT_SELECT_RENAMEERROR), _T("Error"), MB_OK);
+							if (!_tcsncmp(szName, _T("default"), CONTAINER_NAMELEN) || !_tcsncmp(szName, CTranslator::get(CTranslator::GEN_DEFAULT_CONTAINER_NAME), CONTAINER_NAMELEN))
+								MessageBox(hwndDlg, CTranslator::get(CTranslator::CNT_SELECT_RENAMEERROR), _T("Error"), MB_OK | MB_ICONERROR);
 							else {
 								int iIndex = SendDlgItemMessage(hwndDlg, IDC_CNTLIST, LB_GETITEMDATA, (WPARAM)iItem, 0);
 								RenameContainer(iIndex, szNewName);
@@ -154,10 +159,10 @@ INT_PTR CALLBACK SelectContainerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, L
 					if (iLen) {
 						GetWindowText(GetDlgItem(hwndDlg, IDC_NEWCONTAINER), szNewName, CONTAINER_NAMELEN * sizeof(TCHAR));
 						iItem = SendDlgItemMessage(hwndDlg, IDC_CNTLIST, LB_FINDSTRING, (WPARAM) - 1, (LPARAM) szNewName);
-						if (iItem != LB_ERR) {
+						if (iItem != LB_ERR || !_tcsncmp(szNewName, CGlobals::m_default_container_name, CONTAINER_NAMELEN)) {
 							SendDlgItemMessage(hwndDlg, IDC_CNTLIST, LB_GETTEXT, (WPARAM)iItem, (LPARAM)szName);
-							if (lstrlen(szName) == lstrlen(szNewName)) {
-								MessageBox(0, CTranslator::get(CTranslator::CNT_SELECT_INUSE), _T("Error"), MB_OK);
+							if (lstrlen(szName) == lstrlen(szNewName) || !_tcsncmp(szNewName, CGlobals::m_default_container_name, CONTAINER_NAMELEN)) {
+								MessageBox(0, CTranslator::get(CTranslator::CNT_SELECT_INUSE), _T("Error"), MB_OK | MB_ICONERROR);
 								SetFocus(GetDlgItem(hwndDlg, IDC_NEWCONTAINER));
 								break;
 							}
@@ -195,7 +200,8 @@ INT_PTR CALLBACK SelectContainerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, L
 					break;          // end of list
 				if (dbv.type == DBVT_ASCIIZ || dbv.type == DBVT_WCHAR) {
 					if (_tcsncmp(dbv.ptszVal, _T("**free**"), CONTAINER_NAMELEN)) {
-						iItemNew = SendDlgItemMessage(hwndDlg, IDC_CNTLIST, LB_ADDSTRING, 0, (LPARAM)dbv.ptszVal);
+						iItemNew = SendDlgItemMessage(hwndDlg, IDC_CNTLIST, LB_ADDSTRING, 0, (LPARAM)(!_tcscmp(dbv.ptszVal, _T("default")) ?
+													  CTranslator::get(CTranslator::GEN_DEFAULT_CONTAINER_NAME) : dbv.ptszVal));
 						if (iItemNew != LB_ERR)
 							SendDlgItemMessage(hwndDlg, IDC_CNTLIST, LB_SETITEMDATA, (WPARAM)iItemNew, (LPARAM)iCounter);
 					}
@@ -211,7 +217,8 @@ INT_PTR CALLBACK SelectContainerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, L
 			if (pContainer) {
 				LRESULT iItem;
 
-				iItem = SendDlgItemMessage(hwndDlg, IDC_CNTLIST, LB_FINDSTRING, (WPARAM) - 1, (LPARAM) pContainer->szName);
+				iItem = SendDlgItemMessage(hwndDlg, IDC_CNTLIST, LB_FINDSTRING, (WPARAM) - 1, (LPARAM)(!_tcscmp(pContainer->szName, _T("default")) ?
+										   CTranslator::get(CTranslator::GEN_DEFAULT_CONTAINER_NAME) : pContainer->szName));
 				if (iItem != LB_ERR)
 					SendDlgItemMessage(hwndDlg, IDC_CNTLIST, LB_SETCURSEL, (WPARAM) iItem, 0);
 			}

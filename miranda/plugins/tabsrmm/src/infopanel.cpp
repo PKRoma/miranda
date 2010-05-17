@@ -989,7 +989,7 @@ INT_PTR CALLBACK CInfoPanel::avatarParentSubclass(HWND hwnd, UINT msg, WPARAM wP
 
 				GetClientRect(hwnd, &rcItem);
 				rc = rcItem;
-				if(!IsWindowEnabled(hwnd) || !dat->Panel->isActive())
+				if(!IsWindowEnabled(hwnd) || !dat->Panel->isActive() || dat->showInfoPic == 0)
 					return(TRUE);
 
 				HDC 			dcWin = (HDC)wParam;
@@ -1001,7 +1001,7 @@ INT_PTR CALLBACK CInfoPanel::avatarParentSubclass(HWND hwnd, UINT msg, WPARAM wP
 					LONG	cy = rcItem.bottom - rcItem.top;
 
 					rc.left -= 3; rc.right += 3;
-					rc.bottom++;
+					rc.bottom += 2;
 
 					hdc = CreateCompatibleDC(dcWin);
 					hbm = CSkin::CreateAeroCompatibleBitmap(rc, dcWin);
@@ -1023,7 +1023,7 @@ INT_PTR CALLBACK CInfoPanel::avatarParentSubclass(HWND hwnd, UINT msg, WPARAM wP
 					DeleteDC(hdc);
 				}
 				else {
-					rc.bottom++;
+					rc.bottom += 2;
 					rc.left -= 3; rc.right += 3;
 					dat->Panel->renderBG(dcWin, rc, &SkinItems[ID_EXTBKINFOPANELBG], M->isAero(), false);
 				}

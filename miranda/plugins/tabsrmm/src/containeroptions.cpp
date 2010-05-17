@@ -178,9 +178,9 @@ INT_PTR CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, 
 			pContainer = (TContainerData *) lParam;
 			pContainer->hWndOptions = hwndDlg;
 			TranslateDialogDefault(hwndDlg);
-			mir_sntprintf(szNewTitle, SIZEOF(szNewTitle), _T("\t%s"), pContainer->szName);
 			SetWindowText(hwndDlg, CTranslator::get(CTranslator::CNT_OPT_TITLE));
-			mir_sntprintf(szNewTitle, SIZEOF(szNewTitle), CTranslator::get(CTranslator::CNT_OPT_HEADERBAR), pContainer->szName);
+			mir_sntprintf(szNewTitle, SIZEOF(szNewTitle), CTranslator::get(CTranslator::CNT_OPT_HEADERBAR), !_tcscmp(pContainer->szName, _T("default")) ?
+					  	  CTranslator::get(CTranslator::GEN_DEFAULT_CONTAINER_NAME) : pContainer->szName);
 			SetDlgItemText(hwndDlg, IDC_HEADERBAR, szNewTitle);
 			Utils::enableDlgControl(hwndDlg, IDC_O_HIDETITLE, CSkin::m_frameSkins ? FALSE : TRUE);
 			CheckDlgButton(hwndDlg, IDC_CNTPRIVATE, pContainer->settings->fPrivate ? BST_CHECKED : BST_UNCHECKED);

@@ -153,8 +153,6 @@ static void SaveAvatarToFile(TWindowData *dat, HBITMAP hbm, int isOwnPic)
 	OPENFILENAME ofn = {0};
 	time_t t = time(NULL);
 	struct tm *lt = localtime(&t);
-	static TCHAR *forbiddenCharacters = _T("%/\\'");
-	int i, j;
 	DWORD setView = 1;
 
 	mir_sntprintf(szTimestamp, 100, _T("%04u %02u %02u_%02u%02u"), lt->tm_year + 1900, lt->tm_mon, lt->tm_mday, lt->tm_hour, lt->tm_min);
@@ -182,12 +180,7 @@ static void SaveAvatarToFile(TWindowData *dat, HBITMAP hbm, int isOwnPic)
 	/*
 	 * do not allow / or \ or % in the filename
 	 */
-	for (i = 0; i < lstrlen(forbiddenCharacters); i++) {
-		for(j = 0; j < lstrlen(szFinalFilename); j++) {
-			if(szFinalFilename[j] == forbiddenCharacters[i])
-				szFinalFilename[j] = '_';
-		}
-	}
+	Utils::sanitizeFilename(szFinalFilename);
 
 	ofn.lpstrFilter = _T("Image files\0*.bmp;*.png;*.jpg;*.gif\0\0");
 	if (IsWinVer2000Plus()) {
@@ -685,6 +678,11 @@ int TSAPI GetAvatarVisibility(HWND hwndDlg, struct TWindowData *dat)
 			case 1: {
 				FLASHAVATAR fa = {0};
 				HBITMAP hbm = ((dat->ace && !(dat->ace->dwFlags & AVS_HIDEONCLIST)) ? dat->ace->hbmPic : 0);
+
+				if(0 == hbm && 0 == bAvatarMode && !PluginConfig.g_bDisableAniAvatars) {
+					dat->showInfoPic = 0;
+					break;
+				}
 
 				if (PluginConfig.g_FlashAvatarAvail) {
 					fa.cProto = dat->szProto;

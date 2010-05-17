@@ -292,6 +292,8 @@ TCHAR* CTranslator::m_strings[STR_LAST] = {
 	LPGENT("Deferred"),																	/* QMGR_STATUS_DEFERRED */
 	LPGENT("A send later job failed to complete.\nThe original message: %s"),			/* GEN_SQ_SENDLATER_FAILED_POPUP */
 	LPGENT("The message cannot be sent delayed or to multiple contacts, because it exceeds the maximum allowed message length of %d bytes"), /* GEN_SQ_SENDLATER_ERROR_MSG_TOO_LONG */
+
+	LPGENT("Default container"),														/* GEN_DEFAULT_CONTAINER_NAME */
 };
 
 /*

@@ -35,6 +35,17 @@ are currently no downloads for it, you'll have to compile it from source.
 			Detailed change log
 			===================
 
+Version 3.0.0.32 - 2010/05/16
+
+	* menu bar is now using tool bar colors when using custom message window 
+	  colors
+	
+	* fixed changelog URL for users of updater plugin and created new online 
+	  change log for TabSRMM 3 development versions
+
+	* added separate translation for default container name (avoid using common
+	  translation for "default").
+
 Version 3.0.0.31 - 2010/05/xx
 
 	* fixed drawing problem with animated info panel avatars 

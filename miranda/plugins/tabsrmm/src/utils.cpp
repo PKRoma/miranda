@@ -336,7 +336,7 @@ const TCHAR* Utils::FormatTitleBar(const TWindowData *dat, const TCHAR *szFormat
 				break;
 			}
 			case 'c': {
-				TCHAR	*c = (!_tcscmp(dat->pContainer->szName, _T("default")) ? TranslateTS(dat->pContainer->szName) : dat->pContainer->szName);
+				TCHAR	*c = (!_tcscmp(dat->pContainer->szName, _T("default")) ? const_cast<TCHAR *>(CTranslator::get(CTranslator::GEN_DEFAULT_CONTAINER_NAME)) : dat->pContainer->szName);
 				title.insert(tempmark + 2, c);
 				title.erase(tempmark, 2);
 				curpos = tempmark + lstrlen(c);
@@ -957,13 +957,13 @@ void TSAPI Utils::showDlgControl(const HWND hwnd, UINT id, int showCmd)
 /*
  * stream function to write the contents of the message log to an rtf file
  */
-
 DWORD CALLBACK Utils::StreamOut(DWORD_PTR dwCookie, LPBYTE pbBuff, LONG cb, LONG * pcb)
 {
 	HANDLE hFile;
 	TCHAR *szFilename = (TCHAR *)dwCookie;
 	if ((hFile = CreateFile(szFilename, GENERIC_WRITE, FILE_SHARE_READ, NULL, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL)) != INVALID_HANDLE_VALUE) {
 		SetFilePointer(hFile, 0, NULL, FILE_END);
+		FilterEventMarkers(reinterpret_cast<TCHAR *>(pbBuff));
 		WriteFile(hFile, pbBuff, cb, (DWORD *)pcb, NULL);
 		*pcb = cb;
 		CloseHandle(hFile);
@@ -1028,4 +1028,23 @@ LRESULT Utils::CmdDispatcher(UINT uType, HWND hwndDlg, UINT cmd, WPARAM wParam, 
 			break;
 	}
 	return(0);
+}
+
+/**
+ * filter out invalid characters from a string used as part of a file
+ * or folder name. All invalid characters will be replaced by spaces.
+ *
+ * @param tszFilename - string to filter.
+ */
+void Utils::sanitizeFilename(TCHAR* tszFilename)
+{
+	static TCHAR *forbiddenCharacters = _T("%/\\':|\"<>?");
+	int    i;
+
+	for (i = 0; i < lstrlen(forbiddenCharacters); i++) {
+		TCHAR *szFound = 0;
+
+		while ((szFound = _tcschr(tszFilename, (int)forbiddenCharacters[i])) != NULL)
+			*szFound = ' ';
+	}
 }

@@ -450,10 +450,10 @@ static void DrawItem(TabControlData *tabdat, HDC dc, RECT *rcItem, int nHint, in
 			if(tabdat->iHoveredCloseIcon != nItem)
 				CSkin::m_default_bf.SourceConstantAlpha = 150;
 
-			CMimAPI::m_MyAlphaBlend(dc, rcItem->right - 20, (rcItem->bottom + rcItem->top - 16) / 2, 16, 16, CSkin::m_tabCloseHDC,
+			CMimAPI::m_MyAlphaBlend(dc, rcItem->right - 16 - tabdat->m_xpad, (rcItem->bottom + rcItem->top - 16) / 2, 16, 16, CSkin::m_tabCloseHDC,
 									0, 0, 16, 16, CSkin::m_default_bf);
 
-			rcItem->right -= 18;
+			rcItem->right -= (18 + tabdat->m_xpad);
 			CSkin::m_default_bf.SourceConstantAlpha = 255;
 		}
 

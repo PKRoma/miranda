@@ -40,6 +40,54 @@ extern RECT	  			rcLastStatusBarClick;
 
 
 /**
+ * Save message log for given session as RTF document
+ */
+void TSAPI DM_SaveLogAsRTF(const TWindowData* dat)
+{
+	TCHAR szFilename[MAX_PATH];
+	OPENFILENAME ofn = {0};
+	EDITSTREAM stream = { 0 };
+	TCHAR szFilter[MAX_PATH];
+
+	if (dat && dat->hwndIEView != 0) {
+		IEVIEWEVENT event = {0};
+
+		event.cbSize = sizeof(IEVIEWEVENT);
+		event.hwnd = dat->hwndIEView;
+		event.hContact = dat->hContact;
+		event.iType = IEE_SAVE_DOCUMENT;
+		event.dwFlags = 0;
+		event.count = 0;
+		event.codepage = 0;
+		CallService(MS_IEVIEW_EVENT, 0, (LPARAM)&event);
+	} else if(dat) {
+		TCHAR  szInitialDir[MAX_PATH + 2];
+
+		_tcsncpy(szFilter, _T("Rich Edit file\0*.rtf\0\0"), MAX_PATH);
+		mir_sntprintf(szFilename, MAX_PATH, _T("%s.rtf"), dat->cache->getNick());
+
+		Utils::sanitizeFilename(szFilename);
+
+		mir_sntprintf(szInitialDir, MAX_PATH, _T("%s%s\\"), M->getDataPath(), _T("\\Saved message logs"));
+		CallService(MS_UTILS_CREATEDIRTREET, 0, (LPARAM)szInitialDir);
+		ofn.lStructSize = sizeof(ofn);
+		ofn.hwndOwner = dat->hwnd;
+		ofn.lpstrFile = szFilename;
+		ofn.lpstrFilter = szFilter;
+		ofn.lpstrInitialDir = szInitialDir;
+		ofn.nMaxFile = MAX_PATH;
+		ofn.Flags = OFN_HIDEREADONLY;
+		ofn.lpstrDefExt = _T("rtf");
+		if (GetSaveFileName(&ofn)) {
+			stream.dwCookie = (DWORD_PTR)szFilename;
+			stream.dwError = 0;
+			stream.pfnCallback = Utils::StreamOut;
+			SendDlgItemMessage(dat->hwnd, dat->bType == SESSIONTYPE_IM ? IDC_LOG : IDC_CHAT_LOG, EM_STREAMOUT, SF_RTF | SF_USECODEPAGE, (LPARAM) & stream);
+		}
+	}
+}
+
+/**
  * checks if the balloon tooltip can be dismissed (usually called by
  * WM_MOUSEMOVE events
  */

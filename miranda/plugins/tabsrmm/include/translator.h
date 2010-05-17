@@ -268,7 +268,8 @@ public:
 		QMGR_STATUS_DEFERRED									= 219,
 		GEN_SQ_SENDLATER_FAILED_POPUP							= 220,
 		GEN_SQ_SENDLATER_ERROR_MSG_TOO_LONG						= 221,
-		STR_LAST 												= 222
+		GEN_DEFAULT_CONTAINER_NAME								= 222,
+		STR_LAST 												= 223
 	};
 
 	enum {

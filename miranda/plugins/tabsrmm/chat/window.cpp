@@ -3501,6 +3501,8 @@ LABEL_SHOWWINDOW:
 		case DM_CONTAINERSELECTED: {
 			struct TContainerData *pNewContainer = 0;
 			TCHAR *szNewName = (TCHAR *)lParam;
+			if(!_tcscmp(szNewName, CTranslator::get(CTranslator::GEN_DEFAULT_CONTAINER_NAME)))
+				szNewName = CGlobals::m_default_container_name;
 			int iOldItems = TabCtrl_GetItemCount(hwndTab);
 			if (!_tcsncmp(dat->pContainer->szName, szNewName, CONTAINER_NAMELEN))
 				break;
@@ -3712,6 +3714,10 @@ LABEL_SHOWWINDOW:
 			dat->Panel->showTip(wParam, lParam);
 			break;
 		}
+
+		case DM_SAVEMESSAGELOG:
+			DM_SaveLogAsRTF(dat);
+			return(0);
 
 		case WM_NCDESTROY:
 			if (dat) {
