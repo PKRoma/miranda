@@ -433,9 +433,7 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
 				}
 			}
 			else if (wParam == VK_DOWN && (GetKeyState(VK_CONTROL) & 0x8000) && DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_CTRLSUPPORT, SRMSGDEFSET_CTRLSUPPORT) && !DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_AUTOCLOSE, SRMSGDEFSET_AUTOCLOSE)) {
-				if (pdat->cmdList) {
-					if (!pdat->cmdListCurrent)
-						pdat->cmdListCurrent = tcmdlist_last(pdat->cmdList);
+				if (pdat->cmdList && pdat->cmdListCurrent) {
 					if (pdat->cmdListCurrent->next) {
 						pdat->cmdListCurrent = pdat->cmdListCurrent->next;
 						SetEditorText(hwnd, pdat->cmdListCurrent->szCmd);
