@@ -375,8 +375,8 @@ static char *CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE hContact
 			else {
 				#if defined( _UNICODE )
 				{
-					int msglen = (int)strlen((char *) dbei.pBlob) + 1;
-					msg = ( TCHAR* )alloca(sizeof(TCHAR) * msglen);
+					int msglen = MultiByteToWideChar(CP_ACP, 0, (char *)dbei.pBlob, -1, NULL, 0);
+					msg = (TCHAR*)alloca(sizeof(TCHAR) * msglen);
 					MultiByteToWideChar(CP_ACP, 0, (char *) dbei.pBlob, -1, msg, msglen);
 				}
 				#else
@@ -499,7 +499,7 @@ void StreamInEvents(HWND hwndDlg, HANDLE hDbEventFirst, int count, int fAppend)
 	strcpy(szSep2, fAppend ? "\\par\\sl0" : "\\sl1000");
 	strcpy(szSep2_RTL, fAppend ? "\\rtlpar\\rtlmark\\par\\sl1000" : "\\sl1000");
 
-	SendDlgItemMessage(hwndDlg, IDC_LOG, EM_STREAMIN, fAppend ? SFF_SELECTION | SF_RTF : SFF_SELECTION | SF_RTF, (LPARAM) & stream);
+	SendDlgItemMessage(hwndDlg, IDC_LOG, EM_STREAMIN, fAppend ? SFF_SELECTION | SF_RTF : SF_RTF, (LPARAM) & stream);
 	SendDlgItemMessage(hwndDlg, IDC_LOG, EM_EXSETSEL, 0, (LPARAM) & oldSel);
 	SendDlgItemMessage(hwndDlg, IDC_LOG, EM_HIDESELECTION, FALSE, 0);
 	dat->hDbEventLast = streamData.hDbEventLast;
