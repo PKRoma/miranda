@@ -55,7 +55,9 @@ static int ProcessDatabaseValueDefault(CONTACTINFO *ci, const char* setting)
 	if ( !GetDatabaseString( ci, setting, &dbv )) {
 		switch (dbv.type) {
 		case DBVT_ASCIIZ:
+			if (!dbv.pszVal[0]) break;
 		case DBVT_WCHAR:
+			if (!dbv.pwszVal[0]) break;
 			ci->type = CNFT_ASCIIZ;
 			ci->pszVal = dbv.ptszVal;
 			return 0;
