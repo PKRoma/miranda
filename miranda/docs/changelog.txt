@@ -6,11 +6,11 @@
 * New in 0.8.22
 Enhancements:
  - Updated icons by Angeli-Ka
+
+Bugfixes:
  - Fixed drawing issues in Options and Find/Add
  - Fixed message duplication in the message log
  - Fixed message navigation in the message window
- 
-Bugfixes:
  - Jabber: Don't show error message on reconnect request
  - Yahoo: UTF-8 fixes
 
