@@ -48,7 +48,6 @@
 	".\API\m_popup.h"\
 	".\API\m_smileyadd.h"\
 	".\API\m_spellchecker.h"\
-	".\API\m_toptoolbar.h"\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
@@ -122,7 +121,6 @@
 	".\API\m_popup.h"\
 	".\API\m_smileyadd.h"\
 	".\API\m_spellchecker.h"\
-	".\API\m_toptoolbar.h"\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
@@ -196,7 +194,6 @@
 	".\API\m_popup.h"\
 	".\API\m_smileyadd.h"\
 	".\API\m_spellchecker.h"\
-	".\API\m_toptoolbar.h"\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
@@ -270,7 +267,6 @@
 	".\API\m_popup.h"\
 	".\API\m_smileyadd.h"\
 	".\API\m_spellchecker.h"\
-	".\API\m_toptoolbar.h"\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
@@ -344,7 +340,6 @@
 	".\API\m_popup.h"\
 	".\API\m_smileyadd.h"\
 	".\API\m_spellchecker.h"\
-	".\API\m_toptoolbar.h"\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
@@ -418,7 +413,6 @@
 	".\API\m_popup.h"\
 	".\API\m_smileyadd.h"\
 	".\API\m_spellchecker.h"\
-	".\API\m_toptoolbar.h"\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
@@ -492,7 +486,6 @@
 	".\API\m_popup.h"\
 	".\API\m_smileyadd.h"\
 	".\API\m_spellchecker.h"\
-	".\API\m_toptoolbar.h"\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
@@ -566,7 +559,6 @@
 	".\API\m_popup.h"\
 	".\API\m_smileyadd.h"\
 	".\API\m_spellchecker.h"\
-	".\API\m_toptoolbar.h"\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
@@ -640,7 +632,6 @@
 	".\API\m_popup.h"\
 	".\API\m_smileyadd.h"\
 	".\API\m_spellchecker.h"\
-	".\API\m_toptoolbar.h"\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
@@ -714,7 +705,6 @@
 	".\API\m_popup.h"\
 	".\API\m_smileyadd.h"\
 	".\API\m_spellchecker.h"\
-	".\API\m_toptoolbar.h"\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
@@ -788,7 +778,6 @@
 	".\API\m_popup.h"\
 	".\API\m_smileyadd.h"\
 	".\API\m_spellchecker.h"\
-	".\API\m_toptoolbar.h"\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
@@ -863,7 +852,6 @@
 	".\API\m_popup.h"\
 	".\API\m_smileyadd.h"\
 	".\API\m_spellchecker.h"\
-	".\API\m_toptoolbar.h"\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
@@ -937,7 +925,6 @@
 	".\API\m_popup.h"\
 	".\API\m_smileyadd.h"\
 	".\API\m_spellchecker.h"\
-	".\API\m_toptoolbar.h"\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
@@ -1011,7 +998,6 @@
 	".\API\m_popup.h"\
 	".\API\m_smileyadd.h"\
 	".\API\m_spellchecker.h"\
-	".\API\m_toptoolbar.h"\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
@@ -1085,7 +1071,6 @@
 	".\API\m_popup.h"\
 	".\API\m_smileyadd.h"\
 	".\API\m_spellchecker.h"\
-	".\API\m_toptoolbar.h"\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
@@ -1159,7 +1144,6 @@
 	".\API\m_popup.h"\
 	".\API\m_smileyadd.h"\
 	".\API\m_spellchecker.h"\
-	".\API\m_toptoolbar.h"\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
@@ -1233,7 +1217,6 @@
 	".\API\m_popup.h"\
 	".\API\m_smileyadd.h"\
 	".\API\m_spellchecker.h"\
-	".\API\m_toptoolbar.h"\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
@@ -1307,7 +1290,6 @@
 	".\API\m_popup.h"\
 	".\API\m_smileyadd.h"\
 	".\API\m_spellchecker.h"\
-	".\API\m_toptoolbar.h"\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
@@ -1381,7 +1363,6 @@
 	".\API\m_popup.h"\
 	".\API\m_smileyadd.h"\
 	".\API\m_spellchecker.h"\
-	".\API\m_toptoolbar.h"\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
@@ -1455,7 +1436,6 @@
 	".\API\m_popup.h"\
 	".\API\m_smileyadd.h"\
 	".\API\m_spellchecker.h"\
-	".\API\m_toptoolbar.h"\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
@@ -1529,7 +1509,6 @@
 	".\API\m_popup.h"\
 	".\API\m_smileyadd.h"\
 	".\API\m_spellchecker.h"\
-	".\API\m_toptoolbar.h"\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
@@ -1604,7 +1583,6 @@
 	".\API\m_popup.h"\
 	".\API\m_smileyadd.h"\
 	".\API\m_spellchecker.h"\
-	".\API\m_toptoolbar.h"\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
@@ -1678,7 +1656,6 @@
 	".\API\m_popup.h"\
 	".\API\m_smileyadd.h"\
 	".\API\m_spellchecker.h"\
-	".\API\m_toptoolbar.h"\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
@@ -1752,7 +1729,6 @@
 	".\API\m_popup.h"\
 	".\API\m_smileyadd.h"\
 	".\API\m_spellchecker.h"\
-	".\API\m_toptoolbar.h"\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
@@ -1826,7 +1802,6 @@
 	".\API\m_popup.h"\
 	".\API\m_smileyadd.h"\
 	".\API\m_spellchecker.h"\
-	".\API\m_toptoolbar.h"\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
@@ -1900,7 +1875,6 @@
 	".\API\m_popup.h"\
 	".\API\m_smileyadd.h"\
 	".\API\m_spellchecker.h"\
-	".\API\m_toptoolbar.h"\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
@@ -1974,7 +1948,6 @@
 	".\API\m_popup.h"\
 	".\API\m_smileyadd.h"\
 	".\API\m_spellchecker.h"\
-	".\API\m_toptoolbar.h"\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
@@ -2049,7 +2022,6 @@
 	".\API\m_popup.h"\
 	".\API\m_smileyadd.h"\
 	".\API\m_spellchecker.h"\
-	".\API\m_toptoolbar.h"\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
@@ -2123,7 +2095,6 @@
 	".\API\m_popup.h"\
 	".\API\m_smileyadd.h"\
 	".\API\m_spellchecker.h"\
-	".\API\m_toptoolbar.h"\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
@@ -2197,7 +2168,6 @@
 	".\API\m_popup.h"\
 	".\API\m_smileyadd.h"\
 	".\API\m_spellchecker.h"\
-	".\API\m_toptoolbar.h"\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
@@ -2271,7 +2241,6 @@
 	".\API\m_popup.h"\
 	".\API\m_smileyadd.h"\
 	".\API\m_spellchecker.h"\
-	".\API\m_toptoolbar.h"\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
@@ -2345,7 +2314,6 @@
 	".\API\m_popup.h"\
 	".\API\m_smileyadd.h"\
 	".\API\m_spellchecker.h"\
-	".\API\m_toptoolbar.h"\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
@@ -2419,7 +2387,6 @@
 	".\API\m_popup.h"\
 	".\API\m_smileyadd.h"\
 	".\API\m_spellchecker.h"\
-	".\API\m_toptoolbar.h"\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
@@ -2493,7 +2460,6 @@
 	".\API\m_popup.h"\
 	".\API\m_smileyadd.h"\
 	".\API\m_spellchecker.h"\
-	".\API\m_toptoolbar.h"\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
@@ -2568,7 +2534,6 @@
 	".\API\m_popup.h"\
 	".\API\m_smileyadd.h"\
 	".\API\m_spellchecker.h"\
-	".\API\m_toptoolbar.h"\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
@@ -2642,7 +2607,6 @@
 	".\API\m_popup.h"\
 	".\API\m_smileyadd.h"\
 	".\API\m_spellchecker.h"\
-	".\API\m_toptoolbar.h"\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
@@ -2716,7 +2680,6 @@
 	".\API\m_popup.h"\
 	".\API\m_smileyadd.h"\
 	".\API\m_spellchecker.h"\
-	".\API\m_toptoolbar.h"\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
@@ -2790,7 +2753,6 @@
 	".\API\m_popup.h"\
 	".\API\m_smileyadd.h"\
 	".\API\m_spellchecker.h"\
-	".\API\m_toptoolbar.h"\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
@@ -2864,7 +2826,6 @@
 	".\API\m_popup.h"\
 	".\API\m_smileyadd.h"\
 	".\API\m_spellchecker.h"\
-	".\API\m_toptoolbar.h"\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
@@ -2938,7 +2899,6 @@
 	".\API\m_popup.h"\
 	".\API\m_smileyadd.h"\
 	".\API\m_spellchecker.h"\
-	".\API\m_toptoolbar.h"\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
@@ -3012,7 +2972,6 @@
 	".\API\m_popup.h"\
 	".\API\m_smileyadd.h"\
 	".\API\m_spellchecker.h"\
-	".\API\m_toptoolbar.h"\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
@@ -3086,7 +3045,6 @@
 	".\API\m_popup.h"\
 	".\API\m_smileyadd.h"\
 	".\API\m_spellchecker.h"\
-	".\API\m_toptoolbar.h"\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
@@ -3160,7 +3118,6 @@
 	".\API\m_popup.h"\
 	".\API\m_smileyadd.h"\
 	".\API\m_spellchecker.h"\
-	".\API\m_toptoolbar.h"\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
@@ -3234,7 +3191,6 @@
 	".\API\m_popup.h"\
 	".\API\m_smileyadd.h"\
 	".\API\m_spellchecker.h"\
-	".\API\m_toptoolbar.h"\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
@@ -3308,7 +3264,6 @@
 	".\API\m_popup.h"\
 	".\API\m_smileyadd.h"\
 	".\API\m_spellchecker.h"\
-	".\API\m_toptoolbar.h"\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\

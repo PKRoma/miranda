@@ -220,7 +220,6 @@ DEP_CPP_CLIST=\
 	".\API\m_popup.h"\
 	".\API\m_smileyadd.h"\
 	".\API\m_spellchecker.h"\
-	".\API\m_toptoolbar.h"\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
@@ -304,7 +303,6 @@ DEP_CPP_COLOR=\
 	".\API\m_popup.h"\
 	".\API\m_smileyadd.h"\
 	".\API\m_spellchecker.h"\
-	".\API\m_toptoolbar.h"\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
@@ -388,7 +386,6 @@ DEP_CPP_LOG_C=\
 	".\API\m_popup.h"\
 	".\API\m_smileyadd.h"\
 	".\API\m_spellchecker.h"\
-	".\API\m_toptoolbar.h"\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
@@ -472,7 +469,6 @@ DEP_CPP_MAIN_=\
 	".\API\m_popup.h"\
 	".\API\m_smileyadd.h"\
 	".\API\m_spellchecker.h"\
-	".\API\m_toptoolbar.h"\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
@@ -556,7 +552,6 @@ DEP_CPP_MANAG=\
 	".\API\m_popup.h"\
 	".\API\m_smileyadd.h"\
 	".\API\m_spellchecker.h"\
-	".\API\m_toptoolbar.h"\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
@@ -640,7 +635,6 @@ DEP_CPP_MESSA=\
 	".\API\m_popup.h"\
 	".\API\m_smileyadd.h"\
 	".\API\m_spellchecker.h"\
-	".\API\m_toptoolbar.h"\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
@@ -724,7 +718,6 @@ DEP_CPP_MUCHI=\
 	".\API\m_popup.h"\
 	".\API\m_smileyadd.h"\
 	".\API\m_spellchecker.h"\
-	".\API\m_toptoolbar.h"\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
@@ -828,7 +821,6 @@ DEP_CPP_OPTIO=\
 	".\API\m_popup.h"\
 	".\API\m_smileyadd.h"\
 	".\API\m_spellchecker.h"\
-	".\API\m_toptoolbar.h"\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
@@ -912,7 +904,6 @@ DEP_CPP_SERVI=\
 	".\API\m_popup.h"\
 	".\API\m_smileyadd.h"\
 	".\API\m_spellchecker.h"\
-	".\API\m_toptoolbar.h"\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
@@ -996,7 +987,6 @@ DEP_CPP_TOOLS=\
 	".\API\m_popup.h"\
 	".\API\m_smileyadd.h"\
 	".\API\m_spellchecker.h"\
-	".\API\m_toptoolbar.h"\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
@@ -1080,7 +1070,6 @@ DEP_CPP_WINDO=\
 	".\API\m_popup.h"\
 	".\API\m_smileyadd.h"\
 	".\API\m_spellchecker.h"\
-	".\API\m_toptoolbar.h"\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
@@ -1234,7 +1223,6 @@ DEP_CPP_BUTTO=\
 	".\API\m_popup.h"\
 	".\API\m_smileyadd.h"\
 	".\API\m_spellchecker.h"\
-	".\API\m_toptoolbar.h"\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
@@ -1317,7 +1305,6 @@ DEP_CPP_CONTA=\
 	".\API\m_popup.h"\
 	".\API\m_smileyadd.h"\
 	".\API\m_spellchecker.h"\
-	".\API\m_toptoolbar.h"\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
@@ -1400,7 +1387,6 @@ DEP_CPP_CONTAI=\
 	".\API\m_popup.h"\
 	".\API\m_smileyadd.h"\
 	".\API\m_spellchecker.h"\
-	".\API\m_toptoolbar.h"\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
@@ -1483,7 +1469,6 @@ DEP_CPP_CONTAIN=\
 	".\API\m_popup.h"\
 	".\API\m_smileyadd.h"\
 	".\API\m_spellchecker.h"\
-	".\API\m_toptoolbar.h"\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
@@ -1566,7 +1551,6 @@ DEP_CPP_CONTR=\
 	".\API\m_popup.h"\
 	".\API\m_smileyadd.h"\
 	".\API\m_spellchecker.h"\
-	".\API\m_toptoolbar.h"\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
@@ -1649,7 +1633,6 @@ DEP_CPP_EVENT=\
 	".\API\m_popup.h"\
 	".\API\m_smileyadd.h"\
 	".\API\m_spellchecker.h"\
-	".\API\m_toptoolbar.h"\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
@@ -1732,7 +1715,6 @@ DEP_CPP_GENER=\
 	".\API\m_popup.h"\
 	".\API\m_smileyadd.h"\
 	".\API\m_spellchecker.h"\
-	".\API\m_toptoolbar.h"\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
@@ -1815,7 +1797,6 @@ DEP_CPP_GLOBA=\
 	".\API\m_popup.h"\
 	".\API\m_smileyadd.h"\
 	".\API\m_spellchecker.h"\
-	".\API\m_toptoolbar.h"\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
@@ -1898,7 +1879,6 @@ DEP_CPP_HOTKE=\
 	".\API\m_popup.h"\
 	".\API\m_smileyadd.h"\
 	".\API\m_spellchecker.h"\
-	".\API\m_toptoolbar.h"\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
@@ -1981,7 +1961,6 @@ DEP_CPP_IMAGE=\
 	".\API\m_popup.h"\
 	".\API\m_smileyadd.h"\
 	".\API\m_spellchecker.h"\
-	".\API\m_toptoolbar.h"\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
@@ -2066,7 +2045,6 @@ DEP_CPP_INFOP=\
 	".\API\m_popup.h"\
 	".\API\m_smileyadd.h"\
 	".\API\m_spellchecker.h"\
-	".\API\m_toptoolbar.h"\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
@@ -2149,7 +2127,6 @@ DEP_CPP_MIM_C=\
 	".\API\m_popup.h"\
 	".\API\m_smileyadd.h"\
 	".\API\m_spellchecker.h"\
-	".\API\m_toptoolbar.h"\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
@@ -2232,7 +2209,6 @@ DEP_CPP_MODPL=\
 	".\API\m_popup.h"\
 	".\API\m_smileyadd.h"\
 	".\API\m_spellchecker.h"\
-	".\API\m_toptoolbar.h"\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
@@ -2316,7 +2292,6 @@ DEP_CPP_MSGDI=\
 	".\API\m_popup.h"\
 	".\API\m_smileyadd.h"\
 	".\API\m_spellchecker.h"\
-	".\API\m_toptoolbar.h"\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
@@ -2399,7 +2374,6 @@ DEP_CPP_MSGDL=\
 	".\API\m_popup.h"\
 	".\API\m_smileyadd.h"\
 	".\API\m_spellchecker.h"\
-	".\API\m_toptoolbar.h"\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
@@ -2482,7 +2456,6 @@ DEP_CPP_MSGLO=\
 	".\API\m_popup.h"\
 	".\API\m_smileyadd.h"\
 	".\API\m_spellchecker.h"\
-	".\API\m_toptoolbar.h"\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
@@ -2566,7 +2539,6 @@ DEP_CPP_MSGOP=\
 	".\API\m_popup.h"\
 	".\API\m_smileyadd.h"\
 	".\API\m_spellchecker.h"\
-	".\API\m_toptoolbar.h"\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
@@ -2649,7 +2621,6 @@ DEP_CPP_MSGOPT=\
 	".\API\m_popup.h"\
 	".\API\m_smileyadd.h"\
 	".\API\m_spellchecker.h"\
-	".\API\m_toptoolbar.h"\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
@@ -2733,7 +2704,6 @@ DEP_CPP_MSGS_=\
 	".\API\m_popup.h"\
 	".\API\m_smileyadd.h"\
 	".\API\m_spellchecker.h"\
-	".\API\m_toptoolbar.h"\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
@@ -2816,7 +2786,6 @@ DEP_CPP_SELEC=\
 	".\API\m_popup.h"\
 	".\API\m_smileyadd.h"\
 	".\API\m_spellchecker.h"\
-	".\API\m_toptoolbar.h"\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
@@ -2899,7 +2868,6 @@ DEP_CPP_SENDL=\
 	".\API\m_popup.h"\
 	".\API\m_smileyadd.h"\
 	".\API\m_spellchecker.h"\
-	".\API\m_toptoolbar.h"\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
@@ -2982,7 +2950,6 @@ DEP_CPP_SENDQ=\
 	".\API\m_popup.h"\
 	".\API\m_smileyadd.h"\
 	".\API\m_spellchecker.h"\
-	".\API\m_toptoolbar.h"\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
@@ -3065,7 +3032,6 @@ DEP_CPP_SIDEB=\
 	".\API\m_popup.h"\
 	".\API\m_smileyadd.h"\
 	".\API\m_spellchecker.h"\
-	".\API\m_toptoolbar.h"\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
@@ -3148,7 +3114,6 @@ DEP_CPP_SRMM_=\
 	".\API\m_popup.h"\
 	".\API\m_smileyadd.h"\
 	".\API\m_spellchecker.h"\
-	".\API\m_toptoolbar.h"\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
@@ -3233,7 +3198,6 @@ DEP_CPP_TABCT=\
 	".\API\m_popup.h"\
 	".\API\m_smileyadd.h"\
 	".\API\m_spellchecker.h"\
-	".\API\m_toptoolbar.h"\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
@@ -3316,7 +3280,6 @@ DEP_CPP_TASKB=\
 	".\API\m_popup.h"\
 	".\API\m_smileyadd.h"\
 	".\API\m_spellchecker.h"\
-	".\API\m_toptoolbar.h"\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
@@ -3399,7 +3362,6 @@ DEP_CPP_TEMPL=\
 	".\API\m_popup.h"\
 	".\API\m_smileyadd.h"\
 	".\API\m_spellchecker.h"\
-	".\API\m_toptoolbar.h"\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
@@ -3482,7 +3444,6 @@ DEP_CPP_THEME=\
 	".\API\m_popup.h"\
 	".\API\m_smileyadd.h"\
 	".\API\m_spellchecker.h"\
-	".\API\m_toptoolbar.h"\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
@@ -3565,7 +3526,6 @@ DEP_CPP_THEMES=\
 	".\API\m_popup.h"\
 	".\API\m_smileyadd.h"\
 	".\API\m_spellchecker.h"\
-	".\API\m_toptoolbar.h"\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
@@ -3648,7 +3608,6 @@ DEP_CPP_TRANS=\
 	".\API\m_popup.h"\
 	".\API\m_smileyadd.h"\
 	".\API\m_spellchecker.h"\
-	".\API\m_toptoolbar.h"\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
@@ -3731,7 +3690,6 @@ DEP_CPP_TRAYI=\
 	".\API\m_popup.h"\
 	".\API\m_smileyadd.h"\
 	".\API\m_spellchecker.h"\
-	".\API\m_toptoolbar.h"\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
@@ -3814,7 +3772,6 @@ DEP_CPP_TSBUT=\
 	".\API\m_popup.h"\
 	".\API\m_smileyadd.h"\
 	".\API\m_spellchecker.h"\
-	".\API\m_toptoolbar.h"\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
@@ -3897,7 +3854,6 @@ DEP_CPP_TYPIN=\
 	".\API\m_popup.h"\
 	".\API\m_smileyadd.h"\
 	".\API\m_spellchecker.h"\
-	".\API\m_toptoolbar.h"\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
@@ -3980,7 +3936,6 @@ DEP_CPP_USERP=\
 	".\API\m_popup.h"\
 	".\API\m_smileyadd.h"\
 	".\API\m_spellchecker.h"\
-	".\API\m_toptoolbar.h"\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
@@ -4063,7 +4018,6 @@ DEP_CPP_UTILS=\
 	".\API\m_popup.h"\
 	".\API\m_smileyadd.h"\
 	".\API\m_spellchecker.h"\
-	".\API\m_toptoolbar.h"\
 	".\API\m_updater.h"\
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
