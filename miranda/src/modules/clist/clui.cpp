@@ -324,8 +324,9 @@ int LoadCLUIModule(void)
 		DBGetContactSettingByte(NULL, "CList", "ToolWindow", SETTING_TOOLWINDOW_DEFAULT) ? WS_EX_TOOLWINDOW : 0,
 		_T(MIRANDACLASS),
 		titleText,
-		(DBGetContactSettingByte(NULL, "CLUI", "ShowCaption", SETTING_SHOWCAPTION_DEFAULT) ?
-			WS_CAPTION | WS_SYSMENU : 0) | WS_POPUPWINDOW | WS_THICKFRAME | WS_CLIPCHILDREN,
+		WS_POPUPWINDOW | WS_THICKFRAME | WS_CLIPCHILDREN |
+		(DBGetContactSettingByte(NULL, "CLUI", "ShowCaption", SETTING_SHOWCAPTION_DEFAULT) ?  WS_CAPTION | WS_SYSMENU | 
+			(DBGetContactSettingByte(NULL, "CList", "Min2Tray", SETTING_MIN2TRAY_DEFAULT) ? 0 : WS_MINIMIZEBOX) : 0),
 		pos.left, pos.top, pos.right - pos.left, pos.bottom - pos.top,
 		NULL, NULL, cli.hInst, NULL);
 
@@ -348,7 +349,9 @@ int LoadCLUIModule(void)
 			ShowWindow(cli.hwndContactList, SW_SHOW);
 		else if (state == SETTING_STATE_MINIMIZED)
 			ShowWindow(cli.hwndContactList, SW_SHOWMINIMIZED);
-		SetWindowPos(cli.hwndContactList, DBGetContactSettingByte(NULL, "CList", "OnTop", SETTING_ONTOP_DEFAULT) ? HWND_TOPMOST : HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE);
+		SetWindowPos(cli.hwndContactList, 
+			DBGetContactSettingByte(NULL, "CList", "OnTop", SETTING_ONTOP_DEFAULT) ? HWND_TOPMOST : HWND_NOTOPMOST, 
+			0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE);
 	}
 	{
 		CLISTMENUITEM mi = { 0 };

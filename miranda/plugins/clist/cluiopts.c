@@ -204,12 +204,14 @@ static INT_PTR CALLBACK DlgProcCluiOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 			}
 			else SetParent(pcli->hwndContactList, NULL);
 
-			if (IsDlgButtonChecked(hwndDlg, IDC_SHOWCAPTION))
-				SetWindowLong(pcli->hwndContactList, GWL_STYLE,
-				GetWindowLong(pcli->hwndContactList, GWL_STYLE) | WS_CAPTION | WS_SYSMENU);
+			if (IsDlgButtonChecked(hwndDlg, IDC_SHOWCAPTION)) {
+				int style = GetWindowLong(pcli->hwndContactList, GWL_STYLE) | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX; 
+				if (IsDlgButtonChecked(hwndDlg, IDC_MIN2TRAY)) style &= ~WS_MINIMIZEBOX;
+				SetWindowLong(pcli->hwndContactList, GWL_STYLE, style);
+			}
 			else
 				SetWindowLong(pcli->hwndContactList, GWL_STYLE,
-				GetWindowLong(pcli->hwndContactList, GWL_STYLE) & ~(WS_CAPTION | WS_SYSMENU));
+				GetWindowLong(pcli->hwndContactList, GWL_STYLE) & ~(WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX));
 			if (!IsDlgButtonChecked(hwndDlg, IDC_SHOWMAINMENU))
 				SetMenu(pcli->hwndContactList, NULL);
 			else
