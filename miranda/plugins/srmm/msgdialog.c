@@ -1909,8 +1909,6 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 							CallService(MS_UTILS_OPENURL, 1, (LPARAM) tr.lpstrText);
 							SetFocus(GetDlgItem(hwndDlg, IDC_MESSAGE));
 						}
-
-						mir_free(tr.lpstrText);
 						break;
 		}	}	}	}
 		break;
