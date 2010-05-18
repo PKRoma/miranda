@@ -108,17 +108,17 @@ static void	InitButtons(HWND hwndDlg, SESSION_INFO* si)
 	SendDlgItemMessage( hwndDlg, IDC_FILTER,       BUTTONSETASFLATBTN, 0, 0 );
 	SendDlgItemMessage( hwndDlg, IDC_CLOSE,        BUTTONSETASFLATBTN, 0, 0 );
 
-	SendMessage(GetDlgItem(hwndDlg,IDC_SMILEY), BUTTONADDTOOLTIP, (WPARAM)Translate("Insert a smiley"), 0);
-	SendMessage(GetDlgItem(hwndDlg,IDC_BOLD), BUTTONADDTOOLTIP, (WPARAM)Translate("Make the text bold (CTRL+B)"), 0);
-	SendMessage(GetDlgItem(hwndDlg,IDC_ITALICS), BUTTONADDTOOLTIP, (WPARAM)Translate("Make the text italicized (CTRL+I)"), 0);
-	SendMessage(GetDlgItem(hwndDlg,IDC_UNDERLINE), BUTTONADDTOOLTIP, (WPARAM)Translate("Make the text underlined (CTRL+U)"), 0);
-	SendMessage(GetDlgItem(hwndDlg,IDC_BKGCOLOR), BUTTONADDTOOLTIP, (WPARAM)Translate("Select a background color for the text (CTRL+L)"), 0);
-	SendMessage(GetDlgItem(hwndDlg,IDC_COLOR), BUTTONADDTOOLTIP, (WPARAM)Translate("Select a foreground color for the text (CTRL+K)"), 0);
-	SendMessage(GetDlgItem(hwndDlg,IDC_HISTORY), BUTTONADDTOOLTIP, (WPARAM)Translate("Show the history (CTRL+H)"), 0);
-	SendMessage(GetDlgItem(hwndDlg,IDC_SHOWNICKLIST), BUTTONADDTOOLTIP, (WPARAM)Translate("Show/hide the nicklist (CTRL+N)"), 0);
-	SendMessage(GetDlgItem(hwndDlg,IDC_CHANMGR), BUTTONADDTOOLTIP, (WPARAM)Translate("Control this room (CTRL+O)"), 0);
-	SendMessage(GetDlgItem(hwndDlg,IDC_FILTER), BUTTONADDTOOLTIP, (WPARAM)Translate("Enable/disable the event filter (CTRL+F)"), 0);
-	SendMessage(GetDlgItem(hwndDlg,IDC_CLOSE), BUTTONADDTOOLTIP, (WPARAM)Translate("Close current tab (CTRL+F4)"), 0);
+	SendMessage(GetDlgItem(hwndDlg,IDC_SMILEY), BUTTONADDTOOLTIP, (WPARAM)LPGEN("Insert a smiley"), 0);
+	SendMessage(GetDlgItem(hwndDlg,IDC_BOLD), BUTTONADDTOOLTIP, (WPARAM)LPGEN("Make the text bold (CTRL+B)"), 0);
+	SendMessage(GetDlgItem(hwndDlg,IDC_ITALICS), BUTTONADDTOOLTIP, (WPARAM)LPGEN("Make the text italicized (CTRL+I)"), 0);
+	SendMessage(GetDlgItem(hwndDlg,IDC_UNDERLINE), BUTTONADDTOOLTIP, (WPARAM)LPGEN("Make the text underlined (CTRL+U)"), 0);
+	SendMessage(GetDlgItem(hwndDlg,IDC_BKGCOLOR), BUTTONADDTOOLTIP, (WPARAM)LPGEN("Select a background color for the text (CTRL+L)"), 0);
+	SendMessage(GetDlgItem(hwndDlg,IDC_COLOR), BUTTONADDTOOLTIP, (WPARAM)LPGEN("Select a foreground color for the text (CTRL+K)"), 0);
+	SendMessage(GetDlgItem(hwndDlg,IDC_HISTORY), BUTTONADDTOOLTIP, (WPARAM)LPGEN("Show the history (CTRL+H)"), 0);
+	SendMessage(GetDlgItem(hwndDlg,IDC_SHOWNICKLIST), BUTTONADDTOOLTIP, (WPARAM)LPGEN("Show/hide the nicklist (CTRL+N)"), 0);
+	SendMessage(GetDlgItem(hwndDlg,IDC_CHANMGR), BUTTONADDTOOLTIP, (WPARAM)LPGEN("Control this room (CTRL+O)"), 0);
+	SendMessage(GetDlgItem(hwndDlg,IDC_FILTER), BUTTONADDTOOLTIP, (WPARAM)LPGEN("Enable/disable the event filter (CTRL+F)"), 0);
+	SendMessage(GetDlgItem(hwndDlg,IDC_CLOSE), BUTTONADDTOOLTIP, (WPARAM)LPGEN("Close current tab (CTRL+F4)"), 0);
 	SendDlgItemMessage(hwndDlg, IDC_BOLD, BUTTONSETASPUSHBTN, 0, 0);
 	SendDlgItemMessage(hwndDlg, IDC_ITALICS, BUTTONSETASPUSHBTN, 0, 0);
 	SendDlgItemMessage(hwndDlg, IDC_UNDERLINE, BUTTONSETASPUSHBTN, 0, 0);
@@ -2339,7 +2339,7 @@ LABEL_SHOWWINDOW:
 							tr.chrg = ((ENLINK *) lParam)->chrg;
 							tr.lpstrText = mir_alloc(sizeof(TCHAR)*(tr.chrg.cpMax - tr.chrg.cpMin + 1));
 							SendMessage(pNmhdr->hwndFrom, EM_GETTEXTRANGE, 0, (LPARAM) & tr);
-							pszUrl = t2a( tr.lpstrText );
+							pszUrl = mir_t2a( tr.lpstrText );
 
 							if (((ENLINK *) lParam)->msg == WM_RBUTTONDOWN) {
 								HMENU hSubMenu;
@@ -2529,36 +2529,24 @@ LABEL_SHOWWINDOW:
 
 		case IDC_HISTORY:
 			{
-				char szFile[MAX_PATH];
-				char szName[MAX_PATH];
-				char szFolder[MAX_PATH];
+				TCHAR szFile[MAX_PATH];
+				TCHAR szName[MAX_PATH];
+				TCHAR szFolder[MAX_PATH];
 				MODULEINFO * pInfo = MM_FindModule(si->pszModule);
 
 				if (!IsWindowEnabled(GetDlgItem(hwndDlg,IDC_HISTORY)))
 					break;
 
 				if ( pInfo ) {
-					char *szModName = NULL;
-					if (pInfo->ptszModDispName) {
-						 szModName = mir_t2a(pInfo->ptszModDispName);
-					}
-					mir_snprintf(szName, MAX_PATH,"%s",szModName?szModName:si->pszModule);
+					TCHAR *szModName = NULL;
+					mir_sntprintf(szName, MAX_PATH, _T("%s"), pInfo->ptszModDispName ? pInfo->ptszModDispName : (szModName = mir_a2t(si->pszModule)));
 					mir_free(szModName);
 					ValidateFilename(szName);
-					mir_snprintf(szFolder, MAX_PATH,"%s\\%s", g_Settings.pszLogDir, szName );
-#if defined(_UNICODE)
-                    {
-                        wchar_t wszName[MAX_PATH];
-                        mir_sntprintf(wszName, MAX_PATH,_T("%s.log"),si->ptszID);
-                        WideCharToMultiByte(CP_ACP, 0, wszName, -1, szName, MAX_PATH, 0, 0);
-                        szName[MAX_PATH - 1] = 0;
-                    }
-#else
-                    mir_snprintf(szName, MAX_PATH,"%s.log",si->ptszID);
-#endif
+					mir_sntprintf(szFolder, MAX_PATH, _T("%s\\%s"), g_Settings.pszLogDir, szName);
+                    mir_sntprintf(szName, MAX_PATH, _T("%s.log"), si->ptszID);
 					ValidateFilename(szName);
-					mir_snprintf(szFile, MAX_PATH,"%s\\%s", szFolder, szName );
-					ShellExecuteA(hwndDlg, "open", szFile, NULL, NULL, SW_SHOW);
+					mir_sntprintf(szFile, MAX_PATH, _T("%s\\%s"), szFolder, szName);
+					ShellExecute(hwndDlg, _T("open"), szFile, NULL, NULL, SW_SHOW);
 			}	}
 			break;
 

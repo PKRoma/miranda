@@ -127,7 +127,7 @@ int __declspec(dllexport) Load(PLUGINLINK *link)
 	}	}
 
 	if ( !bFlag ) {
-		if (IDYES == MessageBoxA(0,Translate("Miranda could not load the Chat plugin because Microsoft Rich Edit v 3 is missing.\nIf you are using Windows 95/98/NT or WINE please upgrade your Rich Edit control.\n\nDo you want to download an update now?."),Translate("Information"),MB_YESNO|MB_ICONINFORMATION))
+		if (IDYES == MessageBox(0, TranslateT("Miranda could not load the Chat plugin because Microsoft Rich Edit v 3 is missing.\nIf you are using Windows 95/98/NT or WINE please upgrade your Rich Edit control.\n\nDo you want to download an update now?."),TranslateT("Information"),MB_YESNO|MB_ICONINFORMATION))
 			CallService(MS_UTILS_OPENURL, 1, (LPARAM) "http://members.chello.se/matrix/re3/richupd.exe");
 		FreeLibrary(GetModuleHandleA("riched20.dll"));
 		return 1;

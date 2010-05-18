@@ -21,10 +21,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef _CHAT_H_
 #define _CHAT_H_
 
-#define MIRANDA_VER 0x0700
+#define MIRANDA_VER 0x0800
 
-#pragma warning( disable : 4786 ) // limitation in MSVC's debugger.
-#pragma warning( disable : 4996 ) // limitation in MSVC's debugger.
+//#pragma warning( disable : 4786 ) // limitation in MSVC's debugger.
+//#pragma warning( disable : 4996 ) // limitation in MSVC's debugger.
 
 #define WIN32_LEAN_AND_MEAN
 #define _WIN32_WINNT 0x0501
@@ -32,20 +32,17 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include <m_stdhdr.h>
 
-#include <tchar.h>
 #include <windows.h>
 #include <commctrl.h>
 #include <richedit.h>
-#include <process.h>
 #include <ole2.h>
 #include <richole.h>
-#include <malloc.h>
 #include <commdlg.h>
-#include <time.h>
-#include <stdio.h>
 #include <shellapi.h>
 #include <Initguid.h>
 #include <Oleacc.h>
+
+#include <time.h>
 
 #include <win2k.h>
 #include <newpluginapi.h>
@@ -362,7 +359,7 @@ struct GlobalLogSettings_t {
 	TCHAR*      pszIncomingNick;
 	TCHAR*      pszOutgoingNick;
 	TCHAR*      pszHighlightWords;
-	char*       pszLogDir;
+	TCHAR*      pszLogDir;
 	HFONT       UserListFont;
 	HFONT       UserListHeadingsFont;
 	HFONT       MessageBoxFont;
@@ -402,7 +399,7 @@ INT_PTR CALLBACK DlgProcColorToolWindow(HWND hwndDlg, UINT msg, WPARAM wParam, L
 void   Log_StreamInEvent(HWND hwndDlg, LOGINFO* lin, SESSION_INFO* si, BOOL bRedraw, BOOL bPhaseTwo);
 void   LoadMsgLogBitmaps(void);
 void   FreeMsgLogBitmaps(void);
-void   ValidateFilename (char * filename);
+void   ValidateFilename (TCHAR * filename);
 TCHAR* MakeTimeStamp(TCHAR* pszStamp, time_t time);
 char*  Log_CreateRtfHeader(MODULEINFO * mi);
 
@@ -532,7 +529,6 @@ TCHAR*        DoRtfToTags( char* pszRtfText, SESSION_INFO* si);
 
 //////////////////////////////////////////////////////////////////////////////////
 
-char*  t2a( const TCHAR* str );
 TCHAR* a2tf( const TCHAR* str, int flags );
 TCHAR* replaceStr( TCHAR** dest, const TCHAR* src );
 char*  replaceStrA( char** dest, const char* src );

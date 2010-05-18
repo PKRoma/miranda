@@ -18,7 +18,6 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 #include "chat.h"
-#include <shlwapi.h>
 
 extern HICON        hIcons[30];
 extern BOOL         PopUpInstalled;
@@ -515,11 +514,11 @@ BOOL LogToFile(SESSION_INFO* si, GCEVENT * gce)
 	TCHAR szLine[4096];
 	TCHAR szTime[100];
 	FILE *hFile = NULL;
-	char szFile[MAX_PATH];
-	char szName[MAX_PATH];
-	char szFolder[MAX_PATH];
-	char p = '\0', *pszSessionName;
-	char *szModName = NULL;
+	TCHAR szFile[MAX_PATH];
+	TCHAR szName[MAX_PATH];
+	TCHAR szFolder[MAX_PATH];
+	char p = '\0';
+	TCHAR *szModName = NULL;
 	szBuffer[0] = '\0';
 
 	if (!si || !gce)
@@ -529,26 +528,21 @@ BOOL LogToFile(SESSION_INFO* si, GCEVENT * gce)
 	if ( !mi )
 		return FALSE;
 
-	if (mi->ptszModDispName) {
-		 szModName = mir_t2a(mi->ptszModDispName);
-	}
-	mir_snprintf(szName, MAX_PATH,"%s",szModName?szModName:si->pszModule);
+	szModName = mir_a2t(si->pszModule);
+	mir_sntprintf(szName, MAX_PATH, _T("%s"), mi->ptszModDispName ? mi->ptszModDispName : (szModName = mir_a2t(si->pszModule)));
 	mir_free(szModName);
 	ValidateFilename(szName);
-	mir_snprintf(szFolder, MAX_PATH,"%s\\%s", g_Settings.pszLogDir, szName );
+	mir_sntprintf(szFolder, MAX_PATH, _T("%s\\%s"), g_Settings.pszLogDir, szName );
 
-	if (!PathIsDirectoryA(szFolder))
-		CreateDirectoryA(szFolder, NULL);
+	CallService(MS_UTILS_CREATEDIRTREET, 0, (LPARAM)szFolder);
 
-	pszSessionName = t2a( si->ptszID );
-	mir_snprintf( szName, MAX_PATH,"%s.log", pszSessionName );
+	mir_sntprintf( szName, MAX_PATH, _T("%s.log"), si->ptszID );
 	ValidateFilename(szName);
-	mir_free( pszSessionName );
 
-	mir_snprintf(szFile, MAX_PATH,"%s\\%s", szFolder, szName );
+	mir_sntprintf(szFile, MAX_PATH, _T("%s\\%s"), szFolder, szName );
 	lstrcpyn(szTime, MakeTimeStamp(g_Settings.pszTimeStampLog, gce->time), 99);
 
-	hFile = fopen(szFile,"at+");
+	hFile = _tfopen(szFile, _T("at+"));
 	if (hFile)
 	{
 		TCHAR szTemp[512], szTemp2[512];
@@ -636,7 +630,7 @@ BOOL LogToFile(SESSION_INFO* si, GCEVENT * gce)
 			mir_sntprintf(szLine, SIZEOF(szLine), TranslateT("%s %s\n"), szTime, szBuffer);
 
 		if ( szLine[0] ) {
-			char* p = t2a( szLine );
+			char* p = mir_t2a( szLine );
 			fputs(p, hFile);
 			mir_free( p );
 
@@ -669,7 +663,7 @@ BOOL LogToFile(SESSION_INFO* si, GCEVENT * gce)
 					else pBufferTemp = pBuffer;
 
 					if (read > 0) {
-						hFile = fopen(szFile,"wt");
+						hFile = _tfopen(szFile, _T("wt"));
 						if (hFile ) {
 							fwrite(pBufferTemp, 1, read, hFile);
 							fclose(hFile); hFile = NULL;
@@ -713,7 +707,7 @@ UINT CreateGCMenu(HWND hwndDlg, HMENU *hMenu, int iIndex, POINT pt, SESSION_INFO
 
 		if ( pszWordText && pszWordText[0] ) {
 			TCHAR szMenuText[4096];
-			mir_sntprintf( szMenuText, 4096, _T("Look up \'%s\':"), pszWordText );
+			mir_sntprintf( szMenuText, 4096, TranslateT("Look up \'%s\':"), pszWordText );
 			ModifyMenu( *hMenu, 4, MF_STRING|MF_BYPOSITION, 4, szMenuText );
 		}
 		else ModifyMenu( *hMenu, 4, MF_STRING|MF_GRAYED|MF_BYPOSITION, 4, TranslateT( "No word to look up" ));
@@ -794,9 +788,9 @@ BOOL DoEventHookAsync(HWND hwnd, const TCHAR* pszID, const char* pszModule, int 
 			return FALSE;
 
 		if ( !( si->dwFlags & GC_UNICODE )) {
-			gcd->pszID = t2a( pszID );
-			gch->pszUID = t2a( pszUID );
-			gch->pszText = t2a( pszText );
+			gcd->pszID = mir_t2a( pszID );
+			gch->pszUID = mir_t2a( pszUID );
+			gch->pszText = mir_t2a( pszText );
 		}
 		else {
 	#endif
@@ -825,9 +819,9 @@ BOOL DoEventHook(const TCHAR* pszID, const char* pszModule, int iType, const TCH
 			return FALSE;
 
 		if ( !( si->dwFlags & GC_UNICODE )) {
-			gcd.pszID = t2a( pszID );
-			gch.pszUID = t2a( pszUID );
-			gch.pszText = t2a( pszText );
+			gcd.pszID = mir_t2a( pszID );
+			gch.pszUID = mir_t2a( pszUID );
+			gch.pszText = mir_t2a( pszText );
 		}
 		else {
 	#endif
@@ -884,13 +878,13 @@ BOOL IsEventSupported(int eventType)
 	return FALSE;
 }
 
-void ValidateFilename (char * filename)
+void ValidateFilename (TCHAR * filename)
 {
-	char *p1 = filename;
-	char szForbidden[] = "\\/:*?\"<>|";
+	TCHAR *p1 = filename;
+	TCHAR szForbidden[] = _T("\\/:*?\"<>|");
 	while(*p1 != '\0')
 	{
-		if (strchr(szForbidden, *p1))
+		if (_tcschr(szForbidden, *p1))
 			*p1 = '_';
 		p1 +=1;
 }	}
@@ -903,43 +897,10 @@ TCHAR* a2tf( const TCHAR* str, int flags )
 	#if defined( _UNICODE )
 		if ( flags & GC_UNICODE )
 			return mir_tstrdup( str );
-		else {
-			int codepage = CallService( MS_LANGPACK_GETCODEPAGE, 0, 0 );
-
-			int cbLen = MultiByteToWideChar( codepage, 0, (char*)str, -1, 0, 0 );
-			TCHAR* result = ( TCHAR* )mir_alloc( sizeof(TCHAR)*( cbLen+1 ));
-			if ( result == NULL )
-				return NULL;
-
-			MultiByteToWideChar( codepage, 0, (char*)str, -1, result, cbLen );
-			result[ cbLen ] = 0;
-			return result;
-		}
+		else
+			return mir_a2u((char*)str);
 	#else
 		return mir_strdup( str );
-	#endif
-}
-
-static char* u2a( const wchar_t* src )
-{
-	int codepage = CallService( MS_LANGPACK_GETCODEPAGE, 0, 0 );
-
-	int cbLen = WideCharToMultiByte( codepage, 0, src, -1, NULL, 0, NULL, NULL );
-	char* result = ( char* )mir_alloc( cbLen+1 );
-	if ( result == NULL )
-		return NULL;
-
-	WideCharToMultiByte( codepage, 0, src, -1, result, cbLen, NULL, NULL );
-	result[ cbLen ] = 0;
-	return result;
-}
-
-char* t2a( const TCHAR* src )
-{
-	#if defined( _UNICODE )
-		return u2a( src );
-	#else
-		return mir_strdup( src );
 	#endif
 }
 

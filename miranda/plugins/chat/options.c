@@ -18,11 +18,11 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
+#include "resource.h"
 #include "chat.h"
 #include <shlobj.h>
-#include <shlwapi.h>
 
-#include "m_fontservice.h"
+#include <m_fontservice.h>
 
 extern HANDLE       g_hInst;
 extern HBRUSH       hEditBkgBrush;
@@ -39,19 +39,19 @@ HANDLE g_hOptions = NULL;
 #define FONTF_ITALIC 2
 struct FontOptionsList
 {
-	TCHAR*   szDescr;
-	COLORREF defColour;
-	TCHAR*   szDefFace;
-	BYTE     defCharset, defStyle;
-	char     defSize;
-	COLORREF colour;
-	TCHAR    szFace[LF_FACESIZE];
-	BYTE     charset, style;
-	char     size;
+	const TCHAR*  szDescr;
+	COLORREF      defColour;
+	const TCHAR*  szDefFace;
+	BYTE          defCharset, defStyle; 
+	char          defSize;
+	COLORREF      colour;
+	const TCHAR*  szFace;
+	BYTE          charset, style;
+	char          size;
 }
 
 //remeber to put these in the Translate( ) template file too
-static fontOptionsList[] = {
+static const fontOptionsList[] = {
 	{ LPGENT("Timestamp"),                    RGB(50, 50, 240),   _T("Terminal"), DEFAULT_CHARSET, 0, -8},
 	{ LPGENT("Others nicknames"),             RGB(0, 0, 0),       _T("Verdana"), DEFAULT_CHARSET, FONTF_BOLD, -12},
 	{ LPGENT("Your nickname"),                RGB(0, 0, 0),       _T("Verdana"), DEFAULT_CHARSET, FONTF_BOLD, -12},
@@ -78,111 +78,118 @@ const int msgDlgFontCount = SIZEOF(fontOptionsList);
 
 struct branch_t
 {
-	TCHAR*    szDescr;
-	char*     szDBName;
-	int       iMode;
-	BYTE      bDefault;
-	HTREEITEM hItem;
+	const TCHAR* szDescr;
+	const char*  szDBName;
+	int          iMode;
+	BYTE         bDefault;
 };
 
-static struct branch_t branch0[] = {
-	{ LPGENT("Use a tabbed interface"), "Tabs", 0, 1, NULL},
-	{ LPGENT("Close tab on doubleclick"), "TabCloseOnDblClick", 0, 0, NULL},
-	{ LPGENT("Restore previously open tabs when showing the window"), "TabRestore", 0, 0, NULL},
-	{ LPGENT("Show tabs at the bottom"), "TabBottom", 0, 0, NULL},
+static const struct branch_t branch0[] = {
+	{ LPGENT("Use a tabbed interface"), "Tabs", 0, 1},
+	{ LPGENT("Close tab on doubleclick"), "TabCloseOnDblClick", 0, 0},
+	{ LPGENT("Restore previously open tabs when showing the window"), "TabRestore", 0, 0},
+	{ LPGENT("Show tabs at the bottom"), "TabBottom", 0, 0},
 };
 
-static struct branch_t branch1[] = {
-	{ LPGENT("Send message by pressing the Enter key"), "SendOnEnter", 0, 1, NULL},
-	{ LPGENT("Send message by pressing the Enter key twice"), "SendOnDblEnter", 0,0, NULL},
-	{ LPGENT("Flash window when someone speaks"), "FlashWindow", 0,0, NULL},
-	{ LPGENT("Flash window when a word is highlighted"), "FlashWindowHighlight", 0,1, NULL},
-	{ LPGENT("Show list of users in the chat room"), "ShowNicklist", 0,1, NULL},
-	{ LPGENT("Show button for sending messages"), "ShowSend", 0, 0, NULL},
-	{ LPGENT("Show buttons for controlling the chat room"), "ShowTopButtons", 0,1, NULL},
-	{ LPGENT("Show buttons for formatting the text you are typing"), "ShowFormatButtons", 0,1, NULL},
-	{ LPGENT("Show button menus when right clicking the buttons"), "RightClickFilter", 0,0, NULL},
-	{ LPGENT("Show new windows cascaded"), "CascadeWindows", 0,1, NULL},
-	{ LPGENT("Save the size and position of chat rooms"), "SavePosition", 0,0, NULL},
-	{ LPGENT("Show the topic of the room on your contact list (if supported)"), "TopicOnClist", 0, 0, NULL},
-	{ LPGENT("Do not play sounds when the chat room is focused"), "SoundsFocus", 0, 0, NULL},
-	{ LPGENT("Do not pop up the window when joining a chat room"), "PopupOnJoin", 0,0, NULL},
-	{ LPGENT("Toggle the visible state when double clicking in the contact list"), "ToggleVisibility", 0,0, NULL},
-    {LPGENT("Show contact statuses if protocol supports them"), "ShowContactStatus", 0,0, NULL},
-    {LPGENT("Display contact status icon before user role icon"), "ContactStatusFirst", 0,0, NULL},
+static const struct branch_t branch1[] = {
+	{ LPGENT("Send message by pressing the Enter key"), "SendOnEnter", 0, 1},
+	{ LPGENT("Send message by pressing the Enter key twice"), "SendOnDblEnter", 0,0},
+	{ LPGENT("Flash window when someone speaks"), "FlashWindow", 0,0},
+	{ LPGENT("Flash window when a word is highlighted"), "FlashWindowHighlight", 0,1},
+	{ LPGENT("Show list of users in the chat room"), "ShowNicklist", 0,1},
+	{ LPGENT("Show button for sending messages"), "ShowSend", 0, 0},
+	{ LPGENT("Show buttons for controlling the chat room"), "ShowTopButtons", 0,1},
+	{ LPGENT("Show buttons for formatting the text you are typing"), "ShowFormatButtons", 0,1},
+	{ LPGENT("Show button menus when right clicking the buttons"), "RightClickFilter", 0,0},
+	{ LPGENT("Show new windows cascaded"), "CascadeWindows", 0,1},
+	{ LPGENT("Save the size and position of chat rooms"), "SavePosition", 0,0},
+	{ LPGENT("Show the topic of the room on your contact list (if supported)"), "TopicOnClist", 0, 0},
+	{ LPGENT("Do not play sounds when the chat room is focused"), "SoundsFocus", 0, 0},
+	{ LPGENT("Do not pop up the window when joining a chat room"), "PopupOnJoin", 0,0},
+	{ LPGENT("Toggle the visible state when double clicking in the contact list"), "ToggleVisibility", 0,0},
+    {LPGENT("Show contact statuses if protocol supports them"), "ShowContactStatus", 0,0},
+    {LPGENT("Display contact status icon before user role icon"), "ContactStatusFirst", 0,0},
 };
 
-static struct branch_t branch2[] = {
-	{ LPGENT("Prefix all events with a timestamp"), "ShowTimeStamp", 0,1, NULL},
-	{ LPGENT("Only prefix with timestamp if it has changed"), "ShowTimeStampIfChanged", 0,0, NULL},
-	{ LPGENT("Timestamp has same colour as the event"), "TimeStampEventColour", 0,0, NULL},
-	{ LPGENT("Indent the second line of a message"), "LogIndentEnabled", 0,1, NULL},
-	{ LPGENT("Limit user names in the message log to 20 characters"), "LogLimitNames", 0,1, NULL},
-	{ LPGENT("Add \':\' to auto-completed user names"), "AddColonToAutoComplete", 0, 1, NULL},
-	{ LPGENT("Strip colors from messages in the log"), "StripFormatting", 0, 0, NULL},
-	{ LPGENT("Enable the \'event filter\' for new rooms"), "FilterEnabled", 0,0, NULL}
+static const struct branch_t branch2[] = {
+	{ LPGENT("Prefix all events with a timestamp"), "ShowTimeStamp", 0,1},
+	{ LPGENT("Only prefix with timestamp if it has changed"), "ShowTimeStampIfChanged", 0,0},
+	{ LPGENT("Timestamp has same colour as the event"), "TimeStampEventColour", 0,0},
+	{ LPGENT("Indent the second line of a message"), "LogIndentEnabled", 0,1},
+	{ LPGENT("Limit user names in the message log to 20 characters"), "LogLimitNames", 0,1},
+	{ LPGENT("Add \':\' to auto-completed user names"), "AddColonToAutoComplete", 0, 1},
+	{ LPGENT("Strip colors from messages in the log"), "StripFormatting", 0, 0},
+	{ LPGENT("Enable the \'event filter\' for new rooms"), "FilterEnabled", 0,0}
 };
 
-static struct branch_t branch3[] = {
-	{ LPGENT("Show topic changes"), "FilterFlags", GC_EVENT_TOPIC, 0, NULL},
-	{ LPGENT("Show users joining"), "FilterFlags", GC_EVENT_JOIN, 0, NULL},
-	{ LPGENT("Show users disconnecting"), "FilterFlags", GC_EVENT_QUIT, 0, NULL},
-	{ LPGENT("Show messages"), "FilterFlags", GC_EVENT_MESSAGE, 1, NULL},
-	{ LPGENT("Show actions"), "FilterFlags", GC_EVENT_ACTION, 1, NULL},
-	{ LPGENT("Show users leaving"), "FilterFlags", GC_EVENT_PART, 0, NULL},
-	{ LPGENT("Show users being kicked"), "FilterFlags", GC_EVENT_KICK, 1, NULL},
-	{ LPGENT("Show notices"), "FilterFlags", GC_EVENT_NOTICE, 1, NULL},
-	{ LPGENT("Show users changing name"), "FilterFlags", GC_EVENT_NICK, 0, NULL},
-	{ LPGENT("Show information messages"), "FilterFlags", GC_EVENT_INFORMATION, 1, NULL},
-	{ LPGENT("Show status changes of users"), "FilterFlags", GC_EVENT_ADDSTATUS, 0, NULL},
+static const struct branch_t branch3[] = {
+	{ LPGENT("Show topic changes"), "FilterFlags", GC_EVENT_TOPIC, 0},
+	{ LPGENT("Show users joining"), "FilterFlags", GC_EVENT_JOIN, 0},
+	{ LPGENT("Show users disconnecting"), "FilterFlags", GC_EVENT_QUIT, 0},
+	{ LPGENT("Show messages"), "FilterFlags", GC_EVENT_MESSAGE, 1},
+	{ LPGENT("Show actions"), "FilterFlags", GC_EVENT_ACTION, 1},
+	{ LPGENT("Show users leaving"), "FilterFlags", GC_EVENT_PART, 0},
+	{ LPGENT("Show users being kicked"), "FilterFlags", GC_EVENT_KICK, 1},
+	{ LPGENT("Show notices"), "FilterFlags", GC_EVENT_NOTICE, 1},
+	{ LPGENT("Show users changing name"), "FilterFlags", GC_EVENT_NICK, 0},
+	{ LPGENT("Show information messages"), "FilterFlags", GC_EVENT_INFORMATION, 1},
+	{ LPGENT("Show status changes of users"), "FilterFlags", GC_EVENT_ADDSTATUS, 0},
 };
 
-static struct branch_t branch4[] = {
-	{ LPGENT("Show icon for topic changes"), "IconFlags", GC_EVENT_TOPIC, 0, NULL},
-	{ LPGENT("Show icon for users joining"), "IconFlags", GC_EVENT_JOIN, 1, NULL},
-	{ LPGENT("Show icon for users disconnecting"), "IconFlags", GC_EVENT_QUIT, 0, NULL},
-	{ LPGENT("Show icon for messages"), "IconFlags", GC_EVENT_MESSAGE, 0, NULL},
-	{ LPGENT("Show icon for actions"), "IconFlags", GC_EVENT_ACTION, 0, NULL},
-	{ LPGENT("Show icon for highlights"), "IconFlags", GC_EVENT_HIGHLIGHT, 0, NULL},
-	{ LPGENT("Show icon for users leaving"), "IconFlags", GC_EVENT_PART, 0, NULL},
-	{ LPGENT("Show icon for users kicking other user"), "IconFlags", GC_EVENT_KICK, 0, NULL},
-	{ LPGENT("Show icon for notices "), "IconFlags", GC_EVENT_NOTICE, 0, NULL},
-	{ LPGENT("Show icon for name changes"), "IconFlags", GC_EVENT_NICK, 0, NULL},
-	{ LPGENT("Show icon for information messages"), "IconFlags", GC_EVENT_INFORMATION, 0, NULL},
-	{ LPGENT("Show icon for status changes"), "IconFlags", GC_EVENT_ADDSTATUS, 0, NULL},
+static const struct branch_t branch4[] = {
+	{ LPGENT("Show icon for topic changes"), "IconFlags", GC_EVENT_TOPIC, 0},
+	{ LPGENT("Show icon for users joining"), "IconFlags", GC_EVENT_JOIN, 1},
+	{ LPGENT("Show icon for users disconnecting"), "IconFlags", GC_EVENT_QUIT, 0},
+	{ LPGENT("Show icon for messages"), "IconFlags", GC_EVENT_MESSAGE, 0},
+	{ LPGENT("Show icon for actions"), "IconFlags", GC_EVENT_ACTION, 0},
+	{ LPGENT("Show icon for highlights"), "IconFlags", GC_EVENT_HIGHLIGHT, 0},
+	{ LPGENT("Show icon for users leaving"), "IconFlags", GC_EVENT_PART, 0},
+	{ LPGENT("Show icon for users kicking other user"), "IconFlags", GC_EVENT_KICK, 0},
+	{ LPGENT("Show icon for notices "), "IconFlags", GC_EVENT_NOTICE, 0},
+	{ LPGENT("Show icon for name changes"), "IconFlags", GC_EVENT_NICK, 0},
+	{ LPGENT("Show icon for information messages"), "IconFlags", GC_EVENT_INFORMATION, 0},
+	{ LPGENT("Show icon for status changes"), "IconFlags", GC_EVENT_ADDSTATUS, 0},
 };
 
-static struct branch_t branch5[] = {
-	{ LPGENT("Show icons in tray only when the chat room is not active"), "TrayIconInactiveOnly", 0, 1, NULL},
-	{ LPGENT("Show icon in tray for topic changes"), "TrayIconFlags", GC_EVENT_TOPIC, 0, NULL},
-	{ LPGENT("Show icon in tray for users joining"), "TrayIconFlags", GC_EVENT_JOIN, 0, NULL},
-	{ LPGENT("Show icon in tray for users disconnecting"), "TrayIconFlags", GC_EVENT_QUIT, 0, NULL},
-	{ LPGENT("Show icon in tray for messages"), "TrayIconFlags", GC_EVENT_MESSAGE, 0, NULL},
-	{ LPGENT("Show icon in tray for actions"), "TrayIconFlags", GC_EVENT_ACTION, 0, NULL},
-	{ LPGENT("Show icon in tray for highlights"), "TrayIconFlags", GC_EVENT_HIGHLIGHT, 1, NULL},
-	{ LPGENT("Show icon in tray for users leaving"), "TrayIconFlags", GC_EVENT_PART, 0, NULL},
-	{ LPGENT("Show icon in tray for users kicking other user"), "TrayIconFlags", GC_EVENT_KICK, 0, NULL},
-	{ LPGENT("Show icon in tray for notices "), "TrayIconFlags", GC_EVENT_NOTICE, 0, NULL},
-	{ LPGENT("Show icon in tray for name changes"), "TrayIconFlags", GC_EVENT_NICK, 0, NULL},
-	{ LPGENT("Show icon in tray for information messages"), "TrayIconFlags", GC_EVENT_INFORMATION, 0, NULL},
-	{ LPGENT("Show icon in tray for status changes"), "TrayIconFlags", GC_EVENT_ADDSTATUS, 0, NULL},
+static const struct branch_t branch5[] = {
+	{ LPGENT("Show icons in tray only when the chat room is not active"), "TrayIconInactiveOnly", 0, 1},
+	{ LPGENT("Show icon in tray for topic changes"), "TrayIconFlags", GC_EVENT_TOPIC, 0},
+	{ LPGENT("Show icon in tray for users joining"), "TrayIconFlags", GC_EVENT_JOIN, 0},
+	{ LPGENT("Show icon in tray for users disconnecting"), "TrayIconFlags", GC_EVENT_QUIT, 0},
+	{ LPGENT("Show icon in tray for messages"), "TrayIconFlags", GC_EVENT_MESSAGE, 0},
+	{ LPGENT("Show icon in tray for actions"), "TrayIconFlags", GC_EVENT_ACTION, 0},
+	{ LPGENT("Show icon in tray for highlights"), "TrayIconFlags", GC_EVENT_HIGHLIGHT, 1},
+	{ LPGENT("Show icon in tray for users leaving"), "TrayIconFlags", GC_EVENT_PART, 0},
+	{ LPGENT("Show icon in tray for users kicking other user"), "TrayIconFlags", GC_EVENT_KICK, 0},
+	{ LPGENT("Show icon in tray for notices "), "TrayIconFlags", GC_EVENT_NOTICE, 0},
+	{ LPGENT("Show icon in tray for name changes"), "TrayIconFlags", GC_EVENT_NICK, 0},
+	{ LPGENT("Show icon in tray for information messages"), "TrayIconFlags", GC_EVENT_INFORMATION, 0},
+	{ LPGENT("Show icon in tray for status changes"), "TrayIconFlags", GC_EVENT_ADDSTATUS, 0},
 };
 
-static struct branch_t branch6[] = {
-	{ LPGENT("Show pop-ups only when the chat room is not active"), "PopUpInactiveOnly", 0, 1, NULL},
-	{ LPGENT("Show pop-up for topic changes"), "PopupFlags", GC_EVENT_TOPIC, 0, NULL},
-	{ LPGENT("Show pop-up for users joining"), "PopupFlags", GC_EVENT_JOIN, 0, NULL},
-	{ LPGENT("Show pop-up for users disconnecting"), "PopupFlags", GC_EVENT_QUIT, 0, NULL},
-	{ LPGENT("Show pop-up for messages"), "PopupFlags", GC_EVENT_MESSAGE, 0, NULL},
-	{ LPGENT("Show pop-up for actions"), "PopupFlags", GC_EVENT_ACTION, 0, NULL},
-	{ LPGENT("Show pop-up for highlights"), "PopupFlags", GC_EVENT_HIGHLIGHT, 0, NULL},
-	{ LPGENT("Show pop-up for users leaving"), "PopupFlags", GC_EVENT_PART, 0, NULL},
-	{ LPGENT("Show pop-up for users kicking other user"), "PopupFlags", GC_EVENT_KICK, 0, NULL},
-	{ LPGENT("Show pop-up for notices "), "PopupFlags", GC_EVENT_NOTICE, 0, NULL},
-	{ LPGENT("Show pop-up for name changes"), "PopupFlags", GC_EVENT_NICK, 0, NULL},
-	{ LPGENT("Show pop-up for information messages"), "PopupFlags", GC_EVENT_INFORMATION, 0, NULL},
-	{ LPGENT("Show pop-up for status changes"), "PopupFlags", GC_EVENT_ADDSTATUS, 0, NULL},
+static const struct branch_t branch6[] = {
+	{ LPGENT("Show pop-ups only when the chat room is not active"), "PopUpInactiveOnly", 0, 1},
+	{ LPGENT("Show pop-up for topic changes"), "PopupFlags", GC_EVENT_TOPIC, 0},
+	{ LPGENT("Show pop-up for users joining"), "PopupFlags", GC_EVENT_JOIN, 0},
+	{ LPGENT("Show pop-up for users disconnecting"), "PopupFlags", GC_EVENT_QUIT, 0},
+	{ LPGENT("Show pop-up for messages"), "PopupFlags", GC_EVENT_MESSAGE, 0},
+	{ LPGENT("Show pop-up for actions"), "PopupFlags", GC_EVENT_ACTION, 0},
+	{ LPGENT("Show pop-up for highlights"), "PopupFlags", GC_EVENT_HIGHLIGHT, 0},
+	{ LPGENT("Show pop-up for users leaving"), "PopupFlags", GC_EVENT_PART, 0},
+	{ LPGENT("Show pop-up for users kicking other user"), "PopupFlags", GC_EVENT_KICK, 0},
+	{ LPGENT("Show pop-up for notices "), "PopupFlags", GC_EVENT_NOTICE, 0},
+	{ LPGENT("Show pop-up for name changes"), "PopupFlags", GC_EVENT_NICK, 0},
+	{ LPGENT("Show pop-up for information messages"), "PopupFlags", GC_EVENT_INFORMATION, 0},
+	{ LPGENT("Show pop-up for status changes"), "PopupFlags", GC_EVENT_ADDSTATUS, 0},
 };
+
+HTREEITEM hItemB0[SIZEOF(branch0)];
+HTREEITEM hItemB1[SIZEOF(branch1)];
+HTREEITEM hItemB2[SIZEOF(branch2)];
+HTREEITEM hItemB3[SIZEOF(branch3)];
+HTREEITEM hItemB4[SIZEOF(branch4)];
+HTREEITEM hItemB5[SIZEOF(branch5)];
+HTREEITEM hItemB6[SIZEOF(branch6)];
 
 static HTREEITEM InsertBranch(HWND hwndTree, TCHAR* pszDescr, BOOL bExpanded)
 {
@@ -197,7 +204,7 @@ static HTREEITEM InsertBranch(HWND hwndTree, TCHAR* pszDescr, BOOL bExpanded)
 	return TreeView_InsertItem(hwndTree, &tvis);
 }
 
-static void FillBranch(HWND hwndTree, HTREEITEM hParent, struct branch_t *branch, int nValues, DWORD defaultval)
+static void FillBranch(HWND hwndTree, HTREEITEM hParent, const struct branch_t *branch, HTREEITEM *hItemB, int nValues, DWORD defaultval)
 {
 	TVINSERTSTRUCT tvis;
 	int i;
@@ -217,10 +224,10 @@ static void FillBranch(HWND hwndTree, HTREEITEM hParent, struct branch_t *branch
 		else
 			iState = DBGetContactSettingByte(NULL, "Chat", branch[i].szDBName, branch[i].bDefault)!=0?2:1;
 		tvis.item.state=INDEXTOSTATEIMAGEMASK(iState);
-		branch[i].hItem = TreeView_InsertItem(hwndTree, &tvis);
+		hItemB[i] = TreeView_InsertItem(hwndTree, &tvis);
 }	}
 
-static void SaveBranch(HWND hwndTree, struct branch_t *branch, int nValues)
+static void SaveBranch(HWND hwndTree, const struct branch_t *branch, HTREEITEM *hItemB, int nValues)
 {
 	TVITEM tvi;
 	BYTE bChecked;
@@ -229,7 +236,7 @@ static void SaveBranch(HWND hwndTree, struct branch_t *branch, int nValues)
 
 	tvi.mask=TVIF_HANDLE|TVIF_STATE;
 	for (i=0;i<nValues;i++) {
-		tvi.hItem = branch[i].hItem;
+		tvi.hItem = hItemB[i];
 		TreeView_GetItem(hwndTree,&tvi);
 		bChecked = ((tvi.state&TVIS_STATEIMAGEMASK)>>12==1)?0:1;
 		if(branch[i].iMode) {
@@ -253,7 +260,7 @@ static void CheckHeading(HWND hwndTree, HTREEITEM hHeading)
 	tvi.mask=TVIF_HANDLE|TVIF_STATE;
 	tvi.hItem=TreeView_GetNextItem(hwndTree, hHeading, TVGN_CHILD);
 	while(tvi.hItem && bChecked) {
-		if (tvi.hItem != branch1[0].hItem && tvi.hItem != branch1[1].hItem ) {
+		if (tvi.hItem != hItemB1[0] && tvi.hItem != hItemB1[1] ) {
 			TreeView_GetItem(hwndTree,&tvi);
 			if (((tvi.state & TVIS_STATEIMAGEMASK)>>12 == 1))
 				bChecked = FALSE;
@@ -283,20 +290,21 @@ static void CheckBranches(HWND hwndTree, HTREEITEM hHeading)
 	tvi.stateMask = TVIS_STATEIMAGEMASK;
 	while(tvi.hItem) {
 		tvi.state=INDEXTOSTATEIMAGEMASK(bChecked?2:1);
-		if (tvi.hItem != branch1[0].hItem && tvi.hItem != branch1[1].hItem )
+		if (tvi.hItem !=hItemB1[0] && tvi.hItem != hItemB1[1] )
 			TreeView_SetItem(hwndTree,&tvi);
 		tvi.hItem=TreeView_GetNextSibling(hwndTree,tvi.hItem);
 }	}
 
 static INT CALLBACK BrowseCallbackProc(HWND hwnd, UINT uMsg, LPARAM lp, LPARAM pData)
 {
-	char szDir[MAX_PATH];
+	TCHAR szDir[MAX_PATH];
 	switch(uMsg) {
 	case BFFM_INITIALIZED:
 		SendMessage(hwnd, BFFM_SETSELECTION, TRUE, pData);
 		break;
+
 	case BFFM_SELCHANGED:
-		if (SHGetPathFromIDListA((LPITEMIDLIST) lp ,szDir))
+		if (SHGetPathFromIDList((LPITEMIDLIST) lp ,szDir))
 			SendMessage(hwnd,BFFM_SETSTATUSTEXT,0,(LPARAM)szDir);
 		break;
 	}
@@ -426,7 +434,7 @@ struct
 	const char* szName;
 	int   defIconID;
 }
-iconList[] =
+static const iconList[] =
 {
 	{	16, LPGEN("Messaging") "/" LPGEN("Group Chats"), LPGEN("Window Icon"),           "chat_window",    IDI_CHANMGR    },
 	{	16, LPGEN("Messaging") "/" LPGEN("Group Chats"), LPGEN("Text colour"),           "chat_fgcol",     IDI_COLOR      },
@@ -530,13 +538,13 @@ static INT_PTR CALLBACK DlgProcOptions1(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPA
 		hListHeading5 = InsertBranch(GetDlgItem(hwndDlg, IDC_CHECKBOXES), TranslateT("Icons to display in the tray"), DBGetContactSettingByte(NULL, "Chat", "Branch5Exp", 0)?TRUE:FALSE);
 		if (PopUpInstalled)
 			hListHeading6 = InsertBranch(GetDlgItem(hwndDlg, IDC_CHECKBOXES), TranslateT("Pop-ups to display"), DBGetContactSettingByte(NULL, "Chat", "Branch6Exp", 0)?TRUE:FALSE);
-		FillBranch(GetDlgItem(hwndDlg, IDC_CHECKBOXES), hListHeading0, branch0, SIZEOF(branch0), 0);
-		FillBranch(GetDlgItem(hwndDlg, IDC_CHECKBOXES), hListHeading1, branch1, SIZEOF(branch1), 0);
-		FillBranch(GetDlgItem(hwndDlg, IDC_CHECKBOXES), hListHeading2, branch2, SIZEOF(branch2), 0);
-		FillBranch(GetDlgItem(hwndDlg, IDC_CHECKBOXES), hListHeading3, branch3, SIZEOF(branch3), 0x03E0);
-		FillBranch(GetDlgItem(hwndDlg, IDC_CHECKBOXES), hListHeading4, branch4, SIZEOF(branch4), 0x0000);
-		FillBranch(GetDlgItem(hwndDlg, IDC_CHECKBOXES), hListHeading5, branch5, SIZEOF(branch5), 0x1000);
-		FillBranch(GetDlgItem(hwndDlg, IDC_CHECKBOXES), hListHeading6, branch6, SIZEOF(branch6), 0x0000);
+		FillBranch(GetDlgItem(hwndDlg, IDC_CHECKBOXES), hListHeading0, branch0, hItemB0, SIZEOF(branch0), 0);
+		FillBranch(GetDlgItem(hwndDlg, IDC_CHECKBOXES), hListHeading1, branch1, hItemB1, SIZEOF(branch1), 0);
+		FillBranch(GetDlgItem(hwndDlg, IDC_CHECKBOXES), hListHeading2, branch2, hItemB2, SIZEOF(branch2), 0);
+		FillBranch(GetDlgItem(hwndDlg, IDC_CHECKBOXES), hListHeading3, branch3, hItemB3, SIZEOF(branch3), 0x03E0);
+		FillBranch(GetDlgItem(hwndDlg, IDC_CHECKBOXES), hListHeading4, branch4, hItemB4, SIZEOF(branch4), 0x0000);
+		FillBranch(GetDlgItem(hwndDlg, IDC_CHECKBOXES), hListHeading5, branch5, hItemB5, SIZEOF(branch5), 0x1000);
+		FillBranch(GetDlgItem(hwndDlg, IDC_CHECKBOXES), hListHeading6, branch6, hItemB6, SIZEOF(branch6), 0x0000);
 		SendMessage(hwndDlg, OPT_FIXHEADINGS, 0, 0);
 		break;
 
@@ -569,10 +577,10 @@ static INT_PTR CALLBACK DlgProcOptions1(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPA
 							tvi.mask=TVIF_HANDLE|TVIF_STATE;
 							tvi.hItem=hti.hItem;
 							TreeView_GetItem(((LPNMHDR)lParam)->hwndFrom,&tvi);
-							if (tvi.hItem == branch1[0].hItem && INDEXTOSTATEIMAGEMASK(1)==tvi.state)
-								TreeView_SetItemState(((LPNMHDR)lParam)->hwndFrom, branch1[1].hItem, INDEXTOSTATEIMAGEMASK(1),  TVIS_STATEIMAGEMASK);
-							if (tvi.hItem == branch1[1].hItem && INDEXTOSTATEIMAGEMASK(1)==tvi.state)
-								TreeView_SetItemState(((LPNMHDR)lParam)->hwndFrom, branch1[0].hItem, INDEXTOSTATEIMAGEMASK(1),  TVIS_STATEIMAGEMASK);
+							if (tvi.hItem == hItemB1[0] && INDEXTOSTATEIMAGEMASK(1)==tvi.state)
+								TreeView_SetItemState(((LPNMHDR)lParam)->hwndFrom, hItemB1[1], INDEXTOSTATEIMAGEMASK(1),  TVIS_STATEIMAGEMASK);
+							if (tvi.hItem == hItemB1[1] && INDEXTOSTATEIMAGEMASK(1)==tvi.state)
+								TreeView_SetItemState(((LPNMHDR)lParam)->hwndFrom, hItemB1[0], INDEXTOSTATEIMAGEMASK(1),  TVIS_STATEIMAGEMASK);
 
 							if (tvi.hItem == hListHeading0)
 								CheckBranches(GetDlgItem(hwndDlg, IDC_CHECKBOXES), hListHeading0);
@@ -599,14 +607,14 @@ static INT_PTR CALLBACK DlgProcOptions1(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPA
 				case PSN_APPLY:
 					{
 						BYTE b = DBGetContactSettingByte(NULL, "Chat", "Tabs", 1);
-						SaveBranch(GetDlgItem(hwndDlg, IDC_CHECKBOXES), branch0, SIZEOF(branch0));
-						SaveBranch(GetDlgItem(hwndDlg, IDC_CHECKBOXES), branch1, SIZEOF(branch1));
-						SaveBranch(GetDlgItem(hwndDlg, IDC_CHECKBOXES), branch2, SIZEOF(branch2));
-						SaveBranch(GetDlgItem(hwndDlg, IDC_CHECKBOXES), branch3, SIZEOF(branch3));
-						SaveBranch(GetDlgItem(hwndDlg, IDC_CHECKBOXES), branch4, SIZEOF(branch4));
-						SaveBranch(GetDlgItem(hwndDlg, IDC_CHECKBOXES), branch5, SIZEOF(branch5));
+						SaveBranch(GetDlgItem(hwndDlg, IDC_CHECKBOXES), branch0, hItemB0, SIZEOF(branch0));
+						SaveBranch(GetDlgItem(hwndDlg, IDC_CHECKBOXES), branch1, hItemB1, SIZEOF(branch1));
+						SaveBranch(GetDlgItem(hwndDlg, IDC_CHECKBOXES), branch2, hItemB2, SIZEOF(branch2));
+						SaveBranch(GetDlgItem(hwndDlg, IDC_CHECKBOXES), branch3, hItemB3, SIZEOF(branch3));
+						SaveBranch(GetDlgItem(hwndDlg, IDC_CHECKBOXES), branch4, hItemB4, SIZEOF(branch4));
+						SaveBranch(GetDlgItem(hwndDlg, IDC_CHECKBOXES), branch5, hItemB5, SIZEOF(branch5));
 						if (PopUpInstalled)
-							SaveBranch(GetDlgItem(hwndDlg, IDC_CHECKBOXES), branch6, SIZEOF(branch6));
+							SaveBranch(GetDlgItem(hwndDlg, IDC_CHECKBOXES), branch6, hItemB6, SIZEOF(branch6));
 						g_Settings.dwIconFlags = DBGetContactSettingDword(NULL, "Chat", "IconFlags", 0x0000);
 						g_Settings.dwTrayIconFlags = DBGetContactSettingDword(NULL, "Chat", "TrayIconFlags", 0x1000);
 						g_Settings.dwPopupFlags = DBGetContactSettingDword(NULL, "Chat", "PopupFlags", 0x0000);
@@ -669,9 +677,9 @@ static INT_PTR CALLBACK DlgProcOptions2(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPA
 			mir_free(pszGroup);
 		}
 		{
-			char szTemp[MAX_PATH];
-			CallService(MS_UTILS_PATHTORELATIVE, (WPARAM)g_Settings.pszLogDir, (LPARAM)szTemp );
-			SetDlgItemTextA(hwndDlg, IDC_LOGDIRECTORY, szTemp);
+			TCHAR szTemp[MAX_PATH];
+			CallService(MS_UTILS_PATHTORELATIVET, (WPARAM)g_Settings.pszLogDir, (LPARAM)szTemp );
+			SetDlgItemText(hwndDlg, IDC_LOGDIRECTORY, szTemp);
 		}
 		SetDlgItemText(hwndDlg, IDC_HIGHLIGHTWORDS, g_Settings.pszHighlightWords);
 		SetDlgItemText(hwndDlg, IDC_LOGTIMESTAMP, g_Settings.pszTimeStampLog);
@@ -708,29 +716,24 @@ static INT_PTR CALLBACK DlgProcOptions2(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPA
 
 		case IDC_FONTCHOOSE:
 		{
-			char szDirectory[MAX_PATH];
 			LPITEMIDLIST idList;
-			LPMALLOC psMalloc; 
-			BROWSEINFOA bi = {0};
+			BROWSEINFO bi = {0};
+			TCHAR szDirectory[MAX_PATH];
+			TCHAR szTemp[MAX_PATH];
 
-			if(SUCCEEDED(CoGetMalloc(1,&psMalloc))) 
-			{
-				char szTemp[MAX_PATH];
-				bi.hwndOwner=hwndDlg;
-				bi.pszDisplayName=szDirectory;
-				bi.lpszTitle=Translate("Select Folder");
-				bi.ulFlags=BIF_NEWDIALOGSTYLE|BIF_EDITBOX|BIF_RETURNONLYFSDIRS;			
-				bi.lpfn=BrowseCallbackProc;
-				bi.lParam=(LPARAM)szDirectory;
-				idList = SHBrowseForFolderA(&bi);
-				if ( idList ) {
-					SHGetPathFromIDListA(idList,szDirectory);
-					lstrcatA(szDirectory,"\\");
-					CallService(MS_UTILS_PATHTORELATIVE, (WPARAM)szDirectory, (LPARAM)szTemp );
-					SetWindowTextA(GetDlgItem(hwndDlg, IDC_LOGDIRECTORY), lstrlenA(szTemp) > 1?szTemp:"Logs\\");
-				}
-				psMalloc->lpVtbl->Free(psMalloc,idList);
-				psMalloc->lpVtbl->Release(psMalloc);
+			bi.hwndOwner=hwndDlg;
+			bi.pszDisplayName=szDirectory;
+			bi.lpszTitle=TranslateT("Select Folder");
+			bi.ulFlags=BIF_NEWDIALOGSTYLE|BIF_EDITBOX|BIF_RETURNONLYFSDIRS;			
+			bi.lpfn=BrowseCallbackProc;
+			bi.lParam=(LPARAM)szDirectory;
+			idList = SHBrowseForFolder(&bi);
+			if ( idList ) {
+				SHGetPathFromIDList(idList,szDirectory);
+				lstrcat(szDirectory, _T("\\"));
+				CallService(MS_UTILS_PATHTORELATIVET, (WPARAM)szDirectory, (LPARAM)szTemp);
+				SetDlgItemText(hwndDlg, IDC_LOGDIRECTORY, lstrlen(szTemp) > 1 ? szTemp : _T("Logs\\"));
+				CoTaskMemFree(idList);
 			}
 			break;
 		}
@@ -746,7 +749,7 @@ static INT_PTR CALLBACK DlgProcOptions2(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPA
 	case WM_NOTIFY:
 		if (((LPNMHDR)lParam)->idFrom == 0 && ((LPNMHDR)lParam)->code == PSN_APPLY ) {
 			int iLen;
-			char * pszText = NULL;
+			TCHAR * pszText = NULL;
 
 			iLen = GetWindowTextLength(GetDlgItem(hwndDlg, IDC_HIGHLIGHTWORDS));
 			if ( iLen > 0 ) {
@@ -755,10 +758,10 @@ static INT_PTR CALLBACK DlgProcOptions2(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPA
 				
 				if(ptszText) {
 				    GetDlgItemText(hwndDlg, IDC_HIGHLIGHTWORDS, ptszText, iLen + 1);
-				    p2 = _tcschr(ptszText, (TCHAR)',');
+				    p2 = _tcschr(ptszText, ',');
 				    while ( p2 ) {
 					   *p2 = ' ';
-					   p2 = _tcschr(ptszText, (TCHAR)',');
+					   p2 = _tcschr(ptszText, ',');
 				    }
 				    DBWriteContactSettingTString(NULL, "Chat", "HighlightWords", ptszText);
 				    mir_free(ptszText);
@@ -768,43 +771,43 @@ static INT_PTR CALLBACK DlgProcOptions2(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPA
 
 			iLen = GetWindowTextLength(GetDlgItem(hwndDlg, IDC_LOGDIRECTORY));
 			if ( iLen > 0 ) {
-				pszText = mir_realloc(pszText, iLen+1);
-				GetDlgItemTextA(hwndDlg, IDC_LOGDIRECTORY, pszText,iLen+1);
-				DBWriteContactSettingString(NULL, "Chat", "LogDirectory", pszText);
+				pszText = mir_realloc(pszText, (iLen + 1) * sizeof(TCHAR));
+				GetDlgItemText(hwndDlg, IDC_LOGDIRECTORY, pszText,iLen + 1);
+				DBWriteContactSettingTString(NULL, "Chat", "LogDirectory", pszText);
 			}
 			else DBDeleteContactSetting(NULL, "Chat", "LogDirectory");
 
-			CallService(MS_UTILS_PATHTOABSOLUTE, (WPARAM)pszText, (LPARAM)g_Settings.pszLogDir);
+			CallService(MS_UTILS_PATHTOABSOLUTET, (WPARAM)pszText, (LPARAM)g_Settings.pszLogDir);
 
 			iLen = GetWindowTextLength(GetDlgItem(hwndDlg, IDC_LOGTIMESTAMP));
 			if ( iLen > 0 ) {
-				pszText = mir_realloc(pszText, iLen+1);
-				GetDlgItemTextA(hwndDlg, IDC_LOGTIMESTAMP, pszText,iLen+1);
-				DBWriteContactSettingString(NULL, "Chat", "LogTimestamp", pszText);
+				pszText = mir_realloc(pszText, (iLen + 1) * sizeof(TCHAR));
+				GetDlgItemText(hwndDlg, IDC_LOGTIMESTAMP, pszText, iLen+1);
+				DBWriteContactSettingTString(NULL, "Chat", "LogTimestamp", pszText);
 			}
 			else DBDeleteContactSetting(NULL, "Chat", "LogTimestamp");
 
 			iLen = GetWindowTextLength(GetDlgItem(hwndDlg, IDC_TIMESTAMP));
 			if ( iLen > 0 ) {
-				pszText = mir_realloc(pszText, iLen+1);
-				GetDlgItemTextA(hwndDlg, IDC_TIMESTAMP, pszText,iLen+1);
-				DBWriteContactSettingString(NULL, "Chat", "HeaderTime", pszText);
+				pszText = mir_realloc(pszText, (iLen + 1) * sizeof(TCHAR));
+				GetDlgItemText(hwndDlg, IDC_TIMESTAMP, pszText, iLen+1);
+				DBWriteContactSettingTString(NULL, "Chat", "HeaderTime", pszText);
 			}
 			else DBDeleteContactSetting(NULL, "Chat", "HeaderTime");
 
 			iLen = GetWindowTextLength(GetDlgItem(hwndDlg, IDC_INSTAMP));
 			if ( iLen > 0 ) {
-				pszText = mir_realloc(pszText, iLen+1);
-				GetDlgItemTextA(hwndDlg, IDC_INSTAMP, pszText,iLen+1);
-				DBWriteContactSettingString(NULL, "Chat", "HeaderIncoming", pszText);
+				pszText = mir_realloc(pszText, (iLen + 1) * sizeof(TCHAR));
+				GetDlgItemText(hwndDlg, IDC_INSTAMP, pszText,iLen+1);
+				DBWriteContactSettingTString(NULL, "Chat", "HeaderIncoming", pszText);
 			}
 			else DBDeleteContactSetting(NULL, "Chat", "HeaderIncoming");
 
 			iLen = GetWindowTextLength(GetDlgItem(hwndDlg, IDC_OUTSTAMP));
 			if ( iLen > 0 ) {
-				pszText = mir_realloc(pszText, iLen+1);
-				GetDlgItemTextA(hwndDlg, IDC_OUTSTAMP, pszText,iLen+1);
-				DBWriteContactSettingString(NULL, "Chat", "HeaderOutgoing", pszText);
+				pszText = mir_realloc(pszText, (iLen + 1) * sizeof(TCHAR));
+				GetDlgItemText(hwndDlg, IDC_OUTSTAMP, pszText,iLen+1);
+				DBWriteContactSettingTString(NULL, "Chat", "HeaderOutgoing", pszText);
 			}
 			else DBDeleteContactSetting(NULL, "Chat", "HeaderOutgoing");
 
@@ -814,8 +817,7 @@ static INT_PTR CALLBACK DlgProcOptions2(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPA
 			g_Settings.LoggingEnabled = IsDlgButtonChecked(hwndDlg, IDC_LOGGING) == BST_CHECKED?TRUE:FALSE;
 			DBWriteContactSettingByte(NULL, "Chat", "LoggingEnabled", (BYTE)g_Settings.LoggingEnabled);
 			if ( g_Settings.LoggingEnabled )
-				if ( !PathIsDirectoryA( g_Settings.pszLogDir ))
-					CreateDirectoryA( g_Settings.pszLogDir, NULL );
+				CallService(MS_UTILS_CREATEDIRTREET, 0, (LPARAM)g_Settings.pszLogDir);
 
 			iLen = SendDlgItemMessage(hwndDlg,IDC_SPIN2,UDM_GETPOS,0,0);
 			DBWriteContactSettingWord(NULL, "Chat", "LogLimit", (WORD)iLen);
@@ -824,9 +826,9 @@ static INT_PTR CALLBACK DlgProcOptions2(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPA
 
 			iLen = GetWindowTextLength(GetDlgItem(hwndDlg, IDC_GROUP));
 			if (iLen > 0) {
-				pszText = mir_realloc(pszText, iLen+1);
-				GetDlgItemTextA(hwndDlg, IDC_GROUP, pszText,iLen+1);
-				DBWriteContactSettingString(NULL, "Chat", "AddToGroup", pszText);
+				pszText = mir_realloc(pszText, (iLen + 1) * sizeof(TCHAR));
+				GetDlgItemText(hwndDlg, IDC_GROUP, pszText, iLen+1);
+				DBWriteContactSettingTString(NULL, "Chat", "AddToGroup", pszText);
 			}
 			else DBWriteContactSettingString(NULL, "Chat", "AddToGroup", "");
 			mir_free(pszText);
@@ -928,7 +930,7 @@ static int OptionsInitialize(WPARAM wParam, LPARAM lParam)
 	odp.position = 910000000;
 	odp.hInstance = g_hInst;
 	odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPTIONS1);
-	odp.pszGroup = LPGEN("Events");
+	odp.pszGroup = LPGEN("Message Sessions");
 	odp.pszTitle = LPGEN("Group chats");
 	odp.pszTab = LPGEN("General");
 	odp.pfnDlgProc = DlgProcOptions1;
@@ -997,20 +999,20 @@ void LoadGlobalSettings(void)
 	InitSetting( &g_Settings.pszHighlightWords, "HighlightWords", _T("%m"));
 
 	{
-		char pszTemp[MAX_PATH];
+		TCHAR pszTemp[MAX_PATH];
 		DBVARIANT dbv;
-		g_Settings.pszLogDir = (char *)mir_realloc(g_Settings.pszLogDir, MAX_PATH);
-		if (!DBGetContactSettingString(NULL, "Chat", "LogDirectory", &dbv)) {
-			lstrcpynA(pszTemp, dbv.pszVal, MAX_PATH);
+		g_Settings.pszLogDir = (TCHAR *)mir_realloc(g_Settings.pszLogDir, MAX_PATH*sizeof(TCHAR));
+		if (!DBGetContactSettingTString(NULL, "Chat", "LogDirectory", &dbv)) {
+			lstrcpyn(pszTemp, dbv.ptszVal, MAX_PATH);
 			DBFreeVariant(&dbv);
 		}
 		else {
-            char *tmpPath = Utils_ReplaceVars("%miranda_logpath%\\Chat");
-            lstrcpynA(pszTemp, tmpPath, SIZEOF(pszTemp)-1);
+            TCHAR *tmpPath = Utils_ReplaceVarsT(_T("%miranda_logpath%\\Chat"));
+            lstrcpyn(pszTemp, tmpPath, SIZEOF(pszTemp)-1);
             mir_free(tmpPath);
         }
 
-		CallService(MS_UTILS_PATHTOABSOLUTE, (WPARAM)pszTemp, (LPARAM)g_Settings.pszLogDir);
+		CallService(MS_UTILS_PATHTOABSOLUTET, (WPARAM)pszTemp, (LPARAM)g_Settings.pszLogDir);
 	}
 
 	g_Settings.LogIndentEnabled = (DBGetContactSettingByte(NULL, "Chat", "LogIndentEnabled", 1) != 0)?TRUE:FALSE;
@@ -1079,21 +1081,20 @@ int OptionsInit(void)
 	g_Settings.iHeight = DBGetContactSettingDword(NULL, "Chat", "roomheight", -1);
 	LoadGlobalSettings();
 
-	SkinAddNewSoundEx("ChatMessage", "Chat", Translate("Incoming message"));
-	SkinAddNewSoundEx("ChatHighlight", "Chat", Translate("Message is highlighted"));
-	SkinAddNewSoundEx("ChatAction", "Chat", Translate("User has performed an action"));
-	SkinAddNewSoundEx("ChatJoin", "Chat", Translate("User has joined"));
-	SkinAddNewSoundEx("ChatPart", "Chat", Translate("User has left"));
-	SkinAddNewSoundEx("ChatKick", "Chat", Translate("User has kicked some other user"));
-	SkinAddNewSoundEx("ChatMode", "Chat", Translate("User's status was changed"));
-	SkinAddNewSoundEx("ChatNick", "Chat", Translate("User has changed name"));
-	SkinAddNewSoundEx("ChatNotice", "Chat", Translate("User has sent a notice"));
-	SkinAddNewSoundEx("ChatQuit", "Chat", Translate("User has disconnected"));
-	SkinAddNewSoundEx("ChatTopic", "Chat", Translate("The topic has been changed"));
+	SkinAddNewSoundEx("ChatMessage", "Chat", LPGEN("Incoming message"));
+	SkinAddNewSoundEx("ChatHighlight", "Chat", LPGEN("Message is highlighted"));
+	SkinAddNewSoundEx("ChatAction", "Chat", LPGEN("User has performed an action"));
+	SkinAddNewSoundEx("ChatJoin", "Chat", LPGEN("User has joined"));
+	SkinAddNewSoundEx("ChatPart", "Chat", LPGEN("User has left"));
+	SkinAddNewSoundEx("ChatKick", "Chat", LPGEN("User has kicked some other user"));
+	SkinAddNewSoundEx("ChatMode", "Chat", LPGEN("User's status was changed"));
+	SkinAddNewSoundEx("ChatNick", "Chat", LPGEN("User has changed name"));
+	SkinAddNewSoundEx("ChatNotice", "Chat", LPGEN("User has sent a notice"));
+	SkinAddNewSoundEx("ChatQuit", "Chat", LPGEN("User has disconnected"));
+	SkinAddNewSoundEx("ChatTopic", "Chat", LPGEN("The topic has been changed"));
 
 	if ( g_Settings.LoggingEnabled )
-		if ( !PathIsDirectoryA( g_Settings.pszLogDir ))
-			CreateDirectoryA( g_Settings.pszLogDir, NULL );
+		CallService(MS_UTILS_CREATEDIRTREET, 0, (LPARAM)g_Settings.pszLogDir);
 	{
 		LOGFONT lf;
 		HFONT hFont;
