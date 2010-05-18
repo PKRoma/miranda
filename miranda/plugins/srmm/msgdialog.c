@@ -1857,16 +1857,18 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 				case WM_RBUTTONDOWN:
 				case WM_LBUTTONUP:
 					{
-						TEXTRANGEA tr;
+						TEXTRANGE tr;
 						CHARRANGE sel;
+						char *link;
 
 						SendDlgItemMessage(hwndDlg, IDC_LOG, EM_EXGETSEL, 0, (LPARAM) & sel);
 						if (sel.cpMin != sel.cpMax)
 							break;
 						tr.chrg = ((ENLINK *) lParam)->chrg;
-						tr.lpstrText = _alloca(tr.chrg.cpMax - tr.chrg.cpMin + 8);
-						SendDlgItemMessageA(hwndDlg, IDC_LOG, EM_GETTEXTRANGE, 0, (LPARAM) & tr);
-						if (strchr(tr.lpstrText, '@') != NULL && strchr(tr.lpstrText, ':') == NULL && strchr(tr.lpstrText, '/') == NULL) {
+						tr.lpstrText = _alloca((tr.chrg.cpMax - tr.chrg.cpMin + 8) * sizeof(TCHAR));
+						SendDlgItemMessage(hwndDlg, IDC_LOG, EM_GETTEXTRANGE, 0, (LPARAM) & tr);
+						link  = mir_t2a(tr.lpstrText);
+						if (strchr(link, '@') != NULL && strchr(link, ':') == NULL && strchr(link, '/') == NULL) {
 							MoveMemory(tr.lpstrText + 7, tr.lpstrText, tr.chrg.cpMax - tr.chrg.cpMin + 1);
 							CopyMemory(tr.lpstrText, "mailto:", 7);
 						}
@@ -1880,12 +1882,13 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 							pt.x = (short) LOWORD(((ENLINK *) lParam)->lParam);
 							pt.y = (short) HIWORD(((ENLINK *) lParam)->lParam);
 							ClientToScreen(((NMHDR *) lParam)->hwndFrom, &pt);
+
 							switch (TrackPopupMenu(hSubMenu, TPM_RETURNCMD, pt.x, pt.y, 0, hwndDlg, NULL)) {
 							case IDM_OPENNEW:
-								CallService(MS_UTILS_OPENURL, 1, (LPARAM) tr.lpstrText);
+								CallService(MS_UTILS_OPENURL, 1, (LPARAM) link);
 								break;
 							case IDM_OPENEXISTING:
-								CallService(MS_UTILS_OPENURL, 0, (LPARAM) tr.lpstrText);
+								CallService(MS_UTILS_OPENURL, 0, (LPARAM) link);
 								break;
 							case IDM_COPYLINK:
 								{
@@ -1893,8 +1896,8 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 									if (!OpenClipboard(hwndDlg))
 										break;
 									EmptyClipboard();
-									hData = GlobalAlloc(GMEM_MOVEABLE, lstrlenA(tr.lpstrText) + 1);
-									lstrcpyA(GlobalLock(hData), tr.lpstrText);
+									hData = GlobalAlloc(GMEM_MOVEABLE, lstrlenA(link) + 1);
+									lstrcpyA(GlobalLock(hData), link);
 									GlobalUnlock(hData);
 									SetClipboardData(CF_TEXT, hData);
 									CloseClipboard();
@@ -1903,11 +1906,13 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 
 							DestroyMenu(hMenu);
 							SetWindowLongPtr(hwndDlg, DWLP_MSGRESULT, TRUE);
+							mir_free(link);
 							return TRUE;
 						}
 						else {
-							CallService(MS_UTILS_OPENURL, 1, (LPARAM) tr.lpstrText);
+							CallService(MS_UTILS_OPENURL, 1, (LPARAM) link);
 							SetFocus(GetDlgItem(hwndDlg, IDC_MESSAGE));
+							mir_free(link);
 						}
 						break;
 		}	}	}	}
