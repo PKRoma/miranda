@@ -413,7 +413,7 @@ int    OptionsUnInit(void);
 void   LoadMsgDlgFont(int i, LOGFONT * lf, COLORREF * colour);
 void   LoadGlobalSettings(void);
 void   AddIcons(void);
-HICON  LoadIconEx( char* pszIcoLibName );
+HICON  LoadIconEx(char* pszIcoLibName, BOOL big);
 void   LoadLogFonts(void);
 
 //services.c

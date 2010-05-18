@@ -140,7 +140,7 @@ static int ShowPopup (HANDLE hContact, SESSION_INFO* si, HICON hIcon,  char* psz
 	if ( hIcon )
 		pd.lchIcon = hIcon ;
 	else
-		pd.lchIcon = LoadIconEx( "window" );
+		pd.lchIcon = LoadIconEx( "window", FALSE );
 
 	mir_sntprintf(pd.lptzContactName, MAX_CONTACTNAME-1, _T(TCHAR_STR_PARAM) _T(" - %s"),
 		pszProtoName, CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)hContact, GCDNF_TCHAR ));

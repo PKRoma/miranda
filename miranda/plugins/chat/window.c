@@ -84,17 +84,17 @@ static void	InitButtons(HWND hwndDlg, SESSION_INFO* si)
 {
 	MODULEINFO * pInfo = MM_FindModule(si->pszModule);
 
-	SendDlgItemMessage( hwndDlg, IDC_SMILEY,       BM_SETIMAGE, IMAGE_ICON, (LPARAM)LoadIconEx( "smiley"    ));
-	SendDlgItemMessage( hwndDlg, IDC_BOLD,         BM_SETIMAGE, IMAGE_ICON, (LPARAM)LoadIconEx( "bold"      ));
-	SendDlgItemMessage( hwndDlg, IDC_ITALICS,      BM_SETIMAGE, IMAGE_ICON, (LPARAM)LoadIconEx( "italics"   ));
-	SendDlgItemMessage( hwndDlg, IDC_UNDERLINE,    BM_SETIMAGE, IMAGE_ICON, (LPARAM)LoadIconEx( "underline" ));
-	SendDlgItemMessage( hwndDlg, IDC_COLOR,        BM_SETIMAGE, IMAGE_ICON, (LPARAM)LoadIconEx( "fgcol"     ));
-	SendDlgItemMessage( hwndDlg, IDC_BKGCOLOR,     BM_SETIMAGE, IMAGE_ICON, (LPARAM)LoadIconEx( "bkgcol"    ));
-	SendDlgItemMessage( hwndDlg, IDC_HISTORY,      BM_SETIMAGE, IMAGE_ICON, (LPARAM)LoadIconEx( "history"   ));
-	SendDlgItemMessage( hwndDlg, IDC_CHANMGR,      BM_SETIMAGE, IMAGE_ICON, (LPARAM)LoadIconEx( "settings"  ));
-	SendDlgItemMessage( hwndDlg, IDC_CLOSE,        BM_SETIMAGE, IMAGE_ICON, (LPARAM)LoadIconEx( "close"     ));
-	SendDlgItemMessage( hwndDlg, IDC_SHOWNICKLIST, BM_SETIMAGE, IMAGE_ICON, (LPARAM)LoadIconEx( si->bNicklistEnabled ? "nicklist" : "nicklist2" ));
-	SendDlgItemMessage( hwndDlg, IDC_FILTER,       BM_SETIMAGE, IMAGE_ICON, (LPARAM)LoadIconEx( si->bFilterEnabled ? "filter" : "filter2" ));
+	SendDlgItemMessage( hwndDlg, IDC_SMILEY,       BM_SETIMAGE, IMAGE_ICON, (LPARAM)LoadIconEx( "smiley", FALSE    ));
+	SendDlgItemMessage( hwndDlg, IDC_BOLD,         BM_SETIMAGE, IMAGE_ICON, (LPARAM)LoadIconEx( "bold", FALSE      ));
+	SendDlgItemMessage( hwndDlg, IDC_ITALICS,      BM_SETIMAGE, IMAGE_ICON, (LPARAM)LoadIconEx( "italics", FALSE   ));
+	SendDlgItemMessage( hwndDlg, IDC_UNDERLINE,    BM_SETIMAGE, IMAGE_ICON, (LPARAM)LoadIconEx( "underline", FALSE ));
+	SendDlgItemMessage( hwndDlg, IDC_COLOR,        BM_SETIMAGE, IMAGE_ICON, (LPARAM)LoadIconEx( "fgcol", FALSE     ));
+	SendDlgItemMessage( hwndDlg, IDC_BKGCOLOR,     BM_SETIMAGE, IMAGE_ICON, (LPARAM)LoadIconEx( "bkgcol", FALSE    ));
+	SendDlgItemMessage( hwndDlg, IDC_HISTORY,      BM_SETIMAGE, IMAGE_ICON, (LPARAM)LoadIconEx( "history", FALSE   ));
+	SendDlgItemMessage( hwndDlg, IDC_CHANMGR,      BM_SETIMAGE, IMAGE_ICON, (LPARAM)LoadIconEx( "settings", FALSE  ));
+	SendDlgItemMessage( hwndDlg, IDC_CLOSE,        BM_SETIMAGE, IMAGE_ICON, (LPARAM)LoadIconEx( "close", FALSE     ));
+	SendDlgItemMessage( hwndDlg, IDC_SHOWNICKLIST, BM_SETIMAGE, IMAGE_ICON, (LPARAM)LoadIconEx( si->bNicklistEnabled ? "nicklist" : "nicklist2", FALSE ));
+	SendDlgItemMessage( hwndDlg, IDC_FILTER,       BM_SETIMAGE, IMAGE_ICON, (LPARAM)LoadIconEx( si->bFilterEnabled ? "filter" : "filter2", FALSE ));
 
 	SendDlgItemMessage( hwndDlg, IDC_SMILEY,       BUTTONSETASFLATBTN, 0, 0 );
 	SendDlgItemMessage( hwndDlg, IDC_BOLD,         BUTTONSETASFLATBTN, 0, 0 );
@@ -1270,7 +1270,8 @@ INT_PTR CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
 
 			SendMessage(hwndDlg, GC_FIXTABICONS, 0, 0);
 			SendMessage(si->hwndStatus, SB_SETICON, 0,(LPARAM)hIcon);
-			SendMessage(hwndDlg,WM_SETICON,ICON_BIG,(LPARAM)LoadIconEx( "window" ));
+			SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)LoadIconEx( "window", TRUE ));
+			SendMessage(hwndDlg, WM_SETICON, ICON_SMALL, (LPARAM)LoadIconEx( "window", FALSE ));
 
 			SendMessage(GetDlgItem(hwndDlg, IDC_LOG), EM_SETBKGNDCOLOR , 0, g_Settings.crLogBackground);
 
@@ -2495,7 +2496,7 @@ LABEL_SHOWWINDOW:
 
 			si->bNicklistEnabled = !si->bNicklistEnabled;
 
-			SendDlgItemMessage(hwndDlg,IDC_SHOWNICKLIST,BM_SETIMAGE,IMAGE_ICON,(LPARAM)LoadIconEx( si->bNicklistEnabled ? "nicklist" : "nicklist2" ));
+			SendDlgItemMessage(hwndDlg,IDC_SHOWNICKLIST,BM_SETIMAGE,IMAGE_ICON,(LPARAM)LoadIconEx( si->bNicklistEnabled ? "nicklist" : "nicklist2", FALSE ));
 			SendMessage(hwndDlg, GC_SCROLLTOBOTTOM, 0, 0);
 			SendMessage(hwndDlg, WM_SIZE, 0, 0);
 			break;
@@ -2565,7 +2566,7 @@ LABEL_SHOWWINDOW:
 				break;
 
 			si->bFilterEnabled = !si->bFilterEnabled;
-			SendDlgItemMessage(hwndDlg,IDC_FILTER,BM_SETIMAGE,IMAGE_ICON,(LPARAM)LoadIconEx( si->bFilterEnabled ? "filter" : "filter2" ));
+			SendDlgItemMessage(hwndDlg,IDC_FILTER,BM_SETIMAGE,IMAGE_ICON,(LPARAM)LoadIconEx( si->bFilterEnabled ? "filter" : "filter2", FALSE ));
 			if (si->bFilterEnabled && DBGetContactSettingByte(NULL, "Chat", "RightClickFilter", 0) == 0) {
 				SendMessage(hwndDlg, GC_SHOWFILTERMENU, 0, 0);
 				break;

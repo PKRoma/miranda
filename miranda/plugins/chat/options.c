@@ -438,21 +438,21 @@ struct
 }
 static const iconList[] =
 {
-	{	16, LPGEN("Messaging") "/" LPGEN("Group Chats"), LPGEN("Window Icon"),           "chat_window",    IDI_CHANMGR    },
-	{	16, LPGEN("Messaging") "/" LPGEN("Group Chats"), LPGEN("Text colour"),           "chat_fgcol",     IDI_COLOR      },
-	{	16, LPGEN("Messaging") "/" LPGEN("Group Chats"), LPGEN("Background colour"),     "chat_bkgcol",    IDI_BKGCOLOR   },
-	{	16, LPGEN("Messaging") "/" LPGEN("Group Chats"), LPGEN("Bold"),                  "chat_bold",      IDI_BBOLD      },
-	{	16, LPGEN("Messaging") "/" LPGEN("Group Chats"), LPGEN("Italics"),               "chat_italics",   IDI_BITALICS   },
-	{	16, LPGEN("Messaging") "/" LPGEN("Group Chats"), LPGEN("Underlined"),            "chat_underline", IDI_BUNDERLINE },
-	{	16, LPGEN("Messaging") "/" LPGEN("Group Chats"), LPGEN("Smiley button"),         "chat_smiley",    IDI_BSMILEY    },
-	{	16, LPGEN("Messaging") "/" LPGEN("Group Chats"), LPGEN("Room history"),          "chat_history",   IDI_HISTORY    },
-	{	16, LPGEN("Messaging") "/" LPGEN("Group Chats"), LPGEN("Room settings"),         "chat_settings",  IDI_TOPICBUT   },
-	{	16, LPGEN("Messaging") "/" LPGEN("Group Chats"), LPGEN("Event filter disabled"), "chat_filter",    IDI_FILTER     },
-	{	16, LPGEN("Messaging") "/" LPGEN("Group Chats"), LPGEN("Event filter enabled"),  "chat_filter2",   IDI_FILTER2    },
-	{	16, LPGEN("Messaging") "/" LPGEN("Group Chats"), LPGEN("Hide userlist"),         "chat_nicklist",  IDI_NICKLIST   },
-	{	16, LPGEN("Messaging") "/" LPGEN("Group Chats"), LPGEN("Show userlist"),         "chat_nicklist2", IDI_NICKLIST2  },
-	{	16, LPGEN("Messaging") "/" LPGEN("Group Chats"), LPGEN("Icon overlay"),          "chat_overlay",   IDI_OVERLAY    },
-	{	16, LPGEN("Messaging") "/" LPGEN("Group Chats"), LPGEN("Close"),                 "chat_close",     IDI_CLOSE      },
+	{	 0, LPGEN("Messaging") "/" LPGEN("Group Chats"), LPGEN("Window Icon"),           "chat_window",    IDI_CHANMGR    },
+	{	 0, LPGEN("Messaging") "/" LPGEN("Group Chats"), LPGEN("Text colour"),           "chat_fgcol",     IDI_COLOR      },
+	{	 0, LPGEN("Messaging") "/" LPGEN("Group Chats"), LPGEN("Background colour"),     "chat_bkgcol",    IDI_BKGCOLOR   },
+	{	 0, LPGEN("Messaging") "/" LPGEN("Group Chats"), LPGEN("Bold"),                  "chat_bold",      IDI_BBOLD      },
+	{	 0, LPGEN("Messaging") "/" LPGEN("Group Chats"), LPGEN("Italics"),               "chat_italics",   IDI_BITALICS   },
+	{	 0, LPGEN("Messaging") "/" LPGEN("Group Chats"), LPGEN("Underlined"),            "chat_underline", IDI_BUNDERLINE },
+	{	 0, LPGEN("Messaging") "/" LPGEN("Group Chats"), LPGEN("Smiley button"),         "chat_smiley",    IDI_BSMILEY    },
+	{	 0, LPGEN("Messaging") "/" LPGEN("Group Chats"), LPGEN("Room history"),          "chat_history",   IDI_HISTORY    },
+	{	 0, LPGEN("Messaging") "/" LPGEN("Group Chats"), LPGEN("Room settings"),         "chat_settings",  IDI_TOPICBUT   },
+	{	 0, LPGEN("Messaging") "/" LPGEN("Group Chats"), LPGEN("Event filter disabled"), "chat_filter",    IDI_FILTER     },
+	{	 0, LPGEN("Messaging") "/" LPGEN("Group Chats"), LPGEN("Event filter enabled"),  "chat_filter2",   IDI_FILTER2    },
+	{	 0, LPGEN("Messaging") "/" LPGEN("Group Chats"), LPGEN("Hide userlist"),         "chat_nicklist",  IDI_NICKLIST   },
+	{	 0, LPGEN("Messaging") "/" LPGEN("Group Chats"), LPGEN("Show userlist"),         "chat_nicklist2", IDI_NICKLIST2  },
+	{	 0, LPGEN("Messaging") "/" LPGEN("Group Chats"), LPGEN("Icon overlay"),          "chat_overlay",   IDI_OVERLAY    },
+	{	 0, LPGEN("Messaging") "/" LPGEN("Group Chats"), LPGEN("Close"),                 "chat_close",     IDI_CLOSE      },
 
 	{	10, LPGEN("Messaging") "/" LPGEN("Group Chats"), LPGEN("Status 1 (10x10)"),      "chat_status0",   IDI_STATUS0    },
 	{	10, LPGEN("Messaging") "/" LPGEN("Group Chats"), LPGEN("Status 2 (10x10)"),      "chat_status1",   IDI_STATUS1    },
@@ -497,11 +497,11 @@ void AddIcons(void)
 }	}
 
 // load icons from the skinning module if available
-HICON LoadIconEx( char* pszIcoLibName )
+HICON LoadIconEx( char* pszIcoLibName, BOOL big )
 {
 	char szTemp[256];
 	mir_snprintf(szTemp, SIZEOF(szTemp), "chat_%s", pszIcoLibName);
-	return (HICON) CallService(MS_SKIN2_GETICON, 0, (LPARAM)szTemp);
+	return (HICON) CallService(MS_SKIN2_GETICON, big, (LPARAM)szTemp);
 }
 
 static void InitSetting(TCHAR** ppPointer, char* pszSetting, TCHAR* pszDefault)
