@@ -743,6 +743,7 @@ void CGlobals::RestoreUnreadMessageAlerts(void)
 	cle.cbSize = sizeof(cle);
 	cle.hIcon = LoadSkinnedIcon(SKINICON_EVENT_MESSAGE);
 	cle.pszService = "SRMsg/ReadMessage";
+	cle.flags = CLEF_TCHAR;
 
 	hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
 	while (hContact) {
