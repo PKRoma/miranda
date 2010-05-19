@@ -1319,7 +1319,7 @@ buttons_done:
 			 * so let's add the container's vertical padding (title bar, tab bar, 
 			 * window border, status bar) to this value
 			 */
-			mmi->ptMinTrackSize.y = pContainer->uChildMinHeight + ((rcWindow.bottom - rcWindow.top) - rcClient.bottom);
+			mmi->ptMinTrackSize.y = pContainer->uChildMinHeight + pContainer->hwndActive ? ((rcWindow.bottom - rcWindow.top) - rcClient.bottom) : 0;
 
 			if (pContainer->dwFlags & CNT_VERTICALMAX || (GetKeyState(VK_CONTROL) & 0x8000)) {
 				RECT rcDesktop = {0};
