@@ -1303,7 +1303,7 @@ buttons_done:
 		 *    that at least 2 lines of the message log are always visible).
 		 */
 		case WM_GETMINMAXINFO: {
-			RECT rc, rcWindow, rcClient;
+			RECT rc, rcWindow, rcClient = {0};
 			POINT pt;
 			MINMAXINFO *mmi = (MINMAXINFO *) lParam;
 
