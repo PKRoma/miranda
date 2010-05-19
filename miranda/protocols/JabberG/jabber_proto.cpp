@@ -1070,8 +1070,8 @@ HANDLE __cdecl CJabberProto::SendFile( HANDLE hContact, const TCHAR* szDescripti
 	while( ppszFiles[ ft->std.totalFiles ] != NULL )
 		ft->std.totalFiles++;
 
-	ft->std.ptszFiles = ( TCHAR** ) mir_alloc( sizeof( TCHAR* )* ft->std.totalFiles );
-	ft->fileSize = ( unsigned __int64* ) mir_alloc( sizeof( unsigned __int64 ) * ft->std.totalFiles );
+	ft->std.ptszFiles = ( TCHAR** ) mir_calloc( sizeof( TCHAR* )* ft->std.totalFiles );
+	ft->fileSize = ( unsigned __int64* ) mir_calloc( sizeof( unsigned __int64 ) * ft->std.totalFiles );
 	for( i=j=0; i < ft->std.totalFiles; i++ ) {
 		if ( _tstati64( ppszFiles[i], &statbuf ))
 			Log( "'%s' is an invalid filename", ppszFiles[i] );
@@ -1081,6 +1081,11 @@ HANDLE __cdecl CJabberProto::SendFile( HANDLE hContact, const TCHAR* szDescripti
 			j++;
 			ft->std.totalBytes += statbuf.st_size;
 	}	}
+	if ( j == 0 ) {
+		delete ft;
+		JFreeVariant( &dbv );
+		return NULL;
+	}
 
 	ft->std.tszCurrentFile = mir_tstrdup( ppszFiles[0] );
 	ft->szDescription = mir_tstrdup( szDescription );
