@@ -84,9 +84,6 @@ TCHAR* DoRtfToTags( char* pszText, SESSION_INFO* si)
 	char InsertThis[50];
 	BOOL bJustRemovedRTF = TRUE;
 	BOOL bTextHasStarted = FALSE;
-	#if defined(_UNICODE)
-		TCHAR *ptszResult;
-	#endif
 	int iUcMode = 0;
 
 	if ( !pszText )
@@ -151,6 +148,16 @@ TCHAR* DoRtfToTags( char* pszText, SESSION_INFO* si)
 				iRemoveChars = 5;
 				strcpy(InsertThis, "\n" );
 			}
+			else if (!memcmp(p1, "\\bullet", 7)) {
+				bTextHasStarted = TRUE;
+				bJustRemovedRTF = TRUE;
+				iRemoveChars = 7;
+#if defined(_UNICODE)
+				strcpy(InsertThis, "\xE2\x80\xA2");
+#else
+				strcpy(InsertThis, "\x95");
+#endif
+			}
 			else if ( !memcmp(p1, "\\b", 2 )) { //bold
 				bTextHasStarted = bJustRemovedRTF = TRUE;
 				iRemoveChars = (p1[2] != '0')?2:3;
@@ -206,16 +213,6 @@ TCHAR* DoRtfToTags( char* pszText, SESSION_INFO* si)
 				strcpy(InsertThis, "\x97");
 #endif
 			} 
-			else if (!memcmp(p1, "\\bullet", 7)) {
-				bTextHasStarted = TRUE;
-				bJustRemovedRTF = TRUE;
-				iRemoveChars = 7;
-#if defined(_UNICODE)
-				strcpy(InsertThis, "\xE2\x80\xA2");
-#else
-				strcpy(InsertThis, "\x95");
-#endif
-			}
 			else if (!memcmp(p1, "\\ldblquote",10)) {
 				bTextHasStarted = TRUE;
 				bJustRemovedRTF = TRUE;
@@ -319,8 +316,7 @@ TCHAR* DoRtfToTags( char* pszText, SESSION_INFO* si)
 	#if !defined( _UNICODE )
 		return pszText;
 	#else
-		mir_utf8decode(pszText, &ptszResult);
-		return ptszResult;
+		return mir_utf8decodeW(pszText);
 	#endif
 }
 
@@ -368,6 +364,6 @@ char* Message_GetFromStream(HWND hwndDlg, SESSION_INFO* si)
 	#else
 		dwFlags = SF_RTFNOOBJS | SFF_PLAINRTF;
 	#endif
-	SendMessage(GetDlgItem(hwndDlg, IDC_MESSAGE), EM_STREAMOUT, dwFlags, (LPARAM) & stream);
+	SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_STREAMOUT, dwFlags, (LPARAM) & stream);
 	return pszText; // pszText contains the text
 }
