@@ -964,7 +964,6 @@ void CAimProto::snac_received_message(SNAC &snac,HANDLE hServerConn,unsigned sho
 		bool auto_response=false;
 		bool force_proxy=false;
 		bool descr_included=false;
-		bool unicode_message=false;
 		bool utf_fname=false;
 		bool unicode_descr=false;
 		short recv_file_type=-1;
@@ -999,19 +998,30 @@ void CAimProto::snac_received_message(SNAC &snac,HANDLE hServerConn,unsigned sho
 				char* buf=tlv.part(12+caps_length,msg_length);
 				if(hContact)
 				{
+					wchar_t* wbuf;
 					ccs.hContact = hContact;
-					if(encoding==0x0002)
+					switch (encoding)
 					{
-						unicode_message=1;
-
-						wchar_t* wbuf = (wchar_t*)buf;
+					case 2:
+						wbuf = (wchar_t*)buf;
 						wcs_htons(wbuf);
 
 						msg_buf = mir_utf8encodeW(wbuf);
 						mir_free(wbuf);
-					}
-					else
+						break;
+
+					case 3:
+						wbuf = mir_a2u_cp(buf, 28591);
+
+						msg_buf = mir_utf8encodeW(wbuf);
+						mir_free(wbuf);
+						mir_free(buf);
+						break;
+
+					default:
 						msg_buf = buf;
+						break;
+					}
 				}
 			}
 			if (tlv.cmp(0x0004) && !tlv.len())//auto response flag
@@ -1148,7 +1158,7 @@ void CAimProto::snac_received_message(SNAC &snac,HANDLE hServerConn,unsigned sho
 			}
 
 			// Okay we are setting up the structure to give the message back to miranda's core
-			pre.flags = unicode_message ? PREF_UTF : 0;
+			pre.flags = PREF_UTF;
 
 			if (is_offline)
 				pre.timestamp = offline_timestamp;
