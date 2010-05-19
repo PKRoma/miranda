@@ -466,6 +466,9 @@ void CContactCache::releaseAlloced()
 		free(m_history);
 		m_history = 0;
 	}
+#ifdef _UNICODE
+	mir_free(m_tszProto);
+#endif
 }
 
 /**
