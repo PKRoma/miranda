@@ -398,10 +398,10 @@ INT_PTR CallProtoServiceInt( HANDLE hContact, const char *szModule, const char *
 							PROTOSEARCHRESULT *psr = ( PROTOSEARCHRESULT* )lParam;
 							PROTOSEARCHRESULT *psra =( PROTOSEARCHRESULT* )mir_alloc( psr->cbSize );
 							memcpy( psra, psr, psr->cbSize );
-							psra->nick      = ( PROTOCHAR* )mir_u2a( psr->nick );
-							psra->firstName = ( PROTOCHAR* )mir_u2a( psr->firstName );
-							psra->lastName  = ( PROTOCHAR* )mir_u2a( psr->lastName );
-							psra->email     = ( PROTOCHAR* )mir_u2a( psr->email );
+							psra->nick      = ( PROTOCHAR* )mir_t2a( psr->nick );
+							psra->firstName = ( PROTOCHAR* )mir_t2a( psr->firstName );
+							psra->lastName  = ( PROTOCHAR* )mir_t2a( psr->lastName );
+							psra->email     = ( PROTOCHAR* )mir_t2a( psr->email );
 							
 							INT_PTR res = ( INT_PTR )ppi->AddToList( wParam, psra );
 							
@@ -581,10 +581,10 @@ INT_PTR CallProtoServiceInt( HANDLE hContact, const char *szModule, const char *
 		PROTOSEARCHRESULT *psr = ( PROTOSEARCHRESULT* )lParam;
 		PROTOSEARCHRESULT *psra =( PROTOSEARCHRESULT* )mir_alloc( psr->cbSize );
 		memcpy( psra, psr, psr->cbSize );
-		psra->nick      = ( PROTOCHAR* )mir_u2a( psr->nick );
-		psra->firstName = ( PROTOCHAR* )mir_u2a( psr->firstName );
-		psra->lastName  = ( PROTOCHAR* )mir_u2a( psr->lastName );
-		psra->email     = ( PROTOCHAR* )mir_u2a( psr->email );
+		psra->nick      = ( PROTOCHAR* )mir_t2a( psr->nick );
+		psra->firstName = ( PROTOCHAR* )mir_t2a( psr->firstName );
+		psra->lastName  = ( PROTOCHAR* )mir_t2a( psr->lastName );
+		psra->email     = ( PROTOCHAR* )mir_t2a( psr->email );
 		
 		INT_PTR res = MyCallProtoService( szModule, szService, wParam, ( LPARAM )psra );
 		
