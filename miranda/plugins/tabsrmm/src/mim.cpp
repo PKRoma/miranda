@@ -420,7 +420,7 @@ const TCHAR* CMimAPI::getUserDir()
 		mir_sntprintf(m_userDir, MAX_PATH, userdata);
 		if(m_userDir[lstrlen(m_userDir) - 1] != '\\')
 		   _tcscat(m_userDir, _T("\\"));
-		mir_free(userdata);
+		mir_free(userdata); 
 	}
 	return(m_userDir);
 }
