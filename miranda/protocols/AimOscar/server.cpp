@@ -1002,7 +1002,7 @@ void CAimProto::snac_received_message(SNAC &snac,HANDLE hServerConn,unsigned sho
 					ccs.hContact = hContact;
 					switch (encoding)
 					{
-					case 0x0002:
+					case 2:
 						wbuf = (wchar_t*)buf;
 						wcs_htons(wbuf);
 
@@ -1010,7 +1010,7 @@ void CAimProto::snac_received_message(SNAC &snac,HANDLE hServerConn,unsigned sho
 						mir_free(wbuf);
 						break;
 
-					case 0x0003:
+					case 3:
 						wbuf = mir_a2u_cp(buf, 28591);
 
 						msg_buf = mir_utf8encodeW(wbuf);
@@ -1191,7 +1191,6 @@ void CAimProto::snac_received_message(SNAC &snac,HANDLE hServerConn,unsigned sho
 			}
 
 			// Okay we are setting up the structure to give the message back to miranda's core
-//			pre.flags = unicode_message ? PREF_UTF : 0;
 			pre.flags = PREF_UTF;
 
 			if (is_offline)
