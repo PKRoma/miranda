@@ -1027,6 +1027,12 @@ HANDLE __cdecl CJabberProto::SendFile( HANDLE hContact, const char* szDescriptio
 			j++;
 			ft->std.totalBytes += statbuf.st_size;
 	}	}
+	if ( j == 0 ) {
+		delete ft;
+		JFreeVariant( &dbv );
+		return NULL;
+	}
+
 
 	ft->std.currentFile = mir_strdup( ppszFiles[0] );
 	ft->szDescription = mir_strdup( szDescription );
