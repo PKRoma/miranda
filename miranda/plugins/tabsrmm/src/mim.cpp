@@ -416,9 +416,11 @@ INT_PTR CMimAPI::foldersPathChanged()
 const TCHAR* CMimAPI::getUserDir()
 {
 	if(m_userDir[0] == 0) {
-		mir_sntprintf(m_userDir, MAX_PATH, ::Utils_ReplaceVarsT(_T("%miranda_userdata%")));
+		TCHAR *userdata = ::Utils_ReplaceVarsT(_T("%miranda_userdata%"));
+		mir_sntprintf(m_userDir, MAX_PATH, userdata);
 		if(m_userDir[lstrlen(m_userDir) - 1] != '\\')
 		   _tcscat(m_userDir, _T("\\"));
+		mir_free(userdata);
 	}
 	return(m_userDir);
 }
