@@ -691,23 +691,30 @@ struct CIcqProto : public PROTO_INTERFACE
 	char*  getServListGroupCListPath(WORD wGroupId);
 	char*  getServListUniqueGroupName(const char *szGroupName, int bAlloced);
 
-	int    servlistCreateGroup_gotParentGroup(const char *szGroup, WORD wGroupID, LPARAM param, int nResult);
-	int    servlistCreateGroup_Ready(const char *szGroup, WORD groupID, LPARAM param, int nResult);
-	void   servlistCreateGroup(const char* szGroupPath, LPARAM param, PENDING_GROUP_CALLBACK callback);
-	int    servlistAddContact_gotGroup(const char *szGroup, WORD wGroupID, LPARAM lParam, int nResult);
-	int    servlistAddContact_Ready(HANDLE hContact, WORD wContactID, WORD wGroupID, LPARAM lParam, int nResult);
+	int __cdecl servlistCreateGroup_gotParentGroup(const char *szGroup, WORD wGroupID, LPARAM param, int nResult);
+	int __cdecl servlistCreateGroup_Ready(const char *szGroup, WORD groupID, LPARAM param, int nResult);
+	void   servlistCreateGroup(const char *szGroupPath, LPARAM param, PENDING_GROUP_CALLBACK callback);
+
+	int __cdecl servlistAddContact_gotGroup(const char *szGroup, WORD wGroupID, LPARAM lParam, int nResult);
+	int __cdecl servlistAddContact_Ready(HANDLE hContact, WORD wContactID, WORD wGroupID, LPARAM lParam, int nResult);
 	void   servlistAddContact(HANDLE hContact, const char *pszGroup);
-	int    servlistRemoveContact_Ready(HANDLE hContact, WORD contactID, WORD groupID, LPARAM lParam, int nResult);
+
+	int __cdecl servlistRemoveContact_Ready(HANDLE hContact, WORD contactID, WORD groupID, LPARAM lParam, int nResult);
 	void   servlistRemoveContact(HANDLE hContact);
-	int    servlistMoveContact_gotTargetGroup(const char *szGroup, WORD wNewGroupID, LPARAM lParam, int nResult);
-	int    servlistMoveContact_Ready(HANDLE hContact, WORD contactID, WORD groupID, LPARAM lParam, int nResult);
+
+	int __cdecl servlistMoveContact_gotTargetGroup(const char *szGroup, WORD wNewGroupID, LPARAM lParam, int nResult);
+	int __cdecl servlistMoveContact_Ready(HANDLE hContact, WORD contactID, WORD groupID, LPARAM lParam, int nResult);
 	void   servlistMoveContact(HANDLE hContact, const char *pszNewGroup);
-	int    servlistUpdateContact_Ready(HANDLE hContact, WORD contactID, WORD groupID, LPARAM lParam, int nResult);
+
+	int __cdecl servlistUpdateContact_Ready(HANDLE hContact, WORD contactID, WORD groupID, LPARAM lParam, int nResult);
 	void   servlistUpdateContact(HANDLE hContact);
-	int    servlistRenameGroup_Ready(const char *szGroup, WORD wGroupID, LPARAM lParam, int nResult);
+
+	int __cdecl servlistRenameGroup_Ready(const char *szGroup, WORD wGroupID, LPARAM lParam, int nResult);
 	void   servlistRenameGroup(char *szGroup, WORD wGroupId, char *szNewGroup);
-	int    servlistRemoveGroup_Ready(const char *szGroup, WORD groupID, LPARAM lParam, int nResult);
+
+	int __cdecl servlistRemoveGroup_Ready(const char *szGroup, WORD groupID, LPARAM lParam, int nResult);
 	void   servlistRemoveGroup(const char *szGroup, WORD wGroupId);
+
 	void   removeGroupPathLinks(WORD wGroupID);
 	int    getServListGroupLevel(WORD wGroupId);
 
@@ -810,7 +817,7 @@ struct CIcqProto : public PROTO_INTERFACE
 		    
 	//---- | icq_svcs.cpp |----------------------------------------------------------------
 	HANDLE AddToListByUIN(DWORD dwUin, DWORD dwFlags);
-	HANDLE AddToListByUID(char *szUID, DWORD dwFlags);
+	HANDLE AddToListByUID(const char *szUID, DWORD dwFlags);
 
 	void   ICQAddRecvEvent(HANDLE hContact, WORD wType, PROTORECVEVENT* pre, DWORD cbBlob, PBYTE pBlob, DWORD flags);
 

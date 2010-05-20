@@ -472,10 +472,8 @@ void CIcqProto::servlistProcessLogin()
 
 int CIcqProto::servlistPendingFindItem(int nType, HANDLE hContact, const char *pszGroup)
 {
-  int i;
-
   if (servlistPendingList)
-    for (i = 0; i < servlistPendingCount; i++)
+    for (int i = 0; i < servlistPendingCount; i++)
       if (servlistPendingList[i]->nType == nType)
       { 
         if (((nType == ITEM_PENDING_CONTACT) && (servlistPendingList[i]->hContact == hContact)) ||
@@ -486,7 +484,7 @@ int CIcqProto::servlistPendingFindItem(int nType, HANDLE hContact, const char *p
 }
 
 
-void CIcqProto::servlistPendingAddItem(servlistpendingitem* pItem)
+void CIcqProto::servlistPendingAddItem(servlistpendingitem *pItem)
 {
   if (servlistPendingCount >= servlistPendingSize) // add new
   {
@@ -928,8 +926,8 @@ void CIcqProto::FlushServerIDs()
 
 struct GroupReserveIdsEnumParam
 {
-	CIcqProto* ppro;
-	char* szModule;
+	CIcqProto *ppro;
+	char *szModule;
 };
 
 static int GroupReserveIdsEnumProc(const char *szSetting,LPARAM lParam)
@@ -937,10 +935,10 @@ static int GroupReserveIdsEnumProc(const char *szSetting,LPARAM lParam)
 	if (szSetting && strlennull(szSetting)<5)
 	{ 
 		// it is probably server group
-		GroupReserveIdsEnumParam* param = (GroupReserveIdsEnumParam*)lParam;
+		GroupReserveIdsEnumParam *param = (GroupReserveIdsEnumParam*)lParam;
 		char val[MAX_PATH+2]; // dummy
 
-		DBVARIANT dbv;
+    DBVARIANT dbv = {DBVT_DELETED};
 		dbv.type = DBVT_ASCIIZ;
 		dbv.pszVal = val;
 		dbv.cchVal = MAX_PATH;
@@ -973,7 +971,6 @@ static int GroupReserveIdsEnumProc(const char *szSetting,LPARAM lParam)
 // Load all known server IDs from DB to list
 void CIcqProto::LoadServerIDs()
 {
-	HANDLE hContact;
 	WORD wSrvID;
 	int nGroups = 0, nContacts = 0, nPermits = 0, nDenys = 0, nIgnores = 0, nUnhandled = 0;
 
@@ -1003,7 +1000,7 @@ void CIcqProto::LoadServerIDs()
 
 	nGroups = nServerIDListCount - nStart;
 
-	hContact = FindFirstContact();
+	HANDLE hContact = FindFirstContact();
 
 	while (hContact)
 	{ // search all our contacts, reserve their server IDs
@@ -2039,9 +2036,9 @@ int CIcqProto::servlistCreateGroup_Ready(const char *szGroup, WORD groupID, LPAR
 
 // create group with this path, a bit complex task
 // this supposes that all server groups are known
-void CIcqProto::servlistCreateGroup(const char* szGroupPath, LPARAM param, PENDING_GROUP_CALLBACK callback)
+void CIcqProto::servlistCreateGroup(const char *szGroupPath, LPARAM param, PENDING_GROUP_CALLBACK callback)
 {
-  char* szGroup = (char*)szGroupPath;
+  char *szGroup = (char*)szGroupPath;
 
   if (!strlennull(szGroup)) szGroup = DEFAULT_SS_GROUP;
 
@@ -2057,9 +2054,7 @@ void CIcqProto::servlistCreateGroup(const char* szGroupPath, LPARAM param, PENDI
 
 int CIcqProto::servlistAddContact_gotGroup(const char *szGroup, WORD wGroupID, LPARAM lParam, int nResult)
 {
-	WORD wItemID;
   cookie_servlist_action* ack = (cookie_servlist_action*)lParam;
-  DWORD dwCookie;
 
   if (ack) SAFE_FREE(&ack->szGroup);
 
@@ -2076,7 +2071,7 @@ int CIcqProto::servlistAddContact_gotGroup(const char *szGroup, WORD wGroupID, L
     return CALLBACK_RESULT_CONTINUE;
 	}
 
-	wItemID = getSettingWord(ack->hContact, DBSETTING_SERVLIST_ID, 0);
+	WORD wItemID = getSettingWord(ack->hContact, DBSETTING_SERVLIST_ID, 0);
 
 	if (wItemID) /// TODO: redundant ???
 	{ // Only add the contact if it doesnt already have an ID
@@ -2092,7 +2087,7 @@ int CIcqProto::servlistAddContact_gotGroup(const char *szGroup, WORD wGroupID, L
 	ack->wGroupId = wGroupID;
 	ack->wContactId = wItemID;
 
-	dwCookie = AllocateCookie(CKT_SERVERLIST, ICQ_LISTS_ADDTOLIST, ack->hContact, ack);
+	DWORD dwCookie = AllocateCookie(CKT_SERVERLIST, ICQ_LISTS_ADDTOLIST, ack->hContact, ack);
 
   icq_sendServerContact(ack->hContact, dwCookie, ICQ_LISTS_ADDTOLIST, wGroupID, wItemID, SSOP_ITEM_ACTION | SSOF_CONTACT | SSOF_BEGIN_OPERATION, 400, NULL);
 
@@ -2103,7 +2098,6 @@ int CIcqProto::servlistAddContact_gotGroup(const char *szGroup, WORD wGroupID, L
 // Need to be called when Pending Contact is active
 int CIcqProto::servlistAddContact_Ready(HANDLE hContact, WORD wContactID, WORD wGroupID, LPARAM lParam, int nResult)
 {
-  WORD wItemID;
   cookie_servlist_action* ack = (cookie_servlist_action*)lParam;
 
   if (nResult == PENDING_RESULT_PURGE)
@@ -2113,7 +2107,7 @@ int CIcqProto::servlistAddContact_Ready(HANDLE hContact, WORD wContactID, WORD w
     return CALLBACK_RESULT_CONTINUE;
   }
 
-  wItemID = getSettingWord(ack->hContact, DBSETTING_SERVLIST_ID, 0);
+  WORD wItemID = getSettingWord(ack->hContact, DBSETTING_SERVLIST_ID, 0);
 
   if (wItemID)
   { // Only add the contact if it doesn't already have an ID
@@ -2239,12 +2233,9 @@ void CIcqProto::servlistRemoveContact(HANDLE hContact)
 
 int CIcqProto::servlistMoveContact_gotTargetGroup(const char *szGroup, WORD wNewGroupID, LPARAM lParam, int nResult)
 {
-	WORD wItemID;
-	WORD wGroupID;
-	cookie_servlist_action* ack = (cookie_servlist_action*)lParam;
-	DWORD dwCookie, dwCookie2;
+	cookie_servlist_action *ack = (cookie_servlist_action*)lParam;
 
-  if (ack) SAFE_FREE((void**)&ack->szGroup);
+  if (ack) SAFE_FREE(&ack->szGroup);
 
   if (nResult == PENDING_RESULT_PURGE)
   { // removing obsolete items, just free the memory
@@ -2259,8 +2250,8 @@ int CIcqProto::servlistMoveContact_gotTargetGroup(const char *szGroup, WORD wNew
     return CALLBACK_RESULT_CONTINUE;
 	}
 
-	wItemID = getSettingWord(ack->hContact, DBSETTING_SERVLIST_ID, 0);
-	wGroupID = getSettingWord(ack->hContact, DBSETTING_SERVLIST_GROUP, 0);
+	WORD wItemID = getSettingWord(ack->hContact, DBSETTING_SERVLIST_ID, 0);
+	WORD wGroupID = getSettingWord(ack->hContact, DBSETTING_SERVLIST_GROUP, 0);
 
 	if (!wItemID) 
 	{ // We have no ID, so try to simply add the contact to serv-list 
@@ -2284,11 +2275,11 @@ int CIcqProto::servlistMoveContact_gotTargetGroup(const char *szGroup, WORD wNew
 	ack->wNewGroupId = wNewGroupID;
 	ack->lParam = 0; // we use this as a sign
 
-	dwCookie = AllocateCookie(CKT_SERVERLIST, ICQ_LISTS_REMOVEFROMLIST, ack->hContact, ack);
-	dwCookie2 = AllocateCookie(CKT_SERVERLIST, ICQ_LISTS_ADDTOLIST, ack->hContact, ack);
+	DWORD dwCookie = AllocateCookie(CKT_SERVERLIST, ICQ_LISTS_REMOVEFROMLIST, ack->hContact, ack);
+	DWORD dwCookie2 = AllocateCookie(CKT_SERVERLIST, ICQ_LISTS_ADDTOLIST, ack->hContact, ack);
 
   { // imitate icq5, previously here was different order, but AOL changed and it ceased to work
-    void* doubleObject = NULL;
+    void *doubleObject = NULL;
 
     icq_sendServerContact(ack->hContact, dwCookie, ICQ_LISTS_REMOVEFROMLIST, wGroupID, wItemID, SSO_CONTACT_SETGROUP | SSOF_BEGIN_OPERATION, 500, &doubleObject);
     icq_sendServerContact(ack->hContact, dwCookie2, ICQ_LISTS_ADDTOLIST, wNewGroupID, ack->wNewContactId, SSO_CONTACT_SETGROUP | SSOF_BEGIN_OPERATION, 500, &doubleObject);
@@ -2299,26 +2290,24 @@ int CIcqProto::servlistMoveContact_gotTargetGroup(const char *szGroup, WORD wNew
 
 int CIcqProto::servlistMoveContact_Ready(HANDLE hContact, WORD contactID, WORD groupID, LPARAM lParam, int nResult)
 {
-  WORD wItemID;
-  WORD wGroupID;
-  cookie_servlist_action* ack = (cookie_servlist_action*)lParam;
+  cookie_servlist_action *ack = (cookie_servlist_action*)lParam;
 
   if (nResult == PENDING_RESULT_PURGE)
   { // removing obsolete items, just free the memory
-    SAFE_FREE((void**)&ack->szGroup);
+    SAFE_FREE(&ack->szGroup);
     SAFE_FREE((void**)&ack);
     return CALLBACK_RESULT_CONTINUE;
   }
 
-  wItemID = getSettingWord(ack->hContact, DBSETTING_SERVLIST_ID, 0);
-  wGroupID = getSettingWord(ack->hContact, DBSETTING_SERVLIST_GROUP, 0);
+  WORD wItemID = getSettingWord(ack->hContact, DBSETTING_SERVLIST_ID, 0);
+  WORD wGroupID = getSettingWord(ack->hContact, DBSETTING_SERVLIST_GROUP, 0);
 
   if (!wGroupID && wItemID)
   { // Only move the contact if it had an GroupID
     servlistPendingRemoveContact(ack->hContact, contactID, groupID, PENDING_RESULT_FAILED);
 
     NetLog_Server("Failed to move contact to group on server side list (%s)", "no Group");
-    SAFE_FREE((void**)&ack->szGroup);
+    SAFE_FREE(&ack->szGroup);
     SAFE_FREE((void**)&ack);
     return CALLBACK_RESULT_CONTINUE;
   }
@@ -2335,7 +2324,6 @@ void CIcqProto::servlistMoveContact(HANDLE hContact, const char *pszNewGroup)
 {
   DWORD dwUin;
   uid_str szUid;
-	cookie_servlist_action* ack;
 
   if (!hContact) return; // we do not move us, caused our uin was wrongly added to list
 
@@ -2352,14 +2340,15 @@ void CIcqProto::servlistMoveContact(HANDLE hContact, const char *pszNewGroup)
 		return;
 	}
 
-	if (!getSettingWord(hContact, DBSETTING_SERVLIST_ID, 0))
+	if (!getSettingWord(hContact, DBSETTING_SERVLIST_ID, 0)) /// FIXME:::: this should be in _ready
 	{ // the contact is not stored on the server, check if we should try to add
 		if (!getSettingByte(NULL, "ServerAddRemove", DEFAULT_SS_ADDSERVER) ||
 			DBGetContactSettingByte(hContact, "CList", "Hidden", 0))
 			return;
 	}
+	cookie_servlist_action *ack = (cookie_servlist_action*)SAFE_MALLOC(sizeof(cookie_servlist_action));
 
-	if (!(ack = (cookie_servlist_action*)SAFE_MALLOC(sizeof(cookie_servlist_action))))
+	if (!ack)
 	{ // Could not do anything without cookie
 		NetLog_Server("Failed to add contact to server side list (%s)", "malloc failed");
 		return;
@@ -2377,16 +2366,15 @@ void CIcqProto::servlistMoveContact(HANDLE hContact, const char *pszNewGroup)
 
 int CIcqProto::servlistUpdateContact_Ready(HANDLE hContact, WORD contactID, WORD groupID, LPARAM lParam, int nResult)
 {
-  WORD wItemID;
-  WORD wGroupID;
-  cookie_servlist_action* ack = (cookie_servlist_action*)lParam;
-  DWORD dwCookie;
+  cookie_servlist_action *ack = (cookie_servlist_action*)lParam;
 
   if (nResult == PENDING_RESULT_PURGE)
   { // removing obsolete items, just free the memory
     SAFE_FREE((void**)&ack);
     return CALLBACK_RESULT_CONTINUE;
   }
+  WORD wItemID;
+  WORD wGroupID;
 
   // Get the contact's group ID
   if (!(wGroupID = getSettingWord(hContact, DBSETTING_SERVLIST_GROUP, 0)))
@@ -2413,7 +2401,7 @@ int CIcqProto::servlistUpdateContact_Ready(HANDLE hContact, WORD contactID, WORD
   ack->wGroupId = wGroupID;
   ack->hContact = hContact;
 
-  dwCookie = AllocateCookie(CKT_SERVERLIST, ICQ_LISTS_UPDATEGROUP, hContact, ack);
+  DWORD dwCookie = AllocateCookie(CKT_SERVERLIST, ICQ_LISTS_UPDATEGROUP, hContact, ack);
 
   // There is no need to send ICQ_LISTS_CLI_MODIFYSTART or
   // ICQ_LISTS_CLI_MODIFYEND when just changing nick name
@@ -2429,7 +2417,6 @@ void CIcqProto::servlistUpdateContact(HANDLE hContact)
 {
 	DWORD dwUin;
 	uid_str szUid;
-	cookie_servlist_action* ack;
 
 	// Get UID
 	if (getContactUid(hContact, &dwUin, &szUid))
@@ -2438,8 +2425,9 @@ void CIcqProto::servlistUpdateContact(HANDLE hContact)
 		NetLog_Server("Failed to update contact's details on server side list (%s)", "no UID");
 		return;
 	}
+	cookie_servlist_action *ack = (cookie_servlist_action*)SAFE_MALLOC(sizeof(cookie_servlist_action));
 
-	if (!(ack = (cookie_servlist_action*)SAFE_MALLOC(sizeof(cookie_servlist_action))))
+	if (!ack)
 	{
 		// Could not allocate cookie - use old fake
     NetLog_Server("Failed to update contact's details on server side list (%s)", "malloc failed");
@@ -2458,13 +2446,10 @@ void CIcqProto::servlistUpdateContact(HANDLE hContact)
 int CIcqProto::servlistRenameGroup_Ready(const char *szGroup, WORD wGroupID, LPARAM lParam, int nResult)
 {
   cookie_servlist_action *ack = (cookie_servlist_action*)lParam;
-  DWORD dwCookie;
-  void* groupData;
-  int groupSize;
 
   if (nResult == PENDING_RESULT_PURGE)
   { // only cleanup
-    if (ack) SAFE_FREE((void**)&ack->szGroupName);
+    if (ack) SAFE_FREE(&ack->szGroupName);
     SAFE_FREE((void**)&ack);
     return CALLBACK_RESULT_CONTINUE;
   }
@@ -2473,10 +2458,12 @@ int CIcqProto::servlistRenameGroup_Ready(const char *szGroup, WORD wGroupID, LPA
   {
     servlistPendingRemoveGroup(szGroup, wGroupID, PENDING_RESULT_FAILED);
 
-    if (ack) SAFE_FREE((void**)&ack->szGroupName);
+    if (ack) SAFE_FREE(&ack->szGroupName);
     SAFE_FREE((void**)&ack);
     return CALLBACK_RESULT_CONTINUE;
   }
+  void *groupData;
+  int groupSize;
 
   if (groupData = collectBuddyGroup(wGroupID, &groupSize))
   {
@@ -2486,7 +2473,7 @@ int CIcqProto::servlistRenameGroup_Ready(const char *szGroup, WORD wGroupID, LPA
     // check if the new name is unique, create unique groupname if necessary
     ack->szGroupName = getServListUniqueGroupName(ack->szGroupName, TRUE);
 
-    dwCookie = AllocateCookie(CKT_SERVERLIST, ICQ_LISTS_UPDATEGROUP, 0, ack);
+    DWORD dwCookie = AllocateCookie(CKT_SERVERLIST, ICQ_LISTS_UPDATEGROUP, 0, ack);
 
     icq_sendServerGroup(dwCookie, ICQ_LISTS_UPDATEGROUP, wGroupID, ack->szGroupName, groupData, groupSize, 0);
     SAFE_FREE(&groupData);
@@ -2497,17 +2484,15 @@ int CIcqProto::servlistRenameGroup_Ready(const char *szGroup, WORD wGroupID, LPA
 
 void CIcqProto::servlistRenameGroup(char *szGroup, WORD wGroupId, char *szNewGroup)
 {
-	cookie_servlist_action* ack;
-  char *szGroupName, *szNewGroupName, *szLast;
+  char *szNewGroupName;
   int nGroupLevel = getServListGroupLevel(wGroupId);
-  int i;
 
 	if (nGroupLevel == -1) return; // we failed to prepare group
 
   if (!m_bSsiSimpleGroups)
   {
-    szGroupName = szGroup;
-    i = nGroupLevel;
+    char *szGroupName = szGroup;
+    int i = nGroupLevel;
     while (i)
     { // find correct part of grouppath
       szGroupName = strstrnull(szGroupName, "\\") + 1;
@@ -2523,7 +2508,7 @@ void CIcqProto::servlistRenameGroup(char *szGroup, WORD wGroupId, char *szNewGro
       i--;
     }
     // truncate possible sub-groups
-    szLast = strstrnull(szGroupName, "\\");
+    char *szLast = strstrnull(szGroupName, "\\");
     if (szLast)
       szLast[0] = '\0';
     szLast = strstrnull(szNewGroupName, "\\");
@@ -2546,11 +2531,12 @@ void CIcqProto::servlistRenameGroup(char *szGroup, WORD wGroupId, char *szNewGro
   else // simple groups do not require any conversion
     szNewGroupName = null_strdup(szNewGroup);
 
-	if (!(ack = (cookie_servlist_action*)SAFE_MALLOC(sizeof(cookie_servlist_action))))
+	cookie_servlist_action* ack = (cookie_servlist_action*)SAFE_MALLOC(sizeof(cookie_servlist_action));
+	if (!ack)
 	{ // cookie failed
     NetLog_Server("Error: Failed to allocate cookie");
 
-    SAFE_FREE((void**)&szNewGroupName);
+    SAFE_FREE(&szNewGroupName);
     return;
 	}
   // store new group name for future use
@@ -2562,26 +2548,27 @@ void CIcqProto::servlistRenameGroup(char *szGroup, WORD wGroupId, char *szNewGro
 
 int CIcqProto::servlistRemoveGroup_Ready(const char *szGroup, WORD groupID, LPARAM lParam, int nResult)
 {
-  cookie_servlist_action* ack = (cookie_servlist_action*)lParam;
-  DWORD dwCookie;
-  WORD wGroupID;
-  char* szGroupName;
+  cookie_servlist_action *ack = (cookie_servlist_action*)lParam;
 
   if (nResult == PENDING_RESULT_PURGE)
   { // only cleanup
     SAFE_FREE((void**)&ack);
     return CALLBACK_RESULT_CONTINUE;
   }
-  wGroupID = getServListGroupLinkID(szGroup);
+  WORD wGroupID = getServListGroupLinkID(szGroup);
+  char *szGroupName;
+
   if (wGroupID && (szGroupName = getServListGroupName(wGroupID)))
   { // the group is valid, check if it is empty
-    void* groupData = collectBuddyGroup(wGroupID, NULL);
+    void *groupData = collectBuddyGroup(wGroupID, NULL);
 
     if (groupData)
     { // the group is not empty, cannot delete
-      SAFE_FREE((void**)&groupData);
-      SAFE_FREE((void**)&szGroupName);
+      SAFE_FREE(&groupData);
+      SAFE_FREE(&szGroupName);
+      // end operation
       servlistPendingRemoveGroup(szGroup, wGroupID, PENDING_RESULT_SUCCESS);
+      // cleanup
       SAFE_FREE((void**)&ack);
       return CALLBACK_RESULT_CONTINUE;
     }
@@ -2594,13 +2581,15 @@ int CIcqProto::servlistRemoveGroup_Ready(const char *szGroup, WORD groupID, LPAR
       ack->hContact = NULL;
       ack->szGroup = null_strdup(szGroup); // we need that name
       ack->szGroupName = szGroupName;
-      dwCookie = AllocateCookie(CKT_SERVERLIST, ICQ_LISTS_REMOVEFROMLIST, 0, ack);
+      DWORD dwCookie = AllocateCookie(CKT_SERVERLIST, ICQ_LISTS_REMOVEFROMLIST, 0, ack);
 
       icq_sendServerGroup(dwCookie, ICQ_LISTS_REMOVEFROMLIST, ack->wGroupId, ack->szGroupName, NULL, 0, 0);
     }
     return CALLBACK_RESULT_POSTPONE;
   }
+  // end operation
   servlistPendingRemoveGroup(szGroup, groupID, PENDING_RESULT_SUCCESS);
+  // cleanup
   SAFE_FREE((void**)&ack);
   return CALLBACK_RESULT_CONTINUE;
 }
@@ -2608,11 +2597,11 @@ int CIcqProto::servlistRemoveGroup_Ready(const char *szGroup, WORD groupID, LPAR
 
 void CIcqProto::servlistRemoveGroup(const char *szGroup, WORD wGroupId)
 {
-  cookie_servlist_action *ack;
-
   if (!szGroup) return;
 
-  if (!(ack = (cookie_servlist_action*)SAFE_MALLOC(sizeof(cookie_servlist_action))))
+  cookie_servlist_action *ack = (cookie_servlist_action*)SAFE_MALLOC(sizeof(cookie_servlist_action));
+
+  if (!ack)
   { // cookie failed
     NetLog_Server("Error: Failed to allocate cookie");
     return;
@@ -2636,19 +2625,19 @@ void CIcqProto::resetServContactAuthState(HANDLE hContact, DWORD dwUin)
 
 	if (wContactId && wGroupId)
 	{
-		DWORD dwCookie;
-		cookie_servlist_action* ack;
+		cookie_servlist_action *ack = (cookie_servlist_action*)SAFE_MALLOC(sizeof(cookie_servlist_action));
 
-		if (ack = (cookie_servlist_action*)SAFE_MALLOC(sizeof(cookie_servlist_action)))
+		if (ack)
 		{ // we have cookie good, go on
 			ack->hContact = hContact;
 			ack->wContactId = wContactId;
 			ack->wGroupId = wGroupId;
 			ack->dwAction = SSA_CONTACT_FIX_AUTH;
-			dwCookie = AllocateCookie(CKT_SERVERLIST, 0, hContact, ack);
+
+			DWORD dwCookie = AllocateCookie(CKT_SERVERLIST, 0, hContact, ack);
 
       {
-        void* doubleObject = NULL;
+        void *doubleObject = NULL;
 
         icq_sendServerContact(hContact, dwCookie, ICQ_LISTS_REMOVEFROMLIST, wGroupId, wContactId, SSO_CONTACT_FIXAUTH | SSOF_BEGIN_OPERATION | SSOF_END_OPERATION, 200, &doubleObject);
         deleteSetting(hContact, DBSETTING_METAINFO_TOKEN);
@@ -2657,6 +2646,8 @@ void CIcqProto::resetServContactAuthState(HANDLE hContact, DWORD dwUin)
         icq_sendServerContact(hContact, dwCookie, ICQ_LISTS_ADDTOLIST, wGroupId, wContactId, SSO_CONTACT_FIXAUTH | SSOF_BEGIN_OPERATION | SSOF_END_OPERATION, 200, &doubleObject);
       }
 		}
+    else
+      NetLog_Server("Error: Failed to allocate cookie");
 	}
 }
 
@@ -2690,6 +2681,13 @@ int CIcqProto::ServListDbSettingChanged(WPARAM wParam, LPARAM lParam)
 			return 0;
 	}
 
+#ifdef _DEBUG
+  if (cws->value.type == DBVT_DELETED)
+    NetLog_Server("DB-Events: Module \"%s\", setting \"%s\" deleted.", cws->szModule, cws->szSetting);
+  else
+    NetLog_Server("DB-Events: Module \"%s\", setting \"%s\" changed, data type %x.", cws->szModule, cws->szSetting, cws->value.type);
+#endif
+
 	if (!strcmpnull(cws->szModule, "CList"))
 	{
 		// Has a temporary contact just been added permanently?
@@ -2718,7 +2716,7 @@ int CIcqProto::ServListDbSettingChanged(WPARAM wParam, LPARAM lParam)
       if (szNewGroup && (dwLastCListGroupsChange + 10 < time(NULL)))
         servlistMoveContact((HANDLE)wParam, szNewGroup);
 
-      SAFE_FREE((void**)&szNewGroup);
+      SAFE_FREE(&szNewGroup);
     }
 	}
 	else if (!strcmpnull(cws->szModule, "UserInfo"))
@@ -2736,6 +2734,12 @@ int CIcqProto::ServListDbSettingChanged(WPARAM wParam, LPARAM lParam)
 
 int CIcqProto::ServListDbContactDeleted(WPARAM wParam, LPARAM lParam)
 {
+	if (!IsICQContact((HANDLE)wParam)) return 0;
+
+#ifdef _DEBUG
+  NetLog_Server("DB-Events: Contact %x deleted.", wParam);
+#endif
+
 	DeleteFromContactsCache((HANDLE)wParam);
 
 	if ( !icqOnline() && m_bSsiEnabled)
@@ -2747,22 +2751,20 @@ int CIcqProto::ServListDbContactDeleted(WPARAM wParam, LPARAM lParam)
 		return 0;
 
 	{ // we need all server contacts on local buddy list
-		WORD wContactID;
-		WORD wGroupID;
-		WORD wVisibleID;
-		WORD wInvisibleID;
-		WORD wIgnoreID;
 		DWORD dwUIN;
 		uid_str szUID;
 
 		if (getContactUid((HANDLE)wParam, &dwUIN, &szUID))
 			return 0;
 
-		wContactID = getSettingWord((HANDLE)wParam, DBSETTING_SERVLIST_ID, 0);
-		wGroupID = getSettingWord((HANDLE)wParam, DBSETTING_SERVLIST_GROUP, 0);
-		wVisibleID = getSettingWord((HANDLE)wParam, DBSETTING_SERVLIST_PERMIT, 0);
-		wInvisibleID = getSettingWord((HANDLE)wParam, DBSETTING_SERVLIST_DENY, 0);
-		wIgnoreID = getSettingWord((HANDLE)wParam, DBSETTING_SERVLIST_IGNORE, 0);
+		WORD wContactID = getSettingWord((HANDLE)wParam, DBSETTING_SERVLIST_ID, 0);
+		WORD wGroupID = getSettingWord((HANDLE)wParam, DBSETTING_SERVLIST_GROUP, 0);
+		WORD wVisibleID = getSettingWord((HANDLE)wParam, DBSETTING_SERVLIST_PERMIT, 0);
+		WORD wInvisibleID = getSettingWord((HANDLE)wParam, DBSETTING_SERVLIST_DENY, 0);
+		WORD wIgnoreID = getSettingWord((HANDLE)wParam, DBSETTING_SERVLIST_IGNORE, 0);
+
+    // Remove from queue for user details request
+    icq_DequeueUser(dwUIN);
 
 		// Close all opened peer connections
 		CloseContactDirectConns((HANDLE)wParam);
@@ -2814,6 +2816,10 @@ int CIcqProto::ServListCListGroupChange(WPARAM wParam, LPARAM lParam)
     { // group removed
       char *szOldName = tchar_to_utf8(grpchg->pszOldName);
       WORD wGroupId = getServListGroupLinkID(szOldName);
+
+#ifdef _DEBUG
+      NetLog_Server("CList-Events: Group %x:\"%s\" deleted.", wGroupId, szOldName);
+#endif
       if (wGroupId)
       { // the group is known, remove from server
         servlistPostPacket(NULL, 0, SSO_BEGIN_OPERATION, 100); // start server modifications here
@@ -2844,6 +2850,9 @@ int CIcqProto::ServListCListGroupChange(WPARAM wParam, LPARAM lParam)
 		{ // our contact, fine move on the server as well
 			char *szNewName = grpchg->pszNewName ? tchar_to_utf8(grpchg->pszNewName) : NULL;
 			
+#ifdef _DEBUG
+      NetLog_Server("CList-Events: Contact %x moved to group \"%s\".", hContact, szNewName);
+#endif
       servlistMoveContact(hContact, szNewName);
 			SAFE_FREE(&szNewName);
 		}

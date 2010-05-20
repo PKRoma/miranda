@@ -678,6 +678,7 @@ INT_PTR CIcqProto::SetPassword(WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
+
 // TODO: Adding needs some more work in general
 
 HANDLE CIcqProto::AddToListByUIN(DWORD dwUin, DWORD dwFlags)
@@ -688,8 +689,8 @@ HANDLE CIcqProto::AddToListByUIN(DWORD dwUin, DWORD dwFlags)
 	{
 		if ((!dwFlags & PALF_TEMPORARY) && DBGetContactSettingByte(hContact, "CList", "NotOnList", 1))
 		{
-			DBDeleteContactSetting(hContact, "CList", "NotOnList");
 			setContactHidden(hContact, 0);
+			DBDeleteContactSetting(hContact, "CList", "NotOnList");
 		}
 
 		return hContact; // Success
@@ -698,7 +699,8 @@ HANDLE CIcqProto::AddToListByUIN(DWORD dwUin, DWORD dwFlags)
 	return NULL; // Failure
 }
 
-HANDLE CIcqProto::AddToListByUID(char *szUID, DWORD dwFlags)
+
+HANDLE CIcqProto::AddToListByUID(const char *szUID, DWORD dwFlags)
 {
 	int bAdded;
 	HANDLE hContact = HContactFromUID(0, szUID, &bAdded);
@@ -706,8 +708,8 @@ HANDLE CIcqProto::AddToListByUID(char *szUID, DWORD dwFlags)
 	{
 		if ((!dwFlags & PALF_TEMPORARY) && DBGetContactSettingByte(hContact, "CList", "NotOnList", 1))
 		{
-			DBDeleteContactSetting(hContact, "CList", "NotOnList");
 			setContactHidden(hContact, 0);
+			DBDeleteContactSetting(hContact, "CList", "NotOnList");
 		}
 
 		return hContact; // Success
@@ -715,6 +717,7 @@ HANDLE CIcqProto::AddToListByUID(char *szUID, DWORD dwFlags)
 
 	return NULL; // Failure
 }
+
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
@@ -743,6 +746,7 @@ void CIcqProto::ICQAddRecvEvent(HANDLE hContact, WORD wType, PROTORECVEVENT* pre
 
 	AddEvent(hContact, wType, pre->timestamp, flags, cbBlob, pBlob);
 }
+
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
