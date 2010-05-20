@@ -1597,18 +1597,24 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 		break;
 
 	case WM_MEASUREITEM:
-		if (wParam == 0 || lParam == 0)
-			break; 
-		return CallService(MS_CLIST_MENUMEASUREITEM, wParam, lParam);
+		{
+			LPMEASUREITEMSTRUCT mis = (LPMEASUREITEMSTRUCT) lParam;
+			if (mis->CtlType == ODT_MENU)
+				return CallService(MS_CLIST_MENUMEASUREITEM, wParam, lParam);
+		}
+		break;
 
 	case WM_DRAWITEM:
 		{
 			LPDRAWITEMSTRUCT dis = (LPDRAWITEMSTRUCT) lParam;
-			if (dis->hwndItem == dat->hwndStatus) {
+			if (dis->CtlType == ODT_MENU)
+				return CallService(MS_CLIST_MENUDRAWITEM, wParam, lParam);
+			else if (dis->hwndItem == dat->hwndStatus) 
+			{
 				DrawStatusIcons(dat->hContact, dis->hDC, dis->rcItem, 2);
-				return 0;
+				return TRUE;
 			}
-			else if (dis->hwndItem == GetDlgItem(hwndDlg, IDC_PROTOCOL)) {
+			else if (dis->CtlID == IDC_PROTOCOL) {
 				if (dat->szProto) {
 					HICON hIcon;
 					int dwStatus;
@@ -1627,9 +1633,10 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 						else 
 							DrawIconEx(dis->hDC, dis->rcItem.left, dis->rcItem.top, hIcon, GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), 0, NULL, DI_NORMAL);
 						CallService(MS_SKIN2_RELEASEICON,(WPARAM)hIcon, 0);
+						return TRUE;
 				}	}
 			}
-			else if (dis->hwndItem == GetDlgItem(hwndDlg, IDC_AVATAR) && dat->avatarPic && (g_dat->flags&SMF_AVATAR)) {
+			else if (dis->CtlID == IDC_AVATAR && dat->avatarPic && (g_dat->flags & SMF_AVATAR)) {
 				BITMAP bminfo;
 				HPEN hPen, hOldPen;
 
@@ -1649,9 +1656,11 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 					}
                     SelectObject(hdcMem,hbmMem);
                     DeleteDC(hdcMem);
-			}	}
-			return CallService(MS_CLIST_MENUDRAWITEM, wParam, lParam);
+				}
+				return TRUE;
+			}
 		}
+		break;
 
 	case WM_COMMAND:
 		if (!lParam && CallService(MS_CLIST_MENUPROCESSCOMMAND, MAKEWPARAM(LOWORD(wParam), MPCF_CONTACTMENU), (LPARAM) dat->hContact))
