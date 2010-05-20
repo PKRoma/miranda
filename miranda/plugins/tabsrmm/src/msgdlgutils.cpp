@@ -2143,7 +2143,7 @@ int TSAPI MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, TWindowData *dat)
 			CSkin::SkinDrawBG(dis->hwndItem, dat->pContainer->hwnd, dat->pContainer, &dis->rcItem, dis->hDC);
 		} else {
 			SetTextColor(dis->hDC, GetSysColor(COLOR_BTNTEXT));
-			FillRect(dis->hDC, &dis->rcItem, GetSysColorBrush(COLOR_3DFACE));
+			CSkin::FillBack(dis->hDC, &dis->rcItem);
 		}
 		GetWindowText(dis->hwndItem, szWindowText, 255);
 		szWindowText[255] = 0;
@@ -2154,7 +2154,7 @@ int TSAPI MsgWindowDrawHandler(WPARAM wParam, LPARAM lParam, TWindowData *dat)
 		if (CSkin::m_skinEnabled)
 			CSkin::SkinDrawBG(dis->hwndItem, dat->pContainer->hwnd, dat->pContainer, &dis->rcItem, dis->hDC);
 		else
-			FillRect(dis->hDC, &dis->rcItem, GetSysColorBrush(COLOR_3DFACE));
+			CSkin::FillBack(dis->hDC, &dis->rcItem);
 		DrawIconEx(dis->hDC, (dis->rcItem.right - dis->rcItem.left) / 2 - 8, (dis->rcItem.bottom - dis->rcItem.top) / 2 - 8,
 				   PluginConfig.g_iconErr, 16, 16, 0, 0, DI_NORMAL);
 		return TRUE;

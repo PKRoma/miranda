@@ -382,9 +382,6 @@ private:
 
 struct TabControlData {
 	BOOL    m_VisualStyles;
-#if defined(__FEAT_DEPRECATED_MODERNTABS)
-	BOOL    m_moderntabs;
-#endif
 	HWND    hwnd;
 	DWORD   dwStyle;
 	DWORD   cx, cy;

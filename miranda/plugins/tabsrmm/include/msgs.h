@@ -414,7 +414,7 @@ struct TIconDescW {
  */
 
 #define TCF_FLAT 1
-#define TCF_STYLED 2
+//#define TCF_STYLED 2
 #define TCF_CLOSEBUTTON 4
 #define TCF_FLASHICON 8
 #define TCF_FLASHLABEL 16

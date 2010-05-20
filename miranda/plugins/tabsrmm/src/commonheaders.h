@@ -41,8 +41,6 @@
 #endif
 
 //#define __FEAT_EXP_AUTOSPLITTER 1
-//#define __FEAT_DEPRECATED_MODERNTABS
-//#define __FEAT_DEPRECATED_TABTIPS
 
 #define WINVER 0x0600
 #define _WIN32_WINNT 0x0600

@@ -524,7 +524,6 @@
 #define IDC_QMGR_SUCCESSPOPUPS          1446
 #define IDC_BUTTON2                     1446
 #define IDC_SKIN_CLOSENOW               1446
-#define IDC_STYLEDTABS                  1482
 #define IDC_FLASHICON                   1489
 #define IDC_FLASHLABEL                  1490
 #define IDC_STATIC_VISIBILTY            1491

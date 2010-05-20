@@ -10,8 +10,10 @@
 #include <windows.h>
 #include <winres.h>
 #include "../../include/statusmodes.h"
-
-
+
+
+
+
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
 
@@ -246,7 +248,6 @@ BEGIN
     CONTROL         "Single row tab control (*)",IDC_SINGLEROWTAB,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,120,138,130,12
     CONTROL         "Close button",IDC_CLOSEBUTTONONTABS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,260,138,75,12
     CONTROL         "Use button tabs (*)",IDC_BUTTONTABS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,120,149,130,12
-    CONTROL         "Styled tabs (*)",IDC_STYLEDTABS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,260,149,75,12
     LTEXT           "You have chosen to disable all event notifications for open message windows.",IDC_O_EXPLAINGLOBALNOTIFY,103,127,240,30
     LTEXT           "Show contact avatars",IDC_O_STATIC_AVATAR,105,63,233,12
     COMBOBOX        IDC_AVATARMODE,105,72,220,14,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP

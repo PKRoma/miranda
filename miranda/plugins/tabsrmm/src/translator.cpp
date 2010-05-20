@@ -294,6 +294,18 @@ TCHAR* CTranslator::m_strings[STR_LAST] = {
 	LPGENT("The message cannot be sent delayed or to multiple contacts, because it exceeds the maximum allowed message length of %d bytes"), /* GEN_SQ_SENDLATER_ERROR_MSG_TOO_LONG */
 
 	LPGENT("Default container"),														/* GEN_DEFAULT_CONTAINER_NAME */
+	/*
+	 * event notification popups
+	 */
+	LPGENT("No description given"),														/* GEN_STRING_EVENT_FILE_NODESC */
+	LPGENT("Incoming file (invalid format"),											/* GEN_STRING_EVENT_FILE_INVALID */
+	LPGENT("Incoming file"),															/* GEN_STRING_EVENT_FILE */
+	/*
+	 * tooltips for static message window buttons
+	 */
+	LPGENT("Add this contact permanently to your contact list"),						/* GEN_TOOLTIP_ADDCONTACT */
+	LPGENT("Do not add this contact permanently"),										/* GEN_TOOLTIP_DONTADD */
+	LPGENT("Expand or collapse the side bar"),											/* GEN_TOOLTIP_EXPANDSIDEBAR */
 };
 
 /*
@@ -615,4 +627,3 @@ void CTranslator::translateOptionTree(TOptionListItem *lvItems)
 		i++;
 	}
 }
-

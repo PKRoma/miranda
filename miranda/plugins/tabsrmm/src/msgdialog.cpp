@@ -53,11 +53,11 @@ static const UINT errorControls[] 			= { IDC_STATICERRORICON, IDC_STATICTEXT, ID
 
 static struct _tooltips {
 	int id;
-	TCHAR *szTip;
+	int translate_id;
 } tooltips[] = {
-	IDC_ADD, _T("Add this contact permanently to your contact list"),
-	IDC_CANCELADD, _T("Do not add this contact permanently"),
-	IDC_TOGGLESIDEBAR, _T("Expand or collapse the side bar"),
+	IDC_ADD, CTranslator::GEN_TOOLTIP_ADDCONTACT,
+	IDC_CANCELADD, CTranslator::GEN_TOOLTIP_DONTADD,
+	IDC_TOGGLESIDEBAR, CTranslator::GEN_TOOLTIP_EXPANDSIDEBAR,
 	-1, NULL
 };
 
@@ -1440,7 +1440,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			for (i = 0;;i++) {
 				if (tooltips[i].id == -1)
 					break;
-				SendDlgItemMessage(hwndDlg, tooltips[i].id, BUTTONADDTOOLTIP, (WPARAM)TranslateTS(tooltips[i].szTip), 0);
+				SendDlgItemMessage(hwndDlg, tooltips[i].id, BUTTONADDTOOLTIP, (WPARAM)CTranslator::get(tooltips[i].translate_id), 0);
 			}
 			SetDlgItemText(hwndDlg, IDC_LOGFROZENTEXT, dat->bNotOnList ? CTranslator::get(CTranslator::GEN_MSG_CONTACT_NOT_ON_LIST) :
 						   CTranslator::get(CTranslator::GEN_MSG_LOGFROZENSTATIC));
@@ -1454,8 +1454,11 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 
 			SendDlgItemMessage(hwndDlg, IDC_LOG, EM_SETUNDOLIMIT, 0, 0);
 			SendDlgItemMessage(hwndDlg, IDC_LOG, EM_SETEVENTMASK, 0, ENM_MOUSEEVENTS | ENM_KEYEVENTS | ENM_LINK);
+#if defined(__FEAT_EXP_AUTOSPLITTER)
 			SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_SETEVENTMASK, 0, ENM_REQUESTRESIZE | ENM_MOUSEEVENTS | ENM_SCROLL | ENM_KEYEVENTS | ENM_CHANGE);
-
+#else
+			SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_SETEVENTMASK, 0, ENM_MOUSEEVENTS | ENM_SCROLL | ENM_KEYEVENTS | ENM_CHANGE);
+#endif
 			dat->bActualHistory = M->GetByte(dat->hContact, "ActualHistory", 0);
 
 			/* OnO: higligh lines to their end */
@@ -1491,7 +1494,6 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 				FindFirstEvent(dat);
 				dat->nMax = dat->cache->getMaxMessageLength();
 			}
-
  			LoadContactAvatar(dat);
 			SendMessage(hwndDlg, DM_OPTIONSAPPLIED, 0, 0);
 			LoadOwnAvatar(dat);
@@ -2921,6 +2923,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			}
 			return CallService(MS_CLIST_MENUMEASUREITEM, wParam, lParam);
 		}
+
 		case WM_NCHITTEST:
 			SendMessage(hwndContainer, WM_NCHITTEST, wParam, lParam);
 			break;

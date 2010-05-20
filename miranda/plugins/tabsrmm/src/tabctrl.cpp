@@ -199,183 +199,6 @@ void TSAPI FillTabBackground(const HDC hdc, int iStateId, const TWindowData* dat
 }
 
 /*
- * draw an antialiased (smoothed) line from X0/Y0 to X1/Y1 using clrLine as basecolor
- * used by the "styled" tabs which look similar to visual studio UI tabs.
- */
-
-#if defined(__FEAT_DEPRECATED_MODERNTABS)
-static void __stdcall DrawWuLine(HDC pDC, int X0, int Y0, int X1, int Y1, COLORREF clrLine)
-{
-	int XDir, DeltaX, DeltaY;
-	unsigned short ErrorAdj;
-	unsigned short ErrorAccTemp, Weighting;
-	unsigned short ErrorAcc = 0;
-	double grayl;
-	BYTE rl, gl, bl;
-	BYTE rb, gb, bb, rr, gr, br;
-	double grayb;
-	COLORREF clrBackGround;
-
-	if (Y0 > Y1) {
-		int Temp = Y0;
-		Y0 = Y1;
-		Y1 = Temp;
-		Temp = X0;
-		X0 = X1;
-		X1 = Temp;
-	}
-
-	SetPixel(pDC, X0, Y0, clrLine);
-
-	DeltaX = X1 - X0;
-	if (DeltaX >= 0)
-		XDir = 1;
-	else {
-		XDir   = -1;
-		DeltaX = 0 - DeltaX;
-	}
-
-	DeltaY = Y1 - Y0;
-
-	if (DeltaY == 0) {
-		while (DeltaX-- != 0) {
-			X0 += XDir;
-			SetPixel(pDC, X0, Y0, clrLine);
-		}
-		return;
-	}
-	if (DeltaX == 0) {
-		do {
-			Y0++;
-			SetPixel(pDC, X0, Y0, clrLine);
-		} while (--DeltaY != 0);
-		return;
-	}
-
-	if (DeltaX == DeltaY) {
-		do {
-			X0 += XDir;
-			Y0++;
-			SetPixel(pDC, X0, Y0, clrLine);
-		} while (--DeltaY != 0);
-		return;
-	}
-
-	rl = GetRValue(clrLine);
-	gl = GetGValue(clrLine);
-	bl = GetBValue(clrLine);
-	grayl = rl * 0.299 + gl * 0.587 + bl * 0.114;
-
-	if (DeltaY > DeltaX) {
-		ErrorAdj = (unsigned short)(((unsigned long) DeltaX << 16) / (unsigned long) DeltaY);
-
-		while (--DeltaY) {
-			ErrorAccTemp = ErrorAcc;
-			ErrorAcc += ErrorAdj;
-			if (ErrorAcc <= ErrorAccTemp)
-				X0 += XDir;
-			Y0++;
-			Weighting = ErrorAcc >> 8;
-
-			clrBackGround = GetPixel(pDC, X0, Y0);
-			rb = GetRValue(clrBackGround);
-			gb = GetGValue(clrBackGround);
-			bb = GetBValue(clrBackGround);
-			grayb = rb * 0.299 + gb * 0.587 + bb * 0.114;
-
-			rr = (rb > rl ? ((BYTE)(((double)(grayl < grayb ? Weighting :
-											  (Weighting ^ 255))) / 255.0 * (rb - rl) + rl)) :
-						  ((BYTE)(((double)(grayl < grayb ? Weighting : (Weighting ^ 255)))
-								  / 255.0 * (rl - rb) + rb)));
-			gr = (gb > gl ? ((BYTE)(((double)(grayl < grayb ? Weighting :
-											  (Weighting ^ 255))) / 255.0 * (gb - gl) + gl)) :
-						  ((BYTE)(((double)(grayl < grayb ? Weighting : (Weighting ^ 255)))
-								  / 255.0 * (gl - gb) + gb)));
-			br = (bb > bl ? ((BYTE)(((double)(grayl < grayb ? Weighting :
-											  (Weighting ^ 255))) / 255.0 * (bb - bl) + bl)) :
-						  ((BYTE)(((double)(grayl < grayb ? Weighting : (Weighting ^ 255)))
-								  / 255.0 * (bl - bb) + bb)));
-			SetPixel(pDC, X0, Y0, RGB(rr, gr, br));
-
-			clrBackGround = GetPixel(pDC, X0 + XDir, Y0);
-			rb = GetRValue(clrBackGround);
-			gb = GetGValue(clrBackGround);
-			bb = GetBValue(clrBackGround);
-			grayb = rb * 0.299 + gb * 0.587 + bb * 0.114;
-
-			rr = (rb > rl ? ((BYTE)(((double)(grayl < grayb ? (Weighting ^ 255) :
-											  Weighting)) / 255.0 * (rb - rl) + rl)) :
-						  ((BYTE)(((double)(grayl < grayb ? (Weighting ^ 255) : Weighting))
-								  / 255.0 * (rl - rb) + rb)));
-			gr = (gb > gl ? ((BYTE)(((double)(grayl < grayb ? (Weighting ^ 255) :
-											  Weighting)) / 255.0 * (gb - gl) + gl)) :
-						  ((BYTE)(((double)(grayl < grayb ? (Weighting ^ 255) : Weighting))
-								  / 255.0 * (gl - gb) + gb)));
-			br = (bb > bl ? ((BYTE)(((double)(grayl < grayb ? (Weighting ^ 255) :
-											  Weighting)) / 255.0 * (bb - bl) + bl)) :
-						  ((BYTE)(((double)(grayl < grayb ? (Weighting ^ 255) : Weighting))
-								  / 255.0 * (bl - bb) + bb)));
-			SetPixel(pDC, X0 + XDir, Y0, RGB(rr, gr, br));
-		}
-		SetPixel(pDC, X1, Y1, clrLine);
-		return;
-	}
-	ErrorAdj = (unsigned short)(((unsigned long) DeltaY << 16) / (unsigned long) DeltaX);
-
-	while (--DeltaX) {
-		ErrorAccTemp = ErrorAcc;
-		ErrorAcc += ErrorAdj;
-		if (ErrorAcc <= ErrorAccTemp)
-			Y0++;
-		X0 += XDir;
-		Weighting = ErrorAcc >> 8;
-
-		clrBackGround = GetPixel(pDC, X0, Y0);
-		rb = GetRValue(clrBackGround);
-		gb = GetGValue(clrBackGround);
-		bb = GetBValue(clrBackGround);
-		grayb = rb * 0.299 + gb * 0.587 + bb * 0.114;
-
-		rr = (rb > rl ? ((BYTE)(((double)(grayl < grayb ? Weighting :
-										  (Weighting ^ 255))) / 255.0 * (rb - rl) + rl)) :
-					  ((BYTE)(((double)(grayl < grayb ? Weighting : (Weighting ^ 255)))
-							  / 255.0 * (rl - rb) + rb)));
-		gr = (gb > gl ? ((BYTE)(((double)(grayl < grayb ? Weighting :
-										  (Weighting ^ 255))) / 255.0 * (gb - gl) + gl)) :
-					  ((BYTE)(((double)(grayl < grayb ? Weighting : (Weighting ^ 255)))
-							  / 255.0 * (gl - gb) + gb)));
-		br = (bb > bl ? ((BYTE)(((double)(grayl < grayb ? Weighting :
-										  (Weighting ^ 255))) / 255.0 * (bb - bl) + bl)) :
-					  ((BYTE)(((double)(grayl < grayb ? Weighting : (Weighting ^ 255)))
-							  / 255.0 * (bl - bb) + bb)));
-
-		SetPixel(pDC, X0, Y0, RGB(rr, gr, br));
-
-		clrBackGround = GetPixel(pDC, X0, Y0 + 1);
-		rb = GetRValue(clrBackGround);
-		gb = GetGValue(clrBackGround);
-		bb = GetBValue(clrBackGround);
-		grayb = rb * 0.299 + gb * 0.587 + bb * 0.114;
-
-		rr = (rb > rl ? ((BYTE)(((double)(grayl < grayb ? (Weighting ^ 255) :
-										  Weighting)) / 255.0 * (rb - rl) + rl)) :
-					  ((BYTE)(((double)(grayl < grayb ? (Weighting ^ 255) : Weighting))
-							  / 255.0 * (rl - rb) + rb)));
-		gr = (gb > gl ? ((BYTE)(((double)(grayl < grayb ? (Weighting ^ 255) :
-										  Weighting)) / 255.0 * (gb - gl) + gl)) :
-					  ((BYTE)(((double)(grayl < grayb ? (Weighting ^ 255) : Weighting))
-							  / 255.0 * (gl - gb) + gb)));
-		br = (bb > bl ? ((BYTE)(((double)(grayl < grayb ? (Weighting ^ 255) :
-										  Weighting)) / 255.0 * (bb - bl) + bl)) :
-					  ((BYTE)(((double)(grayl < grayb ? (Weighting ^ 255) : Weighting))
-							  / 255.0 * (bl - bb) + bb)));
-
-		SetPixel(pDC, X0, Y0 + 1, RGB(rr, gr, br));
-	}
-	SetPixel(pDC, X1, Y1, clrLine);
-}
-#endif
-/*
  * draws the item contents (icon and label)
  * it obtains the label and icon handle directly from the message window data
  * no image list is used and necessary, the message window dialog procedure has to provide a valid
@@ -406,13 +229,6 @@ static void DrawItem(TabControlData *tabdat, HDC dc, RECT *rcItem, int nHint, in
 		clr = PluginConfig.tabConfig.colors[clrIndex];
 
 		oldMode = SetBkMode(dc, TRANSPARENT);
-
-#if defined(__FEAT_DEPRECATED_MODERNTABS)
-		if (tabdat->m_moderntabs && rcItem->left < 10) {
-			leftMost = TRUE;
-			rcItem->left += 10;
-		}
-#endif
 
 		if (!(dwStyle & TCS_BOTTOM))
 			OffsetRect(rcItem, 0, 1);
@@ -556,20 +372,12 @@ b_nonskinned:
 
 		if (nHint & HINT_ACTIVE_ITEM) {
 			if (dwStyle & TCS_BOTTOM) {
-#if defined(__FEAT_DEPRECATED_MODERNTABS)
-				if (!CSkin::m_skinEnabled && !tabdat->m_moderntabs)
-#else
 				if (!CSkin::m_skinEnabled)
-#endif
 					CSkin::FillBack(dc, rcItem);
 				rcItem->bottom += 2;
 			} else {
 				rcItem->bottom += 2;
-#if defined(__FEAT_DEPRECATED_MODERNTABS)
-				if (!CSkin::m_skinEnabled && !tabdat->m_moderntabs)
-#else
 				if (!CSkin::m_skinEnabled)
-#endif
 					CSkin::FillBack(dc, rcItem);
 				rcItem->bottom--;
 				rcItem->top -= 2;
@@ -603,236 +411,31 @@ b_nonskinned:
 			}
 		}
 		if (dwStyle & TCS_BOTTOM) {
-#if defined(__FEAT_DEPRECATED_MODERNTABS)
-			if (tabdat->m_moderntabs) {
-				RECT rc = *rcItem;
-				POINT pt[5], pts;
-				BOOL active = nHint & HINT_ACTIVE_ITEM;
-				HRGN rgn;
-				TCITEM item = {0};
-				struct TWindowData *dat = 0;
-				HBRUSH bg;
-				CSkinItem *s_item;
-				int item_id;
+			MoveToEx(dc, rcItem->left, rcItem->top - (nHint & HINT_ACTIVE_ITEM ? 1 : 0), &pt);
+			LineTo(dc, rcItem->left, rcItem->bottom - 2);
+			LineTo(dc, rcItem->left + 2, rcItem->bottom);
+			SelectObject(dc, PluginConfig.tabConfig.m_hPenShadow);
+			LineTo(dc, rcItem->right - 3, rcItem->bottom);
 
-				item.mask = TCIF_PARAM;
-				TabCtrl_GetItem(tabdat->hwnd, iItem, &item);
-
-				/*
-				 * get the message window data for the session to which this tab item belongs
-				 */
-
-				if (IsWindow((HWND)item.lParam) && item.lParam != 0)
-					dat = (struct TWindowData *)GetWindowLongPtr((HWND)item.lParam, GWLP_USERDATA);
-
-				if (active && rc.left > 10)
-					rc.left -= 10;
-
-				if (active) {
-					rc.bottom--;
-					//rc.right -1;
-				}
-				rc.right--;
-
-				item_id = active ? ID_EXTBKTABITEMACTIVEBOTTOM : (nHint & HINT_HOTTRACK ? ID_EXTBKTABITEMHOTTRACKBOTTOM : ID_EXTBKTABITEMBOTTOM);
-				s_item = &SkinItems[item_id];
-
-				pt[0].x = rc.left;
-				pt[0].y = rc.top - (active ? 1 : 0);
-				if (active || rc.left < 10) {
-					pt[1].x = rc.left + 10;
-					pt[1].y = rc.bottom - 4;
-					pt[2].x = rc.left + 16;
-					pt[2].y = rc.bottom;
-				} else {
-					pt[1].x = rc.left;
-					pt[1].y = rc.bottom - 6;
-					pt[2].x = rc.left + 6;
-					pt[2].y = rc.bottom;
-				}
-				pt[3].x = rc.right;
-				pt[3].y = rc.bottom;
-				pt[4].x = rc.right;
-				pt[4].y = rc.top - (active ? 1 : 0);
-				rgn = CreatePolygonRgn(pt, 5, WINDING);
-				if (!s_item->IGNORED) {
-					if (active)
-						rc.top--;
-					SelectClipRgn(dc, rgn);
-					CSkin::DrawItem(dc, &rc, s_item);
-					SelectClipRgn(dc, 0);
-				} else if (dat) {
-					if (dat->mayFlashTab == TRUE)
-						bg = PluginConfig.tabConfig.m_hBrushUnread;
-					else if (nHint & HINT_ACTIVE_ITEM)
-						bg = PluginConfig.tabConfig.m_hBrushActive;
-					else if (nHint & HINT_HOTTRACK)
-						bg = PluginConfig.tabConfig.m_hBrushHottrack;
-					else
-						bg = PluginConfig.tabConfig.m_hBrushDefault;
-					FillRgn(dc, rgn, bg);
-				}
-				SelectObject(dc, PluginConfig.tabConfig.m_hPenStyledDark);
-				if (active || rc.left < 10) {
-					DrawWuLine(dc, pt[0].x, pt[0].y, pt[1].x, pt[1].y, PluginConfig.tabConfig.colors[9]);
-					DrawWuLine(dc, pt[1].x, pt[1].y, pt[2].x, pt[2].y, PluginConfig.tabConfig.colors[9]);
-					MoveToEx(dc, pt[2].x, pt[2].y, &pts);
-				} else {
-					MoveToEx(dc, pt[1].x, pt[1].y, &pts);
-					LineTo(dc, pt[2].x, pt[2].y);
-				}
-				LineTo(dc, pt[3].x, pt[3].y);
-				LineTo(dc, pt[4].x, pt[4].y - 1);
-
-				SelectObject(dc, PluginConfig.tabConfig.m_hPenStyledLight);
-				MoveToEx(dc, pt[4].x - 1, pt[4].y, &pts);
-				LineTo(dc, pt[3].x - 1, pt[3].y - 1);
-				LineTo(dc, pt[2].x, pt[2].y - 1);
-				if (active || rc.left < 10) {
-					DrawWuLine(dc, pt[2].x, pt[2].y - 1, pt[1].x + 1, pt[1].y - 1, PluginConfig.tabConfig.colors[8]);
-					DrawWuLine(dc, pt[1].x + 1, pt[1].y - 1, pt[0].x + 1, pt[0].y, PluginConfig.tabConfig.colors[8]);
-					if (rc.top > rcTabPage.bottom + 10 && !active) {
-						DrawWuLine(dc, pt[0].x, pt[0].y - 1, pt[4].x, pt[4].y - 1, PluginConfig.tabConfig.colors[9]);
-						DrawWuLine(dc, pt[0].x + 1, pt[0].y, pt[4].x - 1, pt[4].y, PluginConfig.tabConfig.colors[8]);
-					}
-				} else
-					LineTo(dc, pt[1].x, pt[1].y - 1);
-				DeleteObject(rgn);
-			} else {
-#endif
-				MoveToEx(dc, rcItem->left, rcItem->top - (nHint & HINT_ACTIVE_ITEM ? 1 : 0), &pt);
-				LineTo(dc, rcItem->left, rcItem->bottom - 2);
-				LineTo(dc, rcItem->left + 2, rcItem->bottom);
-				SelectObject(dc, PluginConfig.tabConfig.m_hPenShadow);
-				LineTo(dc, rcItem->right - 3, rcItem->bottom);
-
-				LineTo(dc, rcItem->right - 1, rcItem->bottom - 2);
-				LineTo(dc, rcItem->right - 1, rcItem->top - 1);
-				MoveToEx(dc, rcItem->right - 2, rcItem->top, &pt);
-				SelectObject(dc, PluginConfig.tabConfig.m_hPenItemShadow);
-				LineTo(dc, rcItem->right - 2, rcItem->bottom - 1);
-				MoveToEx(dc, rcItem->right - 3, rcItem->bottom - 1, &pt);
-				LineTo(dc, rcItem->left + 2, rcItem->bottom - 1);
-#if defined(__FEAT_DEPRECATED_MODERNTABS)
-			}
-#endif
+			LineTo(dc, rcItem->right - 1, rcItem->bottom - 2);
+			LineTo(dc, rcItem->right - 1, rcItem->top - 1);
+			MoveToEx(dc, rcItem->right - 2, rcItem->top, &pt);
+			SelectObject(dc, PluginConfig.tabConfig.m_hPenItemShadow);
+			LineTo(dc, rcItem->right - 2, rcItem->bottom - 1);
+			MoveToEx(dc, rcItem->right - 3, rcItem->bottom - 1, &pt);
+		LineTo(dc, rcItem->left + 2, rcItem->bottom - 1);
 		} else {
-#if defined(__FEAT_DEPRECATED_MODERNTABS)
-			if (tabdat->m_moderntabs) {
-				RECT rc = *rcItem;
-				POINT pt[5], pts;
-				BOOL active = nHint & HINT_ACTIVE_ITEM;
-				HRGN rgn;
-				TCITEM item = {0};
-				struct TWindowData *dat = 0;
-				HBRUSH bg;
-				LONG bendPoint;
-				CSkinItem *s_item;
-				int item_id;
+			MoveToEx(dc, rcItem->left, rcItem->bottom, &pt);
+			LineTo(dc, rcItem->left, rcItem->top + 2);
+			LineTo(dc, rcItem->left + 2, rcItem->top);
+			LineTo(dc, rcItem->right - 2, rcItem->top);
+			SelectObject(dc, PluginConfig.tabConfig.m_hPenItemShadow);
 
-				item.mask = TCIF_PARAM;
-				TabCtrl_GetItem(tabdat->hwnd, iItem, &item);
-
-				if (IsWindow((HWND)item.lParam) && item.lParam != 0)
-					dat = (struct TWindowData *)GetWindowLongPtr((HWND)item.lParam, GWLP_USERDATA);
-
-				if (active && rc.left > 10)
-					rc.left -= 10;
-
-				if (active)
-					rc.top++;
-
-				item_id = active ? ID_EXTBKTABITEMACTIVE : (nHint & HINT_HOTTRACK ? ID_EXTBKTABITEMHOTTRACK : ID_EXTBKTABITEM);
-				s_item = &SkinItems[item_id];
-
-				rc.right--;
-
-				pt[0].x = rc.left;
-				pt[0].y = rc.bottom + (active ? 1 : 0);
-				bendPoint = (rc.bottom - rc.top) - 4;
-
-				if (active || rc.left < 10) {
-					pt[1].x = rc.left + 10;
-					pt[1].y = rc.top + 4;
-					pt[2].x = rc.left + 16;
-					pt[2].y = rc.top;
-				} else {
-					pt[1].x = rc.left;
-					pt[1].y = rc.top + 6;
-					pt[2].x = rc.left + 6;
-					pt[2].y = rc.top;
-				}
-				pt[3].x = rc.right;
-				pt[3].y = rc.top;
-				pt[4].x = rc.right;
-				pt[4].y = rc.bottom + 1;
-				rgn = CreatePolygonRgn(pt, 5, WINDING);
-				if (!s_item->IGNORED) {
-					if (active)
-						rc.bottom++;
-					SelectClipRgn(dc, rgn);
-					DrawAlpha(dc, &rc, s_item->COLOR, s_item->ALPHA, s_item->COLOR2, s_item->COLOR2_TRANSPARENT, s_item->GRADIENT,
-							  s_item->CORNER, s_item->BORDERSTYLE, s_item->imageItem);
-					SelectClipRgn(dc, 0);
-				} else if (dat) {
-					if (dat->mayFlashTab == TRUE)
-						bg = PluginConfig.tabConfig.m_hBrushUnread;
-					else if (nHint & HINT_ACTIVE_ITEM)
-						bg = PluginConfig.tabConfig.m_hBrushActive;
-					else if (nHint & HINT_HOTTRACK)
-						bg = PluginConfig.tabConfig.m_hBrushHottrack;
-					else
-						bg = PluginConfig.tabConfig.m_hBrushDefault;
-					FillRgn(dc, rgn, bg);
-				}
-				SelectObject(dc, PluginConfig.tabConfig.m_hPenStyledDark);
-				if (active || rc.left < 10) {
-					//MoveToEx(dc, pt[0].x, pt[0].y - (active ? 1 : 0), &pts);
-					//LineTo(dc, pt[1].x, pt[1].y);
-					//LineTo(dc, pt[2].x, pt[2].y);
-					DrawWuLine(dc, pt[0].x, pt[0].y - (active ? 1 : 0), pt[1].x, pt[1].y, PluginConfig.tabConfig.colors[9]);
-					DrawWuLine(dc, pt[1].x, pt[1].y, pt[2].x, pt[2].y, PluginConfig.tabConfig.colors[9]);
-					MoveToEx(dc, pt[2].x, pt[2].y, &pts);
-				} else {
-					MoveToEx(dc, pt[1].x, pt[1].y, &pts);
-					LineTo(dc, pt[2].x, pt[2].y);
-				}
-				LineTo(dc, pt[3].x, pt[3].y);
-				LineTo(dc, pt[4].x, pt[4].y);
-
-				SelectObject(dc, PluginConfig.tabConfig.m_hPenStyledLight);
-				MoveToEx(dc, pt[4].x - 1, pt[4].y - 1, &pts);
-				LineTo(dc, pt[3].x - 1, pt[3].y + 1);
-				LineTo(dc, pt[2].x, pt[2].y + 1);
-				if (active || rc.left < 10) {
-					//LineTo(dc, pt[1].x, pt[1].y + 1);
-					//LineTo(dc, pt[0].x, pt[0].y);
-					DrawWuLine(dc, pt[2].x, pt[2].y + 1, pt[1].x + 1, pt[1].y + 1, PluginConfig.tabConfig.colors[8]);
-					DrawWuLine(dc, pt[1].x + 1, pt[1].y + 1, pt[0].x + 1, pt[0].y, PluginConfig.tabConfig.colors[8]);
-
-					if (rc.bottom < rcTabPage.top - 10 && !active) {
-						DrawWuLine(dc, pt[0].x, pt[0].y + 1, pt[4].x, pt[4].y + 1, PluginConfig.tabConfig.colors[9]);
-						DrawWuLine(dc, pt[0].x + 1, pt[0].y, pt[4].x - 1, pt[4].y, PluginConfig.tabConfig.colors[8]);
-					}
-				} else
-					LineTo(dc, pt[1].x, pt[1].y + 1);
-				DeleteObject(rgn);
-			} else {
-#endif
-				MoveToEx(dc, rcItem->left, rcItem->bottom, &pt);
-				LineTo(dc, rcItem->left, rcItem->top + 2);
-				LineTo(dc, rcItem->left + 2, rcItem->top);
-				LineTo(dc, rcItem->right - 2, rcItem->top);
-				SelectObject(dc, PluginConfig.tabConfig.m_hPenItemShadow);
-
-				MoveToEx(dc, rcItem->right - 2, rcItem->top + 1, &pt);
-				LineTo(dc, rcItem->right - 2, rcItem->bottom + 1);
-				SelectObject(dc, PluginConfig.tabConfig.m_hPenShadow);
-				MoveToEx(dc, rcItem->right - 1, rcItem->top + 2, &pt);
-				LineTo(dc, rcItem->right - 1, rcItem->bottom + 1);
-#if defined(__FEAT_DEPRECATED_MODERNTABS)
-			}
-#endif
+			MoveToEx(dc, rcItem->right - 2, rcItem->top + 1, &pt);
+			LineTo(dc, rcItem->right - 2, rcItem->bottom + 1);
+			SelectObject(dc, PluginConfig.tabConfig.m_hPenShadow);
+			MoveToEx(dc, rcItem->right - 1, rcItem->top + 2, &pt);
+			LineTo(dc, rcItem->right - 1, rcItem->bottom + 1);
 		}
 	}
 }
@@ -1072,13 +675,8 @@ static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
 
 	tabdat = (struct TabControlData *)GetWindowLongPtr(hwnd, GWLP_USERDATA);
 	if (tabdat) {
-		if (tabdat->pContainer == NULL) {
+		if (tabdat->pContainer == NULL)
 			tabdat->pContainer = (TContainerData *)GetWindowLongPtr(GetParent(hwnd), GWLP_USERDATA);
-#if defined(__FEAT_DEPRECATED_MODERNTABS)
-			if(tabdat->pContainer)
-				tabdat->m_moderntabs = ((tabdat->pContainer->dwFlagsEx & TCF_STYLED) && !CSkin::m_skinEnabled);
-#endif
-		}
 		tabdat->dwStyle = GetWindowLongPtr(hwnd, GWL_STYLE);
 	}
 
@@ -1137,10 +735,6 @@ static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
 			BOOL bClassicDraw = (tabdat->m_VisualStyles == FALSE);
 			if ((tabdat->dwStyle & TCS_BOTTOM) && !bClassicDraw && PluginConfig.tabConfig.m_bottomAdjust != 0)
 				InvalidateRect(hwnd, NULL, FALSE);
-#if defined(__FEAT_DEPRECATED_MODERNTABS)
-			else if (tabdat->m_moderntabs)
-				InvalidateRect(hwnd, NULL, FALSE);
-#endif
 			break;
 		}
 		case EM_REFRESHWITHOUTCLIP:
@@ -1152,23 +746,6 @@ static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
 				tabdat->bRefreshWithoutClip = FALSE;
 				return 0;
 			}
-		case TCM_GETITEMRECT: {
-			RECT *rc = (RECT *)lParam;
-			LRESULT result = CallWindowProc(OldTabControlClassProc, hwnd, msg, wParam, lParam);
-#if defined(__FEAT_DEPRECATED_MODERNTABS)
-			RECT rcControl;
-			if (tabdat->m_moderntabs && tabdat->dwStyle & TCS_MULTILINE) {
-				GetClientRect(hwnd, &rcControl);
-				if (rc->left < 10)
-					rc->right += 10;
-				else if (rc->right > rcControl.right - 10)
-					rc->left += 10;
-				else
-					OffsetRect(rc, 10, 0);
-			}
-#endif
-			return result;
-		}
 		case TCM_INSERTITEM:
 		case TCM_DELETEITEM:
 			tabdat->iHoveredCloseIcon = -1;
@@ -1441,11 +1018,7 @@ static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
 			DWORD cx, cy;
 			bool  isAero = M->isAero();
 			HANDLE hpb = 0;
-#if defined(__FEAT_DEPRECATED_MODERNTABS)
-			BOOL bClassicDraw = !isAero && (tabdat->m_VisualStyles == FALSE || tabdat->m_moderntabs || CSkin::m_skinEnabled);
-#else
 			BOOL bClassicDraw = !isAero && (tabdat->m_VisualStyles == FALSE || CSkin::m_skinEnabled);
-#endif
 			if(GetUpdateRect(hwnd, NULL, TRUE) == 0)
 				break;
 
@@ -1469,12 +1042,6 @@ static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
 			}
 			else
 				tabdat->fAeroTabs = FALSE;
-
-#if defined(__FEAT_DEPRECATED_MODERNTABS)
-			if(tabdat->pContainer)
-				tabdat->m_moderntabs = !tabdat->fAeroTabs && (tabdat->pContainer->dwFlagsEx & TCF_STYLED) &&
-				!(tabdat->dwStyle & TCS_BUTTONS) && !(CSkin::m_skinEnabled);
-#endif
 
 			hdcreal = BeginPaint(hwnd, &ps);
 
@@ -1597,11 +1164,6 @@ static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
 						LineTo(hdc, rectTemp.left, rectTemp.bottom);
 					} else {
 						rectTemp = rctPage;
-
-#if defined(__FEAT_DEPRECATED_MODERNTABS)
-						if (tabdat->m_moderntabs)
-							SelectObject(hdc, PluginConfig.tabConfig.m_hPenItemShadow);
-#endif
 						MoveToEx(hdc, rectTemp.left, rectTemp.bottom - 1, &pt);
 						LineTo(hdc, rectTemp.left, rectTemp.top);
 
@@ -1613,17 +1175,11 @@ static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
 							MoveToEx(hdc, rctActive.left - 2, rectTemp.bottom - 1, &pt);
 							LineTo(hdc, rectTemp.left - 1, rectTemp.bottom - 1);
 							SelectObject(hdc, PluginConfig.tabConfig.m_hPenItemShadow);
-#if defined(__FEAT_DEPRECATED_MODERNTABS)
-							if (!tabdat->m_moderntabs) {
-#endif
-								MoveToEx(hdc, rectTemp.right - 2, rectTemp.top + 1, &pt);
-								LineTo(hdc, rectTemp.right - 2, rectTemp.bottom - 2);
-								LineTo(hdc, rctActive.right, rectTemp.bottom - 2);
-								MoveToEx(hdc, rctActive.left - 2, rectTemp.bottom - 2, &pt);
-								LineTo(hdc, rectTemp.left, rectTemp.bottom - 2);
-#if defined(__FEAT_DEPRECATED_MODERNTABS)
-							}
-#endif
+							MoveToEx(hdc, rectTemp.right - 2, rectTemp.top + 1, &pt);
+							LineTo(hdc, rectTemp.right - 2, rectTemp.bottom - 2);
+							LineTo(hdc, rctActive.right, rectTemp.bottom - 2);
+							MoveToEx(hdc, rctActive.left - 2, rectTemp.bottom - 2, &pt);
+							LineTo(hdc, rectTemp.left, rectTemp.bottom - 2);
 						} else {
 							if (rctActive.left >= 0) {
 								LineTo(hdc, rctActive.left, rctActive.bottom);
@@ -1635,32 +1191,18 @@ static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
 									else
 										MoveToEx(hdc, rctActive.right, rctActive.bottom, &pt);
 								}
-#if defined(__FEAT_DEPRECATED_MODERNTABS)
-								LineTo(hdc, rectTemp.right - (tabdat->m_moderntabs ? 1 : 2), rctActive.bottom);
-#else
 								LineTo(hdc, rectTemp.right - 2, rctActive.bottom);
-#endif
 							} else {
 								RECT rectItemLeftmost;
 								UINT nItemLeftmost = FindLeftDownItem(hwnd);
 								TabCtrl_GetItemRect(hwnd, nItemLeftmost, &rectItemLeftmost);
 								LineTo(hdc, rectTemp.right - 2, rctActive.bottom);
 							}
-#if defined(__FEAT_DEPRECATED_MODERNTABS)
-							if (!tabdat->m_moderntabs) {
-#endif
-								SelectObject(hdc, PluginConfig.tabConfig.m_hPenItemShadow);
-								LineTo(hdc, rectTemp.right - 2, rectTemp.bottom - 2);
-								LineTo(hdc, rectTemp.left, rectTemp.bottom - 2);
-#if defined(__FEAT_DEPRECATED_MODERNTABS)
-							}
-#endif
+							SelectObject(hdc, PluginConfig.tabConfig.m_hPenItemShadow);
+							LineTo(hdc, rectTemp.right - 2, rectTemp.bottom - 2);
+							LineTo(hdc, rectTemp.left, rectTemp.bottom - 2);
 
-#if defined(__FEAT_DEPRECATED_MODERNTABS)
-							SelectObject(hdc, tabdat->m_moderntabs ? PluginConfig.tabConfig.m_hPenItemShadow : PluginConfig.tabConfig.m_hPenShadow);
-#else
 							SelectObject(hdc, PluginConfig.tabConfig.m_hPenShadow);
-#endif
 							MoveToEx(hdc, rectTemp.right - 1, rctActive.bottom, &pt);
 							LineTo(hdc, rectTemp.right - 1, rectTemp.bottom - 1);
 							LineTo(hdc, rectTemp.left - 2, rectTemp.bottom - 1);

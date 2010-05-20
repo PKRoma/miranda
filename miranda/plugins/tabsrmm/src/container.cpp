@@ -955,53 +955,6 @@ panel_found:
 				/*
 				 * tooltips
 				 */
-#if defined(__FEAT_DEPRECATED_TABTIPS)
-				case TTN_GETDISPINFO: {
-					POINT 			pt;
-					int   			iItem;
-					TCITEM 			item;
-					NMTTDISPINFO*	nmtt = (NMTTDISPINFO *) lParam;
-					TWindowData *cdat = 0;
-					const TCHAR*	contactName = 0;
-					TCHAR 			szTtitle[256];
-
-					if (pContainer->hwndTip == 0)
-						break;
-
-					GetCursorPos(&pt);
-					if ((iItem = GetTabItemFromMouse(hwndTab, &pt)) == -1)
-						break;
-					ZeroMemory((void *)&item, sizeof(item));
-					item.mask = TCIF_PARAM;
-					TabCtrl_GetItem(hwndTab, iItem, &item);
-					if (item.lParam) {
-						cdat = (struct TWindowData *) GetWindowLongPtr((HWND)item.lParam, GWLP_USERDATA);
-						if (cdat) {
-							contactName = cdat->cache->getNick();
-							if (contactName) {
-								if (cdat->szProto) {
-									nmtt->hinst = NULL;
-									if (cdat->idle != 0) {
-										time_t diff = time(NULL) - cdat->idle;
-										int i_hrs = diff / 3600;
-										int i_mins = (diff - i_hrs * 3600) / 60;
-										int i_secs = diff % 60;
-
-										mir_sntprintf(szTtitle, safe_sizeof(szTtitle), _T("%s (%s) - Idle: %d:%02d:%02d"), contactName, cdat->szStatus[0] ? cdat->szStatus : _T("(undef)"), i_hrs, i_mins, i_secs);
-									}
-									else
-										mir_sntprintf(szTtitle, safe_sizeof(szTtitle), _T("%s (%s)"), contactName, cdat->szStatus[0] ? cdat->szStatus : _T("(undef)"));
-									lstrcpyn(nmtt->szText, szTtitle, 80);
-									nmtt->szText[79] = 0;
-									nmtt->lpszText = nmtt->szText;
-									nmtt->uFlags = TTF_IDISHWND;
-								}
-							}
-						}
-					}
-					break;
-				}
-#endif
 				case NM_RCLICK: {
 					HMENU 	subMenu;
 					POINT 	pt, pt1;
@@ -1308,9 +1261,11 @@ buttons_done:
 			MINMAXINFO *mmi = (MINMAXINFO *) lParam;
 
 			mmi->ptMinTrackSize.x = 275;
+			mmi->ptMinTrackSize.y = 300;
 
 			GetClientRect(GetDlgItem(hwndDlg, IDC_MSGTABS), &rc);
-			GetClientRect(pContainer->hwndActive, &rcClient);
+			if(pContainer->hwndActive)								// at container creation time, there is no hwndActive yet..
+				GetClientRect(pContainer->hwndActive, &rcClient);
 			GetWindowRect(hwndDlg, &rcWindow);
 			pt.y = rc.top;
 			TabCtrl_AdjustRect(GetDlgItem(hwndDlg, IDC_MSGTABS), FALSE, &rc);
@@ -1319,7 +1274,8 @@ buttons_done:
 			 * so let's add the container's vertical padding (title bar, tab bar, 
 			 * window border, status bar) to this value
 			 */
-			mmi->ptMinTrackSize.y = pContainer->uChildMinHeight + (pContainer->hwndActive ? ((rcWindow.bottom - rcWindow.top) - rcClient.bottom) : 0);
+			if(pContainer->hwndActive)
+				mmi->ptMinTrackSize.y = pContainer->uChildMinHeight + (pContainer->hwndActive ? ((rcWindow.bottom - rcWindow.top) - rcClient.bottom) : 0);
 
 			if (pContainer->dwFlags & CNT_VERTICALMAX || (GetKeyState(VK_CONTROL) & 0x8000)) {
 				RECT rcDesktop = {0};
@@ -1352,6 +1308,13 @@ buttons_done:
 					mmi->ptMaxPosition.x += rcDesktop.left;
 					mmi->ptMaxPosition.y += rcDesktop.top;
 				}
+
+				/*
+				 * protect against invalid values...
+				 */
+				if(mmi->ptMinTrackSize.y < 50 || mmi->ptMinTrackSize.y > rcDesktop.bottom)
+					mmi->ptMinTrackSize.y = 300;
+
 				if (PluginConfig.m_MathModAvail) {
 					if (CallService(MTH_GET_PREVIEW_SHOWN, 0, 0)) {
 						RECT rc;
@@ -1529,10 +1492,6 @@ buttons_done:
 							ShowWindow((HWND)item.lParam, SW_SHOW);
 							SetFocus(pContainer->hwndActive);
 						}
-#if defined(__FEAT_DEPRECATED_MODERNTABS)
-						if(tabdat && tabdat->m_moderntabs)
-                              InvalidateRect(hwndTab, NULL, TRUE);
-#endif
 					}
 					break;
 			}

@@ -254,7 +254,7 @@ flat_themed:
 							BitBlt(hdcMem, rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top,
 								   dat->pContainer->cachedToolbarDC, pt.x, 1, SRCCOPY);
 						}
-					}
+					}				
 					else {
 						if (CMimAPI::m_pfnIsThemeBackgroundPartiallyTransparent(ctl->hThemeToolbar, TP_BUTTON, TBStateConvert2Flat(state)))
 							CMimAPI::m_pfnDrawThemeParentBackground(ctl->hwnd, hdcMem, &rc);
@@ -342,6 +342,7 @@ nonflat_themed:
 					if (clip)
 						state = PBS_NORMAL;
 
+					CSkin::FillBack(hdcMem, &rcClient);
 					if((fAero || fVSThemed) && ctl->bToolbarButton) {
 						if(dat) {
 							RECT	rcWin;

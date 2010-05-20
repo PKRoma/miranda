@@ -487,7 +487,7 @@ static BOOL CALLBACK PopupDlgProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM
 
 /**
  * Get a preview for the message
- * caller must mir_free() the return value
+ * caller must always mir_free() the return value
  *
  * @param eventType the event type
  * @param dbe       DBEVENTINFO *: database event structure
@@ -529,34 +529,48 @@ static TCHAR *GetPreviewT(WORD eventType, DBEVENTINFO* dbe)
 			break;
 		case EVENTTYPE_FILE:
 			if(pBlob) {
-				if(nen_options.bPreview) {
+				if(!nen_options.bPreview) {
+					commentFix = mir_tstrdup(CTranslator::get(CTranslator::GEN_STRING_EVENT_FILE));
+					break;
+				}
+				if(dbe->cbBlob > 5) {			// min valid size = (sizeof(DWORD) + 1 character file name + terminating 0)
 					char* szFileName = (char *)dbe->pBlob + sizeof(DWORD);
-					char* szDescr = szFileName + lstrlenA(szFileName) + 1;
-					TCHAR* tszFileName = DbGetEventStringT(dbe, szFileName );
-					TCHAR *buf = 0;
+					char* szDescr = 0;
+					size_t namelength = Utils::safe_strlen(szFileName, dbe->cbBlob - sizeof(DWORD));
 
-					if (*szDescr != 0) {
+					if(dbe->cbBlob > (sizeof(DWORD) + namelength + 1))
+						szDescr = szFileName + namelength + 1;
+
+					TCHAR* tszFileName = DbGetEventStringT(dbe, szFileName );
+					TCHAR* buf = 0;
+
+					if (szDescr && Utils::safe_strlen(szDescr, dbe->cbBlob - sizeof(DWORD) - namelength - 1) > 0) {
 						TCHAR* tszDescr = DbGetEventStringT(dbe, szDescr);
 
 						if(tszFileName && tszDescr) {
-							UINT uRequired = (lstrlen(CTranslator::get(CTranslator::GEN_STRING_FILE)) + lstrlen(tszFileName) + lstrlen(tszDescr) + 10) * sizeof(TCHAR);
+							size_t uRequired = sizeof(TCHAR) * (_tcslen(CTranslator::get(CTranslator::GEN_STRING_EVENT_FILE)) + namelength + _tcslen(tszDescr) + 10);
 							buf = (TCHAR *)mir_alloc(uRequired);
-							mir_sntprintf(buf, uRequired, _T("%s: %s (%s)"), CTranslator::get(CTranslator::GEN_STRING_FILE),
+							mir_sntprintf(buf, uRequired, _T("%s: %s (%s)"), CTranslator::get(CTranslator::GEN_STRING_EVENT_FILE),
 										  tszFileName, tszDescr);
+							mir_free(tszDescr);
+							mir_free(tszFileName);
+							return(buf);
 						}
-						mir_free(tszDescr);
 					}
-					else {
-						UINT uRequired = (lstrlen(CTranslator::get(CTranslator::GEN_STRING_FILE)) + lstrlen(tszFileName) + 10) * sizeof(TCHAR);
+
+					if(tszFileName) {
+						size_t uRequired = sizeof(TCHAR) * (_tcslen(CTranslator::get(CTranslator::GEN_STRING_EVENT_FILE)) + namelength +
+								_tcslen(CTranslator::get(CTranslator::GEN_STRING_EVENT_FILE_NODESC)) + 10);
 						buf = (TCHAR *)mir_alloc(uRequired);
-						mir_sntprintf(buf, uRequired, _T("%s: %s"), CTranslator::get(CTranslator::GEN_STRING_FILE),
-									  tszFileName);
+						mir_sntprintf(buf, uRequired, _T("%s: %s (%s)"), CTranslator::get(CTranslator::GEN_STRING_EVENT_FILE),
+									  tszFileName, CTranslator::get(CTranslator::GEN_STRING_EVENT_FILE_NODESC));
+						mir_free(tszFileName);
 					}
-					mir_free( tszFileName );
-					return(buf);
+					if(buf)
+						return(buf);
 				}
 			}
-			commentFix = mir_tstrdup(CTranslator::get(CTranslator::GEN_STRING_FILE));
+			commentFix = mir_tstrdup(CTranslator::get(CTranslator::GEN_STRING_EVENT_FILE_INVALID));
 			break;
 		default:
 			commentFix = mir_tstrdup(CTranslator::get(CTranslator::GEN_POPUPS_UNKNOWN));

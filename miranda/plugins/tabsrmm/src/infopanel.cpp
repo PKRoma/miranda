@@ -294,9 +294,12 @@ void CInfoPanel::renderBG(const HDC hdc, RECT& rc, CSkinItem *item, bool fAero, 
 				rc.bottom -= 2;
 				CSkin::SkinDrawBG(m_dat->hwnd, m_dat->pContainer->hwnd, m_dat->pContainer, &rc, hdc);
 				item = &SkinItems[ID_EXTBKINFOPANELBG];
-				if(item->IGNORED)
-					item = &SkinItems[ID_EXTBKINFOPANEL];
-				CSkin::DrawItem(hdc, &rc, item);
+				/*
+				 * if new (= tabsrmm 3.x) skin item is not defined, use the old info panel
+				 * field background items. That should break less skins
+				 */
+				if(!item->IGNORED)
+					CSkin::DrawItem(hdc, &rc, item);
 			} else {
 				rc.bottom -= 2;
 				::DrawAlpha(hdc, &rc, PluginConfig.m_ipBackgroundGradient, 100, PluginConfig.m_ipBackgroundGradientHigh, 0, 17,
@@ -304,7 +307,6 @@ void CInfoPanel::renderBG(const HDC hdc, RECT& rc, CSkinItem *item, bool fAero, 
 				if(fAutoCalc) {
 					rc.top = rc.bottom - 1;
 					rc.left--; rc.right++;
-					//::DrawEdge(hdc, &rc, BDR_SUNKENOUTER, BF_RECT);
 				}
 			}
 		}

@@ -28,7 +28,7 @@
  *
  * $Id$
  *
- * utility functions
+ * utility functions for TabSRMM
  *
  */
 
@@ -104,7 +104,7 @@ public:
 
 	static  void 				TSAPI extractResource				(const HMODULE h, const UINT uID, const TCHAR *tszName, const TCHAR *tszPath,
 																	 const TCHAR *tszFilename, bool fForceOverwrite);
-	static	void				TSAPI scaleAvatarHeightLimited		(const HBITMAP hBm, double& dNewWidth, double& dNewHeight, LONG maxHeight);
+	static	void				TSAPI scaleAvatarHeightLimited		(const HBITMAP hBm, double& dNewWidth, double& dNewHeight, const LONG maxHeight);
 
 	static	AVATARCACHEENTRY*	TSAPI loadAvatarFromAVS				(const HANDLE hContact);
 	static	void				TSAPI sanitizeFilename				(TCHAR *tszFilename);
@@ -165,6 +165,27 @@ public:
 			}
 		}
 	}
+
+	/**
+	 * safe strlen function - do not overflow the given buffer length
+	 * if the buffer does not contain a valid (zero-terminated) string, it
+	 * will return 0.
+	 *
+	 * careful: maxlen must be given in element counts!!
+	 */
+	template<typename T> static size_t safe_strlen(const T* src, const size_t maxlen = 0)
+	{
+		size_t s = 0;
+
+		while(s < maxlen && *(src++))
+			s++;
+
+		if(s >= maxlen && *src != 0)
+			return(0);
+		else
+			return(s);
+	}
+
 public:
 	static	TRTFColorTable*		rtf_ctable;
 	static	int					rtf_ctable_size;
