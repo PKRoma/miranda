@@ -39,9 +39,9 @@ int CJabberProto::SendGetVcard( const TCHAR* jid )
 	if (!m_bJabberOnline) return 0;
 
 	int iqId = SerialNext();
+	JABBER_IQ_PROCID procId = !lstrcmp( jid, m_szJabberJID ) ? IQ_PROC_GETVCARD : IQ_PROC_NONE;
 
-	// FIXME: maybe _tcscmp?
-	IqAdd( iqId, ( jid == m_szJabberJID ) ? IQ_PROC_GETVCARD : IQ_PROC_NONE, &CJabberProto::OnIqResultGetVcard );
+	IqAdd( iqId, procId, &CJabberProto::OnIqResultGetVcard );
 	m_ThreadInfo->send(
 		XmlNodeIq( _T("get"), iqId, jid ) << XCHILDNS( _T("vCard"), _T(JABBER_FEAT_VCARD_TEMP))
 			<< XATTR( _T("prodid"), _T("-//HandGen//NONSGML vGen v1.0//EN")) << XATTR( _T("version"), _T("2.0")));

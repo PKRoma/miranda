@@ -192,19 +192,6 @@ void CJabberProto::OnLoggedIn()
 		SendGetVcard( m_szJabberJID );
 	JSetString( NULL, "LastLoggedServer", m_ThreadInfo->server );
 
-	//Check if avatar changed
-	DBVARIANT dbvSaved = {0};
-	DBVARIANT dbvHash = {0};
-	int resultSaved = JGetStringT( NULL, "AvatarSaved", &dbvSaved );
-	int resultHash  = JGetStringT( NULL, "AvatarHash", &dbvHash );
-	if ( resultSaved || resultHash || lstrcmp( dbvSaved.ptszVal, dbvHash.ptszVal ))	{
-		char tFileName[ MAX_PATH ];
-		GetAvatarFileName( NULL, tFileName, MAX_PATH );
-		SetServerVcard( TRUE, tFileName );
-	}
-	DBFreeVariant(&dbvSaved);
-	DBFreeVariant(&dbvHash);
-
 	m_pepServices.ResetPublishAll();
 }
 

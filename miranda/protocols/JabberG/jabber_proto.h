@@ -571,7 +571,7 @@ struct CJabberProto : public PROTO_INTERFACE
 		  
 	void   OnIqResultBind( HXML iqNode, CJabberIqInfo* pInfo );
 	void   OnIqResultDiscoBookmarks( HXML iqNode );
-	void   OnIqResultSetBookmarks( HXML iqNode );
+	void   OnIqResultEntityTime( HXML iqNode, CJabberIqInfo* pInfo );
 	void   OnIqResultExtSearch( HXML iqNode );
 	void   OnIqResultGetAuth( HXML iqNode );
 	void   OnIqResultGetVCardAvatar( HXML iqNode );
@@ -582,6 +582,7 @@ struct CJabberProto : public PROTO_INTERFACE
 	void   OnIqResultGetRegister( HXML iqNode );
 	void   OnIqResultGetRoster( HXML iqNode, CJabberIqInfo* pInfo );
 	void   OnIqResultGetVcard( HXML iqNode );
+	void   OnIqResultLastActivity( HXML iqNode, CJabberIqInfo* pInfo );
 	void   OnIqResultMucGetAdminList( HXML iqNode );
 	void   OnIqResultMucGetBanList( HXML iqNode );
 	void   OnIqResultMucGetMemberList( HXML iqNode );
@@ -592,12 +593,11 @@ struct CJabberProto : public PROTO_INTERFACE
 	void   OnIqResultNotes( HXML iqNode, CJabberIqInfo* pInfo );
 	void   OnIqResultSession( HXML iqNode, CJabberIqInfo* pInfo );
 	void   OnIqResultSetAuth( HXML iqNode );
+	void   OnIqResultSetBookmarks( HXML iqNode );
 	void   OnIqResultSetPassword( HXML iqNode );
 	void   OnIqResultSetRegister( HXML iqNode );
 	void   OnIqResultSetSearch( HXML iqNode );
 	void   OnIqResultSetVcard( HXML iqNode );
-	void   OnIqResultEntityTime( HXML iqNode, CJabberIqInfo* pInfo );
-	void   OnIqResultLastActivity( HXML iqNode, CJabberIqInfo* pInfo );
 	void   OnIqResultVersion( HXML node, CJabberIqInfo *pInfo );
 	void   OnProcessLoginRq( ThreadData* info, DWORD rq );
 	void   OnLoggedIn( void );
