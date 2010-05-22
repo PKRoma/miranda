@@ -801,7 +801,8 @@
 	</Configurations>
 	<References>
 		<ProjectReference
-			ReferencedProjectIdentifier="{FFD8637D-909C-4586-9E42-120B66B564FE}"
+			ReferencedProjectIdentifier="{E2A369CD-EDA3-414F-8AD0-E732CD7EE68C}"
+			RelativePathToProject="..\plugins\zlib\zlib_9.vcproj"
 		/>
 	</References>
 	<Files>
