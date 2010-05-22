@@ -1,4 +1,4 @@
-/* $Id: tif_stream.cxx,v 1.17 2008/04/05 17:55:39 drolon Exp $ */
+/* $Id: tif_stream.cxx,v 1.23 2009/11/07 19:18:27 drolon Exp $ */
 
 /*
  * Copyright (c) 1988-1996 Sam Leffler
@@ -116,7 +116,7 @@ _tiffosSeekProc(thandle_t fd, toff_t off, int whence)
 #else
 		ios::iostate	old_state;
 #endif
-		toff_t		origin;
+		toff_t		origin=0;
 
 		old_state = os->rdstate();
 		// reset the fail bit or else tellp() won't work below

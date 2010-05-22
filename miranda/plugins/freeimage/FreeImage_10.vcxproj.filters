@@ -212,9 +212,6 @@
     <ClCompile Include="Source\LibJPEG\jcparam.c">
       <Filter>Source Files\LibJPEG\Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Source\LibJPEG\jcphuff.c">
-      <Filter>Source Files\LibJPEG\Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Source\LibJPEG\jcprepct.c">
       <Filter>Source Files\LibJPEG\Source Files</Filter>
     </ClCompile>
@@ -245,9 +242,6 @@
     <ClCompile Include="Source\LibJPEG\jddctmgr.c">
       <Filter>Source Files\LibJPEG\Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Source\LibJPEG\jdhuff.c">
-      <Filter>Source Files\LibJPEG\Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Source\LibJPEG\jdinput.c">
       <Filter>Source Files\LibJPEG\Source Files</Filter>
     </ClCompile>
@@ -261,9 +255,6 @@
       <Filter>Source Files\LibJPEG\Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Source\LibJPEG\jdmerge.c">
-      <Filter>Source Files\LibJPEG\Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\LibJPEG\jdphuff.c">
       <Filter>Source Files\LibJPEG\Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Source\LibJPEG\jdpostct.c">
@@ -294,9 +285,6 @@
       <Filter>Source Files\LibJPEG\Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Source\LibJPEG\jidctint.c">
-      <Filter>Source Files\LibJPEG\Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\LibJPEG\jidctred.c">
       <Filter>Source Files\LibJPEG\Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Source\LibJPEG\jmemmgr.c">
@@ -436,6 +424,18 @@
     </ClCompile>
     <ClCompile Include="Source\FreeImageToolkit\Resize.cpp">
       <Filter>Toolkit Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\LibJPEG\jaricom.c">
+      <Filter>Source Files\LibJPEG\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\LibJPEG\jcarith.c">
+      <Filter>Source Files\LibJPEG\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\LibJPEG\jdarith.c">
+      <Filter>Source Files\LibJPEG\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\LibJPEG\jdhuff.c">
+      <Filter>Source Files\LibJPEG\Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

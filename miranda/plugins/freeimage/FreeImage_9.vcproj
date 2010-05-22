@@ -4,6 +4,7 @@
 	Version="9.00"
 	Name="FreeImage"
 	ProjectGUID="{D0C4EACD-F264-4CFA-9AFC-3918FEC31A9A}"
+	RootNamespace="FreeImage"
 	TargetFrameworkVersion="131072"
 	>
 	<Platforms>
@@ -1015,11 +1016,19 @@
 					Name="Source Files"
 					>
 					<File
+						RelativePath=".\Source\LibJPEG\jaricom.c"
+						>
+					</File>
+					<File
 						RelativePath=".\Source\LibJPEG\jcapimin.c"
 						>
 					</File>
 					<File
 						RelativePath=".\Source\LibJPEG\jcapistd.c"
+						>
+					</File>
+					<File
+						RelativePath=".\Source\LibJPEG\jcarith.c"
 						>
 					</File>
 					<File
@@ -1063,10 +1072,6 @@
 						>
 					</File>
 					<File
-						RelativePath=".\Source\LibJPEG\jcphuff.c"
-						>
-					</File>
-					<File
 						RelativePath=".\Source\LibJPEG\jcprepct.c"
 						>
 					</File>
@@ -1084,6 +1089,10 @@
 					</File>
 					<File
 						RelativePath=".\Source\LibJPEG\jdapistd.c"
+						>
+					</File>
+					<File
+						RelativePath=".\Source\LibJPEG\jdarith.c"
 						>
 					</File>
 					<File
@@ -1131,10 +1140,6 @@
 						>
 					</File>
 					<File
-						RelativePath=".\Source\LibJPEG\jdphuff.c"
-						>
-					</File>
-					<File
 						RelativePath=".\Source\LibJPEG\jdpostct.c"
 						>
 					</File>
@@ -1172,10 +1177,6 @@
 					</File>
 					<File
 						RelativePath=".\Source\LibJPEG\jidctint.c"
-						>
-					</File>
-					<File
-						RelativePath=".\Source\LibJPEG\jidctred.c"
 						>
 					</File>
 					<File
@@ -1263,19 +1264,11 @@
 						>
 					</File>
 					<File
-						RelativePath=".\Source\LibJPEG\jchuff.h"
-						>
-					</File>
-					<File
 						RelativePath=".\Source\LibJPEG\jconfig.h"
 						>
 					</File>
 					<File
 						RelativePath=".\Source\LibJPEG\jdct.h"
-						>
-					</File>
-					<File
-						RelativePath=".\Source\LibJPEG\jdhuff.h"
 						>
 					</File>
 					<File
@@ -1510,14 +1503,6 @@
 				>
 			</File>
 		</Filter>
-		<File
-			RelativePath="Todo.txt"
-			>
-		</File>
-		<File
-			RelativePath="Whatsnew.txt"
-			>
-		</File>
 	</Files>
 	<Globals>
 	</Globals>

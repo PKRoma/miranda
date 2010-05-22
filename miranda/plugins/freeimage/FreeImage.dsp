@@ -263,11 +263,19 @@ SOURCE=.\Miranda\main.cpp
 # PROP Default_Filter ""
 # Begin Source File
 
+SOURCE=.\Source\LibJPEG\jaricom.c
+# End Source File
+# Begin Source File
+
 SOURCE=.\Source\LibJPEG\jcapimin.c
 # End Source File
 # Begin Source File
 
 SOURCE=.\Source\LibJPEG\jcapistd.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\Source\LibJPEG\jcarith.c
 # End Source File
 # Begin Source File
 
@@ -319,10 +327,6 @@ SOURCE=.\Source\LibJPEG\jcparam.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\Source\LibJPEG\jcphuff.c
-# End Source File
-# Begin Source File
-
 SOURCE=.\Source\LibJPEG\jcprepct.c
 # End Source File
 # Begin Source File
@@ -340,6 +344,10 @@ SOURCE=.\Source\LibJPEG\jdapimin.c
 # Begin Source File
 
 SOURCE=.\Source\LibJPEG\jdapistd.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\Source\LibJPEG\jdarith.c
 # End Source File
 # Begin Source File
 
@@ -395,10 +403,6 @@ SOURCE=.\Source\LibJPEG\jdmerge.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\Source\LibJPEG\jdphuff.c
-# End Source File
-# Begin Source File
-
 SOURCE=.\Source\LibJPEG\jdpostct.c
 # End Source File
 # Begin Source File
@@ -440,10 +444,6 @@ SOURCE=.\Source\LibJPEG\jidctfst.c
 # Begin Source File
 
 SOURCE=.\Source\LibJPEG\jidctint.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\Source\LibJPEG\jidctred.c
 # End Source File
 # Begin Source File
 

@@ -1,4 +1,4 @@
-/* $Id: tif_dir.c,v 1.23 2008/04/05 17:55:37 drolon Exp $ */
+/* $Id: tif_dir.c,v 1.29 2009/11/07 19:18:27 drolon Exp $ */
 
 /*
  * Copyright (c) 1988-1997 Sam Leffler
@@ -593,7 +593,7 @@ badvalue:
 	return (0);
 badvalue32:
 	TIFFErrorExt(tif->tif_clientdata, module,
-		     "%s: Bad value %ld for \"%s\" tag",
+		     "%s: Bad value %u for \"%s\" tag",
 		     tif->tif_name, v32,
 		     _TIFFFieldWithTag(tif, tag)->field_name);
 	va_end(ap);

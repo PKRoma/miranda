@@ -2,8 +2,10 @@
 
 /* This code snippet is for use by configure's compilation test. */
 
-#if defined(PNG_ASSEMBLER_CODE_SUPPORTED) && \
+#if (!defined _MSC_VER) && \
+    defined(PNG_ASSEMBLER_CODE_SUPPORTED) && \
     defined(PNG_MMX_CODE_SUPPORTED)
+
 int PNGAPI png_dummy_mmx_support(void);
 
 static int _mmx_supported = 2; // 0: no MMX; 1: MMX supported; 2: not tested
@@ -15,9 +17,9 @@ int PNGAPI
 png_dummy_mmx_support(void)
 {
    int result;
-#if defined(PNG_MMX_CODE_SUPPORTED)  // superfluous, but what the heck
+#ifdef PNG_MMX_CODE_SUPPORTED  // superfluous, but what the heck
     __asm__ __volatile__ (
-#if defined(__x86_64__)
+#ifdef __x86_64__
         "pushq %%rbx          \n\t"  // rbx gets clobbered by CPUID instruction
         "pushq %%rcx          \n\t"  // so does rcx...
         "pushq %%rdx          \n\t"  // ...and rdx (but rcx & rdx safe on Linux)
@@ -69,7 +71,7 @@ png_dummy_mmx_support(void)
     "0:                       \n\t"  // .NOT_SUPPORTED: target label for jump instructions
         "movl $0, %%eax       \n\t"  // set return value to 0
     "1:                       \n\t"  // .RETURN: target label for jump instructions
-#if defined(__x86_64__)
+#ifdef __x86_64__
         "popq %%rdx           \n\t"  // restore rdx
         "popq %%rcx           \n\t"  // restore rcx
         "popq %%rbx           \n\t"  // restore rbx

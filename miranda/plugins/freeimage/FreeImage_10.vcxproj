@@ -602,6 +602,10 @@
     <ClCompile Include="Source\FreeImage\CacheFile.cpp" />
     <ClCompile Include="Source\FreeImage\MultiPage.cpp" />
     <ClCompile Include="Source\FreeImage\ZLibInterface.cpp" />
+    <ClCompile Include="Source\LibJPEG\jaricom.c" />
+    <ClCompile Include="Source\LibJPEG\jcarith.c" />
+    <ClCompile Include="Source\LibJPEG\jdarith.c" />
+    <ClCompile Include="Source\LibJPEG\jdhuff.c" />
     <ClCompile Include="Source\Metadata\Exif.cpp" />
     <ClCompile Include="Source\Metadata\FIRational.cpp" />
     <ClCompile Include="Source\Metadata\FreeImageTag.cpp" />
@@ -621,7 +625,6 @@
     <ClCompile Include="Source\LibJPEG\jcmaster.c" />
     <ClCompile Include="Source\LibJPEG\jcomapi.c" />
     <ClCompile Include="Source\LibJPEG\jcparam.c" />
-    <ClCompile Include="Source\LibJPEG\jcphuff.c" />
     <ClCompile Include="Source\LibJPEG\jcprepct.c" />
     <ClCompile Include="Source\LibJPEG\jcsample.c" />
     <ClCompile Include="Source\LibJPEG\jctrans.c" />
@@ -632,13 +635,11 @@
     <ClCompile Include="Source\LibJPEG\jdcoefct.c" />
     <ClCompile Include="Source\LibJPEG\jdcolor.c" />
     <ClCompile Include="Source\LibJPEG\jddctmgr.c" />
-    <ClCompile Include="Source\LibJPEG\jdhuff.c" />
     <ClCompile Include="Source\LibJPEG\jdinput.c" />
     <ClCompile Include="Source\LibJPEG\jdmainct.c" />
     <ClCompile Include="Source\LibJPEG\jdmarker.c" />
     <ClCompile Include="Source\LibJPEG\jdmaster.c" />
     <ClCompile Include="Source\LibJPEG\jdmerge.c" />
-    <ClCompile Include="Source\LibJPEG\jdphuff.c" />
     <ClCompile Include="Source\LibJPEG\jdpostct.c" />
     <ClCompile Include="Source\LibJPEG\jdsample.c" />
     <ClCompile Include="Source\LibJPEG\jdtrans.c" />
@@ -649,7 +650,6 @@
     <ClCompile Include="Source\LibJPEG\jidctflt.c" />
     <ClCompile Include="Source\LibJPEG\jidctfst.c" />
     <ClCompile Include="Source\LibJPEG\jidctint.c" />
-    <ClCompile Include="Source\LibJPEG\jidctred.c" />
     <ClCompile Include="Source\LibJPEG\jmemmgr.c" />
     <ClCompile Include="Source\LibJPEG\jmemnobs.c" />
     <ClCompile Include="Source\LibJPEG\jquant1.c" />

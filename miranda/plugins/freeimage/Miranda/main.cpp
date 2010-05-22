@@ -30,20 +30,18 @@ Last change by : $Author: rainwater $
 
 */
 
+#include <m_stdhdr.h>
+
 #include <windows.h>
 #include <commdlg.h>
-#include <malloc.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <tchar.h>
-#include <string.h>
 
-#include "newpluginapi.h"
-#include "version.h"
 #include <m_png.h>
 #include <m_clui.h>
 
 #include <m_imgsrvc.h>
+
+#include "newpluginapi.h"
+#include "version.h"
 
 #include "../Source/libpng/png.h"
 
@@ -512,8 +510,8 @@ extern "C" DWORD __declspec(dllexport) getver( void )
 
 typedef struct {
 	char*		mBuffer;
-	size_t	mBufSize;
-	size_t	mBufPtr;
+	png_size_t	mBufSize;
+	png_size_t	mBufPtr;
 }
 HMemBufInfo;
 
@@ -1017,6 +1015,11 @@ static INT_PTR serviceSave(WPARAM wParam, LPARAM lParam)
 static INT_PTR serviceGetVersion(WPARAM wParam, LPARAM lParam)
 {
 	return FI_IF_VERSION;
+}
+
+DLL_API FIBITMAP *DLL_CALLCONV FreeImage_RotateClassic(FIBITMAP *dib, double angle)
+{
+	return FreeImage_Rotate(dib, angle, NULL);
 }
 
 void FI_Populate(void)
