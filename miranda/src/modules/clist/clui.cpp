@@ -321,7 +321,7 @@ int LoadCLUIModule(void)
 	Utils_AssertInsideScreen(&pos);
 
 	cli.hwndContactList = CreateWindowEx(
-		DBGetContactSettingByte(NULL, "CList", "ToolWindow", SETTING_TOOLWINDOW_DEFAULT) ? WS_EX_TOOLWINDOW : 0,
+		WS_EX_APPWINDOW | (DBGetContactSettingByte(NULL, "CList", "ToolWindow", SETTING_TOOLWINDOW_DEFAULT) ? WS_EX_TOOLWINDOW : 0),
 		_T(MIRANDACLASS),
 		titleText,
 		WS_POPUPWINDOW | WS_THICKFRAME | WS_CLIPCHILDREN |
