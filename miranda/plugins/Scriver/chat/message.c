@@ -218,6 +218,26 @@ TCHAR* DoRtfToTags( char* pszText, SESSION_INFO* si)
 				strcpy(InsertThis, "\x97");
 #endif
 			} 
+			else if (!memcmp(p1, "\\lquote",7)) {
+				bTextHasStarted = TRUE;
+				bJustRemovedRTF = TRUE;
+				iRemoveChars = 7;
+#if defined(_UNICODE)
+				strcpy(InsertThis, "\xE2\x80\x98");
+#else
+				strcpy(InsertThis, "\x91");
+#endif
+			}
+			else if (!memcmp(p1, "\\rquote",7)) {
+				bTextHasStarted = TRUE;
+				bJustRemovedRTF = TRUE;
+				iRemoveChars = 7;
+#if defined(_UNICODE)
+				strcpy(InsertThis, "\xE2\x80\x99");
+#else
+				strcpy(InsertThis, "\x92");
+#endif
+			}
 			else if (!memcmp(p1, "\\ldblquote",10)) {
 				bTextHasStarted = TRUE;
 				bJustRemovedRTF = TRUE;
