@@ -309,9 +309,9 @@ Begin of Hrk's code for bug
 
 int fnGetWindowVisibleState(HWND hWnd, int iStepX, int iStepY)
 {
-	RECT rc = { 0 };
-	POINT pt = { 0 };
-	register int i = 0, j = 0, width = 0, height = 0, iCountedDots = 0, iNotCoveredDots = 0;
+	RECT rc, rcWin, rcWorkArea;
+	POINT pt;
+	register int i, j, width, height, iCountedDots = 0, iNotCoveredDots = 0;
 	BOOL bPartiallyCovered = FALSE;
 	HWND hAux = 0;
 
@@ -327,11 +327,25 @@ int fnGetWindowVisibleState(HWND hWnd, int iStepX, int iStepY)
 
 	if (IsIconic(hWnd) || !IsWindowVisible(hWnd))
 		return GWVS_HIDDEN;
-	else {
+	else 
+	{
 		if (CallService(MS_CLIST_DOCKINGISDOCKED, 0, 0))
 			return GWVS_VISIBLE;
 
-		GetWindowRect(hWnd, &rc);
+		GetWindowRect(hWnd, &rcWin);
+
+		SystemParametersInfo(SPI_GETWORKAREA, 0, &rcWorkArea, FALSE);
+		if (MyMonitorFromWindow)
+		{
+			HMONITOR hMon = MyMonitorFromWindow(hWnd, MONITOR_DEFAULTTONEAREST);
+			MONITORINFO mi;
+			mi.cbSize = sizeof(mi);
+			if (MyGetMonitorInfo(hMon, &mi))
+				rcWorkArea = mi.rcWork;
+		}
+
+		IntersectRect(&rc, &rcWin, &rcWorkArea);
+
 		width = rc.right - rc.left;
 		height = rc.bottom - rc.top;
 
