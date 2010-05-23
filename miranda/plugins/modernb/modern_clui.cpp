@@ -706,6 +706,7 @@ void CLUI_ChangeWindowMode()
 	{
 		style=WS_CLIPCHILDREN;
 		styleEx=WS_EX_TOOLWINDOW;
+		styleMaskEx |= WS_EX_APPWINDOW;
 	}
 	//3- TODO Update Layered mode
 	if(g_bTransparentFlag&&g_CluiData.fLayered)
