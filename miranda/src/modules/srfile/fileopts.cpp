@@ -98,8 +98,8 @@ static INT_PTR CALLBACK DlgProcFileOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 			}
 
 			DBVARIANT dbv;
-			if(DBGetContactSettingString(NULL,"SRFile","ScanCmdLine",&dbv)==0) {
-				SetDlgItemTextA(hwndDlg,IDC_SCANCMDLINE,dbv.pszVal);
+			if(DBGetContactSettingTString(NULL,"SRFile","ScanCmdLine",&dbv)==0) {
+				SetDlgItemText(hwndDlg,IDC_SCANCMDLINE,dbv.ptszVal);
 				DBFreeVariant(&dbv);
 			}
 			else {
@@ -160,45 +160,45 @@ static INT_PTR CALLBACK DlgProcFileOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 					else if(HIWORD(wParam)!=CBN_EDITCHANGE) return 0;
 					break;
 				case IDC_SCANCMDLINEBROWSE:
-				{	char str[MAX_PATH+2];
-					OPENFILENAMEA ofn={0};
-					char filter[512],*pfilter;
+				{	TCHAR str[MAX_PATH+2];
+					OPENFILENAME ofn = {0};
+					TCHAR filter[512], *pfilter;
 
-					GetDlgItemTextA(hwndDlg,IDC_SCANCMDLINE,str,SIZEOF(str));
-					ofn.lStructSize=OPENFILENAME_SIZE_VERSION_400;
-					ofn.hwndOwner=hwndDlg;
-					ofn.Flags=OFN_FILEMUSTEXIST|OFN_HIDEREADONLY;
-					strcpy(filter,Translate("Executable Files"));
-					strcat(filter," (*.exe)");
-					pfilter=filter+strlen(filter)+1;
-					strcpy(pfilter,"*.exe");
-					pfilter=pfilter+strlen(pfilter)+1;
-					strcpy(pfilter,Translate("All Files"));
-					strcat(pfilter," (*)");
-					pfilter=pfilter+strlen(pfilter)+1;
-					strcpy(pfilter,"*");
-					pfilter=pfilter+strlen(pfilter)+1;
-					*pfilter='\0';
-					ofn.lpstrFilter=filter;
-					ofn.lpstrFile=str;
-					ofn.nMaxFile=SIZEOF(str)-2;
+					GetDlgItemText(hwndDlg, IDC_SCANCMDLINE, str, SIZEOF(str));
+					ofn.lStructSize = OPENFILENAME_SIZE_VERSION_400;
+					ofn.hwndOwner = hwndDlg;
+					ofn.Flags = OFN_FILEMUSTEXIST | OFN_HIDEREADONLY;
+					_tcscpy(filter,TranslateT("Executable Files"));
+					_tcscat(filter, _T(" (*.exe)"));
+					pfilter = filter + _tcslen(filter) + 1;
+					_tcscpy(pfilter, _T("*.exe"));
+					pfilter = pfilter + _tcslen(pfilter)+1;
+					_tcscpy(pfilter, TranslateT("All Files"));
+					_tcscat(pfilter, _T(" (*)"));
+					pfilter = pfilter + _tcslen(pfilter) + 1;
+					_tcscpy(pfilter, _T("*"));
+					pfilter = pfilter + _tcslen(pfilter) + 1;
+					*pfilter = 0;
+					ofn.lpstrFilter = filter;
+					ofn.lpstrFile = str;
+					ofn.nMaxFile = SIZEOF(str)-2;
 					if(str[0]=='"')	{
-						char *pszQuote=strchr(str+1,'"');
-						if(pszQuote) *pszQuote='\0';
-						MoveMemory(str,str+1,lstrlenA(str));
+						TCHAR *pszQuote = _tcschr(str + 1, '"');
+						if (pszQuote) *pszQuote = 0;
+						MoveMemory(str, str + 1, _tcslen(str) * sizeof(TCHAR));
 					}
 					else {
-						char *pszSpace=strchr(str,' ');
-						if(pszSpace) *pszSpace='\0';
+						TCHAR *pszSpace = _tcschr(str, ' ');
+						if (pszSpace) *pszSpace = 0;
 					}
-					ofn.nMaxFileTitle=MAX_PATH;
-					if(!GetOpenFileNameA(&ofn)) break;
-					if(strchr(str,' ')!=NULL) {
-						MoveMemory(str+1,str,SIZEOF(str)-2);
-						str[0]='"';
-						lstrcatA(str,"\"");
+					ofn.nMaxFileTitle = MAX_PATH;
+					if (!GetOpenFileName(&ofn)) break;
+					if (_tcschr(str, ' ') != NULL) {
+						MoveMemory(str+1, str, SIZEOF(str) - 2 * sizeof(TCHAR));
+						str[0] = '"';
+						_tcscat(str, _T("\""));
 					}
-					SetDlgItemTextA(hwndDlg,IDC_SCANCMDLINE,str);
+					SetDlgItemText(hwndDlg, IDC_SCANCMDLINE, str);
 					break;
 				}
 			}
@@ -208,18 +208,17 @@ static INT_PTR CALLBACK DlgProcFileOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 			switch (((LPNMHDR)lParam)->code)
 			{
 				case PSN_APPLY:
-				{	char str[512];
-					TCHAR tstr[512];
-					GetDlgItemText(hwndDlg,IDC_FILEDIR,tstr,SIZEOF(tstr));
-					RemoveInvalidPathChars(tstr);
-					DBWriteContactSettingTString(NULL,"SRFile","RecvFilesDirAdv",tstr);
+				{	TCHAR str[512];
+					GetDlgItemText(hwndDlg, IDC_FILEDIR, str, SIZEOF(str));
+					RemoveInvalidPathChars(str);
+					DBWriteContactSettingTString(NULL,"SRFile","RecvFilesDirAdv",str);
 					DBWriteContactSettingByte(NULL,"SRFile","AutoAccept",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_AUTOACCEPT));
 					DBWriteContactSettingByte(NULL,"SRFile","AutoMin",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_AUTOMIN));
 					DBWriteContactSettingByte(NULL,"SRFile","AutoClose",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_AUTOCLOSE));
 					DBWriteContactSettingByte(NULL,"SRFile","AutoClear",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_AUTOCLEAR));
 					DBWriteContactSettingByte(NULL,"SRFile","UseScanner",(BYTE)(IsDlgButtonChecked(hwndDlg,IDC_SCANAFTERDL)?VIRUSSCAN_AFTERDL:(IsDlgButtonChecked(hwndDlg,IDC_SCANDURINGDL)?VIRUSSCAN_DURINGDL:VIRUSSCAN_DISABLE)));
-					GetDlgItemTextA(hwndDlg,IDC_SCANCMDLINE,str,SIZEOF(str));
-					DBWriteContactSettingString(NULL,"SRFile","ScanCmdLine",str);
+					GetDlgItemText(hwndDlg, IDC_SCANCMDLINE, str, SIZEOF(str));
+					DBWriteContactSettingTString(NULL,"SRFile","ScanCmdLine",str);
 					DBWriteContactSettingByte(NULL,"SRFile","WarnBeforeOpening",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_WARNBEFOREOPENING));
 					DBWriteContactSettingByte(NULL,"SRFile","IfExists",(BYTE)(IsDlgButtonChecked(hwndDlg,IDC_ASK)?FILERESUME_ASK:(IsDlgButtonChecked(hwndDlg,IDC_RESUME)?FILERESUME_RESUMEALL:(IsDlgButtonChecked(hwndDlg,IDC_OVERWRITE)?FILERESUME_OVERWRITEALL:FILERESUME_RENAMEALL))));
 					return TRUE;

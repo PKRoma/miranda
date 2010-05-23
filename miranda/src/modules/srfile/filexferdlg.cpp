@@ -121,23 +121,26 @@ void FillSendData( FileDlgData* dat, DBEVENTINFO& dbei )
 static void __cdecl RunVirusScannerThread(struct virusscanthreadstartinfo *info)
 {
 	PROCESS_INFORMATION pi;
-	STARTUPINFOA si={0};
+	STARTUPINFO si={0};
 	DBVARIANT dbv;
-	char szCmdLine[768];
+	TCHAR szCmdLine[768];
 
-	if(!DBGetContactSettingString(NULL,"SRFile","ScanCmdLine",&dbv)) {
-		if(dbv.pszVal[0]) {
-			char *pszReplace;
+	if (!DBGetContactSettingTString(NULL,"SRFile", "ScanCmdLine", &dbv)) 
+	{
+		if(dbv.ptszVal[0]) 
+		{
+			TCHAR *pszReplace;
 			si.cb=sizeof(si);
-			pszReplace=strstr(dbv.pszVal,"%f");
-			if(pszReplace) {
-				if ( info->szFile[ lstrlen(info->szFile)-1]=='\\')
-					info->szFile[lstrlen(info->szFile)-1]='\0';
-				*pszReplace=0;
-				mir_snprintf(szCmdLine,SIZEOF(szCmdLine),"%s\"%s\"%s",dbv.pszVal,info->szFile,pszReplace+2);
+			pszReplace = _tcsstr(dbv.ptszVal, _T("%f"));
+			if (pszReplace) 
+			{
+				if ( info->szFile[_tcslen(info->szFile) - 1] == '\\')
+					info->szFile[_tcslen(info->szFile) - 1] = '\0';
+				*pszReplace = 0;
+				mir_sntprintf(szCmdLine, SIZEOF(szCmdLine), _T("%s\"%s\"%s"), dbv.ptszVal, info->szFile, pszReplace+2);
 			}
-			else lstrcpynA(szCmdLine,dbv.pszVal,SIZEOF(szCmdLine));
-			if(CreateProcessA(NULL,szCmdLine,NULL,NULL,FALSE,0,NULL,NULL,&si,&pi)) {
+			else lstrcpyn(szCmdLine, dbv.ptszVal, SIZEOF(szCmdLine));
+			if(CreateProcess(NULL,szCmdLine,NULL,NULL,FALSE,0,NULL,NULL,&si,&pi)) {
 				if(WaitForSingleObject(pi.hProcess,3600*1000)==WAIT_OBJECT_0)
 					PostMessage(info->hwndReply,M_VIRUSSCANDONE,info->returnCode,0);
 				CloseHandle(pi.hProcess);
