@@ -1623,7 +1623,7 @@ int CIcqProto::getCListGroupExists(const char *szGroup)
   if (clint && clint->version >= 1)
   { // we've got clist interface, use it
     int size = strlennull(szGroup) + 2;
-    TCHAR *tszGroup = (TCHAR*)_alloca(size);
+    TCHAR *tszGroup = (TCHAR*)_alloca(size * sizeof(TCHAR));
 
     if (utf8_to_tchar_static(szGroup, tszGroup, size))
       for (int i = 1; TRUE; i++)
