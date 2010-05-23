@@ -117,7 +117,7 @@ static int FindDbProviders(char*, DATABASELINK * dblink, LPARAM lParam)
 	if ( dblink->getFriendlyName(szName,SIZEOF(szName),1) == 0 ) {
 		// add to combo box
 		TCHAR* p = LangPackPcharToTchar( szName );
-		LRESULT index = SendMessage( hwndCombo, CB_ADDSTRING, 0, (LPARAM)Translate( p ));
+		LRESULT index = SendMessage( hwndCombo, CB_ADDSTRING, 0, (LPARAM)p );
 		mir_free( p );
 		SendMessage(hwndCombo, CB_SETITEMDATA, index, (LPARAM)dblink);
 	}
