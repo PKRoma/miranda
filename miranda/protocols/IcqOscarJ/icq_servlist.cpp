@@ -1617,6 +1617,8 @@ int CIcqProto::getCListGroupExists(const char *szGroup)
   int hGroup = 0;
   CLIST_INTERFACE *clint = NULL;
 
+  if (!szGroup) return 0;
+
   if (ServiceExists(MS_CLIST_RETRIEVE_INTERFACE))
     clint = (CLIST_INTERFACE*)CallService(MS_CLIST_RETRIEVE_INTERFACE, 0, 0);
 
@@ -2334,7 +2336,7 @@ void CIcqProto::servlistMoveContact(HANDLE hContact, const char *pszNewGroup)
     return;
   }
 
-	if (!getCListGroupExists(pszNewGroup) && (pszNewGroup != NULL) && (pszNewGroup[0]!='\0'))
+	if ((pszNewGroup != NULL) && (pszNewGroup[0]!='\0') && !getCListGroupExists(pszNewGroup))
 	{ // the contact moved to non existing group, do not do anything: MetaContact hack
 		NetLog_Server("Contact not moved - probably hiding by MetaContacts.");
 		return;

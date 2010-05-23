@@ -218,33 +218,36 @@ char* __stdcall make_utf8_string(const WCHAR *unicode)
 
 WCHAR* __stdcall make_unicode_string_static(const char *utf8, WCHAR *unicode, size_t unicode_size)
 {
-	int index = 0;
 	unsigned int out_index = 0;
-	unsigned char c;
 
-	c = utf8[index++];
-	while (c)
+	if (utf8)
 	{
-		if (out_index + 1 >= unicode_size) break;
-		if((c & 0x80) == 0) 
+		unsigned int index = 0;
+		unsigned char c = utf8[index++];
+
+		while (c)
 		{
-			unicode[out_index++] = c;
-		} 
-		else if((c & 0xe0) == 0xe0) 
-		{
-			unicode[out_index] = (c & 0x1F) << 12;
+			if (out_index + 1 >= unicode_size) break;
+			if((c & 0x80) == 0) 
+			{
+				unicode[out_index++] = c;
+			} 
+			else if((c & 0xe0) == 0xe0) 
+			{
+				unicode[out_index] = (c & 0x1F) << 12;
+				c = utf8[index++];
+				unicode[out_index] |= (c & 0x3F) << 6;
+				c = utf8[index++];
+				unicode[out_index++] |= (c & 0x3F);
+			}
+			else
+			{
+				unicode[out_index] = (c & 0x3F) << 6;
+				c = utf8[index++];
+				unicode[out_index++] |= (c & 0x3F);
+			}
 			c = utf8[index++];
-			unicode[out_index] |= (c & 0x3F) << 6;
-			c = utf8[index++];
-			unicode[out_index++] |= (c & 0x3F);
 		}
-		else
-		{
-			unicode[out_index] = (c & 0x3F) << 6;
-			c = utf8[index++];
-			unicode[out_index++] |= (c & 0x3F);
-		}
-		c = utf8[index++];
 	}
 	unicode[out_index] = 0;
 
