@@ -480,6 +480,7 @@ LRESULT CALLBACK fnContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 	case WM_NCCREATE:
 	{
 		MENUITEMINFO mii = { 0 };
+/*
 		if (IsWinVerVistaPlus())
 		{
 			HICON hIcon = LoadSkinnedIcon(SKINICON_OTHER_MAINMENU);
@@ -491,6 +492,7 @@ LRESULT CALLBACK fnContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 			mii.hbmpItem = hBmp;
 		}
 		else
+*/
 		{
 			mii.cbSize = MENUITEMINFO_V4_SIZE;
 			mii.fMask = MIIM_TYPE | MIIM_DATA;

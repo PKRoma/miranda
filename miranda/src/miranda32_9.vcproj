@@ -785,7 +785,7 @@
 				Name="VCLinkerTool"
 				IgnoreImportLibrary="true"
 				AdditionalDependencies="wsock32.lib comctl32.lib winmm.lib version.lib"
-				OutputFile="c:\miranda im\miranda64.exe"
+				OutputFile="$(OutDir)\miranda64.exe"
 				SuppressStartupBanner="true"
 				AdditionalManifestDependencies="type=&apos;win32&apos; name=&apos;Microsoft.Windows.Common-Controls&apos; version=&apos;6.0.0.0&apos; processorArchitecture=&apos;*&apos; publicKeyToken=&apos;6595b64144ccf1df&apos; language=&apos;*&apos;;type=&apos;win32&apos; name=&apos;Microsoft.Windows.Gdiplus&apos; version=&apos;1.0.0.0&apos; processorArchitecture=&apos;amd64&apos; publicKeyToken=&apos;6595b64144ccf1df&apos; language=&apos;*&apos;"
 				ModuleDefinitionFile=""
