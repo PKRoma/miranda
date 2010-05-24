@@ -512,7 +512,7 @@ int CJabberProto::AuthDeny( HANDLE hContact, const char* /*szReason*/ )
 	lastName = firstName + strlen( firstName ) + 1;
 	jid = lastName + strlen( lastName ) + 1;
 
-	Log( "Send 'authorization denied' to " TCHAR_STR_PARAM, jid );
+	Log( "Send 'authorization denied' to %s", jid );
 
 	m_ThreadInfo->send( XmlNode( _T("presence")) << XATTR( _T("to"), _A2T(jid)) << XATTR( _T("type"), _T("unsubscribed")));
 
@@ -663,7 +663,7 @@ DWORD_PTR __cdecl CJabberProto::GetCaps( int type, HANDLE /*hContact*/ )
 	case PFLAGNUM_3:
 		return PF2_ONLINE | PF2_SHORTAWAY | PF2_LONGAWAY | PF2_HEAVYDND | PF2_FREECHAT;
 	case PFLAGNUM_4:
-		return PF4_FORCEAUTH | PF4_NOCUSTOMAUTH | PF4_SUPPORTTYPING | PF4_AVATARS | PF4_IMSENDUTF;
+		return PF4_FORCEAUTH | PF4_NOCUSTOMAUTH | PF4_SUPPORTTYPING | PF4_AVATARS | PF4_IMSENDUTF | PF4_NOAUTHDENYREASON;
 	case PFLAG_UNIQUEIDTEXT:
 		return ( DWORD_PTR ) JTranslate( "JID" );
 	case PFLAG_UNIQUEIDSETTING:
