@@ -904,16 +904,22 @@ void RebuildMenuOrder( void )
 		flags = pa->ppro->GetCaps( PFLAGNUM_2, 0 ) & ~pa->ppro->GetCaps( PFLAGNUM_5, 0 );
 		int j;
 		HICON ic;
+		TCHAR tbuf[256];
 
 		//adding root
 		TMO_MenuItem tmi = { 0 };
 		tmi.cbSize = sizeof(tmi);
 		tmi.flags = CMIF_TCHAR | CMIF_ROOTHANDLE | CMIF_KEEPUNTRANSLATED;
 		tmi.position = pos++;
-		tmi.hIcon=(HICON)CallProtoService( pa->szModuleName, PS_LOADICON, PLI_PROTOCOL | PLIF_SMALL, 0 );
-		ic = tmi.hIcon;
-		tmi.root = NULL;
-		tmi.ptszName = pa->tszAccountName;
+		tmi.hIcon = ic = (HICON)CallProtoService( pa->szModuleName, PS_LOADICON, PLI_PROTOCOL | PLIF_SMALL, 0 );
+
+		if ( Proto_IsAccountLocked( pa ) && cli.bDisplayLocked )
+		{
+			mir_sntprintf( tbuf, SIZEOF(tbuf), TranslateT("%s (locked)"), pa->tszAccountName );
+			tmi.ptszName = tbuf;
+		} else {
+			tmi.ptszName = pa->tszAccountName;
+		}
 		{
 			//owner data
 			lpStatusMenuExecParam smep = ( lpStatusMenuExecParam )mir_calloc( sizeof( StatusMenuExecParam ));
@@ -941,9 +947,8 @@ void RebuildMenuOrder( void )
 
 		if (( tmi.flags & CMIF_CHECKED ) && cli.bDisplayLocked )
 		{
-			TCHAR buf[256];
-			mir_sntprintf( buf, SIZEOF(buf), TranslateT("%s (locked)"), pa->tszAccountName );
-			tmi.ptszName = buf;
+			mir_sntprintf( tbuf, SIZEOF(tbuf), TranslateT("%s (locked)"), pa->tszAccountName );
+			tmi.ptszName = tbuf;
 		} else {
 			tmi.ptszName = pa->tszAccountName;
 		}
@@ -963,7 +968,7 @@ void RebuildMenuOrder( void )
 			mir_snprintf( buf, SIZEOF(buf), "RootProtocolIcon_%s", pa->szModuleName );
 			MO_SetOptionsMenuItem( menuHandle, OPT_MENUITEMSETUNIQNAME, ( INT_PTR )buf );
 		}
-		DestroyIcon(tmi.hIcon);
+		DestroyIcon(ic);
 		pos += 100000;
 
 		for ( j=0; j < SIZEOF(statusModeList); j++ ) {
