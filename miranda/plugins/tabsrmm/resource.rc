@@ -253,6 +253,7 @@ BEGIN
     COMBOBOX        IDC_AVATARMODE,105,72,220,14,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     LTEXT           "Show my own avatars",IDC_O_STATIC_OWNAVATAR,105,88,233,12
     COMBOBOX        IDC_OWNAVATARMODE,105,98,220,14,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "Show avatars on task bar (Win 7, large task bar required)",IDC_AVATARSONTASKBAR,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,105,120,233,30
     CONTROL         "Enable sound effects",IDC_O_ENABLESOUNDS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,105,65,233,10
     CONTROL         "Play sounds when minimized",IDC_O_SOUNDSMINIMIZED,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,105,77,233,10
@@ -1088,6 +1089,8 @@ END
 IDR_SKIN_AERO           SKIN_GLYPH              "res\\SKIN\\tabskin_aero.png"
 IDR_SKIN_AERO_GLOW      SKIN_GLYPH              "res\\SKIN\\tabskin_aero_glow.png"
 IDR_SKIN_AERO_SWITCHBAR SKIN_GLYPH              "res\\SKIN\\tabskin_aero_button.png"
+IDR_SKIN_LOGO			SKIN_GLYPH				"res\\SKIN\\unknown.png"
+
 #endif    // English (United States) resources
 /////////////////////////////////////////////////////////////////////////////
 

@@ -276,6 +276,8 @@ void CGlobals::reloadSystemModulesChanged()
 	mi.pszName = LPGEN("&Message");
 	mi.pszService = MS_MSG_SENDMESSAGE;
 	PluginConfig.m_hMenuItem = (HANDLE)CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM) & mi);
+
+	m_useAeroPeek = M->GetByte("useAeroPeek", 0);
 }
 
 /**
@@ -350,6 +352,7 @@ void CGlobals::reloadSettings(bool fReloadSkins)
 		::DeleteObject(CSkin::m_BrushFill);
 		CSkin::m_BrushFill = 0;
 	}
+	m_genericTxtColor = 				M->GetDword(FONTMODULE, "genericTxtClr", GetSysColor(COLOR_BTNTEXT));
 	m_cRichBorders =					M->GetDword(FONTMODULE, "cRichBorders", 0);
 
 	::CopyMemory(&globalContainerSettings, &_cnt_default, sizeof(TContainerSettings));

@@ -73,13 +73,14 @@ static struct _tagExtSettings_v5 {
 	char*	szDbModule;
 	char*	szDbSetting;
 	DWORD	dwDef;
-} _extSettings_v5[16] = {
+} _extSettings_v5[17] = {
 		"CommonClrs", "IP_High", FONTMODULE, "ipfieldsbgHigh", 0xf0f0f0,
 		"CommonClrs", "IP_Low", FONTMODULE, "ipfieldsbg", 0x62caff,
 		"CommonClrs", "TB_High", FONTMODULE, "tbBgHigh", 0,
 		"CommonClrs", "TB_Low", FONTMODULE, "tbBgLow", 0,
 		"CommonClrs", "FillColor", FONTMODULE, "fillColor", 0,
 		"CommonClrs", "RichBorders", FONTMODULE, "cRichBorders", 0,
+		"CommonClrs", "GenericTxt", FONTMODULE, "genericTxtClr", RGB(20, 20, 20),
 		"AeroMode", "Style", SRMSGMOD_T, "aerostyle", CSkin::AERO_EFFECT_MILK,
 		"AeroMode", "AeroGlowColor", FONTMODULE, "aeroGlow", RGB(40, 40, 255),
 

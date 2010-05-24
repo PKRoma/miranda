@@ -345,13 +345,15 @@ static void MsgWindowUpdateState(TWindowData *dat, UINT msg)
 			SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_REQUESTRESIZE, 0, 0);
 		}
 #endif
+		if(dat->pWnd)
+			dat->pWnd->activateTab();
 		dat->Panel->dismissConfig();
 		if (dat->pContainer->hwndSaved == hwndDlg)
 			return;
 
 		dat->pContainer->hwndSaved = hwndDlg;
 
-		dat->dwTickLastEvent = 0;
+		dat->dwTickLastEvent = dat->dwUnread = 0;
 		dat->dwFlags &= ~MWF_DIVIDERSET;
 		if (KillTimer(hwndDlg, TIMERID_FLASHWND)) {
 			FlashTab(dat, hwndTab, dat->iTabID, &dat->bTabFlash, FALSE, dat->hTabIcon);
@@ -453,6 +455,8 @@ static void MsgWindowUpdateState(TWindowData *dat, UINT msg)
 		if(dat->pContainer->dwFlags & CNT_SIDEBAR)
 			dat->pContainer->SideBar->setActiveItem(dat);
 
+		if(dat->pWnd)
+			dat->pWnd->Invalidate();
 	}
 }
 
@@ -1041,7 +1045,6 @@ LRESULT CALLBACK SplitterSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 						RECT rcWin;
 						BYTE bSync = M->GetByte("Chat", "SyncSplitter", 0);
 						DWORD dwOff_IM = 0, dwOff_CHAT = 0;
-						bool  fCntGlobal = (!dat->pContainer->settings->fPrivate ? true : false);
 
 						dwOff_CHAT = -(2 + (PluginConfig.g_DPIscaleY > 1.0 ? 1 : 0));
 						dwOff_IM = 2 + (PluginConfig.g_DPIscaleY > 1.0 ? 1 : 0);
@@ -1055,7 +1058,7 @@ LRESULT CALLBACK SplitterSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 						PluginConfig.lastSPlitterPos.off_chat = dwOff_CHAT;
 						PluginConfig.lastSPlitterPos.off_im = dwOff_IM;
 						PluginConfig.lastSPlitterPos.bSync = bSync;
-
+						SendMessage(dat->hwnd, DM_SPLITTERGLOBALEVENT, 0, 0);
 						M->BroadcastMessage(DM_SPLITTERGLOBALEVENT, 0, 0);
 						break;
 					}
@@ -1066,7 +1069,7 @@ LRESULT CALLBACK SplitterSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 						if (dat->bType == SESSIONTYPE_CHAT) {
 							SESSION_INFO *si = (SESSION_INFO *)dat->si;
 							si->iSplitterY = dat->savedSplitY;
-							dat->splitterY =si->iSplitterY + DPISCALEY(22);
+							dat->splitterY =si->iSplitterY + DPISCALEY_S(22);
 						}
 						CSkin::UpdateToolbarBG(dat);
 						SendMessage(hwndParent, WM_SIZE, 0, 0);
@@ -1147,8 +1150,8 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
 			} else
 				dat->fMustOffset = FALSE;
 
-			if(showToolbar && bBottomToolbar && (PluginConfig.m_AlwaysFullToolbarWidth || ((dat->pic.cy - DPISCALEY(6)) < rc.bottom))) {
-				urc->rcItem.bottom -= DPISCALEY(22);
+			if(showToolbar && bBottomToolbar && (PluginConfig.m_AlwaysFullToolbarWidth || ((dat->pic.cy - DPISCALEY_S(6)) < rc.bottom))) {
+				urc->rcItem.bottom -= DPISCALEY_S(22);
 				if(dat->fIsAutosizingInput) {
 					urc->rcItem.left--;
 					urc->rcItem.top--;
@@ -1188,7 +1191,7 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
 				urc->rcItem.right -= dat->pic.cx + 2;
 			urc->rcItem.top -= dat->splitterY - dat->originalSplitterY;
 			if (bBottomToolbar&&showToolbar)
-				urc->rcItem.bottom -= DPISCALEY(22);
+				urc->rcItem.bottom -= DPISCALEY_S(22);
 
 			if(dat->fIsAutosizingInput)
 				urc->rcItem.top -= DPISCALEY_S(1);
@@ -1315,6 +1318,10 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			dat->cache->setWindowData(hwndDlg, dat);
 			M->AddWindow(hwndDlg, dat->hContact);
 			BroadCastContainer(m_pContainer, DM_REFRESHTABINDEX, 0, 0);
+			dat->pWnd = 0;
+#if defined(__FEAT_EXP_W7TASKBAR)
+			CProxyWindow::add(dat);
+#endif
 			dat->szProto = const_cast<char *>(dat->cache->getProto());
 			dat->bIsMeta = dat->cache->isMeta() ? TRUE : FALSE;
 			if(dat->bIsMeta)
@@ -1330,7 +1337,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			GetMYUIN(dat);
 			GetClientIcon(dat);
 
-			CreateWindowEx(0, _T("TSButtonClass"), _T(""), WS_CHILD | WS_VISIBLE | WS_TABSTOP, 0, 0, 6, DPISCALEY(20),
+			CreateWindowEx(0, _T("TSButtonClass"), _T(""), WS_CHILD | WS_VISIBLE | WS_TABSTOP, 0, 0, 6, DPISCALEY_S(20),
 					hwndDlg, (HMENU)IDC_TOGGLESIDEBAR, g_hInst, NULL);
 			dat->hwndPanelPicParent = CreateWindowEx(WS_EX_TOPMOST, _T("Static"), _T(""), SS_OWNERDRAW | WS_VISIBLE | WS_CHILD, 1, 1, 1, 1, hwndDlg, (HMENU)6000, NULL, NULL);
 			oldAvatarParentWndProc = (WNDPROC)SetWindowLongPtr(dat->hwndPanelPicParent, GWLP_WNDPROC, (INT_PTR)CInfoPanel::avatarParentSubclass);
@@ -1763,9 +1770,9 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 				dat->ipFieldHeight = CInfoPanel::m_ipConfig.height2;
 
 			if (dat->pContainer->uChildMinHeight > 0 && HIWORD(lParam) >= dat->pContainer->uChildMinHeight) {
-				if (dat->splitterY > HIWORD(lParam) - DPISCALEY(MINLOGHEIGHT)) {
-					dat->splitterY = HIWORD(lParam) - DPISCALEY(MINLOGHEIGHT);
-					dat->dynaSplitter = dat->splitterY - DPISCALEY(34);
+				if (dat->splitterY > HIWORD(lParam) - DPISCALEY_S(MINLOGHEIGHT)) {
+					dat->splitterY = HIWORD(lParam) - DPISCALEY_S(MINLOGHEIGHT);
+					dat->dynaSplitter = dat->splitterY - DPISCALEY_S(34);
 					DM_RecalcPictureSize(dat);
 				}
 				if (dat->splitterY < DPISCALEY_S(MINSPLITTERY))
@@ -2349,6 +2356,9 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 
 				if (m_pContainer->hwndActive == hwndDlg)
 					SendMessage(t_hwnd, DM_SETICON, (WPARAM)dat, (LPARAM)(dat->hXStatusIcon ? dat->hXStatusIcon : dat->hTabIcon));
+
+				if(dat->pWnd)
+					dat->pWnd->updateIcon(dat->hXStatusIcon ? dat->hXStatusIcon : dat->hTabIcon);
 			}
 			return 0;
 		}
@@ -2492,7 +2502,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 				oldSplitterY = dat->splitterY;
 				oldDynaSplitter = dat->dynaSplitter;
 
-				dat->splitterY = rc.bottom - pt.y +DPISCALEY(23);
+				dat->splitterY = rc.bottom - pt.y +DPISCALEY_S(23);
 				/*
 				 * attempt to fix splitter troubles..
 				 * hardcoded limits... better solution is possible, but this works for now
@@ -2503,7 +2513,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 				//
 				if (dat->splitterY < (DPISCALEY_S(MINSPLITTERY) + 5 + bottomtoolbarH)) {	// min splitter size
 					dat->splitterY = (DPISCALEY_S(MINSPLITTERY) + 5 + bottomtoolbarH);
-					dat->dynaSplitter = dat->splitterY - DPISCALEY(34);
+					dat->dynaSplitter = dat->splitterY - DPISCALEY_S(34);
 					DM_RecalcPictureSize(dat);
 				}
 				else if (dat->splitterY > (rc.bottom - rc.top)) {
@@ -2512,7 +2522,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 					DM_RecalcPictureSize(dat);
 				}
 				else {
-					dat->dynaSplitter = (rc.bottom - pt.y) - DPISCALEY(11);
+					dat->dynaSplitter = (rc.bottom - pt.y) - DPISCALEY_S(11);
 					DM_RecalcPictureSize(dat);
 				}
 				CSkin::UpdateToolbarBG(dat);
@@ -3466,9 +3476,6 @@ quote_from_last:
 				LoadOwnAvatar(dat);
 			break;
 		}
-		//case WM_INPUTLANGCHANGE:
-		//	return DefWindowProc(hwndDlg, WM_INPUTLANGCHANGE, wParam, lParam);
-
 		case DM_GETWINDOWSTATE: {
 			UINT state = 0;
 
@@ -3887,10 +3894,17 @@ quote_from_last:
 				}
 				CallService(MS_HPP_EG_WINDOW, 0, (LPARAM)&ieWindow);
 			}
+#if defined(__FEAT_EXP_W7TASKBAR)
+			if(dat->pWnd) {
+				delete dat->pWnd;
+				dat->pWnd = 0;
+			}
+#endif
 			break;
 		case WM_DWMCOMPOSITIONCHANGED:
 			BB_RefreshTheme(dat);
 			ZeroMemory(&m_pContainer->mOld, sizeof(MARGINS));
+			CProxyWindow::verify(dat);
 			break;
 
 		case DM_FORCEREDRAW:

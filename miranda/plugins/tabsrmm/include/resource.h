@@ -329,6 +329,7 @@
 #define IDC_AVATARMODE                  1267
 #define IDC_CODEPAGES                   1268
 #define IDC_OWNAVATARMODE               1268
+#define IDC_AVATARSONTASKBAR			2735
 #define IDC_TIMEZONE                    1269
 #define IDC_SENDFORMATTING              1270
 #define IDC_EMPTYLINEFIX                1272

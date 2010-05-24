@@ -1891,7 +1891,6 @@ buttons_done:
 
 		case DM_SETICON: {
 			HICON 		hIconMsg = PluginConfig.g_IconMsgEvent;
-
 			if(Win7Taskbar->haveLargeIcons()) {
 				TWindowData*dat = (TWindowData *)wParam;
 
@@ -1905,7 +1904,13 @@ buttons_done:
 
 				if(dat) {
 					if(dat->hTaskbarIcon == 0)
-						dat->hTaskbarIcon = Utils::iconFromAvatar(dat);
+						dat->hTaskbarIcon = ((dat->pContainer->dwFlags & CNT_AVATARSONTASKBAR) ? Utils::iconFromAvatar(dat) : 0);
+					else {
+						if(!(dat->pContainer->dwFlags & CNT_AVATARSONTASKBAR)) {
+							DestroyIcon(dat->hTaskbarIcon);
+							dat->hTaskbarIcon = 0;
+						}
+					}
 
 					if(dat->hTaskbarIcon) {
 						SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)dat->hTaskbarIcon);
@@ -1913,10 +1918,16 @@ buttons_done:
 						Win7Taskbar->setOverlayIcon(hwndDlg, (LPARAM)(dat->hTabIcon ? (LPARAM)dat->hTabIcon : lParam));
 					}
 					else {
-						SendMessage(hwndDlg, WM_SETICON, ICON_BIG, lParam);
+						HICON hIconBig = LoadSkinnedProtoIconBig(dat->cache->getActiveProto(), dat->cache->getActiveStatus());
+						if(0 == hIconBig || (HICON)CALLSERVICE_NOTFOUND == hIconBig)
+							SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)lParam);
+						else
+							SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)hIconBig);
 						SendMessage(hwndDlg, WM_SETICON, ICON_SMALL, lParam);
 						if(dat->pContainer->hIconTaskbarOverlay)
 							Win7Taskbar->setOverlayIcon(hwndDlg, (LPARAM)dat->pContainer->hIconTaskbarOverlay);
+						else if(Win7Taskbar->haveAlwaysGroupingMode())
+							Win7Taskbar->setOverlayIcon(hwndDlg, lParam);
 						else
 							Win7Taskbar->clearOverlayIcon(hwndDlg);
 					}

@@ -274,14 +274,14 @@ void TSAPI CalcDynamicAvatarSize(TWindowData *dat, BITMAP *bminfo)
 		picAspect = 1.0;
 	else
 		picAspect = (double)(bminfo->bmWidth / (double)bminfo->bmHeight);
-	picProjectedWidth = (double)((dat->dynaSplitter-((bBottomToolBar && bToolBar)? DPISCALEX(24):0) + ((dat->showUIElements != 0) ? DPISCALEX(28) : DPISCALEX(2)))) * picAspect;
+	picProjectedWidth = (double)((dat->dynaSplitter-((bBottomToolBar && bToolBar)? DPISCALEX_S(24):0) + ((dat->showUIElements != 0) ? DPISCALEX_S(28) : DPISCALEX_S(2)))) * picAspect;
 
 	if ((rc.right - (int)picProjectedWidth) > (dat->iButtonBarReallyNeeds) && !PluginConfig.m_AlwaysFullToolbarWidth && bToolBar)
-		dat->iRealAvatarHeight = dat->dynaSplitter + 3 + (dat->showUIElements ? DPISCALEY(28):DPISCALEY(2));
+		dat->iRealAvatarHeight = dat->dynaSplitter + 3 + (dat->showUIElements ? DPISCALEY_S(28):DPISCALEY_S(2));
 	else
-		dat->iRealAvatarHeight = dat->dynaSplitter + DPISCALEY(6) + DPISCALEY_S(iSplitOffset);
+		dat->iRealAvatarHeight = dat->dynaSplitter + DPISCALEY_S(6) + DPISCALEY_S(iSplitOffset);
 
-	dat->iRealAvatarHeight-=((bBottomToolBar&&bToolBar) ? DPISCALEY(22) : 0);
+	dat->iRealAvatarHeight-=((bBottomToolBar&&bToolBar) ? DPISCALEY_S(22) : 0);
 
 	if (PluginConfig.m_LimitStaticAvatarHeight > 0)
 		dat->iRealAvatarHeight = min(dat->iRealAvatarHeight, PluginConfig.m_LimitStaticAvatarHeight);
@@ -909,14 +909,14 @@ void TSAPI AdjustBottomAvatarDisplay(TWindowData *dat)
 			dat->showPic = GetAvatarVisibility(hwndDlg, dat);
 			if (dat->dynaSplitter == 0 || dat->splitterY == 0)
 				LoadSplitter(dat);
-			dat->dynaSplitter = dat->splitterY - DPISCALEY(34);
+			dat->dynaSplitter = dat->splitterY - DPISCALEY_S(34);
 			DM_RecalcPictureSize(dat);
 			Utils::showDlgControl(hwndDlg, IDC_CONTACTPIC, dat->showPic ? SW_SHOW : SW_HIDE);
 			InvalidateRect(GetDlgItem(hwndDlg, IDC_CONTACTPIC), NULL, TRUE);
 		} else {
 			dat->showPic = GetAvatarVisibility(hwndDlg, dat);
 			Utils::showDlgControl(hwndDlg, IDC_CONTACTPIC, dat->showPic ? SW_SHOW : SW_HIDE);
-			dat->pic.cy = dat->pic.cx = DPISCALEY(60);
+			dat->pic.cy = dat->pic.cx = DPISCALEY_S(60);
 			InvalidateRect(GetDlgItem(hwndDlg, IDC_CONTACTPIC), NULL, TRUE);
 		}
 	}
@@ -929,7 +929,7 @@ void TSAPI ShowPicture(TWindowData *dat, BOOL showNewPic)
 	HWND		hwndDlg = dat->hwnd;
 
 	if (!dat->Panel->isActive())
-		dat->pic.cy = dat->pic.cx = DPISCALEY(60);
+		dat->pic.cy = dat->pic.cx = DPISCALEY_S(60);
 
 	if (showNewPic) {
 		if (dat->Panel->isActive() && dat->pContainer->avatarMode != 3) {
@@ -947,7 +947,7 @@ void TSAPI ShowPicture(TWindowData *dat, BOOL showNewPic)
 		DBWriteContactSettingByte(dat->hContact, SRMSGMOD_T, "MOD_ShowPic", (BYTE)dat->showPic);
 	}
 	GetWindowRect(GetDlgItem(hwndDlg, IDC_CONTACTPIC), &rc);
-	if (dat->minEditBoxSize.cy + DPISCALEY(3)> dat->splitterY)
+	if (dat->minEditBoxSize.cy + DPISCALEY_S(3)> dat->splitterY)
 		SendMessage(hwndDlg, DM_SPLITTERMOVED, (WPARAM)rc.bottom - dat->minEditBoxSize.cy, (LPARAM)GetDlgItem(hwndDlg, IDC_SPLITTER));
 	if (!showNewPic)
 		SetDialogToType(hwndDlg);
@@ -961,6 +961,9 @@ void TSAPI FlashOnClist(HWND hwndDlg, struct TWindowData *dat, HANDLE hEvent, DB
 	CLISTEVENT cle;
 
 	dat->dwTickLastEvent = GetTickCount();
+	if(!(dbei->flags & DBEF_SENT) && dbei->eventType == EVENTTYPE_MESSAGE)
+		dat->dwUnread++;
+
 	if ((GetForegroundWindow() != dat->pContainer->hwnd || dat->pContainer->hwndActive != hwndDlg) && !(dbei->flags & DBEF_SENT) && dbei->eventType == EVENTTYPE_MESSAGE) {
 		UpdateTrayMenu(dat, (WORD)(dat->cache->getActiveStatus()), dat->cache->getActiveProto(), dat->szStatus, dat->hContact, 0L);
 		if (nen_options.bTraySupport)

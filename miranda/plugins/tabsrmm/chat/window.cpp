@@ -281,6 +281,8 @@ static void Chat_UpdateWindowState(TWindowData *dat, UINT msg)
 	}
 #endif
 	dat->Panel->dismissConfig();
+	if(dat->pWnd)
+		dat->pWnd->activateTab();
 
 	if (dat->pContainer->hwndSaved == hwndDlg || dat->bWasDeleted)
 		return;
@@ -338,6 +340,7 @@ static void Chat_UpdateWindowState(TWindowData *dat, UINT msg)
 			PostMessage(hwndDlg, WM_SIZE, 0, 0);
 			dat->wParam = dat->lParam = 0;
 		}
+		/*
 		if (dat->hwndIEView) {
 			RECT rcRTF;
 			POINT pt;
@@ -357,12 +360,16 @@ static void Chat_UpdateWindowState(TWindowData *dat, UINT msg)
 			}
 			dat->hwndIWebBrowserControl = WindowFromPoint(pt);
 		}
+		*/
 	}
 	if(M->isAero())
 		InvalidateRect(hwndTab, NULL, FALSE);
 	if(dat->pContainer->dwFlags & CNT_SIDEBAR)
 		dat->pContainer->SideBar->setActiveItem(dat);
 	BB_SetButtonsPos(dat);
+
+	if(dat->pWnd)
+		dat->pWnd->Invalidate();
 }
 
 /*
@@ -475,7 +482,7 @@ static int RoomWndResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL *urc)
 			urc->rcItem.top = 0;
 			urc->rcItem.left = 0;
 			urc->rcItem.right = bNick ? urc->dlgNewSize.cx - si->iSplitterX : urc->dlgNewSize.cx;
-			urc->rcItem.bottom = (bToolbar&&!bBottomToolbar) ? (urc->dlgNewSize.cy - si->iSplitterY - (PluginConfig.g_DPIscaleY > 1.0 ? DPISCALEY(24) : DPISCALEY(23))) : (urc->dlgNewSize.cy - si->iSplitterY - DPISCALEY(2));
+			urc->rcItem.bottom = (bToolbar&&!bBottomToolbar) ? (urc->dlgNewSize.cy - si->iSplitterY - (PluginConfig.g_DPIscaleY > 1.0 ? DPISCALEY_S(24) : DPISCALEY_S(23))) : (urc->dlgNewSize.cy - si->iSplitterY - DPISCALEY_S(2));
 			if (fInfoPanel)
 				urc->rcItem.top += panelHeight;
 			if (CSkin::m_skinEnabled) {
@@ -493,7 +500,7 @@ static int RoomWndResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL *urc)
 			urc->rcItem.top = 0;
 			urc->rcItem.right = urc->dlgNewSize.cx ;
 			urc->rcItem.left = urc->dlgNewSize.cx - si->iSplitterX + 2;
-			urc->rcItem.bottom = (bToolbar&&!bBottomToolbar) ? (urc->dlgNewSize.cy - si->iSplitterY - DPISCALEY(23)) : (urc->dlgNewSize.cy - si->iSplitterY - DPISCALEY(2));
+			urc->rcItem.bottom = (bToolbar&&!bBottomToolbar) ? (urc->dlgNewSize.cy - si->iSplitterY - DPISCALEY_S(23)) : (urc->dlgNewSize.cy - si->iSplitterY - DPISCALEY_S(2));
 			if (fInfoPanel)
 				urc->rcItem.top += panelHeight;
 			if (CSkin::m_skinEnabled) {
@@ -510,7 +517,7 @@ static int RoomWndResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL *urc)
 		case IDC_SPLITTERX:
 			urc->rcItem.right = urc->dlgNewSize.cx - si->iSplitterX + 2;
 			urc->rcItem.left = urc->dlgNewSize.cx - si->iSplitterX;
-			urc->rcItem.bottom = (bToolbar&&!bBottomToolbar) ? (urc->dlgNewSize.cy - si->iSplitterY - DPISCALEY(23)) : (urc->dlgNewSize.cy - si->iSplitterY - DPISCALEY(2));
+			urc->rcItem.bottom = (bToolbar&&!bBottomToolbar) ? (urc->dlgNewSize.cy - si->iSplitterY - DPISCALEY_S(23)) : (urc->dlgNewSize.cy - si->iSplitterY - DPISCALEY_S(2));
 			urc->rcItem.top = 0;
 			if (fInfoPanel)
 				urc->rcItem.top += panelHeight;
@@ -519,7 +526,7 @@ static int RoomWndResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL *urc)
 		case IDC_SPLITTERY:
 			urc->rcItem.right = urc->dlgNewSize.cx;
 			urc->rcItem.top = (bToolbar&&!bBottomToolbar) ? urc->dlgNewSize.cy - si->iSplitterY : urc->dlgNewSize.cy - si->iSplitterY;
-			urc->rcItem.bottom = (bToolbar&&!bBottomToolbar) ? (urc->dlgNewSize.cy - si->iSplitterY + DPISCALEY(2)) : (urc->dlgNewSize.cy - si->iSplitterY + DPISCALEY(2));
+			urc->rcItem.bottom = (bToolbar&&!bBottomToolbar) ? (urc->dlgNewSize.cy - si->iSplitterY + DPISCALEY_S(2)) : (urc->dlgNewSize.cy - si->iSplitterY + DPISCALEY_S(2));
 			urc->rcItem.left = 0;
 			urc->rcItem.bottom++;
 			urc->rcItem.top++;
@@ -536,7 +543,7 @@ static int RoomWndResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL *urc)
 
 			msgTop = urc->rcItem.top;
 			if (bBottomToolbar&&bToolbar)
-				urc->rcItem.bottom -= DPISCALEY(22);
+				urc->rcItem.bottom -= DPISCALEY_S(22);
 			if (CSkin::m_skinEnabled) {
 				CSkinItem *item = &SkinItems[ID_EXTBKINPUTAREA];
 				if (!item->IGNORED) {
@@ -1957,6 +1964,11 @@ INT_PTR CALLBACK RoomWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 			if(dat->fIsAutosizingInput)
 				psi->iSplitterY = GetDefaultMinimumInputHeight(dat);
 #endif
+			dat->pWnd = 0;
+#if defined(__FEAT_EXP_W7TASKBAR)
+			CProxyWindow::add(dat);
+#endif
+
 			dat->fInsertMode = FALSE;
 
 			dat->codePage = M->GetDword(dat->hContact, "ANSIcodepage", CP_ACP);
@@ -2006,7 +2018,7 @@ INT_PTR CALLBACK RoomWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 			DM_ThemeChanged(dat);
 			SendMessage(GetDlgItem(hwndDlg, IDC_CHAT_LOG), EM_HIDESELECTION, TRUE, 0);
 
-			CreateWindowEx(0, _T("TSButtonClass"), _T(""), WS_CHILD | WS_VISIBLE | WS_TABSTOP, 0, 0, 6, DPISCALEY(20),
+			CreateWindowEx(0, _T("TSButtonClass"), _T(""), WS_CHILD | WS_VISIBLE | WS_TABSTOP, 0, 0, 6, DPISCALEY_S(20),
 					hwndDlg, (HMENU)IDC_CHAT_TOGGLESIDEBAR, g_hInst, NULL);
 
 			GetMYUIN(dat);
@@ -3705,6 +3717,7 @@ LABEL_SHOWWINDOW:
 		case WM_DWMCOMPOSITIONCHANGED:
 			BB_RefreshTheme(dat);
 			ZeroMemory(&dat->pContainer->mOld, sizeof(MARGINS));
+			CProxyWindow::verify(dat);
 			break;
 
 		case DM_ACTIVATEME:
@@ -3786,9 +3799,15 @@ LABEL_SHOWWINDOW:
 				BroadCastContainer(dat->pContainer, DM_REFRESHTABINDEX, 0, 0);
 				dat->iTabID = -1;
 			}
+#if defined(__FEAT_EXP_W7TASKBAR)
+			if(dat->pWnd) {
+				delete dat->pWnd;
+				dat->pWnd = 0;
+			}
+#endif
 			//MAD
 			M->RemoveWindow(hwndDlg);
-			//
+
 			TABSRMM_FireEvent(dat->hContact, hwndDlg, MSG_WINDOW_EVT_CLOSE, 0);
 			break;
 		}

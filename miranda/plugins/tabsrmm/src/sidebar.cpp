@@ -681,15 +681,16 @@ void CSideBar::updateSession(const TWindowData *dat)
 		return;
 
 	ButtonIterator item = findSession(dat);
-	//_DebugTraceW(_T("update session for %s"), dat->szNickname);
 	if(item != m_buttonlist.end()) {
 		if(m_dwFlags & SIDEBARLAYOUT_DYNHEIGHT) {
 			LONG oldHeight = (*item)->getHeight();
 			m_topHeight -= (oldHeight + 1);
 			SIZE sz = (*item)->measureItem();
 			m_topHeight += (sz.cy + 1);
-			if(sz.cy != oldHeight)
+			if(sz.cy != oldHeight) {
 				Invalidate();
+				::InvalidateRect((*item)->getHwnd(), NULL, TRUE);
+			}
 			else
 				::InvalidateRect((*item)->getHwnd(), NULL, FALSE);
 		}

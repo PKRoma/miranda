@@ -918,6 +918,12 @@ void TSAPI CreateImageList(BOOL bInitial)
 
 	PluginConfig.g_IconFileEvent = LoadSkinnedIcon(SKINICON_EVENT_FILE);
 	PluginConfig.g_IconMsgEvent = LoadSkinnedIcon(SKINICON_EVENT_MESSAGE);
+	PluginConfig.g_IconMsgEventBig = LoadSkinnedIconBig(SKINICON_EVENT_MESSAGE);
+	if((HICON)CALLSERVICE_NOTFOUND == PluginConfig.g_IconMsgEventBig)
+		PluginConfig.g_IconMsgEventBig = 0;
+	PluginConfig.g_IconTypingEventBig = LoadSkinnedIconBig(SKINICON_OTHER_TYPING);
+	if((HICON)CALLSERVICE_NOTFOUND == PluginConfig.g_IconTypingEventBig)
+		PluginConfig.g_IconTypingEventBig = 0;
 	PluginConfig.g_IconSend = PluginConfig.g_buttonBarIcons[9];
 	PluginConfig.g_IconTypingEvent = PluginConfig.g_buttonBarIcons[5];
 }
@@ -1083,12 +1089,6 @@ static int TSAPI SetupIconLibConfig()
 	if (PluginConfig.m_chat_enabled)
 		Chat_AddIcons();
 	version = GetIconPackVersion(g_hIconDLL);
-	PluginConfig.g_hbmUnknown = (HBITMAP)LoadImage(g_hIconDLL, MAKEINTRESOURCE(IDB_UNKNOWNAVATAR), IMAGE_BITMAP, 0, 0, 0);
-	if (PluginConfig.g_hbmUnknown == 0) {
-		HDC dc = GetDC(0);
-		PluginConfig.g_hbmUnknown = CreateCompatibleBitmap(dc, 20, 20);
-		ReleaseDC(0, dc);
-	}
 	FreeLibrary(g_hIconDLL);
 	g_hIconDLL = 0;
 

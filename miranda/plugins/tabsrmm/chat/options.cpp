@@ -84,7 +84,10 @@ struct ColorOptionsList {
 	COLORREF 	def;
 };
 
-
+/*
+ * note: bits 24-31 in default color indicates that color is a system color index
+ * (GetSysColor(default_color & 0x00ffffff)), not a rgb value.
+ */
 static ColorOptionsList _clrs[] = {
 	0, LPGENT("TabSRMM/Group Chats"), LPGENT("Log background"), SRMSGSET_BKGCOLOUR, SRMSGDEFSET_BKGCOLOUR,
 	1, LPGENT("TabSRMM"), LPGENT("Input area background"), "inputbg", SRMSGDEFSET_BKGCOLOUR,
@@ -101,6 +104,7 @@ static ColorOptionsList _clrs[] = {
 	2, LPGENT("TabSRMM/Common colors"), LPGENT("Window fill color"), "fillColor", 0,
 	3, LPGENT("TabSRMM/Common colors"), LPGENT("Text area borders"), "cRichBorders", 0,
 	4, LPGENT("TabSRMM/Common colors"), LPGENT("Aero glow effect"), "aeroGlow", RGB(40, 40, 255),
+	4, LPGENT("TabSRMM/Common colors"), LPGENT("Generic text color (only when fill color is set)"), "genericTxtClr", 0xff000000 | COLOR_BTNTEXT,
 };
 
 static ColorOptionsList _tabclrs[] = {

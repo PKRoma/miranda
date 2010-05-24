@@ -60,7 +60,7 @@ typedef HRESULT	(WINAPI *PGTBCR)(HANDLE, HDC, int, int, const RECT *, const RECT
 
 typedef HMONITOR(WINAPI *MMFW)(HWND, DWORD);
 typedef BOOL	(WINAPI *GMIA)(HMONITOR, LPMONITORINFO);
-typedef HRESULT	(WINAPI *DRT)(HWND, HWND *, PHTHUMBNAIL);
+typedef HRESULT	(WINAPI *DRT)(HWND, HWND, PHTHUMBNAIL);
 typedef BOOL	(WINAPI *ETDT)(HANDLE, DWORD);
 typedef HANDLE  (WINAPI *BBP)(HDC, RECT *, BP_BUFFERFORMAT, BP_PAINTPARAMS *, HDC *);
 typedef HRESULT (WINAPI *EBP)(HANDLE, BOOL);
@@ -70,7 +70,14 @@ typedef HRESULT (WINAPI *BBW)(HWND, DWM_BLURBEHIND *);
 typedef HRESULT (WINAPI *DGC)(DWORD *, BOOL *);
 typedef HRESULT (WINAPI *BPSA)(HANDLE, const RECT *, BYTE);
 typedef int		(WINAPI *GLIX)(LPCWSTR, LCTYPE, LPCWSTR, int);
-
+#if defined(__FEAT_EXP_W7TASKBAR)
+typedef HRESULT (WINAPI *DWMSWA)(HWND, DWORD, LPCVOID, DWORD);
+typedef HRESULT (WINAPI *DWMIIB)(HWND);
+typedef HRESULT (WINAPI *DWMUT)(HTHUMBNAIL, DWM_THUMBNAIL_PROPERTIES *);
+typedef HRESULT (WINAPI *DURT)(HTHUMBNAIL);
+typedef HRESULT (WINAPI *DSIT)(HWND, HBITMAP, DWORD);
+typedef HRESULT (WINAPI *DSILP)(HWND, HBITMAP, POINT *, DWORD);
+#endif
 /*
  * used to encapsulate some parts of the Miranda API
  * constructor does early time initialization - do NOT put anything
@@ -252,6 +259,12 @@ public:
 	static DGC		m_pfnDwmGetColorizationColor;
 	static BPSA		m_pfnBufferedPaintSetAlpha;
 	static GLIX		m_pfnGetLocaleInfoEx;
+	static DWMSWA   m_pfnDwmSetWindowAttribute;
+	static DWMIIB	m_pfnDwmInvalidateIconicBitmaps;
+	static DWMUT	m_pfnDwmUpdateThumbnailProperties;
+	static DURT		m_pfnDwmUnregisterThumbnail;
+	static DSIT		m_pfnDwmSetIconicThumbnail;
+	static DSILP	m_pfnDwmSetIconicLivePreviewBitmap;
 	static bool		m_shutDown, m_haveBufferedPaint;
 
 	static DWORD	m_MimVersion;

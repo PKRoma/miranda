@@ -142,15 +142,22 @@ extern "C" int __declspec(dllexport) Unload(void)
 #if defined(_UNICODE)
 int _DebugTraceW(const wchar_t *fmt, ...)
 {
-	wchar_t debug[2048];
-	int     ibsize = 2047;
-	va_list va;
+	wchar_t 	debug[2048];
+	int     	ibsize = 2047;
+	SYSTEMTIME	st;
+	va_list 	va;
+	char		tszTime[50];
 	va_start(va, fmt);
 
+	GetLocalTime(&st);
+
+	mir_snprintf(tszTime, 50, "%02d.%02d.%04d - %02d:%02d:%04d: ", st.wDay, st.wMonth, st.wYear, st.wHour, st.wMinute, st.wMilliseconds);
+
+
 	_vsnwprintf(debug, ibsize - 10, fmt, va);
-#ifdef _DEBUG
+//#ifdef _DEBUG
 	OutputDebugStringW(debug);
-#else
+//#else
 	{
 		char szLogFileName[MAX_PATH], szDataPath[MAX_PATH];
 		FILE *f;
@@ -160,6 +167,7 @@ int _DebugTraceW(const wchar_t *fmt, ...)
 		f = fopen(szLogFileName, "a+");
 		if (f) {
 			char *szDebug = M->utf8_encodeW(debug);
+			fputs(tszTime, f);
 			fputs(szDebug, f);
 			fputs("\n", f);
 			fclose(f);
@@ -167,7 +175,7 @@ int _DebugTraceW(const wchar_t *fmt, ...)
 				mir_free(szDebug);
 		}
 	}
-#endif
+//#endif
 	return 0;
 }
 #endif

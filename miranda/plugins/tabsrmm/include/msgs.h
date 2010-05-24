@@ -172,6 +172,7 @@ class CMenuBar;
 class CInfoPanel;
 class CSideBar;
 class CContactCache;
+class CProxyWindow;
 
 #define STICK_ICON_MSG 10
 struct TLogTheme {
@@ -298,7 +299,7 @@ struct TWindowData {
 	DWORD   lastMessage;
 	int     iTabID;
 	HKL     hkl;                                    // keyboard layout identifier
-	DWORD   dwTickLastEvent;
+	DWORD   dwTickLastEvent, dwUnread;
 	HBITMAP hOwnPic;
 	SIZE    pic;
 	int     showPic, showInfoPic;
@@ -353,6 +354,8 @@ struct TWindowData {
 	bool	fEditNotesActive;
 	CInfoPanel *Panel;
 	CContactCache *cache;
+	CProxyWindow  *pWnd;	// proxy window object (win7+, for taskbar support).
+							// ALWAYS check this pointer before using it, it is not guaranteed to exist.
 	DWORD	iSplitterSaved;
 	BYTE    bWasDeleted;
 	BOOL	bActualHistory;
@@ -470,7 +473,7 @@ struct TNewWindowData {
 #define CNT_NOSTATUSBAR 0x1000000
 #define CNT_NOMENUBAR 0x2000000
 #define CNT_TABSBOTTOM 0x4000000
-// #define CNT_STATICICON 0x8000000 **free**
+#define CNT_AVATARSONTASKBAR 0x200
 #define CNT_BOTTOMTOOLBAR 0x10000000
 #define CNT_HIDETOOLBAR 0x20000000
 #define CNT_UINSTATUSBAR 0x40000000

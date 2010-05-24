@@ -35,6 +35,28 @@ are currently no downloads for it, you'll have to compile it from source.
 			Detailed change log
 			===================
 
+Version 3.0.0.33 - 2010/05/22
+
+	* some issues fixed
+
+	* improved compatibility for old (TabSRMM 2) skins
+
+	* preliminary support for large status icons on the Windows 7 task bar (Miranda 0.9
+	  required).
+
+	* option to show avatars on task bar added to container settings (only
+	  when running on Windows 7).
+
+	* option to enable/disable Windows 7 task bar features removed (now always on, 
+	  when running on Windows 7).
+	  
+	* Added aero peek for the Windows 7 task bar. Per tab thumbnails are partially
+	  implemented, so you get a similar UI as seen in other tabbed applications
+	  under Windows 7 (IE 8, Opera 10, for example). Still experimental, so it is 
+	  disabled by default (Message Sessions->Advanced tweaks is where you can enable
+	  it). A Restart is required.
+
+
 Version 3.0.0.32 - 2010/05/16
 
 	* menu bar is now using tool bar colors when using custom message window 

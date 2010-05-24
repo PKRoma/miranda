@@ -303,7 +303,7 @@ void CInfoPanel::renderBG(const HDC hdc, RECT& rc, CSkinItem *item, bool fAero, 
 			} else {
 				rc.bottom -= 2;
 				::DrawAlpha(hdc, &rc, PluginConfig.m_ipBackgroundGradient, 100, PluginConfig.m_ipBackgroundGradientHigh, 0, 17,
-							0, 2, 0);
+							0, 0, 0);
 				if(fAutoCalc) {
 					rc.top = rc.bottom - 1;
 					rc.left--; rc.right++;

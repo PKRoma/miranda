@@ -434,7 +434,7 @@ TOptionListItem CTranslator::m_lvItemsModPlus[] = {
 	0, LPGENT("Enable icon pack version check (*)"), 1, LOI_TYPE_SETTING, (UINT_PTR)"adv_IconpackWarning", 0,
 	0, LPGENT("Disable error popups on sending failures"), 0, LOI_TYPE_SETTING, (UINT_PTR)"adv_noErrorPopups", 1,
 	0, LPGENT("Use Aero Glass for the message window (Vista+)"), 1, LOI_TYPE_SETTING, (UINT_PTR)"useAero", 0,
-	0, LPGENT("Use Windows 7 task bar features (*)"), 1, LOI_TYPE_SETTING, (UINT_PTR)"useW7Taskbar", 0,
+	0, LPGENT("Use Aero Peek features for tabbed Windows (Win7+) (*)"), 0, LOI_TYPE_SETTING, (UINT_PTR)"useAeroPeek", 0,
 	0, LPGENT("Automatic keyboard layout: Do not load the system default for new contacts"), 1, LOI_TYPE_SETTING, (UINT_PTR)"adv_leaveKeyboardAlone", 0,
 	0, LPGENT("Enable unattended send (experimental, required for multisend and send later, possibly buggy) (*)"), 0, LOI_TYPE_SETTING, (UINT_PTR)"sendLaterAvail", 0,
 	0, NULL, 0, 0, 0, 0

@@ -40,7 +40,8 @@
 static SKINDESC my_default_skin[] = {
 	IDR_SKIN_AERO, _T("tabskin_aero.png"),
 	IDR_SKIN_AERO_GLOW, _T("tabskin_aero_glow.png"),
-	IDR_SKIN_AERO_SWITCHBAR, _T("tabskin_aero_button.png")
+	IDR_SKIN_AERO_SWITCHBAR, _T("tabskin_aero_button.png"),
+	IDR_SKIN_LOGO, _T("unknown.png")
 };
 
 CSkin* Skin = 0;
@@ -937,11 +938,14 @@ void CImageItem::Free()
 	ZeroMemory(this, sizeof(CImageItem));
 }
 
-/*
- * unused...
+/**
+ * Set the alpha value for a 32bit RGBA bitmap to the given value
+ *
+ * @param hBitmap	bitmap handle
+ * @param bAlpha	new alpha value (0 -> fully transparent, 255 -> opaque)
+ * 					default value is 255
  */
-
-void CImageItem::CorrectBitmap32Alpha(HBITMAP hBitmap)
+void CImageItem::SetBitmap32Alpha(HBITMAP hBitmap, BYTE bAlpha)
 {
 	BITMAP bmp;
 	DWORD dwLen;
@@ -966,17 +970,11 @@ void CImageItem::CorrectBitmap32Alpha(HBITMAP hBitmap)
 		BYTE *px = p + bmp.bmWidth * 4 * y;
 
 		for (x = 0; x < bmp.bmWidth; ++x) {
-			if (px[3] != 0)
-				fixIt = FALSE;
-			else
-				px[3] = 255;
+			px[3] = bAlpha;
 			px += 4;
 		}
 	}
-
-	if (fixIt)
-		SetBitmapBits(hBitmap, bmp.bmWidth * bmp.bmHeight * 4, p);
-
+	SetBitmapBits(hBitmap, bmp.bmWidth * bmp.bmHeight * 4, p);
 	free(p);
 }
 
@@ -1944,6 +1942,21 @@ void CSkin::setupAeroSkins()
 	if(tszBasePath[lstrlen(tszBasePath) - 1] != '\\')
 		_tcscat(tszBasePath, _T("\\"));
 
+	/*
+	 * load unknown avatar..
+	 */
+	if(0 == PluginConfig.g_hbmUnknown) {
+		mir_sntprintf(tszFilename, MAX_PATH, _T("%scustom_unknown.png"), tszBasePath);
+		if(!PathFileExists(tszFilename))
+			mir_sntprintf(tszFilename, MAX_PATH, _T("%sunknown.png"), tszBasePath);
+		PluginConfig.g_hbmUnknown = (HBITMAP)CallService(MS_IMG_LOAD, (WPARAM)tszFilename, IMGL_TCHAR);
+		if (PluginConfig.g_hbmUnknown == 0) {
+			HDC dc = GetDC(0);
+			PluginConfig.g_hbmUnknown = CreateCompatibleBitmap(dc, 20, 20);
+			ReleaseDC(0, dc);
+		}
+	}
+
 	mir_sntprintf(tszFilename, MAX_PATH, _T("%stabskin_aero.png"), tszBasePath);
 
 	if(CMimAPI::m_pfnDwmGetColorizationColor && M->isAero())
@@ -2361,7 +2374,8 @@ int CSkin::RenderText(HDC hdc, HANDLE hTheme, const TCHAR *szText, RECT *rc, DWO
 	if(PluginConfig.m_bIsVista && !CSkin::m_skinEnabled && hTheme) {
 		DTTOPTS dto = {0};
 		dto.dwSize = sizeof(dto);
-		if(iGlowSize && M->isAero()) {
+		if(iGlowSize && (M->isAero() || dtFlags & 0x80000000)) {
+			dtFlags &= 0x7fffffff;
 			dto.iGlowSize = iGlowSize;
 			dto.dwFlags = DTT_COMPOSITED|DTT_GLOWSIZE;
 		}

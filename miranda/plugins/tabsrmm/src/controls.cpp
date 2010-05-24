@@ -791,7 +791,7 @@ LONG_PTR CALLBACK StatusBarSubclassProc(HWND hWnd, UINT msg, WPARAM wParam, LPAR
 
 			SetBkMode(hdcMem, TRANSPARENT);
 
-			clr = CSkin::m_skinEnabled ? CSkin::m_DefaultFontColor : GetSysColor(COLOR_BTNTEXT);
+			clr = CSkin::m_skinEnabled ? CSkin::m_DefaultFontColor : (PluginConfig.m_fillColor ? PluginConfig.m_genericTxtColor : GetSysColor(COLOR_BTNTEXT));
 
 			hFontOld = (HFONT)SelectObject(hdcMem, GetStockObject(DEFAULT_GUI_FONT));
 

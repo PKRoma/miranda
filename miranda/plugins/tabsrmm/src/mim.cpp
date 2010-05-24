@@ -64,7 +64,12 @@ BBW		CMimAPI::m_pfnDwmBlurBehindWindow = 0;
 DGC		CMimAPI::m_pfnDwmGetColorizationColor = 0;
 BPSA	CMimAPI::m_pfnBufferedPaintSetAlpha = 0;
 GLIX	CMimAPI::m_pfnGetLocaleInfoEx = 0;
-
+DWMIIB  CMimAPI::m_pfnDwmInvalidateIconicBitmaps = 0;
+DWMSWA	CMimAPI::m_pfnDwmSetWindowAttribute = 0;
+DWMUT	CMimAPI::m_pfnDwmUpdateThumbnailProperties = 0;
+DURT	CMimAPI::m_pfnDwmUnregisterThumbnail = 0;
+DSIT	CMimAPI::m_pfnDwmSetIconicThumbnail = 0;
+DSILP	CMimAPI::m_pfnDwmSetIconicLivePreviewBitmap = 0;
 bool	CMimAPI::m_shutDown = 0;
 TCHAR	CMimAPI::m_userDir[] = _T("\0");
 
@@ -514,6 +519,12 @@ void CMimAPI::InitAPI()
 			m_pfnDwmRegisterThumbnail = (DRT)GetProcAddress(m_hDwmApi, "DwmRegisterThumbnail");
 			m_pfnDwmBlurBehindWindow = (BBW)GetProcAddress(m_hDwmApi, "DwmEnableBlurBehindWindow");
 			m_pfnDwmGetColorizationColor = (DGC)GetProcAddress(m_hDwmApi, "DwmGetColorizationColor");
+			m_pfnDwmInvalidateIconicBitmaps = (DWMIIB)GetProcAddress(m_hDwmApi, "DwmInvalidateIconicBitmaps");
+			m_pfnDwmSetWindowAttribute = (DWMSWA)GetProcAddress(m_hDwmApi, "DwmSetWindowAttribute");
+			m_pfnDwmUpdateThumbnailProperties = (DWMUT)GetProcAddress(m_hDwmApi, "DwmUpdateThumbnailProperties");
+			m_pfnDwmUnregisterThumbnail = (DURT)GetProcAddress(m_hDwmApi, "DwmUnregisterThumbnail");
+			m_pfnDwmSetIconicThumbnail = (DSIT)GetProcAddress(m_hDwmApi, "DwmSetIconicThumbnail");
+			m_pfnDwmSetIconicLivePreviewBitmap = (DSILP)GetProcAddress(m_hDwmApi, "DwmSetIconicLivePreviewBitmap");
 	    }
 		/*
 		 * additional uxtheme APIs (Vista+)

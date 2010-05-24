@@ -181,7 +181,7 @@ public:
 	void 				Create(const TCHAR *szImageFile);
 	void __fastcall		Render(const HDC hdc, const RECT *rc, bool fIgnoreGlyph) const;
 	static void TSAPI	PreMultiply(HBITMAP hBitmap, int mode);
-	static void TSAPI	CorrectBitmap32Alpha(HBITMAP hBitmap);
+	static void TSAPI	SetBitmap32Alpha(HBITMAP hBitmap, BYTE bAlpha = 255);
 	static void TSAPI	Colorize(HBITMAP hBitmap, BYTE dr, BYTE dg, BYTE db, BYTE alpha = 0);
     static HBITMAP TSAPI LoadPNG(const TCHAR *szFilename);
 

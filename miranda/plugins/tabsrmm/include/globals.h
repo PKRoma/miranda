@@ -115,6 +115,7 @@ public:
 	int         g_FlashAvatarAvail;
 	HIMAGELIST  g_hImageList;
 	HICON       g_IconMsgEvent, g_IconTypingEvent, g_IconFileEvent, g_IconSend;
+	HICON		g_IconMsgEventBig, g_IconTypingEventBig;
 	HICON       g_IconFolder, g_IconChecked, g_IconUnchecked;
 	HMENU       g_hMenuContext, g_hMenuContainer, g_hMenuEncoding, g_hMenuTrayUnread;
 	HMENU       g_hMenuFavorites, g_hMenuRecent, g_hMenuTrayContext;
@@ -190,12 +191,13 @@ public:
 	HMENU		m_MenuBar;
 	COLORREF	m_ipBackgroundGradient;
 	COLORREF	m_ipBackgroundGradientHigh;
-	COLORREF	m_tbBackgroundHigh, m_tbBackgroundLow, m_fillColor, m_cRichBorders;
+	COLORREF	m_tbBackgroundHigh, m_tbBackgroundLow, m_fillColor, m_cRichBorders, m_genericTxtColor;
 	BYTE		g_bClientInStatusBar;
 	BYTE		m_dontUseDefaultKbd;
 	HANDLE		hSvc[SERVICE_LAST];
 	HANDLE		m_event_MsgWin, m_event_MsgPopup;
 	HANDLE		m_hMenuItem;
+	BYTE		m_useAeroPeek;
 
 	TSplitterBroadCast 		lastSPlitterPos;
 	TContainerSettings		globalContainerSettings;
@@ -236,9 +238,6 @@ private:
 
 extern	CGlobals	PluginConfig;
 extern	CGlobals	*pConfig;
-
-#define DPISCALEY(argY) ((int) ((double)(argY) * PluginConfig.g_DPIscaleY))
-#define DPISCALEX(argX) ((int) ((double)(argX) * PluginConfig.g_DPIscaleX))
 
 #define DPISCALEY_S(argY) ((int) ((double)(argY) * PluginConfig.g_DPIscaleY))
 #define DPISCALEX_S(argX) ((int) ((double)(argX) * PluginConfig.g_DPIscaleX))

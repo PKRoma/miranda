@@ -40,7 +40,11 @@
 	#define _UNICODE
 #endif
 
-//#define __FEAT_EXP_AUTOSPLITTER 1
+#define __FEAT_EXP_AUTOSPLITTER 1					// autosize input area on request (experimental, incomplete, don't use,
+													// feature postponed to rel 3.1.+)
+#define __FEAT_EXP_W7TASKBAR 1						// support for Windows 7 task bar with "per tab" thumbnails (incomplete, but useable)
+
+//#define __LOGDEBUG_	1								// log some stuff to %profile_dir%/tabsrmm_debug.log
 
 #define WINVER 0x0600
 #define _WIN32_WINNT 0x0600
@@ -77,6 +81,31 @@
 		BOOL fVisible;
 		BOOL fSourceClientAreaOnly;
 	} DWM_THUMBNAIL_PROPERTIES, *PDWM_THUMBNAIL_PROPERTIES;
+
+	enum DWMWINDOWATTRIBUTE
+	{
+	    DWMWA_NCRENDERING_ENABLED = 1,      // [get] Is non-client rendering enabled/disabled
+	    DWMWA_NCRENDERING_POLICY,           // [set] Non-client rendering policy
+	    DWMWA_TRANSITIONS_FORCEDISABLED,    // [set] Potentially enable/forcibly disable transitions
+	    DWMWA_ALLOW_NCPAINT,                // [set] Allow contents rendered in the non-client area to be visible on the DWM-drawn frame.
+	    DWMWA_CAPTION_BUTTON_BOUNDS,        // [get] Bounds of the caption button area in window-relative space.
+	    DWMWA_NONCLIENT_RTL_LAYOUT,         // [set] Is non-client content RTL mirrored
+	    DWMWA_FORCE_ICONIC_REPRESENTATION,  // [set] Force this window to display iconic thumbnails.
+	    DWMWA_FLIP3D_POLICY,                // [set] Designates how Flip3D will treat the window.
+	    DWMWA_EXTENDED_FRAME_BOUNDS,        // [get] Gets the extended frame bounds rectangle in screen space
+	    DWMWA_HAS_ICONIC_BITMAP,            // [set] Indicates an available bitmap when there is no better thumbnail representation.
+	    DWMWA_DISALLOW_PEEK,                // [set] Don't invoke Peek on the window.
+	    DWMWA_EXCLUDED_FROM_PEEK,           // [set] LivePreview exclusion information
+	    DWMWA_LAST
+	};
+
+	#define DWM_TNP_RECTDESTINATION	0x00000001
+	#define DWM_TNP_RECTSOURCE 0x00000002
+	#define DWM_TNP_OPACITY	0x00000004
+	#define DWM_TNP_VISIBLE	0x00000008
+	#define DWM_TNP_SOURCECLIENTAREAONLY 0x00000010
+
+	#define DWM_SIT_DISPLAYFRAME    0x00000001  // Display a window frame around the provided bitmap
 
 	typedef HANDLE HTHUMBNAIL;
 	typedef HTHUMBNAIL* PHTHUMBNAIL;
@@ -121,6 +150,9 @@
 
 #define WM_DWMCOMPOSITIONCHANGED        0x031E
 #define WM_DWMCOLORIZATIONCOLORCHANGED  0x0320
+
+#define WM_DWMSENDICONICTHUMBNAIL           0x0323
+#define WM_DWMSENDICONICLIVEPREVIEWBITMAP   0x0326
 
 #include <stdio.h>
 #include <time.h>

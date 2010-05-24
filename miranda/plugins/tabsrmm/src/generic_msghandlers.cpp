@@ -775,7 +775,7 @@ void TSAPI DM_InitRichEdit(TWindowData *dat)
 	ZeroMemory(&cf2, sizeof(CHARFORMAT2A));
 
 	dat->inputbg = fIsChat ? M->GetDword(FONTMODULE, "inputbg", SRMSGDEFSET_BKGCOLOUR) : dat->pContainer->theme.inputbg;
-	colour = fIsChat ? M->GetDword(FONTMODULE, SRMSGSET_BKGCOLOUR, SRMSGDEFSET_BKGCOLOUR) : dat->pContainer->theme.bg;
+	colour = fIsChat ? M->GetDword(FONTMODULE, SRMSGSET_BKGCOLOUR, SRMSGDEFSET_BKGCOLOUR) : dat->pContainer->theme.inbg;
 
 	if(!fIsChat) {
 		if (GetWindowTextLengthA(hwndEdit) > 0)
@@ -1708,6 +1708,8 @@ int TSAPI DM_SplitterGlobalEvent(TWindowData *dat, WPARAM wParam, LPARAM lParam)
 		DM_RecalcPictureSize(dat);
 		SendMessage(dat->hwnd, WM_SIZE, 0, 0);
 		DM_ScrollToBottom(dat, 1,1);
+		if(dat != srcDat)
+			CSkin::UpdateToolbarBG(dat);
 	}
 	else {
 		SESSION_INFO *si = dat->si;
@@ -1751,13 +1753,14 @@ void TSAPI DM_EventAdded(TWindowData *dat, WPARAM wParam, LPARAM lParam)
 		return;
 
 	if (DbEventIsShown(dat, &dbei)) {
-		if (dbei.eventType == EVENTTYPE_MESSAGE && m_pContainer->hwndStatus && !(dbei.flags & (DBEF_SENT))) {
+		if (dbei.eventType == EVENTTYPE_MESSAGE && !(dbei.flags & (DBEF_SENT))) {
 			dat->lastMessage = dbei.timestamp;
 			dat->szStatusBar[0] = 0;
 			dat->nTypeSecs = 0;
 			dat->showTyping = 0;
 			HandleIconFeedback(dat, (HICON)-1);
-			PostMessage(hwndDlg, DM_UPDATELASTMESSAGE, 0, 0);
+			if(m_pContainer->hwndStatus)
+				PostMessage(hwndDlg, DM_UPDATELASTMESSAGE, 0, 0);
 		}
 		/*
 		* set the message log divider to mark new (maybe unseen) messages, if the container has
@@ -1859,6 +1862,9 @@ void TSAPI DM_EventAdded(TWindowData *dat, WPARAM wParam, LPARAM lParam)
 		*/
 		if (dbei.eventType == EVENTTYPE_MESSAGE && !(dbei.flags & (DBEF_SENT)))
 			PostMessage(hwndDlg, DM_PLAYINCOMINGSOUND, 0, 0);
+
+		if(dat->pWnd)
+			dat->pWnd->Invalidate();
 	}
 }
 
@@ -1986,7 +1992,9 @@ void TSAPI DM_UpdateTitle(TWindowData *dat, WPARAM wParam, LPARAM lParam)
 			item.pszText = newtitle;
 			_tcsncpy(dat->newtitle, newtitle, safe_sizeof(dat->newtitle));
 			dat->newtitle[127] = 0;
-			item.cchTextMax = 127;;
+			item.cchTextMax = 127;
+			if(dat->pWnd)
+				dat->pWnd->updateTitle(dat->cache->getNick());
 		}
 		if (dat->iTabID  >= 0) {
 			TabCtrl_SetItem(hwndTab, dat->iTabID, &item);
@@ -2006,6 +2014,8 @@ void TSAPI DM_UpdateTitle(TWindowData *dat, WPARAM wParam, LPARAM lParam)
 		}
 
 		dat->Panel->Invalidate();
+		if(dat->pWnd)
+			dat->pWnd->Invalidate();
 
 		if (PluginConfig.g_FlashAvatarAvail) {
 			FLASHAVATAR fa = {0};
