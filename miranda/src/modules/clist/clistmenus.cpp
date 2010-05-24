@@ -607,21 +607,25 @@ INT_PTR StatusMenuExecService(WPARAM wParam, LPARAM)
 
 				CallProtoService( smep->proto, PS_GETNAME, (WPARAM)SIZEOF(szHumanName), (LPARAM)szHumanName );
 				pimi = MO_GetIntMenuItem(( HGENMENU )smep->protoindex );
+				PMO_IntMenuItem root = (PMO_IntMenuItem)pimi->mi.root;
+				mir_free( pimi->mi.pszName );
+				mir_free( root->mi.pszName );
 				if ( i ) {
 					TCHAR buf[256];
 					pimi->mi.flags|=CMIF_CHECKED;
-					if ( pimi->mi.pszName )
-						mir_free( pimi->mi.pszName );
 					if ( cli.bDisplayLocked ) {
 						mir_sntprintf(buf,SIZEOF(buf),TranslateT("%s (locked)"),acc->tszAccountName);
 						pimi->mi.ptszName = mir_tstrdup( buf );
+						root->mi.ptszName = mir_tstrdup( buf );
 					}
-					else pimi->mi.ptszName =  mir_tstrdup( acc->tszAccountName );
+					else { 
+						pimi->mi.ptszName = mir_tstrdup( acc->tszAccountName );
+						root->mi.ptszName = mir_tstrdup( acc->tszAccountName );
+					}
 				}
 				else {
-					if ( pimi->mi.pszName )
-						mir_free( pimi->mi.pszName );
 					pimi->mi.ptszName = mir_tstrdup( acc->tszAccountName );
+					root->mi.ptszName = mir_tstrdup( acc->tszAccountName );
 					pimi->mi.flags &= ~CMIF_CHECKED;
 				}
 				if ( cli.hwndStatus )
