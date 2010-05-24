@@ -525,7 +525,7 @@ int CJabberProto::Authorize( HANDLE hContact )
 ////////////////////////////////////////////////////////////////////////////////////////
 // JabberAuthDeny - handles the unsuccessful authorization
 
-int CJabberProto::AuthDeny( HANDLE hContact, const TCHAR* /*szReason*/ )
+int CJabberProto::AuthDeny( HANDLE hDbEvent, const TCHAR* /*szReason*/ )
 {
 	DBEVENTINFO dbei;
 	char* nick, *firstName, *lastName, *jid;
@@ -536,11 +536,11 @@ int CJabberProto::AuthDeny( HANDLE hContact, const TCHAR* /*szReason*/ )
 	Log( "Entering AuthDeny" );
 	memset( &dbei, 0, sizeof( dbei ) );
 	dbei.cbSize = sizeof( dbei );
-	if (( dbei.cbBlob=JCallService( MS_DB_EVENT_GETBLOBSIZE, ( WPARAM )hContact, 0 )) == ( DWORD )( -1 ))
+	if (( dbei.cbBlob=JCallService( MS_DB_EVENT_GETBLOBSIZE, ( WPARAM )hDbEvent, 0 )) == ( DWORD )( -1 ))
 		return 1;
 	if (( dbei.pBlob=( PBYTE ) mir_alloc( dbei.cbBlob )) == NULL )
 		return 1;
-	if ( JCallService( MS_DB_EVENT_GET, ( WPARAM )hContact, ( LPARAM )&dbei )) {
+	if ( JCallService( MS_DB_EVENT_GET, ( WPARAM )hDbEvent, ( LPARAM )&dbei )) {
 		mir_free( dbei.pBlob );
 		return 1;
 	}
@@ -558,7 +558,7 @@ int CJabberProto::AuthDeny( HANDLE hContact, const TCHAR* /*szReason*/ )
 	lastName = firstName + strlen( firstName ) + 1;
 	jid = lastName + strlen( lastName ) + 1;
 
-	Log( "Send 'authorization denied' to " TCHAR_STR_PARAM, jid );
+	Log( "Send 'authorization denied' to %s" , jid );
 
 	TCHAR* newJid = dbei.flags & DBEF_UTF ? mir_utf8decodeT( jid ) : mir_a2t( jid );
 

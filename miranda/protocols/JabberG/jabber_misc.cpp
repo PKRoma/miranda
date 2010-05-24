@@ -150,7 +150,7 @@ void CJabberProto::DBAddAuthRequest( const TCHAR* jid, const TCHAR* nick )
 	*pCurBlob = '\0';					//reason
 
 	JCallService( MS_DB_EVENT_ADD, ( WPARAM ) ( HANDLE ) NULL, ( LPARAM )&dbei );
-	Log( "Setup DBAUTHREQUEST with nick='" TCHAR_STR_PARAM "' jid='" TCHAR_STR_PARAM "'", szNick, szJid );
+	Log( "Setup DBAUTHREQUEST with nick='%s' jid='%s'", szNick, szJid );
 
 	mir_free( szJid );
 	mir_free( szNick );
