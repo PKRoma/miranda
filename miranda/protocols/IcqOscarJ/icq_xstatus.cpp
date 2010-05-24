@@ -183,8 +183,11 @@ HICON CIcqProto::getXStatusIcon(int bStatus, UINT flags)
 
 void CIcqProto::releaseXStatusIcon(int bStatus, UINT flags)
 {
-	if (bStatus > 0 && bStatus <= XSTATUS_COUNT)
-		hXStatusIcons[bStatus - 1]->ReleaseIcon((flags & LR_BIGICON) != 0);
+	if (bStatus > 0 && bStatus <= XSTATUS_COUNT) {
+		IcqIconHandle p = hXStatusIcons[bStatus - 1];
+		if (p)
+			p->ReleaseIcon((flags & LR_BIGICON) != 0);
+	}
 }
 
 
