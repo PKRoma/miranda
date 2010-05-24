@@ -67,6 +67,11 @@ pfnEnableThemeDialogTexture enableThemeDialogTexture;
 pfnSetWindowTheme setWindowTheme;
 pfnSetWindowThemeAttribute setWindowThemeAttribute;
 pfnIsThemeActive isThemeActive;
+pfnBufferedPaintInit bufferedPaintInit;
+pfnBufferedPaintUninit bufferedPaintUninit;
+pfnBeginBufferedPaint beginBufferedPaint;
+pfnEndBufferedPaint endBufferedPaint;
+pfnGetBufferedPaintBits getBufferedPaintBits;
 
 pfnDwmExtendFrameIntoClientArea dwmExtendFrameIntoClientArea;
 pfnDwmIsCompositionEnabled dwmIsCompositionEnabled;
@@ -585,21 +590,27 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int )
     if (IsWinVerXPPlus())
     {
 	    hThemeAPI = LoadLibraryA("uxtheme.dll");
-	    if ( hThemeAPI ) {
-		    openThemeData = (pfnOpenThemeData)GetProcAddress(hThemeAPI,"OpenThemeData");
-		    isThemeBackgroundPartiallyTransparent = (pfnIsThemeBackgroundPartiallyTransparent)GetProcAddress(hThemeAPI,"IsThemeBackgroundPartiallyTransparent");
-		    drawThemeParentBackground  = (pfnDrawThemeParentBackground)GetProcAddress(hThemeAPI,"DrawThemeParentBackground");
-		    drawThemeBackground = (pfnDrawThemeBackground)GetProcAddress(hThemeAPI,"DrawThemeBackground");
-		    drawThemeText = (pfnDrawThemeText)GetProcAddress(hThemeAPI,"DrawThemeText");
-		    drawThemeTextEx = (pfnDrawThemeTextEx)GetProcAddress(hThemeAPI,"DrawThemeTextEx");
-            getThemeBackgroundContentRect = (pfnGetThemeBackgroundContentRect)GetProcAddress(hThemeAPI,"GetThemeBackgroundContentRect");
-            getThemeFont = (pfnGetThemeFont)GetProcAddress(hThemeAPI,"GetThemeFont");
-		    closeThemeData  = (pfnCloseThemeData)GetProcAddress(hThemeAPI,"CloseThemeData");
-            enableThemeDialogTexture = (pfnEnableThemeDialogTexture)GetProcAddress(hThemeAPI,"EnableThemeDialogTexture");
-            setWindowTheme = (pfnSetWindowTheme)GetProcAddress(hThemeAPI,"SetWindowTheme");
-            setWindowThemeAttribute = (pfnSetWindowThemeAttribute)GetProcAddress(hThemeAPI,"SetWindowThemeAttribute");
-            isThemeActive = (pfnIsThemeActive)GetProcAddress(hThemeAPI,"IsThemeActive");
-        }
+	    if (hThemeAPI)
+		{
+		    openThemeData = (pfnOpenThemeData)GetProcAddress(hThemeAPI, "OpenThemeData");
+		    isThemeBackgroundPartiallyTransparent = (pfnIsThemeBackgroundPartiallyTransparent)GetProcAddress(hThemeAPI, "IsThemeBackgroundPartiallyTransparent");
+		    drawThemeParentBackground  = (pfnDrawThemeParentBackground)GetProcAddress(hThemeAPI, "DrawThemeParentBackground");
+		    drawThemeBackground = (pfnDrawThemeBackground)GetProcAddress(hThemeAPI, "DrawThemeBackground");
+		    drawThemeText = (pfnDrawThemeText)GetProcAddress(hThemeAPI, "DrawThemeText");
+		    drawThemeTextEx = (pfnDrawThemeTextEx)GetProcAddress(hThemeAPI, "DrawThemeTextEx");
+            getThemeBackgroundContentRect = (pfnGetThemeBackgroundContentRect)GetProcAddress(hThemeAPI ,"GetThemeBackgroundContentRect");
+            getThemeFont = (pfnGetThemeFont)GetProcAddress(hThemeAPI, "GetThemeFont");
+		    closeThemeData  = (pfnCloseThemeData)GetProcAddress(hThemeAPI, "CloseThemeData");
+            enableThemeDialogTexture = (pfnEnableThemeDialogTexture)GetProcAddress(hThemeAPI, "EnableThemeDialogTexture");
+            setWindowTheme = (pfnSetWindowTheme)GetProcAddress(hThemeAPI, "SetWindowTheme");
+            setWindowThemeAttribute = (pfnSetWindowThemeAttribute)GetProcAddress(hThemeAPI, "SetWindowThemeAttribute");
+            isThemeActive = (pfnIsThemeActive)GetProcAddress(hThemeAPI, "IsThemeActive");
+            bufferedPaintInit = (pfnBufferedPaintInit)GetProcAddress(hThemeAPI, "BufferedPaintInit");
+            bufferedPaintUninit = (pfnBufferedPaintUninit)GetProcAddress(hThemeAPI, "BufferedPaintUninit");
+            beginBufferedPaint = (pfnBeginBufferedPaint)GetProcAddress(hThemeAPI, "BeginBufferedPaint");
+            endBufferedPaint = (pfnEndBufferedPaint)GetProcAddress(hThemeAPI, "EndBufferedPaint");
+            getBufferedPaintBits = (pfnGetBufferedPaintBits)GetProcAddress(hThemeAPI, "GetBufferedPaintBits");
+		}
     }
 
     if (IsWinVerVistaPlus())
@@ -611,6 +622,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int )
             dwmIsCompositionEnabled = (pfnDwmIsCompositionEnabled)GetProcAddress(hDwmApi,"DwmIsCompositionEnabled");
 	    }
     }
+
+	if (bufferedPaintInit) bufferedPaintInit();
 
 	OleInitialize(NULL);
 
@@ -689,6 +702,8 @@ exit:
 		pTaskbarInterface->Release();
 
 	OleUninitialize();
+
+	if (bufferedPaintUninit) bufferedPaintUninit();
 
     if (hDwmApi) FreeLibrary(hDwmApi);
     if (hThemeAPI) FreeLibrary(hThemeAPI);

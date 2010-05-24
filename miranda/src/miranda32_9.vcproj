@@ -65,7 +65,6 @@
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="commonheaders.h"
 				AssemblerListingLocation=""
-				BrowseInformation="0"
 				BrowseInformationFile=""
 				WarningLevel="3"
 				SuppressStartupBanner="true"
@@ -92,7 +91,6 @@
 				AdditionalManifestDependencies="type=&apos;win32&apos; name=&apos;Microsoft.Windows.Common-Controls&apos; version=&apos;6.0.0.0&apos; processorArchitecture=&apos;*&apos; publicKeyToken=&apos;6595b64144ccf1df&apos; language=&apos;*&apos;;type=&apos;win32&apos; name=&apos;Microsoft.Windows.Gdiplus&apos; version=&apos;1.0.0.0&apos; processorArchitecture=&apos;X86&apos; publicKeyToken=&apos;6595b64144ccf1df&apos; language=&apos;*&apos;"
 				ModuleDefinitionFile=""
 				GenerateDebugInformation="true"
-				GenerateMapFile="false"
 				MapFileName=""
 				SubSystem="2"
 				OptimizeReferences="2"
@@ -100,7 +98,6 @@
 				OptimizeForWindows98="0"
 				LinkTimeCodeGeneration="1"
 				RandomizedBaseAddress="1"
-				DataExecutionPrevention="0"
 				ImportLibrary="$(IntDir)/$(TargetName).lib"
 				TargetMachine="1"
 			/>
@@ -172,7 +169,6 @@
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="commonheaders.h"
 				AssemblerListingLocation=""
-				BrowseInformation="0"
 				BrowseInformationFile=""
 				WarningLevel="3"
 				SuppressStartupBanner="true"
@@ -200,7 +196,6 @@
 				AdditionalManifestDependencies="type=&apos;win32&apos; name=&apos;Microsoft.Windows.Common-Controls&apos; version=&apos;6.0.0.0&apos; processorArchitecture=&apos;*&apos; publicKeyToken=&apos;6595b64144ccf1df&apos; language=&apos;*&apos;;type=&apos;win32&apos; name=&apos;Microsoft.Windows.Gdiplus&apos; version=&apos;1.0.0.0&apos; processorArchitecture=&apos;amd64&apos; publicKeyToken=&apos;6595b64144ccf1df&apos; language=&apos;*&apos;"
 				ModuleDefinitionFile=""
 				GenerateDebugInformation="true"
-				GenerateMapFile="false"
 				MapFileName=""
 				SubSystem="2"
 				OptimizeReferences="2"
@@ -208,7 +203,6 @@
 				OptimizeForWindows98="0"
 				LinkTimeCodeGeneration="1"
 				RandomizedBaseAddress="1"
-				DataExecutionPrevention="0"
 				ImportLibrary="$(IntDir)/$(TargetName).lib"
 				TargetMachine="17"
 			/>
@@ -274,7 +268,6 @@
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="commonheaders.h"
 				AssemblerListingLocation=""
-				BrowseInformation="0"
 				BrowseInformationFile=""
 				WarningLevel="3"
 				SuppressStartupBanner="true"
@@ -301,11 +294,9 @@
 				AdditionalManifestDependencies="type=&apos;win32&apos; name=&apos;Microsoft.Windows.Common-Controls&apos; version=&apos;6.0.0.0&apos; processorArchitecture=&apos;*&apos; publicKeyToken=&apos;6595b64144ccf1df&apos; language=&apos;*&apos;;type=&apos;win32&apos; name=&apos;Microsoft.Windows.Gdiplus&apos; version=&apos;1.0.0.0&apos; processorArchitecture=&apos;X86&apos; publicKeyToken=&apos;6595b64144ccf1df&apos; language=&apos;*&apos;"
 				ModuleDefinitionFile=""
 				GenerateDebugInformation="true"
-				GenerateMapFile="false"
 				MapFileName=""
 				SubSystem="2"
 				RandomizedBaseAddress="1"
-				DataExecutionPrevention="0"
 				ImportLibrary="$(IntDir)/$(TargetName).lib"
 				TargetMachine="1"
 			/>
@@ -371,7 +362,6 @@
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="commonheaders.h"
 				AssemblerListingLocation=""
-				BrowseInformation="0"
 				BrowseInformationFile=""
 				WarningLevel="3"
 				SuppressStartupBanner="true"
@@ -399,11 +389,9 @@
 				AdditionalManifestDependencies="type=&apos;win32&apos; name=&apos;Microsoft.Windows.Common-Controls&apos; version=&apos;6.0.0.0&apos; processorArchitecture=&apos;*&apos; publicKeyToken=&apos;6595b64144ccf1df&apos; language=&apos;*&apos;;type=&apos;win32&apos; name=&apos;Microsoft.Windows.Gdiplus&apos; version=&apos;1.0.0.0&apos; processorArchitecture=&apos;amd64&apos; publicKeyToken=&apos;6595b64144ccf1df&apos; language=&apos;*&apos;"
 				ModuleDefinitionFile=""
 				GenerateDebugInformation="true"
-				GenerateMapFile="false"
 				MapFileName=""
 				SubSystem="2"
 				RandomizedBaseAddress="1"
-				DataExecutionPrevention="0"
 				ImportLibrary="$(IntDir)/$(TargetName).lib"
 				TargetMachine="17"
 			/>
@@ -476,7 +464,6 @@
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="commonheaders.h"
 				AssemblerOutput="4"
-				BrowseInformation="0"
 				BrowseInformationFile=""
 				WarningLevel="3"
 				SuppressStartupBanner="true"
@@ -507,7 +494,6 @@
 				EnableCOMDATFolding="2"
 				LinkTimeCodeGeneration="1"
 				RandomizedBaseAddress="1"
-				DataExecutionPrevention="0"
 				ImportLibrary="$(IntDir)/$(TargetName).lib"
 				TargetMachine="1"
 			/>
@@ -580,7 +566,6 @@
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="commonheaders.h"
 				AssemblerOutput="4"
-				BrowseInformation="0"
 				BrowseInformationFile=""
 				WarningLevel="3"
 				SuppressStartupBanner="true"
@@ -612,7 +597,6 @@
 				EnableCOMDATFolding="2"
 				LinkTimeCodeGeneration="1"
 				RandomizedBaseAddress="1"
-				DataExecutionPrevention="0"
 				ImportLibrary="$(IntDir)/$(TargetName).lib"
 				TargetMachine="17"
 			/>
@@ -681,7 +665,6 @@
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="commonheaders.h"
 				AssemblerListingLocation=""
-				BrowseInformation="0"
 				BrowseInformationFile=""
 				WarningLevel="3"
 				SuppressStartupBanner="true"
@@ -709,11 +692,9 @@
 				ModuleDefinitionFile=""
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile="$(TargetDir)$(TargetName).pdb"
-				GenerateMapFile="false"
 				MapFileName=""
 				SubSystem="2"
 				RandomizedBaseAddress="1"
-				DataExecutionPrevention="0"
 				ImportLibrary="$(IntDir)/$(TargetName).lib"
 				TargetMachine="1"
 			/>
@@ -782,7 +763,6 @@
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="commonheaders.h"
 				AssemblerListingLocation=""
-				BrowseInformation="0"
 				BrowseInformationFile=""
 				WarningLevel="3"
 				SuppressStartupBanner="true"
@@ -805,17 +785,15 @@
 				Name="VCLinkerTool"
 				IgnoreImportLibrary="true"
 				AdditionalDependencies="wsock32.lib comctl32.lib winmm.lib version.lib"
-				OutputFile="$(OutDir)\miranda64.exe"
+				OutputFile="c:\miranda im\miranda64.exe"
 				SuppressStartupBanner="true"
 				AdditionalManifestDependencies="type=&apos;win32&apos; name=&apos;Microsoft.Windows.Common-Controls&apos; version=&apos;6.0.0.0&apos; processorArchitecture=&apos;*&apos; publicKeyToken=&apos;6595b64144ccf1df&apos; language=&apos;*&apos;;type=&apos;win32&apos; name=&apos;Microsoft.Windows.Gdiplus&apos; version=&apos;1.0.0.0&apos; processorArchitecture=&apos;amd64&apos; publicKeyToken=&apos;6595b64144ccf1df&apos; language=&apos;*&apos;"
 				ModuleDefinitionFile=""
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile="$(TargetDir)$(TargetName).pdb"
-				GenerateMapFile="false"
 				MapFileName=""
 				SubSystem="2"
 				RandomizedBaseAddress="1"
-				DataExecutionPrevention="0"
 				ImportLibrary="$(IntDir)/$(TargetName).lib"
 				TargetMachine="17"
 			/>
@@ -1309,94 +1287,6 @@
 				>
 				<File
 					RelativePath="modules\addcontact\addcontact.cpp"
-					>
-					<FileConfiguration
-						Name="Release|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							Optimization="1"
-							AdditionalIncludeDirectories=""
-							PreprocessorDefinitions=""
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release|x64"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							Optimization="1"
-							AdditionalIncludeDirectories=""
-							PreprocessorDefinitions=""
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Debug|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							Optimization="0"
-							AdditionalIncludeDirectories=""
-							PreprocessorDefinitions=""
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Debug|x64"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							Optimization="0"
-							AdditionalIncludeDirectories=""
-							PreprocessorDefinitions=""
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release Unicode|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							Optimization="1"
-							AdditionalIncludeDirectories=""
-							PreprocessorDefinitions=""
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release Unicode|x64"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							Optimization="1"
-							AdditionalIncludeDirectories=""
-							PreprocessorDefinitions=""
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Debug Unicode|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							Optimization="0"
-							AdditionalIncludeDirectories=""
-							PreprocessorDefinitions=""
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Debug Unicode|x64"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							Optimization="0"
-							AdditionalIncludeDirectories=""
-							PreprocessorDefinitions=""
-						/>
-					</FileConfiguration>
-				</File>
-			</Filter>
-			<Filter
-				Name="autoaway"
-				>
-				<File
-					RelativePath="modules\autoaway\autoaway.cpp"
 					>
 					<FileConfiguration
 						Name="Release|Win32"
@@ -5772,6 +5662,10 @@
 					</FileConfiguration>
 				</File>
 				<File
+					RelativePath=".\modules\utils\imgconv.cpp"
+					>
+				</File>
+				<File
 					RelativePath=".\modules\utils\md5.cpp"
 					>
 				</File>
@@ -6448,6 +6342,94 @@
 					>
 				</File>
 			</Filter>
+			<Filter
+				Name="autoaway"
+				>
+				<File
+					RelativePath="modules\autoaway\autoaway.cpp"
+					>
+					<FileConfiguration
+						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="1"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|x64"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="1"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="0"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug|x64"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="0"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release Unicode|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="1"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release Unicode|x64"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="1"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug Unicode|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="0"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug Unicode|x64"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="0"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+				</File>
+			</Filter>
 		</Filter>
 		<Filter
 			Name="Resources"
@@ -6642,6 +6624,14 @@
 			</File>
 			<File
 				RelativePath=".\res\miranda_manager.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\res\Off.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\res\On.ico"
 				>
 			</File>
 			<File

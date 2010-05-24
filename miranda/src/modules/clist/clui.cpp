@@ -479,13 +479,24 @@ LRESULT CALLBACK fnContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 	switch (msg) {
 	case WM_NCCREATE:
 	{
-		MENUITEMINFO mii;
-		ZeroMemory(&mii, sizeof(mii));
-		mii.cbSize = MENUITEMINFO_V4_SIZE;
-		mii.fMask = MIIM_TYPE | MIIM_DATA;
-		mii.dwItemData = MENU_MIRANDAMENU;
-		mii.fType = MFT_OWNERDRAW;
-		mii.dwTypeData = NULL;
+		MENUITEMINFO mii = { 0 };
+		if (IsWinVerVistaPlus())
+		{
+			HICON hIcon = LoadSkinnedIcon(SKINICON_OTHER_MAINMENU);
+			HBITMAP hBmp = ConvertIconToBitmap(hIcon, NULL, 0);
+			IconLib_ReleaseIcon(hIcon, NULL);
+
+			mii.cbSize = sizeof(mii);
+			mii.fMask = MIIM_BITMAP | MIIM_STRING | MIIM_DATA;
+			mii.hbmpItem = hBmp;
+		}
+		else
+		{
+			mii.cbSize = MENUITEMINFO_V4_SIZE;
+			mii.fMask = MIIM_TYPE | MIIM_DATA;
+			mii.dwItemData = MENU_MIRANDAMENU;
+			mii.fType = MFT_OWNERDRAW;
+		}
 		SetMenuItemInfo(GetMenu(hwnd), 0, TRUE, &mii);
 		return DefWindowProc(hwnd, msg, wParam, lParam);
 	}

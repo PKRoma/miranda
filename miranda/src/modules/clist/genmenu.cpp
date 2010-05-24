@@ -326,7 +326,9 @@ int MO_ModifyMenuItem( PMO_IntMenuItem menuHandle, PMO_MenuItem pmi )
 				pimi->iconId = ImageList_ReplaceIcon( pimi->parent->m_hMenuIcons, pimi->iconId, pmi->hIcon );
 			else
 				pimi->iconId = -1;	  //fixme, should remove old icon & shuffle all iconIds
-	}	}
+		}
+		if (pimi->hBmp) DeleteObject(pimi->hBmp); pimi->hBmp = NULL;
+	}
 
 	if ( pmi->flags & CMIM_HOTKEY )
 		pimi->mi.hotKey = pmi->hotKey;
@@ -963,19 +965,27 @@ HMENU BuildRecursiveMenu(HMENU hMenu, PMO_IntMenuItem pRootMenu, ListParam *para
 
 		MENUITEMINFO mii = { 0 };
 		mii.dwItemData = ( LPARAM )pmi;
-		mii.fType = MFT_STRING;
 
 		int i = WhereToPlace( hMenu, mi );
 
 		if ( !IsWinVer98Plus()) {
 			mii.cbSize = MENUITEMINFO_V4_SIZE;
 			mii.fMask = MIIM_DATA | MIIM_TYPE | MIIM_ID;
+			mii.fType = MFT_STRING;
 		}
 		else {
 			mii.cbSize = sizeof( mii );
 			mii.fMask = MIIM_DATA | MIIM_ID | MIIM_STRING;
-			if ( pmi->iconId != -1 )
+			if ( pmi->iconId != -1 ) {
 				mii.fMask |= MIIM_BITMAP;
+				if (IsWinVerVistaPlus()) {
+					if (pmi->hBmp == NULL)
+						pmi->hBmp = ConvertIconToBitmap(NULL, pmi->parent->m_hMenuIcons, pmi->iconId);
+					mii.hbmpItem = pmi->hBmp;
+				}
+				else
+					mii.hbmpItem = HBMMENU_CALLBACK;
+			}
 		}
 
 		mii.fMask |= MIIM_STATE;
@@ -983,12 +993,12 @@ HMENU BuildRecursiveMenu(HMENU hMenu, PMO_IntMenuItem pRootMenu, ListParam *para
 		mii.fState |= (( pmi->mi.flags & CMIF_CHECKED) ? MFS_CHECKED : MFS_UNCHECKED );
 		if ( pmi->mi.flags & CMIF_DEFAULT ) mii.fState |= MFS_DEFAULT;
 
+		mii.dwTypeData = ( pmi->CustomName ) ? pmi->CustomName : mi->ptszName;
+
 		// it's a submenu
 		if ( pmi->submenu.first ) {
 			mii.fMask |= MIIM_SUBMENU;
 			mii.hSubMenu = CreatePopupMenu();
-			mii.hbmpItem = HBMMENU_CALLBACK;
-			mii.dwTypeData = ( pmi->CustomName ) ? pmi->CustomName : mi->ptszName;
 
 			#ifdef PUTPOSITIONSONMENU
 				if ( GetKeyState(VK_CONTROL) & 0x8000) {
@@ -1004,9 +1014,6 @@ HMENU BuildRecursiveMenu(HMENU hMenu, PMO_IntMenuItem pRootMenu, ListParam *para
 		}
 		else {
 			mii.wID = pmi->iCommand;
-
-			mii.hbmpItem = HBMMENU_CALLBACK;
-			mii.dwTypeData = ( pmi->CustomName ) ? pmi->CustomName : mi->ptszName;
 
 			#ifdef PUTPOSITIONSONMENU
 				if ( GetKeyState(VK_CONTROL) & 0x8000) {
@@ -1077,7 +1084,7 @@ static int MO_RegisterIcon( PMO_IntMenuItem pmi, void* )
 		char* buf = NEWSTR_ALLOCA( descr );
 
 		char sectionName[256], iconame[256];
-		_snprintf( sectionName, sizeof(sectionName), "Menu Icons/%s", pmi->parent->Name );
+		mir_snprintf( sectionName, sizeof(sectionName), "Menu Icons/%s", pmi->parent->Name );
 
 		// remove '&'
 		char* start = buf;
@@ -1090,16 +1097,13 @@ static int MO_RegisterIcon( PMO_IntMenuItem pmi, void* )
 			else break;
 		}
 
-		if ( uname != NULL && *uname != 0 )
-			_snprintf(iconame,sizeof(iconame),"genmenu_%s_%s", pmi->parent->Name, uname );
-		else
-			_snprintf(iconame,sizeof(iconame),"genmenu_%s_%s", pmi->parent->Name, descr );
+		mir_snprintf(iconame, sizeof(iconame), "genmenu_%s_%s", pmi->parent->Name, uname && *uname ? uname : descr);
 
 		SKINICONDESC sid={0};
 		sid.cbSize = sizeof(sid);
 		sid.cx = 16;
 		sid.cy = 16;
-		sid.pszSection = Translate(sectionName);
+		sid.pszSection = sectionName;
 		sid.pszName = iconame;
 		sid.pszDefaultFile = NULL;
 		sid.pszDescription = buf;
@@ -1254,5 +1258,6 @@ void TIntMenuObject::freeItem( TMO_IntMenuItem* p )
 	FreeAndNil(( void** )&p->mi.pszName );
 	FreeAndNil(( void** )&p->UniqName   );
 	FreeAndNil(( void** )&p->CustomName );
+	if ( p->hBmp ) DeleteObject( p->hBmp );
 	mir_free( p );
 }

@@ -73,7 +73,12 @@ typedef HRESULT ( STDAPICALLTYPE *pfnCloseThemeData )( HTHEME );
 typedef HRESULT ( STDAPICALLTYPE *pfnEnableThemeDialogTexture )( HWND hwnd, DWORD dwFlags );
 typedef HRESULT ( STDAPICALLTYPE *pfnSetWindowTheme )( HWND, LPCWSTR, LPCWSTR );
 typedef HRESULT ( STDAPICALLTYPE *pfnSetWindowThemeAttribute )( HWND, enum WINDOWTHEMEATTRIBUTETYPE, PVOID, DWORD );
-typedef BOOL ( STDAPICALLTYPE *pfnIsThemeActive )();
+typedef BOOL    ( STDAPICALLTYPE *pfnIsThemeActive )();
+typedef HRESULT (STDAPICALLTYPE *pfnBufferedPaintInit)(void);
+typedef HRESULT (STDAPICALLTYPE *pfnBufferedPaintUninit)(void);
+typedef HANDLE  (STDAPICALLTYPE *pfnBeginBufferedPaint)(HDC, RECT *, BP_BUFFERFORMAT, BP_PAINTPARAMS *, HDC *);
+typedef HRESULT (STDAPICALLTYPE *pfnEndBufferedPaint)(HANDLE, BOOL);
+typedef HRESULT (STDAPICALLTYPE *pfnGetBufferedPaintBits)(HPAINTBUFFER, RGBQUAD **, int *);
 
 extern pfnOpenThemeData openThemeData;
 extern pfnIsThemeBackgroundPartiallyTransparent isThemeBackgroundPartiallyTransparent;
@@ -88,6 +93,11 @@ extern pfnEnableThemeDialogTexture enableThemeDialogTexture;
 extern pfnSetWindowTheme setWindowTheme;
 extern pfnSetWindowThemeAttribute setWindowThemeAttribute;
 extern pfnIsThemeActive isThemeActive;
+extern pfnBufferedPaintInit bufferedPaintInit;
+extern pfnBufferedPaintUninit bufferedPaintUninit;
+extern pfnBeginBufferedPaint beginBufferedPaint;
+extern pfnEndBufferedPaint endBufferedPaint;
+extern pfnGetBufferedPaintBits getBufferedPaintBits;
 
 extern ITaskbarList3 * pTaskbarInterface;
 
@@ -277,6 +287,8 @@ char*  ltrim(char* str);
 __inline char* lrtrim(char* str) { return ltrim(rtrim(str)); };
 
 bool wildcmp(char * name, char * mask);
+
+HBITMAP ConvertIconToBitmap(HICON hIcon, HIMAGELIST hIml, int iconId);
 
 #ifdef _UNICODE
 class StrConvT

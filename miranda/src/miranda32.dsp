@@ -782,6 +782,10 @@ SOURCE=.\modules\utils\hyperlink.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\modules\utils\imgconv.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\modules\utils\md5.cpp
 # End Source File
 # Begin Source File

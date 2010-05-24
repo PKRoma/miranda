@@ -46,12 +46,13 @@ typedef struct _tagIntMenuItem
 	char*        UniqName;        // unique name
 	TCHAR*       CustomName;
 	HANDLE       hIcolibItem;     // handle of iconlib item
+	HBITMAP      hBmp;
 	int          originalPosition;
 
 	struct _tagIntMenuItem *next; // next item in list
 	struct TIntMenuObject  *parent;
 	TMO_LinkedList         *owner;
-	TMO_LinkedList			   submenu;
+	TMO_LinkedList         submenu;
 }
 	TMO_IntMenuItem,*PMO_IntMenuItem;
 
