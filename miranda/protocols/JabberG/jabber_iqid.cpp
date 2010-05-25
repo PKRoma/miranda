@@ -676,7 +676,7 @@ LBL_Ret:
 	}
 	else GetAvatarFileName( NULL, szAvatarFileName, sizeof( szAvatarFileName ));
 
-	Log( "Picture file name set to %s", szAvatarFileName );
+	Log( "Picture file name set to " TCHAR_STR_PARAM, szAvatarFileName );
 	HANDLE hFile = CreateFile( szAvatarFileName, GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL );
 	if ( hFile == INVALID_HANDLE_VALUE )
 		goto LBL_Ret;
@@ -685,10 +685,16 @@ LBL_Ret:
 	if ( !WriteFile( hFile, buffer, bufferLen, &nWritten, NULL ))
 		goto LBL_Ret;
 
+	CloseHandle( hFile );
+
 	Log( "%d bytes written", nWritten );
 	if ( hContact == NULL ) {
 		hasPhoto = TRUE;
-		Log( "My picture saved to %s", szAvatarFileName );
+		char* p = mir_t2a( szAvatarFileName );
+		JCallService( MS_AV_SETMYAVATAR, ( WPARAM )this->m_szModuleName, ( LPARAM )p );
+		mir_free( p );
+
+		Log( "My picture saved to " TCHAR_STR_PARAM, szAvatarFileName );
 	}
 	else if ( !JGetStringT( hContact, "jid", &dbv )) {
 		item = ListGetItemPtr( LIST_ROSTER, jid );
@@ -696,17 +702,15 @@ LBL_Ret:
 			item = ListAdd( LIST_VCARD_TEMP, jid ); // adding to the temp list to store information about photo
 			item->bUseResource = TRUE;
 		}
-		if (item != NULL ) {
+		if ( item != NULL ) {
 			hasPhoto = TRUE;
 			if ( item->photoFileName )
 				DeleteFile( item->photoFileName );
 			replaceStr( item->photoFileName, szAvatarFileName );
-			Log( "Contact's picture saved to %s", szAvatarFileName );
+			Log( "Contact's picture saved to " TCHAR_STR_PARAM, szAvatarFileName );
 		}
 		JFreeVariant( &dbv );
 	}
-
-	CloseHandle( hFile );
 
 	if ( !hasPhoto )
 		DeleteFile( szAvatarFileName );

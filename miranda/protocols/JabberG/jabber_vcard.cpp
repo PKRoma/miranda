@@ -277,7 +277,7 @@ static INT_PTR CALLBACK PhotoDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 			if ( GetTempPath( SIZEOF( szTempPath ), szTempPath ) <= 0 )
 				_tcscpy( szTempPath, _T(".\\"));
 			if ( GetTempFileName( szTempPath, _T("jab"), 0, szTempFileName ) > 0 ) {
-				dat->ppro->Log( "Temp file = %s", szTempFileName );
+				dat->ppro->Log( "Temp file = " TCHAR_STR_PARAM, szTempFileName );
 				if ( CopyFile( szAvatarFileName, szTempFileName, FALSE ) == TRUE ) {
 					if (( dat->hBitmap=( HBITMAP ) JCallService( MS_UTILS_LOADBITMAP, 0, ( LPARAM )szTempFileName )) != NULL ) {
 						JabberBitmapPremultiplyChannels( dat->hBitmap );
@@ -320,7 +320,7 @@ static INT_PTR CALLBACK PhotoDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 					struct _stat st;
 					HBITMAP hNewBitmap;
 
-					dat->ppro->Log( "File selected is %s", szFileName );
+					dat->ppro->Log( "File selected is " TCHAR_STR_PARAM, szFileName );
 					if ( _tstat( szFileName, &st )<0 || st.st_size>40*1024 ) {
 						MessageBox( hwndDlg, TranslateT( "Only JPG, GIF, and BMP image files smaller than 40 KB are supported." ), TranslateT( "Jabber vCard" ), MB_OK|MB_SETFOREGROUND );
 						break;
@@ -328,7 +328,7 @@ static INT_PTR CALLBACK PhotoDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 					if ( GetTempPath( SIZEOF( szTempPath ), szTempPath ) <= 0 )
 						_tcscpy( szTempPath, _T(".\\"));
 					if ( GetTempFileName( szTempPath, _T("jab"), 0, szTempFileName ) > 0 ) {
-						dat->ppro->Log( "Temp file = %s", szTempFileName );
+						dat->ppro->Log( "Temp file = " TCHAR_STR_PARAM, szTempFileName );
 						if ( CopyFile( szFileName, szTempFileName, FALSE ) == TRUE ) {
 							if (( hNewBitmap=( HBITMAP ) JCallService( MS_UTILS_LOADBITMAP, 0, ( LPARAM )szTempFileName )) != NULL ) {
 								if ( dat->hBitmap ) {

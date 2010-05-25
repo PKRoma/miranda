@@ -287,7 +287,7 @@ void CJabberProto::GetAvatarFileName( HANDLE hContact, TCHAR* pszDest, size_t cb
 
 	DWORD dwAttributes = GetFileAttributes( pszDest );
 	if ( dwAttributes == 0xffffffff || ( dwAttributes & FILE_ATTRIBUTE_DIRECTORY ) == 0 )
-		JCallService( MS_UTILS_CREATEDIRTREE, 0, ( LPARAM )pszDest );
+		JCallService( MS_UTILS_CREATEDIRTREET, 0, ( LPARAM )pszDest );
 
 	pszDest[ tPathLen++ ] = '\\';
 
