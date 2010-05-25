@@ -434,6 +434,7 @@ public:
 		m_chkManualHost.OnChange = Callback(this, &CDlgOptAccount::chkManualHost_OnChange);
 		m_chkUseHostnameAsResource.OnChange = Callback(this, &CDlgOptAccount::chkUseHostnameAsResource_OnChange);
 		m_chkUseSsl.OnChange = Callback(this, &CDlgOptAccount::chkUseSsl_OnChange);
+		m_chkUseTls.OnChange = Callback(this, &CDlgOptAccount::chkUseTls_OnChange);
 
 		m_btnRegister.OnClick = Callback(this, &CDlgOptAccount::btnRegister_OnClick);
 		m_btnUnregister.OnClick = Callback(this, &CDlgOptAccount::btnUnregister_OnClick);
@@ -494,9 +495,9 @@ protected:
 		EnableWindow(GetDlgItem(m_hwnd, IDC_COMBO_RESOURCE ), m_chkUseHostnameAsResource.GetState() != BST_CHECKED);
 		EnableWindow(GetDlgItem(m_hwnd, IDC_UNREGISTER), m_proto->m_bJabberOnline);
 
-		m_chkUseTls.Enable(!m_proto->m_options.UseSSL);
-		m_chkUseTls.Enable(!m_proto->m_options.Disable3920auth);
+		m_chkUseTls.Enable(!m_proto->m_options.Disable3920auth && (m_proto->m_options.UseSSL ? false : true));
 		if (m_proto->m_options.Disable3920auth) m_chkUseTls.SetState(BST_UNCHECKED);
+		m_chkUseSsl.Enable(m_proto->m_options.Disable3920auth || (m_proto->m_options.UseTLS ? false : true));
 
 		if (m_proto->m_options.ManualConnect)
 		{
@@ -506,6 +507,7 @@ protected:
 		}
 
 		CheckRegistration();
+
 	}
 
 	void OnApply()
@@ -667,18 +669,26 @@ private:
 
 	void chkUseSsl_OnChange(CCtrlData*)
 	{
-		if (m_chkManualHost.GetState() != BST_CHECKED)
+		BOOL bManualHost = m_chkManualHost.GetState() == BST_CHECKED;
+		if (m_chkUseSsl.GetState() == BST_CHECKED)
 		{
-			if (m_chkUseSsl.GetState() == BST_CHECKED)
-			{
-				m_chkUseTls.Disable();
+			m_chkUseTls.Disable();
+			if (!bManualHost)
 				m_txtPort.SetInt(5223);
-			} else
-			{
-				if (!m_proto->m_options.Disable3920auth) m_chkUseTls.Enable();
+		} else
+		{
+			if (!m_proto->m_options.Disable3920auth) m_chkUseTls.Enable();
+			if (!bManualHost)
 				m_txtPort.SetInt(5222);
-			}
 		}
+	}
+
+	void chkUseTls_OnChange(CCtrlData*)
+	{
+		if (m_chkUseTls.GetState() == BST_CHECKED)
+			m_chkUseSsl.Disable();
+		else
+			m_chkUseSsl.Enable();
 	}
 
 	void CheckRegistration()
