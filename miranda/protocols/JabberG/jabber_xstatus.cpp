@@ -192,6 +192,7 @@ CJabberDlgPepSimple::CJabberDlgPepSimple(CJabberProto *proto, TCHAR *title):
 	m_text(NULL),
 	m_selected(0),
 	m_prevSelected(-1),
+	m_active(-1),
 	m_bOkClicked(false),
 	m_title(title)
 {
