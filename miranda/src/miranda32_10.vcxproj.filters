@@ -602,6 +602,9 @@
     <ClCompile Include="modules\xml\xmlParser.cpp">
       <Filter>Modules\xmlparser</Filter>
     </ClCompile>
+    <ClCompile Include="modules\utils\imgconv.cpp">
+      <Filter>Modules\utils</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="res\_blank.ico">
