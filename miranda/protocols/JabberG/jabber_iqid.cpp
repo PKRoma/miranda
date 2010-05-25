@@ -632,54 +632,52 @@ void CJabberProto::OnIqResultGetVcardPhoto( const TCHAR* jid, HXML n, HANDLE hCo
 	if ( buffer == NULL )
 		return;
 
-	char* szPicType;
+	const TCHAR* szPicType;
 	HXML m = xmlGetChild( n , "TYPE" );
 	if ( m == NULL || xmlGetText( m ) == NULL ) {
 LBL_NoTypeSpecified:
 		switch( JabberGetPictureType( buffer )) {
-		case PA_FORMAT_GIF:	szPicType = "image/gif";	break;
-		case PA_FORMAT_BMP:  szPicType = "image/bmp";	break;
-		case PA_FORMAT_PNG:  szPicType = "image/png";	break;
-		case PA_FORMAT_JPEG: szPicType = "image/jpeg";	break;
+		case PA_FORMAT_GIF:	szPicType = _T("image/gif");	break;
+		case PA_FORMAT_BMP:  szPicType = _T("image/bmp");	break;
+		case PA_FORMAT_PNG:  szPicType = _T("image/png");	break;
+		case PA_FORMAT_JPEG: szPicType = _T("image/jpeg");	break;
 		default:
 			goto LBL_Ret;
 		}
 	}
 	else {
-		if ( !_tcscmp( xmlGetText( m ), _T("image/jpeg")))
-			szPicType = "image/jpeg";
-		else if ( !_tcscmp( xmlGetText( m ), _T("image/png")))
-			szPicType = "image/png";
-		else if ( !_tcscmp( xmlGetText( m ), _T("image/gif")))
-			szPicType = "image/gif";
-		else if ( !_tcscmp( xmlGetText( m ), _T("image/bmp")))
-			szPicType = "image/bmp";
+		const TCHAR* tszType = xmlGetText( m );
+		if ( !_tcscmp( tszType, _T("image/jpeg")) ||
+		     !_tcscmp( tszType, _T("image/png"))  ||
+		     !_tcscmp( tszType, _T("image/gif"))  || 
+		     !_tcscmp( tszType, _T("image/bmp")))
+			szPicType = tszType;
 		else
 			goto LBL_NoTypeSpecified;
 	}
 
 	DWORD nWritten;
-	char szTempPath[MAX_PATH], szAvatarFileName[MAX_PATH];
+	TCHAR szTempPath[MAX_PATH], szAvatarFileName[MAX_PATH];
 	JABBER_LIST_ITEM *item;
 	DBVARIANT dbv;
 
 	if ( hContact ) {
-		if ( GetTempPathA( sizeof( szTempPath ), szTempPath ) <= 0 )
-			lstrcpyA( szTempPath, ".\\" );
-		if ( !GetTempFileNameA( szTempPath, m_szModuleName, GetTickCount(), szAvatarFileName )) {
+		if ( GetTempPath( SIZEOF( szTempPath ), szTempPath ) <= 0 )
+			lstrcpy( szTempPath, _T(".\\"));
+		if ( !GetTempFileName( szTempPath, m_tszUserName, GetTickCount(), szAvatarFileName )) {
 LBL_Ret:
 			mir_free( buffer );
 			return;
 		}
 
-		char* p = strrchr( szAvatarFileName, '.' );
+		TCHAR* p = _tcsrchr( szAvatarFileName, '.' );
 		if ( p != NULL )
-			lstrcpyA( p+1, szPicType + 6 );
+			lstrcpy( p+1, szPicType + 6 );
 	}
 	else GetAvatarFileName( NULL, szAvatarFileName, sizeof( szAvatarFileName ));
 
 	Log( "Picture file name set to %s", szAvatarFileName );
-	HANDLE hFile = CreateFileA( szAvatarFileName, GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL );
+	HANDLE hFile = CreateFile( szAvatarFileName, GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL );
 	if ( hFile == INVALID_HANDLE_VALUE )
 		goto LBL_Ret;
 
@@ -701,7 +699,7 @@ LBL_Ret:
 		if (item != NULL ) {
 			hasPhoto = TRUE;
 			if ( item->photoFileName )
-				DeleteFileA( item->photoFileName );
+				DeleteFile( item->photoFileName );
 			replaceStr( item->photoFileName, szAvatarFileName );
 			Log( "Contact's picture saved to %s", szAvatarFileName );
 		}
@@ -711,7 +709,7 @@ LBL_Ret:
 	CloseHandle( hFile );
 
 	if ( !hasPhoto )
-		DeleteFileA( szAvatarFileName );
+		DeleteFile( szAvatarFileName );
 
 	goto LBL_Ret;
 }
@@ -1507,14 +1505,16 @@ LBL_ErrFormat:
 	else if (( pictureType = JabberGetPictureType( body )) == PA_FORMAT_UNKNOWN )
 		goto LBL_ErrFormat;
 
+	TCHAR tszFileName[ MAX_PATH ];
+
 	PROTO_AVATAR_INFORMATION AI;
 	AI.cbSize = sizeof AI;
 	AI.format = pictureType;
 	AI.hContact = hContact;
 
 	if ( JGetByte( hContact, "AvatarType", PA_FORMAT_UNKNOWN ) != (unsigned char)pictureType ) {
-		GetAvatarFileName( hContact, AI.filename, sizeof AI.filename );
-		DeleteFileA( AI.filename );
+		GetAvatarFileName( hContact, tszFileName, SIZEOF(tszFileName));
+		DeleteFile( tszFileName );
 	}
 
 	JSetByte( hContact, "AvatarType", pictureType );
@@ -1528,9 +1528,14 @@ LBL_ErrFormat:
 	for ( int i=0; i<20; i++ )
 		sprintf( buffer+( i<<1 ), "%02x", digest[i] );
 
-	GetAvatarFileName( hContact, AI.filename, sizeof AI.filename );
+	GetAvatarFileName( hContact, tszFileName, SIZEOF(tszFileName));
+	#if defined( _UNICODE )
+		WideCharToMultiByte( CP_ACP, 0, tszFileName, -1, AI.filename, sizeof AI.filename, 0, 0 );
+	#else
+		strncpy( AI.filename, tszFileName, sizeof AI.filename );
+	#endif
 
-	FILE* out = fopen( AI.filename, "wb" );
+	FILE* out = _tfopen( tszFileName, _T("wb"));
 	if ( out != NULL ) {
 		fwrite( body, resultLen, 1, out );
 		fclose( out );

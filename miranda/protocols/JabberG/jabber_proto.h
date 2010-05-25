@@ -708,7 +708,7 @@ struct CJabberProto : public PROTO_INTERFACE
 	void   DBAddAuthRequest( const TCHAR* jid, const TCHAR* nick );
 	BOOL   AddDbPresenceEvent(HANDLE hContact, BYTE btEventType);
 	HANDLE DBCreateContact( const TCHAR* jid, const TCHAR* nick, BOOL temporary, BOOL stripResource );
-	void   GetAvatarFileName( HANDLE hContact, char* pszDest, int cbLen );
+	void   GetAvatarFileName( HANDLE hContact, TCHAR* pszDest, size_t cbLen );
 	void   ResolveTransportNicks( const TCHAR* jid );
 	void   SetServerStatus( int iNewStatus );
 	void   FormatMirVer(JABBER_RESOURCE_STATUS *resource, TCHAR *buf, int bufSize);
@@ -916,13 +916,13 @@ struct CJabberProto : public PROTO_INTERFACE
 	int    m_vCardUpdates;
 	HWND   m_hwndPhoto;
 	bool   m_bPhotoChanged;
-	char   m_szPhotoFileName[MAX_PATH];
+	TCHAR  m_szPhotoFileName[MAX_PATH];
 	void   OnUserInfoInit_VCard( WPARAM, LPARAM );
 
 	void   GroupchatJoinByHContact( HANDLE hContact, bool autojoin=false );
 	int    SendGetVcard( const TCHAR* jid );
 	void   AppendVcardFromDB( HXML n, char* tag, char* key );
-	void   SetServerVcard( BOOL bPhotoChanged, char* szPhotoFileName );
+	void   SetServerVcard( BOOL bPhotoChanged, TCHAR* szPhotoFileName );
 	void   SaveVcardToDB( HWND hwndPage, int iPage );
 
 	//---- jabber_ws.c -------------------------------------------------

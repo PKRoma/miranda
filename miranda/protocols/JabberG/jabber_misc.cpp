@@ -271,21 +271,21 @@ void CJabberProto::InitCustomFolders( void )
 		hJabberAvatarsFolder = FoldersRegisterCustomPath( m_szModuleName, "Avatars", AvatarsFolder );	// title!!!!!!!!!!!
 }	}
 
-void CJabberProto::GetAvatarFileName( HANDLE hContact, char* pszDest, int cbLen )
+void CJabberProto::GetAvatarFileName( HANDLE hContact, TCHAR* pszDest, size_t cbLen )
 {
 	size_t tPathLen;
-	char* path = ( char* )alloca( cbLen );
+	TCHAR* path = ( TCHAR* )alloca( cbLen );
 
 	InitCustomFolders();
 
-	if ( hJabberAvatarsFolder == NULL || FoldersGetCustomPath( hJabberAvatarsFolder, path, cbLen, "" )) {
-        char *tmpPath = Utils_ReplaceVars( "%miranda_avatarcache%" );
-		tPathLen = mir_snprintf( pszDest, cbLen, "%s\\Jabber", tmpPath );
-        mir_free(tmpPath);
+	if ( hJabberAvatarsFolder == NULL || FoldersGetCustomPathT( hJabberAvatarsFolder, path, cbLen, _T(""))) {
+		TCHAR *tmpPath = Utils_ReplaceVarsT( _T("%miranda_avatarcache%"));
+		tPathLen = mir_sntprintf( pszDest, cbLen, _T("%s\\Jabber"), tmpPath );
+		mir_free(tmpPath);
 	}
-	else tPathLen = mir_snprintf( pszDest, cbLen, "%s", path );
+	else tPathLen = mir_sntprintf( pszDest, cbLen, _T("%s"), path );
 
-	DWORD dwAttributes = GetFileAttributesA( pszDest );
+	DWORD dwAttributes = GetFileAttributes( pszDest );
 	if ( dwAttributes == 0xffffffff || ( dwAttributes & FILE_ATTRIBUTE_DIRECTORY ) == 0 )
 		JCallService( MS_UTILS_CREATEDIRTREE, 0, ( LPARAM )pszDest );
 
@@ -310,18 +310,18 @@ void CJabberProto::GetAvatarFileName( HANDLE hContact, char* pszDest, int cbLen 
 		else _i64toa(( LONG_PTR )hContact, str, 10 );
 
 		char* hash = JabberSha1( str );
-		mir_snprintf( pszDest + tPathLen, MAX_PATH - tPathLen, "%s.%s", hash, szFileType );
+		mir_sntprintf( pszDest + tPathLen, MAX_PATH - tPathLen, _T("%s.%s"), hash, szFileType );
 		mir_free( hash );
 	}
 	else if ( m_ThreadInfo != NULL ) {
-		mir_snprintf( pszDest + tPathLen, MAX_PATH - tPathLen, TCHAR_STR_PARAM "@%s avatar.%s", 
+		mir_sntprintf( pszDest + tPathLen, MAX_PATH - tPathLen, _T("%s@") _T(TCHAR_STR_PARAM) _T(" avatar.") _T(TCHAR_STR_PARAM), 
 			m_ThreadInfo->username, m_ThreadInfo->server, szFileType );
 	}
 	else {
 		DBVARIANT dbv1, dbv2;
 		BOOL res1 = DBGetContactSettingString( NULL, m_szModuleName, "LoginName", &dbv1 );
 		BOOL res2 = DBGetContactSettingString( NULL, m_szModuleName, "LoginServer", &dbv2 );
-		mir_snprintf( pszDest + tPathLen, MAX_PATH - tPathLen, "%s@%s avatar.%s",
+		mir_sntprintf( pszDest + tPathLen, MAX_PATH - tPathLen, _T(TCHAR_STR_PARAM) _T("@") _T(TCHAR_STR_PARAM) _T(" avatar.") _T(TCHAR_STR_PARAM),
 			res1 ? "noname" : dbv1.pszVal,
 			res2 ? m_szModuleName : dbv2.pszVal,
 			szFileType );

@@ -713,10 +713,9 @@ static INT_PTR CALLBACK JabberUserPhotoDlgProc( HWND hwndDlg, UINT msg, WPARAM w
 				DBVARIANT dbv;
 				JABBER_LIST_ITEM *item;
 				HANDLE hFile;
-				OPENFILENAMEA ofn;
-				static char szFilter[512];
+				static TCHAR szFilter[512];
 				unsigned char buffer[3];
-				char szFileName[_MAX_PATH];
+				TCHAR szFileName[MAX_PATH];
 				DWORD n;
 
 				if ( photoInfo->ppro->JGetStringT( photoInfo->hContact, "jid", &dbv ))
@@ -726,30 +725,31 @@ static INT_PTR CALLBACK JabberUserPhotoDlgProc( HWND hwndDlg, UINT msg, WPARAM w
 				if (( item = photoInfo->ppro->ListGetItemPtr( LIST_VCARD_TEMP, jid )) == NULL)
 					item = photoInfo->ppro->ListGetItemPtr( LIST_ROSTER, jid );
 				if ( item != NULL ) {
-					if (( hFile=CreateFileA( item->photoFileName, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL )) != INVALID_HANDLE_VALUE ) {
+					if (( hFile=CreateFile( item->photoFileName, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL )) != INVALID_HANDLE_VALUE ) {
 						if ( ReadFile( hFile, buffer, 3, &n, NULL ) && n==3 ) {
 							if ( !strncmp(( char* )buffer, "BM", 2 )) {
-								mir_snprintf( szFilter, sizeof( szFilter ), "BMP %s ( *.bmp )", JTranslate( "format" ));
-								n = (DWORD)strlen( szFilter );
-								strncpy( szFilter+n+1, "*.BMP", sizeof( szFilter )-n-2 );
+								mir_sntprintf( szFilter, SIZEOF( szFilter ), _T("BMP %s ( *.bmp )"), TranslateT( "format" ));
+								n = (DWORD)_tcslen( szFilter );
+								_tcsncpy( szFilter+n+1, _T("*.BMP"), SIZEOF( szFilter )-n-2 );
 							}
 							else if ( !strncmp(( char* )buffer, "GIF", 3 )) {
-								mir_snprintf( szFilter, sizeof( szFilter ), "GIF %s ( *.gif )", JTranslate( "format" ));
-								n = (DWORD)strlen( szFilter );
-								strncpy( szFilter+n+1, "*.GIF", sizeof( szFilter )-n-2 );
+								mir_sntprintf( szFilter, SIZEOF( szFilter ), _T("GIF %s ( *.gif )"), TranslateT( "format" ));
+								n = (DWORD)_tcslen( szFilter );
+								_tcsncpy( szFilter+n+1, _T("*.GIF"), SIZEOF( szFilter )-n-2 );
 							}
 							else if ( buffer[0]==0xff && buffer[1]==0xd8 && buffer[2]==0xff ) {
-								mir_snprintf( szFilter, sizeof( szFilter ), "JPEG %s ( *.jpg;*.jpeg )", JTranslate( "format" ));
-								n = (DWORD)strlen( szFilter );
-								strncpy( szFilter+n+1, "*.JPG;*.JPEG", sizeof( szFilter )-n-2 );
+								mir_sntprintf( szFilter, SIZEOF( szFilter ), _T("JPEG %s ( *.jpg;*.jpeg )"), TranslateT( "format" ));
+								n = (DWORD)_tcslen( szFilter );
+								_tcsncpy( szFilter+n+1, _T("*.JPG;*.JPEG"), SIZEOF( szFilter )-n-2 );
 							}
 							else {
-								mir_snprintf( szFilter, sizeof( szFilter ), "%s ( *.* )", JTranslate( "Unknown format" ));
-								n = (DWORD)strlen( szFilter );
-								strncpy( szFilter+n+1, "*.*", sizeof( szFilter )-n-2 );
+								mir_sntprintf( szFilter, SIZEOF( szFilter ), _T("%s ( *.* )"), TranslateT( "Unknown format" ));
+								n = (DWORD)_tcslen( szFilter );
+								_tcsncpy( szFilter+n+1, _T("*.*"), SIZEOF( szFilter )-n-2 );
 							}
 							szFilter[sizeof( szFilter )-1] = '\0';
 
+							OPENFILENAME ofn = { 0 };
 							ofn.lStructSize = OPENFILENAME_SIZE_VERSION_400;
 							ofn.hwndOwner = hwndDlg;
 							ofn.hInstance = NULL;
@@ -771,9 +771,9 @@ static INT_PTR CALLBACK JabberUserPhotoDlgProc( HWND hwndDlg, UINT msg, WPARAM w
 							ofn.lpfnHook = NULL;
 							ofn.lpTemplateName = NULL;
 							szFileName[0] = '\0';
-							if ( GetSaveFileNameA( &ofn )) {
+							if ( GetSaveFileName( &ofn )) {
 								photoInfo->ppro->Log( "File selected is %s", szFileName );
-								CopyFileA( item->photoFileName, szFileName, FALSE );
+								CopyFile( item->photoFileName, szFileName, FALSE );
 							}
 						}
 						CloseHandle( hFile );

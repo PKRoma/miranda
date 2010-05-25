@@ -94,7 +94,14 @@ INT_PTR __cdecl CJabberProto::JabberGetAvatar( WPARAM wParam, LPARAM lParam )
 	if ( !m_options.EnableAvatars )
 		return -2;
 
-	GetAvatarFileName( NULL, buf, size );
+	#if defined( _UNICODE )
+		TCHAR tszBuf[MAX_PATH];
+		GetAvatarFileName( NULL, tszBuf, SIZEOF(tszBuf));
+		WideCharToMultiByte( CP_ACP, 0, tszBuf, -1, buf, size, 0, 0 );
+	#else
+		GetAvatarFileName( NULL, buf, size );
+	#endif
+		
 	return 0;
 }
 
@@ -140,7 +147,14 @@ INT_PTR __cdecl CJabberProto::JabberGetAvatarInfo( WPARAM wParam, LPARAM lParam 
 		return GAIR_NOAVATAR;
 	}
 
-	GetAvatarFileName( AI->hContact, AI->filename, sizeof AI->filename );
+	TCHAR tszFileName[ MAX_PATH ];
+	GetAvatarFileName( AI->hContact, tszFileName, SIZEOF(tszFileName));
+	#if defined( _UNICODE )
+		WideCharToMultiByte( CP_ACP, 0, tszFileName, -1, AI->filename, sizeof AI->filename, 0, 0 );
+	#else
+		strncpy( AI->filename, tszFileName, sizeof AI->filename );
+	#endif
+
 	AI->format = ( AI->hContact == NULL ) ? PA_FORMAT_PNG : JGetByte( AI->hContact, "AvatarType", 0 );
 
 	if ( ::_access( AI->filename, 0 ) == 0 ) {
@@ -280,23 +294,23 @@ INT_PTR __cdecl CJabberProto::OnGetEventTextPresence( WPARAM, LPARAM lParam )
 
 INT_PTR __cdecl CJabberProto::JabberSetAvatar( WPARAM, LPARAM lParam )
 {
-	char* szFileName = ( char* )lParam;
+	TCHAR* tszFileName = mir_a2t(( char* )lParam );
 
 	if ( m_bJabberOnline ) {
-		SetServerVcard( TRUE, szFileName );
+		SetServerVcard( TRUE, tszFileName );
 		SendPresence( m_iDesiredStatus, false );
 	}
-	else if ( szFileName == NULL || szFileName[0] == 0 ) {
+	else if ( tszFileName == NULL || tszFileName[0] == 0 ) {
 		// Remove avatar
-		char tFileName[ MAX_PATH ];
+		TCHAR tFileName[ MAX_PATH ];
 		GetAvatarFileName( NULL, tFileName, MAX_PATH );
-		DeleteFileA( tFileName );
+		DeleteFile( tFileName );
 
 		JDeleteSetting( NULL, "AvatarSaved" );
 		JDeleteSetting( NULL, "AvatarHash" );
 	}
 	else {
-		int fileIn = _open( szFileName, O_RDWR | O_BINARY, S_IREAD | S_IWRITE );
+		int fileIn = _topen( tszFileName, O_RDWR | O_BINARY, S_IREAD | S_IWRITE );
 		if ( fileIn == -1 )
 			return 1;
 
@@ -316,9 +330,9 @@ INT_PTR __cdecl CJabberProto::JabberSetAvatar( WPARAM, LPARAM lParam )
 		mir_sha1_append( &sha1ctx, (mir_sha1_byte_t*)pResult, dwPngSize );
 		mir_sha1_finish( &sha1ctx, digest );
 
-		char tFileName[ MAX_PATH ];
+		TCHAR tFileName[ MAX_PATH ];
 		GetAvatarFileName( NULL, tFileName, MAX_PATH );
-		DeleteFileA( tFileName );
+		DeleteFile( tFileName );
 
 		char buf[MIR_SHA1_HASH_SIZE*2+1];
 		for ( int i=0; i<MIR_SHA1_HASH_SIZE; i++ )
@@ -327,7 +341,7 @@ INT_PTR __cdecl CJabberProto::JabberSetAvatar( WPARAM, LPARAM lParam )
 		m_options.AvatarType = JabberGetPictureType( pResult );
 
 		GetAvatarFileName( NULL, tFileName, MAX_PATH );
-		FILE* out = fopen( tFileName, "wb" );
+		FILE* out = _tfopen( tFileName, _T("wb"));
 		if ( out != NULL ) {
 			fwrite( pResult, dwPngSize, 1, out );
 			fclose( out );
@@ -348,8 +362,7 @@ INT_PTR __cdecl CJabberProto::JabberSetNickname( WPARAM wParam, LPARAM lParam )
 	TCHAR *nickname = ( wParam & SMNN_UNICODE ) ? mir_u2t( (WCHAR *) lParam ) : mir_a2t( (char *) lParam );
 
 	JSetStringT( NULL, "Nick", nickname );
-	SetServerVcard( FALSE, "" );
-
+	SetServerVcard( FALSE, _T(""));
 	return 0;
 }
 

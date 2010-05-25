@@ -425,10 +425,10 @@ BOOL CJabberProto::OnIqRequestAvatar( HXML, CJabberIqInfo *pInfo )
 		default:	return TRUE;
 	}
 
-	char szFileName[ MAX_PATH ];
-	GetAvatarFileName( NULL, szFileName, MAX_PATH );
+	TCHAR szFileName[ MAX_PATH ];
+	GetAvatarFileName( NULL, szFileName, SIZEOF(szFileName));
 
-	FILE* in = fopen( szFileName, "rb" );
+	FILE* in = _tfopen( szFileName, _T("rb"));
 	if ( in == NULL )
 		return TRUE;
 

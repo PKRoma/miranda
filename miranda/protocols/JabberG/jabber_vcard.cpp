@@ -241,7 +241,7 @@ static INT_PTR CALLBACK PhotoDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 {
 	const unsigned long iPageId = 3;
 
-	char szAvatarFileName[ MAX_PATH ], szTempPath[MAX_PATH], szTempFileName[MAX_PATH];
+	TCHAR szAvatarFileName[ MAX_PATH ], szTempPath[MAX_PATH], szTempFileName[MAX_PATH];
 	PhotoDlgProcData* dat = ( PhotoDlgProcData* )GetWindowLongPtr( hwndDlg, GWLP_USERDATA );
 
 	switch ( msg ) {
@@ -268,25 +268,25 @@ static INT_PTR CALLBACK PhotoDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 		if ( dat->hBitmap ) {
 			DeleteObject( dat->hBitmap );
 			dat->hBitmap = NULL;
-			DeleteFileA( dat->ppro->m_szPhotoFileName );
+			DeleteFile( dat->ppro->m_szPhotoFileName );
 			dat->ppro->m_szPhotoFileName[0] = '\0';
 		}
 		EnableWindow( GetDlgItem( hwndDlg, IDC_DELETE ), FALSE );
 		dat->ppro->GetAvatarFileName( NULL, szAvatarFileName, sizeof( szAvatarFileName ));
-		if ( _access( szAvatarFileName, 0 ) == 0 ) {
-			if ( GetTempPathA( sizeof( szTempPath ), szTempPath ) <= 0 )
-				strcpy( szTempPath, ".\\" );
-			if ( GetTempFileNameA( szTempPath, "jab", 0, szTempFileName ) > 0 ) {
+		if ( _taccess( szAvatarFileName, 0 ) == 0 ) {
+			if ( GetTempPath( SIZEOF( szTempPath ), szTempPath ) <= 0 )
+				_tcscpy( szTempPath, _T(".\\"));
+			if ( GetTempFileName( szTempPath, _T("jab"), 0, szTempFileName ) > 0 ) {
 				dat->ppro->Log( "Temp file = %s", szTempFileName );
-				if ( CopyFileA( szAvatarFileName, szTempFileName, FALSE ) == TRUE ) {
+				if ( CopyFile( szAvatarFileName, szTempFileName, FALSE ) == TRUE ) {
 					if (( dat->hBitmap=( HBITMAP ) JCallService( MS_UTILS_LOADBITMAP, 0, ( LPARAM )szTempFileName )) != NULL ) {
 						JabberBitmapPremultiplyChannels( dat->hBitmap );
-						strcpy( dat->ppro->m_szPhotoFileName, szTempFileName );
+						_tcscpy( dat->ppro->m_szPhotoFileName, szTempFileName );
 						EnableWindow( GetDlgItem( hwndDlg, IDC_DELETE ), TRUE );
 					}
-					else DeleteFileA( szTempFileName );
+					else DeleteFile( szTempFileName );
 				}
-				else DeleteFileA( szTempFileName );
+				else DeleteFile( szTempFileName );
 		}	}
 
 		dat->ppro->m_bPhotoChanged = FALSE;
@@ -302,12 +302,12 @@ static INT_PTR CALLBACK PhotoDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 		switch ( LOWORD( wParam )) {
 		case IDC_LOAD:
 			{
-				char szFilter[512];
-				char szFileName[_MAX_PATH];
+				TCHAR szFilter[512];
+				TCHAR szFileName[_MAX_PATH];
 
 				JCallService( MS_UTILS_GETBITMAPFILTERSTRINGS, ( WPARAM ) sizeof( szFilter ), ( LPARAM )szFilter );
 
-				OPENFILENAMEA ofn = {0};
+				OPENFILENAME ofn = {0};
 				ofn.lStructSize = OPENFILENAME_SIZE_VERSION_400;
 				ofn.hwndOwner = hwndDlg;
 				ofn.lpstrFilter = szFilter;
@@ -316,28 +316,28 @@ static INT_PTR CALLBACK PhotoDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 				ofn.nMaxFile = _MAX_PATH;
 				ofn.Flags = OFN_FILEMUSTEXIST;
 				szFileName[0] = '\0';
-				if ( GetOpenFileNameA( &ofn )) {
+				if ( GetOpenFileName( &ofn )) {
 					struct _stat st;
 					HBITMAP hNewBitmap;
 
 					dat->ppro->Log( "File selected is %s", szFileName );
-					if ( _stat( szFileName, &st )<0 || st.st_size>40*1024 ) {
+					if ( _tstat( szFileName, &st )<0 || st.st_size>40*1024 ) {
 						MessageBox( hwndDlg, TranslateT( "Only JPG, GIF, and BMP image files smaller than 40 KB are supported." ), TranslateT( "Jabber vCard" ), MB_OK|MB_SETFOREGROUND );
 						break;
 					}
-					if ( GetTempPathA( sizeof( szTempPath ), szTempPath ) <= 0 )
-						strcpy( szTempPath, ".\\" );
-					if ( GetTempFileNameA( szTempPath, "jab", 0, szTempFileName ) > 0 ) {
+					if ( GetTempPath( SIZEOF( szTempPath ), szTempPath ) <= 0 )
+						_tcscpy( szTempPath, _T(".\\"));
+					if ( GetTempFileName( szTempPath, _T("jab"), 0, szTempFileName ) > 0 ) {
 						dat->ppro->Log( "Temp file = %s", szTempFileName );
-						if ( CopyFileA( szFileName, szTempFileName, FALSE ) == TRUE ) {
+						if ( CopyFile( szFileName, szTempFileName, FALSE ) == TRUE ) {
 							if (( hNewBitmap=( HBITMAP ) JCallService( MS_UTILS_LOADBITMAP, 0, ( LPARAM )szTempFileName )) != NULL ) {
 								if ( dat->hBitmap ) {
 									DeleteObject( dat->hBitmap );
-									DeleteFileA( dat->ppro->m_szPhotoFileName );
+									DeleteFile( dat->ppro->m_szPhotoFileName );
 								}
 
 								dat->hBitmap = hNewBitmap;
-								strcpy( dat->ppro->m_szPhotoFileName, szTempFileName );
+								_tcscpy( dat->ppro->m_szPhotoFileName, szTempFileName );
 								dat->ppro->m_bPhotoChanged = TRUE;
 								EnableWindow( GetDlgItem( hwndDlg, IDC_DELETE ), TRUE );
 								InvalidateRect( hwndDlg, NULL, TRUE );
@@ -345,9 +345,9 @@ static INT_PTR CALLBACK PhotoDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 								dat->ppro->m_vCardUpdates |= (1UL<<iPageId);
 								SendMessage( GetParent( hwndDlg ), PSM_CHANGED, 0, 0 );
 							}
-							else DeleteFileA( szTempFileName );
+							else DeleteFile( szTempFileName );
 						}
-						else DeleteFileA( szTempFileName );
+						else DeleteFile( szTempFileName );
 					}
 				}
 			}
@@ -356,7 +356,7 @@ static INT_PTR CALLBACK PhotoDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 			if ( dat->hBitmap ) {
 				DeleteObject( dat->hBitmap );
 				dat->hBitmap = NULL;
-				DeleteFileA( dat->ppro->m_szPhotoFileName );
+				DeleteFile( dat->ppro->m_szPhotoFileName );
 				dat->ppro->m_szPhotoFileName[0] = '\0';
 				dat->ppro->m_bPhotoChanged = TRUE;
 				EnableWindow( GetDlgItem( hwndDlg, IDC_DELETE ), FALSE );
@@ -456,7 +456,7 @@ static INT_PTR CALLBACK PhotoDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 		if ( dat->hBitmap ) {
 			dat->ppro->Log( "Delete bitmap" );
 			DeleteObject( dat->hBitmap );
-			DeleteFileA( dat->ppro->m_szPhotoFileName );
+			DeleteFile( dat->ppro->m_szPhotoFileName );
 		}
 		delete dat;
 		break;
@@ -991,13 +991,13 @@ void CJabberProto::AppendVcardFromDB( HXML n, char* tag, char* key )
 		JFreeVariant( &dbv );
 }	}
 
-void CJabberProto::SetServerVcard( BOOL bPhotoChanged, char* szPhotoFileName )
+void CJabberProto::SetServerVcard( BOOL bPhotoChanged, TCHAR* szPhotoFileName )
 {
 	if (!m_bJabberOnline) return;
 
 	DBVARIANT dbv;
 	int  iqId;
-	char *szFileName;
+	TCHAR *szFileName;
 	int  i;
 	char idstr[33];
 	WORD nFlag;
@@ -1091,7 +1091,7 @@ void CJabberProto::SetServerVcard( BOOL bPhotoChanged, char* szPhotoFileName )
 		if ( nFlag & JABBER_VCTEL_PCS )   n << XCHILD( _T("PCS"));
 	}
 
-	char szAvatarName[ MAX_PATH ];
+	TCHAR szAvatarName[ MAX_PATH ];
 	GetAvatarFileName( NULL, szAvatarName, sizeof( szAvatarName ));
 	if ( bPhotoChanged )
 		szFileName = szPhotoFileName;
@@ -1102,7 +1102,7 @@ void CJabberProto::SetServerVcard( BOOL bPhotoChanged, char* szPhotoFileName )
 	Log( "Before update, file name = %s", szFileName );
 	if ( szFileName == NULL || szFileName[0] == 0 ) {
 		v << XCHILD( _T("PHOTO"));
-		DeleteFileA( szAvatarName );
+		DeleteFile( szAvatarName );
 		JDeleteSetting( NULL, "AvatarSaved" );
 		JDeleteSetting( NULL, "AvatarHash" );
 	}
@@ -1113,9 +1113,9 @@ void CJabberProto::SetServerVcard( BOOL bPhotoChanged, char* szPhotoFileName )
 		DWORD nRead;
 
 		Log( "Saving picture from %s", szFileName );
-		if ( _stat( szFileName, &st ) >= 0 ) {
+		if ( _tstat( szFileName, &st ) >= 0 ) {
 			// Note the FILE_SHARE_READ attribute so that the CopyFile can succeed
-			if (( hFile=CreateFileA( szFileName, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL )) != INVALID_HANDLE_VALUE ) {
+			if (( hFile=CreateFile( szFileName, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL )) != INVALID_HANDLE_VALUE ) {
 				if (( buffer=( char* )mir_alloc( st.st_size )) != NULL ) {
 					if ( ReadFile( hFile, buffer, st.st_size, &nRead, NULL )) {
 						if (( str=JabberBase64Encode( buffer, nRead )) != NULL ) {
@@ -1147,11 +1147,11 @@ void CJabberProto::SetServerVcard( BOOL bPhotoChanged, char* szPhotoFileName )
 							m_options.AvatarType = JabberGetPictureType( buffer );	
 
 							if ( bPhotoChanged ) {
-								DeleteFileA( szAvatarName );
+								DeleteFile( szAvatarName );
 
 								GetAvatarFileName( NULL, szAvatarName, sizeof( szAvatarName ));
 
-								CopyFileA( szFileName, szAvatarName, FALSE );
+								CopyFile( szFileName, szAvatarName, FALSE );
 							}
 
 							JSetString( NULL, "AvatarHash", buf );
