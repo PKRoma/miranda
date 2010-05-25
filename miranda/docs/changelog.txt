@@ -3,7 +3,7 @@
                            www.miranda-im.org
 
 
-* New in 0.8.23
+* New in 0.8.24
 Bugfixes:
  - Fixed processing of special characters in multi-user chat windows
  - AIM: Fixed reception of messages in ISO 8859-1 codepage
@@ -11,7 +11,7 @@ Bugfixes:
  - Jabber: Fixed possible crash sending non-existent file
 
 
-* New in 0.8.22
+* New in 0.8.23
 Enhancements:
  - Updated icons by Angeli-Ka
 
