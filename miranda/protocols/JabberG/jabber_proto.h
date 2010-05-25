@@ -457,7 +457,9 @@ struct CJabberProto : public PROTO_INTERFACE
 		  
 	void   AdminSet( const TCHAR* to, const TCHAR* ns, const TCHAR* szItem, const TCHAR* itemVal, const TCHAR* var, const TCHAR* varVal );
 	void   AdminGet( const TCHAR* to, const TCHAR* ns, const TCHAR* var, const TCHAR* varVal, JABBER_IQ_PFUNC foo );
+	void   AdminSetReason( const TCHAR* to, const TCHAR* ns, const TCHAR* szItem, const TCHAR* itemVal, const TCHAR* var, const TCHAR* varVal, const TCHAR* rsn );
 	void   AddMucListItem( JABBER_MUC_JIDLIST_INFO* jidListInfo, TCHAR* str );
+	void   AddMucListItem( JABBER_MUC_JIDLIST_INFO* jidListInfo, TCHAR* str , TCHAR* rsn);
 	void   DeleteMucListItem( JABBER_MUC_JIDLIST_INFO* jidListInfo, TCHAR* jid );
 
 	//---- jabber_console.cpp ------------------------------------------------------------

@@ -867,6 +867,10 @@ void CJabberProto::AdminSet( const TCHAR* to, const TCHAR* ns, const TCHAR* szIt
 	m_ThreadInfo->send( XmlNodeIq( _T("set"), SerialNext(), to ) << XQUERY( ns ) << XCHILD( _T("item")) << XATTR( szItem, itemVal ) << XATTR( var, varVal ));
 }
 
+void CJabberProto::AdminSetReason( const TCHAR* to, const TCHAR* ns, const TCHAR* szItem, const TCHAR* itemVal, const TCHAR* var, const TCHAR* varVal , const TCHAR* rsn)
+{   m_ThreadInfo->send( XmlNodeIq( _T("set"), SerialNext(), to ) << XQUERY( ns ) << XCHILD( _T("item")) << XATTR( szItem, itemVal ) << XATTR( var, varVal ) << XCHILD( _T("reason"), rsn));
+}
+
 void CJabberProto::AdminGet( const TCHAR* to, const TCHAR* ns, const TCHAR* var, const TCHAR* varVal, JABBER_IQ_PFUNC foo )
 {
 	int id = SerialNext();
@@ -1512,6 +1516,14 @@ int CJabberProto::JabberGcEventHook(WPARAM, LPARAM lParam)
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
+void CJabberProto::AddMucListItem( JABBER_MUC_JIDLIST_INFO* jidListInfo, TCHAR* str , TCHAR* rsn)
+{		
+	const TCHAR* field = ( jidListInfo->type == MUC_BANLIST || _tcschr(str,'@') ) ? _T("jid") : _T("nick");
+	TCHAR* roomJid = jidListInfo->roomJid;
+	if ( jidListInfo->type == MUC_BANLIST ) {
+		AdminSetReason( roomJid, xmlnsAdmin, field, str, _T("affiliation"), _T("outcast"), rsn);
+		AdminGet( roomJid, xmlnsAdmin, _T("affiliation"), _T("outcast"), &CJabberProto::OnIqResultMucGetBanList);
+}	}
 
 void CJabberProto::AddMucListItem( JABBER_MUC_JIDLIST_INFO* jidListInfo, TCHAR* str )
 {
