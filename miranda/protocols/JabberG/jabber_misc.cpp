@@ -219,23 +219,19 @@ BOOL CJabberProto::AddDbPresenceEvent(HANDLE hContact, BYTE btEventType)
 	if ( !hContact )
 		return FALSE;
 
-	switch ( btEventType )
-	{
+	switch ( btEventType ) {
 	case JABBER_DB_EVENT_PRESENCE_SUBSCRIBE:
 	case JABBER_DB_EVENT_PRESENCE_SUBSCRIBED:
 	case JABBER_DB_EVENT_PRESENCE_UNSUBSCRIBE:
 	case JABBER_DB_EVENT_PRESENCE_UNSUBSCRIBED:
-		{
-			if ( !m_options.LogPresence )
-				return FALSE;
-			break;
-		}
+		if ( !m_options.LogPresence )
+			return FALSE;
+		break;
+
 	case JABBER_DB_EVENT_PRESENCE_ERROR:
-		{
-			if ( !m_options.LogPresenceErrors )
-				return FALSE;
-			break;
-		}
+		if ( !m_options.LogPresenceErrors )
+			return FALSE;
+		break;
 	}
 
 	DBEVENTINFO dbei;
@@ -274,7 +270,7 @@ void CJabberProto::InitCustomFolders( void )
 void CJabberProto::GetAvatarFileName( HANDLE hContact, TCHAR* pszDest, size_t cbLen )
 {
 	size_t tPathLen;
-	TCHAR* path = ( TCHAR* )alloca( cbLen );
+	TCHAR* path = ( TCHAR* )alloca( cbLen * sizeof( TCHAR ));
 
 	InitCustomFolders();
 
