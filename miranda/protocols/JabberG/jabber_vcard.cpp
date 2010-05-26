@@ -335,7 +335,8 @@ static INT_PTR CALLBACK PhotoDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 					if ( GetTempFileName( szTempPath, _T("jab"), 0, szTempFileName ) > 0 ) {
 						dat->ppro->Log( "Temp file = " TCHAR_STR_PARAM, szTempFileName );
 						if ( CopyFile( szFileName, szTempFileName, FALSE ) == TRUE ) {
-							if (( hNewBitmap=( HBITMAP ) JCallService( MS_UTILS_LOADBITMAP, 0, ( LPARAM )szTempFileName )) != NULL ) {
+							char* pszTemp = mir_t2a( szTempFileName );
+							if (( hNewBitmap=( HBITMAP ) JCallService( MS_UTILS_LOADBITMAP, 0, ( LPARAM )pszTemp )) != NULL ) {
 								if ( dat->hBitmap ) {
 									DeleteObject( dat->hBitmap );
 									DeleteFile( dat->ppro->m_szPhotoFileName );
@@ -351,6 +352,8 @@ static INT_PTR CALLBACK PhotoDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 								SendMessage( GetParent( hwndDlg ), PSM_CHANGED, 0, 0 );
 							}
 							else DeleteFile( szTempFileName );
+
+							mir_free( pszTemp );
 						}
 						else DeleteFile( szTempFileName );
 					}
