@@ -1109,7 +1109,7 @@ void CJabberProto::SetServerVcard( BOOL bPhotoChanged, TCHAR* szPhotoFileName )
 		szFileName = szAvatarName;
 
 	// Set photo element, also update the global jabberVcardPhotoFileName to reflect the update
-	Log( "Before update, file name = %s", szFileName );
+	Log( "Before update, file name = " TCHAR_STR_PARAM, szFileName );
 	if ( szFileName == NULL || szFileName[0] == 0 ) {
 		v << XCHILD( _T("PHOTO"));
 		DeleteFile( szAvatarName );
@@ -1122,7 +1122,7 @@ void CJabberProto::SetServerVcard( BOOL bPhotoChanged, TCHAR* szPhotoFileName )
 		char* buffer, *str;
 		DWORD nRead;
 
-		Log( "Saving picture from %s", szFileName );
+		Log( "Saving picture from " TCHAR_STR_PARAM, szFileName );
 		if ( _tstat( szFileName, &st ) >= 0 ) {
 			// Note the FILE_SHARE_READ attribute so that the CopyFile can succeed
 			if (( hFile=CreateFile( szFileName, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL )) != INVALID_HANDLE_VALUE ) {

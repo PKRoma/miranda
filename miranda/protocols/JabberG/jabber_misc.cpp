@@ -264,11 +264,11 @@ void CJabberProto::InitCustomFolders( void )
 
 	bInitDone = true;
 	if ( ServiceExists( MS_FOLDERS_REGISTER_PATH )) {
-		char AvatarsFolder[MAX_PATH];
-        char *tmpPath = Utils_ReplaceVars( "%miranda_avatarcache%" );
-		mir_snprintf( AvatarsFolder, SIZEOF( AvatarsFolder ), "%s\\Jabber", tmpPath );
-        mir_free(tmpPath);
-		hJabberAvatarsFolder = FoldersRegisterCustomPath( m_szModuleName, "Avatars", AvatarsFolder );	// title!!!!!!!!!!!
+		TCHAR AvatarsFolder[MAX_PATH];
+		TCHAR* tmpPath = Utils_ReplaceVarsT( _T("%miranda_avatarcache%"));
+		mir_sntprintf( AvatarsFolder, SIZEOF( AvatarsFolder ), _T("%s\\Jabber"), tmpPath );
+		mir_free(tmpPath);
+		hJabberAvatarsFolder = FoldersRegisterCustomPathT( m_szModuleName, "Avatars", AvatarsFolder );	// title!!!!!!!!!!!
 }	}
 
 void CJabberProto::GetAvatarFileName( HANDLE hContact, TCHAR* pszDest, size_t cbLen )
