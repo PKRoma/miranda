@@ -75,19 +75,35 @@ int fnHitTest(HWND hwnd, struct ClcData *dat, int testx, int testy, struct ClcCo
 	HFONT hFont;
 	DWORD style = GetWindowLongPtr(hwnd, GWL_STYLE);
 	POINT pt;
-	HWND hwndRoot, hwndDesk;
 
 	if ( flags )
 		*flags = 0;
 
 	pt.x = testx;
 	pt.y = testy;
+	ClientToScreen(hwnd, &pt);
 
-	hwndDesk = GetDesktopWindow();
+	HWND hwndParent = hwnd, hwndTemp;
+	do
+	{
+		hwndTemp = hwndParent;
+		hwndParent = GetParent(hwndTemp);
 
-	MapWindowPoints(hwnd, hwndDesk, &pt, 1);
-	hwndRoot = ChildWindowFromPointEx(hwndDesk, pt, CWP_SKIPINVISIBLE|CWP_SKIPTRANSPARENT);
-	if (hwndRoot != cli.hwndContactList) return -1;
+		POINT pt1 = pt;
+		ScreenToClient(hwndParent, &pt1);
+		HWND h = ChildWindowFromPointEx(hwndParent ? hwndParent : GetDesktopWindow(), 
+			pt1, CWP_SKIPINVISIBLE | CWP_SKIPTRANSPARENT);
+		if (h != hwndTemp)
+		{
+			if (hwndParent == NULL)
+			{
+				h = ChildWindowFromPointEx(h, pt1, CWP_SKIPINVISIBLE | CWP_SKIPTRANSPARENT);
+				if (h == hwndTemp) break;
+			}
+			return -1;
+		}
+	}
+	while (hwndParent);
 
 	GetClientRect(hwnd, &clRect);
 	if ( testx < 0 || testy < 0 || testy >= clRect.bottom || testx >= clRect.right ) {

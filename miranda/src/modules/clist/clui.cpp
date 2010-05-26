@@ -331,7 +331,7 @@ int LoadCLUIModule(void)
 		NULL, NULL, cli.hInst, NULL);
 
 	if (DBGetContactSettingByte(NULL, "CList", "OnDesktop", 0)) {
-		HWND hProgMan = FindWindowA("Progman", NULL);
+		HWND hProgMan = FindWindow(_T("Progman"), NULL);
 		if (IsWindow(hProgMan))
 			SetParent(cli.hwndContactList, hProgMan);
 	}
