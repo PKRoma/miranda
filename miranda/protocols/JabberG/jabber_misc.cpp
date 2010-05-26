@@ -310,7 +310,7 @@ void CJabberProto::GetAvatarFileName( HANDLE hContact, TCHAR* pszDest, size_t cb
 		else _i64toa(( LONG_PTR )hContact, str, 10 );
 
 		char* hash = JabberSha1( str );
-		mir_sntprintf( pszDest + tPathLen, MAX_PATH - tPathLen, _T("%s.%s"), hash, szFileType );
+		mir_sntprintf( pszDest + tPathLen, MAX_PATH - tPathLen, _T(TCHAR_STR_PARAM) _T(".") _T(TCHAR_STR_PARAM), hash, szFileType );
 		mir_free( hash );
 	}
 	else if ( m_ThreadInfo != NULL ) {
