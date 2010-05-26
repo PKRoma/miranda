@@ -693,8 +693,10 @@ static INT_PTR CALLBACK JabberUserPhotoDlgProc( HWND hwndDlg, UINT msg, WPARAM w
 					item = photoInfo->ppro->ListGetItemPtr( LIST_ROSTER, jid );
 				if ( item != NULL ) {
 					if ( item->photoFileName ) {
-						photoInfo->ppro->Log( "Showing picture from %s", item->photoFileName );
-						photoInfo->hBitmap = ( HBITMAP ) JCallService( MS_UTILS_LOADBITMAP, 0, ( LPARAM )item->photoFileName );
+						photoInfo->ppro->Log( "Showing picture from " TCHAR_STR_PARAM, item->photoFileName );
+						char* p = mir_t2a( item->photoFileName );
+						photoInfo->hBitmap = ( HBITMAP ) JCallService( MS_UTILS_LOADBITMAP, 0, ( LPARAM )p );
+						mir_free( p );
 						JabberBitmapPremultiplyChannels(photoInfo->hBitmap);
 						ShowWindow( GetDlgItem( hwndDlg, IDC_SAVE ), SW_SHOW );
 					}

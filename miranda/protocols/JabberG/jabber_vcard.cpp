@@ -279,12 +279,14 @@ static INT_PTR CALLBACK PhotoDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 			if ( GetTempFileName( szTempPath, _T("jab"), 0, szTempFileName ) > 0 ) {
 				dat->ppro->Log( "Temp file = " TCHAR_STR_PARAM, szTempFileName );
 				if ( CopyFile( szAvatarFileName, szTempFileName, FALSE ) == TRUE ) {
-					if (( dat->hBitmap=( HBITMAP ) JCallService( MS_UTILS_LOADBITMAP, 0, ( LPARAM )szTempFileName )) != NULL ) {
+					char* p = mir_t2a( szTempFileName );
+					if (( dat->hBitmap=( HBITMAP ) JCallService( MS_UTILS_LOADBITMAP, 0, ( LPARAM )p )) != NULL ) {
 						JabberBitmapPremultiplyChannels( dat->hBitmap );
 						_tcscpy( dat->ppro->m_szPhotoFileName, szTempFileName );
 						EnableWindow( GetDlgItem( hwndDlg, IDC_DELETE ), TRUE );
 					}
 					else DeleteFile( szTempFileName );
+					mir_free(p);
 				}
 				else DeleteFile( szTempFileName );
 		}	}
