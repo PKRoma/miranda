@@ -303,9 +303,13 @@ static INT_PTR CALLBACK PhotoDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 		case IDC_LOAD:
 			{
 				TCHAR szFilter[512];
-				TCHAR szFileName[_MAX_PATH];
+				union {
+					TCHAR szFileName[MAX_PATH];
+					char  boo[512];
+				};
 
-				JCallService( MS_UTILS_GETBITMAPFILTERSTRINGS, ( WPARAM ) sizeof( szFilter ), ( LPARAM )szFilter );
+				JCallService( MS_UTILS_GETBITMAPFILTERSTRINGS, sizeof( boo ), ( LPARAM )boo );
+				MultiByteToWideChar( CP_ACP, 0, boo, -1, szFilter, SIZEOF(szFilter));
 
 				OPENFILENAME ofn = {0};
 				ofn.lStructSize = OPENFILENAME_SIZE_VERSION_400;
