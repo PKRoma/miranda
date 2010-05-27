@@ -41,7 +41,7 @@ extern 	TTemplateSet RTL_Active, LTR_Active;
 const 	TCHAR*		pszIDCSAVE_close = 0, *pszIDCSAVE_save = 0;
 
 static  WNDPROC OldMessageEditProc=0, OldAvatarWndProc=0, OldMessageLogProc=0, oldAvatarParentWndProc=0;
-		WNDPROC OldIEViewProc = 0, OldHppProc = 0;
+		WNDPROC OldIEViewProc = 0;
 
 WNDPROC OldSplitterProc = 0;
 
@@ -277,11 +277,11 @@ LRESULT CALLBACK IEViewSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 
 	switch (msg) {
 		case WM_NCCALCSIZE:
-			return(CSkin::NcCalcRichEditFrame(hwnd, mwdat, ID_EXTBKHISTORY, msg, wParam, lParam, mwdat->hwndIEView ?  OldIEViewProc : OldHppProc));
+			return(CSkin::NcCalcRichEditFrame(hwnd, mwdat, ID_EXTBKHISTORY, msg, wParam, lParam, OldIEViewProc));
 		case WM_NCPAINT:
-			return(CSkin::DrawRichEditFrame(hwnd, mwdat, ID_EXTBKHISTORY, msg, wParam, lParam, mwdat->hwndIEView ? OldIEViewProc : OldHppProc));
+			return(CSkin::DrawRichEditFrame(hwnd, mwdat, ID_EXTBKHISTORY, msg, wParam, lParam, OldIEViewProc));
 	}
-	return CallWindowProc(mwdat->hwndIEView ? OldIEViewProc : OldHppProc, hwnd, msg, wParam, lParam);
+	return CallWindowProc(OldIEViewProc, hwnd, msg, wParam, lParam);
 }
 
 /*
@@ -297,6 +297,10 @@ LRESULT CALLBACK HPPKFSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lP
 		KbdState(mwdat, isShift, isCtrl, isAlt);
 
 		switch(msg) {
+			case WM_NCCALCSIZE:
+				return(CSkin::NcCalcRichEditFrame(hwnd, mwdat, ID_EXTBKHISTORY, msg, wParam, lParam, mwdat->oldIEViewProc));
+			case WM_NCPAINT:
+				return(CSkin::DrawRichEditFrame(hwnd, mwdat, ID_EXTBKHISTORY, msg, wParam, lParam, mwdat->oldIEViewProc));
 
 			case WM_KEYDOWN:
 				if(!isCtrl && !isAlt&&!isShift) {
@@ -1319,9 +1323,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			M->AddWindow(hwndDlg, dat->hContact);
 			BroadCastContainer(m_pContainer, DM_REFRESHTABINDEX, 0, 0);
 			dat->pWnd = 0;
-#if defined(__FEAT_EXP_W7TASKBAR)
 			CProxyWindow::add(dat);
-#endif
 			dat->szProto = const_cast<char *>(dat->cache->getProto());
 			dat->bIsMeta = dat->cache->isMeta() ? TRUE : FALSE;
 			if(dat->bIsMeta)
@@ -1456,6 +1458,17 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			SendMessage(GetDlgItem(hwndDlg, IDC_PROTOCOL), BUTTONADDTOOLTIP, (WPARAM) CTranslator::get(CTranslator::GEN_MSG_TIP_CONTACTMENU), 0);
 
 			SetWindowText(GetDlgItem(hwndDlg, IDC_RETRY), CTranslator::get(CTranslator::GEN_MSG_BUTTON_RETRY));
+
+			{
+				UINT _ctrls[] = {IDC_RETRY, IDC_CANCELSEND, IDC_MSGSENDLATER};
+				for(i = 0; i < 3; i++) {
+					SendDlgItemMessage(hwndDlg, _ctrls[i], BUTTONSETASPUSHBTN, 0, 0);
+					SendDlgItemMessage(hwndDlg, _ctrls[i], BUTTONSETASFLATBTN, 0, 1);
+					SendDlgItemMessage(hwndDlg, _ctrls[i], BUTTONSETASFLATBTN + 10, 0, 1);
+
+				}
+			}
+
 			SetWindowText(GetDlgItem(hwndDlg, IDC_CANCELSEND), CTranslator::get(CTranslator::GEN_MSG_BUTTON_CANCEL));
 			SetWindowText(GetDlgItem(hwndDlg, IDC_MSGSENDLATER), CTranslator::get(CTranslator::GEN_MSG_BUTTON_SENDLATER));
 
@@ -1603,15 +1616,12 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			DM_RecalcPictureSize(dat);
 			dat->dwLastActivity = GetTickCount() - 1000;
 			m_pContainer->dwLastActivity = dat->dwLastActivity;
-			if(dat->hwndHPP) {
-				if(dat->oldIEViewProc == 0) {
-					WNDPROC wndProc = (WNDPROC)SetWindowLongPtr(dat->hwndHPP, GWLP_WNDPROC, (LONG_PTR)HPPKFSubclassProc);
-					if(OldHppProc == 0)
-						OldHppProc = wndProc;
-					dat->oldIEViewProc = wndProc;
-				}
 
+			if (dat->hwndHPP) {
+				WNDPROC wndProc = (WNDPROC)SetWindowLongPtr(dat->hwndHPP, GWLP_WNDPROC, (LONG_PTR)HPPKFSubclassProc);
+				dat->oldIEViewProc = wndProc;
 			}
+
 			dat->dwFlags &= ~MWF_INITMODE;
 			TABSRMM_FireEvent(dat->hContact, hwndDlg, MSG_WINDOW_EVT_OPEN, 0);
 
@@ -3894,12 +3904,10 @@ quote_from_last:
 				}
 				CallService(MS_HPP_EG_WINDOW, 0, (LPARAM)&ieWindow);
 			}
-#if defined(__FEAT_EXP_W7TASKBAR)
 			if(dat->pWnd) {
 				delete dat->pWnd;
 				dat->pWnd = 0;
 			}
-#endif
 			break;
 		case WM_DWMCOMPOSITIONCHANGED:
 			BB_RefreshTheme(dat);

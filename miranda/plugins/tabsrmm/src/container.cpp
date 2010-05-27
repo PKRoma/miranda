@@ -43,6 +43,7 @@ TContainerData *pFirstContainer = 0;        // the linked list of struct Contain
 TContainerData *pLastActiveContainer = NULL;
 
 static 	WNDPROC OldContainerWndProc = 0;
+static  bool	fForceOverlayIcons = false;
 
 static int ServiceParamsOK(ButtonItem *item, WPARAM *wParam, LPARAM *lParam, HANDLE hContact)
 {
@@ -586,6 +587,7 @@ static INT_PTR CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, 
 			BOOL isThemed = !M->GetByte("nlflat", 0);
 
 			fHaveTipper = ServiceExists("mToolTip/ShowTip");
+			fForceOverlayIcons = M->GetByte("forceTaskBarStatusOverlays", 0) ? true : false;
 
 			OldContainerWndProc = (WNDPROC)SetWindowLongPtr(hwndDlg, GWLP_WNDPROC, (LONG_PTR)ContainerWndProc);
 
@@ -1926,7 +1928,7 @@ buttons_done:
 						SendMessage(hwndDlg, WM_SETICON, ICON_SMALL, lParam);
 						if(dat->pContainer->hIconTaskbarOverlay)
 							Win7Taskbar->setOverlayIcon(hwndDlg, (LPARAM)dat->pContainer->hIconTaskbarOverlay);
-						else if(Win7Taskbar->haveAlwaysGroupingMode())
+						else if(Win7Taskbar->haveAlwaysGroupingMode() && fForceOverlayIcons)
 							Win7Taskbar->setOverlayIcon(hwndDlg, lParam);
 						else
 							Win7Taskbar->clearOverlayIcon(hwndDlg);

@@ -2159,18 +2159,20 @@ void CSkin::SkinDrawBG(HWND hwndClient, HWND hwnd, struct TContainerData *pConta
  * @param hdcTarget  HDC: device context of the target window
  */
 
-void CSkin::SkinDrawBGFromDC(HWND hwndClient, HWND hwnd, HDC hdcSrc, RECT *rcClient, HDC hdcTarget)
+void CSkin::SkinDrawBGFromDC(HWND hwndClient, HWND hwnd, RECT *rcClient, HDC hdcTarget)
 {
 	RECT rcWindow;
 	POINT pt;
 	LONG width = rcClient->right - rcClient->left;
 	LONG height = rcClient->bottom - rcClient->top;
+	HDC	 hdcSrc = ::GetDC(hwnd);
 
 	::GetWindowRect(hwndClient, &rcWindow);
 	pt.x = rcWindow.left + rcClient->left;
 	pt.y = rcWindow.top + rcClient->top;
 	::ScreenToClient(hwnd, &pt);
-	::BitBlt(hdcTarget, rcClient->left, rcClient->top, width, height, hdcSrc, pt.x, pt.y, SRCCOPY);
+	::StretchBlt(hdcTarget, rcClient->left, rcClient->top, width, height, hdcSrc, pt.x, pt.y, width, height, SRCCOPY | CAPTUREBLT);
+	::ReleaseDC(hwnd, hdcSrc);
 }
 
 /**
@@ -2231,7 +2233,7 @@ void CSkin::DrawDimmedIcon(HDC hdc, LONG left, LONG top, LONG dx, LONG dy, HICON
 
 UINT CSkin::NcCalcRichEditFrame(HWND hwnd, const TWindowData *mwdat, UINT skinID, UINT msg, WPARAM wParam, LPARAM lParam, WNDPROC OldWndProc)
 {
-	LRESULT orig;
+	LRESULT orig = 0;
 	NCCALCSIZE_PARAMS *nccp = (NCCALCSIZE_PARAMS *)lParam;
 	BOOL bReturn = FALSE;
 
@@ -2240,14 +2242,18 @@ UINT CSkin::NcCalcRichEditFrame(HWND hwnd, const TWindowData *mwdat, UINT skinID
 		EnableScrollBar(hwnd, SB_VERT, ESB_DISABLE_BOTH);
 		ShowScrollBar(hwnd, SB_VERT, FALSE);
 	}
-	orig = CallWindowProc(OldWndProc, hwnd, msg, wParam, lParam);
+	if(OldWndProc)
+		orig = CallWindowProc(OldWndProc, hwnd, msg, wParam, lParam);
 
-	if (mwdat && CSkin::m_skinEnabled && !mwdat->bFlatMsgLog) {
+	if(0 == mwdat)
+		return(orig);
+
+	if (CSkin::m_skinEnabled) {
 		CSkinItem *item = &SkinItems[skinID];
 		if (!item->IGNORED)
 			return WVR_REDRAW;
 	}
-	if (mwdat && mwdat->hTheme && wParam && CMimAPI::m_pfnGetThemeBackgroundContentRect) {
+	if (mwdat->hTheme && wParam && CMimAPI::m_pfnGetThemeBackgroundContentRect) {
 		RECT rcClient;
 		HDC hdc = GetDC(GetParent(hwnd));
 
@@ -2263,7 +2269,7 @@ UINT CSkin::NcCalcRichEditFrame(HWND hwnd, const TWindowData *mwdat, UINT skinID
 		else
 			return orig;
 	}
-	if (mwdat && (mwdat->sendMode & SMODE_MULTIPLE || mwdat->sendMode & SMODE_CONTAINER ||
+	if ((mwdat->sendMode & SMODE_MULTIPLE || mwdat->sendMode & SMODE_CONTAINER ||
 				  mwdat->fEditNotesActive || mwdat->sendMode & SMODE_SENDLATER) && skinID == ID_EXTBKINPUTAREA) {
 		InflateRect(&nccp->rgrc[0], -1, -1);
 		return WVR_REDRAW;
@@ -2280,66 +2286,69 @@ UINT CSkin::DrawRichEditFrame(HWND hwnd, const TWindowData *mwdat, UINT skinID, 
 {
 	CSkinItem *item = &SkinItems[skinID];
 	LRESULT result = 0;
-	BOOL isMultipleReason;
-	BOOL isEditNotesReason = ((mwdat && mwdat->fEditNotesActive) && (skinID == ID_EXTBKINPUTAREA));
-	BOOL isSendLaterReason = ((mwdat && mwdat->sendMode & SMODE_SENDLATER) && (skinID == ID_EXTBKINPUTAREA));
 
-	result = CallWindowProc(OldWndProc, hwnd, msg, wParam, lParam);			// do default processing (otherwise, NO scrollbar as it is painted in NC_PAINT)
-	if (!mwdat)
+	if(OldWndProc)
+		result = CallWindowProc(OldWndProc, hwnd, msg, wParam, lParam);			// do default processing (otherwise, NO scrollbar as it is painted in NC_PAINT)
+
+	if (0 == mwdat)
 		return result;
 
-	isMultipleReason = ((skinID == ID_EXTBKINPUTAREA) && (mwdat->sendMode & SMODE_MULTIPLE || mwdat->sendMode & SMODE_CONTAINER));
+	BOOL isEditNotesReason = ((mwdat->fEditNotesActive) && (skinID == ID_EXTBKINPUTAREA));
+	BOOL isSendLaterReason = ((mwdat->sendMode & SMODE_SENDLATER) && (skinID == ID_EXTBKINPUTAREA));
+	BOOL isMultipleReason = ((skinID == ID_EXTBKINPUTAREA) && (mwdat->sendMode & SMODE_MULTIPLE || mwdat->sendMode & SMODE_CONTAINER));
 
-	if ((isMultipleReason || isEditNotesReason || isSendLaterReason) || ((mwdat && mwdat->hTheme) || (mwdat && CSkin::m_skinEnabled && !item->IGNORED && !mwdat->bFlatMsgLog))) {
-		HDC hdc = GetWindowDC(hwnd);
-		RECT rcWindow;
-		POINT pt;
-		LONG left_off, top_off, right_off, bottom_off;
-		LONG dwStyle = GetWindowLongPtr(hwnd, GWL_STYLE);
-		LONG dwExStyle = GetWindowLongPtr(hwnd, GWL_EXSTYLE);
+	HDC hdc = GetWindowDC(hwnd);
+	RECT rcWindow;
+	POINT pt;
+	LONG left_off, top_off, right_off, bottom_off;
+	LONG dwStyle = GetWindowLongPtr(hwnd, GWL_STYLE);
+	LONG dwExStyle = GetWindowLongPtr(hwnd, GWL_EXSTYLE);
 
-		GetWindowRect(hwnd, &rcWindow);
-		pt.x = pt.y = 0;
-		ClientToScreen(hwnd, &pt);
-		left_off = pt.x - rcWindow.left;
-		if (dwStyle & WS_VSCROLL && dwExStyle & WS_EX_RTLREADING)
-			left_off -= PluginConfig.m_ncm.iScrollWidth;
-		top_off = pt.y - rcWindow.top;
+	GetWindowRect(hwnd, &rcWindow);
+	pt.x = pt.y = 0;
+	ClientToScreen(hwnd, &pt);
+	left_off = pt.x - rcWindow.left;
+	if (dwStyle & WS_VSCROLL && dwExStyle & WS_EX_RTLREADING)
+		left_off -= PluginConfig.m_ncm.iScrollWidth;
+	top_off = pt.y - rcWindow.top;
 
-		if (CSkin::m_skinEnabled && !item->IGNORED) {
-			right_off = item->MARGIN_RIGHT;
-			bottom_off = item->MARGIN_BOTTOM;
-		} else {
-			right_off = left_off;
-			bottom_off = top_off;
-		}
+	if (CSkin::m_skinEnabled && !item->IGNORED) {
+		right_off = item->MARGIN_RIGHT;
+		bottom_off = item->MARGIN_BOTTOM;
+	} else {
+		right_off = left_off;
+		bottom_off = top_off;
+	}
 
-		rcWindow.right -= rcWindow.left;
-		rcWindow.bottom -= rcWindow.top;
-		rcWindow.left = rcWindow.top = 0;
+	rcWindow.right -= rcWindow.left;
+	rcWindow.bottom -= rcWindow.top;
+	rcWindow.left = rcWindow.top = 0;
 
-		ExcludeClipRect(hdc, left_off, top_off, rcWindow.right - right_off, rcWindow.bottom - bottom_off);
-		if (CSkin::m_skinEnabled && !item->IGNORED) {
-			ReleaseDC(hwnd, hdc);
-			return result;
-		} else if (CMimAPI::m_pfnDrawThemeBackground) {
-			if (isMultipleReason || isEditNotesReason || isSendLaterReason) {
-				HBRUSH br = CreateSolidBrush(isMultipleReason ? RGB(255, 130, 130) : (isEditNotesReason ? RGB(80, 255, 80) : RGB(80, 80, 255)));
-				FillRect(hdc, &rcWindow, br);
-				DeleteObject(br);
-			} else {
-				if(PluginConfig.m_cRichBorders) {
-					HBRUSH br = CreateSolidBrush(PluginConfig.m_cRichBorders);
-					FillRect(hdc, &rcWindow, br);
-					DeleteObject(br);
-				}
-				else
-					CMimAPI::m_pfnDrawThemeBackground(mwdat->hTheme, hdc, 1, 1, &rcWindow, &rcWindow);
-			}
-		}
+	ExcludeClipRect(hdc, left_off, top_off, rcWindow.right - right_off, rcWindow.bottom - bottom_off);
+	if (CSkin::m_skinEnabled && !item->IGNORED) {
 		ReleaseDC(hwnd, hdc);
 		return result;
+	} else if (CMimAPI::m_pfnDrawThemeBackground) {
+		if (isMultipleReason || isEditNotesReason || isSendLaterReason) {
+			HBRUSH br = CreateSolidBrush(isMultipleReason ? RGB(255, 130, 130) : (isEditNotesReason ? RGB(80, 255, 80) : RGB(80, 80, 255)));
+			FillRect(hdc, &rcWindow, br);
+			DeleteObject(br);
+		} else {
+			if(PluginConfig.m_cRichBorders) {
+				HBRUSH br = CreateSolidBrush(PluginConfig.m_cRichBorders);
+				FillRect(hdc, &rcWindow, br);
+				DeleteObject(br);
+			}
+			else
+				CMimAPI::m_pfnDrawThemeBackground(mwdat->hTheme, hdc, 1, 1, &rcWindow, &rcWindow);
+		}
 	}
+	else {
+		HBRUSH br = CreateSolidBrush(PluginConfig.m_cRichBorders ? PluginConfig.m_cRichBorders : ::GetSysColor(COLOR_3DSHADOW));
+		FillRect(hdc, &rcWindow, br);
+		DeleteObject(br);
+	}
+	ReleaseDC(hwnd, hdc);
 	return result;
 }
 
@@ -2564,6 +2573,10 @@ void CSkin::RenderToolbarBG(const TWindowData *dat, HDC hdc, const RECT &rcWindo
 		LONG cx = rcToolbar.right - rcToolbar.left;
 		LONG cy = rcToolbar.bottom - rcToolbar.top;
 
+		RECT rcCachedToolbar = {0};
+		rcCachedToolbar.right = cx;
+		rcCachedToolbar.bottom = cy;
+
 		if(dat->pContainer->cachedToolbarDC == 0)
 			dat->pContainer->cachedToolbarDC = ::CreateCompatibleDC(hdc);
 
@@ -2572,35 +2585,30 @@ void CSkin::RenderToolbarBG(const TWindowData *dat, HDC hdc, const RECT &rcWindo
 				::SelectObject(dat->pContainer->cachedToolbarDC, dat->pContainer->oldhbmToolbarBG);
 				::DeleteObject(dat->pContainer->hbmToolbarBG);
 			}
-			dat->pContainer->hbmToolbarBG = ::CreateCompatibleBitmap(hdc, cx, cy);
+			dat->pContainer->hbmToolbarBG = CSkin::CreateAeroCompatibleBitmap(rcCachedToolbar, hdc);// ::CreateCompatibleBitmap(hdc, cx, cy);
 			dat->pContainer->oldhbmToolbarBG = reinterpret_cast<HBITMAP>(::SelectObject(dat->pContainer->cachedToolbarDC, dat->pContainer->hbmToolbarBG));
 		}
 		dat->pContainer->szOldToolbarSize.cx = cx;
 		dat->pContainer->szOldToolbarSize.cy = cy;
 
-		if(fMustDrawNonThemed) {
-			m_tmp_tb_high = PluginConfig.m_tbBackgroundHigh ? PluginConfig.m_tbBackgroundHigh :
-					(m_pCurrentAeroEffect ? m_pCurrentAeroEffect->m_clrToolbar : 0xf0f0f0);
-			m_tmp_tb_low = PluginConfig.m_tbBackgroundLow ? PluginConfig.m_tbBackgroundLow :
-					(m_pCurrentAeroEffect ? m_pCurrentAeroEffect->m_clrToolbar2 : m_dwmColorRGB);
-
-			bAlphaOffset = PluginConfig.m_tbBackgroundHigh ? 40 : 0;
-			::DrawAlpha(hdc, &rcToolbar, m_tmp_tb_high, 45 + bAlphaOffset, m_tmp_tb_low, 0, 9, 0, 0, 0);
-		} else
-			CMimAPI::m_pfnDrawThemeBackground(dat->hThemeToolbar, hdc, 6, 1,
-				&rcToolbar, &rcToolbar);
-
-		RECT rcCachedToolbar = {0};
-		rcCachedToolbar.right = cx;
-		rcCachedToolbar.bottom = cy;
-
-		if(fMustDrawNonThemed) {
-			::DrawAlpha(dat->pContainer->cachedToolbarDC, &rcCachedToolbar, m_tmp_tb_high, 55 + bAlphaOffset, m_tmp_tb_low, 0, 9, 0, 0, 0);
-			//::BitBlt(dat->pContainer->cachedToolbarDC, 0, 0, cx, cy, hdc,
-				//	 rcToolbar.left, rcToolbar.top, SRCCOPY);
-		} else
+		if(!fMustDrawNonThemed && CMimAPI::m_pfnDrawThemeBackground != 0) {
 			CMimAPI::m_pfnDrawThemeBackground(dat->hThemeToolbar, dat->pContainer->cachedToolbarDC, 6, 1,
 				&rcCachedToolbar, &rcCachedToolbar);
+			dat->pContainer->bTBRenderingMode = 1;				// tell TSButton how to render the tool bar buttons
+		}
+		else {
+			dat->pContainer->bTBRenderingMode = 0;
+			m_tmp_tb_high = PluginConfig.m_tbBackgroundHigh ? PluginConfig.m_tbBackgroundHigh :
+					(m_pCurrentAeroEffect ? m_pCurrentAeroEffect->m_clrToolbar : ::GetSysColor(COLOR_3DFACE));
+			m_tmp_tb_low = PluginConfig.m_tbBackgroundLow ? PluginConfig.m_tbBackgroundLow :
+					(m_pCurrentAeroEffect ? m_pCurrentAeroEffect->m_clrToolbar2 : ::GetSysColor(COLOR_3DFACE));
+
+			bAlphaOffset = PluginConfig.m_tbBackgroundHigh ? 40 : 0;
+			::DrawAlpha(dat->pContainer->cachedToolbarDC, &rcCachedToolbar, m_tmp_tb_high, 55 + bAlphaOffset, m_tmp_tb_low, 0, 9, 0, 0, 0);
+		}
+
+		::BitBlt(hdc, rcToolbar.left, rcToolbar.top, cx, cy,
+				 dat->pContainer->cachedToolbarDC, 0, 0, SRCCOPY);
 	}
 }
 
@@ -2707,7 +2715,7 @@ void CSkin::initAeroEffect()
 		::DeleteObject(m_BrushBack);
 		m_BrushBack = 0;
 	}
-	if(m_aeroEffect > AERO_EFFECT_NONE && m_aeroEffect < AERO_EFFECT_LAST) {
+	if(PluginConfig.m_bIsVista && m_aeroEffect > AERO_EFFECT_NONE && m_aeroEffect < AERO_EFFECT_LAST) {
 		m_currentAeroEffect = m_aeroEffects[m_aeroEffect];
 		m_pCurrentAeroEffect = &m_currentAeroEffect;
 		m_glowSize = m_pCurrentAeroEffect->m_glowSize;

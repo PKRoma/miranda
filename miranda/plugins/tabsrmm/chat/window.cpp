@@ -75,7 +75,7 @@ typedef struct
 } MESSAGESUBDATA;
 
 static const CLSID IID_ITextDocument= { 0x8CC497C0,0xA1DF,0x11CE, { 0x80,0x98, 0x00,0xAA, 0x00,0x47,0xBE,0x5D} };
-extern WNDPROC OldIEViewProc, OldHppProc;
+extern WNDPROC OldIEViewProc;
 
 static void Chat_SetMessageLog(TWindowData *dat)
 {
@@ -1965,9 +1965,7 @@ INT_PTR CALLBACK RoomWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 				psi->iSplitterY = GetDefaultMinimumInputHeight(dat);
 #endif
 			dat->pWnd = 0;
-#if defined(__FEAT_EXP_W7TASKBAR)
 			CProxyWindow::add(dat);
-#endif
 
 			dat->fInsertMode = FALSE;
 
@@ -2122,6 +2120,10 @@ INT_PTR CALLBACK RoomWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 					break;
 			}
 
+			if(dat->pWnd) {
+				dat->pWnd->updateTitle(dat->newtitle);
+				dat->pWnd->updateIcon(hIcon);
+			}
 			dat->hTabStatusIcon = hIcon;
 
 			if (lParam)
@@ -3799,12 +3801,10 @@ LABEL_SHOWWINDOW:
 				BroadCastContainer(dat->pContainer, DM_REFRESHTABINDEX, 0, 0);
 				dat->iTabID = -1;
 			}
-#if defined(__FEAT_EXP_W7TASKBAR)
 			if(dat->pWnd) {
 				delete dat->pWnd;
 				dat->pWnd = 0;
 			}
-#endif
 			//MAD
 			M->RemoveWindow(hwndDlg);
 

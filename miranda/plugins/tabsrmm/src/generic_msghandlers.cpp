@@ -1420,26 +1420,21 @@ LRESULT TSAPI DM_ThemeChanged(TWindowData *dat)
 	CSkinItem *item_log = &SkinItems[ID_EXTBKHISTORY];
 	CSkinItem *item_msg = &SkinItems[ID_EXTBKINPUTAREA];
 
-	dat->bFlatMsgLog = M->GetByte("flatlog", 0);
-
 	HWND	hwnd = dat->hwnd;
 
-	if (!dat->bFlatMsgLog)
-		dat->hTheme = (M->isVSAPIState() && CMimAPI::m_pfnOpenThemeData) ? CMimAPI::m_pfnOpenThemeData(hwnd, L"EDIT") : 0;
-	else
-		dat->hTheme = 0;
+	dat->hTheme = (M->isVSAPIState() && CMimAPI::m_pfnOpenThemeData) ? CMimAPI::m_pfnOpenThemeData(hwnd, L"EDIT") : 0;
 
 	if (dat->bType == SESSIONTYPE_IM) {
-		if (dat->bFlatMsgLog || dat->hTheme != 0 || (CSkin::m_skinEnabled && !item_log->IGNORED))
+		if (dat->hTheme != 0 || (CSkin::m_skinEnabled && !item_log->IGNORED))
 			SetWindowLongPtr(GetDlgItem(hwnd, IDC_LOG), GWL_EXSTYLE, GetWindowLongPtr(GetDlgItem(hwnd, IDC_LOG), GWL_EXSTYLE) & ~WS_EX_STATICEDGE);
-		if (dat->bFlatMsgLog || dat->hTheme != 0 || (CSkin::m_skinEnabled && !item_msg->IGNORED))
+		if (dat->hTheme != 0 || (CSkin::m_skinEnabled && !item_msg->IGNORED))
 			SetWindowLongPtr(GetDlgItem(hwnd, IDC_MESSAGE), GWL_EXSTYLE, GetWindowLongPtr(GetDlgItem(hwnd, IDC_MESSAGE), GWL_EXSTYLE) & ~WS_EX_STATICEDGE);
 	} else {
-		if (dat->bFlatMsgLog || dat->hTheme != 0 || (CSkin::m_skinEnabled && !item_log->IGNORED)) {
+		if (dat->hTheme != 0 || (CSkin::m_skinEnabled && !item_log->IGNORED)) {
 			SetWindowLongPtr(GetDlgItem(hwnd, IDC_CHAT_LOG), GWL_EXSTYLE, GetWindowLongPtr(GetDlgItem(hwnd, IDC_CHAT_LOG), GWL_EXSTYLE) & ~WS_EX_STATICEDGE);
 			SetWindowLongPtr(GetDlgItem(hwnd, IDC_LIST), GWL_EXSTYLE, GetWindowLongPtr(GetDlgItem(hwnd, IDC_LIST), GWL_EXSTYLE) & ~(WS_EX_CLIENTEDGE | WS_EX_STATICEDGE));
 		}
-		if (dat->bFlatMsgLog || dat->hTheme != 0 || (CSkin::m_skinEnabled && !item_msg->IGNORED))
+		if (dat->hTheme != 0 || (CSkin::m_skinEnabled && !item_msg->IGNORED))
 			SetWindowLongPtr(GetDlgItem(hwnd, IDC_CHAT_MESSAGE), GWL_EXSTYLE, GetWindowLongPtr(GetDlgItem(hwnd, IDC_CHAT_MESSAGE), GWL_EXSTYLE) & ~WS_EX_STATICEDGE);
 	}
 	dat->hThemeIP = M->isAero() ? CMimAPI::m_pfnOpenThemeData(hwnd, L"ButtonStyle") : 0;

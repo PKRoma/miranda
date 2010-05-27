@@ -277,7 +277,7 @@ void CGlobals::reloadSystemModulesChanged()
 	mi.pszService = MS_MSG_SENDMESSAGE;
 	PluginConfig.m_hMenuItem = (HANDLE)CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM) & mi);
 
-	m_useAeroPeek = M->GetByte("useAeroPeek", 0);
+	m_useAeroPeek = M->GetByte("useAeroPeek", 1);
 }
 
 /**
@@ -323,7 +323,7 @@ void CGlobals::reloadSettings(bool fReloadSkins)
 	m_TabAppearance = 					(int)M->GetDword("tabconfig", TCF_FLASHICON | TCF_SINGLEROWTABCONTROL);
 	m_panelHeight = 					(DWORD)M->GetDword("panelheight", CInfoPanel::DEGRADE_THRESHOLD);
 	m_MUCpanelHeight = 					M->GetDword("Chat", "panelheight", CInfoPanel::DEGRADE_THRESHOLD);
-	m_IdleDetect = 						(int)M->GetByte("detectidle", 1);
+	m_IdleDetect = 						(int)M->GetByte("dimIconsForIdleContacts", 1);
 	m_smcxicon = 16;
 	m_smcyicon = 16;
 	m_PasteAndSend = 					(int)M->GetByte("pasteandsend", 1);

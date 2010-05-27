@@ -42,8 +42,6 @@
 
 #define __FEAT_EXP_AUTOSPLITTER 1					// autosize input area on request (experimental, incomplete, don't use,
 													// feature postponed to rel 3.1.+)
-#define __FEAT_EXP_W7TASKBAR 1						// support for Windows 7 task bar with "per tab" thumbnails (incomplete, but useable)
-
 //#define __LOGDEBUG_	1								// log some stuff to %profile_dir%/tabsrmm_debug.log
 
 #define WINVER 0x0600
@@ -148,11 +146,15 @@
 	#define LOCALE_SISO639LANGNAME2       0x00000067   // 3 character ISO abbreviated language name, eg "eng"
 #endif
 
-#define WM_DWMCOMPOSITIONCHANGED        0x031E
-#define WM_DWMCOLORIZATIONCOLORCHANGED  0x0320
+#ifndef WM_DWMCOMPOSITIONCHANGED
+	#define WM_DWMCOMPOSITIONCHANGED        0x031E
+	#define WM_DWMCOLORIZATIONCOLORCHANGED  0x0320
+#endif
 
-#define WM_DWMSENDICONICTHUMBNAIL           0x0323
-#define WM_DWMSENDICONICLIVEPREVIEWBITMAP   0x0326
+#ifndef WM_DWMSENDICONICTHUMBNAIL
+	#define WM_DWMSENDICONICTHUMBNAIL           0x0323
+	#define WM_DWMSENDICONICLIVEPREVIEWBITMAP   0x0326
+#endif
 
 #include <stdio.h>
 #include <time.h>

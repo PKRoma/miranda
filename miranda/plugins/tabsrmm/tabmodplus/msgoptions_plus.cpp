@@ -194,7 +194,6 @@ INT_PTR CALLBACK PlusOptionsProc(HWND hwndDlg,UINT msg,WPARAM wParam,LPARAM lPar
 				lvItems[i].handle = (LRESULT)TreeView_InsertItem(GetDlgItem(hwndDlg, IDC_PLUS_CHECKTREE), &tvi);
 				i++;
 			}
-			g_bIMGtagButton = M->GetByte("adv_IMGtagButton",0 );
 			PluginConfig.g_bClientInStatusBar = M->GetByte("adv_ClientIconInStatusBar", 0);
 
 			SendDlgItemMessage(hwndDlg, IDC_TIMEOUTSPIN, UDM_SETRANGE, 0, MAKELONG(300, SRMSGSET_MSGTIMEOUT_MIN / 1000));

@@ -39,6 +39,12 @@
 
 extern  FI_INTERFACE *FIF;
 
+/*
+ * Win32 API definitions of functions dynamically obtained via GetProcAddress()
+ * - uxtheme
+ * - dwmapi
+ * - some GDI functions (AlphaBlend()..)
+ */
 typedef BOOL 	(WINAPI *SMI)( HMENU hmenu, LPCMENUINFO lpcmi );
 typedef HRESULT (WINAPI *DEFICA)(HWND hwnd, const MARGINS *margins);
 typedef HRESULT (WINAPI *DICE)(BOOL *);
@@ -70,14 +76,13 @@ typedef HRESULT (WINAPI *BBW)(HWND, DWM_BLURBEHIND *);
 typedef HRESULT (WINAPI *DGC)(DWORD *, BOOL *);
 typedef HRESULT (WINAPI *BPSA)(HANDLE, const RECT *, BYTE);
 typedef int		(WINAPI *GLIX)(LPCWSTR, LCTYPE, LPCWSTR, int);
-#if defined(__FEAT_EXP_W7TASKBAR)
 typedef HRESULT (WINAPI *DWMSWA)(HWND, DWORD, LPCVOID, DWORD);
 typedef HRESULT (WINAPI *DWMIIB)(HWND);
 typedef HRESULT (WINAPI *DWMUT)(HTHUMBNAIL, DWM_THUMBNAIL_PROPERTIES *);
 typedef HRESULT (WINAPI *DURT)(HTHUMBNAIL);
 typedef HRESULT (WINAPI *DSIT)(HWND, HBITMAP, DWORD);
 typedef HRESULT (WINAPI *DSILP)(HWND, HBITMAP, POINT *, DWORD);
-#endif
+
 /*
  * used to encapsulate some parts of the Miranda API
  * constructor does early time initialization - do NOT put anything

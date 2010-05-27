@@ -24,7 +24,7 @@
  *
  * part of tabSRMM messaging plugin for Miranda.
  *
- * (C) 2005-2009 by silvercircle _at_ gmail _dot_ com and contributors
+ * (C) 2005-2010 by silvercircle _at_ gmail _dot_ com and contributors
  *
  * $Id$
  *
@@ -159,52 +159,30 @@ static void PaintWorker(MButtonCtrl *ctl, HDC hdcPaint)
 		bf_buttonglyph.AlphaFormat = 0;
 	}
 	if (hdcPaint) {
-		HDC 	hdcMem;
-		HBITMAP hbmMem, hOld;
-		RECT 	rcClient, rcContent;
-		HRGN 	clip = 0;
-		bool 	fAero = M->isAero();
-		bool 	fVSThemed = (!CSkin::m_skinEnabled && M->isVSThemed());
-		HANDLE 	hbp = 0;
+		HDC 		hdcMem;
+		HBITMAP 	hbmMem, hOld;
+		RECT 		rcClient;
+		RECT		rcContent;
+		bool 		fAero = M->isAero();
+		bool 		fVSThemed = (!CSkin::m_skinEnabled && M->isVSThemed());
+		HANDLE 		hbp = 0;
 
 		TWindowData *dat = (TWindowData *)GetWindowLongPtr(GetParent(ctl->hwnd), GWLP_USERDATA);
-		GetClientRect(ctl->hwnd, &rcClient);
+		GetClientRect(ctl->hwnd, const_cast<RECT *>(&rcClient));
 		CopyRect(&rcContent, &rcClient);
 
 		if(CMimAPI::m_haveBufferedPaint)
-			hbp = CMimAPI::m_pfnBeginBufferedPaint(hdcPaint, &rcClient, BPBF_TOPDOWNDIB, NULL, &hdcMem);
+			hbp = CMimAPI::m_pfnBeginBufferedPaint(hdcPaint, &rcContent, BPBF_TOPDOWNDIB, NULL, &hdcMem);
 		else {
 			hdcMem = CreateCompatibleDC(hdcPaint);
 			hbmMem = CreateCompatibleBitmap(hdcPaint, rcClient.right - rcClient.left, rcClient.bottom - rcClient.top);
 			hOld = (HBITMAP)SelectObject(hdcMem, hbmMem);
 		}
 
+		CSkin::FillBack(hdcMem, &rcContent);
+
 		if (ctl->pushBtn && ctl->pbState)
 			ctl->stateId = PBS_PRESSED;
-
-		if (ctl->item) {
-			RECT rcParent;
-			POINT pt;
-			HWND hwndParent = ctl->pContainer->hwnd;
-			CImageItem *imgItem = ctl->stateId == PBS_HOT ? ctl->item->imgHover : (ctl->stateId == PBS_PRESSED ? ctl->item->imgPressed : ctl->item->imgNormal);
-
-			if (imgItem == NULL)
-				goto default_draw_bg;
-
-			GetWindowRect(ctl->hwnd, &rcParent);
-			pt.x = rcParent.left;
-			pt.y = rcParent.top;
-
-			if (CSkin::m_skinEnabled) {
-				ScreenToClient(hwndParent, &pt);
-
-				BitBlt(hdcMem, 0, 0, rcClient.right, rcClient.bottom, ctl->pContainer->cachedDC, pt.x, pt.y, SRCCOPY);
-				DrawAlpha(hdcMem, &rcClient, 0, 0, 0, 0, 0, 0, 0, imgItem);
-			}
-			goto bg_done;
-		}
-
-default_draw_bg:
 
 		if (ctl->flatBtn) {
 			if (ctl->pContainer && CSkin::m_skinEnabled) {
@@ -214,10 +192,8 @@ default_draw_bg:
 				else {
 					item = &SkinItems[(ctl->stateId == PBS_NORMAL || ctl->stateId == PBS_DISABLED) ? ID_EXTBKBUTTONSNPRESSED : (ctl->stateId == PBS_HOT ? ID_EXTBKBUTTONSMOUSEOVER : ID_EXTBKBUTTONSPRESSED)];
 					realItem = item;
-					if (clip)
-						item = &SkinItems[ID_EXTBKBUTTONSNPRESSED];
 				}
-				CSkin::SkinDrawBG(ctl->hwnd, ctl->pContainer->hwnd,  ctl->pContainer, &rcClient, hdcMem);
+				CSkin::SkinDrawBG(ctl->hwnd, ctl->pContainer->hwnd,  ctl->pContainer, &rcContent, hdcMem);
 				if (!item->IGNORED) {
 					RECT rc1 = rcClient;
 					rc1.left += item->MARGIN_LEFT;
@@ -225,87 +201,40 @@ default_draw_bg:
 					rc1.top += item->MARGIN_TOP;
 					rc1.bottom -= item->MARGIN_BOTTOM;
 					CSkin::DrawItem(hdcMem, &rc1, item);
-					if (clip && realItem) {
-						SelectClipRgn(hdcMem, clip);
-						CSkin::DrawItem(hdcMem, &rc1, realItem);
-					}
 				} else
 					goto flat_themed;
 			} else {
 flat_themed:
-				if (ctl->hThemeToolbar && ctl->bThemed) {
-					RECT rc = rcClient;
-					int state = IsWindowEnabled(ctl->hwnd) ? (ctl->stateId == PBS_NORMAL && ctl->defbutton ? PBS_DEFAULTED : ctl->stateId) : PBS_DISABLED;
-					int realState = state;
+				int state = IsWindowEnabled(ctl->hwnd) ? (ctl->stateId == PBS_NORMAL && ctl->defbutton ? PBS_DEFAULTED : ctl->stateId) : PBS_DISABLED;
 
-					if (clip)
-						state = PBS_NORMAL;
-
-					CSkin::FillBack(hdcMem, &rc);
-					if (rc.right < 20 || rc.bottom < 20)
-						InflateRect(&rc, 2, 2);
-					if((fAero || fVSThemed) && ctl->bToolbarButton) {
-						if(dat) {
-							RECT	rcWin;
-							GetWindowRect(ctl->hwnd, &rcWin);
-							POINT 	pt;
-							pt.x = rcWin.left;
-							ScreenToClient(dat->hwnd, &pt);
-							BitBlt(hdcMem, rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top,
-								   dat->pContainer->cachedToolbarDC, pt.x, 1, SRCCOPY);
-						}
-					}				
-					else {
-						if (CMimAPI::m_pfnIsThemeBackgroundPartiallyTransparent(ctl->hThemeToolbar, TP_BUTTON, TBStateConvert2Flat(state)))
-							CMimAPI::m_pfnDrawThemeParentBackground(ctl->hwnd, hdcMem, &rc);
-					}
-					if(fAero || PluginConfig.m_WinVerMajor >= 6)
-						CMimAPI::m_pfnDrawThemeBackground(ctl->hThemeToolbar, hdcMem, 8, RBStateConvert2Flat(state), &rc, &rc);
-					else
-						CMimAPI::m_pfnDrawThemeBackground(ctl->hThemeToolbar, hdcMem, TP_BUTTON, TBStateConvert2Flat(state), &rc, &rc);
-					if (clip && !(fAero || fVSThemed)) {
-						SelectClipRgn(hdcMem, clip);
-						CMimAPI::m_pfnDrawThemeBackground(ctl->hThemeToolbar, hdcMem, TP_BUTTON, TBStateConvert2Flat(realState), &rc, &rc);
-					}
-				} else {
-					HBRUSH hbr;
-					RECT rc = rcClient;
-
-					CSkin::FillBack(hdcMem, &rc);
-					if(PluginConfig.m_fillColor && dat && ctl->bToolbarButton) {
+				if (ctl->bToolbarButton) {
+					if(dat) {
 						RECT	rcWin;
 						GetWindowRect(ctl->hwnd, &rcWin);
 						POINT 	pt;
 						pt.x = rcWin.left;
 						ScreenToClient(dat->hwnd, &pt);
-						BitBlt(hdcMem, rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top,
+						BitBlt(hdcMem, 0, 0, rcClient.right - rcClient.left, rcClient.bottom - rcClient.top,
 							   dat->pContainer->cachedToolbarDC, pt.x, 1, SRCCOPY);
 					}
-					else {
-						if (ctl->stateId == PBS_PRESSED || ctl->stateId == PBS_HOT) {
-							hbr = GetSysColorBrush(COLOR_3DLIGHT);
-							FillRect(hdcMem, &rc, hbr);
-						} else {
-							HDC dc;
-							HWND hwndParent;
-
-							hwndParent = GetParent(ctl->hwnd);
-							dc = GetDC(hwndParent);
-							hbr = (HBRUSH)SendMessage(hwndParent, WM_CTLCOLORDLG, (WPARAM)dc, (LPARAM)hwndParent);
-							ReleaseDC(hwndParent, dc);
-							if (hbr) {
-								FillRect(hdcMem, &rc, hbr);
-								DeleteObject(hbr);
-							}
+				}
+				if (ctl->hThemeToolbar && ctl->bThemed && 1 == dat->pContainer->bTBRenderingMode) {
+					if(fAero || PluginConfig.m_WinVerMajor >= 6)
+						CMimAPI::m_pfnDrawThemeBackground(ctl->hThemeToolbar, hdcMem, 8, RBStateConvert2Flat(state), &rcClient, &rcClient);
+					else
+						CMimAPI::m_pfnDrawThemeBackground(ctl->hThemeToolbar, hdcMem, TP_BUTTON, TBStateConvert2Flat(state), &rcClient, &rcClient);
+				} else {
+					CSkin::m_switchBarItem->setAlphaFormat(AC_SRC_ALPHA, state == PBS_HOT ? 220 : 180);
+					if(state == PBS_HOT || state == PBS_PRESSED) {
+						if(state == PBS_PRESSED) {
+							RECT	rc = rcClient;
+							InflateRect(&rc, -1, -1);
+							HBRUSH bBack = CreateSolidBrush(PluginConfig.m_tbBackgroundLow ? PluginConfig.m_tbBackgroundLow : GetSysColor(COLOR_3DDKSHADOW));
+							FillRect(hdcMem, &rc, bBack);
+							DeleteObject(bBack);
 						}
+						CSkin::m_switchBarItem->Render(hdcMem, &rcClient, true);
 					}
-					if (ctl->stateId == PBS_HOT || ctl->focus) {
-						if (ctl->pbState)
-							DrawEdge(hdcMem, &rc, EDGE_ETCHED, BF_RECT | BF_SOFT);
-						else
-							DrawEdge(hdcMem, &rc, BDR_RAISEDOUTER, BF_RECT | BF_SOFT);
-					} else if (ctl->stateId == PBS_PRESSED)
-						DrawEdge(hdcMem, &rc, BDR_SUNKENOUTER, BF_RECT | BF_SOFT);
 				}
 			}
 		} else {
@@ -316,8 +245,6 @@ flat_themed:
 				else {
 					item = &SkinItems[(ctl->stateId == PBS_NORMAL || ctl->stateId == PBS_DISABLED) ? ID_EXTBKBUTTONSNPRESSED : (ctl->stateId == PBS_HOT ? ID_EXTBKBUTTONSMOUSEOVER : ID_EXTBKBUTTONSPRESSED)];
 					realItem = item;
-					if (clip)
-						item = &SkinItems[ID_EXTBKBUTTONSNPRESSED];
 				}
 				CSkin::SkinDrawBG(ctl->hwnd, ctl->pContainer->hwnd,  ctl->pContainer, &rcClient, hdcMem);
 				if (!item->IGNORED) {
@@ -327,51 +254,25 @@ flat_themed:
 					rc1.top += item->MARGIN_TOP;
 					rc1.bottom -= item->MARGIN_BOTTOM;
 					CSkin::DrawItem(hdcMem, &rc1, item);
-					if (clip && realItem) {
-						SelectClipRgn(hdcMem, clip);
-						CSkin::DrawItem(hdcMem, &rc1, realItem);
-					}
 				} else
 					goto nonflat_themed;
 			} else {
 nonflat_themed:
-				if (ctl->hThemeButton && ctl->bThemed) {
-					int state = IsWindowEnabled(ctl->hwnd) ? (ctl->stateId == PBS_NORMAL && ctl->defbutton ? PBS_DEFAULTED : ctl->stateId) : PBS_DISABLED;
-					int realState = state;
+				int state = IsWindowEnabled(ctl->hwnd) ? (ctl->stateId == PBS_NORMAL && ctl->defbutton ? PBS_DEFAULTED : ctl->stateId) : PBS_DISABLED;
 
-					if (clip)
-						state = PBS_NORMAL;
-
-					CSkin::FillBack(hdcMem, &rcClient);
-					if((fAero || fVSThemed) && ctl->bToolbarButton) {
-						if(dat) {
-							RECT	rcWin;
-							GetWindowRect(ctl->hwnd, &rcWin);
-							POINT 	pt;
-							pt.x = rcWin.left;
-							ScreenToClient(dat->hwnd, &pt);
-							BitBlt(hdcMem, rcClient.left, rcClient.top, rcClient.right - rcClient.left, rcClient.bottom - rcClient.top,
-								   dat->pContainer->cachedToolbarDC, pt.x, 1, SRCCOPY);
-						}
-					}
-					else {
-						if (CMimAPI::m_pfnIsThemeBackgroundPartiallyTransparent(ctl->hThemeButton, BP_PUSHBUTTON, state)) {
-							CMimAPI::m_pfnDrawThemeParentBackground(ctl->hwnd, hdcMem, &rcClient);
-						}
-					}
+				if (ctl->hThemeButton && ctl->bThemed && 0 == PluginConfig.m_fillColor) {
 					CMimAPI::m_pfnDrawThemeBackground(ctl->hThemeButton, hdcMem, BP_PUSHBUTTON, state, &rcClient, &rcClient);
-
-					if (clip) {
-						SelectClipRgn(hdcMem, clip);
-						CMimAPI::m_pfnDrawThemeBackground(ctl->hThemeButton, hdcMem, BP_PUSHBUTTON, realState, &rcClient, &rcClient);
-					}
 					CMimAPI::m_pfnGetThemeBackgroundContentRect(ctl->hThemeToolbar, hdcMem, BP_PUSHBUTTON, PBS_NORMAL, &rcClient, &rcContent);
 				} else {
-					RECT rcFill = rcClient;
-					UINT uType = ctl->stateId == PBS_PRESSED ? EDGE_ETCHED : EDGE_BUMP;
-					DrawEdge(hdcMem, &rcClient, uType, BF_RECT | BF_SOFT | (ctl->stateId == PBS_HOT ? BF_MONO : 0));
-					InflateRect(&rcFill, -1, -1);
-					FillRect(hdcMem, &rcFill, GetSysColorBrush(COLOR_3DFACE));
+					CSkin::m_switchBarItem->setAlphaFormat(AC_SRC_ALPHA, state == PBS_NORMAL ? 140 : 240);
+					if(state == PBS_PRESSED) {
+						RECT	rc = rcClient;
+						InflateRect(&rc, -1, -1);
+						HBRUSH bBack = CreateSolidBrush(PluginConfig.m_tbBackgroundLow ? PluginConfig.m_tbBackgroundLow : GetSysColor(COLOR_3DDKSHADOW));
+						FillRect(hdcMem, &rc, bBack);
+						DeleteObject(bBack);
+					}
+					CSkin::m_switchBarItem->Render(hdcMem, &rcClient, true);
 				}
 
 				// Draw focus rectangle if button has focus
@@ -382,11 +283,10 @@ nonflat_themed:
 				}
 			}
 		}
-bg_done:
-		if (clip) {
-			SelectClipRgn(hdcMem, 0);
-			DeleteObject(clip);
-		}
+
+		/*
+		 * render content
+		 */
 		if (ctl->arrow) {
 			rcContent.top += 2;
 			rcContent.bottom -= 2;
@@ -395,74 +295,9 @@ bg_done:
 
 			DrawIconEx(hdcMem, rcClient.right - 15, (rcClient.bottom - rcClient.top) / 2 - (PluginConfig.m_smcyicon / 2),
 					   PluginConfig.g_buttonBarIcons[ICON_DEFAULT_PULLDOWN], 16, 16, 0, 0, DI_NORMAL);
-			if (!ctl->flatBtn)
-				DrawEdge(hdcMem, &rcContent, EDGE_BUMP, BF_LEFT);
-			else if (ctl->pContainer && CSkin::m_skinEnabled) {
-				HPEN hPenOld = (HPEN)SelectObject(hdcMem, CSkin::m_SkinLightShadowPen);
-				POINT pt;
-
-				MoveToEx(hdcMem, rcContent.left, rcContent.top, &pt);
-				LineTo(hdcMem, rcContent.left, rcContent.bottom);
-				SelectObject(hdcMem, CSkin::m_SkinDarkShadowPen);
-				MoveToEx(hdcMem, rcContent.left + 1, rcContent.bottom - 1, &pt);
-				LineTo(hdcMem, rcContent.left + 1, rcContent.top - 1);
-				SelectObject(hdcMem, hPenOld);
-			}
 		}
 
-		if (ctl->item) {
-			HICON hIcon = 0;
-			LONG_PTR *glyphMetrics = ctl->stateId == PBS_HOT ? ctl->item->hoverGlyphMetrics : (ctl->stateId == PBS_PRESSED ? ctl->item->pressedGlyphMetrics : ctl->item->normalGlyphMetrics);
-			LONG xOff;
-			HFONT hOldFont;
-			SIZE  szText = {0};
-
-			if (ctl->item->dwFlags & BUTTON_HASLABEL) {
-				hOldFont = (HFONT)SelectObject(hdcMem, ctl->hFont);
-				GetTextExtentPoint32(hdcMem, ctl->item->tszLabel, lstrlen(ctl->item->tszLabel), &szText);
-				szText.cx += 2;
-			}
-			if ((ctl->stateId == PBS_NORMAL || ctl->stateId == PBS_DISABLED) && ctl->item->dwFlags & BUTTON_NORMALGLYPHISICON)
-				hIcon = *((HICON *)ctl->item->normalGlyphMetrics[0]);
-			else if (ctl->item->dwFlags & BUTTON_PRESSEDGLYPHISICON && ctl->stateId == PBS_PRESSED)
-				hIcon = *((HICON *)ctl->item->pressedGlyphMetrics[0]);
-			else if (ctl->item->dwFlags & BUTTON_HOVERGLYPHISICON && ctl->stateId == PBS_HOT)
-				hIcon = *((HICON *)ctl->item->hoverGlyphMetrics[0]);
-
-			if (hIcon) {
-				szText.cx += 16;
-				if (ctl->stateId != PBS_DISABLED || CMimAPI::m_MyAlphaBlend == 0)
-					DrawIconEx(hdcMem, rcClient.right / 2 - szText.cx / 2, rcClient.bottom / 2 - 8, hIcon, 16, 16, 0, 0, DI_NORMAL);
-				else {
-					BitBlt(hdc_buttonglyph, 0, 0, 16, 16, hdcMem, rcClient.right / 2 - szText.cx / 2, rcClient.bottom / 2 - 8, SRCCOPY);
-					DrawIconEx(hdc_buttonglyph, 0, 0, hIcon, 16, 16, 0, 0, DI_NORMAL);
-					CMimAPI::m_MyAlphaBlend(hdcMem, rcClient.right / 2 - szText.cx / 2, rcClient.bottom / 2 - 8, 16, 16, hdc_buttonglyph, 0, 0, 16, 16, bf_buttonglyph);
-				}
-				xOff = 18;
-			} else {
-				const CImageItem	*glyphItem = Skin->getGlyphItem();
-				szText.cx += glyphMetrics[2];
-				if (glyphItem) {
-					CMimAPI::m_MyAlphaBlend(hdcMem, (rcClient.right - szText.cx / 2), (rcClient.bottom - glyphMetrics[3]) / 2,
-								 glyphMetrics[2], glyphMetrics[3], glyphItem->getDC(),
-								 glyphMetrics[0], glyphMetrics[1], glyphMetrics[2],
-								 glyphMetrics[3], glyphItem->getBF());
-				}
-				xOff = glyphMetrics[2] + 2;
-			}
-			if (ctl->item->dwFlags & BUTTON_HASLABEL) {
-				RECT rc = rcClient;
-
-				if (ctl->pContainer && CSkin::m_skinEnabled)
-					SetTextColor(hdcMem, ctl->stateId != PBS_DISABLED ? CSkin::m_DefaultFontColor : GetSysColor(COLOR_GRAYTEXT));
-				else
-					SetTextColor(hdcMem, ctl->stateId != PBS_DISABLED ? GetSysColor(COLOR_BTNTEXT) : GetSysColor(COLOR_GRAYTEXT));
-				SetBkMode(hdcMem, TRANSPARENT);
-				rc.left = (rcClient.right - szText.cx) / 2 + xOff;
-				DrawText(hdcMem, ctl->item->tszLabel, -1, &rc, DT_VCENTER | DT_SINGLELINE | DT_NOPREFIX);
-				SelectObject(hdcMem, hOldFont);
-			}
-		} else if (ctl->hIcon || ctl->hIconPrivate) {
+		if (ctl->hIcon || ctl->hIconPrivate) {
 			int ix = (rcClient.right - rcClient.left) / 2 - 8;
 			int iy = (rcClient.bottom - rcClient.top) / 2 - 8;
 			HICON hIconNew = ctl->hIconPrivate != 0 ? ctl->hIconPrivate : ctl->hIcon;
@@ -502,11 +337,14 @@ bg_done:
 			GetWindowText(ctl->hwnd, szText, MAX_PATH - 1);
 			SetBkMode(hdcMem, TRANSPARENT);
 			hOldFont = (HFONT)SelectObject(hdcMem, ctl->hFont);
-			// XP w/themes doesn't used the glossy disabled text.  Is it always using COLOR_GRAYTEXT?  Seems so.
 			if (ctl->pContainer && CSkin::m_skinEnabled)
 				SetTextColor(hdcMem, IsWindowEnabled(ctl->hwnd) ? CSkin::m_DefaultFontColor : GetSysColor(COLOR_GRAYTEXT));
-			else
-				SetTextColor(hdcMem, IsWindowEnabled(ctl->hwnd) || !ctl->hThemeButton ? GetSysColor(COLOR_BTNTEXT) : GetSysColor(COLOR_GRAYTEXT));
+			else {
+				if(PluginConfig.m_genericTxtColor)
+					SetTextColor(hdcMem, PluginConfig.m_genericTxtColor);
+				else
+					SetTextColor(hdcMem, IsWindowEnabled(ctl->hwnd) || !ctl->hThemeButton ? GetSysColor(COLOR_BTNTEXT) : GetSysColor(COLOR_GRAYTEXT));
+			}
 			GetTextExtentPoint32(hdcMem, szText, lstrlen(szText), &sz);
 			if (ctl->cHot) {
 				SIZE szHot;
@@ -547,7 +385,8 @@ static LRESULT CALLBACK TSButtonWndProc(HWND hwndDlg, UINT msg,  WPARAM wParam, 
 			bct->hFont = (HFONT)GetStockObject(DEFAULT_GUI_FONT);
 			LoadTheme(bct);
 			SetWindowLongPtr(hwndDlg, 0, (LONG_PTR)bct);
-			if (((CREATESTRUCTA *)lParam)->lpszName) SetWindowTextA(hwndDlg, ((CREATESTRUCTA *)lParam)->lpszName);
+			if (((CREATESTRUCT *)lParam)->lpszName)
+				SetWindowText(hwndDlg, ((CREATESTRUCT *)lParam)->lpszName);
 			return TRUE;
 		}
 		case WM_DESTROY: {
@@ -631,6 +470,8 @@ static LRESULT CALLBACK TSButtonWndProc(HWND hwndDlg, UINT msg,  WPARAM wParam, 
 			break;
 		}
 		case WM_NCPAINT:
+			return(0);
+
 		case WM_PAINT: {
 			PAINTSTRUCT ps;
 			HDC hdcPaint;
@@ -730,10 +571,6 @@ static LRESULT CALLBACK TSButtonWndProc(HWND hwndDlg, UINT msg,  WPARAM wParam, 
 			break;
 		case BUTTONSETASFLATBTN + 15:
 			return bct->stateId;
-
-		case BUTTONSETASFLATBTN + 20:
-			bct->item = (ButtonItem *)lParam;
-			break;
 		case BUTTONSETASTOOLBARBUTTON:
 			bct->bToolbarButton = lParam;
 			break;
@@ -895,7 +732,7 @@ static LRESULT CALLBACK TSButtonWndProc(HWND hwndDlg, UINT msg,  WPARAM wParam, 
 			break;
 		}
 		case WM_ERASEBKGND:
-			return 0;
+			return(1);
 	}
 	return DefWindowProc(hwndDlg, msg, wParam, lParam);
 }

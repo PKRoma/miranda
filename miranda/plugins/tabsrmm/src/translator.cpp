@@ -426,7 +426,6 @@ TOptionListGroup CTranslator::m_lvGroupsModPlus[] = {
 };
 
 TOptionListItem CTranslator::m_lvItemsModPlus[] = {
-	0, LPGENT("Enable image tag button (*)"), 0, LOI_TYPE_SETTING, (UINT_PTR)"adv_IMGtagButton", 0,
 	0, LPGENT("Show client icon in status bar (fingerprint plugin required)"), 0, LOI_TYPE_SETTING, (UINT_PTR)"adv_ClientIconInStatusBar", 0,
 	0, LPGENT("Enable typing sounds"), 0, LOI_TYPE_SETTING, (UINT_PTR)"adv_soundontyping", 0,
 	0, LPGENT("Disable animated GIF avatars (will not affect already open message windows)"), 0, LOI_TYPE_SETTING, (UINT_PTR)"adv_DisableAniAvatars", 0,
@@ -545,7 +544,6 @@ TOptionListItem CTranslator::m_lvItemsLog[] = {
 TOptionListGroup CTranslator::m_lvGroupsTab[] = {
 	0, LPGENT("Tab options"),
 	0, LPGENT("How to create tabs and windows for incoming messages"),
-	0, LPGENT("Message dialog visual settings"),
 	0, LPGENT("Miscellaneous options"),
 	0, NULL
 };
@@ -560,14 +558,10 @@ TOptionListItem CTranslator::m_lvItemsTab[] = {
 	0, LPGENT("New windows are minimized (the option above MUST be active)"), 1, LOI_TYPE_SETTING, (UINT_PTR)"autocontainer", 1,
 	0, LPGENT("Activate a minimized window when a new tab is created inside it"), 0, LOI_TYPE_SETTING, (UINT_PTR)"cpopup", 1,
 	0, LPGENT("Automatically activate existing tabs in minimized windows"), 1, LOI_TYPE_SETTING, (UINT_PTR)"autoswitchtabs", 1,
-	0, LPGENT("No borders for text areas (make them appear \"flat\")"), 0, LOI_TYPE_SETTING, (UINT_PTR)"flatlog", 2,
-	0, LPGENT("Remember and set keyboard layout per contact"), 1, LOI_TYPE_SETTING, (UINT_PTR)"al", 3,
-	0, LPGENT("Close button only hides message windows"), 0, LOI_TYPE_SETTING, (UINT_PTR)"hideonclose", 3,
-	0, LPGENT("Allow TAB key in typing area (this will disable focus selection by TAB key)"), 0, LOI_TYPE_SETTING, (UINT_PTR)"tabmode", 3,
-	//MAD
-	0, LPGENT("Add offline contacts to multisend list"),0,LOI_TYPE_SETTING,(UINT_PTR) "AllowOfflineMultisend", 3,
-	//
-	0, LPGENT("Dim icons for idle contacts"), 1, LOI_TYPE_SETTING, (UINT_PTR)"detectidle", 2,
+	0, LPGENT("Remember and set keyboard layout per contact"), 1, LOI_TYPE_SETTING, (UINT_PTR)"al", 2,
+	0, LPGENT("Close button only hides message windows"), 0, LOI_TYPE_SETTING, (UINT_PTR)"hideonclose", 2,
+	0, LPGENT("Allow TAB key in typing area (this will disable focus selection by TAB key)"), 0, LOI_TYPE_SETTING, (UINT_PTR)"tabmode", 2,
+	0, LPGENT("Add offline contacts to multisend list"),0,LOI_TYPE_SETTING,(UINT_PTR) "AllowOfflineMultisend", 2,
 	0, NULL, 0, 0, 0, 0
 };
 

@@ -256,14 +256,10 @@ static int CustomButtonPressed(WPARAM wParam,LPARAM lParam)
 
 int ModPlus_Init(WPARAM wparam,LPARAM lparam)
 {
-	g_bStartup=1;
+	g_bStartup = 1;
 
-	g_bIMGtagButton = M->GetByte("adv_IMGtagButton", 0);
-
-	if ( g_bIMGtagButton ) {
-		hEventCBButtonPressed=HookEvent(ME_MSG_BUTTONPRESSED,CustomButtonPressed);
-		hEventCBInit=HookEvent(ME_MSG_TOOLBARLOADED,RegisterCustomButton);
-	}
+	hEventCBButtonPressed=HookEvent(ME_MSG_BUTTONPRESSED,CustomButtonPressed);
+	hEventCBInit=HookEvent(ME_MSG_TOOLBARLOADED,RegisterCustomButton);
 
 	if (PluginConfig.g_bClientInStatusBar&&ServiceExists(MS_MSG_ADDICON) ) {
 		StatusIconData sid = {0};

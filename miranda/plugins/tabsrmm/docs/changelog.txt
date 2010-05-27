@@ -35,6 +35,18 @@ are currently no downloads for it, you'll have to compile it from source.
 			Detailed change log
 			===================
 
+Version 3.0.0.34 - 2010/05/27
+
+	* fixed crash when running on Windows 2000
+	
+	* cleaned up the mess in the TSButton class
+	
+	* More work on Aero Peek thumbnail previews. Added custom thumbnails for MUC chat
+	  rooms and server windows.
+	  
+	* updated msglog mark read code with some recent changes for srmm.
+	
+
 Version 3.0.0.33 - 2010/05/22
 
 	* some issues fixed

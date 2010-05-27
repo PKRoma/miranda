@@ -179,14 +179,6 @@ void TSAPI CacheLogFonts()
 	ReleaseDC(PluginConfig.g_hwndHotkeyHandler, hdc);
 	PluginConfig.hFontCaption = CInfoPanel::m_ipConfig.hFonts[IPFONTCOUNT - 1];
 
-	if (CInfoPanel::m_ipConfig.bkgBrush)
-		DeleteObject(CInfoPanel::m_ipConfig.bkgBrush);
-
-	CInfoPanel::m_ipConfig.clrBackground = M->GetDword(FONTMODULE, "ipfieldsbg", GetSysColor(COLOR_3DFACE));
-	CInfoPanel::m_ipConfig.clrClockSymbol = M->GetDword(FONTMODULE, "col_clock", GetSysColor(COLOR_WINDOWTEXT));
-
-	CInfoPanel::m_ipConfig.bkgBrush = CreateSolidBrush(CInfoPanel::m_ipConfig.clrBackground);
-
 	PluginConfig.crDefault = M->GetDword(FONTMODULE, SRMSGSET_BKGCOLOUR, SRMSGDEFSET_BKGCOLOUR);
 	PluginConfig.crIncoming = M->GetDword(FONTMODULE, "inbg", SRMSGDEFSET_BKGINCOLOUR);
 	PluginConfig.crOutgoing = M->GetDword(FONTMODULE, "outbg", SRMSGDEFSET_BKGOUTCOLOUR);
@@ -203,8 +195,6 @@ void FreeLogFonts()
 		if (CInfoPanel::m_ipConfig.hFonts[i])
 			DeleteObject(CInfoPanel::m_ipConfig.hFonts[i]);
 
-	if (CInfoPanel::m_ipConfig.bkgBrush)
-		DeleteObject(CInfoPanel::m_ipConfig.bkgBrush);
 }
 
 void TSAPI CacheMsgLogIcons()
@@ -586,6 +576,12 @@ int TSAPI DbEventIsShown(struct TWindowData *dat, DBEVENTINFO * dbei)
 	return 0;
 }
 
+static int DbEventIsForMsgWindow(DBEVENTINFO *dbei)
+{
+	DBEVENTTYPEDESCR* et = ( DBEVENTTYPEDESCR* )CallService( MS_DB_EVENT_GETTYPE, ( WPARAM )dbei->szModule, ( LPARAM )dbei->eventType );
+	return et && ( et->flags & DETF_MSGWINDOW );
+}
+
 static char *Template_CreateRTFFromDbEvent(struct TWindowData *dat, HANDLE hContact, HANDLE hDbEvent, int prefixParaBreak, struct LogStreamData *streamData)
 {
 	char *buffer, c;
@@ -676,11 +672,9 @@ static char *Template_CreateRTFFromDbEvent(struct TWindowData *dat, HANDLE hCont
 	iFontIDOffset = dat->isHistory ? 8 : 0;     // offset into the font table for either history (old) or new events... (# of fonts per configuration set)
 	isSent = (dbei.flags & DBEF_SENT);
 
-	if (!isSent && (fIsStatusChangeEvent || dbei.eventType == EVENTTYPE_MESSAGE || dbei.eventType == EVENTTYPE_URL)) {
-		if(IsWindowVisible(GetParent(dat->hwnd))) {
-			CallService(MS_DB_EVENT_MARKREAD, (WPARAM)hContact, (LPARAM)hDbEvent);
-			CallService(MS_CLIST_REMOVEEVENT, (WPARAM)hContact, (LPARAM)hDbEvent);
-		}
+	if (!isSent && (fIsStatusChangeEvent || dbei.eventType == EVENTTYPE_MESSAGE || DbEventIsForMsgWindow(&dbei))) {
+		CallService(MS_DB_EVENT_MARKREAD, (WPARAM)hContact, (LPARAM)hDbEvent);
+		CallService(MS_CLIST_REMOVEEVENT, (WPARAM)hContact, (LPARAM)hDbEvent);
 	}
 
 	g_groupBreak = TRUE;

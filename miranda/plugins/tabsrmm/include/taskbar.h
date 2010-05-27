@@ -39,6 +39,51 @@
 #define PROXYCLASSNAME  _T("TabSRMM_DWMProxy")
 extern HINSTANCE g_hInst;
 
+class CProxyWindow;
+
+class CThumbBase {
+public:
+	CThumbBase				(const CProxyWindow* pWnd);
+	virtual ~CThumbBase		();
+
+	const HBITMAP			getHBM() const { return(m_hbmThumb); }
+
+protected:
+	HBITMAP					m_hbmThumb, m_hbmOld;
+	const TWindowData*		m_dat;
+	LONG					m_width, m_height;
+	HDC						m_hdc;
+	const CProxyWindow*		m_pWnd;
+	RECT					m_rc, m_rcTop, m_rcBottom, m_rcIcon;
+	DWORD					m_dtFlags;
+	SIZE					m_sz;
+	LONG					m_cx, m_cy;
+	HFONT					m_hOldFont;
+
+private:
+	virtual void			renderContent() = 0;
+};
+
+class CThumbIM : public CThumbBase {
+
+public:
+	CThumbIM				(const CProxyWindow* pWnd);
+	virtual ~CThumbIM		() {};
+
+private:
+	void					renderContent();
+};
+
+class CThumbMUC : public CThumbBase {
+
+public:
+	CThumbMUC				(const CProxyWindow* pWnd);
+	virtual ~CThumbMUC		() {};
+
+private:
+	void					renderContent();
+};
+
 class CProxyWindow
 {
 public:
@@ -50,6 +95,11 @@ public:
 	void					setBigIcon(const HICON hIcon, bool fInvalidate = true);
 	void					activateTab() const;
 	void					Invalidate();
+	const TWindowData*		getDat() const { return(m_dat); }
+	const LONG				getWidth() const { return(m_width); }
+	const LONG				getHeight() const { return(m_height); }
+	const HWND				getHwnd() const { return(m_hwnd); }
+	const HICON				getBigIcon() const { return(m_hBigIcon); }
 
 	static	LRESULT CALLBACK stubWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 	static	void			add(TWindowData *dat);
@@ -59,12 +109,11 @@ private:
 	const TWindowData*		m_dat;
 	HWND					m_hwnd;
 	LONG					m_width, m_height;
-	HBITMAP					m_hbmThumb;
 	HICON					m_hBigIcon;
 	LRESULT CALLBACK		wndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
-	void					refreshThumb();
 	void 					sendThumb(LONG width, LONG height);
 	void					sendPreview();
+	const CThumbBase*		m_thumb;
 };
 
 class CTaskbarInteract

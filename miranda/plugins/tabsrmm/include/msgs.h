@@ -247,6 +247,7 @@ struct TContainerData {
 	SIZE	szOldToolbarSize;
 	SIZE    oldSize, preSIZE;
 	WORD	avatarMode, ownAvatarMode;
+	BYTE	bTBRenderingMode;
 	TLogTheme 	theme;
 	TContainerSettings* settings;
 	CTaskbarInteract*	TaskBar;
@@ -337,7 +338,6 @@ struct TWindowData {
 	HANDLE  *hHistoryEvents;
 	int     maxHistory, curHistory;
 	HANDLE  hTheme, hThemeIP, hThemeToolbar;
-	BYTE    bFlatMsgLog;
 	char    szMicroLf[128];
 	DWORD   isAutoRTL;
 	int     nMax;            // max message size

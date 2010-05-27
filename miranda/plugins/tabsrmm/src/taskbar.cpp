@@ -35,6 +35,25 @@
  * - read Windows 7 task bar configuration from the registry.
  */
 
+/**
+ * how it works:
+ *
+ * Because of the fact, the DWM does not talk to non-toplevel windows
+ * we need an invisible "proxy window" for each tab. This window is a very
+ * small and hidden toplevel tool window which is used to communicate
+ * with the dwm. Each proxy is associated with the client window (the "tab")
+ * and registers itself with the message container window via
+ * ITaskbarList3::RegisterTab().
+ *
+ * Instead of automatically created snapshots of the window content, we
+ * use custom generated thumbnails for the task bar buttons, including
+ * nickname, UID, status message and avatar. This makes the thumbnails
+ * easily recognizable.
+ *
+ * Thumbnails are generated "on request", only when the desktop window
+ * manager needs one.
+ */
+
 #include "commonheaders.h"
 
 CTaskbarInteract* Win7Taskbar = 0;
@@ -197,6 +216,7 @@ CProxyWindow::CProxyWindow(const TWindowData *dat)
 		WS_POPUP | WS_BORDER | WS_SYSMENU | WS_CAPTION, -32000, -32000, 10, 10, NULL, NULL, g_hInst, (LPVOID)this);
 
 	m_hBigIcon = 0;
+	m_thumb = 0;
 
 #if defined(__LOGDEBUG_)
 	_DebugTraceW(_T("create proxy object for: %s"), m_dat->cache->getNick());
@@ -220,159 +240,10 @@ CProxyWindow::~CProxyWindow()
 #if defined(__LOGDEBUG_)
 	_DebugTraceW(_T("destroy proxy object for: %s"), m_dat->cache->getNick());
 #endif
-	if(m_hbmThumb)
-		::DeleteObject(m_hbmThumb);
-}
-
-/**
- * refresh thumbnail image
- * whenever the DWM requests a thumbnail this might create one, either
- * if none does yet exist, the size has changed or the Invalidate() was
- * called since the last update.
- */
-void CProxyWindow::refreshThumb()
-{
-	RECT			rc = {0};
-	HBITMAP 		hbmOld = 0;
-	HBRUSH  		brBack = 0;
-	LONG			lIconSize = 32, cx, cy;
-	const TCHAR*	tszStatusMsg = m_dat->cache->getStatusMsg();
-	HBITMAP			hbmAvatar, hbmOldAv;
-	double			dNewWidth = 0.0, dNewHeight = 0.0;
-	bool			fFree = false;
-	HRGN			hRgn = 0;
-	BOOL			fUnread = m_dat->dwUnread ? true : false;
-	HICON			hIcon;
-	HFONT			hOldFont = 0;
-	SIZE			sz = {0};
-	DWORD			dtFlags = 0;
-
-	if(m_hbmThumb)
-		::DeleteObject(m_hbmThumb);
-
-#if defined(__LOGDEBUG_)
-	_DebugTraceW(_T("recreating thumb for %s"), m_dat->cache->getNick());
-#endif
-
-	rc.right = m_width;
-	rc.bottom = m_height;
-
-	HDC dc = ::GetDC(m_hwnd);
-	HDC	hdc = ::CreateCompatibleDC(dc);
-
-	m_hbmThumb = CSkin::CreateAeroCompatibleBitmap(rc, hdc);
-	hbmOld = reinterpret_cast<HBITMAP>(::SelectObject(hdc, m_hbmThumb));
-	ReleaseDC(m_hwnd, dc);
-
-	brBack = ::CreateSolidBrush(fUnread ? RGB(70, 60, 60) : RGB(60, 60, 60));
-	::FillRect(hdc, &rc, brBack);
-
-	::SelectObject(hdc, hbmOld);
-	CImageItem::SetBitmap32Alpha(m_hbmThumb, fUnread ? 100 : 80);
-	hbmOld = reinterpret_cast<HBITMAP>(::SelectObject(hdc, m_hbmThumb));
-
-	SetBkMode(hdc, TRANSPARENT);
-
-	hOldFont = reinterpret_cast<HFONT>(::SelectObject(hdc, CInfoPanel::m_ipConfig.hFonts[IPFONTID_STATUS]));
-	::GetTextExtentPoint32A(hdc, "A", 1, &sz);
-
-	rc.left += 3;
-	rc.right -= 3;
-
-	RECT rcTop = rc;
-	RECT rcBottom = rc;
-	rcBottom.top = rc.bottom - ( 2 * (rcBottom.bottom / 5)) - 2;
-	rcTop.bottom = rcBottom.top - 2;
-
-	RECT rcIcon = rcTop;
-	rcIcon.right = rc.right / 3;
-
-	hIcon = m_hBigIcon;
-	if(0 == hIcon) {
-		if(fUnread) {
-			if(PluginConfig.g_IconMsgEventBig)
-				hIcon = PluginConfig.g_IconMsgEventBig;
-			else {
-				hIcon = PluginConfig.g_IconMsgEvent;
-				lIconSize = 16;
-			}
-		}
-		else {
-			hIcon = reinterpret_cast<HICON>(LoadSkinnedProtoIconBig(m_dat->cache->getActiveProto(), m_dat->cache->getActiveStatus()));
-			if(0 == hIcon || reinterpret_cast<HICON>(CALLSERVICE_NOTFOUND) == hIcon) {
-				hIcon = reinterpret_cast<HICON>(LoadSkinnedProtoIcon(m_dat->cache->getActiveProto(), m_dat->cache->getActiveStatus()));
-				lIconSize = 16;
-			}
-		}
+	if(m_thumb) {
+		delete m_thumb;
+		m_thumb = 0;
 	}
-	::DrawIconEx(hdc, rcIcon.right / 2 - lIconSize / 2, rcIcon.top + 3, hIcon, lIconSize, lIconSize, 0, 0, DI_NORMAL);
-
-	rcIcon.top += (lIconSize + 7);
-	CSkin::RenderText(hdc, m_dat->hThemeToolbar, m_dat->szStatus, &rcIcon, 0x80000000 | DT_CENTER | DT_WORD_ELLIPSIS, 10);
-	if(fUnread) {
-		TCHAR	tszTemp[30];
-
-		rcIcon.top += sz.cy;
-		mir_sntprintf(tszTemp, 30, _T("%d Unread"), m_dat->dwUnread);
-		CSkin::RenderText(hdc, m_dat->hThemeToolbar, tszTemp, &rcIcon, 0x80000000 | DT_CENTER | DT_WORD_ELLIPSIS, 10);
-	}
-
-	/*
-	 * avatar
-	 */
-
-	rcIcon= rcTop;
-	rcIcon.top += 2;
-	rcIcon.left = rc.right / 3;
-	cx = rcIcon.right - rcIcon.left;
-	cy = rcIcon.bottom - rcIcon.top;
-
-	hbmAvatar = (m_dat->ace && m_dat->ace->hbmPic) ? m_dat->ace->hbmPic : PluginConfig.g_hbmUnknown;
-	Utils::scaleAvatarHeightLimited(hbmAvatar, dNewWidth, dNewHeight, rcIcon.bottom - rcIcon.top);
-
-	HBITMAP hbmResized = CSkin::ResizeBitmap(hbmAvatar, dNewWidth, dNewHeight, fFree);
-
-	dc = CreateCompatibleDC(hdc);
-	hbmOldAv = reinterpret_cast<HBITMAP>(::SelectObject(dc, hbmResized));
-
-	LONG xOff = rcIcon.right - (LONG)dNewWidth - 2;
-	LONG yOff = (cy - (LONG)dNewHeight) / 2 + rcIcon.top;
-
-	hRgn = ::CreateRectRgn(xOff - 1, yOff - 1, xOff + (LONG)dNewWidth + 2, yOff + (LONG)dNewHeight + 2);
-	CSkin::m_default_bf.SourceConstantAlpha = 150;
-	CMimAPI::m_MyAlphaBlend(hdc, xOff, yOff, (LONG)dNewWidth, (LONG)dNewHeight, dc, 0, 0, (LONG)dNewWidth, (LONG)dNewHeight, CSkin::m_default_bf);
-	CSkin::m_default_bf.SourceConstantAlpha = 255;
-	::FrameRgn(hdc, hRgn, reinterpret_cast<HBRUSH>(::GetStockObject(BLACK_BRUSH)), 1, 1);
-
-	::DeleteObject(hRgn);
-	::SelectObject(dc, hbmOldAv);
-	::DeleteObject(hbmResized);
-	::DeleteDC(dc);
-
-	rcBottom.bottom -= 16;
-	/*
-	 * status message and bottom line (either UID or nick name, depending on
-	 * task bar grouping mode).
-	 */
-	if((rcBottom.bottom - rcBottom.top) < 2 * sz.cy)
-		dtFlags |= DT_SINGLELINE;
-
-	rcBottom.bottom -= ((rcBottom.bottom - rcBottom.top) % sz.cy);		// adjust to a multiple of line height
-
-	if(0 == tszStatusMsg)
-		tszStatusMsg = CTranslator::get(CTranslator::GEN_NO_STATUS);
-	CSkin::RenderText(hdc, m_dat->hThemeToolbar, tszStatusMsg, &rcBottom, 0x80000000 | DT_WORD_ELLIPSIS | DT_END_ELLIPSIS | dtFlags, 10);
-	rcBottom.bottom = rc.bottom;
-	rcBottom.top = rcBottom.bottom - sz.cy - 2;
-	CSkin::RenderText(hdc, m_dat->hThemeToolbar, Win7Taskbar->haveAlwaysGroupingMode() ? m_dat->cache->getUIN() : m_dat->cache->getNick(),
-					  &rcBottom, 0x80000000 | DT_SINGLELINE | DT_WORD_ELLIPSIS | DT_END_ELLIPSIS, 10);
-
-	if(hOldFont)
-		::SelectObject(hdc, hOldFont);
-
-	::SelectObject(hdc, hbmOld);
-	::DeleteDC(hdc);
-	::DeleteObject(brBack);
 }
 
 /**
@@ -384,12 +255,17 @@ void CProxyWindow::refreshThumb()
  */
 void CProxyWindow::sendThumb(LONG width, LONG height)
 {
-	if(width != m_width || height != m_height || m_hbmThumb == 0) {
+	if(width != m_width || height != m_height || m_thumb == 0) {
 		m_width = width;
 		m_height = height;
-		refreshThumb();
+		if(m_thumb)
+			delete m_thumb;
+		if(m_dat->bType == SESSIONTYPE_IM)
+			m_thumb = new CThumbIM(this);
+		else
+			m_thumb = new CThumbMUC(this);
 	}
-	CMimAPI::m_pfnDwmSetIconicThumbnail(m_hwnd, m_hbmThumb, DWM_SIT_DISPLAYFRAME);
+	CMimAPI::m_pfnDwmSetIconicThumbnail(m_hwnd, m_thumb->getHBM(), DWM_SIT_DISPLAYFRAME);
 }
 
 /**
@@ -406,58 +282,55 @@ void CProxyWindow::sendPreview()
 	RECT	rcContainer, rcBox;
 	HDC		hdc, dc;
 
-#if defined(__LOGDEBUG_)
-	_DebugTraceW(_T("recreating preview for %s"), m_dat->cache->getNick());
-#endif
+	if(m_thumb) {
+	#if defined(__LOGDEBUG_)
+		_DebugTraceW(_T("recreating preview for %s"), m_dat->cache->getNick());
+	#endif
 
-	/*
-	 * a minimized container has a null rect as client area, so do not use it
-	 * use the last known client area size instead.
-	 */
-	if(!IsIconic(m_dat->pContainer->hwnd))
-		::GetClientRect(m_dat->pContainer->hwnd, &rcContainer);
-	else
-		rcContainer = m_dat->pContainer->rcSaved;
+		/*
+		 * a minimized container has a null rect as client area, so do not use it
+		 * use the last known client area size instead.
+		 */
+		if(!IsIconic(m_dat->pContainer->hwnd))
+			::GetClientRect(m_dat->pContainer->hwnd, &rcContainer);
+		else
+			rcContainer = m_dat->pContainer->rcSaved;
 
-#if defined(__LOGDEBUG_)
-	_DebugTraceW(_T("client rect is: %d, %d - saved = %d, %d"), rcContainer.right, rcContainer.bottom, m_dat->pContainer->rcSaved.right, m_dat->pContainer->rcSaved.bottom);
-#endif
+		dc = ::GetDC(m_dat->hwnd);
+		hdc = ::CreateCompatibleDC(dc);
+		HBITMAP hbm = CSkin::CreateAeroCompatibleBitmap(rcContainer, hdc);
+		HBITMAP hbmOld = reinterpret_cast<HBITMAP>(::SelectObject(hdc, hbm));
 
-	dc = ::GetDC(m_dat->hwnd);
-	hdc = ::CreateCompatibleDC(dc);
-	HBITMAP hbm = CSkin::CreateAeroCompatibleBitmap(rcContainer, hdc);
-	HBITMAP hbmOld = reinterpret_cast<HBITMAP>(::SelectObject(hdc, hbm));
+		::DrawAlpha(hdc, &rcContainer, PluginConfig.m_ipBackgroundGradient, 50, PluginConfig.m_ipBackgroundGradientHigh, 0, 17, 0, 2, 0);
+		CImageItem::SetBitmap32Alpha(hbm, 220);
 
-	::DrawAlpha(hdc, &rcContainer, PluginConfig.m_ipBackgroundGradient, 50, PluginConfig.m_ipBackgroundGradientHigh, 0, 17, 0, 2, 0);
-	CImageItem::SetBitmap32Alpha(hbm, 220);
+		HDC dcSrc = ::CreateCompatibleDC(hdc);
+		HBITMAP hOldSrc = reinterpret_cast<HBITMAP>(::SelectObject(dcSrc, m_thumb->getHBM()));
 
-	HDC dcSrc = ::CreateCompatibleDC(hdc);
-	HBITMAP hOldSrc = reinterpret_cast<HBITMAP>(::SelectObject(dcSrc, m_hbmThumb));
+		rcBox.left = (rcContainer.right - m_width) / 2 - 20;
+		rcBox.right = rcBox.left + m_width + 40;
+		rcBox.top = (rcContainer.bottom - m_height) / 2 - 20;
+		rcBox.bottom = rcBox.top + m_height + 40;
 
-	rcBox.left = (rcContainer.right - m_width) / 2 - 20;
-	rcBox.right = rcBox.left + m_width + 40;
-	rcBox.top = (rcContainer.bottom - m_height) / 2 - 20;
-	rcBox.bottom = rcBox.top + m_height + 40;
+		::DrawAlpha(hdc, &rcBox, 0x00ffffff, 60, 0x00ffffff, 0, 0, CORNER_ALL, 12, 0);
+		CMimAPI::m_MyAlphaBlend(hdc, rcBox.left + 20, rcBox.top + 20, m_width, m_height,
+								dcSrc, 0, 0, m_width, m_height, CSkin::m_default_bf);
 
-	::DrawAlpha(hdc, &rcBox, 0x00ffffff, 60, 0x00ffffff, 0, 0, CORNER_ALL, 12, 0);
-	CMimAPI::m_MyAlphaBlend(hdc, rcBox.left + 20, rcBox.top + 20, m_width, m_height,
-							dcSrc, 0, 0, m_width, m_height, CSkin::m_default_bf);
+		::SelectObject(dcSrc, hOldSrc);
+		::DeleteDC(dcSrc);
 
-	::SelectObject(dcSrc, hOldSrc);
-	::DeleteDC(dcSrc);
-
-	rcContainer.top = rcContainer.bottom - 20;
-	CSkin::RenderText(hdc, m_dat->hThemeToolbar, _T("Placeholder, not fully implemented"), &rcContainer, DT_CENTER | DT_SINGLELINE, 10);
-	//StretchBlt(hdc, 0, 0, rcContainer.right, rcContainer.bottom, dc, 0, 0, rcClient.right, rcClient.bottom, SRCCOPY | CAPTUREBLT);
-	::SelectObject(hdc, hbmOld);
-	::DeleteDC(hdc);
-	CMimAPI::m_pfnDwmSetIconicLivePreviewBitmap(m_hwnd, hbm, &pt, DWM_SIT_DISPLAYFRAME);
-	::ReleaseDC(m_dat->hwnd, dc);
-	::DeleteObject(hbm);
+		rcContainer.top = rcContainer.bottom - 20;
+		//StretchBlt(hdc, 0, 0, rcContainer.right, rcContainer.bottom, dc, 0, 0, rcClient.right, rcClient.bottom, SRCCOPY | CAPTUREBLT);
+		::SelectObject(hdc, hbmOld);
+		::DeleteDC(hdc);
+		CMimAPI::m_pfnDwmSetIconicLivePreviewBitmap(m_hwnd, hbm, &pt, DWM_SIT_DISPLAYFRAME);
+		::ReleaseDC(m_dat->hwnd, dc);
+		::DeleteObject(hbm);
+	}
 }
 
 /**
- * set the larg icon for the thumbnail. This is mostly used by group chats
+ * set the large icon for the thumbnail. This is mostly used by group chats
  * to indicate last active event in the session.
  *
  * hIcon may be 0 to remove a custom big icon. In that case, the renderer
@@ -501,9 +374,9 @@ void CProxyWindow::activateTab() const
  */
 void CProxyWindow::Invalidate()
 {
-	if(m_hbmThumb) {
-		::DeleteObject(m_hbmThumb);
-		m_hbmThumb = 0;
+	if(m_thumb) {
+		delete m_thumb;
+		m_thumb = 0;
 	}
 	/*
 	 * tell the DWM to request a new thumbnail for the proxy window m_hwnd
@@ -591,4 +464,250 @@ LRESULT CALLBACK CProxyWindow::wndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
 			break;
 	}
 	return(::DefWindowProc(hWnd, msg, wParam, lParam));
+}
+
+/**
+ * base thumbnail class. Create the background and common parts for a
+ * thumbnail
+ *
+ * @param _p			 owner proxy window object
+ * @return
+ */
+CThumbBase::CThumbBase(const CProxyWindow* _p)
+{
+	HICON	hIcon = 0;
+	HBRUSH	brBack;
+	LONG	lIconSize = 32;
+
+	m_pWnd = _p;
+	m_width = m_pWnd->getWidth();
+	m_height = m_pWnd->getHeight();
+	m_dat = m_pWnd->getDat();
+	m_dtFlags = 0;
+	m_hOldFont = 0;
+
+#if defined(__LOGDEBUG_)
+	_DebugTraceW(_T("create CThumbBase with %d, %d"), m_width, m_height);
+#endif
+
+	m_rc.right = m_width;
+	m_rc.bottom = m_height;
+	m_rc.left = m_rc.top = 0;
+
+	HDC dc = ::GetDC(m_pWnd->getHwnd());
+	m_hdc = ::CreateCompatibleDC(dc);
+
+	m_hbmThumb = CSkin::CreateAeroCompatibleBitmap(m_rc, m_hdc);
+	m_hbmOld = reinterpret_cast<HBITMAP>(::SelectObject(m_hdc, m_hbmThumb));
+	ReleaseDC(m_pWnd->getHwnd(), dc);
+
+	brBack = ::CreateSolidBrush(m_dat->dwUnread ? RGB(70, 60, 60) : RGB(60, 60, 60));
+	::FillRect(m_hdc, &m_rc, brBack);
+	::DeleteObject(brBack);
+
+	::SelectObject(m_hdc, m_hbmOld);
+	CImageItem::SetBitmap32Alpha(m_hbmThumb, m_dat->dwUnread ? 80 : 60);
+	m_hbmOld = reinterpret_cast<HBITMAP>(::SelectObject(m_hdc, m_hbmThumb));
+
+	SetBkMode(m_hdc, TRANSPARENT);
+
+	m_hOldFont = reinterpret_cast<HFONT>(::SelectObject(m_hdc, CInfoPanel::m_ipConfig.hFonts[IPFONTID_STATUS]));
+	::GetTextExtentPoint32A(m_hdc, "A", 1, &m_sz);
+
+	if(CSkin::m_pCurrentAeroEffect)
+		m_dtFlags |= (CSkin::m_pCurrentAeroEffect->m_glowSize ? 0x80000000 : 0);
+
+	InflateRect(&m_rc, -3, -3);
+
+	m_rcTop = m_rc;
+	m_rcBottom = m_rc;
+	m_rcBottom.top = m_rc.bottom - ( 2 * (m_rcBottom.bottom / 5)) - 2;
+	m_rcTop.bottom = m_rcBottom.top - 2;
+
+	m_rcIcon = m_rcTop;
+	m_rcIcon.right = m_rc.right / 3;
+
+	hIcon = m_pWnd->getBigIcon();
+
+	if(0 == hIcon) {
+		if(m_dat->dwUnread) {
+			if(PluginConfig.g_IconMsgEventBig)
+				hIcon = PluginConfig.g_IconMsgEventBig;
+			else {
+				hIcon = PluginConfig.g_IconMsgEvent;
+				lIconSize = 16;
+			}
+		}
+		else {
+			hIcon = reinterpret_cast<HICON>(LoadSkinnedProtoIconBig(m_dat->cache->getActiveProto(), m_dat->cache->getActiveStatus()));
+			if(0 == hIcon || reinterpret_cast<HICON>(CALLSERVICE_NOTFOUND) == hIcon) {
+				hIcon = reinterpret_cast<HICON>(LoadSkinnedProtoIcon(m_dat->cache->getActiveProto(), m_dat->cache->getActiveStatus()));
+				lIconSize = 16;
+			}
+		}
+	}
+	::DrawIconEx(m_hdc, m_rcIcon.right / 2 - lIconSize / 2, m_rcIcon.top, hIcon, lIconSize, lIconSize, 0, 0, DI_NORMAL);
+
+	m_rcIcon.top += (lIconSize + 3);
+	CSkin::RenderText(m_hdc, m_dat->hThemeToolbar, m_dat->szStatus, &m_rcIcon, m_dtFlags | DT_CENTER | DT_WORD_ELLIPSIS, 10);
+	if(m_dat->dwUnread) {
+		TCHAR	tszTemp[30];
+
+		m_rcIcon.top += m_sz.cy;
+		mir_sntprintf(tszTemp, 30, _T("%d Unread"), m_dat->dwUnread);
+		CSkin::RenderText(m_hdc, m_dat->hThemeToolbar, tszTemp, &m_rcIcon, m_dtFlags | DT_CENTER | DT_WORD_ELLIPSIS, 10);
+	}
+	m_rcIcon= m_rcTop;
+	m_rcIcon.top += 2;
+	m_rcIcon.left = m_rc.right / 3;
+	m_cx = m_rcIcon.right - m_rcIcon.left;
+	m_cy = m_rcIcon.bottom - m_rcIcon.top;
+}
+
+/**
+ * destroy the thumbnail object. Just delete the bitmap we cached
+ * @return
+ */
+CThumbBase::~CThumbBase()
+{
+	if(m_hbmThumb)
+		::DeleteObject(m_hbmThumb);
+
+#if defined(__LOGDEBUG_)
+	_DebugTraceW(_T("destroy CThumbBase"));
+#endif
+}
+
+/**
+ * create a IM session thumbnail. base class will create the
+ * bitmap and render the background.
+ *
+ * @param _p	our owner (CProxyWindow object)
+ * @return
+ */
+CThumbIM::CThumbIM(const CProxyWindow* _p) : CThumbBase(_p)
+{
+	renderContent();
+}
+
+/**
+ * render the content for an IM chat session thumbnail
+ * m_hdc etc. must already be initialized (done by the constructor)
+ * background had been already rendered
+ */
+void CThumbIM::renderContent()
+{
+	HBITMAP			hbmAvatar, hbmOldAv;
+	double			dNewWidth = 0.0, dNewHeight = 0.0;
+	bool			fFree = false;
+	HRGN			hRgn = 0;
+	HDC				dc;
+	const TCHAR*	tszStatusMsg = 0;
+
+	hbmAvatar = (m_dat->ace && m_dat->ace->hbmPic) ? m_dat->ace->hbmPic : PluginConfig.g_hbmUnknown;
+	Utils::scaleAvatarHeightLimited(hbmAvatar, dNewWidth, dNewHeight, m_rcIcon.bottom - m_rcIcon.top);
+
+	HBITMAP hbmResized = CSkin::ResizeBitmap(hbmAvatar, dNewWidth, dNewHeight, fFree);
+
+	dc = CreateCompatibleDC(m_hdc);
+	hbmOldAv = reinterpret_cast<HBITMAP>(::SelectObject(dc, hbmResized));
+
+	LONG xOff = m_rcIcon.right - (LONG)dNewWidth - 2;
+	LONG yOff = (m_cy - (LONG)dNewHeight) / 2 + m_rcIcon.top;
+
+	hRgn = ::CreateRectRgn(xOff - 1, yOff - 1, xOff + (LONG)dNewWidth + 2, yOff + (LONG)dNewHeight + 2);
+	CSkin::m_default_bf.SourceConstantAlpha = 150;
+	CMimAPI::m_MyAlphaBlend(m_hdc, xOff, yOff, (LONG)dNewWidth, (LONG)dNewHeight, dc, 0, 0, (LONG)dNewWidth, (LONG)dNewHeight, CSkin::m_default_bf);
+	CSkin::m_default_bf.SourceConstantAlpha = 255;
+	::FrameRgn(m_hdc, hRgn, reinterpret_cast<HBRUSH>(::GetStockObject(BLACK_BRUSH)), 1, 1);
+
+	::DeleteObject(hRgn);
+	::SelectObject(dc, hbmOldAv);
+	::DeleteObject(hbmResized);
+	::DeleteDC(dc);
+	m_rcBottom.bottom -= 16;
+
+	/*
+	 * status message and bottom line (either UID or nick name, depending on
+	 * task bar grouping mode). For chat rooms, it is the topic.
+	 */
+	if((m_rcBottom.bottom - m_rcBottom.top) < 2 * m_sz.cy)
+		m_dtFlags |= DT_SINGLELINE;
+
+	m_rcBottom.bottom -= ((m_rcBottom.bottom - m_rcBottom.top) % m_sz.cy);		// adjust to a multiple of line height
+
+	if(0 == (tszStatusMsg = m_dat->cache->getStatusMsg()))
+			tszStatusMsg = CTranslator::get(CTranslator::GEN_NO_STATUS);
+
+	CSkin::RenderText(m_hdc, m_dat->hThemeToolbar, tszStatusMsg, &m_rcBottom, DT_WORD_ELLIPSIS | DT_END_ELLIPSIS | m_dtFlags, 10);
+	m_rcBottom.bottom = m_rc.bottom;
+	m_rcBottom.top = m_rcBottom.bottom - m_sz.cy - 2;
+	CSkin::RenderText(m_hdc, m_dat->hThemeToolbar, Win7Taskbar->haveAlwaysGroupingMode() ? m_dat->cache->getUIN() : m_dat->cache->getNick(),
+					  &m_rcBottom, m_dtFlags | DT_SINGLELINE | DT_WORD_ELLIPSIS | DT_END_ELLIPSIS, 10);
+
+	if(m_hOldFont)
+		::SelectObject(m_hdc, m_hOldFont);
+
+	::SelectObject(m_hdc, m_hbmOld);
+	::DeleteDC(m_hdc);
+}
+
+/**
+ * create a MUC session thumbnail. base class will create the
+ * bitmap and render the background.
+ *
+ * @param _p	our owner (CProxyWindow object)
+ * @return
+ */
+CThumbMUC::CThumbMUC(const CProxyWindow* _p) : CThumbBase(_p)
+{
+	renderContent();
+}
+
+void CThumbMUC::renderContent()
+{
+	if(m_dat->si) {
+		MODULEINFO*		mi = MM_FindModule(m_dat->si->pszModule);
+		TCHAR			tszTemp[250];
+		const TCHAR*	tszStatusMsg = 0;
+
+		if(mi) {
+			if(m_dat->si->iType != GCW_SERVER) {
+				mir_sntprintf(tszTemp, SIZEOF(tszTemp), _T("Chat room %s"), m_dat->si->ptszStatusbarText);
+				CSkin::RenderText(m_hdc, m_dat->hThemeToolbar, tszTemp, &m_rcIcon, m_dtFlags | DT_SINGLELINE | DT_RIGHT, 10);
+			}
+			else {
+				mir_sntprintf(tszTemp, SIZEOF(tszTemp), _T("Server window"));
+				CSkin::RenderText(m_hdc, m_dat->hThemeToolbar, tszTemp, &m_rcIcon, m_dtFlags | DT_SINGLELINE | DT_RIGHT, 10);
+				if(mi->tszIdleMsg[0] && _tcslen(mi->tszIdleMsg) > 2) {
+					m_rcIcon.top += m_sz.cy;
+					CSkin::RenderText(m_hdc, m_dat->hThemeToolbar, &mi->tszIdleMsg[2], &m_rcIcon, m_dtFlags | DT_SINGLELINE | DT_RIGHT, 10);
+				}
+			}
+		}
+
+		if((m_rcBottom.bottom - m_rcBottom.top) < 2 * m_sz.cy)
+			m_dtFlags |= DT_SINGLELINE;
+
+		m_rcBottom.bottom -= ((m_rcBottom.bottom - m_rcBottom.top) % m_sz.cy);		// adjust to a multiple of line height
+
+		if(m_dat->si->iType != GCW_SERVER) {
+			if(0 == (tszStatusMsg = m_dat->si->ptszTopic))
+				tszStatusMsg = CTranslator::get(CTranslator::GEN_MUC_NO_TOPIC);
+		}
+		else if(mi) {
+			mir_sntprintf(tszTemp, SIZEOF(tszTemp), CTranslator::get(CTranslator::MUC_SBAR_ON_SERVER), m_dat->szMyNickname, mi->ptszModDispName, _T(""));
+			tszStatusMsg = tszTemp;
+		}
+
+		CSkin::RenderText(m_hdc, m_dat->hThemeToolbar, tszStatusMsg, &m_rcBottom, DT_WORD_ELLIPSIS | DT_END_ELLIPSIS | m_dtFlags, 10);
+	}
+	/*
+	 * finalize it
+	 */
+	if(m_hOldFont)
+		::SelectObject(m_hdc, m_hOldFont);
+
+	::SelectObject(m_hdc, m_hbmOld);
+	::DeleteDC(m_hdc);
 }

@@ -53,8 +53,6 @@
 struct TInfoPanelConfig {
 	HFONT       hFonts[IPFONTCOUNT];
 	COLORREF    clrs[IPFONTCOUNT];
-	COLORREF    clrClockSymbol, clrBackground;
-	HBRUSH      bkgBrush;
 	UINT		height1, height2;
 };
 

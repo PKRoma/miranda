@@ -961,10 +961,9 @@ void TSAPI FlashOnClist(HWND hwndDlg, struct TWindowData *dat, HANDLE hEvent, DB
 	CLISTEVENT cle;
 
 	dat->dwTickLastEvent = GetTickCount();
-	if(!(dbei->flags & DBEF_SENT) && dbei->eventType == EVENTTYPE_MESSAGE)
-		dat->dwUnread++;
 
 	if ((GetForegroundWindow() != dat->pContainer->hwnd || dat->pContainer->hwndActive != hwndDlg) && !(dbei->flags & DBEF_SENT) && dbei->eventType == EVENTTYPE_MESSAGE) {
+		dat->dwUnread++;
 		UpdateTrayMenu(dat, (WORD)(dat->cache->getActiveStatus()), dat->cache->getActiveProto(), dat->szStatus, dat->hContact, 0L);
 		if (nen_options.bTraySupport)
 			return;
@@ -1374,12 +1373,10 @@ static void CheckAndDestroyHPP(struct TWindowData *dat)
 		ieWindow.cbSize = sizeof(IEVIEWWINDOW);
 		ieWindow.iType = IEW_DESTROY;
 		ieWindow.hwnd = dat->hwndHPP;
-		//MAD: restore old wndProc
-		if(dat->oldIEViewProc){
+		if(dat->oldIEViewProc) {
 			SetWindowLongPtr(dat->hwndHPP, GWLP_WNDPROC, (LONG_PTR)dat->oldIEViewProc);
-			dat->oldIEViewProc=0;
-			}
-		//MAD_
+			dat->oldIEViewProc = 0;
+		}
 		CallService(MS_HPP_EG_WINDOW, 0, (LPARAM)&ieWindow);
 		dat->hwndHPP = 0;
 	}
