@@ -78,7 +78,7 @@ typedef HRESULT (STDAPICALLTYPE *pfnBufferedPaintInit)(void);
 typedef HRESULT (STDAPICALLTYPE *pfnBufferedPaintUninit)(void);
 typedef HANDLE  (STDAPICALLTYPE *pfnBeginBufferedPaint)(HDC, RECT *, BP_BUFFERFORMAT, BP_PAINTPARAMS *, HDC *);
 typedef HRESULT (STDAPICALLTYPE *pfnEndBufferedPaint)(HANDLE, BOOL);
-typedef HRESULT (STDAPICALLTYPE *pfnGetBufferedPaintBits)(HPAINTBUFFER, RGBQUAD **, int *);
+typedef HRESULT (STDAPICALLTYPE *pfnGetBufferedPaintBits)(HANDLE, RGBQUAD **, int *);
 
 extern pfnOpenThemeData openThemeData;
 extern pfnIsThemeBackgroundPartiallyTransparent isThemeBackgroundPartiallyTransparent;
