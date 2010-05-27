@@ -466,6 +466,29 @@ File created by Christian Kästner, and tweaked a bit by Richard Hughes*/
 
 #endif /* SDK check */
 
+#ifndef BPPF_ERASE
+	typedef enum _BP_BUFFERFORMAT
+	{
+		BPBF_COMPATIBLEBITMAP,    // Compatible bitmap
+		BPBF_DIB,                 // Device-independent bitmap
+		BPBF_TOPDOWNDIB,          // Top-down device-independent bitmap
+		BPBF_TOPDOWNMONODIB       // Top-down monochrome device-independent bitmap
+	} BP_BUFFERFORMAT;
+
+
+	typedef struct _BP_PAINTPARAMS
+	{
+		DWORD                       cbSize;
+		DWORD                       dwFlags; // BPPF_ flags
+		const RECT *                prcExclude;
+		const BLENDFUNCTION *       pBlendFunction;
+	} BP_PAINTPARAMS, *PBP_PAINTPARAMS;
+
+	#define BPPF_ERASE               1
+	#define BPPF_NOCLIP              2
+	#define BPPF_NONCLIENT           4
+#endif
+
 
 		/* windows seven taskbar interface comes with sdk v7.0
 		   if not existent define on our own */
