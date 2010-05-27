@@ -130,6 +130,8 @@ static void GetFile(char* szUrl, AUTO_PROXY_SCRIPT_BUFFER &buf)
 
 	nlu.handleType = NLH_USER;
 	nlu.user.flags = NUF_OUTGOING | NUF_HTTPCONNS;
+	nlu.user.szSettingsModule = "(NULL)";
+	nlu.toLog = 1;
 
 	// initialize the netlib request
 	nlhr.cbSize = sizeof(nlhr);
