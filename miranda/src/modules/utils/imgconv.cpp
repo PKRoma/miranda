@@ -84,7 +84,7 @@ bool HasAlpha( ARGB *pargb, SIZE& sizImage, int cxRow)
     return false;
 }
 
-void ConvertBufferToPARGB32(HPAINTBUFFER hPaintBuffer, HDC hdc, HICON hIcon, SIZE& sizIcon)
+void ConvertBufferToPARGB32(HANDLE hPaintBuffer, HDC hdc, HICON hIcon, SIZE& sizIcon)
 {
     RGBQUAD *prgbQuad;
     int cxRow;
@@ -130,7 +130,7 @@ HBITMAP ConvertIconToBitmap(HICON hicon, HIMAGELIST hIml, int iconId)
     paintParams.pBlendFunction = &bfAlpha;
 
     HDC hdcBuffer;
-    HPAINTBUFFER hPaintBuffer = beginBufferedPaint(hdc, &rcIcon, BPBF_DIB, &paintParams, &hdcBuffer);
+    HANDLE hPaintBuffer = beginBufferedPaint(hdc, &rcIcon, BPBF_DIB, &paintParams, &hdcBuffer);
     if (hPaintBuffer)
     {
 		if (hIml)
