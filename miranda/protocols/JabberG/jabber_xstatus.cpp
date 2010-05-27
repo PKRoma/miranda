@@ -628,7 +628,8 @@ struct
 CPepMood::CPepMood(CJabberProto *proto):
 	CPepGuiService(proto, "Mood", _T(JABBER_FEAT_USER_MOOD)),
 	m_icons(proto),
-	m_text(NULL)
+	m_text(NULL),
+	m_mode(-1)
 {
 	UpdateMenuItem(LoadSkinnedIconHandle(SKINICON_OTHER_SMALLDOT), LPGENT("Set mood..."));
 }
@@ -1038,7 +1039,8 @@ void ActivityBuildTitle(int id, TCHAR *buf, int size)
 CPepActivity::CPepActivity(CJabberProto *proto):
 	CPepGuiService(proto, "Activity", _T(JABBER_FEAT_USER_ACTIVITY)),
 	m_icons(proto),
-	m_text(NULL)
+	m_text(NULL),
+	m_mode(-1)
 {
 	UpdateMenuItem(LoadSkinnedIconHandle(SKINICON_OTHER_SMALLDOT), LPGENT("Set activity..."));
 }
