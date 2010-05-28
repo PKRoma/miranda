@@ -147,7 +147,7 @@ static void GetFile(char* szUrl, AUTO_PROXY_SCRIPT_BUFFER &buf)
 		if (nlhrReply->resultCode == 200)
 		{
 			buf.lpszScriptBuffer = nlhrReply->pData;
-			buf.dwScriptBufferSize = nlhrReply->dataLength;
+			buf.dwScriptBufferSize = nlhrReply->dataLength + 1;
 
 			nlhrReply->dataLength = 0;
 			nlhrReply->pData = NULL;
@@ -213,7 +213,7 @@ bool NetlibGetIeProxyConn(NetlibConnection *nlc)
 	return true;
 }
 
-static char szAutoUrlStr[256] = "";
+static char szAutoUrlStr[MAX_PATH] = "";
 static AUTO_PROXY_SCRIPT_BUFFER abuf = {0};
 static HANDLE hIeProxyMutex;
 static bool bAutoProxyInit;
@@ -237,18 +237,10 @@ static void NetlibInitAutoProxy(void)
 			GetProcAddress(hModJS, "InternetGetProxyInfo");
 	}
 
-	char *loc = strstr(szAutoUrlStr, "file://");
-	if (loc || strstr(szAutoUrlStr, "://") == NULL) 
+	if (strstr(szAutoUrlStr, "file://") == NULL && strstr(szAutoUrlStr, "://") != NULL) 
 	{
-		loc = loc ? loc + 7 : szAutoUrlStr;
-	}
-	else
-	{
-		if (!bAutoProxyInit)
-		{
-			abuf.dwStructSize = sizeof (abuf);
-			GetFile(szAutoUrlStr, abuf);
-		}
+		abuf.dwStructSize = sizeof(abuf);
+		GetFile(szAutoUrlStr, abuf);
 	}
 	bAutoProxyInit = true;
 }
@@ -276,11 +268,13 @@ static unsigned __stdcall NetlibIeProxyThread(void * arg)
 	char *loc = strstr(szAutoUrlStr, "file://");
 	if (loc || strstr(szAutoUrlStr, "://") == NULL) 
 	{
+		Netlib_Logf(NULL, "Autoproxy Init file: %s", loc);
 		loc = loc ? loc + 7 : szAutoUrlStr;
 		res = pInternetInitializeAutoProxyDll(0, loc, NULL, NULL /*&HelperFunctions*/, NULL);
 	}
 	else
 	{
+		Netlib_Logf(NULL, "Autoproxy Init %d", abuf.dwScriptBufferSize);
 		if (abuf.dwScriptBufferSize)
 			res = pInternetInitializeAutoProxyDll(0, NULL, NULL, NULL /*&HelperFunctions*/, &abuf);
 		else
@@ -297,8 +291,11 @@ static unsigned __stdcall NetlibIeProxyThread(void * arg)
 			param->szHost, (DWORD)strlen(param->szHost), &proxy, &dwProxyLen))
 			param->szProxy = mir_strdup(lrtrim(proxy));
 
+		Netlib_Logf(NULL, "Autoproxy got response %s, Param: %s %s", param->szProxy, param->szUrl, param->szHost);
 		pInternetDeInitializeAutoProxyDll(NULL, 0);
 	}
+	else
+		Netlib_Logf(NULL, "Autoproxy init failed");
 
 	return 0;
 }
