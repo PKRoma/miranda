@@ -98,6 +98,25 @@ extern struct LIST_INTERFACE li;
 typedef  int  (__cdecl *pfnDrawAvatar)(HDC hdcOrig, HDC hdcMem, RECT *rc, struct ClcContact *contact, int y, struct ClcData *dat, int selected, WORD cstatus, int rowHeight);
 typedef  void (__cdecl *pfnDrawAlpha)(HDC hdcwnd, PRECT rc, DWORD basecolor, BYTE alpha, DWORD basecolor2, BOOL transparent, DWORD FLG_GRADIENT, DWORD FLG_CORNER, DWORD BORDERSTYLE, ImageItem *item);
 
+typedef BOOL (WINAPI *pfnSetLayeredWindowAttributes)(HWND, COLORREF, BYTE, DWORD);
+extern  pfnSetLayeredWindowAttributes MySetLayeredWindowAttributes;
+
+typedef BOOL (WINAPI *pfnUpdateLayeredWindow)(HWND, HDC, POINT *, SIZE *, HDC, POINT *, COLORREF, BLENDFUNCTION *, DWORD);
+extern  pfnUpdateLayeredWindow MyUpdateLayeredWindow;
+
+typedef HMONITOR (WINAPI *pfnMonitorFromPoint)(POINT,DWORD);
+extern  pfnMonitorFromPoint MyMonitorFromPoint; 
+
+typedef HMONITOR (WINAPI *pfnMonitorFromWindow)(HWND,DWORD);
+extern  pfnMonitorFromWindow  MyMonitorFromWindow; 
+
+typedef BOOL     (WINAPI *pfnGetMonitorInfo)(HMONITOR,LPMONITORINFO);
+extern  pfnGetMonitorInfo   MyGetMonitorInfo;
+
+typedef BOOL     (WINAPI *pfnTrackMouseEvent)(LPTRACKMOUSEEVENT);
+extern  pfnTrackMouseEvent  MyTrackMouseEvent;
+
+
 #define safe_sizeof(a) (sizeof((a)) / sizeof((a)[0]))
 
 BOOL __forceinline GetItemByStatus(int status, StatusItems_t *retitem);

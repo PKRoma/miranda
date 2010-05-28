@@ -34,33 +34,28 @@ UNICODE - done.
 #define DOCKED_RIGHT   2
 static int docked;
 
-typedef HMONITOR WINAPI MyMonitorFromPoint(POINT,DWORD);
-typedef BOOL WINAPI MyGetMonitorInfo(HMONITOR,LPMONITORINFO);
 extern struct CluiData g_CluiData;
 
 extern RECT cluiPos;
 
 static void Docking_GetMonitorRectFromPoint(POINT pt, RECT *rc)
 {
-    HMODULE hUserInstance = GetModuleHandleA("user32");
+	if ( MyMonitorFromPoint ) {
+		MONITORINFO monitorInfo;
+		HMONITOR hMonitor = MyMonitorFromPoint(pt, MONITOR_DEFAULTTONEAREST); // always returns a valid value
+		monitorInfo.cbSize = sizeof(MONITORINFO);
 
-    MyMonitorFromPoint *LPMyMonitorFromPoint = (MyMonitorFromPoint *) GetProcAddress(hUserInstance, "MonitorFromPoint");
-    if (LPMyMonitorFromPoint) {
-        MONITORINFO monitorInfo;
-        HMONITOR hMonitor = LPMyMonitorFromPoint(pt, MONITOR_DEFAULTTONEAREST); // always returns a valid value
-        monitorInfo.cbSize = sizeof(MONITORINFO);
+		if ( MyGetMonitorInfo( hMonitor, &monitorInfo )) {
+			CopyMemory(rc, &monitorInfo.rcMonitor, sizeof(RECT));
+			return;
+		}
+	}
 
-        if ((MyGetMonitorInfo *) GetProcAddress(hUserInstance, "GetMonitorInfoA")(hMonitor, & monitorInfo)) {
-            CopyMemory(rc, &monitorInfo.rcMonitor, sizeof(RECT));
-            return;
-        }
-    }
-
-    // "generic" win95/NT support, also serves as failsafe
-    rc->left = 0;
-    rc->top = 0;
-    rc->bottom = GetSystemMetrics(SM_CYSCREEN);
-    rc->right = GetSystemMetrics(SM_CXSCREEN);
+	// "generic" win95/NT support, also serves as failsafe
+	rc->left = 0;
+	rc->top = 0;
+	rc->bottom = GetSystemMetrics(SM_CYSCREEN);
+	rc->right = GetSystemMetrics(SM_CXSCREEN);
 }
 
 static void Docking_GetMonitorRectFromWindow(HWND hWnd, RECT *rc)

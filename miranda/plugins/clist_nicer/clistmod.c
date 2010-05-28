@@ -25,8 +25,6 @@ UNICODE done
 */
 #include "commonheaders.h"
 
-extern BOOL (WINAPI *MySetLayeredWindowAttributes)(HWND, COLORREF, BYTE, DWORD);
-
 BOOL (WINAPI *MySetProcessWorkingSetSize)(HANDLE, SIZE_T, SIZE_T) = 0;
 
 extern int AddEvent(WPARAM wParam, LPARAM lParam);
