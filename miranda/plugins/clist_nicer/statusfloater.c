@@ -121,14 +121,20 @@ static struct ContactFloater *FLT_RemoveFromList(struct ContactFloater *pFloater
     return NULL;
 }
 
-void FLT_SnapToEdges(HWND hwnd){
+void FLT_SnapToEdges(HWND hwnd)
+{
 	RECT dr;
 	MONITORINFO monInfo;
 	RECT rcWindow;
-	HMONITOR curMonitor = MonitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST);
+	HMONITOR curMonitor;
+	
+	if ( MyMonitorFromWindow == NULL )
+		return;
+
+	curMonitor = MyMonitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST);
 
 	monInfo.cbSize = sizeof(monInfo);
-	GetMonitorInfo(curMonitor, &monInfo);
+	MyGetMonitorInfo(curMonitor, &monInfo);
 
 	dr = monInfo.rcWork;
 	GetWindowRect(hwnd, &rcWindow);
@@ -623,9 +629,9 @@ LRESULT CALLBACK ContactFloaterClassProc(HWND hwnd, UINT msg, WPARAM wParam, LPA
 			if(centry)
 				CallService(MS_CLIST_CONTACTDOUBLECLICKED, (WPARAM)centry->hContact, 0);
 			return 0;
-        case WM_LBUTTONDOWN:
-            {
-                POINT ptMouse;
+		case WM_LBUTTONDOWN:
+			{
+				POINT ptMouse;
 				RECT rcWindow;
 
 				GetCursorPos(&ptMouse);
@@ -636,28 +642,25 @@ LRESULT CALLBACK ContactFloaterClassProc(HWND hwnd, UINT msg, WPARAM wParam, LPA
 				break;
 			}
 		case WM_MOUSEMOVE:
-			{
-				if(!hover){
-					TRACKMOUSEEVENT tme;
-					tme.cbSize = sizeof(TRACKMOUSEEVENT);
-					tme.dwFlags = TME_HOVER | TME_LEAVE;
-					tme.hwndTrack = hwnd;
-					tme.dwHoverTime = 5;
-					TrackMouseEvent(&tme);
-					hover = TRUE;
-				}
-                if (ServiceExists(MS_TOOLTIP_SHOWTIP))
-                {
-                    if ((g_floatoptions.dwFlags & FLT_SHOWTOOLTIPS) && !tooltip)
-                    {
-                        GetCursorPos(&start_pos);
-                        if (hTooltipTimer) KillTimer(hwnd, TOOLTIP_TIMER);
-                        hTooltipTimer = SetTimer(hwnd, TOOLTIP_TIMER, g_floatoptions.hover_time, ShowTooltip);					
-                    }
-                }
-
-				return FALSE;
+			if( MyTrackMouseEvent && !hover ) {
+				TRACKMOUSEEVENT tme;
+				tme.cbSize = sizeof(TRACKMOUSEEVENT);
+				tme.dwFlags = TME_HOVER | TME_LEAVE;
+				tme.hwndTrack = hwnd;
+				tme.dwHoverTime = 5;
+				MyTrackMouseEvent(&tme);
+				hover = TRUE;
 			}
+			if ( ServiceExists( MS_TOOLTIP_SHOWTIP )) {
+				if ((g_floatoptions.dwFlags & FLT_SHOWTOOLTIPS) && !tooltip) {
+					GetCursorPos(&start_pos);
+					if (hTooltipTimer) KillTimer(hwnd, TOOLTIP_TIMER);
+					hTooltipTimer = SetTimer(hwnd, TOOLTIP_TIMER, g_floatoptions.hover_time, ShowTooltip);					
+				}
+			}
+
+			return FALSE;
+
 		case WM_MOUSEHOVER:
 			{
 				struct ClcContact *contact = NULL;

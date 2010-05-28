@@ -34,8 +34,13 @@ TCHAR *szNoevents = _T("No events...");
 //extern HICON im_clienthIcons[NR_CLIENTS];
 extern HICON overlayicons[10];
 
-extern BOOL (WINAPI *MySetLayeredWindowAttributes)(HWND, COLORREF, BYTE, DWORD);
-extern BOOL (WINAPI *MyUpdateLayeredWindow)(HWND hwnd, HDC hdcDst, POINT *pptDst,SIZE *psize, HDC hdcSrc, POINT *pptSrc, COLORREF crKey, BLENDFUNCTION *pblend, DWORD dwFlags);
+pfnSetLayeredWindowAttributes MySetLayeredWindowAttributes = NULL;
+pfnUpdateLayeredWindow MyUpdateLayeredWindow = NULL;
+pfnMonitorFromPoint  MyMonitorFromPoint = NULL;
+pfnMonitorFromWindow MyMonitorFromWindow = NULL;
+pfnGetMonitorInfo    MyGetMonitorInfo = NULL;
+pfnTrackMouseEvent   MyTrackMouseEvent = NULL;
+
 extern PGF MyGradientFill;
 extern int Docking_ProcessWindowMessage(WPARAM wParam, LPARAM lParam);
 extern int SetHideOffline(WPARAM wParam, LPARAM lParam);
@@ -223,7 +228,7 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 {
 	int rc = 0;
 	HMODULE hUserDll;
-    DBVARIANT dbv;
+	DBVARIANT dbv;
 	int       i;
 	char	  szProfilePath[MAX_PATH];
 
@@ -234,14 +239,20 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 
 	pfnSetLayout = (DWORD ( WINAPI *)(HDC, DWORD))GetProcAddress( GetModuleHandleA( "GDI32.DLL" ), "SetLayout" );
 
-	LoadCLCButtonModule();
-	RegisterCLUIFrameClasses();
 	hUserDll = GetModuleHandleA("user32.dll");
 	if (hUserDll) {
-		MySetLayeredWindowAttributes = (BOOL(WINAPI *)(HWND, COLORREF, BYTE, DWORD))GetProcAddress(hUserDll, "SetLayeredWindowAttributes");
-		MyUpdateLayeredWindow = (BOOL (WINAPI *)(HWND, HDC, POINT *, SIZE *, HDC, POINT *, COLORREF, BLENDFUNCTION *, DWORD))GetProcAddress(hUserDll, "UpdateLayeredWindow");
+		MyMonitorFromPoint = ( pfnMonitorFromPoint )GetProcAddress(hUserDll, "MonitorFromPoint");
+		MyMonitorFromWindow = ( pfnMonitorFromWindow )GetProcAddress(hUserDll, "MonitorFromWindow");
+		MyGetMonitorInfo = ( pfnGetMonitorInfo )GetProcAddress(hUserDll, "GetMonitorInfoA");
+		MySetLayeredWindowAttributes = ( pfnSetLayeredWindowAttributes )GetProcAddress(hUserDll, "SetLayeredWindowAttributes");
+		MyUpdateLayeredWindow = ( pfnUpdateLayeredWindow )GetProcAddress(hUserDll, "UpdateLayeredWindow");
+		MyTrackMouseEvent = ( pfnTrackMouseEvent )GetProcAddress(hUserDll, "TrackMouseEvent");
 	}
+
 	MyGradientFill = (PGF)GetProcAddress(GetModuleHandleA("msimg32"), "GradientFill");
+
+	LoadCLCButtonModule();
+	RegisterCLUIFrameClasses();
 
 	// get the internal malloc/free()
 	memset(&memoryManagerInterface, 0, sizeof(memoryManagerInterface));
@@ -257,8 +268,8 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 		int iCount = CallService(MS_DB_CONTACT_GETCOUNT, 0, 0);
 
 		iCount += 20;
-        if(iCount < 300)
-            iCount = 300;
+		if( iCount < 300 )
+			iCount = 300;
 
 		g_ExtraCache = malloc(sizeof(struct ExtraCache) * iCount);
 		ZeroMemory(g_ExtraCache, sizeof(struct ExtraCache) * iCount);
@@ -300,7 +311,7 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 	g_CluiData.bLayeredHack = DBGetContactSettingByte(NULL, "CLUI", "layeredhack", 1);
 	g_CluiData.bFirstRun = DBGetContactSettingByte(NULL, "CLUI", "firstrun", 1);
 	g_CluiData.langPackCP = CallService(MS_LANGPACK_GETCODEPAGE, 0, 0);
-    g_CluiData.realTimeSaving = DBGetContactSettingByte(NULL, "CLUI", "save_pos_always", 0);
+	g_CluiData.realTimeSaving = DBGetContactSettingByte(NULL, "CLUI", "save_pos_always", 0);
 
 	{
 		DWORD sortOrder = DBGetContactSettingDword(NULL, "CList", "SortOrder", SORTBY_NAME);
@@ -319,22 +330,22 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 		g_CluiData.local_gmt_diff = (int)difftime(now, gmt_time);
 
 	}
-    if(!DBGetContactSettingString(NULL, "CLUI", "exIconOrder", &dbv)) {
 
-        if(lstrlenA(dbv.pszVal) < EXICON_COUNT) {
-            for(i = 1; i <= EXICON_COUNT; i++)
-                g_CluiData.exIconOrder[i - 1] = i;
-        }
-        else {
-            for(i = 0; i < EXICON_COUNT; i++)
-                g_CluiData.exIconOrder[i] = dbv.pszVal[i];
-        }
-        DBFreeVariant(&dbv);
-    }
-    else {
-        for(i = 1; i <= EXICON_COUNT; i++)
-            g_CluiData.exIconOrder[i - 1] = i;
-    }
+	if (!DBGetContactSettingString(NULL, "CLUI", "exIconOrder", &dbv)) {
+		if(lstrlenA(dbv.pszVal) < EXICON_COUNT) {
+			for(i = 1; i <= EXICON_COUNT; i++)
+				g_CluiData.exIconOrder[i - 1] = i;
+		}
+		else {
+			for(i = 0; i < EXICON_COUNT; i++)
+				g_CluiData.exIconOrder[i] = dbv.pszVal[i];
+		}
+		DBFreeVariant(&dbv);
+	}
+	else {
+		for(i = 1; i <= EXICON_COUNT; i++)
+			g_CluiData.exIconOrder[i - 1] = i;
+	}
 	ReloadThemedOptions();
 	FLT_ReadOptions();
 	Reload3dBevelColors();

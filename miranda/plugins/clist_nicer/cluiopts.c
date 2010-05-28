@@ -25,7 +25,6 @@ UNICODE done
 */
 #include "commonheaders.h"
 
-extern BOOL(WINAPI *MySetLayeredWindowAttributes)(HWND, COLORREF, BYTE, DWORD);
 extern struct CluiData g_CluiData;
 extern WNDPROC OldStatusBarProc;
 extern HANDLE hExtraImageApplying;

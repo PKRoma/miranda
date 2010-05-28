@@ -31,7 +31,6 @@ extern struct ClcData *g_clcData;
 extern HWND g_hwndViewModeFrame;
 extern HIMAGELIST himlExtraImages;
 extern struct CluiTopButton top_buttons[];
-extern BOOL (WINAPI *MySetLayeredWindowAttributes)(HWND, COLORREF, BYTE, DWORD);
 extern BOOL (WINAPI *MyEnableThemeDialogTexture)(HANDLE, DWORD);
 
 StatusItems_t *StatusItems = NULL;

@@ -40,7 +40,6 @@ extern wndFrame *wndFrameCLC;
 extern ButtonItem *g_ButtonItems;
 
 extern pfnDrawAlpha pDrawAlpha;
-extern BOOL (WINAPI *MySetLayeredWindowAttributes)(HWND, COLORREF, BYTE, DWORD);
 extern int during_sizing;
 extern StatusItems_t *StatusItems;
 extern int g_shutDown;

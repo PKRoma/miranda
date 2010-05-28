@@ -25,8 +25,6 @@ UNICODE done
 */
 #include "commonheaders.h"
 
-extern BOOL (WINAPI *MySetLayeredWindowAttributes)(HWND, COLORREF, BYTE, DWORD);
-
 BOOL (WINAPI *MySetProcessWorkingSetSize)(HANDLE, SIZE_T, SIZE_T) = 0;
 
 extern int AddEvent(WPARAM wParam, LPARAM lParam);
@@ -225,7 +223,6 @@ int ShowHide(WPARAM wParam, LPARAM lParam)
 	}
 	if (bShow == TRUE) {
 		WINDOWPLACEMENT pl = { 0 };
-		HMONITOR(WINAPI * MyMonitorFromWindow) (HWND, DWORD);
 		RECT rcScreen, rcWindow;
 		int offScreen = 0;
 
@@ -238,17 +235,13 @@ int ShowHide(WPARAM wParam, LPARAM lParam)
 		ShowWindow(pcli->hwndContactList, SW_SHOW);
 		DBWriteContactSettingByte(NULL, "CList", "State", SETTING_STATE_NORMAL);
 
-        //this forces the window onto the visible screen
-		MyMonitorFromWindow = (HMONITOR(WINAPI *) (HWND, DWORD)) GetProcAddress(GetModuleHandleA("USER32"), "MonitorFromWindow");
 		GetWindowRect(pcli->hwndContactList, &rcWindow);
 		if (MyMonitorFromWindow) {
 			if (MyMonitorFromWindow(pcli->hwndContactList, 0) == NULL) {
-				BOOL(WINAPI * MyGetMonitorInfoA) (HMONITOR, LPMONITORINFO);
 				MONITORINFO mi = { 0 };
 				HMONITOR hMonitor = MyMonitorFromWindow(pcli->hwndContactList, 2);
-				MyGetMonitorInfoA = (BOOL(WINAPI *) (HMONITOR, LPMONITORINFO)) GetProcAddress(GetModuleHandleA("USER32"), "GetMonitorInfoA");
 				mi.cbSize = sizeof(mi);
-				MyGetMonitorInfoA(hMonitor, &mi);
+				MyGetMonitorInfo(hMonitor, &mi);
 				rcScreen = mi.rcWork;
 				offScreen = 1;
 			}
