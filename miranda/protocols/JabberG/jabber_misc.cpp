@@ -150,7 +150,7 @@ void CJabberProto::DBAddAuthRequest( const TCHAR* jid, const TCHAR* nick )
 	*pCurBlob = '\0';					//reason
 
 	JCallService( MS_DB_EVENT_ADD, ( WPARAM ) ( HANDLE ) NULL, ( LPARAM )&dbei );
-	Log( "Setup DBAUTHREQUEST with nick='%s' jid='%s', szNick, szJid );
+	Log( "Setup DBAUTHREQUEST with nick='%s' jid='%s'", szNick, szJid );
 
 	mir_free( szJid );
 	mir_free( szNick );
@@ -314,7 +314,7 @@ void CJabberProto::GetAvatarFileName( HANDLE hContact, char* pszDest, int cbLen 
 		mir_free( hash );
 	}
 	else if ( m_ThreadInfo != NULL ) {
-		mir_snprintf( pszDest + tPathLen, MAX_PATH - tPathLen, TCHAR_STR_PARAM "@%s avatar.%s", 
+		mir_snprintf( pszDest + tPathLen, MAX_PATH - tPathLen, TCHAR_STR_PARAM "@%s avatar.%s",
 			m_ThreadInfo->username, m_ThreadInfo->server, szFileType );
 	}
 	else {

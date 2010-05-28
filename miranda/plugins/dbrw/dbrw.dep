@@ -1,0 +1,672 @@
+# Microsoft Developer Studio Generated Dependency File, included by dbrw.mak
+
+.\contacts.c : \
+	"..\..\include\m_database.h"\
+	"..\..\include\m_langpack.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_system.h"\
+	"..\..\include\m_utils.h"\
+	"..\..\include\newpluginapi.h"\
+	".\dbrw.h"\
+	".\resource.h"\
+	".\sqlite3\sqlite3.h"\
+	
+
+.\dbrw.c : \
+	"..\..\include\m_database.h"\
+	"..\..\include\m_langpack.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_system.h"\
+	"..\..\include\m_utils.h"\
+	"..\..\include\newpluginapi.h"\
+	".\dbrw.h"\
+	".\resource.h"\
+	".\sqlite3\sqlite3.h"\
+	
+
+.\events.c : \
+	"..\..\include\m_database.h"\
+	"..\..\include\m_langpack.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_system.h"\
+	"..\..\include\m_utils.h"\
+	"..\..\include\newpluginapi.h"\
+	".\dbrw.h"\
+	".\resource.h"\
+	".\sqlite3\sqlite3.h"\
+	
+
+.\settings.c : \
+	"..\..\include\m_database.h"\
+	"..\..\include\m_langpack.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_system.h"\
+	"..\..\include\m_utils.h"\
+	"..\..\include\newpluginapi.h"\
+	".\dbrw.h"\
+	".\resource.h"\
+	".\sqlite3\sqlite3.h"\
+	
+
+.\sql.c : \
+	"..\..\include\m_database.h"\
+	"..\..\include\m_langpack.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_system.h"\
+	"..\..\include\m_utils.h"\
+	"..\..\include\newpluginapi.h"\
+	".\dbrw.h"\
+	".\resource.h"\
+	".\sqlite3\sqlite3.h"\
+	
+
+.\utf8.c : \
+	"..\..\include\m_database.h"\
+	"..\..\include\m_langpack.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_system.h"\
+	"..\..\include\m_utils.h"\
+	"..\..\include\newpluginapi.h"\
+	".\dbrw.h"\
+	".\resource.h"\
+	".\sqlite3\sqlite3.h"\
+	
+
+.\utils.c : \
+	"..\..\include\m_database.h"\
+	"..\..\include\m_langpack.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_system.h"\
+	"..\..\include\m_utils.h"\
+	"..\..\include\newpluginapi.h"\
+	".\dbrw.h"\
+	".\resource.h"\
+	".\sqlite3\sqlite3.h"\
+	
+
+.\sqlite3\alter.c : \
+	".\sqlite3\btree.h"\
+	".\sqlite3\hash.h"\
+	".\sqlite3\opcodes.h"\
+	".\sqlite3\os.h"\
+	".\sqlite3\pager.h"\
+	".\sqlite3\parse.h"\
+	".\sqlite3\sqlite3.h"\
+	".\sqlite3\sqliteInt.h"\
+	".\sqlite3\sqliteLimit.h"\
+	".\sqlite3\vdbe.h"\
+	
+
+.\sqlite3\analyze.c : \
+	".\sqlite3\btree.h"\
+	".\sqlite3\hash.h"\
+	".\sqlite3\opcodes.h"\
+	".\sqlite3\os.h"\
+	".\sqlite3\pager.h"\
+	".\sqlite3\parse.h"\
+	".\sqlite3\sqlite3.h"\
+	".\sqlite3\sqliteInt.h"\
+	".\sqlite3\sqliteLimit.h"\
+	".\sqlite3\vdbe.h"\
+	
+
+.\sqlite3\attach.c : \
+	".\sqlite3\btree.h"\
+	".\sqlite3\hash.h"\
+	".\sqlite3\opcodes.h"\
+	".\sqlite3\os.h"\
+	".\sqlite3\pager.h"\
+	".\sqlite3\parse.h"\
+	".\sqlite3\sqlite3.h"\
+	".\sqlite3\sqliteInt.h"\
+	".\sqlite3\sqliteLimit.h"\
+	".\sqlite3\vdbe.h"\
+	
+
+.\sqlite3\auth.c : \
+	".\sqlite3\btree.h"\
+	".\sqlite3\hash.h"\
+	".\sqlite3\opcodes.h"\
+	".\sqlite3\os.h"\
+	".\sqlite3\pager.h"\
+	".\sqlite3\parse.h"\
+	".\sqlite3\sqlite3.h"\
+	".\sqlite3\sqliteInt.h"\
+	".\sqlite3\sqliteLimit.h"\
+	".\sqlite3\vdbe.h"\
+	
+
+.\sqlite3\btree.c : \
+	".\sqlite3\btree.h"\
+	".\sqlite3\btreeInt.h"\
+	".\sqlite3\hash.h"\
+	".\sqlite3\opcodes.h"\
+	".\sqlite3\os.h"\
+	".\sqlite3\pager.h"\
+	".\sqlite3\parse.h"\
+	".\sqlite3\sqlite3.h"\
+	".\sqlite3\sqliteInt.h"\
+	".\sqlite3\sqliteLimit.h"\
+	".\sqlite3\vdbe.h"\
+	
+
+.\sqlite3\build.c : \
+	".\sqlite3\btree.h"\
+	".\sqlite3\hash.h"\
+	".\sqlite3\opcodes.h"\
+	".\sqlite3\os.h"\
+	".\sqlite3\pager.h"\
+	".\sqlite3\parse.h"\
+	".\sqlite3\sqlite3.h"\
+	".\sqlite3\sqliteInt.h"\
+	".\sqlite3\sqliteLimit.h"\
+	".\sqlite3\vdbe.h"\
+	
+
+.\sqlite3\callback.c : \
+	".\sqlite3\btree.h"\
+	".\sqlite3\hash.h"\
+	".\sqlite3\opcodes.h"\
+	".\sqlite3\os.h"\
+	".\sqlite3\pager.h"\
+	".\sqlite3\parse.h"\
+	".\sqlite3\sqlite3.h"\
+	".\sqlite3\sqliteInt.h"\
+	".\sqlite3\sqliteLimit.h"\
+	".\sqlite3\vdbe.h"\
+	
+
+.\sqlite3\complete.c : \
+	".\sqlite3\btree.h"\
+	".\sqlite3\hash.h"\
+	".\sqlite3\opcodes.h"\
+	".\sqlite3\os.h"\
+	".\sqlite3\pager.h"\
+	".\sqlite3\parse.h"\
+	".\sqlite3\sqlite3.h"\
+	".\sqlite3\sqliteInt.h"\
+	".\sqlite3\sqliteLimit.h"\
+	".\sqlite3\vdbe.h"\
+	
+
+.\sqlite3\date.c : \
+	".\sqlite3\btree.h"\
+	".\sqlite3\hash.h"\
+	".\sqlite3\opcodes.h"\
+	".\sqlite3\os.h"\
+	".\sqlite3\pager.h"\
+	".\sqlite3\parse.h"\
+	".\sqlite3\sqlite3.h"\
+	".\sqlite3\sqliteInt.h"\
+	".\sqlite3\sqliteLimit.h"\
+	".\sqlite3\vdbe.h"\
+	
+
+.\sqlite3\delete.c : \
+	".\sqlite3\btree.h"\
+	".\sqlite3\hash.h"\
+	".\sqlite3\opcodes.h"\
+	".\sqlite3\os.h"\
+	".\sqlite3\pager.h"\
+	".\sqlite3\parse.h"\
+	".\sqlite3\sqlite3.h"\
+	".\sqlite3\sqliteInt.h"\
+	".\sqlite3\sqliteLimit.h"\
+	".\sqlite3\vdbe.h"\
+	
+
+.\sqlite3\expr.c : \
+	".\sqlite3\btree.h"\
+	".\sqlite3\hash.h"\
+	".\sqlite3\opcodes.h"\
+	".\sqlite3\os.h"\
+	".\sqlite3\pager.h"\
+	".\sqlite3\parse.h"\
+	".\sqlite3\sqlite3.h"\
+	".\sqlite3\sqliteInt.h"\
+	".\sqlite3\sqliteLimit.h"\
+	".\sqlite3\vdbe.h"\
+	
+
+.\sqlite3\func.c : \
+	".\sqlite3\btree.h"\
+	".\sqlite3\hash.h"\
+	".\sqlite3\opcodes.h"\
+	".\sqlite3\os.h"\
+	".\sqlite3\pager.h"\
+	".\sqlite3\parse.h"\
+	".\sqlite3\sqlite3.h"\
+	".\sqlite3\sqliteInt.h"\
+	".\sqlite3\sqliteLimit.h"\
+	".\sqlite3\vdbe.h"\
+	".\sqlite3\vdbeInt.h"\
+	
+
+.\sqlite3\hash.c : \
+	".\sqlite3\btree.h"\
+	".\sqlite3\hash.h"\
+	".\sqlite3\opcodes.h"\
+	".\sqlite3\os.h"\
+	".\sqlite3\pager.h"\
+	".\sqlite3\parse.h"\
+	".\sqlite3\sqlite3.h"\
+	".\sqlite3\sqliteInt.h"\
+	".\sqlite3\sqliteLimit.h"\
+	".\sqlite3\vdbe.h"\
+	
+
+.\sqlite3\insert.c : \
+	".\sqlite3\btree.h"\
+	".\sqlite3\hash.h"\
+	".\sqlite3\opcodes.h"\
+	".\sqlite3\os.h"\
+	".\sqlite3\pager.h"\
+	".\sqlite3\parse.h"\
+	".\sqlite3\sqlite3.h"\
+	".\sqlite3\sqliteInt.h"\
+	".\sqlite3\sqliteLimit.h"\
+	".\sqlite3\vdbe.h"\
+	
+
+.\sqlite3\legacy.c : \
+	".\sqlite3\btree.h"\
+	".\sqlite3\hash.h"\
+	".\sqlite3\opcodes.h"\
+	".\sqlite3\os.h"\
+	".\sqlite3\pager.h"\
+	".\sqlite3\parse.h"\
+	".\sqlite3\sqlite3.h"\
+	".\sqlite3\sqliteInt.h"\
+	".\sqlite3\sqliteLimit.h"\
+	".\sqlite3\vdbe.h"\
+	
+
+.\sqlite3\loadext.c : \
+	".\sqlite3\btree.h"\
+	".\sqlite3\hash.h"\
+	".\sqlite3\opcodes.h"\
+	".\sqlite3\os.h"\
+	".\sqlite3\pager.h"\
+	".\sqlite3\parse.h"\
+	".\sqlite3\sqlite3.h"\
+	".\sqlite3\sqlite3ext.h"\
+	".\sqlite3\sqliteInt.h"\
+	".\sqlite3\sqliteLimit.h"\
+	".\sqlite3\vdbe.h"\
+	
+
+.\sqlite3\main.c : \
+	".\sqlite3\btree.h"\
+	".\sqlite3\hash.h"\
+	".\sqlite3\opcodes.h"\
+	".\sqlite3\os.h"\
+	".\sqlite3\pager.h"\
+	".\sqlite3\parse.h"\
+	".\sqlite3\sqlite3.h"\
+	".\sqlite3\sqliteInt.h"\
+	".\sqlite3\sqliteLimit.h"\
+	".\sqlite3\vdbe.h"\
+	
+
+.\sqlite3\malloc.c : \
+	".\sqlite3\btree.h"\
+	".\sqlite3\hash.h"\
+	".\sqlite3\opcodes.h"\
+	".\sqlite3\os.h"\
+	".\sqlite3\pager.h"\
+	".\sqlite3\parse.h"\
+	".\sqlite3\sqlite3.h"\
+	".\sqlite3\sqliteInt.h"\
+	".\sqlite3\sqliteLimit.h"\
+	".\sqlite3\vdbe.h"\
+	
+
+.\sqlite3\os.c : \
+	".\sqlite3\btree.h"\
+	".\sqlite3\hash.h"\
+	".\sqlite3\opcodes.h"\
+	".\sqlite3\os.h"\
+	".\sqlite3\pager.h"\
+	".\sqlite3\parse.h"\
+	".\sqlite3\sqlite3.h"\
+	".\sqlite3\sqliteInt.h"\
+	".\sqlite3\sqliteLimit.h"\
+	".\sqlite3\vdbe.h"\
+	
+
+.\sqlite3\os_os2.c : \
+	".\sqlite3\btree.h"\
+	".\sqlite3\hash.h"\
+	".\sqlite3\opcodes.h"\
+	".\sqlite3\os.h"\
+	".\sqlite3\os_common.h"\
+	".\sqlite3\pager.h"\
+	".\sqlite3\parse.h"\
+	".\sqlite3\sqlite3.h"\
+	".\sqlite3\sqliteInt.h"\
+	".\sqlite3\sqliteLimit.h"\
+	".\sqlite3\vdbe.h"\
+	
+
+.\sqlite3\os_unix.c : \
+	".\sqlite3\btree.h"\
+	".\sqlite3\hash.h"\
+	".\sqlite3\opcodes.h"\
+	".\sqlite3\os.h"\
+	".\sqlite3\os_common.h"\
+	".\sqlite3\pager.h"\
+	".\sqlite3\parse.h"\
+	".\sqlite3\sqlite3.h"\
+	".\sqlite3\sqliteInt.h"\
+	".\sqlite3\sqliteLimit.h"\
+	".\sqlite3\vdbe.h"\
+	
+
+.\sqlite3\os_win.c : \
+	".\sqlite3\btree.h"\
+	".\sqlite3\hash.h"\
+	".\sqlite3\opcodes.h"\
+	".\sqlite3\os.h"\
+	".\sqlite3\os_common.h"\
+	".\sqlite3\pager.h"\
+	".\sqlite3\parse.h"\
+	".\sqlite3\sqlite3.h"\
+	".\sqlite3\sqliteInt.h"\
+	".\sqlite3\sqliteLimit.h"\
+	".\sqlite3\vdbe.h"\
+	
+
+.\sqlite3\pager.c : \
+	".\sqlite3\btree.h"\
+	".\sqlite3\hash.h"\
+	".\sqlite3\opcodes.h"\
+	".\sqlite3\os.h"\
+	".\sqlite3\pager.h"\
+	".\sqlite3\parse.h"\
+	".\sqlite3\sqlite3.h"\
+	".\sqlite3\sqliteInt.h"\
+	".\sqlite3\sqliteLimit.h"\
+	".\sqlite3\vdbe.h"\
+	
+
+.\sqlite3\parse.c : \
+	".\sqlite3\btree.h"\
+	".\sqlite3\hash.h"\
+	".\sqlite3\opcodes.h"\
+	".\sqlite3\os.h"\
+	".\sqlite3\pager.h"\
+	".\sqlite3\parse.h"\
+	".\sqlite3\sqlite3.h"\
+	".\sqlite3\sqliteInt.h"\
+	".\sqlite3\sqliteLimit.h"\
+	".\sqlite3\vdbe.h"\
+	
+
+.\sqlite3\pragma.c : \
+	".\sqlite3\btree.h"\
+	".\sqlite3\hash.h"\
+	".\sqlite3\opcodes.h"\
+	".\sqlite3\os.h"\
+	".\sqlite3\pager.h"\
+	".\sqlite3\parse.h"\
+	".\sqlite3\sqlite3.h"\
+	".\sqlite3\sqliteInt.h"\
+	".\sqlite3\sqliteLimit.h"\
+	".\sqlite3\vdbe.h"\
+	
+
+.\sqlite3\prepare.c : \
+	".\sqlite3\btree.h"\
+	".\sqlite3\hash.h"\
+	".\sqlite3\opcodes.h"\
+	".\sqlite3\os.h"\
+	".\sqlite3\pager.h"\
+	".\sqlite3\parse.h"\
+	".\sqlite3\sqlite3.h"\
+	".\sqlite3\sqliteInt.h"\
+	".\sqlite3\sqliteLimit.h"\
+	".\sqlite3\vdbe.h"\
+	
+
+.\sqlite3\printf.c : \
+	".\sqlite3\btree.h"\
+	".\sqlite3\hash.h"\
+	".\sqlite3\opcodes.h"\
+	".\sqlite3\os.h"\
+	".\sqlite3\pager.h"\
+	".\sqlite3\parse.h"\
+	".\sqlite3\sqlite3.h"\
+	".\sqlite3\sqliteInt.h"\
+	".\sqlite3\sqliteLimit.h"\
+	".\sqlite3\vdbe.h"\
+	
+
+.\sqlite3\random.c : \
+	".\sqlite3\btree.h"\
+	".\sqlite3\hash.h"\
+	".\sqlite3\opcodes.h"\
+	".\sqlite3\os.h"\
+	".\sqlite3\pager.h"\
+	".\sqlite3\parse.h"\
+	".\sqlite3\sqlite3.h"\
+	".\sqlite3\sqliteInt.h"\
+	".\sqlite3\sqliteLimit.h"\
+	".\sqlite3\vdbe.h"\
+	
+
+.\sqlite3\select.c : \
+	".\sqlite3\btree.h"\
+	".\sqlite3\hash.h"\
+	".\sqlite3\opcodes.h"\
+	".\sqlite3\os.h"\
+	".\sqlite3\pager.h"\
+	".\sqlite3\parse.h"\
+	".\sqlite3\sqlite3.h"\
+	".\sqlite3\sqliteInt.h"\
+	".\sqlite3\sqliteLimit.h"\
+	".\sqlite3\vdbe.h"\
+	
+
+.\sqlite3\table.c : \
+	".\sqlite3\btree.h"\
+	".\sqlite3\hash.h"\
+	".\sqlite3\opcodes.h"\
+	".\sqlite3\os.h"\
+	".\sqlite3\pager.h"\
+	".\sqlite3\parse.h"\
+	".\sqlite3\sqlite3.h"\
+	".\sqlite3\sqliteInt.h"\
+	".\sqlite3\sqliteLimit.h"\
+	".\sqlite3\vdbe.h"\
+	
+
+.\sqlite3\tokenize.c : \
+	".\sqlite3\btree.h"\
+	".\sqlite3\hash.h"\
+	".\sqlite3\keywordhash.h"\
+	".\sqlite3\opcodes.h"\
+	".\sqlite3\os.h"\
+	".\sqlite3\pager.h"\
+	".\sqlite3\parse.h"\
+	".\sqlite3\sqlite3.h"\
+	".\sqlite3\sqliteInt.h"\
+	".\sqlite3\sqliteLimit.h"\
+	".\sqlite3\vdbe.h"\
+	
+
+.\sqlite3\trigger.c : \
+	".\sqlite3\btree.h"\
+	".\sqlite3\hash.h"\
+	".\sqlite3\opcodes.h"\
+	".\sqlite3\os.h"\
+	".\sqlite3\pager.h"\
+	".\sqlite3\parse.h"\
+	".\sqlite3\sqlite3.h"\
+	".\sqlite3\sqliteInt.h"\
+	".\sqlite3\sqliteLimit.h"\
+	".\sqlite3\vdbe.h"\
+	
+
+.\sqlite3\update.c : \
+	".\sqlite3\btree.h"\
+	".\sqlite3\hash.h"\
+	".\sqlite3\opcodes.h"\
+	".\sqlite3\os.h"\
+	".\sqlite3\pager.h"\
+	".\sqlite3\parse.h"\
+	".\sqlite3\sqlite3.h"\
+	".\sqlite3\sqliteInt.h"\
+	".\sqlite3\sqliteLimit.h"\
+	".\sqlite3\vdbe.h"\
+	
+
+.\sqlite3\utf.c : \
+	".\sqlite3\btree.h"\
+	".\sqlite3\hash.h"\
+	".\sqlite3\opcodes.h"\
+	".\sqlite3\os.h"\
+	".\sqlite3\pager.h"\
+	".\sqlite3\parse.h"\
+	".\sqlite3\sqlite3.h"\
+	".\sqlite3\sqliteInt.h"\
+	".\sqlite3\sqliteLimit.h"\
+	".\sqlite3\vdbe.h"\
+	".\sqlite3\vdbeInt.h"\
+	
+
+.\sqlite3\util.c : \
+	".\sqlite3\btree.h"\
+	".\sqlite3\hash.h"\
+	".\sqlite3\opcodes.h"\
+	".\sqlite3\os.h"\
+	".\sqlite3\pager.h"\
+	".\sqlite3\parse.h"\
+	".\sqlite3\sqlite3.h"\
+	".\sqlite3\sqliteInt.h"\
+	".\sqlite3\sqliteLimit.h"\
+	".\sqlite3\vdbe.h"\
+	
+
+.\sqlite3\vacuum.c : \
+	".\sqlite3\btree.h"\
+	".\sqlite3\hash.h"\
+	".\sqlite3\opcodes.h"\
+	".\sqlite3\os.h"\
+	".\sqlite3\pager.h"\
+	".\sqlite3\parse.h"\
+	".\sqlite3\sqlite3.h"\
+	".\sqlite3\sqliteInt.h"\
+	".\sqlite3\sqliteLimit.h"\
+	".\sqlite3\vdbe.h"\
+	".\sqlite3\vdbeInt.h"\
+	
+
+.\sqlite3\vdbe.c : \
+	".\sqlite3\btree.h"\
+	".\sqlite3\hash.h"\
+	".\sqlite3\opcodes.h"\
+	".\sqlite3\os.h"\
+	".\sqlite3\pager.h"\
+	".\sqlite3\parse.h"\
+	".\sqlite3\sqlite3.h"\
+	".\sqlite3\sqliteInt.h"\
+	".\sqlite3\sqliteLimit.h"\
+	".\sqlite3\vdbe.h"\
+	".\sqlite3\vdbeInt.h"\
+	
+
+.\sqlite3\vdbeapi.c : \
+	".\sqlite3\btree.h"\
+	".\sqlite3\hash.h"\
+	".\sqlite3\opcodes.h"\
+	".\sqlite3\os.h"\
+	".\sqlite3\pager.h"\
+	".\sqlite3\parse.h"\
+	".\sqlite3\sqlite3.h"\
+	".\sqlite3\sqliteInt.h"\
+	".\sqlite3\sqliteLimit.h"\
+	".\sqlite3\vdbe.h"\
+	".\sqlite3\vdbeInt.h"\
+	
+
+.\sqlite3\vdbeaux.c : \
+	".\sqlite3\btree.h"\
+	".\sqlite3\hash.h"\
+	".\sqlite3\opcodes.h"\
+	".\sqlite3\os.h"\
+	".\sqlite3\pager.h"\
+	".\sqlite3\parse.h"\
+	".\sqlite3\sqlite3.h"\
+	".\sqlite3\sqliteInt.h"\
+	".\sqlite3\sqliteLimit.h"\
+	".\sqlite3\vdbe.h"\
+	".\sqlite3\vdbeInt.h"\
+	
+
+.\sqlite3\vdbeblob.c : \
+	".\sqlite3\btree.h"\
+	".\sqlite3\hash.h"\
+	".\sqlite3\opcodes.h"\
+	".\sqlite3\os.h"\
+	".\sqlite3\pager.h"\
+	".\sqlite3\parse.h"\
+	".\sqlite3\sqlite3.h"\
+	".\sqlite3\sqliteInt.h"\
+	".\sqlite3\sqliteLimit.h"\
+	".\sqlite3\vdbe.h"\
+	".\sqlite3\vdbeInt.h"\
+	
+
+.\sqlite3\vdbefifo.c : \
+	".\sqlite3\btree.h"\
+	".\sqlite3\hash.h"\
+	".\sqlite3\opcodes.h"\
+	".\sqlite3\os.h"\
+	".\sqlite3\pager.h"\
+	".\sqlite3\parse.h"\
+	".\sqlite3\sqlite3.h"\
+	".\sqlite3\sqliteInt.h"\
+	".\sqlite3\sqliteLimit.h"\
+	".\sqlite3\vdbe.h"\
+	".\sqlite3\vdbeInt.h"\
+	
+
+.\sqlite3\vdbemem.c : \
+	".\sqlite3\btree.h"\
+	".\sqlite3\hash.h"\
+	".\sqlite3\opcodes.h"\
+	".\sqlite3\os.h"\
+	".\sqlite3\pager.h"\
+	".\sqlite3\parse.h"\
+	".\sqlite3\sqlite3.h"\
+	".\sqlite3\sqliteInt.h"\
+	".\sqlite3\sqliteLimit.h"\
+	".\sqlite3\vdbe.h"\
+	".\sqlite3\vdbeInt.h"\
+	
+
+.\sqlite3\vtab.c : \
+	".\sqlite3\btree.h"\
+	".\sqlite3\hash.h"\
+	".\sqlite3\opcodes.h"\
+	".\sqlite3\os.h"\
+	".\sqlite3\pager.h"\
+	".\sqlite3\parse.h"\
+	".\sqlite3\sqlite3.h"\
+	".\sqlite3\sqliteInt.h"\
+	".\sqlite3\sqliteLimit.h"\
+	".\sqlite3\vdbe.h"\
+	
+
+.\sqlite3\where.c : \
+	".\sqlite3\btree.h"\
+	".\sqlite3\hash.h"\
+	".\sqlite3\opcodes.h"\
+	".\sqlite3\os.h"\
+	".\sqlite3\pager.h"\
+	".\sqlite3\parse.h"\
+	".\sqlite3\sqlite3.h"\
+	".\sqlite3\sqliteInt.h"\
+	".\sqlite3\sqliteLimit.h"\
+	".\sqlite3\vdbe.h"\
+	

@@ -1,6 +1,6 @@
 # Microsoft Developer Studio Generated NMAKE File, Based on FreeImage.dsp
 !IF "$(CFG)" == ""
-CFG=FreeImage - Win32 Release
+CFG=FreeImage - Win32 Debug
 !MESSAGE No configuration specified. Defaulting to FreeImage - Win32 Debug.
 !ENDIF 
 
@@ -25,10 +25,6 @@ NULL=
 NULL=nul
 !ENDIF 
 
-CPP=cl.exe
-MTL=midl.exe
-RSC=rc.exe
-
 !IF  "$(CFG)" == "FreeImage - Win32 Release"
 
 OUTDIR=.\Release
@@ -40,12 +36,12 @@ ALL : "..\..\bin\release\plugins\advaimg.dll"
 
 !ELSE 
 
-ALL : "LibPNG - Win32 Release" "LibJPEG - Win32 Release" "..\..\bin\release\plugins\advaimg.dll"
+ALL : "zlib - Win32 Release" "..\..\bin\release\plugins\advaimg.dll"
 
 !ENDIF 
 
 !IF "$(RECURSE)" == "1" 
-CLEAN :"LibJPEG - Win32 ReleaseCLEAN" "LibPNG - Win32 ReleaseCLEAN" 
+CLEAN :"zlib - Win32 ReleaseCLEAN" 
 !ELSE 
 CLEAN :
 !ENDIF 
@@ -176,8 +172,42 @@ CLEAN :
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
+CPP=cl.exe
 CPP_PROJ=/nologo /MD /W3 /GX /Zi /O1 /I "Source" /I "Source\ZLib" /I "..\..\include" /I "..\zlib" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "FREEIMAGE_EXPORTS" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+
+.c{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.cpp{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.cxx{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.c{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.cpp{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.cxx{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+MTL=midl.exe
 MTL_PROJ=/nologo /D "NDEBUG" /mktyplib203 /win32 
+RSC=rc.exe
 RSC_PROJ=/l 0x409 /fo"$(INTDIR)\FreeImage.res" /d "NDEBUG" 
 BSC32=bscmake.exe
 BSC32_FLAGS=/nologo /o"$(OUTDIR)\FreeImage.bsc" 
@@ -304,8 +334,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\Rescale.obj" \
 	"$(INTDIR)\Resize.obj" \
 	"$(INTDIR)\FreeImage.res" \
-	".\Source\LibJPEG\Release\LibJPEG.lib" \
-	".\Source\LibPNG\Release\LibPNG.lib"
+	"..\zlib\Release\zlib.lib"
 
 "..\..\bin\release\plugins\advaimg.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -326,12 +355,12 @@ ALL : "..\..\bin\debug\plugins\advaimg.dll" "$(OUTDIR)\FreeImage.bsc"
 
 !ELSE 
 
-ALL : "LibPNG - Win32 Debug" "LibJPEG - Win32 Debug" "..\..\bin\debug\plugins\advaimg.dll" "$(OUTDIR)\FreeImage.bsc"
+ALL : "zlib - Win32 Debug" "..\..\bin\debug\plugins\advaimg.dll" "$(OUTDIR)\FreeImage.bsc"
 
 !ENDIF 
 
 !IF "$(RECURSE)" == "1" 
-CLEAN :"LibJPEG - Win32 DebugCLEAN" "LibPNG - Win32 DebugCLEAN" 
+CLEAN :"zlib - Win32 DebugCLEAN" 
 !ELSE 
 CLEAN :
 !ENDIF 
@@ -582,8 +611,42 @@ CLEAN :
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
+CPP=cl.exe
 CPP_PROJ=/nologo /MTd /W3 /Gm /GX /ZI /Od /I "Source" /I "Source\ZLib" /I "..\..\include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "FREEIMAGE_EXPORTS" /FR"$(INTDIR)\\" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
+
+.c{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.cpp{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.cxx{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.c{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.cpp{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.cxx{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+MTL=midl.exe
 MTL_PROJ=/nologo /D "_DEBUG" /mktyplib203 /win32 
+RSC=rc.exe
 RSC_PROJ=/l 0x409 /fo"$(INTDIR)\FreeImage.res" /d "_DEBUG" 
 BSC32=bscmake.exe
 BSC32_FLAGS=/nologo /o"$(OUTDIR)\FreeImage.bsc" 
@@ -832,8 +895,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\Rescale.obj" \
 	"$(INTDIR)\Resize.obj" \
 	"$(INTDIR)\FreeImage.res" \
-	".\Source\LibJPEG\Debug\LibJPEG.lib" \
-	".\Source\LibPNG\Debug\LibPNG.lib"
+	"..\zlib\Debug\zlib.lib"
 
 "..\..\bin\debug\plugins\advaimg.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -841,36 +903,6 @@ LINK32_OBJS= \
 <<
 
 !ENDIF 
-
-.c{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cpp{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cxx{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.c{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cpp{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cxx{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
 
 
 !IF "$(NO_EXTERNAL_DEPS)" != "1"
@@ -2997,59 +3029,27 @@ SOURCE=.\Source\FreeImageToolkit\Resize.cpp
 
 !IF  "$(CFG)" == "FreeImage - Win32 Release"
 
-"LibJPEG - Win32 Release" : 
-   cd ".\Source\LibJPEG"
-   $(MAKE) /$(MAKEFLAGS) /F ".\LibJPEG.mak" CFG="LibJPEG - Win32 Release" 
-   cd "..\.."
+"zlib - Win32 Release" : 
+   cd "\Miranda8\miranda\plugins\zlib"
+   $(MAKE) /$(MAKEFLAGS) /F .\zlib.mak CFG="zlib - Win32 Release" 
+   cd "..\freeimage"
 
-"LibJPEG - Win32 ReleaseCLEAN" : 
-   cd ".\Source\LibJPEG"
-   $(MAKE) /$(MAKEFLAGS) /F ".\LibJPEG.mak" CFG="LibJPEG - Win32 Release" RECURSE=1 CLEAN 
-   cd "..\.."
-
-!ELSEIF  "$(CFG)" == "FreeImage - Win32 Debug"
-
-"LibJPEG - Win32 Debug" : 
-   cd ".\Source\LibJPEG"
-   $(MAKE) /$(MAKEFLAGS) /F ".\LibJPEG.mak" CFG="LibJPEG - Win32 Debug" 
-   cd "..\.."
-
-"LibJPEG - Win32 DebugCLEAN" : 
-   cd ".\Source\LibJPEG"
-   $(MAKE) /$(MAKEFLAGS) /F ".\LibJPEG.mak" CFG="LibJPEG - Win32 Debug" RECURSE=1 CLEAN 
-   cd "..\.."
-
-!ENDIF 
-
-!IF  "$(CFG)" == "FreeImage - Win32 Release"
-
-"LibPNG - Win32 Release" : 
-   cd ".\Source\LibPNG"
-   $(MAKE) /$(MAKEFLAGS) /F ".\LibPNG.mak" CFG="LibPNG - Win32 Release" 
-   cd "..\.."
-
-"LibPNG - Win32 ReleaseCLEAN" : 
-   cd ".\Source\LibPNG"
-   $(MAKE) /$(MAKEFLAGS) /F ".\LibPNG.mak" CFG="LibPNG - Win32 Release" RECURSE=1 CLEAN 
-   cd "..\.."
+"zlib - Win32 ReleaseCLEAN" : 
+   cd "\Miranda8\miranda\plugins\zlib"
+   $(MAKE) /$(MAKEFLAGS) /F .\zlib.mak CFG="zlib - Win32 Release" RECURSE=1 CLEAN 
+   cd "..\freeimage"
 
 !ELSEIF  "$(CFG)" == "FreeImage - Win32 Debug"
 
-"LibPNG - Win32 Debug" : 
-   cd ".\Source\LibPNG"
-   $(MAKE) /$(MAKEFLAGS) /F ".\LibPNG.mak" CFG="LibPNG - Win32 Debug" 
-   cd "..\.."
+"zlib - Win32 Debug" : 
+   cd "\Miranda8\miranda\plugins\zlib"
+   $(MAKE) /$(MAKEFLAGS) /F .\zlib.mak CFG="zlib - Win32 Debug" 
+   cd "..\freeimage"
 
-"LibPNG - Win32 DebugCLEAN" : 
-   cd ".\Source\LibPNG"
-   $(MAKE) /$(MAKEFLAGS) /F ".\LibPNG.mak" CFG="LibPNG - Win32 Debug" RECURSE=1 CLEAN 
-   cd "..\.."
-
-!ENDIF 
-
-!IF  "$(CFG)" == "FreeImage - Win32 Release"
-
-!ELSEIF  "$(CFG)" == "FreeImage - Win32 Debug"
+"zlib - Win32 DebugCLEAN" : 
+   cd "\Miranda8\miranda\plugins\zlib"
+   $(MAKE) /$(MAKEFLAGS) /F .\zlib.mak CFG="zlib - Win32 Debug" RECURSE=1 CLEAN 
+   cd "..\freeimage"
 
 !ENDIF 
 

@@ -118,11 +118,6 @@ call :Nmake modernb.mak "modernb - Win32 Release"
 popd
 if errorlevel 1 goto :Error
 
-pushd ..\..\miranda\plugins\modernopt
-call :Nmake modernopt.mak "modernopt - Win32 Release"
-popd
-if errorlevel 1 goto :Error
-
 pushd ..\..\miranda\plugins\mwclist
 call :Nmake mwclist.mak "mwclist - Win32 Release"
 popd
@@ -231,7 +226,7 @@ echo           ^<language^>en-us^</language^>                                   
 echo           ^<lastBuildDate^>%yy%-%mm%-%dd% %hh%:%mn%^</lastBuildDate^>         >>%temp%\index.xml
 echo           ^<item^>                                                            >>%temp%\index.xml
 echo                ^<title^>Miranda 0.%1.%2 alpha %3^</title^>                    >>%temp%\index.xml
-echo 			   ^<link^>http://files.miranda-im.org/builds/?%yy%%mm%%dd%%hh%%mn%^</link^> >>%temp%\index.xml
+echo         ^<link^>http://files.miranda-im.org/builds/?%yy%%mm%%dd%%hh%%mn%^</link^> >>%temp%\index.xml
 echo                ^<description^>                                                >>%temp%\index.xml
 echo                     Miranda 0.%1.%2 alpha %3 is now available at http://files.miranda-im.org/builds/miranda-v%1a%3.zip >>%temp%\index.xml
 echo                ^</description^>                                               >>%temp%\index.xml
