@@ -340,13 +340,13 @@ static INT_PTR NetlibLog(WPARAM wParam,LPARAM lParam)
 		SetLastError(ERROR_INVALID_PARAMETER);
 		return 0;
 	}
-	if (nlu==NULL) { /* if the Netlib user handle is NULL, just pretend its not */
-		if ( !logOptions.toLog )
+	if (nlu == NULL) { /* if the Netlib user handle is NULL, just pretend its not */
+		if (!logOptions.toLog)
 			return 1;
-		nlu=&nludummy;
-		nlu->user.szSettingsModule="(NULL)";
+		nlu = &nludummy;
+		nlu->user.szSettingsModule = "(NULL)";
 	}
-	else if ( !(nlu->toLog) )
+	else if (!nlu->toLog)
 		return 1;
 
 	dwOriginalLastError=GetLastError();
@@ -402,6 +402,27 @@ static INT_PTR NetlibLog(WPARAM wParam,LPARAM lParam)
 	SetLastError(dwOriginalLastError);
 	return 1;
 }
+
+void NetlibLogf(NetlibUser* nlu, const char *fmt, ...)
+{
+	if (nlu == NULL) 
+	{
+		if (!logOptions.toLog)
+			return;
+	}
+	else if (!nlu->toLog)
+		return;
+
+	va_list va;
+	char szText[1024];
+
+	va_start(va,fmt);
+	mir_vsnprintf(szText, sizeof(szText), fmt, va);
+	va_end(va);
+
+	NetlibLog((WPARAM)nlu, (LPARAM)szText);
+}
+
 
 void NetlibDumpData(struct NetlibConnection *nlc,PBYTE buf,int len,int sent,int flags)
 {

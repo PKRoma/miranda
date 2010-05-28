@@ -126,12 +126,12 @@ static unsigned __stdcall NetlibBindAcceptThread(void* param)
 	struct NetlibConnection *nlc;
 	struct NetlibBoundPort *nlbp = ( NetlibBoundPort* )param;
 
-	Netlib_Logf(nlbp->nlu,"(%d) Port %u opened for incoming connections",nlbp->s,nlbp->wPort);
+	NetlibLogf(nlbp->nlu,"(%d) Port %u opened for incoming connections",nlbp->s,nlbp->wPort);
 	for(;;) {
 		sinLen=sizeof(sin);
 		s=accept(nlbp->s,(struct sockaddr*)&sin,&sinLen);
 		if(s==INVALID_SOCKET) break;
-		Netlib_Logf(nlbp->nlu,"New incoming connection on port %u from %s (%d)",nlbp->wPort, inet_ntoa(sin.sin_addr),s);
+		NetlibLogf(nlbp->nlu,"New incoming connection on port %u from %s (%d)",nlbp->wPort, inet_ntoa(sin.sin_addr),s);
 		nlc=(struct NetlibConnection*)mir_alloc(sizeof(struct NetlibConnection));
 		memset(nlc,0,sizeof(struct NetlibConnection));
 		nlc->handleType=NLH_CONNECTION;
@@ -174,7 +174,7 @@ INT_PTR NetlibBindPort(WPARAM wParam,LPARAM lParam)
 	nlbp->s=socket(AF_INET,SOCK_STREAM,0);
 	nlbp->pExtra= (nlb->cbSize != NETLIBBIND_SIZEOF_V1) ? nlb->pExtra : NULL;
 	if(nlbp->s==INVALID_SOCKET) {
-		Netlib_Logf(nlu,"%s %d: %s() failed (%u)",__FILE__,__LINE__,"socket",WSAGetLastError());
+		NetlibLogf(nlu,"%s %d: %s() failed (%u)",__FILE__,__LINE__,"socket",WSAGetLastError());
 		mir_free(nlbp);
 		return (INT_PTR)NULL;
 	}
@@ -188,7 +188,7 @@ INT_PTR NetlibBindPort(WPARAM wParam,LPARAM lParam)
 	{
 		if (!BindSocketToPort(nlu->settings.szIncomingPorts, nlbp->s, &nlu->outportnum))
 		{
-			Netlib_Logf(nlu,"Netlib bind: Not enough ports for incoming connections specified");
+			NetlibLogf(nlu,"Netlib bind: Not enough ports for incoming connections specified");
 			SetLastError(WSAEADDRINUSE);
 		}
 		else
@@ -198,20 +198,20 @@ INT_PTR NetlibBindPort(WPARAM wParam,LPARAM lParam)
 		/* if ->wPort==0 then they'll get any free port, otherwise they'll
 		be asking for whatever was in nlb->wPort*/
 		if (nlb->wPort!=0) {
-			Netlib_Logf(nlu,"%s %d: trying to bind port %d, this 'feature' can be abused, please be sure you want to allow it.",__FILE__,__LINE__,nlb->wPort);
+			NetlibLogf(nlu,"%s %d: trying to bind port %d, this 'feature' can be abused, please be sure you want to allow it.",__FILE__,__LINE__,nlb->wPort);
 			sin.sin_port=htons(nlb->wPort);
 		}
 		if(bind(nlbp->s,(SOCKADDR *)&sin,sizeof(sin))==0) foundPort=1;
 	}
 	if(!foundPort) {
-		Netlib_Logf(nlu,"%s %d: %s() failed (%u)",__FILE__,__LINE__,"bind",WSAGetLastError());
+		NetlibLogf(nlu,"%s %d: %s() failed (%u)",__FILE__,__LINE__,"bind",WSAGetLastError());
 		closesocket(nlbp->s);
 		mir_free(nlbp);
 		return (INT_PTR)NULL;
 	}
 
 	if(listen(nlbp->s,5)) {
-		Netlib_Logf(nlu,"%s %d: %s() failed (%u)",__FILE__,__LINE__,"listen",WSAGetLastError());
+		NetlibLogf(nlu,"%s %d: %s() failed (%u)",__FILE__,__LINE__,"listen",WSAGetLastError());
 		closesocket(nlbp->s);
 		mir_free(nlbp);
 		return (INT_PTR)NULL;
@@ -223,7 +223,7 @@ INT_PTR NetlibBindPort(WPARAM wParam,LPARAM lParam)
 		ZeroMemory(&sin,sizeof(sin));
 		len=sizeof(sin);
 		if(getsockname(nlbp->s,(SOCKADDR *)&sin,&len)) {
-			Netlib_Logf(nlu,"%s %d: %s() failed (%u)",__FILE__,__LINE__,"getsockname",WSAGetLastError());
+			NetlibLogf(nlu,"%s %d: %s() failed (%u)",__FILE__,__LINE__,"getsockname",WSAGetLastError());
 			closesocket(nlbp->s);
 			mir_free(nlbp);
 			return (INT_PTR)NULL;
@@ -245,7 +245,7 @@ INT_PTR NetlibBindPort(WPARAM wParam,LPARAM lParam)
 		if (nlu->settings.enableUPnP && 
 			NetlibUPnPAddPortMapping(nlb->wPort, "TCP", &nlbp->wExPort, &extIP, nlb->cbSize > NETLIBBIND_SIZEOF_V2))
 		{
-			Netlib_Logf(NULL, "UPnP port mapping succeeded. Internal Port: %u External Port: %u\n", 
+			NetlibLogf(NULL, "UPnP port mapping succeeded. Internal Port: %u External Port: %u\n", 
 				nlb->wPort, nlbp->wExPort); 
 			if (nlb->cbSize > NETLIBBIND_SIZEOF_V2)
 			{
@@ -256,9 +256,9 @@ INT_PTR NetlibBindPort(WPARAM wParam,LPARAM lParam)
 		else
 		{
 			if (nlu->settings.enableUPnP)
-				Netlib_Logf(NULL, "UPnP port mapping failed. Internal Port: %u\n", nlb->wPort); 
+				NetlibLogf(NULL, "UPnP port mapping failed. Internal Port: %u\n", nlb->wPort); 
 			else
-				Netlib_Logf(NULL, "UPnP disabled. Internal Port: %u\n", nlb->wPort); 
+				NetlibLogf(NULL, "UPnP disabled. Internal Port: %u\n", nlb->wPort); 
 
 			nlbp->wExPort = 0;
 			if (nlb->cbSize > NETLIBBIND_SIZEOF_V2)

@@ -299,7 +299,7 @@ INT_PTR NetlibCloseHandle(WPARAM wParam, LPARAM)
 			CloseHandle(nlc->hOkToCloseEvent);
 			DeleteCriticalSection(&nlc->csHttpSequenceNums);
 			ReleaseMutex(hConnectionHeaderMutex);
-			Netlib_Logf(nlc->nlu,"(%p:%u) Connection closed",nlc,nlc->s);
+			NetlibLogf(nlc->nlu,"(%p:%u) Connection closed",nlc,nlc->s);
 			break;
 		}
 		case NLH_BOUNDPORT:

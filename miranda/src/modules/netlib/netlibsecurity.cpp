@@ -72,7 +72,7 @@ static void ReportSecError(SECURITY_STATUS scRet, int line)
 
 	char *p = strchr(szMsgBuf, 13); if (p) *p = 0;
 
-	Netlib_Logf(NULL, "Security error 0x%x on line %u (%s)", scRet, line, szMsgBuf);
+	NetlibLogf(NULL, "Security error 0x%x on line %u (%s)", scRet, line, szMsgBuf);
 }
 
 static void LoadSecurityLibrary(void)
@@ -285,9 +285,9 @@ char* NtlmCreateResponseFromChallenge(HANDLE hSecurity, const char *szChallenge,
 			{
 				memset(&auth, 0, sizeof(auth));
 #ifdef _UNICODE
-				Netlib_Logf(NULL, "Security login requested, user: %S pssw: %s", login, psw ? "(exist)" : "(no psw)");
+				NetlibLogf(NULL, "Security login requested, user: %S pssw: %s", login, psw ? "(exist)" : "(no psw)");
 #else
-				Netlib_Logf(NULL, "Security login requested, user: %s pssw: %s", login, psw ? "(exist)" : "(no psw)");
+				NetlibLogf(NULL, "Security login requested, user: %s pssw: %s", login, psw ? "(exist)" : "(no psw)");
 #endif
 
 				const TCHAR* loginName = login;

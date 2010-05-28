@@ -264,7 +264,7 @@ static int httpTransact(char* szUrl, char* szResult, int resSize, char* szAction
 					enetaddr.sin_addr.s_addr = *(unsigned*)he->h_addr_list[0];
 			}
 
-			Netlib_Logf(NULL, "UPnP HTTP connection Host: %s Port: %u\n", szHost, sPort);
+			NetlibLogf(NULL, "UPnP HTTP connection Host: %s Port: %u\n", szHost, sPort);
 
 			FD_ZERO(&readfd);
 			FD_SET(sock, &readfd);
@@ -283,13 +283,13 @@ static int httpTransact(char* szUrl, char* szResult, int resSize, char* szAction
 				// Socket connection failed
 				if (err != WSAEWOULDBLOCK)
 				{
-					Netlib_Logf(NULL, "UPnP connect failed %d", err);
+					NetlibLogf(NULL, "UPnP connect failed %d", err);
 					break;
 				}
 				// Wait for socket to connect
 				else if (select(1, NULL, &readfd, NULL, &tv) != 1)
 				{
-					Netlib_Logf(NULL, "UPnP connect timeout");
+					NetlibLogf(NULL, "UPnP connect timeout");
 					break;
 				}
 			}
@@ -311,7 +311,7 @@ static int httpTransact(char* szUrl, char* szResult, int resSize, char* szAction
 					// Wait for the next packet
 					if (select(1, &readfd, NULL, NULL, &tv) != 1)
 					{
-						Netlib_Logf(NULL, "UPnP recieve timeout");
+						NetlibLogf(NULL, "UPnP recieve timeout");
 						break;
 					}
 
@@ -395,7 +395,7 @@ static int httpTransact(char* szUrl, char* szResult, int resSize, char* szAction
 				LongLog(szResult);
 			}
 			else
-				Netlib_Logf(NULL, "UPnP send failed %d", WSAGetLastError());
+				NetlibLogf(NULL, "UPnP send failed %d", WSAGetLastError());
 
 			if (szActionName == NULL)
 			{
@@ -606,7 +606,7 @@ static BOOL findUPnPGateway(void)
 		gatewayFound = FALSE;
 
 		discoverUPnP();
-		Netlib_Logf(NULL, "UPnP Gateway detected %d, Control URL: %s\n", gatewayFound, szCtlUrl);
+		NetlibLogf(NULL, "UPnP Gateway detected %d, Control URL: %s\n", gatewayFound, szCtlUrl);
 	}
 
 	ReleaseMutex(portListMutex);
