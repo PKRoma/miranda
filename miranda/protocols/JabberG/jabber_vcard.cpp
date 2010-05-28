@@ -51,12 +51,12 @@ int CJabberProto::SendGetVcard( const TCHAR* jid )
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-static void SetDialogField( CJabberProto* ppro, HWND hwndDlg, int nDlgItem, char* key )
+static void SetDialogField( CJabberProto* ppro, HWND hwndDlg, int nDlgItem, char* key, bool bTranslate = false )
 {
 	DBVARIANT dbv;
 
 	if ( !DBGetContactSettingTString( NULL, ppro->m_szModuleName, key, &dbv )) {
-		SetDlgItemText( hwndDlg, nDlgItem, dbv.ptszVal );
+		SetDlgItemText( hwndDlg, nDlgItem, ( bTranslate ) ? TranslateTS(dbv.ptszVal) : dbv.ptszVal );
 		JFreeVariant( &dbv );
 	}
 	else SetDlgItemTextA( hwndDlg, nDlgItem, "" );
@@ -86,7 +86,7 @@ static INT_PTR CALLBACK PersonalDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, 
 		SetDialogField( ppro, hwndDlg, IDC_MIDDLE, "MiddleName" );
 		SetDialogField( ppro, hwndDlg, IDC_LASTNAME, "LastName" );
 		SetDialogField( ppro, hwndDlg, IDC_BIRTH, "BirthDate" );
-		SetDialogField( ppro, hwndDlg, IDC_GENDER, "GenderString" );
+		SetDialogField( ppro, hwndDlg, IDC_GENDER, "GenderString", true );
 		SetDialogField( ppro, hwndDlg, IDC_OCCUPATION, "Role" );
 		SetDialogField( ppro, hwndDlg, IDC_HOMEPAGE, "Homepage" );
 		break;
@@ -929,8 +929,11 @@ void CJabberProto::SaveVcardToDB( HWND hwndPage, int iPage )
 		JSetStringT( NULL, "LastName", text );
 		GetDlgItemText( hwndPage, IDC_BIRTH, text, SIZEOF( text ));
 		JSetStringT( NULL, "BirthDate", text );
-		GetDlgItemText( hwndPage, IDC_GENDER, text, SIZEOF( text ));
-		JSetStringT( NULL, "GenderString", text );
+		switch( SendMessage( GetDlgItem( hwndPage, IDC_GENDER ), CB_GETCURSEL, 0, 0 )) {
+			case 0:	JSetString( NULL, "GenderString", "Male" );   break;
+			case 1:	JSetString( NULL, "GenderString", "Female" ); break;
+			default: JSetString( NULL, "GenderString", "" );       break;
+		}
 		GetDlgItemText( hwndPage, IDC_OCCUPATION, text, SIZEOF( text ));
 		JSetStringT( NULL, "Role", text );
 		GetDlgItemText( hwndPage, IDC_HOMEPAGE, text, SIZEOF( text ));
