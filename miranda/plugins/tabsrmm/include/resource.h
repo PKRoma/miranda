@@ -373,7 +373,6 @@
 #define IDC_TOGGLESIDEBAR               1299
 #define IDC_CNTNOSTATUSBAR              1299
 #define IDC_UPREFS_BBCODE               1299
-#define IDC_AUTOCLOSELAST               1300
 #define IDC_SECTIONTREE                 1300
 #define IDC_UPREFS_RTL                  1301
 #define IDC_CHECKICONDLL                1302
@@ -539,6 +538,8 @@
 #define IDC_TXT_TITLE3                  1623
 #define IDC_EDIT1						1720
 #define IDC_O_EXPLAINGLOBALNOTIFY       1624
+#define IDC_O_AUTOHIDE					1625
+#define IDC_O_AUTOHIDESECONDS			1626
 #define IDC_O_ENABLESOUNDS              1701
 #define IDC_O_SOUNDSMINIMIZED           1702
 #define IDC_O_SOUNDSUNFOCUSED           1703

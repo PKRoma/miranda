@@ -52,6 +52,9 @@
  *
  * Thumbnails are generated "on request", only when the desktop window
  * manager needs one.
+ *
+ * Each proxy window has a CThumbIM or CThumbMUC object which represents
+ * the actual thumbnail bitmap.
  */
 
 #include "commonheaders.h"
@@ -135,7 +138,7 @@ void CTaskbarInteract::registerTab(const HWND hwndTab, const HWND hwndContainer)
 	if(m_isEnabled) {
 		m_pTaskbarInterface->RegisterTab(hwndTab, hwndContainer);
 		m_pTaskbarInterface->SetTabOrder(hwndTab, 0);
-		m_pTaskbarInterface->SetThumbnailTooltip(hwndContainer, _T(""));
+		//m_pTaskbarInterface->SetThumbnailTooltip(hwndContainer, _T(""));
 	}
 }
 
@@ -150,16 +153,20 @@ void CTaskbarInteract::unRegisterTab(const HWND hwndTab) const
 		m_pTaskbarInterface->UnregisterTab(hwndTab);
 }
 
-void CTaskbarInteract::SetTabActive(const HWND hwndTab) const
+/**
+ * set a tab as active. The active thumbnail will appear with a slightly
+ * different background and transparency.
+ *
+ * @param hwndTab			window handle of the PROXY window to activate
+ * 							(don't use the real window handle of the message
+ * 							tab, because it is not a toplevel window).
+ * @param hwndGroup			window group to which it belongs (usually, the
+ * 							container window handle).
+ */
+void CTaskbarInteract::SetTabActive(const HWND hwndTab, const HWND hwndGroup) const
 {
 	if(m_isEnabled)
-		m_pTaskbarInterface->SetTabActive(hwndTab, m_hwndClist, 0);
-}
-
-void CTaskbarInteract::setThumbnailClip(const HWND hwndTab, const RECT* rc) const
-{
-	if(m_isEnabled)
-		m_pTaskbarInterface->SetThumbnailClip(hwndTab, const_cast<RECT *>(rc));
+		m_pTaskbarInterface->SetTabActive(hwndTab, hwndGroup, 0);
 }
 
 /**
@@ -255,17 +262,21 @@ CProxyWindow::~CProxyWindow()
  */
 void CProxyWindow::sendThumb(LONG width, LONG height)
 {
-	if(width != m_width || height != m_height || m_thumb == 0) {
+	if(0 == m_thumb) {
 		m_width = width;
 		m_height = height;
-		if(m_thumb)
-			delete m_thumb;
 		if(m_dat->bType == SESSIONTYPE_IM)
 			m_thumb = new CThumbIM(this);
 		else
 			m_thumb = new CThumbMUC(this);
 	}
-	CMimAPI::m_pfnDwmSetIconicThumbnail(m_hwnd, m_thumb->getHBM(), DWM_SIT_DISPLAYFRAME);
+	else if(width != m_width || height != m_height || !m_thumb->isValid()) {
+		m_width = width;
+		m_height = height;
+		m_thumb->update();
+	}
+	if(m_thumb)
+		CMimAPI::m_pfnDwmSetIconicThumbnail(m_hwnd, m_thumb->getHBM(), DWM_SIT_DISPLAYFRAME);
 }
 
 /**
@@ -357,11 +368,13 @@ void CProxyWindow::updateIcon(const HICON hIcon) const
 }
 
 /**
- * set the task bar button ("tab") active.
+ * set the task bar button ("tab") active. This activates the proxy
+ * window as a sub-window of the (top level) container window.
+ * This is called whenever the active message tab or window changes
  */
 void CProxyWindow::activateTab() const
 {
-	Win7Taskbar->SetTabActive(m_hwnd);
+	Win7Taskbar->SetTabActive(m_hwnd, m_dat->pContainer->hwnd);
 }
 /**
  * invalidate the thumbnail, it will be recreated at the next request
@@ -372,17 +385,16 @@ void CProxyWindow::activateTab() const
  *
  * also tell the DWM that it must request a new thumb.
  */
-void CProxyWindow::Invalidate()
+void CProxyWindow::Invalidate() const
 {
 	if(m_thumb) {
-		delete m_thumb;
-		m_thumb = 0;
+		m_thumb->setValid(false);
+		/*
+		 * tell the DWM to request a new thumbnail for the proxy window m_hwnd
+		 * when it needs one.
+		 */
+		CMimAPI::m_pfnDwmInvalidateIconicBitmaps(m_hwnd);
 	}
-	/*
-	 * tell the DWM to request a new thumbnail for the proxy window m_hwnd
-	 * when it needs one.
-	 */
-	CMimAPI::m_pfnDwmInvalidateIconicBitmaps(m_hwnd);
 }
 
 /**
@@ -475,11 +487,22 @@ LRESULT CALLBACK CProxyWindow::wndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
  */
 CThumbBase::CThumbBase(const CProxyWindow* _p)
 {
+	m_pWnd = _p;
+	m_hbmThumb = 0;
+	renderBase();
+}
+
+/**
+ * render base for a thumbnail. This creates the background, the large icon
+ * and the basic status mode text. It also divides the thumbnail rectangle
+ * into a few content rectangles used later by the content renderer.
+ */
+void CThumbBase::renderBase()
+{
 	HICON	hIcon = 0;
 	HBRUSH	brBack;
 	LONG	lIconSize = 32;
 
-	m_pWnd = _p;
 	m_width = m_pWnd->getWidth();
 	m_height = m_pWnd->getHeight();
 	m_dat = m_pWnd->getDat();
@@ -487,12 +510,17 @@ CThumbBase::CThumbBase(const CProxyWindow* _p)
 	m_hOldFont = 0;
 
 #if defined(__LOGDEBUG_)
-	_DebugTraceW(_T("create CThumbBase with %d, %d"), m_width, m_height);
+	_DebugTraceW(_T("refresh base (background) with %d, %d"), m_width, m_height);
 #endif
 
 	m_rc.right = m_width;
 	m_rc.bottom = m_height;
 	m_rc.left = m_rc.top = 0;
+
+	if(m_hbmThumb) {
+		::DeleteObject(m_hbmThumb);
+		m_hbmThumb = 0;
+	}
 
 	HDC dc = ::GetDC(m_pWnd->getHwnd());
 	m_hdc = ::CreateCompatibleDC(dc);
@@ -563,16 +591,17 @@ CThumbBase::CThumbBase(const CProxyWindow* _p)
 	m_cx = m_rcIcon.right - m_rcIcon.left;
 	m_cy = m_rcIcon.bottom - m_rcIcon.top;
 }
-
 /**
  * destroy the thumbnail object. Just delete the bitmap we cached
  * @return
  */
 CThumbBase::~CThumbBase()
 {
-	if(m_hbmThumb)
+	if(m_hbmThumb) {
 		::DeleteObject(m_hbmThumb);
-
+		m_hbmThumb = 0;
+		m_isValid = false;
+	}
 #if defined(__LOGDEBUG_)
 	_DebugTraceW(_T("destroy CThumbBase"));
 #endif
@@ -588,6 +617,17 @@ CThumbBase::~CThumbBase()
 CThumbIM::CThumbIM(const CProxyWindow* _p) : CThumbBase(_p)
 {
 	renderContent();
+	setValid(true);
+}
+
+/**
+ * update the thumbnail
+ */
+void CThumbIM::update()
+{
+	renderBase();
+	renderContent();
+	setValid(true);
 }
 
 /**
@@ -662,8 +702,21 @@ void CThumbIM::renderContent()
 CThumbMUC::CThumbMUC(const CProxyWindow* _p) : CThumbBase(_p)
 {
 	renderContent();
+	setValid(true);
 }
 
+/**
+ * update an invalidated thumbnail
+ */
+void CThumbMUC::update()
+{
+	renderBase();
+	renderContent();
+	setValid(true);
+}
+/**
+ * render content area for a MUC thumbnail
+ */
 void CThumbMUC::renderContent()
 {
 	if(m_dat->si) {
@@ -673,11 +726,23 @@ void CThumbMUC::renderContent()
 
 		if(mi) {
 			if(m_dat->si->iType != GCW_SERVER) {
-				mir_sntprintf(tszTemp, SIZEOF(tszTemp), _T("Chat room %s"), m_dat->si->ptszStatusbarText);
+				TCHAR*	_p = _tcschr(m_dat->si->ptszStatusbarText, ']');
+				if(_p) {
+					_p++;
+					TCHAR	_t = *_p;
+					*_p = 0;
+					mir_sntprintf(tszTemp, SIZEOF(tszTemp), CTranslator::get(CTranslator::GEN_TASKBAR_STRING_CHAT_ROOM), m_dat->si->ptszStatusbarText);
+					*_p = _t;
+				}
+				else
+					mir_sntprintf(tszTemp, SIZEOF(tszTemp), CTranslator::get(CTranslator::GEN_TASKBAR_STRING_CHAT_ROOM), _T(""));
+				CSkin::RenderText(m_hdc, m_dat->hThemeToolbar, tszTemp, &m_rcIcon, m_dtFlags | DT_SINGLELINE | DT_RIGHT, 10);
+				m_rcIcon.top += m_sz.cy;
+				mir_sntprintf(tszTemp, SIZEOF(tszTemp), _T("%d users"), m_dat->si->nUsersInNicklist);
 				CSkin::RenderText(m_hdc, m_dat->hThemeToolbar, tszTemp, &m_rcIcon, m_dtFlags | DT_SINGLELINE | DT_RIGHT, 10);
 			}
 			else {
-				mir_sntprintf(tszTemp, SIZEOF(tszTemp), _T("Server window"));
+				mir_sntprintf(tszTemp, SIZEOF(tszTemp), CTranslator::get(CTranslator::GEN_STRING_SERVER_WINDOW));
 				CSkin::RenderText(m_hdc, m_dat->hThemeToolbar, tszTemp, &m_rcIcon, m_dtFlags | DT_SINGLELINE | DT_RIGHT, 10);
 				if(mi->tszIdleMsg[0] && _tcslen(mi->tszIdleMsg) > 2) {
 					m_rcIcon.top += m_sz.cy;

@@ -197,7 +197,8 @@ struct TContainerSettings {
 	TCHAR	szTitleFormat[TITLE_FORMATLEN + 2];
 	WORD	avatarMode;
 	WORD	ownAvatarMode;
-	BYTE	reserved[12];
+	WORD	autoCloseSeconds;
+	BYTE	reserved[10];
 };
 
 struct TContainerData {
@@ -455,7 +456,7 @@ struct TNewWindowData {
 #define CNT_DONTREPORT 0x40
 #define CNT_FLASHALWAYS 0x80
 #define CNT_TRANSPARENCY 0x100
-//#define CNT_TITLE_PRIVATE 0x200
+#define CNT_AUTOHIDE 0x200
 //#define CNT_GLOBALSETTINGS 0x400
 #define CNT_GLOBALSIZE 0x800
 #define CNT_INFOPANEL 0x1000
@@ -571,7 +572,7 @@ struct TNewWindowData {
 #define DM_SETICON           (WM_USER+68)
 #define DM_CLOSEIFMETA		 (WM_USER+69)
 #define DM_CHECKQUEUEFORCLOSE (WM_USER+70)
-//#define DM_QUERYSTATUS       (WM_USER+71)
+#define DM_CHECKAUTOHIDE       (WM_USER+71)
 #define DM_SETPARENTDIALOG   (WM_USER+72)
 #define DM_HANDLECLISTEVENT  (WM_USER+73)
 #define DM_TRAYICONNOTIFY    (WM_USER+74)

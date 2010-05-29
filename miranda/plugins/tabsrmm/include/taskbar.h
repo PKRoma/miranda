@@ -47,6 +47,9 @@ public:
 	virtual ~CThumbBase		();
 
 	const HBITMAP			getHBM() const { return(m_hbmThumb); }
+	const bool				isValid() const { return(m_isValid); }
+	virtual void			setValid(const bool fNewValid) { m_isValid = fNewValid; }
+	virtual void			update() = 0;
 
 protected:
 	HBITMAP					m_hbmThumb, m_hbmOld;
@@ -60,8 +63,13 @@ protected:
 	LONG					m_cx, m_cy;
 	HFONT					m_hOldFont;
 
+	virtual void			renderBase();
+
 private:
 	virtual void			renderContent() = 0;
+
+private:
+	bool					m_isValid;
 };
 
 class CThumbIM : public CThumbBase {
@@ -69,6 +77,7 @@ class CThumbIM : public CThumbBase {
 public:
 	CThumbIM				(const CProxyWindow* pWnd);
 	virtual ~CThumbIM		() {};
+	void					update();
 
 private:
 	void					renderContent();
@@ -79,6 +88,7 @@ class CThumbMUC : public CThumbBase {
 public:
 	CThumbMUC				(const CProxyWindow* pWnd);
 	virtual ~CThumbMUC		() {};
+	void					update();
 
 private:
 	void					renderContent();
@@ -94,7 +104,7 @@ public:
 	void					updateTitle(const TCHAR *tszTitle) const;
 	void					setBigIcon(const HICON hIcon, bool fInvalidate = true);
 	void					activateTab() const;
-	void					Invalidate();
+	void					Invalidate() const;
 	const TWindowData*		getDat() const { return(m_dat); }
 	const LONG				getWidth() const { return(m_width); }
 	const LONG				getHeight() const { return(m_height); }
@@ -113,7 +123,7 @@ private:
 	LRESULT CALLBACK		wndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 	void 					sendThumb(LONG width, LONG height);
 	void					sendPreview();
-	const CThumbBase*		m_thumb;
+	CThumbBase*				m_thumb;
 };
 
 class CTaskbarInteract
@@ -131,7 +141,6 @@ public:
 			if(0 == m_pTaskbarInterface)
 				m_isEnabled = false;
 		}
-		m_hwndClist = reinterpret_cast<HWND>(::CallService(MS_CLUI_GETHWND, 0, 0));
 
 		/*
 		 * register proxy window class
@@ -164,7 +173,7 @@ public:
 	LONG			updateMetrics					();
 	void			registerTab						(const HWND hwndTab, const HWND hwndContainer) const;
 	void			unRegisterTab					(const HWND hwndTab) const;
-	void			SetTabActive					(const HWND hwndTab) const;
+	void			SetTabActive					(const HWND hwndTab, const HWND hwndGroup) const;
 	void			setThumbnailClip				(const HWND hwndTab, const RECT* rc) const;
 
 	//const TCHAR*	getFileNameFromWindow			(const HWND hWnd);
@@ -174,7 +183,6 @@ private:
 	bool										m_fHaveLargeicons;
 	bool										m_fHaveAlwaysGrouping;
 	LONG										m_IconSize;
-	HWND										m_hwndClist;
 };
 
 extern CTaskbarInteract* Win7Taskbar;

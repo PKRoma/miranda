@@ -1906,6 +1906,10 @@ void CSkin::setupTabCloseBitmap(bool fDeleteOnly)
  * and one image for the glowing effect on tabs (also flipped for bottom
  * tabs).
  *
+ * support for custom images added 3.0.0.34
+ * user can place images with a custom_ prefix into the images folder and
+ * they will be loaded instead the default ones.
+ *
  * the 3rd image acts as background for switch bar buttons
  *
  * this is executed when:
@@ -1957,7 +1961,9 @@ void CSkin::setupAeroSkins()
 		}
 	}
 
-	mir_sntprintf(tszFilename, MAX_PATH, _T("%stabskin_aero.png"), tszBasePath);
+	mir_sntprintf(tszFilename, MAX_PATH, _T("%scustom_tabskin_aero.png"), tszBasePath);
+	if(!PathFileExists(tszFilename))
+		mir_sntprintf(tszFilename, MAX_PATH, _T("%stabskin_aero.png"), tszBasePath);
 
 	if(CMimAPI::m_pfnDwmGetColorizationColor && M->isAero())
 		CMimAPI::m_pfnDwmGetColorizationColor(&m_dwmColor, &isOpaque);
@@ -2042,7 +2048,9 @@ void CSkin::setupAeroSkins()
 	m_tabBottom->setMetrics(bm.bmWidth, bm.bmHeight);
 
 
-	mir_sntprintf(tszFilename, MAX_PATH, _T("%stabskin_aero_glow.png"), tszBasePath);
+	mir_sntprintf(tszFilename, MAX_PATH, _T("%scustom_tabskin_aero_glow.png"), tszBasePath);
+	if(!PathFileExists(tszFilename))
+		mir_sntprintf(tszFilename, MAX_PATH, _T("%stabskin_aero_glow.png"), tszBasePath);
 
 	fib = (FIBITMAP *)CallService(MS_IMG_LOAD, (WPARAM)tszFilename, IMGL_TCHAR | IMGL_RETURNDIB);
 
@@ -2078,7 +2086,9 @@ void CSkin::setupAeroSkins()
 	/*
 	 * background item for the button switch bar
 	 */
-	mir_sntprintf(tszFilename, MAX_PATH, _T("%stabskin_aero_button.png"), tszBasePath);
+	mir_sntprintf(tszFilename, MAX_PATH, _T("%scustom_tabskin_aero_button.png"), tszBasePath);
+	if(!PathFileExists(tszFilename))
+		mir_sntprintf(tszFilename, MAX_PATH, _T("%stabskin_aero_button.png"), tszBasePath);
 
 	hbm  = (HBITMAP)CallService(MS_IMG_LOAD, (WPARAM)tszFilename, IMGL_TCHAR);
 
@@ -2591,13 +2601,13 @@ void CSkin::RenderToolbarBG(const TWindowData *dat, HDC hdc, const RECT &rcWindo
 		dat->pContainer->szOldToolbarSize.cx = cx;
 		dat->pContainer->szOldToolbarSize.cy = cy;
 
-		if(!fMustDrawNonThemed && CMimAPI::m_pfnDrawThemeBackground != 0) {
+		if(!fMustDrawNonThemed && M->isVSThemed()) {
 			CMimAPI::m_pfnDrawThemeBackground(dat->hThemeToolbar, dat->pContainer->cachedToolbarDC, 6, 1,
 				&rcCachedToolbar, &rcCachedToolbar);
 			dat->pContainer->bTBRenderingMode = 1;				// tell TSButton how to render the tool bar buttons
 		}
 		else {
-			dat->pContainer->bTBRenderingMode = 0;
+			dat->pContainer->bTBRenderingMode = (M->isVSThemed() ? 1 : 0);
 			m_tmp_tb_high = PluginConfig.m_tbBackgroundHigh ? PluginConfig.m_tbBackgroundHigh :
 					(m_pCurrentAeroEffect ? m_pCurrentAeroEffect->m_clrToolbar : ::GetSysColor(COLOR_3DFACE));
 			m_tmp_tb_low = PluginConfig.m_tbBackgroundLow ? PluginConfig.m_tbBackgroundLow :

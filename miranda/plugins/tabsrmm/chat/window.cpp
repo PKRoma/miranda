@@ -284,6 +284,7 @@ static void Chat_UpdateWindowState(TWindowData *dat, UINT msg)
 	if(dat->pWnd)
 		dat->pWnd->activateTab();
 
+	dat->dwUnread = 0;
 	if (dat->pContainer->hwndSaved == hwndDlg || dat->bWasDeleted)
 		return;
 
@@ -2202,6 +2203,8 @@ INT_PTR CALLBACK RoomWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 				SendMessage(dat->pContainer->hwndStatus, SB_SETTEXT, 0, (LPARAM)szFinalStatusBarText);
 				UpdateStatusBar(dat);
 				dat->Panel->Invalidate();
+				if(dat->pWnd)
+					dat->pWnd->Invalidate();
 				return TRUE;
 			}
 			break;
@@ -2286,12 +2289,17 @@ INT_PTR CALLBACK RoomWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 				Log_StreamInEvent(hwndDlg, si->pLogEnd, si, TRUE, TRUE);
 			break;
 
-		case GC_ADDLOG:
+		case GC_ADDLOG: {
+			BOOL	fInactive = (GetForegroundWindow() != dat->pContainer->hwnd || GetActiveWindow() != dat->pContainer->hwnd);
+
+			if(fInactive)
+				dat->dwUnread++;
+
 			if (g_Settings.UseDividers && g_Settings.DividersUsePopupConfig) {
 				if (!MessageWindowOpened(0, (LPARAM)hwndDlg))
 					SendMessage(hwndDlg, DM_ADDDIVIDER, 0, 0);
 			} else if (g_Settings.UseDividers) {
-				if ((GetForegroundWindow() != dat->pContainer->hwnd || GetActiveWindow() != dat->pContainer->hwnd))
+				if (fInactive)
 					SendMessage(hwndDlg, DM_ADDDIVIDER, 0, 0);
 				else {
 					if (dat->pContainer->hwndActive != hwndDlg)
@@ -2304,6 +2312,7 @@ INT_PTR CALLBACK RoomWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 			else
 				SendMessage(hwndDlg, GC_EVENT_CONTROL + WM_USER + 500, WINDOW_CLEARLOG, 0);
 			break;
+		}
 
 		case GC_ACKMESSAGE:
 			SendDlgItemMessage(hwndDlg, IDC_CHAT_MESSAGE, EM_SETREADONLY, FALSE, 0);
@@ -2712,7 +2721,7 @@ LABEL_SHOWWINDOW:
 							return(_dlgReturn(hwndDlg, 1));
 						}
 
-						LRESULT mim_hotkey_check = CallService(MS_HOTKEY_CHECK, (WPARAM)&message, (LPARAM)Translate(TABSRMM_HK_SECTION_GC));
+						LRESULT mim_hotkey_check = CallService(MS_HOTKEY_CHECK, (WPARAM)&message, (LPARAM)(TABSRMM_HK_SECTION_GC));
 						if(mim_hotkey_check)
 							dat->fkeyProcessed = true;
 						switch(mim_hotkey_check) {								// nothing (yet) FIXME
@@ -3442,16 +3451,6 @@ LABEL_SHOWWINDOW:
 			CInfoPanel::setPanelHandler(dat, wParam, lParam);
 			return(0);
 
-		case WM_GETMINMAXINFO: {
-			MINMAXINFO* mmi = (MINMAXINFO*)lParam;
-			mmi->ptMinTrackSize.x = si->iSplitterX + 43;
-			if (mmi->ptMinTrackSize.x < 350)
-				mmi->ptMinTrackSize.x = 350;
-
-			mmi->ptMinTrackSize.y = si->iSplitterY + 80;
-		}
-		break;
-
 		case WM_RBUTTONUP: {
 			POINT pt;
 			int iSelection;
@@ -3736,6 +3735,10 @@ LABEL_SHOWWINDOW:
 
 		case DM_SAVEMESSAGELOG:
 			DM_SaveLogAsRTF(dat);
+			return(0);
+
+		case DM_CHECKAUTOHIDE:
+			DM_CheckAutoHide(dat, wParam, lParam);
 			return(0);
 
 		case WM_NCDESTROY:

@@ -455,9 +455,9 @@ static HRESULT DrawThemesPartWithAero(const TabControlData *tabdat, HDC hDC, int
 
 	if(tabdat->fAeroTabs) {
 		if(tabdat->dwStyle & TCS_BOTTOM)
-			prcBox->top += (fAero ? 2 : iStateId == PBS_PRESSED ? (PluginConfig.m_bIsXP ? 1 : 0) : 0);
+			prcBox->top += (fAero ? 2 : iStateId == PBS_PRESSED ? (M->isVSThemed() ? 1 : 0) : 0);
 		else if (!fAero)
-			prcBox->bottom -= (iStateId == PBS_PRESSED ? 1 : 0);
+			prcBox->bottom -= (iStateId == PBS_PRESSED ? (M->isVSThemed() ? 1 : 0) : 0);
 
 		if(fAero)
 			FillRect(hDC, prcBox, CSkin::m_BrushBack);

@@ -88,6 +88,33 @@ void TSAPI DM_SaveLogAsRTF(const TWindowData* dat)
 }
 
 /**
+ * This is broadcasted by the container to all child windows to check if the
+ * container can be autohidden or -closed.
+ *
+ * wParam is the autohide timeout (in seconds)
+ * lParam points to a BOOL and a session which wants to prevent auto-hiding
+ * the container must set it to FALSE.
+ *
+ * If no session in the container disagrees, the container will be hidden.
+ */
+void TSAPI DM_CheckAutoHide(const TWindowData* dat, WPARAM wParam, LPARAM lParam)
+{
+	if(dat && lParam) {
+		BOOL	*fResult = (BOOL *)lParam;
+
+		if(GetWindowTextLengthA(GetDlgItem(dat->hwnd, dat->bType == SESSIONTYPE_IM ? IDC_MESSAGE : IDC_CHAT_MESSAGE)) > 0) {
+			*fResult = FALSE;
+			return;				// text entered in the input area -> prevent autohide/cose
+		}
+		if(dat->dwUnread) {
+			*fResult = FALSE;
+			return;				// unread events, do not hide or close the container
+		}
+		if(((GetTickCount() - dat->dwLastActivity) / 1000) <= wParam)
+			*fResult = FALSE;		// time since last activity did not yet reach the threshold.
+	}
+}
+/**
  * checks if the balloon tooltip can be dismissed (usually called by
  * WM_MOUSEMOVE events
  */
@@ -135,7 +162,7 @@ void TSAPI DM_InitTip(TWindowData *dat)
  */
 LRESULT TSAPI DM_GenericHotkeysCheck(MSG *message, TWindowData *dat)
 {
-	LRESULT mim_hotkey_check = CallService(MS_HOTKEY_CHECK, (WPARAM)message, (LPARAM)Translate(TABSRMM_HK_SECTION_GENERIC));
+	LRESULT mim_hotkey_check = CallService(MS_HOTKEY_CHECK, (WPARAM)message, (LPARAM)(TABSRMM_HK_SECTION_GENERIC));
 	HWND	hwndDlg = dat->hwnd;
 
 	switch(mim_hotkey_check) {

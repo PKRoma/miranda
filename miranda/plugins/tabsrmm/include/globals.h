@@ -138,7 +138,6 @@ public:
 	int         m_EscapeCloses;
 	int         m_WarnOnClose;
 	int         m_FlashOnClist;
-	int         m_TabAutoClose;
 	int         m_AlwaysFullToolbarWidth;
 	int         m_LimitStaticAvatarHeight;
 	int         m_SendFormat;

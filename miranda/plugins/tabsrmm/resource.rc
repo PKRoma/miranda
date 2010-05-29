@@ -160,7 +160,7 @@ STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD | WS_CAPTION
 CAPTION "Dialog"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    GROUPBOX        "Message log view mode",IDC_STATIC,4,11,274,33
+    GROUPBOX        "Message log view mode (does not affect open windows)",IDC_STATIC,4,5,274,39
     COMBOBOX        IDC_IEVIEWMODE,8,25,114,46,CBS_DROPDOWNLIST | WS_VSCROLL | WS_GROUP | WS_TABSTOP
     LTEXT           "Select how to display the message log. This setting can be ignored when one of the listed plugins is not installed.",IDC_STATIC,126,17,141,24
     GROUPBOX        "Send text formatting method",IDC_STATIC,4,45,274,33
@@ -200,8 +200,14 @@ BEGIN
     CONTROL         "Only show tab bar when it's needed",IDC_O_NOTABS,"Button",BS_AUTOCHECKBOX | NOT WS_VISIBLE | WS_TABSTOP,105,65,233,10
     CONTROL         "Container stays on top",IDC_O_STICKY,"Button",BS_AUTOCHECKBOX | NOT WS_VISIBLE | WS_TABSTOP,105,77,233,10
     CONTROL         "Vertical maximize",IDC_VERTICALMAX,"Button",BS_AUTOCHECKBOX | NOT WS_VISIBLE | WS_TABSTOP,105,88,233,10
+
+    LTEXT           "Close/hide inactive container after",IDC_O_AUTOHIDE,105,103,122,11
+    EDITTEXT        IDC_AUTOCLOSETABTIME,240,101,41,12,ES_AUTOHSCROLL | ES_NUMBER
+    CONTROL         "",IDC_AUTOCLOSETABSPIN,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,155,171,11,11
+    LTEXT           "sec. (0=never)",IDC_O_AUTOHIDESECONDS,290,103,122,11
+
     CONTROL         "Automatically size input area (*)",IDC_AUTOSPLITTER,
-                    "Button",BS_AUTOCHECKBOX | NOT WS_VISIBLE | WS_TABSTOP,105,99,233,10
+                    "Button",BS_AUTOCHECKBOX | NOT WS_VISIBLE | WS_TABSTOP,105,120,233,10
     CONTROL         "Use default setting",IDC_O_FLASHDEFAULT,"Button",BS_AUTORADIOBUTTON | WS_GROUP,105,64,233,11
     CONTROL         "Flash until focused",IDC_O_FLASHALWAYS,"Button",BS_AUTORADIOBUTTON,105,75,233,12
     CONTROL         "Disable flashing",IDC_O_FLASHNEVER,"Button",BS_AUTORADIOBUTTON,105,88,233,11
@@ -277,13 +283,6 @@ BEGIN
     EDITTEXT        IDC_MAXAVATARHEIGHT,174,127,35,12,ES_AUTOHSCROLL | ES_NUMBER
     CONTROL         "",IDC_AVATARSPIN,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,209,125,9,11
     LTEXT           "(0 = no limit)",IDC_STATIC,224,128,75,11
-    GROUPBOX        "Automatically close tabs and windows",IDC_STATIC,3,162,300,34
-    LTEXT           "Automatically close tabs after",IDC_STATIC,7,173,119,11
-    EDITTEXT        IDC_AUTOCLOSETABTIME,128,171,31,12,ES_AUTOHSCROLL | ES_NUMBER
-    CONTROL         "",IDC_AUTOCLOSETABSPIN,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,155,171,11,11
-    LTEXT           "minutes of inactivity (0 = disable)",IDC_STATIC,173,172,122,11
-    CONTROL         "Also auto-close the last tab and its container",IDC_AUTOCLOSELAST,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,184,280,10
     GROUPBOX        "Miscellaneous options",IDC_STATIC,3,198,300,27
     LTEXT           "Send text formatting:",IDC_STATIC,9,211,132,11
     COMBOBOX        IDC_SENDFORMATTING,143,209,74,46,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP

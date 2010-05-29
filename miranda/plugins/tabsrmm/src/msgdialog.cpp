@@ -352,12 +352,13 @@ static void MsgWindowUpdateState(TWindowData *dat, UINT msg)
 		if(dat->pWnd)
 			dat->pWnd->activateTab();
 		dat->Panel->dismissConfig();
+		dat->dwUnread = 0;
 		if (dat->pContainer->hwndSaved == hwndDlg)
 			return;
 
 		dat->pContainer->hwndSaved = hwndDlg;
 
-		dat->dwTickLastEvent = dat->dwUnread = 0;
+		dat->dwTickLastEvent = 0;
 		dat->dwFlags &= ~MWF_DIVIDERSET;
 		if (KillTimer(hwndDlg, TIMERID_FLASHWND)) {
 			FlashTab(dat, hwndTab, dat->iTabID, &dat->bTabFlash, FALSE, dat->hTabIcon);
@@ -1914,7 +1915,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 							}
 
 							if(msg == WM_KEYDOWN || msg == WM_SYSKEYDOWN) {
-								LRESULT mim_hotkey_check = CallService(MS_HOTKEY_CHECK, (WPARAM)&message, (LPARAM)Translate(TABSRMM_HK_SECTION_IM));
+								LRESULT mim_hotkey_check = CallService(MS_HOTKEY_CHECK, (WPARAM)&message, (LPARAM)(TABSRMM_HK_SECTION_IM));
 								if(mim_hotkey_check)
 									dat->fkeyProcessed = true;
 								switch(mim_hotkey_check) {
@@ -2457,20 +2458,6 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 		case WM_MOUSEACTIVATE:
 			MsgWindowUpdateState(dat, WM_ACTIVATE);
 			return 1;
-
-		case WM_GETMINMAXINFO: {
-			MINMAXINFO *mmi = (MINMAXINFO *) lParam;
-			RECT rcWindow, rcLog;
-			GetWindowRect(hwndDlg, &rcWindow);
-			GetWindowRect(GetDlgItem(hwndDlg, IDC_LOG), &rcLog);
-			mmi->ptMinTrackSize.x = rcWindow.right - rcWindow.left - ((rcLog.right - rcLog.left) - dat->minEditBoxSize.cx);
-			mmi->ptMinTrackSize.y = rcWindow.bottom - rcWindow.top - ((rcLog.bottom - rcLog.top) - dat->minEditBoxSize.cy);
-			if (CallService(MTH_GET_PREVIEW_SHOWN, 0, 0))	//when preview is shown, fit the maximum size of message-dialog.
-				mmi->ptMaxSize.y = GetSystemMetrics(SM_CYSCREEN) - CallService(MTH_GET_PREVIEW_HEIGHT , 0, 0);//max-height
-			else
-				mmi->ptMaxSize.y = GetSystemMetrics(SM_CYSCREEN);
-			return 0;
-		}
 
 		case DM_UPDATEPICLAYOUT:
 			LoadContactAvatar(dat);
@@ -3433,6 +3420,7 @@ quote_from_last:
 		 * sent from the containers heartbeat timer
 		 * wParam = inactivity timer in seconds
 		 */
+		/*
 		case DM_CHECKAUTOCLOSE: {
 			if (GetWindowTextLengthA(GetDlgItem(hwndDlg, IDC_MESSAGE)) > 0)
 				break;              // don't autoclose if message input area contains text
@@ -3446,6 +3434,10 @@ quote_from_last:
 			}
 			break;
 		}
+		*/
+		case DM_CHECKAUTOHIDE:
+			DM_CheckAutoHide(dat, wParam, lParam);
+			return(0);
 
 		// metacontact support
 

@@ -1389,11 +1389,13 @@ buttons_done:
 
 		case WM_TIMER:
 			if (wParam == TIMERID_HEARTBEAT) {
+				/*
 				int i;
 				TCITEM item = {0};
 				DWORD dwTimeout;
+				*/
 				struct TWindowData *dat = 0;
-
+				/*
 				item.mask = TCIF_PARAM;
 				if ((dwTimeout = PluginConfig.m_TabAutoClose) > 0) {
 					int clients = TabCtrl_GetItemCount(GetDlgItem(hwndDlg, IDC_MSGTABS));
@@ -1411,6 +1413,14 @@ buttons_done:
 						}
 					}
 					mir_free(hwndClients);
+				}
+				*/
+				if(GetForegroundWindow() != hwndDlg && (pContainer->settings->autoCloseSeconds > 0) && !pContainer->fHidden) {
+					BOOL fResult = TRUE;
+					BroadCastContainer(pContainer, DM_CHECKAUTOHIDE, (WPARAM)pContainer->settings->autoCloseSeconds, (LPARAM)&fResult);
+
+					if(fResult && 0 == pContainer->hWndOptions)
+						PostMessage(hwndDlg, WM_CLOSE, 1, 0);
 				}
 				dat = (TWindowData *)GetWindowLongPtr(pContainer->hwndActive, GWLP_USERDATA);
 				if(dat && dat->bType == SESSIONTYPE_IM) {

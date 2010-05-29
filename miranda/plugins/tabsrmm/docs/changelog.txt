@@ -35,6 +35,19 @@ are currently no downloads for it, you'll have to compile it from source.
 			Detailed change log
 			===================
 
+Version 3.0.0.35 - 2010/05/29
+
+	* taskbar thumbnails (Win7): better support for MUC tabs, set active session
+	  should now work.
+	  
+	* autoclose tabs: converted to a more useful autoclose/autohide container 
+	  feature and moved to container options.
+	  
+	* fixed a bug where installing a language pack could break hotkeys (translation
+	  issue)
+	
+	* fixed "black tool bar bug" when classic windows theme is active on XP or later.
+			  
 Version 3.0.0.34 - 2010/05/27
 
 	* fixed crash when running on Windows 2000

@@ -306,6 +306,12 @@ TCHAR* CTranslator::m_strings[STR_LAST] = {
 	LPGENT("Add this contact permanently to your contact list"),						/* GEN_TOOLTIP_ADDCONTACT */
 	LPGENT("Do not add this contact permanently"),										/* GEN_TOOLTIP_DONTADD */
 	LPGENT("Expand or collapse the side bar"),											/* GEN_TOOLTIP_EXPANDSIDEBAR */
+
+	/*
+	 * task bar support (thumbnails)
+	 */
+	LPGENT("Chat room %s"),																/* GEN_TASKBAR_STRING_CHAT_ROOM */
+	LPGENT("Server window"),															/* GEN_STRING_SERVER_WINDOW */
 };
 
 /*

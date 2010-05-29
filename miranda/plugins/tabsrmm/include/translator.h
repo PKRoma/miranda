@@ -275,7 +275,9 @@ public:
 		GEN_TOOLTIP_ADDCONTACT									= 226,
 		GEN_TOOLTIP_DONTADD										= 227,
 		GEN_TOOLTIP_EXPANDSIDEBAR								= 228,
-		STR_LAST 												= 229
+		GEN_TASKBAR_STRING_CHAT_ROOM							= 229,
+		GEN_STRING_SERVER_WINDOW								= 230,
+		STR_LAST 												= 231
 	};
 
 	enum {

@@ -1366,6 +1366,7 @@ UINT TSAPI GetIEViewMode(HWND hwndDlg, HANDLE hContact)
 	return iWantHPP ? WANT_HPP_LOG : (iWantIEView ? WANT_IEVIEW_LOG : 0);
 }
 
+#if defined(__FEAT_DEPRECATED_DYNAMICSWITCHLOGVIEWER)
 static void CheckAndDestroyHPP(struct TWindowData *dat)
 {
 	if (dat->hwndHPP) {
@@ -1398,6 +1399,7 @@ void TSAPI CheckAndDestroyIEView(TWindowData *dat)
 		dat->hwndIEView = 0;
 	}
 }
+#endif
 
 void TSAPI SetMessageLog(TWindowData *dat)
 {
@@ -1408,7 +1410,9 @@ void TSAPI SetMessageLog(TWindowData *dat)
 		IEVIEWWINDOW ieWindow;
 
 		ZeroMemory(&ieWindow, sizeof(ieWindow));
+#if defined(__FEAT_DEPRECATED_DYNAMICSWITCHLOGVIEWER)
 		CheckAndDestroyHPP(dat);
+#endif
 		ieWindow.cbSize = sizeof(IEVIEWWINDOW);
 		ieWindow.iType = IEW_CREATE;
 		ieWindow.dwFlags = 0;
@@ -1424,8 +1428,9 @@ void TSAPI SetMessageLog(TWindowData *dat)
 		Utils::enableDlgControl(hwndDlg, IDC_LOG, FALSE);
 	} else if (iLogMode == WANT_HPP_LOG && dat->hwndHPP == 0) {
 		IEVIEWWINDOW ieWindow;
-
+#if defined(__FEAT_DEPRECATED_DYNAMICSWITCHLOGVIEWER)
 		CheckAndDestroyIEView(dat);
+#endif
 		ieWindow.cbSize = sizeof(IEVIEWWINDOW);
 		ieWindow.iType = IEW_CREATE;
 		ieWindow.dwFlags = 0;
@@ -1440,6 +1445,7 @@ void TSAPI SetMessageLog(TWindowData *dat)
 		Utils::showDlgControl(hwndDlg, IDC_LOG, SW_HIDE);
 		Utils::enableDlgControl(hwndDlg, IDC_LOG, FALSE);
 	} else {
+#if defined(__FEAT_DEPRECATED_DYNAMICSWITCHLOGVIEWER)
 		if (iLogMode != WANT_IEVIEW_LOG)
 			CheckAndDestroyIEView(dat);
 		if (iLogMode != WANT_HPP_LOG)
@@ -1449,9 +1455,11 @@ void TSAPI SetMessageLog(TWindowData *dat)
 		dat->hwndIEView = 0;
 		dat->hwndIWebBrowserControl = 0;
 		dat->hwndHPP = 0;
+#endif
 	}
 }
 
+#if defined(__FEAT_DEPRECATED_DYNAMICSWITCHLOGVIEWER)
 void TSAPI SwitchMessageLog(TWindowData *dat, int iMode)
 {
 	HWND hwndDlg = dat->hwnd;
@@ -1480,6 +1488,7 @@ void TSAPI SwitchMessageLog(TWindowData *dat, int iMode)
 		}
 	}
 }
+#endif
 
 void TSAPI FindFirstEvent(TWindowData *dat)
 {
