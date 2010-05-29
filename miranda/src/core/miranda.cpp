@@ -288,6 +288,7 @@ VOID CALLBACK KillAllThreads(HWND, UINT, UINT_PTR, DWORD)
 			Netlib_Logf( NULL, "Thread %08x was abnormally terminated because module '%s' didn't release it. Entry point: %08x",
 				p->hThread, szModuleName, p->addr );
 			TerminateThread( p->hThread, 9999 );
+			CloseHandle(p->hThread);
 			mir_free( p );
 		}
 
@@ -376,18 +377,16 @@ void* GetCurrentThreadEntryPoint()
 INT_PTR UnwindThreadPush(WPARAM wParam,LPARAM lParam)
 {
 	ResetEvent(hThreadQueueEmpty); // thread list is not empty
-	if (WaitForSingleObject(hStackMutex,INFINITE)==WAIT_OBJECT_0)
+	if (WaitForSingleObject(hStackMutex, INFINITE) == WAIT_OBJECT_0)
 	{
-		THREAD_WAIT_ENTRY* p = ( THREAD_WAIT_ENTRY* )mir_calloc( sizeof( THREAD_WAIT_ENTRY ));
+		THREAD_WAIT_ENTRY* p = (THREAD_WAIT_ENTRY*)mir_calloc(sizeof(THREAD_WAIT_ENTRY));
 
-		HANDLE hThread=0;
-		DuplicateHandle(GetCurrentProcess(),GetCurrentThread(),GetCurrentProcess(),&hThread,0,FALSE,DUPLICATE_SAME_ACCESS);
-		p->hThread = hThread;
+		DuplicateHandle(GetCurrentProcess(), GetCurrentThread(), GetCurrentProcess(), &p->hThread, 0, FALSE, DUPLICATE_SAME_ACCESS);
 		p->dwThreadId = GetCurrentThreadId();
         p->pObject = (void*)wParam;
-		p->hOwner = GetInstByAddress(( void* )lParam );
-		p->addr = (PVOID)lParam;
-		threads.insert( p );
+		p->hOwner = GetInstByAddress((void*)lParam);
+		p->addr = (void*)lParam;
+		threads.insert(p);
 
  		//Netlib_Logf( NULL, "*** pushing thread %x[%x] (%d)", hThread, GetCurrentThreadId(), threads.count );
 		ReleaseMutex(hStackMutex);
