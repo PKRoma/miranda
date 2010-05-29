@@ -298,7 +298,7 @@ static int NetlibInitSocks5Connection(struct NetlibConnection *nlc,struct Netlib
 	return 1;
 }
 
-static int NetlibInitHttpsConnection(struct NetlibConnection *nlc,struct NetlibUser *nlu,NETLIBOPENCONNECTION *nloc)
+static bool NetlibInitHttpsConnection(struct NetlibConnection *nlc, struct NetlibUser *nlu, NETLIBOPENCONNECTION *nloc)
 {	//rfc2817
 	NETLIBHTTPREQUEST nlhrSend = {0}, *nlhrReply;
 	char szUrl[512];
@@ -314,7 +314,7 @@ static int NetlibInitHttpsConnection(struct NetlibConnection *nlc,struct NetlibU
 	{
 		IN_ADDR addr;
 		DWORD ip = DnsLookup(nlu, nloc->szHost);
-		if (ip == 0) return 0;
+		if (ip == 0) return false;
 		addr.S_un.S_addr = ip;
 		mir_snprintf(szUrl, SIZEOF(szUrl), "%s:%u", inet_ntoa(addr), nloc->wPort);
 	}
@@ -329,7 +329,7 @@ static int NetlibInitHttpsConnection(struct NetlibConnection *nlc,struct NetlibU
 	}
 	nlhrReply = (NETLIBHTTPREQUEST*)NetlibHttpRecvHeaders((WPARAM)nlc, MSG_DUMPPROXY | MSG_RAW);
 	nlc->usingHttpGateway = false;
-	if (nlhrReply == NULL) return 0;
+	if (nlhrReply == NULL) return false;
 	if (nlhrReply->resultCode < 200 || nlhrReply->resultCode >= 300)
 	{
 		NetlibHttpSetLastErrorUsingHttpResult(nlhrReply->resultCode);
@@ -339,7 +339,7 @@ static int NetlibInitHttpsConnection(struct NetlibConnection *nlc,struct NetlibU
 	}
 	NetlibHttpFreeRequestStruct(0, (LPARAM)nlhrReply);
 	//connected
-	return 1;
+	return true;
 }
 
 static void FreePartiallyInitedConnection(struct NetlibConnection *nlc)
@@ -469,6 +469,24 @@ unblock:
 	return rc;
 }
 
+static int NetlibHttpFallbackToDirect(struct NetlibConnection *nlc, struct NetlibUser *nlu, NETLIBOPENCONNECTION *nloc)
+{
+	if (nlc->s) closesocket(nlc->s);
+	nlc->s = NULL;
+
+	nlc->proxyType = 0;
+	nlc->sinProxy.sin_family = AF_INET;
+	nlc->sinProxy.sin_port = htons(nloc->wPort);
+	nlc->sinProxy.sin_addr.S_un.S_addr = DnsLookup(nlu, nloc->szHost);
+	if (nlc->sinProxy.sin_addr.S_un.S_addr == 0 || my_connect(nlc, nloc) == SOCKET_ERROR) 
+	{
+		if (nlc->sinProxy.sin_addr.S_un.S_addr)
+			NetlibLogf(nlu, "%s %d: %s() failed (%u)", __FILE__, __LINE__, "connect", WSAGetLastError());
+		return false;
+	}
+	return true;
+}
+
 bool NetlibDoConnect(NetlibConnection *nlc)
 {
 	NETLIBOPENCONNECTION *nloc = &nlc->nloc;
@@ -513,8 +531,15 @@ bool NetlibDoConnect(NetlibConnection *nlc)
 
 	if (my_connect(nlc, nloc)==SOCKET_ERROR) 
 	{
-		NetlibLogf(nlu,"%s %d: %s() failed (%u)",__FILE__,__LINE__,"connect",WSAGetLastError());
-		return false;
+		if (usingProxy && (nlc->proxyType == PROXYTYPE_HTTPS || nlc->proxyType == PROXYTYPE_HTTP))
+		{
+			usingProxy = false;
+			if (!NetlibHttpFallbackToDirect(nlc, nlu, nloc))
+			{
+				NetlibLogf(nlu,"%s %d: %s() failed (%u)",__FILE__,__LINE__,"connect",WSAGetLastError());
+				return false;
+			}
+		}
 	}
 
 	if (usingProxy && !((nloc->flags & (NLOCF_HTTP | NLOCF_SSL)) == NLOCF_HTTP && 
@@ -522,7 +547,7 @@ bool NetlibDoConnect(NetlibConnection *nlc)
 	{
 		if (!WaitUntilWritable(nlc->s,30000)) return false;
 
-		switch(nlc->proxyType) 
+		switch (nlc->proxyType) 
 		{
 			case PROXYTYPE_SOCKS4:
 				if (!NetlibInitSocks4Connection(nlc, nlu, nloc)) return false;
@@ -533,7 +558,12 @@ bool NetlibDoConnect(NetlibConnection *nlc)
 				break;
 
 			case PROXYTYPE_HTTPS:
-				if (!NetlibInitHttpsConnection(nlc, nlu, nloc)) return false;
+				if (!NetlibInitHttpsConnection(nlc, nlu, nloc))
+				{
+					usingProxy = false;
+					if (!NetlibHttpFallbackToDirect(nlc, nlu, nloc))
+						return false;
+				}
 				break;
 
 			case PROXYTYPE_HTTP:
@@ -543,17 +573,9 @@ bool NetlibDoConnect(NetlibConnection *nlc)
 					if (!NetlibInitHttpsConnection(nlc, nlu, nloc))
 					{
 						//can't do HTTPS: try direct
-						closesocket(nlc->s);
-
-						nlc->sinProxy.sin_family = AF_INET;
-						nlc->sinProxy.sin_port = htons(nloc->wPort);
-						nlc->sinProxy.sin_addr.S_un.S_addr = DnsLookup(nlu, nloc->szHost);
-						if(nlc->sinProxy.sin_addr.S_un.S_addr == 0 || my_connect(nlc, nloc) == SOCKET_ERROR) 
-						{
-							if (nlc->sinProxy.sin_addr.S_un.S_addr)
-								NetlibLogf(nlu, "%s %d: %s() failed (%u)", __FILE__, __LINE__, "connect", WSAGetLastError());
+						usingProxy = false;
+						if (!NetlibHttpFallbackToDirect(nlc, nlu, nloc))
 							return false;
-						}
 					}
 				}
 				else if (!NetlibInitHttpConnection(nlc, nlu, nloc)) return false;

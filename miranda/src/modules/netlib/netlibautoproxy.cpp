@@ -194,9 +194,9 @@ bool NetlibGetIeProxyConn(NetlibConnection *nlc)
 	if (p) { *p = 0; ++p; }
 
 	lrtrim(h); ltrim(p);
-	if (_stricmp(m, "proxy") == 0 && h[0] && !noHttp)
+	if (_stricmp(m, "proxy") == 0 && h[0])
 	{
-		nlc->proxyType = usingSsl ? PROXYTYPE_HTTPS : PROXYTYPE_HTTP;
+		nlc->proxyType = (usingSsl || noHttp) ? PROXYTYPE_HTTPS : PROXYTYPE_HTTP;
 		nlc->wProxyPort = p ? atol(p) : 8080;
 		nlc->szProxyServer = mir_strdup(h);
 	}
@@ -328,7 +328,7 @@ char* NetlibGetIeProxy(char *szUrl)
 		else if (strstr(szUrl, "https://")) 
 			ind = bOneProxy ? 0 : (szProxyHost[1] ? 1 : 2);
 		else
-			ind = 2;
+			ind = szProxyHost[2] ? 2 : (bOneProxy ? 0 : (szProxyHost[1] ? 1 : 2));
 
 		if (ind < 0 || !szProxyHost[ind]) return NULL;
 		
