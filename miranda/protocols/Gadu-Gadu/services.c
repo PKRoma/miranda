@@ -78,17 +78,19 @@ HICON gg_geticon(PROTO_INTERFACE *proto, int iconIndex)
 	if (LOWORD(iconIndex) == PLI_PROTOCOL)
 	{
 		HICON hIcon;
+		BOOL big;
 
 		if (iconIndex & PLIF_ICOLIBHANDLE)
 			return (HICON)GetIconHandle(IDI_GG);
 
-		hIcon = LoadIconEx("main");
+		big = (iconIndex & PLIF_SMALL) == 0;
+		hIcon = LoadIconEx("main", big);
 
 		if (iconIndex & PLIF_ICOLIB)
 			return hIcon;
 
 		hIcon = CopyIcon(hIcon);
-		ReleaseIconEx("main");
+		ReleaseIconEx("main", big);
 		return hIcon;
 	}
 

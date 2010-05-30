@@ -576,9 +576,21 @@ DWORD_PTR __cdecl CIrcProto::GetCaps( int type, HANDLE )
 
 HICON __cdecl CIrcProto::GetIcon( int iconIndex )
 {
-	if (( iconIndex & 0xFFFF ) == PLI_PROTOCOL )
-		return ( HICON )LoadImage(hInst,MAKEINTRESOURCE(IDI_MAIN),IMAGE_ICON,16,16,LR_SHARED);
+	if (LOWORD(iconIndex) == PLI_PROTOCOL)
+	{
+		if (iconIndex & PLIF_ICOLIBHANDLE)
+			return (HICON)GetIconHandle(IDI_MAIN);
+		
+		bool big = (iconIndex & PLIF_SMALL) == 0;
+		HICON hIcon = LoadIconEx(IDI_MAIN, big);
 
+		if (iconIndex & PLIF_ICOLIB)
+			return hIcon;
+
+		HICON hIcon2 = CopyIcon(hIcon);
+		ReleaseIconEx(hIcon);
+		return hIcon2;
+	}
 	return NULL;
 }
 

@@ -725,13 +725,13 @@ HICON __cdecl CJabberProto::GetIcon( int iconIndex )
 		if (iconIndex & PLIF_ICOLIBHANDLE)
 			return (HICON)GetIconHandle(IDI_JABBER);
 		
-		bool big = (iconIndex & PLIF_LARGE) != 0;
+		bool big = (iconIndex & PLIF_SMALL) == 0;
 		HICON hIcon = LoadIconEx("main", big);
 
 		if (iconIndex & PLIF_ICOLIB)
 			return hIcon;
 
-		HICON hIcon2 =  CopyIcon(hIcon);
+		HICON hIcon2 = CopyIcon(hIcon);
 		g_ReleaseIcon(hIcon);
 		return hIcon2;
 	}

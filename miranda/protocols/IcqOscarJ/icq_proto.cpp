@@ -886,7 +886,7 @@ HICON __cdecl CIcqProto::GetIcon( int iconIndex )
 		if (iconIndex & PLIF_ICOLIBHANDLE)
 			return (HICON)m_hIconProtocol->Handle();
 		
-		bool big = (iconIndex & PLIF_LARGE) != 0;
+		bool big = (iconIndex & PLIF_SMALL) == 0;
 		HICON hIcon = m_hIconProtocol->GetIcon(big);
 
 		if (iconIndex & PLIF_ICOLIB)

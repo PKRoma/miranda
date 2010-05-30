@@ -781,13 +781,13 @@ HICON __cdecl CMsnProto::GetIcon(int iconIndex)
 		if (iconIndex & PLIF_ICOLIBHANDLE)
 			return (HICON)GetIconHandle(IDI_MSN);
 		
-		bool big = (iconIndex & PLIF_LARGE) != 0;
+		bool big = (iconIndex & PLIF_SMALL) == 0;
 		HICON hIcon = LoadIconEx("main", big);
 
 		if (iconIndex & PLIF_ICOLIB)
 			return hIcon;
 
-		hIcon =  CopyIcon(hIcon);
+		hIcon = CopyIcon(hIcon);
 		ReleaseIconEx("main", big);
 		return hIcon;
 	}

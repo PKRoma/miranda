@@ -416,13 +416,14 @@ static INT_PTR CALLBACK gg_img_dlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 				SendDlgItemMessage(hwndDlg, IDC_IMG_DELETE,	BUTTONSETASFLATBTN, 0, 0);
 
 				// Setting images for buttons
-				SendDlgItemMessage(hwndDlg, IDC_IMG_PREV,	BM_SETIMAGE, IMAGE_ICON, (LPARAM)LoadIconEx("previous"));
-				SendDlgItemMessage(hwndDlg, IDC_IMG_NEXT,	BM_SETIMAGE, IMAGE_ICON, (LPARAM)LoadIconEx("next"));
-				SendDlgItemMessage(hwndDlg, IDC_IMG_DELETE,	BM_SETIMAGE, IMAGE_ICON, (LPARAM)LoadIconEx("delete"));
-				SendDlgItemMessage(hwndDlg, IDC_IMG_SAVE,	BM_SETIMAGE, IMAGE_ICON, (LPARAM)LoadIconEx("save"));
+				SendDlgItemMessage(hwndDlg, IDC_IMG_PREV,	BM_SETIMAGE, IMAGE_ICON, (LPARAM)LoadIconEx("previous", FALSE));
+				SendDlgItemMessage(hwndDlg, IDC_IMG_NEXT,	BM_SETIMAGE, IMAGE_ICON, (LPARAM)LoadIconEx("next", FALSE));
+				SendDlgItemMessage(hwndDlg, IDC_IMG_DELETE,	BM_SETIMAGE, IMAGE_ICON, (LPARAM)LoadIconEx("delete", FALSE));
+				SendDlgItemMessage(hwndDlg, IDC_IMG_SAVE,	BM_SETIMAGE, IMAGE_ICON, (LPARAM)LoadIconEx("save", FALSE));
 
 				// Set main window image
-				SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)LoadIconEx("image"));
+				SendMessage(hwndDlg, WM_SETICON, ICON_SMALL, (LPARAM)LoadIconEx("image", FALSE));
+				SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)LoadIconEx("image", TRUE));
 				szName = (char *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)dat->hContact, 0);
 
 				if(dat->bReceiving)
@@ -550,11 +551,12 @@ static INT_PTR CALLBACK gg_img_dlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 					img = img->lpNext;
 					gg_img_releasepicture(temp);
 				}
-				ReleaseIconEx("previous");
-				ReleaseIconEx("next");
-				ReleaseIconEx("delete");
-				ReleaseIconEx("save");
-				ReleaseIconEx("image");
+				ReleaseIconEx("previous", FALSE);
+				ReleaseIconEx("next", FALSE);
+				ReleaseIconEx("delete", FALSE);
+				ReleaseIconEx("save", FALSE);
+				ReleaseIconEx("image", FALSE);
+				ReleaseIconEx("image", TRUE);
 				EnterCriticalSection(&gg->img_mutex);
 				list_remove(&gg->imagedlgs, dat, 1);
 				LeaveCriticalSection(&gg->img_mutex);

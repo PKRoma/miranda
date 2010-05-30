@@ -459,9 +459,9 @@ BOOL gg_img_opened(GGPROTO *gg, uin_t uin);
 
 /* IcoLib functions */
 void gg_icolib_init();
-HICON LoadIconEx(const char* name);
+HICON LoadIconEx(const char* name, BOOL big);
 HANDLE GetIconHandle(int iconId);
-void ReleaseIconEx(const char* name);
+void ReleaseIconEx(const char* name, BOOL big);
 
 /* URI parser functions */
 void gg_links_instancemenu_init();

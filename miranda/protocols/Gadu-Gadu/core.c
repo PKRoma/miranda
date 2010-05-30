@@ -890,14 +890,14 @@ retry:
 
 						cle.cbSize = sizeof(cle);
 						cle.hContact = hContact;
-						cle.hIcon = LoadIconEx("image");
+						cle.hIcon = LoadIconEx("image", FALSE);
 						cle.flags = CLEF_URGENT;
 						cle.hDbEvent = (HANDLE)"img";
 						cle.lParam = (LPARAM)img;
 						cle.pszService = service;
 						cle.pszTooltip = Translate("Image received");
 						CallService(MS_CLIST_ADDEVENT, 0, (LPARAM)&cle);
-						ReleaseIconEx("image");
+						ReleaseIconEx("image", FALSE);
 					}
 				}
 				break;
