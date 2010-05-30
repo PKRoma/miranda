@@ -349,8 +349,8 @@ static void  PQDecode(char* str)
 
 static size_t utf8toutf16(char* str, wchar_t* res)
 {
-	wchar_t *dec;
-	mir_utf8decode(str, &dec);
+	wchar_t *dec = mir_utf8decodeW(str);
+	if (dec == NULL) dec = mir_a2t(str);
 	wcscpy(res, dec);
 	mir_free(dec);
 	return wcslen(res);
@@ -359,7 +359,7 @@ static size_t utf8toutf16(char* str, wchar_t* res)
 
 wchar_t* MimeHeaders::decode(const char* val)
 {
-	size_t ssz = strlen(val)+1;
+	size_t ssz = strlen(val) * 2 + 1;
 	char* tbuf = (char*)alloca(ssz);
 	memcpy(tbuf, val, ssz);
 
@@ -411,7 +411,8 @@ wchar_t* MimeHeaders::decode(const char* val)
 			sz = utf8toutf16(fld, resp);
 			ssz -= sz; resp += sz;
 		}
-		else {
+		else
+		{
 			int sz = MultiByteToWideChar(FindCP(cp), 0, fld, -1, resp, (int)ssz);
 			if (sz == 0)
 				sz = MultiByteToWideChar(CP_ACP, 0, fld, -1, resp, (int)ssz);

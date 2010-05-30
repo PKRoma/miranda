@@ -192,6 +192,8 @@ void CMsnProto::InitCustomFolders(void)
 
 char* MSN_GetAvatarHash(char* szContext)
 {
+	if (szContext == NULL) return NULL;
+
 	char* res  = NULL;
 
 	ezxml_t xmli = ezxml_parse_str(NEWSTR_ALLOCA(szContext), strlen(szContext));
