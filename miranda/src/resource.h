@@ -104,7 +104,6 @@
 #define IDD_OPT_FILETRANSFER            250
 #define IDD_FILEEXISTS                  251
 #define IDD_DELETECONTACT               254
-#define IDD_DENYREASON                  256
 #define IDD_ADDCONTACT                  257
 #define IDD_OPT_CONTACT                 261
 #define IDI_DOWNARROW                   264
@@ -171,6 +170,7 @@
 #define IDC_REASON                      1046
 #define IDC_BTN_UNDO                    1047
 #define IDC_EMAIL                       1048
+#define IDC_DENYREASON                  1048
 #define IDC_NAMENICK                    1049
 #define IDC_NAMEFIRST                   1050
 #define IDC_NAMELAST                    1051

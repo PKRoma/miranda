@@ -163,44 +163,6 @@ INT_PTR CALLBACK DlgProcAdded(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
 	return FALSE;
 }
 
-INT_PTR CALLBACK DenyReasonProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
-{
-	switch (msg)
-	{
-		case WM_INITDIALOG:
-			TranslateDialogDefault(hwndDlg);
-			SendDlgItemMessage(hwndDlg, IDC_REASON, EM_LIMITTEXT, 255, 0);
-			SetWindowLongPtr(hwndDlg, GWLP_USERDATA, lParam);
-			return TRUE;
-
-		case WM_COMMAND:
-			if (LOWORD(wParam) == IDOK || LOWORD(wParam) == IDCANCEL)
-            {
-				HANDLE hDbEvent = (HANDLE)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
-				
-				DBEVENTINFO dbei = {0};
-				dbei.cbSize = sizeof(dbei);
-				CallService(MS_DB_EVENT_GET,(WPARAM)hDbEvent,(LPARAM)&dbei);
-
-				if (LOWORD(wParam) == IDOK)
-				{
-					char szReason[256];
-					GetDlgItemTextA(hwndDlg, IDC_REASON, szReason, SIZEOF(szReason));
-					CallProtoService(dbei.szModule, PS_AUTHDENY, (WPARAM)hDbEvent, (LPARAM)szReason);
-				}
-				else
-					CallProtoService(dbei.szModule, PS_AUTHDENY, (WPARAM)hDbEvent, 0);
-			}
-            // fall through
-
-		case WM_CLOSE:
-			EndDialog(hwndDlg,0);
-			return TRUE;
-	}
-
-	return FALSE;
-}
-
 INT_PTR CALLBACK DlgProcAuthReq(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	HANDLE hDbEvent = (HANDLE)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
@@ -274,6 +236,11 @@ INT_PTR CALLBACK DlgProcAuthReq(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			}
 			SetDlgItemTextA(hwndDlg, IDC_MAIL, email[0] ? email : Translate("(Unknown)"));
 			SetDlgItemTextA(hwndDlg, IDC_REASON, reason);
+			SendDlgItemMessage(hwndDlg, IDC_DENYREASON, EM_LIMITTEXT, 255, 0);
+
+			if (CallProtoService(dbei.szModule, PS_GETCAPS,PFLAGNUM_4, 0) & PF4_NOAUTHDENYREASON)
+				EnableWindow(GetDlgItem(hwndDlg, IDC_DENYREASON), FALSE);
+
 			SetWindowLongPtr(GetDlgItem(hwndDlg,IDC_DETAILS), GWLP_USERDATA, (LONG_PTR)hContact);
 		}
 		return TRUE;
@@ -345,18 +312,19 @@ INT_PTR CALLBACK DlgProcAuthReq(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			{
 				DBEVENTINFO dbei = {0};
 				dbei.cbSize = sizeof(dbei);
-
 				CallService(MS_DB_EVENT_GET, (WPARAM)hDbEvent, (LPARAM)&dbei);
 
-				DWORD flags = CallProtoService(dbei.szModule, PS_GETCAPS,PFLAGNUM_4, 0);
-				if (flags & PF4_NOAUTHDENYREASON)
-					CallProtoService(dbei.szModule, PS_AUTHDENY, (WPARAM)hDbEvent, 0);
+				if (IsWindowEnabled(GetDlgItem(hwndDlg, IDC_DENYREASON)))
+				{
+					char szReason[256];
+					GetDlgItemTextA(hwndDlg, IDC_DENYREASON, szReason, SIZEOF(szReason));
+					CallProtoService(dbei.szModule, PS_AUTHDENY, (WPARAM)hDbEvent, (LPARAM)szReason);
+				}
 				else
-					DialogBoxParam(hMirandaInst, MAKEINTRESOURCE(IDD_DENYREASON), hwndDlg,
-						DenyReasonProc, (LPARAM)hDbEvent);
+					CallProtoService(dbei.szModule, PS_AUTHDENY, (WPARAM)hDbEvent, 0);
 			}
 			DestroyWindow(hwndDlg);
-			break;;
+			break;
 		}
 		break;
 
