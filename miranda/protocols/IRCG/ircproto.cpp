@@ -81,6 +81,7 @@ CIrcProto::CIrcProto( const char* szModuleName, const TCHAR* tszUserName ) :
 	CallService( MS_DB_SETSETTINGRESIDENT, TRUE, ( LPARAM )text );
 
 	CList_SetAllOffline(true);
+	AddIcons();
 
 	IRC_MAP_ENTRY("PING", PING)
 	IRC_MAP_ENTRY("JOIN", JOIN)
@@ -211,8 +212,6 @@ int CIrcProto::OnModulesLoaded( WPARAM, LPARAM )
 	TCHAR name[128];
 
 	DBDeleteContactSetting( NULL, m_szModuleName, "JTemp" );
-
-	AddIcons();
 
 	nlu.cbSize = sizeof(nlu);
 	nlu.flags = NUF_OUTGOING|NUF_INCOMING|NUF_HTTPCONNS|NUF_TCHAR;

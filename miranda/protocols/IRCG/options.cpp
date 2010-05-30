@@ -202,21 +202,21 @@ struct
 }
 static iconList[] =
 {
-	{ LPGENT("Main"),              "main",    16, IDI_MAIN    },
-	{ LPGENT("Add"),               "add",     16, IDI_ADD     },
-	{ LPGENT("Apply"),             "apply",   16, IDI_APPLY   },
-	{ LPGENT("Rename"),            "rename",  16, IDI_RENAME  },
-	{ LPGENT("Edit"),              "edit",    16, IDI_EDIT    },
-	{ LPGENT("Cancel"),            "delete",  16, IDI_DELETE  },
-	{ LPGENT("Ignore"),            "block",   16, IDI_BLOCK   },
-	{ LPGENT("Channel list"),      "list",    16, IDI_LIST    },
-	{ LPGENT("Channel manager"),   "manager", 16, IDI_MANAGER },
-	{ LPGENT("Quick connect"),     "quick",   16, IDI_QUICK   },
-	{ LPGENT("Server window"),     "server",  16, IDI_SERVER  },
-	{ LPGENT("Show channel"),      "show",    16, IDI_SHOW    },
-	{ LPGENT("Question"),          "question",16, IDI_IRCQUESTION},
-	{ LPGENT("WhoIs"),             "whois",   16, IDI_WHOIS   },
-	{ LPGENT("Incoming DCC Chat"), "dcc",     16, IDI_DCC     },
+	{ LPGENT("Main"),              "main",     0, IDI_MAIN    },
+	{ LPGENT("Add"),               "add",      0, IDI_ADD     },
+	{ LPGENT("Apply"),             "apply",    0, IDI_APPLY   },
+	{ LPGENT("Rename"),            "rename",   0, IDI_RENAME  },
+	{ LPGENT("Edit"),              "edit",     0, IDI_EDIT    },
+	{ LPGENT("Cancel"),            "delete",   0, IDI_DELETE  },
+	{ LPGENT("Ignore"),            "block",    0, IDI_BLOCK   },
+	{ LPGENT("Channel list"),      "list",     0, IDI_LIST    },
+	{ LPGENT("Channel manager"),   "manager",  0, IDI_MANAGER },
+	{ LPGENT("Quick connect"),     "quick",    0, IDI_QUICK   },
+	{ LPGENT("Server window"),     "server",   0, IDI_SERVER  },
+	{ LPGENT("Show channel"),      "show",     0, IDI_SHOW    },
+	{ LPGENT("Question"),          "question", 0, IDI_IRCQUESTION},
+	{ LPGENT("WhoIs"),             "whois",    0, IDI_WHOIS   },
+	{ LPGENT("Incoming DCC Chat"), "dcc",      0, IDI_DCC     },
 	{ LPGENT("Logo (48x48)"),      "logo",    48, IDI_LOGO    }
 };
 
