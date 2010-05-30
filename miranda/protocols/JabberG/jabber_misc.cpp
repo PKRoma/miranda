@@ -274,7 +274,7 @@ void CJabberProto::GetAvatarFileName( HANDLE hContact, TCHAR* pszDest, size_t cb
 
 	InitCustomFolders();
 
-	if ( hJabberAvatarsFolder == NULL || FoldersGetCustomPathT( hJabberAvatarsFolder, path, cbLen, _T(""))) {
+	if ( hJabberAvatarsFolder == NULL || FoldersGetCustomPathT( hJabberAvatarsFolder, path, (int)cbLen, _T(""))) {
 		TCHAR *tmpPath = Utils_ReplaceVarsT( _T("%miranda_avatarcache%"));
 		tPathLen = mir_sntprintf( pszDest, cbLen, _T("%s\\Jabber"), tmpPath );
 		mir_free(tmpPath);
