@@ -104,7 +104,6 @@
 #define IDD_OPT_FILETRANSFER            250
 #define IDD_FILEEXISTS                  251
 #define IDD_DELETECONTACT               254
-#define IDD_DENYREASON                  256
 #define IDD_ADDCONTACT                  257
 #define IDD_OPT_CONTACT                 261
 #define IDI_DOWNARROW                   264
@@ -172,6 +171,7 @@
 #define IDC_BTN_RESET                   1045
 #define IDC_REASON                      1046
 #define IDC_BTN_UNDO                    1047
+#define IDC_DENYREASON                  1047
 #define IDC_EMAIL                       1048
 #define IDC_NAMENICK                    1049
 #define IDC_NAMEFIRST                   1050
@@ -218,8 +218,6 @@
 #define IDC_BUILDTIME                   1108
 #define IDC_CREDITSFILE                 1109
 #define IDC_NUMBER                      1113
-#define IDC_UIN                         1123
-#define IDC_PROTONAME                   1124
 #define IDC_FINDWHAT                    1131
 #define IDC_FIND                        1132
 #define IDC_FILE                        1133
@@ -352,7 +350,6 @@
 #define IDC_TIMEFORMAT                  1469
 #define IDC_FILENAMEBROWSE              1470
 #define IDC_SHOWTHISDLGATSTART          1471
-#define IDC_DUMPPROXY2                  1473
 #define IDC_DUMPSSL                     1473
 #define IDC_FILEDIRBROWSE               1475
 #define IDC_SCANCMDLINEBROWSE           1476
@@ -390,7 +387,6 @@
 #define IDC_VIRUSSCANNERGROUP           1520
 #define IDC_HIDE                        1534
 #define IDC_TOPLINE                     1535
-#define IDC_MAIL                        1536
 #define IDC_MYHANDLE                    1540
 #define IDC_GROUP                       1541
 #define IDC_ADDED                       1542
@@ -480,7 +476,6 @@
 #define IDC_LV_ERRORS                   1733
 #define IDC_HEADERBAR                   1734
 #define IDC_LV_LEGEND                   1735
-#define IDC_ADDHDR                      1736
 #define IDC_ENABLEBETA                  1737
 #define IDC_ENABLESTABLE                1738
 #define IDC_EFFECT_COLOUR_TEXT1         1853
@@ -518,7 +513,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        323
 #define _APS_NEXT_COMMAND_VALUE         40018
-#define _APS_NEXT_CONTROL_VALUE         1739
+#define _APS_NEXT_CONTROL_VALUE         1740
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif
