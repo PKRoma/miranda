@@ -559,7 +559,7 @@ HWND FtMgr_Show(bool bForceActivate, bool bFromMenu)
 	if (!bJustCreated && IsWindowVisible(hwndFtMgr))
 		return hwndFtMgr;
  
-	ShowWindow(hwndFtMgr, SW_RESTORE);
+	if (!bAutoMin) ShowWindow(hwndFtMgr, SW_RESTORE);
 	ShowWindow(hwndFtMgr, SW_SHOWNOACTIVATE);
  	return hwndFtMgr;
  }
