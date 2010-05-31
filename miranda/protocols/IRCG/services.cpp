@@ -31,81 +31,80 @@ void CIrcProto::InitMenus()
 	CLISTMENUITEM mi = { 0 };
 	mi.cbSize = sizeof( mi );
 	mi.pszService = temp;
-	mi.flags = CMIF_ICONFROMICOLIB;
 
 	if ( bChatInstalled ) {
-		// Root popupmenuitem
-		mi.ptszName = m_tszUserName;
-		mi.position = -1999901010;
-		mi.pszPopupName = (char *)-1;
-		mi.flags |= CMIF_ROOTPOPUP | CMIF_TCHAR | CMIF_KEEPUNTRANSLATED;
-		mi.icolibItem = GetIconHandle(IDI_MAIN);
-		hMenuRoot = (HANDLE)CallService( MS_CLIST_ADDMAINMENUITEM,  (WPARAM)0, (LPARAM)&mi);
+		hMenuRoot = MO_GetProtoRootMenu( m_szModuleName );
+		if ( hMenuRoot == NULL ) {
+			// Root popupmenuitem
+			mi.ptszName = m_tszUserName;
+			mi.position = -1999901010;
+			mi.pszPopupName = (char *)-1;
+			mi.flags = CMIF_ICONFROMICOLIB | CMIF_ROOTPOPUP | CMIF_TCHAR | CMIF_KEEPUNTRANSLATED;
+			mi.icolibItem = GetIconHandle(IDI_MAIN);
+			hMenuRoot = ( HGENMENU )CallService( MS_CLIST_ADDMAINMENUITEM,  (WPARAM)0, (LPARAM)&mi);
+		}
 		
-		mi.flags &= ~(CMIF_ROOTPOPUP | CMIF_TCHAR | CMIF_KEEPUNTRANSLATED);
-		mi.flags |= CMIF_CHILDPOPUP;
-
+		mi.flags = CMIF_ICONFROMICOLIB | CMIF_CHILDPOPUP;
 		mi.pszName = LPGEN("&Quick connect");
 		mi.icolibItem = GetIconHandle(IDI_QUICK);
 		strcpy( d, IRC_QUICKCONNECT );
-		mi.position = 500090000;
-		mi.pszPopupName = (char *)hMenuRoot;
-		hMenuQuick= (HANDLE)CallService( MS_CLIST_ADDMAINMENUITEM, (WPARAM)0, (LPARAM)&mi);
+		mi.position = 201001;
+		mi.hParentMenu = hMenuRoot;
+		hMenuQuick = ( HGENMENU )CallService( MS_CLIST_ADDPROTOMENUITEM, (WPARAM)0, (LPARAM)&mi);
 
 		mi.pszName = LPGEN("&Join channel");
 		mi.icolibItem = LoadSkinnedIconHandle(SKINICON_CHAT_JOIN);//GetIconHandle(IDI_JOIN);
 		strcpy( d, IRC_JOINCHANNEL );
-		mi.position = 500090001;
-		hMenuJoin = (HANDLE)CallService( MS_CLIST_ADDMAINMENUITEM, (WPARAM)0, (LPARAM)&mi);
+		mi.position = 201002;
+		hMenuJoin = ( HGENMENU )CallService( MS_CLIST_ADDPROTOMENUITEM, (WPARAM)0, (LPARAM)&mi);
 
 		mi.pszName = LPGEN("&Change your nickname");
 		mi.icolibItem = GetIconHandle(IDI_RENAME);
 		strcpy( d, IRC_CHANGENICK );
-		mi.position = 500090002;
-		hMenuNick = (HANDLE)CallService( MS_CLIST_ADDMAINMENUITEM, (WPARAM)0, (LPARAM)&mi);
+		mi.position = 201003;
+		hMenuNick = ( HGENMENU )CallService( MS_CLIST_ADDPROTOMENUITEM, (WPARAM)0, (LPARAM)&mi);
 
 		mi.pszName = LPGEN("Show the &list of available channels");
 		mi.icolibItem = GetIconHandle(IDI_LIST);
 		strcpy( d, IRC_SHOWLIST );
-		mi.position = 500090003;
-		hMenuList = (HANDLE)CallService( MS_CLIST_ADDMAINMENUITEM, (WPARAM)0, (LPARAM)&mi);
+		mi.position = 201004;
+		hMenuList = ( HGENMENU )CallService( MS_CLIST_ADDPROTOMENUITEM, (WPARAM)0, (LPARAM)&mi);
 
 		mi.pszName = LPGEN("&Show the server window");
 		mi.icolibItem = GetIconHandle(IDI_SERVER);
 		strcpy( d, IRC_SHOWSERVER );
-		mi.position = 500090004;
-		hMenuServer = (HANDLE)CallService( MS_CLIST_ADDMAINMENUITEM, (WPARAM)0, (LPARAM)&mi);
+		mi.position = 201005;
+		hMenuServer = ( HGENMENU )CallService( MS_CLIST_ADDPROTOMENUITEM, (WPARAM)0, (LPARAM)&mi);
 	}
 	
-	mi.flags &= ~CMIF_CHILDPOPUP;
-
+	mi.flags = CMIF_ICONFROMICOLIB;
 	mi.pszName = LPGEN("Channel &settings");
 	mi.icolibItem = GetIconHandle(IDI_MANAGER);
 	strcpy( d, IRC_UM_CHANSETTINGS );
 	mi.pszContactOwner = m_szModuleName;
 	mi.popupPosition = 500090002;
-	hUMenuChanSettings = (void *)CallService( MS_CLIST_ADDCONTACTMENUITEM, (WPARAM)0, (LPARAM)&mi);
+	hUMenuChanSettings = ( HGENMENU )CallService( MS_CLIST_ADDCONTACTMENUITEM, (WPARAM)0, (LPARAM)&mi);
 
 	mi.pszName = LPGEN("&WhoIs info");
 	mi.icolibItem = GetIconHandle(IDI_WHOIS);
 	strcpy( d, IRC_UM_WHOIS );
 	mi.pszContactOwner = m_szModuleName;
 	mi.popupPosition = 500090001;
-	hUMenuWhois = (void *)CallService( MS_CLIST_ADDCONTACTMENUITEM, (WPARAM)0, (LPARAM)&mi);
+	hUMenuWhois = ( HGENMENU )CallService( MS_CLIST_ADDCONTACTMENUITEM, (WPARAM)0, (LPARAM)&mi);
 
 	mi.pszName = LPGEN("Di&sconnect");
 	mi.icolibItem = GetIconHandle(IDI_DELETE);
 	strcpy( d, IRC_UM_DISCONNECT );
 	mi.pszContactOwner = m_szModuleName;
 	mi.popupPosition = 500090001;
-	hUMenuDisconnect = (void *)CallService( MS_CLIST_ADDCONTACTMENUITEM, (WPARAM)0, (LPARAM)&mi);
+	hUMenuDisconnect = ( HGENMENU )CallService( MS_CLIST_ADDCONTACTMENUITEM, (WPARAM)0, (LPARAM)&mi);
 
 	mi.pszName = LPGEN("&Add to ignore list");
 	mi.icolibItem = GetIconHandle(IDI_BLOCK);
 	strcpy( d, IRC_UM_IGNORE );
 	mi.pszContactOwner = m_szModuleName;
 	mi.popupPosition = 500090002;
-	hUMenuIgnore = (void *)CallService( MS_CLIST_ADDCONTACTMENUITEM, (WPARAM)0, (LPARAM)&mi);
+	hUMenuIgnore = ( HGENMENU )CallService( MS_CLIST_ADDCONTACTMENUITEM, (WPARAM)0, (LPARAM)&mi);
 
 	CLISTMENUITEM clmi;
 	memset( &clmi, 0, sizeof( clmi ));

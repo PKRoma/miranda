@@ -478,23 +478,22 @@ void CPepGuiService::InitGui()
 
 void CPepGuiService::RebuildMenu()
 {
-	HGENMENU hJabberRoot = pcli->pfnGetProtocolMenu( m_proto->m_szModuleName );
-	if ( !hJabberRoot ) return;
+	HGENMENU hJabberRoot = MO_GetProtoRootMenu( m_proto->m_szModuleName );
+	if ( hJabberRoot ) {
+		char szService[128];
+		mir_snprintf(szService, SIZEOF(szService), "%s/AdvStatusSet/%s", m_proto->m_szModuleName, m_name);
 
-	char szService[128];
-	mir_snprintf(szService, SIZEOF(szService), "%s/AdvStatusSet/%s", m_proto->m_szModuleName, m_name);
+		CLISTMENUITEM mi = { 0 };
+		mi.cbSize = sizeof(mi);
+		mi.hParentMenu = hJabberRoot;
+		mi.pszService = szService;
+		mi.position = 200010;
+		mi.flags = CMIF_TCHAR | CMIF_ICONFROMICOLIB | CMIF_HIDDEN | CMIF_ROOTHANDLE;
 
-	CLISTMENUITEM mi = { 0 };
-	mi.cbSize = sizeof(mi);
-	mi.hParentMenu = hJabberRoot;
-	mi.pszService = szService;
-	mi.position = 1010;
-	mi.flags = CMIF_TCHAR | CMIF_ICONFROMICOLIB | CMIF_HIDDEN | CMIF_ROOTHANDLE;
-
-	mi.icolibItem = m_hIcolibItem;
-	mi.ptszName = m_szText ? m_szText : _T("<advanced status slot>");
-	m_hMenuItem = (HANDLE)CallService(MS_CLIST_ADDSTATUSMENUITEM, 0, (LPARAM)&mi);
-}
+		mi.icolibItem = m_hIcolibItem;
+		mi.ptszName = m_szText ? m_szText : _T("<advanced status slot>");
+		m_hMenuItem = ( HANDLE )CallService(MS_CLIST_ADDPROTOMENUITEM, 0, (LPARAM)&mi);
+}	}
 
 bool CPepGuiService::LaunchSetGui()
 {

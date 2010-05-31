@@ -152,6 +152,9 @@ typedef struct {
 #define MS_CLIST_ADDCONTACTMENUITEM     "CList/AddContactMenuItem"
 #define MS_CLIST_ADDSTATUSMENUITEM      "CList/AddStatusMenuItem"
 
+//adds a protocol menu item        v0.9+
+#define MS_CLIST_ADDPROTOMENUITEM        "CList/AddProtoMenuItem"
+
 //modify an existing menu item     v0.1.0.1+
 //wParam=(WPARAM)(HANDLE)hMenuItem
 //lParam=(LPARAM)(CLISTMENUITEM*)&clmi

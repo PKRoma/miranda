@@ -2259,13 +2259,13 @@ void CJabberProto::BuildPrivacyMenu()
 {
 	CLISTMENUITEM mi = { 0 };
 	mi.cbSize = sizeof(mi);
-	mi.position = 1005;
+	mi.position = 200005;
 	mi.pszContactOwner = m_szModuleName;
 	mi.icolibItem = GetIconHandle(IDI_AGENTS);
 	mi.flags = CMIF_ROOTPOPUP | CMIF_CHILDPOPUP | CMIF_ICONFROMICOLIB | CMIF_HIDDEN;
 	mi.pszName = LPGEN("Privacy Lists");
-	mi.hParentMenu = pcli->pfnGetProtocolMenu( m_szModuleName );
-	m_hPrivacyMenuRoot = ( HGENMENU )CallService( MS_CLIST_ADDSTATUSMENUITEM, 0, ( LPARAM )&mi );
+	mi.hParentMenu = MO_GetProtoRootMenu( m_szModuleName );
+	m_hPrivacyMenuRoot = ( HGENMENU )CallService( MS_CLIST_ADDPROTOMENUITEM, 0, ( LPARAM )&mi );
 
 	JCreateService( "/PrivacyLists", &CJabberProto::OnMenuHandlePrivacyLists );
 	char srvFce[MAX_PATH + 64];
@@ -2276,7 +2276,7 @@ void CJabberProto::BuildPrivacyMenu()
 	mi.icolibItem = GetIconHandle(IDI_PRIVACY_LISTS);
 	mi.ptszName = LPGENT("List Editor...");
 	mi.hParentMenu = m_hPrivacyMenuRoot;
-	CallService( MS_CLIST_ADDSTATUSMENUITEM, 0, ( LPARAM )&mi );
+	CallService( MS_CLIST_ADDPROTOMENUITEM, 0, ( LPARAM )&mi );
 }
 
 void CJabberProto::BuildPrivacyListsMenu( bool bDeleteOld )
@@ -2310,7 +2310,7 @@ void CJabberProto::BuildPrivacyListsMenu( bool bDeleteOld )
 			SKINICON_OTHER_SMALLDOT :
 			SKINICON_OTHER_EMPTYBLOB);
 	mi.ptszName = LPGENT("<none>");
-	m_hPrivacyMenuItems.insert(( HANDLE )CallService( MS_CLIST_ADDSTATUSMENUITEM, 0, ( LPARAM )&mi ));
+	m_hPrivacyMenuItems.insert(( HANDLE )CallService( MS_CLIST_ADDPROTOMENUITEM, 0, ( LPARAM )&mi ));
 
 	for ( CPrivacyList *pList = m_privacyListManager.GetFirstList(); pList; pList = pList->GetNext()) {
 		++i;
@@ -2327,7 +2327,7 @@ void CJabberProto::BuildPrivacyListsMenu( bool bDeleteOld )
 				SKINICON_OTHER_SMALLDOT :
 				SKINICON_OTHER_EMPTYBLOB);
 		mi.ptszName = pList->GetListName();
-		m_hPrivacyMenuItems.insert(( HANDLE )CallService( MS_CLIST_ADDSTATUSMENUITEM, 0, ( LPARAM )&mi ));
+		m_hPrivacyMenuItems.insert(( HANDLE )CallService( MS_CLIST_ADDPROTOMENUITEM, 0, ( LPARAM )&mi ));
 	}
 
 	m_privacyListManager.Unlock();

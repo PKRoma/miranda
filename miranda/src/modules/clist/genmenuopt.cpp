@@ -423,6 +423,7 @@ LRESULT CALLBACK LBTNDOWNProc(HWND hwnd,UINT uMsg, WPARAM wParam, LPARAM lParam)
 static INT_PTR CALLBACK GenMenuOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	struct OrderData *dat = (struct OrderData*)GetWindowLongPtr(GetDlgItem(hwndDlg,IDC_MENUITEMS),GWLP_USERDATA);
+	LPNMHDR hdr;
 
 	switch (msg) {
 	case WM_INITDIALOG:
@@ -443,6 +444,9 @@ static INT_PTR CALLBACK GenMenuOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 			TreeView_SetImageList(GetDlgItem(hwndDlg,IDC_MENUOBJECTS),himlCheckBoxes,TVSIL_NORMAL);
 			TreeView_SetImageList(GetDlgItem(hwndDlg,IDC_MENUITEMS),himlCheckBoxes,TVSIL_NORMAL);
 		}
+		CheckDlgButton(hwndDlg,
+			DBGetContactSettingByte( NULL, "CList", "MoveProtoMenus", FALSE ) ? IDC_RADIO2 : IDC_RADIO1,
+			TRUE );
 		BuildMenuObjectsTree(hwndDlg);
 		return TRUE;
 
@@ -456,6 +460,11 @@ static INT_PTR CALLBACK GenMenuOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 
 			case IDC_RESETMENU:
 				ResetMenuItems( hwndDlg );
+				SendMessage( GetParent( hwndDlg ), PSM_CHANGED, 0, 0 );
+				break;
+
+			case IDC_RADIO1:
+			case IDC_RADIO2:
 				SendMessage( GetParent( hwndDlg ), PSM_CHANGED, 0, 0 );
 				break;
 
@@ -521,21 +530,23 @@ static INT_PTR CALLBACK GenMenuOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 		break;
 
 	case WM_NOTIFY:
-		switch(((LPNMHDR)lParam)->idFrom ) {
+		hdr = (LPNMHDR)lParam;
+		switch( hdr->idFrom ) {
 		case 0:
-			if (((LPNMHDR)lParam)->code == PSN_APPLY ) {
+			if (hdr->code == PSN_APPLY ) {
+				DBWriteContactSettingByte( NULL, "CList", "MoveProtoMenus", IsDlgButtonChecked(hwndDlg, IDC_RADIO1) ? 0 : 1 );
 				SaveTree(hwndDlg);
 				RebuildCurrent(hwndDlg);
 			}
 			break;
 
 		case IDC_MENUOBJECTS:
-			if (((LPNMHDR)lParam)->code == TVN_SELCHANGEDA )
+			if (hdr->code == TVN_SELCHANGEDA )
 				RebuildCurrent( hwndDlg );
 			break;
 
 		case IDC_MENUITEMS:
-			switch (((LPNMHDR)lParam)->code) {
+			switch (hdr->code) {
 			case NM_CUSTOMDRAW:
 				{
 					int i= handleCustomDraw(GetDlgItem(hwndDlg,IDC_MENUITEMS),(LPNMTVCUSTOMDRAW) lParam);
@@ -555,17 +566,17 @@ static INT_PTR CALLBACK GenMenuOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 					TVHITTESTINFO hti;
 					hti.pt.x=(short)LOWORD(GetMessagePos());
 					hti.pt.y=(short)HIWORD(GetMessagePos());
-					ScreenToClient(((LPNMHDR)lParam)->hwndFrom,&hti.pt);
-					if (TreeView_HitTest(((LPNMHDR)lParam)->hwndFrom,&hti)) {
+					ScreenToClient(hdr->hwndFrom,&hti.pt);
+					if (TreeView_HitTest(hdr->hwndFrom,&hti)) {
 						if (hti.flags&TVHT_ONITEMICON) {
 							TVITEM tvi;
 							tvi.mask=TVIF_HANDLE|TVIF_IMAGE|TVIF_SELECTEDIMAGE|TVIF_PARAM;
 							tvi.hItem=hti.hItem;
-							TreeView_GetItem(((LPNMHDR)lParam)->hwndFrom,&tvi);
+							TreeView_GetItem(hdr->hwndFrom,&tvi);
 
 							tvi.iImage=tvi.iSelectedImage=!tvi.iImage;
 							((MenuItemOptData *)tvi.lParam)->show=tvi.iImage;
-							TreeView_SetItem(((LPNMHDR)lParam)->hwndFrom,&tvi);
+							TreeView_SetItem(hdr->hwndFrom,&tvi);
 							SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
 
 							//all changes take effect in runtime
@@ -575,7 +586,7 @@ static INT_PTR CALLBACK GenMenuOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 						if (hti.flags&TVHT_ONITEMLABEL) {
 							/// LabelClicked Set/unset selection
 							TVITEM tvi;
-							HWND tvw=((LPNMHDR)lParam)->hwndFrom;
+							HWND tvw=hdr->hwndFrom;
 							tvi.mask=TVIF_HANDLE|TVIF_PARAM;
 							tvi.hItem=hti.hItem;
 							TreeView_GetItem(tvw,&tvi);

@@ -65,6 +65,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "m_userinfo.h"
 #include "m_addcontact.h"
 #include "m_button.h"
+#include "m_genmenu.h"
 #include "m_file.h"
 #include "m_ignore.h"
 #include "m_chat.h"
@@ -447,9 +448,9 @@ struct CIrcProto : public PROTO_INTERFACE, public CCallocBase
 	DWORD     m_bConnectRequested;
 	DWORD     m_bConnectThreadRunning;
 
-	HANDLE  hMenuRoot, hMenuQuick, hMenuServer, hMenuJoin, hMenuNick, hMenuList;
-	HANDLE  hNetlib, hNetlibDCC, hUMenuShowChannel, hUMenuJoinLeave, hUMenuChanSettings, hUMenuWhois;
-	HANDLE  hUMenuDisconnect, hUMenuIgnore;
+	HGENMENU hMenuRoot, hMenuQuick, hMenuServer, hMenuJoin, hMenuNick, hMenuList;
+	HGENMENU hUMenuShowChannel, hUMenuJoinLeave, hUMenuChanSettings, hUMenuWhois, hUMenuDisconnect, hUMenuIgnore;
+	HANDLE   hNetlib, hNetlibDCC;
 
 	bool  bTempDisableCheck, bTempForceCheck, bEcho;
 	bool	nickflag;

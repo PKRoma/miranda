@@ -421,8 +421,15 @@ XCHAR *GetInternalVariable(XCHAR *key, size_t keyLength, HANDLE hContact)
 				 !_xcscmp(theKey, XSTR(key, "miranda_logpath")))
 		{
 			char szFullPath[MAX_PATH], szProfilePath[MAX_PATH], szProfileName[MAX_PATH];
-			CallService(MS_DB_GETPROFILEPATH, SIZEOF(szProfilePath), (LPARAM) szProfilePath);
-			CallService(MS_DB_GETPROFILENAME, SIZEOF(szProfileName), (LPARAM) szProfileName);
+			// fix garbage in returned string when called before load db* plugin
+			if (ServiceExists(MS_DB_GETPROFILEPATH))
+				CallService(MS_DB_GETPROFILEPATH, SIZEOF(szProfilePath), (LPARAM) szProfilePath);
+			else
+				szProfilePath[0] = '\0';
+			if (ServiceExists(MS_DB_GETPROFILENAME))
+				CallService(MS_DB_GETPROFILENAME, SIZEOF(szProfileName), (LPARAM) szProfileName);
+			else
+				szProfileName[0] = '\0';
 			char *pos = strrchr(szProfileName, '.');
 			if ( lstrcmpA( pos, ".dat" ) == 0 )
 				*pos = 0;

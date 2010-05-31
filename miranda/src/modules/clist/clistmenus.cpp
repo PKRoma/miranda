@@ -784,13 +784,12 @@ static INT_PTR DrawMenuItem(WPARAM, LPARAM lParam)
 
 int RecursiveDeleteMenu(HMENU hMenu)
 {
-    int cnt = GetMenuItemCount(hMenu);
-    for (int i=0; i<cnt; ++i)
-    {
+	int cnt = GetMenuItemCount(hMenu);
+	for ( int i=0; i < cnt; i++ ) {
 		HMENU submenu = GetSubMenu(hMenu, 0);
 		if (submenu) DestroyMenu(submenu);
-        DeleteMenu(hMenu, 0, MF_BYPOSITION);
-    }
+		DeleteMenu(hMenu, 0, MF_BYPOSITION);
+	}
 	return 0;
 }
 
@@ -813,9 +812,9 @@ static INT_PTR BuildStatusMenu(WPARAM, LPARAM)
 
 static INT_PTR SetStatusMode(WPARAM wParam, LPARAM)
 {
-    prochotkey = true;
+	prochotkey = true;
 	MenuProcessCommand(MAKEWPARAM(LOWORD(wParam), MPCF_MAINMENU), 0);
-    prochotkey = false;
+	prochotkey = false;
 	return 0;
 }
 
@@ -973,7 +972,7 @@ void RebuildMenuOrder( void )
 			MO_SetOptionsMenuItem( menuHandle, OPT_MENUITEMSETUNIQNAME, ( INT_PTR )buf );
 		}
 		DestroyIcon(ic);
-		pos += 100000;
+		pos += 500000;
 
 		for ( j=0; j < SIZEOF(statusModeList); j++ ) {
 			if ( !( flags & statusModePf2List[j] ))
@@ -1183,7 +1182,7 @@ static INT_PTR AddStatusMenuItem(WPARAM wParam,LPARAM lParam)
 	tmi.position = mi->position;
 	tmi.pszName = mi->pszName;
 	tmi.flags = mi->flags;
-	tmi.root = ( HGENMENU )mi->pszPopupName;
+	tmi.root = mi->hParentMenu;
 
 	// for new style menus the pszPopupName contains the root menu handle
 	if ( mi->flags & CMIF_ROOTHANDLE )
@@ -1256,6 +1255,19 @@ static INT_PTR AddStatusMenuItem(WPARAM wParam,LPARAM lParam)
 	return ( INT_PTR )menuHandle;
 }
 
+/////////////////////////////////////////////////////////////////////////////////////////
+// PROTOCOL MENU
+
+static INT_PTR AddProtoMenuItem(WPARAM wParam,LPARAM lParam)
+{
+	if ( DBGetContactSettingByte( NULL, "CList", "MoveProtoMenus", FALSE ))
+		return AddStatusMenuItem( wParam, lParam );
+
+	return AddMainMenuItem( wParam, lParam );
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+
 void InitCustomMenus(void)
 {
 	CreateServiceFunction("MainMenuExecService",MainMenuExecService);
@@ -1291,6 +1303,8 @@ void InitCustomMenus(void)
 	CreateServiceFunction(MS_CLIST_MENUPROCESSCOMMAND,MenuProcessCommand);
 	CreateServiceFunction(MS_CLIST_MENUPROCESSHOTKEY,MenuProcessHotkey);
 
+	CreateServiceFunction(MS_CLIST_ADDPROTOMENUITEM,AddProtoMenuItem);
+
 	hPreBuildContactMenuEvent=CreateHookableEvent(ME_CLIST_PREBUILDCONTACTMENU);
 	hPreBuildMainMenuEvent=CreateHookableEvent(ME_CLIST_PREBUILDMAINMENU);
 	cli.hPreBuildStatusMenuEvent=CreateHookableEvent(ME_CLIST_PREBUILDSTATUSMENU);
@@ -1298,8 +1312,8 @@ void InitCustomMenus(void)
 
 	hAckHook=(HANDLE)HookEvent(ME_PROTO_ACK,MenuProtoAck);
 
-    hMainMenu = CreatePopupMenu();
-    hStatusMenu = CreatePopupMenu();
+	hMainMenu = CreatePopupMenu();
+	hStatusMenu = CreatePopupMenu();
 
 	hStatusMainMenuHandles=NULL;
 	hStatusMainMenuHandlesCnt=0;

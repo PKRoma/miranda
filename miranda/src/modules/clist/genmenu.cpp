@@ -229,6 +229,31 @@ INT_PTR MO_ProcessHotKeys( HANDLE menuHandle, INT_PTR vKey )
 	return FALSE;
 }
 
+INT_PTR MO_GetProtoRootMenu(WPARAM wParam,LPARAM lParam)
+{
+	char* szProto = ( char* )wParam;
+	if ( szProto == NULL )
+		return 0;
+
+	if ( DBGetContactSettingByte( NULL, "CList", "MoveProtoMenus", FALSE ))
+		return ( INT_PTR )cli.pfnGetProtocolMenu( szProto );
+
+	int objidx = GetMenuObjbyId(( int )hMainMenuObject );
+	if ( objidx == -1 )
+		return NULL;
+
+	EnterCriticalSection( &csMenuHook );
+
+	TIntMenuObject* pmo = g_menus[objidx];
+	PMO_IntMenuItem p;
+	for ( p = pmo->m_items.first; p != NULL; p = p->next )
+		if ( !lstrcmpA( p->UniqName, szProto ))
+			break;
+
+	LeaveCriticalSection( &csMenuHook );
+	return ( INT_PTR )p;
+}
+
 //wparam=MenuItemHandle
 //lparam=PMO_MenuItem
 INT_PTR MO_GetMenuItem(WPARAM wParam,LPARAM lParam)
@@ -1205,6 +1230,7 @@ int InitGenMenu()
 	CreateServiceFunction( MO_PROCESSCOMMANDBYMENUIDENT, MO_ProcessCommandByMenuIdent );
 	CreateServiceFunction( MO_PROCESSHOTKEYS, ( MIRANDASERVICE )MO_ProcessHotKeys );
 	CreateServiceFunction( MO_REMOVEMENUOBJECT, MO_RemoveMenuObject );
+	CreateServiceFunction( MO_GETPROTOROOTMENU, MO_GetProtoRootMenu );
 
 	CreateServiceFunction( MO_SETOPTIONSMENUOBJECT, SRVMO_SetOptionsMenuObject );
 	CreateServiceFunction( MO_SETOPTIONSMENUITEM, SRVMO_SetOptionsMenuItem );
