@@ -775,12 +775,21 @@ void CIcqProto::parseStatusNote(DWORD dwUin, char *szUid, HANDLE hContact, oscar
         }
         if (getContactXStatus(hContact) != 0 || !CheckContactCapabilities(hContact, CAPF_STATUS_MESSAGES))
 		{
-		  setSettingStringUtf(hContact, "CList", "StatusMsg", szStatusNote);
+		  setStatusMsgVar(hContact, szStatusNote);
           BroadcastAck(hContact, ACKTYPE_AWAYMSG, ACKRESULT_SUCCESS, NULL, (LPARAM)szNoteAnsi);
 		}
       }
     }
     SAFE_FREE(&szStatusNote);
+  }
+  else
+  {
+    if (getContactStatus(hContact) == ID_STATUS_OFFLINE)
+    {
+      setStatusMsgVar(hContact, NULL);
+      deleteSetting(hContact, DBSETTING_STATUS_NOTE);
+      setSettingDword(hContact, DBSETTING_STATUS_NOTE_TIME, dwStatusNoteTS);
+    }
   }
 }
 

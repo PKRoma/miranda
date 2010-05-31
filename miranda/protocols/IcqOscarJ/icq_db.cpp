@@ -286,6 +286,18 @@ int CIcqProto::setContactHidden(HANDLE hContact, BYTE bHidden)
   return nResult;
 }
 
+void CIcqProto::setStatusMsgVar(HANDLE hContact, char* szStatusMsg)
+{
+	if (szStatusMsg && szStatusMsg[0])
+	{
+		char* oldStatusMsg = getSettingStringUtf(hContact, "CList", "StatusMsg", "");
+		if (strcmp(oldStatusMsg, szStatusMsg))
+			setSettingStringUtf(hContact, "CList", "StatusMsg", szStatusMsg);
+		SAFE_FREE(&oldStatusMsg);
+	}
+	else
+		DBDeleteContactSetting(hContact, "CList", "StatusMsg");
+}
 
 int __fastcall ICQFreeVariant(DBVARIANT *dbv)
 {

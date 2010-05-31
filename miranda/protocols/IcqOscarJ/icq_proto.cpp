@@ -2218,7 +2218,8 @@ void __cdecl CIcqProto::GetAwayMsgThread( void *pStatusData )
     // wait a little
     Sleep(100);
 
-	setSettingStringUtf(pThreadData->hContact, "CList", "StatusMsg", pThreadData->szMessage);
+	setStatusMsgVar(pThreadData->hContact, pThreadData->szMessage);
+
     if (utf8_decode(pThreadData->szMessage, &szAnsiMsg))
       BroadcastAck(pThreadData->hContact, ACKTYPE_AWAYMSG, ACKRESULT_SUCCESS, pThreadData->hProcess, (LPARAM)szAnsiMsg);
 
@@ -2329,7 +2330,7 @@ HANDLE __cdecl CIcqProto::GetAwayMsg( HANDLE hContact )
 
 int __cdecl CIcqProto::RecvAwayMsg( HANDLE hContact, int statusMode, PROTORECVEVENT* evt )
 {
-	setSettingStringUtf(hContact, "CList", "StatusMsg", evt->szMessage);
+	setStatusMsgVar(hContact, evt->szMessage);
 	BroadcastAck(hContact, ACKTYPE_AWAYMSG, ACKRESULT_SUCCESS, (HANDLE)evt->lParam, (LPARAM)evt->szMessage);
 	return 0;
 }
