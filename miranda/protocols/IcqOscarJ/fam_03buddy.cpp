@@ -774,7 +774,10 @@ void CIcqProto::parseStatusNote(DWORD dwUin, char *szUid, HANDLE hContact, oscar
           utf8_decode_static(szStatusNote, szNoteAnsi, strlennull(szStatusNote) + 1);
         }
         if (getContactXStatus(hContact) != 0 || !CheckContactCapabilities(hContact, CAPF_STATUS_MESSAGES))
+		{
+		  setSettingStringUtf(hContact, "CList", "StatusMsg", szStatusNote);
           BroadcastAck(hContact, ACKTYPE_AWAYMSG, ACKRESULT_SUCCESS, NULL, (LPARAM)szNoteAnsi);
+		}
       }
     }
     SAFE_FREE(&szStatusNote);

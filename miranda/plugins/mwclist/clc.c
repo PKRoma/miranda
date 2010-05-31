@@ -65,14 +65,9 @@ void StatusUpdaterThread(HWND hwndDlg)
 				for (i=0; i<5; i++) {
 					if (hContact!=NULL) {
 						pdisplayNameCacheEntry pdnce =(pdisplayNameCacheEntry)pcli->pfnGetCacheEntry((HANDLE)hContact);
-						if (pdnce!=NULL&&pdnce->protoNotExists==FALSE&&pdnce->szProto!=NULL)
+						if (pdnce && !pdnce->protoNotExists && pdnce->szProto)
 						{			
-							char *szProto =pdnce->szProto; //(char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
-							_snprintf(szServiceName, SIZEOF(szServiceName), "%s%s", szProto, PSS_GETAWAYMSG);
-							if (ServiceExists(szServiceName)) {
-								strncpy(szServiceName, PSS_GETAWAYMSG, SIZEOF(szServiceName));
-								CallContactService(hContact, szServiceName, 0, 0);
-							}
+							CallContactService(hContact, PSS_GETAWAYMSG, 0, 0);
 						}
 						hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM) hContact, 0);
 					}

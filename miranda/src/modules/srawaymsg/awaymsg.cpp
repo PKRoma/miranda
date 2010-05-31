@@ -35,77 +35,82 @@ struct AwayMsgDlgData {
 #define HM_AWAYMSG  (WM_USER+10)
 static INT_PTR CALLBACK ReadAwayMsgDlgProc(HWND hwndDlg,UINT message,WPARAM wParam,LPARAM lParam)
 {
-	struct AwayMsgDlgData *dat;
-	dat=(struct AwayMsgDlgData*)GetWindowLongPtr(hwndDlg,GWLP_USERDATA);
-	switch(message) {
+	AwayMsgDlgData *dat = (AwayMsgDlgData*)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
+
+	switch(message) 
+	{
 		case WM_INITDIALOG:
 			TranslateDialogDefault(hwndDlg);
-			dat=(struct AwayMsgDlgData*)mir_alloc(sizeof(struct AwayMsgDlgData));
-			SetWindowLongPtr(hwndDlg,GWLP_USERDATA,(LONG_PTR)dat);
-			dat->hContact=(HANDLE)lParam;
-			{
-#ifdef _UNICODE
-				DBVARIANT dbv;
-				int unicode = !DBGetContactSetting(dat->hContact, "CList", "StatusMsg", &dbv) && 
-					(dbv.type == DBVT_UTF8 || dbv.type == DBVT_WCHAR);
-				DBFreeVariant(&dbv);
-				if (unicode) {
-					DBGetContactSettingWString(dat->hContact, "CList", "StatusMsg", &dbv);
-					SetDlgItemText(hwndDlg, IDC_MSG, dbv.pwszVal);
-					DBFreeVariant(&dbv);
-					ShowWindow(GetDlgItem(hwndDlg,IDC_RETRIEVING),SW_HIDE);
-					ShowWindow(GetDlgItem(hwndDlg,IDC_MSG),SW_SHOW);
-					SetDlgItemText(hwndDlg,IDOK,TranslateT("&Close"));
-				}
-				else 
-#endif	
-				{
-					dat->hAwayMsgEvent=HookEventMessage(ME_PROTO_ACK,hwndDlg,HM_AWAYMSG);
-					dat->hSeq=(HANDLE)CallContactService(dat->hContact,PSS_GETAWAYMSG,0,0);
-				}
-			}
-			WindowList_Add(hWindowList,hwndDlg,dat->hContact);
-			{	TCHAR  str[256],format[128];
-				TCHAR* contactName = cli.pfnGetContactDisplayName( dat->hContact, 0 );
-				char*  szProto=(char*)CallService(MS_PROTO_GETCONTACTBASEPROTO,(WPARAM)dat->hContact,0);
-				WORD   dwStatus = DBGetContactSettingWord(dat->hContact,szProto,"Status",ID_STATUS_OFFLINE);
-				TCHAR* status = cli.pfnGetStatusModeDescription( dwStatus, 0 );
-				GetWindowText(hwndDlg,format,SIZEOF(format));
-				mir_sntprintf(str,SIZEOF(str),format,status,contactName);
-				SetWindowText(hwndDlg,str);
-				GetDlgItemText(hwndDlg,IDC_RETRIEVING,format,SIZEOF(format));
-				mir_sntprintf(str,SIZEOF(str),format,status);
-				SetDlgItemText(hwndDlg,IDC_RETRIEVING,str);
+			dat = (AwayMsgDlgData*)mir_alloc(sizeof(AwayMsgDlgData));
+			SetWindowLongPtr(hwndDlg, GWLP_USERDATA, (LONG_PTR)dat);
+
+			dat->hContact = (HANDLE)lParam;
+			dat->hAwayMsgEvent = HookEventMessage(ME_PROTO_ACK, hwndDlg, HM_AWAYMSG);
+			dat->hSeq = (HANDLE)CallContactService(dat->hContact, PSS_GETAWAYMSG, 0, 0);
+			WindowList_Add(hWindowList, hwndDlg, dat->hContact);
+
+			{	
+				TCHAR  str[256], format[128];
+				TCHAR* contactName = cli.pfnGetContactDisplayName(dat->hContact, 0);
+				char*  szProto = (char*)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)dat->hContact, 0);
+				WORD   dwStatus = DBGetContactSettingWord(dat->hContact, szProto, "Status", ID_STATUS_OFFLINE);
+				TCHAR* status = cli.pfnGetStatusModeDescription(dwStatus, 0);
+				
+				GetWindowText(hwndDlg, format, SIZEOF(format));
+				mir_sntprintf(str, SIZEOF(str), format, status, contactName);
+				SetWindowText(hwndDlg, str);
+
+				GetDlgItemText(hwndDlg, IDC_RETRIEVING, format, SIZEOF(format));
+				mir_sntprintf(str, SIZEOF(str), format, status);
+				SetDlgItemText(hwndDlg, IDC_RETRIEVING, str);
+
 				Window_SetProtoIcon_IcoLib(hwndDlg, szProto, dwStatus);
 			}
 			return TRUE;
+
 		case HM_AWAYMSG:
-		{	ACKDATA *ack=(ACKDATA*)lParam;
-			if(ack->hContact!=dat->hContact) break;
-			if(ack->type!=ACKTYPE_AWAYMSG) break;
-			if(ack->hProcess!=dat->hSeq) break;
-			if(ack->result!=ACKRESULT_SUCCESS) break;
-			if(dat->hAwayMsgEvent!=NULL) {UnhookEvent(dat->hAwayMsgEvent); dat->hAwayMsgEvent=NULL;}
-			SetDlgItemTextA(hwndDlg,IDC_MSG,(const char*)ack->lParam);
-			ShowWindow(GetDlgItem(hwndDlg,IDC_RETRIEVING),SW_HIDE);
-			ShowWindow(GetDlgItem(hwndDlg,IDC_MSG),SW_SHOW);
-			SetDlgItemText(hwndDlg,IDOK,TranslateT("&Close"));
+		{	
+			ACKDATA *ack = (ACKDATA*)lParam;
+			if (ack->hContact != dat->hContact || ack->type != ACKTYPE_AWAYMSG) break;
+			if (ack->result != ACKRESULT_SUCCESS) break;
+			if (dat->hAwayMsgEvent && ack->hProcess == dat->hSeq) { UnhookEvent(dat->hAwayMsgEvent); dat->hAwayMsgEvent = NULL; }
+
+#ifdef _UNICODE
+			DBVARIANT dbv;
+			bool unicode = !DBGetContactSetting(dat->hContact, "CList", "StatusMsg", &dbv) && 
+				(dbv.type == DBVT_UTF8 || dbv.type == DBVT_WCHAR);
+			DBFreeVariant(&dbv);
+			if (unicode) 
+			{
+				DBGetContactSettingWString(dat->hContact, "CList", "StatusMsg", &dbv);
+				SetDlgItemText(hwndDlg, IDC_MSG, dbv.pwszVal);
+			}
+			else 
+#endif	
+				SetDlgItemTextA(hwndDlg, IDC_MSG, (const char*)ack->lParam);
+
+			ShowWindow(GetDlgItem(hwndDlg,IDC_RETRIEVING), SW_HIDE);
+			ShowWindow(GetDlgItem(hwndDlg,IDC_MSG), SW_SHOW);
+			SetDlgItemText(hwndDlg, IDOK, TranslateT("&Close"));
 			break;
 		}
+
 		case WM_COMMAND:
-			switch(LOWORD(wParam)) {
+			switch(LOWORD(wParam)) 
+			{
 				case IDCANCEL:
 				case IDOK:
 					DestroyWindow(hwndDlg);
 					break;
 			}
 			break;
+
 		case WM_CLOSE:
 			DestroyWindow(hwndDlg);
 			break;
+
 		case WM_DESTROY:
-			if ( dat->hAwayMsgEvent != NULL )
-				UnhookEvent(dat->hAwayMsgEvent);
+			if (dat->hAwayMsgEvent) UnhookEvent(dat->hAwayMsgEvent);
 			WindowList_Remove(hWindowList,hwndDlg);
 			Window_FreeIcon_IcoLib(hwndDlg);
 			mir_free(dat);
