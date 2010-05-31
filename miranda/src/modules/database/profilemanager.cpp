@@ -46,7 +46,6 @@ struct DetailsPageData {
 struct DlgProfData {
 	PROPSHEETHEADER * psh;
 	HWND hwndOK;			// handle to OK button
-	HWND hwndREMOVE;		// handle to REMOVE button
 	PROFILEMANAGERDATA * pd;
 };
 
@@ -188,7 +187,6 @@ static INT_PTR CALLBACK DlgProfileNew(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 		if ( wParam ) {
 			SetWindowText( dat->hwndOK, TranslateT("&Create"));
 			SendMessage( hwndDlg, WM_INPUTCHANGED, 0, 0 );
-			ShowWindow( GetDlgItem(GetParent( hwndDlg ), IDC_STORELASTPROFILE), FALSE );
 		}
 		break;
 
@@ -308,8 +306,15 @@ BOOL EnumProfilesForList(TCHAR * fullpath, TCHAR * profile, LPARAM lParam)
 				item.pszText = szPath;
 				item.iSubItem = 1;
 				SendMessage( hwndList, LVM_SETITEMTEXT, iItem, (LPARAM)&item );
-			}
-		}
+		}	}
+
+		item2.iSubItem = 3;
+		item2.pszText = rtrim( _tctime( &statbuf.st_ctime ));
+		SendMessage( hwndList, LVM_SETITEMTEXT, iItem, (LPARAM)&item2 );
+
+		item2.iSubItem = 4;
+		item2.pszText = rtrim( _tctime( &statbuf.st_mtime ));
+		SendMessage( hwndList, LVM_SETITEMTEXT, iItem, (LPARAM)&item2 );
 	}
 	return TRUE;
 }
@@ -333,16 +338,24 @@ static INT_PTR CALLBACK DlgProfileSelect(HWND hwndDlg, UINT msg, WPARAM wParam, 
 			// set columns
 			col.mask = LVCF_TEXT | LVCF_WIDTH;
 			col.pszText = TranslateT("Profile");
-			col.cx=100;
+			col.cx=122;
 			ListView_InsertColumn( hwndList, 0, &col );
 
 			col.pszText = TranslateT("Driver");
-			col.cx=150;
+			col.cx=100;
 			ListView_InsertColumn( hwndList, 1, &col );
 
 			col.pszText = TranslateT("Size");
 			col.cx=60;
 			ListView_InsertColumn( hwndList, 2, &col );
+
+			col.pszText = TranslateT("Created");
+			col.cx=145;
+			ListView_InsertColumn( hwndList, 3, &col );
+
+			col.pszText = TranslateT("Accessed");
+			col.cx=145;
+			ListView_InsertColumn( hwndList, 4, &col );
 
 			// icons
 			hImgList=ImageList_Create(16, 16, ILC_MASK | (IsWinVerXPPlus() ? ILC_COLOR32 : ILC_COLOR16), 1, 1);
@@ -373,8 +386,6 @@ static INT_PTR CALLBACK DlgProfileSelect(HWND hwndDlg, UINT msg, WPARAM wParam, 
 		if ( wParam ) {
 			SetWindowText(dat->hwndOK,TranslateT("&Run"));
 			EnableWindow(dat->hwndOK, ListView_GetSelectedCount(GetDlgItem(hwndDlg,IDC_PROFILELIST))==1);
-			EnableWindow(dat->hwndREMOVE, ListView_GetSelectedCount(GetDlgItem(hwndDlg,IDC_PROFILELIST))==1);
-			ShowWindow(GetDlgItem(GetParent( hwndDlg ), IDC_STORELASTPROFILE), TRUE);
 		}
 		break;
 
@@ -388,7 +399,6 @@ static INT_PTR CALLBACK DlgProfileSelect(HWND hwndDlg, UINT msg, WPARAM wParam, 
 				switch ( hdr->code ) {
 					case LVN_ITEMCHANGED:
 						EnableWindow( dat->hwndOK, ListView_GetSelectedCount( hdr->hwndFrom ) == 1);
-						EnableWindow( dat->hwndREMOVE, ListView_GetSelectedCount( hdr->hwndFrom ) == 1);
 
 					case NM_DBLCLK:
 					{
@@ -425,19 +435,18 @@ static INT_PTR CALLBACK DlgProfileManager(HWND hwndDlg, UINT msg, WPARAM wParam,
 		struct DlgProfData * prof = (struct DlgProfData *)lParam;
 		PROPSHEETHEADER *psh = prof->psh;
 		TranslateDialogDefault(hwndDlg);
-		SendMessage(hwndDlg, WM_SETICON, ICON_SMALL, (LPARAM)LoadImage(hMirandaInst, MAKEINTRESOURCE(IDI_DETAILSLOGO),IMAGE_ICON,GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),0));
-		SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)LoadImage(hMirandaInst, MAKEINTRESOURCE(IDI_DETAILSLOGO),IMAGE_ICON,GetSystemMetrics(SM_CXICON),GetSystemMetrics(SM_CYICON),0));
+		SendMessage(hwndDlg, WM_SETICON, ICON_SMALL, (LPARAM)LoadImage(hMirandaInst, MAKEINTRESOURCE(IDI_USERDETAILS),IMAGE_ICON,GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),0));
+		SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)LoadImage(hMirandaInst, MAKEINTRESOURCE(IDI_USERDETAILS),IMAGE_ICON,GetSystemMetrics(SM_CXICON),GetSystemMetrics(SM_CYICON),0));
 		dat = (struct DetailsData*)mir_alloc(sizeof(struct DetailsData));
 		dat->prof = prof;
 		prof->hwndOK = GetDlgItem( hwndDlg, IDOK );
 		EnableWindow( prof->hwndOK, FALSE );
-		prof->hwndREMOVE = GetDlgItem(hwndDlg, IDC_REMOVE);
-		EnableWindow( prof->hwndREMOVE, FALSE );
 		SetWindowLongPtr( hwndDlg, GWLP_USERDATA, (LONG_PTR)dat );
 
         {
             TCHAR buf[512];
-            mir_sntprintf(buf, SIZEOF(buf), _T("%s\n%s"), TranslateT("Miranda IM Profile Manager"), TranslateT("Manage your Miranda IM profile"));
+            mir_sntprintf(buf, SIZEOF(buf), _T("%s: %s\n%s"), TranslateT("Miranda Profiles from"), prof->pd->szProfileDir, 
+                TranslateT("Select or create your Miranda IM user profile"));
             SetDlgItemText(hwndDlg, IDC_NAME, buf);
         }
 
@@ -506,16 +515,6 @@ static INT_PTR CALLBACK DlgProfileManager(HWND hwndDlg, UINT msg, WPARAM wParam,
 			}
 		}
 		ShowWindow( dat->opd[dat->currentPage].hwnd, SW_SHOW );
-		SetWindowText( dat->prof->hwndREMOVE, TranslateT("Remove"));
-
-		//read checkbox startup
-		TCHAR path[MAX_PATH];
-		TCHAR profileName[MAX_PATH];
-
-		mir_sntprintf(path, MAX_PATH, _T("%s\\%s"), Utils_ReplaceVarsT(_T("%miranda_path%")), _T("mirandaboot.ini"));
-		GetPrivateProfileString(_T("Database"), _T("DefaultProfile"), _T(""), profileName, SIZEOF(profileName), path);
-		if (profileName[0] != 0)
-			CheckDlgButton(hwndDlg, /*IDC_STORELASTPROFILE*/1739, BST_CHECKED);
 		return TRUE;
 	}
 	case WM_CTLCOLORSTATIC:
@@ -560,8 +559,6 @@ static INT_PTR CALLBACK DlgProfileManager(HWND hwndDlg, UINT msg, WPARAM wParam,
 					SetWindowLongPtr( hwndDlg, DWLP_MSGRESULT, TRUE );
 					return TRUE;
 				}
-				// change enable prop
-				EnableWindow( dat->prof->hwndREMOVE, GetWindowTextLength( GetDlgItem( hwndDlg, IDC_PROFILENAME )) > 0 );
 				break;
 			}
 			case TCN_SELCHANGE:
@@ -606,79 +603,6 @@ static INT_PTR CALLBACK DlgProfileManager(HWND hwndDlg, UINT msg, WPARAM wParam,
 			}
 			break;
 
-		// remove button click
-		case IDC_REMOVE:
-			{	int i = 0;
-				PSHNOTIFY pshn;
-				pshn.hdr.idFrom=0;
-				pshn.lParam=0;
-				pshn.hdr.code=PSN_RESET;
-				for(i=0;i<dat->pageCount;i++) {
-					if (dat->opd[i].hwnd==NULL || !dat->opd[i].changed) continue;
-					pshn.hdr.hwndFrom=dat->opd[i].hwnd;
-					SendMessage(dat->opd[i].hwnd,WM_NOTIFY,0,(LPARAM)&pshn);
-				}
-				if(!dat->prof->pd->noProfiles)
-				{
-					TCHAR* profile = _tcsrchr(dat->prof->pd->szProfile, _T('\\')) + 1;
-
-					TCHAR *msg = new TCHAR[MAX_PATH];
-					msg[MAX_PATH - 1] = _T('\0');
-					mir_sntprintf(msg, _tcslen(msg), TranslateT("Are you sure you want to remove %s?"), profile);
-					
-					if(MessageBox(NULL, msg, _T("Miranda IM"), MB_YESNO) == IDYES)
-					{
-						TCHAR path[MAX_PATH]={0};
-
-						mir_sntprintf(path, MAX_PATH, _T("%s"), Utils_ReplaceVarsT(_T("%miranda_userdata%")));
-						CallService(MS_UTILS_PATHTOABSOLUTET, (WPARAM)path, (LPARAM)path);
-						
-						int size = _tcslen(profile) - _tcslen(_T(".dat"));
-						TCHAR* profileName = new TCHAR[size+1];
-
-						memcpy(profileName, profile, sizeof(TCHAR)*size);
-						profileName[size] = _T('\0');
-						mir_sntprintf(path, MAX_PATH, _T("%sProfiles\\%s"), path, profileName);
-
-						delete[] profileName;
-
-						SHFILEOPSTRUCT sh = { 0 };
-						sh.wFunc = FO_DELETE;
-						
-						sh.pFrom = path + _T('\0') + _T('\0');
-						sh.fFlags = FOF_NOCONFIRMATION | FOF_SILENT;
-						SHFileOperation(&sh);
-
-						DeleteFile(dat->prof->pd->szProfile);
-					}
-					delete[] msg;
-				}
-
-				ProfileEnumData ped = { dat->opd->hwnd, dat->prof->pd->szProfile };
-				findProfiles(dat->prof->pd->szProfileDir, EnumProfilesForList, (LPARAM)&ped);
-
-				{
-					dat->opd[dat->currentPage].hwnd = CreateDialogIndirectParam(dat->opd[dat->currentPage].hInst, dat->opd[dat->currentPage].pTemplate, hwndDlg, dat->opd[dat->currentPage].dlgProc, (LPARAM)dat->prof);
-					ThemeDialogBackground(dat->opd[dat->currentPage].hwnd);
-					SetWindowPos(dat->opd[dat->currentPage].hwnd, HWND_TOP, dat->rcDisplay.left, dat->rcDisplay.top, 0, 0, SWP_NOSIZE);
-					pshn.hdr.code = PSN_INFOCHANGED;
-					pshn.hdr.hwndFrom = dat->opd[dat->currentPage].hwnd;
-					pshn.hdr.idFrom = 0;
-					pshn.lParam = (LPARAM)0;
-					SendMessage(dat->opd[dat->currentPage].hwnd, WM_NOTIFY, 0, (LPARAM)&pshn);
-				}
-
-				ShowWindow(dat->opd[dat->currentPage].hwnd, SW_SHOW);
-
-				pshn.hdr.code = PSN_KILLACTIVE;
-				pshn.hdr.hwndFrom = dat->opd[dat->currentPage].hwnd;
-				pshn.hdr.idFrom = 0;
-				pshn.lParam = 0;
-				if (SendMessage(dat->opd[dat->currentPage].hwnd, WM_NOTIFY, 0, (LPARAM)&pshn))
-					SetWindowLongPtr( hwndDlg, DWLP_MSGRESULT, TRUE );
-			}
-			break;
-
 		case IDOK:
 			{
 				int i;
@@ -707,35 +631,6 @@ static INT_PTR CALLBACK DlgProfileManager(HWND hwndDlg, UINT msg, WPARAM wParam,
 						ShowWindow( dat->opd[dat->currentPage].hwnd, SW_SHOW );
 						return 0;
 				}	}
-
-				// store last profile
-				if (IsDlgButtonChecked(hwndDlg, /*IDC_STORELASTPROFILE*/1739))
-				{
-					TCHAR* profile = _tcsrchr(dat->prof->pd->szProfile, _T('\\')) + 1;
-					TCHAR path[MAX_PATH];
-
-					int size = _tcslen(profile) - _tcslen(_T(".dat"));
-					TCHAR* profileName = new TCHAR[size];
-
-					memcpy(profileName, profile, sizeof(TCHAR)*size);
-					profileName[size] = _T('\0');
-
-					mir_sntprintf(path, MAX_PATH, _T("%s\\%s"), Utils_ReplaceVarsT(_T("%miranda_path%")), _T("mirandaboot.ini"));
-
-					WritePrivateProfileString(_T("Database"), _T("DefaultProfile"), profileName, path);
-					WritePrivateProfileString(_T("Database"), _T("ShowProfileMgr"), _T("smart"), path);
-					
-					delete[] profileName;
-				}
-				else
-				{
-					TCHAR path[MAX_PATH];
-
-					mir_sntprintf(path, MAX_PATH, _T("%s\\%s"), Utils_ReplaceVarsT(_T("%miranda_path%")), _T("mirandaboot.ini"));
-
-					WritePrivateProfileString(_T("Database"), _T("DefaultProfile"), _T(""), path);
-					WritePrivateProfileString(_T("Database"), _T("ShowProfileMgr"), _T("yes"), path);
-				}
 				EndDialog(hwndDlg,1);
 				break;
 		}	}
