@@ -653,7 +653,7 @@ void gg_import_init(GGPROTO *gg)
 	// Import from server item
 	mir_snprintf(service, sizeof(service), GGS_IMPORT_SERVER, GG_PROTO);
 	CreateProtoServiceFunction(service, gg_import_server, gg);
-	mi.position = 290000;
+	mi.position = 291000;
 	mi.icolibItem = GetIconHandle(IDI_IMPORT_SERVER);
 	mi.pszName = LPGEN("Import List From &Server");
 	mi.pszService = service;
@@ -662,7 +662,7 @@ void gg_import_init(GGPROTO *gg)
 	// Import from textfile
 	mir_snprintf(service, sizeof(service), GGS_IMPORT_TEXT, GG_PROTO);
 	CreateProtoServiceFunction(service, gg_import_text, gg);
-	mi.position = 600090001;
+	mi.position = 291001;
 	mi.icolibItem = GetIconHandle(IDI_IMPORT_TEXT);
 	mi.pszName = LPGEN("Import List From &Text File...");
 	mi.pszService = service;
@@ -671,7 +671,7 @@ void gg_import_init(GGPROTO *gg)
 	// Remove from server
 	mir_snprintf(service, sizeof(service), GGS_REMOVE_SERVER, GG_PROTO);
 	CreateProtoServiceFunction(service, gg_remove_server, gg);
-	mi.position = 600090002;
+	mi.position = 291002;
 	mi.icolibItem = GetIconHandle(IDI_REMOVE_SERVER);
 	mi.pszName = LPGEN("&Remove List From Server");
 	mi.pszService = service;
@@ -680,7 +680,7 @@ void gg_import_init(GGPROTO *gg)
 	// Export to server
 	mir_snprintf(service, sizeof(service), GGS_EXPORT_SERVER, GG_PROTO);
 	CreateProtoServiceFunction(service, gg_export_server, gg);
-	mi.position = 700090000;
+	mi.position = 291003;
 	mi.icolibItem = GetIconHandle(IDI_EXPORT_SERVER);
 	mi.pszName = LPGEN("Export List To &Server");
 	mi.pszService = service;
@@ -689,7 +689,7 @@ void gg_import_init(GGPROTO *gg)
 	// Export to textfile
 	mir_snprintf(service, sizeof(service), GGS_EXPORT_TEXT, GG_PROTO);
 	CreateProtoServiceFunction(service, gg_export_text, gg);
-	mi.position = 700090001;
+	mi.position = 291004;
 	mi.icolibItem = GetIconHandle(IDI_EXPORT_TEXT);
 	mi.pszName = LPGEN("Export List To &Text File...");
 	mi.pszService = service;
