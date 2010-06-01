@@ -2330,8 +2330,20 @@ HANDLE __cdecl CIcqProto::GetAwayMsg( HANDLE hContact )
 
 int __cdecl CIcqProto::RecvAwayMsg( HANDLE hContact, int statusMode, PROTORECVEVENT* evt )
 {
-	setStatusMsgVar(hContact, evt->szMessage);
-	BroadcastAck(hContact, ACKTYPE_AWAYMSG, ACKRESULT_SUCCESS, (HANDLE)evt->lParam, (LPARAM)evt->szMessage);
+	char* pszMsg;
+	if (evt->flags & PREF_UTF)
+	{
+		setStatusMsgVar(hContact, evt->szMessage);
+		pszMsg = detect_decode_utf8(evt->szMessage);
+		BroadcastAck(hContact, ACKTYPE_AWAYMSG, ACKRESULT_SUCCESS, (HANDLE)evt->lParam, (LPARAM)pszMsg);
+	}
+	else
+	{
+		pszMsg = ansi_to_utf8(evt->szMessage);
+		setStatusMsgVar(hContact, pszMsg);
+		BroadcastAck(hContact, ACKTYPE_AWAYMSG, ACKRESULT_SUCCESS, (HANDLE)evt->lParam, (LPARAM)evt->szMessage);
+	}
+	SAFE_FREE(&pszMsg);
 	return 0;
 }
 
