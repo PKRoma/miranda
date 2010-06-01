@@ -1056,6 +1056,7 @@ void CIcqProto::icq_sendAwayMsgReplyServExt(DWORD dwUin, char *szUID, DWORD dwMs
 			packBuffer(&packet, (LPBYTE)"text/x-aolrtf", 0x0D);
 
 			sendServPacket(&packet);
+			SAFE_FREE(&pszMsg);
 		}
 	}
 }
