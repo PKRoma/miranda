@@ -462,21 +462,21 @@ void CAimProto::InitMenus(void)
 
 	mir_snprintf(service_name, sizeof(service_name), "%s%s", m_szModuleName, "/ManageAccount");
 	CreateProtoService("/ManageAccount", &CAimProto::ManageAccount);
-	mi.position = 2000060000;
+	mi.position = 201001;
 	mi.icolibItem = GetIconHandle("aim");
 	mi.pszName = LPGEN("Manage Account");
 	hMainMenu[0] = (HANDLE)CallService(MS_CLIST_ADDPROTOMENUITEM, 0, (LPARAM)&mi);
 
 	mir_snprintf(service_name, sizeof(service_name), "%s%s", m_szModuleName, "/InstantIdle");
 	CreateProtoService("/InstantIdle",&CAimProto::InstantIdle);
-	mi.position = 2000060001;
+	mi.position = 201002;
 	mi.icolibItem = GetIconHandle("idle");
 	mi.pszName = LPGEN("Instant Idle");
 	hMainMenu[1] = (HANDLE)CallService(MS_CLIST_ADDPROTOMENUITEM, 0, (LPARAM)&mi);
 
 	mir_snprintf(service_name, sizeof(service_name), "%s%s", m_szModuleName, "/JoinChatRoom");
 	CreateProtoService("/JoinChatRoom", &CAimProto::JoinChatUI);
-	mi.position = 2000060002;
+	mi.position = 201003;
 	mi.icolibItem = GetIconHandle("aol");
 	mi.pszName = LPGEN( "Join Chat Room" );
 	hMainMenu[2] = (HANDLE)CallService(MS_CLIST_ADDPROTOMENUITEM, 0, (LPARAM)&mi);
@@ -487,7 +487,7 @@ void CAimProto::InitMenus(void)
 
 	mir_snprintf(service_name, sizeof(service_name), "%s%s", m_szModuleName, "/GetHTMLAwayMsg");
 	CreateProtoService("/GetHTMLAwayMsg",&CAimProto::GetHTMLAwayMsg);
-	mi.position=-2000006000;
+	mi.position = -2000006000;
 	mi.icolibItem = GetIconHandle("away");
 	mi.pszName = LPGEN("Read &HTML Away Message");
 	mi.flags = CMIF_NOTOFFLINE | CMIF_HIDDEN | CMIF_ICONFROMICOLIB;
