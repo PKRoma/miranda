@@ -132,20 +132,17 @@ BEGIN
     CONTROL         "Tree1",IDC_NAMEORDER,"SysTreeView32",TVS_NOTOOLTIPS | TVS_FULLROWSELECT | WS_BORDER | WS_HSCROLL | WS_TABSTOP,19,48,164,86
 END
 
-IDD_PROFILEMANAGER DIALOGEX 0, 0, 219, 211
+IDD_PROFILEMANAGER DIALOGEX 0, 0, 400, 211
 STYLE DS_SETFONT | DS_MODALFRAME | DS_SETFOREGROUND | DS_FIXEDSYS | DS_CENTER | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
 CAPTION "Miranda IM Profile Manager"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    CONTROL         "",IDC_NAME,"MHeaderbarCtrl",0x0,0,0,220,25
-    CONTROL         "Tab1",IDC_TABS,"SysTabControl32",TCS_HOTTRACK | WS_TABSTOP,2,31,215,137
-    PUSHBUTTON      "&Run",IDOK,169,195,48,14
-    PUSHBUTTON      "Re&move",IDC_REMOVE,112,195,48,14
-    PUSHBUTTON      "&Exit",IDCANCEL,2,195,48,14
-    CONTROL         "Do not show choice at startup",IDC_STORELASTPROFILE,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,3,168,140,10
-    RTEXT           "Start in Service Mode with",IDC_SM_LABEL,10,182,106,10
-    COMBOBOX        IDC_SM_COMBO,118,180,98,12,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "",IDC_NAME,"MHeaderbarCtrl",0x0,0,0,400,25
+    CONTROL         "Tab1",IDC_TABS,"SysTabControl32",TCS_HOTTRACK | WS_TABSTOP,4,31,393,160
+    PUSHBUTTON      "&Run",IDOK,298,194,48,14
+    PUSHBUTTON      "&Exit",IDCANCEL,348,194,48,14
+    RTEXT           "Start in Service Mode with",IDC_SM_LABEL,10,196,131,10
+    COMBOBOX        IDC_SM_COMBO,146,195,143,12,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
 END
 
 IDD_FINDADD DIALOGEX 0, 0, 427, 257
@@ -868,28 +865,28 @@ BEGIN
     GROUPBOX        "Idle Options",IDC_STATIC,3,3,304,182
 END
 
-IDD_PROFILE_SELECTION DIALOGEX 0, 0, 208, 122
+IDD_PROFILE_SELECTION DIALOGEX 0, 0, 386, 142
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_CLIPSIBLINGS | WS_CLIPCHILDREN
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    CONTROL         "List1",IDC_PROFILELIST,"SysListView32",LVS_REPORT | LVS_SINGLESEL | LVS_SHOWSELALWAYS | LVS_NOSORTHEADER | WS_TABSTOP,0,3,365,138
+    CONTROL         "List1",IDC_PROFILELIST,"SysListView32",LVS_REPORT | LVS_SINGLESEL | LVS_SHOWSELALWAYS | LVS_NOSORTHEADER | WS_TABSTOP,3,2,382,137
 END
 
-IDD_PROFILE_NEW DIALOGEX 0, 0, 208, 122
+IDD_PROFILE_NEW DIALOGEX 0, 0, 386, 142
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_CLIPSIBLINGS | WS_CLIPCHILDREN
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    LTEXT           "Please complete the following form to create a new user profile",IDC_STATIC,4,3,205,16
-    EDITTEXT        IDC_PROFILENAME,61,13,105,12,ES_AUTOHSCROLL
-    COMBOBOX        IDC_PROFILEDRIVERS,58,75,105,56,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Profile",IDC_STATIC,20,14,38,9
-    LTEXT           "e.g. Workplace",IDC_STATIC,71,27,77,11
-    LTEXT           "You can select a different profile driver from the default, it may offer more features or abilities, if in doubt use the default.",IDC_STATIC,4,46,207,24
-    LTEXT           "e.g. Miranda Database",IDC_STATIC,62,91,84,11
-    LTEXT           "Driver",IDC_STATIC,20,77,37,9
-    LTEXT           "Problem: Unable to find any database drivers, this means you can not create a new profile, you need to get dbx_3x.dll",IDC_NODBDRIVERS,4,104,203,22,NOT WS_VISIBLE
+    LTEXT           "Please complete the following form to create a new user profile",IDC_STATIC,7,7,231,16
+    EDITTEXT        IDC_PROFILENAME,67,27,75,12,ES_AUTOHSCROLL
+    COMBOBOX        IDC_PROFILEDRIVERS,67,72,75,56,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Profile",IDC_STATIC,20,28,40,9
+    LTEXT           "e.g. Workplace",IDC_STATIC,161,28,77,11
+    LTEXT           "You can select a different profile driver from the default, it may offer more features or abilities, if in doubt use the default.",IDC_STATIC,7,49,231,17
+    LTEXT           "e.g. Miranda Database",IDC_STATIC,154,73,84,11
+    LTEXT           "Driver",IDC_STATIC,20,74,43,9
+    LTEXT           "Problem: Unable to find any database drivers, this means you can not create a new profile, you need to get dbx_3x.dll",IDC_NODBDRIVERS,7,113,231,22,NOT WS_VISIBLE
 END
 
 IDD_OPT_PLUGINS DIALOGEX 0, 0, 315, 252
