@@ -1659,23 +1659,21 @@ void CIcqProto::handleStatusMsgReply(const char *szPrefix, HANDLE hContact, DWOR
 		return;
 	}
 
-	char *pszMsg = null_strdup(szMsg);
-
 	// it is probably UTF-8 status reply
 	if (wVersion == 9 || (nMsgFlags & MTF_PLUGIN) && wVersion == 10)
-		pszMsg = detect_decode_utf8(pszMsg);
+	{
+		if (UTF8_IsValid(szMsg)) pre.flags |= PREF_UTF;
+	}
 
 	ccs.szProtoService = PSR_AWAYMSG;
 	ccs.hContact = hContact;
 	ccs.wParam = status;
 	ccs.lParam = (LPARAM)&pre;
-	pre.szMessage = pszMsg;
+	pre.szMessage = (char*)szMsg;
 	pre.timestamp = time(NULL);
 	pre.lParam = wCookie;
 
 	CallService(MS_PROTO_CHAINRECV,0,(LPARAM)&ccs);
-
-	SAFE_FREE(&pszMsg);
 }
 
 

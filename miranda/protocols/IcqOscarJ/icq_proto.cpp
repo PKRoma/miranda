@@ -2334,7 +2334,7 @@ int __cdecl CIcqProto::RecvAwayMsg( HANDLE hContact, int statusMode, PROTORECVEV
 	if (evt->flags & PREF_UTF)
 	{
 		setStatusMsgVar(hContact, evt->szMessage);
-		pszMsg = detect_decode_utf8(evt->szMessage);
+		utf8_decode(evt->szMessage, &pszMsg);
 		BroadcastAck(hContact, ACKTYPE_AWAYMSG, ACKRESULT_SUCCESS, (HANDLE)evt->lParam, (LPARAM)pszMsg);
 	}
 	else
