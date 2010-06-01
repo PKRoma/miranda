@@ -309,9 +309,9 @@ private:
 	HANDLE hYahooNudge;
 	HANDLE m_hNetlibUser;
 
-	HANDLE mainMenuRoot;
-	HANDLE hShowProfileMenuItem;
-	HANDLE menuItemsAll[ 7 ];
+	HGENMENU mainMenuRoot;
+	HGENMENU hShowProfileMenuItem;
+	HGENMENU menuItemsAll[ 7 ];
 
     HANDLE		hYahooAvatarsFolder;
     bool		InitCstFldRan;
