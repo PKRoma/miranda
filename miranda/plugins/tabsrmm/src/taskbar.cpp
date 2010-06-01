@@ -726,8 +726,10 @@ void CThumbMUC::renderContent()
 
 		if(mi) {
 			if(m_dat->si->iType != GCW_SERVER) {
-				TCHAR*	_p = _tcschr(m_dat->si->ptszStatusbarText, ']');
-				if(_p) {
+				TCHAR* _p = NULL;
+				if ( m_dat->si->ptszStatusbarText )
+					_p = _tcschr(m_dat->si->ptszStatusbarText, ']');
+				if( _p ) {
 					_p++;
 					TCHAR	_t = *_p;
 					*_p = 0;
