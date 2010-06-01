@@ -483,7 +483,7 @@ struct CIcqProto : public PROTO_INTERFACE
 	int    setSettingStringUtf(HANDLE hContact, const char *szSetting, const char *szValue);
 	int    setSettingBlob(HANDLE hContact, const char *szSetting, const BYTE *pValue, const int cbValue);
 	int    setContactHidden(HANDLE hContact, BYTE bHidden);
-	void   setStatusMsgVar(HANDLE hContact, char* saStatusMsg);
+	void   setStatusMsgVar(HANDLE hContact, char* szStatusMsg, bool isAnsi);
 
 	//----| icq_direct.cpp |--------------------------------------------------------------
 	icq_critical_section *directConnListMutex;

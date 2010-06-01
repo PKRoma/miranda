@@ -775,7 +775,7 @@ void CIcqProto::parseStatusNote(DWORD dwUin, char *szUid, HANDLE hContact, oscar
         }
         if (getContactXStatus(hContact) != 0 || !CheckContactCapabilities(hContact, CAPF_STATUS_MESSAGES))
 		{
-		  setStatusMsgVar(hContact, szStatusNote);
+		  setStatusMsgVar(hContact, szStatusNote, false);
           BroadcastAck(hContact, ACKTYPE_AWAYMSG, ACKRESULT_SUCCESS, NULL, (LPARAM)szNoteAnsi);
 		}
       }
@@ -786,7 +786,7 @@ void CIcqProto::parseStatusNote(DWORD dwUin, char *szUid, HANDLE hContact, oscar
   {
     if (getContactStatus(hContact) == ID_STATUS_OFFLINE)
     {
-      setStatusMsgVar(hContact, NULL);
+      setStatusMsgVar(hContact, NULL, false);
       deleteSetting(hContact, DBSETTING_STATUS_NOTE);
       setSettingDword(hContact, DBSETTING_STATUS_NOTE_TIME, dwStatusNoteTS);
     }

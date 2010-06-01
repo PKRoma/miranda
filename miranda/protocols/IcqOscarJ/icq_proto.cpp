@@ -2218,7 +2218,7 @@ void __cdecl CIcqProto::GetAwayMsgThread( void *pStatusData )
     // wait a little
     Sleep(100);
 
-	setStatusMsgVar(pThreadData->hContact, pThreadData->szMessage);
+	setStatusMsgVar(pThreadData->hContact, pThreadData->szMessage, false);
 
     if (utf8_decode(pThreadData->szMessage, &szAnsiMsg))
       BroadcastAck(pThreadData->hContact, ACKTYPE_AWAYMSG, ACKRESULT_SUCCESS, pThreadData->hProcess, (LPARAM)szAnsiMsg);
@@ -2333,17 +2333,16 @@ int __cdecl CIcqProto::RecvAwayMsg( HANDLE hContact, int statusMode, PROTORECVEV
 	char* pszMsg;
 	if (evt->flags & PREF_UTF)
 	{
-		setStatusMsgVar(hContact, evt->szMessage);
+		setStatusMsgVar(hContact, evt->szMessage, false);
 		utf8_decode(evt->szMessage, &pszMsg);
 		BroadcastAck(hContact, ACKTYPE_AWAYMSG, ACKRESULT_SUCCESS, (HANDLE)evt->lParam, (LPARAM)pszMsg);
+		SAFE_FREE(&pszMsg);
 	}
 	else
 	{
-		pszMsg = ansi_to_utf8(evt->szMessage);
-		setStatusMsgVar(hContact, pszMsg);
+		setStatusMsgVar(hContact, evt->szMessage, true);
 		BroadcastAck(hContact, ACKTYPE_AWAYMSG, ACKRESULT_SUCCESS, (HANDLE)evt->lParam, (LPARAM)evt->szMessage);
 	}
-	SAFE_FREE(&pszMsg);
 	return 0;
 }
 

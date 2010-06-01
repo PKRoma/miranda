@@ -286,14 +286,24 @@ int CIcqProto::setContactHidden(HANDLE hContact, BYTE bHidden)
   return nResult;
 }
 
-void CIcqProto::setStatusMsgVar(HANDLE hContact, char* szStatusMsg)
+void CIcqProto::setStatusMsgVar(HANDLE hContact, char* szStatusMsg, bool isAnsi)
 {
 	if (szStatusMsg && szStatusMsg[0])
 	{
+		if (isAnsi)
+		{
+			char* szStatusNoteAnsi = NULL;
+			char* szStatusNote = getSettingStringUtf(hContact, DBSETTING_STATUS_NOTE, "");
+			utf8_decode(szStatusNote, &szStatusNoteAnsi);
+			szStatusMsg = strcmp(szStatusNoteAnsi, szStatusMsg) ? ansi_to_utf8(szStatusMsg) : szStatusNote;
+			SAFE_FREE(&szStatusNoteAnsi);
+		}
+
 		char* oldStatusMsg = getSettingStringUtf(hContact, "CList", "StatusMsg", "");
 		if (strcmp(oldStatusMsg, szStatusMsg))
 			setSettingStringUtf(hContact, "CList", "StatusMsg", szStatusMsg);
 		SAFE_FREE(&oldStatusMsg);
+		if (isAnsi) SAFE_FREE(&szStatusMsg);
 	}
 	else
 		DBDeleteContactSetting(hContact, "CList", "StatusMsg");
