@@ -1003,7 +1003,7 @@ HMENU BuildRecursiveMenu(HMENU hMenu, PMO_IntMenuItem pRootMenu, ListParam *para
 			mii.fMask = MIIM_DATA | MIIM_ID | MIIM_STRING;
 			if ( pmi->iconId != -1 ) {
 				mii.fMask |= MIIM_BITMAP;
-				if (IsWinVerVistaPlus()) {
+				if (IsWinVerVistaPlus() && isThemeActive()) {
 					if (pmi->hBmp == NULL)
 						pmi->hBmp = ConvertIconToBitmap(NULL, pmi->parent->m_hMenuIcons, pmi->iconId);
 					mii.hbmpItem = pmi->hBmp;

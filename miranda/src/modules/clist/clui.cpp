@@ -481,7 +481,7 @@ LRESULT CALLBACK fnContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 	{
 		MENUITEMINFO mii = { 0 };
 /*
-		if (IsWinVerVistaPlus())
+		if (IsWinVerVistaPlus() && isThemeActive())
 		{
 			HICON hIcon = LoadSkinnedIcon(SKINICON_OTHER_MAINMENU);
 			HBITMAP hBmp = ConvertIconToBitmap(hIcon, NULL, 0);
