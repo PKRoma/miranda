@@ -334,47 +334,51 @@ void CMsnProto::MsnInitMenus(void)
 	strcpy(servicefunction, m_szModuleName);
 	char* tDest = servicefunction + strlen(servicefunction);
 
-	CLISTMENUITEM mi = { 0 };
+	CLISTMENUITEM mi = {0};
 	mi.cbSize = sizeof(mi);
-	mi.pszService = servicefunction;
 
-	mi.popupPosition = 500085000;
-	mi.pszPopupName = (char *)-1;
-	mi.flags = CMIF_ICONFROMICOLIB | CMIF_ROOTPOPUP | CMIF_TCHAR | CMIF_KEEPUNTRANSLATED;
-	mi.icolibItem = GetIconHandle(IDI_MSN);
-	mi.ptszName = m_tszUserName;
-	mainMenuRoot = (HANDLE)MSN_CallService(MS_CLIST_ADDMAINMENUITEM,  (WPARAM)0, (LPARAM)&mi);
+	HANDLE hRoot = MO_GetProtoRootMenu(m_szModuleName);
+	if (hRoot == NULL)
+	{
+		mi.popupPosition = 500085000;
+		mi.pszPopupName = (char *)-1;
+		mi.flags = CMIF_ICONFROMICOLIB | CMIF_ROOTPOPUP | CMIF_TCHAR | CMIF_KEEPUNTRANSLATED;
+		mi.icolibItem = GetIconHandle(IDI_MSN);
+		mi.ptszName = m_tszUserName;
+		hRoot = mainMenuRoot = (HANDLE)MSN_CallService(MS_CLIST_ADDMAINMENUITEM,  (WPARAM)0, (LPARAM)&mi);
+	}
 
 	mi.flags = CMIF_ICONFROMICOLIB | CMIF_CHILDPOPUP;
-	mi.pszPopupName = (char *)mainMenuRoot;
+	mi.pszPopupName = (char *)hRoot;
+	mi.pszService = servicefunction;
 
 	strcpy(tDest, MS_SET_NICKNAME_UI);
 	CreateProtoService(MS_SET_NICKNAME_UI, &CMsnProto::SetNicknameUI);
 	mi.position = 2000060000;
 	mi.icolibItem = GetIconHandle(IDI_MSN);
 	mi.pszName = LPGEN("Set &Nickname");
-	menuItems[0] = (HANDLE)MSN_CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM)&mi);
+	menuItems[0] = (HANDLE)MSN_CallService(MS_CLIST_ADDPROTOMENUITEM, 0, (LPARAM)&mi);
 
 	strcpy(tDest, MS_GOTO_INBOX);
 	CreateProtoService(MS_GOTO_INBOX, &CMsnProto::MsnGotoInbox);
 	mi.position = 2000060001;
 	mi.icolibItem = GetIconHandle(IDI_INBOX);
 	mi.pszName = LPGEN("Display &Hotmail Inbox");
-	menuItemsAll[0] = (HANDLE)MSN_CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM)&mi);
+	menuItemsAll[0] = (HANDLE)MSN_CallService(MS_CLIST_ADDPROTOMENUITEM, 0, (LPARAM)&mi);
 
 	strcpy(tDest, MS_EDIT_PROFILE);
 	CreateProtoService(MS_EDIT_PROFILE, &CMsnProto::MsnEditProfile);
 	mi.position = 2000060002;
 	mi.icolibItem = GetIconHandle(IDI_PROFILE);
 	mi.pszName = LPGEN("My Live &Space");
-	menuItemsAll[1] = (HANDLE)MSN_CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM)&mi);
+	menuItemsAll[1] = (HANDLE)MSN_CallService(MS_CLIST_ADDPROTOMENUITEM, 0, (LPARAM)&mi);
 
 	strcpy(tDest, MS_EDIT_ALERTS);
 	CreateProtoService(MS_EDIT_ALERTS, &CMsnProto::MsnSetupAlerts);
 	mi.position = 2000060003;
 	mi.icolibItem = GetIconHandle(IDI_PROFILE);
 	mi.pszName = LPGEN("Setup Live &Alerts");
-	menuItemsAll[2] = (HANDLE)MSN_CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM)&mi);
+	menuItemsAll[2] = (HANDLE)MSN_CallService(MS_CLIST_ADDPROTOMENUITEM, 0, (LPARAM)&mi);
 
 	//////////////////////////////////////////////////////////////////////////////////////
 	// Contact menu initialization
@@ -430,7 +434,8 @@ void CMsnProto::MsnUninitMenus(void)
 	MSN_CallService(MS_CLIST_REMOVEMAINMENUITEM, (WPARAM)menuItemsAll[1], 0);
 	MSN_CallService(MS_CLIST_REMOVEMAINMENUITEM, (WPARAM)menuItemsAll[2], 0);
 	MSN_CallService(MS_CLIST_REMOVEMAINMENUITEM, (WPARAM)menuItemsAll[3], 0);
-	MSN_CallService(MS_CLIST_REMOVEMAINMENUITEM, (WPARAM)mainMenuRoot, 0);
+	if (mainMenuRoot) 
+		MSN_CallService(MS_CLIST_REMOVEMAINMENUITEM, (WPARAM)mainMenuRoot, 0);
 	MSN_CallService(MS_CLIST_REMOVECONTACTMENUITEM, (WPARAM)hBlockMenuItem, 0);
 	MSN_CallService(MS_CLIST_REMOVECONTACTMENUITEM, (WPARAM)menuItemsAll[4], 0);
 	MSN_CallService(MS_CLIST_REMOVECONTACTMENUITEM, (WPARAM)menuItemsAll[5], 0);

@@ -56,7 +56,6 @@ CAimProto::CAimProto(const char* aProtoName, const TCHAR* aUserName)
 	HookProtoEvent(ME_CLIST_GROUPCHANGE,         &CAimProto::OnGroupChange);
 	HookProtoEvent(ME_OPT_INITIALISE,            &CAimProto::OnOptionsInit);
 
-	InitMenus();
 	init_custom_folders();
 	offline_contacts();
 
@@ -132,6 +131,7 @@ int CAimProto::OnModulesLoaded(WPARAM wParam, LPARAM lParam)
 	HookProtoEvent(ME_IDLE_CHANGED,             &CAimProto::OnIdleChanged);
 	HookProtoEvent(ME_MSG_WINDOWEVENT,          &CAimProto::OnWindowEvent);
 
+	InitMenus();
 	chat_register();
 
 	return 0;
@@ -838,14 +838,15 @@ int __cdecl CAimProto::OnEvent(PROTOEVENTTYPE eventType, WPARAM wParam, LPARAM l
 		}
 
 		case EV_PROTO_ONRENAME:
-		{	
-			CLISTMENUITEM clmi = { 0 };
-			clmi.cbSize = sizeof(CLISTMENUITEM);
-			clmi.flags = CMIM_NAME | CMIF_TCHAR | CMIF_KEEPUNTRANSLATED;
-			clmi.ptszName = m_tszUserName;
-			CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM)hMenuRoot, (LPARAM)&clmi);
+			if (hMenuRoot)
+			{	
+				CLISTMENUITEM clmi = { 0 };
+				clmi.cbSize = sizeof(CLISTMENUITEM);
+				clmi.flags = CMIM_NAME | CMIF_TCHAR | CMIF_KEEPUNTRANSLATED;
+				clmi.ptszName = m_tszUserName;
+				CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM)hMenuRoot, (LPARAM)&clmi);
+			}
 			break;
-		}
 	}
 	return 1;
 }
