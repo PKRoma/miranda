@@ -263,18 +263,18 @@ int gg_preshutdown(WPARAM wParam, LPARAM lParam)
 // Menus initialization
 void gg_menus_init(GGPROTO *gg)
 {
-	CLISTMENUITEM mi = {0};
-	char service[MAXMODULELABELLENGTH];
-
-	strcpy(service, gg->proto.m_szModuleName);
-	mi.cbSize = sizeof(mi);
-	mi.flags = CMIF_ICONFROMICOLIB | CMIF_TCHAR | CMIF_KEEPUNTRANSLATED;
-	mi.ptszPopupName = NULL;
-	mi.position = 500090000;
-	mi.icolibItem = GetIconHandle(IDI_GG);
-	mi.ptszName = GG_PROTONAME;
-	mi.pszService = service;
-	gg->hMenuRoot = (HANDLE)CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM) &mi);
+	if (( gg->hMenuRoot = MO_GetProtoRootMenu(gg->proto.m_szModuleName)) == NULL )
+	{
+		CLISTMENUITEM mi = {0};
+		mi.cbSize = sizeof(mi);
+		mi.flags = CMIF_ICONFROMICOLIB | CMIF_TCHAR | CMIF_KEEPUNTRANSLATED;
+		mi.ptszPopupName = NULL;
+		mi.position = 500090000;
+		mi.icolibItem = GetIconHandle(IDI_GG);
+		mi.ptszName = GG_PROTONAME;
+		mi.pszService = gg->proto.m_szModuleName;
+		gg->hMenuRoot = (HANDLE)CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM) &mi);
+	}
 
 	gg_gc_menus_init(gg);
 	gg_import_init(gg);

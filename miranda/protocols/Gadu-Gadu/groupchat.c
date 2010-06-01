@@ -83,19 +83,19 @@ void gg_gc_menus_init(GGPROTO *gg)
 		// Conferencing
 		mir_snprintf(service, sizeof(service), GGS_OPEN_CONF, GG_PROTO);
 		CreateProtoServiceFunction(service, gg_gc_openconf, gg);
-		mi.position = 500090000;
+		mi.position = 209000;
 		mi.icolibItem = GetIconHandle(IDI_CONFERENCE);
 		mi.pszName = LPGEN("Open &conference...");
 		mi.pszService = service;
-		gg->hMainMenu[0] = (HANDLE)CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM) &mi);
+		gg->hMainMenu[0] = (HANDLE)CallService(MS_CLIST_ADDPROTOMENUITEM, 0, (LPARAM) &mi);
 
 		mir_snprintf(service, sizeof(service), GGS_CLEAR_IGNORED, GG_PROTO);
 		CreateProtoServiceFunction(service, gg_gc_clearignored, gg);
-		mi.position = 500090001;
+		mi.position = 209001;
 		mi.icolibItem = GetIconHandle(IDI_CLEAR_CONFERENCE);
 		mi.pszName = LPGEN("&Clear ignored conferences");
 		mi.pszService = service;
-		gg->hMainMenu[1] = (HANDLE)CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM) &mi);
+		gg->hMainMenu[1] = (HANDLE)CallService(MS_CLIST_ADDPROTOMENUITEM, 0, (LPARAM) &mi);
 	}
 }
 
