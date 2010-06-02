@@ -940,9 +940,14 @@ void CJabberProto::OnProcessProceed( HXML node, ThreadData* info )
 
 	if ( !lstrcmp( type, _T("urn:ietf:params:xml:ns:xmpp-tls" ))) {
 		Log("Starting TLS...");
+
+		char* gtlk = strstr(info->manualHost, "google.com");
+		bool isHosted =  gtlk && !gtlk[10] && stricmp(info->server, "gmail.com") && 
+			stricmp(info->server, "googlemail.com");
+
 		NETLIBSSL ssl = {0};
 		ssl.cbSize = sizeof(ssl);
-		ssl.host = info->server;
+		ssl.host = isHosted ? info->manualHost : info->server;
 		if (!JCallService( MS_NETLIB_STARTSSL, ( WPARAM )info->s, ( LPARAM )&ssl)) {
 			Log( "SSL initialization failed" );
 			SetStatus(ID_STATUS_OFFLINE);
