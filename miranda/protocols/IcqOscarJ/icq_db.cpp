@@ -299,8 +299,24 @@ void CIcqProto::setStatusMsgVar(HANDLE hContact, char* szStatusMsg, bool isAnsi)
 			SAFE_FREE(&szStatusNoteAnsi);
 		}
 
-		char* oldStatusMsg = getSettingStringUtf(hContact, "CList", "StatusMsg", "");
-		if (strcmp(oldStatusMsg, szStatusMsg))
+		char* oldStatusMsg = NULL;
+		DBVARIANT dbv;
+		if (!DBGetContactSetting(hContact, "CList", "StatusMsg", &dbv))
+		{
+			switch (dbv.type)
+			{
+			case DBVT_UTF8:
+				oldStatusMsg = null_strdup(dbv.pszVal);
+				break;
+
+			case DBVT_WCHAR:
+				oldStatusMsg = make_utf8_string(dbv.pwszVal);
+				break;
+			}
+			ICQFreeVariant(&dbv);
+		}
+			
+		if (!oldStatusMsg || strcmp(oldStatusMsg, szStatusMsg))
 			setSettingStringUtf(hContact, "CList", "StatusMsg", szStatusMsg);
 		SAFE_FREE(&oldStatusMsg);
 		if (isAnsi) SAFE_FREE(&szStatusMsg);
