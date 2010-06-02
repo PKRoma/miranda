@@ -965,9 +965,14 @@ void CJabberProto::OnProcessProceed( HXML node, ThreadData* info )
 
 	if ( !lstrcmp( type, _T("urn:ietf:params:xml:ns:xmpp-tls" ))) {
 		Log("Starting TLS...");
+
+		char* gtlk = strstr(info->manualHost, "google.com");
+		bool isHosted =  gtlk && !gtlk[10] && stricmp(info->server, "gmail.com") && 
+			stricmp(info->server, "googlemail.com");
+
 		NETLIBSSL ssl = {0};
 		ssl.cbSize = sizeof(ssl);
-		ssl.host = info->server;
+		ssl.host = isHosted ? info->manualHost : info->server;
 		if (!JCallService( MS_NETLIB_STARTSSL, ( WPARAM )info->s, ( LPARAM )&ssl)) {
 			Log( "SSL initialization failed" );
 			SetStatus(ID_STATUS_OFFLINE);
@@ -1544,6 +1549,26 @@ void CJabberProto::UpdateJidDbSettings( const TCHAR *jid )
 	MenuUpdateSrmmIcon( item );
 }
 
+void CJabberProto::ResolveJabberNickFromNickTag( HXML nickNode, LPCTSTR from )
+{
+	if ( nickNode == NULL ) return;
+
+	LPCTSTR nick_xmlns = xmlGetAttrValue( nickNode, _T("xmlns") );
+	if ( !nick_xmlns || _tcscmp( nick_xmlns, _T(JABBER_FEAT_PRESENCE_NICKNAME) ))
+		return;
+
+	LPCTSTR nick = xmlGetText( nickNode ); 
+	if ( !nick ) return;
+	
+	TCHAR*  JIDnick = JabberNickFromJID( from );
+	JABBER_LIST_ITEM* item = ListGetItemPtr( LIST_ROSTER, from );
+
+	if ( item && item->nick && (item->nick[0] || !lstrcmp(item->nick, JIDnick)))
+		AddContactToRoster( item->jid, nick, item->group );
+
+	mir_free(JIDnick);
+}
+
 void CJabberProto::OnProcessPresence( HXML node, ThreadData* info )
 {
 	HANDLE hContact;
@@ -1571,6 +1596,8 @@ void CJabberProto::OnProcessPresence( HXML node, ThreadData* info )
 
 	if ( !_tcsicmp( szBareFrom, szBareOurJid ))
 		bSelfPresence = TRUE;
+
+	ResolveJabberNickFromNickTag( xmlGetChild( node , "nick" ), szBareFrom );
 
 	LPCTSTR type = xmlGetAttrValue( node, _T("type"));
 	if ( type == NULL || !_tcscmp( type, _T("available"))) {
