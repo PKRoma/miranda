@@ -498,9 +498,7 @@ bool NetlibDoConnect(NetlibConnection *nlc)
 	NETLIBOPENCONNECTION *nloc = &nlc->nloc;
 	NetlibUser *nlu = nlc->nlu;
 
-	nlc->proxyAuthNeeded = true;
 	nlc->sinProxy.sin_family = AF_INET;
-
 	mir_free(nlc->szProxyServer); nlc->szProxyServer = NULL;
 
 	bool usingProxy = false;
@@ -589,7 +587,11 @@ bool NetlibDoConnect(NetlibConnection *nlc)
 							return false;
 					}
 				}
-				else if (!NetlibInitHttpConnection(nlc, nlu, nloc)) return false;
+				else 
+				{
+					nlc->proxyAuthNeeded = true;
+					if (!NetlibInitHttpConnection(nlc, nlu, nloc)) return false;
+				}
 				break;
 
 			default:

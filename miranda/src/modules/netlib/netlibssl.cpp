@@ -459,7 +459,7 @@ static int ClientConnect(SslHandle *ssl, const char *host)
 		cbData = send(ssl->s, (char*)OutBuffers[0].pvBuffer, OutBuffers[0].cbBuffer, 0);
 		if (cbData == SOCKET_ERROR || cbData == 0) 
 		{
-			NetlibLogf(NULL, "SSL failure sending connection data (%d)", WSAGetLastError());
+			NetlibLogf(NULL, "SSL failure sending connection data (%d %d)", ssl->s, WSAGetLastError());
 			g_pSSPI->FreeContextBuffer(OutBuffers[0].pvBuffer);
 			return 0;
 		}
