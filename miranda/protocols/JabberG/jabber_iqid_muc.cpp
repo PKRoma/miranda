@@ -339,9 +339,13 @@ static INT_PTR CALLBACK JabberMucJidListDlgProc( HWND hwndDlg, UINT msg, WPARAM 
 							break;
 						TCHAR rsn[ 1024 ];
 						_tcscpy( rsn, dat->type2str());
-						dat->ppro->EnterString(rsn, SIZEOF(rsn), TranslateT("Ban reason") , JES_COMBO, "gcAddReason_");
-						if (szBuffer)
-							dat->ppro->AddMucListItem( dat, p , rsn);
+						if ( dat->type == MUC_BANLIST ) {
+							dat->ppro->EnterString(rsn, SIZEOF(rsn), TranslateT("Ban reason") , JES_COMBO, "gcAddReason_");
+							if ( szBuffer )
+								dat->ppro->AddMucListItem( dat, p , rsn);
+							else 
+								dat->ppro->AddMucListItem( dat, p );
+						}
 						else dat->ppro->AddMucListItem( dat, p );
 						
 					}
