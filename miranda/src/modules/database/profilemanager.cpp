@@ -47,6 +47,7 @@ struct DlgProfData {
 	PROPSHEETHEADER * psh;
 	HWND hwndOK;			// handle to OK button
 	PROFILEMANAGERDATA * pd;
+	HANDLE hFileNotify;
 };
 
 struct DetailsData {
@@ -328,7 +329,7 @@ static INT_PTR CALLBACK DlgProfileSelect(HWND hwndDlg, UINT msg, WPARAM wParam, 
 	{
 	case WM_INITDIALOG:
 		{
-			HIMAGELIST hImgList = 0;
+			HIMAGELIST hImgList;
 			LVCOLUMN col;
 
 			TranslateDialogDefault( hwndDlg );
@@ -359,7 +360,7 @@ static INT_PTR CALLBACK DlgProfileSelect(HWND hwndDlg, UINT msg, WPARAM wParam, 
 			ListView_InsertColumn( hwndList, 4, &col );
 
 			// icons
-			hImgList=ImageList_Create(16, 16, ILC_MASK | (IsWinVerXPPlus() ? ILC_COLOR32 : ILC_COLOR16), 1, 1);
+			hImgList = ImageList_Create(16, 16, ILC_MASK | (IsWinVerXPPlus() ? ILC_COLOR32 : ILC_COLOR16), 2, 1);
 			ImageList_AddIcon_NotShared(hImgList, MAKEINTRESOURCE(IDI_USERDETAILS));
 			ImageList_AddIcon_NotShared(hImgList, MAKEINTRESOURCE(IDI_DELETE));
 
@@ -372,19 +373,40 @@ static INT_PTR CALLBACK DlgProfileSelect(HWND hwndDlg, UINT msg, WPARAM wParam, 
 			// find all the profiles
             ProfileEnumData ped = { hwndDlg, dat->pd->szProfile };
 			findProfiles(dat->pd->szProfileDir, EnumProfilesForList, (LPARAM)&ped);
-			PostMessage(hwndDlg,WM_FOCUSTEXTBOX,0,0);
+			PostMessage(hwndDlg, WM_FOCUSTEXTBOX, 0, 0);
+
+			dat->hFileNotify = FindFirstChangeNotification(dat->pd->szProfileDir, 0, 
+				FILE_NOTIFY_CHANGE_FILE_NAME | FILE_NOTIFY_CHANGE_LAST_WRITE);
+			if (dat->hFileNotify != INVALID_HANDLE_VALUE) 
+				SetTimer(hwndDlg, 0, 1200, NULL);
 			return TRUE;
 		}
-	case WM_FOCUSTEXTBOX:
+
+	case WM_DESTROY:
+		KillTimer(hwndDlg, 0);
+		FindCloseChangeNotification(dat->hFileNotify);
+		break;
+
+	case WM_TIMER:
+		if (WaitForSingleObject(dat->hFileNotify, 0) == WAIT_OBJECT_0)
 		{
-			SetFocus(hwndList);
-            if (dat->pd->szProfile[0] == 0 || ListView_GetSelectedCount(hwndList) == 0)
-				ListView_SetItemState(hwndList, 0, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED);
-			break;
+			ListView_DeleteAllItems(hwndList);
+            ProfileEnumData ped = { hwndDlg, dat->pd->szProfile };
+			findProfiles(dat->pd->szProfileDir, EnumProfilesForList, (LPARAM)&ped);
+			FindNextChangeNotification(dat->hFileNotify);
 		}
+		break;
+
+	case WM_FOCUSTEXTBOX:
+		SetFocus(hwndList);
+        if (dat->pd->szProfile[0] == 0 || ListView_GetSelectedCount(hwndList) == 0)
+			ListView_SetItemState(hwndList, 0, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED);
+		break;
+
 	case WM_SHOWWINDOW:
-		if ( wParam ) {
-			SetWindowText(dat->hwndOK,TranslateT("&Run"));
+		if ( wParam ) 
+		{
+			SetWindowText(dat->hwndOK, TranslateT("&Run"));
 			EnableWindow(dat->hwndOK, ListView_GetSelectedCount(hwndList)==1);
 		}
 		break;
