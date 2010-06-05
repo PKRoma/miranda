@@ -563,7 +563,6 @@ typedef struct _tag_MYOPTIONS
 
 	bool		EnableSounds;
 
-	bool		UseGateway;
 	bool		ShowErrorsAsPopups;
 	bool		AwayAsBrb;
 	bool		SlowSend;

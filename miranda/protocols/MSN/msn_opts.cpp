@@ -172,8 +172,8 @@ static INT_PTR CALLBACK DlgProcMsnOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 		{
 			switch(LOWORD(wParam)) 
 			{
-			case IDC_HANDLE:			case IDC_PASSWORD:			case IDC_LOGINSERVER:
-			case IDC_MSNPORT:			case IDC_YOURHOST:			case IDC_HANDLE2:
+			case IDC_HANDLE:			case IDC_PASSWORD:			case IDC_HANDLE2:
+			case IDC_GATEWAYSERVER: 	case IDC_YOURHOST:			case IDC_DIRECTSERVER:
 				SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
 			}	
 		}
@@ -361,15 +361,21 @@ static INT_PTR CALLBACK DlgProcMsnConnOpts(HWND hwndDlg, UINT msg, WPARAM wParam
 			SetWindowLongPtr(hwndDlg, GWLP_USERDATA, lParam);
 			CMsnProto* proto = (CMsnProto*)lParam;
 			
-			CheckDlgButton(hwndDlg, IDC_USEGATEWAY, proto->MyOptions.UseGateway);
-			if (!proto->getString(NULL, "LoginServer", &dbv)) 
+			if (!proto->getString(NULL, "DirectServer", &dbv)) 
 			{
-				SetDlgItemTextA(hwndDlg, IDC_LOGINSERVER, dbv.pszVal);
+				SetDlgItemTextA(hwndDlg, IDC_DIRECTSERVER, dbv.pszVal);
 				MSN_FreeVariant(&dbv);
 			}
 			else 
-				SetDlgItemTextA(hwndDlg, IDC_LOGINSERVER, proto->MyOptions.UseGateway ? MSN_DEFAULT_GATEWAY : MSN_DEFAULT_LOGIN_SERVER);
-			SetDlgItemInt(hwndDlg, IDC_MSNPORT, proto->MyOptions.UseGateway ? MSN_DEFAULT_GATEWAY_PORT : MSN_DEFAULT_PORT, FALSE);
+				SetDlgItemTextA(hwndDlg, IDC_DIRECTSERVER,  MSN_DEFAULT_LOGIN_SERVER);
+
+			if (!proto->getString(NULL, "GatewayServer", &dbv)) 
+			{
+				SetDlgItemTextA(hwndDlg, IDC_GATEWAYSERVER, dbv.pszVal);
+				MSN_FreeVariant(&dbv);
+			}
+			else 
+				SetDlgItemTextA(hwndDlg, IDC_GATEWAYSERVER,  MSN_DEFAULT_GATEWAY);
 
 			CheckDlgButton(hwndDlg, IDC_SLOWSEND,    proto->getByte("SlowSend",    0));
 
@@ -398,7 +404,6 @@ static INT_PTR CALLBACK DlgProcMsnConnOpts(HWND hwndDlg, UINT msg, WPARAM wParam
 				SetDlgItemText(hwndDlg, IDC_YOURHOST, TranslateT("IP info available only after login"));
 			EnableWindow(GetDlgItem(hwndDlg, IDC_YOURHOST), gethst == 1);
 
-			EnableWindow(GetDlgItem(hwndDlg, IDC_MSNPORT), FALSE);
 			return TRUE;
 		}
 
@@ -406,22 +411,16 @@ static INT_PTR CALLBACK DlgProcMsnConnOpts(HWND hwndDlg, UINT msg, WPARAM wParam
 		switch (LOWORD(wParam)) 
 		{
 		case IDC_RESETSERVER:
-			if (IsDlgButtonChecked(hwndDlg, IDC_USEGATEWAY)) 
-			{
-				SetDlgItemTextA(hwndDlg, IDC_LOGINSERVER, MSN_DEFAULT_GATEWAY);
-				SetDlgItemInt(hwndDlg, IDC_MSNPORT, MSN_DEFAULT_GATEWAY_PORT, FALSE);
-			}
-			else {
-				SetDlgItemTextA(hwndDlg, IDC_LOGINSERVER, MSN_DEFAULT_LOGIN_SERVER);
-				SetDlgItemInt(hwndDlg, IDC_MSNPORT,  1863, FALSE);
-			}
+			SetDlgItemTextA(hwndDlg, IDC_DIRECTSERVER, MSN_DEFAULT_LOGIN_SERVER);
+			SetDlgItemTextA(hwndDlg, IDC_GATEWAYSERVER, MSN_DEFAULT_GATEWAY);
 			SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
 			break;
 		}
 
 		if (HIWORD(wParam) == EN_CHANGE && (HWND)lParam == GetFocus())
 			switch(LOWORD(wParam)) {
-			case IDC_LOGINSERVER:
+			case IDC_DIRECTSERVER:
+			case IDC_GATEWAYSERVER:
 			case IDC_YOURHOST:
 				SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
 			}
@@ -440,31 +439,6 @@ static INT_PTR CALLBACK DlgProcMsnConnOpts(HWND hwndDlg, UINT msg, WPARAM wParam
 				case IDC_SLOWSEND:
 					SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
 					break;
-
-				case IDC_USEGATEWAY: 
-				{
-					CMsnProto* proto = (CMsnProto*)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
-					bool tValue = !IsDlgButtonChecked(hwndDlg, IDC_USEGATEWAY);
-
-					HWND tWindow = GetDlgItem(hwndDlg, IDC_LOGINSERVER);
-					if (!tValue) {
-						SetWindowTextA(tWindow, MSN_DEFAULT_GATEWAY);
-						SetDlgItemInt(hwndDlg, IDC_MSNPORT, MSN_DEFAULT_GATEWAY_PORT, FALSE);
-					}
-					else 
-					{
-						if (!proto->getString(NULL, "LoginServer", &dbv)) 
-						{
-							SetWindowTextA(tWindow, dbv.pszVal);
-							MSN_FreeVariant(&dbv);
-						}
-						else SetWindowTextA(tWindow, MSN_DEFAULT_LOGIN_SERVER);
-
-						SetDlgItemInt(hwndDlg, IDC_MSNPORT, MSN_DEFAULT_PORT, FALSE);
-					}
-					SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
-					break;
-				}
 			}	
 		}
 		break;
@@ -477,17 +451,17 @@ static INT_PTR CALLBACK DlgProcMsnConnOpts(HWND hwndDlg, UINT msg, WPARAM wParam
 
 			CMsnProto* proto = (CMsnProto*)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 
-			bool tValue = IsDlgButtonChecked(hwndDlg, IDC_USEGATEWAY) == BST_CHECKED;
-			if (proto->MyOptions.UseGateway != tValue) {
-				proto->setByte("UseGateway", tValue);
-				reconnectRequired = true;
-			}
-			
-			GetDlgItemTextA(hwndDlg, IDC_LOGINSERVER, str, sizeof(str));
-			if (strcmp(str, MSN_DEFAULT_LOGIN_SERVER) && strcmp(str, MSN_DEFAULT_GATEWAY))
-				proto->setString(NULL, "LoginServer", str);
+			GetDlgItemTextA(hwndDlg, IDC_DIRECTSERVER, str, sizeof(str));
+			if (strcmp(str, MSN_DEFAULT_LOGIN_SERVER))
+				proto->setString(NULL, "DirectServer", str);
 			else
-				proto->deleteSetting(NULL, "LoginServer");
+				proto->deleteSetting(NULL, "DirectServer");
+
+			GetDlgItemTextA(hwndDlg, IDC_GATEWAYSERVER, str, sizeof(str));
+			if (strcmp(str, MSN_DEFAULT_GATEWAY))
+				proto->setString(NULL, "GatewayServer", str);
+			else
+				proto->deleteSetting(NULL, "GatewayServer");
 
 			proto->setByte("SlowSend",   (BYTE)IsDlgButtonChecked(hwndDlg, IDC_SLOWSEND ));
 			if (proto->getByte("SlowSend", FALSE))
@@ -871,7 +845,6 @@ void  CMsnProto::LoadOptions(void)
 	MyOptions.PopupTimeoutOther = getDword("PopupTimeoutOther", MyOptions.PopupTimeoutHotmail);
 	MyOptions.ShowErrorsAsPopups = getByte("ShowErrorsAsPopups", FALSE) != 0;
 	MyOptions.SlowSend = getByte("SlowSend", FALSE) != 0;
-	MyOptions.UseGateway = getByte("UseGateway", FALSE) != 0;
 	MyOptions.UseWinColors = getByte("UseWinColors", FALSE) != 0;
 	if (getStaticString(NULL, "e-mail", MyOptions.szEmail, sizeof(MyOptions.szEmail)))
 		MyOptions.szEmail[0] = 0;

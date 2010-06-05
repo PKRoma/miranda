@@ -57,7 +57,6 @@
 #define IDC_REMOVEHOT                   1046
 #define IDC_EDIT5                       1047
 #define IDC_REMOVEBLOCK                 1047
-#define IDC_BUTTON1                     1047
 #define IDC_LISTREFRESH                 1047
 #define IDC_NICKNAME                    1048
 #define IDC_EDIT6                       1048
@@ -80,10 +79,9 @@
 #define IDC_MAILER_APP                  1057
 #define IDC_RUN_APP_ON_HOTMAIL          1058
 #define IDC_ENTER_MAILER_APP            1059
-#define IDC_LOGINSERVER                 1171
+#define IDC_DIRECTSERVER                1171
 #define IDC_YOURHOST                    1172
-#define IDC_MSNPORT                     1174
-#define IDC_USEGATEWAY                  1175
+#define IDC_GATEWAYSERVER               1174
 #define IDC_DISABLEHOTMAILPOPUP         1301
 #define IDC_DISABLEHOTMAILTRAY          1302
 #define IDC_DISABLEHOTMAILCL            1303
