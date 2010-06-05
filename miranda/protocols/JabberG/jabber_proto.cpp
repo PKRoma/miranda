@@ -153,7 +153,6 @@ CJabberProto::CJabberProto( const char* aProtoName, const TCHAR* aUserName ) :
 	// XMPP URI parser service for "File Association Manager" plugin
 	JCreateService( JS_PARSE_XMPP_URI, &CJabberProto::JabberServiceParseXmppURI );
 
-	JHookEvent( ME_CLIST_PREBUILDSTATUSMENU, &CJabberProto::OnBuildStatusMenu );
 	JHookEvent( ME_DB_CONTACT_DELETED, &CJabberProto::OnContactDeleted );
 	JHookEvent( ME_DB_CONTACT_SETTINGCHANGED, &CJabberProto::OnDbSettingChanged );
 	JHookEvent( ME_MODERNOPT_INITIALIZE, &CJabberProto::OnModernOptInit );
@@ -370,6 +369,7 @@ int CJabberProto::OnModulesLoadedEx( WPARAM, LPARAM )
 	}
 
 	CleanLastResourceMap();
+	OnBuildStatusMenu(0, 0);
 
 	return 0;
 }
