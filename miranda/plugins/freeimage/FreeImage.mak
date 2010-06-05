@@ -1,6 +1,6 @@
 # Microsoft Developer Studio Generated NMAKE File, Based on FreeImage.dsp
 !IF "$(CFG)" == ""
-CFG=FreeImage - Win32 Debug
+CFG=FreeImage - Win32 Release
 !MESSAGE No configuration specified. Defaulting to FreeImage - Win32 Debug.
 !ENDIF 
 
@@ -173,7 +173,7 @@ CLEAN :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
 CPP=cl.exe
-CPP_PROJ=/nologo /MD /W3 /GX /Zi /O1 /I "Source" /I "Source\ZLib" /I "..\..\include" /I "..\zlib" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "FREEIMAGE_EXPORTS" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+CPP_PROJ=/nologo /MT /W3 /GX /Zi /O1 /I "Source" /I "Source\ZLib" /I "..\..\include" /I "..\zlib" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "FREEIMAGE_EXPORTS" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 
 .c{$(INTDIR)}.obj::
    $(CPP) @<<
@@ -3030,25 +3030,25 @@ SOURCE=.\Source\FreeImageToolkit\Resize.cpp
 !IF  "$(CFG)" == "FreeImage - Win32 Release"
 
 "zlib - Win32 Release" : 
-   cd "\Miranda8\miranda\plugins\zlib"
-   $(MAKE) /$(MAKEFLAGS) /F .\zlib.mak CFG="zlib - Win32 Release" 
+   cd "..\zlib"
+   $(MAKE) /$(MAKEFLAGS) /F ".\zlib.mak" CFG="zlib - Win32 Release" 
    cd "..\freeimage"
 
 "zlib - Win32 ReleaseCLEAN" : 
-   cd "\Miranda8\miranda\plugins\zlib"
-   $(MAKE) /$(MAKEFLAGS) /F .\zlib.mak CFG="zlib - Win32 Release" RECURSE=1 CLEAN 
+   cd "..\zlib"
+   $(MAKE) /$(MAKEFLAGS) /F ".\zlib.mak" CFG="zlib - Win32 Release" RECURSE=1 CLEAN 
    cd "..\freeimage"
 
 !ELSEIF  "$(CFG)" == "FreeImage - Win32 Debug"
 
 "zlib - Win32 Debug" : 
-   cd "\Miranda8\miranda\plugins\zlib"
-   $(MAKE) /$(MAKEFLAGS) /F .\zlib.mak CFG="zlib - Win32 Debug" 
+   cd "..\zlib"
+   $(MAKE) /$(MAKEFLAGS) /F ".\zlib.mak" CFG="zlib - Win32 Debug" 
    cd "..\freeimage"
 
 "zlib - Win32 DebugCLEAN" : 
-   cd "\Miranda8\miranda\plugins\zlib"
-   $(MAKE) /$(MAKEFLAGS) /F .\zlib.mak CFG="zlib - Win32 Debug" RECURSE=1 CLEAN 
+   cd "..\zlib"
+   $(MAKE) /$(MAKEFLAGS) /F ".\zlib.mak" CFG="zlib - Win32 Debug" RECURSE=1 CLEAN 
    cd "..\freeimage"
 
 !ENDIF 
