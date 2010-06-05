@@ -321,19 +321,20 @@ BOOL EnumProfilesForList(TCHAR * fullpath, TCHAR * profile, LPARAM lParam)
 
 static INT_PTR CALLBACK DlgProfileSelect(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	struct DlgProfData* dat = (struct DlgProfData *)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
+	DlgProfData* dat = (struct DlgProfData *)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
+	HWND hwndList = GetDlgItem(hwndDlg, IDC_PROFILELIST);
 
-	switch (msg) {
+	switch (msg) 
+	{
 	case WM_INITDIALOG:
 		{
-			HWND hwndList = GetDlgItem(hwndDlg, IDC_PROFILELIST);
-			HIMAGELIST hImgList=0;
+			HIMAGELIST hImgList = 0;
 			LVCOLUMN col;
 
 			TranslateDialogDefault( hwndDlg );
 
-			dat = ( struct DlgProfData* ) lParam;
-			SetWindowLongPtr(hwndDlg,GWLP_USERDATA,(LONG_PTR)dat);
+			dat = (DlgProfData*) lParam;
+			SetWindowLongPtr(hwndDlg, GWLP_USERDATA, (LONG_PTR)dat);
 
 			// set columns
 			col.mask = LVCF_TEXT | LVCF_WIDTH;
@@ -353,7 +354,7 @@ static INT_PTR CALLBACK DlgProfileSelect(HWND hwndDlg, UINT msg, WPARAM wParam, 
 			col.cx=145;
 			ListView_InsertColumn( hwndList, 3, &col );
 
-			col.pszText = TranslateT("Accessed");
+			col.pszText = TranslateT("Modified");
 			col.cx=145;
 			ListView_InsertColumn( hwndList, 4, &col );
 
@@ -376,7 +377,6 @@ static INT_PTR CALLBACK DlgProfileSelect(HWND hwndDlg, UINT msg, WPARAM wParam, 
 		}
 	case WM_FOCUSTEXTBOX:
 		{
-			HWND hwndList=GetDlgItem(hwndDlg, IDC_PROFILELIST);
 			SetFocus(hwndList);
             if (dat->pd->szProfile[0] == 0 || ListView_GetSelectedCount(hwndList) == 0)
 				ListView_SetItemState(hwndList, 0, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED);
@@ -385,40 +385,69 @@ static INT_PTR CALLBACK DlgProfileSelect(HWND hwndDlg, UINT msg, WPARAM wParam, 
 	case WM_SHOWWINDOW:
 		if ( wParam ) {
 			SetWindowText(dat->hwndOK,TranslateT("&Run"));
-			EnableWindow(dat->hwndOK, ListView_GetSelectedCount(GetDlgItem(hwndDlg,IDC_PROFILELIST))==1);
+			EnableWindow(dat->hwndOK, ListView_GetSelectedCount(hwndList)==1);
 		}
 		break;
 
 	case WM_NOTIFY:
 		{
 			LPNMHDR hdr = (LPNMHDR) lParam;
-			if ( hdr && hdr->code == PSN_INFOCHANGED)
+			if (hdr && hdr->code == PSN_INFOCHANGED)
 				break;
 
-			if ( hdr && hdr->idFrom == IDC_PROFILELIST ) {
-				switch ( hdr->code ) {
+			if (hdr && hdr->idFrom == IDC_PROFILELIST)
+			{
+				switch (hdr->code) 
+				{
 					case LVN_ITEMCHANGED:
-						EnableWindow( dat->hwndOK, ListView_GetSelectedCount( hdr->hwndFrom ) == 1);
+						EnableWindow(dat->hwndOK, ListView_GetSelectedCount(hwndList) == 1);
 
 					case NM_DBLCLK:
 					{
-						HWND hwndList = GetDlgItem(hwndDlg, IDC_PROFILELIST);
-						LVITEM item;
+						LVITEM item = {0};
 						TCHAR profile[MAX_PATH];
 
-						if ( dat == NULL )
-							break;
-						ZeroMemory(&item,sizeof(item));
+						if (dat == NULL) break;
+
 						item.mask = LVIF_TEXT;
 						item.iItem = ListView_GetNextItem(hwndList, -1, LVNI_SELECTED | LVNI_ALL);
 						item.pszText = profile;
 						item.cchTextMax = SIZEOF(profile);
-						if ( SendMessage(hwndList, LVM_GETITEM, 0, (LPARAM)&item) && dat ) {
+
+						if (ListView_GetItem(hwndList, &item))
+						{
 							mir_sntprintf(dat->pd->szProfile, MAX_PATH, _T("%s%s.dat"), dat->pd->szProfileDir, profile);
-							if ( hdr->code == NM_DBLCLK ) EndDialog(GetParent(hwndDlg), 1);
+							if (hdr->code == NM_DBLCLK) EndDialog(GetParent(hwndDlg), 1);
 						}
 						return TRUE;
-			}	}	}
+					}	
+
+					case LVN_KEYDOWN:
+					{
+						LPNMLVKEYDOWN hdrk = (LPNMLVKEYDOWN) lParam;
+						if (hdrk->wVKey != VK_DELETE) break;
+
+						LVITEM item = {0};
+						TCHAR profile[MAX_PATH], profilef[MAX_PATH];
+
+						item.mask = LVIF_TEXT;
+						item.iItem = ListView_GetNextItem(hwndList, -1, LVNI_SELECTED | LVNI_ALL);
+						item.pszText = profile;
+						item.cchTextMax = SIZEOF(profile);
+
+						if (item.iItem < 0 || !ListView_GetItem(hwndList, &item)) break;
+						
+						mir_sntprintf(profilef, SIZEOF(profilef), TranslateT("Are you sure you want to remove profile \"%s.dat\"?"), profile);
+						if (MessageBox(NULL, profilef, _T("Miranda IM"), MB_YESNO | MB_TASKMODAL | MB_ICONWARNING) == IDYES)
+						{
+							mir_sntprintf(profilef, SIZEOF(profilef), _T("%s%s.dat"), dat->pd->szProfileDir, profile);
+							if (DeleteFile(profilef))
+								ListView_DeleteItem(hwndList, item.iItem);
+						}
+						break;
+					}
+				}	
+			}
 			break;
 	}	}
 
