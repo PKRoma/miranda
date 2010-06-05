@@ -53,7 +53,7 @@ static int HttpGatewayReadSetResult(NetlibConnection *nlc, char *buf, int num, i
 void HttpGatewayRemovePacket(NetlibConnection *nlc, int pck)
 {
 	EnterCriticalSection(&nlc->csHttpSequenceNums);
-	while (nlc->pHttpProxyPacketQueue != NULL && pck--)
+	while (pck-- && nlc->pHttpProxyPacketQueue != NULL)
 	{
 		NetlibHTTPProxyPacketQueue *p = nlc->pHttpProxyPacketQueue;
 		nlc->pHttpProxyPacketQueue = nlc->pHttpProxyPacketQueue->next;
