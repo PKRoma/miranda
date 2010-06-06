@@ -314,7 +314,7 @@ int makeDatabase(TCHAR * profile, DATABASELINK * link, HWND hwndDlg)
 		SHFILEOPSTRUCT sf = {0};
 		sf.wFunc=FO_DELETE;
 		sf.pFrom=buf;
-		sf.fFlags=FOF_NOCONFIRMATION|FOF_NOERRORUI|FOF_SILENT;
+		sf.fFlags = FOF_NOCONFIRMATION | FOF_NOERRORUI | FOF_SILENT | FOF_ALLOWUNDO;
 		mir_sntprintf(buf, SIZEOF(buf), _T("%s\0"), profile);
 		if ( SHFileOperation(&sf) != 0 ) {
 			mir_sntprintf(buf, SIZEOF(buf),TranslateT("Couldn't move '%s' to the Recycle Bin, Please select another profile name."),file);
