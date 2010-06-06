@@ -690,18 +690,16 @@ void CPepMood::ProcessItems(const TCHAR *from, HXML itemsNode)
 	SetMood(hContact, moodType, fixedText);
 	mir_free( fixedText );
 
-	if (!hContact)
+	if (!hContact && m_mode >= 0)
 		ForceRepublishOnLogin();
 }
 
 void CPepMood::CreateData( HXML n )
 {
-	if ( m_mode != -1 ) {
-		HXML moodNode = n << XCHILDNS( _T("mood"), _T(JABBER_FEAT_USER_MOOD));
-		moodNode << XCHILD( _A2T(g_arrMoods[m_mode].szTag));
-		if ( m_text )
-			moodNode << XCHILD( _T("text"), m_text );
-	}
+	HXML moodNode = n << XCHILDNS( _T("mood"), _T(JABBER_FEAT_USER_MOOD));
+	moodNode << XCHILD( _A2T(g_arrMoods[m_mode].szTag));
+	if ( m_text )
+		moodNode << XCHILD( _T("text"), m_text );
 }
 
 void CPepMood::ResetExtraIcon(HANDLE hContact)
@@ -1114,7 +1112,7 @@ void CPepActivity::ProcessItems(const TCHAR *from, HXML itemsNode)
 	SetActivity(hContact, szFirstNode, szSecondNode, fixedText);
 	mir_free( fixedText );
 
-	if (!hContact)
+	if (!hContact && m_mode >= 0)
 		ForceRepublishOnLogin();
 }
 
