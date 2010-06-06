@@ -606,19 +606,13 @@ bool NetlibDoConnect(NetlibConnection *nlc)
 		nlc->usingDirectHttpGateway = true;
 	}
 
+	NetlibLogf(nlu,"(%d) Connected to %s:%d", nlc->s, nloc->szHost, nloc->wPort);
+
 	if (NLOCF_SSL & nloc->flags)
 	{
-		NetlibLogf(nlc->nlu, "(%d) Connected to %s:%d, Starting SSL negotiation", nlc->s, nloc->szHost, nloc->wPort);
-
-		nlc->hSsl = si.connect(nlc->s, nloc->szHost, nlc->nlu->settings.validateSSL);
-		if (nlc->hSsl == NULL)
-		{
-			NetlibLogf(nlc->nlu, "(%d %s) Failure to negotiate SSL connection", nlc->s, nloc->szHost);
-			return false;
-		}
+		return NetlibStartSsl((WPARAM)nlc, 0) != 0;
 	}
 
-	NetlibLogf(nlu,"(%d) Connected to %s:%d", nlc->s, nloc->szHost, nloc->wPort);
 	return true;
 }
 
@@ -711,15 +705,19 @@ INT_PTR NetlibOpenConnection(WPARAM wParam,LPARAM lParam)
 	return (INT_PTR)nlc;
 }
 
-INT_PTR NetlibStartSsl(WPARAM wParam,LPARAM lParam)
+INT_PTR NetlibStartSsl(WPARAM wParam, LPARAM lParam)
 {
 	struct NetlibConnection *nlc = (struct NetlibConnection*)wParam;
 	NETLIBSSL *sp = (NETLIBSSL*)lParam;
+	const char *szHost = sp ? sp->host : nlc->nloc.szHost;
 
-	nlc->hSsl = si.connect(nlc->s, sp ? sp->host : nlc->nloc.szHost, nlc->nlu->settings.validateSSL);
+	NetlibLogf(nlc->nlu, "(%d %s) Starting SSL negotiation", nlc->s, szHost);
+	nlc->hSsl = si.connect(nlc->s, szHost, nlc->nlu->settings.validateSSL);
 
 	if (nlc->hSsl == NULL)
-		NetlibLogf(nlc->nlu,"(%d %s) Failure to negotiate SSL connection",nlc->s, sp ? sp->host : nlc->nloc.szHost);
+		NetlibLogf(nlc->nlu,"(%d %s) Failure to negotiate SSL connection", nlc->s, szHost);
+	else
+		NetlibLogf(nlc->nlu, "(%d %s) SSL negotiation successful", nlc->s, szHost);
 
 	return nlc->hSsl != NULL;
 }
