@@ -311,8 +311,7 @@ int makeDatabase(TCHAR * profile, DATABASELINK * link, HWND hwndDlg)
 		if ( MessageBox(hwndDlg, buf, TranslateT("The profile already exists"), MB_ICONQUESTION|MB_YESNO|MB_DEFBUTTON2) != IDYES ) return 0;
 		
 		// move the file
-		SHFILEOPSTRUCT sf;
-		ZeroMemory(&sf,sizeof(sf));
+		SHFILEOPSTRUCT sf = {0};
 		sf.wFunc=FO_DELETE;
 		sf.pFrom=buf;
 		sf.fFlags=FOF_NOCONFIRMATION|FOF_NOERRORUI|FOF_SILENT;

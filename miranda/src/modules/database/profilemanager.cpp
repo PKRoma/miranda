@@ -450,7 +450,7 @@ static INT_PTR CALLBACK DlgProfileSelect(HWND hwndDlg, UINT msg, WPARAM wParam, 
 						if (hdrk->wVKey != VK_DELETE) break;
 
 						LVITEM item = {0};
-						TCHAR profile[MAX_PATH], profilef[MAX_PATH];
+						TCHAR profile[MAX_PATH], profilef[MAX_PATH*2];
 
 						item.mask = LVIF_TEXT;
 						item.iItem = ListView_GetNextItem(hwndList, -1, LVNI_SELECTED | LVNI_ALL);
@@ -459,12 +459,17 @@ static INT_PTR CALLBACK DlgProfileSelect(HWND hwndDlg, UINT msg, WPARAM wParam, 
 
 						if (item.iItem < 0 || !ListView_GetItem(hwndList, &item)) break;
 						
-						mir_sntprintf(profilef, SIZEOF(profilef), TranslateT("Are you sure you want to remove profile \"%s.dat\"?"), profile);
+						mir_sntprintf(profilef, SIZEOF(profilef), TranslateT("Are you sure you want to remove profile \"%s\"?"), profile);
 						if (MessageBox(NULL, profilef, _T("Miranda IM"), MB_YESNO | MB_TASKMODAL | MB_ICONWARNING) == IDYES)
 						{
-							mir_sntprintf(profilef, SIZEOF(profilef), _T("%s%s.dat"), dat->pd->szProfileDir, profile);
-							if (DeleteFile(profilef))
-								ListView_DeleteItem(hwndList, item.iItem);
+							mir_sntprintf(profilef, SIZEOF(profilef), _T("%s%s.dat%c%s%s%c"), dat->pd->szProfileDir, profile, 0, dat->pd->szProfileDir, profile, 0);
+
+							SHFILEOPSTRUCT sf = {0};
+							sf.wFunc = FO_DELETE;
+							sf.pFrom = profilef;
+							sf.fFlags = FOF_NOCONFIRMATION | FOF_SILENT | FOF_ALLOWUNDO;
+							SHFileOperation(&sf);
+							ListView_DeleteItem(hwndList, item.iItem);
 						}
 						break;
 					}
