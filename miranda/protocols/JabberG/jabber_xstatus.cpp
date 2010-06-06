@@ -696,11 +696,12 @@ void CPepMood::ProcessItems(const TCHAR *from, HXML itemsNode)
 
 void CPepMood::CreateData( HXML n )
 {
-	HXML moodNode = n << XCHILDNS( _T("mood"), _T(JABBER_FEAT_USER_MOOD));
-	if ( m_mode != -1 )
+	if ( m_mode != -1 ) {
+		HXML moodNode = n << XCHILDNS( _T("mood"), _T(JABBER_FEAT_USER_MOOD));
 		moodNode << XCHILD( _A2T(g_arrMoods[m_mode].szTag));
-	if ( m_text )
-		moodNode << XCHILD( _T("text"), m_text );
+		if ( m_text )
+			moodNode << XCHILD( _T("text"), m_text );
+	}
 }
 
 void CPepMood::ResetExtraIcon(HANDLE hContact)
