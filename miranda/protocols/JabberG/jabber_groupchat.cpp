@@ -1107,13 +1107,17 @@ void CJabberProto::GroupchatProcessMessage( HXML node )
 			return;
 
 		nick = _tcschr( from, '/' );
-		if ( nick == NULL || nick[1] == '\0' )
-			return;
-		nick++;
+		if ( nick != NULL ) {
+			if ( nick[1] == '\0' )
+				return;
+			nick++;
+		}
 
 		msgText = ( TCHAR* )xmlGetText( n );
 
-		if ( _tcsncmp( msgText, _T("/me "), 4 ) == 0 && _tcslen( msgText ) > 4 ) {
+		if ( nick == NULL)
+			gcd.iType = GC_EVENT_INFORMATION;
+		else if ( _tcsncmp( msgText, _T("/me "), 4 ) == 0 && _tcslen( msgText ) > 4 ) {
 			msgText += 4;
 			gcd.iType = GC_EVENT_ACTION;
 		}
@@ -1140,7 +1144,7 @@ void CJabberProto::GroupchatProcessMessage( HXML node )
 	gce.ptszNick = nick;
 	gce.time = msgTime;
 	gce.ptszText = EscapeChatTags( msgText );
-	gce.bIsMe = lstrcmp( nick, item->nick ) == 0;
+	gce.bIsMe = nick == NULL ? FALSE : (lstrcmp( nick, item->nick ) == 0);
 	gce.dwFlags = GC_TCHAR | GCEF_ADDTOLOG;
 	CallServiceSync( MS_GC_EVENT, NULL, (LPARAM)&gce );
 
