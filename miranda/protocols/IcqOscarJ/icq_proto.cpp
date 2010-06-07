@@ -2021,7 +2021,7 @@ char* CIcqProto::PrepareStatusNote(int nStatus)
   if (bXStatus)
     szStatusNote = getSettingStringUtf(NULL, DBSETTING_XSTATUS_MSG, "");
 
-  if (!szStatusNote)
+  if (!szStatusNote || !szStatusNote[0])
   { // get standard status message (no custom status defined)
     icq_lock l(m_modeMsgsMutex);
 
@@ -2060,39 +2060,39 @@ int __cdecl CIcqProto::SetStatus(int iNewStatus)
 
 		// New status is OFFLINE
 		if (nNewStatus == ID_STATUS_OFFLINE)
-    { // for quick logoff
-      if (icqOnline())
-      { // set offline status note (otherwise the old will remain)
-        char *szOfflineNote = PrepareStatusNote(nNewStatus);
+		{ // for quick logoff
+			if (icqOnline())
+			{ // set offline status note (otherwise the old will remain)
+				char *szOfflineNote = PrepareStatusNote(nNewStatus);
 
-        // Create unnamed event to wait until the status note change process is completed
-        m_hNotifyNameInfoEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
+				// Create unnamed event to wait until the status note change process is completed
+				m_hNotifyNameInfoEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
 
-        int bNoteChanged = SetStatusNote(szOfflineNote, 0, FALSE);
+				int bNoteChanged = SetStatusNote(szOfflineNote, 0, FALSE);
 
-        SAFE_FREE(&szOfflineNote);
+				SAFE_FREE(&szOfflineNote);
 
-        // Note was changed, wait until the process is over
-        if (bNoteChanged)
-          ICQWaitForSingleObject(m_hNotifyNameInfoEvent, 4000, TRUE);
+				// Note was changed, wait until the process is over
+				if (bNoteChanged)
+				  ICQWaitForSingleObject(m_hNotifyNameInfoEvent, 4000, TRUE);
 
-        // Release the event
-        CloseHandle(m_hNotifyNameInfoEvent);
-        m_hNotifyNameInfoEvent = NULL;
-      }
+				// Release the event
+				CloseHandle(m_hNotifyNameInfoEvent);
+				m_hNotifyNameInfoEvent = NULL;
+			}
 
 			m_iDesiredStatus = nNewStatus;
 
-      if (hServerConn)
-      { // Connected, Send disconnect packet
-			  icq_sendCloseConnection();
+			if (hServerConn)
+			{ // Connected, Send disconnect packet
+				  icq_sendCloseConnection();
 
-			  icq_serverDisconnect(FALSE);
+				  icq_serverDisconnect(FALSE);
 
-  			SetCurrentStatus(ID_STATUS_OFFLINE);
+				SetCurrentStatus(ID_STATUS_OFFLINE);
 
-	  		NetLog_Server("Logged off.");
-      }
+				NetLog_Server("Logged off.");
+			}
 		}
 		else
 		{
@@ -2138,12 +2138,12 @@ int __cdecl CIcqProto::SetStatus(int iNewStatus)
 			default:
 				SetCurrentStatus(nNewStatus);
 
-        char *szStatusNote = PrepareStatusNote(nNewStatus);
-        
-        //! This is a bit tricky, we do trigger status note change thread and then
-        // change the status note right away (this spares one packet) - so SetStatusNote()
-        // will only change User Details Directory
-        SetStatusNote(szStatusNote, 6000, FALSE);
+				char *szStatusNote = PrepareStatusNote(nNewStatus);
+
+				//! This is a bit tricky, we do trigger status note change thread and then
+				// change the status note right away (this spares one packet) - so SetStatusNote()
+				// will only change User Details Directory
+				SetStatusNote(szStatusNote, 6000, FALSE);
 
 				if (m_iStatus == ID_STATUS_INVISIBLE)
 				{
@@ -2157,22 +2157,20 @@ int __cdecl CIcqProto::SetStatus(int iNewStatus)
 					if (m_bSsiEnabled)
 						updateServVisibilityCode(4);
 				}
-        SAFE_FREE(&szStatusNote);
+				SAFE_FREE(&szStatusNote);
 
-        if (m_bAimEnabled)
-        {
-          icq_lock l(m_modeMsgsMutex);
+				if (m_bAimEnabled)
+				{
+					icq_lock l(m_modeMsgsMutex);
 
-          char **pszStatusNote = NULL;
-          // only set away message for appropriate statuses
-          if (m_iStatus == ID_STATUS_AWAY)
-            pszStatusNote = MirandaStatusToAwayMsg(m_iStatus);
+					char **pszStatusNote = NULL;
+					// only set away message for appropriate statuses
+					if (m_iStatus == ID_STATUS_AWAY)
+					pszStatusNote = MirandaStatusToAwayMsg(m_iStatus);
 
-          if (pszStatusNote)
-      		  icq_sendSetAimAwayMsgServ(*pszStatusNote);
-          else // clear the away message
-            icq_sendSetAimAwayMsgServ(NULL);
-        }
+					if (pszStatusNote)
+					  icq_sendSetAimAwayMsgServ(*pszStatusNote);
+				}
 			}
 		}
 	}
