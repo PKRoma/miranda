@@ -173,7 +173,7 @@ void CAimProto::snac_icbm_limitations(SNAC &snac,HANDLE hServerConn,unsigned sho
 		case ID_STATUS_ONTHEPHONE:
 			broadcast_status(ID_STATUS_AWAY);
 			aim_set_invis(hServerConn,seqno,AIM_STATUS_AWAY,AIM_STATUS_NULL);
-			aim_set_away(hServerConn,seqno, *msgptr ? *msgptr : DEFAULT_AWAY_MSG);
+			aim_set_away(hServerConn,seqno, *msgptr, true);
 			break;
 		}
 

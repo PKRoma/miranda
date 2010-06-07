@@ -218,7 +218,7 @@ struct CAimProto : public PROTO_INTERFACE
 
 	void   __cdecl get_online_msg_thread( void* arg );
 
-	int    aim_set_away(HANDLE hServerConn,unsigned short &seqno,const char *msg);//user info
+	int    aim_set_away(HANDLE hServerConn, unsigned short &seqno, const char *msg, bool set);//user info
 	int    aim_set_statusmsg(HANDLE hServerConn,unsigned short &seqno,const char *msg);//user info
 	int    aim_query_away_message(HANDLE hServerConn,unsigned short &seqno,const char* sn);
 

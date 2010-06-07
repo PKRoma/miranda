@@ -651,9 +651,9 @@ int __cdecl CAimProto::SetStatus(int iNewStatus)
 		if (msgptr && *msgptr)
 		{
 			if (m_iStatus == ID_STATUS_AWAY)
-				aim_set_away(hServerConn,seqno,NULL);//unset away message
+				aim_set_away(hServerConn, seqno, NULL, false);//unset away message
 			else
-				aim_set_statusmsg(hServerConn,seqno,NULL);//unset status message
+				aim_set_statusmsg(hServerConn, seqno, NULL);//unset status message
 		}
 		broadcast_status(ID_STATUS_OFFLINE);
 		return 0;
@@ -673,14 +673,14 @@ int __cdecl CAimProto::SetStatus(int iNewStatus)
 		case ID_STATUS_ONLINE:
 		case ID_STATUS_FREECHAT:
 			broadcast_status(ID_STATUS_ONLINE);
-			aim_set_invis(hServerConn,seqno,AIM_STATUS_ONLINE,AIM_STATUS_NULL);//online not invis
-			aim_set_away(hServerConn,seqno,NULL);//unset away message
+			aim_set_invis(hServerConn, seqno, AIM_STATUS_ONLINE, AIM_STATUS_NULL);//online not invis
+			aim_set_away(hServerConn, seqno, NULL, false);//unset away message
 			break;
 
 		case ID_STATUS_INVISIBLE:
 			broadcast_status(ID_STATUS_INVISIBLE);
 			aim_set_invis(hServerConn,seqno,AIM_STATUS_INVISIBLE,AIM_STATUS_NULL);
-			aim_set_away(hServerConn,seqno,NULL);//unset away message
+			aim_set_away(hServerConn, seqno, NULL, false);//unset away message
 			break;
 
 		case ID_STATUS_AWAY:
@@ -692,8 +692,8 @@ int __cdecl CAimProto::SetStatus(int iNewStatus)
 			broadcast_status(ID_STATUS_AWAY);
 			if (m_iStatus != ID_STATUS_AWAY) 
 			{
-				aim_set_away(hServerConn,seqno,*msgptr?*msgptr:DEFAULT_AWAY_MSG);//set actual away message
-				aim_set_invis(hServerConn,seqno,AIM_STATUS_AWAY,AIM_STATUS_NULL);//away not invis
+				aim_set_away(hServerConn, seqno, *msgptr, true);//set actual away message
+				aim_set_invis(hServerConn, seqno, AIM_STATUS_AWAY, AIM_STATUS_NULL);//away not invis
 			}
 			//see SetAwayMsg for m_iStatus away
 			break;
@@ -784,7 +784,7 @@ int __cdecl CAimProto::SetAwayMsg(int status, const TCHAR* msg)
 		case ID_STATUS_DND:
 		case ID_STATUS_OCCUPIED:
 		case ID_STATUS_ONTHEPHONE:
-			aim_set_away(hServerConn, seqno, *msgptr?*msgptr:DEFAULT_AWAY_MSG); //set actual away message
+			aim_set_away(hServerConn, seqno, *msgptr, true); //set actual away message
 			break;
 		}
 	}
