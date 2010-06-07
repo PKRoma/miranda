@@ -320,6 +320,37 @@ BOOL EnumProfilesForList(TCHAR * fullpath, TCHAR * profile, LPARAM lParam)
 	return TRUE;
 }
 
+void DeleteProfile(HWND hwndList, int iItem, DlgProfData* dat)
+{
+	LVITEM item = {0};
+	TCHAR profile[MAX_PATH], profilef[MAX_PATH*2];
+
+	if (iItem < 0) return;
+
+	item.mask = LVIF_TEXT;
+	item.iItem = iItem;
+	item.pszText = profile;
+	item.cchTextMax = SIZEOF(profile);
+
+	if (!ListView_GetItem(hwndList, &item)) return;
+
+	mir_sntprintf(profilef, SIZEOF(profilef), 
+		TranslateT("Are you sure you want to remove profile \"%s\"?"), profile);
+
+	if (MessageBox(NULL, profilef, _T("Miranda IM"), MB_YESNO | MB_TASKMODAL | MB_ICONWARNING) == IDYES)
+	{
+		mir_sntprintf(profilef, SIZEOF(profilef), _T("%s%s.dat%c%s%s%c"), 
+			dat->pd->szProfileDir, profile, 0, dat->pd->szProfileDir, profile, 0);
+
+		SHFILEOPSTRUCT sf = {0};
+		sf.wFunc = FO_DELETE;
+		sf.pFrom = profilef;
+		sf.fFlags = FOF_NOCONFIRMATION | FOF_SILENT | FOF_ALLOWUNDO;
+		SHFileOperation(&sf);
+		ListView_DeleteItem(hwndList, item.iItem);
+	}
+}
+
 static INT_PTR CALLBACK DlgProfileSelect(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	DlgProfData* dat = (struct DlgProfData *)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
@@ -411,6 +442,26 @@ static INT_PTR CALLBACK DlgProfileSelect(HWND hwndDlg, UINT msg, WPARAM wParam, 
 		}
 		break;
 
+	case WM_CONTEXTMENU:
+		{
+			LVHITTESTINFO lvht = {0};
+			lvht.pt.x  = GET_X_LPARAM(lParam); 
+			lvht.pt.y  = GET_Y_LPARAM(lParam); 
+			ScreenToClient(hwndList, &lvht.pt);
+			if (ListView_HitTest(hwndList, &lvht) < 0) break;
+
+			lvht.pt.x  = GET_X_LPARAM(lParam); 
+			lvht.pt.y  = GET_Y_LPARAM(lParam); 
+
+			HMENU hMenu = CreatePopupMenu();
+			AppendMenu(hMenu, MF_STRING, 1, TranslateT("Delete"));
+			if (TrackPopupMenu(hMenu, TPM_RETURNCMD, lvht.pt.x, lvht.pt.y, 0, hwndDlg, NULL) ==  1)
+				DeleteProfile(hwndList, lvht.iItem, dat);
+			DestroyMenu(hMenu);
+			break;
+		}
+
+
 	case WM_NOTIFY:
 		{
 			LPNMHDR hdr = (LPNMHDR) lParam;
@@ -447,30 +498,8 @@ static INT_PTR CALLBACK DlgProfileSelect(HWND hwndDlg, UINT msg, WPARAM wParam, 
 					case LVN_KEYDOWN:
 					{
 						LPNMLVKEYDOWN hdrk = (LPNMLVKEYDOWN) lParam;
-						if (hdrk->wVKey != VK_DELETE) break;
-
-						LVITEM item = {0};
-						TCHAR profile[MAX_PATH], profilef[MAX_PATH*2];
-
-						item.mask = LVIF_TEXT;
-						item.iItem = ListView_GetNextItem(hwndList, -1, LVNI_SELECTED | LVNI_ALL);
-						item.pszText = profile;
-						item.cchTextMax = SIZEOF(profile);
-
-						if (item.iItem < 0 || !ListView_GetItem(hwndList, &item)) break;
-						
-						mir_sntprintf(profilef, SIZEOF(profilef), TranslateT("Are you sure you want to remove profile \"%s\"?"), profile);
-						if (MessageBox(NULL, profilef, _T("Miranda IM"), MB_YESNO | MB_TASKMODAL | MB_ICONWARNING) == IDYES)
-						{
-							mir_sntprintf(profilef, SIZEOF(profilef), _T("%s%s.dat%c%s%s%c"), dat->pd->szProfileDir, profile, 0, dat->pd->szProfileDir, profile, 0);
-
-							SHFILEOPSTRUCT sf = {0};
-							sf.wFunc = FO_DELETE;
-							sf.pFrom = profilef;
-							sf.fFlags = FOF_NOCONFIRMATION | FOF_SILENT | FOF_ALLOWUNDO;
-							SHFileOperation(&sf);
-							ListView_DeleteItem(hwndList, item.iItem);
-						}
+						if (hdrk->wVKey == VK_DELETE) 
+							DeleteProfile(hwndList, ListView_GetNextItem(hwndList, -1, LVNI_SELECTED | LVNI_ALL), dat);
 						break;
 					}
 				}	
