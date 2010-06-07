@@ -271,34 +271,34 @@ void CList_CreateGroup(TCHAR* group)
 	CallService(MS_CLUI_GROUPADDED, i + 1, 0);
 }
 
-BOOL CList_AddEvent(HANDLE hContact, HICON Icon, HANDLE event, int type, TCHAR* fmt, ... )
+BOOL CList_AddEvent(HANDLE hContact, HICON hIcon, HANDLE hEvent, int type, TCHAR* fmt, ... )
 {
-	CLISTEVENT cle;
+	CLISTEVENT cle = {0};
 	va_list marker;
-	TCHAR* szBuf = (TCHAR*)alloca(4096 * sizeof(TCHAR));
+	TCHAR szBuf[4096];
 
-	if (!fmt || lstrlen(fmt) < 1 || lstrlen(fmt) > 2000)
+	if (!fmt || !fmt[0] || _tcslen(fmt) > 2000)
 		return FALSE;
 
 	va_start(marker, fmt);
-	_vsntprintf(szBuf, 4096, fmt, marker);
+	_vsntprintf(szBuf, SIZEOF(szBuf), fmt, marker);
 	va_end(marker);
 
-	cle.cbSize=sizeof(cle);
-	cle.hContact=(HANDLE)hContact;
-	cle.hDbEvent=(HANDLE)event;
-	cle.flags = type + CLEF_TCHAR;
-	cle.hIcon = Icon;
+	cle.cbSize = sizeof(cle);
+	cle.hContact = hContact;
+	cle.hDbEvent = hEvent;
+	cle.flags = type | CLEF_TCHAR;
+	cle.hIcon = hIcon;
 	cle.pszService = "GChat/DblClickEvent" ;
 	cle.ptszTooltip = TranslateTS(szBuf);
-	if ( type ) {
-		if (!CallService(MS_CLIST_GETEVENT, (WPARAM)hContact, (LPARAM)0))
-			CallService(MS_CLIST_ADDEVENT,(WPARAM) hContact,(LPARAM) &cle);
+	if (type) {
+		if (!CallService(MS_CLIST_GETEVENT, (WPARAM)hContact, 0))
+			CallService(MS_CLIST_ADDEVENT, (WPARAM) hContact, (LPARAM) &cle);
 	}
 	else {
-		if (CallService(MS_CLIST_GETEVENT, (WPARAM)hContact, (LPARAM)0))
-			CallService(MS_CLIST_REMOVEEVENT, (WPARAM)hContact, (LPARAM)event);
-		CallService(MS_CLIST_ADDEVENT,(WPARAM) hContact,(LPARAM) &cle);
+		if (CallService(MS_CLIST_GETEVENT, (WPARAM)hContact, 0))
+			CallService(MS_CLIST_REMOVEEVENT, (WPARAM)hContact, (LPARAM)hEvent);
+		CallService(MS_CLIST_ADDEVENT, (WPARAM)hContact, (LPARAM)&cle);
 	}
 	return TRUE;
 }
