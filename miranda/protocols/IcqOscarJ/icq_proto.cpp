@@ -2166,10 +2166,12 @@ int __cdecl CIcqProto::SetStatus(int iNewStatus)
 					char **pszStatusNote = NULL;
 					// only set away message for appropriate statuses
 					if (m_iStatus == ID_STATUS_AWAY)
-					pszStatusNote = MirandaStatusToAwayMsg(m_iStatus);
+						pszStatusNote = MirandaStatusToAwayMsg(m_iStatus);
 
 					if (pszStatusNote)
-					  icq_sendSetAimAwayMsgServ(*pszStatusNote);
+						icq_sendSetAimAwayMsgServ(*pszStatusNote);
+					else // clear the away message
+						icq_sendSetAimAwayMsgServ(NULL);
 				}
 			}
 		}
