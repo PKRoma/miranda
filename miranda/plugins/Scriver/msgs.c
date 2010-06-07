@@ -127,8 +127,8 @@ static int MessageEventAdded(WPARAM wParam, LPARAM lParam)
 {
 	CLISTEVENT cle;
 	DBEVENTINFO dbei;
-	char *contactName;
-	char toolTip[256];
+	TCHAR *contactName;
+	TCHAR toolTip[256];
 	HWND hwnd;
 
 	ZeroMemory(&dbei, sizeof(dbei));
@@ -166,9 +166,9 @@ static int MessageEventAdded(WPARAM wParam, LPARAM lParam)
 		cle.hDbEvent = (HANDLE) lParam;
 		cle.hIcon = LoadSkinnedIcon(SKINICON_EVENT_MESSAGE);
 		cle.pszService = "SRMsg/ReadMessage";
-		contactName = (char *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, wParam, 0);
-		mir_snprintf(toolTip, sizeof(toolTip), Translate("Message from %s"), contactName);
-		cle.pszTooltip = toolTip;
+		contactName = (TCHAR *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, wParam, GCDNF_TCHAR);
+		mir_sntprintf(toolTip, SIZEOF(toolTip), TranslateT("Message from %s"), contactName);
+		cle.ptszTooltip = toolTip;
 		CallService(MS_CLIST_ADDEVENT, 0, (LPARAM) & cle);
 	}
 	return 0;
@@ -343,7 +343,7 @@ static void RestoreUnreadMessageAlerts(void)
 {
    CLISTEVENT cle = { 0 };
    DBEVENTINFO dbei = { 0 };
-   char toolTip[256];
+   TCHAR toolTip[256];
    int windowAlreadyExists;
    HANDLE hDbEvent, hContact;
 
@@ -351,6 +351,8 @@ static void RestoreUnreadMessageAlerts(void)
    cle.cbSize = sizeof(cle);
    cle.hIcon = LoadSkinnedIcon(SKINICON_EVENT_MESSAGE);
    cle.pszService = "SRMsg/ReadMessage";
+   cle.flags = CLEF_TCHAR;
+   cle.ptszTooltip = toolTip;
 
    hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
    while (hContact) {
@@ -375,8 +377,7 @@ static void RestoreUnreadMessageAlerts(void)
             else {
                cle.hContact = hContact;
                cle.hDbEvent = hDbEvent;
-               mir_snprintf(toolTip, sizeof(toolTip), Translate("Message from %s"), (char *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM) hContact, 0));
-               cle.pszTooltip = toolTip;
+               mir_sntprintf(toolTip, SIZEOF(toolTip), TranslateT("Message from %s"), (char *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM) hContact, GCDNF_TCHAR));
                CallService(MS_CLIST_ADDEVENT, 0, (LPARAM) & cle);
             }
          }
