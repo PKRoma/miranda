@@ -292,7 +292,7 @@ BOOL CList_AddEvent(HANDLE hContact, HICON Icon, HANDLE event, int type, TCHAR* 
 	cle.cbSize=sizeof(cle);
 	cle.hContact=(HANDLE)hContact;
 	cle.hDbEvent=(HANDLE)event;
-	cle.flags = type + CLEF_TCHAR;
+	cle.flags = type | CLEF_TCHAR;
 	cle.hIcon=Icon;
 	cle.pszService= "GChat/DblClickEvent" ;
 	cle.ptszTooltip = TranslateTS(szBuf);

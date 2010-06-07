@@ -125,15 +125,10 @@ static INT_PTR ReadMessageCommand(WPARAM wParam, LPARAM lParam)
 
 static int MessageEventAdded(WPARAM wParam, LPARAM lParam)
 {
-	CLISTEVENT cle;
-	DBEVENTINFO dbei;
-	TCHAR *contactName;
-	TCHAR toolTip[256];
+	DBEVENTINFO dbei = {0};
 	HWND hwnd;
 
-	ZeroMemory(&dbei, sizeof(dbei));
 	dbei.cbSize = sizeof(dbei);
-	dbei.cbBlob = 0;
 	CallService(MS_DB_EVENT_GET, lParam, (LPARAM) & dbei);
 	if (dbei.eventType == EVENTTYPE_MESSAGE && (dbei.flags & DBEF_READ))
 		return 0;
@@ -159,9 +154,14 @@ static int MessageEventAdded(WPARAM wParam, LPARAM lParam)
 			return 0;
 		}
 	}
-	if (hwnd == NULL || !IsWindowVisible(GetParent(hwnd))) {
-		ZeroMemory(&cle, sizeof(cle));
+	if (hwnd == NULL || !IsWindowVisible(GetParent(hwnd))) 
+	{
+		CLISTEVENT cle = {0};
+		TCHAR *contactName;
+		TCHAR toolTip[256];
+
 		cle.cbSize = sizeof(cle);
+		cle.flags = CLEF_TCHAR;
 		cle.hContact = (HANDLE) wParam;
 		cle.hDbEvent = (HANDLE) lParam;
 		cle.hIcon = LoadSkinnedIcon(SKINICON_EVENT_MESSAGE);
@@ -300,18 +300,17 @@ static int TypingMessage(WPARAM wParam, LPARAM lParam)
          CallService(MS_CLIST_SYSTRAY_NOTIFY, 0, (LPARAM) & tn);
       }
       else {
-         CLISTEVENT cle;
+		CLISTEVENT cle =  {0};
 
-         ZeroMemory(&cle, sizeof(cle));
-         cle.cbSize = sizeof(cle);
-         cle.hContact = (HANDLE) wParam;
-         cle.hDbEvent = (HANDLE) 1;
-         cle.flags = CLEF_ONLYAFEW | CLEF_TCHAR;
-		 cle.hIcon = GetCachedIcon("scriver_TYPING");
-         cle.pszService = "SRMsg/TypingMessage";
-         cle.ptszTooltip = szTip;
-         CallServiceSync(MS_CLIST_REMOVEEVENT, wParam, (LPARAM) 1);
-         CallServiceSync(MS_CLIST_ADDEVENT, wParam, (LPARAM) & cle);
+		cle.cbSize = sizeof(cle);
+		cle.hContact = (HANDLE) wParam;
+		cle.hDbEvent = (HANDLE) 1;
+		cle.flags = CLEF_ONLYAFEW | CLEF_TCHAR;
+		cle.hIcon = GetCachedIcon("scriver_TYPING");
+		cle.pszService = "SRMsg/TypingMessage";
+		cle.ptszTooltip = szTip;
+		CallServiceSync(MS_CLIST_REMOVEEVENT, wParam, (LPARAM) 1);
+		CallServiceSync(MS_CLIST_ADDEVENT, wParam, (LPARAM) & cle);
       }
    }
    return 0;
