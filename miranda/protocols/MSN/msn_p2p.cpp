@@ -147,8 +147,6 @@ bool p2p_IsDlFileOk(filetransfer* ft)
 	BYTE sha[MIR_SHA1_HASH_SIZE];
 	mir_sha1_init(&sha1ctx);
 
-	ft->close();
-
 	bool res = false;
 
 	int fileId = _topen(ft->std.tszCurrentFile, O_RDONLY | _O_BINARY, _S_IREAD);
@@ -1704,7 +1702,11 @@ void  CMsnProto::p2p_processMsg(ThreadData* info,  char* msgbody)
 				SendBroadcast(ft->std.hContact, ACKTYPE_FILE, ACKRESULT_DATA, ft, (LPARAM)&ft->std);
 				p2p_sendAck(ft->std.hContact, hdrdata);
 				if (ft->p2p_appID == MSN_APPID_FILE)
-					ft->bCompleted = true;
+				{
+					ft->ts = time(NULL);
+					ft->p2p_waitack = true;
+					ft->complete();
+				}
 				else 
 				{
 					p2p_savePicture2disk(ft);
