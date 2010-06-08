@@ -508,7 +508,7 @@ void NetlibSslShutdown(SslHandle *ssl)
 	TimeStamp       tsExpiry;
 	DWORD           scRet;
 
-	if (ssl == NULL) return;
+	if (ssl == NULL || !SecIsValidHandle(&ssl->hContext)) return;
 
 	dwType = SCHANNEL_SHUTDOWN;
 
