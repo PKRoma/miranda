@@ -686,7 +686,9 @@ void CIcqProto::icq_sendSetAimAwayMsgServ(const char *szMsg)
 	if (wMsgLen > 0x1000) wMsgLen = 0x1000; // limit length
 	serverPacketInit(&packet, (WORD)(48 + wMsgLen));
 	packFNACHeader(&packet, ICQ_LOCATION_FAMILY, ICQ_LOCATION_SET_USER_INFO, 0, dwCookie);
-	packTLV(&packet, 0x03, 0x1E, (LPBYTE)"text/x-aolrtf; charset=\"utf-8\"");
+
+	if (wMsgLen)
+		packTLV(&packet, 0x03, 0x1E, (LPBYTE)"text/x-aolrtf; charset=\"utf-8\"");
 	packTLV(&packet, 0x04, wMsgLen, (LPBYTE)szMsg);
 
 	sendServPacket(&packet);
