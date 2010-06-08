@@ -3,6 +3,20 @@
                            www.miranda-im.org
 
 
+* New in 0.8.25
+Bugfixes:
+ - Fixed focus issues with file transfer minimize option
+ - Fixed auth issues caused by deny reason dialog
+ - Fixed dll dependancy issue with image processing library
+ - Fixed account manager icon sizing issue
+ - Fixed possible crash with IE 4 installed
+ - AIM: Fixed ceritificate validation
+ - ICQ: Fixed issue with ICQ not setting the status properly when AIM support is enabled
+ - Jabber: Added SSL certificate validation for Google Apps accounts
+ - MSN: Fixed possible crashes
+ - MSN: Added workaround for file transfers with Pidgin
+
+
 * New in 0.8.24
 Bugfixes:
  - Fixed processing of special characters in multi-user chat windows
