@@ -471,8 +471,6 @@ INT_PTR CALLBACK AccMgrDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LPARAM 
 			SetWindowLongPtr(hwndDlg, GWLP_USERDATA, (LONG_PTR)dat);
 
 			TranslateDialogDefault(hwndDlg);
-			Utils_RestoreWindowPositionNoSize(hwndDlg, NULL, "AccMgr", "");
-
 			Window_SetIcon_IcoLib( hwndDlg, SKINICON_OTHER_ACCMGR );
 
 			SendDlgItemMessage( hwndDlg, IDC_ADD, BM_SETIMAGE, IMAGE_ICON, ( LPARAM )LoadSkinIcon( SKINICON_OTHER_ADDCONTACT ));
@@ -530,6 +528,8 @@ INT_PTR CALLBACK AccMgrDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LPARAM 
 			dat->iSelected = -1;
 			sttSubclassAccList(GetDlgItem(hwndDlg, IDC_ACCLIST), TRUE);
 			SendMessage( hwndDlg, WM_MY_REFRESH, 0, 0 );
+
+			Utils_RestoreWindowPositionNoSize(hwndDlg, NULL, "AccMgr", "");
 		}
 		return TRUE;
 
