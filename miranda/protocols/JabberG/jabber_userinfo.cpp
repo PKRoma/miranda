@@ -749,7 +749,7 @@ static INT_PTR CALLBACK JabberUserPhotoDlgProc( HWND hwndDlg, UINT msg, WPARAM w
 								n = (DWORD)_tcslen( szFilter );
 								_tcsncpy( szFilter+n+1, _T("*.*"), SIZEOF( szFilter )-n-2 );
 							}
-							szFilter[sizeof( szFilter )-1] = '\0';
+							szFilter[SIZEOF( szFilter )-1] = 0;
 
 							OPENFILENAME ofn = { 0 };
 							ofn.lStructSize = OPENFILENAME_SIZE_VERSION_400;
