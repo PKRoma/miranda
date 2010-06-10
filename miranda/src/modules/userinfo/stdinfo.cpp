@@ -104,7 +104,18 @@ static void SetValue(HWND hwndDlg,int idCtrl,HANDLE hContact,char *szModule,char
 				break;
 			case DBVT_WORD:
 				if(special==SVS_COUNTRY) {
-					pstr=(char*)CallService(MS_UTILS_GETCOUNTRYBYNUMBER,dbv.wVal,0);
+					WORD wSave = dbv.wVal;
+					if (wSave == ( WORD )-1) {
+						char szSettingName[100];
+						mir_snprintf( szSettingName, SIZEOF(szSettingName), "%sName", szSetting );
+						if ( !DBGetContactSettingTString(hContact,szModule,szSettingName,&dbv)) {
+							ptstr = dbv.ptszVal;
+							unspecified = false;
+							break;
+						}
+					}
+
+					pstr = Translate((char*)CallService(MS_UTILS_GETCOUNTRYBYNUMBER,wSave,0));
 					unspecified=pstr==NULL;
 				}
 				else {

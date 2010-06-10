@@ -138,11 +138,13 @@ static INT_PTR GetContactInfo(WPARAM, LPARAM lParam) {
 		}
 		case CNF_COUNTRY:
 		case CNF_COCOUNTRY:
-		{
-			int i,countryCount;
-			struct CountryListEntry *countries;
+			if ( !GetDatabaseString( ci, (ci->dwFlag & 0x7F) == CNF_COUNTRY ? "CountryName" : "CompanyCountryName", &dbv ))
+				return 0;
+
 			if ( !DBGetContactSetting( ci->hContact, ci->szProto, (ci->dwFlag & 0x7F)==CNF_COUNTRY ? "Country" : "CompanyCountry", &dbv )) {
 				if ( dbv.type == DBVT_WORD ) {
+					int i,countryCount;
+					struct CountryListEntry *countries;
 					CallService(MS_UTILS_GETCOUNTRYLIST,(WPARAM)&countryCount,(LPARAM)&countries);
 					for(i=0;i<countryCount;i++) {
 						if(countries[i].id!=dbv.wVal) continue;
@@ -165,7 +167,7 @@ static INT_PTR GetContactInfo(WPARAM, LPARAM lParam) {
 				DBFreeVariant(&dbv);
 			}
 			break;
-		}
+
 		case CNF_FIRSTLAST:
 			if( !GetDatabaseString( ci, "FirstName", &dbv )) {
 				DBVARIANT dbv2;
