@@ -926,8 +926,7 @@ void CJabberProto::OnIqResultGetVcard( HXML iqNode )
 							hasHomeCtry = TRUE;
 							if ( hContact != NULL )
 								JSetWord( hContact, "Country", ( WORD )JabberCountryNameToId( xmlGetText( m ) ));
-							else
-								JSetStringT( hContact, "CountryName", xmlGetText( m ) );
+							JSetStringT( hContact, "CountryName", xmlGetText( m ) );
 					}	}
 
 					if ( !hasWork && xmlGetChild( n , "WORK" )!=NULL ) {
@@ -972,8 +971,7 @@ void CJabberProto::OnIqResultGetVcard( HXML iqNode )
 							hasWorkCtry = TRUE;
 							if ( hContact != NULL )
 								JSetWord( hContact, "CompanyCountry", ( WORD )JabberCountryNameToId( xmlGetText( m ) ));
-							else
-								JSetStringT( hContact, "CompanyCountryName", xmlGetText( m ) );
+							JSetStringT( hContact, "CompanyCountryName", xmlGetText( m ) );
 					}	}
 				}
 				else if ( !lstrcmp( xmlGetName( n ), _T("TEL"))) {
