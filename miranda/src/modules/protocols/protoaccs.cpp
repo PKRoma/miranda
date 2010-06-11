@@ -26,6 +26,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "../clist/clc.h"
 
 bool CheckProtocolOrder(void);
+void 	BuildProtoMenus();
 
 static BOOL bModuleInitialized = FALSE;
 
@@ -210,6 +211,8 @@ static int InitializeStaticAccounts( WPARAM, LPARAM )
 		if ( !pa->bOldProto )
 			count++;
 	}
+
+	BuildProtoMenus();
 
 	if ( count == 0 && !DBGetContactSettingByte( NULL, "FirstRun", "AccManager", 0 )) {
 		DBWriteContactSettingByte( NULL, "FirstRun", "AccManager", 1 );
@@ -520,11 +523,21 @@ void UnloadAccountsModule()
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
+void BuildProtoMenus()
+{
+	for ( int i = 0; i < accounts.getCount(); i++ ) {
+		PROTOACCOUNT* pa = accounts[ i ];
+		if ( !pa->bIsEnabled || !pa->bIsVisible || pa->bDynDisabled )
+			continue;
+
+		if ( pa->ppro )
+			pa->ppro->OnEvent( EV_PROTO_ONMENU, 0, 0 );
+	}
+}
+
 void RebuildProtoMenus( int iNewValue )
 {
-	int i;
-
-	for( i = 0; i < accounts.getCount(); i++ ) {
+	for( int i = 0; i < accounts.getCount(); i++ ) {
 		PROTOACCOUNT* pa = accounts[ i ];
 		HGENMENU hMenu = ( HGENMENU )CallService( MO_GETPROTOROOTMENU, ( WPARAM )pa->szModuleName, 0 );
 		if ( hMenu != NULL )
@@ -534,10 +547,5 @@ void RebuildProtoMenus( int iNewValue )
 	DBWriteContactSettingByte( NULL, "CList", "MoveProtoMenus", iNewValue );
 
 	RebuildMenuOrder();
-
-	for( i = 0; i < accounts.getCount(); i++ ) {
-		PROTOACCOUNT* pa = accounts[ i ];
-		if ( pa->ppro )
-			pa->ppro->OnEvent( EV_PROTO_ONMENU, 0, 0 );
-	}
+	BuildProtoMenus();
 }

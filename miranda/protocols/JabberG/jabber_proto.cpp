@@ -369,7 +369,6 @@ int CJabberProto::OnModulesLoadedEx( WPARAM, LPARAM )
 	}
 
 	CleanLastResourceMap();
-	MenuInit();
 	return 0;
 }
 

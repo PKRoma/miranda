@@ -31,6 +31,7 @@ static TCHAR szTip[MAX_TIP_SIZE+1];
 
 int LoadContactListModule2( void );
 int LoadCLCModule( void );
+void BuildProtoMenus( void );
 
 static int interfaceInited = 0;
 
@@ -55,6 +56,7 @@ static void fnOnCreateClc( void )
 static void fnReloadProtoMenus( void )
 {
 	RebuildMenuOrder();
+	BuildProtoMenus();
 	cli.pfnCluiProtocolStatusChanged(0,0);
 }
 

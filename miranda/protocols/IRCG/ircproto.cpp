@@ -327,7 +327,6 @@ int CIrcProto::OnModulesLoaded( WPARAM, LPARAM )
 	}
 
 	InitIgnore();
-	InitMenus();
 
 	IrcHookEvent( ME_USERINFO_INITIALISE, &CIrcProto::OnInitUserInfo );
 	IrcHookEvent( ME_CLIST_PREBUILDCONTACTMENU, &CIrcProto::OnMenuPreBuild );

@@ -131,7 +131,6 @@ int CAimProto::OnModulesLoaded(WPARAM wParam, LPARAM lParam)
 	HookProtoEvent(ME_IDLE_CHANGED,             &CAimProto::OnIdleChanged);
 	HookProtoEvent(ME_MSG_WINDOWEVENT,          &CAimProto::OnWindowEvent);
 
-	InitMenus();
 	chat_register();
 
 	return 0;

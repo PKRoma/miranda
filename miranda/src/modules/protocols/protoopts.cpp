@@ -189,10 +189,11 @@ static INT_PTR CALLBACK AccFormDlgProc(HWND hwndDlg,UINT message, WPARAM wParam,
 					DBWriteContactSettingString( NULL, pa->szModuleName, "AM_BaseProto", pa->szProtoName );
 					accounts.insert( pa );
 
-					if ( ActivateAccount( pa ))
+					if ( ActivateAccount( pa )) {
 						pa->ppro->OnEvent( EV_PROTO_ONLOAD, 0, 0 );
-					else
-						pa->type = PROTOTYPE_DISPROTO;
+						pa->ppro->OnEvent( EV_PROTO_ONMENU, 0, 0 );
+					}
+					else pa->type = PROTOTYPE_DISPROTO;
 				}
 
 				WriteDbAccounts();
@@ -777,10 +778,11 @@ INT_PTR CALLBACK AccMgrDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LPARAM 
 
 							pa->bIsEnabled = !pa->bIsEnabled;
 							if ( pa->bIsEnabled ) {
-								if ( ActivateAccount( pa ))
+								if ( ActivateAccount( pa )) {
 									pa->ppro->OnEvent( EV_PROTO_ONLOAD, 0, 0 );
-								else
-									pa->type = PROTOTYPE_DISPROTO;
+									pa->ppro->OnEvent( EV_PROTO_ONMENU, 0, 0 );
+								}
+								else pa->type = PROTOTYPE_DISPROTO;
 							}
 							else DeactivateAccount( pa, true, false );
 

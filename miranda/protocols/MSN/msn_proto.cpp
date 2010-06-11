@@ -224,7 +224,6 @@ CMsnProto::~CMsnProto()
 
 int CMsnProto::OnModulesLoaded(WPARAM, LPARAM)
 {
-	MsnInitMenus();
 	if (msnHaveChatDll) 
 	{
 		GCREGISTER gcr = {0};

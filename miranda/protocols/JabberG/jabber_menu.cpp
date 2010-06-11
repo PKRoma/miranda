@@ -719,7 +719,7 @@ void CJabberProto::MenuInit()
 		mi.hParentMenu = HGENMENU_ROOT;
 		mi.flags = CMIF_ICONFROMICOLIB | CMIF_ROOTPOPUP | CMIF_TCHAR | CMIF_KEEPUNTRANSLATED;
 		mi.icolibItem = GetIconHandle( IDI_JABBER );
-		hJabberRoot = ( HGENMENU )CallService( MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM)&mi );
+		hJabberRoot = ( HGENMENU )CallService( MS_CLIST_ADDPROTOMENUITEM, 0, (LPARAM)&mi );
 	}
 
 	// "Bookmarks..."
@@ -1038,8 +1038,7 @@ void CJabberProto::CheckMenuItems()
 	JCallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )m_hMenuSDTransports, ( LPARAM )&clmi );
 	JCallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )m_hMenuSDConferences, ( LPARAM )&clmi );
 
-	if ( m_ThreadInfo && !( m_ThreadInfo->jabberServerCaps & JABBER_CAPS_PRIVATE_STORAGE))
-		clmi.flags |= CMIF_GRAYED;
+	clmi.flags = CMIM_FLAGS | (( m_ThreadInfo && ( m_ThreadInfo->jabberServerCaps & JABBER_CAPS_PRIVATE_STORAGE)) ? 0 : CMIF_HIDDEN );
 	JCallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )m_hMenuBookmarks, ( LPARAM )&clmi );
 	JCallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )m_hMenuNotes, ( LPARAM )&clmi );
 

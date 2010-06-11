@@ -103,7 +103,6 @@ INT_PTR CYahooProto::OnModulesLoadedEx( WPARAM, LPARAM )
 	
 	m_hNetlibUser = ( HANDLE )YAHOO_CallService( MS_NETLIB_REGISTERUSER, 0, ( LPARAM )&nlu );
 	
-	MenuInit();
 	return 0;
 }
 

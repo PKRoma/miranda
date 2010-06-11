@@ -41,7 +41,7 @@ void CIrcProto::InitMenus()
 			mi.pszPopupName = (char *)-1;
 			mi.flags = CMIF_ICONFROMICOLIB | CMIF_ROOTPOPUP | CMIF_TCHAR | CMIF_KEEPUNTRANSLATED;
 			mi.icolibItem = GetIconHandle(IDI_MAIN);
-			hMenuRoot = ( HGENMENU )CallService( MS_CLIST_ADDMAINMENUITEM,  (WPARAM)0, (LPARAM)&mi);
+			hMenuRoot = ( HGENMENU )CallService( MS_CLIST_ADDPROTOMENUITEM,  (WPARAM)0, (LPARAM)&mi);
 		}
 		
 		mi.flags = CMIF_ICONFROMICOLIB | CMIF_CHILDPOPUP;

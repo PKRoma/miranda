@@ -345,7 +345,7 @@ void CMsnProto::MsnInitMenus(void)
 		mi.flags = CMIF_ICONFROMICOLIB | CMIF_ROOTPOPUP | CMIF_TCHAR | CMIF_KEEPUNTRANSLATED;
 		mi.icolibItem = GetIconHandle(IDI_MSN);
 		mi.ptszName = m_tszUserName;
-		hRoot = mainMenuRoot = (HANDLE)MSN_CallService(MS_CLIST_ADDMAINMENUITEM,  (WPARAM)0, (LPARAM)&mi);
+		hRoot = mainMenuRoot = (HANDLE)MSN_CallService(MS_CLIST_ADDPROTOMENUITEM,  (WPARAM)0, (LPARAM)&mi);
 	}
 
 	mi.flags = CMIF_ICONFROMICOLIB | CMIF_CHILDPOPUP;

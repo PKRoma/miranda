@@ -453,7 +453,7 @@ void CAimProto::InitMenus(void)
 		mi.pszPopupName = (char *)-1;
 		mi.popupPosition = 500090000;
 		mi.position = 500090000;
-		hRoot = hMenuRoot = (HANDLE)CallService(MS_CLIST_ADDMAINMENUITEM,  (WPARAM)0, (LPARAM)&mi);
+		hRoot = hMenuRoot = (HANDLE)CallService(MS_CLIST_ADDPROTOMENUITEM,  (WPARAM)0, (LPARAM)&mi);
 	}
 
 	mi.pszService = service_name;
