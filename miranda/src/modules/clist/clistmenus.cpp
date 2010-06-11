@@ -869,7 +869,7 @@ void RebuildMenuOrder( void )
 	BYTE bHideStatusMenu = DBGetContactSettingByte( NULL, "CLUI", "DontHideStatusMenu", 0 ); // cool perversion, though
 
 	//clear statusmenu
-    RecursiveDeleteMenu(hStatusMenu);
+	RecursiveDeleteMenu(hStatusMenu);
 
 	//status menu
 	if ( hStatusMenuObject != 0 ) {
@@ -916,13 +916,12 @@ void RebuildMenuOrder( void )
 		tmi.position = pos++;
 		tmi.hIcon = ic = (HICON)CallProtoService( pa->szModuleName, PS_LOADICON, PLI_PROTOCOL | PLIF_SMALL, 0 );
 
-		if ( Proto_IsAccountLocked( pa ) && cli.bDisplayLocked )
-		{
+		if ( Proto_IsAccountLocked( pa ) && cli.bDisplayLocked ) {
 			mir_sntprintf( tbuf, SIZEOF(tbuf), TranslateT("%s (locked)"), pa->tszAccountName );
 			tmi.ptszName = tbuf;
-		} else {
-			tmi.ptszName = pa->tszAccountName;
 		}
+		else tmi.ptszName = pa->tszAccountName;
+
 		{
 			//owner data
 			lpStatusMenuExecParam smep = ( lpStatusMenuExecParam )mir_calloc( sizeof( StatusMenuExecParam ));
@@ -948,13 +947,11 @@ void RebuildMenuOrder( void )
 		if ( Proto_IsAccountLocked( pa ))
 			tmi.flags |= CMIF_CHECKED;
 
-		if (( tmi.flags & CMIF_CHECKED ) && cli.bDisplayLocked )
-		{
+		if (( tmi.flags & CMIF_CHECKED ) && cli.bDisplayLocked ) {
 			mir_sntprintf( tbuf, SIZEOF(tbuf), TranslateT("%s (locked)"), pa->tszAccountName );
 			tmi.ptszName = tbuf;
-		} else {
-			tmi.ptszName = pa->tszAccountName;
 		}
+		else tmi.ptszName = pa->tszAccountName;
 
 		PMO_IntMenuItem menuHandle = MO_AddNewMenuItem( hStatusMenuObject, &tmi );
 		((lpStatusMenuExecParam)tmi.ownerdata)->protoindex = ( int )menuHandle;
@@ -1374,10 +1371,10 @@ void UninitCustomMenus(void)
 	mir_free(hStatusMainMenuHandles);
 	hStatusMainMenuHandles = NULL;
 
-    mir_free( hStatusMenuHandles );
+	mir_free( hStatusMenuHandles );
 	hStatusMenuHandles = NULL;
 
-    if ( hMainMenuObject   ) CallService( MO_REMOVEMENUOBJECT, (WPARAM)hMainMenuObject, 0 );
+	if ( hMainMenuObject   ) CallService( MO_REMOVEMENUOBJECT, (WPARAM)hMainMenuObject, 0 );
 	if ( hStatusMenuObject ) CallService( MO_REMOVEMENUOBJECT, (WPARAM)hMainMenuObject, 0 );
 
 	UnloadMoveToGroup();

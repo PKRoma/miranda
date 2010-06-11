@@ -27,6 +27,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 extern int DefaultImageListColorDepth;
 long handleCustomDraw(HWND hWndTreeView, LPNMTVCUSTOMDRAW pNMTVCD);
+void RebuildProtoMenus( int );
 
 int hInst;
 
@@ -34,6 +35,7 @@ struct OrderData
 {
 	int dragging;
 	HTREEITEM hDragItem;
+	int iInitMenuValue;
 };
 
 typedef struct tagMenuItemOptData
@@ -430,8 +432,9 @@ static INT_PTR CALLBACK GenMenuOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 		TranslateDialogDefault(hwndDlg);
 		dat=(struct OrderData*)mir_alloc(sizeof(struct OrderData));
 		SetWindowLongPtr(GetDlgItem(hwndDlg,IDC_MENUITEMS),GWLP_USERDATA,(LONG_PTR)dat);
-		dat->dragging=0;
-		MyOldWindowProc=(WNDPROC)GetWindowLongPtr(GetDlgItem(hwndDlg,IDC_MENUITEMS),GWLP_WNDPROC);
+		dat->dragging = 0;
+		dat->iInitMenuValue = DBGetContactSettingByte( NULL, "CList", "MoveProtoMenus", FALSE );
+		MyOldWindowProc = (WNDPROC)GetWindowLongPtr(GetDlgItem(hwndDlg,IDC_MENUITEMS),GWLP_WNDPROC);
 		SetWindowLongPtr(GetDlgItem(hwndDlg,IDC_MENUITEMS),GWLP_WNDPROC,(LONG_PTR)&LBTNDOWNProc);
 		{
 			HIMAGELIST himlCheckBoxes;
@@ -444,9 +447,7 @@ static INT_PTR CALLBACK GenMenuOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 			TreeView_SetImageList(GetDlgItem(hwndDlg,IDC_MENUOBJECTS),himlCheckBoxes,TVSIL_NORMAL);
 			TreeView_SetImageList(GetDlgItem(hwndDlg,IDC_MENUITEMS),himlCheckBoxes,TVSIL_NORMAL);
 		}
-		CheckDlgButton(hwndDlg,
-			DBGetContactSettingByte( NULL, "CList", "MoveProtoMenus", FALSE ) ? IDC_RADIO2 : IDC_RADIO1,
-			TRUE );
+		CheckDlgButton(hwndDlg, dat->iInitMenuValue ? IDC_RADIO2 : IDC_RADIO1, TRUE );
 		BuildMenuObjectsTree(hwndDlg);
 		return TRUE;
 
@@ -534,7 +535,11 @@ static INT_PTR CALLBACK GenMenuOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 		switch( hdr->idFrom ) {
 		case 0:
 			if (hdr->code == PSN_APPLY ) {
-				DBWriteContactSettingByte( NULL, "CList", "MoveProtoMenus", IsDlgButtonChecked(hwndDlg, IDC_RADIO1) ? 0 : 1 );
+				int iNewMenuValue = IsDlgButtonChecked(hwndDlg, IDC_RADIO1) ? 0 : 1;
+				if ( iNewMenuValue != dat->iInitMenuValue ) {
+					RebuildProtoMenus( iNewMenuValue );
+					dat->iInitMenuValue = iNewMenuValue;
+				}
 				SaveTree(hwndDlg);
 				RebuildCurrent(hwndDlg);
 			}
@@ -701,17 +706,6 @@ static INT_PTR CALLBACK GenMenuOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 		}	}
 		break;
 
-	case WM_DESTROY:
-	{
-		struct OrderData* dat = (struct OrderData*)GetWindowLongPtr( GetDlgItem(hwndDlg,IDC_MENUITEMS), GWLP_USERDATA );
-		if ( dat )
-			mir_free( dat );
-
-		ImageList_Destroy(TreeView_SetImageList(GetDlgItem(hwndDlg,IDC_MENUOBJECTS),NULL,TVSIL_NORMAL));
-		FreeTreeData( hwndDlg );
-		break;
-	}
-
 	case WM_LBUTTONUP:
 		if (!dat->dragging)
 			break;
@@ -774,6 +768,15 @@ static INT_PTR CALLBACK GenMenuOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 				SaveTree(hwndDlg);
 		}	}
 		break;
+
+	case WM_DESTROY:
+		if ( dat )
+			mir_free( dat );
+
+		ImageList_Destroy(TreeView_SetImageList(GetDlgItem(hwndDlg,IDC_MENUOBJECTS),NULL,TVSIL_NORMAL));
+		FreeTreeData( hwndDlg );
+		break;
+
 	}
 	return FALSE;
 }
@@ -783,7 +786,6 @@ long handleCustomDraw(HWND hWndTreeView, LPNMTVCUSTOMDRAW pNMTVCD)
 	if ( pNMTVCD == NULL )
 		return -1;
 
-	//SetWindowTheme(hWndTreeView, "", "");
 	switch ( pNMTVCD->nmcd.dwDrawStage ) {
 	case CDDS_PREPAINT:
 		return CDRF_NOTIFYITEMDRAW;
@@ -834,8 +836,6 @@ long handleCustomDraw(HWND hWndTreeView, LPNMTVCUSTOMDRAW pNMTVCD)
 
 			return CDRF_NEWFONT|(k?CDRF_SKIPDEFAULT:0);
 		}
-	default:
-		break;
 	}
 	return 0;
 }

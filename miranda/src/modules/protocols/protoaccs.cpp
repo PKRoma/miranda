@@ -23,6 +23,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "commonheaders.h"
 
+#include "../clist/clc.h"
+
 bool CheckProtocolOrder(void);
 
 static BOOL bModuleInitialized = FALSE;
@@ -38,23 +40,23 @@ LIST<PROTOACCOUNT> accounts( 10, CompareAccounts );
 
 static int EnumDbModules(const char *szModuleName, DWORD ofsModuleName, LPARAM lParam)
 {
-    DBVARIANT dbv;
+	DBVARIANT dbv;
 	if ( !DBGetContactSettingString( NULL, szModuleName, "AM_BaseProto", &dbv )) {
-        if (!Proto_GetAccount( szModuleName )) {
-	        PROTOACCOUNT* pa = ( PROTOACCOUNT* )mir_calloc( sizeof( PROTOACCOUNT ));
-	        pa->cbSize = sizeof( *pa );
-	        pa->type = PROTOTYPE_PROTOCOL;
-	        pa->szModuleName = mir_strdup( szModuleName );
-	        pa->szProtoName = mir_strdup( dbv.pszVal );
-	        pa->tszAccountName = mir_a2t( szModuleName );
+		if (!Proto_GetAccount( szModuleName )) {
+			PROTOACCOUNT* pa = ( PROTOACCOUNT* )mir_calloc( sizeof( PROTOACCOUNT ));
+			pa->cbSize = sizeof( *pa );
+			pa->type = PROTOTYPE_PROTOCOL;
+			pa->szModuleName = mir_strdup( szModuleName );
+			pa->szProtoName = mir_strdup( dbv.pszVal );
+			pa->tszAccountName = mir_a2t( szModuleName );
 			pa->bIsVisible = TRUE;
-            pa->bIsEnabled = FALSE;
+			pa->bIsEnabled = FALSE;
 			pa->iOrder = accounts.getCount();
 			accounts.insert( pa );
-        }
-        DBFreeVariant( &dbv );
-    }
-    return 0;
+		}
+		DBFreeVariant( &dbv );
+	}
+	return 0;
 }
 
 void LoadDbAccounts(void)
@@ -112,13 +114,13 @@ void LoadDbAccounts(void)
 			pa->tszAccountName = mir_a2t( pa->szModuleName );
 
 		accounts.insert( pa );
-    }
+	}
 
-    if (CheckProtocolOrder()) WriteDbAccounts();
+	if (CheckProtocolOrder()) WriteDbAccounts();
 
-    int anum = accounts.getCount();
-    CallService(MS_DB_MODULES_ENUM, 0, (LPARAM)EnumDbModules);
-    if (anum != accounts.getCount()) WriteDbAccounts();
+	int anum = accounts.getCount();
+	CallService(MS_DB_MODULES_ENUM, 0, (LPARAM)EnumDbModules);
+	if (anum != accounts.getCount()) WriteDbAccounts();
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -398,7 +400,7 @@ static int DeactivationThread( DeactivationThreadParam* param )
 	tagPROTO_INTERFACE* p = ( tagPROTO_INTERFACE* )param->ppro;
 	p->SetStatus(ID_STATUS_OFFLINE);
 
-    char * szModuleName = NEWSTR_ALLOCA(p->m_szModuleName);
+	char * szModuleName = NEWSTR_ALLOCA(p->m_szModuleName);
 
 	if ( param->bIsDynamic ) {
 		p->OnEvent( EV_PROTO_ONREADYTOEXIT, 0, 0 );
@@ -408,28 +410,28 @@ static int DeactivationThread( DeactivationThreadParam* param )
 	KillObjectThreads( p ); // waits for them before terminating
 	KillObjectEventHooks( p ); // untie an object from the outside world
 
-    if ( param->bErase )
-	    p->OnEvent( EV_PROTO_ONERASE, 0, 0 );
+	if ( param->bErase )
+		p->OnEvent( EV_PROTO_ONERASE, 0, 0 );
 
-    if ( param->fnUninit )
+	if ( param->fnUninit )
 		param->fnUninit( p );
 
 	KillObjectServices( p );
 
-    if ( param->bErase )
-        EraseAccount( szModuleName );
+	if ( param->bErase )
+		EraseAccount( szModuleName );
 
-    delete param;
+	delete param;
 	return 0;
 }
 
 void DeactivateAccount( PROTOACCOUNT* pa, bool bIsDynamic, bool bErase )
 {
 	if ( pa->ppro == NULL ) {
-        if ( bErase )
-            EraseAccount( pa->szModuleName );
+		if ( bErase )
+			EraseAccount( pa->szModuleName );
 		return;
-    }
+	}
 
 	if ( pa->hwndAccMgrUI ) {
 		DestroyWindow(pa->hwndAccMgrUI);
@@ -441,9 +443,9 @@ void DeactivateAccount( PROTOACCOUNT* pa, bool bIsDynamic, bool bErase )
 	param->ppro = pa->ppro;
 	param->fnUninit = GetProtocolDestructor( pa->szProtoName );
 	param->bIsDynamic = bIsDynamic;
-    param->bErase = bErase;
+	param->bErase = bErase;
 	pa->ppro = NULL;
-    pa->type = PROTOTYPE_DISPROTO;
+	pa->type = PROTOTYPE_DISPROTO;
 	if ( bIsDynamic )
 		mir_forkthread(( pThreadFunc )DeactivationThread, param );
 	else 
@@ -464,16 +466,15 @@ void EraseAccount( const char* pszModuleName )
 
 	// remove protocol contacts first
 	HANDLE hContact = ( HANDLE )CallService( MS_DB_CONTACT_FINDFIRST, 0, 0 );
-	while ( hContact != NULL ) 
-    {
+	while ( hContact != NULL ) {
 		HANDLE h1 = hContact;
 		hContact = ( HANDLE )CallService( MS_DB_CONTACT_FINDNEXT, ( WPARAM )h1, 0 );
 
-        dbv.type = DBVT_ASCIIZ;
-        dbv.pszVal = szProtoName;
-        dbv.cchVal = SIZEOF(szProtoName);
+		dbv.type = DBVT_ASCIIZ;
+		dbv.pszVal = szProtoName;
+		dbv.cchVal = SIZEOF(szProtoName);
 
-        if ( CallService( MS_DB_CONTACT_GETSETTINGSTATIC, ( WPARAM )h1, ( LPARAM )&dbcgs ))
+		if ( CallService( MS_DB_CONTACT_GETSETTINGSTATIC, ( WPARAM )h1, ( LPARAM )&dbcgs ))
 			continue;
 
 		if ( !lstrcmpA( szProtoName, pszModuleName ))
@@ -515,4 +516,28 @@ void UnloadAccountsModule()
 	}
 
 	accounts.destroy();
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+
+void RebuildProtoMenus( int iNewValue )
+{
+	int i;
+
+	for( i = 0; i < accounts.getCount(); i++ ) {
+		PROTOACCOUNT* pa = accounts[ i ];
+		HGENMENU hMenu = ( HGENMENU )CallService( MO_GETPROTOROOTMENU, ( WPARAM )pa->szModuleName, 0 );
+		if ( hMenu != NULL )
+			CallService( MO_REMOVEMENUITEM, ( WPARAM )hMenu, 0 );
+	}
+
+	DBWriteContactSettingByte( NULL, "CList", "MoveProtoMenus", iNewValue );
+
+	RebuildMenuOrder();
+
+	for( i = 0; i < accounts.getCount(); i++ ) {
+		PROTOACCOUNT* pa = accounts[ i ];
+		if ( pa->ppro )
+			pa->ppro->OnEvent( EV_PROTO_ONMENU, 0, 0 );
+	}
 }
