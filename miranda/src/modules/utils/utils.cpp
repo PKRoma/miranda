@@ -511,6 +511,23 @@ char* ltrim(char* str)
 	}
 }
 
+char* ltrimp(char* str)
+{
+	if (str == NULL) return NULL;
+	char* p = str;
+
+	for (;;)
+	{
+		switch (*p)
+		{
+		case ' ': case '\t': case '\n': case '\r':
+			++p; break;
+		default:
+			return p;
+		}
+	}
+}
+
 bool wildcmp(char * name, char * mask)
 {
 	char * last='\0';

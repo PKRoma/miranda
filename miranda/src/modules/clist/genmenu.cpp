@@ -385,7 +385,7 @@ INT_PTR MO_MenuItemGetOwnerData(WPARAM wParam, LPARAM)
 PMO_IntMenuItem MO_GetIntMenuItem(HGENMENU wParam)
 {
 	PMO_IntMenuItem result = ( PMO_IntMenuItem )wParam;
-	if ( result == NULL || wParam == (HGENMENU)0xffff1234 )
+	if ( result == NULL || wParam == (HGENMENU)0xffff1234 || wParam == HGENMENU_ROOT)
 		return NULL;
 
 	__try

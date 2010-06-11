@@ -35,6 +35,8 @@ struct ProxyAuth
 {
 	char *szServer;
 	char *szMethod;
+//	char *szUserName;
+//	char *szPassword;
 
 	ProxyAuth(const char *pszServer, const char *pszMethod)
 	{
@@ -244,65 +246,75 @@ static char* NetlibHttpSecurityProvider(NetlibConnection *nlc, HANDLE& hNtlmSecu
 	return szAuthHdr;
 }
 
-static int HttpPeekFirstResponseLine(struct NetlibConnection *nlc,DWORD dwTimeoutTime,DWORD recvFlags,int *resultCode,char **ppszResultDescr,int *length)
+static int HttpPeekFirstResponseLine(NetlibConnection *nlc, DWORD dwTimeoutTime, 
+									 DWORD recvFlags, int *resultCode, 
+									 char **ppszResultDescr, int *length)
 {
-	int bytesPeeked=0;
-	char buffer[1024];
+	int bytesPeeked;
+	char buffer[2048];
 	char *peol;
 
 	for(;;) 
 	{
-		bytesPeeked=RecvWithTimeoutTime(nlc,dwTimeoutTime,buffer,SIZEOF(buffer)-1,MSG_PEEK|recvFlags);
-		if(bytesPeeked==0 || bytesPeeked==SOCKET_ERROR) {
-			if(bytesPeeked==0) SetLastError(ERROR_HANDLE_EOF);
+		bytesPeeked = RecvWithTimeoutTime(nlc, dwTimeoutTime, buffer, SIZEOF(buffer) - 1, 
+			MSG_PEEK | recvFlags);
+
+		if (bytesPeeked == 0)
+		{
+			SetLastError(ERROR_HANDLE_EOF);
 			return 0;
 		}
-		buffer[bytesPeeked]='\0';
-		peol=strchr(buffer,'\n');
-		if(peol==NULL) {
-			if(lstrlenA(buffer)<bytesPeeked) {
+		if (bytesPeeked == SOCKET_ERROR) 
+			return 0;
+
+		buffer[bytesPeeked] = '\0';
+		peol = strchr(buffer, '\n');
+		if (peol == NULL) 
+		{
+			if (strlen(buffer) < bytesPeeked) 
+			{
 				SetLastError(ERROR_BAD_FORMAT);
 				return 0;
 			}
-			if(bytesPeeked==SIZEOF(buffer)-1) {
+			if (bytesPeeked == SIZEOF(buffer) - 1) 
+			{
 				SetLastError(ERROR_BUFFER_OVERFLOW);
 				return 0;
 			}
 			if (Miranda_Terminated()) return 0;
 			Sleep(10);
-			continue;
 		}
-		if(peol==buffer || *--peol!='\r') {
-			SetLastError(ERROR_BAD_FORMAT);
-			return 0;
-		}
-		*peol='\0';
-		{
-			char *pResultCode,*pResultDescr,*pHttpMajor,*pHttpMinor;
-			size_t tokenLen;
-			int httpMajorVer,httpMinorVer;
-			if(peol==buffer
-			   || _strnicmp(buffer,"http/",5)
-			   || (httpMajorVer=strtol(pHttpMajor=buffer+5,&pHttpMinor,10))<0
-			   || pHttpMajor==pHttpMinor
-			   || httpMajorVer>1
-			   || *pHttpMinor++!='.'
-			   || (httpMinorVer=strtol(pHttpMinor,&pResultCode,10))<0
-			   || pResultCode==pHttpMinor
-			   || (tokenLen=strspn(pResultCode," \t\n\0"))==0	//by FYR: Some proxy may not return code description but mostly 'HTTP/1.0 200' is able to work result
-			   || (*resultCode=strtol(pResultCode+=tokenLen,&pResultDescr,10))==0
-			// || pResultDescr==pResultCode
-			// || (tokenLen=strspn(pResultDescr," \t"))==0
-			// || *(pResultDescr+=tokenLen)=='\0' 
-			   ) {
-				SetLastError(peol==buffer?ERROR_BAD_FORMAT:ERROR_INVALID_DATA);
-				return 0;
-			}
-			if(ppszResultDescr) *ppszResultDescr=mir_strdup(pResultDescr);
-			if(length) *length=peol-buffer+2;
-		}
-		return 1;
+		else
+			break;
 	}
+	
+	if (peol == buffer) 
+	{
+		SetLastError(ERROR_BAD_FORMAT);
+		return 0;
+	}
+
+	*peol = '\0';
+
+	if (_strnicmp(buffer, "HTTP/", 5)) 
+	{
+		SetLastError(ERROR_BAD_FORMAT);
+		return 0;
+	}
+
+	size_t off = strcspn(buffer, " \t");
+	if (!buffer[off]) return 0;
+	char* pResultCode = buffer + off;
+	*(pResultCode++) = 0;
+
+	char* pResultDescr;
+	*resultCode = strtol(pResultCode, &pResultDescr, 10);
+
+	if (ppszResultDescr)
+		*ppszResultDescr = mir_strdup(lrtrimp(pResultDescr));
+
+	if (length) *length = peol - buffer + 1;
+	return 1;
 }
 
 static int SendHttpRequestAndData(struct NetlibConnection *nlc,struct ResizableCharBuffer *httpRequest,NETLIBHTTPREQUEST *nlhr,int sendContentLengthHeader)
@@ -760,13 +772,13 @@ INT_PTR NetlibHttpRecvHeaders(WPARAM wParam,LPARAM lParam)
 		}
 		buffer[bytesPeeked] = 0;
 
-		for (pbuffer = buffer, headersCount = 0; ; pbuffer = peol + 2, ++headersCount)
+		for (pbuffer = buffer, headersCount = 0; ; pbuffer = peol + 1, ++headersCount)
 		{
-			peol = strstr(pbuffer, "\r\n");
+			peol = strchr(pbuffer, '\n');
 			if (peol == NULL) break;
-			if (peol == pbuffer)
+			if (peol == pbuffer || (peol == (pbuffer + 1) &&  *pbuffer == '\r'))
 			{
-				bytesPeeked = peol - buffer + 2;
+				bytesPeeked = peol - buffer + 1;
 				headersCompleted = true;
 				break;
 			}
@@ -788,30 +800,23 @@ INT_PTR NetlibHttpRecvHeaders(WPARAM wParam,LPARAM lParam)
 	nlhr->headersCount = headersCount;
 	nlhr->headers = (NETLIBHTTPHEADER*)mir_alloc(sizeof(NETLIBHTTPHEADER) * headersCount);
 
-	for (pbuffer = buffer, headersCount = 0; ; pbuffer = peol + 2, ++headersCount) 
+	for (pbuffer = buffer, headersCount = 0; ; pbuffer = peol + 1, ++headersCount) 
 	{
-		peol = strstr(pbuffer, "\r\n");
-		if (peol == NULL || peol == pbuffer) break;
-
+		peol = strchr(pbuffer, '\n');
+		if (peol == NULL || peol == pbuffer || (peol == (pbuffer + 1) &&  *pbuffer == '\r')) break;
 		*peol = 0;
+
+		char *pColon = strchr(pbuffer, ':');
+		if (pColon == NULL) 
 		{
-			char *pColon, *pSpace;
-
-			pColon = strchr(pbuffer, ':');
-			if (pColon == NULL) 
-			{
-				NetlibHttpFreeRequestStruct(0, (LPARAM)nlhr); nlhr = NULL;
-				SetLastError(ERROR_INVALID_DATA);
-				break;
-			}
-
-			pSpace = pColon;
-			do { *pSpace-- = 0; } while (pSpace >= pbuffer && (*pSpace == ' ' || *pSpace == '\t'));
-			nlhr->headers[headersCount].szName = mir_strdup(pbuffer);
-
-			do { ++pColon; } while (*pColon == ' ' || *pColon == '\t');
-			nlhr->headers[headersCount].szValue = mir_strdup(pColon);
+			NetlibHttpFreeRequestStruct(0, (LPARAM)nlhr); nlhr = NULL;
+			SetLastError(ERROR_INVALID_DATA);
+			break;
 		}
+
+		*(pColon++) = 0;
+		nlhr->headers[headersCount].szName = mir_strdup(rtrim(pbuffer));
+		nlhr->headers[headersCount].szValue = mir_strdup(lrtrimp(pColon));
 	}
 
 	NetlibLeaveNestedCS(&nlc->ncsRecv);
@@ -1097,6 +1102,7 @@ next:
 						}
 					}
 				}
+				Sleep(10);
 			}
 
 			if (chunked)

@@ -284,7 +284,9 @@ __inline static INT_PTR CallProtoService( const char* szModule, const char* szSe
 #endif
 TCHAR* rtrim(TCHAR* str);
 char*  ltrim(char* str);
+char* ltrimp(char* str);
 __inline char* lrtrim(char* str) { return ltrim(rtrim(str)); };
+__inline char* lrtrimp(char* str) { return ltrimp(rtrim(str)); };
 
 bool wildcmp(char * name, char * mask);
 
