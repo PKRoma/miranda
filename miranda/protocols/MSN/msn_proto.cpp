@@ -1241,6 +1241,10 @@ int __cdecl CMsnProto::OnEvent(PROTOEVENTTYPE eventType, WPARAM wParam, LPARAM l
 	case EV_PROTO_ONOPTIONS: 
 		return OnOptionsInit(wParam, lParam);
 
+	case EV_PROTO_ONMENU:
+		MsnInitMenus();
+		break;
+
 	case EV_PROTO_ONERASE:
 		{
 			char szDbsettings[64];

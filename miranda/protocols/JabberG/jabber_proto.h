@@ -235,7 +235,6 @@ struct CJabberProto : public PROTO_INTERFACE
 	void __cdecl OnRenameContact( DBCONTACTWRITESETTING* cws, HANDLE hContact );
 	void __cdecl OnRenameGroup( DBCONTACTWRITESETTING* cws, HANDLE hContact );
 	int  __cdecl OnUserInfoInit( WPARAM, LPARAM );
-	int  __cdecl OnBuildStatusMenu( WPARAM, LPARAM );
 
 	int  __cdecl JabberGcEventHook( WPARAM, LPARAM );
 	int  __cdecl JabberGcMenuHook( WPARAM, LPARAM );
@@ -685,8 +684,10 @@ struct CJabberProto : public PROTO_INTERFACE
 	INT_PTR    __cdecl OnMenuHandleDirectPresence(WPARAM wParam, LPARAM lParam, LPARAM res);
 	INT_PTR    __cdecl OnMenuSetPriority(WPARAM wParam, LPARAM lParam, LPARAM dwDelta);
 
+	void   GlobalMenuInit( void );
+	void   GlobalMenuUninit( void );
+
 	void   MenuInit( void );
-	void   MenuUninit( void );
 
 	void   MenuHideSrmmIcon(HANDLE hContact);
 	void   MenuUpdateSrmmIcon(JABBER_LIST_ITEM *item);

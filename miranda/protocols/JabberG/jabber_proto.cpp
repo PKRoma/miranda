@@ -170,7 +170,7 @@ CJabberProto::CJabberProto( const char* aProtoName, const TCHAR* aUserName ) :
 	m_clientCapsManager.AddDefaultCaps();
 
 	IconsInit();
-	MenuInit();
+	GlobalMenuInit();
 	WsInit();
 	IqInit();
 	SerialInit();
@@ -225,7 +225,7 @@ CJabberProto::~CJabberProto()
 	XStatusUninit();
 	SerialUninit();
 	ConsoleUninit();
-	MenuUninit();
+	GlobalMenuUninit();
 
 	delete m_pInfoFrame;
 
@@ -369,8 +369,7 @@ int CJabberProto::OnModulesLoadedEx( WPARAM, LPARAM )
 	}
 
 	CleanLastResourceMap();
-	OnBuildStatusMenu(0, 0);
-
+	MenuInit();
 	return 0;
 }
 
@@ -1572,6 +1571,11 @@ int __cdecl CJabberProto::OnEvent( PROTOEVENTTYPE eventType, WPARAM wParam, LPAR
 	case EV_PROTO_ONLOAD:    return OnModulesLoadedEx( 0, 0 );
 	case EV_PROTO_ONEXIT:    return OnPreShutdown( 0, 0 );
 	case EV_PROTO_ONOPTIONS: return OnOptionsInit( wParam, lParam );
+
+	case EV_PROTO_ONMENU:
+		MenuInit();
+		break;
+
 	case EV_PROTO_ONRENAME:
 		{	
 			CLISTMENUITEM clmi = { 0 };

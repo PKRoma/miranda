@@ -826,6 +826,10 @@ int __cdecl CAimProto::OnEvent(PROTOEVENTTYPE eventType, WPARAM wParam, LPARAM l
 //		case EV_PROTO_ONEXIT:    
 //            return OnPreShutdown(0, 0);
 
+		case EV_PROTO_ONMENU:
+			InitMenus();
+			break;
+
 		case EV_PROTO_ONOPTIONS: 
 			return OnOptionsInit(wParam, lParam);
 

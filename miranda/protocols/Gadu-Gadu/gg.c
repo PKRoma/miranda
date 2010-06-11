@@ -321,10 +321,16 @@ int gg_event(PROTO_INTERFACE *proto, PROTOEVENTTYPE eventType, WPARAM wParam, LP
 			gg_img_shutdown(gg);
 
 			break;
+
 		case EV_PROTO_ONOPTIONS:
 			return gg_options_init(gg, wParam, lParam);
+
+		case EV_PROTO_ONMENU:
+			gg_menus_init(gg);
+			break;
+
 		case EV_PROTO_ONRENAME:
-		{	
+		{
 			CLISTMENUITEM mi = {0};
 
 #ifdef DEBUGMODE

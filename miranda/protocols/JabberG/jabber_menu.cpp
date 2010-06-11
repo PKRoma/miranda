@@ -702,7 +702,7 @@ INT_PTR __cdecl CJabberProto::OnMenuBookmarkAdd( WPARAM wParam, LPARAM )
 /////////////////////////////////////////////////////////////////////////////////////////
 // status menu
 
-int __cdecl CJabberProto::OnBuildStatusMenu( WPARAM, LPARAM )
+void CJabberProto::MenuInit()
 {
 	CLISTMENUITEM mi = { 0 };
 	mi.cbSize = sizeof( CLISTMENUITEM );
@@ -871,7 +871,6 @@ int __cdecl CJabberProto::OnBuildStatusMenu( WPARAM, LPARAM )
 
 	m_pepServices.RebuildMenu();
 	CheckMenuItems();
-	return 0;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -908,7 +907,7 @@ void CJabberProto::UpdatePriorityMenu(short priority)
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-void CJabberProto::MenuInit()
+void CJabberProto::GlobalMenuInit()
 {
 	//////////////////////////////////////////////////////////////////////////////////////
 	// Account chooser menu
@@ -1004,7 +1003,7 @@ int g_OnModernToolbarInit(WPARAM, LPARAM)
 	return 0;
 }
 
-void CJabberProto::MenuUninit()
+void CJabberProto::GlobalMenuUninit()
 {
 	if ( m_phMenuResourceItems ) {
 		for ( int i=0; i < m_nMenuResourceItems; i++ )

@@ -802,6 +802,11 @@ int __cdecl CYahooProto::OnEvent( PROTOEVENTTYPE eventType, WPARAM wParam, LPARA
 		case EV_PROTO_ONLOAD:    return OnModulesLoadedEx( 0, 0 );
 		//case EV_PROTO_ONEXIT:    return OnPreShutdown( 0, 0 );
 		case EV_PROTO_ONOPTIONS: return OnOptionsInit( wParam, lParam );
+
+		case EV_PROTO_ONMENU:
+			MenuInit();
+			break;
+
 		case EV_PROTO_ONRENAME:
 		{	
 			CLISTMENUITEM clmi = { 0 };
@@ -809,12 +814,8 @@ int __cdecl CYahooProto::OnEvent( PROTOEVENTTYPE eventType, WPARAM wParam, LPARA
 			clmi.flags = CMIM_NAME | CMIF_TCHAR | CMIF_KEEPUNTRANSLATED;
 			clmi.ptszName = m_tszUserName;
 			YAHOO_CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )mainMenuRoot, ( LPARAM )&clmi );
-            break;
-		}
-		case EV_PROTO_ONEXIT:
-		case EV_PROTO_ONREADYTOEXIT:
-		case EV_PROTO_ONERASE:
 			break;
+		}
 	}	
 	return 1;
 }

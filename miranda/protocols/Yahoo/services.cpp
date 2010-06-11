@@ -574,5 +574,4 @@ void CYahooProto::LoadYahooServices( void )
 
 	mir_snprintf( path, sizeof( path ), "%s/PictLoading", m_szModuleName );
 	CallService( MS_DB_SETSETTINGRESIDENT, TRUE, ( LPARAM )path );
-
 }
