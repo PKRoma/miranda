@@ -510,9 +510,9 @@ void __cdecl CMsnProto::MsnSearchAckThread(void* arg)
 
 HANDLE __cdecl CMsnProto::SearchBasic(const char* id)
 {
-	if (!msnLoggedIn) return 0;
+	if (!msnLoggedIn || !id) return NULL;
 	
-	char* email = mir_strdup(id); 
+	char* email = _strlwr(mir_strdup(id)); 
 	ForkThread(&CMsnProto::MsnSearchAckThread, email);
 
 	return email;

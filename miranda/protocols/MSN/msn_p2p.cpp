@@ -320,7 +320,7 @@ void  CMsnProto::p2p_sendMsg(HANDLE hContact, unsigned appId, P2P_Header& hdrdat
 				p += sprintf(p, sttP2Pheader, ft->p2p_dest);
 			}
 			else
-				p += sprintf(p, sttP2Pheader, email);
+				p += sprintf(p, sttP2Pheader, _strlwr(email));
 		}
 
 		// add message body
@@ -995,7 +995,7 @@ void CMsnProto::p2p_InitFileTransfer(
 	ft->p2p_ackID = dwAppID == MSN_APPID_FILE ? 2000 : 1000;
 	replaceStr(ft->p2p_callID, szCallID);
 	replaceStr(ft->p2p_branch, szBranch);
-	ft->p2p_dest = mir_strdup(szFrom);
+	ft->p2p_dest = _strlwr(mir_strdup(szFrom));
 	ft->std.hContact = info->mJoinedContacts[0];
 
 	p2p_registerSession(ft);
@@ -1845,7 +1845,7 @@ void  CMsnProto::p2p_invite(HANDLE hContact, int iAppID, filetransfer* ft)
 
 	if (!p2p_sessionRegistered(ft)) 
 	{
-		ft->p2p_dest = mir_strdup(szEmail);
+		ft->p2p_dest = _strlwr(mir_strdup(szEmail));
 		p2p_registerSession(ft);
 	}
 

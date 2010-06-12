@@ -603,7 +603,7 @@ void CMsnProto::MSN_ReceiveMessage(ThreadData* info, char* cmdString, char* para
 	else if (!_strnicmp(tContentType, "application/x-msnmsgrp2p", 24))
 	{
 		const char* dest = tHeader["P2P-Dest"];
-		if (dest && stricmp(dest, MyOptions.szEmail) == 0)
+		if (dest && _stricmp(dest, MyOptions.szEmail) == 0)
 			p2p_processMsg(info, msgBody);
 	}
 	else if (!_strnicmp(tContentType, "text/x-mms-emoticon", 19))
@@ -735,7 +735,7 @@ void CMsnProto::sttProcessRemove(char* buf, size_t len)
 			if ((listId & (LIST_RL | LIST_FL)) == 0) 
 			{
 				HANDLE hContact = MSN_HContactFromEmail(szEmail, NULL, false, false);
-				if (strcmp(szEmail, MyOptions.szEmail))
+				if (_stricmp(szEmail, MyOptions.szEmail))
 					MSN_CallService(MS_DB_CONTACT_DELETE, (WPARAM)hContact, 0);
 			}
 

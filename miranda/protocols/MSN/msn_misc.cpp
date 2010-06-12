@@ -1212,7 +1212,7 @@ bool CMsnProto::MSN_IsMeByContact(HANDLE hContact, char* szEmail)
 	if (getStaticString(hContact, "e-mail", emailPtr, sizeof(tEmail))) 
 		return false;
 	
-	return strcmp(emailPtr, MyOptions.szEmail) == 0;
+	return _stricmp(emailPtr, MyOptions.szEmail) == 0;
 }
 
 

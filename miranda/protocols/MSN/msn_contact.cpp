@@ -39,10 +39,11 @@ HANDLE  CMsnProto::MSN_HContactFromEmail(const char* msnEmail, const char* msnNi
 
 	if (addIfNeeded)
 	{
+		char *szEmail = _strlwr(NEWSTR_ALLOCA(msnEmail));
 		hContact = (HANDLE)MSN_CallService(MS_DB_CONTACT_ADD, 0, 0);
 		MSN_CallService(MS_PROTO_ADDTOCONTACT, (WPARAM)hContact, (LPARAM)m_szModuleName);
-		setString(hContact, "e-mail", msnEmail);
-		setStringUtf(hContact, "Nick", (char*)msnNick);
+		setString(hContact, "e-mail", szEmail);
+		setStringUtf(hContact, "Nick", szEmail);
 		if (temporary)
 			DBWriteContactSettingByte(hContact, "CList", "NotOnList", 1);
 
@@ -159,7 +160,7 @@ bool CMsnProto::MSN_AddUser(HANDLE hContact, const char* email, int netId, int f
 		else 
 		{
 			DBVARIANT dbv = {0};
-			if (!strcmp(email, MyOptions.szEmail))
+			if (!_stricmp(email, MyOptions.szEmail))
 				getStringUtf("Nick", &dbv);
 
 			unsigned res1 = MSN_ABContactAdd(email, dbv.pszVal, netId, msg, false);

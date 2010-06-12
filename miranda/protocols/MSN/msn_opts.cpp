@@ -275,7 +275,7 @@ LBL_Continue:
 			CMsnProto* proto = (CMsnProto*)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 
 			GetDlgItemTextA(hwndDlg, IDC_HANDLE, szEmail, sizeof(szEmail));
-			if (strcmp(szEmail, proto->MyOptions.szEmail)) 
+			if (strcmp(_strlwr(szEmail), proto->MyOptions.szEmail)) 
             {
 				reconnectRequired = true;
 				strcpy(proto->MyOptions.szEmail, szEmail);
@@ -882,4 +882,5 @@ void  CMsnProto::LoadOptions(void)
 	MyOptions.UseWinColors = getByte("UseWinColors", FALSE) != 0;
 	if (getStaticString(NULL, "e-mail", MyOptions.szEmail, sizeof(MyOptions.szEmail)))
 		MyOptions.szEmail[0] = 0;
+	_strlwr(MyOptions.szEmail);
 }
