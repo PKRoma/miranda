@@ -104,60 +104,55 @@ bool RecvUntilTimeout(struct NetlibConnection *nlc, char *buf, int len, int flag
 	return false;
 }
 
-static int NetlibInitSocks4Connection(struct NetlibConnection *nlc,struct NetlibUser *nlu,NETLIBOPENCONNECTION *nloc)
-{	//http://www.socks.nec.com/protocol/socks4.protocol and http://www.socks.nec.com/protocol/socks4a.protocol
-	PBYTE pInit;
-	int nUserLen,nHostLen,len;
-	BYTE reply[8];
+static int NetlibInitSocks4Connection(NetlibConnection *nlc, NetlibUser *nlu, NETLIBOPENCONNECTION *nloc)
+{	
+//	http://www.socks.nec.com/protocol/socks4.protocol and http://www.socks.nec.com/protocol/socks4a.protocol
+	if (!nloc->szHost || !nloc->szHost[0]) return 0;
 
-	nUserLen=lstrlenA(nlu->settings.szProxyAuthUser);
-	nHostLen=lstrlenA(nloc->szHost);
-	pInit=(PBYTE)mir_alloc(10+nUserLen+nHostLen);
-	pInit[0]=4;   //SOCKS4
-	pInit[1]=1;   //connect
-	*(PWORD)(pInit+2)=htons(nloc->wPort);
-	if(nlu->settings.szProxyAuthUser==NULL) pInit[8]=0;
-	else lstrcpyA((char*)pInit+8,nlu->settings.szProxyAuthUser);
-	if(nlu->settings.dnsThroughProxy) {
-		if((*(PDWORD)(pInit+4)=DnsLookup(nlu,nloc->szHost))==0) {
-			// FIXME: very suspect code :)
-			*(PDWORD)(pInit+4)=0x01000000;
-			lstrcpyA((char*)pInit+9+nUserLen,nloc->szHost);
-			len=10+nUserLen+nHostLen;
-		}
-		else len=9+nUserLen;
+	size_t nHostLen = strlen(nloc->szHost) + 1;
+	size_t nUserLen = nlu->settings.szProxyAuthUser ? strlen(nlu->settings.szProxyAuthUser) + 1 : 1;
+	size_t len = 8 + nUserLen;
+
+	char* pInit = (char*)alloca(len + nHostLen);
+	pInit[0] = 4;	// SOCKS4
+	pInit[1] = 1;	//connect
+	*(PWORD)&pInit[2] = htons(nloc->wPort);
+
+	if (nUserLen <= 1) pInit[8] = 0;
+	else memcpy(&pInit[8], nlu->settings.szProxyAuthUser, nUserLen);
+
+	//if cannot resolve host, try resolving through proxy (requires SOCKS4a)  
+	DWORD ip = DnsLookup(nlu, nloc->szHost);
+	*(PDWORD)&pInit[4] = ip ? ip : 0x01000000; 	
+	if (!ip) 
+	{
+		memcpy(&pInit[len], nloc->szHost, nHostLen);
+		len += nHostLen;
 	}
-	else {
-		*(PDWORD)(pInit+4)=DnsLookup(nlu,nloc->szHost);
-		if(*(PDWORD)(pInit+4)==0) {
-			mir_free(pInit);
-			return 0;
-		}
-		len=9+nUserLen;
-	}
-	if(NLSend(nlc,(char*)pInit,len,MSG_DUMPPROXY)==SOCKET_ERROR) {
+
+	if (NLSend(nlc, pInit, (int)len, MSG_DUMPPROXY) == SOCKET_ERROR) 
+	{
 		NetlibLogf(nlu,"%s %d: %s() failed (%u)",__FILE__,__LINE__,"NLSend",GetLastError());
-		mir_free(pInit);
 		return 0;
 	}
-	mir_free(pInit);
 
-	if (!RecvUntilTimeout(nlc,(char*)reply,SIZEOF(reply),MSG_DUMPPROXY,RECV_DEFAULT_TIMEOUT)) {
+	char reply[8];
+	if (!RecvUntilTimeout(nlc, reply, sizeof(reply), MSG_DUMPPROXY, RECV_DEFAULT_TIMEOUT)) 
+	{
 		NetlibLogf(nlu,"%s %d: %s() failed (%u)",__FILE__,__LINE__,"RecvUntilTimeout",GetLastError());
 		return 0;
 	}
-	if ( reply[1] != 90 ) {
-		switch( reply[1] ) {
-			case 91: SetLastError(ERROR_ACCESS_DENIED); break;
-			case 92: SetLastError(ERROR_CONNECTION_UNAVAIL); break;
-			case 93: SetLastError(ERROR_INVALID_ACCESS); break;
-			default: SetLastError(ERROR_INVALID_DATA); break;
-		}
-		NetlibLogf(nlu,"%s %d: Proxy connection failed (%u)",__FILE__,__LINE__, GetLastError());
-		return 0;
+
+	switch ((BYTE)reply[1]) 
+	{
+		case 90: return 1;
+		case 91: SetLastError(ERROR_ACCESS_DENIED); break;
+		case 92: SetLastError(ERROR_CONNECTION_UNAVAIL); break;
+		case 93: SetLastError(ERROR_INVALID_ACCESS); break;
+		default: SetLastError(ERROR_INVALID_DATA); break;
 	}
-	//connected
-	return 1;
+	NetlibLogf(nlu,"%s %d: Proxy connection failed (%x %u)",__FILE__,__LINE__, (BYTE)reply[1], GetLastError());
+	return 0;
 }
 
 static int NetlibInitSocks5Connection(struct NetlibConnection *nlc,struct NetlibUser *nlu,NETLIBOPENCONNECTION *nloc)
@@ -217,7 +212,7 @@ static int NetlibInitSocks5Connection(struct NetlibConnection *nlc,struct Netlib
 		int nHostLen;
 		DWORD hostIP;
 
-		if(nlu->settings.dnsThroughProxy) {
+		if(nlc->dnsThroughProxy) {
 			if((hostIP=inet_addr(nloc->szHost))==INADDR_NONE)
 				nHostLen=lstrlenA(nloc->szHost)+1;
 			else nHostLen=4;
@@ -306,17 +301,15 @@ static bool NetlibInitHttpsConnection(struct NetlibConnection *nlc, struct Netli
 	nlhrSend.cbSize = sizeof(nlhrSend);
 	nlhrSend.requestType = REQUEST_CONNECT;
 	nlhrSend.flags = NLHRF_GENERATEHOST | NLHRF_DUMPPROXY | NLHRF_SMARTAUTHHEADER | NLHRF_HTTP11 | NLHRF_NOPROXY;
-	if (nlu->settings.dnsThroughProxy) 
+	if (nlc->dnsThroughProxy) 
 	{
 		mir_snprintf(szUrl, SIZEOF(szUrl), "%s:%u", nloc->szHost, nloc->wPort);
 	}
 	else 
 	{
-		IN_ADDR addr;
 		DWORD ip = DnsLookup(nlu, nloc->szHost);
 		if (ip == 0) return false;
-		addr.S_un.S_addr = ip;
-		mir_snprintf(szUrl, SIZEOF(szUrl), "%s:%u", inet_ntoa(addr), nloc->wPort);
+		mir_snprintf(szUrl, SIZEOF(szUrl), "%s:%u", inet_ntoa(*(PIN_ADDR)&ip), nloc->wPort);
 	}
 	nlhrSend.szUrl = szUrl;
 
@@ -332,6 +325,13 @@ static bool NetlibInitHttpsConnection(struct NetlibConnection *nlc, struct Netli
 	if (nlhrReply == NULL) return false;
 	if (nlhrReply->resultCode < 200 || nlhrReply->resultCode >= 300)
 	{
+		if (nlhrReply->resultCode == 403 && nlc->dnsThroughProxy) 
+		{
+			NetlibHttpFreeRequestStruct(0, (LPARAM)nlhrReply);
+			nlc->dnsThroughProxy = 0;
+			return NetlibInitHttpsConnection(nlc, nlu, nloc);
+		}
+
 		NetlibHttpSetLastErrorUsingHttpResult(nlhrReply->resultCode);
 		NetlibLogf(nlu,"%s %d: %s request failed (%u %s)",__FILE__,__LINE__,nlu->settings.proxyType==PROXYTYPE_HTTP?"HTTP":"HTTPS",nlhrReply->resultCode,nlhrReply->szResultDescr);
 		NetlibHttpFreeRequestStruct(0, (LPARAM)nlhrReply);
@@ -689,6 +689,7 @@ INT_PTR NetlibOpenConnection(WPARAM wParam,LPARAM lParam)
 	nlc->nloc.szHost = mir_strdup(nloc->szHost);
 	nlc->s = INVALID_SOCKET;
 	nlc->s2 = INVALID_SOCKET;
+	nlc->dnsThroughProxy = nlu->settings.dnsThroughProxy != 0;
 
 	InitializeCriticalSection(&nlc->csHttpSequenceNums);
 	nlc->hOkToCloseEvent = CreateEvent(NULL,TRUE,TRUE,NULL);

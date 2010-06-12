@@ -59,6 +59,7 @@ struct NetlibConnection
 	bool usingHttpGateway;
 	bool usingDirectHttpGateway;
 	bool proxyAuthNeeded;
+	bool dnsThroughProxy;
 	struct NetlibUser *nlu;
 	SOCKADDR_IN sinProxy;
 	NETLIBHTTPPROXYINFO nlhpi;
@@ -129,7 +130,7 @@ INT_PTR NetlibHttpFreeRequestStruct(WPARAM wParam,LPARAM lParam);
 INT_PTR NetlibHttpTransaction(WPARAM wParam,LPARAM lParam);
 void NetlibHttpSetLastErrorUsingHttpResult(int result);
 NETLIBHTTPREQUEST* NetlibHttpRecv(NetlibConnection* nlc, DWORD hflags, DWORD dflags);
-void NetlibConnFromUrl(char* szUrl, bool secur, NETLIBOPENCONNECTION &nloc);
+void NetlibConnFromUrl(const char* szUrl, bool secur, NETLIBOPENCONNECTION &nloc);
 
 //netlibhttpproxy.c
 int NetlibInitHttpConnection(struct NetlibConnection *nlc,struct NetlibUser *nlu,NETLIBOPENCONNECTION *nloc);

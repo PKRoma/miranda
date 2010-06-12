@@ -120,6 +120,7 @@ void*  mir_realloc( void* ptr, size_t );
 void   mir_free( void* ptr );
 char*  mir_strdup( const char* str );
 WCHAR* mir_wstrdup( const WCHAR* str );
+char* mir_strndup( const char* str, size_t len );
 
 int    mir_snprintf(char *buffer, size_t count, const char* fmt, ...);
 int    mir_sntprintf(TCHAR *buffer, size_t count, const TCHAR* fmt, ...);

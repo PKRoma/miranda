@@ -138,10 +138,10 @@ static char* NetlibHttpFindHeader(NETLIBHTTPREQUEST *nlhrReply, const char *hdr)
 	return NULL;
 }
 
-void NetlibConnFromUrl(char* szUrl, bool secur, NETLIBOPENCONNECTION &nloc)
+void NetlibConnFromUrl(const char* szUrl, bool secur, NETLIBOPENCONNECTION &nloc)
 {
 	secur = secur || _strnicmp(szUrl, "https", 5) == 0;
-	char* phost = strstr(szUrl, "://");
+	const char* phost = strstr(szUrl, "://");
 	
 	char* szHost = mir_strdup(phost ? phost + 3 : szUrl);
 
@@ -163,7 +163,7 @@ void NetlibConnFromUrl(char* szUrl, bool secur, NETLIBOPENCONNECTION &nloc)
 }
 
 static NetlibConnection* NetlibHttpProcessUrl(NETLIBHTTPREQUEST *nlhr, NetlibUser *nlu, NetlibConnection* nlc, 
-											  char* szUrl = NULL)
+											  const char* szUrl = NULL)
 {
 	NETLIBOPENCONNECTION nloc;
 
@@ -271,7 +271,7 @@ static int HttpPeekFirstResponseLine(NetlibConnection *nlc, DWORD dwTimeoutTime,
 		peol = strchr(buffer, '\n');
 		if (peol == NULL) 
 		{
-			if (strlen(buffer) < bytesPeeked) 
+			if ((int)strlen(buffer) < bytesPeeked) 
 			{
 				SetLastError(ERROR_BAD_FORMAT);
 				return 0;
@@ -357,8 +357,10 @@ INT_PTR NetlibHttpSendRequest(WPARAM wParam,LPARAM lParam)
 	HANDLE hNtlmSecurity = NULL;;
 
 	struct ResizableCharBuffer httpRequest={0};
-	char *pszRequest, *szHost, *pszUrl, *pszFullUrl;
+	const char *pszRequest, *pszUrl, *pszFullUrl;
+	char *szHost = NULL, *szNewUrl = NULL;
 	char *pszProxyAuthHdr = NULL, *pszAuthHdr = NULL;
+	char *szAuthMethodNlu = NULL, *szAuthHost = NULL;;
 	int i, doneHostHeader, doneContentLengthHeader, doneProxyAuthHeader, doneAuthHeader;
 	int bytesSent;
 
@@ -383,44 +385,86 @@ INT_PTR NetlibHttpSendRequest(WPARAM wParam,LPARAM lParam)
 
 	if (nlc->nlhpi.szHttpGetUrl == NULL)
 	{
-		if(!NetlibEnterNestedCS(nlc,NLNCS_SEND)) return SOCKET_ERROR;
+		if (!NetlibEnterNestedCS(nlc, NLNCS_SEND)) 
+			return SOCKET_ERROR;
 	}
 
-	//first line: "GET /index.html HTTP/1.0\r\n"
-	szHost = NULL;
 	pszFullUrl = nlhr->szUrl;
-
-	char *szAuthMethodNlu = NULL, *szAuthHost = NULL;;
+	pszUrl = NULL;
 
 	unsigned complete = false;
 	int count = 11;
 	while (--count)
 	{
-		pszUrl = pszFullUrl;
-		if (nlhr->flags & (NLHRF_SMARTREMOVEHOST | NLHRF_REMOVEHOST | NLHRF_GENERATEHOST))
+		if (!NetlibReconnect(nlc)) { bytesSent = SOCKET_ERROR; break; }
+
+		if (!pszUrl)
 		{
-			mir_free(szHost); szHost = NULL;
-
-			char *ppath, *phost;
-			phost = strstr(pszUrl, "://");
-			if (phost == NULL) phost = pszUrl;
-			else phost += 3;
-			ppath = strchr(phost, '/');
-			if (ppath == NULL) ppath = phost + lstrlenA(phost);
-			if (nlhr->flags & NLHRF_GENERATEHOST) 
+			pszUrl = pszFullUrl;
+			if (nlhr->flags & (NLHRF_SMARTREMOVEHOST | NLHRF_REMOVEHOST | NLHRF_GENERATEHOST))
 			{
-				szHost = (char*)mir_strdup(phost);
-				szHost[ppath - phost] = 0;
-			}
+				bool usingProxy = nlc->proxyType == PROXYTYPE_HTTP && !(nlhr->flags & NLHRF_SSL);
 
-			if (nlhr->flags & NLHRF_REMOVEHOST || (nlhr->flags & NLHRF_SMARTREMOVEHOST && 
-				(nlhr->flags & NLHRF_SSL || nlc->proxyType != PROXYTYPE_HTTP))) 
-			{
-			   pszUrl = ppath[0] ? ppath : "/";
+				mir_free(szHost);
+				szHost = NULL;
+
+				const char *ppath, *phost;
+				phost = strstr(pszUrl, "://");
+				if (phost == NULL) phost = pszUrl;
+				else phost += 3;
+				ppath = strchr(phost, '/');
+				if (ppath == phost) phost = NULL;
+
+				if (nlhr->flags & NLHRF_GENERATEHOST) 
+				{
+					szHost = mir_strdup(phost);
+					if (ppath && phost) szHost[ppath - phost] = 0;
+				}
+
+				if (nlhr->flags & NLHRF_REMOVEHOST || (nlhr->flags & NLHRF_SMARTREMOVEHOST && !usingProxy))
+				{
+					pszUrl = ppath ? ppath : "/";
+				}
+
+				if (usingProxy && phost && !nlc->dnsThroughProxy) 
+				{
+					char* tszHost = mir_strdup(phost);
+					if (ppath && phost) tszHost[ppath - phost] = 0;
+
+					if (inet_addr(tszHost) == INADDR_NONE)
+					{
+						DWORD ip = DnsLookup(nlc->nlu, tszHost);
+						if (ip && szHost) 
+						{
+							mir_free(szHost);
+							szHost = mir_strdup(inet_ntoa(*(PIN_ADDR)&ip));
+						}
+/*
+						if (ip && pszUrl[0] != '/') 
+						{
+							mir_free(szNewUrl);
+							szNewUrl = (char*)mir_alloc(strlen(pszUrl) + 60);
+							szNewUrl[0] = 0;
+							
+							phost = strstr(pszUrl, "://");
+							if (phost)
+							{
+								phost += 3;
+								size_t len =  phost - pszUrl;
+								memcpy(szNewUrl, pszUrl, len); 
+								szNewUrl[len] = 0;
+							}
+							strcat(szNewUrl, inet_ntoa(*(PIN_ADDR)&ip));
+							ppath = strchr(phost, '/');
+							if (ppath) strcat(szNewUrl, ppath);
+							pszUrl = szNewUrl;
+						}
+*/
+					}
+					mir_free(tszHost);
+				}
 			}
 		}
-
-		if (!NetlibReconnect(nlc)) { bytesSent = SOCKET_ERROR; break; }
 
 		if (nlc->proxyAuthNeeded && proxyAuthList.getCount())
 		{
@@ -508,11 +552,11 @@ INT_PTR NetlibHttpSendRequest(WPARAM wParam,LPARAM lParam)
 						size_t rlen = 0;
 						if (tmpUrl[0] == '/')
 						{
-							char* szPath;
-							char* szPref = strstr(pszFullUrl, "://");
-							szPref = szPref ? szPref + 3 : pszFullUrl;
-							szPath = strchr(szPref, '/');
-							rlen = szPath != NULL ? szPath - pszFullUrl : strlen(pszFullUrl); 
+							const char *ppath, *phost;
+							phost = strstr(pszFullUrl, "://");
+							phost = phost ? phost + 3 : pszFullUrl;
+							ppath = strchr(phost, '/');
+							rlen = ppath ? ppath - pszFullUrl : strlen(pszFullUrl); 
 						}
 
 						nlc->szNewUrl = (char*)mir_realloc(nlc->szNewUrl, rlen + strlen(tmpUrl) * 3 + 1);
@@ -520,6 +564,7 @@ INT_PTR NetlibHttpSendRequest(WPARAM wParam,LPARAM lParam)
 						strncpy(nlc->szNewUrl, pszFullUrl, rlen);
 						strcpy(nlc->szNewUrl + rlen, tmpUrl); 
 						pszFullUrl = nlc->szNewUrl;
+						pszUrl = NULL;
 
 						if (NetlibHttpProcessUrl(nlhr, nlc->nlu, nlc, pszFullUrl) == NULL)
 						{
@@ -670,6 +715,7 @@ INT_PTR NetlibHttpSendRequest(WPARAM wParam,LPARAM lParam)
 	mir_free(pszProxyAuthHdr);
 	mir_free(pszAuthHdr);
 	mir_free(szHost);
+	mir_free(szNewUrl);
 	mir_free(szAuthMethodNlu);
 	mir_free(szAuthHost);
 
