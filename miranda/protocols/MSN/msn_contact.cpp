@@ -28,14 +28,15 @@ HANDLE  CMsnProto::MSN_HContactFromEmail(const char* msnEmail, const char* msnNi
 
 	if (addIfNeeded)
 	{
+		char *szEmail = _strlwr(NEWSTR_ALLOCA(msnEmail));
 		HANDLE hContact = (HANDLE)MSN_CallService(MS_DB_CONTACT_ADD, 0, 0);
 		MSN_CallService(MS_PROTO_ADDTOCONTACT, (WPARAM)hContact, (LPARAM)m_szModuleName);
-		setString(hContact, "e-mail", msnEmail);
+		setString(hContact, "e-mail", szEmail);
 		setStringUtf(hContact, "Nick", (char*)msnNick);
 		if (temporary)
 			DBWriteContactSettingByte(hContact, "CList", "NotOnList", 1);
 
-		Lists_Add(0, NETID_MSN, msnEmail, hContact);
+		Lists_Add(0, NETID_MSN, szEmail, hContact);
 		return hContact;
 	}
 	return NULL;

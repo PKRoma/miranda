@@ -424,7 +424,7 @@ void CMsnProto::MsnInitMenus(void)
 	mi.pszName = LPGEN("Open &Hotmail Inbox");
 	hOpenInboxMenuItem = (HANDLE)CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM) &mi);
 
-	MSN_EnableMenuItems(false);
+	MSN_EnableMenuItems(m_iStatus >= ID_STATUS_ONLINE);
 }
 
 void CMsnProto::MsnUninitMenus(void)

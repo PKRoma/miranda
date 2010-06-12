@@ -187,7 +187,7 @@ void CMsnProto::InviteUser(ThreadData* info)
 	char tEmail[MSN_MAX_EMAIL_LEN];
 	if (!getStaticString(hInvitedUser, "e-mail", tEmail, sizeof(tEmail))) 
 	{
-		info->sendPacket("CAL", tEmail);
+		info->sendPacket("CAL", _strlwr(tEmail));
 		MSN_ChatStart(info);
 	}	
 }

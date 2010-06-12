@@ -930,7 +930,7 @@ void CMsnProto::MsnSendOim(void* arg)
 	char tEmail[MSN_MAX_EMAIL_LEN];
 	tParam->proto->getStaticString(tParam->hContact, "e-mail", tEmail, sizeof(tEmail));
 
-	int seq = tParam->proto->MSN_SendOIM(tEmail, tParam->msg);
+	int seq = tParam->proto->MSN_SendOIM(_strlwr(tEmail), tParam->msg);
 
 	char* errMsg = NULL;
 	switch (seq)

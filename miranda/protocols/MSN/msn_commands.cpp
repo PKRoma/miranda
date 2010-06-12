@@ -1646,7 +1646,7 @@ LBL_InvalidCommand:
 				}
 
 				info->mInitialContact = hContact;
-				info->sendPacket("CAL", tEmail);
+				info->sendPacket("CAL", _strlwr(tEmail));
 			}
 			else 	   //dispatch or notification server (section 7.3)
 			{
