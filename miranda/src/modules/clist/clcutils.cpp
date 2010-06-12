@@ -87,7 +87,7 @@ int fnHitTest(HWND hwnd, struct ClcData *dat, int testx, int testy, struct ClcCo
 	do
 	{
 		hwndTemp = hwndParent;
-		hwndParent = GetParent(hwndTemp);
+		hwndParent = (HWND)GetWindowLongPtr(hwndTemp, GWLP_HWNDPARENT);
 
 		POINT pt1 = pt;
 		ScreenToClient(hwndParent, &pt1);
@@ -95,12 +95,8 @@ int fnHitTest(HWND hwnd, struct ClcData *dat, int testx, int testy, struct ClcCo
 			pt1, CWP_SKIPINVISIBLE | CWP_SKIPTRANSPARENT);
 		if (h != hwndTemp)
 		{
-			if (hwndParent == NULL)
-			{
-				h = ChildWindowFromPointEx(h, pt1, CWP_SKIPINVISIBLE | CWP_SKIPTRANSPARENT);
-				if (h == hwndTemp) break;
-			}
-			return -1;
+			if (!(GetWindowLong(hwndTemp, GWL_STYLE) & BS_GROUPBOX))
+				return -1;
 		}
 	}
 	while (hwndParent);
