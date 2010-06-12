@@ -85,7 +85,7 @@ void __cdecl CMsnProto::MSNServerThread(void* arg)
 
 	if (info->mIsMainThread)
 	{
-		usingGateway = ForceHttpProxy(hNetlibUser);
+		usingGateway = false;
 	}
 
 retry:

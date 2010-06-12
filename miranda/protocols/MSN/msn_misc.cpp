@@ -1246,15 +1246,3 @@ void MSN_MakeDigest(const char* chl, char* dgst)
 	strcpy(dgst, str);
 	mir_free(str);
 }
-
-bool ForceHttpProxy(HANDLE hNetlib)
-{
-	NETLIBUSERSETTINGS nls = {0};
-
-	nls.cbSize = sizeof(NETLIBUSERSETTINGS);
-	if (MSN_CallService(MS_NETLIB_GETUSERSETTINGS, (WPARAM)hNetlib, (LPARAM)&nls))
-	{
-		return nls.useProxy && nls.proxyType == PROXYTYPE_HTTP;
-	}
-	return false;
-}
