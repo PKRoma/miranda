@@ -524,8 +524,13 @@ bool NetlibDoConnect(NetlibConnection *nlc)
 	{
 		nlc->sinProxy.sin_port = htons(nlc->wProxyPort);
 		nlc->sinProxy.sin_addr.S_un.S_addr = DnsLookup(nlu, nlc->szProxyServer);
+		if (nlc->sinProxy.sin_addr.S_un.S_addr == 0) 
+		{
+			usingProxy = false;
+			nlc->proxyType = 0;
+		}
 	}
-	else
+	if (!usingProxy)
 	{
 		nlc->sinProxy.sin_port = htons(nloc->wPort);
 		nlc->sinProxy.sin_addr.S_un.S_addr = DnsLookup(nlu, nloc->szHost);
