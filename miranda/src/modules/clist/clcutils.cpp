@@ -95,7 +95,7 @@ int fnHitTest(HWND hwnd, struct ClcData *dat, int testx, int testy, struct ClcCo
 			pt1, CWP_SKIPINVISIBLE | CWP_SKIPTRANSPARENT);
 		if (h != hwndTemp)
 		{
-			if (!(GetWindowLong(hwndTemp, GWL_STYLE) & BS_GROUPBOX))
+			if (!hwndParent || !(GetWindowLong(hwndTemp, GWL_STYLE) & BS_GROUPBOX))
 				return -1;
 		}
 	}
