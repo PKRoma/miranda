@@ -349,7 +349,7 @@ int CMsnProto::MSN_GCMenuHook(WPARAM, LPARAM lParam)
 	else if (gcmi->Type == MENU_ON_NICKLIST) 
 	{
 		char* email = mir_t2a(gcmi->pszUID);
-		if (!strcmp(MyOptions.szEmail, email)) 
+		if (!_stricmp(MyOptions.szEmail, email)) 
 		{
 			static const struct gc_item Items[] = 
 			{

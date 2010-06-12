@@ -150,7 +150,7 @@ bool CMsnProto::MSN_AddUser(HANDLE hContact, const char* email, int netId, int f
 		else 
 		{
 			DBVARIANT dbv = {0};
-			if (!strcmp(email, MyOptions.szEmail))
+			if (!_stricmp(email, MyOptions.szEmail))
 				getStringUtf("Nick", &dbv);
 
 			unsigned res1 = MSN_ABContactAdd(email, dbv.pszVal, netId, msg, false);

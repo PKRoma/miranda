@@ -735,7 +735,7 @@ void CMsnProto::sttProcessRemove(char* buf, size_t len)
 			MsnContact* msc = Lists_Get(szEmail);
 			if (msc == NULL || (msc->list & (LIST_RL | LIST_FL | LIST_LL)) == 0) 
 			{
-				if (msc->hContact && strcmp(szEmail, MyOptions.szEmail))
+				if (msc->hContact && _stricmp(szEmail, MyOptions.szEmail))
 				{
 					MSN_CallService(MS_DB_CONTACT_DELETE, (WPARAM)msc->hContact, 0);
 					msc->hContact = NULL;
