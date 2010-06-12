@@ -1033,7 +1033,7 @@ int CDccSession::SetupConnection()
 			if ( m_proto->m_manualHost )
 				ulAdr = ConvertIPToInteger( m_proto->m_mySpecifiedHostIP );				
 			else
-				ulAdr = ConvertIPToInteger( m_proto->m_IPFromServer ? m_proto->m_myHost : m_proto->m_myLocalHost );
+				ulAdr = m_proto->m_IPFromServer ? ConvertIPToInteger( m_proto->m_myHost ) : nb.dwExternalIP;
 
 			if ( di->iPort && ulAdr )
 				m_proto->PostIrcMessage( _T("/CTCP %s DCC SEND %s %u %u %u %s"), di->sContactName.c_str(), sFileWithQuotes.c_str(), ulAdr, di->iPort, di->dwSize, di->sToken.c_str());
