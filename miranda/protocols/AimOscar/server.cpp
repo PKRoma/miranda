@@ -46,7 +46,7 @@ int CAimProto::snac_authorization_reply(SNAC &snac)//family 0x0017
 			{
 				Netlib_CloseHandle(hServerConn);
 
-				unsigned short port = 5190;
+				unsigned short port = getWord(AIM_KEY_PN, AIM_DEFAULT_PORT);
 				char* delim = strchr(server, ':');
 				if (delim)
 				{
