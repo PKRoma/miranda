@@ -1,8 +1,6 @@
 # Microsoft Developer Studio Generated Dependency File, included by miranda32.mak
 
 .\core\commonheaders.cpp : \
-	"..\..\..\program files\microsoft platform sdk\include\vsstyle.h"\
-	"..\..\..\program files\microsoft platform sdk\include\vssym32.h"\
 	"..\include\m_addcontact.h"\
 	"..\include\m_awaymsg.h"\
 	"..\include\m_button.h"\
@@ -39,6 +37,7 @@
 	"..\include\m_userinfo.h"\
 	"..\include\m_utils.h"\
 	"..\include\m_xml.h"\
+	"..\include\msapi\vssym32.h"\
 	"..\include\newpluginapi.h"\
 	"..\include\statusmodes.h"\
 	"..\include\win2k.h"\
@@ -503,6 +502,12 @@
 	
 
 .\modules\utils\hyperlink.cpp : \
+	"..\include\m_genmenu.h"\
+	"..\include\m_plugins.h"\
+	"..\include\m_protomod.h"\
+	
+
+.\modules\utils\imgconv.cpp : \
 	"..\include\m_genmenu.h"\
 	"..\include\m_plugins.h"\
 	"..\include\m_protomod.h"\
