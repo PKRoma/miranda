@@ -295,7 +295,18 @@ void CIcqProto::setStatusMsgVar(HANDLE hContact, char* szStatusMsg, bool isAnsi)
 			char* szStatusNoteAnsi = NULL;
 			char* szStatusNote = getSettingStringUtf(hContact, DBSETTING_STATUS_NOTE, "");
 			utf8_decode(szStatusNote, &szStatusNoteAnsi);
-			szStatusMsg = strcmp(szStatusNoteAnsi, szStatusMsg) ? ansi_to_utf8(szStatusMsg) : szStatusNote;
+			bool notmatch = false;
+			for (int i=0; ;++i)
+			{
+				if (szStatusNoteAnsi[i] != szStatusMsg[i] && szStatusMsg[i] != '?' && szStatusMsg[i] != '?')
+				{
+					notmatch = true;
+					break;
+				}
+				if (!szStatusNoteAnsi[i] || !szStatusMsg[i])
+					break;
+			}
+			szStatusMsg = notmatch ? ansi_to_utf8(szStatusMsg) : szStatusNote;
 			SAFE_FREE(&szStatusNoteAnsi);
 		}
 
