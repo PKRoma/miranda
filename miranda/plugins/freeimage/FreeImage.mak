@@ -1,50 +1,50 @@
 # Microsoft Developer Studio Generated NMAKE File, Based on FreeImage.dsp
 !IF "$(CFG)" == ""
-CFG=FreeImage - Win32 Release
+CFG=FreeImage - Win32 Debug
 !MESSAGE No configuration specified. Defaulting to FreeImage - Win32 Debug.
-!ENDIF 
+!ENDIF
 
 !IF "$(CFG)" != "FreeImage - Win32 Release" && "$(CFG)" != "FreeImage - Win32 Debug"
 !MESSAGE Invalid configuration "$(CFG)" specified.
 !MESSAGE You can specify a configuration when running NMAKE
 !MESSAGE by defining the macro CFG on the command line. For example:
-!MESSAGE 
+!MESSAGE
 !MESSAGE NMAKE /f "FreeImage.mak" CFG="FreeImage - Win32 Debug"
-!MESSAGE 
+!MESSAGE
 !MESSAGE Possible choices for configuration are:
-!MESSAGE 
+!MESSAGE
 !MESSAGE "FreeImage - Win32 Release" (based on "Win32 (x86) Dynamic-Link Library")
 !MESSAGE "FreeImage - Win32 Debug" (based on "Win32 (x86) Dynamic-Link Library")
-!MESSAGE 
+!MESSAGE
 !ERROR An invalid configuration is specified.
-!ENDIF 
+!ENDIF
 
 !IF "$(OS)" == "Windows_NT"
 NULL=
-!ELSE 
+!ELSE
 NULL=nul
-!ENDIF 
+!ENDIF
 
 !IF  "$(CFG)" == "FreeImage - Win32 Release"
 
 OUTDIR=.\Release
 INTDIR=.\Release
 
-!IF "$(RECURSE)" == "0" 
+!IF "$(RECURSE)" == "0"
 
 ALL : "..\..\bin\release\plugins\advaimg.dll"
 
-!ELSE 
+!ELSE
 
 ALL : "zlib - Win32 Release" "..\..\bin\release\plugins\advaimg.dll"
 
-!ENDIF 
+!ENDIF
 
-!IF "$(RECURSE)" == "1" 
-CLEAN :"zlib - Win32 ReleaseCLEAN" 
-!ELSE 
+!IF "$(RECURSE)" == "1"
+CLEAN :"zlib - Win32 ReleaseCLEAN"
+!ELSE
 CLEAN :
-!ENDIF 
+!ENDIF
 	-@erase "$(INTDIR)\BitmapAccess.obj"
 	-@erase "$(INTDIR)\BSplineRotate.obj"
 	-@erase "$(INTDIR)\CacheFile.obj"
@@ -173,48 +173,48 @@ CLEAN :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
 CPP=cl.exe
-CPP_PROJ=/nologo /MT /W3 /GX /Zi /O1 /I "Source" /I "Source\ZLib" /I "..\..\include" /I "..\zlib" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "FREEIMAGE_EXPORTS" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+CPP_PROJ=/nologo /MT /W3 /GX /Zi /O1 /I "Source" /I "Source\ZLib" /I "..\..\include" /I "..\zlib" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "FREEIMAGE_EXPORTS" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c
 
 .c{$(INTDIR)}.obj::
    $(CPP) @<<
-   $(CPP_PROJ) $< 
+   $(CPP_PROJ) $<
 <<
 
 .cpp{$(INTDIR)}.obj::
    $(CPP) @<<
-   $(CPP_PROJ) $< 
+   $(CPP_PROJ) $<
 <<
 
 .cxx{$(INTDIR)}.obj::
    $(CPP) @<<
-   $(CPP_PROJ) $< 
+   $(CPP_PROJ) $<
 <<
 
 .c{$(INTDIR)}.sbr::
    $(CPP) @<<
-   $(CPP_PROJ) $< 
+   $(CPP_PROJ) $<
 <<
 
 .cpp{$(INTDIR)}.sbr::
    $(CPP) @<<
-   $(CPP_PROJ) $< 
+   $(CPP_PROJ) $<
 <<
 
 .cxx{$(INTDIR)}.sbr::
    $(CPP) @<<
-   $(CPP_PROJ) $< 
+   $(CPP_PROJ) $<
 <<
 
 MTL=midl.exe
-MTL_PROJ=/nologo /D "NDEBUG" /mktyplib203 /win32 
+MTL_PROJ=/nologo /D "NDEBUG" /mktyplib203 /win32
 RSC=rc.exe
-RSC_PROJ=/l 0x409 /fo"$(INTDIR)\FreeImage.res" /i "..\..\include" /d "NDEBUG" 
+RSC_PROJ=/l 0x409 /fo"$(INTDIR)\FreeImage.res" /i "..\..\include" /d "NDEBUG"
 BSC32=bscmake.exe
-BSC32_FLAGS=/nologo /o"$(OUTDIR)\FreeImage.bsc" 
+BSC32_FLAGS=/nologo /o"$(OUTDIR)\FreeImage.bsc"
 BSC32_SBRS= \
-	
+
 LINK32=link.exe
-LINK32_FLAGS=..\zlib\Release\zlib.lib msimg32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /base:"0x5130000" /dll /incremental:no /pdb:"$(OUTDIR)\advaimg.pdb" /machine:I386 /out:"../../bin/release/plugins/advaimg.dll" /implib:"$(OUTDIR)\advaimg.lib" /opt:NOWIN98 
+LINK32_FLAGS=..\zlib\Release\zlib.lib msimg32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /base:"0x5130000" /dll /incremental:no /pdb:"$(OUTDIR)\advaimg.pdb" /machine:I386 /out:"../../bin/release/plugins/advaimg.dll" /implib:"$(OUTDIR)\advaimg.lib" /opt:NOWIN98
 LINK32_OBJS= \
 	"$(INTDIR)\Plugin.obj" \
 	"$(INTDIR)\PluginBMP.obj" \
@@ -349,21 +349,21 @@ INTDIR=.\Debug
 OutDir=.\Debug
 # End Custom Macros
 
-!IF "$(RECURSE)" == "0" 
+!IF "$(RECURSE)" == "0"
 
 ALL : "..\..\bin\debug\plugins\advaimg.dll" "$(OUTDIR)\FreeImage.bsc"
 
-!ELSE 
+!ELSE
 
 ALL : "zlib - Win32 Debug" "..\..\bin\debug\plugins\advaimg.dll" "$(OUTDIR)\FreeImage.bsc"
 
-!ENDIF 
+!ENDIF
 
-!IF "$(RECURSE)" == "1" 
-CLEAN :"zlib - Win32 DebugCLEAN" 
-!ELSE 
+!IF "$(RECURSE)" == "1"
+CLEAN :"zlib - Win32 DebugCLEAN"
+!ELSE
 CLEAN :
-!ENDIF 
+!ENDIF
 	-@erase "$(INTDIR)\BitmapAccess.obj"
 	-@erase "$(INTDIR)\BitmapAccess.sbr"
 	-@erase "$(INTDIR)\BSplineRotate.obj"
@@ -612,44 +612,44 @@ CLEAN :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
 CPP=cl.exe
-CPP_PROJ=/nologo /MTd /W3 /Gm /GX /ZI /Od /I "Source" /I "Source\ZLib" /I "..\..\include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "FREEIMAGE_EXPORTS" /FR"$(INTDIR)\\" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
+CPP_PROJ=/nologo /MTd /W3 /Gm /GX /ZI /Od /I "Source" /I "Source\ZLib" /I "..\..\include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "FREEIMAGE_EXPORTS" /FR"$(INTDIR)\\" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c
 
 .c{$(INTDIR)}.obj::
    $(CPP) @<<
-   $(CPP_PROJ) $< 
+   $(CPP_PROJ) $<
 <<
 
 .cpp{$(INTDIR)}.obj::
    $(CPP) @<<
-   $(CPP_PROJ) $< 
+   $(CPP_PROJ) $<
 <<
 
 .cxx{$(INTDIR)}.obj::
    $(CPP) @<<
-   $(CPP_PROJ) $< 
+   $(CPP_PROJ) $<
 <<
 
 .c{$(INTDIR)}.sbr::
    $(CPP) @<<
-   $(CPP_PROJ) $< 
+   $(CPP_PROJ) $<
 <<
 
 .cpp{$(INTDIR)}.sbr::
    $(CPP) @<<
-   $(CPP_PROJ) $< 
+   $(CPP_PROJ) $<
 <<
 
 .cxx{$(INTDIR)}.sbr::
    $(CPP) @<<
-   $(CPP_PROJ) $< 
+   $(CPP_PROJ) $<
 <<
 
 MTL=midl.exe
-MTL_PROJ=/nologo /D "_DEBUG" /mktyplib203 /win32 
+MTL_PROJ=/nologo /D "_DEBUG" /mktyplib203 /win32
 RSC=rc.exe
-RSC_PROJ=/l 0x409 /fo"$(INTDIR)\FreeImage.res" /i "..\..\include" /d "_DEBUG" 
+RSC_PROJ=/l 0x409 /fo"$(INTDIR)\FreeImage.res" /i "..\..\include" /d "_DEBUG"
 BSC32=bscmake.exe
-BSC32_FLAGS=/nologo /o"$(OUTDIR)\FreeImage.bsc" 
+BSC32_FLAGS=/nologo /o"$(OUTDIR)\FreeImage.bsc"
 BSC32_SBRS= \
 	"$(INTDIR)\Plugin.sbr" \
 	"$(INTDIR)\PluginBMP.sbr" \
@@ -775,7 +775,7 @@ BSC32_SBRS= \
 <<
 
 LINK32=link.exe
-LINK32_FLAGS=..\zlib\Release\zlib.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /incremental:yes /pdb:"$(OUTDIR)\advaimg.pdb" /debug /machine:I386 /out:"../../bin/debug/plugins/advaimg.dll" /implib:"$(OUTDIR)\advaimg.lib" /pdbtype:sept 
+LINK32_FLAGS=..\zlib\Release\zlib.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /incremental:yes /pdb:"$(OUTDIR)\advaimg.pdb" /debug /machine:I386 /out:"../../bin/debug/plugins/advaimg.dll" /implib:"$(OUTDIR)\advaimg.lib" /pdbtype:sept
 LINK32_OBJS= \
 	"$(INTDIR)\Plugin.obj" \
 	"$(INTDIR)\PluginBMP.obj" \
@@ -902,16 +902,16 @@ LINK32_OBJS= \
   $(LINK32_FLAGS) $(LINK32_OBJS)
 <<
 
-!ENDIF 
+!ENDIF
 
 
 !IF "$(NO_EXTERNAL_DEPS)" != "1"
 !IF EXISTS("FreeImage.dep")
 !INCLUDE "FreeImage.dep"
-!ELSE 
+!ELSE
 !MESSAGE Warning: cannot find "FreeImage.dep"
-!ENDIF 
-!ENDIF 
+!ENDIF
+!ENDIF
 
 
 !IF "$(CFG)" == "FreeImage - Win32 Release" || "$(CFG)" == "FreeImage - Win32 Debug"
@@ -931,7 +931,7 @@ SOURCE=.\Source\FreeImage\Plugin.cpp
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF 
+!ENDIF
 
 SOURCE=.\Source\FreeImage\PluginBMP.cpp
 
@@ -949,7 +949,7 @@ SOURCE=.\Source\FreeImage\PluginBMP.cpp
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF 
+!ENDIF
 
 SOURCE=.\Source\FreeImage\PluginCUT.cpp
 
@@ -967,7 +967,7 @@ SOURCE=.\Source\FreeImage\PluginCUT.cpp
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF 
+!ENDIF
 
 SOURCE=.\Source\FreeImage\PluginGIF.cpp
 
@@ -985,7 +985,7 @@ SOURCE=.\Source\FreeImage\PluginGIF.cpp
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF 
+!ENDIF
 
 SOURCE=.\Source\FreeImage\PluginICO.cpp
 
@@ -1003,7 +1003,7 @@ SOURCE=.\Source\FreeImage\PluginICO.cpp
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF 
+!ENDIF
 
 SOURCE=.\Source\FreeImage\PluginJPEG.cpp
 
@@ -1021,7 +1021,7 @@ SOURCE=.\Source\FreeImage\PluginJPEG.cpp
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF 
+!ENDIF
 
 SOURCE=.\Source\FreeImage\PluginPNG.cpp
 
@@ -1039,7 +1039,7 @@ SOURCE=.\Source\FreeImage\PluginPNG.cpp
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF 
+!ENDIF
 
 SOURCE=.\Source\FreeImage\Conversion.cpp
 
@@ -1057,7 +1057,7 @@ SOURCE=.\Source\FreeImage\Conversion.cpp
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF 
+!ENDIF
 
 SOURCE=.\Source\FreeImage\Conversion16_555.cpp
 
@@ -1075,7 +1075,7 @@ SOURCE=.\Source\FreeImage\Conversion16_555.cpp
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF 
+!ENDIF
 
 SOURCE=.\Source\FreeImage\Conversion16_565.cpp
 
@@ -1093,7 +1093,7 @@ SOURCE=.\Source\FreeImage\Conversion16_565.cpp
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF 
+!ENDIF
 
 SOURCE=.\Source\FreeImage\Conversion24.cpp
 
@@ -1111,7 +1111,7 @@ SOURCE=.\Source\FreeImage\Conversion24.cpp
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF 
+!ENDIF
 
 SOURCE=.\Source\FreeImage\Conversion32.cpp
 
@@ -1129,7 +1129,7 @@ SOURCE=.\Source\FreeImage\Conversion32.cpp
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF 
+!ENDIF
 
 SOURCE=.\Source\FreeImage\Conversion4.cpp
 
@@ -1147,7 +1147,7 @@ SOURCE=.\Source\FreeImage\Conversion4.cpp
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF 
+!ENDIF
 
 SOURCE=.\Source\FreeImage\Conversion8.cpp
 
@@ -1165,7 +1165,7 @@ SOURCE=.\Source\FreeImage\Conversion8.cpp
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF 
+!ENDIF
 
 SOURCE=.\Source\FreeImage\ConversionRGBF.cpp
 
@@ -1183,7 +1183,7 @@ SOURCE=.\Source\FreeImage\ConversionRGBF.cpp
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF 
+!ENDIF
 
 SOURCE=.\Source\FreeImage\ConversionType.cpp
 
@@ -1201,7 +1201,7 @@ SOURCE=.\Source\FreeImage\ConversionType.cpp
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF 
+!ENDIF
 
 SOURCE=.\Source\FreeImage\Halftoning.cpp
 
@@ -1219,7 +1219,7 @@ SOURCE=.\Source\FreeImage\Halftoning.cpp
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF 
+!ENDIF
 
 SOURCE=.\Source\FreeImageToolkit\MultigridPoissonSolver.cpp
 
@@ -1237,7 +1237,7 @@ SOURCE=.\Source\FreeImageToolkit\MultigridPoissonSolver.cpp
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF 
+!ENDIF
 
 SOURCE=.\Source\FreeImage\tmoColorConvert.cpp
 
@@ -1255,7 +1255,7 @@ SOURCE=.\Source\FreeImage\tmoColorConvert.cpp
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF 
+!ENDIF
 
 SOURCE=.\Source\FreeImage\tmoDrago03.cpp
 
@@ -1273,7 +1273,7 @@ SOURCE=.\Source\FreeImage\tmoDrago03.cpp
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF 
+!ENDIF
 
 SOURCE=.\Source\FreeImage\tmoFattal02.cpp
 
@@ -1291,7 +1291,7 @@ SOURCE=.\Source\FreeImage\tmoFattal02.cpp
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF 
+!ENDIF
 
 SOURCE=.\Source\FreeImage\tmoReinhard05.cpp
 
@@ -1309,7 +1309,7 @@ SOURCE=.\Source\FreeImage\tmoReinhard05.cpp
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF 
+!ENDIF
 
 SOURCE=.\Source\FreeImage\ToneMapping.cpp
 
@@ -1327,7 +1327,7 @@ SOURCE=.\Source\FreeImage\ToneMapping.cpp
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF 
+!ENDIF
 
 SOURCE=.\Source\FreeImage\NNQuantizer.cpp
 
@@ -1345,7 +1345,7 @@ SOURCE=.\Source\FreeImage\NNQuantizer.cpp
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF 
+!ENDIF
 
 SOURCE=.\Source\FreeImage\WuQuantizer.cpp
 
@@ -1363,7 +1363,7 @@ SOURCE=.\Source\FreeImage\WuQuantizer.cpp
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF 
+!ENDIF
 
 SOURCE=.\Source\FreeImage\CacheFile.cpp
 
@@ -1381,7 +1381,7 @@ SOURCE=.\Source\FreeImage\CacheFile.cpp
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF 
+!ENDIF
 
 SOURCE=.\Source\FreeImage\MultiPage.cpp
 
@@ -1399,7 +1399,7 @@ SOURCE=.\Source\FreeImage\MultiPage.cpp
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF 
+!ENDIF
 
 SOURCE=.\Source\FreeImage\ZLibInterface.cpp
 
@@ -1417,7 +1417,7 @@ SOURCE=.\Source\FreeImage\ZLibInterface.cpp
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF 
+!ENDIF
 
 SOURCE=.\Source\Metadata\Exif.cpp
 
@@ -1435,7 +1435,7 @@ SOURCE=.\Source\Metadata\Exif.cpp
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF 
+!ENDIF
 
 SOURCE=.\Source\Metadata\FIRational.cpp
 
@@ -1453,7 +1453,7 @@ SOURCE=.\Source\Metadata\FIRational.cpp
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF 
+!ENDIF
 
 SOURCE=.\Source\Metadata\FreeImageTag.cpp
 
@@ -1471,7 +1471,7 @@ SOURCE=.\Source\Metadata\FreeImageTag.cpp
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF 
+!ENDIF
 
 SOURCE=.\Source\Metadata\IPTC.cpp
 
@@ -1489,7 +1489,7 @@ SOURCE=.\Source\Metadata\IPTC.cpp
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF 
+!ENDIF
 
 SOURCE=.\Source\Metadata\TagConversion.cpp
 
@@ -1507,7 +1507,7 @@ SOURCE=.\Source\Metadata\TagConversion.cpp
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF 
+!ENDIF
 
 SOURCE=.\Source\Metadata\TagLib.cpp
 
@@ -1525,7 +1525,7 @@ SOURCE=.\Source\Metadata\TagLib.cpp
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF 
+!ENDIF
 
 SOURCE=.\Miranda\main.cpp
 
@@ -1543,7 +1543,7 @@ SOURCE=.\Miranda\main.cpp
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF 
+!ENDIF
 
 SOURCE=.\Source\LibJPEG\jaricom.c
 
@@ -1561,7 +1561,7 @@ SOURCE=.\Source\LibJPEG\jaricom.c
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF 
+!ENDIF
 
 SOURCE=.\Source\LibJPEG\jcapimin.c
 
@@ -1579,7 +1579,7 @@ SOURCE=.\Source\LibJPEG\jcapimin.c
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF 
+!ENDIF
 
 SOURCE=.\Source\LibJPEG\jcapistd.c
 
@@ -1597,7 +1597,7 @@ SOURCE=.\Source\LibJPEG\jcapistd.c
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF 
+!ENDIF
 
 SOURCE=.\Source\LibJPEG\jcarith.c
 
@@ -1615,7 +1615,7 @@ SOURCE=.\Source\LibJPEG\jcarith.c
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF 
+!ENDIF
 
 SOURCE=.\Source\LibJPEG\jccoefct.c
 
@@ -1633,7 +1633,7 @@ SOURCE=.\Source\LibJPEG\jccoefct.c
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF 
+!ENDIF
 
 SOURCE=.\Source\LibJPEG\jccolor.c
 
@@ -1651,7 +1651,7 @@ SOURCE=.\Source\LibJPEG\jccolor.c
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF 
+!ENDIF
 
 SOURCE=.\Source\LibJPEG\jcdctmgr.c
 
@@ -1669,7 +1669,7 @@ SOURCE=.\Source\LibJPEG\jcdctmgr.c
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF 
+!ENDIF
 
 SOURCE=.\Source\LibJPEG\jchuff.c
 
@@ -1687,7 +1687,7 @@ SOURCE=.\Source\LibJPEG\jchuff.c
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF 
+!ENDIF
 
 SOURCE=.\Source\LibJPEG\jcinit.c
 
@@ -1705,7 +1705,7 @@ SOURCE=.\Source\LibJPEG\jcinit.c
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF 
+!ENDIF
 
 SOURCE=.\Source\LibJPEG\jcmainct.c
 
@@ -1723,7 +1723,7 @@ SOURCE=.\Source\LibJPEG\jcmainct.c
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF 
+!ENDIF
 
 SOURCE=.\Source\LibJPEG\jcmarker.c
 
@@ -1741,7 +1741,7 @@ SOURCE=.\Source\LibJPEG\jcmarker.c
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF 
+!ENDIF
 
 SOURCE=.\Source\LibJPEG\jcmaster.c
 
@@ -1759,7 +1759,7 @@ SOURCE=.\Source\LibJPEG\jcmaster.c
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF 
+!ENDIF
 
 SOURCE=.\Source\LibJPEG\jcomapi.c
 
@@ -1777,7 +1777,7 @@ SOURCE=.\Source\LibJPEG\jcomapi.c
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF 
+!ENDIF
 
 SOURCE=.\Source\LibJPEG\jcparam.c
 
@@ -1795,7 +1795,7 @@ SOURCE=.\Source\LibJPEG\jcparam.c
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF 
+!ENDIF
 
 SOURCE=.\Source\LibJPEG\jcprepct.c
 
@@ -1813,7 +1813,7 @@ SOURCE=.\Source\LibJPEG\jcprepct.c
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF 
+!ENDIF
 
 SOURCE=.\Source\LibJPEG\jcsample.c
 
@@ -1831,7 +1831,7 @@ SOURCE=.\Source\LibJPEG\jcsample.c
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF 
+!ENDIF
 
 SOURCE=.\Source\LibJPEG\jctrans.c
 
@@ -1849,7 +1849,7 @@ SOURCE=.\Source\LibJPEG\jctrans.c
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF 
+!ENDIF
 
 SOURCE=.\Source\LibJPEG\jdapimin.c
 
@@ -1867,7 +1867,7 @@ SOURCE=.\Source\LibJPEG\jdapimin.c
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF 
+!ENDIF
 
 SOURCE=.\Source\LibJPEG\jdapistd.c
 
@@ -1885,7 +1885,7 @@ SOURCE=.\Source\LibJPEG\jdapistd.c
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF 
+!ENDIF
 
 SOURCE=.\Source\LibJPEG\jdarith.c
 
@@ -1903,7 +1903,7 @@ SOURCE=.\Source\LibJPEG\jdarith.c
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF 
+!ENDIF
 
 SOURCE=.\Source\LibJPEG\jdatadst.c
 
@@ -1921,7 +1921,7 @@ SOURCE=.\Source\LibJPEG\jdatadst.c
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF 
+!ENDIF
 
 SOURCE=.\Source\LibJPEG\jdatasrc.c
 
@@ -1939,7 +1939,7 @@ SOURCE=.\Source\LibJPEG\jdatasrc.c
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF 
+!ENDIF
 
 SOURCE=.\Source\LibJPEG\jdcoefct.c
 
@@ -1957,7 +1957,7 @@ SOURCE=.\Source\LibJPEG\jdcoefct.c
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF 
+!ENDIF
 
 SOURCE=.\Source\LibJPEG\jdcolor.c
 
@@ -1975,7 +1975,7 @@ SOURCE=.\Source\LibJPEG\jdcolor.c
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF 
+!ENDIF
 
 SOURCE=.\Source\LibJPEG\jddctmgr.c
 
@@ -1993,7 +1993,7 @@ SOURCE=.\Source\LibJPEG\jddctmgr.c
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF 
+!ENDIF
 
 SOURCE=.\Source\LibJPEG\jdhuff.c
 
@@ -2011,7 +2011,7 @@ SOURCE=.\Source\LibJPEG\jdhuff.c
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF 
+!ENDIF
 
 SOURCE=.\Source\LibJPEG\jdinput.c
 
@@ -2029,7 +2029,7 @@ SOURCE=.\Source\LibJPEG\jdinput.c
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF 
+!ENDIF
 
 SOURCE=.\Source\LibJPEG\jdmainct.c
 
@@ -2047,7 +2047,7 @@ SOURCE=.\Source\LibJPEG\jdmainct.c
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF 
+!ENDIF
 
 SOURCE=.\Source\LibJPEG\jdmarker.c
 
@@ -2065,7 +2065,7 @@ SOURCE=.\Source\LibJPEG\jdmarker.c
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF 
+!ENDIF
 
 SOURCE=.\Source\LibJPEG\jdmaster.c
 
@@ -2083,7 +2083,7 @@ SOURCE=.\Source\LibJPEG\jdmaster.c
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF 
+!ENDIF
 
 SOURCE=.\Source\LibJPEG\jdmerge.c
 
@@ -2101,7 +2101,7 @@ SOURCE=.\Source\LibJPEG\jdmerge.c
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF 
+!ENDIF
 
 SOURCE=.\Source\LibJPEG\jdpostct.c
 
@@ -2119,7 +2119,7 @@ SOURCE=.\Source\LibJPEG\jdpostct.c
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF 
+!ENDIF
 
 SOURCE=.\Source\LibJPEG\jdsample.c
 
@@ -2137,7 +2137,7 @@ SOURCE=.\Source\LibJPEG\jdsample.c
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF 
+!ENDIF
 
 SOURCE=.\Source\LibJPEG\jdtrans.c
 
@@ -2155,7 +2155,7 @@ SOURCE=.\Source\LibJPEG\jdtrans.c
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF 
+!ENDIF
 
 SOURCE=.\Source\LibJPEG\jerror.c
 
@@ -2173,7 +2173,7 @@ SOURCE=.\Source\LibJPEG\jerror.c
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF 
+!ENDIF
 
 SOURCE=.\Source\LibJPEG\jfdctflt.c
 
@@ -2191,7 +2191,7 @@ SOURCE=.\Source\LibJPEG\jfdctflt.c
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF 
+!ENDIF
 
 SOURCE=.\Source\LibJPEG\jfdctfst.c
 
@@ -2209,7 +2209,7 @@ SOURCE=.\Source\LibJPEG\jfdctfst.c
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF 
+!ENDIF
 
 SOURCE=.\Source\LibJPEG\jfdctint.c
 
@@ -2227,7 +2227,7 @@ SOURCE=.\Source\LibJPEG\jfdctint.c
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF 
+!ENDIF
 
 SOURCE=.\Source\LibJPEG\jidctflt.c
 
@@ -2245,7 +2245,7 @@ SOURCE=.\Source\LibJPEG\jidctflt.c
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF 
+!ENDIF
 
 SOURCE=.\Source\LibJPEG\jidctfst.c
 
@@ -2263,7 +2263,7 @@ SOURCE=.\Source\LibJPEG\jidctfst.c
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF 
+!ENDIF
 
 SOURCE=.\Source\LibJPEG\jidctint.c
 
@@ -2281,7 +2281,7 @@ SOURCE=.\Source\LibJPEG\jidctint.c
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF 
+!ENDIF
 
 SOURCE=.\Source\LibJPEG\jmemmgr.c
 
@@ -2299,7 +2299,7 @@ SOURCE=.\Source\LibJPEG\jmemmgr.c
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF 
+!ENDIF
 
 SOURCE=.\Source\LibJPEG\jmemnobs.c
 
@@ -2317,7 +2317,7 @@ SOURCE=.\Source\LibJPEG\jmemnobs.c
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF 
+!ENDIF
 
 SOURCE=.\Source\LibJPEG\jquant1.c
 
@@ -2335,7 +2335,7 @@ SOURCE=.\Source\LibJPEG\jquant1.c
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF 
+!ENDIF
 
 SOURCE=.\Source\LibJPEG\jquant2.c
 
@@ -2353,7 +2353,7 @@ SOURCE=.\Source\LibJPEG\jquant2.c
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF 
+!ENDIF
 
 SOURCE=.\Source\LibJPEG\jutils.c
 
@@ -2371,7 +2371,7 @@ SOURCE=.\Source\LibJPEG\jutils.c
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF 
+!ENDIF
 
 SOURCE=.\Source\LibJPEG\transupp.c
 
@@ -2389,7 +2389,7 @@ SOURCE=.\Source\LibJPEG\transupp.c
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF 
+!ENDIF
 
 SOURCE=.\Source\LibPNG\png.c
 
@@ -2407,7 +2407,7 @@ SOURCE=.\Source\LibPNG\png.c
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF 
+!ENDIF
 
 SOURCE=.\Source\LibPNG\pngerror.c
 
@@ -2425,7 +2425,7 @@ SOURCE=.\Source\LibPNG\pngerror.c
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF 
+!ENDIF
 
 SOURCE=.\Source\LibPNG\pnggccrd.c
 
@@ -2443,7 +2443,7 @@ SOURCE=.\Source\LibPNG\pnggccrd.c
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF 
+!ENDIF
 
 SOURCE=.\Source\LibPNG\pngget.c
 
@@ -2461,7 +2461,7 @@ SOURCE=.\Source\LibPNG\pngget.c
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF 
+!ENDIF
 
 SOURCE=.\Source\LibPNG\pngmem.c
 
@@ -2479,7 +2479,7 @@ SOURCE=.\Source\LibPNG\pngmem.c
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF 
+!ENDIF
 
 SOURCE=.\Source\LibPNG\pngpread.c
 
@@ -2497,7 +2497,7 @@ SOURCE=.\Source\LibPNG\pngpread.c
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF 
+!ENDIF
 
 SOURCE=.\Source\LibPNG\pngread.c
 
@@ -2515,7 +2515,7 @@ SOURCE=.\Source\LibPNG\pngread.c
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF 
+!ENDIF
 
 SOURCE=.\Source\LibPNG\pngrio.c
 
@@ -2533,7 +2533,7 @@ SOURCE=.\Source\LibPNG\pngrio.c
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF 
+!ENDIF
 
 SOURCE=.\Source\LibPNG\pngrtran.c
 
@@ -2551,7 +2551,7 @@ SOURCE=.\Source\LibPNG\pngrtran.c
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF 
+!ENDIF
 
 SOURCE=.\Source\LibPNG\pngrutil.c
 
@@ -2569,7 +2569,7 @@ SOURCE=.\Source\LibPNG\pngrutil.c
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF 
+!ENDIF
 
 SOURCE=.\Source\LibPNG\pngset.c
 
@@ -2587,7 +2587,7 @@ SOURCE=.\Source\LibPNG\pngset.c
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF 
+!ENDIF
 
 SOURCE=.\Source\LibPNG\pngtrans.c
 
@@ -2605,7 +2605,7 @@ SOURCE=.\Source\LibPNG\pngtrans.c
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF 
+!ENDIF
 
 SOURCE=.\Source\LibPNG\pngvcrd.c
 
@@ -2623,7 +2623,7 @@ SOURCE=.\Source\LibPNG\pngvcrd.c
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF 
+!ENDIF
 
 SOURCE=.\Source\LibPNG\pngwio.c
 
@@ -2641,7 +2641,7 @@ SOURCE=.\Source\LibPNG\pngwio.c
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF 
+!ENDIF
 
 SOURCE=.\Source\LibPNG\pngwrite.c
 
@@ -2659,7 +2659,7 @@ SOURCE=.\Source\LibPNG\pngwrite.c
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF 
+!ENDIF
 
 SOURCE=.\Source\LibPNG\pngwtran.c
 
@@ -2677,7 +2677,7 @@ SOURCE=.\Source\LibPNG\pngwtran.c
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF 
+!ENDIF
 
 SOURCE=.\Source\LibPNG\pngwutil.c
 
@@ -2695,7 +2695,7 @@ SOURCE=.\Source\LibPNG\pngwutil.c
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF 
+!ENDIF
 
 SOURCE=.\Source\FreeImage\BitmapAccess.cpp
 
@@ -2713,7 +2713,7 @@ SOURCE=.\Source\FreeImage\BitmapAccess.cpp
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF 
+!ENDIF
 
 SOURCE=.\Source\FreeImage\ColorLookup.cpp
 
@@ -2731,7 +2731,7 @@ SOURCE=.\Source\FreeImage\ColorLookup.cpp
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF 
+!ENDIF
 
 SOURCE=.\Source\FreeImage\FreeImage.cpp
 
@@ -2749,7 +2749,7 @@ SOURCE=.\Source\FreeImage\FreeImage.cpp
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF 
+!ENDIF
 
 SOURCE=.\FreeImage.rc
 
@@ -2773,7 +2773,7 @@ SOURCE=.\Source\FreeImage\FreeImageC.c
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF 
+!ENDIF
 
 SOURCE=.\Source\FreeImage\FreeImageIO.cpp
 
@@ -2791,7 +2791,7 @@ SOURCE=.\Source\FreeImage\FreeImageIO.cpp
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF 
+!ENDIF
 
 SOURCE=.\Source\FreeImage\GetType.cpp
 
@@ -2809,7 +2809,7 @@ SOURCE=.\Source\FreeImage\GetType.cpp
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF 
+!ENDIF
 
 SOURCE=.\Source\FreeImage\MemoryIO.cpp
 
@@ -2827,7 +2827,7 @@ SOURCE=.\Source\FreeImage\MemoryIO.cpp
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF 
+!ENDIF
 
 SOURCE=.\Source\FreeImage\PixelAccess.cpp
 
@@ -2845,7 +2845,7 @@ SOURCE=.\Source\FreeImage\PixelAccess.cpp
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF 
+!ENDIF
 
 SOURCE=.\Source\FreeImageToolkit\BSplineRotate.cpp
 
@@ -2863,7 +2863,7 @@ SOURCE=.\Source\FreeImageToolkit\BSplineRotate.cpp
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF 
+!ENDIF
 
 SOURCE=.\Source\FreeImageToolkit\Channels.cpp
 
@@ -2881,7 +2881,7 @@ SOURCE=.\Source\FreeImageToolkit\Channels.cpp
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF 
+!ENDIF
 
 SOURCE=.\Source\FreeImageToolkit\ClassicRotate.cpp
 
@@ -2899,7 +2899,7 @@ SOURCE=.\Source\FreeImageToolkit\ClassicRotate.cpp
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF 
+!ENDIF
 
 SOURCE=.\Source\FreeImageToolkit\Colors.cpp
 
@@ -2917,7 +2917,7 @@ SOURCE=.\Source\FreeImageToolkit\Colors.cpp
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF 
+!ENDIF
 
 SOURCE=.\Source\FreeImageToolkit\CopyPaste.cpp
 
@@ -2935,7 +2935,7 @@ SOURCE=.\Source\FreeImageToolkit\CopyPaste.cpp
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF 
+!ENDIF
 
 SOURCE=.\Source\FreeImageToolkit\Display.cpp
 
@@ -2953,7 +2953,7 @@ SOURCE=.\Source\FreeImageToolkit\Display.cpp
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF 
+!ENDIF
 
 SOURCE=.\Source\FreeImageToolkit\Flip.cpp
 
@@ -2971,7 +2971,7 @@ SOURCE=.\Source\FreeImageToolkit\Flip.cpp
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF 
+!ENDIF
 
 SOURCE=.\Source\FreeImageToolkit\JPEGTransform.cpp
 
@@ -2989,7 +2989,7 @@ SOURCE=.\Source\FreeImageToolkit\JPEGTransform.cpp
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF 
+!ENDIF
 
 SOURCE=.\Source\FreeImageToolkit\Rescale.cpp
 
@@ -3007,7 +3007,7 @@ SOURCE=.\Source\FreeImageToolkit\Rescale.cpp
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF 
+!ENDIF
 
 SOURCE=.\Source\FreeImageToolkit\Resize.cpp
 
@@ -3025,34 +3025,33 @@ SOURCE=.\Source\FreeImageToolkit\Resize.cpp
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
-!ENDIF 
+!ENDIF
 
 !IF  "$(CFG)" == "FreeImage - Win32 Release"
 
-"zlib - Win32 Release" : 
-   cd "..\zlib"
-   $(MAKE) /$(MAKEFLAGS) /F ".\zlib.mak" CFG="zlib - Win32 Release" 
+"zlib - Win32 Release" :
+   cd "..\..\plugins\zlib"
+   $(MAKE) /$(MAKEFLAGS) /F .\zlib.mak CFG="zlib - Win32 Release"
    cd "..\freeimage"
 
-"zlib - Win32 ReleaseCLEAN" : 
-   cd "..\zlib"
-   $(MAKE) /$(MAKEFLAGS) /F ".\zlib.mak" CFG="zlib - Win32 Release" RECURSE=1 CLEAN 
+"zlib - Win32 ReleaseCLEAN" :
+   cd "..\..\plugins\zlib"
+   $(MAKE) /$(MAKEFLAGS) /F .\zlib.mak CFG="zlib - Win32 Release" RECURSE=1 CLEAN
    cd "..\freeimage"
 
 !ELSEIF  "$(CFG)" == "FreeImage - Win32 Debug"
 
-"zlib - Win32 Debug" : 
-   cd "..\zlib"
-   $(MAKE) /$(MAKEFLAGS) /F ".\zlib.mak" CFG="zlib - Win32 Debug" 
+"zlib - Win32 Debug" :
+   cd "..\..\plugins\zlib"
+   $(MAKE) /$(MAKEFLAGS) /F .\zlib.mak CFG="zlib - Win32 Debug"
    cd "..\freeimage"
 
-"zlib - Win32 DebugCLEAN" : 
-   cd "..\zlib"
-   $(MAKE) /$(MAKEFLAGS) /F ".\zlib.mak" CFG="zlib - Win32 Debug" RECURSE=1 CLEAN 
+"zlib - Win32 DebugCLEAN" :
+   cd "..\..\plugins\zlib"
+   $(MAKE) /$(MAKEFLAGS) /F .\zlib.mak CFG="zlib - Win32 Debug" RECURSE=1 CLEAN
    cd "..\freeimage"
 
-!ENDIF 
+!ENDIF
 
 
-!ENDIF 
-
+!ENDIF
