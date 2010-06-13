@@ -298,7 +298,7 @@ void CIcqProto::setStatusMsgVar(HANDLE hContact, char* szStatusMsg, bool isAnsi)
 			bool notmatch = false;
 			for (int i=0; ;++i)
 			{
-				if (szStatusNoteAnsi[i] != szStatusMsg[i] && szStatusMsg[i] != '?' && szStatusMsg[i] != '?')
+				if (szStatusNoteAnsi[i] != szStatusMsg[i] && szStatusNoteAnsi[i] != '?' && szStatusMsg[i] != '?')
 				{
 					notmatch = true;
 					break;
