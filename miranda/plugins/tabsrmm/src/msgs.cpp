@@ -421,6 +421,7 @@ int SplitmsgShutdown(void)
 	ImageList_Destroy(PluginConfig.g_hImageList);
 
 	delete Win7Taskbar;
+	delete mREOLECallback;
 
 	OleUninitialize();
 	DestroyMenu(PluginConfig.g_hMenuContext);

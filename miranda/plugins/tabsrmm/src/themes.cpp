@@ -1132,6 +1132,35 @@ bool CSkin::warnToClose() const
  * * user unloads the skin from the dialog box
  * * a new skin is loaded by user's request.
  */
+
+void CSkin::UnloadTabs()
+{
+	if(m_tabTop) {
+		delete m_tabTop;
+		m_tabTop = NULL;
+	}
+
+	if(m_tabBottom) {
+		delete m_tabBottom;
+		m_tabBottom = NULL;
+	}
+
+	if(m_tabGlowTop) {
+		delete m_tabGlowTop;
+		m_tabGlowTop = NULL;
+	}
+
+	if(m_tabGlowBottom) {
+		delete m_tabGlowBottom;
+		m_tabGlowTop = NULL;
+	}
+
+	if(m_switchBarItem) {
+		delete m_switchBarItem;
+		m_switchBarItem = NULL;
+	}
+}
+
 void CSkin::Unload()
 {
 	int i;
@@ -1192,6 +1221,8 @@ void CSkin::Unload()
 	m_ContainerColorKey = 0;
 	m_ContainerColorKeyBrush = m_MenuBGBrush = 0;
 	m_skinEnabled = m_frameSkins = false;
+
+	UnloadTabs();
 
 	if(m_closeIcon)
 		::DestroyIcon(m_closeIcon);
@@ -1922,18 +1953,7 @@ void CSkin::setupAeroSkins()
 	TCHAR	tszFilename[MAX_PATH], tszBasePath[MAX_PATH];
 
 	M->getAeroState();
-
-	if(m_tabTop)
-		delete m_tabTop;
-	if(m_tabBottom)
-		delete m_tabBottom;
-	if(m_tabGlowTop)
-		delete m_tabGlowTop;
-	if(m_tabGlowBottom)
-		delete m_tabGlowBottom;
-
-	m_tabTop = m_tabBottom = m_tabGlowBottom = m_tabGlowTop = 0;
-
+	UnloadTabs();
 
 	BOOL	isOpaque;
 	HBITMAP hbm;

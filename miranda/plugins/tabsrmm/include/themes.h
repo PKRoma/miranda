@@ -260,6 +260,7 @@ public:
 	void			Init(bool fStartup = false);
 	void			Load();
 	void			Unload();
+	void			UnloadTabs();
 	void			setFileName();
 	void			ReadItem(const int id, const TCHAR *section);
 	void			LoadItems();
