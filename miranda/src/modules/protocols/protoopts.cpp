@@ -467,32 +467,22 @@ INT_PTR CALLBACK AccMgrDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LPARAM 
 	switch(message) {
 	case WM_INITDIALOG:
 		{
-			struct TAccMgrData *dat = (struct TAccMgrData *)mir_alloc(sizeof(struct TAccMgrData));
+			TAccMgrData *dat = (TAccMgrData *)mir_alloc(sizeof(TAccMgrData));
 			SetWindowLongPtr(hwndDlg, GWLP_USERDATA, (LONG_PTR)dat);
 
 			TranslateDialogDefault(hwndDlg);
 			Window_SetIcon_IcoLib( hwndDlg, SKINICON_OTHER_ACCMGR );
 
-			SendDlgItemMessage( hwndDlg, IDC_ADD, BM_SETIMAGE, IMAGE_ICON, ( LPARAM )LoadSkinIcon( SKINICON_OTHER_ADDCONTACT ));
-			SendDlgItemMessage( hwndDlg, IDC_ADD, BUTTONADDTOOLTIP, (WPARAM)"New account", 0);
-			SendDlgItemMessage( hwndDlg, IDC_ADD, BUTTONSETASFLATBTN, 0, 0);
-			SendDlgItemMessage( hwndDlg, IDC_EDIT, BM_SETIMAGE, IMAGE_ICON, ( LPARAM )LoadSkinIcon( SKINICON_OTHER_RENAME ));
-			SendDlgItemMessage( hwndDlg, IDC_EDIT, BUTTONADDTOOLTIP, (WPARAM)"Edit", 0);
-			SendDlgItemMessage( hwndDlg, IDC_EDIT, BUTTONSETASFLATBTN, 0, 0);
-			SendDlgItemMessage( hwndDlg, IDC_REMOVE, BM_SETIMAGE, IMAGE_ICON, ( LPARAM )LoadSkinIcon( SKINICON_OTHER_DELETE ));
-			SendDlgItemMessage( hwndDlg, IDC_REMOVE, BUTTONADDTOOLTIP, (WPARAM)"Remove account", 0);
-			SendDlgItemMessage( hwndDlg, IDC_REMOVE, BUTTONSETASFLATBTN, 0, 0);
-			SendDlgItemMessage( hwndDlg, IDC_OPTIONS, BM_SETIMAGE, IMAGE_ICON, ( LPARAM )LoadSkinIcon( SKINICON_OTHER_OPTIONS ));
-			SendDlgItemMessage( hwndDlg, IDC_OPTIONS, BUTTONADDTOOLTIP, (WPARAM)"Configure...", 0);
-			SendDlgItemMessage( hwndDlg, IDC_OPTIONS, BUTTONSETASFLATBTN, 0, 0);
-			SendDlgItemMessage( hwndDlg, IDC_UPGRADE, BM_SETIMAGE, IMAGE_ICON, ( LPARAM )LoadSkinIcon( SKINICON_OTHER_ACCMGR ));
-			SendDlgItemMessage( hwndDlg, IDC_UPGRADE, BUTTONADDTOOLTIP, (WPARAM)"Upgrade account", 0);
-			SendDlgItemMessage( hwndDlg, IDC_UPGRADE, BUTTONSETASFLATBTN, 0, 0);
+			Button_SetIcon_IcoLib(hwndDlg, IDC_ADD, SKINICON_OTHER_ADDCONTACT, LPGEN("New account"));
+			Button_SetIcon_IcoLib(hwndDlg, IDC_EDIT, SKINICON_OTHER_RENAME, LPGEN("Edit"));
+			Button_SetIcon_IcoLib(hwndDlg, IDC_REMOVE, SKINICON_OTHER_DELETE, LPGEN("Remove account"));
+			Button_SetIcon_IcoLib(hwndDlg, IDC_OPTIONS, SKINICON_OTHER_OPTIONS, LPGEN( "Configure..."));
+			Button_SetIcon_IcoLib(hwndDlg, IDC_UPGRADE, SKINICON_OTHER_ACCMGR, LPGEN("Upgrade account"));
 
-			EnableWindow( GetDlgItem( hwndDlg, IDC_EDIT ), FALSE );
-			EnableWindow( GetDlgItem( hwndDlg, IDC_REMOVE ), FALSE );
-			EnableWindow( GetDlgItem( hwndDlg, IDC_OPTIONS ), FALSE );
-			EnableWindow( GetDlgItem( hwndDlg, IDC_UPGRADE ), FALSE );
+			EnableWindow(GetDlgItem(hwndDlg, IDC_EDIT), FALSE);
+			EnableWindow(GetDlgItem(hwndDlg, IDC_REMOVE), FALSE);
+			EnableWindow(GetDlgItem(hwndDlg, IDC_OPTIONS), FALSE);
+			EnableWindow(GetDlgItem(hwndDlg, IDC_UPGRADE), FALSE);
 
 			{
 				LOGFONT lf;
