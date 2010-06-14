@@ -172,7 +172,8 @@ CIrcProto::~CIrcProto()
 	CallService( MS_CLIST_REMOVECONTACTMENUITEM, ( WPARAM )hUMenuDisconnect, 0 );
 	CallService( MS_CLIST_REMOVECONTACTMENUITEM, ( WPARAM )hUMenuIgnore, 0 );
 
-	CallService( MS_CLIST_REMOVEMAINMENUITEM, ( WPARAM )hMenuRoot, 0 );
+	if (hMenuRoot)
+		CallService( MS_CLIST_REMOVEMAINMENUITEM, ( WPARAM )hMenuRoot, 0 );
 
 	mir_free( m_alias );
 	mir_free( m_szModuleName );
@@ -211,6 +212,7 @@ int CIrcProto::OnModulesLoaded( WPARAM, LPARAM )
 	NETLIBUSER nlu = {0};
 	TCHAR name[128];
 
+	InitContactMenus();
 	DBDeleteContactSetting( NULL, m_szModuleName, "JTemp" );
 
 	nlu.cbSize = sizeof(nlu);
@@ -1076,11 +1078,11 @@ int __cdecl CIrcProto::OnEvent( PROTOEVENTTYPE eventType, WPARAM wParam, LPARAM 
 	case EV_PROTO_ONOPTIONS: return OnInitOptionsPages( wParam, lParam );
 
 	case EV_PROTO_ONMENU:
-		InitMenus();
+		InitMainMenus();
 		break;
 
 	case EV_PROTO_ONRENAME:
-		{
+		if ( hMenuRoot ) {
 			CLISTMENUITEM clmi = { 0 };
 			clmi.cbSize = sizeof( CLISTMENUITEM );
 			clmi.flags = CMIM_NAME | CMIF_TCHAR | CMIF_KEEPUNTRANSLATED;

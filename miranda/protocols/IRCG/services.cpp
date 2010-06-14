@@ -23,7 +23,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 BOOL bChatInstalled = FALSE, m_bMbotInstalled = FALSE;
 
-void CIrcProto::InitMenus()
+void CIrcProto::InitMainMenus(void)
 {
 	char temp[ MAXMODULELABELLENGTH ];
 	char *d = temp + sprintf( temp, m_szModuleName );
@@ -33,15 +33,20 @@ void CIrcProto::InitMenus()
 	mi.pszService = temp;
 
 	if ( bChatInstalled ) {
-		hMenuRoot = MO_GetProtoRootMenu( m_szModuleName );
-		if ( hMenuRoot == NULL ) {
+		HGENMENU hRoot = MO_GetProtoRootMenu( m_szModuleName );
+		if ( hRoot == NULL ) {
 			// Root popupmenuitem
 			mi.ptszName = m_tszUserName;
 			mi.position = -1999901010;
 			mi.pszPopupName = (char *)-1;
 			mi.flags = CMIF_ICONFROMICOLIB | CMIF_ROOTPOPUP | CMIF_TCHAR | CMIF_KEEPUNTRANSLATED;
 			mi.icolibItem = GetIconHandle(IDI_MAIN);
-			hMenuRoot = ( HGENMENU )CallService( MS_CLIST_ADDPROTOMENUITEM,  (WPARAM)0, (LPARAM)&mi);
+			hRoot = hMenuRoot = ( HGENMENU )CallService( MS_CLIST_ADDPROTOMENUITEM,  (WPARAM)0, (LPARAM)&mi);
+		}
+		else {
+			if (hMenuRoot)
+				CallService( MS_CLIST_REMOVEMAINMENUITEM, ( WPARAM )hMenuRoot, 0 );
+			hMenuRoot = NULL;
 		}
 		
 		mi.flags = CMIF_ICONFROMICOLIB | CMIF_CHILDPOPUP;
@@ -49,8 +54,10 @@ void CIrcProto::InitMenus()
 		mi.icolibItem = GetIconHandle(IDI_QUICK);
 		strcpy( d, IRC_QUICKCONNECT );
 		mi.position = 201001;
-		mi.hParentMenu = hMenuRoot;
+		mi.hParentMenu = hRoot;
 		hMenuQuick = ( HGENMENU )CallService( MS_CLIST_ADDPROTOMENUITEM, (WPARAM)0, (LPARAM)&mi);
+
+		if (m_iStatus != ID_STATUS_OFFLINE) mi.flags |= CMIF_GRAYED;
 
 		mi.pszName = LPGEN("&Join channel");
 		mi.icolibItem = LoadSkinnedIconHandle(SKINICON_CHAT_JOIN);//GetIconHandle(IDI_JOIN);
@@ -70,14 +77,25 @@ void CIrcProto::InitMenus()
 		mi.position = 201004;
 		hMenuList = ( HGENMENU )CallService( MS_CLIST_ADDPROTOMENUITEM, (WPARAM)0, (LPARAM)&mi);
 
+		if (m_useServer) mi.flags &= ~CMIF_GRAYED;
 		mi.pszName = LPGEN("&Show the server window");
 		mi.icolibItem = GetIconHandle(IDI_SERVER);
 		strcpy( d, IRC_SHOWSERVER );
 		mi.position = 201005;
 		hMenuServer = ( HGENMENU )CallService( MS_CLIST_ADDPROTOMENUITEM, (WPARAM)0, (LPARAM)&mi);
 	}
+}
 	
+void CIrcProto::InitContactMenus(void)
+{
+	char temp[ MAXMODULELABELLENGTH ];
+	char *d = temp + sprintf( temp, m_szModuleName );
+
+	CLISTMENUITEM mi = { 0 };
+	mi.cbSize = sizeof( mi );
+	mi.pszService = temp;
 	mi.flags = CMIF_ICONFROMICOLIB;
+
 	mi.pszName = LPGEN("Channel &settings");
 	mi.icolibItem = GetIconHandle(IDI_MANAGER);
 	strcpy( d, IRC_UM_CHANSETTINGS );
@@ -106,15 +124,6 @@ void CIrcProto::InitMenus()
 	mi.popupPosition = 500090002;
 	hUMenuIgnore = ( HGENMENU )CallService( MS_CLIST_ADDCONTACTMENUITEM, (WPARAM)0, (LPARAM)&mi);
 
-	CLISTMENUITEM clmi;
-	memset( &clmi, 0, sizeof( clmi ));
-	clmi.cbSize = sizeof( clmi );
-	clmi.flags = CMIM_FLAGS | CMIF_GRAYED;
-	CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hMenuJoin, ( LPARAM )&clmi );
-	CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hMenuList, ( LPARAM )&clmi );
-	CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hMenuNick, ( LPARAM )&clmi );
-	if ( !m_useServer )
-		CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hMenuServer, ( LPARAM )&clmi );
 }
 
 INT_PTR __cdecl CIrcProto::OnDoubleclicked(WPARAM, LPARAM lParam)
