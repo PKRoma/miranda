@@ -719,7 +719,12 @@ void CJabberProto::MenuInit()
 		mi.hParentMenu = HGENMENU_ROOT;
 		mi.flags = CMIF_ICONFROMICOLIB | CMIF_ROOTPOPUP | CMIF_TCHAR | CMIF_KEEPUNTRANSLATED;
 		mi.icolibItem = GetIconHandle( IDI_JABBER );
-		hJabberRoot = ( HGENMENU )CallService( MS_CLIST_ADDPROTOMENUITEM, 0, (LPARAM)&mi );
+		hJabberRoot = m_hMenuRoot = ( HGENMENU )CallService( MS_CLIST_ADDPROTOMENUITEM, 0, (LPARAM)&mi );
+	}
+	else {
+		if ( m_hMenuRoot )
+			CallService( MS_CLIST_REMOVEMAINMENUITEM, ( WPARAM )m_hMenuRoot, 0 );
+		m_hMenuRoot = NULL;
 	}
 
 	// "Bookmarks..."
@@ -745,7 +750,7 @@ void CJabberProto::MenuInit()
 	strcpy( tDest, "/Services" );
 	mi.position = 200003;
 	mi.icolibItem = GetIconHandle( IDI_SERVICE_DISCOVERY );
-	m_hMenuRoot = ( HGENMENU ) JCallService( MS_CLIST_ADDPROTOMENUITEM, 0, ( LPARAM )&mi );
+	HGENMENU hMenuServicesRoot = ( HGENMENU ) JCallService( MS_CLIST_ADDPROTOMENUITEM, 0, ( LPARAM )&mi );
 
 	// "Service Discovery..."
 	JCreateService( "/ServiceDiscovery", &CJabberProto::OnMenuHandleServiceDiscovery );
@@ -754,7 +759,7 @@ void CJabberProto::MenuInit()
 	mi.pszName = LPGEN("Service Discovery");
 	mi.position = 2000050001;
 	mi.icolibItem = GetIconHandle( IDI_SERVICE_DISCOVERY );
-	mi.hParentMenu = m_hMenuRoot;
+	mi.hParentMenu = hMenuServicesRoot;
 	m_hMenuServiceDiscovery = ( HGENMENU ) JCallService( MS_CLIST_ADDPROTOMENUITEM, 0, ( LPARAM )&mi );
 
 	JCreateService( "/SD/MyTransports", &CJabberProto::OnMenuHandleServiceDiscoveryMyTransports );
@@ -1012,6 +1017,10 @@ void CJabberProto::GlobalMenuUninit()
 		m_phMenuResourceItems = NULL;
 	}
 	m_nMenuResourceItems = 0;
+
+	if ( m_hMenuRoot )
+		CallService( MS_CLIST_REMOVEMAINMENUITEM, ( WPARAM )m_hMenuRoot, 0 );
+	m_hMenuRoot = NULL;
 }
 
 void CJabberProto::EnableMenuItems( BOOL bEnable )
