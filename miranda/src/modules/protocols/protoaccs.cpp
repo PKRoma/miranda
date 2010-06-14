@@ -537,13 +537,6 @@ void BuildProtoMenus()
 
 void RebuildProtoMenus( int iNewValue )
 {
-	for( int i = 0; i < accounts.getCount(); i++ ) {
-		PROTOACCOUNT* pa = accounts[ i ];
-		HGENMENU hMenu = ( HGENMENU )CallService( MO_GETPROTOROOTMENU, ( WPARAM )pa->szModuleName, 0 );
-		if ( hMenu != NULL )
-			CallService( MO_REMOVEMENUITEM, ( WPARAM )hMenu, 0 );
-	}
-
 	DBWriteContactSettingByte( NULL, "CList", "MoveProtoMenus", iNewValue );
 
 	RebuildMenuOrder();
