@@ -534,6 +534,7 @@ static INT_PTR SetSettingResident(WPARAM wParam,LPARAM lParam)
 static INT_PTR WriteContactSetting(WPARAM wParam,LPARAM lParam)
 {
 	DBCONTACTWRITESETTING *dbcws=(DBCONTACTWRITESETTING*)lParam;
+	DBVARIANT dbv;
 	struct DBContact dbc;
 	DWORD ofsModuleName;
 	struct DBContactSettings dbcs;
@@ -565,29 +566,31 @@ static INT_PTR WriteContactSetting(WPARAM wParam,LPARAM lParam)
 		return 1;
 	}
 
-	if (dbcws->value.type == DBVT_WCHAR) {
-		if (dbcws->value.pszVal != NULL) {
-			char* val = mir_utf8encodeW(dbcws->value.pwszVal);
+	dbv = dbcws->value;
+
+	if (dbv.type == DBVT_WCHAR) {
+		if (dbv.pszVal != NULL) {
+			char* val = mir_utf8encodeW(dbv.pwszVal);
 			if ( val == NULL )
 				return 1;
 
-			dbcws->value.pszVal = ( char* )alloca( strlen( val )+1 );
-			strcpy( dbcws->value.pszVal, val );
+			dbv.pszVal = ( char* )alloca( strlen( val )+1 );
+			strcpy( dbv.pszVal, val );
 			mir_free(val);
-			dbcws->value.type = DBVT_UTF8;
+			dbv.type = DBVT_UTF8;
 		}
 		else return 1;
 	}
 
-	if(dbcws->value.type!=DBVT_BYTE && dbcws->value.type!=DBVT_WORD && dbcws->value.type!=DBVT_DWORD && dbcws->value.type!=DBVT_ASCIIZ && dbcws->value.type!=DBVT_UTF8 && dbcws->value.type!=DBVT_BLOB)
+	if(dbv.type!=DBVT_BYTE && dbv.type!=DBVT_WORD && dbv.type!=DBVT_DWORD && dbv.type!=DBVT_ASCIIZ && dbv.type!=DBVT_UTF8 && dbv.type!=DBVT_BLOB)
 		return 1;
-	if ((!dbcws->szModule) || (!dbcws->szSetting) || ((dbcws->value.type == DBVT_ASCIIZ || dbcws->value.type == DBVT_UTF8 )&& dbcws->value.pszVal == NULL) || (dbcws->value.type == DBVT_BLOB && dbcws->value.pbVal == NULL) )
+	if ((!dbcws->szModule) || (!dbcws->szSetting) || ((dbv.type == DBVT_ASCIIZ || dbv.type == DBVT_UTF8 )&& dbv.pszVal == NULL) || (dbv.type == DBVT_BLOB && dbv.pbVal == NULL) )
 		return 1;
 
 	// the db can not tolerate strings/blobs longer than 0xFFFF since the format writes 2 lengths
-	switch( dbcws->value.type ) {
+	switch( dbv.type ) {
 	case DBVT_ASCIIZ:		case DBVT_BLOB:	case DBVT_UTF8:
-		{	size_t len = ( dbcws->value.type != DBVT_BLOB ) ? strlen(dbcws->value.pszVal) : dbcws->value.cpbVal;
+		{	size_t len = ( dbv.type != DBVT_BLOB ) ? strlen(dbv.pszVal) : dbv.cpbVal;
 			if ( len >= 0xFFFF ) {
 				#ifdef _DEBUG
 					OutputDebugStringA("WriteContactSetting() writing huge string/blob, rejecting ( >= 0xFFFF ) \n");
@@ -600,24 +603,24 @@ static INT_PTR WriteContactSetting(WPARAM wParam,LPARAM lParam)
 	EnterCriticalSection(&csDbAccess);
 	{
 		char* szCachedSettingName = GetCachedSetting(dbcws->szModule, dbcws->szSetting, moduleNameLen, settingNameLen);
-		if ( dbcws->value.type != DBVT_BLOB ) {
+		if ( dbv.type != DBVT_BLOB ) {
 			DBVARIANT* pCachedValue = GetCachedValuePtr((HANDLE)wParam, szCachedSettingName, 1);
 			if ( pCachedValue != NULL ) {
 				BOOL bIsIdentical = FALSE;
-				if ( pCachedValue->type == dbcws->value.type ) {
-					switch(dbcws->value.type) {
-						case DBVT_BYTE:   bIsIdentical = pCachedValue->bVal == dbcws->value.bVal;  break;
-						case DBVT_WORD:   bIsIdentical = pCachedValue->wVal == dbcws->value.wVal;  break;
-						case DBVT_DWORD:  bIsIdentical = pCachedValue->dVal == dbcws->value.dVal;  break;
+				if ( pCachedValue->type == dbv.type ) {
+					switch(dbv.type) {
+						case DBVT_BYTE:   bIsIdentical = pCachedValue->bVal == dbv.bVal;  break;
+						case DBVT_WORD:   bIsIdentical = pCachedValue->wVal == dbv.wVal;  break;
+						case DBVT_DWORD:  bIsIdentical = pCachedValue->dVal == dbv.dVal;  break;
 						case DBVT_UTF8:
-						case DBVT_ASCIIZ: bIsIdentical = strcmp( pCachedValue->pszVal, dbcws->value.pszVal ) == 0; break;
+						case DBVT_ASCIIZ: bIsIdentical = strcmp( pCachedValue->pszVal, dbv.pszVal ) == 0; break;
 					}
 					if ( bIsIdentical ) {
 						LeaveCriticalSection(&csDbAccess);
 						return 0;
 					}
 				}
-				SetCachedVariant(&dbcws->value, pCachedValue);
+				SetCachedVariant(&dbv, pCachedValue);
 			}
 			if ( szCachedSettingName[-1] != 0 ) {
 				LeaveCriticalSection(&csDbAccess);
@@ -641,11 +644,11 @@ static INT_PTR WriteContactSetting(WPARAM wParam,LPARAM lParam)
 	//make sure the module group exists
 	ofsSettingsGroup=GetSettingsGroupOfsByModuleNameOfs(&dbc,ofsModuleName);
 	if(ofsSettingsGroup==0) {  //module group didn't exist - make it
-		if(dbcws->value.type&DBVTF_VARIABLELENGTH) {
-		  if(dbcws->value.type==DBVT_ASCIIZ || dbcws->value.type==DBVT_UTF8) bytesRequired=(int)strlen(dbcws->value.pszVal)+2;
-		  else if(dbcws->value.type==DBVT_BLOB) bytesRequired=dbcws->value.cpbVal+2;
+		if(dbv.type&DBVTF_VARIABLELENGTH) {
+		  if(dbv.type==DBVT_ASCIIZ || dbv.type==DBVT_UTF8) bytesRequired=(int)strlen(dbv.pszVal)+2;
+		  else if(dbv.type==DBVT_BLOB) bytesRequired=dbv.cpbVal+2;
 		}
-		else bytesRequired=dbcws->value.type;
+		else bytesRequired=dbv.type;
 		bytesRequired+=2+settingNameLen;
 		bytesRequired+=(DB_SETTINGS_RESIZE_GRANULARITY-(bytesRequired%DB_SETTINGS_RESIZE_GRANULARITY))%DB_SETTINGS_RESIZE_GRANULARITY;
 		ofsSettingsGroup=CreateNewSpace(bytesRequired+offsetof(struct DBContactSettings,blob));
@@ -679,7 +682,7 @@ static INT_PTR WriteContactSetting(WPARAM wParam,LPARAM lParam)
 			MoveAlong(1+settingNameLen);
 			//if different type or variable length and length is different
 			NeedBytes(3);
-			if(pBlob[0]!=dbcws->value.type || ((pBlob[0]==DBVT_ASCIIZ || pBlob[0]==DBVT_UTF8) && *(PWORD)(pBlob+1)!=strlen(dbcws->value.pszVal)) || (pBlob[0]==DBVT_BLOB && *(PWORD)(pBlob+1)!=dbcws->value.cpbVal)) {
+			if(pBlob[0]!=dbv.type || ((pBlob[0]==DBVT_ASCIIZ || pBlob[0]==DBVT_UTF8) && *(PWORD)(pBlob+1)!=strlen(dbv.pszVal)) || (pBlob[0]==DBVT_BLOB && *(PWORD)(pBlob+1)!=dbv.cpbVal)) {
 				//bin it
 				int nameLen,valLen;
 				DWORD ofsSettingToCut;
@@ -702,13 +705,13 @@ static INT_PTR WriteContactSetting(WPARAM wParam,LPARAM lParam)
 			else {
 				//replace existing setting at pBlob
 				MoveAlong(1);	//skip data type
-				switch(dbcws->value.type) {
-					case DBVT_BYTE: DBWrite(ofsBlobPtr,&dbcws->value.bVal,1); break;
-					case DBVT_WORD: DBWrite(ofsBlobPtr,&dbcws->value.wVal,2); break;
-					case DBVT_DWORD: DBWrite(ofsBlobPtr,&dbcws->value.dVal,4); break;
+				switch(dbv.type) {
+					case DBVT_BYTE: DBWrite(ofsBlobPtr,&dbv.bVal,1); break;
+					case DBVT_WORD: DBWrite(ofsBlobPtr,&dbv.wVal,2); break;
+					case DBVT_DWORD: DBWrite(ofsBlobPtr,&dbv.dVal,4); break;
 					case DBVT_UTF8:
-					case DBVT_ASCIIZ: DBWrite(ofsBlobPtr+2,dbcws->value.pszVal,(int)strlen(dbcws->value.pszVal)); break;
-					case DBVT_BLOB: DBWrite(ofsBlobPtr+2,dbcws->value.pbVal,dbcws->value.cpbVal); break;
+					case DBVT_ASCIIZ: DBWrite(ofsBlobPtr+2,dbv.pszVal,(int)strlen(dbv.pszVal)); break;
+					case DBVT_BLOB: DBWrite(ofsBlobPtr+2,dbv.pbVal,dbv.cpbVal); break;
 				}
 				//quit
 				DBFlush(1);
@@ -722,11 +725,11 @@ static INT_PTR WriteContactSetting(WPARAM wParam,LPARAM lParam)
 	//cannot do a simple replace, add setting to end of list
 	//pBlob already points to end of list
 	//see if it fits
-	if(dbcws->value.type&DBVTF_VARIABLELENGTH) {
-	  if(dbcws->value.type==DBVT_ASCIIZ || dbcws->value.type==DBVT_UTF8) bytesRequired=(int)strlen(dbcws->value.pszVal)+2;
-	  else if(dbcws->value.type==DBVT_BLOB) bytesRequired=dbcws->value.cpbVal+2;
+	if(dbv.type&DBVTF_VARIABLELENGTH) {
+	  if(dbv.type==DBVT_ASCIIZ || dbv.type==DBVT_UTF8) bytesRequired=(int)strlen(dbv.pszVal)+2;
+	  else if(dbv.type==DBVT_BLOB) bytesRequired=dbv.cpbVal+2;
 	}
-	else bytesRequired=dbcws->value.type;
+	else bytesRequired=dbv.type;
 	bytesRequired+=2+settingNameLen;
 	bytesRequired+=ofsBlobPtr+1-(ofsSettingsGroup+offsetof(struct DBContactSettings,blob));
 	if((DWORD)bytesRequired>dbcs.cbBlob) {
@@ -770,24 +773,24 @@ static INT_PTR WriteContactSetting(WPARAM wParam,LPARAM lParam)
 	DBWrite(ofsBlobPtr,&settingNameLen,1);
 	DBWrite(ofsBlobPtr+1,(PVOID)dbcws->szSetting,settingNameLen);
 	MoveAlong(1+settingNameLen);
-	DBWrite(ofsBlobPtr,&dbcws->value.type,1);
+	DBWrite(ofsBlobPtr,&dbv.type,1);
 	MoveAlong(1);
-	switch(dbcws->value.type) {
-		case DBVT_BYTE: DBWrite(ofsBlobPtr,&dbcws->value.bVal,1); MoveAlong(1); break;
-		case DBVT_WORD: DBWrite(ofsBlobPtr,&dbcws->value.wVal,2); MoveAlong(2); break;
-		case DBVT_DWORD: DBWrite(ofsBlobPtr,&dbcws->value.dVal,4); MoveAlong(4); break;
+	switch(dbv.type) {
+		case DBVT_BYTE: DBWrite(ofsBlobPtr,&dbv.bVal,1); MoveAlong(1); break;
+		case DBVT_WORD: DBWrite(ofsBlobPtr,&dbv.wVal,2); MoveAlong(2); break;
+		case DBVT_DWORD: DBWrite(ofsBlobPtr,&dbv.dVal,4); MoveAlong(4); break;
 		case DBVT_UTF8:
 		case DBVT_ASCIIZ:
-			{	int len=(int)strlen(dbcws->value.pszVal);
+			{	int len=(int)strlen(dbv.pszVal);
 				DBWrite(ofsBlobPtr,&len,2);
-				DBWrite(ofsBlobPtr+2,dbcws->value.pszVal,len);
+				DBWrite(ofsBlobPtr+2,dbv.pszVal,len);
 				MoveAlong(2+len);
 			}
 			break;
 		case DBVT_BLOB:
-			DBWrite(ofsBlobPtr,&dbcws->value.cpbVal,2);
-			DBWrite(ofsBlobPtr+2,dbcws->value.pbVal,dbcws->value.cpbVal);
-			MoveAlong(2+dbcws->value.cpbVal);
+			DBWrite(ofsBlobPtr,&dbv.cpbVal,2);
+			DBWrite(ofsBlobPtr+2,dbv.pbVal,dbv.cpbVal);
+			MoveAlong(2+dbv.cpbVal);
 			break;
 	}
 	{	BYTE zero=0;
