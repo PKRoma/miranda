@@ -146,12 +146,12 @@ struct CAimProto : public PROTO_INTERFACE
 	HANDLE hDirectBoundPort;//direct connection listening port
 
 	//Handles for the context menu items
-	HANDLE hMenuRoot;
-	HANDLE hHTMLAwayContextMenuItem;
-	HANDLE hAddToServerListContextMenuItem;
-	HANDLE hReadProfileMenuItem;
-	HANDLE hBlockContextMenuItem;
-	HANDLE hMainMenu[3];
+	HGENMENU hMenuRoot;
+	HGENMENU hHTMLAwayContextMenuItem;
+	HGENMENU hAddToServerListContextMenuItem;
+	HGENMENU hReadProfileMenuItem;
+	HGENMENU hBlockContextMenuItem;
+	HGENMENU hMainMenu[3];
 
 	//Some mail connection stuff
 	HANDLE hMailConn;
@@ -395,8 +395,10 @@ struct CAimProto : public PROTO_INTERFACE
 	//////////////////////////////////////////////////////////////////////////////////////
 	// themes.cpp
 
-	void   InitMenus(void);
-	void   RemoveMenus(void);
+	void   InitMainMenus(void);
+	void   InitContactMenus(void);
+	void   RemoveMainMenus(void);
+	void   RemoveContactMenus(void);
 
 	//////////////////////////////////////////////////////////////////////////////////////
 	// thread.cpp

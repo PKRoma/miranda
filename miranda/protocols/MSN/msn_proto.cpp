@@ -188,7 +188,8 @@ CMsnProto::CMsnProto(const char* aProtoName, const TCHAR* aUserName) :
 
 CMsnProto::~CMsnProto()
 {
-	MsnUninitMenus();
+	MsnRemoveMainMenus();
+	MsnRemoveContactMenus();
 
 	DestroyHookableEvent(hMSNNudge);
 
@@ -245,7 +246,8 @@ int CMsnProto::OnModulesLoaded(WPARAM, LPARAM)
 		HookProtoEvent(szEvent, &CMsnProto::MSN_ChatInit);
 	}
 
-	HookProtoEvent(ME_IDLE_CHANGED,              &CMsnProto::OnIdleChanged);
+	HookProtoEvent(ME_IDLE_CHANGED, &CMsnProto::OnIdleChanged);
+	MsnInitContactMenu();
 
 	return 0;
 }
@@ -1241,7 +1243,7 @@ int __cdecl CMsnProto::OnEvent(PROTOEVENTTYPE eventType, WPARAM wParam, LPARAM l
 		return OnOptionsInit(wParam, lParam);
 
 	case EV_PROTO_ONMENU:
-		MsnInitMenus();
+		MsnInitMainMenu();
 		break;
 
 	case EV_PROTO_ONERASE:

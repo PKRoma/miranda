@@ -112,7 +112,7 @@ int CMsnProto::Lists_Add(int list, int netId, const char* email, HANDLE hContact
 		p = new MsnContact;
 		p->list = list;
 		p->netId = netId;
-		p->email = mir_strdup(email);
+		p->email = _strlwr(mir_strdup(email));
 		p->invite = mir_strdup(invite);
 		p->hContact = hContact;
 		p->p2pMsgId = 0;

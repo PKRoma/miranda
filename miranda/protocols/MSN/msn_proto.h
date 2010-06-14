@@ -254,14 +254,16 @@ struct CMsnProto : public PROTO_INTERFACE
 	/////////////////////////////////////////////////////////////////////////////////////////
 	// MSN menus
 
-	HANDLE mainMenuRoot;
-	HANDLE hBlockMenuItem;
-	HANDLE hOpenInboxMenuItem;
-	HANDLE menuItems[1];
-	HANDLE menuItemsAll[7];
+	HGENMENU mainMenuRoot;
+	HGENMENU hBlockMenuItem;
+	HGENMENU hOpenInboxMenuItem;
+	HGENMENU menuItems[1];
+	HGENMENU menuItemsAll[7];
 
-	void MsnInitMenus(void);
-	void MsnUninitMenus(void);
+	void MsnInitMainMenu(void);
+	void MsnInitContactMenu(void);
+	void MsnRemoveMainMenus(void);
+	void MsnRemoveContactMenus(void);
 	void MSN_EnableMenuItems(bool parEnable);
 	void MsnInvokeMyURL(bool ismail, const char* url);
 

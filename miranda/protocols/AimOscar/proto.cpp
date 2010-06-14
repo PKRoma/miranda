@@ -80,7 +80,8 @@ CAimProto::CAimProto(const char* aProtoName, const TCHAR* aUserName)
 
 CAimProto::~CAimProto()
 {
-	RemoveMenus();
+	RemoveMainMenus();
+	RemoveContactMenus();
 
 	if(hDirectBoundPort)
 		Netlib_CloseHandle(hDirectBoundPort);
@@ -132,6 +133,7 @@ int CAimProto::OnModulesLoaded(WPARAM wParam, LPARAM lParam)
 	HookProtoEvent(ME_MSG_WINDOWEVENT,          &CAimProto::OnWindowEvent);
 
 	chat_register();
+	InitContactMenus();
 
 	return 0;
 }
@@ -826,7 +828,7 @@ int __cdecl CAimProto::OnEvent(PROTOEVENTTYPE eventType, WPARAM wParam, LPARAM l
 //            return OnPreShutdown(0, 0);
 
 		case EV_PROTO_ONMENU:
-			InitMenus();
+			InitMainMenus();
 			break;
 
 		case EV_PROTO_ONOPTIONS: 

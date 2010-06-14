@@ -905,7 +905,7 @@ static INT_PTR CALLBACK options_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 
 				//PN
 				int port = GetDlgItemInt(hwndDlg, IDC_PN, NULL, FALSE);
-				if(port>0 && port != AIM_DEFAULT_PORT)
+				if(port > 0 && port != AIM_DEFAULT_PORT)
 					ppro->setWord(AIM_KEY_PN, (WORD)port);
 				else
 					ppro->deleteSetting(NULL, AIM_KEY_PN);

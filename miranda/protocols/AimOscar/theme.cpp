@@ -436,7 +436,7 @@ int CAimProto::OnPreBuildContactMenu(WPARAM wParam,LPARAM /*lParam*/)
 	return 0;
 }
 
-void CAimProto::InitMenus(void)
+void CAimProto::InitMainMenus(void)
 {
 	//Do not put any services below HTML get away message!!!
 	char service_name[200];
@@ -444,20 +444,25 @@ void CAimProto::InitMenus(void)
 	CLISTMENUITEM mi = {0};
 	mi.cbSize = sizeof(mi);
 
-	HANDLE hRoot = MO_GetProtoRootMenu(m_szModuleName);
+	HGENMENU hRoot = MO_GetProtoRootMenu(m_szModuleName);
 	if (hRoot == NULL)
 	{
 		mi.flags = CMIF_ROOTPOPUP | CMIF_ICONFROMICOLIB | CMIF_TCHAR | CMIF_KEEPUNTRANSLATED;
 		mi.icolibItem = GetIconHandle("aim");
 		mi.ptszName = m_tszUserName;
-		mi.pszPopupName = (char *)-1;
+		mi.hParentMenu = HGENMENU_ROOT;
 		mi.popupPosition = 500090000;
 		mi.position = 500090000;
-		hRoot = hMenuRoot = (HANDLE)CallService(MS_CLIST_ADDPROTOMENUITEM,  (WPARAM)0, (LPARAM)&mi);
+		hRoot = hMenuRoot = (HGENMENU)CallService(MS_CLIST_ADDPROTOMENUITEM,  (WPARAM)0, (LPARAM)&mi);
+	}
+	else
+	{
+		RemoveMainMenus();
+		hMenuRoot = NULL;
 	}
 
 	mi.pszService = service_name;
-	mi.pszPopupName = (char *)hRoot;
+	mi.hParentMenu = hRoot;
 	mi.flags = CMIF_ICONFROMICOLIB | CMIF_CHILDPOPUP;
 
 	mir_snprintf(service_name, sizeof(service_name), "%s%s", m_szModuleName, "/ManageAccount");
@@ -465,25 +470,32 @@ void CAimProto::InitMenus(void)
 	mi.position = 201001;
 	mi.icolibItem = GetIconHandle("aim");
 	mi.pszName = LPGEN("Manage Account");
-	hMainMenu[0] = (HANDLE)CallService(MS_CLIST_ADDPROTOMENUITEM, 0, (LPARAM)&mi);
+	hMainMenu[0] = (HGENMENU)CallService(MS_CLIST_ADDPROTOMENUITEM, 0, (LPARAM)&mi);
 
 	mir_snprintf(service_name, sizeof(service_name), "%s%s", m_szModuleName, "/InstantIdle");
 	CreateProtoService("/InstantIdle",&CAimProto::InstantIdle);
 	mi.position = 201002;
 	mi.icolibItem = GetIconHandle("idle");
 	mi.pszName = LPGEN("Instant Idle");
-	hMainMenu[1] = (HANDLE)CallService(MS_CLIST_ADDPROTOMENUITEM, 0, (LPARAM)&mi);
+	hMainMenu[1] = (HGENMENU)CallService(MS_CLIST_ADDPROTOMENUITEM, 0, (LPARAM)&mi);
 
 	mir_snprintf(service_name, sizeof(service_name), "%s%s", m_szModuleName, "/JoinChatRoom");
 	CreateProtoService("/JoinChatRoom", &CAimProto::JoinChatUI);
 	mi.position = 201003;
 	mi.icolibItem = GetIconHandle("aol");
 	mi.pszName = LPGEN( "Join Chat Room" );
-	hMainMenu[2] = (HANDLE)CallService(MS_CLIST_ADDPROTOMENUITEM, 0, (LPARAM)&mi);
+	hMainMenu[2] = (HGENMENU)CallService(MS_CLIST_ADDPROTOMENUITEM, 0, (LPARAM)&mi);
+}
 
+void CAimProto::InitContactMenus(void)
+{
+	//Do not put any services below HTML get away message!!!
+	char service_name[200];
+
+	CLISTMENUITEM mi = {0};
+	mi.cbSize = sizeof(mi);
+	mi.pszService = service_name;
 	mi.pszContactOwner = m_szModuleName;
-	mi.pszPopupName = NULL;
-	mi.popupPosition = 0;
 
 	mir_snprintf(service_name, sizeof(service_name), "%s%s", m_szModuleName, "/GetHTMLAwayMsg");
 	CreateProtoService("/GetHTMLAwayMsg",&CAimProto::GetHTMLAwayMsg);
@@ -491,7 +503,7 @@ void CAimProto::InitMenus(void)
 	mi.icolibItem = GetIconHandle("away");
 	mi.pszName = LPGEN("Read &HTML Away Message");
 	mi.flags = CMIF_NOTOFFLINE | CMIF_HIDDEN | CMIF_ICONFROMICOLIB;
-	hHTMLAwayContextMenuItem = (HANDLE)CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM)&mi);
+	hHTMLAwayContextMenuItem = (HGENMENU)CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM)&mi);
 
 	mir_snprintf(service_name, sizeof(service_name), "%s%s", m_szModuleName, "/GetProfile");
 	CreateProtoService("/GetProfile", &CAimProto::GetProfile);
@@ -499,7 +511,7 @@ void CAimProto::InitMenus(void)
 	mi.icolibItem = GetIconHandle("profile");
 	mi.pszName = LPGEN("Read Profile");
 	mi.flags = CMIF_NOTOFFLINE | CMIF_ICONFROMICOLIB;
-	hReadProfileMenuItem = (HANDLE)CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM)&mi);
+	hReadProfileMenuItem = (HGENMENU)CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM)&mi);
 
 	mir_snprintf(service_name, sizeof(service_name), "%s%s", m_szModuleName, "/AddToServerList");
 	CreateProtoService("/AddToServerList", &CAimProto::AddToServerList); 
@@ -507,7 +519,7 @@ void CAimProto::InitMenus(void)
 	mi.icolibItem = GetIconHandle("add");
 	mi.pszName = LPGEN("Add To Server List");
 	mi.flags = CMIF_NOTONLINE | CMIF_HIDDEN | CMIF_ICONFROMICOLIB;
-	hAddToServerListContextMenuItem = (HANDLE)CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM)&mi);
+	hAddToServerListContextMenuItem = (HGENMENU)CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM)&mi);
 
 	mir_snprintf(service_name, sizeof(service_name), "%s%s", m_szModuleName, "/BlockCommand");
 	CreateProtoService("/BlockCommand", &CAimProto::BlockBuddy);
@@ -515,17 +527,20 @@ void CAimProto::InitMenus(void)
 	mi.icolibItem = GetIconHandle("block");
 	mi.pszName = LPGEN("&Block");
 	mi.flags = CMIF_ICONFROMICOLIB | CMIF_HIDDEN;
-	hBlockContextMenuItem = (HANDLE)CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM)&mi);
+	hBlockContextMenuItem = (HGENMENU)CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM)&mi);
 }
 
-void CAimProto::RemoveMenus(void)
+void CAimProto::RemoveMainMenus(void)
 {
 	for (unsigned i=0; i<4; ++i)
 		CallService(MS_CLIST_REMOVEMAINMENUITEM, (WPARAM)hMainMenu[i], 0);
 	
 	if (hMenuRoot)
 		CallService(MS_CLIST_REMOVEMAINMENUITEM, (WPARAM)hMenuRoot, 0);
+}
 
+void CAimProto::RemoveContactMenus(void)
+{
 	CallService(MS_CLIST_REMOVECONTACTMENUITEM, (WPARAM)hHTMLAwayContextMenuItem, 0);
 	CallService(MS_CLIST_REMOVECONTACTMENUITEM, (WPARAM)hReadProfileMenuItem, 0);
 	CallService(MS_CLIST_REMOVECONTACTMENUITEM, (WPARAM)hAddToServerListContextMenuItem, 0);
