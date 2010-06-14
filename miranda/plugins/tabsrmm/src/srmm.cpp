@@ -132,6 +132,7 @@ extern "C" int __declspec(dllexport) Unload(void)
 	Chat_Unload();
 	int iRet = SplitmsgShutdown();
 	Skin->setupTabCloseBitmap(true);
+	Skin->UnloadAeroTabs();
 	delete Skin;
 	delete sendLater;
 	delete sendQueue;

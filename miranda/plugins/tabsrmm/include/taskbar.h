@@ -31,6 +31,8 @@
  * - Windows 7 taskbar integration class
  * - Proxy window class, needed to support custom aero peek tab
  *   thumbnails
+ * - Thumbnail classes to provide task bar thumbnails for Aero peek
+ *   preview.
  */
 
 #ifndef __TASKBAR_H
@@ -46,10 +48,10 @@ public:
 	CThumbBase				(const CProxyWindow* pWnd);
 	virtual ~CThumbBase		();
 
-	const HBITMAP			getHBM() const { return(m_hbmThumb); }
-	const bool				isValid() const { return(m_isValid); }
-	virtual void			setValid(const bool fNewValid) { m_isValid = fNewValid; }
-	virtual void			update() = 0;
+	const HBITMAP			getHBM				() const { return(m_hbmThumb); }
+	const bool				isValid				() const { return(m_isValid); }
+	virtual void			setValid			(const bool fNewValid) { m_isValid = fNewValid; }
+	virtual void			update				() = 0;
 
 protected:
 	HBITMAP					m_hbmThumb, m_hbmOld;
@@ -63,10 +65,10 @@ protected:
 	LONG					m_cx, m_cy;
 	HFONT					m_hOldFont;
 
-	virtual void			renderBase();
+	virtual void			renderBase			();
 
 private:
-	virtual void			renderContent() = 0;
+	virtual void			renderContent		() = 0;
 
 private:
 	bool					m_isValid;
@@ -77,10 +79,10 @@ class CThumbIM : public CThumbBase {
 public:
 	CThumbIM				(const CProxyWindow* pWnd);
 	virtual ~CThumbIM		() {};
-	void					update();
+	void					update				();
 
 private:
-	void					renderContent();
+	void					renderContent		();
 };
 
 class CThumbMUC : public CThumbBase {
@@ -88,10 +90,10 @@ class CThumbMUC : public CThumbBase {
 public:
 	CThumbMUC				(const CProxyWindow* pWnd);
 	virtual ~CThumbMUC		() {};
-	void					update();
+	void					update				();
 
 private:
-	void					renderContent();
+	void					renderContent		();
 };
 
 class CProxyWindow
@@ -100,29 +102,31 @@ public:
 	CProxyWindow(const TWindowData *dat);
 	~CProxyWindow();
 
-	void					updateIcon(const HICON hIcon) const;
-	void					updateTitle(const TCHAR *tszTitle) const;
-	void					setBigIcon(const HICON hIcon, bool fInvalidate = true);
-	void					activateTab() const;
-	void					Invalidate() const;
-	const TWindowData*		getDat() const { return(m_dat); }
-	const LONG				getWidth() const { return(m_width); }
-	const LONG				getHeight() const { return(m_height); }
-	const HWND				getHwnd() const { return(m_hwnd); }
-	const HICON				getBigIcon() const { return(m_hBigIcon); }
+	void					updateIcon			(const HICON hIcon) const;
+	void					updateTitle			(const TCHAR *tszTitle) const;
+	void					setBigIcon			(const HICON hIcon, bool fInvalidate = true);
+	void					activateTab			() const;
+	void					Invalidate			() const;
+	const TWindowData*		getDat				() const { return(m_dat); }
+	const LONG				getWidth			() const { return(m_width); }
+	const LONG				getHeight			() const { return(m_height); }
+	const HWND				getHwnd				() const { return(m_hwnd); }
+	const HICON				getBigIcon			() const { return(m_hBigIcon); }
+	void					verifyDwmState		();
 
-	static	LRESULT CALLBACK stubWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
-	static	void			add(TWindowData *dat);
-	static 	void			verify(TWindowData *dat);
+	static	LRESULT CALLBACK stubWndProc		(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+	static	void			add					(TWindowData *dat);
+	static 	void			verify				(TWindowData *dat);
 
 private:
 	const TWindowData*		m_dat;
 	HWND					m_hwnd;
 	LONG					m_width, m_height;
 	HICON					m_hBigIcon;
-	LRESULT CALLBACK		wndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
-	void 					sendThumb(LONG width, LONG height);
-	void					sendPreview();
+
+	LRESULT CALLBACK		wndProc				(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+	void 					sendThumb			(LONG width, LONG height);
+	void					sendPreview			();
 	CThumbBase*				m_thumb;
 };
 

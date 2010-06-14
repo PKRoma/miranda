@@ -24,7 +24,7 @@
  *
  * part of tabSRMM messaging plugin for Miranda.
  *
- * (C) 2005-2009 by silvercircle _at_ gmail _dot_ com and contributors
+ * (C) 2005-2010 by silvercircle _at_ gmail _dot_ com and contributors
  *
  * $Id$
  *
@@ -260,7 +260,7 @@ public:
 	void			Init(bool fStartup = false);
 	void			Load();
 	void			Unload();
-	void			UnloadTabs();
+	void			UnloadAeroTabs();
 	void			setFileName();
 	void			ReadItem(const int id, const TCHAR *section);
 	void			LoadItems();
@@ -302,7 +302,7 @@ public:
 	static UINT TSAPI		DrawRichEditFrame(HWND hwnd, const TWindowData *mwdat, UINT skinID, UINT msg, WPARAM wParam, LPARAM lParam, WNDPROC OldWndProc);
 	static UINT TSAPI		NcCalcRichEditFrame(HWND hwnd, const TWindowData *mwdat, UINT skinID, UINT msg, WPARAM wParam, LPARAM lParam, WNDPROC OldWndProc);
 	static HBITMAP TSAPI 	CreateAeroCompatibleBitmap(const RECT &rc, HDC dc);
-	static int TSAPI		RenderText(HDC hdc, HANDLE hTheme, const TCHAR *szText, RECT *rc, DWORD dtFlags, const int iGlowSize = DEFAULT_GLOW_SIZE, COLORREF clr = 0);
+	static int TSAPI		RenderText(HDC hdc, HANDLE hTheme, const TCHAR *szText, RECT *rc, DWORD dtFlags, const int iGlowSize = DEFAULT_GLOW_SIZE, COLORREF clr = 0, bool fForceAero = false);
 	static void TSAPI		MapClientToParent(HWND hwndClient, HWND hwndParent, RECT &rc);
 	static void TSAPI		RenderToolbarBG(const TWindowData *dat, HDC hdc, const RECT &rcWindow);
 	static HBITMAP TSAPI	ResizeBitmap(HBITMAP hBmpSrc, LONG width, LONG height, bool &mustFree);

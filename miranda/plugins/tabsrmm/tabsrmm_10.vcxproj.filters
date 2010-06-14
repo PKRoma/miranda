@@ -678,5 +678,6 @@
     <None Include="chat\Icons\window.ico">
       <Filter>Resource Files\Icons</Filter>
     </None>
+    <None Include="res\SKIN\unknown.png" />
   </ItemGroup>
 </Project>

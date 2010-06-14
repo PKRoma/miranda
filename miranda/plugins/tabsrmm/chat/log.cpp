@@ -800,14 +800,6 @@ static char* Log_CreateRTF(LOGSTREAMDATA *streamData)
 			if (lin->next != NULL)
 				Log_Append(&buffer, &bufferEnd, &bufferAlloced, "\\par ");
 
-			/* TODO IEView support
-			if (streamData->dat->hwndIEView != 0 || streamData->dat->hwndHPP != 0) {
-				LogEventIEView(streamData, lin->ptszNick);
-				streamData->lin = lin;
-				lin = lin->prev;
-				continue;
-			}
-			*/
 			if (streamData->dat->dwFlags & MWF_DIVIDERWANTED || lin->dwFlags & MWF_DIVIDERWANTED) {
 				static char szStyle_div[128] = "\0";
 				if (szStyle_div[0] == 0)

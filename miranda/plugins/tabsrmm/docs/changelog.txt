@@ -35,6 +35,21 @@ are currently no downloads for it, you'll have to compile it from source.
 			Detailed change log
 			===================
 
+Version 3.0.0.36 - 2010/06/04
+
+	* task bar support (Win 7), removed check for running DWM. Task bar tabs should
+	  now work with classic and non-aero themes in Windows 7 (no thumbnails, though,
+	  because they require Aero to be active).
+	  
+	* renamed misleading option for task bar support as it implied to require an Aero
+	  theme (which is not the case).
+	
+	* another tool bar rendering fix - don't use gradients for the tool bar background
+	  at all with classic Windows theme, unless both tool bar background colors are 
+	  properly set.
+
+	* Aero peek (task bar tabs) now default to enabled.
+
 Version 3.0.0.35 - 2010/05/29
 
 	* taskbar thumbnails (Win7): better support for MUC tabs, set active session

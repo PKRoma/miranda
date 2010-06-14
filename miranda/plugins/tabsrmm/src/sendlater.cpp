@@ -736,7 +736,7 @@ void CSendLater::qMgrSetupColumns()
 		sscanf(szColDefault, szColFormat, &nWidths[0], &nWidths[1], &nWidths[2], &nWidths[3], &nWidths[4]);
 
 	col.mask = LVCF_TEXT|LVCF_WIDTH|LVCF_SUBITEM;
-	col.cx = max(nWidths[0], 10);      // width TODO save/restore user-defined values
+	col.cx = max(nWidths[0], 10);
 	col.pszText = const_cast<TCHAR *>(CTranslator::get(CTranslator::GEN_CONTACT));
 
 	::SendMessage(m_hwndList, LVM_INSERTCOLUMN, 0, reinterpret_cast<LPARAM>(&col));

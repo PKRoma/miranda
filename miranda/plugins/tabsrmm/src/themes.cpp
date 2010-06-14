@@ -160,7 +160,7 @@ AeroEffect  CSkin::m_aeroEffects[AERO_EFFECT_LAST] = {
 		0,
 		CORNER_ALL,
 		GRADIENT_TB + 1,
-		8,
+		6,
 		0,
 		0x0,
 		0xf0f0f0,
@@ -1127,13 +1127,11 @@ bool CSkin::warnToClose() const
 }
 
 /**
- * Unload the skin. Free everything allocated.
- * Called when:
- * * user unloads the skin from the dialog box
- * * a new skin is loaded by user's request.
+ * free the aero tab bitmaps
+ * only called on exit, NOT when a skin is unloaded as these elements
+ * are always needed (even without a skin)
  */
-
-void CSkin::UnloadTabs()
+void CSkin::UnloadAeroTabs()
 {
 	if(m_tabTop) {
 		delete m_tabTop;
@@ -1160,6 +1158,13 @@ void CSkin::UnloadTabs()
 		m_switchBarItem = NULL;
 	}
 }
+
+/**
+ * Unload the skin. Free everything allocated.
+ * Called when:
+ * * user unloads the skin from the dialog box
+ * * a new skin is loaded by user's request.
+ */
 
 void CSkin::Unload()
 {
@@ -1221,8 +1226,6 @@ void CSkin::Unload()
 	m_ContainerColorKey = 0;
 	m_ContainerColorKeyBrush = m_MenuBGBrush = 0;
 	m_skinEnabled = m_frameSkins = false;
-
-	UnloadTabs();
 
 	if(m_closeIcon)
 		::DestroyIcon(m_closeIcon);
@@ -1402,7 +1405,7 @@ void CSkin::ReadImageItem(const TCHAR *itemname)
 		delete szImageFileName;
 }
 
-/* 				DISABLED TODO (fix it)
+/* 				DISABLED code
 
 void CSkin::ReadButtonItem(const TCHAR *itemName) const
 {
@@ -1953,7 +1956,7 @@ void CSkin::setupAeroSkins()
 	TCHAR	tszFilename[MAX_PATH], tszBasePath[MAX_PATH];
 
 	M->getAeroState();
-	UnloadTabs();
+	UnloadAeroTabs();
 
 	BOOL	isOpaque;
 	HBITMAP hbm;
@@ -2099,9 +2102,6 @@ void CSkin::setupAeroSkins()
 
 	m_tabGlowBottom->setAlphaFormat(AC_SRC_ALPHA, 255);
 	m_tabGlowBottom->setMetrics(bm.bmWidth, bm.bmHeight);
-
-	if(m_switchBarItem)
-		delete m_switchBarItem;
 
 	/*
 	 * background item for the button switch bar
@@ -2407,14 +2407,13 @@ DWORD __fastcall CSkin::HexStringToLong(const TCHAR *szSource)
  * @return
  */
 
-int CSkin::RenderText(HDC hdc, HANDLE hTheme, const TCHAR *szText, RECT *rc, DWORD dtFlags, const int iGlowSize, COLORREF clr)
+int CSkin::RenderText(HDC hdc, HANDLE hTheme, const TCHAR *szText, RECT *rc, DWORD dtFlags, const int iGlowSize, COLORREF clr, bool fForceAero)
 {
 #if defined(_UNICODE)
-	if(PluginConfig.m_bIsVista && !CSkin::m_skinEnabled && hTheme) {
+	if((PluginConfig.m_bIsVista && !CSkin::m_skinEnabled && hTheme) || fForceAero) {
 		DTTOPTS dto = {0};
 		dto.dwSize = sizeof(dto);
-		if(iGlowSize && (M->isAero() || dtFlags & 0x80000000)) {
-			dtFlags &= 0x7fffffff;
+		if(iGlowSize && (M->isAero() || fForceAero)) {
 			dto.iGlowSize = iGlowSize;
 			dto.dwFlags = DTT_COMPOSITED|DTT_GLOWSIZE;
 		}
@@ -2629,9 +2628,9 @@ void CSkin::RenderToolbarBG(const TWindowData *dat, HDC hdc, const RECT &rcWindo
 		else {
 			dat->pContainer->bTBRenderingMode = (M->isVSThemed() ? 1 : 0);
 			m_tmp_tb_high = PluginConfig.m_tbBackgroundHigh ? PluginConfig.m_tbBackgroundHigh :
-					(m_pCurrentAeroEffect ? m_pCurrentAeroEffect->m_clrToolbar : ::GetSysColor(COLOR_3DFACE));
+					((fAero && m_pCurrentAeroEffect) ? m_pCurrentAeroEffect->m_clrToolbar : ::GetSysColor(COLOR_3DFACE));
 			m_tmp_tb_low = PluginConfig.m_tbBackgroundLow ? PluginConfig.m_tbBackgroundLow :
-					(m_pCurrentAeroEffect ? m_pCurrentAeroEffect->m_clrToolbar2 : ::GetSysColor(COLOR_3DFACE));
+					((fAero && m_pCurrentAeroEffect) ? m_pCurrentAeroEffect->m_clrToolbar2 : ::GetSysColor(COLOR_3DFACE));
 
 			bAlphaOffset = PluginConfig.m_tbBackgroundHigh ? 40 : 0;
 			::DrawAlpha(dat->pContainer->cachedToolbarDC, &rcCachedToolbar, m_tmp_tb_high, 55 + bAlphaOffset, m_tmp_tb_low, 0, 9, 0, 0, 0);

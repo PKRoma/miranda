@@ -3808,10 +3808,6 @@ quote_from_last:
 						 * the hwndOwner is set to 0 because the window handle is now no longer valid.
 						 * Response for such a job is still silently handled by AckMessage() (sendqueue.c)
 						 */
-						/* TODO
-						 * User may receive NO feedback for sending errors after the session window
-						 * had been closed, since such jobs will be silently discarded.
-						 */
 						if (jobs[i].iStatus == (unsigned)SendQueue::SQ_INPROGRESS)
 							jobs[i].hwndOwner = 0;
 					}

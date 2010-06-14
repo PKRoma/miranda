@@ -34,7 +34,6 @@
  * - custom taskbar thumbnails for aero peek in tabbed containers
  * - read Windows 7 task bar configuration from the registry.
  */
-
 /**
  * how it works:
  *
@@ -101,6 +100,9 @@ bool CTaskbarInteract::haveLargeIcons()
 			::RegQueryValueEx(hKey, _T("TaskbarSmallIcons"), 0, &dwType, (LPBYTE)&val, &size);
 			size = 4;
 			dwType = REG_DWORD;
+			/*
+			 * this is the "grouping mode" setting for the task bar. 0 = always combine, no labels
+			 */
 			::RegQueryValueEx(hKey, _T("TaskbarGlomLevel"), 0, &dwType, (LPBYTE)&valGrouping, &size);
 			::RegCloseKey(hKey);
 		}
@@ -174,11 +176,12 @@ void CTaskbarInteract::SetTabActive(const HWND hwndTab, const HWND hwndGroup) co
  * per session and not outside of WM_INITDIALOG after most things are initialized.
  * @param dat		session window data
  *
- * static member function
+ * static member function. Ignored when OS is not Windows 7 or global option for
+ * Windows 7 task bar support is diabled.
  */
 void CProxyWindow::add(TWindowData *dat)
 {
-	if(IsWinVer7Plus() && PluginConfig.m_useAeroPeek && M->isDwmActive())
+	if(PluginConfig.m_bIsWin7 && PluginConfig.m_useAeroPeek)
 		dat->pWnd = new CProxyWindow(dat);
 	else
 		dat->pWnd = 0;
@@ -194,7 +197,7 @@ void CProxyWindow::add(TWindowData *dat)
  */
 void CProxyWindow::verify(TWindowData *dat)
 {
-	if(M->isDwmActive()) {
+	if(PluginConfig.m_bIsWin7) {
 		if(0 == dat->pWnd) {
 			dat->pWnd = new CProxyWindow(dat);
 			if(dat->pWnd) {
@@ -202,7 +205,12 @@ void CProxyWindow::verify(TWindowData *dat)
 				dat->pWnd->updateTitle(dat->cache->getNick());
 			}
 		}
+		else
+			dat->pWnd->verifyDwmState();
 	}
+	/*
+	 * this should not happens, but who knows...
+	 */
 	else {
 		if(dat->pWnd) {
 			delete dat->pWnd;
@@ -250,6 +258,27 @@ CProxyWindow::~CProxyWindow()
 	if(m_thumb) {
 		delete m_thumb;
 		m_thumb = 0;
+	}
+}
+
+/**
+ * verify status of DWM when system broadcasts a WM_DWMCOMPOSITIONCHANGED message
+ * delete thumbnails, if no longer needed
+ */
+void CProxyWindow::verifyDwmState()
+{
+	if(!M->isDwmActive()) {
+		if(m_thumb) {
+			delete m_thumb;
+			m_thumb = 0;
+		}
+	}
+	else {
+		/*
+		 * force thumbnail recreation
+		 */
+		m_width = 0;
+		m_height = 0;
 	}
 }
 
@@ -302,7 +331,7 @@ void CProxyWindow::sendPreview()
 		 * a minimized container has a null rect as client area, so do not use it
 		 * use the last known client area size instead.
 		 */
-		if(!IsIconic(m_dat->pContainer->hwnd))
+		if(!::IsIconic(m_dat->pContainer->hwnd))
 			::GetClientRect(m_dat->pContainer->hwnd, &rcContainer);
 		else
 			rcContainer = m_dat->pContainer->rcSaved;
@@ -449,9 +478,11 @@ LRESULT CALLBACK CProxyWindow::wndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
 			 * to the real message window.
 			 */
 		case WM_ACTIVATE:
-			::SendMessage(m_dat->hwnd, DM_ACTIVATEME, 0, 0);
-			::SetFocus(m_dat->hwnd);
-			return(0);			// no default processing, avoid flickering.
+			if(WA_ACTIVE == wParam) {
+				::PostMessage(m_dat->hwnd, DM_ACTIVATEME, 0, 0);
+				return(0);			// no default processing, avoid flickering.
+			}
+			break;
 
 		case WM_NCDESTROY:
 			::SetWindowLongPtr(hWnd, GWLP_USERDATA, 0);
@@ -542,9 +573,6 @@ void CThumbBase::renderBase()
 	m_hOldFont = reinterpret_cast<HFONT>(::SelectObject(m_hdc, CInfoPanel::m_ipConfig.hFonts[IPFONTID_STATUS]));
 	::GetTextExtentPoint32A(m_hdc, "A", 1, &m_sz);
 
-	if(CSkin::m_pCurrentAeroEffect)
-		m_dtFlags |= (CSkin::m_pCurrentAeroEffect->m_glowSize ? 0x80000000 : 0);
-
 	InflateRect(&m_rc, -3, -3);
 
 	m_rcTop = m_rc;
@@ -577,13 +605,13 @@ void CThumbBase::renderBase()
 	::DrawIconEx(m_hdc, m_rcIcon.right / 2 - lIconSize / 2, m_rcIcon.top, hIcon, lIconSize, lIconSize, 0, 0, DI_NORMAL);
 
 	m_rcIcon.top += (lIconSize + 3);
-	CSkin::RenderText(m_hdc, m_dat->hThemeToolbar, m_dat->szStatus, &m_rcIcon, m_dtFlags | DT_CENTER | DT_WORD_ELLIPSIS, 10);
+	CSkin::RenderText(m_hdc, m_dat->hTheme, m_dat->szStatus, &m_rcIcon, m_dtFlags | DT_CENTER | DT_WORD_ELLIPSIS, 10, 0, true);
 	if(m_dat->dwUnread) {
 		TCHAR	tszTemp[30];
 
 		m_rcIcon.top += m_sz.cy;
-		mir_sntprintf(tszTemp, 30, _T("%d Unread"), m_dat->dwUnread);
-		CSkin::RenderText(m_hdc, m_dat->hThemeToolbar, tszTemp, &m_rcIcon, m_dtFlags | DT_CENTER | DT_WORD_ELLIPSIS, 10);
+		mir_sntprintf(tszTemp, 30, CTranslator::get(CTranslator::GEN_TASKBAR_STRING_UNREAD), m_dat->dwUnread);
+		CSkin::RenderText(m_hdc, m_dat->hTheme, tszTemp, &m_rcIcon, m_dtFlags | DT_CENTER | DT_WORD_ELLIPSIS, 10, 0, true);
 	}
 	m_rcIcon= m_rcTop;
 	m_rcIcon.top += 2;
@@ -679,11 +707,11 @@ void CThumbIM::renderContent()
 	if(0 == (tszStatusMsg = m_dat->cache->getStatusMsg()))
 			tszStatusMsg = CTranslator::get(CTranslator::GEN_NO_STATUS);
 
-	CSkin::RenderText(m_hdc, m_dat->hThemeToolbar, tszStatusMsg, &m_rcBottom, DT_WORD_ELLIPSIS | DT_END_ELLIPSIS | m_dtFlags, 10);
+	CSkin::RenderText(m_hdc, m_dat->hTheme, tszStatusMsg, &m_rcBottom, DT_WORD_ELLIPSIS | DT_END_ELLIPSIS | m_dtFlags, 10, 0, true);
 	m_rcBottom.bottom = m_rc.bottom;
 	m_rcBottom.top = m_rcBottom.bottom - m_sz.cy - 2;
-	CSkin::RenderText(m_hdc, m_dat->hThemeToolbar, Win7Taskbar->haveAlwaysGroupingMode() ? m_dat->cache->getUIN() : m_dat->cache->getNick(),
-					  &m_rcBottom, m_dtFlags | DT_SINGLELINE | DT_WORD_ELLIPSIS | DT_END_ELLIPSIS, 10);
+	CSkin::RenderText(m_hdc, m_dat->hTheme, Win7Taskbar->haveAlwaysGroupingMode() ? m_dat->cache->getUIN() : m_dat->cache->getNick(),
+					  &m_rcBottom, m_dtFlags | DT_SINGLELINE | DT_WORD_ELLIPSIS | DT_END_ELLIPSIS, 10, 0, true);
 
 	if(m_hOldFont)
 		::SelectObject(m_hdc, m_hOldFont);
@@ -720,9 +748,9 @@ void CThumbMUC::update()
 void CThumbMUC::renderContent()
 {
 	if(m_dat->si) {
-		MODULEINFO*		mi = MM_FindModule(m_dat->si->pszModule);
-		TCHAR			tszTemp[250];
-		const TCHAR*	tszStatusMsg = 0;
+		const MODULEINFO*	mi = MM_FindModule(m_dat->si->pszModule);
+		TCHAR				tszTemp[250];
+		const TCHAR*		tszStatusMsg = 0;
 
 		if(mi) {
 			if(m_dat->si->iType != GCW_SERVER) {
@@ -738,17 +766,17 @@ void CThumbMUC::renderContent()
 				}
 				else
 					mir_sntprintf(tszTemp, SIZEOF(tszTemp), CTranslator::get(CTranslator::GEN_TASKBAR_STRING_CHAT_ROOM), _T(""));
-				CSkin::RenderText(m_hdc, m_dat->hThemeToolbar, tszTemp, &m_rcIcon, m_dtFlags | DT_SINGLELINE | DT_RIGHT, 10);
+				CSkin::RenderText(m_hdc, m_dat->hTheme, tszTemp, &m_rcIcon, m_dtFlags | DT_SINGLELINE | DT_RIGHT, 10, 0, true);
 				m_rcIcon.top += m_sz.cy;
-				mir_sntprintf(tszTemp, SIZEOF(tszTemp), _T("%d users"), m_dat->si->nUsersInNicklist);
-				CSkin::RenderText(m_hdc, m_dat->hThemeToolbar, tszTemp, &m_rcIcon, m_dtFlags | DT_SINGLELINE | DT_RIGHT, 10);
+				mir_sntprintf(tszTemp, SIZEOF(tszTemp), CTranslator::get(CTranslator::GEN_TASKBAR_STRING_USERS), m_dat->si->nUsersInNicklist);
+				CSkin::RenderText(m_hdc, m_dat->hTheme, tszTemp, &m_rcIcon, m_dtFlags | DT_SINGLELINE | DT_RIGHT, 10, 0, true);
 			}
 			else {
-				mir_sntprintf(tszTemp, SIZEOF(tszTemp), CTranslator::get(CTranslator::GEN_STRING_SERVER_WINDOW));
-				CSkin::RenderText(m_hdc, m_dat->hThemeToolbar, tszTemp, &m_rcIcon, m_dtFlags | DT_SINGLELINE | DT_RIGHT, 10);
+				mir_sntprintf(tszTemp, SIZEOF(tszTemp), CTranslator::get(CTranslator::GEN_TASKBAR_STRING_SERVER_WINDOW));
+				CSkin::RenderText(m_hdc, m_dat->hTheme, tszTemp, &m_rcIcon, m_dtFlags | DT_SINGLELINE | DT_RIGHT, 10, 0, true);
 				if(mi->tszIdleMsg[0] && _tcslen(mi->tszIdleMsg) > 2) {
 					m_rcIcon.top += m_sz.cy;
-					CSkin::RenderText(m_hdc, m_dat->hThemeToolbar, &mi->tszIdleMsg[2], &m_rcIcon, m_dtFlags | DT_SINGLELINE | DT_RIGHT, 10);
+					CSkin::RenderText(m_hdc, m_dat->hTheme, &mi->tszIdleMsg[2], &m_rcIcon, m_dtFlags | DT_SINGLELINE | DT_RIGHT, 10, 0, true);
 				}
 			}
 		}
@@ -767,7 +795,7 @@ void CThumbMUC::renderContent()
 			tszStatusMsg = tszTemp;
 		}
 
-		CSkin::RenderText(m_hdc, m_dat->hThemeToolbar, tszStatusMsg, &m_rcBottom, DT_WORD_ELLIPSIS | DT_END_ELLIPSIS | m_dtFlags, 10);
+		CSkin::RenderText(m_hdc, m_dat->hTheme, tszStatusMsg, &m_rcBottom, DT_WORD_ELLIPSIS | DT_END_ELLIPSIS | m_dtFlags, 10, 0, true);
 	}
 	/*
 	 * finalize it

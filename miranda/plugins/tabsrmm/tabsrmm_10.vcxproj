@@ -931,6 +931,7 @@
     <None Include="res\SKIN\tabskin_aero.png" />
     <None Include="res\SKIN\tabskin_aero_button.png" />
     <None Include="res\SKIN\tabskin_aero_glow.png" />
+    <None Include="res\SKIN\unknown.png" />
     <None Include="tabmodplus\icons\imgclose.ico" />
     <None Include="tabmodplus\icons\imgopen.ico" />
     <None Include="res\in.ico" />
