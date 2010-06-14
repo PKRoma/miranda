@@ -535,12 +535,12 @@ static INT_PTR CALLBACK GenMenuOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 		switch( hdr->idFrom ) {
 		case 0:
 			if (hdr->code == PSN_APPLY ) {
+				SaveTree(hwndDlg);
 				int iNewMenuValue = IsDlgButtonChecked(hwndDlg, IDC_RADIO1) ? 0 : 1;
 				if ( iNewMenuValue != dat->iInitMenuValue ) {
 					RebuildProtoMenus( iNewMenuValue );
 					dat->iInitMenuValue = iNewMenuValue;
 				}
-				SaveTree(hwndDlg);
 				RebuildCurrent(hwndDlg);
 			}
 			break;
