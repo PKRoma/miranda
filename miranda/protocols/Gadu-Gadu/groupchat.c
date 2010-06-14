@@ -68,7 +68,7 @@ int gg_gc_init(GGPROTO *gg)
 
 ////////////////////////////////////////////////////////////////////////////////
 // Groupchat menus initialization
-void gg_gc_menus_init(GGPROTO *gg)
+void gg_gc_menus_init(GGPROTO *gg, HGENMENU hRoot)
 {
 	if(gg->gc_enabled)
 	{
@@ -78,7 +78,7 @@ void gg_gc_menus_init(GGPROTO *gg)
 		ZeroMemory(&mi,sizeof(mi));
 		mi.cbSize = sizeof(mi);
 		mi.flags = CMIF_ICONFROMICOLIB | CMIF_ROOTHANDLE;
-		mi.hParentMenu = gg->hMenuRoot;
+		mi.hParentMenu = hRoot;
 
 		// Conferencing
 		mir_snprintf(service, sizeof(service), GGS_OPEN_CONF, GG_PROTO);

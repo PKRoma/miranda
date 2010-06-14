@@ -640,7 +640,7 @@ static INT_PTR gg_export_server(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
 
 //////////////////////////////////////////////////////////
 // Import menus and stuff
-void gg_import_init(GGPROTO *gg)
+void gg_import_init(GGPROTO *gg, HGENMENU hRoot)
 {
 	CLISTMENUITEM mi;
 	char service[64];
@@ -648,7 +648,7 @@ void gg_import_init(GGPROTO *gg)
 	ZeroMemory(&mi, sizeof(mi));
 	mi.cbSize = sizeof(mi);
 	mi.flags = CMIF_ICONFROMICOLIB | CMIF_ROOTHANDLE;
-	mi.hParentMenu = gg->hMenuRoot;
+	mi.hParentMenu = hRoot;
 
 	// Import from server item
 	mir_snprintf(service, sizeof(service), GGS_IMPORT_SERVER, GG_PROTO);

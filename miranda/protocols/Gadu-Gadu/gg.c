@@ -263,7 +263,8 @@ int gg_preshutdown(WPARAM wParam, LPARAM lParam)
 // Menus initialization
 void gg_menus_init(GGPROTO *gg)
 {
-	if (( gg->hMenuRoot = MO_GetProtoRootMenu(gg->proto.m_szModuleName)) == NULL )
+	HGENMENU hRoot = MO_GetProtoRootMenu(gg->proto.m_szModuleName);
+	if (hRoot == NULL)
 	{
 		CLISTMENUITEM mi = {0};
 		mi.cbSize = sizeof(mi);
@@ -273,11 +274,17 @@ void gg_menus_init(GGPROTO *gg)
 		mi.icolibItem = GetIconHandle(IDI_GG);
 		mi.ptszName = GG_PROTONAME;
 		mi.pszService = gg->proto.m_szModuleName;
-		gg->hMenuRoot = (HANDLE)CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM) &mi);
+		hRoot = gg->hMenuRoot = (HANDLE)CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM) &mi);
+	}
+	else
+	{
+		if (gg->hMenuRoot)
+			CallService(MS_CLIST_REMOVEMAINMENUITEM, (WPARAM)gg->hMenuRoot, 0);
+		gg->hMenuRoot = NULL;
 	}
 
-	gg_gc_menus_init(gg);
-	gg_import_init(gg);
+	gg_gc_menus_init(gg, hRoot);
+	gg_import_init(gg, hRoot);
 }
 
 //////////////////////////////////////////////////////////
@@ -330,22 +337,22 @@ int gg_event(PROTO_INTERFACE *proto, PROTOEVENTTYPE eventType, WPARAM wParam, LP
 			break;
 
 		case EV_PROTO_ONRENAME:
-		{
-			CLISTMENUITEM mi = {0};
+			if (gg->hMenuRoot)
+			{
+				CLISTMENUITEM mi = {0};
 
 #ifdef DEBUGMODE
-			gg_netlog(gg, "gg_event(EV_PROTO_ONRENAME): renaming account...");
+				gg_netlog(gg, "gg_event(EV_PROTO_ONRENAME): renaming account...");
 #endif
-			mir_free(gg->name);
-			gg->name = gg_t2a(gg->proto.m_tszUserName);
+				mir_free(gg->name);
+				gg->name = gg_t2a(gg->proto.m_tszUserName);
 
-			mi.cbSize = sizeof(mi);
-			mi.flags = CMIM_NAME | CMIF_TCHAR | CMIF_KEEPUNTRANSLATED;
-			mi.ptszName = GG_PROTONAME;
-			CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM)gg->hMenuRoot, (LPARAM)&mi);
-
+				mi.cbSize = sizeof(mi);
+				mi.flags = CMIM_NAME | CMIF_TCHAR | CMIF_KEEPUNTRANSLATED;
+				mi.ptszName = GG_PROTONAME;
+				CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM)gg->hMenuRoot, (LPARAM)&mi);
+			}
 			break;
-		}
 	}
 	return TRUE;
 }
@@ -432,7 +439,9 @@ static int gg_proto_uninit(PROTO_INTERFACE *proto)
 	gg_gc_destroy(gg);
 	gg_import_shutdown(gg);
 	gg_links_instance_destroy(gg);
-	CallService(MS_CLIST_REMOVEMAINMENUITEM, (WPARAM)gg->hMenuRoot, 0);
+
+	if (gg->hMenuRoot)
+		CallService(MS_CLIST_REMOVEMAINMENUITEM, (WPARAM)gg->hMenuRoot, 0);
 
 	// Close handles
 	LocalEventUnhook(gg->hookOptsInit);

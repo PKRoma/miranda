@@ -152,8 +152,8 @@ typedef struct
 		hookIdleChanged,
 		hookGCUserEvent,
 		hookGCMenuBuild;
-	HANDLE hMenuRoot;
-	HANDLE hMainMenu[7];
+	HGENMENU hMenuRoot;
+	HGENMENU hMainMenu[7];
 	HANDLE hContactMenu;
 	HANDLE hInstanceMenuItem;
 	HANDLE hAvatarsFolder;
@@ -441,7 +441,7 @@ int gg_recvfile(PROTO_INTERFACE *proto, HANDLE hContact, PROTOFILEEVENT* pre);
 HANDLE gg_sendfile(PROTO_INTERFACE *proto, HANDLE hContact, const PROTOCHAR* szDescription, PROTOCHAR** ppszFiles);
 
 /* Import module */
-void gg_import_init(GGPROTO *gg);
+void gg_import_init(GGPROTO *gg, HGENMENU hRoot);
 void gg_import_shutdown(GGPROTO *gg);
 
 /* Keep-alive module */
@@ -480,7 +480,7 @@ int gg_details_init(GGPROTO *gg, WPARAM wParam, LPARAM lParam);
 
 /* Groupchat functions */
 int gg_gc_init(GGPROTO *gg);
-void gg_gc_menus_init(GGPROTO *gg);
+void gg_gc_menus_init(GGPROTO *gg, HGENMENU hRoot);
 int gg_gc_destroy(GGPROTO *gg);
 char * gg_gc_getchat(GGPROTO *gg, uin_t sender, uin_t *recipients, int recipients_count);
 GGGC *gg_gc_lookup(GGPROTO *gg, char *id);
