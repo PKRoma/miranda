@@ -121,7 +121,8 @@ struct CYahooProto : public PROTO_INTERFACE
 
 	void   BroadcastStatus(int s);
 	void   LoadYahooServices( void );
-	void   MenuInit( void );
+	void   MenuMainInit( void );
+	void   MenuContactInit( void );
 	void   MenuUninit( void );
 	
 	//====| Data |========================================================================

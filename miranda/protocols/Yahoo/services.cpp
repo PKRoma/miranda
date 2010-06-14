@@ -379,7 +379,7 @@ INT_PTR __cdecl CYahooProto::GetUnreadEmailCount(WPARAM wParam, LPARAM lParam)
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-void CYahooProto::MenuInit( void )
+void CYahooProto::MenuMainInit( void )
 {
 	char servicefunction[ 100 ];
 	lstrcpyA( servicefunction, m_szModuleName );
@@ -389,17 +389,23 @@ void CYahooProto::MenuInit( void )
 	mi.cbSize = sizeof( mi );
 	mi.pszService = servicefunction;
 
-	if (( mainMenuRoot = MO_GetProtoRootMenu(m_szModuleName)) == NULL ) {
+	HGENMENU hRoot = MO_GetProtoRootMenu( m_szModuleName );
+	if ( hRoot == NULL ) {
 		mi.position = 500015000;
 		mi.hParentMenu = HGENMENU_ROOT;
 		mi.flags = CMIF_ICONFROMICOLIB | CMIF_ROOTPOPUP | CMIF_TCHAR | CMIF_KEEPUNTRANSLATED;
 		mi.icolibItem = GetIconHandle( IDI_YAHOO );
 		mi.ptszName = m_tszUserName;
-		mainMenuRoot = ( HGENMENU )YAHOO_CallService( MS_CLIST_ADDPROTOMENUITEM,  (WPARAM)0, (LPARAM)&mi);
+		hRoot = mainMenuRoot = ( HGENMENU )YAHOO_CallService( MS_CLIST_ADDPROTOMENUITEM,  (WPARAM)0, (LPARAM)&mi);
+	}
+	else {
+		if ( mainMenuRoot )
+			YAHOO_CallService( MS_CLIST_REMOVEMAINMENUITEM, ( WPARAM )mainMenuRoot, 0 );
+		mainMenuRoot = NULL;
 	}
 		
 	mi.flags = CMIF_ICONFROMICOLIB | CMIF_CHILDPOPUP;
-	mi.hParentMenu = mainMenuRoot;
+	mi.hParentMenu = hRoot;
 	
 	// Show custom status menu    
 	lstrcpyA( tDest, YAHOO_SET_CUST_STAT );
@@ -465,15 +471,24 @@ void CYahooProto::MenuInit( void )
 	mi.pszName = LPGEN( "&Refresh" );
 	menuItemsAll[6] = ( HGENMENU )YAHOO_CallService( MS_CLIST_ADDPROTOMENUITEM, 0, ( LPARAM )&mi );
 	*/
+}
 	
+void CYahooProto::MenuContactInit( void )
+{
+	char servicefunction[ 100 ];
+	lstrcpyA( servicefunction, m_szModuleName );
+	char* tDest = servicefunction + lstrlenA( servicefunction );
+	
+	CLISTMENUITEM mi = { 0 };
+	mi.cbSize = sizeof( mi );
+	mi.flags = CMIF_ICONFROMICOLIB;
+	mi.pszService = servicefunction;
+	mi.pszContactOwner = m_szModuleName;
+
 	// Show Profile 
 	strcpy( tDest, YAHOO_SHOW_PROFILE );
 	YCreateService( YAHOO_SHOW_PROFILE, &CYahooProto::OnShowProfileCommand );
 
-	mi.flags = CMIF_ICONFROMICOLIB;
-	mi.pszPopupName = NULL;
-	mi.pszContactOwner = m_szModuleName;
-	
 	mi.position = -2000006000;
 	mi.icolibItem = GetIconHandle( IDI_PROFILE );
 	mi.pszName = LPGEN( "&Show Profile" );
@@ -490,8 +505,9 @@ void CYahooProto::MenuUninit( void )
 	YAHOO_CallService( MS_CLIST_REMOVEMAINMENUITEM, ( WPARAM )menuItemsAll[4], 0 );
 	YAHOO_CallService( MS_CLIST_REMOVEMAINMENUITEM, ( WPARAM )menuItemsAll[5], 0 );
 	//YAHOO_CallService( MS_CLIST_REMOVEMAINMENUITEM, ( WPARAM )menuItemsAll[6], 0 );
-	
-	YAHOO_CallService( MS_CLIST_REMOVEMAINMENUITEM, ( WPARAM )mainMenuRoot, 0 );
+
+	if ( mainMenuRoot )
+		YAHOO_CallService( MS_CLIST_REMOVEMAINMENUITEM, ( WPARAM )mainMenuRoot, 0 );
 	
 	YAHOO_CallService( MS_CLIST_REMOVECONTACTMENUITEM, ( WPARAM )hShowProfileMenuItem, 0 );
 }

@@ -102,6 +102,7 @@ INT_PTR CYahooProto::OnModulesLoadedEx( WPARAM, LPARAM )
 #endif	
 	
 	m_hNetlibUser = ( HANDLE )YAHOO_CallService( MS_NETLIB_REGISTERUSER, 0, ( LPARAM )&nlu );
+	MenuContactInit();
 	
 	return 0;
 }
@@ -803,18 +804,18 @@ int __cdecl CYahooProto::OnEvent( PROTOEVENTTYPE eventType, WPARAM wParam, LPARA
 		case EV_PROTO_ONOPTIONS: return OnOptionsInit( wParam, lParam );
 
 		case EV_PROTO_ONMENU:
-			MenuInit();
+			MenuMainInit();
 			break;
 
 		case EV_PROTO_ONRENAME:
-		{	
-			CLISTMENUITEM clmi = { 0 };
-			clmi.cbSize = sizeof( CLISTMENUITEM );
-			clmi.flags = CMIM_NAME | CMIF_TCHAR | CMIF_KEEPUNTRANSLATED;
-			clmi.ptszName = m_tszUserName;
-			YAHOO_CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )mainMenuRoot, ( LPARAM )&clmi );
+			if ( mainMenuRoot ) {	
+				CLISTMENUITEM clmi = { 0 };
+				clmi.cbSize = sizeof( CLISTMENUITEM );
+				clmi.flags = CMIM_NAME | CMIF_TCHAR | CMIF_KEEPUNTRANSLATED;
+				clmi.ptszName = m_tszUserName;
+				YAHOO_CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )mainMenuRoot, ( LPARAM )&clmi );
+			}
 			break;
-		}
 	}	
 	return 1;
 }
