@@ -250,7 +250,6 @@ static int ContactListAccountsChanged( WPARAM eventCode, LPARAM lParam )
         RemoveProtoIconIndex(( PROTOACCOUNT* )lParam );
         break;
     }
-    cli.pfnReloadProtoMenus();
 	cli.pfnTrayIconIconsChanged();
 	cli.pfnClcBroadcast( INTM_RELOADOPTIONS, 0, 0 );
 	cli.pfnClcBroadcast( INTM_INVALIDATE, 0, 0 );
