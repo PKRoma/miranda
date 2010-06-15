@@ -713,15 +713,18 @@ INT_PTR CALLBACK AccMgrDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LPARAM 
 				PROTOACCOUNT* pa = (PROTOACCOUNT*)ListBox_GetItemData(hwndList, iItem);
 				HMENU hMenu = CreatePopupMenu();
 				if ( !pa->bOldProto && !pa->bDynDisabled )
-					AppendMenu(hMenu, MF_STRING, (UINT_PTR)1, TranslateT("Rename"));
+					AppendMenu(hMenu, MF_STRING, 1, TranslateT("Rename"));
 
-				AppendMenu(hMenu, MF_STRING, (UINT_PTR)3, TranslateT("Delete"));
+				AppendMenu(hMenu, MF_STRING, 3, TranslateT("Delete"));
+
+				if ( Proto_IsAccountEnabled( pa ))
+					AppendMenu(hMenu, MF_STRING, 4, TranslateT("Configure"));
 
 				if ( pa->bOldProto || pa->bDynDisabled )
-					AppendMenu(hMenu, MF_STRING, (UINT_PTR)4, TranslateT("Upgrade"));
+					AppendMenu(hMenu, MF_STRING, 5, TranslateT("Upgrade"));
 
 				AppendMenu(hMenu, MF_SEPARATOR, 0, NULL);
-				AppendMenu(hMenu, MF_STRING, (UINT_PTR)0, TranslateT("Cancel"));
+				AppendMenu(hMenu, MF_STRING, 0, TranslateT("Cancel"));
 				switch (TrackPopupMenu( hMenu, TPM_RETURNCMD, pt.x, pt.y, 0, hwndDlg, NULL )) {
 				case 1:
 					PostMessage(hwndList, WM_MY_RENAME, 0, 0);
@@ -736,6 +739,10 @@ INT_PTR CALLBACK AccMgrDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LPARAM 
 					break;
 
 				case 4:
+					sttClickButton(hwndDlg, IDC_OPTIONS);
+					break;
+
+				case 5:
 					sttClickButton(hwndDlg, IDC_UPGRADE);
 					break;
 				}
