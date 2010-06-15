@@ -148,8 +148,9 @@ static INT_PTR CALLBACK AskForConfirmationDlgProc(HWND hWnd, UINT msg, WPARAM wP
 			mir_sntprintf(szFinal, SIZEOF(szFinal), szFormat, cli.pfnGetContactDisplayName((HANDLE)lParam, 0));
 			SetDlgItemText(hWnd, IDC_TOPLINE, szFinal);
 		}
+        SetFocus(GetDlgItem(hWnd, IDNO));
 		SetWindowPos(hWnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
-		return TRUE;
+		break;
 	case WM_COMMAND:
 		switch (LOWORD(wParam)) {
 		case IDYES:
