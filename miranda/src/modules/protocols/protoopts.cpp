@@ -191,7 +191,8 @@ static INT_PTR CALLBACK AccFormDlgProc(HWND hwndDlg,UINT message, WPARAM wParam,
 
 					if ( ActivateAccount( pa )) {
 						pa->ppro->OnEvent( EV_PROTO_ONLOAD, 0, 0 );
-						pa->ppro->OnEvent( EV_PROTO_ONMENU, 0, 0 );
+						if (!DBGetContactSettingByte(NULL, "CList", "MoveProtoMenus", FALSE))
+							pa->ppro->OnEvent( EV_PROTO_ONMENU, 0, 0 );
 					}
 					else pa->type = PROTOTYPE_DISPROTO;
 				}
@@ -770,7 +771,8 @@ INT_PTR CALLBACK AccMgrDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LPARAM 
 							if ( pa->bIsEnabled ) {
 								if ( ActivateAccount( pa )) {
 									pa->ppro->OnEvent( EV_PROTO_ONLOAD, 0, 0 );
-									pa->ppro->OnEvent( EV_PROTO_ONMENU, 0, 0 );
+									if (!DBGetContactSettingByte(NULL, "CList", "MoveProtoMenus", FALSE))
+										pa->ppro->OnEvent( EV_PROTO_ONMENU, 0, 0 );
 								}
 								else pa->type = PROTOTYPE_DISPROTO;
 							}

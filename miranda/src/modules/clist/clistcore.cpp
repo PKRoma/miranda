@@ -56,7 +56,8 @@ static void fnOnCreateClc( void )
 static void fnReloadProtoMenus( void )
 {
 	RebuildMenuOrder();
-	BuildProtoMenus();
+	if (DBGetContactSettingByte(NULL, "CList", "MoveProtoMenus", FALSE))
+		BuildProtoMenus();
 	cli.pfnCluiProtocolStatusChanged(0,0);
 }
 
