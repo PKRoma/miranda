@@ -65,54 +65,62 @@ void LoadColumnSizes(HWND hwndResults,const char *szProto)
 	int columnCount;
 	char szSetting[32];
 	int i;
-	struct FindAddDlgData *dat;
-	int colOrdersValid;
+	FindAddDlgData *dat;
+	bool colOrdersValid;
 
-	defaultColumnSizes[COLUMNID_PROTO]=GetSystemMetrics(SM_CXSMICON)+4;
-	dat=(struct FindAddDlgData*)GetWindowLongPtr(GetParent(hwndResults),GWLP_USERDATA);
+	defaultColumnSizes[COLUMNID_PROTO] = GetSystemMetrics(SM_CXSMICON) + 4;
+	dat = (FindAddDlgData*)GetWindowLongPtr(GetParent(hwndResults), GWLP_USERDATA);
 
 	columnCount = NUM_COLUMNID;
-	colOrdersValid=1;
-	for(i=0; i < NUM_COLUMNID; i++) {
+	colOrdersValid = true;
+	for(i=0; i < NUM_COLUMNID; i++) 
+	{
 		LVCOLUMN lvc;
-		if( i < columnCount ) {
+		if( i < columnCount ) 
+		{
 			int bNeedsFree = FALSE;
 			lvc.mask = LVCF_TEXT | LVCF_WIDTH;
 			if( szColumnNames[i] != NULL )
 				lvc.pszText = TranslateTS( szColumnNames[i] );
-			else if( i == COLUMNID_HANDLE ) {
-				#if defined( _UNICODE )
-					bNeedsFree = TRUE;
-					lvc.pszText = mir_a2t((char*)CallProtoService(szProto,PS_GETCAPS,PFLAG_UNIQUEIDTEXT,0));
-				#else
-					lvc.pszText = (char*)CallProtoService(szProto,PS_GETCAPS,PFLAG_UNIQUEIDTEXT,0);
-				#endif
+			else if( i == COLUMNID_HANDLE ) 
+			{
+				if (szProto)
+				{
+					#if defined( _UNICODE )
+						bNeedsFree = TRUE;
+						lvc.pszText = mir_a2t((char*)CallProtoService(szProto,PS_GETCAPS,PFLAG_UNIQUEIDTEXT,0));
+					#else
+						lvc.pszText = (char*)CallProtoService(szProto,PS_GETCAPS,PFLAG_UNIQUEIDTEXT,0);
+					#endif
+				}
+				else
+					lvc.pszText = _T("ID");
 			}
 			else lvc.mask &= ~LVCF_TEXT;
 			mir_snprintf(szSetting, SIZEOF(szSetting), "ColWidth%d", i);
-			lvc.cx = DBGetContactSettingWord(NULL,"FindAdd",szSetting,defaultColumnSizes[i]);
-			ListView_InsertColumn( hwndResults, i, (LPARAM)&lvc );
+			lvc.cx = DBGetContactSettingWord(NULL, "FindAdd", szSetting, defaultColumnSizes[i]);
+			ListView_InsertColumn(hwndResults, i, (LPARAM)&lvc);
 			#if defined( _UNICODE )
-				if ( bNeedsFree )
+				if (bNeedsFree)
 					mir_free(lvc.pszText);
 			#endif
 		}
 		mir_snprintf(szSetting, SIZEOF(szSetting), "ColOrder%d", i);
-		columnOrder[i]=DBGetContactSettingByte(NULL,"FindAdd",szSetting,-1);
-		if(columnOrder[i]==-1 || columnOrder[i] >= NUM_COLUMNID) colOrdersValid=0;
+		columnOrder[i] = DBGetContactSettingByte(NULL, "FindAdd", szSetting, -1);
+		if (columnOrder[i] == -1 || columnOrder[i] >= NUM_COLUMNID) colOrdersValid = false;
 	}
 
 	if (colOrdersValid) 
-		ListView_SetColumnOrderArray(hwndResults,columnCount,columnOrder);
+		ListView_SetColumnOrderArray(hwndResults, columnCount, columnOrder);
 
-	dat->iLastColumnSortIndex=DBGetContactSettingByte(NULL,"FindAdd","SortColumn",COLUMNID_NICK);
-	if (dat->iLastColumnSortIndex >= columnCount) dat->iLastColumnSortIndex=COLUMNID_NICK;
-	dat->bSortAscending=DBGetContactSettingByte(NULL,"FindAdd","SortAscending",TRUE);
+	dat->iLastColumnSortIndex = DBGetContactSettingByte(NULL, "FindAdd", "SortColumn", COLUMNID_NICK);
+	if (dat->iLastColumnSortIndex >= columnCount) dat->iLastColumnSortIndex = COLUMNID_NICK;
+	dat->bSortAscending = DBGetContactSettingByte(NULL, "FindAdd", "SortAscending", TRUE);
 
-	hdi.mask=HDI_BITMAP|HDI_FORMAT;
-	hdi.fmt=HDF_LEFT|HDF_BITMAP|HDF_STRING|HDF_BITMAP_ON_RIGHT;
-	hdi.hbm=dat->bSortAscending?dat->hBmpSortDown:dat->hBmpSortUp;
-	Header_SetItem(ListView_GetHeader(hwndResults),dat->iLastColumnSortIndex,&hdi);
+	hdi.mask = HDI_BITMAP | HDI_FORMAT;
+	hdi.fmt = HDF_LEFT | HDF_BITMAP | HDF_STRING | HDF_BITMAP_ON_RIGHT;
+	hdi.hbm = dat->bSortAscending ? dat->hBmpSortDown : dat->hBmpSortUp;
+	Header_SetItem(ListView_GetHeader(hwndResults), dat->iLastColumnSortIndex, &hdi);
 }
 
 static LPARAM ListView_GetItemLParam(HWND hwndList, int idx)
