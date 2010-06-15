@@ -14,6 +14,7 @@
 #include "yahoo.h"
 
 #include <shlwapi.h>
+#include <win2k.h>
 
 #include <m_idle.h>
 #include <m_options.h>
@@ -79,18 +80,18 @@ int CYahooProto::OnModulesLoadedEx( WPARAM, LPARAM )
 	YHookEvent( ME_IDLE_CHANGED, 				&CYahooProto::OnIdleEvent);
 	YHookEvent( ME_CLIST_PREBUILDCONTACTMENU, 	&CYahooProto::OnPrebuildContactMenu );
 
-	char tModuleDescr[ 100 ];
-	snprintf(tModuleDescr, sizeof(tModuleDescr), Translate( "%s plugin connections" ), m_szModuleName);
+	TCHAR tModuleDescr[ 100 ];
+	mir_sntprintf(tModuleDescr, SIZEOF(tModuleDescr), TranslateT( "%s plugin connections" ), m_tszUserName);
 	
 	NETLIBUSER nlu = {0};
 	nlu.cbSize = sizeof(nlu);
 #ifdef HTTP_GATEWAY
-	nlu.flags = NUF_OUTGOING | NUF_HTTPGATEWAY| NUF_HTTPCONNS;
+	nlu.flags = NUF_OUTGOING | NUF_HTTPGATEWAY| NUF_HTTPCONNS | NUF_TCHAR;
 #else
-  	nlu.flags = NUF_OUTGOING | NUF_HTTPCONNS;
+  	nlu.flags = NUF_OUTGOING | NUF_HTTPCONNS | NUF_TCHAR;
 #endif
 	nlu.szSettingsModule = m_szModuleName;
-	nlu.szDescriptiveName = tModuleDescr;
+	nlu.ptszDescriptiveName = tModuleDescr;
 	
 #ifdef HTTP_GATEWAY
 	// Here comes the Gateway Code! 
