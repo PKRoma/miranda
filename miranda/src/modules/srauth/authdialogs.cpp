@@ -229,7 +229,10 @@ INT_PTR CALLBACK DlgProcAuthReq(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 
 			SendDlgItemMessage(hwndDlg, IDC_DENYREASON, EM_LIMITTEXT, 255, 0);
 			if (CallProtoService(dbei.szModule, PS_GETCAPS,PFLAGNUM_4, 0) & PF4_NOAUTHDENYREASON)
+			{
 				EnableWindow(GetDlgItem(hwndDlg, IDC_DENYREASON), FALSE);
+				SetDlgItemText(hwndDlg, IDC_DENYREASON, TranslateT("Feature is not supported by protocol"));
+			}
 
 			SetWindowLongPtr(GetDlgItem(hwndDlg,IDC_DETAILS), GWLP_USERDATA, (LONG_PTR)hContact);
 		}
