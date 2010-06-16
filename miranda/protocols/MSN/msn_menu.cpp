@@ -440,11 +440,6 @@ void CMsnProto::MsnInitContactMenu(void)
 
 void CMsnProto::MsnRemoveMainMenus(void)
 {
-	MSN_CallService(MS_CLIST_REMOVEMAINMENUITEM, (WPARAM)menuItems[0], 0);
-	MSN_CallService(MS_CLIST_REMOVEMAINMENUITEM, (WPARAM)menuItemsAll[0], 0);
-	MSN_CallService(MS_CLIST_REMOVEMAINMENUITEM, (WPARAM)menuItemsAll[1], 0);
-	MSN_CallService(MS_CLIST_REMOVEMAINMENUITEM, (WPARAM)menuItemsAll[2], 0);
-	MSN_CallService(MS_CLIST_REMOVEMAINMENUITEM, (WPARAM)menuItemsAll[3], 0);
 	if (mainMenuRoot) 
 		MSN_CallService(MS_CLIST_REMOVEMAINMENUITEM, (WPARAM)mainMenuRoot, 0);
 }
