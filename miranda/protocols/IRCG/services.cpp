@@ -38,7 +38,7 @@ void CIrcProto::InitMainMenus(void)
 			// Root popupmenuitem
 			mi.ptszName = m_tszUserName;
 			mi.position = -1999901010;
-			mi.pszPopupName = (char *)-1;
+			mi.hParentMenu = HGENMENU_ROOT;
 			mi.flags = CMIF_ICONFROMICOLIB | CMIF_ROOTPOPUP | CMIF_TCHAR | CMIF_KEEPUNTRANSLATED;
 			mi.icolibItem = GetIconHandle(IDI_MAIN);
 			hRoot = hMenuRoot = ( HGENMENU )CallService( MS_CLIST_ADDPROTOMENUITEM,  (WPARAM)0, (LPARAM)&mi);
