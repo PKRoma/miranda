@@ -983,7 +983,6 @@ private:
 	unsigned int m_nSerial;
 
 	HANDLE   m_hInitChat;
-	HANDLE   m_hPrebuildStatusMenu;
 	HGENMENU m_hPrivacyMenuRoot;
 	BOOL     m_menuItemsStatus;
 	LIST<void> m_hPrivacyMenuItems;
