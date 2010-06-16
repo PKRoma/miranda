@@ -268,13 +268,12 @@ void gg_menus_init(GGPROTO *gg)
 	{
 		CLISTMENUITEM mi = {0};
 		mi.cbSize = sizeof(mi);
-		mi.flags = CMIF_ICONFROMICOLIB | CMIF_TCHAR | CMIF_KEEPUNTRANSLATED;
-		mi.ptszPopupName = NULL;
-		mi.position = 500090000;
-		mi.icolibItem = GetIconHandle(IDI_GG);
 		mi.ptszName = GG_PROTONAME;
-		mi.pszService = gg->proto.m_szModuleName;
-		hRoot = gg->hMenuRoot = (HANDLE)CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM) &mi);
+		mi.position = 500090000;
+		mi.hParentMenu = HGENMENU_ROOT;
+		mi.flags = CMIF_ICONFROMICOLIB | CMIF_ROOTPOPUP | CMIF_TCHAR | CMIF_KEEPUNTRANSLATED;
+		mi.icolibItem = GetIconHandle(IDI_GG);
+		hRoot = gg->hMenuRoot = (HANDLE)CallService(MS_CLIST_ADDPROTOMENUITEM, 0, (LPARAM) &mi);
 	}
 	else
 	{
@@ -437,7 +436,6 @@ static int gg_proto_uninit(PROTO_INTERFACE *proto)
 	gg_img_destroy(gg);
 	gg_keepalive_destroy(gg);
 	gg_gc_destroy(gg);
-	gg_import_shutdown(gg);
 	gg_links_instance_destroy(gg);
 
 	if (gg->hMenuRoot)

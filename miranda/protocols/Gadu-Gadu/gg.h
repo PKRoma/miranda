@@ -442,7 +442,6 @@ HANDLE gg_sendfile(PROTO_INTERFACE *proto, HANDLE hContact, const PROTOCHAR* szD
 
 /* Import module */
 void gg_import_init(GGPROTO *gg, HGENMENU hRoot);
-void gg_import_shutdown(GGPROTO *gg);
 
 /* Keep-alive module */
 void gg_keepalive_init(GGPROTO *gg);

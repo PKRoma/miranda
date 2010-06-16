@@ -695,10 +695,3 @@ void gg_import_init(GGPROTO *gg, HGENMENU hRoot)
 	mi.pszService = service;
 	gg->hMainMenu[6] = (HANDLE)CallService(MS_CLIST_ADDPROTOMENUITEM, 0, (LPARAM) &mi);
 }
-
-void gg_import_shutdown(GGPROTO *gg) 
-{
-	int i;
-	for(i = 2; i < 7; i++)
-		CallService(MS_CLIST_REMOVEMAINMENUITEM, (WPARAM)gg->hMainMenu[i], (LPARAM) 0);
-}

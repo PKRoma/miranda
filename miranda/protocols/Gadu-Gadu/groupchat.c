@@ -112,11 +112,6 @@ int gg_gc_destroy(GGPROTO *gg)
 	list_destroy(gg->chats, 1); gg->chats = NULL;
 	LocalEventUnhook(gg->hookGCUserEvent);
 	LocalEventUnhook(gg->hookGCMenuBuild);
-	if(gg->gc_enabled)
-	{
-		CallService(MS_CLIST_REMOVEMAINMENUITEM, (WPARAM)gg->hMainMenu[0], (LPARAM) 0);
-		CallService(MS_CLIST_REMOVEMAINMENUITEM, (WPARAM)gg->hMainMenu[1], (LPARAM) 0);
-	}
 
 	return 1;
 }
