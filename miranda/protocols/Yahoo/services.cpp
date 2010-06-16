@@ -498,14 +498,6 @@ void CYahooProto::MenuContactInit( void )
 
 void CYahooProto::MenuUninit( void )
 {
-	YAHOO_CallService( MS_CLIST_REMOVEMAINMENUITEM, ( WPARAM )menuItemsAll[0], 0 );
-	YAHOO_CallService( MS_CLIST_REMOVEMAINMENUITEM, ( WPARAM )menuItemsAll[1], 0 );
-	YAHOO_CallService( MS_CLIST_REMOVEMAINMENUITEM, ( WPARAM )menuItemsAll[2], 0 );
-	YAHOO_CallService( MS_CLIST_REMOVEMAINMENUITEM, ( WPARAM )menuItemsAll[3], 0 );
-	YAHOO_CallService( MS_CLIST_REMOVEMAINMENUITEM, ( WPARAM )menuItemsAll[4], 0 );
-	YAHOO_CallService( MS_CLIST_REMOVEMAINMENUITEM, ( WPARAM )menuItemsAll[5], 0 );
-	//YAHOO_CallService( MS_CLIST_REMOVEMAINMENUITEM, ( WPARAM )menuItemsAll[6], 0 );
-
 	if ( mainMenuRoot )
 		YAHOO_CallService( MS_CLIST_REMOVEMAINMENUITEM, ( WPARAM )mainMenuRoot, 0 );
 	
