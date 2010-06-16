@@ -981,7 +981,7 @@ static LPPROTOTICKS CLUI_GetProtoTicksByProto(char * szProto)
 			CycleStartTick[i].szProto=mir_strdup(szProto);
 			CycleStartTick[i].nCycleStartTick=0;
 			CycleStartTick[i].nIndex=i;			
-			CycleStartTick[i].bGlobal=_strcmpi(szProto,GLOBAL_PROTO_NAME)==0;
+			CycleStartTick[i].bGlobal=( szProto[0]==0 );
 			CycleStartTick[i].himlIconList=NULL;
 			return(&CycleStartTick[i]);
 		}
@@ -1005,22 +1005,31 @@ static int CLUI_GetConnectingIconForProtoCount(char *szAccoName)
 		CallService(MS_UTILS_PATHTOABSOLUTE, (WPARAM)szRelativePath, (LPARAM)szFolderPath);
 	}
 
-	// first of all try to find by account name
-	_snprintf( fileFull, sizeof(fileFull), "%s\\Icons\\proto_conn_%s.dll", szFolderPath, szAccoName );
+	if ( szAccoName )
+	{
+		// first of all try to find by account name( or empty - global )
+		_snprintf( fileFull, sizeof(fileFull), "%s\\Icons\\proto_conn_%s.dll", szFolderPath, szAccoName );
+		count = ExtractIconExA(fileFull,-1,NULL,NULL,1);
+		if ( count ) return count;
+
+		if ( szAccoName[0] )
+		{
+			// second try to find by protocol name
+			PROTOACCOUNT * acc = ProtoGetAccount( szAccoName );
+			if ( acc && !acc->bOldProto )
+			{
+				_snprintf( fileFull, sizeof(fileFull), "%s\\Icons\\proto_conn_%s.dll", szFolderPath, acc->szProtoName );
+				count = ExtractIconExA(fileFull,-1,NULL,NULL,1);
+				if ( count ) return count;
+			}
+		}
+	}
+	// third try global
+	_snprintf( fileFull, sizeof(fileFull), "%s\\Icons\\proto_conn.dll", szFolderPath );
 	count = ExtractIconExA(fileFull,-1,NULL,NULL,1);
 	if ( count ) return count;
 
-	// second try to find by protocol name
-	PROTOACCOUNT * acc = ProtoGetAccount( szAccoName );
-	if ( acc && !acc->bOldProto )
-	{
-		_snprintf( fileFull, sizeof(fileFull), "%s\\Icons\\proto_conn_%s.dll", szFolderPath, acc->szProtoName );
-		count = ExtractIconExA(fileFull,-1,NULL,NULL,1);
-		if ( count ) return count;
-	}
-
 	return 8;
-
 }
 
 static HICON CLUI_ExtractIconFromPath(const char *path, BOOL * needFree)
@@ -1108,18 +1117,28 @@ static HICON CLUI_GetConnectingIconForProto(char *szAccoName, int b)
 	BOOL needFree;
 	b=b-1;
 	
-	_snprintf(szFullPath, sizeof(szFullPath), "proto_conn_%s.dll",szAccoName);
-	hIcon = CLUI_LoadIconFromExternalFile(szFullPath,b+1,FALSE,FALSE,NULL,NULL,NULL,0,&needFree);
-	if (hIcon) return hIcon;
-
-	// second try to find by protocol name
-	PROTOACCOUNT * acc = ProtoGetAccount( szAccoName );
-	if ( acc && !acc->bOldProto )
+	if ( szAccoName )
 	{
-		_snprintf( szFullPath, sizeof(szFullPath), "proto_conn_%s.dll", acc->szProtoName );
+		_snprintf(szFullPath, sizeof(szFullPath), "proto_conn_%s.dll",szAccoName);
 		hIcon = CLUI_LoadIconFromExternalFile(szFullPath,b+1,FALSE,FALSE,NULL,NULL,NULL,0,&needFree);
-		if ( hIcon ) return hIcon;
+		if (hIcon) return hIcon;
+
+		if ( szAccoName[0] )
+		{
+			// second try to find by protocol name
+			PROTOACCOUNT * acc = ProtoGetAccount( szAccoName );
+			if ( acc && !acc->bOldProto )
+			{
+				_snprintf( szFullPath, sizeof(szFullPath), "proto_conn_%s.dll", acc->szProtoName );
+				hIcon = CLUI_LoadIconFromExternalFile(szFullPath,b+1,FALSE,FALSE,NULL,NULL,NULL,0,&needFree);
+				if ( hIcon ) return hIcon;
+			}
+		}
 	}
+	// third try global
+	_snprintf( szFullPath, sizeof(szFullPath), "proto_conn.dll" );
+	hIcon = CLUI_LoadIconFromExternalFile(szFullPath,b+1,FALSE,FALSE,NULL,NULL,NULL,0,&needFree);
+	if ( hIcon ) return hIcon;
 
 	hIcon=LoadSmallIcon(g_hInst,(TCHAR *)(IDI_ICQC1+b+1));
 	return(hIcon);

@@ -13,6 +13,7 @@ POINT lastpnt;
 
 HWND hModernStatusBar=NULL;
 HANDLE hFramehModernStatusBar=NULL;
+void ApplyViewMode(const char *Name);
 
 //int FindFrameID(HWND FrameHwnd);
 COLORREF sttGetColor(char * module, char * color, COLORREF defColor);
@@ -46,6 +47,8 @@ typedef struct _ProtoItemData
 	BYTE SBarRightClk;
 	int PaddingLeft;
 	int PaddingRight;
+
+	bool isDimmed;
 
 } ProtoItemData;
 
@@ -299,6 +302,14 @@ int ModernDrawStatusBarWorker(HWND hWnd, HDC hDC)
 			ProtosData[visProtoCount].ProtoStatusText = mir_strdup((char*)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION,(WPARAM)ProtosData[visProtoCount].ProtoStatus,0));
 			ProtosData[visProtoCount].ProtoPos = visProtoCount;
 
+			ProtosData[visProtoCount].isDimmed = 0;
+			if(g_CluiData.bFilterEffective & CLVM_FILTER_PROTOS) 
+			{
+				char szTemp[2048];
+				mir_snprintf(szTemp, sizeof(szTemp), "%s|", ProtosData[visProtoCount].AccountName );
+				ProtosData[visProtoCount].isDimmed = strstr(g_CluiData.protoFilter, szTemp) ? 0 : 1;
+			}
+			
 			visProtoCount++;
 			allocedItemData++;
 		}
@@ -582,21 +593,23 @@ int ModernDrawStatusBarWorker(HWND hWnd, HDC hDC)
 							ProtosData[i].protoRect=r;
 							SelectClipRgn(hDC,rgn);
 							ProtosData[i].DoubleIcons=FALSE;
+							
+							DWORD dim = ProtosData[i].isDimmed ? ( ( 64<<24 ) | 0x80 ) : 0;
 
 							if ((ProtosData[i].xStatusMode&3)==3)
 							{
-								if (hIcon) mod_DrawIconEx_helper(hDC,x,iconY,hIcon,GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),0,NULL,DI_NORMAL);
+								if (hIcon) mod_DrawIconEx_helper(hDC,x,iconY,hIcon,GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),0,NULL,  DI_NORMAL|dim );
 								if (hxIcon) 
 								{
-									mod_DrawIconEx_helper(hDC,x+GetSystemMetrics(SM_CXSMICON)+1,iconY,hxIcon,GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),0,NULL,DI_NORMAL);
+									mod_DrawIconEx_helper(hDC,x+GetSystemMetrics(SM_CXSMICON)+1,iconY,hxIcon,GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),0,NULL,DI_NORMAL|dim);
 									x+=GetSystemMetrics(SM_CXSMICON)+1;
 								}
 								ProtosData[i].DoubleIcons=hIcon&&hxIcon;
 							}
 							else
 							{
-								if (hxIcon) mod_DrawIconEx_helper(hDC,x,iconY,hxIcon,GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),0,NULL,DI_NORMAL);
-								if (hIcon) mod_DrawIconEx_helper(hDC,x,iconY,hIcon,GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),0,NULL,DI_NORMAL|((hxIcon&&(ProtosData[i].xStatusMode&4))?(192<<24):0));
+								if (hxIcon) mod_DrawIconEx_helper(hDC,x,iconY,hxIcon,GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),0,NULL,DI_NORMAL|dim);
+								if (hIcon) mod_DrawIconEx_helper(hDC,x,iconY,hIcon,GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),0,NULL,DI_NORMAL| ((hxIcon&&(ProtosData[i].xStatusMode&4))?(192<<24):0 ) | dim );
 							}
 
 							if ( ( hxIcon || hIcon) && TRUE /* TODO g_StatusBarData.bDrawLockOverlay  options to draw locked proto*/  )
@@ -606,7 +619,7 @@ int ModernDrawStatusBarWorker(HWND hWnd, HDC hDC)
 									HICON hLockOverlay = LoadSkinnedIcon(SKINICON_OTHER_STATUS_LOCKED);
 									if (hLockOverlay != NULL)
 									{
-										mod_DrawIconEx_helper(hDC, x, iconY, hLockOverlay, GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),0,NULL,DI_NORMAL);
+										mod_DrawIconEx_helper(hDC, x, iconY, hLockOverlay, GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),0,NULL,DI_NORMAL | dim);
 										CallService(MS_SKIN2_RELEASEICON, (WPARAM)hLockOverlay, 0);									}
 								}
 							}
@@ -964,6 +977,15 @@ LRESULT CALLBACK ModernStatusProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam
                     {
                        return TRUE;
 					}        
+					if ( msg == WM_LBUTTONDOWN && ( GetAsyncKeyState(VK_LEFT )&0x8000 ) )
+					{
+						ApplyViewMode( "" );
+						mir_snprintf( g_CluiData.protoFilter, sizeof(g_CluiData.protoFilter), "%s|", ProtosData[i].AccountName );
+						g_CluiData.bFilterEffective = CLVM_FILTER_PROTOS;
+						pcli->pfnClcBroadcast(CLM_AUTOREBUILD, 0, 0);
+						CLUI__cliInvalidateRect( hwnd, NULL, FALSE );
+						return DefWindowProc(hwnd, msg, wParam, lParam);
+					}
 					if (!hMenu)
 					{
 						if (msg==WM_RBUTTONDOWN)
@@ -998,7 +1020,13 @@ LRESULT CALLBACK ModernStatusProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam
 					}
 					return 0;
 				}
-            }
+			}
+			if ( msg == WM_LBUTTONDOWN )
+			{
+				ApplyViewMode( "" );
+				CLUI__cliInvalidateRect( hwnd, NULL, FALSE );
+				return DefWindowProc(hwnd, msg, wParam, lParam);
+			}
 			return SendMessage(GetParent(hwnd), msg, wParam, lParam );
         }
     }

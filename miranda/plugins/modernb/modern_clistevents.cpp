@@ -236,6 +236,74 @@ int cli_RemoveEvent(HANDLE hContact, HANDLE hDbEvent)
 
 
 /* Implementations */
+
+struct event_area_t
+{
+	HBITMAP  hBmpBackground;
+	COLORREF bkColour;
+	int      useWinColors;
+	int      backgroundBmpUse;
+
+	event_area_t():
+		hBmpBackground( NULL),
+		bkColour( CLCDEFAULT_BKCOLOUR ),
+		useWinColors( CLCDEFAULT_USEWINDOWSCOLOURS ),
+		backgroundBmpUse( CLCDEFAULT_USEBITMAP )
+	{}
+};
+
+static event_area_t event_area;
+
+static BOOL sttDrawEventAreaBackground(HWND hwnd, HDC hdc, RECT * rect)
+{
+	BOOL bFloat = (GetParent(hwnd)!=pcli->hwndContactList);
+	if (g_CluiData.fDisableSkinEngine || !g_CluiData.fLayered || bFloat)
+	{	
+		RECT rc;
+
+		if (rect) rc=*rect;
+		else	  GetClientRect(hwnd,&rc);
+
+		if (!event_area.hBmpBackground && !event_area.useWinColors)
+		{			
+			HBRUSH hbr=CreateSolidBrush(event_area.bkColour);
+			FillRect(hdc, &rc, hbr);
+			DeleteObject(hbr);
+		}
+		else 
+		{
+			DrawBackGround(hwnd,hdc,event_area.hBmpBackground,event_area.bkColour,event_area.backgroundBmpUse);
+		}
+	}
+	return TRUE;
+}
+
+COLORREF sttGetColor(char * module, char * color, COLORREF defColor); //clcutils
+
+static int  ehhEventAreaBackgroundSettingsChanged(WPARAM wParam, LPARAM lParam)
+{
+	if(event_area.hBmpBackground) 
+	{
+		DeleteObject(event_area.hBmpBackground); 
+		event_area.hBmpBackground=NULL;
+	}
+	if (g_CluiData.fDisableSkinEngine)
+	{
+		DBVARIANT dbv;
+		event_area.bkColour=sttGetColor("EventArea","BkColour",CLCDEFAULT_BKCOLOUR);
+		if(ModernGetSettingByte(NULL,"EventArea","UseBitmap",CLCDEFAULT_USEBITMAP)) {
+			if(!ModernGetSettingString(NULL,"EventArea","BkBitmap",&dbv)) {
+				event_area.hBmpBackground=(HBITMAP)CallService(MS_UTILS_LOADBITMAP,0,(LPARAM)dbv.pszVal);
+				ModernDBFreeVariant(&dbv);
+			}
+		}
+		event_area.useWinColors = ModernGetSettingByte(NULL, "EventArea", "UseWinColours", CLCDEFAULT_USEWINDOWSCOLOURS);
+		event_area.backgroundBmpUse = ModernGetSettingWord(NULL, "EventArea", "BkBmpUse", CLCDEFAULT_BKBMPUSE);
+	}	
+	PostMessage(pcli->hwndContactList,WM_SIZE,0,0);
+	return 0;
+}
+
 void EventArea_ConfigureEventArea()
 {
 	int iCount = pcli->events.count;
@@ -275,7 +343,14 @@ static int EventArea_DrawWorker(HWND hWnd, HDC hDC)
     RECT rc;
     HFONT hOldFont;
     GetClientRect(hWnd,&rc);   
-    SkinDrawGlyph(hDC,&rc,&rc,"Main,ID=EventArea");
+	if ( g_CluiData.fDisableSkinEngine )
+	{
+		sttDrawEventAreaBackground( hWnd, hDC, &rc );
+	}
+	else
+	{
+		SkinDrawGlyph(hDC,&rc,&rc,"Main,ID=EventArea");
+	}
     hOldFont=g_clcPainter.ChangeToFont(hDC,NULL,FONTID_EVENTAREA,NULL);
 	SetBkMode(hDC,TRANSPARENT);
     //ske_DrawText(hDC,_T("DEBUG"),lstrlen(_T("DEBUG")),&rc,0);
@@ -350,6 +425,11 @@ static void EventArea_HideShowNotifyFrame()
 
 int EventArea_Create(HWND hCluiWnd)
 {
+
+  CallService(MS_BACKGROUNDCONFIG_REGISTER,(WPARAM)"Event Area Background/EventArea",0);
+  ModernHookEvent(ME_BACKGROUNDCONFIG_CHANGED,ehhEventAreaBackgroundSettingsChanged); 
+  ehhEventAreaBackgroundSettingsChanged(0,0);
+
   WNDCLASS wndclass={0};
   TCHAR pluginname[]=TEXT("EventArea");
   int h=GetSystemMetrics(SM_CYSMICON)+2;

@@ -243,7 +243,6 @@ extern BOOL DebugDeleteObject(HGDIOBJ a);
 extern BOOL mod_DeleteDC(HDC hdc);
 extern BOOL ske_ResetTextEffect(HDC hdc);
 extern BOOL ske_SelectTextEffect(HDC hdc, BYTE EffectID, DWORD FirstColor, DWORD SecondColor);
-#define GLOBAL_PROTO_NAME "global_connect"
 extern void IvalidateDisplayNameCache(DWORD mode);
 
 void FreeAndNil( void **p );
