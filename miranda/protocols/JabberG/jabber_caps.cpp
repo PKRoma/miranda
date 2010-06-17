@@ -646,13 +646,16 @@ BOOL CJabberClientCapsManager::HandleInfoRequest( HXML, CJabberIqInfo* pInfo, co
 	if ( !szNode ) {
 		TCHAR szOsBuffer[256] = {0};
 		TCHAR *os = szOsBuffer;
-		if (!GetOSDisplayString(szOsBuffer, SIZEOF(szOsBuffer)))
-			lstrcpyn(szOsBuffer, _T(""), SIZEOF(szOsBuffer));
-		else {
-			TCHAR *szOsWindows = _T("Microsoft Windows");
-			size_t nOsWindowsLength = _tcslen( szOsWindows );
-			if (!_tcsnicmp(szOsBuffer, szOsWindows, nOsWindowsLength))
-				os += nOsWindowsLength + 1;
+
+		if ( ppro->m_options.ShowOSVersion ) {
+			if (!GetOSDisplayString(szOsBuffer, SIZEOF(szOsBuffer)))
+				lstrcpyn(szOsBuffer, _T(""), SIZEOF(szOsBuffer));
+			else {
+				TCHAR *szOsWindows = _T("Microsoft Windows");
+				size_t nOsWindowsLength = _tcslen( szOsWindows );
+				if (!_tcsnicmp(szOsBuffer, szOsWindows, nOsWindowsLength))
+					os += nOsWindowsLength + 1;
+			}
 		}
 
 		DWORD dwCoreVersion = JCallService( MS_SYSTEM_GETVERSION, NULL, NULL );
@@ -665,8 +668,10 @@ BOOL CJabberClientCapsManager::HandleInfoRequest( HXML, CJabberIqInfo* pInfo, co
 		form << XCHILD( _T("field")) << XATTR( _T("var"), _T("FORM_TYPE")) << XATTR( _T("type"), _T("hidden"))
 			<< XCHILD( _T("value"), _T("urn:xmpp:dataforms:softwareinfo"));
 
-		form << XCHILD( _T("field")) << XATTR( _T("var"), _T("os")) << XCHILD( _T("value"), _T("Microsoft Windows"));
-		form << XCHILD( _T("field")) << XATTR( _T("var"), _T("os_version")) << XCHILD( _T("value"), os );
+		if ( ppro->m_options.ShowOSVersion ) {
+			form << XCHILD( _T("field")) << XATTR( _T("var"), _T("os")) << XCHILD( _T("value"), _T("Microsoft Windows"));
+			form << XCHILD( _T("field")) << XATTR( _T("var"), _T("os_version")) << XCHILD( _T("value"), os );
+		}
 		form << XCHILD( _T("field")) << XATTR( _T("var"), _T("software")) << XCHILD( _T("value"), _T("Miranda IM Jabber Protocol"));
 		form << XCHILD( _T("field")) << XATTR( _T("var"), _T("software_version")) << XCHILD( _T("value"), _T(__VERSION_STRING));
 		form << XCHILD( _T("field")) << XATTR( _T("var"), _T("x-miranda-core-version")) << XCHILD( _T("value"), szCoreVersion );
