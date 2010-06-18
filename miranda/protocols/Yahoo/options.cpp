@@ -58,7 +58,7 @@ static BOOL CALLBACK DlgProcYahooOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 		//SetButtonCheck( hwndDlg, IDC_DISABLE_UTF8, ppro->GetByte( "DisableUTF8", 0 )); 
 		SetButtonCheck( hwndDlg, IDC_USE_YAB, ppro->GetByte( "UseYAB", 1 )); 
 		SetButtonCheck( hwndDlg, IDC_SHOW_AVATARS, ppro->GetByte( "ShowAvatars", 1 )); 
-		SetButtonCheck( hwndDlg, IDC_MAIL_AUTOLOGIN, ppro->GetByte( "MailAutoLogin", 0 )); 
+		SetButtonCheck( hwndDlg, IDC_MAIL_AUTOLOGIN, ppro->GetByte( "MailAutoLogin", 1 )); 
 		SetButtonCheck( hwndDlg, IDC_DISABLEYAHOOMAIL, !ppro->GetByte( "DisableYahoomail", 0 ));
 		SetButtonCheck( hwndDlg, IDC_SHOW_ERRORS, ppro->GetByte( "ShowErrors", 1 )); 
 

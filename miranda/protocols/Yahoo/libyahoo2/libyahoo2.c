@@ -2450,16 +2450,23 @@ static void yahoo_process_y8_list(struct yahoo_input_data *yid, struct yahoo_pac
 static void yahoo_process_verify(struct yahoo_input_data *yid, struct yahoo_packet *pkt)
 {
 	struct yahoo_data *yd = yid->yd;
-
+	struct yahoo_server_settings *yss = yd->server_settings;
+	
 	if(pkt->status != 0x01) {
 		DEBUG_MSG(("expected status: 0x01, got: %d", pkt->status));
 		YAHOO_CALLBACK(ext_yahoo_login_response)(yd->client_id, YAHOO_LOGIN_LOCK, "");
 		return;
 	}
 
-	pkt = yahoo_packet_new(YAHOO_SERVICE_AUTH, YPACKET_STATUS_DEFAULT, yd->session_id);
-
+	pkt = yahoo_packet_new(YAHOO_SERVICE_AUTH, YPACKET_STATUS_DEFAULT, 0);
 	yahoo_packet_hash(pkt, 1, yd->user);
+	//NOTICE(("web messenger: %d", yss->web_messenger));
+	if (yss->web_messenger) {
+		yahoo_packet_hash(pkt, 0, yd->user);
+		yahoo_packet_hash(pkt, 24, "0");
+	}
+	//NOTICE(("Sending initial packet"));
+
 	yahoo_send_packet(yid, pkt, 0);
 
 	yahoo_packet_free(pkt);
@@ -2720,11 +2727,6 @@ LBL_FAILED:
 
 	FREE(response);
 		
-	/*crypt_result = yahoo_crypt(yd->password, "$1$_2S43d5f$");  
-	LOG(("Yahoo Crypt of password: %s", crypt_result));
-	free(crypt_result);*/
-	
-	//pack = yahoo_packet_new(YAHOO_SERVICE_AUTHRESP, (yd->initial_status == YAHOO_STATUS_INVISIBLE) ?YPACKET_STATUS_INVISIBLE:YPACKET_STATUS_WEBLOGIN, yd->session_id);
 	pack = yahoo_packet_new(YAHOO_SERVICE_AUTHRESP, (yd->initial_status == YAHOO_STATUS_INVISIBLE) ?YPACKET_STATUS_INVISIBLE:YPACKET_STATUS_WEBLOGIN, 0);
 /*
 		AuthResp, WebLogin
@@ -4807,13 +4809,28 @@ int yahoo_init_with_attributes(const char *username, const char *password, const
 {
 	va_list ap;
 	struct yahoo_data *yd;
-
+	char *c;
+	
 	yd = y_new0(struct yahoo_data, 1);
 
 	if(!yd)
 		return 0;
 
 	yd->user = strdup(username);
+
+	/* we need to strip out @yahoo.com in case a user enters full e-mail address. 
+	  NOTE: Not sure what other domains to strip out as well
+	 */
+	c = strstr(yd->user, "@yahoo.com");
+	
+	if (c != NULL) 
+		(*c) = '\0';
+	
+	/**
+	 * Lower case it in case a user uses different/mixed case
+	 */
+	strlwr(yd->user);
+	
 	yd->password = strdup(password);
 	yd->pw_token = (pw_token != NULL && pw_token[0] != '\0') ? strdup(pw_token) : NULL;
 	
@@ -4875,15 +4892,7 @@ static void yahoo_connected(int fd, int error, void *data)
 	if(fd < 0)
 		return;
 
-	pkt = yahoo_packet_new(YAHOO_SERVICE_AUTH, YPACKET_STATUS_DEFAULT, yd->session_id);
-	yahoo_packet_hash(pkt, 1, yd->user);
-
-	//NOTICE(("web messenger: %d", yss->web_messenger));
-	if (yss->web_messenger) {
-		yahoo_packet_hash(pkt, 0, yd->user);
-		yahoo_packet_hash(pkt, 24, "0");
-	}
-	//NOTICE(("Sending initial packet"));
+	pkt = yahoo_packet_new(YAHOO_SERVICE_VERIFY, YPACKET_STATUS_DEFAULT, 0);
 
 	yid = y_new0(struct yahoo_input_data, 1);
 	yid->yd = yd;

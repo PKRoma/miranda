@@ -629,9 +629,6 @@ void CYahooProto::ext_got_buddies(YList * buds)
 
 		YAHOO_DEBUGLOG("[ext_got_buddies] id = %s, group = %s, auth = %d", bud->id, bud->group, bud->auth);
 		
-		if (bud->real_name)
-			YAHOO_DEBUGLOG("id = %s name = %s", bud->id, bud->real_name);
-
 		hContact = getbuddyH(bud->id);
 		if (hContact == NULL)
 			hContact = add_buddy(bud->id, (bud->real_name != NULL) ? bud->real_name : bud->id, bud->protocol, 0);
@@ -659,6 +656,11 @@ void CYahooProto::ext_got_buddies(YList * buds)
 		//	YAHOO_DEBUGLOG( "Auth request waiting for: %s", bud->id );
 		SetByte(hContact, "YAuth", bud->auth);
 
+		if (bud->real_name) {
+			YAHOO_DEBUGLOG("id = %s name = %s", bud->id, bud->real_name);
+			SetStringUtf( hContact, "Nick", bud->real_name);
+		}
+
 		if (bud->yab_entry) {
 			//LOG(("YAB_ENTRY"));
 
@@ -667,9 +669,6 @@ void CYahooProto::ext_got_buddies(YList * buds)
 
 			if (bud->yab_entry->lname) 
 				SetStringUtf( hContact, "LastName", bud->yab_entry->lname);
-
-			if (bud->yab_entry->nname) 
-				SetStringUtf( hContact, "Nick", bud->yab_entry->nname);
 
 			if (bud->yab_entry->email) 
 				SetString( hContact, "e-mail", bud->yab_entry->email);
