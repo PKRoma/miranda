@@ -527,7 +527,7 @@ void BuildProtoMenus()
 {
 	for ( int i = 0; i < accounts.getCount(); i++ ) {
 		PROTOACCOUNT* pa = accounts[ i ];
-		if ( !pa->bIsEnabled || !pa->bIsVisible || pa->bDynDisabled )
+		if ( cli.pfnGetProtocolVisibility( pa->szModuleName ) == 0 )
 			continue;
 
 		if ( pa->ppro )
