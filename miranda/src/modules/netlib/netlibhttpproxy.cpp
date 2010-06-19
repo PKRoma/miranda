@@ -200,6 +200,9 @@ static int NetlibHttpGatewayOscarPost(NetlibConnection *nlc, const char *buf, in
 	nlcSend.s                = nlc->s2;
 	nlcSend.sinProxy         = nlc->sinProxy;
 	nlcSend.usingHttpGateway = nlc->usingHttpGateway;
+	nlcSend.szProxyServer    = nlc->szProxyServer;
+	nlcSend.wProxyPort       = nlc->wProxyPort;
+	nlcSend.proxyType        = nlc->proxyType;
 
 	if (!NetlibReconnect(&nlcSend)) return 0;
 	nlc->s2 = nlcSend.s;
@@ -434,9 +437,11 @@ int NetlibInitHttpConnection(struct NetlibConnection *nlc, struct NetlibUser *nl
 
 	if (nlu->user.szHttpGatewayHello != NULL) 
 	{
+		nlc->usingHttpGateway = true;
 		NetlibHttpGatewaySend(nlc, reqHelloGet, NULL, 0);
 
-		nlhrReply = NetlibHttpRecv(nlc, MSG_DUMPPROXY, MSG_DUMPPROXY);
+		nlhrReply = NetlibHttpRecv(nlc, MSG_DUMPPROXY | MSG_RAW, MSG_DUMPPROXY | MSG_RAW);
+		nlc->usingHttpGateway = false;
 		if (nlhrReply == NULL) return 0;
 
 		if (nlhrReply->resultCode != 200) 

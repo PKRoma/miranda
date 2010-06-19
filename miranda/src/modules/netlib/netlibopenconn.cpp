@@ -315,12 +315,12 @@ static bool NetlibInitHttpsConnection(struct NetlibConnection *nlc, struct Netli
 
 	nlc->usingHttpGateway = true;
 
-	if (NetlibHttpSendRequest((WPARAM)nlc,(LPARAM)&nlhrSend) == SOCKET_ERROR)
+	if (NetlibHttpSendRequest((WPARAM)nlc, (LPARAM)&nlhrSend) == SOCKET_ERROR)
 	{
 		nlc->usingHttpGateway = false;
 		return 0;
 	}
-	nlhrReply = (NETLIBHTTPREQUEST*)NetlibHttpRecvHeaders((WPARAM)nlc, MSG_DUMPPROXY | MSG_RAW);
+	nlhrReply = NetlibHttpRecv(nlc, MSG_DUMPPROXY | MSG_RAW, MSG_DUMPPROXY | MSG_RAW, true);
 	nlc->usingHttpGateway = false;
 	if (nlhrReply == NULL) return false;
 	if (nlhrReply->resultCode < 200 || nlhrReply->resultCode >= 300)
@@ -480,7 +480,9 @@ static int NetlibHttpFallbackToDirect(struct NetlibConnection *nlc, struct Netli
 	if (nlc->s) closesocket(nlc->s);
 	nlc->s = NULL;
 
+	nlc->proxyAuthNeeded = false;
 	nlc->proxyType = 0;
+	mir_free(nlc->szProxyServer); nlc->szProxyServer = NULL;
 	nlc->sinProxy.sin_family = AF_INET;
 	nlc->sinProxy.sin_port = htons(nloc->wPort);
 	nlc->sinProxy.sin_addr.S_un.S_addr = DnsLookup(nlu, nloc->szHost);
@@ -559,7 +561,7 @@ bool NetlibDoConnect(NetlibConnection *nlc)
 	if (usingProxy && !((nloc->flags & (NLOCF_HTTP | NLOCF_SSL)) == NLOCF_HTTP && 
 		(nlc->proxyType == PROXYTYPE_HTTP || nlc->proxyType == PROXYTYPE_HTTPS)))
 	{
-		if (!WaitUntilWritable(nlc->s,30000)) return false;
+		if (!WaitUntilWritable(nlc->s, 30000)) return false;
 
 		switch (nlc->proxyType) 
 		{
@@ -572,6 +574,7 @@ bool NetlibDoConnect(NetlibConnection *nlc)
 				break;
 
 			case PROXYTYPE_HTTPS:
+				nlc->proxyAuthNeeded = true;
 				if (!NetlibInitHttpsConnection(nlc, nlu, nloc))
 				{
 					usingProxy = false;
@@ -581,6 +584,7 @@ bool NetlibDoConnect(NetlibConnection *nlc)
 				break;
 
 			case PROXYTYPE_HTTP:
+				nlc->proxyAuthNeeded = true;
 				if (!(nlu->user.flags & NUF_HTTPGATEWAY || nloc->flags & NLOCF_HTTPGATEWAY) || nloc->flags & NLOCF_SSL)
 				{
 					//NLOCF_HTTP not specified and no HTTP gateway available: try HTTPS
@@ -594,7 +598,6 @@ bool NetlibDoConnect(NetlibConnection *nlc)
 				}
 				else 
 				{
-					nlc->proxyAuthNeeded = true;
 					if (!NetlibInitHttpConnection(nlc, nlu, nloc)) return false;
 				}
 				break;

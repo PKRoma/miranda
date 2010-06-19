@@ -129,7 +129,7 @@ INT_PTR NetlibHttpRecvHeaders(WPARAM wParam,LPARAM lParam);
 INT_PTR NetlibHttpFreeRequestStruct(WPARAM wParam,LPARAM lParam);
 INT_PTR NetlibHttpTransaction(WPARAM wParam,LPARAM lParam);
 void NetlibHttpSetLastErrorUsingHttpResult(int result);
-NETLIBHTTPREQUEST* NetlibHttpRecv(NetlibConnection* nlc, DWORD hflags, DWORD dflags);
+NETLIBHTTPREQUEST* NetlibHttpRecv(NetlibConnection* nlc, DWORD hflags, DWORD dflags, bool isConnect = false);
 void NetlibConnFromUrl(const char* szUrl, bool secur, NETLIBOPENCONNECTION &nloc);
 
 //netlibhttpproxy.c
