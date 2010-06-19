@@ -95,8 +95,7 @@ void CAimProto::start_connection(void *arg)
 		char* login_url = getSetting(NULL, AIM_KEY_HN);
 		if (login_url == NULL) login_url = mir_strdup(use_ssl ? AIM_DEFAULT_SERVER : AIM_DEFAULT_SERVER_NS);
 
-		unsigned short port = getWord(AIM_KEY_PN, AIM_DEFAULT_PORT);
-		hServerConn = aim_connect(login_url, port, use_ssl, login_url);
+		hServerConn = aim_connect(login_url, get_default_port(), use_ssl, login_url);
 
 		mir_free(login_url);
 
@@ -133,6 +132,12 @@ bool CAimProto::wait_conn(HANDLE& hConn, HANDLE& hEvent, unsigned short service)
 		return false;
 
 	return true;
+}
+
+
+unsigned short CAimProto::get_default_port(void)
+{
+	return getWord(AIM_KEY_PN, getByte(AIM_KEY_DSSL, 0) ? AIM_DEFAULT_PORT : AIM_DEFAULT_SSL_PORT);
 }
 
 bool CAimProto::is_my_contact(HANDLE hContact)

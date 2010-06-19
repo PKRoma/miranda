@@ -46,7 +46,7 @@ int CAimProto::snac_authorization_reply(SNAC &snac)//family 0x0017
 			{
 				Netlib_CloseHandle(hServerConn);
 
-				unsigned short port = getWord(AIM_KEY_PN, AIM_DEFAULT_PORT);
+				unsigned short port = get_default_port();
 				char* delim = strchr(server, ':');
 				if (delim)
 				{
@@ -1600,7 +1600,7 @@ void CAimProto::snac_service_redirect(SNAC &snac)//family 0x0001
 		}
 		if (family == 0x0018)
 		{
-			hMailConn = aim_connect(server, getWord(AIM_KEY_PN, AIM_DEFAULT_PORT), use_ssl != 0, host);
+			hMailConn = aim_connect(server, get_default_port(), use_ssl != 0, host);
 			if(hMailConn)
 			{
 				LOG("Successfully Connected to the Mail Server.");
@@ -1613,7 +1613,7 @@ void CAimProto::snac_service_redirect(SNAC &snac)//family 0x0001
 		}
 		else if (family == 0x0010)
 		{
-			hAvatarConn = aim_connect(server, getWord(AIM_KEY_PN, AIM_DEFAULT_PORT), false/*use_ssl != 0*/);
+			hAvatarConn = aim_connect(server, get_default_port(), false/*use_ssl != 0*/);
 			if(hAvatarConn)
 			{
 				LOG("Successfully Connected to the Avatar Server.");
@@ -1626,7 +1626,7 @@ void CAimProto::snac_service_redirect(SNAC &snac)//family 0x0001
 		}
 		else if (family == 0x000D)
 		{
-			hChatNavConn = aim_connect(server, getWord(AIM_KEY_PN, AIM_DEFAULT_PORT), use_ssl != 0, host);
+			hChatNavConn = aim_connect(server, get_default_port(), use_ssl != 0, host);
 			if(hChatNavConn)
 			{
 				LOG("Successfully Connected to the Chat Navigation Server.");
@@ -1643,7 +1643,7 @@ void CAimProto::snac_service_redirect(SNAC &snac)//family 0x0001
 			chat_list_item* item = find_chat_by_cid(snac.idh());
 			if (item)
 			{
-				item->hconn = aim_connect(server, getWord(AIM_KEY_PN, AIM_DEFAULT_PORT), use_ssl != 0, host);
+				item->hconn = aim_connect(server, get_default_port(), use_ssl != 0, host);
 				if (item->hconn)
 				{
 					LOG("Successfully Connected to the Chat Server.");
@@ -1658,7 +1658,7 @@ void CAimProto::snac_service_redirect(SNAC &snac)//family 0x0001
 		}
 		else if (family == 0x0007)
 		{
-			hAdminConn = aim_connect(server, getWord(AIM_KEY_PN, AIM_DEFAULT_PORT), false /*use_ssl != 0*/);
+			hAdminConn = aim_connect(server, get_default_port(), false /*use_ssl != 0*/);
 			if(hAdminConn)
 			{
 				LOG("Successfully Connected to the Admin Server.");

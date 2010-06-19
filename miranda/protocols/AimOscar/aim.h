@@ -156,6 +156,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 #define AIM_DEFAULT_SERVER_NS "login.oscar.aol.com"
 #define AIM_PROXY_SERVER "ars.oscar.aol.com"
 #define AIM_DEFAULT_PORT 5190
+#define AIM_DEFAULT_SSL_PORT 443
 
 //Some Defaults for various things
 #define DEFAULT_KEEPALIVE_TIMER 39 // secs

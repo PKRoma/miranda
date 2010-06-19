@@ -822,7 +822,7 @@ static INT_PTR CALLBACK options_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			else
 				SetDlgItemTextA(hwndDlg, IDC_HN, ppro->getByte(AIM_KEY_DSSL, 0) ? AIM_DEFAULT_SERVER_NS : AIM_DEFAULT_SERVER);
 
-			SetDlgItemInt(hwndDlg, IDC_PN, ppro->getWord(AIM_KEY_PN, AIM_DEFAULT_PORT), FALSE);
+			SetDlgItemInt(hwndDlg, IDC_PN, ppro->get_default_port(), FALSE);
 
 			CheckDlgButton(hwndDlg, IDC_DC, ppro->getByte(AIM_KEY_DC, 0));//Message Delivery Confirmation
 			CheckDlgButton(hwndDlg, IDC_FP, ppro->getByte(AIM_KEY_FP, 0));//force proxy
@@ -851,7 +851,7 @@ static INT_PTR CALLBACK options_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			{
 				SetDlgItemTextA(hwndDlg, IDC_HN, 
 					IsDlgButtonChecked(hwndDlg, IDC_DSSL) ? AIM_DEFAULT_SERVER_NS : AIM_DEFAULT_SERVER);
-				SetDlgItemInt(hwndDlg, IDC_PN, AIM_DEFAULT_PORT, FALSE);
+				SetDlgItemInt(hwndDlg, IDC_PN,ppro->get_default_port(), FALSE);
 			}
 
 			if ((LOWORD(wParam) == IDC_SN || LOWORD(wParam) == IDC_PN || LOWORD(wParam) == IDC_NK || LOWORD(wParam) == IDC_PW || LOWORD(wParam) == IDC_HN)
@@ -903,14 +903,6 @@ static INT_PTR CALLBACK options_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 					ppro->deleteSetting(NULL, AIM_KEY_HN);
 				//END HN
 
-				//PN
-				int port = GetDlgItemInt(hwndDlg, IDC_PN, NULL, FALSE);
-				if(port > 0 && port != AIM_DEFAULT_PORT)
-					ppro->setWord(AIM_KEY_PN, (WORD)port);
-				else
-					ppro->deleteSetting(NULL, AIM_KEY_PN);
-				//END PN
-
 				//Delivery Confirmation
 				ppro->setByte(AIM_KEY_DC, IsDlgButtonChecked(hwndDlg, IDC_DC) != 0);
 				//End Delivery Confirmation
@@ -930,6 +922,14 @@ static INT_PTR CALLBACK options_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 				//Force Proxy Transfer
 				ppro->setByte(AIM_KEY_FP, IsDlgButtonChecked(hwndDlg, IDC_FP) != 0);
 				//End Force Proxy Transfer
+
+				//PN
+				int port = GetDlgItemInt(hwndDlg, IDC_PN, NULL, FALSE);
+				if(port > 0 && port != ppro->getByte(AIM_KEY_DSSL, 0) ? AIM_DEFAULT_PORT : AIM_DEFAULT_SSL_PORT)
+					ppro->setWord(AIM_KEY_PN, (WORD)port);
+				else
+					ppro->deleteSetting(NULL, AIM_KEY_PN);
+				//END PN
 
 				//Disable Account Type Icons
 				if (IsDlgButtonChecked(hwndDlg, IDC_AT))

@@ -423,6 +423,7 @@ struct CAimProto : public PROTO_INTERFACE
 	void   offline_contacts(void);
 	void   offline_contact(HANDLE hContact, bool remove_settings);
 	void   execute_cmd(const char* arg);
+	unsigned short get_default_port(void);
 
 	int    open_contact_file(const char* sn, const char* file, const char* mode, char* &path, bool contact_dir);
 	void   write_away_message(const char* sn, const char* msg, bool utf);

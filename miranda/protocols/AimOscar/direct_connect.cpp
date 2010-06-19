@@ -49,8 +49,7 @@ void __cdecl CAimProto::aim_dc_helper(void* param) //only called when we are ini
 		if (!ft->requester && result == 1 && !Miranda_Terminated())
 		{
 			ft->accepted = false;
-			unsigned short port = getWord(AIM_KEY_PN, AIM_DEFAULT_PORT);
-			HANDLE hConn = aim_peer_connect(AIM_PROXY_SERVER, port);
+			HANDLE hConn = aim_peer_connect(AIM_PROXY_SERVER, get_default_port());
 			if (hConn) 
 			{
 				LOG("Connected to proxy ip because we want to use a proxy for the file transfer.");
