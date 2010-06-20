@@ -70,7 +70,7 @@ INT_PTR CALLBACK DlgProcAdded(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
 				off = mir_sntprintf(name, SIZEOF(name), _T("%s"), firstT);
 			else if (lastT[0])
 				off = mir_sntprintf(name, SIZEOF(name), _T("%s"), lastT);
-			if (nickT)
+			if (nickT[0])
 			{
 				if (off)
 					mir_sntprintf(name + off, SIZEOF(name) - off, _T(" (%s)"), nickT);
