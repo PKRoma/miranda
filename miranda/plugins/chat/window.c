@@ -2170,6 +2170,7 @@ LABEL_SHOWWINDOW:
 
 							ClientToScreen(GetDlgItem(hwndDlg, IDC_TAB), &tci.pt);
 							hSubMenu = GetSubMenu(g_hMenu, 5);
+							CallService(MS_LANGPACK_TRANSLATEMENU, (WPARAM) hSubMenu, 0);
 							if (s) {
 								WORD w = DBGetContactSettingWord(s->hContact, s->pszModule, "TabPosition", 0);
 								if ( w == 0)
