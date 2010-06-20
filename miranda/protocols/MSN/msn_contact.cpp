@@ -32,7 +32,7 @@ HANDLE  CMsnProto::MSN_HContactFromEmail(const char* msnEmail, const char* msnNi
 		HANDLE hContact = (HANDLE)MSN_CallService(MS_DB_CONTACT_ADD, 0, 0);
 		MSN_CallService(MS_PROTO_ADDTOCONTACT, (WPARAM)hContact, (LPARAM)m_szModuleName);
 		setString(hContact, "e-mail", szEmail);
-		setStringUtf(hContact, "Nick", (char*)msnNick);
+		setStringUtf(hContact, "Nick", msnNick ? msnNick : msnEmail);
 		if (temporary)
 			DBWriteContactSettingByte(hContact, "CList", "NotOnList", 1);
 

@@ -127,6 +127,8 @@ void  CMsnProto::MSN_AddAuthRequest(const char *email, const char *nick, const c
 	HANDLE hContact = MSN_HContactFromEmail(email, nick, true, false);
 	
 	int emaillen = (int)strlen(email);
+
+	if (nick == NULL) nick = "";
 	int nicklen = (int)strlen(nick);
 
 	if (reason == NULL) reason = "";

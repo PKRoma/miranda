@@ -187,11 +187,11 @@ void CMsnProto::MSN_CleanupLists(void)
 			if (p.list & (LIST_AL | LIST_BL))
 				MSN_AddUser(NULL, p.email, p.netId, LIST_PL + LIST_REMOVE);
 			else
-				MSN_AddAuthRequest(p.email, p.email, p.invite);
+				MSN_AddAuthRequest(p.email, NULL, p.invite);
 		}
 
 		if (p.list == LIST_RL)
-			MSN_AddAuthRequest(p.email, p.email, p.invite);
+			MSN_AddAuthRequest(p.email, NULL, p.invite);
 
 		if (p.hContact && !(p.list & (LIST_LL | LIST_FL | LIST_PL)) && p.list != LIST_RL)
 		{
