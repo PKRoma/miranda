@@ -3,6 +3,17 @@
                            www.miranda-im.org
 
 
+* New in 0.8.26
+Bugfixes:
+ - Minor translation fixes
+ - AIM: Fixed specified port need to be used as a backup
+ - ICQ: Removed version warning
+ - ICQ: Fixed offline message timeout to AIM
+ - MSN: Fixed file/avatar transfer issues for contacts with id that has upper case letters
+ - Yahoo: Fixed issues setting Nick
+ - Yahoo: Strip out username when email address is entered for the username
+
+
 * New in 0.8.25
 Bugfixes:
  - Fixed focus issues with file transfer minimize option
