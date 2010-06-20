@@ -441,9 +441,8 @@ void CMimAPI::InitPaths()
 	mir_sntprintf(m_szProfilePath, MAX_PATH, _T("%stabSRMM"), szUserdataDir);
 	mir_sntprintf(m_szChatLogsPath, MAX_PATH, _T("%s"), szUserdataDir);
 
-	_sntprintf(m_szSkinsPath, MAX_PATH, _T("%s"), szUserdataDir);
-	_sntprintf(m_szSavedAvatarsPath, MAX_PATH, _T("%s\\Saved Contact Pictures"), m_szProfilePath);
-	m_szSkinsPath[MAX_PATH - 1] = m_szSavedAvatarsPath[MAX_PATH - 1] = 0;
+	mir_sntprintf(m_szSkinsPath, MAX_PATH, _T("%s\\skins\\"), m_szProfilePath);
+	mir_sntprintf(m_szSavedAvatarsPath, MAX_PATH, _T("%s\\Saved Contact Pictures"), m_szProfilePath);
 }
 
 bool CMimAPI::getAeroState()

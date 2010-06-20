@@ -394,7 +394,9 @@ LONG_PTR CMenuBar::customDrawWorker(NMCUSTOMDRAW *nm)
 
 					if(szText) {
 						COLORREF clr = CSkin::m_skinEnabled ? CSkin::m_DefaultFontColor :
-										((uState & (CDIS_SELECTED | CDIS_HOT | CDIS_MARKED)) ? ::GetSysColor(COLOR_HIGHLIGHTTEXT) : ::GetSysColor(COLOR_BTNTEXT));
+									 (PluginConfig.m_fillColor ? PluginConfig.m_genericTxtColor : 
+									 (uState & (CDIS_SELECTED | CDIS_HOT | CDIS_MARKED)) ? ::GetSysColor(COLOR_HIGHLIGHTTEXT) : ::GetSysColor(COLOR_BTNTEXT));
+
 						::SetBkMode(m_hdcDraw, TRANSPARENT);
 						CSkin::RenderText(m_hdcDraw, m_hTheme, szText, &nmtb->nmcd.rc, DT_SINGLELINE | DT_VCENTER | DT_CENTER,
 										  CSkin::m_glowSize, clr);

@@ -593,6 +593,8 @@ HWND CreateNewRoom(TContainerData *pContainer, SESSION_INFO *si, BOOL bActivateT
 				SetForegroundWindow(pContainer->hwnd);
 		}
 	}
+	if(PluginConfig.m_bIsWin7 && PluginConfig.m_useAeroPeek && CSkin::m_skinEnabled && !M->GetByte("forceAeroPeek", 0))
+		CWarning::show(CWarning::WARN_AEROPEEK_SKIN, CWarning::CWF_UNTRANSLATED|MB_ICONWARNING|MB_OK);
 	return hwndNew;		// return handle of the new dialog
 }
 

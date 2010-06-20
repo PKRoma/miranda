@@ -120,7 +120,7 @@ TCHAR* CTranslator::m_strings[STR_LAST] = {
 	LPGENT("%s is typing a message."), 					/* GEN_MTN_STARTWITHNICK */
 	LPGENT("Typing Notification"),						/* GEN_MTN_TTITLE */
 	LPGENT("Message from %s"),							/* GEN_MSG_TTITLE */
-	LPGENT("Icon pack missing. Please install it in the /icons subfolder."), /* GEN_ICONPACK_WARNING */
+	LPGENT("/"),										/* GEN_ICONPACK_WARNING */ /* NOT IN USE!! */
 	LPGENT("Select container for %s"),					/* CNT_SELECT_FOR */
 	LPGENT("This name is already in use"),				/* CNT_SELECT_INUSE */
 	LPGENT("You cannot rename the default container"),  /* CNT_SELECT_RENAMEERROR */
@@ -424,8 +424,29 @@ TCHAR* CTranslator::m_OptStrings[OPT_LAST] = {
 	LPGENT("You have chosen to use an external plugin for displaying the message history in the chat window. Most of the settings on this page are for the standard message log viewer only and will have no effect. To change the appearance of the message log, you must configure either IEView or History++."),									/* OPT_MSGLOG_EXPLAINSETTINGS */
 	LPGENT("<no skin>"),											/* OPT_SKIN_NOSKINSELECT */
 };
+
+/** IMPORTANT note to translators for translation of the warning dialogs:
+ *
+ * Make sure to NOT remove the pipe character ( | ) from the strings. This separates the
+ * warning title from the actual warning text.
+ *
+ * Also, do NOT insert multiple | characters in the translated string. Not well-formatted
+ * warnings cannot be translated and the plugin will show the untranslated versions.
+ *
+ * strings marked with a NOT TRANSLATABLE comment cannot be translated at all. This
+ * will be used for important and critical error messages only.
+ */
+TCHAR* CTranslator::m_Warnings[WARN_LAST] = {
+	LPGENT("Important release notes|A test warning message"),							/* WARN_TEST */ /* reserved for important notes after upgrade - NOT translatable */
+	LPGENT("Icon pack version check|The installed icon pack is outdated and might be incompatible with TabSRMM version 3.\n\nMissing or misplaced icons are possible issues with the currently installed icon pack."),			/* WARN_ICONPACKVERSION */
+	LPGENT("Edit user notes|You are editing the user notes. Click the button again or use the hotkey (default: Alt-N) to save the notes and return to normal messaging mode"),  /* WARN_EDITUSERNOTES */
+	LPGENT("Missing component|The icon pack is missing. Please install it to the default icons folder.\n\nNo icons will be available"),		/* WARN_ICONPACKMISSING */ /* NOT TRANSLATABLE */
+	LPGENT("Aero peek warning|Some Windows 7 Aero Peek features are disabled, because you have loaded a skin.\n\n\\b1Task bar thumbnails and previews will not work and default task bar behavior will be used.\\b0 "),	/* WARN_AEROPEEKSKIN */
+};
+
 TCHAR* CTranslator::m_translated[STR_LAST];
 TCHAR* CTranslator::m_OptTranslated[OPT_LAST];
+TCHAR* CTranslator::m_WarningsTranslated[WARN_LAST];
 
 TOptionListGroup CTranslator::m_lvGroupsModPlus[] = {
 	0, LPGENT("Message window tweaks"),
@@ -438,7 +459,6 @@ TOptionListItem CTranslator::m_lvItemsModPlus[] = {
 	0, LPGENT("Enable typing sounds"), 0, LOI_TYPE_SETTING, (UINT_PTR)"adv_soundontyping", 0,
 	0, LPGENT("Disable animated GIF avatars (will not affect already open message windows)"), 0, LOI_TYPE_SETTING, (UINT_PTR)"adv_DisableAniAvatars", 0,
 	0, LPGENT("Close current tab on send"), 0, LOI_TYPE_SETTING, (UINT_PTR)"adv_AutoClose_2", 0,
-	0, LPGENT("Enable icon pack version check (*)"), 1, LOI_TYPE_SETTING, (UINT_PTR)"adv_IconpackWarning", 0,
 	0, LPGENT("Disable error popups on sending failures"), 0, LOI_TYPE_SETTING, (UINT_PTR)"adv_noErrorPopups", 1,
 	0, LPGENT("Use Aero Glass for the message window (Vista+)"), 1, LOI_TYPE_SETTING, (UINT_PTR)"useAero", 0,
 	0, LPGENT("Use Windows 7 task bar features for tabbed windows (*)"), 1, LOI_TYPE_SETTING, (UINT_PTR)"useAeroPeek", 0,

@@ -992,7 +992,7 @@ LRESULT CALLBACK SplitterSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 				CSkin::FillBack(dc, &rc);
 			}
 			else
-				FillRect(dc, &rc, GetSysColorBrush(COLOR_3DFACE));
+				CSkin::FillBack(dc, &rc);
 			EndPaint(hwnd, &ps);
 			return 0;
 		}

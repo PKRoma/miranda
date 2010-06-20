@@ -18,6 +18,7 @@
 #define IDR_SKIN_AERO_GLOW              15
 #define IDD_SENDLATER_QMGR              15
 #define IDR_SKIN_AERO_SWITCHBAR         16
+#define IDD_WARNING                     16
 #define IDR_SKIN_LOGO                   20
 #define IDI_IMGOPEN                     102
 #define IDI_IMGCLOSE                    103
@@ -329,7 +330,6 @@
 #define IDC_AVATARMODE                  1267
 #define IDC_CODEPAGES                   1268
 #define IDC_OWNAVATARMODE               1268
-#define IDC_AVATARSONTASKBAR			2735
 #define IDC_TIMEZONE                    1269
 #define IDC_SENDFORMATTING              1270
 #define IDC_EMPTYLINEFIX                1272
@@ -409,7 +409,7 @@
 #define IDC_STATUSGROUP                 1338
 #define IDC_ALLOWSENDBUTTONHIDE         1340
 #define IDC_VERTICALMAX                 1341
-#define IDC_AUTOSPLITTER				1342
+#define IDC_AUTOSPLITTER                1342
 #define IDC_ICONDLLNAME                 1343
 #define IDC_SAVETEMPLATE                1344
 #define IDC_SELECTICONDLL               1345
@@ -435,8 +435,6 @@
 #define IDC_IGNORETIMEOUTS              1372
 #define IDC_RTLTEMPLOVERRIDE            1373
 #define IDC_SELECTTHEME                 1376
-#define IDC_TSLABEL_EXPLAINTHEME		3123
-#define IDC_TSLABEL_REOPENWARN			3124
 #define IDC_RELOAD                      1376
 #define IDC_LOGOPTIONS                  1377
 #define IDC_WINDOWOPTIONS               1378
@@ -468,6 +466,7 @@
 #define IDC_PLUS_REVERT                 1415
 #define IDC_SIZECOMPACT                 1415
 #define IDC_RESCANSKIN                  1415
+#define IDC_RESETWARNINGS               1415
 #define IDC_TIMEOUTSPIN                 1416
 #define IDC_SIZENORMAL                  1416
 #define IDC_SIZELARGE                   1417
@@ -524,6 +523,12 @@
 #define IDC_QMGR_SUCCESSPOPUPS          1446
 #define IDC_BUTTON2                     1446
 #define IDC_SKIN_CLOSENOW               1446
+#define IDC_CHECK1                      1447
+#define IDC_DONTSHOWAGAIN               1447
+#define IDC_CAPTION                     1448
+#define IDC_WARNTEXT                    1449
+#define IDC_WARNICON                    1450
+#define IDC_WARNGROUP                   1451
 #define IDC_FLASHICON                   1489
 #define IDC_FLASHLABEL                  1490
 #define IDC_STATIC_VISIBILTY            1491
@@ -536,16 +541,16 @@
 #define IDC_TXT_TITLE4                  1620
 #define IDC_TXT_TITLE5                  1622
 #define IDC_TXT_TITLE3                  1623
-#define IDC_EDIT1						1720
 #define IDC_O_EXPLAINGLOBALNOTIFY       1624
-#define IDC_O_AUTOHIDE					1625
-#define IDC_O_AUTOHIDESECONDS			1626
+#define IDC_O_AUTOHIDE                  1625
+#define IDC_O_AUTOHIDESECONDS           1626
 #define IDC_O_ENABLESOUNDS              1701
 #define IDC_O_SOUNDSMINIMIZED           1702
 #define IDC_O_SOUNDSUNFOCUSED           1703
 #define IDC_O_SOUNDSINACTIVE            1704
 #define IDC_O_SOUNDSFOCUSED             1705
 #define IDC_O_TITLEBARFORMAT            1706
+#define IDC_EDIT1                       1720
 #define IDC_O_CNTPRIVATE                1901
 #define IDC_PLUS_CHECKTREE              2000
 #define IDC_COPYRIGHT                   2002
@@ -554,6 +559,9 @@
 #define IDC_O_HELP_TITLEFORMAT          2064
 #define IDC_OPTIONSTAB                  2111
 #define IDC_HEADERBAR                   2397
+#define IDC_AVATARSONTASKBAR            2735
+#define IDC_TSLABEL_EXPLAINTHEME        3123
+#define IDC_TSLABEL_REOPENWARN          3124
 #define IDD_OPT_TYPINGNOTIFYPOPUP       30159
 #define IDI_START1                      30160
 #define IDI_STOP1                       30161
@@ -774,9 +782,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        16
+#define _APS_NEXT_RESOURCE_VALUE        17
 #define _APS_NEXT_COMMAND_VALUE         40263
-#define _APS_NEXT_CONTROL_VALUE         1447
+#define _APS_NEXT_CONTROL_VALUE         1452
 #define _APS_NEXT_SYMED_VALUE           40283
 #endif
 #endif

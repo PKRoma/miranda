@@ -883,7 +883,7 @@ void CInfoPanel::showTip(UINT ctrlId, const LPARAM lParam)
 			size_t		pos;
 			BYTE		xStatus = 0;
 
-			mir_sntprintf(temp, 1024, _T("{\\rtf1\\ansi\\deff0\\pard\\li%u\\fi-%u\\ri%u\\tx%u"), 0, 0, 0, 30*15);
+			mir_sntprintf(temp, 1024, RTF_DEFAULT_HEADER, 0, 0, 0, 30*15);
 
 			tstring *str = new tstring(temp);
 
@@ -1612,26 +1612,20 @@ INT_PTR CALLBACK CTip::WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam
 				case EN_LINK:
 					::SetFocus(m_hRich);
 					switch (((ENLINK *) lParam)->msg) {
-						case WM_LBUTTONUP:
-							TEXTRANGE tr;
-							CHARRANGE sel;
+						case WM_LBUTTONUP: {
+							ENLINK* 		e = reinterpret_cast<ENLINK *>(lParam);
 
-							::SendMessage(m_hRich, EM_EXGETSEL, 0, (LPARAM) & sel);
-							if (sel.cpMin != sel.cpMax)
-								break;
-							tr.chrg = ((ENLINK *) lParam)->chrg;
-							tr.lpstrText = (TCHAR *)mir_alloc(sizeof(TCHAR) * (tr.chrg.cpMax - tr.chrg.cpMin + 8));
-							::SendMessage(m_hRich, EM_GETTEXTRANGE, 0, (LPARAM) & tr);
-							if (_tcschr(tr.lpstrText, '@') != NULL && _tcschr(tr.lpstrText, ':') == NULL && _tcschr(tr.lpstrText, '/') == NULL) {
-								::MoveMemory(tr.lpstrText + 7, tr.lpstrText, sizeof(TCHAR) * (tr.chrg.cpMax - tr.chrg.cpMin + 1));
-								::CopyMemory(tr.lpstrText, _T("mailto:"), 7);
+							const TCHAR*	tszUrl = Utils::extractURLFromRichEdit(e, m_hRich);
+							if(tszUrl) {
+								char* szUrl = mir_t2a(tszUrl);
+
+								CallService(MS_UTILS_OPENURL, 1, (LPARAM)szUrl);
+								mir_free(szUrl);
+								mir_free(const_cast<TCHAR *>(tszUrl));
 							}
-							char *szUrl = mir_t2a(tr.lpstrText);
-							CallService(MS_UTILS_OPENURL, 1, (LPARAM)szUrl);
-							mir_free(szUrl);
-							mir_free(tr.lpstrText);
 							::DestroyWindow(hwnd);
 							break;
+						}
 					}
 					break;
 				default:

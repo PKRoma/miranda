@@ -299,6 +299,10 @@ INT_PTR CALLBACK DlgProcAbout(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
 				case IDC_SUPPORT:
 					CallService(MS_UTILS_OPENURL, 1, (LPARAM)"http://miranda.or.at/TabSrmm:Development3_0_KnownIssues");
 					break;
+				case IDC_RESETWARNINGS:
+					M->WriteDword(SRMSGMOD_T, "cWarningsL", 0);
+					M->WriteDword(SRMSGMOD_T, "cWarningsH", 0);
+					break;
 			}
 			break;
 		case WM_CTLCOLOREDIT:

@@ -250,10 +250,7 @@ static int TSAPI RescanSkins(HWND hwndCombobox)
 	DBVARIANT 				dbv = {0};
 
 
-	if(!M->haveFoldersPlugin())
-		mir_sntprintf(tszSkinRoot, MAX_PATH, _T("%sTabSRMM\\skins\\"), M->getSkinPath());
-	else
-		mir_sntprintf(tszSkinRoot, MAX_PATH, _T("%s"), M->getSkinPath());
+	mir_sntprintf(tszSkinRoot, MAX_PATH, _T("%s"), M->getSkinPath());
 
 	SetDlgItemText(GetParent(hwndCombobox), IDC_SKINROOTFOLDER, tszSkinRoot);
 	mir_sntprintf(tszFindMask, MAX_PATH, _T("%s*.*"), tszSkinRoot);
@@ -533,6 +530,10 @@ static INT_PTR CALLBACK DlgProcOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 				}
 				case IDC_HELP_GENERAL:
 					CallService(MS_UTILS_OPENURL, 1, (LPARAM)"http://wiki.miranda.or.at/GeneralSettings");
+					break;
+				case IDC_RESETWARNINGS:
+					M->WriteDword(SRMSGMOD_T, "cWarningsL", 0);
+					M->WriteDword(SRMSGMOD_T, "cWarningsH", 0);
 					break;
 			}
 			SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);

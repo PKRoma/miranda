@@ -579,7 +579,6 @@ LRESULT TSAPI DM_MsgWindowCmdHandler(HWND hwndDlg, TContainerData *m_pContainer,
 					SetDlgItemText(hwndDlg, IDC_MESSAGE, dbv.ptszVal);
 					mir_free(dbv.ptszVal);
 				}
-				SendMessage(hwndDlg, DM_ACTIVATETOOLTIP, IDC_PIC, (LPARAM)CTranslator::get(CTranslator::GEN_MSG_EDIT_NOTES_TIP));
 			}
 			else {
 				int iLen = GetWindowTextLength(GetDlgItem(hwndDlg, IDC_MESSAGE));
@@ -598,6 +597,9 @@ LRESULT TSAPI DM_MsgWindowCmdHandler(HWND hwndDlg, TContainerData *m_pContainer,
 			SetWindowPos(GetDlgItem(hwndDlg, IDC_MESSAGE), 0, 0, 0, 0, 0, SWP_DRAWFRAME|SWP_FRAMECHANGED|SWP_NOZORDER|
 						 SWP_NOMOVE|SWP_NOSIZE|SWP_NOCOPYBITS);
 			RedrawWindow(hwndDlg, 0, 0, RDW_INVALIDATE|RDW_ERASE|RDW_FRAME|RDW_UPDATENOW|RDW_ALLCHILDREN);
+
+			if(dat->fEditNotesActive)
+				CWarning::show(CWarning::WARN_EDITUSERNOTES, MB_OK|MB_ICONINFORMATION);
 			break;
 		}
 		case IDM_CLEAR:

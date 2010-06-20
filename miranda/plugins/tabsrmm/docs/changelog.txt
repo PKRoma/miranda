@@ -35,7 +35,16 @@ are currently no downloads for it, you'll have to compile it from source.
 			Detailed change log
 			===================
 
-Version 3.0.0.36 - 2010/06/04
+Version 3.0.0.37 - 2010/06/15
+
+	* changed logic for calculating relative skin path names. You will most likely
+	  have to reload your skins.
+
+	* fixed a possible crash when unloading/reloading skins.
+
+	* some updates for task bar thumbnails.
+
+Version 3.0.0.36 - 2010/06/04 - released with Miranda 0.9.alpha#10
 
 	* task bar support (Win 7), removed check for running DWM. Task bar tabs should
 	  now work with classic and non-aero themes in Windows 7 (no thumbnails, though,

@@ -865,7 +865,9 @@ HWND TSAPI CreateNewTabForContact(struct TContainerData *pContainer, HANDLE hCon
 		}
 		SendMessage(pContainer->hwndActive, WM_SIZE, 0, 0);
 	}
-	//MaD_
+	if(PluginConfig.m_bIsWin7 && PluginConfig.m_useAeroPeek && CSkin::m_skinEnabled && !M->GetByte("forceAeroPeek", 0))
+		CWarning::show(CWarning::WARN_AEROPEEK_SKIN, CWarning::CWF_UNTRANSLATED|MB_ICONWARNING|MB_OK);
+
 	return hwndNew;		// return handle of the new dialog
 }
 
@@ -1053,19 +1055,12 @@ static int GetIconPackVersion(HMODULE hDLL)
 			version = 3;
 		else if (!strcmp(szIDString, "__tabSRMM_ICONPACK 3.5__"))
 			version = 4;
+		else if (!strcmp(szIDString, "__tabSRMM_ICONPACK 5.0__"))
+			version = 5;
 	}
 
-	/*
-	 * user may disable warnings about incompatible icon packs
-	 */
-
-	if(!M->GetByte("adv_IconpackWarning", 1))
-		return version;
-
-	if (version == 0)
-		MessageBox(0, _T("The icon pack is either missing or too old."), _T("tabSRMM warning"), MB_OK | MB_ICONWARNING);
-	else if (version > 0 && version < 4)
-		MessageBox(0, _T("You are using an old icon pack (tabsrmm_icons.dll version < 3.5). This can cause missing icons, so please update the icon pack"), _T("tabSRMM warning"), MB_OK | MB_ICONWARNING);
+	if (version < 5)
+		CWarning::show(CWarning::WARN_ICONPACK_VERSION, CWarning::CWF_UNTRANSLATED|MB_OK|MB_ICONERROR);
 	return version;
 }
 /*
@@ -1082,7 +1077,7 @@ static int TSAPI SetupIconLibConfig()
 	strncpy(szFilename, "icons\\tabsrmm_icons.dll", MAX_PATH);
 	g_hIconDLL = LoadLibraryA(szFilename);
 	if (g_hIconDLL == 0) {
-		MessageBox(0, CTranslator::get(CTranslator::GEN_ICONPACK_WARNING), _T("tabSRMM"), MB_OK);
+		CWarning::show(CWarning::WARN_ICONPACKMISSING, CWarning::CWF_NOALLOWHIDE|CWarning::CWF_UNTRANSLATED|MB_ICONERROR|MB_OK);
 		return 0;
 	}
 

@@ -118,7 +118,7 @@ public:
 		GEN_MTN_STARTWITHNICK									= 70,
 		GEN_MTN_TTITLE											= 71,
 		GEN_MSG_TTITLE											= 72,
-		GEN_ICONPACK_WARNING									= 73,
+		GEN_ICONPACK_WARNING									= 73,		// unused!
 		CNT_SELECT_FOR											= 74,
 		CNT_SELECT_INUSE										= 75,
 		CNT_SELECT_RENAMEERROR									= 76,
@@ -388,6 +388,14 @@ public:
 		OPT_LAST												= 102
 	};
 
+	enum {
+		WARN_RELNOTES											= 0,
+		WARN_ICONPACKVERSION									= 1,
+		WARN_EDITUSERNOTES										= 2,
+		WARN_ICONPACKMISSING									= 3,
+		WARN_AEROPEEKSKIN										= 4,
+		WARN_LAST												= 5
+	};
 	/*
 	 * identities for the option trees
 	 */
@@ -413,6 +421,16 @@ public:
 		return(m_OptTranslated[id]);
 	}
 
+	inline static const TCHAR* getWarning(const UINT id)
+	{
+		return(m_WarningsTranslated[id]);
+	}
+
+	inline static const TCHAR* getUntranslatedWarning(const UINT id)
+	{
+		return(m_Warnings[id]);
+	}
+
 	inline static const TCHAR *getWeekday(const UINT id)
 	{
 		return(weekDays_translated[id]);
@@ -432,6 +450,9 @@ public:
 
 		for(i = 0; i < OPT_LAST; i++)
 			m_OptTranslated[i] = TranslateTS(m_OptStrings[i]);
+
+		for(i = 0; i < WARN_LAST; i++)
+			m_WarningsTranslated[i] = TranslateTS(m_Warnings[i]);
 
 		translateGroupTree(m_lvGroupsModPlus);
 		translateGroupTree(m_lvGroupsNEN);
@@ -464,6 +485,9 @@ private:
 
 	static TCHAR *m_OptStrings[OPT_LAST];
 	static TCHAR *m_OptTranslated[OPT_LAST];
+
+	static TCHAR *m_Warnings[WARN_LAST];
+	static TCHAR *m_WarningsTranslated[WARN_LAST];
 
 	static TCHAR *weekDays[7];
 	static TCHAR *months[12];

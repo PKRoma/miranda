@@ -140,7 +140,6 @@ void CTaskbarInteract::registerTab(const HWND hwndTab, const HWND hwndContainer)
 	if(m_isEnabled) {
 		m_pTaskbarInterface->RegisterTab(hwndTab, hwndContainer);
 		m_pTaskbarInterface->SetTabOrder(hwndTab, 0);
-		//m_pTaskbarInterface->SetThumbnailTooltip(hwndContainer, _T(""));
 	}
 }
 
@@ -181,7 +180,7 @@ void CTaskbarInteract::SetTabActive(const HWND hwndTab, const HWND hwndGroup) co
  */
 void CProxyWindow::add(TWindowData *dat)
 {
-	if(PluginConfig.m_bIsWin7 && PluginConfig.m_useAeroPeek)
+	if(PluginConfig.m_bIsWin7 && PluginConfig.m_useAeroPeek && (!CSkin::m_skinEnabled || M->GetByte("forceAeroPeek", 0)))
 		dat->pWnd = new CProxyWindow(dat);
 	else
 		dat->pWnd = 0;

@@ -9,6 +9,8 @@
 //
 #include <windows.h>
 #include <winres.h>
+#include <richedit.h>
+
 #include "../../include/statusmodes.h"
 
 
@@ -274,18 +276,19 @@ STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD | WS_VISIBLE
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     GROUPBOX        "Message window options",IDC_STATIC,3,0,300,112
-    CONTROL         "",IDC_WINDOWOPTIONS,"SysTreeView32",TVS_DISABLEDRAGDROP | TVS_SHOWSELALWAYS | WS_BORDER | WS_TABSTOP,6,9,294,100
+    CONTROL         "",IDC_WINDOWOPTIONS,"SysTreeView32",TVS_DISABLEDRAGDROP | TVS_SHOWSELALWAYS | WS_BORDER | WS_HSCROLL | WS_TABSTOP,6,9,294,100
     GROUPBOX        "Avatar options (size and scaling only for bottom avatar display)",IDC_STATIC,3,117,300,42
     LTEXT           "Maximum display height (pixels)",IDC_STATIC,10,129,160,10
     EDITTEXT        IDC_MAXAVATARHEIGHT,174,127,35,12,ES_AUTOHSCROLL | ES_NUMBER
     CONTROL         "",IDC_AVATARSPIN,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,209,125,9,11
     LTEXT           "(0 = no limit)",IDC_STATIC,224,128,75,11
-    GROUPBOX        "Miscellaneous options",IDC_STATIC,3,198,300,27
-    LTEXT           "Send text formatting:",IDC_STATIC,9,211,132,11
-    COMBOBOX        IDC_SENDFORMATTING,143,209,74,46,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    GROUPBOX        "Miscellaneous options",IDC_STATIC,3,161,300,60
+    LTEXT           "Send text formatting:",IDC_STATIC,9,174,132,11
+    COMBOBOX        IDC_SENDFORMATTING,143,172,74,46,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     CONTROL         "Try to keep original size",IDC_PRESERVEAVATARSIZE,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,143,285,9
-    CONTROL         "Help on this",IDC_HELP_GENERAL,"Hyperlink",WS_TABSTOP | 0x1,224,211,67,9
+    CONTROL         "Help on this",IDC_HELP_GENERAL,"Hyperlink",WS_TABSTOP | 0x1,224,174,67,9
+    PUSHBUTTON      "Reset all hidden warnings",IDC_RESETWARNINGS,144,197,153,15
 END
 
 IDD_OPT_MSGLOG DIALOGEX 0, 0, 303, 226
@@ -533,6 +536,7 @@ BEGIN
     CTEXT           "",IDC_BUILDTIME,37,105,150,11
     CONTROL         "Support and latest version information",IDC_SUPPORT,
                     "Hyperlink",WS_TABSTOP | 0x1,18,91,192,12
+    PUSHBUTTON      "Reset all hidden warnings",IDC_RESETWARNINGS,2,123,133,14
 END
 
 IDD_OPT_SKIN DIALOGEX 0, 0, 303, 224
@@ -887,11 +891,19 @@ BEGIN
     BEGIN
     END
 
+    IDD_OPT_MSGDLG, DIALOG
+    BEGIN
+    END
+
     IDD_OPT_CONTAINERS, DIALOG
     BEGIN
     END
 
     IDD_TABCONFIG, DIALOG
+    BEGIN
+    END
+
+    IDD_ABOUT, DIALOG
     BEGIN
     END
 
@@ -942,6 +954,26 @@ BEGIN
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,242,210,12
 END
 
+IDD_WARNING DIALOGEX 0, 0, 298, 105
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Dialog"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
+BEGIN
+    LTEXT           "",IDC_STATIC,0,0,298,76
+    CONTROL         "Do not show this message again",IDC_DONTSHOWAGAIN,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,77,277,11
+    CONTROL         "",IDC_WARNTEXT,RICHEDIT_CLASS,ES_MULTILINE | ES_READONLY |
+                    ES_AUTOVSCROLL | ES_NOHIDESEL | ES_WANTRETURN | 
+                    WS_CHILD | WS_VSCROLL | WS_TABSTOP,36,23,250,51,0
+    ICON            "",IDC_WARNICON,6,8,24,24,SS_CENTERIMAGE
+    LTEXT           "Static",IDC_CAPTION,36,5,252,16
+    DEFPUSHBUTTON   "OK",IDOK,245,88,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,241,88,50,14
+    PUSHBUTTON      "Yes",IDYES,136,88,50,14
+    PUSHBUTTON      "No",IDNO,189,88,50,14
+    CONTROL         "",IDC_WARNGROUP,"Static",SS_ENHMETAFILE,0,74,297,2
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -957,6 +989,15 @@ BEGIN
         RIGHTMARGIN, 477
         TOPMARGIN, 7
         BOTTOMMARGIN, 254
+    END
+
+    IDD_WARNING, DIALOG
+    BEGIN
+        MOCKUP, 0, 100, 0, 0, ".\res\Logo.ico"
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 291
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 98
     END
 END
 #endif    // APSTUDIO_INVOKED

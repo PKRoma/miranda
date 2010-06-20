@@ -178,7 +178,6 @@ public:
 	void			registerTab						(const HWND hwndTab, const HWND hwndContainer) const;
 	void			unRegisterTab					(const HWND hwndTab) const;
 	void			SetTabActive					(const HWND hwndTab, const HWND hwndGroup) const;
-	void			setThumbnailClip				(const HWND hwndTab, const RECT* rc) const;
 
 	//const TCHAR*	getFileNameFromWindow			(const HWND hWnd);
 private:

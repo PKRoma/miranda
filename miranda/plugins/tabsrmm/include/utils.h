@@ -37,6 +37,8 @@
 
 #define RTF_CTABLE_DEFSIZE 8
 
+#define RTF_DEFAULT_HEADER _T("{\\rtf1\\ansi\\deff0\\pard\\li%u\\fi-%u\\ri%u\\tx%u")
+
 #if defined(_UNICODE)
 	#define		CNT_KEYNAME "CNTW_Def"
 	#define CNT_BASEKEYNAME "CNTW_"
@@ -110,6 +112,7 @@ public:
 	static	void				TSAPI sanitizeFilename				(TCHAR *tszFilename);
 
 	static	INT_PTR CALLBACK		  PopupDlgProcError				(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+	static	const TCHAR*			  extractURLFromRichEdit		(const ENLINK* _e, const HWND hwndRich);
 
 	template<typename T> static size_t TSAPI CopyToClipBoard(T* _t, const HWND hwndOwner)
 	{
@@ -192,5 +195,60 @@ public:
 };
 
 LRESULT TSAPI		_dlgReturn(HWND hWnd, LRESULT result);
+
+
+
+/**
+ * implement a warning dialog with a "do not show this again" check
+ * box
+ */
+
+class CWarning {
+
+public:
+	/*
+	 * the warning IDs
+	 */
+	enum {
+		WARN_RELNOTES						= 0,
+		WARN_ICONPACK_VERSION				= 1,
+		WARN_EDITUSERNOTES					= 2,
+		WARN_ICONPACKMISSING				= 3,
+		WARN_AEROPEEK_SKIN					= 4,
+	};
+
+	/*
+	 * the flags (low word is reserved for default windows flags like MB_OK etc.
+	 */
+
+	enum {
+		CWF_UNTRANSLATED					= 0x00010000,			// do not translate the msg (useful for some error messages)
+		CWF_NOALLOWHIDE						= 0x00020000			// critical message, hide the "do not show this again" check box
+	};
+
+	CWarning(const TCHAR* tszTitle, const TCHAR* tszText, const UINT uId, const DWORD dwFlags);
+	~CWarning();
+
+public:
+	/*
+	 * static function to construct and show the dialog, returns the
+	 * user's choice
+	 */
+	static	LRESULT			show				(const UINT uId, const DWORD dwFlags = 0);
+	LRESULT					ShowDialog			() const;
+
+private:
+	std::basic_string<TCHAR>*		m_szTitle;
+	std::basic_string<TCHAR>*		m_szText;
+	UINT							m_uId;
+	HFONT							m_hFontCaption;
+	DWORD							m_dwFlags;
+	HWND							m_hwnd;
+
+	INT_PTR	CALLBACK		dlgProc				(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
+	//void					resize				() const;
+	static INT_PTR CALLBACK	stubDlgProc			(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
+	static  __int64			getMask				();		// get bit mask for disabled message classes
+};
 
 #endif /* __UTILS_H */
