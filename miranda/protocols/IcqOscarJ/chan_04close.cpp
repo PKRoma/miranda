@@ -263,7 +263,7 @@ void CIcqProto::handleSignonError(WORD wError)
 		break;
 
 	case 0x1C: // You are using an older version of ICQ. Upgrade recommended
-		icq_LogMessage(LOG_WARNING, LPGEN("The server sent warning, this version is getting old.\nTry to look for a new one."));
+//		icq_LogMessage(LOG_WARNING, LPGEN("The server sent warning, this version is getting old.\nTry to look for a new one."));
 		break;
 
 	case 0x1E: // Can't register on the ICQ network
