@@ -818,9 +818,9 @@ int CIcqProto::GetAvatarData(HANDLE hContact, DWORD dwUin, char *szUid, const BY
 					continue;
 				}
 				m_avatarsMutex->Leave();
-				NetLog_Server("Avatars: Requests for %s avatar are blocked.", strUID(dwUin, szUid));
-
-        return 0;
+				uid_str szUidTemp;
+				NetLog_Server("Avatars: Requests for %s avatar are blocked.", dwUin ? strUID(dwUin, szUidTemp) : szUid);
+				return 0;
 			}
 			ar = ar->pNext;
 		}
