@@ -108,17 +108,17 @@ static void	InitButtons(HWND hwndDlg, SESSION_INFO* si)
 	SendDlgItemMessage( hwndDlg, IDC_FILTER,       BUTTONSETASFLATBTN, 0, 0 );
 	SendDlgItemMessage( hwndDlg, IDC_CLOSE,        BUTTONSETASFLATBTN, 0, 0 );
 
-	SendMessage(GetDlgItem(hwndDlg,IDC_SMILEY), BUTTONADDTOOLTIP, (WPARAM)Translate("Insert a smiley"), 0);
-	SendMessage(GetDlgItem(hwndDlg,IDC_BOLD), BUTTONADDTOOLTIP, (WPARAM)Translate("Make the text bold (CTRL+B)"), 0);
-	SendMessage(GetDlgItem(hwndDlg,IDC_ITALICS), BUTTONADDTOOLTIP, (WPARAM)Translate("Make the text italicized (CTRL+I)"), 0);
-	SendMessage(GetDlgItem(hwndDlg,IDC_UNDERLINE), BUTTONADDTOOLTIP, (WPARAM)Translate("Make the text underlined (CTRL+U)"), 0);
-	SendMessage(GetDlgItem(hwndDlg,IDC_BKGCOLOR), BUTTONADDTOOLTIP, (WPARAM)Translate("Select a background color for the text (CTRL+L)"), 0);
-	SendMessage(GetDlgItem(hwndDlg,IDC_COLOR), BUTTONADDTOOLTIP, (WPARAM)Translate("Select a foreground color for the text (CTRL+K)"), 0);
-	SendMessage(GetDlgItem(hwndDlg,IDC_HISTORY), BUTTONADDTOOLTIP, (WPARAM)Translate("Show the history (CTRL+H)"), 0);
-	SendMessage(GetDlgItem(hwndDlg,IDC_SHOWNICKLIST), BUTTONADDTOOLTIP, (WPARAM)Translate("Show/hide the nicklist (CTRL+N)"), 0);
-	SendMessage(GetDlgItem(hwndDlg,IDC_CHANMGR), BUTTONADDTOOLTIP, (WPARAM)Translate("Control this room (CTRL+O)"), 0);
-	SendMessage(GetDlgItem(hwndDlg,IDC_FILTER), BUTTONADDTOOLTIP, (WPARAM)Translate("Enable/disable the event filter (CTRL+F)"), 0);
-	SendMessage(GetDlgItem(hwndDlg,IDC_CLOSE), BUTTONADDTOOLTIP, (WPARAM)Translate("Close current tab (CTRL+F4)"), 0);
+	SendMessage(GetDlgItem(hwndDlg,IDC_SMILEY), BUTTONADDTOOLTIP, (WPARAM)LPGEN("Insert a smiley"), 0);
+	SendMessage(GetDlgItem(hwndDlg,IDC_BOLD), BUTTONADDTOOLTIP, (WPARAM)LPGEN("Make the text bold (CTRL+B)"), 0);
+	SendMessage(GetDlgItem(hwndDlg,IDC_ITALICS), BUTTONADDTOOLTIP, (WPARAM)LPGEN("Make the text italicized (CTRL+I)"), 0);
+	SendMessage(GetDlgItem(hwndDlg,IDC_UNDERLINE), BUTTONADDTOOLTIP, (WPARAM)LPGEN("Make the text underlined (CTRL+U)"), 0);
+	SendMessage(GetDlgItem(hwndDlg,IDC_BKGCOLOR), BUTTONADDTOOLTIP, (WPARAM)LPGEN("Select a background color for the text (CTRL+L)"), 0);
+	SendMessage(GetDlgItem(hwndDlg,IDC_COLOR), BUTTONADDTOOLTIP, (WPARAM)LPGEN("Select a foreground color for the text (CTRL+K)"), 0);
+	SendMessage(GetDlgItem(hwndDlg,IDC_HISTORY), BUTTONADDTOOLTIP, (WPARAM)LPGEN("Show the history (CTRL+H)"), 0);
+	SendMessage(GetDlgItem(hwndDlg,IDC_SHOWNICKLIST), BUTTONADDTOOLTIP, (WPARAM)LPGEN("Show/hide the nicklist (CTRL+N)"), 0);
+	SendMessage(GetDlgItem(hwndDlg,IDC_CHANMGR), BUTTONADDTOOLTIP, (WPARAM)LPGEN("Control this room (CTRL+O)"), 0);
+	SendMessage(GetDlgItem(hwndDlg,IDC_FILTER), BUTTONADDTOOLTIP, (WPARAM)LPGEN("Enable/disable the event filter (CTRL+F)"), 0);
+	SendMessage(GetDlgItem(hwndDlg,IDC_CLOSE), BUTTONADDTOOLTIP, (WPARAM)LPGEN("Close current tab (CTRL+F4)"), 0);
 	SendDlgItemMessage(hwndDlg, IDC_BOLD, BUTTONSETASPUSHBTN, 0, 0);
 	SendDlgItemMessage(hwndDlg, IDC_ITALICS, BUTTONSETASPUSHBTN, 0, 0);
 	SendDlgItemMessage(hwndDlg, IDC_UNDERLINE, BUTTONSETASPUSHBTN, 0, 0);
@@ -2165,6 +2165,7 @@ LABEL_SHOWWINDOW:
 
 							ClientToScreen(GetDlgItem(hwndDlg, IDC_TAB), &tci.pt);
 							hSubMenu = GetSubMenu(g_hMenu, 5);
+							CallService(MS_LANGPACK_TRANSLATEMENU, (WPARAM) hSubMenu, 0);
 							if (s) {
 								WORD w = DBGetContactSettingWord(s->hContact, s->pszModule, "TabPosition", 0);
 								if ( w == 0)
