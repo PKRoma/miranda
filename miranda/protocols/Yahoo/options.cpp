@@ -121,7 +121,15 @@ static BOOL CALLBACK DlgProcYahooOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 			
 			ppro->SetString( YAHOO_PASSWORD, str );
 			GetDlgItemTextA( hwndDlg, IDC_NICK, str, sizeof( str ));
-			ppro->SetString( "Nick", str );
+			
+			
+			if (str[0] == '\0') {
+				/* Check for empty Nick, if so delete the key in the DB */
+				DBDeleteContactSetting( NULL, ppro->m_szModuleName, "Nick" );
+			} else {
+				/* otherwise save the new Nick */
+				ppro->SetString( "Nick", str );
+			}
 
 			//ppro->SetByte("DisableUTF8", ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_DISABLE_UTF8 )); 
 			ppro->SetByte("UseYAB", ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_USE_YAB )); 
