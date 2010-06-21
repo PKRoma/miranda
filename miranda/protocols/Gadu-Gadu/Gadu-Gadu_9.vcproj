@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="windows-1250"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="9.00"
+	Version="9,00"
 	Name="GG"
 	ProjectGUID="{6DA1396F-2A44-4D5C-8442-012F71006217}"
 	RootNamespace="GG"
@@ -74,6 +74,7 @@
 				Name="VCResourceCompilerTool"
 				PreprocessorDefinitions="_DEBUG"
 				Culture="1033"
+				AdditionalIncludeDirectories="../../include"
 			/>
 			<Tool
 				Name="VCPreLinkEventTool"
@@ -278,6 +279,7 @@
 				Name="VCResourceCompilerTool"
 				PreprocessorDefinitions="NDEBUG"
 				Culture="1033"
+				AdditionalIncludeDirectories="../../include"
 			/>
 			<Tool
 				Name="VCPreLinkEventTool"
@@ -490,6 +492,7 @@
 				Name="VCResourceCompilerTool"
 				PreprocessorDefinitions="_DEBUG"
 				Culture="1033"
+				AdditionalIncludeDirectories="../../include"
 			/>
 			<Tool
 				Name="VCPreLinkEventTool"
@@ -698,6 +701,7 @@
 				Name="VCResourceCompilerTool"
 				PreprocessorDefinitions="NDEBUG"
 				Culture="1033"
+				AdditionalIncludeDirectories="../../include"
 			/>
 			<Tool
 				Name="VCPreLinkEventTool"

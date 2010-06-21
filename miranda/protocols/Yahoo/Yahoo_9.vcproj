@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="windows-1251"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="9.00"
+	Version="9,00"
 	Name="Yahoo"
 	ProjectGUID="{E42870DB-9FED-44E7-9C93-4E64D0C87F51}"
 	RootNamespace="Yahoo"
@@ -72,6 +72,7 @@
 				Name="VCResourceCompilerTool"
 				PreprocessorDefinitions="_DEBUG"
 				Culture="1049"
+				AdditionalIncludeDirectories="../../include"
 			/>
 			<Tool
 				Name="VCPreLinkEventTool"
@@ -267,6 +268,7 @@
 				Name="VCResourceCompilerTool"
 				PreprocessorDefinitions="NDEBUG"
 				Culture="1049"
+				AdditionalIncludeDirectories="../../include"
 			/>
 			<Tool
 				Name="VCPreLinkEventTool"
@@ -472,6 +474,7 @@
 				Name="VCResourceCompilerTool"
 				PreprocessorDefinitions="_DEBUG"
 				Culture="1049"
+				AdditionalIncludeDirectories="../../include"
 			/>
 			<Tool
 				Name="VCPreLinkEventTool"
@@ -671,6 +674,7 @@
 				Name="VCResourceCompilerTool"
 				PreprocessorDefinitions="NDEBUG"
 				Culture="1049"
+				AdditionalIncludeDirectories="../../include"
 			/>
 			<Tool
 				Name="VCPreLinkEventTool"

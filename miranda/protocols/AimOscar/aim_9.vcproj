@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="9.00"
+	Version="9,00"
 	Name="aim"
 	ProjectGUID="{736E59E5-CDCE-4C88-9C3A-E7913D45C9EC}"
 	RootNamespace="aim"
@@ -79,6 +79,7 @@
 				Name="VCResourceCompilerTool"
 				PreprocessorDefinitions="NDEBUG"
 				Culture="2057"
+				AdditionalIncludeDirectories="../../include"
 			/>
 			<Tool
 				Name="VCPreLinkEventTool"
@@ -276,6 +277,7 @@
 				Name="VCResourceCompilerTool"
 				PreprocessorDefinitions="_DEBUG"
 				Culture="2057"
+				AdditionalIncludeDirectories="../../include"
 			/>
 			<Tool
 				Name="VCPreLinkEventTool"
@@ -462,6 +464,7 @@
 				Name="VCResourceCompilerTool"
 				PreprocessorDefinitions="_DEBUG"
 				Culture="2057"
+				AdditionalIncludeDirectories="../../include"
 			/>
 			<Tool
 				Name="VCPreLinkEventTool"
@@ -657,6 +660,7 @@
 				Name="VCResourceCompilerTool"
 				PreprocessorDefinitions="NDEBUG"
 				Culture="2057"
+				AdditionalIncludeDirectories="../../include"
 			/>
 			<Tool
 				Name="VCPreLinkEventTool"

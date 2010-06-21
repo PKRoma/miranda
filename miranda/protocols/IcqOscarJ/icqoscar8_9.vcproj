@@ -82,6 +82,7 @@
 				Name="VCResourceCompilerTool"
 				PreprocessorDefinitions="NDEBUG"
 				Culture="1047"
+				AdditionalIncludeDirectories="../../include"
 			/>
 			<Tool
 				Name="VCPreLinkEventTool"
@@ -291,6 +292,7 @@
 				Name="VCResourceCompilerTool"
 				PreprocessorDefinitions="_DEBUG"
 				Culture="2057"
+				AdditionalIncludeDirectories="../../include"
 			/>
 			<Tool
 				Name="VCPreLinkEventTool"
@@ -485,6 +487,7 @@
 				Name="VCResourceCompilerTool"
 				PreprocessorDefinitions="_DEBUG"
 				Culture="2057"
+				AdditionalIncludeDirectories="../../include"
 			/>
 			<Tool
 				Name="VCPreLinkEventTool"
@@ -690,6 +693,7 @@
 				Name="VCResourceCompilerTool"
 				PreprocessorDefinitions="NDEBUG"
 				Culture="1047"
+				AdditionalIncludeDirectories="../../include"
 			/>
 			<Tool
 				Name="VCPreLinkEventTool"
