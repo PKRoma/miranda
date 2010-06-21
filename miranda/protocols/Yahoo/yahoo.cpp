@@ -415,7 +415,7 @@ void CYahooProto::ext_status_changed(const char *who, int protocol, int stat, co
 
 void CYahooProto::ext_status_logon(const char *who, int protocol, int stat, const char *msg, int away, int idle, int mobile, int cksum, int buddy_icon, long client_version, int utf8)
 {
-	YAHOO_DEBUGLOG("[ext_status_logon] %s with msg %s utf8: %d, (stat: %d, away: %d, idle: %d seconds, checksum: %d buddy_icon: %d client_version: %ld)", who, msg, utf8, stat, away, idle, cksum, buddy_icon, client_version);
+	YAHOO_DEBUGLOG("[ext_status_logon] %s (prot: %d) with msg %s utf8: %d, (stat: %d, away: %d, idle: %d seconds, checksum: %d buddy_icon: %d client_version: %ld)", who, protocol, msg, utf8, stat, away, idle, cksum, buddy_icon, client_version);
 	
 	ext_status_changed(who, protocol, stat, msg, away, idle, mobile, utf8);
 
@@ -1478,43 +1478,41 @@ void CYahooProto::ext_login(enum yahoo_status login_mode)
 
 	host[0] = '\0';
 	
-	if (GetByte("YahooJapan",0) == 0) {
-		/**
-		 * Implementing Yahoo 9 2 Stage Login using their VIP server/services
-		 */
-		NETLIBHTTPREQUEST nlhr={0},*nlhrReply;
-		char z[4096];
+	/**
+	 * Implementing Yahoo 9 2 Stage Login using their VIP server/services
+	 */
+	NETLIBHTTPREQUEST nlhr={0},*nlhrReply;
+	char z[4096];
 
-		wsprintfA(z, "http://%s%s", "vcs.msg.yahoo.com", "/capacity");
-		nlhr.cbSize		= sizeof(nlhr);
-		nlhr.requestType= REQUEST_GET;
-		nlhr.flags		= NLHRF_HTTP11;
-		nlhr.szUrl		= z;
-	
-		nlhrReply=(NETLIBHTTPREQUEST*)CallService(MS_NETLIB_HTTPTRANSACTION,(WPARAM)g_hNetlibUser,(LPARAM)&nlhr);
-		if(nlhrReply) {
-			if (nlhrReply->resultCode == 200 && nlhrReply->pData != NULL) {
-				char *c = strstr(nlhrReply->pData,"CS_IP_ADDRESS=");
-				
-				if (c != NULL) {
-						char *t = c;
-					
-						while ( (*t) != '=') t++; /* scan until = */
-						t++;
-						
-						while ( (*c) != '\0' && (*c) != '\r' && (*c) != '\n') c++;
-						
-						memcpy(host, t, c - t);
-						host[c - t] = '\0';
-						
-						LOG(("Got Host: %s", host));
-				}
-			} else {
-				LOG(( "Problem retrieving a response from VIP server." ));
-			}
+	wsprintfA(z, "http://%s%s", GetByte("YahooJapan",0) != 0 ? "cs1.msg.vip.ogk.yahoo.co.jp" : "vcs.msg.yahoo.com", "/capacity");
+	nlhr.cbSize		= sizeof(nlhr);
+	nlhr.requestType= REQUEST_GET;
+	nlhr.flags		= NLHRF_HTTP11;
+	nlhr.szUrl		= z;
+
+	nlhrReply=(NETLIBHTTPREQUEST*)CallService(MS_NETLIB_HTTPTRANSACTION,(WPARAM)g_hNetlibUser,(LPARAM)&nlhr);
+	if(nlhrReply) {
+		if (nlhrReply->resultCode == 200 && nlhrReply->pData != NULL) {
+			char *c = strstr(nlhrReply->pData,"CS_IP_ADDRESS=");
 			
-			CallService(MS_NETLIB_FREEHTTPREQUESTSTRUCT,0,(LPARAM)nlhrReply);
-		} 
+			if (c != NULL) {
+					char *t = c;
+				
+					while ( (*t) != '=') t++; /* scan until = */
+					t++;
+					
+					while ( (*c) != '\0' && (*c) != '\r' && (*c) != '\n') c++;
+					
+					memcpy(host, t, c - t);
+					host[c - t] = '\0';
+					
+					LOG(("Got Host: %s", host));
+			}
+		} else {
+			LOG(( "Problem retrieving a response from VIP server." ));
+		}
+		
+		CallService(MS_NETLIB_FREEHTTPREQUESTSTRUCT,0,(LPARAM)nlhrReply);
 	} 
 	
 	if 	(host[0] == '\0') {
