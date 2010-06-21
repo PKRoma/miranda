@@ -58,7 +58,7 @@ static INT_PTR CALLBACK DlgProcYahooOpts(HWND hwndDlg, UINT msg, WPARAM wParam, 
 		//SetButtonCheck( hwndDlg, IDC_DISABLE_UTF8, ppro->GetByte( "DisableUTF8", 0 )); 
 		SetButtonCheck( hwndDlg, IDC_USE_YAB, ppro->GetByte( "UseYAB", 1 )); 
 		SetButtonCheck( hwndDlg, IDC_SHOW_AVATARS, ppro->GetByte( "ShowAvatars", 1 )); 
-		SetButtonCheck( hwndDlg, IDC_MAIL_AUTOLOGIN, ppro->GetByte( "MailAutoLogin", 0 )); 
+		SetButtonCheck( hwndDlg, IDC_MAIL_AUTOLOGIN, ppro->GetByte( "MailAutoLogin", 1 )); 
 		SetButtonCheck( hwndDlg, IDC_DISABLEYAHOOMAIL, !ppro->GetByte( "DisableYahoomail", 0 ));
 		SetButtonCheck( hwndDlg, IDC_SHOW_ERRORS, ppro->GetByte( "ShowErrors", 1 )); 
 
@@ -121,7 +121,15 @@ static INT_PTR CALLBACK DlgProcYahooOpts(HWND hwndDlg, UINT msg, WPARAM wParam, 
 			
 			ppro->SetString( YAHOO_PASSWORD, str );
 			GetDlgItemTextA( hwndDlg, IDC_NICK, str, sizeof( str ));
-			ppro->SetString( "Nick", str );
+			
+			
+			if (str[0] == '\0') {
+				/* Check for empty Nick, if so delete the key in the DB */
+				DBDeleteContactSetting( NULL, ppro->m_szModuleName, "Nick" );
+			} else {
+				/* otherwise save the new Nick */
+				ppro->SetString( "Nick", str );
+			}
 
 			//ppro->SetByte("DisableUTF8", ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_DISABLE_UTF8 )); 
 			ppro->SetByte("UseYAB", ( BYTE )IsDlgButtonChecked( hwndDlg, IDC_USE_YAB )); 

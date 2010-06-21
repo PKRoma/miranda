@@ -1102,56 +1102,7 @@ static int is_same_bud(const void * a, const void * b)
 	const struct yahoo_buddy *subject = (struct yahoo_buddy *) a;
 	const struct yahoo_buddy *object  = (struct yahoo_buddy *) b;
 
-	return strcmp(subject->id, object->id);
-}
-
-static YList * bud_str2list(char *rawlist)
-{
-	YList * l = NULL;
-
-	char **lines;
-	char **split;
-	char **buddies;
-	char **tmp, **bud;
-
-	lines = y_strsplit(rawlist, "\n", -1);
-	for (tmp = lines; *tmp; tmp++) {
-		struct yahoo_buddy *newbud;
-
-		split = y_strsplit(*tmp, ":", 2);
-		if (!split)
-			continue;
-		if (!split[0] || !split[1]) {
-			y_strfreev(split);
-			continue;
-		}
-		buddies = y_strsplit(split[1], ",", -1);
-
-		for (bud = buddies; bud && *bud; bud++) {
-			newbud = y_new0(struct yahoo_buddy, 1);
-			newbud->id = strdup(*bud);
-			newbud->group = strdup(split[0]);
-
-			if(y_list_find_custom(l, newbud, is_same_bud)) {
-				FREE(newbud->id);
-				FREE(newbud->group);
-				FREE(newbud);
-				continue;
-			}
-
-			newbud->real_name = NULL;
-
-			l = y_list_append(l, newbud);
-
-			//NOTICE(("Added buddy %s to group %s", newbud->id, newbud->group));
-		}
-
-		y_strfreev(buddies);
-		y_strfreev(split);
-	}
-	y_strfreev(lines);
-
-	return l;
+	return strcmp(subject->id, object->id) && ( subject->protocol == object->protocol );
 }
 
 char * getcookie(char *rawcookie)
@@ -2240,19 +2191,6 @@ static void yahoo_process_list(struct yahoo_input_data *yid, struct yahoo_packet
 		struct yahoo_pair *pair = (struct yahoo_pair *) l->data;
 
 		switch(pair->key) {
-		case 87: /* buddies */
-			if(!yd->rawbuddylist)
-				yd->rawbuddylist = strdup(pair->value);
-			else {
-				yd->rawbuddylist = y_string_append(yd->rawbuddylist, pair->value);
-			}
-			break;
-
-		case 88: /* ignore list */
-			if(!yd->ignorelist)
-				yd->ignorelist = strdup("Ignore:");
-			yd->ignorelist = y_string_append(yd->ignorelist, pair->value);
-			break;
 
 		case 89: /* identities */
 			{
@@ -2292,16 +2230,6 @@ static void yahoo_process_list(struct yahoo_input_data *yid, struct yahoo_packet
 		case 102: /* NULL */
 		case 93: /* 86400/1440 */
 			break;
-		case 185: /* stealth list */
-			if(!yd->rawstealthlist)
-				yd->rawstealthlist = strdup(pair->value);
-			else {
-				yd->rawstealthlist = y_string_append(yd->rawstealthlist, pair->value);
-			}
-			
-			WARNING(("Got stealth list: %s", yd->rawstealthlist));
-			YAHOO_CALLBACK(ext_yahoo_got_stealthlist)(yd->client_id, yd->rawstealthlist);
-			break;
 		case 213: /* my current avatar setting */
 			{
 				int buddy_icon = strtol(pair->value, NULL, 10);
@@ -2329,23 +2257,6 @@ static void yahoo_process_list(struct yahoo_input_data *yid, struct yahoo_packet
 	if (pkt->status != 0) /* Thanks for the fix GAIM */
 		return;
 	
-	if (yd->rawstealthlist != NULL)
-		YAHOO_CALLBACK(ext_yahoo_got_stealthlist)(yd->client_id, yd->rawstealthlist);
-	
-	if(yd->ignorelist) {
-		yd->ignore = bud_str2list(yd->ignorelist);
-		FREE(yd->ignorelist);
-		YAHOO_CALLBACK(ext_yahoo_got_ignore)(yd->client_id, yd->ignore);
-	}
-	
-	if(yd->rawbuddylist) {
-		yd->buddies = bud_str2list(yd->rawbuddylist);
-		FREE(yd->rawbuddylist);
-		
-		YAHOO_CALLBACK(ext_yahoo_got_buddies)(yd->client_id, yd->buddies);
-	}
-
-
 	if(yd->cookie_y && yd->cookie_t && yd->cookie_c)
 				YAHOO_CALLBACK(ext_yahoo_got_cookies)(yd->client_id);
 	
@@ -2371,7 +2282,7 @@ static void yahoo_process_y8_list(struct yahoo_input_data *yid, struct yahoo_pac
 		struct yahoo_pair *pair = (struct yahoo_pair *) l->data;
 
 		switch(pair->key) {
-			case 302:
+		case 302:
 			/* This is always 318 before a group, 319 before the first s/n in a group, 320 before any ignored s/n.
 			 * It is not sent for s/n's in a group after the first.
 			 * All ignored s/n's are listed last, so when we see a 320 we clear the group and begin marking the
@@ -2450,16 +2361,23 @@ static void yahoo_process_y8_list(struct yahoo_input_data *yid, struct yahoo_pac
 static void yahoo_process_verify(struct yahoo_input_data *yid, struct yahoo_packet *pkt)
 {
 	struct yahoo_data *yd = yid->yd;
-
+	struct yahoo_server_settings *yss = yd->server_settings;
+	
 	if(pkt->status != 0x01) {
 		DEBUG_MSG(("expected status: 0x01, got: %d", pkt->status));
 		YAHOO_CALLBACK(ext_yahoo_login_response)(yd->client_id, YAHOO_LOGIN_LOCK, "");
 		return;
 	}
 
-	pkt = yahoo_packet_new(YAHOO_SERVICE_AUTH, YPACKET_STATUS_DEFAULT, yd->session_id);
-
+	pkt = yahoo_packet_new(YAHOO_SERVICE_AUTH, YPACKET_STATUS_DEFAULT, 0);
 	yahoo_packet_hash(pkt, 1, yd->user);
+	//NOTICE(("web messenger: %d", yss->web_messenger));
+	if (yss->web_messenger) {
+		yahoo_packet_hash(pkt, 0, yd->user);
+		yahoo_packet_hash(pkt, 24, "0");
+	}
+	//NOTICE(("Sending initial packet"));
+
 	yahoo_send_packet(yid, pkt, 0);
 
 	yahoo_packet_free(pkt);
@@ -2717,11 +2635,6 @@ LBL_FAILED:
 
 	FREE(response);
 		
-	/*crypt_result = yahoo_crypt(yd->password, "$1$_2S43d5f$");  
-	LOG(("Yahoo Crypt of password: %s", crypt_result));
-	free(crypt_result);*/
-	
-	//pack = yahoo_packet_new(YAHOO_SERVICE_AUTHRESP, (yd->initial_status == YAHOO_STATUS_INVISIBLE) ?YPACKET_STATUS_INVISIBLE:YPACKET_STATUS_WEBLOGIN, yd->session_id);
 	pack = yahoo_packet_new(YAHOO_SERVICE_AUTHRESP, (yd->initial_status == YAHOO_STATUS_INVISIBLE) ?YPACKET_STATUS_INVISIBLE:YPACKET_STATUS_WEBLOGIN, 0);
 /*
 		AuthResp, WebLogin
@@ -3028,7 +2941,7 @@ static void yahoo_process_buddyadd(struct yahoo_input_data *yid, struct yahoo_pa
 	struct yahoo_data *yd = yid->yd;
 	char *who = NULL;
 	char *where = NULL;
-	int status = 0, auth = 0;
+	int status = 0, auth = 0, protocol = 0;
 	char *me = NULL;
 
 	struct yahoo_buddy *bud=NULL;
@@ -3050,9 +2963,17 @@ static void yahoo_process_buddyadd(struct yahoo_input_data *yid, struct yahoo_pa
 		case 66:
 			status = strtol(pair->value, NULL, 10);
 			break;
+			
 		case 223:
 			auth = strtol(pair->value, NULL, 10);
 			break;
+		
+		case 241:
+			protocol = strtol(pair->value, NULL, 10);
+			break;
+		
+		default:
+			DEBUG_MSG(("unknown key: %d = %s", pair->key, pair->value));
 		}
 	}
 
@@ -3067,6 +2988,7 @@ static void yahoo_process_buddyadd(struct yahoo_input_data *yid, struct yahoo_pa
 	bud->id = strdup(who);
 	bud->group = strdup(where);
 	bud->real_name = NULL;
+	bud->protocol = protocol;
 
 	yd->buddies = y_list_append(yd->buddies, bud);
 
@@ -3079,7 +3001,7 @@ static void yahoo_process_buddydel(struct yahoo_input_data *yid, struct yahoo_pa
 	struct yahoo_data *yd = yid->yd;
 	char *who = NULL;
 	char *where = NULL;
-	int unk_66 = 0;
+	int unk_66 = 0, protocol = 0;
 	char *me = NULL;
 	struct yahoo_buddy *bud;
 
@@ -3088,25 +3010,41 @@ static void yahoo_process_buddydel(struct yahoo_input_data *yid, struct yahoo_pa
 	YList *l;
 	for (l = pkt->hash; l; l = l->next) {
 		struct yahoo_pair *pair = (struct yahoo_pair *) l->data;
-		if (pair->key == 1)
-			me = pair->value;
-		else if (pair->key == 7)
-			who = pair->value;
-		else if (pair->key == 65)
-			where = pair->value;
-		else if (pair->key == 66)
-			unk_66 = strtol(pair->value, NULL, 10);
-		else
-			DEBUG_MSG(("unknown key: %d = %s", pair->key, pair->value));
+		
+		switch (pair->key) {
+			case 1:
+					me = pair->value;
+					break;
+					
+			case 7:
+					who = pair->value;
+					break;
+					
+			case 65:
+					where = pair->value;
+					break;
+					
+			case 66:
+					unk_66 = strtol(pair->value, NULL, 10);
+					break;
+					
+			case 241:
+					protocol = strtol(pair->value, NULL, 10);
+					break;
+					
+			default:
+					DEBUG_MSG(("unknown key: %d = %s", pair->key, pair->value));
+		}
 	}
 
 	if(!who || !where)
 		return;
 	
-	bud = y_new0(struct yahoo_buddy, 1);
-	bud->id = strdup(who);
-	bud->group = strdup(where);
-
+	bud 			= y_new0(struct yahoo_buddy, 1);
+	bud->id 		= strdup(who);
+	bud->group 		= strdup(where);
+	bud->protocol 	= protocol;
+	
 	buddy = y_list_find_custom(yd->buddies, bud, is_same_bud);
 
 	FREE(bud->id);
@@ -3801,7 +3739,7 @@ static void yahoo_packet_process(struct yahoo_input_data *yid, struct yahoo_pack
 		break;
 	case YAHOO_SERVICE_LIST:
 		yahoo_process_list(yid, pkt);
-		break;
+		break;		
 	case YAHOO_SERVICE_VERIFY:
 		yahoo_process_verify(yid, pkt);
 		break;
@@ -4804,13 +4742,28 @@ int yahoo_init_with_attributes(const char *username, const char *password, const
 {
 	va_list ap;
 	struct yahoo_data *yd;
-
+	char *c;
+	
 	yd = y_new0(struct yahoo_data, 1);
 
 	if(!yd)
 		return 0;
 
 	yd->user = strdup(username);
+
+	/* we need to strip out @yahoo.com in case a user enters full e-mail address. 
+	  NOTE: Not sure what other domains to strip out as well
+	 */
+	c = strstr(yd->user, "@yahoo.com");
+	
+	if (c != NULL) 
+		(*c) = '\0';
+	
+	/**
+	 * Lower case it in case a user uses different/mixed case
+	 */
+	strlwr(yd->user);
+	
 	yd->password = strdup(password);
 	yd->pw_token = (pw_token != NULL && pw_token[0] != '\0') ? strdup(pw_token) : NULL;
 	
@@ -4872,15 +4825,7 @@ static void yahoo_connected(int fd, int error, void *data)
 	if(fd < 0)
 		return;
 
-	pkt = yahoo_packet_new(YAHOO_SERVICE_AUTH, YPACKET_STATUS_DEFAULT, yd->session_id);
-	yahoo_packet_hash(pkt, 1, yd->user);
-
-	//NOTICE(("web messenger: %d", yss->web_messenger));
-	if (yss->web_messenger) {
-		yahoo_packet_hash(pkt, 0, yd->user);
-		yahoo_packet_hash(pkt, 24, "0");
-	}
-	//NOTICE(("Sending initial packet"));
+	pkt = yahoo_packet_new(YAHOO_SERVICE_VERIFY, YPACKET_STATUS_DEFAULT, 0);
 
 	yid = y_new0(struct yahoo_input_data, 1);
 	yid->yd = yd;
