@@ -627,7 +627,7 @@ void CYahooProto::ext_got_buddies(YList * buds)
 			continue;
 		}
 
-		YAHOO_DEBUGLOG("[ext_got_buddies] id = %s, group = %s, auth = %d", bud->id, bud->group, bud->auth);
+		YAHOO_DEBUGLOG("[ext_got_buddies] id = %s, protocol = %d, group = %s, auth = %d", bud->id, bud->protocol, bud->group, bud->auth);
 		
 		hContact = getbuddyH(bud->id);
 		if (hContact == NULL)
