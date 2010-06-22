@@ -307,7 +307,6 @@ int gg_event(PROTO_INTERFACE *proto, PROTOEVENTTYPE eventType, WPARAM wParam, LP
 			// Init misc thingies
 			gg_icolib_init();
 			gg_gc_init(gg);
-			gg_menus_init(gg);
 			gg_keepalive_init(gg);
 			gg_img_init(gg);
 
