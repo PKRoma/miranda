@@ -842,23 +842,33 @@ static INT_PTR CALLBACK options_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 		break;
 
 	case WM_COMMAND:
-			if (LOWORD(wParam) == IDC_DSSL) 
+		switch (LOWORD(wParam))
+		{
+		case IDC_DSSL:
 			{
-				SetDlgItemTextA(hwndDlg, IDC_HN, 
-					IsDlgButtonChecked(hwndDlg, IDC_DSSL) ? AIM_DEFAULT_SERVER_NS : AIM_DEFAULT_SERVER);
+				bool dssl = IsDlgButtonChecked(hwndDlg, IDC_DSSL) != 0;
+				SetDlgItemTextA(hwndDlg, IDC_HN, dssl ? AIM_DEFAULT_SERVER_NS : AIM_DEFAULT_SERVER);
+				SetDlgItemInt(hwndDlg, IDC_PN, dssl ? AIM_DEFAULT_PORT : AIM_DEFAULT_SSL_PORT, FALSE);
 			}
-			else if (LOWORD(wParam) == IDC_SVRRESET) 
-			{
-				SetDlgItemTextA(hwndDlg, IDC_HN, 
-					IsDlgButtonChecked(hwndDlg, IDC_DSSL) ? AIM_DEFAULT_SERVER_NS : AIM_DEFAULT_SERVER);
-				SetDlgItemInt(hwndDlg, IDC_PN,ppro->get_default_port(), FALSE);
-			}
-
-			if ((LOWORD(wParam) == IDC_SN || LOWORD(wParam) == IDC_PN || LOWORD(wParam) == IDC_NK || LOWORD(wParam) == IDC_PW || LOWORD(wParam) == IDC_HN)
-				&& (HIWORD(wParam) != EN_CHANGE || (HWND) lParam != GetFocus()))
-				return 0;
-			SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
 			break;
+
+		case IDC_SVRRESET: 
+			SetDlgItemTextA(hwndDlg, IDC_HN, 
+				IsDlgButtonChecked(hwndDlg, IDC_DSSL) ? AIM_DEFAULT_SERVER_NS : AIM_DEFAULT_SERVER);
+			SetDlgItemInt(hwndDlg, IDC_PN,ppro->get_default_port(), FALSE);
+			break;
+
+		case IDC_SN: 
+		case IDC_PN: 
+		case IDC_NK: 
+		case IDC_PW: 
+		case IDC_HN: 
+			if (HIWORD(wParam) != EN_CHANGE || (HWND) lParam != GetFocus())
+				return 0;
+			break;
+		}
+		SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
+		break;
 
 	case WM_NOTIFY:
 		switch (((LPNMHDR) lParam)->code) 
