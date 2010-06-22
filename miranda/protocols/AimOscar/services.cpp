@@ -446,6 +446,7 @@ INT_PTR CAimProto::GetAvatarCaps(WPARAM wParam, LPARAM lParam)
 
 	case AF_ENABLED:
 	case AF_DONTNEEDDELAYS:
+	case AF_FETCHALWAYS:
 		res = 1;
 		break;
 	}

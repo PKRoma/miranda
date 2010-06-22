@@ -1390,17 +1390,19 @@ void CAimProto::snac_received_info(SNAC &snac)//family 0x0002
 {
 	if(snac.subcmp(0x0006))
 	{   
-		unsigned short offset=0;
-		int i=0;
-		bool away_message_received=false;
-		bool away_message_unicode=false;
-		bool profile_received=false;
-		bool profile_unicode=false;
-		unsigned char sn_length=snac.ubyte();
-		char* sn=snac.part(1,sn_length);
-		unsigned short tlv_count=snac.ushort(3+sn_length);
-		offset=5+sn_length;
-		HANDLE hContact=contact_from_sn(sn, true, true);
+		unsigned short offset = 0;
+		int i = 0;
+		bool away_message_received = false;
+		bool away_message_unicode = false;
+		bool away_message_utf = false;
+		bool profile_received = false;
+		bool profile_unicode = false;
+		bool profile_utf = false;
+		unsigned char sn_length = snac.ubyte();
+		char* sn = snac.part(1, sn_length);
+		unsigned short tlv_count = snac.ushort(3 + sn_length);
+		offset = 5 + sn_length;
+		HANDLE hContact = contact_from_sn(sn, true, true);
 		
 		while (offset < snac.len())
 		{
@@ -1408,32 +1410,34 @@ void CAimProto::snac_received_info(SNAC &snac)//family 0x0002
 
 			if (++i > tlv_count)
 			{
-				if(tlv.cmp(0x0001))//profile encoding
+				if (tlv.cmp(0x0001))//profile encoding
 				{
 					char* enc = tlv.dup();
-					profile_unicode = strstr(enc,"unicode-2-0") != NULL;
+					profile_unicode = strstr(enc, "unicode-2-0") != NULL;
+					profile_utf = strstr(enc, "utf-8") != NULL;
 					mir_free(enc);
 				}
-				else if(tlv.cmp(0x0002))//profile message string
+				else if (tlv.cmp(0x0002))//profile message string
 				{
 					char* msg = profile_unicode ? tlv.dupw() : tlv.dup();
 
 					profile_received = true;
-					write_profile(sn, msg, profile_unicode);
+					write_profile(sn, msg, profile_unicode | profile_utf);
 					mir_free(msg);
 				}
-				else if(tlv.cmp(0x0003))//away message encoding
+				else if (tlv.cmp(0x0003))//away message encoding
 				{
 					char* enc = tlv.dup();
-					away_message_unicode = strstr(enc,"unicode-2-0") != NULL;
+					away_message_unicode = strstr(enc, "unicode-2-0") != NULL;
+					away_message_utf = strstr(enc, "utf-8") != NULL;
 					mir_free(enc);
 				}
-				else if(tlv.cmp(0x0004))//away message string
+				else if (tlv.cmp(0x0004))//away message string
 				{
 					char* msg = away_message_unicode ? tlv.dupw() : tlv.dup();
 
-					away_message_received=1;
-					write_away_message(sn, msg, away_message_unicode);
+					away_message_received = true;
+					write_away_message(sn, msg, away_message_unicode | away_message_utf);
 					mir_free(msg);
 				}
 			}
@@ -2003,6 +2007,7 @@ void CAimProto::snac_chat_received_message(SNAC &snac,chat_list_item* item)//fam
 			else if (tlv.cmp(0x0005))  // Message information
 			{
 				bool uni = false;
+				bool utf = false;
 //		        char* language = NULL;
 
 				int offset = 0;
@@ -2015,10 +2020,17 @@ void CAimProto::snac_chat_received_message(SNAC &snac,chat_list_item* item)//fam
 					{
 						if (uni) 
 						{
-							char* msgu = msg_tlv.dupw();
-							html_decode(msgu);
-							message = mir_utf8decodeT(msgu);                    
-							mir_free(msgu);
+							char* msg = msg_tlv.dupw();
+							html_decode(msg);
+							message = mir_utf8decodeT(msg);                    
+							mir_free(msg);
+						}
+						else if (utf)
+						{
+							char* msg = msg_tlv.dup();
+							html_decode(msg);
+							message = mir_utf8decodeT(msg);
+							mir_free(msg);
 						}
 						else
 						{
@@ -2032,6 +2044,7 @@ void CAimProto::snac_chat_received_message(SNAC &snac,chat_list_item* item)//fam
 					{
 						char* enc = msg_tlv.dup();
 						uni = strstr(enc, "unicode-2-0") != NULL;
+						utf = strstr(enc, "utf-8") != NULL;
 						mir_free(enc);
 					}
 //			        else if (msg_tlv.cmp(0x0003))
