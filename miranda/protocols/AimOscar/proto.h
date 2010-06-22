@@ -382,6 +382,7 @@ struct CAimProto : public PROTO_INTERFACE
 	void   snac_list_modification_ack(SNAC &snac);//family 0x0013
 	void   snac_mail_response(SNAC &snac);//family 0x0018
 	void   snac_retrieve_avatar(SNAC &snac);//family 0x0010
+	void   snac_upload_reply_avatar(SNAC &snac);//family 0x0010
 	void   snac_email_search_results(SNAC &snac);//family 0x000A
 	void   snac_chatnav_info_response(SNAC &snac,HANDLE hServerConn,unsigned short &seqno);//family 0x000D
 	void   snac_chat_joined_left_users(SNAC &snac,chat_list_item* item);//family 0x000E

@@ -373,38 +373,41 @@ void __cdecl CAimProto::aim_avatar_negotiation( void* )
 		if (recvResult == SOCKET_ERROR)
 			break;
 
-		if(recvResult>0)
+		if (recvResult > 0)
 		{
 			unsigned short flap_length=0;
-			for(;packetRecv.bytesUsed<packetRecv.bytesAvailable;packetRecv.bytesUsed=flap_length)
+			for(; packetRecv.bytesUsed < packetRecv.bytesAvailable; packetRecv.bytesUsed = flap_length)
 			{
-				if(!packetRecv.buffer)
+				if (!packetRecv.buffer)
 					break;
 				FLAP flap((char*)&packetRecv.buffer[packetRecv.bytesUsed],packetRecv.bytesAvailable-packetRecv.bytesUsed);
-				if(!flap.len())
+				if (!flap.len())
 					break;
-				flap_length+=FLAP_SIZE+flap.len();
+				flap_length += FLAP_SIZE + flap.len();
 				if(flap.cmp(0x01))
 				{
-					aim_send_cookie(hAvatarConn,avatar_seqno,AVATAR_COOKIE_LENGTH,AVATAR_COOKIE);//cookie challenge
+					aim_send_cookie(hAvatarConn, avatar_seqno, AVATAR_COOKIE_LENGTH, AVATAR_COOKIE);//cookie challenge
 					mir_free(AVATAR_COOKIE);
-					AVATAR_COOKIE=NULL;
-					AVATAR_COOKIE_LENGTH=0;
+					AVATAR_COOKIE = NULL;
+					AVATAR_COOKIE_LENGTH = 0;
 				}
 				else if(flap.cmp(0x02))
 				{
-					SNAC snac(flap.val(),flap.snaclen());
-					if(snac.cmp(0x0001))
+					SNAC snac(flap.val(), flap.snaclen());
+					if (snac.cmp(0x0001))
 					{
-						snac_supported_families(snac,hAvatarConn,avatar_seqno);
-						snac_supported_family_versions(snac,hAvatarConn,avatar_seqno);
-						snac_avatar_rate_limitations(snac,hAvatarConn,avatar_seqno);
+						snac_supported_families(snac, hAvatarConn, avatar_seqno);
+						snac_supported_family_versions(snac, hAvatarConn, avatar_seqno);
+						snac_avatar_rate_limitations(snac, hAvatarConn, avatar_seqno);
 						snac_error(snac);
 					}
-					if(snac.cmp(0x0010))
+					if (snac.cmp(0x0010))
+					{
 						snac_retrieve_avatar(snac);
+						snac_upload_reply_avatar(snac);
+					}
 				}
-				else if(flap.cmp(0x04))
+				else if (flap.cmp(0x04))
 					goto exit;
 			}
 		}

@@ -1766,6 +1766,33 @@ void CAimProto::snac_retrieve_avatar(SNAC &snac)//family 0x0010
 		mir_free(sn);
 	}
 }
+void CAimProto::snac_upload_reply_avatar(SNAC &snac)//family 0x0010
+{
+	if (snac.subcmp(0x0003))
+	{
+		int code = snac.ubyte(0);
+		switch (code)
+		{
+		case 0: 
+			break;
+		case 3:
+			ShowPopup(LPGEN("Error uploading avatar. (Too small)"), ERROR_POPUP);
+			break;
+		case 4:
+			ShowPopup(LPGEN("Error uploading avatar. (Too big)"), ERROR_POPUP);
+			break;
+		case 5:
+			ShowPopup(LPGEN("Error uploading avatar. (Wrong type)"), ERROR_POPUP);
+			break;
+		case 6:
+			ShowPopup(LPGEN("Error uploading avatar. (Is banned)"), ERROR_POPUP);
+			break;
+		default:
+			ShowPopup(LPGEN("Error uploading avatar. (Unknown error)"), ERROR_POPUP);
+			break;
+		}
+	}
+}
 void CAimProto::snac_email_search_results(SNAC &snac)//family 0x000A
 {
 	if (snac.subcmp(0x0003)) // Found some buddies
