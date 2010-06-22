@@ -250,8 +250,9 @@
 				AdditionalIncludeDirectories="../../include; ../include"
 				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE"
 				StringPooling="true"
-				ExceptionHandling="1"
+				ExceptionHandling="0"
 				RuntimeLibrary="2"
+				BufferSecurityCheck="false"
 				EnableFunctionLevelLinking="true"
 				FloatingPointModel="1"
 				RuntimeTypeInfo="false"
@@ -359,7 +360,7 @@
 				AdditionalIncludeDirectories="../../include; ../include"
 				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE"
 				StringPooling="true"
-				ExceptionHandling="1"
+				ExceptionHandling="0"
 				RuntimeLibrary="2"
 				BufferSecurityCheck="false"
 				EnableFunctionLevelLinking="true"
@@ -470,10 +471,11 @@
 				AdditionalIncludeDirectories="../../include"
 				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE"
 				StringPooling="true"
-				ExceptionHandling="1"
+				ExceptionHandling="0"
 				RuntimeLibrary="2"
 				BufferSecurityCheck="false"
 				EnableFunctionLevelLinking="true"
+				FloatingPointModel="2"
 				RuntimeTypeInfo="false"
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="commonheaders.h"
@@ -576,11 +578,11 @@
 				AdditionalIncludeDirectories="../../include"
 				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE"
 				StringPooling="true"
-				ExceptionHandling="2"
+				ExceptionHandling="0"
 				RuntimeLibrary="2"
 				BufferSecurityCheck="false"
 				EnableFunctionLevelLinking="true"
-				EnableEnhancedInstructionSet="1"
+				FloatingPointModel="2"
 				RuntimeTypeInfo="false"
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="commonheaders.h"
@@ -2129,23 +2131,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\res\angeli-icons\Add.ico"
-				>
-			</File>
-			<File
-				RelativePath="..\..\Miranda-IM\res\addcontact.ico"
-				>
-			</File>
-			<File
 				RelativePath=".\chat\Icons\addmode.ico"
-				>
-			</File>
-			<File
-				RelativePath=".\res\angeli-icons\AddXP.ico"
-				>
-			</File>
-			<File
-				RelativePath=".\res\arrow-down.ico"
 				>
 			</File>
 			<File
@@ -2157,79 +2143,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\res\blocked.ico"
-				>
-			</File>
-			<File
-				RelativePath=".\chat\Icons\bold.ico"
-				>
-			</File>
-			<File
-				RelativePath=".\res\check.ico"
-				>
-			</File>
-			<File
-				RelativePath=".\res\checked.ico"
-				>
-			</File>
-			<File
-				RelativePath=".\res\Clock8.ico"
-				>
-			</File>
-			<File
-				RelativePath=".\chat\Icons\close.ico"
-				>
-			</File>
-			<File
-				RelativePath=".\res\angeli-icons\Close.ico"
-				>
-			</File>
-			<File
-				RelativePath=".\chat\Icons\color.ico"
-				>
-			</File>
-			<File
 				RelativePath="..\..\src\res\cursor_drop_user.cur"
 				>
 			</File>
 			<File
 				RelativePath="..\..\src\res\cursor_hyperlink.cur"
-				>
-			</File>
-			<File
-				RelativePath=".\res\delete.ico"
-				>
-			</File>
-			<File
-				RelativePath="res\Details32.ico"
-				>
-			</File>
-			<File
-				RelativePath="res\Details8.ico"
-				>
-			</File>
-			<File
-				RelativePath="..\..\Miranda-IM\res\dragcopy.cur"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\res\dragcopy.cur"
-				>
-			</File>
-			<File
-				RelativePath="..\..\Miranda-IM\res\dropuser.cur"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\res\dropuser.cur"
-				>
-			</File>
-			<File
-				RelativePath=".\res\error.ico"
-				>
-			</File>
-			<File
-				RelativePath=".\res\expand.ico"
 				>
 			</File>
 			<File
@@ -2245,42 +2163,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\res\angeli-icons\History.ico"
-				>
-			</File>
-			<File
-				RelativePath="..\..\Miranda-IM\res\history.ico"
-				>
-			</File>
-			<File
-				RelativePath="res\History32.ico"
-				>
-			</File>
-			<File
-				RelativePath="res\History8.ico"
-				>
-			</File>
-			<File
-				RelativePath=".\res\angeli-icons\HistoryXP.ico"
-				>
-			</File>
-			<File
-				RelativePath="..\..\Miranda-IM\res\hyperlin.cur"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\res\hyperlin.cur"
-				>
-			</File>
-			<File
-				RelativePath=".\res\icon1.ico"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\res\icon1.ico"
-				>
-			</File>
-			<File
 				RelativePath=".\tabmodplus\icons\imgclose.ico"
 				>
 			</File>
@@ -2289,23 +2171,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\res\in.ico"
-				>
-			</File>
-			<File
-				RelativePath=".\res\angeli-icons\Incom.ico"
-				>
-			</File>
-			<File
 				RelativePath=".\chat\Icons\info.ico"
-				>
-			</File>
-			<File
-				RelativePath=".\res\angeli-icons\Info.ico"
-				>
-			</File>
-			<File
-				RelativePath=".\chat\Icons\italics.ico"
 				>
 			</File>
 			<File
@@ -2321,10 +2187,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\res\LOGO.bmp"
-				>
-			</File>
-			<File
 				RelativePath=".\chat\Icons\message.ico"
 				>
 			</File>
@@ -2337,59 +2199,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\res\angeli-icons\Multi.ico"
-				>
-			</File>
-			<File
-				RelativePath="..\..\Miranda-IM\res\multisend.ico"
-				>
-			</File>
-			<File
-				RelativePath="res\Multisend32.ico"
-				>
-			</File>
-			<File
-				RelativePath="res\Multisend8.ico"
-				>
-			</File>
-			<File
-				RelativePath=".\res\angeli-icons\MultiXP.ico"
-				>
-			</File>
-			<File
 				RelativePath=".\chat\Icons\nick.ico"
 				>
 			</File>
 			<File
-				RelativePath=".\chat\Icons\nicklist.ico"
-				>
-			</File>
-			<File
-				RelativePath=".\chat\Icons\nicklist2.ico"
-				>
-			</File>
-			<File
 				RelativePath=".\chat\Icons\notice.ico"
-				>
-			</File>
-			<File
-				RelativePath=".\res\angeli-icons\Opt.ico"
-				>
-			</File>
-			<File
-				RelativePath=".\res\options.ico"
-				>
-			</File>
-			<File
-				RelativePath=".\res\angeli-icons\OptXP.ico"
-				>
-			</File>
-			<File
-				RelativePath=".\res\out.ico"
-				>
-			</File>
-			<File
-				RelativePath=".\res\angeli-icons\Outg.ico"
 				>
 			</File>
 			<File
@@ -2398,26 +2212,6 @@
 			</File>
 			<File
 				RelativePath=".\chat\Icons\part.ico"
-				>
-			</File>
-			<File
-				RelativePath=".\res\angeli-icons\Pencil.ico"
-				>
-			</File>
-			<File
-				RelativePath=".\res\Photo32.ico"
-				>
-			</File>
-			<File
-				RelativePath=".\res\Photo8.ico"
-				>
-			</File>
-			<File
-				RelativePath=".\res\angeli-icons\Pic.ico"
-				>
-			</File>
-			<File
-				RelativePath=".\res\angeli-icons\PicXP.ico"
 				>
 			</File>
 			<File
@@ -2433,10 +2227,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\res\pulldown1.ico"
-				>
-			</File>
-			<File
 				RelativePath=".\res\pullup.ico"
 				>
 			</File>
@@ -2445,19 +2235,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\res\quote.ico"
-				>
-			</File>
-			<File
-				RelativePath=".\res\angeli-icons\Quote02.ico"
-				>
-			</File>
-			<File
 				RelativePath=".\chat\Icons\removestatus.ico"
-				>
-			</File>
-			<File
-				RelativePath="..\..\Miranda-IM\res\rename.ico"
 				>
 			</File>
 			<File
@@ -2469,67 +2247,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\res\save.ico"
-				>
-			</File>
-			<File
-				RelativePath=".\res\angeli-icons\Save.ico"
-				>
-			</File>
-			<File
-				RelativePath=".\res\angeli-icons\SaveXP.ico"
-				>
-			</File>
-			<File
-				RelativePath=".\res\angeli-icons\Send.ico"
-				>
-			</File>
-			<File
-				RelativePath=".\res\smbutton.ico"
-				>
-			</File>
-			<File
-				RelativePath=".\chat\Icons\smiley.ico"
-				>
-			</File>
-			<File
-				RelativePath=".\res\smiley_xp.ico"
-				>
-			</File>
-			<File
-				RelativePath=".\res\status.ico"
-				>
-			</File>
-			<File
 				RelativePath=".\chat\Icons\topic.ico"
 				>
 			</File>
 			<File
 				RelativePath=".\chat\Icons\topicbut.ico"
-				>
-			</File>
-			<File
-				RelativePath="res\Typing32.ico"
-				>
-			</File>
-			<File
-				RelativePath="res\Typing8.ico"
-				>
-			</File>
-			<File
-				RelativePath=".\res\unchecked.ico"
-				>
-			</File>
-			<File
-				RelativePath=".\chat\Icons\underline.ico"
-				>
-			</File>
-			<File
-				RelativePath="..\..\Miranda-IM\res\viewdetails.ico"
-				>
-			</File>
-			<File
-				RelativePath=".\res\visible.ico"
 				>
 			</File>
 			<File
