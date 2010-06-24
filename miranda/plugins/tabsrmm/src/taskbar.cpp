@@ -58,6 +58,22 @@
 
 #include "commonheaders.h"
 
+/**
+ * maps MUC event types to icon names for retrieving the "big" icons
+ * while generating task bar thumbnails.
+ * used by getMUCBigICon()
+ */
+
+/*
+struct TMUCLargeIconsMap { 
+	UINT	eventType;
+	char*	szIconDesc;
+} MUCLargeIconMap[] = {
+	{ GC_EVENT_NICK, "chat_nick" },
+	{ GC_EVENT_PART, "chat_part" }
+};
+*/
+
 CTaskbarInteract* Win7Taskbar = 0;
 
 /**
@@ -226,7 +242,7 @@ void CProxyWindow::verify(TWindowData *dat)
 CProxyWindow::CProxyWindow(const TWindowData *dat)
 {
 	m_dat = dat;
-	m_hwnd = ::CreateWindowEx(/*WS_EX_TOOLWINDOW | */WS_EX_NOACTIVATE, PROXYCLASSNAME, _T(""),
+	m_hwndProxy = ::CreateWindowEx(/*WS_EX_TOOLWINDOW | */WS_EX_NOACTIVATE, PROXYCLASSNAME, _T(""),
 		WS_POPUP | WS_BORDER | WS_SYSMENU | WS_CAPTION, -32000, -32000, 10, 10, NULL, NULL, g_hInst, (LPVOID)this);
 
 	m_hBigIcon = 0;
@@ -235,21 +251,21 @@ CProxyWindow::CProxyWindow(const TWindowData *dat)
 #if defined(__LOGDEBUG_)
 	_DebugTraceW(_T("create proxy object for: %s"), m_dat->cache->getNick());
 #endif
-	Win7Taskbar->registerTab(m_hwnd, m_dat->pContainer->hwnd);
+	Win7Taskbar->registerTab(m_hwndProxy, m_dat->pContainer->hwnd);
 	if(CMimAPI::m_pfnDwmSetWindowAttribute) {
 		BOOL	fIconic = TRUE;
 		BOOL	fHasIconicBitmap = TRUE;
-		HWND	hwndSrc = m_hwnd;
+		HWND	hwndSrc = m_hwndProxy;
 
-		CMimAPI::m_pfnDwmSetWindowAttribute(m_hwnd, DWMWA_FORCE_ICONIC_REPRESENTATION, &fIconic,  sizeof(fIconic));
-		CMimAPI::m_pfnDwmSetWindowAttribute(m_hwnd, DWMWA_HAS_ICONIC_BITMAP, &fHasIconicBitmap, sizeof(fHasIconicBitmap));
+		CMimAPI::m_pfnDwmSetWindowAttribute(m_hwndProxy, DWMWA_FORCE_ICONIC_REPRESENTATION, &fIconic,  sizeof(fIconic));
+		CMimAPI::m_pfnDwmSetWindowAttribute(m_hwndProxy, DWMWA_HAS_ICONIC_BITMAP, &fHasIconicBitmap, sizeof(fHasIconicBitmap));
 	}
 }
 
 CProxyWindow::~CProxyWindow()
 {
-	Win7Taskbar->unRegisterTab(m_hwnd);
-	::DestroyWindow(m_hwnd);
+	Win7Taskbar->unRegisterTab(m_hwndProxy);
+	::DestroyWindow(m_hwndProxy);
 
 #if defined(__LOGDEBUG_)
 	_DebugTraceW(_T("destroy proxy object for: %s"), m_dat->cache->getNick());
@@ -304,7 +320,7 @@ void CProxyWindow::sendThumb(LONG width, LONG height)
 		m_thumb->update();
 	}
 	if(m_thumb)
-		CMimAPI::m_pfnDwmSetIconicThumbnail(m_hwnd, m_thumb->getHBM(), DWM_SIT_DISPLAYFRAME);
+		CMimAPI::m_pfnDwmSetIconicThumbnail(m_hwndProxy, m_thumb->getHBM(), DWM_SIT_DISPLAYFRAME);
 }
 
 /**
@@ -317,52 +333,114 @@ void CProxyWindow::sendThumb(LONG width, LONG height)
  */
 void CProxyWindow::sendPreview()
 {
-	POINT 	pt = {0};
-	RECT	rcContainer, rcBox;
-	HDC		hdc, dc;
+	POINT 			pt = {0};
+	RECT			rcContainer;
+	HDC				hdc, dc;
+	FORMATRANGE 	fr = {0};
+	int				twips = (int)(15.0f / PluginConfig.g_DPIscaleY);
+	RECT			rcTemp;
+	RECT			rcRich, rcLog;
+	bool			fIsChat = m_dat->bType == SESSIONTYPE_IM ? false : true;
+	TWindowData* 	dat_active = reinterpret_cast<TWindowData *>(::GetWindowLongPtr(m_dat->pContainer->hwndActive, GWLP_USERDATA));
 
-	if(m_thumb) {
-	#if defined(__LOGDEBUG_)
-		_DebugTraceW(_T("recreating preview for %s"), m_dat->cache->getNick());
-	#endif
+	if(m_thumb && dat_active) {
+		HWND 	hwndRich = ::GetDlgItem(m_dat->hwnd, fIsChat ? IDC_CHAT_LOG : IDC_LOG);
+		LONG 	cx, cy;
+		POINT	ptOrigin = {0}, ptBottom;
 
+		if(m_dat->dwFlags & MWF_NEEDCHECKSIZE) {
+			RECT	rcClient;
+
+			::SendMessage(m_dat->pContainer->hwnd, DM_QUERYCLIENTAREA, 0, (LPARAM)&rcClient);
+			::MoveWindow(m_dat->hwnd, rcClient.left, rcClient.top, (rcClient.right - rcClient.left), (rcClient.bottom - rcClient.top), FALSE);
+			::SendMessage(m_dat->hwnd, WM_SIZE, 0, 0);
+			::SendMessage(m_dat->hwnd, DM_FORCESCROLL, 0, 0);
+		}
 		/*
 		 * a minimized container has a null rect as client area, so do not use it
 		 * use the last known client area size instead.
 		 */
-		if(!::IsIconic(m_dat->pContainer->hwnd))
+
+		if(!::IsIconic(m_dat->pContainer->hwnd)) {
+			::GetWindowRect(m_dat->pContainer->hwndActive, &rcLog);
 			::GetClientRect(m_dat->pContainer->hwnd, &rcContainer);
-		else
+			pt.x = rcLog.left;
+			pt.y = rcLog.top;
+			::ScreenToClient(m_dat->pContainer->hwnd, &pt);
+		}
+		else {
+			rcLog = m_dat->pContainer->rcLogSaved;
 			rcContainer = m_dat->pContainer->rcSaved;
+			pt = m_dat->pContainer->ptLogSaved;
+		}
+
+		::GetWindowRect(::GetDlgItem(m_dat->pContainer->hwndActive, dat_active->bType == SESSIONTYPE_IM ? IDC_LOG : IDC_CHAT_LOG), &rcTemp);
+		ptBottom.x = rcTemp.left;
+		ptBottom.y = rcTemp.bottom;
+		::ScreenToClient(m_dat->pContainer->hwnd, &ptBottom);
+
+		cx = rcLog.right - rcLog.left;
+		cy = rcLog.bottom - rcLog.top;
+		rcRich.left = 0;
+		rcRich.top = 0;
+		rcRich.right = cx;
+		rcRich.bottom = ptBottom.y - pt.y;
 
 		dc = ::GetDC(m_dat->hwnd);
 		hdc = ::CreateCompatibleDC(dc);
 		HBITMAP hbm = CSkin::CreateAeroCompatibleBitmap(rcContainer, hdc);
 		HBITMAP hbmOld = reinterpret_cast<HBITMAP>(::SelectObject(hdc, hbm));
 
-		::DrawAlpha(hdc, &rcContainer, PluginConfig.m_ipBackgroundGradient, 50, PluginConfig.m_ipBackgroundGradientHigh, 0, 17, 0, 2, 0);
-		CImageItem::SetBitmap32Alpha(hbm, 220);
+		CSkin::FillBack(hdc, &rcContainer);
+		CImageItem::SetBitmap32Alpha(hbm, 180);
 
-		HDC dcSrc = ::CreateCompatibleDC(hdc);
-		HBITMAP hOldSrc = reinterpret_cast<HBITMAP>(::SelectObject(dcSrc, m_thumb->getHBM()));
+		LRESULT first = ::SendMessage(hwndRich, EM_CHARFROMPOS, 0, reinterpret_cast<LPARAM>(&ptOrigin));
 
-		rcBox.left = (rcContainer.right - m_width) / 2 - 20;
-		rcBox.right = rcBox.left + m_width + 40;
-		rcBox.top = (rcContainer.bottom - m_height) / 2 - 20;
-		rcBox.bottom = rcBox.top + m_height + 40;
+		/*
+		 * paint the content of the message log control into a separate bitmap without
+		 * transparency
+		 */
+		HDC hdcRich = ::CreateCompatibleDC(dc);
+		HBITMAP hbmRich = CSkin::CreateAeroCompatibleBitmap(rcRich, hdcRich);
+		HBITMAP hbmRichOld = reinterpret_cast<HBITMAP>(::SelectObject(hdcRich, hbmRich));
 
-		::DrawAlpha(hdc, &rcBox, 0x00ffffff, 60, 0x00ffffff, 0, 0, CORNER_ALL, 12, 0);
-		CMimAPI::m_MyAlphaBlend(hdc, rcBox.left + 20, rcBox.top + 20, m_width, m_height,
-								dcSrc, 0, 0, m_width, m_height, CSkin::m_default_bf);
+		COLORREF clr = fIsChat ? M->GetDword(FONTMODULE, SRMSGSET_BKGCOLOUR, SRMSGDEFSET_BKGCOLOUR) : m_dat->pContainer->theme.inbg;
+		HBRUSH br = ::CreateSolidBrush(clr);
+		::FillRect(hdcRich, &rcRich, br);
+		::DeleteObject(br);
 
-		::SelectObject(dcSrc, hOldSrc);
-		::DeleteDC(dcSrc);
+		if(m_dat->hwndIEView)
+			::SendMessage(m_dat->hwndIEView, WM_PRINT, reinterpret_cast<WPARAM>(hdcRich), PRF_CLIENT | PRF_NONCLIENT);
+		else if(m_dat->hwndHPP)
+			::SendMessage(m_dat->hwndHPP, WM_PRINT, reinterpret_cast<WPARAM>(hdcRich), PRF_CLIENT | PRF_NONCLIENT);
+		else {
+			rcRich.right *= twips;
+			rcRich.bottom *= twips;
 
-		rcContainer.top = rcContainer.bottom - 20;
-		//StretchBlt(hdc, 0, 0, rcContainer.right, rcContainer.bottom, dc, 0, 0, rcClient.right, rcClient.bottom, SRCCOPY | CAPTUREBLT);
+			fr.hdc = hdcRich;
+			fr.hdcTarget = hdcRich;
+			fr.rc = rcRich;
+			fr.rcPage = rcRich;
+			fr.chrg.cpMax = -1;
+			fr.chrg.cpMin = first;
+
+			::SendMessage(hwndRich, EM_FORMATRANGE, 1, reinterpret_cast<LPARAM>(&fr));
+		}
+
+		//::BitBlt(hdcRich, 0, 0, cx, cy, dc, 0, 0, CAPTUREBLT|SRCCOPY);
+
+		::SelectObject(hdcRich, hbmRichOld);
+		CImageItem::SetBitmap32Alpha(hbmRich, 255);
+		::SelectObject(hdcRich, hbmRich);
+		::BitBlt(hdc, pt.x, pt.y, cx, cy, hdcRich, 0, 0, SRCCOPY);
+		::SelectObject(hdcRich, hbmRichOld);
+		::DeleteObject(hbmRich);
+		::DeleteDC(hdcRich);
+
 		::SelectObject(hdc, hbmOld);
 		::DeleteDC(hdc);
-		CMimAPI::m_pfnDwmSetIconicLivePreviewBitmap(m_hwnd, hbm, &pt, DWM_SIT_DISPLAYFRAME);
+		pt.x = pt.y = 0;
+		CMimAPI::m_pfnDwmSetIconicLivePreviewBitmap(m_hwndProxy, hbm, &pt, m_dat->pContainer->dwFlags & CNT_CREATE_MINIMIZED ? 0 : DWM_SIT_DISPLAYFRAME);
 		::ReleaseDC(m_dat->hwnd, dc);
 		::DeleteObject(hbm);
 	}
@@ -391,8 +469,8 @@ void CProxyWindow::setBigIcon(const HICON hIcon, bool fInvalidate)
  */
 void CProxyWindow::updateIcon(const HICON hIcon) const
 {
-	if(m_hwnd && hIcon)
-		::SendMessage(m_hwnd, WM_SETICON, ICON_SMALL, reinterpret_cast<LPARAM>(hIcon));
+	if(m_hwndProxy && hIcon)
+		::SendMessage(m_hwndProxy, WM_SETICON, ICON_SMALL, reinterpret_cast<LPARAM>(hIcon));
 }
 
 /**
@@ -402,7 +480,7 @@ void CProxyWindow::updateIcon(const HICON hIcon) const
  */
 void CProxyWindow::activateTab() const
 {
-	Win7Taskbar->SetTabActive(m_hwnd, m_dat->pContainer->hwnd);
+	Win7Taskbar->SetTabActive(m_hwndProxy, m_dat->pContainer->hwnd);
 }
 /**
  * invalidate the thumbnail, it will be recreated at the next request
@@ -421,7 +499,7 @@ void CProxyWindow::Invalidate() const
 		 * tell the DWM to request a new thumbnail for the proxy window m_hwnd
 		 * when it needs one.
 		 */
-		CMimAPI::m_pfnDwmInvalidateIconicBitmaps(m_hwnd);
+		CMimAPI::m_pfnDwmInvalidateIconicBitmaps(m_hwndProxy);
 	}
 }
 
@@ -431,9 +509,10 @@ void CProxyWindow::Invalidate() const
  */
 void CProxyWindow::updateTitle(const TCHAR *tszTitle) const
 {
-	if(m_hwnd && tszTitle)
-		::SetWindowText(m_hwnd, tszTitle);
+	if(m_hwndProxy && tszTitle)
+		::SetWindowText(m_hwndProxy, tszTitle);
 }
+
 /**
  * stub window procedure for the custom proxy window class
  * just initialize GWLP_USERDATA and call the object's method

@@ -437,6 +437,10 @@ void TSAPI DoFlashAndSoundWorker(FLASH_PARAMS* p)
 				}
 			}
 		}
+		if(dat->pWnd) {
+			dat->pWnd->updateIcon(p->hNotifyIcon);
+			dat->pWnd->Invalidate();
+		}
 
 		// autoswitch tab..
 		if (p->bMustAutoswitch) {

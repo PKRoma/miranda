@@ -394,7 +394,9 @@ public:
 		WARN_EDITUSERNOTES										= 2,
 		WARN_ICONPACKMISSING									= 3,
 		WARN_AEROPEEKSKIN										= 4,
-		WARN_LAST												= 5
+		WARN_CHAT_ENABLED										= 5,
+		WARN_IMGSVC_MISSING										= 6,
+		WARN_LAST												= 7
 	};
 	/*
 	 * identities for the option trees

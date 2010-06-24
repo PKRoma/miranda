@@ -205,7 +205,6 @@ static INT_PTR CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, 
 			}
 
 			ShowWindow(hwndDlg, SW_SHOW);
-			CheckDlgButton(hwndDlg, IDC_NOAUTOCLOSE, M->GetByte(hContact, "NoAutoClose", 0));
 			return TRUE;
 		}
 		case WM_COMMAND:
@@ -363,12 +362,6 @@ static INT_PTR CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, 
 						SendMessage(hWnd, WM_SIZE, 0, 0);
 						DM_ScrollToBottom(dat, 0, 1);
 					}
-
-					if (IsDlgButtonChecked(hwndDlg, IDC_NOAUTOCLOSE))
-						M->WriteByte(hContact, SRMSGMOD_T, "NoAutoClose", 1);
-					else
-						DBDeleteContactSetting(hContact, SRMSGMOD_T, "NoAutoClose");
-
 					DestroyWindow(hwndDlg);
 					break;
 				}

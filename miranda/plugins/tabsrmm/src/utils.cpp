@@ -24,7 +24,7 @@
  *
  * part of tabSRMM messaging plugin for Miranda.
  *
- * (C) 2005-2009 by silvercircle _at_ gmail _dot_ com and contributors
+ * (C) 2005-2010 by silvercircle _at_ gmail _dot_ com and contributors
  *
  * $Id$
  *
@@ -1084,6 +1084,8 @@ CWarning::CWarning(const TCHAR *tszTitle, const TCHAR *tszText, const UINT uId, 
 	m_uId = uId;
 	m_hFontCaption = 0;
 	m_dwFlags = dwFlags;
+
+	m_fIsModal = ((m_dwFlags & MB_YESNO || m_dwFlags & MB_YESNOCANCEL) ? true : false);
 }
 
 CWarning::~CWarning()
@@ -1097,8 +1099,14 @@ CWarning::~CWarning()
 
 LRESULT CWarning::ShowDialog() const
 {
-	LRESULT res = ::DialogBoxParam(g_hInst, MAKEINTRESOURCE(IDD_WARNING), 0, stubDlgProc, reinterpret_cast<LPARAM>(this));
-	return(res);
+	if(!m_fIsModal) {
+		::CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_WARNING), 0, stubDlgProc, reinterpret_cast<LPARAM>(this));
+		return(0);
+	}
+	else {
+		LRESULT res = ::DialogBoxParam(g_hInst, MAKEINTRESOURCE(IDD_WARNING), 0, stubDlgProc, reinterpret_cast<LPARAM>(this));
+		return(res);
+	}
 }
 
 __int64 CWarning::getMask()
@@ -1118,41 +1126,60 @@ __int64 CWarning::getMask()
  * not show this message again. This has room for 64 different warning dialogs, which
  * should be enough in the first place. Extending it should not be too hard though.
  */
-LRESULT CWarning::show(const UINT uId, const DWORD dwFlags)
+LRESULT CWarning::show(const int uId, DWORD dwFlags, const TCHAR* tszTxt)
 {
 	TCHAR*	separator_pos = 0;
 	__int64 mask = 0, val = 0;
 	LRESULT result = 0;
 	TCHAR *_s = 0;
 
-	if(dwFlags & CWF_UNTRANSLATED)
-		_s = const_cast<TCHAR *>(CTranslator::getUntranslatedWarning(uId));
-	else {
-		/*
-		 * revert to untranslated warning when the translated message
-		 * is not well-formatted.
-		 */
-		_s = const_cast<TCHAR *>(CTranslator::getWarning(uId));
-		if(_tcslen(_s) < 3 || 0 == _tcschr(_s, '|'))
+	if(uId != -1) {
+		if(dwFlags & CWF_UNTRANSLATED)
 			_s = const_cast<TCHAR *>(CTranslator::getUntranslatedWarning(uId));
+		else {
+			/*
+			* revert to untranslated warning when the translated message
+			* is not well-formatted.
+			*/
+			_s = const_cast<TCHAR *>(CTranslator::getWarning(uId));
+			if(_tcslen(_s) < 3 || 0 == _tcschr(_s, '|'))
+				_s = const_cast<TCHAR *>(CTranslator::getUntranslatedWarning(uId));
+		}
 	}
+	else if(-1 == uId && tszTxt) {
+		dwFlags |= CWF_NOALLOWHIDE;
+		_s = (dwFlags & CWF_UNTRANSLATED ? const_cast<TCHAR *>(tszTxt) : TranslateTS(tszTxt));
+	}
+	else
+		return(-1);
 
 	TCHAR *s = reinterpret_cast<TCHAR *>(mir_alloc((_tcslen(_s) + 1) * sizeof(TCHAR)));
 
 	_tcscpy(s, _s);
 	if((_tcslen(s) > 3) && ((separator_pos = _tcschr(s, '|')) != 0)) {
 
-		mask = getMask();
-		val = ((__int64)1L) << uId;
+		if(uId >= 0) {
+			mask = getMask();
+			val = ((__int64)1L) << uId;
+		}
+		else
+			mask = val = 0;
 
 		if(0 == (mask & val) || dwFlags & CWF_NOALLOWHIDE) {
+
 			separator_pos[0] = 0;
 
 			CWarning *w = new CWarning(s, &separator_pos[1], uId, dwFlags);
-			result = w->ShowDialog();
-			mir_free(s);
-			delete w;
-			return(result);
+			if(!(dwFlags & MB_YESNO || dwFlags & MB_YESNOCANCEL)) {
+				w->ShowDialog();
+				mir_free(s);
+			}
+			else {
+				result = w->ShowDialog();
+				mir_free(s);
+				delete w;
+				return(result);
+			}
 		}
 	}
 	return(-1);
@@ -1198,7 +1225,8 @@ INT_PTR CALLBACK CWarning::dlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lP
 			m_hwnd = hwnd;
 
 			::SetWindowText(hwnd, _T("TabSRMM message"));
-
+			::SendMessage(hwnd, WM_SETICON, ICON_BIG, reinterpret_cast<LPARAM>(::LoadSkinnedIconBig(SKINICON_OTHER_MIRANDA)));
+			::SendMessage(hwnd, WM_SETICON, ICON_SMALL, reinterpret_cast<LPARAM>(::LoadSkinnedIcon(SKINICON_OTHER_MIRANDA)));
 			::SendDlgItemMessage(hwnd, IDC_WARNTEXT, EM_AUTOURLDETECT, (WPARAM) TRUE, 0);
 			::SendDlgItemMessage(hwnd, IDC_WARNTEXT, EM_SETEVENTMASK, 0, ENM_LINK);
 
@@ -1227,14 +1255,16 @@ INT_PTR CALLBACK CWarning::dlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lP
 
 			if(m_dwFlags & CWF_NOALLOWHIDE)
 				Utils::showDlgControl(hwnd, IDC_DONTSHOWAGAIN, SW_HIDE);
-			if(m_dwFlags & MB_YESNO || m_dwFlags & MB_YESNOCANCEL)
+			if(m_dwFlags & MB_YESNO || m_dwFlags & MB_YESNOCANCEL) {
 				Utils::showDlgControl(hwnd, IDOK, SW_HIDE);
+				::SetFocus(::GetDlgItem(hwnd, IDCANCEL));
+			}
 			else {
 				Utils::showDlgControl(hwnd, IDCANCEL, SW_HIDE);
 				Utils::showDlgControl(hwnd, IDYES, SW_HIDE);
 				Utils::showDlgControl(hwnd, IDNO, SW_HIDE);
+				::SetFocus(::GetDlgItem(hwnd, IDOK));
 			}
-
 			if(m_dwFlags & MB_ICONERROR || m_dwFlags & MB_ICONHAND)
 				uResId = 32513;
 			else if(m_dwFlags & MB_ICONEXCLAMATION || m_dwFlags & MB_ICONWARNING)
@@ -1250,6 +1280,9 @@ INT_PTR CALLBACK CWarning::dlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lP
 				hIcon = ::LoadSkinnedIconBig(SKINICON_EVENT_MESSAGE);
 
 			::SendDlgItemMessage(hwnd, IDC_WARNICON, STM_SETICON, reinterpret_cast<WPARAM>(hIcon), 0);
+			if(!(m_dwFlags & MB_YESNO || m_dwFlags & MB_YESNOCANCEL))
+				::ShowWindow(hwnd, SW_SHOWNORMAL);
+			
 			return(TRUE);
 		}
 
@@ -1284,8 +1317,12 @@ INT_PTR CALLBACK CWarning::dlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lP
 				case IDCANCEL:
 				case IDYES:
 				case IDNO:
-					::SetWindowLongPtr(hwnd, GWLP_USERDATA, 0);
-					EndDialog(hwnd, LOWORD(wParam));
+					if(!m_fIsModal && LOWORD(wParam) == IDOK)
+						::DestroyWindow(hwnd);
+					else {
+						::SetWindowLongPtr(hwnd, GWLP_USERDATA, 0);
+						EndDialog(hwnd, LOWORD(wParam));
+					}
 					break;
 
 				case IDC_DONTSHOWAGAIN: {
@@ -1306,30 +1343,35 @@ INT_PTR CALLBACK CWarning::dlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lP
 			}
 			break;
 
-			case WM_NOTIFY: {
-				switch (((NMHDR *) lParam)->code) {
-					case EN_LINK:
-						switch (((ENLINK *) lParam)->msg) {
-							case WM_LBUTTONUP: {
-								ENLINK* 		e = reinterpret_cast<ENLINK *>(lParam);
+		case WM_NOTIFY: {
+			switch (((NMHDR *) lParam)->code) {
+			case EN_LINK:
+				switch (((ENLINK *) lParam)->msg) {
+				case WM_LBUTTONUP: {
+					ENLINK* 		e = reinterpret_cast<ENLINK *>(lParam);
 
-								const TCHAR*	tszUrl = Utils::extractURLFromRichEdit(e, ::GetDlgItem(hwnd, IDC_WARNTEXT));
-								if(tszUrl) {
-									char* szUrl = mir_t2a(tszUrl);
+					const TCHAR*	tszUrl = Utils::extractURLFromRichEdit(e, ::GetDlgItem(hwnd, IDC_WARNTEXT));
+					if(tszUrl) {
+						char* szUrl = mir_t2a(tszUrl);
 
-									CallService(MS_UTILS_OPENURL, 1, (LPARAM)szUrl);
-									mir_free(szUrl);
-									mir_free(const_cast<TCHAR *>(tszUrl));
-								}
-								break;
-							}
-						}
-						break;
-					default:
-						break;
+						CallService(MS_UTILS_OPENURL, 1, (LPARAM)szUrl);
+						mir_free(szUrl);
+						mir_free(const_cast<TCHAR *>(tszUrl));
+					}
+					break;
+								   }
 				}
 				break;
+			default:
+				break;
 			}
+			break;
+						}
+
+		case WM_NCDESTROY:
+			::SetWindowLongPtr(hwnd, GWLP_USERDATA, 0);
+			delete this;
+			break;
 
 		default:
 			break;

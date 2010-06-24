@@ -1568,7 +1568,7 @@ void TSAPI DM_OptionsApplied(TWindowData *dat, WPARAM wParam, LPARAM lParam)
 }
 
 
-void TSAPI DM_Typing(TWindowData *dat)
+void TSAPI DM_Typing(TWindowData *dat, bool fForceOff)
 {
 	if(dat == 0)
 		return;
@@ -1587,14 +1587,16 @@ void TSAPI DM_Typing(TWindowData *dat)
 				SendMessage(hwndDlg, DM_UPDATEWINICON, 0, 0);
 		} else {
 			struct TWindowData *dat_active = NULL;
-			dat->showTyping = 2;
-			dat->nTypeSecs = 86400;
+			
+			if(!fForceOff) {
+				dat->showTyping = 2;
+				dat->nTypeSecs = 86400;
 
-			mir_sntprintf(dat->szStatusBar, safe_sizeof(dat->szStatusBar),
+				mir_sntprintf(dat->szStatusBar, safe_sizeof(dat->szStatusBar),
 						  CTranslator::get(CTranslator::GEN_MTN_STOPPED), dat->cache->getNick());
-			if(hwndStatus && dat->pContainer->hwndActive == hwndDlg)
-				SendMessage(hwndStatus, SB_SETTEXT, 0, (LPARAM) dat->szStatusBar);
-
+				if(hwndStatus && dat->pContainer->hwndActive == hwndDlg)
+					SendMessage(hwndStatus, SB_SETTEXT, 0, (LPARAM) dat->szStatusBar);
+			}
 			SendMessage(hwndDlg, DM_UPDATEWINICON, 0, 0);
 			HandleIconFeedback(dat, (HICON) - 1);
 			dat_active = (struct TWindowData *)GetWindowLongPtr(dat->pContainer->hwndActive, GWLP_USERDATA);
@@ -1780,8 +1782,11 @@ void TSAPI DM_EventAdded(TWindowData *dat, WPARAM wParam, LPARAM lParam)
 		if (dbei.eventType == EVENTTYPE_MESSAGE && !(dbei.flags & (DBEF_SENT))) {
 			dat->lastMessage = dbei.timestamp;
 			dat->szStatusBar[0] = 0;
-			dat->nTypeSecs = 0;
-			dat->showTyping = 0;
+			if(dat->showTyping) {
+				dat->nTypeSecs = 0;
+				DM_Typing(dat, true);
+				dat->showTyping = 0;
+			}
 			HandleIconFeedback(dat, (HICON)-1);
 			if(m_pContainer->hwndStatus)
 				PostMessage(hwndDlg, DM_UPDATELASTMESSAGE, 0, 0);

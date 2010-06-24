@@ -215,6 +215,8 @@ public:
 		WARN_EDITUSERNOTES					= 2,
 		WARN_ICONPACKMISSING				= 3,
 		WARN_AEROPEEK_SKIN					= 4,
+		WARN_CHAT_ENABLED					= 5,
+		WARN_IMGSVC_MISSING					= 6,
 	};
 
 	/*
@@ -234,7 +236,7 @@ public:
 	 * static function to construct and show the dialog, returns the
 	 * user's choice
 	 */
-	static	LRESULT			show				(const UINT uId, const DWORD dwFlags = 0);
+	static	LRESULT			show				(const int uId, DWORD dwFlags = 0, const TCHAR* tszTxt = 0);
 	LRESULT					ShowDialog			() const;
 
 private:
@@ -244,6 +246,7 @@ private:
 	HFONT							m_hFontCaption;
 	DWORD							m_dwFlags;
 	HWND							m_hwnd;
+	bool							m_fIsModal;
 
 	INT_PTR	CALLBACK		dlgProc				(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 	//void					resize				() const;

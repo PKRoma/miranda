@@ -692,11 +692,19 @@ static INT_PTR CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, 
 				pContainer->hwndTip = 0;
 
 			if (pContainer->dwFlags & CNT_CREATE_MINIMIZED) {
+				WINDOWPLACEMENT wp = {0};
+
+				wp.length = sizeof(wp);
+
  				SetWindowLongPtr(hwndDlg, GWL_STYLE, GetWindowLongPtr(hwndDlg, GWL_STYLE) & ~WS_VISIBLE);
 				ShowWindow(hwndDlg, SW_SHOWMINNOACTIVE);
  				SendMessage(hwndDlg, DM_RESTOREWINDOWPOS, 0, 0);
-				GetClientRect(hwndDlg, &pContainer->rcSaved);
+				//GetClientRect(hwndDlg, &pContainer->rcSaved);
 				ShowWindow(hwndDlg, SW_SHOWMINNOACTIVE);
+				GetWindowPlacement(hwndDlg, &wp);
+				pContainer->rcSaved.left = pContainer->rcSaved.top = 0;
+				pContainer->rcSaved.right = wp.rcNormalPosition.right - wp.rcNormalPosition.left;
+				pContainer->rcSaved.bottom = wp.rcNormalPosition.bottom - wp.rcNormalPosition.top;
 			}
 			else {
 				SendMessage(hwndDlg, DM_RESTOREWINDOWPOS, 0, 0);
@@ -1463,8 +1471,17 @@ buttons_done:
 					pContainer->oldSize.cx = pContainer->oldSize.cy = 0;
 					ZeroMemory(&pContainer->mOld, sizeof(MARGINS));
 					break;
-				case SC_MINIMIZE:
+				case SC_MINIMIZE: {
+					TWindowData* dat = reinterpret_cast<TWindowData *>(GetWindowLongPtr(pContainer->hwndActive, GWLP_USERDATA));
+					if(dat) {
+						//GetWindowRect(GetDlgItem(pContainer->hwndActive, dat->bType == SESSIONTYPE_IM ? IDC_LOG : IDC_CHAT_LOG), &pContainer->rcLogSaved);
+						GetWindowRect(pContainer->hwndActive, &pContainer->rcLogSaved);
+						pContainer->ptLogSaved.x = pContainer->rcLogSaved.left;
+						pContainer->ptLogSaved.y = pContainer->rcLogSaved.top;
+						ScreenToClient(hwndDlg, &pContainer->ptLogSaved);
+					}
 					break;
+				}
 			}
 			break;
 		case DM_SELECTTAB: {
@@ -1980,11 +1997,13 @@ buttons_done:
 		}
 		case DM_QUERYCLIENTAREA: {
 			RECT *rc = (RECT *)lParam;
-			if (!IsIconic(hwndDlg))
-				GetClientRect(hwndDlg, rc);
-			else
-				CopyRect(rc, &pContainer->rcSaved);
-			AdjustTabClientRect(pContainer, rc);
+			if(rc) {
+				if (!IsIconic(hwndDlg))
+					GetClientRect(hwndDlg, rc);
+				else
+					CopyRect(rc, &pContainer->rcSaved);
+				AdjustTabClientRect(pContainer, rc);
+			}
 			return(0);
 		}
 		case WM_DESTROY: {

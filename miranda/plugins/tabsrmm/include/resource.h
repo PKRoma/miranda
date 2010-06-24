@@ -356,7 +356,6 @@
 #define IDC_SKIN_LOADTEMPLATES          1290
 #define IDC_UPREFS_SHOWSYMBOLS          1290
 #define IDC_SKIN_LOADTEMPLATES2         1291
-#define IDC_NOAUTOCLOSE                 1291
 #define IDC_UPREFS_INOUTICONS           1291
 #define IDC_AVADYNAMIC                  1292
 #define IDC_UPREFS_SHOWTIMESTAMP        1292

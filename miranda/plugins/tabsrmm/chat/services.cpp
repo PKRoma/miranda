@@ -880,11 +880,9 @@ int CreateServiceFunctions(void)
 	PluginConfig.m_chat_enabled = false;
 
 	if(ServiceExists(MS_GC_REGISTER)) {
-		if(MessageBox(0, TranslateT("TabSRMM could not enable its group chat module. The most likely cause is that you have installed and enabled chat.dll or another plugin that provides groupchat services.\n\nShould I try to fix this now (a RESTART of Miranda is required to apply these changes)?"),
-					  TranslateT("TabSRMM group chat module"),  MB_YESNO | MB_ICONQUESTION) == IDYES) {
-
-			M->WriteByte("PluginDisable", "chat.dll", 1);
-		}
+		LRESULT result = CWarning::show(CWarning::WARN_CHAT_ENABLED, CWarning::CWF_NOALLOWHIDE | CWarning::CWF_UNTRANSLATED | MB_YESNOCANCEL | MB_ICONQUESTION);
+			if(result == IDYES)
+				M->WriteByte("PluginDisable", "chat.dll", 1);
 		return(0);
 	}
 	PluginConfig.m_chat_enabled = true;

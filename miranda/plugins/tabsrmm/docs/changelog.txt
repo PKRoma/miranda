@@ -35,6 +35,27 @@ are currently no downloads for it, you'll have to compile it from source.
 			Detailed change log
 			===================
 
+Version 3.0.0.39 - 2010/06/24
+
+	* task bar previews: removed placeholders and implemented real previews of
+	  the message window contents.
+
+	* redesigned container options dialog for better translations. Most
+	  options now offer much more space for translated strings.
+	  
+	* attempt to fix stuck typing notifications on arriving messages
+
+Version 3.0.0.38 - 2010/06/21 - released with Miranda 0.9.alpha#11
+
+	* implemented warning dialog boxes with a "do not show this message again"
+	  checkmark for various error- or informational messages.
+
+	* disabled aero peek previews when a skin is in use because of various
+	  unresolved problems. Might be adressed at a later time.
+
+	* updated icon pack version to 5 and re-enabled a mandatory version check
+	  on startup. The warning message can be disabled though.
+
 Version 3.0.0.37 - 2010/06/15
 
 	* changed logic for calculating relative skin path names. You will most likely

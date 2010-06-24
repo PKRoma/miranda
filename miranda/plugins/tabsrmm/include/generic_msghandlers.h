@@ -46,7 +46,7 @@ LRESULT __stdcall 	DM_RecalcPictureSize	(TWindowData *dat);
 LRESULT TSAPI		DM_WMCopyHandler		(HWND hwnd, WNDPROC oldWndProc, WPARAM wParam, LPARAM lParam);
 LRESULT TSAPI		DM_MouseWheelHandler	(HWND hwnd, HWND hwndParent, struct TWindowData *mwdat, WPARAM wParam, LPARAM lParam);
 LRESULT TSAPI		DM_ThemeChanged			(TWindowData *dat);
-void	TSAPI		DM_Typing				(TWindowData *dat);
+void	TSAPI		DM_Typing				(TWindowData *dat, bool fForceOff = false);
 void	TSAPI		DM_FreeTheme			(TWindowData *dat);
 void	TSAPI		DM_NotifyTyping			(TWindowData *dat, int mode);
 int 	TSAPI 		DM_SplitterGlobalEvent	(TWindowData *dat, WPARAM wParam, LPARAM lParam);

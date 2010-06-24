@@ -312,8 +312,8 @@ TCHAR* CTranslator::m_strings[STR_LAST] = {
 	 */
 	LPGENT("Chat room %s"),																/* GEN_TASKBAR_STRING_CHAT_ROOM */
 	LPGENT("Server window"),															/* GEN_TASKBAR_STRING_SERVER_WINDOW */
-	LPGENT("% Unread"),																	/* GEN_TASKBAR_STRING_UNREAD */
-	LPGENT("% User(s)"),																/* GEN_TASKBAR_STRING_USERS */
+	LPGENT("%d Unread"),																	/* GEN_TASKBAR_STRING_UNREAD */
+	LPGENT("%d User(s)"),																/* GEN_TASKBAR_STRING_USERS */
 };
 
 /*
@@ -438,10 +438,12 @@ TCHAR* CTranslator::m_OptStrings[OPT_LAST] = {
  */
 TCHAR* CTranslator::m_Warnings[WARN_LAST] = {
 	LPGENT("Important release notes|A test warning message"),							/* WARN_TEST */ /* reserved for important notes after upgrade - NOT translatable */
-	LPGENT("Icon pack version check|The installed icon pack is outdated and might be incompatible with TabSRMM version 3.\n\nMissing or misplaced icons are possible issues with the currently installed icon pack."),			/* WARN_ICONPACKVERSION */
+	LPGENT("Icon pack version check|The installed icon pack is outdated and might be incompatible with TabSRMM version 3.\n\n\\b1Missing or misplaced icons are possible issues with the currently installed icon pack.\\b0 "),			/* WARN_ICONPACKVERSION */
 	LPGENT("Edit user notes|You are editing the user notes. Click the button again or use the hotkey (default: Alt-N) to save the notes and return to normal messaging mode"),  /* WARN_EDITUSERNOTES */
 	LPGENT("Missing component|The icon pack is missing. Please install it to the default icons folder.\n\nNo icons will be available"),		/* WARN_ICONPACKMISSING */ /* NOT TRANSLATABLE */
 	LPGENT("Aero peek warning|Some Windows 7 Aero Peek features are disabled, because you have loaded a skin.\n\n\\b1Task bar thumbnails and previews will not work and default task bar behavior will be used.\\b0 "),	/* WARN_AEROPEEKSKIN */
+	LPGENT("TabSRMM group chat module|TabSRMM could not enable its group chat module. The most likely cause is that you have installed and enabled \\b1chat.dll\\b0  or another plugin that provides groupchat services.\n\nShould I try to fix this now \\b1(a restart of Miranda is required to apply these changes)?\\b0"), /* WARN_CHAT_ENABLED */ /* NOT TRANSLATABLE */
+	LPGENT("Missing component|The image service plugin (\\b1advaimg.dll\\b0 ) is not properly installed. Please check your plugin configuration.\n\n\\b1TabSRMM is disabled.\\b0 ")
 };
 
 TCHAR* CTranslator::m_translated[STR_LAST];

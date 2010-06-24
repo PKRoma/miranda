@@ -239,7 +239,8 @@ struct TContainerData {
 	int     ncActive;
 	HWND    hwndSaved;
 	ButtonItem *buttonItems;
-	RECT    rcSaved;
+	RECT    rcSaved, rcLogSaved;
+	POINT	ptLogSaved;
 	DWORD   exFlags;
 	BOOL	fPrivateThemeChanged;
 	MARGINS mOld;
@@ -503,6 +504,9 @@ struct TNewWindowData {
 
 #define MWF_LOG_DEFAULT (MWF_LOG_SHOWTIME | MWF_LOG_NORMALTEMPLATES | MWF_LOG_SHOWDATES | MWF_LOG_SYMBOLS | MWF_LOG_GRID | MWF_LOG_STATUSCHANGES | MWF_LOG_INOUTICONS)
 
+/*
+ * custom dialog window messages
+ */
 #define EM_SUBCLASSED             (WM_USER+0x101)
 #define EM_SEARCHSCROLLER         (WM_USER+0x103)
 #define EM_VALIDATEBOTTOM         (WM_USER+0x104)
@@ -895,7 +899,6 @@ struct SIDEBARITEM {
 #define THEME_READ_TEMPLATES 2
 #define THEME_READ_ALL (THEME_READ_FONTS | THEME_READ_TEMPLATES)
 
-#define BUDDYPOUNCE_SERVICENAME "BuddyPounce/AddToPounce"
 #define IDC_TBFIRSTUID 10000            // first uId for custom buttons
 
 #include "templates.h"

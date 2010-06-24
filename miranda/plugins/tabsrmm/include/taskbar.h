@@ -110,7 +110,7 @@ public:
 	const TWindowData*		getDat				() const { return(m_dat); }
 	const LONG				getWidth			() const { return(m_width); }
 	const LONG				getHeight			() const { return(m_height); }
-	const HWND				getHwnd				() const { return(m_hwnd); }
+	const HWND				getHwnd				() const { return(m_hwndProxy); }
 	const HICON				getBigIcon			() const { return(m_hBigIcon); }
 	void					verifyDwmState		();
 
@@ -120,7 +120,7 @@ public:
 
 private:
 	const TWindowData*		m_dat;
-	HWND					m_hwnd;
+	HWND					m_hwndProxy;
 	LONG					m_width, m_height;
 	HICON					m_hBigIcon;
 

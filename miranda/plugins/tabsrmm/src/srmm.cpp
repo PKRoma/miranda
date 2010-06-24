@@ -123,6 +123,7 @@ extern "C" int __declspec(dllexport) Load(PLUGINLINK * link)
 	SystemParametersInfo(SPI_GETICONTITLELOGFONT, sizeof(lfDefault), &lfDefault, FALSE);
 
 	Chat_Load(pluginLink);
+
 	return LoadSendRecvMessageModule();
 }
 
