@@ -1,6 +1,6 @@
 /*
 Plugin of Miranda IM for communicating with users of the MSN Messenger protocol.
-Copyright (c) 2007-2009 Boris Krasnovskiy.
+Copyright (c) 2007-2010 Boris Krasnovskiy.
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -1427,6 +1427,8 @@ unsigned CMsnProto::MSN_ABContactAdd(const char* szEmail, const char* szNick, in
 
 			if (strcmp(szErr, "InvalidPassportUser") == 0)
 				status = 1;
+			else if (strcmp(szErr, "FederatedQueryFailure") == 0)
+				status = 4;
 			else if (strcmp(szErr, "EmailDomainIsFederated") == 0)
 				status = 2;
 			else if (strcmp(szErr, "BadEmailArgument") == 0)
