@@ -77,11 +77,11 @@ static void ReportSslError(SECURITY_STATUS scRet, int line)
 		break;
 
 	case SEC_E_WRONG_PRINCIPAL:
-		msg = "Host we connecting to is not the one certificate was issued for";
+		msg = "Host we are connecting to is not the one certificate was issued for";
 		break;
 
 	case SEC_E_UNTRUSTED_ROOT:
-		msg = "The certificate chain was issued by an authority that is not trusted";
+		msg = "The certificate chain was issued by not trusted authority";
 		break;
 
 	case SEC_E_ILLEGAL_MESSAGE:
@@ -154,7 +154,7 @@ static BOOL AcquireCredentials(SslHandle *ssl, BOOL verify, BOOL chkname)
 	ZeroMemory(&SchannelCred, sizeof(SchannelCred));
 
 	SchannelCred.dwVersion  = SCHANNEL_CRED_VERSION;
-	SchannelCred.grbitEnabledProtocols = SP_PROT_SSL3TLS1_CLIENTS | 0xA00;
+	SchannelCred.grbitEnabledProtocols = SP_PROT_SSL3TLS1_CLIENTS /*| 0xA00 TLS1.1 & 1.2*/;
 
 	SchannelCred.dwFlags |= SCH_CRED_NO_DEFAULT_CREDS;
 
