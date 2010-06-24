@@ -167,6 +167,8 @@ char* Utf8EncodeCP( const char* src, int codepage );
 
 char* Utf8EncodeUcs2( const wchar_t* str );
 
+int   Ucs2toUtf8Len(const wchar_t *src);
+
 #if defined( _UNICODE )
 	#define Utf8DecodeT Utf8DecodeUcs2
 	#define Utf8EncodeT Utf8EncodeUcs2

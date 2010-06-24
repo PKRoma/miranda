@@ -859,17 +859,27 @@ INT_PTR GetUtfInterface(WPARAM, LPARAM lParam)
 	struct UTF8_INTERFACE *utfi = (struct UTF8_INTERFACE*) lParam;
 	if ( utfi == NULL )
 		return 1;
-	if ( utfi->cbSize != UTF8_INTERFACE_SIZEOF_V1 && utfi->cbSize != sizeof( struct UTF8_INTERFACE ))
+
+	switch( utfi->cbSize ) {
+	case UTF8_INTERFACE_SIZEOF_V1:
+	case UTF8_INTERFACE_SIZEOF_V2:
+	case sizeof( struct UTF8_INTERFACE ):
+		break;
+
+	default:
 		return 1;
+	}
 
 	utfi->utf8_decode   = Utf8Decode;
 	utfi->utf8_decodecp = Utf8DecodeCP;
 	utfi->utf8_encode   = Utf8Encode;
 	utfi->utf8_encodecp = Utf8EncodeCP;
 	utfi->utf8_encodeW  = Utf8EncodeUcs2;
-	if (utfi->cbSize > UTF8_INTERFACE_SIZEOF_V1) {
-		utfi->utf8_decodeW  = Utf8DecodeUcs2;
-	}
+	if (utfi->cbSize > UTF8_INTERFACE_SIZEOF_V1)
+		utfi->utf8_decodeW = Utf8DecodeUcs2;
+	if (utfi->cbSize > UTF8_INTERFACE_SIZEOF_V2)
+		utfi->utf8_lenW = Ucs2toUtf8Len;
+
 	return 0;
 }
 

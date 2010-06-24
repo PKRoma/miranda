@@ -94,6 +94,14 @@ static int Ucs2toUtf8Len(const wchar_t *src, unsigned int srclen)
     return len;
 }
 
+int Ucs2toUtf8Len(const wchar_t *src)
+{
+	if ( src == 0 )
+		return 0;
+
+	return Ucs2toUtf8Len( src, wcslen( src ));
+}
+
 /* wide char to UTF-8 string conversion */
 /* return -1 on dst buffer overflow, -2 on invalid input char */
 int Ucs2toUtf8(const wchar_t *src, int srclen, char *dst, int dstlen)

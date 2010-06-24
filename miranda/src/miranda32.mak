@@ -1,7 +1,7 @@
 # Microsoft Developer Studio Generated NMAKE File, Based on miranda32.dsp
 !IF "$(CFG)" == ""
-CFG=miranda32 - Win32 Debug Unicode
-!MESSAGE No configuration specified. Defaulting to miranda32 - Win32 Debug Unicode.
+CFG=miranda32 - Win32 Release Unicode
+!MESSAGE No configuration specified. Defaulting to miranda32 - Win32 Release Unicode.
 !ENDIF
 
 !IF "$(CFG)" != "miranda32 - Win32 Release" && "$(CFG)" != "miranda32 - Win32 Debug" && "$(CFG)" != "miranda32 - Win32 Release Unicode" && "$(CFG)" != "miranda32 - Win32 Debug Unicode"

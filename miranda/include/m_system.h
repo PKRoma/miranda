@@ -278,6 +278,8 @@ __forceinline INT_PTR mir_getLI( struct LIST_INTERFACE* dest )
 */
 
 #define UTF8_INTERFACE_SIZEOF_V1 (sizeof(size_t)+5*sizeof(void*))
+#define UTF8_INTERFACE_SIZEOF_V2 (sizeof(size_t)+6*sizeof(void*))
+
 struct UTF8_INTERFACE
 {
 	size_t cbSize;
@@ -298,9 +300,15 @@ struct UTF8_INTERFACE
 	// encodes an WCHAR string into a utf8 format
 	// the resulting string should be freed using mir_free
 	char* ( *utf8_encodeW )( const wchar_t* src );
+
 	// decodes utf8 and returns the result as wchar_t* that should be freed using mir_free()
 	// the input buffer remains unchanged
 	wchar_t* ( *utf8_decodeW )( const char* str );
+
+	// returns the predicted length of the utf-8 string 
+	#if MIRANDA_VER >= 0x0900
+		int ( *utf8_lenW )( const wchar_t* src );
+	#endif
 };
 
 #define MS_SYSTEM_GET_UTFI  "Miranda/System/GetUTFI"
@@ -319,6 +327,7 @@ extern struct UTF8_INTERFACE utfi;
 #define mir_utf8encode(A)       utfi.utf8_encode(A)
 #define mir_utf8encodecp(A,B)   utfi.utf8_encodecp(A,B)
 #define mir_utf8encodeW(A)      utfi.utf8_encodeW(A)
+#define mir_utf8lenW(A)         utfi.utf8_lenW(A)
 
 __forceinline char* mir_utf8decodeA(const char* src)
 {
