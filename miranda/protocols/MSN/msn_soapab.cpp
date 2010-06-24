@@ -1428,7 +1428,7 @@ unsigned CMsnProto::MSN_ABContactAdd(const char* szEmail, const char* szNick, in
 			if (strcmp(szErr, "InvalidPassportUser") == 0)
 				status = 1;
 			else if (strcmp(szErr, "FederatedQueryFailure") == 0)
-				status = 1;
+				status = 4;
 			else if (strcmp(szErr, "EmailDomainIsFederated") == 0)
 				status = 2;
 			else if (strcmp(szErr, "BadEmailArgument") == 0)
