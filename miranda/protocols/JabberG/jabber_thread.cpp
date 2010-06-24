@@ -222,22 +222,6 @@ void CJabberProto::xmlStreamInitializeNow(ThreadData* info)
 	xi.destroyNode( n );
 }
 
-static int utfLen( TCHAR* p, size_t len )
-{
-	int result = 0;
-	for ( size_t i=0; i < len && *p; i++ ) {
-		WORD w = *p++;
-		if ( w < 0x80 )
-			result++;
-		else if ( w < 0x800 )
-			result += 2;
-		else
-			result += 3;
-	}
-
-	return result;
-}
-
 void CJabberProto::ServerThread( ThreadData* info )
 {
 	DBVARIANT dbv;
@@ -519,7 +503,7 @@ LBL_FatalError:
 			bytesParsed = 0;
 			XmlNode root( str, &bytesParsed, tag );
 			#if defined( _UNICODE )
-				bytesParsed = ( root ) ? utfLen( str, bytesParsed ) : 0;
+				bytesParsed = ( root ) ? mir_utf8lenW( str, bytesParsed ) : 0;
 				mir_free(str);
 			#else
 				bytesParsed = ( root ) ? bytesParsed : 0;
