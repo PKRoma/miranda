@@ -49,7 +49,6 @@ static int stopStatusUpdater = 0;
 void StatusUpdaterThread(HWND hwndDlg)
 {
 	int i,curdelay,lastcheck=0;
-	char szServiceName[256];
 	HANDLE hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
 
 	SetThreadPriority(GetCurrentThread(),THREAD_PRIORITY_LOWEST);
