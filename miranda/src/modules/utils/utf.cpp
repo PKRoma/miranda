@@ -99,7 +99,7 @@ int Ucs2toUtf8Len(const wchar_t *src)
 	if ( src == 0 )
 		return 0;
 
-	return Ucs2toUtf8Len( src, wcslen( src ));
+	return Ucs2toUtf8Len( src, (int)wcslen( src ));
 }
 
 /* wide char to UTF-8 string conversion */
