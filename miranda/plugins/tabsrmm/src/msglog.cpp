@@ -234,8 +234,6 @@ static void AppendToBuffer(char **buffer, int *cbBufferEnd, int *cbBufferAlloced
 	*cbBufferEnd += charsDone;
 }
 
-#if defined( _UNICODE )
-
 static int AppendUnicodeToBuffer(char **buffer, int *cbBufferEnd, int *cbBufferAlloced, TCHAR * line, int mode)
 {
 	DWORD textCharsCount = 0;
@@ -326,7 +324,6 @@ static int AppendUnicodeToBuffer(char **buffer, int *cbBufferEnd, int *cbBufferA
 	*cbBufferEnd = (int)(d - *buffer);
 	return textCharsCount;
 }
-#endif
 
 /*
  * same as above but does "\r\n"->"\\par " and "\t"->"\\tab " too
@@ -527,19 +524,12 @@ static char *CreateRTFHeader(struct TWindowData *dat)
 static void AppendTimeStamp(TCHAR *szFinalTimestamp, int isSent, char **buffer, int *bufferEnd, int *bufferAlloced, int skipFont,
 							struct TWindowData *dat, int iFontIDOffset)
 {
-#ifdef _UNICODE
 	if (skipFont)
 		AppendUnicodeToBuffer(buffer, bufferEnd, bufferAlloced, szFinalTimestamp, MAKELONG(isSent, dat->isHistory));
 	else {
 		AppendToBuffer(buffer, bufferEnd, bufferAlloced, "%s ", GetRTFFont(isSent ? MSGFONTID_MYTIME + iFontIDOffset : MSGFONTID_YOURTIME + iFontIDOffset));
 		AppendUnicodeToBuffer(buffer, bufferEnd, bufferAlloced, szFinalTimestamp, MAKELONG(isSent, dat->isHistory));
 	}
-#else
-	if (skipFont)
-		AppendToBuffer(buffer, bufferEnd, bufferAlloced, "%s", szFinalTimestamp);
-	else
-		AppendToBuffer(buffer, bufferEnd, bufferAlloced, "%s %s", GetRTFFont(isSent ? MSGFONTID_MYTIME + iFontIDOffset : MSGFONTID_YOURTIME + iFontIDOffset), szFinalTimestamp);
-#endif
 }
 
 //free() the return value
@@ -586,9 +576,6 @@ static char *Template_CreateRTFFromDbEvent(struct TWindowData *dat, HANDLE hCont
 {
 	char *buffer, c;
 	TCHAR ci, cc;
-#if !defined(_UNICODE)
-	char *szName;
-#endif
 	TCHAR 	*szFinalTimestamp;
 	int 	bufferAlloced, bufferEnd;
 	size_t 	iTemplateLen, i = 0;
@@ -904,7 +891,6 @@ static char *Template_CreateRTFFromDbEvent(struct TWindowData *dat, HANDLE hCont
 					break;
 				case'O':            // month (name)
 					if (showTime && showDate) {
-#ifdef _UNICODE
 						if (skipFont)
 							AppendUnicodeToBuffer(&buffer, &bufferEnd, &bufferAlloced, const_cast<TCHAR *>(CTranslator::getMonth(event_time.tm_mon)),
 												  MAKELONG(isSent, dat->isHistory));
@@ -913,12 +899,6 @@ static char *Template_CreateRTFFromDbEvent(struct TWindowData *dat, HANDLE hCont
 							AppendUnicodeToBuffer(&buffer, &bufferEnd, &bufferAlloced, const_cast<TCHAR *>(CTranslator::getMonth(event_time.tm_mon)),
 												  MAKELONG(isSent, dat->isHistory));
 						}
-#else
-						if (skipFont)
-							AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s", const_cast<TCHAR *>(CTranslator::getMonth(event_time.tm_mon)));
-						else
-							AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s %s", GetRTFFont(isSent ? MSGFONTID_MYTIME + iFontIDOffset : MSGFONTID_YOURTIME + iFontIDOffset), const_cast<TCHAR *>(CTranslator::getMonth(event_time.tm_mon)));
-#endif
 					} else
 						skipToNext = TRUE;
 					break;
@@ -933,19 +913,12 @@ static char *Template_CreateRTFFromDbEvent(struct TWindowData *dat, HANDLE hCont
 					break;
 				case 'w':           // day of week
 					if (showTime && showDate) {
-#ifdef _UNICODE
 						if (skipFont)
 							AppendUnicodeToBuffer(&buffer, &bufferEnd, &bufferAlloced, const_cast<TCHAR *>(CTranslator::getWeekday(event_time.tm_wday)), MAKELONG(isSent, dat->isHistory));
 						else {
 							AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s ", GetRTFFont(isSent ? MSGFONTID_MYTIME + iFontIDOffset : MSGFONTID_YOURTIME + iFontIDOffset));
 							AppendUnicodeToBuffer(&buffer, &bufferEnd, &bufferAlloced, const_cast<TCHAR *>(CTranslator::getWeekday(event_time.tm_wday)), MAKELONG(isSent, dat->isHistory));
 						}
-#else
-						if (skipFont)
-							AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s", const_cast<TCHAR *>(CTranslator::getWeekday(event_time.tm_wday)));
-						else
-							AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s %s", GetRTFFont(isSent ? MSGFONTID_MYTIME + iFontIDOffset : MSGFONTID_YOURTIME + iFontIDOffset), const_cast<TCHAR *>(CTranslator::getWeekday(event_time.tm_wday)));
-#endif
 					} else
 						skipToNext = TRUE;
 					break;
@@ -1014,20 +987,13 @@ static char *Template_CreateRTFFromDbEvent(struct TWindowData *dat, HANDLE hCont
 					if (heFlags != -1 && !(heFlags & HISTORYEVENTS_FLAG_EXPECT_CONTACT_NAME_BEFORE))
 						break;
 
-#if !defined(_UNICODE)
-					szName = isSent ? szMyName : szYourName;
-#endif
 					if (!skipFont)
 						AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s ", GetRTFFont(isSent ? MSGFONTID_MYNAME + iFontIDOffset : MSGFONTID_YOURNAME + iFontIDOffset));
-#if defined(_UNICODE)
 					if (isSent)
 						AppendUnicodeToBuffer(&buffer, &bufferEnd, &bufferAlloced, szMyName, MAKELONG(isSent, dat->isHistory));
 					//AppendToBufferWithRTF(0, &buffer, &bufferEnd, &bufferAlloced, "%s", szMyName);
 					else
 						AppendUnicodeToBuffer(&buffer, &bufferEnd, &bufferAlloced, szYourName, MAKELONG(isSent, dat->isHistory));
-#else
-					AppendToBufferWithRTF(0, &buffer, &bufferEnd, &bufferAlloced, "%s", szName);
-#endif
 					break;
 				}
 				case 'U':            // UIN
@@ -1036,12 +1002,8 @@ static char *Template_CreateRTFFromDbEvent(struct TWindowData *dat, HANDLE hCont
 					AppendToBufferWithRTF(0, &buffer, &bufferEnd, &bufferAlloced, "%s", isSent ? dat->myUin : dat->cache->getUIN());
 					break;
 				case 'e':           // error message
-#if defined(_UNICODE)
 					AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s ", GetRTFFont(MSGFONTID_ERROR));
 					AppendUnicodeToBuffer(&buffer, &bufferEnd, &bufferAlloced, (wchar_t *)dbei.szModule, MAKELONG(isSent, dat->isHistory));
-#else
-					AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s %s", GetRTFFont(MSGFONTID_ERROR), dbei.szModule);
-#endif
 					break;
 				case 'M': {         // message
 					if (fIsStatusChangeEvent)
@@ -1070,11 +1032,7 @@ static char *Template_CreateRTFFromDbEvent(struct TWindowData *dat, HANDLE hCont
 							if (rtfMessage != NULL) {
 								AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s", rtfMessage);
 							} else {
-#if defined( _UNICODE )
 								AppendUnicodeToBuffer(&buffer, &bufferEnd, &bufferAlloced, formatted, MAKELONG(isSent, dat->isHistory));
-#else   // unicode
-								AppendToBufferWithRTF(MAKELONG(isSent, dat->isHistory), &buffer, &bufferEnd, &bufferAlloced, "%s", formatted);
-#endif      // unicode
 							}
 							AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%s", "\\b0\\ul0\\i0 ");
 							break;
@@ -1088,21 +1046,13 @@ static char *Template_CreateRTFFromDbEvent(struct TWindowData *dat, HANDLE hCont
 								TCHAR* tszFileName = DbGetEventStringT( &dbei, szFileName );
 								if ( *szDescr != 0 ) {
 									TCHAR* tszDescr = DbGetEventStringT( &dbei, szDescr );
-#if defined( _UNICODE )
 									TCHAR buf[1000];
 									mir_sntprintf( buf, SIZEOF(buf), _T("%s (%s)"), tszFileName, tszDescr );
 									AppendUnicodeToBuffer(&buffer, &bufferEnd, &bufferAlloced, buf, 0 );
-#else   // unicode
-									AppendToBufferWithRTF(0, &buffer, &bufferEnd, &bufferAlloced, "%s (%s)", tszFileName, tszDescr );
-#endif      // unicode
 									mir_free( tszDescr );
 								}
 								else {
-#if defined( _UNICODE )
 									AppendUnicodeToBuffer(&buffer, &bufferEnd, &bufferAlloced, tszFileName, 0 );
-#else   // unicode
-									AppendToBufferWithRTF(0, &buffer, &bufferEnd, &bufferAlloced, "%s", tszFileName );
-#endif      // unicode
 								}
 								mir_free( tszFileName );
 							}
@@ -1213,13 +1163,9 @@ static char *Template_CreateRTFFromDbEvent(struct TWindowData *dat, HANDLE hCont
 			} else
 				i += 2;
 		} else {
-#if defined(_UNICODE)
 			char temp[24];
 			mir_snprintf(temp, 24, "{\\uc1\\u%d?}", (int)ci);
 			AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, temp);
-#else
-			AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "%c", ci);
-#endif
 			i++;
 		}
 	}
@@ -1351,17 +1297,12 @@ void TSAPI StreamInEvents(HWND hwndDlg, HANDLE hDbEventFirst, int count, int fAp
 		event.cbSize = sizeof(IEVIEWEVENT);
 		event.hwnd = dat->hwndIEView;
 		event.hContact = dat->hContact;
-#if defined(_UNICODE)
 		event.dwFlags = (dat->dwFlags & MWF_LOG_RTL) ? IEEF_RTL : 0;
 		if (dat->sendMode & SMODE_FORCEANSI) {
 			event.dwFlags |= IEEF_NO_UNICODE;
 			event.codepage = dat->codePage;
 		} else
 			event.codepage = 0;
-#else
-		event.dwFlags = ((dat->dwFlags & MWF_LOG_RTL) ? IEEF_RTL : 0) | IEEF_NO_UNICODE;
-		event.codepage = 0;
-#endif
 		if (!fAppend) {
 			event.iType = IEE_CLEAR_LOG;
 			CallService(MS_IEVIEW_EVENT, 0, (LPARAM)&event);
@@ -1384,17 +1325,12 @@ void TSAPI StreamInEvents(HWND hwndDlg, HANDLE hDbEventFirst, int count, int fAp
 		event.cbSize = sizeof(IEVIEWEVENT);
 		event.hwnd = dat->hwndHPP;
 		event.hContact = dat->hContact;
-#if defined(_UNICODE)
 		event.dwFlags = (dat->dwFlags & MWF_LOG_RTL) ? IEEF_RTL : 0;
 		if (dat->sendMode & SMODE_FORCEANSI) {
 			event.dwFlags |= IEEF_NO_UNICODE;
 			event.codepage = dat->codePage;
 		} else
 			event.codepage = 0;
-#else
-		event.dwFlags = ((dat->dwFlags & MWF_LOG_RTL) ? IEEF_RTL : 0) | IEEF_NO_UNICODE;
-		event.codepage = 0;
-#endif
 		if (!fAppend) {
 			event.iType = IEE_CLEAR_LOG;
 			CallService(MS_HPP_EG_EVENT, 0, (LPARAM)&event);
@@ -1436,13 +1372,8 @@ void TSAPI StreamInEvents(HWND hwndDlg, HANDLE hDbEventFirst, int count, int fAp
 
 	if (fAppend) {
 		GETTEXTLENGTHEX gtxl = {0};
-#if defined(_UNICODE)
 		gtxl.codepage = 1200;
 		gtxl.flags = GTL_DEFAULT | GTL_PRECISE | GTL_NUMCHARS;
-#else
-		gtxl.codepage = CP_ACP;
-		gtxl.flags = GTL_DEFAULT | GTL_PRECISE;
-#endif
 		fi.chrg.cpMin = SendDlgItemMessage(hwndDlg, IDC_LOG, EM_GETTEXTLENGTHEX, (WPARAM) & gtxl, 0);
 		sel.cpMin = sel.cpMax = GetWindowTextLength(GetDlgItem(hwndDlg, IDC_LOG));
 		SendDlgItemMessage(hwndDlg, IDC_LOG, EM_EXSETSEL, 0, (LPARAM) & sel);
@@ -1473,13 +1404,8 @@ void TSAPI StreamInEvents(HWND hwndDlg, HANDLE hDbEventFirst, int count, int fAp
 		GETTEXTLENGTHEX gtxl = {0};
 		_PARAFORMAT2 pf2;
 
-#if defined(_UNICODE)
 		gtxl.codepage = 1200;
 		gtxl.flags = GTL_DEFAULT | GTL_PRECISE | GTL_NUMCHARS;
-#else
-		gtxl.codepage = CP_ACP;
-		gtxl.flags = GTL_DEFAULT | GTL_PRECISE;
-#endif
 		ZeroMemory(&pf2, sizeof(_PARAFORMAT2));
 		sel.cpMax = SendDlgItemMessage(hwndDlg, IDC_LOG, EM_GETTEXTLENGTHEX, (WPARAM) & gtxl, 0);
 		sel.cpMin = sel.cpMax - 1;

@@ -28,7 +28,7 @@
  * original chat module for Miranda IM, written and copyrighted
  * by Joergen Persson in 2005.
  *
- * (C) 2005-2009 by silvercircle _at_ gmail _dot_ com and contributors
+ * (C) 2005-2010 by silvercircle _at_ gmail _dot_ com and contributors
  *
  * $Id$
  *
@@ -642,11 +642,7 @@ static int Log_AppendRTF(LOGSTREAMDATA* streamData, BOOL simpleMode, char **buff
 		} else if (*line > 0 && *line < 128) {
 			*d++ = (char) * line;
 		}
-#if defined( _UNICODE )
 		else d += sprintf(d, "\\u%u ?", (WORD) * line);
-#else
-		else d += sprintf(d, "\\'%02x", (BYTE) * line);
-#endif
 	}
 
 	*cbBufferEnd = (int)(d - *buffer);

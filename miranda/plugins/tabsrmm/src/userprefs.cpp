@@ -24,7 +24,7 @@
  *
  * part of tabSRMM messaging plugin for Miranda.
  *
- * (C) 2005-2009 by silvercircle _at_ gmail _dot_ com and contributors
+ * (C) 2005-2010 by silvercircle _at_ gmail _dot_ com and contributors
  *
  * $Id$
  *
@@ -72,9 +72,7 @@ static INT_PTR CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, 
 
 	switch (msg) {
 		case WM_INITDIALOG: {
-#if defined(_UNICODE)
 			DWORD sCodePage;
-#endif
 			DWORD contact_gmt_diff, timediff;
 			int i;
 			BYTE timezone;
@@ -159,7 +157,6 @@ static INT_PTR CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, 
 			Utils::enableDlgControl(hwndDlg, IDC_TRIM, maxhist != 0);
 			CheckDlgButton(hwndDlg, IDC_ALWAYSTRIM2, maxhist != 0);
 
-#if defined(_UNICODE)
 			hCpCombo = GetDlgItem(hwndDlg, IDC_CODEPAGES);
 			sCodePage = M->GetDword(hContact, "ANSIcodepage", 0);
 			EnumSystemCodePages((CODEPAGE_ENUMPROC)FillCpCombo, CP_INSTALLED);
@@ -173,10 +170,6 @@ static INT_PTR CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, 
 				}
 			}
 			CheckDlgButton(hwndDlg, IDC_FORCEANSI, M->GetByte(hContact, "forceansi", 0) ? 1 : 0);
-#else
-			Utils::enableDlgControl(hwndDlg, IDC_CODEPAGES, FALSE);
-			Utils::enableDlgControl(hwndDlg, IDC_FORCEANSI, FALSE);
-#endif
 			CheckDlgButton(hwndDlg, IDC_IGNORETIMEOUTS, M->GetByte(hContact, "no_ack", 0));
 			timezone = M->GetByte(hContact, "UserInfo", "Timezone", M->GetByte(hContact, (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0), "Timezone", -1));
 
@@ -270,7 +263,6 @@ static INT_PTR CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, 
 						else
 							M->WriteDword(hContact, SRMSGMOD_T, "sendformat", iIndex == 2 ? -1 : 1);
 					}
-#if defined(_UNICODE)
 					iIndex = SendDlgItemMessage(hwndDlg, IDC_CODEPAGES, CB_GETCURSEL, 0, 0);
 					if ((newCodePage = (DWORD)SendDlgItemMessage(hwndDlg, IDC_CODEPAGES, CB_GETITEMDATA, (WPARAM)iIndex, 0)) != sCodePage) {
 						M->WriteDword(hContact, SRMSGMOD_T, "ANSIcodepage", (DWORD)newCodePage);
@@ -284,9 +276,6 @@ static INT_PTR CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, 
 						if (hWnd && dat)
 							dat->sendMode = IsDlgButtonChecked(hwndDlg, IDC_FORCEANSI) ? dat->sendMode | SMODE_FORCEANSI : dat->sendMode & ~SMODE_FORCEANSI;
 					}
-#else
-					newCodePage = CP_ACP;
-#endif
 					if (IsDlgButtonChecked(hwndDlg, IDC_ISFAVORITE)) {
 						if (!M->GetByte(hContact, SRMSGMOD_T, "isFavorite", 0))
 							AddContactToFavorites(hContact, NULL, NULL, NULL, 0, 0, 1, PluginConfig.g_hMenuFavorites);

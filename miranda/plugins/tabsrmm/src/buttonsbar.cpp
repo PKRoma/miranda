@@ -284,13 +284,10 @@ static INT_PTR CB_AddButton(WPARAM wParam, LPARAM lParam)
 		cbd->pszModuleName = mir_strdup(bbdi->pszModuleName);
 
 		if (bbdi->ptszTooltip) {
-			if (bbdi->bbbFlags&BBBF_ANSITOOLTIP) {
-#if defined ( _UNICODE )
+			if (bbdi->bbbFlags&BBBF_ANSITOOLTIP)
 				cbd->ptszTooltip = mir_a2u(bbdi->pszTooltip);
-#else
-				cbd->ptszTooltip = mir_strdup(bbdi->pszTooltip);
-#endif
-			} else cbd->ptszTooltip = mir_tstrdup(bbdi->ptszTooltip);
+			else
+				cbd->ptszTooltip = mir_tstrdup(bbdi->ptszTooltip);
 		} else cbd->ptszTooltip = NULL;
 
 
@@ -388,13 +385,10 @@ static INT_PTR CB_SetButtonState(WPARAM wParam, LPARAM lParam)
 	if (hwndDlg && realbutton && bbdi->hIcon)
 		SendMessage(GetDlgItem(hwndDlg, tempCID), BM_SETIMAGE, IMAGE_ICON, (LPARAM)CallService(MS_SKIN2_GETICONBYHANDLE, 0, (LPARAM)bbdi->hIcon));
 	if (hwndDlg && realbutton && bbdi->pszTooltip) {
-		if (bbdi->bbbFlags&BBBF_ANSITOOLTIP) {
-#if defined ( _UNICODE )
+		if (bbdi->bbbFlags&BBBF_ANSITOOLTIP)
 			SendMessage(GetDlgItem(hwndDlg, tempCID), BUTTONADDTOOLTIP, (WPARAM)mir_a2u(bbdi->pszTooltip), 0);
-#else
-			SendMessage(GetDlgItem(hwndDlg, tempCID), BUTTONADDTOOLTIP, (WPARAM)bbdi->pszTooltip, 0);
-#endif
-		} else SendMessage(GetDlgItem(hwndDlg, tempCID), BUTTONADDTOOLTIP, (WPARAM)bbdi->ptszTooltip, 0);
+		else
+			SendMessage(GetDlgItem(hwndDlg, tempCID), BUTTONADDTOOLTIP, (WPARAM)bbdi->ptszTooltip, 0);
 	}
 	if (hwndDlg && realbutton && bbdi->bbbFlags) {
 		Utils::showDlgControl(hwndDlg, tempCID, (bbdi->bbbFlags&BBSF_HIDDEN) ? SW_HIDE : SW_SHOW);
@@ -473,13 +467,10 @@ static INT_PTR CB_ModifyButton(WPARAM wParam, LPARAM lParam)
 	if (bFound) {
 		if (bbdi->pszTooltip) {
 			if (cbd->ptszTooltip)  mir_free(cbd->ptszTooltip);
-			if (bbdi->bbbFlags&BBBF_ANSITOOLTIP) {
-#if defined ( _UNICODE )
+			if (bbdi->bbbFlags&BBBF_ANSITOOLTIP)
 				cbd->ptszTooltip = mir_a2u(bbdi->pszTooltip);
-#else
-				cbd->ptszTooltip = mir_strdup(bbdi->pszTooltip);
-#endif
-			} else cbd->ptszTooltip = mir_tstrdup(bbdi->ptszTooltip);
+			else
+				cbd->ptszTooltip = mir_tstrdup(bbdi->ptszTooltip);
 		}
 		if (bbdi->hIcon) cbd->hIcon = bbdi->hIcon;
 		if (bbdi->bbbFlags) {

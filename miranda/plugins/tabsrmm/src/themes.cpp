@@ -2409,7 +2409,6 @@ DWORD __fastcall CSkin::HexStringToLong(const TCHAR *szSource)
 
 int CSkin::RenderText(HDC hdc, HANDLE hTheme, const TCHAR *szText, RECT *rc, DWORD dtFlags, const int iGlowSize, COLORREF clr, bool fForceAero)
 {
-#if defined(_UNICODE)
 	if((PluginConfig.m_bIsVista && !CSkin::m_skinEnabled && hTheme) || fForceAero) {
 		DTTOPTS dto = {0};
 		dto.dwSize = sizeof(dto);
@@ -2425,12 +2424,9 @@ int CSkin::RenderText(HDC hdc, HANDLE hTheme, const TCHAR *szText, RECT *rc, DWO
 		return(CMimAPI::m_pfnDrawThemeTextEx(hTheme, hdc, BP_PUSHBUTTON, PBS_NORMAL, szText, -1, dtFlags, rc, &dto));
 	}
 	else {
-#endif
 		::SetTextColor(hdc, clr);
 		return(::DrawText(hdc, szText, -1, rc, dtFlags));
-#if defined(_UNICODE)
 	}
-#endif
 }
 
 /**

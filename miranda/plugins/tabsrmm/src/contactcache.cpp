@@ -24,7 +24,7 @@
  *
  * part of tabSRMM messaging plugin for Miranda.
  *
- * (C) 2005-2009 by silvercircle _at_ gmail _dot_ com and contributors
+ * (C) 2005-2010 by silvercircle _at_ gmail _dot_ com and contributors
  *
  * $Id$
  *
@@ -52,13 +52,8 @@ CContactCache::CContactCache(const HANDLE hContact)
 
 	if(hContact) {
 		m_szProto = reinterpret_cast<char *>(::CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)m_hContact, 0));
-#if defined(_UNICODE)
 		if(m_szProto)
 			m_tszProto = mir_a2t(m_szProto);
-#else
-		if(m_szProto)
-			m_tszProto = m_szProto;
-#endif
 		initPhaseTwo();
 	}
 	else {
@@ -197,11 +192,7 @@ void CContactCache::updateMeta(bool fForce)
 				if(acc && acc->tszAccountName)
 					m_szAccount = acc->tszAccountName;
 				m_wMetaStatus = DBGetContactSettingWord(m_hSubContact, m_szMetaProto, "Status", ID_STATUS_OFFLINE);
-#if defined(_UNICODE)
 				MultiByteToWideChar(CP_ACP, 0, m_szMetaProto, -1, m_tszMetaProto, 40);
-#else
-				strncpy(m_tszMetaProto, m_szMetaProto, 40);
-#endif
 				m_tszMetaProto[39] = 0;
 			}
 			else {
@@ -466,9 +457,7 @@ void CContactCache::releaseAlloced()
 		free(m_history);
 		m_history = 0;
 	}
-#ifdef _UNICODE
 	mir_free(m_tszProto);
-#endif
 }
 
 /**

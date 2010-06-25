@@ -45,11 +45,7 @@
  * required for MingW32 compatibility
  */
 
-#if defined(_UNICODE)
-	#define CF_TEXTT CF_UNICODETEXT
-#else
-	#define CF_TEXTT CF_TEXT
-#endif
+#define CF_TEXTT CF_UNICODETEXT
 
 #include <richedit.h>
 #include <richole.h>

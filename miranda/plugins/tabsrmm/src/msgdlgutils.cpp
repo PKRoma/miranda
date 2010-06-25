@@ -205,11 +205,7 @@ static void SaveAvatarToFile(TWindowData *dat, HBITMAP hbm, int isOwnPic)
 		}
 		IMGSRVC_INFO ii;
 		ii.cbSize = sizeof(ii);
-#if defined(_UNICODE)
 		ii.wszName = szFinalFilename;
-#else
-		ii.szName = szFinalFilename;
-#endif
 		ii.hbm = hbm;
 		ii.dwMask = IMGI_HBITMAP;
 		ii.fif = FIF_UNKNOWN;			// get the format from the filename extension. png is default.
@@ -545,7 +541,6 @@ void TSAPI UpdateReadChars(const TWindowData *dat)
 		if (dat->bType == SESSIONTYPE_CHAT)
 			len = GetWindowTextLength(GetDlgItem(dat->hwnd, IDC_CHAT_MESSAGE));
 		else {
-#if defined(_UNICODE)
 			/*
 			 * retrieve text length in UTF8 bytes, because this is the relevant length for most protocols
 			 */
@@ -554,9 +549,6 @@ void TSAPI UpdateReadChars(const TWindowData *dat)
 			gtxl.flags = GTL_DEFAULT | GTL_PRECISE | GTL_NUMBYTES;
 
 			len = SendDlgItemMessage(dat->hwnd, IDC_MESSAGE, EM_GETTEXTLENGTHEX, (WPARAM) & gtxl, 0);
-#else
-			len = GetWindowTextLength(GetDlgItem(dat->hwnd, IDC_MESSAGE));
-#endif
 		}
 
 		fCaps = (GetKeyState(VK_CAPITAL) & 1);
@@ -815,11 +807,7 @@ TCHAR* TSAPI QuoteText(const TCHAR *text, int charsPerLine, int removeExistingQu
 	int justDoneLineBreak, bufSize;
 	TCHAR *strout;
 
-#ifdef _UNICODE
 	bufSize = lstrlenW(text) + 23;
-#else
-	bufSize = strlen(text) + 23;
-#endif
 	strout = (TCHAR*)malloc(bufSize * sizeof(TCHAR));
 	inChar = 0;
 	justDoneLineBreak = 1;
@@ -1031,17 +1019,10 @@ char* TSAPI Message_GetFromStream(HWND hwndRtf, const TWindowData* dat, DWORD dw
 	ZeroMemory(&stream, sizeof(stream));
 	stream.pfnCallback = Message_StreamCallback;
 	stream.dwCookie = (DWORD_PTR) & pszText; // pass pointer to pointer
-#if defined(_UNICODE)
 	if (dwPassedFlags == 0)
 		dwFlags = (CP_UTF8 << 16) | (SF_RTFNOOBJS | SFF_PLAINRTF | SF_USECODEPAGE);
 	else
 		dwFlags = (CP_UTF8 << 16) | dwPassedFlags;
-#else
-	if (dwPassedFlags == 0)
-		dwFlags = SF_RTF | SF_RTFNOOBJS | SFF_PLAINRTF;
-	else
-		dwFlags = dwPassedFlags;
-#endif
 	SendMessage(hwndRtf, EM_STREAMOUT, (WPARAM)dwFlags, (LPARAM) & stream);
 
 	return pszText; // pszText contains the text
@@ -1123,47 +1104,27 @@ BOOL TSAPI DoRtfToTags(TCHAR * pszText, const TWindowData *dat)
 					} else if (p1 == _tcsstr(p1, _T("\\endash"))) {
 						bTextHasStarted = bJustRemovedRTF = TRUE;
 						iRemoveChars = 7;
-#if defined(_UNICODE)
 						_sntprintf(InsertThis, safe_sizeof(InsertThis), _T("\xE2\x80\x93"));
-#else
-						_sntprintf(InsertThis, safe_sizeof(InsertThis), _T("\x96"));
-#endif
 					} else if (p1 == _tcsstr(p1, _T("\\emdash"))) {
 						bTextHasStarted = TRUE;
 						bJustRemovedRTF = TRUE;
 						iRemoveChars = 7;
-#if defined(_UNICODE)
 						_sntprintf(InsertThis, safe_sizeof(InsertThis), _T("%c"), 0x2014);
-#else
-						_sntprintf(InsertThis, safe_sizeof(InsertThis), _T("-"));
-#endif
 					} else if (p1 == _tcsstr(p1, _T("\\bullet"))) {
 						bTextHasStarted = TRUE;
 						bJustRemovedRTF = TRUE;
 						iRemoveChars = 7;
-#if defined(_UNICODE)
 						_sntprintf(InsertThis, safe_sizeof(InsertThis), _T("%c"), 0x2022);
-#else
-						_sntprintf(InsertThis, safe_sizeof(InsertThis), _T("*"));
-#endif
 					} else if (p1 == _tcsstr(p1, _T("\\ldblquote"))) {
 						bTextHasStarted = TRUE;
 						bJustRemovedRTF = TRUE;
 						iRemoveChars = 10;
-#if defined(_UNICODE)
 						_sntprintf(InsertThis, safe_sizeof(InsertThis), _T("%c"), 0x201C);
-#else
-						_sntprintf(InsertThis, safe_sizeof(InsertThis), _T("\""));
-#endif
 					} else if (p1 == _tcsstr(p1, _T("\\rdblquote"))) {
 						bTextHasStarted = TRUE;
 						bJustRemovedRTF = TRUE;
 						iRemoveChars = 10;
-#if defined(_UNICODE)
 						_sntprintf(InsertThis, safe_sizeof(InsertThis), _T("%c"), 0x201D);
-#else
-						_sntprintf(InsertThis, safe_sizeof(InsertThis), _T("\""));
-#endif
 					} else if (p1 == _tcsstr(p1, _T("\\b"))) { //bold
 						bTextHasStarted = TRUE;
 						bJustRemovedRTF = TRUE;
@@ -1209,11 +1170,7 @@ BOOL TSAPI DoRtfToTags(TCHAR * pszText, const TWindowData *dat)
 						bTextHasStarted = TRUE;
 						bJustRemovedRTF = TRUE;
 						iRemoveChars = 4;
-#if defined(_UNICODE)
 						_sntprintf(InsertThis, safe_sizeof(InsertThis), _T("%c"), 0x09);
-#else
-						_sntprintf(InsertThis, safe_sizeof(InsertThis), _T(" "));
-#endif
 					} else if (p1[1] == (TCHAR) '\\' || p1[1] == (TCHAR) '{' || p1[1] == (TCHAR) '}') { // escaped characters
 						bTextHasStarted = TRUE;
 						//bJustRemovedRTF = TRUE;

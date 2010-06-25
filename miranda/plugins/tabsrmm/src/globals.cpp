@@ -69,7 +69,6 @@ LRESULT			 CGlobals::m_exLastResult = 0;
 char			 CGlobals::m_exSzFile[MAX_PATH] = "\0";
 int				 CGlobals::m_exLine = 0;
 
-#if defined(_UNICODE)
 #if defined(_WIN64)
 	static char szCurrentVersion[30];
 	static char *szVersionUrl = "http://download.miranda.or.at/tabsrmm/3/version.txt";
@@ -82,13 +81,6 @@ int				 CGlobals::m_exLine = 0;
 	static char *szUpdateUrl = "http://silvercircle.googlecode.com/files/tabsrmm-3_x86.zip";
 	static char *szFLVersionUrl = "http://addons.miranda-im.org/details.php?action=viewfile&id=3699";
 	static char *szFLUpdateurl = "http://addons.miranda-im.org/feed.php?dlfile=3699";
-#endif
-#else
-	static char szCurrentVersion[30];
-	static char *szVersionUrl = "http://download.miranda.or.at/tabsrmm/3/version.txt";
-	static char *szUpdateUrl = "http://silvercircle.googlecode.com/files/tabsrmm-3_ansi_x86.zip";
-	static char *szFLVersionUrl = "http://addons.miranda-im.org/details.php?action=viewfile&id=3698";
-	static char *szFLUpdateurl = "http://addons.miranda-im.org/feed.php?dlfile=3698";
 #endif
 	static char *szPrefix = "tabsrmm ";
 
@@ -121,11 +113,7 @@ void CGlobals::RegisterWithUpdater()
  	upd.cpbVersion 			=	(int)(strlen((char *)upd.pbVersion));
 	upd.szVersionURL 		=	szFLVersionUrl;
 	upd.szUpdateURL 		=	szFLUpdateurl;
-#if defined(_UNICODE)
 	upd.pbVersionPrefix 	= 	(BYTE *)"<span class=\"fileNameHeader\">tabSRMM Unicode 2.0 ";
-#else
-	upd.pbVersionPrefix 	= 	(BYTE *)"<span class=\"fileNameHeader\">tabSRMM 2.0 ";
-#endif
 	upd.cpbVersionPrefix 	= 	(int)(strlen((char *)upd.pbVersionPrefix));
 
  	upd.szBetaUpdateURL 	=	szUpdateUrl;
@@ -235,11 +223,7 @@ void CGlobals::reloadSystemModulesChanged()
 	if (m_MathModAvail) {
 		char *szDelim = (char *)CallService(MATH_GET_STARTDELIMITER, 0, 0);
 		if (szDelim) {
-#if defined(_UNICODE)
 			MultiByteToWideChar(CP_ACP, 0, szDelim, -1, PluginConfig.m_MathModStartDelimiter, safe_sizeof(PluginConfig.m_MathModStartDelimiter));
-#else
-			strncpy(PluginConfig.m_MathModStartDelimiter, szDelim, sizeof(PluginConfig.m_MathModStartDelimiter));
-#endif
 			CallService(MTH_FREE_MATH_BUFFER, 0, (LPARAM)szDelim);
 		}
 	}
@@ -259,10 +243,7 @@ void CGlobals::reloadSystemModulesChanged()
 	}
 
 	g_PopupAvail = (ServiceExists(MS_POPUP_ADDPOPUPEX) ? 1 : 0);
-
-#if defined(_UNICODE)
 	g_PopupWAvail = (ServiceExists(MS_POPUP_ADDPOPUPW) ? 1 : 0);
-#endif
 
 	mi.cbSize = sizeof(mi);
 	mi.position = -2000090000;
@@ -717,11 +698,7 @@ int CGlobals::OkToExit(WPARAM wParam, LPARAM lParam)
 	}
 	::ModPlus_PreShutdown(wParam, lParam);
 	PluginConfig.globalContainerSettings.fPrivate = false;
-#if defined(_UNICODE)
 	::DBWriteContactSettingBlob(0, SRMSGMOD_T, CNT_KEYNAME, &PluginConfig.globalContainerSettings, sizeof(TContainerSettings));
-#else
-	::DBWriteContactSettingBlob(0, SRMSGMOD_T, CNT_KEYNAME, &PluginConfig.globalContainerSettings, sizeof(TContainerSettings));
-#endif
 	return 0;
 }
 

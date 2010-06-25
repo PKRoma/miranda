@@ -24,7 +24,7 @@
  *
  * part of tabSRMM messaging plugin for Miranda.
  *
- * (C) 2005-2009 by silvercircle _at_ gmail _dot_ com and contributors
+ * (C) 2005-2010 by silvercircle _at_ gmail _dot_ com and contributors
  *
  * $Id$
  *
@@ -446,13 +446,12 @@ LONG_PTR CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			}
 			break;
 		}
-#if defined(_UNICODE)
 		case DM_SENDMESSAGECOMMANDW:
 			SendMessageCommand_W(wParam, lParam);
 			if (lParam)
 				free((void *)lParam);
 			return(0);
-#endif
+
 		case DM_SENDMESSAGECOMMAND:
 			SendMessageCommand(wParam, lParam);
 			if (lParam)

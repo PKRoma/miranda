@@ -434,7 +434,6 @@ const TCHAR* Utils::FormatTitleBar(const TWindowData *dat, const TCHAR *szFormat
 	return szResult;
 }
 
-#if defined(_UNICODE)
 char* Utils::FilterEventMarkers(char *szText)
 {
 	std::string text(szText);
@@ -467,7 +466,6 @@ char* Utils::FilterEventMarkers(char *szText)
 	lstrcpyA(szText, text.c_str());
 	return szText;
 }
-#endif
 
 const TCHAR* Utils::DoubleAmpersands(TCHAR *pszText)
 {

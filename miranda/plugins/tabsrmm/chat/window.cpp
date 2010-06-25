@@ -892,11 +892,7 @@ static LRESULT CALLBACK MessageSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, 
 				end = HIWORD(lResult);
 				SendMessage(hwnd, EM_SETSEL, end, end);
 
-				#if defined( _UNICODE )
-					gt.codepage = 1200;
-				#else
-					gt.codepage = CP_ACP;
-				#endif
+				gt.codepage = 1200;
 				iLen = SendMessage(hwnd, EM_GETTEXTLENGTHEX, (WPARAM)&gt, (LPARAM)NULL);
 				if (iLen >0) {
 					TCHAR *pszName = NULL;
@@ -2927,11 +2923,7 @@ LABEL_SHOWWINDOW:
 												hData = GlobalAlloc(GMEM_MOVEABLE, sizeof(TCHAR) * (lstrlen(tr.lpstrText) + 1));
 												lstrcpy((TCHAR*)GlobalLock(hData), tr.lpstrText);
 												GlobalUnlock(hData);
-#if defined( _UNICODE )
 												SetClipboardData(CF_UNICODETEXT, hData);
-#else
-												SetClipboardData(CF_TEXT, hData);
-#endif
 											}
 											CloseClipboard();
 											SetFocus(GetDlgItem(hwndDlg, IDC_CHAT_MESSAGE));
@@ -3162,9 +3154,7 @@ LABEL_SHOWWINDOW:
 							SkinPlaySound("ChatSent");
 					}
 					mir_free(pszRtf);
-#if defined( _UNICODE )
 					mir_free(ptszText);
-#endif
 					SetFocus(GetDlgItem(hwndDlg, IDC_CHAT_MESSAGE));
 				}
 				break;
@@ -3228,15 +3218,11 @@ LABEL_SHOWWINDOW:
 						break;
 
 					if (ServiceExists("MSP/HTMLlog/ViewLog") && strstr(si->pszModule, "IRC")) {
-#if defined(_UNICODE)
 						char szName[MAX_PATH];
 
 						WideCharToMultiByte(CP_ACP, 0, si->ptszName, -1, szName, MAX_PATH, 0, 0);
 						szName[MAX_PATH - 1] = 0;
 						CallService("MSP/HTMLlog/ViewLog", (WPARAM)si->pszModule, (LPARAM)szName);
-#else
-						CallService("MSP/HTMLlog/ViewLog", (WPARAM)si->pszModule, (LPARAM)si->ptszName);
-#endif
 					} else if (pInfo)
 						ShellExecute(hwndDlg, NULL, GetChatLogsFilename(si, 0), NULL, NULL, SW_SHOW);
 				}
@@ -3471,11 +3457,7 @@ LABEL_SHOWWINDOW:
 			if (iSelection >= IDM_CONTAINERMENU) {
 				DBVARIANT dbv = {0};
 				char szIndex[10];
-		#if defined (_UNICODE)
 				char *szKey = "TAB_ContainersW";
-		#else
-				char *szKey = "TAB_Containers";
-		#endif
 				_snprintf(szIndex, 8, "%d", iSelection - IDM_CONTAINERMENU);
 				if (iSelection - IDM_CONTAINERMENU >= 0) {
 					if (!M->GetTString(NULL, szKey, szIndex, &dbv)) {
@@ -3526,11 +3508,7 @@ LABEL_SHOWWINDOW:
 			pNewContainer = FindContainerByName(szNewName);
 			if (pNewContainer == NULL)
 				pNewContainer = CreateContainer(szNewName, FALSE, dat->hContact);
-		#if defined (_UNICODE)
 			M->WriteTString(dat->hContact, SRMSGMOD_T, "containerW", szNewName);
-		#else
-			M->WriteTString(dat->hContact, SRMSGMOD_T, "container", szNewName);
-		#endif
 			PostMessage(PluginConfig.g_hwndHotkeyHandler, DM_DOCREATETAB_CHAT, (WPARAM)pNewContainer, (LPARAM)hwndDlg);
 			if (iOldItems > 1)                // there were more than 1 tab, container is still valid
 				SendMessage(dat->pContainer->hwndActive, WM_SIZE, 0, 0);

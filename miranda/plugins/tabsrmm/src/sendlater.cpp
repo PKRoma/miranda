@@ -34,12 +34,7 @@
 #include "commonheaders.h"
 #pragma hdrstop
 
-#if defined(_UNICODE)
-	#define U_PREF_UNICODE PREF_UNICODE
-#else
-	#define U_PREF_UNICODE 0
-#endif
-
+#define U_PREF_UNICODE PREF_UNICODE
 /*
  * implementation of the CSendLaterJob class
  */
@@ -150,11 +145,7 @@ CSendLaterJob::~CSendLaterJob()
 				ppd.lchContact = hContact;
 				ppd.cbSize = sizeof(ppd);
 				mir_sntprintf(ppd.lptzContactName, MAX_CONTACTNAME, _T("%s"), tszName ? tszName : CTranslator::get(CTranslator::GEN_UNKNOWN_CONTACT));
-#if defined(_UNICODE)
 				TCHAR *msgPreview = Utils::GetPreviewWithEllipsis(reinterpret_cast<TCHAR *>(&pBuf[lstrlenA((char *)pBuf) + 1]), 100);
-#else
-				TCHAR *msgPreview = Utils::GetPreviewWithEllipsis(reinterpret_cast<TCHAR *>(pBuf), 100);
-#endif
 				if(fSuccess) {
 					mir_sntprintf(ppd.lptzText, MAX_SECONDLINE, CTranslator::get(CTranslator::GEN_SQ_SENDLATER_SUCCESS_POPUP),
 								  msgPreview);
@@ -547,10 +538,7 @@ HANDLE CSendLater::processAck(const ACKDATA *ack)
 				dbei.szModule = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)((*it)->hContact), 0);
 				dbei.timestamp = time(NULL);
 				dbei.cbBlob = lstrlenA((*it)->sendBuffer) + 1;
-
-	#if defined( _UNICODE )
 				dbei.flags |= DBEF_UTF;
-	#endif
 				dbei.pBlob = (PBYTE)((*it)->sendBuffer);
 				HANDLE hNewEvent = (HANDLE) CallService(MS_DB_EVENT_ADD, (WPARAM)((*it)->hContact), (LPARAM)&dbei);
 				

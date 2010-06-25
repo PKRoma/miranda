@@ -24,7 +24,7 @@
  *
  * part of tabSRMM messaging plugin for Miranda.
  *
- * (C) 2005-2009 by silvercircle _at_ gmail _dot_ com and contributors
+ * (C) 2005-2010 by silvercircle _at_ gmail _dot_ com and contributors
  *
  * $Id$
  *
@@ -378,11 +378,7 @@ INT_PTR CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, 
 						::DBWriteContactSettingBlob(0, SRMSGMOD_T, CNT_KEYNAME, &PluginConfig.globalContainerSettings, sizeof(TContainerSettings));
 					}
 					else {
-#if defined (_UNICODE)
 						char *szSetting = "CNTW_";
-#else
-						char *szSetting = "CNT_";
-#endif
 						Utils::SaveContainerSettings(pContainer, szSetting);
 					}
 

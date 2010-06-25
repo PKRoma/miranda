@@ -24,7 +24,7 @@
  *
  * part of tabSRMM messaging plugin for Miranda.
  *
- * (C) 2005-2009 by silvercircle _at_ gmail _dot_ com and contributors
+ * (C) 2005-2010 by silvercircle _at_ gmail _dot_ com and contributors
  *
  * $Id$
  *
@@ -138,11 +138,7 @@ void TSAPI SetAeroMargins(TContainerData *pContainer)
 struct TContainerData* TSAPI CreateContainer(const TCHAR *name, int iTemp, HANDLE hContactFrom) {
 	DBVARIANT dbv;
 	char szCounter[10];
-#if defined (_UNICODE)
 	char *szKey = "TAB_ContainersW";
-#else
-	char *szKey = "TAB_Containers";
-#endif
 	int i, iFirstFree = -1, iFound = FALSE;
 
 	struct TContainerData *pContainer = (struct TContainerData *)malloc(sizeof(struct TContainerData));
@@ -721,11 +717,7 @@ static INT_PTR CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, 
 			return TRUE;
 		}
 		case DM_RESTOREWINDOWPOS: {
-#if defined (_UNICODE)
 			char *szSetting = "CNTW_";
-#else
-			char *szSetting = "CNT_";
-#endif
 			char szCName[CONTAINER_NAMELEN + 20];
 			/*
 			 * retrieve the container window geometry information from the database.
@@ -1002,11 +994,7 @@ panel_found:
 					if (iSelection >= IDM_CONTAINERMENU) {
 						DBVARIANT dbv = {0};
 						char szIndex[10];
-#if defined (_UNICODE)
 						char *szKey = "TAB_ContainersW";
-#else
-						char *szKey = "TAB_Containers";
-#endif
 						mir_snprintf(szIndex, 8, "%d", iSelection - IDM_CONTAINERMENU);
 						if (iSelection - IDM_CONTAINERMENU >= 0) {
 							if (!M->GetTString(NULL, szKey, szIndex, &dbv)) {
@@ -1711,12 +1699,8 @@ buttons_done:
 			TCHAR 		szTitleFormat[200];
 			TCHAR*		szThemeName = NULL;
 			DBVARIANT 	dbv = {0};
-
-#if defined (_UNICODE)
 			char *szSetting = "CNTW_";
-#else
-			char *szSetting = "CNT_";
-#endif
+
 			szTitleFormat[0] = 0;
 
 			if (pContainer->isCloned && pContainer->hContactFrom != 0) {
@@ -2079,12 +2063,7 @@ buttons_done:
 			else {
 				WINDOWPLACEMENT wp;
 				char szCName[40];
-#if defined (_UNICODE)
 				char *szSetting = "CNTW_";
-#else
-				char *szSetting = "CNT_";
-#endif
-
 
 				if (lParam == 0 && TabCtrl_GetItemCount(GetDlgItem(hwndDlg, IDC_MSGTABS)) > 0) {    // dont ask if container is empty (no tabs)
 					int    clients = TabCtrl_GetItemCount(hwndTab), i;
@@ -2454,11 +2433,7 @@ int TSAPI GetContainerNameForContact(HANDLE hContact, TCHAR *szName, int iNameLe
 			return dbv.cchVal;
 		}
 	}
-#if defined (_UNICODE)
 	if (M->GetTString(hContact, SRMSGMOD_T, "containerW", &dbv)) {
-#else
-	if (M->GetTString(hContact, SRMSGMOD_T, "container", &dbv)) {
-#endif
 		_tcsncpy(szName, _T("default"), iNameLen);
 		return 0;
 	}
@@ -2475,15 +2450,9 @@ int TSAPI GetContainerNameForContact(HANDLE hContact, TCHAR *szName, int iNameLe
 void TSAPI DeleteContainer(int iIndex) {
 	DBVARIANT dbv;
 	char szIndex[10], szSetting[CONTAINER_NAMELEN + 30];
-#if defined (_UNICODE)
 	char *szKey = "TAB_ContainersW";
 	char *szSettingP = "CNTW_";
 	char *szSubKey = "containerW";
-#else
-	char *szSettingP = "CNT_";
-	char *szKey = "TAB_ContainersW";
-	char *szSubKey = "container";
-#endif
 	HANDLE hhContact;
 	_snprintf(szIndex, 8, "%d", iIndex);
 
@@ -2523,15 +2492,9 @@ void TSAPI DeleteContainer(int iIndex) {
 
 void TSAPI RenameContainer(int iIndex, const TCHAR *szNew) {
 	DBVARIANT dbv;
-#if defined (_UNICODE)
 	char *szKey = "TAB_ContainersW";
 	char *szSettingP = "CNTW_";
 	char *szSubKey = "containerW";
-#else
-	char *szSettingP = "CNT_";
-	char *szKey = "TAB_ContainersW";
-	char *szSubKey = "container";
-#endif
 	char szIndex[10];
 	HANDLE hhContact;
 
@@ -2561,11 +2524,7 @@ void TSAPI RenameContainer(int iIndex, const TCHAR *szNew) {
 
 HMENU TSAPI BuildContainerMenu()
 {
-#if defined (_UNICODE)
 	char *szKey = "TAB_ContainersW";
-#else
-	char *szKey = "TAB_Containers";
-#endif
 	char szCounter[10];
 	int i = 0;
 	DBVARIANT dbv = { 0 };

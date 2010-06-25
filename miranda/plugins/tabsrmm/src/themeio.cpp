@@ -24,7 +24,7 @@
  *
  * part of tabSRMM messaging plugin for Miranda.
  *
- * (C) 2005-2009 by silvercircle _at_ gmail _dot_ com and contributors
+ * (C) 2005-2010 by silvercircle _at_ gmail _dot_ com and contributors
  *
  * $Id$
  *
@@ -188,12 +188,7 @@ void TSAPI WriteThemeToINI(const TCHAR *szIniFilenameT, struct TWindowData *dat)
 	DBVARIANT dbv;
 	char szBuf[100], szTemp[100], szAppname[100];
 	COLORREF def;
-
-#if defined(_UNICODE)
 	char *szIniFilename = mir_u2a(szIniFilenameT);
-#else
-	const char *szIniFilename = szIniFilenameT;
-#endif
 
 	WritePrivateProfileStringA("TabSRMM Theme", "Version", _itoa(CURRENT_THEME_VERSION, szBuf, 10), szIniFilename);
 	WritePrivateProfileStringA("TabSRMM Theme", "Cookie", _itoa(THEME_COOKIE, szBuf, 10), szIniFilename);
@@ -236,7 +231,6 @@ void TSAPI WriteThemeToINI(const TCHAR *szIniFilenameT, struct TWindowData *dat)
 	WritePrivateProfileStringA("Message Log", "ExtraMicroLF", _itoa(M->GetByte("extramicrolf", 0), szBuf, 10), szIniFilename);
 
 	for (i = 0; i <= TMPL_ERRMSG; i++) {
-#if defined(_UNICODE)
 		char *encoded;
 		if (dat == 0)
 			encoded = M->utf8_encodeW(LTR_Active.szTemplates[i]);
@@ -250,15 +244,6 @@ void TSAPI WriteThemeToINI(const TCHAR *szIniFilenameT, struct TWindowData *dat)
 			encoded = M->utf8_encodeW(dat->pContainer->rtl_templates->szTemplates[i]);
 		WritePrivateProfileStringA("RTLTemplates", TemplateNames[i], encoded, szIniFilename);
 		mir_free(encoded);
-#else
-		if (dat == 0) {
-			WritePrivateProfileStringA("Templates", TemplateNames[i], LTR_Active.szTemplates[i], szIniFilename);
-			WritePrivateProfileStringA("RTLTemplates", TemplateNames[i], RTL_Active.szTemplates[i], szIniFilename);
-		} else {
-			WritePrivateProfileStringA("Templates", TemplateNames[i], dat->pContainer->ltr_templates->szTemplates[i], szIniFilename);
-			WritePrivateProfileStringA("RTLTemplates", TemplateNames[i], dat->pContainer->rtl_templates->szTemplates[i], szIniFilename);
-		}
-#endif
 	}
 	for (i = 0; i < CUSTOM_COLORS; i++) {
 		sprintf(szTemp, "cc%d", i + 1);
@@ -270,9 +255,7 @@ void TSAPI WriteThemeToINI(const TCHAR *szIniFilenameT, struct TWindowData *dat)
 	for (i = 0; i <= 7; i++)
 		WritePrivateProfileStringA("Nick Colors", _itoa(i, szBuf, 10), _itoa(g_Settings.nickColors[i], szTemp, 10), szIniFilename);
 
-#if defined(_UNICODE)
 	mir_free(szIniFilename);
-#endif
 }
 
 void TSAPI ReadThemeFromINI(const TCHAR *szIniFilenameT, TContainerData *dat, int noAdvanced, DWORD dwFlags)
@@ -281,14 +264,8 @@ void TSAPI ReadThemeFromINI(const TCHAR *szIniFilenameT, TContainerData *dat, in
 	int i, n = 0;
 	int version;
 	COLORREF def;
-
-#if defined(_UNICODE)
 	char *szIniFilename = mir_u2a(szIniFilenameT);
 	char szTemplateBuffer[TEMPLATE_LENGTH * 3 + 2];
-#else
-	const char *szIniFilename = szIniFilenameT;
-#endif
-
 	char bSize = 0;
 	HDC hdc;
 	int charset;
@@ -421,7 +398,6 @@ void TSAPI ReadThemeFromINI(const TCHAR *szIniFilenameT, TContainerData *dat, in
 	if (version >= 3) {
 		if (!noAdvanced && dwFlags & THEME_READ_TEMPLATES) {
 			for (i = 0; i <= TMPL_ERRMSG; i++) {
-#if defined(_UNICODE)
 				wchar_t *decoded = 0;
 
 				GetPrivateProfileStringA("Templates", TemplateNames[i], "[undef]", szTemplateBuffer, TEMPLATE_LENGTH * 3, szIniFilename);
@@ -449,26 +425,12 @@ void TSAPI ReadThemeFromINI(const TCHAR *szIniFilenameT, TContainerData *dat, in
 						mir_sntprintf(dat->rtl_templates->szTemplates[i], TEMPLATE_LENGTH, L"%s", decoded);
 					mir_free(decoded);
 				}
-#else
-				if (dat == 0) {
-					GetPrivateProfileStringA("Templates", TemplateNames[i], "[undef]", LTR_Active.szTemplates[i], TEMPLATE_LENGTH - 1, szIniFilename);
-					DBWriteContactSettingString(NULL, TEMPLATES_MODULE, TemplateNames[i], LTR_Active.szTemplates[i]);
-					GetPrivateProfileStringA("RTLTemplates", TemplateNames[i], "", RTL_Active.szTemplates[i], TEMPLATE_LENGTH - 1, szIniFilename);
-					DBWriteContactSettingString(NULL, RTLTEMPLATES_MODULE, TemplateNames[i], RTL_Active.szTemplates[i]);
-				} else {
-					GetPrivateProfileStringA("Templates", TemplateNames[i], "", dat->ltr_templates->szTemplates[i], TEMPLATE_LENGTH - 1, szIniFilename);
-					GetPrivateProfileStringA("RTLTemplates", TemplateNames[i], "", dat->rtl_templates->szTemplates[i], TEMPLATE_LENGTH - 1, szIniFilename);
-				}
-#endif
 			}
 		}
 	}
 	if (PluginConfig.m_chat_enabled)
 		LoadGlobalSettings();
-
-#if defined(_UNICODE)
 	mir_free(szIniFilename);
-#endif
 }
 
 /*

@@ -33,12 +33,7 @@ $Id$
 //#define TIMERID_TOOLTIP		 5
 #define TIMEOUT_TYPEOFF      10000      // send type off after 10 seconds of inactivity
 #define SB_CHAR_WIDTH        45
-
-#if defined(_UNICODE)
-    #define SEND_FLAGS PREF_UNICODE
-#else
-    #define SEND_FLAGS 0
-#endif
+#define SEND_FLAGS PREF_UNICODE
 
 /*
  * send flags
@@ -107,9 +102,7 @@ public:
 	/*
 	 * static members
 	 */
-#if defined(_UNICODE)
 	static	int TSAPI RTL_Detect				(const wchar_t *pszwText);
-#endif
 	static	char* TSAPI MsgServiceName			(const HANDLE hContact, const TWindowData *dat, int isUnicode);
 	static  int   TSAPI GetProtoIconFromList	(const char *szProto, int iStatus);
 	static  LRESULT TSAPI WarnPendingJobs		(unsigned int uNrMessages);

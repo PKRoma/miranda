@@ -11,4 +11,3 @@ echo *                                              *
 
 vcbuild.exe tabsrmm_9.vcproj "Release Unicode" /platform:Win32 /r
 vcbuild.exe tabsrmm_9.vcproj "Release Unicode" /platform:x64 /r
-vcbuild.exe tabsrmm_9.vcproj "Release" /platform:Win32 /r

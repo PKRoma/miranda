@@ -927,13 +927,9 @@ int tabSRMM_ShowPopup(WPARAM wParam, LPARAM lParam, WORD eventType, int windowOp
 		return 0;
 	}
 passed:
-#if defined(_UNICODE)
-	if (!(PluginConfig.g_PopupAvail && PluginConfig.g_PopupWAvail)) {
-#else
-	if (!PluginConfig.g_PopupAvail) {
-#endif
+	if (!(PluginConfig.g_PopupAvail && PluginConfig.g_PopupWAvail))
 		return 0;
-	}
+
 	if(PU_GetByContact((HANDLE)wParam) && nen_options.bMergePopup && eventType == EVENTTYPE_MESSAGE) {
 		if(PopupUpdateT((HANDLE)wParam, (HANDLE)lParam) != 0)
 			PopupShowT(&nen_options, (HANDLE)wParam, (HANDLE)lParam, (UINT)eventType);

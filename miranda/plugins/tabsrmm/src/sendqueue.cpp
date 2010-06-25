@@ -24,7 +24,7 @@
  *
  * part of tabSRMM messaging plugin for Miranda.
  *
- * (C) 2005-2009 by silvercircle _at_ gmail _dot_ com and contributors
+ * (C) 2005-2010 by silvercircle _at_ gmail _dot_ com and contributors
  *
  * $Id$
  *
@@ -53,7 +53,6 @@ static char *pss_msgw = "/SendMsgW";
  */
 char *SendQueue::MsgServiceName(const HANDLE hContact = 0, const TWindowData *dat = 0, int dwFlags = 0)
 {
-#ifdef _UNICODE
 	char	szServiceName[100];
 	char	*szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
 
@@ -68,7 +67,7 @@ char *SendQueue::MsgServiceName(const HANDLE hContact = 0, const TWindowData *da
 	_snprintf(szServiceName, sizeof(szServiceName), "%s%sW", szProto, PSS_MESSAGE);
 	if (ServiceExists(szServiceName))
 		return pss_msgw;
-#endif
+
 	return pss_msg;
 }
 
@@ -175,7 +174,6 @@ entry_found:
 
 #define SPLIT_WORD_CUTOFF 20
 
-#if defined(_UNICODE)
 static int SendChunkW(WCHAR *chunk, HANDLE hContact, char *szSvc, DWORD dwFlags)
 {
 	BYTE	*pBuf = NULL;
@@ -192,14 +190,11 @@ static int SendChunkW(WCHAR *chunk, HANDLE hContact, char *szSvc, DWORD dwFlags)
 	mir_free(pBuf);
 	return id;
 }
-#endif
 
 static int SendChunkA(char *chunk, HANDLE hContact, char *szSvc, DWORD dwFlags)
 {
 	return(CallContactService(hContact, szSvc, dwFlags, (LPARAM)chunk));
 }
-
-#if defined(_UNICODE)
 
 static void DoSplitSendW(LPVOID param)
 {
@@ -286,8 +281,6 @@ static void DoSplitSendW(LPVOID param)
 	while (fSplitting);
 	mir_free(wszBegin);
 }
-
-#endif
 
 static void DoSplitSendA(LPVOID param)
 {
@@ -466,14 +459,10 @@ int SendQueue::sendQueued(TWindowData *dat, const int iEntry)
 			if (dat->sendMode & SMODE_FORCEANSI)
 				m_jobs[iEntry].dwFlags &= ~PREF_UNICODE;
 
-#if defined(_UNICODE)
 			if (!(m_jobs[iEntry].dwFlags & PREF_UNICODE) || dat->sendMode & SMODE_FORCEANSI)
 				mir_forkthread(DoSplitSendA, (LPVOID)iEntry);
 			else
 				mir_forkthread(DoSplitSendW, (LPVOID)iEntry);
-#else
-			mir_forkthread(DoSplitSendA, (LPVOID)iEntry);
-#endif
 			m_jobs[iEntry].dwFlags = dwOldFlags;
 		}
 		else {
@@ -590,13 +579,11 @@ void SendQueue::logError(const TWindowData *dat, int iSendJobIndex, const TCHAR 
 	}
 	if (m_jobs[iSendJobIndex].dwFlags & PREF_UTF)
 		dbei.flags = DBEF_UTF;
-#if defined(_UNICODE)
 	if (iSendJobIndex >= 0) {
 		if (m_jobs[iSendJobIndex].dwFlags & PREF_UNICODE) {
 			iMsgLen *= 3;
 		}
 	}
-#endif
 	dbei.cbBlob = iMsgLen;
 	dbei.timestamp = time(NULL);
 	dbei.szModule = (char *)szErrMsg;
@@ -661,7 +648,6 @@ void SendQueue::recallFailed(const TWindowData *dat, int iEntry) const
 	if(dat) {
 		NotifyDeliveryFailure(dat);
 		if (iLen == 0) {                    // message area is empty, so we can recall the failed message...
-	#if defined(_UNICODE)
 			SETTEXTEX stx = {ST_DEFAULT, 1200};
 			if (m_jobs[iEntry].dwFlags & PREF_UNICODE)
 				SendDlgItemMessage(dat->hwnd, IDC_MESSAGE, EM_SETTEXTEX, (WPARAM)&stx, (LPARAM)&m_jobs[iEntry].sendBuffer[lstrlenA(m_jobs[iEntry].sendBuffer) + 1]);
@@ -669,9 +655,6 @@ void SendQueue::recallFailed(const TWindowData *dat, int iEntry) const
 				stx.codepage = (m_jobs[iEntry].dwFlags & PREF_UTF) ? CP_UTF8 : CP_ACP;
 				SendDlgItemMessage(dat->hwnd, IDC_MESSAGE, EM_SETTEXTEX, (WPARAM)&stx, (LPARAM)m_jobs[iEntry].sendBuffer);
 			}
-	#else
-			SetDlgItemTextA(dat->hwnd, IDC_MESSAGE, (char *)m_jobs[iEntry].sendBuffer);
-	#endif
 			UpdateSaveAndSendButton(const_cast<TWindowData *>(dat));
 			SendDlgItemMessage(dat->hwnd, IDC_MESSAGE, EM_SETSEL, (WPARAM) - 1, (LPARAM) - 1);
 		}
@@ -684,15 +667,11 @@ void SendQueue::UpdateSaveAndSendButton(TWindowData *dat)
 		int		len;
 		HWND	hwndDlg = dat->hwnd;
 
-	#if defined(_UNICODE)
 		GETTEXTLENGTHEX	gtxl = {0};
 		gtxl.codepage = CP_UTF8;
 		gtxl.flags = GTL_DEFAULT | GTL_PRECISE | GTL_NUMBYTES;
 
 		len = SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_GETTEXTLENGTHEX, (WPARAM) & gtxl, 0);
-	#else
-		len = GetWindowTextLength(GetDlgItem(hwndDlg, IDC_MESSAGE));
-	#endif
 		if (len && GetSendButtonState(hwndDlg) == PBS_DISABLED)
 			EnableSendButton(dat, TRUE);
 		else if (len == 0 && GetSendButtonState(hwndDlg) != PBS_DISABLED)
@@ -741,7 +720,6 @@ void SendQueue::NotifyDeliveryFailure(const TWindowData *dat)
  * searches string for characters typical for RTL text (hebrew and other RTL languages
 */
 
-#if defined(_UNICODE)
 int SendQueue::RTL_Detect(const WCHAR *pszwText)
 {
 	WORD	*infoTypeC2;
@@ -764,7 +742,6 @@ int SendQueue::RTL_Detect(const WCHAR *pszwText)
 	}
 	return 0;
 }
-#endif
 
 int SendQueue::ackMessage(TWindowData *dat, WPARAM wParam, LPARAM lParam)
 {
@@ -838,14 +815,12 @@ inform_and_discard:
 			c->updateStats(TSessionStats::BYTES_SENT, dbei.cbBlob - 1);
 	}
 
-#if defined( _UNICODE )
 	if (m_jobs[iFound].dwFlags & PREF_UNICODE)
 		dbei.cbBlob *= sizeof(TCHAR) + 1;
 	if (m_jobs[iFound].dwFlags & PREF_RTL)
 		dbei.flags |= DBEF_RTL;
 	if (m_jobs[iFound].dwFlags & PREF_UTF)
 		dbei.flags |= DBEF_UTF;
-#endif
 	dbei.pBlob = (PBYTE) m_jobs[iFound].sendBuffer;
 	hNewEvent = (HANDLE) CallService(MS_DB_EVENT_ADD, (WPARAM) m_jobs[iFound].hOwner, (LPARAM) & dbei);
 

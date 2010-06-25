@@ -743,10 +743,8 @@ BOOL LogToFile(SESSION_INFO* si, GCEVENT * gce)
 	if (hFile) {
 		TCHAR szTemp[512], szTemp2[512];
 		TCHAR* pszNick = NULL;
-#ifdef _UNICODE
 		if (bFileJustCreated)
 			fputws((const wchar_t*)"\377\376", hFile);		//UTF-16 LE BOM == FF FE
-#endif
 		if (gce->ptszNick) {
 			if (g_Settings.LogLimitNames && lstrlen(gce->ptszNick) > 20) {
 				lstrcpyn(szTemp2, gce->ptszNick, 20);
@@ -1002,9 +1000,7 @@ void DestroyGCMenu(HMENU *hMenu, int iIndex)
 
 BOOL DoEventHookAsync(HWND hwnd, const TCHAR* pszID, const char* pszModule, int iType, TCHAR* pszUID, TCHAR* pszText, DWORD dwItem)
 {
-#if defined(_UNICODE)
 	SESSION_INFO* si;
-#endif
 	GCHOOK* gch = (GCHOOK*)mir_alloc(sizeof(GCHOOK));
 	GCDEST* gcd = (GCDEST*)mir_alloc(sizeof(GCDEST));
 
@@ -1012,7 +1008,6 @@ BOOL DoEventHookAsync(HWND hwnd, const TCHAR* pszID, const char* pszModule, int 
 	memset(gcd, 0, sizeof(GCDEST));
 
 	replaceStrA(&gcd->pszModule, pszModule);
-#if defined( _UNICODE )
 	if ((si = SM_FindSession(pszID, pszModule)) == NULL)
 		return FALSE;
 
@@ -1022,13 +1017,10 @@ BOOL DoEventHookAsync(HWND hwnd, const TCHAR* pszID, const char* pszModule, int 
 		gch->pszUID = t2a(pszUID, 0);
 		gch->pszText = t2a(pszText, dwCP);
 	} else {
-#endif
 		replaceStr(&gcd->ptszID, pszID);
 		replaceStr(&gch->ptszUID, pszUID);
 		replaceStr(&gch->ptszText, pszText);
-#if defined( _UNICODE )
 	}
-#endif
 	gcd->iType = iType;
 	gch->dwData = dwItem;
 	gch->pDest = gcd;
@@ -1038,14 +1030,11 @@ BOOL DoEventHookAsync(HWND hwnd, const TCHAR* pszID, const char* pszModule, int 
 
 BOOL DoEventHook(const TCHAR* pszID, const char* pszModule, int iType, const TCHAR* pszUID, const TCHAR* pszText, DWORD dwItem)
 {
-#if defined( _UNICODE )
 	SESSION_INFO* si;
-#endif
 	GCHOOK gch = {0};
 	GCDEST gcd = {0};
 
 	gcd.pszModule = (char*)pszModule;
-#if defined( _UNICODE )
 	if ((si = SM_FindSession(pszID, pszModule)) == NULL)
 		return FALSE;
 
@@ -1055,14 +1044,10 @@ BOOL DoEventHook(const TCHAR* pszID, const char* pszModule, int iType, const TCH
 		gch.pszUID = t2a(pszUID, 0);
 		gch.pszText = t2a(pszText, dwCP);
 	} else {
-#endif
 		gcd.ptszID = mir_tstrdup(pszID);
 		gch.ptszUID = mir_tstrdup(pszUID);
 		gch.ptszText = mir_tstrdup(pszText);
-#if defined( _UNICODE )
 	}
-#endif
-
 	gcd.iType = iType;
 	gch.dwData = dwItem;
 	gch.pDest = &gcd;
@@ -1113,7 +1098,6 @@ TCHAR* a2tf(const TCHAR* str, int flags, DWORD cp)
 	if (str == NULL)
 		return NULL;
 
-#if defined( _UNICODE )
 	if (flags & GC_UNICODE)
 		return mir_tstrdup(str);
 	else {
@@ -1134,9 +1118,6 @@ TCHAR* a2tf(const TCHAR* str, int flags, DWORD cp)
 		result[ cbLen ] = 0;
 		return result;
 	}
-#else
-	return mir_strdup(str);
-#endif
 }
 
 static char* u2a(const wchar_t* src, DWORD cp)
@@ -1161,11 +1142,7 @@ static char* u2a(const wchar_t* src, DWORD cp)
 
 char* t2a(const TCHAR* src, DWORD cp)
 {
-#if defined( _UNICODE )
 	return u2a(src, cp);
-#else
-	return mir_strdup(src);
-#endif
 }
 
 TCHAR* replaceStr(TCHAR** dest, const TCHAR* src)

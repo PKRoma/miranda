@@ -36,9 +36,7 @@
 #ifndef __COMMONHEADERS_H
 #define __COMMONHEADERS_H
 
-#if defined( UNICODE ) && !defined( _UNICODE )
-	#define _UNICODE
-#endif
+#define _UNICODE 1
 
 //#define __FEAT_EXP_AUTOSPLITTER 1					// autosize input area on request (experimental, incomplete, don't use,
 													// feature postponed to rel 3.1.+)

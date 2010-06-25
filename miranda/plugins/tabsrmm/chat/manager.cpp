@@ -140,10 +140,8 @@ int SM_RemoveSession(const TCHAR* pszID, const char* pszModule)
 			mir_free(pTemp->ptszName);
 			mir_free(pTemp->ptszStatusbarText);
 			mir_free(pTemp->ptszTopic);
-#if defined( _UNICODE )
 			mir_free(pTemp->pszID);
 			mir_free(pTemp->pszName);
-#endif
 
 			// delete commands
 			pCurComm = pTemp->lpCommands;
@@ -923,12 +921,7 @@ char* SM_GetUsers(SESSION_INFO* si)
 		int pLen = lstrlenA(p), nameLen = lstrlen(utemp->pszUID);
 		if (pLen + nameLen + 2 > alloced)
 			p = (char *)mir_realloc(p, alloced += 4096);
-
-#if !defined( _UNICODE )
-		lstrcpy(p + pLen, utemp->pszUID);
-#else
 		WideCharToMultiByte(CP_ACP, 0, utemp->pszUID, -1, p + pLen, nameLen + 1, 0, 0);
-#endif
 		lstrcpyA(p + pLen + nameLen, " ");
 		utemp = utemp->next;
 	} while (utemp != NULL);

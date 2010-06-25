@@ -39,13 +39,8 @@
 
 #define RTF_DEFAULT_HEADER _T("{\\rtf1\\ansi\\deff0\\pard\\li%u\\fi-%u\\ri%u\\tx%u")
 
-#if defined(_UNICODE)
-	#define		CNT_KEYNAME "CNTW_Def"
-	#define CNT_BASEKEYNAME "CNTW_"
-#else
-	#define		CNT_KEYNAME "CNT_Def"
-	#define CNT_BASEKEYNAME "CNT_"
-#endif
+#define	CNT_KEYNAME "CNTW_Def"
+#define CNT_BASEKEYNAME "CNTW_"
 
 struct TRTFColorTable {
     TCHAR 		szName[10];
@@ -79,9 +74,7 @@ public:
 	static	TCHAR* 				TSAPI FilterEventMarkers			(TCHAR *wszText);
 	static  const TCHAR* 		TSAPI FormatRaw						(TWindowData *dat, const TCHAR *msg, int flags, BOOL isSent);
 	static	const TCHAR* 		TSAPI FormatTitleBar				(const TWindowData *dat, const TCHAR *szFormat);
-#if defined(_UNICODE)
 	static	char* 				TSAPI FilterEventMarkers			(char *szText);
-#endif
 	static	const TCHAR* 		TSAPI DoubleAmpersands				(TCHAR *pszText);
 	static	void 				TSAPI RTF_CTableInit				();
 	static	void 				TSAPI RTF_ColorAdd					(const TCHAR *tszColname, size_t length);

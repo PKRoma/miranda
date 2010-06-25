@@ -24,7 +24,7 @@
  *
  * part of tabSRMM messaging plugin for Miranda.
  *
- * (C) 2005-2009 by silvercircle _at_ gmail _dot_ com and contributors
+ * (C) 2005-2010 by silvercircle _at_ gmail _dot_ com and contributors
  *
  * $Id$
  *
@@ -278,8 +278,6 @@ static INT_PTR ReadMessageCommand(WPARAM wParam, LPARAM lParam)
  * for filling the message input box with a passed message
  */
 
-#if defined(_UNICODE)
-
 INT_PTR SendMessageCommand_W(WPARAM wParam, LPARAM lParam)
 {
 	HWND hwnd;
@@ -334,8 +332,6 @@ INT_PTR SendMessageCommand_W(WPARAM wParam, LPARAM lParam)
 	}
 	return 0;
 }
-
-#endif
 
 /*
  * the SendMessageCommand() invokes a message session window for the given contact.
@@ -545,10 +541,7 @@ static void TSAPI InitAPI()
 	for(i = 0; i < safe_sizeof(SERVICES); i++)
 		*(SERVICES[i].h) = CreateServiceFunction(SERVICES[i].szName, SERVICES[i].pfnService);
 
-#if defined(_UNICODE)
 	*(SERVICES[CGlobals::H_MS_MSG_SENDMESSAGEW].h) = CreateServiceFunction(MS_MSG_SENDMESSAGE "W", SendMessageCommand_W);
-#endif
-
 	SI_InitStatusIcons();
 	CB_InitCustomButtons();
 
@@ -946,11 +939,7 @@ int TABSRMM_FireEvent(HANDLE hContact, HWND hwnd, unsigned int type, unsigned in
 	mwe.cbSize = sizeof(mwe);
 	mwe.hContact = hContact;
 	mwe.hwndWindow = hwnd;
-#if defined(_UNICODE)
 	mwe.szModule = "tabSRMsgW";
-#else
-	mwe.szModule = "tabSRMsg";
-#endif
 	mwe.uType = type;
 	mwe.hwndInput = GetDlgItem(hwnd, bType == SESSIONTYPE_IM ? IDC_MESSAGE : IDC_CHAT_MESSAGE);
 	mwe.hwndLog = GetDlgItem(hwnd, bType == SESSIONTYPE_IM ? IDC_LOG : IDC_CHAT_LOG);

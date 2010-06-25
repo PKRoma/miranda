@@ -211,10 +211,8 @@ typedef struct SESSIONINFO_TYPE
 	TCHAR*      ptszTopic;
 	TCHAR		pszLogFileName[MAX_PATH + 50];
 
-	#if defined( _UNICODE )
-		char*    pszID;		// ugly fix for returning static ANSI strings in GC_INFO
-		char*    pszName;   // just to fix a bug quickly, should die after porting IRC to Unicode
-	#endif
+	char*    	pszID;		// ugly fix for returning static ANSI strings in GC_INFO
+	char*    	pszName;   // just to fix a bug quickly, should die after porting IRC to Unicode
 
 	int         iType;
 	int         iFG;
@@ -355,11 +353,7 @@ typedef struct{
 #include "chatprototypes.h"
 #include "chat_resource.h"
 
-#if defined( _UNICODE )
-	#define mir_tstrdup mir_wstrdup
-#else
-	#define mir_tstrdup mir_strdup
-#endif
+#define mir_tstrdup mir_wstrdup
 
 TCHAR* a2t( const char* str );
 char*  t2a( const TCHAR* str, DWORD codepage );

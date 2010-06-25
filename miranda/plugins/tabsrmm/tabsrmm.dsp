@@ -4,7 +4,7 @@
 
 # TARGTYPE "Win32 (x86) Dynamic-Link Library" 0x0102
 
-CFG=tabSRMM - Win32 Debug
+CFG=tabSRMM - Win32 Release Unicode
 !MESSAGE Dies ist kein gültiges Makefile. Zum Erstellen dieses Projekts mit NMAKE
 !MESSAGE verwenden Sie den Befehl "Makefile exportieren" und führen Sie den Befehl
 !MESSAGE 
@@ -13,13 +13,11 @@ CFG=tabSRMM - Win32 Debug
 !MESSAGE Sie können beim Ausführen von NMAKE eine Konfiguration angeben
 !MESSAGE durch Definieren des Makros CFG in der Befehlszeile. Zum Beispiel:
 !MESSAGE 
-!MESSAGE NMAKE /f "tabsrmm.mak" CFG="tabSRMM - Win32 Debug"
+!MESSAGE NMAKE /f "tabsrmm.mak" CFG="tabSRMM - Win32 Release Unicode"
 !MESSAGE 
 !MESSAGE Für die Konfiguration stehen zur Auswahl:
 !MESSAGE 
-!MESSAGE "tabSRMM - Win32 Debug" (basierend auf  "Win32 (x86) Dynamic-Link Library")
 !MESSAGE "tabSRMM - Win32 Release Unicode" (basierend auf  "Win32 (x86) Dynamic-Link Library")
-!MESSAGE "tabSRMM - Win32 Release" (basierend auf  "Win32 (x86) Dynamic-Link Library")
 !MESSAGE "tabSRMM - Win32 Debug Unicode" (basierend auf  "Win32 (x86) Dynamic-Link Library")
 !MESSAGE 
 
@@ -31,35 +29,7 @@ CPP=cl.exe
 MTL=midl.exe
 RSC=rc.exe
 
-!IF  "$(CFG)" == "tabSRMM - Win32 Debug"
-
-# PROP BASE Use_MFC 0
-# PROP BASE Use_Debug_Libraries 1
-# PROP BASE Output_Dir ".\Debug"
-# PROP BASE Intermediate_Dir ".\Debug"
-# PROP BASE Target_Dir ""
-# PROP Use_MFC 0
-# PROP Use_Debug_Libraries 1
-# PROP Output_Dir ".\Debug"
-# PROP Intermediate_Dir ".\Debug"
-# PROP Ignore_Export_Lib 1
-# PROP Target_Dir ""
-# ADD BASE CPP /nologo /MDd /W3 /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "_MBCS" /Fp".\Debug/srmm.pch" /YX /GZ /c
-# ADD CPP /nologo /MDd /W3 /GX /ZI /Od /I "../../include" /I "../../include/msapi" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "_MBCS" /Fp".\Debug/srmm.pch" /Yu"commonheaders.h" /GZ /c
-# ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /win32
-# ADD MTL /nologo /D "_DEBUG" /mktyplib203 /win32
-# ADD BASE RSC /l 0x809 /d "_DEBUG"
-# ADD RSC /l 0x809 /d "_DEBUG"
-BSC32=bscmake.exe
-# ADD BASE BSC32 /nologo
-# ADD BSC32 /nologo
-LINK32=link.exe
-# ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib /nologo /subsystem:windows /dll /incremental:no /pdb:".\Debug\srmm.pdb" /debug /machine:IX86 /out:"..\..\Bin\Debug\Plugins\tabsrmm.dll" /implib:".\Debug/srmm.lib" /pdbtype:sept
-# SUBTRACT BASE LINK32 /pdb:none
-# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib msimg32.lib shlwapi.lib /nologo /subsystem:windows /dll /pdb:".\Debug\srmm.pdb" /debug /machine:IX86 /out:"..\..\Bin\Debug\Plugins\tabsrmm.dll" /implib:".\Debug/srmm.lib" /pdbtype:sept
-# SUBTRACT LINK32 /pdb:none /incremental:no
-
-!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release Unicode"
+!IF  "$(CFG)" == "tabSRMM - Win32 Release Unicode"
 
 # PROP BASE Use_MFC 0
 # PROP BASE Use_Debug_Libraries 0
@@ -86,33 +56,6 @@ LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib /nologo /base:"0x6a540000" /subsystem:windows /dll /machine:IX86 /out:"..\..\Bin\Release\Plugins\tabsrmm_unicode.dll" /implib:".\Release_Unicode/srmm.lib" /pdbtype:sept
 # ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib msimg32.lib shlwapi.lib /nologo /base:"0x6a540000" /subsystem:windows /dll /map /debug /machine:IX86 /out:"..\..\Bin\Release Unicode\Plugins\tabsrmm.dll" /implib:".\Release_Unicode/srmm.lib" /opt:NOWIN98
 # SUBTRACT LINK32 /pdb:none /incremental:yes
-
-!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release"
-
-# PROP BASE Use_MFC 0
-# PROP BASE Use_Debug_Libraries 0
-# PROP BASE Output_Dir ".\Release"
-# PROP BASE Intermediate_Dir ".\Release"
-# PROP BASE Target_Dir ""
-# PROP Use_MFC 0
-# PROP Use_Debug_Libraries 0
-# PROP Output_Dir ".\Release"
-# PROP Intermediate_Dir ".\Release"
-# PROP Ignore_Export_Lib 1
-# PROP Target_Dir ""
-# ADD BASE CPP /nologo /MT /W3 /GX /O1 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "_MBCS" /Fp".\Release/srmm.pch" /YX /GF /c
-# ADD CPP /nologo /MD /W3 /GX /Zi /O1 /I "../../include" /I "../../include/msapi" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "_MBCS" /Fp".\Release/srmm.pch" /Yu"commonheaders.h" /GF /c
-# ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
-# ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
-# ADD BASE RSC /l 0x809 /d "NDEBUG"
-# ADD RSC /l 0x809 /d "NDEBUG"
-BSC32=bscmake.exe
-# ADD BASE BSC32 /nologo
-# ADD BSC32 /nologo
-LINK32=link.exe
-# ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib /nologo /base:"0x6a540000" /subsystem:windows /dll /machine:IX86 /out:"..\..\Bin\Release\Plugins\tabsrmm.dll" /implib:".\Release/srmm.lib" /pdbtype:sept
-# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib msimg32.lib shlwapi.lib /nologo /base:"0x6a540000" /subsystem:windows /dll /map /machine:IX86 /out:"..\..\Bin\Release\Plugins\tabsrmm.dll" /implib:".\Release/srmm.lib" /opt:NOWIN98
-# SUBTRACT LINK32 /pdb:none /debug
 
 !ELSEIF  "$(CFG)" == "tabSRMM - Win32 Debug Unicode"
 
@@ -147,9 +90,7 @@ LINK32=link.exe
 
 # Begin Target
 
-# Name "tabSRMM - Win32 Debug"
 # Name "tabSRMM - Win32 Release Unicode"
-# Name "tabSRMM - Win32 Release"
 # Name "tabSRMM - Win32 Debug Unicode"
 # Begin Group "Source Files"
 
@@ -749,14 +690,7 @@ NODEP_CPP_MUCHI=\
 	".\xtheme.h"\
 	
 
-!IF  "$(CFG)" == "tabSRMM - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release Unicode"
-
-# ADD CPP /O2
-# SUBTRACT CPP /YX /Yc /Yu
-
-!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release"
+!IF  "$(CFG)" == "tabSRMM - Win32 Release Unicode"
 
 # ADD CPP /O2
 # SUBTRACT CPP /YX /Yc /Yu

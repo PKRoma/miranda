@@ -145,7 +145,7 @@ static void ShowPopupMenu(TWindowData *dat, int idFrom, HWND hwndFrom, POINT pt)
 		if (idFrom == IDC_MESSAGE)
 			EnableMenuItem(hSubMenu, IDM_CUT, MF_BYCOMMAND | MF_GRAYED);
 	}
-#if defined(_UNICODE)
+
 	if (idFrom == IDC_LOG)  {
 		int i;
 		//MAD: quote mod
@@ -159,7 +159,6 @@ static void ShowPopupMenu(TWindowData *dat, int idFrom, HWND hwndFrom, POINT pt)
 			CheckMenuItem(PluginConfig.g_hMenuEncoding, dat->codePage, MF_BYCOMMAND | MF_CHECKED);
 		CheckMenuItem(hSubMenu, ID_LOG_FREEZELOG, MF_BYCOMMAND | (dat->dwFlagsEx & MWF_SHOW_SCROLLINGDISABLED ? MF_CHECKED : MF_UNCHECKED));
 	}
-#endif
 
 	if (idFrom == IDC_LOG || idFrom == IDC_MESSAGE) {
 		// First notification
@@ -234,10 +233,8 @@ static void ShowPopupMenu(TWindowData *dat, int idFrom, HWND hwndFrom, POINT pt)
 				break;
 		}
 	}
-#if defined(_UNICODE)
 	if (idFrom == IDC_LOG)
 		RemoveMenu(hSubMenu, 6, MF_BYPOSITION);
-#endif
 	DestroyMenu(hMenu);
 	if (dat->codePage != oldCodepage) {
 		SendMessage(hwndDlg, DM_REMAKELOG, 0, 0);
@@ -1537,14 +1534,10 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			}
 			if (newData->szInitialText) {
 				int len;
-#if defined(_UNICODE)
 				if (newData->isWchar)
 					SetDlgItemTextW(hwndDlg, IDC_MESSAGE, (TCHAR *)newData->szInitialText);
 				else
 					SetDlgItemTextA(hwndDlg, IDC_MESSAGE, newData->szInitialText);
-#else
-				SetDlgItemTextA(hwndDlg, IDC_MESSAGE, newData->szInitialText);
-#endif
 				len = GetWindowTextLength(GetDlgItem(hwndDlg, IDC_MESSAGE));
 				PostMessage(GetDlgItem(hwndDlg, IDC_MESSAGE), EM_SETSEL, len, len);
 				if (len)
@@ -2896,11 +2889,8 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			if (iSelection >= IDM_CONTAINERMENU) {
 				DBVARIANT dbv = {0};
 				char szIndex[10];
-#if defined (_UNICODE)
 				char *szKey = "TAB_ContainersW";
-#else
-				char *szKey = "TAB_Containers";
-#endif
+
 				_snprintf(szIndex, 8, "%d", iSelection - IDM_CONTAINERMENU);
 				if (iSelection - IDM_CONTAINERMENU >= 0) {
 					if (!M->GetTString(NULL, szKey, szIndex, &dbv)) {
@@ -2982,7 +2972,6 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 					if (GetSendButtonState(hwndDlg) == PBS_DISABLED)
 						break;
 
-#if defined( _UNICODE )
 					streamOut = Message_GetFromStream(GetDlgItem(hwndDlg, IDC_MESSAGE), dat, final_sendformat ? 0 : (CP_UTF8 << 16) | (SF_TEXT | SF_USECODEPAGE));
 					if (streamOut != NULL) {
 						decoded = M->utf8_decodeW(streamOut);
@@ -3035,27 +3024,6 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 						}
 						free(streamOut);
 					}
-#else
-					streamOut = Message_GetFromStream(GetDlgItem(hwndDlg, IDC_MESSAGE), dat, final_sendformat ? (SF_RTFNOOBJS | SFF_PLAINRTF) : (SF_TEXT));
-					if (streamOut != NULL) {
-						converted = (TCHAR *)malloc((lstrlenA(streamOut) + 2) * sizeof(TCHAR));
-						if (converted != NULL) {
-							_tcscpy(converted, streamOut);
-							if (final_sendformat) {
-								DoRtfToTags(converted, dat);
-								DoTrimMessage(converted);
-							}
-							bufSize = memRequired = lstrlenA(converted) + 1;
-							if (memRequired > dat->iSendBufferSize) {
-								dat->sendBuffer = (char *) realloc(dat->sendBuffer, memRequired);
-								dat->iSendBufferSize = memRequired;
-							}
-							CopyMemory(dat->sendBuffer, converted, bufSize);
-							free(converted);
-						}
-						free(streamOut);
-					}
-#endif  // unicode
 					if (memRequired == 0 || dat->sendBuffer[0] == 0)
 						break;
 
@@ -3065,11 +3033,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 						int tabCount = TabCtrl_GetItemCount(hwndTab), i;
 						char *szFromStream = NULL;
 
-#if defined(_UNICODE)
 						szFromStream = Message_GetFromStream(GetDlgItem(hwndDlg, IDC_MESSAGE), dat, dat->SendFormat ? 0 : (CP_UTF8 << 16) | (SF_TEXT | SF_USECODEPAGE));
-#else
-						szFromStream = Message_GetFromStream(GetDlgItem(hwndDlg, IDC_MESSAGE), dat, dat->SendFormat ? (SF_RTFNOOBJS | SFF_PLAINRTF) : (SF_TEXT));
-#endif
 						ZeroMemory((void *)&tci, sizeof(tci));
 						tci.mask = TCIF_PARAM;
 
@@ -3080,11 +3044,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 							if (IsWindow(contacthwnd)) {
 								// if the contact hwnd is the current contact then ignore it and let the normal code deal with the msg
 								if (contacthwnd != hwndDlg) {
-#if defined(_UNICODE)
 									SETTEXTEX stx = {ST_DEFAULT, CP_UTF8};
-#else
-									SETTEXTEX stx = {ST_DEFAULT, CP_ACP};
-#endif
 									// send the buffer to the contacts msg typing area
 									SendDlgItemMessage(contacthwnd, IDC_MESSAGE, EM_SETTEXTEX, (WPARAM)&stx, (LPARAM)szFromStream);
 									SendMessage(contacthwnd, WM_COMMAND, IDOK, 0);
@@ -3113,12 +3073,11 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 					char*	szFromStream = NULL;
 					HANDLE 	hDBEvent = 0;
 					int		iCharsPerLine = M->GetDword("quoteLineLength", 64);
-#ifdef _UNICODE
 					TCHAR *szConverted;
 					int iAlloced = 0;
 					unsigned int iSize = 0;
 					SETTEXTEX stx = {ST_SELECTION, 1200};
-#endif
+
 					if (dat->hwndIEView || dat->hwndHPP) {                // IEView quoting support..
 						TCHAR *selected = 0, *szQuoted = 0;
 						IEVIEWEVENT event;
@@ -3126,10 +3085,8 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 						event.cbSize = sizeof(IEVIEWEVENT);
 						event.hContact = dat->hContact;
 						event.dwFlags = 0;
-#if !defined(_UNICODE)
-						event.dwFlags |= IEEF_NO_UNICODE;
-#endif
 						event.iType = IEE_GET_SELECTION;
+
 						if (dat->hwndIEView) {
 							event.hwnd = dat->hwndIEView;
 							selected = (TCHAR *)CallService(MS_IEVIEW_EVENT, 0, (LPARAM) & event);
@@ -3140,11 +3097,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 
 						if (selected != NULL) {
 							szQuoted = QuoteText(selected, iCharsPerLine, 0);
-#if defined(_UNICODE)
 							SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_SETTEXTEX, (WPARAM)&stx, (LPARAM)szQuoted);
-#else
-							SendDlgItemMessageA(hwndDlg, IDC_MESSAGE, EM_REPLACESEL, TRUE, (LPARAM)szQuoted);
-#endif
 							if (szQuoted)
 								free(szQuoted);
 							break;
@@ -3168,7 +3121,6 @@ quote_from_last:
 						szText = (TCHAR *)malloc((dbei.cbBlob + 1) * sizeof(TCHAR));   //URLs are made one char bigger for crlf
 						dbei.pBlob = (BYTE *)szText;
 						CallService(MS_DB_EVENT_GET, (WPARAM)hDBEvent, (LPARAM)&dbei);
-#ifdef _UNICODE
 						iSize = (int)(strlen((char *)dbei.pBlob)) + 1;
 						if (dbei.flags & DBEF_UTF) {
 							szConverted = M->utf8_decodeW((char*)szText);
@@ -3182,35 +3134,23 @@ quote_from_last:
 								MultiByteToWideChar(CP_ACP, 0, (char *) dbei.pBlob, -1, szConverted, iSize);
 							}
 						}
-#endif
 						if (dbei.eventType == EVENTTYPE_FILE) {
 							iDescr = lstrlenA((char *)(szText + sizeof(DWORD)));
 							MoveMemory(szText, szText + sizeof(DWORD), iDescr);
 							MoveMemory(szText + iDescr + 2, szText + sizeof(DWORD) + iDescr, dbei.cbBlob - iDescr - sizeof(DWORD) - 1);
 							szText[iDescr] = '\r';
 							szText[iDescr+1] = '\n';
-#ifdef _UNICODE
 							szConverted = (TCHAR *)malloc(sizeof(TCHAR) * (1 + lstrlenA((char *)szText)));
 							MultiByteToWideChar(CP_ACP, 0, (char *) szText, -1, szConverted, 1 + lstrlenA((char *)szText));
 							iAlloced = TRUE;
-#endif
 						}
-#ifdef _UNICODE
 						szQuoted = QuoteText(szConverted, iCharsPerLine, 0);
 						SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_SETTEXTEX, (WPARAM)&stx, (LPARAM)szQuoted);
-#else
-						szQuoted = QuoteText(szText, 64, 0);
-						SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_REPLACESEL, TRUE, (LPARAM)szQuoted);
-#endif
-
 						free(szText);
 						free(szQuoted);
-#ifdef _UNICODE
 						if (iAlloced)
 							mir_free(szConverted);
-#endif
 					} else {
-#ifdef _UNICODE
 						wchar_t *converted = 0;
 						szFromStream = Message_GetFromStream(GetDlgItem(hwndDlg, IDC_LOG), dat, SF_TEXT | SF_USECODEPAGE | SFF_SELECTION);
 						converted = M->utf8_decodeW(szFromStream);
@@ -3220,14 +3160,6 @@ quote_from_last:
 						free(szQuoted);
 						mir_free(converted);
 						free(szFromStream);
-#else
-						szFromStream = Message_GetFromStream(GetDlgItem(hwndDlg, IDC_LOG), dat, SF_TEXT | SFF_SELECTION);
-						Utils::FilterEventMarkers(szFromStream);
-						szQuoted = QuoteText(szFromStream, 64, 0);
-						SendDlgItemMessageA(hwndDlg, IDC_MESSAGE, EM_REPLACESEL, TRUE, (LPARAM)szQuoted);
-						free(szQuoted);
-						free(szFromStream);
-#endif
 					}
 					SetFocus(GetDlgItem(hwndDlg, IDC_MESSAGE));
 					break;
@@ -3363,11 +3295,7 @@ quote_from_last:
 			pNewContainer = FindContainerByName(szNewName);
 			if (pNewContainer == NULL)
 				pNewContainer = CreateContainer(szNewName, FALSE, dat->hContact);
-#if defined (_UNICODE)
 			M->WriteTString(dat->hContact, SRMSGMOD_T, "containerW", szNewName);
-#else
-			M->WriteTString(dat->hContact, SRMSGMOD_T, "container", szNewName);
-#endif
 			dat->fIsReattach = TRUE;
 			PostMessage(PluginConfig.g_hwndHotkeyHandler, DM_DOCREATETAB, (WPARAM)pNewContainer, (LPARAM)dat->hContact);
 			if (iOldItems > 1)                // there were more than 1 tab, container is still valid

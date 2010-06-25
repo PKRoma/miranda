@@ -74,11 +74,7 @@ PLUGININFOEX pluginInfo = {
 	"http://miranda.or.at",
 	UNICODE_AWARE,
 	DEFMOD_SRMESSAGE,            // replace internal version (if any)
-#ifdef _UNICODE
 	{0x6ca5f042, 0x7a7f, 0x47cc, { 0xa7, 0x15, 0xfc, 0x8c, 0x46, 0xfb, 0xf4, 0x34 }} //{6CA5F042-7A7F-47cc-A715-FC8C46FBF434}
-#else
-	{0x5889a3ef, 0x7c95, 0x4249, { 0x98, 0xbb, 0x34, 0xe9, 0x5, 0x3a, 0x6e, 0xa0 }} //{5889A3EF-7C95-4249-98BB-34E9053A6EA0}
-#endif
 };
 
 BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)
@@ -141,7 +137,6 @@ extern "C" int __declspec(dllexport) Unload(void)
 	return iRet;
 }
 
-#if defined(_UNICODE)
 int _DebugTraceW(const wchar_t *fmt, ...)
 {
 	wchar_t 	debug[2048];
@@ -180,7 +175,6 @@ int _DebugTraceW(const wchar_t *fmt, ...)
 //#endif
 	return 0;
 }
-#endif
 
 int _DebugTraceA(const char *fmt, ...)
 {
@@ -236,17 +230,10 @@ int _DebugPopup(HANDLE hContact, const TCHAR *fmt, ...)
 		tn.szProto = NULL;
 		tn.cbSize = sizeof(tn);
 		mir_sntprintf(szTitle, safe_sizeof(szTitle), TranslateT("tabSRMM Message (%s)"), (hContact != 0) ? (TCHAR *)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)hContact, GCDNF_TCHAR) : TranslateT("Global"));
-#if defined(_UNICODE)
 		tn.tszInfoTitle = szTitle;
 		tn.tszInfo = debug;
-#else
-		tn.szInfoTitle = szTitle;
-		tn.szInfo = debug;
-#endif
 		tn.dwInfoFlags = NIIF_INFO;
-#if defined(_UNICODE)
 		tn.dwInfoFlags |= NIIF_INTERN_UNICODE;
-#endif
 		tn.uTimeout = 1000 * 4;
 		CallService(MS_CLIST_SYSTRAY_NOTIFY, 0, (LPARAM) & tn);
 	}
@@ -277,15 +264,9 @@ INT_PTR CALLBACK DlgProcAbout(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
 					mir_snprintf(buildstr, 50, "[Build #%d]", build_nr);
 				}
 				TCHAR	*szBuildstr = mir_a2t(buildstr);
-	#if defined(_UNICODE)
 				mir_sntprintf(tStr, safe_sizeof(tStr), _T("TabSRMM\n%s %d.%d.%d.%d (Unicode) %s"),
 							 _T("Version"), HIBYTE(HIWORD(v)), LOBYTE(HIWORD(v)), HIBYTE(LOWORD(v)), LOBYTE(LOWORD(v)),
 							 szBuildstr);
-	#else
-				mir_snprintf(tStr, safe_sizeof(tStr), "TabSRMM\n%s %d.%d.%d.%d %s",
-							 _T("Version"), HIBYTE(HIWORD(v)), LOBYTE(HIWORD(v)), HIBYTE(LOWORD(v)), LOBYTE(LOWORD(v)),
-							 szBuildstr);
-	#endif
 				SetDlgItemText(hwndDlg, IDC_HEADERBAR, tStr);
 				mir_free(szBuildstr);
 			}

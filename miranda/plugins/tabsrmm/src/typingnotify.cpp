@@ -32,11 +32,7 @@ static int CALLBACK PopupDlgProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
 		case WM_COMMAND:
 			if (HIWORD(wParam) == STN_CLICKED) {
 				HANDLE hContact = PUGetContact(hWnd);
-#if defined(_UNICODE)
 				CallService(MS_MSG_SENDMESSAGE "W",(WPARAM)hContact,0);
-#else
-				CallService(MS_MSG_SENDMESSAGE,(WPARAM)hContact,0 );
-#endif
 				PUDeletePopUp(hWnd);
 				return 1;
 			}

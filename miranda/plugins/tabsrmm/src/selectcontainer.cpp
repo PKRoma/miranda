@@ -24,7 +24,7 @@
  *
  * part of tabSRMM messaging plugin for Miranda.
  *
- * (C) 2005-2009 by silvercircle _at_ gmail _dot_ com and contributors
+ * (C) 2005-2010 by silvercircle _at_ gmail _dot_ com and contributors
  *
  * $Id$
  *
@@ -187,11 +187,7 @@ INT_PTR CALLBACK SelectContainerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, L
 		case DM_SC_BUILDLIST: {
 			DBVARIANT dbv;
 			int iCounter = 0, iItemNew;
-#if defined(_UNICODE)
 			char *szKey = "TAB_ContainersW";
-#else
-			char *szKey = "TAB_Containers";
-#endif
 			char szValue[10];
 			struct TContainerData *pContainer = 0;
 			do {

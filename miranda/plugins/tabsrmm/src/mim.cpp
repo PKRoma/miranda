@@ -212,20 +212,12 @@ char *CMimAPI::utf8_encodeW(const wchar_t* src) const
 
 char *CMimAPI::utf8_encodeT(const TCHAR* src) const
 {
-#if defined(_UNICODE)
 	return(m_utfi.utf8_encodeW(src));
-#else
-	return(m_utfi.utf8_encode(src));
-#endif
 }
 
 TCHAR *CMimAPI::utf8_decodeT(const char* src) const
 {
-#if defined(_UNICODE)
 	return(m_utfi.utf8_decodeW(src));
-#else
-	return(m_utfi.utf8_decode(const_cast<char *>(src), NULL));
-#endif
 }
 
 wchar_t *CMimAPI::utf8_decodeW(const char* str) const
@@ -449,13 +441,11 @@ bool CMimAPI::getAeroState()
 {
 	BOOL result = FALSE;
 	m_isAero = m_DwmActive = false;
-#if defined(_UNICODE)
 	if(IsWinVerVistaPlus()) {
 		m_DwmActive = (m_pfnDwmIsCompositionEnabled && (m_pfnDwmIsCompositionEnabled(&result) == S_OK) && result) ? true : false;
 		m_isAero = (CSkin::m_skinEnabled == false) && GetByte("useAero", 1) && CSkin::m_fAeroSkinsValid && m_DwmActive;
 
 	}
-#endif
 	m_isVsThemed = (m_VsAPI && m_pfnIsThemeActive && m_pfnIsThemeActive());
 	return(m_isAero);
 }
@@ -628,11 +618,7 @@ int CMimAPI::TypingMessage(WPARAM wParam, LPARAM lParam)
 				tn.cbSize = sizeof(tn);
 				tn.tszInfoTitle = const_cast<TCHAR *>(CTranslator::get(CTranslator::GEN_MTN_TTITLE));
 				tn.tszInfo = szTip;
-	#ifdef UNICODE
 				tn.dwInfoFlags = NIIF_INFO | NIIF_INTERN_UNICODE;
-	#else
-				tn.dwInfoFlags = NIIF_INFO;
-	#endif
 				tn.uTimeout = 1000 * 4;
 				CallService(MS_CLIST_SYSTRAY_NOTIFY, 0, (LPARAM) & tn);
 			}

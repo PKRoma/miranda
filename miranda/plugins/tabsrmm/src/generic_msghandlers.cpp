@@ -24,7 +24,7 @@
  *
  * part of tabSRMM messaging plugin for Miranda.
  *
- * (C) 2005-2009 by silvercircle _at_ gmail _dot_ com and contributors
+ * (C) 2005-2010 by silvercircle _at_ gmail _dot_ com and contributors
  *
  * $Id$
  *
@@ -1285,11 +1285,7 @@ LRESULT TSAPI DM_WMCopyHandler(HWND hwnd, WNDPROC oldWndProc, WPARAM wParam, LPA
 	LRESULT result = CallWindowProc(oldWndProc, hwnd, WM_COPY, wParam, lParam);
 
 	if (OpenClipboard(hwnd)) {
-#if defined(_UNICODE)
 		HANDLE hClip = GetClipboardData(CF_UNICODETEXT);
-#else
-		HANDLE hClip = GetClipboardData(CF_TEXT);
-#endif
 		if (hClip) {
 			HGLOBAL hgbl;
 			TCHAR *tszLocked;
@@ -1303,11 +1299,7 @@ LRESULT TSAPI DM_WMCopyHandler(HWND hwnd, WNDPROC oldWndProc, WPARAM wParam, LPA
 			tszLocked = (TCHAR *)GlobalLock(hgbl);
 			lstrcpy(tszLocked, tszText);
 			GlobalUnlock(hgbl);
-#if defined(_UNICODE)
 			SetClipboardData(CF_UNICODETEXT, hgbl);
-#else
-			SetClipboardData(CF_TEXT, hgbl);
-#endif
 			if (tszText)
 				free(tszText);
 		}

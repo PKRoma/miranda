@@ -90,9 +90,7 @@ TCHAR* Chat_DoRtfToTags(char* pszText, SESSION_INFO* si)
 	char InsertThis[50];
 	BOOL bJustRemovedRTF = TRUE;
 	BOOL bTextHasStarted = FALSE;
-#if defined(_UNICODE)
 	TCHAR *ptszResult; //, *d;
-#endif
 	int iUcMode = 0;
 
 	if (!pszText)
@@ -151,27 +149,15 @@ TCHAR* Chat_DoRtfToTags(char* pszText, SESSION_INFO* si)
 				} else if (!memcmp(p1, "\\endash", 7)) {
 					bTextHasStarted = bJustRemovedRTF = TRUE;
 					iRemoveChars = 7;
-#if defined(_UNICODE)
 					mir_snprintf(InsertThis, SIZEOF(InsertThis), "\xE2\x80\x93");
-#else
-					mir_snprintf(InsertThis, SIZEOF(InsertThis), "\x96");
-#endif
 				} else if (!memcmp(p1, "\\emdash", 7)) {
 					bTextHasStarted = bJustRemovedRTF = TRUE;
 					iRemoveChars = 7;
-#if defined(_UNICODE)
 					mir_snprintf(InsertThis, SIZEOF(InsertThis), "\xE2\x80\x94");
-#else
-					mir_snprintf(InsertThis, SIZEOF(InsertThis), "\x97");
-#endif
 				} else if (!memcmp(p1, "\\bullet", 7)) {
 					bTextHasStarted = bJustRemovedRTF = TRUE;
 					iRemoveChars = 7;
-#if defined(_UNICODE)
 					mir_snprintf(InsertThis, SIZEOF(InsertThis), "\xE2\x80\xA2");
-#else
-					mir_snprintf(InsertThis, SIZEOF(InsertThis), "\x95");
-#endif
 				} else if (!memcmp(p1, "\\line", 5)) {  // newline
 					bTextHasStarted = bJustRemovedRTF = TRUE;
 					iRemoveChars = 5;
@@ -217,51 +203,31 @@ TCHAR* Chat_DoRtfToTags(char* pszText, SESSION_INFO* si)
 					bTextHasStarted = TRUE;
 					bJustRemovedRTF = TRUE;
 					iRemoveChars = 4;
-#if defined(_UNICODE)
 					mir_snprintf(InsertThis, safe_sizeof(InsertThis), "\x09");
-#else
-					mir_snprintf(InsertThis, safe_sizeof(InsertThis), " ");
-#endif
 				}
 				else if (!memcmp(p1, "\\ldblquote",10)) {
 					bTextHasStarted = TRUE;
 					bJustRemovedRTF = TRUE;
 					iRemoveChars = 10;
-#if defined(_UNICODE)
 					mir_snprintf(InsertThis, safe_sizeof(InsertThis), "\xe2\x80\x9c");
-#else
-					mir_snprintf(InsertThis, safe_sizeof(InsertThis), "\"");
-#endif
 				}
 				else if (!memcmp(p1, "\\rdblquote",10)) {
 					bTextHasStarted = TRUE;
 					bJustRemovedRTF = TRUE;
 					iRemoveChars = 10;
-#if defined(_UNICODE)
 					mir_snprintf(InsertThis, safe_sizeof(InsertThis), "\xe2\x80\x9d");
-#else
-					mir_snprintf(InsertThis, safe_sizeof(InsertThis), "\"");
-#endif
 				}
 				else if (!memcmp(p1, "\\lquote",7)) {
 					bTextHasStarted = TRUE;
 					bJustRemovedRTF = TRUE;
 					iRemoveChars = 7;
-#if defined(_UNICODE)
 					strcpy(InsertThis, "\xE2\x80\x98");
-#else
-					strcpy(InsertThis, "\x91");
-#endif
 				}
 				else if (!memcmp(p1, "\\rquote",7)) {
 					bTextHasStarted = TRUE;
 					bJustRemovedRTF = TRUE;
 					iRemoveChars = 7;
-#if defined(_UNICODE)
 					strcpy(InsertThis, "\xE2\x80\x99");
-#else
-					strcpy(InsertThis, "\x92");
-#endif
 				}
 
 				 else if (p1[1] == '\'') {  // special character
@@ -328,13 +294,8 @@ TCHAR* Chat_DoRtfToTags(char* pszText, SESSION_INFO* si)
 	}
 
 	mir_free(pIndex);
-
-#if !defined( _UNICODE )
-	return pszText;
-#else
 	ptszResult = M->utf8_decodeW(pszText);
 	return ptszResult;
-#endif
 }
 
 static DWORD CALLBACK Chat_Message_StreamCallback(DWORD_PTR dwCookie, LPBYTE pbBuff, LONG cb, LONG * pcb)
@@ -374,11 +335,7 @@ char* Chat_Message_GetFromStream(HWND hwndDlg, SESSION_INFO* si)
 	stream.pfnCallback = Chat_Message_StreamCallback;
 	stream.dwCookie = (DWORD_PTR) & pszText; // pass pointer to pointer
 
-#if defined(_UNICODE)
 	dwFlags = SF_RTFNOOBJS | SFF_PLAINRTF | SF_USECODEPAGE | (CP_UTF8 << 16);
-#else
-	dwFlags = SF_RTFNOOBJS | SFF_PLAINRTF;
-#endif
 	SendMessage(GetDlgItem(hwndDlg, IDC_CHAT_MESSAGE), EM_STREAMOUT, dwFlags, (LPARAM) & stream);
 	return pszText; // pszText contains the text
 }

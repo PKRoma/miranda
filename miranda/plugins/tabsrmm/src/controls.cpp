@@ -24,7 +24,7 @@
  *
  * part of tabSRMM messaging plugin for Miranda.
  *
- * (C) 2005-2009 by silvercircle _at_ gmail _dot_ com and contributors
+ * (C) 2005-2010 by silvercircle _at_ gmail _dot_ com and contributors
  *
  * $Id$
  *
@@ -1014,11 +1014,7 @@ LONG_PTR CALLBACK StatusBarSubclassProc(HWND hWnd, UINT msg, WPARAM wParam, LPAR
 		case WM_TIMER:
 			if (wParam == TIMERID_HOVER) {
 				POINT pt;
-#if defined(_UNICODE)
 				char *szTTService = "mToolTip/ShowTipW";
-#else
-				char *szTTService = "mToolTip/ShowTip";
-#endif
 				CLCINFOTIP ti = {0};
 				ti.cbSize = sizeof(ti);
 
