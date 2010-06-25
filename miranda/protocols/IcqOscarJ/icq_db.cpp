@@ -292,9 +292,11 @@ void CIcqProto::setStatusMsgVar(HANDLE hContact, char* szStatusMsg, bool isAnsi)
 	{
 		if (isAnsi)
 		{
-			char* szStatusNoteAnsi = NULL;
 			char* szStatusNote = getSettingStringUtf(hContact, DBSETTING_STATUS_NOTE, "");
-			utf8_decode(szStatusNote, &szStatusNoteAnsi);
+			wchar_t* szStatusNoteW = make_unicode_string(szStatusNote);
+			int len = (int)wcslen(szStatusNoteW) * 3 + 1;
+			char* szStatusNoteAnsi = (char*)alloca(len);
+			WideCharToMultiByte(CP_ACP, WC_NO_BEST_FIT_CHARS, szStatusNoteW, -1, szStatusNoteAnsi, len, NULL, NULL);
 			bool notmatch = false;
 			for (int i=0; ;++i)
 			{
@@ -307,7 +309,8 @@ void CIcqProto::setStatusMsgVar(HANDLE hContact, char* szStatusMsg, bool isAnsi)
 					break;
 			}
 			szStatusMsg = notmatch ? ansi_to_utf8(szStatusMsg) : szStatusNote;
-			SAFE_FREE(&szStatusNoteAnsi);
+			SAFE_FREE(&szStatusNoteW);
+			if (notmatch) SAFE_FREE(&szStatusNote);
 		}
 
 		char* oldStatusMsg = NULL;
