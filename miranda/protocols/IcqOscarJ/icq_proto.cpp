@@ -2309,8 +2309,7 @@ int __cdecl CIcqProto::SetAwayMsg(int status, const char* msg)
 			else
 				SetStatusNote(szNote, 1000, FALSE);
 
-			if (m_bAimEnabled && (m_iStatus == status) && 
-         (m_iStatus != ID_STATUS_ONLINE && m_iStatus != ID_STATUS_INVISIBLE && m_iStatus != ID_STATUS_FREECHAT))
+			if (m_bAimEnabled && (m_iStatus == status) && m_iStatus == ID_STATUS_AWAY)
 				icq_sendSetAimAwayMsgServ(*ppszMsg);
 		}
 	}
