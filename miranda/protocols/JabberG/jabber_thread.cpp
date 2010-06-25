@@ -503,7 +503,7 @@ LBL_FatalError:
 			bytesParsed = 0;
 			XmlNode root( str, &bytesParsed, tag );
 			#if defined( _UNICODE )
-				bytesParsed = ( root ) ? mir_utf8lenW( str, bytesParsed ) : 0;
+				bytesParsed = ( root ) ? mir_utf8lenW( str ) : 0;
 				mir_free(str);
 			#else
 				bytesParsed = ( root ) ? bytesParsed : 0;
