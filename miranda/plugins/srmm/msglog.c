@@ -474,35 +474,59 @@ static DWORD CALLBACK LogStreamInEvents(DWORD_PTR dwCookie, LPBYTE pbBuff, LONG 
 
 void StreamInEvents(HWND hwndDlg, HANDLE hDbEventFirst, int count, int fAppend)
 {
-	EDITSTREAM stream = { 0 };
-	struct LogStreamData streamData = { 0 };
-	struct MessageWindowData *dat = (struct MessageWindowData *) GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
+	EDITSTREAM stream = {0};
+	struct LogStreamData streamData = {0};
+	struct MessageWindowData *dat = (struct MessageWindowData*)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 	CHARRANGE oldSel, sel;
+	BOOL bottomScroll = TRUE;
 
-	SendDlgItemMessage(hwndDlg, IDC_LOG, EM_HIDESELECTION, TRUE, 0);
-	SendDlgItemMessage(hwndDlg, IDC_LOG, EM_EXGETSEL, 0, (LPARAM) & oldSel);
+	HWND hwndLog = GetDlgItem(hwndDlg, IDC_LOG);
+
+	SendMessage(hwndLog, EM_HIDESELECTION, TRUE, 0);
+	SendMessage(hwndLog, EM_EXGETSEL, 0, (LPARAM) & oldSel);
 	streamData.hContact = dat->hContact;
 	streamData.hDbEvent = hDbEventFirst;
 	streamData.dlgDat = dat;
 	streamData.eventsToInsert = count;
-	streamData.isEmpty = fAppend ? GetWindowTextLength(GetDlgItem(hwndDlg, IDC_LOG)) == 0 : 1;
+	streamData.isEmpty = !fAppend || GetWindowTextLength(hwndLog) == 0;
 	stream.pfnCallback = LogStreamInEvents;
-	stream.dwCookie = (DWORD_PTR) & streamData;
-	if (fAppend) {
-		sel.cpMin = sel.cpMax = GetWindowTextLength(GetDlgItem(hwndDlg, IDC_LOG));
-		SendDlgItemMessage(hwndDlg, IDC_LOG, EM_EXSETSEL, 0, (LPARAM) & sel);
+	stream.dwCookie = (DWORD_PTR)&streamData;
+
+	if (!streamData.isEmpty)
+	{
+		if (GetWindowLongPtr(hwndLog, GWL_STYLE) & WS_VSCROLL)
+		{
+			SCROLLINFO si = {0};
+			si.cbSize = sizeof(si);
+			si.fMask = SIF_PAGE | SIF_RANGE | SIF_POS;
+			GetScrollInfo(hwndLog, SB_VERT, &si);
+			bottomScroll = (si.nPos + (int)si.nPage) >= si.nMax;
+		}
 	}
-	else dat->bIsFirstAppend = TRUE;
+	if (fAppend) 
+	{
+		sel.cpMin = sel.cpMax = -1;
+		SendMessage(hwndLog, EM_EXSETSEL, 0, (LPARAM) & sel);
+	}
 
 	strcpy(szSep2, fAppend ? "\\par\\sl0" : "\\sl1000");
 	strcpy(szSep2_RTL, fAppend ? "\\rtlpar\\rtlmark\\par\\sl1000" : "\\sl1000");
 
-	SendDlgItemMessage(hwndDlg, IDC_LOG, EM_STREAMIN, fAppend ? SFF_SELECTION | SF_RTF : SF_RTF, (LPARAM) & stream);
-	SendDlgItemMessage(hwndDlg, IDC_LOG, EM_EXSETSEL, 0, (LPARAM) & oldSel);
-	SendDlgItemMessage(hwndDlg, IDC_LOG, EM_HIDESELECTION, FALSE, 0);
+	SendMessage(hwndLog, EM_STREAMIN, fAppend ? SFF_SELECTION | SF_RTF : SF_RTF, (LPARAM) & stream);
+	if (bottomScroll)
+	{
+		sel.cpMin = sel.cpMax = GetWindowTextLength(hwndLog);
+		SendMessage(hwndLog, EM_EXSETSEL, 0, (LPARAM) & sel);
+		if (GetWindowLongPtr(hwndLog, GWL_STYLE) & WS_VSCROLL)
+			PostMessage(hwndDlg, DM_SCROLLLOGTOBOTTOM, 0, 0);
+	}
+	else
+	{
+		SendMessage(hwndLog, EM_EXSETSEL, 0, (LPARAM) & oldSel);
+		SendMessage(hwndLog, EM_HIDESELECTION, FALSE, 0);
+	}
+
 	dat->hDbEventLast = streamData.hDbEventLast;
-	if (GetWindowLongPtr(GetDlgItem(hwndDlg, IDC_LOG), GWL_STYLE) & WS_VSCROLL)
-		PostMessage(hwndDlg, DM_SCROLLLOGTOBOTTOM, 0, 0);
 }
 
 #define RTFPICTHEADERMAXSIZE   78

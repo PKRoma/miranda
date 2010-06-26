@@ -1453,6 +1453,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 				if (rcLog.bottom - rcLog.top - (dat->splitterPos - oldSplitterY) < dat->minEditBoxSize.cy)
 					dat->splitterPos = oldSplitterY - dat->minEditBoxSize.cy + (rcLog.bottom - rcLog.top);
 			}
+			SendMessage(hwndDlg, DM_SCROLLLOGTOBOTTOM, 0, 0);
 			SendMessage(hwndDlg, WM_SIZE, 0, 0);
 		}
 		break;
@@ -1468,16 +1469,17 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 
 	case DM_SCROLLLOGTOBOTTOM:
 		{
-			SCROLLINFO si = { 0 };
-			if ((GetWindowLongPtr(GetDlgItem(hwndDlg, IDC_LOG), GWL_STYLE) & WS_VSCROLL) == 0)
+			SCROLLINFO si = {0};
+			HWND hwndLog = GetDlgItem(hwndDlg, IDC_LOG);
+			if ((GetWindowLongPtr(hwndLog, GWL_STYLE) & WS_VSCROLL) == 0)
 				break;
 			si.cbSize = sizeof(si);
 			si.fMask = SIF_PAGE | SIF_RANGE;
-			GetScrollInfo(GetDlgItem(hwndDlg, IDC_LOG), SB_VERT, &si);
+			GetScrollInfo(hwndLog, SB_VERT, &si);
 			si.fMask = SIF_POS;
 			si.nPos = si.nMax - si.nPage + 1;
-			SetScrollInfo(GetDlgItem(hwndDlg, IDC_LOG), SB_VERT, &si, TRUE);
-			PostMessage(GetDlgItem(hwndDlg, IDC_LOG), WM_VSCROLL, MAKEWPARAM(SB_BOTTOM, 0), 0);
+			SetScrollInfo(hwndLog, SB_VERT, &si, TRUE);
+			PostMessage(hwndLog, WM_VSCROLL, MAKEWPARAM(SB_BOTTOM, 0), 0);
 		}
 		break;
 
