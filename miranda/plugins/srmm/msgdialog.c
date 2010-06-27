@@ -1499,12 +1499,6 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 				GetScrollInfo(hwndLog, SB_VERT, &si);
 				si.fMask = SIF_POS;
 				si.nPos = si.nMax - si.nPage;
-				SetScrollInfo(hwndLog, SB_VERT, &si, FALSE);
-
-				si.fMask = SIF_PAGE | SIF_RANGE;
-				GetScrollInfo(hwndLog, SB_VERT, &si);
-				si.fMask = SIF_POS;
-				si.nPos = si.nMax - si.nPage;
 				SetScrollInfo(hwndLog, SB_VERT, &si, TRUE);
 				SendMessage(hwndLog, WM_VSCROLL, MAKEWPARAM(SB_BOTTOM, 0), 0);
 			}
