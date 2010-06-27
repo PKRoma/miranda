@@ -1047,7 +1047,6 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 				SendMessage(hwndDlg, DM_SPLITTERMOVED, rc.top-(rc.bottom-rc.top-dat->minEditBoxSize.cy-4), (LPARAM) GetDlgItem(hwndDlg, IDC_SPLITTER));
 			}
 			SendMessage(hwndDlg, WM_SIZE, 0, 0);
-			SendMessage(hwndDlg, DM_SCROLLLOGTOBOTTOM, 0, 0);
 		}
 		break;
 
@@ -1391,10 +1390,13 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 
 	case WM_SIZE:
 		{
-			UTILRESIZEDIALOG urd;
+			UTILRESIZEDIALOG urd = {0};
+			BOOL bottomScroll = TRUE;
+ 
 			if (IsIconic(hwndDlg))
 				break;
-			if (dat->hwndStatus) {
+			if (dat->hwndStatus) 
+			{
 				int icons_width = (GetSystemMetrics(SM_CXSMICON) + 2) * status_icon_list_size + SB_GRIP_WIDTH;
 				RECT rc;
 				SendMessage(dat->hwndStatus, WM_SIZE, 0, 0);
@@ -1406,14 +1408,24 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 					statwidths[2] = -1;
 					SendMessage(dat->hwndStatus, SB_SETPARTS, 3, (LPARAM) statwidths);
 				}
-				else {
+				else 
+				{
 					int statwidths[2];
 					statwidths[0] = (rc.right - rc.left - icons_width);
 					statwidths[1] = -1;
 					SendMessage(dat->hwndStatus, SB_SETPARTS, 2, (LPARAM) statwidths);
-			}	}
+				}	
+			}
 
-			ZeroMemory(&urd, sizeof(urd));
+			if (GetWindowLongPtr(GetDlgItem(hwndDlg, IDC_LOG), GWL_STYLE) & WS_VSCROLL)
+			{
+				SCROLLINFO si = {0};
+				si.cbSize = sizeof(si);
+				si.fMask = SIF_PAGE | SIF_RANGE | SIF_POS;
+				GetScrollInfo(GetDlgItem(hwndDlg, IDC_LOG), SB_VERT, &si);
+				bottomScroll = (si.nPos + (int)si.nPage + 5) >= si.nMax;
+			}
+
 			urd.cbSize = sizeof(urd);
 			urd.hInstance = g_hInst;
 			urd.hwndDlg = hwndDlg;
@@ -1421,26 +1433,35 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			urd.lpTemplate = MAKEINTRESOURCEA(IDD_MSG);
 			urd.pfnResizer = MessageDialogResize;
 			CallService(MS_UTILS_RESIZEDIALOG, 0, (LPARAM) & urd);
+
 			// The statusbar sometimes draws over these 2 controls so
 			// redraw them
-			if (dat->hwndStatus) {
+			if (dat->hwndStatus) 
+			{
 				RedrawWindow(GetDlgItem(hwndDlg, IDOK), NULL, NULL, RDW_INVALIDATE);
 				RedrawWindow(GetDlgItem(hwndDlg, IDC_MESSAGE), NULL, NULL, RDW_INVALIDATE);
 			}
-			if ((g_dat->flags&SMF_AVATAR)&&dat->avatarPic)
+			if ((g_dat->flags & SMF_AVATAR) && dat->avatarPic)
 				RedrawWindow(GetDlgItem(hwndDlg, IDC_AVATAR), NULL, NULL, RDW_INVALIDATE);
+
+			if (bottomScroll)
+				PostMessage(hwndDlg, DM_SCROLLLOGTOBOTTOM, 0, 0);
 			break;
 		}
 
 	case DM_SPLITTERMOVED:
 		{
-			POINT pt;
-			RECT rc;
-			RECT rcLog;
-			GetWindowRect(GetDlgItem(hwndDlg, IDC_LOG), &rcLog);
-			if ((HWND) lParam == GetDlgItem(hwndDlg, IDC_SPLITTER)) {
+			if ((HWND) lParam == GetDlgItem(hwndDlg, IDC_SPLITTER)) 
+			{
+				POINT pt;
+				RECT rc;
+				RECT rcLog;
 				int oldSplitterY;
+				HWND hwndLog = GetDlgItem(hwndDlg, IDC_LOG);
+
 				GetClientRect(hwndDlg, &rc);
+				GetWindowRect(hwndLog, &rcLog);
+
 				pt.x = 0;
 				pt.y = wParam;
 				ScreenToClient(hwndDlg, &pt);
@@ -1452,9 +1473,9 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 					dat->splitterPos = oldSplitterY + dat->minEditBoxSize.cy - (rc.bottom - rc.top);
 				if (rcLog.bottom - rcLog.top - (dat->splitterPos - oldSplitterY) < dat->minEditBoxSize.cy)
 					dat->splitterPos = oldSplitterY - dat->minEditBoxSize.cy + (rcLog.bottom - rcLog.top);
+
+				SendMessage(hwndDlg, WM_SIZE, 0, 0);
 			}
-			SendMessage(hwndDlg, DM_SCROLLLOGTOBOTTOM, 0, 0);
-			SendMessage(hwndDlg, WM_SIZE, 0, 0);
 		}
 		break;
 
@@ -1469,17 +1490,24 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 
 	case DM_SCROLLLOGTOBOTTOM:
 		{
-			SCROLLINFO si = {0};
 			HWND hwndLog = GetDlgItem(hwndDlg, IDC_LOG);
-			if ((GetWindowLongPtr(hwndLog, GWL_STYLE) & WS_VSCROLL) == 0)
-				break;
-			si.cbSize = sizeof(si);
-			si.fMask = SIF_PAGE | SIF_RANGE;
-			GetScrollInfo(hwndLog, SB_VERT, &si);
-			si.fMask = SIF_POS;
-			si.nPos = si.nMax - si.nPage + 1;
-			SetScrollInfo(hwndLog, SB_VERT, &si, TRUE);
-			PostMessage(hwndLog, WM_VSCROLL, MAKEWPARAM(SB_BOTTOM, 0), 0);
+			if (GetWindowLongPtr(hwndLog, GWL_STYLE) & WS_VSCROLL)
+			{
+				SCROLLINFO si = {0};
+				si.cbSize = sizeof(si);
+				si.fMask = SIF_PAGE | SIF_RANGE;
+				GetScrollInfo(hwndLog, SB_VERT, &si);
+				si.fMask = SIF_POS;
+				si.nPos = si.nMax - si.nPage;
+				SetScrollInfo(hwndLog, SB_VERT, &si, FALSE);
+
+				si.fMask = SIF_PAGE | SIF_RANGE;
+				GetScrollInfo(hwndLog, SB_VERT, &si);
+				si.fMask = SIF_POS;
+				si.nPos = si.nMax - si.nPage;
+				SetScrollInfo(hwndLog, SB_VERT, &si, TRUE);
+				SendMessage(hwndLog, WM_VSCROLL, MAKEWPARAM(SB_BOTTOM, 0), 0);
+			}
 		}
 		break;
 
