@@ -197,11 +197,11 @@ static INT_PTR CALLBACK DlgProcCluiOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 				GetWindowPlacement(pcli->hwndContactList, &p);
 				ShowWindow(pcli->hwndContactList, SW_HIDE);
 				SetWindowLong(pcli->hwndContactList, GWL_EXSTYLE,
-					GetWindowLong(pcli->hwndContactList, GWL_EXSTYLE) | WS_EX_TOOLWINDOW | WS_EX_APPWINDOW | WS_EX_WINDOWEDGE);
+					GetWindowLong(pcli->hwndContactList, GWL_EXSTYLE) & ~WS_EX_APPWINDOW | WS_EX_TOOLWINDOW | WS_EX_WINDOWEDGE);
 				SetWindowPlacement(pcli->hwndContactList, &p);
 			}
 			else 
-				SetWindowLong(pcli->hwndContactList, GWL_EXSTYLE, GetWindowLong(pcli->hwndContactList, GWL_EXSTYLE) & ~(WS_EX_TOOLWINDOW | WS_EX_APPWINDOW));
+				SetWindowLong(pcli->hwndContactList, GWL_EXSTYLE, GetWindowLong(pcli->hwndContactList, GWL_EXSTYLE) & ~WS_EX_TOOLWINDOW | WS_EX_APPWINDOW);
 
 			if (IsDlgButtonChecked(hwndDlg, IDC_ONDESKTOP)) 
 			{
