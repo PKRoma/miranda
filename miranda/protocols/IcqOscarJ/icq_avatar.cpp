@@ -1000,7 +1000,7 @@ void __cdecl CIcqProto::AvatarThread(avatars_server_connection *pInfo)
 	}
 
 	{ // Release connection handler
-	  icq_lock l(m_avatarsMutex);
+		icq_lock l(m_avatarsMutex);
 		SAFE_DELETE((lockable_struct**)&pInfo);
 	}
 
@@ -1011,21 +1011,19 @@ void __cdecl CIcqProto::AvatarThread(avatars_server_connection *pInfo)
 avatars_server_connection::avatars_server_connection(CIcqProto *ppro, HANDLE hConnection, char *pCookie, WORD wCookieLen): 
   isLoggedIn(FALSE), stopThread(FALSE), isActive(FALSE)
 {
-  _Lock();
-
-  this->ppro = ppro;
+	this->ppro = ppro;
 	this->hConnection = hConnection;
-  this->pCookie = pCookie;
-  this->wCookieLen = wCookieLen;
+	this->pCookie = pCookie;
+	this->wCookieLen = wCookieLen;
 
-  // Initialize packet sequence
-  localSeqMutex = new icq_critical_section();
+	// Initialize packet sequence
+	localSeqMutex = new icq_critical_section();
 	wLocalSequence = generate_flap_sequence();
 
 	// Initialize rates
 	m_ratesMutex = new icq_critical_section();
 
-  // Create connection thread
+	// Create connection thread
 	ppro->ForkThread(( IcqThreadFunc )&CIcqProto::AvatarThread, this);
 }
 
