@@ -2406,6 +2406,7 @@ static int ske_GetSkinFromDB(char * szSection, SKINOBJECTSLIST * Skin)
 		dbces.ofsSettings=0;
 		CallService(MS_DB_CONTACT_ENUMSETTINGS,0,(LPARAM)&dbces);
 
+		SortMaskList(pCurrentSkin->pMaskList);
 		ske_LinkSkinObjects(pCurrentSkin);
 	}
 	//Load Masks
