@@ -686,11 +686,13 @@ void CLUI_ChangeWindowMode()
 		{
 			style=WS_CLIPCHILDREN| (ModernGetSettingByte(NULL,"CList","ThinBorder",SETTING_THINBORDER_DEFAULT)?WS_BORDER:0);
 			styleEx=WS_EX_TOOLWINDOW;
+			styleMaskEx |= WS_EX_APPWINDOW;
 		} 
 		else if (ModernGetSettingByte(NULL,"CLUI","ShowCaption",SETTING_SHOWCAPTION_DEFAULT) && ModernGetSettingByte(NULL,"CList","ToolWindow",SETTING_TOOLWINDOW_DEFAULT))
 		{
 			styleEx=WS_EX_TOOLWINDOW/*|WS_EX_WINDOWEDGE*/;
 			style=WS_CAPTION|WS_POPUPWINDOW|WS_CLIPCHILDREN|WS_THICKFRAME;
+			styleMaskEx |= WS_EX_APPWINDOW;
 		}
 		else if (ModernGetSettingByte(NULL,"CLUI","ShowCaption",SETTING_SHOWCAPTION_DEFAULT))
 		{
@@ -700,6 +702,7 @@ void CLUI_ChangeWindowMode()
 		{
 			style=WS_POPUPWINDOW|WS_CLIPCHILDREN|WS_THICKFRAME;
 			styleEx=WS_EX_TOOLWINDOW/*|WS_EX_WINDOWEDGE*/;
+			styleMaskEx |= WS_EX_APPWINDOW;
 		}
 	}
 	else 
@@ -736,12 +739,12 @@ void CLUI_ChangeWindowMode()
 		g_CluiData.fOnDesktop=0;
 	}
 	//5- TODO Apply Style
-	oldStyleEx=curStyleEx=GetWindowLong(pcli->hwndContactList,GWL_EXSTYLE);
-	oldStyle=curStyle=GetWindowLong(pcli->hwndContactList,GWL_STYLE);	
+	oldStyleEx = curStyleEx = GetWindowLong(pcli->hwndContactList,GWL_EXSTYLE);
+	oldStyle = curStyle = GetWindowLong(pcli->hwndContactList,GWL_STYLE);	
 
-	curStyleEx=(curStyleEx&(~styleMaskEx))|styleEx;
-	curStyle=(curStyle&(~styleMask))|style;
-	if (oldStyleEx!=curStyleEx || oldStyle!=curStyle)
+	curStyleEx = (curStyleEx & ~styleMaskEx) | styleEx;
+	curStyle = (curStyle & ~styleMask) | style;
+	if (oldStyleEx != curStyleEx || oldStyle != curStyle)
 	{
 		if (IsWindowVisible(pcli->hwndContactList)) 
 		{
