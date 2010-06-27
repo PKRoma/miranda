@@ -1058,24 +1058,26 @@ void CIcqProto::LoadServerIDs()
 
 void CIcqProto::StoreServerIDs() /// TODO: allow delayed
 {
-  BYTE *pUnhandled = NULL;
-  int cbUnhandled = 0;
+	BYTE *pUnhandled = NULL;
+	int cbUnhandled = 0;
 
 	servlistMutex->Enter();
 	if (pdwServerIDList)
 		for (int i = 0; i<nServerIDListCount; i++)
 			if ((pdwServerIDList[i] & 0xFF000000) == SSIF_UNHANDLED)
 			{
-        ppackLEWord(&pUnhandled, &cbUnhandled, pdwServerIDList[i] & 0xFFFF);
-        ppackByte(&pUnhandled, &cbUnhandled, (pdwServerIDList[i] & 0x00FF0000) >> 0x10);
-        ppackByte(&pUnhandled, &cbUnhandled, (pdwServerIDList[i] & 0xFF000000) >> 0x18);
+				ppackLEWord(&pUnhandled, &cbUnhandled, pdwServerIDList[i] & 0xFFFF);
+				ppackByte(&pUnhandled, &cbUnhandled, (pdwServerIDList[i] & 0x00FF0000) >> 0x10);
+				ppackByte(&pUnhandled, &cbUnhandled, (pdwServerIDList[i] & 0xFF000000) >> 0x18);
 			}
 	servlistMutex->Leave();
 
-  if (pUnhandled)
-    setSettingBlob(NULL, DBSETTING_SERVLIST_UNHANDLED, pUnhandled, cbUnhandled);
-  else
-    deleteSetting(NULL, DBSETTING_SERVLIST_UNHANDLED);
+	if (pUnhandled)
+		setSettingBlob(NULL, DBSETTING_SERVLIST_UNHANDLED, pUnhandled, cbUnhandled);
+	else
+		deleteSetting(NULL, DBSETTING_SERVLIST_UNHANDLED);
+
+	SAFE_FREE((void**)&pUnhandled);
 }
 
 
