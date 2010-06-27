@@ -734,10 +734,11 @@ static INT_PTR CALLBACK DlgProcItemTextOpts(HWND hwndDlg, UINT msg, WPARAM wPara
 			CheckDlgButton(hwndDlg, IDC_APPEND_NICK, ModernGetSettingByte(NULL,"CList","FirstLineAppendNick",SETTING_FIRSTLINE_APPENDNICK_DEFAULT) == 1 ? BST_CHECKED : BST_UNCHECKED );
 			CheckDlgButton(hwndDlg, IDC_TRIM_TEXT, ModernGetSettingByte(NULL,"CList","TrimText",SETTING_FIRSTLINE_TRIMTEXT_DEFAULT) == 1 ? BST_CHECKED : BST_UNCHECKED );
 
-			CLUI_ShowWindowMod(GetDlgItem(hwndDlg,IDC_REPLACE_SMILEYS), ServiceExists(MS_SMILEYADD_PARSE) ? SW_SHOW : SW_HIDE);
-			CLUI_ShowWindowMod(GetDlgItem(hwndDlg,IDC_USE_PROTOCOL_SMILEYS), ServiceExists(MS_SMILEYADD_PARSE) ? SW_SHOW : SW_HIDE);
-			//CLUI_ShowWindowMod(GetDlgItem(hwndDlg,IDC_RESIZE_SMILEYS), ServiceExists(MS_SMILEYADD_PARSE) ? SW_SHOW : SW_HIDE);
-			CLUI_ShowWindowMod(GetDlgItem(hwndDlg,IDC_DRAW_SMILEYS_ON_FIRST_LINE), ServiceExists(MS_SMILEYADD_PARSE) ? SW_SHOW : SW_HIDE);
+			bool smileAddPresent = ServiceExists(MS_SMILEYADD_BATCHPARSE) != 0; 
+			CLUI_ShowWindowMod(GetDlgItem(hwndDlg,IDC_REPLACE_SMILEYS), smileAddPresent ? SW_SHOW : SW_HIDE);
+			CLUI_ShowWindowMod(GetDlgItem(hwndDlg,IDC_USE_PROTOCOL_SMILEYS), smileAddPresent ? SW_SHOW : SW_HIDE);
+			//CLUI_ShowWindowMod(GetDlgItem(hwndDlg,IDC_RESIZE_SMILEYS), smileAddPresent ? SW_SHOW : SW_HIDE);
+			CLUI_ShowWindowMod(GetDlgItem(hwndDlg,IDC_DRAW_SMILEYS_ON_FIRST_LINE), smileAddPresent ? SW_SHOW : SW_HIDE);
 
 			if (!IsDlgButtonChecked(hwndDlg,IDC_REPLACE_SMILEYS))
 			{
@@ -877,7 +878,7 @@ static INT_PTR CALLBACK DlgProcItemSecondLineOpts(HWND hwndDlg, UINT msg, WPARAM
 				}
 			}
 
-			CLUI_ShowWindowMod(GetDlgItem(hwndDlg,IDC_DRAW_SMILEYS), ServiceExists(MS_SMILEYADD_PARSE) ? SW_SHOW : SW_HIDE);
+			CLUI_ShowWindowMod(GetDlgItem(hwndDlg,IDC_DRAW_SMILEYS), ServiceExists(MS_SMILEYADD_BATCHPARSE) ? SW_SHOW : SW_HIDE);
 			CLUI_ShowWindowMod(GetDlgItem(hwndDlg,IDC_VARIABLES_L), ServiceExists(MS_VARS_FORMATSTRING) ? SW_SHOW : SW_HIDE);
 
 			break;
@@ -1074,7 +1075,7 @@ static INT_PTR CALLBACK DlgProcItemThirdLineOpts(HWND hwndDlg, UINT msg, WPARAM 
 				}
 			}
 
-			CLUI_ShowWindowMod(GetDlgItem(hwndDlg,IDC_DRAW_SMILEYS), ServiceExists(MS_SMILEYADD_PARSE) ? SW_SHOW : SW_HIDE);
+			CLUI_ShowWindowMod(GetDlgItem(hwndDlg,IDC_DRAW_SMILEYS), ServiceExists(MS_SMILEYADD_BATCHPARSE) ? SW_SHOW : SW_HIDE);
 			CLUI_ShowWindowMod(GetDlgItem(hwndDlg,IDC_VARIABLES_L), ServiceExists(MS_VARS_FORMATSTRING) ? SW_SHOW : SW_HIDE);
 
 			break;
