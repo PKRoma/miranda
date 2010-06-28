@@ -140,7 +140,7 @@ typedef struct {
     UINT 		eventType;
     HANDLE 		hContact;
     NEN_OPTIONS *pluginOptions;
-	POPUPDATAT* pud;
+	POPUPDATAT_V2* pud;
 	HWND 		hWnd;
 	long 		iSeconds;
     TCHAR 		szHeader[256];
