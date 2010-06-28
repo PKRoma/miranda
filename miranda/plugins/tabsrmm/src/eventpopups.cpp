@@ -662,7 +662,7 @@ static int PopupUpdateT(HANDLE hContact, HANDLE hEvent)
 
 static int PopupShowT(NEN_OPTIONS *pluginOptions, HANDLE hContact, HANDLE hEvent, UINT eventType)
 {
-	POPUPDATAT 		pud = {0};
+	POPUPDATAT_V2 	pud = {0};
 	PLUGIN_DATAT 	*pdata;
 	DBEVENTINFO 	dbe;
 	long 			iSeconds = 0;

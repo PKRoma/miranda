@@ -544,7 +544,7 @@
     <ClInclude Include="API\m_metacontacts.h" />
     <ClInclude Include="API\m_msg_buttonsbar.h" />
     <ClInclude Include="API\m_nudge.h" />
-    <ClInclude Include="API\m_popup.h" />
+    <ClInclude Include="API\m_popup2.h" />
     <ClInclude Include="API\m_smileyadd.h" />
     <ClInclude Include="API\m_spellchecker.h" />
     <ClInclude Include="API\m_updater.h" />

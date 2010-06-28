@@ -200,6 +200,7 @@
 #include  <m_protomod.h>
 #include  <m_hotkeys.h>
 #include  <m_genmenu.h>
+#include  <m_popup.h>
 
 extern struct LIST_INTERFACE li;
 
@@ -207,7 +208,7 @@ extern struct LIST_INTERFACE li;
 
 #include "../include/version.h"
 #include "../API/m_ieview.h"
-#include "../API/m_popup.h"
+#include "../API/m_popup2.h"
 #include "../API/m_metacontacts.h"
 #include "../API/m_fingerprint.h"
 #include "../API/m_nudge.h"

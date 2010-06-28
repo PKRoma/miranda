@@ -695,7 +695,7 @@ void SendQueue::UpdateSaveAndSendButton(TWindowData *dat)
 
 void SendQueue::NotifyDeliveryFailure(const TWindowData *dat)
 {
-	POPUPDATAT		ppd = {0};
+	POPUPDATAT_V2	ppd = {0};
 	int				ibsize = 1023;
 
 	if(M->GetByte("adv_noErrorPopups", 0))

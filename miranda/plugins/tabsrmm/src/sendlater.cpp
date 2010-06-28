@@ -128,7 +128,7 @@ void CSendLaterJob::writeFlags()
 CSendLaterJob::~CSendLaterJob()
 {
 	if(fSuccess || fFailed) {
-		POPUPDATAT ppd = {0};
+		POPUPDATAT_V2 ppd = {0};
 
 		if((sendLater->haveErrorPopups() && fFailed) || (sendLater->haveSuccessPopups() && fSuccess)) {
 			bool fShowPopup = true;

@@ -59,7 +59,7 @@ static int CALLBACK PopupDlgProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
 
 int TN_TypingMessage(WPARAM wParam, LPARAM lParam)
 {
-	POPUPDATAT ppd = { 0 };
+	POPUPDATAT_V2 ppd = { 0 };
 	TCHAR *szContactName = NULL;
 	HWND hPopUpWnd = NULL;
 	int notyping;
@@ -278,7 +278,7 @@ static INT_PTR CALLBACK DlgProcOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 						SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
 					break;
 				case IDC_PREVIEW: {
-					POPUPDATAT ppd = { 0 };
+					POPUPDATAT_V2 ppd = { 0 };
 					char *szProto = NULL;
 					int i, notyping;
 

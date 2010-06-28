@@ -278,7 +278,7 @@
     <ClInclude Include="API\m_nudge.h">
       <Filter>Header Files\API</Filter>
     </ClInclude>
-    <ClInclude Include="API\m_popup.h">
+    <ClInclude Include="API\m_popup2.h">
       <Filter>Header Files\API</Filter>
     </ClInclude>
     <ClInclude Include="API\m_smileyadd.h">

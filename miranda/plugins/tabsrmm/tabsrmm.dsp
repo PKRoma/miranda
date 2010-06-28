@@ -158,7 +158,7 @@ DEP_CPP_CLIST=\
 	".\API\m_metacontacts.h"\
 	".\API\m_msg_buttonsbar.h"\
 	".\API\m_nudge.h"\
-	".\API\m_popup.h"\
+	".\API\m_popup2.h"\
 	".\API\m_smileyadd.h"\
 	".\API\m_spellchecker.h"\
 	".\API\m_updater.h"\
@@ -241,7 +241,7 @@ DEP_CPP_COLOR=\
 	".\API\m_metacontacts.h"\
 	".\API\m_msg_buttonsbar.h"\
 	".\API\m_nudge.h"\
-	".\API\m_popup.h"\
+	".\API\m_popup2.h"\
 	".\API\m_smileyadd.h"\
 	".\API\m_spellchecker.h"\
 	".\API\m_updater.h"\
@@ -324,7 +324,7 @@ DEP_CPP_LOG_C=\
 	".\API\m_metacontacts.h"\
 	".\API\m_msg_buttonsbar.h"\
 	".\API\m_nudge.h"\
-	".\API\m_popup.h"\
+	".\API\m_popup2.h"\
 	".\API\m_smileyadd.h"\
 	".\API\m_spellchecker.h"\
 	".\API\m_updater.h"\
@@ -407,7 +407,7 @@ DEP_CPP_MAIN_=\
 	".\API\m_metacontacts.h"\
 	".\API\m_msg_buttonsbar.h"\
 	".\API\m_nudge.h"\
-	".\API\m_popup.h"\
+	".\API\m_popup2.h"\
 	".\API\m_smileyadd.h"\
 	".\API\m_spellchecker.h"\
 	".\API\m_updater.h"\
@@ -490,7 +490,7 @@ DEP_CPP_MANAG=\
 	".\API\m_metacontacts.h"\
 	".\API\m_msg_buttonsbar.h"\
 	".\API\m_nudge.h"\
-	".\API\m_popup.h"\
+	".\API\m_popup2.h"\
 	".\API\m_smileyadd.h"\
 	".\API\m_spellchecker.h"\
 	".\API\m_updater.h"\
@@ -573,7 +573,7 @@ DEP_CPP_MESSA=\
 	".\API\m_metacontacts.h"\
 	".\API\m_msg_buttonsbar.h"\
 	".\API\m_nudge.h"\
-	".\API\m_popup.h"\
+	".\API\m_popup2.h"\
 	".\API\m_smileyadd.h"\
 	".\API\m_spellchecker.h"\
 	".\API\m_updater.h"\
@@ -656,7 +656,7 @@ DEP_CPP_MUCHI=\
 	".\API\m_metacontacts.h"\
 	".\API\m_msg_buttonsbar.h"\
 	".\API\m_nudge.h"\
-	".\API\m_popup.h"\
+	".\API\m_popup2.h"\
 	".\API\m_smileyadd.h"\
 	".\API\m_spellchecker.h"\
 	".\API\m_updater.h"\
@@ -752,7 +752,7 @@ DEP_CPP_OPTIO=\
 	".\API\m_metacontacts.h"\
 	".\API\m_msg_buttonsbar.h"\
 	".\API\m_nudge.h"\
-	".\API\m_popup.h"\
+	".\API\m_popup2.h"\
 	".\API\m_smileyadd.h"\
 	".\API\m_spellchecker.h"\
 	".\API\m_updater.h"\
@@ -835,7 +835,7 @@ DEP_CPP_SERVI=\
 	".\API\m_metacontacts.h"\
 	".\API\m_msg_buttonsbar.h"\
 	".\API\m_nudge.h"\
-	".\API\m_popup.h"\
+	".\API\m_popup2.h"\
 	".\API\m_smileyadd.h"\
 	".\API\m_spellchecker.h"\
 	".\API\m_updater.h"\
@@ -918,7 +918,7 @@ DEP_CPP_TOOLS=\
 	".\API\m_metacontacts.h"\
 	".\API\m_msg_buttonsbar.h"\
 	".\API\m_nudge.h"\
-	".\API\m_popup.h"\
+	".\API\m_popup2.h"\
 	".\API\m_smileyadd.h"\
 	".\API\m_spellchecker.h"\
 	".\API\m_updater.h"\
@@ -1001,7 +1001,7 @@ DEP_CPP_WINDO=\
 	".\API\m_metacontacts.h"\
 	".\API\m_msg_buttonsbar.h"\
 	".\API\m_nudge.h"\
-	".\API\m_popup.h"\
+	".\API\m_popup2.h"\
 	".\API\m_smileyadd.h"\
 	".\API\m_spellchecker.h"\
 	".\API\m_updater.h"\
@@ -1087,7 +1087,7 @@ SOURCE=.\API\m_nudge.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\API\m_popup.h
+SOURCE=.\API\m_popup2.h
 # End Source File
 # Begin Source File
 
@@ -1154,7 +1154,7 @@ DEP_CPP_BUTTO=\
 	".\API\m_metacontacts.h"\
 	".\API\m_msg_buttonsbar.h"\
 	".\API\m_nudge.h"\
-	".\API\m_popup.h"\
+	".\API\m_popup2.h"\
 	".\API\m_smileyadd.h"\
 	".\API\m_spellchecker.h"\
 	".\API\m_updater.h"\
@@ -1236,7 +1236,7 @@ DEP_CPP_CONTA=\
 	".\API\m_metacontacts.h"\
 	".\API\m_msg_buttonsbar.h"\
 	".\API\m_nudge.h"\
-	".\API\m_popup.h"\
+	".\API\m_popup2.h"\
 	".\API\m_smileyadd.h"\
 	".\API\m_spellchecker.h"\
 	".\API\m_updater.h"\
@@ -1318,7 +1318,7 @@ DEP_CPP_CONTAI=\
 	".\API\m_metacontacts.h"\
 	".\API\m_msg_buttonsbar.h"\
 	".\API\m_nudge.h"\
-	".\API\m_popup.h"\
+	".\API\m_popup2.h"\
 	".\API\m_smileyadd.h"\
 	".\API\m_spellchecker.h"\
 	".\API\m_updater.h"\
@@ -1400,7 +1400,7 @@ DEP_CPP_CONTAIN=\
 	".\API\m_metacontacts.h"\
 	".\API\m_msg_buttonsbar.h"\
 	".\API\m_nudge.h"\
-	".\API\m_popup.h"\
+	".\API\m_popup2.h"\
 	".\API\m_smileyadd.h"\
 	".\API\m_spellchecker.h"\
 	".\API\m_updater.h"\
@@ -1482,7 +1482,7 @@ DEP_CPP_CONTR=\
 	".\API\m_metacontacts.h"\
 	".\API\m_msg_buttonsbar.h"\
 	".\API\m_nudge.h"\
-	".\API\m_popup.h"\
+	".\API\m_popup2.h"\
 	".\API\m_smileyadd.h"\
 	".\API\m_spellchecker.h"\
 	".\API\m_updater.h"\
@@ -1564,7 +1564,7 @@ DEP_CPP_EVENT=\
 	".\API\m_metacontacts.h"\
 	".\API\m_msg_buttonsbar.h"\
 	".\API\m_nudge.h"\
-	".\API\m_popup.h"\
+	".\API\m_popup2.h"\
 	".\API\m_smileyadd.h"\
 	".\API\m_spellchecker.h"\
 	".\API\m_updater.h"\
@@ -1646,7 +1646,7 @@ DEP_CPP_GENER=\
 	".\API\m_metacontacts.h"\
 	".\API\m_msg_buttonsbar.h"\
 	".\API\m_nudge.h"\
-	".\API\m_popup.h"\
+	".\API\m_popup2.h"\
 	".\API\m_smileyadd.h"\
 	".\API\m_spellchecker.h"\
 	".\API\m_updater.h"\
@@ -1728,7 +1728,7 @@ DEP_CPP_GLOBA=\
 	".\API\m_metacontacts.h"\
 	".\API\m_msg_buttonsbar.h"\
 	".\API\m_nudge.h"\
-	".\API\m_popup.h"\
+	".\API\m_popup2.h"\
 	".\API\m_smileyadd.h"\
 	".\API\m_spellchecker.h"\
 	".\API\m_updater.h"\
@@ -1810,7 +1810,7 @@ DEP_CPP_HOTKE=\
 	".\API\m_metacontacts.h"\
 	".\API\m_msg_buttonsbar.h"\
 	".\API\m_nudge.h"\
-	".\API\m_popup.h"\
+	".\API\m_popup2.h"\
 	".\API\m_smileyadd.h"\
 	".\API\m_spellchecker.h"\
 	".\API\m_updater.h"\
@@ -1892,7 +1892,7 @@ DEP_CPP_IMAGE=\
 	".\API\m_metacontacts.h"\
 	".\API\m_msg_buttonsbar.h"\
 	".\API\m_nudge.h"\
-	".\API\m_popup.h"\
+	".\API\m_popup2.h"\
 	".\API\m_smileyadd.h"\
 	".\API\m_spellchecker.h"\
 	".\API\m_updater.h"\
@@ -1976,7 +1976,7 @@ DEP_CPP_INFOP=\
 	".\API\m_metacontacts.h"\
 	".\API\m_msg_buttonsbar.h"\
 	".\API\m_nudge.h"\
-	".\API\m_popup.h"\
+	".\API\m_popup2.h"\
 	".\API\m_smileyadd.h"\
 	".\API\m_spellchecker.h"\
 	".\API\m_updater.h"\
@@ -2058,7 +2058,7 @@ DEP_CPP_MIM_C=\
 	".\API\m_metacontacts.h"\
 	".\API\m_msg_buttonsbar.h"\
 	".\API\m_nudge.h"\
-	".\API\m_popup.h"\
+	".\API\m_popup2.h"\
 	".\API\m_smileyadd.h"\
 	".\API\m_spellchecker.h"\
 	".\API\m_updater.h"\
@@ -2140,7 +2140,7 @@ DEP_CPP_MODPL=\
 	".\API\m_metacontacts.h"\
 	".\API\m_msg_buttonsbar.h"\
 	".\API\m_nudge.h"\
-	".\API\m_popup.h"\
+	".\API\m_popup2.h"\
 	".\API\m_smileyadd.h"\
 	".\API\m_spellchecker.h"\
 	".\API\m_updater.h"\
@@ -2223,7 +2223,7 @@ DEP_CPP_MSGDI=\
 	".\API\m_metacontacts.h"\
 	".\API\m_msg_buttonsbar.h"\
 	".\API\m_nudge.h"\
-	".\API\m_popup.h"\
+	".\API\m_popup2.h"\
 	".\API\m_smileyadd.h"\
 	".\API\m_spellchecker.h"\
 	".\API\m_updater.h"\
@@ -2305,7 +2305,7 @@ DEP_CPP_MSGDL=\
 	".\API\m_metacontacts.h"\
 	".\API\m_msg_buttonsbar.h"\
 	".\API\m_nudge.h"\
-	".\API\m_popup.h"\
+	".\API\m_popup2.h"\
 	".\API\m_smileyadd.h"\
 	".\API\m_spellchecker.h"\
 	".\API\m_updater.h"\
@@ -2387,7 +2387,7 @@ DEP_CPP_MSGLO=\
 	".\API\m_metacontacts.h"\
 	".\API\m_msg_buttonsbar.h"\
 	".\API\m_nudge.h"\
-	".\API\m_popup.h"\
+	".\API\m_popup2.h"\
 	".\API\m_smileyadd.h"\
 	".\API\m_spellchecker.h"\
 	".\API\m_updater.h"\
@@ -2470,7 +2470,7 @@ DEP_CPP_MSGOP=\
 	".\API\m_metacontacts.h"\
 	".\API\m_msg_buttonsbar.h"\
 	".\API\m_nudge.h"\
-	".\API\m_popup.h"\
+	".\API\m_popup2.h"\
 	".\API\m_smileyadd.h"\
 	".\API\m_spellchecker.h"\
 	".\API\m_updater.h"\
@@ -2552,7 +2552,7 @@ DEP_CPP_MSGOPT=\
 	".\API\m_metacontacts.h"\
 	".\API\m_msg_buttonsbar.h"\
 	".\API\m_nudge.h"\
-	".\API\m_popup.h"\
+	".\API\m_popup2.h"\
 	".\API\m_smileyadd.h"\
 	".\API\m_spellchecker.h"\
 	".\API\m_updater.h"\
@@ -2635,7 +2635,7 @@ DEP_CPP_MSGS_=\
 	".\API\m_metacontacts.h"\
 	".\API\m_msg_buttonsbar.h"\
 	".\API\m_nudge.h"\
-	".\API\m_popup.h"\
+	".\API\m_popup2.h"\
 	".\API\m_smileyadd.h"\
 	".\API\m_spellchecker.h"\
 	".\API\m_updater.h"\
@@ -2717,7 +2717,7 @@ DEP_CPP_SELEC=\
 	".\API\m_metacontacts.h"\
 	".\API\m_msg_buttonsbar.h"\
 	".\API\m_nudge.h"\
-	".\API\m_popup.h"\
+	".\API\m_popup2.h"\
 	".\API\m_smileyadd.h"\
 	".\API\m_spellchecker.h"\
 	".\API\m_updater.h"\
@@ -2799,7 +2799,7 @@ DEP_CPP_SENDL=\
 	".\API\m_metacontacts.h"\
 	".\API\m_msg_buttonsbar.h"\
 	".\API\m_nudge.h"\
-	".\API\m_popup.h"\
+	".\API\m_popup2.h"\
 	".\API\m_smileyadd.h"\
 	".\API\m_spellchecker.h"\
 	".\API\m_updater.h"\
@@ -2881,7 +2881,7 @@ DEP_CPP_SENDQ=\
 	".\API\m_metacontacts.h"\
 	".\API\m_msg_buttonsbar.h"\
 	".\API\m_nudge.h"\
-	".\API\m_popup.h"\
+	".\API\m_popup2.h"\
 	".\API\m_smileyadd.h"\
 	".\API\m_spellchecker.h"\
 	".\API\m_updater.h"\
@@ -2963,7 +2963,7 @@ DEP_CPP_SIDEB=\
 	".\API\m_metacontacts.h"\
 	".\API\m_msg_buttonsbar.h"\
 	".\API\m_nudge.h"\
-	".\API\m_popup.h"\
+	".\API\m_popup2.h"\
 	".\API\m_smileyadd.h"\
 	".\API\m_spellchecker.h"\
 	".\API\m_updater.h"\
@@ -3045,7 +3045,7 @@ DEP_CPP_SRMM_=\
 	".\API\m_metacontacts.h"\
 	".\API\m_msg_buttonsbar.h"\
 	".\API\m_nudge.h"\
-	".\API\m_popup.h"\
+	".\API\m_popup2.h"\
 	".\API\m_smileyadd.h"\
 	".\API\m_spellchecker.h"\
 	".\API\m_updater.h"\
@@ -3129,7 +3129,7 @@ DEP_CPP_TABCT=\
 	".\API\m_metacontacts.h"\
 	".\API\m_msg_buttonsbar.h"\
 	".\API\m_nudge.h"\
-	".\API\m_popup.h"\
+	".\API\m_popup2.h"\
 	".\API\m_smileyadd.h"\
 	".\API\m_spellchecker.h"\
 	".\API\m_updater.h"\
@@ -3211,7 +3211,7 @@ DEP_CPP_TASKB=\
 	".\API\m_metacontacts.h"\
 	".\API\m_msg_buttonsbar.h"\
 	".\API\m_nudge.h"\
-	".\API\m_popup.h"\
+	".\API\m_popup2.h"\
 	".\API\m_smileyadd.h"\
 	".\API\m_spellchecker.h"\
 	".\API\m_updater.h"\
@@ -3293,7 +3293,7 @@ DEP_CPP_TEMPL=\
 	".\API\m_metacontacts.h"\
 	".\API\m_msg_buttonsbar.h"\
 	".\API\m_nudge.h"\
-	".\API\m_popup.h"\
+	".\API\m_popup2.h"\
 	".\API\m_smileyadd.h"\
 	".\API\m_spellchecker.h"\
 	".\API\m_updater.h"\
@@ -3375,7 +3375,7 @@ DEP_CPP_THEME=\
 	".\API\m_metacontacts.h"\
 	".\API\m_msg_buttonsbar.h"\
 	".\API\m_nudge.h"\
-	".\API\m_popup.h"\
+	".\API\m_popup2.h"\
 	".\API\m_smileyadd.h"\
 	".\API\m_spellchecker.h"\
 	".\API\m_updater.h"\
@@ -3457,7 +3457,7 @@ DEP_CPP_THEMES=\
 	".\API\m_metacontacts.h"\
 	".\API\m_msg_buttonsbar.h"\
 	".\API\m_nudge.h"\
-	".\API\m_popup.h"\
+	".\API\m_popup2.h"\
 	".\API\m_smileyadd.h"\
 	".\API\m_spellchecker.h"\
 	".\API\m_updater.h"\
@@ -3539,7 +3539,7 @@ DEP_CPP_TRANS=\
 	".\API\m_metacontacts.h"\
 	".\API\m_msg_buttonsbar.h"\
 	".\API\m_nudge.h"\
-	".\API\m_popup.h"\
+	".\API\m_popup2.h"\
 	".\API\m_smileyadd.h"\
 	".\API\m_spellchecker.h"\
 	".\API\m_updater.h"\
@@ -3621,7 +3621,7 @@ DEP_CPP_TRAYI=\
 	".\API\m_metacontacts.h"\
 	".\API\m_msg_buttonsbar.h"\
 	".\API\m_nudge.h"\
-	".\API\m_popup.h"\
+	".\API\m_popup2.h"\
 	".\API\m_smileyadd.h"\
 	".\API\m_spellchecker.h"\
 	".\API\m_updater.h"\
@@ -3703,7 +3703,7 @@ DEP_CPP_TSBUT=\
 	".\API\m_metacontacts.h"\
 	".\API\m_msg_buttonsbar.h"\
 	".\API\m_nudge.h"\
-	".\API\m_popup.h"\
+	".\API\m_popup2.h"\
 	".\API\m_smileyadd.h"\
 	".\API\m_spellchecker.h"\
 	".\API\m_updater.h"\
@@ -3785,7 +3785,7 @@ DEP_CPP_TYPIN=\
 	".\API\m_metacontacts.h"\
 	".\API\m_msg_buttonsbar.h"\
 	".\API\m_nudge.h"\
-	".\API\m_popup.h"\
+	".\API\m_popup2.h"\
 	".\API\m_smileyadd.h"\
 	".\API\m_spellchecker.h"\
 	".\API\m_updater.h"\
@@ -3867,7 +3867,7 @@ DEP_CPP_USERP=\
 	".\API\m_metacontacts.h"\
 	".\API\m_msg_buttonsbar.h"\
 	".\API\m_nudge.h"\
-	".\API\m_popup.h"\
+	".\API\m_popup2.h"\
 	".\API\m_smileyadd.h"\
 	".\API\m_spellchecker.h"\
 	".\API\m_updater.h"\
@@ -3949,7 +3949,7 @@ DEP_CPP_UTILS=\
 	".\API\m_metacontacts.h"\
 	".\API\m_msg_buttonsbar.h"\
 	".\API\m_nudge.h"\
-	".\API\m_popup.h"\
+	".\API\m_popup2.h"\
 	".\API\m_smileyadd.h"\
 	".\API\m_spellchecker.h"\
 	".\API\m_updater.h"\
