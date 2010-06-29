@@ -3,6 +3,16 @@
                            www.miranda-im.org
 
 
+* New in 0.8.27
+Bugfixes:
+ - ICQ: Fixed status when AIM support enabled
+ - MSN: Updated WLM 10 detection
+ - MSN: Fix infinite loop
+ - Yahoo: Fix empty "Nick" issues
+ - Yahoo: Fixed client version detection
+ - Yahoo: Fix issues with Yahoo! Japan
+
+
 * New in 0.8.26
 Bugfixes:
  - Minor translation fixes
