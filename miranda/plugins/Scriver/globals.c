@@ -51,6 +51,7 @@ typedef struct IconDefStruct
 	const char *name;
 	int defaultIndex;
 	const TCHAR *description;
+	int size;
 } IconDef;
 
 static const IconDef iconList[] = {
@@ -68,9 +69,9 @@ static const IconDef iconList[] = {
 	{LPGENT("Single Messaging"), "scriver_QUOTE", IDI_QUOTE, LPGENT("Quote button")},
 	{LPGENT("Single Messaging"), "scriver_CLOSEX", IDI_CLOSEX, LPGENT("Close button")},
 	{LPGENT("Single Messaging"), "scriver_OVERLAY", IDI_OVERLAY, LPGENT("Icon overlay")},
-	{LPGENT("Single Messaging"), "scriver_INCOMING", IDI_INCOMING, LPGENT("Incoming message (10x10)")},
-	{LPGENT("Single Messaging"), "scriver_OUTGOING", IDI_OUTGOING, LPGENT("Outgoing message (10x10)")},
-	{LPGENT("Single Messaging"), "scriver_NOTICE", IDI_NOTICE, LPGENT("Notice (10x10)")},
+	{LPGENT("Single Messaging"), "scriver_INCOMING", IDI_INCOMING, LPGENT("Incoming message (10x10)"),10},
+	{LPGENT("Single Messaging"), "scriver_OUTGOING", IDI_OUTGOING, LPGENT("Outgoing message (10x10)"),10},
+	{LPGENT("Single Messaging"), "scriver_NOTICE", IDI_NOTICE, LPGENT("Notice (10x10)"),10},
 	{LPGENT("Group Chats"), "chat_window", IDI_CHANMGR, LPGENT("Window Icon")},
 	{LPGENT("Group Chats"), "chat_fgcol", IDI_COLOR, LPGENT("Text colour")},
 	{LPGENT("Group Chats"), "chat_bkgcol", IDI_BKGCOLOR, LPGENT("Background colour")},
@@ -85,26 +86,26 @@ static const IconDef iconList[] = {
 	{LPGENT("Group Chats"), "chat_nicklist", IDI_NICKLIST, LPGENT("Hide userlist")},
 	{LPGENT("Group Chats"), "chat_nicklist2", IDI_NICKLIST2, LPGENT("Show userlist")},
 	{LPGENT("Group Chats"), "chat_overlay", IDI_OVERLAY, LPGENT("Icon overlay")},
-	{LPGENT("Group Chats"), "chat_status0", IDI_STATUS0, LPGENT("Status 1 (10x10)")},
-	{LPGENT("Group Chats"), "chat_status1", IDI_STATUS1, LPGENT("Status 2 (10x10")},
-	{LPGENT("Group Chats"), "chat_status2", IDI_STATUS2, LPGENT("Status 3 (10x10)")},
-	{LPGENT("Group Chats"), "chat_status3", IDI_STATUS3, LPGENT("Status 4 (10x10)")},
-	{LPGENT("Group Chats"), "chat_status4", IDI_STATUS4, LPGENT("Status 5 (10x10)")},
-	{LPGENT("Group Chats"), "chat_status5", IDI_STATUS5, LPGENT("Status 6 (10x10)")},
-	{LPGENT("Group Chats Log"), "chat_log_message_in", IDI_INCOMING, LPGENT("Message in (10x10)")},
-	{LPGENT("Group Chats Log"), "chat_log_message_out", IDI_OUTGOING, LPGENT("Message out (10x10)")},
-	{LPGENT("Group Chats Log"), "chat_log_action", IDI_ACTION, LPGENT("Action (10x10)")},
-	{LPGENT("Group Chats Log"), "chat_log_addstatus", IDI_ADDSTATUS, LPGENT("Add Status (10x10)")},
-	{LPGENT("Group Chats Log"), "chat_log_removestatus", IDI_REMSTATUS, LPGENT("Remove status (10x10)")},
-	{LPGENT("Group Chats Log"), "chat_log_join", IDI_JOIN, LPGENT("Join (10x10)")},
-	{LPGENT("Group Chats Log"), "chat_log_part", IDI_PART, LPGENT("Leave (10x10)")},
-	{LPGENT("Group Chats Log"), "chat_log_quit", IDI_QUIT, LPGENT("Quit (10x10)")},
-	{LPGENT("Group Chats Log"), "chat_log_kick", IDI_KICK, LPGENT("Kick (10x10)")},
-	{LPGENT("Group Chats Log"), "chat_log_nick", IDI_NICK, LPGENT("Nickchange (10x10)")},
-	{LPGENT("Group Chats Log"), "chat_log_notice", IDI_CHAT_NOTICE, LPGENT("Notice (10x10)")},
-	{LPGENT("Group Chats Log"), "chat_log_topic", IDI_TOPIC, LPGENT("Topic (10x10)")},
-	{LPGENT("Group Chats Log"), "chat_log_highlight", IDI_NOTICE, LPGENT("Highlight (10x10)")},
-	{LPGENT("Group Chats Log"), "chat_log_info", IDI_INFO, LPGENT("Information (10x10)")}
+	{LPGENT("Group Chats"), "chat_status0", IDI_STATUS0, LPGENT("Status 1 (10x10)"),10},
+	{LPGENT("Group Chats"), "chat_status1", IDI_STATUS1, LPGENT("Status 2 (10x10"),10},
+	{LPGENT("Group Chats"), "chat_status2", IDI_STATUS2, LPGENT("Status 3 (10x10)"),10},
+	{LPGENT("Group Chats"), "chat_status3", IDI_STATUS3, LPGENT("Status 4 (10x10)"),10},
+	{LPGENT("Group Chats"), "chat_status4", IDI_STATUS4, LPGENT("Status 5 (10x10)"),10},
+	{LPGENT("Group Chats"), "chat_status5", IDI_STATUS5, LPGENT("Status 6 (10x10)"),10},
+	{LPGENT("Group Chats Log"), "chat_log_message_in", IDI_INCOMING, LPGENT("Message in (10x10)"),10},
+	{LPGENT("Group Chats Log"), "chat_log_message_out", IDI_OUTGOING, LPGENT("Message out (10x10)"),10},
+	{LPGENT("Group Chats Log"), "chat_log_action", IDI_ACTION, LPGENT("Action (10x10)"),10},
+	{LPGENT("Group Chats Log"), "chat_log_addstatus", IDI_ADDSTATUS, LPGENT("Add Status (10x10)"),10},
+	{LPGENT("Group Chats Log"), "chat_log_removestatus", IDI_REMSTATUS, LPGENT("Remove status (10x10)"),10},
+	{LPGENT("Group Chats Log"), "chat_log_join", IDI_JOIN, LPGENT("Join (10x10)"),10},
+	{LPGENT("Group Chats Log"), "chat_log_part", IDI_PART, LPGENT("Leave (10x10)"),10},
+	{LPGENT("Group Chats Log"), "chat_log_quit", IDI_QUIT, LPGENT("Quit (10x10)"),10},
+	{LPGENT("Group Chats Log"), "chat_log_kick", IDI_KICK, LPGENT("Kick (10x10)"),10},
+	{LPGENT("Group Chats Log"), "chat_log_nick", IDI_NICK, LPGENT("Nickchange (10x10)"),10},
+	{LPGENT("Group Chats Log"), "chat_log_notice", IDI_CHAT_NOTICE, LPGENT("Notice (10x10)"),10},
+	{LPGENT("Group Chats Log"), "chat_log_topic", IDI_TOPIC, LPGENT("Topic (10x10)"),10},
+	{LPGENT("Group Chats Log"), "chat_log_highlight", IDI_NOTICE, LPGENT("Highlight (10x10)"),10},
+	{LPGENT("Group Chats Log"), "chat_log_info", IDI_INFO, LPGENT("Information (10x10)"),10}
 };
 
 HICON hIconList[SIZEOF(iconList)];
@@ -154,14 +155,7 @@ int ImageList_AddIcon_ProtoEx(HIMAGELIST hIml, const char* szProto, int status) 
  	return res;
 }
 
-int ImageList_ReplaceIcon_ProtoEx(HIMAGELIST hIml, int nIndex, const char* szProto, int status) {
-	HICON hIcon = LoadSkinnedProtoIcon(szProto, status);
-	int res = ImageList_ReplaceIcon(hIml, nIndex, hIcon);
- 	CallService(MS_SKIN2_RELEASEICON,(WPARAM)hIcon, 0);
- 	return res;
-}
-
-void RegisterIcons()
+void RegisterIcons(void)
 {
 	SKINICONDESC sid = { 0 };
 	TCHAR path[MAX_PATH];
@@ -176,6 +170,7 @@ void RegisterIcons()
 	for (i = 0; i < SIZEOF(iconList); i++) {
 		mir_sntprintf(tTemp, SIZEOF(tTemp), _T("%s/%s"), LPGENT("Messaging"), iconList[i].section);
 		sid.pszName = (char*)iconList[i].name;
+		sid.cx = sid.cy = iconList[i].size;
 		sid.iDefaultIndex = -iconList[i].defaultIndex;
 		sid.ptszDescription = (TCHAR*)iconList[i].description;
 		CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
@@ -191,6 +186,8 @@ void ReleaseIcons()
 		}
 	}
 	CallService(MS_SKIN2_RELEASEICON, (WPARAM)g_dat->hMsgIcon, 0);
+	CallService(MS_SKIN2_RELEASEICON, (WPARAM)g_dat->hMsgIconBig, 0);
+	CallService(MS_SKIN2_RELEASEICON, (WPARAM)g_dat->hIconChatBig, 0);
 }
 
 HICON GetCachedIcon(const char *name)
@@ -212,6 +209,8 @@ void LoadGlobalIcons() {
 	}
 
 	g_dat->hMsgIcon = LoadSkinnedIcon(SKINICON_EVENT_MESSAGE);
+	g_dat->hMsgIconBig = LoadSkinnedIconBig(SKINICON_EVENT_MESSAGE);
+	g_dat->hIconChatBig = (HICON) CallService(MS_SKIN2_GETICON, 0, (LPARAM)"chat_window");
 
 	ImageList_RemoveAll(g_dat->hButtonIconList);
 	ImageList_RemoveAll(g_dat->hChatButtonIconList);

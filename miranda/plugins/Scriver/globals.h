@@ -121,6 +121,8 @@ struct GlobalMessageData
 	int        logPixelSX;
 	int        logPixelSY;
     HICON      hMsgIcon;
+    HICON      hMsgIconBig;
+    HICON      hIconChatBig;
 };
 
 int IconsChanged(WPARAM wParam, LPARAM lParam);
@@ -139,7 +141,6 @@ int ImageList_AddIcon_Ex(HIMAGELIST hIml, int id);
 int ImageList_AddIcon_Ex2(HIMAGELIST hIml, HICON hIcon);
 int ImageList_ReplaceIcon_Ex(HIMAGELIST hIml, int nIndex, int id);
 int ImageList_AddIcon_ProtoEx(HIMAGELIST hIml, const char* szProto, int status);
-int ImageList_ReplaceIcon_ProtoEx(HIMAGELIST hIml, int nIndex, const char* szProto, int status);
 void ReleaseIconSmart(HICON hIcon);
 
 extern struct GlobalMessageData *g_dat;

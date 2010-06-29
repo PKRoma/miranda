@@ -24,14 +24,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "../utils.h"
 #include "../statusicon.h"
 
-#define __try
-#define __except(x) if (0)
-#define __finally
-
-#define _try __try
-#define _except __except
-#define _finally __finally
-
 #ifndef WM_UNICHAR
 #define WM_UNICHAR    0x0109
 #endif
@@ -1287,11 +1279,17 @@ INT_PTR CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
     {
         TitleBarData tbd = {0};
         TCHAR szTemp [100];
-		HICON hIcon = GetCachedIcon("chat_window");
         if (g_dat->flags & SMF_STATUSICON) {
             MODULEINFO* mi = MM_FindModule(si->pszModule);
-            hIcon = (si->wStatus == ID_STATUS_ONLINE) ? mi->hOnlineIcon : mi->hOfflineIcon;
+            tbd.hIcon = (si->wStatus == ID_STATUS_ONLINE) ? mi->hOnlineIcon : mi->hOfflineIcon;
+            tbd.hIconBig = (si->wStatus == ID_STATUS_ONLINE) ? mi->hOnlineIconBig : mi->hOfflineIconBig;
         }
+		else {
+			tbd.hIcon = GetCachedIcon("chat_window");
+			tbd.hIconBig = g_dat->hIconChatBig;
+		}
+		tbd.hIconNot = (si->wState & (GC_EVENT_HIGHLIGHT | STATE_TALK)) ?  GetCachedIcon("chat_overlay") : NULL;
+
         switch(si->iType) {
         case GCW_CHATROOM:
             mir_sntprintf(szTemp, SIZEOF(szTemp),
@@ -1309,7 +1307,6 @@ INT_PTR CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
         }
         tbd.iFlags = TBDF_TEXT | TBDF_ICON;
         tbd.pszText = szTemp;
-        tbd.hIcon = hIcon;
         SendMessage(GetParent(hwndDlg), CM_UPDATETITLEBAR, (WPARAM) &tbd, (LPARAM) hwndDlg);
         SendMessage(hwndDlg, DM_UPDATETABCONTROL, 0, 0);
     }
@@ -1439,19 +1436,18 @@ INT_PTR CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
     case GC_FIXTABICONS:
     {
         TabControlData tcd;
-        HICON hIcon = NULL;
-        if (!(si->wState&GC_EVENT_HIGHLIGHT))
+        HICON hIcon;
+        if (!(si->wState & GC_EVENT_HIGHLIGHT))
         {
-            if (si->wState&STATE_TALK)
+            if (si->wState & STATE_TALK)
                 hIcon = (si->wStatus==ID_STATUS_ONLINE) ? MM_FindModule(si->pszModule)->hOnlineTalkIcon : MM_FindModule(si->pszModule)->hOfflineTalkIcon;
             else
                 hIcon = (si->wStatus==ID_STATUS_ONLINE) ? MM_FindModule(si->pszModule)->hOnlineIcon : MM_FindModule(si->pszModule)->hOfflineIcon;
          } else {
-         	hIcon = LoadSkinnedIcon(SKINICON_EVENT_MESSAGE);
+			 hIcon = g_dat->hMsgIcon;
          }
          tcd.iFlags = TCDF_ICON;
          tcd.hIcon = hIcon;
-         CallService(MS_SKIN2_RELEASEICON, (WPARAM)hIcon, 0);
          SendMessage(GetParent(hwndDlg), CM_UPDATETABCONTROL, (WPARAM) &tcd, (LPARAM) hwndDlg);
     }
     break;
@@ -1460,6 +1456,7 @@ INT_PTR CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
       {
          si->wState |= GC_EVENT_HIGHLIGHT;
          SendMessage(si->hWnd, GC_FIXTABICONS, 0, 0);
+		 SendMessage(hwndDlg, DM_UPDATETITLEBAR, 0, 0);
          if (DBGetContactSettingByte(NULL, "Chat", "FlashWindowHighlight", 0) != 0 && GetActiveWindow() != hwndDlg && GetForegroundWindow() != GetParent(hwndDlg))
             SendMessage(GetParent(si->hWnd), CM_STARTFLASHING, 0, 0);
       }
@@ -1468,6 +1465,7 @@ INT_PTR CALLBACK RoomWndProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM lParam)
    case GC_SETTABHIGHLIGHT:
       {
          SendMessage(si->hWnd, GC_FIXTABICONS, 0, 0);
+		 SendMessage(hwndDlg, DM_UPDATETITLEBAR, 0, 0);
          if (g_Settings.FlashWindow && GetActiveWindow() != GetParent(hwndDlg) && GetForegroundWindow() != GetParent(hwndDlg))
             SendMessage(GetParent(si->hWnd), CM_STARTFLASHING, 0, 0);
       }

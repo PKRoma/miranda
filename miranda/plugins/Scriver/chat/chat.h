@@ -108,6 +108,8 @@ typedef struct  MODULE_INFO_TYPE
 	COLORREF*	crColors;
 	HICON		hOnlineIcon;
 	HICON		hOfflineIcon;
+	HICON		hOnlineIconBig;
+	HICON		hOfflineIconBig;
 	HICON		hOnlineTalkIcon;
 	HICON		hOfflineTalkIcon;
 	int			iMaxText;

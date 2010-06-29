@@ -825,16 +825,13 @@ MODULEINFO* MM_AddModule(const char* pszModule)
 		return NULL;
 	if (!MM_FindModule(pszModule))
 	{
-		MODULEINFO *node = (MODULEINFO*) mir_alloc(sizeof(MODULEINFO));
-		ZeroMemory(node, sizeof(MODULEINFO));
+		MODULEINFO *node = (MODULEINFO*) mir_calloc(sizeof(MODULEINFO));
 
-		node->pszModule = (char*)mir_alloc(lstrlenA(pszModule) + 1);
-		lstrcpyA(node->pszModule, pszModule);
+		node->pszModule = mir_strdup(pszModule);
 
 		if (m_ModList == NULL) // list is empty
 		{
 			m_ModList = node;
-			node->next = NULL;
 		}
 		else
 		{
@@ -852,16 +849,12 @@ void MM_IconsChanged(void)
 
 	while (pTemp != NULL)
 	{
-		if (pTemp->hOfflineIcon)
-			DestroyIcon(pTemp->hOfflineIcon);
-		if (pTemp->hOnlineIcon)
-			DestroyIcon(pTemp->hOnlineIcon);
 		if (pTemp->hOnlineTalkIcon)
 			DestroyIcon(pTemp->hOnlineTalkIcon);
 		if (pTemp->hOfflineTalkIcon)
 			DestroyIcon(pTemp->hOfflineTalkIcon);
 
-      LoadModuleIcons(pTemp);
+		LoadModuleIcons(pTemp);
 		pTemp = pTemp->next;
 	}
 	return;
@@ -916,10 +909,6 @@ BOOL MM_RemoveAll (void)
 		mir_free(m_ModList->ptszModDispName);
 		mir_free(m_ModList->crColors);
 
-		if (m_ModList->hOfflineIcon)
-			DestroyIcon(m_ModList->hOfflineIcon);
-		if (m_ModList->hOnlineIcon)
-			DestroyIcon(m_ModList->hOnlineIcon);
 		if (m_ModList->hOnlineTalkIcon)
 			DestroyIcon(m_ModList->hOnlineTalkIcon);
 		if (m_ModList->hOfflineTalkIcon)
