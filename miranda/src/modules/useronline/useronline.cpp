@@ -58,7 +58,7 @@ static int UserOnlineSettingChanged(WPARAM wParam,LPARAM lParam)
 				cle.flags=CLEF_ONLYAFEW | CLEF_TCHAR;
 				cle.hContact=(HANDLE)wParam;
 				cle.hDbEvent=(HANDLE)(uniqueEventId++);
-				cle.hIcon = LoadSkinIcon( SKINICON_OTHER_USERONLINE );
+				cle.hIcon = LoadSkinIcon( SKINICON_OTHER_USERONLINE, false );
 				cle.pszService="UserOnline/Description";
 				mir_sntprintf(tooltip,SIZEOF(tooltip),TranslateT("%s is Online"), cli.pfnGetContactDisplayName(( HANDLE )wParam, 0 ));
 				cle.ptszTooltip=tooltip;
@@ -86,7 +86,7 @@ static int UserOnlineModulesLoaded(WPARAM, LPARAM)
 {
 	// reset the counter
 	for ( int j = 0; j < accounts.getCount(); j++ )
-		if ( IsAccountEnabled( accounts[j] )) db_dword_set( NULL, "UserOnline", accounts[j]->szModuleName, GetTickCount());
+		if ( Proto_IsAccountEnabled( accounts[j] )) db_dword_set( NULL, "UserOnline", accounts[j]->szModuleName, GetTickCount());
 
 	return 0;
 }
@@ -99,7 +99,7 @@ static int UserOnlineAccountsChanged( WPARAM eventCode, LPARAM lParam )
 	case PRAC_ADDED:
 	case PRAC_CHECKED:
 		// reset the counter
-		if ( IsAccountEnabled( pa ))
+		if ( Proto_IsAccountEnabled( pa ))
 			db_dword_set( NULL, "UserOnline", pa->szModuleName, GetTickCount());
 		break;
 	}

@@ -1,7 +1,7 @@
 /*
 dbRW
 
-Copyright (c) 2005-2007 Robert Rainwater
+Copyright (c) 2005-2009 Robert Rainwater
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -38,7 +38,7 @@ PLUGININFOEX pluginInfo = {
 	#endif
 	"Robert Rainwater",
 	"rainwater@miranda-im.org",
-	"Copyright © 2005-2007 Robert Rainwater",
+	"Copyright © 2005-2009 Robert Rainwater",
 	"http://www.miranda-im.org/",
 	0,
 	DEFMOD_DB,
@@ -293,23 +293,6 @@ __declspec(dllexport) DATABASELINK* DatabasePluginInfo(void *reserved) {
 __declspec(dllexport) PLUGININFOEX* MirandaPluginInfoEx(DWORD mirandaVersion) {
 	return &pluginInfo;
 }
-
-#ifdef DBRW_OLD_PLUGINAPI_SUPPORT
-PLUGININFO oldPluginInfo = {0,0,0,0,0,0,0,0,0,0};
-__declspec(dllexport) PLUGININFO* MirandaPluginInfo(DWORD mirandaVersion) {
-    oldPluginInfo.cbSize = sizeof(PLUGININFO);
-    oldPluginInfo.shortName = pluginInfo.shortName;
-    oldPluginInfo.version = pluginInfo.version;
-    oldPluginInfo.description = pluginInfo.description;
-    oldPluginInfo.author = pluginInfo.author;
-    oldPluginInfo.authorEmail = pluginInfo.authorEmail;
-    oldPluginInfo.copyright = pluginInfo.copyright;
-    oldPluginInfo.homepage = pluginInfo.homepage;
-    oldPluginInfo.flags = pluginInfo.flags;
-    oldPluginInfo.replacesDefaultModule = pluginInfo.replacesDefaultModule;
-	return &oldPluginInfo;
-}
-#endif
 
 static const MUUID interfaces[] = {MIID_DATABASE, MIID_LAST};
 __declspec(dllexport) const MUUID* MirandaPluginInterfaces(void) {

@@ -1,6 +1,6 @@
 /*
 Plugin of Miranda IM for communicating with users of the MSN Messenger protocol.
-Copyright (c) 2006-2009 Boris Krasnovskiy.
+Copyright (c) 2006-2010 Boris Krasnovskiy.
 Copyright (c) 2003-2005 George Hazan.
 Copyright (c) 2002-2003 Richard Hughes (original version).
 
@@ -70,7 +70,7 @@ int CMsnProto::MSN_HandleErrors(ThreadData* info, char* cmdString)
 
 	case ERR_AUTHENTICATION_FAILED:
 		if (info->mType != SERVER_SWITCHBOARD) 
-        {
+		{
 			MSN_ShowError("Your username or password is incorrect");
 			SendBroadcast(NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_WRONGPASSWORD);
 		}
@@ -78,7 +78,7 @@ int CMsnProto::MSN_HandleErrors(ThreadData* info, char* cmdString)
 
 	case ERR_INVALID_LOCALE:
 		if (packetID == tridUrlInbox) 
-        {
+		{
 			tridUrlInbox = -1;
 			return 0;
 		}

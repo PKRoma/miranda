@@ -70,6 +70,7 @@ static void ReportSslError(SECURITY_STATUS scRet, int line)
 	switch (scRet)
 	{
 	case 0:
+	case ERROR_NOT_READY:
 		return;
 
 	case SEC_E_INVALID_TOKEN:
@@ -108,7 +109,7 @@ static void ReportSslError(SECURITY_STATUS scRet, int line)
 		msg = "Unknown Error"; 
 		break;
 	}
-	Netlib_Logf(NULL, "SSL connection failure (%x): %s", scRet, msg);
+	NetlibLogf(NULL, "SSL connection failure (%x %u): %s", scRet, line, msg);
 }
 
 static int SSL_library_init(void)
@@ -234,7 +235,7 @@ static SECURITY_STATUS ClientHandshakeLoop(SslHandle *ssl, BOOL fDoInitialRead)
 		{
 			if (fDoRead) 
 			{
-				TIMEVAL tv = {10, 0};
+				TIMEVAL tv = {6, 0};
 				fd_set fd;
 
 				// If buffer not large enough reallocate buffer
@@ -248,21 +249,22 @@ static SECURITY_STATUS ClientHandshakeLoop(SslHandle *ssl, BOOL fDoInitialRead)
 				FD_SET(ssl->s, &fd);
 				if (select(1, &fd, NULL, NULL, &tv) != 1)
 				{
-					scRet = SEC_E_INTERNAL_ERROR;
+					NetlibLogf(NULL, "SSL Negotiation failure recieving data (timeout) (bytes %u)", ssl->cbIoBuffer);
+					scRet = ERROR_NOT_READY;
 					break;
 				}
 
 				cbData = recv(ssl->s, (char*)ssl->pbIoBuffer + ssl->cbIoBuffer, ssl->sbIoBuffer - ssl->cbIoBuffer, 0);
 				if (cbData == SOCKET_ERROR) 
 				{
-					Netlib_Logf(NULL, "SSL Negotiation failure recieving data (%d)", WSAGetLastError());
-					scRet = SEC_E_INTERNAL_ERROR;
+					NetlibLogf(NULL, "SSL Negotiation failure recieving data (%d)", WSAGetLastError());
+					scRet = ERROR_NOT_READY;
 					break;
 				}
 				if (cbData == 0) 
 				{
-					Netlib_Logf(NULL, "SSL Negotiation connection gracefully closed");
-					scRet = SEC_E_INTERNAL_ERROR;
+					NetlibLogf(NULL, "SSL Negotiation connection gracefully closed");
+					scRet = ERROR_NOT_READY;
 					break;
 				}
 
@@ -326,7 +328,7 @@ static SECURITY_STATUS ClientHandshakeLoop(SslHandle *ssl, BOOL fDoInitialRead)
 				cbData = send(ssl->s, (char*)OutBuffers[0].pvBuffer, OutBuffers[0].cbBuffer, 0);
 				if (cbData == SOCKET_ERROR || cbData == 0) 
 				{
-					Netlib_Logf(NULL, "SSL Negotiation failure sending data (%d)", WSAGetLastError());
+					NetlibLogf(NULL, "SSL Negotiation failure sending data (%d)", WSAGetLastError());
 					g_pSSPI->FreeContextBuffer(OutBuffers[0].pvBuffer);
 					return SEC_E_INTERNAL_ERROR;
 				}
@@ -346,7 +348,7 @@ static SECURITY_STATUS ClientHandshakeLoop(SslHandle *ssl, BOOL fDoInitialRead)
 			// Store remaining data for further use
 			if (InBuffers[1].BufferType == SECBUFFER_EXTRA) 
 			{
-				MoveMemory(ssl->pbIoBuffer,
+				memmove(ssl->pbIoBuffer,
 					ssl->pbIoBuffer + (ssl->cbIoBuffer - InBuffers[1].cbBuffer),
 					InBuffers[1].cbBuffer);
 				ssl->cbIoBuffer = InBuffers[1].cbBuffer;
@@ -374,7 +376,7 @@ static SECURITY_STATUS ClientHandshakeLoop(SslHandle *ssl, BOOL fDoInitialRead)
 		// Copy any leftover data from the buffer, and go around again.
 		if (InBuffers[1].BufferType == SECBUFFER_EXTRA) 
 		{
-			MoveMemory(ssl->pbIoBuffer,
+			memmove(ssl->pbIoBuffer,
 				ssl->pbIoBuffer + (ssl->cbIoBuffer - InBuffers[1].cbBuffer),
 				InBuffers[1].cbBuffer);
 
@@ -457,7 +459,7 @@ static int ClientConnect(SslHandle *ssl, const char *host)
 		cbData = send(ssl->s, (char*)OutBuffers[0].pvBuffer, OutBuffers[0].cbBuffer, 0);
 		if (cbData == SOCKET_ERROR || cbData == 0) 
 		{
-			Netlib_Logf(NULL, "SSL failure sending connection data (%d)", WSAGetLastError());
+			NetlibLogf(NULL, "SSL failure sending connection data (%d %d)", ssl->s, WSAGetLastError());
 			g_pSSPI->FreeContextBuffer(OutBuffers[0].pvBuffer);
 			return 0;
 		}
@@ -641,14 +643,14 @@ int NetlibSslRead(SslHandle *ssl, char *buf, int num, int peek)
 			cbData = recv(ssl->s, (char*)ssl->pbIoBuffer + ssl->cbIoBuffer, ssl->sbIoBuffer - ssl->cbIoBuffer, 0);
 			if (cbData == SOCKET_ERROR)
 			{
-				Netlib_Logf(NULL, "SSL failure recieving data (%d)", WSAGetLastError());
+				NetlibLogf(NULL, "SSL failure recieving data (%d)", WSAGetLastError());
 				ssl->state = sockError;
 				return NetlibSslReadSetResult(ssl, buf, num, peek);
 			}
 			
 			if (cbData == 0) 
 			{
-				Netlib_Logf(NULL, "SSL connection gracefully closed");
+				NetlibLogf(NULL, "SSL connection gracefully closed");
 				if (peek && ssl->cbRecDataBuf)
 				{
 					ssl->state = sockClosed;
@@ -739,19 +741,19 @@ int NetlibSslRead(SslHandle *ssl, char *buf, int num, int peek)
 			if (peek)
 			{
 				resNum = bytes = min(num, ssl->cbRecDataBuf);
-				CopyMemory(buf, ssl->pbRecDataBuf, bytes);
+				memcpy(buf, ssl->pbRecDataBuf, bytes);
 			}
 			else
 			{
 				resNum = bytes;
-				CopyMemory(buf, pDataBuffer->pvBuffer, bytes);
+				memcpy(buf, pDataBuffer->pvBuffer, bytes);
 			}
 		}
 
 		// Move any "extra" data to the input buffer.
 		if (pExtraBuffer) 
 		{
-			MoveMemory(ssl->pbIoBuffer, pExtraBuffer->pvBuffer, pExtraBuffer->cbBuffer);
+			memmove(ssl->pbIoBuffer, pExtraBuffer->pvBuffer, pExtraBuffer->cbBuffer);
 			ssl->cbIoBuffer = pExtraBuffer->cbBuffer;
 		}
 		else ssl->cbIoBuffer = 0;
@@ -762,7 +764,7 @@ int NetlibSslRead(SslHandle *ssl, char *buf, int num, int peek)
 		// Server signaled end of session
 		if (scRet == SEC_I_CONTEXT_EXPIRED) 
 		{
-			Netlib_Logf(NULL, "SSL Server signaled SSL Shutdown");
+			NetlibLogf(NULL, "SSL Server signaled SSL Shutdown");
 			ssl->state = sockClosed;
 			return NetlibSslReadSetResult(ssl, buf, num, peek);
 		}
@@ -844,7 +846,7 @@ int NetlibSslWrite(SslHandle *ssl, const char *buf, int num)
 		cbData = send(ssl->s, (char*)pbDataBuffer, cbData, 0);
 		if (cbData == SOCKET_ERROR || cbData == 0)
 		{
-			Netlib_Logf(NULL, "SSL failure sending data (%d)", WSAGetLastError());
+			NetlibLogf(NULL, "SSL failure sending data (%d)", WSAGetLastError());
 			scRet = SEC_E_INTERNAL_ERROR;
 			break;
 		}
@@ -884,4 +886,5 @@ int LoadSslModule(void)
 void UnloadSslModule(void)
 {
 	CloseHandle(g_hSslMutex);
+	if (g_hSchannel) FreeLibrary(g_hSchannel);
 }

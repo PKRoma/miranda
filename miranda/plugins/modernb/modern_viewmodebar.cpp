@@ -57,6 +57,8 @@ static UINT _page2Controls[] = {IDC_CLIST, IDC_STATIC9, IDC_STATIC8, IDC_CLEARAL
 void ApplyViewMode(const char *name);
 static UINT _buttons[] = {IDC_RESETMODES, IDC_SELECTMODE, IDC_CONFIGUREMODES, 0};
 
+static BOOL sttDrawViewModeBackground(HWND hwnd, HDC hdc, RECT * rect);
+
 static int DrawViewModeBar(HWND hWnd, HDC hDC)
 {
 	RECT rc;
@@ -1058,7 +1060,7 @@ void BuildViewModeMenu()
 	
 
 }
-//#define MODERNSKINBUTTONCLASS "MirandaModernSkinButtonClass"
+
 LRESULT CALLBACK ViewModeFrameWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
     switch(msg) 
@@ -1067,27 +1069,30 @@ LRESULT CALLBACK ViewModeFrameWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
         {
             HWND hwndButton;
 			RECT rcMargins={12,0,2,0};
-            hwndSelector = CreateWindowEx(WS_EX_TRANSPARENT, SKINBUTTONCLASS, _T(""), BS_PUSHBUTTON | WS_VISIBLE | WS_CHILD | WS_TABSTOP , 0, 0, 20, 20, 
+            hwndSelector = CreateWindow( SKINBUTTONCLASS, _T(""), BS_PUSHBUTTON | WS_VISIBLE | WS_CHILD | WS_TABSTOP , 0, 0, 20, 20, 
                             hwnd, (HMENU) IDC_SELECTMODE, g_hInst, NULL);
             SendMessage(hwndSelector, BUTTONADDTOOLTIP, (WPARAM)TranslateT("Select a view mode"), 0);
 			SendMessage(hwndSelector, BUTTONSETMARGINS,0 ,(LPARAM) &rcMargins);			
 			SendMessage(hwndSelector, BUTTONSETID,0 ,(LPARAM) "ViewMode.Select" );			
 			SendMessage(hwndSelector, WM_SETFONT,0 ,(LPARAM) FONTID_VIEMODES+1 );
+			SendMessage(hwndSelector, BUTTONSETASFLATBTN, 0, 1 );
 			SendMessage(hwndSelector, MBM_UPDATETRANSPARENTFLAG, 0, 2);
             SendMessage(hwndSelector, BUTTONSETSENDONDOWN, 0 ,(LPARAM) 1 );	
 			
 			//SendMessage(hwndSelector, BM_SETASMENUACTION, 1, 0);
-            hwndButton = CreateWindowEx(WS_EX_TRANSPARENT, SKINBUTTONCLASS, _T(""), BS_PUSHBUTTON | WS_VISIBLE | WS_CHILD | WS_TABSTOP, 0, 0, 20, 20, 
+            hwndButton = CreateWindow( SKINBUTTONCLASS, _T(""), BS_PUSHBUTTON | WS_VISIBLE | WS_CHILD | WS_TABSTOP, 0, 0, 20, 20, 
                             hwnd, (HMENU) IDC_CONFIGUREMODES, g_hInst, NULL);
             SendMessage(hwndButton, BUTTONADDTOOLTIP, (WPARAM)TranslateT("Setup view modes"), 0);
 			SendMessage(hwndButton, BUTTONSETID,0 ,(LPARAM) "ViewMode.Setup" );	
+			SendMessage(hwndButton, BUTTONSETASFLATBTN, 0, 1 );
 			SendMessage(hwndButton, MBM_UPDATETRANSPARENTFLAG, 0, 2);
 
-            hwndButton = CreateWindowEx(WS_EX_TRANSPARENT, SKINBUTTONCLASS, _T(""), BS_PUSHBUTTON | WS_VISIBLE | WS_CHILD | WS_TABSTOP, 0, 0, 20, 20, 
+            hwndButton = CreateWindow( SKINBUTTONCLASS, _T(""), BS_PUSHBUTTON | WS_VISIBLE | WS_CHILD | WS_TABSTOP, 0, 0, 20, 20, 
                             hwnd, (HMENU) IDC_RESETMODES, g_hInst, NULL);
             SendMessage(hwndButton, BUTTONADDTOOLTIP, (WPARAM)TranslateT("Clear view mode and return to default display"), 0);
 			SendMessage(hwndButton, BUTTONSETID,0 ,(LPARAM) "ViewMode.Clear" );	
-			SendMessage(hwnd, WM_USER + 100, 0, 0);            
+			SendMessage(hwnd, WM_USER + 100, 0, 0);
+			SendMessage(hwndButton, BUTTONSETASFLATBTN, 0, 1 );
 			SendMessage(hwndButton, MBM_UPDATETRANSPARENTFLAG, 0, 2);
             return FALSE;
         }
@@ -1159,15 +1164,12 @@ LRESULT CALLBACK ViewModeFrameWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
             else
                 SetWindowText(GetDlgItem(hwnd, IDC_SELECTMODE), TranslateT("All contacts"));
             break;
-		case WM_ERASEBKGND:	
+		case WM_ERASEBKGND:
 			if (g_CluiData.fDisableSkinEngine)
-			{
-				DefWindowProc(hwnd,msg,wParam,lParam);
-			}
-			return 1;
-		case WM_NCPAINT:
-			//if (!g_CluiData.fDisableSkinEngine)
+				return sttDrawViewModeBackground(hwnd, (HDC)wParam, NULL);
+			else
 				return 0;
+		case WM_NCPAINT:
         case WM_PAINT:
 			/*if ( g_CluiData.fDisableSkinEngine )
 			{
@@ -1198,14 +1200,24 @@ LRESULT CALLBACK ViewModeFrameWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 				hdc2=CreateCompatibleDC(hdc);
 				hbmp=ske_CreateDIB32(rc.right,rc.bottom);
 				hbmpo=(HBITMAP)SelectObject(hdc2,hbmp);		
-				if (GetParent(hwnd)!=pcli->hwndContactList)
+				
+				if ( g_CluiData.fDisableSkinEngine )
 				{
-					HBRUSH br=GetSysColorBrush(COLOR_3DFACE);
-                    FillRect(hdc2,&rc,br);
+					sttDrawViewModeBackground( hwnd, hdc2, &rc );
 				}
 				else
-					ske_BltBackImage(hwnd,hdc2,&rc);
-				DrawViewModeBar(hwnd,hdc2);	
+				{
+					if (GetParent(hwnd)!=pcli->hwndContactList)
+					{
+						HBRUSH br=GetSysColorBrush(COLOR_3DFACE);
+						FillRect(hdc2,&rc,br);
+					}
+					else
+						ske_BltBackImage(hwnd,hdc2,&rc);
+
+					DrawViewModeBar(hwnd,hdc2);	
+				}
+				
 				{
 					int i;
 					for (i=0; _buttons[i]!=0; i++)
@@ -1309,25 +1321,7 @@ LRESULT CALLBACK ViewModeFrameWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
                 }
                 case IDC_RESETMODES:
 clvm_reset_command:
-                    g_CluiData.bFilterEffective = 0;
-                    
-                    {   // remove last applied view mode
-                        char szSetting[256];
-                        mir_snprintf(szSetting, 256, "%c_LastMode", 246);
-                        ModernDeleteSetting(NULL,CLVM_MODULE,szSetting);
-                    }
-					if ( g_CluiData.bOldUseGroups != (BYTE) -1 )
-						CallService( MS_CLIST_SETUSEGROUPS, (WPARAM)g_CluiData.bOldUseGroups, 0 );
-
-					pcli->pfnClcBroadcast(CLM_AUTOREBUILD, 0, 0);
-                    SetWindowText(GetDlgItem(hwnd, IDC_SELECTMODE), TranslateT("All contacts"));
-                    if (g_CluiData.boldHideOffline!=(BYTE)-1) CallService(MS_CLIST_SETHIDEOFFLINE, (WPARAM)g_CluiData.boldHideOffline, 0);
-					if (g_CluiData.bOldUseGroups!=(BYTE)-1) CallService(MS_CLIST_SETUSEGROUPS, (WPARAM)g_CluiData.bOldUseGroups, 0);
-                    g_CluiData.boldHideOffline = (BYTE)-1;
-					g_CluiData.bOldUseGroups = (BYTE) -1;
- //                   SetButtonStates(pcli->hwndContactList);
-                    g_CluiData.current_viewmode[0] = 0;
-                    g_CluiData.old_viewmode[0] = 0;
+					ApplyViewMode( "" );
                     break;
                 case IDC_CONFIGUREMODES:
                 {
@@ -1338,6 +1332,7 @@ clvm_config_command:
                 }
             }
             break;
+
         }
         default:
             return DefWindowProc(hwnd, msg, wParam, lParam);
@@ -1348,10 +1343,81 @@ clvm_config_command:
 static HWND hCLVMFrame;
 HWND g_hwndViewModeFrame;
 
+struct view_mode_t
+{
+	HBITMAP  hBmpBackground;
+	COLORREF bkColour;
+	int      useWinColors;
+	int      backgroundBmpUse;
 
+	view_mode_t():
+		hBmpBackground( NULL),
+		bkColour( CLCDEFAULT_BKCOLOUR ),
+		useWinColors( CLCDEFAULT_USEWINDOWSCOLOURS ),
+		backgroundBmpUse( CLCDEFAULT_USEBITMAP )
+	{}
+};
+
+static view_mode_t view_mode;
+
+static BOOL sttDrawViewModeBackground(HWND hwnd, HDC hdc, RECT * rect)
+{
+	BOOL bFloat = (GetParent(hwnd)!=pcli->hwndContactList);
+	if (g_CluiData.fDisableSkinEngine || !g_CluiData.fLayered || bFloat)
+	{	
+		RECT rc;
+
+		if (rect) rc=*rect;
+		else	  GetClientRect(hwnd,&rc);
+
+		if (!view_mode.hBmpBackground && !view_mode.useWinColors)
+		{			
+			HBRUSH hbr=CreateSolidBrush(view_mode.bkColour);
+			FillRect(hdc, &rc, hbr);
+			DeleteObject(hbr);
+		}
+		else 
+		{
+			DrawBackGround(hwnd,hdc,view_mode.hBmpBackground,view_mode.bkColour,view_mode.backgroundBmpUse);
+		}
+	}
+	return TRUE;
+}
+
+COLORREF sttGetColor(char * module, char * color, COLORREF defColor); //clcutils
+
+static int  ehhViewModeBackgroundSettingsChanged(WPARAM wParam, LPARAM lParam)
+{
+	if(view_mode.hBmpBackground) 
+	{
+		DeleteObject(view_mode.hBmpBackground); 
+		view_mode.hBmpBackground=NULL;
+	}
+	if (g_CluiData.fDisableSkinEngine)
+	{
+		DBVARIANT dbv;
+		view_mode.bkColour=sttGetColor("ViewMode","BkColour",CLCDEFAULT_BKCOLOUR);
+		if(ModernGetSettingByte(NULL,"ViewMode","UseBitmap",CLCDEFAULT_USEBITMAP)) {
+			if(!ModernGetSettingString(NULL,"ViewMode","BkBitmap",&dbv)) {
+				view_mode.hBmpBackground=(HBITMAP)CallService(MS_UTILS_LOADBITMAP,0,(LPARAM)dbv.pszVal);
+				ModernDBFreeVariant(&dbv);
+			}
+		}
+		view_mode.useWinColors = ModernGetSettingByte(NULL, "ViewMode", "UseWinColours", CLCDEFAULT_USEWINDOWSCOLOURS);
+		view_mode.backgroundBmpUse = ModernGetSettingWord(NULL, "ViewMode", "BkBmpUse", CLCDEFAULT_BKBMPUSE);
+	}	
+	PostMessage(pcli->hwndContactList,WM_SIZE,0,0);
+	return 0;
+}
 
 void CreateViewModeFrame()
 {
+
+	CallService(MS_BACKGROUNDCONFIG_REGISTER,(WPARAM)"View Mode Background/ViewMode",0);
+	ModernHookEvent(ME_BACKGROUNDCONFIG_CHANGED,ehhViewModeBackgroundSettingsChanged);
+	ehhViewModeBackgroundSettingsChanged(0,0);
+
+
     CLISTFrame frame = {0};
     WNDCLASS wndclass = {0};
 
@@ -1410,6 +1476,30 @@ void ApplyViewMode(const char *Name)
         else return;
     }
 	
+	if ( name[0] == '\0' )
+	{
+		// Reset View Mode
+		g_CluiData.bFilterEffective = 0;
+
+		{   // remove last applied view mode
+			char szSetting[256];
+			mir_snprintf(szSetting, 256, "%c_LastMode", 246);
+			ModernDeleteSetting(NULL,CLVM_MODULE,szSetting);
+		}
+		if ( g_CluiData.bOldUseGroups != (BYTE) -1 )
+			CallService( MS_CLIST_SETUSEGROUPS, (WPARAM)g_CluiData.bOldUseGroups, 0 );
+
+		pcli->pfnClcBroadcast(CLM_AUTOREBUILD, 0, 0);
+	    KillTimer(g_hwndViewModeFrame, TIMERID_VIEWMODEEXPIRE);
+		SetWindowText(GetDlgItem(g_hwndViewModeFrame, IDC_SELECTMODE), TranslateT("All contacts"));
+		if (g_CluiData.boldHideOffline!=(BYTE)-1) CallService(MS_CLIST_SETHIDEOFFLINE, (WPARAM)g_CluiData.boldHideOffline, 0);
+		if (g_CluiData.bOldUseGroups!=(BYTE)-1) CallService(MS_CLIST_SETUSEGROUPS, (WPARAM)g_CluiData.bOldUseGroups, 0);
+		g_CluiData.boldHideOffline = (BYTE)-1;
+		g_CluiData.bOldUseGroups = (BYTE) -1;
+		g_CluiData.current_viewmode[0] = 0;
+		g_CluiData.old_viewmode[0] = 0;
+		return;
+	}
 
     mir_snprintf(szSetting, 256, "%c%s_PF", 246, name);
     if(!ModernGetSettingString(NULL, CLVM_MODULE, szSetting, &dbv)) {

@@ -18,7 +18,7 @@ static int OnContactMenuBuild(WPARAM wParam,LPARAM lParam)
 		mi.pszPopupName=(char *)-1;
 		mi.pszService="CList/SetContactFloating";
 		mi.pszName=LPGEN("&Floating Contact");
-		if (pcli) 
+		if (pcli)
 		{
 			if (SendMessage(pcli->hwndContactTree, CLM_QUERYFLOATINGCONTACT, wParam, 0))
 				mi.flags=CMIF_CHECKED;
@@ -35,7 +35,7 @@ static int OnContactMenuBuild(WPARAM wParam,LPARAM lParam)
 		memset(&mi,0,sizeof(mi));
 		mi.cbSize=sizeof(mi);
 		mi.flags=CMIM_FLAGS;
-		if (pcli) 
+		if (pcli)
 		{
 			if (SendMessage(pcli->hwndContactTree, CLM_QUERYFLOATINGCONTACT, wParam, 0))
 				mi.flags |= CMIF_CHECKED;
@@ -47,12 +47,7 @@ static int OnContactMenuBuild(WPARAM wParam,LPARAM lParam)
 
 int MTG_OnmodulesLoad(WPARAM wParam,LPARAM lParam)
 {
-	if (!ServiceExists(MS_CLIST_REMOVECONTACTMENUITEM)) 
-	{
-		MessageBoxA(0,"New menu system not found - plugin disabled.","MoveToGroup",0);
-		return 0;
-	}
-	hOnCntMenuBuild=HookEvent(ME_CLIST_PREBUILDCONTACTMENU,OnContactMenuBuild); 
+	hOnCntMenuBuild=HookEvent(ME_CLIST_PREBUILDCONTACTMENU,OnContactMenuBuild);
 	return 0;
 }
 

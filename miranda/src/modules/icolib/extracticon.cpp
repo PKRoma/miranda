@@ -243,6 +243,8 @@ UINT _ExtractIconEx(LPCTSTR lpszFile, int iconIndex, int cxIcon, int cyIcon, HIC
 		res = ExtractIconEx(lpszFile, iconIndex, phicon, NULL, 1);
 	else if (cxIcon == GetSystemMetrics(SM_CXSMICON) && cyIcon == GetSystemMetrics(SM_CYSMICON))
 		res = ExtractIconEx(lpszFile, iconIndex, NULL, phicon, 1);
+	else if (cxIcon == 0 || cyIcon == 0)
+		res = ExtractIconEx(lpszFile, iconIndex, NULL, phicon, 1);
 	// check if the api succeded, if not try our method too
 	if (res) return res;
 

@@ -2,7 +2,7 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2003 Miranda ICQ/IM project, 
+Copyright 2000-2010 Miranda ICQ/IM project, 
 all portions of this codebase are copyrighted to the people 
 listed in contributors.txt.
 
@@ -156,7 +156,8 @@ static INT_PTR CALLBACK DlgProcCluiOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 			SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
 		break;
 	case WM_NOTIFY:
-		if (((LPNMHDR) lParam)->code == PSN_APPLY) {
+		if (((LPNMHDR) lParam)->code == PSN_APPLY)
+		{
 			DBWriteContactSettingByte(NULL, "CList", "OnTop", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_ONTOP));
 			DBWriteContactSettingByte(NULL, "CList", "ToolWindow", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_TOOLWND));
 			DBWriteContactSettingByte(NULL, "CList", "BringToFront", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_BRINGTOFRONT));
@@ -182,10 +183,13 @@ static INT_PTR CALLBACK DlgProcCluiOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 				DBWriteContactSettingTString(NULL, "CList", "TitleText", title);
 				SetWindowText(pcli->hwndContactList, title);
 			}
+
 			pcli->pfnLoadCluiGlobalOpts();
-			SetWindowPos(pcli->hwndContactList, IsDlgButtonChecked(hwndDlg, IDC_ONTOP) ? HWND_TOPMOST : HWND_NOTOPMOST, 0, 0, 0, 0,
-				SWP_NOMOVE | SWP_NOSIZE);
-			if (IsDlgButtonChecked(hwndDlg, IDC_TOOLWND)) {
+			SetWindowPos(pcli->hwndContactList, IsDlgButtonChecked(hwndDlg, IDC_ONTOP) ? HWND_TOPMOST : HWND_NOTOPMOST, 
+				0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
+
+			if (IsDlgButtonChecked(hwndDlg, IDC_TOOLWND)) 
+			{
 				// Window must be hidden to dynamically remove the taskbar button.
 				// See http://msdn.microsoft.com/library/en-us/shellcc/platform/shell/programmersguide/shell_int/shell_int_programming/taskbar.asp
 				WINDOWPLACEMENT p;
@@ -193,42 +197,56 @@ static INT_PTR CALLBACK DlgProcCluiOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 				GetWindowPlacement(pcli->hwndContactList, &p);
 				ShowWindow(pcli->hwndContactList, SW_HIDE);
 				SetWindowLong(pcli->hwndContactList, GWL_EXSTYLE,
-					GetWindowLong(pcli->hwndContactList, GWL_EXSTYLE) | WS_EX_TOOLWINDOW | WS_EX_WINDOWEDGE);
+					GetWindowLong(pcli->hwndContactList, GWL_EXSTYLE) & ~WS_EX_APPWINDOW | WS_EX_TOOLWINDOW | WS_EX_WINDOWEDGE);
 				SetWindowPlacement(pcli->hwndContactList, &p);
 			}
-			else SetWindowLong(pcli->hwndContactList, GWL_EXSTYLE, GetWindowLong(pcli->hwndContactList, GWL_EXSTYLE) & ~WS_EX_TOOLWINDOW);
+			else 
+				SetWindowLong(pcli->hwndContactList, GWL_EXSTYLE, GetWindowLong(pcli->hwndContactList, GWL_EXSTYLE) & ~WS_EX_TOOLWINDOW | WS_EX_APPWINDOW);
 
-			if (IsDlgButtonChecked(hwndDlg, IDC_ONDESKTOP)) {
-				HWND hProgMan = FindWindowA("Progman", NULL);
-				if (IsWindow(hProgMan))
+			if (IsDlgButtonChecked(hwndDlg, IDC_ONDESKTOP)) 
+			{
+				HWND hProgMan = FindWindow(_T("Progman"), NULL);
+				if (hProgMan)
 					SetParent(pcli->hwndContactList, hProgMan);
 			}
-			else SetParent(pcli->hwndContactList, NULL);
+			else 
+				SetParent(pcli->hwndContactList, NULL);
 
-			if (IsDlgButtonChecked(hwndDlg, IDC_SHOWCAPTION))
-				SetWindowLong(pcli->hwndContactList, GWL_STYLE,
-				GetWindowLong(pcli->hwndContactList, GWL_STYLE) | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX);
+			if (IsDlgButtonChecked(hwndDlg, IDC_SHOWCAPTION)) 
+			{
+				int style = GetWindowLong(pcli->hwndContactList, GWL_STYLE) | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX; 
+				if (IsDlgButtonChecked(hwndDlg, IDC_MIN2TRAY)) style &= ~WS_MINIMIZEBOX;
+				SetWindowLong(pcli->hwndContactList, GWL_STYLE, style);
+			}
 			else
+			{
 				SetWindowLong(pcli->hwndContactList, GWL_STYLE,
-				GetWindowLong(pcli->hwndContactList, GWL_STYLE) & ~(WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX));
+					GetWindowLong(pcli->hwndContactList, GWL_STYLE) & ~(WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX));
+			}
+
 			if (!IsDlgButtonChecked(hwndDlg, IDC_SHOWMAINMENU))
 				SetMenu(pcli->hwndContactList, NULL);
 			else
 				SetMenu(pcli->hwndContactList, pcli->hMenuMain);
+
 			SetWindowPos(pcli->hwndContactList, 0, 0, 0, 0, 0, SWP_NOZORDER | SWP_NOMOVE | SWP_NOSIZE | SWP_FRAMECHANGED);
 			RedrawWindow(pcli->hwndContactList, NULL, NULL, RDW_FRAME | RDW_INVALIDATE);
+
 			if (IsIconic(pcli->hwndContactList) && !IsDlgButtonChecked(hwndDlg, IDC_TOOLWND))
 				ShowWindow(pcli->hwndContactList, IsDlgButtonChecked(hwndDlg, IDC_MIN2TRAY) ? SW_HIDE : SW_SHOW);
-			if (IsDlgButtonChecked(hwndDlg, IDC_TRANSPARENT)) {
+			if (IsDlgButtonChecked(hwndDlg, IDC_TRANSPARENT)) 
+			{
 				SetWindowLong(pcli->hwndContactList, GWL_EXSTYLE, GetWindowLong(pcli->hwndContactList, GWL_EXSTYLE) | WS_EX_LAYERED);
 				if (MySetLayeredWindowAttributes)
 					MySetLayeredWindowAttributes(pcli->hwndContactList, RGB(0, 0, 0),
 					(BYTE) DBGetContactSettingByte(NULL, "CList", "AutoAlpha", SETTING_AUTOALPHA_DEFAULT),
 					LWA_ALPHA);
 			}
-			else SetWindowLong(pcli->hwndContactList, GWL_EXSTYLE, GetWindowLong(pcli->hwndContactList, GWL_EXSTYLE) & ~WS_EX_LAYERED);
+			else 
+				SetWindowLong(pcli->hwndContactList, GWL_EXSTYLE, GetWindowLong(pcli->hwndContactList, GWL_EXSTYLE) & ~WS_EX_LAYERED);
 
 			SendMessage(pcli->hwndContactTree, WM_SIZE, 0, 0);        //forces it to send a cln_listsizechanged
+
 			return TRUE;
 		}
 		break;

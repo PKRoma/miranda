@@ -1,22 +1,22 @@
 # Microsoft Developer Studio Generated NMAKE File, Based on ICONSXP.dsp
 !IF "$(CFG)" == ""
 CFG=ICONSXP - Win32 Debug
-!MESSAGE Keine Konfiguration angegeben. ICONSXP - Win32 Debug wird als Standard verwendet.
+!MESSAGE No configuration specified. Defaulting to ICONSXP - Win32 Debug.
 !ENDIF 
 
 !IF "$(CFG)" != "ICONSXP - Win32 Debug" && "$(CFG)" != "ICONSXP - Win32 Release"
-!MESSAGE UngÅltige Konfiguration "$(CFG)" angegeben.
-!MESSAGE Sie kînnen beim AusfÅhren von NMAKE eine Konfiguration angeben
-!MESSAGE durch Definieren des Makros CFG in der Befehlszeile. Zum Beispiel:
+!MESSAGE Invalid configuration "$(CFG)" specified.
+!MESSAGE You can specify a configuration when running NMAKE
+!MESSAGE by defining the macro CFG on the command line. For example:
 !MESSAGE 
 !MESSAGE NMAKE /f "ICONSXP.mak" CFG="ICONSXP - Win32 Debug"
 !MESSAGE 
-!MESSAGE FÅr die Konfiguration stehen zur Auswahl:
+!MESSAGE Possible choices for configuration are:
 !MESSAGE 
-!MESSAGE "ICONSXP - Win32 Debug" (basierend auf  "Win32 (x86) Dynamic-Link Library")
-!MESSAGE "ICONSXP - Win32 Release" (basierend auf  "Win32 (x86) Dynamic-Link Library")
+!MESSAGE "ICONSXP - Win32 Debug" (based on "Win32 (x86) Dynamic-Link Library")
+!MESSAGE "ICONSXP - Win32 Release" (based on "Win32 (x86) Dynamic-Link Library")
 !MESSAGE 
-!ERROR Eine ungÅltige Konfiguration wurde angegeben.
+!ERROR An invalid configuration is specified.
 !ENDIF 
 
 !IF "$(OS)" == "Windows_NT"
@@ -112,9 +112,7 @@ ALL : "$(OUTDIR)\tabsrmm_icons.dll"
 CLEAN :
 	-@erase "$(INTDIR)\ICONSXP.res"
 	-@erase "$(OUTDIR)\tabsrmm_icons.dll"
-	-@erase "$(OUTDIR)\tabsrmm_icons.pdb"
 	-@erase ".\$(OutDir)\ICONSXP.exp"
-	-@erase ".\$(OutDir)\ICONSXP.lib"
 
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
@@ -161,7 +159,7 @@ BSC32_FLAGS=/nologo /o"$(OUTDIR)\ICONSXP.bsc"
 BSC32_SBRS= \
 	
 LINK32=link.exe
-LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /dll /incremental:no /pdb:"$(OUTDIR)\tabsrmm_icons.pdb" /debug /machine:IX86 /out:"$(OUTDIR)\tabsrmm_icons.dll" /implib:"$(OutDir)/ICONSXP.lib" /pdbtype:sept /opt:ref /opt:icf /noentry 
+LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /dll /incremental:no /pdb:"$(OUTDIR)\tabsrmm_icons.pdb" /machine:IX86 /nodefaultlib /out:"$(OUTDIR)\tabsrmm_icons.dll" /implib:"$(OutDir)/ICONSXP.lib" /pdbtype:sept /opt:ref /opt:icf /noentry 
 LINK32_OBJS= \
 	"$(INTDIR)\ICONSXP.res"
 

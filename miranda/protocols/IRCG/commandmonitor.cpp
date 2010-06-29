@@ -1171,8 +1171,6 @@ bool CIrcProto::IsCTCP( const CIrcMessage* pmsg )
 
 					HANDLE hContact = CList_AddContact( &user, false, true );
 					if ( hContact ) {
-						char* szFileName = mir_t2a( sFile.c_str() );
-
 						DCCINFO* di = new DCCINFO;
 						di->hContact = hContact;
 						di->sFile = sFile;
@@ -1188,17 +1186,16 @@ bool CIrcProto::IsCTCP( const CIrcMessage* pmsg )
 						if( di->bReverse )
 							di->sToken = sTokenBackup;
 
-						char* szBlob = ( char* )alloca(sizeof(DWORD) + strlen(szFileName) + 3);
-						*((PDWORD) szBlob) = 0;
-						strcpy(szBlob + sizeof(DWORD), szFileName );
-						strcpy(szBlob + sizeof(DWORD) + strlen(szFileName) + 1, " ");
-
 						setTString(hContact, "User", pmsg->prefix.sUser.c_str());
 						setTString(hContact, "Host", pmsg->prefix.sHost.c_str());
 
-						PROTORECVEVENT pre = {0};
+						TCHAR* tszTemp = ( TCHAR* )sFile.c_str();
+
+						PROTORECVFILET pre = {0};
+						pre.flags = PREF_UNICODE;
 						pre.timestamp = (DWORD)time(NULL);
-						pre.szMessage = szBlob;
+						pre.fileCount = 1;
+						pre.ptszFiles = &tszTemp;						
 						pre.lParam = (LPARAM)di;
 
 						CCSDATA ccs = {0}; 
@@ -1206,8 +1203,6 @@ bool CIrcProto::IsCTCP( const CIrcMessage* pmsg )
 						ccs.hContact = hContact;
 						ccs.lParam = (LPARAM) & pre;
 						CallService( MS_PROTO_CHAINRECV, 0, (LPARAM)&ccs );
-
-						mir_free( szFileName );
 			}	}	}
 			// end type == "send"
 		}
@@ -1854,17 +1849,15 @@ static void __stdcall sttShowNickWnd( void* param )
 bool CIrcProto::OnIrc_NICK_ERR( const CIrcMessage* pmsg )
 {
 	if ( pmsg->m_bIncoming ) {
-		if (( nickflag || m_alternativeNick[0] == 0) && pmsg->parameters.getCount() > 2  && !_tcscmp(pmsg->parameters[1].c_str(), m_alternativeNick)) {
-			CallFunctionAsync( sttShowNickWnd, new CIrcMessage( *pmsg ));
-			WaitForSingleObject( m_evWndCreate, INFINITE );
-		}
-		else {
+		if ( nickflag && ((m_alternativeNick[0] != 0)) && (pmsg->parameters.getCount() > 2  && _tcscmp(pmsg->parameters[1].c_str(), m_alternativeNick)) ) {
 			TCHAR m[200];
 			mir_sntprintf( m, SIZEOF(m), _T("NICK %s"), m_alternativeNick );
 			if ( IsConnected() )
 				SendIrcMessage( m );
-
-			nickflag = true;
+		}
+		else {
+			CallFunctionAsync( sttShowNickWnd, new CIrcMessage( *pmsg ));
+			WaitForSingleObject( m_evWndCreate, INFINITE );
 	}	}
 
 	ShowMessage( pmsg );
@@ -2450,6 +2443,7 @@ bool CIrcProto::DoOnConnect( const CIrcMessage* )
 	}
 
 	CallFunctionAsync( sttMainThrdOnConnect, this );
+	nickflag = false;
 	return 0;
 }
 

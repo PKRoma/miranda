@@ -40,11 +40,11 @@ int gg_gc_init(GGPROTO *gg)
 
 		// Register Gadu-Gadu proto
 		gcr.cbSize = sizeof(GCREGISTER);
-		gcr.dwFlags = 0;
+		gcr.dwFlags = GC_TCHAR;
 		gcr.iMaxText = 0;
 		gcr.nColors = 0;
 		gcr.pColors = 0;
-		gcr.pszModuleDispName = GG_PROTONAME;
+		gcr.ptszModuleDispName = gg->proto.m_tszUserName;
 		gcr.pszModule = GG_PROTO;
 #ifdef DEBUGMODE
 		gg_netlog(gg, "gg_gc_init(): Trying to register groupchat plugin...");
@@ -68,7 +68,7 @@ int gg_gc_init(GGPROTO *gg)
 
 ////////////////////////////////////////////////////////////////////////////////
 // Groupchat menus initialization
-void gg_gc_menus_init(GGPROTO *gg)
+void gg_gc_menus_init(GGPROTO *gg, HGENMENU hRoot)
 {
 	if(gg->gc_enabled)
 	{
@@ -78,24 +78,24 @@ void gg_gc_menus_init(GGPROTO *gg)
 		ZeroMemory(&mi,sizeof(mi));
 		mi.cbSize = sizeof(mi);
 		mi.flags = CMIF_ICONFROMICOLIB | CMIF_ROOTHANDLE;
-		mi.hParentMenu = gg->hMenuRoot;
+		mi.hParentMenu = hRoot;
 
 		// Conferencing
 		mir_snprintf(service, sizeof(service), GGS_OPEN_CONF, GG_PROTO);
 		CreateProtoServiceFunction(service, gg_gc_openconf, gg);
-		mi.position = 500090000;
+		mi.position = 209000;
 		mi.icolibItem = GetIconHandle(IDI_CONFERENCE);
 		mi.pszName = LPGEN("Open &conference...");
 		mi.pszService = service;
-		gg->hMainMenu[0] = (HANDLE)CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM) &mi);
+		gg->hMainMenu[0] = (HANDLE)CallService(MS_CLIST_ADDPROTOMENUITEM, 0, (LPARAM) &mi);
 
 		mir_snprintf(service, sizeof(service), GGS_CLEAR_IGNORED, GG_PROTO);
 		CreateProtoServiceFunction(service, gg_gc_clearignored, gg);
-		mi.position = 500090001;
+		mi.position = 209001;
 		mi.icolibItem = GetIconHandle(IDI_CLEAR_CONFERENCE);
 		mi.pszName = LPGEN("&Clear ignored conferences");
 		mi.pszService = service;
-		gg->hMainMenu[1] = (HANDLE)CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM) &mi);
+		gg->hMainMenu[1] = (HANDLE)CallService(MS_CLIST_ADDPROTOMENUITEM, 0, (LPARAM) &mi);
 	}
 }
 
@@ -112,11 +112,6 @@ int gg_gc_destroy(GGPROTO *gg)
 	list_destroy(gg->chats, 1); gg->chats = NULL;
 	LocalEventUnhook(gg->hookGCUserEvent);
 	LocalEventUnhook(gg->hookGCMenuBuild);
-	if(gg->gc_enabled)
-	{
-		CallService(MS_CLIST_REMOVEMAINMENUITEM, (WPARAM)gg->hMainMenu[0], (LPARAM) 0);
-		CallService(MS_CLIST_REMOVEMAINMENUITEM, (WPARAM)gg->hMainMenu[1], (LPARAM) 0);
-	}
 
 	return 1;
 }
@@ -198,7 +193,7 @@ int gg_gc_event(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
 			gcevent.pszNick = Translate("Me");
 
 		// Get rid of CRLF at back
-		lc = strlen(gch->pszText) - 1;
+		lc = (int)strlen(gch->pszText) - 1;
 		while(lc >= 0 && (gch->pszText[lc] == '\n' || gch->pszText[lc] == '\r')) gch->pszText[lc --] = 0;
 		gcevent.time = time(NULL);
 		gcevent.bIsMe = 1;
@@ -208,9 +203,9 @@ int gg_gc_event(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
 #endif
 		CallServiceSync(MS_GC_EVENT, 0, (LPARAM)&gcevent);
 		if(gcevent.pszNick == dbv.pszVal) DBFreeVariant(&dbv);
-		pthread_mutex_lock(&gg->sess_mutex);
+		EnterCriticalSection(&gg->sess_mutex);
 		gg_send_message_confer(gg->sess, GG_CLASS_CHAT, chat->recipients_count, chat->recipients, gch->pszText);
-		pthread_mutex_unlock(&gg->sess_mutex);
+		LeaveCriticalSection(&gg->sess_mutex);
 		return 1;
 	}
 

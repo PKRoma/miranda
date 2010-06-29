@@ -80,15 +80,15 @@ static INT_PTR CALLBACK AccFormDlgProc(HWND hwndDlg,UINT message, WPARAM wParam,
 			Proto_EnumProtocols(( WPARAM )&protoCount, ( LPARAM )&proto );
 			for ( i=0; i < protoCount; i++ ) {
 				PROTOCOLDESCRIPTOR* pd = proto[i];
-                if ( pd->type == PROTOTYPE_PROTOCOL && pd->cbSize == sizeof( *pd )) {
+				if ( pd->type == PROTOTYPE_PROTOCOL && pd->cbSize == sizeof( *pd )) {
 					SendDlgItemMessageA( hwndDlg, IDC_PROTOTYPECOMBO, CB_ADDSTRING, 0, (LPARAM)proto[i]->szName );
-                    ++cnt;
-                }
+					++cnt;
+				}
 			}
 			SendDlgItemMessage( hwndDlg, IDC_PROTOTYPECOMBO, CB_SETCURSEL, 0, 0 );
 			EnableWindow( GetDlgItem( hwndDlg, IDOK ), cnt != 0 );
 
-		    SetWindowLongPtr( hwndDlg, GWLP_USERDATA, lParam );
+			SetWindowLongPtr( hwndDlg, GWLP_USERDATA, lParam );
 			AccFormDlgParam* param = ( AccFormDlgParam* )lParam;
 
 			if ( param->action == PRAC_ADDED ) // new account
@@ -124,24 +124,24 @@ static INT_PTR CALLBACK AccFormDlgProc(HWND hwndDlg,UINT message, WPARAM wParam,
 					GetDlgItemTextA( hwndDlg, IDC_ACCINTERNALNAME, buf, SIZEOF( buf ));
 					rtrim( buf );
 					if ( buf[0] ) {
-                        for (int i = 0; i < accounts.getCount(); ++i)
-                            if (_stricmp(buf, accounts[i]->szModuleName) == 0)
-                                return FALSE;
-                }   }
-                
-                switch( param->action ) {
+						for (int i = 0; i < accounts.getCount(); ++i)
+							if (_stricmp(buf, accounts[i]->szModuleName) == 0)
+								return FALSE;
+				}	}
+
+				switch( param->action ) {
 				case PRAC_UPGRADED:
 					{
-                        int idx;
-                        BOOL oldProto = pa->bOldProto;
+						int idx;
+						BOOL oldProto = pa->bOldProto;
 						char szPlugin[ MAX_PATH ];
 						mir_snprintf( szPlugin, SIZEOF(szPlugin), "%s.dll", pa->szProtoName );
 						idx = accounts.getIndex(pa);
-                        UnloadAccount( pa, false, false );
+						UnloadAccount( pa, false, false );
 						accounts.remove( idx );
-                        if ( oldProto && UnloadPlugin( szPlugin, SIZEOF( szPlugin ))) {
+						if ( oldProto && UnloadPlugin( szPlugin, SIZEOF( szPlugin ))) {
 							char szNewName[ MAX_PATH ];
-   							mir_snprintf( szNewName, SIZEOF(szNewName), "%s~", szPlugin );
+							mir_snprintf( szNewName, SIZEOF(szNewName), "%s~", szPlugin );
 							MoveFileA( szPlugin, szNewName );
 						}
 					}
@@ -181,25 +181,26 @@ static INT_PTR CALLBACK AccFormDlgProc(HWND hwndDlg,UINT message, WPARAM wParam,
 					}	}
 					pa->szModuleName = mir_strdup( buf );
 
-                    if (!pa->tszAccountName[0])
-                    {
-					    mir_free(pa->tszAccountName);
-                        pa->tszAccountName = a2t(buf);
-                    }
+					if ( !pa->tszAccountName[0] ) {
+						mir_free(pa->tszAccountName);
+						pa->tszAccountName = mir_a2t(buf);
+					}
 
 					DBWriteContactSettingString( NULL, pa->szModuleName, "AM_BaseProto", pa->szProtoName );
 					accounts.insert( pa );
 
-                    if ( ActivateAccount( pa ))
+					if ( ActivateAccount( pa )) {
 						pa->ppro->OnEvent( EV_PROTO_ONLOAD, 0, 0 );
-                    else
-    					pa->type = PROTOTYPE_DISPROTO;
+						if (!DBGetContactSettingByte(NULL, "CList", "MoveProtoMenus", FALSE))
+							pa->ppro->OnEvent( EV_PROTO_ONMENU, 0, 0 );
+					}
+					else pa->type = PROTOTYPE_DISPROTO;
 				}
 
 				WriteDbAccounts();
 				NotifyEventHooks( hAccListChanged, param->action, ( LPARAM )pa );
 
-                SendMessage( GetParent(hwndDlg), WM_MY_REFRESH, 0, 0 );
+				SendMessage( GetParent(hwndDlg), WM_MY_REFRESH, 0, 0 );
 			}
 
 			EndDialog( hwndDlg, TRUE );
@@ -419,13 +420,13 @@ static void sttUpdateAccountInfo(HWND hwndDlg, struct TAccMgrData *dat)
 			if ( dat->iSelected >= 0 ) {
 				PROTOACCOUNT *pa_old = (PROTOACCOUNT *)ListBox_GetItemData(hwndList, dat->iSelected);
 				if (pa_old && pa_old != pa && pa_old->hwndAccMgrUI)
-                    ShowWindow(pa_old->hwndAccMgrUI, SW_HIDE);
+					ShowWindow(pa_old->hwndAccMgrUI, SW_HIDE);
 			}
 
 			if ( pa->hwndAccMgrUI ) {
 				ShowWindow(GetDlgItem(hwndDlg, IDC_TXT_INFO), SW_HIDE);
 				ShowWindow(pa->hwndAccMgrUI, SW_SHOW);
-            }
+			}
 			else if ( !pa->ppro ) {
 				ShowWindow(GetDlgItem(hwndDlg, IDC_TXT_INFO), SW_SHOW);
 				SetWindowText(GetDlgItem(hwndDlg, IDC_TXT_INFO), TranslateT("Account is disabled. Please activate it to access options."));
@@ -467,32 +468,22 @@ INT_PTR CALLBACK AccMgrDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LPARAM 
 	switch(message) {
 	case WM_INITDIALOG:
 		{
-			struct TAccMgrData *dat = (struct TAccMgrData *)mir_alloc(sizeof(struct TAccMgrData));
+			TAccMgrData *dat = (TAccMgrData *)mir_alloc(sizeof(TAccMgrData));
 			SetWindowLongPtr(hwndDlg, GWLP_USERDATA, (LONG_PTR)dat);
 
 			TranslateDialogDefault(hwndDlg);
 			Window_SetIcon_IcoLib( hwndDlg, SKINICON_OTHER_ACCMGR );
 
-			SendDlgItemMessage( hwndDlg, IDC_ADD, BM_SETIMAGE, IMAGE_ICON, ( LPARAM )LoadSkinIcon( SKINICON_OTHER_ADDCONTACT ));
-			SendDlgItemMessage( hwndDlg, IDC_ADD, BUTTONADDTOOLTIP, (WPARAM)"New account", 0);
-			SendDlgItemMessage( hwndDlg, IDC_ADD, BUTTONSETASFLATBTN, 0, 0);
-			SendDlgItemMessage( hwndDlg, IDC_EDIT, BM_SETIMAGE, IMAGE_ICON, ( LPARAM )LoadSkinIcon( SKINICON_OTHER_RENAME ));
-			SendDlgItemMessage( hwndDlg, IDC_EDIT, BUTTONADDTOOLTIP, (WPARAM)"Edit", 0);
-			SendDlgItemMessage( hwndDlg, IDC_EDIT, BUTTONSETASFLATBTN, 0, 0);
-			SendDlgItemMessage( hwndDlg, IDC_REMOVE, BM_SETIMAGE, IMAGE_ICON, ( LPARAM )LoadSkinIcon( SKINICON_OTHER_DELETE ));
-			SendDlgItemMessage( hwndDlg, IDC_REMOVE, BUTTONADDTOOLTIP, (WPARAM)"Remove account", 0);
-			SendDlgItemMessage( hwndDlg, IDC_REMOVE, BUTTONSETASFLATBTN, 0, 0);
-			SendDlgItemMessage( hwndDlg, IDC_OPTIONS, BM_SETIMAGE, IMAGE_ICON, ( LPARAM )LoadSkinIcon( SKINICON_OTHER_OPTIONS ));
-			SendDlgItemMessage( hwndDlg, IDC_OPTIONS, BUTTONADDTOOLTIP, (WPARAM)"Configure...", 0);
-			SendDlgItemMessage( hwndDlg, IDC_OPTIONS, BUTTONSETASFLATBTN, 0, 0);
-			SendDlgItemMessage( hwndDlg, IDC_UPGRADE, BM_SETIMAGE, IMAGE_ICON, ( LPARAM )LoadSkinIcon( SKINICON_OTHER_ACCMGR ));
-			SendDlgItemMessage( hwndDlg, IDC_UPGRADE, BUTTONADDTOOLTIP, (WPARAM)"Upgrade account", 0);
-			SendDlgItemMessage( hwndDlg, IDC_UPGRADE, BUTTONSETASFLATBTN, 0, 0);
+			Button_SetIcon_IcoLib(hwndDlg, IDC_ADD, SKINICON_OTHER_ADDCONTACT, LPGEN("New account"));
+			Button_SetIcon_IcoLib(hwndDlg, IDC_EDIT, SKINICON_OTHER_RENAME, LPGEN("Edit"));
+			Button_SetIcon_IcoLib(hwndDlg, IDC_REMOVE, SKINICON_OTHER_DELETE, LPGEN("Remove account"));
+			Button_SetIcon_IcoLib(hwndDlg, IDC_OPTIONS, SKINICON_OTHER_OPTIONS, LPGEN( "Configure..."));
+			Button_SetIcon_IcoLib(hwndDlg, IDC_UPGRADE, SKINICON_OTHER_ACCMGR, LPGEN("Upgrade account"));
 
-			EnableWindow( GetDlgItem( hwndDlg, IDC_EDIT ), FALSE );
-			EnableWindow( GetDlgItem( hwndDlg, IDC_REMOVE ), FALSE );
-			EnableWindow( GetDlgItem( hwndDlg, IDC_OPTIONS ), FALSE );
-			EnableWindow( GetDlgItem( hwndDlg, IDC_UPGRADE ), FALSE );
+			EnableWindow(GetDlgItem(hwndDlg, IDC_EDIT), FALSE);
+			EnableWindow(GetDlgItem(hwndDlg, IDC_REMOVE), FALSE);
+			EnableWindow(GetDlgItem(hwndDlg, IDC_OPTIONS), FALSE);
+			EnableWindow(GetDlgItem(hwndDlg, IDC_UPGRADE), FALSE);
 
 			{
 				LOGFONT lf;
@@ -588,20 +579,15 @@ INT_PTR CALLBACK AccMgrDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LPARAM 
 			lps->rcItem.bottom -= 2;
 
 			if ( acc->bOldProto )
-			{
-                tmp = SKINICON_OTHER_LOADED;
-			} 
+				tmp = SKINICON_OTHER_ON;
 			else if ( acc->bDynDisabled )
-			{
-                tmp = SKINICON_OTHER_NOTLOADED;
-			} 
-            else
-			{
-                tmp = acc->bIsEnabled ? SKINICON_OTHER_TICK : SKINICON_OTHER_NOTICK;
-			}
-		    hIcon = LoadSkinnedIcon(tmp);
+				tmp = SKINICON_OTHER_OFF;
+			else
+				tmp = acc->bIsEnabled ? SKINICON_OTHER_TICK : SKINICON_OTHER_NOTICK;
+
+			hIcon = LoadSkinnedIcon(tmp);
 			DrawIconEx(lps->hDC, lps->rcItem.left, lps->rcItem.top, hIcon, cxIcon, cyIcon, 0, hbrBack, DI_NORMAL);
-           	IconLib_ReleaseIcon(hIcon, 0);
+			IconLib_ReleaseIcon(hIcon, 0);
 
 			lps->rcItem.left += cxIcon + 2;
 
@@ -676,8 +662,7 @@ INT_PTR CALLBACK AccMgrDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LPARAM 
 
 			dat->iSelected = -1;
 			SendMessage( hList, LB_RESETCONTENT, 0, 0 );
-			for (i = 0; i < accounts.getCount(); ++i)
-			{
+			for (i = 0; i < accounts.getCount(); ++i) {
 				int iItem = SendMessage(hList, LB_ADDSTRING, 0, (LPARAM)accounts[i]->tszAccountName);
 				SendMessage(hList, LB_SETITEMDATA, iItem, (LPARAM)accounts[i]);
 
@@ -724,24 +709,23 @@ INT_PTR CALLBACK AccMgrDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LPARAM 
                 }
 			}
 
-			if ( iItem != LB_ERR ) 
-            {
-                PROTOACCOUNT* pa = (PROTOACCOUNT*)ListBox_GetItemData(hwndList, iItem);
+			if ( iItem != LB_ERR ) {
+				PROTOACCOUNT* pa = (PROTOACCOUNT*)ListBox_GetItemData(hwndList, iItem);
 				HMENU hMenu = CreatePopupMenu();
-                if (!pa->bOldProto && !pa->bDynDisabled)
-                {
-				    AppendMenu(hMenu, MF_STRING, (UINT_PTR)1, TranslateT("Rename"));
-//				    AppendMenu(hMenu, MF_STRING, (UINT_PTR)2, TranslateT("Edit"));
-                }
-				AppendMenu(hMenu, MF_STRING, (UINT_PTR)3, TranslateT("Delete"));
+				if ( !pa->bOldProto && !pa->bDynDisabled )
+					AppendMenu(hMenu, MF_STRING, 1, TranslateT("Rename"));
 
-                if ( pa->bOldProto || pa->bDynDisabled )
-				    AppendMenu(hMenu, MF_STRING, (UINT_PTR)4, TranslateT("Upgrade"));
+				AppendMenu(hMenu, MF_STRING, 3, TranslateT("Delete"));
+
+				if ( Proto_IsAccountEnabled( pa ))
+					AppendMenu(hMenu, MF_STRING, 4, TranslateT("Configure"));
+
+				if ( pa->bOldProto || pa->bDynDisabled )
+					AppendMenu(hMenu, MF_STRING, 5, TranslateT("Upgrade"));
 
 				AppendMenu(hMenu, MF_SEPARATOR, 0, NULL);
-				AppendMenu(hMenu, MF_STRING, (UINT_PTR)0, TranslateT("Cancel"));
-				switch (TrackPopupMenu( hMenu, TPM_RETURNCMD, pt.x, pt.y, 0, hwndDlg, NULL )) 
-                {
+				AppendMenu(hMenu, MF_STRING, 0, TranslateT("Cancel"));
+				switch (TrackPopupMenu( hMenu, TPM_RETURNCMD, pt.x, pt.y, 0, hwndDlg, NULL )) {
 				case 1:
 					PostMessage(hwndList, WM_MY_RENAME, 0, 0);
 					break;
@@ -755,12 +739,16 @@ INT_PTR CALLBACK AccMgrDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LPARAM 
 					break;
 
 				case 4:
+					sttClickButton(hwndDlg, IDC_OPTIONS);
+					break;
+
+				case 5:
 					sttClickButton(hwndDlg, IDC_UPGRADE);
 					break;
 				}
 				DestroyMenu( hMenu );
-		    }	
-        }
+			}	
+		}
 		break;
 
 	case WM_COMMAND:
@@ -775,9 +763,9 @@ INT_PTR CALLBACK AccMgrDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LPARAM 
 					SetFocus(hwndList);
 					break;
 
-                case LBN_DBLCLK:
+				case LBN_DBLCLK:
 					PostMessage(hwndList, WM_MY_RENAME, 0, 0);
-                    break;
+					break;
 
 				case LBN_MY_CHECK:
 					{
@@ -788,10 +776,12 @@ INT_PTR CALLBACK AccMgrDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LPARAM 
 
 							pa->bIsEnabled = !pa->bIsEnabled;
 							if ( pa->bIsEnabled ) {
-								if ( ActivateAccount( pa ))
+								if ( ActivateAccount( pa )) {
 									pa->ppro->OnEvent( EV_PROTO_ONLOAD, 0, 0 );
-                                else
-    					            pa->type = PROTOTYPE_DISPROTO;
+									if (!DBGetContactSettingByte(NULL, "CList", "MoveProtoMenus", FALSE))
+										pa->ppro->OnEvent( EV_PROTO_ONMENU, 0, 0 );
+								}
+								else pa->type = PROTOTYPE_DISPROTO;
 							}
 							else DeactivateAccount( pa, true, false );
 
@@ -806,8 +796,7 @@ INT_PTR CALLBACK AccMgrDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LPARAM 
 					{
 						int iItem = ListBox_GetCurSel(hwndList);
 						PROTOACCOUNT *pa = (PROTOACCOUNT *)ListBox_GetItemData(hwndList, iItem);
-						if (pa) 
-                        {
+						if ( pa ) {
 							mir_free(pa->tszAccountName);
 							pa->tszAccountName = (TCHAR*)lParam;
 							WriteDbAccounts();
@@ -821,10 +810,9 @@ INT_PTR CALLBACK AccMgrDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LPARAM 
 							sttSelectItem(dat, hwndList, iItem);
 
 							RedrawWindow(hwndList, NULL, NULL, RDW_INVALIDATE);
-					    }
-                        else
-                            mir_free((TCHAR*)lParam);
-                    }
+						}
+						else mir_free((TCHAR*)lParam);
+					}
 					break;
 			}	}
 			break;
@@ -832,9 +820,9 @@ INT_PTR CALLBACK AccMgrDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LPARAM 
 		case IDC_ADD:
 			{
 				AccFormDlgParam param = { PRAC_ADDED, NULL };
-				if ( IDOK == DialogBoxParam( hMirandaInst, MAKEINTRESOURCE(IDD_ACCFORM), hwndDlg, AccFormDlgProc, (LPARAM)&param )) {
+				if ( IDOK == DialogBoxParam( hMirandaInst, MAKEINTRESOURCE(IDD_ACCFORM), hwndDlg, AccFormDlgProc, (LPARAM)&param ))
 					SendMessage( hwndDlg, WM_MY_REFRESH, 0, 0 );
-			}	}
+			}
 			break;
 
 		case IDC_EDIT:
@@ -854,12 +842,11 @@ INT_PTR CALLBACK AccMgrDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LPARAM 
 					PROTOACCOUNT* pa = ( PROTOACCOUNT* )ListBox_GetItemData( hList, idx );
 					TCHAR buf[ 200 ];
 					mir_sntprintf( buf, SIZEOF(buf), TranslateT( "Account %s is being deleted" ), pa->tszAccountName );
-                    if (pa->bOldProto) 
-                    {
-					    MessageBox( NULL, TranslateT( "You need to disable plugin to delete this account" ), buf,
-                            MB_ICONERROR | MB_OK );
-                        break;
-                    }
+					if (pa->bOldProto) {
+						MessageBox( NULL, TranslateT( "You need to disable plugin to delete this account" ), buf,
+							MB_ICONERROR | MB_OK );
+						break;
+					}
 					if ( IDYES == MessageBox( NULL, TranslateT( errMsg ), buf, MB_ICONSTOP | MB_DEFBUTTON2 | MB_YESNO )) {
 						// lock controls to avoid changes during remove process
 						ListBox_SetCurSel( hList, -1 );
@@ -871,9 +858,9 @@ INT_PTR CALLBACK AccMgrDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LPARAM 
 
 						accounts.remove( pa );
 
-                        CheckProtocolOrder();
-                
-                        WriteDbAccounts();
+						CheckProtocolOrder();
+
+						WriteDbAccounts();
 						NotifyEventHooks( hAccListChanged, PRAC_REMOVED, ( LPARAM )pa );
 
 						UnloadAccount( pa, true, true );
@@ -926,24 +913,24 @@ INT_PTR CALLBACK AccMgrDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LPARAM 
 			break;
 
 		case IDOK:
-		{
-			PSHNOTIFY pshn = {0};
-			pshn.hdr.code = PSN_APPLY;
-			pshn.hdr.hwndFrom = hwndDlg;
-			SendMessage(hwndDlg, WM_NOTIFY, 0, (LPARAM)&pshn);
-			DestroyWindow(hwndDlg);
-			break;
-		}
+			{
+				PSHNOTIFY pshn = {0};
+				pshn.hdr.code = PSN_APPLY;
+				pshn.hdr.hwndFrom = hwndDlg;
+				SendMessage(hwndDlg, WM_NOTIFY, 0, (LPARAM)&pshn);
+				DestroyWindow(hwndDlg);
+				break;
+			}
 
 		case IDCANCEL:
-		{
-			PSHNOTIFY pshn = {0};
-			pshn.hdr.code = PSN_RESET;
-			pshn.hdr.hwndFrom = hwndDlg;
-			SendMessage(hwndDlg, WM_NOTIFY, 0, (LPARAM)&pshn);
-			DestroyWindow(hwndDlg);
-			break;
-		}
+			{
+				PSHNOTIFY pshn = {0};
+				pshn.hdr.code = PSN_RESET;
+				pshn.hdr.hwndFrom = hwndDlg;
+				SendMessage(hwndDlg, WM_NOTIFY, 0, (LPARAM)&pshn);
+				DestroyWindow(hwndDlg);
+				break;
+			}
 		}
 	case PSM_CHANGED:
 		{
@@ -962,14 +949,14 @@ INT_PTR CALLBACK AccMgrDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LPARAM 
 	case WM_NOTIFY:
 		switch(((LPNMHDR)lParam)->idFrom) {
 		case 0:
-			switch (((LPNMHDR)lParam)->code)
-			{
+			switch (((LPNMHDR)lParam)->code) {
 				case PSN_APPLY:
-				{	int i;
+				{	
+					int i;
 					PSHNOTIFY pshn = {0};
 					pshn.hdr.code = PSN_APPLY;
 					for (i = 0; i < accounts.getCount(); ++i) {
-						if (accounts[i]->hwndAccMgrUI && accounts[i]->bAccMgrUIChanged) {
+						if ( accounts[i]->hwndAccMgrUI && accounts[i]->bAccMgrUIChanged ) {
 							pshn.hdr.hwndFrom = accounts[i]->hwndAccMgrUI;
 							SendMessage(accounts[i]->hwndAccMgrUI, WM_NOTIFY, 0, (LPARAM)&pshn);
 							accounts[i]->bAccMgrUIChanged = FALSE;
@@ -977,12 +964,12 @@ INT_PTR CALLBACK AccMgrDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LPARAM 
 					return TRUE;
 				}
 				case PSN_RESET:
-				{	int i;
+				{	
+					int i;
 					PSHNOTIFY pshn = {0};
 					pshn.hdr.code = PSN_RESET;
 					for (i = 0; i < accounts.getCount(); ++i) {
-						if (accounts[i]->hwndAccMgrUI && accounts[i]->bAccMgrUIChanged)
-						{
+						if ( accounts[i]->hwndAccMgrUI && accounts[i]->bAccMgrUIChanged ) {
 							pshn.hdr.hwndFrom = accounts[i]->hwndAccMgrUI;
 							SendMessage(accounts[i]->hwndAccMgrUI, WM_NOTIFY, 0, (LPARAM)&pshn);
 							accounts[i]->bAccMgrUIChanged = FALSE;

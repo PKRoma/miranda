@@ -5,7 +5,7 @@
 // Copyright © 2000-2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001-2002 Jon Keating, Richard Hughes
 // Copyright © 2002-2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004-2009 Joe Kucera
+// Copyright © 2004-2010 Joe Kucera
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -19,7 +19,7 @@
 // 
 // You should have received a copy of the GNU General Public License
 // along with this program; if not, write to the Free Software
-// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 //
 // -----------------------------------------------------------------------------
 //
@@ -109,6 +109,14 @@ void CIcqProto::handleExtensionError(BYTE *buf, WORD wPackLen)
 
 							NetLog_Server("Full info request error 0x%02x received", wErrorCode);
 						}
+            else if (wSubType == META_SET_PASSWORD_REQ)
+            { // failed to change user password, report to UI
+              BroadcastAck(NULL, ACKTYPE_SETINFO, ACKRESULT_FAILED, (HANDLE)wCookie, 0);
+
+              NetLog_Server("Meta change password request failed, error 0x%02x", wErrorCode);
+            }
+            else
+              NetLog_Server("Meta request error 0x%02x received", wErrorCode);
 					}
 					else 
 						NetLog_Server("Meta request error 0x%02x received", wErrorCode);
@@ -357,6 +365,7 @@ void CIcqProto::parseSearchReplies(unsigned char *databuf, WORD wPacketLen, WORD
 		{
 			ICQSEARCHRESULT sr = {0};
 			DWORD dwUin;
+      char szUin[UINMAXLEN];
 			WORD wLen;
 
 			sr.hdr.cbSize = sizeof(sr);
@@ -377,6 +386,8 @@ void CIcqProto::parseSearchReplies(unsigned char *databuf, WORD wPacketLen, WORD
 			unpackLEDWord(&databuf, &dwUin); // Uin
 			wPacketLen -= 4;
 			sr.uin = dwUin;
+      _itoa(dwUin, szUin, 10);
+      sr.hdr.id = (FNAMECHAR*)szUin;
 
 			// Nick
 			if (wPacketLen < 2)
@@ -387,7 +398,7 @@ void CIcqProto::parseSearchReplies(unsigned char *databuf, WORD wPacketLen, WORD
 			{
 				if (wPacketLen < wLen || (databuf[wLen-1] != 0))
 					break;
-				sr.hdr.nick = (char*)databuf;
+				sr.hdr.nick = (FNAMECHAR*)databuf;
 				databuf += wLen;
 			}
 			else
@@ -404,7 +415,7 @@ void CIcqProto::parseSearchReplies(unsigned char *databuf, WORD wPacketLen, WORD
 			{
 				if (wPacketLen < wLen || (databuf[wLen-1] != 0))
 					break;
-				sr.hdr.firstName = (char*)databuf;
+				sr.hdr.firstName = (FNAMECHAR*)databuf;
 				databuf += wLen;
 			}
 			else
@@ -421,7 +432,7 @@ void CIcqProto::parseSearchReplies(unsigned char *databuf, WORD wPacketLen, WORD
 			{
 				if (wPacketLen < wLen || (databuf[wLen-1] != 0))
 					break;
-				sr.hdr.lastName = (char*)databuf;
+				sr.hdr.lastName = (FNAMECHAR*)databuf;
 				databuf += wLen;
 			}
 			else
@@ -438,7 +449,7 @@ void CIcqProto::parseSearchReplies(unsigned char *databuf, WORD wPacketLen, WORD
 			{
 				if (wPacketLen < wLen || (databuf[wLen-1] != 0))
 					break;
-				sr.hdr.email = (char*)databuf;
+				sr.hdr.email = (FNAMECHAR*)databuf;
 				databuf += wLen;
 			}
 			else
@@ -451,7 +462,6 @@ void CIcqProto::parseSearchReplies(unsigned char *databuf, WORD wPacketLen, WORD
 				break;
 			unpackByte(&databuf, &sr.auth);
 
-			sr.uid = NULL; // icq contact
 			// Finally, broadcast the result
 			BroadcastAck(NULL, ACKTYPE_SEARCH, ACKRESULT_DATA, (HANDLE)wCookie, (LPARAM)&sr);
 
@@ -469,7 +479,6 @@ void CIcqProto::parseSearchReplies(unsigned char *databuf, WORD wPacketLen, WORD
 				}
 				ReleaseSearchCookie(wCookie, pCookie);
 			}
-
 			bParsingOK = TRUE;
 		}
 		else 
@@ -768,8 +777,32 @@ void CIcqProto::handleDirectoryQueryResponse(BYTE *databuf, WORD wPacketLen, WOR
 		switch (pCookieData->bRequestType)
 		{
 		case DIRECTORYREQUEST_INFOOWNER:
-			hContact = NULL;
+			parseDirectoryUserDetailsData(NULL, pDirectoryData, wCookie, pCookieData, wReplySubtype);
+			break;
+
 		case DIRECTORYREQUEST_INFOUSER:
+      {
+  		  DWORD dwUin = 0;
+	  	  char *szUid = pDirectoryData->getString(0x32, 1);
+		    if (!szUid) 
+		    {
+			    NetLog_Server("Error: Received unrecognized data from the directory");
+			    break;
+		    }
+
+  		  if (IsStringUIN(szUid))
+	  		  dwUin = atoi(szUid);
+
+        if (hContact != HContactFromUID(dwUin, szUid, NULL))
+        {
+          NetLog_Server("Error: Received data does not match cookie contact, ignoring.");
+          SAFE_FREE(&szUid);
+          break;
+        }
+        else
+          SAFE_FREE(&szUid);
+      }
+      
 		case DIRECTORYREQUEST_INFOMULTI:
 			parseDirectoryUserDetailsData(hContact, pDirectoryData, wCookie, pCookieData, wReplySubtype);
 			break;
@@ -820,17 +853,6 @@ void CIcqProto::parseDirectoryUserDetailsData(HANDLE hContact, oscar_tlv_chain *
 	oscar_tlv *pTLV;
 	WORD wRecordCount;
 
-#ifdef _DEBUG
-	{
-		char *szUid = cDetails->getString(0x32, 1);
-
-    if (!hContact)
-			NetLog_Server("Received owner user info from directory");
-		else
-			NetLog_Server("Received user info for %s from directory", szUid);
-		SAFE_FREE(&szUid);
-	}
-#endif
 	if (pCookieData->bRequestType == DIRECTORYREQUEST_INFOMULTI && !hContact)
 	{
 		DWORD dwUin = 0;
@@ -851,8 +873,24 @@ void CIcqProto::parseDirectoryUserDetailsData(HANDLE hContact, oscar_tlv_chain *
 			SAFE_FREE(&szUid);
 			return;
 		}
+#ifdef _DEBUG
+		else
+			NetLog_Server("Received user info for %s from directory", szUid);
+#endif
 		SAFE_FREE(&szUid);
 	}
+#ifdef _DEBUG
+  else
+	{
+		char *szUid = cDetails->getString(0x32, 1);
+
+    if (!hContact)
+			NetLog_Server("Received owner user info from directory");
+		else
+			NetLog_Server("Received user info for %s from directory", szUid);
+		SAFE_FREE(&szUid);
+	}
+#endif
 
 	pTLV = cDetails->getTLV(0x50, 1);
 	if (pTLV && pTLV->wLen > 0)
@@ -1013,42 +1051,47 @@ void CIcqProto::parseDirectoryUserDetailsData(HANDLE hContact, oscar_tlv_chain *
 void CIcqProto::parseDirectorySearchData(oscar_tlv_chain *cDetails, DWORD dwCookie, cookie_directory_data *pCookieData, WORD wReplySubType)
 {
 	ICQSEARCHRESULT isr = {0};
-	oscar_tlv *pTLV;
-	char *szUin = cDetails->getString(0x32, 1); // User ID
+	char *szUid = cDetails->getString(0x32, 1); // User ID
 
 #ifdef _DEBUG
-	NetLog_Server("Directory Search: Found user %s", szUin);
+	NetLog_Server("Directory Search: Found user %s", szUid);
 #endif
 	isr.hdr.cbSize = sizeof(ICQSEARCHRESULT);
+  isr.hdr.flags = PSR_TCHAR;
+  isr.hdr.id = ansi_to_tchar(szUid);
 
-	if (IsStringUIN(szUin))
-	{
-		isr.uin = atoi(szUin);
-		SAFE_FREE(&szUin);
-	}
+  if (IsStringUIN(szUid))
+		isr.uin = atoi(szUid);
 	else
-	{
 		isr.uin = 0;
-		isr.uid = szUin;
-	}
 
-	pTLV = cDetails->getTLV(0x50, 1);
+	SAFE_FREE(&szUid);
+
+	oscar_tlv *pTLV = cDetails->getTLV(0x50, 1);
+  char *szData = NULL;
+
 	if (pTLV && pTLV->wLen > 0)
-		isr.hdr.email = cDetails->getString(0x50, 1); // Verified e-mail
+		szData = cDetails->getString(0x50, 1); // Verified e-mail
 	else
-		isr.hdr.email = cDetails->getString(0x55, 1); // Pending e-mail
-	if (!strlennull(isr.hdr.email))
-		SAFE_FREE(&isr.hdr.email);
+		szData = cDetails->getString(0x55, 1); // Pending e-mail
+	if (strlennull(szData))
+    isr.hdr.email = ansi_to_tchar(szData);
+	SAFE_FREE(&szData);
 
-	isr.firstName = cDetails->getString(0x64, 1); // First Name
-	if (!utf8_decode(isr.firstName, &isr.hdr.firstName))
-		SAFE_FREE(&isr.firstName);
-	isr.lastName = cDetails->getString(0x6E, 1); // Last Name
-	if (!utf8_decode(isr.lastName, &isr.hdr.lastName))
-		SAFE_FREE(&isr.lastName);
-	isr.nick = cDetails->getString(0x78, 1); // Nick
-	if (!utf8_decode(isr.nick, &isr.hdr.nick))
-		SAFE_FREE(&isr.nick);
+	szData = cDetails->getString(0x64, 1); // First Name
+	if (strlennull(szData))
+		isr.hdr.firstName = utf8_to_tchar(szData);
+  SAFE_FREE(&szData);
+
+	szData = cDetails->getString(0x6E, 1); // Last Name
+	if (strlennull(szData))
+		isr.hdr.lastName = utf8_to_tchar(szData);
+  SAFE_FREE(&szData);
+
+	szData = cDetails->getString(0x78, 1); // Nick
+	if (strlennull(szData))
+    isr.hdr.nick = utf8_to_tchar(szData);
+	SAFE_FREE(&szData);
 
 	switch (cDetails->getNumber(0x82, 1)) // Gender
 	{
@@ -1080,9 +1123,7 @@ void CIcqProto::parseDirectorySearchData(oscar_tlv_chain *cDetails, DWORD dwCook
 	BroadcastAck(NULL, ACKTYPE_SEARCH, ACKRESULT_DATA, (HANDLE)dwCookie, (LPARAM)&isr);
 
 	// Release memory
-	SAFE_FREE(&isr.nick); /// FIXME: Reduce memory allocation
-	SAFE_FREE(&isr.firstName);
-	SAFE_FREE(&isr.lastName);
+  SAFE_FREE(&isr.hdr.id);
 	SAFE_FREE(&isr.hdr.nick);
 	SAFE_FREE(&isr.hdr.firstName);
 	SAFE_FREE(&isr.hdr.lastName);

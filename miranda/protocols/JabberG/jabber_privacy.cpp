@@ -37,7 +37,7 @@ Last change by : $Author$
 
 #define JABBER_PL_BUSY_MSG	 "Sending request, please wait..."
 
-void CJabberProto::OnIqRequestPrivacyLists( HXML, CJabberIqInfo* pInfo )
+BOOL CJabberProto::OnIqRequestPrivacyLists( HXML, CJabberIqInfo* pInfo )
 {
 	if ( pInfo->GetIqType() == JABBER_IQ_TYPE_SET ) {
 		if ( !m_pDlgPrivacyLists )
@@ -49,7 +49,9 @@ void CJabberProto::OnIqRequestPrivacyLists( HXML, CJabberIqInfo* pInfo )
 
 		XmlNodeIq iq( _T("result"), pInfo );
 		m_ThreadInfo->send( iq );
-}	}
+	}
+	return TRUE;
+}
 
 void CJabberProto::OnIqResultPrivacyListModify( HXML, CJabberIqInfo* pInfo )
 {
@@ -587,6 +589,10 @@ public:
 
 	void OnDestroy()
 	{
+		g_ReleaseIcon(( HICON )SendDlgItemMessage(m_hwnd, IDC_ICO_MESSAGE,     STM_SETICON, 0, 0));
+		g_ReleaseIcon(( HICON )SendDlgItemMessage(m_hwnd, IDC_ICO_QUERY,       STM_SETICON, 0, 0));
+		g_ReleaseIcon(( HICON )SendDlgItemMessage(m_hwnd, IDC_ICO_PRESENCEIN,  STM_SETICON, 0, 0));
+		g_ReleaseIcon(( HICON )SendDlgItemMessage(m_hwnd, IDC_ICO_PRESENCEOUT, STM_SETICON, 0, 0));
 		m_proto->m_hwndPrivacyRule = NULL;
 	}
 };
@@ -760,9 +766,9 @@ CJabberDlgPrivacyLists::CJabberDlgPrivacyLists(CJabberProto *proto):
 	m_btnAdvanced(this,   IDC_BTN_ADVANCED, proto->LoadIconEx("sd_view_list"),    LPGEN("Advanced mode")),
 	m_btnAddJid(this,     IDC_ADDJID,       proto->LoadIconEx("addroster"),       LPGEN("Add JID")),
 	m_btnActivate(this,   IDC_ACTIVATE,     proto->LoadIconEx("pl_list_active"),  LPGEN("Activate")),
-	m_btnSetDefault(this, IDC_SET_DEFAULT,  proto->LoadIconEx("pl_list_default"),	LPGEN("Set default")),
+	m_btnSetDefault(this, IDC_SET_DEFAULT,  proto->LoadIconEx("pl_list_default"), LPGEN("Set default")),
 	m_btnEditRule(this,   IDC_EDIT_RULE,    SKINICON_OTHER_RENAME,                LPGEN("Edit rule")),
-	m_btnAddRule(this,    IDC_ADD_RULE,     SKINICON_OTHER_ADDCONTACT,				LPGEN("Add rule")),
+	m_btnAddRule(this,    IDC_ADD_RULE,     SKINICON_OTHER_ADDCONTACT,            LPGEN("Add rule")),
 	m_btnRemoveRule(this, IDC_REMOVE_RULE,  SKINICON_OTHER_DELETE,                LPGEN("Delete rule")),
 	m_btnUpRule(this,     IDC_UP_RULE,      proto->LoadIconEx("arrow_up"),        LPGEN("Move rule up")),
 	m_btnDownRule(this,   IDC_DOWN_RULE,    proto->LoadIconEx("arrow_down"),      LPGEN("Move rule down")),
@@ -802,8 +808,7 @@ void CJabberDlgPrivacyLists::OnInitDialog()
 {
 	CSuper::OnInitDialog();
 
-	SendMessage( m_hwnd, WM_SETICON, ICON_BIG, ( LPARAM )m_proto->LoadIconEx( "privacylists" ));
-	SendDlgItemMessage(m_hwnd, IDC_HEADERBAR, WM_SETICON, 0, (LPARAM)g_LoadIconEx32("privacylists"));
+	WindowSetIcon( m_hwnd, m_proto, "privacylists" );
 
 	EnableWindow( GetDlgItem( m_hwnd, IDC_ADD_RULE ), FALSE );
 	EnableWindow( GetDlgItem( m_hwnd, IDC_EDIT_RULE ), FALSE );
@@ -825,15 +830,15 @@ void CJabberDlgPrivacyLists::OnInitDialog()
 	m_clcClist.SetExStyle(CLS_EX_DISABLEDRAGDROP|CLS_EX_TRACKSELECT);
 
 	HIMAGELIST hIml = ImageList_Create(GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),(IsWinVerXPPlus()?ILC_COLOR32:ILC_COLOR16)|ILC_MASK,9,9);
-	ImageList_AddIcon(hIml, LoadSkinnedIcon(SKINICON_OTHER_SMALLDOT));
-	ImageList_AddIcon(hIml, m_proto->LoadIconEx("pl_msg_allow"));
-	ImageList_AddIcon(hIml, m_proto->LoadIconEx("pl_msg_deny"));
-	ImageList_AddIcon(hIml, m_proto->LoadIconEx("pl_prin_allow"));
-	ImageList_AddIcon(hIml, m_proto->LoadIconEx("pl_prin_deny"));
-	ImageList_AddIcon(hIml, m_proto->LoadIconEx("pl_prout_allow"));
-	ImageList_AddIcon(hIml, m_proto->LoadIconEx("pl_prout_deny"));
-	ImageList_AddIcon(hIml, m_proto->LoadIconEx("pl_iq_allow"));
-	ImageList_AddIcon(hIml, m_proto->LoadIconEx("pl_iq_deny"));
+	ImageList_AddIcon_Icolib(hIml, LoadSkinnedIcon(SKINICON_OTHER_SMALLDOT));
+	ImageList_AddIcon_Icolib(hIml, m_proto->LoadIconEx("pl_msg_allow"));
+	ImageList_AddIcon_Icolib(hIml, m_proto->LoadIconEx("pl_msg_deny"));
+	ImageList_AddIcon_Icolib(hIml, m_proto->LoadIconEx("pl_prin_allow"));
+	ImageList_AddIcon_Icolib(hIml, m_proto->LoadIconEx("pl_prin_deny"));
+	ImageList_AddIcon_Icolib(hIml, m_proto->LoadIconEx("pl_prout_allow"));
+	ImageList_AddIcon_Icolib(hIml, m_proto->LoadIconEx("pl_prout_deny"));
+	ImageList_AddIcon_Icolib(hIml, m_proto->LoadIconEx("pl_iq_allow"));
+	ImageList_AddIcon_Icolib(hIml, m_proto->LoadIconEx("pl_iq_deny"));
 	m_clcClist.SetExtraImageList(hIml);
 	m_clcClist.SetExtraColumns(4);
 
@@ -2254,13 +2259,13 @@ void CJabberProto::BuildPrivacyMenu()
 {
 	CLISTMENUITEM mi = { 0 };
 	mi.cbSize = sizeof(mi);
-	mi.position = 1005;
+	mi.position = 200005;
 	mi.pszContactOwner = m_szModuleName;
 	mi.icolibItem = GetIconHandle(IDI_AGENTS);
 	mi.flags = CMIF_ROOTPOPUP | CMIF_CHILDPOPUP | CMIF_ICONFROMICOLIB | CMIF_HIDDEN;
 	mi.pszName = LPGEN("Privacy Lists");
-	mi.hParentMenu = pcli->pfnGetProtocolMenu( m_szModuleName );
-	m_hPrivacyMenuRoot = ( HGENMENU )CallService( MS_CLIST_ADDSTATUSMENUITEM, 0, ( LPARAM )&mi );
+	mi.hParentMenu = MO_GetProtoRootMenu( m_szModuleName );
+	m_hPrivacyMenuRoot = ( HGENMENU )CallService( MS_CLIST_ADDPROTOMENUITEM, 0, ( LPARAM )&mi );
 
 	JCreateService( "/PrivacyLists", &CJabberProto::OnMenuHandlePrivacyLists );
 	char srvFce[MAX_PATH + 64];
@@ -2271,7 +2276,7 @@ void CJabberProto::BuildPrivacyMenu()
 	mi.icolibItem = GetIconHandle(IDI_PRIVACY_LISTS);
 	mi.ptszName = LPGENT("List Editor...");
 	mi.hParentMenu = m_hPrivacyMenuRoot;
-	CallService( MS_CLIST_ADDSTATUSMENUITEM, 0, ( LPARAM )&mi );
+	CallService( MS_CLIST_ADDPROTOMENUITEM, 0, ( LPARAM )&mi );
 }
 
 void CJabberProto::BuildPrivacyListsMenu( bool bDeleteOld )
@@ -2305,7 +2310,7 @@ void CJabberProto::BuildPrivacyListsMenu( bool bDeleteOld )
 			SKINICON_OTHER_SMALLDOT :
 			SKINICON_OTHER_EMPTYBLOB);
 	mi.ptszName = LPGENT("<none>");
-	m_hPrivacyMenuItems.insert(( HANDLE )CallService( MS_CLIST_ADDSTATUSMENUITEM, 0, ( LPARAM )&mi ));
+	m_hPrivacyMenuItems.insert(( HANDLE )CallService( MS_CLIST_ADDPROTOMENUITEM, 0, ( LPARAM )&mi ));
 
 	for ( CPrivacyList *pList = m_privacyListManager.GetFirstList(); pList; pList = pList->GetNext()) {
 		++i;
@@ -2322,7 +2327,7 @@ void CJabberProto::BuildPrivacyListsMenu( bool bDeleteOld )
 				SKINICON_OTHER_SMALLDOT :
 				SKINICON_OTHER_EMPTYBLOB);
 		mi.ptszName = pList->GetListName();
-		m_hPrivacyMenuItems.insert(( HANDLE )CallService( MS_CLIST_ADDSTATUSMENUITEM, 0, ( LPARAM )&mi ));
+		m_hPrivacyMenuItems.insert(( HANDLE )CallService( MS_CLIST_ADDPROTOMENUITEM, 0, ( LPARAM )&mi ));
 	}
 
 	m_privacyListManager.Unlock();

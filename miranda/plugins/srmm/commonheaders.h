@@ -1,7 +1,5 @@
 /*
-SRMM
-
-Copyright 2000-2005 Miranda ICQ/IM project, 
+Copyright 2000-2010 Miranda IM project, 
 all portions of this codebase are copyrighted to the people 
 listed in contributors.txt.
 
@@ -29,12 +27,14 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include <windows.h>
 #include <commctrl.h>
-#include <stdio.h>
+#include <vssym32.h>
+
 #include <time.h>
-#include <stddef.h>
-#include <process.h>
+
 #include "resource.h"
+
 #include <win2k.h>
+
 #include <newpluginapi.h>
 #include <m_system.h>
 #include <m_database.h>
@@ -54,6 +54,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <m_message.h>
 #include <m_file.h>
 #include <m_icolib.h>
+#include <m_fontservice.h>
+
 #include "cmdlist.h"
 #include "msgs.h"
 #include "globals.h"

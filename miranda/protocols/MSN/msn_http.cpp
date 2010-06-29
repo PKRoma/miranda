@@ -1,6 +1,6 @@
 /*
 Plugin of Miranda IM for communicating with users of the MSN Messenger protocol.
-Copyright (c) 2006-2009 Boris Krasnovskiy.
+Copyright (c) 2006-2010 Boris Krasnovskiy.
 Copyright (c) 2003-2005 George Hazan.
 Copyright (c) 2002-2003 Richard Hughes (original version).
 
@@ -41,6 +41,7 @@ int msn_httpGatewayInit(HANDLE hConn, NETLIBOPENCONNECTION* nloc, NETLIBHTTPREQU
 	nlhpi.szHttpGetUrl = NULL;
 	nlhpi.szHttpPostUrl = "messenger.hotmail.com";
 	nlhpi.flags = NLHPIF_HTTP11;
+	nlhpi.combinePackets = 5;
 	return MSN_CallService(MS_NETLIB_SETHTTPPROXYINFO, (WPARAM)hConn, (LPARAM)&nlhpi);
 }
 
@@ -87,19 +88,19 @@ PBYTE msn_httpGatewayUnwrapRecv(NETLIBHTTPREQUEST* nlhr, PBYTE buf, int len, int
 				break;
 
 			T->processSessionData(tHeader.szValue);
-			T->applyGatewayData(nlhr->nlc, false);
 		}
 	}
 
-	if (tIsSessionClosed)
+	T->sessionClosed |= tIsSessionClosed;
+	if (tIsSessionClosed && buf == NULL)
 	{	
-        *outBufLen = 0;
+		*outBufLen = 0;
 		buf = (PBYTE)mir_alloc(1);
 		*buf = 0;
 	}
 	else if (buf == NULL && len == 0)
 	{	
-        *outBufLen = 1;
+		*outBufLen = 1;
 		buf = (PBYTE)mir_alloc(1);
 		*buf = 0;
 	}

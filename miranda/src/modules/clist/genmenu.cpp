@@ -1,3 +1,25 @@
+/*
+
+Miranda IM: the free IM client for Microsoft* Windows*
+
+Copyright 2000-2010 Miranda ICQ/IM project,
+all portions of this codebase are copyrighted to the people
+listed in contributors.txt.
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+*/
 #include "commonheaders.h"
 #include "genmenu.h"
 
@@ -207,6 +229,31 @@ INT_PTR MO_ProcessHotKeys( HANDLE menuHandle, INT_PTR vKey )
 	return FALSE;
 }
 
+INT_PTR MO_GetProtoRootMenu(WPARAM wParam,LPARAM lParam)
+{
+	char* szProto = ( char* )wParam;
+	if ( szProto == NULL )
+		return 0;
+
+	if ( DBGetContactSettingByte( NULL, "CList", "MoveProtoMenus", FALSE ))
+		return ( INT_PTR )cli.pfnGetProtocolMenu( szProto );
+
+	int objidx = GetMenuObjbyId(( int )hMainMenuObject );
+	if ( objidx == -1 )
+		return NULL;
+
+	EnterCriticalSection( &csMenuHook );
+
+	TIntMenuObject* pmo = g_menus[objidx];
+	PMO_IntMenuItem p;
+	for ( p = pmo->m_items.first; p != NULL; p = p->next )
+		if ( !lstrcmpA( p->UniqName, szProto ))
+			break;
+
+	LeaveCriticalSection( &csMenuHook );
+	return ( INT_PTR )p;
+}
+
 //wparam=MenuItemHandle
 //lparam=PMO_MenuItem
 INT_PTR MO_GetMenuItem(WPARAM wParam,LPARAM lParam)
@@ -290,7 +337,7 @@ int MO_ModifyMenuItem( PMO_IntMenuItem menuHandle, PMO_MenuItem pmi )
 	}
 	if ( pmi->flags & CMIM_ICON ) {
 		if ( pimi->mi.flags & CMIF_ICONFROMICOLIB ) {
-			HICON hIcon = IcoLib_GetIconByHandle( pmi->hIcolibItem );
+			HICON hIcon = IcoLib_GetIconByHandle( pmi->hIcolibItem, false );
 			if ( hIcon != NULL ) {
 				pimi->hIcolibItem = pmi->hIcolibItem;
 				pimi->iconId = ImageList_ReplaceIcon( pimi->parent->m_hMenuIcons, pimi->iconId, hIcon );
@@ -304,7 +351,9 @@ int MO_ModifyMenuItem( PMO_IntMenuItem menuHandle, PMO_MenuItem pmi )
 				pimi->iconId = ImageList_ReplaceIcon( pimi->parent->m_hMenuIcons, pimi->iconId, pmi->hIcon );
 			else
 				pimi->iconId = -1;	  //fixme, should remove old icon & shuffle all iconIds
-	}	}
+		}
+		if (pimi->hBmp) DeleteObject(pimi->hBmp); pimi->hBmp = NULL;
+	}
 
 	if ( pmi->flags & CMIM_HOTKEY )
 		pimi->mi.hotKey = pmi->hotKey;
@@ -336,7 +385,7 @@ INT_PTR MO_MenuItemGetOwnerData(WPARAM wParam, LPARAM)
 PMO_IntMenuItem MO_GetIntMenuItem(HGENMENU wParam)
 {
 	PMO_IntMenuItem result = ( PMO_IntMenuItem )wParam;
-	if ( result == NULL )
+	if ( result == NULL || wParam == (HGENMENU)0xffff1234 || wParam == HGENMENU_ROOT)
 		return NULL;
 
 	__try
@@ -505,7 +554,8 @@ INT_PTR MO_CreateNewMenuObject(WPARAM, LPARAM lParam)
 	p->Name = mir_strdup( pmp->name );
 	p->CheckService = mir_strdup( pmp->CheckService );
 	p->ExecService = mir_strdup( pmp->ExecService );
-	p->m_hMenuIcons = ImageList_Create( GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), ILC_COLOR32|ILC_MASK, 15, 100 );
+	p->m_hMenuIcons = ImageList_Create( GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), 
+		(IsWinVerXPPlus() ? ILC_COLOR32 : ILC_COLOR16) | ILC_MASK, 15, 100 );
 	g_menus.insert(p);
 
 	LeaveCriticalSection( &csMenuHook );
@@ -552,7 +602,7 @@ INT_PTR MO_RemoveMenuItem(WPARAM wParam, LPARAM)
 	pimi->parent->freeItem( pimi );
 
 	LeaveCriticalSection( &csMenuHook );
-	return -1;
+	return 0;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -620,7 +670,7 @@ PMO_IntMenuItem MO_AddNewMenuItem( HANDLE menuobjecthandle, PMO_MenuItem pmi )
 
 	if ( pmi->hIcon != NULL ) {
 		if ( pmi->flags & CMIF_ICONFROMICOLIB ) {
-			HICON hIcon = IcoLib_GetIconByHandle( pmi->hIcolibItem );
+			HICON hIcon = IcoLib_GetIconByHandle( pmi->hIcolibItem, false );
 			p->iconId = ImageList_AddIcon( pmo->m_hMenuIcons, hIcon );
 			p->hIcolibItem = pmi->hIcolibItem;
 			IconLib_ReleaseIcon( hIcon, 0 );
@@ -940,19 +990,27 @@ HMENU BuildRecursiveMenu(HMENU hMenu, PMO_IntMenuItem pRootMenu, ListParam *para
 
 		MENUITEMINFO mii = { 0 };
 		mii.dwItemData = ( LPARAM )pmi;
-		mii.fType = MFT_STRING;
 
 		int i = WhereToPlace( hMenu, mi );
 
 		if ( !IsWinVer98Plus()) {
 			mii.cbSize = MENUITEMINFO_V4_SIZE;
 			mii.fMask = MIIM_DATA | MIIM_TYPE | MIIM_ID;
+			mii.fType = MFT_STRING;
 		}
 		else {
 			mii.cbSize = sizeof( mii );
 			mii.fMask = MIIM_DATA | MIIM_ID | MIIM_STRING;
-			if ( pmi->iconId != -1 )
+			if ( pmi->iconId != -1 ) {
 				mii.fMask |= MIIM_BITMAP;
+				if (IsWinVerVistaPlus() && isThemeActive()) {
+					if (pmi->hBmp == NULL)
+						pmi->hBmp = ConvertIconToBitmap(NULL, pmi->parent->m_hMenuIcons, pmi->iconId);
+					mii.hbmpItem = pmi->hBmp;
+				}
+				else
+					mii.hbmpItem = HBMMENU_CALLBACK;
+			}
 		}
 
 		mii.fMask |= MIIM_STATE;
@@ -960,12 +1018,12 @@ HMENU BuildRecursiveMenu(HMENU hMenu, PMO_IntMenuItem pRootMenu, ListParam *para
 		mii.fState |= (( pmi->mi.flags & CMIF_CHECKED) ? MFS_CHECKED : MFS_UNCHECKED );
 		if ( pmi->mi.flags & CMIF_DEFAULT ) mii.fState |= MFS_DEFAULT;
 
+		mii.dwTypeData = ( pmi->CustomName ) ? pmi->CustomName : mi->ptszName;
+
 		// it's a submenu
 		if ( pmi->submenu.first ) {
 			mii.fMask |= MIIM_SUBMENU;
 			mii.hSubMenu = CreatePopupMenu();
-			mii.hbmpItem = HBMMENU_CALLBACK;
-			mii.dwTypeData = ( pmi->CustomName ) ? pmi->CustomName : mi->ptszName;
 
 			#ifdef PUTPOSITIONSONMENU
 				if ( GetKeyState(VK_CONTROL) & 0x8000) {
@@ -981,9 +1039,6 @@ HMENU BuildRecursiveMenu(HMENU hMenu, PMO_IntMenuItem pRootMenu, ListParam *para
 		}
 		else {
 			mii.wID = pmi->iCommand;
-
-			mii.hbmpItem = HBMMENU_CALLBACK;
-			mii.dwTypeData = ( pmi->CustomName ) ? pmi->CustomName : mi->ptszName;
 
 			#ifdef PUTPOSITIONSONMENU
 				if ( GetKeyState(VK_CONTROL) & 0x8000) {
@@ -1009,7 +1064,7 @@ HMENU BuildRecursiveMenu(HMENU hMenu, PMO_IntMenuItem pRootMenu, ListParam *para
 static int MO_ReloadIcon( PMO_IntMenuItem pmi, void* )
 {
 	if ( pmi->hIcolibItem ) {
-		HICON newIcon = IcoLib_GetIconByHandle( pmi->hIcolibItem );
+		HICON newIcon = IcoLib_GetIconByHandle( pmi->hIcolibItem, false );
 		if ( newIcon )
 			ImageList_ReplaceIcon( pmi->parent->m_hMenuIcons, pmi->iconId, newIcon );
 
@@ -1039,8 +1094,8 @@ static int MO_RegisterIcon( PMO_IntMenuItem pmi, void* )
 	uname = pmi->UniqName;
 	if ( uname == NULL )
 		#ifdef UNICODE
-			uname = u2a(pmi->CustomName);
-			descr = u2a(pmi->mi.ptszName);
+			uname = mir_u2a(pmi->CustomName);
+			descr = mir_u2a(pmi->mi.ptszName);
 		#else
 			uname = pmi->CustomName;
 			descr = pmi->mi.pszName;
@@ -1054,7 +1109,7 @@ static int MO_RegisterIcon( PMO_IntMenuItem pmi, void* )
 		char* buf = NEWSTR_ALLOCA( descr );
 
 		char sectionName[256], iconame[256];
-		_snprintf( sectionName, sizeof(sectionName), "Menu Icons/%s", pmi->parent->Name );
+		mir_snprintf( sectionName, sizeof(sectionName), "Menu Icons/%s", pmi->parent->Name );
 
 		// remove '&'
 		char* start = buf;
@@ -1067,16 +1122,13 @@ static int MO_RegisterIcon( PMO_IntMenuItem pmi, void* )
 			else break;
 		}
 
-		if ( uname != NULL && *uname != 0 )
-			_snprintf(iconame,sizeof(iconame),"genmenu_%s_%s", pmi->parent->Name, uname );
-		else
-			_snprintf(iconame,sizeof(iconame),"genmenu_%s_%s", pmi->parent->Name, descr );
+		mir_snprintf(iconame, sizeof(iconame), "genmenu_%s_%s", pmi->parent->Name, uname && *uname ? uname : descr);
 
 		SKINICONDESC sid={0};
 		sid.cbSize = sizeof(sid);
 		sid.cx = 16;
 		sid.cy = 16;
-		sid.pszSection = Translate(sectionName);
+		sid.pszSection = sectionName;
 		sid.pszName = iconame;
 		sid.pszDefaultFile = NULL;
 		sid.pszDescription = buf;
@@ -1178,6 +1230,7 @@ int InitGenMenu()
 	CreateServiceFunction( MO_PROCESSCOMMANDBYMENUIDENT, MO_ProcessCommandByMenuIdent );
 	CreateServiceFunction( MO_PROCESSHOTKEYS, ( MIRANDASERVICE )MO_ProcessHotKeys );
 	CreateServiceFunction( MO_REMOVEMENUOBJECT, MO_RemoveMenuObject );
+	CreateServiceFunction( MO_GETPROTOROOTMENU, MO_GetProtoRootMenu );
 
 	CreateServiceFunction( MO_SETOPTIONSMENUOBJECT, SRVMO_SetOptionsMenuObject );
 	CreateServiceFunction( MO_SETOPTIONSMENUITEM, SRVMO_SetOptionsMenuItem );
@@ -1231,5 +1284,6 @@ void TIntMenuObject::freeItem( TMO_IntMenuItem* p )
 	FreeAndNil(( void** )&p->mi.pszName );
 	FreeAndNil(( void** )&p->UniqName   );
 	FreeAndNil(( void** )&p->CustomName );
+	if ( p->hBmp ) DeleteObject( p->hBmp );
 	mir_free( p );
 }

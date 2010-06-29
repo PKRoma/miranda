@@ -31,8 +31,8 @@ static BOOL bModuleInitialized = FALSE;
 
 typedef struct
 {
-	int id;
 	const char* name;
+	int id;
 }
 	TServiceListItem;
 
@@ -55,16 +55,16 @@ static INT_PTR Proto_BroadcastAck(WPARAM wParam,LPARAM lParam)
 	return NotifyEventHooks(hAckEvent,wParam,lParam);
 }
 
+INT_PTR __fastcall MyCallProtoService( const char *szModule, const char *szService, WPARAM wParam, LPARAM lParam );
+void FreeFilesMatrix( TCHAR ***files );
+
 PROTOCOLDESCRIPTOR* Proto_IsProtocolLoaded( const char* szProtoName )
 {
 	if ( szProtoName ) {
-		int idx;
 		PROTOCOLDESCRIPTOR tmp;
 		tmp.szName = ( char* )szProtoName;
-		if (( idx = protos.getIndex( &tmp )) != -1 )
-			return protos[idx];
+		return protos.find( &tmp );
 	}
-
 	return NULL;
 }
 
@@ -148,6 +148,7 @@ static INT_PTR Proto_RecvFile(WPARAM,LPARAM lParam)
 	dbei.szModule = ( char* )CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)ccs->hContact, 0);
 	dbei.timestamp = pre->timestamp;
 	dbei.flags = ( pre->flags & PREF_CREATEREAD ) ? DBEF_READ : 0;
+	dbei.flags |= ( pre->flags & PREF_UTF ) ? DBEF_UTF : 0;
 	dbei.eventType = EVENTTYPE_FILE;
 	dbei.cbBlob = (DWORD)(sizeof( DWORD ) + strlen( szFile ) + strlen( szDescr ) + 2);
 	dbei.pBlob = ( PBYTE )pre->szMessage;
@@ -155,6 +156,65 @@ static INT_PTR Proto_RecvFile(WPARAM,LPARAM lParam)
 
 	if ( pre->lParam != NULL )
 		PushFileEvent( ccs->hContact, hdbe, pre->lParam );
+	return 0;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+
+static void sttRecvCreateBlob( DBEVENTINFO& dbei, int fileCount, char** pszFiles, char* szDescr )
+{
+	dbei.cbBlob = sizeof( DWORD );
+	{
+		for ( int i=0; i < fileCount; i++ )
+			dbei.cbBlob += lstrlenA( pszFiles[i] ) + 1;
+	}
+	
+	dbei.cbBlob += lstrlenA( szDescr ) + 1;
+
+	if (( dbei.pBlob = ( BYTE* )mir_alloc( dbei.cbBlob )) == 0 )
+		return;
+
+	*( DWORD* )dbei.pBlob = 0;
+	BYTE* p = dbei.pBlob + sizeof( DWORD );
+	for ( int i=0; i < fileCount; i++ ) {
+		strcpy(( char* )p, pszFiles[i] );
+		p += lstrlenA( pszFiles[i] ) + 1;
+	}
+	strcpy(( char* )p, ( szDescr == NULL ) ? "" : szDescr );
+}
+
+static INT_PTR Proto_RecvFileT(WPARAM,LPARAM lParam)
+{
+	CCSDATA* ccs = ( CCSDATA* )lParam;
+	PROTORECVFILET* pre = ( PROTORECVFILET* )ccs->lParam;
+	if ( pre->fileCount == 0 )
+		return 0;
+
+	DBEVENTINFO dbei = { 0 };
+	dbei.cbSize = sizeof( dbei );
+	dbei.szModule = ( char* )CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)ccs->hContact, 0);
+	dbei.timestamp = pre->timestamp;
+	dbei.flags = ( pre->flags & PREF_CREATEREAD ) ? DBEF_READ : 0;
+	dbei.eventType = EVENTTYPE_FILE;
+
+	char** pszFiles = ( char** )alloca( pre->fileCount * sizeof(char*));
+	{
+		for ( int i=0; i < pre->fileCount; i++ )
+			pszFiles[i] = Utf8EncodeT( pre->ptszFiles[i] );
+	}
+	char* szDescr = Utf8EncodeT( pre->tszDescription );
+	dbei.flags |= DBEF_UTF;
+	sttRecvCreateBlob( dbei, pre->fileCount, pszFiles, szDescr );
+	{
+		for ( int i=0; i < pre->fileCount; i++ )
+			mir_free( pszFiles[i] );
+	}
+	mir_free( szDescr );
+
+	HANDLE hdbe = ( HANDLE )CallService( MS_DB_EVENT_ADD, ( WPARAM )ccs->hContact, ( LPARAM )&dbei );
+
+	PushFileEvent( ccs->hContact, hdbe, pre->lParam );
+	mir_free( dbei.pBlob );
 	return 0;
 }
 
@@ -226,6 +286,52 @@ static INT_PTR Proto_ContactIsTyping(WPARAM wParam,LPARAM lParam)
 	return 0;
 }
 
+void Proto_SetStatus(const char* szProto, unsigned status)
+{
+	if ( CallProtoService( szProto, PS_GETCAPS, PFLAGNUM_1, 0 ) & PF1_MODEMSGSEND ) {
+		TCHAR* awayMsg = ( TCHAR* )CallService( MS_AWAYMSG_GETSTATUSMSGW, (WPARAM) status, (LPARAM) szProto );
+		if (( INT_PTR )awayMsg == CALLSERVICE_NOTFOUND ) {
+			char* awayMsgA = ( char* )CallService( MS_AWAYMSG_GETSTATUSMSG, (WPARAM) status, (LPARAM) szProto );
+			awayMsg = mir_a2t( awayMsgA );
+			mir_free( awayMsgA );
+		}
+		if (( INT_PTR ) awayMsg != CALLSERVICE_NOTFOUND ) {
+			CallProtoService( szProto, PS_SETAWAYMSGT, status, (LPARAM) awayMsg );
+			mir_free( awayMsg );
+	}	}
+	CallProtoService( szProto, PS_SETSTATUS, status, 0);
+}
+
+#ifdef _UNICODE
+char** __fastcall Proto_FilesMatrixA( wchar_t **files )
+{
+	if ( files == NULL ) return NULL;
+
+	int count = 0;
+	while( files[ count++ ] );
+
+	char** filesA = ( char** )mir_alloc( count * sizeof( char* ));
+	for( int i = 0; i < count; ++i )
+		filesA[ i ] = mir_u2a( files[ i ] );
+
+	return filesA;
+}
+
+static wchar_t** __fastcall Proto_FilesMatrixU( char **files )
+{
+	if ( files == NULL ) return NULL;
+
+	int count = 0;
+	while( files[ count++ ] );
+
+	wchar_t** filesU = ( wchar_t** )mir_alloc( count * sizeof( wchar_t* ));
+	for( int i = 0; i < count; ++i )
+		filesU[ i ] = mir_a2u( files[ i ] );
+
+	return filesU;
+}
+#endif
+
 /////////////////////////////////////////////////////////////////////////////////////////
 // 0.8.0+ - accounts
 
@@ -252,66 +358,286 @@ static INT_PTR Proto_EnumAccounts(WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
+int Proto_IsAccountEnabled( PROTOACCOUNT* pa )
+{
+	return pa && (( pa->bIsEnabled && !pa->bDynDisabled ) || pa->bOldProto );
+}
+
+static INT_PTR srvProto_IsAccountEnabled(WPARAM, LPARAM lParam)
+{
+	return ( INT_PTR )Proto_IsAccountEnabled(( PROTOACCOUNT* )lParam);
+}
+
+int Proto_IsAccountLocked( PROTOACCOUNT* pa )
+{
+	return pa ? DBGetContactSettingByte(NULL, pa->szModuleName, "LockMainStatus", 0) : 0;
+}
+
+static INT_PTR srvProto_IsAccountLocked(WPARAM, LPARAM lParam)
+{
+	return ( INT_PTR )Proto_IsAccountLocked( Proto_GetAccount(( char* )lParam ));
+}
+
 /////////////////////////////////////////////////////////////////////////////////////////
 
 INT_PTR CallProtoServiceInt( HANDLE hContact, const char *szModule, const char *szService, WPARAM wParam, LPARAM lParam )
 {
-	int idx;
-	char svcName[ MAXMODULELABELLENGTH ];
-	PROTOACCOUNT* pa = ( PROTOACCOUNT* )Proto_GetAccount( szModule );
+	PROTOACCOUNT* pa = Proto_GetAccount( szModule );
 	if ( pa && !pa->bOldProto ) {
 		PROTO_INTERFACE* ppi;
 		if (( ppi = pa->ppro ) == NULL )
 			return CALLSERVICE_NOTFOUND;
 		else {
-			TServiceListItem item;
-			item.name = szService;
-			if (( idx = serviceItems.getIndex( &item )) != -1 ) {
-				switch( serviceItems[ idx ]->id ) {
-					case  1: return ( INT_PTR )ppi->AddToList( wParam, (PROTOSEARCHRESULT*)lParam ); break;
-					case  2: return ( INT_PTR )ppi->AddToListByEvent( LOWORD(wParam), HIWORD(wParam), (HANDLE)lParam ); break;
-					case  3: return ( INT_PTR )ppi->Authorize( ( HANDLE )wParam ); break;
-					case  4: return ( INT_PTR )ppi->AuthDeny( ( HANDLE )wParam, ( const char* )lParam ); break;
-					case  5: return ( INT_PTR )ppi->AuthRecv( hContact, ( PROTORECVEVENT* )lParam ); break;
-					case  6: return ( INT_PTR )ppi->AuthRequest( hContact, ( char* )lParam ); break;
-					case  7: return ( INT_PTR )ppi->ChangeInfo( wParam, ( void* )lParam ); break;
-					case  8: return ( INT_PTR )ppi->FileAllow( hContact, ( HANDLE )wParam, ( char* )lParam ); break;
-					case  9: return ( INT_PTR )ppi->FileCancel( hContact, ( HANDLE )wParam ); break;
-					case 10: return ( INT_PTR )ppi->FileDeny( hContact, ( HANDLE )wParam, ( char* )lParam ); break;
+			TServiceListItem *item = serviceItems.find(( TServiceListItem* )&szService );
+			if ( item ) {
+				switch( item->id ) {
+					case  1: 
+#ifdef _UNICODE
+						if ( ppi->m_iVersion > 1 || !((( PROTOSEARCHRESULT* )lParam)->flags & PSR_UNICODE))
+							return ( INT_PTR )ppi->AddToList( wParam, (PROTOSEARCHRESULT*)lParam ); 
+						else {
+							PROTOSEARCHRESULT *psr = ( PROTOSEARCHRESULT* )lParam;
+							PROTOSEARCHRESULT *psra =( PROTOSEARCHRESULT* )mir_alloc( psr->cbSize );
+							memcpy( psra, psr, psr->cbSize );
+							psra->nick      = ( PROTOCHAR* )mir_u2a( psr->nick );
+							psra->firstName = ( PROTOCHAR* )mir_u2a( psr->firstName );
+							psra->lastName  = ( PROTOCHAR* )mir_u2a( psr->lastName );
+							psra->email     = ( PROTOCHAR* )mir_u2a( psr->email );
+							
+							INT_PTR res = ( INT_PTR )ppi->AddToList( wParam, psra );
+							
+							mir_free( psra->nick );
+							mir_free( psra->firstName );
+							mir_free( psra->lastName );
+							mir_free( psra->email );
+							mir_free( psra );
+							
+							return res;
+						}
+#else
+						return ( INT_PTR )ppi->AddToList( wParam, (PROTOSEARCHRESULT*)lParam ); 
+#endif
+					case  2: return ( INT_PTR )ppi->AddToListByEvent( LOWORD(wParam), HIWORD(wParam), (HANDLE)lParam ); 
+					case  3: return ( INT_PTR )ppi->Authorize( ( HANDLE )wParam ); 
+					case  4:
+						if ( ppi->m_iVersion > 1 )
+							return ( INT_PTR )ppi->AuthDeny(( HANDLE )wParam,  StrConvT(( char* )lParam )); 
+						else
+							return ( INT_PTR )ppi->AuthDeny(( HANDLE )wParam, ( PROTOCHAR* )lParam ); 
+					case  5: return ( INT_PTR )ppi->AuthRecv( hContact, ( PROTORECVEVENT* )lParam ); 
+					case  6:
+						if ( ppi->m_iVersion > 1 )
+							return ( INT_PTR )ppi->AuthRequest( hContact,  StrConvT(( char* )lParam )); 
+						else
+							return ( INT_PTR )ppi->AuthRequest( hContact, ( PROTOCHAR* )lParam ); 
+					case  7: return ( INT_PTR )ppi->ChangeInfo( wParam, ( void* )lParam ); 
+					case  8:
+						if ( ppi->m_iVersion > 1 )
+							return ( INT_PTR )ppi->FileAllow( hContact, ( HANDLE )wParam,  StrConvT(( char* )lParam )); 
+						else
+							return ( INT_PTR )ppi->FileAllow( hContact, ( HANDLE )wParam, ( PROTOCHAR* )lParam ); 
+					case  9: return ( INT_PTR )ppi->FileCancel( hContact, ( HANDLE )wParam ); 
+					case  10:
+						if ( ppi->m_iVersion > 1 )
+							return ( INT_PTR )ppi->FileDeny( hContact, ( HANDLE )wParam,  StrConvT(( char* )lParam )); 
+						else
+							return ( INT_PTR )ppi->FileDeny( hContact, ( HANDLE )wParam, ( PROTOCHAR* )lParam ); 
 					case 11: {
 						PROTOFILERESUME* pfr = ( PROTOFILERESUME* )lParam;
-						return ( INT_PTR )ppi->FileResume( ( HANDLE )wParam, &pfr->action, &pfr->szFilename ); break;
+#ifdef _UNICODE
+						if ( ppi->m_iVersion > 1 ) {
+							PROTOCHAR* szFname = mir_a2t(( char* )pfr->szFilename );
+							INT_PTR res = ( INT_PTR )ppi->FileResume(( HANDLE )wParam, &pfr->action, 
+								( const PROTOCHAR** )&szFname);
+							mir_free(( PROTOCHAR* )pfr->szFilename ); 
+							pfr->szFilename = ( PROTOCHAR* )mir_t2a( szFname ); mir_free( szFname ); 
+						}
+						else
+#endif
+							return ( INT_PTR )ppi->FileResume(( HANDLE )wParam, &pfr->action, 
+								( const PROTOCHAR** )&pfr->szFilename );
 					}
-					case 12: return ( INT_PTR )ppi->GetCaps( wParam, (HANDLE)lParam ); break;
-					case 13: return ( INT_PTR )ppi->GetIcon( wParam ); break;
-					case 14: return ( INT_PTR )ppi->GetInfo( hContact, wParam ); break;
-					case 15: return ( INT_PTR )ppi->SearchBasic( ( char* )lParam ); break;
-					case 16: return ( INT_PTR )ppi->SearchByEmail( ( char* )lParam ); break;
+					case 12: return ( INT_PTR )ppi->GetCaps( wParam, (HANDLE)lParam );
+					case 13: return ( INT_PTR )ppi->GetIcon( wParam );
+					case 14: return ( INT_PTR )ppi->GetInfo( hContact, wParam );;
+					case 15: 
+						if ( ppi->m_iVersion > 1 )
+							return ( INT_PTR )ppi->SearchBasic( StrConvT(( char* )lParam ));
+						else
+							return ( INT_PTR )ppi->SearchBasic(( TCHAR* )lParam ); 
+					case 16: 
+						if ( ppi->m_iVersion > 1 )
+							return ( INT_PTR )ppi->SearchByEmail( StrConvT(( char* )lParam ));
+						else
+							return ( INT_PTR )ppi->SearchByEmail(( TCHAR* )lParam ); 
 					case 17: {
 						PROTOSEARCHBYNAME* psbn = ( PROTOSEARCHBYNAME* )lParam;
-						return ( INT_PTR )ppi->SearchByName( psbn->pszNick, psbn->pszFirstName, psbn->pszLastName ); break;
+						if ( ppi->m_iVersion > 1 )
+							return ( INT_PTR )ppi->SearchByName( StrConvT(( char* )psbn->pszNick ), 
+								StrConvT(( char* )psbn->pszFirstName ), StrConvT(( char* )psbn->pszLastName ));
+						else
+							return ( INT_PTR )ppi->SearchByName( psbn->pszNick, psbn->pszFirstName, psbn->pszLastName ); 
 					}
-					case 18: return ( INT_PTR )ppi->SearchAdvanced( ( HWND )lParam ); break;
-					case 19: return ( INT_PTR )ppi->CreateExtendedSearchUI ( ( HWND )lParam ); break;
-					case 20: return ( INT_PTR )ppi->RecvContacts( hContact, ( PROTORECVEVENT* )lParam ); break;
-					case 21: return ( INT_PTR )ppi->RecvFile( hContact, ( PROTORECVFILE* )lParam ); break;
-					case 22: return ( INT_PTR )ppi->RecvMsg( hContact, ( PROTORECVEVENT* )lParam ); break;
-					case 23: return ( INT_PTR )ppi->RecvUrl( hContact, ( PROTORECVEVENT* )lParam ); break;
-					case 24: return ( INT_PTR )ppi->SendContacts( hContact, LOWORD(wParam), HIWORD(wParam), ( HANDLE* )lParam ); break;
-					case 25: return ( INT_PTR )ppi->SendFile( hContact, ( const char* )wParam, ( char** )lParam ); break;
-					case 26: return ( INT_PTR )ppi->SendMsg( hContact, wParam, ( const char* )lParam ); break;
-					case 27: return ( INT_PTR )ppi->SendUrl( hContact, wParam, ( const char* )lParam ); break;
-					case 28: return ( INT_PTR )ppi->SetApparentMode( hContact, wParam ); break;
-					case 29: return ( INT_PTR )ppi->SetStatus( wParam ); break;
-					case 30: return ( INT_PTR )ppi->GetAwayMsg( hContact ); break;
-					case 31: return ( INT_PTR )ppi->RecvAwayMsg( hContact, wParam, ( PROTORECVEVENT* )lParam ); break;
-					case 32: return ( INT_PTR )ppi->SendAwayMsg( hContact, ( HANDLE )wParam, ( const char* )lParam ); break;
-					case 33: return ( INT_PTR )ppi->SetAwayMsg( wParam, ( const char* )lParam ); break;
-					case 34: return ( INT_PTR )ppi->UserIsTyping( ( HANDLE )wParam, lParam ); break;
+					case 18: return ( INT_PTR )ppi->SearchAdvanced( ( HWND )lParam ); 
+					case 19: return ( INT_PTR )ppi->CreateExtendedSearchUI ( ( HWND )lParam ); 
+					case 20: return ( INT_PTR )ppi->RecvContacts( hContact, ( PROTORECVEVENT* )lParam ); 
+					case 21: return ( INT_PTR )ppi->RecvFile( hContact, ( PROTOFILEEVENT* )lParam ); 
+					case 22: return ( INT_PTR )ppi->RecvMsg( hContact, ( PROTORECVEVENT* )lParam ); 
+					case 23: return ( INT_PTR )ppi->RecvUrl( hContact, ( PROTORECVEVENT* )lParam ); 
+					case 24: return ( INT_PTR )ppi->SendContacts( hContact, LOWORD( wParam ), HIWORD( wParam ), 
+								 ( HANDLE* )lParam ); 
+					case 25:
+#ifdef _UNICODE
+						if ( ppi->m_iVersion > 1 ) {
+							TCHAR** files = Proto_FilesMatrixU(( char** )lParam );
+							INT_PTR res = ( INT_PTR )ppi->SendFile( hContact, StrConvT(( char* )wParam ), ( TCHAR** )files ); 
+							if ( res == 0 ) FreeFilesMatrix( &files );
+							return res;
+						}
+						else
+#endif
+							return ( INT_PTR )ppi->SendFile( hContact, ( TCHAR* )wParam, ( TCHAR** )lParam );
+					case 26: return ( INT_PTR )ppi->SendMsg( hContact, wParam, ( const char* )lParam ); 
+					case 27: return ( INT_PTR )ppi->SendUrl( hContact, wParam, ( const char* )lParam ); 
+					case 28: return ( INT_PTR )ppi->SetApparentMode( hContact, wParam ); 
+					case 29: return ( INT_PTR )ppi->SetStatus( wParam ); 
+					case 30: return ( INT_PTR )ppi->GetAwayMsg( hContact ); 
+					case 31: return ( INT_PTR )ppi->RecvAwayMsg( hContact, wParam, ( PROTORECVEVENT* )lParam ); 
+					case 32: return ( INT_PTR )ppi->SendAwayMsg( hContact, ( HANDLE )wParam, ( const char* )lParam ); 
+					case 33: 
+						if ( ppi->m_iVersion > 1 )
+							return ( INT_PTR )ppi->SetAwayMsg( wParam, StrConvT(( char* )lParam ));
+						else
+							return ( INT_PTR )ppi->SetAwayMsg( wParam, ( TCHAR* )lParam ); 
+					case 34: return ( INT_PTR )ppi->UserIsTyping( ( HANDLE )wParam, lParam ); 
+					case 35: lstrcpynA(( char* )lParam, ppi->m_szModuleName, wParam ); return 0; 
+					case 36: return ppi->m_iStatus; 
+					
+#ifdef _UNICODE
+					case 100:
+						if ( ppi->m_iVersion > 1 )
+							return ( INT_PTR )ppi->SetAwayMsg( wParam, ( TCHAR* )lParam );
+						else
+							return ( INT_PTR )ppi->SetAwayMsg( wParam, StrConvA(( TCHAR* )lParam )); 
+					case 102:
+						if ( ppi->m_iVersion > 1 )
+							return ( INT_PTR )ppi->SendFile( hContact, ( TCHAR* )wParam, ( TCHAR** )lParam );
+						else {
+							char** files = Proto_FilesMatrixA(( TCHAR** )lParam );
+							INT_PTR res = ( INT_PTR )ppi->SendFile( hContact, StrConvA(( TCHAR* )wParam ), ( TCHAR** )files ); 
+							if ( res == 0 ) FreeFilesMatrix(( TCHAR*** )&files );
+							return res;
+						}
+					case 103:
+						if ( ppi->m_iVersion > 1 )
+							return ( INT_PTR )ppi->FileAllow( hContact, ( HANDLE )wParam, ( TCHAR* )lParam );
+						else
+							return ( INT_PTR )ppi->FileAllow( hContact, ( HANDLE )wParam, StrConvA(( TCHAR* )lParam )); 
+					case 104:
+						if ( ppi->m_iVersion > 1 )
+							return ( INT_PTR )ppi->FileDeny( hContact, ( HANDLE )wParam, ( TCHAR* )lParam );
+						else
+							return ( INT_PTR )ppi->FileDeny( hContact, ( HANDLE )wParam, StrConvA(( TCHAR* )lParam )); 
+					case 105: {
+						PROTOFILERESUME* pfr = ( PROTOFILERESUME* )lParam;
+						if ( ppi->m_iVersion > 1 )
+							return ( INT_PTR )ppi->FileResume(( HANDLE )wParam, &pfr->action, 
+								( const PROTOCHAR** )&pfr->szFilename );
+						else {
+							char* szFname = mir_t2a( pfr->szFilename );
+							INT_PTR res = ( INT_PTR )ppi->FileResume(( HANDLE )wParam, &pfr->action, 
+								( const PROTOCHAR** )&szFname);
+							mir_free( szFname );
+					}	}
+					case 106:
+						if ( ppi->m_iVersion > 1 )
+							return ( INT_PTR )ppi->AuthRequest( hContact, ( const TCHAR* )lParam );
+						else
+							return ( INT_PTR )ppi->AuthRequest( hContact, StrConvA(( const TCHAR* )lParam )); 
+					case 107:
+						if ( ppi->m_iVersion > 1 )
+							return ( INT_PTR )ppi->AuthDeny(( HANDLE )wParam, ( const TCHAR* )lParam );
+						else
+							return ( INT_PTR )ppi->AuthDeny(( HANDLE )wParam, StrConvA(( const TCHAR* )lParam )); 
+					case 108:
+						if ( ppi->m_iVersion > 1 )
+							return ( INT_PTR )ppi->SearchBasic(( const TCHAR* )lParam );
+						else
+							return ( INT_PTR )ppi->SearchBasic(StrConvA(( const TCHAR* )lParam )); 
+					case 109: {
+						PROTOSEARCHBYNAME* psbn = ( PROTOSEARCHBYNAME* )lParam;
+						if ( ppi->m_iVersion > 1 )
+							return ( INT_PTR )ppi->SearchByName( psbn->pszNick, psbn->pszFirstName, psbn->pszLastName ); 
+						else
+							return ( INT_PTR )ppi->SearchByName( StrConvA(( TCHAR* )psbn->pszNick ), 
+								StrConvT(( char* )psbn->pszFirstName ), StrConvA(( TCHAR* )psbn->pszLastName ));
+					}
+					case 110:
+						if ( ppi->m_iVersion > 1 )
+							return ( INT_PTR )ppi->SearchByEmail(( const TCHAR* )lParam );
+						else
+							return ( INT_PTR )ppi->SearchByEmail(StrConvA(( const TCHAR* )lParam )); 
+#endif
 	}	}	}	}
 
-	mir_snprintf( svcName, sizeof(svcName), "%s%s", szModule, szService );
-	return CallService( svcName, wParam, lParam );
+#ifdef _UNICODE
+	if ( strcmp( szService, PS_ADDTOLIST ) == 0 ) {
+		PROTOSEARCHRESULT *psr = ( PROTOSEARCHRESULT* )lParam;
+		PROTOSEARCHRESULT *psra =( PROTOSEARCHRESULT* )mir_alloc( psr->cbSize );
+		memcpy( psra, psr, psr->cbSize );
+		psra->nick      = ( PROTOCHAR* )mir_u2a( psr->nick );
+		psra->firstName = ( PROTOCHAR* )mir_u2a( psr->firstName );
+		psra->lastName  = ( PROTOCHAR* )mir_u2a( psr->lastName );
+		psra->email     = ( PROTOCHAR* )mir_u2a( psr->email );
+		
+		INT_PTR res = MyCallProtoService( szModule, szService, wParam, ( LPARAM )psra );
+		
+		mir_free( psra->nick );
+		mir_free( psra->firstName );
+		mir_free( psra->lastName );
+		mir_free( psra->email );
+		mir_free( psra );
+		
+		return res;
+	}
+#endif
+
+	INT_PTR res = MyCallProtoService( szModule, szService, wParam, lParam );
+
+#ifdef _UNICODE
+	if ( res == CALLSERVICE_NOTFOUND && pa && pa->bOldProto && pa->ppro && strchr( szService, 'W' )) {
+		TServiceListItem *item = serviceItems.find(( TServiceListItem* )&szService );
+		if ( !item ) return res;
+
+		switch( item->id ) {
+			case 100:
+				return ( INT_PTR )pa->ppro->SetAwayMsg( wParam, ( TCHAR* )lParam );
+			case 102: {
+				CCSDATA *ccs = ( CCSDATA* )lParam;
+				return ( INT_PTR )pa->ppro->SendFile( ccs->hContact, ( TCHAR* )ccs->wParam, ( TCHAR** )ccs->lParam );
+			}
+			case 103: {
+				CCSDATA *ccs = ( CCSDATA* )lParam;
+				return ( INT_PTR )pa->ppro->FileAllow( ccs->hContact, ( HANDLE )ccs->wParam, ( TCHAR* )ccs->lParam );
+			}
+			case 104: {
+				CCSDATA *ccs = ( CCSDATA* )lParam;
+				return ( INT_PTR )pa->ppro->FileDeny( ccs->hContact, ( HANDLE )ccs->wParam, ( TCHAR* )ccs->lParam );
+			}
+			case 105: {
+				PROTOFILERESUME* pfr = ( PROTOFILERESUME* )lParam;
+				return ( INT_PTR )pa->ppro->FileResume(( HANDLE )wParam, &pfr->action, &pfr->szFilename );
+			}
+			case 106: {
+				CCSDATA *ccs = ( CCSDATA* )lParam;
+				return ( INT_PTR )pa->ppro->AuthRequest( ccs->hContact, ( const TCHAR* )ccs->lParam );
+			}
+			case 107:
+				return ( INT_PTR )pa->ppro->AuthDeny(( HANDLE )wParam, ( const TCHAR* )lParam );
+	}	}
+#endif
+
+	return res;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -407,6 +733,21 @@ int LoadProtocolsModule(void)
 	InsertServiceListItem( 32, PSS_AWAYMSG );
 	InsertServiceListItem( 33, PS_SETAWAYMSG );
 	InsertServiceListItem( 34, PSS_USERISTYPING );
+	InsertServiceListItem( 35, PS_GETNAME );
+	InsertServiceListItem( 36, PS_GETSTATUS );
+
+#ifdef _UNICODE
+	InsertServiceListItem( 100, PS_SETAWAYMSGW );
+	InsertServiceListItem( 102, PSS_FILEW );
+	InsertServiceListItem( 103, PSS_FILEALLOWW );
+	InsertServiceListItem( 104, PSS_FILEDENYW );
+	InsertServiceListItem( 105, PS_FILERESUMEW );
+	InsertServiceListItem( 106, PSS_AUTHREQUESTW );
+	InsertServiceListItem( 107, PS_AUTHDENYW );
+	InsertServiceListItem( 108, PS_BASICSEARCHW );
+	InsertServiceListItem( 109, PS_SEARCHBYNAMEW );
+	InsertServiceListItem( 110, PS_SEARCHBYEMAILW );
+#endif
 
 	hAckEvent = CreateHookableEvent(ME_PROTO_ACK);
 	hTypeEvent = CreateHookableEvent(ME_PROTO_CONTACTISTYPING);
@@ -420,11 +761,15 @@ int LoadProtocolsModule(void)
 	CreateServiceFunction( MS_PROTO_CONTACTISTYPING,  Proto_ContactIsTyping  );
 
 	CreateServiceFunction( MS_PROTO_RECVFILE,         Proto_RecvFile         );
+	CreateServiceFunction( MS_PROTO_RECVFILET,        Proto_RecvFileT        );
 	CreateServiceFunction( MS_PROTO_RECVMSG,          Proto_RecvMessage      );
 
 	CreateServiceFunction( "Proto/EnumProtocols",     Proto_EnumAccounts     );
 	CreateServiceFunction( MS_PROTO_ENUMACCOUNTS,     Proto_EnumAccounts     );
 	CreateServiceFunction( MS_PROTO_GETACCOUNT,       srvProto_GetAccount    );
+
+	CreateServiceFunction( MS_PROTO_ISACCOUNTENABLED, srvProto_IsAccountEnabled );
+	CreateServiceFunction( MS_PROTO_ISACCOUNTLOCKED,  srvProto_IsAccountLocked );
 
 	return LoadProtoOptions();
 }

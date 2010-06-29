@@ -143,7 +143,7 @@ static INT_PTR Proto_GetContactBaseProto(WPARAM wParam, LPARAM)
 		return (INT_PTR)(char*)NULL;
 
 	PROTOACCOUNT* pa = ProtoGetAccount(( char* )dbv.pszVal );
-    return (INT_PTR)( pa && IsAccountEnabled( pa ) ? pa->szModuleName : NULL);
+	return (INT_PTR)( Proto_IsAccountEnabled( pa ) ? pa->szModuleName : NULL);
 }
 
 static INT_PTR Proto_GetContactBaseAccount(WPARAM wParam, LPARAM)

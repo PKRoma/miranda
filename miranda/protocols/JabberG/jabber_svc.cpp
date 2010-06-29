@@ -94,7 +94,14 @@ INT_PTR __cdecl CJabberProto::JabberGetAvatar( WPARAM wParam, LPARAM lParam )
 	if ( !m_options.EnableAvatars )
 		return -2;
 
-	GetAvatarFileName( NULL, buf, size );
+	#if defined( _UNICODE )
+		TCHAR tszBuf[MAX_PATH];
+		GetAvatarFileName( NULL, tszBuf, SIZEOF(tszBuf));
+		WideCharToMultiByte( CP_ACP, 0, tszBuf, -1, buf, size, 0, 0 );
+	#else
+		GetAvatarFileName( NULL, buf, size );
+	#endif
+		
 	return 0;
 }
 
@@ -140,7 +147,14 @@ INT_PTR __cdecl CJabberProto::JabberGetAvatarInfo( WPARAM wParam, LPARAM lParam 
 		return GAIR_NOAVATAR;
 	}
 
-	GetAvatarFileName( AI->hContact, AI->filename, sizeof AI->filename );
+	TCHAR tszFileName[ MAX_PATH ];
+	GetAvatarFileName( AI->hContact, tszFileName, SIZEOF(tszFileName));
+	#if defined( _UNICODE )
+		WideCharToMultiByte( CP_ACP, 0, tszFileName, -1, AI->filename, sizeof AI->filename, 0, 0 );
+	#else
+		strncpy( AI->filename, tszFileName, sizeof AI->filename );
+	#endif
+
 	AI->format = ( AI->hContact == NULL ) ? PA_FORMAT_PNG : JGetByte( AI->hContact, "AvatarType", 0 );
 
 	if ( ::_access( AI->filename, 0 ) == 0 ) {
@@ -280,23 +294,23 @@ INT_PTR __cdecl CJabberProto::OnGetEventTextPresence( WPARAM, LPARAM lParam )
 
 INT_PTR __cdecl CJabberProto::JabberSetAvatar( WPARAM, LPARAM lParam )
 {
-	char* szFileName = ( char* )lParam;
+	TCHAR* tszFileName = mir_a2t(( char* )lParam );
 
 	if ( m_bJabberOnline ) {
-		SetServerVcard( TRUE, szFileName );
+		SetServerVcard( TRUE, tszFileName );
 		SendPresence( m_iDesiredStatus, false );
 	}
-	else if ( szFileName == NULL || szFileName[0] == 0 ) {
+	else if ( tszFileName == NULL || tszFileName[0] == 0 ) {
 		// Remove avatar
-		char tFileName[ MAX_PATH ];
+		TCHAR tFileName[ MAX_PATH ];
 		GetAvatarFileName( NULL, tFileName, MAX_PATH );
-		DeleteFileA( tFileName );
+		DeleteFile( tFileName );
 
 		JDeleteSetting( NULL, "AvatarSaved" );
 		JDeleteSetting( NULL, "AvatarHash" );
 	}
 	else {
-		int fileIn = _open( szFileName, O_RDWR | O_BINARY, S_IREAD | S_IWRITE );
+		int fileIn = _topen( tszFileName, O_RDWR | O_BINARY, S_IREAD | S_IWRITE );
 		if ( fileIn == -1 )
 			return 1;
 
@@ -316,9 +330,9 @@ INT_PTR __cdecl CJabberProto::JabberSetAvatar( WPARAM, LPARAM lParam )
 		mir_sha1_append( &sha1ctx, (mir_sha1_byte_t*)pResult, dwPngSize );
 		mir_sha1_finish( &sha1ctx, digest );
 
-		char tFileName[ MAX_PATH ];
+		TCHAR tFileName[ MAX_PATH ];
 		GetAvatarFileName( NULL, tFileName, MAX_PATH );
-		DeleteFileA( tFileName );
+		DeleteFile( tFileName );
 
 		char buf[MIR_SHA1_HASH_SIZE*2+1];
 		for ( int i=0; i<MIR_SHA1_HASH_SIZE; i++ )
@@ -327,7 +341,7 @@ INT_PTR __cdecl CJabberProto::JabberSetAvatar( WPARAM, LPARAM lParam )
 		m_options.AvatarType = JabberGetPictureType( pResult );
 
 		GetAvatarFileName( NULL, tFileName, MAX_PATH );
-		FILE* out = fopen( tFileName, "wb" );
+		FILE* out = _tfopen( tFileName, _T("wb"));
 		if ( out != NULL ) {
 			fwrite( pResult, dwPngSize, 1, out );
 			fclose( out );
@@ -337,6 +351,18 @@ INT_PTR __cdecl CJabberProto::JabberSetAvatar( WPARAM, LPARAM lParam )
 		JSetString( NULL, "AvatarSaved", buf );
 	}
 
+	return 0;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////
+// JabberSetNickname - sets the user nickname without UI
+
+INT_PTR __cdecl CJabberProto::JabberSetNickname( WPARAM wParam, LPARAM lParam )
+{
+	TCHAR *nickname = ( wParam & SMNN_UNICODE ) ? mir_u2t( (WCHAR *) lParam ) : mir_a2t( (char *) lParam );
+
+	JSetStringT( NULL, "Nick", nickname );
+	SetServerVcard( FALSE, _T(""));
 	return 0;
 }
 
@@ -488,11 +514,27 @@ INT_PTR __cdecl CJabberProto::JabberServiceParseXmppURI( WPARAM wParam, LPARAM l
 		// message
 		if ( ServiceExists( MS_MSG_SENDMESSAGE )) {
 			HANDLE hContact = HContactFromJID( szJid, TRUE );
+            TCHAR *szMsgBody = NULL;
 			if ( !hContact )
 				hContact = DBCreateContact( szJid, szJid, TRUE, TRUE );
 			if ( !hContact )
 				return 1;
-			CallService( MS_MSG_SENDMESSAGE, (WPARAM)hContact, (LPARAM)NULL );
+
+			if ( szSecondParam ) { //there are parameters to message
+				szMsgBody = _tcsstr(szSecondParam, _T( "body=" ));
+				if ( szMsgBody ) {
+					szMsgBody += 5;
+					TCHAR* szDelim = _tcschr( szMsgBody, _T( ';' )); 
+					if ( szDelim )
+						szDelim = 0;
+					JabberHttpUrlDecode( szMsgBody );
+			}	}
+			#if defined(_UNICODE)
+				CallService(MS_MSG_SENDMESSAGE "W",(WPARAM)hContact, (LPARAM)szMsgBody);
+			#else
+				CallService( MS_MSG_SENDMESSAGE, (WPARAM)hContact, (LPARAM)szMsgBody );
+			#endif
+
 			return 0;
 		}
 		return 1;
@@ -502,7 +544,9 @@ INT_PTR __cdecl CJabberProto::JabberServiceParseXmppURI( WPARAM wParam, LPARAM l
 		if ( !HContactFromJID( szJid )) {
 			JABBER_SEARCH_RESULT jsr = { 0 };
 			jsr.hdr.cbSize = sizeof( JABBER_SEARCH_RESULT );
-			jsr.hdr.nick = mir_t2a( szJid );
+			jsr.hdr.flags = PSR_TCHAR;
+			jsr.hdr.nick = szJid;
+			jsr.hdr.id = szJid;
 			_tcsncpy( jsr.jid, szJid, SIZEOF(jsr.jid) - 1 );
 
 			ADDCONTACTSTRUCT acs;
@@ -510,7 +554,6 @@ INT_PTR __cdecl CJabberProto::JabberServiceParseXmppURI( WPARAM wParam, LPARAM l
 			acs.szProto = m_szModuleName;
 			acs.psr = &jsr.hdr;
 			CallService( MS_ADDCONTACT_SHOW, (WPARAM)NULL, (LPARAM)&acs );
-			mir_free( jsr.hdr.nick );
 		}
 		return 0;
 	}
@@ -646,8 +689,7 @@ public:
 	{
 		CSuper::OnInitDialog();
 
-		SendMessage(m_hwnd, WM_SETICON, ICON_BIG, (LPARAM)m_proto->LoadIconEx("openid"));
-		SendDlgItemMessage(m_hwnd, IDC_HEADERBAR, WM_SETICON, 0, (LPARAM)m_proto->LoadIconEx("openid"));
+		WindowSetIcon( m_hwnd, m_proto, "openid" );
 
 		SetDlgItemText(m_hwnd, IDC_TXT_URL, m_pParams->m_szUrl);
 		SetDlgItemText(m_hwnd, IDC_TXT_FROM, m_pParams->m_szFrom);
@@ -710,4 +752,403 @@ INT_PTR __cdecl CJabberProto::OnHttpAuthRequest( WPARAM wParam, LPARAM lParam )
 	pDlg->Show();
 
 	return 0;
+}
+
+
+// Jabber API functions
+INT_PTR __cdecl CJabberProto::JabberGetApi( WPARAM wParam, LPARAM lParam )
+{
+	IJabberInterface **ji = (IJabberInterface**)lParam;
+	if ( !ji )
+		return -1;
+	*ji = &m_JabberApi;
+	return 0;
+}
+
+DWORD CJabberInterface::GetFlags() const
+{
+#ifdef _UNICODE
+	return JIF_UNICODE;
+#else
+	return 0;
+#endif
+}
+
+int CJabberInterface::GetVersion() const
+{
+	return 1;
+}
+
+DWORD CJabberInterface::GetJabberVersion() const
+{
+	return __VERSION_DWORD;
+}
+
+IJabberSysInterface *CJabberInterface::Sys() const
+{
+	return &m_psProto->m_JabberSysApi;
+}
+
+IJabberNetInterface *CJabberInterface::Net() const
+{
+	return &m_psProto->m_JabberNetApi;
+}
+
+int CJabberSysInterface::GetVersion() const
+{
+	return 1;
+}
+
+int CJabberSysInterface::CompareJIDs( LPCTSTR jid1, LPCTSTR jid2 )
+{
+	if ( !jid1 || !jid2 ) return 0;
+	return JabberCompareJids( jid1, jid2 );
+}
+
+HANDLE CJabberSysInterface::ContactFromJID( LPCTSTR jid )
+{
+	if ( !jid ) return NULL;
+	return m_psProto->HContactFromJID( jid );
+}
+
+LPTSTR CJabberSysInterface::ContactToJID( HANDLE hContact )
+{
+	return m_psProto->JGetStringT( hContact, m_psProto->JGetByte( hContact, "ChatRoom", 0 ) ? "ChatRoomID" : "jid" );
+}
+
+LPTSTR CJabberSysInterface::GetBestResourceName( LPCTSTR jid )
+{
+	if ( jid == NULL )
+		return NULL;
+	LPCTSTR p = _tcschr( jid, '/' );
+	if ( p == NULL ) {
+		m_psProto->ListLock(); // make sure we allow access to the list only after making mir_tstrdup() of resource name
+		LPTSTR res = mir_tstrdup( m_psProto->ListGetBestClientResourceNamePtr( jid ));
+		m_psProto->ListUnlock();
+		return res;
+	}
+	return mir_tstrdup( jid );
+}
+
+LPTSTR CJabberSysInterface::GetResourceList( LPCTSTR jid )
+{
+	if ( !jid )
+		return NULL;
+
+	m_psProto->ListLock();
+	JABBER_LIST_ITEM *item = NULL;
+	if (( item = m_psProto->ListGetItemPtr( LIST_VCARD_TEMP, jid )) == NULL)
+		item = m_psProto->ListGetItemPtr( LIST_ROSTER, jid );
+	if ( item == NULL ) {
+		m_psProto->ListUnlock();
+		return NULL;
+	}
+
+	if ( item->resource == NULL ) {
+		m_psProto->ListUnlock();
+		return NULL;
+	}
+
+	int i;
+	int iLen = 1; // 1 for extra zero terminator at the end of the string
+	// calculate total necessary string length
+	for ( i=0; i<item->resourceCount; i++ ) {
+		iLen += lstrlen(item->resource[i].resourceName) + 1;
+	}
+
+	// allocate memory and fill it
+	LPTSTR str = (LPTSTR)mir_alloc(iLen * sizeof(TCHAR));
+	LPTSTR p = str;
+	for ( i=0; i<item->resourceCount; i++ ) {
+		lstrcpy(p, item->resource[i].resourceName);
+		p += lstrlen(item->resource[i].resourceName) + 1;
+	}
+	*p = 0; // extra zero terminator
+
+	m_psProto->ListUnlock();
+	return str;
+}
+
+char *CJabberSysInterface::GetModuleName() const
+{
+	return m_psProto->m_szModuleName;
+}
+
+int CJabberNetInterface::GetVersion() const
+{
+	return 1;
+}
+
+unsigned int CJabberNetInterface::SerialNext()
+{
+	return m_psProto->SerialNext();
+}
+
+int CJabberNetInterface::SendXmlNode( HXML node )
+{
+	return m_psProto->m_ThreadInfo->send(node);
+}
+
+
+typedef struct
+{
+	JABBER_HANDLER_FUNC Func;
+	void *pUserData;
+} sHandlerData;
+
+void CJabberProto::ExternalTempIqHandler( HXML node, CJabberIqInfo *pInfo )
+{
+	sHandlerData *d = (sHandlerData*)pInfo->GetUserData();
+	d->Func(&m_JabberApi, node, d->pUserData);
+	free(d); // free IqHandlerData allocated in CJabberNetInterface::AddIqHandler below
+}
+
+BOOL CJabberProto::ExternalIqHandler( HXML node, CJabberIqInfo *pInfo )
+{
+	sHandlerData *d = (sHandlerData*)pInfo->GetUserData();
+	return d->Func(&m_JabberApi, node, d->pUserData);
+}
+
+BOOL CJabberProto::ExternalMessageHandler( HXML node, ThreadData *pThreadData, CJabberMessageInfo* pInfo )
+{
+	sHandlerData *d = (sHandlerData*)pInfo->GetUserData();
+	return d->Func(&m_JabberApi, node, d->pUserData);
+}
+
+BOOL CJabberProto::ExternalPresenceHandler( HXML node, ThreadData *pThreadData, CJabberPresenceInfo* pInfo )
+{
+	sHandlerData *d = (sHandlerData*)pInfo->GetUserData();
+	return d->Func(&m_JabberApi, node, d->pUserData);
+}
+
+BOOL CJabberProto::ExternalSendHandler( HXML node, ThreadData *pThreadData, CJabberSendInfo* pInfo )
+{
+	sHandlerData *d = (sHandlerData*)pInfo->GetUserData();
+	return d->Func(&m_JabberApi, node, d->pUserData);
+}
+
+HJHANDLER CJabberNetInterface::AddPresenceHandler( JABBER_HANDLER_FUNC Func, void *pUserData, int iPriority )
+{
+	sHandlerData *d = (sHandlerData*)malloc(sizeof(sHandlerData));
+	d->Func = Func;
+	d->pUserData = pUserData;
+	return (HJHANDLER)m_psProto->m_presenceManager.AddPermanentHandler( &CJabberProto::ExternalPresenceHandler, d, free, iPriority );
+}
+
+HJHANDLER CJabberNetInterface::AddMessageHandler( JABBER_HANDLER_FUNC Func, int iMsgTypes, LPCTSTR szXmlns, LPCTSTR szTag, void *pUserData, int iPriority )
+{
+	sHandlerData *d = (sHandlerData*)malloc(sizeof(sHandlerData));
+	d->Func = Func;
+	d->pUserData = pUserData;
+	return (HJHANDLER)m_psProto->m_messageManager.AddPermanentHandler( &CJabberProto::ExternalMessageHandler, iMsgTypes, 0, szXmlns, FALSE, szTag, d, free, iPriority );
+}
+
+HJHANDLER CJabberNetInterface::AddIqHandler( JABBER_HANDLER_FUNC Func, int iIqTypes, LPCTSTR szXmlns, LPCTSTR szTag, void *pUserData, int iPriority )
+{
+	sHandlerData *d = (sHandlerData*)malloc(sizeof(sHandlerData));
+	d->Func = Func;
+	d->pUserData = pUserData;
+	return (HJHANDLER)m_psProto->m_iqManager.AddPermanentHandler( &CJabberProto::ExternalIqHandler, iIqTypes, 0, szXmlns, FALSE, szTag, d, free, iPriority );
+}
+
+HJHANDLER CJabberNetInterface::AddTemporaryIqHandler( JABBER_HANDLER_FUNC Func, int iIqTypes, int iIqId, void *pUserData, DWORD dwTimeout, int iPriority )
+{
+	sHandlerData *d = (sHandlerData*)malloc(sizeof(sHandlerData));
+	d->Func = Func;
+	d->pUserData = pUserData;
+	return (HJHANDLER)m_psProto->m_iqManager.AddHandler( &CJabberProto::ExternalTempIqHandler, iIqTypes, NULL, 0, iIqId, d, 0, dwTimeout, iPriority );
+}
+
+HJHANDLER CJabberNetInterface::AddSendHandler( JABBER_HANDLER_FUNC Func, void *pUserData, int iPriority )
+{
+	sHandlerData *d = (sHandlerData*)malloc(sizeof(sHandlerData));
+	d->Func = Func;
+	d->pUserData = pUserData;
+	return (HJHANDLER)m_psProto->m_sendManager.AddPermanentHandler( &CJabberProto::ExternalSendHandler, d, free, iPriority );
+}
+
+int CJabberNetInterface::RemoveHandler( HJHANDLER hHandler )
+{
+	return m_psProto->m_sendManager.DeletePermanentHandler( (CJabberSendPermanentInfo*)hHandler ) ||
+		m_psProto->m_presenceManager.DeletePermanentHandler( (CJabberPresencePermanentInfo*)hHandler ) ||
+		m_psProto->m_messageManager.DeletePermanentHandler( (CJabberMessagePermanentInfo*)hHandler ) ||
+		m_psProto->m_iqManager.DeletePermanentHandler( (CJabberIqPermanentInfo*)hHandler ) ||
+		m_psProto->m_iqManager.DeleteHandler( (CJabberIqInfo*)hHandler );
+}
+
+JabberFeatCapPairDynamic *CJabberNetInterface::FindFeature(LPCTSTR szFeature)
+{
+	int i;
+	for ( i = 0; i < m_psProto->m_lstJabberFeatCapPairsDynamic.getCount(); i++ )
+		if ( !lstrcmp( m_psProto->m_lstJabberFeatCapPairsDynamic[i]->szFeature, szFeature ))
+			return m_psProto->m_lstJabberFeatCapPairsDynamic[i];
+	return NULL;
+}
+
+int CJabberNetInterface::RegisterFeature( LPCTSTR szFeature, LPCTSTR szDescription )
+{
+	if ( !szFeature ) {
+		return false;
+	}
+
+	// check for this feature in core features, and return false if it's present, to prevent re-registering a core feature
+	int i;
+	for ( i = 0; g_JabberFeatCapPairs[i].szFeature; i++ )
+	{
+		if ( !lstrcmp( g_JabberFeatCapPairs[i].szFeature, szFeature ))
+		{
+			return false;
+		}
+	}
+
+	m_psProto->ListLock();
+	JabberFeatCapPairDynamic *fcp = FindFeature( szFeature );
+	if ( !fcp ) {
+	// if the feature is not registered yet, allocate new bit for it
+		JabberCapsBits jcb = JABBER_CAPS_OTHER_SPECIAL; // set all bits not included in g_JabberFeatCapPairs
+
+		// set all bits occupied by g_JabberFeatCapPairs
+		for ( i = 0; g_JabberFeatCapPairs[i].szFeature; i++ )
+			jcb |= g_JabberFeatCapPairs[i].jcbCap;
+
+		// set all bits already occupied by external plugins
+		for ( i = 0; i < m_psProto->m_lstJabberFeatCapPairsDynamic.getCount(); i++ )
+			jcb |= m_psProto->m_lstJabberFeatCapPairsDynamic[i]->jcbCap;
+
+		// Now get first zero bit. The line below is a fast way to do it. If there are no zero bits, it returns 0.
+		jcb = (~jcb) & (JabberCapsBits)(-(__int64)(~jcb));
+
+		if ( !jcb ) {
+		// no more free bits
+			m_psProto->ListUnlock();
+			return false;
+		}
+
+		LPTSTR szExt = mir_tstrdup( szFeature );
+		LPTSTR pSrc, pDst;
+		for ( pSrc = szExt, pDst = szExt; *pSrc; pSrc++ ) {
+		// remove unnecessary symbols from szFeature to make the string shorter, and use it as szExt
+			if ( _tcschr( _T("bcdfghjklmnpqrstvwxz0123456789"), *pSrc )) {
+				*pDst++ = *pSrc;
+			}
+		}
+		*pDst = 0;
+		m_psProto->m_clientCapsManager.SetClientCaps( _T(JABBER_CAPS_MIRANDA_NODE), szExt, jcb );
+
+		fcp = new JabberFeatCapPairDynamic();
+		fcp->szExt = szExt; // will be deallocated along with other values of JabberFeatCapPairDynamic in CJabberProto destructor
+		fcp->szFeature = mir_tstrdup( szFeature );
+		fcp->szDescription = szDescription ? mir_tstrdup( szDescription ) : NULL;
+		fcp->jcbCap = jcb;
+		m_psProto->m_lstJabberFeatCapPairsDynamic.insert( fcp );
+	} else if ( szDescription ) {
+	// update description
+		if ( fcp->szDescription )
+			mir_free( fcp->szDescription );
+		fcp->szDescription = mir_tstrdup( szDescription );
+	}
+	m_psProto->ListUnlock();
+	return true;
+}
+
+int CJabberNetInterface::AddFeatures( LPCTSTR szFeatures )
+{
+	if ( !szFeatures ) {
+		return false;
+	}
+
+	m_psProto->ListLock();
+	BOOL ret = true;
+	LPCTSTR szFeat = szFeatures;
+	while ( szFeat[0] ) {
+		JabberFeatCapPairDynamic *fcp = FindFeature( szFeat );
+		// if someone is trying to add one of core features, RegisterFeature() will return false, so we don't have to perform this check here
+		if ( !fcp ) {
+		// if the feature is not registered yet
+			if ( !RegisterFeature( szFeat, NULL )) {
+				ret = false;
+			} else {
+				fcp = FindFeature( szFeat ); // update fcp after RegisterFeature()
+			}
+		}
+		if ( fcp ) {
+			m_psProto->m_uEnabledFeatCapsDynamic |= fcp->jcbCap;
+		} else {
+			ret = false;
+		}
+		szFeat += lstrlen( szFeat ) + 1;
+	}
+	m_psProto->ListUnlock();
+
+	if ( m_psProto->m_bJabberOnline ) {
+		m_psProto->SendPresence( m_psProto->m_iStatus, true );
+	}
+	return ret;
+}
+
+int CJabberNetInterface::RemoveFeatures( LPCTSTR szFeatures )
+{
+	if ( !szFeatures ) {
+		return false;
+	}
+
+	m_psProto->ListLock();
+	BOOL ret = true;
+	LPCTSTR szFeat = szFeatures;
+	while ( szFeat[0] ) {
+		JabberFeatCapPairDynamic *fcp = FindFeature( szFeat );
+		if ( fcp ) {
+			m_psProto->m_uEnabledFeatCapsDynamic &= ~fcp->jcbCap;
+		} else {
+			ret = false; // indicate that there was an error removing at least one of the specified features
+		}
+		szFeat += lstrlen( szFeat ) + 1;
+	}
+	m_psProto->ListUnlock();
+
+	if ( m_psProto->m_bJabberOnline ) {
+		m_psProto->SendPresence( m_psProto->m_iStatus, true );
+	}
+	return ret;
+}
+
+LPTSTR CJabberNetInterface::GetResourceFeatures( LPCTSTR jid )
+{
+	JabberCapsBits jcb = m_psProto->GetResourceCapabilites( jid, true );
+	if ( !( jcb & JABBER_RESOURCE_CAPS_ERROR )) {
+		m_psProto->ListLock(); // contents of m_lstJabberFeatCapPairsDynamic must not change from the moment we calculate total length and to the moment when we fill the string
+		int i;
+		int iLen = 1; // 1 for extra zero terminator at the end of the string
+		// calculate total necessary string length
+		for ( i = 0; g_JabberFeatCapPairs[i].szFeature; i++ ) {
+			if ( jcb & g_JabberFeatCapPairs[i].jcbCap ) {
+				iLen += lstrlen( g_JabberFeatCapPairs[i].szFeature ) + 1;
+			}
+		}
+		for ( i = 0; i < m_psProto->m_lstJabberFeatCapPairsDynamic.getCount(); i++ ) {
+			if ( jcb & m_psProto->m_lstJabberFeatCapPairsDynamic[i]->jcbCap ) {
+				iLen += lstrlen( m_psProto->m_lstJabberFeatCapPairsDynamic[i]->szFeature ) + 1;
+			}
+		}
+
+		// allocate memory and fill it
+		LPTSTR str = (LPTSTR)mir_alloc( iLen * sizeof(TCHAR) );
+		LPTSTR p = str;
+		for ( i = 0; g_JabberFeatCapPairs[i].szFeature; i++ ) {
+			if ( jcb & g_JabberFeatCapPairs[i].jcbCap ) {
+				lstrcpy( p, g_JabberFeatCapPairs[i].szFeature );
+				p += lstrlen( g_JabberFeatCapPairs[i].szFeature ) + 1;
+			}
+		}
+		for ( i = 0; i < m_psProto->m_lstJabberFeatCapPairsDynamic.getCount(); i++ ) {
+			if ( jcb & m_psProto->m_lstJabberFeatCapPairsDynamic[i]->jcbCap ) {
+				lstrcpy( p, m_psProto->m_lstJabberFeatCapPairsDynamic[i]->szFeature );
+				p += lstrlen( m_psProto->m_lstJabberFeatCapPairsDynamic[i]->szFeature ) + 1;
+			}
+		}
+		*p = 0; // extra zero terminator
+		m_psProto->ListUnlock();
+		return str;
+	}
+	return NULL;
 }

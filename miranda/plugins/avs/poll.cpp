@@ -50,6 +50,7 @@ extern int ChangeAvatar(HANDLE hContact, BOOL fLoad, BOOL fNotifyHist = FALSE, i
 extern int DeleteAvatar(HANDLE hContact);
 extern void MakePathRelative(HANDLE hContact, char *path);
 int Proto_GetDelayAfterFail(const char *proto);
+BOOL Proto_IsFetchingAlwaysAllowed(const char *proto);
 
 struct CacheNode *FindAvatarInCache(HANDLE hContact, BOOL add, BOOL findAny = FALSE);
 
@@ -95,7 +96,7 @@ static BOOL PollProtocolCanHaveAvatar(const char *szProto)
 	int status = CallProtoService(szProto, PS_GETSTATUS, 0, 0);
 	return (pCaps & PF4_AVATARS)
 		&& (g_szMetaName == NULL || strcmp(g_szMetaName, szProto))
-		&& status > ID_STATUS_OFFLINE && status != ID_STATUS_INVISIBLE;
+		&& ((status > ID_STATUS_OFFLINE && status != ID_STATUS_INVISIBLE) || Proto_IsFetchingAlwaysAllowed(szProto));
 }
 
 // Return true if this protocol has to be checked
@@ -108,7 +109,7 @@ static BOOL PollCheckProtocol(const char *szProto)
 static BOOL PollContactCanHaveAvatar(HANDLE hContact, const char *szProto)
 {
 	int status = DBGetContactSettingWord(hContact, szProto, "Status", ID_STATUS_OFFLINE);
-	return status != ID_STATUS_OFFLINE
+	return (Proto_IsFetchingAlwaysAllowed(szProto) || status != ID_STATUS_OFFLINE)
 		&& !DBGetContactSettingByte(hContact, "CList", "NotOnList", 0)
 		&& DBGetContactSettingByte(hContact, "CList", "ApparentMode", 0) != ID_STATUS_OFFLINE;
 }

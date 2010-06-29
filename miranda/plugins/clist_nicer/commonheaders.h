@@ -33,6 +33,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <windows.h>
 #include <commctrl.h>
 #include <uxtheme.h>
+#include <vssym32.h>
 #include <stdio.h>
 #include <time.h>
 #include <stddef.h>
@@ -43,7 +44,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <math.h>
 #include <shlwapi.h>
 #include "resource.h"
-#include "forkthread.h"
 #include <win2k.h>
 #include <newpluginapi.h>
 #include <m_clist.h>

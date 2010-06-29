@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="windows-1250"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="9,00"
+	Version="9.00"
 	Name="scriver"
 	ProjectGUID="{B8928210-546C-4AE3-956B-E2B724E6B8E5}"
 	RootNamespace="scriver"
@@ -983,6 +983,10 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\infobar.c"
+				>
+			</File>
+			<File
 				RelativePath=".\input.c"
 				>
 			</File>
@@ -1443,80 +1447,8 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="richutil.c"
+				RelativePath=".\richutil.c"
 				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|x64"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|x64"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release Unicode|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release Unicode|x64"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug Unicode|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug Unicode|x64"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\sendqueue.c"
@@ -2316,6 +2248,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\infobar.h"
+				>
+			</File>
+			<File
 				RelativePath=".\input.h"
 				>
 			</File>
@@ -2336,7 +2272,7 @@
 				>
 			</File>
 			<File
-				RelativePath="richutil.h"
+				RelativePath=".\richutil.h"
 				>
 			</File>
 			<File
@@ -2365,27 +2301,19 @@
 			Filter="ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe"
 			>
 			<File
-				RelativePath="..\..\src\res\addcontact.ico"
-				>
-			</File>
-			<File
-				RelativePath="..\..\Miranda-IM\res\addcontact.ico"
-				>
-			</File>
-			<File
 				RelativePath="res\addcontact.ico"
 				>
 			</File>
 			<File
-				RelativePath="res\Clock32.ico"
+				RelativePath=".\res\ansi.ico"
 				>
 			</File>
 			<File
-				RelativePath="res\Clock8.ico"
+				RelativePath=".\res\clock.ico"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\res\delete.ico"
+				RelativePath=".\res\closex.ico"
 				>
 			</File>
 			<File
@@ -2393,27 +2321,11 @@
 				>
 			</File>
 			<File
-				RelativePath="res\Details32.ico"
+				RelativePath=".\res\details.ico"
 				>
 			</File>
 			<File
-				RelativePath="res\Details8.ico"
-				>
-			</File>
-			<File
-				RelativePath="..\..\Miranda-IM\res\downarrow.ico"
-				>
-			</File>
-			<File
-				RelativePath="res\Downarrow32.ico"
-				>
-			</File>
-			<File
-				RelativePath="res\Downarrow8.ico"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\res\dragcopy.cur"
+				RelativePath=".\res\downarrow.ico"
 				>
 			</File>
 			<File
@@ -2421,27 +2333,19 @@
 				>
 			</File>
 			<File
-				RelativePath="res\emptyblo.ico"
+				RelativePath=".\res\foodnetwork.ico"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\res\emptyblo.ico"
+				RelativePath=".\res\google.ico"
 				>
 			</File>
 			<File
-				RelativePath="..\..\Miranda-IM\res\history.ico"
+				RelativePath=".\res\highlight.ico"
 				>
 			</File>
 			<File
-				RelativePath="res\History32.ico"
-				>
-			</File>
-			<File
-				RelativePath="res\History8.ico"
-				>
-			</File>
-			<File
-				RelativePath="..\..\Miranda-IM\res\hyperlin.cur"
+				RelativePath=".\res\history.ico"
 				>
 			</File>
 			<File
@@ -2449,39 +2353,15 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\res\hyperlin.cur"
+				RelativePath=".\res\message.ico"
 				>
 			</File>
 			<File
-				RelativePath="res\incoming.ico"
-				>
-			</File>
-			<File
-				RelativePath="..\..\Miranda-IM\res\multisend.ico"
-				>
-			</File>
-			<File
-				RelativePath="res\Multisend32.ico"
-				>
-			</File>
-			<File
-				RelativePath="res\Multisend8.ico"
-				>
-			</File>
-			<File
-				RelativePath="res\notice.ico"
-				>
-			</File>
-			<File
-				RelativePath="res\outgoing.ico"
+				RelativePath=".\res\messageout.ico"
 				>
 			</File>
 			<File
 				RelativePath="res\quote.ico"
-				>
-			</File>
-			<File
-				RelativePath="..\..\Miranda-IM\res\rename.ico"
 				>
 			</File>
 			<File
@@ -2561,27 +2441,15 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="res\send8.ico"
+				RelativePath=".\res\send.ico"
 				>
 			</File>
 			<File
-				RelativePath="res\smiley8.ico"
+				RelativePath=".\res\smiley.ico"
 				>
 			</File>
 			<File
-				RelativePath="..\..\Miranda-IM\res\timestamp.ico"
-				>
-			</File>
-			<File
-				RelativePath="..\..\Miranda-IM\res\typing.ico"
-				>
-			</File>
-			<File
-				RelativePath="res\Typing32.ico"
-				>
-			</File>
-			<File
-				RelativePath="res\Typing8.ico"
+				RelativePath=".\res\typing.ico"
 				>
 			</File>
 			<File
@@ -2589,170 +2457,134 @@
 				>
 			</File>
 			<File
-				RelativePath="res\typingon.ico"
+				RelativePath=".\res\unicode.ico"
 				>
 			</File>
 			<File
-				RelativePath="res\unicodeoff.ico"
+				RelativePath=".\res\wikipedia.ico"
 				>
 			</File>
 			<File
-				RelativePath="res\unicodeon.ico"
-				>
-			</File>
-			<File
-				RelativePath="res\unknown.bmp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\Miranda-IM\res\viewdetails.ico"
+				RelativePath=".\res\yahoo.ico"
 				>
 			</File>
 			<Filter
 				Name="chat"
 				>
 				<File
-					RelativePath=".\chat\Icons\1.ico"
+					RelativePath=".\res\chat\1.ico"
 					>
 				</File>
 				<File
-					RelativePath=".\chat\Icons\2.ico"
+					RelativePath=".\res\chat\2.ico"
 					>
 				</File>
 				<File
-					RelativePath=".\chat\Icons\3.ico"
+					RelativePath=".\res\chat\3.ico"
 					>
 				</File>
 				<File
-					RelativePath=".\chat\Icons\4.ico"
+					RelativePath=".\res\chat\4.ico"
 					>
 				</File>
 				<File
-					RelativePath=".\chat\Icons\5.ico"
+					RelativePath=".\res\chat\5.ico"
 					>
 				</File>
 				<File
-					RelativePath=".\chat\Icons\6.ico"
+					RelativePath=".\res\chat\6.ico"
 					>
 				</File>
 				<File
-					RelativePath=".\chat\Icons\action.ico"
+					RelativePath=".\res\chat\action.ico"
 					>
 				</File>
 				<File
-					RelativePath=".\chat\Icons\addmode.ico"
+					RelativePath=".\res\chat\addmode.ico"
 					>
 				</File>
 				<File
-					RelativePath=".\chat\Icons\bkgcolor.ico"
+					RelativePath=".\res\chat\bkgcolor.ico"
 					>
 				</File>
 				<File
-					RelativePath=".\chat\Icons\bold.ico"
+					RelativePath=".\res\chat\bold.ico"
 					>
 				</File>
 				<File
-					RelativePath=".\chat\Icons\close.ico"
+					RelativePath=".\res\chat\color.ico"
 					>
 				</File>
 				<File
-					RelativePath=".\chat\Icons\color.ico"
+					RelativePath=".\res\chat\filter.ico"
 					>
 				</File>
 				<File
-					RelativePath=".\chat\Icons\filter.ico"
+					RelativePath=".\res\chat\filter2.ico"
 					>
 				</File>
 				<File
-					RelativePath=".\chat\Icons\filter2.ico"
+					RelativePath=".\res\chat\info.ico"
 					>
 				</File>
 				<File
-					RelativePath=".\chat\Icons\highlight.ico"
+					RelativePath=".\res\chat\italic.ico"
 					>
 				</File>
 				<File
-					RelativePath=".\chat\Icons\history.ico"
+					RelativePath=".\res\chat\join.ico"
 					>
 				</File>
 				<File
-					RelativePath=".\chat\Icons\info.ico"
+					RelativePath=".\res\chat\kick.ico"
 					>
 				</File>
 				<File
-					RelativePath=".\chat\Icons\italics.ico"
+					RelativePath=".\res\chat\nick.ico"
 					>
 				</File>
 				<File
-					RelativePath=".\chat\Icons\join.ico"
+					RelativePath=".\res\chat\nicklist.ico"
 					>
 				</File>
 				<File
-					RelativePath=".\chat\Icons\kick.ico"
+					RelativePath=".\res\chat\nicklist2.ico"
 					>
 				</File>
 				<File
-					RelativePath=".\chat\Icons\message.ico"
+					RelativePath=".\res\chat\notice.ico"
 					>
 				</File>
 				<File
-					RelativePath=".\chat\Icons\messageout.ico"
+					RelativePath=".\res\chat\overlay.ico"
 					>
 				</File>
 				<File
-					RelativePath=".\chat\Icons\nick.ico"
+					RelativePath=".\res\chat\part.ico"
 					>
 				</File>
 				<File
-					RelativePath=".\chat\Icons\nicklist.ico"
+					RelativePath=".\res\chat\quit.ico"
 					>
 				</File>
 				<File
-					RelativePath=".\chat\Icons\nicklist2.ico"
+					RelativePath=".\res\chat\removestatus.ico"
 					>
 				</File>
 				<File
-					RelativePath=".\chat\Icons\notice.ico"
+					RelativePath=".\res\chat\topic.ico"
 					>
 				</File>
 				<File
-					RelativePath=".\chat\Icons\overlay.ico"
+					RelativePath=".\res\chat\topicbut.ico"
 					>
 				</File>
 				<File
-					RelativePath=".\chat\Icons\part.ico"
+					RelativePath=".\res\chat\underline.ico"
 					>
 				</File>
 				<File
-					RelativePath=".\chat\Icons\quit.ico"
-					>
-				</File>
-				<File
-					RelativePath=".\chat\Icons\removestatus.ico"
-					>
-				</File>
-				<File
-					RelativePath=".\chat\Icons\smiley.ico"
-					>
-				</File>
-				<File
-					RelativePath=".\chat\Icons\smileyc.ico"
-					>
-				</File>
-				<File
-					RelativePath=".\chat\Icons\topic.ico"
-					>
-				</File>
-				<File
-					RelativePath=".\chat\Icons\topicbut.ico"
-					>
-				</File>
-				<File
-					RelativePath=".\chat\Icons\underline.ico"
-					>
-				</File>
-				<File
-					RelativePath=".\chat\Icons\window.ico"
+					RelativePath=".\res\chat\window.ico"
 					>
 				</File>
 			</Filter>

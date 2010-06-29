@@ -3,7 +3,7 @@
 //                ________________________________________
 // 
 // Copyright © 2001-2004 Richard Hughes, Martin Öberg
-// Copyright © 2004-2009 Joe Kucera, Bio
+// Copyright © 2004-2010 Joe Kucera, Bio
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -17,7 +17,7 @@
 // 
 // You should have received a copy of the GNU General Public License
 // along with this program; if not, write to the Free Software
-// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 //
 // -----------------------------------------------------------------------------
 //
@@ -547,7 +547,7 @@ INT_PTR CALLBACK ChangeInfoDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
     }
 		dat->FreeStoredDbSettings();
     SetWindowLongPtr(hwndDlg, GWLP_USERDATA, 0);
-    delete dat;
+    SAFE_DELETE((void_struct**)&dat);
 		break;
 	}
 	return FALSE;

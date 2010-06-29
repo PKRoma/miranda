@@ -27,8 +27,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #define MS_NETLIB_LOGWIN "Netlib/Log/Win"
 
-extern struct NetlibUser **netlibUser;
-extern int netlibUserCount;
 extern HANDLE hConnectionHeaderMutex;
 
 #define TIMEFORMAT_NONE         0
@@ -110,7 +108,7 @@ static INT_PTR CALLBACK LogOptionsDlgProc(HWND hwndDlg,UINT message,WPARAM wPara
 			tvis.item.mask=TVIF_PARAM|TVIF_TEXT|TVIF_STATE;
 			tvis.item.stateMask=TVIS_STATEIMAGEMASK;
 
-			for( i=0; i<netlibUserCount; i++ )
+			for (i = 0; i < netlibUser.getCount(); ++i)
 			{
 				tvis.item.pszText=netlibUser[i]->user.ptszDescriptiveName;
 				tvis.item.lParam=i;
@@ -269,7 +267,7 @@ static INT_PTR CALLBACK LogOptionsDlgProc(HWND hwndDlg,UINT message,WPARAM wPara
 						DBWriteContactSettingDword(NULL, "Netlib", "NLlog",checked);
 					}
 					else
-					if (tvi.lParam < netlibUserCount) {
+					if (tvi.lParam < netlibUser.getCount()) {
 						netlibUser[tvi.lParam]->toLog = checked;
 						if ( logOptions.save )
 							DBWriteContactSettingDword(NULL,netlibUser[tvi.lParam]->user.szSettingsModule,"NLlog",checked);
@@ -342,13 +340,13 @@ static INT_PTR NetlibLog(WPARAM wParam,LPARAM lParam)
 		SetLastError(ERROR_INVALID_PARAMETER);
 		return 0;
 	}
-	if (nlu==NULL) { /* if the Netlib user handle is NULL, just pretend its not */
-		if ( !logOptions.toLog )
+	if (nlu == NULL) { /* if the Netlib user handle is NULL, just pretend its not */
+		if (!logOptions.toLog)
 			return 1;
-		nlu=&nludummy;
-		nlu->user.szSettingsModule="(NULL)";
+		nlu = &nludummy;
+		nlu->user.szSettingsModule = "(NULL)";
 	}
-	else if ( !(nlu->toLog) )
+	else if (!nlu->toLog)
 		return 1;
 
 	dwOriginalLastError=GetLastError();
@@ -404,6 +402,27 @@ static INT_PTR NetlibLog(WPARAM wParam,LPARAM lParam)
 	SetLastError(dwOriginalLastError);
 	return 1;
 }
+
+void NetlibLogf(NetlibUser* nlu, const char *fmt, ...)
+{
+	if (nlu == NULL) 
+	{
+		if (!logOptions.toLog)
+			return;
+	}
+	else if (!nlu->toLog)
+		return;
+
+	va_list va;
+	char szText[1024];
+
+	va_start(va,fmt);
+	mir_vsnprintf(szText, sizeof(szText), fmt, va);
+	va_end(va);
+
+	NetlibLog((WPARAM)nlu, (LPARAM)szText);
+}
+
 
 void NetlibDumpData(struct NetlibConnection *nlc,PBYTE buf,int len,int sent,int flags)
 {

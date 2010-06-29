@@ -6,6 +6,10 @@ Homepage: http://miranda.or.at
 Download: http://code.google.com/p/silvercircle/downloads/list
 Source:   http://code.google.com/p/miranda     (tabSRMM code is in Miranda SVN)
 
+Addtional annoucements can be found at my blog:
+	http://blog.miranda.or.at
+
+
 + : new feature
 * : changed
 ! : bugfix
@@ -23,21 +27,230 @@ It NEEDS Miranda 0.7.x and will not work on older versions.
 
 Version 2.2.1.x is for Miranda 0.8 and was released in June 2009
 
+Version 3.x is for Miranda 0.9 and incompatible with older Miranda cores. There
+are currently no downloads for it, you'll have to compile it from source.
+
 -----------------
 
 			Detailed change log
 			===================
 
-Version 2.2.1.21  - 2009/08/05
+Version 3.0.0.39 - 2010/06/24
 
-	! fixed few groupchat issues
+	* task bar previews: removed placeholders and implemented real previews of
+	  the message window contents.
 
-Version 2.2.1.20  - 2009/07/20
+	* redesigned container options dialog for better translations. Most
+	  options now offer much more space for translated strings.
+	  
+	* attempt to fix stuck typing notifications on arriving messages
+
+Version 3.0.0.38 - 2010/06/21 - released with Miranda 0.9.alpha#11
+
+	* implemented warning dialog boxes with a "do not show this message again"
+	  checkmark for various error- or informational messages.
+
+	* disabled aero peek previews when a skin is in use because of various
+	  unresolved problems. Might be adressed at a later time.
+
+	* updated icon pack version to 5 and re-enabled a mandatory version check
+	  on startup. The warning message can be disabled though.
+
+Version 3.0.0.37 - 2010/06/15
+
+	* changed logic for calculating relative skin path names. You will most likely
+	  have to reload your skins.
+
+	* fixed a possible crash when unloading/reloading skins.
+
+	* some updates for task bar thumbnails.
+
+Version 3.0.0.36 - 2010/06/04 - released with Miranda 0.9.alpha#10
+
+	* task bar support (Win 7), removed check for running DWM. Task bar tabs should
+	  now work with classic and non-aero themes in Windows 7 (no thumbnails, though,
+	  because they require Aero to be active).
+	  
+	* renamed misleading option for task bar support as it implied to require an Aero
+	  theme (which is not the case).
+	
+	* another tool bar rendering fix - don't use gradients for the tool bar background
+	  at all with classic Windows theme, unless both tool bar background colors are 
+	  properly set.
+
+	* Aero peek (task bar tabs) now default to enabled.
+
+Version 3.0.0.35 - 2010/05/29
+
+	* taskbar thumbnails (Win7): better support for MUC tabs, set active session
+	  should now work.
+	  
+	* autoclose tabs: converted to a more useful autoclose/autohide container 
+	  feature and moved to container options.
+	  
+	* fixed a bug where installing a language pack could break hotkeys (translation
+	  issue)
+	
+	* fixed "black tool bar bug" when classic windows theme is active on XP or later.
+			  
+Version 3.0.0.34 - 2010/05/27
+
+	* fixed crash when running on Windows 2000
+	
+	* cleaned up the mess in the TSButton class
+	
+	* More work on Aero Peek thumbnail previews. Added custom thumbnails for MUC chat
+	  rooms and server windows.
+	  
+	* updated msglog mark read code with some recent changes for srmm.
+	
+
+Version 3.0.0.33 - 2010/05/22
+
+	* some issues fixed
+
+	* improved compatibility for old (TabSRMM 2) skins
+
+	* preliminary support for large status icons on the Windows 7 task bar (Miranda 0.9
+	  required).
+
+	* option to show avatars on task bar added to container settings (only
+	  when running on Windows 7).
+
+	* option to enable/disable Windows 7 task bar features removed (now always on, 
+	  when running on Windows 7).
+	  
+	* Added aero peek for the Windows 7 task bar. Per tab thumbnails are partially
+	  implemented, so you get a similar UI as seen in other tabbed applications
+	  under Windows 7 (IE 8, Opera 10, for example). Still experimental, so it is 
+	  disabled by default (Message Sessions->Advanced tweaks is where you can enable
+	  it). A Restart is required.
+
+
+Version 3.0.0.32 - 2010/05/16
+
+	* menu bar is now using tool bar colors when using custom message window 
+	  colors
+	
+	* fixed changelog URL for users of updater plugin and created new online 
+	  change log for TabSRMM 3 development versions
+
+	* added separate translation for default container name (avoid using common
+	  translation for "default").
+
+Version 3.0.0.31 - 2010/05/xx
+
+	* fixed drawing problem with animated info panel avatars 
+	
+	* moved all legacy color settings to font service
+	
+	* added theme support for new color settings (+ updated theme version to
+	  v5).
+	  
+	* fixed issue with own nickname when it has not been set on the protocol's
+	  option page (use own UID instead).
+	  
+	  	  
+Version 3.0.0.30 - 2010/05/12
+
+	* MUC: replaced (non working) log truncating with log rotation. Old log files
+	  are archived when the size exceeds the maximum allowed length for a single
+	  channel log file.
+	  
+	* updated some dialogs to make more space for translations.
+	
+	* added UI button for quickly opening the MUC logs base folder.
+	
+	* implemented right and middle click actions for side bar buttons (close/context
+	  menu)
+	  
+	  
+Version 3.0.0.29 - 2010/05/11
+
+	* fixed a number of drawing problems
+	
+	* DB tweak to force tool bar always use visual styles
+	
+	* added 2 new common colors for painting the UI in aero and visual styles
+	  mode.
+	  
+	* improved exporting and importing of theme files to support UI settings that
+	  are new in TabSRMM 3.
+	  
+	   
+Version 3.0.0.27 - 2010/05/06
+
+	* send menu pulldown button is now always available, even if the
+	  send button itself is disabled.
+
+	* fixed few problems with tool bar configuration dialog.
+
+	* send later UI improved
+
+	* skin selection dialog improved (added button for quickly closing
+	  all open message windows when loading or unloading a skin).
+
+Version 3.0.0.26 - 2010/04/30
+
+	* fixed the painting of close buttons on tabs when using a skin (they
+	  were incorrectly using visual styles instead of the button skin)
+
+	* new skin item for the switch bar background
+
+	* send later out of hidden state (see: http://wiki.miranda.or.at/SendLater)
+
+Version 3.0.0.25 - 2010/04/23
+
+	* bug fixes
+	* added two new switch bar layouts (more complex, allow showing avatars
+	  on the switch bar buttons).
+	* fix for a crash when AVS plugin is not available.
+
+Version 3.0.0.22 - 2010/04/01
+
+	* Alpha snapshot released to my googlecode site.
+	* many bug fixes and small improvements, new skin selection dialog
+	* still INCOMPLETE and not all features are fully working.
+	
+Version 3.0.0.8  - 3.0.0.21
+
+	* again, many, many changes and new things. Refer to the Wiki page 
+	  (http://miranda.or.at/TabSrmm:Development3_0_KnownIssues) for more information.
+
+Version 3.0.0.4  - 3.0.0.8
+
+	* Ongoing rewrite of the plugin. New infopanel, MUC highlighting, aero effects
+	  among many other things were added. Still in alpha stage.
+
+Version 3.0.0.3  - 2009/08/20
+
+	* too many changes to list here. Major rewrites in many areas, aero support
+	  new menu bar (rebar-based), new, more dynamic info panel layout and drawing,
+	  support for core hotkey service added, folders support extended, reworked
+	  some groupchat options, got rid of old protocol names where possible
+
+Version 3.0.0.2  - 2009/07/30
+
+	* Major rewrites in some areas
+	* converted source to C++
+	* basic aero support added (experimental, disabled by default, you have to set
+	  a database value BYTE "useAero" under the "Tab_SRMsg" module and set its
+	  value to 1. Restart required
+	* many parts of the plugin rewritten in C++ (just started, more to come)
+
+Version 3.0.0.1  - 2009/07/20
+
+	* MAJOR changes in some areas. Info panel overhaul and more. Expect
+	  tabSRMM to be unstable for a while. 2.2.1.x will continue to exist for user
+	  of a stable Miranda. 3.0.0.x is currently for TESTING ONLY.
+
+Version 3.0.0.0  - 2009/07/20
 
 	! various visual glitches fixed.
 	! fixed problem with private container theme (using relative pathnames)
-	! fixed few groupchat issues
-	
+	! plugin version updated and restricted to Miranda 0.9.x development
+	  branch.
+
 Version 2.2.1.19  - 2009/07/08
 
 	! fixed some slowdowns when opening new tabs

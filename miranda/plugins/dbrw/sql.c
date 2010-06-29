@@ -1,7 +1,7 @@
 /*
 dbRW
 
-Copyright (c) 2005-2007 Robert Rainwater
+Copyright (c) 2005-2009 Robert Rainwater
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -161,7 +161,7 @@ static void CALLBACK sql_server_sync_apc(DWORD dwParam) {
 
 static void sql_server_sync(TSqlMessage *msg) {
     msg->hDoneEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
-    QueueUserAPC(sql_server_sync_apc, hSqlThread, (DWORD)msg);
+    sql_server_sync_apc((DWORD)msg);
     PostMessage(hAPCWindow, WM_NULL, 0, 0);
     WaitForSingleObject(msg->hDoneEvent, INFINITE);
     CloseHandle(msg->hDoneEvent);

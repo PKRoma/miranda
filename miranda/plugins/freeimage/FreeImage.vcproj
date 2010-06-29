@@ -673,6 +673,9 @@ copy Source\FreeImage.h Dist
 					<File
 						RelativePath=".\Source\LibJPEG\transupp.h">
 					</File>
+					<File
+						RelativePath=".\Miranda\version.h"
+					</File>
 				</Filter>
 			</Filter>
 			<Filter

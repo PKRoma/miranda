@@ -655,7 +655,7 @@ void CYahooProto::GetAvatarFileName(HANDLE hContact, char* pszDest, int cbLen, i
 	}
 }
 
-int __cdecl CYahooProto::GetAvatarInfo(WPARAM wParam,LPARAM lParam)
+INT_PTR __cdecl CYahooProto::GetAvatarInfo(WPARAM wParam,LPARAM lParam)
 {
 	PROTO_AVATAR_INFORMATION* AI = ( PROTO_AVATAR_INFORMATION* )lParam;
 	DBVARIANT dbv;
@@ -723,7 +723,7 @@ int __cdecl CYahooProto::GetAvatarInfo(WPARAM wParam,LPARAM lParam)
 /*
  * --=[ AVS / LoadAvatars API/Services ]=--
  */
-int __cdecl CYahooProto::GetAvatarCaps(WPARAM wParam, LPARAM lParam)
+INT_PTR __cdecl CYahooProto::GetAvatarCaps(WPARAM wParam, LPARAM lParam)
 {
 	int res = 0;
 
@@ -778,7 +778,7 @@ wParam=(char *)Buffer to file name
 lParam=(int)Buffer size
 return=0 on success, else on error
 */
-int __cdecl CYahooProto::GetMyAvatar(WPARAM wParam, LPARAM lParam)
+INT_PTR __cdecl CYahooProto::GetMyAvatar(WPARAM wParam, LPARAM lParam)
 {
 	char *buffer = (char *)wParam;
 	int size = (int)lParam;
@@ -841,7 +841,7 @@ INT_PTR __cdecl CYahooProto::SetMyAvatar(WPARAM wParam, LPARAM lParam)
 	} else {
 		DWORD  dwPngSize, dw;
 		BYTE* pResult;
-		int hash;
+		unsigned int hash;
 		HANDLE  hFile;
 
 		hFile = CreateFileA(szFile, 
@@ -876,30 +876,26 @@ INT_PTR __cdecl CYahooProto::SetMyAvatar(WPARAM wParam, LPARAM lParam)
 		CloseHandle( hFile );
 
 		hash = YAHOO_avt_hash(( const char* )pResult, dwPngSize);
-		
-		if (hash < 0)
-			hash = -hash;
-		
 		free( pResult );
 
-		LOG(("[YAHOO_SetAvatar] File: '%s' CK: %d", szMyFile, hash));	
+		if ( hash ) {
+			LOG(("[YAHOO_SetAvatar] File: '%s' CK: %d", szMyFile, hash));	
 
-		/* now check and make sure we don't reupload same thing over again */
-		if (hash != GetDword("AvatarHash", 0)) {
-			SetString(NULL, "AvatarFile", szMyFile);
-			DBWriteContactSettingDword(NULL, m_szModuleName, "TMPAvatarHash", hash);
+			/* now check and make sure we don't reupload same thing over again */
+			if (hash != GetDword("AvatarHash", 0)) {
+				SetString(NULL, "AvatarFile", szMyFile);
+				DBWriteContactSettingDword(NULL, m_szModuleName, "TMPAvatarHash", hash);
 
-			/*	Set Sharing to ON if it's OFF */
-			if (GetByte( "ShareAvatar", 0 ) != 2) {
-				SetByte( "ShareAvatar", 2 );
-				yahoo_send_picture_status(m_id, 2);
-			}
+				/*	Set Sharing to ON if it's OFF */
+				if (GetByte( "ShareAvatar", 0 ) != 2) {
+					SetByte( "ShareAvatar", 2 );
+					yahoo_send_picture_status(m_id, 2);
+				}
 
-			SendAvatar(szMyFile);
-		} else {
-			LOG(("[YAHOO_SetAvatar] Same checksum and avatar on YahooFT. Not Reuploading."));	  
-		}
-	}	
+				SendAvatar(szMyFile);
+			} 
+			else LOG(("[YAHOO_SetAvatar] Same checksum and avatar on YahooFT. Not Reuploading."));	  
+	}	}
 
 	return 0;
 }

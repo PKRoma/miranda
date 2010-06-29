@@ -31,7 +31,6 @@
 	"..\..\chat\icons\nova\topic.ico"\
 	"..\..\chat\icons\nova\topicbut.ico"\
 	"..\..\chat\icons\nova\window.ico"\
-	"..\..\res\empty.ico"\
 	"..\..\res\leftarrow.ico"\
 	"..\..\res\MessAnim\m1.ico"\
 	"..\..\res\MessAnim\m2.ico"\
@@ -41,9 +40,9 @@
 	"..\..\res\nova\block.ico"\
 	"..\..\res\nova\bold.ico"\
 	"..\..\res\nova\check.ico"\
+	"..\..\res\nova\clock.ico"\
 	"..\..\res\nova\delete.ico"\
 	"..\..\res\nova\emoticon.ico"\
-	"..\..\res\nova\favlist.ico"\
 	"..\..\res\nova\file.ico"\
 	"..\..\res\nova\font.ico"\
 	"..\..\res\nova\font2.ico"\
@@ -65,7 +64,6 @@
 	"..\..\res\nova\secureOff.ico"\
 	"..\..\res\nova\secureOn.ico"\
 	"..\..\res\nova\slist.ico"\
-	"..\..\res\nova\sounds_off.ico"\
 	"..\..\res\nova\sounds_on.ico"\
 	"..\..\res\nova\Status change.ico"\
 	"..\..\res\nova\strike.ico"\
@@ -75,4 +73,5 @@
 	"..\..\res\pullup.ico"\
 	"..\..\res\rightarrow.ico"\
 	"..\..\res\unknown.bmp"\
+	"..\..\tabmodplus\icons\imgopen.ico"\
 	

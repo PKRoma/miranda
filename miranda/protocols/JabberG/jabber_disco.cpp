@@ -414,7 +414,7 @@ void CJabberProto::PerformBrowse(HWND hwndDlg)
 							JSetByte( hContact, "IsTransport", TRUE );
 
 						if ( m_lstTransports.getIndex( item->jid ) == -1 )
-							m_lstTransports.insert( _tcsdup( item->jid ));
+							m_lstTransports.insert( mir_tstrdup( item->jid ));
 
 						CJabberSDNode* pNode = m_SDManager.AddPrimaryNode(item->jid, NULL, NULL);
 						SendBothRequests( pNode, NULL );
@@ -637,7 +637,7 @@ void CJabberDlgDiscovery::OnInitDialog()
 	CSuper::OnInitDialog();
 
 //	TranslateDialogDefault( m_hwnd );
-	SendMessage( m_hwnd, WM_SETICON, ICON_BIG, ( LPARAM )m_proto->LoadIconEx( "servicediscovery" ));
+	WindowSetIcon( m_hwnd, m_proto, "servicediscovery" );
 
 	int i;
 
@@ -689,15 +689,19 @@ void CJabberDlgDiscovery::OnInitDialog()
 	TreeList_AddIcon(hwndList, m_proto->LoadIconEx("main"), 0);
 	for (i = 0; i < SIZEOF(sttNodeIcons); ++i)
 	{
+		bool needDestroy = false;
 		HICON hIcon;
-		if ((sttNodeIcons[i].iconIndex == SKINICON_STATUS_ONLINE) && sttNodeIcons[i].iconName)
+		if ((sttNodeIcons[i].iconIndex == SKINICON_STATUS_ONLINE) && sttNodeIcons[i].iconName) {
 			hIcon = (HICON)CallProtoService(sttNodeIcons[i].iconName, PS_LOADICON, PLI_PROTOCOL|PLIF_SMALL, 0);
+			needDestroy = true;
+		}
 		else if (sttNodeIcons[i].iconName)
 			hIcon = m_proto->LoadIconEx(sttNodeIcons[i].iconName);
 		else if (sttNodeIcons[i].iconIndex)
 			hIcon = LoadSkinnedIcon(sttNodeIcons[i].iconIndex);
 		else continue;
 		sttNodeIcons[i].listIndex = TreeList_AddIcon(hwndList, hIcon, 0);
+		if (needDestroy) DestroyIcon(hIcon);
 	}
 	TreeList_AddIcon(hwndList, m_proto->LoadIconEx("disco_fail"), SD_OVERLAY_FAIL);
 	TreeList_AddIcon(hwndList, m_proto->LoadIconEx("disco_progress"), SD_OVERLAY_PROGRESS);

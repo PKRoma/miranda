@@ -105,6 +105,12 @@ Boston, MA 02111-1307, USA.
 // Only works on AVATAR_CONTROL_CLASS controls
 #define AVATAR_SETRESIZEIFSMALLER				(WM_USER+10)
 
+// tell acc to paint avatar on aero surface (must draw with alpha channel, not
+// using BitBlt()
+// wParam = not used
+// lParam = (BOOL) TRUE -> enable, FALSE -> disable
+
+#define AVATAR_SETAEROCOMPATDRAWING				(WM_USER+11)
 
 
 // Set to the parent throught WM_NOTIFY to notify when the avatar shown has changed

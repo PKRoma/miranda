@@ -47,6 +47,13 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 //if you want to send the container and keep the original directory inside it.
 #define MS_FILE_SENDSPECIFICFILES  "SRFile/SendSpecificFiles"
 
+//v0.9.0+
+//wParam=(WPARAM)(HANDLE)hContact
+//lParam=(LPARAM)(const TCHAR**)ppFiles
+//returns 0 on success or nonzero on failure
+//returns immediately, without waiting for the send
+#define MS_FILE_SENDSPECIFICFILEST  "SRFile/SendSpecificFilesT"
+
 //get the received files folder    v0.1.2.2+
 //wParam=(WPARAM)(HANDLE)hContact
 //lParam=(LPARAM)(char *)pszOutput

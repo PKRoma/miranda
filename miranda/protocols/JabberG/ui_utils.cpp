@@ -560,6 +560,11 @@ CCtrlMButton::CCtrlMButton( CDlgBase* dlg, int ctrlId, int iCoreIcon, const char
 {
 }
 
+CCtrlMButton::~CCtrlMButton()
+{
+	g_ReleaseIcon( m_hIcon );
+}
+
 void CCtrlMButton::OnInit()
 {
 	CCtrlButton::OnInit();

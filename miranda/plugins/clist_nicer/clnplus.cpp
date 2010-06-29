@@ -26,4 +26,5 @@ void RemoveFromTaskBar(HWND hWnd)
         }
         pTaskbarList->Release();
     }
-} }
+}
+}

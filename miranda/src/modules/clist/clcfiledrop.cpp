@@ -130,9 +130,9 @@ HRESULT CDropTarget::DragOver(DWORD /*grfKeyState*/, POINTL pt, DWORD * pdwEffec
 	if (dat->selection != hit) {
 		dat->selection = hit;
 		cli.pfnInvalidateRect(hwndCurrentDrag, NULL, FALSE);
-		pDropTargetHelper->Show(FALSE);
+		if (pDropTargetHelper) pDropTargetHelper->Show(FALSE);
 		UpdateWindow(hwndCurrentDrag);
-		pDropTargetHelper->Show(TRUE);
+		if (pDropTargetHelper) pDropTargetHelper->Show(TRUE);
 	}
 
 	return S_OK;
@@ -175,30 +175,26 @@ HRESULT CDropTarget::DragLeave(void)
 	return S_OK;
 }
 
-static void AddToFileList(char ***pppFiles, int *totalCount, const char *szFilename)
+static void AddToFileList(TCHAR ***pppFiles, int *totalCount, const TCHAR *szFilename)
 {
-	DWORD attr = GetFileAttributesA(szFilename);
-	if (attr == INVALID_FILE_ATTRIBUTES) return;
-
-	*pppFiles = (char **) mir_realloc(*pppFiles, (++*totalCount + 1) * sizeof(char *));
+	*pppFiles = (TCHAR **) mir_realloc(*pppFiles, (++*totalCount + 1) * sizeof(TCHAR *));
 	(*pppFiles)[*totalCount] = NULL;
-	(*pppFiles)[*totalCount - 1] = mir_strdup(szFilename);
-	
-	if (attr & FILE_ATTRIBUTE_DIRECTORY) {
-		WIN32_FIND_DATAA fd;
+	(*pppFiles)[*totalCount - 1] = mir_tstrdup(szFilename);
+	if (GetFileAttributes(szFilename) & FILE_ATTRIBUTE_DIRECTORY) {
+		WIN32_FIND_DATA fd;
 		HANDLE hFind;
-		char szPath[MAX_PATH];
-		lstrcpyA(szPath, szFilename);
-		lstrcatA(szPath, "\\*");
-		if (hFind = FindFirstFileA(szPath, &fd)) {
+		TCHAR szPath[MAX_PATH];
+		lstrcpy(szPath, szFilename);
+		lstrcat(szPath, _T("\\*"));
+		if (hFind = FindFirstFile(szPath, &fd)) {
 			do {
-				if (!lstrcmpA(fd.cFileName, ".") || !lstrcmpA(fd.cFileName, ".."))
+				if (!lstrcmp(fd.cFileName, _T(".")) || !lstrcmp(fd.cFileName, _T("..")))
 					continue;
-				lstrcpyA(szPath, szFilename);
-				lstrcatA(szPath, "\\");
-				lstrcatA(szPath, fd.cFileName);
+				lstrcpy(szPath, szFilename);
+				lstrcat(szPath, _T("\\"));
+				lstrcat(szPath, fd.cFileName);
 				AddToFileList(pppFiles, totalCount, szPath);
-			} while (FindNextFileA(hFind, &fd));
+			} while (FindNextFile(hFind, &fd));
 			FindClose(hFind);
 		}
 	}
@@ -227,18 +223,18 @@ HRESULT CDropTarget::Drop(IDataObject * pDataObj, DWORD /*fKeyState*/, POINTL pt
 	ScreenToClient(hwndCurrentDrag, &shortPt);
 	hContact = HContactFromPoint(hwndCurrentDrag, dat, shortPt.x, shortPt.y, NULL);
 	if (hContact != NULL) {
-		char **ppFiles = NULL;
-		char szFilename[MAX_PATH];
+		TCHAR **ppFiles = NULL;
+		TCHAR szFilename[MAX_PATH];
 		int fileCount, totalCount = 0, i;
 
 		fileCount = DragQueryFile(hDrop, -1, NULL, 0);
 		ppFiles = NULL;
 		for (i = 0; i < fileCount; i++) {
-			DragQueryFileA(hDrop, i, szFilename, SIZEOF(szFilename));
+			DragQueryFile(hDrop, i, szFilename, SIZEOF(szFilename));
 			AddToFileList(&ppFiles, &totalCount, szFilename);
 		}
 
-		if (!CallService(MS_CLIST_CONTACTFILESDROPPED, (WPARAM) hContact, (LPARAM) ppFiles))
+		if (!CallService(MS_FILE_SENDSPECIFICFILEST, (WPARAM) hContact, (LPARAM) ppFiles))
 			*pdwEffect = DROPEFFECT_COPY;
 
 		for (i = 0; ppFiles[i]; i++)
@@ -266,7 +262,9 @@ static VOID CALLBACK CreateDropTargetHelperTimerProc(HWND hwnd, UINT, UINT_PTR i
 
 void InitFileDropping(void)
 {
-	SetTimer(NULL, 1, 1000, CreateDropTargetHelperTimerProc);
+	// Disabled as this function loads tons of dlls for no apparenet reason
+	// we will se what the reaction will be
+//	SetTimer(NULL, 1, 1000, CreateDropTargetHelperTimerProc);
 }
 
 void fnRegisterFileDropping(HWND hwnd)

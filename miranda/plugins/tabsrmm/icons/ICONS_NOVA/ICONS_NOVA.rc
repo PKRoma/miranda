@@ -1,5 +1,6 @@
 // Microsoft Visual C++ generated resource script.
 //
+
 #include "../iconsxp/resource.h"
 
 #define APSTUDIO_READONLY_SYMBOLS
@@ -7,7 +8,7 @@
 //
 // Generated from the TEXTINCLUDE 2 resource.
 //
-#include "afxres.h"
+#include "winres.h"
 
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
@@ -40,6 +41,7 @@ IDI_CONTACTPIC          ICON                    "../../res/nova/avatar.ico"
 IDI_USERMENU            ICON                    "../../res/nova/info.ico"
 IDI_MSGERROR            ICON                    "../../res/nova/block.ico"
 IDI_CLOSEMSGDLG         ICON                    "../../res/nova/delete.ico"
+IDI_CLOCK               ICON                    "../../res/nova/clock.ico"
 IDI_ICONIN              ICON                    "../../res/nova/Incom.ico"
 IDI_ICONOUT             ICON                    "../../res/nova/outg.ico"
 IDI_SMILEYICON          ICON                    "../../res/nova/emoticon.ico"
@@ -56,12 +58,9 @@ IDI_STRIKEOUT           ICON                    "../../res/nova/strike.ico"
 IDI_FONTFACE            ICON                    "../../res/nova/font.ico"
 IDI_FONTCOLOR           ICON                    "../../res/nova/font2.ico"
 IDI_SOUNDSON            ICON                    "../../res/nova/sounds_on.ico"
-IDI_SOUNDSOFF           ICON                    "../../res/nova/sounds_off.ico"
-IDI_EMPTY               ICON                    "../../res/empty.ico"
-IDI_RESERVED10          ICON                    "../../res/empty.ico"
 IDI_SESSIONLIST         ICON                    "../../res/nova/slist.ico"
 IDI_CONFIGSIDEBAR       ICON                    "../../res/nova/sbaroptions.ico"
-IDI_FAVLIST             ICON                    "../../res/nova/favlist.ico"
+IDI_IMAGETAG            ICON                    "../../tabmodplus/icons/imgopen.ico"
 IDI_RECENTLIST          ICON                    "../../res/nova/recentlist.ico"
 IDI_USERPREFS           ICON                    "../../res/nova/userprefs.ico"
 IDI_TRAYANIM1           ICON                    "../../res/MessAnim/m1.ico"
@@ -156,7 +155,7 @@ LANGUAGE LANG_GERMAN, SUBLANG_GERMAN_AUSTRIAN
 
 STRINGTABLE 
 BEGIN
-    IDS_IDENTIFY            "__tabSRMM_ICONPACK 3.5__"
+    IDS_IDENTIFY            "__tabSRMM_ICONPACK 5.0__"
 END
 
 #endif    // German (Austria) resources

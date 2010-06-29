@@ -260,7 +260,7 @@ int gg_http_watch_fd(struct gg_http *h)
 	if (h->state == GG_STATE_SENDING_QUERY) {
 		int res;
 
-		if ((res = gg_sock_write(h->fd, h->query, strlen(h->query))) < 1) {
+		if ((res = gg_sock_write(h->fd, h->query, (int)strlen(h->query))) < 1) {
 			gg_debug(GG_DEBUG_MISC, "=> http, write() failed (len=%d, res=%d, errno=%d)\n", strlen(h->query), res, errno);
 			gg_http_error(GG_ERROR_WRITING);
 		}

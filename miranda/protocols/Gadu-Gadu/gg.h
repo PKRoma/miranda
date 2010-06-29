@@ -21,7 +21,7 @@
 #ifndef GG_H
 #define GG_H
 
-#define MIRANDA_VER 0x800
+#define MIRANDA_VER 0x900
 
 #if defined(__DEBUG__) || defined(_DEBUG) || defined(DEBUG)
 #define DEBUGMODE // Debug Mode
@@ -78,11 +78,16 @@ extern "C" {
 #include <m_imgsrvc.h>
 #include <m_genmenu.h>
 #include <m_file.h>
+#include <m_avatars.h>
+#include <m_xml.h>
 #include <m_chat.h>
 #include <m_idle.h>
 #ifdef DEBUGMODE
 #include <m_popup.h>
 #endif
+
+// Custom profile folders plugin header
+#include "m_folders.h"
 
 // Visual C++ extras
 #ifdef _MSC_VER
@@ -94,7 +99,6 @@ extern "C" {
 #endif
 
 // Plugin headers
-#include "pthread.h"
 #include "resource.h"
 
 // libgadu headers
@@ -111,21 +115,26 @@ typedef struct
 
 typedef struct
 {
+	HANDLE hThread;
+	DWORD dwThreadId;
+} GGTHREAD;
+
+typedef struct
+{
 	PROTO_INTERFACE proto;
 	LPTSTR name;
-	pthread_mutex_t ft_mutex, sess_mutex, img_mutex, modemsg_mutex;
-	list_t watches, transfers, requests, chats, imagedlgs;
+	CRITICAL_SECTION ft_mutex, sess_mutex, img_mutex, modemsg_mutex, avatar_mutex;
+	list_t watches, transfers, requests, chats, imagedlgs, avatar_requests, avatar_transfers;
 	int gc_enabled, gc_id, list_remove, unicode_core, statusPostponed;
 	uin_t next_uin;
 	unsigned long last_crc;
-	pthread_t pth_dcc;
-	pthread_t pth_sess;
+	GGTHREAD pth_dcc;
+	GGTHREAD pth_sess;
+	GGTHREAD pth_avatar;
 	struct gg_session *sess;
 	struct gg_dcc *dcc;
 	HANDLE event;
 	UINT_PTR timer;
-	char *token_id;
-	char *token_val;
 	struct
 	{
 		char *online;
@@ -143,10 +152,12 @@ typedef struct
 		hookIdleChanged,
 		hookGCUserEvent,
 		hookGCMenuBuild;
-	HANDLE hMenuRoot;
-	HANDLE hMainMenu[7];
+	HGENMENU hMenuRoot;
+	HGENMENU hMainMenu[7];
 	HANDLE hContactMenu;
 	HANDLE hInstanceMenuItem;
+	HANDLE hAvatarsFolder;
+	HANDLE hImagesFolder;
 } GGPROTO;
 
 typedef struct
@@ -173,11 +184,13 @@ typedef struct
 	char val[256];
 } GGTOKEN;
 
-typedef struct
-{
-	GGPROTO *gg;
-	HANDLE hContact;
-} GGCONTEXT;
+// GG Thread Function
+typedef void (__cdecl GGThreadFunc)(void*, void*);
+
+#if 0 /* #ifdef DEBUGMODE */
+#define EnterCriticalSection(lpCS)	{gg_netlog(gg,"EnterCriticalSection @ %s:%d", __FILE__, __LINE__); EnterCriticalSection(lpCS);}
+#define LeaveCriticalSection(lpCS)	{gg_netlog(gg,"LeaveCriticalSection @ %s:%d", __FILE__, __LINE__); LeaveCriticalSection(lpCS);}
+#endif
 
 
 // Wrappers of the old interface
@@ -186,7 +199,6 @@ typedef struct
 #define GG_PROTOERROR	(gg->name)
 #define GGDEF_PROTO 	 "GG"        // Default Proto
 #define GGDEF_PROTONAME  "Gadu-Gadu" // Default ProtoName
-
 
 
 // Process handles / seqs
@@ -213,10 +225,13 @@ typedef struct
 #define GG_KEY_PASSWORD			"Password"		// Password
 #define GG_KEY_EMAIL			"e-mail"		// E-mail
 #define GG_KEY_STATUS			"Status"		// Status
-#define GG_KEY_STARTUPSTATUS	"StartupStatus" // Status used when starting up
+//#define GG_KEY_STARTUPSTATUS	"StartupStatus" // Status used when starting up (deprecated)
 #define GG_KEY_NICK				"Nick"			// Nick
 #define GG_KEY_STATUSDESCR		"StatusMsg" 	// Users status description, to be compatible with MWClist
 												// should be stored in "CList" group
+#define GG_KEY_TOKEN			"Token"			// OAuth Access Token
+#define GG_KEY_TOKENSECRET		"TokenSecret"	// OAuth Access Token Secret
+
 #define GG_KEY_KEEPALIVE		"KeepAlive" 	// Keep-alive support
 #define GG_KEYDEF_KEEPALIVE		1
 
@@ -237,6 +252,19 @@ typedef struct
 #define GG_KEY_SHOWLINKS		"ShowLinks"		// Show links from unknown contacts
 #define GG_KEYDEF_SHOWLINKS		0
 
+#define GG_KEY_ENABLEAVATARS	"EnableAvatars"	// Enable avatars support
+#define GG_KEYDEF_ENABLEAVATARS	1
+
+#define GG_KEY_AVATARHASH		"AvatarHash"	// Contact's avatar hash
+
+#define GG_KEY_AVATARURL		"AvatarURL"		// Contact's avatar URL
+
+#define GG_KEY_AVATARTYPE		"AvatarType"	// Contact's avatar format
+#define GG_KEYDEF_AVATARTYPE	PA_FORMAT_UNKNOWN
+
+#define GG_KEY_AVATARREQUESTED		"AvatarRequested"	// When contact's avatar is requested
+#define GG_KEYDEF_AVATARREQUESTED	0
+
 #define GG_KEY_SHOWINVISIBLE	"ShowInvisible" // Show invisible users when described
 #define GG_KEYDEF_SHOWINVISIBLE	0
 
@@ -249,26 +277,21 @@ typedef struct
 #define GG_KEY_IMGMETHOD		"PopupImg"		// Popup image window automatically
 #define GG_KEYDEF_IMGMETHOD		1
 
-// Hidden option
-#define GG_KEY_STARTINVISIBLE	"StartInvisible"// Starts as invisible
-#define GG_KEYDEF_STARTINVISIBLE 0
-
-#define GG_KEY_MSGACK			"MessageAck"		// Acknowledge when sending msg
+#define GG_KEY_MSGACK			"MessageAck"	// Acknowledge when sending msg
 #define GG_KEYDEF_MSGACK		1
 
 #define GG_KEY_MANUALHOST		"ManualHost"	// Specify by hand server host/port
 #define GG_KEYDEF_MANUALHOST	0
-// #define GG_KEY_SERVERHOST		"ServerHost"	// Host (depreciated)
-// #define GG_KEY_SERVERPORT		"ServerPort"	// Port (depreciated)
+// #define GG_KEY_SERVERHOST		"ServerHost"	// Host (deprecated)
+// #define GG_KEY_SERVERPORT		"ServerPort"	// Port (deprecated)
 #define GG_KEY_SSLCONN			"SSLConnection" // Use SSL/TLS for connections
 #define GG_KEYDEF_SSLCONN		0
 #define GG_KEY_SERVERHOSTS		"ServerHosts"	// NL separated list of hosts for server connection
 #define GG_KEYDEF_SERVERHOSTS	"91.197.13.54\r\n91.197.13.66\r\n91.197.13.69\r\n91.197.13.72\r\n91.197.13.75\r\n91.197.13.81"
 
-
 #define GG_KEY_CLIENTIP 		"IP"			// Contact IP (by notify)
 #define GG_KEY_CLIENTPORT		"ClientPort"	// Contact port
-#define GG_KEY_CLIENTVERSION "ClientVersion"	// Contact app version
+#define GG_KEY_CLIENTVERSION	"ClientVersion"	// Contact app version
 
 #define GG_KEY_DIRECTCONNS		"DirectConns"	// Use direct connections
 #define GG_KEYDEF_DIRECTCONNS	1
@@ -331,6 +354,7 @@ typedef struct
 extern HINSTANCE hInstance;
 extern PLUGINLINK *pluginLink;
 extern CLIST_INTERFACE *pcli;
+extern struct LIST_INTERFACE li;
 extern DWORD gMirandaVersion;
 extern HANDLE hNetlib;
 #ifdef GG_CONFIG_HAVE_OPENSSL
@@ -359,14 +383,18 @@ char *ws_strerror(int code);
 uint32_t swap32(uint32_t x);
 const char *gg_version2string(int v);
 
+/* Thread functions */
+void gg_forkthread(GGPROTO *gg, GGThreadFunc pFunc, void *param);
+HANDLE gg_forkthreadex(GGPROTO *gg, GGThreadFunc pFunc, void *param, UINT *threadId);
+void gg_threadwait(GGPROTO *gg, GGTHREAD *thread);
+
 /* Global GG functions */
 void gg_notifyuser(GGPROTO *gg, HANDLE hContact, int refresh);
 void gg_setalloffline(GGPROTO *gg);
 void gg_disconnect(GGPROTO *gg);
 HANDLE gg_getcontact(GGPROTO *gg, uin_t uin, int create, int inlist, char *nick);
 void gg_registerservices(GGPROTO *gg);
-void gg_threadwait(GGPROTO *gg, pthread_t *thread);
-void *__stdcall gg_mainthread(void *empty);
+void __cdecl gg_mainthread(GGPROTO *gg, void *empty);
 int gg_isonline(GGPROTO *gg);
 int gg_refreshstatus(GGPROTO *gg, int status);
 
@@ -394,16 +422,26 @@ int gg_img_displayasmsg(GGPROTO *gg, HANDLE hContact, void *img);
 int gg_event(PROTO_INTERFACE *proto, PROTOEVENTTYPE eventType, WPARAM wParam, LPARAM lParam);
 int gg_recvmessage(PROTO_INTERFACE *proto, HANDLE hContact, PROTORECVEVENT *pre);
 
+/* Avatar functions */
+void gg_getavatarfilename(GGPROTO *gg, HANDLE hContact, char *pszDest, int cbLen);
+char *gg_avatarhash(char *param);
+void gg_getavatar(GGPROTO *gg, HANDLE hContact, char *szAvatarURL);
+void gg_requestavatar(GGPROTO *gg, HANDLE hContact, int iWaitFor);
+void gg_initavatarrequestthread(GGPROTO *gg);
+void gg_uninitavatarrequestthread(GGPROTO *gg);
+void gg_getuseravatar(GGPROTO *gg);
+int gg_setavatar(GGPROTO *gg, const char *szFilename);
+INT_PTR gg_getavatarinfo(GGPROTO *gg, WPARAM wParam, LPARAM lParam);
+
 /* File transfer functions */
-HANDLE gg_fileallow(PROTO_INTERFACE *proto, HANDLE hContact, HANDLE hTransfer, const char* szPath);
+HANDLE gg_fileallow(PROTO_INTERFACE *proto, HANDLE hContact, HANDLE hTransfer, const PROTOCHAR* szPath);
 int gg_filecancel(PROTO_INTERFACE *proto, HANDLE hContact, HANDLE hTransfer);
-int gg_filedeny(PROTO_INTERFACE *proto, HANDLE hContact, HANDLE hTransfer, const char* szReason);
-int gg_recvfile(PROTO_INTERFACE *proto, HANDLE hContact, PROTORECVFILE *pre);
-HANDLE gg_sendfile(PROTO_INTERFACE *proto, HANDLE hContact, const char* szDescription, char** files);
+int gg_filedeny(PROTO_INTERFACE *proto, HANDLE hContact, HANDLE hTransfer, const PROTOCHAR* szReason);
+int gg_recvfile(PROTO_INTERFACE *proto, HANDLE hContact, PROTOFILEEVENT* pre);
+HANDLE gg_sendfile(PROTO_INTERFACE *proto, HANDLE hContact, const PROTOCHAR* szDescription, PROTOCHAR** ppszFiles);
 
 /* Import module */
-void gg_import_init(GGPROTO *gg);
-void gg_import_shutdown(GGPROTO *gg);
+void gg_import_init(GGPROTO *gg, HGENMENU hRoot);
 
 /* Keep-alive module */
 void gg_keepalive_init(GGPROTO *gg);
@@ -417,13 +455,12 @@ INT_PTR gg_img_recvimage(GGPROTO *gg, WPARAM wParam, LPARAM lParam);
 INT_PTR gg_img_sendimage(GGPROTO *gg, WPARAM wParam, LPARAM lParam);
 int gg_img_sendonrequest(GGPROTO *gg, struct gg_event* e);
 BOOL gg_img_opened(GGPROTO *gg, uin_t uin);
-void *__stdcall gg_img_dlgthread(void *empty);
 
 /* IcoLib functions */
 void gg_icolib_init();
-HICON LoadIconEx(const char* name);
+HICON LoadIconEx(const char* name, BOOL big);
 HANDLE GetIconHandle(int iconId);
-void ReleaseIconEx(const char* name);
+void ReleaseIconEx(const char* name, BOOL big);
 
 /* URI parser functions */
 void gg_links_instancemenu_init();
@@ -432,13 +469,17 @@ void gg_links_destroy();
 void gg_links_instance_init(GGPROTO* gg);
 void gg_links_instance_destroy(GGPROTO* gg);
 
+/* OAuth functions */
+char *gg_oauth_header(GGPROTO *gg, const char *httpmethod, const char *url);
+int gg_oauth_checktoken(GGPROTO *gg, int force);
+
 /* UI page initializers */
 int gg_options_init(GGPROTO *gg, WPARAM wParam, LPARAM lParam);
 int gg_details_init(GGPROTO *gg, WPARAM wParam, LPARAM lParam);
 
 /* Groupchat functions */
 int gg_gc_init(GGPROTO *gg);
-void gg_gc_menus_init(GGPROTO *gg);
+void gg_gc_menus_init(GGPROTO *gg, HGENMENU hRoot);
 int gg_gc_destroy(GGPROTO *gg);
 char * gg_gc_getchat(GGPROTO *gg, uin_t sender, uin_t *recipients, int recipients_count);
 GGGC *gg_gc_lookup(GGPROTO *gg, char *id);
@@ -448,8 +489,12 @@ int gg_gc_changenick(GGPROTO *gg, HANDLE hContact, char *pszNick);
 /* Event helper */
 #define HookProtoEvent(name, func, proto)             HookEventObj(name, (MIRANDAHOOKOBJ)func, proto)
 #define CreateProtoServiceFunction(name, func, proto) CreateServiceFunctionObj(name, (MIRANDASERVICEOBJ)func, proto)
-typedef int (*GGPROTOFUNC)(GGPROTO*,WPARAM,LPARAM);
+typedef INT_PTR (*GGPROTOFUNC)(GGPROTO*,WPARAM,LPARAM);
 void CreateProtoService(const char* szService, GGPROTOFUNC serviceProc, GGPROTO *gg);
+
+/* ANSI <-> Unicode conversion helpers */
+#define gg_a2t(s) gg->unicode_core ? (TCHAR *)mir_a2u(s) : (TCHAR *)mir_strdup(s)
+#define gg_t2a(s) gg->unicode_core ? mir_u2a((wchar_t *)s) : mir_strdup(s)
 
 // Debug functions
 #ifdef DEBUGMODE

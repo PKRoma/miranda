@@ -22,46 +22,38 @@
 
 void __cdecl CYahooProto::search_simplethread(void *snsearch)
 {
-	char *nick = (char *) snsearch;
-	static char m[255];
+	TCHAR *id = (TCHAR *) snsearch;
 
-	if (lstrlenA(nick) < 4) {
+	if (lstrlen(id) < 4) {
 		SendBroadcast(NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, (HANDLE) 1, 0);
 		MessageBoxA(NULL, "Please enter a valid ID to search for.", "Search", MB_OK);
 		return;
 	}
 
-	char *c = strchr(nick, '@');
-	if (c != NULL){
-		int l =  c - nick;
-
-		strncpy(m, nick, l);
-		m[l] = '\0';        
-	}
-	else strcpy(m, nick);
+	TCHAR *c = _tcschr(id, '@');
+	if (c) *c = 0;
 
 	PROTOSEARCHRESULT psr = { 0 };
 	psr.cbSize = sizeof(psr);
-	psr.nick = strlwr(strdup(nick));
+	psr.flags = PSR_TCHAR;
+	psr.id = (TCHAR*)_tcslwr(id);
 	psr.reserved[0] = YAHOO_IM_YAHOO;
 
 	SendBroadcast(NULL, ACKTYPE_SEARCH, ACKRESULT_DATA, (HANDLE) 1, (LPARAM) & psr);
 
 	//yahoo_search(m_id, YAHOO_SEARCH_YID, m, YAHOO_GENDER_NONE, YAHOO_AGERANGE_NONE, 0, 1);
 
-	FREE(nick);
-	
 	SendBroadcast(NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, (HANDLE) 1, 0);
 }
 
-HANDLE __cdecl CYahooProto::SearchBasic( const char* nick )
+HANDLE __cdecl CYahooProto::SearchBasic( const TCHAR* nick )
 {
-	LOG(("[YahooBasicSearch] Searching for: %s", nick));
+	LOG(("[YahooBasicSearch] Searching for: %S", nick));
 	
 	if ( !m_bLoggedIn )
 		return 0;
 
-	YForkThread(&CYahooProto::search_simplethread, strdup( nick ));
+	YForkThread(&CYahooProto::search_simplethread, _tcsdup( nick ));
 	return ( HANDLE )1;
 }
 
@@ -82,6 +74,7 @@ void CYahooProto::ext_got_search_result(int found, int start, int total, YList *
 		
 	PROTOSEARCHRESULT psr = { 0 };
 	psr.cbSize = sizeof(psr);
+	psr.flags = PSR_TCHAR;
 	psr.reserved[0] = YAHOO_IM_YAHOO;
 	
 	while (en) {
@@ -91,24 +84,34 @@ void CYahooProto::ext_got_search_result(int found, int start, int total, YList *
 			LOG(("[%d] Empty record?",i++));
 		} else {
 			LOG(("[%d] id: '%s', online: %d, age: %d, sex: '%s', location: '%s'", i++, yct->id, yct->online, yct->age, yct->gender, yct->location));
-			psr.nick = (char *)yct->id;
-			char *c = (char *)malloc(10);
+			psr.id = mir_utf8decodeT( yct->id );
 			
 			if (yct->gender[0] != 5)
-				psr.firstName = yct->gender;
+				psr.firstName = mir_utf8decodeT( yct->gender );
+			else
+				psr.firstName = NULL;
 			
+			TCHAR c[10];
 			if (yct->age > 0) {
-				itoa(yct->age, c,10);
-				psr.lastName = (char *)c;
+				_itot(yct->age, c,10);
+				psr.lastName = ( TCHAR* )c;
 			}
+			else
+				psr.lastName = NULL;
 			
 			if (yct->location[0] != 5)
-				psr.email = (char *)yct->location;
+				psr.email = mir_utf8decodeT( yct->location );
+			else
+				psr.email = NULL;
     
 			//void yahoo_search(int id, enum yahoo_search_type t, const char *text, enum yahoo_search_gender g, enum yahoo_search_agerange ar, 
 			//	int photo, int yahoo_only)
 
 			SendBroadcast(NULL, ACKTYPE_SEARCH, ACKRESULT_DATA, (HANDLE) 1, (LPARAM) & psr);
+
+			mir_free(psr.id);
+			mir_free(psr.firstName);
+			mir_free(psr.email);
 		}
 		en = y_list_next(en);
 	}
@@ -151,10 +154,10 @@ void __cdecl CYahooProto::searchadv_thread(void *pHWND)
 {
 	HWND hwndDlg = (HWND) pHWND;
 
-	char searchid[128];
-	GetDlgItemTextA(hwndDlg, IDC_SEARCH_ID, searchid, 128);
+	TCHAR searchid[128];
+	GetDlgItemText(hwndDlg, IDC_SEARCH_ID, searchid, 128);
 
-	if (lstrlenA(searchid) == 0) {
+	if (lstrlen(searchid) == 0) {
 		SendBroadcast(NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, (HANDLE) 1, 0);
 		MessageBoxA(NULL, "Please enter a valid ID to search for.", "Search", MB_OK);
 		return;
@@ -162,14 +165,15 @@ void __cdecl CYahooProto::searchadv_thread(void *pHWND)
 
 	PROTOSEARCHRESULT psr = { 0 };
 	psr.cbSize = sizeof(psr);
-	psr.nick = strlwr(searchid);
+	psr.flags = PSR_TCHAR;
+	psr.id = _tcslwr(searchid);
 
 	int pid = SendDlgItemMessage(hwndDlg , IDC_SEARCH_PROTOCOL, CB_GETCURSEL, 0, 0);
 	switch (pid){
-		case 0: psr.firstName = "<Yahoo >";  pid = YAHOO_IM_YAHOO; break;
-		case 1: psr.firstName = "<Lotus Sametime>"; pid = YAHOO_IM_SAMETIME;break;
-		case 2: psr.firstName = "<LCS>"; pid = YAHOO_IM_LCS; break;
-		case 3: psr.firstName = "<Windows Live (MSN)>"; pid = YAHOO_IM_MSN; break;
+		case 0: psr.firstName = _T("<Yahoo >");  pid = YAHOO_IM_YAHOO; break;
+		case 1: psr.firstName = _T("<Lotus Sametime>"); pid = YAHOO_IM_SAMETIME;break;
+		case 2: psr.firstName = _T("<LCS>"); pid = YAHOO_IM_LCS; break;
+		case 3: psr.firstName = _T("<Windows Live (MSN)>"); pid = YAHOO_IM_MSN; break;
 	}
 
 	psr.reserved[0] = pid;

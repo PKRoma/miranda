@@ -2,8 +2,8 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2008 Miranda ICQ/IM project, 
-all portions of this codebase are copyrighted to the people 
+Copyright 2000-2008 Miranda ICQ/IM project,
+all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
 This program is free software; you can redistribute it and/or
@@ -94,7 +94,7 @@ typedef struct {
 
 //Assign a Netlib user handle a set of dynamic HTTP headers to be used with all
 //
-//HTTP connections that enable the HTTP-use-sticky headers flag. 
+//HTTP connections that enable the HTTP-use-sticky headers flag.
 //The headers persist until cleared with lParam=NULL.
 //
 //All memory should be allocated by the caller using malloc() from MS_SYSTEM_GET_MMI
@@ -183,22 +183,23 @@ should use the MSG_DUMPPROXY flag so that the logging is neat.
 #define PROXYTYPE_SOCKS5   2
 #define PROXYTYPE_HTTP     3
 #define PROXYTYPE_HTTPS    4
+#define PROXYTYPE_IE       5
 typedef struct {
-	int cbSize;    //to be filled in before calling
-	int useProxy;	  //1 or 0
-	int proxyType;	  //a PROXYTYPE_
-	char *szProxyServer;   //can be NULL
-	int wProxyPort;    //host byte order
-	int useProxyAuth;   //1 or 0. Always 0 for SOCKS4
-	char *szProxyAuthUser;		 //can be NULL, always used by SOCKS4
-	char *szProxyAuthPassword;	 //can be NULL
-	int useProxyAuthNtlm;  //1 or 0, only used by HTTP, HTTPS
-	int dnsThroughProxy;   //1 or 0
-	int specifyIncomingPorts;   //1 or 0
-	char *szIncomingPorts;   //can be NULL. Of form "1024-1050,1060-1070,2000"
-	int specifyOutgoingPorts; // 0.3.3a+
-	char *szOutgoingPorts; // 0.3.3a+
-    int enableUPnP; //0.6.1+ only for NUF_INCOMING
+	int cbSize;                 // to be filled in before calling
+	int useProxy;	            // 1 or 0
+	int proxyType;	            // a PROXYTYPE_
+	char *szProxyServer;        // can be NULL
+	int wProxyPort;             // host byte order
+	int useProxyAuth;           // 1 or 0. Always 0 for SOCKS4
+	char *szProxyAuthUser;      // can be NULL, always used by SOCKS4
+	char *szProxyAuthPassword;  // can be NULL
+	int useProxyAuthNtlm;       // 1 or 0, only used by HTTP, HTTPS
+	int dnsThroughProxy;        // 1 or 0
+	int specifyIncomingPorts;   // 1 or 0
+	char *szIncomingPorts;      // can be NULL. Of form "1024-1050,1060-1070,2000"
+	int specifyOutgoingPorts;   // 0.3.3a+
+	char *szOutgoingPorts;      // 0.3.3a+
+    int enableUPnP;             // 0.6.1+ only for NUF_INCOMING
     int validateSSL;
 } NETLIBUSERSETTINGS;
 #define MS_NETLIB_GETUSERSETTINGS  "Netlib/GetUserSettings"
@@ -245,14 +246,14 @@ __inline static INT_PTR Netlib_CloseHandle(HANDLE h) {return CallService(MS_NETL
 // will result in an attempt to bind on the port given in wPort
 // if this port is taken then you will get an error, so be sure to check
 // for such conditions.
-// 
+//
 // passing wPort != 0 is for people who need to open a set port for
 // daemon activities, usually passing wPort==0 is what you want and
 // will result in a free port given by the TCP/IP socket layer and/or
 // seeded from the user selected port ranges.
 //
 // also note that wPort if != 0, will have be converted to network byte order
-// 
+//
 /* pExtra was added during 0.3.4+, prior its just two args, since we use the cdecl convention
 it shouldnt matter */
 
@@ -280,7 +281,7 @@ typedef struct {
 	int cbSize;
 	union { // new code should use V2
 		NETLIBNEWCONNECTIONPROC pfnNewConnection;
-		NETLIBNEWCONNECTIONPROC_V2 pfnNewConnectionV2; 		
+		NETLIBNEWCONNECTIONPROC_V2 pfnNewConnectionV2;
 	};
 	     //function to call when there's a new connection. Params are: the
 		 //new connection, IP of remote machine (host byte order)
@@ -321,23 +322,24 @@ typedef struct {
 //    ERROR_INVALID_ADDRESS (socks5 address type not supported)
 //    HTTP: anything from nlu.pfnHttpGatewayInit, nlu.pfnHttpGatewayBegin,
 //          MS_NETLIB_SENDHTTPREQUEST or MS_NETLIB_RECVHTTPHEADERS
-#define NLOCF_HTTP  0x0001  //this connection will be used for HTTP communications. If configured for an HTTP/HTTPS proxy the connection is opened as if there was no proxy.
+#define NLOCF_HTTP          0x0001 //this connection will be used for HTTP communications. If configured for an HTTP/HTTPS proxy the connection is opened as if there was no proxy.
 #define NLOCF_STICKYHEADERS 0x0002 //this connection should send the sticky headers associated with NetLib user apart of any HTTP request
-#define NLOCF_V2 0x0004 //this connection understands the newer structure, newer cbSize isnt enough
-#define NLOCF_UDP 0x0008 // this connection is UDP
-#define NLOCF_SSL 0x0010 // this connection is SSL
+#define NLOCF_V2            0x0004 //this connection understands the newer structure, newer cbSize isnt enough
+#define NLOCF_UDP           0x0008 // this connection is UDP
+#define NLOCF_SSL           0x0010 // this connection is SSL
+#define NLOCF_HTTPGATEWAY   0x0020 // this connection is HTTP Gateway
 
 /* Added during 0.4.0+ development!! (2004/11/29) prior to this, connect() blocks til a connection is made or
 a hard timeout is reached, this can be anywhere between 30-60 seconds, and it stops Miranda from unloading whilst
 this is attempted, clearing sucking - so now you can set a timeout of any value, there is still a hard limit which is
 always reached by Windows, If a timeout occurs, or Miranda is exiting then you will get ERROR_TIMEOUT as soon as possible.
-*/ 
+*/
 #define NETLIBOPENCONNECTION_V1_SIZE 16 /* old sizeof() is 14 bytes, but there is padding of 2 bytes */
 struct NETLIBOPENCONNECTION_tag {
 	int cbSize;
 	const char *szHost;	  //can contain the string representation of an IP
 	WORD wPort;			  //host byte order
-	DWORD flags;	
+	DWORD flags;
 	unsigned int timeout;
 	/* optional, called in the context of the thread that issued the attempt, if it returns 0 the connection attempt is
 	stopped, the remaining timeout value can also be adjusted */
@@ -363,6 +365,9 @@ typedef struct {
 	char *szHttpPostUrl;
 	char *szHttpGetUrl;
 	int firstGetSequence,firstPostSequence;
+#if MIRANDA_VER >= 0x0900
+	int combinePackets;
+#endif
 } NETLIBHTTPPROXYINFO;
 #define MS_NETLIB_SETHTTPPROXYINFO   "Netlib/SetHttpProxyInfo"
 
@@ -449,8 +454,11 @@ typedef struct {
 #define NLHRF_SMARTREMOVEHOST 0x00000004   //removes host and/or protocol from szUrl unless the connection was opened through an HTTP or HTTPS proxy.
 #define NLHRF_SMARTAUTHHEADER 0x00000008   //if the connection was opened through an HTTP or HTTPS proxy then send a Proxy-Authorization header if required.
 #define NLHRF_HTTP11          0x00000010   //use HTTP 1.1
-#define NLHRF_PERSISTENT      0x00000020   //preserve connection on exit
-#define NLHRF_SSL             0x00000040   //use ssl connection
+#define NLHRF_PERSISTENT      0x00000020   //preserve connection on exit, open connection provided in the nlc field of the reply
+                                           //it should be supplied in nlc field of request for reuse or closed if not needed
+#define NLHRF_SSL             0x00000040   //use SSL connection
+#define NLHRF_NOPROXY         0x00000080   //do not use proxy server
+#define NLHRF_REDIRECT        0x00000100   //handle HTTP redirect requests (response 30x), the resulting url provided in szUrl of the response
 #define NLHRF_NODUMP          0x00010000   //never dump this to the log
 #define NLHRF_NODUMPHEADERS   0x00020000   //don't dump http headers (only useful for POSTs and MS_NETLIB_HTTPTRANSACTION)
 #define NLHRF_DUMPPROXY       0x00040000   //this transaction is a proxy communication. For dump filtering only.
@@ -623,7 +631,7 @@ typedef struct {
 //Shutdown connection
 //wParam=(WPARAM)(HANDLE)hConnection
 //lParam=(LPARAM)0
-//Returns 0 
+//Returns 0
 #define MS_NETLIB_SHUTDOWN	   "Netlib/Shutdown"
 __inline static void Netlib_Shutdown(HANDLE h) {CallService(MS_NETLIB_SHUTDOWN,(WPARAM)h,0);}
 
@@ -682,13 +690,13 @@ typedef struct {
 //Errors: -1
 #define MS_NETLIB_SETPOLLINGTIMEOUT "Netlib/SetPollingTimeout"
 
-//Makes connection SSL 
+//Makes connection SSL
 //wParam=(WPARAM)(HANDLE)hConn
 //lParam=(LPARAM)(NETLIBSSL*)&nlssl or null if no certficate validation required
 //Returns 0 on failure 1 on success
 #define MS_NETLIB_STARTSSL "Netlib/StartSsl"
 
-typedef struct 
+typedef struct
 {
     int cbSize;
 	const char *host; //Expected host name
@@ -700,20 +708,33 @@ typedef struct
 //#include <stdarg.h> and <stdio.h> before including this header in order to
 //use it.
 #if defined va_start && (defined _STDIO_DEFINED || defined _STDIO_H_) && (!defined NETLIB_NOLOGGING)
-static __inline INT_PTR Netlib_Logf(HANDLE hUser,const char *fmt,...)
+static INT_PTR Netlib_Logf(HANDLE hUser,const char *fmt,...)
 {
 	va_list va;
 	char szText[1024];
 
-	va_start(va,fmt);
-	mir_vsnprintf(szText,sizeof(szText),fmt,va);
-	va_end(va);
-	return CallService(MS_NETLIB_LOG,(WPARAM)hUser,(LPARAM)szText);
+	__try
+	{
+		va_start(va,fmt);
+		mir_vsnprintf(szText,sizeof(szText),fmt,va);
+		va_end(va);
+		return CallService(MS_NETLIB_LOG,(WPARAM)hUser,(LPARAM)szText);
+	}
+	__except(EXCEPTION_EXECUTE_HANDLER) {}
+	return 0;
 }
 #endif //defined va_start
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // Security providers (0.6+)
+
+#define NNR_UNICODE 1
+
+#ifdef UNICODE
+#define NNR_TCHAR 1
+#else
+#define NNR_TCHAR 0
+#endif
 
 // Inits a required security provider. Right now only NTLM is supported
 // Returns HANDLE = NULL on error or non-null value on success
@@ -723,6 +744,23 @@ static __inline HANDLE Netlib_InitSecurityProvider( char* szProviderName )
 {
 	return (HANDLE)CallService( MS_NETLIB_INITSECURITYPROVIDER, 0, (LPARAM)szProviderName );
 }
+
+typedef struct {
+	size_t cbSize;
+	const TCHAR* szProviderName;
+	const TCHAR* szPrincipal;
+	unsigned flags;
+}
+	NETLIBNTLMINIT2;
+
+#define MS_NETLIB_INITSECURITYPROVIDER2 "Netlib/InitSecurityProvider2"
+
+static __inline HANDLE Netlib_InitSecurityProvider2( const TCHAR* szProviderName, const TCHAR* szPrincipal )
+{
+	NETLIBNTLMINIT2 temp = { sizeof(temp), szProviderName, szPrincipal, NNR_TCHAR };
+	return (HANDLE)CallService( MS_NETLIB_INITSECURITYPROVIDER2, 0, (LPARAM)&temp );
+}
+
 
 // Destroys a security provider's handle, provided by Netlib_InitSecurityProvider.
 // Right now only NTLM is supported
@@ -734,19 +772,40 @@ static __inline void Netlib_DestroySecurityProvider( char* szProviderName, HANDL
 }
 
 // Returns the NTLM response string. The result value should be freed using mir_free
-#define MS_NETLIB_NTLMCREATERESPONSE "Netlib/NtlmCreateResponse"
 
 typedef struct {
-   char* szChallenge;
+	char* szChallenge;
 	char* userName;
 	char* password;
 }
 	NETLIBNTLMREQUEST;
 
+#define MS_NETLIB_NTLMCREATERESPONSE "Netlib/NtlmCreateResponse"
+
 static __inline char* Netlib_NtlmCreateResponse( HANDLE hProvider, char* szChallenge, char* login, char* psw )
 {
 	NETLIBNTLMREQUEST temp = { szChallenge, login, psw };
 	return (char*)CallService( MS_NETLIB_NTLMCREATERESPONSE, (WPARAM)hProvider, (LPARAM)&temp );
+}
+
+typedef struct {
+	size_t cbSize;
+	const char* szChallenge;
+	const TCHAR* szUserName;
+	const TCHAR* szPassword;
+	unsigned complete;
+	unsigned flags;
+}
+	NETLIBNTLMREQUEST2;
+
+#define MS_NETLIB_NTLMCREATERESPONSE2 "Netlib/NtlmCreateResponse2"
+
+static __inline char* Netlib_NtlmCreateResponse2( HANDLE hProvider, char* szChallenge, TCHAR* szLogin, TCHAR* szPass, unsigned *complete )
+{
+	NETLIBNTLMREQUEST2 temp = { sizeof(temp), szChallenge, szLogin, szPass, 0, NNR_TCHAR };
+	char* res = (char*)CallService( MS_NETLIB_NTLMCREATERESPONSE2, (WPARAM)hProvider, (LPARAM)&temp );
+	*complete = temp.complete;
+	return res;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////

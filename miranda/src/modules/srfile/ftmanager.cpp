@@ -332,7 +332,6 @@ static INT_PTR CALLBACK FtMgrDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
 
 		// Fall through to setup initial placement
 	}
-
 	case WM_SIZE:
 	{
 		RECT rc, rcButton;
@@ -456,11 +455,15 @@ static INT_PTR CALLBACK FtMgrDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
 	case M_PRESHUTDOWN:
 		SendMessage(dat->hwndIncoming, M_PRESHUTDOWN, 0, 0);
 		SendMessage(dat->hwndOutgoing, M_PRESHUTDOWN, 0, 0);
-        DestroyWindow(hwnd);
+		DestroyWindow(hwnd);
 		break;
 
 	case WM_CLOSE:
 		ShowWindow(hwnd, SW_HIDE);
+		if (DBGetContactSettingByte(NULL, "SRFile", "AutoClear", 1)) {
+			PostMessage(dat->hwndIncoming, WM_FT_CLEANUP, 0, 0);
+			PostMessage(dat->hwndOutgoing, WM_FT_CLEANUP, 0, 0);
+		}
 		return TRUE; /* Disable default IDCANCEL notification */
 
 	case WM_DESTROY:
@@ -560,7 +563,7 @@ HWND FtMgr_Show(bool bForceActivate, bool bFromMenu)
 		return hwndFtMgr;
  
 	ShowWindow(hwndFtMgr, bAutoMin ? SW_SHOWMINNOACTIVE : SW_SHOWNOACTIVATE);
- 	return hwndFtMgr;
+  	return hwndFtMgr;
  }
 
 void FtMgr_Destroy()

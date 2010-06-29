@@ -686,26 +686,30 @@ void CLUI_ChangeWindowMode()
 		{
 			style=WS_CLIPCHILDREN| (ModernGetSettingByte(NULL,"CList","ThinBorder",SETTING_THINBORDER_DEFAULT)?WS_BORDER:0);
 			styleEx=WS_EX_TOOLWINDOW;
+			styleMaskEx |= WS_EX_APPWINDOW;
 		} 
 		else if (ModernGetSettingByte(NULL,"CLUI","ShowCaption",SETTING_SHOWCAPTION_DEFAULT) && ModernGetSettingByte(NULL,"CList","ToolWindow",SETTING_TOOLWINDOW_DEFAULT))
 		{
 			styleEx=WS_EX_TOOLWINDOW/*|WS_EX_WINDOWEDGE*/;
-			style=WS_CAPTION|WS_MINIMIZEBOX|WS_POPUPWINDOW|WS_CLIPCHILDREN|WS_THICKFRAME;
+			style=WS_CAPTION|WS_POPUPWINDOW|WS_CLIPCHILDREN|WS_THICKFRAME;
+			styleMaskEx |= WS_EX_APPWINDOW;
 		}
 		else if (ModernGetSettingByte(NULL,"CLUI","ShowCaption",SETTING_SHOWCAPTION_DEFAULT))
 		{
-			style=WS_CAPTION|WS_SYSMENU|WS_MINIMIZEBOX|WS_POPUPWINDOW|WS_CLIPCHILDREN|WS_THICKFRAME;
+			style=WS_CAPTION|WS_SYSMENU|WS_POPUPWINDOW|WS_CLIPCHILDREN|WS_THICKFRAME;
 		}
 		else 
 		{
 			style=WS_POPUPWINDOW|WS_CLIPCHILDREN|WS_THICKFRAME;
 			styleEx=WS_EX_TOOLWINDOW/*|WS_EX_WINDOWEDGE*/;
+			styleMaskEx |= WS_EX_APPWINDOW;
 		}
 	}
 	else 
 	{
 		style=WS_CLIPCHILDREN;
 		styleEx=WS_EX_TOOLWINDOW;
+		styleMaskEx |= WS_EX_APPWINDOW;
 	}
 	//3- TODO Update Layered mode
 	if(g_bTransparentFlag&&g_CluiData.fLayered)
@@ -735,12 +739,12 @@ void CLUI_ChangeWindowMode()
 		g_CluiData.fOnDesktop=0;
 	}
 	//5- TODO Apply Style
-	oldStyleEx=curStyleEx=GetWindowLong(pcli->hwndContactList,GWL_EXSTYLE);
-	oldStyle=curStyle=GetWindowLong(pcli->hwndContactList,GWL_STYLE);	
+	oldStyleEx = curStyleEx = GetWindowLong(pcli->hwndContactList,GWL_EXSTYLE);
+	oldStyle = curStyle = GetWindowLong(pcli->hwndContactList,GWL_STYLE);	
 
-	curStyleEx=(curStyleEx&(~styleMaskEx))|styleEx;
-	curStyle=(curStyle&(~styleMask))|style;
-	if (oldStyleEx!=curStyleEx || oldStyle!=curStyle)
+	curStyleEx = (curStyleEx & ~styleMaskEx) | styleEx;
+	curStyle = (curStyle & ~styleMask) | style;
+	if (oldStyleEx != curStyleEx || oldStyle != curStyle)
 	{
 		if (IsWindowVisible(pcli->hwndContactList)) 
 		{
@@ -980,7 +984,7 @@ static LPPROTOTICKS CLUI_GetProtoTicksByProto(char * szProto)
 			CycleStartTick[i].szProto=mir_strdup(szProto);
 			CycleStartTick[i].nCycleStartTick=0;
 			CycleStartTick[i].nIndex=i;			
-			CycleStartTick[i].bGlobal=_strcmpi(szProto,GLOBAL_PROTO_NAME)==0;
+			CycleStartTick[i].bGlobal=( szProto[0]==0 );
 			CycleStartTick[i].himlIconList=NULL;
 			return(&CycleStartTick[i]);
 		}
@@ -988,24 +992,47 @@ static LPPROTOTICKS CLUI_GetProtoTicksByProto(char * szProto)
 	return (NULL);
 }
 
-static int CLUI_GetConnectingIconForProtoCount(char *szProto)
+static int CLUI_GetConnectingIconForProtoCount(char *szAccoName)
 {
-	char file[MAX_PATH],fileFull[MAX_PATH],szFullPath[MAX_PATH];
-	char szPath[MAX_PATH];
-	char *str;
-	int ret;
+	char fileFull[MAX_PATH];
+	static char szFolderPath[MAX_PATH] = "";
 
-	GetModuleFileNameA(GetModuleHandle(NULL), szPath, MAX_PATH);
-	str=strrchr(szPath,'\\');
-	if(str!=NULL) *str=0;
-	_snprintf(szFullPath, sizeof(szFullPath), "%s\\Icons\\proto_conn_%s.dll", szPath, szProto);
+	int count = 8;
 
-	lstrcpynA(file,szFullPath,sizeof(file));
-	CallService(MS_UTILS_PATHTOABSOLUTE, (WPARAM)file, (LPARAM)fileFull);
-	ret=ExtractIconExA(fileFull,-1,NULL,NULL,1);
-	if (ret==0) ret=8;
-	return ret;
+	if ( !szFolderPath[0] )
+	{
+		char szRelativePath[MAX_PATH];
+		GetModuleFileNameA(GetModuleHandle(NULL), szRelativePath, MAX_PATH);
+		char *str = strrchr( szRelativePath, '\\' ); 
+		if( str != NULL ) *str=0;
+		CallService(MS_UTILS_PATHTOABSOLUTE, (WPARAM)szRelativePath, (LPARAM)szFolderPath);
+	}
 
+	if ( szAccoName )
+	{
+		// first of all try to find by account name( or empty - global )
+		_snprintf( fileFull, sizeof(fileFull), "%s\\Icons\\proto_conn_%s.dll", szFolderPath, szAccoName );
+		count = ExtractIconExA(fileFull,-1,NULL,NULL,1);
+		if ( count ) return count;
+
+		if ( szAccoName[0] )
+		{
+			// second try to find by protocol name
+			PROTOACCOUNT * acc = ProtoGetAccount( szAccoName );
+			if ( acc && !acc->bOldProto )
+			{
+				_snprintf( fileFull, sizeof(fileFull), "%s\\Icons\\proto_conn_%s.dll", szFolderPath, acc->szProtoName );
+				count = ExtractIconExA(fileFull,-1,NULL,NULL,1);
+				if ( count ) return count;
+			}
+		}
+	}
+	// third try global
+	_snprintf( fileFull, sizeof(fileFull), "%s\\Icons\\proto_conn.dll", szFolderPath );
+	count = ExtractIconExA(fileFull,-1,NULL,NULL,1);
+	if ( count ) return count;
+
+	return 8;
 }
 
 static HICON CLUI_ExtractIconFromPath(const char *path, BOOL * needFree)
@@ -1086,15 +1113,36 @@ HICON CLUI_LoadIconFromExternalFile(char *filename,int i,boolean UseLibrary,bool
 	return (HICON)0;
 }
 
-static HICON CLUI_GetConnectingIconForProto(char *szProto,int b)
+static HICON CLUI_GetConnectingIconForProto(char *szAccoName, int b)
 {
 	char szFullPath[MAX_PATH];
 	HICON hIcon=NULL;
 	BOOL needFree;
 	b=b-1;
-	_snprintf(szFullPath, sizeof(szFullPath), "proto_conn_%s.dll",szProto);
-	hIcon=CLUI_LoadIconFromExternalFile(szFullPath,b+1,FALSE,FALSE,NULL,NULL,NULL,0,&needFree);
-	if (hIcon) return hIcon;
+	
+	if ( szAccoName )
+	{
+		_snprintf(szFullPath, sizeof(szFullPath), "proto_conn_%s.dll",szAccoName);
+		hIcon = CLUI_LoadIconFromExternalFile(szFullPath,b+1,FALSE,FALSE,NULL,NULL,NULL,0,&needFree);
+		if (hIcon) return hIcon;
+
+		if ( szAccoName[0] )
+		{
+			// second try to find by protocol name
+			PROTOACCOUNT * acc = ProtoGetAccount( szAccoName );
+			if ( acc && !acc->bOldProto )
+			{
+				_snprintf( szFullPath, sizeof(szFullPath), "proto_conn_%s.dll", acc->szProtoName );
+				hIcon = CLUI_LoadIconFromExternalFile(szFullPath,b+1,FALSE,FALSE,NULL,NULL,NULL,0,&needFree);
+				if ( hIcon ) return hIcon;
+			}
+		}
+	}
+	// third try global
+	_snprintf( szFullPath, sizeof(szFullPath), "proto_conn.dll" );
+	hIcon = CLUI_LoadIconFromExternalFile(szFullPath,b+1,FALSE,FALSE,NULL,NULL,NULL,0,&needFree);
+	if ( hIcon ) return hIcon;
+
 	hIcon=LoadSmallIcon(g_hInst,(TCHAR *)(IDI_ICQC1+b+1));
 	return(hIcon);
 }
@@ -2625,8 +2673,15 @@ LRESULT CLUI::OnShowWindow( UINT msg, WPARAM wParam, LPARAM lParam )
 
 LRESULT CLUI::OnSysCommand( UINT msg, WPARAM wParam, LPARAM lParam )
 {
-	if( wParam == SC_MAXIMIZE ) 
-		return FALSE;
+		switch (wParam)
+		{
+		case SC_MAXIMIZE:
+			return 0;
+
+		case SC_CLOSE:
+			PostMessage(m_hWnd, msg, SC_MINIMIZE, lParam);
+			return 0;
+		}
 
 	DefWindowProc(m_hWnd, msg, wParam, lParam);
 	if (ModernGetSettingByte(NULL,"CList","OnDesktop",SETTING_ONDESKTOP_DEFAULT))
@@ -2678,7 +2733,7 @@ LRESULT CLUI::OnListSizeChangeNotify( NMCLISTCONTROL * pnmc )
 
 	// TODO: Check and refactor possible problem of clist resized to full screen problem
 	static RECT rcWindow,rcTree,rcTree2,rcWorkArea,rcOld;
-	int maxHeight,newHeight;
+	int maxHeight, minHeight,newHeight;
 	int winstyle;
 	if (mutex_bDisableAutoUpdate==1)
 		return FALSE;
@@ -2690,6 +2745,7 @@ LRESULT CLUI::OnListSizeChangeNotify( NMCLISTCONTROL * pnmc )
 		return FALSE;
 
 	maxHeight=ModernGetSettingByte(NULL,"CLUI","MaxSizeHeight",SETTING_MAXSIZEHEIGHT_DEFAULT);
+	minHeight=ModernGetSettingByte(NULL,"CLUI","MinSizeHeight",SETTING_MINSIZEHEIGHT_DEFAULT);
 	rcOld=rcWindow;
 	GetWindowRect(pcli->hwndContactTree,&rcTree);
 
@@ -2713,6 +2769,9 @@ LRESULT CLUI::OnListSizeChangeNotify( NMCLISTCONTROL * pnmc )
 	nLastRequiredHeight=pnmc->pt.y;
 	newHeight=max(CLUIFramesGetMinHeight(),max(pnmc->pt.y,3)+1+((winstyle&WS_BORDER)?2:0)+(rcWindow.bottom-rcWindow.top)-(rcTree.bottom-rcTree.top));
 	if (newHeight==(rcWindow.bottom-rcWindow.top)) return 0;
+
+	if(newHeight<(rcWorkArea.bottom-rcWorkArea.top)*minHeight/100)
+		newHeight=(rcWorkArea.bottom-rcWorkArea.top)*minHeight/100;
 
 	if(newHeight>(rcWorkArea.bottom-rcWorkArea.top)*maxHeight/100)
 		newHeight=(rcWorkArea.bottom-rcWorkArea.top)*maxHeight/100;

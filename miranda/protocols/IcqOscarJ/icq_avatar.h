@@ -30,7 +30,7 @@
 //
 // DESCRIPTION:
 //
-//  Describe me here please...
+//  Avatars connection support declarations
 //
 // -----------------------------------------------------------------------------
 
@@ -40,12 +40,89 @@
 
 extern BYTE hashEmptyAvatar[9];
 
+#define AVATAR_HASH_MINI    0x00
 #define AVATAR_HASH_STATIC  0x01
 #define AVATAR_HASH_FLASH   0x08
 #define AVATAR_HASH_PHOTO   0x0C
 
+struct CIcqProto;
+
+struct avatars_server_connection : public lockable_struct
+{
+protected:
+	CIcqProto *ppro;
+	HANDLE hConnection;  // handle to the connection
+	HANDLE hPacketRecver;
+	WORD   wLocalSequence;
+	icq_critical_section *localSeqMutex;
+
+  BOOL   isLoggedIn;
+  BOOL   isActive;
+	BOOL   stopThread; // horrible, but simple - signal for thread to stop
+
+  char  *pCookie;     // auth to server
+	WORD   wCookieLen;
+
+	int    sendServerPacket(icq_packet *pPacket);
+
+	int    handleServerPackets(BYTE *buf, int buflen);
+
+	void   handleLoginChannel(BYTE *buf, WORD datalen);
+	void   handleDataChannel(BYTE *buf, WORD datalen);
+
+	void   handleServiceFam(BYTE *pBuffer, WORD wBufferLength, snac_header *pSnacHeader);
+	void   handleAvatarFam(BYTE *pBuffer, WORD wBufferLength, snac_header *pSnacHeader);
+
+	rates *m_rates;
+  icq_critical_section *m_ratesMutex;
+
+	int    NetLog_Server(const char *fmt,...);
+
+	HANDLE runContact[4];
+	DWORD  runTime[4];
+	int    runCount;
+  void   checkRequestQueue();
+public:
+  avatars_server_connection(CIcqProto *ppro, HANDLE hConnection, char *pCookie, WORD wCookieLen);
+  virtual ~avatars_server_connection();
+
+  void connectionThread();
+  void closeConnection();
+
+  __inline BOOL isPending() { return !isLoggedIn; };
+  __inline BOOL isReady() { return isLoggedIn && isActive && !stopThread; };
+
+  DWORD  sendGetAvatarRequest(HANDLE hContact, DWORD dwUin, char *szUid, const BYTE *hash, unsigned int hashlen, const char *file);
+  DWORD  sendUploadAvatarRequest(HANDLE hContact, WORD wRef, const BYTE *data, unsigned int datalen);
+};
+
+
+struct avatars_request : public void_struct
+{
+	int    type;
+	HANDLE hContact;
+	DWORD  dwUin;
+	uid_str szUid;
+	BYTE  *hash;
+	unsigned int hashlen;
+	char  *szFile;
+	BYTE  *pData;
+	unsigned int cbData;
+	WORD   wRef;
+	DWORD  timeOut;
+	avatars_request *pNext;
+public:
+  avatars_request(int type);
+  virtual ~avatars_request();
+};
+
+#define ART_GET     1
+#define ART_UPLOAD  2
+#define ART_BLOCK   4
+
+
 int  DetectAvatarFormat(const char *szFile);
-void AddAvatarExt(int dwFormat, char* pszDest);
+void AddAvatarExt(int dwFormat, char *pszDest);
 
 BYTE* calcMD5HashOfFile(const char *szFile);
 

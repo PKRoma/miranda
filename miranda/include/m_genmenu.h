@@ -393,4 +393,14 @@ typedef struct tagOptParam
 //returns TRUE if it processed the command, FALSE otherwise
 #define MO_SETOPTIONSMENUITEM					"MO/SetOptionsMenuItem"
 
+//wparam=char* szProtoName
+//lparam=0
+//returns HGENMENU of the root item or NULL
+#define MO_GETPROTOROOTMENU					"MO/GetProtoRootMenu"
+
+__forceinline HGENMENU MO_GetProtoRootMenu( const char* szProtoName )
+{
+	return ( HGENMENU )CallService( MO_GETPROTOROOTMENU, ( WPARAM )szProtoName, 0 );
+}
+
 #endif

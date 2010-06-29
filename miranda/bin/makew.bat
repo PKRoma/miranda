@@ -166,53 +166,15 @@ call :WriteVer2 %Version% %SubVersion% %3
 goto :eof
 
 :WriteVer2
-echo #include ^<windows.h^>                                                         >..\src\version.rc
-echo #include ^<winres.h^>                                                         >>..\src\version.rc
-echo #ifndef _MAC                                                                  >>..\src\version.rc
-echo ///////////////////////////////////////////////////////////////////////////// >>..\src\version.rc
-echo //                                                                            >>..\src\version.rc
-echo // Version                                                                    >>..\src\version.rc
-echo //                                                                            >>..\src\version.rc
-echo.                                                                              >>..\src\version.rc
-echo VS_VERSION_INFO VERSIONINFO                                                   >>..\src\version.rc
-echo  FILEVERSION 0,%1,%2,%3                                                       >>..\src\version.rc
-echo  PRODUCTVERSION 0,%1,%2,%3                                                    >>..\src\version.rc
-echo  FILEFLAGSMASK 0x3fL                                                          >>..\src\version.rc
-echo #ifdef _DEBUG                                                                 >>..\src\version.rc
-echo  FILEFLAGS 0x1L                                                               >>..\src\version.rc
-echo #else                                                                         >>..\src\version.rc
-echo  FILEFLAGS 0x0L                                                               >>..\src\version.rc
-echo #endif                                                                        >>..\src\version.rc
-echo  FILEOS 0x40004L                                                              >>..\src\version.rc
-echo  FILETYPE 0x1L                                                                >>..\src\version.rc
-echo  FILESUBTYPE 0x0L                                                             >>..\src\version.rc
-echo BEGIN                                                                         >>..\src\version.rc
-echo     BLOCK "StringFileInfo"                                                    >>..\src\version.rc
-echo     BEGIN                                                                     >>..\src\version.rc
-echo         BLOCK "000004b0"                                                      >>..\src\version.rc
-echo         BEGIN                                                                 >>..\src\version.rc
-echo             VALUE "Comments", "Licensed under the terms of the GNU General Public License\0" >>..\src\version.rc
-echo             VALUE "CompanyName", " \0"                                        >>..\src\version.rc
-echo             VALUE "FileDescription", "Miranda IM\0"                           >>..\src\version.rc
-echo             VALUE "FileVersion", "0.%1.%2 alpha build #%3\0"                  >>..\src\version.rc
-echo             VALUE "InternalName", "miranda32\0"                               >>..\src\version.rc
-echo             VALUE "LegalCopyright", "Copyright © 2000-2009 Miranda IM Project. This software is released under the terms of the GNU General Public License.\0"    >>..\src\version.rc
-echo             VALUE "LegalTrademarks", "\0"                                     >>..\src\version.rc
-echo             VALUE "OriginalFilename", "miranda32.exe\0"                       >>..\src\version.rc
-echo             VALUE "PrivateBuild", "\0"                                        >>..\src\version.rc
-echo             VALUE "ProductName", "Miranda IM\0"                               >>..\src\version.rc
-echo             VALUE "ProductVersion", "0.%1.%2 alpha build #%3\0"               >>..\src\version.rc
-echo             VALUE "SpecialBuild", "\0"                                        >>..\src\version.rc
-echo         END                                                                   >>..\src\version.rc
-echo     END                                                                       >>..\src\version.rc
-echo     BLOCK "VarFileInfo"                                                       >>..\src\version.rc
-echo     BEGIN                                                                     >>..\src\version.rc
-echo         VALUE "Translation", 0x0, 1200                                        >>..\src\version.rc
-echo     END                                                                       >>..\src\version.rc
-echo END                                                                           >>..\src\version.rc
-echo.                                                                              >>..\src\version.rc
-echo #endif    // !_MAC                                                            >>..\src\version.rc
-echo.                                                                              >>..\src\version.rc
+copy m_version.h.in ..\include\m_version.h
+
+echo #define MIRANDA_VERSION_FILEVERSION 0,%1,%2,%3                                >>..\include\m_version.h
+echo #define MIRANDA_VERSION_STRING      "0.%1.%2.%3"                              >>..\include\m_version.h
+echo #define MIRANDA_VERSION_DISPLAY     "0.%1.%2 alpha build #%3"                 >>..\include\m_version.h
+echo #define MIRANDA_VERSION_DWORD       MIRANDA_MAKE_VERSION(0, %1, %2, %3)       >>..\include\m_version.h
+echo.                                                                              >>..\include\m_version.h
+echo #endif // M_VERSION_H__                                                       >>..\include\m_version.h
+goto :eof
 
 for /F "delims=-/. tokens=1,2,3" %%i in ('date /T') do call :SetBuildDate %%i %%j %%k
 for /F "delims=:/. tokens=1,2" %%i in ('time /T') do call :SetBuildTime %%i %%j
@@ -226,7 +188,7 @@ echo           ^<language^>en-us^</language^>                                   
 echo           ^<lastBuildDate^>%yy%-%mm%-%dd% %hh%:%mn%^</lastBuildDate^>         >>%temp%\index.xml
 echo           ^<item^>                                                            >>%temp%\index.xml
 echo                ^<title^>Miranda 0.%1.%2 alpha %3^</title^>                    >>%temp%\index.xml
-echo 			   ^<link^>http://files.miranda-im.org/builds/?%yy%%mm%%dd%%hh%%mn%^</link^> >>%temp%\index.xml
+echo         ^<link^>http://files.miranda-im.org/builds/?%yy%%mm%%dd%%hh%%mn%^</link^> >>%temp%\index.xml
 echo                ^<description^>                                                >>%temp%\index.xml
 echo                     Miranda 0.%1.%2 alpha %3 is now available at http://files.miranda-im.org/builds/miranda-v%1a%3.zip >>%temp%\index.xml
 echo                ^</description^>                                               >>%temp%\index.xml
@@ -251,13 +213,13 @@ goto :eof
 
 :Pack
 if %2 == 00 (
-   set FileVer=v0%1a%3w.zip
+   set FileVer=v0%1a%3w.7z
 ) else (
-   set FileVer=v0%1%2a%3w.zip
+   set FileVer=v0%1%2a%3w.7z
 )
 
 del /Q /F "%Temp%\miranda-%FileVer%"
-7z.exe a -tzip -r -mx=9 "%Temp%\miranda-%FileVer%" ./* ..\ChangeLog.txt
+"%PROGRAMFILES%\7-zip\7z.exe" a -r -mx=9 "%Temp%\miranda-%FileVer%" ./* ..\ChangeLog.txt
 
 rd /Q /S %Temp%\pdbw >nul
 md %Temp%\pdbw
@@ -290,7 +252,7 @@ copy ..\..\plugins\import\Release\import.pdb                   %Temp%\pdbw\plugi
 copy ..\..\plugins\freeimage\Release\freeimage.pdb             %Temp%\pdbw\plugins
 
 del /Q /F "%Temp%\miranda-pdb-%FileVer%"
-7z.exe a -tzip -r -mx=9 "%Temp%\miranda-pdb-%FileVer%" %Temp%\pdbw/*
+"%PROGRAMFILES%\7-zip\7z.exe" a -r -mx=9 "%Temp%\miranda-pdb-%FileVer%" %Temp%\pdbw/*
 rd /Q /S %Temp%\pdbw
 goto :eof
 

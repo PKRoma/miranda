@@ -114,13 +114,13 @@ void CCtrlTreeOpts::OnInit()
 	DeleteAllItems();
 
 	hImgLst = ImageList_Create(GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), ILC_COLOR|ILC_COLOR32|ILC_MASK, 5, 1);
-	ImageList_ReplaceIcon(hImgLst, -1, (HICON)LoadSkinnedIcon(SKINICON_OTHER_MIRANDA));
-	ImageList_ReplaceIcon(hImgLst, -1, (HICON)LoadSkinnedIcon(SKINICON_OTHER_TICK));	// check on
-	ImageList_ReplaceIcon(hImgLst, -1, (HICON)LoadSkinnedIcon(SKINICON_OTHER_NOTICK));	// check off
-	ImageList_ReplaceIcon(hImgLst, -1, (HICON)LoadSkinnedIcon(SKINICON_OTHER_TICK));	// radio on
-	ImageList_ReplaceIcon(hImgLst, -1, (HICON)LoadSkinnedIcon(SKINICON_OTHER_NOTICK));	// radio on
-	ImageList_ReplaceIcon(hImgLst, -1, (HICON)LoadSkinnedIcon(SKINICON_OTHER_GROUPOPEN));
-	ImageList_ReplaceIcon(hImgLst, -1, (HICON)LoadSkinnedIcon(SKINICON_OTHER_GROUPSHUT));
+	ImageList_AddIcon_Icolib(hImgLst, LoadSkinnedIcon(SKINICON_OTHER_MIRANDA));
+	ImageList_AddIcon_Icolib(hImgLst, LoadSkinnedIcon(SKINICON_OTHER_TICK));	// check on
+	ImageList_AddIcon_Icolib(hImgLst, LoadSkinnedIcon(SKINICON_OTHER_NOTICK));	// check off
+	ImageList_AddIcon_Icolib(hImgLst, LoadSkinnedIcon(SKINICON_OTHER_TICK));	// radio on
+	ImageList_AddIcon_Icolib(hImgLst, LoadSkinnedIcon(SKINICON_OTHER_NOTICK));	// radio on
+	ImageList_AddIcon_Icolib(hImgLst, LoadSkinnedIcon(SKINICON_OTHER_GROUPOPEN));
+	ImageList_AddIcon_Icolib(hImgLst, LoadSkinnedIcon(SKINICON_OTHER_GROUPSHUT));
 	SetImageList(hImgLst, TVSIL_NORMAL);
 
 	/* build options tree. based on code from IcoLib */

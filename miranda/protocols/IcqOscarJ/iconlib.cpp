@@ -5,7 +5,7 @@
 // Copyright © 2000-2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001-2002 Jon Keating, Richard Hughes
 // Copyright © 2002-2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004-2009 Joe Kucera
+// Copyright © 2004-2010 Joe Kucera
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -19,7 +19,7 @@
 // 
 // You should have received a copy of the GNU General Public License
 // along with this program; if not, write to the Free Software
-// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 //
 // -----------------------------------------------------------------------------
 //
@@ -53,14 +53,13 @@ IcqIconHandle IconLibDefine(const char *desc, const char *section, const char *m
   sid.pszName = szName;
   sid.ptszDefaultFile = (TCHAR*)def_file;
   sid.iDefaultIndex = def_idx;
-  sid.cx = sid.cy = 16;
 
   IcqIconHandle hIcon = (IcqIconHandle)SAFE_MALLOC(sizeof(IcqIconHandle_s));
   hIcon->szName = null_strdup(sid.pszName);
   hIcon->hIcoLib = (HANDLE)CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
 
-  SAFE_FREE((void**)&sid.pwszSection);
-  SAFE_FREE((void**)&sid.pwszDescription);
+  SAFE_FREE(&sid.pwszSection);
+  SAFE_FREE(&sid.pwszDescription);
 
   return hIcon;
 }
@@ -88,11 +87,16 @@ HANDLE IcqIconHandle_s::Handle()
 }
 
 
-HICON IcqIconHandle_s::GetIcon()
+HICON IcqIconHandle_s::GetIcon(bool big)
 {
   if (this)
-    return (HICON)CallService(MS_SKIN2_GETICONBYHANDLE, 0, (LPARAM)hIcoLib);
+    return (HICON)CallService(MS_SKIN2_GETICONBYHANDLE, big, (LPARAM)hIcoLib);
 
   return NULL;
+}
+
+void IcqIconHandle_s::ReleaseIcon(bool big)
+{
+	CallService(big ? MS_SKIN2_RELEASEICONBIG : MS_SKIN2_RELEASEICON, 0, (LPARAM)szName);
 }
 

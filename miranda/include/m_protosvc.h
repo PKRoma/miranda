@@ -121,16 +121,16 @@ static __inline unsigned long Proto_Status2Flag(int status)
 }
 
 #define PFLAGNUM_4	 4			//misc options
-#define PF4_FORCEAUTH	   0x00000001 // forces auth requests to be sent when adding users
-#define PF4_FORCEADDED	   0x00000002 // forces "you were added" requests to be sent
-#define PF4_NOCUSTOMAUTH   0x00000004 // protocol doesn't support custom auth text (doesn't show auth text box)
-#define PF4_SUPPORTTYPING  0x00000008 // protocol supports user is typing messages v0.3.3+
-#define PF4_SUPPORTIDLE    0x00000010 // protocol understands idle, added during v0.3.4+ (2004/09/13)
-#define PF4_AVATARS		   0x00000020 // protocol has avatar support, added during v0.3.4 (2004/09/13)
-#define PF4_OFFLINEFILES   0x00000040 // protocols supports sending files to offline users (v0.5.2)
-#define PF4_IMSENDUTF      0x00000080 // protocol is able to process messages in utf-8 (v.0.7.0+)
-#define PF4_IMSENDOFFLINE  0x00000100 // protocol supports sending offline messages (v0.8.0+)
-#define PF4_INFOSETTINGSVC 0x00000200 // protocol supports user info translation services (v0.8.0+)
+#define PF4_FORCEAUTH	     0x00000001 // forces auth requests to be sent when adding users
+#define PF4_FORCEADDED	     0x00000002 // forces "you were added" requests to be sent
+#define PF4_NOCUSTOMAUTH     0x00000004 // protocol doesn't support custom auth text (doesn't show auth text box)
+#define PF4_SUPPORTTYPING    0x00000008 // protocol supports user is typing messages v0.3.3+
+#define PF4_SUPPORTIDLE      0x00000010 // protocol understands idle, added during v0.3.4+ (2004/09/13)
+#define PF4_AVATARS		     0x00000020 // protocol has avatar support, added during v0.3.4 (2004/09/13)
+#define PF4_OFFLINEFILES     0x00000040 // protocols supports sending files to offline users (v0.5.2)
+#define PF4_IMSENDUTF        0x00000080 // protocol is able to process messages in utf-8 (v.0.7.0+)
+#define PF4_IMSENDOFFLINE    0x00000100 // protocol supports sending offline messages (v0.8.0+)
+#define PF4_INFOSETTINGSVC   0x00000200 // protocol supports user info translation services (v0.8.0+)
 #define PF4_NOAUTHDENYREASON 0x00000400 // protocol doesn't support authorization deny reason (v0.9.0+)
 
 #define PFLAG_UNIQUEIDTEXT  100    //returns a static buffer of text describing the unique field by which this protocol identifies users (already translated), or NULL
@@ -244,7 +244,8 @@ will pick this up and everything will be good.
 //the operation of away messages
 //Protocol modules must support szMessage=NULL. It may either mean to use an
 //empty message, or (preferably) to not reply at all to any requests
-#define PS_SETAWAYMSG  "/SetAwayMsg"
+#define PS_SETAWAYMSG   "/SetAwayMsg"
+#define PS_SETAWAYMSGW  "/SetAwayMsgW"
 
 //Get the status mode that a protocol is currently in
 //wParam=lParam=0
@@ -267,10 +268,11 @@ will pick this up and everything will be good.
 
 //Deny an authorisation request
 //wParam=(WPARAM)(HANDLE)hDbEvent
-//lParam=(LPARAM)(const char*)szReason
+//lParam=(LPARAM)(const TCHAR*)szReason
 //Returns 0 on success, nonzero on failure
 //Protocol modules must be able to cope with szReason=NULL
 #define PS_AUTHDENY    "/AuthDeny"
+#define PS_AUTHDENYW   "/AuthDenyW"
 
 // Send a "You were added" event
 // wParam=lParam=0
@@ -288,7 +290,7 @@ will pick this up and everything will be good.
 
 //Send a basic search request
 //wParam=0
-//lParam=(LPARAM)(const char*)szId
+//lParam=(LPARAM)(const TCHAR*)szId
 //Returns a handle for the search, or zero on failure
 //All protocols identify users uniquely by a single field. This service will
 //search by that field.
@@ -302,13 +304,24 @@ will pick this up and everything will be good.
 //type=ACKTYPE_SEARCH, result=ACKRESULT_SUCCESS, lParam=0
 //Note that the pointers in the structure are not guaranteed to be valid after
 //the ack is complete.
+
+#define PSR_UNICODE 1        // return Unicode status
+#if defined( _UNICODE )
+	#define PSR_TCHAR PSR_UNICODE
+#else
+	#define PSR_TCHAR 0
+#endif
+
+
 typedef struct {
 	int cbSize;
-	char *nick;
-	char *firstName;
-	char *lastName;
-	char *email;
-	char reserved[16];
+	FNAMECHAR *nick;
+	FNAMECHAR *firstName;
+	FNAMECHAR *lastName;
+	FNAMECHAR *email;
+	FNAMECHAR *id;
+	int flags;
+	char reserved[8*sizeof(HANDLE)/sizeof(DWORD)];
 	//Protocols may extend this structure with extra members at will and supply
 	//a larger cbSize to reflect the new information, but they must not change
 	//any elements above this comment
@@ -318,10 +331,11 @@ typedef struct {
 	//they put there will be retained by anyone trying to save this structure.
 } PROTOSEARCHRESULT;
 #define PS_BASICSEARCH  "/BasicSearch"
+#define PS_BASICSEARCHW "/BasicSearchW"
 
 //Search for users by e-mail address           v0.1.2.1+
 //wParam=0
-//lParam=(LPARAM)(char*)szEmail
+//lParam=(LPARAM)(TCHAR*)szEmail
 //Returns a HANDLE to the search, or NULL on failure
 //Results are returned as for PS_BASICSEARCH.
 //This function is only available if the PF1_SEARCHBYEMAIL capability is set
@@ -329,6 +343,7 @@ typedef struct {
 //PS_BASICSEARCH should have the same result (and it's best if they are the
 //same function).
 #define PS_SEARCHBYEMAIL    "/SearchByEmail"
+#define PS_SEARCHBYEMAILW   "/SearchByEmailW"
 
 //Search for users by name           v0.1.2.1+
 //wParam=0
@@ -337,11 +352,12 @@ typedef struct {
 //Results are returned as for PS_BASICSEARCH.
 //This function is only available if the PF1_SEARCHBYNAME capability is set
 typedef struct {
-	char *pszNick;
-	char *pszFirstName;
-	char *pszLastName;
+	TCHAR *pszNick;
+	TCHAR *pszFirstName;
+	TCHAR *pszLastName;
 } PROTOSEARCHBYNAME;
 #define PS_SEARCHBYNAME    "/SearchByName"
+#define PS_SEARCHBYNAMEW   "/SearchByNameW"
 
 //Create the advanced search dialog box     v0.1.2.1+
 //wParam=0
@@ -431,9 +447,10 @@ typedef struct {
 #define FILERESUME_SKIP       4
 typedef struct {
 	int action;    //a FILERESUME_ flag
-	const char *szFilename;  //full path. Only valid if action==FILERESUME_RENAME
+	const FNAMECHAR *szFilename;  //full path. Only valid if action==FILERESUME_RENAME
 } PROTOFILERESUME;
 #define PS_FILERESUME     "/FileResume"
+#define PS_FILERESUMEW    "/FileResumeW"
 
 //Asks a protocol to join the chatroom from contact  v0.8.0+
 //wParam=(WPARAM)(HANDLE)hContact
@@ -475,6 +492,54 @@ typedef struct {
 #endif
 
 #define PS_GETMYAWAYMSG  "/GetMyAwayMsg"
+
+// Set nickname for the user
+// wParam=(WPARAM)SMNN_xxx
+// lParam=(LPARAM)(char *) The new nickname for the user
+// return=0 for success
+
+#define SMNN_UNICODE 1        // return Unicode status
+#if defined( _UNICODE )
+	#define SMNN_TCHAR SMNN_UNICODE
+#else
+	#define SMNN_TCHAR 0
+#endif
+
+#define PS_SETMYNICKNAME "/SetNickname"
+
+// Get the max allowed length for the user nickname
+// Optional, default value is 1024
+// wParam=(WPARAM)0
+// lParam=(LPARAM)0
+// return= <=0 for error, >0 the max length of the nick
+#define PS_GETMYNICKNAMEMAXLENGTH "/GetMyNicknameMaxLength"
+
+// WAYD = What are you doing
+#define WAYD_UNICODE 1        // return Unicode texts
+#if defined( _UNICODE )
+	#define WAYD_TCHAR WAYD_UNICODE
+#else
+	#define WAYD_TCHAR 0
+#endif
+
+// Get the WAYD message for the user
+// wParam=(WPARAM)WAYD_xxx
+// lParam=(LPARAM)0
+// Returns the text or NULL if there is none. Remember to mir_free the return value.
+#define PS_GETMYWAYD "/GetMyWAYD"
+
+// Sets the WAYD message for the user
+// wParam=(WPARAM)WAYD_xxx
+// lParam=(LPARAM)(WCHAR * or char *)The message
+// Returns 0 on success, nonzero on failure
+#define PS_SETMYWAYD "/SetMyWAYD"
+
+// Get the max allowed length that a WAYD message can have
+// Optional, default value is 1024
+// wParam=(WPARAM)0
+// lParam=(LPARAM)0
+// Returns the max length
+#define PS_GETMYWAYDMAXLENGTH "/GetMyWAYDMaxLength"
 
 /****************************** SENDING SERVICES *************************/
 //these should be called with CallContactService()
@@ -555,7 +620,7 @@ typedef struct {
 
 //Allows a file transfer to begin
 //wParam=(WPARAM)(HANDLE)hTransfer
-//lParam=(LPARAM)(const char*)szPath
+//lParam=(LPARAM)(const TCHAR*)szPath
 //Returns a new handle to the transfer, to be used from now on
 //If szPath does not point to a directory then:
 //  if a single file is being transferred and the protocol supports file
@@ -567,12 +632,14 @@ typedef struct {
 //DWORD hTransfer
 //ASCIIZ filename(s), description
 #define PSS_FILEALLOW   "/FileAllow"
+#define PSS_FILEALLOWW  "/FileAllowW"
 
 //Refuses a file transfer request
 //wParam=(WPARAM)(HANDLE)hTransfer
-//lParam=(LPARAM)(const char*)szReason
+//lParam=(LPARAM)(const TCHAR*)szReason
 //Returns 0 on success, nonzero on failure
 #define PSS_FILEDENY    "/FileDeny"
+#define PSS_FILEDENYW   "/FileDenyW"
 
 //Cancel an in-progress file transfer
 //wParam=(WPARAM)(HANDLE)hTransfer
@@ -581,12 +648,13 @@ typedef struct {
 #define PSS_FILECANCEL  "/FileCancel"
 
 //Initiate a file send
-//wParam=(WPARAM)(const char*)szDescription
-//lParam=(LPARAM)(char **)ppszFiles
+//wParam=(WPARAM)(const TCHAR*)szDescription
+//lParam=(LPARAM)(TCHAR **)ppszFiles
 //Returns a transfer handle on success, NULL on failure
 //All notification is done through acks, with type=ACKTYPE_FILE
 //If result=ACKRESULT_FAILED then lParam=(LPARAM)(const char*)szReason
 #define PSS_FILE    "/SendFile"
+#define PSS_FILEW   "/SendFileW"
 
 //Set the status mode you will appear in to a user
 //wParam=statusMode
@@ -600,9 +668,10 @@ typedef struct {
 
 // Send an auth request
 // wParam=0
-// lParam=(const char *)szMessage
+// lParam=(const TCHAR *)szMessage
 // Returns 0 on success, nonzero on failure
 #define PSS_AUTHREQUEST    "/AuthRequest"
+#define PSS_AUTHREQUESTW   "/AuthRequestW"
 
 // Send "User is Typing" (user is typing a message to the user) v0.3.3+
 // wParam=(WPARAM)(HANDLE)hContact
@@ -632,7 +701,7 @@ typedef struct {
 //wParam=0
 //lParam=(LPARAM)(PROTORECVEVENT*)&pre
 //DB event: EVENTTYPE_MESSAGE, blob contains szMessage without 0 terminator
-//Returns a handle to the newly added event, or NULL on failure
+//Return 0 - success, other failure
 typedef struct {
 	DWORD flags;
 	DWORD timestamp;   //unix time
@@ -640,7 +709,7 @@ typedef struct {
 	LPARAM lParam;     //extra space for the network level protocol module
 } PROTORECVEVENT;
 #define PREF_CREATEREAD   1     //create the database event with the 'read' flag set
-#define PREF_UNICODE	     2
+#define PREF_UNICODE	  2
 #define PREF_RTL          4     // 0.5+ addition: support for right-to-left messages
 #define PREF_UTF          8     // message is in utf-8 (0.7.0+)
 
@@ -685,9 +754,24 @@ zero-terminated, binary data should be converted to text.
 Use PS_ADDTOLISTBYEVENT to add the contacts from one of these to the list.
 */
 
-//File(s) have been received
+//File(s) have been received (0.9.x)
 //wParam=0
 //lParam=(LPARAM)(PROTORECVFILE*)&prf
+typedef struct {
+	DWORD flags;
+	DWORD timestamp;   //unix time
+	TCHAR *tszDescription;
+	int   fileCount;
+	TCHAR **ptszFiles;
+	LPARAM lParam;     //extra space for the network level protocol module
+} PROTORECVFILET;
+
+#define MS_PROTO_RECVFILET "Proto/RecvFileT"
+
+#define PSR_FILE       "/RecvFile"
+
+// left for compatibility with the old Miranda versions.
+
 typedef struct {
 	DWORD flags;
 	DWORD timestamp;   //unix time
@@ -695,8 +779,6 @@ typedef struct {
 	char **pFiles;
 	LPARAM lParam;     //extra space for the network level protocol module
 } PROTORECVFILE;
-#define PSR_FILE       "/RecvFile"
-
 #define MS_PROTO_RECVFILE "Proto/RecvFile"
 
 //An away message reply has been received
@@ -710,5 +792,34 @@ typedef struct {
 //pre.szMessage is same format as blob
 //pre.lParam is the size of the blob
 #define PSR_AUTH		"/RecvAuth"
+
+
+#ifdef _UNICODE
+
+#define PS_SETAWAYMSGT    PS_SETAWAYMSGW
+#define PSS_FILET         PSS_FILEW
+#define PSS_FILEALLOWT    PSS_FILEALLOWW
+#define PSS_FILEDENYT     PSS_FILEDENYW
+#define PSS_AUTHREQUESTT  PSS_AUTHREQUESTW
+#define PS_AUTHDENYT      PS_AUTHDENYW
+#define PS_FILERESUMET    PS_FILERESUMEW
+#define PS_BASICSEARCHT   PS_BASICSEARCHW
+#define PS_SEARCHBYNAMET  PS_SEARCHBYNAMEW
+#define PS_SEARCHBYEMAILT PS_SEARCHBYEMAILW
+
+#else
+
+#define PS_SETAWAYMSGT    PS_SETAWAYMSG
+#define PSS_FILET         PSS_FILE
+#define PSS_FILEALLOWT    PSS_FILEALLOW
+#define PSS_FILEDENYT     PSS_FILEDENY
+#define PSS_AUTHREQUESTT  PSS_AUTHREQUEST
+#define PS_AUTHDENYT      PS_AUTHDENY
+#define PS_FILERESUMET    PS_FILERESUME
+#define PS_BASICSEARCHT   PS_BASICSEARCH
+#define PS_SEARCHBYNAMET  PS_SEARCHBYNAME
+#define PS_SEARCHBYEMAILT PS_SEARCHBYEMAIL
+
+#endif
 
 #endif  // M_PROTOSVC_H__

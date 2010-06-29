@@ -1,6 +1,6 @@
 /*
 Plugin of Miranda IM for communicating with users of the MSN Messenger protocol.
-Copyright (c) 2006-2009 Boris Krasnovskiy.
+Copyright (c) 2006-2010 Boris Krasnovskiy.
 Copyright (c) 2003-2005 George Hazan.
 Copyright (c) 2002-2003 Richard Hughes (original version).
 
@@ -57,20 +57,21 @@ void CMsnProto::msnftp_invite(filetransfer *ft)
 	if (isOffline) return; 
 	if (thread != NULL) thread->mMsnFtp = ft;
 
-	char* pszFiles = strrchr(ft->std.files[0], '\\'), msg[1024];
+	TCHAR* pszFiles = _tcsrchr(ft->std.ptszFiles[0], '\\');
 	if (pszFiles)
 		pszFiles++;
 	else
-		pszFiles = *ft->std.files;
+		pszFiles = *ft->std.ptszFiles;
 
-    mir_snprintf(msg, sizeof(msg),
+    char msg[1024];
+    mir_snprintf(msg, SIZEOF(msg),
 		"Content-Type: text/x-msmsgsinvite; charset=UTF-8\r\n\r\n"
 		"Application-Name: File Transfer\r\n"
 		"Application-GUID: {5D3E02AB-6190-11d3-BBBB-00C04F795683}\r\n"
 		"Invitation-Command: INVITE\r\n"
 		"Invitation-Cookie: %i\r\n"
 		"Application-File: %s\r\n"
-		"Application-FileSize: %i\r\n\r\n",
+		"Application-FileSize: %I64u\r\n\r\n",
 		MSN_GenRandom(), UTF8(pszFiles), ft->std.currentFileSize);
 
 	if (thread == NULL)
@@ -115,9 +116,10 @@ int CMsnProto::MSN_HandleMSNFTP(ThreadData *info, char *cmdString)
 
 			info->mCaller = 3;
 
-			while(ft->std.currentFileProgress < ft->std.currentFileSize)
+			while (ft->std.currentFileProgress < ft->std.currentFileSize)
 			{
-				if (ft->bCanceled) {
+				if (ft->bCanceled) 
+                {
 					sendpacket[0] = 0x01;
 					sendpacket[1] = 0x00;
 					sendpacket[2] = 0x00;
@@ -127,9 +129,8 @@ int CMsnProto::MSN_HandleMSNFTP(ThreadData *info, char *cmdString)
 
 				int wPlace = 0;
 				sendpacket[wPlace++] = 0x00;
-				int packetLen = ft->std.currentFileSize - ft->std.currentFileProgress;
-				if (packetLen > 2045)
-					packetLen = 2045;
+				unsigned __int64 packetLen = ft->std.currentFileSize - ft->std.currentFileProgress;
+				if (packetLen > 2045) packetLen = 2045;
 
 				sendpacket[wPlace++] = (char)(packetLen & 0x00ff);
 				sendpacket[wPlace++] = (char)((packetLen & 0xff00) >> 8);
@@ -209,7 +210,8 @@ LBL_InvalidCommand:
 				BYTE* p = tBuf.surelyRead(3);
 				if (p == NULL) 
                 {
-LBL_Error:		ft->close();
+LBL_Error:
+                    ft->close();
 					MSN_ShowError("file transfer is canceled by remote host");
 					return 1;
 				}
@@ -218,7 +220,8 @@ LBL_Error:		ft->close();
 				WORD dataLen = *p++;
 				dataLen |= (*p++ << 8);
 
-				if (tIsTransitionFinished) {
+				if (tIsTransitionFinished) 
+                {
 LBL_Success:
 					static const char sttCommand[] = "BYE 16777989\r\n";
 					info->send(sttCommand, strlen(sttCommand));
@@ -256,7 +259,8 @@ void __cdecl CMsnProto::msnftp_sendFileThread(void* arg)
 
 	MSN_DebugLog("Waiting for an incoming connection to '%s'...", info->mServer);
 
-	switch(WaitForSingleObject(info->hWaitEvent, 60000)) {
+	switch(WaitForSingleObject(info->hWaitEvent, 60000)) 
+	{
 	case WAIT_TIMEOUT:
 	case WAIT_FAILED:
 		MSN_DebugLog("Incoming connection timed out, closing file transfer");
@@ -302,7 +306,8 @@ void __cdecl CMsnProto::msnftp_sendFileThread(void* arg)
 
 				MSN_DebugLog("RECV:%s", msg);
 
-				if (!isalnum(msg[0]) || !isalnum(msg[1]) || !isalnum(msg[2]) || (msg[3] && msg[3]!=' ')) {
+				if (!isalnum(msg[0]) || !isalnum(msg[1]) || !isalnum(msg[2]) || (msg[3] && msg[3]!=' ')) 
+				{
 					MSN_DebugLog("Invalid command name");
 					continue;
 				}
@@ -355,6 +360,7 @@ void CMsnProto::msnftp_startFileSend(ThreadData* info, const char* Invcommand, c
 		"Request-Data: IP-Address:\r\n\r\n",
 		sb ? "ACCEPT" : "CANCEL",
 		Invcookie, MyConnection.GetMyExtIPStr(), nlb.wExPort, MSN_GenRandom());
+
 	info->sendPacket("MSG", "N %d\r\n%s", nBytes, command);
 
 	if (sb) 

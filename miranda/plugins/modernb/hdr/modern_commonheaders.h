@@ -74,6 +74,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <windows.h>
 #include <commctrl.h>
 #include <uxtheme.h>
+#include <vssym32.h>
 #include <stdio.h>
 #include <time.h>
 #include <stddef.h>
@@ -242,7 +243,6 @@ extern BOOL DebugDeleteObject(HGDIOBJ a);
 extern BOOL mod_DeleteDC(HDC hdc);
 extern BOOL ske_ResetTextEffect(HDC hdc);
 extern BOOL ske_SelectTextEffect(HDC hdc, BYTE EffectID, DWORD FirstColor, DWORD SecondColor);
-#define GLOBAL_PROTO_NAME "global_connect"
 extern void IvalidateDisplayNameCache(DWORD mode);
 
 void FreeAndNil( void **p );

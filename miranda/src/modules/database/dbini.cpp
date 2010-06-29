@@ -158,7 +158,7 @@ static INT_PTR CALLBACK IniImportDoneDlgProc(HWND hwndDlg,UINT message,WPARAM wP
 						shfo.wFunc=FO_DELETE;
 						shfo.pFrom=szIniPath;
 						szIniPath[lstrlen(szIniPath)+1]='\0';
-						shfo.fFlags=FOF_NOCONFIRMATION|FOF_NOERRORUI|FOF_SILENT;
+						shfo.fFlags = FOF_NOCONFIRMATION | FOF_NOERRORUI | FOF_SILENT | FOF_ALLOWUNDO;
 						SHFileOperation(&shfo);
 					}
 					EndDialog(hwndDlg,LOWORD(wParam));
@@ -406,7 +406,7 @@ static void DoAutoExec(void)
 				shfo.wFunc=FO_DELETE;
 				shfo.pFrom=szIniPath;
 				szIniPath[lstrlen(szIniPath)+1]=0;
-				shfo.fFlags=FOF_NOCONFIRMATION|FOF_NOERRORUI|FOF_SILENT;
+				shfo.fFlags=FOF_NOCONFIRMATION | FOF_NOERRORUI | FOF_SILENT | FOF_ALLOWUNDO;
 				SHFileOperation(&shfo);
 			}
 			else if(!lstrcmpi(szOnCompletion,_T("rename"))) {

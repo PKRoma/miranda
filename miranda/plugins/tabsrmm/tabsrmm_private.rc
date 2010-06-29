@@ -16,4 +16,3 @@
 #include "msgwindow.rc"
 #include "resource.rc"
 #include "chat/chat.rc"
-

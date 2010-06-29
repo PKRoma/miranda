@@ -1,8 +1,7 @@
 /*
 Scriver
 
-Copyright 2000-2003 Miranda ICQ/IM project,
-Copyright 2005 Piotr Piastucki
+Copyright 2000-2009 Miranda ICQ/IM project,
 
 all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
@@ -26,7 +25,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <mbstring.h>
 #include <winsock.h>
 #include <m_netlib.h>
-
+#ifndef TTI_NONE
+#define TTI_NONE 0
+#endif
+extern HANDLE			g_hInst;
 
 static unsigned hookNum = 0;
 static unsigned serviceNum = 0;
@@ -250,11 +252,11 @@ int SetRichTextEncoded(HWND hwnd, const char *text, int codepage) {
 	TCHAR *textToSet;
 	SETTEXTEX  st;
 	st.flags = ST_DEFAULT;
-	st.codepage = codepage;
 	#ifdef _UNICODE
 		st.codepage = 1200;
 		textToSet = mir_utf8decodeW(text);
 	#else
+    	st.codepage = codepage;
 		textToSet = (char *)text;
 	#endif
 	SendMessage(hwnd, EM_SETTEXTEX, (WPARAM) &st, (LPARAM)textToSet);
@@ -351,35 +353,6 @@ TCHAR *GetRichTextWord(HWND hwnd, POINTL *ptl)
 	return pszWord;
 }
 
-HDWP ResizeToolbar(HWND hwnd, HDWP hdwp, int width, int vPos, int height, int cControls, const UINT * controls, UINT *controlWidth, UINT *controlSpacing, char *controlAlignment, int controlVisibility)
-{
-	int i;
-	int lPos = 0;
-	int rPos = width;
-	for (i = 0; i < cControls ; i++) {
-		if (!controlAlignment[i] && (controlVisibility & (1 << i))) {
-			lPos += controlSpacing[i];
-			hdwp = DeferWindowPos(hdwp, GetDlgItem(hwnd, controls[i]), 0, lPos, vPos, controlWidth[i], height, SWP_NOZORDER);
-			lPos += controlWidth[i];
-		}
-	}
-	for (i = cControls - 1; i >=0; i--) {
-		if (controlAlignment[i] && (controlVisibility & (1 << i))) {
-			rPos -= controlSpacing[i] + controlWidth[i];
-			hdwp = DeferWindowPos(hdwp, GetDlgItem(hwnd, controls[i]), 0, rPos, vPos, controlWidth[i], height, SWP_NOZORDER);
-		}
-	}
-	return hdwp;
-}
-
-void ShowToolbarControls(HWND hwndDlg, int cControls, const UINT * controls, int controlVisibility, int state)
-{
-	int i;
-	for (i = 0; i < cControls; i++)
-		ShowWindow(GetDlgItem(hwndDlg, controls[i]), (controlVisibility & (1 << i)) ? state : SW_HIDE);
-}
-
-
 void AppendToBuffer(char **buffer, int *cbBufferEnd, int *cbBufferAlloced, const char *fmt, ...)
 {
 	va_list va;
@@ -401,7 +374,7 @@ void AppendToBuffer(char **buffer, int *cbBufferEnd, int *cbBufferAlloced, const
 int MeasureMenuItem(WPARAM wParam, LPARAM lParam)
 {
 	LPMEASUREITEMSTRUCT mis = (LPMEASUREITEMSTRUCT) lParam;
-	if (mis->itemData != (ULONG_PTR) g_dat->hButtonIconList && mis->itemData != (ULONG_PTR) g_dat->hSearchEngineIconList) {
+	if (mis->itemData != (ULONG_PTR) g_dat->hButtonIconList && mis->itemData != (ULONG_PTR) g_dat->hSearchEngineIconList && mis->itemData != (ULONG_PTR) g_dat->hChatButtonIconList) {
 		return FALSE;
 	}
 	mis->itemWidth = max(0, GetSystemMetrics(SM_CXSMICON) - GetSystemMetrics(SM_CXMENUCHECK) + 4);
@@ -414,7 +387,7 @@ int DrawMenuItem(WPARAM wParam, LPARAM lParam)
 	int y;
 	int id;
 	LPDRAWITEMSTRUCT dis = (LPDRAWITEMSTRUCT) lParam;
-	if (dis->itemData != (ULONG_PTR) g_dat->hButtonIconList && dis->itemData != (ULONG_PTR) g_dat->hSearchEngineIconList) {
+	if (dis->itemData != (ULONG_PTR) g_dat->hButtonIconList && dis->itemData != (ULONG_PTR) g_dat->hSearchEngineIconList && dis->itemData != (ULONG_PTR) g_dat->hChatButtonIconList) {
 		return FALSE;
 	}
 	id = dis->itemID;
@@ -499,4 +472,122 @@ void SetSearchEngineIcons(HMENU hMenu, HIMAGELIST hImageList) {
 		minfo.dwItemData = (ULONG_PTR) hImageList;
 		SetMenuItemInfo(hMenu, IDM_SEARCH_GOOGLE + i, FALSE, &minfo);
 	}
+}
+
+void GetContactUniqueId(struct MessageWindowData *dat, char *buf, int maxlen) {
+	CONTACTINFO ci;
+	ZeroMemory(&ci, sizeof(ci));
+    ci.cbSize = sizeof(ci);
+    ci.hContact = dat->windowData.hContact;
+    ci.szProto = dat->szProto;
+    ci.dwFlag = CNF_UNIQUEID;
+	buf[0] = 0;
+    if (!CallService(MS_CONTACT_GETCONTACTINFO, 0, (LPARAM) & ci)) {
+        switch (ci.type) {
+            case CNFT_ASCIIZ:
+                mir_snprintf(buf, maxlen, "%s", ci.pszVal);
+                miranda_sys_free(ci.pszVal);
+                break;
+            case CNFT_DWORD:
+                mir_snprintf(buf, maxlen, "%u", ci.dVal);
+                break;
+        }
+    }
+}
+
+HWND CreateToolTip(HWND hwndParent, LPTSTR ptszText, LPTSTR ptszTitle, RECT* rect)
+{
+	TOOLINFO ti = { 0 };
+	HWND hwndTT;
+	hwndTT = CreateWindowEx(WS_EX_TOPMOST,
+		TOOLTIPS_CLASS, NULL,
+		WS_POPUP | TTS_NOPREFIX,		
+		CW_USEDEFAULT, CW_USEDEFAULT,
+		CW_USEDEFAULT, CW_USEDEFAULT,
+		hwndParent, NULL, g_hInst, NULL);
+
+	SetWindowPos(hwndTT, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
+	ti.cbSize = sizeof(TOOLINFO);
+	ti.uFlags = TTF_SUBCLASS | TTF_CENTERTIP;
+	ti.hwnd = hwndParent;
+	ti.hinst = g_hInst;
+	ti.lpszText = ptszText;
+	ti.rect = *rect;
+	SendMessage(hwndTT, TTM_ADDTOOL, 0, (LPARAM) (LPTOOLINFO) &ti);
+	SendMessage(hwndTT, TTM_SETTITLE, TTI_NONE, (LPARAM)ptszTitle);
+	return hwndTT;
+} 
+
+void SetToolTipText(HWND hwndParent, HWND hwndTT, LPTSTR ptszText, LPTSTR ptszTitle) {
+	TOOLINFO ti = { 0 };
+	ti.cbSize = sizeof(TOOLINFO);
+	ti.hinst = g_hInst;
+	ti.hwnd = hwndParent;
+	ti.lpszText = ptszText;
+	SendMessage(hwndTT, TTM_UPDATETIPTEXT, 0, (LPARAM) (LPTOOLINFO) &ti);
+	SendMessage(hwndTT, TTM_SETTITLE, TTI_NONE, (LPARAM)ptszTitle);
+}
+
+void SetToolTipRect(HWND hwndParent, HWND hwndTT, RECT* rect)
+{
+	TOOLINFO ti = { 0 };
+	ti.cbSize = sizeof(TOOLINFO);
+	ti.hinst = g_hInst;
+	ti.hwnd = hwndParent;
+	ti.rect = *rect;
+	SendMessage(hwndTT, TTM_NEWTOOLRECT, 0, (LPARAM) (LPTOOLINFO) &ti);
+} 
+
+/* toolbar-related stuff, to be moved to a separate file */
+
+HDWP ResizeToolbar(HWND hwnd, HDWP hdwp, int width, int vPos, int height, int cControls, const ToolbarButton * buttons, int controlVisibility)
+{
+	int i;
+	int lPos = 0;
+	int rPos = width;
+	for (i = 0; i < cControls ; i++) {
+		if (!buttons[i].alignment && (controlVisibility & (1 << i))) {
+			lPos += buttons[i].spacing;
+			hdwp = DeferWindowPos(hdwp, GetDlgItem(hwnd, buttons[i].controlId), 0, lPos, vPos, buttons[i].width, height, SWP_NOZORDER);
+			lPos += buttons[i].width;
+		}
+	}
+	for (i = cControls - 1; i >=0; i--) {
+		if (buttons[i].alignment && (controlVisibility & (1 << i))) {
+			rPos -= buttons[i].spacing + buttons[i].width;
+			hdwp = DeferWindowPos(hdwp, GetDlgItem(hwnd, buttons[i].controlId), 0, rPos, vPos, buttons[i].width, height, SWP_NOZORDER);
+		}
+	}
+	return hdwp;
+}
+
+void ShowToolbarControls(HWND hwndDlg, int cControls, const ToolbarButton* buttons, int controlVisibility, int state)
+{
+	int i;
+	for (i = 0; i < cControls; i++)
+		ShowWindow(GetDlgItem(hwndDlg, buttons[i].controlId), (controlVisibility & (1 << i)) ? state : SW_HIDE);
+}
+
+int GetToolbarWidth(int cControls, const ToolbarButton * buttons)
+{
+	int i, w = 0;
+	for (i = 0; i < cControls; i++) {
+//		if (g_dat->buttonVisibility & (1 << i)) {
+			if (buttons[i].controlId != IDC_SMILEYS || g_dat->smileyAddInstalled) {
+				w += buttons[i].width + buttons[i].spacing;
+			}
+//		}
+	}
+	return w;
+}
+
+BOOL IsToolbarVisible(int cControls, int visibilityFlags)
+{
+	int i;
+	for (i = 0; i < cControls; i++) {
+		if (visibilityFlags & (1 << i)) {
+			return TRUE;
+		}
+	}
+	return FALSE;
 }

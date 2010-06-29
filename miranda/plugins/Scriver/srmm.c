@@ -31,6 +31,8 @@ struct UTF8_INTERFACE utfi;
 PLUGINLINK *pluginLink;
 HINSTANCE g_hInst;
 
+ITaskbarList3 * pTaskbarInterface;
+
 PLUGININFOEX pluginInfo = {
 	sizeof(PLUGININFOEX),
 #ifdef _UNICODE
@@ -38,7 +40,7 @@ PLUGININFOEX pluginInfo = {
 #else
 	"Scriver",
 #endif
-	PLUGIN_MAKE_VERSION(2, 8, 1, 1),
+	PLUGIN_MAKE_VERSION(2, 9, 0, 4),
 	"Scriver - send and receive instant messages",
 	"Miranda IM Development Team",
 	"the_leech@users.berlios.de",
@@ -82,6 +84,9 @@ int __declspec(dllexport) Load(PLUGINLINK * link)
 	mir_getMMI( &mmi );
 	mir_getUTFI( &utfi );
 
+	if (IsWinVer7Plus())
+		CoCreateInstance(&CLSID_TaskbarList, NULL, CLSCTX_ALL, &IID_ITaskbarList3, (void**)&pTaskbarInterface);
+
 	InitSendQueue();
 	return OnLoadModule();
 }
@@ -89,5 +94,7 @@ int __declspec(dllexport) Load(PLUGINLINK * link)
 int __declspec(dllexport) Unload(void)
 {
 	DestroySendQueue();
+	if (pTaskbarInterface)
+		pTaskbarInterface->lpVtbl->Release(pTaskbarInterface);
 	return OnUnloadModule();
 }

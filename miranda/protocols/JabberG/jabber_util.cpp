@@ -384,6 +384,37 @@ char* __stdcall JabberSha1( char* str )
 	return result;
 }
 
+TCHAR* __stdcall JabberStrFixLines( const TCHAR* str )
+{
+	if (!str) return NULL;
+
+	const TCHAR *p;
+	int add = 0;
+	bool prev_r = false;
+	bool prev_n = false;
+
+	for (p = str; p && *p; ++p)
+		if (*p == _T('\r') || *p == _T('\n'))
+			++add;
+
+	TCHAR *buf = (TCHAR *)mir_alloc((lstrlen(str) + add + 1) * sizeof(TCHAR));
+	TCHAR *res = buf;
+
+	for (p = str; p && *p; ++p)
+	{
+		if (*p == _T('\n') && !prev_r)
+			*res++ = _T('\r');
+		if (*p != _T('\r') && *p != _T('\n') && prev_r)
+			*res++ = _T('\n');
+		*res++ = *p;
+		prev_r = *p == _T('\r');
+		prev_n = *p == _T('\n');
+	}
+	*res = 0;
+
+	return buf;
+}
+
 char* __stdcall JabberUnixToDos( const char* str )
 {
 	char* p, *q, *res;
@@ -436,34 +467,34 @@ WCHAR* __stdcall JabberUnixToDosW( const WCHAR* str )
 	return res;
 }
 
-char* __stdcall JabberHttpUrlEncode( const char* str )
+TCHAR* __stdcall JabberHttpUrlEncode( const TCHAR* str )
 {
-	unsigned char* p, *q, *res;
+	TCHAR* p, *q, *res;
 
 	if ( str == NULL ) return NULL;
-	res = ( BYTE* ) mir_alloc( 3*strlen( str ) + 1 );
-	for ( p=( BYTE* )str,q=res; *p!='\0'; p++,q++ ) {
+	res = ( TCHAR* ) mir_alloc( 3*_tcslen( str ) + 1 );
+	for ( p = ( TCHAR* )str, q = res; *p!='\0'; p++,q++ ) {
 		if (( *p>='A' && *p<='Z' ) || ( *p>='a' && *p<='z' ) || ( *p>='0' && *p<='9' ) || strchr( "$-_.+!*'(),", *p )!=NULL ) {
 			*q = *p;
 		}
 		else {
-			sprintf(( char* )q, "%%%02X", *p );
+			wsprintf( q, _T("%%%02X"), *p );
 			q += 2;
 		}
 	}
 	*q = '\0';
-	return ( char* )res;
+	return res;
 }
 
-void __stdcall JabberHttpUrlDecode( char* str )
+void __stdcall JabberHttpUrlDecode( TCHAR* str )
 {
-	unsigned char* p, *q;
+	TCHAR* p, *q;
 	unsigned int code;
 
 	if ( str == NULL ) return;
-	for ( p=q=( BYTE* )str; *p!='\0'; p++,q++ ) {
+	for ( p = q = ( TCHAR* )str; *p!='\0'; p++,q++ ) {
 		if ( *p=='%' && *( p+1 )!='\0' && isxdigit( *( p+1 )) && *( p+2 )!='\0' && isxdigit( *( p+2 )) ) {
-			sscanf(( char* )p+1, "%2x", &code );
+			_stscanf(( TCHAR* )p+1, _T("%2x"), &code );
 			*q = ( unsigned char ) code;
 			p += 2;
 		}
@@ -840,6 +871,15 @@ void CJabberProto::SendPresenceTo( int status, TCHAR* to, HXML extra, TCHAR *msg
 		_tcscat( szExtCaps, _T(JABBER_EXT_MIR_NOTES) );
 	}
 
+	// add features enabled through IJabberNetInterface::AddFeatures()
+	for ( int i = 0; i < m_lstJabberFeatCapPairsDynamic.getCount(); i++ ) {
+		if ( m_uEnabledFeatCapsDynamic & m_lstJabberFeatCapPairsDynamic[i]->jcbCap ) {
+			if ( szExtCaps[0] )
+				_tcscat( szExtCaps, _T(" "));
+			_tcscat( szExtCaps, m_lstJabberFeatCapPairsDynamic[i]->szExt );
+		}
+	}
+
 	if ( szExtCaps[0] )
 		xmlAddAttr( c, _T("ext"), szExtCaps );
 
@@ -1003,22 +1043,6 @@ TCHAR* __stdcall JabberStripJid( const TCHAR* jid, TCHAR* dest, size_t destLen )
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
-// JabberGetXmlLang() - returns language code for xml:lang attribute, caller must free return value
-
-TCHAR* CJabberProto::GetXmlLang()
-{
-	DBVARIANT dbv;
-	TCHAR *szSelectedLang = NULL;
-	if ( !JGetStringT( NULL, "XmlLang", &dbv )) {
-		szSelectedLang = mir_tstrdup( dbv.ptszVal );
-		JFreeVariant( &dbv );
-	}
-	else
-		szSelectedLang = mir_tstrdup( _T( "en" ));
-	return szSelectedLang;
-}
-
-/////////////////////////////////////////////////////////////////////////////////////////
 // JabberGetPictureType - tries to autodetect the picture type from the buffer
 
 int __stdcall JabberGetPictureType( const char* buf )
@@ -1134,7 +1158,7 @@ static VOID CALLBACK sttRebuildInfoFrameApcProc( DWORD_PTR param )
 	{
 		ppro->m_pInfoFrame->RemoveInfoItem("$/PEP");
 		ppro->m_pInfoFrame->RemoveInfoItem("$/Transports");
-		ppro->m_pInfoFrame->UpdateInfoItem("$/JID", LoadSkinnedIconHandle(SKINICON_OTHER_USERDETAILS), _T("Offline"));
+		ppro->m_pInfoFrame->UpdateInfoItem("$/JID", LoadSkinnedIconHandle(SKINICON_OTHER_USERDETAILS), TranslateT("Offline"));
 	} else
 	{
 		ppro->m_pInfoFrame->UpdateInfoItem("$/JID", LoadSkinnedIconHandle(SKINICON_OTHER_USERDETAILS), ppro->m_szJabberJID);
@@ -1264,7 +1288,7 @@ static INT_PTR CALLBACK sttEnterStringDlgProc( HWND hwndDlg, UINT msg, WPARAM wP
 	{
 		//SetWindowPos( hwndDlg, HWND_TOPMOST ,0,0,0,0,SWP_NOSIZE|SWP_NOMOVE );
 		TranslateDialogDefault( hwndDlg );
-		SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)LoadSkinnedIcon(SKINICON_OTHER_RENAME));
+		SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)LoadSkinnedIconBig(SKINICON_OTHER_RENAME));
 		SendMessage(hwndDlg, WM_SETICON, ICON_SMALL, (LPARAM)LoadSkinnedIcon(SKINICON_OTHER_RENAME));
 		JabberEnterStringParams *params = (JabberEnterStringParams *)lParam;
 		SetWindowLongPtr( hwndDlg, GWLP_USERDATA, ( LONG_PTR )params );
@@ -1325,6 +1349,9 @@ static INT_PTR CALLBACK sttEnterStringDlgProc( HWND hwndDlg, UINT msg, WPARAM wP
 
 		return TRUE;
 	}
+	case WM_DESTROY:
+		WindowFreeIcon( hwndDlg );
+		break;
 	case WM_TIMER:
 	{
 		switch (wParam)

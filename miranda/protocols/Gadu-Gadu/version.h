@@ -17,7 +17,8 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 ////////////////////////////////////////////////////////////////////////////////
-#include <m_version.h>
+
+#include "../../include/m_version.h"
 
 #define __FILEVERSION_STRING        MIRANDA_VERSION_FILEVERSION
 #define __VERSION_STRING            MIRANDA_VERSION_STRING

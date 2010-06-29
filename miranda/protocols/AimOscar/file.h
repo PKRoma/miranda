@@ -21,53 +21,53 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 struct file_transfer
 {
-    HANDLE hContact;
-    char* sn;
+	HANDLE hContact;
+	char* sn;
 
-    char icbm_cookie[8];
+	char icbm_cookie[8];
 
-    HANDLE hConn;
-    HANDLE hResumeEvent;
+	HANDLE hConn;
+	HANDLE hResumeEvent;
 
-    char* file;
-    char* message;
+	char* file;
+	char* message;
 
-    PROTOFILETRANSFERSTATUS pfts;
+	PROTOFILETRANSFERSTATUS pfts;
 
-    unsigned long cf;
+	unsigned long cf;
 
 	//below is for when receiving only
-    unsigned long local_ip;
-    unsigned long verified_ip;
-    unsigned long proxy_ip;
-    unsigned short port;
-    unsigned short max_ver;
+	unsigned long local_ip;
+	unsigned long verified_ip;
+	unsigned long proxy_ip;
+	unsigned short port;
+	unsigned short max_ver;
 
-    unsigned short req_num;
+	unsigned short req_num;
 
-    bool peer_force_proxy;
-    bool me_force_proxy;
-    bool sending;
-    bool accepted;
-    bool requester;
-    bool success;
+	bool peer_force_proxy;
+	bool me_force_proxy;
+	bool sending;
+	bool accepted;
+	bool requester;
+	bool success;
 
-    file_transfer(HANDLE hCont, char* nick, char* cookie);
-    ~file_transfer();
+	file_transfer(HANDLE hCont, char* nick, char* cookie);
+	~file_transfer();
 };
 
 struct ft_list_type : OBJLIST <file_transfer> 
 {
-    ft_list_type();
+	ft_list_type();
 
-    file_transfer* find_by_handle(HANDLE hContact);
-    file_transfer* find_by_cookie(char* cookie, HANDLE hContact);
-    file_transfer* find_by_ip(unsigned long ip);
-    file_transfer* find_suitable(void);
+	file_transfer* find_by_handle(HANDLE hContact);
+	file_transfer* find_by_cookie(char* cookie, HANDLE hContact);
+	file_transfer* find_by_ip(unsigned long ip);
+	file_transfer* find_suitable(void);
 
-    bool find_by_ft(file_transfer *ft);
+	bool find_by_ft(file_transfer *ft);
 
-    void remove_by_ft(file_transfer *ft);
+	void remove_by_ft(file_transfer *ft);
 };
 
 

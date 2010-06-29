@@ -1,6 +1,6 @@
 /*
 Plugin of Miranda IM for communicating with users of the MSN Messenger protocol.
-Copyright (c) 2006-2009 Boris Krasnovskiy.
+Copyright (c) 2006-2010 Boris Krasnovskiy.
 Copyright (c) 2003-2005 George Hazan.
 Copyright (c) 2002-2003 Richard Hughes (original version).
 
@@ -23,30 +23,20 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 HANDLE  CMsnProto::MSN_HContactFromEmail(const char* msnEmail, const char* msnNick, bool addIfNeeded, bool temporary)
 {
-	HANDLE hContact = (HANDLE)MSN_CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
-	while (hContact != NULL)
-	{
-		if (MSN_IsMyContact(hContact)) 
-		{
-			char tEmail[MSN_MAX_EMAIL_LEN];
-			if (!getStaticString(hContact, "e-mail", tEmail, sizeof(tEmail)))
-				if (!_stricmp(msnEmail, tEmail))
-					return hContact;
-		}
-
-		hContact = (HANDLE)MSN_CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM)hContact, 0);
-	}
+	MsnContact *msc = Lists_Get(msnEmail);
+	if (msc && msc->hContact) return msc->hContact;
 
 	if (addIfNeeded)
 	{
 		char *szEmail = _strlwr(NEWSTR_ALLOCA(msnEmail));
-		hContact = (HANDLE)MSN_CallService(MS_DB_CONTACT_ADD, 0, 0);
+		HANDLE hContact = (HANDLE)MSN_CallService(MS_DB_CONTACT_ADD, 0, 0);
 		MSN_CallService(MS_PROTO_ADDTOCONTACT, (WPARAM)hContact, (LPARAM)m_szModuleName);
 		setString(hContact, "e-mail", szEmail);
-		setStringUtf(hContact, "Nick", szEmail);
+		setStringUtf(hContact, "Nick", msnNick ? msnNick : msnEmail);
 		if (temporary)
 			DBWriteContactSettingByte(hContact, "CList", "NotOnList", 1);
 
+		Lists_Add(0, NETID_MSN, szEmail, hContact);
 		return hContact;
 	}
 	return NULL;
@@ -252,6 +242,8 @@ void CMsnProto::MSN_FindYahooUser(const char* email)
 bool CMsnProto::MSN_RefreshContactList(void)
 {
 	Lists_Wipe();
+	Lists_Populate();
+
 	if (!MSN_SharingFindMembership()) return false;
 
 	if (m_iDesiredStatus == ID_STATUS_OFFLINE) return false;

@@ -204,7 +204,8 @@ void gg_pubdir50_free(gg_pubdir50_t s)
  */
 uint32_t gg_pubdir50(struct gg_session *sess, gg_pubdir50_t req)
 {
-	int i, size = 5;
+	size_t size = 5;
+	int i;
 	uint32_t res;
 	char *buf, *p;
 	struct gg_pubdir50_request *r;
@@ -260,7 +261,7 @@ uint32_t gg_pubdir50(struct gg_session *sess, gg_pubdir50_t req)
 	}
 
 	if (!req->seq)
-		req->seq = time(NULL);
+		req->seq = (uint32_t)time(NULL);
 
 	res = req->seq;
 

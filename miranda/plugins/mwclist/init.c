@@ -83,11 +83,11 @@ PLUGININFOEX pluginInfo = {
 	#else
 		"MultiWindow Contact List",
 	#endif
-	PLUGIN_MAKE_VERSION(0,8,0,1),
+	PLUGIN_MAKE_VERSION(0,9,0,0),
 	"Display contacts, event notifications, protocol status with MW modifications",
 	"",
 	"bethoven@mailgate.ru" ,
-	"Copyright 2000-2008 Miranda-IM project ["__DATE__" "__TIME__"]",
+	"Copyright 2000-2010 Miranda-IM project ["__DATE__" "__TIME__"]",
 	"http://www.miranda-im.org",
 	UNICODE_AWARE,
 	DEFMOD_CLISTALL,

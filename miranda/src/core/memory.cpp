@@ -155,6 +155,21 @@ char* mir_strdup( const char* str )
 
 /******************************************************************************/
 
+char* mir_strndup( const char* str, size_t len )
+{
+	if ( str != NULL && len != 0 ) {
+		char* p = ( char* )mir_alloc( len + 1 );
+		if ( !p ) {
+			memcpy( p, str, len );
+			p[ len ] = 0;
+		}
+		return p;
+	}
+	return NULL;
+}
+
+/******************************************************************************/
+
 WCHAR* mir_wstrdup( const WCHAR* str )
 {
 	if ( str != NULL ) {

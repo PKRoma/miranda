@@ -5,7 +5,7 @@
 // Copyright © 2000-2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001-2002 Jon Keating, Richard Hughes
 // Copyright © 2002-2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004-2009 Joe Kucera
+// Copyright © 2004-2010 Joe Kucera
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -19,7 +19,7 @@
 // 
 // You should have received a copy of the GNU General Public License
 // along with this program; if not, write to the Free Software
-// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 //
 // -----------------------------------------------------------------------------
 //
@@ -59,8 +59,8 @@
 
 struct CIcqProto;
 // callback prototypes for pending operation mechanism:
-typedef int (CIcqProto::*PENDING_GROUP_CALLBACK)(const char* pszGroup, WORD wGroupId, LPARAM lParam, int nResult);
-typedef int (CIcqProto::*PENDING_CONTACT_CALLBACK)(HANDLE hContact, WORD wContactId, WORD wGroupId, LPARAM lParam, int nResult);
+typedef int (__cdecl CIcqProto::*PENDING_GROUP_CALLBACK)(const char* pszGroup, WORD wGroupId, LPARAM lParam, int nResult);
+typedef int (__cdecl CIcqProto::*PENDING_CONTACT_CALLBACK)(HANDLE hContact, WORD wContactId, WORD wGroupId, LPARAM lParam, int nResult);
 
 // cookie struct for SSI actions
 struct cookie_servlist_action

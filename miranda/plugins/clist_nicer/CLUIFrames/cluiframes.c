@@ -3420,7 +3420,7 @@ static INT_PTR AddIconToExtraImageList(WPARAM wParam, LPARAM lParam)
 	if (himlExtraImages == 0 || wParam == 0)
 		return -1;
 
-	return((int)ImageList_AddIcon(himlExtraImages, (HICON)wParam));
+	return ImageList_AddIcon(himlExtraImages, (HICON)wParam);
 }
 
 /*

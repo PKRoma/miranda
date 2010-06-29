@@ -103,11 +103,13 @@ static INT_PTR DbEventGetText(WPARAM wParam, LPARAM lParam)
 	if ( dbei->eventType == EVENTTYPE_FILE ) {
 		char* filename = ((char *)dbei->pBlob) + sizeof(DWORD);
 		char* descr = filename + lstrlenA( filename ) + 1;
+		char* str = (*descr == 0) ? filename : descr;
 		switch ( egt->datatype ) {
 		case DBVT_WCHAR:
-			return ( INT_PTR )a2t( *descr == 0 ? filename : descr );
+			return ( INT_PTR )(( dbei->flags & DBEF_UTF ) ? 
+					Utf8DecodeT( str ) : mir_a2t( str ));
 		case DBVT_ASCIIZ:
-			return ( INT_PTR )mir_strdup( *descr == 0 ? filename : descr );
+			return ( INT_PTR )(( dbei->flags & DBEF_UTF ) ? Utf8Decode( mir_strdup( str ), NULL ) : mir_strdup( str ));
 		}
 		return 0;
 	}
@@ -199,6 +201,24 @@ static INT_PTR DbEventGetIcon( WPARAM wParam, LPARAM lParam )
     return ( INT_PTR )CopyIcon( icon );
 }
 
+static INT_PTR DbEventGetStringT( WPARAM wParam, LPARAM lParam )
+{
+	DBEVENTINFO* dbei = ( DBEVENTINFO* )wParam;
+	char* string = ( char* )lParam;
+
+	#if defined( _UNICODE )
+		if ( dbei->flags & DBEF_UTF )
+			return ( INT_PTR )Utf8DecodeUcs2( string );
+
+		return ( INT_PTR )mir_a2t( string );
+	#else
+		char* res = mir_strdup( string );
+		if ( dbei->flags & DBEF_UTF )
+			Utf8Decode( res, NULL );
+		return ( INT_PTR )res;
+	#endif
+}
+
 /////////////////////////////////////////////////////////////////////////////////////////
 
 static int sttEnumVars( const char* szVarName, LPARAM lParam )
@@ -236,6 +256,7 @@ int InitUtils()
 	CreateServiceFunction(MS_DB_EVENT_GETTYPE, DbEventTypeGet);
 	CreateServiceFunction(MS_DB_EVENT_GETTEXT, DbEventGetText);
 	CreateServiceFunction(MS_DB_EVENT_GETICON, DbEventGetIcon);
+	CreateServiceFunction(MS_DB_EVENT_GETSTRINGT, DbEventGetStringT);
 
 	CreateServiceFunction(MS_DB_MODULE_DELETE, DbDeleteModule);
 	return 0;

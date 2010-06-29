@@ -58,7 +58,6 @@ void gg_icolib_init()
 
 	sid.cbSize = sizeof(SKINICONDESC);
 	sid.pszDefaultFile = szFile;
-	sid.cx = sid.cy = 16;
 	sid.pszSection = szSectionName;
 
 	for(i = 0; i < sizeof(iconList) / sizeof(iconList[0]); i++) {
@@ -71,11 +70,11 @@ void gg_icolib_init()
 	}
 }
 
-HICON LoadIconEx(const char* name)
+HICON LoadIconEx(const char* name, BOOL big)
 {
 	char szSettingName[100];
 	mir_snprintf(szSettingName, sizeof(szSettingName), "%s_%s", GGDEF_PROTO, name);
-	return (HICON)CallService(MS_SKIN2_GETICON, 0, (LPARAM)szSettingName);
+	return (HICON)CallService(MS_SKIN2_GETICON, big, (LPARAM)szSettingName);
 }
 
 HANDLE GetIconHandle(int iconId)
@@ -87,9 +86,9 @@ HANDLE GetIconHandle(int iconId)
 	return NULL;
 }
 
-void ReleaseIconEx(const char* name)
+void ReleaseIconEx(const char* name, BOOL big)
 {
 	char szSettingName[100];
 	mir_snprintf(szSettingName, sizeof(szSettingName), "%s_%s", GGDEF_PROTO, name);
-	CallService(MS_SKIN2_RELEASEICON, 0, (LPARAM)szSettingName);
+	CallService(big ? MS_SKIN2_RELEASEICONBIG : MS_SKIN2_RELEASEICON, 0, (LPARAM)szSettingName);
 }

@@ -2,7 +2,7 @@
 Chat module plugin for Miranda IM
 
 Copyright (C) 2003 Jörgen Persson
-Copyright 2003-2008 Miranda ICQ/IM project,
+Copyright 2003-2009 Miranda ICQ/IM project,
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -24,7 +24,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 extern TCHAR* pszActiveWndID ;
 extern char*  pszActiveWndModule ;
-extern HICON  hIcons[30];
 extern struct MM_INTERFACE		mmi ;
 
 extern struct GlobalMessageData *g_dat;
@@ -279,23 +278,14 @@ HICON SM_GetStatusIcon(SESSION_INFO* si, USERINFO * ui)
 		if ((INT_PTR)ti->hIcon < STATUSICONCOUNT)
 		{
 			INT_PTR id = si->iStatusCount - (INT_PTR)ti->hIcon - 1;
-			if (id == 0)
-				return hIcons[ICON_STATUS0];
-			if (id == 1)
-				return hIcons[ICON_STATUS1];
-			if (id == 2)
-				return hIcons[ICON_STATUS2];
-			if (id == 3)
-				return hIcons[ICON_STATUS3];
-			if (id == 4)
-				return hIcons[ICON_STATUS4];
-			if (id == 5)
-				return hIcons[ICON_STATUS5];
+			char name[128];
+			sprintf(name, "chat_status%d", id);
+			return GetCachedIcon(name);
 		}
 		else
 			return ti->hIcon;
 	}
-	return hIcons[ICON_STATUS0];
+	return GetCachedIcon("chat_status0");
 }
 
 BOOL SM_AddEventToAllMatchingUID(GCEVENT * gce)
@@ -879,6 +869,7 @@ void MM_IconsChanged(void)
 void MM_FontsChanged(void)
 {
 	SESSION_INFO* pTemp = m_WndList;
+	SetIndentSize();
 	while (pTemp != NULL)
 	{
 		pTemp->pszHeader = Log_CreateRtfHeader(MM_FindModule(pTemp->pszModule), pTemp);
@@ -922,7 +913,7 @@ BOOL MM_RemoveAll (void)
 	{
 		MODULEINFO *pLast = m_ModList->next;
 		mir_free(m_ModList->pszModule);
-		mir_free(m_ModList->pszModDispName);
+		mir_free(m_ModList->ptszModDispName);
 		mir_free(m_ModList->crColors);
 
 		if (m_ModList->hOfflineIcon)

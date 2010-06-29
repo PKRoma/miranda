@@ -19,12 +19,14 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 #ifndef AIM_H
 #define AIM_H
 
-#define MIRANDA_VER 0x800
+#define MIRANDA_VER 0x900
 
 #include <m_stdhdr.h>
 
 //System includes
 #include <windows.h>
+#include <vssym32.h>
+
 #include <ctype.h>
 #include <fcntl.h>
 #include <io.h>
@@ -154,6 +156,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 #define AIM_DEFAULT_SERVER_NS "login.oscar.aol.com"
 #define AIM_PROXY_SERVER "ars.oscar.aol.com"
 #define AIM_DEFAULT_PORT 5190
+#define AIM_DEFAULT_SSL_PORT 443
 
 //Some Defaults for various things
 #define DEFAULT_KEEPALIVE_TIMER 39 // secs

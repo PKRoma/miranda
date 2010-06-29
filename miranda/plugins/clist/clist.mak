@@ -1,7 +1,7 @@
 # Microsoft Developer Studio Generated NMAKE File, Based on clist.dsp
 !IF "$(CFG)" == ""
-CFG=clist - Win32 Release Unicode
-!MESSAGE No configuration specified. Defaulting to clist - Win32 Release Unicode.
+CFG=clist - Win32 Debug Unicode
+!MESSAGE No configuration specified. Defaulting to clist - Win32 Debug Unicode.
 !ENDIF 
 
 !IF "$(CFG)" != "clist - Win32 Release" && "$(CFG)" != "clist - Win32 Debug" && "$(CFG)" != "clist - Win32 Release Unicode" && "$(CFG)" != "clist - Win32 Debug Unicode"
@@ -48,7 +48,6 @@ CLEAN :
 	-@erase "$(INTDIR)\clistopts.obj"
 	-@erase "$(INTDIR)\cluiopts.obj"
 	-@erase "$(INTDIR)\commonheaders.obj"
-	-@erase "$(INTDIR)\forkthread.obj"
 	-@erase "$(INTDIR)\init.obj"
 	-@erase "$(INTDIR)\resource.res"
 	-@erase "$(INTDIR)\vc60.idb"
@@ -78,7 +77,6 @@ LINK32_OBJS= \
 	"$(INTDIR)\clistopts.obj" \
 	"$(INTDIR)\cluiopts.obj" \
 	"$(INTDIR)\commonheaders.obj" \
-	"$(INTDIR)\forkthread.obj" \
 	"$(INTDIR)\init.obj" \
 	"$(INTDIR)\resource.res"
 
@@ -103,7 +101,6 @@ CLEAN :
 	-@erase "$(INTDIR)\clistopts.obj"
 	-@erase "$(INTDIR)\cluiopts.obj"
 	-@erase "$(INTDIR)\commonheaders.obj"
-	-@erase "$(INTDIR)\forkthread.obj"
 	-@erase "$(INTDIR)\init.obj"
 	-@erase "$(INTDIR)\resource.res"
 	-@erase "$(INTDIR)\vc60.idb"
@@ -133,7 +130,6 @@ LINK32_OBJS= \
 	"$(INTDIR)\clistopts.obj" \
 	"$(INTDIR)\cluiopts.obj" \
 	"$(INTDIR)\commonheaders.obj" \
-	"$(INTDIR)\forkthread.obj" \
 	"$(INTDIR)\init.obj" \
 	"$(INTDIR)\resource.res"
 
@@ -159,7 +155,6 @@ CLEAN :
 	-@erase "$(INTDIR)\clistopts.obj"
 	-@erase "$(INTDIR)\cluiopts.obj"
 	-@erase "$(INTDIR)\commonheaders.obj"
-	-@erase "$(INTDIR)\forkthread.obj"
 	-@erase "$(INTDIR)\init.obj"
 	-@erase "$(INTDIR)\resource.res"
 	-@erase "$(INTDIR)\vc60.idb"
@@ -189,7 +184,6 @@ LINK32_OBJS= \
 	"$(INTDIR)\clistopts.obj" \
 	"$(INTDIR)\cluiopts.obj" \
 	"$(INTDIR)\commonheaders.obj" \
-	"$(INTDIR)\forkthread.obj" \
 	"$(INTDIR)\init.obj" \
 	"$(INTDIR)\resource.res"
 
@@ -214,7 +208,6 @@ CLEAN :
 	-@erase "$(INTDIR)\clistopts.obj"
 	-@erase "$(INTDIR)\cluiopts.obj"
 	-@erase "$(INTDIR)\commonheaders.obj"
-	-@erase "$(INTDIR)\forkthread.obj"
 	-@erase "$(INTDIR)\init.obj"
 	-@erase "$(INTDIR)\resource.res"
 	-@erase "$(INTDIR)\vc60.idb"
@@ -244,7 +237,6 @@ LINK32_OBJS= \
 	"$(INTDIR)\clistopts.obj" \
 	"$(INTDIR)\cluiopts.obj" \
 	"$(INTDIR)\commonheaders.obj" \
-	"$(INTDIR)\forkthread.obj" \
 	"$(INTDIR)\init.obj" \
 	"$(INTDIR)\resource.res"
 
@@ -558,50 +550,6 @@ CPP_SWITCHES=/nologo /MD /W3 /Zi /O1 /I "../../include/" /I "../../include" /D "
 CPP_SWITCHES=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "CLIST_EXPORTS" /D "UNICODE" /Fp"$(INTDIR)\clist.pch" /YX /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
 
 "$(INTDIR)\commonheaders.obj" : $(SOURCE) "$(INTDIR)"
-	$(CPP) @<<
-  $(CPP_SWITCHES) $(SOURCE)
-<<
-
-
-!ENDIF 
-
-SOURCE=.\forkthread.c
-
-!IF  "$(CFG)" == "clist - Win32 Release"
-
-CPP_SWITCHES=/nologo /MD /W3 /Zi /O1 /I "../../include/" /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "CLIST_EXPORTS" /Fp"$(INTDIR)\clist.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
-
-"$(INTDIR)\forkthread.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\clist.pch"
-	$(CPP) @<<
-  $(CPP_SWITCHES) $(SOURCE)
-<<
-
-
-!ELSEIF  "$(CFG)" == "clist - Win32 Debug"
-
-CPP_SWITCHES=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "CLIST_EXPORTS" /Fp"$(INTDIR)\clist.pch" /YX /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
-
-"$(INTDIR)\forkthread.obj" : $(SOURCE) "$(INTDIR)"
-	$(CPP) @<<
-  $(CPP_SWITCHES) $(SOURCE)
-<<
-
-
-!ELSEIF  "$(CFG)" == "clist - Win32 Release Unicode"
-
-CPP_SWITCHES=/nologo /MD /W3 /Zi /O1 /I "../../include/" /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "CLIST_EXPORTS" /D "UNICODE" /Fp"$(INTDIR)\clist.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
-
-"$(INTDIR)\forkthread.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\clist.pch"
-	$(CPP) @<<
-  $(CPP_SWITCHES) $(SOURCE)
-<<
-
-
-!ELSEIF  "$(CFG)" == "clist - Win32 Debug Unicode"
-
-CPP_SWITCHES=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "CLIST_EXPORTS" /D "UNICODE" /Fp"$(INTDIR)\clist.pch" /YX /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
-
-"$(INTDIR)\forkthread.obj" : $(SOURCE) "$(INTDIR)"
 	$(CPP) @<<
   $(CPP_SWITCHES) $(SOURCE)
 <<

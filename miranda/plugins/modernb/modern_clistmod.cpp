@@ -521,11 +521,8 @@ int cliShowHide(WPARAM wParam,LPARAM lParam)
 			return 0;
 	}
 
-	if( (bShow == TRUE || lParam == 1) ) {
-		RECT rcWindow;
-
-		GetWindowRect(pcli->hwndContactList,&rcWindow);
-
+	if( (bShow == TRUE || lParam == 1) ) 
+	{
 		Sync( CLUIFrames_ActivateSubContainers, TRUE );
 		CLUI_ShowWindowMod(pcli->hwndContactList, SW_RESTORE);
 
@@ -546,6 +543,8 @@ int cliShowHide(WPARAM wParam,LPARAM lParam)
 		}
 		ModernWriteSettingByte(NULL,"CList","State",SETTING_STATE_NORMAL);
 
+		RECT rcWindow;
+		GetWindowRect(pcli->hwndContactList,&rcWindow);
 		if (Utils_AssertInsideScreen(&rcWindow) == 1)
 		{
 			MoveWindow(pcli->hwndContactList, rcWindow.left, rcWindow.top, 
@@ -557,11 +556,26 @@ int cliShowHide(WPARAM wParam,LPARAM lParam)
 
 	}
 	else { //It needs to be hidden
+		if (GetWindowLong(pcli->hwndContactList, GWL_EXSTYLE) & WS_EX_TOOLWINDOW)
+		{
+			CListMod_HideWindow(pcli->hwndContactList, SW_HIDE);
+			ModernWriteSettingByte(NULL,"CList","State",SETTING_STATE_HIDDEN);
+		}
+		else
+		{
+			if (ModernGetSettingByte(NULL,"CList","Min2Tray",SETTING_MIN2TRAY_DEFAULT)) {
+				CLUI_ShowWindowMod(pcli->hwndContactList, SW_HIDE);
+				ModernWriteSettingByte(NULL,"CList","State",SETTING_STATE_HIDDEN);
+			}
+			else
+			{
+				CLUI_ShowWindowMod(pcli->hwndContactList, SW_MINIMIZE);
+				ModernWriteSettingByte(NULL,"CList","State",SETTING_STATE_MINIMIZED);
+			}
+		}
 
-		CListMod_HideWindow(pcli->hwndContactList, SW_HIDE);
-
-		ModernWriteSettingByte(NULL,"CList","State",SETTING_STATE_HIDDEN);
-		if(MySetProcessWorkingSetSize!=NULL && ModernGetSettingByte(NULL,"CList","DisableWorkingSet",SETTING_DISABLEWORKINGSET_DEFAULT)) MySetProcessWorkingSetSize(GetCurrentProcess(),-1,-1);
+		if (MySetProcessWorkingSetSize!=NULL && ModernGetSettingByte(NULL,"CList","DisableWorkingSet",SETTING_DISABLEWORKINGSET_DEFAULT)) 
+			MySetProcessWorkingSetSize(GetCurrentProcess(),-1,-1);
 	}
 	return 0;
 }

@@ -1,8 +1,7 @@
 /*
 Scriver
 
-Copyright 2000-2003 Miranda ICQ/IM project,
-Copyright 2005 Piotr Piastucki
+Copyright 2000-2009 Miranda ICQ/IM project,
 
 all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
@@ -26,14 +25,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "statusicon.h"
 #include "chat/chat.h"
 
-
-#ifdef _MSC_VER
-#define STRING2(x) #x
-#define STRING(x) STRING2(x)
-#pragma message ("_MSC_VER: "STRING(_MSC_VER))
-#endif
-
-
 #ifndef __MINGW32__
 #if (_MSC_VER < 1300)
 #include "multimon.h"
@@ -42,6 +33,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 extern HINSTANCE g_hInst;
 extern HCURSOR hDragCursor;
+extern ITaskbarList3 * pTaskbarInterface;
 
 #define SB_CHAR_WIDTH		 40
 #define SB_SENDING_WIDTH 	 25
@@ -66,38 +58,50 @@ void UnsubclassTabCtrl(HWND hwnd) {
 	SetWindowLongPtr(hwnd, GWLP_WNDPROC, (LONG_PTR) OldTabCtrlProc);
 }
 
+static TCHAR *titleTokenNames[] = {_T("%name%"), _T("%status%"), _T("%statusmsg%"), _T("%account%")};
+
 TCHAR* GetWindowTitle(HANDLE *hContact, const char *szProto)
 {
-	DBVARIANT dbv;
 	int isTemplate;
-	int i, j, len, contactNameLen = 0, statusLen = 0, statusMsgLen = 0, protocolLen = 0;
-	TCHAR *p, *tmplt, *szContactName = NULL, *szStatus = NULL, *szStatusMsg = NULL, *szProtocol = NULL, *title;
+	int i, j, len;
+    TCHAR* tokens[4] = {NULL};
+    int tokenLen[4] = {0};
+	TCHAR *p, *tmplt, *title;
+    char *accModule;
 	TCHAR *pszNewTitleEnd = mir_tstrdup(TranslateT("Message Session"));
 	isTemplate = 0;
 	if (hContact && szProto) {
-		szContactName = GetNickname(hContact, szProto);
-		contactNameLen = lstrlen(szContactName);
-		szStatus = a2t((char *) CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, szProto == NULL ? ID_STATUS_OFFLINE : DBGetContactSettingWord(hContact, szProto, "Status", ID_STATUS_OFFLINE), 0));
-		statusLen = lstrlen(szStatus);
-		szStatusMsg = DBGetStringT(hContact, "CList", "StatusMsg");
-		if (szStatusMsg != NULL) {
-			statusMsgLen = (int)_tcslen(szStatusMsg);
-			for (i = j = 0; i < statusMsgLen; i++) {
-				if (szStatusMsg[i] == '\r') {
+		tokens[0] = GetNickname(hContact, szProto);
+		tokenLen[0] = lstrlen(tokens[0]);
+		tokens[1] = a2t((char *) CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, szProto == NULL ? ID_STATUS_OFFLINE : DBGetContactSettingWord(hContact, szProto, "Status", ID_STATUS_OFFLINE), 0));
+		tokenLen[1] = lstrlen(tokens[1]);
+		tokens[2] = DBGetStringT(hContact, "CList", "StatusMsg");
+		if (tokens[2] != NULL) {
+			tokenLen[2] = (int)lstrlen(tokens[2]);
+			for (i = j = 0; i < tokenLen[2]; i++) {
+				if (tokens[2][i] == '\r') {
 					continue;
-				} else if (szStatusMsg[i] == '\n') {
-					szStatusMsg[j++] = ' ';
+				} else if (tokens[2][i] == '\n') {
+					tokens[2][j++] = ' ';
 				} else {
-					szStatusMsg[j++] = szStatusMsg[i];
+					tokens[2][j++] = tokens[2][i];
 				}
 			}
-			szStatusMsg[j] = '\0';
-			statusMsgLen = j;
+			tokens[2][j] = '\0';
+			tokenLen[2] = j;
 		}
-		if (!DBGetContactSettingTString(NULL, SRMMMOD, SRMSGSET_WINDOWTITLE, &dbv)) {
+
+    	accModule = (char *) CallService(MS_PROTO_GETCONTACTBASEACCOUNT, (WPARAM) hContact, 0);
+        if (accModule != NULL) {
+            PROTOACCOUNT* proto = (PROTOACCOUNT*)CallService(MS_PROTO_GETACCOUNT, 0, (LPARAM)accModule);
+            if (proto != NULL) {
+                tokens[3] = mir_tstrdup(proto->tszAccountName);
+                tokenLen[3] = lstrlen(tokens[3]);
+            }
+        }
+        tmplt = DBGetStringT(NULL, SRMMMOD, SRMSGSET_WINDOWTITLE);
+		if (tmplt != NULL) {
 			isTemplate = 1;
-			tmplt = mir_tstrdup(dbv.ptszVal);
-			DBFreeVariant(&dbv);
 		} else {
 			if (g_dat->flags & SMF_STATUSICON) {
 				tmplt = _T("%name% - ");
@@ -110,19 +114,14 @@ TCHAR* GetWindowTitle(HANDLE *hContact, const char *szProto)
 	}
 	for (len = 0, p = tmplt; *p; p++) {
 		if (*p == '%') {
-			if (!_tcsncmp(p, _T("%name%"), 6)) {
-				len += contactNameLen;
-				p += 5;
-				continue;
-			} else if (!_tcsncmp(p, _T("%status%"), 8)) {
-				len += statusLen;
-				p += 7;
-				continue;
-			} else if (!_tcsncmp(p, _T("%statusmsg%"), 11)) {
-				len += statusMsgLen;
-				p += 10;
-				continue;
-			}
+            for (i = 0; i < SIZEOF(titleTokenNames); i ++) {
+                int tnlen = lstrlen(titleTokenNames[i]);
+                if (!_tcsncmp(p, titleTokenNames[i], tnlen)) {
+                    len += tokenLen[i];
+                    p += tnlen;
+                    break;
+                }
+            }
 		}
 		len++;
 	}
@@ -132,22 +131,17 @@ TCHAR* GetWindowTitle(HANDLE *hContact, const char *szProto)
 	title = (TCHAR *)mir_alloc(sizeof(TCHAR) * (len + 1));
 	for (len = 0, p = tmplt; *p; p++) {
 		if (*p == '%') {
-			if (!_tcsncmp(p, _T("%name%"), 6)) {
-				memcpy(title+len, szContactName, sizeof(TCHAR) * contactNameLen);
-				len += contactNameLen;
-				p += 5;
-				continue;
-			} else if (!_tcsncmp(p, _T("%status%"), 8)) {
-				memcpy(title+len, szStatus, sizeof(TCHAR) * statusLen);
-				len += statusLen;
-				p += 7;
-				continue;
-			} else if (!_tcsncmp(p, _T("%statusmsg%"), 11)) {
-				memcpy(title+len, szStatusMsg, sizeof(TCHAR) * statusMsgLen);
-				len += statusMsgLen;
-				p += 10;
-				continue;
-			}
+            for (i = 0; i < SIZEOF(titleTokenNames); i ++) {
+                int tnlen = lstrlen(titleTokenNames[i]);
+                if (!_tcsncmp(p, titleTokenNames[i], tnlen)) {
+                    if (tokens[i] != NULL) {
+                        memcpy(title+len, tokens[i], sizeof(TCHAR) * tokenLen[i]);
+                        len += tokenLen[i];
+                    }
+                    p += tnlen;
+                    break;
+                }
+            }
 		}
 		title[len++] = *p;
 	}
@@ -159,11 +153,10 @@ TCHAR* GetWindowTitle(HANDLE *hContact, const char *szProto)
 	if (isTemplate) {
 		mir_free(tmplt);
 	}
-	mir_free(szContactName);
-	mir_free(szStatus);
+    for (i = 0; i < SIZEOF(titleTokenNames); i ++) {
+        mir_free(tokens[i]);
+    }
 	mir_free(pszNewTitleEnd);
-	if (szStatusMsg)
-		mir_free(szStatusMsg);
 	return title;
 }
 
@@ -331,8 +324,8 @@ static void ActivateChild(ParentWindowData *dat, HWND child) {
 	RECT rcChild;
 	GetChildWindowRect(dat, &rcChild);
 	SetWindowPos(child, HWND_TOP, rcChild.left, rcChild.top, rcChild.right-rcChild.left, rcChild.bottom - rcChild.top, SWP_NOSIZE);
-
-	i = GetTabFromHWND(dat, child);
+	
+    i = GetTabFromHWND(dat, child);
 	if ( i == -1 )
 		return;
 	else {
@@ -377,6 +370,9 @@ static void AddChild(ParentWindowData *dat, HWND hwnd, HANDLE hContact)
 //	ActivateChild(dat, mdat->hwnd);
 	SetWindowPos(mwtd->hwnd, HWND_TOP, dat->childRect.left, dat->childRect.top, dat->childRect.right-dat->childRect.left, dat->childRect.bottom - dat->childRect.top, SWP_HIDEWINDOW);
 	SendMessage(dat->hwnd, WM_SIZE, 0, 0);
+
+	if (MyEnableThemeDialogTexture)
+		MyEnableThemeDialogTexture(hwnd, ETDT_ENABLETAB);
 }
 
 static void RemoveChild(ParentWindowData *dat, HWND child)
@@ -787,7 +783,7 @@ INT_PTR CALLBACK DlgProcParentWindow(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 			ActivateChild(dat, dat->hwndActive);
 			g_dat->hFocusWnd = dat->hwndActive;
 			PostMessage(dat->hwndActive, DM_SETFOCUS, 0, msg);
-		}
+        }
 		if (KillTimer(hwndDlg, TIMERID_FLASHWND)) {
 			FlashWindow(hwndDlg, FALSE);
 			dat->nFlash = 0;
@@ -889,8 +885,6 @@ INT_PTR CALLBACK DlgProcParentWindow(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 				mir_free((MessageWindowTabData *) tci.lParam);
 				ReleaseIcon(tci.iImage);
 			}
-			DestroyIcon((HICON)SendMessage(hwndDlg, WM_SETICON, (WPARAM) ICON_BIG, 0));
-			DestroyIcon((HICON)SendMessage(hwndDlg, WM_SETICON, (WPARAM) ICON_SMALL, 0));
 			SetWindowLongPtr(hwndDlg, GWLP_USERDATA, 0);
 			WindowList_Remove(g_dat->hParentWindowList, hwndDlg);
 			if (savePerContact)
@@ -1042,8 +1036,12 @@ INT_PTR CALLBACK DlgProcParentWindow(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 					}
 				}
 				if (tbd->iFlags & TBDF_ICON) {
-					DestroyIcon((HICON)SendMessage(hwndDlg, WM_SETICON, (WPARAM) ICON_SMALL, (LPARAM) CopyIcon(tbd->hIcon)));
-					DestroyIcon((HICON)SendMessage(hwndDlg, WM_SETICON, (WPARAM) ICON_BIG, (LPARAM) CopyIcon(tbd->hIcon)));
+					SendMessage(hwndDlg, WM_SETICON, ICON_SMALL, (LPARAM) tbd->hIcon);
+                    if (tbd->hIconBig != NULL) {
+                        SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM) tbd->hIconBig);
+                    }
+					if (pTaskbarInterface)
+						pTaskbarInterface->lpVtbl->SetOverlayIcon(pTaskbarInterface, hwndDlg,  tbd->hIconNot, L"");
 				}
 			}
 			break;
@@ -1182,6 +1180,8 @@ static void DrawTab(ParentWindowData *dat, HWND hwnd, WPARAM wParam, LPARAM lPar
 	int	iTabIndex = lpDIS->itemID;
 	tcdat = (TabCtrlData *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 	if (iTabIndex >= 0) {
+		HANDLE hTheme = NULL;
+		int tstate;
 		TCHAR szLabel[1024];
 		tci.mask = TCIF_TEXT | TCIF_IMAGE | TCIF_STATE;
 		tci.pszText = szLabel;
@@ -1191,14 +1191,31 @@ static void DrawTab(ParentWindowData *dat, HWND hwnd, WPARAM wParam, LPARAM lPar
 			IMAGEINFO info;
 			RECT rIcon = lpDIS->rcItem;
 			RECT rect = lpDIS->rcItem;
+			RECT rectTab = lpDIS->rcItem;
 			int bSelected = lpDIS->itemState & ODS_SELECTED;
-			int	iOldBkMode = SetBkMode(lpDIS->hDC, TRANSPARENT);
 			int atTop = (GetWindowLong(hwnd, GWL_STYLE) & TCS_BOTTOM) == 0;
 			UINT dwFormat;
-			if (!pfnIsAppThemed) {
+			if (!MyIsAppThemed || !MyIsAppThemed()) {
 				FillRect(lpDIS->hDC, &rect, GetSysColorBrush(COLOR_BTNFACE));
-			} else if (!pfnIsAppThemed()) {
-				FillRect(lpDIS->hDC, &rect, GetSysColorBrush(COLOR_BTNFACE));
+			}
+			else
+			{
+				if (lpDIS->itemState & ODS_SELECTED)
+					tstate = TTIS_SELECTED;
+				else if (lpDIS->itemState & ODS_FOCUS)
+					tstate = TTIS_FOCUSED;
+				else if (lpDIS->itemState & ODS_HOTLIGHT)
+					tstate = TTIS_HOT;
+				else
+					tstate = TTIS_NORMAL;
+
+				if (!bSelected)
+					InflateRect(&rectTab, 1, 1);
+
+				hTheme = MyOpenThemeData(hwnd, L"TAB");
+				if(MyIsThemeBackgroundPartiallyTransparent(hTheme, TABP_TABITEM, tstate))
+					MyDrawThemeParentBackground(hwnd, lpDIS->hDC, &rectTab);
+ 				MyDrawThemeBackground(hTheme, lpDIS->hDC, TABP_TABITEM, tstate, &rectTab, NULL);
 			}
 			if (atTop) {
 				dwFormat = DT_SINGLELINE|DT_TOP|DT_CENTER|DT_NOPREFIX|DT_NOCLIP;
@@ -1234,8 +1251,17 @@ static void DrawTab(ParentWindowData *dat, HWND hwnd, WPARAM wParam, LPARAM lPar
 				}
 				rect.bottom -= GetSystemMetrics(SM_CYEDGE) + 2;
 			}
-			DrawText(lpDIS->hDC, szLabel, -1, &rect, dwFormat);
-			SetBkMode(lpDIS->hDC, iOldBkMode);
+			if (hTheme) {
+#ifdef _UNICODE
+				MyDrawThemeText(hTheme, lpDIS->hDC, TABP_TABITEM, tstate, szLabel, -1, dwFormat, 0, &rect);
+#else
+				wchar_t* text = mir_a2u(szLabel);
+				MyDrawThemeText(hTheme, lpDIS->hDC, TABP_TABITEM, tstate, text, -1, dwFormat, 0, &rect);
+				mir_free(text);
+#endif
+			}
+			else
+				DrawText(lpDIS->hDC, szLabel, -1, &rect, dwFormat);
 			if (tcdat->bDragged && iTabIndex == tcdat->destTab && iTabIndex != tcdat->srcTab) {
 				RECT hlRect = lpDIS->rcItem;
 				if (bSelected) {
@@ -1259,6 +1285,7 @@ static void DrawTab(ParentWindowData *dat, HWND hwnd, WPARAM wParam, LPARAM lPar
 				hlRect.bottom--;
 				FrameRect(lpDIS->hDC, &hlRect, GetSysColorBrush(COLOR_HIGHLIGHT));
 			}
+			if (hTheme) MyCloseThemeData(hTheme);
 		}
 	}
 }
@@ -1416,17 +1443,18 @@ BOOL CALLBACK TabCtrlProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 									MoveWindow(hParent, rc.left, rc.top, rc.right, rc.bottom, FALSE);
 
 								}
+								NotifyLocalWinEvent(hContact, hChild, MSG_WINDOW_EVT_CLOSING);
+								NotifyLocalWinEvent(hContact, hChild, MSG_WINDOW_EVT_CLOSE);
 								SetParent(hChild, hParent);
 								SendMessage(GetParent(hwnd), CM_REMOVECHILD, 0, (LPARAM) hChild);
 								SendMessage(hChild, DM_SETPARENT, 0, (LPARAM) hParent);
 								SendMessage(hParent, CM_ADDCHILD, (WPARAM)hChild, (LPARAM) hContact);
 								SendMessage(hChild, DM_UPDATETABCONTROL, 0, 0);
 								SendMessage(hParent, CM_ACTIVATECHILD, 0, (LPARAM) hChild);
-								NotifyLocalWinEvent(hContact, hChild, MSG_WINDOW_EVT_CLOSING);
-								NotifyLocalWinEvent(hContact, hChild, MSG_WINDOW_EVT_CLOSE);
 								NotifyLocalWinEvent(hContact, hChild, MSG_WINDOW_EVT_OPENING);
 								NotifyLocalWinEvent(hContact, hChild, MSG_WINDOW_EVT_OPEN);
 								ShowWindow(hParent, SW_SHOWNA);
+                                EnableWindow(hParent, TRUE);
 							}
 						}
 					} else {

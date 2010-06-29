@@ -30,7 +30,7 @@ HANDLE hLibSSL;								// SSL main library handle
 HANDLE hLibEAY;								// SSL/EAY misc library handle
 
 PFN_SSL_int_void			SSL_library_init;		// int SSL_library_init()
-PFN_SSL_pvoid_void			TLSv1_client_method;	// SSL_METHOD *TLSv1_client_method()
+PFN_SSL_pvoid_void			SSLv3_client_method;	// SSL_METHOD *SSLv3_client_method()
 PFN_SSL_pvoid_pvoid			SSL_CTX_new;			// SSL_CTX *SSL_CTX_new(SSL_METHOD *method)
 PFN_SSL_void_pvoid			SSL_CTX_free;			// void SSL_CTX_free(SSL_CTX *ctx);
 PFN_SSL_pvoid_pvoid			SSL_new;				// SSL *SSL_new(SSL_CTX *ctx)
@@ -75,7 +75,7 @@ BOOL gg_ssl_init()
 	{
 		if (error || (SSL_library_init=(PFN_SSL_int_void)GetProcAddress(hLibSSL, failFunction = "SSL_library_init")) == NULL)
 			error = TRUE;
-		if (error || (TLSv1_client_method=(PFN_SSL_pvoid_void)GetProcAddress(hLibSSL, failFunction = "TLSv1_client_method")) == NULL)
+		if (error || (SSLv3_client_method=(PFN_SSL_pvoid_void)GetProcAddress(hLibSSL, failFunction = "SSLv3_client_method")) == NULL)
 			error = TRUE;
 		if (error || (SSL_CTX_new=(PFN_SSL_pvoid_pvoid)GetProcAddress(hLibSSL, failFunction = "SSL_CTX_new")) == NULL)
 			error = TRUE;

@@ -46,9 +46,12 @@
 #define TAG_MAKER_NOTE			0x927C	// Maker note
 
 // CANON cameras have some funny bespoke fields that need further processing...
-#define TAG_CANON_CAMERA_STATE_1 0x0001
-#define TAG_CANON_CAMERA_STATE_2 0x0002
-#define TAG_CANON_CAMERA_STATE_4 0x0004
+#define TAG_CANON_CAMERA_STATE_0x01	0x0001		// tags under tag 0x001 (CameraSettings)
+#define TAG_CANON_CAMERA_STATE_0x02	0x0002		// tags under tag 0x002 (FocalLength)
+#define TAG_CANON_CAMERA_STATE_0x04	0x0004		// tags under tag 0x004 (ShotInfo)
+#define TAG_CANON_CAMERA_STATE_0x12	0x0012		// tags under tag 0x012 (AFInfo)
+#define TAG_CANON_CAMERA_STATE_0xA0	0x00A0		// tags under tag 0x0A0 (ProcessingInfo)
+#define TAG_CANON_CAMERA_STATE_0xE0	0x00E0		// tags under tag 0x0E0 (SensorInfo)
 
 
 // =====================================================================
@@ -172,13 +175,19 @@ processMakerNote(FIBITMAP *dib, char *pval, BOOL msb_order, DWORD *subdirOffset,
 	FreeImage_GetMetadata(FIMD_EXIF_MAIN, dib, "Make", &tagMake);
 	const char *Maker = (char*)FreeImage_GetTagValue(tagMake);
 
-	if((strncmp("OLYMP", pval, 5) == 0) || (strncmp("EPSON", pval, 5) == 0) || (strncmp("AGFA", pval, 4) == 0)) {
-		// Olympus Makernote
+	if((strncmp("OLYMP\x00\x01", pval, 7) == 0) || (strncmp("OLYMP\x00\x02", pval, 7) == 0) || (strncmp("EPSON", pval, 5) == 0) || (strncmp("AGFA", pval, 4) == 0)) {
+		// Olympus Type 1 Makernote
 		// Epson and Agfa use Olympus maker note standard, 
 		// see: http://www.ozhiker.com/electronics/pjmt/jpeg_info/
-		*md_model = TagLib::EXIF_MAKERNOTE_OLYMPUS;
+		*md_model = TagLib::EXIF_MAKERNOTE_OLYMPUSTYPE1;
 		*subdirOffset = 8;
 	} 
+	else if(strncmp("OLYMPUS\x00\x49\x49\x03\x00", pval, 12) == 0) {
+		// Olympus Type 2 Makernote
+		// !!! NOT YET SUPPORTED !!!
+		*subdirOffset = 0;
+		*md_model = TagLib::UNKNOWN;
+	}
 	else if(strncmp("Nikon", pval, 5) == 0) {
 		/* There are two scenarios here:
 		 * Type 1:
@@ -221,6 +230,10 @@ processMakerNote(FIBITMAP *dib, char *pval, BOOL msb_order, DWORD *subdirOffset,
 		}
 	} else if ((strncmp("FUJIFILM", pval, 8) == 0) || (Maker && (FreeImage_strnicmp("Fujifilm", Maker, 8) == 0))) {
         // Fujifile Makernote
+		// Fujifilm's Makernote always use Intel order altough the Exif section maybe in Intel order or in Motorola order. 
+		// If msb_order == TRUE, the Makernote won't be read: 
+		// the value of ifdStart will be 0x0c000000 instead of 0x0000000c and the MakerNote section will be discarded later
+		// in jpeg_read_exif_dir because the IFD is too high
 		*md_model = TagLib::EXIF_MAKERNOTE_FUJIFILM;
         DWORD ifdStart = (DWORD) ReadUint32(msb_order, pval + 8);
 		*subdirOffset = ifdStart;
@@ -261,7 +274,7 @@ processMakerNote(FIBITMAP *dib, char *pval, BOOL msb_order, DWORD *subdirOffset,
 Process a Canon maker note tag. 
 A single Canon tag may contain many other tags within.
 */
-static void 
+static BOOL 
 processCanonMakerNoteTag(FIBITMAP *dib, FITAG *tag) {
 	char defaultKey[16];
 	DWORD startIndex = 0;
@@ -269,71 +282,88 @@ processCanonMakerNoteTag(FIBITMAP *dib, FITAG *tag) {
 
 	WORD tag_id = FreeImage_GetTagID(tag);
 
-	if((tag_id == TAG_CANON_CAMERA_STATE_1) || (tag_id == TAG_CANON_CAMERA_STATE_2) || (tag_id == TAG_CANON_CAMERA_STATE_4)) {
-		// this single tag has multiple values within
+	int subTagTypeBase = 0;
 
-		int subTagTypeBase = 0;
+	switch(tag_id) {
+		case TAG_CANON_CAMERA_STATE_0x01:
+			subTagTypeBase = 0xC100;
+			startIndex = 1;
+			break;
+		case TAG_CANON_CAMERA_STATE_0x02:
+			subTagTypeBase = 0xC200;
+			startIndex = 0;
+			break;
+		case TAG_CANON_CAMERA_STATE_0x04:
+			subTagTypeBase = 0xC400;
+			startIndex = 1;
+			break;
+		case TAG_CANON_CAMERA_STATE_0x12:
+			subTagTypeBase = 0xC120;
+			startIndex = 0;
+			break;
+		case TAG_CANON_CAMERA_STATE_0xA0:
+			subTagTypeBase = 0xCA00;
+			startIndex = 1;
+			break;
+		case TAG_CANON_CAMERA_STATE_0xE0:
+			subTagTypeBase = 0xCE00;
+			startIndex = 1;
+			break;
 
-		switch(tag_id) {
-			case TAG_CANON_CAMERA_STATE_1:
-				subTagTypeBase = 0xC100;
-				startIndex = 1;
-				break;
-			case TAG_CANON_CAMERA_STATE_2:
-				subTagTypeBase = 0xC200;
-				startIndex = 0;
-				break;
-			case TAG_CANON_CAMERA_STATE_4:
-				subTagTypeBase = 0xC400;
-				startIndex = 2;
-				break;
-		}
-
-		WORD *pvalue = (WORD*)FreeImage_GetTagValue(tag);
-
-        // we intentionally skip the first array member
-        for (DWORD i = startIndex; i < FreeImage_GetTagCount(tag); i++) {
-			// create a tag
-			FITAG *canonTag = FreeImage_CreateTag();
-			if(!canonTag) return;
-
-			tag_id = (WORD)(subTagTypeBase + i);
-
-			FreeImage_SetTagID(canonTag, tag_id);
-			FreeImage_SetTagType(canonTag, FIDT_SHORT);
-			FreeImage_SetTagCount(canonTag, 1);
-			FreeImage_SetTagLength(canonTag, 2);
-			FreeImage_SetTagValue(canonTag, &pvalue[i]);
+		default:
+		{
+			// process as a normal tag
 
 			// get the tag key and description
 			const char *key = s.getTagFieldName(TagLib::EXIF_MAKERNOTE_CANON, tag_id, defaultKey);
-			FreeImage_SetTagKey(canonTag, key);
+			FreeImage_SetTagKey(tag, key);
 			const char *description = s.getTagDescription(TagLib::EXIF_MAKERNOTE_CANON, tag_id);
-			FreeImage_SetTagDescription(canonTag, description);
+			FreeImage_SetTagDescription(tag, description);
 
 			// store the tag
 			if(key) {
-				FreeImage_SetMetadata(FIMD_EXIF_MAKERNOTE, dib, key, canonTag);
+				FreeImage_SetMetadata(FIMD_EXIF_MAKERNOTE, dib, key, tag);
 			}
 
-			// delete the tag
-			FreeImage_DeleteTag(canonTag);
-        }
+			return TRUE;
+		}
+		break;
+
 	}
-	else {
-		// process as a normal tag
+
+	WORD *pvalue = (WORD*)FreeImage_GetTagValue(tag);
+
+	// create a tag
+	FITAG *canonTag = FreeImage_CreateTag();
+	if(!canonTag) return FALSE;
+
+	// we intentionally skip the first array member (if needed)
+    for (DWORD i = startIndex; i < FreeImage_GetTagCount(tag); i++) {
+
+		tag_id = (WORD)(subTagTypeBase + i);
+
+		FreeImage_SetTagID(canonTag, tag_id);
+		FreeImage_SetTagType(canonTag, FIDT_SHORT);
+		FreeImage_SetTagCount(canonTag, 1);
+		FreeImage_SetTagLength(canonTag, 2);
+		FreeImage_SetTagValue(canonTag, &pvalue[i]);
 
 		// get the tag key and description
 		const char *key = s.getTagFieldName(TagLib::EXIF_MAKERNOTE_CANON, tag_id, defaultKey);
-		FreeImage_SetTagKey(tag, key);
+		FreeImage_SetTagKey(canonTag, key);
 		const char *description = s.getTagDescription(TagLib::EXIF_MAKERNOTE_CANON, tag_id);
-		FreeImage_SetTagDescription(tag, description);
+		FreeImage_SetTagDescription(canonTag, description);
 
 		// store the tag
 		if(key) {
-			FreeImage_SetMetadata(FIMD_EXIF_MAKERNOTE, dib, key, tag);
+			FreeImage_SetMetadata(FIMD_EXIF_MAKERNOTE, dib, key, canonTag);
 		}
 	}
+
+	// delete the tag
+	FreeImage_DeleteTag(canonTag);
+
+	return TRUE;
 }
 
 /**
@@ -537,11 +567,17 @@ jpeg_read_exif_dir(FIBITMAP *dib, const BYTE *tiffp, unsigned long offset, unsig
 				// 4 bytes or less and value is in the dir entry itself
 				pval = pde + 8;
 			} else {
-				DWORD offset_value;
-
 				// if its bigger than 4 bytes, the directory entry contains an offset
-				offset_value = ReadUint32(msb_order, pde + 8);
-				if((size_t) (offset_value + FreeImage_GetTagLength(tag)) > length) {
+				// first check if offset exceeds buffer, at this stage FreeImage_GetTagLength may return invalid data
+				DWORD offset_value = ReadUint32(msb_order, pde + 8);
+				if(offset_value > length) {
+					// a problem occured : delete the tag (not free'd after)
+					FreeImage_DeleteTag(tag);
+					// jump to next entry
+					continue;
+				}
+				// now check if offset + tag length exceeds buffer
+				if(offset_value > length - FreeImage_GetTagLength(tag)) {
 					// a problem occured : delete the tag (not free'd after)
 					FreeImage_DeleteTag(tag);
 					// jump to next entry

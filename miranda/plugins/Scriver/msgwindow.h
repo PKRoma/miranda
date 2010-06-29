@@ -1,8 +1,7 @@
 /*
 Scriver
 
-Copyright 2000-2003 Miranda ICQ/IM project,
-Copyright 2005 Piotr Piastucki
+Copyright 2000-2009 Miranda ICQ/IM project,
 
 all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
@@ -75,6 +74,8 @@ typedef struct TitleBarDataStruct
 	int iFlags;
 	TCHAR *pszText;
 	HICON hIcon;
+	HICON hIconBig;
+	HICON hIconNot;
 } TitleBarData;
 
 #define TCDF_TEXT 1

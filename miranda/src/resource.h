@@ -135,6 +135,8 @@
 #define IDD_OPT_ERRORS                  301
 #define IDD_OPTIONSPAGE                 318
 #define IDI_MOVETOGROUP                 319
+#define IDI_ON                          320
+#define IDI_OFF                         322
 #define IDC_SAVE                        1001
 #define IDI_ONTHEPHONE                  1002
 #define IDC_MESSAGE                     1002
@@ -169,8 +171,8 @@
 #define IDC_BTN_RESET                   1045
 #define IDC_REASON                      1046
 #define IDC_BTN_UNDO                    1047
+#define IDC_DENYREASON                  1047
 #define IDC_EMAIL                       1048
-#define IDC_DENYREASON                  1048
 #define IDC_NAMENICK                    1049
 #define IDC_NAMEFIRST                   1050
 #define IDC_NAMELAST                    1051
@@ -216,8 +218,6 @@
 #define IDC_BUILDTIME                   1108
 #define IDC_CREDITSFILE                 1109
 #define IDC_NUMBER                      1113
-#define IDC_UIN                         1123
-#define IDC_PROTONAME                   1124
 #define IDC_FINDWHAT                    1131
 #define IDC_FIND                        1132
 #define IDC_FILE                        1133
@@ -237,7 +237,6 @@
 #define IDC_STATIC22                    1157
 #define IDC_STATIC31                    1158
 #define IDC_STATIC32                    1159
-#define IDC_PROXYAUTHNTLM               1160
 #define IDC_CHANGE                      1164
 #define IDC_PREVIEW                     1165
 #define IDC_CHOOSE                      1169
@@ -388,7 +387,6 @@
 #define IDC_VIRUSSCANNERGROUP           1520
 #define IDC_HIDE                        1534
 #define IDC_TOPLINE                     1535
-#define IDC_MAIL                        1536
 #define IDC_MYHANDLE                    1540
 #define IDC_GROUP                       1541
 #define IDC_ADDED                       1542
@@ -403,7 +401,10 @@
 #define IDC_TXT_TITLE2                  1593
 #define IDC_TXT_TITLE3                  1594
 #define IDC_TXT_TITLE4                  1595
+#define IDC_TXT_TITLE5                  1596
 #define IDC_TXT_TITLE6                  1597
+#define IDC_TXT_TITLE7                  1598
+#define IDC_TXT_TITLE8                  1599
 #define IDC_PREVIEWSMALL                1600
 #define IDC_PREVIEWGENERAL              1601
 #define IDC_PREVIEWHEADER               1602
@@ -447,7 +448,6 @@
 #define IDC_ENABLEUPDATES               1700
 #define IDC_ENABLEALPHA                 1701
 #define IDC_RESETMENU                   1702
-#define IDC_ENABLEBETA                  1703
 #define IDC_KEYWORD_FILTER              1704
 #define IDC_FILTER                      1706
 #define IDC_PATH                        1707
@@ -476,8 +476,11 @@
 #define IDC_LV_ERRORS                   1733
 #define IDC_HEADERBAR                   1734
 #define IDC_LV_LEGEND                   1735
-#define IDC_ADDHDR                      1736
+#define IDC_ENABLEBETA                  1737
 #define IDC_ENABLESTABLE                1738
+#define IDC_STORELASTPROFILE            1739
+#define IDC_RADIO1                      1740
+#define IDC_RADIO2                      1741
 #define IDC_EFFECT_COLOUR_TEXT1         1853
 #define IDC_EFFECT_COLOUR_SPIN1         1854
 #define IDC_EFFECT_COLOUR_TEXT2         11803
@@ -511,9 +514,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        320
+#define _APS_NEXT_RESOURCE_VALUE        323
 #define _APS_NEXT_COMMAND_VALUE         40018
-#define _APS_NEXT_CONTROL_VALUE         1739
+#define _APS_NEXT_CONTROL_VALUE         1742
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

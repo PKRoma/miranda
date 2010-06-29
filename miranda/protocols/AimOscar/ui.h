@@ -28,27 +28,27 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 struct invite_chat_param
 {
-    char* id;
-    CAimProto* ppro;
-    
-    invite_chat_param(const char* idt, CAimProto* prt)
-    { id = mir_strdup(idt); ppro = prt; }
+	char* id;
+	CAimProto* ppro;
+	
+	invite_chat_param(const char* idt, CAimProto* prt)
+	{ id = mir_strdup(idt); ppro = prt; }
 };
 
 struct invite_chat_req_param
 {
-    chatnav_param* cnp;
-    CAimProto* ppro;
-    char* message;
-    char* name;
-    char* icbm_cookie;
-    
-    invite_chat_req_param(chatnav_param* cnpt, CAimProto* prt, char* msg, char* nm, char* icki)
-    { cnp = cnpt; ppro = prt; message = mir_strdup(msg); name = mir_strdup(nm); 
-      icbm_cookie = (char*)mir_alloc(8); memcpy(icbm_cookie, icki, 8); }
+	chatnav_param* cnp;
+	CAimProto* ppro;
+	char* message;
+	char* name;
+	char* icbm_cookie;
+	
+	invite_chat_req_param(chatnav_param* cnpt, CAimProto* prt, char* msg, char* nm, char* icki)
+	{ cnp = cnpt; ppro = prt; message = mir_strdup(msg); name = mir_strdup(nm); 
+	  icbm_cookie = (char*)mir_alloc(8); memcpy(icbm_cookie, icki, 8); }
 
-    ~invite_chat_req_param()
-    { mir_free(message); mir_free(name); mir_free(icbm_cookie); }
+	~invite_chat_req_param()
+	{ mir_free(message); mir_free(name); mir_free(icbm_cookie); }
 };
 
 INT_PTR CALLBACK instant_idle_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);

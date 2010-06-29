@@ -1,7 +1,5 @@
 /*
-SRMM
-
-Copyright 2000-2005 Miranda ICQ/IM project, 
+Copyright 2000-2010 Miranda IM project, 
 all portions of this codebase are copyrighted to the people 
 listed in contributors.txt.
 
@@ -33,6 +31,7 @@ struct NewMessageWindowLParam
 	HANDLE hContact;
 	const char *szInitialText;
 	int isWchar;
+	int noActivate;
 };
 
 struct MessageWindowData
@@ -67,7 +66,7 @@ struct MessageWindowData
 	TCmdList *cmdList;
 	TCmdList *cmdListCurrent;
 	TCHAR* lastMsg;
-	int bIsRtl, bIsFirstAppend, bIsAutoRTL, bIsUtf;
+	int bIsRtl, bIsAutoRTL, bIsUtf;
 	int lastEventType;
 	HWND hwndErrorDlg;
 };
@@ -110,6 +109,7 @@ struct CREOleCallback
 INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 int InitOptions(void);
 INT_PTR CALLBACK ErrorDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+int DbEventIsForMsgWindow(DBEVENTINFO *dbei);
 int DbEventIsShown(DBEVENTINFO * dbei, struct MessageWindowData *dat);
 void StreamInEvents(HWND hwndDlg, HANDLE hDbEventFirst, int count, int fAppend);
 void LoadMsgLogIcons(void);

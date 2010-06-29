@@ -19,9 +19,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
 #include "chat.h"
-#include <math.h>
-#include <mbstring.h>
-#include <shlwapi.h>
 
 
 // The code for streaming the text is to a large extent copied from

@@ -822,7 +822,7 @@ static INT_PTR CALLBACK options_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			else
 				SetDlgItemTextA(hwndDlg, IDC_HN, ppro->getByte(AIM_KEY_DSSL, 0) ? AIM_DEFAULT_SERVER_NS : AIM_DEFAULT_SERVER);
 
-			SetDlgItemInt(hwndDlg, IDC_PN, ppro->getWord(AIM_KEY_PN, AIM_DEFAULT_PORT), FALSE);
+			SetDlgItemInt(hwndDlg, IDC_PN, ppro->get_default_port(), FALSE);
 
 			CheckDlgButton(hwndDlg, IDC_DC, ppro->getByte(AIM_KEY_DC, 0));//Message Delivery Confirmation
 			CheckDlgButton(hwndDlg, IDC_FP, ppro->getByte(AIM_KEY_FP, 0));//force proxy
@@ -842,23 +842,33 @@ static INT_PTR CALLBACK options_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 		break;
 
 	case WM_COMMAND:
-			if (LOWORD(wParam) == IDC_DSSL) 
+		switch (LOWORD(wParam))
+		{
+		case IDC_DSSL:
 			{
-				SetDlgItemTextA(hwndDlg, IDC_HN, 
-					IsDlgButtonChecked(hwndDlg, IDC_DSSL) ? AIM_DEFAULT_SERVER_NS : AIM_DEFAULT_SERVER);
+				bool dssl = IsDlgButtonChecked(hwndDlg, IDC_DSSL) != 0;
+				SetDlgItemTextA(hwndDlg, IDC_HN, dssl ? AIM_DEFAULT_SERVER_NS : AIM_DEFAULT_SERVER);
+				SetDlgItemInt(hwndDlg, IDC_PN, dssl ? AIM_DEFAULT_PORT : AIM_DEFAULT_SSL_PORT, FALSE);
 			}
-			else if (LOWORD(wParam) == IDC_SVRRESET) 
-			{
-				SetDlgItemTextA(hwndDlg, IDC_HN, 
-					IsDlgButtonChecked(hwndDlg, IDC_DSSL) ? AIM_DEFAULT_SERVER_NS : AIM_DEFAULT_SERVER);
-				SetDlgItemInt(hwndDlg, IDC_PN, AIM_DEFAULT_PORT, FALSE);
-			}
-
-			if ((LOWORD(wParam) == IDC_SN || LOWORD(wParam) == IDC_PN || LOWORD(wParam) == IDC_NK || LOWORD(wParam) == IDC_PW || LOWORD(wParam) == IDC_HN)
-				&& (HIWORD(wParam) != EN_CHANGE || (HWND) lParam != GetFocus()))
-				return 0;
-			SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
 			break;
+
+		case IDC_SVRRESET: 
+			SetDlgItemTextA(hwndDlg, IDC_HN, 
+				IsDlgButtonChecked(hwndDlg, IDC_DSSL) ? AIM_DEFAULT_SERVER_NS : AIM_DEFAULT_SERVER);
+			SetDlgItemInt(hwndDlg, IDC_PN,ppro->get_default_port(), FALSE);
+			break;
+
+		case IDC_SN: 
+		case IDC_PN: 
+		case IDC_NK: 
+		case IDC_PW: 
+		case IDC_HN: 
+			if (HIWORD(wParam) != EN_CHANGE || (HWND) lParam != GetFocus())
+				return 0;
+			break;
+		}
+		SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
+		break;
 
 	case WM_NOTIFY:
 		switch (((LPNMHDR) lParam)->code) 
@@ -903,14 +913,6 @@ static INT_PTR CALLBACK options_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 					ppro->deleteSetting(NULL, AIM_KEY_HN);
 				//END HN
 
-				//PN
-				int port = GetDlgItemInt(hwndDlg, IDC_PN, NULL, FALSE);
-				if(port>0 && port != AIM_DEFAULT_PORT)
-					ppro->setWord(AIM_KEY_PN, (WORD)port);
-				else
-					ppro->deleteSetting(NULL, AIM_KEY_PN);
-				//END PN
-
 				//Delivery Confirmation
 				ppro->setByte(AIM_KEY_DC, IsDlgButtonChecked(hwndDlg, IDC_DC) != 0);
 				//End Delivery Confirmation
@@ -930,6 +932,14 @@ static INT_PTR CALLBACK options_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 				//Force Proxy Transfer
 				ppro->setByte(AIM_KEY_FP, IsDlgButtonChecked(hwndDlg, IDC_FP) != 0);
 				//End Force Proxy Transfer
+
+				//PN
+				int port = GetDlgItemInt(hwndDlg, IDC_PN, NULL, FALSE);
+				if(port > 0 && port != ppro->getByte(AIM_KEY_DSSL, 0) ? AIM_DEFAULT_PORT : AIM_DEFAULT_SSL_PORT)
+					ppro->setWord(AIM_KEY_PN, (WORD)port);
+				else
+					ppro->deleteSetting(NULL, AIM_KEY_PN);
+				//END PN
 
 				//Disable Account Type Icons
 				if (IsDlgButtonChecked(hwndDlg, IDC_AT))
@@ -1143,7 +1153,7 @@ int CAimProto::OnOptionsInit(WPARAM wParam,LPARAM lParam)
 	odp.ptszGroup = LPGENT("Network");
 	odp.ptszTitle = m_tszUserName;
 	odp.dwInitParam = LPARAM(this);
-	odp.flags = ODPF_BOLDGROUPS | ODPF_TCHAR;
+	odp.flags = ODPF_BOLDGROUPS | ODPF_TCHAR | ODPF_DONTTRANSLATE;
 
 	odp.ptszTab   = LPGENT("Basic");
 	odp.pszTemplate = MAKEINTRESOURCEA(IDD_AIM);
@@ -1249,10 +1259,10 @@ INT_PTR CALLBACK instant_idle_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 		SetWindowLongPtr(hwndDlg, GWLP_USERDATA, lParam);
 		ppro = (CAimProto*)lParam;
 		{
-			SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)LoadIconEx("idle"));
+			WindowSetIcon(hwndDlg, "idle");
 			unsigned long it = ppro->getDword(AIM_KEY_IIT, 0);
-			unsigned long hours=it/60;
-			unsigned long minutes=it%60;
+			unsigned long hours = it / 60;
+			unsigned long minutes = it % 60;
 			SetDlgItemInt(hwndDlg, IDC_IIH, hours,0);
 			SetDlgItemInt(hwndDlg, IDC_IIM, minutes,0);
 		}
@@ -1262,7 +1272,7 @@ INT_PTR CALLBACK instant_idle_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 		break;
 
 	case WM_DESTROY:
-		ReleaseIconEx("idle");
+		WindowFreeIcon(hwndDlg);
 		break;
 
 	case WM_COMMAND:
@@ -1311,7 +1321,7 @@ INT_PTR CALLBACK join_chat_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 
 		SetWindowLongPtr(hwndDlg, GWLP_USERDATA, lParam);
 		ppro = (CAimProto*)lParam;
-		SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)LoadIconEx("aol"));
+		WindowSetIcon(hwndDlg, "aol");
 		break;
 
 	case WM_CLOSE:
@@ -1319,7 +1329,7 @@ INT_PTR CALLBACK join_chat_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 		break;
 
 	case WM_DESTROY:
-		ReleaseIconEx("aol");
+		WindowFreeIcon(hwndDlg);
 		break;
 
 	case WM_COMMAND:
@@ -1434,7 +1444,7 @@ INT_PTR CALLBACK invite_to_chat_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 		SetWindowLongPtr(hwndDlg, GWLP_USERDATA, lParam);
 		param = (invite_chat_param*)lParam;
 
-		SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)LoadIconEx("aol"));
+		WindowSetIcon(hwndDlg, "aol");
 		SetDlgItemTextA(hwndDlg, IDC_ROOMNAME, param->id);
 		SetDlgItemTextA(hwndDlg, IDC_MSG, Translate("Join me in this buddy chat!"));
 		break;
@@ -1444,7 +1454,7 @@ INT_PTR CALLBACK invite_to_chat_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 		break;
 
 	case WM_NCDESTROY:
-		ReleaseIconEx("aol");
+		WindowFreeIcon(hwndDlg);
 		delete param;
 		break;
 
@@ -1529,7 +1539,7 @@ INT_PTR CALLBACK chat_request_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 		SetWindowLongPtr(hwndDlg, GWLP_USERDATA, lParam);
 		param = (invite_chat_req_param*)lParam;
 
-		SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)LoadIconEx("aol"));
+		WindowSetIcon(hwndDlg, "aol");
 
 		SetDlgItemTextA(hwndDlg, IDC_ROOMNAME, strrchr(param->cnp->id, '-')+1);
 		SetDlgItemTextA(hwndDlg, IDC_SCREENNAME,  param->name);
@@ -1541,7 +1551,7 @@ INT_PTR CALLBACK chat_request_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 		break;
 
 	case WM_DESTROY:
-		ReleaseIconEx("aol");
+		WindowFreeIcon(hwndDlg);
 		delete param; 
 		break;
 

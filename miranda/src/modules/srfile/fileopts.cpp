@@ -29,30 +29,30 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define VSCAN_CA          4
 
 struct virusscannerinfo {
-	const char *szProductName;
-	const char *szExeRegPath;
-	const char *szExeRegValue;
-	const char *szCommandLine;
+	const TCHAR *szProductName;
+	const TCHAR *szExeRegPath;
+	const TCHAR *szExeRegValue;
+	const TCHAR *szCommandLine;
 };
 
 static const struct virusscannerinfo virusScanners[]={
-	{"Network Associates/McAfee VirusScan","SOFTWARE\\McAfee\\VirusScan","Scan32EXE","\"%s\" %%f /nosplash /comp /autoscan /autoexit /noboot"},
-	{"Dr Solomon's VirusScan (Network Associates)","SOFTWARE\\Network Associates\\TVD\\VirusScan\\AVConsol\\General","szScannerExe","\"%s\" %%f /uinone /noboot /comp /prompt /autoexit"},
-	{"Norton AntiVirus","SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\App Paths\\Navw32.exe",NULL,"\"%s\" %%f /b- /m- /s+ /noresults"},
-	{"Computer Associates/Inoculate IT","Software\\Antivirus","ImageFilename","\"%s\" %%f /display=progress /exit"},
-	{"Computer Associates eTrust","SOFTWARE\\ComputerAssociates\\Anti-Virus\\Resident","VetPath","\"%s\" %%f /display=progress /exit"},
-	{"Kaspersky Anti-Virus","SOFTWARE\\KasperskyLab\\Components\\101","EXEName","\"%s\" /S /Q %%f"},
-	{"Kaspersky Anti-Virus","SOFTWARE\\KasperskyLab\\SetupFolders","KAV8","\"%savp.exe\" SCAN %%f"},
-	{"Kaspersky Anti-Virus","SOFTWARE\\KasperskyLab\\SetupFolders","KAV9","\"%savp.exe\" SCAN %%f"},
-	{"AntiVir PersonalEdition Classic","SOFTWARE\\Avira\\AntiVir PersonalEdition Classic","Path","\"%savscan.exe\" /GUIMODE=2 /PATH=\"%%f\""},
-	{"ESET NOD32 Antivirus","SOFTWARE\\ESET\\ESET Security\\CurrentVersion\\Info","InstallDir","\"%secls.exe\" /log-all /aind /no-boots /adware /sfx /unsafe /unwanted /heur /adv-heur /action=clean \"%%f\""},
+	{_T("Network Associates/McAfee VirusScan"),_T("SOFTWARE\\McAfee\\VirusScan"),_T("Scan32EXE"),_T("\"%s\" %%f /nosplash /comp /autoscan /autoexit /noboot")},
+	{_T("Dr Solomon's VirusScan (Network Associates)"),_T("SOFTWARE\\Network Associates\\TVD\\VirusScan\\AVConsol\\General"),_T("szScannerExe"),_T("\"%s\" %%f /uinone /noboot /comp /prompt /autoexit")},
+	{_T("Norton AntiVirus"),_T("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\App Paths\\Navw32.exe"),NULL,_T("\"%s\" %%f /b- /m- /s+ /noresults")},
+	{_T("Computer Associates/Inoculate IT"),_T("Software\\Antivirus"),_T("ImageFilename"),_T("\"%s\" %%f /display=progress /exit")},
+	{_T("Computer Associates eTrust"),_T("SOFTWARE\\ComputerAssociates\\Anti-Virus\\Resident"),_T("VetPath"),_T("\"%s\" %%f /display=progress /exit")},
+	{_T("Kaspersky Anti-Virus"),_T("SOFTWARE\\KasperskyLab\\Components\\101"),_T("EXEName"),_T("\"%s\" /S /Q %%f")},
+	{_T("Kaspersky Anti-Virus"),_T("SOFTWARE\\KasperskyLab\\SetupFolders"),_T("KAV8"),_T("\"%savp.exe\" SCAN %%f")},
+	{_T("Kaspersky Anti-Virus"),_T("SOFTWARE\\KasperskyLab\\SetupFolders"),_T("KAV9"),_T("\"%savp.exe\" SCAN %%f")},
+	{_T("AntiVir PersonalEdition Classic"),_T("SOFTWARE\\Avira\\AntiVir PersonalEdition Classic"),_T("Path"),_T("\"%savscan.exe\" /GUIMODE=2 /PATH=\"%%f\"")},
+	{_T("ESET NOD32 Antivirus"),_T("SOFTWARE\\ESET\\ESET Security\\CurrentVersion\\Info"),_T("InstallDir"),_T("\"%secls.exe\" /log-all /aind /no-boots /adware /sfx /unsafe /unwanted /heur /adv-heur /action=clean \"%%f\"")},
 };
 
 #define M_UPDATEENABLING   (WM_USER+100)
 #define M_SCANCMDLINESELCHANGE  (WM_USER+101)
 
 #ifndef SHACF_FILESYS_DIRS
-	#define SHACF_FILESYS_DIRS 0x00000020
+	#define SHACF_FILESYS_DIRS  0x00000020
 #endif
 
 static INT_PTR CALLBACK DlgProcFileOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
@@ -61,14 +61,15 @@ static INT_PTR CALLBACK DlgProcFileOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 		case WM_INITDIALOG:
 		{
 			TranslateDialogDefault(hwndDlg);
-			{
-				char str[MAX_PATH];
-				GetContactReceivedFilesDir(NULL,str,SIZEOF(str),FALSE);
-				SetDlgItemTextA(hwndDlg,IDC_FILEDIR,str);
-			}
 
 			if (shAutoComplete)
-				shAutoComplete(GetDlgItem(hwndDlg,IDC_FILEDIR), SHACF_FILESYS_DIRS);
+				shAutoComplete(GetDlgItem(hwndDlg, IDC_FILEDIR), SHACF_FILESYS_DIRS);
+
+			{
+				TCHAR str[MAX_PATH];
+				GetContactReceivedFilesDir(NULL,str,SIZEOF(str),FALSE);
+				SetDlgItemText(hwndDlg,IDC_FILEDIR,str);
+			}
 
             CheckDlgButton(hwndDlg, IDC_AUTOACCEPT, DBGetContactSettingByte(NULL,"SRFile","AutoAccept",0) ? BST_CHECKED : BST_UNCHECKED);
 			CheckDlgButton(hwndDlg, IDC_AUTOMIN, DBGetContactSettingByte(NULL,"SRFile","AutoMin",0) ? BST_CHECKED : BST_UNCHECKED);
@@ -81,24 +82,24 @@ static INT_PTR CALLBACK DlgProcFileOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 			}
 			CheckDlgButton(hwndDlg, IDC_WARNBEFOREOPENING, DBGetContactSettingByte(NULL,"SRFile","WarnBeforeOpening",1) ? BST_CHECKED : BST_UNCHECKED);
 
-			{	char szScanExe[MAX_PATH];
+			{	TCHAR szScanExe[MAX_PATH];
 				int i,iItem;
 				for( i=0; i < SIZEOF(virusScanners); i++ ) {
 					if(SRFile_GetRegValue(HKEY_LOCAL_MACHINE,virusScanners[i].szExeRegPath,virusScanners[i].szExeRegValue,szScanExe,SIZEOF(szScanExe))) {
-						iItem=SendDlgItemMessageA(hwndDlg,IDC_SCANCMDLINE,CB_ADDSTRING,0,(LPARAM)virusScanners[i].szProductName);
+						iItem=SendDlgItemMessage(hwndDlg,IDC_SCANCMDLINE,CB_ADDSTRING,0,(LPARAM)virusScanners[i].szProductName);
 						SendDlgItemMessage(hwndDlg,IDC_SCANCMDLINE,CB_SETITEMDATA,iItem,i);
 					}
 				}
 				if ( SendDlgItemMessageA(hwndDlg,IDC_SCANCMDLINE,CB_GETCOUNT,0,0) == 0 )
 				{
-					iItem = SendDlgItemMessageA(hwndDlg,IDC_SCANCMDLINE,CB_ADDSTRING,0,(LPARAM)("") );
+					iItem = SendDlgItemMessage(hwndDlg,IDC_SCANCMDLINE,CB_ADDSTRING,0,(LPARAM)_T("") );
 					SendDlgItemMessage(hwndDlg,IDC_SCANCMDLINE,CB_SETITEMDATA,iItem, (LPARAM)-1);
 				}
 			}
 
 			DBVARIANT dbv;
-			if(DBGetContactSettingString(NULL,"SRFile","ScanCmdLine",&dbv)==0) {
-				SetDlgItemTextA(hwndDlg,IDC_SCANCMDLINE,dbv.pszVal);
+			if(DBGetContactSettingTString(NULL,"SRFile","ScanCmdLine",&dbv)==0) {
+				SetDlgItemText(hwndDlg,IDC_SCANCMDLINE,dbv.ptszVal);
 				DBFreeVariant(&dbv);
 			}
 			else {
@@ -126,13 +127,14 @@ static INT_PTR CALLBACK DlgProcFileOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 			break;
 		}
 		case M_SCANCMDLINESELCHANGE:
-		{	char str[512],szScanExe[MAX_PATH];
+		{	TCHAR str[512];
+			TCHAR szScanExe[MAX_PATH];
 			int iScanner=SendDlgItemMessage(hwndDlg,IDC_SCANCMDLINE,CB_GETITEMDATA,SendDlgItemMessage(hwndDlg,IDC_SCANCMDLINE,CB_GETCURSEL,0,0),0);
 			if(iScanner >= SIZEOF(virusScanners) || iScanner<0) break;
 			str[0]='\0';
 			if(SRFile_GetRegValue(HKEY_LOCAL_MACHINE,virusScanners[iScanner].szExeRegPath,virusScanners[iScanner].szExeRegValue,szScanExe,SIZEOF(szScanExe)))
-				mir_snprintf(str, SIZEOF(str), virusScanners[iScanner].szCommandLine,szScanExe);
-			SetDlgItemTextA(hwndDlg,IDC_SCANCMDLINE,str);
+				mir_sntprintf(str, SIZEOF(str), virusScanners[iScanner].szCommandLine,szScanExe);
+			SetDlgItemText(hwndDlg,IDC_SCANCMDLINE,str);
 			break;
 		}
 		case WM_COMMAND:
@@ -141,10 +143,10 @@ static INT_PTR CALLBACK DlgProcFileOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 					if((HIWORD(wParam)!=EN_CHANGE || (HWND)lParam!=GetFocus())) return 0;
 					break;
 				case IDC_FILEDIRBROWSE:
-				{	char str[MAX_PATH];
-					GetDlgItemTextA(hwndDlg,IDC_FILEDIR,str,SIZEOF(str));
+				{	TCHAR str[MAX_PATH];
+					GetDlgItemText(hwndDlg,IDC_FILEDIR,str,SIZEOF(str));
 					if(BrowseForFolder(hwndDlg,str))
-						SetDlgItemTextA(hwndDlg,IDC_FILEDIR,str);
+						SetDlgItemText(hwndDlg,IDC_FILEDIR,str);
 					break;
 				}
 				case IDC_AUTOACCEPT:
@@ -158,45 +160,45 @@ static INT_PTR CALLBACK DlgProcFileOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 					else if(HIWORD(wParam)!=CBN_EDITCHANGE) return 0;
 					break;
 				case IDC_SCANCMDLINEBROWSE:
-				{	char str[MAX_PATH+2];
-					OPENFILENAMEA ofn={0};
-					char filter[512],*pfilter;
+				{	TCHAR str[MAX_PATH+2];
+					OPENFILENAME ofn = {0};
+					TCHAR filter[512], *pfilter;
 
-					GetDlgItemTextA(hwndDlg,IDC_SCANCMDLINE,str,SIZEOF(str));
-					ofn.lStructSize=OPENFILENAME_SIZE_VERSION_400;
-					ofn.hwndOwner=hwndDlg;
-					ofn.Flags=OFN_FILEMUSTEXIST|OFN_HIDEREADONLY;
-					strcpy(filter,Translate("Executable Files"));
-					strcat(filter," (*.exe)");
-					pfilter=filter+strlen(filter)+1;
-					strcpy(pfilter,"*.exe");
-					pfilter=pfilter+strlen(pfilter)+1;
-					strcpy(pfilter,Translate("All Files"));
-					strcat(pfilter," (*)");
-					pfilter=pfilter+strlen(pfilter)+1;
-					strcpy(pfilter,"*");
-					pfilter=pfilter+strlen(pfilter)+1;
-					*pfilter='\0';
-					ofn.lpstrFilter=filter;
-					ofn.lpstrFile=str;
-					ofn.nMaxFile=SIZEOF(str)-2;
+					GetDlgItemText(hwndDlg, IDC_SCANCMDLINE, str, SIZEOF(str));
+					ofn.lStructSize = OPENFILENAME_SIZE_VERSION_400;
+					ofn.hwndOwner = hwndDlg;
+					ofn.Flags = OFN_FILEMUSTEXIST | OFN_HIDEREADONLY;
+					_tcscpy(filter,TranslateT("Executable Files"));
+					_tcscat(filter, _T(" (*.exe)"));
+					pfilter = filter + _tcslen(filter) + 1;
+					_tcscpy(pfilter, _T("*.exe"));
+					pfilter = pfilter + _tcslen(pfilter)+1;
+					_tcscpy(pfilter, TranslateT("All Files"));
+					_tcscat(pfilter, _T(" (*)"));
+					pfilter = pfilter + _tcslen(pfilter) + 1;
+					_tcscpy(pfilter, _T("*"));
+					pfilter = pfilter + _tcslen(pfilter) + 1;
+					*pfilter = 0;
+					ofn.lpstrFilter = filter;
+					ofn.lpstrFile = str;
+					ofn.nMaxFile = SIZEOF(str)-2;
 					if(str[0]=='"')	{
-						char *pszQuote=strchr(str+1,'"');
-						if(pszQuote) *pszQuote='\0';
-						MoveMemory(str,str+1,lstrlenA(str));
+						TCHAR *pszQuote = _tcschr(str + 1, '"');
+						if (pszQuote) *pszQuote = 0;
+						MoveMemory(str, str + 1, _tcslen(str) * sizeof(TCHAR));
 					}
 					else {
-						char *pszSpace=strchr(str,' ');
-						if(pszSpace) *pszSpace='\0';
+						TCHAR *pszSpace = _tcschr(str, ' ');
+						if (pszSpace) *pszSpace = 0;
 					}
-					ofn.nMaxFileTitle=MAX_PATH;
-					if(!GetOpenFileNameA(&ofn)) break;
-					if(strchr(str,' ')!=NULL) {
-						MoveMemory(str+1,str,SIZEOF(str)-2);
-						str[0]='"';
-						lstrcatA(str,"\"");
+					ofn.nMaxFileTitle = MAX_PATH;
+					if (!GetOpenFileName(&ofn)) break;
+					if (_tcschr(str, ' ') != NULL) {
+						MoveMemory(str+1, str, SIZEOF(str) - 2 * sizeof(TCHAR));
+						str[0] = '"';
+						_tcscat(str, _T("\""));
 					}
-					SetDlgItemTextA(hwndDlg,IDC_SCANCMDLINE,str);
+					SetDlgItemText(hwndDlg, IDC_SCANCMDLINE, str);
 					break;
 				}
 			}
@@ -206,16 +208,17 @@ static INT_PTR CALLBACK DlgProcFileOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 			switch (((LPNMHDR)lParam)->code)
 			{
 				case PSN_APPLY:
-				{	char str[512];
-					GetDlgItemTextA(hwndDlg,IDC_FILEDIR,str,SIZEOF(str));
-					DBWriteContactSettingString(NULL,"SRFile","RecvFilesDirAdv",str);
+				{	TCHAR str[512];
+					GetDlgItemText(hwndDlg, IDC_FILEDIR, str, SIZEOF(str));
+					RemoveInvalidPathChars(str);
+					DBWriteContactSettingTString(NULL,"SRFile","RecvFilesDirAdv",str);
 					DBWriteContactSettingByte(NULL,"SRFile","AutoAccept",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_AUTOACCEPT));
 					DBWriteContactSettingByte(NULL,"SRFile","AutoMin",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_AUTOMIN));
 					DBWriteContactSettingByte(NULL,"SRFile","AutoClose",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_AUTOCLOSE));
 					DBWriteContactSettingByte(NULL,"SRFile","AutoClear",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_AUTOCLEAR));
 					DBWriteContactSettingByte(NULL,"SRFile","UseScanner",(BYTE)(IsDlgButtonChecked(hwndDlg,IDC_SCANAFTERDL)?VIRUSSCAN_AFTERDL:(IsDlgButtonChecked(hwndDlg,IDC_SCANDURINGDL)?VIRUSSCAN_DURINGDL:VIRUSSCAN_DISABLE)));
-					GetDlgItemTextA(hwndDlg,IDC_SCANCMDLINE,str,SIZEOF(str));
-					DBWriteContactSettingString(NULL,"SRFile","ScanCmdLine",str);
+					GetDlgItemText(hwndDlg, IDC_SCANCMDLINE, str, SIZEOF(str));
+					DBWriteContactSettingTString(NULL,"SRFile","ScanCmdLine",str);
 					DBWriteContactSettingByte(NULL,"SRFile","WarnBeforeOpening",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_WARNBEFOREOPENING));
 					DBWriteContactSettingByte(NULL,"SRFile","IfExists",(BYTE)(IsDlgButtonChecked(hwndDlg,IDC_ASK)?FILERESUME_ASK:(IsDlgButtonChecked(hwndDlg,IDC_RESUME)?FILERESUME_RESUMEALL:(IsDlgButtonChecked(hwndDlg,IDC_OVERWRITE)?FILERESUME_OVERWRITEALL:FILERESUME_RENAMEALL))));
 					return TRUE;

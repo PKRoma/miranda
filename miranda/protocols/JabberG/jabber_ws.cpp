@@ -47,7 +47,7 @@ BOOL CJabberProto::WsInit( void )
 	//nlu.pfnHttpGatewayUnwrapRecv = JabberHttpGatewayUnwrapRecv;
 	m_hNetlibUser = ( HANDLE ) JCallService( MS_NETLIB_REGISTERUSER, 0, ( LPARAM )&nlu );
 
-	return ( m_hNetlibUser!=NULL )?TRUE:FALSE;
+	return m_hNetlibUser != NULL;
 }
 
 void CJabberProto::WsUninit( void )
@@ -62,6 +62,7 @@ JABBER_SOCKET CJabberProto::WsConnect( char* host, WORD port )
 	nloc.cbSize = sizeof( nloc );
 	nloc.szHost = host;
 	nloc.wPort = port;
+	nloc.timeout = 6;
 	return ( HANDLE )JCallService( MS_NETLIB_OPENCONNECTION, ( WPARAM ) m_hNetlibUser, ( LPARAM )&nloc );
 }
 

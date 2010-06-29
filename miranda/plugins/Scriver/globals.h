@@ -1,8 +1,7 @@
 /*
 Scriver
 
-Copyright 2000-2005 Miranda ICQ/IM project,
-Copyright 2005 Piotr Piastucki
+Copyright 2000-2009 Miranda ICQ/IM project,
 
 all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
@@ -77,30 +76,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define SMF2_SHOWTYPINGCLIST 			0x08000000
 #define SMF2_SHOWTYPINGSWITCH			0x10000000
 
-#define SMF_ICON_ADD         	0
-#define SMF_ICON_USERDETAILS 	1
-#define SMF_ICON_HISTORY     	2
-#define SMF_ICON_SEND		3
-#define SMF_ICON_CANCEL		4
-#define SMF_ICON_SMILEY		5
-#define SMF_ICON_TYPING      	6
-#define SMF_ICON_UNICODEON	7
-#define SMF_ICON_UNICODEOFF	8
-#define SMF_ICON_DELIVERING	9
-#define SMF_ICON_QUOTE		10
-
-#define SMF_ICON_INCOMING	11
-#define SMF_ICON_OUTGOING	12
-#define SMF_ICON_NOTICE		13
-
-#define SMF_ICON_CLOSEX		14
-#define SMF_ICON_OVERLAY    15
-
-#define SMF_ICON_TYPINGOFF  16
-
-#define SMF_ICON_MESSAGE	17
-#define SMF_ICON_COUNT		18
-
 typedef struct ImageListUsageEntry_tag
 {
 	int		index;
@@ -112,7 +87,6 @@ struct GlobalMessageData
 {
 	unsigned int flags;
 	unsigned int flags2;
-	HICON hIcons[SMF_ICON_COUNT];
 	HANDLE hMessageWindowList;
 	DWORD openFlags;
 	HANDLE hParentWindowList;
@@ -130,22 +104,23 @@ struct GlobalMessageData
 	int 	popupInstalled;
 	int		ieviewInstalled;
 	int		buttonVisibility;
+	int		chatBbuttonVisibility;
 	int		limitTabsNum;
 	int		limitChatsTabsNum;
 	int		indentSize;
 	HIMAGELIST hTabIconList;
 	HIMAGELIST hButtonIconList;
+	HIMAGELIST hChatButtonIconList;
 	HIMAGELIST hHelperIconList;
 	HIMAGELIST hSearchEngineIconList;
-	HFONT	   hContactNameFont;
-	COLORREF   contactNameColour;
-	HFONT	   hContactStatusFont;
-	COLORREF   contactStatusColour;
 	HBRUSH	   hInfobarBrush;
-	HPEN	   hInfobarPen;
 	int		   toolbarPosition;
 	int        splitterY;
 	HWND       hFocusWnd;
+    DWORD      logLineColour;
+	int        logPixelSX;
+	int        logPixelSY;
+    HICON      hMsgIcon;
 };
 
 int IconsChanged(WPARAM wParam, LPARAM lParam);
@@ -153,11 +128,11 @@ int SmileySettingsChanged(WPARAM wParam, LPARAM lParam);
 void InitGlobals();
 void FreeGlobals();
 void ReloadGlobals();
-void RegisterIcoLibIcons();
-void RegisterFontServiceFonts();
+void RegisterIcons();
+void ReleaseIcons();
 void LoadGlobalIcons();
-void ReleaseGlobalIcons();
-int IcoLibIconsChanged(WPARAM wParam, LPARAM lParam) ;
+HICON GetCachedIcon(const char *name);
+void RegisterFontServiceFonts();
 int ScriverRestoreWindowPosition(HWND hwnd,HANDLE hContact,const char *szModule,const char *szNamePrefix, int flags, int showCmd);
 
 int ImageList_AddIcon_Ex(HIMAGELIST hIml, int id);
@@ -168,5 +143,6 @@ int ImageList_ReplaceIcon_ProtoEx(HIMAGELIST hIml, int nIndex, const char* szPro
 void ReleaseIconSmart(HICON hIcon);
 
 extern struct GlobalMessageData *g_dat;
+void StreamInTestEvents(HWND hEditWnd, struct GlobalMessageData *gdat);
 
 #endif

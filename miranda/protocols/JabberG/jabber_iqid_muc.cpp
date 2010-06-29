@@ -114,14 +114,14 @@ static void sttFillJidList(HWND hwndDlg)
 
 					if (( jid = xmlGetAttrValue( itemNode, _T("jid"))) != NULL ) {
 						lvi.pszText = ( TCHAR* )jid;
-						if ( jidListInfo->type == MUC_BANLIST ) {										
+						if ( jidListInfo->type == MUC_BANLIST ) {
 							if (( reason = xmlGetText(xmlGetChild( itemNode , "reason" ))) != NULL ) {
 								TCHAR jidreason[ 200 ];
 								mir_sntprintf( jidreason, SIZEOF( jidreason ), _T("%s (%s)") , jid, reason );
 								lvi.pszText = jidreason;
 						}	}
 
-						if ( jidListInfo->type == MUC_VOICELIST || jidListInfo->type == MUC_MODERATORLIST ) {										
+						if ( jidListInfo->type == MUC_VOICELIST || jidListInfo->type == MUC_MODERATORLIST ) {
 							if (( nick = xmlGetAttrValue( itemNode, _T("nick"))) != NULL ) {
 								TCHAR nickjid[ 200 ];
 								mir_sntprintf( nickjid, SIZEOF( nickjid ), _T("%s (%s)") , nick, jid );
@@ -251,7 +251,7 @@ static INT_PTR CALLBACK JabberMucJidListDlgProc( HWND hwndDlg, UINT msg, WPARAM 
 				if (( iqNode = dat->iqNode ) != NULL ) {
 					if (( from = xmlGetAttrValue( iqNode, _T("from"))) != NULL ) {
 						dat->roomJid = mir_tstrdup( from );
-						
+
 						if (( queryNode = xmlGetChild( iqNode , "query" )) != NULL ) {
 							TCHAR* localFrom = mir_tstrdup( from );
 							mir_sntprintf( title, SIZEOF( title ), TranslateT("%s, %d items (%s)"),
@@ -337,8 +337,17 @@ static INT_PTR CALLBACK JabberMucJidListDlgProc( HWND hwndDlg, UINT msg, WPARAM 
 						if (*q != '\0') *q = '\0';
 						if (*p == '\0')
 							break;
-
-						dat->ppro->AddMucListItem( dat, p );
+						TCHAR rsn[ 1024 ];
+						_tcscpy( rsn, dat->type2str());
+						if ( dat->type == MUC_BANLIST ) {
+							dat->ppro->EnterString(rsn, SIZEOF(rsn), TranslateT("Ban reason") , JES_COMBO, "gcAddReason_");
+							if ( szBuffer )
+								dat->ppro->AddMucListItem( dat, p , rsn);
+							else 
+								dat->ppro->AddMucListItem( dat, p );
+						}
+						else dat->ppro->AddMucListItem( dat, p );
+						
 					}
 					else {
 						//delete

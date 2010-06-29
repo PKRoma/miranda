@@ -1,10 +1,33 @@
+/*
+
+Miranda IM: the free IM client for Microsoft* Windows*
+
+Copyright 2000-2010 Miranda ICQ/IM project,
+all portions of this codebase are copyrighted to the people
+listed in contributors.txt.
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+*/
 #include "commonheaders.h"
 #include "genmenu.h"
 
-#define STR_SEPARATOR _T("---------------------------------------------")
+#define STR_SEPARATOR _T("-----------------------------------")
 
 extern int DefaultImageListColorDepth;
 long handleCustomDraw(HWND hWndTreeView, LPNMTVCUSTOMDRAW pNMTVCD);
+void RebuildProtoMenus( int );
 
 int hInst;
 
@@ -12,6 +35,7 @@ struct OrderData
 {
 	int dragging;
 	HTREEITEM hDragItem;
+	int iInitMenuValue;
 };
 
 typedef struct tagMenuItemOptData
@@ -29,17 +53,18 @@ typedef struct tagMenuItemOptData
 }
 	MenuItemOptData,*lpMenuItemOptData;
 
-static BOOL GetCurrentMenuObjectID( HWND hwndDlg, int* result )
+static BOOL GetCurrentMenuObjectID(HWND hwndDlg, int* result)
 {
 	TVITEM tvi;
-	HTREEITEM hti = TreeView_GetSelection( GetDlgItem( hwndDlg, IDC_MENUOBJECTS ));
+	HWND hTree = GetDlgItem(hwndDlg, IDC_MENUOBJECTS);
+	HTREEITEM hti = TreeView_GetSelection(hTree);
 	if ( hti == NULL )
 		return FALSE;
 
 	tvi.mask = TVIF_HANDLE | TVIF_PARAM;
 	tvi.hItem = hti;
-	TreeView_GetItem( GetDlgItem( hwndDlg, IDC_MENUOBJECTS ), &tvi );
-	*result = ( int )tvi.lParam;
+	TreeView_GetItem(hTree, &tvi);
+	*result = (int)tvi.lParam;
 	return TRUE;
 }
 
@@ -117,7 +142,7 @@ static int BuildMenuObjectsTree(HWND hwndDlg)
 		return FALSE;
 
 	for ( i=0; i < g_menus.getCount(); i++ ) {
-		if ( g_menus[i]->id == (int)hStatusMenuObject )
+		if ( g_menus[i]->id == (int)hStatusMenuObject  || !g_menus[i]->m_bUseUserDefinedItems )
 			continue;
 
 		tvis.item.lParam  = ( LPARAM )g_menus[i]->id;
@@ -400,18 +425,21 @@ LRESULT CALLBACK LBTNDOWNProc(HWND hwnd,UINT uMsg, WPARAM wParam, LPARAM lParam)
 static INT_PTR CALLBACK GenMenuOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	struct OrderData *dat = (struct OrderData*)GetWindowLongPtr(GetDlgItem(hwndDlg,IDC_MENUITEMS),GWLP_USERDATA);
+	LPNMHDR hdr;
 
 	switch (msg) {
 	case WM_INITDIALOG:
 		TranslateDialogDefault(hwndDlg);
 		dat=(struct OrderData*)mir_alloc(sizeof(struct OrderData));
 		SetWindowLongPtr(GetDlgItem(hwndDlg,IDC_MENUITEMS),GWLP_USERDATA,(LONG_PTR)dat);
-		dat->dragging=0;
-		MyOldWindowProc=(WNDPROC)GetWindowLongPtr(GetDlgItem(hwndDlg,IDC_MENUITEMS),GWLP_WNDPROC);
+		dat->dragging = 0;
+		dat->iInitMenuValue = DBGetContactSettingByte( NULL, "CList", "MoveProtoMenus", FALSE );
+		MyOldWindowProc = (WNDPROC)GetWindowLongPtr(GetDlgItem(hwndDlg,IDC_MENUITEMS),GWLP_WNDPROC);
 		SetWindowLongPtr(GetDlgItem(hwndDlg,IDC_MENUITEMS),GWLP_WNDPROC,(LONG_PTR)&LBTNDOWNProc);
 		{
 			HIMAGELIST himlCheckBoxes;
-			himlCheckBoxes=ImageList_Create(GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),ILC_COLOR32|ILC_MASK,2,2);
+			himlCheckBoxes=ImageList_Create(GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON),
+				(IsWinVerXPPlus() ? ILC_COLOR32 : ILC_COLOR16) | ILC_MASK, 2, 2);
 
 			ImageList_AddIcon_IconLibLoaded(himlCheckBoxes, SKINICON_OTHER_NOTICK);
 			ImageList_AddIcon_IconLibLoaded(himlCheckBoxes, SKINICON_OTHER_TICK);
@@ -419,6 +447,7 @@ static INT_PTR CALLBACK GenMenuOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 			TreeView_SetImageList(GetDlgItem(hwndDlg,IDC_MENUOBJECTS),himlCheckBoxes,TVSIL_NORMAL);
 			TreeView_SetImageList(GetDlgItem(hwndDlg,IDC_MENUITEMS),himlCheckBoxes,TVSIL_NORMAL);
 		}
+		CheckDlgButton(hwndDlg, dat->iInitMenuValue ? IDC_RADIO2 : IDC_RADIO1, TRUE );
 		BuildMenuObjectsTree(hwndDlg);
 		return TRUE;
 
@@ -432,6 +461,11 @@ static INT_PTR CALLBACK GenMenuOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 
 			case IDC_RESETMENU:
 				ResetMenuItems( hwndDlg );
+				SendMessage( GetParent( hwndDlg ), PSM_CHANGED, 0, 0 );
+				break;
+
+			case IDC_RADIO1:
+			case IDC_RADIO2:
 				SendMessage( GetParent( hwndDlg ), PSM_CHANGED, 0, 0 );
 				break;
 
@@ -497,21 +531,27 @@ static INT_PTR CALLBACK GenMenuOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 		break;
 
 	case WM_NOTIFY:
-		switch(((LPNMHDR)lParam)->idFrom ) {
+		hdr = (LPNMHDR)lParam;
+		switch( hdr->idFrom ) {
 		case 0:
-			if (((LPNMHDR)lParam)->code == PSN_APPLY ) {
+			if (hdr->code == PSN_APPLY ) {
 				SaveTree(hwndDlg);
+				int iNewMenuValue = IsDlgButtonChecked(hwndDlg, IDC_RADIO1) ? 0 : 1;
+				if ( iNewMenuValue != dat->iInitMenuValue ) {
+					RebuildProtoMenus( iNewMenuValue );
+					dat->iInitMenuValue = iNewMenuValue;
+				}
 				RebuildCurrent(hwndDlg);
 			}
 			break;
 
 		case IDC_MENUOBJECTS:
-			if (((LPNMHDR)lParam)->code == TVN_SELCHANGEDA )
+			if (hdr->code == TVN_SELCHANGEDA )
 				RebuildCurrent( hwndDlg );
 			break;
 
 		case IDC_MENUITEMS:
-			switch (((LPNMHDR)lParam)->code) {
+			switch (hdr->code) {
 			case NM_CUSTOMDRAW:
 				{
 					int i= handleCustomDraw(GetDlgItem(hwndDlg,IDC_MENUITEMS),(LPNMTVCUSTOMDRAW) lParam);
@@ -531,17 +571,17 @@ static INT_PTR CALLBACK GenMenuOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 					TVHITTESTINFO hti;
 					hti.pt.x=(short)LOWORD(GetMessagePos());
 					hti.pt.y=(short)HIWORD(GetMessagePos());
-					ScreenToClient(((LPNMHDR)lParam)->hwndFrom,&hti.pt);
-					if (TreeView_HitTest(((LPNMHDR)lParam)->hwndFrom,&hti)) {
+					ScreenToClient(hdr->hwndFrom,&hti.pt);
+					if (TreeView_HitTest(hdr->hwndFrom,&hti)) {
 						if (hti.flags&TVHT_ONITEMICON) {
 							TVITEM tvi;
 							tvi.mask=TVIF_HANDLE|TVIF_IMAGE|TVIF_SELECTEDIMAGE|TVIF_PARAM;
 							tvi.hItem=hti.hItem;
-							TreeView_GetItem(((LPNMHDR)lParam)->hwndFrom,&tvi);
+							TreeView_GetItem(hdr->hwndFrom,&tvi);
 
 							tvi.iImage=tvi.iSelectedImage=!tvi.iImage;
 							((MenuItemOptData *)tvi.lParam)->show=tvi.iImage;
-							TreeView_SetItem(((LPNMHDR)lParam)->hwndFrom,&tvi);
+							TreeView_SetItem(hdr->hwndFrom,&tvi);
 							SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
 
 							//all changes take effect in runtime
@@ -551,7 +591,7 @@ static INT_PTR CALLBACK GenMenuOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 						if (hti.flags&TVHT_ONITEMLABEL) {
 							/// LabelClicked Set/unset selection
 							TVITEM tvi;
-							HWND tvw=((LPNMHDR)lParam)->hwndFrom;
+							HWND tvw=hdr->hwndFrom;
 							tvi.mask=TVIF_HANDLE|TVIF_PARAM;
 							tvi.hItem=hti.hItem;
 							TreeView_GetItem(tvw,&tvi);
@@ -666,17 +706,6 @@ static INT_PTR CALLBACK GenMenuOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 		}	}
 		break;
 
-	case WM_DESTROY:
-	{
-		struct OrderData* dat = (struct OrderData*)GetWindowLongPtr( GetDlgItem(hwndDlg,IDC_MENUITEMS), GWLP_USERDATA );
-		if ( dat )
-			mir_free( dat );
-
-		ImageList_Destroy(TreeView_SetImageList(GetDlgItem(hwndDlg,IDC_MENUOBJECTS),NULL,TVSIL_NORMAL));
-		FreeTreeData( hwndDlg );
-		break;
-	}
-
 	case WM_LBUTTONUP:
 		if (!dat->dragging)
 			break;
@@ -739,6 +768,15 @@ static INT_PTR CALLBACK GenMenuOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 				SaveTree(hwndDlg);
 		}	}
 		break;
+
+	case WM_DESTROY:
+		if ( dat )
+			mir_free( dat );
+
+		ImageList_Destroy(TreeView_SetImageList(GetDlgItem(hwndDlg,IDC_MENUOBJECTS),NULL,TVSIL_NORMAL));
+		FreeTreeData( hwndDlg );
+		break;
+
 	}
 	return FALSE;
 }
@@ -748,7 +786,6 @@ long handleCustomDraw(HWND hWndTreeView, LPNMTVCUSTOMDRAW pNMTVCD)
 	if ( pNMTVCD == NULL )
 		return -1;
 
-	//SetWindowTheme(hWndTreeView, "", "");
 	switch ( pNMTVCD->nmcd.dwDrawStage ) {
 	case CDDS_PREPAINT:
 		return CDRF_NOTIFYITEMDRAW;
@@ -799,8 +836,6 @@ long handleCustomDraw(HWND hWndTreeView, LPNMTVCUSTOMDRAW pNMTVCD)
 
 			return CDRF_NEWFONT|(k?CDRF_SKIPDEFAULT:0);
 		}
-	default:
-		break;
 	}
 	return 0;
 }

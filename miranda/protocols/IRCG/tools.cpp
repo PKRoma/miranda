@@ -227,7 +227,7 @@ void __stdcall RemoveLinebreaks( CMString& Message )
 	if (Message.Find( _T("\r\n"), 0) == 0)
 		Message.Delete(0,2);
 
-	if (Message.GetLength() >1 && Message.ReverseFind( '\r\n' ) == Message.GetLength()-2)
+	if ( (Message.GetLength() > 1) && (Message.Find(_T("\r\n"), Message.GetLength()-2) == 0) )
 		Message.Delete(Message.GetLength()-2, 2);
 }
 

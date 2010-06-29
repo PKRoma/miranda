@@ -994,7 +994,7 @@ void MM_IconsChanged(void)
 {
 	MODULEINFO *pTemp = m_ModList, *pLast = NULL;
 	ImageList_ReplaceIcon(hIconsList, 0, LoadSkinnedIcon(SKINICON_EVENT_MESSAGE));
-	ImageList_ReplaceIcon(hIconsList, 1, LoadIconEx( "overlay" ));
+	ImageList_ReplaceIcon(hIconsList, 1, LoadIconEx( "overlay", FALSE ));
 	while (pTemp != NULL)
 	{
 		pTemp->OnlineIconIndex = ImageList_ReplaceIcon(hIconsList, pTemp->OnlineIconIndex, LoadSkinnedProtoIcon(pTemp->pszModule, ID_STATUS_ONLINE));
@@ -1068,7 +1068,7 @@ BOOL MM_RemoveAll (void)
 	{
 		MODULEINFO *pLast = m_ModList->next;
 		mir_free(m_ModList->pszModule);
-		mir_free(m_ModList->pszModDispName);
+		mir_free(m_ModList->ptszModDispName);
 		mir_free(m_ModList->pszHeader);
 		mir_free(m_ModList->crColors);
 

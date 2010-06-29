@@ -47,7 +47,7 @@ void JabberIbbFreeJibb( JABBER_IBB_TRANSFER *jibb )
 		mir_free( jibb );
 }	}
 
-void CJabberProto::OnFtHandleIbbIq( HXML iqNode, CJabberIqInfo* pInfo )
+BOOL CJabberProto::OnFtHandleIbbIq( HXML iqNode, CJabberIqInfo* pInfo )
 {
 	if ( !_tcscmp( pInfo->GetChildNodeName(), _T("open")))
 		FtHandleIbbRequest( iqNode, TRUE );
@@ -68,6 +68,7 @@ void CJabberProto::OnFtHandleIbbIq( HXML iqNode, CJabberIqInfo* pInfo )
 					<< XCHILD( _T("error")) << XATTRI( _T("code"), 404 ) << XATTR( _T("type"), _T("cancel"))
 						<< XCHILDNS( _T("item-not-found"), _T("urn:ietf:params:xml:ns:xmpp-stanzas")));
 	}
+	return TRUE;
 }
 
 void CJabberProto::OnIbbInitiateResult( HXML, CJabberIqInfo* pInfo )

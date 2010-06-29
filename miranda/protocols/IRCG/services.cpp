@@ -23,7 +23,70 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 BOOL bChatInstalled = FALSE, m_bMbotInstalled = FALSE;
 
-void CIrcProto::InitMenus()
+void CIrcProto::InitMainMenus(void)
+{
+	char temp[ MAXMODULELABELLENGTH ];
+	char *d = temp + sprintf( temp, m_szModuleName );
+
+	CLISTMENUITEM mi = { 0 };
+	mi.cbSize = sizeof( mi );
+	mi.pszService = temp;
+
+	if ( bChatInstalled ) {
+		HGENMENU hRoot = MO_GetProtoRootMenu( m_szModuleName );
+		if ( hRoot == NULL ) {
+			// Root popupmenuitem
+			mi.ptszName = m_tszUserName;
+			mi.position = -1999901010;
+			mi.hParentMenu = HGENMENU_ROOT;
+			mi.flags = CMIF_ICONFROMICOLIB | CMIF_ROOTPOPUP | CMIF_TCHAR | CMIF_KEEPUNTRANSLATED;
+			mi.icolibItem = GetIconHandle(IDI_MAIN);
+			hRoot = hMenuRoot = ( HGENMENU )CallService( MS_CLIST_ADDPROTOMENUITEM,  (WPARAM)0, (LPARAM)&mi);
+		}
+		else {
+			if (hMenuRoot)
+				CallService( MS_CLIST_REMOVEMAINMENUITEM, ( WPARAM )hMenuRoot, 0 );
+			hMenuRoot = NULL;
+		}
+		
+		mi.flags = CMIF_ICONFROMICOLIB | CMIF_CHILDPOPUP;
+		mi.pszName = LPGEN("&Quick connect");
+		mi.icolibItem = GetIconHandle(IDI_QUICK);
+		strcpy( d, IRC_QUICKCONNECT );
+		mi.position = 201001;
+		mi.hParentMenu = hRoot;
+		hMenuQuick = ( HGENMENU )CallService( MS_CLIST_ADDPROTOMENUITEM, (WPARAM)0, (LPARAM)&mi);
+
+		if (m_iStatus != ID_STATUS_OFFLINE) mi.flags |= CMIF_GRAYED;
+
+		mi.pszName = LPGEN("&Join channel");
+		mi.icolibItem = LoadSkinnedIconHandle(SKINICON_CHAT_JOIN);//GetIconHandle(IDI_JOIN);
+		strcpy( d, IRC_JOINCHANNEL );
+		mi.position = 201002;
+		hMenuJoin = ( HGENMENU )CallService( MS_CLIST_ADDPROTOMENUITEM, (WPARAM)0, (LPARAM)&mi);
+
+		mi.pszName = LPGEN("&Change your nickname");
+		mi.icolibItem = GetIconHandle(IDI_RENAME);
+		strcpy( d, IRC_CHANGENICK );
+		mi.position = 201003;
+		hMenuNick = ( HGENMENU )CallService( MS_CLIST_ADDPROTOMENUITEM, (WPARAM)0, (LPARAM)&mi);
+
+		mi.pszName = LPGEN("Show the &list of available channels");
+		mi.icolibItem = GetIconHandle(IDI_LIST);
+		strcpy( d, IRC_SHOWLIST );
+		mi.position = 201004;
+		hMenuList = ( HGENMENU )CallService( MS_CLIST_ADDPROTOMENUITEM, (WPARAM)0, (LPARAM)&mi);
+
+		if (m_useServer) mi.flags &= ~CMIF_GRAYED;
+		mi.pszName = LPGEN("&Show the server window");
+		mi.icolibItem = GetIconHandle(IDI_SERVER);
+		strcpy( d, IRC_SHOWSERVER );
+		mi.position = 201005;
+		hMenuServer = ( HGENMENU )CallService( MS_CLIST_ADDPROTOMENUITEM, (WPARAM)0, (LPARAM)&mi);
+	}
+}
+	
+void CIrcProto::InitContactMenus(void)
 {
 	char temp[ MAXMODULELABELLENGTH ];
 	char *d = temp + sprintf( temp, m_szModuleName );
@@ -33,89 +96,34 @@ void CIrcProto::InitMenus()
 	mi.pszService = temp;
 	mi.flags = CMIF_ICONFROMICOLIB;
 
-	if ( bChatInstalled ) {
-		// Root popupmenuitem
-		mi.ptszName = m_tszUserName;
-		mi.position = -1999901010;
-		mi.pszPopupName = (char *)-1;
-		mi.flags |= CMIF_ROOTPOPUP | CMIF_TCHAR;
-		mi.icolibItem = GetIconHandle(IDI_MAIN);
-		hMenuRoot = (HANDLE)CallService( MS_CLIST_ADDMAINMENUITEM,  (WPARAM)0, (LPARAM)&mi);
-		
-		mi.flags &= ~(CMIF_ROOTPOPUP | CMIF_TCHAR);
-		mi.flags |= CMIF_CHILDPOPUP;
-
-		mi.pszName = LPGEN("&Quick connect");
-		mi.icolibItem = GetIconHandle(IDI_QUICK);
-		strcpy( d, IRC_QUICKCONNECT );
-		mi.position = 500090000;
-		mi.pszPopupName = (char *)hMenuRoot;
-		hMenuQuick= (HANDLE)CallService( MS_CLIST_ADDMAINMENUITEM, (WPARAM)0, (LPARAM)&mi);
-
-		mi.pszName = LPGEN("&Join channel");
-		mi.icolibItem = LoadSkinnedIconHandle(SKINICON_CHAT_JOIN);//GetIconHandle(IDI_JOIN);
-		strcpy( d, IRC_JOINCHANNEL );
-		mi.position = 500090001;
-		hMenuJoin = (HANDLE)CallService( MS_CLIST_ADDMAINMENUITEM, (WPARAM)0, (LPARAM)&mi);
-
-		mi.pszName = LPGEN("&Change your nickname");
-		mi.icolibItem = GetIconHandle(IDI_RENAME);
-		strcpy( d, IRC_CHANGENICK );
-		mi.position = 500090002;
-		hMenuNick = (HANDLE)CallService( MS_CLIST_ADDMAINMENUITEM, (WPARAM)0, (LPARAM)&mi);
-
-		mi.pszName = LPGEN("Show the &list of available channels");
-		mi.icolibItem = GetIconHandle(IDI_LIST);
-		strcpy( d, IRC_SHOWLIST );
-		mi.position = 500090003;
-		hMenuList = (HANDLE)CallService( MS_CLIST_ADDMAINMENUITEM, (WPARAM)0, (LPARAM)&mi);
-
-		mi.pszName = LPGEN("&Show the server window");
-		mi.icolibItem = GetIconHandle(IDI_SERVER);
-		strcpy( d, IRC_SHOWSERVER );
-		mi.position = 500090004;
-		hMenuServer = (HANDLE)CallService( MS_CLIST_ADDMAINMENUITEM, (WPARAM)0, (LPARAM)&mi);
-	}
-	
-	mi.flags &= ~CMIF_CHILDPOPUP;
-
 	mi.pszName = LPGEN("Channel &settings");
 	mi.icolibItem = GetIconHandle(IDI_MANAGER);
 	strcpy( d, IRC_UM_CHANSETTINGS );
 	mi.pszContactOwner = m_szModuleName;
 	mi.popupPosition = 500090002;
-	hUMenuChanSettings = (void *)CallService( MS_CLIST_ADDCONTACTMENUITEM, (WPARAM)0, (LPARAM)&mi);
+	hUMenuChanSettings = ( HGENMENU )CallService( MS_CLIST_ADDCONTACTMENUITEM, (WPARAM)0, (LPARAM)&mi);
 
 	mi.pszName = LPGEN("&WhoIs info");
 	mi.icolibItem = GetIconHandle(IDI_WHOIS);
 	strcpy( d, IRC_UM_WHOIS );
 	mi.pszContactOwner = m_szModuleName;
 	mi.popupPosition = 500090001;
-	hUMenuWhois = (void *)CallService( MS_CLIST_ADDCONTACTMENUITEM, (WPARAM)0, (LPARAM)&mi);
+	hUMenuWhois = ( HGENMENU )CallService( MS_CLIST_ADDCONTACTMENUITEM, (WPARAM)0, (LPARAM)&mi);
 
 	mi.pszName = LPGEN("Di&sconnect");
 	mi.icolibItem = GetIconHandle(IDI_DELETE);
 	strcpy( d, IRC_UM_DISCONNECT );
 	mi.pszContactOwner = m_szModuleName;
 	mi.popupPosition = 500090001;
-	hUMenuDisconnect = (void *)CallService( MS_CLIST_ADDCONTACTMENUITEM, (WPARAM)0, (LPARAM)&mi);
+	hUMenuDisconnect = ( HGENMENU )CallService( MS_CLIST_ADDCONTACTMENUITEM, (WPARAM)0, (LPARAM)&mi);
 
 	mi.pszName = LPGEN("&Add to ignore list");
 	mi.icolibItem = GetIconHandle(IDI_BLOCK);
 	strcpy( d, IRC_UM_IGNORE );
 	mi.pszContactOwner = m_szModuleName;
 	mi.popupPosition = 500090002;
-	hUMenuIgnore = (void *)CallService( MS_CLIST_ADDCONTACTMENUITEM, (WPARAM)0, (LPARAM)&mi);
+	hUMenuIgnore = ( HGENMENU )CallService( MS_CLIST_ADDCONTACTMENUITEM, (WPARAM)0, (LPARAM)&mi);
 
-	CLISTMENUITEM clmi;
-	memset( &clmi, 0, sizeof( clmi ));
-	clmi.cbSize = sizeof( clmi );
-	clmi.flags = CMIM_FLAGS | CMIF_GRAYED;
-	CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hMenuJoin, ( LPARAM )&clmi );
-	CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hMenuList, ( LPARAM )&clmi );
-	CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hMenuNick, ( LPARAM )&clmi );
-	if ( !m_useServer )
-		CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hMenuServer, ( LPARAM )&clmi );
 }
 
 INT_PTR __cdecl CIrcProto::OnDoubleclicked(WPARAM, LPARAM lParam)
@@ -308,12 +316,13 @@ INT_PTR __cdecl CIrcProto::OnQuickConnectMenuCommand(WPARAM, LPARAM)
 	if ( !m_quickDlg ) {
 		m_quickDlg = new CQuickDlg( this );
 		m_quickDlg->Show();
+
+		SetWindowText( m_quickDlg->GetHwnd(), TranslateT( "Quick connect" ));
+		SetDlgItemText( m_quickDlg->GetHwnd(), IDC_TEXT, TranslateT( "Please select IRC network and enter the password if needed" ));
+		SetDlgItemText( m_quickDlg->GetHwnd(), IDC_CAPTION, TranslateT( "Quick connect" ));
+		WindowSetIcon( m_quickDlg->GetHwnd(), IDI_QUICK );
 	}
 
-	SetWindowText( m_quickDlg->GetHwnd(), TranslateT( "Quick connect" ));
-	SetDlgItemText( m_quickDlg->GetHwnd(), IDC_TEXT, TranslateT( "Please select IRC network and enter the password if needed" ));
-	SetDlgItemText( m_quickDlg->GetHwnd(), IDC_CAPTION, TranslateT( "Quick connect" ));
-	SendMessage( m_quickDlg->GetHwnd(), WM_SETICON, ICON_BIG, ( LPARAM )LoadIconEx( IDI_QUICK ));
 	ShowWindow( m_quickDlg->GetHwnd(), SW_SHOW );
 	SetActiveWindow( m_quickDlg->GetHwnd() );
 	return 0;
@@ -729,14 +738,15 @@ int __cdecl CIrcProto::GCEventHook(WPARAM wParam,LPARAM lParam)
 						{
 							PROTOSEARCHRESULT psr = { 0 };
 							psr.cbSize = sizeof(psr);
-							psr.nick = mir_t2a_cp( gch->ptszUID, getCodepage());
+							psr.flags = PSR_TCHAR;
+							psr.id = gch->ptszUID;
+							psr.nick = gch->ptszUID;
 
 							ADDCONTACTSTRUCT acs = { 0 };
 							acs.handleType = HANDLE_SEARCHRESULT;
 							acs.szProto = m_szModuleName;
 							acs.psr = &psr;
 							CallService( MS_ADDCONTACT_SHOW, (WPARAM)NULL, (LPARAM)&acs);
-							mir_free( psr.nick );
 						}
 						break;
 					case 31:	//slap
@@ -1071,7 +1081,7 @@ void __cdecl CIrcProto::ConnectServerThread( void* )
 		m_info.bNickFlag = false;
 		int Temp = m_iDesiredStatus;
 		m_iDesiredStatus = ID_STATUS_CONNECTING;
-		nickflag = false;
+		nickflag = true;
 		ProtoBroadcastAck(m_szModuleName,NULL,ACKTYPE_STATUS,ACKRESULT_SUCCESS,(HANDLE)Temp,ID_STATUS_CONNECTING);
 		Sleep(100);
 	    EnterCriticalSection(&cs);

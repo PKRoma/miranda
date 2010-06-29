@@ -142,26 +142,22 @@ void CMsnProto::sttInviteMessage(ThreadData* info, char* msgBody, char* email, c
 		filetransfer* ft = info->mMsnFtp = new filetransfer(this);
 
 		ft->std.hContact = MSN_HContactFromEmail(email, nick, true, true);
-		replaceStr(ft->std.currentFile, Appfile);
-		mir_utf8decode(ft->std.currentFile, &ft->wszFileName);
+		mir_free(ft->std.tszCurrentFile);
+		ft->std.tszCurrentFile = mir_utf8decodeT(Appfile);
 		ft->fileId = -1;
-		ft->std.currentFileSize = atol(Appfilesize);
-		ft->std.totalBytes = atol(Appfilesize);
+		ft->std.totalBytes = ft->std.currentFileSize = _atoi64(Appfilesize);
 		ft->std.totalFiles = 1;
 		ft->szInvcookie = mir_strdup(Invcookie);
 
-		size_t tFileNameLen = strlen(ft->std.currentFile);
-		char tComment[40];
-		int tCommentLen = mir_snprintf(tComment, sizeof(tComment), "%lu bytes", ft->std.currentFileSize);
-		char* szBlob = (char*)mir_alloc(sizeof(DWORD) + tFileNameLen + tCommentLen + 2);
-		*(PDWORD)szBlob = 0;
-		strcpy(szBlob + sizeof(DWORD), ft->std.currentFile);
-		strcpy(szBlob + sizeof(DWORD) + tFileNameLen + 1, tComment);
+		TCHAR tComment[40];
+		mir_sntprintf(tComment, SIZEOF(tComment), TranslateT("%I64u bytes"), ft->std.currentFileSize);
 
-		PROTORECVEVENT pre;
-		pre.flags = 0;
-		pre.timestamp = (DWORD)time(NULL);
-		pre.szMessage = (char*)szBlob;
+		PROTORECVFILET pre = {0};
+		pre.flags = PREF_TCHAR;
+		pre.fileCount = 1;
+		pre.timestamp = time(NULL);
+		pre.tszDescription = tComment;
+		pre.ptszFiles = &ft->std.tszCurrentFile;
 		pre.lParam = (LPARAM)ft;
 
 		CCSDATA ccs;
@@ -170,7 +166,6 @@ void CMsnProto::sttInviteMessage(ThreadData* info, char* msgBody, char* email, c
 		ccs.wParam = 0;
 		ccs.lParam = (LPARAM)&pre;
 		MSN_CallService(MS_PROTO_CHAINRECV, 0, (LPARAM)&ccs);
-		mir_free(pre.szMessage);
 		return;
 	}
 
@@ -321,8 +316,9 @@ void CMsnProto::sttCustomSmiley(const char* msgBody, char* email, char* nick, in
 			UrlEncode(buf, smileyName, rlen*3);
 			mir_free(buf);
 
-			ft->std.currentFile = (char*)mir_alloc(MAX_PATH);
-			MSN_GetCustomSmileyFileName(hContact, ft->std.currentFile, MAX_PATH, smileyName, iSmileyType);
+			char path[MAX_PATH];
+			MSN_GetCustomSmileyFileName(hContact, path, SIZEOF(path), smileyName, iSmileyType);
+			ft->std.tszCurrentFile = mir_a2t(path);
 			mir_free(smileyName);
 
 			if (p2p_IsDlFileOk(ft))
@@ -604,7 +600,7 @@ void CMsnProto::MSN_ReceiveMessage(ThreadData* info, char* cmdString, char* para
 	else if (!_strnicmp(tContentType, "application/x-msnmsgrp2p", 24))
 	{
 		const char* dest = tHeader["P2P-Dest"];
-		if (dest && _stricmp(dest, MyOptions.szEmail) == 0)
+		if (dest && stricmp(dest, MyOptions.szEmail) == 0)
 			p2p_processMsg(info, msgBody);
 	}
 	else if (!_strnicmp(tContentType, "text/x-mms-emoticon", 19))
@@ -637,12 +633,16 @@ void CMsnProto::sttProcessYFind(char* buf, size_t len)
 	{
 		if (szNetId != NULL)
 		{
+			TCHAR* szEmailT = mir_utf8decodeT(szEmail);
 			PROTOSEARCHRESULT isr = {0};
 			isr.cbSize = sizeof(isr);
-			isr.nick = szEmail;
-			isr.email = szEmail;
+			isr.flags = PSR_TCHAR;
+			isr.id = szEmailT;
+			isr.nick = szEmailT;
+			isr.email = szEmailT;
 
 			SendBroadcast(NULL, ACKTYPE_SEARCH, ACKRESULT_DATA, msnSearchId, (LPARAM)&isr);
+			mir_free(szEmailT);
 		}
 		SendBroadcast(NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, msnSearchId, 0);
 	
@@ -703,8 +703,10 @@ void CMsnProto::sttProcessAdd(char* buf, size_t len)
 
 			MSN_AddUser(NULL, szEmail, netId, listId);
 
-			if (listId == LIST_RL && !(Lists_GetMask(szEmail) & (LIST_FL | LIST_AL | LIST_BL)))
-				MSN_AddAuthRequest(szEmail, szNick, Lists_GetInvite(szEmail));
+			MsnContact* msc = Lists_Get(szEmail);
+
+			if (listId == LIST_RL && !(msc->list & (LIST_FL | LIST_AL | LIST_BL)))
+				MSN_AddAuthRequest(szEmail, szNick, msc->invite);
 
 			cont = ezxml_next(cont);
 		}
@@ -731,13 +733,14 @@ void CMsnProto::sttProcessRemove(char* buf, size_t len)
 			mir_snprintf(szEmail, sizeof(szEmail), "%s@%s", szCont, szDom);
 			Lists_Remove(listId, szEmail);
 
-			listId = Lists_GetMask(szEmail);
-
-			if ((listId & (LIST_RL | LIST_FL)) == 0) 
+			MsnContact* msc = Lists_Get(szEmail);
+			if (msc == NULL || (msc->list & (LIST_RL | LIST_FL | LIST_LL)) == 0) 
 			{
-				HANDLE hContact = MSN_HContactFromEmail(szEmail, NULL, false, false);
-				if (_stricmp(szEmail, MyOptions.szEmail))
-					MSN_CallService(MS_DB_CONTACT_DELETE, (WPARAM)hContact, 0);
+				if (msc->hContact && _stricmp(szEmail, MyOptions.szEmail))
+				{
+					MSN_CallService(MS_DB_CONTACT_DELETE, (WPARAM)msc->hContact, 0);
+					msc->hContact = NULL;
+				}
 			}
 
 			cont = ezxml_next(cont);
@@ -1168,18 +1171,16 @@ LBL_InvalidCommand:
 			if (m_iStatus == ID_STATUS_OFFLINE) return 1;
 			if (oldMode <= ID_STATUS_OFFLINE)
 			{
-				HANDLE hContact = (HANDLE)MSN_CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
-				while (hContact != NULL)
+				int count = -1;
+				for (;;)
 				{
-					if (MSN_IsMyContact(hContact)) 
+					MsnContact *msc = Lists_GetNext(count);
+					if (msc == NULL) break;
+
+					if (strncmp(msc->email, "tel:", 4) == 0)
 					{
-						char tEmail[MSN_MAX_EMAIL_LEN];
-						if (getStaticString(hContact, "e-mail", tEmail, sizeof(tEmail)) == 0 && strncmp(tEmail, "tel:", 4) == 0)
-						{
-							setWord(hContact, "Status", ID_STATUS_ONTHEPHONE);
-						}
+						setWord(msc->hContact, "Status", ID_STATUS_ONTHEPHONE);
 					}
-					hContact = (HANDLE)MSN_CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM)hContact, 0);
 				}	
 			}			
 			if (m_iStatus != ID_STATUS_IDLE)
@@ -1454,7 +1455,8 @@ LBL_InvalidCommand:
 			break;
 
 		case ' TUO':   //********* OUT: sections 7.10 Connection Close, 8.6 Leaving a Switchboard Session
-			if (!_stricmp(params, "OTH")) {
+			if (!_stricmp(params, "OTH"))
+			{
 				SendBroadcast(NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_OTHERLOCATION);
 				MSN_DebugLog("You have been disconnected from the MSN server because you logged on from another location using the same MSN passport.");
 			}
@@ -1645,7 +1647,7 @@ LBL_InvalidCommand:
 				}
 
 				info->mInitialContact = hContact;
-				info->sendPacket("CAL", tEmail);
+				info->sendPacket("CAL", _strlwr(tEmail));
 			}
 			else 	   //dispatch or notification server (section 7.3)
 			{

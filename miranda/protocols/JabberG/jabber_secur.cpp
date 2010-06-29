@@ -28,21 +28,95 @@ Last change by : $Author$
 #include "jabber.h"
 #include "jabber_secur.h"
 
+typedef BYTE (WINAPI *GetUserNameExType )( int NameFormat, LPTSTR lpNameBuffer, PULONG nSize );
+
+
 /////////////////////////////////////////////////////////////////////////////////////////
 // ntlm auth - LanServer based authorization
 
-TNtlmAuth::TNtlmAuth( ThreadData* info ) :
+TNtlmAuth::TNtlmAuth( ThreadData* info, const char* mechanism ) :
 	TJabberAuth( info )
 {
-	szName = "NTLM";
-	if (( hProvider = Netlib_InitSecurityProvider( "NTLM" )) == NULL )
+	szName = mechanism;
+
+	const TCHAR *szProvider;
+	if ( !strcmp( mechanism, "GSS-SPNEGO" ))
+		szProvider = _T("Negotiate");
+	else if ( !strcmp( mechanism, "GSSAPI" ))
+		szProvider = _T("Kerberos");
+	else if ( !strcmp( mechanism, "NTLM" ))
+		szProvider = _T("NTLM");
+	else {
+		bIsValid = false;
+		return;
+	}
+
+	TCHAR szSpn[ 256 ] = _T( "" );
+	if ( strcmp( mechanism, "NTLM" )) {
+		if ( !getSpn( szSpn, SIZEOF( szSpn )) && !strcmp( mechanism, "GSSAPI" )) {
+			bIsValid = false;
+			return;
+	}	}
+
+	if (( hProvider = Netlib_InitSecurityProvider2( szProvider, szSpn )) == NULL )
 		bIsValid = false;
 }
 
 TNtlmAuth::~TNtlmAuth()
 {
 	if ( hProvider != NULL )
-		Netlib_DestroySecurityProvider( "NTLM", hProvider );
+		Netlib_DestroySecurityProvider( NULL, hProvider );
+}
+
+bool TNtlmAuth::getSpn( TCHAR* szSpn, size_t dwSpnLen )
+{
+#ifdef UNICODE
+	GetUserNameExType myGetUserNameEx = 
+		( GetUserNameExType )GetProcAddress( GetModuleHandleA( "secur32.dll" ), "GetUserNameExW" );
+#else
+	GetUserNameExType myGetUserNameEx = 
+		( GetUserNameExType )GetProcAddress( GetModuleHandleA( "secur32.dll" ), "GetUserNameExA" );
+#endif
+	if ( !myGetUserNameEx ) return false;
+
+	TCHAR szFullUserName[128] = _T( "" );
+	ULONG szFullUserNameLen = SIZEOF( szFullUserName );
+	if (!myGetUserNameEx( 12, szFullUserName, &szFullUserNameLen )) {
+		szFullUserName[ 0 ] = 0; 
+		szFullUserNameLen = SIZEOF( szFullUserName );
+		myGetUserNameEx( 2, szFullUserName, &szFullUserNameLen );
+	}
+
+	TCHAR* name = _tcsrchr(szFullUserName, '\\');
+	if (name) *name = 0;
+	else return false; 
+
+	_tcsupr(szFullUserName);
+
+	const char* connectHost = info->manualHost[0] ? info->manualHost : info->server;
+	TCHAR *connectHostDSN = mir_a2t( connectHost );
+
+	unsigned long ip = inet_addr( connectHost );
+	if ( ip == INADDR_NONE && !strchr(connectHost, '.' )) {
+		PHOSTENT host = gethostbyname( connectHost );
+		if ( host != NULL )
+			ip = (( PIN_ADDR )host->h_addr )->S_un.S_addr;
+	}
+
+	if ( ip != INADDR_NONE ) {
+		PHOSTENT host = gethostbyaddr(( char* )&ip, 4, AF_INET );
+		if ( host ) {
+			mir_free( connectHostDSN );
+			connectHostDSN = mir_a2t( host->h_name );
+		}
+	}
+
+	mir_sntprintf( szSpn, dwSpnLen, _T( "xmpp/%s@%s" ), connectHostDSN, szFullUserName );
+	Netlib_Logf( NULL, "SPN: " TCHAR_STR_PARAM, szSpn );
+
+	mir_free( connectHostDSN );
+
+	return true;
 }
 
 char* TNtlmAuth::getInitialRequest()
@@ -50,12 +124,14 @@ char* TNtlmAuth::getInitialRequest()
 	if ( !hProvider )
 		return NULL;
 
-	// use the full auth for the external servers
+	// This generates login method advertisement packet
+	char* result;
 	if ( info->password[0] != 0 )
-		return mir_strdup("");
+		result = Netlib_NtlmCreateResponse2( hProvider, "", info->username, info->password, &complete );
+	else 
+		result = Netlib_NtlmCreateResponse2( hProvider, "", NULL, NULL, &complete );
 
-	// use the transparent auth for local servers (password is empty)
-	return Netlib_NtlmCreateResponse( hProvider, "", NULL, NULL );
+	return result;
 }
 
 char* TNtlmAuth::getChallenge( const TCHAR* challenge )
@@ -64,12 +140,10 @@ char* TNtlmAuth::getChallenge( const TCHAR* challenge )
 		return NULL;
 
 	char *text = ( !lstrcmp( challenge, _T("="))) ? mir_strdup( "" ) : mir_t2a( challenge ), *result;
-	if ( info->password[0] != 0 ) {
-		char* user = mir_t2a( info->username );
-		result = Netlib_NtlmCreateResponse( hProvider, text, user, info->password );
-		mir_free( user );
-	}
-	else result = Netlib_NtlmCreateResponse( hProvider, text, NULL, NULL );
+	if ( info->password[0] != 0 )
+		result = Netlib_NtlmCreateResponse2( hProvider, text, info->username, info->password, &complete );
+	else 
+		result = Netlib_NtlmCreateResponse2( hProvider, text, NULL, NULL, &complete );
 	
 	mir_free( text );
 	return result;
@@ -114,7 +188,7 @@ char* TMD5Auth::getChallenge( const TCHAR* challenge )
 	sprintf( cnonce, "%08x%08x%08x%08x", htonl(digest[0]), htonl(digest[1]), htonl(digest[2]), htonl(digest[3]));
 
 	char *uname = mir_utf8encodeT( info->username ), 
-		 *passw = mir_utf8encode( info->password ), 
+		 *passw = mir_utf8encodeT( info->password ), 
 		 *serv  = mir_utf8encode( info->server );
 
 	mir_md5_init( &ctx );
@@ -182,12 +256,12 @@ TPlainAuth::~TPlainAuth()
 char* TPlainAuth::getInitialRequest()
 {
 	char *uname = mir_utf8encodeT( info->username ), 
-		 *passw = mir_utf8encode( info->password );
+		 *passw = mir_utf8encodeT( info->password ); 
 
-	const size_t size = strlen( uname ) + strlen( passw ) + 3;
+	const size_t size = strlen(uname) + strlen(passw) + 3;
 	char *toEncode = ( char* )alloca( size );
 	mir_snprintf( toEncode, size, "%c%s%c%s", 0, uname, 0, passw );
-
+	
 	mir_free( uname );
 	mir_free( passw );
 

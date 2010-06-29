@@ -42,27 +42,17 @@ int icq_httpGatewayInit(HANDLE hConn, NETLIBOPENCONNECTION *nloc, NETLIBHTTPREQU
 	WORD wLen, wVersion, wType;
 	WORD wIpLen;
 	DWORD dwSid1, dwSid2, dwSid3, dwSid4;
-	BYTE response[300], *buf;
-	int responseBytes, recvResult;
+	BYTE *buf;
 	char szSid[33], szHttpServer[256], szHttpGetUrl[300], szHttpPostUrl[300];
 	NETLIBHTTPPROXYINFO nlhpi = {0};
 
-	for (responseBytes = 0; ; )
-	{
-		recvResult = Netlib_Recv(hConn, (char*)response + responseBytes, sizeof(response) - responseBytes, MSG_DUMPPROXY);
-		if(recvResult<=0) break;
-		responseBytes += recvResult;
-		if(responseBytes == sizeof(response))
-			break;
-	}
-
-	if (responseBytes < 31)
+	if (nlhr->dataLength < 31)
 	{
 		SetLastError(ERROR_INVALID_DATA);
 		return 0;
 	}
 
-	buf = response;
+	buf = (PBYTE)nlhr->pData;
 	unpackWord(&buf, &wLen);
 	unpackWord(&buf, &wVersion);    /* always 0x0443 */
 	unpackWord(&buf, &wType);       /* hello reply */
@@ -74,7 +64,7 @@ int icq_httpGatewayInit(HANDLE hConn, NETLIBOPENCONNECTION *nloc, NETLIBHTTPREQU
 	null_snprintf(szSid, 33, "%08x%08x%08x%08x", dwSid1, dwSid2, dwSid3, dwSid4);
 	unpackWord(&buf, &wIpLen);
 
-	if(responseBytes < 30 + wIpLen || wIpLen == 0 || wIpLen > sizeof(szHttpServer) - 1)
+	if(nlhr->dataLength < 30 + wIpLen || wIpLen == 0 || wIpLen > sizeof(szHttpServer) - 1)
 	{
 		SetLastError(ERROR_INVALID_DATA);
 		return 0;
@@ -101,7 +91,7 @@ int icq_httpGatewayInit(HANDLE hConn, NETLIBOPENCONNECTION *nloc, NETLIBHTTPREQU
 int icq_httpGatewayBegin(HANDLE hConn, NETLIBOPENCONNECTION* nloc)
 { // open our "virual data connection"
 	icq_packet packet;
-	int serverNameLen;
+	size_t serverNameLen;
 
 	serverNameLen = strlennull(nloc->szHost);
 
@@ -110,10 +100,10 @@ int icq_httpGatewayBegin(HANDLE hConn, NETLIBOPENCONNECTION* nloc)
 	packWord(&packet, (WORD)serverNameLen);
 	packBuffer(&packet, (LPBYTE)nloc->szHost, (WORD)serverNameLen);
 	packWord(&packet, nloc->wPort);
-	Netlib_Send(hConn, (char*)packet.pData, packet.wLen, MSG_DUMPPROXY|MSG_NOHTTPGATEWAYWRAP);
+	INT_PTR res = Netlib_Send(hConn, (char*)packet.pData, packet.wLen, MSG_DUMPPROXY|MSG_NOHTTPGATEWAYWRAP);
 	SAFE_FREE((void**)&packet.pData);
 
-	return 1;
+	return res != SOCKET_ERROR;
 }
 
 

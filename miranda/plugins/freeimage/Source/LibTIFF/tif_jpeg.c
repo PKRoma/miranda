@@ -1,4 +1,4 @@
-/* $Id: tif_jpeg.c,v 1.22 2008/04/05 17:55:38 drolon Exp $ */
+/* $Id: tif_jpeg.c,v 1.28 2009/11/07 19:18:27 drolon Exp $ */
 
 /*
  * Copyright (c) 1994-1997 Sam Leffler
@@ -226,7 +226,7 @@ TIFFjpeg_error_exit(j_common_ptr cinfo)
 	char buffer[JMSG_LENGTH_MAX];
 
 	(*cinfo->err->format_message) (cinfo, buffer);
-	TIFFErrorExt(sp->tif->tif_clientdata, "JPEGLib", buffer);		/* display the error message */
+	TIFFErrorExt(sp->tif->tif_clientdata, "JPEGLib", "%s", buffer);		/* display the error message */
 	jpeg_abort(cinfo);			/* clean up libjpeg state */
 	LONGJMP(sp->exit_jmpbuf, 1);		/* return to libtiff caller */
 }
@@ -242,7 +242,7 @@ TIFFjpeg_output_message(j_common_ptr cinfo)
 	char buffer[JMSG_LENGTH_MAX];
 
 	(*cinfo->err->format_message) (cinfo, buffer);
-	TIFFWarningExt(((JPEGState *) cinfo)->tif->tif_clientdata, "JPEGLib", buffer);
+	TIFFWarningExt(((JPEGState *) cinfo)->tif->tif_clientdata, "JPEGLib", "%s", buffer);
 }
 
 /*
@@ -1424,6 +1424,10 @@ JPEGEncode(TIFF* tif, tidata_t buf, tsize_t cc, tsample_t s)
 	nrows = cc / sp->bytesperline;
 	if (cc % sp->bytesperline)
 		TIFFWarningExt(tif->tif_clientdata, tif->tif_name, "fractional scanline discarded");
+
+        /* The last strip will be limited to image size */
+        if( !isTiled(tif) && tif->tif_row+nrows > tif->tif_dir.td_imagelength )
+            nrows = tif->tif_dir.td_imagelength - tif->tif_row;
 
 	while (nrows-- > 0) {
 		bufptr[0] = (JSAMPROW) buf;

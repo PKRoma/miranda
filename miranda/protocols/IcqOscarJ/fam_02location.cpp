@@ -30,18 +30,16 @@
 //
 // DESCRIPTION:
 //
-//  Handle packets from Location family
+//  Handles packets from Location family
 //
 // -----------------------------------------------------------------------------
 
 #include "icqoscar.h"
 
 
-static void handleLocationUserInfoReply(BYTE* buf, WORD wLen, DWORD dwCookie);
-
 extern const char* cliSpamBot;
 
-void CIcqProto::handleLocationFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pSnacHeader)
+void CIcqProto::handleLocationFam(BYTE *pBuffer, WORD wBufferLength, snac_header *pSnacHeader)
 {
 	switch (pSnacHeader->wSubtype) {
 
@@ -217,109 +215,6 @@ void CIcqProto::handleLocationUserInfoReply(BYTE* buf, WORD wLen, DWORD dwCookie
 				BroadcastAck(hContact, ACKTYPE_GETINFO, ACKRESULT_SUCCESS, (HANDLE)1 ,0);
 
 				SAFE_FREE((void**)&szMsg);
-			}
-			break;
-		}
-
-	case CKT_CHECKSPAMBOT:
-		{
-			ReleaseCookie(dwCookie);
-
-			// Read user info TLVs
-			{
-				oscar_tlv_chain* pChain;
-				oscar_tlv* pTLV;
-				BYTE *tmp;
-				WORD wVersion = 0;
-				DWORD dwFT1 = 0, dwFT2 = 0, dwFT3 = 0;
-				BYTE nTCPFlag = 0;
-				DWORD dwDirectConnCookie = 0;
-				DWORD dwWebPort = 0;
-				BYTE* capBuf = NULL;
-				WORD capLen = 0;
-				char szStrBuf[MAX_PATH];
-				BYTE bClientId = 0;
-				const char *szClient;
-
-				// Syntax check
-				if (wLen < 4)
-					return;
-
-				tmp = buf;
-				// Get general chain
-				if (!(pChain = readIntoTLVChain(&buf, wLen, wTLVCount)))
-					return;
-
-				// Get Class word
-				WORD wClass = pChain->getWord(0x01, 1);
-				int nIsICQ = wClass & CLASS_ICQ;
-
-				if (dwUIN)
-				{ // Get DC info TLV
-					pTLV = pChain->getTLV(0x0C, 1);
-					if (pTLV && (pTLV->wLen >= 15))
-					{
-						BYTE *pBuffer = pTLV->pData;
-
-						nIsICQ = TRUE;
-
-						pBuffer += 8;
-						unpackByte(&pBuffer,  &nTCPFlag);
-						unpackWord(&pBuffer,  &wVersion);
-						unpackDWord(&pBuffer, &dwDirectConnCookie);
-						unpackDWord(&pBuffer, &dwWebPort); // Web front port
-						pBuffer += 4; // Client features
-
-						// Get faked time signatures, used to identify clients
-						if (pTLV->wLen >= 0x23)
-						{
-							unpackDWord(&pBuffer, &dwFT1);
-							unpackDWord(&pBuffer, &dwFT2);
-							unpackDWord(&pBuffer, &dwFT3);
-						}
-					}
-				}
-				else
-					nIsICQ = FALSE;
-
-				// Get Online Since TLV
-				DWORD dwOnlineSince = pChain->getDWord(0x03, 1);
-
-				disposeChain(&pChain);
-
-				wLen -= (buf - tmp);
-
-        if (wLen)
-        {
-				  // Get extra chain
-				  if (pChain = readIntoTLVChain(&buf, wLen, 2))
-				  {
-					  pTLV = pChain->getTLV(0x05, 1);
-					  if (pTLV && (pTLV->wLen > 0))
-					  {
-						  capBuf = pTLV->pData;
-						  capLen = pTLV->wLen;
-					  }
-				  }
-				  szClient = detectUserClient(hContact, nIsICQ, dwUIN, wClass, wVersion, dwFT1, dwFT2, dwFT3, dwOnlineSince, nTCPFlag, dwDirectConnCookie, dwWebPort, capBuf, capLen, &bClientId, szStrBuf);
-
-				  // Free TLV chain
-				  disposeChain(&pChain);
-
-				  if (szClient == cliSpamBot)
-				  {
-					  if (DBGetContactSettingByte(hContact, "CList", "NotOnList", 0))
-					  { // kill spammer
-						  icq_DequeueUser(dwUIN);
-						  AddToSpammerList(dwUIN);
-						  if (getSettingByte(NULL, "PopupsSpamEnabled", DEFAULT_SPAM_POPUPS_ENABLED))
-							  ShowPopUpMsg(hContact, LPGEN("Spambot Detected"), LPGEN("Contact deleted & further events blocked."), POPTYPE_SPAM);
-						  CallService(MS_DB_CONTACT_DELETE, (WPARAM)hContact, 0);
-
-						  NetLog_Server("Contact %s deleted", strUID(dwUIN, szUID));
-					  }
-				  }
-        }
 			}
 			break;
 		}

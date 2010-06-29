@@ -62,7 +62,7 @@ static INT_PTR CALLBACK EditUserPhoneDlgProc(HWND hwndDlg, UINT msg, WPARAM wPar
 			int i,item,countryCount;
 			struct CountryListEntry *countries;
 			SetWindowLongPtr(hwndDlg,GWLP_USERDATA,(LONG_PTR)lParam);
-			if(szText[0]) SetWindowTextA(hwndDlg,"Edit Phone Number");
+			if(szText[0]) SetWindowText(hwndDlg,TranslateT("Edit Phone Number"));
 			TranslateDialogDefault(hwndDlg);
 			if(lstrlenA(szText)>4 && !lstrcmpA(szText+lstrlenA(szText)-4," SMS")) {
 				CheckDlgButton(hwndDlg,IDC_SMS,BST_CHECKED);
@@ -232,7 +232,7 @@ INT_PTR CALLBACK ContactDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 				ListView_InsertColumn(GetDlgItem(hwndDlg,IDC_PHONES),3,&lvc);
 				ListView_InsertColumn(GetDlgItem(hwndDlg,IDC_PHONES),4,&lvc);
 			}
-			return TRUE;
+			break;
 		case M_REMAKELISTS:
 			{	char *szProto;
 			LVITEM lvi;
@@ -419,8 +419,7 @@ INT_PTR CALLBACK ContactDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 
 							if(IsOverEmail(hwndDlg,szEmail,SIZEOF(szEmail))) {
 								TCHAR szExec[264];
-								lstrcpy(szExec, _T("mailto:"));
-								lstrcat(szExec,szEmail);
+								mir_sntprintf(szExec, SIZEOF(szExec), _T("mailto:%s"), szEmail);
 								ShellExecute(hwndDlg,_T("open"),szExec,NULL,NULL,SW_SHOW);
 								break;
 							}
@@ -494,7 +493,7 @@ INT_PTR CALLBACK ContactDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 				POINT pt;
 				GetCursorPos(&pt);
 				ScreenToClient(hwndDlg,&pt);
-				SetFocus(ChildWindowFromPoint(hwndDlg,pt));	  //ugly hack because listviews ignore their first click
+//				SetFocus(ChildWindowFromPoint(hwndDlg,pt));	  //ugly hack because listviews ignore their first click
 			}
 			if(IsOverEmail(hwndDlg,NULL,0)) {
 				SetCursor(hHandCursor);

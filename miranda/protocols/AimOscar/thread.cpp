@@ -25,8 +25,7 @@ void __cdecl CAimProto::accept_file_thread(void* param)//buddy sending file
 	HANDLE hConn = NULL;
 	if (ft->peer_force_proxy)  //peer is forcing proxy
 	{
-		unsigned short port = getWord(AIM_KEY_PN, AIM_DEFAULT_PORT);
-		hConn = aim_peer_connect(ft->proxy_ip, port);
+		hConn = aim_peer_connect(ft->proxy_ip, get_default_port());
 		if (hConn) 
 		{
 			LOG("Connected to proxy ip that buddy specified.");
@@ -36,8 +35,7 @@ void __cdecl CAimProto::accept_file_thread(void* param)//buddy sending file
 	}
 	else if (ft->me_force_proxy) //we are forcing proxy
 	{
-		unsigned short port = getWord(AIM_KEY_PN, AIM_DEFAULT_PORT);
-		hConn = aim_peer_connect(AIM_PROXY_SERVER, port);
+		hConn = aim_peer_connect(AIM_PROXY_SERVER, get_default_port());
 		if (hConn) 
 		{
 			LOG("Connected to proxy ip because we want to use a proxy for the file transfer.");
@@ -60,8 +58,7 @@ void __cdecl CAimProto::accept_file_thread(void* param)//buddy sending file
 		}
 		else if (ft->sending)
 		{
-			unsigned short port = getWord(AIM_KEY_PN, AIM_DEFAULT_PORT);
-			hConn = aim_peer_connect(AIM_PROXY_SERVER, port);
+			hConn = aim_peer_connect(AIM_PROXY_SERVER, get_default_port());
 			if (hConn) 
 			{
 				ft->hConn = hConn;
@@ -82,7 +79,7 @@ void __cdecl CAimProto::accept_file_thread(void* param)//buddy sending file
 	{
 		if (ft->req_num)
 		{
-			aim_file_ad(hServerConn, seqno, ft->sn, ft->icbm_cookie, true, false);
+			aim_file_ad(hServerConn, seqno, ft->sn, ft->icbm_cookie, true, 0);
 		}
 		sendBroadcast(ft->hContact, ACKTYPE_FILE, ACKRESULT_FAILED, ft, 0);
 		ft_list.remove_by_ft(ft);

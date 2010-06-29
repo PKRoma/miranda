@@ -266,7 +266,7 @@ static int RenameGroupWithMove(int groupId, const TCHAR *szName, int move)
 	_itoa(groupId, idstr, 10);
 	if (DBGetContactSettingTString(NULL, "CListGroups", idstr, &dbv))
 		return 1;
-	str[0] = dbv.pszVal[0];
+	str[0] = dbv.pszVal[0] & 0x7F;
 	lstrcpyn(oldName, dbv.ptszVal + 1, SIZEOF(oldName));
 	DBFreeVariant(&dbv);
 	lstrcpyn(str + 1, szName, SIZEOF(str) - 1);
@@ -343,7 +343,7 @@ int fnRenameGroup( int groupID, TCHAR* newName )
 static INT_PTR RenameGroup(WPARAM wParam, LPARAM lParam)
 {
 	#if defined( _UNICODE )
-		WCHAR* temp = a2u(( char* )lParam );
+		WCHAR* temp = mir_a2u(( char* )lParam );
 		int result = ( -1 != RenameGroupWithMove(wParam - 1, temp, 1));
 		mir_free( temp );
 		return result;
@@ -380,7 +380,7 @@ static INT_PTR SetGroupFlags(WPARAM wParam, LPARAM lParam)
 		return 1;
 	flags = LOWORD(lParam) & HIWORD(lParam);
 	oldval = dbv.pszVal[0];
-	newval = dbv.pszVal[0] = (dbv.pszVal[0] & ~HIWORD(lParam)) | flags;
+	newval = dbv.pszVal[0] = ((oldval & ~HIWORD(lParam)) | flags) & 0x7f;
 	DBWriteContactSettingStringUtf(NULL, "CListGroups", idstr, dbv.pszVal);
 	DBFreeVariant(&dbv);
 	if ((oldval & GROUPF_HIDEOFFLINE) != (newval & GROUPF_HIDEOFFLINE))
@@ -545,6 +545,22 @@ static INT_PTR BuildGroupMenu(WPARAM, LPARAM)
 
 int InitGroupServices(void)
 {
+	for (int i = 0; ; i++) 
+	{
+		char str[32];
+		_itoa(i, str, 10);
+
+		DBVARIANT dbv;
+		if (DBGetContactSettingStringUtf(NULL, "CListGroups", str, &dbv))
+			break;
+		if (dbv.pszVal[0] & 0x80)
+		{
+			dbv.pszVal[0] &= 0x7f;
+			DBWriteContactSettingStringUtf(NULL, "CListGroups", str, dbv.pszVal);
+		}
+		DBFreeVariant(&dbv);
+	}
+
 	CreateServiceFunction(MS_CLIST_GROUPCREATE, CreateGroup);
 	CreateServiceFunction(MS_CLIST_GROUPDELETE, DeleteGroup);
 	CreateServiceFunction(MS_CLIST_GROUPRENAME, RenameGroup);
@@ -556,5 +572,6 @@ int InitGroupServices(void)
 	CreateServiceFunction(MS_CLIST_GROUPBUILDMENU, BuildGroupMenu);
 
 	hGroupChangeEvent = CreateHookableEvent( ME_CLIST_GROUPCHANGE );
+
 	return 0;
 }

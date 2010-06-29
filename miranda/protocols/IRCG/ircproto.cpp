@@ -36,6 +36,7 @@ CIrcProto::CIrcProto( const char* szModuleName, const TCHAR* tszUserName ) :
 	vUserhostReasons( 10, NULL ),
 	vWhoInProgress( 10, NULL )
 {
+	m_iVersion = 2;
 	m_tszUserName = mir_tstrdup( tszUserName );
 	m_szModuleName = mir_strdup( szModuleName );
 
@@ -80,6 +81,7 @@ CIrcProto::CIrcProto( const char* szModuleName, const TCHAR* tszUserName ) :
 	CallService( MS_DB_SETSETTINGRESIDENT, TRUE, ( LPARAM )text );
 
 	CList_SetAllOffline(true);
+	AddIcons();
 
 	IRC_MAP_ENTRY("PING", PING)
 	IRC_MAP_ENTRY("JOIN", JOIN)
@@ -170,7 +172,8 @@ CIrcProto::~CIrcProto()
 	CallService( MS_CLIST_REMOVECONTACTMENUITEM, ( WPARAM )hUMenuDisconnect, 0 );
 	CallService( MS_CLIST_REMOVECONTACTMENUITEM, ( WPARAM )hUMenuIgnore, 0 );
 
-	CallService( MS_CLIST_REMOVEMAINMENUITEM, ( WPARAM )hMenuRoot, 0 );
+	if (hMenuRoot)
+		CallService( MS_CLIST_REMOVEMAINMENUITEM, ( WPARAM )hMenuRoot, 0 );
 
 	mir_free( m_alias );
 	mir_free( m_szModuleName );
@@ -209,9 +212,8 @@ int CIrcProto::OnModulesLoaded( WPARAM, LPARAM )
 	NETLIBUSER nlu = {0};
 	TCHAR name[128];
 
+	InitContactMenus();
 	DBDeleteContactSetting( NULL, m_szModuleName, "JTemp" );
-
-	AddIcons();
 
 	nlu.cbSize = sizeof(nlu);
 	nlu.flags = NUF_OUTGOING|NUF_INCOMING|NUF_HTTPCONNS|NUF_TCHAR;
@@ -241,11 +243,11 @@ int CIrcProto::OnModulesLoaded( WPARAM, LPARAM )
 	if ( ServiceExists( MS_GC_REGISTER )) {
 		GCREGISTER gcr = {0};
 		gcr.cbSize = sizeof(GCREGISTER);
-		gcr.dwFlags = GC_CHANMGR|GC_BOLD|GC_ITALICS|GC_UNDERLINE|GC_COLOR|GC_BKGCOLOR;
+		gcr.dwFlags = GC_CHANMGR | GC_BOLD | GC_ITALICS | GC_UNDERLINE | GC_COLOR | GC_BKGCOLOR | GC_TCHAR;
 		gcr.iMaxText = 0;
 		gcr.nColors = 16;
 		gcr.pColors = colors;
-		gcr.pszModuleDispName = m_szModuleName;
+		gcr.ptszModuleDispName = m_tszUserName;
 		gcr.pszModule = m_szModuleName;
 		CallServiceSync( MS_GC_REGISTER, NULL, (LPARAM)&gcr );
 		IrcHookEvent( ME_GC_EVENT, &CIrcProto::GCEventHook );
@@ -281,7 +283,7 @@ int CIrcProto::OnModulesLoaded( WPARAM, LPARAM )
 		if ( IDYES == MessageBox(0,TranslateT("The IRC protocol depends on another plugin called \'Chat\'\n\nDo you want to download it from the Miranda IM web site now?"),TranslateT("Information"),MB_YESNO|MB_ICONINFORMATION ))
 			CallService( MS_UTILS_OPENURL, 1, (LPARAM) "http://www.miranda-im.org/download/");
 	}
-    
+
 	mir_snprintf(szTemp, sizeof(szTemp), "%s\\%s_perform.ini", mirandapath, m_szModuleName);
 	char* pszPerformData = IrcLoadFile( szTemp );
 	if ( pszPerformData != NULL ) {
@@ -327,7 +329,6 @@ int CIrcProto::OnModulesLoaded( WPARAM, LPARAM )
 	}
 
 	InitIgnore();
-	InitMenus();
 
 	IrcHookEvent( ME_USERINFO_INITIALISE, &CIrcProto::OnInitUserInfo );
 	IrcHookEvent( ME_CLIST_PREBUILDCONTACTMENU, &CIrcProto::OnMenuPreBuild );
@@ -359,7 +360,10 @@ HANDLE __cdecl CIrcProto::AddToList( int, PROTOSEARCHRESULT* psr )
 	if ( m_iDesiredStatus == ID_STATUS_OFFLINE || m_iDesiredStatus == ID_STATUS_CONNECTING )
 		return 0;
 
-	CONTACT user = { mir_a2t( psr->nick ), NULL, NULL, true, false, false };
+	TCHAR *id = psr->id ? psr->id : psr->nick;
+	id = psr->flags & PSR_UNICODE ? mir_u2t((wchar_t*)id) : mir_a2t((char*)id);
+
+	CONTACT user = { id, NULL, NULL, true, false, false };
 	HANDLE hContact = CList_AddContact( &user, true, false );
 
 	if ( hContact ) {
@@ -385,7 +389,7 @@ HANDLE __cdecl CIrcProto::AddToList( int, PROTOSEARCHRESULT* psr )
 			PostIrcMessage( _T("/PRIVMSG %s \001VERSION\001"), user.name);
 	}
 
-	mir_free( user.name );
+	mir_free(id);
 	return hContact;
 }
 
@@ -408,7 +412,7 @@ int __cdecl CIrcProto::Authorize( HANDLE )
 ////////////////////////////////////////////////////////////////////////////////////////
 // AuthDeny - handles the unsuccessful authorization
 
-int __cdecl CIrcProto::AuthDeny( HANDLE, const char* )
+int __cdecl CIrcProto::AuthDeny( HANDLE, const TCHAR* )
 {
 	return 0;
 }
@@ -424,7 +428,7 @@ int __cdecl CIrcProto::AuthRecv( HANDLE, PROTORECVEVENT* )
 ////////////////////////////////////////////////////////////////////////////////////////
 // PSS_AUTHREQUEST
 
-int __cdecl CIrcProto::AuthRequest( HANDLE, const char* )
+int __cdecl CIrcProto::AuthRequest( HANDLE, const TCHAR* )
 {
 	return 1;
 }
@@ -440,7 +444,7 @@ HANDLE __cdecl CIrcProto::ChangeInfo( int, void* )
 ////////////////////////////////////////////////////////////////////////////////////////
 // FileAllow - starts a file transfer
 
-HANDLE __cdecl CIrcProto::FileAllow( HANDLE, HANDLE hTransfer, const char* szPath )
+HANDLE __cdecl CIrcProto::FileAllow( HANDLE, HANDLE hTransfer, const TCHAR* szPath )
 {
 	DCCINFO* di = ( DCCINFO* )hTransfer;
 
@@ -449,10 +453,8 @@ HANDLE __cdecl CIrcProto::FileAllow( HANDLE, HANDLE hTransfer, const char* szPat
 		return (HANDLE)szPath;
 	}
 
-	TCHAR* ptszFileName = mir_a2t_cp( szPath, getCodepage());
-	di->sPath = ptszFileName;
+	di->sPath = szPath;
 	di->sFileAndPath = di->sPath + di->sFile;
-	mir_free( ptszFileName );
 
 	CDccSession* dcc = new CDccSession( this, di );
 	AddDCCSession( di, dcc );
@@ -479,7 +481,7 @@ int __cdecl CIrcProto::FileCancel( HANDLE, HANDLE hTransfer )
 ////////////////////////////////////////////////////////////////////////////////////////
 // FileDeny - denies a file transfer
 
-int __cdecl CIrcProto::FileDeny( HANDLE, HANDLE hTransfer, const char* )
+int __cdecl CIrcProto::FileDeny( HANDLE, HANDLE hTransfer, const TCHAR* )
 {
 	DCCINFO* di = ( DCCINFO* )hTransfer;
 	delete di;
@@ -489,7 +491,7 @@ int __cdecl CIrcProto::FileDeny( HANDLE, HANDLE hTransfer, const char* )
 ////////////////////////////////////////////////////////////////////////////////////////
 // FileResume - processes file renaming etc
 
-int __cdecl CIrcProto::FileResume( HANDLE hTransfer, int* action, const char** szFilename )
+int __cdecl CIrcProto::FileResume( HANDLE hTransfer, int* action, const TCHAR** szFilename )
 {
 	DCCINFO* di = ( DCCINFO* )hTransfer;
 
@@ -499,7 +501,7 @@ int __cdecl CIrcProto::FileResume( HANDLE hTransfer, int* action, const char** s
 	if (dcc) {
 		InterlockedExchange(&dcc->dwWhatNeedsDoing, i);
 		if (*action == FILERESUME_RENAME) {
-			char * szTemp = _strdup(*szFilename);
+			TCHAR* szTemp = _tcsdup(*szFilename);
 			InterlockedExchangePointer((PVOID*)&dcc->NewFileName, szTemp);
 		}
 
@@ -574,9 +576,21 @@ DWORD_PTR __cdecl CIrcProto::GetCaps( int type, HANDLE )
 
 HICON __cdecl CIrcProto::GetIcon( int iconIndex )
 {
-	if (( iconIndex & 0xFFFF ) == PLI_PROTOCOL )
-		return ( HICON )LoadImage(hInst,MAKEINTRESOURCE(IDI_MAIN),IMAGE_ICON,16,16,LR_SHARED);
+	if (LOWORD(iconIndex) == PLI_PROTOCOL)
+	{
+		if (iconIndex & PLIF_ICOLIBHANDLE)
+			return (HICON)GetIconHandle(IDI_MAIN);
+		
+		bool big = (iconIndex & PLIF_SMALL) == 0;
+		HICON hIcon = LoadIconEx(IDI_MAIN, big);
 
+		if (iconIndex & PLIF_ICOLIB)
+			return hIcon;
+
+		HICON hIcon2 = CopyIcon(hIcon);
+		ReleaseIconEx(hIcon);
+		return hIcon2;
+	}
 	return NULL;
 }
 
@@ -593,25 +607,28 @@ int __cdecl CIrcProto::GetInfo( HANDLE, int )
 
 struct AckBasicSearchParam
 {
-	char buf[ 50 ];
+	PROTOCHAR buf[ 50 ];
 };
 
 void __cdecl CIrcProto::AckBasicSearch( void* param )
 {
 	PROTOSEARCHRESULT psr = { 0 };
 	psr.cbSize = sizeof(psr);
+	psr.flags = PSR_TCHAR;
+	psr.id = (( AckBasicSearchParam* )param )->buf;
 	psr.nick = (( AckBasicSearchParam* )param )->buf;
 	ProtoBroadcastAck( m_szModuleName, NULL, ACKTYPE_SEARCH, ACKRESULT_DATA, (HANDLE) 1, (LPARAM) & psr);
 	ProtoBroadcastAck( m_szModuleName, NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, (HANDLE) 1, 0);
 	delete param;
 }
 
-HANDLE __cdecl CIrcProto::SearchBasic( const char* szId )
+HANDLE __cdecl CIrcProto::SearchBasic( const PROTOCHAR* szId )
 {
 	if ( szId ) {
-		if (m_iDesiredStatus != ID_STATUS_OFFLINE && m_iDesiredStatus != ID_STATUS_CONNECTING && lstrlenA(szId) > 0 && !IsChannel(szId)) {
+		if (m_iDesiredStatus != ID_STATUS_OFFLINE && m_iDesiredStatus != ID_STATUS_CONNECTING && 
+			szId && szId[0] && !IsChannel(szId)) {
 			AckBasicSearchParam* param = new AckBasicSearchParam;
-			lstrcpynA( param->buf, szId, 50 );
+			lstrcpyn( param->buf, szId, 50 );
 			ircFork( &CIrcProto::AckBasicSearch, param );
 			return ( HANDLE )1;
 	}	}
@@ -622,7 +639,7 @@ HANDLE __cdecl CIrcProto::SearchBasic( const char* szId )
 ////////////////////////////////////////////////////////////////////////////////////////
 // SearchByEmail - searches the contact by its e-mail
 
-HANDLE __cdecl CIrcProto::SearchByEmail( const char* )
+HANDLE __cdecl CIrcProto::SearchByEmail( const PROTOCHAR* )
 {
 	return NULL;
 }
@@ -630,7 +647,7 @@ HANDLE __cdecl CIrcProto::SearchByEmail( const char* )
 ////////////////////////////////////////////////////////////////////////////////////////
 // upsupported search functions
 
-HANDLE __cdecl CIrcProto::SearchByName( const char*, const char*, const char* )
+HANDLE __cdecl CIrcProto::SearchByName( const PROTOCHAR*, const PROTOCHAR*, const PROTOCHAR* )
 {
 	return NULL;
 }
@@ -656,10 +673,10 @@ int __cdecl CIrcProto::RecvContacts( HANDLE, PROTORECVEVENT* )
 ////////////////////////////////////////////////////////////////////////////////////////
 // RecvFile
 
-int __cdecl CIrcProto::RecvFile( HANDLE hContact, PROTORECVFILE* evt )
+int __cdecl CIrcProto::RecvFile( HANDLE hContact, PROTORECVFILET* evt )
 {
 	CCSDATA ccs = { hContact, PSR_FILE, 0, ( LPARAM )evt };
-	return CallService( MS_PROTO_RECVFILE, 0, ( LPARAM )&ccs );
+	return CallService( MS_PROTO_RECVFILET, 0, ( LPARAM )&ccs );
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -690,7 +707,7 @@ int __cdecl CIrcProto::SendContacts( HANDLE, int, int, HANDLE* )
 ////////////////////////////////////////////////////////////////////////////////////////
 // SendFile - sends a file
 
-HANDLE __cdecl CIrcProto::SendFile( HANDLE hContact, const char*, char** ppszFiles )
+HANDLE __cdecl CIrcProto::SendFile( HANDLE hContact, const TCHAR*, TCHAR** ppszFiles )
 {
 	DCCINFO* dci = NULL;
 	int iPort = 0;
@@ -718,7 +735,7 @@ HANDLE __cdecl CIrcProto::SendFile( HANDLE hContact, const char*, char** ppszFil
 		//get file size
 		FILE * hFile = NULL;
 		while (ppszFiles[index] && hFile == 0) {
-			hFile = fopen ( ppszFiles[index] , "rb" );
+			hFile = _tfopen ( ppszFiles[index] , _T("rb"));
 			if (hFile) {
 				fseek (hFile , 0 , SEEK_END);
 				size = ftell (hFile);
@@ -738,7 +755,7 @@ HANDLE __cdecl CIrcProto::SendFile( HANDLE hContact, const char*, char** ppszFil
 		if ( !getTString( hContact, "Nick", &dbv )) {
 			// set up a basic DCCINFO struct and pass it to a DCC object
 			dci = new DCCINFO;
-			dci->sFileAndPath = (TCHAR *)_A2T( ppszFiles[index], getCodepage());
+			dci->sFileAndPath = ppszFiles[index];
 
 			int i = dci->sFileAndPath.ReverseFind( '\\' );
 			if (i != -1) {
@@ -816,7 +833,7 @@ HANDLE __cdecl CIrcProto::SendFile( HANDLE hContact, const char*, char** ppszFil
 			index++;
 			while( ppszFiles[index] ) {
 				hFile = NULL;
-				hFile = fopen( ppszFiles[index] , "rb" );
+				hFile = _tfopen( ppszFiles[index] , _T("rb"));
 				if ( hFile ) {
 					fclose(hFile);
 					PostIrcMessage( _T("/DCC SEND %s ") _T(TCHAR_STR_PARAM), dci->sContactName.c_str(), ppszFiles[index]);
@@ -923,13 +940,13 @@ int CIrcProto::SetStatusInternal( int iNewStatus, bool bIsInternal )
 	if ( iNewStatus != ID_STATUS_OFFLINE && lstrlenA(m_network) < 1 ) {
 		if (lstrlen(m_nick) > 0 && !m_disableDefaultServer) {
 			CQuickDlg* dlg = new CQuickDlg( this );
+			dlg->GetProto()->m_quickComboSelection = dlg->GetProto()->m_serverComboSelection + 1;
 			dlg->Show();
 			HWND hwnd = dlg->GetHwnd();
 			SetWindowTextA(hwnd, "Miranda IRC");
 			SetWindowText(GetDlgItem(hwnd, IDC_TEXT), TranslateT("Please choose an IRC-network to go online. This network will be the default."));
 			SetWindowText(GetDlgItem(hwnd, IDC_CAPTION), TranslateT("Default network"));
-			HICON hIcon = LoadIconEx(IDI_MAIN);
-			SendMessage(hwnd, WM_SETICON, ICON_BIG,(LPARAM)hIcon);
+			WindowSetIcon(hwnd, IDI_MAIN);
 			ShowWindow(hwnd, SW_SHOW);
 			SetActiveWindow(hwnd);
 		}
@@ -1020,7 +1037,7 @@ int __cdecl CIrcProto::SendAwayMsg( HANDLE, HANDLE, const char* )
 ////////////////////////////////////////////////////////////////////////////////////////
 // SetAwayMsg - sets the away status message
 
-int __cdecl CIrcProto::SetAwayMsg( int status, const char* msg )
+int __cdecl CIrcProto::SetAwayMsg( int status, const TCHAR* msg )
 {
 	switch( status ) {
 	case ID_STATUS_ONLINE:     case ID_STATUS_INVISIBLE:   case ID_STATUS_FREECHAT:
@@ -1028,7 +1045,7 @@ int __cdecl CIrcProto::SetAwayMsg( int status, const char* msg )
 		break;
 
 	default:
-		CMString newStatus = _A2T( msg, getCodepage());
+		CMString newStatus = msg;
 		ReplaceString( newStatus, _T("\r\n"), _T(" "));
 		if ( m_statusMessage.IsEmpty() || msg == NULL || m_statusMessage != newStatus ) {
 			if ( msg == NULL || *( char* )msg == '\0')
@@ -1059,13 +1076,20 @@ int __cdecl CIrcProto::OnEvent( PROTOEVENTTYPE eventType, WPARAM wParam, LPARAM 
 	case EV_PROTO_ONLOAD:    return OnModulesLoaded( 0, 0 );
 	case EV_PROTO_ONEXIT:    return OnPreShutdown( 0, 0 );
 	case EV_PROTO_ONOPTIONS: return OnInitOptionsPages( wParam, lParam );
+
+	case EV_PROTO_ONMENU:
+		InitMainMenus();
+		break;
+
 	case EV_PROTO_ONRENAME:
-		{
+		if ( hMenuRoot ) {
 			CLISTMENUITEM clmi = { 0 };
 			clmi.cbSize = sizeof( CLISTMENUITEM );
-			clmi.flags = CMIM_NAME | CMIF_TCHAR;
+			clmi.flags = CMIM_NAME | CMIF_TCHAR | CMIF_KEEPUNTRANSLATED;
 			clmi.ptszName = m_tszUserName;
 			CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hMenuRoot, ( LPARAM )&clmi );
-	}	}
+		}
+		break;
+	}
 	return 1;
 }

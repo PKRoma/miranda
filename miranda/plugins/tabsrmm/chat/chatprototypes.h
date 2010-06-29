@@ -1,4 +1,26 @@
-//main.c
+/*
+Chat module plugin for Miranda IM
+
+Copyright (C) 2003-2009 Joergen Persson and others
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+
+$Id$
+
+*/
+
 void LoadIcons(void);
 void LoadLogIcons(void);
 void FreeIcons(void);
@@ -11,7 +33,7 @@ INT_PTR CALLBACK DlgProcColorToolWindow(HWND hwndDlg, UINT msg, WPARAM wParam, L
 void   Log_StreamInEvent(HWND hwndDlg, LOGINFO* lin, SESSION_INFO* si, BOOL bRedraw, BOOL bPhaseTwo);
 void   LoadMsgLogBitmaps(void);
 void   FreeMsgLogBitmaps(void);
-TCHAR* GetChatLogsFilename (HANDLE  hContact, time_t tTime);
+TCHAR* GetChatLogsFilename(SESSION_INFO *si, time_t tTime);
 TCHAR* MakeTimeStamp(TCHAR* pszStamp, time_t time);
 char*  Log_CreateRtfHeader(MODULEINFO * mi);
 
@@ -31,7 +53,7 @@ HICON LoadIconEx(int iIndex, char * pszIcoLibName, int iX, int iY);
 //services.c
 void HookEvents(void);
 void UnhookEvents(void);
-void CreateServiceFunctions(void);
+int  CreateServiceFunctions(void);
 void DestroyServiceFunctions(void);
 void DestroyHookableEvents(void);
 void CreateHookableEvents(void);
@@ -47,7 +69,7 @@ int  Service_SetSBText(WPARAM wParam, LPARAM lParam);
 int  Service_SetVisibility(WPARAM wParam, LPARAM lParam);
 INT_PTR  Service_GetCount(WPARAM wParam,LPARAM lParam);
 
-HWND CreateNewRoom(struct ContainerWindowData *pContainer, SESSION_INFO *si, BOOL bActivateTab, BOOL bPopupContainer, BOOL bWantPopup);
+HWND CreateNewRoom(TContainerData *pContainer, SESSION_INFO *si, BOOL bActivateTab, BOOL bPopupContainer, BOOL bWantPopup);
 
 //manager.c
 void          SetActiveSession(const TCHAR* pszID, const char* pszModule);
@@ -57,19 +79,17 @@ SESSION_INFO* SM_AddSession(const TCHAR* pszID, const char* pszModule);
 int           SM_RemoveSession(const TCHAR* pszID, const char* pszModule);
 SESSION_INFO* SM_FindSession(const TCHAR* pszID, const char* pszModule);
 USERINFO*     SM_AddUser(const TCHAR* pszID, const char* pszModule, const TCHAR* pszUID, const TCHAR* pszNick, WORD wStatus);
+SESSION_INFO* SM_FindSessionAutoComplete(const char* pszModule, SESSION_INFO* currSession, SESSION_INFO* prevSession, const TCHAR* pszOriginal, const TCHAR* pszCurrent);
 BOOL          SM_ChangeUID(const TCHAR* pszID, const char* pszModule, const TCHAR* pszUID, const TCHAR* pszNewUID);
 BOOL          SM_ChangeNick(const TCHAR* pszID, const char* pszModule, GCEVENT * gce);
 BOOL          SM_RemoveUser(const TCHAR* pszID, const char* pszModule, const TCHAR* pszUID);
 BOOL          SM_SetOffline(const TCHAR* pszID, const char* pszModule);
-BOOL          SM_SetTabbedWindowHwnd(SESSION_INFO* si, HWND hwnd);
 HICON         SM_GetStatusIcon(SESSION_INFO* si, USERINFO* ui, char* szIndicator);
 BOOL          SM_SetStatus(const TCHAR* pszID, const char* pszModule, int wStatus);
 BOOL          SM_SetStatusEx(const TCHAR* pszID, const char* pszModule, const TCHAR* pszText, int flags );
 BOOL          SM_SendUserMessage(const TCHAR* pszID, const char* pszModule, const TCHAR* pszText);
 STATUSINFO*   SM_AddStatus(const TCHAR* pszID, const char* pszModule, const TCHAR* pszStatus);
-SESSION_INFO* SM_GetNextWindow(SESSION_INFO* si);
-SESSION_INFO* SM_GetPrevWindow(SESSION_INFO* si);
-BOOL          SM_AddEventToAllMatchingUID(GCEVENT * gce);
+BOOL          SM_AddEventToAllMatchingUID(GCEVENT * gce, BOOL bisHighLight = FALSE);
 BOOL          SM_AddEvent(const TCHAR* pszID, const char* pszModule, GCEVENT * gce, BOOL bIsHighlighted);
 LRESULT       SM_SendMessage(const TCHAR* pszID, const char* pszModule, UINT msg, WPARAM wParam, LPARAM lParam);
 BOOL          SM_PostMessage(const TCHAR* pszID, const char* pszModule, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -89,7 +109,7 @@ SESSION_INFO* SM_FindSessionByIndex(const char* pszModule, int iItem);
 char*         SM_GetUsers(SESSION_INFO* si);
 USERINFO*     SM_GetUserFromIndex(const TCHAR* pszID, const char* pszModule, int index);
 BOOL		  SM_ReconfigureFilters();
-SESSION_INFO* SM_FindSessionAutoComplete(const char* pszModule, SESSION_INFO* currSession, SESSION_INFO* prevSession, const TCHAR* pszOriginal, const TCHAR* pszCurrent);
+BOOL		  SM_InvalidateLogDirectories();
 MODULEINFO*   MM_AddModule(const char* pszModule);
 MODULEINFO*   MM_FindModule(const char* pszModule);
 void          MM_FixColors();
@@ -129,12 +149,12 @@ INT_PTR       CList_LeaveChat(WPARAM wParam, LPARAM lParam);
 int           CList_PrebuildContactMenu(WPARAM wParam, LPARAM lParam);
 INT_PTR		  CList_PrebuildContactMenuSvc(WPARAM wParam, LPARAM lParam);
 void          CList_CreateGroup(TCHAR* group);
-BOOL          CList_AddEvent(HANDLE hContact, HICON Icon, HANDLE event, int type, TCHAR* fmt, ... ) ;
+BOOL          CList_AddEvent(HANDLE hContact, HICON Icon, HANDLE event, int type, const TCHAR* fmt, ... ) ;
 HANDLE        CList_FindRoom (const char* pszModule, const TCHAR* pszRoom) ;
 int           WCCmp(TCHAR* wild, TCHAR*string);
 
 //tools.c
-TCHAR*        RemoveFormatting(const TCHAR* pszText);
+TCHAR*        RemoveFormatting(const TCHAR* pszText, bool fLower = false);
 BOOL          DoSoundsFlashPopupTrayStuff(SESSION_INFO* si, GCEVENT * gce, BOOL bHighlight, int bManyFix);
 int           Chat_GetColorIndex(const char* pszModule, COLORREF cr);
 void          CheckColorsInModule(const char* pszModule);
@@ -148,7 +168,7 @@ BOOL          DoEventHook(const TCHAR* pszID, const char* pszModule, int iType, 
 BOOL          IsEventSupported(int eventType);
 BOOL          LogToFile(SESSION_INFO* si, GCEVENT * gce);
 void          Chat_SetFilters(SESSION_INFO *si);
-
+void 		  TSAPI DoFlashAndSoundWorker(FLASH_PARAMS* p);
 // message.c
 char*         Chat_Message_GetFromStream(HWND hwndDlg, SESSION_INFO* si);
 TCHAR*        Chat_DoRtfToTags( char* pszRtfText, SESSION_INFO* si);

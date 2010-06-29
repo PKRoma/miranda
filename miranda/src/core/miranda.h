@@ -49,11 +49,17 @@ extern pfnSHGetSpecialFolderPathW shGetSpecialFolderPathW;
 #define shGetSpecialFolderPath shGetSpecialFolderPathA
 #endif
 
-typedef HDESK (WINAPI* pfnOpenInputDesktop)( DWORD, BOOL, DWORD );
+typedef HDESK (WINAPI* pfnOpenInputDesktop)(DWORD, BOOL, DWORD);
 extern pfnOpenInputDesktop openInputDesktop;
 
-typedef HDESK (WINAPI* pfnCloseDesktop)( HDESK );
+typedef HDESK (WINAPI* pfnCloseDesktop)(HDESK);
 extern pfnCloseDesktop closeDesktop;
+
+typedef BOOL (WINAPI* pfnAnimateWindow)(HWND, DWORD, DWORD);
+extern pfnAnimateWindow animateWindow;
+
+typedef BOOL (WINAPI * pfnSetLayeredWindowAttributes) (HWND, COLORREF, BYTE, DWORD);
+extern pfnSetLayeredWindowAttributes setLayeredWindowAttributes;
 
 typedef HTHEME  ( STDAPICALLTYPE *pfnOpenThemeData )( HWND, LPCWSTR );
 typedef HRESULT ( STDAPICALLTYPE *pfnIsThemeBackgroundPartiallyTransparent )( HTHEME, int, int );
@@ -67,7 +73,12 @@ typedef HRESULT ( STDAPICALLTYPE *pfnCloseThemeData )( HTHEME );
 typedef HRESULT ( STDAPICALLTYPE *pfnEnableThemeDialogTexture )( HWND hwnd, DWORD dwFlags );
 typedef HRESULT ( STDAPICALLTYPE *pfnSetWindowTheme )( HWND, LPCWSTR, LPCWSTR );
 typedef HRESULT ( STDAPICALLTYPE *pfnSetWindowThemeAttribute )( HWND, enum WINDOWTHEMEATTRIBUTETYPE, PVOID, DWORD );
-typedef BOOL ( STDAPICALLTYPE *pfnIsThemeActive )();
+typedef BOOL    ( STDAPICALLTYPE *pfnIsThemeActive )();
+typedef HRESULT (STDAPICALLTYPE *pfnBufferedPaintInit)(void);
+typedef HRESULT (STDAPICALLTYPE *pfnBufferedPaintUninit)(void);
+typedef HANDLE  (STDAPICALLTYPE *pfnBeginBufferedPaint)(HDC, RECT *, BP_BUFFERFORMAT, BP_PAINTPARAMS *, HDC *);
+typedef HRESULT (STDAPICALLTYPE *pfnEndBufferedPaint)(HANDLE, BOOL);
+typedef HRESULT (STDAPICALLTYPE *pfnGetBufferedPaintBits)(HANDLE, RGBQUAD **, int *);
 
 extern pfnOpenThemeData openThemeData;
 extern pfnIsThemeBackgroundPartiallyTransparent isThemeBackgroundPartiallyTransparent;
@@ -82,6 +93,11 @@ extern pfnEnableThemeDialogTexture enableThemeDialogTexture;
 extern pfnSetWindowTheme setWindowTheme;
 extern pfnSetWindowThemeAttribute setWindowThemeAttribute;
 extern pfnIsThemeActive isThemeActive;
+extern pfnBufferedPaintInit bufferedPaintInit;
+extern pfnBufferedPaintUninit bufferedPaintUninit;
+extern pfnBeginBufferedPaint beginBufferedPaint;
+extern pfnEndBufferedPaint endBufferedPaint;
+extern pfnGetBufferedPaintBits getBufferedPaintBits;
 
 extern ITaskbarList3 * pTaskbarInterface;
 
@@ -104,6 +120,7 @@ void*  mir_realloc( void* ptr, size_t );
 void   mir_free( void* ptr );
 char*  mir_strdup( const char* str );
 WCHAR* mir_wstrdup( const WCHAR* str );
+char* mir_strndup( const char* str, size_t len );
 
 int    mir_snprintf(char *buffer, size_t count, const char* fmt, ...);
 int    mir_sntprintf(TCHAR *buffer, size_t count, const TCHAR* fmt, ...);
@@ -137,14 +154,26 @@ char* Utf8DecodeCP( char* str, int codepage, wchar_t** ucs2 );
 
 wchar_t* Utf8DecodeUcs2( const char* str );
 
+__forceinline char* Utf8DecodeA(const char* src)
+{
+    char* tmp = mir_strdup(src);
+    Utf8Decode(tmp, NULL);
+    return tmp;
+}
+
+
 char* Utf8Encode( const char* str );
 char* Utf8EncodeCP( const char* src, int codepage );
 
 char* Utf8EncodeUcs2( const wchar_t* str );
 
+int   Ucs2toUtf8Len(const wchar_t *src);
+
 #if defined( _UNICODE )
+	#define Utf8DecodeT Utf8DecodeUcs2
 	#define Utf8EncodeT Utf8EncodeUcs2
 #else
+	#define Utf8DecodeT Utf8DecodeA
 	#define Utf8EncodeT Utf8Encode
 #endif
 
@@ -154,12 +183,6 @@ int    LangPackGetDefaultCodePage();
 int    LangPackGetDefaultLocale();
 TCHAR* LangPackPcharToTchar( const char* pszStr );
 char*  LangPackTranslateString(const char *szEnglish, const int W);
-
-TCHAR*   a2t( const char* str );
-char*    t2a( const TCHAR* src );
-TCHAR*   u2t( const wchar_t* src );
-char*    u2a( const wchar_t* src );
-wchar_t* a2u( const char* src );
 
 /**** path.c ***************************************************************************/
 
@@ -182,15 +205,15 @@ int CreateDirectoryTree(const char *szDir);
 /**** skin2icons.c *********************************************************************/
 
 HANDLE IcoLib_AddNewIcon( SKINICONDESC* sid );
-HICON  IcoLib_GetIcon( const char* pszIconName );
-HICON  IcoLib_GetIconByHandle( HANDLE hItem );
+HICON  IcoLib_GetIcon( const char* pszIconName, bool big );
+HICON  IcoLib_GetIconByHandle( HANDLE hItem, bool big );
 HANDLE IcoLib_IsManaged( HICON hIcon );
-int    IcoLib_ReleaseIcon( HICON hIcon, char* szIconName );
+int    IcoLib_ReleaseIcon( HICON hIcon, char* szIconName, bool big );
 
 /**** skinicons.c **********************************************************************/
 
-HICON LoadSkinProtoIcon( const char* szProto, int status );
-HICON LoadSkinIcon( int idx );
+HICON LoadSkinProtoIcon( const char* szProto, int status, bool big = false );
+HICON LoadSkinIcon( int idx, bool big = false );
 HANDLE GetSkinIconHandle( int idx );
 
 HICON LoadIconEx(HINSTANCE hInstance, LPCTSTR lpIconName, BOOL bShared);
@@ -208,7 +231,7 @@ void Window_SetIcon_IcoLib(HWND hWnd, int iconId);
 void Window_SetProtoIcon_IcoLib(HWND hWnd, const char* szProto, int iconId);
 void Window_FreeIcon_IcoLib(HWND hWnd);
 
-#define IconLib_ReleaseIcon(hIcon, szName) IcoLib_ReleaseIcon(hIcon, szName);
+#define IconLib_ReleaseIcon(hIcon, szName) IcoLib_ReleaseIcon(hIcon, szName, false);
 #define Safe_DestroyIcon(hIcon) if (hIcon) DestroyIcon(hIcon)
 
 /**** clistmenus.c **********************************************************************/
@@ -234,6 +257,9 @@ extern LIST<PROTOACCOUNT> accounts;
 PROTOACCOUNT* Proto_GetAccount( const char* accName );
 PROTOCOLDESCRIPTOR* Proto_IsProtocolLoaded( const char* szProtoName );
 
+int Proto_IsAccountEnabled( PROTOACCOUNT* pa );
+int Proto_IsAccountLocked( PROTOACCOUNT* pa );
+
 PROTO_INTERFACE* AddDefaultAccount( const char* szProtoName );
 int  FreeDefaultAccount( PROTO_INTERFACE* ppi );
 
@@ -257,6 +283,51 @@ __inline static INT_PTR CallProtoService( const char* szModule, const char* szSe
 /**** utils.c **************************************************************************/
 
 #if defined( _UNICODE )
-	char*  rtrim( char* string );
+	char*  rtrim(char* str);
 #endif
-TCHAR* rtrim( TCHAR* string );
+TCHAR* rtrim(TCHAR* str);
+char*  ltrim(char* str);
+char* ltrimp(char* str);
+__inline char* lrtrim(char* str) { return ltrim(rtrim(str)); };
+__inline char* lrtrimp(char* str) { return ltrimp(rtrim(str)); };
+
+bool wildcmp(char * name, char * mask);
+
+HBITMAP ConvertIconToBitmap(HICON hIcon, HIMAGELIST hIml, int iconId);
+
+#ifdef _UNICODE
+class StrConvT
+{
+private:
+	wchar_t* m_body;
+
+public:
+	StrConvT( const char* pSrc ) :
+		m_body( mir_a2u( pSrc )) {}
+
+    ~StrConvT() {  mir_free( m_body ); }
+	operator const wchar_t* () const { return m_body; }
+};
+
+class StrConvA
+{
+private:
+	char* m_body;
+
+public:
+	StrConvA( const wchar_t* pSrc ) :
+		m_body( mir_u2a( pSrc )) {}
+
+    ~StrConvA() {  mir_free( m_body ); }
+	operator const char*  () const { return m_body; }
+	operator const wchar_t* () const { return ( wchar_t* )m_body; }  // type cast to fake the interface definition
+	operator const LPARAM () const { return ( LPARAM )m_body; }
+};
+
+#else
+
+#define StrConvT( x ) x
+#define StrConvA( x ) x
+
+#endif
+

@@ -20,10 +20,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 struct flap_header
 {
-    unsigned char ast;
-    unsigned char type;
-    unsigned short seqno;
-    unsigned short len;
+	unsigned char ast;
+	unsigned char type;
+	unsigned short seqno;
+	unsigned short len;
 };
 struct snac_header
 {
@@ -45,7 +45,7 @@ inline unsigned long _htonl(unsigned long s)
 
 inline unsigned __int64 _htonl64(unsigned __int64 s)
 {
-    return (unsigned __int64)_htonl(s & 0xffffffff) << 32 | _htonl(s >> 32);
+	return (unsigned __int64)_htonl(s & 0xffffffff) << 32 | _htonl(s >> 32);
 }
 
 

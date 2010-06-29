@@ -38,7 +38,7 @@ Robert rainwater <rainwater@miranda-im.org>
 
 Copyright
 ---------
-Copyright (c) 2005-2007 Robert Rainwater
+Copyright (c) 2005-2009 Robert Rainwater
 Portions of dbRW are Copyright (c) 2005 Sam Kothari
 
 This program is free software; you can redistribute it and/or

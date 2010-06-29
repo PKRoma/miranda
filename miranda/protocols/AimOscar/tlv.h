@@ -18,8 +18,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 #ifndef TLV_H
 #define TLV_H
+
 #include "packets.h"
+
 #define TLV_HEADER_SIZE	4
+
 class TLV
 {
 private:
@@ -31,18 +34,19 @@ public:
 	TLV(unsigned short type, unsigned short length, const char* value);
 	~TLV();
 
-    int cmp(unsigned short type) { return type_ == type; }
-    unsigned short len(void) { return length_; }
-    char* val(void) { return value_; }
+	int cmp(unsigned short type) { return type_ == type; }
+	unsigned short len(void) { return length_; }
+	char* val(void) { return value_; }
 
 	char* part(int pos, int length);
-    char* dup(void) { return part(0, length_); };
-    char* dupw(void);
+	char* dup(void) { return part(0, length_); };
+	char* dupw(void);
 
-    unsigned short whole(char* buf);
+	unsigned short whole(char* buf);
 	unsigned short ushort(int pos=0);
 	unsigned long ulong(int pos=0);
-    unsigned __int64 u64(int pos=0);
+	unsigned __int64 u64(int pos=0);
 	unsigned char ubyte(int pos=0);
 };
+
 #endif

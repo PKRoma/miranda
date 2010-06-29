@@ -23,6 +23,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "commonheaders.h"
 #include "file.h"
 
+TCHAR* PFTS_StringToTchar( int flags, const PROTOCHAR* s );
+int PFTS_CompareWithTchar( PROTOFILETRANSFERSTATUS* ft, const PROTOCHAR* s, TCHAR* r );
+
 static HANDLE hSRFileMenuItem;
 
 static INT_PTR SendFileCommand(WPARAM wParam, LPARAM)
@@ -36,16 +39,45 @@ static INT_PTR SendFileCommand(WPARAM wParam, LPARAM)
 
 static INT_PTR SendSpecificFiles(WPARAM wParam,LPARAM lParam)
 {
-	struct FileSendData fsd;
+	FileSendData fsd;
 	fsd.hContact=(HANDLE)wParam;
-	fsd.ppFiles=(const char**)lParam;
+	#if defined( _UNICODE )
+		char** ppFiles = ( char** )lParam;
+		int count = 0;
+		while ( ppFiles[count] != NULL )
+			count++;
+
+		fsd.ppFiles = (const TCHAR**)alloca(( count+1 ) * sizeof( void* ));
+		for ( int i=0; i < count; i++ )
+			fsd.ppFiles[i] = ( const TCHAR* )mir_a2t( ppFiles[i] );
+		fsd.ppFiles[ count ] = NULL;
+	#else
+		fsd.ppFiles=(const char**)lParam;
+	#endif
+	CreateDialogParam(hMirandaInst,MAKEINTRESOURCE(IDD_FILESEND),NULL,DlgProcSendFile,(LPARAM)&fsd);
+	#if defined( _UNICODE )
+		for ( int j=0; j < count; j++ )
+			mir_free(( void* )fsd.ppFiles[j] );
+	#endif
+	return 0;
+}
+
+static INT_PTR SendSpecificFilesT(WPARAM wParam,LPARAM lParam)
+{
+	FileSendData fsd;
+	fsd.hContact=(HANDLE)wParam;
+	fsd.ppFiles=(const TCHAR**)lParam;
 	CreateDialogParam(hMirandaInst,MAKEINTRESOURCE(IDD_FILESEND),NULL,DlgProcSendFile,(LPARAM)&fsd);
 	return 0;
 }
 
 static INT_PTR GetReceivedFilesFolder(WPARAM wParam,LPARAM lParam)
 {
-	GetContactReceivedFilesDir((HANDLE)wParam,(char*)lParam,MAX_PATH,TRUE);
+  TCHAR buf[MAX_PATH];
+	GetContactReceivedFilesDir((HANDLE)wParam,buf,MAX_PATH,TRUE);
+  char* dir = mir_t2a(buf);
+  lstrcpynA((char*)lParam,dir,MAX_PATH);
+  mir_free(dir);
 	return 0;
 }
 
@@ -94,45 +126,50 @@ static int FileEventAdded(WPARAM wParam,LPARAM lParam)
 	return 0;
 }
 
-int SRFile_GetRegValue(HKEY hKeyBase,const char *szSubKey,const char *szValue,char *szOutput,int cbOutput)
+int SRFile_GetRegValue(HKEY hKeyBase,const TCHAR *szSubKey,const TCHAR *szValue,TCHAR *szOutput,int cbOutput)
 {
 	HKEY hKey;
 	DWORD cbOut=cbOutput;
 
-	if(RegOpenKeyExA(hKeyBase,szSubKey,0,KEY_QUERY_VALUE,&hKey)!=ERROR_SUCCESS) return 0;
-	if(RegQueryValueExA(hKey,szValue,NULL,NULL,(PBYTE)szOutput,&cbOut)!=ERROR_SUCCESS) {RegCloseKey(hKey); return 0;}
+	if ( RegOpenKeyEx( hKeyBase,szSubKey,0,KEY_QUERY_VALUE,&hKey ) != ERROR_SUCCESS)
+		return 0;
+	
+	if ( RegQueryValueEx( hKey,szValue,NULL,NULL,(PBYTE)szOutput, &cbOut ) != ERROR_SUCCESS ) {
+		RegCloseKey(hKey);
+		return 0;
+	}
+
 	RegCloseKey(hKey);
 	return 1;
 }
 
-void GetSensiblyFormattedSize(DWORD size,TCHAR *szOut,int cchOut,int unitsOverride,int appendUnits,int *unitsUsed)
+void GetSensiblyFormattedSize(__int64 size,TCHAR *szOut,int cchOut,int unitsOverride,int appendUnits,int *unitsUsed)
 {
 	if(!unitsOverride) {
 		if(size<1000) unitsOverride=UNITS_BYTES;
 		else if(size<100*1024) unitsOverride=UNITS_KBPOINT1;
 		else if(size<1024*1024) unitsOverride=UNITS_KBPOINT0;
-		else unitsOverride=UNITS_MBPOINT2;
+		else if(size<1024*1024*1024) unitsOverride=UNITS_MBPOINT2;
+    else unitsOverride=UNITS_GBPOINT3;
 	}
 	if(unitsUsed) *unitsUsed=unitsOverride;
 	switch(unitsOverride) {
-		case UNITS_BYTES: mir_sntprintf(szOut,cchOut,_T("%u%s%s"),size,appendUnits?_T(" "):_T(""),appendUnits?TranslateT("bytes"):_T("")); break;
+		case UNITS_BYTES: mir_sntprintf(szOut,cchOut,_T("%u%s%s"),(int)size,appendUnits?_T(" "):_T(""),appendUnits?TranslateT("bytes"):_T("")); break;
 		case UNITS_KBPOINT1: mir_sntprintf(szOut,cchOut,_T("%.1lf%s"),size/1024.0,appendUnits?_T(" KB"):_T("")); break;
-		case UNITS_KBPOINT0: mir_sntprintf(szOut,cchOut,_T("%u%s"),size/1024,appendUnits?_T(" KB"):_T("")); break;
+		case UNITS_KBPOINT0: mir_sntprintf(szOut,cchOut,_T("%u%s"),(int)(size/1024),appendUnits?_T(" KB"):_T("")); break;
+		case UNITS_GBPOINT3: mir_sntprintf(szOut,cchOut,_T("%.3f%s"),(size >> 20)/1024.0,appendUnits?_T(" GB"):_T("")); break;
 		default: mir_sntprintf(szOut,cchOut,_T("%.2lf%s"),size/1048576.0,appendUnits?_T(" MB"):_T("")); break;
 	}
 }
 
 // Tripple redirection sucks but is needed to nullify the array pointer
-void FreeFilesMatrix(char ***files)
+void FreeFilesMatrix(TCHAR ***files)
 {
-
-	char **pFile;
-
 	if (*files == NULL)
 		return;
 
 	// Free each filename in the pointer array
-	pFile = *files;
+	TCHAR **pFile = *files;
 	while (*pFile != NULL)
 	{
 		mir_free(*pFile);
@@ -143,72 +180,104 @@ void FreeFilesMatrix(char ***files)
 	// Free the array itself
 	mir_free(*files);
 	*files = NULL;
-
 }
 
 void FreeProtoFileTransferStatus(PROTOFILETRANSFERSTATUS *fts)
 {
-	if(fts->currentFile) mir_free(fts->currentFile);
-	if(fts->files) {
-		int i;
-		for(i=0;i<fts->totalFiles;i++) mir_free(fts->files[i]);
-		mir_free(fts->files);
+	mir_free(fts->tszCurrentFile);
+	if(fts->ptszFiles) {
+		for( int i=0;i<fts->totalFiles;i++) mir_free(fts->ptszFiles[i]);
+		mir_free(fts->ptszFiles);
 	}
-	if(fts->workingDir) mir_free(fts->workingDir);
+	mir_free(fts->tszWorkingDir);
 }
 
-void CopyProtoFileTransferStatus(PROTOFILETRANSFERSTATUS *dest,PROTOFILETRANSFERSTATUS *src)
+void CopyProtoFileTransferStatus(PROTOFILETRANSFERSTATUS *dest, PROTOFILETRANSFERSTATUS *src)
 {
 	*dest=*src;
-	if(src->currentFile) dest->currentFile=mir_strdup(src->currentFile);
-	if(src->files) {
-		int i;
-		dest->files=(char**)mir_alloc(sizeof(char*)*src->totalFiles);
-		for(i=0;i<src->totalFiles;i++)
-			dest->files[i]=mir_strdup(src->files[i]);
+	if ( src->tszCurrentFile ) dest->tszCurrentFile = PFTS_StringToTchar(src->flags, src->tszCurrentFile);
+	if ( src->ptszFiles ) {
+		dest->ptszFiles = (TCHAR**)mir_alloc(sizeof(TCHAR*)*src->totalFiles);
+		for( int i=0; i < src->totalFiles; i++ )
+			dest->ptszFiles[i] = PFTS_StringToTchar(src->flags, src->ptszFiles[i] );
 	}
-	if(src->workingDir) dest->workingDir=mir_strdup(src->workingDir);
+	if ( src->tszWorkingDir ) dest->tszWorkingDir = PFTS_StringToTchar(src->flags, src->tszWorkingDir );
+	dest->flags &= ~PFTS_UTF;
+	dest->flags |= PFTS_TCHAR;
 }
 
-void UpdateProtoFileTransferStatus(PROTOFILETRANSFERSTATUS *dest,PROTOFILETRANSFERSTATUS *src)
+void UpdateProtoFileTransferStatus(PROTOFILETRANSFERSTATUS *dest, PROTOFILETRANSFERSTATUS *src)
 {
-  dest->hContact = src->hContact;
-  dest->sending = src->sending;
-  if (dest->totalFiles != src->totalFiles) {
-    int i;
-    for(i=0;i<dest->totalFiles;i++) mir_free(dest->files[i]);
-    mir_free(dest->files);
-    dest->files = NULL;
-	  dest->totalFiles = src->totalFiles;
-  }
-  if (src->files) {
-    int i;
-    if (!dest->files) dest->files = (char**)mir_calloc(sizeof(char*)*src->totalFiles);
-    for(i=0;i<src->totalFiles;i++)
-      if(!dest->files[i] || !src->files[i] || strcmp(dest->files[i],src->files[i])) {
-        mir_free(dest->files[i]);
-        if(src->files[i]) dest->files[i]=mir_strdup(src->files[i]); else dest->files[i]=NULL;
-      }
-  } else if (dest->files) {
-    int i;
-    for(i=0;i<dest->totalFiles;i++) mir_free(dest->files[i]);
-    mir_free(dest->files);
-    dest->files = NULL;
-  }
+	if (src->cbSize == sizeof(PROTOFILETRANSFERSTATUS_V1))
+	{
+		PROTOFILETRANSFERSTATUS_V1 *src1 = (PROTOFILETRANSFERSTATUS_V1*)src;
+		src = (PROTOFILETRANSFERSTATUS*)alloca(sizeof(PROTOFILETRANSFERSTATUS));
+
+		src->cbSize               = sizeof(PROTOFILETRANSFERSTATUS);
+		src->hContact             = src1->hContact;
+		src->flags                = src1->sending ? PFTS_SENDING : 0;
+		src->pszFiles             = src1->files;
+		src->totalFiles           = src1->totalFiles;
+		src->currentFileNumber    = src1->currentFileNumber;
+		src->totalBytes           = src1->totalBytes;
+		src->totalProgress        = src1->totalProgress;
+		src->szWorkingDir         = src1->workingDir;
+		src->szCurrentFile        = src1->currentFile;
+		src->currentFileSize      = src1->currentFileSize;
+		src->currentFileProgress  = src1->currentFileProgress;
+		src->currentFileTime      = src1->currentFileTime;
+	}
+
+	dest->hContact = src->hContact;
+	dest->flags = src->flags;
+	if ( dest->totalFiles != src->totalFiles ) {
+		for( int i=0;i<dest->totalFiles;i++) mir_free(dest->ptszFiles[i]);
+		mir_free(dest->ptszFiles);
+		dest->ptszFiles = NULL;
+		dest->totalFiles = src->totalFiles;
+	}
+	if ( src->ptszFiles ) {
+		if ( !dest->ptszFiles )
+			dest->ptszFiles = ( TCHAR** )mir_calloc( sizeof(TCHAR*)*src->totalFiles);
+		for ( int i=0; i < src->totalFiles; i++ )
+			if ( !dest->ptszFiles[i] || !src->ptszFiles[i] || PFTS_CompareWithTchar( src, src->ptszFiles[i], dest->ptszFiles[i] )) {
+				mir_free( dest->ptszFiles[i] );
+				if ( src->ptszFiles[i] )
+					dest->ptszFiles[i] = PFTS_StringToTchar( src->flags, src->ptszFiles[i] );
+				else
+					dest->ptszFiles[i] = NULL;
+			}
+	}
+	else if (dest->ptszFiles) {
+		for( int i=0; i < dest->totalFiles; i++ )
+			mir_free(dest->ptszFiles[i]);
+		mir_free( dest->ptszFiles );
+		dest->ptszFiles = NULL;
+	}
+
 	dest->currentFileNumber = src->currentFileNumber;
 	dest->totalBytes = src->totalBytes;
 	dest->totalProgress = src->totalProgress;
-  if (src->workingDir && (!dest->workingDir || strcmp(dest->workingDir, src->workingDir))) {
-    mir_free(dest->workingDir);
-    if(src->workingDir) dest->workingDir=mir_strdup(src->workingDir); else dest->workingDir = NULL;
-  }
-  if (!dest->currentFile || !src->currentFile || strcmp(dest->currentFile, src->currentFile)) {
-    mir_free(dest->currentFile);
-    if(src->currentFile) dest->currentFile=mir_strdup(src->currentFile); else dest->currentFile = NULL;
-  }
+	if (src->tszWorkingDir && (!dest->tszWorkingDir || PFTS_CompareWithTchar( src, src->tszWorkingDir, dest->tszWorkingDir))) {
+		mir_free( dest->tszWorkingDir );
+		if ( src->tszWorkingDir )
+			dest->tszWorkingDir = PFTS_StringToTchar( src->flags, src->tszWorkingDir );
+		else
+			dest->tszWorkingDir = NULL;
+	}
+
+	if ( !dest->tszCurrentFile || !src->tszCurrentFile || PFTS_CompareWithTchar( src, src->tszCurrentFile, dest->tszCurrentFile )) {
+		mir_free( dest->tszCurrentFile );
+		if ( src->tszCurrentFile )
+			dest->tszCurrentFile = PFTS_StringToTchar( src->flags, src->tszCurrentFile );
+		else
+			dest->tszCurrentFile = NULL;
+	}
 	dest->currentFileSize = src->currentFileSize;
 	dest->currentFileProgress = src->currentFileProgress;
 	dest->currentFileTime = src->currentFileTime;
+  dest->flags &= ~PFTS_UTF;
+  dest->flags |= PFTS_TCHAR;
 }
 
 static void RemoveUnreadFileEvents(void)
@@ -273,18 +342,18 @@ INT_PTR FtMgrShowCommand(WPARAM, LPARAM)
 
 INT_PTR openContRecDir(WPARAM wparam, LPARAM)
 {
-	char szContRecDir[MAX_PATH];
+	TCHAR szContRecDir[MAX_PATH];
 	HANDLE hContact = (HANDLE)wparam;
 	GetContactReceivedFilesDir(hContact, szContRecDir, SIZEOF(szContRecDir),TRUE);
-	ShellExecuteA(0, "open", szContRecDir, 0, 0, SW_SHOW);
+	ShellExecute(0, _T("open"), szContRecDir, 0, 0, SW_SHOW);
 	return 0;
 }
 
 INT_PTR openRecDir(WPARAM, LPARAM)
 {
-	char szContRecDir[MAX_PATH];
+	TCHAR szContRecDir[MAX_PATH];
 	GetReceivedFilesDir(szContRecDir, SIZEOF(szContRecDir));
-	ShellExecuteA(0, "open", szContRecDir, 0, 0, SW_SHOW);
+	ShellExecute(0, _T("open"), szContRecDir, 0, 0, SW_SHOW);
 	return 0;
 }
 
@@ -308,6 +377,7 @@ int LoadSendRecvFileModule(void)
 
 	CreateServiceFunction(MS_FILE_SENDFILE,SendFileCommand);
 	CreateServiceFunction(MS_FILE_SENDSPECIFICFILES,SendSpecificFiles);
+	CreateServiceFunction(MS_FILE_SENDSPECIFICFILEST,SendSpecificFilesT);
 	CreateServiceFunction(MS_FILE_GETRECEIVEDFILESFOLDER,GetReceivedFilesFolder);
 	CreateServiceFunction("SRFile/RecvFile",RecvFileCommand);
 

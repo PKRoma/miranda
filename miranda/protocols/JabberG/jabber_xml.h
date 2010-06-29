@@ -50,6 +50,7 @@ LPCTSTR __fastcall xmlGetText( HXML );
 
 void    __fastcall xmlAddAttr( HXML, LPCTSTR pszName, LPCTSTR ptszValue );
 void    __fastcall xmlAddAttr( HXML, LPCTSTR pszName, int value );
+void    __fastcall xmlAddAttr( HXML hXml, LPCTSTR pszName, unsigned __int64 value );
 void    __fastcall xmlAddAttrID( HXML, int id );
 
 int     __fastcall xmlGetAttrCount( HXML );
@@ -127,6 +128,24 @@ struct XATTRI
 };
 
 HXML __forceinline operator<<( HXML node, const XATTRI& attr )
+{	xmlAddAttr( node, attr.name, attr.value );
+	return node;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+
+struct XATTRI64
+{
+	LPCTSTR name;
+	unsigned __int64 value;
+
+	__forceinline XATTRI64( LPCTSTR _name, unsigned __int64 _value ) :
+		name( _name ),
+		value( _value )
+		{}
+};
+
+HXML __forceinline operator<<( HXML node, const XATTRI64& attr )
 {	xmlAddAttr( node, attr.name, attr.value );
 	return node;
 }

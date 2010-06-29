@@ -1065,6 +1065,8 @@ static INT_PTR CALLBACK DlgProcClistBehaviourOpts(HWND hwndDlg, UINT msg, WPARAM
 
 		SendDlgItemMessage(hwndDlg,IDC_MAXSIZESPIN,UDM_SETRANGE,0,MAKELONG(100,0));
 		SendDlgItemMessage(hwndDlg,IDC_MAXSIZESPIN,UDM_SETPOS,0,ModernGetSettingByte(NULL,"CLUI","MaxSizeHeight",SETTING_MAXSIZEHEIGHT_DEFAULT));
+		SendDlgItemMessage(hwndDlg,IDC_MINSIZESPIN,UDM_SETRANGE,0,MAKELONG(100,0));
+		SendDlgItemMessage(hwndDlg,IDC_MINSIZESPIN,UDM_SETPOS,0,ModernGetSettingByte(NULL,"CLUI","MinSizeHeight",SETTING_MINSIZEHEIGHT_DEFAULT));
 		CheckDlgButton(hwndDlg, IDC_AUTOSIZEUPWARD, ModernGetSettingByte(NULL,"CLUI","AutoSizeUpward",SETTING_AUTOSIZEUPWARD_DEFAULT) ? BST_CHECKED : BST_UNCHECKED);
 		CheckDlgButton(hwndDlg, IDC_SNAPTOEDGES, ModernGetSettingByte(NULL,"CLUI","SnapToEdges",SETTING_SNAPTOEDGES_DEFAULT) ? BST_CHECKED : BST_UNCHECKED);
 		CheckDlgButton(hwndDlg, IDC_DOCKTOSIDES, ModernGetSettingByte(NULL,"CLUI","DockToSides",SETTING_DOCKTOSIDES_DEFAULT) ? BST_CHECKED : BST_UNCHECKED);
@@ -1115,6 +1117,8 @@ static INT_PTR CALLBACK DlgProcClistBehaviourOpts(HWND hwndDlg, UINT msg, WPARAM
 			EnableWindow(GetDlgItem(hwndDlg,IDC_STATIC22),FALSE);
 			EnableWindow(GetDlgItem(hwndDlg,IDC_MAXSIZEHEIGHT),FALSE);
 			EnableWindow(GetDlgItem(hwndDlg,IDC_MAXSIZESPIN),FALSE);
+			EnableWindow(GetDlgItem(hwndDlg,IDC_MINSIZEHEIGHT),FALSE);
+			EnableWindow(GetDlgItem(hwndDlg,IDC_MINSIZESPIN),FALSE);
 			EnableWindow(GetDlgItem(hwndDlg,IDC_AUTOSIZEUPWARD),FALSE);
 		}
 		return TRUE;
@@ -1135,6 +1139,8 @@ static INT_PTR CALLBACK DlgProcClistBehaviourOpts(HWND hwndDlg, UINT msg, WPARAM
 			EnableWindow(GetDlgItem(hwndDlg,IDC_STATIC22),IsDlgButtonChecked(hwndDlg,IDC_AUTOSIZE));
 			EnableWindow(GetDlgItem(hwndDlg,IDC_MAXSIZEHEIGHT),IsDlgButtonChecked(hwndDlg,IDC_AUTOSIZE));
 			EnableWindow(GetDlgItem(hwndDlg,IDC_MAXSIZESPIN),IsDlgButtonChecked(hwndDlg,IDC_AUTOSIZE));
+			EnableWindow(GetDlgItem(hwndDlg,IDC_MINSIZEHEIGHT),IsDlgButtonChecked(hwndDlg,IDC_AUTOSIZE));
+			EnableWindow(GetDlgItem(hwndDlg,IDC_MINSIZESPIN),IsDlgButtonChecked(hwndDlg,IDC_AUTOSIZE));
 			EnableWindow(GetDlgItem(hwndDlg,IDC_AUTOSIZEUPWARD),IsDlgButtonChecked(hwndDlg,IDC_AUTOSIZE));
 		}
 		else if (LOWORD(wParam)==IDC_HIDEMETHOD)
@@ -1153,7 +1159,7 @@ static INT_PTR CALLBACK DlgProcClistBehaviourOpts(HWND hwndDlg, UINT msg, WPARAM
 			EnableWindow(GetDlgItem(hwndDlg,IDC_STATIC10),mode!=0);
 			EnableWindow(GetDlgItem(hwndDlg,IDC_STATIC13),mode!=0);
 		}
-		if ((LOWORD(wParam)==IDC_HIDETIME || LOWORD(wParam)==IDC_HIDEDELAY2 ||LOWORD(wParam)==IDC_HIDEDELAY ||LOWORD(wParam)==IDC_SHOWDELAY || LOWORD(wParam)==IDC_MAXSIZEHEIGHT) &&
+		if ((LOWORD(wParam)==IDC_HIDETIME || LOWORD(wParam)==IDC_HIDEDELAY2 ||LOWORD(wParam)==IDC_HIDEDELAY ||LOWORD(wParam)==IDC_SHOWDELAY || LOWORD(wParam)==IDC_MAXSIZEHEIGHT || LOWORD(wParam)==IDC_MINSIZEHEIGHT) &&
 			(HIWORD(wParam)!=EN_CHANGE || (HWND)lParam!=GetFocus()))
 			return 0;
 		// Enable apply button
@@ -1184,6 +1190,7 @@ static INT_PTR CALLBACK DlgProcClistBehaviourOpts(HWND hwndDlg, UINT msg, WPARAM
 			ModernWriteSettingByte(NULL,"CLUI","AutoSize",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_AUTOSIZE));
 			ModernWriteSettingByte(NULL,"CLUI","LockSize",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_LOCKSIZING));
 			ModernWriteSettingByte(NULL,"CLUI","MaxSizeHeight",(BYTE)GetDlgItemInt(hwndDlg,IDC_MAXSIZEHEIGHT,NULL,FALSE));               
+			ModernWriteSettingByte(NULL,"CLUI","MinSizeHeight",(BYTE)GetDlgItemInt(hwndDlg,IDC_MINSIZEHEIGHT,NULL,FALSE));               
 			ModernWriteSettingByte(NULL,"CLUI","AutoSizeUpward",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_AUTOSIZEUPWARD));
 			ModernWriteSettingByte(NULL,"CLUI","SnapToEdges",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_SNAPTOEDGES));
 			
@@ -1392,7 +1399,7 @@ static INT_PTR CALLBACK DlgProcClistWindowOpts(HWND hwndDlg, UINT msg, WPARAM wP
 			else CheckDlgButton(hwndDlg, IDC_BORDER,BST_UNCHECKED); 
 
 		}
-		if ((LOWORD(wParam)==IDC_TITLETEXT || LOWORD(wParam)==IDC_MAXSIZEHEIGHT || LOWORD(wParam)==IDC_FRAMESGAP || LOWORD(wParam)==IDC_CAPTIONSGAP ||
+		if ((LOWORD(wParam)==IDC_TITLETEXT || LOWORD(wParam)==IDC_MAXSIZEHEIGHT || LOWORD(wParam)==IDC_MINSIZEHEIGHT || LOWORD(wParam)==IDC_FRAMESGAP || LOWORD(wParam)==IDC_CAPTIONSGAP ||
 			LOWORD(wParam)==IDC_LEFTMARGIN || LOWORD(wParam)==IDC_RIGHTMARGIN|| LOWORD(wParam)==IDC_TOPMARGIN || LOWORD(wParam)==IDC_BOTTOMMARGIN) 
 			&&(HIWORD(wParam)!=EN_CHANGE || (HWND)lParam!=GetFocus()))
 			return 0;
@@ -1413,103 +1420,92 @@ static INT_PTR CALLBACK DlgProcClistWindowOpts(HWND hwndDlg, UINT msg, WPARAM wP
 		switch (((LPNMHDR)lParam)->code)
 		{
 		case PSN_APPLY:
-			//
-			ModernWriteSettingByte(NULL,"CLUI","LeftClientMargin",(BYTE)SendDlgItemMessage(hwndDlg,IDC_LEFTMARGINSPIN,UDM_GETPOS,0,0));
-			ModernWriteSettingByte(NULL,"CLUI","RightClientMargin",(BYTE)SendDlgItemMessage(hwndDlg,IDC_RIGHTMARGINSPIN,UDM_GETPOS,0,0));
-			ModernWriteSettingByte(NULL,"CLUI","TopClientMargin",(BYTE)SendDlgItemMessage(hwndDlg,IDC_TOPMARGINSPIN,UDM_GETPOS,0,0));
-			ModernWriteSettingByte(NULL,"CLUI","BottomClientMargin",(BYTE)SendDlgItemMessage(hwndDlg,IDC_BOTTOMMARGINSPIN,UDM_GETPOS,0,0));
-			ModernWriteSettingByte(NULL,"ModernData","DisableEngine",IsDlgButtonChecked(hwndDlg,IDC_DISABLEENGINE));
-			ModernWriteSettingByte(NULL,"ModernData","AeroGlass",IsDlgButtonChecked(hwndDlg,IDC_AEROGLASS));
-			if (!IsDlgButtonChecked(hwndDlg,IDC_DISABLEENGINE))
 			{
-				if (g_proc_UpdateLayeredWindow!=NULL && IsDlgButtonChecked(hwndDlg,IDC_LAYERENGINE)) 
-					ModernWriteSettingByte(NULL,"ModernData","EnableLayering",0);
+				ModernWriteSettingByte(NULL,"CLUI","LeftClientMargin",(BYTE)SendDlgItemMessage(hwndDlg,IDC_LEFTMARGINSPIN,UDM_GETPOS,0,0));
+				ModernWriteSettingByte(NULL,"CLUI","RightClientMargin",(BYTE)SendDlgItemMessage(hwndDlg,IDC_RIGHTMARGINSPIN,UDM_GETPOS,0,0));
+				ModernWriteSettingByte(NULL,"CLUI","TopClientMargin",(BYTE)SendDlgItemMessage(hwndDlg,IDC_TOPMARGINSPIN,UDM_GETPOS,0,0));
+				ModernWriteSettingByte(NULL,"CLUI","BottomClientMargin",(BYTE)SendDlgItemMessage(hwndDlg,IDC_BOTTOMMARGINSPIN,UDM_GETPOS,0,0));
+				ModernWriteSettingByte(NULL,"ModernData","DisableEngine",IsDlgButtonChecked(hwndDlg,IDC_DISABLEENGINE));
+				ModernWriteSettingByte(NULL,"ModernData","AeroGlass",IsDlgButtonChecked(hwndDlg,IDC_AEROGLASS));
+				if (!IsDlgButtonChecked(hwndDlg,IDC_DISABLEENGINE))
+				{
+					if (g_proc_UpdateLayeredWindow!=NULL && IsDlgButtonChecked(hwndDlg,IDC_LAYERENGINE)) 
+						ModernWriteSettingByte(NULL,"ModernData","EnableLayering",0);
+					else 
+						ModernDeleteSetting(NULL,"ModernData","EnableLayering");	
+				}
+				g_CluiData.dwKeyColor=ModernGetSettingDword(NULL,"ModernSettings","KeyColor",(DWORD)SETTING_KEYCOLOR_DEFAULT);
+				ModernWriteSettingByte(NULL,"CList","OnDesktop",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_ONDESKTOP));
+				ModernWriteSettingByte(NULL,"CList","OnTop",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_ONTOP));
+				SetWindowPos(pcli->hwndContactList, IsDlgButtonChecked(hwndDlg,IDC_ONTOP)?HWND_TOPMOST:HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE |SWP_NOACTIVATE);
+				ModernWriteSettingByte(NULL,"CLUI","DragToScroll",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_DRAGTOSCROLL));
+
+				{ //====== Non-Layered Mode ======
+					ModernWriteSettingByte(NULL,"CList","ToolWindow",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_TOOLWND));
+					ModernWriteSettingByte(NULL,"CLUI","ShowCaption",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_SHOWCAPTION));
+					ModernWriteSettingByte(NULL,"CLUI","ShowMainMenu",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_SHOWMAINMENU));
+					ModernWriteSettingByte(NULL,"CList","ThinBorder",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_BORDER));
+					ModernWriteSettingByte(NULL,"CList","NoBorder",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_NOBORDERWND));
+					{	
+						TCHAR title[256];
+						GetDlgItemText(hwndDlg,IDC_TITLETEXT,title,SIZEOF(title));
+						ModernWriteSettingTString(NULL,"CList","TitleText",title);
+						//			SetWindowText(pcli->hwndContactList,title);
+					}
+					ModernWriteSettingByte(NULL,"CList","Min2Tray",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_MIN2TRAY));
+					ModernWriteSettingByte(NULL,"CList","WindowShadow",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_DROPSHADOW));
+					ModernWriteSettingByte(NULL,"CLC","RoundCorners",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_ROUNDCORNERS));		
+				} //====== End of Non-Layered Mode ======
+				g_mutex_bChangingMode=TRUE;
+
+				if (IsDlgButtonChecked(hwndDlg,IDC_ONDESKTOP)) 
+				{
+					HWND hProgMan=FindWindow(TEXT("Progman"),NULL);
+					if (IsWindow(hProgMan)) 
+					{
+						SetParent(pcli->hwndContactList,hProgMan);
+						Sync( CLUIFrames_SetParentForContainers, (HWND)hProgMan );
+						g_CluiData.fOnDesktop=1;
+					}
+				} 
 				else 
-					ModernDeleteSetting(NULL,"ModernData","EnableLayering");	
-			}
-			g_CluiData.dwKeyColor=ModernGetSettingDword(NULL,"ModernSettings","KeyColor",(DWORD)SETTING_KEYCOLOR_DEFAULT);
-			ModernWriteSettingByte(NULL,"CList","OnDesktop",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_ONDESKTOP));
-			ModernWriteSettingByte(NULL,"CList","OnTop",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_ONTOP));
-			SetWindowPos(pcli->hwndContactList, IsDlgButtonChecked(hwndDlg,IDC_ONTOP)?HWND_TOPMOST:HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE |SWP_NOACTIVATE);
-			ModernWriteSettingByte(NULL,"CLUI","DragToScroll",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_DRAGTOSCROLL));
-
-			{ //====== Non-Layered Mode ======
-				ModernWriteSettingByte(NULL,"CList","ToolWindow",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_TOOLWND));
-				ModernWriteSettingByte(NULL,"CLUI","ShowCaption",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_SHOWCAPTION));
-				ModernWriteSettingByte(NULL,"CLUI","ShowMainMenu",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_SHOWMAINMENU));
-				ModernWriteSettingByte(NULL,"CList","ThinBorder",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_BORDER));
-				ModernWriteSettingByte(NULL,"CList","NoBorder",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_NOBORDERWND));
-				{	
-					TCHAR title[256];
-					GetDlgItemText(hwndDlg,IDC_TITLETEXT,title,SIZEOF(title));
-					ModernWriteSettingTString(NULL,"CList","TitleText",title);
-					//			SetWindowText(pcli->hwndContactList,title);
-				}
-				ModernWriteSettingByte(NULL,"CList","Min2Tray",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_MIN2TRAY));
-				ModernWriteSettingByte(NULL,"CList","WindowShadow",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_DROPSHADOW));
-				ModernWriteSettingByte(NULL,"CLC","RoundCorners",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_ROUNDCORNERS));		
-			} //====== End of Non-Layered Mode ======
-			g_mutex_bChangingMode=TRUE;
-
-			if (IsDlgButtonChecked(hwndDlg,IDC_ONDESKTOP)) 
-			{
-				HWND hProgMan=FindWindow(TEXT("Progman"),NULL);
-				if (IsWindow(hProgMan)) 
 				{
-					SetParent(pcli->hwndContactList,hProgMan);
-					Sync( CLUIFrames_SetParentForContainers, (HWND)hProgMan );
-					g_CluiData.fOnDesktop=1;
+					if (GetParent(pcli->hwndContactList))
+					{
+						SetParent(pcli->hwndContactList,NULL);
+						Sync( CLUIFrames_SetParentForContainers, (HWND)NULL );
+					}
+					g_CluiData.fOnDesktop=0;
 				}
-			} 
-			else 
-			{
-				if (GetParent(pcli->hwndContactList))
+				AniAva_UpdateParent();
+				ModernWriteSettingByte(NULL,"CLUI","FadeInOut",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_FADEINOUT));
+				g_CluiData.fSmoothAnimation=IsWinVer2000Plus()&&(BYTE)IsDlgButtonChecked(hwndDlg,IDC_FADEINOUT);
 				{
-					SetParent(pcli->hwndContactList,NULL);
-					Sync( CLUIFrames_SetParentForContainers, (HWND)NULL );
+					int i1;
+					int i2;
+					i1=SendDlgItemMessage(hwndDlg,IDC_FRAMESSPIN,UDM_GETPOS,0,0);
+					i2=SendDlgItemMessage(hwndDlg,IDC_CAPTIONSSPIN,UDM_GETPOS,0,0);   
+
+					ModernWriteSettingDword(NULL,"CLUIFrames","GapBetweenFrames",(DWORD)i1);
+					ModernWriteSettingDword(NULL,"CLUIFrames","GapBetweenTitleBar",(DWORD)i2);
+					Sync(CLUIFramesOnClistResize, (WPARAM)pcli->hwndContactList,(LPARAM)0);
 				}
-				g_CluiData.fOnDesktop=0;
+				ModernWriteSettingByte(NULL,"CList","Transparent",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_TRANSPARENT));
+				ModernWriteSettingByte(NULL,"CList","Alpha",(BYTE)SendDlgItemMessage(hwndDlg,IDC_TRANSACTIVE,TBM_GETPOS,0,0));
+				ModernWriteSettingByte(NULL,"CList","AutoAlpha",(BYTE)SendDlgItemMessage(hwndDlg,IDC_TRANSINACTIVE,TBM_GETPOS,0,0));
+				ModernWriteSettingByte(NULL,"CList","OnDesktop",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_ONDESKTOP));
+
+				ske_LoadSkinFromDB();
+				CLUI_UpdateLayeredMode();	
+				CLUI_ChangeWindowMode(); 
+				SendMessage(pcli->hwndContactTree,WM_SIZE,0,0);	//forces it to send a cln_listsizechanged
+				CLUI_ReloadCLUIOptions();
+				cliShowHide(0,1);			
+				g_mutex_bChangingMode=FALSE;
+				return TRUE;
 			}
-			AniAva_UpdateParent();
-
-
-			//DBWriteContactSettingByte(NULL,"CLUI","ClientAreaDrag",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_CLIENTDRAG));
-			ModernWriteSettingByte(NULL,"CLUI","FadeInOut",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_FADEINOUT));
-			g_CluiData.fSmoothAnimation=IsWinVer2000Plus()&&(BYTE)IsDlgButtonChecked(hwndDlg,IDC_FADEINOUT);
-
-			//DBWriteContactSettingByte(NULL,"CLUI","AutoSize",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_AUTOSIZE));
-			//DBWriteContactSettingByte(NULL,"CLUI","LockSize",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_LOCKSIZING));
-			//DBWriteContactSettingByte(NULL,"CLUI","MaxSizeHeight",(BYTE)GetDlgItemInt(hwndDlg,IDC_MAXSIZEHEIGHT,NULL,FALSE));               
-			{
-				int i1;
-				int i2;
-				i1=SendDlgItemMessage(hwndDlg,IDC_FRAMESSPIN,UDM_GETPOS,0,0);
-				i2=SendDlgItemMessage(hwndDlg,IDC_CAPTIONSSPIN,UDM_GETPOS,0,0);   
-
-				ModernWriteSettingDword(NULL,"CLUIFrames","GapBetweenFrames",(DWORD)i1);
-				ModernWriteSettingDword(NULL,"CLUIFrames","GapBetweenTitleBar",(DWORD)i2);
-				Sync(CLUIFramesOnClistResize, (WPARAM)pcli->hwndContactList,(LPARAM)0);
-			}
-			//DBWriteContactSettingByte(NULL,"CLUI","AutoSizeUpward",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_AUTOSIZEUPWARD));
-			//DBWriteContactSettingByte(NULL,"CLUI","SnapToEdges",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_SNAPTOEDGES));
-			//DBWriteContactSettingByte(NULL,"CList","AutoHide",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_AUTOHIDE));
-			//DBWriteContactSettingWord(NULL,"CList","HideTime",(WORD)SendDlgItemMessage(hwndDlg,IDC_HIDETIMESPIN,UDM_GETPOS,0,0));
-
-			ModernWriteSettingByte(NULL,"CList","Transparent",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_TRANSPARENT));
-			ModernWriteSettingByte(NULL,"CList","Alpha",(BYTE)SendDlgItemMessage(hwndDlg,IDC_TRANSACTIVE,TBM_GETPOS,0,0));
-			ModernWriteSettingByte(NULL,"CList","AutoAlpha",(BYTE)SendDlgItemMessage(hwndDlg,IDC_TRANSINACTIVE,TBM_GETPOS,0,0));
-			ModernWriteSettingByte(NULL,"CList","OnDesktop",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_ONDESKTOP));
-
-			ske_LoadSkinFromDB();
-			CLUI_UpdateLayeredMode();	
-			CLUI_ChangeWindowMode(); 
-			SendMessage(pcli->hwndContactTree,WM_SIZE,0,0);	//forces it to send a cln_listsizechanged
-			CLUI_ReloadCLUIOptions();
-			cliShowHide(0,1);			
-			g_mutex_bChangingMode=FALSE;
-			return TRUE;
+			break;
 		}
-		break;
 	}
 	return FALSE;
 }

@@ -33,15 +33,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#ifndef _WIN32
+#ifdef _WIN32
+#include "win32.h"
+#define random() rand()
+#else
 #include <unistd.h>
 #endif
 
 #include "libgadu.h"
-
-#ifdef _WIN32
-#define random() rand()
-#endif
 
 /**
  * Rejestruje nowego użytkownika.

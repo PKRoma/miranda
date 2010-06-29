@@ -78,7 +78,7 @@ char *CreateGroup(char *groupName)
 	// Is this a duplicate?
 	if (!GroupNameExists(groupName))
 	{
-		lstrcpyn(groupName2 + 1, groupName, strlen(groupName) + 1);
+		lstrcpyn(groupName2 + 1, groupName, (int)strlen(groupName) + 1);
 
 		// Find an unused id
 		for (groupId = 0; ; groupId++) {
@@ -340,11 +340,11 @@ static INT_PTR gg_import_server(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
 		return 0;
 
 	// Making contacts list
-	pthread_mutex_lock(&gg->sess_mutex);
+	EnterCriticalSection(&gg->sess_mutex);
 	if (gg_userlist_request(gg->sess, GG_USERLIST_GET, NULL) == -1)
 	{
 		char error[128];
-		pthread_mutex_unlock(&gg->sess_mutex);
+		LeaveCriticalSection(&gg->sess_mutex);
 		mir_snprintf(error, sizeof(error), Translate("List cannot be imported because of error:\n\t%s"), strerror(errno));
 		MessageBox(
 			NULL,
@@ -356,7 +356,7 @@ static INT_PTR gg_import_server(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
 		gg_netlog(gg, "gg_import_serverthread(): Cannot import list because of \"%s\".", strerror(errno));
 #endif
 	}
-	pthread_mutex_unlock(&gg->sess_mutex);
+	LeaveCriticalSection(&gg->sess_mutex);
 	free(password);
 
 	return 0;
@@ -393,11 +393,11 @@ static INT_PTR gg_remove_server(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
 		return 0;
 
 	// Making contacts list
-	pthread_mutex_lock(&gg->sess_mutex);
+	EnterCriticalSection(&gg->sess_mutex);
 	if (gg_userlist_request(gg->sess, GG_USERLIST_PUT, NULL) == -1)
 	{
 		char error[128];
-		pthread_mutex_unlock(&gg->sess_mutex);
+		LeaveCriticalSection(&gg->sess_mutex);
 		mir_snprintf(error, sizeof(error), Translate("List cannot be removeed because of error:\n\t%s"), strerror(errno));
 		MessageBox(
 			NULL,
@@ -410,7 +410,7 @@ static INT_PTR gg_remove_server(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
 		gg_netlog(gg, "gg_remove_serverthread(): Cannot remove list because of \"%s\".", strerror(errno));
 #endif
 	}
-	pthread_mutex_unlock(&gg->sess_mutex);
+	LeaveCriticalSection(&gg->sess_mutex);
 
 	// Set list removal
 	gg->list_remove = TRUE;
@@ -612,11 +612,11 @@ static INT_PTR gg_export_server(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
 		gg_netlog(gg, "gg_userlist_request(%s).", contacts);
 #endif
 
-	pthread_mutex_lock(&gg->sess_mutex);
+	EnterCriticalSection(&gg->sess_mutex);
 	if (gg_userlist_request(gg->sess, GG_USERLIST_PUT, contacts) == -1)
 	{
 		char error[128];
-		pthread_mutex_unlock(&gg->sess_mutex);
+		LeaveCriticalSection(&gg->sess_mutex);
 		mir_snprintf(error, sizeof(error), Translate("List cannot be exported because of error:\n\t%s"), strerror(errno));
 		MessageBox(
 			NULL,
@@ -628,7 +628,7 @@ static INT_PTR gg_export_server(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
 		gg_netlog(gg, "gg_export_serverthread(): Cannot export list because of \"%s\".", strerror(errno));
 #endif
 	}
-	pthread_mutex_unlock(&gg->sess_mutex);
+	LeaveCriticalSection(&gg->sess_mutex);
 
 	// Set list removal
 	gg->list_remove = FALSE;
@@ -640,7 +640,7 @@ static INT_PTR gg_export_server(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
 
 //////////////////////////////////////////////////////////
 // Import menus and stuff
-void gg_import_init(GGPROTO *gg)
+void gg_import_init(GGPROTO *gg, HGENMENU hRoot)
 {
 	CLISTMENUITEM mi;
 	char service[64];
@@ -648,57 +648,50 @@ void gg_import_init(GGPROTO *gg)
 	ZeroMemory(&mi, sizeof(mi));
 	mi.cbSize = sizeof(mi);
 	mi.flags = CMIF_ICONFROMICOLIB | CMIF_ROOTHANDLE;
-	mi.hParentMenu = gg->hMenuRoot;
+	mi.hParentMenu = hRoot;
 
 	// Import from server item
 	mir_snprintf(service, sizeof(service), GGS_IMPORT_SERVER, GG_PROTO);
 	CreateProtoServiceFunction(service, gg_import_server, gg);
-	mi.position = 600090000;
+	mi.position = 291000;
 	mi.icolibItem = GetIconHandle(IDI_IMPORT_SERVER);
 	mi.pszName = LPGEN("Import List From &Server");
 	mi.pszService = service;
- 	gg->hMainMenu[2] = (HANDLE)CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM) &mi);
+ 	gg->hMainMenu[2] = (HANDLE)CallService(MS_CLIST_ADDPROTOMENUITEM, 0, (LPARAM) &mi);
 
 	// Import from textfile
 	mir_snprintf(service, sizeof(service), GGS_IMPORT_TEXT, GG_PROTO);
 	CreateProtoServiceFunction(service, gg_import_text, gg);
-	mi.position = 600090001;
+	mi.position = 291001;
 	mi.icolibItem = GetIconHandle(IDI_IMPORT_TEXT);
 	mi.pszName = LPGEN("Import List From &Text File...");
 	mi.pszService = service;
-	gg->hMainMenu[3] = (HANDLE)CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM) &mi);
+	gg->hMainMenu[3] = (HANDLE)CallService(MS_CLIST_ADDPROTOMENUITEM, 0, (LPARAM) &mi);
 
 	// Remove from server
 	mir_snprintf(service, sizeof(service), GGS_REMOVE_SERVER, GG_PROTO);
 	CreateProtoServiceFunction(service, gg_remove_server, gg);
-	mi.position = 600090002;
+	mi.position = 291002;
 	mi.icolibItem = GetIconHandle(IDI_REMOVE_SERVER);
 	mi.pszName = LPGEN("&Remove List From Server");
 	mi.pszService = service;
-	gg->hMainMenu[4] = (HANDLE)CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM) &mi);
+	gg->hMainMenu[4] = (HANDLE)CallService(MS_CLIST_ADDPROTOMENUITEM, 0, (LPARAM) &mi);
 
 	// Export to server
 	mir_snprintf(service, sizeof(service), GGS_EXPORT_SERVER, GG_PROTO);
 	CreateProtoServiceFunction(service, gg_export_server, gg);
-	mi.position = 700090000;
+	mi.position = 291003;
 	mi.icolibItem = GetIconHandle(IDI_EXPORT_SERVER);
 	mi.pszName = LPGEN("Export List To &Server");
 	mi.pszService = service;
-	gg->hMainMenu[5] = (HANDLE)CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM) &mi);
+	gg->hMainMenu[5] = (HANDLE)CallService(MS_CLIST_ADDPROTOMENUITEM, 0, (LPARAM) &mi);
 
 	// Export to textfile
 	mir_snprintf(service, sizeof(service), GGS_EXPORT_TEXT, GG_PROTO);
 	CreateProtoServiceFunction(service, gg_export_text, gg);
-	mi.position = 700090001;
+	mi.position = 291004;
 	mi.icolibItem = GetIconHandle(IDI_EXPORT_TEXT);
 	mi.pszName = LPGEN("Export List To &Text File...");
 	mi.pszService = service;
-	gg->hMainMenu[6] = (HANDLE)CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM) &mi);
-}
-
-void gg_import_shutdown(GGPROTO *gg) 
-{
-	int i;
-	for(i = 2; i < 7; i++)
-		CallService(MS_CLIST_REMOVEMAINMENUITEM, (WPARAM)gg->hMainMenu[i], (LPARAM) 0);
+	gg->hMainMenu[6] = (HANDLE)CallService(MS_CLIST_ADDPROTOMENUITEM, 0, (LPARAM) &mi);
 }

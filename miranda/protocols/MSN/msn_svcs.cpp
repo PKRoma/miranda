@@ -1,6 +1,6 @@
 /*
 Plugin of Miranda IM for communicating with users of the MSN Messenger protocol.
-Copyright (c) 2006-2009 Boris Krasnovskiy.
+Copyright (c) 2006-2010 Boris Krasnovskiy.
 Copyright (c) 2003-2005 George Hazan.
 Copyright (c) 2002-2003 Richard Hughes (original version).
 
@@ -28,10 +28,10 @@ extern int avsPresent;
 
 INT_PTR CMsnProto::GetMyAwayMsg(WPARAM wParam,LPARAM lParam)
 {
-    char** msgptr = GetStatusMsgLoc(wParam ? wParam : m_iStatus);
+	char** msgptr = GetStatusMsgLoc(wParam ? wParam : m_iStatus);
 	if (msgptr == NULL)	return 0;
 
-    return (lParam & SGMA_UNICODE) ? (INT_PTR)mir_utf8decodeW(*msgptr) : (INT_PTR)mir_utf8decodeA(*msgptr);
+	return (lParam & SGMA_UNICODE) ? (INT_PTR)mir_utf8decodeW(*msgptr) : (INT_PTR)mir_utf8decodeA(*msgptr);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -186,7 +186,7 @@ INT_PTR CMsnProto::GetAvatarInfo(WPARAM wParam,LPARAM lParam)
 				filetransfer* ft = new filetransfer(this);
 				ft->std.hContact = AI->hContact;
 				ft->p2p_object = mir_strdup(szContext);
-				ft->std.currentFile = mir_strdup(AI->filename);
+				ft->std.tszCurrentFile = mir_a2t(AI->filename);
 
 				p2p_invite(AI->hContact, MSN_APPID_AVATAR, ft);
 			}
@@ -238,7 +238,7 @@ INT_PTR CMsnProto::SetAvatar(WPARAM wParam, LPARAM lParam)
 
 	if (szFileName == NULL)
 	{
-		char tFileName[ MAX_PATH ];
+		char tFileName[MAX_PATH];
 		MSN_GetAvatarFileName(NULL, tFileName, sizeof(tFileName));
 		remove(tFileName);
 		deleteSetting(NULL, "PictObject");
@@ -249,7 +249,7 @@ INT_PTR CMsnProto::SetAvatar(WPARAM wParam, LPARAM lParam)
 		int fileId = _open(szFileName, _O_RDONLY | _O_BINARY, _S_IREAD);
 		if (fileId < 0) return 1;
 
-		long  dwPngSize = _filelength(fileId);
+		long  dwPngSize = _filelengthi64(fileId);
 		unsigned char* pResult = (unsigned char*)mir_alloc(dwPngSize);
 		if (pResult == NULL) return 2;
 
@@ -264,7 +264,7 @@ INT_PTR CMsnProto::SetAvatar(WPARAM wParam, LPARAM lParam)
 		mir_sha1_append(&sha1ctx, pResult, dwPngSize);
 		mir_sha1_finish(&sha1ctx, sha1d);
 		{	
-            NETLIBBASE64 nlb = { szSha1d, sizeof(szSha1d), (PBYTE)sha1d, sizeof(sha1d) };
+			NETLIBBASE64 nlb = { szSha1d, sizeof(szSha1d), (PBYTE)sha1d, sizeof(sha1d) };
 			MSN_CallService(MS_NETLIB_BASE64ENCODE, 0, LPARAM(&nlb));
 		}
 		char drive[_MAX_DRIVE];
@@ -279,7 +279,7 @@ INT_PTR CMsnProto::SetAvatar(WPARAM wParam, LPARAM lParam)
 		mir_sha1_append(&sha1ctx, (PBYTE)MyOptions.szEmail, (int)strlen(MyOptions.szEmail));
 		ezxml_set_attr(xmlp, "Creator", MyOptions.szEmail);
 
-		char szFileSize[ 20 ];
+		char szFileSize[20];
 		_ltoa(dwPngSize, szFileSize, 10);
 		mir_sha1_append(&sha1ctx, (PBYTE)"Size", 4);
 		mir_sha1_append(&sha1ctx, (PBYTE)szFileSize, (int)strlen(szFileSize));
@@ -304,13 +304,13 @@ INT_PTR CMsnProto::SetAvatar(WPARAM wParam, LPARAM lParam)
 		mir_sha1_finish(&sha1ctx, sha1c);
 
 		{	
-            NETLIBBASE64 nlb = { szSha1c, sizeof(szSha1c), (PBYTE)sha1c, sizeof(sha1c) };
+			NETLIBBASE64 nlb = { szSha1c, sizeof(szSha1c), (PBYTE)sha1c, sizeof(sha1c) };
 			MSN_CallService(MS_NETLIB_BASE64ENCODE, 0, LPARAM(&nlb));
 			ezxml_set_attr(xmlp, "SHA1C", szSha1c);
 		}
 		{
 			char* szBuffer = ezxml_toxml(xmlp, false);
-			char szEncodedBuffer[ 2000 ];
+			char szEncodedBuffer[2000];
 			UrlEncode(szBuffer, szEncodedBuffer, sizeof(szEncodedBuffer));
 			free(szBuffer);
 			ezxml_free(xmlp);
@@ -318,17 +318,20 @@ INT_PTR CMsnProto::SetAvatar(WPARAM wParam, LPARAM lParam)
 			setString(NULL, "PictObject", szEncodedBuffer);
 		}
 		{	
-            char tFileName[MAX_PATH];
+			char tFileName[MAX_PATH];
 			MSN_GetAvatarFileName(NULL, tFileName, SIZEOF(tFileName));
 			int fileId = _open(tFileName, _O_CREAT | _O_TRUNC | _O_WRONLY | O_BINARY,  _S_IREAD | _S_IWRITE);
 			if (fileId >= 0) 
-            {
+			{
 				_write(fileId, pResult, dwPngSize);
 				_close(fileId);
 			}
 			else
-				MSN_ShowError("Cannot set avatar. File '%s' could not be created/overwritten", tFileName);
-
+			{
+				TCHAR *fname = mir_a2t(tFileName);
+				MSN_ShowError("Cannot set avatar. File '%s' could not be created/overwritten", fname);
+				mir_free(fname);
+			}
 		}
 
 		StoreAvatarData* par = (StoreAvatarData*)mir_alloc(sizeof(StoreAvatarData));
@@ -349,7 +352,10 @@ INT_PTR CMsnProto::SetAvatar(WPARAM wParam, LPARAM lParam)
 
 INT_PTR CMsnProto::SetNickName(WPARAM wParam, LPARAM lParam)
 {
-	MSN_SendNickname((char*)lParam);
+	if (wParam & SMNN_UNICODE)
+		MSN_SendNickname((wchar_t*)lParam);
+	else
+		MSN_SendNickname((char*)lParam);
 	return 0;
 }
 
@@ -362,7 +368,7 @@ INT_PTR CMsnProto::SendNudge(WPARAM wParam, LPARAM lParam)
 
 	HANDLE hContact = (HANDLE)wParam;
 
-	char tEmail[ MSN_MAX_EMAIL_LEN ];
+	char tEmail[MSN_MAX_EMAIL_LEN];
 	if (MSN_IsMeByContact(hContact, tEmail)) return 0;
 
 	static const char nudgemsg[] = 
@@ -516,23 +522,26 @@ int CMsnProto::OnContactDeleted(WPARAM wParam, LPARAM lParam)
 	}
 	else
 	{
-		char szEmail[ MSN_MAX_EMAIL_LEN ];
-        if (MSN_IsMeByContact(hContact, szEmail))
-            CallService(MS_CLIST_REMOVEEVENT, (WPARAM)hContact, (LPARAM) 1);
-        
-        if (szEmail[0]) 
-        {
+		char szEmail[MSN_MAX_EMAIL_LEN];
+		if (MSN_IsMeByContact(hContact, szEmail))
+			CallService(MS_CLIST_REMOVEEVENT, (WPARAM)hContact, (LPARAM) 1);
+		
+		if (szEmail[0]) 
+		{
 			MSN_DebugLog("Deleted Handler Email");
 
-            if (Lists_IsInList(LIST_FL, szEmail))
-            {
-                DeleteParam param = { this, hContact };
-                DialogBoxParam(hInst, MAKEINTRESOURCE(IDD_DELETECONTACT), NULL, DlgDeleteContactUI, (LPARAM)&param);
-            }
-            if (Lists_IsInList(LIST_LL, szEmail))
-            {
-                MSN_AddUser(hContact, szEmail, 0, LIST_LL | LIST_REMOVE);
-            }
+			if (Lists_IsInList(LIST_FL, szEmail))
+			{
+				DeleteParam param = { this, hContact };
+				DialogBoxParam(hInst, MAKEINTRESOURCE(IDD_DELETECONTACT), NULL, DlgDeleteContactUI, (LPARAM)&param);
+
+				MsnContact* msc = Lists_Get(szEmail);
+				if (msc) msc->hContact = NULL; 
+			}
+			if (Lists_IsInList(LIST_LL, szEmail))
+			{
+				MSN_AddUser(hContact, szEmail, 0, LIST_LL | LIST_REMOVE);
+			}
 		}
 	}
 
@@ -600,7 +609,7 @@ int CMsnProto::OnDbSettingChanged(WPARAM wParam,LPARAM lParam)
 		if (!MSN_IsMyContact(hContact))
 			return 0;
 
-		char tEmail[ MSN_MAX_EMAIL_LEN ];
+		char tEmail[MSN_MAX_EMAIL_LEN];
 		if (!getStaticString(hContact, "e-mail", tEmail, sizeof(tEmail))) 
 		{
 			bool isBlocked = Lists_IsInList(LIST_BL, tEmail);
@@ -623,24 +632,24 @@ int CMsnProto::OnDbSettingChanged(WPARAM wParam,LPARAM lParam)
 		if (!MSN_IsMyContact(hContact))
 			return 0;
 
-        bool isMe = MSN_IsMeByContact(hContact);
-        if (!isMe || !nickChg)
-        {
-		    char szContactID[ 100 ];
-		    if (!getStaticString(hContact, "ID", szContactID, sizeof(szContactID))) 
-		    {
-			    if (cws->value.type != DBVT_DELETED) 
-			    {
-				    if (cws->value.type == DBVT_UTF8)
-					    MSN_ABUpdateNick(cws->value.pszVal, szContactID);
-				    else
-					    MSN_ABUpdateNick(UTF8(cws->value.pszVal), szContactID);
-			    }
-			    else
-				    MSN_ABUpdateNick(NULL, szContactID);
-		    }
-            if (isMe) displayEmailCount(hContact);
-        }
+		bool isMe = MSN_IsMeByContact(hContact);
+		if (!isMe || !nickChg)
+		{
+			char szContactID[100];
+			if (!getStaticString(hContact, "ID", szContactID, sizeof(szContactID))) 
+			{
+				if (cws->value.type != DBVT_DELETED) 
+				{
+					if (cws->value.type == DBVT_UTF8)
+						MSN_ABUpdateNick(cws->value.pszVal, szContactID);
+					else
+						MSN_ABUpdateNick(UTF8(cws->value.pszVal), szContactID);
+				}
+				else
+					MSN_ABUpdateNick(NULL, szContactID);
+			}
+			if (isMe) displayEmailCount(hContact);
+		}
 	}
 	return 0;
 }
@@ -653,11 +662,12 @@ int CMsnProto::OnIdleChanged(WPARAM wParam, LPARAM lParam)
 	if (!msnLoggedIn || m_iDesiredStatus != ID_STATUS_ONLINE)
 		return 0;
 
-    if (lParam & IDF_PRIVACY) {
+	if (lParam & IDF_PRIVACY) 
+	{
 		if (m_iStatus == ID_STATUS_IDLE)
 			MSN_SetServerStatus(ID_STATUS_ONLINE);
 	}
-    else
+	else
 		MSN_SetServerStatus(lParam & IDF_ISIDLE ? ID_STATUS_IDLE : ID_STATUS_ONLINE);
 
 	return 0;
@@ -673,7 +683,7 @@ int CMsnProto::OnWindowEvent(WPARAM wParam, LPARAM lParam)
 	if (msgEvData->uType == MSG_WINDOW_EVT_OPENING) {
 		if (!MSN_IsMyContact(msgEvData->hContact)) return 0;
 		
-		char tEmail[ MSN_MAX_EMAIL_LEN ];
+		char tEmail[MSN_MAX_EMAIL_LEN];
 		if (MSN_IsMeByContact(msgEvData->hContact, tEmail)) return 0;
 
 		int netId = Lists_GetNetId(tEmail);
@@ -708,7 +718,7 @@ INT_PTR CMsnProto::OnLeaveChat(WPARAM wParam,LPARAM lParam)
 {
 	HANDLE hContact = (HANDLE)wParam;
 	if (getByte(hContact, "ChatRoom", 0) != 0) 
-    {
+	{
 		DBVARIANT dbv;
 		if (getTString(hContact, "ChatRoomID", &dbv) == 0)
 		{

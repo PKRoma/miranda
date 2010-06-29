@@ -197,7 +197,7 @@ static int gg_dcc7_connect(struct gg_session *sess, struct gg_dcc7 *dcc)
 static int gg_dcc7_listen(struct gg_dcc7 *dcc, uint16_t port)
 {
 	struct sockaddr_in sin;
-	int fd;
+	SOCKET fd;
 
 	gg_debug_session((dcc) ? (dcc)->sess : NULL, GG_DEBUG_FUNCTION, "** gg_dcc7_listen(%p, %d)\n", dcc, port);
 
@@ -390,7 +390,7 @@ static struct gg_dcc7 *gg_dcc7_send_file_common(struct gg_session *sess, uin_t r
 	dcc->uin = sess->uin;
 	dcc->peer_uin = rcpt;
 	dcc->file_fd = fd;
-	dcc->size = size;
+	dcc->size = (unsigned int)size;
 	dcc->seek = seek;
 
 	strncpy((char*) dcc->filename, filename1250, GG_DCC7_FILENAME_LEN - 1);
@@ -744,6 +744,7 @@ int gg_dcc7_handle_info(struct gg_session *sess, struct gg_event *e, void *paylo
 		e->event.dcc7_accept.remote_port = dcc->remote_port;
 	} else {
 		e->type = GG_EVENT_DCC7_PENDING;
+		e->event.dcc7_pending.dcc7 = dcc;
 	}
 
 	if (gg_dcc7_connect(sess, dcc) == -1) {
@@ -961,7 +962,8 @@ struct gg_event *gg_dcc7_watch_fd(struct gg_dcc7 *dcc)
 		case GG_STATE_LISTENING:
 		{
 			struct sockaddr_in sin;
-			int fd, one = 1;
+			SOCKET fd;
+			int one = 1;
 			unsigned int sin_len = sizeof(sin);
 
 			gg_debug_session((dcc) ? (dcc)->sess : NULL, GG_DEBUG_MISC, "// gg_dcc7_watch_fd() GG_STATE_LISTENING\n");
@@ -1020,6 +1022,7 @@ struct gg_event *gg_dcc7_watch_fd(struct gg_dcc7 *dcc)
 
 				if (gg_dcc7_reverse_connect(dcc) != -1) {
 					e->type = GG_EVENT_DCC7_PENDING;
+					e->event.dcc7_pending.dcc7 = dcc;
 				} else {
 					e->type = GG_EVENT_DCC7_ERROR;
 					e->event.dcc7_error = GG_ERROR_DCC7_NET;
@@ -1110,6 +1113,7 @@ struct gg_event *gg_dcc7_watch_fd(struct gg_dcc7 *dcc)
 			if (dcc->offset >= dcc->size) {
 				gg_debug_session((dcc) ? (dcc)->sess : NULL, GG_DEBUG_MISC, "// gg_dcc7_watch_fd() offset >= size, finished\n");
 				e->type = GG_EVENT_DCC7_DONE;
+				e->event.dcc7_done.dcc7 = dcc;
 				return e;
 			}
 
@@ -1145,6 +1149,7 @@ struct gg_event *gg_dcc7_watch_fd(struct gg_dcc7 *dcc)
 			if (dcc->offset >= dcc->size) {
 				gg_debug_session((dcc) ? (dcc)->sess : NULL, GG_DEBUG_MISC, "// gg_dcc7_watch_fd() finished\n");
 				e->type = GG_EVENT_DCC7_DONE;
+				e->event.dcc7_done.dcc7 = dcc;
 				return e;
 			}
 
@@ -1165,6 +1170,7 @@ struct gg_event *gg_dcc7_watch_fd(struct gg_dcc7 *dcc)
 			if (dcc->offset >= dcc->size) {
 				gg_debug_session((dcc) ? (dcc)->sess : NULL, GG_DEBUG_MISC, "// gg_dcc7_watch_fd() finished\n");
 				e->type = GG_EVENT_DCC7_DONE;
+				e->event.dcc7_done.dcc7 = dcc;
 				return e;
 			}
 
@@ -1191,6 +1197,7 @@ struct gg_event *gg_dcc7_watch_fd(struct gg_dcc7 *dcc)
 			if (dcc->offset >= dcc->size) {
 				gg_debug_session((dcc) ? (dcc)->sess : NULL, GG_DEBUG_MISC, "// gg_dcc7_watch_fd() finished\n");
 				e->type = GG_EVENT_DCC7_DONE;
+				e->event.dcc7_done.dcc7 = dcc;
 				return e;
 			}
 

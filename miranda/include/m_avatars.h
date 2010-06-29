@@ -41,7 +41,8 @@ The service takes care about protocol capabilites (does not actively fetch avata
 protocols which do not report avatar capabilities via PF4_AVATARS or for protocols which
 have been disabled in the option dialog). It also does not actively fetch avatars for
 protocols which are in invisible status mode (may cause privacy issues and some protocols
-like MSN don't allow any outbound client communication when in invisible status mode).
+like MSN don't allow any outbound client communication when in invisible status mode)
+unless AF_FETCHALWAYS is set.
 
 - TODO
 - maintain recent avatars (store the last hashes to avoid re-fetching)
@@ -102,6 +103,7 @@ struct CacheNode {
 #define AVDRQ_DONTRESIZEIFSMALLER      0x0100        // don't resize images that are smaller then the draw area
 #define AVDRQ_FORCEFASTALPHA           0x0200        // force rendering with simple AlphaBlend (will use FI_Resample otherwise)
 #define AVDRQ_FORCEALPHA               0x0400        // force with simple AlphaBlend (may use StretchBlt otherwise)
+#define AVDRQ_AERO					   0x0800		 // draw on aero surface
 
 // request to draw a contacts picture. See MS_AV_DRAWAVATAR service description
 
@@ -337,6 +339,11 @@ return=0 for sucess
 // lParam = 0
 // return = the time, in ms
 #define AF_DELAYAFTERFAIL 7
+
+// Fetching avatars is always possible and allowed
+// lParam = 0
+// return = 1 (always) or 0 (depending on our or contacts status mode)
+#define AF_FETCHALWAYS 8
 
 
 /*

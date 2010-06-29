@@ -55,10 +55,10 @@ extern "C" {
 #undef GG_CONFIG_HAVE_GETHOSTBYNAME_R
 
 /* Defined if libgadu was compiled and linked with pthread support. */
-#undef GG_CONFIG_HAVE_PTHREAD
+#define GG_CONFIG_HAVE_PTHREAD
 
 /* Defined if pthread resolver is the default one. */
-#undef GG_CONFIG_PTHREAD_DEFAULT 
+#define GG_CONFIG_PTHREAD_DEFAULT 
 
 /* Defined if this machine has C99-compiliant vsnprintf(). */
 #undef GG_CONFIG_HAVE_C99_VSNPRINTF
@@ -168,6 +168,7 @@ typedef   signed int    int32_t;
 #  define gg_sock_close(sock)			closesocket(sock)
 #  define gg_getsockopt(sock,level,name,val,len) getsockopt(sock,level,name,(char *)val,len)
 #else
+   typedef int				SOCKET;
 #  define gg_sock_write		write
 #  define gg_sock_read		read
 #  define gg_sock_close		close
@@ -192,7 +193,7 @@ typedef struct {
  * Makro deklarujące pola wspólne dla struktur sesji.
  */
 #define gg_common_head(x) \
-	int fd;			/**< Obserwowany deskryptor */ \
+	SOCKET fd;		/**< Obserwowany deskryptor */ \
 	int check;		/**< Informacja o żądaniu odczytu/zapisu (patrz \ref gg_check_t) */ \
 	int state;		/**< Aktualny stan połączenia (patrz \ref gg_state_t) */ \
 	int error;		/**< Kod błędu dla \c GG_STATE_ERROR (patrz \ref gg_error_t) */ \
@@ -316,11 +317,11 @@ struct gg_session {
 	gg_encoding_t encoding;		/**< Rodzaj kodowania znaków */
 
 	gg_resolver_t resolver_type;	/**< Sposób rozwiązywania nazw serwerów */
-	int (*resolver_start)(int *fd, void **private_data, const char *hostname);	/**< Funkcja rozpoczynająca rozwiązywanie nazwy */
+	int (*resolver_start)(SOCKET *fd, void **private_data, const char *hostname);	/**< Funkcja rozpoczynająca rozwiązywanie nazwy */
 	void (*resolver_cleanup)(void **private_data, int force);	/**< Funkcja zwalniająca zasoby po rozwiązaniu nazwy */
 
 	int protocol_features;	/**< Opcje protokołu */
-	int protocol_flags80;	/**< Flagi protokołu GG8 */
+	int status_flags;	/**< Flagi statusu */
 };
 
 /**
@@ -352,7 +353,7 @@ struct gg_http {
 	unsigned int body_done;	/**< Liczba odebranych bajtów strony */
 
 	gg_resolver_t resolver_type;	/**< Sposób rozwiązywania nazw serwerów */
-	int (*resolver_start)(int *fd, void **private_data, const char *hostname);	/**< Funkcja rozpoczynająca rozwiązywanie nazwy */
+	int (*resolver_start)(SOCKET *fd, void **private_data, const char *hostname);	/**< Funkcja rozpoczynająca rozwiązywanie nazwy */
 	void (*resolver_cleanup)(void **private_data, int force);	/**< Funkcja zwalniająca zasoby po rozwiązaniu nazwy */
 };
 
@@ -577,7 +578,8 @@ enum gg_state_t {
 	GG_STATE_WAITING_FOR_INFO,	/**< Oczekiwanie na informacje o połączeniu bezpośrednim */
 
 	GG_STATE_READING_ID,		/**< Odebranie identyfikatora połączenia bezpośredniego */
-	GG_STATE_SENDING_ID		/**< Wysłano identyfikatora połączenia bezpośredniego */
+	GG_STATE_SENDING_ID,		/**< Wysłano identyfikatora połączenia bezpośredniego */
+	GG_STATE_RESOLVING_GG		/**< Oczekiwanie na rozwiązanie nazwy serwera Gadu-Gadu */
 };
 
 /**
@@ -629,7 +631,7 @@ struct gg_login_params {
 	gg_encoding_t encoding;		/**< Rodzaj kodowania używanego w sesji (domyślnie CP1250) */
 	gg_resolver_t resolver;		/**< Sposób rozwiązywania nazw (patrz \ref build-resolver) */
 	int protocol_features;		/**< Opcje protokołu (flagi GG_FEATURE_*). */
-	int protocol_flags80;		/**< Flagi protokołu GG8 */
+	int status_flags;		/**< Flagi statusu (flagi GG_STATUS_FLAG_*, patrz \ref status). */
 
 #ifndef DOXYGEN
 	char dummy[1 * sizeof(int)];	/**< \internal Miejsce na kilka kolejnych
@@ -645,6 +647,7 @@ void gg_logoff(struct gg_session *sess);
 int gg_change_status(struct gg_session *sess, int status);
 int gg_change_status_descr(struct gg_session *sess, int status, const char *descr);
 int gg_change_status_descr_time(struct gg_session *sess, int status, const char *descr, int time);
+int gg_change_status_flags(struct gg_session *sess, int flags);
 int gg_send_message(struct gg_session *sess, int msgclass, uin_t recipient, const unsigned char *message);
 int gg_send_message_richtext(struct gg_session *sess, int msgclass, uin_t recipient, const unsigned char *message, const unsigned char *format, int formatlen);
 int gg_send_message_confer(struct gg_session *sess, int msgclass, int recipients_count, uin_t *recipients, const unsigned char *message);
@@ -659,15 +662,15 @@ uint32_t gg_crc32(uint32_t crc, const unsigned char *buf, int len);
 
 int gg_session_set_resolver(struct gg_session *gs, gg_resolver_t type);
 gg_resolver_t gg_session_get_resolver(struct gg_session *gs);
-int gg_session_set_custom_resolver(struct gg_session *gs, int (*resolver_start)(int*, void**, const char*), void (*resolver_cleanup)(void**, int));
+int gg_session_set_custom_resolver(struct gg_session *gs, int (*resolver_start)(SOCKET*, void**, const char*), void (*resolver_cleanup)(void**, int));
 
 int gg_http_set_resolver(struct gg_http *gh, gg_resolver_t type);
 gg_resolver_t gg_http_get_resolver(struct gg_http *gh);
-int gg_http_set_custom_resolver(struct gg_http *gh, int (*resolver_start)(int*, void**, const char*), void (*resolver_cleanup)(void**, int));
+int gg_http_set_custom_resolver(struct gg_http *gh, int (*resolver_start)(SOCKET*, void**, const char*), void (*resolver_cleanup)(void**, int));
 
 int gg_global_set_resolver(gg_resolver_t type);
 gg_resolver_t gg_global_get_resolver(void);
-int gg_global_set_custom_resolver(int (*resolver_start)(int*, void**, const char*), void (*resolver_cleanup)(void**, int));
+int gg_global_set_custom_resolver(int (*resolver_start)(SOCKET*, void**, const char*), void (*resolver_cleanup)(void**, int));
 
 /**
  * Rodzaj zdarzenia.
@@ -717,6 +720,7 @@ enum gg_event_t {
 
 	GG_EVENT_XML_EVENT,		/**< Otrzymano komunikat systemowy (7.7) */
 	GG_EVENT_DISCONNECT_ACK,	/**< \brief Potwierdzenie zakończenia sesji. Informuje o tym, że zmiana stanu na niedostępny z opisem dotarła do serwera i można zakończyć połączenie TCP. */
+	GG_EVENT_XML_ACTION,
 	GG_EVENT_TYPING_NOTIFY
 };
 
@@ -913,6 +917,13 @@ struct gg_event_xml_event {
 };
 
 /**
+ * Opis zdarzenia \c GG_EVENT_XML_ACTION.
+ */
+struct gg_event_xml_action {
+	char *data;		/**< Bufor z komunikatem */
+};
+
+/**
  * Opis zdarzenia \c GG_EVENT_TYPING_NOTIFY.
  */
 struct gg_event_typing_notify {
@@ -925,7 +936,13 @@ struct gg_event_typing_notify {
  */
 struct gg_event_dcc7_connected {
 	struct gg_dcc7 *dcc7;	/**< Struktura połączenia */
-	// XXX czy coś się przyda?
+};
+
+/**
+ * Opis zdarzenia \c GG_EVENT_DCC7_PENDING.
+ */
+struct gg_event_dcc7_pending {
+	struct gg_dcc7 *dcc7;	/**< Struktura połączenia */
 };
 
 /**
@@ -944,6 +961,13 @@ struct gg_event_dcc7_accept {
 	int type;		/**< Sposób połączenia (P2P, przez serwer) */
 	uint32_t remote_ip;	/**< Adres zdalnego klienta */
 	uint16_t remote_port;	/**< Port zdalnego klienta */
+};
+
+/**
+ * Opis zdarzenia \c GG_EVENT_DCC7_DONE.
+ */
+struct gg_event_dcc7_done {
+	struct gg_dcc7 *dcc7;	/**< Struktura połączenia */
 };
 
 /**
@@ -976,6 +1000,7 @@ union gg_event_union {
 	struct gg_event_userlist userlist;	/**< Odpowiedź listy kontaktów (\c GG_EVENT_USERLIST) */
 	gg_pubdir50_t pubdir50;	/**< Odpowiedź katalogu publicznego (\c GG_EVENT_PUBDIR50_*) */
 	struct gg_event_xml_event xml_event;	/**< Zdarzenie systemowe (\c GG_EVENT_XML_EVENT) */
+	struct gg_event_xml_action xml_action;	/**< Zdarzenie XML (\c GG_EVENT_XML_ACTION) */
 	struct gg_event_typing_notify typing_notify;	/**< Powiadomienie o pisaniu (\c GG_EVENT_TYPING_NOTIFY) */
 	struct gg_dcc *dcc_new;	/**< Nowe połączenie bezpośrednie (\c GG_EVENT_DCC_NEW) */
 	enum gg_error_t dcc_error;	/**< Błąd połączenia bezpośredniego (\c GG_EVENT_DCC_ERROR) */
@@ -984,8 +1009,10 @@ union gg_event_union {
 	enum gg_error_t dcc7_error;	/**< Błąd połączenia bezpośredniego (\c GG_EVENT_DCC7_ERROR) */
 	struct gg_event_dcc7_error dcc7_error_ex;	/**< Błąd połączenia bezpośredniego ze wskaźnikiem na strukturę połączenia (\c GG_EVENT_DCC7_ERROR) */
 	struct gg_event_dcc7_connected dcc7_connected;	/**< Informacja o zestawieniu połączenia bezpośredniego (\c GG_EVENT_DCC7_CONNECTED) */
+	struct gg_event_dcc7_pending dcc7_pending;	/**< Trwa próba połączenia bezpośredniego (\c GG_EVENT_DCC7_PENDING) */
 	struct gg_event_dcc7_reject dcc7_reject;	/**< Odrzucono połączenia bezpośredniego (\c GG_EVENT_DCC7_REJECT) */
 	struct gg_event_dcc7_accept dcc7_accept;	/**< Zaakceptowano połączenie bezpośrednie (\c GG_EVENT_DCC7_ACCEPT) */
+	struct gg_event_dcc7_done dcc7_done;	/**< Zakończono połączenie bezpośrednie (\c GG_EVENT_DCC7_DONE) */
 };
 
 /**
@@ -1368,9 +1395,9 @@ char *gg_vsaprintf(const char *format, va_list ap) GG_DEPRECATED;
 
 char *gg_get_line(char **ptr) GG_DEPRECATED;
 
-int gg_connect(void *addr, int port, int async) GG_DEPRECATED;
+SOCKET gg_connect(void *addr, int port, int async) GG_DEPRECATED;
 struct in_addr *gg_gethostbyname(const char *hostname) GG_DEPRECATED;
-char *gg_read_line(int sock, char *buf, int length) GG_DEPRECATED;
+char *gg_read_line(SOCKET sock, char *buf, int length) GG_DEPRECATED;
 void gg_chomp(char *line) GG_DEPRECATED;
 char *gg_urlencode(const char *str) GG_DEPRECATED;
 int gg_http_hash(const char *format, ...) GG_DEPRECATED;
@@ -1381,8 +1408,8 @@ void *gg_recv_packet(struct gg_session *sess) GG_DEPRECATED;
 int gg_send_packet(struct gg_session *sess, int type, ...) GG_DEPRECATED;
 unsigned int gg_login_hash(const unsigned char *password, unsigned int seed) GG_DEPRECATED;
 void gg_login_hash_sha1(const char *password, uint32_t seed, uint8_t *result) GG_DEPRECATED;
-uint32_t gg_fix32(uint32_t x) GG_DEPRECATED;
-uint16_t gg_fix16(uint16_t x) GG_DEPRECATED;
+uint32_t gg_fix32(uint32_t x);
+uint16_t gg_fix16(uint16_t x);
 #define fix16 gg_fix16
 #define fix32 gg_fix32
 char *gg_proxy_auth(void) GG_DEPRECATED;
@@ -1429,11 +1456,11 @@ int gg_dcc7_handle_reject(struct gg_session *sess, struct gg_event *e, void *pay
 #define GG_HAS_AUDIO_MASK 0x40000000
 #define GG_HAS_AUDIO7_MASK 0x20000000
 #define GG_ERA_OMNIX_MASK 0x04000000
-#define GG_LIBGADU_VERSION "1.9.0"
+#define GG_LIBGADU_VERSION "1.10.0-pre"
 
 #ifndef DOXYGEN
 
-#define GG_FEATURE_MSG77		0x04
+#define GG_FEATURE_MSG77		0x01
 #define GG_FEATURE_STATUS77		0x02
 #define GG_FEATURE_DND_FFC		0x10
 #define GG_FEATURE_IMAGE_DESCR		0x20
@@ -1573,6 +1600,11 @@ struct gg_pubdir50_reply {
 #define GG_STATUS_DESCR_MASK 0x4000
 #define GG_STATUS_FRIENDS_MASK 0x8000
 
+#define GG_STATUS_FLAG_UNKNOWN 0x00000001
+#define GG_STATUS_FLAG_VIDEO 0x00000002
+#define GG_STATUS_FLAG_MOBILE 0x00100000
+#define GG_STATUS_FLAG_SPAM 0x00800000
+
 #else
 
 /**
@@ -1597,6 +1629,18 @@ enum {
 	GG_STATUS_IMAGE_MASK,		/**< Flaga bitowa oznaczająca opis graficzny (tylko jeśli wybrano \c GG_FEATURE_IMAGE_DESCR) */
 	GG_STATUS_DESCR_MASK,		/**< Flaga bitowa oznaczająca status z opisem (tylko jeśli wybrano \c GG_FEATURE_IMAGE_DESCR) */
 	GG_STATUS_FRIENDS_MASK,		/**< Flaga bitowa dostępności tylko dla znajomych */
+};
+
+/**
+ * Rodzaje statusów użytkownika. Mapa bitowa.
+ *
+ * \ingroup status
+ */
+enum {
+	GG_STATUS_FLAG_UNKNOWN,		/**< Przeznaczenie nieznane, ale występuje zawsze */
+	GG_STATUS_FLAG_VIDEO,		/**< Klient obsługuje wideorozmowy */
+	GG_STATUS_FLAG_MOBILE,		/**< Klient mobilny (ikona telefonu komórkowego) */
+	GG_STATUS_FLAG_SPAM,		/**< Klient chce otrzymywać linki od nieznajomych */
 };
 
 #endif	/* DOXYGEN */
@@ -1959,6 +2003,8 @@ struct gg_recv_msg {
 #define GG_USERLIST_REQUEST 0x0016
 
 #define GG_XML_EVENT 0x0027
+
+#define GG_XML_ACTION 0x002c
 
 #define GG_TYPING_NOTIFY 0x0059
 

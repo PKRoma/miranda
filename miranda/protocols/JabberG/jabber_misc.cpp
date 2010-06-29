@@ -128,8 +128,8 @@ void CJabberProto::DBAddAuthRequest( const TCHAR* jid, const TCHAR* nick )
 	JDeleteSetting( hContact, "Hidden" );
 	//JSetStringT( hContact, "Nick", nick );
 
-	char* szJid = mir_t2a( jid );
-	char* szNick = mir_t2a( nick );
+	char* szJid = mir_utf8encodeT( jid );
+	char* szNick = mir_utf8encodeT( nick );
 
 	//blob is: uin( DWORD ), hContact( HANDLE ), nick( ASCIIZ ), first( ASCIIZ ), last( ASCIIZ ), email( ASCIIZ ), reason( ASCIIZ )
 	//blob is: 0( DWORD ), hContact( HANDLE ), nick( ASCIIZ ), ""( ASCIIZ ), ""( ASCIIZ ), email( ASCIIZ ), ""( ASCIIZ )
@@ -137,7 +137,7 @@ void CJabberProto::DBAddAuthRequest( const TCHAR* jid, const TCHAR* nick )
 	dbei.cbSize = sizeof( DBEVENTINFO );
 	dbei.szModule = m_szModuleName;
 	dbei.timestamp = ( DWORD )time( NULL );
-	dbei.flags = 0;
+	dbei.flags = DBEF_UTF;
 	dbei.eventType = EVENTTYPE_AUTHREQUEST;
 	dbei.cbBlob = (DWORD)(sizeof( DWORD )+ sizeof( HANDLE ) + strlen( szNick ) + strlen( szJid ) + 5);
 	PBYTE pCurBlob = dbei.pBlob = ( PBYTE ) mir_alloc( dbei.cbBlob );
@@ -219,23 +219,19 @@ BOOL CJabberProto::AddDbPresenceEvent(HANDLE hContact, BYTE btEventType)
 	if ( !hContact )
 		return FALSE;
 
-	switch ( btEventType )
-	{
+	switch ( btEventType ) {
 	case JABBER_DB_EVENT_PRESENCE_SUBSCRIBE:
 	case JABBER_DB_EVENT_PRESENCE_SUBSCRIBED:
 	case JABBER_DB_EVENT_PRESENCE_UNSUBSCRIBE:
 	case JABBER_DB_EVENT_PRESENCE_UNSUBSCRIBED:
-		{
-			if ( !m_options.LogPresence )
-				return FALSE;
-			break;
-		}
+		if ( !m_options.LogPresence )
+			return FALSE;
+		break;
+
 	case JABBER_DB_EVENT_PRESENCE_ERROR:
-		{
-			if ( !m_options.LogPresenceErrors )
-				return FALSE;
-			break;
-		}
+		if ( !m_options.LogPresenceErrors )
+			return FALSE;
+		break;
 	}
 
 	DBEVENTINFO dbei;
@@ -264,30 +260,30 @@ void CJabberProto::InitCustomFolders( void )
 
 	bInitDone = true;
 	if ( ServiceExists( MS_FOLDERS_REGISTER_PATH )) {
-		char AvatarsFolder[MAX_PATH];
-        char *tmpPath = Utils_ReplaceVars( "%miranda_avatarcache%" );
-		mir_snprintf( AvatarsFolder, SIZEOF( AvatarsFolder ), "%s\\Jabber", tmpPath );
-        mir_free(tmpPath);
-		hJabberAvatarsFolder = FoldersRegisterCustomPath( m_szModuleName, "Avatars", AvatarsFolder );	// title!!!!!!!!!!!
+		TCHAR AvatarsFolder[MAX_PATH];
+		TCHAR* tmpPath = Utils_ReplaceVarsT( _T("%miranda_avatarcache%"));
+		mir_sntprintf( AvatarsFolder, SIZEOF( AvatarsFolder ), _T("%s\\Jabber"), tmpPath );
+		mir_free(tmpPath);
+		hJabberAvatarsFolder = FoldersRegisterCustomPathT( m_szModuleName, "Avatars", AvatarsFolder );	// title!!!!!!!!!!!
 }	}
 
-void CJabberProto::GetAvatarFileName( HANDLE hContact, char* pszDest, int cbLen )
+void CJabberProto::GetAvatarFileName( HANDLE hContact, TCHAR* pszDest, size_t cbLen )
 {
 	size_t tPathLen;
-	char* path = ( char* )alloca( cbLen );
+	TCHAR* path = ( TCHAR* )alloca( cbLen * sizeof( TCHAR ));
 
 	InitCustomFolders();
 
-	if ( hJabberAvatarsFolder == NULL || FoldersGetCustomPath( hJabberAvatarsFolder, path, cbLen, "" )) {
-        char *tmpPath = Utils_ReplaceVars( "%miranda_avatarcache%" );
-		tPathLen = mir_snprintf( pszDest, cbLen, "%s\\Jabber", tmpPath );
-        mir_free(tmpPath);
+	if ( hJabberAvatarsFolder == NULL || FoldersGetCustomPathT( hJabberAvatarsFolder, path, (int)cbLen, _T(""))) {
+		TCHAR *tmpPath = Utils_ReplaceVarsT( _T("%miranda_avatarcache%"));
+		tPathLen = mir_sntprintf( pszDest, cbLen, _T("%s\\Jabber"), tmpPath );
+		mir_free(tmpPath);
 	}
-	else tPathLen = mir_snprintf( pszDest, cbLen, "%s", path );
+	else tPathLen = mir_sntprintf( pszDest, cbLen, _T("%s"), path );
 
-	DWORD dwAttributes = GetFileAttributesA( pszDest );
+	DWORD dwAttributes = GetFileAttributes( pszDest );
 	if ( dwAttributes == 0xffffffff || ( dwAttributes & FILE_ATTRIBUTE_DIRECTORY ) == 0 )
-		JCallService( MS_UTILS_CREATEDIRTREE, 0, ( LPARAM )pszDest );
+		JCallService( MS_UTILS_CREATEDIRTREET, 0, ( LPARAM )pszDest );
 
 	pszDest[ tPathLen++ ] = '\\';
 
@@ -307,21 +303,21 @@ void CJabberProto::GetAvatarFileName( HANDLE hContact, char* pszDest, int cbLen 
 			str[ sizeof(str)-1 ] = 0;
 			JFreeVariant( &dbv );
 		}
-		else _ltoa(( long )hContact, str, 10 );
+		else _i64toa(( LONG_PTR )hContact, str, 10 );
 
 		char* hash = JabberSha1( str );
-		mir_snprintf( pszDest + tPathLen, MAX_PATH - tPathLen, "%s.%s", hash, szFileType );
+		mir_sntprintf( pszDest + tPathLen, MAX_PATH - tPathLen, _T(TCHAR_STR_PARAM) _T(".") _T(TCHAR_STR_PARAM), hash, szFileType );
 		mir_free( hash );
 	}
 	else if ( m_ThreadInfo != NULL ) {
-		mir_snprintf( pszDest + tPathLen, MAX_PATH - tPathLen, TCHAR_STR_PARAM "@%s avatar.%s",
+		mir_sntprintf( pszDest + tPathLen, MAX_PATH - tPathLen, _T("%s@") _T(TCHAR_STR_PARAM) _T(" avatar.") _T(TCHAR_STR_PARAM), 
 			m_ThreadInfo->username, m_ThreadInfo->server, szFileType );
 	}
 	else {
 		DBVARIANT dbv1, dbv2;
 		BOOL res1 = DBGetContactSettingString( NULL, m_szModuleName, "LoginName", &dbv1 );
 		BOOL res2 = DBGetContactSettingString( NULL, m_szModuleName, "LoginServer", &dbv2 );
-		mir_snprintf( pszDest + tPathLen, MAX_PATH - tPathLen, "%s@%s avatar.%s",
+		mir_sntprintf( pszDest + tPathLen, MAX_PATH - tPathLen, _T(TCHAR_STR_PARAM) _T("@") _T(TCHAR_STR_PARAM) _T(" avatar.") _T(TCHAR_STR_PARAM),
 			res1 ? "noname" : dbv1.pszVal,
 			res2 ? m_szModuleName : dbv2.pszVal,
 			szFileType );
@@ -405,6 +401,9 @@ void CJabberProto::SetServerStatus( int iNewStatus )
 	default:
 		return;
 	}
+
+	if ( m_iStatus == oldStatus )
+		return;
 
 	// send presence update
 	SendPresence( m_iStatus, true );
@@ -541,7 +540,10 @@ void CJabberProto::UpdateMirVer(HANDLE hContact, JABBER_RESOURCE_STATUS *resourc
 {
 	TCHAR szMirVer[ 512 ];
 	FormatMirVer(resource, szMirVer, SIZEOF(szMirVer));
-	JSetStringT( hContact, "MirVer", szMirVer );
+	if ( szMirVer[0] )
+		JSetStringT( hContact, "MirVer", szMirVer );
+	else
+		JDeleteSetting( hContact, "MirVer" );
 
 	DBVARIANT dbv;
 	if ( !JGetStringT( hContact, "jid", &dbv )) {

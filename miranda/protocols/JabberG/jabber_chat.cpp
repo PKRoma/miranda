@@ -777,8 +777,7 @@ public:
 		TCHAR buf[256];
 		mir_sntprintf(buf, SIZEOF(buf), _T("%s\n%s"), m_room, TranslateT("Send groupchat invitation.") );
 		SetDlgItemText( m_hwnd, IDC_HEADERBAR, buf );
-		SendMessage( m_hwnd, WM_SETICON, ICON_BIG, ( LPARAM )m_proto->LoadIconEx( "group" ));
-		SendDlgItemMessage(m_hwnd, IDC_HEADERBAR, WM_SETICON, 0, (LPARAM)g_LoadIconEx32("group"));
+		SendMessage( m_hwnd, WM_SETICON, ICON_SMALL, ( LPARAM )m_proto->LoadIconEx( "group" ));
 
 		SetWindowLong(GetDlgItem(m_hwnd, IDC_CLIST), GWL_STYLE,
 			GetWindowLong(GetDlgItem(m_hwnd, IDC_CLIST), GWL_STYLE)|CLS_HIDEOFFLINE|CLS_CHECKBOXES|CLS_HIDEEMPTYGROUPS|CLS_USEGROUPS|CLS_GREYALTERNATE|CLS_GROUPCHECKBOXES);
@@ -868,6 +867,10 @@ void CJabberProto::AdminSet( const TCHAR* to, const TCHAR* ns, const TCHAR* szIt
 	m_ThreadInfo->send( XmlNodeIq( _T("set"), SerialNext(), to ) << XQUERY( ns ) << XCHILD( _T("item")) << XATTR( szItem, itemVal ) << XATTR( var, varVal ));
 }
 
+void CJabberProto::AdminSetReason( const TCHAR* to, const TCHAR* ns, const TCHAR* szItem, const TCHAR* itemVal, const TCHAR* var, const TCHAR* varVal , const TCHAR* rsn)
+{   m_ThreadInfo->send( XmlNodeIq( _T("set"), SerialNext(), to ) << XQUERY( ns ) << XCHILD( _T("item")) << XATTR( szItem, itemVal ) << XATTR( var, varVal ) << XCHILD( _T("reason"), rsn));
+}
+
 void CJabberProto::AdminGet( const TCHAR* to, const TCHAR* ns, const TCHAR* var, const TCHAR* varVal, JABBER_IQ_PFUNC foo )
 {
 	int id = SerialNext();
@@ -898,8 +901,7 @@ static LRESULT CALLBACK sttUserInfoDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam
 		SetWindowLongPtr(hwndDlg, GWLP_USERDATA, lParam);
 		dat = (TUserInfoData *)lParam;
 
-		SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)dat->ppro->LoadIconEx("group"));
-		SendDlgItemMessage(hwndDlg, IDC_HEADERBAR, WM_SETICON, 0, (LPARAM)g_LoadIconEx32("group"));
+		WindowSetIcon( hwndDlg, dat->ppro, "group" );
 
 		LOGFONT lf;
 		GetObject((HFONT)SendDlgItemMessage(hwndDlg, IDC_TXT_NICK, WM_GETFONT, 0, 0), sizeof(lf), &lf);
@@ -1034,6 +1036,9 @@ static LRESULT CALLBACK sttUserInfoDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam
 
 	case WM_DESTROY:
 		{
+			WindowFreeIcon( hwndDlg );
+			g_ReleaseIcon(( HICON )SendDlgItemMessage( hwndDlg, IDC_BTN_AFFILIATION, BM_SETIMAGE, IMAGE_ICON, 0 ));
+			g_ReleaseIcon(( HICON )SendDlgItemMessage( hwndDlg, IDC_BTN_ROLE, BM_SETIMAGE, IMAGE_ICON, 0 ));
 			TUserInfoData *dat = (TUserInfoData *)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 			if (!dat)break;
 			SetWindowLongPtr(hwndDlg, GWLP_USERDATA, 0);
@@ -1100,7 +1105,7 @@ static void sttNickListHook( CJabberProto* ppro, JABBER_LIST_ITEM* item, GCHOOK*
 	case IDM_VCARD:
 	{
 		HANDLE hContact;
-		JABBER_SEARCH_RESULT jsr;
+		JABBER_SEARCH_RESULT jsr = {0};
 		mir_sntprintf(jsr.jid, SIZEOF(jsr.jid), _T("%s/%s"), item->jid, him->resourceName );
 		jsr.hdr.cbSize = sizeof( JABBER_SEARCH_RESULT );
 		
@@ -1247,7 +1252,7 @@ static void sttNickListHook( CJabberProto* ppro, JABBER_LIST_ITEM* item, GCHOOK*
 		if (him->szRealJid && *him->szRealJid)
 		{
 			HANDLE hContact;
-			JABBER_SEARCH_RESULT jsr;
+			JABBER_SEARCH_RESULT jsr ={0};
 			jsr.hdr.cbSize = sizeof( JABBER_SEARCH_RESULT );
 			mir_sntprintf(jsr.jid, SIZEOF(jsr.jid), _T("%s"), him->szRealJid);
 			if (TCHAR *tmp = _tcschr(jsr.jid, _T('/'))) *tmp = 0;
@@ -1266,16 +1271,16 @@ static void sttNickListHook( CJabberProto* ppro, JABBER_LIST_ITEM* item, GCHOOK*
 		{
 			JABBER_SEARCH_RESULT jsr={0};
 			jsr.hdr.cbSize = sizeof( JABBER_SEARCH_RESULT );
+			jsr.hdr.flags = PSR_TCHAR;
 			mir_sntprintf(jsr.jid, SIZEOF(jsr.jid), _T("%s"), him->szRealJid);
 			if (TCHAR *tmp = _tcschr(jsr.jid, _T('/'))) *tmp = 0;
-			jsr.hdr.nick = mir_t2a( jsr.jid );
+			jsr.hdr.nick = jsr.jid;
 
 			ADDCONTACTSTRUCT acs={0};
 			acs.handleType = HANDLE_SEARCHRESULT;
 			acs.szProto = ppro->m_szModuleName;
 			acs.psr = (PROTOSEARCHRESULT *)&jsr;
 			CallService(MS_ADDCONTACT_SHOW, (WPARAM)CallService(MS_CLUI_GETHWND, 0, 0), (LPARAM)&acs);
-			mir_free( jsr.hdr.nick );
 			break;
 		}
 	}
@@ -1511,6 +1516,14 @@ int CJabberProto::JabberGcEventHook(WPARAM, LPARAM lParam)
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
+void CJabberProto::AddMucListItem( JABBER_MUC_JIDLIST_INFO* jidListInfo, TCHAR* str , TCHAR* rsn)
+{		
+	const TCHAR* field = ( jidListInfo->type == MUC_BANLIST || _tcschr(str,'@') ) ? _T("jid") : _T("nick");
+	TCHAR* roomJid = jidListInfo->roomJid;
+	if ( jidListInfo->type == MUC_BANLIST ) {
+		AdminSetReason( roomJid, xmlnsAdmin, field, str, _T("affiliation"), _T("outcast"), rsn);
+		AdminGet( roomJid, xmlnsAdmin, _T("affiliation"), _T("outcast"), &CJabberProto::OnIqResultMucGetBanList);
+}	}
 
 void CJabberProto::AddMucListItem( JABBER_MUC_JIDLIST_INFO* jidListInfo, TCHAR* str )
 {

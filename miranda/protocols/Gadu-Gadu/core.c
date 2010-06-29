@@ -40,9 +40,9 @@ uint32_t swap32(uint32_t x)
 GGINLINE int gg_isonline(GGPROTO *gg)
 {
 	int isonline;
-	pthread_mutex_lock(&gg->sess_mutex);
+	EnterCriticalSection(&gg->sess_mutex);
 	isonline = (gg->sess != NULL);
-	pthread_mutex_unlock(&gg->sess_mutex);
+	LeaveCriticalSection(&gg->sess_mutex);
 
 	return isonline;
 }
@@ -64,9 +64,9 @@ void gg_disconnect(GGPROTO *gg)
 			switch(DBGetContactSettingWord(NULL, GG_PROTO, GG_KEY_LEAVESTATUS, GG_KEYDEF_LEAVESTATUS))
 			{
 				case ID_STATUS_ONLINE:
-					pthread_mutex_lock(&gg->modemsg_mutex);
+					EnterCriticalSection(&gg->modemsg_mutex);
 					szMsg = _strdup(gg->modemsg.online);
-					pthread_mutex_unlock(&gg->modemsg_mutex);
+					LeaveCriticalSection(&gg->modemsg_mutex);
 					if(!szMsg &&
 						!DBGetContactSettingString(NULL, "SRAway", gg_status2db(ID_STATUS_ONLINE, "Default"), &dbv))
 					{
@@ -76,9 +76,9 @@ void gg_disconnect(GGPROTO *gg)
 					}
 					break;
 				case ID_STATUS_AWAY:
-					pthread_mutex_lock(&gg->modemsg_mutex);
+					EnterCriticalSection(&gg->modemsg_mutex);
 					szMsg = _strdup(gg->modemsg.away);
-					pthread_mutex_unlock(&gg->modemsg_mutex);
+					LeaveCriticalSection(&gg->modemsg_mutex);
 					if(!szMsg &&
 						!DBGetContactSettingString(NULL, "SRAway", gg_status2db(ID_STATUS_AWAY, "Default"), &dbv))
 					{
@@ -88,9 +88,9 @@ void gg_disconnect(GGPROTO *gg)
 					}
 					break;
 				case ID_STATUS_DND:
-					pthread_mutex_lock(&gg->modemsg_mutex);
+					EnterCriticalSection(&gg->modemsg_mutex);
 					szMsg = _strdup(gg->modemsg.dnd);
-					pthread_mutex_unlock(&gg->modemsg_mutex);
+					LeaveCriticalSection(&gg->modemsg_mutex);
 					if(!szMsg &&
 						!DBGetContactSettingString(NULL, "SRAway", gg_status2db(ID_STATUS_DND, "Default"), &dbv))
 					{
@@ -100,9 +100,9 @@ void gg_disconnect(GGPROTO *gg)
 					}
 					break;
 				case ID_STATUS_FREECHAT:
-					pthread_mutex_lock(&gg->modemsg_mutex);
+					EnterCriticalSection(&gg->modemsg_mutex);
 					szMsg = _strdup(gg->modemsg.freechat);
-					pthread_mutex_unlock(&gg->modemsg_mutex);
+					LeaveCriticalSection(&gg->modemsg_mutex);
 					if(!szMsg &&
 						!DBGetContactSettingString(NULL, "SRAway", gg_status2db(ID_STATUS_FREECHAT, "Default"), &dbv))
 					{
@@ -112,9 +112,9 @@ void gg_disconnect(GGPROTO *gg)
 					}
 					break;
 				case ID_STATUS_INVISIBLE:
-					pthread_mutex_lock(&gg->modemsg_mutex);
+					EnterCriticalSection(&gg->modemsg_mutex);
 					szMsg = _strdup(gg->modemsg.invisible);
-					pthread_mutex_unlock(&gg->modemsg_mutex);
+					LeaveCriticalSection(&gg->modemsg_mutex);
 					if(!szMsg &&
 						!DBGetContactSettingString(NULL, "SRAway", gg_status2db(ID_STATUS_INVISIBLE, "Default"), &dbv))
 					{
@@ -126,13 +126,13 @@ void gg_disconnect(GGPROTO *gg)
 
 				default:
 					// Set last status
-					pthread_mutex_lock(&gg->modemsg_mutex);
+					EnterCriticalSection(&gg->modemsg_mutex);
 					szMsg = _strdup(gg_getstatusmsg(gg, gg->proto.m_iStatus));
-					pthread_mutex_unlock(&gg->modemsg_mutex);
+					LeaveCriticalSection(&gg->modemsg_mutex);
 			}
 		}
 
-		pthread_mutex_lock(&gg->sess_mutex);
+		EnterCriticalSection(&gg->sess_mutex);
 		// Check if it has message
 		if(szMsg)
 		{
@@ -146,7 +146,7 @@ void gg_disconnect(GGPROTO *gg)
 			// Send logoff immediately
 			gg_logoff(gg->sess);
 		}
-		pthread_mutex_unlock(&gg->sess_mutex);
+		LeaveCriticalSection(&gg->sess_mutex);
 	}
 }
 
@@ -230,23 +230,8 @@ int gg_decodehosts(char *var, GGHOST *hosts, int max)
 }
 
 ////////////////////////////////////////////////////////////
-// Wait for thread to stop
-void gg_threadwait(GGPROTO *gg, pthread_t *thread)
-{
-	if (!thread->hThread)
-		return;
-
-#ifdef DEBUGMODE
-	gg_netlog(gg, "gg_threadwait(): Waiting until %s finished, if needed.", thread->hThread == gg->pth_dcc.hThread ? "DCC Server Thread" : "Server Thread");
-#endif
-	while (WaitForSingleObjectEx(thread->hThread, INFINITE, TRUE) != WAIT_OBJECT_0);
-	pthread_detach(thread);
-	ZeroMemory(thread, sizeof(pthread_t));
-}
-
-////////////////////////////////////////////////////////////
 // Main connection session thread
-void *__stdcall gg_mainthread(void *empty)
+void __cdecl gg_mainthread(GGPROTO *gg, void *empty)
 {
 	// Miranda variables
 	NETLIBUSERSETTINGS nlus;
@@ -273,12 +258,11 @@ void *__stdcall gg_mainthread(void *empty)
 		{ GG_FAILURE_UNAVAILABLE,	"Gadu-Gadu servers are now down. Try again later." },
 		{ 0,						"Unknown" }
 	};
-	GGPROTO *gg = empty;
 	// Time deviation (300s)
 	time_t timeDeviation = DBGetContactSettingWord(NULL, GG_PROTO, GG_KEY_TIMEDEVIATION, GG_KEYDEF_TIMEDEVIATION);
 
 #ifdef DEBUGMODE
-	gg_netlog(gg, "gg_mainthread(%x): Server Thread Starting", empty);
+	gg_netlog(gg, "gg_mainthread(%x): Server Thread Starting", gg);
 	gg_debug_level = GG_DEBUG_NET | GG_DEBUG_TRAFFIC | GG_DEBUG_FUNCTION | GG_DEBUG_MISC;
 #else
 	gg_debug_level = 0;
@@ -292,8 +276,9 @@ void *__stdcall gg_mainthread(void *empty)
 	p.protocol_version = 0x2e;
 	p.protocol_features = GG_FEATURE_DND_FFC | GG_FEATURE_TYPING_NOTIFY;
 	p.encoding = GG_ENCODING_CP1250;
+	p.status_flags = GG_STATUS_FLAG_UNKNOWN;
 	if (DBGetContactSettingByte(NULL, GG_PROTO, GG_KEY_SHOWLINKS, GG_KEYDEF_SHOWLINKS))
-		p.protocol_flags80 = 0x800000;
+		p.status_flags |= GG_STATUS_FLAG_SPAM;
 
 	// Use audio
 	/* p.has_audio = 1; */
@@ -310,7 +295,7 @@ void *__stdcall gg_mainthread(void *empty)
 	{
 #ifdef DEBUGMODE
 		if(nlus.useProxy)
-			gg_netlog(gg, "gg_mainthread(%x): Using proxy %s:%d.", empty, nlus.szProxyServer, nlus.wProxyPort);
+			gg_netlog(gg, "gg_mainthread(%x): Using proxy %s:%d.", gg, nlus.szProxyServer, nlus.wProxyPort);
 #endif
 		gg_proxy_enabled = nlus.useProxy;
 		gg_proxy_host = nlus.szProxyServer;
@@ -326,7 +311,7 @@ void *__stdcall gg_mainthread(void *empty)
 	else
 	{
 #ifdef DEBUGMODE
-		gg_netlog(gg, "gg_mainthread(%x): Failed loading proxy settings.", empty);
+		gg_netlog(gg, "gg_mainthread(%x): Failed loading proxy settings.", gg);
 #endif
 		gg_proxy_enabled = 0;
 	}
@@ -351,10 +336,10 @@ void *__stdcall gg_mainthread(void *empty)
 	else
 	{
 #ifdef DEBUGMODE
-		gg_netlog(gg, "gg_mainthread(%x): No password specified. Exiting.", empty);
+		gg_netlog(gg, "gg_mainthread(%x): No password specified. Exiting.", gg);
 #endif
 		gg_broadcastnewstatus(gg, ID_STATUS_OFFLINE);
-		return NULL;
+		return;
 	}
 
 	// Readup number
@@ -365,7 +350,7 @@ void *__stdcall gg_mainthread(void *empty)
 #endif
 		gg_broadcastnewstatus(gg, ID_STATUS_OFFLINE);
 		free(p.password);
-		return NULL;
+		return;
 	}
 
 	// Readup SSL/TLS setting
@@ -420,8 +405,9 @@ void *__stdcall gg_mainthread(void *empty)
 	// Setup client port
 	if(gg->dcc) p.client_port = gg->dcc->port;
 
+retry:
 	// Loadup startup status & description
-	pthread_mutex_lock(&gg->modemsg_mutex);
+	EnterCriticalSection(&gg->modemsg_mutex);
 	p.status_descr = _strdup(gg_getstatusmsg(gg, gg->proto.m_iDesiredStatus));
 	p.status = status_m2gg(gg, gg->proto.m_iDesiredStatus, p.status_descr != NULL);
 
@@ -429,9 +415,8 @@ void *__stdcall gg_mainthread(void *empty)
 	gg_netlog(gg, "gg_mainthread(%x): Connecting with number %d, status %d and description \"%s\".", gg, p.uin, gg->proto.m_iDesiredStatus,
 				p.status_descr ? p.status_descr : "<none>");
 #endif
-	pthread_mutex_unlock(&gg->modemsg_mutex);
+	LeaveCriticalSection(&gg->modemsg_mutex);
 
-retry:
 	// Check manual hosts
 	if(hostnum < hostcount)
 	{
@@ -450,7 +435,7 @@ retry:
 		{
 			p.server_port = hosts[hostnum].port;
 #ifdef DEBUGMODE
-			gg_netlog(gg, "gg_mainthread(%x): Connecting to manually specified host %s (%d.%d.%d.%d) and port %d.", empty,
+			gg_netlog(gg, "gg_mainthread(%x): Connecting to manually specified host %s (%d.%d.%d.%d) and port %d.", gg,
 				hosts[hostnum].hostname, LOBYTE(LOWORD(p.server_addr)), HIBYTE(LOWORD(p.server_addr)),
 				LOBYTE(HIWORD(p.server_addr)), HIBYTE(HIWORD(p.server_addr)), p.server_port);
 #endif
@@ -469,6 +454,7 @@ retry:
 			char error[128], *perror = NULL;
 			int i;
 
+			gg_broadcastnewstatus(gg, ID_STATUS_OFFLINE);
 			// Lookup for error desciption
 			if(errno == EACCES)
 			{
@@ -500,29 +486,30 @@ retry:
 		// Reconnect to the next server on the list
 		if(gg->proto.m_iDesiredStatus != ID_STATUS_OFFLINE
 			&& errno == EACCES
-			&& (gg_failno == GG_FAILURE_CONNECTING || gg_failno == GG_FAILURE_READING || gg_failno == GG_FAILURE_WRITING)
+			&& (gg_failno >= GG_FAILURE_RESOLVING && gg_failno != GG_FAILURE_PASSWORD && gg_failno != GG_FAILURE_INTRUDER && gg_failno != GG_FAILURE_UNAVAILABLE)
 			&& (DBGetContactSettingByte(NULL, GG_PROTO, GG_KEY_ARECONNECT, GG_KEYDEF_ARECONNECT)
 				|| (hostnum < hostcount - 1)))
 		{
 			if(hostnum < hostcount - 1) hostnum ++;
+			gg_broadcastnewstatus(gg, ID_STATUS_CONNECTING);
 			goto retry;
 		}
 		// We cannot do more about this
-		pthread_mutex_lock(&gg->modemsg_mutex);
+		EnterCriticalSection(&gg->modemsg_mutex);
 		gg->proto.m_iDesiredStatus = ID_STATUS_OFFLINE;
-		pthread_mutex_unlock(&gg->modemsg_mutex);
+		LeaveCriticalSection(&gg->modemsg_mutex);
 	}
 	else
 	{
 		// Successfully connected
-		pthread_mutex_lock(&gg->sess_mutex);
+		EnterCriticalSection(&gg->sess_mutex);
 		gg->sess = sess;
-		pthread_mutex_unlock(&gg->sess_mutex);
+		LeaveCriticalSection(&gg->sess_mutex);
 		// Subscribe users status notifications
 		gg_notifyall(gg);
 		// Set startup status
-		if(gg->proto.m_iDesiredStatus == ID_STATUS_OFFLINE)
-			gg_disconnect(gg);
+		if (gg->proto.m_iDesiredStatus != status_gg2m(gg, p.status))
+			gg_refreshstatus(gg, gg->proto.m_iDesiredStatus);
 		else
 			gg_broadcastnewstatus(gg, gg->proto.m_iDesiredStatus);
 	}
@@ -537,10 +524,10 @@ retry:
 #ifdef DEBUGMODE
 			gg_netlog(gg, "gg_mainthread(%x): Connection closed.", gg);
 #endif
-			pthread_mutex_lock(&gg->sess_mutex);
+			EnterCriticalSection(&gg->sess_mutex);
 			gg_free_session(gg->sess);
 			gg->sess = NULL;
-			pthread_mutex_unlock(&gg->sess_mutex);
+			LeaveCriticalSection(&gg->sess_mutex);
 			break;
 		}
 #ifdef DEBUGMODE
@@ -558,10 +545,10 @@ retry:
 			// Client disconnected or connection failure
 			case GG_EVENT_CONN_FAILED:
 			case GG_EVENT_DISCONNECT:
-				pthread_mutex_lock(&gg->sess_mutex);
+				EnterCriticalSection(&gg->sess_mutex);
 				gg_free_session(gg->sess);
 				gg->sess = NULL;
-				pthread_mutex_unlock(&gg->sess_mutex);
+				LeaveCriticalSection(&gg->sess_mutex);
 				break;
 
 			// Client allowed to disconnect
@@ -579,7 +566,7 @@ retry:
 				}
 				break;
 
-			// Statuslist notify
+			// Statuslist notify (deprecated)
 			case GG_EVENT_NOTIFY:
 			case GG_EVENT_NOTIFY_DESCR:
 			{
@@ -594,14 +581,16 @@ retry:
 				}
 				break;
 			}
-			// Statuslist notify (version 6.0)
+			// Statuslist notify (version >= 6.0)
 			case GG_EVENT_NOTIFY60:
 			{
 				int i;
-				for(i = 0; e->event.notify60[i].uin; i++)
+				for(i = 0; e->event.notify60[i].uin; i++) {
 					gg_changecontactstatus(gg, e->event.notify60[i].uin, e->event.notify60[i].status, e->event.notify60[i].descr,
 						e->event.notify60[i].time, e->event.notify60[i].remote_ip, e->event.notify60[i].remote_port,
 						e->event.notify60[i].version);
+					gg_requestavatar(gg, gg_getcontact(gg, e->event.notify60[i].uin, 0, 0, NULL), 0);
+				}
 				break;
 			}
 
@@ -669,13 +658,13 @@ retry:
 									strncat(strFmt2, strFmt1, sizeof(strFmt2) - strlen(strFmt2));
 								}
 							}
-							mir_snprintf(strFmt1, sizeof(strFmt1), "GG: %d", uin);
 
 							sr.hdr.cbSize = sizeof(sr);
 							sr.hdr.nick = (char *)__nick;
 							sr.hdr.firstName = (char *)__firstname;
-							sr.hdr.lastName = strFmt1;
+							sr.hdr.lastName = (char *)__lastname;
 							sr.hdr.email = strFmt2;
+							sr.hdr.id = _ultoa(uin, strFmt1, 10);
 							sr.uin = uin;
 
 							ProtoBroadcastAck(GG_PROTO, NULL, ACKTYPE_SEARCH, ACKRESULT_DATA, (HANDLE) 1, (LPARAM)&sr);
@@ -731,15 +720,23 @@ retry:
 				break;
 			}
 
-			// Status (depreciated)
+			// Status (deprecated)
 			case GG_EVENT_STATUS:
 				gg_changecontactstatus(gg, e->event.status.uin, e->event.status.status, e->event.status.descr, 0, 0, 0, 0);
 				break;
 
-			// Status (version 6.0)
+			// Status (version >= 6.0)
 			case GG_EVENT_STATUS60:
-				gg_changecontactstatus(gg, e->event.status60.uin, e->event.status60.status, e->event.status60.descr,
-					e->event.status60.time, e->event.status60.remote_ip, e->event.status60.remote_port, e->event.status60.version);
+				{
+					HANDLE hContact = gg_getcontact(gg, e->event.status60.uin, 0, 0, NULL);
+					int oldstatus = DBGetContactSettingWord(hContact, GG_PROTO, GG_KEY_STATUS, (WORD)ID_STATUS_OFFLINE);
+
+					gg_changecontactstatus(gg, e->event.status60.uin, e->event.status60.status, e->event.status60.descr,
+						e->event.status60.time, e->event.status60.remote_ip, e->event.status60.remote_port, e->event.status60.version);
+
+					if (oldstatus == ID_STATUS_OFFLINE && DBGetContactSettingWord(hContact, GG_PROTO, GG_KEY_STATUS, (WORD)ID_STATUS_OFFLINE) != ID_STATUS_OFFLINE)
+						gg_requestavatar(gg, hContact, 0);
+				}
 				break;
 
 			// Received userlist / or put info
@@ -846,11 +843,11 @@ retry:
 							add_ptr = sizeof(struct gg_msg_richtext_format);
 							if( ((struct gg_msg_richtext_format*)formats)->font & GG_FONT_IMAGE)
 							{
-								pthread_mutex_lock(&gg->sess_mutex);
+								EnterCriticalSection(&gg->sess_mutex);
 								gg_image_request(gg->sess, e->event.msg.sender,
 								((struct gg_msg_image_request*)(formats+4))->size,
 								((struct gg_msg_image_request*)(formats+4))->crc32 );
-								pthread_mutex_unlock(&gg->sess_mutex);
+								LeaveCriticalSection(&gg->sess_mutex);
 
 #ifdef DEBUGMODE
 								gg_netlog(gg, "gg_mainthread: image request send!");
@@ -893,14 +890,14 @@ retry:
 
 						cle.cbSize = sizeof(cle);
 						cle.hContact = hContact;
-						cle.hIcon = LoadIconEx("image");
+						cle.hIcon = LoadIconEx("image", FALSE);
 						cle.flags = CLEF_URGENT;
 						cle.hDbEvent = (HANDLE)"img";
 						cle.lParam = (LPARAM)img;
 						cle.pszService = service;
 						cle.pszTooltip = Translate("Image received");
 						CallService(MS_CLIST_ADDEVENT, 0, (LPARAM)&cle);
-						ReleaseIconEx("image");
+						ReleaseIconEx("image", FALSE);
 					}
 				}
 				break;
@@ -927,9 +924,9 @@ retry:
 					}
 
 					// Add to waiting transfers
-					pthread_mutex_lock(&gg->ft_mutex);
+					EnterCriticalSection(&gg->ft_mutex);
 					list_add(&gg->transfers, dcc7, 0);
-					pthread_mutex_unlock(&gg->ft_mutex);
+					LeaveCriticalSection(&gg->ft_mutex);
 
 					//////////////////////////////////////////////////
 					// Add file recv request
@@ -976,19 +973,18 @@ retry:
 					ProtoBroadcastAck(GG_PROTO, dcc7->contact, ACKTYPE_FILE, ACKRESULT_DENIED, dcc7, 0);
 
 					// Remove from watches and free
-					pthread_mutex_lock(&gg->ft_mutex);
+					EnterCriticalSection(&gg->ft_mutex);
 					list_remove(&gg->watches, dcc7, 0);
-					pthread_mutex_unlock(&gg->ft_mutex);
+					LeaveCriticalSection(&gg->ft_mutex);
 					gg_dcc7_free(dcc7);
 				}
 				break;
 
-#ifdef DEBUGMODE
 			// Direct connection error
 			case GG_EVENT_DCC7_ERROR:
 				{
 					struct gg_dcc7 *dcc7 = e->event.dcc7_error_ex.dcc7;
-
+#ifdef DEBUGMODE
 					switch (e->event.dcc7_error)
 					{
 						case GG_ERROR_DCC7_HANDSHAKE:
@@ -1009,7 +1005,7 @@ retry:
 						default:
 							gg_netlog(gg, "gg_mainthread(%x): Client: %d, Unknown error.", gg, dcc7 ? dcc7->peer_uin : 0);
 					}
-
+#endif
 					if (!dcc7) break;
 
 					// Remove from watches
@@ -1025,7 +1021,49 @@ retry:
 					gg_dcc7_free(dcc7);
 				}
 				break;
+
+			case GG_EVENT_XML_ACTION:
+				if (DBGetContactSettingByte(NULL, GG_PROTO, GG_KEY_ENABLEAVATARS, GG_KEYDEF_ENABLEAVATARS)) {
+					HXML hXml;
+					TCHAR *xmlAction;
+					TCHAR *tag;
+
+					xmlAction = gg_a2t(e->event.xml_action.data);
+					tag = gg_a2t("events");
+					hXml = xi.parseString(xmlAction, 0, tag);
+
+					if (hXml != NULL) {
+						HXML node;
+						char *type, *sender;
+						
+						mir_free(tag);
+						tag = gg_a2t("event/type");
+						node = xi.getChildByPath(hXml, tag, 0);
+						type = node != NULL ? gg_t2a(xi.getText(node)) : NULL;
+
+						mir_free(tag);
+						tag = gg_a2t("event/sender");
+						node = xi.getChildByPath(hXml, tag, 0);
+						sender = node != NULL ? gg_t2a(xi.getText(node)) : NULL;
+#ifdef DEBUGMODE
+						gg_netlog(gg, "gg_mainthread(%x): XML Action type: %s.", gg, type != NULL ? type : "unknown");
 #endif
+						// Avatar change notify
+						if (type != NULL && !strcmp(type, "28")) {
+#ifdef DEBUGMODE
+							gg_netlog(gg, "gg_mainthread(%x): Client %s changed his avatar.", gg, sender);
+#endif
+							gg_requestavatar(gg, gg_getcontact(gg, atoi(sender), 0, 0, NULL), 0);
+						}
+						mir_free(type);
+						mir_free(sender);
+						xi.destroyNode(hXml);
+					}
+					mir_free(tag);
+					mir_free(xmlAction);
+				}
+				break;
+
 			case GG_EVENT_TYPING_NOTIFY:
 				{
 					HANDLE hContact = gg_getcontact(gg, e->event.typing_notify.uin, 0, 0, NULL);
@@ -1062,13 +1100,16 @@ retry:
 
 	// Stop dcc server
 	gg->pth_dcc.dwThreadId = 0;
+#ifdef DEBUGMODE
+	gg_netlog(gg, "gg_mainthread(%x): Waiting until DCC Server Thread finished, if needed.", gg);
+#endif
 	gg_threadwait(gg, &gg->pth_dcc);
 
 #ifdef DEBUGMODE
 	gg_netlog(gg, "gg_mainthread(%x): Server Thread Ending", gg);
 #endif
 
-	return NULL;
+	return;
 }
 
 ////////////////////////////////////////////////////////////
@@ -1077,15 +1118,15 @@ void gg_broadcastnewstatus(GGPROTO *gg, int newStatus)
 {
 	int oldStatus;
 
-	pthread_mutex_lock(&gg->modemsg_mutex);
+	EnterCriticalSection(&gg->modemsg_mutex);
 	oldStatus = gg->proto.m_iStatus;
 	if(oldStatus == newStatus)
 	{
-		pthread_mutex_unlock(&gg->modemsg_mutex);
+		LeaveCriticalSection(&gg->modemsg_mutex);
 		return;
 	}
 	gg->proto.m_iStatus = newStatus;
-	pthread_mutex_unlock(&gg->modemsg_mutex);
+	LeaveCriticalSection(&gg->modemsg_mutex);
 
 	ProtoBroadcastAck(GG_PROTO, NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS, (HANDLE) oldStatus, newStatus);
 
@@ -1133,9 +1174,9 @@ int gg_userdeleted(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
 
 	if(uin && gg_isonline(gg))
 	{
-		pthread_mutex_lock(&gg->sess_mutex);
+		EnterCriticalSection(&gg->sess_mutex);
 		gg_remove_notify_ex(gg->sess, uin, GG_USER_NORMAL);
-		pthread_mutex_unlock(&gg->sess_mutex);
+		LeaveCriticalSection(&gg->sess_mutex);
 	}
 
 	return 0;
@@ -1148,6 +1189,14 @@ int gg_dbsettingchanged(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
 	DBCONTACTWRITESETTING *cws = (DBCONTACTWRITESETTING *) lParam;
 	HANDLE hContact = (HANDLE) wParam;
 	char *szProto = NULL;
+
+	// If user UIN changed
+	if(!hContact && !strcmp(cws->szModule, GG_PROTO) && !strcmp(cws->szSetting, GG_KEY_UIN)
+		&& cws->value.dVal)
+	{
+		// Get user's avatar
+		gg_getuseravatar(gg);
+	}
 
 	// Check if the contact is NULL or we are not online
 	if(!hContact || !gg_isonline(gg))
@@ -1211,7 +1260,8 @@ int gg_dbsettingchanged(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
 			{
 				// Notify user normally this time if added to the list permanently
 				DBDeleteContactSetting(hContact, GG_PROTO, GG_KEY_DELETEUSER); // What is it ?? I don't remember
-				gg_notifyuser(gg, (HANDLE) wParam, 1);
+				gg_notifyuser(gg, hContact, 1);
+				gg_requestavatar(gg, hContact, 0);
 			}
 		}
 	}
@@ -1272,7 +1322,7 @@ void gg_notifyuser(GGPROTO *gg, HANDLE hContact, int refresh)
 		if((DBGetContactSettingWord(hContact, GG_PROTO, GG_KEY_APPARENT, (WORD) ID_STATUS_ONLINE) == ID_STATUS_OFFLINE) ||
 			DBGetContactSettingByte(hContact, "CList", "NotOnList", 0))
 		{
-			pthread_mutex_lock(&gg->sess_mutex);
+			EnterCriticalSection(&gg->sess_mutex);
 			if(refresh)
 			{
 				gg_remove_notify_ex(gg->sess, uin, GG_USER_NORMAL);
@@ -1280,29 +1330,29 @@ void gg_notifyuser(GGPROTO *gg, HANDLE hContact, int refresh)
 			}
 
 			gg_add_notify_ex(gg->sess, uin, GG_USER_OFFLINE);
-			pthread_mutex_unlock(&gg->sess_mutex);
+			LeaveCriticalSection(&gg->sess_mutex);
 		}
 		else if(DBGetContactSettingDword(hContact, "Ignore", "Mask1", (DWORD)0 ) & IGNOREEVENT_MESSAGE)
 		{
-			pthread_mutex_lock(&gg->sess_mutex);
+			EnterCriticalSection(&gg->sess_mutex);
 			if(refresh)
 			{
 				gg_remove_notify_ex(gg->sess, uin, GG_USER_OFFLINE);
 			}
 
 			gg_add_notify_ex(gg->sess, uin, GG_USER_BLOCKED);
-			pthread_mutex_unlock(&gg->sess_mutex);
+			LeaveCriticalSection(&gg->sess_mutex);
 		}
 		else
 		{
-			pthread_mutex_lock(&gg->sess_mutex);
+			EnterCriticalSection(&gg->sess_mutex);
 			if(refresh)
 			{
 				gg_remove_notify_ex(gg->sess, uin, GG_USER_BLOCKED);
 			}
 
 			gg_add_notify_ex(gg->sess, uin, GG_USER_NORMAL);
-			pthread_mutex_unlock(&gg->sess_mutex);
+			LeaveCriticalSection(&gg->sess_mutex);
 		}
 	}
 }
@@ -1332,9 +1382,9 @@ void gg_notifyall(GGPROTO *gg)
 	{
 		if(gg_isonline(gg))
 		{
-			pthread_mutex_lock(&gg->sess_mutex);
+			EnterCriticalSection(&gg->sess_mutex);
 			gg_notify_ex(gg->sess, NULL, NULL, 0);
-			pthread_mutex_unlock(&gg->sess_mutex);
+			LeaveCriticalSection(&gg->sess_mutex);
 		}
 		return;
 	}
@@ -1363,9 +1413,9 @@ void gg_notifyall(GGPROTO *gg)
 	// Send notification
 	if(gg_isonline(gg))
 	{
-		pthread_mutex_lock(&gg->sess_mutex);
+		EnterCriticalSection(&gg->sess_mutex);
 		gg_notify_ex(gg->sess, uins, types, count);
-		pthread_mutex_unlock(&gg->sess_mutex);
+		LeaveCriticalSection(&gg->sess_mutex);
 	}
 
 	// Free variables
@@ -1451,9 +1501,9 @@ HANDLE gg_getcontact(GGPROTO *gg, uin_t uin, int create, int inlist, char *szNic
 			// Add uin and search it
 			gg_pubdir50_add(req, GG_PUBDIR50_UIN, ditoa(uin));
 			gg_pubdir50_seq_set(req, GG_SEQ_GETNICK);
-			pthread_mutex_lock(&gg->sess_mutex);
+			EnterCriticalSection(&gg->sess_mutex);
 			gg_pubdir50(gg->sess, req);
-			pthread_mutex_unlock(&gg->sess_mutex);
+			LeaveCriticalSection(&gg->sess_mutex);
 			gg_pubdir50_free(req);
 			DBWriteContactSettingString(hContact, GG_PROTO, GG_KEY_NICK, ditoa(uin));
 #ifdef DEBUGMODE
@@ -1465,9 +1515,9 @@ HANDLE gg_getcontact(GGPROTO *gg, uin_t uin, int create, int inlist, char *szNic
 	// Add to notify list if new
 	if(gg_isonline(gg))
 	{
-		pthread_mutex_lock(&gg->sess_mutex);
+		EnterCriticalSection(&gg->sess_mutex);
 		gg_add_notify_ex(gg->sess, uin, (char)(inlist ? GG_USER_NORMAL : GG_USER_OFFLINE));
-		pthread_mutex_unlock(&gg->sess_mutex);
+		LeaveCriticalSection(&gg->sess_mutex);
 	}
 
 	// TODO server side list & add buddy

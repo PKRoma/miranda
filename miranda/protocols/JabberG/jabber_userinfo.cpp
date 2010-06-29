@@ -207,6 +207,7 @@ static HTREEITEM sttFillInfoLine( HWND hwndTree, HTREEITEM htiRoot, HICON hIcon,
 		tvis.itemex.mask |= TVIF_IMAGE|TVIF_SELECTEDIMAGE;
 		tvis.itemex.iImage =
 		tvis.itemex.iSelectedImage = ImageList_AddIcon( himl, hIcon );
+		g_ReleaseIcon( hIcon );
 	}
 
 	if (hti)
@@ -293,13 +294,25 @@ static void sttFillResourceInfo( CJabberProto* ppro, HWND hwndTree, HTREEITEM ht
 		if ( !( jcb & JABBER_RESOURCE_CAPS_ERROR ))
 		{
 			HTREEITEM htiCaps = sttFillInfoLine( hwndTree, htiResource, ppro->LoadIconEx( "main" ), NULL, TranslateT( "Client capabilities" ), sttInfoLineId(resource, INFOLINE_CAPS));
-			for ( int i = 0; g_JabberFeatCapPairs[i].szFeature; i++ ) 
+			int i;
+			for ( i = 0; g_JabberFeatCapPairs[i].szFeature; i++ ) 
 				if ( jcb & g_JabberFeatCapPairs[i].jcbCap ) {
 					TCHAR szDescription[ 1024 ];
 					if ( g_JabberFeatCapPairs[i].szDescription )
 						mir_sntprintf( szDescription, SIZEOF( szDescription ), _T("%s (%s)"), TranslateTS(g_JabberFeatCapPairs[i].szDescription), g_JabberFeatCapPairs[i].szFeature );
 					else
 						mir_sntprintf( szDescription, SIZEOF( szDescription ), _T("%s"), g_JabberFeatCapPairs[i].szFeature );
+					sttFillInfoLine( hwndTree, htiCaps, NULL, NULL, szDescription, sttInfoLineId(resource, INFOLINE_CAPS, i) );
+				}
+
+			int j;
+			for ( j = 0; j < ppro->m_lstJabberFeatCapPairsDynamic.getCount(); j++, i++ )
+				if ( jcb & ppro->m_lstJabberFeatCapPairsDynamic[j]->jcbCap ) {
+					TCHAR szDescription[ 1024 ];
+					if ( ppro->m_lstJabberFeatCapPairsDynamic[j]->szDescription )
+						mir_sntprintf( szDescription, SIZEOF( szDescription ), _T("%s (%s)"), TranslateTS(ppro->m_lstJabberFeatCapPairsDynamic[j]->szDescription), ppro->m_lstJabberFeatCapPairsDynamic[j]->szFeature );
+					else
+						mir_sntprintf( szDescription, SIZEOF( szDescription ), _T("%s"), ppro->m_lstJabberFeatCapPairsDynamic[j]->szFeature );
 					sttFillInfoLine( hwndTree, htiCaps, NULL, NULL, szDescription, sttInfoLineId(resource, INFOLINE_CAPS, i) );
 				}
 		}
@@ -463,7 +476,8 @@ static INT_PTR CALLBACK JabberUserInfoDlgProc( HWND hwndDlg, UINT msg, WPARAM wP
 		// lParam is hContact
 		TranslateDialogDefault( hwndDlg );
 
-		SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)LoadSkinnedIcon(SKINICON_OTHER_USERDETAILS));
+		SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)LoadSkinnedIconBig(SKINICON_OTHER_USERDETAILS));
+		SendMessage(hwndDlg, WM_SETICON, ICON_SMALL, (LPARAM)LoadSkinnedIcon(SKINICON_OTHER_USERDETAILS));
 
 		dat = (JabberUserInfoDlgData *)mir_alloc(sizeof(JabberUserInfoDlgData));
 		ZeroMemory(dat, sizeof(JabberUserInfoDlgData));
@@ -480,13 +494,13 @@ static INT_PTR CALLBACK JabberUserInfoDlgProc( HWND hwndDlg, UINT msg, WPARAM wP
 			MoveWindow( GetDlgItem( hwndDlg, IDC_TV_INFO ), 5, 5, rc.right-10, rc.bottom-10, TRUE );
 
 			HIMAGELIST himl = ImageList_Create(GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), ILC_COLOR|ILC_COLOR32|ILC_MASK, 5, 1);
-			ImageList_AddIcon(himl, LoadSkinnedIcon(SKINICON_OTHER_SMALLDOT));
+			ImageList_AddIcon_Icolib(himl, LoadSkinnedIcon(SKINICON_OTHER_SMALLDOT));
 			TreeView_SetImageList(GetDlgItem(hwndDlg, IDC_TV_INFO), himl, TVSIL_NORMAL);
 
 			SetWindowLongPtr(hwndDlg, GWLP_USERDATA, (LONG_PTR)dat);
 			WindowList_Add(hUserInfoList, hwndDlg, dat->hContact);
 		}
-		return TRUE;
+		break;
 
 	case WM_JABBER_REFRESH:
 		if ( !dat ) break;
@@ -610,6 +624,7 @@ static INT_PTR CALLBACK JabberUserInfoDlgProc( HWND hwndDlg, UINT msg, WPARAM wP
 			SetWindowLongPtr(hwndDlg, GWLP_USERDATA, 0);
 		}
 		ImageList_Destroy(TreeView_SetImageList(GetDlgItem(hwndDlg, IDC_TV_INFO), NULL, TVSIL_NORMAL));
+		WindowFreeIcon( hwndDlg );
 		break;
 	}
 	return FALSE;
@@ -640,11 +655,11 @@ static INT_PTR CALLBACK JabberUserPhotoDlgProc( HWND hwndDlg, UINT msg, WPARAM w
 		photoInfo->ppro = NULL;
 		photoInfo->hBitmap = NULL;
 		SetWindowLongPtr( hwndDlg, GWLP_USERDATA, ( LONG_PTR ) photoInfo );
-		SendMessage( GetDlgItem( hwndDlg, IDC_SAVE ), BM_SETIMAGE, IMAGE_ICON, ( LPARAM )LoadImage( hInst, MAKEINTRESOURCE( IDI_SAVE ), IMAGE_ICON, GetSystemMetrics( SM_CXSMICON ), GetSystemMetrics( SM_CYSMICON ), 0 ));
-		SendMessage( GetDlgItem( hwndDlg, IDC_SAVE ), BUTTONSETASFLATBTN, 0, 0);
+		SendDlgItemMessage( hwndDlg, IDC_SAVE, BM_SETIMAGE, IMAGE_ICON, ( LPARAM )LoadImage( hInst, MAKEINTRESOURCE( IDI_SAVE ), IMAGE_ICON, GetSystemMetrics( SM_CXSMICON ), GetSystemMetrics( SM_CYSMICON ), 0 ));
+		SendDlgItemMessage( hwndDlg, IDC_SAVE, BUTTONSETASFLATBTN, 0, 0);
 		ShowWindow( GetDlgItem( hwndDlg, IDC_LOAD ), SW_HIDE );
 		ShowWindow( GetDlgItem( hwndDlg, IDC_DELETE ), SW_HIDE );
-		return TRUE;
+		break;
 
 	case WM_NOTIFY:
 		switch ((( LPNMHDR )lParam )->idFrom ) {
@@ -678,8 +693,10 @@ static INT_PTR CALLBACK JabberUserPhotoDlgProc( HWND hwndDlg, UINT msg, WPARAM w
 					item = photoInfo->ppro->ListGetItemPtr( LIST_ROSTER, jid );
 				if ( item != NULL ) {
 					if ( item->photoFileName ) {
-						photoInfo->ppro->Log( "Showing picture from %s", item->photoFileName );
-						photoInfo->hBitmap = ( HBITMAP ) JCallService( MS_UTILS_LOADBITMAP, 0, ( LPARAM )item->photoFileName );
+						photoInfo->ppro->Log( "Showing picture from " TCHAR_STR_PARAM, item->photoFileName );
+						char* p = mir_t2a( item->photoFileName );
+						photoInfo->hBitmap = ( HBITMAP ) JCallService( MS_UTILS_LOADBITMAP, 0, ( LPARAM )p );
+						mir_free( p );
 						JabberBitmapPremultiplyChannels(photoInfo->hBitmap);
 						ShowWindow( GetDlgItem( hwndDlg, IDC_SAVE ), SW_SHOW );
 					}
@@ -698,10 +715,9 @@ static INT_PTR CALLBACK JabberUserPhotoDlgProc( HWND hwndDlg, UINT msg, WPARAM w
 				DBVARIANT dbv;
 				JABBER_LIST_ITEM *item;
 				HANDLE hFile;
-				OPENFILENAMEA ofn;
-				static char szFilter[512];
+				static TCHAR szFilter[512];
 				unsigned char buffer[3];
-				char szFileName[_MAX_PATH];
+				TCHAR szFileName[MAX_PATH];
 				DWORD n;
 
 				if ( photoInfo->ppro->JGetStringT( photoInfo->hContact, "jid", &dbv ))
@@ -711,30 +727,31 @@ static INT_PTR CALLBACK JabberUserPhotoDlgProc( HWND hwndDlg, UINT msg, WPARAM w
 				if (( item = photoInfo->ppro->ListGetItemPtr( LIST_VCARD_TEMP, jid )) == NULL)
 					item = photoInfo->ppro->ListGetItemPtr( LIST_ROSTER, jid );
 				if ( item != NULL ) {
-					if (( hFile=CreateFileA( item->photoFileName, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL )) != INVALID_HANDLE_VALUE ) {
+					if (( hFile=CreateFile( item->photoFileName, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL )) != INVALID_HANDLE_VALUE ) {
 						if ( ReadFile( hFile, buffer, 3, &n, NULL ) && n==3 ) {
 							if ( !strncmp(( char* )buffer, "BM", 2 )) {
-								mir_snprintf( szFilter, sizeof( szFilter ), "BMP %s ( *.bmp )", JTranslate( "format" ));
-								n = (DWORD)strlen( szFilter );
-								strncpy( szFilter+n+1, "*.BMP", sizeof( szFilter )-n-2 );
+								mir_sntprintf( szFilter, SIZEOF( szFilter ), _T("BMP %s ( *.bmp )"), TranslateT( "format" ));
+								n = (DWORD)_tcslen( szFilter );
+								_tcsncpy( szFilter+n+1, _T("*.BMP"), SIZEOF( szFilter )-n-2 );
 							}
 							else if ( !strncmp(( char* )buffer, "GIF", 3 )) {
-								mir_snprintf( szFilter, sizeof( szFilter ), "GIF %s ( *.gif )", JTranslate( "format" ));
-								n = (DWORD)strlen( szFilter );
-								strncpy( szFilter+n+1, "*.GIF", sizeof( szFilter )-n-2 );
+								mir_sntprintf( szFilter, SIZEOF( szFilter ), _T("GIF %s ( *.gif )"), TranslateT( "format" ));
+								n = (DWORD)_tcslen( szFilter );
+								_tcsncpy( szFilter+n+1, _T("*.GIF"), SIZEOF( szFilter )-n-2 );
 							}
 							else if ( buffer[0]==0xff && buffer[1]==0xd8 && buffer[2]==0xff ) {
-								mir_snprintf( szFilter, sizeof( szFilter ), "JPEG %s ( *.jpg;*.jpeg )", JTranslate( "format" ));
-								n = (DWORD)strlen( szFilter );
-								strncpy( szFilter+n+1, "*.JPG;*.JPEG", sizeof( szFilter )-n-2 );
+								mir_sntprintf( szFilter, SIZEOF( szFilter ), _T("JPEG %s ( *.jpg;*.jpeg )"), TranslateT( "format" ));
+								n = (DWORD)_tcslen( szFilter );
+								_tcsncpy( szFilter+n+1, _T("*.JPG;*.JPEG"), SIZEOF( szFilter )-n-2 );
 							}
 							else {
-								mir_snprintf( szFilter, sizeof( szFilter ), "%s ( *.* )", JTranslate( "Unknown format" ));
-								n = (DWORD)strlen( szFilter );
-								strncpy( szFilter+n+1, "*.*", sizeof( szFilter )-n-2 );
+								mir_sntprintf( szFilter, SIZEOF( szFilter ), _T("%s ( *.* )"), TranslateT( "Unknown format" ));
+								n = (DWORD)_tcslen( szFilter );
+								_tcsncpy( szFilter+n+1, _T("*.*"), SIZEOF( szFilter )-n-2 );
 							}
-							szFilter[sizeof( szFilter )-1] = '\0';
+							szFilter[SIZEOF( szFilter )-1] = 0;
 
+							OPENFILENAME ofn = { 0 };
 							ofn.lStructSize = OPENFILENAME_SIZE_VERSION_400;
 							ofn.hwndOwner = hwndDlg;
 							ofn.hInstance = NULL;
@@ -756,9 +773,9 @@ static INT_PTR CALLBACK JabberUserPhotoDlgProc( HWND hwndDlg, UINT msg, WPARAM w
 							ofn.lpfnHook = NULL;
 							ofn.lpTemplateName = NULL;
 							szFileName[0] = '\0';
-							if ( GetSaveFileNameA( &ofn )) {
+							if ( GetSaveFileName( &ofn )) {
 								photoInfo->ppro->Log( "File selected is %s", szFileName );
-								CopyFileA( item->photoFileName, szFileName, FALSE );
+								CopyFile( item->photoFileName, szFileName, FALSE );
 							}
 						}
 						CloseHandle( hFile );
@@ -845,6 +862,7 @@ static INT_PTR CALLBACK JabberUserPhotoDlgProc( HWND hwndDlg, UINT msg, WPARAM w
 		break;
 
 	case WM_DESTROY:
+		DestroyIcon(( HICON )SendDlgItemMessage( hwndDlg, IDC_SAVE, BM_SETIMAGE, IMAGE_ICON, 0 ));
 		if ( photoInfo->hBitmap ) {
 			photoInfo->ppro->Log( "Delete bitmap" );
 			DeleteObject( photoInfo->hBitmap );

@@ -85,7 +85,7 @@ void CJabberProto::FtCancel( filetransfer* ft )
 void CJabberProto::FtInitiate( TCHAR* jid, filetransfer* ft )
 {
 	TCHAR *rs;
-	char *filename, *p;
+	TCHAR *filename, *p;
 	int i;
 	TCHAR sid[9];
 
@@ -102,8 +102,8 @@ void CJabberProto::FtInitiate( TCHAR* jid, filetransfer* ft )
 	sid[8] = '\0';
 	if ( ft->sid != NULL ) mir_free( ft->sid );
 	ft->sid = mir_tstrdup( sid );
-	filename = ft->std.files[ ft->std.currentFileNumber ];
-	if (( p=strrchr( filename, '\\' )) != NULL )
+	filename = ft->std.ptszFiles[ ft->std.currentFileNumber ];
+	if (( p = _tcsrchr( filename, '\\' )) != NULL )
 		filename = p+1;
 
 	TCHAR tszJid[ 512 ];
@@ -112,8 +112,8 @@ void CJabberProto::FtInitiate( TCHAR* jid, filetransfer* ft )
 	XmlNodeIq iq( m_iqManager.AddHandler( &CJabberProto::OnFtSiResult, JABBER_IQ_TYPE_SET, tszJid, JABBER_IQ_PARSE_FROM | JABBER_IQ_PARSE_TO, -1, ft ));
 	HXML si = iq << XCHILDNS( _T("si"), _T(JABBER_FEAT_SI)) << XATTR( _T("id"), sid ) 
 						<< XATTR( _T("mime-type"), _T("binary/octet-stream")) << XATTR( _T("profile"), _T(JABBER_FEAT_SI_FT));
-	si << XCHILDNS( _T("file"), _T(JABBER_FEAT_SI_FT)) << XATTR( _T("name"), _A2T(filename)) 
-		<< XATTRI( _T("size"), ft->fileSize[ ft->std.currentFileNumber ] ) << XCHILD( _T("desc"), _A2T(ft->szDescription));
+	si << XCHILDNS( _T("file"), _T(JABBER_FEAT_SI_FT)) << XATTR( _T("name"), filename) 
+		<< XATTRI64( _T("size"), ft->fileSize[ ft->std.currentFileNumber ] ) << XCHILD( _T("desc"), ft->szDescription);
 	
 	HXML field = si << XCHILDNS( _T("feature"), _T(JABBER_FEAT_FEATURE_NEG))
 							<< XCHILDNS( _T("x"), _T(JABBER_FEAT_DATA_FORMS)) << XATTR( _T("type"), _T("form"))
@@ -182,19 +182,19 @@ void CJabberProto::OnFtSiResult( HXML iqNode, CJabberIqInfo* pInfo )
 
 BOOL CJabberProto::FtSend( HANDLE hConn, filetransfer* ft )
 {
-	struct _stat statbuf;
+	struct _stati64 statbuf;
 	int fd;
 	char* buffer;
 	int numRead;
 
-	Log( "Sending [%s]", ft->std.files[ ft->std.currentFileNumber ] );
-	_stat( ft->std.files[ ft->std.currentFileNumber ], &statbuf );	// file size in statbuf.st_size
-	if (( fd=_open( ft->std.files[ ft->std.currentFileNumber ], _O_BINARY|_O_RDONLY )) < 0 ) {
+	Log( "Sending [%s]", ft->std.ptszFiles[ ft->std.currentFileNumber ] );
+	_tstati64( ft->std.ptszFiles[ ft->std.currentFileNumber ], &statbuf );	// file size in statbuf.st_size
+	if (( fd = _topen( ft->std.ptszFiles[ ft->std.currentFileNumber ], _O_BINARY|_O_RDONLY )) < 0 ) {
 		Log( "File cannot be opened" );
 		return FALSE;
 	}
 
-	ft->std.sending = TRUE;
+	ft->std.flags |= PFTS_SENDING;
 	ft->std.currentFileSize = statbuf.st_size;
 	ft->std.currentFileProgress = 0;
 
@@ -217,19 +217,19 @@ BOOL CJabberProto::FtSend( HANDLE hConn, filetransfer* ft )
 
 BOOL CJabberProto::FtIbbSend( int blocksize, filetransfer* ft )
 {
-	struct _stat statbuf;
+	struct _stati64 statbuf;
 	int fd;
 	char* buffer;
 	int numRead;
 
-	Log( "Sending [%s]", ft->std.files[ ft->std.currentFileNumber ] );
-	_stat( ft->std.files[ ft->std.currentFileNumber ], &statbuf );	// file size in statbuf.st_size
-	if (( fd=_open( ft->std.files[ ft->std.currentFileNumber ], _O_BINARY|_O_RDONLY )) < 0 ) {
+	Log( "Sending [%s]", ft->std.ptszFiles[ ft->std.currentFileNumber ] );
+	_tstati64( ft->std.ptszFiles[ ft->std.currentFileNumber ], &statbuf );	// file size in statbuf.st_size
+	if (( fd = _topen( ft->std.ptszFiles[ ft->std.currentFileNumber ], _O_BINARY|_O_RDONLY )) < 0 ) {
 		Log( "File cannot be opened" );
 		return FALSE;
 	}
 
-	ft->std.sending = TRUE;
+	ft->std.flags |= PFTS_SENDING;
 	ft->std.currentFileSize = statbuf.st_size;
 	ft->std.currentFileProgress = 0;
 
@@ -285,7 +285,7 @@ void CJabberProto::FtSendFinal( BOOL success, filetransfer* ft )
 	else {
 		if ( ft->std.currentFileNumber < ft->std.totalFiles-1 ) {
 			ft->std.currentFileNumber++;
-			replaceStr( ft->std.currentFile, ft->std.files[ ft->std.currentFileNumber ] );
+			replaceStr( ft->std.tszCurrentFile, ft->std.ptszFiles[ ft->std.currentFileNumber ] );
 			JSendBroadcast( ft->std.hContact, ACKTYPE_FILE, ACKRESULT_NEXTFILE, ft, 0 );
 			FtInitiate( ft->jid, ft );
 			return;
@@ -303,7 +303,8 @@ void CJabberProto::FtHandleSiRequest( HXML iqNode )
 {
 	const TCHAR* from, *sid, *str, *szId, *filename;
 	HXML siNode, fileNode, featureNode, xNode, fieldNode, n;
-	unsigned filesize, i;
+	int i;
+    unsigned __int64 filesize;
 
 	if ( !iqNode ||
 		  ( from = xmlGetAttrValue( iqNode, _T("from"))) == NULL ||
@@ -317,7 +318,7 @@ void CJabberProto::FtHandleSiRequest( HXML iqNode )
 		( filename = xmlGetAttrValue( fileNode,  _T("name"))) != NULL &&
 		( str = xmlGetAttrValue( fileNode,  _T("size"))) != NULL ) {
 
-		filesize = _tcstoul( str, NULL, 10 );
+		filesize = _ttoi64( str );
 		if (( featureNode = xmlGetChildByTag( siNode, "feature", "xmlns", _T(JABBER_FEAT_FEATURE_NEG))) != NULL &&
 			( xNode = xmlGetChildByTag( featureNode, "x", "xmlns", _T(JABBER_FEAT_DATA_FORMS)))!=NULL &&
 			( fieldNode = xmlGetChildByTag( xNode, "field", "var", _T("stream-method")))!=NULL ) {
@@ -355,37 +356,28 @@ void CJabberProto::FtHandleSiRequest( HXML iqNode )
 
 			if ( optionNode != NULL ) {
 				// Found known stream mechanism
-				char *localFilename = mir_t2a( filename );
-				char *desc = (( n = xmlGetChild( fileNode , "desc" )) != NULL && xmlGetText( n )!=NULL ) ? mir_t2a( xmlGetText( n ) ) : mir_strdup( "" );
-
 				filetransfer* ft = new filetransfer( this );
-				ft->dwExpectedRecvFileSize = (DWORD)filesize;
+				ft->dwExpectedRecvFileSize = filesize;
 				ft->jid = mir_tstrdup( from );
 				ft->std.hContact = HContactFromJID( from );
 				ft->sid = mir_tstrdup( sid );
 				ft->iqId = mir_tstrdup( szId );
 				ft->type = ftType;
 				ft->std.totalFiles = 1;
-				ft->std.currentFile = localFilename;
+				ft->std.tszCurrentFile = mir_tstrdup( filename );
 				ft->std.totalBytes = ft->std.currentFileSize = filesize;
-				char* szBlob = ( char* )alloca( sizeof( DWORD )+ strlen( localFilename ) + strlen( desc ) + 2 );
-				*(( PDWORD ) szBlob ) = 0;
-				strcpy( szBlob + sizeof( DWORD ), localFilename );
-				strcpy( szBlob + sizeof( DWORD )+ strlen( localFilename ) + 1, desc );
 
-				PROTORECVEVENT pre;
-				pre.flags = 0;
+				PROTORECVFILET pre = { 0 };
+				pre.flags = PREF_TCHAR;
+				pre.fileCount = 1;
 				pre.timestamp = time( NULL );
-				pre.szMessage = szBlob;
+				pre.ptszFiles = ( TCHAR** )&filename;
 				pre.lParam = ( LPARAM )ft;
+				if (( n = xmlGetChild( fileNode , "desc" )) != NULL )
+					pre.tszDescription = ( TCHAR* )xmlGetText( n );
 
-				CCSDATA ccs;
-				ccs.szProtoService = PSR_FILE;
-				ccs.hContact = ft->std.hContact;
-				ccs.wParam = 0;
-				ccs.lParam = ( LPARAM )&pre;
+				CCSDATA ccs = { ft->std.hContact, PSR_FILE, 0, ( LPARAM )&pre };
 				JCallService( MS_PROTO_CHAINRECV, 0, ( LPARAM )&ccs );
-				mir_free( desc );
 				return;
 			}
 			else {
@@ -440,7 +432,7 @@ void CJabberProto::FtAcceptIbbRequest( filetransfer* ft )
 				<< XCHILD( _T("value"), _T(JABBER_FEAT_IBB)));
 }	}
 
-void CJabberProto::FtHandleBytestreamRequest( HXML iqNode, CJabberIqInfo* pInfo )
+BOOL CJabberProto::FtHandleBytestreamRequest( HXML iqNode, CJabberIqInfo* pInfo )
 {
 	HXML queryNode = pInfo->GetChildNode();
 
@@ -458,11 +450,11 @@ void CJabberProto::FtHandleBytestreamRequest( HXML iqNode, CJabberIqInfo* pInfo 
 		item->ft->jbt = jbt;
 		JForkThread(( JThreadFunc )&CJabberProto::ByteReceiveThread, jbt );
 		ListRemove( LIST_FTRECV, sid );
-		return;
+		return TRUE;
 	}
 
 	Log( "File transfer invalid bytestream initiation request received" );
-	return;
+	return TRUE;
 }
 
 BOOL CJabberProto::FtHandleIbbRequest( HXML iqNode, BOOL bOpen )
@@ -535,9 +527,9 @@ int CJabberProto::FtReceive( HANDLE, filetransfer* ft, char* buffer, int datalen
 	if ( ft->create() == -1 )
 		return -1;
 
-	if ( ft->std.currentFileSize > ft->std.currentFileProgress ) {
-		unsigned remainingBytes = ft->std.currentFileSize - ft->std.currentFileProgress;
-		int writeSize = ( remainingBytes < (unsigned)datalen ) ? remainingBytes : datalen;
+	__int64 remainingBytes = ft->std.currentFileSize - ft->std.currentFileProgress;
+	if ( remainingBytes > 0 ) {
+		int writeSize = ( remainingBytes<datalen ) ? remainingBytes : datalen;
 		if ( _write( ft->fileId, buffer, writeSize ) != writeSize ) {
 			Log( "_write() error" );
 			return -1;

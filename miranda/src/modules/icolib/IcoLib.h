@@ -62,8 +62,8 @@ typedef struct
 	int          default_indx;
 	int          cx, cy;
 
-	IconSourceItem* source;
-
+	IconSourceItem* source_small;
+	IconSourceItem* source_big;
 	IconSourceItem* default_icon;
 
 	TCHAR*       temp_file;

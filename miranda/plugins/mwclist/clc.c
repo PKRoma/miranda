@@ -49,7 +49,6 @@ static int stopStatusUpdater = 0;
 void StatusUpdaterThread(HWND hwndDlg)
 {
 	int i,curdelay,lastcheck=0;
-	char szServiceName[256];
 	HANDLE hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
 
 	SetThreadPriority(GetCurrentThread(),THREAD_PRIORITY_LOWEST);
@@ -65,14 +64,9 @@ void StatusUpdaterThread(HWND hwndDlg)
 				for (i=0; i<5; i++) {
 					if (hContact!=NULL) {
 						pdisplayNameCacheEntry pdnce =(pdisplayNameCacheEntry)pcli->pfnGetCacheEntry((HANDLE)hContact);
-						if (pdnce!=NULL&&pdnce->protoNotExists==FALSE&&pdnce->szProto!=NULL)
+						if (pdnce && !pdnce->protoNotExists && pdnce->szProto)
 						{			
-							char *szProto =pdnce->szProto; //(char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
-							_snprintf(szServiceName, SIZEOF(szServiceName), "%s%s", szProto, PSS_GETAWAYMSG);
-							if (ServiceExists(szServiceName)) {
-								strncpy(szServiceName, PSS_GETAWAYMSG, SIZEOF(szServiceName));
-								CallContactService(hContact, szServiceName, 0, 0);
-							}
+							CallContactService(hContact, PSS_GETAWAYMSG, 0, 0);
 						}
 						hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM) hContact, 0);
 					}
@@ -273,7 +267,7 @@ LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam, L
 	{	LRESULT res = saveContactListControlWndProc(hwnd, msg, wParam, lParam);
 		switch (msg) {
 			case WM_CREATE:
-				forkthread(StatusUpdaterThread,0,0);
+				mir_forkthread(StatusUpdaterThread,0);
 				break;
 		}
 		return res;

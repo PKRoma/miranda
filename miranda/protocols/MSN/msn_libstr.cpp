@@ -1,6 +1,6 @@
 /*
 Plugin of Miranda IM for communicating with users of the MSN Messenger protocol.
-Copyright (c) 2006-2009 Boris Krasnovskiy.
+Copyright (c) 2006-2010 Boris Krasnovskiy.
 Copyright (c) 2003-2005 George Hazan.
 Copyright (c) 2002-2003 Richard Hughes (original version).
 
@@ -26,6 +26,15 @@ void replaceStr(char*& dest, const char* src)
 	{
 		mir_free(dest);
 		dest = mir_strdup(src);
+	}	
+}
+
+void replaceStr(wchar_t*& dest, const wchar_t* src)
+{
+	if (src != NULL) 
+	{
+		mir_free(dest);
+		dest = mir_wstrdup(src);
 	}	
 }
 
@@ -135,7 +144,7 @@ bool txtParseParam (const char* szData, const char* presearch, const char* start
 /////////////////////////////////////////////////////////////////////////////////////////
 // UrlDecode - converts URL chars like %20 into printable characters
 
-static int SingleHexToDecimal(char c)
+static int SingleHexToDecimal(int c)
 {
 	if (c >= '0' && c <= '9') return c-'0';
 	if (c >= 'a' && c <= 'f') return c-'a'+10;
@@ -143,9 +152,14 @@ static int SingleHexToDecimal(char c)
 	return -1;
 }
 
-void  UrlDecode(char* str)
+template void UrlDecode(char* str);
+#ifdef _UNICODE
+template void UrlDecode(wchar_t* str);
+#endif
+
+template <class chartype> void UrlDecode(chartype* str)
 {
-	char* s = str, *d = str;
+	chartype* s = str, *d = str;
 
 	while(*s)
 	{
@@ -158,7 +172,7 @@ void  UrlDecode(char* str)
 				if (digit2 != -1) 
 				{
 					s += 3;
-					*d++ = (char)((digit1 << 4) | digit2);
+					*d++ = (chartype)((digit1 << 4) | digit2);
 					continue;
 				}	
 			}	
@@ -322,7 +336,7 @@ void stripColorCode(char* src)
 						if (ps[0] == ',' && isdigit(ps[1]))
 						{
 							ps += 2;
-							if (isdigit(ps[1]))
+						if (isdigit(ps[1]))
 								ps += 2;
 						else
 							++ps;
@@ -344,4 +358,3 @@ void stripColorCode(char* src)
 	}
 	*pd = 0;
 }
-

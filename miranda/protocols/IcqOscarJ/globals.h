@@ -5,7 +5,7 @@
 // Copyright © 2000-2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001-2002 Jon Keating, Richard Hughes
 // Copyright © 2002-2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004-2009 Joe Kucera
+// Copyright © 2004-2010 Joe Kucera
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -19,7 +19,7 @@
 // 
 // You should have received a copy of the GNU General Public License
 // along with this program; if not, write to the Free Software
-// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 //
 // -----------------------------------------------------------------------------
 //
@@ -30,7 +30,7 @@
 //
 // DESCRIPTION:
 //
-//  Contains global variables declarations.
+//  Contains global types & variables declarations.
 //
 // -----------------------------------------------------------------------------
 
@@ -38,12 +38,12 @@
 #ifndef __GLOBALS_H
 #define __GLOBALS_H
 
+
 typedef char uid_str[MAX_PATH];
 
 // from init.cpp
 extern HINSTANCE hInst;
 extern DWORD MIRANDA_VERSION;
-extern BYTE gbUnicodeCore;
 
 extern IcqIconHandle hStaticIcons[];
 
@@ -52,7 +52,6 @@ extern const int moodXStatus[];
 // from fam_04message.cpp
 struct icq_mode_messages
 {
-  char *szOffline;
   char *szOnline;
   char *szAway;
   char *szNa;

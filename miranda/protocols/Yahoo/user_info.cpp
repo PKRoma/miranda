@@ -31,7 +31,7 @@ static INT_PTR CALLBACK YahooUserInfoDlgProc( HWND hwndDlg, UINT msg, WPARAM wPa
 		//SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)LoadSkinnedIcon(SKINICON_OTHER_USERDETAILS));
 
 		
-		return TRUE;
+		break;
 
 	case WM_NOTIFY:
 		if (( ( LPNMHDR )lParam )->idFrom == 0 ) {
@@ -111,7 +111,7 @@ static INT_PTR CALLBACK YahooUserInfoDlgProc( HWND hwndDlg, UINT msg, WPARAM wPa
 /////////////////////////////////////////////////////////////////////////////////////////
 // OnInfoInit - initializes user info option dialogs
 
-int __cdecl CYahooProto::OnUserInfoInit( WPARAM wParam, LPARAM lParam )
+INT_PTR __cdecl CYahooProto::OnUserInfoInit( WPARAM wParam, LPARAM lParam )
 {
 	//if ( !JCallService( MS_PROTO_ISPROTOCOLLOADED, 0, ( LPARAM )m_szModuleName ))
 	//	return 0;

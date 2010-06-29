@@ -240,7 +240,7 @@ FreeImage_ConvertToStandardType(FIBITMAP *src, BOOL scale_linear) {
 
 	// convert from src_type to FIT_BITMAP
 
-	FREE_IMAGE_TYPE src_type = FreeImage_GetImageType(src);
+	const FREE_IMAGE_TYPE src_type = FreeImage_GetImageType(src);
 
 	switch(src_type) {
 		case FIT_BITMAP:	// standard image: 1-, 4-, 8-, 16-, 24-, 32-bit
@@ -288,8 +288,11 @@ FreeImage_ConvertToStandardType(FIBITMAP *src, BOOL scale_linear) {
 
 	if(NULL == dst) {
 		FreeImage_OutputMessageProc(FIF_UNKNOWN, "FREE_IMAGE_TYPE: Unable to convert from type %d to type %d.\n No such conversion exists.", src_type, FIT_BITMAP);
+	} else {
+		// copy metadata from src to dst
+		FreeImage_CloneMetadata(dst, src);
 	}
-
+	
 	return dst;
 }
 
@@ -307,7 +310,7 @@ FreeImage_ConvertToType(FIBITMAP *src, FREE_IMAGE_TYPE dst_type, BOOL scale_line
 
 	// convert from src_type to dst_type
 
-	FREE_IMAGE_TYPE src_type = FreeImage_GetImageType(src);
+	const FREE_IMAGE_TYPE src_type = FreeImage_GetImageType(src);
 
 	if(src_type == dst_type) {
 		return FreeImage_Clone(src);
@@ -593,6 +596,7 @@ FreeImage_ConvertToType(FIBITMAP *src, FREE_IMAGE_TYPE dst_type, BOOL scale_line
 		case FIT_RGBA16:
 			switch(dst_type) {
 				case FIT_BITMAP:
+					dst = FreeImage_ConvertTo32Bits(src);
 					break;
 				case FIT_UINT16:
 					break;
@@ -611,6 +615,7 @@ FreeImage_ConvertToType(FIBITMAP *src, FREE_IMAGE_TYPE dst_type, BOOL scale_line
 				case FIT_RGB16:
 					break;
 				case FIT_RGBF:
+					dst = FreeImage_ConvertToRGBF(src);
 					break;
 				case FIT_RGBAF:
 					break;
@@ -673,6 +678,9 @@ FreeImage_ConvertToType(FIBITMAP *src, FREE_IMAGE_TYPE dst_type, BOOL scale_line
 
 	if(NULL == dst) {
 		FreeImage_OutputMessageProc(FIF_UNKNOWN, "FREE_IMAGE_TYPE: Unable to convert from type %d to type %d.\n No such conversion exists.", src_type, dst_type);
+	} else {
+		// copy metadata from src to dst
+		FreeImage_CloneMetadata(dst, src);
 	}
 
 	return dst;

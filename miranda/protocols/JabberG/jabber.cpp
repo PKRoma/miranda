@@ -113,8 +113,8 @@ extern "C" BOOL WINAPI DllMain( HINSTANCE hModule, DWORD, LPVOID )
 
 extern "C" __declspec( dllexport ) PLUGININFOEX *MirandaPluginInfoEx( DWORD mirandaVersion )
 {
-	if ( mirandaVersion < PLUGIN_MAKE_VERSION( 0,8,0,21 )) {
-		MessageBoxA( NULL, "The Jabber protocol plugin cannot be loaded. It requires Miranda IM 0.8.0.21 or later.", "Jabber Protocol Plugin", MB_OK|MB_ICONWARNING|MB_SETFOREGROUND|MB_TOPMOST );
+	if ( mirandaVersion < PLUGIN_MAKE_VERSION( 0,9,0,4 )) {
+		MessageBoxA( NULL, "The Jabber protocol plugin cannot be loaded. It requires Miranda IM 0.9.0.4 or later.", "Jabber Protocol Plugin", MB_OK|MB_ICONWARNING|MB_SETFOREGROUND|MB_TOPMOST );
 		return NULL;
 	}
 
@@ -152,6 +152,9 @@ int __cdecl CJabberProto::OnPreShutdown( WPARAM, LPARAM )
 
 	m_iqManager.ExpireAll();
 	m_iqManager.Shutdown();
+	m_messageManager.Shutdown();
+	m_presenceManager.Shutdown();
+	m_sendManager.Shutdown();
 	ConsoleUninit();
 	return 0;
 }
@@ -248,13 +251,6 @@ extern "C" int __declspec( dllexport ) Load( PLUGINLINK *link )
 	mir_snprintf( szVersion, sizeof( szVersion ), Translate("Jabber protocol plugin for Miranda IM (%s)"), __DATE__ );
 
 	pcli = ( CLIST_INTERFACE* )CallService(MS_CLIST_RETRIEVE_INTERFACE, 0, (LPARAM)hInst);
-	if ( (INT_PTR)pcli == CALLSERVICE_NOTFOUND ) {
-LBL_Error:
-		MessageBoxA( NULL, "This version of plugin requires Miranda IM 0.8.0.9 or later", "Fatal error", MB_OK );
-		return 1;
-	}
-	if ( pcli->version < 6 )
-		goto LBL_Error;
 
 	DuplicateHandle( GetCurrentProcess(), GetCurrentThread(), GetCurrentProcess(), &hMainThread, 0, FALSE, DUPLICATE_SAME_ACCESS );
 	jabberMainThreadId = GetCurrentThreadId();

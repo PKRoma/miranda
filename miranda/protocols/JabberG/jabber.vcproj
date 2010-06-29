@@ -739,6 +739,12 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\jabber_message_handlers.cpp">
+			</File>
+			<File
+				RelativePath=".\jabber_message_manager.cpp">
+			</File>
+			<File
 				RelativePath="jabber_misc.cpp">
 				<FileConfiguration
 					Name="Debug|Win32">
@@ -844,6 +850,9 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\jabber_presence_manager.cpp">
+			</File>
+			<File
 				RelativePath=".\jabber_privacy.cpp">
 			</File>
 			<File
@@ -890,6 +899,9 @@
 			</File>
 			<File
 				RelativePath=".\jabber_secur.cpp">
+			</File>
+			<File
+				RelativePath=".\jabber_send_manager.cpp">
 			</File>
 			<File
 				RelativePath=".\jabber_std.cpp">
@@ -1169,10 +1181,16 @@
 				RelativePath="jabber_list.h">
 			</File>
 			<File
+				RelativePath=".\jabber_message_manager.h">
+			</File>
+			<File
 				RelativePath=".\jabber_notes.h">
 			</File>
 			<File
 				RelativePath=".\jabber_opttree.h">
+			</File>
+			<File
+				RelativePath=".\jabber_presence_manager.h">
 			</File>
 			<File
 				RelativePath="jabber_proxy.h">
@@ -1185,6 +1203,9 @@
 			</File>
 			<File
 				RelativePath=".\jabber_secur.h">
+			</File>
+			<File
+				RelativePath=".\jabber_send_manager.h">
 			</File>
 			<File
 				RelativePath="jabber_xml.h">

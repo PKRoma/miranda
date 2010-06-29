@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="windows-1250"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="9,00"
+	Version="9.00"
 	Name="GG"
 	ProjectGUID="{6DA1396F-2A44-4D5C-8442-012F71006217}"
 	RootNamespace="GG"
@@ -51,7 +51,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="../../include,libgadu,libgadu/win32"
+				AdditionalIncludeDirectories="../../include,libgadu"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;GG_EXPORTS"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -74,7 +74,6 @@
 				Name="VCResourceCompilerTool"
 				PreprocessorDefinitions="_DEBUG"
 				Culture="1033"
-				AdditionalIncludeDirectories="../../include"
 			/>
 			<Tool
 				Name="VCPreLinkEventTool"
@@ -150,7 +149,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="../../include,libgadu,libgadu/win32"
+				AdditionalIncludeDirectories="../../include,libgadu"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;GG_EXPORTS"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -253,7 +252,7 @@
 				EnableIntrinsicFunctions="true"
 				FavorSizeOrSpeed="2"
 				WholeProgramOptimization="true"
-				AdditionalIncludeDirectories="../../include,libgadu,libgadu/win32"
+				AdditionalIncludeDirectories="../../include,libgadu"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;GG_EXPORTS"
 				StringPooling="true"
 				ExceptionHandling="0"
@@ -279,7 +278,6 @@
 				Name="VCResourceCompilerTool"
 				PreprocessorDefinitions="NDEBUG"
 				Culture="1033"
-				AdditionalIncludeDirectories="../../include"
 			/>
 			<Tool
 				Name="VCPreLinkEventTool"
@@ -363,7 +361,7 @@
 				EnableIntrinsicFunctions="true"
 				FavorSizeOrSpeed="2"
 				WholeProgramOptimization="true"
-				AdditionalIncludeDirectories="../../include,libgadu,libgadu/win32"
+				AdditionalIncludeDirectories="../../include,libgadu"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;GG_EXPORTS"
 				StringPooling="true"
 				ExceptionHandling="0"
@@ -467,7 +465,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="../../include,libgadu,libgadu/win32"
+				AdditionalIncludeDirectories="../../include,libgadu"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;GG_EXPORTS"
 				StringPooling="false"
 				MinimalRebuild="true"
@@ -492,7 +490,6 @@
 				Name="VCResourceCompilerTool"
 				PreprocessorDefinitions="_DEBUG"
 				Culture="1033"
-				AdditionalIncludeDirectories="../../include"
 			/>
 			<Tool
 				Name="VCPreLinkEventTool"
@@ -569,7 +566,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="../../include,libgadu,libgadu/win32"
+				AdditionalIncludeDirectories="../../include,libgadu"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;GG_EXPORTS"
 				StringPooling="false"
 				MinimalRebuild="true"
@@ -675,7 +672,7 @@
 				EnableIntrinsicFunctions="true"
 				FavorSizeOrSpeed="2"
 				WholeProgramOptimization="true"
-				AdditionalIncludeDirectories="../../include,libgadu,libgadu/win32"
+				AdditionalIncludeDirectories="../../include,libgadu"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;GG_EXPORTS"
 				StringPooling="true"
 				ExceptionHandling="0"
@@ -701,7 +698,6 @@
 				Name="VCResourceCompilerTool"
 				PreprocessorDefinitions="NDEBUG"
 				Culture="1033"
-				AdditionalIncludeDirectories="../../include"
 			/>
 			<Tool
 				Name="VCPreLinkEventTool"
@@ -786,7 +782,7 @@
 				EnableIntrinsicFunctions="true"
 				FavorSizeOrSpeed="2"
 				WholeProgramOptimization="true"
-				AdditionalIncludeDirectories="../../include,libgadu,libgadu/win32"
+				AdditionalIncludeDirectories="../../include,libgadu"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;GG_EXPORTS"
 				StringPooling="true"
 				ExceptionHandling="0"
@@ -866,6 +862,10 @@
 			Name="Source Files"
 			Filter="cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
 			>
+			<File
+				RelativePath="avatar.c"
+				>
+			</File>
 			<File
 				RelativePath="core.c"
 				>
@@ -975,11 +975,11 @@
 				>
 			</File>
 			<File
-				RelativePath="ownerinfo.c"
+				RelativePath="oauth.c"
 				>
 			</File>
 			<File
-				RelativePath="pthread.c"
+				RelativePath="ownerinfo.c"
 				>
 			</File>
 			<File
@@ -1426,6 +1426,78 @@
 					>
 				</File>
 				<File
+					RelativePath="libgadu\pthread.c"
+					>
+					<FileConfiguration
+						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug|x64"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|x64"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug Unicode|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug Unicode|x64"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release Unicode|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release Unicode|x64"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+						/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath="libgadu\pthread.h"
+					>
+				</File>
+				<File
 					RelativePath="libgadu\pubdir.c"
 					>
 					<FileConfiguration
@@ -1702,6 +1774,74 @@
 					</FileConfiguration>
 				</File>
 				<File
+					RelativePath="libgadu\win32.c"
+					>
+					<FileConfiguration
+						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug|x64"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|x64"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug Unicode|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug Unicode|x64"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release Unicode|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release Unicode|x64"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+						/>
+					</FileConfiguration>
+				</File>
+				<File
 					RelativePath="libgadu\win32.h"
 					>
 				</File>
@@ -1717,10 +1857,6 @@
 			</File>
 			<File
 				RelativePath="gg.h"
-				>
-			</File>
-			<File
-				RelativePath="pthread.h"
 				>
 			</File>
 			<File
@@ -1741,47 +1877,51 @@
 			Filter="ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe"
 			>
 			<File
-				RelativePath="icos\ArrowLeft.ico"
+				RelativePath="icons\clear_ignored_conference.ico"
 				>
 			</File>
 			<File
-				RelativePath="icos\Conference.ico"
+				RelativePath="icons\conference.ico"
 				>
 			</File>
 			<File
-				RelativePath="icos\delete.ico"
+				RelativePath="icons\delete.ico"
 				>
 			</File>
 			<File
-				RelativePath="icos\Fedex.ico"
+				RelativePath="icons\export_list_to_server.ico"
 				>
 			</File>
 			<File
-				RelativePath="icos\gg.ico"
+				RelativePath="icons\export_list_to_txt_file.ico"
 				>
 			</File>
 			<File
-				RelativePath="icos\Image.ico"
+				RelativePath="icons\gg.ico"
 				>
 			</File>
 			<File
-				RelativePath="icos\InBox.ico"
+				RelativePath="icons\image.ico"
 				>
 			</File>
 			<File
-				RelativePath="icos\Lime.ico"
+				RelativePath="icons\import_list_from_server.ico"
 				>
 			</File>
 			<File
-				RelativePath="icos\Next.ico"
+				RelativePath="icons\import_list_from_txt_file.ico"
 				>
 			</File>
 			<File
-				RelativePath="icos\OutBox.ico"
+				RelativePath="icons\next.ico"
 				>
 			</File>
 			<File
-				RelativePath="icos\Prev.ico"
+				RelativePath="icons\previous.ico"
+				>
+			</File>
+			<File
+				RelativePath="icons\remove_list_from_server.ico"
 				>
 			</File>
 			<File
@@ -1789,11 +1929,11 @@
 				>
 			</File>
 			<File
-				RelativePath="icos\save.ico"
+				RelativePath="icons\save.ico"
 				>
 			</File>
 			<File
-				RelativePath="icos\Strawberry.ico"
+				RelativePath="icons\settings.ico"
 				>
 			</File>
 		</Filter>

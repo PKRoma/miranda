@@ -533,6 +533,21 @@ same parameters MS_DB_EVENT_GETICON does.
 */
 #define MS_DB_EVENT_GETICON "DB/Event/GetIcon"
 
+/* DB/Event/GetString (0.9.0+)
+Converts the event's string to TCHAR* depending on the event's format
+  wParam=(LPARAM)(DBEVENTINFO*)dbei
+  lParam=(WPARAM)(char*)str - string to be converted
+  returns TCHAR* - the converted string
+Caller must free the result using mir_free
+*/
+
+#define MS_DB_EVENT_GETSTRINGT "DB/Event/GetStringT"
+
+__inline static TCHAR* DbGetEventStringT( DBEVENTINFO* dbei, const char* str )
+{  
+   return (TCHAR*)CallService( MS_DB_EVENT_GETSTRINGT, (WPARAM)dbei, (LPARAM)str );
+}
+
 /* DB/Event/MarkRead
 Changes the flags for an event to mark it as read.
   wParam=(WPARAM)(HANDLE)hContact
@@ -1127,7 +1142,7 @@ __inline static INT_PTR DBWriteContactSettingBlob(HANDLE hContact,const char *sz
 	cws.szModule=szModule;
 	cws.szSetting=szSetting;
 	cws.value.type=DBVT_BLOB;
-	cws.value.cpbVal = (WORD)len;
+    cws.value.cpbVal = (WORD)len;
 	cws.value.pbVal=(unsigned char*)val;
 	return CallService(MS_DB_CONTACT_WRITESETTING,(WPARAM)hContact,(LPARAM)&cws);
 }

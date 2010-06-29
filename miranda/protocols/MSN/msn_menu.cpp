@@ -1,6 +1,6 @@
 /*
 Plugin of Miranda IM for communicating with users of the MSN Messenger protocol.
-Copyright (c) 2006-2009 Boris Krasnovskiy.
+Copyright (c) 2006-2010 Boris Krasnovskiy.
 Copyright (c) 2003-2005 George Hazan.
 Copyright (c) 2002-2003 Richard Hughes (original version).
 
@@ -43,22 +43,22 @@ INT_PTR CMsnProto::MsnBlockCommand(WPARAM wParam, LPARAM)
 
 INT_PTR CMsnProto::MsnGotoInbox(WPARAM, LPARAM)
 {
-    HANDLE hContact = MSN_HContactFromEmail(MyOptions.szEmail, NULL, false, false);
-    if (hContact) CallService(MS_CLIST_REMOVEEVENT, (WPARAM)hContact, (LPARAM) 1);
+	HANDLE hContact = MSN_HContactFromEmail(MyOptions.szEmail, NULL, false, false);
+	if (hContact) CallService(MS_CLIST_REMOVEEVENT, (WPARAM)hContact, (LPARAM) 1);
 
-    MsnInvokeMyURL(true, NULL);
+	MsnInvokeMyURL(true, NULL);
 	return 0;
 }
 
 INT_PTR CMsnProto::MsnSendHotmail(WPARAM wParam, LPARAM)
 {
-    const HANDLE hContact = (HANDLE)wParam;
+	const HANDLE hContact = (HANDLE)wParam;
 	char szEmail[MSN_MAX_EMAIL_LEN];
 
-    if (MSN_IsMeByContact(hContact, szEmail))
-        MsnGotoInbox(0, 0);
-    else if (msnLoggedIn)
-        tridUrlCompose = msnNsThread->sendPacket("URL", "COMPOSE %s", szEmail);
+	if (MSN_IsMeByContact(hContact, szEmail))
+		MsnGotoInbox(0, 0);
+	else if (msnLoggedIn)
+		tridUrlCompose = msnNsThread->sendPacket("URL", "COMPOSE %s", szEmail);
 
 	return 0;
 }
@@ -68,7 +68,7 @@ INT_PTR CMsnProto::MsnSendHotmail(WPARAM wParam, LPARAM)
 
 INT_PTR CMsnProto::MsnSetupAlerts(WPARAM, LPARAM)
 {
-    MsnInvokeMyURL(false, "http://alerts.live.com");
+	MsnInvokeMyURL(false, "http://alerts.live.com");
 	return 0;
 }
 
@@ -77,17 +77,17 @@ INT_PTR CMsnProto::MsnSetupAlerts(WPARAM, LPARAM)
 
 INT_PTR CMsnProto::MsnViewProfile(WPARAM wParam, LPARAM)
 {
-    const HANDLE hContact = (HANDLE)wParam;
+	const HANDLE hContact = (HANDLE)wParam;
 
-    if (MSN_IsMeByContact(hContact))
-	    MsnInvokeMyURL(false, NULL);
-    else
-    {
-        char tUrl[256] = "http://spaces.live.com/Profile.aspx?partner=Messenger&cid=";
+	if (MSN_IsMeByContact(hContact))
+		MsnInvokeMyURL(false, NULL);
+	else
+	{
+		char tUrl[256] = "http://spaces.live.com/Profile.aspx?partner=Messenger&cid=";
 
-	    if (!getStaticString(hContact, "CID", strchr(tUrl, 0), 30))
-            MsnInvokeMyURL(false, tUrl);
-    }
+		if (!getStaticString(hContact, "CID", strchr(tUrl, 0), 30))
+			MsnInvokeMyURL(false, tUrl);
+	}
 	return 0;
 }
 
@@ -97,15 +97,6 @@ INT_PTR CMsnProto::MsnViewProfile(WPARAM wParam, LPARAM)
 INT_PTR CMsnProto::MsnEditProfile(WPARAM, LPARAM)
 {
 	MsnInvokeMyURL(false, NULL);
-	return 0;
-}
-
-/////////////////////////////////////////////////////////////////////////////////////////
-// MsnViewServiceStatus - display MSN services status
-
-INT_PTR CMsnProto::MsnViewServiceStatus(WPARAM, LPARAM)
-{
-	MSN_CallService(MS_UTILS_OPENURL, 1, (LPARAM)"http://messenger.msn.com/Status.aspx");
 	return 0;
 }
 
@@ -159,15 +150,15 @@ INT_PTR CMsnProto::MsnInviteCommand(WPARAM wParam, LPARAM)
 	if (tEmail[0]) 
 	{
 		for (int j=0; j < tActiveThreads[tChosenThread]->mJoinedCount; j++) 
-        {
+		{
 			// if the user is already in the chat session
 			if (tActiveThreads[tChosenThread]->mJoinedContacts[j] == (HANDLE)wParam) 
-            {
+			{
 				MessageBox(NULL, TranslateT("User is already in the chat session."), 
-                    TranslateT("MSN Chat"), MB_OK | MB_ICONINFORMATION);
+					TranslateT("MSN Chat"), MB_OK | MB_ICONINFORMATION);
 				return 0;
-		    }	
-        }
+			}	
+		}
 
 		tActiveThreads[tChosenThread]->sendPacket("CAL", tEmail);
 
@@ -182,54 +173,54 @@ INT_PTR CMsnProto::MsnInviteCommand(WPARAM wParam, LPARAM)
 
 int CMsnProto::OnPrebuildContactMenu(WPARAM wParam, LPARAM)
 {
-    const HANDLE hContact = (HANDLE)wParam;
+	const HANDLE hContact = (HANDLE)wParam;
 	char szEmail[MSN_MAX_EMAIL_LEN];
 
 	CLISTMENUITEM mi = {0};
 	mi.cbSize = sizeof(mi);
 
-    if (!MSN_IsMyContact(hContact)) return 0;
+	if (!MSN_IsMyContact(hContact)) return 0;
 
-    bool isMe = MSN_IsMeByContact(hContact, szEmail);
+	bool isMe = MSN_IsMeByContact(hContact, szEmail);
 	if (szEmail[0]) 
-    {
-	    int listId = Lists_GetMask(szEmail);
-        
-        bool noChat = !(listId & LIST_FL) || isMe || getByte(hContact, "ChatRoom", 0);
+	{
+		int listId = Lists_GetMask(szEmail);
+		
+		bool noChat = !(listId & LIST_FL) || isMe || getByte(hContact, "ChatRoom", 0);
 
 		mi.flags = CMIM_NAME | CMIM_FLAGS | CMIF_ICONFROMICOLIB;
-        if (noChat) mi.flags |= CMIF_HIDDEN;
-        mi.pszName = (char*)((listId & LIST_BL) ? "&Unblock" : "&Block");
+		if (noChat) mi.flags |= CMIF_HIDDEN;
+		mi.pszName = (char*)((listId & LIST_BL) ? "&Unblock" : "&Block");
 		MSN_CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM)hBlockMenuItem, (LPARAM)&mi);
 
-	    mi.flags = CMIM_NAME | CMIM_FLAGS | CMIF_ICONFROMICOLIB;
-        if (!emailEnabled) mi.flags |= CMIF_HIDDEN;
-        mi.pszName = isMe ? LPGEN("Open &Hotmail Inbox") : LPGEN("Send &Hotmail E-mail");
-        MSN_CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM)hOpenInboxMenuItem, (LPARAM)&mi);
+		mi.flags = CMIM_NAME | CMIM_FLAGS | CMIF_ICONFROMICOLIB;
+		if (!emailEnabled) mi.flags |= CMIF_HIDDEN;
+		mi.pszName = isMe ? LPGEN("Open &Hotmail Inbox") : LPGEN("Send &Hotmail E-mail");
+		MSN_CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM)hOpenInboxMenuItem, (LPARAM)&mi);
 
 		mi.flags = CMIM_NAME | CMIM_FLAGS | CMIF_ICONFROMICOLIB;
-        mi.pszName = isMe ? LPGEN("Edit Live &Space") : LPGEN("View Live &Space");
+		mi.pszName = isMe ? LPGEN("Edit Live &Space") : LPGEN("View Live &Space");
 		MSN_CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM)menuItemsAll[4], (LPARAM)&mi);
 
-        mi.flags = CMIM_FLAGS | CMIF_ICONFROMICOLIB | CMIF_NOTOFFLINE;
-        if (noChat) mi.flags |= CMIF_HIDDEN;
+		mi.flags = CMIM_FLAGS | CMIF_ICONFROMICOLIB | CMIF_NOTOFFLINE;
+		if (noChat) mi.flags |= CMIF_HIDDEN;
 		MSN_CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM)menuItemsAll[5], (LPARAM)&mi);
 		MSN_CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM)menuItemsAll[6], (LPARAM)&mi);
-    }
+	}
 
-    return 0;
+	return 0;
 }
 
 int CMsnProto::OnContactDoubleClicked(WPARAM wParam, LPARAM)
 {
-    const HANDLE hContact = (HANDLE)wParam;
+	const HANDLE hContact = (HANDLE)wParam;
 
-    if (emailEnabled && MSN_IsMeByContact(hContact)) 
-    {
-        MsnSendHotmail(wParam, 0);
-        return 1;
-    }
-    return 0;
+	if (emailEnabled && MSN_IsMeByContact(hContact)) 
+	{
+		MsnSendHotmail(wParam, 0);
+		return 1;
+	}
+	return 0;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -280,7 +271,8 @@ static INT_PTR CALLBACK DlgProcSetNickname(HWND hwndDlg, UINT msg, WPARAM wParam
 			SetWindowLongPtr(hwndDlg, GWLP_USERDATA, lParam);
 			CMsnProto* proto = (CMsnProto*)lParam;
 
-			SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)LoadIconEx("main"));
+			SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)LoadIconEx("main", true));
+			SendMessage(hwndDlg, WM_SETICON, ICON_SMALL, (LPARAM)LoadIconEx("main"));
 			SendMessage(GetDlgItem(hwndDlg, IDC_NICKNAME), EM_LIMITTEXT, 129, 0);
 
 			DBVARIANT dbv;
@@ -294,10 +286,10 @@ static INT_PTR CALLBACK DlgProcSetNickname(HWND hwndDlg, UINT msg, WPARAM wParam
 			switch(wParam)
 			{
 			case IDOK: 
-                {
+				{
 					CMsnProto* proto = (CMsnProto*)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 					if (proto->msnLoggedIn) 
-                    {
+					{
 						TCHAR str[130];
 						GetDlgItemText(hwndDlg, IDC_NICKNAME, str, SIZEOF(str));
 						proto->MSN_SendNickname(str);
@@ -305,7 +297,7 @@ static INT_PTR CALLBACK DlgProcSetNickname(HWND hwndDlg, UINT msg, WPARAM wParam
 				}
 
 				case IDCANCEL:
- 					DestroyWindow(hwndDlg);
+					DestroyWindow(hwndDlg);
 					break;
 			}
 			break;
@@ -316,6 +308,7 @@ static INT_PTR CALLBACK DlgProcSetNickname(HWND hwndDlg, UINT msg, WPARAM wParam
 
 		case WM_DESTROY:
 			ReleaseIconEx("main");
+			ReleaseIconEx("main", true);
 			break;
 	}
 	return FALSE;
@@ -328,74 +321,83 @@ INT_PTR CMsnProto::SetNicknameUI(WPARAM, LPARAM)
 
 	SetForegroundWindow(hwndSetNickname);
 	SetFocus(hwndSetNickname);
- 	ShowWindow(hwndSetNickname, SW_SHOW);
+	ShowWindow(hwndSetNickname, SW_SHOW);
 	return 0;
 }
 
 //////////////////////////////////////////////////////////////////////////////////////
 // Menus initialization
 
-void CMsnProto::MsnInitMenus(void)
+void CMsnProto::MsnInitMainMenu(void)
 {
 	char servicefunction[100];
 	strcpy(servicefunction, m_szModuleName);
 	char* tDest = servicefunction + strlen(servicefunction);
 
-	CLISTMENUITEM mi = { 0 };
+	CLISTMENUITEM mi = {0};
 	mi.cbSize = sizeof(mi);
-	mi.pszService = servicefunction;
 
-	mi.popupPosition = 500085000;
-	mi.pszPopupName = (char *)-1;
-	mi.flags = CMIF_ICONFROMICOLIB | CMIF_ROOTPOPUP | CMIF_TCHAR;
-	mi.icolibItem = GetIconHandle(IDI_MSN);
-	mi.ptszName = m_tszUserName;
-	mainMenuRoot = (HANDLE)MSN_CallService(MS_CLIST_ADDMAINMENUITEM,  (WPARAM)0, (LPARAM)&mi);
+	HGENMENU hRoot = MO_GetProtoRootMenu(m_szModuleName);
+	if (hRoot == NULL)
+	{
+		mi.popupPosition = 500085000;
+		mi.hParentMenu = HGENMENU_ROOT;
+		mi.flags = CMIF_ICONFROMICOLIB | CMIF_ROOTPOPUP | CMIF_TCHAR | CMIF_KEEPUNTRANSLATED;
+		mi.icolibItem = GetIconHandle(IDI_MSN);
+		mi.ptszName = m_tszUserName;
+		hRoot = mainMenuRoot = (HGENMENU)MSN_CallService(MS_CLIST_ADDPROTOMENUITEM,  (WPARAM)0, (LPARAM)&mi);
+	}
+	else
+	{
+		MsnRemoveMainMenus();
+		mainMenuRoot = NULL;
+	}
 
 	mi.flags = CMIF_ICONFROMICOLIB | CMIF_CHILDPOPUP;
-	mi.pszPopupName = (char *)mainMenuRoot;
+	mi.hParentMenu = hRoot;
+	mi.pszService = servicefunction;
 
 	strcpy(tDest, MS_SET_NICKNAME_UI);
 	CreateProtoService(MS_SET_NICKNAME_UI, &CMsnProto::SetNicknameUI);
-	mi.position = 2000060000;
+	mi.position = 201001;
 	mi.icolibItem = GetIconHandle(IDI_MSN);
 	mi.pszName = LPGEN("Set &Nickname");
-	menuItems[0] = (HANDLE)MSN_CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM)&mi);
+	menuItems[0] = (HGENMENU)MSN_CallService(MS_CLIST_ADDPROTOMENUITEM, 0, (LPARAM)&mi);
 
 	strcpy(tDest, MS_GOTO_INBOX);
 	CreateProtoService(MS_GOTO_INBOX, &CMsnProto::MsnGotoInbox);
-	mi.position = 2000060001;
+	mi.position = 201002;
 	mi.icolibItem = GetIconHandle(IDI_INBOX);
 	mi.pszName = LPGEN("Display &Hotmail Inbox");
-	menuItemsAll[0] = (HANDLE)MSN_CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM)&mi);
+	menuItemsAll[0] = (HGENMENU)MSN_CallService(MS_CLIST_ADDPROTOMENUITEM, 0, (LPARAM)&mi);
 
 	strcpy(tDest, MS_EDIT_PROFILE);
 	CreateProtoService(MS_EDIT_PROFILE, &CMsnProto::MsnEditProfile);
-	mi.position = 2000060002;
+	mi.position = 201003;
 	mi.icolibItem = GetIconHandle(IDI_PROFILE);
 	mi.pszName = LPGEN("My Live &Space");
-	menuItemsAll[1] = (HANDLE)MSN_CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM)&mi);
+	menuItemsAll[1] = (HGENMENU)MSN_CallService(MS_CLIST_ADDPROTOMENUITEM, 0, (LPARAM)&mi);
 
 	strcpy(tDest, MS_EDIT_ALERTS);
 	CreateProtoService(MS_EDIT_ALERTS, &CMsnProto::MsnSetupAlerts);
-	mi.position = 2000060003;
+	mi.position = 201004;
 	mi.icolibItem = GetIconHandle(IDI_PROFILE);
 	mi.pszName = LPGEN("Setup Live &Alerts");
-	menuItemsAll[2] = (HANDLE)MSN_CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM)&mi);
+	menuItemsAll[2] = (HGENMENU)MSN_CallService(MS_CLIST_ADDPROTOMENUITEM, 0, (LPARAM)&mi);
 
-    strcpy(tDest, MS_VIEW_STATUS);
-	CreateProtoService(MS_VIEW_STATUS, &CMsnProto::MsnViewServiceStatus);
-	mi.position = 2000060004;
-	mi.icolibItem = GetIconHandle(IDI_SERVICES);
-	mi.pszName = LPGEN("View MSN Services &Status");
-	menuItemsAll[3] = (HANDLE)MSN_CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM)&mi);
+	MSN_EnableMenuItems(m_iStatus >= ID_STATUS_ONLINE);
+}
 
+void CMsnProto::MsnInitContactMenu(void)
+{
+	char servicefunction[100];
+	strcpy(servicefunction, m_szModuleName);
+	char* tDest = servicefunction + strlen(servicefunction);
 
-	//////////////////////////////////////////////////////////////////////////////////////
-	// Contact menu initialization
-
+	CLISTMENUITEM mi = {0};
+	mi.cbSize = sizeof(mi);
 	mi.flags = CMIF_ICONFROMICOLIB;
-	mi.pszPopupName = NULL;
+	mi.pszService = servicefunction;
 	mi.pszContactOwner = m_szModuleName;
 
 	strcpy(tDest, MSN_BLOCK);
@@ -403,14 +405,14 @@ void CMsnProto::MsnInitMenus(void)
 	mi.position = -500050000;
 	mi.icolibItem = GetIconHandle(IDI_MSNBLOCK);
 	mi.pszName = LPGEN("&Block");
-	hBlockMenuItem = (HANDLE)MSN_CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM)&mi);
+	hBlockMenuItem = (HGENMENU)MSN_CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM)&mi);
 
 	strcpy(tDest, MSN_VIEW_PROFILE);
 	CreateProtoService(MSN_VIEW_PROFILE, &CMsnProto::MsnViewProfile);
 	mi.position = -500050003;
 	mi.icolibItem = GetIconHandle(IDI_PROFILE);
 	mi.pszName = LPGEN("View Live &Space");
-	menuItemsAll[4] = (HANDLE)MSN_CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM)&mi);
+	menuItemsAll[4] = (HGENMENU)MSN_CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM)&mi);
 
 	strcpy(tDest, MSN_NETMEETING);
 	CreateProtoService(MSN_NETMEETING, &CMsnProto::MsnSendNetMeeting);
@@ -418,14 +420,14 @@ void CMsnProto::MsnInitMenus(void)
 	mi.position = -500050002;
 	mi.icolibItem = GetIconHandle(IDI_NETMEETING);
 	mi.pszName = LPGEN("&Start Netmeeting");
-	menuItemsAll[5] = (HANDLE)MSN_CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM)&mi);
+	menuItemsAll[5] = (HGENMENU)MSN_CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM)&mi);
 
 	strcpy(tDest, MSN_INVITE);
 	CreateProtoService(MSN_INVITE, &CMsnProto::MsnInviteCommand);
 	mi.position = -500050001;
 	mi.icolibItem = GetIconHandle(IDI_INVITE);
 	mi.pszName = LPGEN("&Invite to chat");
-	menuItemsAll[6] = (HANDLE)MSN_CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM)&mi);
+	menuItemsAll[6] = (HGENMENU)MSN_CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM)&mi);
 
 	strcpy(tDest, "/SendHotmail");
 	CreateProtoService("/SendHotmail", &CMsnProto::MsnSendHotmail);
@@ -433,19 +435,17 @@ void CMsnProto::MsnInitMenus(void)
 	mi.flags = CMIF_ICONFROMICOLIB | CMIF_HIDDEN;
 	mi.icolibItem = LoadSkinnedIconHandle(SKINICON_OTHER_SENDEMAIL);
 	mi.pszName = LPGEN("Open &Hotmail Inbox");
-	hOpenInboxMenuItem = (HANDLE)CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM) &mi);
-
-    MSN_EnableMenuItems(false);
+	hOpenInboxMenuItem = (HGENMENU)CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM) &mi);
 }
 
-void CMsnProto::MsnUninitMenus(void)
+void CMsnProto::MsnRemoveMainMenus(void)
 {
-	MSN_CallService(MS_CLIST_REMOVEMAINMENUITEM, (WPARAM)menuItems[0], 0);
-	MSN_CallService(MS_CLIST_REMOVEMAINMENUITEM, (WPARAM)menuItemsAll[0], 0);
-	MSN_CallService(MS_CLIST_REMOVEMAINMENUITEM, (WPARAM)menuItemsAll[1], 0);
-	MSN_CallService(MS_CLIST_REMOVEMAINMENUITEM, (WPARAM)menuItemsAll[2], 0);
-	MSN_CallService(MS_CLIST_REMOVEMAINMENUITEM, (WPARAM)menuItemsAll[3], 0);
-	MSN_CallService(MS_CLIST_REMOVEMAINMENUITEM, (WPARAM)mainMenuRoot, 0);
+	if (mainMenuRoot) 
+		MSN_CallService(MS_CLIST_REMOVEMAINMENUITEM, (WPARAM)mainMenuRoot, 0);
+}
+
+void CMsnProto::MsnRemoveContactMenus(void)
+{
 	MSN_CallService(MS_CLIST_REMOVECONTACTMENUITEM, (WPARAM)hBlockMenuItem, 0);
 	MSN_CallService(MS_CLIST_REMOVECONTACTMENUITEM, (WPARAM)menuItemsAll[4], 0);
 	MSN_CallService(MS_CLIST_REMOVECONTACTMENUITEM, (WPARAM)menuItemsAll[5], 0);
@@ -468,9 +468,9 @@ void  CMsnProto::MSN_EnableMenuItems(bool parEnable)
 	MSN_CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM)hBlockMenuItem, (LPARAM)&mi);
 
 	if (parEnable)
-    {
-        mi.flags = CMIM_FLAGS;
-        if (!emailEnabled) mi.flags |= CMIF_HIDDEN;
-        MSN_CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM)menuItemsAll[0], (LPARAM)&mi);
-    }
+	{
+		mi.flags = CMIM_FLAGS;
+		if (!emailEnabled) mi.flags |= CMIF_HIDDEN;
+		MSN_CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM)menuItemsAll[0], (LPARAM)&mi);
+	}
 }

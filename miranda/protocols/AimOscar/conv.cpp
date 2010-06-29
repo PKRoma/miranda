@@ -810,11 +810,11 @@ char* get_fname(char* path)
 	return pszFile;
 }
 
-char* get_dir(char* path)
+TCHAR* get_dir(TCHAR* path)
 {
-	char *cpath = mir_strdup(path);
+	TCHAR *cpath = mir_tstrdup(path);
 
-	char* swd = strrchr(cpath, '\\'); 
+	TCHAR* swd = _tcsrchr(cpath, '\\'); 
 	if (swd) swd[1] = 0; else cpath[0] = 0;
 
 	return cpath;

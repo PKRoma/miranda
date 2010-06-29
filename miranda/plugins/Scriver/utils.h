@@ -1,8 +1,7 @@
 /*
 Scriver
 
-Copyright 2000-2003 Miranda ICQ/IM project,
-Copyright 2005 Piotr Piastucki
+Copyright 2000-2009 Miranda ICQ/IM project,
 
 all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
@@ -53,10 +52,16 @@ extern TCHAR *GetRichTextWord(HWND hwnd, POINTL *pt);
 extern int SetRichTextRTF(HWND hwnd, const char *text);
 extern int SetRichTextEncoded(HWND hwnd, const char *text, int codepage);
 extern void SearchWord(TCHAR * word, int engine);
-extern HDWP ResizeToolbar(HWND hwnd, HDWP hdwp, int width, int vPos, int height, int cControls, const UINT * controls, UINT *controlWidth, UINT *controlSpacing, char *controlAlignment, int controlVisibility);
-extern void ShowToolbarControls(HWND hwndDlg, int cControls, const UINT * controls, int controlVisibility, int state);
+extern HDWP ResizeToolbar(HWND hwnd, HDWP hdwp, int width, int vPos, int height, int cControls, const ToolbarButton * buttons, int controlVisibility);
+extern void ShowToolbarControls(HWND hwndDlg, int cControls, const ToolbarButton * buttons, int controlVisibility, int state);
 extern void AppendToBuffer(char **buffer, int *cbBufferEnd, int *cbBufferAlloced, const char *fmt, ...);
 extern int MeasureMenuItem(WPARAM wParam, LPARAM lParam);
 extern int DrawMenuItem(WPARAM wParam, LPARAM lParam);
 extern void SetSearchEngineIcons(HMENU hMenu, HIMAGELIST hImageList);
+extern void GetContactUniqueId(struct MessageWindowData *dat, char *buf, int maxlen);
+HWND CreateToolTip(HWND hwndParent, LPTSTR ptszText, LPTSTR ptszTitle, RECT *rect);
+void SetToolTipText(HWND hwndParent, HWND hwndTT, LPTSTR ptszText, LPTSTR ptszTitle);
+void SetToolTipRect(HWND hwndParent, HWND hwndTT, RECT* rect);
+int GetToolbarWidth(int cControls, const ToolbarButton * buttons);
+BOOL IsToolbarVisible(int cControls, int visibilityFlags);
 #endif

@@ -31,59 +31,73 @@ static BOOL CALLBACK ClipSiblingsChildEnumProc(HWND hwnd, LPARAM)
 	return TRUE;
 }
 
-static void GetLowestExistingDirName(const char *szTestDir,char *szExistingDir,int cchExistingDir)
+static void GetLowestExistingDirName(const TCHAR *szTestDir,TCHAR *szExistingDir,int cchExistingDir)
 {
 	DWORD dwAttributes;
-	char *pszLastBackslash;
+	TCHAR *pszLastBackslash;
 
-	lstrcpynA(szExistingDir,szTestDir,cchExistingDir);
-	while((dwAttributes=GetFileAttributesA(szExistingDir))!=0xffffffff && !(dwAttributes&FILE_ATTRIBUTE_DIRECTORY)) {
-		pszLastBackslash=strrchr(szExistingDir,'\\');
+	lstrcpyn(szExistingDir,szTestDir,cchExistingDir);
+	while((dwAttributes=GetFileAttributes(szExistingDir))!=INVALID_FILE_ATTRIBUTES && !(dwAttributes&FILE_ATTRIBUTE_DIRECTORY)) {
+		pszLastBackslash=_tcsrchr(szExistingDir,'\\');
 		if(pszLastBackslash==NULL) {*szExistingDir='\0'; break;}
 		*pszLastBackslash='\0';
 	}
-	if(szExistingDir[0]=='\0') GetCurrentDirectoryA(cchExistingDir,szExistingDir);
+	if(szExistingDir[0]=='\0') GetCurrentDirectory(cchExistingDir,szExistingDir);
 }
 
-static const char validFilenameChars[]="abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_!&{}-=#@~,. ";
-static void RemoveInvalidFilenameChars(char *szString)
+static const TCHAR InvalidFilenameChars[] = _T("\\/:*?\"<>|"); 
+void RemoveInvalidFilenameChars(TCHAR *tszString)
 {
 	size_t i;
-	for(i=strspn(szString,validFilenameChars);szString[i];i+=strspn(szString+i+1,validFilenameChars)+1)
-		if(szString[i]>=0) szString[i]='%';
+	if (tszString) {
+		for(i=_tcscspn(tszString,InvalidFilenameChars); tszString[i]; i+=_tcscspn(tszString+i+1,InvalidFilenameChars)+1)
+			if(tszString[i] >= 0) 
+				tszString[i] = _T('_');
+	}
+}
+
+static const TCHAR InvalidPathChars[] = _T("*?\"<>|"); // "\/:" are excluded as they are allowed in file path
+void RemoveInvalidPathChars(TCHAR *tszString)
+{
+	size_t i;
+	if (tszString) {
+		for(i=_tcscspn(tszString,InvalidPathChars); tszString[i]; i+=_tcscspn(tszString+i+1,InvalidPathChars)+1)
+			if(tszString[i] >= 0) 
+				tszString[i] = _T('_');
+	}
 }
 
 static INT CALLBACK BrowseCallbackProc(HWND hwnd, UINT uMsg, LPARAM lp, LPARAM pData)
 {
-	char szDir[MAX_PATH];
+	TCHAR szDir[MAX_PATH];
 	switch(uMsg) {
 	case BFFM_INITIALIZED:
 		SendMessage(hwnd, BFFM_SETSELECTION, TRUE, pData);
 		break;
 	case BFFM_SELCHANGED:
-		if (SHGetPathFromIDListA((LPITEMIDLIST) lp ,szDir))
+		if (SHGetPathFromIDList((LPITEMIDLIST) lp ,szDir))
 			SendMessage(hwnd,BFFM_SETSTATUSTEXT,0,(LPARAM)szDir);
 		break;
 	}
 	return 0;
 }
 
-int BrowseForFolder(HWND hwnd,char *szPath)
+int BrowseForFolder(HWND hwnd,TCHAR *szPath)
 {
-	BROWSEINFOA bi={0};
+	BROWSEINFO bi={0};
 	LPITEMIDLIST pidlResult;
 
 	bi.hwndOwner=hwnd;
 	bi.pszDisplayName=szPath;
-	bi.lpszTitle=Translate("Select Folder");
+	bi.lpszTitle=TranslateT("Select Folder");
 	bi.ulFlags=BIF_NEWDIALOGSTYLE|BIF_EDITBOX|BIF_RETURNONLYFSDIRS;				// Use this combo instead of BIF_USENEWUI
 	bi.lpfn=BrowseCallbackProc;
 	bi.lParam=(LPARAM)szPath;
 
-	pidlResult=SHBrowseForFolderA(&bi);
-	if (pidlResult) {
-		SHGetPathFromIDListA(pidlResult,szPath);
-		lstrcatA(szPath, "\\");
+	pidlResult=SHBrowseForFolder(&bi);
+	if(pidlResult) {
+		SHGetPathFromIDList(pidlResult,szPath);
+		lstrcat(szPath,_T("\\"));
 		CoTaskMemFree(pidlResult);
 	}
 	return pidlResult != NULL;
@@ -97,78 +111,97 @@ static REPLACEVARSARRAY sttVarsToReplace[] =
 	{ NULL, NULL }
 };
 
-static void patchDir( char* str, size_t strSize )
+static void patchDir( TCHAR* str, size_t strSize )
 {
 	REPLACEVARSDATA dat = { 0 };
 	dat.cbSize = sizeof( dat );
+	dat.dwFlags = RVF_TCHAR;
 	dat.variables = sttVarsToReplace;
 
-	char* result = ( char* )CallService( MS_UTILS_REPLACEVARS, (WPARAM)str, (LPARAM)&dat );
+	TCHAR* result = ( TCHAR* )CallService( MS_UTILS_REPLACEVARS, (WPARAM)str, (LPARAM)&dat );
 	if ( result ) {
-		strncpy( str, result, strSize );
+		_tcsncpy( str, result, strSize );
 		mir_free( result );
 	}
 
-	size_t len = lstrlenA( str );
+	size_t len = lstrlen( str );
 	if ( len+1 < strSize && str[len-1] != '\\' )
-		lstrcpyA( str+len, "\\" );
+		lstrcpy( str+len, _T("\\") );
 }
 
-void GetContactReceivedFilesDir(HANDLE hContact,char *szDir,int cchDir, BOOL patchVars)
+void GetContactReceivedFilesDir(HANDLE hContact, TCHAR *szDir, int cchDir, BOOL patchVars)
 {
 	DBVARIANT dbv;
-	char szTemp[MAX_PATH];
+	TCHAR szTemp[MAX_PATH];
 	szTemp[0] = 0;
 
-	if ( !DBGetContactSettingString( NULL, "SRFile", "RecvFilesDirAdv", &dbv)) {
-		if ( lstrlenA( dbv.pszVal ) > 0 )
-			lstrcpynA( szTemp, dbv.pszVal, SIZEOF( szTemp ));
+	if ( !DBGetContactSettingTString( NULL, "SRFile", "RecvFilesDirAdv", &dbv)) {
+		if ( lstrlen( dbv.ptszVal ) > 0 )
+			lstrcpyn( szTemp, dbv.ptszVal, SIZEOF( szTemp ));
 		DBFreeVariant( &dbv );
 	}
 
 	if ( !szTemp[0] )
 #ifdef _UNICODE
-		mir_snprintf( szTemp, SIZEOF(szTemp), "%%mydocuments%%\\%s\\%%userid%%", Translate("My Received Files"));
+		mir_sntprintf( szTemp, SIZEOF(szTemp), _T("%%mydocuments%%\\%s\\%%userid%%"), TranslateT("My Received Files"));
 #else
-		mir_snprintf( szTemp, SIZEOF(szTemp), "%%mydocuments%%\\%s\\%%userid%%", "My Received Files");
+		mir_sntprintf( szTemp, SIZEOF(szTemp), _T("%%mydocuments%%\\%s\\%%userid%%"), "My Received Files");
 #endif
 
 	if ( hContact ) {
 		REPLACEVARSDATA dat = { 0 };
+		REPLACEVARSARRAY rvaVarsToReplace[4];
+		rvaVarsToReplace[0].lptzKey   = _T("nick");
+		rvaVarsToReplace[0].lptzValue = mir_tstrdup((TCHAR *)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)hContact, GCDNF_TCHAR));
+		rvaVarsToReplace[1].lptzKey   = _T("userid");
+		rvaVarsToReplace[1].lptzValue = GetContactID(hContact);
+		rvaVarsToReplace[2].lptzKey   = _T("proto");
+		rvaVarsToReplace[2].lptzValue = mir_a2t((char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact,0));
+		rvaVarsToReplace[3].lptzKey   = NULL;
+		rvaVarsToReplace[3].lptzValue = NULL;
+		for (int i=0; i < (SIZEOF(rvaVarsToReplace)-1);i++)
+			RemoveInvalidFilenameChars(rvaVarsToReplace[i].lptzValue);
+
 		dat.cbSize = sizeof( dat );
+		dat.dwFlags = RVF_TCHAR;
+		dat.variables = rvaVarsToReplace;
 		dat.hContact = hContact;
-		char* result = ( char* )CallService( MS_UTILS_REPLACEVARS, (WPARAM)szTemp, (LPARAM)&dat );
+		TCHAR* result = ( TCHAR* )CallService( MS_UTILS_REPLACEVARS, (WPARAM)szTemp, (LPARAM)&dat );
 		if ( result ) {
-			strncpy( szTemp, result, SIZEOF(szTemp));
+			_tcsncpy( szTemp, result, SIZEOF(szTemp));
 			mir_free( result );
+			for (int i=0; i < (SIZEOF(rvaVarsToReplace)-1);i++)
+				mir_free(rvaVarsToReplace[i].lptzValue);
 	}	}
 
 	if (patchVars)
 		patchDir( szTemp, SIZEOF(szTemp));
-	lstrcpynA( szDir, szTemp, cchDir );
+	RemoveInvalidPathChars(szTemp);
+	lstrcpyn( szDir, szTemp, cchDir );
 }
 
-void GetReceivedFilesDir(char *szDir,int cchDir)
+void GetReceivedFilesDir(TCHAR *szDir, int cchDir)
 {
 	DBVARIANT dbv;
-	char szTemp[MAX_PATH];
+	TCHAR szTemp[MAX_PATH];
 	szTemp[0] = 0;
 
-	if ( !DBGetContactSettingString( NULL, "SRFile", "RecvFilesDirAdv", &dbv )) {
-		if ( lstrlenA( dbv.pszVal ) > 0 )
-			lstrcpynA( szTemp, dbv.pszVal, SIZEOF( szTemp ));
+	if ( !DBGetContactSettingTString( NULL, "SRFile", "RecvFilesDirAdv", &dbv )) {
+		if ( lstrlen( dbv.ptszVal ) > 0 )
+			lstrcpyn( szTemp, dbv.ptszVal, SIZEOF( szTemp ));
 		DBFreeVariant(&dbv);
 	}
 
 	if ( !szTemp[0] )
 #ifdef _UNICODE
-		mir_snprintf( szTemp, SIZEOF(szTemp), "%%mydocuments%%\\%s", Translate("My Received Files"));
+		mir_sntprintf( szTemp, SIZEOF(szTemp), _T("%%mydocuments%%\\%s"), TranslateT("My Received Files"));
 #else
-		mir_snprintf( szTemp, SIZEOF(szTemp), "%%mydocuments%%\\%s", "My Received Files");
+		mir_sntprintf( szTemp, SIZEOF(szTemp), _T("%%mydocuments%%\\%s"), "My Received Files");
 #endif
 
 	patchDir( szTemp, SIZEOF(szTemp));
-	lstrcpynA( szDir, szTemp, cchDir );
+	RemoveInvalidPathChars(szTemp);
+	lstrcpyn( szDir, szTemp, cchDir );
 }
 
 INT_PTR CALLBACK DlgProcRecvFile(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
@@ -179,7 +212,7 @@ INT_PTR CALLBACK DlgProcRecvFile(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 	switch (msg) {
 	case WM_INITDIALOG: {
 		TCHAR *contactName;
-		char szPath[450];
+		TCHAR szPath[450];
 		CLISTEVENT* cle = (CLISTEVENT*)lParam;
 
 		TranslateDialogDefault(hwndDlg);
@@ -194,15 +227,15 @@ INT_PTR CALLBACK DlgProcRecvFile(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 		EnumChildWindows(hwndDlg,ClipSiblingsChildEnumProc,0);
 
 		Window_SetIcon_IcoLib(hwndDlg, SKINICON_EVENT_FILE);
-		Button_SetIcon_IcoLib(hwndDlg, IDC_ADD, SKINICON_OTHER_ADDCONTACT, "Add Contact Permanently to List");
-		Button_SetIcon_IcoLib(hwndDlg, IDC_DETAILS, SKINICON_OTHER_USERDETAILS, "View User's Details");
-		Button_SetIcon_IcoLib(hwndDlg, IDC_HISTORY, SKINICON_OTHER_HISTORY, "View User's History");
-		Button_SetIcon_IcoLib(hwndDlg, IDC_USERMENU, SKINICON_OTHER_DOWNARROW, "User Menu");
+		Button_SetIcon_IcoLib(hwndDlg, IDC_ADD, SKINICON_OTHER_ADDCONTACT, LPGEN("Add Contact Permanently to List"));
+		Button_SetIcon_IcoLib(hwndDlg, IDC_DETAILS, SKINICON_OTHER_USERDETAILS, LPGEN("View User's Details"));
+		Button_SetIcon_IcoLib(hwndDlg, IDC_HISTORY, SKINICON_OTHER_HISTORY, LPGEN("View User's History"));
+		Button_SetIcon_IcoLib(hwndDlg, IDC_USERMENU, SKINICON_OTHER_DOWNARROW, LPGEN("User Menu"));
 
 		contactName = cli.pfnGetContactDisplayName( dat->hContact, 0 );
 		SetDlgItemText(hwndDlg,IDC_FROM,contactName);
 		GetContactReceivedFilesDir(dat->hContact,szPath,SIZEOF(szPath),TRUE);
-		SetDlgItemTextA(hwndDlg,IDC_FILEDIR,szPath);
+		SetDlgItemText(hwndDlg,IDC_FILEDIR,szPath);
 		{
 			int i;
 			char idstr[32];
@@ -213,8 +246,8 @@ INT_PTR CALLBACK DlgProcRecvFile(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 
 			for(i=0;i<MAX_MRU_DIRS;i++) {
 				mir_snprintf(idstr, SIZEOF(idstr), "MruDir%d",i);
-				if(DBGetContactSettingString(NULL,"SRFile",idstr,&dbv)) break;
-				SendDlgItemMessageA(hwndDlg,IDC_FILEDIR,CB_ADDSTRING,0,(LPARAM)dbv.pszVal);
+				if(DBGetContactSettingTString(NULL,"SRFile",idstr,&dbv)) break;
+				SendDlgItemMessage(hwndDlg,IDC_FILEDIR,CB_ADDSTRING,0,(LPARAM)dbv.ptszVal);
 				DBFreeVariant(&dbv);
 			}
 		}
@@ -224,16 +257,21 @@ INT_PTR CALLBACK DlgProcRecvFile(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 			DBEVENTINFO dbei={0};
 			DBTIMETOSTRINGT dbtts;
 			TCHAR datetimestr[64];
+			char buf[540];
 
 			dbei.cbSize=sizeof(dbei);
 			dbei.cbBlob=CallService(MS_DB_EVENT_GETBLOBSIZE,(WPARAM)dat->hDbEvent,0);
 			dbei.pBlob=(PBYTE)mir_alloc(dbei.cbBlob);
 			CallService(MS_DB_EVENT_GET,(WPARAM)dat->hDbEvent,(LPARAM)&dbei);
 			dat->fs = cle->lParam ? (HANDLE)cle->lParam : (HANDLE)*(PDWORD)dbei.pBlob;
-			lstrcpynA(szPath, (char*)dbei.pBlob+4, min(dbei.cbBlob+1,SIZEOF(szPath)));
-			SetDlgItemTextA(hwndDlg,IDC_FILENAMES,szPath);
-			lstrcpynA(szPath, (char*)dbei.pBlob+4+strlen((char*)dbei.pBlob+4)+1, min((int)(dbei.cbBlob-4-strlen((char*)dbei.pBlob+4)),SIZEOF(szPath)));
-			SetDlgItemTextA(hwndDlg,IDC_MSG,szPath);
+			lstrcpynA(buf, (char*)dbei.pBlob+4, min(dbei.cbBlob+1,SIZEOF(buf)));
+			TCHAR* ptszFileName = DbGetEventStringT( &dbei, buf );
+			SetDlgItemText(hwndDlg,IDC_FILENAMES,ptszFileName);
+			mir_free(ptszFileName);
+			lstrcpynA(buf, (char*)dbei.pBlob+4+strlen((char*)dbei.pBlob+4)+1, min((int)(dbei.cbBlob-4-strlen((char*)dbei.pBlob+4)),SIZEOF(buf)));
+			TCHAR* ptszDescription = DbGetEventStringT( &dbei, buf );
+			SetDlgItemText(hwndDlg,IDC_MSG,ptszDescription);
+			mir_free(ptszDescription);
 			mir_free(dbei.pBlob);
 
 			dbtts.szFormat = _T("t d");
@@ -314,32 +352,33 @@ INT_PTR CALLBACK DlgProcRecvFile(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 		switch ( LOWORD( wParam )) {
 		case IDC_FILEDIRBROWSE:
 			{
-				char szDirName[MAX_PATH],szExistingDirName[MAX_PATH];
+				TCHAR szDirName[MAX_PATH],szExistingDirName[MAX_PATH];
 
-				GetDlgItemTextA(hwndDlg,IDC_FILEDIR,szDirName,SIZEOF(szDirName));
+				GetDlgItemText(hwndDlg,IDC_FILEDIR,szDirName,SIZEOF(szDirName));
 				GetLowestExistingDirName(szDirName,szExistingDirName,SIZEOF(szExistingDirName));
 				if(BrowseForFolder(hwndDlg,szExistingDirName))
-					SetDlgItemTextA(hwndDlg,IDC_FILEDIR,szExistingDirName);
+					SetDlgItemText(hwndDlg,IDC_FILEDIR,szExistingDirName);
 			}
             break;
 
 		case IDOK:
 			{	//most recently used directories
-				char szRecvDir[MAX_PATH],szDefaultRecvDir[MAX_PATH];
-				GetDlgItemTextA(hwndDlg,IDC_FILEDIR,szRecvDir,SIZEOF(szRecvDir));
+				TCHAR szRecvDir[MAX_PATH],szDefaultRecvDir[MAX_PATH];
+				GetDlgItemText(hwndDlg,IDC_FILEDIR,szRecvDir,SIZEOF(szRecvDir));
+				RemoveInvalidPathChars(szRecvDir);
 				GetContactReceivedFilesDir(NULL,szDefaultRecvDir,SIZEOF(szDefaultRecvDir),TRUE);
-				if(_strnicmp(szRecvDir,szDefaultRecvDir,lstrlenA(szDefaultRecvDir))) {
+				if(_tcsnicmp(szRecvDir,szDefaultRecvDir,lstrlen(szDefaultRecvDir))) {
 					char idstr[32];
 					int i;
 					DBVARIANT dbv;
 					for(i=MAX_MRU_DIRS-2;i>=0;i--) {
 						mir_snprintf(idstr, SIZEOF(idstr), "MruDir%d",i);
-						if(DBGetContactSettingString(NULL,"SRFile",idstr,&dbv)) continue;
+						if(DBGetContactSettingTString(NULL,"SRFile",idstr,&dbv)) continue;
 						mir_snprintf(idstr, SIZEOF(idstr), "MruDir%d",i+1);
-						DBWriteContactSettingString(NULL,"SRFile",idstr,dbv.pszVal);
+						DBWriteContactSettingTString(NULL,"SRFile",idstr,dbv.ptszVal);
 						DBFreeVariant(&dbv);
 					}
-					DBWriteContactSettingString(NULL,"SRFile",idstr,szRecvDir);
+					DBWriteContactSettingTString(NULL,"SRFile",idstr,szRecvDir);
 				}
 			}
 			EnableWindow(GetDlgItem(hwndDlg,IDC_FILENAMES),FALSE);
@@ -347,9 +386,9 @@ INT_PTR CALLBACK DlgProcRecvFile(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 			EnableWindow(GetDlgItem(hwndDlg,IDC_FILEDIR),FALSE);
 			EnableWindow(GetDlgItem(hwndDlg,IDC_FILEDIRBROWSE),FALSE);
 
-			GetDlgItemTextA(hwndDlg,IDC_FILEDIR,dat->szSavePath,SIZEOF(dat->szSavePath));
-			GetDlgItemTextA(hwndDlg,IDC_FILE,dat->szFilenames,SIZEOF(dat->szFilenames));
-			GetDlgItemTextA(hwndDlg,IDC_MSG,dat->szMsg,SIZEOF(dat->szMsg));
+			GetDlgItemText(hwndDlg,IDC_FILEDIR,dat->szSavePath,SIZEOF(dat->szSavePath));
+			GetDlgItemText(hwndDlg,IDC_FILE,dat->szFilenames,SIZEOF(dat->szFilenames));
+			GetDlgItemText(hwndDlg,IDC_MSG,dat->szMsg,SIZEOF(dat->szMsg));
 			dat->hwndTransfer = FtMgr_AddTransfer(dat);
 			SetWindowLongPtr( hwndDlg, GWLP_USERDATA, 0);
 			//check for auto-minimize here to fix BUG#647620
@@ -361,7 +400,7 @@ INT_PTR CALLBACK DlgProcRecvFile(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
             break;
 
 		case IDCANCEL:
-			if (dat->fs) CallContactService(dat->hContact,PSS_FILEDENY,(WPARAM)dat->fs,(LPARAM)Translate("Cancelled"));
+			if (dat->fs) CallContactService(dat->hContact,PSS_FILEDENYT,(WPARAM)dat->fs,(LPARAM)TranslateT("Cancelled"));
 			dat->fs=NULL; /* the protocol will free the handle */
 			DestroyWindow(hwndDlg);
             break;

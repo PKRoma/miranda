@@ -5,7 +5,7 @@
 // Copyright © 2000-2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001-2002 Jon Keating, Richard Hughes
 // Copyright © 2002-2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004-2009 Joe Kucera
+// Copyright © 2004-2010 Joe Kucera
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -19,7 +19,7 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with this program; if not, write to the Free Software
-// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 //
 // -----------------------------------------------------------------------------
 //
@@ -36,17 +36,6 @@
 
 #ifndef __FAMILIES_H
 #define __FAMILIES_H
-
-
-struct snac_header 
-{
-  BOOL  bValid;
-  WORD  wFamily;
-  WORD  wSubtype;
-  WORD  wFlags;
-  DWORD dwRef;
-  WORD  wVersion;
-};
 
 
 struct message_ack_params 
@@ -68,6 +57,7 @@ struct message_ack_params
 /* handleMessageTypes(): mMsgFlags constants */
 #define MTF_DIRECT          1
 #define MTF_PLUGIN          2
+#define MTF_STATUS_EXTENDED 4
 
 
 struct UserInfoRecordItem 

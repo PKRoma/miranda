@@ -38,12 +38,13 @@ void Map()
 	hMap = CreateFileMapping(hDbFile, NULL, PAGE_READWRITE, 0, dwFileSize, NULL);
 
 	if (hMap)
+	{
 		pDbCache = MapViewOfFile(hMap, FILE_MAP_ALL_ACCESS/*FILE_MAP_WRITE*/, 0, 0 ,0);
+		if (!pDbCache)
+			DatabaseCorruption( _T("%s (MapViewOfFile failed. Code: %d)"));
+	}
 	else
 		DatabaseCorruption( _T("%s (CreateFileMapping failed. Code: %d)"));
-
-	if (!pDbCache)
-		DatabaseCorruption( _T("%s (MapViewOfFile failed. Code: %d)"));
 }
 
 void ReMap(DWORD needed)

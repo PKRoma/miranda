@@ -1,22 +1,38 @@
 /*
-Chat module plugin for Miranda IM
-
-Copyright (C) 2003 J�rgen Persson
-
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
-of the License, or (at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-*/
+ * astyle --force-indent=tab=4 --brackets=linux --indent-switches
+ *		  --pad=oper --one-line=keep-blocks  --unpad=paren
+ *
+ * Miranda IM: the free IM client for Microsoft* Windows*
+ *
+ * Copyright 2000-2009 Miranda ICQ/IM project,
+ * all portions of this codebase are copyrighted to the people
+ * listed in contributors.txt.
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * you should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ *
+ * part of tabSRMM messaging plugin for Miranda.
+ *
+ * This code is based on and still contains large parts of the the
+ * original chat module for Miranda IM, written and copyrighted
+ * by Joergen Persson in 2005.
+ *
+ * (C) 2005-2009 by silvercircle _at_ gmail _dot_ com and contributors
+ *
+ * $Id$
+ *
+ */
 
 #ifndef _CHAT_H_
 #define _CHAT_H_
@@ -26,47 +42,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #define WIN32_LEAN_AND_MEAN
 
-#define _WIN32_WINNT 0x0501
-
 #include "m_stdhdr.h"
-
-#include <windows.h>
-#include <commctrl.h>
-#include <richedit.h>
-#include <process.h>
-#include <ole2.h>
-#include <richole.h>
-#include <tom.h>
-#include <commdlg.h>
-#include <time.h>
-#include <stdio.h>
-#include <shellapi.h>
-#include "../../../include/win2k.h"
-#include "../../../include/newpluginapi.h"
-#include "../../../include/m_system.h"
-#include "../../../include/m_options.h"
-#include "../../../include/m_database.h"
-#include "../../../include/m_utils.h"
-#include "../../../include/m_langpack.h"
-#include "../../../include/m_skin.h"
-#include "../../../include/m_button.h"
-#include "../../../include/m_protomod.h"
-#include "../../../include/m_protosvc.h"
-#include "../../../include/m_addcontact.h"
-#include "../../../include/m_clist.h"
-#include "../../../include/m_clui.h"
-//#include "../../../include/m_popup.h"
-#include "chat_resource.h"
-#include "m_chat.h"
-#include "../API/m_ieview.h"
-#include "../API/m_smileyadd.h"
-
-#ifdef _MSC_VER
-#ifndef NDEBUG
-#include <crtdbg.h>
-#define new new(_NORMAL_BLOCK, __FILE__, __LINE__)
-#endif
-#endif
 
 //defines
 #define OPTIONS_FONTCOUNT 20
@@ -132,12 +108,14 @@ typedef struct  {
 	GETEVENTFUNC pfnAddEvent;
 }GCPTRS;
 
+class CMUCHighlight;
+
 //structs
 
 typedef struct  MODULE_INFO_TYPE
 {
 	char*		pszModule;
-	char*		pszModDispName;
+	TCHAR*		ptszModDispName;
 	char*		pszHeader;
 	BOOL		bBold;
 	BOOL		bUnderline;
@@ -148,13 +126,19 @@ typedef struct  MODULE_INFO_TYPE
 	BOOL		bAckMsg;
 	int			nColorCount;
 	COLORREF*	crColors;
+	/*
 	HICON		hOnlineIcon;
 	HICON		hOfflineIcon;
 	HICON		hOnlineTalkIcon;
 	HICON		hOfflineTalkIcon;
 	int			OnlineIconIndex;
 	int			OfflineIconIndex;
+	*/
 	int			iMaxText;
+	DWORD		idleTimeStamp;
+	DWORD		lastIdleCheck;
+	TCHAR		tszIdleMsg[60];
+	CMUCHighlight* Highlight;
 	struct MODULE_INFO_TYPE *next;
 }
 	MODULEINFO;
@@ -210,15 +194,7 @@ typedef struct  USERINFO_TYPE
 }
 	USERINFO;
 
-typedef struct  TABLIST_TYPE
-{
-	TCHAR* pszID;
-	char*  pszModule;
-	struct TABLIST_TYPE *next;
-}
-	TABLIST;
-
-typedef struct SESSION_INFO_TYPE
+typedef struct SESSIONINFO_TYPE
 {
 	HWND        hWnd;
 
@@ -233,11 +209,10 @@ typedef struct SESSION_INFO_TYPE
 	TCHAR*      ptszName;
 	TCHAR*      ptszStatusbarText;
 	TCHAR*      ptszTopic;
+	TCHAR		pszLogFileName[MAX_PATH + 50];
 
-	#if defined( _UNICODE )
-		char*    pszID;		// ugly fix for returning static ANSI strings in GC_INFO
-		char*    pszName;   // just to fix a bug quickly, should die after porting IRC to Unicode
-	#endif
+	char*    	pszID;		// ugly fix for returning static ANSI strings in GC_INFO
+	char*    	pszName;   // just to fix a bug quickly, should die after porting IRC to Unicode
 
 	int         iType;
 	int         iFG;
@@ -250,10 +225,6 @@ typedef struct SESSION_INFO_TYPE
 	int         iDiskLogFlags;
 	int         nUsersInNicklist;
 	int         iEventCount;
-	int         iX;
-	int         iY;
-	int         iWidth;
-	int         iHeight;
 	int         iStatusCount;
 
 	WORD        wStatus;
@@ -262,10 +233,11 @@ typedef struct SESSION_INFO_TYPE
 	DWORD       dwItemData;
 	DWORD       dwFlags;
 	HANDLE      hContact;
-	HWND        hwndStatus;
+	HWND		hwndFilter;
 	time_t      LastTime;
     TCHAR          szSearch[255];
     int            iSearchItem;
+	CMUCHighlight* Highlight;
 	COMMAND_INFO*  lpCommands;
 	COMMAND_INFO*  lpCurrentCommand;
 	LOGINFO*       pLog;
@@ -273,10 +245,11 @@ typedef struct SESSION_INFO_TYPE
 	USERINFO*      pUsers;
 	USERINFO*      pMe;
 	STATUSINFO*    pStatuses;
-	struct         ContainerWindowData *pContainer;
-   int            wasTrimmed;
-	struct SESSION_INFO_TYPE *next;
-}	SESSION_INFO;
+	TContainerData *pContainer;
+	TWindowData    *dat;
+	int            wasTrimmed;
+	SESSIONINFO_TYPE*  next;
+}  SESSION_INFO;
 
 typedef struct
 {
@@ -288,11 +261,11 @@ typedef struct
 	BOOL          bRedraw;
 	SESSION_INFO* si;
 	int           crCount;
-	struct MessageWindowData *dat;
+	TWindowData*  dat;
 }
 	LOGSTREAMDATA;
 
-struct GlobalLogSettings_t {
+struct TMUCSettings {
 	HICON       hIconOverlay;
 	BOOL        ShowTime;
 	BOOL        ShowTimeIfChanged;
@@ -303,8 +276,6 @@ struct GlobalLogSettings_t {
 	BOOL        HighlightEnabled;
 	BOOL        LogIndentEnabled;
 	BOOL        StripFormat;
-	BOOL        SoundsFocus;
-	BOOL        SkipWhenNoWindow;
 	BOOL        BBCodeInPopups;
 	BOOL        TrayIconInactiveOnly;
 	BOOL        AddColonToAutoComplete;
@@ -314,24 +285,19 @@ struct GlobalLogSettings_t {
 	int         LogTextIndent;
 	long        LoggingLimit;
 	int         iEventLimit;
+	int			iEventLimitThreshold;
 	int         iPopupStyle;
 	int         iPopupTimeout;
 	int         iSplitterX;
 	int         iSplitterY;
-	int         iX;
-	int         iY;
-	int         iWidth;
-	int         iHeight;
 	TCHAR*      pszTimeStamp;
 	TCHAR*      pszTimeStampLog;
 	TCHAR*      pszIncomingNick;
 	TCHAR*      pszOutgoingNick;
-	TCHAR*      pszHighlightWords;
-	TCHAR*      pszLogDir;
-	HFONT       UserListFont;
-	HFONT       UserListHeadingsFont;
+	TCHAR	    pszLogDir[MAX_PATH + 20];
+	LONG		iNickListFontHeight;
+	HFONT		UserListFont, UserListHeadingsFont;
 	HFONT       NameFont;
-	COLORREF    crLogBackground;
 	COLORREF    crUserListColor;
 	COLORREF    crUserListBGColor;
 	COLORREF    crUserListHeadingsColor;
@@ -357,9 +323,19 @@ struct GlobalLogSettings_t {
 	BOOL		DoubleClick4Privat;
 	BOOL		ShowContactStatus;
 	BOOL		ContactStatusFirst;
-
+	HANDLE		hGroup;
+	CMUCHighlight* Highlight;
 };
-extern struct GlobalLogSettings_t g_Settings;
+
+struct FLASH_PARAMS {
+	HANDLE hContact;
+	const char* sound;
+	int   iEvent;
+	HICON hNotifyIcon;
+	BOOL  bActiveTab, bHighlight, bInactive, bMustFlash, bMustAutoswitch;
+};
+
+extern TMUCSettings g_Settings;
 
 typedef struct{
 	MODULEINFO*   pModule;
@@ -375,16 +351,9 @@ typedef struct{
 //////////////////////////////////////////////////////////////////////////////////
 
 #include "chatprototypes.h"
-#include "../msgs.h"
-#include "../nen.h"
-#include "../functions.h"
-#include "../msgdlgutils.h"
+#include "chat_resource.h"
 
-#if defined( _UNICODE )
-	#define mir_tstrdup mir_wstrdup
-#else
-	#define mir_tstrdup mir_strdup
-#endif
+#define mir_tstrdup mir_wstrdup
 
 TCHAR* a2t( const char* str );
 char*  t2a( const TCHAR* str, DWORD codepage );
@@ -392,7 +361,6 @@ TCHAR* a2tf( const TCHAR* str, int flags, DWORD cp );
 TCHAR* replaceStr( TCHAR** dest, const TCHAR* src );
 char*  replaceStrA( char** dest, const char* src );
 
-extern HINSTANCE g_hInst;
 extern char *szChatIconString;
 
 #define DEFLOGFILENAME _T("%miranda_logpath%\\%proto%\\%userid%.log")

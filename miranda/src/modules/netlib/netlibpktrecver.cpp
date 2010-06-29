@@ -65,7 +65,7 @@ INT_PTR NetlibPacketRecverGetMore(WPARAM wParam,LPARAM lParam)
 	if(nlprParam->bytesUsed==0) {
 		if(nlpr->packetRecver.bytesAvailable==nlpr->packetRecver.bufferSize) {
 			nlpr->packetRecver.bytesAvailable=0;
-			Netlib_Logf(nlpr->nlc->nlu,"Packet recver: packet overflowed buffer, ditching");
+			NetlibLogf(nlpr->nlc->nlu,"Packet recver: packet overflowed buffer, ditching");
 		}
 	}
 	else {
@@ -73,7 +73,7 @@ INT_PTR NetlibPacketRecverGetMore(WPARAM wParam,LPARAM lParam)
 		nlpr->packetRecver.bytesAvailable-=nlprParam->bytesUsed;
 	}
 	if(nlprParam->dwTimeout!=INFINITE) {
-		if(!si.pending(nlpr->nlc->hSsl) && !WaitUntilReadable(nlpr->nlc->s,nlprParam->dwTimeout)) {
+		if(!si.pending(nlpr->nlc->hSsl) && WaitUntilReadable(nlpr->nlc->s,nlprParam->dwTimeout) <= 0) {
 			*nlprParam=nlpr->packetRecver;
 			return SOCKET_ERROR;
 		}

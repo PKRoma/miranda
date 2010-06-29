@@ -2,7 +2,7 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2003 Miranda ICQ/IM project,
+Copyright 2000-2010 Miranda ICQ/IM project,
 all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
@@ -73,11 +73,11 @@ static int FS_FontsChanged(WPARAM wParam, LPARAM lParam)
 void RegisterCListFonts()
 {
 	FontIDT fontid = {0};
-	ColourIDT colourid;
+	ColourIDT colourid = {0};
 	char idstr[10];
 	int i;
 
-	fontid.cbSize = sizeof(FontID);
+	fontid.cbSize = sizeof(FontIDT);
 	fontid.flags = FIDF_ALLOWREREGISTER | FIDF_APPENDNAME | FIDF_NOAS | FIDF_SAVEPOINTSIZE | FIDF_ALLOWEFFECTS;
 
 	for (i = 0; i <= CLIST_FONTID_MAX; i++) {
@@ -110,7 +110,7 @@ void RegisterCListFonts()
 	}
 
 	// and colours
-	colourid.cbSize = sizeof(ColourID);
+	colourid.cbSize = sizeof(ColourIDT);
 	colourid.order = 0;
 	strncpy(colourid.dbSettingsGroup, "CLC", sizeof(colourid.dbSettingsGroup));
 

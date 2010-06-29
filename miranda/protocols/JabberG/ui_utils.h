@@ -434,6 +434,7 @@ class CCtrlMButton : public CCtrlButton
 public:
 	CCtrlMButton( CDlgBase* dlg, int ctrlId, HICON hIcon, const char* tooltip );
 	CCtrlMButton( CDlgBase* dlg, int ctrlId, int iCoreIcon, const char* tooltip );
+	~CCtrlMButton();
 
 	void MakeFlat();
 	void MakePush();
@@ -1294,6 +1295,7 @@ protected:
 				m_proto->WindowSubscribe(m_hwnd);
 				break;
 			case WM_DESTROY:
+				WindowFreeIcon(m_hwnd);
 				m_proto->WindowUnsubscribe(m_hwnd);
 				break;
 		}

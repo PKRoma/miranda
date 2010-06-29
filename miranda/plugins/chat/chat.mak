@@ -1,7 +1,7 @@
 # Microsoft Developer Studio Generated NMAKE File, Based on chat.dsp
 !IF "$(CFG)" == ""
-CFG=chat - Win32 Debug Unicode
-!MESSAGE No configuration specified. Defaulting to chat - Win32 Debug Unicode.
+CFG=chat - Win32 Release
+!MESSAGE No configuration specified. Defaulting to chat - Win32 Release.
 !ENDIF 
 
 !IF "$(CFG)" != "chat - Win32 Release" && "$(CFG)" != "chat - Win32 Debug" && "$(CFG)" != "chat - Win32 Debug Unicode" && "$(CFG)" != "chat - Win32 Release Unicode"

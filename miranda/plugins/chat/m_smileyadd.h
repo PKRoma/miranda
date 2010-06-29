@@ -1,7 +1,7 @@
 /*
 Miranda SmileyAdd Plugin
-Copyright (C) 2005-2008 Boris Krasnovskiy
-Copyright (C) 2003-2004 Rein-Peter de Boer
+Copyright (C) 2005 - 2009 Boris Krasnovskiy
+Copyright (C) 2003 - 2004 Rein-Peter de Boer
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -16,9 +16,12 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include <richedit.h>
 
 #define SAFLRE_INSERTEMF  2     // insert smiley as EMF into RichEdit, otherwise bitmap inserted
                                 // this flag allows "true" transparency
+#define SAFLRE_OUTGOING  4      // Parsing outgoing message
+#define SAFLRE_NOCUSTOM  8      // Do not use custom smileys
 
 typedef struct 
 {
@@ -96,8 +99,10 @@ typedef struct
 //lParam = (LPARAM) 0; not used
 #define ME_SMILEYADD_OPTIONSCHANGED  "SmileyAdd/OptionsChanged"
 
-#define SAFL_PATH   1           // provide smiley file path, icon otherwise 
-#define SAFL_UNICODE  2         // string fields in OPTIONSDIALOGPAGE are WCHAR*
+#define SAFL_PATH      1        // provide smiley file path, icon otherwise 
+#define SAFL_UNICODE   2        // string fields in OPTIONSDIALOGPAGE are WCHAR*
+#define SAFL_OUTGOING  4        // Parsing outgoing message
+#define SAFL_NOCUSTOM  8        // Do not use custom smileys
 
 #if defined _UNICODE || defined UNICODE
   #define SAFL_TCHAR     SAFL_UNICODE
@@ -233,3 +238,15 @@ typedef struct
 // Code of WM_NOTIFY message (code)
 #define NM_FIREVIEWCHANGE   NM_FIRST+1;
 
+typedef struct 
+{
+    unsigned cbSize;            // size of the structure
+	HANDLE hContact;
+	int type;					// 0 - directory, 1 - file;
+    TCHAR* path;                // smiley category name for reference
+} SMADD_CONT;
+
+//Loads all smileys for the contact
+//wParam = (WPARAM) 0; not used
+//lParam = (LPARAM) (SMADD_CONT*) &dir;  // pointer to directory to load smiley from
+#define MS_SMILEYADD_LOADCONTACTSMILEYS  "SmileyAdd/LoadContactSmileys"

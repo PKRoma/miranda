@@ -163,6 +163,9 @@ void cliTrayIconUpdateBase(const char *szChangedProto)
 	HWND hwnd=pcli->hwndContactList;
 
 	if (!szChangedProto) return;
+
+	if (!pcli->pfnGetProtocolVisibility(szChangedProto)) return;
+
 	pcli->pfnLockTray();	
 	if ( pcli->cycleTimerId ) {
 		KillTimer( NULL, pcli->cycleTimerId);
@@ -225,7 +228,7 @@ void cliTrayIconUpdateBase(const char *szChangedProto)
 							if (_strcmpi(szChangedProto,g_szConnectingProto))
 								{ pcli->pfnUnlockTray(); return; }
 							else
-								hIcon=(HICON)CLUI_GetConnectingIconService((WPARAM)GLOBAL_PROTO_NAME/*(WPARAM)szChangedProto*/,1);
+								hIcon=(HICON)CLUI_GetConnectingIconService((WPARAM)"",1);
 						else
 							hIcon=(HICON)CLUI_GetConnectingIconService((WPARAM)szChangedProto,0);
 						if (hIcon) {
@@ -260,7 +263,7 @@ void cliTrayIconUpdateBase(const char *szChangedProto)
 								if (_strcmpi(szChangedProto,g_szConnectingProto))
 								{ pcli->pfnUnlockTray(); return; }
 								else
-									hIcon=(HICON)CLUI_GetConnectingIconService((WPARAM)GLOBAL_PROTO_NAME/*(WPARAM)szChangedProto*/,1);
+									hIcon=(HICON)CLUI_GetConnectingIconService((WPARAM)"",1);
 							else
 								hIcon=(HICON)CLUI_GetConnectingIconService((WPARAM)szChangedProto,0);
 							if (hIcon)

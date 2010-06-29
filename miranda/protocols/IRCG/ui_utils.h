@@ -390,6 +390,7 @@ class CCtrlMButton : public CCtrlButton
 public:
 	CCtrlMButton( CDlgBase* dlg, int ctrlId, HICON hIcon, const char* tooltip );
 	CCtrlMButton( CDlgBase* dlg, int ctrlId, int iCoreIcon, const char* tooltip );
+	~CCtrlMButton();
 
 	void MakeFlat();
 	void MakePush();

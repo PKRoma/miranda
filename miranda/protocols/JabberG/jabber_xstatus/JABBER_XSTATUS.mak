@@ -24,6 +24,9 @@ NULL=
 NULL=nul
 !ENDIF 
 
+CPP=cl.exe
+MTL=midl.exe
+RSC=rc.exe
 OUTDIR=.\Release
 INTDIR=.\Release
 
@@ -40,7 +43,20 @@ CLEAN :
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
-CPP=cl.exe
+BSC32=bscmake.exe
+BSC32_FLAGS=/nologo /o"$(OUTDIR)\JABBER_XSTATUS.bsc" 
+BSC32_SBRS= \
+	
+LINK32=link.exe
+LINK32_FLAGS=/nologo /dll /incremental:no /pdb:"$(OUTDIR)\xstatus_jabber.pdb" /debug /machine:I386 /out:"..\..\..\bin\release\ICONS\xstatus_jabber.dll" /implib:"$(OUTDIR)\xstatus_jabber.lib" /noentry /ALIGN:4096 /ignore:4108 
+LINK32_OBJS= \
+	"$(INTDIR)\JABBER_XSTATUS.res"
+
+"..\..\..\bin\release\ICONS\xstatus_jabber.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
+    $(LINK32) @<<
+  $(LINK32_FLAGS) $(LINK32_OBJS)
+<<
+
 CPP_PROJ=/nologo /MT /W3 /GX /Zi /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_USRDLL" /D "JABBER_XSTATUS_EXPORTS" /D "_MBCS" /Fp"$(INTDIR)\JABBER_XSTATUS.pch" /Yu"stdafx.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /c 
 
 .c{$(INTDIR)}.obj::
@@ -73,24 +89,8 @@ CPP_PROJ=/nologo /MT /W3 /GX /Zi /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_USRDL
    $(CPP_PROJ) $< 
 <<
 
-MTL=midl.exe
 MTL_PROJ=/nologo /win32 
-RSC=rc.exe
 RSC_PROJ=/l 0x409 /fo"$(INTDIR)\JABBER_XSTATUS.res" 
-BSC32=bscmake.exe
-BSC32_FLAGS=/nologo /o"$(OUTDIR)\JABBER_XSTATUS.bsc" 
-BSC32_SBRS= \
-	
-LINK32=link.exe
-LINK32_FLAGS=/nologo /dll /incremental:no /pdb:"$(OUTDIR)\xstatus_jabber.pdb" /debug /machine:I386 /out:"..\..\..\bin\release\ICONS\xstatus_jabber.dll" /implib:"$(OUTDIR)\xstatus_jabber.lib" /noentry /ALIGN:4096 /ignore:4108 
-LINK32_OBJS= \
-	"$(INTDIR)\JABBER_XSTATUS.res"
-
-"..\..\..\bin\release\ICONS\xstatus_jabber.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
-    $(LINK32) @<<
-  $(LINK32_FLAGS) $(LINK32_OBJS)
-<<
-
 
 !IF "$(NO_EXTERNAL_DEPS)" != "1"
 !IF EXISTS("JABBER_XSTATUS.dep")

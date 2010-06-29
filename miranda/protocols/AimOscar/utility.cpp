@@ -1,6 +1,6 @@
 /*
 Plugin of Miranda IM for communicating with users of the AIM protocol.
-Copyright (c) 2008-2010 Boris Krasnovskiy
+Copyright (c) 2008-2009 Boris Krasnovskiy
 Copyright (C) 2005-2006 Aaron Myles Landwehr
 
 This program is free software; you can redistribute it and/or
@@ -95,8 +95,7 @@ void CAimProto::start_connection(void *arg)
 		char* login_url = getSetting(NULL, AIM_KEY_HN);
 		if (login_url == NULL) login_url = mir_strdup(use_ssl ? AIM_DEFAULT_SERVER : AIM_DEFAULT_SERVER_NS);
 
-		unsigned short port = getWord(AIM_KEY_PN, AIM_DEFAULT_PORT);
-		hServerConn = aim_connect(login_url, port, use_ssl, login_url);
+		hServerConn = aim_connect(login_url, get_default_port(), use_ssl, login_url);
 
 		mir_free(login_url);
 
@@ -133,6 +132,12 @@ bool CAimProto::wait_conn(HANDLE& hConn, HANDLE& hEvent, unsigned short service)
 		return false;
 
 	return true;
+}
+
+
+unsigned short CAimProto::get_default_port(void)
+{
+	return getWord(AIM_KEY_PN, getByte(AIM_KEY_DSSL, 0) ? AIM_DEFAULT_PORT : AIM_DEFAULT_SSL_PORT);
 }
 
 bool CAimProto::is_my_contact(HANDLE hContact)
@@ -657,13 +662,13 @@ unsigned long aim_oft_checksum_chunk(unsigned long dwChecksum, const unsigned ch
 	return checksum << 16;
 }
 
-unsigned aim_oft_checksum_file(char *filename, unsigned size) 
+unsigned int aim_oft_checksum_file(TCHAR *filename, unsigned __int64 size) 
 {
 	unsigned long checksum = 0xffff0000;
-	int fid = _open(filename, _O_RDONLY | _O_BINARY, _S_IREAD);
+	int fid = _topen(filename, _O_RDONLY | _O_BINARY, _S_IREAD);
 	if (fid >= 0)  
 	{
-		unsigned sz = _filelength(fid);
+		unsigned __int64 sz = _filelengthi64(fid);
 		if (size > sz) size = sz; 
 		while (size)
 		{

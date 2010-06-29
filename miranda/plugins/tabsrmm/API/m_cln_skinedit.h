@@ -10,31 +10,15 @@
  * data structs
  */
 
-struct MessageWindowData;
+struct TWindowData;
+class CImageItem;
 
-typedef struct _tagImageItem {
-    char    szName[40];
-    HBITMAP hbm;
-    BYTE    bLeft, bRight, bTop, bBottom;      // sizing margins
-    BYTE    alpha;
-    DWORD   dwFlags;
-    HDC     hdc;
-    HBITMAP hbmOld;
-    LONG    inner_height, inner_width;
-    LONG    width, height;
-    BLENDFUNCTION bf;
-    BYTE    bStretch;
-    HBRUSH  fillBrush;
-    LONG    glyphMetrics[4];
-    struct  _tagImageItem *nextItem;
-} ImageItem;
-
-typedef struct _tagButtonItem {
-    char    szName[40];
+struct ButtonItem {
+    TCHAR   szName[40];
     HWND    hWnd;
     LONG    xOff, yOff;
     LONG    width, height;
-    ImageItem *imgNormal, *imgPressed, *imgHover;
+    CImageItem *imgNormal, *imgPressed, *imgHover;
     LONG_PTR normalGlyphMetrics[4];
     LONG_PTR hoverGlyphMetrics[4];
     LONG_PTR pressedGlyphMetrics[4];
@@ -45,19 +29,21 @@ typedef struct _tagButtonItem {
     char    szModule[256], szSetting[256];
     BYTE    bValuePush[256], bValueRelease[256];
     DWORD   type;
-    void    (*pfnAction)(struct _tagButtonItem *item, HWND hwndDlg, struct MessageWindowData *dat, HWND hwndItem);
-    void    (*pfnCallback)(struct _tagButtonItem *item, HWND hwndDlg, struct MessageWindowData *dat, HWND hwndItem);
+    void    (*pfnAction)(ButtonItem *item, HWND hwndDlg, TWindowData *dat, HWND hwndItem);
+    void    (*pfnCallback)(ButtonItem *item, HWND hwndDlg, TWindowData *dat, HWND hwndItem);
     TCHAR   tszLabel[40];
-    struct  _tagButtonItem *nextItem;
-} ButtonItem;
+    ButtonItem* nextItem;
+	HANDLE  hContact;
+	TWindowData *dat;
+};
 
 typedef struct _tagButtonSet {
     ButtonItem  *items;
     LONG        left, top, right, bottom;               // client area offsets, calculated from button layout
 } ButtonSet;
 
-typedef struct {
-    char szName[40];
+struct CSkinItem {
+    TCHAR szName[40];
     char szDBname[40];
     int statusID;
 
@@ -79,28 +65,12 @@ typedef struct {
     int MARGIN_BOTTOM;
     BYTE IGNORED;
     DWORD BORDERSTYLE;
-    ImageItem *imageItem;
-} StatusItems_t;
-
-typedef struct {
-    BOOL bGRADIENT;
-    BOOL bCORNER;
-    BOOL bCOLOR;
-    BOOL bCOLOR2;
-    BOOL bCOLOR2_TRANSPARENT;
-    BOOL bTEXTCOLOR;
-    BOOL bALPHA;
-    BOOL bMARGIN_LEFT;
-    BOOL bMARGIN_TOP;
-    BOOL bMARGIN_RIGHT;
-    BOOL bMARGIN_BOTTOM;
-    BOOL bIGNORED;
-    BOOL bBORDERSTYLE;
-} ChangedSItems_t;
+    CImageItem *imageItem;
+};
 
 typedef struct _tagSkinDescription {
     DWORD           cbSize;
-    StatusItems_t   *StatusItems;
+    CSkinItem   *StatusItems;
     int             lastItem;
     int             firstItem;
     char            szModule[100];
@@ -126,6 +96,7 @@ typedef struct _tagSkinDescription {
 #define CORNER_TR 4
 #define CORNER_BR 8
 #define CORNER_BL 16
+#define CORNER_ALL (CORNER_TL | CORNER_TR | CORNER_BR | CORNER_BL | CORNER_ACTIVE)
 
 #define GRADIENT_NONE 0
 #define GRADIENT_ACTIVE 1

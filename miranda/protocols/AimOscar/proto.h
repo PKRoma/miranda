@@ -27,34 +27,34 @@ struct CAimProto : public PROTO_INTERFACE
 	virtual	HANDLE __cdecl AddToListByEvent( int flags, int iContact, HANDLE hDbEvent );
 
 	virtual	int    __cdecl Authorize( HANDLE hContact );
-	virtual	int    __cdecl AuthDeny( HANDLE hContact, const char* szReason );
+	virtual	int    __cdecl AuthDeny( HANDLE hContact, const TCHAR* szReason );
 	virtual	int    __cdecl AuthRecv( HANDLE hContact, PROTORECVEVENT* );
-	virtual	int    __cdecl AuthRequest( HANDLE hContact, const char* szMessage );
+	virtual	int    __cdecl AuthRequest( HANDLE hContact, const TCHAR* szMessage );
 
 	virtual	HANDLE __cdecl ChangeInfo( int iInfoType, void* pInfoData );
 
-	virtual	HANDLE __cdecl FileAllow( HANDLE hContact, HANDLE hTransfer, const char* szPath );
+	virtual	HANDLE __cdecl FileAllow( HANDLE hContact, HANDLE hTransfer, const PROTOCHAR* szPath );
 	virtual	int    __cdecl FileCancel( HANDLE hContact, HANDLE hTransfer );
-	virtual	int    __cdecl FileDeny( HANDLE hContact, HANDLE hTransfer, const char* szReason );
-	virtual	int    __cdecl FileResume( HANDLE hTransfer, int* action, const char** szFilename );
+	virtual	int    __cdecl FileDeny( HANDLE hContact, HANDLE hTransfer, const PROTOCHAR* szReason );
+	virtual	int    __cdecl FileResume( HANDLE hTransfer, int* action, const PROTOCHAR** szFilename );
 
 	virtual	DWORD_PTR __cdecl GetCaps( int type, HANDLE hContact = NULL );
 	virtual	HICON  __cdecl GetIcon( int iconIndex );
 	virtual	int    __cdecl GetInfo( HANDLE hContact, int infoType );
 
-	virtual	HANDLE __cdecl SearchBasic( const char* id );
-	virtual	HANDLE __cdecl SearchByEmail( const char* email );
-	virtual	HANDLE __cdecl SearchByName( const char* nick, const char* firstName, const char* lastName );
+	virtual	HANDLE __cdecl SearchBasic( const PROTOCHAR* id );
+	virtual	HANDLE __cdecl SearchByEmail( const PROTOCHAR* email );
+	virtual	HANDLE __cdecl SearchByName( const PROTOCHAR* nick, const PROTOCHAR* firstName, const PROTOCHAR* lastName );
 	virtual	HWND   __cdecl SearchAdvanced( HWND owner );
 	virtual	HWND   __cdecl CreateExtendedSearchUI( HWND owner );
 
 	virtual	int    __cdecl RecvContacts( HANDLE hContact, PROTORECVEVENT* );
-	virtual	int    __cdecl RecvFile( HANDLE hContact, PROTORECVFILE* );
+	virtual	int    __cdecl RecvFile( HANDLE hContact, PROTOFILEEVENT* );
 	virtual	int    __cdecl RecvMsg( HANDLE hContact, PROTORECVEVENT* );
 	virtual	int    __cdecl RecvUrl( HANDLE hContact, PROTORECVEVENT* );
 
 	virtual	int    __cdecl SendContacts( HANDLE hContact, int flags, int nContacts, HANDLE* hContactsList );
-	virtual	HANDLE __cdecl SendFile( HANDLE hContact, const char* szDescription, char** ppszFiles );
+	virtual	HANDLE __cdecl SendFile( HANDLE hContact, const PROTOCHAR* szDescription, PROTOCHAR** ppszFiles );
 	virtual	int    __cdecl SendMsg( HANDLE hContact, int flags, const char* msg );
 	virtual	int    __cdecl SendUrl( HANDLE hContact, int flags, const char* url );
 
@@ -64,7 +64,7 @@ struct CAimProto : public PROTO_INTERFACE
 	virtual	HANDLE __cdecl GetAwayMsg( HANDLE hContact );
 	virtual	int    __cdecl RecvAwayMsg( HANDLE hContact, int mode, PROTORECVEVENT* evt );
 	virtual	int    __cdecl SendAwayMsg( HANDLE hContact, HANDLE hProcess, const char* msg );
-	virtual	int    __cdecl SetAwayMsg( int m_iStatus, const char* msg );
+	virtual	int    __cdecl SetAwayMsg( int m_iStatus, const TCHAR* msg );
 
 	virtual	int    __cdecl UserIsTyping( HANDLE hContact, int type );
 
@@ -146,12 +146,12 @@ struct CAimProto : public PROTO_INTERFACE
 	HANDLE hDirectBoundPort;//direct connection listening port
 
 	//Handles for the context menu items
-	HANDLE hMenuRoot;
-	HANDLE hHTMLAwayContextMenuItem;
-	HANDLE hAddToServerListContextMenuItem;
-	HANDLE hReadProfileMenuItem;
-	HANDLE hBlockContextMenuItem;
-	HANDLE hMainMenu[3];
+	HGENMENU hMenuRoot;
+	HGENMENU hHTMLAwayContextMenuItem;
+	HGENMENU hAddToServerListContextMenuItem;
+	HGENMENU hReadProfileMenuItem;
+	HGENMENU hBlockContextMenuItem;
+	HGENMENU hMainMenu[3];
 
 	//Some mail connection stuff
 	HANDLE hMailConn;
@@ -218,7 +218,7 @@ struct CAimProto : public PROTO_INTERFACE
 
 	void   __cdecl get_online_msg_thread( void* arg );
 
-	int    aim_set_away(HANDLE hServerConn,unsigned short &seqno,const char *msg);//user info
+	int    aim_set_away(HANDLE hServerConn, unsigned short &seqno, const char *msg, bool set);//user info
 	int    aim_set_statusmsg(HANDLE hServerConn,unsigned short &seqno,const char *msg);//user info
 	int    aim_query_away_message(HANDLE hServerConn,unsigned short &seqno,const char* sn);
 
@@ -335,7 +335,7 @@ struct CAimProto : public PROTO_INTERFACE
 
 	int    sending_file(file_transfer *ft, HANDLE hServerPacketRecver, NETLIBPACKETRECVER &packetRecv);
 	int    receiving_file(file_transfer *ft, HANDLE hServerPacketRecver, NETLIBPACKETRECVER &packetRecv);
-	void   report_file_error(char* fname);
+	void   report_file_error(TCHAR* fname);
 	void   shutdown_file_transfers(void);
 
 	//////////////////////////////////////////////////////////////////////////////////////
@@ -382,6 +382,7 @@ struct CAimProto : public PROTO_INTERFACE
 	void   snac_list_modification_ack(SNAC &snac);//family 0x0013
 	void   snac_mail_response(SNAC &snac);//family 0x0018
 	void   snac_retrieve_avatar(SNAC &snac);//family 0x0010
+	void   snac_upload_reply_avatar(SNAC &snac);//family 0x0010
 	void   snac_email_search_results(SNAC &snac);//family 0x000A
 	void   snac_chatnav_info_response(SNAC &snac,HANDLE hServerConn,unsigned short &seqno);//family 0x000D
 	void   snac_chat_joined_left_users(SNAC &snac,chat_list_item* item);//family 0x000E
@@ -395,8 +396,10 @@ struct CAimProto : public PROTO_INTERFACE
 	//////////////////////////////////////////////////////////////////////////////////////
 	// themes.cpp
 
-	void   InitMenus(void);
-	void   RemoveMenus(void);
+	void   InitMainMenus(void);
+	void   InitContactMenus(void);
+	void   RemoveMainMenus(void);
+	void   RemoveContactMenus(void);
 
 	//////////////////////////////////////////////////////////////////////////////////////
 	// thread.cpp
@@ -421,6 +424,7 @@ struct CAimProto : public PROTO_INTERFACE
 	void   offline_contacts(void);
 	void   offline_contact(HANDLE hContact, bool remove_settings);
 	void   execute_cmd(const char* arg);
+	unsigned short get_default_port(void);
 
 	int    open_contact_file(const char* sn, const char* file, const char* mode, char* &path, bool contact_dir);
 	void   write_away_message(const char* sn, const char* msg, bool utf);

@@ -5,7 +5,7 @@
 // Copyright © 2000-2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001-2002 Jon Keating, Richard Hughes
 // Copyright © 2002-2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004-2008 Joe Kucera
+// Copyright © 2004-2009 Joe Kucera
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -131,7 +131,7 @@ filetransfer* CIcqProto::CreateFileTransfer(HANDLE hContact, DWORD dwUin, int nV
 // buf points to the first data after the string
 void CIcqProto::handleFileRequest(PBYTE buf, WORD wLen, DWORD dwUin, DWORD dwCookie, DWORD dwID1, DWORD dwID2, char* pszDescription, int nVersion, BOOL bDC)
 {
-	char* pszFileName = NULL;
+	char *pszFileName = NULL;
 	DWORD dwFileSize;
 	WORD wFilenameLength;
 	BOOL bEmptyDesc = FALSE;
@@ -166,42 +166,41 @@ void CIcqProto::handleFileRequest(PBYTE buf, WORD wLen, DWORD dwUin, DWORD dwCoo
 	unpackLEDWord(&buf, &dwFileSize);
 	wLen -= 4;
 
-	{
-		int bAdded;
-		HANDLE hContact = HContactFromUIN(dwUin, &bAdded);
+	int bAdded;
+	HANDLE hContact = HContactFromUIN(dwUin, &bAdded);
 
-		// Initialize a filetransfer struct
-		filetransfer* ft = CreateFileTransfer(hContact, dwUin, nVersion);
-		ft->dwCookie = dwCookie;
-		ft->szFilename = null_strdup(pszFileName);
-		ft->szDescription = null_strdup(pszDescription);
-		ft->fileId = -1;
-		ft->dwTotalSize = dwFileSize;
-		ft->pMessage.dwMsgID1 = dwID1;
-		ft->pMessage.dwMsgID2 = dwID2;
-		ft->bDC = bDC;
-		ft->bEmptyDesc = bEmptyDesc;
+	// Initialize a filetransfer struct
+	filetransfer *ft = CreateFileTransfer(hContact, dwUin, nVersion);
+	ft->dwCookie = dwCookie;
+	ft->szFilename = ansi_to_utf8(pszFileName);
+	ft->szDescription = ansi_to_utf8(pszDescription);
+	ft->fileId = -1;
+	ft->dwTotalSize = dwFileSize;
+	ft->pMessage.dwMsgID1 = dwID1;
+	ft->pMessage.dwMsgID2 = dwID2;
+	ft->bDC = bDC;
+	ft->bEmptyDesc = bEmptyDesc;
 
-		// Send chain event
-		char* szBlob = (char*)_alloca(sizeof(DWORD) + strlennull(pszFileName) + strlennull(pszDescription) + 2);
-		*(PDWORD)szBlob = 0;
-		strcpy(szBlob + sizeof(DWORD), pszFileName);
-		strcpy(szBlob + sizeof(DWORD) + strlennull(pszFileName) + 1, pszDescription);
+  // Send chain event
+  char *szBlob = (char*)_alloca(sizeof(DWORD) + strlennull(pszFileName) + strlennull(pszDescription) + 2);
+  *(PDWORD)szBlob = 0;
+  strcpy(szBlob + sizeof(DWORD), pszFileName);
+  strcpy(szBlob + sizeof(DWORD) + strlennull(pszFileName) + 1, pszDescription);
 
-		PROTORECVEVENT pre;
-		pre.flags = 0;
-		pre.timestamp = time(NULL);
-		pre.szMessage = szBlob;
-		pre.lParam = (LPARAM)ft;
+  PROTORECVEVENT pre;
+  pre.flags = 0;
+  pre.timestamp = time(NULL);
+  pre.szMessage = szBlob;
+  pre.lParam = (LPARAM)ft;
 
-		CCSDATA ccs;
-		ccs.szProtoService = PSR_FILE;
-		ccs.hContact = hContact;
-		ccs.wParam = 0;
-		ccs.lParam = (LPARAM)&pre;
-		CallService(MS_PROTO_CHAINRECV, 0, (LPARAM)&ccs);
-	}
+	CCSDATA ccs;
+	ccs.szProtoService = PSR_FILE;
+	ccs.hContact = hContact;
+	ccs.wParam = 0;
+	ccs.lParam = (LPARAM)&pre;
+	CallService(MS_PROTO_CHAINRECV, 0, (LPARAM)&ccs);
 }
+
 
 void CIcqProto::handleDirectCancel(directconnect *dc, PBYTE buf, WORD wLen, WORD wCommand, DWORD dwCookie, WORD wMessageType, WORD wStatus, WORD wFlags, char* pszText)
 {

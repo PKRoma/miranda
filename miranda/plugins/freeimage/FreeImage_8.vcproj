@@ -4,8 +4,6 @@
 	Version="8,00"
 	Name="FreeImage"
 	ProjectGUID="{D0C4EACD-F264-4CFA-9AFC-3918FEC31A9A}"
-	SccProjectName=""
-	SccLocalPath=""
 	>
 	<Platforms>
 		<Platform
@@ -789,10 +787,6 @@
 						>
 					</File>
 					<File
-						RelativePath=".\Source\LibJPEG\jidctred.c"
-						>
-					</File>
-					<File
 						RelativePath=".\Source\LibJPEG\jmemmgr.c"
 						>
 					</File>
@@ -1065,6 +1059,10 @@
 			</File>
 			<File
 				RelativePath="Source\Utilities.h"
+				>
+			</File>
+			<File
+				RelativePath=".\Miranda\version.h"
 				>
 			</File>
 		</Filter>

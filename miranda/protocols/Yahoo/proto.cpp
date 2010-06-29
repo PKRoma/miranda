@@ -31,6 +31,7 @@
 CYahooProto::CYahooProto( const char* aProtoName, const TCHAR* aUserName ) :
 	m_bLoggedIn( FALSE ), poll_loop( 0 ) 
 {
+	m_iVersion = 2;
 	m_tszUserName = mir_tstrdup( aUserName );
 	m_szModuleName = mir_strdup( aProtoName );
 
@@ -44,8 +45,6 @@ CYahooProto::CYahooProto( const char* aProtoName, const TCHAR* aUserName ) :
 	
 	LoadYahooServices();
 	IconsInit();
-	
-	MenuInit();
 }
 
 CYahooProto::~CYahooProto()
@@ -73,7 +72,7 @@ CYahooProto::~CYahooProto()
 
 //static COLORREF crCols[16] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15};
 
-int CYahooProto::OnModulesLoadedEx( WPARAM, LPARAM )
+INT_PTR CYahooProto::OnModulesLoadedEx( WPARAM, LPARAM )
 {
 	YHookEvent( ME_USERINFO_INITIALISE, 		&CYahooProto::OnUserInfoInit );
 	YHookEvent( ME_DB_CONTACT_SETTINGCHANGED, 	&CYahooProto::OnSettingChanged);
@@ -104,6 +103,7 @@ int CYahooProto::OnModulesLoadedEx( WPARAM, LPARAM )
 #endif	
 	
 	m_hNetlibUser = ( HANDLE )YAHOO_CallService( MS_NETLIB_REGISTERUSER, 0, ( LPARAM )&nlu );
+	MenuContactInit();
 	
 	return 0;
 }
@@ -125,22 +125,26 @@ HANDLE CYahooProto::AddToList( int flags, PROTOSEARCHRESULT* psr )
 		return 0;
 	}
 
-	HANDLE hContact = getbuddyH(psr->nick);
+	char *id = psr->flags & PSR_UNICODE ? mir_utf8encodeW((wchar_t*)psr->id) : mir_utf8encode((char*)psr->id);
+	HANDLE hContact = getbuddyH(id);
 	if (hContact != NULL) {
 		if (DBGetContactSettingByte(hContact, "CList", "NotOnList", 0)) {
-			DebugLog("[YahooAddToList] Temporary Buddy:%s already on our buddy list", psr->nick);
+			DebugLog("[YahooAddToList] Temporary Buddy:%s already on our buddy list", id);
 			//return 0;
 		} else {
-			DebugLog("[YahooAddToList] Buddy:%s already on our buddy list", psr->nick);
+			DebugLog("[YahooAddToList] Buddy:%s already on our buddy list", id);
+			mir_free(id);
 			return 0;
 		}
 	} else if (flags & PALF_TEMPORARY ) { /* not on our list */
-		DebugLog("[YahooAddToList] Adding Temporary Buddy:%s ", psr->nick);
+		DebugLog("[YahooAddToList] Adding Temporary Buddy:%s ", id);
 	}
 
 	int protocol = psr->reserved[0];
-	DebugLog("Adding buddy:%s", psr->nick);
-	return add_buddy(psr->nick, psr->nick, protocol, flags);
+	DebugLog("Adding buddy:%s", id);
+	hContact = add_buddy(id, id, protocol, flags);
+	mir_free(id);
+	return hContact;
 }
 
 HANDLE __cdecl CYahooProto::AddToListByEvent( int flags, int /*iContact*/, HANDLE hDbEvent )
@@ -249,7 +253,7 @@ int CYahooProto::Authorize( HANDLE hdbe )
 ////////////////////////////////////////////////////////////////////////////////////////
 // AuthDeny - handles the unsuccessful authorization
 
-int CYahooProto::AuthDeny( HANDLE hdbe, const char* reason )
+int CYahooProto::AuthDeny( HANDLE hdbe, const TCHAR* reason )
 {
 	DebugLog("[YahooAuthDeny]");
 	if ( !m_bLoggedIn )
@@ -286,10 +290,16 @@ int CYahooProto::AuthDeny( HANDLE hdbe, const char* reason )
 	/* Need to remove the buddy from our Miranda Lists */
 	DBVARIANT dbv;
 	if (hContact != NULL && !DBGetContactSettingString( hContact, m_szModuleName, YAHOO_LOGINID, &dbv )){
-		DebugLog("Rejecting buddy:%s msg: %s", dbv.pszVal, reason);    
-		reject(dbv.pszVal, GetWord(hContact, "yprotoid", 0), reason);
+		char *u_reason;
+		
+		u_reason = mir_utf8encodeT(reason);
+		
+		DebugLog("Rejecting buddy:%s msg: %s", dbv.pszVal, u_reason);    
+		reject(dbv.pszVal, GetWord(hContact, "yprotoid", 0), u_reason);
 		DBFreeVariant(&dbv);
 		YAHOO_CallService( MS_DB_CONTACT_DELETE, (WPARAM) hContact, 0);
+		
+		mir_free(u_reason);
 	}
 	return 0;
 }
@@ -307,6 +317,7 @@ int __cdecl CYahooProto::AuthRecv( HANDLE hContact, PROTORECVEVENT* pre )
 	dbei.szModule = m_szModuleName;
 	dbei.timestamp = pre->timestamp;
 	dbei.flags = pre->flags & (PREF_CREATEREAD?DBEF_READ:0);
+	dbei.flags |= (pre->flags & PREF_UTF) ? DBEF_UTF : 0;
 	dbei.eventType = EVENTTYPE_AUTHREQUEST;
 
 	/* Just copy the Blob from PSR_AUTH event. */
@@ -321,7 +332,7 @@ int __cdecl CYahooProto::AuthRecv( HANDLE hContact, PROTORECVEVENT* pre )
 ////////////////////////////////////////////////////////////////////////////////////////
 // PSS_AUTHREQUEST
 
-int __cdecl CYahooProto::AuthRequest( HANDLE hContact, const char* msg )
+int __cdecl CYahooProto::AuthRequest( HANDLE hContact, const TCHAR* msg )
 {	
 	DebugLog("[YahooSendAuthRequest]");
 	
@@ -329,11 +340,15 @@ int __cdecl CYahooProto::AuthRequest( HANDLE hContact, const char* msg )
 		if (hContact) {
 			DBVARIANT dbv;
 			if (!DBGetContactSettingString(hContact, m_szModuleName, YAHOO_LOGINID, &dbv )) {
-				DebugLog("Adding buddy:%s Auth:%s", dbv.pszVal, msg);
-				AddBuddy( dbv.pszVal, GetWord(hContact, "yprotoid", 0), "miranda", msg );
+				char *u_msg;
+				
+				u_msg = mir_utf8encodeT(msg);
+				DebugLog("Adding buddy:%s Auth:%s", dbv.pszVal, u_msg);
+				AddBuddy( dbv.pszVal, GetWord(hContact, "yprotoid", 0), "miranda", u_msg );
 				SetString(hContact, "YGroup", "miranda");
 				DBFreeVariant( &dbv );
 				
+				mir_free(u_msg);
 				return 0; // Success
 			}
 		}
@@ -394,15 +409,22 @@ DWORD_PTR __cdecl CYahooProto::GetCaps( int type, HANDLE /*hContact*/ )
 
 HICON __cdecl CYahooProto::GetIcon( int iconIndex )
 {
-	UINT id;
+	if (LOWORD(iconIndex) == PLI_PROTOCOL)
+	{
+		if (iconIndex & PLIF_ICOLIBHANDLE)
+			return (HICON)GetIconHandle(IDI_YAHOO);
+		
+		bool big = (iconIndex & PLIF_SMALL) == 0;
+		HICON hIcon = LoadIconEx("yahoo", big);
 
-	switch( iconIndex & 0xFFFF ) {
-		case PLI_PROTOCOL: id=IDI_YAHOO; break; // IDI_MAIN is the main icon for the protocol
-		default: return NULL;	
+		if (iconIndex & PLIF_ICOLIB)
+			return hIcon;
+
+		hIcon = CopyIcon(hIcon);
+		ReleaseIconEx("yahoo", big);
+		return hIcon;
 	}
-	return ( HICON )LoadImage(hInstance, MAKEINTRESOURCE(id), IMAGE_ICON,
-		GetSystemMetrics( iconIndex & PLIF_SMALL ? SM_CXSMICON : SM_CXICON ),
-		GetSystemMetrics( iconIndex & PLIF_SMALL ? SM_CYSMICON : SM_CYICON ),0);
+	return NULL;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -423,7 +445,7 @@ int __cdecl CYahooProto::GetInfo( HANDLE hContact, int /*infoType*/ )
 ////////////////////////////////////////////////////////////////////////////////////////
 // SearchByEmail - searches the contact by its e-mail
 
-HANDLE __cdecl CYahooProto::SearchByEmail( const char* email )
+HANDLE __cdecl CYahooProto::SearchByEmail( const PROTOCHAR* email )
 {
 	return 0;
 }
@@ -431,7 +453,7 @@ HANDLE __cdecl CYahooProto::SearchByEmail( const char* email )
 ////////////////////////////////////////////////////////////////////////////////////////
 // SearchByName - searches the contact by its first or last name, or by a nickname
 
-HANDLE __cdecl CYahooProto::SearchByName( const char* nick, const char* firstName, const char* lastName )
+HANDLE __cdecl CYahooProto::SearchByName( const PROTOCHAR* nick, const PROTOCHAR* firstName, const PROTOCHAR* lastName )
 {
 	return 0;
 }
@@ -447,7 +469,7 @@ int __cdecl CYahooProto::RecvContacts( HANDLE /*hContact*/, PROTORECVEVENT* )
 ////////////////////////////////////////////////////////////////////////////////////////
 // RecvFile
 
-int __cdecl CYahooProto::RecvFile( HANDLE hContact, PROTORECVFILE* evt )
+int __cdecl CYahooProto::RecvFile( HANDLE hContact, PROTORECVFILET* evt )
 {
 	DBDeleteContactSetting(hContact, "CList", "Hidden");
 
@@ -692,27 +714,23 @@ int __cdecl CYahooProto::SendAwayMsg( HANDLE /*hContact*/, HANDLE /*hProcess*/, 
 ////////////////////////////////////////////////////////////////////////////////////////
 // SetAwayMsg - sets the away status message
 
-int __cdecl CYahooProto::SetAwayMsg( int status, const char* msg )
+int __cdecl CYahooProto::SetAwayMsg( int status, const PROTOCHAR* msg )
 {
-	char *c = (char *)msg;
-	if (c != NULL) 
-		if (*c == '\0')
-			c = NULL;
+	char *c = msg && msg[0] ? mir_utf8encodeT(msg) : NULL;
 		
 	DebugLog("[YahooSetAwayMessage] Status: %s, Msg: %s",(char *) CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, status, 0), (char*) c);
 	
     if(!m_bLoggedIn){
 		if (m_iStatus == ID_STATUS_OFFLINE) {
 			DebugLog("[YahooSetAwayMessage] WARNING: WE ARE OFFLINE!"); 
+			mir_free(c);
 			return 1;
 		} else {
 			if (m_startMsg) free(m_startMsg);
-			
-			if (c != NULL) 
-				m_startMsg = strdup(c);
-			else
-				m_startMsg = NULL;
-			
+
+			m_startMsg = c ? strdup(c) : NULL;
+
+			mir_free(c);
 			return 0;
 		}
 	}              
@@ -735,6 +753,7 @@ int __cdecl CYahooProto::SetAwayMsg( int status, const char* msg )
 		m_startMsg = NULL;
 	}
 	
+	mir_free(c);
 	return 0;
 }
 
@@ -747,9 +766,9 @@ INT_PTR __cdecl CYahooProto::GetMyAwayMsg(WPARAM wParam, LPARAM lParam)
 		return 0;
 	
 	if (lParam & SGMA_UNICODE)  {
-		return (INT_PTR) mir_a2u(m_startMsg);
+		return (INT_PTR) mir_utf8decodeW(m_startMsg);
 	} else {
-		return (INT_PTR) m_startMsg;
+		return (INT_PTR) mir_utf8decodeA(m_startMsg);
 	}
 }
 
@@ -784,18 +803,19 @@ int __cdecl CYahooProto::OnEvent( PROTOEVENTTYPE eventType, WPARAM wParam, LPARA
 		case EV_PROTO_ONLOAD:    return OnModulesLoadedEx( 0, 0 );
 		//case EV_PROTO_ONEXIT:    return OnPreShutdown( 0, 0 );
 		case EV_PROTO_ONOPTIONS: return OnOptionsInit( wParam, lParam );
+
+		case EV_PROTO_ONMENU:
+			MenuMainInit();
+			break;
+
 		case EV_PROTO_ONRENAME:
-		{	
-			CLISTMENUITEM clmi = { 0 };
-			clmi.cbSize = sizeof( CLISTMENUITEM );
-			clmi.flags = CMIM_NAME | CMIF_TCHAR;
-			clmi.ptszName = m_tszUserName;
-			YAHOO_CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )mainMenuRoot, ( LPARAM )&clmi );
-            break;
-		}
-		case EV_PROTO_ONEXIT:
-		case EV_PROTO_ONREADYTOEXIT:
-		case EV_PROTO_ONERASE:
+			if ( mainMenuRoot ) {	
+				CLISTMENUITEM clmi = { 0 };
+				clmi.cbSize = sizeof( CLISTMENUITEM );
+				clmi.flags = CMIM_NAME | CMIF_TCHAR | CMIF_KEEPUNTRANSLATED;
+				clmi.ptszName = m_tszUserName;
+				YAHOO_CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )mainMenuRoot, ( LPARAM )&clmi );
+			}
 			break;
 	}	
 	return 1;

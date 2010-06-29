@@ -1,8 +1,8 @@
 /*
 Chat module plugin for Miranda IM
 
-Copyright (C) 2003 Jörgen Persson
-Copyright 2003-2008 Miranda ICQ/IM project,
+Copyright (C) 2003 JÃ¶rgen Persson
+Copyright 2003-2009 Miranda ICQ/IM project,
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -148,35 +148,20 @@ TCHAR* DoRtfToTags( char* pszText, SESSION_INFO* si)
 				iRemoveChars = 4;
 				strcpy(InsertThis, "\n" );
 			}
-			else if (!memcmp(p1, "\\endash", 7)) {
- 				bTextHasStarted = bJustRemovedRTF = TRUE;
- 				iRemoveChars = 7;
-#if defined(_UNICODE)
-					mir_snprintf(InsertThis, SIZEOF(InsertThis), "\xE2\x80\x93");
-#else
-					mir_snprintf(InsertThis, SIZEOF(InsertThis), "\x96");
-#endif
-				} else if (!memcmp(p1, "\\emdash", 7)) {
-					bTextHasStarted = bJustRemovedRTF = TRUE;
-					iRemoveChars = 7;
-#if defined(_UNICODE)
-					mir_snprintf(InsertThis, SIZEOF(InsertThis), "\xE2\x80\x94");
-#else
-					mir_snprintf(InsertThis, SIZEOF(InsertThis), "\x97");
-#endif
-				} else if (!memcmp(p1, "\\bullet", 7)) {
-					bTextHasStarted = bJustRemovedRTF = TRUE;
-					iRemoveChars = 7;
-#if defined(_UNICODE)
-					mir_snprintf(InsertThis, SIZEOF(InsertThis), "\xE2\x80\xA2");
-#else
-					mir_snprintf(InsertThis, SIZEOF(InsertThis), "\x95");
-#endif
-			}
 			else if ( !memcmp(p1, "\\line", 5 )) { // newline
 				bTextHasStarted = bJustRemovedRTF = TRUE;
 				iRemoveChars = 5;
 				strcpy(InsertThis, "\n" );
+			}
+			else if (!memcmp(p1, "\\bullet", 7)) {
+				bTextHasStarted = TRUE;
+				bJustRemovedRTF = TRUE;
+				iRemoveChars = 7;
+#if defined(_UNICODE)
+				strcpy(InsertThis, "\xE2\x80\xA2");
+#else
+				strcpy(InsertThis, "\x95");
+#endif
 			}
 			else if ( !memcmp(p1, "\\b", 2 )) { //bold
 				bTextHasStarted = bJustRemovedRTF = TRUE;
@@ -212,6 +197,66 @@ TCHAR* DoRtfToTags( char* pszText, SESSION_INFO* si)
 				bJustRemovedRTF = TRUE;
 				iRemoveChars = 4;
 				strcpy(InsertThis, " " );
+			}
+			else if (!memcmp(p1, "\\endash", 7)) {
+				bTextHasStarted = TRUE;
+				bJustRemovedRTF = TRUE;
+				iRemoveChars = 7;
+#if defined(_UNICODE)
+				strcpy(InsertThis, "\xE2\x80\x93");
+#else
+				strcpy(InsertThis, "\x96");
+#endif
+			}
+			else if (!memcmp(p1, "\\emdash", 7)) {
+				bTextHasStarted = TRUE;
+				bJustRemovedRTF = TRUE;
+				iRemoveChars = 7;
+#if defined(_UNICODE)
+				strcpy(InsertThis, "\xE2\x80\x94");
+#else
+				strcpy(InsertThis, "\x97");
+#endif
+			} 
+			else if (!memcmp(p1, "\\lquote",7)) {
+				bTextHasStarted = TRUE;
+				bJustRemovedRTF = TRUE;
+				iRemoveChars = 7;
+#if defined(_UNICODE)
+				strcpy(InsertThis, "\xE2\x80\x98");
+#else
+				strcpy(InsertThis, "\x91");
+#endif
+			}
+			else if (!memcmp(p1, "\\rquote",7)) {
+				bTextHasStarted = TRUE;
+				bJustRemovedRTF = TRUE;
+				iRemoveChars = 7;
+#if defined(_UNICODE)
+				strcpy(InsertThis, "\xE2\x80\x99");
+#else
+				strcpy(InsertThis, "\x92");
+#endif
+			}
+			else if (!memcmp(p1, "\\ldblquote",10)) {
+				bTextHasStarted = TRUE;
+				bJustRemovedRTF = TRUE;
+				iRemoveChars = 10;
+#if defined(_UNICODE)
+				strcpy(InsertThis, "\xe2\x80\x9c");
+#else
+				strcpy(InsertThis, "\"");
+#endif
+			}
+			else if (!memcmp(p1, "\\rdblquote",10)) {
+				bTextHasStarted = TRUE;
+				bJustRemovedRTF = TRUE;
+				iRemoveChars = 10;
+#if defined(_UNICODE)
+				strcpy(InsertThis, "\xe2\x80\x9d");
+#else
+				strcpy(InsertThis, "\"");
+#endif
 			}
 			else if ( p1[1] == '\\' ||  p1[1] == '{' || p1[1] == '}' ) { // escaped characters
 				bTextHasStarted = TRUE;

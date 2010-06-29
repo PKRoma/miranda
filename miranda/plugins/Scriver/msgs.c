@@ -1,8 +1,7 @@
 /*
 Scriver
 
-Copyright 2000-2003 Miranda ICQ/IM project,
-Copyright 2005 Piotr Piastucki
+Copyright 2000-2009 Miranda ICQ/IM project,
 
 all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
@@ -46,9 +45,6 @@ extern HINSTANCE g_hInst;
 extern HWND GetParentWindow(HANDLE hContact, BOOL bChat);
 
 PSLWA pSetLayeredWindowAttributes;
-BOOL (WINAPI *pfnIsAppThemed)(VOID) = 0;
-BOOL (WINAPI *pfnIsThemeActive)();
-HRESULT (WINAPI *pfnDrawThemeParentBackground)(HWND, HDC, RECT *);
 
 #ifdef __MINGW32__
 // RichEdit interface GUIDs
@@ -63,6 +59,9 @@ const CLSID IID_IRichEditOleCallback=
       0x00, 0x00, 0x00, 0x46 } };
 
 #endif
+
+#define EVENTTYPE_SCRIVER 2010
+#define SCRIVER_DB_GETEVENTTEXT "Scriver/GetText"
 
 static int SRMMStatusToPf2(int status)
 {
@@ -126,15 +125,10 @@ static INT_PTR ReadMessageCommand(WPARAM wParam, LPARAM lParam)
 
 static int MessageEventAdded(WPARAM wParam, LPARAM lParam)
 {
-	CLISTEVENT cle;
-	DBEVENTINFO dbei;
-	char *contactName;
-	char toolTip[256];
+	DBEVENTINFO dbei = {0};
 	HWND hwnd;
 
-	ZeroMemory(&dbei, sizeof(dbei));
 	dbei.cbSize = sizeof(dbei);
-	dbei.cbBlob = 0;
 	CallService(MS_DB_EVENT_GET, lParam, (LPARAM) & dbei);
 	if (dbei.eventType == EVENTTYPE_MESSAGE && (dbei.flags & DBEF_READ))
 		return 0;
@@ -142,7 +136,7 @@ static int MessageEventAdded(WPARAM wParam, LPARAM lParam)
 	if (hwnd) {
 		SendMessage(hwnd, HM_DBEVENTADDED, wParam, lParam);
 	}
-	if (dbei.flags & DBEF_SENT || dbei.eventType != EVENTTYPE_MESSAGE)
+	if (dbei.flags & DBEF_SENT || !DbEventIsMessageOrCustom(&dbei))
 		return 0;
 
 	CallServiceSync(MS_CLIST_REMOVEEVENT, wParam, (LPARAM) 1);
@@ -160,16 +154,21 @@ static int MessageEventAdded(WPARAM wParam, LPARAM lParam)
 			return 0;
 		}
 	}
-	if (hwnd == NULL || !IsWindowVisible(GetParent(hwnd))) {
-		ZeroMemory(&cle, sizeof(cle));
+	if (hwnd == NULL || !IsWindowVisible(GetParent(hwnd))) 
+	{
+		CLISTEVENT cle = {0};
+		TCHAR *contactName;
+		TCHAR toolTip[256];
+
 		cle.cbSize = sizeof(cle);
+		cle.flags = CLEF_TCHAR;
 		cle.hContact = (HANDLE) wParam;
 		cle.hDbEvent = (HANDLE) lParam;
 		cle.hIcon = LoadSkinnedIcon(SKINICON_EVENT_MESSAGE);
 		cle.pszService = "SRMsg/ReadMessage";
-		contactName = (char *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, wParam, 0);
-		mir_snprintf(toolTip, sizeof(toolTip), Translate("Message from %s"), contactName);
-		cle.pszTooltip = toolTip;
+		contactName = (TCHAR *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, wParam, GCDNF_TCHAR);
+		mir_sntprintf(toolTip, SIZEOF(toolTip), TranslateT("Message from %s"), contactName);
+		cle.ptszTooltip = toolTip;
 		CallService(MS_CLIST_ADDEVENT, 0, (LPARAM) & cle);
 	}
 	return 0;
@@ -301,18 +300,17 @@ static int TypingMessage(WPARAM wParam, LPARAM lParam)
          CallService(MS_CLIST_SYSTRAY_NOTIFY, 0, (LPARAM) & tn);
       }
       else {
-         CLISTEVENT cle;
+		CLISTEVENT cle =  {0};
 
-         ZeroMemory(&cle, sizeof(cle));
-         cle.cbSize = sizeof(cle);
-         cle.hContact = (HANDLE) wParam;
-         cle.hDbEvent = (HANDLE) 1;
-         cle.flags = CLEF_ONLYAFEW | CLEF_TCHAR;
-         cle.hIcon = g_dat->hIcons[SMF_ICON_TYPING];
-         cle.pszService = "SRMsg/TypingMessage";
-         cle.ptszTooltip = szTip;
-         CallServiceSync(MS_CLIST_REMOVEEVENT, wParam, (LPARAM) 1);
-         CallServiceSync(MS_CLIST_ADDEVENT, wParam, (LPARAM) & cle);
+		cle.cbSize = sizeof(cle);
+		cle.hContact = (HANDLE) wParam;
+		cle.hDbEvent = (HANDLE) 1;
+		cle.flags = CLEF_ONLYAFEW | CLEF_TCHAR;
+		cle.hIcon = GetCachedIcon("scriver_TYPING");
+		cle.pszService = "SRMsg/TypingMessage";
+		cle.ptszTooltip = szTip;
+		CallServiceSync(MS_CLIST_REMOVEEVENT, wParam, (LPARAM) 1);
+		CallServiceSync(MS_CLIST_ADDEVENT, wParam, (LPARAM) & cle);
       }
    }
    return 0;
@@ -326,7 +324,7 @@ static int MessageSettingChanged(WPARAM wParam, LPARAM lParam)
    szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, wParam, 0);
    if (lstrcmpA(cws->szModule, "CList") && (szProto == NULL || lstrcmpA(cws->szModule, szProto)))
       return 0;
-   WindowList_Broadcast(g_dat->hMessageWindowList, DM_CLISTSETTINGSCHANGED, (WPARAM) cws, 0);
+   WindowList_Broadcast(g_dat->hMessageWindowList, DM_CLISTSETTINGSCHANGED, wParam, lParam);
    return 0;
 }
 
@@ -344,7 +342,7 @@ static void RestoreUnreadMessageAlerts(void)
 {
    CLISTEVENT cle = { 0 };
    DBEVENTINFO dbei = { 0 };
-   char toolTip[256];
+   TCHAR toolTip[256];
    int windowAlreadyExists;
    HANDLE hDbEvent, hContact;
 
@@ -352,6 +350,8 @@ static void RestoreUnreadMessageAlerts(void)
    cle.cbSize = sizeof(cle);
    cle.hIcon = LoadSkinnedIcon(SKINICON_EVENT_MESSAGE);
    cle.pszService = "SRMsg/ReadMessage";
+   cle.flags = CLEF_TCHAR;
+   cle.ptszTooltip = toolTip;
 
    hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
    while (hContact) {
@@ -359,7 +359,7 @@ static void RestoreUnreadMessageAlerts(void)
       while (hDbEvent) {
          dbei.cbBlob = 0;
          CallService(MS_DB_EVENT_GET, (WPARAM) hDbEvent, (LPARAM) & dbei);
-         if (!(dbei.flags & (DBEF_SENT | DBEF_READ)) && dbei.eventType == EVENTTYPE_MESSAGE) {
+         if (!(dbei.flags & (DBEF_SENT | DBEF_READ)) && DbEventIsMessageOrCustom(&dbei)) {
             windowAlreadyExists = WindowList_Find(g_dat->hMessageWindowList, hContact) != NULL;
             if (windowAlreadyExists)
                continue;
@@ -376,8 +376,7 @@ static void RestoreUnreadMessageAlerts(void)
             else {
                cle.hContact = hContact;
                cle.hDbEvent = hDbEvent;
-               mir_snprintf(toolTip, sizeof(toolTip), Translate("Message from %s"), (char *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM) hContact, 0));
-               cle.pszTooltip = toolTip;
+               mir_sntprintf(toolTip, SIZEOF(toolTip), TranslateT("Message from %s"), (char *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM) hContact, GCDNF_TCHAR));
                CallService(MS_CLIST_ADDEVENT, 0, (LPARAM) & cle);
             }
          }
@@ -461,15 +460,15 @@ static void RegisterStatusIcons() {
 	sid.szModule = SRMMMOD;
 
 	sid.dwId = 1;
-	sid.hIcon = g_dat->hIcons[SMF_ICON_TYPING];
-	sid.hIconDisabled = g_dat->hIcons[SMF_ICON_TYPINGOFF];
+	sid.hIcon = CopyIcon(GetCachedIcon("scriver_TYPING"));
+	sid.hIconDisabled = CopyIcon(GetCachedIcon("scriver_TYPINGOFF"));
 	sid.flags = MBF_HIDDEN;
 	sid.szTooltip = NULL;
 	AddStickyStatusIcon((WPARAM) 0, (LPARAM) &sid);
 
 	sid.dwId = 0;
-	sid.hIcon = g_dat->hIcons[SMF_ICON_UNICODEON];
-	sid.hIconDisabled = g_dat->hIcons[SMF_ICON_UNICODEOFF];
+	sid.hIcon = CopyIcon(GetCachedIcon("scriver_UNICODEON"));
+	sid.hIconDisabled = CopyIcon(GetCachedIcon("scriver_UNICODEOFF"));
 	sid.flags = 0;
 	sid.szTooltip = NULL;
 	AddStickyStatusIcon((WPARAM) 0, (LPARAM) &sid);
@@ -480,15 +479,15 @@ void ChangeStatusIcons() {
 	sid.cbSize = sizeof(sid);
 	sid.szModule = SRMMMOD;
 	sid.dwId = 0;
-	sid.hIcon = CopyIcon(g_dat->hIcons[SMF_ICON_UNICODEON]);
-	sid.hIconDisabled = CopyIcon(g_dat->hIcons[SMF_ICON_UNICODEOFF]);
+	sid.hIcon = CopyIcon(GetCachedIcon("scriver_UNICODEON"));
+	sid.hIconDisabled = CopyIcon(GetCachedIcon("scriver_UNICODEOFF"));
 	sid.flags = 0;
 	sid.szTooltip = NULL;
 	ModifyStatusIcon((WPARAM)NULL, (LPARAM) &sid);
 
 	sid.dwId = 1;
-	sid.hIcon = CopyIcon(g_dat->hIcons[SMF_ICON_TYPING]);
-	sid.hIconDisabled = CopyIcon(g_dat->hIcons[SMF_ICON_UNICODEOFF]);
+	sid.hIcon = CopyIcon(GetCachedIcon("scriver_TYPING"));
+	sid.hIconDisabled = CopyIcon(GetCachedIcon("scriver_TYPINGOFF"));
 	sid.flags = MBF_HIDDEN;
 	sid.szTooltip = NULL;
 	ModifyStatusIcon((WPARAM)NULL, (LPARAM) &sid);
@@ -539,7 +538,7 @@ static int OnModulesLoaded(WPARAM wParam, LPARAM lParam)
 {
 	CLISTMENUITEM mi;
 	ReloadGlobals();
-	RegisterIcoLibIcons();
+	RegisterIcons();
 	RegisterFontServiceFonts();
 	RegisterKeyBindings();
 	LoadGlobalIcons();
@@ -592,9 +591,11 @@ int OnUnloadModule(void)
 	DestroyServices_Ex();
 	DestroyHookableEvent(hHookWinEvt);
 	DestroyHookableEvent(hHookWinPopup);
+	ReleaseIcons();
 	FreeMsgLogIcons();
 	FreeLibrary(GetModuleHandleA("riched20.dll"));
 	OleUninitialize();
+	RichUtil_Unload();
 	FreeGlobals();
 	return 0;
 }
@@ -612,15 +613,9 @@ int OnLoadModule(void) {
 	}
 	hDLL = GetModuleHandle(_T("user32"));
 	pSetLayeredWindowAttributes = (PSLWA) GetProcAddress(hDLL,"SetLayeredWindowAttributes");
-	if (IsWinVerXPPlus()) {
-		hDLL = GetModuleHandle(_T("uxtheme.dll"));
-		if (hDLL) {
-			pfnIsAppThemed = (BOOL (WINAPI *)(VOID))GetProcAddress(hDLL, "IsAppThemed");
-			pfnDrawThemeParentBackground = (HRESULT (WINAPI *)(HWND,HDC,RECT *))GetProcAddress(hDLL, "DrawThemeParentBackground");
-			pfnIsThemeActive = (BOOL (WINAPI *)())GetProcAddress(hDLL, "IsThemeActive");
-		}
-	}
+
 	InitGlobals();
+	RichUtil_Load();
 	OleInitialize(NULL);
 	InitREOleCallback();
 	InitStatusIcons();

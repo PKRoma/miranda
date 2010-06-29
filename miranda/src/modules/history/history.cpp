@@ -170,7 +170,7 @@ static void GetObjectSummary( DBEVENTINFO *dbei, TCHAR* str, int cbStr )
 		{
 			DBEVENTTYPEDESCR* et = ( DBEVENTTYPEDESCR* )CallService( MS_DB_EVENT_GETTYPE, ( WPARAM )dbei->szModule, ( LPARAM )dbei->eventType );
 			if ( et && ( et->flags & DETF_HISTORY )) {
-				pszTmp = a2t( et->descr );
+				pszTmp = mir_a2t( et->descr );
 				pszSrc = TranslateTS( pszTmp );
 				break;
 			}
@@ -274,7 +274,7 @@ static INT_PTR CALLBACK DlgProcHistory(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			mir_sntprintf(str,SIZEOF(str),TranslateT("History for %s"),contactName);
 			SetWindowText(hwndDlg,str);
 		}
-		Window_SetIcon_IcoLib(hwndDlg,SKINICON_OTHER_HISTORY);
+		Window_SetIcon_IcoLib(hwndDlg, SKINICON_OTHER_HISTORY);
 		SendMessage(hwndDlg,DM_HREBUILD,0,0);
 		return TRUE;
 

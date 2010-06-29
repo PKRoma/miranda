@@ -13,7 +13,7 @@
 #ifndef _YAHOO_YAHOO_H_
 #define _YAHOO_YAHOO_H_
 
-#define MIRANDA_VER 0x0800
+#define MIRANDA_VER 0x0900
 
 extern "C"
 {
@@ -64,7 +64,7 @@ extern "C"
 // Build is a cvs build
 //
 // If defined, the build will add cvs info to the plugin info
-//#define YAHOO_CVSBUILD
+#define YAHOO_CVSBUILD
 
 #define YAHOO_LOGINSERVER					"LoginServer"
 #define YAHOO_LOGINPORT						"LoginPort"
@@ -122,7 +122,7 @@ extern HINSTANCE		hInstance;
 extern int 				iHTTPGateway;
 #endif
 
-int __stdcall YAHOO_CallService( const char* szSvcName, WPARAM wParam, LPARAM lParam );
+INT_PTR __stdcall YAHOO_CallService( const char* szSvcName, WPARAM wParam, LPARAM lParam );
 
 #define YAHOO_hasnotification() ServiceExists(MS_CLIST_SYSTRAY_NOTIFY)
 

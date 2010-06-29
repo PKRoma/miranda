@@ -1,4 +1,4 @@
-
+/*
 CHANGES - changes for libpng
 
 version 0.2
@@ -539,7 +539,8 @@ version 1.0.5d [November 29, 1999]
   Eliminated pngtypes.h; use macros instead to declare PNG_CHNK arrays.
   Renamed "PNG_GLOBAL_ARRAYS" to "PNG_USE_GLOBAL_ARRAYS" and made available
     to applications a macro "PNG_USE_LOCAL_ARRAYS".
-  #ifdef out all the new declarations when PNG_USE_GLOBAL_ARRAYS is defined.
+  Remove all the new declarations with #ifdef/#endif when
+    PNG_USE_GLOBAL_ARRAYS is defined.
   Added PNG_EXPORT_VAR macro to accommodate making DLL's.
 version 1.0.5e [November 30, 1999]
   Added iCCP, iTXt, and sPLT support; added "lang" member to the png_text
@@ -1179,7 +1180,7 @@ version 1.2.4beta3 [June 28, 2002]
   Plugged memory leak of row_buf in pngtest.c when there is a png_error().
   Detect buffer overflow in pngpread.c when IDAT is corrupted with extra data.
   Added "test-installed" target to makefile.32sunu, makefile.64sunu,
-    makefile.beos, makefile.darwin, makefile.dec, makefile.macosx, 
+    makefile.beos, makefile.darwin, makefile.dec, makefile.macosx,
     makefile.solaris, makefile.hpux, makefile.hpgcc, and makefile.so9.
 version 1.2.4rc1 and 1.0.14rc1 [July 2, 2002]
   Added "test-installed" target to makefile.cygwin and makefile.sco.
@@ -1300,7 +1301,7 @@ version 1.2.6beta4 [July 28, 2004]
   Added PNG_NO_SEQUENTIAL_READ_SUPPORTED macro to conditionally remove
     sequential read support.
   Added some "#if PNG_WRITE_SUPPORTED" blocks.
-  #ifdef'ed out some redundancy in png_malloc_default().
+  Removed some redundancy with #ifdef/#endif in png_malloc_default().
   Use png_malloc instead of png_zalloc to allocate the pallete.
 version 1.0.16rc1 and 1.2.6rc1 [August 4, 2004]
   Fixed buffer overflow vulnerability in png_handle_tRNS()
@@ -1370,7 +1371,8 @@ version 1.2.8beta1 [November 1, 2004]
   Fixed bug, introduced in libpng-1.2.7, that overruns a buffer during
     strip alpha operation in png_do_strip_filler().
   Added PNG_1_2_X definition in pngconf.h
-  #ifdef out png_info_init in png.c and png_read_init in pngread.c (as of 1.3.0)
+  Comment out with #ifdef/#endif png_info_init in png.c and png_read_init
+    in pngread.c (as of 1.3.0)
 version 1.2.8beta2 [November 2, 2004]
   Reduce color_type to a nonalpha type after strip alpha operation in
     png_do_strip_filler().
@@ -1387,7 +1389,7 @@ version 1.2.8beta5 [November 20, 2004]
   Use png_ptr->flags instead of png_ptr->transformations to pass
     PNG_STRIP_ALPHA info to png_do_strip_filler(), to preserve ABI
     compatibility.
-  Revised handling of SPECIALBUILD, PRIVATEBUILD, 
+  Revised handling of SPECIALBUILD, PRIVATEBUILD,
     PNG_LIBPNG_BUILD_SPECIAL_STRING and PNG_LIBPNG_BUILD_PRIVATE_STRING.
 version 1.2.8rc1 [November 24, 2004]
   Moved handling of BUILD macros from pngconf.h to png.h
@@ -1685,14 +1687,14 @@ version 1.2.16beta1 [January 6, 2007]
 
 version 1.2.16beta2 [January 16, 2007]
   Revised scripts/CMakeLists.txt
- 
+
 version 1.0.24, 1.2.16 [January 31, 2007]
   No changes.
- 
+
 version 1.2.17beta1 [March 6, 2007]
   Revised scripts/CMakeLists.txt to install both shared and static libraries.
   Deleted a redundant line from pngset.c.
- 
+
 version 1.2.17beta2 [April 26, 2007]
   Relocated misplaced test for png_ptr == NULL in pngpread.c
   Change "==" to "&" for testing PNG_RGB_TO_GRAY_ERR & PNG_RGB_TO_GRAY_WARN
@@ -1713,7 +1715,7 @@ version 1.2.17rc2 [May 8, 2007]
   Added png_ptr->unknown_chunk to hold working unknown chunk data, so it
     can be free'ed in case of error.  Revised unknown chunk handling in
     pngrutil.c and pngpread.c to use this structure.
- 
+
 version 1.2.17rc3 [May 8, 2007]
   Revised symbol-handling in configure script.
 
@@ -1756,9 +1758,9 @@ version 1.2.19beta6 [May 22, 2007]
   Added a special "_MSC_VER" case that defines png_snprintf to _snprintf
 
 version 1.2.19beta7 [May 22, 2007]
-  Squelched png_squelch_warnings() in pnggccrd.c and added an
-    #ifdef PNG_MMX_CODE_SUPPORTED block around the declarations that caused
-    the warnings that png_squelch_warnings was squelching.
+  Squelched png_squelch_warnings() in pnggccrd.c and added
+    an #ifdef PNG_MMX_CODE_SUPPORTED/#endif block around the declarations
+    that caused the warnings that png_squelch_warnings was squelching.
 
 version 1.2.19beta8 [May 22, 2007]
   Removed __MMX__ from test in pngconf.h.
@@ -2048,7 +2050,7 @@ version 1.2.25beta03 [January 22, 2008]
   Change "if (swidth == NULL)" to "if (sheight == NULL)" in png_handle_sCAL
     (bug introduced in libpng-1.2.4/1.0.13).
   Return from png_destroy_read_struct() if png_ptr_ptr is NULL.
-  Fix overflow of "msg" in png_decompres_chunk().
+  Fix overflow of "msg" in png_decompress_chunk().
 
 version 1.2.25beta04 [January 26, 2008]
   Work around Coverity bug report by slightly refactoring
@@ -2076,6 +2078,607 @@ version 1.2.25rc02 [February 10, 2008]
 version 1.2.25 and 1.0.31 [February 18, 2008]
   No changes.
 
+version 1.2.26beta01 [February 21, 2008]
+  Added missing "(" in pngmem.c.  Bug introduced in libpng-1.2.2/1.0.13
+
+version 1.2.26beta02 [March 12, 2008]
+  Refined error message returned from deflateInit2 in pngwutil.c
+  Check IHDR length in png_push_read_chunk() before saving it.
+
+version 1.2.26beta03 [March 16, 2008]
+  Revised contrib/gregbook to handle premature end-of-file and file
+    read errors correctly.
+
+version 1.2.26beta04 [March 18, 2008]
+  Free png_ptr->big_row_buf and png_ptr->prev_row before allocating
+    new copies in png_read_start_row().  Bug introduced in libpng-1.2.22.
+
+version 1.2.26beta05 [March 19, 2008]
+  Removed extra png_free() added in libpng-1.2.26beta04.
+
+version 1.2.26beta06 [March 19, 2008]
+  Avoid reallocating big_row_buf and prev_row when the size does not increase.
+
+version 1.2.26rc01 [March 26, 2008]
+  Ifdef out some code that is unused when interlacing is not supported.
+
+versions 1.0.32 and 1.2.26 [April 2, 2008]
+  No changes.
+
+version 1.2.27beta01 [April 12, 2008]
+  Fixed bug (introduced in libpng-1.0.5h) with handling zero-length
+    unknown chunks.
+  Added more information about png_set_keep_unknown_chunks() to the
+    documentation.
+  Reject tRNS chunk with out-of-range samples instead of masking off
+    the invalid high bits as done in since libpng-1.2.19beta5.
+
+version 1.2.27beta02 [April 13, 2008]
+  Revised documentation about unknown chunk and user chunk handling.
+  Keep tRNS chunk with out-of-range samples and issue a png_warning().
+
+version 1.2.27beta03 [April 14, 2008]
+  Added check for NULL ptr in TURBOC version of png_free_default().
+  Removed several unnecessary checks for NULL before calling png_free().
+  Revised png_set_tRNS() so that calling it twice removes and invalidates
+    the previous call.
+  Revised pngtest to check for out-of-range tRNS samples.
+
+version 1.2.27beta04 [April 18, 2008]
+  Added AC_LIBTOOL_WIN32_DLL to configure.ac
+  Rebuilt Makefile.in, aclocal.m4, and configure with autoconf-2.62
+
+version 1.2.27beta05 [April 19, 2008]
+  Added MAINTAINERCLEANFILES variable to Makefile.am
+
+version 1.2.27beta06 [April 21, 2008]
+  Avoid changing color_type from GRAY to RGB by
+    png_set_expand_gray_1_2_4_to_8().
+
+version 1.2.27rc01 [April 23, 2008]
+  Fix broken URL for rfc2083 in png.5 and libpng-*.txt
+
+version 1.0.33 and 1.2.27 [April 30, 2008]
+  No changes.
+
+version 1.0.34 and 1.2.28 [April 30, 2008]
+  Rebuilt Makefile.in, aclocal.m4, and configure with autoconf-2.61
+    due to backward incompatibilities.
+  Removed a stray object file from contrib/gregbook
+
+version 1.2.29beta01 [May 1, 2008]
+  Removed some stray *.diff and *.orig files
+
+version 1.2.29beta02 [May 1, 2008]
+  Reverted Makefile.in, aclocal.m4, and configure to the libpng-1.2.26
+    versions.
+
+version 1.2.29beta03 [May 2, 2008]
+  Added --force to autogen libtoolize options and --force-missing to
+    automake options.
+  Changed $(ECHO) to echo in Makefile.am and Makefile.in
+  Updated all configure files to autoconf-2.62
+  Comment out pnggcrd.c code with #ifdef/#endif if using MSC_VER
+
+version 1.2.29rc01 [May 4, 2008]
+  No changes.
+
+version 1.0.35 and 1.2.29 [May 8, 2008]
+  No changes.
+
+version 1.0.37 [May 9, 2008]
+  Updated Makefile.in and configure (omitted version 1.0.36).
+
+version 1.2.30beta01 [May 29, 2008]
+  Updated libpng.pc-configure.in and libpng-config.in per debian bug reports.
+
+version 1.2.30beta02 [June 25, 2008]
+  Restored png_flush(png_ptr) at the end of png_write_end(), that was
+    removed from libpng-1.0.9beta03.
+
+version 1.2.30beta03 [July 6, 2008]
+  Merged some cosmetic whitespace changes from libpng-1.4.0beta19.
+  Inline call of png_get_uint_32() in png_get_uint_31(), as in 1.4.0beta19.
+  Added demo of decoding vpAg and sTER chunks to pngtest.c, from 1.4.0beta19.
+  Changed PNGMAJ from 0 to 12 in makefile.darwin, which does not like 0.
+  Added new private function png_read_chunk_header() from 1.4.0beta19.
+  Merge reading of chunk length and chunk type into a single 8-byte read.
+  Merge writing of chunk length and chunk type into a single 8-byte write.
+
+version 1.2.30beta04 [July 10, 2008]
+  Merged more cosmetic whitespace changes from libpng-1.4.0beta19.
+
+version 1.0.38rc01, 1.2.30rc01 [July 18, 2008]
+  No changes.
+
+version 1.0.38rc02, 1.2.30rc02 [July 21, 2008]
+  Moved local array "chunkdata" from pngrutil.c to the png_struct, so
+    it will be freed by png_read_destroy() in case of a read error (Kurt
+    Christensen).
+
+version 1.0.38rc03, 1.2.30rc03 [July 21, 2008]
+  Changed "purpose" and "buffer" to png_ptr->chunkdata to avoid memory leaking.
+
+version 1.0.38rc04, 1.2.30rc04 [July 22, 2008]
+  Changed "chunkdata = NULL" to "png_ptr->chunkdata = NULL" several places in
+    png_decompress_chunk().
+
+version 1.0.38rc05, 1.2.30rc05 [July 25, 2008]
+  Changed all remaining "chunkdata" to "png_ptr->chunkdata" in
+    png_decompress_chunk() and remove chunkdata from parameter list.
+  Put a call to png_check_chunk_name() in png_read_chunk_header().
+  Revised png_check_chunk_name() to reject a name with a lowercase 3rd byte.
+  Removed two calls to png_check_chunk_name() occuring later in the process.
+
+version 1.0.38rc06, 1.2.30rc06 [July 29, 2008]
+  Added a call to png_check_chunk_name() in pngpread.c
+  Reverted png_check_chunk_name() to accept a name with a lowercase 3rd byte.
+
+version 1.0.38r07, 1.2.30r07 [August 2, 2008]
+  Changed "-Wall" to "-W -Wall" in the CFLAGS in all makefiles (Cosmin Truta)
+  Declared png_ptr "volatile" in pngread.c and pngwrite.c to avoid warnings.
+  Added code in pngset.c to quiet compiler warnings.
+  Updated contrib/visupng/cexcept.h to version 2.0.1
+  Relocated a misplaced "#endif /* PNG_NO_WRITE_FILTER */" in pngwutil.c
+
+version 1.0.38r08, 1.2.30r08 [August 2, 2008]
+  Enclose "volatile" declarations in #ifdef PNG_SETJMP_SUPPORTED (Cosmin).
+
+version 1.0.38, 1.2.30 [August 14, 2008]
+  No changes.
+
+version 1.2.31rc01 [August 19, 2008]
+  Removed extra crc check at the end of png_handle_cHRM().  Bug introduced
+    in libpng-1.2.30beta03 (Heiko Nitzsche).
+
+version 1.2.31rc02 [August 19, 2008]
+  Added PNG_WRITE_FLUSH_SUPPORTED block around new png_flush() call.
+
+version 1.2.31rc03 [August 19, 2008]
+  Added PNG_WRITE_FLUSH_AFTER_IEND_SUPPORTED block, off by default, around
+    new png_flush().
+
+version 1.0.39, 1.2.31 [August 21, 2008]
+  No changes.
+
+version 1.2.32beta01 [September 6, 2008]
+  Shortened tIME_string to 29 bytes in pngtest.c (bug introduced in
+    libpng-1.2.22).
+  Fixed off-by-one error introduced in png_push_read_zTXt() function in
+    libpng-1.2.30beta04/pngpread.c (Harald van Dijk)
+  These bugs have been given the vulnerability id CVE-2008-3964.
+
+version 1.0.40, 1.2.32 [September 18, 2008]
+  No changes.
+
+version 1.2.33beta01 [October 6, 2008]
+  Revised makefile.darwin to fix shared library numbering.
+  Change png_set_gray_1_2_4_to_8() to png_set_expand_gray_1_2_4_to_8()
+    in example.c (debian bug report)
+
+version 1.2.33rc01 [October 15, 2008]
+  No changes.
+
+version 1.0.41rc01, version 1.2.33rc02 [October 23, 2008]
+  Changed remaining "key" to "png_ptr->chunkdata" in png_handle_tEXt()
+    to avoid memory leak after memory failure while reading tEXt chunk.`
+
+version 1.2.33 [October 31, 2008]
+  No changes.
+
+version 1.2.34beta01 [November 27, 2008]
+  Revised png_warning() to write its message on standard output by default
+    when warning_fn is NULL. This was the behavior prior to libpng-1.2.9beta9.
+  Fixed string vs pointer-to-string error in png_check_keyword().
+  Added png_check_cHRM_fixed() in png.c and moved checking from pngget.c,
+    pngrutil.c, and pngwrite.c, and eliminated floating point cHRM checking.
+  Added check for zero-area RGB cHRM triangle in png_check_cHRM_fixed().
+  In png_check_cHRM_fixed(), ensure white_y is > 0, and removed redundant
+    check for all-zero coordinates that is detected by the triangle check.
+  Revised png_warning() to write its message on standard output by default
+    when warning_fn is NULL.
+
+version 1.2.34beta02 [November 28, 2008]
+  Corrected off-by-one error in bKGD validity check in png_write_bKGD()
+    and in png_handle_bKGD().
+
+version 1.2.34beta03 [December 1, 2008]
+  Revised bKGD validity check to use >= x instead of > x + 1
+  Merged with png_debug from libpng-1.4.0 to remove newlines.
+
+version 1.2.34beta04 [December 2, 2008]
+  More merging with png_debug from libpng-1.4.0 to remove newlines.
+
+version 1.2.34beta05 [December 5, 2008]
+  Removed redundant check for key==NULL before calling png_check_keyword()
+    to ensure that new_key gets initialized and removed extra warning
+    (Arvan Pritchard).
+
+version 1.2.34beta06 [December 9, 2008]
+  In png_write_png(), respect the placement of the filler bytes in an earlier
+    call to png_set_filler() (Jim Barry).
+
+version 1.2.34beta07 [December 9, 2008]
+  Undid previous change and added PNG_TRANSFORM_STRIP_FILLER_BEFORE and
+    PNG_TRANSFORM_STRIP_FILLER_AFTER conditionals and deprecated
+    PNG_TRANSFORM_STRIP_FILLER (Jim Barry).
+
+version 1.0.42rc01, 1.2.34rc01 [December 11, 2008]
+  No changes.
+
+version 1.0.42, 1.2.34 [December 18, 2008]
+  No changes.
+
+version 1.2.35beta01 [February 4, 2009]
+  Zero out some arrays of pointers after png_malloc(). (Tavis Ormandy)
+
+version 1.2.35beta02 [February 4, 2009]
+  Zero out more arrays of pointers after png_malloc().
+
+version 1.2.35beta03 [February 5, 2009]
+  Use png_memset() instead of a loop to intialize pointers.  We realize
+    this will not work on platforms where the NULL pointer is not all zeroes.
+
+version 1.2.35rc01 [February 11, 2009]
+  No changes.
+
+version 1.2.35rc02 [February 12, 2009]
+  Fix typo in new png_memset call in pngset.c (png_color should be png_charp)
+
+version 1.0.43 and 1.2.35 [February 14, 2009]
+  No changes.
+
+version 1.2.36beta01 [February 28, 2009]
+  Revised comments in png_set_read_fn() and png_set_write_fn().
+  Revised order of #ifdef's and indentation in png_debug definitions of png.h
+    bug introduced in libpng-1.2.34.
+
+version 1.2.36beta02 [March 21, 2009]
+  Use png_memset() after png_malloc() of big_row_buf when reading an
+    interlaced file, to avoid a possible UMR.
+  Undid recent revision of PNG_NO_STDIO version of png_write_flush().  Users
+    having trouble with fflush() can build with PNG_NO_WRITE_FLUSH defined.
+  Revised libpng*.txt documentation about use of png_write_flush().
+  Removed fflush() from pngtest.c.
+  Added "#define PNG_NO_WRITE_FLUSH" to contrib/pngminim/encoder/pngusr.h
+
+version 1.2.36beta03 [March 27, 2009]
+  Relocated misplaced PNG_1_0_X define in png.h that caused the prototype
+    for png_set_strip_error_numbers() to be omitted from PNG_NO_ASSEMBLER_CODE
+    builds.  This bug was introduced in libpng-1.2.15beta4.
+  Added a section on differences between 1.0.x and 1.2.x to libpng.3/libpng.txt
+
+version 1.2.36beta04 [April 5, 2009]
+  Fixed potential memory leak of "new_name" in png_write_iCCP() (Ralph Giles)
+
+version 1.2.36beta05 [April 24, 2009]
+  Added "ifndef PNG_SKIP_SETJMP_CHECK" block in pngconf.h to allow
+    application code writers to bypass the check for multiple inclusion
+    of setjmp.h when they know that it is safe to ignore the situation.
+  Made some cosmetic changes to whitespace in pngtest output.
+  Renamed "user_chunk_data" to "my_user_chunk_data" in pngtest.c to suppress
+    "shadowed declaration" warning from gcc-4.3.3.
+  Renamed "gamma" to "png_gamma" in pngset.c to avoid "shadowed declaration"
+    warning about a global "gamma" variable in math.h on some platforms.
+
+version 1.2.36rc01 [April 30, 2009]
+  No changes.
+
+version 1.0.44 and 1.2.36 [May 7, 2009]
+  No changes.
+
+version 1.2.37beta01 [May 14, 2009]
+  Fixed inconsistency in pngrutil.c, introduced in libpng-1.2.36.  The
+    memset() was using "png_ptr->rowbytes" instead of "row_bytes", which
+    the corresponding png_malloc() uses (Joe Drew).
+  Clarified usage of sig_bit versus sig_bit_p in example.c (Vincent Torri)
+  Updated some of the makefiles in the scripts directory (merged with
+    those in libpng-1.4.0beta57).
+
+version 1.2.37beta02 [May 19, 2009]
+  Fixed typo in libpng documentation (FILTER_AVE should be FILTER_AVG)
+  Relocated misplaced #endif in pngwrite.c, sCAL chunk handler.
+  Conditionally compile png_read_finish_row() which is not used by
+    progressive readers.
+  Added contrib/pngminim/preader to demonstrate building minimal progressive
+    decoder, based on contrib/gregbook with embedded libpng and zlib.
+
+version 1.2.37beta03 [May 20, 2009]
+  In contrib/pngminim/*, renamed "makefile.std" to "makefile", since there
+    is only one makefile in those directories, and revised the README files
+    accordingly.
+  Reformated sources in libpng style (3-space indentation, comment format)
+
+version 1.2.37rc01 [May 27, 2009]
+  No changes.
+
+versions 1.2.37 and 1.0.45 [June 4, 2009]
+  Reformatted several remaining "else statement;" and "if () statement;" into
+    two lines.
+  Added "#define PNG_NO_WRITE_SWAP" to contrib/pngminim/encoder/pngusr.h
+    and "define PNG_NO_READ_SWAP" to decoder/pngusr.h and preader/pngusr.h
+  Added sections about the git repository and our coding style to the
+    documentation (merged from libpng-1.4.0beta62)
+  Added a section to the libpng documentation about using png_get_io_ptr()
+    in configure scripts to detect the presence of libpng.
+
+version 1.2.38beta01 [June 17, 2009]
+  Revised libpng*.txt and libpng.3 to mention calling png_set_IHDR()
+    multiple times and to specify the sample order in the tRNS chunk,
+    because the ISO PNG specification has a typo in the tRNS table.
+  Changed several PNG_UNKNOWN_CHUNK_SUPPORTED to
+    PNG_HANDLE_AS_UNKNOWN_SUPPORTED, to make the png_set_keep mechanism
+    available for ignoring known chunks even when not saving unknown chunks.
+  Adopted preference for consistent use of "#ifdef" and "#ifndef" versus
+    "#if defined()" and "if !defined()" where possible.
+  Added PNG_NO_HANDLE_AS_UNKNOWN in the PNG_LEGACY_SUPPORTED block of
+    pngconf.h, and moved the various unknown chunk macro definitions
+    outside of the PNG_READ|WRITE_ANCILLARY_CHUNK_SUPPORTED blocks.
+
+version 1.0.46 [June 18, 2009]
+  Removed some editing cruft from scripts/libpng.pc.in and some makefiles.
+
+version 1.2.38rc01 [June 24, 2009]
+  No changes.
+
+version 1.2.38rc02 [June 29, 2009]
+  Added a reference to the libpng license in each source file.
+
+version 1.2.38rc03 [July 11, 2009]
+  Revised references to the libpng license in pngconf.h and contrib/visupng
+    source files.
+  Rebuilt configure scripts with autoconf-2.63.
+
+version 1.0.47 and 1.2.38 [July 16, 2009]
+  No changes.
+
+version 1.2.39beta01 [July 25, 2009]
+  Added a prototype for png_64bit_product() in png.c
+
+version 1.2.39beta02 [July 27, 2009]
+  Avoid a possible NULL dereference in debug build, in png_set_text_2().
+    (bug introduced in libpng-0.95, discovered by Evan Rouault)
+
+version 1.2.39beta03 [July 29, 2009]
+  Relocated new png_64_bit_product() prototype into png.h
+  Expanded the information about prototypes in the libpng style section of
+    the documentation.
+  Rebuilt configure scripts with autoconf-2.64.
+
+version 1.2.39beta04 [August 1, 2009]
+  Replaced *.tar.lzma with *.txz in distribution.  Get the xz codec
+    from <http://tukaani.org/xz>.
+
+version 1.2.39beta05 [August 1, 2009]
+  Reject attempt to write iCCP chunk with negative embedded profile length
+    (JD Chen)
+
+version 1.2.39c01 [August 6, 2009]
+  No changes.
+
+version 1.2.39 and 1.0.48 [August 13, 2009]
+  No changes.
+
+version 1.2.40beta01 [August 20, 2009]
+  Removed an extra png_debug() recently added to png_write_find_filter().
+  Fixed incorrect #ifdef in pngset.c regarding unknown chunk support.
+
+version 1.2.40rc01 [September 2, 2009]
+  Various bugfixes and improvements to CMakeLists.txt (Philip Lowman)
+
+version 1.2.40 and 1.0.49 [September 2, 2009]
+  No changes.
+
+version 1.0.50 [September 10, 2009]
+  Removed some editing cruft from pngset.c and pngwutil.c.
+
+version 1.2.41beta01 [September 25, 2009]
+  Moved redundant IHDR checking into new png_check_IHDR() in png.c
+    and report all errors found in the IHDR data.
+  Eliminated useless call to png_check_cHRM() from pngset.c
+  Expanded TAB characters in pngrtran.c
+
+version 1.2.41beta02 [September 30, 2009]
+  Revised png_check_IHDR().
+
+version 1.2.41beta03 [October 1, 2009]
+  Revised png_check_IHDR() again, to check info_ptr members instead of
+    the contents of the returned parameters.
+
+version 1.2.41beta04 [October 7, 2009]
+  Added "xcode" project similar one already in libpng-1.4.0beta (Alam Arias).
+  Ported some cosmetic changes from libpng-1.4.0beta86.
+  Eliminated a shadowed declaration of "pp" in png_handle_sPLT().
+
+version 1.2.41beta05 [October 17, 2009]
+  Revised pngconf.h to make it easier to enable iTXt support.  From libpng
+    version 1.2.9 through 1.2.40, defining PNG_iTXt_SUPPORTED did not work
+    as expected.
+  Ported some cosmetic changes from libpng-1.4.0beta87, changing
+    many "#if defined(x)" to "#ifdef x".
+
+version 1.2.41beta06 [October 18, 2009]
+  Restored PNG_USE_LOCAL_ARRAYS code in pngread.c that was inadvertently
+    deleted in libpng-1.2.41beta05.
+  Converted all PNG_NO_* tests to PNG_*_SUPPORTED everywhere except pngconf.h
+    as in libpng-1.4.0beta78 and later.
+
+version 1.2.41beta07 [October 21, 2009]
+  Ported some cosmetic changes from libpng-1.4.0rc01, changing
+    many "#if defined(x)" to "#ifdef x" in png.h and pngconf.h.
+
+version 1.2.41beta08 [October 30, 2009]
+  Ported from libpng-1.4.0rc01: png_calloc(), png_get_io_chunk_name(),
+    png_get_io_state(), png_set_user_cache_max(), png_get_user_cache_max(),
+    png_set_premultiply_alpha, and png_do_read_premultiply_alpha().
+  Relocated png_do_chop() ahead of building gamma tables in pngrtran.c
+    This avoids building 16-bit gamma tables unnecessarily.
+
+version 1.2.41beta09 [November 1, 2009]
+  Removed a harmless extra png_set_invert_alpha() from pngwrite.c
+  More bugfixes and improvements to CMakeLists.txt (Philip Lowman)
+  Moved CMakeLists.txt from scripts into the main libpng directory.
+  Apply png_user_chunk_cache_max within png_decompress_chunk().
+  Merged libpng-1.2.41.txt with libpng-1.4.0.txt where appropriate.
+
+version 1.2.41beta10 [November 1, 2009]
+  Enabled iTXt support by default. To ensure binary compatibility with
+    previous versions, the "lang" and "lang_key" members will be assumed
+    to be omitted from previous versions unless the current libpng
+    version was built with PNG_iTXt_SUPPORTED (which is otherwise no
+    longer necessary to gain iTXt support), as a signal that the user has
+    been building previous versions with PNG_iTXt_SUPPORTED as well.
+
+version 1.2.41beta11 [November 2, 2009]
+  Store user's user_png_ver in new png_ptr->user_png_ver element.
+  Revised iTXt support. To ensure binary compatibility with
+    previous versions, the "lang" and "lang_key" members will be assumed
+    to be omitted from versions prior to 1.2.41beta11 whenever there is a
+    library mismatch.
+
+version 1.2.41beta12 [November 2, 2009]
+  Free png_ptr->user_png_ver when destroying png_ptr.
+
+version 1.2.41beta13 [November 3, 2009]
+  Updated scripts/pngw32.def and projects/wince/png32ce.def
+  Copied projects/wince/png32ce.def to the scripts directory.
+  Added scripts/makefile.wce
+  Patched ltmain.sh for wince support.
+  Added PNG_CONVERT_tIME_SUPPORTED macro.
+
+version 1.2.41beta14 [November 8, 2009]
+  versions 1.2.41beta05 through 1.2.41beta13 were abandoned.
+  The 1.0.x/1.2.x series will only receive security updates from now on.
+  Make inclusion of time.h in pngconf.h depend on PNG_CONVERT_tIME_SUPPORTED
+  Make #define PNG_CONVERT_tIME_SUPPORTED depend on PNG_WRITE_tIME_SUPPORTED
+  Reverted iTXt compatibility stuff from 1.2.41beta05, 1.2.41beta11, and
+    1.2.41beta12.
+  Reverted IOSTATE feature, user_cache_max, and premultiply_alpha features
+    from 1.2.41beta08.
+  Retained png_calloc() from 1.2.41beta08 but as a non-exported function,
+    and removed reference to png_calloc from scripts/*.def
+
+version 1.2.41beta15 [November 8, 2009]
+  Added PNG_DEPSTRUCT, PNG_DEPRECATED, PNG_USE_RESULT, PNG_NORETURN, and
+    PNG_ALLOCATED macros to detect deprecated direct access to the
+    png_struct or info_struct members and other deprecated usage in
+    applications (John Bowler).
+  Updated scripts/makefile* to add "-DPNG_CONFIGURE_LIBPNG" to CFLAGS,
+    to prevent warnings about direct access to png structs by libpng
+    functions while building libpng.  They need to be tested, especially
+    those using compilers other than gcc.
+  Updated projects/visualc6 and visualc71 with "/d PNG_CONFIGURE_LIBPNG".
+
+version 1.2.41beta16 [November 9, 2009]
+  Removed three direct references to read_info_ptr members in pngtest.c
+    that were detected by the new PNG_DEPSTRUCT macro.
+  Only #define PNG_DEPSTRUCT, etc. in pngconf.h if not already defined.
+
+version 1.2.41beta17 [November 10, 2009]
+  Updated CMakeLists.txt to add "-DPNG_CONFIGURE_LIBPNG" to the definitions.
+  Marked deprecated function prototypes with PNG_DEPRECATED.
+  Marked memory allocation function prototypes with PNG_ALLOCATED.
+  Changed png_check_sig() to !png_sig_cmp() in contrib programs.
+  Corrected the png_get_IHDR() call in contrib/gregbook/readpng2.c
+  Added "-DPNG_CONFIGURE_LIBPNG" to the contrib/pngminum makefiles.
+
+version 1.2.41beta18 [November 11, 2009]
+  Renamed scripts/makefile.wce to scripts/makefile.cegcc
+  Marked nonexported functions with PNG_PRIVATE macro.
+
+version 1.2.41rc01 and 1.0.51rc01 [November 18, 2009]
+  Revised scripts/*.def to reflect functions actually exported by libpng.
+  Updated the copyright year in scripts/pngw32.rc from 2004 to 2009.
+  Moved descriptions of makefiles and other scripts out of INSTALL into
+    scripts/README.txt
+
+version 1.2.41rc02 [November 22, 2009]
+  Rebuilt the configure scripts with autoconf-2.65
+
+version 1.2.41rc03 [November 25, 2009]
+  Disabled the new pedantic warnings about deprecated function use
+    and deprecated structure access unless the user defines
+    PNG_PEDANTIC_WARNINGS.
+  Added "#define PNG_NO_PEDANTIC_WARNINGS" in the libpng source files.
+  Removed "-DPNG_CONFIGURE_LIBPNG" from the makefiles and projects.
+
+version 1.2.41 and 1.0.51 [December 3, 2009]
+  Updated the list of files and made some cosmetic changes in README.
+
+version 1.2.42beta01 [December 4, 2009]
+  Removed "#define PNG_NO_ERROR_NUMBERS" that was inadvertently added
+    to pngconf.h in version 1.2.41.
+  Revised scripts/makefile.netbsd, makefile.openbsd, and makefile.sco
+    to put png.h and pngconf.h in $prefix/include, like the other scripts,
+    instead of in $prefix/include/libpng.  Also revised makefile.sco
+    to put them in $prefix/include/libpng12 instead of in
+    $prefix/include/libpng/libpng12.
+  Removed leftover "-DPNG_CONFIGURE_LIBPNG" from scripts/makefile.darwin
+
+version 1.2.42beta02 [December 11, 2009]
+  Removed leftover "-DPNG_CONFIGURE_LIBPNG" from contrib/pngminim/*/makefile
+  Relocated png_do_chop() to its original position in pngrtran.c. The
+    change in version 1.2.41beta08 caused transparency to be handled wrong
+    in some 16-bit datastreams (Yusaku Sugai).
+
+version 1.2.42rc01 [December 17, 2009]
+  No changes.
+
+version 1.2.42rc02 [December 22, 2009]
+  Renamed libpng-pc.in back to libpng.pc.in and revised CMakeLists.txt
+    (revising changes made in 1.2.41beta17 and 1.2.41rc01)
+
+version 1.2.42rc03 [December 25, 2009]
+  Swapped PNG_UNKNOWN_CHUNKS_SUPPORTED and PNG_HANDLE_AS_UNKNOWN_SUPPORTED
+    in pngset.c to be consistent with other changes in version 1.2.38.
+
+version 1.2.42rc04 [January 1, 2010]
+  Marked png_memcpy_check() and png_memset_check() PNG_DEPRECATED.
+  Updated copyright year.
+
+version 1.2.42rc05 [January 2, 2010]
+  Avoid deprecated references to png_ptr-io_ptr and png_ptr->error_ptr
+    in pngtest.c
+
+version 1.2.42 and 1.0.52 [January 3, 2010]
+  No changes.
+
+version 1.2.43beta01 [January 27, 2010]
+  Updated CMakeLists.txt for consistent indentation and to avoid an
+    unclosed if-statement warning (Philip Lowman).
+  Removed "#ifdef PNG_1_0_X / #endif" surrounding
+    PNG_READ_16_TO_8_SUPPORTED and PNG_READ_GRAY_TO_RGB_SUPPORTED
+    in pngconf.h.  These were added in libpng-1.2.41beta08 and libpng-1.0.51,
+    which introduced a binary incompatibility with libpng-1.0.50.
+  Backported new png_decompress_chunk() algorithm from libpng-1.4.1.
+
+version 1.2.43beta02 [February 1, 2010]
+  Backported two-pass png_decompress_chunk() algorithm from libpng-1.4.1.
+
+version 1.2.43beta03 [February 6, 2010]
+  Backported fast png_push_save_buffer() algorithm from libpng-1.4.1.
+  Backported some cosmetic changes from libpng-1.4.1.
+
+version 1.2.43beta04 [February 8, 2010]
+  Reverted recent changes to png_push_save-buffer().
+  Removed PNGAPI declaration of png_calloc() and png_write_sig() in
+    1ibpng-1.2.X, introduced by mistake in libpng-1.2.41.
+  Return allocated "old_buffer" in png_push_save_buffer() before png_error()
+    to avoid a potential memory leak.
+
+version 1.2.43beta05 [February 8, 2010]
+  Ported rewritten png_decompress_chunk() by John Bowler from libpng-1.4.1.
+
+version 1.0.53rc01 and 1.2.43rc01 [February 18, 2010]
+  No changes.
+
+version 1.0.53rc02 and 1.2.43rc02 [February 19, 2010]
+  Define _ALL_SOURCE in configure.ac, makefile.aix, and CMakeLists.txt
+    when using AIX compiler.
+
+version 1.0.53 and 1.2.43 [February 25, 2010]
+  Removed unused gzio.c from contrib/pngminim gather and makefile scripts
+
 Send comments/corrections/commendations to png-mng-implement at lists.sf.net
 (subscription required; visit
 https://lists.sourceforge.net/lists/listinfo/png-mng-implement
@@ -2083,3 +2686,4 @@ to subscribe)
 or to glennrp at users.sourceforge.net
 
 Glenn R-P
+*/

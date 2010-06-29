@@ -21,22 +21,21 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 #include "commonheaders.h"
-// TODO: Remove this
-#include <m_icq.h>
 #include "findadd.h"
 
-#define COLUMNID_PROTO    0
-#define COLUMNID_NICK     1
-#define COLUMNID_FIRST    2
-#define COLUMNID_LAST     3
-#define COLUMNID_EMAIL    4
-#define COLUMNID_HANDLE   5
-
-static int handleColumnAfter = COLUMNID_EMAIL;
+enum {
+	COLUMNID_PROTO,
+	COLUMNID_HANDLE,
+	COLUMNID_NICK,
+	COLUMNID_FIRST,
+	COLUMNID_LAST,
+	COLUMNID_EMAIL,
+	NUM_COLUMNID
+};
 
 void SaveColumnSizes(HWND hwndResults)
 {
-	int columnOrder[COLUMNID_HANDLE+1];
+	int columnOrder[NUM_COLUMNID];
 	int columnCount;
 	char szSetting[32];
 	int i;
@@ -44,24 +43,9 @@ void SaveColumnSizes(HWND hwndResults)
 
 	dat=(struct FindAddDlgData*)GetWindowLongPtr(GetParent(hwndResults),GWLP_USERDATA);
 	columnCount=Header_GetItemCount(ListView_GetHeader(hwndResults));
-	if(columnCount<=COLUMNID_EMAIL || columnCount>COLUMNID_HANDLE+1) return;
+	if (columnCount != NUM_COLUMNID) return;
 	ListView_GetColumnOrderArray(hwndResults,columnCount,columnOrder);
-	if(columnCount<=COLUMNID_HANDLE) {
-		if(handleColumnAfter==-1) {
-			memmove(columnOrder+1,columnOrder,sizeof(columnOrder[0])*columnCount);
-			columnOrder[0]=COLUMNID_HANDLE;
-		}
-		else {
-			for(i=0;i<columnCount;i++) {
-				if(handleColumnAfter==columnOrder[i]) {
-					memmove(columnOrder+i+2,columnOrder+i+1,sizeof(columnOrder[0])*(columnCount-i-1));
-					columnOrder[i+1]=COLUMNID_HANDLE;
-					break;
-				}
-			}
-		}
-	}
-	for(i=0;i<=COLUMNID_HANDLE;i++) {
+	for(i=0; i < NUM_COLUMNID; i++) {
 		mir_snprintf(szSetting, SIZEOF(szSetting), "ColOrder%d", i);
 		DBWriteContactSettingByte(NULL,"FindAdd",szSetting,(BYTE)columnOrder[i]);
 		if(i>=columnCount) continue;
@@ -72,75 +56,71 @@ void SaveColumnSizes(HWND hwndResults)
 	DBWriteContactSettingByte(NULL,"FindAdd","SortAscending",(BYTE)dat->bSortAscending);
 }
 
-static const TCHAR *szColumnNames[] = { NULL, _T("Nick"), _T("First Name"), _T("Last Name"), _T("E-mail"), NULL };
-static int defaultColumnSizes[]={0,100,100,100,200,90};
+static const TCHAR *szColumnNames[] = { NULL, NULL, _T("Nick"), _T("First Name"), _T("Last Name"), _T("E-mail") };
+static int defaultColumnSizes[]={0,90,100,100,100,2000};
 void LoadColumnSizes(HWND hwndResults,const char *szProto)
 {
 	HDITEM hdi;
-	int columnOrder[COLUMNID_HANDLE+1];
+	int columnOrder[NUM_COLUMNID];
 	int columnCount;
 	char szSetting[32];
 	int i;
-	struct FindAddDlgData *dat;
-	int colOrdersValid;
+	FindAddDlgData *dat;
+	bool colOrdersValid;
 
-	defaultColumnSizes[COLUMNID_PROTO]=GetSystemMetrics(SM_CXSMICON)+4;
-	dat=(struct FindAddDlgData*)GetWindowLongPtr(GetParent(hwndResults),GWLP_USERDATA);
+	defaultColumnSizes[COLUMNID_PROTO] = GetSystemMetrics(SM_CXSMICON) + 4;
+	dat = (FindAddDlgData*)GetWindowLongPtr(GetParent(hwndResults), GWLP_USERDATA);
 
-	if(szProto && !lstrcmpA(szProto,"ICQ"))
-		columnCount=COLUMNID_HANDLE+1;
-	else
-		columnCount=COLUMNID_EMAIL+1;
-
-	colOrdersValid=1;
-	for(i=0;i<=COLUMNID_HANDLE;i++) {
+	columnCount = NUM_COLUMNID;
+	colOrdersValid = true;
+	for(i=0; i < NUM_COLUMNID; i++) 
+	{
 		LVCOLUMN lvc;
-		if( i < columnCount ) {
+		if( i < columnCount ) 
+		{
 			int bNeedsFree = FALSE;
 			lvc.mask = LVCF_TEXT | LVCF_WIDTH;
 			if( szColumnNames[i] != NULL )
 				lvc.pszText = TranslateTS( szColumnNames[i] );
-			else if( i == COLUMNID_HANDLE ) {
-				#if defined( _UNICODE )
-					bNeedsFree = TRUE;
-					lvc.pszText = a2u((char*)CallProtoService(szProto,PS_GETCAPS,PFLAG_UNIQUEIDTEXT,0));
-				#else
-					lvc.pszText = (char*)CallProtoService(szProto,PS_GETCAPS,PFLAG_UNIQUEIDTEXT,0);
-				#endif
+			else if( i == COLUMNID_HANDLE ) 
+			{
+				if (szProto)
+				{
+					#if defined( _UNICODE )
+						bNeedsFree = TRUE;
+						lvc.pszText = mir_a2t((char*)CallProtoService(szProto,PS_GETCAPS,PFLAG_UNIQUEIDTEXT,0));
+					#else
+						lvc.pszText = (char*)CallProtoService(szProto,PS_GETCAPS,PFLAG_UNIQUEIDTEXT,0);
+					#endif
+				}
+				else
+					lvc.pszText = _T("ID");
 			}
 			else lvc.mask &= ~LVCF_TEXT;
 			mir_snprintf(szSetting, SIZEOF(szSetting), "ColWidth%d", i);
-			lvc.cx = DBGetContactSettingWord(NULL,"FindAdd",szSetting,defaultColumnSizes[i]);
-			ListView_InsertColumn( hwndResults, i, (LPARAM)&lvc );
+			lvc.cx = DBGetContactSettingWord(NULL, "FindAdd", szSetting, defaultColumnSizes[i]);
+			ListView_InsertColumn(hwndResults, i, (LPARAM)&lvc);
 			#if defined( _UNICODE )
-				if ( bNeedsFree )
+				if (bNeedsFree)
 					mir_free(lvc.pszText);
 			#endif
 		}
 		mir_snprintf(szSetting, SIZEOF(szSetting), "ColOrder%d", i);
-		columnOrder[i]=DBGetContactSettingByte(NULL,"FindAdd",szSetting,-1);
-		if(columnOrder[i]==-1) colOrdersValid=0;
-		if(columnOrder[i]==COLUMNID_HANDLE) handleColumnAfter=i?columnOrder[i-1]:-1;
+		columnOrder[i] = DBGetContactSettingByte(NULL, "FindAdd", szSetting, -1);
+		if (columnOrder[i] == -1 || columnOrder[i] >= NUM_COLUMNID) colOrdersValid = false;
 	}
-	if(colOrdersValid) {
-		if(columnCount<=COLUMNID_HANDLE)
-			for(i=0;i<columnCount;i++)
-				if(columnOrder[i]==COLUMNID_HANDLE) {
-					memmove(columnOrder+i,columnOrder+i+1,sizeof(columnOrder[0])*(columnCount-i));
-					break;
-				}
-		ListView_SetColumnOrderArray(hwndResults,columnCount,columnOrder);
-	}
-	else handleColumnAfter=COLUMNID_EMAIL;
 
-	dat->iLastColumnSortIndex=DBGetContactSettingByte(NULL,"FindAdd","SortColumn",COLUMNID_NICK);
-	if(dat->iLastColumnSortIndex>=columnCount) dat->iLastColumnSortIndex=COLUMNID_NICK;
-	dat->bSortAscending=DBGetContactSettingByte(NULL,"FindAdd","SortAscending",TRUE);
+	if (colOrdersValid) 
+		ListView_SetColumnOrderArray(hwndResults, columnCount, columnOrder);
 
-	hdi.mask=HDI_BITMAP|HDI_FORMAT;
-	hdi.fmt=HDF_LEFT|HDF_BITMAP|HDF_STRING|HDF_BITMAP_ON_RIGHT;
-	hdi.hbm=dat->bSortAscending?dat->hBmpSortDown:dat->hBmpSortUp;
-	Header_SetItem(ListView_GetHeader(hwndResults),dat->iLastColumnSortIndex,&hdi);
+	dat->iLastColumnSortIndex = DBGetContactSettingByte(NULL, "FindAdd", "SortColumn", COLUMNID_NICK);
+	if (dat->iLastColumnSortIndex >= columnCount) dat->iLastColumnSortIndex = COLUMNID_NICK;
+	dat->bSortAscending = DBGetContactSettingByte(NULL, "FindAdd", "SortAscending", TRUE);
+
+	hdi.mask = HDI_BITMAP | HDI_FORMAT;
+	hdi.fmt = HDF_LEFT | HDF_BITMAP | HDF_STRING | HDF_BITMAP_ON_RIGHT;
+	hdi.hbm = dat->bSortAscending ? dat->hBmpSortDown : dat->hBmpSortUp;
+	Header_SetItem(ListView_GetHeader(hwndResults), dat->iLastColumnSortIndex, &hdi);
 }
 
 static LPARAM ListView_GetItemLParam(HWND hwndList, int idx)
@@ -172,24 +152,16 @@ int CALLBACK SearchResultsCompareFunc(LPARAM lParam1, LPARAM lParam2, LPARAM lPa
 		{
 		case COLUMNID_PROTO:
 			return lstrcmpA(lsr1->szProto, lsr2->szProto)*sortMultiplier;
-		case COLUMNID_NICK:
-			return lstrcmpiA(lsr1->psr.nick, lsr2->psr.nick)*sortMultiplier;
-		case COLUMNID_FIRST:
-			return lstrcmpiA(lsr1->psr.firstName, lsr2->psr.firstName)*sortMultiplier;
-		case COLUMNID_LAST:
-			return lstrcmpiA(lsr1->psr.lastName, lsr2->psr.lastName)*sortMultiplier;
-		case COLUMNID_EMAIL:
-			return lstrcmpiA(lsr1->psr.email, lsr2->psr.email)*sortMultiplier;
 		case COLUMNID_HANDLE:
-			if(!lstrcmpA(lsr1->szProto,lsr2->szProto)) {
-				if(!lstrcmpA(lsr1->szProto,"ICQ")) {
-					ULONG UIN1 = ((ICQSEARCHRESULT*)&lsr1->psr)->uin, UIN2 = ((ICQSEARCHRESULT*)&lsr2->psr)->uin;
-					if( UIN1 < UIN2 ) return -sortMultiplier;
-					return sortMultiplier;
-				}
-				else return 0;
-			}
-			else return lstrcmpA(lsr1->szProto, lsr2->szProto)*sortMultiplier;
+			return lstrcmpi(lsr1->psr.id, lsr2->psr.id)*sortMultiplier;
+		case COLUMNID_NICK:
+			return lstrcmpi(lsr1->psr.nick, lsr2->psr.nick)*sortMultiplier;
+		case COLUMNID_FIRST:
+			return lstrcmpi(lsr1->psr.firstName, lsr2->psr.firstName)*sortMultiplier;
+		case COLUMNID_LAST:
+			return lstrcmpi(lsr1->psr.lastName, lsr2->psr.lastName)*sortMultiplier;
+		case COLUMNID_EMAIL:
+			return lstrcmpi(lsr1->psr.email, lsr2->psr.email)*sortMultiplier;
 		}
 	}
 	else 
@@ -212,6 +184,7 @@ void FreeSearchResults(HWND hwndResults)
 		ListView_GetItem(hwndResults,&lvi);
 		lsr=(struct ListSearchResult*)lvi.lParam;
 		if(lsr==NULL) continue;
+		mir_free(lsr->psr.id);
 		mir_free(lsr->psr.email);
 		mir_free(lsr->psr.nick);
 		mir_free(lsr->psr.firstName);
@@ -246,7 +219,7 @@ int BeginSearch(HWND,struct FindAddDlgData *dat,const char *szProto,const char *
 		dat->search = (struct ProtoSearchInfo*)mir_calloc(sizeof(struct ProtoSearchInfo) * accounts.getCount());
 		for( i=0; i < accounts.getCount();i++) {
 			PROTOACCOUNT* pa = accounts[i];
-            if (!IsAccountEnabled(pa)) continue;
+			if (!Proto_IsAccountEnabled(pa)) continue;
 			DWORD caps=(DWORD)CallProtoService(pa->szModuleName,PS_GETCAPS,PFLAGNUM_1,0);
 			if(!(caps&requiredCapability)) continue;
 			dat->search[dat->searchCount].hProcess = (HANDLE)CallProtoService(pa->szModuleName,szSearchService,0,(LPARAM)pvSearchParams);

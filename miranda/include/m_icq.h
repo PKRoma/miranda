@@ -5,7 +5,7 @@
 // Copyright © 2000-2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001-2002 Jon Keating, Richard Hughes
 // Copyright © 2002-2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004-2009 Joe Kucera
+// Copyright © 2004-2010 Joe Kucera
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -19,7 +19,7 @@
 // 
 // You should have received a copy of the GNU General Public License
 // along with this program; if not, write to the Free Software
-// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 //
 // -----------------------------------------------------------------------------
 //
@@ -30,7 +30,7 @@
 //
 // DESCRIPTION:
 //
-//  Describe me here please...
+//  Public headers for ICQ protocol plug-in
 //
 // -----------------------------------------------------------------------------
 
@@ -44,10 +44,6 @@ typedef struct {
   PROTOSEARCHRESULT hdr;
   DWORD uin;
   BYTE auth;
-  char *uid;
-  char *nick; // utf-8
-  char *firstName;
-  char *lastName;
   BYTE gender;
   BYTE age;
   DWORD country;
@@ -245,9 +241,11 @@ typedef struct {
 //return = 0 (for success)
 #define PS_ICQ_GETCUSTOMSTATUSEX "/GetXStatusEx"
 
+#define LR_BIGICON 0x40
+
 // Retrieves specified custom status icon
 //wParam = (int)N  // custom status id (1-32), 0 = my current custom status
-//lParam = flags   // use LR_SHARED for shared HICON
+//lParam = flags   // use LR_SHARED for shared HICON, LR_BIGICON for 32x32 icon
 //return = HICON   // custom status icon (use DestroyIcon to release resources if not LR_SHARED)
 #define PS_ICQ_GETCUSTOMSTATUSICON "/GetXStatusIcon"
 

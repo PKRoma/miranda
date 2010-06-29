@@ -446,8 +446,7 @@ void CJabberDlgGcJoin::OnInitDialog()
 {
 	CSuper::OnInitDialog();
 
-	SendMessage(m_hwnd, WM_SETICON, ICON_BIG, (LPARAM)m_proto->LoadIconEx("group"));
-	SendDlgItemMessage(m_hwnd, IDC_HEADERBAR, WM_SETICON, 0, (LPARAM)g_LoadIconEx32("group"));
+	WindowSetIcon( m_hwnd, m_proto, "group" );
 
 	JabberGcRecentInfo *info = NULL;
 	if ( m_jid )
@@ -541,6 +540,7 @@ void CJabberDlgGcJoin::OnDestroy()
 	if ( str != NULL )
 		mir_free( str );
 
+	g_ReleaseIcon(( HICON )SendDlgItemMessage( m_hwnd, IDC_BOOKMARKS, BM_SETIMAGE, IMAGE_ICON, 0 ));
 	m_proto->m_pDlgJabberJoinGroupchat = NULL;
 	DeleteObject((HFONT)SendDlgItemMessage(m_hwnd, IDC_TXT_RECENT, WM_GETFONT, 0, 0));
 
@@ -1099,18 +1099,25 @@ void CJabberProto::GroupchatProcessMessage( HXML node )
 		replaceStr(item->itemResource.statusMessage, msgText);
 	}
 	else {
-		if (( n = xmlGetChild( node , "body" )) == NULL ) return;
+		if (( n = xmlGetChildByTag( node , "body", "xml:lang", m_tszSelectedLang )) == NULL )
+			if (( n = xmlGetChild( node , "body" )) == NULL )
+				return;
+
 		if ( xmlGetText( n ) == NULL )
 			return;
 
 		nick = _tcschr( from, '/' );
-		if ( nick == NULL || nick[1] == '\0' )
-			return;
-		nick++;
+		if ( nick != NULL ) {
+			if ( nick[1] == '\0' )
+				return;
+			nick++;
+		}
 
 		msgText = ( TCHAR* )xmlGetText( n );
 
-		if ( _tcsncmp( msgText, _T("/me "), 4 ) == 0 && _tcslen( msgText ) > 4 ) {
+		if ( nick == NULL)
+			gcd.iType = GC_EVENT_INFORMATION;
+		else if ( _tcsncmp( msgText, _T("/me "), 4 ) == 0 && _tcslen( msgText ) > 4 ) {
 			msgText += 4;
 			gcd.iType = GC_EVENT_ACTION;
 		}
@@ -1137,7 +1144,7 @@ void CJabberProto::GroupchatProcessMessage( HXML node )
 	gce.ptszNick = nick;
 	gce.time = msgTime;
 	gce.ptszText = EscapeChatTags( msgText );
-	gce.bIsMe = lstrcmp( nick, item->nick ) == 0;
+	gce.bIsMe = nick == NULL ? FALSE : (lstrcmp( nick, item->nick ) == 0);
 	gce.dwFlags = GC_TCHAR | GCEF_ADDTOLOG;
 	CallServiceSync( MS_GC_EVENT, NULL, (LPARAM)&gce );
 
@@ -1187,8 +1194,7 @@ public:
 		SetDlgItemText( m_hwnd, IDC_NICK, myNick );
 		mir_free( myNick );
 
-		SendMessage( m_hwnd, WM_SETICON, ICON_BIG, ( LPARAM )m_proto->LoadIconEx( "group" ));
-		SendDlgItemMessage(m_hwnd, IDC_HEADERBAR, WM_SETICON, 0, (LPARAM)g_LoadIconEx32("group"));
+		WindowSetIcon( m_hwnd, m_proto, "group" );
 
 		SetFocus(GetDlgItem(m_hwnd, IDC_NICK));
 	}

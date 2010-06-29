@@ -34,7 +34,7 @@ INT_PTR CALLBACK AddContactDlgProc(HWND hdlg,UINT msg,WPARAM wparam,LPARAM lpara
 			SetWindowLongPtr(hdlg,GWLP_USERDATA,(LONG_PTR)acs);
 
 			TranslateDialogDefault(hdlg);
-			Window_SetIcon_IcoLib(hdlg,SKINICON_OTHER_ADDCONTACT);
+			Window_SetIcon_IcoLib(hdlg, SKINICON_OTHER_ADDCONTACT);
 			if ( acs->handleType == HANDLE_EVENT ) {
 				DWORD dwUin;
 				DBEVENTINFO dbei = { 0 };
@@ -46,11 +46,10 @@ INT_PTR CALLBACK AddContactDlgProc(HWND hdlg,UINT msg,WPARAM wparam,LPARAM lpara
 				acs->szProto = dbei.szModule;
 			}
 			{
-				TCHAR* szName = NULL;
+				TCHAR *szName = NULL, *tmpStr = NULL;
 				if ( acs->handleType == HANDLE_CONTACT )
 					szName = cli.pfnGetContactDisplayName( acs->handle, GCDNF_TCHAR );
 				else {
-					char *p;
 					int isSet = 0;
 
 					if (acs->handleType == HANDLE_EVENT) {
@@ -70,21 +69,17 @@ INT_PTR CALLBACK AddContactDlgProc(HWND hdlg,UINT msg,WPARAM wparam,LPARAM lpara
 						}
 					}
 					if (!isSet) {
-						p = (acs->handleType == HANDLE_EVENT) ? szUin : acs->psr->nick;
-						#if defined( _UNICODE )
-							szName =( TCHAR* )alloca( 128*sizeof( TCHAR ));
-							MultiByteToWideChar( CP_ACP, 0, p, -1, szName, 128 );
-						#else
-							szName = p;
-						#endif
+						szName = (acs->handleType == HANDLE_EVENT) ? (tmpStr = mir_a2t(szUin)) : 
+							(acs->psr->id ? acs->psr->id : acs->psr->nick);
 				}	}
 
-				if ( lstrlen( szName )) {
+				if ( szName && szName[0] ) {
 					TCHAR  szTitle[128];
 					mir_sntprintf( szTitle, SIZEOF(szTitle), TranslateT("Add %s"), szName );
 					SetWindowText( hdlg, szTitle );
 				}
 				else SetWindowText( hdlg, TranslateT("Add Contact"));
+				mir_free(tmpStr);
 		}	}
 
 		if ( acs->handleType == HANDLE_CONTACT && acs->handle )
@@ -108,22 +103,27 @@ INT_PTR CALLBACK AddContactDlgProc(HWND hdlg,UINT msg,WPARAM wparam,LPARAM lpara
 		SendDlgItemMessage(hdlg,IDC_GROUP,CB_SETCURSEL,0,0);
 		/* acs->szProto may be NULL don't expect it */
 		{
+			// By default check both checkboxes
+			CheckDlgButton(hdlg,IDC_ADDED,BST_CHECKED);
+			CheckDlgButton(hdlg,IDC_AUTH,BST_CHECKED);
+
 			DWORD flags = (acs->szProto) ? CallProtoService(acs->szProto,PS_GETCAPS,PFLAGNUM_4,0) : 0;
 			if (flags&PF4_FORCEADDED) { // force you were added requests for this protocol
-				CheckDlgButton(hdlg,IDC_ADDED,BST_CHECKED);
 				EnableWindow(GetDlgItem(hdlg,IDC_ADDED),FALSE);
 			}
 			if (flags&PF4_FORCEAUTH) { // force auth requests for this protocol
-				CheckDlgButton(hdlg,IDC_AUTH,BST_CHECKED);
 				EnableWindow(GetDlgItem(hdlg,IDC_AUTH),FALSE);
 			}
 			if (flags&PF4_NOCUSTOMAUTH) {
 				EnableWindow(GetDlgItem(hdlg,IDC_AUTHREQ),FALSE);
 				EnableWindow(GetDlgItem(hdlg,IDC_AUTHGB),FALSE);
-		}	}
-		SetDlgItemText(hdlg,IDC_AUTHREQ,TranslateT("Please authorize my request and add me to your contact list."));
-		EnableWindow(GetDlgItem(hdlg,IDC_AUTHREQ),IsDlgButtonChecked(hdlg,IDC_AUTH));
-		EnableWindow(GetDlgItem(hdlg,IDC_AUTHGB),IsDlgButtonChecked(hdlg,IDC_AUTH));
+			} 
+			else {
+				EnableWindow(GetDlgItem(hdlg,IDC_AUTHREQ),IsDlgButtonChecked(hdlg,IDC_AUTH));
+				EnableWindow(GetDlgItem(hdlg,IDC_AUTHGB),IsDlgButtonChecked(hdlg,IDC_AUTH));
+			}
+			SetDlgItemText(hdlg,IDC_AUTHREQ,TranslateT("Please authorize my request and add me to your contact list."));
+		}
 		break;
 
 	case WM_COMMAND:
@@ -183,11 +183,11 @@ INT_PTR CALLBACK AddContactDlgProc(HWND hdlg,UINT msg,WPARAM wparam,LPARAM lpara
 				if ( IsDlgButtonChecked( hdlg, IDC_AUTH )) {
 					DWORD flags = CallProtoService( acs->szProto, PS_GETCAPS, PFLAGNUM_4, 0 );
 					if ( flags & PF4_NOCUSTOMAUTH )
-						CallContactService( hcontact, PSS_AUTHREQUEST, 0, (LPARAM)"" );
+						CallContactService( hcontact, PSS_AUTHREQUESTT, 0, 0 );
 					else {
-						char szReason[256];
-						GetDlgItemTextA(hdlg,IDC_AUTHREQ,szReason,256);
-						CallContactService(hcontact,PSS_AUTHREQUEST,0,(LPARAM)szReason);
+						TCHAR szReason[256];
+						GetDlgItemText(hdlg,IDC_AUTHREQ,szReason,256);
+						CallContactService(hcontact, PSS_AUTHREQUESTT, 0, (LPARAM)szReason);
 				}	}
 
 				DBDeleteContactSetting(hcontact,"CList","NotOnList");
@@ -239,10 +239,11 @@ INT_PTR AddContactDialog(WPARAM wParam,LPARAM lParam)
 			/* bad! structures that are bigger than psr will cause crashes if they define pointers within unreachable structural space */
 			psr = (PROTOSEARCHRESULT *)mir_alloc(acs->psr->cbSize);
 			memmove(psr,acs->psr,acs->psr->cbSize);
-			psr->nick = mir_strdup(psr->nick);
-			psr->firstName = mir_strdup(psr->firstName);
-			psr->lastName = mir_strdup(psr->lastName);
-			psr->email = mir_strdup(psr->email);
+			psr->nick = psr->flags & PSR_UNICODE ? mir_u2t((wchar_t*)psr->nick) : mir_a2t((char*)psr->nick);
+			psr->firstName = psr->flags & PSR_UNICODE ? mir_u2t((wchar_t*)psr->firstName) : mir_a2t((char*)psr->firstName);
+			psr->lastName = psr->flags & PSR_UNICODE ? mir_u2t((wchar_t*)psr->lastName) : mir_a2t((char*)psr->lastName);
+			psr->email = psr->flags & PSR_UNICODE ? mir_u2t((wchar_t*)psr->email) : mir_a2t((char*)psr->email);
+			psr->flags = psr->flags & ~PSR_UNICODE | PSR_TCHAR;
 			acs->psr = psr;
 			/* copied the passed acs structure, the psr structure with, the pointers within that  */
 		}

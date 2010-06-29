@@ -1,8 +1,8 @@
 /*
 Chat module plugin for Miranda IM
 
-Copyright (C) 2003 Jörgen Persson
-Copyright 2003-2008 Miranda ICQ/IM project,
+Copyright (C) 2003 JÃ¶rgen Persson
+Copyright 2003-2009 Miranda ICQ/IM project,
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -31,8 +31,6 @@ HANDLE				hBuildMenuEvent ;
 HANDLE				g_hHookContactDblClick, g_hHookPrebuildMenu;
 CRITICAL_SECTION	cs;
 
-void RegisterFonts( void );
-
 #ifdef _WIN64 
 
 #define SIZEOF_STRUCT_GCREGISTER_V1 40
@@ -48,16 +46,6 @@ void RegisterFonts( void );
 #define SIZEOF_STRUCT_GCEVENT_V2	48
 
 #endif
-
-int Chat_ModulesLoaded(WPARAM wParam,LPARAM lParam)
-{
-	char* mods[3] = { "Chat", "ChatFonts" };
-	CallService( "DBEditorpp/RegisterModule", (WPARAM)mods, 2 );
-	RegisterFonts();
-	CList_SetAllOffline(TRUE, NULL);
- 	return 0;
-}
-
 
 int Chat_SmileyOptionsChanged(WPARAM wParam,LPARAM lParam)
 {
@@ -78,19 +66,6 @@ int Chat_FontsChanged(WPARAM wParam,LPARAM lParam)
 {
 	LoadLogFonts();
 	LoadMsgLogBitmaps();
-	{
-		LOGFONT lf;
-		HFONT hFont;
-		int iText;
-
-		LoadMsgDlgFont(0, &lf, NULL);
-		hFont = CreateFontIndirect(&lf);
-		iText = GetTextPixelSize(MakeTimeStamp(g_Settings.pszTimeStamp, time(NULL)),hFont, TRUE);
-		DeleteObject(hFont);
-		g_Settings.LogTextIndent = iText;
-		g_Settings.LogTextIndent = g_Settings.LogTextIndent*12/10;
-		g_Settings.LogIndentEnabled = (DBGetContactSettingByte(NULL, "Chat", "LogIndentEnabled", 1) != 0)?TRUE:FALSE;
-	}
 	MM_FontsChanged();
 	MM_FixColors();
 	SM_BroadcastMessage(NULL, GC_SETWNDPROPS, 0, 0, TRUE);
@@ -100,8 +75,6 @@ int Chat_FontsChanged(WPARAM wParam,LPARAM lParam)
 int Chat_IconsChanged(WPARAM wParam,LPARAM lParam)
 {
 	FreeMsgLogBitmaps();
-	ReleaseLogIcons();
-	LoadLogIcons();
 	LoadMsgLogBitmaps();
 	MM_IconsChanged();
 	SM_BroadcastMessage(NULL, GC_SETWNDPROPS, 0, 0, FALSE);
@@ -170,7 +143,7 @@ static INT_PTR Service_GetInfo(WPARAM wParam,LPARAM lParam)
 void LoadModuleIcons(MODULEINFO * mi) {
 	int index;
 	HIMAGELIST hList = ImageList_Create(16, 16, IsWinVerXPPlus() ? ILC_COLOR32 | ILC_MASK : ILC_COLOR8 | ILC_MASK, 0, 0);
-	int overlayIcon = ImageList_AddIcon(hList, hIcons[ICON_OVERLAY]);
+	int overlayIcon = ImageList_AddIcon(hList, GetCachedIcon("chat_overlay"));
 	ImageList_SetOverlayImage(hList, overlayIcon, 1);
 	index = ImageList_AddIcon_ProtoEx(hList, mi->pszModule, ID_STATUS_ONLINE);
 	mi->hOnlineIcon = ImageList_GetIcon(hList, index, ILD_TRANSPARENT);
@@ -200,7 +173,7 @@ static INT_PTR Service_Register(WPARAM wParam, LPARAM lParam)
 
 	mi = MM_AddModule( gcr->pszModule );
 	if ( mi ) {
-		mi->pszModDispName = mir_strdup( gcr->pszModuleDispName );
+		mi->ptszModDispName = a2tf( gcr->ptszModuleDispName, gcr->dwFlags );
 		mi->bBold = gcr->dwFlags&GC_BOLD;
 		mi->bUnderline = gcr->dwFlags&GC_UNDERLINE ;
 		mi->bItalics = gcr->dwFlags&GC_ITALICS ;

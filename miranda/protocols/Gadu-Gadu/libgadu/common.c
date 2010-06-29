@@ -150,6 +150,32 @@ void gg_debug_session(struct gg_session *sess, int level, const char *format, ..
 	errno = old_errno;
 }
 
+/**
+ * \internal Przekazuje informację odpluskwiania związane z zawartością pamięci.
+ *
+ * \param sess Struktura sesji
+ * \param buf Adres w pamięci
+ * \param buf_length Ilość danych do wyświetlenia
+ * \param format Format wiadomości (zgodny z \c printf)
+ *
+ * \ingroup debug
+ */
+void gg_debug_dump_session(struct gg_session *sess, const char *buf, unsigned int buf_length, const char *format, ...)
+{
+	va_list ap;
+
+	if ((gg_debug_level & GG_DEBUG_DUMP)) {
+		  unsigned int i;
+
+		  va_start(ap, format);
+		  gg_debug_common(sess, GG_DEBUG_DUMP, format, ap);
+		  for (i = 0; i < buf_length; ++i)
+			  gg_debug_session(sess, GG_DEBUG_DUMP, " %.2x", (unsigned char) buf[i]);
+		  gg_debug_session(sess, GG_DEBUG_DUMP, "\n");
+		  va_end(ap);
+	  }
+}
+
 #endif
 
 /**
@@ -303,7 +329,7 @@ char *gg_get_line(char **ptr)
  *
  * \return Zwraca \c buf jeśli się powiodło, lub \c NULL w przypadku błędu.
  */
-char *gg_read_line(int sock, char *buf, int length)
+char *gg_read_line(SOCKET sock, char *buf, int length)
 {
 	int ret;
 
@@ -312,7 +338,7 @@ char *gg_read_line(int sock, char *buf, int length)
 
 	for (; length > 1; buf++, length--) {
 		do {
-			if ((ret = gg_sock_read(sock, buf, 1)) == -1 && errno != EINTR) {
+			if ((ret = gg_sock_read(sock, buf, 1)) == -1 && errno != EINTR && errno != EAGAIN) {
 				gg_debug(GG_DEBUG_MISC, "// gg_read_line() error on read (errno=%d, %s)\n", errno, strerror(errno));
 				*buf = 0;
 				return NULL;
@@ -321,7 +347,7 @@ char *gg_read_line(int sock, char *buf, int length)
 				*buf = 0;
 				return NULL;
 			}
-		} while (ret == -1 && errno == EINTR);
+		} while (ret == -1 && (errno == EINTR || errno == EAGAIN));
 
 		if (*buf == '\n') {
 			buf++;
@@ -344,9 +370,10 @@ char *gg_read_line(int sock, char *buf, int length)
  *
  * \ingroup helper
  */
-int gg_connect(void *addr, int port, int async)
+SOCKET gg_connect(void *addr, int port, int async)
 {
-	int sock, one = 1, errno2;
+	SOCKET sock;
+	int one = 1, errno2;
 	struct sockaddr_in sin;
 	struct in_addr *a = addr;
 	struct sockaddr_in myaddr;
@@ -418,7 +445,7 @@ int gg_connect(void *addr, int port, int async)
  */
 void gg_chomp(char *line)
 {
-	int len;
+	size_t len;
 
 	if (!line)
 		return;
@@ -619,7 +646,7 @@ static char gg_base64_charset[] =
 char *gg_base64_encode(const char *buf)
 {
 	char *out, *res;
-	unsigned int i = 0, j = 0, k = 0, len = strlen(buf);
+	unsigned int i = 0, j = 0, k = 0, len = (unsigned int)strlen(buf);
 
 	res = out = malloc((len / 3 + 1) * 4 + 2);
 
@@ -736,7 +763,7 @@ char *gg_base64_decode(const char *buf)
 char *gg_proxy_auth()
 {
 	char *tmp, *enc, *out;
-	unsigned int tmp_size;
+	size_t tmp_size;
 
 	if (!gg_proxy_enabled || !gg_proxy_username || !gg_proxy_password)
 		return NULL;
@@ -952,7 +979,7 @@ char *gg_utf8_to_cp(const char *b)
 	int len;
 	int i, j;
 
-	len = strlen(b);
+	len = (int)strlen(b);
 
 	for (i = 0; i < len; newlen++) {
 		uint16_t discard;
