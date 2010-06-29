@@ -419,6 +419,7 @@ void CIcqProto::handleUserOnline(BYTE *buf, WORD wLen, serverthread_info *info)
       // Check if the client changed, if not do not change
       if (szCurrentClient && !strcmpnull(szCurrentClient, szClient))
         szClient = (const char*)-1;
+	  SAFE_FREE(&szCurrentClient);
     }
 		else if (wOldStatus == ID_STATUS_OFFLINE)
 		{
