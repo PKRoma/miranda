@@ -47,23 +47,20 @@ static const char *chatButtonIcons[] = {"scriver_CLOSEX",
 
 typedef struct IconDefStruct 
 {
-	TCHAR* section;
-	char *name;
+	const TCHAR* section;
+	const char *name;
 	int defaultIndex;
-	TCHAR *description;
-    BOOL  isBig;
-	HICON icon;
-    HICON iconBig;
+	const TCHAR *description;
 } IconDef;
 
-static IconDef iconList[] = {
+static const IconDef iconList[] = {
 	{LPGENT("Single Messaging"), "scriver_ADD", IDI_ADDCONTACT, LPGENT("Add contact")},
 	{LPGENT("Single Messaging"), "scriver_USERDETAILS", IDI_USERDETAILS, LPGENT("User's details")},
 	{LPGENT("Single Messaging"), "scriver_HISTORY", IDI_HISTORY, LPGENT("User's history")},
 	{LPGENT("Single Messaging"), "scriver_SEND", IDI_SEND, LPGENT("Send message")},
 	{LPGENT("Single Messaging"), "scriver_CANCEL", IDI_CANCEL, LPGENT("Close session")},
 	{LPGENT("Single Messaging"), "scriver_SMILEY", IDI_SMILEY, LPGENT("Smiley button")},
-	{LPGENT("Single Messaging"), "scriver_TYPING", IDI_TYPING, LPGENT("User is typing"), TRUE},
+	{LPGENT("Single Messaging"), "scriver_TYPING", IDI_TYPING, LPGENT("User is typing")},
 	{LPGENT("Single Messaging"), "scriver_TYPINGOFF", IDI_TYPINGOFF, LPGENT("Typing notification off")},
 	{LPGENT("Single Messaging"), "scriver_UNICODEON", IDI_UNICODEON, LPGENT("Unicode is on")},
 	{LPGENT("Single Messaging"), "scriver_UNICODEOFF", IDI_UNICODEOFF, LPGENT("Unicode is off")},
@@ -110,10 +107,12 @@ static IconDef iconList[] = {
 	{LPGENT("Group Chats Log"), "chat_log_info", IDI_INFO, LPGENT("Information (10x10)")}
 };
 
+HICON hIconList[SIZEOF(iconList)];
+
 BOOL IsStaticIcon(HICON hIcon) {
 	int i;
-	for (i = 0; i < SIZEOF(iconList); i++) {
-		if (hIcon == iconList[i].icon || hIcon == iconList[i].iconBig) {
+	for (i = 0; i < SIZEOF(hIconList); i++) {
+		if (hIcon == hIconList[i]) {
 			return TRUE;
 		}
 	}
@@ -171,17 +170,14 @@ void RegisterIcons()
 	hEventSkin2IconsChanged = HookEvent_Ex(ME_SKIN2_ICONSCHANGED, IconsChanged);
 	GetModuleFileName(g_hInst, path, MAX_PATH);
 	sid.cbSize = sizeof(SKINICONDESC);
-	sid.cx = sid.cy = 16;
 	sid.flags = SIDF_ALL_TCHAR;
 	sid.ptszDefaultFile = path;
     sid.ptszSection = tTemp;
 	for (i = 0; i < SIZEOF(iconList); i++) {
 		mir_sntprintf(tTemp, SIZEOF(tTemp), _T("%s/%s"), LPGENT("Messaging"), iconList[i].section);
-		iconList[i].icon = NULL;
-        iconList[i].iconBig = NULL;
-		sid.pszName = iconList[i].name;
+		sid.pszName = (char*)iconList[i].name;
 		sid.iDefaultIndex = -iconList[i].defaultIndex;
-		sid.ptszDescription = iconList[i].description;
+		sid.ptszDescription = (TCHAR*)iconList[i].description;
 		CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
 	}
 }
@@ -189,46 +185,33 @@ void RegisterIcons()
 void ReleaseIcons()
 {
 	int i;
-	for (i = 0; i < SIZEOF(iconList); i++) {
-		if (iconList[i].icon != NULL) {
-			CallService(MS_SKIN2_RELEASEICON, (WPARAM)iconList[i].icon, 0);
-		}
-		if (iconList[i].iconBig != NULL) {
-			CallService(MS_SKIN2_RELEASEICON, (WPARAM)iconList[i].iconBig, 0);
+	for (i = 0; i < SIZEOF(hIconList); i++) {
+		if (hIconList[i] != NULL) {
+			CallService(MS_SKIN2_RELEASEICON, (WPARAM)hIconList[i], 0);
 		}
 	}
 	CallService(MS_SKIN2_RELEASEICON, (WPARAM)g_dat->hMsgIcon, 0);
-    CallService(MS_SKIN2_RELEASEICON, (WPARAM)g_dat->hMsgIconBig, 0);
 }
 
-HICON GetCachedIconBySize(const char *name, BOOL isBig)
+HICON GetCachedIcon(const char *name)
 {
 	int i;
 	for (i = 0; i < SIZEOF(iconList); i++) {
 		if (!strcmp(iconList[i].name, name)) {
-			return isBig ? iconList[i].iconBig : iconList[i].icon;
+			return hIconList[i];
 		}
 	}
 	return NULL;
-}
-
-HICON GetCachedIcon(const char *name) 
-{
-    return GetCachedIconBySize(name, FALSE);
 }
 
 void LoadGlobalIcons() {
 	int i;
 	int overlayIcon;
 	for (i = 0; i < SIZEOF(iconList); i++) {
-		iconList[i].icon = (HICON) CallService(MS_SKIN2_GETICON, 0, (LPARAM)iconList[i].name);
-        if (iconList[i].isBig) {
-            iconList[i].iconBig = (HICON) CallService(MS_SKIN2_GETICON, 1, (LPARAM)iconList[i].name);
-        }
+		hIconList[i] = (HICON) CallService(MS_SKIN2_GETICON, 0, (LPARAM)iconList[i].name);
 	}
 
 	g_dat->hMsgIcon = LoadSkinnedIcon(SKINICON_EVENT_MESSAGE);
-    g_dat->hMsgIconBig = LoadSkinnedIconBig(SKINICON_EVENT_MESSAGE);
 
 	ImageList_RemoveAll(g_dat->hButtonIconList);
 	ImageList_RemoveAll(g_dat->hChatButtonIconList);

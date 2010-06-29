@@ -323,22 +323,16 @@ void SetStatusIcon(struct MessageWindowData *dat) {
 	}
 }
 
-HICON GetTitlebarIcon(struct MessageWindowData *dat) {
+void GetTitlebarIcon(struct MessageWindowData *dat, TitleBarData *tbd) {
 	if (dat->showTyping && (g_dat->flags2&SMF2_SHOWTYPINGWIN)) {
-		return GetCachedIcon("scriver_TYPING");
+		tbd->hIconNot = tbd->hIcon = GetCachedIcon("scriver_TYPING");
 	} else if ((g_dat->flags & SMF_STATUSICON) && ! (dat->showUnread && (GetActiveWindow() != dat->hwndParent || GetForegroundWindow() != dat->hwndParent))) {
-		return dat->statusIcon;
+		tbd->hIcon = dat->statusIcon;
+		tbd->hIconNot = NULL;
+	} else {
+		tbd->hIconNot = tbd->hIcon = g_dat->hMsgIcon;
 	}
-	return g_dat->hMsgIcon;
-}
-
-HICON GetTitlebarIconBig(struct MessageWindowData *dat) {
-	if (dat->showTyping && (g_dat->flags2&SMF2_SHOWTYPINGWIN)) {
-		return GetCachedIconBySize("scriver_TYPING", TRUE);
-	} else if ((g_dat->flags & SMF_STATUSICON) && ! (dat->showUnread && (GetActiveWindow() != dat->hwndParent || GetForegroundWindow() != dat->hwndParent))) {
-		return dat->statusIconBig;
-	}
-	return g_dat->hMsgIconBig;
+	tbd->hIconBig = dat->statusIconBig;
 }
 
 HICON GetTabIcon(struct MessageWindowData *dat) {
@@ -1205,8 +1199,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			TitleBarData tbd = {0};
 			TabControlData tcd;
 			tbd.iFlags = TBDF_ICON;
-			tbd.hIcon = GetTitlebarIcon(dat);
-			tbd.hIconBig = GetTitlebarIconBig(dat);
+			GetTitlebarIcon(dat, &tbd);
 			SendMessage(dat->hwndParent, CM_UPDATETITLEBAR, (WPARAM)&tbd, (LPARAM)hwndDlg);
 			tcd.iFlags = TCDF_ICON;
 			tcd.hIcon = GetTabIcon(dat);
@@ -1229,8 +1222,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 		{
 			TitleBarData tbd = {0};
 			tbd.iFlags = TBDF_TEXT | TBDF_ICON;
-			tbd.hIcon = GetTitlebarIcon(dat);
-			tbd.hIconBig = GetTitlebarIconBig(dat);
+			GetTitlebarIcon(dat, &tbd);
 			tbd.pszText = GetWindowTitle(dat->windowData.hContact, dat->szProto);
 			SendMessage(dat->hwndParent, CM_UPDATETITLEBAR, (WPARAM)&tbd, (LPARAM)hwndDlg);
 			mir_free(tbd.pszText);

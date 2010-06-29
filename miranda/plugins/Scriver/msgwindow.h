@@ -75,6 +75,7 @@ typedef struct TitleBarDataStruct
 	TCHAR *pszText;
 	HICON hIcon;
 	HICON hIconBig;
+	HICON hIconNot;
 } TitleBarData;
 
 #define TCDF_TEXT 1

@@ -121,7 +121,6 @@ struct GlobalMessageData
 	int        logPixelSX;
 	int        logPixelSY;
     HICON      hMsgIcon;
-    HICON      hMsgIconBig;
 };
 
 int IconsChanged(WPARAM wParam, LPARAM lParam);
@@ -133,7 +132,6 @@ void RegisterIcons();
 void ReleaseIcons();
 void LoadGlobalIcons();
 HICON GetCachedIcon(const char *name);
-HICON GetCachedIconBySize(const char *name, BOOL isBig);
 void RegisterFontServiceFonts();
 int ScriverRestoreWindowPosition(HWND hwnd,HANDLE hContact,const char *szModule,const char *szNamePrefix, int flags, int showCmd);
 

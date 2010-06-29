@@ -33,6 +33,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 extern HINSTANCE g_hInst;
 extern HCURSOR hDragCursor;
+extern ITaskbarList3 * pTaskbarInterface;
 
 #define SB_CHAR_WIDTH		 40
 #define SB_SENDING_WIDTH 	 25
@@ -1039,6 +1040,8 @@ INT_PTR CALLBACK DlgProcParentWindow(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
                     if (tbd->hIconBig != NULL) {
                         SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM) tbd->hIconBig);
                     }
+					if (pTaskbarInterface)
+						pTaskbarInterface->lpVtbl->SetOverlayIcon(pTaskbarInterface, hwndDlg,  tbd->hIconNot, L"");
 				}
 			}
 			break;

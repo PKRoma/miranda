@@ -31,6 +31,8 @@ struct UTF8_INTERFACE utfi;
 PLUGINLINK *pluginLink;
 HINSTANCE g_hInst;
 
+ITaskbarList3 * pTaskbarInterface;
+
 PLUGININFOEX pluginInfo = {
 	sizeof(PLUGININFOEX),
 #ifdef _UNICODE
@@ -82,6 +84,9 @@ int __declspec(dllexport) Load(PLUGINLINK * link)
 	mir_getMMI( &mmi );
 	mir_getUTFI( &utfi );
 
+	if (IsWinVer7Plus())
+		CoCreateInstance(&CLSID_TaskbarList, NULL, CLSCTX_ALL, &IID_ITaskbarList3, (void**)&pTaskbarInterface);
+
 	InitSendQueue();
 	return OnLoadModule();
 }
@@ -89,5 +94,7 @@ int __declspec(dllexport) Load(PLUGINLINK * link)
 int __declspec(dllexport) Unload(void)
 {
 	DestroySendQueue();
+	if (pTaskbarInterface)
+		pTaskbarInterface->lpVtbl->Release(pTaskbarInterface);
 	return OnUnloadModule();
 }
