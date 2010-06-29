@@ -142,15 +142,22 @@ static INT_PTR Service_GetInfo(WPARAM wParam,LPARAM lParam)
 
 void LoadModuleIcons(MODULEINFO * mi) {
 	int index;
+
 	HIMAGELIST hList = ImageList_Create(16, 16, IsWinVerXPPlus() ? ILC_COLOR32 | ILC_MASK : ILC_COLOR8 | ILC_MASK, 0, 0);
+
 	int overlayIcon = ImageList_AddIcon(hList, GetCachedIcon("chat_overlay"));
 	ImageList_SetOverlayImage(hList, overlayIcon, 1);
-	index = ImageList_AddIcon_ProtoEx(hList, mi->pszModule, ID_STATUS_ONLINE);
-	mi->hOnlineIcon = ImageList_GetIcon(hList, index, ILD_TRANSPARENT);
-	mi->hOnlineTalkIcon = ImageList_GetIcon(hList, index, ILD_TRANSPARENT|INDEXTOOVERLAYMASK(1));
-	index = ImageList_AddIcon_ProtoEx(hList, mi->pszModule, ID_STATUS_OFFLINE);
-	mi->hOfflineIcon = ImageList_GetIcon(hList, index, ILD_TRANSPARENT);
-	mi->hOfflineTalkIcon = ImageList_GetIcon(hList, index, ILD_TRANSPARENT|INDEXTOOVERLAYMASK(1));
+	
+	mi->hOnlineIconBig = LoadSkinnedProtoIconBig(mi->pszModule, ID_STATUS_ONLINE);
+	mi->hOnlineIcon = LoadSkinnedProtoIcon(mi->pszModule, ID_STATUS_ONLINE);
+	index = ImageList_AddIcon(hList, mi->hOnlineIcon); 
+	mi->hOnlineTalkIcon = ImageList_GetIcon(hList, index, ILD_TRANSPARENT | INDEXTOOVERLAYMASK(1));
+
+	mi->hOfflineIconBig = LoadSkinnedProtoIconBig(mi->pszModule, ID_STATUS_OFFLINE);
+	mi->hOfflineIcon = LoadSkinnedProtoIcon(mi->pszModule, ID_STATUS_OFFLINE);
+	index = ImageList_AddIcon(hList, mi->hOfflineIcon); 
+	mi->hOfflineTalkIcon = ImageList_GetIcon(hList, index, ILD_TRANSPARENT | INDEXTOOVERLAYMASK(1));
+
 	ImageList_Destroy(hList);
 }
 
@@ -189,11 +196,6 @@ static INT_PTR Service_Register(WPARAM wParam, LPARAM lParam)
 			mi->crColors = mir_alloc(sizeof(COLORREF) * gcr->nColors);
 			memcpy(mi->crColors, gcr->pColors, sizeof(COLORREF) * gcr->nColors);
 		}
-
-		mi->hOnlineIcon = NULL;
-		mi->hOnlineTalkIcon = NULL;
-		mi->hOfflineIcon = NULL;
-		mi->hOfflineTalkIcon = NULL;
 
 		CheckColorsInModule((char*)gcr->pszModule);
 		CList_SetAllOffline(TRUE, gcr->pszModule);
