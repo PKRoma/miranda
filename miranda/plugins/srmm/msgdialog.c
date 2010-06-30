@@ -691,7 +691,7 @@ void Button_SetIcon_IcoLib(HWND hwndDlg, int itemId, int iconId, const char* too
 	HWND hWnd = GetDlgItem( hwndDlg, itemId );
 	SendMessage( hWnd, BM_SETIMAGE, IMAGE_ICON, ( LPARAM )LoadSkinnedIcon( iconId ));
 	SendMessage( hWnd, BUTTONSETASFLATBTN, 0, 0 );
-	SendMessage( hWnd, BUTTONADDTOOLTIP, (WPARAM)Translate(tooltip), 0);
+	SendMessage( hWnd, BUTTONADDTOOLTIP, (WPARAM)tooltip, 0);
 }
 
 void Button_FreeIcon_IcoLib(HWND hwndDlg, int itemId)
@@ -1545,7 +1545,8 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			KillTimer(hwndDlg, wParam);
 			//ShowWindow(hwndDlg, SW_SHOWNORMAL); //usability
 			//EnableWindow(hwndDlg, FALSE); //usability
-			dat->hwndErrorDlg = CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_MSGSENDERROR), hwndDlg, ErrorDlgProc, (LPARAM)"The message send timed out.");
+			dat->hwndErrorDlg = CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_MSGSENDERROR), 
+				hwndDlg, ErrorDlgProc, (LPARAM) LPGEN("The message send timed out."));
 		}
 		else if (wParam == TIMERID_FLASHWND) {
 			FlashWindow(hwndDlg, TRUE);
