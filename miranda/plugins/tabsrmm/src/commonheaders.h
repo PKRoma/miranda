@@ -258,6 +258,18 @@ extern 	NEN_OPTIONS	nen_options;
 	#define wEffects wReserved
 #endif
 
+#if defined(__GNUG__)
+#define __except(x) if(x)
+#define __try
+#define __finally
+
+EXCEPTION_POINTERS* GetExceptionInformation()
+{
+	EXCEPTION_POINTERS e;
+	return(&e);
+}
+#endif
+
 typedef struct __paraformat2
 {
 	UINT	cbSize;

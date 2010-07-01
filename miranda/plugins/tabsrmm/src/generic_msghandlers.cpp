@@ -518,7 +518,10 @@ LRESULT TSAPI DM_MsgWindowCmdHandler(HWND hwndDlg, TContainerData *m_pContainer,
 					dat->sendMode ^= SMODE_FORCEANSI;
 					break;
 				case ID_SENDMENU_SENDLATER:
-					dat->sendMode ^= SMODE_SENDLATER;
+					if(sendLater->isAvail())
+						dat->sendMode ^= SMODE_SENDLATER;
+					else
+						CWarning::show(CWarning::WARN_NO_SENDLATER, MB_OK|MB_ICONINFORMATION, CTranslator::get(CTranslator::QMGR_ERROR_NOMULTISEND));
 					break;
 				case ID_SENDMENU_SENDWITHOUTTIMEOUTS:
 					dat->sendMode ^= SMODE_NOACK;
@@ -1315,7 +1318,7 @@ LRESULT TSAPI DM_WMCopyHandler(HWND hwnd, WNDPROC oldWndProc, WPARAM wParam, LPA
 HWND TSAPI DM_CreateClist(TWindowData *dat)
 {
 	if(!sendLater->isAvail()) {
-		SendMessage(dat->hwnd, DM_ACTIVATETOOLTIP, IDC_MESSAGE, (LPARAM)CTranslator::get(CTranslator::QMGR_ERROR_NOMULTISEND));
+		CWarning::show(CWarning::WARN_NO_SENDLATER, MB_OK|MB_ICONINFORMATION, CTranslator::get(CTranslator::QMGR_ERROR_NOMULTISEND));
 		dat->sendMode &= ~SMODE_MULTIPLE;
 		return(0);
 	}
@@ -1856,7 +1859,7 @@ void TSAPI DM_EventAdded(TWindowData *dat, WPARAM wParam, LPARAM lParam)
 		* never switch for status changes...
 		*/
 		if (!(dbei.flags & DBEF_SENT) && !fIsStatusChangeEvent) {
-			if(PluginConfig.m_AutoSwitchTabs && m_pContainer->hwndActive != hwndDlg) {
+			if(PluginConfig.haveAutoSwitch() && m_pContainer->hwndActive != hwndDlg) {
 				if ((IsIconic(hwndContainer) && !IsZoomed(hwndContainer)) || (PluginConfig.m_HideOnClose && !IsWindowVisible(m_pContainer->hwnd))) {
 					int iItem = GetTabIndexFromHWND(GetParent(hwndDlg), hwndDlg);
 					if (iItem >= 0) {

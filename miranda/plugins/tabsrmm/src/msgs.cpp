@@ -859,8 +859,12 @@ HWND TSAPI CreateNewTabForContact(struct TContainerData *pContainer, HANDLE hCon
 		SendMessage(pContainer->hwndActive, WM_SIZE, 0, 0);
 	}
 	if(PluginConfig.m_bIsWin7 && PluginConfig.m_useAeroPeek && CSkin::m_skinEnabled && !M->GetByte("forceAeroPeek", 0))
-		CWarning::show(CWarning::WARN_AEROPEEK_SKIN, CWarning::CWF_UNTRANSLATED|MB_ICONWARNING|MB_OK);
+		CWarning::show(CWarning::WARN_AEROPEEK_SKIN, MB_ICONWARNING|MB_OK);
 
+	if(ServiceExists(MS_HPP_EG_EVENT) && ServiceExists(MS_IEVIEW_EVENT) && M->GetByte(0, "HistoryPlusPlus", "IEViewAPI", 0)) {
+		if(IDYES == CWarning::show(CWarning::WARN_HPP_APICHECK, MB_ICONWARNING|MB_YESNO))
+			M->WriteByte(0, "HistoryPlusPlus", "IEViewAPI", 0);
+	}
 	return hwndNew;		// return handle of the new dialog
 }
 

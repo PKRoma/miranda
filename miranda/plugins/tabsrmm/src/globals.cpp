@@ -667,6 +667,8 @@ int CGlobals::OkToExit(WPARAM wParam, LPARAM lParam)
 	::CreateSystrayIcon(0);
 	::CreateTrayMenus(0);
 
+	CWarning::destroyAll();
+
 	CMimAPI::m_shutDown = true;
 	UnhookEvent(m_event_EventAdded);
 	UnhookEvent(m_event_Dispatch);
@@ -846,6 +848,24 @@ void CGlobals::cacheUpdateMetaChanged()
 	}
 }
 
+/**
+ * on Windows 7, when using new task bar features (grouping mode and per tab
+ * previews), autoswitching does not work relieably, so it is disabled.
+ *
+ * @return: true if configuration dictates autoswitch
+ */
+bool CGlobals::haveAutoSwitch()
+{
+	if(m_bIsWin7) {
+		if(m_useAeroPeek && !CSkin::m_skinEnabled)
+			return(false);
+	}
+	return(m_AutoSwitchTabs ? true : false);
+}
+/**
+ * exception handling - copy error message to clip board
+ * @param hWnd: 	window handle of the edit control containing the error message
+ */
 void CGlobals::Ex_CopyEditToClipboard(HWND hWnd)
 {
 	SendMessage(hWnd, EM_SETSEL, 0, 65535L);
@@ -913,6 +933,7 @@ int CGlobals::Ex_ShowDialog(EXCEPTION_POINTERS *ep, const char *szFile, int line
 	_snprintf(m_exSzFile, MAX_PATH, "%s%s", szName, szExt);
 	m_exLine = line;
 	m_exLastResult = DialogBoxParam(g_hInst, MAKEINTRESOURCE(IDD_EXCEPTION), 0, CGlobals::Ex_DlgProc, 0);
-
+	if(IDCANCEL == m_exLastResult)
+		ExitProcess(1);
 	return 1;
 }

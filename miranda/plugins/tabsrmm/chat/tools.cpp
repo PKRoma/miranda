@@ -444,7 +444,7 @@ void TSAPI DoFlashAndSoundWorker(FLASH_PARAMS* p)
 
 		// autoswitch tab..
 		if (p->bMustAutoswitch) {
-			if ((IsIconic(dat->pContainer->hwnd)) && !IsZoomed(dat->pContainer->hwnd) && PluginConfig.m_AutoSwitchTabs && dat->pContainer->hwndActive != si->hWnd) {
+			if ((IsIconic(dat->pContainer->hwnd)) && !IsZoomed(dat->pContainer->hwnd) && PluginConfig.haveAutoSwitch() && dat->pContainer->hwndActive != si->hWnd) {
 				int iItem = GetTabIndexFromHWND(hwndTab, si->hWnd);
 				if (iItem >= 0) {
 					TabCtrl_SetCurSel(hwndTab, iItem);

@@ -42,6 +42,8 @@
 int				Utils::rtf_ctable_size = 0;
 TRTFColorTable* Utils::rtf_ctable = 0;
 
+HANDLE			CWarning::hWindowList = 0;
+
 static TCHAR *w_bbcodes_begin[] = { _T("[b]"), _T("[i]"), _T("[u]"), _T("[s]"), _T("[color=") };
 static TCHAR *w_bbcodes_end[] = { _T("[/b]"), _T("[/i]"), _T("[/u]"), _T("[/s]"), _T("[/color]") };
 
@@ -1008,23 +1010,23 @@ void TSAPI Utils::extractResource(const HMODULE h, const UINT uID, const TCHAR *
  * extract the clicked URL from a rich edit control. Return the URL as TCHAR*
  * caller MUST mir_free() the returned string
  * @param 	hwndRich -  rich edit window handle
- * @return	TCHAR*		extracted URL
+ * @return	wchar_t*	extracted URL
  */
-const TCHAR* Utils::extractURLFromRichEdit(const ENLINK* _e, const HWND hwndRich)
+const wchar_t* Utils::extractURLFromRichEdit(const ENLINK* _e, const HWND hwndRich)
 {
-	TEXTRANGE tr = {0};
-	CHARRANGE sel = {0};
+	TEXTRANGEW 	tr = {0};
+	CHARRANGE 	sel = {0};
 
-	::SendMessage(hwndRich, EM_EXGETSEL, 0, (LPARAM) & sel);
+	::SendMessageW(hwndRich, EM_EXGETSEL, 0, (LPARAM) & sel);
 	if (sel.cpMin != sel.cpMax)
 		return(0);
 
 	tr.chrg = _e->chrg;
-	tr.lpstrText = (TCHAR *)mir_alloc(sizeof(TCHAR) * (tr.chrg.cpMax - tr.chrg.cpMin + 8));
-	::SendMessage(hwndRich, EM_GETTEXTRANGE, 0, (LPARAM) & tr);
-	if (_tcschr(tr.lpstrText, '@') != NULL && _tcschr(tr.lpstrText, ':') == NULL && _tcschr(tr.lpstrText, '/') == NULL) {
+	tr.lpstrText = (wchar_t *)mir_alloc(2 * (tr.chrg.cpMax - tr.chrg.cpMin + 8));
+	::SendMessageW(hwndRich, EM_GETTEXTRANGE, 0, (LPARAM) & tr);
+	if (wcschr(tr.lpstrText, '@') != NULL && wcschr(tr.lpstrText, ':') == NULL && wcschr(tr.lpstrText, '/') == NULL) {
 		::MoveMemory(tr.lpstrText + 7, tr.lpstrText, sizeof(TCHAR) * (tr.chrg.cpMax - tr.chrg.cpMin + 1));
-		::CopyMemory(tr.lpstrText, _T("mailto:"), 7);
+		::CopyMemory(tr.lpstrText, L"mailto:", 7);
 	}
 	return(tr.lpstrText);
 }
@@ -1059,15 +1061,15 @@ LRESULT Utils::CmdDispatcher(UINT uType, HWND hwndDlg, UINT cmd, WPARAM wParam, 
  *
  * @param tszFilename - string to filter.
  */
-void Utils::sanitizeFilename(TCHAR* tszFilename)
+void Utils::sanitizeFilename(wchar_t* tszFilename)
 {
-	static TCHAR *forbiddenCharacters = _T("%/\\':|\"<>?");
+	static wchar_t *forbiddenCharacters = L"%/\\':|\"<>?";
 	int    i;
 
-	for (i = 0; i < lstrlen(forbiddenCharacters); i++) {
-		TCHAR *szFound = 0;
+	for (i = 0; i < lstrlenW(forbiddenCharacters); i++) {
+		wchar_t*	szFound = 0;
 
-		while ((szFound = _tcschr(tszFilename, (int)forbiddenCharacters[i])) != NULL)
+		while ((szFound = wcschr(tszFilename, (int)forbiddenCharacters[i])) != NULL)
 			*szFound = ' ';
 	}
 }
@@ -1075,10 +1077,10 @@ void Utils::sanitizeFilename(TCHAR* tszFilename)
 /**
  * implementation of the CWarning class
  */
-CWarning::CWarning(const TCHAR *tszTitle, const TCHAR *tszText, const UINT uId, const DWORD dwFlags)
+CWarning::CWarning(const wchar_t *tszTitle, const wchar_t *tszText, const UINT uId, const DWORD dwFlags)
 {
-	m_szTitle = new std::basic_string<TCHAR>(tszTitle);
-	m_szText = new std::basic_string<TCHAR>(tszText);
+	m_szTitle = new std::basic_string<wchar_t>(tszTitle);
+	m_szText = new std::basic_string<wchar_t>(tszText);
 	m_uId = uId;
 	m_hFontCaption = 0;
 	m_dwFlags = dwFlags;
@@ -1119,42 +1121,55 @@ __int64 CWarning::getMask()
 	return(mask);
 }
 
+void CWarning::destroyAll()
+{
+	if(hWindowList)
+		WindowList_Broadcast(hWindowList, WM_COMMAND, MAKEWPARAM(IDCANCEL, 0), 0);
+}
 /**
  * show a CWarning dialog using the id value. Check whether the user has chosen to
  * not show this message again. This has room for 64 different warning dialogs, which
  * should be enough in the first place. Extending it should not be too hard though.
  */
-LRESULT CWarning::show(const int uId, DWORD dwFlags, const TCHAR* tszTxt)
+LRESULT CWarning::show(const int uId, DWORD dwFlags, const wchar_t* tszTxt)
 {
-	TCHAR*	separator_pos = 0;
-	__int64 mask = 0, val = 0;
-	LRESULT result = 0;
-	TCHAR *_s = 0;
+	wchar_t*	separator_pos = 0;
+	__int64 	mask = 0, val = 0;
+	LRESULT 	result = 0;
+	wchar_t*	_s = 0;
 
-	if(uId != -1) {
-		if(dwFlags & CWF_UNTRANSLATED)
-			_s = const_cast<TCHAR *>(CTranslator::getUntranslatedWarning(uId));
-		else {
-			/*
-			* revert to untranslated warning when the translated message
-			* is not well-formatted.
-			*/
-			_s = const_cast<TCHAR *>(CTranslator::getWarning(uId));
-			if(_tcslen(_s) < 3 || 0 == _tcschr(_s, '|'))
-				_s = const_cast<TCHAR *>(CTranslator::getUntranslatedWarning(uId));
+	if(0 == hWindowList)
+		hWindowList = reinterpret_cast<HANDLE>(::CallService(MS_UTILS_ALLOCWINDOWLIST, 0, 0));
+
+	if(tszTxt)
+		_s = const_cast<wchar_t *>(tszTxt);
+	else {
+		if(uId != -1) {
+			if(dwFlags & CWF_UNTRANSLATED)
+				_s = const_cast<wchar_t *>(CTranslator::getUntranslatedWarning(uId));
+			else {
+				/*
+				* revert to untranslated warning when the translated message
+				* is not well-formatted.
+				*/
+				_s = const_cast<wchar_t *>(CTranslator::getWarning(uId));
+
+				if(wcslen(_s) < 3 || 0 == wcschr(_s, '|'))
+					_s = const_cast<wchar_t *>(CTranslator::getUntranslatedWarning(uId));
+			}
 		}
+		else if(-1 == uId && tszTxt) {
+			dwFlags |= CWF_NOALLOWHIDE;
+			_s = (dwFlags & CWF_UNTRANSLATED ? const_cast<wchar_t *>(tszTxt) : TranslateW(tszTxt));
+		}
+		else
+			return(-1);
 	}
-	else if(-1 == uId && tszTxt) {
-		dwFlags |= CWF_NOALLOWHIDE;
-		_s = (dwFlags & CWF_UNTRANSLATED ? const_cast<TCHAR *>(tszTxt) : TranslateTS(tszTxt));
-	}
-	else
-		return(-1);
 
-	TCHAR *s = reinterpret_cast<TCHAR *>(mir_alloc((_tcslen(_s) + 1) * sizeof(TCHAR)));
+	wchar_t *s = reinterpret_cast<wchar_t *>(mir_alloc((wcslen(_s) + 1) * 2));
 
-	_tcscpy(s, _s);
-	if((_tcslen(s) > 3) && ((separator_pos = _tcschr(s, '|')) != 0)) {
+	wcscpy(s, _s);
+	if((wcslen(s) > 3) && ((separator_pos = wcschr(s, '|')) != 0)) {
 
 		if(uId >= 0) {
 			mask = getMask();
@@ -1222,7 +1237,7 @@ INT_PTR CALLBACK CWarning::dlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lP
 
 			m_hwnd = hwnd;
 
-			::SetWindowText(hwnd, _T("TabSRMM message"));
+			::SetWindowTextW(hwnd, L"TabSRMM message");
 			::SendMessage(hwnd, WM_SETICON, ICON_BIG, reinterpret_cast<LPARAM>(::LoadSkinnedIconBig(SKINICON_OTHER_MIRANDA)));
 			::SendMessage(hwnd, WM_SETICON, ICON_SMALL, reinterpret_cast<LPARAM>(::LoadSkinnedIcon(SKINICON_OTHER_MIRANDA)));
 			::SendDlgItemMessage(hwnd, IDC_WARNTEXT, EM_AUTOURLDETECT, (WPARAM) TRUE, 0);
@@ -1232,16 +1247,16 @@ INT_PTR CALLBACK CWarning::dlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lP
 			tstring *str = new tstring(temp);
 
 			str->append(m_szText->c_str());
-			str->append(_T("}"));
+			str->append(L"}");
 
 			TranslateDialogDefault(hwnd);
 
 			/*
 			 * convert normal line breaks to rtf
 			 */
-			while((pos = str->find(_T("\n"))) != str->npos) {
+			while((pos = str->find(L"\n")) != str->npos) {
 				str->erase(pos, 1);
-				str->insert(pos, _T("\\line "));
+				str->insert(pos, L"\\line ");
 			}
 
 			char *utf8 = M->utf8_encodeT(str->c_str());
@@ -1249,7 +1264,7 @@ INT_PTR CALLBACK CWarning::dlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lP
 			mir_free(utf8);
 			delete str;
 
-			::SetDlgItemText(hwnd, IDC_CAPTION, m_szTitle->c_str());
+			::SetDlgItemTextW(hwnd, IDC_CAPTION, m_szTitle->c_str());
 
 			if(m_dwFlags & CWF_NOALLOWHIDE)
 				Utils::showDlgControl(hwnd, IDC_DONTSHOWAGAIN, SW_HIDE);
@@ -1277,10 +1292,11 @@ INT_PTR CALLBACK CWarning::dlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lP
 			else
 				hIcon = ::LoadSkinnedIconBig(SKINICON_EVENT_MESSAGE);
 
-			::SendDlgItemMessage(hwnd, IDC_WARNICON, STM_SETICON, reinterpret_cast<WPARAM>(hIcon), 0);
+			::SendDlgItemMessageW(hwnd, IDC_WARNICON, STM_SETICON, reinterpret_cast<WPARAM>(hIcon), 0);
 			if(!(m_dwFlags & MB_YESNO || m_dwFlags & MB_YESNOCANCEL))
 				::ShowWindow(hwnd, SW_SHOWNORMAL);
-			
+
+			WindowList_Add(hWindowList, hwnd, hwnd);
 			return(TRUE);
 		}
 
@@ -1348,13 +1364,13 @@ INT_PTR CALLBACK CWarning::dlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lP
 				case WM_LBUTTONUP: {
 					ENLINK* 		e = reinterpret_cast<ENLINK *>(lParam);
 
-					const TCHAR*	tszUrl = Utils::extractURLFromRichEdit(e, ::GetDlgItem(hwnd, IDC_WARNTEXT));
-					if(tszUrl) {
-						char* szUrl = mir_t2a(tszUrl);
+					const wchar_t*	wszUrl = Utils::extractURLFromRichEdit(e, ::GetDlgItem(hwnd, IDC_WARNTEXT));
+					if(wszUrl) {
+						char* szUrl = mir_t2a(wszUrl);
 
 						CallService(MS_UTILS_OPENURL, 1, (LPARAM)szUrl);
 						mir_free(szUrl);
-						mir_free(const_cast<TCHAR *>(tszUrl));
+						mir_free(const_cast<TCHAR *>(wszUrl));
 					}
 					break;
 								   }
@@ -1365,6 +1381,9 @@ INT_PTR CALLBACK CWarning::dlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lP
 			}
 			break;
 						}
+		case WM_DESTROY:
+			WindowList_Remove(hWindowList, hwnd);
+			break;
 
 		case WM_NCDESTROY:
 			::SetWindowLongPtr(hwnd, GWLP_USERDATA, 0);

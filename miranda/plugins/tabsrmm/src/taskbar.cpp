@@ -685,7 +685,7 @@ void CThumbBase::renderBase()
 	m_rcIcon.top += (lIconSize + 3);
 	CSkin::RenderText(m_hdc, m_dat->hTheme, m_dat->szStatus, &m_rcIcon, m_dtFlags | DT_CENTER | DT_WORD_ELLIPSIS, 10, 0, true);
 	if(m_dat->dwUnread) {
-		TCHAR	tszTemp[30];
+		wchar_t	tszTemp[30];
 
 		m_rcIcon.top += m_sz.cy;
 		mir_sntprintf(tszTemp, 30, CTranslator::get(CTranslator::GEN_TASKBAR_STRING_UNREAD), m_dat->dwUnread);
@@ -718,7 +718,6 @@ CThumbBase::~CThumbBase()
  * bitmap and render the background.
  *
  * @param _p	our owner (CProxyWindow object)
- * @return
  */
 CThumbIM::CThumbIM(const CProxyWindow* _p) : CThumbBase(_p)
 {
@@ -727,7 +726,7 @@ CThumbIM::CThumbIM(const CProxyWindow* _p) : CThumbBase(_p)
 }
 
 /**
- * update the thumbnail
+ * update the thumbnail, render everything and set it valid
  */
 void CThumbIM::update()
 {
@@ -748,7 +747,7 @@ void CThumbIM::renderContent()
 	bool			fFree = false;
 	HRGN			hRgn = 0;
 	HDC				dc;
-	const TCHAR*	tszStatusMsg = 0;
+	const wchar_t*	tszStatusMsg = 0;
 
 	hbmAvatar = (m_dat->ace && m_dat->ace->hbmPic) ? m_dat->ace->hbmPic : PluginConfig.g_hbmUnknown;
 	Utils::scaleAvatarHeightLimited(hbmAvatar, dNewWidth, dNewHeight, m_rcIcon.bottom - m_rcIcon.top);
@@ -783,7 +782,7 @@ void CThumbIM::renderContent()
 	m_rcBottom.bottom -= ((m_rcBottom.bottom - m_rcBottom.top) % m_sz.cy);		// adjust to a multiple of line height
 
 	if(0 == (tszStatusMsg = m_dat->cache->getStatusMsg()))
-			tszStatusMsg = CTranslator::get(CTranslator::GEN_NO_STATUS);
+		tszStatusMsg = CTranslator::get(CTranslator::GEN_NO_STATUS);
 
 	CSkin::RenderText(m_hdc, m_dat->hTheme, tszStatusMsg, &m_rcBottom, DT_WORD_ELLIPSIS | DT_END_ELLIPSIS | m_dtFlags, 10, 0, true);
 	m_rcBottom.bottom = m_rc.bottom;
@@ -791,6 +790,12 @@ void CThumbIM::renderContent()
 	CSkin::RenderText(m_hdc, m_dat->hTheme, Win7Taskbar->haveAlwaysGroupingMode() ? m_dat->cache->getUIN() : m_dat->cache->getNick(),
 					  &m_rcBottom, m_dtFlags | DT_SINGLELINE | DT_WORD_ELLIPSIS | DT_END_ELLIPSIS, 10, 0, true);
 
+	/*
+	 * finalize it
+	 * do NOT delete the bitmap, the dwm will need the handle
+	 * m_hbm is deleted when a new thumbnail is generated on dwm's request.
+	 * this is not a leak!
+	 */
 	if(m_hOldFont)
 		::SelectObject(m_hdc, m_hOldFont);
 
@@ -827,31 +832,31 @@ void CThumbMUC::renderContent()
 {
 	if(m_dat->si) {
 		const MODULEINFO*	mi = MM_FindModule(m_dat->si->pszModule);
-		TCHAR				tszTemp[250];
-		const TCHAR*		tszStatusMsg = 0;
+		wchar_t				szTemp[250];
+		const wchar_t*		szStatusMsg = 0;
 
 		if(mi) {
 			if(m_dat->si->iType != GCW_SERVER) {
-				TCHAR* _p = NULL;
+				wchar_t* _p = NULL;
 				if ( m_dat->si->ptszStatusbarText )
-					_p = _tcschr(m_dat->si->ptszStatusbarText, ']');
+					_p = wcschr(m_dat->si->ptszStatusbarText, ']');
 				if( _p ) {
 					_p++;
-					TCHAR	_t = *_p;
+					wchar_t	_t = *_p;
 					*_p = 0;
-					mir_sntprintf(tszTemp, SIZEOF(tszTemp), CTranslator::get(CTranslator::GEN_TASKBAR_STRING_CHAT_ROOM), m_dat->si->ptszStatusbarText);
+					mir_sntprintf(szTemp, SIZEOF(szTemp), CTranslator::get(CTranslator::GEN_TASKBAR_STRING_CHAT_ROOM), m_dat->si->ptszStatusbarText);
 					*_p = _t;
 				}
 				else
-					mir_sntprintf(tszTemp, SIZEOF(tszTemp), CTranslator::get(CTranslator::GEN_TASKBAR_STRING_CHAT_ROOM), _T(""));
-				CSkin::RenderText(m_hdc, m_dat->hTheme, tszTemp, &m_rcIcon, m_dtFlags | DT_SINGLELINE | DT_RIGHT, 10, 0, true);
+					mir_sntprintf(szTemp, SIZEOF(szTemp), CTranslator::get(CTranslator::GEN_TASKBAR_STRING_CHAT_ROOM), L"");
+				CSkin::RenderText(m_hdc, m_dat->hTheme, szTemp, &m_rcIcon, m_dtFlags | DT_SINGLELINE | DT_RIGHT, 10, 0, true);
 				m_rcIcon.top += m_sz.cy;
-				mir_sntprintf(tszTemp, SIZEOF(tszTemp), CTranslator::get(CTranslator::GEN_TASKBAR_STRING_USERS), m_dat->si->nUsersInNicklist);
-				CSkin::RenderText(m_hdc, m_dat->hTheme, tszTemp, &m_rcIcon, m_dtFlags | DT_SINGLELINE | DT_RIGHT, 10, 0, true);
+				mir_sntprintf(szTemp, SIZEOF(szTemp), CTranslator::get(CTranslator::GEN_TASKBAR_STRING_USERS), m_dat->si->nUsersInNicklist);
+				CSkin::RenderText(m_hdc, m_dat->hTheme, szTemp, &m_rcIcon, m_dtFlags | DT_SINGLELINE | DT_RIGHT, 10, 0, true);
 			}
 			else {
-				mir_sntprintf(tszTemp, SIZEOF(tszTemp), CTranslator::get(CTranslator::GEN_TASKBAR_STRING_SERVER_WINDOW));
-				CSkin::RenderText(m_hdc, m_dat->hTheme, tszTemp, &m_rcIcon, m_dtFlags | DT_SINGLELINE | DT_RIGHT, 10, 0, true);
+				mir_sntprintf(szTemp, SIZEOF(szTemp), CTranslator::get(CTranslator::GEN_TASKBAR_STRING_SERVER_WINDOW));
+				CSkin::RenderText(m_hdc, m_dat->hTheme, szTemp, &m_rcIcon, m_dtFlags | DT_SINGLELINE | DT_RIGHT, 10, 0, true);
 				if(mi->tszIdleMsg[0] && _tcslen(mi->tszIdleMsg) > 2) {
 					m_rcIcon.top += m_sz.cy;
 					CSkin::RenderText(m_hdc, m_dat->hTheme, &mi->tszIdleMsg[2], &m_rcIcon, m_dtFlags | DT_SINGLELINE | DT_RIGHT, 10, 0, true);
@@ -865,18 +870,21 @@ void CThumbMUC::renderContent()
 		m_rcBottom.bottom -= ((m_rcBottom.bottom - m_rcBottom.top) % m_sz.cy);		// adjust to a multiple of line height
 
 		if(m_dat->si->iType != GCW_SERVER) {
-			if(0 == (tszStatusMsg = m_dat->si->ptszTopic))
-				tszStatusMsg = CTranslator::get(CTranslator::GEN_MUC_NO_TOPIC);
+			if(0 == (szStatusMsg = m_dat->si->ptszTopic))
+				szStatusMsg = CTranslator::get(CTranslator::GEN_MUC_NO_TOPIC);
 		}
 		else if(mi) {
-			mir_sntprintf(tszTemp, SIZEOF(tszTemp), CTranslator::get(CTranslator::MUC_SBAR_ON_SERVER), m_dat->szMyNickname, mi->ptszModDispName, _T(""));
-			tszStatusMsg = tszTemp;
+			mir_sntprintf(szTemp, SIZEOF(szTemp), CTranslator::get(CTranslator::MUC_SBAR_ON_SERVER), m_dat->szMyNickname, mi->ptszModDispName, L"");
+			szStatusMsg = szTemp;
 		}
 
-		CSkin::RenderText(m_hdc, m_dat->hTheme, tszStatusMsg, &m_rcBottom, DT_WORD_ELLIPSIS | DT_END_ELLIPSIS | m_dtFlags, 10, 0, true);
+		CSkin::RenderText(m_hdc, m_dat->hTheme, szStatusMsg, &m_rcBottom, DT_WORD_ELLIPSIS | DT_END_ELLIPSIS | m_dtFlags, 10, 0, true);
 	}
 	/*
 	 * finalize it
+	 * do NOT delete the bitmap, the dwm will need the handle
+	 * m_hbm is deleted when a new thumbnail is generated on dwm's request.
+	 * this is not a leak!
 	 */
 	if(m_hOldFont)
 		::SelectObject(m_hdc, m_hOldFont);

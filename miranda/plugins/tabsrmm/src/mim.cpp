@@ -865,18 +865,16 @@ int CMimAPI::MessageEventAdded(WPARAM wParam, LPARAM lParam)
 			bPopup = (BOOL) M->GetByte("cpopup", 0);
 			pContainer = FindContainerByName(szName);
 			if (pContainer != NULL) {
-				if ((IsIconic(pContainer->hwnd)) && PluginConfig.m_AutoSwitchTabs) {
-					bActivate = TRUE;
-					pContainer->dwFlags |= CNT_DEFERREDTABSELECT;
-				}
-				if (M->GetByte("limittabs", 0) &&  !_tcsncmp(pContainer->szName, _T("default"), 6)) {
-					if ((pContainer = FindMatchingContainer(_T("default"), (HANDLE)wParam)) != NULL) {
+				//if ((IsIconic(pContainer->hwnd)) && PluginConfig.haveAutoSwitch())
+				//	pContainer->dwFlags |= CNT_DEFERREDTABSELECT;
+				if (M->GetByte("limittabs", 0) &&  !wcsncmp(pContainer->szName, L"default", 6)) {
+					if ((pContainer = FindMatchingContainer(L"default", (HANDLE)wParam)) != NULL) {
 						CreateNewTabForContact(pContainer, (HANDLE) wParam, 0, NULL, bActivate, bPopup, TRUE, (HANDLE)lParam);
 						return 0;
 					} else if (bAutoContainer) {
 						pContainer = CreateContainer(szName, CNT_CREATEFLAG_MINIMIZED, (HANDLE)wParam);         // 2 means create minimized, don't popup...
 						CreateNewTabForContact(pContainer, (HANDLE) wParam,  0, NULL, bActivate, bPopup, TRUE, (HANDLE)lParam);
-						SendMessage(pContainer->hwnd, WM_SIZE, 0, 0);
+						SendMessageW(pContainer->hwnd, WM_SIZE, 0, 0);
 						return 0;
 					}
 				} else {
@@ -888,7 +886,7 @@ int CMimAPI::MessageEventAdded(WPARAM wParam, LPARAM lParam)
 				if (bAutoContainer) {
 					pContainer = CreateContainer(szName, CNT_CREATEFLAG_MINIMIZED, (HANDLE)wParam);         // 2 means create minimized, don't popup...
 					CreateNewTabForContact(pContainer, (HANDLE) wParam,  0, NULL, bActivate, bPopup, TRUE, (HANDLE)lParam);
-					SendMessage(pContainer->hwnd, WM_SIZE, 0, 0);
+					SendMessageW(pContainer->hwnd, WM_SIZE, 0, 0);
 					return 0;
 				}
 			}

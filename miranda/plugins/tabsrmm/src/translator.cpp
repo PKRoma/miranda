@@ -34,19 +34,19 @@
 
 #include "commonheaders.h"
 
-TCHAR* CTranslator::weekDays[7] = {LPGENT("Sunday"), LPGENT("Monday"),
+wchar_t* CTranslator::weekDays[7] = {LPGENT("Sunday"), LPGENT("Monday"),
 		LPGENT("Tuesday"), LPGENT("Wednesday"),
 		LPGENT("Thursday"), LPGENT("Friday"), LPGENT("Saturday")};
 
-TCHAR* CTranslator::months[12] = {LPGENT("January"), LPGENT("February"),
+wchar_t* CTranslator::months[12] = {LPGENT("January"), LPGENT("February"),
 		LPGENT("March"), LPGENT("April"), LPGENT("May"),
 		LPGENT("June"), LPGENT("July"), LPGENT("August"),
 		LPGENT("September"), LPGENT("October"), LPGENT("November"), LPGENT("December")};
 
-TCHAR* CTranslator::weekDays_translated[7];
-TCHAR* CTranslator::months_translated[12];
+wchar_t* CTranslator::weekDays_translated[7];
+wchar_t* CTranslator::months_translated[12];
 
-TCHAR* CTranslator::m_strings[STR_LAST] = {
+wchar_t* CTranslator::m_strings[STR_LAST] = {
 	LPGENT("Stay on Top"),								/* CNT_MENU_STAYONTOP */
 	LPGENT("Hide titlebar"),							/* CNT_MENU_HIDETITLEBAR */
 	LPGENT("Container options..."),						/* CNT_MENU_CONTAINEROPTIONS */
@@ -284,7 +284,7 @@ TCHAR* CTranslator::m_strings[STR_LAST] = {
 	LPGENT("Sent OK"),																	/* QMGR_STATUS_SENTOK */
 	LPGENT("Pending"),																	/* QMGR_STATUS_PENDING */
 	LPGENT("Wait ACK"),																	/* QMGR_STATUS_WAITACK */
-	LPGENT("Multisend is unavailable, because the unattended send feature has not been enabled"), /* QMGR_ERROR_NOMULTISEND */
+	LPGENT("Configuration issue|The unattended send feature is disabled. The \\b1 send later\\b0  and \\b1 send to multiple contacts\\b0  features depend on it.\n\nYou must enable it under \\b1Options->Message Sessions->Advanced tweaks\\b0. Changing this option requires a restart."), /* QMGR_ERROR_NOMULTISEND */
 	LPGENT("Removed"),																	/* QMGR_STATUS_REMOVED */
 	LPGENT("You are about to modify the state of one or more items in the\nunattended send queue. The requested action(s) will be executed at the next scheduled queue processing.\n\nThis action cannot be made undone."),	/* QMGR_WARNING_REMOVAL */
 	LPGENT("Queue manager"),															/* QMGR_TITLE */
@@ -320,7 +320,7 @@ TCHAR* CTranslator::m_strings[STR_LAST] = {
  * these strings are used by option pages ONLY
  */
 
-TCHAR* CTranslator::m_OptStrings[OPT_LAST] = {
+wchar_t* CTranslator::m_OptStrings[OPT_LAST] = {
 	LPGENT("Use Global Setting"),									/* OPT_UPREFS_IPGLOBAL */
 	LPGENT("Always On"),											/* OPT_UPREFS_ON */
 	LPGENT("Always Off"),											/* OPT_UPREFS_OFF */
@@ -435,20 +435,27 @@ TCHAR* CTranslator::m_OptStrings[OPT_LAST] = {
  *
  * strings marked with a NOT TRANSLATABLE comment cannot be translated at all. This
  * will be used for important and critical error messages only.
+ *
+ * some strings are empty, this is intentional and used for error messages that share
+ * the message with other possible error notifications (popups, tool tips etc.)
+ *
+ * Entries that do not use the LPGENT() macro are NOT TRANSLATABLE, so don't bother translating them.
  */
-TCHAR* CTranslator::m_Warnings[WARN_LAST] = {
+wchar_t* CTranslator::m_Warnings[WARN_LAST] = {
 	LPGENT("Important release notes|A test warning message"),							/* WARN_TEST */ /* reserved for important notes after upgrade - NOT translatable */
-	LPGENT("Icon pack version check|The installed icon pack is outdated and might be incompatible with TabSRMM version 3.\n\n\\b1Missing or misplaced icons are possible issues with the currently installed icon pack.\\b0 "),			/* WARN_ICONPACKVERSION */
+	L"Icon pack version check|The installed icon pack is outdated and might be incompatible with TabSRMM version 3.\n\n\\b1Missing or misplaced icons are possible issues with the currently installed icon pack.\\b0 ",			/* WARN_ICONPACKVERSION */ /* NOT TRANSLATABLE */
 	LPGENT("Edit user notes|You are editing the user notes. Click the button again or use the hotkey (default: Alt-N) to save the notes and return to normal messaging mode"),  /* WARN_EDITUSERNOTES */
-	LPGENT("Missing component|The icon pack is missing. Please install it to the default icons folder.\n\nNo icons will be available"),		/* WARN_ICONPACKMISSING */ /* NOT TRANSLATABLE */
+	L"Missing component|The icon pack is missing. Please install it to the default icons folder.\n\nNo icons will be available",		/* WARN_ICONPACKMISSING */ /* NOT TRANSLATABLE */
 	LPGENT("Aero peek warning|Some Windows 7 Aero Peek features are disabled, because you have loaded a skin.\n\n\\b1Task bar thumbnails and previews will not work and default task bar behavior will be used.\\b0 "),	/* WARN_AEROPEEKSKIN */
-	LPGENT("TabSRMM group chat module|TabSRMM could not enable its group chat module. The most likely cause is that you have installed and enabled \\b1chat.dll\\b0  or another plugin that provides groupchat services.\n\nShould I try to fix this now \\b1(a restart of Miranda is required to apply these changes)?\\b0"), /* WARN_CHAT_ENABLED */ /* NOT TRANSLATABLE */
-	LPGENT("Missing component|The image service plugin (\\b1advaimg.dll\\b0 ) is not properly installed. Please check your plugin configuration.\n\n\\b1TabSRMM is disabled.\\b0 ")
+	L"TabSRMM group chat module|TabSRMM could not enable its group chat module. The most likely cause is that you have installed and enabled \\b1chat.dll\\b0  or another plugin that provides groupchat services.\n\nShould I try to fix this now \\b1(a restart of Miranda is required to apply these changes)?\\b0", /* WARN_CHAT_ENABLED */ /* NOT TRANSLATABLE */
+	L"Missing component|The image service plugin (\\b1advaimg.dll\\b0 ) is not properly installed. Please check your plugin configuration.\n\n\\b1TabSRMM is disabled.\\b0 ", /* WARN_IMGSVC_MISSING */ /* NOT TRANSLATABLE */
+	LPGENT("Settings problem|The option \\b1 History->Imitate IEView API\\b0  is enabled and the History++ plugin is active. This can cause problems when using IEView as message log viewer.\n\nShould I correct the option (a restart is required)?"), /* WARN_HPP_APICHECK */
+	L" ", /* WARN_NO_SENDLATER */ /*uses QMGR_ERROR_NOMULTISEND */
 };
 
-TCHAR* CTranslator::m_translated[STR_LAST];
-TCHAR* CTranslator::m_OptTranslated[OPT_LAST];
-TCHAR* CTranslator::m_WarningsTranslated[WARN_LAST];
+wchar_t* CTranslator::m_translated[STR_LAST];
+wchar_t* CTranslator::m_OptTranslated[OPT_LAST];
+wchar_t* CTranslator::m_WarningsTranslated[WARN_LAST];
 
 TOptionListGroup CTranslator::m_lvGroupsModPlus[] = {
 	0, LPGENT("Message window tweaks"),
@@ -587,7 +594,7 @@ TOptionListItem CTranslator::m_lvItemsTab[] = {
 	0, LPGENT("Automatically create new message sessions without activating them"), 1, LOI_TYPE_SETTING, (UINT_PTR)"autotabs", 1,
 	0, LPGENT("New windows are minimized (the option above MUST be active)"), 1, LOI_TYPE_SETTING, (UINT_PTR)"autocontainer", 1,
 	0, LPGENT("Activate a minimized window when a new tab is created inside it"), 0, LOI_TYPE_SETTING, (UINT_PTR)"cpopup", 1,
-	0, LPGENT("Automatically activate existing tabs in minimized windows"), 1, LOI_TYPE_SETTING, (UINT_PTR)"autoswitchtabs", 1,
+	0, LPGENT("Automatically activate tabs in minimized windows (ignored when using Aero Peek task bar features)"), 1, LOI_TYPE_SETTING, (UINT_PTR)"autoswitchtabs", 1,
 	0, LPGENT("Remember and set keyboard layout per contact"), 1, LOI_TYPE_SETTING, (UINT_PTR)"al", 2,
 	0, LPGENT("Close button only hides message windows"), 0, LOI_TYPE_SETTING, (UINT_PTR)"hideonclose", 2,
 	0, LPGENT("Allow TAB key in typing area (this will disable focus selection by TAB key)"), 0, LOI_TYPE_SETTING, (UINT_PTR)"tabmode", 2,
