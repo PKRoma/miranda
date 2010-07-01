@@ -126,7 +126,6 @@ static INT_PTR SendMessageCmd(HANDLE hContact, char* msg, int isWchar)
 				SendMessageA(hEdit, EM_REPLACESEL, FALSE, (LPARAM)msg);
 		}
 		ShowWindow(hwnd, SW_RESTORE);
-		SetWindowPos(hwnd, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_SHOWWINDOW | SWP_NOSIZE | SWP_NOMOVE);
 	}
 	else 
 	{
