@@ -443,38 +443,107 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
 
 	case WM_CONTEXTMENU: 
 		{
-			MessageWindowPopupData mwpd;
+			HMENU hMenu;
+			CHARRANGE sel;
+			static const CHARRANGE all = {0, -1};
+
+			MessageWindowPopupData mwpd = {0};
 			mwpd.cbSize = sizeof(mwpd);
 			mwpd.uType = MSG_WINDOWPOPUP_SHOWING;
 			mwpd.uFlags = MSG_WINDOWPOPUP_INPUT;
 			mwpd.hContact = pdat->hContact;
 			mwpd.hwnd = hwnd;
-			mwpd.hMenu = CreatePopupMenu();
-			mwpd.selection = 0;
 
-			if (lParam == 0xFFFFFFFF) {
-				CHARRANGE sel;
-				SendMessage(hwnd, EM_EXGETSEL, 0, (LPARAM) &sel);
-				SendMessage(hwnd, EM_POSFROMCHAR, (WPARAM)&mwpd.pt, (LPARAM) sel.cpMax);
+			hMenu = LoadMenu(g_hInst, MAKEINTRESOURCE(IDR_CONTEXT));
 
+			mwpd.hMenu = GetSubMenu(hMenu, 2);
+			CallService(MS_LANGPACK_TRANSLATEMENU, (WPARAM)mwpd.hMenu, 0);
+			
+			SendMessage(hwnd, EM_EXGETSEL, 0, (LPARAM)&sel);
+			if (sel.cpMin == sel.cpMax) 
+			{
+				EnableMenuItem(mwpd.hMenu, IDM_CUT, MF_BYCOMMAND | MF_GRAYED);
+				EnableMenuItem(mwpd.hMenu, IDM_COPY, MF_BYCOMMAND | MF_GRAYED);
+				EnableMenuItem(mwpd.hMenu, IDM_DELETE, MF_BYCOMMAND | MF_GRAYED);
+			}
+			if (!SendMessage(hwnd, EM_CANUNDO, 0, 0)) 
+			{
+				EnableMenuItem(mwpd.hMenu, IDM_UNDO, MF_BYCOMMAND | MF_GRAYED);
+			}
+			if (!SendMessage(hwnd, EM_CANREDO, 0, 0))
+			{
+				EnableMenuItem(mwpd.hMenu, IDM_REDO, MF_BYCOMMAND | MF_GRAYED);
+			}
+			if (!SendMessage(hwnd, EM_CANPASTE, 0, 0)) 
+			{
+				EnableMenuItem(mwpd.hMenu, IDM_PASTE, MF_BYCOMMAND | MF_GRAYED);
+				EnableMenuItem(mwpd.hMenu, IDM_PASTESEND, MF_BYCOMMAND | MF_GRAYED);
+			}
+			if (lParam == 0xFFFFFFFF) 
+			{
+				SendMessage(hwnd, EM_POSFROMCHAR, (WPARAM)&mwpd.pt, (LPARAM)sel.cpMax);
 				ClientToScreen(hwnd, &mwpd.pt);
 			}
-			else {
-				mwpd.pt.x = LOWORD(lParam);
-				mwpd.pt.y = HIWORD(lParam);
+			else 
+			{
+				mwpd.pt.x = GET_X_LPARAM(lParam);
+				mwpd.pt.y = GET_Y_LPARAM(lParam);
 			}
+
 
 			// First notification
 			NotifyEventHooks(hHookWinPopup, 0, (LPARAM)&mwpd);
 
 			// Someone added items?
-			if (GetMenuItemCount(mwpd.hMenu) > 0) {
+			if (GetMenuItemCount(mwpd.hMenu) > 0) 
+			{
 				mwpd.selection = TrackPopupMenu(mwpd.hMenu, TPM_RETURNCMD, mwpd.pt.x, mwpd.pt.y, 0, hwnd, NULL);
 			}
 
 			// Second notification
 			mwpd.uType = MSG_WINDOWPOPUP_SELECTED;
 			NotifyEventHooks(hHookWinPopup, 0, (LPARAM)&mwpd);
+
+			switch (mwpd.selection)
+			{
+			case IDM_UNDO:
+				SendMessage(hwnd, WM_UNDO, 0, 0);
+				break;
+
+			case IDM_REDO:
+				SendMessage(hwnd, EM_REDO, 0, 0);
+				break;
+
+			case IDM_CUT:
+				SendMessage(hwnd, WM_CUT, 0, 0);
+				break;
+
+			case IDM_COPY:
+				SendMessage(hwnd, WM_COPY, 0, 0);
+				break;
+
+			case IDM_PASTE:
+				SendMessage(hwnd, EM_PASTESPECIAL, CF_TEXT, 0);
+				break;
+
+			case IDM_PASTESEND:
+				SendMessage(hwnd, EM_PASTESPECIAL, CF_TEXT, 0);
+				PostMessage(GetParent(hwnd), WM_COMMAND, IDOK, 0);
+				break;
+
+			case IDM_DELETE:
+				SendMessage(hwnd, EM_REPLACESEL, TRUE, 0);
+				break;
+
+			case IDM_SELECTALL:
+				SendMessage(hwnd, EM_EXSETSEL, 0, (LPARAM)&all);
+				break;
+
+			case IDM_CLEAR:
+				SetWindowText(hwnd, _T( "" ));
+				break;
+			}
+			DestroyMenu(hMenu);
 			return 0;
 		}
 
