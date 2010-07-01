@@ -326,6 +326,21 @@ BEGIN
         MENUITEM "&Open in existing window",    IDM_OPENEXISTING
         MENUITEM "&Copy link",                  IDM_COPYLINK
     END
+    POPUP "Message"
+    BEGIN
+        MENUITEM "Undo",                        IDM_UNDO
+        MENUITEM "Redo",                        IDM_REDO
+        MENUITEM SEPARATOR
+        MENUITEM "Cut",                         IDM_CUT
+        MENUITEM "Copy",                        IDM_COPY
+        MENUITEM "Paste",                       IDM_PASTE
+        MENUITEM "Paste && Send",               IDM_PASTESEND
+        MENUITEM "Delete",                      IDM_DELETE
+        MENUITEM SEPARATOR
+        MENUITEM "Select &All",                 IDM_SELECTALL
+        MENUITEM SEPARATOR
+        MENUITEM "Clear",                       IDM_CLEAR
+    END
 END
 
 #endif    // English (U.S.) resources

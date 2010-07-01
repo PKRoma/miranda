@@ -72,7 +72,14 @@
 #define IDC_TXT_TITLE1                  1617
 #define IDC_TXT_TITLE2                  1618
 #define IDC_TXT_TITLE3                  1619
+
+#define IDM_CUT                         40000
 #define IDM_COPY                        40001
+#define IDM_PASTE                       40002
+#define IDM_UNDO                        40003
+#define IDM_DELETE                      40004
+#define IDM_REDO                        40005
+#define IDM_PASTESEND                   40006
 #define IDM_COPYALL                     40011
 #define IDM_SELECTALL                   40012
 #define IDM_CLEAR                       40013

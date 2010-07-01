@@ -23,9 +23,14 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define _WIN32_WINNT 0x0501
 #define _WIN32_IE 0x0501
 
+#define WIN32_LEAN_AND_MEAN 
+
 #include <m_stdhdr.h>
 
 #include <windows.h>
+#include <windowsx.h>
+#include <ole2.h>
+#include <shellapi.h>
 #include <commctrl.h>
 #include <vssym32.h>
 
