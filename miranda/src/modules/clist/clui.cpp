@@ -2,7 +2,7 @@
 
   Miranda IM: the free IM client for Microsoft* Windows*
 
-  Copyright 2000-2009 Miranda ICQ/IM project,
+  Copyright 2000-2010 Miranda ICQ/IM project,
   all portions of this codebase are copyrighted to the people
   listed in contributors.txt.
 
@@ -584,8 +584,11 @@ LRESULT CALLBACK fnContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 				rcStatus.top = rcStatus.bottom = 0;
 			SetWindowPos(cli.hwndContactTree, NULL, 0, 0, rect.right, rect.bottom - (rcStatus.bottom - rcStatus.top), SWP_NOZORDER);
 		}
-		if (wParam == SIZE_MINIMIZED) {
-			if (DBGetContactSettingByte(NULL, "CList", "Min2Tray", SETTING_MIN2TRAY_DEFAULT)) {
+		if (wParam == SIZE_MINIMIZED) 
+		{
+			if ((GetWindowLongPtr(hwnd, GWL_EXSTYLE) & WS_EX_TOOLWINDOW) || 
+				DBGetContactSettingByte(NULL, "CList", "Min2Tray", SETTING_MIN2TRAY_DEFAULT)) 
+			{
 				ShowWindow(hwnd, SW_HIDE);
 				DBWriteContactSettingByte(NULL, "CList", "State", SETTING_STATE_HIDDEN);
 			}
