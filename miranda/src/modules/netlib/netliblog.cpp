@@ -324,23 +324,25 @@ static INT_PTR ShowOptions(WPARAM, LPARAM)
 	return 0;
 }
 
-static INT_PTR NetlibLog(WPARAM wParam,LPARAM lParam)
+static INT_PTR NetlibLog(WPARAM wParam, LPARAM lParam)
 {
-	struct NetlibUser *nlu=(struct NetlibUser*)wParam;
+	struct NetlibUser *nlu = (struct NetlibUser*)wParam;
 	struct NetlibUser nludummy;
-	const char *pszMsg=(const char*)lParam;
+	const char *pszMsg = (const char*)lParam;
 	char szTime[32], szHead[128];
 	LARGE_INTEGER liTimeNow;
 	DWORD dwOriginalLastError;
 
-	if ( !bIsActive )
+	if (!bIsActive)
 		return 0;
 
-	if ((nlu != NULL && GetNetlibHandleType(nlu)!=NLH_USER) || pszMsg==NULL) {
+	if ((nlu != NULL && GetNetlibHandleType(nlu) != NLH_USER) || pszMsg == NULL) 
+	{
 		SetLastError(ERROR_INVALID_PARAMETER);
 		return 0;
 	}
-	if (nlu == NULL) { /* if the Netlib user handle is NULL, just pretend its not */
+	if (nlu == NULL) /* if the Netlib user handle is NULL, just pretend its not */
+	{
 		if (!logOptions.toLog)
 			return 1;
 		nlu = &nludummy;
@@ -349,58 +351,84 @@ static INT_PTR NetlibLog(WPARAM wParam,LPARAM lParam)
 	else if (!nlu->toLog)
 		return 1;
 
-	dwOriginalLastError=GetLastError();
-	QueryPerformanceCounter(&liTimeNow);
-	liTimeNow.QuadPart-=mirandaStartTime;
-	switch(logOptions.timeFormat) {
-		case TIMEFORMAT_HHMMSS:
-			GetTimeFormatA(LOCALE_USER_DEFAULT,TIME_FORCE24HOURFORMAT|TIME_NOTIMEMARKER,NULL,NULL,szTime,SIZEOF(szTime)-1);
-			break;
-		case TIMEFORMAT_MILLISECONDS:
-			mir_snprintf(szTime,SIZEOF(szTime)-1,"%I64u.%03I64u",liTimeNow.QuadPart/perfCounterFreq,1000*(liTimeNow.QuadPart%perfCounterFreq)/perfCounterFreq);
-			break;
-		case TIMEFORMAT_MICROSECONDS:
-			mir_snprintf(szTime,SIZEOF(szTime)-1,"%I64u.%06I64u",liTimeNow.QuadPart/perfCounterFreq,1000000*(liTimeNow.QuadPart%perfCounterFreq)/perfCounterFreq);
-			break;
-		default:
-			szTime[0]='\0';
-			break;
+	dwOriginalLastError = GetLastError();
+	switch (logOptions.timeFormat) 
+	{
+	case TIMEFORMAT_HHMMSS:
+		GetTimeFormatA(LOCALE_USER_DEFAULT, TIME_FORCE24HOURFORMAT | TIME_NOTIMEMARKER, 
+			NULL, NULL, szTime, SIZEOF(szTime));
+		break;
+
+	case TIMEFORMAT_MILLISECONDS:
+		QueryPerformanceCounter(&liTimeNow);
+		liTimeNow.QuadPart -= mirandaStartTime;
+		mir_snprintf(szTime, SIZEOF(szTime), "%I64u.%03I64u", liTimeNow.QuadPart / perfCounterFreq, 
+			1000 * (liTimeNow.QuadPart % perfCounterFreq) / perfCounterFreq);
+		break;
+
+	case TIMEFORMAT_MICROSECONDS:
+		QueryPerformanceCounter(&liTimeNow);
+		liTimeNow.QuadPart -= mirandaStartTime;
+		mir_snprintf(szTime, SIZEOF(szTime), "%I64u.%06I64u", liTimeNow.QuadPart / perfCounterFreq,
+			1000000 * (liTimeNow.QuadPart % perfCounterFreq) / perfCounterFreq);
+		break;
+
+	default:
+		szTime[0] = '\0';
+		break;
 	}
 	if(logOptions.timeFormat || logOptions.showUser)
-		mir_snprintf(szHead,SIZEOF(szHead)-1,"[%s%s%s] ",szTime,(logOptions.showUser&&logOptions.timeFormat)?" ":"",logOptions.showUser?nlu->user.szSettingsModule:"");
+		mir_snprintf(szHead, SIZEOF(szHead) - 1, "[%s%s%s] ", szTime, 
+			(logOptions.showUser && logOptions.timeFormat) ? " " : "",
+			logOptions.showUser ? nlu->user.szSettingsModule : "");
 	else
 		szHead[0]=0;
 
-	if(logOptions.toOutputDebugString) {
+	if(logOptions.toOutputDebugString) 
+	{
 	    if (szHead[0])
 			OutputDebugStringA(szHead);
 		OutputDebugStringA(pszMsg);
 		OutputDebugStringA("\n");
 	}
 
-	if(logOptions.toFile && logOptions.szFile[0]) {
+	if (logOptions.toFile && logOptions.szFile[0]) 
+	{
 		EnterCriticalSection(&logOptions.cs);
 
 		FILE *fp;
-		fp = _tfopen(logOptions.szFile, _T("at"));
-		if ( !fp ) {
-			CreatePathToFileT( logOptions.szFile );
+		fp = _tfopen(logOptions.szFile, _T("ab"));
+		if (!fp) 
+		{
+			CreatePathToFileT(logOptions.szFile);
 			fp = _tfopen(logOptions.szFile, _T("at"));
 		}
-		if ( fp ) {
-			fprintf(fp,"%s%s\n", szHead, pszMsg);
+		if (fp) 
+		{
+			size_t len = strlen(pszMsg);
+			fprintf(fp,"%s%s%s", szHead, pszMsg, pszMsg[len-1] == '\n' ? "" : "\r\n");
 			fclose(fp);
 		}	
 		LeaveCriticalSection(&logOptions.cs);
 	}
 
-	if ((( THook* )hLogEvent)->subscriberCount ) {
+	if (((THook*)hLogEvent)->subscriberCount) 
+	{
 		LOGMSG logMsg = { szHead, pszMsg };
-		CallHookSubscribers( hLogEvent, (WPARAM)nlu, (LPARAM)&logMsg );
+		CallHookSubscribers(hLogEvent, (WPARAM)nlu, (LPARAM)&logMsg);
 	}
 
 	SetLastError(dwOriginalLastError);
 	return 1;
+}
+
+static INT_PTR NetlibLogW(WPARAM wParam, LPARAM lParam)
+{
+	const wchar_t *pszMsg = (const wchar_t*)lParam;
+	char* szMsg = Utf8EncodeUcs2(pszMsg);
+	INT_PTR res = NetlibLog(wParam, (LPARAM)szMsg);
+	mir_free(szMsg);
+	return res;
 }
 
 void NetlibLogf(NetlibUser* nlu, const char *fmt, ...)
@@ -437,7 +465,7 @@ void NetlibDumpData(struct NetlibConnection *nlc,PBYTE buf,int len,int sent,int 
 	// the dump if the data should not be written to the log
 
 	// Check packet flags
-	if ((flags&MSG_PEEK) || (flags&MSG_NODUMP))
+	if (flags & (MSG_PEEK | MSG_NODUMP))
 		return;
 
 	// Check user's log settings
@@ -450,7 +478,7 @@ void NetlibDumpData(struct NetlibConnection *nlc,PBYTE buf,int len,int sent,int 
 		return;
 	if ((flags&MSG_DUMPPROXY) && !logOptions.dumpProxy)
 		return;
-	if ((flags&MSG_DUMPSSL) && !logOptions.dumpSsl)
+	if ((flags & MSG_DUMPSSL) && !logOptions.dumpSsl)
 		return;
 
 	WaitForSingleObject(hConnectionHeaderMutex, INFINITE);
@@ -459,19 +487,29 @@ void NetlibDumpData(struct NetlibConnection *nlc,PBYTE buf,int len,int sent,int 
 	ReleaseMutex(hConnectionHeaderMutex);
 
 	// check filter settings
-	if ( nlu && !(nlu->toLog) ) return;
+	if (nlu == NULL) 
+	{
+		if (!logOptions.toLog)
+			return;
+	}
+	else if (!nlu->toLog)
+		return;
 
 	if (!logOptions.textDumps)
 		isText = 0;
-	else if (!(flags&MSG_DUMPASTEXT)) {
-		if (logOptions.autoDetectText) {
+	else if (!(flags&MSG_DUMPASTEXT))
+	{
+		if (logOptions.autoDetectText) 
+		{
 			int i;
 			for(i = 0; i<len; i++)
+			{
 				if ((buf[i]<' ' && buf[i]!='\t' && buf[i]!='\r' && buf[i]!='\n') || buf[i]>=0x80)
 				{
 					isText = 0;
 					break;
 				}
+			}
 		}
 		else
 			isText = 0;
@@ -547,6 +585,7 @@ void NetlibLogInit(void)
 
 	CreateServiceFunction( MS_NETLIB_LOGWIN, ShowOptions );
 	CreateServiceFunction( MS_NETLIB_LOG, NetlibLog );
+	CreateServiceFunction( MS_NETLIB_LOGW, NetlibLogW );
 	hLogEvent = CreateHookableEvent( ME_NETLIB_FASTDUMP );
 
 	InitializeCriticalSection(&logOptions.cs);
