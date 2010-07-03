@@ -726,22 +726,26 @@ static INT_PTR Netlib_Logf(HANDLE hUser, const char *fmt, ...)
 }
 
 #ifdef _UNICODE
-static INT_PTR Netlib_Logf(HANDLE hUser, const wchar_t *fmt, ...)
-{
-	va_list va;
-	wchar_t szText[1024];
-
-	__try
+	static INT_PTR Netlib_LogfW(HANDLE hUser, const wchar_t *fmt, ...)
 	{
-		va_start(va,fmt);
-		mir_vsntprintf(szText, sizeof(szText), fmt, va);
-		va_end(va);
-		return CallService(MS_NETLIB_LOGW, (WPARAM)hUser, (LPARAM)szText);
+		va_list va;
+		wchar_t szText[1024];
+
+		__try
+		{
+			va_start(va,fmt);
+			mir_vsntprintf(szText, sizeof(szText), fmt, va);
+			va_end(va);
+			return CallService(MS_NETLIB_LOGW, (WPARAM)hUser, (LPARAM)szText);
+		}
+		__except(EXCEPTION_EXECUTE_HANDLER) {}
+		return 0;
 	}
-	__except(EXCEPTION_EXECUTE_HANDLER) {}
-	return 0;
-}
+	#define Netlib_LogfW Netlib_LogfT
+#else
+	#define Netlib_LogfW Netlib_Logf
 #endif
+
 #endif //defined va_start
 
 /////////////////////////////////////////////////////////////////////////////////////////
