@@ -421,16 +421,35 @@ XCHAR *GetInternalVariable(XCHAR *key, size_t keyLength, HANDLE hContact)
 				 !_xcscmp(theKey, XSTR(key, "miranda_logpath")))
 		{
 			char szFullPath[MAX_PATH], szProfilePath[MAX_PATH] = "", szProfileName[MAX_PATH] = "";
-			CallService(MS_DB_GETPROFILEPATH, SIZEOF(szProfilePath), (LPARAM) szProfilePath);
-			CallService(MS_DB_GETPROFILENAME, SIZEOF(szProfileName), (LPARAM) szProfileName);
+			// fix garbage in returned string when called before load db* plugin
+			if (ServiceExists(MS_DB_GETPROFILEPATH))
+				CallService(MS_DB_GETPROFILEPATH, SIZEOF(szProfilePath), (LPARAM) szProfilePath);
+			else szProfilePath[0] = '\0';
+			if (ServiceExists(MS_DB_GETPROFILENAME))
+				CallService(MS_DB_GETPROFILENAME, SIZEOF(szProfileName), (LPARAM) szProfileName);
+			else szProfileName[0] = '\0';
 			char *pos = strrchr(szProfileName, '.');
 			if ( lstrcmpA( pos, ".dat" ) == 0 )
 				*pos = 0;
-			if (!_xcscmp(theKey, XSTR(key, "miranda_avatarcache"))) 
-				mir_snprintf(szFullPath, SIZEOF(szFullPath), "%s\\%s\\AvatarCache", szProfilePath, szProfileName);
-			else if (!_xcscmp(theKey, XSTR(key, "miranda_logpath"))) 
-				mir_snprintf(szFullPath, SIZEOF(szFullPath), "%s\\%s\\Logs", szProfilePath, szProfileName);
-			else mir_snprintf(szFullPath, SIZEOF(szFullPath), "%s\\%s", szProfilePath, szProfileName);
+
+			// if "szProfilePath\szProfileName" subfolder exist
+			char tmpPath[MAX_PATH];
+			mir_snprintf(tmpPath, SIZEOF(tmpPath), "%s\\%s", szProfilePath, szProfileName);
+			HANDLE hFile = CreateFileA(tmpPath, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, NULL);
+			if (hFile == INVALID_HANDLE_VALUE) {
+				if (!_xcscmp(theKey, XSTR(key, "miranda_avatarcache"))) 
+					mir_snprintf(szFullPath, SIZEOF(szFullPath), "%s\\AvatarCache", szProfilePath);
+				else if (!_xcscmp(theKey, XSTR(key, "miranda_logpath"))) 
+					mir_snprintf(szFullPath, SIZEOF(szFullPath), "%s\\Logs", szProfilePath);
+				else mir_snprintf(szFullPath, SIZEOF(szFullPath), "%s", szProfilePath);
+			}
+			else {
+				if (!_xcscmp(theKey, XSTR(key, "miranda_avatarcache"))) 
+					mir_snprintf(szFullPath, SIZEOF(szFullPath), "%s\\%s\\AvatarCache", szProfilePath, szProfileName);
+				else if (!_xcscmp(theKey, XSTR(key, "miranda_logpath"))) 
+					mir_snprintf(szFullPath, SIZEOF(szFullPath), "%s\\%s\\Logs", szProfilePath, szProfileName);
+				else mir_snprintf(szFullPath, SIZEOF(szFullPath), "%s\\%s", szProfilePath, szProfileName);
+			}
 			theValue = mir_a2x(key, szFullPath);
 	}	}
 

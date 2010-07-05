@@ -127,89 +127,10 @@ static void getDefaultProfile(TCHAR * szProfile, size_t cch, TCHAR * profiledir)
 
 	TCHAR* res = (TCHAR*)CallService(MS_UTILS_REPLACEVARS, (WPARAM)defaultProfile, (LPARAM)&dat);
 	if (res) {
-		mir_sntprintf(szProfile, cch, _T("%s%s%s"), profiledir, res, isValidProfileName(res) ? _T("") : _T(".dat"));
+		mir_sntprintf(szProfile, cch, _T("%s%s\\%s%s"), profiledir, res, res, isValidProfileName(res) ? _T("") : _T(".dat"));
 		mir_free(res);
 	}
 	else szProfile[0] = 0;
-}
-
-// returns 1 if a single profile (full path) is found within the profile dir
-static int getProfile1(TCHAR * szProfile, size_t cch, TCHAR * profiledir, BOOL * noProfiles)
-{
-	unsigned int found = 0;
-
-    bool nodprof = szProfile[0] == 0;
-	bool reqfd = !nodprof && (_taccess(szProfile, 0) == 0 || shouldAutoCreate(szProfile));
-	bool shpm = showProfileManager();
-
-	if (shpm || !reqfd) 
-	{
-		TCHAR searchspec[MAX_PATH];
-		mir_sntprintf(searchspec, SIZEOF(searchspec), _T("%s*.dat"), profiledir);
-
-		WIN32_FIND_DATA ffd;
-		HANDLE hFind = FindFirstFile(searchspec, &ffd);
-		if (hFind != INVALID_HANDLE_VALUE) 
-		{
-			do 
-			{
-				// make sure the first hit is actually a *.dat file
-				if (!(ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) && isValidProfileName(ffd.cFileName)) 
-				{
-					// copy the profile name early cos it might be the only one
-					if (++found == 1 && nodprof) 
-						mir_sntprintf(szProfile, cch, _T("%s%s"), profiledir, ffd.cFileName);
-				}
-			}
-			while (FindNextFile(hFind, &ffd));
-			FindClose(hFind);
-		}
-		reqfd = !shpm && found == 1 && nodprof;
-	}
-
-	if (noProfiles) 
-		*noProfiles = found == 0;
-    
-    if (nodprof && !reqfd) szProfile[0] = 0;
-
-	if (!reqfd && !found)
-	{
-		REPLACEVARSDATA dat = {0};
-		dat.cbSize = sizeof(dat);
-		dat.dwFlags = RVF_TCHAR;
-
-		TCHAR* pfd = (TCHAR*)CallService(MS_UTILS_REPLACEVARS, (WPARAM)_T("%miranda_path%\\*.dat"), (LPARAM)&dat);
-
-		WIN32_FIND_DATA ffd;
-		HANDLE hFind = FindFirstFile(pfd, &ffd);
-		if (hFind != INVALID_HANDLE_VALUE)
-		{
-			TCHAR *s = _tcsrchr(pfd, '\\'); *s = 0;
-			do
-			{
-				TCHAR path[MAX_PATH], path2[MAX_PATH];
-				mir_sntprintf(path, SIZEOF(path), _T("%s\\%s"), pfd, ffd.cFileName); 
-				mir_sntprintf(path2, SIZEOF(path2), _T("%s\\Profiles\\%s"), pfd, ffd.cFileName); 
-				if (MoveFile(path, path2) == 0)
-				{
-					TCHAR buf[256];
-					mir_sntprintf(buf, SIZEOF(buf), 
-						_T("Your database is located in Miranda root folder.\n")
-						_T("Even though your profile folder is %s\n")
-						_T("Profiles are not allowed in the Miranda root folder.\n")
-						_T("Please move Miranda database into the current profile folder."),
-						profiledir);
-					MessageBox(NULL, buf, _T("Miranda IM"), MB_ICONERROR | MB_OK);
-					break;
-				}
-			}
-			while(FindNextFile(hFind, &ffd));
-		}
-		FindClose(hFind);
-		mir_free(pfd);
-	}
-
-	return reqfd;
 }
 
 // returns 1 if something that looks like a profile is there
@@ -254,7 +175,9 @@ void getProfileCmdLine(TCHAR * szProfile, size_t cch, TCHAR * profiledir)
 	TCHAR buf[MAX_PATH];
 	if (getProfileCmdLineArgs(buf, SIZEOF(buf))) {
 		// have something that looks like a .dat, with or without .dat in the filename
-		pathToAbsoluteT(buf, szProfile, profiledir); 
+		TCHAR newProfileDir[MAX_PATH];
+		mir_sntprintf(newProfileDir, cch, _T("%s%s\\"), profiledir, buf);
+		pathToAbsoluteT(buf, szProfile, newProfileDir); 
 		if (!isValidProfileName(szProfile))
 			_tcscat(szProfile, _T(".dat"));
 
@@ -265,6 +188,215 @@ void getProfileCmdLine(TCHAR * szProfile, size_t cch, TCHAR * profiledir)
 			*(p+1) = 0;
 		}	
 	}
+}
+
+// move profile from root dir to profile dir
+static void moveRootDirProfilesOld(TCHAR * profiledir)
+{
+	REPLACEVARSDATA dat = {0};
+	dat.cbSize = sizeof(dat);
+	dat.dwFlags = RVF_TCHAR;
+
+	TCHAR* pfd = (TCHAR*)CallService(MS_UTILS_REPLACEVARS, (WPARAM)_T("%miranda_path%\\*.dat"), (LPARAM)&dat);
+
+	WIN32_FIND_DATA ffd;
+	HANDLE hFind = FindFirstFile(pfd, &ffd);
+	if (hFind != INVALID_HANDLE_VALUE) {
+		TCHAR *s = _tcsrchr(pfd, '\\'); *s = 0;
+		do {
+			TCHAR path[MAX_PATH], path2[MAX_PATH];
+			int len = _tcslen(ffd.cFileName) - 3;
+			TCHAR* profile = new TCHAR[len];
+			mir_sntprintf(profile, len, _T("%s"), ffd.cFileName);
+			mir_sntprintf(path, SIZEOF(path), _T("%s\\%s"), pfd, ffd.cFileName); 
+			mir_sntprintf(path2, SIZEOF(path2), _T("%s\\Profiles\\%s\\%s"), pfd, profile, ffd.cFileName); 
+			if (MoveFile(path, path2) == 0) {
+				TCHAR buf[512];
+				mir_sntprintf(buf, SIZEOF(buf), 
+					_T("Your database is located in Miranda root folder.\n")
+					_T("Even though your profile folder is %s\n")
+					_T("Profiles are not allowed in the Miranda root folder.\n")
+					_T("Please move Miranda database into the current profile folder."),
+					profiledir);
+				MessageBox(NULL, buf, _T("Miranda IM"), MB_ICONERROR | MB_OK);
+				break;
+			}
+			delete [] profile;
+		}
+		while(FindNextFile(hFind, &ffd));
+	}
+		FindClose(hFind);
+		mir_free(pfd);
+}
+
+// move profile from root dir to profile subdir
+static void moveRootDirProfiles(TCHAR * profiledir)
+{
+	REPLACEVARSDATA dat = {0};
+	dat.cbSize = sizeof(dat);
+	dat.dwFlags = RVF_TCHAR;
+
+	TCHAR* pfd = (TCHAR*)CallService(MS_UTILS_REPLACEVARS, (WPARAM)_T("%miranda_path%\\*.*"), (LPARAM)&dat);
+
+	WIN32_FIND_DATA ffd;
+	HANDLE hFind = FindFirstFile(pfd, &ffd);
+	if (hFind != INVALID_HANDLE_VALUE) {
+		TCHAR *s = _tcsrchr(pfd, '\\'); *s = 0;
+		do {
+			if ((ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) && _tcscmp(ffd.cFileName, _T(".")) && _tcscmp(ffd.cFileName, _T(".."))) {
+				TCHAR profilePath[MAX_PATH], path[MAX_PATH], path2[MAX_PATH];
+				mir_sntprintf(path, SIZEOF(path), _T("%s\\%s"), pfd, ffd.cFileName); 
+				mir_sntprintf(profilePath, SIZEOF(profilePath), _T("%s\\%s\\%s.dat"), pfd, ffd.cFileName, ffd.cFileName); 
+				if (_taccess(profilePath, 0) == 0) {
+					mir_sntprintf(path2, SIZEOF(path2), _T("%s\\Profiles\\%s"), pfd, ffd.cFileName); 
+					if (MoveFile(path, path2) == 0) {
+						TCHAR buf[512];
+						mir_sntprintf(buf, SIZEOF(buf), 
+							_T("Your database is located in Miranda root folder.\n")
+							_T("Even though your profile folder is %s\n")
+							_T("Profiles are not allowed in the Miranda root folder.\n")
+							_T("Please move Miranda database into the current profile folder."),
+							profiledir);
+						MessageBox(NULL, buf, _T("Miranda IM"), MB_ICONERROR | MB_OK);
+						break;
+					}
+				}
+			}
+		}
+			while(FindNextFile(hFind, &ffd));
+	}
+	FindClose(hFind);
+	mir_free(pfd);
+}
+
+// returns 1 if a single profile (full path) is found within the profile dir
+static int getProfile1Old(TCHAR * szProfile, size_t cch, TCHAR * profiledir, BOOL * noProfiles)
+{
+	unsigned int found = 0;
+
+	moveRootDirProfilesOld(profiledir);
+
+    bool nodprof = szProfile[0] == 0;
+	bool reqfd = !nodprof && (_taccess(szProfile, 0) == 0 || shouldAutoCreate(szProfile));
+
+	if (reqfd)
+		found++;
+
+	{
+		TCHAR searchspec[MAX_PATH];
+		mir_sntprintf(searchspec, SIZEOF(searchspec), _T("%s*.dat"), profiledir);
+
+		WIN32_FIND_DATA ffd;
+		HANDLE hFind = FindFirstFile(searchspec, &ffd);
+		if (hFind != INVALID_HANDLE_VALUE) {
+			do {
+				// make sure the first hit is actually a *.dat file
+				if (!(ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) && isValidProfileName(ffd.cFileName)) {
+					TCHAR oldPath[MAX_PATH], newPath[MAX_PATH];
+					int len = _tcslen(ffd.cFileName) - 3;
+					TCHAR* profile = new TCHAR[len];
+					mir_sntprintf(profile, len, _T("%s"), ffd.cFileName);
+					mir_sntprintf(oldPath, SIZEOF(oldPath), _T("%s%s"), profiledir, ffd.cFileName);
+					mir_sntprintf(newPath, SIZEOF(newPath), _T("%s%s\\%s"), profiledir, profile, ffd.cFileName);
+					if (MoveFile(oldPath, newPath) == 0) {
+						TCHAR buf[512];
+						mir_sntprintf(buf, SIZEOF(buf), 
+							_T("Your database is located in Miranda profile folder.\n")
+							_T("Even though your profile folder is %s\n")
+							_T("Profiles are not allowed in the Miranda profile folder.\n")
+							_T("Please move Miranda database into the current profile subfolder."),
+							newPath);
+						MessageBox(NULL, buf, _T("Miranda IM"), MB_ICONERROR | MB_OK);
+					}
+					else {
+						// copy the profile name early cos it might be the only one
+						if (++found == 1 && nodprof) 
+							_tcscpy(szProfile, newPath);
+					}
+					
+					delete [] profile;
+				}
+			}
+				while (FindNextFile(hFind, &ffd));
+			FindClose(hFind);
+		}
+		if (!reqfd)
+			reqfd = found == 1;
+	}
+
+	if (noProfiles) 
+		*noProfiles = found == 0;
+    
+    if (nodprof && !reqfd) szProfile[0] = 0;
+
+	return reqfd;
+}
+
+// returns 1 if a single profile (full path) is found within the profile dir
+static int getProfile1(TCHAR * szProfile, size_t cch, TCHAR * profiledir, BOOL * noProfiles)
+{
+	unsigned int found = 0;
+
+	moveRootDirProfiles(profiledir);
+
+	bool nodprof = szProfile[0] == 0;
+	bool reqfd = !nodprof && (_taccess(szProfile, 0) == 0 || shouldAutoCreate(szProfile));
+	bool shpm = showProfileManager();
+
+	if (reqfd)
+		found++;
+
+	if (shpm || !reqfd) {
+		TCHAR searchspec[MAX_PATH];
+		mir_sntprintf(searchspec, SIZEOF(searchspec), _T("%s*.*"), profiledir);
+
+		WIN32_FIND_DATA ffd;
+		HANDLE hFind = FindFirstFile(searchspec, &ffd);
+		if (hFind != INVALID_HANDLE_VALUE) {
+			do {
+				// make sure the first hit is actually a *.dat file
+				if ((ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) && _tcscmp(ffd.cFileName, _T(".")) && _tcscmp(ffd.cFileName, _T("..")))  {
+					TCHAR newProfile[MAX_PATH];
+					mir_sntprintf(newProfile, MAX_PATH, _T("%s%s\\%s.dat"), profiledir, ffd.cFileName, ffd.cFileName);
+					if (_taccess(newProfile, 0) == 0)
+						if (++found == 1 && nodprof)
+							_tcscpy(szProfile, newProfile);
+				}
+			}
+				while (FindNextFile(hFind, &ffd));
+			FindClose(hFind);
+		}
+		reqfd = !shpm && found == 1 && nodprof;
+	}
+
+	if (noProfiles) 
+		*noProfiles = found == 0;
+
+	if (nodprof && !reqfd) szProfile[0] = 0;
+
+	BOOL oldNoProfiles = TRUE;
+	TCHAR oldProfile[MAX_PATH];
+	mir_sntprintf(oldProfile, MAX_PATH, _T("%s"), (nodprof) ? _T("") : szProfile);
+	if (getProfile1Old(oldProfile, MAX_PATH, profiledir, &oldNoProfiles)) {
+		if (!reqfd) {
+			if (nodprof && *noProfiles)
+				if (!oldNoProfiles && (oldProfile[0] != 0)) {
+					reqfd = !shpm;
+					*noProfiles = !reqfd;
+					_tcscpy(szProfile, oldProfile);
+				}
+		}
+		else {
+			if (nodprof) {
+				if (!oldNoProfiles) {
+					reqfd = false;
+					szProfile[0] = 0;
+				}
+			}
+		}
+	}
+
+	return reqfd;
 }
 
 // returns 1 if a default profile should be selected instead of showing the manager.
