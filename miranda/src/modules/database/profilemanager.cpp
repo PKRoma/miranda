@@ -46,7 +46,6 @@ struct DetailsPageData {
 struct DlgProfData {
 	PROPSHEETHEADER * psh;
 	HWND hwndOK;			// handle to OK button
-	HWND hwndREMOVE;		// handle to REMOVE button
 	PROFILEMANAGERDATA * pd;
 	HANDLE hFileNotify;
 };
@@ -446,7 +445,6 @@ static INT_PTR CALLBACK DlgProfileSelect(HWND hwndDlg, UINT msg, WPARAM wParam, 
 		{
 			SetWindowText(dat->hwndOK, TranslateT("&Run"));
 			EnableWindow(dat->hwndOK, ListView_GetSelectedCount(hwndList)==1);
-			EnableWindow(dat->hwndREMOVE, ListView_GetSelectedCount(GetDlgItem(hwndDlg,IDC_PROFILELIST))==1);
 		}
 		break;
 
@@ -492,7 +490,6 @@ static INT_PTR CALLBACK DlgProfileSelect(HWND hwndDlg, UINT msg, WPARAM wParam, 
 				{
 					case LVN_ITEMCHANGED:
 						EnableWindow(dat->hwndOK, ListView_GetSelectedCount(hwndList) == 1);
-						EnableWindow( dat->hwndREMOVE, ListView_GetSelectedCount( hdr->hwndFrom ) == 1);
 
 					case NM_DBLCLK:
 					{
@@ -552,16 +549,14 @@ static INT_PTR CALLBACK DlgProfileManager(HWND hwndDlg, UINT msg, WPARAM wParam,
 		dat->prof = prof;
 		prof->hwndOK = GetDlgItem( hwndDlg, IDOK );
 		EnableWindow( prof->hwndOK, FALSE );
-		prof->hwndREMOVE = GetDlgItem(hwndDlg, IDC_REMOVE);
-		EnableWindow( prof->hwndREMOVE, FALSE );
 		SetWindowLongPtr( hwndDlg, GWLP_USERDATA, (LONG_PTR)dat );
 
-        {
-            TCHAR buf[512];
-            mir_sntprintf(buf, SIZEOF(buf), _T("%s: %s\n%s"), TranslateT("Miranda Profiles from"), prof->pd->szProfileDir, 
-                TranslateT("Select or create your Miranda IM user profile"));
-            SetDlgItemText(hwndDlg, IDC_NAME, buf);
-        }
+		{
+			TCHAR buf[512];
+			mir_sntprintf(buf, SIZEOF(buf), _T("%s: %s\n%s"), TranslateT("Miranda Profiles from"), prof->pd->szProfileDir, 
+				TranslateT("Select or create your Miranda IM user profile"));
+			SetDlgItemText(hwndDlg, IDC_NAME, buf);
+		}
 
 		{	OPTIONSDIALOGPAGE *odp;
 			int i;
@@ -672,7 +667,6 @@ static INT_PTR CALLBACK DlgProfileManager(HWND hwndDlg, UINT msg, WPARAM wParam,
 					SetWindowLongPtr( hwndDlg, DWLP_MSGRESULT, TRUE );
 					return TRUE;
 				}
-				EnableWindow( dat->prof->hwndREMOVE, GetWindowTextLength( GetDlgItem( hwndDlg, IDC_PROFILENAME )) > 0 );
 				break;
 			}
 			case TCN_SELCHANGE:
