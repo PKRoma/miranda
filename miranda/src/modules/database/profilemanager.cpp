@@ -46,7 +46,7 @@ struct DetailsPageData {
 struct DlgProfData {
 	PROPSHEETHEADER * psh;
 	HWND hwndOK;			// handle to OK button
-	HWND hwndREMOVE;		// Unsane: handle to REMOVE button
+	HWND hwndREMOVE;		// handle to REMOVE button
 	PROFILEMANAGERDATA * pd;
 	HANDLE hFileNotify;
 };
