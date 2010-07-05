@@ -24,6 +24,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "commonheaders.h"
 #include "profilemanager.h"
 
+extern TCHAR g_profileDir[];
+
 static int CompareEventTypes( const DBEVENTTYPEDESCR* p1, const DBEVENTTYPEDESCR* p2 )
 {
 	int result = strcmp( p1->module, p2->module );
@@ -246,6 +248,25 @@ static INT_PTR DbDeleteModule( WPARAM, LPARAM lParam )
 	return 0;
 }
 
+static INT_PTR GetProfilePath(WPARAM wParam, LPARAM lParam)
+{
+	char* dst = (char*)lParam;
+
+	size_t len = _tcslen( g_profileDir );
+	if ( g_profileDir[len-1] == '/' || g_profileDir[len-1] == '\\' )
+		g_profileDir[len-1] = 0;
+
+	#if defined( _UNICODE )
+		char* tmp = mir_t2a( g_profileDir );
+		strncpy( dst, tmp, wParam );
+		mir_free( tmp );
+	#else
+		strncpy( dst, g_profileDir, wParam );
+	#endif
+
+	return 0;
+}
+
 /////////////////////////////////////////////////////////////////////////////////////////
 
 int InitUtils()
@@ -259,6 +280,8 @@ int InitUtils()
 	CreateServiceFunction(MS_DB_EVENT_GETSTRINGT, DbEventGetStringT);
 
 	CreateServiceFunction(MS_DB_MODULE_DELETE, DbDeleteModule);
+
+	CreateServiceFunction(MS_DB_GETPROFILEPATH,GetProfilePath);
 	return 0;
 }
 

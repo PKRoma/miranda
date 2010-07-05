@@ -23,6 +23,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "commonheaders.h"
 #include "../srfile/file.h"
 
+extern TCHAR g_profileDir[MAX_PATH];
+
 static char szMirandaPath[MAX_PATH];
 static char szMirandaPathLower[MAX_PATH];
 
@@ -302,6 +304,10 @@ static __forceinline char *GetEnvironmentVariableX(char *variable)
 		return mir_strdup(result);
 	return NULL;
 }
+static __forceinline char *GetProfileDirX( char* )
+{
+	return mir_t2a( g_profileDir );
+}
 static __forceinline char *SHGetSpecialFolderPathX(int iCSIDL, char* var)
 {
 	char result[512];
@@ -357,6 +363,10 @@ static __forceinline TCHAR *SHGetSpecialFolderPathX(int iCSIDL, TCHAR* var)
 		return mir_tstrdup(result);
 	return NULL;
 }
+static __forceinline TCHAR *GetProfileDirX( TCHAR* )
+{
+	return mir_tstrdup( g_profileDir );
+}
 static __forceinline TCHAR *GetModulePathX(TCHAR *, HMODULE hModule)
 {
 	TCHAR result[MAX_PATH];
@@ -402,9 +412,10 @@ XCHAR *GetInternalVariable(XCHAR *key, size_t keyLength, HANDLE hContact)
 		else if (!_xcscmp(theKey, XSTR(key, "desktop")))
 			theValue = SHGetSpecialFolderPathX(CSIDL_DESKTOPDIRECTORY, theKey);
 		else if (!_xcscmp(theKey, XSTR(key, "miranda_profile"))) {
-			char szProfilePath[MAX_PATH];
-			CallService(MS_DB_GETPROFILEPATH, SIZEOF(szProfilePath), (LPARAM) szProfilePath);
-			theValue = mir_a2x(key, szProfilePath);
+			size_t len = _tcslen( g_profileDir );
+			if ( g_profileDir[len-1] == '/' || g_profileDir[len-1] == '\\' )
+				g_profileDir[len-1] = 0;
+			theValue = GetProfileDirX(key);
 		}
 		else if (!_xcscmp(theKey, XSTR(key, "miranda_profilename"))) {
 			char szProfileName[MAX_PATH];
@@ -421,13 +432,8 @@ XCHAR *GetInternalVariable(XCHAR *key, size_t keyLength, HANDLE hContact)
 				 !_xcscmp(theKey, XSTR(key, "miranda_logpath")))
 		{
 			char szFullPath[MAX_PATH], szProfilePath[MAX_PATH] = "", szProfileName[MAX_PATH] = "";
-			// fix garbage in returned string when called before load db* plugin
-			if (ServiceExists(MS_DB_GETPROFILEPATH))
-				CallService(MS_DB_GETPROFILEPATH, SIZEOF(szProfilePath), (LPARAM) szProfilePath);
-			else szProfilePath[0] = '\0';
-			if (ServiceExists(MS_DB_GETPROFILENAME))
-				CallService(MS_DB_GETPROFILENAME, SIZEOF(szProfileName), (LPARAM) szProfileName);
-			else szProfileName[0] = '\0';
+			CallService(MS_DB_GETPROFILEPATH, SIZEOF(szProfilePath), (LPARAM) szProfilePath);
+			CallService(MS_DB_GETPROFILENAME, SIZEOF(szProfileName), (LPARAM) szProfileName);
 			char *pos = strrchr(szProfileName, '.');
 			if ( lstrcmpA( pos, ".dat" ) == 0 )
 				*pos = 0;
@@ -444,6 +450,7 @@ XCHAR *GetInternalVariable(XCHAR *key, size_t keyLength, HANDLE hContact)
 				else mir_snprintf(szFullPath, SIZEOF(szFullPath), "%s", szProfilePath);
 			}
 			else {
+				CloseHandle( hFile );
 				if (!_xcscmp(theKey, XSTR(key, "miranda_avatarcache"))) 
 					mir_snprintf(szFullPath, SIZEOF(szFullPath), "%s\\%s\\AvatarCache", szProfilePath, szProfileName);
 				else if (!_xcscmp(theKey, XSTR(key, "miranda_logpath"))) 

@@ -29,6 +29,7 @@ extern PLUGINLINK pluginCoreLink;
 // contains the location of mirandaboot.ini
 extern TCHAR mirandabootini[MAX_PATH];
 bool dbCreated;
+TCHAR g_profileDir[MAX_PATH];
 
 const TCHAR tszMoveMsg[] =
 	_T("Your database is located in Miranda root folder.\n")
@@ -406,18 +407,20 @@ static int getProfileAutoRun(TCHAR * szProfile)
 // returns 1 if a profile was selected
 static int getProfile(TCHAR * szProfile, size_t cch)
 {
-	TCHAR profiledir[MAX_PATH];
+	getProfilePath(g_profileDir, SIZEOF(g_profileDir));
+	getDefaultProfile(szProfile, cch, g_profileDir);
+	getProfileCmdLine(szProfile, cch, g_profileDir);
+	if (validateProfileDir(g_profileDir))
+		return 0;
+	if (getProfileAutoRun(szProfile))
+		return 1;
+
 	PROFILEMANAGERDATA pd = {0};
+	if (getProfile1(szProfile, cch, g_profileDir, &pd.noProfiles)) 
+		return 1;
 
-	getProfilePath(profiledir, SIZEOF(profiledir));
-	getDefaultProfile(szProfile, cch, profiledir);
-	getProfileCmdLine(szProfile, cch, profiledir);
-	if (validateProfileDir(profiledir)) return 0;
-	if (getProfileAutoRun(szProfile)) return 1;
-	if (getProfile1(szProfile, cch, profiledir, &pd.noProfiles)) return 1;
-
-	pd.szProfile=szProfile;
-	pd.szProfileDir=profiledir;
+	pd.szProfile = szProfile;
+	pd.szProfileDir = g_profileDir;
 	return getProfileManager(&pd);
 }
 
