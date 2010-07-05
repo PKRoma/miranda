@@ -293,9 +293,9 @@ static int getProfile1Old(TCHAR * szProfile, size_t cch, TCHAR * profiledir, BOO
 				TCHAR* profile = mir_tstrdup(ffd.cFileName);
 				TCHAR *c =_tcsrchr(profile, '.'); if (c) *c = 0;
 				mir_sntprintf(oldPath, SIZEOF(oldPath), _T("%s%s"), profiledir, ffd.cFileName);
-				mir_sntprintf(newPath, SIZEOF(newPath), _T("%s%s"), profiledir, profile);
+				mir_sntprintf(newPath, SIZEOF(newPath), _T("%sProfiles\\%s"), profiledir, profile);
 				CreateDirectoryTreeT(newPath);
-				mir_sntprintf(newPath, SIZEOF(newPath), _T("%s%s\\%s"), profiledir, profile, ffd.cFileName);
+				mir_sntprintf(newPath, SIZEOF(newPath), _T("%sProfiles\\%s\\%s"), profiledir, profile, ffd.cFileName);
 				if (MoveFile(oldPath, newPath) == 0) 
 				{
 					TCHAR buf[512];
@@ -341,7 +341,7 @@ static int getProfile1(TCHAR * szProfile, size_t cch, TCHAR * profiledir, BOOL *
 
 	if (shpm || !reqfd) {
 		TCHAR searchspec[MAX_PATH];
-		mir_sntprintf(searchspec, SIZEOF(searchspec), _T("%s*.*"), profiledir);
+		mir_sntprintf(searchspec, SIZEOF(searchspec), _T("%sProfiles\\*.*"), profiledir);
 
 		WIN32_FIND_DATA ffd;
 		HANDLE hFind = FindFirstFile(searchspec, &ffd);
@@ -350,7 +350,7 @@ static int getProfile1(TCHAR * szProfile, size_t cch, TCHAR * profiledir, BOOL *
 				// make sure the first hit is actually a *.dat file
 				if ((ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) && _tcscmp(ffd.cFileName, _T(".")) && _tcscmp(ffd.cFileName, _T("..")))  {
 					TCHAR newProfile[MAX_PATH];
-					mir_sntprintf(newProfile, MAX_PATH, _T("%s%s\\%s.dat"), profiledir, ffd.cFileName, ffd.cFileName);
+					mir_sntprintf(newProfile, MAX_PATH, _T("%sProfiles\\%s\\%s.dat"), profiledir, ffd.cFileName, ffd.cFileName);
 					if (_taccess(newProfile, 0) == 0)
 						if (++found == 1 && nodprof)
 							_tcscpy(szProfile, newProfile);

@@ -551,12 +551,12 @@ static INT_PTR CALLBACK DlgProfileManager(HWND hwndDlg, UINT msg, WPARAM wParam,
 		EnableWindow( prof->hwndOK, FALSE );
 		SetWindowLongPtr( hwndDlg, GWLP_USERDATA, (LONG_PTR)dat );
 
-        {
-            TCHAR buf[512];
-            mir_sntprintf(buf, SIZEOF(buf), _T("%s: %s\n%s"), TranslateT("Miranda Profiles from"), prof->pd->szProfileDir, 
-                TranslateT("Select or create your Miranda IM user profile"));
-            SetDlgItemText(hwndDlg, IDC_NAME, buf);
-        }
+		{
+			TCHAR buf[512];
+			mir_sntprintf(buf, SIZEOF(buf), _T("%s: %s\n%s"), TranslateT("Miranda Profiles from"), prof->pd->szProfileDir, 
+				TranslateT("Select or create your Miranda IM user profile"));
+			SetDlgItemText(hwndDlg, IDC_NAME, buf);
+		}
 
 		{	OPTIONSDIALOGPAGE *odp;
 			int i;
@@ -708,6 +708,13 @@ static INT_PTR CALLBACK DlgProfileManager(HWND hwndDlg, UINT msg, WPARAM wParam,
 					SendMessage(dat->opd[i].hwnd,WM_NOTIFY,0,(LPARAM)&pshn);
 				}
 				EndDialog(hwndDlg,0);
+			}
+			break;
+
+		case IDC_REMOVE:
+			if (!dat->prof->pd->noProfiles) {
+				HWND hwndList = GetDlgItem(dat->opd[0].hwnd, IDC_PROFILELIST);
+				DeleteProfile(hwndList, ListView_GetNextItem(hwndList, -1, LVNI_SELECTED | LVNI_ALL), dat->prof);
 			}
 			break;
 
