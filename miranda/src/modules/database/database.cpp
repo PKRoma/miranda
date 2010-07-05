@@ -272,7 +272,7 @@ static int getProfile1Old(TCHAR * szProfile, size_t cch, TCHAR * profiledir, BOO
 
 	moveRootDirProfilesOld(profiledir);
 
-    bool nodprof = szProfile[0] == 0;
+	bool nodprof = szProfile[0] == 0;
 	bool reqfd = !nodprof && (_taccess(szProfile, 0) == 0 || shouldAutoCreate(szProfile));
 
 	if (reqfd)
@@ -294,7 +294,7 @@ static int getProfile1Old(TCHAR * szProfile, size_t cch, TCHAR * profiledir, BOO
 				TCHAR *c =_tcsrchr(profile, '.'); if (c) *c = 0;
 				mir_sntprintf(oldPath, SIZEOF(oldPath), _T("%s%s"), profiledir, ffd.cFileName);
 				mir_sntprintf(newPath, SIZEOF(newPath), _T("%s%s"), profiledir, profile);
-				CreateDirectory(newPath, NULL);
+				CreateDirectoryTreeT(newPath);
 				mir_sntprintf(newPath, SIZEOF(newPath), _T("%s%s\\%s"), profiledir, profile, ffd.cFileName);
 				if (MoveFile(oldPath, newPath) == 0) 
 				{
@@ -311,7 +311,7 @@ static int getProfile1Old(TCHAR * szProfile, size_t cch, TCHAR * profiledir, BOO
 				mir_free(profile);
 			}
 		}
-		while (FindNextFile(hFind, &ffd));
+			while (FindNextFile(hFind, &ffd));
 		FindClose(hFind);
 	}
 	if (!reqfd)
