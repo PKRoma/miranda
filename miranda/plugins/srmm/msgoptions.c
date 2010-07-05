@@ -29,13 +29,14 @@ extern HINSTANCE g_hInst;
 #define FONTF_ITALIC 2
 struct FontOptionsList
 {
-	TCHAR*   szDescr;
-	COLORREF defColour;
-	TCHAR*   szDefFace;
-	BYTE     defStyle;
-	char     defSize;
+	const TCHAR* szDescr;
+	COLORREF     defColour;
+	const TCHAR* szDefFace;
+	BYTE         defStyle;
+	char         defSize;
 }
-static fontOptionsList[] = {
+static const fontOptionsList[] = 
+{
 	{ LPGENT("Outgoing messages"), RGB(106, 106, 106), _T("Arial"),    0, -12},
 	{ LPGENT("Incoming messages"), RGB(0, 0, 0),       _T("Arial"),    0, -12},
 	{ LPGENT("Outgoing name"),     RGB(89, 89, 89),    _T("Arial"),    FONTF_BOLD, -12},
@@ -702,9 +703,18 @@ static int ModernOptInitialise(WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
-int InitOptions(void)
+static HANDLE oHooks[2];
+
+void InitOptions(void)
 {
-	HookEvent(ME_OPT_INITIALISE, OptInitialise);
-	HookEvent(ME_MODERNOPT_INITIALIZE, ModernOptInitialise);
-	return 0;
+	oHooks[0] = HookEvent(ME_OPT_INITIALISE, OptInitialise);
+	oHooks[1] = HookEvent(ME_MODERNOPT_INITIALIZE, ModernOptInitialise);
+}
+
+void UnloadOptions(void)
+{
+	int i;
+	for (i=0; i < SIZEOF(oHooks); ++i) 
+		if (oHooks[i])
+			UnhookEvent(oHooks[i]);
 }

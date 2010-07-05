@@ -22,7 +22,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 extern HINSTANCE g_hInst;
 
 struct GlobalMessageData *g_dat;
-static HANDLE g_hDbEvent, g_hAck, g_hIconsChanged;
+static HANDLE g_hooks[3];
 
 static int dbaddedevent(WPARAM wParam, LPARAM lParam);
 static int ackevent(WPARAM wParam, LPARAM lParam);
@@ -81,9 +81,9 @@ void InitGlobals()
 {
 	g_dat = (struct GlobalMessageData *)mir_alloc(sizeof(struct GlobalMessageData));
 	g_dat->hMessageWindowList = (HANDLE) CallService(MS_UTILS_ALLOCWINDOWLIST, 0, 0);
-	g_hDbEvent = HookEvent(ME_DB_EVENT_ADDED, dbaddedevent);
-	g_hAck = HookEvent(ME_PROTO_ACK, ackevent);
-	g_hIconsChanged = HookEvent(ME_SKIN2_ICONSCHANGED, IconsChanged);
+	g_hooks[0] = HookEvent(ME_DB_EVENT_ADDED, dbaddedevent);
+	g_hooks[1] = HookEvent(ME_PROTO_ACK, ackevent);
+	g_hooks[2] = HookEvent(ME_SKIN2_ICONSCHANGED, IconsChanged);
 
 	ReloadGlobals();
 	InitIcons();
@@ -91,11 +91,12 @@ void InitGlobals()
 
 void FreeGlobals()
 {
+	int i;
 	mir_free(g_dat);
 
-	if (g_hDbEvent) UnhookEvent(g_hDbEvent);
-	if (g_hAck) UnhookEvent(g_hAck);
-	if (g_hIconsChanged) UnhookEvent(g_hIconsChanged);
+	for (i=0; i < SIZEOF(g_hooks); ++i) 
+		if (g_hooks[i])
+			UnhookEvent(g_hooks[i]);
 }
 
 void ReloadGlobals()
