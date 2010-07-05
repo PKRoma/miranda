@@ -108,13 +108,16 @@ void FindAdd(HWND hdlg, TCHAR *szProfileDir, TCHAR *szPrefix)
 	TCHAR szSearchPath[MAX_PATH],szFilename[MAX_PATH];
 
 	lstrcpy(szSearchPath,szProfileDir);
-	lstrcat(szSearchPath,_T("\\*.dat"));
+	lstrcat(szSearchPath,_T("\\*.*"));
 
 	hFind=FindFirstFile(szSearchPath,&fd);
 	if (hFind!=INVALID_HANDLE_VALUE) {
 		do {
-			wsprintf(szFilename,_T("%s\\%s"),szProfileDir,fd.cFileName);
-			AddDatabaseToList(GetDlgItem(hdlg,IDC_DBLIST),szFilename,szPrefix);
+			if ((fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) && _tcscmp(fd.cFileName, _T(".")) && _tcscmp(fd.cFileName, _T(".."))) {
+				wsprintf(szFilename,_T("%s\\%s\\%s.dat"),szProfileDir,fd.cFileName,fd.cFileName);
+				if (_taccess(szFilename, 0) == 0)
+					AddDatabaseToList(GetDlgItem(hdlg,IDC_DBLIST),szFilename,szPrefix);
+			}
 		} while(FindNextFile(hFind,&fd));
 		FindClose(hFind);
 	}
