@@ -133,7 +133,7 @@ static INT_PTR SendMessageCmd(HANDLE hContact, char* msg, int isWchar)
 		newData.hContact = hContact;
 		newData.szInitialText = msg;
 		newData.isWchar = isWchar;
-		hwnd = CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_MSG), NULL, DlgProcMessage, (LPARAM)&newData);
+		CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_MSG), NULL, DlgProcMessage, (LPARAM)&newData);
 	}
 	return 0;
 }
@@ -324,12 +324,12 @@ int SplitmsgShutdown(void)
 	DestroyCursor(hCurSplitWE);
 	
 	for (i=0; i < SIZEOF(hHooks); ++i) 
-		if ( hHooks[i] )
-			UnhookEvent( hHooks[i] );
+		if (hHooks[i])
+			UnhookEvent(hHooks[i]);
 
 	for ( i=0; i < SIZEOF(hServices); ++i)
-		if ( hServices[i] )
-			DestroyServiceFunction( hServices[i] );
+		if (hServices[i])
+			DestroyServiceFunction(hServices[i]);
 
 	FreeMsgLogIcons();
 	FreeLibrary(GetModuleHandleA("riched20"));

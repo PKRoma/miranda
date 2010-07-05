@@ -2085,7 +2085,11 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 
 	case DM_STATUSICONCHANGE:
 		SendMessage(dat->hwndStatus, SB_SETTEXT, (WPARAM)(SBT_OWNERDRAW | (SendMessage(dat->hwndStatus, SB_GETPARTS, 0, 0) - 1)), (LPARAM)0);
-		return 0;
+		break;
+
+	case WM_CLOSE:
+		DestroyWindow(hwndDlg);
+		break;
 
 	case WM_DESTROY:
 		NotifyLocalWinEvent(dat->hContact, hwndDlg, MSG_WINDOW_EVT_CLOSING);

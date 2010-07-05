@@ -70,10 +70,10 @@ __declspec(dllexport) const MUUID* MirandaPluginInterfaces(void)
 int __declspec(dllexport) Load(PLUGINLINK * link)
 {
 	pluginLink = link;
-	mir_getMMI( &mmi );
-	mir_getUTFI( &utfi );
+	mir_getMMI(&mmi);
+	mir_getUTFI(&utfi);
 
-	if ( ServiceExists( MS_DB_EVENT_GETTEXT ))
+	if (ServiceExists(MS_DB_EVENT_GETTEXT))
 		bNewDbApi = TRUE;
 
 	return LoadSendRecvMessageModule();
@@ -81,5 +81,6 @@ int __declspec(dllexport) Load(PLUGINLINK * link)
 
 int __declspec(dllexport) Unload(void)
 {
+	UnloadOptions();
 	return SplitmsgShutdown();
 }
