@@ -211,9 +211,8 @@ static void moveRootDirProfilesOld(TCHAR * profiledir)
 		TCHAR *s = _tcsrchr(pfd, '\\'); *s = 0;
 		do {
 			TCHAR path[MAX_PATH], path2[MAX_PATH];
-			int len = _tcslen(ffd.cFileName) - 3;
-			TCHAR* profile = new TCHAR[len];
-			mir_sntprintf(profile, len, _T("%s"), ffd.cFileName);
+			TCHAR* profile = mir_tstrdup(ffd.cFileName);
+			TCHAR *c =_tcsrchr(profile, '.'); if (c) *c = 0;
 			mir_sntprintf(path, SIZEOF(path), _T("%s\\%s"), pfd, ffd.cFileName); 
 			mir_sntprintf(path2, SIZEOF(path2), _T("%s\\Profiles\\%s\\%s"), pfd, profile, ffd.cFileName); 
 			if (MoveFile(path, path2) == 0) {
@@ -222,7 +221,7 @@ static void moveRootDirProfilesOld(TCHAR * profiledir)
 				MessageBox(NULL, buf, _T("Miranda IM"), MB_ICONERROR | MB_OK);
 				break;
 			}
-			delete [] profile;
+			mir_free(profile);
 		}
 		while(FindNextFile(hFind, &ffd));
 	}
@@ -244,23 +243,23 @@ static void moveRootDirProfiles(TCHAR * profiledir)
 	if (hFind != INVALID_HANDLE_VALUE) {
 		TCHAR *s = _tcsrchr(pfd, '\\'); *s = 0;
 		do {
-			if ((ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) && ( !_tcscmp(ffd.cFileName, _T(".")) || !_tcscmp(ffd.cFileName, _T(".."))))
-				continue;
-
-			TCHAR profilePath[MAX_PATH], path[MAX_PATH], path2[MAX_PATH];
-			mir_sntprintf(path, SIZEOF(path), _T("%s\\%s"), pfd, ffd.cFileName); 
-			mir_sntprintf(profilePath, SIZEOF(profilePath), _T("%s\\%s\\%s.dat"), pfd, ffd.cFileName, ffd.cFileName); 
-			if (_taccess(profilePath, 0) == 0) {
-				mir_sntprintf(path2, SIZEOF(path2), _T("%s\\Profiles\\%s"), pfd, ffd.cFileName); 
-				if (MoveFile(path, path2) == 0) {
-					TCHAR buf[512];
-					mir_sntprintf(buf, SIZEOF(buf), TranslateTS(tszMoveMsg), profiledir);
-					MessageBox(NULL, buf, _T("Miranda IM"), MB_ICONERROR | MB_OK);
-					break;
+			if ((ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) && _tcscmp(ffd.cFileName, _T(".")) && _tcscmp(ffd.cFileName, _T(".."))) 
+			{
+				TCHAR profilePath[MAX_PATH], path[MAX_PATH], path2[MAX_PATH];
+				mir_sntprintf(path, SIZEOF(path), _T("%s\\%s"), pfd, ffd.cFileName); 
+				mir_sntprintf(profilePath, SIZEOF(profilePath), _T("%s\\%s\\%s.dat"), pfd, ffd.cFileName, ffd.cFileName); 
+				if (_taccess(profilePath, 0) == 0) {
+					mir_sntprintf(path2, SIZEOF(path2), _T("%s\\Profiles\\%s"), pfd, ffd.cFileName); 
+					if (MoveFile(path, path2) == 0) {
+						TCHAR buf[512];
+						mir_sntprintf(buf, SIZEOF(buf), TranslateTS(tszMoveMsg), profiledir);
+						MessageBox(NULL, buf, _T("Miranda IM"), MB_ICONERROR | MB_OK);
+						break;
+					}
 				}
 			}
 		}
-			while(FindNextFile(hFind, &ffd));
+		while(FindNextFile(hFind, &ffd));
 	}
 	FindClose(hFind);
 	mir_free(pfd);
@@ -273,7 +272,7 @@ static int getProfile1Old(TCHAR * szProfile, size_t cch, TCHAR * profiledir, BOO
 
 	moveRootDirProfilesOld(profiledir);
 
-	bool nodprof = szProfile[0] == 0;
+    bool nodprof = szProfile[0] == 0;
 	bool reqfd = !nodprof && (_taccess(szProfile, 0) == 0 || shouldAutoCreate(szProfile));
 
 	if (reqfd)
@@ -284,39 +283,41 @@ static int getProfile1Old(TCHAR * szProfile, size_t cch, TCHAR * profiledir, BOO
 
 	WIN32_FIND_DATA ffd;
 	HANDLE hFind = FindFirstFile(searchspec, &ffd);
-	if (hFind != INVALID_HANDLE_VALUE) {
+	if (hFind != INVALID_HANDLE_VALUE) 
+	{
 		do {
 			// make sure the first hit is actually a *.dat file
-			if (!(ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) && isValidProfileName(ffd.cFileName)) {
+			if (!(ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) && isValidProfileName(ffd.cFileName)) 
+			{
 				TCHAR oldPath[MAX_PATH], newPath[MAX_PATH];
-				int len = _tcslen(ffd.cFileName) - 3;
-				TCHAR* profile = new TCHAR[len];
-				mir_sntprintf(profile, len, _T("%s"), ffd.cFileName);
+				TCHAR* profile = mir_tstrdup(ffd.cFileName);
+				TCHAR *c =_tcsrchr(profile, '.'); if (c) *c = 0;
 				mir_sntprintf(oldPath, SIZEOF(oldPath), _T("%s%s"), profiledir, ffd.cFileName);
+				mir_sntprintf(newPath, SIZEOF(newPath), _T("%s%s"), profiledir, profile);
+				CreateDirectory(newPath, NULL);
 				mir_sntprintf(newPath, SIZEOF(newPath), _T("%s%s\\%s"), profiledir, profile, ffd.cFileName);
-				if (MoveFile(oldPath, newPath) == 0) {
+				if (MoveFile(oldPath, newPath) == 0) 
+				{
 					TCHAR buf[512];
 					mir_sntprintf(buf, SIZEOF(buf), TranslateTS(tszMoveMsg), newPath);
 					MessageBox(NULL, buf, _T("Miranda IM"), MB_ICONERROR | MB_OK);
 				}
-				else {
+				else 
+				{
 					// copy the profile name early cos it might be the only one
 					if (++found == 1 && nodprof) 
 						_tcscpy(szProfile, newPath);
 				}
-				
-				delete [] profile;
+				mir_free(profile);
 			}
 		}
-			while (FindNextFile(hFind, &ffd));
-
+		while (FindNextFile(hFind, &ffd));
 		FindClose(hFind);
 	}
-
-	if ( !reqfd )
+	if (!reqfd)
 		reqfd = found == 1;
 
-	if ( noProfiles ) 
+	if (noProfiles) 
 		*noProfiles = found == 0;
     
     if (nodprof && !reqfd) szProfile[0] = 0;
