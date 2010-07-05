@@ -46,6 +46,7 @@ struct DetailsPageData {
 struct DlgProfData {
 	PROPSHEETHEADER * psh;
 	HWND hwndOK;			// handle to OK button
+	HWND hwndREMOVE;		// Unsane: handle to REMOVE button
 	PROFILEMANAGERDATA * pd;
 	HANDLE hFileNotify;
 };
@@ -78,24 +79,30 @@ static void ThemeDialogBackground(HWND hwnd)
 
 static int findProfiles(TCHAR * szProfileDir, ENUMPROFILECALLBACK callback, LPARAM lParam)
 {
+	// find in Miranda IM profile subfolders
 	HANDLE hFind = INVALID_HANDLE_VALUE;
 	WIN32_FIND_DATA ffd;
 	TCHAR searchspec[MAX_PATH];
-	mir_sntprintf(searchspec, SIZEOF(searchspec), _T("%s*.dat"), szProfileDir);
+	mir_sntprintf(searchspec, SIZEOF(searchspec), _T("%s\\*.*"), szProfileDir);
 	hFind = FindFirstFile(searchspec, &ffd);
 	if ( hFind == INVALID_HANDLE_VALUE )
 		return 0;
 
 	do {
-		if ( !(ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) && isValidProfileName( ffd.cFileName )) {
-			TCHAR buf[MAX_PATH];
-			mir_sntprintf(buf, SIZEOF(buf), _T("%s%s"), szProfileDir, ffd.cFileName);
-			if ( !callback(buf, ffd.cFileName, lParam ))
-				break;
+		// find all subfolders except "." and ".."
+		if ( (ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) && _tcscmp(ffd.cFileName, _T(".")) && _tcscmp(ffd.cFileName, _T("..")) ) {
+			TCHAR buf[MAX_PATH], profile[MAX_PATH];
+			mir_sntprintf(buf, SIZEOF(buf), _T("%s%s\\%s.dat"), szProfileDir, ffd.cFileName, ffd.cFileName);
+			if (_taccess(buf, 0) == 0) {
+				mir_sntprintf(profile, SIZEOF(profile), _T("%s.dat"), ffd.cFileName);
+				if ( !callback(buf, profile, lParam ))
+					break;
+			}
 		}
 	}
 		while ( FindNextFile(hFind, &ffd) );
 	FindClose(hFind);
+
 	return 1;
 }
 
@@ -202,7 +209,8 @@ static INT_PTR CALLBACK DlgProfileNew(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 				if ( szName[0] == 0 )
 					break;
 
-				mir_sntprintf( dat->pd->szProfile, MAX_PATH, _T("%s%s.dat"), dat->pd->szProfileDir, szName );
+				// profile placed in "profile_name" subfolder
+				mir_sntprintf( dat->pd->szProfile, MAX_PATH, _T("%s\\%s\\%s.dat"), dat->pd->szProfileDir, szName, szName );
 				dat->pd->newProfile = 1;
 				dat->pd->dblink = (DATABASELINK *)SendDlgItemMessage( hwndDlg, IDC_PROFILEDRIVERS, CB_GETITEMDATA, ( WPARAM )curSel, 0 );
 
@@ -322,33 +330,32 @@ BOOL EnumProfilesForList(TCHAR * fullpath, TCHAR * profile, LPARAM lParam)
 
 void DeleteProfile(HWND hwndList, int iItem, DlgProfData* dat)
 {
-	LVITEM item = {0};
+	if (iItem < 0)
+		return;
+
 	TCHAR profile[MAX_PATH], profilef[MAX_PATH*2];
 
-	if (iItem < 0) return;
-
+	LVITEM item = {0};
 	item.mask = LVIF_TEXT;
 	item.iItem = iItem;
 	item.pszText = profile;
 	item.cchTextMax = SIZEOF(profile);
+	if (!ListView_GetItem(hwndList, &item))
+		return;
 
-	if (!ListView_GetItem(hwndList, &item)) return;
+	mir_sntprintf(profilef, SIZEOF(profilef), TranslateT("Are you sure you want to remove profile \"%s\"?"), profile);
 
-	mir_sntprintf(profilef, SIZEOF(profilef), 
-		TranslateT("Are you sure you want to remove profile \"%s\"?"), profile);
+	if (IDYES != MessageBox(NULL, profilef, _T("Miranda IM"), MB_YESNO | MB_TASKMODAL | MB_ICONWARNING))
+		return;
 
-	if (MessageBox(NULL, profilef, _T("Miranda IM"), MB_YESNO | MB_TASKMODAL | MB_ICONWARNING) == IDYES)
-	{
-		mir_sntprintf(profilef, SIZEOF(profilef), _T("%s%s.dat%c%s%s%c"), 
-			dat->pd->szProfileDir, profile, 0, dat->pd->szProfileDir, profile, 0);
+	mir_sntprintf(profilef, SIZEOF(profilef), _T("%s%s%c"), dat->pd->szProfileDir, profile, 0);
 
-		SHFILEOPSTRUCT sf = {0};
-		sf.wFunc = FO_DELETE;
-		sf.pFrom = profilef;
-		sf.fFlags = FOF_NOCONFIRMATION | FOF_SILENT | FOF_ALLOWUNDO;
-		SHFileOperation(&sf);
-		ListView_DeleteItem(hwndList, item.iItem);
-	}
+	SHFILEOPSTRUCT sf = {0};
+	sf.wFunc = FO_DELETE;
+	sf.pFrom = profilef;
+	sf.fFlags = FOF_NOCONFIRMATION | FOF_SILENT | FOF_ALLOWUNDO;
+	SHFileOperation(&sf);
+	ListView_DeleteItem(hwndList, item.iItem);
 }
 
 static INT_PTR CALLBACK DlgProfileSelect(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
@@ -439,6 +446,7 @@ static INT_PTR CALLBACK DlgProfileSelect(HWND hwndDlg, UINT msg, WPARAM wParam, 
 		{
 			SetWindowText(dat->hwndOK, TranslateT("&Run"));
 			EnableWindow(dat->hwndOK, ListView_GetSelectedCount(hwndList)==1);
+			EnableWindow(dat->hwndREMOVE, ListView_GetSelectedCount(GetDlgItem(hwndDlg,IDC_PROFILELIST))==1);
 		}
 		break;
 
@@ -454,9 +462,19 @@ static INT_PTR CALLBACK DlgProfileSelect(HWND hwndDlg, UINT msg, WPARAM wParam, 
 			lvht.pt.y  = GET_Y_LPARAM(lParam); 
 
 			HMENU hMenu = CreatePopupMenu();
-			AppendMenu(hMenu, MF_STRING, 1, TranslateT("Delete"));
-			if (TrackPopupMenu(hMenu, TPM_RETURNCMD, lvht.pt.x, lvht.pt.y, 0, hwndDlg, NULL) ==  1)
+			AppendMenu(hMenu, MF_STRING, 1, TranslateT("Run"));
+			AppendMenu(hMenu, MF_SEPARATOR, 2, NULL);
+			AppendMenu(hMenu, MF_STRING, 3, TranslateT("Delete"));
+			int index = TrackPopupMenu(hMenu, TPM_RETURNCMD, lvht.pt.x, lvht.pt.y, 0, hwndDlg, NULL);
+			switch (index) {
+			case 1:
+				SendMessage(GetParent(hwndDlg), WM_COMMAND, IDOK, 0);
+				break;
+
+			case 3:
 				DeleteProfile(hwndList, lvht.iItem, dat);
+				break;
+			}
 			DestroyMenu(hMenu);
 			break;
 		}
@@ -474,6 +492,7 @@ static INT_PTR CALLBACK DlgProfileSelect(HWND hwndDlg, UINT msg, WPARAM wParam, 
 				{
 					case LVN_ITEMCHANGED:
 						EnableWindow(dat->hwndOK, ListView_GetSelectedCount(hwndList) == 1);
+						EnableWindow( dat->hwndREMOVE, ListView_GetSelectedCount( hdr->hwndFrom ) == 1);
 
 					case NM_DBLCLK:
 					{
@@ -487,9 +506,16 @@ static INT_PTR CALLBACK DlgProfileSelect(HWND hwndDlg, UINT msg, WPARAM wParam, 
 						item.pszText = profile;
 						item.cchTextMax = SIZEOF(profile);
 
-						if (ListView_GetItem(hwndList, &item))
-						{
-							mir_sntprintf(dat->pd->szProfile, MAX_PATH, _T("%s%s.dat"), dat->pd->szProfileDir, profile);
+						if (ListView_GetItem(hwndList, &item)) {
+							// profile is placed in "profile_name" subfolder
+							TCHAR tmpPath[MAX_PATH];
+							mir_sntprintf(tmpPath, SIZEOF(tmpPath), _T("%s%s.dat"), dat->pd->szProfileDir, profile);
+							HANDLE hFile = CreateFile(tmpPath, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, NULL);
+							if (hFile == INVALID_HANDLE_VALUE)
+								mir_sntprintf(dat->pd->szProfile, MAX_PATH, _T("%s%s\\%s.dat"), dat->pd->szProfileDir, profile, profile);
+							else
+								_tcscpy(dat->pd->szProfile, tmpPath);
+							CloseHandle(hFile);
 							if (hdr->code == NM_DBLCLK) EndDialog(GetParent(hwndDlg), 1);
 						}
 						return TRUE;
@@ -526,6 +552,8 @@ static INT_PTR CALLBACK DlgProfileManager(HWND hwndDlg, UINT msg, WPARAM wParam,
 		dat->prof = prof;
 		prof->hwndOK = GetDlgItem( hwndDlg, IDOK );
 		EnableWindow( prof->hwndOK, FALSE );
+		prof->hwndREMOVE = GetDlgItem(hwndDlg, IDC_REMOVE);
+		EnableWindow( prof->hwndREMOVE, FALSE );
 		SetWindowLongPtr( hwndDlg, GWLP_USERDATA, (LONG_PTR)dat );
 
         {
@@ -644,6 +672,7 @@ static INT_PTR CALLBACK DlgProfileManager(HWND hwndDlg, UINT msg, WPARAM wParam,
 					SetWindowLongPtr( hwndDlg, DWLP_MSGRESULT, TRUE );
 					return TRUE;
 				}
+				EnableWindow( dat->prof->hwndREMOVE, GetWindowTextLength( GetDlgItem( hwndDlg, IDC_PROFILENAME )) > 0 );
 				break;
 			}
 			case TCN_SELCHANGE:
@@ -685,6 +714,13 @@ static INT_PTR CALLBACK DlgProfileManager(HWND hwndDlg, UINT msg, WPARAM wParam,
 					SendMessage(dat->opd[i].hwnd,WM_NOTIFY,0,(LPARAM)&pshn);
 				}
 				EndDialog(hwndDlg,0);
+			}
+			break;
+
+		case IDC_REMOVE:
+			if (!dat->prof->pd->noProfiles) {
+				HWND hwndList = GetDlgItem(dat->opd[0].hwnd, IDC_PROFILELIST);
+				DeleteProfile(hwndList, ListView_GetNextItem(hwndList, -1, LVNI_SELECTED | LVNI_ALL), dat->prof);
 			}
 			break;
 
