@@ -46,7 +46,6 @@ struct DetailsPageData {
 struct DlgProfData {
 	PROPSHEETHEADER * psh;
 	HWND hwndOK;			// handle to OK button
-	HWND hwndREMOVE;		// handle to REMOVE button
 	PROFILEMANAGERDATA * pd;
 	HANDLE hFileNotify;
 };
@@ -446,7 +445,6 @@ static INT_PTR CALLBACK DlgProfileSelect(HWND hwndDlg, UINT msg, WPARAM wParam, 
 		{
 			SetWindowText(dat->hwndOK, TranslateT("&Run"));
 			EnableWindow(dat->hwndOK, ListView_GetSelectedCount(hwndList)==1);
-			EnableWindow(dat->hwndREMOVE, ListView_GetSelectedCount(GetDlgItem(hwndDlg,IDC_PROFILELIST))==1);
 		}
 		break;
 
@@ -492,7 +490,6 @@ static INT_PTR CALLBACK DlgProfileSelect(HWND hwndDlg, UINT msg, WPARAM wParam, 
 				{
 					case LVN_ITEMCHANGED:
 						EnableWindow(dat->hwndOK, ListView_GetSelectedCount(hwndList) == 1);
-						EnableWindow( dat->hwndREMOVE, ListView_GetSelectedCount( hdr->hwndFrom ) == 1);
 
 					case NM_DBLCLK:
 					{
@@ -552,8 +549,6 @@ static INT_PTR CALLBACK DlgProfileManager(HWND hwndDlg, UINT msg, WPARAM wParam,
 		dat->prof = prof;
 		prof->hwndOK = GetDlgItem( hwndDlg, IDOK );
 		EnableWindow( prof->hwndOK, FALSE );
-		prof->hwndREMOVE = GetDlgItem(hwndDlg, IDC_REMOVE);
-		EnableWindow( prof->hwndREMOVE, FALSE );
 		SetWindowLongPtr( hwndDlg, GWLP_USERDATA, (LONG_PTR)dat );
 
         {
@@ -672,7 +667,6 @@ static INT_PTR CALLBACK DlgProfileManager(HWND hwndDlg, UINT msg, WPARAM wParam,
 					SetWindowLongPtr( hwndDlg, DWLP_MSGRESULT, TRUE );
 					return TRUE;
 				}
-				EnableWindow( dat->prof->hwndREMOVE, GetWindowTextLength( GetDlgItem( hwndDlg, IDC_PROFILENAME )) > 0 );
 				break;
 			}
 			case TCN_SELCHANGE:
@@ -714,13 +708,6 @@ static INT_PTR CALLBACK DlgProfileManager(HWND hwndDlg, UINT msg, WPARAM wParam,
 					SendMessage(dat->opd[i].hwnd,WM_NOTIFY,0,(LPARAM)&pshn);
 				}
 				EndDialog(hwndDlg,0);
-			}
-			break;
-
-		case IDC_REMOVE:
-			if (!dat->prof->pd->noProfiles) {
-				HWND hwndList = GetDlgItem(dat->opd[0].hwnd, IDC_PROFILELIST);
-				DeleteProfile(hwndList, ListView_GetNextItem(hwndList, -1, LVNI_SELECTED | LVNI_ALL), dat->prof);
 			}
 			break;
 
