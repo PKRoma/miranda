@@ -1261,7 +1261,6 @@ int gg_dbsettingchanged(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
 				// Notify user normally this time if added to the list permanently
 				DBDeleteContactSetting(hContact, GG_PROTO, GG_KEY_DELETEUSER); // What is it ?? I don't remember
 				gg_notifyuser(gg, hContact, 1);
-				gg_requestavatar(gg, hContact, 0);
 			}
 		}
 	}
@@ -1512,12 +1511,18 @@ HANDLE gg_getcontact(GGPROTO *gg, uin_t uin, int create, int inlist, char *szNic
 		}
 	}
 
-	// Add to notify list if new
+	// Add to notify list and pull avatar for the new contact
 	if(gg_isonline(gg))
 	{
+		PROTO_AVATAR_INFORMATION pai = {0};
+
 		EnterCriticalSection(&gg->sess_mutex);
 		gg_add_notify_ex(gg->sess, uin, (char)(inlist ? GG_USER_NORMAL : GG_USER_OFFLINE));
 		LeaveCriticalSection(&gg->sess_mutex);
+
+		pai.cbSize = sizeof(pai);
+		pai.hContact = hContact;
+		gg_getavatarinfo(gg, (WPARAM)GAIF_FORCE, (LPARAM)&pai);
 	}
 
 	// TODO server side list & add buddy
