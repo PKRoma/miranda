@@ -417,14 +417,19 @@ HANDLE gg_addtolist(PROTO_INTERFACE *proto, int flags, PROTOSEARCHRESULT *psr)
 {
 	GGPROTO *gg = (GGPROTO *)proto;
 	GGSEARCHRESULT *sr = (GGSEARCHRESULT *)psr;
+	char *szNick = psr->flags & PSR_UNICODE ? mir_u2a((wchar_t *)sr->hdr.nick) : mir_strdup(sr->hdr.nick);
 	uin_t uin;
-	
+	HANDLE hContact;
+
 	if (psr->cbSize == sizeof(GGSEARCHRESULT))
 		uin = sr->uin;
 	else
 		uin = psr->flags & PSR_UNICODE ? _wtoi((wchar_t*)psr->id) : atoi(psr->id);
 
-	return gg_getcontact(gg, uin, 1, flags & PALF_TEMPORARY ? 0 : 1, sr->hdr.nick);
+	hContact = gg_getcontact(gg, uin, 1, flags & PALF_TEMPORARY ? 0 : 1, szNick);
+	mir_free(szNick);
+
+	return hContact;
 }
 
 //////////////////////////////////////////////////////////
