@@ -322,6 +322,7 @@ struct gg_session {
 
 	int protocol_features;	/**< Opcje protokołu */
 	int status_flags;	/**< Flagi statusu */
+	int recv_msg_count;	/**< Liczba odebranych wiadomości */
 };
 
 /**
@@ -657,6 +658,7 @@ int gg_ping(struct gg_session *sess);
 int gg_userlist_request(struct gg_session *sess, char type, const char *request);
 int gg_image_request(struct gg_session *sess, uin_t recipient, int size, uint32_t crc32);
 int gg_image_reply(struct gg_session *sess, uin_t recipient, const char *filename, const char *image, int size);
+int gg_typing_notification(struct gg_session *sess, uin_t recipient, int length);
 
 uint32_t gg_crc32(uint32_t crc, const unsigned char *buf, int len);
 
@@ -680,7 +682,7 @@ int gg_global_set_custom_resolver(int (*resolver_start)(SOCKET*, void**, const c
 enum gg_event_t {
 	GG_EVENT_NONE = 0,		/**< Nie wydarzyło się nic wartego uwagi */
 	GG_EVENT_MSG,			/**< \brief Otrzymano wiadomość. Przekazuje również wiadomości systemowe od numeru 0. */
-	GG_EVENT_NOTIFY,		/**< \brief Informacja o statusach osób z listy kontaktów (przed 6.0). Zdarzenie należy obsługiwać, jeśli planuje się używać protokołu w wersji starszej niż domyślna. */
+	GG_EVENT_NOTIFY,		/**< \brief Informacja o statusach osób z listy kontaktów (przed 6.0). Zdarzenie należy obsługiwać, jeśli planuje się używać protokołu w wersji starszej niż domyślna. Ostatni element tablicy zawiera uin równy 0, a pozostałe pola są niezainicjowane. */
 	GG_EVENT_NOTIFY_DESCR,		/**< \brief Informacja o statusie opisowym osoby z listy kontaktów (przed 6.0). Zdarzenie należy obsługiwać, jeśli planuje się używać protokołu w wersji starszej niż domyślna. */
 	GG_EVENT_STATUS,		/**< \brief Zmiana statusu osoby z listy kontaktów (przed 6.0). Zdarzenie należy obsługiwać, jeśli planuje się używać protokołu w wersji starszej niż domyślna. */
 	GG_EVENT_ACK,			/**< Potwierdzenie doręczenia wiadomości */
@@ -704,9 +706,9 @@ enum gg_event_t {
 	GG_EVENT_PUBDIR50_WRITE,	/**< Zmieniono własne dane w katalogu publicznym */
 
 	GG_EVENT_STATUS60,		/**< Zmiana statusu osoby z listy kontaktów */
-	GG_EVENT_NOTIFY60,		/**< Informacja o statusach osób z listy kontaktów */
+	GG_EVENT_NOTIFY60,		/**< Informacja o statusach osób z listy kontaktów. Ostatni element tablicy zawiera uin równy 0, a pozostałe pola są niezainicjowane.  */
 	GG_EVENT_USERLIST,		/**< Wynik importu lub eksportu listy kontaktów */
-	GG_EVENT_IMAGE_REQUEST,		/**< Żądanie przesłania obrazka z wiadommości */
+	GG_EVENT_IMAGE_REQUEST,		/**< Żądanie przesłania obrazka z wiadomości */
 	GG_EVENT_IMAGE_REPLY,		/**< Przysłano obrazek z wiadomości */
 	GG_EVENT_DCC_ACK,		/**< Potwierdzenie transmisji w połączeniu bezpośrednim (6.x) */
 
@@ -721,7 +723,7 @@ enum gg_event_t {
 	GG_EVENT_XML_EVENT,		/**< Otrzymano komunikat systemowy (7.7) */
 	GG_EVENT_DISCONNECT_ACK,	/**< \brief Potwierdzenie zakończenia sesji. Informuje o tym, że zmiana stanu na niedostępny z opisem dotarła do serwera i można zakończyć połączenie TCP. */
 	GG_EVENT_XML_ACTION,
-	GG_EVENT_TYPING_NOTIFY
+	GG_EVENT_TYPING_NOTIFICATION	/**< Powiadomienie o pisaniu */
 };
 
 #define GG_EVENT_SEARCH50_REPLY GG_EVENT_PUBDIR50_SEARCH_REPLY
@@ -854,7 +856,7 @@ struct gg_event_status60 {
  * Opis zdarzenia \c GG_EVENT_NOTIFY_REPLY60.
  */
 struct gg_event_notify60 {
-	uin_t uin;		/**< Numer Gadu-Gadu */
+	uin_t uin;		/**< Numer Gadu-Gadu. W ostatnim elemencie jest równy 0, a pozostałe pola są niezainicjowane. */
 	int status;		/**< Nowy status */
 	uint32_t remote_ip;	/**< Adres IP dla połączeń bezpośrednich */
 	uint16_t remote_port;	/**< Port dla połączeń bezpośrednich */
@@ -924,14 +926,6 @@ struct gg_event_xml_action {
 };
 
 /**
- * Opis zdarzenia \c GG_EVENT_TYPING_NOTIFY.
- */
-struct gg_event_typing_notify {
-	uint16_t msg_len;
-	uint32_t uin;
-};
-
-/**
  * Opis zdarzenia \c GG_EVENT_DCC7_CONNECTED.
  */
 struct gg_event_dcc7_connected {
@@ -981,6 +975,14 @@ struct gg_event_dcc7_error {
 };
 
 /**
+ * Opis zdarzenia \c GG_EVENT_TYPING_NOTIFICATION.
+ */
+struct gg_event_typing_notification {
+	uin_t uin;		/**< Numer rozmówcy */
+	int length;		/**< Długość tekstu */
+};
+
+/**
  * Unia wszystkich zdarzeń zwracanych przez funkcje \c gg_watch_fd(), 
  * \c gg_dcc_watch_fd() i \c gg_dcc7_watch_fd().
  *
@@ -1001,7 +1003,6 @@ union gg_event_union {
 	gg_pubdir50_t pubdir50;	/**< Odpowiedź katalogu publicznego (\c GG_EVENT_PUBDIR50_*) */
 	struct gg_event_xml_event xml_event;	/**< Zdarzenie systemowe (\c GG_EVENT_XML_EVENT) */
 	struct gg_event_xml_action xml_action;	/**< Zdarzenie XML (\c GG_EVENT_XML_ACTION) */
-	struct gg_event_typing_notify typing_notify;	/**< Powiadomienie o pisaniu (\c GG_EVENT_TYPING_NOTIFY) */
 	struct gg_dcc *dcc_new;	/**< Nowe połączenie bezpośrednie (\c GG_EVENT_DCC_NEW) */
 	enum gg_error_t dcc_error;	/**< Błąd połączenia bezpośredniego (\c GG_EVENT_DCC_ERROR) */
 	struct gg_event_dcc_voice_data dcc_voice_data;	/**< Dane połączenia głosowego (\c GG_EVENT_DCC_VOICE_DATA) */
@@ -1013,6 +1014,7 @@ union gg_event_union {
 	struct gg_event_dcc7_reject dcc7_reject;	/**< Odrzucono połączenia bezpośredniego (\c GG_EVENT_DCC7_REJECT) */
 	struct gg_event_dcc7_accept dcc7_accept;	/**< Zaakceptowano połączenie bezpośrednie (\c GG_EVENT_DCC7_ACCEPT) */
 	struct gg_event_dcc7_done dcc7_done;	/**< Zakończono połączenie bezpośrednie (\c GG_EVENT_DCC7_DONE) */
+	struct gg_event_typing_notification typing_notification;	/**< Powiadomienie o pisaniu (\c GG_EVENT_TYPING_NOTIFICATION) */
 };
 
 /**
@@ -1450,7 +1452,7 @@ int gg_dcc7_handle_reject(struct gg_session *sess, struct gg_event *e, void *pay
 #define GG_HTTPS_PORT 443
 #define GG_HTTP_USERAGENT "Mozilla/4.7 [en] (Win98; I)"
 
-#define GG_DEFAULT_CLIENT_VERSION "8.0.0.7669"
+#define GG_DEFAULT_CLIENT_VERSION "10.1.0.11070"
 #define GG_DEFAULT_PROTOCOL_VERSION 0x2e
 #define GG_DEFAULT_TIMEOUT 30
 #define GG_HAS_AUDIO_MASK 0x40000000
@@ -1460,17 +1462,27 @@ int gg_dcc7_handle_reject(struct gg_session *sess, struct gg_event *e, void *pay
 
 #ifndef DOXYGEN
 
-#define GG_FEATURE_MSG77		0x01
-#define GG_FEATURE_STATUS77		0x02
-#define GG_FEATURE_DND_FFC		0x10
-#define GG_FEATURE_IMAGE_DESCR		0x20
-#define GG_FEATURE_TYPING_NOTIFY	0x2000
+#define GG_FEATURE_MSG77		0x0001
+#define GG_FEATURE_STATUS77		0x0002
+#define GG_FEATURE_UNKNOWN_4		0x0004
+#define GG_FEATURE_UNKNOWN_8		0x0008
+#define GG_FEATURE_DND_FFC		0x0010
+#define GG_FEATURE_IMAGE_DESCR		0x0020
+#define GG_FEATURE_UNKNOWN_40		0x0040
+#define GG_FEATURE_UNKNOWN_80		0x0080
+#define GG_FEATURE_UNKNOWN_100		0x0100
+#define GG_FEATURE_USER_DATA		0x0200
+#define GG_FEATURE_MSG_ACK		0x0400
+#define GG_FEATURE_UNKNOWN_800		0x0800
+#define GG_FEATURE_UNKNOWN_1000		0x1000
+#define GG_FEATURE_TYPING_NOTIFICATION	0x2000
 
 /* Poniższe makra zostały zachowane dla zgodności API */
 #define GG_FEATURE_MSG80		0
 #define GG_FEATURE_STATUS80		0
 #define GG_FEATURE_STATUS80BETA		0
-#define GG_FEATURE_ALL			(GG_FEATURE_DND_FFC | GG_FEATURE_IMAGE_DESCR)
+
+#define GG_FEATURE_ALL			(GG_FEATURE_MSG80 | GG_FEATURE_STATUS80 | GG_FEATURE_DND_FFC | GG_FEATURE_IMAGE_DESCR | GG_FEATURE_UNKNOWN_100 | GG_FEATURE_USER_DATA | GG_FEATURE_MSG_ACK | GG_FEATURE_TYPING_NOTIFICATION)
 
 #else
 
@@ -2005,13 +2017,6 @@ struct gg_recv_msg {
 #define GG_XML_EVENT 0x0027
 
 #define GG_XML_ACTION 0x002c
-
-#define GG_TYPING_NOTIFY 0x0059
-
-struct gg_typing_notify {
-	uint16_t msg_len;
-	uint32_t uin;
-} GG_PACKED;
 
 #ifndef DOXYGEN
 

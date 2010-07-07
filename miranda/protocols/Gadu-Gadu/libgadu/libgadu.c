@@ -370,6 +370,8 @@ static int gg_write_common(struct gg_session *sess, const char *buf, int length)
 	return gg_sock_write(sess->fd, buf, length);
 }
 
+
+
 /**
  * \internal Wysyła do serwera dane binarne.
  *
@@ -752,13 +754,17 @@ struct gg_session *gg_login(const struct gg_login_params *p)
 	sess->external_port = p->external_port;
 	sess->external_addr = p->external_addr;
 
-	sess->protocol_features = (p->protocol_features & ~(GG_FEATURE_STATUS77 | GG_FEATURE_MSG77));
+	if (p->protocol_features == 0) {
+		sess->protocol_features = GG_FEATURE_MSG80 | GG_FEATURE_STATUS80 | GG_FEATURE_DND_FFC | GG_FEATURE_IMAGE_DESCR | GG_FEATURE_UNKNOWN_100 | GG_FEATURE_USER_DATA | GG_FEATURE_MSG_ACK | GG_FEATURE_TYPING_NOTIFICATION;
+	} else {
+		sess->protocol_features = (p->protocol_features & ~(GG_FEATURE_STATUS77 | GG_FEATURE_MSG77));
 
-	if (!(p->protocol_features & GG_FEATURE_STATUS77))
-		sess->protocol_features |= GG_FEATURE_STATUS80;
+		if (!(p->protocol_features & GG_FEATURE_STATUS77))
+			sess->protocol_features |= GG_FEATURE_STATUS80;
 
-	if (!(p->protocol_features & GG_FEATURE_MSG77))
-		sess->protocol_features |= GG_FEATURE_MSG80;
+		if (!(p->protocol_features & GG_FEATURE_MSG77))
+			sess->protocol_features |= GG_FEATURE_MSG80;
+	}
 
 	if (!(sess->status_flags = p->status_flags))
 		sess->status_flags = GG_STATUS_FLAG_UNKNOWN | GG_STATUS_FLAG_SPAM;
@@ -1423,7 +1429,7 @@ static int gg_convert_to_html(char *dst, const char *src, const unsigned char *f
 
 			format_idx += 3;
 
-			if ((attr & (GG_FONT_BOLD | GG_FONT_ITALIC | GG_FONT_UNDERLINE | GG_FONT_COLOR)) != 0) {
+			if ((attr & (GG_FONT_BOLD | GG_FONT_ITALIC | GG_FONT_UNDERLINE | GG_FONT_COLOR)) != 0 || (attr == 0 && old_attr != 0)) {
 				if (char_pos != 0) {
 					if ((old_attr & GG_FONT_UNDERLINE) != 0)
 						gg_append(dst, &len, "</u>", 4);
@@ -1434,7 +1440,8 @@ static int gg_convert_to_html(char *dst, const char *src, const unsigned char *f
 					if ((old_attr & GG_FONT_BOLD) != 0)
 						gg_append(dst, &len, "</b>", 4);
 
-					gg_append(dst, &len, "</span>", 7);
+					if (src[i] != 0)
+						gg_append(dst, &len, "</span>", 7);
 				}
 
 				if (((attr & GG_FONT_COLOR) != 0) && (format_idx + 3 <= format_len)) {
@@ -1444,9 +1451,11 @@ static int gg_convert_to_html(char *dst, const char *src, const unsigned char *f
 					color = (unsigned char*) "\x00\x00\x00";
 				}
 
-				if (dst != NULL)
-					sprintf(&dst[len], span_fmt, color[0], color[1], color[2]);
-				len += span_len;
+				if (src[i] != 0) {
+					if (dst != NULL)
+						sprintf(&dst[len], span_fmt, color[0], color[1], color[2]);
+					len += span_len;
+				}
 			} else if (char_pos == 0 && src[0] != 0) {
 				if (dst != NULL)
 					sprintf(&dst[len], span_fmt, 0, 0, 0);
@@ -2236,6 +2245,28 @@ int gg_userlist_request(struct gg_session *sess, char type, const char *request)
 	sess->userlist_blocks++;
 
 	return gg_send_packet(sess, GG_USERLIST_REQUEST, &type, sizeof(type), request, len, NULL);
+}
+
+/**
+ * Informuje rozmówcę o pisaniu wiadomości.
+ *
+ * \param sess Struktura sesji
+ * \param recipient Numer adresata
+ * \param length Długość wiadomości lub 0 jeśli jest pusta
+ *
+ * \return 0 jeśli się powiodło, -1 w przypadku błędu
+ *
+ * \ingroup messages
+ */
+int gg_typing_notification(struct gg_session *sess, uin_t recipient, int length){
+	struct gg_typing_notification pkt;
+	uin_t uin;
+
+	pkt.length = gg_fix16(length);
+	uin = gg_fix32(recipient);
+	memcpy(&pkt.uin, &uin, sizeof(uin_t));
+
+	return gg_send_packet(sess, GG_TYPING_NOTIFICATION, &pkt, sizeof(pkt), NULL);
 }
 
 /* @} */
