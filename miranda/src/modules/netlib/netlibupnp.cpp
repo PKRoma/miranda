@@ -594,22 +594,23 @@ static void discoverUPnP(void)
 
 static BOOL findUPnPGateway(void)
 {
-	time_t curTime;
-
-	WaitForSingleObject(portListMutex, INFINITE);
-
-	curTime = time(NULL);
-
-	if ((curTime - lastDiscTime) >= expireTime)
+	if ((time(NULL) - lastDiscTime) >= expireTime)
 	{
-		lastDiscTime = curTime;
-		gatewayFound = FALSE;
+		WaitForSingleObject(portListMutex, INFINITE);
 
-		discoverUPnP();
-		NetlibLogf(NULL, "UPnP Gateway detected %d, Control URL: %s\n", gatewayFound, szCtlUrl);
+		time_t curTime = time(NULL);
+
+		if ((curTime - lastDiscTime) >= expireTime)
+		{
+			lastDiscTime = curTime;
+			gatewayFound = FALSE;
+
+			discoverUPnP();
+			NetlibLogf(NULL, "UPnP Gateway detected %d, Control URL: %s\n", gatewayFound, szCtlUrl);
+		}
+
+		ReleaseMutex(portListMutex);
 	}
-
-	ReleaseMutex(portListMutex);
 
 	return gatewayFound;
 }
