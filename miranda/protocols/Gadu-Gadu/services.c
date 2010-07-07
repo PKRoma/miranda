@@ -996,18 +996,13 @@ INT_PTR gg_leavechat(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
 int gg_useristyping(PROTO_INTERFACE *proto, HANDLE hContact, int type)
 {
 	GGPROTO *gg = (GGPROTO *)proto;
-	struct gg_typing_notify tn = {0};
 	uin_t uin = DBGetContactSettingDword(hContact, GG_PROTO, GG_KEY_UIN, 0);
 
-	if(!uin || !gg_isonline(gg)) return 0;
-
-	if (type == PROTOTYPE_SELFTYPING_ON)
-		tn.msg_len = gg_fix16(0x01);
-	tn.uin = gg_fix32(uin);
+	if (!uin || !gg_isonline(gg)) return 0;
 
 	if (type == PROTOTYPE_SELFTYPING_ON || type == PROTOTYPE_SELFTYPING_OFF) {
 		EnterCriticalSection(&gg->sess_mutex);
-		gg_send_packet(gg->sess, GG_TYPING_NOTIFY, &tn, sizeof(tn), NULL);
+		gg_typing_notification(gg->sess, uin, (type == PROTOTYPE_SELFTYPING_ON));
 		LeaveCriticalSection(&gg->sess_mutex);
 	}
 

@@ -75,6 +75,7 @@
 #endif /* _WIN32 */
 
 #include "libgadu.h"
+#include "internal.h"
 
 /**
  * Plik, do którego będą przekazywane informacje odpluskwiania.
@@ -102,7 +103,7 @@ FILE *gg_debug_file = NULL;
  * \param format Format wiadomości (zgodny z \c printf)
  * \param ap Lista argumentów (zgodna z \c printf)
  */
-void gg_debug_common(struct gg_session *sess, int level, const char *format, va_list ap)
+static void gg_debug_common(struct gg_session *sess, int level, const char *format, va_list ap)
 {
 	if (gg_debug_handler_session)
 		(*gg_debug_handler_session)(sess, level, format, ap);
@@ -160,7 +161,7 @@ void gg_debug_session(struct gg_session *sess, int level, const char *format, ..
  *
  * \ingroup debug
  */
-void gg_debug_dump_session(struct gg_session *sess, const char *buf, unsigned int buf_length, const char *format, ...)
+void gg_debug_dump_session(struct gg_session *sess, const void *buf, unsigned int buf_length, const char *format, ...)
 {
 	va_list ap;
 
@@ -170,7 +171,7 @@ void gg_debug_dump_session(struct gg_session *sess, const char *buf, unsigned in
 		  va_start(ap, format);
 		  gg_debug_common(sess, GG_DEBUG_DUMP, format, ap);
 		  for (i = 0; i < buf_length; ++i)
-			  gg_debug_session(sess, GG_DEBUG_DUMP, " %.2x", (unsigned char) buf[i]);
+			  gg_debug_session(sess, GG_DEBUG_DUMP, " %.2x", ((unsigned char*) buf)[i]);
 		  gg_debug_session(sess, GG_DEBUG_DUMP, "\n");
 		  va_end(ap);
 	  }

@@ -85,6 +85,7 @@ void gg_event_free(struct gg_event *e)
 			free(e->event.msg.message);
 			free(e->event.msg.formats);
 			free(e->event.msg.recipients);
+			free(e->event.msg.xhtml_message);
 			break;
 
 		case GG_EVENT_NOTIFY:
@@ -437,6 +438,7 @@ static int gg_handle_recv_msg(struct gg_header *h, struct gg_event *e, struct gg
 {
 	struct gg_recv_msg *r = (struct gg_recv_msg*) ((char*) h + sizeof(struct gg_header));
 	char *p, *packet_end = (char*) r + h->length;
+	int ctcp = 0;
 
 	gg_debug_session(sess, GG_DEBUG_FUNCTION, "** gg_handle_recv_msg(%p, %p);\n", h, e);
 
@@ -455,6 +457,7 @@ static int gg_handle_recv_msg(struct gg_header *h, struct gg_event *e, struct gg
 
 		if (*p == 0x02 && p == packet_end - 1) {
 			gg_debug_session(sess, GG_DEBUG_MISC, "// gg_handle_recv_msg() received ctcp packet\n");
+			ctcp = 1;
 			break;
 		}
 
@@ -480,7 +483,11 @@ static int gg_handle_recv_msg(struct gg_header *h, struct gg_event *e, struct gg
 	e->event.msg.sender = gg_fix32(r->sender);
 	e->event.msg.time = gg_fix32(r->time);
 	e->event.msg.seq = gg_fix32(r->seq);
-	e->event.msg.message = (unsigned char*) strdup((char*) r + sizeof(*r));
+	if (ctcp)
+		e->event.msg.message = (unsigned char*) strdup("\x02");
+	else
+		e->event.msg.message = (unsigned char*) strdup((char*) r + sizeof(*r));
+
 
 	return 0;
 
@@ -704,6 +711,28 @@ malformed:
 }
 
 /**
+ * \internal Wysyła potwierdzenie odebrania wiadomości.
+ *
+ * \param sess Struktura sesji
+ *
+ * \return 0 jeśli się powiodło, -1 jeśli wystąpił błąd
+ */
+static int gg_handle_recv_msg_ack(struct gg_session *sess)
+{
+	struct gg_recv_msg_ack pkt;
+
+	gg_debug_session(sess, GG_DEBUG_FUNCTION, "** gg_handle_recv_msg_ack(%p);\n", sess);
+
+	if ((sess->protocol_features & GG_FEATURE_MSG_ACK) == 0)
+		return 0;
+
+	sess->recv_msg_count++;
+	pkt.count = gg_fix32(sess->recv_msg_count);
+
+	return gg_send_packet(sess, GG_RECV_MSG_ACK, &pkt, sizeof(pkt), NULL);
+}
+
+/**
  * \internal Odbiera pakiet od serwera.
  *
  * Analizuje pakiet i wypełnia strukturę zdarzenia.
@@ -735,18 +764,24 @@ static int gg_watch_fd_connected(struct gg_session *sess, struct gg_event *e)
 	switch (h->type) {
 		case GG_RECV_MSG:
 		{
-			if (h->length >= sizeof(struct gg_recv_msg))
-				if (gg_handle_recv_msg(h, e, sess))
+			if (h->length >= sizeof(struct gg_recv_msg)) {
+				if (gg_handle_recv_msg(h, e, sess) != -1)
+					gg_handle_recv_msg_ack(sess);
+				else
 					goto fail;
+			}
 
 			break;
 		}
 
 		case GG_RECV_MSG80:
 		{
-			if (h->length >= sizeof(struct gg_recv_msg80))
-				if (gg_handle_recv_msg80(h, e, sess))
+			if (h->length >= sizeof(struct gg_recv_msg80)) {
+				if (gg_handle_recv_msg80(h, e, sess) != -1)
+					gg_handle_recv_msg_ack(sess);
+				else
 					goto fail;
+			}
 
 			break;
 		}
@@ -1300,21 +1335,6 @@ static int gg_watch_fd_connected(struct gg_session *sess, struct gg_event *e)
 			break;
 		}
 
-		case GG_TYPING_NOTIFY:
-		{
-			struct gg_typing_notify *tn = (void*) p;
-
-			gg_debug_session(sess, GG_DEBUG_MISC, "// gg_watch_fd_connected() received typing notify\n");
-
-			if (h->length == sizeof(*tn)) {
-				e->type = GG_EVENT_TYPING_NOTIFY;
-				memcpy(&e->event.typing_notify, p, sizeof(*tn));
-				e->event.typing_notify.msg_len = gg_fix16(e->event.typing_notify.msg_len);
-				e->event.typing_notify.uin = gg_fix32(e->event.typing_notify.uin);
-			}
-			break;
-		}
-
 		case GG_PUBDIR50_REPLY:
 		{
 			gg_debug_session(sess, GG_DEBUG_MISC, "// gg_watch_fd_connected() received pubdir/search reply\n");
@@ -1429,6 +1449,39 @@ static int gg_watch_fd_connected(struct gg_session *sess, struct gg_event *e)
 
 			if (gg_dcc7_handle_info(sess, e, p, h->length) == -1)
 				goto fail;
+
+			break;
+		}
+
+		case GG_USER_DATA:
+		{
+			struct gg_user_data *d = (void*) p;
+
+			gg_debug_session(sess, GG_DEBUG_MISC, "// gg_watch_fd_connected() received user data\n");
+
+			if (h->length < sizeof(*d))
+				break;
+
+			// XXX
+
+			break;
+		}
+
+		case GG_TYPING_NOTIFICATION:
+		{
+			struct gg_typing_notification *n = (void*) p;
+			uin_t uin;
+
+			gg_debug_session(sess, GG_DEBUG_MISC, "// gg_watch_fd_connected() received typing notification\n");
+
+			if (h->length < sizeof(*n))
+				break;
+
+			memcpy(&uin, &n->uin, sizeof(uin_t));
+
+			e->type = GG_EVENT_TYPING_NOTIFICATION;
+			e->event.typing_notification.uin = gg_fix32(uin);
+			e->event.typing_notification.length = gg_fix16(n->length);
 
 			break;
 		}
@@ -1612,10 +1665,9 @@ struct gg_event *gg_watch_fd(struct gg_session *sess)
 #ifdef GG_CONFIG_HAVE_OPENSSL
 			if (sess->ssl != NULL) {
 				snprintf(buf, sizeof(buf) - 1,
-					"GET %s/appsvc/appmsg_ver10.asp?fmnumber=%u&fmt=2&lastmsg=%d&version=%s HTTP/1.0\r\n"
+					"GET %s/appsvc/appmsg_ver10.asp?fmnumber=%u&fmt=2&lastmsg=%d&version=%s&age=2&gender=1 HTTP/1.0\r\n"
+					"Connection: close\r\n"
 					"Host: " GG_APPMSG_HOST "\r\n"
-					"User-Agent: " GG_HTTP_USERAGENT "\r\n"
-					"Pragma: no-cache\r\n"
 					"%s"
 					"\r\n", host, sess->uin, sess->last_sysmsg, client, (auth) ? auth : "");
 			} else
@@ -2171,8 +2223,8 @@ struct gg_event *gg_watch_fd(struct gg_session *sess)
 
 			if (sess->protocol_version >= 0x2e) {
 				struct gg_login80 l;
-
-				uint32_t tmp_version_len	= gg_fix32((uint32_t)strlen(GG8_VERSION));
+				const char *version = (sess->client_version) ? sess->client_version : GG_DEFAULT_CLIENT_VERSION;
+				uint32_t tmp_version_len	= gg_fix32((uint32_t)strlen(GG8_VERSION) + (uint32_t)strlen(version));
 				uint32_t tmp_descr_len		= gg_fix32((sess->initial_descr) ? (uint32_t)strlen(sess->initial_descr) : 0);
 				
 				memset(&l, 0, sizeof(l));
@@ -2189,7 +2241,7 @@ struct gg_event *gg_watch_fd(struct gg_session *sess)
 				gg_debug_session(sess, GG_DEBUG_TRAFFIC, "// gg_watch_fd() sending GG_LOGIN80 packet\n");
 				ret = gg_send_packet(sess, GG_LOGIN80, 
 						&l, sizeof(l), 
-						&tmp_version_len, sizeof(uint32_t), GG8_VERSION, strlen(GG8_VERSION),
+						&tmp_version_len, sizeof(uint32_t), GG8_VERSION, strlen(GG8_VERSION), version, strlen(version),
 						&tmp_descr_len, sizeof(uint32_t), sess->initial_descr, (sess->initial_descr) ? strlen(sess->initial_descr) : 0,
 						NULL);
 
@@ -2289,7 +2341,7 @@ struct gg_event *gg_watch_fd(struct gg_session *sess)
 				break;
 			}
 
-			if (h->type == GG_LOGIN_FAILED) {
+			if (h->type == GG_LOGIN_FAILED || h->type == GG_LOGIN80_FAILED) {
 				gg_debug_session(sess, GG_DEBUG_MISC, "// gg_watch_fd() login failed\n");
 				e->event.failure = GG_FAILURE_PASSWORD;
 				errno = EACCES;

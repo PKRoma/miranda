@@ -40,6 +40,7 @@
 	"..\..\include\openssl\tls1.h"\
 	"..\..\include\openssl\x509.h"\
 	"..\..\include\openssl\x509_vfy.h"\
+	".\libgadu\internal.h"\
 	".\libgadu\libgadu.h"\
 	".\libgadu\win32.h"\
 	".\ssl.h"\
