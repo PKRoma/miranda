@@ -189,10 +189,11 @@ void getProfileCmdLine(TCHAR * szProfile, size_t cch, TCHAR * profiledir)
 			_tcscat(szProfile, _T(".dat"));
 
 		TCHAR *p = _tcsrchr(buf, '\\');
-		if (p) {
+		if (p) 
+		{
 			_tcscpy(profiledir, szProfile);
 			p = _tcsrchr(profiledir, '\\');
-			*(p+1) = 0;
+			p[1] = 0;
 		}	
 	}
 }
@@ -200,21 +201,25 @@ void getProfileCmdLine(TCHAR * szProfile, size_t cch, TCHAR * profiledir)
 // move profile from profile subdir
 static void moveProfileDirProfiles(TCHAR * profiledir, BOOL isRootDir = TRUE)
 {
-	REPLACEVARSDATA dat = {0};
-	dat.cbSize = sizeof(dat);
-	dat.dwFlags = RVF_TCHAR;
-
 	TCHAR pfd[MAX_PATH];
 	if (isRootDir)
-		mir_sntprintf(pfd, SIZEOF(pfd), _T("%s"), (TCHAR*)CallService(MS_UTILS_REPLACEVARS, (WPARAM)_T("%miranda_path%\\*.dat"), (LPARAM)&dat));
+	{
+		REPLACEVARSDATA dat = {0};
+		dat.cbSize = sizeof(dat);
+		dat.dwFlags = RVF_TCHAR;
+		TCHAR *path = (TCHAR*)CallService(MS_UTILS_REPLACEVARS, (WPARAM)_T("%miranda_path%\\*.dat"), (LPARAM)&dat);
+		mir_sntprintf(pfd, SIZEOF(pfd), _T("%s"), path);
+		mir_free(path);
+	}
 	else
 		mir_sntprintf(pfd, SIZEOF(pfd), _T("%s\\*.dat"), profiledir);
 
 	WIN32_FIND_DATA ffd;
 	HANDLE hFind = FindFirstFile(pfd, &ffd);
-	if (hFind != INVALID_HANDLE_VALUE) {
-		TCHAR *s = _tcsrchr(pfd, '\\'); *s = 0;
-		do {
+	if (hFind != INVALID_HANDLE_VALUE) 
+	{
+		do 
+		{
 			TCHAR path[MAX_PATH], path2[MAX_PATH];
 			TCHAR* profile = mir_tstrdup(ffd.cFileName);
 			TCHAR *c =_tcsrchr(profile, '.'); if (c) *c = 0;
@@ -222,7 +227,8 @@ static void moveProfileDirProfiles(TCHAR * profiledir, BOOL isRootDir = TRUE)
 			mir_sntprintf(path2, SIZEOF(path2), _T("%s%s"), profiledir, profile);
 			CreateDirectory(path2, NULL);
 			mir_sntprintf(path2, SIZEOF(path2), _T("%s%s\\%s"), profiledir, profile, ffd.cFileName); 
-			if (MoveFile(path, path2) == 0) {
+			if (MoveFile(path, path2) == 0) 
+			{
 				TCHAR buf[512];
 				mir_sntprintf(buf, SIZEOF(buf), TranslateTS(tszMoveMsg), profiledir);
 				MessageBox(NULL, buf, _T("Miranda IM"), MB_ICONERROR | MB_OK);
@@ -232,9 +238,7 @@ static void moveProfileDirProfiles(TCHAR * profiledir, BOOL isRootDir = TRUE)
 		}
 		while(FindNextFile(hFind, &ffd));
 	}
-
 	FindClose(hFind);
-	mir_free(pfd);
 }
 
 // returns 1 if a single profile (full path) is found within the profile dir
@@ -252,34 +256,37 @@ static int getProfile1(TCHAR * szProfile, size_t cch, TCHAR * profiledir, BOOL *
 	if (reqfd)
 		found++;
 
-	if (shpm || !reqfd) {
+	if (shpm || !reqfd) 
+	{
 		TCHAR searchspec[MAX_PATH];
 		mir_sntprintf(searchspec, SIZEOF(searchspec), _T("%s*.*"), profiledir);
 
 		WIN32_FIND_DATA ffd;
 		HANDLE hFind = FindFirstFile(searchspec, &ffd);
-		if (hFind != INVALID_HANDLE_VALUE) {
-			do {
+		if (hFind != INVALID_HANDLE_VALUE) 
+		{
+			do 
+			{
 				// make sure the first hit is actually a *.dat file
-				if ((ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) && _tcscmp(ffd.cFileName, _T(".")) && _tcscmp(ffd.cFileName, _T("..")))  {
+				if ((ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) && _tcscmp(ffd.cFileName, _T(".")) && _tcscmp(ffd.cFileName, _T(".."))) 
+				{
 					TCHAR newProfile[MAX_PATH];
 					mir_sntprintf(newProfile, MAX_PATH, _T("%s%s\\%s.dat"), profiledir, ffd.cFileName, ffd.cFileName);
-					if (_taccess(newProfile, 0) == 0)
-						if (++found == 1 && nodprof)
-							_tcscpy(szProfile, newProfile);
+					if (_taccess(newProfile, 0) == 0 && ++found == 1 && nodprof)
+						_tcscpy(szProfile, newProfile);
 				}
 			}
-				while (FindNextFile(hFind, &ffd));
+			while (FindNextFile(hFind, &ffd));
 
 			FindClose(hFind);
 		}
 		reqfd = !shpm && found == 1 && nodprof;
 	}
 
-	if ( noProfiles ) 
+	if (noProfiles)
 		*noProfiles = found == 0;
 
-	if ( nodprof && !reqfd )
+	if (nodprof && !reqfd)
 		szProfile[0] = 0;
 
 	return reqfd;
