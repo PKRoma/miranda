@@ -235,7 +235,7 @@ static SECURITY_STATUS ClientHandshakeLoop(SslHandle *ssl, BOOL fDoInitialRead)
 		{
 			if (fDoRead) 
 			{
-				TIMEVAL tv = {6, 0};
+				static const TIMEVAL tv = {6, 0};
 				fd_set fd;
 
 				// If buffer not large enough reallocate buffer
@@ -456,6 +456,7 @@ static int ClientConnect(SslHandle *ssl, const char *host)
 	// Send response to server if there is one.
 	if (OutBuffers[0].cbBuffer != 0 && OutBuffers[0].pvBuffer != NULL) 
 	{
+		NetlibDumpData(NULL, (unsigned char*)(OutBuffers[0].pvBuffer), OutBuffers[0].cbBuffer, 1, MSG_DUMPSSL);
 		cbData = send(ssl->s, (char*)OutBuffers[0].pvBuffer, OutBuffers[0].cbBuffer, 0);
 		if (cbData == SOCKET_ERROR || cbData == 0) 
 		{
@@ -564,6 +565,7 @@ void NetlibSslShutdown(SslHandle *ssl)
 	// Send the close notify message to the server.
 	if (OutBuffers[0].pvBuffer != NULL && OutBuffers[0].cbBuffer != 0) 
 	{
+		NetlibDumpData(NULL, (unsigned char*)(OutBuffers[0].pvBuffer), OutBuffers[0].cbBuffer, 1, MSG_DUMPSSL);
 		send(ssl->s, (char*)OutBuffers[0].pvBuffer, OutBuffers[0].cbBuffer, 0);
 		g_pSSPI->FreeContextBuffer(OutBuffers[0].pvBuffer);
 	}
@@ -624,7 +626,7 @@ int NetlibSslRead(SslHandle *ssl, char *buf, int num, int peek)
 
 			if (peek) 
 			{
-				TIMEVAL tv = {0};
+				static const TIMEVAL tv = {0};
 				fd_set fd;
 				FD_ZERO(&fd);
 				FD_SET(ssl->s, &fd);
@@ -843,6 +845,7 @@ int NetlibSslWrite(SslHandle *ssl, const char *buf, int num)
 		cbData = Buffers[0].cbBuffer + Buffers[1].cbBuffer + Buffers[2].cbBuffer;
 
 		// Send the encrypted data to the server.
+		NetlibDumpData(NULL, pbDataBuffer, cbData, 1, MSG_DUMPSSL);
 		cbData = send(ssl->s, (char*)pbDataBuffer, cbData, 0);
 		if (cbData == SOCKET_ERROR || cbData == 0)
 		{

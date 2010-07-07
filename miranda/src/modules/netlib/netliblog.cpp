@@ -469,14 +469,14 @@ void NetlibDumpData(struct NetlibConnection *nlc,PBYTE buf,int len,int sent,int 
 		return;
 
 	// Check user's log settings
-	if (!( logOptions.toOutputDebugString ||
+	if (!(logOptions.toOutputDebugString ||
 		((THook*)hLogEvent)->subscriberCount ||
-		( logOptions.toFile && logOptions.szFile[0] )))
+		(logOptions.toFile && logOptions.szFile[0])))
 		return;
 	if ((sent && !logOptions.dumpSent) ||
 		(!sent && !logOptions.dumpRecv))
 		return;
-	if ((flags&MSG_DUMPPROXY) && !logOptions.dumpProxy)
+	if ((flags & MSG_DUMPPROXY) && !logOptions.dumpProxy)
 		return;
 	if ((flags & MSG_DUMPSSL) && !logOptions.dumpSsl)
 		return;
