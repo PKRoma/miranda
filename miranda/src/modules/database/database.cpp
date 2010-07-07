@@ -200,20 +200,21 @@ void getProfileCmdLine(TCHAR * szProfile, size_t cch, TCHAR * profiledir)
 // move profile from profile subdir
 static void moveProfileDirProfiles(TCHAR * profiledir, BOOL isRootDir = TRUE)
 {
-	REPLACEVARSDATA dat = {0};
-	dat.cbSize = sizeof(dat);
-	dat.dwFlags = RVF_TCHAR;
-
 	TCHAR pfd[MAX_PATH];
-	if (isRootDir)
-		mir_sntprintf(pfd, SIZEOF(pfd), _T("%s"), (TCHAR*)CallService(MS_UTILS_REPLACEVARS, (WPARAM)_T("%miranda_path%\\*.dat"), (LPARAM)&dat));
+	if (isRootDir) {
+		REPLACEVARSDATA dat = {0};
+		dat.cbSize = sizeof(dat);
+		dat.dwFlags = RVF_TCHAR;
+		TCHAR *path = (TCHAR*)CallService(MS_UTILS_REPLACEVARS, (WPARAM)_T("%miranda_path%\\*.dat"), (LPARAM)&dat);
+		mir_sntprintf(pfd, SIZEOF(pfd), _T("%s"), path);
+		mir_free(path);
+	}
 	else
 		mir_sntprintf(pfd, SIZEOF(pfd), _T("%s\\*.dat"), profiledir);
 
 	WIN32_FIND_DATA ffd;
 	HANDLE hFind = FindFirstFile(pfd, &ffd);
 	if (hFind != INVALID_HANDLE_VALUE) {
-		TCHAR *s = _tcsrchr(pfd, '\\'); *s = 0;
 		do {
 			TCHAR path[MAX_PATH], path2[MAX_PATH];
 			TCHAR* profile = mir_tstrdup(ffd.cFileName);
@@ -232,9 +233,7 @@ static void moveProfileDirProfiles(TCHAR * profiledir, BOOL isRootDir = TRUE)
 		}
 		while(FindNextFile(hFind, &ffd));
 	}
-
 	FindClose(hFind);
-	mir_free(pfd);
 }
 
 // returns 1 if a single profile (full path) is found within the profile dir
@@ -316,6 +315,27 @@ static int getProfile(TCHAR * szProfile, size_t cch)
 	return getProfileManager(&pd);
 }
 
+// carefully converts a file name from TCHAR* to char*
+char* makeFileName( const TCHAR* tszOriginalName )
+{
+	char* szResult = NULL;
+	char* szFileName = mir_t2a( tszOriginalName );
+	TCHAR* tszFileName = mir_a2t( szFileName );
+	if ( _tcscmp( tszOriginalName, tszFileName )) {
+		TCHAR tszProfile[MAX_PATH];
+		if ( GetShortPathName( tszOriginalName, tszProfile, MAX_PATH) != 0)
+			szResult = mir_t2a( tszProfile );
+	} 
+
+	if ( !szResult )
+		szResult = szFileName;
+	else
+		mir_free(szFileName);
+	mir_free(tszFileName);
+
+	return szResult;
+}
+
 // called by the UI, return 1 on success, use link to create profile, set error if any
 int makeDatabase(TCHAR * profile, DATABASELINK * link, HWND hwndDlg)
 {
@@ -325,15 +345,17 @@ int makeDatabase(TCHAR * profile, DATABASELINK * link, HWND hwndDlg)
 	TCHAR * file = _tcsrchr(profile, '\\');
 	if (file) file++;
 	if (_taccess(profile, 0) == 0) {		
-		mir_sntprintf(buf, SIZEOF(buf), TranslateTS( _T("The profile '%s' already exists. Do you want to move it to the ")
-			_T("Recycle Bin? \n\nWARNING: The profile will be deleted if Recycle Bin is disabled.\nWARNING: A profile may contain confidential information and should be properly deleted.")),file);
 		// file already exists!
-		if ( MessageBox(hwndDlg, buf, TranslateT("The profile already exists"), MB_ICONQUESTION|MB_YESNO|MB_DEFBUTTON2) != IDYES ) return 0;
+		mir_sntprintf(buf, SIZEOF(buf), TranslateTS( _T("The profile '%s' already exists. Do you want to move it to the ")
+			_T("Recycle Bin? \n\nWARNING: The profile will be deleted if Recycle Bin is disabled.\n")
+			_T("WARNING: A profile may contain confidential information and should be properly deleted.")), file );
+		if ( MessageBox(hwndDlg, buf, TranslateT("The profile already exists"), MB_ICONQUESTION|MB_YESNO|MB_DEFBUTTON2) != IDYES )
+			return 0;
 		
 		// move the file
 		SHFILEOPSTRUCT sf = {0};
-		sf.wFunc=FO_DELETE;
-		sf.pFrom=buf;
+		sf.wFunc = FO_DELETE;
+		sf.pFrom = buf;
 		sf.fFlags = FOF_NOCONFIRMATION | FOF_NOERRORUI | FOF_SILENT | FOF_ALLOWUNDO;
 		mir_sntprintf(buf, SIZEOF(buf), _T("%s\0"), profile);
 		if ( SHFileOperation(&sf) != 0 ) {
@@ -345,7 +367,7 @@ int makeDatabase(TCHAR * profile, DATABASELINK * link, HWND hwndDlg)
 	}
 	// ask the database to create the profile
 	CreatePathToFileT(profile);
-	char *prf = mir_t2a(profile);
+	char *prf = makeFileName(profile);
 	if (link->makeDatabase(prf, &err)) { 
 		mir_sntprintf(buf, SIZEOF(buf),TranslateT("Unable to create the profile '%s', the error was %x"),file, err);
 		MessageBox(hwndDlg,buf,TranslateT("Problem creating profile"),MB_ICONERROR|MB_OK);
@@ -363,7 +385,7 @@ static int FindDbPluginForProfile(char*, DATABASELINK * dblink, LPARAM lParam)
 {
 	int res = DBPE_CONT;
 	if ( dblink && dblink->cbSize == sizeof(DATABASELINK)) {
-		char * szProfile = mir_t2a((TCHAR*) lParam);
+		char* szProfile = makeFileName((TCHAR*) lParam);
 		// liked the profile?
 		int err = 0;
 		if (dblink->grokHeader(szProfile, &err) == 0) { 			
@@ -397,7 +419,7 @@ static int FindDbPluginAutoCreate(char*, DATABASELINK * dblink, LPARAM lParam)
 		CreatePathToFileT( tszProfile );
 
 		int err;
-		char *szProfile = mir_t2a( tszProfile );
+		char *szProfile = makeFileName( tszProfile );
 		if (dblink->makeDatabase(szProfile, &err) == 0) {
 			dbCreated = true;
 			res = dblink->Load(szProfile, &pluginCoreLink) ? DBPE_HALT : DBPE_DONE;
@@ -441,9 +463,7 @@ static int FindMirandaForProfile(TCHAR * szProfile)
 
 int LoadDatabaseModule(void)
 {
-	int iReturn = 0;
 	TCHAR szProfile[MAX_PATH];
-
 	pathToAbsoluteT(_T("."), szProfile, NULL);
 	_tchdir(szProfile);
 	szProfile[0] = 0;
@@ -453,51 +473,45 @@ int LoadDatabaseModule(void)
 	InitUtils();
 
 	// find out which profile to load
-	if ( getProfile(szProfile, SIZEOF(szProfile))) {
-		int rc;
-		PLUGIN_DB_ENUM dbe;
+	if ( !getProfile( szProfile, SIZEOF( szProfile )))
+		return 1;
 
-		dbe.cbSize=sizeof(PLUGIN_DB_ENUM);
-		dbe.lParam=(LPARAM)szProfile;
+	PLUGIN_DB_ENUM dbe;
+	dbe.cbSize = sizeof(PLUGIN_DB_ENUM);
+	dbe.lParam = (LPARAM)szProfile;
 
-        if (_taccess(szProfile, 0) && shouldAutoCreate(szProfile))
-		    dbe.pfnEnumCallback=( int(*) (char*,void*,LPARAM) )FindDbPluginAutoCreate;
-        else
-		    dbe.pfnEnumCallback=( int(*) (char*,void*,LPARAM) )FindDbPluginForProfile;
+	if ( _taccess(szProfile, 0) && shouldAutoCreate( szProfile ))
+		dbe.pfnEnumCallback=( int(*) (char*,void*,LPARAM) )FindDbPluginAutoCreate;
+	else
+		dbe.pfnEnumCallback=( int(*) (char*,void*,LPARAM) )FindDbPluginForProfile;
 
-		// find a driver to support the given profile
-		rc=CallService(MS_PLUGINS_ENUMDBPLUGINS, 0, (LPARAM)&dbe);
-		switch ( rc ) {
-		case -1: {
-			// no plugins at all
-			TCHAR buf[256];
-			TCHAR * p = _tcsrchr(szProfile,'\\');
-			mir_sntprintf(buf,SIZEOF(buf),TranslateT("Miranda is unable to open '%s' because you do not have any profile plugins installed.\nYou need to install dbx_3x.dll or equivalent."), p ? ++p : szProfile );
-			MessageBox(0,buf,TranslateT("No profile support installed!"),MB_OK | MB_ICONERROR);
-			break;
-		}
-		case 1:
-			// if there were drivers but they all failed cos the file is locked, try and find the miranda which locked it
-            if (fileExist(szProfile)) {
-				// file isn't locked, just no driver could open it.
-				TCHAR buf[256];
-				TCHAR * p = _tcsrchr(szProfile,'\\');
-				mir_sntprintf(buf,SIZEOF(buf),TranslateT("Miranda was unable to open '%s', it's in an unknown format.\nThis profile might also be damaged, please run DB-tool which should be installed."), p ? ++p : szProfile);
-				MessageBox(0,buf,TranslateT("Miranda can't understand that profile"),MB_OK | MB_ICONERROR);
-			}
-            else {
-			    if (!FindMirandaForProfile(szProfile)) {
-				    TCHAR buf[256];
-				    TCHAR * p = _tcsrchr(szProfile,'\\');
-				    mir_sntprintf(buf,SIZEOF(buf),TranslateT("Miranda was unable to open '%s'\nIt's inaccessible or used by other application or Miranda instance"), p ? ++p : szProfile);
-				    MessageBox(0,buf,TranslateT("Miranda can't open that profile"),MB_OK | MB_ICONERROR);
-                }
-            }
-			break;
-		}
-		iReturn = (rc != 0);
+	// find a driver to support the given profile
+	int rc = CallService(MS_PLUGINS_ENUMDBPLUGINS, 0, (LPARAM)&dbe);
+	switch ( rc ) {
+	case -1: {
+		// no plugins at all
+		TCHAR buf[256];
+		TCHAR* p = _tcsrchr(szProfile,'\\');
+		mir_sntprintf(buf,SIZEOF(buf),TranslateT("Miranda is unable to open '%s' because you do not have any profile plugins installed.\nYou need to install dbx_3x.dll or equivalent."), p ? ++p : szProfile );
+		MessageBox(0,buf,TranslateT("No profile support installed!"),MB_OK | MB_ICONERROR);
+		break;
 	}
-	else iReturn = 1;
-
-	return iReturn;
+	case 1:
+		// if there were drivers but they all failed cos the file is locked, try and find the miranda which locked it
+		if (fileExist(szProfile)) {
+			// file isn't locked, just no driver could open it.
+			TCHAR buf[256];
+			TCHAR* p = _tcsrchr(szProfile,'\\');
+			mir_sntprintf(buf,SIZEOF(buf),TranslateT("Miranda was unable to open '%s', it's in an unknown format.\nThis profile might also be damaged, please run DB-tool which should be installed."), p ? ++p : szProfile);
+			MessageBox(0,buf,TranslateT("Miranda can't understand that profile"),MB_OK | MB_ICONERROR);
+		}
+		else if (!FindMirandaForProfile(szProfile)) {
+			TCHAR buf[256];
+			TCHAR* p = _tcsrchr(szProfile,'\\');
+			mir_sntprintf(buf,SIZEOF(buf),TranslateT("Miranda was unable to open '%s'\nIt's inaccessible or used by other application or Miranda instance"), p ? ++p : szProfile);
+			MessageBox(0,buf,TranslateT("Miranda can't open that profile"),MB_OK | MB_ICONERROR);
+		}
+		break;
+	}
+	return (rc != 0);
 }

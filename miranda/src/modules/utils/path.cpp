@@ -438,25 +438,11 @@ XCHAR *GetInternalVariable(XCHAR *key, size_t keyLength, HANDLE hContact)
 			if ( lstrcmpA( pos, ".dat" ) == 0 )
 				*pos = 0;
 
-			// if "szProfilePath\szProfileName" subfolder exist
-			char tmpPath[MAX_PATH];
-			mir_snprintf(tmpPath, SIZEOF(tmpPath), "%s\\%s", szProfilePath, szProfileName);
-			HANDLE hFile = CreateFileA(tmpPath, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, NULL);
-			if (hFile == INVALID_HANDLE_VALUE) {
-				if (!_xcscmp(theKey, XSTR(key, "miranda_avatarcache"))) 
-					mir_snprintf(szFullPath, SIZEOF(szFullPath), "%s\\AvatarCache", szProfilePath);
-				else if (!_xcscmp(theKey, XSTR(key, "miranda_logpath"))) 
-					mir_snprintf(szFullPath, SIZEOF(szFullPath), "%s\\Logs", szProfilePath);
-				else mir_snprintf(szFullPath, SIZEOF(szFullPath), "%s", szProfilePath);
-			}
-			else {
-				CloseHandle( hFile );
-				if (!_xcscmp(theKey, XSTR(key, "miranda_avatarcache"))) 
-					mir_snprintf(szFullPath, SIZEOF(szFullPath), "%s\\%s\\AvatarCache", szProfilePath, szProfileName);
-				else if (!_xcscmp(theKey, XSTR(key, "miranda_logpath"))) 
-					mir_snprintf(szFullPath, SIZEOF(szFullPath), "%s\\%s\\Logs", szProfilePath, szProfileName);
-				else mir_snprintf(szFullPath, SIZEOF(szFullPath), "%s\\%s", szProfilePath, szProfileName);
-			}
+			if (!_xcscmp(theKey, XSTR(key, "miranda_avatarcache"))) 
+				mir_snprintf(szFullPath, SIZEOF(szFullPath), "%s\\%s\\AvatarCache", szProfilePath, szProfileName);
+			else if (!_xcscmp(theKey, XSTR(key, "miranda_logpath"))) 
+				mir_snprintf(szFullPath, SIZEOF(szFullPath), "%s\\%s\\Logs", szProfilePath, szProfileName);
+			else mir_snprintf(szFullPath, SIZEOF(szFullPath), "%s\\%s", szProfilePath, szProfileName);
 			theValue = mir_a2x(key, szFullPath);
 	}	}
 
