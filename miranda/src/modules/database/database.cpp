@@ -86,7 +86,8 @@ int getProfilePath(TCHAR * buf, size_t cch)
 	size_t len = pathToAbsoluteT(exprofiledir, buf, NULL);
 	mir_free(exprofiledir);
 
-	if (len < (cch-1)) _tcscat(buf, _T("\\"));
+	if (len < (cch-1) && buf[len-1] != '/' && buf[len-1] != '\\') 
+		_tcscat(buf, _T("\\"));
 	return 0;
 }
 
