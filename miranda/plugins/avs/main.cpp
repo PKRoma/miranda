@@ -2498,7 +2498,9 @@ static int LoadAvatarModule()
 	_strlwr(g_szDataPath);
     
 #if defined(_UNICODE)
-	MultiByteToWideChar(CP_ACP, 0, g_szDataPath, MAX_PATH, g_wszDataPath, MAX_PATH);
+	TCHAR* tmpPathT = Utils_ReplaceVarsT( _T("%miranda_userdata%"));
+	lstrcpyn(g_wszDataPath, tmpPathT, SIZEOF(g_wszDataPath)-1);
+	mir_free(tmpPathT);
 	g_wszDataPath[MAX_PATH - 1] = 0;
 #endif
 	return 0;
