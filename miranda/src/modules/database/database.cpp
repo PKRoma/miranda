@@ -210,20 +210,24 @@ static void moveProfileDirProfiles(TCHAR * profiledir, BOOL isRootDir = TRUE)
 		mir_free(path);
 	}
 	else
-		mir_sntprintf(pfd, SIZEOF(pfd), _T("%s\\*.dat"), profiledir);
+		mir_sntprintf(pfd, SIZEOF(pfd), _T("%s*.dat"), profiledir);
 
 	WIN32_FIND_DATA ffd;
 	HANDLE hFind = FindFirstFile(pfd, &ffd);
-	if (hFind != INVALID_HANDLE_VALUE) {
-		do {
+	if (hFind != INVALID_HANDLE_VALUE) 
+	{
+		TCHAR *c =_tcsrchr(pfd, '\\'); if (c) *(c+1) = 0;
+		do 
+		{
 			TCHAR path[MAX_PATH], path2[MAX_PATH];
 			TCHAR* profile = mir_tstrdup(ffd.cFileName);
 			TCHAR *c =_tcsrchr(profile, '.'); if (c) *c = 0;
-			mir_sntprintf(path, SIZEOF(path), _T("%s\\%s"), pfd, ffd.cFileName); 
+			mir_sntprintf(path, SIZEOF(path), _T("%s%s"), pfd, ffd.cFileName); 
 			mir_sntprintf(path2, SIZEOF(path2), _T("%s%s"), profiledir, profile);
 			CreateDirectory(path2, NULL);
 			mir_sntprintf(path2, SIZEOF(path2), _T("%s%s\\%s"), profiledir, profile, ffd.cFileName); 
-			if (MoveFile(path, path2) == 0) {
+			if (MoveFile(path, path2) == 0) 
+			{
 				TCHAR buf[512];
 				mir_sntprintf(buf, SIZEOF(buf), TranslateTS(tszMoveMsg), profiledir);
 				MessageBox(NULL, buf, _T("Miranda IM"), MB_ICONERROR | MB_OK);
