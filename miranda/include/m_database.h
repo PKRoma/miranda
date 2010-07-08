@@ -129,6 +129,7 @@ cbName is the size in bytes of the pszName buffer
 Returns 0 on success or nonzero otherwise
 */
 #define MS_DB_GETPROFILENAME  "DB/GetProfileName"
+#define MS_DB_GETPROFILENAMEW "DB/GetProfileNameW"
 
 /* DB/Contact/GetProfilePath service
 Gets the path of the profile currently being used by the database module. This
@@ -140,6 +141,15 @@ cbName is the size in bytes of the pszName buffer
 Returns 0 on success or nonzero otherwise
 */
 #define MS_DB_GETPROFILEPATH  "DB/GetProfilePath"
+#define MS_DB_GETPROFILEPATHW "DB/GetProfilePathW"
+
+#if defined( _UNICODE )
+	#define MS_DB_GETPROFILEPATHT MS_DB_GETPROFILEPATHW
+	#define MS_DB_GETPROFILENAMET MS_DB_GETPROFILENAMEW
+#else
+	#define MS_DB_GETPROFILEPATHT MS_DB_GETPROFILEPATH
+	#define MS_DB_GETPROFILENAMET MS_DB_GETPROFILENAME
+#endif
 
 /************************* Contact ********************************/
 

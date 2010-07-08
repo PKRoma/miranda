@@ -24,8 +24,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "commonheaders.h"
 #include "profilemanager.h"
 
-extern TCHAR g_profileDir[];
-
 static int CompareEventTypes( const DBEVENTTYPEDESCR* p1, const DBEVENTTYPEDESCR* p2 )
 {
 	int result = strcmp( p1->module, p2->module );
@@ -267,6 +265,43 @@ static INT_PTR GetProfilePath(WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
+static INT_PTR GetProfileName(WPARAM wParam, LPARAM lParam)
+{
+	char* dst = (char*)lParam;
+
+	#if defined( _UNICODE )
+		char* tmp = makeFileName( g_profileName );
+		strncpy( dst, tmp, wParam );
+		mir_free( tmp );
+	#else
+		strncpy( dst, g_profileName, wParam );
+	#endif
+
+	return 0;
+}
+
+#if defined( _UNICODE )
+
+static INT_PTR GetProfilePathW(WPARAM wParam, LPARAM lParam)
+{
+	wchar_t* dst = ( wchar_t* )lParam;
+
+	size_t len = _tcslen( g_profileDir );
+	if ( g_profileDir[len-1] == '/' || g_profileDir[len-1] == '\\' )
+		g_profileDir[len-1] = 0;
+
+	wcsncpy( dst, g_profileDir, wParam );
+	return 0;
+}
+
+static INT_PTR GetProfileNameW(WPARAM wParam, LPARAM lParam)
+{
+	wcsncpy(( wchar_t* )lParam, g_profileName, wParam );
+	return 0;
+}
+
+#endif
+
 /////////////////////////////////////////////////////////////////////////////////////////
 
 int InitUtils()
@@ -282,6 +317,11 @@ int InitUtils()
 	CreateServiceFunction(MS_DB_MODULE_DELETE, DbDeleteModule);
 
 	CreateServiceFunction(MS_DB_GETPROFILEPATH,GetProfilePath);
+	CreateServiceFunction(MS_DB_GETPROFILENAME,GetProfileName);
+	#if defined( _UNICODE )
+		CreateServiceFunction(MS_DB_GETPROFILEPATHW,GetProfilePathW);
+		CreateServiceFunction(MS_DB_GETPROFILENAMEW,GetProfileNameW);
+	#endif
 	return 0;
 }
 

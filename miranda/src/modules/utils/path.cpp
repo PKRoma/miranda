@@ -21,6 +21,7 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 #include "commonheaders.h"
+#include "../database/profilemanager.h"
 #include "../srfile/file.h"
 
 extern TCHAR g_profileDir[MAX_PATH];
@@ -331,6 +332,28 @@ static __forceinline char *GetUserNameX(char *)
 		return mir_strdup(result);
 	return NULL;
 }
+static __forceinline char *GetPathVarX(char *, int code)
+{
+	TCHAR szFullPath[MAX_PATH], szProfileName[MAX_PATH];
+	_tcscpy( szProfileName, g_profileName );
+	_tcslwr( szProfileName );
+	TCHAR *pos = _tcsrchr(szProfileName, '.');
+	if ( lstrcmp( pos, _T(".dat")) == 0 )
+		*pos = 0;
+
+	switch( code ) {
+	case 1:
+		mir_sntprintf(szFullPath, SIZEOF(szFullPath), _T("%s\\%s\\AvatarCache"), g_profileDir, szProfileName);
+		break; 
+	case 2:
+		mir_sntprintf(szFullPath, SIZEOF(szFullPath), _T("%s\\%s\\Logs"), g_profileDir, szProfileName);
+		break; 
+	case 3:
+		mir_sntprintf(szFullPath, SIZEOF(szFullPath), _T("%s\\%s"), g_profileDir, szProfileName);
+		break;
+	}
+	return makeFileName( szFullPath );
+}
 
 #ifdef _UNICODE
 static __forceinline int _xcscmp(const TCHAR *s1, const TCHAR *s2) { return _tcscmp(s1, s2); }
@@ -383,6 +406,28 @@ static __forceinline TCHAR *GetUserNameX(TCHAR *)
 		return mir_tstrdup(result);
 	return NULL;
 }
+static __forceinline TCHAR *GetPathVarX(TCHAR *, int code)
+{
+	TCHAR szFullPath[MAX_PATH], szProfileName[MAX_PATH];
+	_tcscpy( szProfileName, g_profileName );
+	_tcslwr( szProfileName );
+	TCHAR *pos = _tcsrchr(szProfileName, '.');
+	if ( lstrcmp( pos, _T(".dat")) == 0 )
+		*pos = 0;
+
+	switch( code ) {
+	case 1:
+		mir_sntprintf(szFullPath, SIZEOF(szFullPath), _T("%s\\%s\\AvatarCache"), g_profileDir, szProfileName);
+		break; 
+	case 2:
+		mir_sntprintf(szFullPath, SIZEOF(szFullPath), _T("%s\\%s\\Logs"), g_profileDir, szProfileName);
+		break; 
+	case 3:
+		mir_sntprintf(szFullPath, SIZEOF(szFullPath), _T("%s\\%s"), g_profileDir, szProfileName);
+		break;
+	}
+	return mir_tstrdup( szFullPath );
+}
 #endif
 
 template<typename XCHAR>
@@ -427,24 +472,13 @@ XCHAR *GetInternalVariable(XCHAR *key, size_t keyLength, HANDLE hContact)
 		}	
 		else if (!_xcscmp(theKey, XSTR(key, "username")))
 			theValue = GetUserNameX(key);
-		else if (!_xcscmp(theKey, XSTR(key, "miranda_userdata")) ||
-				 !_xcscmp(theKey, XSTR(key, "miranda_avatarcache")) ||
-				 !_xcscmp(theKey, XSTR(key, "miranda_logpath")))
-		{
-			char szFullPath[MAX_PATH], szProfilePath[MAX_PATH] = "", szProfileName[MAX_PATH] = "";
-			CallService(MS_DB_GETPROFILEPATH, SIZEOF(szProfilePath), (LPARAM) szProfilePath);
-			CallService(MS_DB_GETPROFILENAME, SIZEOF(szProfileName), (LPARAM) szProfileName);
-			char *pos = strrchr(szProfileName, '.');
-			if ( lstrcmpA( pos, ".dat" ) == 0 )
-				*pos = 0;
-
-			if (!_xcscmp(theKey, XSTR(key, "miranda_avatarcache"))) 
-				mir_snprintf(szFullPath, SIZEOF(szFullPath), "%s\\%s\\AvatarCache", szProfilePath, szProfileName);
-			else if (!_xcscmp(theKey, XSTR(key, "miranda_logpath"))) 
-				mir_snprintf(szFullPath, SIZEOF(szFullPath), "%s\\%s\\Logs", szProfilePath, szProfileName);
-			else mir_snprintf(szFullPath, SIZEOF(szFullPath), "%s\\%s", szProfilePath, szProfileName);
-			theValue = mir_a2x(key, szFullPath);
-	}	}
+		else if (!_xcscmp(theKey, XSTR(key, "miranda_userdata")))
+			theValue = GetPathVarX(key,1);
+		else if (!_xcscmp(theKey, XSTR(key, "miranda_avatarcache")))
+			theValue = GetPathVarX(key,2);
+		else if (!_xcscmp(theKey, XSTR(key, "miranda_logpath")))
+			theValue = GetPathVarX(key,3);
+	}
 
 	if (!theValue)
 		theValue = GetEnvironmentVariableX(theKey);
