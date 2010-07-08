@@ -310,16 +310,14 @@ INT_PTR BmpFilterSaveBitmap(WPARAM wParam,LPARAM lParam)
 	char szFilename[MAX_PATH];
 	int filenameLen;
 
-    if(fei == NULL)
-        return -1;
+	if(fei == NULL)
+		return -1;
 
-    if (!AVS_pathToAbsolute(szFile, szFilename))
+	if (!AVS_pathToAbsolute(szFile, szFilename))
 		mir_snprintf(szFilename, SIZEOF(szFilename), "%s", szFile);
 	filenameLen=lstrlenA(szFilename);
 	if(filenameLen>4) 
-	{
-        return BmpFilterSaveBitmap(hBmp, szFilename, 0);
-	}
+		return BmpFilterSaveBitmap(hBmp, szFilename, 0);
 
 	return -1;
 }
@@ -332,16 +330,16 @@ INT_PTR BmpFilterSaveBitmapW(WPARAM wParam,LPARAM lParam)
 	wchar_t wszFilename[MAX_PATH];
 	int filenameLen;
 
-    if(fei == NULL)
-        return -1;
+	if(fei == NULL)
+		return -1;
 
-    if (!AVS_pathToAbsoluteW(wszFile, wszFilename))
+	if (!AVS_pathToAbsoluteW(wszFile, wszFilename))
 		mir_sntprintf(wszFilename, SIZEOF(wszFilename), _T("%s"), wszFile);
+
 	filenameLen=lstrlenW(wszFilename);
 	if(filenameLen > 4) 
-	{
-        return BmpFilterSaveBitmapW(hBmp, wszFilename, 0);
-	}
+		return BmpFilterSaveBitmapW(hBmp, wszFilename, 0);
+
 	return -1;
 }
 #endif
