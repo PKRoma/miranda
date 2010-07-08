@@ -263,7 +263,7 @@ void CMsnProto::MSN_CreateContList(void)
 			
 			const MsnContact& C = contList[j];
 			
-			if (C.list == LIST_RL || C.list == LIST_PL)
+			if (C.list == LIST_RL || C.list == LIST_PL || C.list == LIST_LL)
 			{
 				used[j] = true;
 				continue;
