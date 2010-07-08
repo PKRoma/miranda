@@ -2,8 +2,8 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2003 Miranda ICQ/IM project, 
-all portions of this codebase are copyrighted to the people 
+Copyright 2000-2003 Miranda ICQ/IM project,
+all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
 This program is free software; you can redistribute it and/or
@@ -87,27 +87,6 @@ void UnloadDatabaseModule(void)
 	DeleteCriticalSection(&csDbAccess);
 }
 
-static INT_PTR GetProfileName(WPARAM wParam, LPARAM lParam)
-{
-	char * p = 0;
-	p = strrchr(szDbPath, '\\');
-	if ( p == 0 ) return 1;
-	p++;
-	strncpy((char*)lParam, p, (size_t) wParam);
-	return 0;
-}
-
-static INT_PTR GetProfilePath(WPARAM wParam, LPARAM lParam)
-{
-	char * dst = (char*)lParam;
-	char * p = 0;
-	strncpy(dst,szDbPath,wParam);
-	p = strrchr(dst, '\\');
-	if ( p == NULL ) return 1;
-	*p=0;
-	return 0;
-}
-
 int LoadDatabaseModule(void)
 {
 	InitializeCriticalSection(&csDbAccess);
@@ -130,10 +109,6 @@ int LoadDatabaseModule(void)
 	if(InitSettings()) return 1;
 	if(InitEvents()) return 1;
 	if(InitCrypt()) return 1;
-	//if(InitTime()) return 1;
-	//if(InitIni()) return 1;
-	CreateServiceFunction(MS_DB_GETPROFILENAME,GetProfileName);
-	CreateServiceFunction(MS_DB_GETPROFILEPATH,GetProfilePath);
 	return 0;
 }
 
@@ -141,7 +116,6 @@ static DWORD DatabaseCorrupted=0;
 
 void __cdecl dbpanic(void *arg)
 {
-	
 	MessageBox(0,TranslateT("Miranda has detected corruption in your database. This corruption maybe fixed by DBTool.  Please download it from http://www.miranda-im.org. Miranda will now shutdown."),TranslateT("Database Panic"),MB_SETFOREGROUND|MB_TOPMOST|MB_APPLMODAL|MB_ICONWARNING|MB_OK);
 	TerminateProcess(GetCurrentProcess(),255);
 	return;
