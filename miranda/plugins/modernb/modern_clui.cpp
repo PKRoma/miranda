@@ -428,7 +428,7 @@ HRESULT CLUI::CreateCLC()
 	Frame.hWnd=ClcWnd();
 	Frame.align=alClient;
 	Frame.hIcon=LoadSkinnedIcon(SKINICON_OTHER_MIRANDA);
-	Frame.Flags=F_VISIBLE|F_SHOWTB|F_SHOWTBTIP|F_NO_SUBCONTAINER|F_TCHAR;
+	Frame.Flags=F_VISIBLE|/*F_SHOWTB|*/F_SHOWTBTIP|F_NO_SUBCONTAINER|F_TCHAR;
 	Frame.tname=LPGENT("My Contacts");
 	Frame.TBtname=TranslateT("My Contacts");
 	hFrameContactTree=(HWND)CallService(MS_CLIST_FRAMES_ADDFRAME,(WPARAM)&Frame,(LPARAM)0);
