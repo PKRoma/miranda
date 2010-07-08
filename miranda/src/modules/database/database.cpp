@@ -2,7 +2,7 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2009 Miranda ICQ/IM project, 
+Copyright 2000-2010 Miranda ICQ/IM project, 
 all portions of this codebase are copyrighted to the people 
 listed in contributors.txt.
 
@@ -86,7 +86,8 @@ int getProfilePath(TCHAR * buf, size_t cch)
 	size_t len = pathToAbsoluteT(exprofiledir, buf, NULL);
 	mir_free(exprofiledir);
 
-	if (len < (cch-1)) _tcscat(buf, _T("\\"));
+	if (len < (cch-1) && buf[len-1] != '/' && buf[len-1] != '\\') 
+		_tcscat(buf, _T("\\"));
 	return 0;
 }
 
