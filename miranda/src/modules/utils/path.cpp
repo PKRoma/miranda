@@ -434,6 +434,7 @@ XCHAR *GetInternalVariable(XCHAR *key, size_t keyLength, HANDLE hContact)
 			char szFullPath[MAX_PATH], szProfilePath[MAX_PATH] = "", szProfileName[MAX_PATH] = "";
 			CallService(MS_DB_GETPROFILEPATH, SIZEOF(szProfilePath), (LPARAM) szProfilePath);
 			CallService(MS_DB_GETPROFILENAME, SIZEOF(szProfileName), (LPARAM) szProfileName);
+			strlwr( szProfileName );
 			char *pos = strrchr(szProfileName, '.');
 			if ( lstrcmpA( pos, ".dat" ) == 0 )
 				*pos = 0;

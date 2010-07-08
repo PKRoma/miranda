@@ -388,9 +388,11 @@ int makeDatabase(TCHAR * profile, DATABASELINK * link, HWND hwndDlg)
 // enumerate all plugins that had valid DatabasePluginInfo()
 static int FindDbPluginForProfile(char*, DATABASELINK * dblink, LPARAM lParam)
 {
+	TCHAR* tszProfile = ( TCHAR* )lParam;
+
 	int res = DBPE_CONT;
 	if ( dblink && dblink->cbSize == sizeof(DATABASELINK)) {
-		char* szProfile = makeFileName((TCHAR*) lParam);
+		char* szProfile = makeFileName(tszProfile);
 		// liked the profile?
 		int err = 0;
 		if (dblink->grokHeader(szProfile, &err) == 0) { 			
@@ -418,9 +420,10 @@ static int FindDbPluginForProfile(char*, DATABASELINK * dblink, LPARAM lParam)
 // enumerate all plugins that had valid DatabasePluginInfo()
 static int FindDbPluginAutoCreate(char*, DATABASELINK * dblink, LPARAM lParam)
 {
+	TCHAR* tszProfile = ( TCHAR* )lParam;
+
 	int res = DBPE_CONT;
 	if (dblink && dblink->cbSize == sizeof(DATABASELINK)) {
-		TCHAR* tszProfile = (TCHAR*)lParam;
 		CreatePathToFileT( tszProfile );
 
 		int err;
