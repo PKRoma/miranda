@@ -40,3 +40,5 @@ int isValidProfileName(const TCHAR * name);
 bool fileExist(TCHAR* fname);
 bool shouldAutoCreate(TCHAR *szProfile);
 
+extern TCHAR g_profileDir[MAX_PATH];
+extern TCHAR g_profileName[MAX_PATH];

@@ -2,8 +2,8 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2009 Miranda ICQ/IM project, 
-all portions of this codebase are copyrighted to the people 
+Copyright 2000-2010 Miranda ICQ/IM project,
+all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
 This program is free software; you can redistribute it and/or
@@ -29,7 +29,7 @@ extern PLUGINLINK pluginCoreLink;
 // contains the location of mirandaboot.ini
 extern TCHAR mirandabootini[MAX_PATH];
 bool dbCreated;
-TCHAR g_profileDir[MAX_PATH];
+TCHAR g_profileDir[MAX_PATH], g_profileName[MAX_PATH];
 
 const TCHAR tszMoveMsg[] =
 	_T("Your database is located in Miranda root folder.\n")
@@ -48,6 +48,17 @@ bool fileExist(TCHAR* fname)
 	return res;
 }
 
+static void fillProfileName( const TCHAR* ptszFileName )
+{
+	const TCHAR* p = _tcsrchr( ptszFileName, '\\' );
+	if ( p == NULL )
+		p = ptszFileName;
+	else
+		p++;
+
+	_tcsncpy( g_profileName, p, SIZEOF(g_profileName));
+}
+
 int validateProfileDir(TCHAR* profiledir)
 {
 	REPLACEVARSDATA dat = {0};
@@ -59,7 +70,7 @@ int validateProfileDir(TCHAR* profiledir)
 	int res = lstrcmpi(profiledir, pfd) == 0;
 	if (res)
 	{
-		MessageBox(NULL, 
+		MessageBox(NULL,
 			_T("Profile cannot be placed into Miranda root folder.\n")
 			_T("Please move Miranda profile to some other location."),
 			_T("Miranda IM"), MB_ICONERROR | MB_OK);
@@ -86,7 +97,7 @@ int getProfilePath(TCHAR * buf, size_t cch)
 	size_t len = pathToAbsoluteT(exprofiledir, buf, NULL);
 	mir_free(exprofiledir);
 
-	if (len < (cch-1) && buf[len-1] != '/' && buf[len-1] != '\\') 
+	if (len < (cch-1) && buf[len-1] != '/' && buf[len-1] != '\\')
 		_tcscat(buf, _T("\\"));
 	return 0;
 }
@@ -185,7 +196,7 @@ void getProfileCmdLine(TCHAR * szProfile, size_t cch, TCHAR * profiledir)
 		// have something that looks like a .dat, with or without .dat in the filename
 		TCHAR newProfileDir[MAX_PATH];
 		mir_sntprintf(newProfileDir, cch, _T("%s%s\\"), profiledir, buf);
-		pathToAbsoluteT(buf, szProfile, newProfileDir); 
+		pathToAbsoluteT(buf, szProfile, newProfileDir);
 		if (!isValidProfileName(szProfile))
 			_tcscat(szProfile, _T(".dat"));
 
@@ -194,7 +205,7 @@ void getProfileCmdLine(TCHAR * szProfile, size_t cch, TCHAR * profiledir)
 			_tcscpy(profiledir, szProfile);
 			p = _tcsrchr(profiledir, '\\');
 			*(p+1) = 0;
-		}	
+		}
 	}
 }
 
@@ -215,19 +226,19 @@ static void moveProfileDirProfiles(TCHAR * profiledir, BOOL isRootDir = TRUE)
 
 	WIN32_FIND_DATA ffd;
 	HANDLE hFind = FindFirstFile(pfd, &ffd);
-	if (hFind != INVALID_HANDLE_VALUE) 
+	if (hFind != INVALID_HANDLE_VALUE)
 	{
 		TCHAR *c =_tcsrchr(pfd, '\\'); if (c) *(c+1) = 0;
-		do 
+		do
 		{
 			TCHAR path[MAX_PATH], path2[MAX_PATH];
 			TCHAR* profile = mir_tstrdup(ffd.cFileName);
 			TCHAR *c =_tcsrchr(profile, '.'); if (c) *c = 0;
-			mir_sntprintf(path, SIZEOF(path), _T("%s%s"), pfd, ffd.cFileName); 
+			mir_sntprintf(path, SIZEOF(path), _T("%s%s"), pfd, ffd.cFileName);
 			mir_sntprintf(path2, SIZEOF(path2), _T("%s%s"), profiledir, profile);
 			CreateDirectory(path2, NULL);
-			mir_sntprintf(path2, SIZEOF(path2), _T("%s%s\\%s"), profiledir, profile, ffd.cFileName); 
-			if (MoveFile(path, path2) == 0) 
+			mir_sntprintf(path2, SIZEOF(path2), _T("%s%s\\%s"), profiledir, profile, ffd.cFileName);
+			if (MoveFile(path, path2) == 0)
 			{
 				TCHAR buf[512];
 				mir_sntprintf(buf, SIZEOF(buf), TranslateTS(tszMoveMsg), profiledir);
@@ -280,7 +291,7 @@ static int getProfile1(TCHAR * szProfile, size_t cch, TCHAR * profiledir, BOOL *
 		reqfd = !shpm && found == 1 && nodprof;
 	}
 
-	if ( noProfiles ) 
+	if ( noProfiles )
 		*noProfiles = found == 0;
 
 	if ( nodprof && !reqfd )
@@ -295,7 +306,7 @@ static int getProfileAutoRun(TCHAR * szProfile)
 	TCHAR Mgr[32];
 	GetPrivateProfileString(_T("Database"), _T("ShowProfileMgr"), _T(""), Mgr, SIZEOF(Mgr), mirandabootini);
 	if (_tcsicmp(Mgr, _T("never")))
-		return 0;		
+		return 0;
 
 	return fileExist(szProfile) || shouldAutoCreate(szProfile);
 }
@@ -312,7 +323,7 @@ static int getProfile(TCHAR * szProfile, size_t cch)
 		return 1;
 
 	PROFILEMANAGERDATA pd = {0};
-	if (getProfile1(szProfile, cch, g_profileDir, &pd.noProfiles)) 
+	if (getProfile1(szProfile, cch, g_profileDir, &pd.noProfiles))
 		return 1;
 
 	pd.szProfile = szProfile;
@@ -330,7 +341,7 @@ char* makeFileName( const TCHAR* tszOriginalName )
 		TCHAR tszProfile[MAX_PATH];
 		if ( GetShortPathName( tszOriginalName, tszProfile, MAX_PATH) != 0)
 			szResult = mir_t2a( tszProfile );
-	} 
+	}
 
 	if ( !szResult )
 		szResult = szFileName;
@@ -345,18 +356,18 @@ char* makeFileName( const TCHAR* tszOriginalName )
 int makeDatabase(TCHAR * profile, DATABASELINK * link, HWND hwndDlg)
 {
 	TCHAR buf[256];
-	int err=0;	
+	int err=0;
 	// check if the file already exists
 	TCHAR * file = _tcsrchr(profile, '\\');
 	if (file) file++;
-	if (_taccess(profile, 0) == 0) {		
+	if (_taccess(profile, 0) == 0) {
 		// file already exists!
 		mir_sntprintf(buf, SIZEOF(buf), TranslateTS( _T("The profile '%s' already exists. Do you want to move it to the ")
 			_T("Recycle Bin? \n\nWARNING: The profile will be deleted if Recycle Bin is disabled.\n")
 			_T("WARNING: A profile may contain confidential information and should be properly deleted.")), file );
 		if ( MessageBox(hwndDlg, buf, TranslateT("The profile already exists"), MB_ICONQUESTION|MB_YESNO|MB_DEFBUTTON2) != IDYES )
 			return 0;
-		
+
 		// move the file
 		SHFILEOPSTRUCT sf = {0};
 		sf.wFunc = FO_DELETE;
@@ -373,7 +384,7 @@ int makeDatabase(TCHAR * profile, DATABASELINK * link, HWND hwndDlg)
 	// ask the database to create the profile
 	CreatePathToFileT(profile);
 	char *prf = makeFileName(profile);
-	if (link->makeDatabase(prf, &err)) { 
+	if (link->makeDatabase(prf, &err)) {
 		mir_sntprintf(buf, SIZEOF(buf),TranslateT("Unable to create the profile '%s', the error was %x"),file, err);
 		MessageBox(hwndDlg,buf,TranslateT("Problem creating profile"),MB_ICONERROR|MB_OK);
 		mir_free(prf);
@@ -395,13 +406,17 @@ static int FindDbPluginForProfile(char*, DATABASELINK * dblink, LPARAM lParam)
 		char* szProfile = makeFileName(tszProfile);
 		// liked the profile?
 		int err = 0;
-		if (dblink->grokHeader(szProfile, &err) == 0) { 			
+		if (dblink->grokHeader(szProfile, &err) == 0) {
 			// added APIs?
-			res = dblink->Load(szProfile, &pluginCoreLink) ? DBPE_HALT : DBPE_DONE;
+			if ( !dblink->Load(szProfile, &pluginCoreLink)) {
+				fillProfileName( tszProfile );
+				res = DBPE_DONE;
+			}
+			else res = DBPE_HALT;
 		}
 		else {
 			res = DBPE_HALT;
-			switch ( err ) {				 
+			switch ( err ) {
 			case EGROKPRF_CANTREAD:
 			case EGROKPRF_UNKHEADER:
 				// just not supported.
@@ -430,7 +445,11 @@ static int FindDbPluginAutoCreate(char*, DATABASELINK * dblink, LPARAM lParam)
 		char *szProfile = makeFileName( tszProfile );
 		if (dblink->makeDatabase(szProfile, &err) == 0) {
 			dbCreated = true;
-			res = dblink->Load(szProfile, &pluginCoreLink) ? DBPE_HALT : DBPE_DONE;
+			if ( !dblink->Load(szProfile, &pluginCoreLink)) {
+				fillProfileName( tszProfile );
+				res = DBPE_DONE;
+			}
+			else res = DBPE_HALT;
 		}
 		mir_free(szProfile);
 	}
@@ -449,7 +468,7 @@ static BOOL CALLBACK EnumMirandaWindows(HWND hwnd, LPARAM lParam)
 	TCHAR classname[256];
 	ENUMMIRANDAWINDOW * x = (ENUMMIRANDAWINDOW *)lParam;
 	DWORD_PTR res=0;
-	if ( GetClassName(hwnd,classname,SIZEOF(classname)) && lstrcmp( _T("Miranda"),classname)==0 ) {		
+	if ( GetClassName(hwnd,classname,SIZEOF(classname)) && lstrcmp( _T("Miranda"),classname)==0 ) {
 		if ( SendMessageTimeout(hwnd, x->msg, (WPARAM)x->aPath, 0, SMTO_ABORTIFHUNG, 100, &res) && res ) {
 			x->found++;
 			return FALSE;
