@@ -21,6 +21,7 @@
   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 #include "commonheaders.h"
+#include "../database/profilemanager.h"
 #include "clc.h"
 
 #define TM_AUTOALPHA  1
@@ -455,17 +456,13 @@ void fnDrawMenuItem(DRAWITEMSTRUCT *dis, HICON hIcon, HICON eventIcon)
 LRESULT CALLBACK fnContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	if (msg == uMsgProcessProfile) {
-		char profile[MAX_PATH];
+		TCHAR profile[MAX_PATH];
 		int rc;
 		// wParam = (ATOM)hProfileAtom, lParam = 0
-		if (GlobalGetAtomNameA((ATOM) wParam, profile, SIZEOF(profile))) {
-			char path[MAX_PATH];
-			char file[MAX_PATH];
-			char p[MAX_PATH];
-			CallService(MS_DB_GETPROFILEPATH, SIZEOF(path), (LPARAM) & path);
-			CallService(MS_DB_GETPROFILENAME, SIZEOF(file), (LPARAM) & file);
-			mir_snprintf(p, SIZEOF(p), "%s\\%s", path, file);
-			rc = lstrcmpiA(profile, p) == 0;
+		if ( GlobalGetAtomName((ATOM) wParam, profile, SIZEOF(profile))) {
+			TCHAR tmp[MAX_PATH];
+			mir_sntprintf(tmp, SIZEOF(tmp), _T("%s\\%s"), g_profileDir, g_profileName);
+			rc = lstrcmpi(profile, tmp) == 0;
 			ReplyMessage(rc);
 			if (rc) {
 				ShowWindow(hwnd, SW_SHOW);

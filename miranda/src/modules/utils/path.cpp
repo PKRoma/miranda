@@ -332,6 +332,15 @@ static __forceinline char *GetUserNameX(char *)
 		return mir_strdup(result);
 	return NULL;
 }
+static __forceinline char *GetProfileNameX(char *)
+{
+	TCHAR szProfileName[MAX_PATH];
+	_tcscpy( szProfileName, g_profileName );
+	TCHAR *pos = _tcsrchr(szProfileName, '.');
+	if ( lstrcmp( pos, _T(".dat")) == 0 )
+		*pos = 0;
+	return mir_t2a( szProfileName );
+}
 static __forceinline char *GetPathVarX(char *, int code)
 {
 	TCHAR szFullPath[MAX_PATH], szProfileName[MAX_PATH];
@@ -406,11 +415,19 @@ static __forceinline TCHAR *GetUserNameX(TCHAR *)
 		return mir_tstrdup(result);
 	return NULL;
 }
+static __forceinline TCHAR *GetProfileNameX(TCHAR *)
+{
+	TCHAR szProfileName[MAX_PATH];
+	_tcscpy( szProfileName, g_profileName );
+	TCHAR *pos = _tcsrchr(szProfileName, '.');
+	if ( lstrcmp( pos, _T(".dat")) == 0 )
+		*pos = 0;
+	return mir_tstrdup( szProfileName );
+}
 static __forceinline TCHAR *GetPathVarX(TCHAR *, int code)
 {
 	TCHAR szFullPath[MAX_PATH], szProfileName[MAX_PATH];
 	_tcscpy( szProfileName, g_profileName );
-	_tcslwr( szProfileName );
 	TCHAR *pos = _tcsrchr(szProfileName, '.');
 	if ( lstrcmp( pos, _T(".dat")) == 0 )
 		*pos = 0;
@@ -462,14 +479,8 @@ XCHAR *GetInternalVariable(XCHAR *key, size_t keyLength, HANDLE hContact)
 				g_profileDir[len-1] = 0;
 			theValue = GetProfileDirX(key);
 		}
-		else if (!_xcscmp(theKey, XSTR(key, "miranda_profilename"))) {
-			char szProfileName[MAX_PATH];
-			CallService(MS_DB_GETPROFILENAME, SIZEOF(szProfileName), (LPARAM) szProfileName);
-			char *pos = strrchr(szProfileName, '.');
-			if ( lstrcmpA( pos, ".dat" ) == 0 )
-				*pos = 0;
-			theValue = mir_a2x(key, szProfileName);
-		}	
+		else if (!_xcscmp(theKey, XSTR(key, "miranda_profilename")))
+			theValue = GetProfileNameX(key);
 		else if (!_xcscmp(theKey, XSTR(key, "username")))
 			theValue = GetUserNameX(key);
 		else if (!_xcscmp(theKey, XSTR(key, "miranda_userdata")))
