@@ -227,18 +227,22 @@ static int DetectDbProvider(char*, DATABASELINK * dblink, LPARAM lParam)
 	int error;
 
 #ifdef _UNICODE
-	char fullpath[MAX_PATH];
-	WideCharToMultiByte(CP_ACP, 0, (TCHAR*)lParam, -1, fullpath, SIZEOF(fullpath), NULL, NULL);
+	char* fullpath = makeFileName(( TCHAR* )lParam );
 #else
 	char* fullpath = (char*)lParam;
 #endif
 
-	if (dblink->grokHeader(fullpath, &error) == 0) 
-    {
-		dblink->getFriendlyName(fullpath, SIZEOF(fullpath), 1);
-
+	int ret = dblink->grokHeader(fullpath, &error);
 #ifdef _UNICODE
-	    MultiByteToWideChar(CP_ACP, 0, fullpath, -1, (TCHAR*)lParam, MAX_PATH);
+	mir_free( fullpath );
+#endif
+	if ( ret == 0) {
+#ifdef _UNICODE
+		char tmp[ MAX_PATH ];
+		dblink->getFriendlyName(tmp, SIZEOF(tmp), 1);
+		MultiByteToWideChar(CP_ACP, 0, tmp, -1, (TCHAR*)lParam, MAX_PATH);
+#else
+		dblink->getFriendlyName((TCHAR*)lParam, MAX_PATH, 1);
 #endif
 		return DBPE_HALT;
 	}
@@ -248,7 +252,7 @@ static int DetectDbProvider(char*, DATABASELINK * dblink, LPARAM lParam)
 
 BOOL EnumProfilesForList(TCHAR * fullpath, TCHAR * profile, LPARAM lParam)
 {
-    ProfileEnumData *ped = (ProfileEnumData*)lParam;
+	ProfileEnumData *ped = (ProfileEnumData*)lParam;
 	HWND hwndList = GetDlgItem(ped->hwnd, IDC_PROFILELIST);
 
 	TCHAR sizeBuf[64];
@@ -256,17 +260,16 @@ BOOL EnumProfilesForList(TCHAR * fullpath, TCHAR * profile, LPARAM lParam)
 	struct _stat statbuf;
 	bool bFileExists = false, bFileLocked = true;
 
-	TCHAR * p = _tcsrchr(profile, '.');
+	TCHAR* p = _tcsrchr(profile, '.');
 	_tcscpy(sizeBuf, _T("0 KB"));
 	if ( p != NULL ) *p=0;
-	
-	LVITEM item;
-    ZeroMemory(&item,sizeof(item));
+
+	LVITEM item = { 0 };
 	item.mask = LVIF_TEXT | LVIF_IMAGE;
 	item.pszText = profile;
-	item.iItem=0;
+	item.iItem = 0;
 
-    if ( _tstat(fullpath, &statbuf) == 0) {
+	if ( _tstat(fullpath, &statbuf) == 0) {
 		if ( statbuf.st_size > 1000000 ) {
 			mir_sntprintf(sizeBuf,SIZEOF(sizeBuf), _T("%.3lf"), (double)statbuf.st_size / 1048576.0 );
 			_tcscpy(sizeBuf+5, _T(" MB"));
@@ -277,7 +280,7 @@ BOOL EnumProfilesForList(TCHAR * fullpath, TCHAR * profile, LPARAM lParam)
 		}
 		bFileExists = TRUE;
 
-	    bFileLocked = !fileExist(fullpath);
+		bFileLocked = !fileExist(fullpath);
 	}
 
 	item.iImage = bFileLocked;
@@ -362,8 +365,7 @@ static INT_PTR CALLBACK DlgProfileSelect(HWND hwndDlg, UINT msg, WPARAM wParam, 
 	DlgProfData* dat = (struct DlgProfData *)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 	HWND hwndList = GetDlgItem(hwndDlg, IDC_PROFILELIST);
 
-	switch (msg) 
-	{
+	switch (msg) {
 	case WM_INITDIALOG:
 		{
 			HIMAGELIST hImgList;
@@ -402,13 +404,13 @@ static INT_PTR CALLBACK DlgProfileSelect(HWND hwndDlg, UINT msg, WPARAM wParam, 
 			ImageList_AddIcon_NotShared(hImgList, MAKEINTRESOURCE(IDI_DELETE));
 
 			// LV will destroy the image list
-            SetWindowLongPtr(hwndList, GWL_STYLE, GetWindowLongPtr(hwndList, GWL_STYLE) | LVS_SORTASCENDING);
+			SetWindowLongPtr(hwndList, GWL_STYLE, GetWindowLongPtr(hwndList, GWL_STYLE) | LVS_SORTASCENDING);
 			ListView_SetImageList(hwndList, hImgList, LVSIL_SMALL);
 			ListView_SetExtendedListViewStyle(hwndList,
 				ListView_GetExtendedListViewStyle(hwndList) | LVS_EX_DOUBLEBUFFER | LVS_EX_LABELTIP | LVS_EX_FULLROWSELECT);
 
 			// find all the profiles
-            ProfileEnumData ped = { hwndDlg, dat->pd->szProfile };
+			ProfileEnumData ped = { hwndDlg, dat->pd->szProfile };
 			findProfiles(dat->pd->szProfileDir, EnumProfilesForList, (LPARAM)&ped);
 			PostMessage(hwndDlg, WM_FOCUSTEXTBOX, 0, 0);
 
@@ -801,18 +803,12 @@ static int AddProfileManagerPage(struct DetailsPageInit * opi, OPTIONSDIALOGPAGE
 
 int getProfileManager(PROFILEMANAGERDATA * pd)
 {
-	PROPSHEETHEADER psh;
-	struct DlgProfData prof;
-	int rc=0;
-	int i;
-
-	struct DetailsPageInit opi;
+	DetailsPageInit opi;
 	opi.pageCount=0;
 	opi.odp=NULL;
 
 	{
-		OPTIONSDIALOGPAGE odp;
-		ZeroMemory(&odp,sizeof(odp));
+		OPTIONSDIALOGPAGE odp = { 0 };
 		odp.cbSize      = sizeof(odp);
 		odp.pszTitle    = LPGEN("My Profiles");
 		odp.pfnDlgProc  = DlgProfileSelect;
@@ -826,19 +822,21 @@ int getProfileManager(PROFILEMANAGERDATA * pd)
 		AddProfileManagerPage(&opi, &odp);
 	}
 
-	ZeroMemory( &psh, sizeof( psh ));
+	PROPSHEETHEADER psh = { 0 };
 	psh.dwSize     = sizeof(psh);
 	psh.dwFlags    = PSH_PROPSHEETPAGE|PSH_NOAPPLYNOW;
 	psh.hwndParent = NULL;
 	psh.nPages     = opi.pageCount;
 	psh.pStartPage = 0;
 	psh.ppsp       = (PROPSHEETPAGE*)opi.odp;
-	prof.pd        = pd;
-	prof.psh       = &psh;
-	rc = DialogBoxParam(hMirandaInst,MAKEINTRESOURCE(IDD_PROFILEMANAGER),NULL,DlgProfileManager,(LPARAM)&prof);
+
+	DlgProfData prof;
+	prof.pd  = pd;
+	prof.psh = &psh;
+	int rc = DialogBoxParam(hMirandaInst,MAKEINTRESOURCE(IDD_PROFILEMANAGER),NULL,DlgProfileManager,(LPARAM)&prof);
 
 	if ( rc != -1 )
-		for ( i=0; i < opi.pageCount; i++ ) {
+		for ( int i=0; i < opi.pageCount; i++ ) {
 			mir_free(( char* )opi.odp[i].pszTitle );
 			mir_free( opi.odp[i].pszGroup );
 			if (( DWORD_PTR )opi.odp[i].pszTemplate & 0xFFFF0000 )
