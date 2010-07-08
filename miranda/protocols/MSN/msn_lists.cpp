@@ -279,7 +279,7 @@ void CMsnProto::MSN_CreateContList(void)
 					newdom = false;
 				}
 
-				sz += mir_snprintf(cxml+sz, sizeof(cxml)-sz, "<c n=\"%s\" l=\"%d\"/>", C.email, C.list & ~LIST_RL);
+				sz += mir_snprintf(cxml+sz, sizeof(cxml)-sz, "<c n=\"%s\" l=\"%d\"/>", C.email, C.list & ~(LIST_RL | LIST_LL));
 				used[j] = true;
 			}
 			else if (dom != NULL && lastds != NULL && _stricmp(lastds, dom) == 0)
@@ -292,7 +292,7 @@ void CMsnProto::MSN_CreateContList(void)
 				}
 
 				*(char*)dom = 0;
-				sz += mir_snprintf(cxml+sz, sizeof(cxml)-sz, "<c n=\"%s\" l=\"%d\" t=\"%d\"/>", C.email, C.list & ~LIST_RL, C.netId);
+				sz += mir_snprintf(cxml+sz, sizeof(cxml)-sz, "<c n=\"%s\" l=\"%d\" t=\"%d\"/>", C.email, C.list & ~(LIST_RL | LIST_LL), C.netId);
 				*(char*)dom = '@';
 				used[j] = true;
 			}
