@@ -128,35 +128,39 @@ static WNDPROC OldMessageEditProc;
 
 static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam)
 {
-	switch(msg) {
+	switch(msg) 
+	{
 	case WM_CHAR:
-		if(wParam=='\n' && GetKeyState(VK_CONTROL)&0x8000) {
-			PostMessage(GetParent(hwnd),WM_COMMAND,IDOK,0);
+		if(wParam == '\n' && GetKeyState(VK_CONTROL) & 0x8000) 
+		{
+			PostMessage(GetParent(hwnd), WM_COMMAND, IDOK, 0);
 			return 0;
 		}
-		if (wParam == 1 && GetKeyState(VK_CONTROL) & 0x8000) {      //ctrl-a
+		if (wParam == 1 && GetKeyState(VK_CONTROL) & 0x8000)      //ctrl-a
+		{
 			SendMessage(hwnd, EM_SETSEL, 0, -1);
 			return 0;
 		}
-		if (wParam == 23 && GetKeyState(VK_CONTROL) & 0x8000) {     // ctrl-w
+		if (wParam == 23 && GetKeyState(VK_CONTROL) & 0x8000)     // ctrl-w
+		{
 			SendMessage(GetParent(hwnd), WM_CLOSE, 0, 0);
 			return 0;
 		}
-		if (wParam == 127 && GetKeyState(VK_CONTROL) & 0x8000) {    //ctrl-backspace
+		if (wParam == 127 && GetKeyState(VK_CONTROL) & 0x8000)    //ctrl-backspace
+		{
 			DWORD start, end;
 			TCHAR *text;
 			int textLen;
-			SendMessage(hwnd, EM_GETSEL, (WPARAM) & end, (LPARAM) (PDWORD) NULL);
+			SendMessage(hwnd, EM_GETSEL, (WPARAM)&end, 0);
 			SendMessage(hwnd, WM_KEYDOWN, VK_LEFT, 0);
-			SendMessage(hwnd, EM_GETSEL, (WPARAM) & start, (LPARAM) (PDWORD) NULL);
+			SendMessage(hwnd, EM_GETSEL, (WPARAM)&start, 0);
 			textLen = GetWindowTextLength(hwnd);
-			text = (TCHAR *) mir_alloc(sizeof(TCHAR) * (textLen + 1));
+			text = (TCHAR *)alloca(sizeof(TCHAR) * (textLen + 1));
 			GetWindowText(hwnd, text, textLen + 1);
-			MoveMemory(text + start, text + end, sizeof(TCHAR) * (textLen + 1 - end));
+			memmove(text + start, text + end, sizeof(TCHAR) * (textLen + 1 - end));
 			SetWindowText(hwnd, text);
-			mir_free(text);
 			SendMessage(hwnd, EM_SETSEL, start, start);
-			SendMessage(GetParent(hwnd), WM_COMMAND, MAKEWPARAM(GetDlgCtrlID(hwnd), EN_CHANGE), (LPARAM) hwnd);
+			SendMessage(GetParent(hwnd), WM_COMMAND, MAKEWPARAM(GetDlgCtrlID(hwnd), EN_CHANGE), (LPARAM)hwnd);
 			return 0;
 		}
 		break;
@@ -181,67 +185,76 @@ void ChangeAllProtoMessages(char *szProto, int statusMode, TCHAR *msg)
 		CallProtoService(szProto, PS_SETAWAYMSGT, statusMode,(LPARAM)msg);
 }
 
-struct SetAwayMsgData {
+struct SetAwayMsgData 
+{
 	int statusMode;
 	int countdown;
 	TCHAR okButtonFormat[64];
 	char *szProto;
 	HANDLE hPreshutdown;
 };
-struct SetAwasMsgNewData {
+struct SetAwasMsgNewData 
+{
 	char *szProto;
 	int statusMode;
 };
 
 #define DM_SRAWAY_SHUTDOWN WM_USER+10
 
-static INT_PTR CALLBACK SetAwayMsgDlgProc(HWND hwndDlg,UINT message,WPARAM wParam,LPARAM lParam)
+static INT_PTR CALLBACK SetAwayMsgDlgProc(HWND hwndDlg, UINT message, WPARAM wParam, LPARAM lParam)
 {
-	struct SetAwayMsgData* dat = ( struct SetAwayMsgData* )GetWindowLongPtr(hwndDlg,GWLP_USERDATA);
-	switch(message) {
+	SetAwayMsgData* dat = (SetAwayMsgData*)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
+	
+	switch(message) 
+	{
 	case WM_INITDIALOG:
 		{
-			struct SetAwasMsgNewData *newdat = (struct SetAwasMsgNewData*)lParam;
+			SetAwasMsgNewData *newdat = (SetAwasMsgNewData*)lParam;
 			TranslateDialogDefault(hwndDlg);
-			dat=(struct SetAwayMsgData*)mir_alloc(sizeof(struct SetAwayMsgData));
-			SetWindowLongPtr(hwndDlg,GWLP_USERDATA,(LONG_PTR)dat);
-			dat->statusMode=newdat->statusMode;
-			dat->szProto=newdat->szProto;
+			dat = (SetAwayMsgData*)mir_alloc(sizeof(SetAwayMsgData));
+			SetWindowLongPtr(hwndDlg, GWLP_USERDATA, (LONG_PTR)dat);
+			dat->statusMode = newdat->statusMode;
+			dat->szProto = newdat->szProto;
 			mir_free(newdat);
-			SendDlgItemMessage(hwndDlg,IDC_MSG,EM_LIMITTEXT,1024,0);
-			OldMessageEditProc=(WNDPROC)SetWindowLongPtr(GetDlgItem(hwndDlg,IDC_MSG),GWLP_WNDPROC,(LONG_PTR)MessageEditSubclassProc);
-			{	TCHAR str[256],format[128];
-				GetWindowText( hwndDlg, format, SIZEOF( format ));
-				mir_sntprintf( str, SIZEOF(str), format, cli.pfnGetStatusModeDescription( dat->statusMode, 0 ));
-				SetWindowText( hwndDlg, str );
+			SendDlgItemMessage(hwndDlg, IDC_MSG, EM_LIMITTEXT, 1024, 0);
+			OldMessageEditProc = (WNDPROC)SetWindowLongPtr(GetDlgItem(hwndDlg,IDC_MSG), GWLP_WNDPROC, (LONG_PTR)MessageEditSubclassProc);
+			{	
+				TCHAR str[256], format[128];
+				GetWindowText(hwndDlg, format, SIZEOF(format));
+				mir_sntprintf(str, SIZEOF(str), format, cli.pfnGetStatusModeDescription(dat->statusMode, 0));
+				SetWindowText(hwndDlg, str );
 			}
 			GetDlgItemText(hwndDlg, IDOK, dat->okButtonFormat, SIZEOF(dat->okButtonFormat));
-			{	TCHAR *msg = GetAwayMessage(dat->statusMode, dat->szProto);
-				SetDlgItemText(hwndDlg,IDC_MSG,msg);
+			{	
+				TCHAR *msg = GetAwayMessage(dat->statusMode, dat->szProto);
+				SetDlgItemText(hwndDlg, IDC_MSG, msg);
 				mir_free(msg);
 			}
-			dat->countdown=6;
-			SendMessage(hwndDlg,WM_TIMER,0,0);
+			dat->countdown = 6;
+			SendMessage(hwndDlg, WM_TIMER, 0, 0);
 			Window_SetProtoIcon_IcoLib(hwndDlg, dat->szProto, dat->statusMode);
 			SetTimer(hwndDlg, 1, 1000, 0);
-			dat->hPreshutdown=HookEventMessage(ME_SYSTEM_PRESHUTDOWN, hwndDlg, DM_SRAWAY_SHUTDOWN);
+			dat->hPreshutdown = HookEventMessage(ME_SYSTEM_PRESHUTDOWN, hwndDlg, DM_SRAWAY_SHUTDOWN);
 		}
 		return TRUE;
 
 	case WM_TIMER:
-		if (--dat->countdown >= 0) {	
+		if (--dat->countdown >= 0) 
+		{
             TCHAR str[64];
 			mir_sntprintf(str, SIZEOF(str), dat->okButtonFormat, dat->countdown);
 			SetDlgItemText(hwndDlg, IDOK, str);
 		}
-		else {
+		else 
+		{
 			KillTimer(hwndDlg, 1);
 			PostMessage(hwndDlg, WM_CLOSE, 0, 0);
 		}
 		break;
 
 	case WM_CLOSE:
-		{	TCHAR *msg = GetAwayMessage(dat->statusMode, dat->szProto);
+		{	
+			TCHAR *msg = GetAwayMessage(dat->statusMode, dat->szProto);
 			ChangeAllProtoMessages(dat->szProto, dat->statusMode, msg);
 			mir_free(msg);
 		}
@@ -249,9 +262,11 @@ static INT_PTR CALLBACK SetAwayMsgDlgProc(HWND hwndDlg,UINT message,WPARAM wPara
 		break;
 
     case WM_COMMAND:
-		 switch(LOWORD(wParam)) {
+		 switch(LOWORD(wParam)) 
+		 {
 		 case IDOK:
-			 if (dat->countdown < 0) {	
+			 if (dat->countdown < 0) 
+			 {	
 				 TCHAR str[1024];
 				 GetDlgItemText(hwndDlg, IDC_MSG, str, SIZEOF(str));
 				 ChangeAllProtoMessages(dat->szProto, dat->statusMode, str);
@@ -338,13 +353,15 @@ static const int statusModes[] =
 	ID_STATUS_FREECHAT,ID_STATUS_INVISIBLE,ID_STATUS_OUTTOLUNCH,ID_STATUS_ONTHEPHONE, ID_STATUS_IDLE
 };
 
-struct AwayMsgInfo {
+struct AwayMsgInfo 
+{
 	int ignore;
 	int noDialog;
 	int usePrevious;
 	TCHAR msg[1024];
 };
-struct AwayMsgDlgData {
+struct AwayMsgDlgData 
+{
 	struct AwayMsgInfo info[ SIZEOF(statusModes) ];
 	int oldPage;
 };
@@ -359,25 +376,26 @@ static INT_PTR CALLBACK DlgProcAwayMsgOpts(HWND hwndDlg, UINT msg, WPARAM wParam
 	switch (msg)
 	{
 		case WM_INITDIALOG:
-		{	int i,j;
-			DBVARIANT dbv;
+		{
 			TranslateDialogDefault(hwndDlg);
-			dat = (struct AwayMsgDlgData*)mir_alloc(sizeof(struct AwayMsgDlgData));
-			SetWindowLongPtr(hwndDlg,GWLP_USERDATA,(LONG_PTR)dat);
-			dat->oldPage=-1;
-			for ( i=0; i < SIZEOF(statusModes); i++ ) {
-				if ( !(protoModeMsgFlags & Proto_Status2Flag( statusModes[i] )))
+			dat = (AwayMsgDlgData*)mir_alloc(sizeof(AwayMsgDlgData));
+			SetWindowLongPtr(hwndDlg, GWLP_USERDATA, (LONG_PTR)dat);
+			dat->oldPage = -1;
+			for (int i = 0; i < SIZEOF(statusModes); i++)
+			{
+				int j;
+				if (!(protoModeMsgFlags & Proto_Status2Flag(statusModes[i])))
 					continue;
 
 				if (hLst)
 				{
-					j = SendDlgItemMessage( hwndDlg, IDC_LST_STATUS, LB_ADDSTRING, 0, (LPARAM)cli.pfnGetStatusModeDescription( statusModes[i], 0 ));
-					SendDlgItemMessage(hwndDlg,IDC_LST_STATUS,LB_SETITEMDATA,j,statusModes[i]);
+					j = SendDlgItemMessage(hwndDlg, IDC_LST_STATUS, LB_ADDSTRING, 0, (LPARAM)cli.pfnGetStatusModeDescription(statusModes[i], 0));
+					SendDlgItemMessage(hwndDlg, IDC_LST_STATUS, LB_SETITEMDATA, j, statusModes[i]);
 				} 
 				else
 				{
-					j = SendDlgItemMessage( hwndDlg, IDC_STATUS, CB_ADDSTRING, 0, (LPARAM)cli.pfnGetStatusModeDescription( statusModes[i], 0 ));
-					SendDlgItemMessage(hwndDlg,IDC_STATUS,CB_SETITEMDATA,j,statusModes[i]);
+					j = SendDlgItemMessage(hwndDlg, IDC_STATUS, CB_ADDSTRING, 0, (LPARAM)cli.pfnGetStatusModeDescription(statusModes[i], 0));
+					SendDlgItemMessage(hwndDlg, IDC_STATUS, CB_SETITEMDATA, j, statusModes[i]);
 				}
 
 				dat->info[j].ignore = DBGetContactSettingByte(NULL, "SRAway", 
@@ -387,6 +405,7 @@ static INT_PTR CALLBACK DlgProcAwayMsgOpts(HWND hwndDlg, UINT msg, WPARAM wParam
 				dat->info[j].usePrevious = DBGetContactSettingByte(NULL, "SRAway", 
 					StatusModeToDbSetting(statusModes[i], "UsePrev"), 0);
 
+				DBVARIANT dbv;
 				if (DBGetContactSettingTString(NULL, "SRAway", StatusModeToDbSetting(statusModes[i], "Default"), &dbv))
 					if (DBGetContactSettingTString(NULL, "SRAway", StatusModeToDbSetting(statusModes[i], "Msg"), &dbv))
 						dbv.ptszVal = mir_tstrdup(GetDefaultMessage(statusModes[i]));
@@ -394,17 +413,17 @@ static INT_PTR CALLBACK DlgProcAwayMsgOpts(HWND hwndDlg, UINT msg, WPARAM wParam
 				mir_free(dbv.ptszVal);
 			}
 			if (hLst)
-				SendDlgItemMessage(hwndDlg,IDC_LST_STATUS,LB_SETCURSEL,0,0);
+				SendDlgItemMessage(hwndDlg, IDC_LST_STATUS, LB_SETCURSEL, 0, 0);
 			else
-				SendDlgItemMessage(hwndDlg,IDC_STATUS,CB_SETCURSEL,0,0);
-			SendMessage(hwndDlg,WM_COMMAND,hLst?MAKEWPARAM(IDC_LST_STATUS,LBN_SELCHANGE):MAKEWPARAM(IDC_STATUS,CBN_SELCHANGE),0);
+				SendDlgItemMessage(hwndDlg, IDC_STATUS, CB_SETCURSEL, 0, 0);
+			SendMessage(hwndDlg, WM_COMMAND, hLst ? MAKEWPARAM(IDC_LST_STATUS, LBN_SELCHANGE) : MAKEWPARAM(IDC_STATUS, CBN_SELCHANGE), 0);
 			return TRUE;
 		}
 		case WM_MEASUREITEM:
 		{
 			LPMEASUREITEMSTRUCT mis = (LPMEASUREITEMSTRUCT)lParam;
-			if (mis->CtlID != IDC_LST_STATUS) break;
-			mis->itemHeight = 20;
+			if (mis->CtlID == IDC_LST_STATUS)
+				mis->itemHeight = 20;
 			break;
 		}
 		case WM_DRAWITEM:
@@ -420,17 +439,18 @@ static INT_PTR CALLBACK DlgProcAwayMsgOpts(HWND hwndDlg, UINT msg, WPARAM wParam
 			{
 				FillRect(dis->hDC, &dis->rcItem, GetSysColorBrush(COLOR_HIGHLIGHT));
 				SetTextColor(dis->hDC, GetSysColor(COLOR_HIGHLIGHTTEXT));
-			} else
+			} 
+			else
 			{
 				FillRect(dis->hDC, &dis->rcItem, GetSysColorBrush(COLOR_WINDOW));
 				SetTextColor(dis->hDC, GetSysColor(COLOR_WINDOWTEXT));
 			}
 
 			RECT rc = dis->rcItem;
-			DrawIconEx(dis->hDC, 3, (rc.top+rc.bottom-16)/2, LoadSkinnedProtoIcon(NULL, dis->itemData), 16, 16, 0, NULL, DI_NORMAL);
+			DrawIconEx(dis->hDC, 3, (rc.top + rc.bottom - 16) / 2, LoadSkinnedProtoIcon(NULL, dis->itemData), 16, 16, 0, NULL, DI_NORMAL);
 			rc.left += 25;
 			SetBkMode(dis->hDC, TRANSPARENT);
-			DrawText(dis->hDC, buf, -1, &rc, DT_LEFT|DT_SINGLELINE|DT_VCENTER|DT_NOPREFIX);
+			DrawText(dis->hDC, buf, -1, &rc, DT_LEFT | DT_SINGLELINE | DT_VCENTER | DT_NOPREFIX);
 			break;
 		}
 		case WM_COMMAND:
@@ -450,45 +470,51 @@ static INT_PTR CALLBACK DlgProcAwayMsgOpts(HWND hwndDlg, UINT msg, WPARAM wParam
 							dat->info[dat->oldPage].usePrevious = IsDlgButtonChecked(hwndDlg, IDC_USEPREVIOUS);
 							GetDlgItemText(hwndDlg, IDC_MSG, dat->info[dat->oldPage].msg, SIZEOF(dat->info[dat->oldPage].msg));
 						}
-						CheckDlgButton(hwndDlg,IDC_DONTREPLY,   i < 0 ? 0 : dat->info[i].ignore);
-						CheckDlgButton(hwndDlg,IDC_NODIALOG,    i < 0 ? 0 : dat->info[i].noDialog);
-						CheckDlgButton(hwndDlg,IDC_USEPREVIOUS, i < 0 ? 0 : dat->info[i].usePrevious);
-						CheckDlgButton(hwndDlg,IDC_USESPECIFIC, i < 0 ? 0 : !dat->info[i].usePrevious);
+						CheckDlgButton(hwndDlg, IDC_DONTREPLY,   i < 0 ? 0 : dat->info[i].ignore);
+						CheckDlgButton(hwndDlg, IDC_NODIALOG,    i < 0 ? 0 : dat->info[i].noDialog);
+						CheckDlgButton(hwndDlg, IDC_USEPREVIOUS, i < 0 ? 0 : dat->info[i].usePrevious);
+						CheckDlgButton(hwndDlg, IDC_USESPECIFIC, i < 0 ? 0 : !dat->info[i].usePrevious);
 
 						SetDlgItemText(hwndDlg,IDC_MSG, i < 0 ? _T("") : dat->info[i].msg);
 
-						EnableWindow(GetDlgItem(hwndDlg,IDC_NODIALOG),    i < 0 ? 0 : !dat->info[i].ignore);
-						EnableWindow(GetDlgItem(hwndDlg,IDC_USEPREVIOUS), i < 0 ? 0 : !dat->info[i].ignore);
-						EnableWindow(GetDlgItem(hwndDlg,IDC_USESPECIFIC), i < 0 ? 0 : !dat->info[i].ignore);
-						EnableWindow(GetDlgItem(hwndDlg,IDC_MSG), i < 0 ? 0 : !(dat->info[i].ignore || dat->info[i].usePrevious));
+						EnableWindow(GetDlgItem(hwndDlg, IDC_NODIALOG),    i < 0 ? 0 : !dat->info[i].ignore);
+						EnableWindow(GetDlgItem(hwndDlg, IDC_USEPREVIOUS), i < 0 ? 0 : !dat->info[i].ignore);
+						EnableWindow(GetDlgItem(hwndDlg, IDC_USESPECIFIC), i < 0 ? 0 : !dat->info[i].ignore);
+						EnableWindow(GetDlgItem(hwndDlg, IDC_MSG), i < 0 ? 0 : !(dat->info[i].ignore || dat->info[i].usePrevious));
 						dat->oldPage = i;
 					}
 					return 0;
+
 				case IDC_DONTREPLY:
 				case IDC_USEPREVIOUS:
 				case IDC_USESPECIFIC:
 					SendMessage(hwndDlg,WM_COMMAND,MAKEWPARAM(IDC_STATUS,CBN_SELCHANGE),0);
 					break;
+
 				case IDC_MSG:
-					if(HIWORD(wParam)!=EN_CHANGE || (HWND)lParam!=GetFocus()) return 0;
+					if (HIWORD(wParam) != EN_CHANGE || (HWND)lParam != GetFocus()) return 0;
 					break;
 			}
 			SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
 			break;
+
 		case WM_NOTIFY:
-			switch(((LPNMHDR)lParam)->idFrom) {
+			switch(((LPNMHDR)lParam)->idFrom) 
+			{
 				case 0:
-					switch(((LPNMHDR)lParam)->code) {
+					switch(((LPNMHDR)lParam)->code) 
+					{
 						case PSN_APPLY:
-						{	int i,status;
-							SendMessage(hwndDlg,WM_COMMAND,MAKEWPARAM(IDC_STATUS,CBN_SELCHANGE),0);
+						{	int i, status;
+							SendMessage(hwndDlg, WM_COMMAND, MAKEWPARAM(IDC_STATUS,CBN_SELCHANGE), 0);
 							i = hLst ?
-								(SendDlgItemMessage(hwndDlg,IDC_LST_STATUS,LB_GETCOUNT,0,0)-1) :
-								(SendDlgItemMessage(hwndDlg,IDC_STATUS,CB_GETCOUNT,0,0)-1);
-							for(;i>=0;i--) {
-								status=hLst?
-									SendDlgItemMessage(hwndDlg,IDC_LST_STATUS,LB_GETITEMDATA,i,0):
-									SendDlgItemMessage(hwndDlg,IDC_STATUS,CB_GETITEMDATA,i,0);
+								(SendDlgItemMessage(hwndDlg, IDC_LST_STATUS, LB_GETCOUNT, 0, 0) - 1) :
+								(SendDlgItemMessage(hwndDlg, IDC_STATUS, CB_GETCOUNT, 0, 0) - 1);
+							for (; i>=0; i--) 
+							{
+								status = hLst ?
+									SendDlgItemMessage(hwndDlg, IDC_LST_STATUS, LB_GETITEMDATA, i, 0):
+									SendDlgItemMessage(hwndDlg, IDC_STATUS, CB_GETITEMDATA, i, 0);
 								DBWriteContactSettingByte(NULL, "SRAway", StatusModeToDbSetting(status,"Ignore"), (BYTE)dat->info[i].ignore);
 								DBWriteContactSettingByte(NULL, "SRAway", StatusModeToDbSetting(status,"NoDlg"),  (BYTE)dat->info[i].noDialog);
 								DBWriteContactSettingByte(NULL, "SRAway", StatusModeToDbSetting(status,"UsePrev"),(BYTE)dat->info[i].usePrevious);
@@ -500,6 +526,7 @@ static INT_PTR CALLBACK DlgProcAwayMsgOpts(HWND hwndDlg, UINT msg, WPARAM wParam
 					break;
 			}
 			break;
+
 		case WM_DESTROY:
 			mir_free(dat);
 			break;
@@ -521,7 +548,7 @@ static int AwayMsgOptInitialise(WPARAM wParam, LPARAM)
 	odp.pszGroup = LPGEN("Status");
 	odp.pfnDlgProc = DlgProcAwayMsgOpts;
 	odp.flags = ODPF_BOLDGROUPS;
-	CallService( MS_OPT_ADDPAGE, wParam, ( LPARAM )&odp );
+	CallService(MS_OPT_ADDPAGE, wParam, (LPARAM)&odp);
 	return 0;
 }
 
@@ -555,7 +582,8 @@ static int AwayMsgSendModernOptInit(WPARAM wParam, LPARAM)
 static int AwayMsgSendAccountsChanged(WPARAM, LPARAM)
 {
 	protoModeMsgFlags = 0;
-	for (int i=0; i < accounts.getCount(); i++) {
+	for (int i=0; i < accounts.getCount(); i++) 
+	{
 		if (!Proto_IsAccountEnabled(accounts[i])) continue;
 		protoModeMsgFlags |= CallProtoService(accounts[i]->szModuleName, PS_GETCAPS, PFLAGNUM_3, 0);
 	}
