@@ -511,7 +511,11 @@ retry:
 		if (gg->proto.m_iDesiredStatus != status_gg2m(gg, p.status))
 			gg_refreshstatus(gg, gg->proto.m_iDesiredStatus);
 		else
+		{
 			gg_broadcastnewstatus(gg, gg->proto.m_iDesiredStatus);
+			// Change status of the contact with our own UIN (if got yourself added to the contact list)
+			gg_changecontactstatus(gg, p.uin, p.status, p.status_descr, 0, 0, 0, 0);
+		}
 	}
 
 	//////////////////////////////////////////////////////////////////////////////////
@@ -584,8 +588,10 @@ retry:
 			// Statuslist notify (version >= 6.0)
 			case GG_EVENT_NOTIFY60:
 			{
+				uin_t uin = (uin_t)DBGetContactSettingDword(NULL, GG_PROTO, GG_KEY_UIN, 0);
 				int i;
 				for(i = 0; e->event.notify60[i].uin; i++) {
+					if (e->event.notify60[i].uin == uin) continue;
 					gg_changecontactstatus(gg, e->event.notify60[i].uin, e->event.notify60[i].status, e->event.notify60[i].descr,
 						e->event.notify60[i].time, e->event.notify60[i].remote_ip, e->event.notify60[i].remote_port,
 						e->event.notify60[i].version);
@@ -1427,11 +1433,6 @@ HANDLE gg_getcontact(GGPROTO *gg, uin_t uin, int create, int inlist, char *szNic
 {
 	HANDLE hContact;
 	char *szProto;
-
-	/* FIXME: We allow here adding our own UIN
-	if(uin == (uin_t)DBGetContactSettingDword(NULL, GG_PROTO, GG_KEY_UIN, 0))
-		return NULL;
-	*/
 
 	// Look for contact in DB
 	hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);

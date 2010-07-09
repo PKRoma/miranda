@@ -166,6 +166,8 @@ int gg_refreshstatus(GGPROTO *gg, int status)
 			gg_change_status(gg->sess, status_m2gg(gg, status, 0));
 		}
 		LeaveCriticalSection(&gg->sess_mutex);
+		// Change status of the contact with our own UIN (if got yourself added to the contact list)
+		gg_changecontactstatus(gg, DBGetContactSettingDword(NULL, GG_PROTO, GG_KEY_UIN, 0), status_m2gg(gg, status, szMsg != NULL), szMsg, 0, 0, 0, 0);
 		LeaveCriticalSection(&gg->modemsg_mutex);
 		gg_broadcastnewstatus(gg, status);
 	}
