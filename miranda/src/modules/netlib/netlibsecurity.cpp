@@ -157,13 +157,7 @@ HANDLE NetlibInitSecurityProvider(const TCHAR* szProvider, const TCHAR* szPrinci
 #ifdef UNICODE
 HANDLE NetlibInitSecurityProvider(const char* szProvider, const char* szPrincipal)
 {
-	TCHAR *szProviderT  = mir_a2t(szProvider);
-	TCHAR *szPrincipalT = mir_a2t(szPrincipal);
-	HANDLE hSecurity = NetlibInitSecurityProvider(szProviderT, szPrincipalT);
-	mir_free(szProviderT);
-	mir_free(szPrincipalT);
-
-	return hSecurity;
+	return NetlibInitSecurityProvider(StrConvT(szProvider), StrConvT(szPrincipal));
 }
 #endif
 
@@ -439,14 +433,8 @@ static INT_PTR NtlmCreateResponseService( WPARAM wParam, LPARAM lParam )
 	NETLIBNTLMREQUEST* req = ( NETLIBNTLMREQUEST* )lParam;
 	unsigned complete;
 
-	TCHAR *szLogin = mir_a2t(req->userName);
-	TCHAR *szPassw = mir_a2t(req->password);
-
 	char* response = NtlmCreateResponseFromChallenge(( HANDLE )wParam, req->szChallenge, 
-		szLogin, szPassw, false, complete );
-
-	mir_free(szLogin);
-	mir_free(szPassw);
+		StrConvT(req->userName), StrConvT(req->password), false, complete );
 
 	return (INT_PTR)response;
 }

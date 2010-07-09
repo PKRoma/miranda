@@ -397,7 +397,7 @@ int makeDatabase(TCHAR * profile, DATABASELINK * link, HWND hwndDlg)
 }
 
 // enumerate all plugins that had valid DatabasePluginInfo()
-static int FindDbPluginForProfile(char*, DATABASELINK * dblink, LPARAM lParam)
+static int FindDbPluginForProfile(const char*, DATABASELINK * dblink, LPARAM lParam)
 {
 	TCHAR* tszProfile = ( TCHAR* )lParam;
 
@@ -433,7 +433,7 @@ static int FindDbPluginForProfile(char*, DATABASELINK * dblink, LPARAM lParam)
 }
 
 // enumerate all plugins that had valid DatabasePluginInfo()
-static int FindDbPluginAutoCreate(char*, DATABASELINK * dblink, LPARAM lParam)
+static int FindDbPluginAutoCreate(const char*, DATABASELINK * dblink, LPARAM lParam)
 {
 	TCHAR* tszProfile = ( TCHAR* )lParam;
 
@@ -508,9 +508,9 @@ int LoadDatabaseModule(void)
 	dbe.lParam = (LPARAM)szProfile;
 
 	if ( _taccess(szProfile, 0) && shouldAutoCreate( szProfile ))
-		dbe.pfnEnumCallback=( int(*) (char*,void*,LPARAM) )FindDbPluginAutoCreate;
+		dbe.pfnEnumCallback=( int(*) (const char*,void*,LPARAM) )FindDbPluginAutoCreate;
 	else
-		dbe.pfnEnumCallback=( int(*) (char*,void*,LPARAM) )FindDbPluginForProfile;
+		dbe.pfnEnumCallback=( int(*) (const char*,void*,LPARAM) )FindDbPluginForProfile;
 
 	// find a driver to support the given profile
 	int rc = CallService(MS_PLUGINS_ENUMDBPLUGINS, 0, (LPARAM)&dbe);

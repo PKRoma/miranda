@@ -56,7 +56,7 @@ static HWND hAccMgr = NULL;
 
 extern HANDLE hAccListChanged;
 
-int UnloadPlugin( char* buf, int bufLen );
+int UnloadPlugin( TCHAR* buf, int bufLen );
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Account edit form
@@ -134,15 +134,16 @@ static INT_PTR CALLBACK AccFormDlgProc(HWND hwndDlg,UINT message, WPARAM wParam,
 					{
 						int idx;
 						BOOL oldProto = pa->bOldProto;
-						char szPlugin[ MAX_PATH ];
-						mir_snprintf( szPlugin, SIZEOF(szPlugin), "%s.dll", pa->szProtoName );
+						TCHAR szPlugin[MAX_PATH];
+						mir_sntprintf(szPlugin, SIZEOF(szPlugin), _T("%s.dll"), StrConvT(pa->szProtoName));
 						idx = accounts.getIndex(pa);
-						UnloadAccount( pa, false, false );
-						accounts.remove( idx );
-						if ( oldProto && UnloadPlugin( szPlugin, SIZEOF( szPlugin ))) {
-							char szNewName[ MAX_PATH ];
-							mir_snprintf( szNewName, SIZEOF(szNewName), "%s~", szPlugin );
-							MoveFileA( szPlugin, szNewName );
+						UnloadAccount(pa, false, false);
+						accounts.remove(idx);
+						if (oldProto && UnloadPlugin(szPlugin, SIZEOF(szPlugin))) 
+						{
+							TCHAR szNewName[MAX_PATH];
+							mir_sntprintf(szNewName, SIZEOF(szNewName), _T("%s~"), szPlugin);
+							MoveFile(szPlugin, szNewName);
 						}
 					}
 					// fall through

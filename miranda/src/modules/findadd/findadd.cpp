@@ -33,14 +33,6 @@ static HANDLE hHookModulesLoaded = 0;
 static HANDLE hMainMenuItem = NULL;
 static int OnSystemModulesLoaded(WPARAM wParam,LPARAM lParam);
 
-void ListView_SetItemTextA( HWND hwndLV, int i, int iSubItem, char* pszText )
-{
-	LV_ITEMA _ms_lvi;
-	_ms_lvi.iSubItem = iSubItem;
-	_ms_lvi.pszText = pszText;
-	SendMessageA( hwndLV, LVM_SETITEMTEXTA, i, (LPARAM)&_ms_lvi);
-}
-
 static int FindAddDlgResizer(HWND,LPARAM lParam,UTILRESIZECONTROL *urc)
 {
 	static int y,nextY,oldTop;

@@ -115,7 +115,7 @@ static LRESULT CALLBACK ProfileNameValidate(HWND edit, UINT msg, WPARAM wParam, 
 	return CallWindowProc((WNDPROC)GetWindowLongPtr(edit,GWLP_USERDATA),edit,msg,wParam,lParam);
 }
 
-static int FindDbProviders(char*, DATABASELINK * dblink, LPARAM lParam)
+static int FindDbProviders(const char*, DATABASELINK * dblink, LPARAM lParam)
 {
 	HWND hwndDlg = (HWND)lParam;
 	HWND hwndCombo = GetDlgItem(hwndDlg, IDC_PROFILEDRIVERS);
@@ -143,7 +143,7 @@ static INT_PTR CALLBACK DlgProfileNew(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 			// fill in the db plugins present
 			PLUGIN_DB_ENUM dbe;
 			dbe.cbSize = sizeof(dbe);
-			dbe.pfnEnumCallback = (int(*)(char*,void*,LPARAM))FindDbProviders;
+			dbe.pfnEnumCallback = (int(*)(const char*,void*,LPARAM))FindDbProviders;
 			dbe.lParam = (LPARAM)hwndDlg;
 			if ( CallService( MS_PLUGINS_ENUMDBPLUGINS, 0, ( LPARAM )&dbe ) == -1 ) {
 				// no plugins?!
@@ -222,7 +222,7 @@ static INT_PTR CALLBACK DlgProfileNew(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 	return FALSE;
 }
 
-static int DetectDbProvider(char*, DATABASELINK * dblink, LPARAM lParam)
+static int DetectDbProvider(const char*, DATABASELINK * dblink, LPARAM lParam)
 {
 	int error;
 
@@ -303,7 +303,7 @@ BOOL EnumProfilesForList(TCHAR * fullpath, TCHAR * profile, LPARAM lParam)
 		item2.iItem = iItem;
 
 		dbe.cbSize = sizeof(dbe);
-		dbe.pfnEnumCallback = (int(*)(char*,void*,LPARAM))DetectDbProvider;
+		dbe.pfnEnumCallback = (int(*)(const char*,void*,LPARAM))DetectDbProvider;
 		dbe.lParam = (LPARAM)szPath;
 		_tcscpy(szPath, fullpath);
 		if ( CallService( MS_PLUGINS_ENUMDBPLUGINS, 0, ( LPARAM )&dbe ) == 1 ) {
