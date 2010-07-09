@@ -2,7 +2,7 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2005 Miranda ICQ/IM project,
+Copyright 2000-2010 Miranda ICQ/IM project,
 all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
@@ -21,7 +21,6 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 #include "commonheaders.h"
-//#include <limits.h>
 
 // block these plugins
 #define DEFMOD_REMOVED_UIPLUGINOPTS     21
@@ -768,7 +767,10 @@ static BOOL dialogListPlugins(WIN32_FIND_DATA * fd, TCHAR * path, WPARAM, LPARAM
 		else
 			memset( &dat->uuid, 0, sizeof(dat->uuid));
 
-		ListView_SetItemText(hwndList, iRow, 1, StrConvT(pi.pluginInfo->shortName));
+		TCHAR *shortNameT = mir_a2t(pi.pluginInfo->shortName);
+		ListView_SetItemText(hwndList, iRow, 1, shortNameT);
+		mir_free(shortNameT);
+
 		mir_sntprintf(buf, SIZEOF(buf), _T("%d.%d.%d.%d"), HIBYTE(HIWORD(pi.pluginInfo->version)), 
 			LOBYTE(HIWORD(pi.pluginInfo->version)), HIBYTE(LOWORD(pi.pluginInfo->version)), 
 			LOBYTE(LOWORD(pi.pluginInfo->version)));
