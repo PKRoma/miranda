@@ -483,11 +483,11 @@ XCHAR *GetInternalVariable(XCHAR *key, size_t keyLength, HANDLE hContact)
 			theValue = GetProfileNameX(key);
 		else if (!_xcscmp(theKey, XSTR(key, "username")))
 			theValue = GetUserNameX(key);
-		else if (!_xcscmp(theKey, XSTR(key, "miranda_userdata")))
-			theValue = GetPathVarX(key,1);
 		else if (!_xcscmp(theKey, XSTR(key, "miranda_avatarcache")))
-			theValue = GetPathVarX(key,2);
+			theValue = GetPathVarX(key,1);
 		else if (!_xcscmp(theKey, XSTR(key, "miranda_logpath")))
+			theValue = GetPathVarX(key,2);
+		else if (!_xcscmp(theKey, XSTR(key, "miranda_userdata")))
 			theValue = GetPathVarX(key,3);
 	}
 
