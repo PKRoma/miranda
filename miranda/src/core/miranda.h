@@ -307,6 +307,7 @@ public:
 
     ~StrConvT() {  mir_free( m_body ); }
 	operator const wchar_t* () const { return m_body; }
+	operator wchar_t* () const { return m_body; }
 };
 
 class StrConvA
