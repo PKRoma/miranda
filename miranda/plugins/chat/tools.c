@@ -1,7 +1,9 @@
 /*
 Chat module plugin for Miranda IM
 
-Copyright (C) 2003 Jörgen Persson
+Copyright 2000-2010 Miranda ICQ/IM project, 
+all portions of this codebase are copyrighted to the people 
+listed in contributors.txt.
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -801,9 +803,9 @@ BOOL DoEventHookAsync(HWND hwnd, const TCHAR* pszID, const char* pszModule, int 
 		}
 	}
 #else
-	gcd->ptszID = mir_tstrdup( pszID );
-	gch->ptszUID = mir_tstrdup( pszUID );
-	gch->ptszText = mir_tstrdup( pszText );
+	gcd->pszID = mir_strdup( pszID );
+	gch->pszUID = mir_strdup( pszUID );
+	gch->pszText = mir_strdup( pszText );
 #endif
 
 	gcd->iType = iType;
@@ -838,9 +840,9 @@ BOOL DoEventHook(const TCHAR* pszID, const char* pszModule, int iType, const TCH
 		}
 	}
 #else
-	gcd.ptszID = mir_tstrdup( pszID );
-	gch.ptszUID = mir_tstrdup( pszUID );
-	gch.ptszText = mir_tstrdup( pszText );
+	gcd.pszID = mir_strdup( pszID );
+	gch.pszUID = mir_strdup( pszUID );
+	gch.pszText = mir_strdup( pszText );
 #endif
 
 	gcd.iType = iType;
