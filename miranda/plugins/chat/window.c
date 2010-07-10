@@ -1,7 +1,9 @@
 /*
 Chat module plugin for Miranda IM
 
-Copyright (C) 2003 Jörgen Persson
+Copyright 2000-2010 Miranda ICQ/IM project, 
+all portions of this codebase are copyrighted to the people 
+listed in contributors.txt.
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -1903,8 +1905,14 @@ END_REMOVETAB:
 					SetTextColor(dis->hDC, ui->iStatusEx == 0?g_Settings.crUserListColor:g_Settings.crUserListHeadingsColor);
 					TextOut(dis->hDC, dis->rcItem.left+x_offset, dis->rcItem.top, ui->pszNick, lstrlen(ui->pszNick));
 					SelectObject(dis->hDC, hOldFont);
-					if (si->pAccPropServicesForNickList) si->pAccPropServicesForNickList->lpVtbl->SetHwndPropStr(si->pAccPropServicesForNickList,
-							GetDlgItem(hwndDlg,IDC_LIST), OBJID_CLIENT, dis->itemID+1, PROPID_ACC_NAME, ui->pszNick);
+
+					if (si->pAccPropServicesForNickList) 
+					{
+						wchar_t *nick = mir_t2u(ui->pszNick);
+						si->pAccPropServicesForNickList->lpVtbl->SetHwndPropStr(si->pAccPropServicesForNickList,
+							GetDlgItem(hwndDlg,IDC_LIST), OBJID_CLIENT, dis->itemID+1, PROPID_ACC_NAME, nick);
+						mir_free(nick);
+					}
 				}
 				return TRUE;
 		}	}

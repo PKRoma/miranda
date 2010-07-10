@@ -1,7 +1,9 @@
 /*
 Chat module plugin for Miranda IM
 
-Copyright (C) 2003 Jörgen Persson
+Copyright 2000-2010 Miranda ICQ/IM project, 
+all portions of this codebase are copyrighted to the people 
+listed in contributors.txt.
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -778,12 +780,14 @@ void DestroyGCMenu(HMENU *hMenu, int iIndex)
 
 BOOL DoEventHookAsync(HWND hwnd, const TCHAR* pszID, const char* pszModule, int iType, TCHAR* pszUID, TCHAR* pszText, DWORD dwItem)
 {
-	SESSION_INFO* si;
 	GCHOOK* gch = (GCHOOK*)mir_calloc( sizeof( GCHOOK ));
 	GCDEST* gcd = (GCDEST*)mir_calloc( sizeof( GCDEST ));
 
-	replaceStrA( &gcd->pszModule, pszModule);
-	#if defined( _UNICODE )
+	gcd->pszModule = mir_strdup( pszModule );
+
+#if defined( _UNICODE )
+	{
+		SESSION_INFO* si;
 		if (( si = SM_FindSession(pszID, pszModule)) == NULL )
 			return FALSE;
 
@@ -793,13 +797,17 @@ BOOL DoEventHookAsync(HWND hwnd, const TCHAR* pszID, const char* pszModule, int 
 			gch->pszText = mir_t2a( pszText );
 		}
 		else {
-	#endif
-			replaceStr( &gcd->ptszID, pszID );
-			replaceStr( &gch->ptszUID, pszUID);
-			replaceStr( &gch->ptszText, pszText);
-	#if defined( _UNICODE )
+			gcd->ptszID = mir_tstrdup( pszID );
+			gch->ptszUID = mir_tstrdup( pszUID );
+			gch->ptszText = mir_tstrdup( pszText );
 		}
-	#endif
+	}
+#else
+	gcd->pszID = mir_strdup( pszID );
+	gch->pszUID = mir_strdup( pszUID );
+	gch->pszText = mir_strdup( pszText );
+#endif
+
 	gcd->iType = iType;
 	gch->dwData = dwItem;
 	gch->pDest = gcd;
@@ -809,12 +817,14 @@ BOOL DoEventHookAsync(HWND hwnd, const TCHAR* pszID, const char* pszModule, int 
 
 BOOL DoEventHook(const TCHAR* pszID, const char* pszModule, int iType, const TCHAR* pszUID, const TCHAR* pszText, DWORD dwItem)
 {
-	SESSION_INFO* si;
 	GCHOOK gch = {0};
 	GCDEST gcd = {0};
 
 	gcd.pszModule = (char*)pszModule;
-	#if defined( _UNICODE )
+
+#ifdef _UNICODE
+	{
+		SESSION_INFO* si;
 		if (( si = SM_FindSession(pszID, pszModule)) == NULL )
 			return FALSE;
 
@@ -824,13 +834,16 @@ BOOL DoEventHook(const TCHAR* pszID, const char* pszModule, int iType, const TCH
 			gch.pszText = mir_t2a( pszText );
 		}
 		else {
-	#endif
 			gcd.ptszID = mir_tstrdup( pszID );
 			gch.ptszUID = mir_tstrdup( pszUID );
 			gch.ptszText = mir_tstrdup( pszText );
-	#if defined( _UNICODE )
 		}
-	#endif
+	}
+#else
+	gcd.pszID = mir_strdup( pszID );
+	gch.pszUID = mir_strdup( pszUID );
+	gch.pszText = mir_strdup( pszText );
+#endif
 
 	gcd.iType = iType;
 	gch.dwData = dwItem;
@@ -840,6 +853,7 @@ BOOL DoEventHook(const TCHAR* pszID, const char* pszModule, int iType, const TCH
 	mir_free( gcd.pszID );
 	mir_free( gch.ptszUID );
 	mir_free( gch.ptszText );
+
 	return TRUE;
 }
 

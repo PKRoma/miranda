@@ -1,7 +1,9 @@
 /*
 Chat module plugin for Miranda IM
 
-Copyright (C) 2003 Jörgen Persson
+Copyright 2000-2010 Miranda ICQ/IM project, 
+all portions of this codebase are copyrighted to the people 
+listed in contributors.txt.
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -625,18 +627,18 @@ static INT_PTR Service_AddEvent(WPARAM wParam, LPARAM lParam)
 
 	EnterCriticalSection(&cs);
 
-	#if defined( _UNICODE )
-		if ( !( gce->dwFlags & GC_UNICODE )) {
-			save_gce = *gce;
-			save_gcd = *gce->pDest;
-			gce->pDest->ptszID = a2tf( gce->pDest->ptszID, gce->dwFlags );
-			gce->ptszUID       = a2tf( gce->ptszUID,       gce->dwFlags );
-			gce->ptszNick      = a2tf( gce->ptszNick,      gce->dwFlags );
-			gce->ptszStatus    = a2tf( gce->ptszStatus,    gce->dwFlags );
-			gce->ptszText      = a2tf( gce->ptszText,      gce->dwFlags );
-			gce->ptszUserInfo  = a2tf( gce->ptszUserInfo,  gce->dwFlags );
-		}
-	#endif
+#ifdef _UNICODE
+	if ( !( gce->dwFlags & GC_UNICODE )) {
+		save_gce = *gce;
+		save_gcd = *gce->pDest;
+		gce->pDest->ptszID = a2tf( gce->pDest->ptszID, gce->dwFlags );
+		gce->ptszUID       = a2tf( gce->ptszUID,       gce->dwFlags );
+		gce->ptszNick      = a2tf( gce->ptszNick,      gce->dwFlags );
+		gce->ptszStatus    = a2tf( gce->ptszStatus,    gce->dwFlags );
+		gce->ptszText      = a2tf( gce->ptszText,      gce->dwFlags );
+		gce->ptszUserInfo  = a2tf( gce->ptszUserInfo,  gce->dwFlags );
+	}
+#endif
 
 	// Do different things according to type of event
 	switch(gcd->iType) {
@@ -778,18 +780,18 @@ static INT_PTR Service_AddEvent(WPARAM wParam, LPARAM lParam)
 LBL_Exit:
 	LeaveCriticalSection(&cs);
 
-	#if defined( _UNICODE )
-		if ( !( gce->dwFlags & GC_UNICODE )) {
-			mir_free((void*)gce->ptszText );
-			mir_free((void*)gce->ptszNick );
-			mir_free((void*)gce->ptszUID );
-			mir_free((void*)gce->ptszStatus );
-			mir_free((void*)gce->ptszUserInfo );
-			mir_free((void*)gce->pDest->ptszID );
-			*gce = save_gce;
-			*gce->pDest = save_gcd;
-		}
-	#endif
+#ifdef _UNICODE
+	if ( !( gce->dwFlags & GC_UNICODE )) {
+		mir_free((void*)gce->ptszText );
+		mir_free((void*)gce->ptszNick );
+		mir_free((void*)gce->ptszUID );
+		mir_free((void*)gce->ptszStatus );
+		mir_free((void*)gce->ptszUserInfo );
+		mir_free((void*)gce->pDest->ptszID );
+		*gce = save_gce;
+		*gce->pDest = save_gcd;
+	}
+#endif
 
 	return iRetVal;
 }
