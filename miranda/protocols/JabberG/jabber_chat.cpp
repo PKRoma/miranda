@@ -983,17 +983,31 @@ static LRESULT CALLBACK sttUserInfoDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam
 
 				switch (value)
 				{
-					case AFFILIATION_NONE:
-						dat->ppro->AdminSet(dat->item->jid, xmlnsAdmin, _T("nick"), dat->him->resourceName, _T("affiliation"), _T("none"));
+					TCHAR szBareJid[ JABBER_MAX_JID_LEN ];
+					JabberStripJid( dat->him->szRealJid, szBareJid, SIZEOF(szBareJid) );
+					case AFFILIATION_NONE:	
+						if (dat->him->szRealJid)
+							dat->ppro->AdminSet(dat->item->jid, xmlnsAdmin, _T("jid"), szBareJid, _T("affiliation"), _T("none"));
+						else
+							dat->ppro->AdminSet(dat->item->jid, xmlnsAdmin, _T("nick"), dat->him->resourceName, _T("affiliation"), _T("none"));
 						break;
 					case AFFILIATION_MEMBER:
-						dat->ppro->AdminSet(dat->item->jid, xmlnsAdmin, _T("nick"), dat->him->resourceName, _T("affiliation"),  _T("member"));
+						if (dat->him->szRealJid)
+							dat->ppro->AdminSet(dat->item->jid, xmlnsAdmin, _T("jid"), szBareJid, _T("affiliation"), _T("member"));
+						else
+							dat->ppro->AdminSet(dat->item->jid, xmlnsAdmin, _T("nick"), dat->him->resourceName, _T("affiliation"), _T("member"));
 						break;
 					case AFFILIATION_ADMIN:
-						dat->ppro->AdminSet(dat->item->jid, xmlnsAdmin, _T("nick"), dat->him->resourceName, _T("affiliation"), _T("admin"));
+						if (dat->him->szRealJid)
+							dat->ppro->AdminSet(dat->item->jid, xmlnsAdmin, _T("jid"), szBareJid, _T("affiliation"), _T("admin"));
+						else
+							dat->ppro->AdminSet(dat->item->jid, xmlnsAdmin, _T("nick"), dat->him->resourceName, _T("affiliation"), _T("admin"));
 						break;
 					case AFFILIATION_OWNER:
-						dat->ppro->AdminSet(dat->item->jid, xmlnsAdmin, _T("nick"), dat->him->resourceName, _T("affiliation"), _T("owner"));
+						if (dat->him->szRealJid)
+							dat->ppro->AdminSet(dat->item->jid, xmlnsAdmin, _T("jid"), szBareJid, _T("affiliation"), _T("owner"));
+						else
+							dat->ppro->AdminSet(dat->item->jid, xmlnsAdmin, _T("nick"), dat->him->resourceName, _T("affiliation"), _T("owner"));
 						break;
 				}
 			}
@@ -1163,19 +1177,55 @@ static void sttNickListHook( CJabberProto* ppro, JABBER_LIST_ITEM* item, GCHOOK*
 
 	case IDM_SET_NONE:
 		if (him->affiliation != AFFILIATION_NONE)
-			ppro->AdminSet(item->jid, xmlnsAdmin, _T("nick"), him->resourceName, _T("affiliation"), _T("none"));
+		{
+			if (him->szRealJid)
+			{
+				TCHAR szBareJid[ JABBER_MAX_JID_LEN ];
+				JabberStripJid( him->szRealJid, szBareJid, SIZEOF(szBareJid) );
+				ppro->AdminSet(item->jid, xmlnsAdmin, _T("jid"), szBareJid, _T("affiliation"), _T("none"));
+			}
+			else
+				ppro->AdminSet(item->jid, xmlnsAdmin, _T("nick"), him->resourceName, _T("affiliation"), _T("none"));
+		}
 		break;
 	case IDM_SET_MEMBER:
 		if (him->affiliation != AFFILIATION_MEMBER)
-			ppro->AdminSet(item->jid, xmlnsAdmin, _T("nick"), him->resourceName, _T("affiliation"),  _T("member"));
+		{
+			if (him->szRealJid)
+			{
+				TCHAR szBareJid[ JABBER_MAX_JID_LEN ];
+				JabberStripJid( him->szRealJid, szBareJid, SIZEOF(szBareJid) );
+				ppro->AdminSet(item->jid, xmlnsAdmin, _T("jid"), szBareJid, _T("affiliation"), _T("member"));
+			}
+			else
+				ppro->AdminSet(item->jid, xmlnsAdmin, _T("nick"), him->resourceName, _T("affiliation"), _T("member"));
+		}
 		break;
 	case IDM_SET_ADMIN:
 		if (him->affiliation != AFFILIATION_ADMIN)
-			ppro->AdminSet(item->jid, xmlnsAdmin, _T("nick"), him->resourceName, _T("affiliation"), _T("admin"));
+		{
+			if (him->szRealJid)
+			{
+				TCHAR szBareJid[ JABBER_MAX_JID_LEN ];
+				JabberStripJid( him->szRealJid, szBareJid, SIZEOF(szBareJid) );
+				ppro->AdminSet(item->jid, xmlnsAdmin, _T("jid"), szBareJid, _T("affiliation"), _T("admin"));
+			}
+			else
+				ppro->AdminSet(item->jid, xmlnsAdmin, _T("nick"), him->resourceName, _T("affiliation"), _T("admin"));
+		}
 		break;
 	case IDM_SET_OWNER:
 		if (him->affiliation != AFFILIATION_OWNER)
-			ppro->AdminSet(item->jid, xmlnsAdmin, _T("nick"), him->resourceName, _T("affiliation"), _T("owner"));
+		{
+			if (him->szRealJid)
+			{
+				TCHAR szBareJid[ JABBER_MAX_JID_LEN ];
+				JabberStripJid( him->szRealJid, szBareJid, SIZEOF(szBareJid) );
+				ppro->AdminSet(item->jid, xmlnsAdmin, _T("jid"), szBareJid, _T("affiliation"), _T("owner"));
+			}
+			else
+				ppro->AdminSet(item->jid, xmlnsAdmin, _T("nick"), him->resourceName, _T("affiliation"), _T("owner"));
+		}
 		break;
 
 	case IDM_SET_BAN:
