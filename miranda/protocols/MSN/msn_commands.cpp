@@ -617,6 +617,7 @@ void CMsnProto::MSN_ReceiveMessage(ThreadData* info, char* cmdString, char* para
 
 void CMsnProto::sttProcessYFind(char* buf, size_t len)
 {
+	if (buf == NULL) return;
 	ezxml_t xmli = ezxml_parse_str(buf, len);
 	
 	ezxml_t dom  = ezxml_child(xmli, "d");
@@ -674,6 +675,8 @@ void CMsnProto::sttProcessYFind(char* buf, size_t len)
 
 void CMsnProto::sttProcessAdd(char* buf, size_t len)
 {
+	if (buf == NULL) return;
+
 	ezxml_t xmli = ezxml_parse_str(buf, len);
 	ezxml_t dom  = ezxml_child(xmli, "d");
 	while (dom != NULL)
@@ -718,6 +721,7 @@ void CMsnProto::sttProcessAdd(char* buf, size_t len)
 
 void CMsnProto::sttProcessRemove(char* buf, size_t len)
 {
+	if (buf == NULL) return;
 	ezxml_t xmli = ezxml_parse_str(buf, len);
 	ezxml_t dom  = ezxml_child(xmli, "d");
 	while (dom != NULL)
@@ -898,6 +902,7 @@ void CMsnProto::sttProcessStatusMessage(char* buf, unsigned len, HANDLE hContact
 
 void CMsnProto::sttProcessPage(char* buf, unsigned len)
 {
+	if (buf == NULL) return;
 	ezxml_t xmlnot = ezxml_parse_str(buf, len);
 
 	ezxml_t xmlbdy = ezxml_get(xmlnot, "MSG", 0, "BODY", -1);
@@ -924,6 +929,7 @@ void CMsnProto::sttProcessPage(char* buf, unsigned len)
 
 void CMsnProto::sttProcessNotificationMessage(char* buf, unsigned len)
 {
+	if (buf == NULL) return;
 	ezxml_t xmlnot = ezxml_parse_str(buf, len);
 
 	if (strcmp(ezxml_attr(xmlnot, "siteid"), "0") == 0)
