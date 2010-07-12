@@ -125,7 +125,7 @@ typedef struct
 	LPTSTR name;
 	CRITICAL_SECTION ft_mutex, sess_mutex, img_mutex, modemsg_mutex, avatar_mutex;
 	list_t watches, transfers, requests, chats, imagedlgs, avatar_requests, avatar_transfers;
-	int gc_enabled, gc_id, list_remove, unicode_core, statusPostponed;
+	int gc_enabled, gc_id, list_remove, unicode_core;
 	uin_t next_uin;
 	unsigned long last_crc;
 	GGTHREAD pth_dcc;
@@ -149,7 +149,6 @@ typedef struct
 		hookUserInfoInit,
 		hookSettingDeleted,
 		hookSettingChanged,
-		hookIdleChanged,
 		hookGCUserEvent,
 		hookGCMenuBuild;
 	HGENMENU hMenuRoot;

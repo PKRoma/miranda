@@ -736,6 +736,15 @@ retry:
 				{
 					HANDLE hContact = gg_getcontact(gg, e->event.status60.uin, 0, 0, NULL);
 					int oldstatus = DBGetContactSettingWord(hContact, GG_PROTO, GG_KEY_STATUS, (WORD)ID_STATUS_OFFLINE);
+					uin_t uin = (uin_t)DBGetContactSettingDword(NULL, GG_PROTO, GG_KEY_UIN, 0);
+
+					if (e->event.status60.uin == uin)
+					{
+						// Status was changed by the user simultaneously logged on using different Miranda account or IM client
+						int iStatus = status_gg2m(gg, e->event.status60.status);
+						CallProtoService(GG_PROTO, PS_SETAWAYMSG, iStatus, (LPARAM)e->event.status60.descr);
+						CallProtoService(GG_PROTO, PS_SETSTATUS, iStatus, 0);
+					}
 
 					gg_changecontactstatus(gg, e->event.status60.uin, e->event.status60.status, e->event.status60.descr,
 						e->event.status60.time, e->event.status60.remote_ip, e->event.status60.remote_port, e->event.status60.version);
@@ -1270,16 +1279,6 @@ int gg_dbsettingchanged(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
 			}
 		}
 	}
-	return 0;
-}
-
-////////////////////////////////////////////////////////////
-// When idle changed
-int gg_idlechanged(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
-{
-	if (gg_isonline(gg) && gg->statusPostponed)
-		gg_refreshstatus(gg, lParam & IDF_ISIDLE ? gg->proto.m_iDesiredStatus : ID_STATUS_ONLINE);
-
 	return 0;
 }
 
