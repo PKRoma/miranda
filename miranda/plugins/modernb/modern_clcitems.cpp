@@ -219,7 +219,7 @@ static void _LoadDataToContact(struct ClcContact * cont, struct ClcGroup *group,
 	//Add subcontacts
 	if (szProto)
 	{	
-		if (g_szMetaModuleName && mir_strcmp(cont->proto,g_szMetaModuleName)==0) 
+		if ( g_szMetaModuleName && dat->IsMetaContactsEnabled && mir_strcmp(cont->proto,g_szMetaModuleName)==0) 
 			AddSubcontacts(dat,cont,CLCItems_IsShowOfflineGroup(group));
 	}
 	cont->lastPaintCounter=0;
@@ -411,7 +411,7 @@ void cliRebuildEntireList(HWND hwnd,struct ClcData *dat)
 		if (cont)	
 		{	
 			cont->SubAllocated=0;
-			if (cont->proto && g_szMetaModuleName && strcmp(cont->proto,g_szMetaModuleName)==0)
+			if (cont->proto && g_szMetaModuleName && dat->IsMetaContactsEnabled  && strcmp(cont->proto,g_szMetaModuleName)==0)
 				AddSubcontacts(dat,cont,CLCItems_IsShowOfflineGroup(group));
 		}
 		hContact=(HANDLE)CallService(MS_DB_CONTACT_FINDNEXT,(WPARAM)hContact,0);

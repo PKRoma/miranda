@@ -473,9 +473,10 @@ static LRESULT clcOnCreate(struct ClcData *dat, HWND hwnd, UINT msg, WPARAM wPar
 
 	dat->NeedResort=1;
 	dat->MetaIgnoreEmptyExtra=ModernGetSettingByte(NULL,"CLC","MetaIgnoreEmptyExtra",SETTING_METAIGNOREEMPTYEXTRA_DEFAULT);
-	// done below in LoadCLCOptions
-	//dat->IsMetaContactsEnabled=(!(GetWindowLong(hwnd,GWL_STYLE)&CLS_MANUALUPDATE)) 
-	//&& meta_module && DBGetContactSettingByte(NULL,meta_module,"Enabled",1);
+
+	dat->IsMetaContactsEnabled=(!(GetWindowLong(hwnd,GWL_STYLE)&CLS_MANUALUPDATE)) &&
+		g_szMetaModuleName && ModernGetSettingByte(NULL,g_szMetaModuleName,"Enabled",1) && ServiceExists(MS_MC_GETDEFAULTCONTACT);
+
 	dat->expandMeta=ModernGetSettingByte(NULL,"CLC","MetaExpanding",SETTING_METAEXPANDING_DEFAULT);		
 	dat->useMetaIcon=ModernGetSettingByte(NULL,"CLC","Meta",SETTING_USEMETAICON_DEFAULT);
 	dat->drawOverlayedStatus=ModernGetSettingByte(NULL,"CLC","DrawOverlayedStatus",SETTING_DRAWOVERLAYEDSTATUS_DEFAULT);
