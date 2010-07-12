@@ -207,28 +207,14 @@ int gg_setstatus(PROTO_INTERFACE *proto, int iNewStatus)
 	gg->proto.m_iDesiredStatus = nNewStatus;
 	LeaveCriticalSection(&gg->modemsg_mutex);
 
-	// Depreciated due status description changing
-	// if (gg->proto.m_iStatus == status) return 0;
+	if (gg->proto.m_iStatus == nNewStatus) return 0;
 #ifdef DEBUGMODE
 	gg_netlog(gg, "gg_setstatus(): PS_SETSTATUS(%s) normalized to %s",
 		(char *) CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, iNewStatus, 0),
 		(char *) CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, nNewStatus, 0));
 #endif
-	// Status wicked code due Miranda incompatibility with status+descr changing in one shot
-	// Status request is offline / just request disconnect
-	if( nNewStatus == ID_STATUS_OFFLINE)
-	{
-		if (gg->proto.m_iStatus == nNewStatus) return 0;
-		// Go offline
-		gg_refreshstatus(gg, nNewStatus);
-	}
-	// Miranda will always ask for a new status message
-	else {
-#ifdef DEBUGMODE
-		gg_netlog(gg, "gg_setstatus(): Postponed to gg_setawaymsg().");
-#endif
-		gg->statusPostponed = 1;
-	}
+	gg_refreshstatus(gg, nNewStatus);
+
 	return 0;
 }
 
@@ -549,7 +535,6 @@ int gg_setawaymsg(PROTO_INTERFACE *proto, int iStatus, const TCHAR *msgt)
 #ifdef DEBUGMODE
 	gg_netlog(gg, "gg_setawaymsg(): Requesting away message set to \"%s\".", msg);
 #endif
-	gg->statusPostponed = 0;
 
 	EnterCriticalSection(&gg->modemsg_mutex);
 	// Select proper msg
@@ -601,18 +586,9 @@ int gg_setawaymsg(PROTO_INTERFACE *proto, int iStatus, const TCHAR *msgt)
 	}
 	LeaveCriticalSection(&gg->modemsg_mutex);
 
-	// Change the status only if it was desired by PS_SETSTATUS
+	// Change the status if it was desired by PS_SETSTATUS
 	if(status == gg->proto.m_iDesiredStatus)
 		gg_refreshstatus(gg, status);
-#ifdef DEBUGMODE
-	else
-	{
-		char error[128];
-		mir_snprintf(error, sizeof(error), Translate("GG: PS_AWAYMSG was called without previous PS_SETSTATUS for status %d, desired %d, current %d."),
-			status, gg->proto.m_iDesiredStatus, gg->proto.m_iStatus);
-		PUShowMessage(error, SM_WARNING);
-	}
-#endif
 
 	mir_free(msg);
 	return 0;
