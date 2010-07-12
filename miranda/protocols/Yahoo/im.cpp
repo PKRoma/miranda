@@ -131,7 +131,11 @@ void CYahooProto::ext_got_im(const char *me, const char *who, int protocol, cons
 				if ((DWORD)tm < dbei.timestamp) tm = (long)time(NULL);
 		}
 
-		pre.timestamp = tm;
+		pre.timestamp = (DWORD)time(NULL);
+		
+		if (tm < pre.timestamp)
+			pre.timestamp = tm;
+		
 	} else
 		pre.timestamp = (DWORD)time(NULL);
 
