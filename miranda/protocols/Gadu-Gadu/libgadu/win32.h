@@ -43,6 +43,12 @@
 #ifdef EINTR
 # undef EINTR
 #endif
+#ifdef ECONNRESET
+# undef ECONNRESET
+#endif
+#ifdef ETIMEDOUT
+# undef ETIMEDOUT
+#endif
 
 #define EINPROGRESS WSAEINPROGRESS
 #define ENOTCONN    WSAENOTCONN
