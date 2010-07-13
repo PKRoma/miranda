@@ -1,7 +1,7 @@
 [Project]
 name=Yahoo
 type=2
-defaultConfig=0
+defaultConfig=1
 
 
 [Debug]
@@ -50,7 +50,7 @@ intermediateFilesDirectory=Release
 outputFilesDirectory=Release
 compilerPreprocessor=
 extraCompilerOptions=-DHAVE_CONFIG_H -DUNICODE -D_UNICODE
-compilerIncludeDirectory=..\..\include_stable
+compilerIncludeDirectory=..\..\include
 noWarning=0
 defaultWarning=1
 allWarning=1
@@ -77,7 +77,7 @@ extraArchiveOptions=
 
 //resource
 resourcePreprocessor=
-resourceIncludeDirectory=
+resourceIncludeDirectory=..\..\include
 extraResourceOptions=
 
 [Source]
@@ -137,16 +137,14 @@ extraResourceOptions=
 6=libyahoo2\Docs\TODO
 7=libyahoo2\Docs\ymsg-9.txt
 [History]
-libyahoo2\libyahoo2.c,1492
-version.h,134
-util.cpp,2020
-main.cpp,4638
-server.cpp,1139
-yahoo.cpp,45439
-proto.h,15024
-..\MSN\msn_proto.cpp,0
+proto.cpp,1233
+..\..\include\m_system_cpp.h,2522
 ..\MSN\msn.cpp,0
-..\..\include\m_system_cpp.h,2550
-..\..\include_stable\m_system.h,9182
-..\..\include_stable\m_system_cpp.h,950
-proto.cpp,1159
+..\MSN\msn_proto.cpp,0
+proto.h,14993
+yahoo.cpp,45421
+server.cpp,1139
+main.cpp,4578
+util.cpp,2020
+libyahoo2\libyahoo2.c,1426
+version.h,44
