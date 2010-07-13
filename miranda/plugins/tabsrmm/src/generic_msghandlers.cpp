@@ -866,7 +866,8 @@ void TSAPI DM_InitRichEdit(TWindowData *dat)
 	 * and textflow formatting commands to the
 	 */
 
-	_PARAFORMAT2 pf2 = {0};
+	PARAFORMAT2 pf2;
+	ZeroMemory(&pf2, sizeof(PARAFORMAT2));
 
 	pf2.cbSize = sizeof(pf2);
 

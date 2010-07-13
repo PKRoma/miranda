@@ -254,7 +254,7 @@ extern 	NEN_OPTIONS	nen_options;
 	#undef _USE_32BIT_TIME_T
 #endif
 
-#if _MSC_VER >= 1500 || defined(__GNUWIN32__)
+#if defined(__GNUWIN32__)
 	#define wEffects wReserved
 #endif
 
@@ -269,34 +269,6 @@ EXCEPTION_POINTERS* GetExceptionInformation()
 	return(&e);
 }
 #endif
-
-typedef struct __paraformat2
-{
-	UINT	cbSize;
-	DWORD	dwMask;
-	WORD	wNumbering;
-	WORD	wReserved;
-	LONG	dxStartIndent;
-	LONG	dxRightIndent;
-	LONG	dxOffset;
-	WORD	wAlignment;
-	SHORT	cTabCount;
-	LONG	rgxTabs[MAX_TAB_STOPS];
- 	LONG	dySpaceBefore;			// Vertical spacing before para
-	LONG	dySpaceAfter;			// Vertical spacing after para
-	LONG	dyLineSpacing;			// Line spacing depending on Rule
-	SHORT	sStyle;					// Style handle
-	BYTE	bLineSpacingRule;		// Rule for line spacing (see tom.doc)
-	BYTE	bOutlineLevel;			// Outline Level
-	WORD	wShadingWeight;			// Shading in hundredths of a per cent
-	WORD	wShadingStyle;			// Byte 0: style, nib 2: cfpat, 3: cbpat
-	WORD	wNumberingStart;		// Starting value for numbering
-	WORD	wNumberingStyle;		// Alignment, Roman/Arabic, (), ), ., etc.
-	WORD	wNumberingTab;			// Space bet 1st indent and 1st-line text
-	WORD	wBorderSpace;			// Border-text spaces (nbl/bdr in pts)
-	WORD	wBorderWidth;			// Pen widths (nbl/bdr in half twips)
-	WORD	wBorders;				// Border styles (nibble/border)
-} _PARAFORMAT2;
 
 /*
  * tchar-like std::string

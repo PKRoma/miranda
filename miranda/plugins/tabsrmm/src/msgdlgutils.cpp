@@ -1609,13 +1609,13 @@ void TSAPI GetLocaleID(TWindowData *dat, const TCHAR *szKLName)
 	TCHAR szLI[256], *stopped = NULL;
 	USHORT langID;
 	WORD   wCtype2[3];
-	_PARAFORMAT2 pf2;
+	PARAFORMAT2 pf2;
 	BOOL fLocaleNotSet;
 	char szTest[4] = {(char)0xe4, (char)0xf6, (char)0xfc, 0 };
 
 	szLI[0] = szLI[1] = 0;
 
-	ZeroMemory(&pf2, sizeof(_PARAFORMAT2));
+	ZeroMemory(&pf2, sizeof(PARAFORMAT2));
 	langID = (USHORT)_tcstol(szKLName, &stopped, 16);
 	dat->lcid = MAKELCID(langID, 0);
 	/*

@@ -2960,12 +2960,12 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 					FINDTEXTEXA fi = {0};
 					int final_sendformat = dat->SendFormat;
 					HWND hwndEdit = GetDlgItem(hwndDlg, IDC_MESSAGE);
-					_PARAFORMAT2 pf2;
+					PARAFORMAT2 pf2;
 
 					// don't parse text formatting when the message contains curly braces - these are used by the rtf syntax
 					// and the parser currently cannot handle them properly in the text - XXX needs to be fixed later.
 
-					ZeroMemory(&pf2, sizeof(_PARAFORMAT2));
+					ZeroMemory(&pf2, sizeof(PARAFORMAT2));
 					fi.chrg.cpMin = 0;
 					fi.chrg.cpMax = -1;
 					fi.lpstrText = "{";
