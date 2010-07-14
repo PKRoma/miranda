@@ -148,7 +148,7 @@ int _DebugTraceW(const wchar_t *fmt, ...)
 
 	GetLocalTime(&st);
 
-	mir_snprintf(tszTime, 50, "%02d.%02d.%04d - %02d:%02d:%04d: ", st.wDay, st.wMonth, st.wYear, st.wHour, st.wMinute, st.wMilliseconds);
+	mir_snprintf(tszTime, 50, "%02d.%02d.%04d - %02d:%02d:%02d.%04d: ", st.wDay, st.wMonth, st.wYear, st.wHour, st.wMinute, st.wSecond, st.wMilliseconds);
 
 
 	_vsnwprintf(debug, ibsize - 10, fmt, va);

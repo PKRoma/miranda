@@ -212,7 +212,8 @@ public:
 		WARN_IMGSVC_MISSING					= 6,
 		WARN_HPP_APICHECK					= 7,
 		WARN_NO_SENDLATER					= 8,
-		WARN_LAST							= 9
+		WARN_CLOSEWINDOW					= 9,
+		WARN_LAST							= 10
 	};
 
 	/*

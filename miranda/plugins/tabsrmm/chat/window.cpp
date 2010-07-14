@@ -3489,11 +3489,6 @@ LABEL_SHOWWINDOW:
 				}
 				_dlgReturn(hwndDlg, TRUE);
 			}
-
-			if (lParam && PluginConfig.m_WarnOnClose)
-				if (MessageBox(dat->pContainer->hwnd, CTranslator::get(CTranslator::GEN_WARN_CLOSE), _T("Miranda"), MB_YESNO | MB_ICONQUESTION) == IDNO)
-					return TRUE;
-
 			SendMessage(hwndDlg, GC_CLOSEWINDOW, 0, 1);
 			break;
 

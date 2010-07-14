@@ -125,7 +125,7 @@ wchar_t* CTranslator::m_strings[STR_LAST] = {
 	LPGENT("This name is already in use"),				/* CNT_SELECT_INUSE */
 	LPGENT("You cannot rename the default container"),  /* CNT_SELECT_RENAMEERROR */
 	LPGENT("You cannot delete the default container"),  /* CNT_SELECT_DELETEERROR */
-	LPGENT("Do you really want to close this session?"), /* GEN_WARN_CLOSE */
+	LPGENT(" "), /* GEN_WARN_CLOSE */ /* UNUSED */
 	LPGENT("Error creating destination directory"),		 /* GEN_MSG_SAVE_NODIR */
 	LPGENT("Save contact picture"),						/* GEN_MSG_SAVE */
 	LPGENT("The file exists. Do you want to overwrite it?"), /* GEN_MSG_SAVE_FILE_EXISTS */
@@ -314,6 +314,9 @@ wchar_t* CTranslator::m_strings[STR_LAST] = {
 	LPGENT("Server window"),															/* GEN_TASKBAR_STRING_SERVER_WINDOW */
 	LPGENT("%d Unread"),																	/* GEN_TASKBAR_STRING_UNREAD */
 	LPGENT("%d User(s)"),																/* GEN_TASKBAR_STRING_USERS */
+
+	LPGENT("Previews not availble when using History++ plugin for message log display."), /* GEN_AEROPEEK_NOHPP */
+	LPGENT("TabSRMM warning message"),													  /* GEN_STRING_WARNING_TITLE */
 };
 
 /*
@@ -451,6 +454,7 @@ wchar_t* CTranslator::m_Warnings[WARN_LAST] = {
 	L"Missing component|The image service plugin (\\b1advaimg.dll\\b0 ) is not properly installed. Please check your plugin configuration.\n\n\\b1TabSRMM is disabled.\\b0 ", /* WARN_IMGSVC_MISSING */ /* NOT TRANSLATABLE */
 	LPGENT("Settings problem|The option \\b1 History->Imitate IEView API\\b0  is enabled and the History++ plugin is active. This can cause problems when using IEView as message log viewer.\n\nShould I correct the option (a restart is required)?"), /* WARN_HPP_APICHECK */
 	L" ", /* WARN_NO_SENDLATER */ /*uses QMGR_ERROR_NOMULTISEND */
+	LPGENT("Closing Window|You are about to close a window with multiple tabs open.\n\nProceed?"),		/* WARN_CLOSEWINDOW */
 };
 
 wchar_t* CTranslator::m_translated[STR_LAST];
@@ -588,13 +592,12 @@ TOptionListGroup CTranslator::m_lvGroupsTab[] = {
 TOptionListItem CTranslator::m_lvItemsTab[] = {
 	0, LPGENT("Show status text on tabs"), 1, LOI_TYPE_SETTING, (UINT_PTR)"tabstatus", 0,
 	0, LPGENT("Prefer xStatus icons when available"), 1, LOI_TYPE_SETTING, (UINT_PTR)"use_xicons", 0,
-	0, LPGENT("Warn when closing a tab or window"), 0, LOI_TYPE_SETTING, (UINT_PTR)"warnonexit", 0,
 	0, LPGENT("Detailed tooltip on tabs (requires mToolTip or Tipper plugin)"), 0, LOI_TYPE_SETTING, (UINT_PTR)"d_tooltips", 0,
 	0, LPGENT("ALWAYS activate new message sessions (has PRIORITY over the options below)"), SRMSGDEFSET_AUTOPOPUP, LOI_TYPE_SETTING, (UINT_PTR)SRMSGSET_AUTOPOPUP, 1,
 	0, LPGENT("Automatically create new message sessions without activating them"), 1, LOI_TYPE_SETTING, (UINT_PTR)"autotabs", 1,
 	0, LPGENT("New windows are minimized (the option above MUST be active)"), 1, LOI_TYPE_SETTING, (UINT_PTR)"autocontainer", 1,
 	0, LPGENT("Activate a minimized window when a new tab is created inside it"), 0, LOI_TYPE_SETTING, (UINT_PTR)"cpopup", 1,
-	0, LPGENT("Automatically activate tabs in minimized windows (ignored when using Aero Peek task bar features)"), 1, LOI_TYPE_SETTING, (UINT_PTR)"autoswitchtabs", 1,
+	0, LPGENT("Automatically switch existing tabs in minimized windows on incoming messages (ignored when using Aero Peek task bar features)"), 1, LOI_TYPE_SETTING, (UINT_PTR)"autoswitchtabs", 1,
 	0, LPGENT("Remember and set keyboard layout per contact"), 1, LOI_TYPE_SETTING, (UINT_PTR)"al", 2,
 	0, LPGENT("Close button only hides message windows"), 0, LOI_TYPE_SETTING, (UINT_PTR)"hideonclose", 2,
 	0, LPGENT("Allow TAB key in typing area (this will disable focus selection by TAB key)"), 0, LOI_TYPE_SETTING, (UINT_PTR)"tabmode", 2,

@@ -293,7 +293,6 @@ void CGlobals::reloadSettings(bool fReloadSkins)
 	m_HideOnClose =						(int) M->GetByte("hideonclose", 0);
 	m_AllowTab =						(int) M->GetByte("tabmode", 0);
 
-	m_WarnOnClose = 					(int)M->GetByte("warnonexit", 0);
 	m_FlashOnClist = 					(int)M->GetByte("flashcl", 0);
 	m_AlwaysFullToolbarWidth = 			(int)M->GetByte("alwaysfulltoolbar", 1);
 	m_LimitStaticAvatarHeight = 		(int)M->GetDword("avatarheight", 96);

@@ -35,6 +35,21 @@ are currently no downloads for it, you'll have to compile it from source.
 			Detailed change log
 			===================
 
+Version 3.0.0.40 - 2010/07/10
+
+	* various fixes and improvements for Windows 7 task bar support.
+	
+	* option to warn when closing a tab is gone. A replacement has been added which
+	  will show you a warning when you are about to close a window with multiple tabs.
+	  This warning uses a custom warning dialog and can be disabled by checking its 
+	  "Do not show this message again" option.
+	  
+	* fix for auto switching tabs incorrectly focusing tab when creating a new
+	  one in the background.
+	  
+	* fixed crash when forcefully terminating Miranda while a custom warning
+	  dialog is still open.	
+
 Version 3.0.0.39 - 2010/06/24
 
 	* task bar previews: removed placeholders and implemented real previews of

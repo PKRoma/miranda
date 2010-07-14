@@ -137,7 +137,6 @@ public:
 	int         m_DividersUsePopupConfig;
 	int         m_MsgTimeout;
 	int         m_EscapeCloses;
-	int         m_WarnOnClose;
 	int         m_FlashOnClist;
 	int         m_AlwaysFullToolbarWidth;
 	int         m_LimitStaticAvatarHeight;

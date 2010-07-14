@@ -3608,15 +3608,6 @@ quote_from_last:
 						return TRUE;
 				}
 			}
-
-			if (!lParam) {
-				if (PluginConfig.m_WarnOnClose) {
-					if (MessageBox(hwndContainer, CTranslator::get(CTranslator::GEN_WARN_CLOSE), _T("Miranda"), MB_YESNO | MB_ICONQUESTION) == IDNO) {
-						return TRUE;
-					}
-				}
-			}
-
 			iTabs = TabCtrl_GetItemCount(hwndTab);
 			if (iTabs == 1) {
 				PostMessage(hwndContainer, WM_CLOSE, 0, 1);
@@ -3645,7 +3636,7 @@ quote_from_last:
 			 * normally, this tab has the same index after the deletion of the formerly active tab
 			 * unless, of course, we closed the last (rightmost) tab.
 			 */
-			if (!m_pContainer->bDontSmartClose && iTabs > 1) {
+			if (!m_pContainer->bDontSmartClose && iTabs > 1 && lParam != 3) {
 				if (i == iTabs - 1)
 					i--;
 				else

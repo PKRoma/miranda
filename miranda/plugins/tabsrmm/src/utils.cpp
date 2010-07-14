@@ -1095,6 +1095,10 @@ CWarning::~CWarning()
 
 	if(m_hFontCaption)
 		::DeleteObject(m_hFontCaption);
+
+#if defined(__LOGDEBUG_)
+	_DebugTraceW(L"destroy object");
+#endif
 }
 
 LRESULT CWarning::ShowDialog() const
@@ -1121,6 +1125,12 @@ __int64 CWarning::getMask()
 	return(mask);
 }
 
+/**
+ * send cancel message to all open warning dialogs so they are destroyed
+ * before TabSRMM is unloaded.
+ *
+ * called by the OkToExit handler in globals.cpp
+ */
 void CWarning::destroyAll()
 {
 	if(hWindowList)
@@ -1140,6 +1150,13 @@ LRESULT CWarning::show(const int uId, DWORD dwFlags, const wchar_t* tszTxt)
 
 	if(0 == hWindowList)
 		hWindowList = reinterpret_cast<HANDLE>(::CallService(MS_UTILS_ALLOCWINDOWLIST, 0, 0));
+
+	/*
+	 * don't open new warnings when shutdown was initiated (modal ones will otherwise
+	 * block the shutdown)
+	 */
+	if(CMimAPI::m_shutDown)
+		return(-1);
 
 	if(tszTxt)
 		_s = const_cast<wchar_t *>(tszTxt);
@@ -1190,7 +1207,6 @@ LRESULT CWarning::show(const int uId, DWORD dwFlags, const wchar_t* tszTxt)
 			else {
 				result = w->ShowDialog();
 				mir_free(s);
-				delete w;
 				return(result);
 			}
 		}
@@ -1216,6 +1232,13 @@ INT_PTR CALLBACK CWarning::stubDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARA
 			}
 			break;
 		}
+
+#if defined(__LOGDEBUG_)
+		case WM_NCDESTROY:
+			_DebugTraceW(L"window destroyed");
+			break;
+#endif
+
 		default:
 			break;
 	}
@@ -1237,7 +1260,7 @@ INT_PTR CALLBACK CWarning::dlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lP
 
 			m_hwnd = hwnd;
 
-			::SetWindowTextW(hwnd, L"TabSRMM message");
+			::SetWindowTextW(hwnd, CTranslator::get(CTranslator::GEN_STRING_WARNING_TITLE));
 			::SendMessage(hwnd, WM_SETICON, ICON_BIG, reinterpret_cast<LPARAM>(::LoadSkinnedIconBig(SKINICON_OTHER_MIRANDA)));
 			::SendMessage(hwnd, WM_SETICON, ICON_SMALL, reinterpret_cast<LPARAM>(::LoadSkinnedIcon(SKINICON_OTHER_MIRANDA)));
 			::SendDlgItemMessage(hwnd, IDC_WARNTEXT, EM_AUTOURLDETECT, (WPARAM) TRUE, 0);
@@ -1331,11 +1354,17 @@ INT_PTR CALLBACK CWarning::dlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lP
 				case IDCANCEL:
 				case IDYES:
 				case IDNO:
-					if(!m_fIsModal && LOWORD(wParam) == IDOK)
+					if(!m_fIsModal && (IDOK == LOWORD(wParam) || IDCANCEL == LOWORD(wParam))) {		// modeless dialogs can receive a IDCANCEL from destroyAll()
+						::SetWindowLongPtr(hwnd, GWLP_USERDATA, 0);
+						delete this;
+						WindowList_Remove(hWindowList, hwnd);
 						::DestroyWindow(hwnd);
+					}
 					else {
 						::SetWindowLongPtr(hwnd, GWLP_USERDATA, 0);
-						EndDialog(hwnd, LOWORD(wParam));
+						delete this;
+						WindowList_Remove(hWindowList, hwnd);
+						::EndDialog(hwnd, LOWORD(wParam));
 					}
 					break;
 
@@ -1359,37 +1388,28 @@ INT_PTR CALLBACK CWarning::dlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lP
 
 		case WM_NOTIFY: {
 			switch (((NMHDR *) lParam)->code) {
-			case EN_LINK:
-				switch (((ENLINK *) lParam)->msg) {
-				case WM_LBUTTONUP: {
-					ENLINK* 		e = reinterpret_cast<ENLINK *>(lParam);
+				case EN_LINK:
+					switch (((ENLINK *) lParam)->msg) {
+						case WM_LBUTTONUP: {
+							ENLINK* 		e = reinterpret_cast<ENLINK *>(lParam);
 
-					const wchar_t*	wszUrl = Utils::extractURLFromRichEdit(e, ::GetDlgItem(hwnd, IDC_WARNTEXT));
-					if(wszUrl) {
-						char* szUrl = mir_t2a(wszUrl);
+							const wchar_t*	wszUrl = Utils::extractURLFromRichEdit(e, ::GetDlgItem(hwnd, IDC_WARNTEXT));
+							if(wszUrl) {
+								char* szUrl = mir_t2a(wszUrl);
 
-						CallService(MS_UTILS_OPENURL, 1, (LPARAM)szUrl);
-						mir_free(szUrl);
-						mir_free(const_cast<TCHAR *>(wszUrl));
+								CallService(MS_UTILS_OPENURL, 1, (LPARAM)szUrl);
+								mir_free(szUrl);
+								mir_free(const_cast<TCHAR *>(wszUrl));
+							}
+							break;
+						}
 					}
 					break;
-								   }
-				}
-				break;
-			default:
-				break;
+				default:
+					break;
 			}
 			break;
-						}
-		case WM_DESTROY:
-			WindowList_Remove(hWindowList, hwnd);
-			break;
-
-		case WM_NCDESTROY:
-			::SetWindowLongPtr(hwnd, GWLP_USERDATA, 0);
-			delete this;
-			break;
-
+		}
 		default:
 			break;
 	}

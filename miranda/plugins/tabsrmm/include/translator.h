@@ -279,7 +279,9 @@ public:
 		GEN_TASKBAR_STRING_SERVER_WINDOW						= 230,
 		GEN_TASKBAR_STRING_UNREAD								= 231,
 		GEN_TASKBAR_STRING_USERS								= 232,
-		STR_LAST 												= 233
+		GEN_AEROPEEK_NOHPP										= 233,
+		GEN_STRING_WARNING_TITLE								= 234,
+		STR_LAST 												= 235
 	};
 
 	enum {
@@ -398,7 +400,8 @@ public:
 		WARN_IMGSVC_MISSING										= 6,
 		WARN_HPP_APICHECK										= 7,
 		WARN_NO_SENDLATER										= 8,
-		WARN_LAST												= 9
+		WARN_CLOSEWINDOW										= 9,
+		WARN_LAST												= 10
 	};
 	/*
 	 * identities for the option trees

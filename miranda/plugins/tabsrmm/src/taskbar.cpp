@@ -411,8 +411,10 @@ void CProxyWindow::sendPreview()
 
 		if(m_dat->hwndIEView)
 			::SendMessage(m_dat->hwndIEView, WM_PRINT, reinterpret_cast<WPARAM>(hdcRich), PRF_CLIENT | PRF_NONCLIENT);
-		else if(m_dat->hwndHPP)
-			::SendMessage(m_dat->hwndHPP, WM_PRINT, reinterpret_cast<WPARAM>(hdcRich), PRF_CLIENT | PRF_NONCLIENT);
+		else if(m_dat->hwndHPP) {
+			CSkin::RenderText(hdcRich, m_dat->hTheme, CTranslator::get(CTranslator::GEN_AEROPEEK_NOHPP),
+							  &rcRich, DT_VCENTER | DT_CENTER | DT_WORDBREAK, 10, m_dat->pContainer->theme.fontColors[MSGFONTID_MYMSG], false);
+		}
 		else {
 			rcRich.right *= twips;
 			rcRich.bottom *= twips;
@@ -551,13 +553,26 @@ LRESULT CALLBACK CProxyWindow::wndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
 			_DebugTraceW(_T("create proxy WINDOW for: %s"), m_dat->cache->getNick());
 			break;
 #endif
+        case WM_CLOSE: {
+        	TContainerData* pC = m_dat->pContainer;
+
+        	if(m_dat->hwnd != pC->hwndActive)
+        		SendMessage(m_dat->hwnd, WM_CLOSE, 1, 3);
+        	else
+        		SendMessage(m_dat->hwnd, WM_CLOSE, 1, 2);
+        	if(!IsIconic(pC->hwnd))
+        		SetForegroundWindow(pC->hwnd);
+        	return(0);
+        }
+
 			/*
 			 * proxy window was activated by clicking on the thumbnail. Send this
 			 * to the real message window.
 			 */
 		case WM_ACTIVATE:
 			if(WA_ACTIVE == wParam) {
-				::PostMessage(m_dat->hwnd, DM_ACTIVATEME, 0, 0);
+				if(IsWindow(m_dat->hwnd))
+					::PostMessage(m_dat->hwnd, DM_ACTIVATEME, 0, 0);
 				return(0);			// no default processing, avoid flickering.
 			}
 			break;
@@ -576,10 +591,6 @@ LRESULT CALLBACK CProxyWindow::wndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
         case WM_DWMSENDICONICLIVEPREVIEWBITMAP:
        		sendPreview();
             return(0);
-
-        case WM_CLOSE:
-        	::SendMessage(m_dat->hwnd, WM_CLOSE, 1, 2);
-        	break;
 
 		default:
 			break;
