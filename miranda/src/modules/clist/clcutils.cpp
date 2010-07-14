@@ -397,38 +397,34 @@ void fnEndRename(HWND, struct ClcData *dat, int save)
 {
 	HWND hwndEdit = dat->hwndRenameEdit;
 
-	if (dat->hwndRenameEdit == NULL)
+	if (hwndEdit == NULL)
 		return;
 	dat->hwndRenameEdit = NULL;
 	if (save) {
-		TCHAR text[120];
-		struct ClcContact *contact;
+		TCHAR text[120] = _T("");
 		GetWindowText(hwndEdit, text, SIZEOF(text));
+
+		ClcContact *contact;
 		if (cli.pfnGetRowByIndex(dat, dat->selection, &contact, NULL) != -1) {
-			if (lstrcmp(contact->szText, text)) {
-				if (contact->type == CLCIT_GROUP && !_tcsstr(text, _T("\\"))) {
-					TCHAR szFullName[256];
-					if (contact->group->parent && contact->group->parent->parent)
-						mir_sntprintf( szFullName, SIZEOF(szFullName), _T("%s\\%s"),
+			if (lstrcmp(contact->szText, text) && !_tcsstr(text, _T("\\"))) {
+				if (contact->type == CLCIT_GROUP) {
+					if (contact->group->parent && contact->group->parent->parent) {
+						TCHAR szFullName[256];
+						mir_sntprintf(szFullName, SIZEOF(szFullName), _T("%s\\%s"),
 							cli.pfnGetGroupName(contact->group->parent->groupId, NULL), text);
+						cli.pfnRenameGroup(contact->groupId, szFullName);
+					}
 					else
-						lstrcpyn( szFullName, text, SIZEOF( szFullName ));
-					cli.pfnRenameGroup( contact->groupId, szFullName );
+						cli.pfnRenameGroup(contact->groupId, text);
 				}
 				else if (contact->type == CLCIT_CONTACT) {
-					TCHAR* otherName = cli.pfnGetContactDisplayName(contact->hContact, GCDNF_NOMYHANDLE);
 					cli.pfnInvalidateDisplayNameCacheEntry(contact->hContact);
-					if (text[0] == '\0') {
+					TCHAR* otherName = cli.pfnGetContactDisplayName(contact->hContact, GCDNF_NOMYHANDLE);
+					if (!text[0] || !lstrcmp(otherName, text))
 						DBDeleteContactSetting(contact->hContact, "CList", "MyHandle");
-					}
-					else {
-						if (!lstrcmp(otherName, text))
-							DBDeleteContactSetting(contact->hContact, "CList", "MyHandle");
-						else
-							DBWriteContactSettingTString(contact->hContact, "CList", "MyHandle", text);
-					}
-					if (otherName)
-						mir_free(otherName);
+					else
+						DBWriteContactSettingTString(contact->hContact, "CList", "MyHandle", text);
+					mir_free(otherName);
 				}
 			}
 		}
