@@ -145,7 +145,7 @@ struct yahoo_input_data {
 /* default values for servers */
 static const char pager_host[] = "scs.msg.yahoo.com";
 static const int pager_port = 5050;
-static const int fallback_ports[]={23, 25, 80, 20, 119, 8001, 8002, 5050, 0};
+static const int fallback_ports[]={80, 23, 25, 20, 119, 8001, 8002, 5050, 0};
 static const char filetransfer_host[]="filetransfer.msg.yahoo.com";
 static const int filetransfer_port=80;
 static const char webcam_host[]="webcam.yahoo.com";
@@ -4796,6 +4796,7 @@ struct connect_callback_data {
 	struct yahoo_data *yd;
 	int tag;
 	int i;
+	int type;
 };
 
 static void yahoo_connected(int fd, int error, void *data)
@@ -4807,15 +4808,20 @@ static void yahoo_connected(int fd, int error, void *data)
 	struct yahoo_server_settings *yss = yd->server_settings;
 
 	if(error) {
-		if(fallback_ports[ccd->i]) {
+		if(ccd->type == YAHOO_CONNECTION_PAGER && fallback_ports[ccd->i]) {
 			int tag;
 			yss->pager_port = fallback_ports[ccd->i++];
-			tag = YAHOO_CALLBACK(ext_yahoo_connect_async)(yd->client_id, yss->pager_host, YAHOO_CONNECTION_PAGER,
-					yss->pager_port, yahoo_connected, ccd);
+			
+			LOG(("[yahoo_connected] Trying port %d", yss->pager_port));
+			
+			tag = YAHOO_CALLBACK(ext_yahoo_connect_async)(yd->client_id, yss->pager_host, yss->pager_port, 
+				ccd->type, yahoo_connected, ccd);
 
 			if(tag > 0)
 				ccd->tag=tag;
 		} else {
+			LOG(("[yahoo_connected] No More ports or wrong type?"));
+			
 			FREE(ccd);
 			YAHOO_CALLBACK(ext_yahoo_login_response)(yd->client_id, YAHOO_LOGIN_SOCK, NULL);
 		}
@@ -4847,8 +4853,9 @@ void yahoo_login(int id, enum yahoo_status initial)
 	struct yahoo_data *yd = find_conn_by_id(id);
 	struct connect_callback_data *ccd;
 	struct yahoo_server_settings *yss;
-	int tag;
 
+	LOG(("[yahoo_login] id: %d, initial status: %d", id, initial));
+	
 	if(!yd)
 		return;
 
@@ -4858,17 +4865,9 @@ void yahoo_login(int id, enum yahoo_status initial)
 
 	ccd = y_new0(struct connect_callback_data, 1);
 	ccd->yd = yd;
-	tag = YAHOO_CALLBACK(ext_yahoo_connect_async)(yd->client_id, yss->pager_host, yss->pager_port, YAHOO_CONNECTION_PAGER,
+	ccd->type = YAHOO_CONNECTION_PAGER;
+	YAHOO_CALLBACK(ext_yahoo_connect_async)(yd->client_id, yss->pager_host, yss->pager_port, YAHOO_CONNECTION_PAGER,
 			yahoo_connected, ccd);
-
-	/*
-	 * if tag <= 0, then callback has already been called
-	 * so ccd will have been freed
-	 */
-	if(tag > 0)
-		ccd->tag = tag;
-	else if(tag < 0)
-		YAHOO_CALLBACK(ext_yahoo_login_response)(yd->client_id, YAHOO_LOGIN_SOCK, NULL);
 }
 
 
