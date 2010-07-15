@@ -1082,6 +1082,8 @@ int OnIconLibChanges(WPARAM, LPARAM)
 			MO_RecursiveWalkMenu( g_menus[mo]->m_items.first, MO_ReloadIcon, 0 );
 
 	LeaveCriticalSection( &csMenuHook );
+
+	cli.pfnReloadProtoMenus();
 	return 0;
 }
 
