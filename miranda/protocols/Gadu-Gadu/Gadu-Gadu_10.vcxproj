@@ -904,6 +904,7 @@
     <None Include="icons\image.ico" />
     <None Include="icons\import_list_from_server.ico" />
     <None Include="icons\import_list_from_txt_file.ico" />
+    <None Include="icons\list.ico" />
     <None Include="icons\next.ico" />
     <None Include="icons\previous.ico" />
     <None Include="icons\remove_list_from_server.ico" />

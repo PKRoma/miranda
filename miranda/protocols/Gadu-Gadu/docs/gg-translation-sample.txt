@@ -110,6 +110,8 @@ Eksport listy do serwera
 Eksport listy do pliku tekstowego
 [Account settings]
 Ustawienia konta
+[Contact list]
+Lista kontaktów
 ;[Blocked to this contact] @ deprecated 0.0.5.2
 [Previous image]
 Poprzedni obrazek
@@ -284,6 +286,8 @@ Wybierz obrazek do wys³ania
 Nie mo¿na za³adowaæ obrazka. Wybrany plik mo¿e mieæ nieznany format.
 [Image exceeds maximum allowed size of 255 KB.]
 Rozmiar pliku obrazka przekracza maksymalny dozwolony rozmiar 255 KB.
+[Image received]
+Odebrano obrazek
 
 ; Conferences
 [Open new conference]

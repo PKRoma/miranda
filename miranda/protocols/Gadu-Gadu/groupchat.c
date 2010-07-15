@@ -72,10 +72,9 @@ void gg_gc_menus_init(GGPROTO *gg, HGENMENU hRoot)
 {
 	if(gg->gc_enabled)
 	{
+		CLISTMENUITEM mi = {0};
 		char service[64];
-		CLISTMENUITEM mi;
 
-		ZeroMemory(&mi,sizeof(mi));
 		mi.cbSize = sizeof(mi);
 		mi.flags = CMIF_ICONFROMICOLIB | CMIF_ROOTHANDLE;
 		mi.hParentMenu = hRoot;
@@ -83,15 +82,16 @@ void gg_gc_menus_init(GGPROTO *gg, HGENMENU hRoot)
 		// Conferencing
 		mir_snprintf(service, sizeof(service), GGS_OPEN_CONF, GG_PROTO);
 		CreateProtoServiceFunction(service, gg_gc_openconf, gg);
-		mi.position = 209000;
+		mi.position = 2000050001;
 		mi.icolibItem = GetIconHandle(IDI_CONFERENCE);
 		mi.pszName = LPGEN("Open &conference...");
 		mi.pszService = service;
 		gg->hMainMenu[0] = (HANDLE)CallService(MS_CLIST_ADDPROTOMENUITEM, 0, (LPARAM) &mi);
 
+		// Clear ignored conferences
 		mir_snprintf(service, sizeof(service), GGS_CLEAR_IGNORED, GG_PROTO);
 		CreateProtoServiceFunction(service, gg_gc_clearignored, gg);
-		mi.position = 209001;
+		mi.position = 2000050002;
 		mi.icolibItem = GetIconHandle(IDI_CLEAR_CONFERENCE);
 		mi.pszName = LPGEN("&Clear ignored conferences");
 		mi.pszService = service;
