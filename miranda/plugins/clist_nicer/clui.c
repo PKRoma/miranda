@@ -589,7 +589,6 @@ void IcoLibReloadIcons()
 	}
 	//
 	pcli->pfnClcBroadcast(CLM_AUTOREBUILD, 0, 0);
-	pcli->pfnReloadProtoMenus();
 	SendMessage(g_hwndViewModeFrame, WM_USER + 100, 0, 0);
 }
 

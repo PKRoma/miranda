@@ -396,12 +396,12 @@ int fnFindRowByText(HWND hwnd, struct ClcData *dat, const TCHAR *text, int prefi
 void fnEndRename(HWND, struct ClcData *dat, int save)
 {
 	HWND hwndEdit = dat->hwndRenameEdit;
-
 	if (hwndEdit == NULL)
 		return;
+
 	dat->hwndRenameEdit = NULL;
 	if (save) {
-		TCHAR text[120] = _T("");
+		TCHAR text[120]; text[0] = 0;
 		GetWindowText(hwndEdit, text, SIZEOF(text));
 
 		ClcContact *contact;
