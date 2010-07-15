@@ -263,26 +263,40 @@ int gg_preshutdown(WPARAM wParam, LPARAM lParam)
 // Menus initialization
 void gg_menus_init(GGPROTO *gg)
 {
-	HGENMENU hRoot = MO_GetProtoRootMenu(gg->proto.m_szModuleName);
+	HGENMENU hGCRoot, hRoot = MO_GetProtoRootMenu(gg->proto.m_szModuleName);
+	CLISTMENUITEM mi = {0};
+
+	mi.cbSize = sizeof(mi);
 	if (hRoot == NULL)
 	{
-		CLISTMENUITEM mi = {0};
-		mi.cbSize = sizeof(mi);
 		mi.ptszName = GG_PROTONAME;
 		mi.position = 500090000;
 		mi.hParentMenu = HGENMENU_ROOT;
 		mi.flags = CMIF_ICONFROMICOLIB | CMIF_ROOTPOPUP | CMIF_TCHAR | CMIF_KEEPUNTRANSLATED;
 		mi.icolibItem = GetIconHandle(IDI_GG);
-		hRoot = gg->hMenuRoot = (HANDLE)CallService(MS_CLIST_ADDPROTOMENUITEM, 0, (LPARAM) &mi);
+		hGCRoot = hRoot = gg->hMenuRoot = (HANDLE)CallService(MS_CLIST_ADDPROTOMENUITEM, 0, (LPARAM) &mi);
 	}
 	else
 	{
+		mi.hParentMenu = hRoot;
+		mi.flags = CMIF_ICONFROMICOLIB | CMIF_ROOTHANDLE | CMIF_TCHAR;
+
+		mi.ptszName = LPGENT("Conference");
+		mi.position = 200001;
+		mi.icolibItem = GetIconHandle(IDI_CONFERENCE);
+		hGCRoot = (HANDLE)CallService(MS_CLIST_ADDPROTOMENUITEM, 0, (LPARAM) &mi);
+
+		mi.ptszName = LPGENT("Contact list");
+		mi.position = 200002;
+		mi.icolibItem = GetIconHandle(IDI_LIST);
+		hRoot = (HANDLE)CallService(MS_CLIST_ADDPROTOMENUITEM, 0, (LPARAM) &mi);
+
 		if (gg->hMenuRoot)
 			CallService(MS_CLIST_REMOVEMAINMENUITEM, (WPARAM)gg->hMenuRoot, 0);
 		gg->hMenuRoot = NULL;
 	}
 
-	gg_gc_menus_init(gg, hRoot);
+	gg_gc_menus_init(gg, hGCRoot);
 	gg_import_init(gg, hRoot);
 }
 

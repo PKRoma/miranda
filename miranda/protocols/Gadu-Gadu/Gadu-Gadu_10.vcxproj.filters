@@ -175,6 +175,9 @@
     <None Include="icons\import_list_from_txt_file.ico">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="icons\list.ico">
+      <Filter>Resource Files</Filter>
+    </None>
     <None Include="icons\next.ico">
       <Filter>Resource Files</Filter>
     </None>

@@ -323,6 +323,10 @@ SOURCE=.\icons\import_list_from_txt_file.ico
 # End Source File
 # Begin Source File
 
+SOURCE=.\icons\list.ico
+# End Source File
+# Begin Source File
+
 SOURCE=.\icons\next.ico
 # End Source File
 # Begin Source File

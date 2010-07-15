@@ -35,6 +35,7 @@
 #define IDI_EXPORT_SERVER		255
 #define IDI_REMOVE_SERVER		256
 #define IDI_SETTINGS			257
+#define IDI_LIST				258
 #define IDI_NEXT				259
 #define IDI_PREV				260
 #define IDI_SCALE				261

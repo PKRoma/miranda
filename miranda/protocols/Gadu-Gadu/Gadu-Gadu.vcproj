@@ -1544,6 +1544,9 @@
 				RelativePath="icons\import_list_from_txt_file.ico">
 			</File>
 			<File
+				RelativePath="icons\list.ico">
+			</File>
+			<File
 				RelativePath="icons\next.ico">
 			</File>
 			<File

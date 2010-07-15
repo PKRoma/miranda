@@ -35,6 +35,7 @@ static const iconList[] =
 	{ LPGEN("Export list to server"),		"exportserver",	IDI_EXPORT_SERVER		},
 	{ LPGEN("Export list to text file"),	"exporttext",	IDI_EXPORT_TEXT			},
 	{ LPGEN("Account settings"),			"settings",		IDI_SETTINGS			},
+	{ LPGEN("Contact list"),				"list",			IDI_LIST				},
 	{ LPGEN("Previous image"),				"previous",		IDI_PREV				},
 	{ LPGEN("Next image"),					"next",			IDI_NEXT				},
 	{ LPGEN("Send image"), 					"image",		IDI_IMAGE				},
