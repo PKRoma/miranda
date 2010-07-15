@@ -200,7 +200,7 @@ char* NtlmCreateResponseFromChallenge(HANDLE hSecurity, const char *szChallenge,
 
 	if (hSecurity == NULL || ntlmCnt == 0) return NULL;
 
- 	if (_tcscmp(hNtlm->szProvider, _T("Basic")))
+ 	if (_tcsicmp(hNtlm->szProvider, _T("Basic")))
 	{
 		bool isKerberos = _tcsicmp(hNtlm->szProvider, _T("Kerberos")) == 0;
 		bool hasChallenge = szChallenge != NULL && szChallenge[0] != '\0';
@@ -364,6 +364,8 @@ char* NtlmCreateResponseFromChallenge(HANDLE hSecurity, const char *szChallenge,
 	}
 	else
 	{
+		if (!login || !psw) return NULL;
+
 		char *szLogin = mir_t2a(login);
 		char *szPassw = mir_t2a(psw);
 
