@@ -155,7 +155,7 @@ static void getDefaultProfile(TCHAR * szProfile, size_t cch, TCHAR * profiledir)
 // returns 1 if something that looks like a profile is there
 static int getProfileCmdLineArgs(TCHAR * szProfile, size_t cch)
 {
-	TCHAR *szCmdLine=GetCommandLine();
+	TCHAR *szCmdLine = GetCommandLine();
 	TCHAR *szEndOfParam;
 	TCHAR szThisParam[1024];
 	int firstParam=1;
@@ -164,21 +164,24 @@ static int getProfileCmdLineArgs(TCHAR * szProfile, size_t cch)
 	dat.cbSize = sizeof(dat);
 	dat.dwFlags = RVF_TCHAR;
 
-	while(szCmdLine[0]) {
-		if(szCmdLine[0]=='"') {
-			szEndOfParam=_tcschr(szCmdLine+1,'"');
-			if(szEndOfParam==NULL) break;
-			lstrcpyn(szThisParam,szCmdLine+1,min( SIZEOF(szThisParam),szEndOfParam-szCmdLine));
-			szCmdLine=szEndOfParam+1;
+	while(szCmdLine[0]) 
+	{
+		if(szCmdLine[0]=='"') 
+		{
+			szEndOfParam = _tcschr(szCmdLine+1, '"');
+			if(szEndOfParam == NULL) break;
+			lstrcpyn(szThisParam, szCmdLine+1, min(SIZEOF(szThisParam), szEndOfParam - szCmdLine));
+			szCmdLine = szEndOfParam + 1;
 		}
-		else {
-			szEndOfParam=szCmdLine+_tcscspn(szCmdLine,_T(" \t"));
-			lstrcpyn(szThisParam,szCmdLine,min( SIZEOF(szThisParam),szEndOfParam-szCmdLine+1));
-			szCmdLine=szEndOfParam;
+		else 
+		{
+			szEndOfParam = szCmdLine + _tcscspn(szCmdLine, _T(" \t"));
+			lstrcpyn(szThisParam, szCmdLine, min(SIZEOF(szThisParam), szEndOfParam - szCmdLine+1));
+			szCmdLine = szEndOfParam;
 		}
 		while(*szCmdLine && *szCmdLine<=' ') szCmdLine++;
-		if(firstParam) {firstParam=0; continue;}   //first param is executable name
-		if(szThisParam[0]=='/' || szThisParam[0]=='-') continue;  //no switches supported
+		if (firstParam) { firstParam=0; continue; }   //first param is executable name
+		if (szThisParam[0] == '/' || szThisParam[0] == '-') continue;  //no switches supported
 
 		TCHAR* res = (TCHAR*)CallService(MS_UTILS_REPLACEVARS, (WPARAM)szThisParam, (LPARAM)&dat);
 		if (res == NULL) return 0;
@@ -192,19 +195,35 @@ static int getProfileCmdLineArgs(TCHAR * szProfile, size_t cch)
 void getProfileCmdLine(TCHAR * szProfile, size_t cch, TCHAR * profiledir)
 {
 	TCHAR buf[MAX_PATH];
-	if (getProfileCmdLineArgs(buf, SIZEOF(buf))) {
-		// have something that looks like a .dat, with or without .dat in the filename
-		TCHAR newProfileDir[MAX_PATH];
-		mir_sntprintf(newProfileDir, cch, _T("%s%s\\"), profiledir, buf);
-		pathToAbsoluteT(buf, szProfile, newProfileDir);
-		if (!isValidProfileName(szProfile))
-			_tcscat(szProfile, _T(".dat"));
+	if (getProfileCmdLineArgs(buf, SIZEOF(buf))) 
+	{
+		TCHAR *p, profileName[MAX_PATH], newProfileDir[MAX_PATH];
 
-		TCHAR *p = _tcsrchr(buf, '\\');
-		if (p) {
+		p = _tcsrchr(buf, '\\'); if (p) ++p; else p = buf; 
+
+		if (!isValidProfileName(buf) && *p)
+			_tcscat(buf, _T(".dat"));
+
+		_tcscpy(profileName, p);
+		p = _tcsrchr(profileName, '.'); if (p) *p = 0; 
+
+		mir_sntprintf(newProfileDir, cch, _T("%s%s\\"), profiledir, profileName);
+		pathToAbsoluteT(buf, szProfile, newProfileDir);
+
+		if (_tcschr(buf, '\\')) 
+		{
 			_tcscpy(profiledir, szProfile);
-			p = _tcsrchr(profiledir, '\\');
-			*(p+1) = 0;
+			if (profileName[0])
+			{
+				p = _tcsrchr(profiledir, '\\'); *p = 0;
+				p = _tcsrchr(profiledir, '\\');
+				if (p && _tcsicmp(p + 1, profileName) == 0)
+					*p = 0;
+				_tcscat(profiledir, _T("\\"));
+			}
+			else
+				szProfile[0] = 0;
+
 		}
 	}
 }
