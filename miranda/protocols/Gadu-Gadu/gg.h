@@ -82,9 +82,6 @@ extern "C" {
 #include <m_xml.h>
 #include <m_chat.h>
 #include <m_idle.h>
-#ifdef DEBUGMODE
-#include <m_popup.h>
-#endif
 
 // Custom profile folders plugin header
 #include "m_folders.h"
@@ -397,10 +394,6 @@ void __cdecl gg_mainthread(GGPROTO *gg, void *empty);
 int gg_isonline(GGPROTO *gg);
 int gg_refreshstatus(GGPROTO *gg, int status);
 
-#ifdef DEBUGMODE
-int gg_netlog(const GGPROTO *gg, const char *fmt, ...);
-#endif
-
 void gg_broadcastnewstatus(GGPROTO *gg, int newStatus);
 int gg_userdeleted(GGPROTO *gg, WPARAM wParam, LPARAM lParam);
 int gg_dbsettingchanged(GGPROTO *gg, WPARAM wParam, LPARAM lParam);
@@ -496,9 +489,8 @@ void CreateProtoService(const char* szService, GGPROTOFUNC serviceProc, GGPROTO 
 #define gg_t2a(s) gg->unicode_core ? mir_u2a((wchar_t *)s) : mir_strdup(s)
 
 // Debug functions
-#ifdef DEBUGMODE
+int gg_netlog(const GGPROTO *gg, const char *fmt, ...);
 const char *ggdebug_eventtype(struct gg_event *e);
-#endif
 
 /* SSL functions */
 #ifdef GG_CONFIG_HAVE_OPENSSL

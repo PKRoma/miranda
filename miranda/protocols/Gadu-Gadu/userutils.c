@@ -49,10 +49,7 @@ void *gg_doregister(GGPROTO *gg, char *newPass, char *newEmail)
 			GG_PROTOERROR,
 			MB_OK | MB_ICONSTOP
 		);
-
-#ifdef DEBUGMODE
 		gg_netlog(gg, "gg_doregister(): Cannot register because of \"%s\".", strerror(errno));
-#endif
 	}
 	else
 	{
@@ -61,9 +58,7 @@ void *gg_doregister(GGPROTO *gg, char *newPass, char *newEmail)
 		CallService(MS_DB_CRYPT_ENCODESTRING, strlen(newPass) + 1, (LPARAM) newPass);
 		DBWriteContactSettingString(NULL, GG_PROTO, GG_KEY_PASSWORD, newPass);
 		DBWriteContactSettingString(NULL, GG_PROTO, GG_KEY_EMAIL, newEmail);
-#ifdef DEBUGMODE
 		gg_netlog(gg, "gg_doregister(): Account registration succesful.");
-#endif
 		MessageBox(
 			NULL,
 			Translate("You have registered new account.\nPlease fill up your personal details in \"M->Change my details...\""),
@@ -108,19 +103,14 @@ void *gg_dounregister(GGPROTO *gg, uin_t uin, char *password)
 			GG_PROTOERROR,
 			MB_OK | MB_ICONSTOP
 		);
-
-#ifdef DEBUGMODE
 		gg_netlog(gg, "gg_dounregister(): Cannot remove account because of \"%s\".", strerror(errno));
-#endif
 	}
 	else
 	{
 		gg_pubdir_free(h);
 		DBDeleteContactSetting(NULL, GG_PROTO, GG_KEY_PASSWORD);
 		DBDeleteContactSetting(NULL, GG_PROTO, GG_KEY_UIN);
-#ifdef DEBUGMODE
 		gg_netlog(gg, "gg_dounregister(): Account %d has been removed.", uin);
-#endif
 		MessageBox(
 			NULL,
 			Translate("Your account has been removed."),
@@ -173,19 +163,14 @@ void *gg_dochpass(GGPROTO *gg, uin_t uin, char *password, char *newPass)
 			GG_PROTOERROR,
 			MB_OK | MB_ICONSTOP
 		);
-
-#ifdef DEBUGMODE
 		gg_netlog(gg, "gg_dochpass(): Cannot change password because of \"%s\".", strerror(errno));
-#endif
 	}
 	else
 	{
 		gg_pubdir_free(h);
 		CallService(MS_DB_CRYPT_ENCODESTRING, strlen(newPass) + 1, (LPARAM) newPass);
 		DBWriteContactSettingString(NULL, GG_PROTO, GG_KEY_PASSWORD, newPass);
-#ifdef DEBUGMODE
 		gg_netlog(gg, "gg_dochpass(): Password change succesful.");
-#endif
 		MessageBox(
 			NULL,
 			Translate("Your password has been changed."),
@@ -230,18 +215,13 @@ void *gg_dochemail(GGPROTO *gg, uin_t uin, char *password, char *email, char *ne
 			GG_PROTONAME,
 			MB_OK | MB_ICONSTOP
 		);
-
-#ifdef DEBUGMODE
 		gg_netlog(gg, "gg_dochpass(): Cannot change e-mail because of \"%s\".", strerror(errno));
-#endif
 	}
 	else
 	{
 		gg_pubdir_free(h);
 		DBWriteContactSettingString(NULL, GG_PROTO, GG_KEY_EMAIL, newEmail);
-#ifdef DEBUGMODE
-		gg_netlog(gg, "gg_doemail(): Password change succesful.");
-#endif
+		gg_netlog(gg, "gg_doemail(): E-mail change succesful.");
 		MessageBox(
 			NULL,
 			Translate("Your e-mail has been changed."),
