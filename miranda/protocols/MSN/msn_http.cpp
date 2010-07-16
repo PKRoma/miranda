@@ -72,7 +72,8 @@ PBYTE msn_httpGatewayUnwrapRecv(NETLIBHTTPREQUEST* nlhr, PBYTE buf, int len, int
 	ThreadData* T = FindThreadConn(nlhr->nlc);
 	if (T == NULL) return buf;
 
-	bool tIsSessionClosed = true;
+	bool isSessionClosed = true;
+	bool isMsnPacket = false;
 
 	if (nlhr->resultCode == 200)
 	{
@@ -82,8 +83,10 @@ PBYTE msn_httpGatewayUnwrapRecv(NETLIBHTTPREQUEST* nlhr, PBYTE buf, int len, int
 			if (_stricmp(tHeader.szName, "X-MSN-Messenger") != 0)
 				continue;
 
+			isMsnPacket = true;
+
 			if (strstr(tHeader.szValue, "Session=close") == 0)
-				tIsSessionClosed = false;
+				isSessionClosed = false;
 			else
 				break;
 
@@ -91,8 +94,8 @@ PBYTE msn_httpGatewayUnwrapRecv(NETLIBHTTPREQUEST* nlhr, PBYTE buf, int len, int
 		}
 	}
 
-	T->sessionClosed |= tIsSessionClosed;
-	if (tIsSessionClosed && buf == NULL)
+	T->sessionClosed |= isSessionClosed;
+	if (isSessionClosed && buf == NULL)
 	{	
 		*outBufLen = 0;
 		buf = (PBYTE)mir_alloc(1);
@@ -102,6 +105,11 @@ PBYTE msn_httpGatewayUnwrapRecv(NETLIBHTTPREQUEST* nlhr, PBYTE buf, int len, int
 	{	
 		*outBufLen = 1;
 		buf = (PBYTE)mir_alloc(1);
+		*buf = 0;
+	}
+	else if (!isMsnPacket)
+	{
+		*outBufLen = 0;
 		*buf = 0;
 	}
 	return buf;
