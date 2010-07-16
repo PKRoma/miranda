@@ -566,7 +566,6 @@ void gg_threadwait(GGPROTO *gg, GGTHREAD *thread)
 //////////////////////////////////////////////////////////
 // DEBUGING FUNCTIONS
 
-#ifdef DEBUGMODE
 struct
 {
 	int type;
@@ -625,6 +624,7 @@ const char *ggdebug_eventtype(struct gg_event *e)
 	return ggdebug_eventype2string[i].text;
 }
 
+#ifdef DEBUGMODE
 void gg_debughandler(int level, const char *format, va_list ap)
 {
 	char szText[1024], *szFormat = _strdup(format);
@@ -638,6 +638,7 @@ void gg_debughandler(int level, const char *format, va_list ap)
 	CallService(MS_NETLIB_LOG, (WPARAM) NULL, (LPARAM) szText);
 	free(szFormat);
 }
+#endif
 
 ////////////////////////////////////////////////////////////
 // Log funcion
@@ -646,15 +647,11 @@ int gg_netlog(const GGPROTO *gg, const char *fmt, ...)
 	va_list va;
 	char szText[1024];
 
-	mir_snprintf(szText, sizeof(szText), "[%s] ", GG_PROTO);
-
 	va_start(va, fmt);
-	mir_vsnprintf(szText + strlen(szText), sizeof(szText) - strlen(szText), fmt, va);
+	mir_vsnprintf(szText, sizeof(szText), fmt, va);
 	va_end(va);
 	return CallService(MS_NETLIB_LOG, (WPARAM) gg->netlib, (LPARAM) szText);
 }
-
-#endif
 
 //////////////////////////////////////////////////////////
 // main DLL function

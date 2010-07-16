@@ -175,9 +175,7 @@ uint32_t gg_dnslookup(GGPROTO *gg, char *host)
 #endif
 		return ip;
 	}
-#ifdef DEBUGMODE
 	gg_netlog(gg, "gg_dnslookup(): Cannot resolve hostname \"%s\".", host);
-#endif
 	return 0;
 }
 
@@ -261,8 +259,8 @@ void __cdecl gg_mainthread(GGPROTO *gg, void *empty)
 	// Time deviation (300s)
 	time_t timeDeviation = DBGetContactSettingWord(NULL, GG_PROTO, GG_KEY_TIMEDEVIATION, GG_KEYDEF_TIMEDEVIATION);
 
-#ifdef DEBUGMODE
 	gg_netlog(gg, "gg_mainthread(%x): Server Thread Starting", gg);
+#ifdef DEBUGMODE
 	gg_debug_level = GG_DEBUG_NET | GG_DEBUG_TRAFFIC | GG_DEBUG_FUNCTION | GG_DEBUG_MISC;
 #else
 	gg_debug_level = 0;
@@ -293,10 +291,8 @@ void __cdecl gg_mainthread(GGPROTO *gg, void *empty)
 	nlus.cbSize = sizeof(nlus);
 	if(CallService(MS_NETLIB_GETUSERSETTINGS, (WPARAM)gg->netlib, (LPARAM)&nlus))
 	{
-#ifdef DEBUGMODE
 		if(nlus.useProxy)
 			gg_netlog(gg, "gg_mainthread(%x): Using proxy %s:%d.", gg, nlus.szProxyServer, nlus.wProxyPort);
-#endif
 		gg_proxy_enabled = nlus.useProxy;
 		gg_proxy_host = nlus.szProxyServer;
 		gg_proxy_port = nlus.wProxyPort;
@@ -310,9 +306,7 @@ void __cdecl gg_mainthread(GGPROTO *gg, void *empty)
 	}
 	else
 	{
-#ifdef DEBUGMODE
 		gg_netlog(gg, "gg_mainthread(%x): Failed loading proxy settings.", gg);
-#endif
 		gg_proxy_enabled = 0;
 	}
 
@@ -335,9 +329,7 @@ void __cdecl gg_mainthread(GGPROTO *gg, void *empty)
 	}
 	else
 	{
-#ifdef DEBUGMODE
 		gg_netlog(gg, "gg_mainthread(%x): No password specified. Exiting.", gg);
-#endif
 		gg_broadcastnewstatus(gg, ID_STATUS_OFFLINE);
 		return;
 	}
@@ -345,9 +337,7 @@ void __cdecl gg_mainthread(GGPROTO *gg, void *empty)
 	// Readup number
 	if(!(p.uin = DBGetContactSettingDword(NULL, GG_PROTO, GG_KEY_UIN, 0)))
 	{
-#ifdef DEBUGMODE
 		gg_netlog(gg, "gg_mainthread(%x): No Gadu-Gadu number specified. Exiting.", gg);
-#endif
 		gg_broadcastnewstatus(gg, ID_STATUS_OFFLINE);
 		free(p.password);
 		return;
@@ -355,11 +345,7 @@ void __cdecl gg_mainthread(GGPROTO *gg, void *empty)
 
 	// Readup SSL/TLS setting
 	if(p.tls = (hLibSSL && DBGetContactSettingByte(NULL, GG_PROTO, GG_KEY_SSLCONN, GG_KEYDEF_SSLCONN)))
-	{
-#ifdef DEBUGMODE
 		gg_netlog(gg, "gg_mainthread(%x): Using TLS/SSL for connections.", gg);
-#endif
-	}
 
 	// Gadu-Gadu accepts image sizes upto 255
 	p.image_size = 255;
@@ -394,10 +380,8 @@ void __cdecl gg_mainthread(GGPROTO *gg, void *empty)
 					MB_OK | MB_ICONEXCLAMATION
 				);
 			}
-#ifdef DEBUGMODE
 			else
 				gg_netlog(gg, "gg_mainthread(%x): Loading forwarding host %s and port %d.", dbv.pszVal, p.external_port, gg);
-#endif
 			if(p.external_addr)	p.external_port = DBGetContactSettingWord(NULL, GG_PROTO, GG_KEY_FORWARDPORT, GG_KEYDEF_FORWARDPORT);
 			DBFreeVariant(&dbv);
 		}
@@ -411,10 +395,8 @@ retry:
 	p.status_descr = _strdup(gg_getstatusmsg(gg, gg->proto.m_iDesiredStatus));
 	p.status = status_m2gg(gg, gg->proto.m_iDesiredStatus, p.status_descr != NULL);
 
-#ifdef DEBUGMODE
 	gg_netlog(gg, "gg_mainthread(%x): Connecting with number %d, status %d and description \"%s\".", gg, p.uin, gg->proto.m_iDesiredStatus,
 				p.status_descr ? p.status_descr : "<none>");
-#endif
 	LeaveCriticalSection(&gg->modemsg_mutex);
 
 	// Check manual hosts
@@ -434,11 +416,9 @@ retry:
 		else
 		{
 			p.server_port = hosts[hostnum].port;
-#ifdef DEBUGMODE
 			gg_netlog(gg, "gg_mainthread(%x): Connecting to manually specified host %s (%d.%d.%d.%d) and port %d.", gg,
 				hosts[hostnum].hostname, LOBYTE(LOWORD(p.server_addr)), HIBYTE(LOWORD(p.server_addr)),
 				LOBYTE(HIWORD(p.server_addr)), HIBYTE(HIWORD(p.server_addr)), p.server_port);
-#endif
 		}
 	}
 	else
@@ -478,9 +458,7 @@ retry:
 				GG_PROTOERROR,
 				MB_OK | MB_ICONSTOP
 			);
-#ifdef DEBUGMODE
 			gg_netlog(gg, "gg_mainthread(%x): %s", gg, perror);
-#endif
 		}
 
 		// Reconnect to the next server on the list
@@ -525,19 +503,15 @@ retry:
 		// Connection broken/closed
 		if(!(e = gg_watch_fd(gg->sess)))
 		{
-#ifdef DEBUGMODE
 			gg_netlog(gg, "gg_mainthread(%x): Connection closed.", gg);
-#endif
 			EnterCriticalSection(&gg->sess_mutex);
 			gg_free_session(gg->sess);
 			gg->sess = NULL;
 			LeaveCriticalSection(&gg->sess_mutex);
 			break;
 		}
-#ifdef DEBUGMODE
 		else
 			gg_netlog(gg, "gg_mainthread(%x): Event: %s", gg, ggdebug_eventtype(e));
-#endif
 
 		switch(e->type)
 		{
@@ -608,14 +582,13 @@ retry:
 				gg_pubdir50_t res = e->event.pubdir50;
 				int i, count;
 
-#ifdef DEBUGMODE
 				if(e->type == GG_EVENT_PUBDIR50_SEARCH_REPLY)
 					gg_netlog(gg, "gg_mainthread(%x): Got user info.", gg);
 				if(e->type == GG_EVENT_PUBDIR50_READ)
 					gg_netlog(gg, "gg_mainthread(%x): Got owner info.", gg);
 				if(e->type == GG_EVENT_PUBDIR50_WRITE)
 					gg_netlog(gg, "gg_mainthread(%x): Public catalog save succesful.", gg);
-#endif
+
 				// Store next search UIN
 				gg->next_uin = gg_pubdir50_next(res);
 
@@ -637,9 +610,7 @@ retry:
 						uin_t uin = __fmnumber ? atoi(__fmnumber) : 0;
 
 						HANDLE hContact = (res->seq == GG_SEQ_CHINFO) ? NULL : gg_getcontact(gg, uin, 0, 0, NULL);
-#ifdef DEBUGMODE
 						gg_netlog(gg, "gg_mainthread(%x): Search result for uin %d, seq %d.", gg, uin, res->seq);
-#endif
 						if(res->seq == GG_SEQ_SEARCH)
 						{
 							char strFmt1[64];
@@ -714,9 +685,7 @@ retry:
 								(BYTE)(!strcmp(__gender, GG_PUBDIR50_GENDER_MALE) ? 'M' :
 									  (!strcmp(__gender, GG_PUBDIR50_GENDER_FEMALE) ? 'F' : '?')));
 
-#ifdef DEBUGMODE
 							gg_netlog(gg, "gg_mainthread(%x): Setting user info for uin %d.", gg, uin);
-#endif
 							ProtoBroadcastAck(GG_PROTO, hContact, ACKTYPE_GETINFO, ACKRESULT_SUCCESS, (HANDLE) 1, 0);
 						}
 					}
@@ -819,9 +788,7 @@ retry:
 							gcevent.pszNick = (char *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM) gg_getcontact(gg, e->event.msg.sender, 1, 0, NULL), 0);
 							gcevent.time = (!(e->event.msg.msgclass & GG_CLASS_OFFLINE) || e->event.msg.time > (t - timeDeviation)) ? t : e->event.msg.time;
 							gcevent.dwFlags = GCEF_ADDTOLOG;
-#ifdef DEBUGMODE
 							gg_netlog(gg, "gg_mainthread(%x): Conference message to room %s & id %s.", gg, chat, id);
-#endif
 							CallServiceSync(MS_GC_EVENT, 0, (LPARAM)&gcevent);
 						}
 					}
@@ -864,9 +831,7 @@ retry:
 								((struct gg_msg_image_request*)(formats+4))->crc32 );
 								LeaveCriticalSection(&gg->sess_mutex);
 
-#ifdef DEBUGMODE
 								gg_netlog(gg, "gg_mainthread: image request send!");
-#endif
 								add_ptr += sizeof(struct gg_msg_richtext_format);
 							}
 							if( ((struct gg_msg_richtext_format*)formats)->font & GG_FONT_COLOR)
@@ -926,9 +891,7 @@ retry:
 			case GG_EVENT_DCC7_NEW:
 				{
 					struct gg_dcc7 *dcc7 = e->event.dcc7_new;
-#ifdef DEBUGMODE
 					gg_netlog(gg, "gg_mainthread(%x): Incoming direct connection.", gg);
-#endif
 					dcc7->contact = gg_getcontact(gg, dcc7->peer_uin, 0, 0, NULL);
 
 					// Check if user is on the list and if it is my uin
@@ -951,10 +914,8 @@ retry:
 						char *szBlob;
 						char *szFilename = dcc7->filename;
 						char *szMsg = dcc7->filename;
-#ifdef DEBUGMODE
 						gg_netlog(gg, "gg_mainthread(%x): Client: %d, File ack filename \"%s\" size %d.", gg, dcc7->peer_uin,
 							dcc7->filename, dcc7->size);
-#endif
 						// Make new ggtransfer struct
 						szBlob = (char *)malloc(sizeof(DWORD) + strlen(szFilename) + strlen(szMsg) + 2);
 						// Store current dcc
@@ -982,9 +943,7 @@ retry:
 			case GG_EVENT_DCC7_REJECT:
 				{
 					struct gg_dcc7 *dcc7 = e->event.dcc7_reject.dcc7;
-#ifdef DEBUGMODE
 					gg_netlog(gg, "gg_mainthread(%x): File transfer denied by client %d.", gg, dcc7->peer_uin);
-#endif
 					ProtoBroadcastAck(GG_PROTO, dcc7->contact, ACKTYPE_FILE, ACKRESULT_DENIED, dcc7, 0);
 
 					// Remove from watches and free
@@ -999,7 +958,6 @@ retry:
 			case GG_EVENT_DCC7_ERROR:
 				{
 					struct gg_dcc7 *dcc7 = e->event.dcc7_error_ex.dcc7;
-#ifdef DEBUGMODE
 					switch (e->event.dcc7_error)
 					{
 						case GG_ERROR_DCC7_HANDSHAKE:
@@ -1020,7 +978,6 @@ retry:
 						default:
 							gg_netlog(gg, "gg_mainthread(%x): Client: %d, Unknown error.", gg, dcc7 ? dcc7->peer_uin : 0);
 					}
-#endif
 					if (!dcc7) break;
 
 					// Remove from watches
@@ -1060,14 +1017,10 @@ retry:
 						tag = gg_a2t("event/sender");
 						node = xi.getChildByPath(hXml, tag, 0);
 						sender = node != NULL ? gg_t2a(xi.getText(node)) : NULL;
-#ifdef DEBUGMODE
 						gg_netlog(gg, "gg_mainthread(%x): XML Action type: %s.", gg, type != NULL ? type : "unknown");
-#endif
 						// Avatar change notify
 						if (type != NULL && !strcmp(type, "28")) {
-#ifdef DEBUGMODE
 							gg_netlog(gg, "gg_mainthread(%x): Client %s changed his avatar.", gg, sender);
-#endif
 							gg_requestavatar(gg, gg_getcontact(gg, atoi(sender), 0, 0, NULL), 0);
 						}
 						mir_free(type);
@@ -1102,9 +1055,7 @@ retry:
 	if(gg->proto.m_iDesiredStatus != ID_STATUS_OFFLINE
 		&& DBGetContactSettingByte(NULL, GG_PROTO, GG_KEY_ARECONNECT, GG_KEYDEF_ARECONNECT))
 	{
-#ifdef DEBUGMODE
 		gg_netlog(gg, "gg_mainthread(%x): Unintentional disconnection detected. Going to reconnect...", gg);
-#endif
 		hostnum = 0;
 		gg_broadcastnewstatus(gg, ID_STATUS_CONNECTING);
 		goto retry;
@@ -1120,10 +1071,7 @@ retry:
 #endif
 	gg_threadwait(gg, &gg->pth_dcc);
 
-#ifdef DEBUGMODE
 	gg_netlog(gg, "gg_mainthread(%x): Server Thread Ending", gg);
-#endif
-
 	return;
 }
 
@@ -1145,9 +1093,7 @@ void gg_broadcastnewstatus(GGPROTO *gg, int newStatus)
 
 	ProtoBroadcastAck(GG_PROTO, NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS, (HANDLE) oldStatus, newStatus);
 
-#ifdef DEBUGMODE
-	gg_netlog(gg, "gg_broadcastnewstatus(): broadcast new status %s", (char *) CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, newStatus, 0));
-#endif
+	gg_netlog(gg, "gg_broadcastnewstatus(): Broadcast new status: %d.", newStatus);
 }
 
 ////////////////////////////////////////////////////////////
@@ -1170,9 +1116,7 @@ int gg_userdeleted(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
 		GCEVENT gcevent = {sizeof(GCEVENT), &gcdest};
 		GGGC *chat = gg_gc_lookup(gg, dbv.pszVal);
 
-#ifdef DEBUGMODE
 		gg_netlog(gg, "gg_gc_event(): Terminating chat %x, id %s from contact list...", chat, dbv.pszVal);
-#endif
 		if(chat)
 		{
 			// Destroy chat entry
@@ -1244,9 +1188,7 @@ int gg_dbsettingchanged(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
 				GCDEST gcdest = {GG_PROTO, dbv.pszVal, GC_EVENT_CHANGESESSIONAME};
 				GCEVENT gcevent = {sizeof(GCEVENT), &gcdest};
 				gcevent.pszText = cws->value.pszVal;
-#ifdef DEBUGMODE
 				gg_netlog(gg, "gg_dbsettingchanged(): Conference %s was renamed to %s.", dbv.pszVal, cws->value.pszVal);
-#endif
 				// Mark cascading
 				/* FIXME */ cascade = 1;
 				CallServiceSync(MS_GC_EVENT, 0, (LPARAM)&gcevent);
@@ -1289,9 +1231,7 @@ void gg_setalloffline(GGPROTO *gg)
 	HANDLE hContact;
 	char *szProto;
 
-#ifdef DEBUGMODE
 	gg_netlog(gg, "gg_setalloffline(): Setting buddies offline");
-#endif
 	DBWriteContactSettingWord(NULL, GG_PROTO, GG_KEY_STATUS, ID_STATUS_OFFLINE);
 	hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
 	while (hContact)
@@ -1368,9 +1308,7 @@ void gg_notifyall(GGPROTO *gg)
 	uin_t *uins;
 	char *types;
 
-#ifdef DEBUGMODE
 	gg_netlog(gg, "gg_notifyall(): Subscribing notification to all users");
-#endif
 	// Readup count
 	hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
 	while (hContact)
@@ -1459,9 +1397,7 @@ HANDLE gg_getcontact(GGPROTO *gg, uin_t uin, int create, int inlist, char *szNic
 
 	if(!hContact)
 	{
-#ifdef DEBUGMODE
 		gg_netlog(gg, "gg_getcontact(): Failed to create Gadu-Gadu contact %s", szNick);
-#endif
 		return NULL;
 	}
 
@@ -1469,15 +1405,11 @@ HANDLE gg_getcontact(GGPROTO *gg, uin_t uin, int create, int inlist, char *szNic
 	{
 		// For some reason we failed to register the protocol for this contact
 		CallService(MS_DB_CONTACT_DELETE, (WPARAM) hContact, 0);
-#ifdef DEBUGMODE
 		gg_netlog(gg, "Failed to register GG contact %d", uin);
-#endif
 		return NULL;
 	}
 
-#ifdef DEBUGMODE
 	gg_netlog(gg, "gg_getcontact(): Added buddy: %d", uin);
-#endif
 	if(!inlist)
 	{
 		DBWriteContactSettingByte(hContact, "CList", "NotOnList", 1);
@@ -1505,9 +1437,7 @@ HANDLE gg_getcontact(GGPROTO *gg, uin_t uin, int create, int inlist, char *szNic
 			LeaveCriticalSection(&gg->sess_mutex);
 			gg_pubdir50_free(req);
 			DBWriteContactSettingString(hContact, GG_PROTO, GG_KEY_NICK, ditoa(uin));
-#ifdef DEBUGMODE
 			gg_netlog(gg, "gg_getcontact(): Search for nick on uin: %d", uin);
-#endif
 		}
 	}
 
@@ -1645,9 +1575,7 @@ void gg_changecontactstatus(GGPROTO *gg, uin_t uin, int status, const char *ides
 	// Check if there's description and if it's not empty
 	if(idescr && *idescr)
 	{
-#ifdef DEBUGMODE
 		gg_netlog(gg, "gg_changecontactstatus(): Saving for %d status desct \"%s\".", uin, idescr);
-#endif
 		DBWriteContactSettingString(hContact, "CList", GG_KEY_STATUSDESCR, idescr);
 	}
 	else

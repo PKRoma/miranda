@@ -58,17 +58,12 @@ void __cdecl gg_remindpasswordthread(GGPROTO *gg, void *param)
 			GG_PROTOERROR,
 			MB_OK | MB_ICONSTOP
 		);
-
-#ifdef DEBUGMODE
 		gg_netlog(gg, "gg_remindpasswordthread(): Password could not be reminded because of \"%s\".", strerror(errno));
-#endif
 	}
 	else
 	{
 		gg_pubdir_free(h);
-#ifdef DEBUGMODE
 		gg_netlog(gg, "gg_remindpasswordthread(): Password remind successful.");
-#endif
 		MessageBox(
 			NULL,
 			Translate("Password was sent to your e-mail."),

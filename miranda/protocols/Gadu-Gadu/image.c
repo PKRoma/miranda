@@ -115,15 +115,11 @@ int gg_img_shutdown(GGPROTO *gg)
 				// Post message async, since it maybe be different thread
 				if(!PostMessage(dat->hWnd, WM_CLOSE, 0, 0))
 				{
-#ifdef DEBUGMODE
 					gg_netlog(gg, "gg_img_shutdown(): Image dlg %x cannot be released !!", dat->hWnd);
-#endif
 				}
 			}
-#ifdef DEBUGMODE
 			else
 				gg_netlog(gg, "gg_img_shutdown(): Image dlg %x not exists, but structure does !!", dat->hWnd);
-#endif
 		}
 	}
 
@@ -261,15 +257,11 @@ int gg_img_saveimage(HWND hwnd, GGIMAGEENTRY *dat)
 		{
 			fwrite(dat->lpData, dat->nSize, 1, fp);
 			fclose(fp);
-#ifdef DEBUGMODE
 			gg_netlog(((GGIMAGEDLGDATA *)GetWindowLongPtr(hwnd, GWLP_USERDATA))->gg, "gg_img_saveimage(): Image saved to %s.", szFileName);
-#endif
 		}
 		else
 		{
-#ifdef DEBUGMODE
 			gg_netlog(((GGIMAGEDLGDATA *)GetWindowLongPtr(hwnd, GWLP_USERDATA))->gg, "gg_img_saveimage(): Cannot save image to %s.", szFileName);
-#endif
 			MessageBox(hwnd, Translate("Image cannot be written to disk."), ((GGIMAGEDLGDATA *)GetWindowLongPtr(hwnd, GWLP_USERDATA))->gg->proto.m_szProtoName, MB_OK | MB_ICONERROR);
 		}
 	}
@@ -405,9 +397,7 @@ static INT_PTR CALLBACK gg_img_dlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 
 				// Send event if someone's waiting
 				if(dat->hEvent) SetEvent(dat->hEvent);
-#ifdef DEBUGMODE
 				else gg_netlog(dat->gg, "gg_img_dlgproc(): Creation event not found, but someone might be waiting.");
-#endif
 
 				// Making buttons flat
 				SendDlgItemMessage(hwndDlg, IDC_IMG_SAVE,	BUTTONSETASFLATBTN, 0, 0);
@@ -521,9 +511,7 @@ static INT_PTR CALLBACK gg_img_dlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 
 				if(!img)
 				{
-#ifdef DEBUGMODE
 					gg_netlog(dat->gg, "gg_img_dlgproc(): Image was not found on the list. Cannot paint the window.");
-#endif
 					return FALSE;
 				}
 
@@ -601,9 +589,7 @@ static INT_PTR CALLBACK gg_img_dlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 								img = img->lpNext;
 							if(!img)
 							{
-#ifdef DEBUGMODE
 								gg_netlog(dat->gg, "gg_img_dlgproc(): Image was not found on the list. Cannot delete it from the list.");
-#endif
 								return FALSE;
 							}
 							del = img->lpNext;
@@ -629,9 +615,7 @@ static INT_PTR CALLBACK gg_img_dlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 							img = img->lpNext;
 						if(!img)
 						{
-#ifdef DEBUGMODE
 							gg_netlog(dat->gg, "gg_img_dlgproc(): Image was not found on the list. Cannot launch saving.");
-#endif
 							return FALSE;
 						}
 						gg_img_saveimage(hwndDlg, img);
@@ -805,9 +789,7 @@ int gg_img_displayasmsg(GGPROTO *gg, HANDLE hContact, void *img)
 
 		fwrite(dat->lpData, dat->nSize, 1, fp);
 		fclose(fp);
-#ifdef DEBUGMODE
 		gg_netlog(gg, "gg_img_displayasmsg: Image saved to %s.", szPath);
-#endif
 
 		mir_snprintf(imgmsg, sizeof(imgmsg), "[img]%s[/img]", szPath);
 		pre.flags = 0;
@@ -816,10 +798,9 @@ int gg_img_displayasmsg(GGPROTO *gg, HANDLE hContact, void *img)
 		pre.lParam = 0;
 		gg_recvmessage((PROTO_INTERFACE *)gg, hContact, &pre);
 	}
-#ifdef DEBUGMODE
 	else
 		gg_netlog(gg, "gg_img_displayasmsg: Cannot save image to %s.", szPath);
-#endif
+
 	return 0;
 }
 
@@ -923,9 +904,7 @@ void *gg_img_loadpicture(GGPROTO *gg, struct gg_event* e, char *szFileName)
 		if(!fp)
 		{
 			free(dat);
-#ifdef DEBUGMODE
 			gg_netlog(gg, "gg_img_loadpicture(): fopen(\"%s\", \"rb\") failed.", szFileName);
-#endif
 			return NULL;
 		}
 		fseek(fp, 0, SEEK_END);
@@ -934,9 +913,7 @@ void *gg_img_loadpicture(GGPROTO *gg, struct gg_event* e, char *szFileName)
 		{
 			fclose(fp);
 			free(dat);
-#ifdef DEBUGMODE
 			gg_netlog(gg, "gg_img_loadpicture(): Zero file size \"%s\" failed.", szFileName);
-#endif
 			return NULL;
 		}
 		// Maximum Gadu-Gadu accepted image size
@@ -944,9 +921,7 @@ void *gg_img_loadpicture(GGPROTO *gg, struct gg_event* e, char *szFileName)
 		{
 			fclose(fp);
 			free(dat);
-#ifdef DEBUGMODE
 			gg_netlog(gg, "gg_img_loadpicture(): Image size of \"%s\" exceeds 255 KB.", szFileName);
-#endif
 			MessageBox(NULL, Translate("Image exceeds maximum allowed size of 255 KB."), GG_PROTONAME, MB_OK | MB_ICONEXCLAMATION);
 			return NULL;
 		}
@@ -957,9 +932,7 @@ void *gg_img_loadpicture(GGPROTO *gg, struct gg_event* e, char *szFileName)
 			free(dat->lpData);
 			fclose(fp);
 			free(dat);
-#ifdef DEBUGMODE
 			gg_netlog(gg, "gg_img_loadpicture(): Reading file \"%s\" failed.", szFileName);
-#endif
 			return NULL;
 		}
 		fclose(fp);
@@ -994,10 +967,7 @@ void *gg_img_loadpicture(GGPROTO *gg, struct gg_event* e, char *szFileName)
 	// If everything is fine return the handle
 	if(dat->hBitmap) return dat;
 
-#ifdef DEBUGMODE
 	gg_netlog(gg, "gg_img_loadpicture(): MS_IMG_LOAD(MEM) failed.");
-#endif
-
 	if(dat)
 	{
 		if(dat->lpData)
@@ -1016,10 +986,7 @@ INT_PTR gg_img_recvimage(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
 	CLISTEVENT *cle = (CLISTEVENT *)lParam;
 	GGIMAGEENTRY *img = (GGIMAGEENTRY *)cle->lParam;
 
-#ifdef DEBUGMODE
 	gg_netlog(gg, "gg_img_recvimage(%x, %x): Popup new image.", wParam, lParam);
-#endif
-
 	if(!img) return FALSE;
 
 	gg_img_display(gg, cle->hContact, img);
@@ -1102,9 +1069,7 @@ GGIMAGEDLGDATA *gg_img_find(GGPROTO *gg, uin_t uin, uint32_t crc32)
 	}
 	LeaveCriticalSection(&gg->img_mutex);
 
-#ifdef DEBUGMODE
 	gg_netlog(gg, "gg_img_find(): Image not found on the list. It might be released before calling this function.");
-#endif
 	return NULL;
 }
 

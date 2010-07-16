@@ -46,22 +46,15 @@ int gg_gc_init(GGPROTO *gg)
 		gcr.pColors = 0;
 		gcr.ptszModuleDispName = gg->proto.m_tszUserName;
 		gcr.pszModule = GG_PROTO;
-#ifdef DEBUGMODE
-		gg_netlog(gg, "gg_gc_init(): Trying to register groupchat plugin...");
-#endif
 		CallServiceSync(MS_GC_REGISTER, 0, (LPARAM)&gcr);
 		gg->hookGCUserEvent = HookProtoEvent(ME_GC_EVENT, gg_gc_event, gg);
 		gg->gc_enabled = TRUE;
 		// create & hook event
 		mir_snprintf(service, 64, GG_GC_GETCHAT, GG_PROTO);
-#ifdef DEBUGMODE
 		gg_netlog(gg, "gg_gc_init(): Registered with groupchat plugin.");
-#endif
 	}
-#ifdef DEBUGMODE
 	else
 		gg_netlog(gg, "gg_gc_init(): Cannot register with groupchat plugin !!!");
-#endif
 
 	return 1;
 }
@@ -151,9 +144,7 @@ int gg_gc_event(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
 	if(gch->pDest->iType == SESSION_TERMINATE)
 	{
 		HANDLE hContact = NULL;
-#ifdef DEBUGMODE
 		gg_netlog(gg, "gg_gc_event(): Terminating chat %x, id %s from chat window...", chat, gch->pDest->pszID);
-#endif
 		// Destroy chat entry
 		free(chat->recipients);
 		list_remove(&gg->chats, chat, 1);
@@ -198,9 +189,7 @@ int gg_gc_event(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
 		gcevent.time = time(NULL);
 		gcevent.bIsMe = 1;
 		gcevent.dwFlags = GCEF_ADDTOLOG;
-#ifdef DEBUGMODE
 		gg_netlog(gg, "gg_gc_event(): Sending conference message to room %s, \"%s\".", gch->pDest->pszID, gch->pszText);
-#endif
 		CallServiceSync(MS_GC_EVENT, 0, (LPARAM)&gcevent);
 		if(gcevent.pszNick == dbv.pszVal) DBFreeVariant(&dbv);
 		EnterCriticalSection(&gg->sess_mutex);
@@ -216,10 +205,7 @@ int gg_gc_event(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
 		if((uin = atoi(gch->pszUID)) && (hContact = gg_getcontact(gg, uin, 1, 0, NULL)))
 			CallService(MS_MSG_SENDMESSAGE, (WPARAM)hContact, (LPARAM)0);
 	}
-
-#ifdef DEBUGMODE
 	gg_netlog(gg, "gg_gc_event(): Unhandled event %d, chat %x, uin %d, text \"%s\".", gch->pDest->iType, chat, uin, gch->pszText);
-#endif
 
 	return 0;
 }
@@ -244,9 +230,7 @@ char *gg_gc_getchat(GGPROTO *gg, uin_t sender, uin_t *recipients, int recipients
 	GCDEST gcdest = {GG_PROTO, 0, GC_EVENT_ADDGROUP};
 	GCEVENT gcevent = {sizeof(GCEVENT), &gcdest};
 
-#ifdef DEBUGMODE
 	gg_netlog(gg, "gg_gc_getchat(): Count %d.", recipients_count);
-#endif
 	if(!recipients) return NULL;
 
 	// Look for existing chat
@@ -271,12 +255,10 @@ char *gg_gc_getchat(GGPROTO *gg, uin_t sender, uin_t *recipients, int recipients
 			// Found all recipients
 			if(found == recipients_count)
 			{
-#ifdef DEBUGMODE
 				if(chat->ignore)
 					gg_netlog(gg, "gg_gc_getchat(): Ignoring existing id %s, size %d.", chat->id, chat->recipients_count);
 				else
 					gg_netlog(gg, "gg_gc_getchat(): Returning existing id %s, size %d.", chat->id, chat->recipients_count);
-#endif
 				return !(chat->ignore) ? chat->id : NULL;
 			}
 		}
@@ -326,9 +308,7 @@ char *gg_gc_getchat(GGPROTO *gg, uin_t sender, uin_t *recipients, int recipients
 			for(i = 0; i < recipients_count; i++)
 				chat->recipients[i] = recipients[i];
 			if(sender) chat->recipients[i] = sender;
-	#ifdef DEBUGMODE
 			gg_netlog(gg, "gg_gc_getchat(): Ignoring new chat %s, count %d.", chat->id, chat->recipients_count);
-	#endif
 			list_add(&gg->chats, chat, 0);
 			return NULL;
 		}
@@ -353,9 +333,7 @@ char *gg_gc_getchat(GGPROTO *gg, uin_t sender, uin_t *recipients, int recipients
 	// Create new room
 	if(CallServiceSync(MS_GC_NEWSESSION, 0, (LPARAM) &gcwindow))
 	{
-#ifdef DEBUGMODE
 		gg_netlog(gg, "gg_gc_getchat(): Cannot create new chat window %s.", chat->id);
-#endif
 		free(name);
 		free(chat);
 		return NULL;
@@ -382,15 +360,10 @@ char *gg_gc_getchat(GGPROTO *gg, uin_t sender, uin_t *recipients, int recipients
 			gcevent.pszNick = Translate("Me");
 		gcevent.bIsMe = 1;
 		CallServiceSync(MS_GC_EVENT, 0, (LPARAM)&gcevent);
-#ifdef DEBUGMODE
 		gg_netlog(gg, "gg_gc_getchat(): Myself %s: %s (%s) to the list...", gcevent.pszUID, gcevent.pszNick, gcevent.pszStatus);
-#endif
 		if(gcevent.pszNick == dbv.pszVal) DBFreeVariant(&dbv);
 	}
-#ifdef DEBUGMODE
-	else
-		gg_netlog(gg, "gg_gc_getchat(): Myself adding failed with uin %d !!!", uin);
-#endif
+	else gg_netlog(gg, "gg_gc_getchat(): Myself adding failed with uin %d !!!", uin);
 
 	// Copy recipient list
 	chat->recipients_count = recipients_count + (sender ? 1 : 0);
@@ -409,18 +382,14 @@ char *gg_gc_getchat(GGPROTO *gg, uin_t sender, uin_t *recipients, int recipients
 		else
 			gcevent.pszNick = Translate("'Unknown'");
 		gcevent.bIsMe = 0;
-#ifdef DEBUGMODE
 		gg_netlog(gg, "gg_gc_getchat(): Added %s: %s (%s) to the list...", gcevent.pszUID, gcevent.pszNick, gcevent.pszStatus);
-#endif
 		CallServiceSync(MS_GC_EVENT, 0, (LPARAM)&gcevent);
 	}
 	gcdest.iType = GC_EVENT_CONTROL;
 	CallServiceSync(MS_GC_EVENT, SESSION_INITDONE, (LPARAM)&gcevent);
 	CallServiceSync(MS_GC_EVENT, SESSION_ONLINE, (LPARAM)&gcevent);
 
-#ifdef DEBUGMODE
 	gg_netlog(gg, "gg_gc_getchat(): Returning new chat window %s, count %d.", chat->id, chat->recipients_count);
-#endif
 	list_add(&gg->chats, chat, 0);
 	return chat->id;
 }
@@ -503,9 +472,7 @@ static INT_PTR CALLBACK gg_gc_openconfdlg(HWND hwndDlg,UINT message,WPARAM wPara
 						if(count)
 						{
 							uin_t *participants = calloc(count, sizeof(uin_t));
-#ifdef DEBUGMODE
 							gg_netlog(gg, "gg_gc_getchat(): Opening new conference for %d contacts.", count);
-#endif
 							hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
 							while (hContact && i < count)
 							{
@@ -670,10 +637,7 @@ int gg_gc_changenick(GGPROTO *gg, HANDLE hContact, char *pszNick)
 	uin_t uin = DBGetContactSettingDword(hContact, GG_PROTO, GG_KEY_UIN, 0);
 	if(!uin || !pszNick) return 0;
 
-#ifdef DEBUGMODE
 	gg_netlog(gg, "gg_gc_changenick(): Nickname for uin %d changed to %s.", uin, pszNick);
-#endif
-
 	// Lookup for chats having this nick
 	for(l = gg->chats; l; l = l->next)
 	{
@@ -695,9 +659,7 @@ int gg_gc_changenick(GGPROTO *gg, HANDLE hContact, char *pszNick)
 					gcd.pszID = chat->id;
 					gce.pszUID = id;
 					gce.pszText = pszNick;
-#ifdef DEBUGMODE
 					gg_netlog(gg, "gg_gc_changenick(): Found room %s with uin %d, sending nick change %s.", chat->id, uin, id);
-#endif
 					CallServiceSync(MS_GC_EVENT, 0, (LPARAM)&gce);
 
 					break;

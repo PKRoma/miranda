@@ -121,14 +121,10 @@ void gg_getavatarfileinfo(GGPROTO *gg, uin_t uin, char **avatarurl, int *type)
 			mir_free(tag);
 			mir_free(xmlAction);
 		}
-#ifdef DEBUGMODE
 		else gg_netlog(gg, "gg_getavatarfileinfo(): Invalid response code from HTTP request");
-#endif
 		CallService(MS_NETLIB_FREEHTTPREQUESTSTRUCT, 0, (LPARAM)resp);
 	}
-#ifdef DEBUGMODE
 	else gg_netlog(gg, "gg_getavatarfileinfo(): No response from HTTP request");
-#endif
 }
 
 char *gg_avatarhash(char *param)
@@ -188,9 +184,7 @@ void __cdecl gg_avatarrequestthread(GGPROTO *gg, void *empty)
 {
 	list_t l;
 
-#ifdef DEBUGMODE
 	gg_netlog(gg, "gg_avatarrequestthread(): Avatar Request Thread Starting");
-#endif
 	while (gg->pth_avatar.dwThreadId)
 	{
 		EnterCriticalSection(&gg->avatar_mutex);
@@ -252,14 +246,10 @@ void __cdecl gg_avatarrequestthread(GGPROTO *gg, void *empty)
 						result = 1;
 					}
 				}
-#ifdef DEBUGMODE
 				else gg_netlog(gg, "gg_avatarrequestthread(): Invalid response code from HTTP request");
-#endif
 				CallService(MS_NETLIB_FREEHTTPREQUESTSTRUCT, 0, (LPARAM)resp);
 			}
-#ifdef DEBUGMODE
 			else gg_netlog(gg, "gg_avatarrequestthread(): No response from HTTP request");
-#endif
 
 			ProtoBroadcastAck(GG_PROTO, pai.hContact, ACKTYPE_AVATAR,
 				result ? ACKRESULT_SUCCESS : ACKRESULT_FAILED, (HANDLE)&pai, 0);
@@ -286,9 +276,7 @@ void __cdecl gg_avatarrequestthread(GGPROTO *gg, void *empty)
 	}
 	list_destroy(gg->avatar_requests, 0);
 	list_destroy(gg->avatar_transfers, 0);
-#ifdef DEBUGMODE
 	gg_netlog(gg, "gg_avatarrequestthread(): Avatar Request Thread Ending");
-#endif
 }
 
 void gg_initavatarrequestthread(GGPROTO *gg)
@@ -347,17 +335,12 @@ int gg_setavatar(GGPROTO *gg, const char *szFilename)
 		*fileext, image_ext[4], image_type[11];
 	int file_fd, avatardatalen, datalen, contentlen, contentendlen, res = 0, repeat = 0;
 
-#ifdef DEBUGMODE
 	gg_netlog(gg, "gg_setvatar(): Trying to set user avatar using %s...", szFilename);
-#endif
-
 	UIN2ID(DBGetContactSettingDword(NULL, GG_PROTO, GG_KEY_UIN, 0), uin);
 
 	file_fd = _open(szFilename, _O_RDONLY | _O_BINARY, _S_IREAD);
 	if (file_fd == -1) {
-#ifdef DEBUGMODE
 		gg_netlog(gg, "gg_setavatar(): Wrong filename.");
-#endif
 		return 0;
 	}
 	avatardatalen = _filelength(file_fd);
@@ -421,16 +404,12 @@ int gg_setavatar(GGPROTO *gg, const char *szFilename)
 #endif
 			res = 1;
 		}
-#ifdef DEBUGMODE
 		else gg_netlog(gg, "gg_setavatar(): Invalid response code from HTTP request");
-#endif
 		if (resp->resultCode == 403 || resp->resultCode == 401)
 			repeat = 1;
 		CallService(MS_NETLIB_FREEHTTPREQUESTSTRUCT, 0, (LPARAM)resp);
 	}
-#ifdef DEBUGMODE
 	else gg_netlog(gg, "gg_setavatar(): No response from HTTP request");
-#endif
 
 	if (repeat) { // Access Token expired - we need to obtain new
 		mir_free(authHeader);
@@ -455,26 +434,20 @@ int gg_setavatar(GGPROTO *gg, const char *szFilename)
 #endif
 				res = 1;
 			}
-#ifdef DEBUGMODE
 			else gg_netlog(gg, "gg_setavatar(): Invalid response code from HTTP request");
-#endif
 			CallService(MS_NETLIB_FREEHTTPREQUESTSTRUCT, 0, (LPARAM)resp);
 		}
-#ifdef DEBUGMODE
 		else gg_netlog(gg, "gg_setavatar(): No response from HTTP request");
-#endif
 	}
 
 	mir_free(authHeader);
 	mir_free(avatardata);
 	mir_free(data);
 
-#ifdef DEBUGMODE
 	if (res)
 		gg_netlog(gg, "gg_setavatar(): User avatar set successfully.");
 	else
 		gg_netlog(gg, "gg_setavatar(): Failed to set user avatar.");
-#endif
 
 	return res;
 }

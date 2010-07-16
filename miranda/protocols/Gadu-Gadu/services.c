@@ -153,16 +153,12 @@ int gg_refreshstatus(GGPROTO *gg, int status)
 		EnterCriticalSection(&gg->sess_mutex);
 		if(szMsg)
 		{
-#ifdef DEBUGMODE
 			gg_netlog(gg, "gg_refreshstatus(): Setting status and away message \"%s\".", szMsg);
-#endif
 			gg_change_status_descr(gg->sess, status_m2gg(gg, status, szMsg != NULL), szMsg);
 		}
 		else
 		{
-#ifdef DEBUGMODE
 			gg_netlog(gg, "gg_refreshstatus(): Setting just status.");
-#endif
 			gg_change_status(gg->sess, status_m2gg(gg, status, 0));
 		}
 		LeaveCriticalSection(&gg->sess_mutex);
@@ -208,11 +204,7 @@ int gg_setstatus(PROTO_INTERFACE *proto, int iNewStatus)
 	LeaveCriticalSection(&gg->modemsg_mutex);
 
 	if (gg->proto.m_iStatus == nNewStatus) return 0;
-#ifdef DEBUGMODE
-	gg_netlog(gg, "gg_setstatus(): PS_SETSTATUS(%s) normalized to %s",
-		(char *) CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, iNewStatus, 0),
-		(char *) CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, nNewStatus, 0));
-#endif
+	gg_netlog(gg, "gg_setstatus(): PS_SETSTATUS(%d) normalized to %d.", iNewStatus, nNewStatus);
 	gg_refreshstatus(gg, nNewStatus);
 
 	return 0;
@@ -282,9 +274,7 @@ int gg_sendmessage(PROTO_INTERFACE *proto, HANDLE hContact, int flags, const cha
 void __cdecl gg_searchthread(GGPROTO *gg, void *empty)
 {
 	SleepEx(100, FALSE);
-#ifdef DEBUGMODE
 	gg_netlog(gg, "gg_searchthread(): Failed search.");
-#endif
 	ProtoBroadcastAck(GG_PROTO, NULL, ACKTYPE_SEARCH, ACKRESULT_FAILED, (HANDLE)1, 0);
 }
 HANDLE gg_basicsearch(PROTO_INTERFACE *proto, const PROTOCHAR *id)
@@ -318,9 +308,7 @@ HANDLE gg_basicsearch(PROTO_INTERFACE *proto, const PROTOCHAR *id)
 		return (HANDLE)1;
 	}
 	LeaveCriticalSection(&gg->sess_mutex);
-#ifdef DEBUGMODE
 	gg_netlog(gg, "gg_basicsearch(): Seq %d.", req->seq);
-#endif
 	gg_pubdir50_free(req);
 
 	return (HANDLE)1;
@@ -391,9 +379,7 @@ static HANDLE gg_searchbydetails(PROTO_INTERFACE *proto, const PROTOCHAR *nick, 
 		return (HANDLE)1;
 	}
 	LeaveCriticalSection(&gg->sess_mutex);
-#ifdef DEBUGMODE
 	gg_netlog(gg, "gg_searchbyname(): Seq %d.", req->seq);
-#endif
 	gg_pubdir50_free(req);
 
 	return (HANDLE)1;
@@ -425,9 +411,7 @@ HANDLE gg_addtolist(PROTO_INTERFACE *proto, int flags, PROTOSEARCHRESULT *psr)
 void __cdecl gg_cmdgetinfothread(GGPROTO *gg, void *hContact)
 {
 	SleepEx(100, FALSE);
-#ifdef DEBUGMODE
 	gg_netlog(gg, "gg_cmdgetinfothread(): Failed info retreival.");
-#endif
 	ProtoBroadcastAck(GG_PROTO, hContact, ACKTYPE_GETINFO, ACKRESULT_FAILED, (HANDLE) 1, 0);
 }
 int gg_getinfo(PROTO_INTERFACE *proto, HANDLE hContact, int infoType)
@@ -448,9 +432,7 @@ int gg_getinfo(PROTO_INTERFACE *proto, HANDLE hContact, int infoType)
 		gg_pubdir50_add(req, GG_PUBDIR50_UIN, ditoa((uin_t)DBGetContactSettingDword(hContact, GG_PROTO, GG_KEY_UIN, 0)));
 		gg_pubdir50_seq_set(req, GG_SEQ_INFO);
 
-#ifdef DEBUGMODE
 		gg_netlog(gg, "gg_getinfo(): Requesting user info.", req->seq);
-#endif
 		if(gg_isonline(gg))
 		{
 			EnterCriticalSection(&gg->sess_mutex);
@@ -475,9 +457,7 @@ int gg_getinfo(PROTO_INTERFACE *proto, HANDLE hContact, int infoType)
 		// Add seq
 		gg_pubdir50_seq_set(req, GG_SEQ_CHINFO);
 
-#ifdef DEBUGMODE
 		gg_netlog(gg, "gg_getinfo(): Requesting owner info.", req->seq);
-#endif
 		if(gg_isonline(gg))
 		{
 			EnterCriticalSection(&gg->sess_mutex);
@@ -490,9 +470,7 @@ int gg_getinfo(PROTO_INTERFACE *proto, HANDLE hContact, int infoType)
 			LeaveCriticalSection(&gg->sess_mutex);
 		}
 	}
-#ifdef DEBUGMODE
 	gg_netlog(gg, "gg_getinfo(): Seq %d.", req->seq);
-#endif
 	gg_pubdir50_free(req);
 
 	return 1;
@@ -508,9 +486,7 @@ void __cdecl gg_getawaymsgthread(GGPROTO *gg, void *hContact)
 	if (!DBGetContactSettingString(hContact, "CList", GG_KEY_STATUSDESCR, &dbv))
 	{
 		ProtoBroadcastAck(GG_PROTO, hContact, ACKTYPE_AWAYMSG, ACKRESULT_SUCCESS, (HANDLE) 1, (LPARAM) dbv.pszVal);
-#ifdef DEBUGMODE
 		gg_netlog(gg, "gg_getawaymsg(): Reading away msg \"%s\".", dbv.pszVal);
-#endif
 		DBFreeVariant(&dbv);
 	}
 	else
@@ -532,9 +508,7 @@ int gg_setawaymsg(PROTO_INTERFACE *proto, int iStatus, const TCHAR *msgt)
 	char **szMsg;
 	char* msg = gg_t2a(msgt);
 
-#ifdef DEBUGMODE
-	gg_netlog(gg, "gg_setawaymsg(): Requesting away message set to \"%s\".", msg);
-#endif
+	gg_netlog(gg, "gg_setawaymsg(): PS_SETAWAYMSG(%d, \"%s\").", iStatus, msg);
 
 	EnterCriticalSection(&gg->modemsg_mutex);
 	// Select proper msg
@@ -567,9 +541,7 @@ int gg_setawaymsg(PROTO_INTERFACE *proto, int iStatus, const TCHAR *msgt)
 	{
 		if(status == gg->proto.m_iDesiredStatus && gg->proto.m_iDesiredStatus == gg->proto.m_iStatus)
 		{
-#ifdef DEBUGMODE
 			gg_netlog(gg, "gg_setawaymsg(): Message hasn't been changed, return.");
-#endif
 			LeaveCriticalSection(&gg->modemsg_mutex);
 			mir_free(msg);
 			return 0;
@@ -763,9 +735,7 @@ HWND gg_searchbyadvanced(PROTO_INTERFACE *proto, HWND hwndDlg)
 		}
 		LeaveCriticalSection(&gg->sess_mutex);
 	}
-#ifdef DEBUGMODE
 	gg_netlog(gg, "gg_searchbyadvanced(): Seq %d.", req->seq);
-#endif
 	gg_pubdir50_free(req);
 
 	return (HWND)1;
@@ -803,9 +773,7 @@ INT_PTR gg_getavatarinfo(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
 	DBVARIANT dbv;
 	uin_t uin = (uin_t)DBGetContactSettingDword(pai->hContact, GG_PROTO, GG_KEY_UIN, 0);
 
-#ifdef DEBUGMODE
 	gg_netlog(gg, "gg_getavatarinfo(): Requesting avatar information for %d.", uin);
-#endif
 
 	pai->filename[0] = 0;
 	pai->format = PA_FORMAT_UNKNOWN;
@@ -843,9 +811,7 @@ INT_PTR gg_getavatarinfo(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
 			result = GAIR_SUCCESS;
 		}
 		else if ((wParam & GAIF_FORCE) != 0) {
-#ifdef DEBUGMODE
 			gg_netlog(gg, "gg_getavatarinfo(): Contact %d changed avatar.", uin);
-#endif
 			remove(pai->filename);
 			DBWriteContactSettingString(pai->hContact, GG_PROTO, GG_KEY_AVATARHASH, AvatarHash);
 			gg_getavatar(gg, pai->hContact, AvatarURL);
@@ -854,9 +820,7 @@ INT_PTR gg_getavatarinfo(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
 	}
 	else if ((wParam & GAIF_FORCE) != 0) {
 		if (AvatarHash == NULL && AvatarSavedHash != NULL) {
-#ifdef DEBUGMODE
 			gg_netlog(gg, "gg_getavatarinfo(): Contact %d deleted avatar.", uin);
-#endif
 			gg_getavatarfilename(gg, pai->hContact, pai->filename, sizeof(pai->filename));
 			remove(pai->filename);
 			DBDeleteContactSetting(pai->hContact, GG_PROTO, GG_KEY_AVATARHASH);
@@ -864,9 +828,7 @@ INT_PTR gg_getavatarinfo(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
 			DBDeleteContactSetting(pai->hContact, GG_PROTO, GG_KEY_AVATARTYPE);
 		}
 		else if (AvatarHash != NULL && AvatarSavedHash == NULL) {
-#ifdef DEBUGMODE
 			gg_netlog(gg, "gg_getavatarinfo(): Contact %d set avatar.", uin);
-#endif
 			DBWriteContactSettingString(pai->hContact, GG_PROTO, GG_KEY_AVATARHASH, AvatarHash);
 			gg_getavatar(gg, pai->hContact, AvatarURL);
 			result = GAIR_WAITFOR;
@@ -887,9 +849,7 @@ INT_PTR gg_getmyavatar(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
 	char *szFilename = (char *)wParam;
 	int len = (int)lParam;
 
-#ifdef DEBUGMODE
 	gg_netlog(gg, "gg_getmyavatar(): Requesting user avatar.");
-#endif
 
 	if (szFilename == NULL || len <= 0)
 		return -1;
@@ -921,9 +881,7 @@ INT_PTR gg_setmyavatar(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
 		char filename[MAX_PATH];
 		gg_getavatarfilename(gg, NULL, filename, sizeof(filename));
 		if (strcmp(szFilename, filename) && !CopyFileA(szFilename, filename, FALSE)) {
-#ifdef DEBUGMODE
 			gg_netlog(gg, "gg_setmyavatar(): Failed to set user avatar. File %s could not be created/overwritten.", filename);
-#endif
 			return res;
 		}
 		remove(filename);

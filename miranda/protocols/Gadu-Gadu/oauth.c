@@ -406,9 +406,7 @@ int gg_oauth_receivetoken(GGPROTO *gg)
 	}
 
 	// 1. Obtaining an Unauthorized Request Token
-#ifdef DEBUGMODE
 	gg_netlog(gg, "gg_oauth_receivetoken(): Obtaining an Unauthorized Request Token...");
-#endif
 	strcpy(szUrl, "http://api.gadu-gadu.pl/request_token");
 	str = oauth_auth_header("POST", szUrl, HMACSHA1, uin, password, NULL, NULL);
 
@@ -451,19 +449,13 @@ int gg_oauth_receivetoken(GGPROTO *gg)
 			mir_free(tag);
 			mir_free(xmlAction);
 		}
-#ifdef DEBUGMODE
 		else gg_netlog(gg, "gg_oauth_receivetoken(): Invalid response code from HTTP request");
-#endif
 		CallService(MS_NETLIB_FREEHTTPREQUESTSTRUCT, 0, (LPARAM)resp);
 	}
-#ifdef DEBUGMODE
 	else gg_netlog(gg, "gg_oauth_receivetoken(): No response from HTTP request");
-#endif
 
 	// 2. Obtaining User Authorization
-#ifdef DEBUGMODE
 	gg_netlog(gg, "gg_oauth_receivetoken(): Obtaining User Authorization...");
-#endif
 	mir_free(str);
 	str = oauth_uri_escape("http://www.mojageneracja.pl");
 
@@ -487,14 +479,10 @@ int gg_oauth_receivetoken(GGPROTO *gg)
 
 	resp = (NETLIBHTTPREQUEST *)CallService(MS_NETLIB_HTTPTRANSACTION, (WPARAM)gg->netlib, (LPARAM)&req);
 	if (resp) CallService(MS_NETLIB_FREEHTTPREQUESTSTRUCT, 0, (LPARAM)resp);
-#ifdef DEBUGMODE
 	else gg_netlog(gg, "gg_oauth_receivetoken(): No response from HTTP request");
-#endif
 
 	// 3. Obtaining an Access Token
-#ifdef DEBUGMODE
 	gg_netlog(gg, "gg_oauth_receivetoken(): Obtaining an Access Token...");
-#endif
 	strcpy(szUrl, "http://api.gadu-gadu.pl/access_token");
 	mir_free(str);
 	str = oauth_auth_header("POST", szUrl, HMACSHA1, uin, password, token, token_secret);
@@ -541,14 +529,10 @@ int gg_oauth_receivetoken(GGPROTO *gg)
 			mir_free(tag);
 			mir_free(xmlAction);
 		}
-#ifdef DEBUGMODE
 		else gg_netlog(gg, "gg_oauth_receivetoken(): Invalid response code from HTTP request");
-#endif
 		CallService(MS_NETLIB_FREEHTTPREQUESTSTRUCT, 0, (LPARAM)resp);
 	}
-#ifdef DEBUGMODE
 	else gg_netlog(gg, "gg_oauth_receivetoken(): No response from HTTP request");
-#endif
 
 	mir_free(password);
 	mir_free(str);
@@ -557,17 +541,13 @@ int gg_oauth_receivetoken(GGPROTO *gg)
 		DBWriteContactSettingString(NULL, GG_PROTO, GG_KEY_TOKEN, token);
 		CallService(MS_DB_CRYPT_ENCODESTRING, (WPARAM)(int)strlen(token_secret) + 1, (LPARAM) token_secret);
 		DBWriteContactSettingString(NULL, GG_PROTO, GG_KEY_TOKENSECRET, token_secret);
-#ifdef DEBUGMODE
 		gg_netlog(gg, "gg_oauth_receivetoken(): Access Token obtained successfully.");
-#endif
 		res = 1;
 	}
 	else {
 		DBDeleteContactSetting(NULL, GG_PROTO, GG_KEY_TOKEN);
 		DBDeleteContactSetting(NULL, GG_PROTO, GG_KEY_TOKENSECRET);
-#ifdef DEBUGMODE
 		gg_netlog(gg, "gg_oauth_receivetoken(): Failed to obtain Access Token.");
-#endif
 	}
 	mir_free(token);
 	mir_free(token_secret);

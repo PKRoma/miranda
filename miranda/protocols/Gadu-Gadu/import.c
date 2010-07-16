@@ -285,7 +285,6 @@ void gg_parsecontacts(GGPROTO *gg, char *contacts)
 #ifdef DEBUGMODE
 			gg_netlog(gg, "gg_parsecontacts(): Found contact %d with nickname \"%s\".", uin, strNick);
 #endif
-
 			// Write group
 			if(hContact && strGroup)
 				DBWriteContactSettingString(hContact, "CList", "Group", CreateGroup(strGroup));
@@ -352,9 +351,7 @@ static INT_PTR gg_import_server(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
 			GG_PROTOERROR,
 			MB_OK | MB_ICONSTOP
 		);
-#ifdef DEBUGMODE
-		gg_netlog(gg, "gg_import_serverthread(): Cannot import list because of \"%s\".", strerror(errno));
-#endif
+		gg_netlog(gg, "gg_import_server(): Cannot import list because of \"%s\".", strerror(errno));
 	}
 	LeaveCriticalSection(&gg->sess_mutex);
 	free(password);
@@ -405,10 +402,7 @@ static INT_PTR gg_remove_server(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
 			GG_PROTOERROR,
 			MB_OK | MB_ICONSTOP
 		);
-
-#ifdef DEBUGMODE
-		gg_netlog(gg, "gg_remove_serverthread(): Cannot remove list because of \"%s\".", strerror(errno));
-#endif
+		gg_netlog(gg, "gg_remove_server(): Cannot remove list because of \"%s\".", strerror(errno));
 	}
 	LeaveCriticalSection(&gg->sess_mutex);
 
@@ -468,7 +462,7 @@ static INT_PTR gg_import_text(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
 	ofn.lpstrDefExt = "txt";
 
 #ifdef DEBUGMODE
-		gg_netlog(gg, "gg_import_text()");
+	gg_netlog(gg, "gg_import_text()");
 #endif
 	if(!GetOpenFileName(&ofn)) return 0;
 
@@ -493,13 +487,14 @@ static INT_PTR gg_import_text(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
 	else
 	{
 		char error[128];
-		mir_snprintf(error, sizeof(error), Translate("List cannot be exported to file \"%s\" because of error:\n\t%s"), str, strerror(errno));
+		mir_snprintf(error, sizeof(error), Translate("List cannot be imported from file \"%s\" because of error:\n\t%s"), str, strerror(errno));
 		MessageBox(
 			NULL,
 			error,
 			GG_PROTOERROR,
 			MB_OK | MB_ICONSTOP
 		);
+		gg_netlog(gg, "gg_import_text(): Cannot import list from file \"%s\" because of \"%s\".", str, strerror(errno));
 	}
 
 	return 0;
@@ -570,6 +565,7 @@ static INT_PTR gg_export_text(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
 			GG_PROTOERROR,
 			MB_OK | MB_ICONSTOP
 		);
+		gg_netlog(gg, "gg_import_text(): Cannot export list to file \"%s\" because of \"%s\".", str, strerror(errno));
 	}
 
 	return 0;
@@ -624,9 +620,7 @@ static INT_PTR gg_export_server(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
 			GG_PROTOERROR,
 			MB_OK | MB_ICONSTOP
 		);
-#ifdef DEBUGMODE
-		gg_netlog(gg, "gg_export_serverthread(): Cannot export list because of \"%s\".", strerror(errno));
-#endif
+		gg_netlog(gg, "gg_export_server(): Cannot export list because of \"%s\".", strerror(errno));
 	}
 	LeaveCriticalSection(&gg->sess_mutex);
 
