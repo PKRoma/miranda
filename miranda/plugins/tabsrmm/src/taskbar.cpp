@@ -391,8 +391,10 @@ void CProxyWindow::sendPreview()
 		HBITMAP hbm = CSkin::CreateAeroCompatibleBitmap(rcContainer, hdc);
 		HBITMAP hbmOld = reinterpret_cast<HBITMAP>(::SelectObject(hdc, hbm));
 
-		CSkin::FillBack(hdc, &rcContainer);
-		CImageItem::SetBitmap32Alpha(hbm, 180);
+		HBRUSH brb = ::CreateSolidBrush(RGB(20, 20, 20));
+		::FillRect(hdc, &rcContainer, brb);
+		::DeleteObject(brb);
+		CImageItem::SetBitmap32Alpha(hbm, 100);
 
 		LRESULT first = ::SendMessage(hwndRich, EM_CHARFROMPOS, 0, reinterpret_cast<LPARAM>(&ptOrigin));
 

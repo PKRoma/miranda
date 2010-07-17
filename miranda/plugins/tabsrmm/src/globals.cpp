@@ -275,7 +275,7 @@ void CGlobals::reloadSettings(bool fReloadSkins)
 	m_SendOnShiftEnter = 				(int)M->GetByte("sendonshiftenter", 0);
 	m_SendOnEnter = 					(int)M->GetByte(SRMSGSET_SENDONENTER, SRMSGDEFSET_SENDONENTER);
 	m_SendOnDblEnter = 					(int)M->GetByte("SendOnDblEnter", 0);
-	m_AutoLocaleSupport = 				(int)M->GetByte("al", 1);
+	m_AutoLocaleSupport = 				(int)M->GetByte("al", 0);
 	m_AutoSwitchTabs = 					(int)M->GetByte("autoswitchtabs", 1);
 	m_CutContactNameTo = 				(int) DBGetContactSettingWord(NULL, SRMSGMOD_T, "cut_at", 15);
 	m_CutContactNameOnTabs = 			(int)M->GetByte("cuttitle", 0);

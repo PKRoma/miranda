@@ -183,6 +183,17 @@ static struct colOptions {
 #define HINT_TRANSPARENT 16
 #define HINT_HOTTRACK 32
 
+static void TSAPI DrawCustomTabPage(HDC hdc, RECT& rcClient)
+{
+	HBRUSH brOld = reinterpret_cast<HBRUSH>(::SelectObject(hdc, CSkin::m_BrushFill));
+	HPEN   hPen = ::CreatePen(PS_SOLID, 1, PluginConfig.m_cRichBorders);
+	HPEN   hPenOld = reinterpret_cast<HPEN>(::SelectObject(hdc, hPen));
+	::Rectangle(hdc, rcClient.left, rcClient.top, rcClient.right, rcClient.bottom);
+	::SelectObject(hdc, hPenOld);
+	::SelectObject(hdc, brOld);
+	::DeleteObject(hPen);
+}
+
 void TSAPI FillTabBackground(const HDC hdc, int iStateId, const TWindowData* dat, RECT* rc)
 {
 	unsigned clrIndex;
@@ -455,9 +466,9 @@ static HRESULT DrawThemesPartWithAero(const TabControlData *tabdat, HDC hDC, int
 
 	if(tabdat->fAeroTabs) {
 		if(tabdat->dwStyle & TCS_BOTTOM)
-			prcBox->top += (fAero ? 2 : iStateId == PBS_PRESSED ? (M->isVSThemed() ? 1 : 0) : 0);
+			prcBox->top += (fAero ? 2 : iStateId == PBS_PRESSED ? (M->isVSThemed() ? 1 : -1) : 0);
 		else if (!fAero)
-			prcBox->bottom -= (iStateId == PBS_PRESSED ? (M->isVSThemed() ? 1 : 0) : 0);
+			prcBox->bottom -= (iStateId == PBS_PRESSED ? (M->isVSThemed() ? 1 : -1) : 0);
 
 		if(fAero)
 			FillRect(hDC, prcBox, CSkin::m_BrushBack);
@@ -1122,14 +1133,17 @@ static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
 				ExcludeClipRect(hdc, rctClip.left, rctClip.top, rctClip.right, rctClip.bottom);
 			else
 				ZeroMemory(&rctClip, sizeof(RECT));
-			if (!bClassicDraw && IntersectRect(&rectTemp, &rctPage, &ps.rcPaint)) {
+			if ((!bClassicDraw || PluginConfig.m_fillColor) && IntersectRect(&rectTemp, &rctPage, &ps.rcPaint)) {
 				RECT rcClient = rctPage;
 				if (dwStyle & TCS_BOTTOM) {
 					rcClient.bottom = rctPage.bottom;
 					uiFlags |= uiBottom;
 				} else
 					rcClient.top = rctPage.top;
-				DrawThemesXpTabItem(hdc, -1, &rcClient, uiFlags, tabdat, 0);	// TABP_PANE=9,0,'TAB'
+				if(PluginConfig.m_fillColor)
+					DrawCustomTabPage(hdc, rcClient);
+				else 
+					DrawThemesXpTabItem(hdc, -1, &rcClient, uiFlags, tabdat, 0);	// TABP_PANE=9,0,'TAB'
 				if (tabdat->bRefreshWithoutClip)
 					goto skip_tabs;
 			} else {
@@ -1156,56 +1170,64 @@ static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
 							rectTemp.bottom--;
 							rectTemp.top++;
 						}
-						MoveToEx(hdc, rectTemp.left, rectTemp.bottom, &pt);
-						LineTo(hdc, rectTemp.left, rectTemp.top + 1);
-						LineTo(hdc, rectTemp.right - 1, rectTemp.top + 1);
-						SelectObject(hdc, PluginConfig.tabConfig.m_hPenShadow);
-						LineTo(hdc, rectTemp.right - 1, rectTemp.bottom);
-						LineTo(hdc, rectTemp.left, rectTemp.bottom);
+						if(PluginConfig.m_fillColor)
+							DrawCustomTabPage(hdc, rectTemp);
+						else {
+							MoveToEx(hdc, rectTemp.left, rectTemp.bottom, &pt);
+							LineTo(hdc, rectTemp.left, rectTemp.top + 1);
+							LineTo(hdc, rectTemp.right - 1, rectTemp.top + 1);
+							SelectObject(hdc, PluginConfig.tabConfig.m_hPenShadow);
+							LineTo(hdc, rectTemp.right - 1, rectTemp.bottom);
+							LineTo(hdc, rectTemp.left, rectTemp.bottom);
+						}
 					} else {
 						rectTemp = rctPage;
-						MoveToEx(hdc, rectTemp.left, rectTemp.bottom - 1, &pt);
-						LineTo(hdc, rectTemp.left, rectTemp.top);
+						if(PluginConfig.m_fillColor)
+							DrawCustomTabPage(hdc, rectTemp);
+						else {
+							MoveToEx(hdc, rectTemp.left, rectTemp.bottom - 1, &pt);
+							LineTo(hdc, rectTemp.left, rectTemp.top);
 
-						if (dwStyle & TCS_BOTTOM) {
-							LineTo(hdc, rectTemp.right - 1, rectTemp.top);
-							SelectObject(hdc, PluginConfig.tabConfig.m_hPenShadow);
-							LineTo(hdc, rectTemp.right - 1, rectTemp.bottom - 1);
-							LineTo(hdc, rctActive.right, rectTemp.bottom - 1);
-							MoveToEx(hdc, rctActive.left - 2, rectTemp.bottom - 1, &pt);
-							LineTo(hdc, rectTemp.left - 1, rectTemp.bottom - 1);
-							SelectObject(hdc, PluginConfig.tabConfig.m_hPenItemShadow);
-							MoveToEx(hdc, rectTemp.right - 2, rectTemp.top + 1, &pt);
-							LineTo(hdc, rectTemp.right - 2, rectTemp.bottom - 2);
-							LineTo(hdc, rctActive.right, rectTemp.bottom - 2);
-							MoveToEx(hdc, rctActive.left - 2, rectTemp.bottom - 2, &pt);
-							LineTo(hdc, rectTemp.left, rectTemp.bottom - 2);
-						} else {
-							if (rctActive.left >= 0) {
-								LineTo(hdc, rctActive.left, rctActive.bottom);
-								if (IsRectEmpty(&rectUpDn))
-									MoveToEx(hdc, rctActive.right, rctActive.bottom, &pt);
-								else {
-									if (rctActive.right >= rectUpDn.left)
-										MoveToEx(hdc, rectUpDn.left - SHIFT_FROM_CUT_TO_SPIN + 2, rctActive.bottom + 1, &pt);
-									else
-										MoveToEx(hdc, rctActive.right, rctActive.bottom, &pt);
-								}
-								LineTo(hdc, rectTemp.right - 2, rctActive.bottom);
+							if (dwStyle & TCS_BOTTOM) {
+								LineTo(hdc, rectTemp.right - 1, rectTemp.top);
+								SelectObject(hdc, PluginConfig.tabConfig.m_hPenShadow);
+								LineTo(hdc, rectTemp.right - 1, rectTemp.bottom - 1);
+								LineTo(hdc, rctActive.right, rectTemp.bottom - 1);
+								MoveToEx(hdc, rctActive.left - 2, rectTemp.bottom - 1, &pt);
+								LineTo(hdc, rectTemp.left - 1, rectTemp.bottom - 1);
+								SelectObject(hdc, PluginConfig.tabConfig.m_hPenItemShadow);
+								MoveToEx(hdc, rectTemp.right - 2, rectTemp.top + 1, &pt);
+								LineTo(hdc, rectTemp.right - 2, rectTemp.bottom - 2);
+								LineTo(hdc, rctActive.right, rectTemp.bottom - 2);
+								MoveToEx(hdc, rctActive.left - 2, rectTemp.bottom - 2, &pt);
+								LineTo(hdc, rectTemp.left, rectTemp.bottom - 2);
 							} else {
-								RECT rectItemLeftmost;
-								UINT nItemLeftmost = FindLeftDownItem(hwnd);
-								TabCtrl_GetItemRect(hwnd, nItemLeftmost, &rectItemLeftmost);
-								LineTo(hdc, rectTemp.right - 2, rctActive.bottom);
-							}
-							SelectObject(hdc, PluginConfig.tabConfig.m_hPenItemShadow);
-							LineTo(hdc, rectTemp.right - 2, rectTemp.bottom - 2);
-							LineTo(hdc, rectTemp.left, rectTemp.bottom - 2);
+								if (rctActive.left >= 0) {
+									LineTo(hdc, rctActive.left, rctActive.bottom);
+									if (IsRectEmpty(&rectUpDn))
+										MoveToEx(hdc, rctActive.right, rctActive.bottom, &pt);
+									else {
+										if (rctActive.right >= rectUpDn.left)
+											MoveToEx(hdc, rectUpDn.left - SHIFT_FROM_CUT_TO_SPIN + 2, rctActive.bottom + 1, &pt);
+										else
+											MoveToEx(hdc, rctActive.right, rctActive.bottom, &pt);
+									}
+									LineTo(hdc, rectTemp.right - 2, rctActive.bottom);
+								} else {
+									RECT rectItemLeftmost;
+									UINT nItemLeftmost = FindLeftDownItem(hwnd);
+									TabCtrl_GetItemRect(hwnd, nItemLeftmost, &rectItemLeftmost);
+									LineTo(hdc, rectTemp.right - 2, rctActive.bottom);
+								}
+								SelectObject(hdc, PluginConfig.tabConfig.m_hPenItemShadow);
+								LineTo(hdc, rectTemp.right - 2, rectTemp.bottom - 2);
+								LineTo(hdc, rectTemp.left, rectTemp.bottom - 2);
 
-							SelectObject(hdc, PluginConfig.tabConfig.m_hPenShadow);
-							MoveToEx(hdc, rectTemp.right - 1, rctActive.bottom, &pt);
-							LineTo(hdc, rectTemp.right - 1, rectTemp.bottom - 1);
-							LineTo(hdc, rectTemp.left - 2, rectTemp.bottom - 1);
+								SelectObject(hdc, PluginConfig.tabConfig.m_hPenShadow);
+								MoveToEx(hdc, rectTemp.right - 1, rctActive.bottom, &pt);
+								LineTo(hdc, rectTemp.right - 1, rectTemp.bottom - 1);
+								LineTo(hdc, rectTemp.left - 2, rectTemp.bottom - 1);
+							}
 						}
 					}
 				}
