@@ -3,6 +3,10 @@
                            www.miranda-im.org
 
 
+* New in 0.9.0
+ *TBA*
+
+
 * New in 0.8.27
 Bugfixes:
  - ICQ: Fixed status when AIM support enabled
