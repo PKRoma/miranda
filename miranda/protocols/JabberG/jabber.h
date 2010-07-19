@@ -769,7 +769,6 @@ void          __stdcall JabberUtfToTchar( const char* str, size_t cbLen, LPTSTR&
 char*         __stdcall JabberBase64Encode( const char* buffer, int bufferLen );
 char*         __stdcall JabberBase64Decode( const TCHAR* buffer, int *resultLen );
 time_t        __stdcall JabberIsoToUnixTime( const TCHAR* stamp );
-int           __stdcall JabberCountryNameToId( const TCHAR* ctry );
 void          __stdcall JabberStringAppend( char* *str, int *sizeAlloced, const char* fmt, ... );
 TCHAR*        __stdcall JabberStripJid( const TCHAR* jid, TCHAR* dest, size_t destLen );
 int           __stdcall JabberGetPictureType( const char* buf );

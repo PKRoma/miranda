@@ -141,7 +141,7 @@ static INT_PTR CALLBACK HomeDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 		SetDialogField( ppro, hwndDlg, IDC_CITY, "City" );
 		SetDialogField( ppro, hwndDlg, IDC_STATE, "State" );
 		SetDialogField( ppro, hwndDlg, IDC_ZIP, "ZIP" );
-		SetDialogField( ppro, hwndDlg, IDC_COUNTRY, "CountryName" );
+		SetDialogField( ppro, hwndDlg, IDC_COUNTRY, "Country" );
 		break;
 	}
 	case WM_COMMAND:
@@ -196,7 +196,7 @@ static INT_PTR CALLBACK WorkDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 		SetDialogField( ppro, hwndDlg, IDC_CITY, "CompanyCity" );
 		SetDialogField( ppro, hwndDlg, IDC_STATE, "CompanyState" );
 		SetDialogField( ppro, hwndDlg, IDC_ZIP, "CompanyZIP" );
-		SetDialogField( ppro, hwndDlg, IDC_COUNTRY, "CompanyCountryName" );
+		SetDialogField( ppro, hwndDlg, IDC_COUNTRY, "CompanyCountry" );
 		break;
 	}
 	case WM_COMMAND:
@@ -957,7 +957,7 @@ void CJabberProto::SaveVcardToDB( HWND hwndPage, int iPage )
 		GetDlgItemText( hwndPage, IDC_ZIP, text, SIZEOF( text ));
 		JSetStringT( NULL, "ZIP", text );
 		GetDlgItemText( hwndPage, IDC_COUNTRY, text, SIZEOF( text ));
-		JSetStringT( NULL, "CountryName", text );
+		JSetStringT( NULL, "Country", text );
 		break;
 
 	// Page 2: Work
@@ -979,7 +979,7 @@ void CJabberProto::SaveVcardToDB( HWND hwndPage, int iPage )
 		GetDlgItemText( hwndPage, IDC_ZIP, text, SIZEOF( text ));
 		JSetStringT( NULL, "CompanyZIP", text );
 		GetDlgItemText( hwndPage, IDC_COUNTRY, text, SIZEOF( text ));
-		JSetStringT( NULL, "CompanyCountryName", text );
+		JSetStringT( NULL, "CompanyCountry", text );
 		break;
 
 	// Page 3: Photo
@@ -1061,8 +1061,8 @@ void CJabberProto::SetServerVcard( BOOL bPhotoChanged, TCHAR* szPhotoFileName )
 	AppendVcardFromDB( n, "LOCALITY", "City" );
 	AppendVcardFromDB( n, "REGION", "State" );
 	AppendVcardFromDB( n, "PCODE", "ZIP" );
-	AppendVcardFromDB( n, "CTRY", "CountryName" );
-	AppendVcardFromDB( n, "COUNTRY", "CountryName" );	// for compatibility with client using old vcard format
+	AppendVcardFromDB( n, "CTRY", "Country" );
+	AppendVcardFromDB( n, "COUNTRY", "Country" );	// for compatibility with client using old vcard format
 
 	n = v << XCHILD( _T("ADR"));
 	n << XCHILD( _T("WORK"));
@@ -1072,8 +1072,8 @@ void CJabberProto::SetServerVcard( BOOL bPhotoChanged, TCHAR* szPhotoFileName )
 	AppendVcardFromDB( n, "LOCALITY", "CompanyCity" );
 	AppendVcardFromDB( n, "REGION", "CompanyState" );
 	AppendVcardFromDB( n, "PCODE", "CompanyZIP" );
-	AppendVcardFromDB( n, "CTRY", "CompanyCountryName" );
-	AppendVcardFromDB( n, "COUNTRY", "CompanyCountryName" );	// for compatibility with client using old vcard format
+	AppendVcardFromDB( n, "CTRY", "CompanyCountry" );
+	AppendVcardFromDB( n, "COUNTRY", "CompanyCountry" );	// for compatibility with client using old vcard format
 
 	n = v << XCHILD( _T("ORG"));
 	AppendVcardFromDB( n, "ORGNAME", "Company" );

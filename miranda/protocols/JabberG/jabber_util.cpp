@@ -768,51 +768,6 @@ time_t __stdcall JabberIsoToUnixTime( const TCHAR* stamp )
 		return ( time_t ) 0;
 }
 
-struct MyCountryListEntry
-{
-	int id;
-	TCHAR* szName;
-}
-static extraCtry[] =
-{
-	{ 1,	_T("United States") },
-	{ 1,	_T("United States of America") },
-	{ 1,	_T("US") },
-	{ 44,	_T("England") }
-};
-
-int __stdcall JabberCountryNameToId( const TCHAR* ptszCountryName )
-{
-	int ctryCount, i;
-
-	// Check for some common strings not present in the country list
-	ctryCount = sizeof( extraCtry )/sizeof( extraCtry[0] );
-	for ( i=0; i < ctryCount && _tcsicmp( extraCtry[i].szName, ptszCountryName ); i++ );
-	if ( i < ctryCount )
-		return extraCtry[i].id;
-
-	// Check Miranda country list
-	{
-		const char* szName;
-		struct CountryListEntry *countries;
-		JCallService( MS_UTILS_GETCOUNTRYLIST, ( WPARAM )&ctryCount, ( LPARAM )&countries );
-
-		#if defined ( _UNICODE )
-			const char* p = ( const char* )mir_t2a( ptszCountryName );
-			szName = NEWSTR_ALLOCA( p );
-			mir_free(( void* )p );
-		#else
-			szName = ptszCountryName;
-		#endif
-
-		for( i=0; i < ctryCount; i++ )
-			if ( !strcmp( countries[i].szName, szName ))
-				return countries[i].id;
-	}
-
-	return 0xffff;
-}
-
 void CJabberProto::SendPresenceTo( int status, TCHAR* to, HXML extra, TCHAR *msg )
 {
 	if ( !m_bJabberOnline ) return;
