@@ -924,9 +924,7 @@ void CJabberProto::OnIqResultGetVcard( HXML iqNode )
 							m = xmlGetChild( n , "COUNTRY" );
 						if ( m!=NULL && xmlGetText( m )!=NULL ) {
 							hasHomeCtry = TRUE;
-							if ( hContact != NULL )
-								JSetWord( hContact, "Country", ( WORD )JabberCountryNameToId( xmlGetText( m ) ));
-							JSetStringT( hContact, "CountryName", xmlGetText( m ) );
+							JSetStringT( hContact, "Country", xmlGetText( m ) );
 					}	}
 
 					if ( !hasWork && xmlGetChild( n , "WORK" )!=NULL ) {
@@ -969,9 +967,7 @@ void CJabberProto::OnIqResultGetVcard( HXML iqNode )
 							m = xmlGetChild( n , "COUNTRY" );
 						if ( m!=NULL && xmlGetText( m )!=NULL ) {
 							hasWorkCtry = TRUE;
-							if ( hContact != NULL )
-								JSetWord( hContact, "CompanyCountry", ( WORD )JabberCountryNameToId( xmlGetText( m ) ));
-							JSetStringT( hContact, "CompanyCountryName", xmlGetText( m ) );
+							JSetStringT( hContact, "CompanyCountry", xmlGetText( m ) );
 					}	}
 				}
 				else if ( !lstrcmp( xmlGetName( n ), _T("TEL"))) {
@@ -1147,12 +1143,8 @@ void CJabberProto::OnIqResultGetVcard( HXML iqNode )
 			JDeleteSetting( hContact, "State" );
 		if ( !hasHomePcode )
 			JDeleteSetting( hContact, "ZIP" );
-		if ( !hasHomeCtry ) {
-			if ( hContact != NULL )
-				JDeleteSetting( hContact, "Country" );
-			else
-				JDeleteSetting( hContact, "CountryName" );
-		}
+		if ( !hasHomeCtry )
+			JDeleteSetting( hContact, "Country" );
 		if ( !hasWorkStreet )
 			JDeleteSetting( hContact, "CompanyStreet" );
 		if ( !hasWorkStreet2 && hContact==NULL )
@@ -1163,12 +1155,8 @@ void CJabberProto::OnIqResultGetVcard( HXML iqNode )
 			JDeleteSetting( hContact, "CompanyState" );
 		if ( !hasWorkPcode )
 			JDeleteSetting( hContact, "CompanyZIP" );
-		if ( !hasWorkCtry ) {
-			if ( hContact != NULL )
-				JDeleteSetting( hContact, "CompanyCountry" );
-			else
-				JDeleteSetting( hContact, "CompanyCountryName" );
-		}
+		if ( !hasWorkCtry )
+			JDeleteSetting( hContact, "CompanyCountry" );
 		if ( !hasUrl )
 			JDeleteSetting( hContact, "Homepage" );
 		if ( !hasOrgname )
