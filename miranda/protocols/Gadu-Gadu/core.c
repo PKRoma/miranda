@@ -1521,6 +1521,9 @@ int status_m2gg(GGPROTO *gg, int status, int descr)
 }
 int status_gg2m(GGPROTO *gg, int status)
 {
+	// ignore additional flags
+	status = GG_S(status);
+
 	// when user has status description but is offline (show it invisible)
 	if(status == GG_STATUS_NOT_AVAIL_DESCR && DBGetContactSettingByte(NULL, GG_PROTO, GG_KEY_SHOWINVISIBLE, GG_KEYDEF_SHOWINVISIBLE))
 		return ID_STATUS_INVISIBLE;
@@ -1570,7 +1573,7 @@ void gg_changecontactstatus(GGPROTO *gg, uin_t uin, int status, const char *ides
 	if(!hContact) return;
 
 	// Write contact status
-	DBWriteContactSettingWord(hContact, GG_PROTO, GG_KEY_STATUS, (WORD)status_gg2m(gg, GG_S(status)));
+	DBWriteContactSettingWord(hContact, GG_PROTO, GG_KEY_STATUS, (WORD)status_gg2m(gg, status));
 
 	// Check if there's description and if it's not empty
 	if(idescr && *idescr)

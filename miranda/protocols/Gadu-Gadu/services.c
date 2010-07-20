@@ -145,27 +145,29 @@ int gg_refreshstatus(GGPROTO *gg, int status)
 	}
 	else
 	{
+		char *szMsg = NULL;
 		// Select proper msg
-		char *szMsg;
-
 		EnterCriticalSection(&gg->modemsg_mutex);
-		szMsg = gg_getstatusmsg(gg, status);
-		EnterCriticalSection(&gg->sess_mutex);
+		szMsg = mir_strdup(gg_getstatusmsg(gg, status));
+		LeaveCriticalSection(&gg->modemsg_mutex);
 		if(szMsg)
 		{
 			gg_netlog(gg, "gg_refreshstatus(): Setting status and away message \"%s\".", szMsg);
+			EnterCriticalSection(&gg->sess_mutex);
 			gg_change_status_descr(gg->sess, status_m2gg(gg, status, szMsg != NULL), szMsg);
+			LeaveCriticalSection(&gg->sess_mutex);
 		}
 		else
 		{
 			gg_netlog(gg, "gg_refreshstatus(): Setting just status.");
+			EnterCriticalSection(&gg->sess_mutex);
 			gg_change_status(gg->sess, status_m2gg(gg, status, 0));
+			LeaveCriticalSection(&gg->sess_mutex);
 		}
-		LeaveCriticalSection(&gg->sess_mutex);
 		// Change status of the contact with our own UIN (if got yourself added to the contact list)
 		gg_changecontactstatus(gg, DBGetContactSettingDword(NULL, GG_PROTO, GG_KEY_UIN, 0), status_m2gg(gg, status, szMsg != NULL), szMsg, 0, 0, 0, 0);
-		LeaveCriticalSection(&gg->modemsg_mutex);
 		gg_broadcastnewstatus(gg, status);
+		mir_free(szMsg);
 	}
 
 	return TRUE;
@@ -338,7 +340,7 @@ static HANDLE gg_searchbydetails(PROTO_INTERFACE *proto, const PROTOCHAR *nick, 
 	{
 		char *nickA = gg_t2a(nick); 
 		gg_pubdir50_add(req, GG_PUBDIR50_NICKNAME, nickA);
-		strncat(data, nick, sizeof(data) - strlen(data));
+		strncat(data, nickA, sizeof(data) - strlen(data));
 		mir_free(nickA);
 	}
 	strncat(data, ".", sizeof(data) - strlen(data));
