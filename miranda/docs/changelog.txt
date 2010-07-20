@@ -4,7 +4,22 @@
 
 
 * New in 0.9.0
- *TBA*
+Enhancements:
+ - Gadu-Gadu: Brought back and improved SSL support (still requires OpenSSL)
+ - Gadu-Gadu: The complete avatars support
+ - Gadu-Gadu: Custom profile folders plugin support for avatars and images
+ - Gadu-Gadu: Added support for changing status by the user simultaneously logged on using different Miranda account or IM client
+ - Gadu-Gadu: Improved showing links from unknown contacts
+ - Gadu-Gadu: Split the protocol menu into two popup menus when it's moved to the status bar
+
+Bugfixes:
+ - Gadu-Gadu: Fixed setting status without status message
+ - Gadu-Gadu: Fixed changing status while connecting
+ - Gadu-Gadu: Fixed status mode/message change issue for yourself added to the contact list
+ - Gadu-Gadu: Auto reconnect did not work in some cases
+ - Gadu-Gadu: Improved thread safety
+ - Gadu-Gadu: Fixed network logging
+ - Gadu-Gadu: Fixed memory leaks
 
 
 * New in 0.8.27
