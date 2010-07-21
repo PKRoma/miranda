@@ -1038,7 +1038,7 @@ INT_PTR CALLBACK DlgProcOptions2(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
 					ofn.lpstrFile = tszReturnName;
 					ofn.nMaxFile = MAX_PATH;
 					ofn.nMaxFileTitle = MAX_PATH;
-					ofn.Flags = OFN_HIDEREADONLY | OFN_DONTADDTORECENT;
+					ofn.Flags = OFN_HIDEREADONLY | OFN_DONTADDTORECENT | OFN_DONTADDTORECENT;
 					ofn.lpstrDefExt = _T("log");
 					GetOpenFileName(&ofn);
 					break;

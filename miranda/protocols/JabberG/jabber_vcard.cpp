@@ -325,7 +325,7 @@ static INT_PTR CALLBACK PhotoDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 				ofn.lpstrCustomFilter = NULL;
 				ofn.lpstrFile = szFileName;
 				ofn.nMaxFile = _MAX_PATH;
-				ofn.Flags = OFN_FILEMUSTEXIST;
+				ofn.Flags = OFN_FILEMUSTEXIST | OFN_DONTADDTORECENT;
 				szFileName[0] = '\0';
 				if ( GetOpenFileName( &ofn )) {
 					struct _stat st;

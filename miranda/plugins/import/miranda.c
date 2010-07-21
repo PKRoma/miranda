@@ -257,7 +257,7 @@ INT_PTR CALLBACK MirandaPageProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM lPa
 				ofn.lpstrFilter = text;
 				ofn.lpstrDefExt = _T("dat");
 				ofn.lpstrFile = str;
-				ofn.Flags = OFN_FILEMUSTEXIST | OFN_EXPLORER | OFN_NOCHANGEDIR;
+				ofn.Flags = OFN_FILEMUSTEXIST | OFN_EXPLORER | OFN_NOCHANGEDIR | OFN_DONTADDTORECENT;
 				ofn.nMaxFile = SIZEOF(str);
 				ofn.lpstrInitialDir = pfd;
 				if (GetOpenFileName(&ofn))

@@ -175,7 +175,7 @@ static INT_PTR CALLBACK LogOptionsDlgProc(HWND hwndDlg,UINT message,WPARAM wPara
 			GetWindowText(GetWindow((HWND)lParam,GW_HWNDPREV),str,SIZEOF(str));
 			ofn.lStructSize=OPENFILENAME_SIZE_VERSION_400;
 			ofn.hwndOwner=hwndDlg;
-			ofn.Flags=OFN_HIDEREADONLY;
+			ofn.Flags=OFN_HIDEREADONLY | OFN_DONTADDTORECENT;
 			if (LOWORD(wParam)==IDC_FILENAMEBROWSE) {
 				ofn.lpstrTitle=TranslateT("Select where log file will be created");
 			} else {

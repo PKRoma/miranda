@@ -1671,7 +1671,7 @@ static INT_PTR CALLBACK DlgProcSkinOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
                         ofn.hInstance = NULL;
                         ofn.lpstrFilter = _T("*.clist");
                         ofn.lpstrFile = str;
-                        ofn.Flags = OFN_FILEMUSTEXIST;
+                        ofn.Flags = OFN_FILEMUSTEXIST | OFN_DONTADDTORECENT;
                         ofn.nMaxFile = MAX_PATH;
                         ofn.nMaxFileTitle = MAX_PATH;
                         ofn.lpstrDefExt = _T("");
