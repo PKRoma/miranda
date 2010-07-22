@@ -6,7 +6,7 @@ rem ---------------------------------------------------------------------------
 
 pushd "..\bin9\Release Unicode64"
 
-dir /B /S *.dll | rebaser /NOCRC
+dir /B /S *.dll | ..\..\bin\rebaser
 
 for /F "tokens=1,2,3 delims= " %%i in (..\..\bin\build.no) do call :Pack %%i %%j %%k
 

@@ -138,18 +138,13 @@ call :Nmake srmm.mak "srmm - Win32 Release"
 popd
 if errorlevel 1 goto :Error
 
-pushd ..\..\miranda\plugins\tabSRMM
-call :Nmake tabSRMM.mak "tabSRMM - Win32 Release"
-popd
-if errorlevel 1 goto :Error
-
 rem ---------------------------------------------------------------------------
 rem Zip it
 rem ---------------------------------------------------------------------------
 
 pushd Release
 
-dir /B /S *.dll | rebaser
+dir /B /S *.dll | ..\rebaser
 
 for /F "tokens=1,2,3 delims= " %%i in (..\build.no) do call :Pack %%i %%j %%k
 
