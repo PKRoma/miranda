@@ -144,7 +144,7 @@ copy ..\release\Icons\xstatus_ICQ.dll    Icons
 copy ..\release\Plugins\advaimg.dll      Plugins
 copy ..\release\Plugins\GG.dll           Plugins
 
-dir /B /S *.dll | rebaser /NOCRC
+dir /B /S *.dll | rebaser
 
 for /F "tokens=1,2,3 delims= " %%i in (..\build.no) do call :Pack %%i %%j %%k
 
