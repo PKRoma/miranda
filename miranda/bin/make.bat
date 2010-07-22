@@ -144,7 +144,7 @@ rem ---------------------------------------------------------------------------
 
 pushd Release
 
-dir /B /S *.dll | rebaser
+dir /B /S *.dll | ..\rebaser
 
 for /F "tokens=1,2,3 delims= " %%i in (..\build.no) do call :Pack %%i %%j %%k
 
@@ -167,10 +167,11 @@ goto :eof
 
 :WriteVer2
 copy m_version.h.in ..\include\m_version.h
+set /A BetaNo=%3-12
 
-echo #define MIRANDA_VERSION_FILEVERSION 0,%1,%2,%3                                >>..\include\m_version.h
+echo #define MIRANDA_VERSION_FILEVERSION  0,%1,%2,%3                               >>..\include\m_version.h
 echo #define MIRANDA_VERSION_STRING      "0.%1.%2.%3"                              >>..\include\m_version.h
-echo #define MIRANDA_VERSION_DISPLAY     "0.%1.%2 alpha build #%3"                 >>..\include\m_version.h
+echo #define MIRANDA_VERSION_DISPLAY     "0.%1.%2 beta #%BetaNo%"                  >>..\include\m_version.h
 echo #define MIRANDA_VERSION_DWORD       MIRANDA_MAKE_VERSION(0, %1, %2, %3)       >>..\include\m_version.h
 echo.                                                                              >>..\include\m_version.h
 echo #endif // M_VERSION_H__                                                       >>..\include\m_version.h
