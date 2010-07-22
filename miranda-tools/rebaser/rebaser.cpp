@@ -2,7 +2,7 @@
 #define WIN32_LEAN_AND_MEAN		// Exclude rarely-used stuff from Windows headers
 
 #include <io.h>
-#include <stdio.h> 
+#include <stdio.h>
 #include <stdlib.h>
 
 #include <windows.h>
@@ -16,9 +16,9 @@ bool	glbCheckMode = false;
 
 void PrintWin32Error( DWORD tErrorCode )
 {
-   char tBuffer[ 1024 ];
-   FormatMessage( FORMAT_MESSAGE_FROM_SYSTEM, NULL, GetLastError(), 0, tBuffer, sizeof( tBuffer ), NULL );
-   fputs( tBuffer, stdout );
+   WCHAR tBuffer[ 1024 ];
+   FormatMessageW( FORMAT_MESSAGE_FROM_SYSTEM, NULL, GetLastError(), 0, tBuffer, ARRAYSIZE( tBuffer ), NULL );
+   fputws( tBuffer, stdout );
    fputc( '\n', stdout );
 }
 
