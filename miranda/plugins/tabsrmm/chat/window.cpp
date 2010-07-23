@@ -281,10 +281,12 @@ static void Chat_UpdateWindowState(TWindowData *dat, UINT msg)
 	}
 #endif
 	dat->Panel->dismissConfig();
-	if(dat->pWnd)
-		dat->pWnd->activateTab();
-
 	dat->dwUnread = 0;
+	if(dat->pWnd) {
+		dat->pWnd->activateTab();
+		dat->pWnd->setOverlayIcon(0, true);
+	}
+
 	if (dat->pContainer->hwndSaved == hwndDlg || dat->bWasDeleted)
 		return;
 

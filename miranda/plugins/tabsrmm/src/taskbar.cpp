@@ -196,7 +196,7 @@ void CTaskbarInteract::SetTabActive(const HWND hwndTab, const HWND hwndGroup) co
  */
 void CProxyWindow::add(TWindowData *dat)
 {
-	if(PluginConfig.m_bIsWin7 && PluginConfig.m_useAeroPeek && (!CSkin::m_skinEnabled || M->GetByte("forceAeroPeek", 0)))
+	if(PluginConfig.m_bIsWin7 && PluginConfig.m_useAeroPeek) // && (!CSkin::m_skinEnabled || M->GetByte("forceAeroPeek", 0)))
 		dat->pWnd = new CProxyWindow(dat);
 	else
 		dat->pWnd = 0;
@@ -431,8 +431,6 @@ void CProxyWindow::sendPreview()
 			::SendMessage(hwndRich, EM_FORMATRANGE, 1, reinterpret_cast<LPARAM>(&fr));
 		}
 
-		//::BitBlt(hdcRich, 0, 0, cx, cy, dc, 0, 0, CAPTUREBLT|SRCCOPY);
-
 		::SelectObject(hdcRich, hbmRichOld);
 		CImageItem::SetBitmap32Alpha(hbmRich, 255);
 		::SelectObject(hdcRich, hbmRich);
@@ -443,7 +441,12 @@ void CProxyWindow::sendPreview()
 
 		::SelectObject(hdc, hbmOld);
 		::DeleteDC(hdc);
-		pt.x = pt.y = 0;
+		if(CSkin::m_skinEnabled && CSkin::m_frameSkins) {
+			pt.x = CSkin::m_SkinnedFrame_left;
+			pt.y = CSkin::m_SkinnedFrame_caption + CSkin::m_SkinnedFrame_bottom;
+		}
+		else
+			pt.x = pt.y = 0;
 		CMimAPI::m_pfnDwmSetIconicLivePreviewBitmap(m_hwndProxy, hbm, &pt, m_dat->pContainer->dwFlags & CNT_CREATE_MINIMIZED ? 0 : DWM_SIT_DISPLAYFRAME);
 		::ReleaseDC(m_dat->hwnd, dc);
 		::DeleteObject(hbm);
@@ -463,6 +466,22 @@ void CProxyWindow::sendPreview()
 void CProxyWindow::setBigIcon(const HICON hIcon, bool fInvalidate)
 {
 	m_hBigIcon = hIcon;
+	if(fInvalidate)
+		Invalidate();
+}
+
+/**
+ * set a overlay icon for the thumbnail. This is mostly used by group chats
+ * to indicate last active event in the session.
+ *
+ * hIcon may be 0 to remove a custom overlay icon.
+ *
+ * @param hIcon			icon handle (should be a 16x16 icon)
+ * @param fInvalidate	invalidate the thumbnail (default value = true)
+ */
+void CProxyWindow::setOverlayIcon(const HICON hIcon, bool fInvalidate)
+{
+	m_hOverlayIcon = hIcon;
 	if(fInvalidate)
 		Invalidate();
 }
@@ -666,14 +685,7 @@ void CThumbBase::renderBase()
 
 	InflateRect(&m_rc, -3, -3);
 
-	m_rcTop = m_rc;
-	m_rcBottom = m_rc;
-	m_rcBottom.top = m_rc.bottom - ( 2 * (m_rcBottom.bottom / 5)) - 2;
-	m_rcTop.bottom = m_rcBottom.top - 2;
-
-	m_rcIcon = m_rcTop;
-	m_rcIcon.right = m_rc.right / 3;
-
+	setupRect();
 	hIcon = m_pWnd->getBigIcon();
 
 	if(0 == hIcon) {
@@ -694,10 +706,13 @@ void CThumbBase::renderBase()
 		}
 	}
 	::DrawIconEx(m_hdc, m_rcIcon.right / 2 - lIconSize / 2, m_rcIcon.top, hIcon, lIconSize, lIconSize, 0, 0, DI_NORMAL);
+	hIcon = m_pWnd->getOverlayIcon();
+	if(hIcon)
+		::DrawIconEx(m_hdc, m_rcIcon.right - 16, m_rcIcon.bottom - 16, hIcon, 16, 16, 0, 0, DI_NORMAL);
 
 	m_rcIcon.top += (lIconSize + 3);
 	CSkin::RenderText(m_hdc, m_dat->hTheme, m_dat->szStatus, &m_rcIcon, m_dtFlags | DT_CENTER | DT_WORD_ELLIPSIS, 10, 0, true);
-	if(m_dat->dwUnread) {
+	if(m_dat->dwUnread && SESSIONTYPE_IM == m_dat->bType) {
 		wchar_t	tszTemp[30];
 
 		m_rcIcon.top += m_sz.cy;
@@ -710,6 +725,32 @@ void CThumbBase::renderBase()
 	m_cx = m_rcIcon.right - m_rcIcon.left;
 	m_cy = m_rcIcon.bottom - m_rcIcon.top;
 }
+
+/**
+ * divide space into content rectangles for normal thumbnails
+ */
+void CThumbBase::setupRect()
+{
+	if(SESSIONTYPE_IM == m_pWnd->getDat()->bType) {
+		m_rcTop = m_rc;
+		m_rcBottom = m_rc;
+		m_rcBottom.top = m_rc.bottom - ( 2 * (m_rcBottom.bottom / 5)) - 2;
+		m_rcTop.bottom = m_rcBottom.top - 2;
+
+		m_rcIcon = m_rcTop;
+		m_rcIcon.right = m_rc.right / 3;
+	}
+	else {
+		m_rcTop = m_rc;
+		m_rcBottom = m_rc;
+		m_rcBottom.top = m_rc.bottom - ( 2 * (m_rcBottom.bottom / 5)) - 2;
+		m_rcTop.bottom = m_rcBottom.top - 2;
+
+		m_rcIcon = m_rcTop;
+		m_rcIcon.right = m_rc.left + 42;
+	}
+}
+
 /**
  * destroy the thumbnail object. Just delete the bitmap we cached
  * @return
@@ -838,6 +879,7 @@ void CThumbMUC::update()
 	renderContent();
 	setValid(true);
 }
+
 /**
  * render content area for a MUC thumbnail
  */
@@ -849,6 +891,11 @@ void CThumbMUC::renderContent()
 		const wchar_t*		szStatusMsg = 0;
 
 		if(mi) {
+			if(m_dat->dwUnread) {
+				mir_sntprintf(szTemp, 30, CTranslator::get(CTranslator::GEN_TASKBAR_STRING_UNREAD), m_dat->dwUnread);
+				CSkin::RenderText(m_hdc, m_dat->hTheme, szTemp, &m_rcIcon, m_dtFlags | DT_SINGLELINE | DT_RIGHT, 10, 0, true);
+				m_rcIcon.top += m_sz.cy;
+			}
 			if(m_dat->si->iType != GCW_SERVER) {
 				wchar_t* _p = NULL;
 				if ( m_dat->si->ptszStatusbarText )

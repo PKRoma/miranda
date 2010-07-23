@@ -439,7 +439,7 @@ void TSAPI DoFlashAndSoundWorker(FLASH_PARAMS* p)
 		}
 		if(dat->pWnd) {
 			dat->pWnd->updateIcon(p->hNotifyIcon);
-			dat->pWnd->Invalidate();
+			dat->pWnd->setOverlayIcon(p->hNotifyIcon, true);
 		}
 
 		// autoswitch tab..

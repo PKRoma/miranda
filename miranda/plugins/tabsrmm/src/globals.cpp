@@ -235,7 +235,7 @@ void CGlobals::reloadSystemModulesChanged()
 
 	if(g_MetaContactsAvail) {
 		mir_snprintf(szMetaName, 256, "%s", (char *)CallService(MS_MC_GETPROTOCOLNAME, 0, 0));
-		bMetaEnabled = M->GetByte(0, szMetaName, "Enabled", 0);
+		bMetaEnabled = abs(M->GetByte(0, szMetaName, "Enabled", -1));
 	}
 	else {
 		szMetaName[0] = 0;
@@ -526,7 +526,7 @@ int CGlobals::DBSettingChanged(WPARAM wParam, LPARAM lParam)
 
 	if(wParam == 0 && !lstrcmpA(setting, "Enabled")) {
 		if(PluginConfig.g_MetaContactsAvail && !lstrcmpA(cws->szModule, PluginConfig.szMetaName)) { 		// catch the disabled meta contacts
-			PluginConfig.bMetaEnabled = M->GetByte(0, PluginConfig.szMetaName, "Enabled", 0);
+			PluginConfig.bMetaEnabled = abs(M->GetByte(0, PluginConfig.szMetaName, "Enabled", -1));
 			cacheUpdateMetaChanged();
 		}
 	}

@@ -38,7 +38,7 @@
 
 #define _UNICODE 1
 
-//#define __FEAT_EXP_AUTOSPLITTER 1					// autosize input area on request (experimental, incomplete, don't use,
+#define __FEAT_EXP_AUTOSPLITTER 1					// autosize input area on request (experimental, incomplete, don't use,
 													// feature postponed to rel 3.1.+)
 //#define __LOGDEBUG_	1								// log some stuff to %profile_dir%/tabsrmm_debug.log
 
