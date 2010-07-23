@@ -9,6 +9,8 @@
 
 #include "imagehlp.h"
 
+#define SIZEOF(X) (sizeof(X)/sizeof(X[0]))
+
 DWORD glbOffset = 0x12000000;   // rebased offset by default
 bool	glbCheckMode = false;
 
@@ -17,7 +19,7 @@ bool	glbCheckMode = false;
 void PrintWin32Error( DWORD tErrorCode )
 {
    WCHAR tBuffer[ 1024 ];
-   FormatMessageW( FORMAT_MESSAGE_FROM_SYSTEM, NULL, GetLastError(), 0, tBuffer, ARRAYSIZE( tBuffer ), NULL );
+   FormatMessageW( FORMAT_MESSAGE_FROM_SYSTEM, NULL, GetLastError(), 0, tBuffer, SIZEOF( tBuffer ), NULL );
    fputws( tBuffer, stdout );
    fputc( '\n', stdout );
 }
