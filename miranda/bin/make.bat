@@ -2,9 +2,9 @@
 
 for /F "tokens=1,2,3 delims= " %%i in (build.no) do call :WriteVer %%i %%j %%k
 
-md Release
-md "Release/Icons"
-md "Release/Plugins"
+if not exist Release md Release
+if not exist "Release/Icons" md "Release/Icons"
+if not exist "Release/Plugins" md "Release/Plugins"
 
 rem ---------------------------------------------------------------------------
 rem Main modules
@@ -26,11 +26,6 @@ rem ---------------------------------------------------------------------------
 
 pushd ..\..\miranda\protocols\IcqOscarJ
 call :Nmake IcqOscar8.mak "icqoscar8 - Win32 Release"
-popd
-if errorlevel 1 goto :Error
-
-pushd ..\..\miranda\protocols\IcqOscarJ\icons_pack
-call :Nmake ICONS.mak "ICONS - Win32 Release"
 popd
 if errorlevel 1 goto :Error
 
@@ -139,6 +134,25 @@ popd
 if errorlevel 1 goto :Error
 
 rem ---------------------------------------------------------------------------
+rem Icons
+rem ---------------------------------------------------------------------------
+
+pushd ..\..\miranda\protocols\IcqOscarJ\icons_pack
+call :Nmake ICONS.mak "ICONS - Win32 Release"
+popd
+if errorlevel 1 goto :Error
+
+pushd ..\..\miranda\protocols\JabberG\jabber_xstatus
+call :Nmake JABBER_XSTATUS.mak "JABBER_XSTATUS - Win32 Release"
+popd
+if errorlevel 1 goto :Error
+
+pushd ..\..\miranda\plugins\modernb\icons_pack\
+call :Nmake ICONS_MODERN.mak "ICONS_MODERN - Win32 Release"
+popd
+if errorlevel 1 goto :Error
+
+rem ---------------------------------------------------------------------------
 rem Zip it
 rem ---------------------------------------------------------------------------
 
@@ -217,19 +231,19 @@ if %2 == 00 (
    set FileVer=v0%1%2a%3.7z
 )
 
-del /Q /F "%Temp%\miranda-%FileVer%"
+if exist "%Temp%\miranda-%FileVer%" del /Q /F "%Temp%\miranda-%FileVer%"
 "%PROGRAMFILES%\7-zip\7z.exe" a -r -mx=9 "%Temp%\miranda-%FileVer%" ./* ..\ChangeLog.txt
 
-rd /Q /S %Temp%\pdba >nul
+if exist %Temp%\pdba rd /Q /S %Temp%\pdba >nul
 md %Temp%\pdba
 md %Temp%\pdba\plugins
 
 copy ..\..\src\Release\miranda32.pdb                   %Temp%\pdba
 copy ..\..\..\miranda-tools\dbtool\Release\dbtool.pdb  %Temp%\pdba
 rem  Protocols
-copy ..\..\protocols\AimOscar\Release\AimOSCAR.pdb     %Temp%\pdba\plugins
+copy ..\..\protocols\AimOscar\Release\Aim.pdb          %Temp%\pdba\plugins
 copy ..\..\protocols\IcqOscarJ\Release\ICQ.pdb         %Temp%\pdba\plugins
-copy ..\..\protocols\IRC\Release\IRC.pdb               %Temp%\pdba\plugins
+copy ..\..\protocols\IRCG\Release\IRC.pdb              %Temp%\pdba\plugins
 copy ..\..\protocols\JabberG\Release\jabber.pdb        %Temp%\pdba\plugins
 copy ..\..\protocols\MSN\Release\MSN.pdb               %Temp%\pdba\plugins
 copy ..\..\protocols\Yahoo\Release\Yahoo.pdb           %Temp%\pdba\plugins
@@ -241,15 +255,15 @@ copy ..\..\plugins\clist\Release\clist_classic.pdb     %Temp%\pdba\plugins
 copy ..\..\plugins\clist_nicer\Release\clist_nicer.pdb %Temp%\pdba\plugins
 copy ..\..\plugins\db3x\Release\dbx_3x.pdb             %Temp%\pdba\plugins
 copy ..\..\plugins\db3x_mmap\Release\dbx_mmap.pdb      %Temp%\pdba\plugins
-copy ..\..\plugins\freeimage\Release\freeimage.pdb     %Temp%\pdba\plugins
+copy ..\..\plugins\freeimage\Release\advaimg.pdb       %Temp%\pdba\plugins
 copy ..\..\plugins\import\Release\import.pdb           %Temp%\pdba\plugins
 copy ..\..\plugins\modernb\Release\clist_modern.pdb    %Temp%\pdba\plugins
+copy ..\..\plugins\modernopt\Release\modernopt.pdb     %Temp%\pdba\plugins
 copy ..\..\plugins\mwclist\Release\clist_mw.pdb        %Temp%\pdba\plugins
 copy ..\..\plugins\scriver\Release\scriver.pdb         %Temp%\pdba\plugins
 copy ..\..\plugins\srmm\Release\srmm.pdb               %Temp%\pdba\plugins
-copy ..\..\plugins\tabSRMM\Release\tabSRMM.pdb         %Temp%\pdba\plugins
 
-del /Q /F "%Temp%\miranda-pdb-%FileVer%"
+if exist "%Temp%\miranda-pdb-%FileVer%" del /Q /F "%Temp%\miranda-pdb-%FileVer%"
 "%PROGRAMFILES%\7-zip\7z.exe" a -r -mx=9 "%Temp%\miranda-pdb-%FileVer%" %Temp%\pdba/*
 rd /Q /S %Temp%\pdba
 goto :eof

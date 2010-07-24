@@ -36,10 +36,11 @@ RSC=rc.exe
 # PROP Use_Debug_Libraries 0
 # PROP Output_Dir "Release"
 # PROP Intermediate_Dir "Release"
-# PROP Ignore_Export_Lib 0
+# PROP Ignore_Export_Lib 1
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MT /W3 /GX /Zi /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_USRDLL" /D "JABBER_XSTATUS_EXPORTS" /D "_MBCS" /Yu"stdafx.h" /c
-# ADD CPP /nologo /MT /W3 /GX /Zi /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_USRDLL" /D "JABBER_XSTATUS_EXPORTS" /D "_MBCS" /Yu"stdafx.h" /c
+# ADD CPP /nologo /Za /W3 /GX- /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_USRDLL" /D "JABBER_XSTATUS_EXPORTS" /D "_MBCS" /Yu"stdafx.h" /c
+# SUBTRACT CPP /Z<none>
 # ADD BASE MTL /nologo /win32
 # ADD MTL /nologo /win32
 # ADD BASE RSC /l 0x409
@@ -49,8 +50,8 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 /nologo /dll /debug /machine:I386
-# ADD LINK32 /nologo /dll /debug /machine:I386 /out:"..\..\..\bin\release\ICONS\xstatus_jabber.dll" /noentry /ALIGN:4096 /ignore:4108
-# SUBTRACT LINK32 /pdb:none
+# ADD LINK32 /nologo /dll /pdb:none /machine:I386 /nodefaultlib /out:"..\..\..\bin\release\ICONS\xstatus_jabber.dll" /noentry /ALIGN:4096 /ignore:4108
+# SUBTRACT LINK32 /debug
 # Begin Target
 
 # Name "JABBER_XSTATUS - Win32 Release"

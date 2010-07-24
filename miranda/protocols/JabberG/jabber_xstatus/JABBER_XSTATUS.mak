@@ -36,8 +36,6 @@ ALL : "..\..\..\bin\release\ICONS\xstatus_jabber.dll"
 CLEAN :
 	-@erase "$(INTDIR)\JABBER_XSTATUS.res"
 	-@erase "$(OUTDIR)\xstatus_jabber.exp"
-	-@erase "$(OUTDIR)\xstatus_jabber.lib"
-	-@erase "$(OUTDIR)\xstatus_jabber.pdb"
 	-@erase "..\..\..\bin\release\ICONS\xstatus_jabber.dll"
 
 "$(OUTDIR)" :
@@ -48,7 +46,7 @@ BSC32_FLAGS=/nologo /o"$(OUTDIR)\JABBER_XSTATUS.bsc"
 BSC32_SBRS= \
 	
 LINK32=link.exe
-LINK32_FLAGS=/nologo /dll /incremental:no /pdb:"$(OUTDIR)\xstatus_jabber.pdb" /debug /machine:I386 /out:"..\..\..\bin\release\ICONS\xstatus_jabber.dll" /implib:"$(OUTDIR)\xstatus_jabber.lib" /noentry /ALIGN:4096 /ignore:4108 
+LINK32_FLAGS=/nologo /dll /pdb:none /machine:I386 /nodefaultlib /out:"..\..\..\bin\release\ICONS\xstatus_jabber.dll" /implib:"$(OUTDIR)\xstatus_jabber.lib" /noentry /ALIGN:4096 /ignore:4108 
 LINK32_OBJS= \
 	"$(INTDIR)\JABBER_XSTATUS.res"
 
@@ -57,7 +55,7 @@ LINK32_OBJS= \
   $(LINK32_FLAGS) $(LINK32_OBJS)
 <<
 
-CPP_PROJ=/nologo /MT /W3 /GX /Zi /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_USRDLL" /D "JABBER_XSTATUS_EXPORTS" /D "_MBCS" /Fp"$(INTDIR)\JABBER_XSTATUS.pch" /Yu"stdafx.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /c 
+CPP_PROJ=/nologo /ML /Za /W3 /GX- /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_USRDLL" /D "JABBER_XSTATUS_EXPORTS" /D "_MBCS" /Fp"$(INTDIR)\JABBER_XSTATUS.pch" /Yu"stdafx.h" /Fo"$(INTDIR)\\" /c 
 
 .c{$(INTDIR)}.obj::
    $(CPP) @<<
