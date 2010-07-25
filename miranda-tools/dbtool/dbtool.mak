@@ -1,31 +1,35 @@
 # Microsoft Developer Studio Generated NMAKE File, Based on dbtool.dsp
 !IF "$(CFG)" == ""
-CFG=dbtool - Win32 Debug Unicode
-!MESSAGE No configuration specified. Defaulting to dbtool - Win32 Debug Unicode.
-!ENDIF 
+CFG=dbtool - Win32 Release Unicode
+!MESSAGE No configuration specified. Defaulting to dbtool - Win32 Release Unicode.
+!ENDIF
 
 !IF "$(CFG)" != "dbtool - Win32 Release" && "$(CFG)" != "dbtool - Win32 Debug" && "$(CFG)" != "dbtool - Win32 Debug Unicode" && "$(CFG)" != "dbtool - Win32 Release Unicode"
 !MESSAGE Invalid configuration "$(CFG)" specified.
 !MESSAGE You can specify a configuration when running NMAKE
 !MESSAGE by defining the macro CFG on the command line. For example:
-!MESSAGE 
+!MESSAGE
 !MESSAGE NMAKE /f "dbtool.mak" CFG="dbtool - Win32 Debug Unicode"
-!MESSAGE 
+!MESSAGE
 !MESSAGE Possible choices for configuration are:
-!MESSAGE 
+!MESSAGE
 !MESSAGE "dbtool - Win32 Release" (based on "Win32 (x86) Application")
 !MESSAGE "dbtool - Win32 Debug" (based on "Win32 (x86) Application")
 !MESSAGE "dbtool - Win32 Debug Unicode" (based on "Win32 (x86) Application")
 !MESSAGE "dbtool - Win32 Release Unicode" (based on "Win32 (x86) Application")
-!MESSAGE 
+!MESSAGE
 !ERROR An invalid configuration is specified.
-!ENDIF 
+!ENDIF
 
 !IF "$(OS)" == "Windows_NT"
 NULL=
-!ELSE 
+!ELSE
 NULL=nul
-!ENDIF 
+!ENDIF
+
+CPP=cl.exe
+MTL=midl.exe
+RSC=rc.exe
 
 !IF  "$(CFG)" == "dbtool - Win32 Release"
 
@@ -56,58 +60,26 @@ CLEAN :
 	-@erase "$(INTDIR)\settingschain.obj"
 	-@erase "$(INTDIR)\user.obj"
 	-@erase "$(INTDIR)\vc60.idb"
+	-@erase "$(INTDIR)\vc60.pdb"
 	-@erase "$(INTDIR)\welcome.obj"
 	-@erase "$(INTDIR)\wizard.obj"
 	-@erase "$(INTDIR)\worker.obj"
 	-@erase "$(OUTDIR)\dbtool.map"
+	-@erase "$(OUTDIR)\dbtool.pdb"
 	-@erase "..\..\miranda\bin\release\dbtool.exe"
 
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
-CPP=cl.exe
-CPP_PROJ=/nologo /MD /W3 /GX /O2 /I "../../include" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "DATABASE_INDEPENDANT" /Fp"$(INTDIR)\dbtool.pch" /Yu"dbtool.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
-
-.c{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cpp{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cxx{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.c{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cpp{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cxx{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-MTL=midl.exe
-MTL_PROJ=/nologo /D "NDEBUG" /mktyplib203 /win32 
-RSC=rc.exe
-RSC_PROJ=/l 0x809 /fo"$(INTDIR)\resource.res" /d "NDEBUG" 
+CPP_PROJ=/nologo /MD /W3 /GX /Zi /O2 /I "../../miranda/include" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "DATABASE_INDEPENDANT" /Fp"$(INTDIR)\dbtool.pch" /Yu"dbtool.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c
+MTL_PROJ=/nologo /D "NDEBUG" /mktyplib203 /win32
+RSC_PROJ=/l 0x809 /fo"$(INTDIR)\resource.res" /d "NDEBUG"
 BSC32=bscmake.exe
-BSC32_FLAGS=/nologo /o"$(OUTDIR)\dbtool.bsc" 
+BSC32_FLAGS=/nologo /o"$(OUTDIR)\dbtool.bsc"
 BSC32_SBRS= \
-	
+
 LINK32=link.exe
-LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib /nologo /subsystem:windows /incremental:no /pdb:"$(OUTDIR)\dbtool.pdb" /map:"$(INTDIR)\dbtool.map" /machine:I386 /out:"../../miranda/bin/release/dbtool.exe" 
+LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib /nologo /subsystem:windows /incremental:no /pdb:"$(OUTDIR)\dbtool.pdb" /map:"$(INTDIR)\dbtool.map" /debug /machine:I386 /out:"../../miranda/bin/release/dbtool.exe"
 LINK32_OBJS= \
 	"$(INTDIR)\aggressive.obj" \
 	"$(INTDIR)\contactchain.obj" \
@@ -176,49 +148,15 @@ CLEAN :
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
-CPP=cl.exe
-CPP_PROJ=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../../include" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "DATABASE_INDEPENDANT" /Fp"$(INTDIR)\dbtool.pch" /Yu"dbtool.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
-
-.c{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cpp{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cxx{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.c{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cpp{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cxx{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-MTL=midl.exe
-MTL_PROJ=/nologo /D "_DEBUG" /mktyplib203 /win32 
-RSC=rc.exe
-RSC_PROJ=/l 0x809 /fo"$(INTDIR)\resource.res" /d "_DEBUG" 
+CPP_PROJ=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../../miranda/include" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "DATABASE_INDEPENDANT" /Fp"$(INTDIR)\dbtool.pch" /Yu"dbtool.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c
+MTL_PROJ=/nologo /D "_DEBUG" /mktyplib203 /win32
+RSC_PROJ=/l 0x809 /fo"$(INTDIR)\resource.res" /d "_DEBUG"
 BSC32=bscmake.exe
-BSC32_FLAGS=/nologo /o"$(OUTDIR)\dbtool.bsc" 
+BSC32_FLAGS=/nologo /o"$(OUTDIR)\dbtool.bsc"
 BSC32_SBRS= \
-	
+
 LINK32=link.exe
-LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib /nologo /subsystem:windows /incremental:yes /pdb:"$(OUTDIR)\dbtool.pdb" /debug /machine:I386 /out:"../../miranda/bin/debug/dbtool.exe" /pdbtype:sept 
+LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib /nologo /subsystem:windows /incremental:yes /pdb:"$(OUTDIR)\dbtool.pdb" /debug /machine:I386 /out:"../../miranda/bin/debug/dbtool.exe" /pdbtype:sept
 LINK32_OBJS= \
 	"$(INTDIR)\aggressive.obj" \
 	"$(INTDIR)\contactchain.obj" \
@@ -287,49 +225,15 @@ CLEAN :
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
-CPP=cl.exe
-CPP_PROJ=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../../include" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "UNICODE" /D "DATABASE_INDEPENDANT" /Fp"$(INTDIR)\dbtool.pch" /Yu"dbtool.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
-
-.c{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cpp{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cxx{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.c{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cpp{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cxx{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-MTL=midl.exe
-MTL_PROJ=/nologo /D "_DEBUG" /mktyplib203 /win32 
-RSC=rc.exe
-RSC_PROJ=/l 0x809 /fo"$(INTDIR)\resource.res" /d "_DEBUG" 
+CPP_PROJ=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../../miranda/include" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "UNICODE" /D "DATABASE_INDEPENDANT" /Fp"$(INTDIR)\dbtool.pch" /Yu"dbtool.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c
+MTL_PROJ=/nologo /D "_DEBUG" /mktyplib203 /win32
+RSC_PROJ=/l 0x809 /fo"$(INTDIR)\resource.res" /d "_DEBUG"
 BSC32=bscmake.exe
-BSC32_FLAGS=/nologo /o"$(OUTDIR)\dbtool.bsc" 
+BSC32_FLAGS=/nologo /o"$(OUTDIR)\dbtool.bsc"
 BSC32_SBRS= \
-	
+
 LINK32=link.exe
-LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib /nologo /subsystem:windows /incremental:yes /pdb:"$(OUTDIR)\dbtool.pdb" /debug /machine:I386 /out:"../../miranda/bin/debug unicode/dbtool.exe" /pdbtype:sept 
+LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib /nologo /subsystem:windows /incremental:yes /pdb:"$(OUTDIR)\dbtool.pdb" /debug /machine:I386 /out:"../../miranda/bin/debug unicode/dbtool.exe" /pdbtype:sept
 LINK32_OBJS= \
 	"$(INTDIR)\aggressive.obj" \
 	"$(INTDIR)\contactchain.obj" \
@@ -387,58 +291,26 @@ CLEAN :
 	-@erase "$(INTDIR)\settingschain.obj"
 	-@erase "$(INTDIR)\user.obj"
 	-@erase "$(INTDIR)\vc60.idb"
+	-@erase "$(INTDIR)\vc60.pdb"
 	-@erase "$(INTDIR)\welcome.obj"
 	-@erase "$(INTDIR)\wizard.obj"
 	-@erase "$(INTDIR)\worker.obj"
 	-@erase "$(OUTDIR)\dbtool.map"
+	-@erase "$(OUTDIR)\dbtool.pdb"
 	-@erase "..\..\miranda\bin\release unicode\dbtool.exe"
 
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
-CPP=cl.exe
-CPP_PROJ=/nologo /MD /W3 /GX /O2 /I "../../include" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D "UNICODE" /D "DATABASE_INDEPENDANT" /Fp"$(INTDIR)\dbtool.pch" /Yu"dbtool.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
-
-.c{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cpp{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cxx{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.c{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cpp{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cxx{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-MTL=midl.exe
-MTL_PROJ=/nologo /D "NDEBUG" /mktyplib203 /win32 
-RSC=rc.exe
-RSC_PROJ=/l 0x809 /fo"$(INTDIR)\resource.res" /d "NDEBUG" 
+CPP_PROJ=/nologo /MD /W3 /GX /Zi /O2 /I "../../miranda/include" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D "UNICODE" /D "DATABASE_INDEPENDANT" /Fp"$(INTDIR)\dbtool.pch" /Yu"dbtool.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c
+MTL_PROJ=/nologo /D "NDEBUG" /mktyplib203 /win32
+RSC_PROJ=/l 0x809 /fo"$(INTDIR)\resource.res" /d "NDEBUG"
 BSC32=bscmake.exe
-BSC32_FLAGS=/nologo /o"$(OUTDIR)\dbtool.bsc" 
+BSC32_FLAGS=/nologo /o"$(OUTDIR)\dbtool.bsc"
 BSC32_SBRS= \
-	
+
 LINK32=link.exe
-LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib /nologo /subsystem:windows /incremental:no /pdb:"$(OUTDIR)\dbtool.pdb" /map:"$(INTDIR)\dbtool.map" /machine:I386 /out:"../../miranda/bin/release unicode/dbtool.exe" 
+LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib /nologo /subsystem:windows /incremental:no /pdb:"$(OUTDIR)\dbtool.pdb" /map:"$(INTDIR)\dbtool.map" /debug /machine:I386 /out:"../../miranda/bin/release unicode/dbtool.exe"
 LINK32_OBJS= \
 	"$(INTDIR)\aggressive.obj" \
 	"$(INTDIR)\contactchain.obj" \
@@ -467,16 +339,46 @@ LINK32_OBJS= \
   $(LINK32_FLAGS) $(LINK32_OBJS)
 <<
 
-!ENDIF 
+!ENDIF
+
+.c{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $<
+<<
+
+.cpp{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $<
+<<
+
+.cxx{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $<
+<<
+
+.c{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $<
+<<
+
+.cpp{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $<
+<<
+
+.cxx{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $<
+<<
 
 
 !IF "$(NO_EXTERNAL_DEPS)" != "1"
 !IF EXISTS("dbtool.dep")
 !INCLUDE "dbtool.dep"
-!ELSE 
+!ELSE
 !MESSAGE Warning: cannot find "dbtool.dep"
-!ENDIF 
-!ENDIF 
+!ENDIF
+!ENDIF
 
 
 !IF "$(CFG)" == "dbtool - Win32 Release" || "$(CFG)" == "dbtool - Win32 Debug" || "$(CFG)" == "dbtool - Win32 Debug Unicode" || "$(CFG)" == "dbtool - Win32 Release Unicode"
@@ -569,7 +471,7 @@ SOURCE=.\main.cpp
 
 !IF  "$(CFG)" == "dbtool - Win32 Release"
 
-CPP_SWITCHES=/nologo /MD /W3 /GX /O2 /I "../../include" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "DATABASE_INDEPENDANT" /Fp"$(INTDIR)\dbtool.pch" /Yc"dbtool.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O2 /I "../../miranda/include" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "DATABASE_INDEPENDANT" /Fp"$(INTDIR)\dbtool.pch" /Yc"dbtool.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c
 
 "$(INTDIR)\main.obj"	"$(INTDIR)\dbtool.pch" : $(SOURCE) "$(INTDIR)"
 	$(CPP) @<<
@@ -579,7 +481,7 @@ CPP_SWITCHES=/nologo /MD /W3 /GX /O2 /I "../../include" /D "NDEBUG" /D "WIN32" /
 
 !ELSEIF  "$(CFG)" == "dbtool - Win32 Debug"
 
-CPP_SWITCHES=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../../include" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "DATABASE_INDEPENDANT" /Fp"$(INTDIR)\dbtool.pch" /Yc"dbtool.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
+CPP_SWITCHES=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../../miranda/include" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "DATABASE_INDEPENDANT" /Fp"$(INTDIR)\dbtool.pch" /Yc"dbtool.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c
 
 "$(INTDIR)\main.obj"	"$(INTDIR)\dbtool.pch" : $(SOURCE) "$(INTDIR)"
 	$(CPP) @<<
@@ -589,7 +491,7 @@ CPP_SWITCHES=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../../include" /D "_DEBUG" /D 
 
 !ELSEIF  "$(CFG)" == "dbtool - Win32 Debug Unicode"
 
-CPP_SWITCHES=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../../include" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "UNICODE" /D "DATABASE_INDEPENDANT" /Fp"$(INTDIR)\dbtool.pch" /Yc"dbtool.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c 
+CPP_SWITCHES=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../../miranda/include" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "UNICODE" /D "DATABASE_INDEPENDANT" /Fp"$(INTDIR)\dbtool.pch" /Yc"dbtool.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c
 
 "$(INTDIR)\main.obj"	"$(INTDIR)\dbtool.pch" : $(SOURCE) "$(INTDIR)"
 	$(CPP) @<<
@@ -599,7 +501,7 @@ CPP_SWITCHES=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../../include" /D "_DEBUG" /D 
 
 !ELSEIF  "$(CFG)" == "dbtool - Win32 Release Unicode"
 
-CPP_SWITCHES=/nologo /MD /W3 /GX /O2 /I "../../include" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D "UNICODE" /D "DATABASE_INDEPENDANT" /Fp"$(INTDIR)\dbtool.pch" /Yc"dbtool.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O2 /I "../../miranda/include" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D "UNICODE" /D "DATABASE_INDEPENDANT" /Fp"$(INTDIR)\dbtool.pch" /Yc"dbtool.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c
 
 "$(INTDIR)\main.obj"	"$(INTDIR)\dbtool.pch" : $(SOURCE) "$(INTDIR)"
 	$(CPP) @<<
@@ -607,7 +509,7 @@ CPP_SWITCHES=/nologo /MD /W3 /GX /O2 /I "../../include" /D "NDEBUG" /D "WIN32" /
 <<
 
 
-!ENDIF 
+!ENDIF
 
 SOURCE=.\wizard.cpp
 
@@ -626,5 +528,4 @@ SOURCE=.\resource.rc
 
 
 
-!ENDIF 
-
+!ENDIF
