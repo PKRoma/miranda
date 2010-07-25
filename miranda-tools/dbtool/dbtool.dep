@@ -2,14 +2,18 @@
 
 .\main.cpp : \
 	"..\..\miranda\include\m_database.h"\
+	"..\..\miranda\include\m_system.h"\
+	"..\..\miranda\include\m_utils.h"\
 	".\database.h"\
 	".\dbtool.h"\
 	
 
 .\resource.rc : \
+	".\dbtool.exe.manifest"\
 	".\res\dbthdr.emf"\
 	".\res\dbtool.emf"\
 	".\res\dbtool.ico"\
+	".\res\delete.ico"\
 	".\res\profileg.ico"\
 	".\res\profiler.ico"\
 	".\res\profiley.ico"\
