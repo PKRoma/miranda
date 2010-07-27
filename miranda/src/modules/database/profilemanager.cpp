@@ -91,7 +91,7 @@ static int findProfiles(TCHAR * szProfileDir, ENUMPROFILECALLBACK callback, LPAR
 		// find all subfolders except "." and ".."
 		if ( (ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) && _tcscmp(ffd.cFileName, _T(".")) && _tcscmp(ffd.cFileName, _T("..")) ) {
 			TCHAR buf[MAX_PATH], profile[MAX_PATH];
-			mir_sntprintf(buf, SIZEOF(buf), _T("%s%s\\%s.dat"), szProfileDir, ffd.cFileName, ffd.cFileName);
+			mir_sntprintf(buf, SIZEOF(buf), _T("%s\\%s\\%s.dat"), szProfileDir, ffd.cFileName, ffd.cFileName);
 			if (_taccess(buf, 0) == 0) {
 				mir_sntprintf(profile, SIZEOF(profile), _T("%s.dat"), ffd.cFileName);
 				if ( !callback(buf, profile, lParam ))
@@ -350,7 +350,7 @@ void DeleteProfile(HWND hwndList, int iItem, DlgProfData* dat)
 	if (IDYES != MessageBox(NULL, profilef, _T("Miranda IM"), MB_YESNO | MB_TASKMODAL | MB_ICONWARNING))
 		return;
 
-	mir_sntprintf(profilef, SIZEOF(profilef), _T("%s%s%c"), dat->pd->szProfileDir, profile, 0);
+	mir_sntprintf(profilef, SIZEOF(profilef), _T("%s\\%s%c"), dat->pd->szProfileDir, profile, 0);
 
 	SHFILEOPSTRUCT sf = {0};
 	sf.wFunc = FO_DELETE;
@@ -508,10 +508,10 @@ static INT_PTR CALLBACK DlgProfileSelect(HWND hwndDlg, UINT msg, WPARAM wParam, 
 						if (ListView_GetItem(hwndList, &item)) {
 							// profile is placed in "profile_name" subfolder
 							TCHAR tmpPath[MAX_PATH];
-							mir_sntprintf(tmpPath, SIZEOF(tmpPath), _T("%s%s.dat"), dat->pd->szProfileDir, profile);
+							mir_sntprintf(tmpPath, SIZEOF(tmpPath), _T("%s\\%s.dat"), dat->pd->szProfileDir, profile);
 							HANDLE hFile = CreateFile(tmpPath, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, NULL);
 							if (hFile == INVALID_HANDLE_VALUE)
-								mir_sntprintf(dat->pd->szProfile, MAX_PATH, _T("%s%s\\%s.dat"), dat->pd->szProfileDir, profile, profile);
+								mir_sntprintf(dat->pd->szProfile, MAX_PATH, _T("%s\\%s\\%s.dat"), dat->pd->szProfileDir, profile, profile);
 							else
 								_tcscpy(dat->pd->szProfile, tmpPath);
 							CloseHandle(hFile);

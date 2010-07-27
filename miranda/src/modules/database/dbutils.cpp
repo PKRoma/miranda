@@ -248,11 +248,10 @@ static INT_PTR DbDeleteModule( WPARAM, LPARAM lParam )
 
 static INT_PTR GetProfilePath(WPARAM wParam, LPARAM lParam)
 {
-	char* dst = (char*)lParam;
+	if (!wParam || !lParam)
+		return 1;
 
-	size_t len = _tcslen( g_profileDir );
-	if ( g_profileDir[len-1] == '/' || g_profileDir[len-1] == '\\' )
-		g_profileDir[len-1] = 0;
+	char* dst = (char*)lParam;
 
 	#if defined( _UNICODE )
 		char* tmp = mir_t2a( g_profileDir );
@@ -262,11 +261,19 @@ static INT_PTR GetProfilePath(WPARAM wParam, LPARAM lParam)
 		strncpy( dst, g_profileDir, wParam );
 	#endif
 
+	if (wParam <= _tcslen(g_profileName))
+	{
+		dst[wParam - 1] = 0;
+		return 1;
+	}
 	return 0;
 }
 
 static INT_PTR GetProfileName(WPARAM wParam, LPARAM lParam)
 {
+	if (!wParam || !lParam)
+		return 1;
+
 	char* dst = (char*)lParam;
 
 	#if defined( _UNICODE )
@@ -277,6 +284,11 @@ static INT_PTR GetProfileName(WPARAM wParam, LPARAM lParam)
 		strncpy( dst, g_profileName, wParam );
 	#endif
 
+	if (wParam <= _tcslen(g_profileName))
+	{
+		dst[wParam - 1] = 0;
+		return 1;
+	}
 	return 0;
 }
 
@@ -284,19 +296,28 @@ static INT_PTR GetProfileName(WPARAM wParam, LPARAM lParam)
 
 static INT_PTR GetProfilePathW(WPARAM wParam, LPARAM lParam)
 {
-	wchar_t* dst = ( wchar_t* )lParam;
+	if (!wParam || !lParam)
+		return 1;
 
-	size_t len = _tcslen( g_profileDir );
-	if ( g_profileDir[len-1] == '/' || g_profileDir[len-1] == '\\' )
-		g_profileDir[len-1] = 0;
-
-	wcsncpy( dst, g_profileDir, wParam );
+	wchar_t* dst = (wchar_t*)lParam;
+	wcsncpy(dst, g_profileDir, wParam);
+	if (wParam <= wcslen(g_profileDir))
+	{
+		dst[wParam - 1] = 0;
+		return 1;
+	}
 	return 0;
 }
 
 static INT_PTR GetProfileNameW(WPARAM wParam, LPARAM lParam)
 {
-	wcsncpy(( wchar_t* )lParam, g_profileName, wParam );
+	wchar_t* dst = (wchar_t*)lParam;
+	wcsncpy(dst, g_profileName, wParam );
+	if (wParam <= wcslen(g_profileName))
+	{
+		dst[wParam - 1] = 0;
+		return 1;
+	}
 	return 0;
 }
 

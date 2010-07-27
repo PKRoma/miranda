@@ -473,12 +473,8 @@ XCHAR *GetInternalVariable(XCHAR *key, size_t keyLength, HANDLE hContact)
 			theValue = SHGetSpecialFolderPathX(CSIDL_PERSONAL, theKey);
 		else if (!_xcscmp(theKey, XSTR(key, "desktop")))
 			theValue = SHGetSpecialFolderPathX(CSIDL_DESKTOPDIRECTORY, theKey);
-		else if (!_xcscmp(theKey, XSTR(key, "miranda_profile"))) {
-			size_t len = _tcslen( g_profileDir );
-			if ( g_profileDir[len-1] == '/' || g_profileDir[len-1] == '\\' )
-				g_profileDir[len-1] = 0;
+		else if (!_xcscmp(theKey, XSTR(key, "miranda_profile")))
 			theValue = GetProfileDirX(key);
-		}
 		else if (!_xcscmp(theKey, XSTR(key, "miranda_profilename")))
 			theValue = GetProfileNameX(key);
 		else if (!_xcscmp(theKey, XSTR(key, "username")))
