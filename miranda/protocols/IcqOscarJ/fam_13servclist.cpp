@@ -1437,7 +1437,7 @@ void CIcqProto::handleServerCListReply(BYTE *buf, WORD wLen, WORD wFlags, server
 				DWORD dwCookie;
 
 				ack->dwAction = SSA_GROUP_UPDATE;
-				ack->szGroupName = (char*)"";
+				ack->szGroupName = null_strdup("");
 				dwCookie = AllocateCookie(CKT_SERVERLIST, ICQ_LISTS_ADDTOLIST, 0, ack);
 				icq_sendServerGroup(dwCookie, ICQ_LISTS_ADDTOLIST, 0, ack->szGroupName, NULL, 0, 0);
 			}
