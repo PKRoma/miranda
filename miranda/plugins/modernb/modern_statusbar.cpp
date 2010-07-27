@@ -13,7 +13,8 @@ POINT lastpnt;
 
 HWND hModernStatusBar=NULL;
 HANDLE hFramehModernStatusBar=NULL;
-void ApplyViewMode(const char *Name);
+extern void ApplyViewMode(const char *Name, bool onlySelector = false );
+extern void SaveViewMode(const char *name, const TCHAR *szGroupFilter, const char *szProtoFilter, DWORD statusMask, DWORD stickyStatusMask, unsigned int options,  unsigned int stickies, unsigned int operators, unsigned int lmdat);
 
 //int FindFrameID(HWND FrameHwnd);
 COLORREF sttGetColor(char * module, char * color, COLORREF defColor);
@@ -963,71 +964,135 @@ LRESULT CALLBACK ModernStatusProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam
                 RECT rc1;
                 BOOL isOnExtra=FALSE;
 
-				rc=ProtosData[i].protoRect;
-				rc1=rc;
-				rc1.left=rc.left+16;
-				rc1.right=rc1.left+16;
-				if (PtInRect(&rc,pt) && PtInRect(&rc1,pt)&&ProtosData[i].DoubleIcons)
-					isOnExtra=TRUE;
-				if(PtInRect(&rc,pt))
-				{
-					HMENU hMenu=NULL;
-					SHORT a=GetKeyState(VK_CONTROL);
-					if ( ( msg==WM_MBUTTONDOWN || (a&0x8000) || isOnExtra) && _ModernStatus_OnExtraIconClick( i ) )
+                rc=ProtosData[i].protoRect;
+                rc1=rc;
+                rc1.left=rc.left+16;
+                rc1.right=rc1.left+16;
+                if (PtInRect(&rc,pt) && PtInRect(&rc1,pt)&&ProtosData[i].DoubleIcons)
+                    isOnExtra=TRUE;
+                if(PtInRect(&rc,pt))
+                {
+                    HMENU hMenu=NULL;
+
+                    bool bShift =(bool)( GetKeyState( VK_SHIFT )&0x8000 );
+                    bool bCtrl  =(bool)( GetKeyState( VK_CONTROL )&0x8000 );
+
+                    if ( ( msg==WM_MBUTTONDOWN || ( msg==WM_RBUTTONDOWN && bCtrl ) || isOnExtra) && _ModernStatus_OnExtraIconClick( i ) )
                     {
-                       return TRUE;
-					}        
-					if ( msg == WM_LBUTTONDOWN && ( GetAsyncKeyState(VK_LEFT )&0x8000 ) )
-					{
-						ApplyViewMode( "" );
-						mir_snprintf( g_CluiData.protoFilter, sizeof(g_CluiData.protoFilter), "%s|", ProtosData[i].AccountName );
-						g_CluiData.bFilterEffective = CLVM_FILTER_PROTOS;
-						pcli->pfnClcBroadcast(CLM_AUTOREBUILD, 0, 0);
-						CLUI__cliInvalidateRect( hwnd, NULL, FALSE );
-						return DefWindowProc(hwnd, msg, wParam, lParam);
-					}
-					if (!hMenu)
-					{
-						if (msg==WM_RBUTTONDOWN)
-						{
-							if ((g_StatusBarData.perProtoConfig && ProtosData[i].SBarRightClk) ||
-								g_StatusBarData.SBarRightClk)
-								hMenu=(HMENU)CallService(MS_CLIST_MENUGETMAIN,0,0);
-							else
-								hMenu=(HMENU)CallService(MS_CLIST_MENUGETSTATUS,0,0);
-						}
-						else
-						{
+                        return TRUE;
+                    }
+                    if ( msg == WM_LBUTTONDOWN && bCtrl )
+                    {
+                        if ( g_CluiData.bFilterEffective != CLVM_FILTER_PROTOS || !bShift )
+                        {
+                            ApplyViewMode( "" );
+                            mir_snprintf( g_CluiData.protoFilter, sizeof(g_CluiData.protoFilter), "%s|", ProtosData[i].AccountName );
+                            g_CluiData.bFilterEffective = CLVM_FILTER_PROTOS;
+                        }
+                        else
+                        {
+                            char protoF[ sizeof(g_CluiData.protoFilter) ];
+                            mir_snprintf( protoF, sizeof(protoF), "%s|", ProtosData[i].AccountName );
+                            char * pos = strstri( g_CluiData.protoFilter, ProtosData[i].AccountName );
+                            if ( pos ) 
+                            {
+                                // remove filter
+                                int len = strlen( protoF );
+                                memmove( pos, pos + len, strlen( pos + len ) + 1 );
+
+                                if ( strlen( g_CluiData.protoFilter ) == 0 )
+                                    ApplyViewMode( "" );
+                                else
+                                    g_CluiData.bFilterEffective = CLVM_FILTER_PROTOS;
+                            }
+                            else
+                            {
+                                //add filter
+                                mir_snprintf( g_CluiData.protoFilter, sizeof(g_CluiData.protoFilter), "%s%s", g_CluiData.protoFilter, protoF );
+                                g_CluiData.bFilterEffective = CLVM_FILTER_PROTOS;
+                            }
+                        }
+                        if ( g_CluiData.bFilterEffective == CLVM_FILTER_PROTOS)
+                        {
+                            char filterName[ sizeof(g_CluiData.protoFilter) ] = { 0 };
+                            filterName[0] = (char)13;
+
+                            int protoCount;
+                            PROTOACCOUNT ** accs;
+                            ProtoEnumAccounts( &protoCount, &accs );
+
+                            bool first = true;
+                            for ( int pos = 0; pos<protoCount; pos++ )
+                            {
+                                int i = pcli->pfnGetAccountIndexByPos( pos );
+
+                                if ( i < 0 && i >= protoCount )
+                                    continue;
+
+                                char protoF[ sizeof(g_CluiData.protoFilter) ];
+                                mir_snprintf( protoF, sizeof(protoF), "%s|", accs[i]->szModuleName );
+                                if ( strstri( g_CluiData.protoFilter, protoF ) )
+                                {
+                                    char * temp = mir_utf8encodeT( accs[i]->tszAccountName );
+                                    if ( !first )
+                                        strncat( filterName, "; ", sizeof(filterName) - strlen(filterName) );
+                                    strncat( filterName, temp, sizeof(filterName) - strlen(filterName) );
+                                    first = false;
+                                    mir_free( temp );
+                                }
+                            }
+                           
+                            SaveViewMode( filterName, _T(""), g_CluiData.protoFilter, 0, -1, 0, 0, 0, 0 );
+
+                            ApplyViewMode( filterName );
+                        }
+                        pcli->pfnClcBroadcast(CLM_AUTOREBUILD, 0, 0);
+                        CLUI__cliInvalidateRect( hwnd, NULL, FALSE );
+                        SetCapture( NULL );
+                        return 0;
+                    }
+                    if (!hMenu)
+                    {
+                        if (msg==WM_RBUTTONDOWN)
+                        {
+                            bool a = (bool)( (g_StatusBarData.perProtoConfig && ProtosData[i].SBarRightClk) || g_StatusBarData.SBarRightClk );
+                            if ( a ^ bShift )
+                                hMenu=(HMENU)CallService(MS_CLIST_MENUGETMAIN,0,0);
+                            else
+                                hMenu=(HMENU)CallService(MS_CLIST_MENUGETSTATUS,0,0);
+                        }
+                        else
+                        {
                             hMenu=(HMENU)CallService(MS_CLIST_MENUGETSTATUS,0,0);  
                             unsigned int cpnl = 0;
                             int mcnt = GetMenuItemCount(hMenu);
                             for (int j=0; j<mcnt; ++j) {
-				                HMENU hMenus = GetSubMenu(hMenu, j);
+                                HMENU hMenus = GetSubMenu(hMenu, j);
                                 if (hMenus && cpnl++ == i) { 
                                     hMenu = hMenus; 
                                     break; 
                                 }
                             }
-                            
-                            //if ( _ModernStatus_OnExtraIconClick( i ) ) return TRUE;
-						}
-					}
-					ClientToScreen(hwnd,&pt);
-					{
-						HWND parent=GetParent(hwnd);
-						if (parent!=pcli->hwndContactList) parent=GetParent(parent);
-						TrackPopupMenu(hMenu,TPM_TOPALIGN|TPM_LEFTALIGN|TPM_LEFTBUTTON,pt.x,pt.y,0,parent,NULL);
-					}
-					return 0;
-				}
-			}
-			if ( msg == WM_LBUTTONDOWN )
-			{
-				ApplyViewMode( "" );
-				CLUI__cliInvalidateRect( hwnd, NULL, FALSE );
-				return DefWindowProc(hwnd, msg, wParam, lParam);
-			}
-			return SendMessage(GetParent(hwnd), msg, wParam, lParam );
+                        }
+                    }
+                    ClientToScreen(hwnd,&pt);
+                    {
+                        HWND parent=GetParent(hwnd);
+                        if (parent!=pcli->hwndContactList) parent=GetParent(parent);
+                        TrackPopupMenu(hMenu,TPM_TOPALIGN|TPM_LEFTALIGN|TPM_LEFTBUTTON,pt.x,pt.y,0,parent,NULL);
+                    }
+                    return 0;
+                }
+            }
+            GetClientRect( hwnd, &rc );
+            if ( PtInRect( &rc, pt ) && msg == WM_LBUTTONDOWN && g_CluiData.bFilterEffective == CLVM_FILTER_PROTOS )
+            {
+                ApplyViewMode( "" );
+                CLUI__cliInvalidateRect( hwnd, NULL, FALSE );
+                SetCapture( NULL );
+                return 0;
+            }
+            return SendMessage(GetParent(hwnd), msg, wParam, lParam );
         }
     }
     return DefWindowProc(hwnd, msg, wParam, lParam);
