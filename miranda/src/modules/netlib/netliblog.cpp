@@ -38,7 +38,6 @@ struct {
 	int    toOutputDebugString;
 	int    toFile;
 	int    toLog;
-	TCHAR* szPath;
 	TCHAR* szFile;
 	TCHAR* szUserFile;
 	int    timeFormat;
@@ -139,31 +138,17 @@ static INT_PTR CALLBACK LogOptionsDlgProc(HWND hwndDlg,UINT message,WPARAM wPara
 */
 		case IDC_FILENAME:
 			if(HIWORD(wParam)!=EN_CHANGE) break;
-			if((HWND)lParam==GetFocus()) {
+			if((HWND)lParam==GetFocus())
 				CheckDlgButton(hwndDlg,IDC_TOFILE,BST_CHECKED);
-			}
-			{	TCHAR newpath[MAX_PATH+1];
-				TCHAR path[MAX_PATH+1];
-				GetWindowText( (HWND)lParam, path, MAX_PATH );
-				if ( !ExpandEnvironmentStrings(path, newpath, MAX_PATH) )
-					_tcscpy(newpath,path);
 
-				// convert relative path to absolute if needed
-				if( _tcsstr(newpath, _T(":")) ||    // X:
-					_tcsstr(newpath, _T("\\\\")) || // \\UNC
-					_tfullpath( path, newpath, MAX_PATH) == NULL )
-					SetDlgItemText( hwndDlg, IDC_PATH, newpath );
-				else {
-					TCHAR drive[_MAX_DRIVE];
-					TCHAR dir[_MAX_DIR];
-					_tsplitpath(logOptions.szPath, drive, dir, NULL, NULL);
-					if ( path[0] == _T('\\') )
-						mir_sntprintf( path, MAX_PATH, _T("%s%s"), drive, newpath);
-					else
-						mir_sntprintf( path, MAX_PATH, _T("%s%s%s"), drive, dir, newpath);
-					path[MAX_PATH]=0;
-					SetDlgItemText( hwndDlg, IDC_PATH, path );
-				}
+			{	
+				TCHAR path[MAX_PATH];
+				GetWindowText((HWND)lParam, path, MAX_PATH);
+
+				TCHAR *pszNewPath = Utils_ReplaceVarsT(path);
+				pathToAbsoluteT(pszNewPath, path, NULL);
+				SetDlgItemText(hwndDlg, IDC_PATH, path);
+				mir_free(pszNewPath);
 			}
 			break;
 		case IDC_FILENAMEBROWSE:
@@ -218,12 +203,12 @@ static INT_PTR CALLBACK LogOptionsDlgProc(HWND hwndDlg,UINT message,WPARAM wPara
 			logOptions.save = 1;
 			//
 		case IDOK:
-		    {
-			    TCHAR str[MAX_PATH+1];
+			{
+				TCHAR str[MAX_PATH];
 
-   				GetWindowText(GetDlgItem(hwndDlg,IDC_RUNATSTART),str,MAX_PATH);
+				GetDlgItemText(hwndDlg, IDC_RUNATSTART, str, MAX_PATH);
 				DBWriteContactSettingTString(NULL, "Netlib", "RunAtStart",str);
-	   			DBWriteContactSettingByte(NULL, "Netlib", "ShowLogOptsAtStart",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_SHOWTHISDLGATSTART));
+				DBWriteContactSettingByte(NULL, "Netlib", "ShowLogOptsAtStart",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_SHOWTHISDLGATSTART));
 
 				EnterCriticalSection(&logOptions.cs);
 
@@ -576,7 +561,6 @@ void NetlibLogInit(void)
 {
 	DBVARIANT dbv;
 	LARGE_INTEGER li;
-	TCHAR path[MAX_PATH+1];
 
 	QueryPerformanceFrequency( &li );
 	perfCounterFreq = li.QuadPart;
@@ -601,31 +585,22 @@ void NetlibLogInit(void)
 	logOptions.toFile = DBGetContactSettingByte( NULL, "Netlib", "ToFile", 0 );
 	logOptions.toLog = DBGetContactSettingDword( NULL, "Netlib", "NLlog", 1 );
 
-	if ( !DBGetContactSettingTString( NULL, "Netlib", "File", &dbv )) {
-		TCHAR newpath[MAX_PATH+1];
-		if ( !ExpandEnvironmentStrings( dbv.ptszVal, newpath, MAX_PATH ))
-			_tcscpy( newpath, dbv.ptszVal );
+	if (!DBGetContactSettingTString(NULL, "Netlib", "File", &dbv))
+	{
+		logOptions.szUserFile = mir_tstrdup(dbv.ptszVal);
+		TCHAR *pszNewPath = Utils_ReplaceVarsT(dbv.ptszVal);
 
-		logOptions.szUserFile = mir_tstrdup( dbv.ptszVal );
-		if( _tfullpath( path, newpath, MAX_PATH ) == NULL)
-			logOptions.szFile = mir_tstrdup( newpath );
-		else
-	    	logOptions.szFile = mir_tstrdup( path );
+		TCHAR path[MAX_PATH];
+		pathToAbsoluteT(pszNewPath, path, NULL);
+		logOptions.szFile = mir_tstrdup(path);
 
-		DBFreeVariant( &dbv );
+		mir_free(pszNewPath);
+		DBFreeVariant(&dbv);
 	}
-	else {
-		logOptions.szUserFile = mir_tstrdup(_T("%temp%\\netlog.txt"));
-		if ( !ExpandEnvironmentStrings( _T("%temp%\\netlog.txt"), path, MAX_PATH ))
-			_tcscpy( path, _T("netlog.txt"));
-		logOptions.szFile = mir_tstrdup( path );
-	}
-
-	if( _tfullpath( path, _T( "." ), MAX_PATH ) == NULL )
-		logOptions.szPath = mir_tstrdup( _T( "" ));
-	else {
-		_tcscat( path, _T("\\"));
-		logOptions.szPath = mir_tstrdup( path );
+	else 
+	{
+		logOptions.szUserFile = mir_tstrdup(_T("%miranda_logpath%\\netlog.txt"));
+		logOptions.szFile = Utils_ReplaceVarsT(logOptions.szUserFile);
 	}
 
 	if ( logOptions.toFile && logOptions.szFile[0] ) {
@@ -656,6 +631,5 @@ void NetlibLogShutdown(void)
 		DestroyWindow( logOptions.hwndOpts );
 	DeleteCriticalSection( &logOptions.cs );
 	mir_free( logOptions.szFile );
-	mir_free( logOptions.szPath );
 	mir_free( logOptions.szUserFile );
 }
