@@ -65,7 +65,7 @@ int validateProfileDir(TCHAR* profiledir)
 	dat.cbSize = sizeof(dat);
 	dat.dwFlags = RVF_TCHAR;
 
-	TCHAR* pfd = (TCHAR*)CallService(MS_UTILS_REPLACEVARS, (WPARAM)_T("%miranda_path%\\"), (LPARAM)&dat);
+	TCHAR* pfd = (TCHAR*)CallService(MS_UTILS_REPLACEVARS, (WPARAM)_T("%miranda_path%"), (LPARAM)&dat);
 
 	int res = lstrcmpi(profiledir, pfd) == 0;
 	if (res)
@@ -97,8 +97,9 @@ int getProfilePath(TCHAR * buf, size_t cch)
 	size_t len = pathToAbsoluteT(exprofiledir, buf, NULL);
 	mir_free(exprofiledir);
 
-	if (len < (cch-1) && buf[len-1] != '/' && buf[len-1] != '\\')
-		_tcscat(buf, _T("\\"));
+	if (buf[len-1] == '/' || buf[len-1] == '\\')
+		buf[len-1] = 0;
+
 	return 0;
 }
 
@@ -146,7 +147,7 @@ static void getDefaultProfile(TCHAR * szProfile, size_t cch, TCHAR * profiledir)
 
 	TCHAR* res = (TCHAR*)CallService(MS_UTILS_REPLACEVARS, (WPARAM)defaultProfile, (LPARAM)&dat);
 	if (res) {
-		mir_sntprintf(szProfile, cch, _T("%s%s\\%s%s"), profiledir, res, res, isValidProfileName(res) ? _T("") : _T(".dat"));
+		mir_sntprintf(szProfile, cch, _T("%s\\%s\\%s%s"), profiledir, res, res, isValidProfileName(res) ? _T("") : _T(".dat"));
 		mir_free(res);
 	}
 	else szProfile[0] = 0;
@@ -207,7 +208,7 @@ void getProfileCmdLine(TCHAR * szProfile, size_t cch, TCHAR * profiledir)
 		_tcscpy(profileName, p);
 		p = _tcsrchr(profileName, '.'); if (p) *p = 0; 
 
-		mir_sntprintf(newProfileDir, cch, _T("%s%s\\"), profiledir, profileName);
+		mir_sntprintf(newProfileDir, cch, _T("%s\\%s\\"), profiledir, profileName);
 		pathToAbsoluteT(buf, szProfile, newProfileDir);
 
 		if (_tcschr(buf, '\\')) 
@@ -219,7 +220,6 @@ void getProfileCmdLine(TCHAR * szProfile, size_t cch, TCHAR * profiledir)
 				p = _tcsrchr(profiledir, '\\');
 				if (p && _tcsicmp(p + 1, profileName) == 0)
 					*p = 0;
-				_tcscat(profiledir, _T("\\"));
 			}
 			else
 				szProfile[0] = 0;
@@ -241,22 +241,22 @@ static void moveProfileDirProfiles(TCHAR * profiledir, BOOL isRootDir = TRUE)
 		mir_free(path);
 	}
 	else
-		mir_sntprintf(pfd, SIZEOF(pfd), _T("%s*.dat"), profiledir);
+		mir_sntprintf(pfd, SIZEOF(pfd), _T("%s\\*.dat"), profiledir);
 
 	WIN32_FIND_DATA ffd;
 	HANDLE hFind = FindFirstFile(pfd, &ffd);
 	if (hFind != INVALID_HANDLE_VALUE)
 	{
-		TCHAR *c =_tcsrchr(pfd, '\\'); if (c) *(c+1) = 0;
+		TCHAR *c =_tcsrchr(pfd, '\\'); if (c) *c = 0;
 		do
 		{
 			TCHAR path[MAX_PATH], path2[MAX_PATH];
 			TCHAR* profile = mir_tstrdup(ffd.cFileName);
 			TCHAR *c =_tcsrchr(profile, '.'); if (c) *c = 0;
-			mir_sntprintf(path, SIZEOF(path), _T("%s%s"), pfd, ffd.cFileName);
-			mir_sntprintf(path2, SIZEOF(path2), _T("%s%s"), profiledir, profile);
+			mir_sntprintf(path, SIZEOF(path), _T("%s\\%s"), pfd, ffd.cFileName);
+			mir_sntprintf(path2, SIZEOF(path2), _T("%s\\%s"), profiledir, profile);
 			CreateDirectory(path2, NULL);
-			mir_sntprintf(path2, SIZEOF(path2), _T("%s%s\\%s"), profiledir, profile, ffd.cFileName);
+			mir_sntprintf(path2, SIZEOF(path2), _T("%s\\%s\\%s"), profiledir, profile, ffd.cFileName);
 			if (MoveFile(path, path2) == 0)
 			{
 				TCHAR buf[512];
@@ -288,7 +288,7 @@ static int getProfile1(TCHAR * szProfile, size_t cch, TCHAR * profiledir, BOOL *
 
 	if (shpm || !reqfd) {
 		TCHAR searchspec[MAX_PATH];
-		mir_sntprintf(searchspec, SIZEOF(searchspec), _T("%s*.*"), profiledir);
+		mir_sntprintf(searchspec, SIZEOF(searchspec), _T("%s\\*.*"), profiledir);
 
 		WIN32_FIND_DATA ffd;
 		HANDLE hFind = FindFirstFile(searchspec, &ffd);
@@ -297,7 +297,7 @@ static int getProfile1(TCHAR * szProfile, size_t cch, TCHAR * profiledir, BOOL *
 				// make sure the first hit is actually a *.dat file
 				if ((ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) && _tcscmp(ffd.cFileName, _T(".")) && _tcscmp(ffd.cFileName, _T("..")))  {
 					TCHAR newProfile[MAX_PATH];
-					mir_sntprintf(newProfile, MAX_PATH, _T("%s%s\\%s.dat"), profiledir, ffd.cFileName, ffd.cFileName);
+					mir_sntprintf(newProfile, MAX_PATH, _T("%s\\%s\\%s.dat"), profiledir, ffd.cFileName, ffd.cFileName);
 					if (_taccess(newProfile, 0) == 0)
 						if (++found == 1 && nodprof)
 							_tcscpy(szProfile, newProfile);
