@@ -289,26 +289,6 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
 			SendMessage(GetParent(hwnd), WM_CLOSE, 0, 0);
 			return 0;
 		}
-
-		if (wParam == 127 && GetKeyState(VK_CONTROL) & 0x8000) {    //ctrl-backspace
-			DWORD start, end;
-			TCHAR *text;
-			int textLen;
-			SendMessage(hwnd, EM_GETSEL, (WPARAM) & end, (LPARAM) & start);
-			if (end != start)
-				SendMessage(hwnd, EM_SETSEL, end, end);
-			SendMessage(hwnd, WM_KEYDOWN, VK_LEFT, 0);
-			SendMessage(hwnd, EM_GETSEL, (WPARAM) & start, (LPARAM) (PDWORD) NULL);
-			textLen = GetWindowTextLength(hwnd);
-			text = (TCHAR *) mir_alloc(sizeof(TCHAR) * (textLen + 1));
-			GetWindowText(hwnd, text, textLen + 1);
-			MoveMemory(text + start, text + end, sizeof(TCHAR) * (textLen + 1 - end));
-			SetWindowText(hwnd, text);
-			mir_free(text);
-			SendMessage(hwnd, EM_SETSEL, start, start);
-			SendMessage(GetParent(hwnd), WM_COMMAND, MAKEWPARAM(GetDlgCtrlID(hwnd), EN_CHANGE), (LPARAM) hwnd);
-			return 0;
-		}
 		break;
 
 	case WM_KEYUP:
