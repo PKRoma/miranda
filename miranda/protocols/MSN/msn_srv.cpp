@@ -319,7 +319,8 @@ void  CMsnProto::MSN_SendNicknameUtf(const char* nickname)
 	else
 		deleteSetting(NULL, "Nick");
 	
-	MSN_SetNicknameUtf(nickname);
+	MSN_SetNicknameUtf(nickname[0] ? nickname : MyOptions.szEmail);
+
 	MSN_StoreUpdateProfile(nickname, false);
 //	MSN_ABUpdateNick(nickname, NULL);
 }

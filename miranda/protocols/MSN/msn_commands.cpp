@@ -529,9 +529,11 @@ void CMsnProto::MSN_ReceiveMessage(ThreadData* info, char* cmdString, char* para
 			DBVARIANT dbv;
 			if (!getStringUtf("Nick", &dbv)) 
 			{
-				if (dbv.pszVal[0]) MSN_SetNicknameUtf(dbv.pszVal);
+				MSN_SetNicknameUtf(dbv.pszVal[0] ? dbv.pszVal : MyOptions.szEmail);
 				MSN_FreeVariant(&dbv);
 			}
+			else
+				MSN_SetNicknameUtf(MyOptions.szEmail);
 			msnNsThread->sendPacket("BLP", msnOtherContactsBlocked ? "BL" : "AL");
 			MSN_SetServerStatus(m_iDesiredStatus);
 
