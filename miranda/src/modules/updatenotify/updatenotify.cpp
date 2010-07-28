@@ -425,7 +425,7 @@ static int UpdateNotifyMakeRequest(UpdateNotifyData *und) {
                     }
                 }
                 else if (isAlphaCheck) {                 
-                    if (!rdAlphaValid&&rdStableValid&&rdAlphaValid) {
+                    if (!rdAlphaValid&&rdStableValid) {
                         if (UpdateNotifyIsNewer(rdStable.dwVersion, rdAlpha.dwVersion)) {
                             UpdateNotifyReleaseLogUpdate(&rdAlpha);
                             if (UpdateNotifyIsNewer(dwVersion, rdAlpha.dwVersion)) 
@@ -444,6 +444,20 @@ static int UpdateNotifyMakeRequest(UpdateNotifyData *und) {
                         if (UpdateNotifyIsNewer(dwVersion, rdStable.dwVersion)) 
                             resUpdate = 1;
                         UpdateNotifyReleaseCopyData(&rdStable, und);
+                    }
+                    else if (!rdAlphaValid&&rdBetaValid&&rdStableValid) {
+                        if (UpdateNotifyIsNewer(rdStable.dwVersion, rdBeta.dwVersion)) {
+                            UpdateNotifyReleaseLogUpdate(&rdBeta);
+                            if (UpdateNotifyIsNewer(dwVersion, rdBeta.dwVersion)) 
+                                resUpdate = 1;
+                            UpdateNotifyReleaseCopyData(&rdBeta, und);
+                        }
+                        else {
+                            UpdateNotifyReleaseLogUpdate(&rdStable);
+                            if (UpdateNotifyIsNewer(dwVersion, rdStable.dwVersion)) 
+                                resUpdate = 1;
+                            UpdateNotifyReleaseCopyData(&rdStable, und);
+                        } 
                     }
                     else if (rdAlphaValid) {
                         UpdateNotifyReleaseLogUpdate(&rdAlpha);
