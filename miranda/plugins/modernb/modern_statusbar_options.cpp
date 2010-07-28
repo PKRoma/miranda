@@ -47,7 +47,7 @@ INT_PTR CALLBACK DlgProcSBarOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 
 static void UpdateXStatusIconOptions(HWND hwndDlg, BOOL perProto, StatusBarProtocolOptions* dat, int curSelProto)
 {
-	int en=IsDlgButtonChecked(hwndDlg,IDC_SHOWSBAR);
+	int en=IsDlgButtonChecked(hwndDlg,IDC_SHOWSBAR) && IsDlgButtonChecked(hwndDlg,IDC_SHOWICON );
 
 	if (IsDlgButtonChecked(hwndDlg,IDC_SHOWBOTH)) CheckDlgButton(hwndDlg,IDC_SHOWNORMAL,FALSE);
 	EnableWindow(GetDlgItem(hwndDlg,IDC_SHOWBOTH),en && IsDlgButtonChecked(hwndDlg,IDC_SHOWXSTATUS) && !IsDlgButtonChecked(hwndDlg,IDC_SHOWNORMAL));
@@ -135,17 +135,18 @@ static void UpdateStatusBarOptionsDisplay(HWND hwndDlg)
 		UpdateXStatusIconOptions(hwndDlg, perProto, dat, curSelProto);
 
 	{
+		BOOL enableIcons = IsDlgButtonChecked(hwndDlg,IDC_SHOWICON );
 		BOOL enableOptions = !perProto || sbpo.AccountIsCustomized;
 		EnableWindow(GetDlgItem(hwndDlg, IDC_SBAR_HIDE_ACCOUNT_COMPLETELY), enableOptions && perProto);
-		EnableWindow(GetDlgItem(hwndDlg, IDC_USECONNECTINGICON), enableOptions);
+		EnableWindow(GetDlgItem(hwndDlg, IDC_USECONNECTINGICON), enableOptions && enableIcons);
 		EnableWindow(GetDlgItem(hwndDlg, IDC_SHOWXSTATUSNAME), enableOptions);
-		EnableWindow(GetDlgItem(hwndDlg, IDC_SHOWXSTATUS), enableOptions);
+		EnableWindow(GetDlgItem(hwndDlg, IDC_SHOWXSTATUS), enableOptions && enableIcons);
 
 		if (!enableOptions)
 		{
-			EnableWindow(GetDlgItem(hwndDlg, IDC_SHOWNORMAL), enableOptions);
-			EnableWindow(GetDlgItem(hwndDlg, IDC_SHOWBOTH), enableOptions);
-			EnableWindow(GetDlgItem(hwndDlg, IDC_TRANSPARENTOVERLAY), enableOptions);
+			EnableWindow(GetDlgItem(hwndDlg, IDC_SHOWNORMAL), enableOptions && enableIcons);
+			EnableWindow(GetDlgItem(hwndDlg, IDC_SHOWBOTH), enableOptions && enableIcons );
+			EnableWindow(GetDlgItem(hwndDlg, IDC_TRANSPARENTOVERLAY), enableOptions && enableIcons);
 		}
 
 		EnableWindow(GetDlgItem(hwndDlg, IDC_SHOWUNREADEMAIL), enableOptions);
@@ -299,6 +300,7 @@ static void UpdateStatusBarOptionsDisplay(HWND hwndDlg)
 
 			{
 				int en=IsDlgButtonChecked(hwndDlg,IDC_SHOWSBAR);
+				int en_icons = IsDlgButtonChecked(hwndDlg,IDC_SHOWICON );
 
 				EnableWindow(GetDlgItem(hwndDlg,IDC_SHOWICON),en);
 				EnableWindow(GetDlgItem(hwndDlg,IDC_SHOWPROTO),en);
@@ -306,7 +308,7 @@ static void UpdateStatusBarOptionsDisplay(HWND hwndDlg)
 				EnableWindow(GetDlgItem(hwndDlg,IDC_RIGHTSTATUS),en);
 				EnableWindow(GetDlgItem(hwndDlg,IDC_RIGHTMIRANDA),en);
 				EnableWindow(GetDlgItem(hwndDlg,IDC_EQUALSECTIONS),en);
-				EnableWindow(GetDlgItem(hwndDlg,IDC_USECONNECTINGICON),en);
+				EnableWindow(GetDlgItem(hwndDlg,IDC_USECONNECTINGICON),en && en_icons);
 				EnableWindow(GetDlgItem(hwndDlg,IDC_USEOWNERDRAW),en);
 				EnableWindow(GetDlgItem(hwndDlg,IDC_OFFSETSPIN),en);
 				EnableWindow(GetDlgItem(hwndDlg,IDC_OFFSETICON),en);
@@ -318,10 +320,10 @@ static void UpdateStatusBarOptionsDisplay(HWND hwndDlg)
 				EnableWindow(GetDlgItem(hwndDlg,IDC_SHOW_ONLY_IF_DIFFERENT),en);
 				EnableWindow(GetDlgItem(hwndDlg,IDC_COLOUR),en);
 				EnableWindow(GetDlgItem(hwndDlg,IDC_SHOWXSTATUSNAME),en);
-				EnableWindow(GetDlgItem(hwndDlg,IDC_SHOWXSTATUS),en);
-				EnableWindow(GetDlgItem(hwndDlg,IDC_SHOWBOTH),en && IsDlgButtonChecked(hwndDlg,IDC_SHOWXSTATUS) && !IsDlgButtonChecked(hwndDlg,IDC_SHOWNORMAL));
-				EnableWindow(GetDlgItem(hwndDlg,IDC_SHOWNORMAL),en && IsDlgButtonChecked(hwndDlg,IDC_SHOWXSTATUS)&& !IsDlgButtonChecked(hwndDlg,IDC_SHOWBOTH));
-				EnableWindow(GetDlgItem(hwndDlg,IDC_TRANSPARENTOVERLAY),en && IsDlgButtonChecked(hwndDlg,IDC_SHOWXSTATUS) && IsDlgButtonChecked(hwndDlg,IDC_SHOWNORMAL)&& !IsDlgButtonChecked(hwndDlg,IDC_SHOWBOTH));
+				EnableWindow(GetDlgItem(hwndDlg,IDC_SHOWXSTATUS),en && en_icons);
+				EnableWindow(GetDlgItem(hwndDlg,IDC_SHOWBOTH),en && en_icons && IsDlgButtonChecked(hwndDlg,IDC_SHOWXSTATUS) && !IsDlgButtonChecked(hwndDlg,IDC_SHOWNORMAL));
+				EnableWindow(GetDlgItem(hwndDlg,IDC_SHOWNORMAL),en && en_icons && IsDlgButtonChecked(hwndDlg,IDC_SHOWXSTATUS)&& !IsDlgButtonChecked(hwndDlg,IDC_SHOWBOTH));
+				EnableWindow(GetDlgItem(hwndDlg,IDC_TRANSPARENTOVERLAY),en && en_icons && IsDlgButtonChecked(hwndDlg,IDC_SHOWXSTATUS) && IsDlgButtonChecked(hwndDlg,IDC_SHOWNORMAL)&& !IsDlgButtonChecked(hwndDlg,IDC_SHOWBOTH));
 				EnableWindow(GetDlgItem(hwndDlg,IDC_SHOWUNREADEMAIL),en);
 
 				EnableWindow(GetDlgItem(hwndDlg,IDC_OFFSETICON_LEFT),en);
@@ -362,13 +364,14 @@ static void UpdateStatusBarOptionsDisplay(HWND hwndDlg)
 		else if (LOWORD(wParam)==IDC_COLOUR ||(LOWORD(wParam)==IDC_SBAR_HORIZ_ALIGN && HIWORD(wParam)==CBN_SELCHANGE)) SendMessage(GetParent(hwndDlg), PSM_CHANGED, (WPARAM)hwndDlg, 0);
 		else if (LOWORD(wParam)==IDC_SHOWSBAR) {
 			int en=IsDlgButtonChecked(hwndDlg,IDC_SHOWSBAR);
+			int en_icons = IsDlgButtonChecked(hwndDlg,IDC_SHOWICON );
 			EnableWindow(GetDlgItem(hwndDlg,IDC_SHOWICON),en);
 			EnableWindow(GetDlgItem(hwndDlg,IDC_SHOWPROTO),en);
 			EnableWindow(GetDlgItem(hwndDlg,IDC_SHOWSTATUS),en);
 			EnableWindow(GetDlgItem(hwndDlg,IDC_RIGHTSTATUS),en);
 			EnableWindow(GetDlgItem(hwndDlg,IDC_RIGHTMIRANDA),en);
 			EnableWindow(GetDlgItem(hwndDlg,IDC_EQUALSECTIONS),en);
-			EnableWindow(GetDlgItem(hwndDlg,IDC_USECONNECTINGICON),en);
+			EnableWindow(GetDlgItem(hwndDlg,IDC_USECONNECTINGICON),en && en_icons);
 			EnableWindow(GetDlgItem(hwndDlg,IDC_USEOWNERDRAW),en);
 			EnableWindow(GetDlgItem(hwndDlg,IDC_OFFSETSPIN),en);
 			EnableWindow(GetDlgItem(hwndDlg,IDC_OFFSETICON),en);
@@ -384,7 +387,7 @@ static void UpdateStatusBarOptionsDisplay(HWND hwndDlg)
 			EnableWindow(GetDlgItem(hwndDlg,IDC_COLOUR),en);
 			EnableWindow(GetDlgItem(hwndDlg,IDC_BUTTON1),en);
 			EnableWindow(GetDlgItem(hwndDlg,IDC_SHOWXSTATUSNAME),en);
-			EnableWindow(GetDlgItem(hwndDlg,IDC_SHOWXSTATUS),en);
+			EnableWindow(GetDlgItem(hwndDlg,IDC_SHOWXSTATUS),en && en_icons);
 			EnableWindow(GetDlgItem(hwndDlg,IDC_SHOWUNREADEMAIL),en);
 
 //			EnableWindow(GetDlgItem(hwndDlg,IDC_SHOWBOTH),en && IsDlgButtonChecked(hwndDlg,IDC_SHOWXSTATUS) && !IsDlgButtonChecked(hwndDlg,IDC_SHOWNORMAL));
@@ -483,6 +486,7 @@ static void UpdateStatusBarOptionsDisplay(HWND hwndDlg)
 			{
 				_GlobalOptions.SBarShow = val;
 			}
+			UpdateStatusBarOptionsDisplay(hwndDlg);
 		}
 		else if (LOWORD(wParam) == IDC_RIGHTSTATUS || LOWORD(wParam) == IDC_RIGHTMIRANDA)
 		{
