@@ -576,8 +576,8 @@ INT_PTR NetlibHttpSendRequest(WPARAM wParam,LPARAM lParam)
 			{
 				nlhrReply = (NETLIBHTTPREQUEST*)NetlibHttpRecvHeaders((WPARAM)nlc, hflags);
 			}
-			else if ((resultCode == 301 || resultCode == 302 || resultCode == 307) // redirect
-				&& (nlhr->flags & NLHRF_REDIRECT))
+			else if (resultCode == 307 || ((resultCode == 301 || resultCode == 302) // redirect
+				&& (nlhr->flags & NLHRF_REDIRECT)))
 			{
 				pszUrl = NULL;
 
