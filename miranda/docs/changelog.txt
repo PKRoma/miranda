@@ -6,23 +6,33 @@
 * New in 0.9.0
 Enhancements:
  - New improved protocols engine with full Unicode support
+ - New high quality icon theme
  - Dynamic protocol's menu creation
  - New Unicode-aware profile manager
  - Added the first official 64-bit core version
  - Added 32x32 pixels icons support
+ - Added Windows 7 taskbar icon support
  - Added full Unicode file transfers
  - Added the Unicode search capability
  - Added the Unicode status messages processing
  - Added menu option to move all protocol menus to the status bar
  - Added SSL certificate validation
+ - Added ability to transfer files longer then 4 GB
+ - Added support for HTTP 1.1 persistent connections including persistent HTTP proxy connections
+ - Added support for HTTP SPINEGO (Negotiate) authentication
+ - Added support for Internet Explorer proxy settings usage including proxy auto configuration scripts
+ - Added transparent HTTP proxy/server authentication if possible (no user settings needed)
  - Jabber: Added GSSAPI authentication
  - Jabber: Added API for the second-level Jabber subplugins
+ - Jabber: Added ability to transfer files longer then 4 GB
  - Gadu-Gadu: Brought back and improved SSL support (still requires OpenSSL)
  - Gadu-Gadu: The complete avatars support
  - Gadu-Gadu: Custom profile folders plugin support for avatars and images
  - Gadu-Gadu: Added support for changing status by the user simultaneously logged on using different Miranda account or IM client
  - Gadu-Gadu: Improved showing links from unknown contacts
  - Gadu-Gadu: Split the protocol menu into two popup menus when it's moved to the status bar
+ - MSN: Added ability to transfer files longer then 4 GB
+ - MSN: Added automatic connection method selection
  - YAHOO: Improved the login procedure
 
 Bugfixes:
