@@ -17,21 +17,21 @@ Enhancements:
  - Added the Unicode status messages processing
  - Added menu option to move all protocol menus to the status bar
  - Added SSL certificate validation
- - Added ability to transfer files longer then 4 GB
+ - Added ability to transfer files longer than 4 GB
  - Added support for HTTP 1.1 persistent connections including persistent HTTP proxy connections
  - Added support for HTTP SPINEGO (Negotiate) authentication
  - Added support for Internet Explorer proxy settings usage including proxy auto configuration scripts
  - Added transparent HTTP proxy/server authentication if possible (no user settings needed)
  - Jabber: Added GSSAPI authentication
  - Jabber: Added API for the second-level Jabber subplugins
- - Jabber: Added ability to transfer files longer then 4 GB
+ - Jabber: Added ability to transfer files longer than 4 GB
  - Gadu-Gadu: Brought back and improved SSL support (still requires OpenSSL)
  - Gadu-Gadu: The complete avatars support
  - Gadu-Gadu: Custom profile folders plugin support for avatars and images
  - Gadu-Gadu: Added support for changing status by the user simultaneously logged on using different Miranda account or IM client
  - Gadu-Gadu: Improved showing links from unknown contacts
  - Gadu-Gadu: Split the protocol menu into two popup menus when it's moved to the status bar
- - MSN: Added ability to transfer files longer then 4 GB
+ - MSN: Added ability to transfer files longer than 4 GB
  - MSN: Added automatic connection method selection
  - YAHOO: Improved the login procedure
 
