@@ -354,19 +354,15 @@ static void DoAutoExec(void)
 	GetPrivateProfileString(_T("AutoExec"),_T("OnCreateFilename"),_T(""),szOnCreateFilename,SIZEOF(szOnCreateFilename),mirandabootini);
 	GetPrivateProfileString(_T("AutoExec"),_T("Glob"),_T("autoexec_*.ini"),szFindPath,SIZEOF(szFindPath),mirandabootini);
     
-	REPLACEVARSDATA dat = {0};
-	dat.cbSize = sizeof(dat);
-	dat.dwFlags = RVF_TCHAR;
-
 	if (dbCreated && szOnCreateFilename[0]) {
-		str2 = (TCHAR*)CallService(MS_UTILS_REPLACEVARS, (WPARAM)szOnCreateFilename, (LPARAM)&dat);
+		str2 = Utils_ReplaceVarsT(szOnCreateFilename);
 		pathToAbsoluteT(str2, szIniPath, NULL);
 		mir_free(str2);
 
 		ProcessIniFile(szIniPath, szSafeSections, szUnsafeSections, 0, 1);
 	}
 
-	str2 = (TCHAR*)CallService(MS_UTILS_REPLACEVARS, (WPARAM)szFindPath, (LPARAM)&dat);
+	str2 = Utils_ReplaceVarsT(szFindPath);
 	pathToAbsoluteT(str2, szFindPath, NULL);
 	mir_free(str2);
 
