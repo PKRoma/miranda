@@ -795,6 +795,12 @@ LRESULT CALLBACK fnContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 		return 0;
 
 	case WM_DISPLAYCHANGE:
+		{
+			RECT rc;
+			GetWindowRect(hwnd, &rc);
+			if (Utils_AssertInsideScreen(&rc) == 1)
+				MoveWindow(hwnd, rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top, TRUE);
+		}
 		SendMessage(cli.hwndContactTree, WM_SIZE, 0, 0);        //forces it to send a cln_listsizechanged
 		break;
 
