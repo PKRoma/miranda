@@ -61,11 +61,7 @@ static void fillProfileName( const TCHAR* ptszFileName )
 
 int validateProfileDir(TCHAR* profiledir)
 {
-	REPLACEVARSDATA dat = {0};
-	dat.cbSize = sizeof(dat);
-	dat.dwFlags = RVF_TCHAR;
-
-	TCHAR* pfd = (TCHAR*)CallService(MS_UTILS_REPLACEVARS, (WPARAM)_T("%miranda_path%"), (LPARAM)&dat);
+	TCHAR* pfd = Utils_ReplaceVarsT(_T("%miranda_path%"));
 
 	int res = lstrcmpi(profiledir, pfd) == 0;
 	if (res)
@@ -86,14 +82,10 @@ int getProfilePath(TCHAR * buf, size_t cch)
 	TCHAR profiledir[MAX_PATH];
 	GetPrivateProfileString(_T("Database"), _T("ProfileDir"), _T(""), profiledir, SIZEOF(profiledir), mirandabootini);
 
-	REPLACEVARSDATA dat = {0};
-	dat.cbSize = sizeof( dat );
-	dat.dwFlags = RVF_TCHAR;
-
 	if (profiledir[0] == 0)
 		_tcscpy(profiledir, _T("%miranda_path%\\Profiles"));
 
-	TCHAR* exprofiledir = (TCHAR*)CallService(MS_UTILS_REPLACEVARS, (WPARAM)profiledir, (LPARAM)&dat);
+	TCHAR* exprofiledir = Utils_ReplaceVarsT(profiledir);
 	size_t len = pathToAbsoluteT(exprofiledir, buf, NULL);
 	mir_free(exprofiledir);
 
@@ -141,11 +133,7 @@ static void getDefaultProfile(TCHAR * szProfile, size_t cch, TCHAR * profiledir)
 	if (defaultProfile[0] == 0)
 		return;
 
-	REPLACEVARSDATA dat = {0};
-	dat.cbSize = sizeof(dat);
-	dat.dwFlags = RVF_TCHAR;
-
-	TCHAR* res = (TCHAR*)CallService(MS_UTILS_REPLACEVARS, (WPARAM)defaultProfile, (LPARAM)&dat);
+	TCHAR* res = Utils_ReplaceVarsT(defaultProfile);
 	if (res) {
 		mir_sntprintf(szProfile, cch, _T("%s\\%s\\%s%s"), profiledir, res, res, isValidProfileName(res) ? _T("") : _T(".dat"));
 		mir_free(res);
@@ -160,10 +148,6 @@ static int getProfileCmdLineArgs(TCHAR * szProfile, size_t cch)
 	TCHAR *szEndOfParam;
 	TCHAR szThisParam[1024];
 	int firstParam=1;
-
-	REPLACEVARSDATA dat = {0};
-	dat.cbSize = sizeof(dat);
-	dat.dwFlags = RVF_TCHAR;
 
 	while(szCmdLine[0]) 
 	{
@@ -184,7 +168,7 @@ static int getProfileCmdLineArgs(TCHAR * szProfile, size_t cch)
 		if (firstParam) { firstParam=0; continue; }   //first param is executable name
 		if (szThisParam[0] == '/' || szThisParam[0] == '-') continue;  //no switches supported
 
-		TCHAR* res = (TCHAR*)CallService(MS_UTILS_REPLACEVARS, (WPARAM)szThisParam, (LPARAM)&dat);
+		TCHAR* res = Utils_ReplaceVarsT(szThisParam);
 		if (res == NULL) return 0;
 		_tcsncpy(szProfile, res, cch); szProfile[cch-1] = 0;
 		mir_free(res);
@@ -233,10 +217,7 @@ static void moveProfileDirProfiles(TCHAR * profiledir, BOOL isRootDir = TRUE)
 {
 	TCHAR pfd[MAX_PATH];
 	if (isRootDir) {
-		REPLACEVARSDATA dat = {0};
-		dat.cbSize = sizeof(dat);
-		dat.dwFlags = RVF_TCHAR;
-		TCHAR *path = (TCHAR*)CallService(MS_UTILS_REPLACEVARS, (WPARAM)_T("%miranda_path%\\*.dat"), (LPARAM)&dat);
+		TCHAR *path = Utils_ReplaceVarsT(_T("%miranda_path%\\*.dat"));
 		mir_sntprintf(pfd, SIZEOF(pfd), _T("%s"), path);
 		mir_free(path);
 	}
