@@ -455,7 +455,7 @@ LBL_FatalError:
 		}
 
 		xmlStreamInitializeNow( info );
-		TCHAR* tag = _T("stream:stream");
+		const TCHAR* tag = _T("stream:stream");
 
 		Log( "Entering main recv loop" );
 		datalen = 0;
@@ -500,8 +500,12 @@ LBL_FatalError:
 				str = buffer;
 			#endif
 
-			bytesParsed = 0;
 			XmlNode root( str, &bytesParsed, tag );
+			if ( root && tag )
+			{
+				XmlNode test( str, &bytesParsed, _T( "stream:features" ));
+				if ( !test ) continue;
+			}
 			#if defined( _UNICODE )
 				bytesParsed = ( root ) ? mir_utf8lenW( str ) : 0;
 				mir_free(str);
