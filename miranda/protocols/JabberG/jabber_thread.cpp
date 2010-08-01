@@ -501,7 +501,7 @@ LBL_FatalError:
 			#endif
 
 			XmlNode root( str, &bytesParsed, tag );
-			if ( root && tag )
+			if ( root && tag && !m_options.Disable3920auth )
 			{
 				XmlNode test( str, &bytesParsed, _T( "stream:features" ));
 				if ( !test ) continue;
