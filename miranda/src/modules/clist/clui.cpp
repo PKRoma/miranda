@@ -796,7 +796,7 @@ LRESULT CALLBACK fnContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 
 	case WM_DISPLAYCHANGE:
 		{
-			RECT rc;
+			RECT rc; 
 			GetWindowRect(hwnd, &rc);
 			if (Utils_AssertInsideScreen(&rc) == 1)
 				MoveWindow(hwnd, rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top, TRUE);
