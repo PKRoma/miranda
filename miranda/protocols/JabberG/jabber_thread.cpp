@@ -503,8 +503,8 @@ LBL_FatalError:
 			XmlNode root( str, &bytesParsed, tag );
 			if ( root && tag && !m_options.Disable3920auth )
 			{
-				XmlNode test( str, &bytesParsed, _T( "stream:features" ));
-				if ( !test ) continue;
+				if (-1 == xi.positionOfChildByName(root, _T( "stream:features" ), 0))
+					continue;
 			}
 			#if defined( _UNICODE )
 				bytesParsed = ( root ) ? mir_utf8lenW( str ) : 0;
