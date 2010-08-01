@@ -491,6 +491,7 @@ LBL_FatalError:
 				break;
 			datalen += recvResult;
 
+recvRest:
 			buffer[datalen] = '\0';
 
 			TCHAR* str;
@@ -500,21 +501,34 @@ LBL_FatalError:
 				str = buffer;
 			#endif
 
+			bytesParsed = 0;
 			XmlNode root( str, &bytesParsed, tag );
-			if ( root && tag && !m_options.Disable3920auth )
+			if ( root && tag )
 			{
-				if (-1 == xi.positionOfChildByName(root, _T( "stream:features" ), 0))
-					continue;
-			}
+				char *p = strstr( buffer, "stream:stream" );
+				if ( p ) p = strchr( p, '>' );
+				if ( p ) 
+					bytesParsed = p - buffer + 1;
+				else {
+					root = XmlNode();
+					bytesParsed = 0;
+				}
+				#if defined( _UNICODE )
+					mir_free(str);
+				#endif
+			} 
+			else {
 			#if defined( _UNICODE )
+				if ( root ) str[ bytesParsed ] = 0;
 				bytesParsed = ( root ) ? mir_utf8lenW( str ) : 0;
 				mir_free(str);
 			#else
 				bytesParsed = ( root ) ? bytesParsed : 0;
 			#endif
+			}
 
 			Log( "bytesParsed = %d", bytesParsed );
-			tag = NULL;
+			if ( root ) tag = NULL;
 
 			if ( xmlGetName( root ) == NULL ) {
 				for ( int i=0; ; i++ ) {
@@ -544,7 +558,10 @@ LBL_FatalError:
 			if ( m_szXmlStreamToBeInitialized ) {
 				xmlStreamInitializeNow( info );
 				tag = _T("stream:stream");
-		}	}
+			}	
+			if ( root && datalen ) 
+				goto recvRest;
+		}
 
 		if ( info->type == JABBER_SESSION_NORMAL ) {
 			m_iqManager.ExpireAll( info );
@@ -656,11 +673,6 @@ void CJabberProto::OnProcessStreamOpening( HXML node, ThreadData *info )
 
 	if ( info->proto->m_options.Disable3920auth )
 		info->proto->PerformIqAuth( info );
-
-	HXML features = xmlGetChild( node ,0);
-	if ( features )
-		if ( !lstrcmp( xmlGetName( features ), _T("stream:features")))
-			OnProcessFeatures( features, info );
 }
 
 void CJabberProto::OnProcessStreamClosing( HXML node, ThreadData *info )
