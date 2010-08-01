@@ -561,6 +561,11 @@ protected:
 	{
 		switch (msg)
 		{
+		case WM_ACTIVATE:
+			m_chkUseTls.Enable(!m_proto->m_options.Disable3920auth && (m_proto->m_options.UseSSL ? false : true));
+			if (m_proto->m_options.Disable3920auth) m_chkUseTls.SetState(BST_UNCHECKED);
+			break;
+
 		case WM_JABBER_REFRESH:
 			RefreshServers(( HXML )lParam );
 			break;
