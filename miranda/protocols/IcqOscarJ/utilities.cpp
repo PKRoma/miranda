@@ -629,7 +629,7 @@ char *NickFromHandleUtf(HANDLE hContact)
 
 char *strUID(DWORD dwUIN, char *pszUID)
 {
-	if (dwUIN)
+	if (dwUIN && pszUID)
 		_ltoa(dwUIN, pszUID, 10);
 
 	return pszUID;
