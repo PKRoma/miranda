@@ -2045,9 +2045,13 @@ int ThreadData::send( HXML node )
 
 	// strip forbidden control characters from outgoing XML stream
 	TCHAR *q = str;
-	for (TCHAR *p = str; *p; ++p)
-	{
-		if (*p < 0x9 || *p > 0x9 && *p < 0xA || *p > 0xA && *p < 0xD || *p > 0xD && *p < 0x20 || *p > 0xD7FF && *p < 0xE000 || *p > 0xFFFD)
+	for (TCHAR *p = str; *p; ++p) {
+		#if defined( _UNICODE )
+			WCHAR c = *p;
+		#else
+			WCHAR c = *( BYTE* )p;
+		#endif
+		if (c < 0x9 || c > 0x9 && c < 0xA || c > 0xA && c < 0xD || c > 0xD && c < 0x20 || c > 0xD7FF && c < 0xE000 || c > 0xFFFD)
 			continue;
 
 		*q++ = *p;
