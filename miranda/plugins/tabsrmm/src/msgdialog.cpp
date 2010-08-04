@@ -234,7 +234,7 @@ static void ShowPopupMenu(TWindowData *dat, int idFrom, HWND hwndFrom, POINT pt)
 		}
 	}
 	if (idFrom == IDC_LOG)
-		RemoveMenu(hSubMenu, 6, MF_BYPOSITION);
+		RemoveMenu(hSubMenu, 7, MF_BYPOSITION);
 	DestroyMenu(hMenu);
 	if (dat->codePage != oldCodepage) {
 		SendMessage(hwndDlg, DM_REMAKELOG, 0, 0);

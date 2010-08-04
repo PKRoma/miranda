@@ -103,6 +103,7 @@ public:
 
 	static	AVATARCACHEENTRY*	TSAPI loadAvatarFromAVS				(const HANDLE hContact);
 	static	void				TSAPI sanitizeFilename				(wchar_t *tszFilename);
+	static	void				TSAPI ensureTralingBackslash		(wchar_t *szPathname);
 
 	static	INT_PTR CALLBACK		  PopupDlgProcError				(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 	static	const TCHAR*			  extractURLFromRichEdit		(const ENLINK* _e, const HWND hwndRich);

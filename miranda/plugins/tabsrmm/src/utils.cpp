@@ -1075,6 +1075,16 @@ void Utils::sanitizeFilename(wchar_t* tszFilename)
 }
 
 /**
+ * ensure that a path name ends on a trailing backslash
+ * @param szPathname - pathname to check
+ */
+void Utils::ensureTralingBackslash(wchar_t *szPathname)
+{
+	if(szPathname[lstrlenW(szPathname) - 1] != '\\')
+		wcscat(szPathname, L"\\");
+}
+
+/**
  * implementation of the CWarning class
  */
 CWarning::CWarning(const wchar_t *tszTitle, const wchar_t *tszText, const UINT uId, const DWORD dwFlags)

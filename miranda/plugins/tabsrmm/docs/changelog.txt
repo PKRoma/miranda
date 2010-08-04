@@ -35,7 +35,14 @@ are currently no downloads for it, you'll have to compile it from source.
 			Detailed change log
 			===================
 
-Version 3.0.1.0 - 2010/09/10
+Version 3.0.1.1 - 2010/08/XX
+
+	* fixed disappearing code page selection menu.
+	
+	* don't create MUC log files in the main profile directory any longer.
+	
+	
+Version 3.0.1.0 - 2010/08/04
 
 	* disabled some known buggy and incomplete features to get ready for 
 	  3.0 release.

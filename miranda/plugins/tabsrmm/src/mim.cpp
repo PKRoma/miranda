@@ -392,14 +392,15 @@ INT_PTR CMimAPI::foldersPathChanged()
 		 * selection code.
 		 */
 
+		Utils::ensureTralingBackslash(m_szSkinsPath);
+
 		FoldersGetCustomPathT(m_hAvatarsPath, szTemp, MAX_PATH, const_cast<TCHAR *>(getSavedAvatarPath()));
 		mir_sntprintf(m_szSavedAvatarsPath, MAX_PATH, _T("%s"), szTemp);
 
 		FoldersGetCustomPathT(m_hChatLogsPath, szTemp, MAX_PATH, const_cast<TCHAR *>(getChatLogPath()));
 		mir_sntprintf(m_szChatLogsPath, MAX_PATH, _T("%s"), szTemp);
 
-		if(m_szChatLogsPath[lstrlen(m_szChatLogsPath) - 1] != '\\')
-			_tcscat(m_szChatLogsPath, _T("\\"));
+		Utils::ensureTralingBackslash(m_szChatLogsPath);
 	}
 	CallService(MS_UTILS_CREATEDIRTREET, 0, (LPARAM)m_szProfilePath);
 	CallService(MS_UTILS_CREATEDIRTREET, 0, (LPARAM)m_szSkinsPath);
@@ -421,10 +422,9 @@ INT_PTR CMimAPI::foldersPathChanged()
 const TCHAR* CMimAPI::getUserDir()
 {
 	if(m_userDir[0] == 0) {
-		TCHAR *userdata = ::Utils_ReplaceVarsT(_T("%miranda_userdata%"));
+		wchar_t*	userdata = ::Utils_ReplaceVarsT(L"%miranda_userdata%");
 		mir_sntprintf(m_userDir, MAX_PATH, userdata);
-		if(m_userDir[lstrlen(m_userDir) - 1] != '\\')
-		   _tcscat(m_userDir, _T("\\"));
+		Utils::ensureTralingBackslash(m_userDir);
 		mir_free(userdata); 
 	}
 	return(m_userDir);
@@ -439,7 +439,7 @@ void CMimAPI::InitPaths()
 	const TCHAR *szUserdataDir = getUserDir();
 
 	mir_sntprintf(m_szProfilePath, MAX_PATH, _T("%stabSRMM"), szUserdataDir);
-	mir_sntprintf(m_szChatLogsPath, MAX_PATH, _T("%s"), szUserdataDir);
+	mir_sntprintf(m_szChatLogsPath, MAX_PATH, _T("%sLogs\\"), szUserdataDir);
 
 	mir_sntprintf(m_szSkinsPath, MAX_PATH, _T("%s\\skins\\"), m_szProfilePath);
 	mir_sntprintf(m_szSavedAvatarsPath, MAX_PATH, _T("%s\\Saved Contact Pictures"), m_szProfilePath);
