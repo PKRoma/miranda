@@ -107,6 +107,7 @@ public:
 
 		::QueryPerformanceFrequency((LARGE_INTEGER *)&m_tFreq);
 		m_dFreq = (double)(1.0f / m_tFreq);
+		m_hChatLogLock = INVALID_HANDLE_VALUE;
 	}
 
 	~CMimAPI() {
@@ -116,6 +117,9 @@ public:
 			FreeLibrary(m_hDwmApi);
 		if	(m_haveBufferedPaint)
 			m_pfnBufferedPaintUninit();
+
+		if(m_hChatLogLock != INVALID_HANDLE_VALUE)
+			CloseHandle(m_hChatLogLock);
 	}
 
 	/*
@@ -276,7 +280,7 @@ public:
 
 private:
 	UTF8_INTERFACE 	m_utfi;
-	TCHAR 		m_szProfilePath[MAX_PATH], m_szSkinsPath[MAX_PATH], m_szSavedAvatarsPath[MAX_PATH], m_szChatLogsPath[MAX_PATH];
+	TCHAR 		m_szProfilePath[MAX_PATH + 2], m_szSkinsPath[MAX_PATH + 2], m_szSavedAvatarsPath[MAX_PATH + 2], m_szChatLogsPath[MAX_PATH + 2];
 	HMODULE		m_hUxTheme, m_hDwmApi;
 	bool		m_VsAPI;
 	bool		m_isAero;
@@ -287,13 +291,14 @@ private:
 	double		m_dFreq;
 	char		m_timerMsg[256];
 	bool		m_haveFolders;
+	HANDLE		m_hChatLogLock;
 
 	void	InitAPI();
 	void	GetUTFI();
 	void 	InitPaths();
 
 private:
-	static TCHAR	m_userDir[MAX_PATH + 1];
+	static TCHAR	m_userDir[MAX_PATH + 2];
 };
 
 inline void CMimAPI::startTimer()

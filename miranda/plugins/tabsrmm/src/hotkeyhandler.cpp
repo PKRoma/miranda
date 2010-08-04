@@ -73,8 +73,8 @@ static HOTKEYDESC _hotkeydescs[] = {
 	0, "tabsrmm_sbar", "Collapse side bar", TABSRMM_HK_SECTION_GENERIC, 0, HOTKEYCODE(0, VK_F9), TABSRMM_HK_TOGGLESIDEBAR,
 	0, "tabsrmm_muc_cmgr", "Channel manager", TABSRMM_HK_SECTION_GC, 0, HOTKEYCODE(HOTKEYF_SHIFT | HOTKEYF_CONTROL, 'C'), TABSRMM_HK_CHANNELMGR,
 	0, "tabsrmm_muc_filter", "Toggle filter", TABSRMM_HK_SECTION_GC, 0, HOTKEYCODE(HOTKEYF_SHIFT | HOTKEYF_CONTROL, 'F'), TABSRMM_HK_FILTERTOGGLE,
-	0, "tabsrmm_muc_filter", "Toggle nick list", TABSRMM_HK_SECTION_GC, 0, HOTKEYCODE(HOTKEYF_SHIFT | HOTKEYF_CONTROL, 'N'), TABSRMM_HK_LISTTOGGLE
-
+	0, "tabsrmm_muc_nick", "Toggle nick list", TABSRMM_HK_SECTION_GC, 0, HOTKEYCODE(HOTKEYF_SHIFT | HOTKEYF_CONTROL, 'N'), TABSRMM_HK_LISTTOGGLE,
+	0, "tabsrmm_muc_server_show", "Show server window", TABSRMM_HK_SECTION_GC, 0, HOTKEYCODE(HOTKEYF_SHIFT | HOTKEYF_CONTROL, '1'), TABSRMM_HK_MUC_SHOWSERVER,
 };
 
 static 	SendLaterJobIterator g_jobs;
@@ -576,6 +576,20 @@ LONG_PTR CALLBACK HotkeyHandlerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 
 		case DM_MUCFLASHWORKER: {
 			FLASH_PARAMS *p = reinterpret_cast<FLASH_PARAMS*>(lParam);
+
+			if(1 == wParam) {
+				CallService(MS_CLIST_CONTACTDOUBLECLICKED, (WPARAM)p->hContact, 1);
+				p->bActiveTab = TRUE;
+				p->bInactive = FALSE;
+				p->bMustAutoswitch = p->bMustFlash = FALSE;
+			}
+
+			if(2 == wParam) {
+				p->bActiveTab = TRUE;
+				p->bInactive = FALSE;
+				p->bMustAutoswitch = p->bMustFlash = FALSE;
+				SendMessage(p->hWnd, DM_ACTIVATEME, 0, 0);
+			}
 			DoFlashAndSoundWorker(p);
 			return(0);
 		}

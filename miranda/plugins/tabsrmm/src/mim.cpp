@@ -378,7 +378,7 @@ void CMimAPI::configureCustomFolders()
 
 INT_PTR CMimAPI::foldersPathChanged()
 {
-	TCHAR szTemp[MAX_PATH] = {'\0'};
+	TCHAR szTemp[MAX_PATH + 2] = {'\0'};
 
 	if(m_hDataPath) {
 		FoldersGetCustomPathT(m_hDataPath, szTemp, MAX_PATH, const_cast<TCHAR *>(getDataPath()));
@@ -391,19 +391,27 @@ INT_PTR CMimAPI::foldersPathChanged()
 		 * make sure skins root path always ends with a '\' - this is assumed by the skin
 		 * selection code.
 		 */
-		if(m_szSkinsPath[lstrlen(m_szSkinsPath) - 1] != '\\')
-			_tcscat(m_szSkinsPath, _T("\\"));
 
 		FoldersGetCustomPathT(m_hAvatarsPath, szTemp, MAX_PATH, const_cast<TCHAR *>(getSavedAvatarPath()));
 		mir_sntprintf(m_szSavedAvatarsPath, MAX_PATH, _T("%s"), szTemp);
 
 		FoldersGetCustomPathT(m_hChatLogsPath, szTemp, MAX_PATH, const_cast<TCHAR *>(getChatLogPath()));
 		mir_sntprintf(m_szChatLogsPath, MAX_PATH, _T("%s"), szTemp);
+
+		if(m_szChatLogsPath[lstrlen(m_szChatLogsPath) - 1] != '\\')
+			_tcscat(m_szChatLogsPath, _T("\\"));
 	}
 	CallService(MS_UTILS_CREATEDIRTREET, 0, (LPARAM)m_szProfilePath);
 	CallService(MS_UTILS_CREATEDIRTREET, 0, (LPARAM)m_szSkinsPath);
 	CallService(MS_UTILS_CREATEDIRTREET, 0, (LPARAM)m_szSavedAvatarsPath);
 	CallService(MS_UTILS_CREATEDIRTREET, 0, (LPARAM)m_szChatLogsPath);
+
+	mir_sntprintf(szTemp, MAX_PATH, L"%sfolder.lck", m_szChatLogsPath);
+
+	if(m_hChatLogLock != INVALID_HANDLE_VALUE)
+		CloseHandle(m_hChatLogLock);
+
+	m_hChatLogLock = CreateFile(szTemp, GENERIC_WRITE, 0, 0, OPEN_ALWAYS, FILE_ATTRIBUTE_HIDDEN, 0);
 
 	Skin->extractSkinsAndLogo(true);
 	Skin->setupAeroSkins();

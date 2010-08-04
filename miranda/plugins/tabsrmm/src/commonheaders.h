@@ -38,11 +38,14 @@
 
 #define _UNICODE 1
 
-#define __FEAT_EXP_AUTOSPLITTER 1					// autosize input area on request (experimental, incomplete, don't use,
-													// feature postponed to rel 3.1.+)
 //#define __LOGDEBUG_	1								// log some stuff to %profile_dir%/tabsrmm_debug.log
-
 //#define __FEAT_DEPRECATED_DYNAMICSWITCHLOGVIEWER 1
+
+#define __DELAYED_FOR_3_1 1							// features not going into 3.0.x and will be completed later
+
+#if !defined __DELAYED_FOR_3_1
+	#define __FEAT_EXP_AUTOSPLITTER 1
+#endif
 
 #define WINVER 0x0600
 #define _WIN32_WINNT 0x0600

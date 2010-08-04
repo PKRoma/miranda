@@ -1030,10 +1030,10 @@ void __fastcall CSideBar::m_DefaultBackgroundRenderer(const HDC hdc, const RECT 
 		if(id == IDC_SIDEBARUP || id == IDC_SIDEBARDOWN) {
 			::FillRect(hdc, const_cast<RECT *>(rc), CSkin::m_BrushBack);
 			if(stateId == PBS_HOT || stateId == PBS_PRESSED)
-				DrawAlpha(hdc, const_cast<RECT *>(rc), 0xf0f0f0, 75, 0x000000, 0, 9,
+				DrawAlpha(hdc, const_cast<RECT *>(rc), 0xf0f0f0, 70, 0x000000, 0, 9,
 						  31, 4, 0);
 			else
-				DrawAlpha(hdc, const_cast<RECT *>(rc), 0xf0f0f0, 85, 0x707070, 0, 9,
+				DrawAlpha(hdc, const_cast<RECT *>(rc), 0xf0f0f0, 30, 0x707070, 0, 9,
 						  31, 4, 0);
 		}
 		else {

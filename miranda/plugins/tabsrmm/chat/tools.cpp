@@ -483,8 +483,8 @@ void TSAPI DoFlashAndSoundWorker(FLASH_PARAMS* p)
 			}
 		}
 
-		if (p->bMustFlash & p->bInactive)
-			UpdateTrayMenu(dat, si->wStatus, si->pszModule, dat ? dat->szStatus : NULL, si->hContact, p->bHighlight ? 2 : 1);
+		if (p->bMustFlash && p->bInactive)
+			UpdateTrayMenu(dat, si->wStatus, si->pszModule, dat ? dat->szStatus : NULL, si->hContact, p->bHighlight ? 1 : 1);
 	}
 
 	free(p);
@@ -492,8 +492,10 @@ void TSAPI DoFlashAndSoundWorker(FLASH_PARAMS* p)
 
 BOOL DoSoundsFlashPopupTrayStuff(SESSION_INFO* si, GCEVENT * gce, BOOL bHighlight, int bManyFix)
 {
-	FLASH_PARAMS* params;
-	struct TWindowData *dat = 0;
+	FLASH_PARAMS*	params;
+	struct			TWindowData *dat = 0;
+	bool			fFlagUnread = false;
+	WPARAM			wParamForHighLight = 0;
 
 	if (gce == 0 || si == 0 || gce->bIsMe || si->iType == GCW_SERVER)
 		return FALSE;
@@ -502,6 +504,7 @@ BOOL DoSoundsFlashPopupTrayStuff(SESSION_INFO* si, GCEVENT * gce, BOOL bHighligh
 	params->hContact = si->hContact;
 	params->bInactive = TRUE;
 	if(si->hWnd && si->dat) {
+		dat = si->dat;
 		if((si->hWnd == si->dat->pContainer->hwndActive) && GetForegroundWindow() == si->dat->pContainer->hwnd)
 			params->bInactive = FALSE;
 	}
@@ -514,16 +517,21 @@ BOOL DoSoundsFlashPopupTrayStuff(SESSION_INFO* si, GCEVENT * gce, BOOL bHighligh
 		params->sound = "ChatHighlight";
 		if (M->GetByte(si->hContact, "CList", "Hidden", 0) != 0)
 			DBDeleteContactSetting(si->hContact, "CList", "Hidden");
-		if (params->bInactive)
+		if (params->bInactive) {
+			fFlagUnread = true;
 			DoTrayIcon(si, gce);
-		//MAD -- highlighted words create and activate the chat window
-		if(g_Settings.CreateWindowOnHighlight) {
-			if (!dat)
-				CallService(MS_CLIST_CONTACTDOUBLECLICKED, (WPARAM)si->hContact, 0);
-			else if(g_Settings.AnnoyingHighlight && params->bInactive)
-				SetForegroundWindow(dat->hwnd);
 		}
-		//
+
+		/* TODO fix for 3.0 final !!! */
+#if !defined(__DELAYED_FOR_3_1)
+		if(g_Settings.CreateWindowOnHighlight && 0 == dat)
+			wParamForHighLight = 1;
+		
+		if(dat && g_Settings.AnnoyingHighlight && params->bInactive && dat->pContainer->hwnd != GetForegroundWindow()) {
+			wParamForHighLight = 2;
+			params->hWnd = dat->hwnd;
+		}
+#endif
 		if (dat || !nen_options.iMUCDisable)
 			DoPopup(si, gce, dat);
 		if (params->bInactive && si && si->hWnd)
@@ -534,9 +542,11 @@ BOOL DoSoundsFlashPopupTrayStuff(SESSION_INFO* si, GCEVENT * gce, BOOL bHighligh
 		params->hNotifyIcon = hIcons[ICON_HIGHLIGHT];
 	} else {
 		// do blinking icons in tray
-		if (params->bInactive || !g_Settings.TrayIconInactiveOnly)
+		if (params->bInactive || !g_Settings.TrayIconInactiveOnly) {
 			DoTrayIcon(si, gce);
-
+			if(params->iEvent == GC_EVENT_MESSAGE)
+				fFlagUnread = true;
+		}
 		// stupid thing to not create multiple popups for a QUIT event for instance
 		if (bManyFix == 0) {
 			// do popups
@@ -641,7 +651,12 @@ BOOL DoSoundsFlashPopupTrayStuff(SESSION_INFO* si, GCEVENT * gce, BOOL bHighligh
 			params->hNotifyIcon = hIcons[ICON_MESSAGE];
 		}
 	}
-	PostMessage(PluginConfig.g_hwndHotkeyHandler, DM_MUCFLASHWORKER, 0, (LPARAM)params);
+	if(dat && fFlagUnread) {
+		dat->dwUnread++;
+		if(dat->pWnd)
+			dat->pWnd->Invalidate();
+	}
+	PostMessage(PluginConfig.g_hwndHotkeyHandler, DM_MUCFLASHWORKER, wParamForHighLight, (LPARAM)params);
 	return TRUE;
 }
 

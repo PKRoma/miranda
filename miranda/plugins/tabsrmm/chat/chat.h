@@ -333,6 +333,7 @@ struct FLASH_PARAMS {
 	int   iEvent;
 	HICON hNotifyIcon;
 	BOOL  bActiveTab, bHighlight, bInactive, bMustFlash, bMustAutoswitch;
+	HWND  hWnd;
 };
 
 extern TMUCSettings g_Settings;

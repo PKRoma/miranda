@@ -35,6 +35,20 @@ are currently no downloads for it, you'll have to compile it from source.
 			Detailed change log
 			===================
 
+Version 3.0.1.0 - 2010/09/10
+
+	* disabled some known buggy and incomplete features to get ready for 
+	  3.0 release.
+
+	* set final feature set for version 3 - some less important things are 
+	  pushed back.
+
+	* MUC: disc logging, properly check log base path for trailing backslashes 
+	  when using folders plugin.
+	  
+	* MUC: protect log root folder from being deleted while MIM is running.
+
+
 Version 3.0.0.40 - 2010/07/10
 
 	* various fixes and improvements for Windows 7 task bar support.

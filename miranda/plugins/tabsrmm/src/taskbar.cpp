@@ -255,7 +255,6 @@ CProxyWindow::CProxyWindow(const TWindowData *dat)
 	if(CMimAPI::m_pfnDwmSetWindowAttribute) {
 		BOOL	fIconic = TRUE;
 		BOOL	fHasIconicBitmap = TRUE;
-		HWND	hwndSrc = m_hwndProxy;
 
 		CMimAPI::m_pfnDwmSetWindowAttribute(m_hwndProxy, DWMWA_FORCE_ICONIC_REPRESENTATION, &fIconic,  sizeof(fIconic));
 		CMimAPI::m_pfnDwmSetWindowAttribute(m_hwndProxy, DWMWA_HAS_ICONIC_BITMAP, &fHasIconicBitmap, sizeof(fHasIconicBitmap));
@@ -670,12 +669,12 @@ void CThumbBase::renderBase()
 	m_hbmOld = reinterpret_cast<HBITMAP>(::SelectObject(m_hdc, m_hbmThumb));
 	ReleaseDC(m_pWnd->getHwnd(), dc);
 
-	brBack = ::CreateSolidBrush(m_dat->dwUnread ? RGB(70, 60, 60) : RGB(60, 60, 60));
+	brBack = ::CreateSolidBrush(m_dat->dwUnread ? RGB(80, 60, 60) : RGB(60, 60, 60));
 	::FillRect(m_hdc, &m_rc, brBack);
 	::DeleteObject(brBack);
 
 	::SelectObject(m_hdc, m_hbmOld);
-	CImageItem::SetBitmap32Alpha(m_hbmThumb, m_dat->dwUnread ? 80 : 60);
+	CImageItem::SetBitmap32Alpha(m_hbmThumb, m_dat->dwUnread ? 110 : 60);
 	m_hbmOld = reinterpret_cast<HBITMAP>(::SelectObject(m_hdc, m_hbmThumb));
 
 	SetBkMode(m_hdc, TRANSPARENT);
@@ -708,7 +707,7 @@ void CThumbBase::renderBase()
 	::DrawIconEx(m_hdc, m_rcIcon.right / 2 - lIconSize / 2, m_rcIcon.top, hIcon, lIconSize, lIconSize, 0, 0, DI_NORMAL);
 	hIcon = m_pWnd->getOverlayIcon();
 	if(hIcon)
-		::DrawIconEx(m_hdc, m_rcIcon.right - 16, m_rcIcon.bottom - 16, hIcon, 16, 16, 0, 0, DI_NORMAL);
+		::DrawIconEx(m_hdc, m_rcIcon.right - 16, m_rcIcon.top + 16, hIcon, 16, 16, 0, 0, DI_NORMAL);
 
 	m_rcIcon.top += (lIconSize + 3);
 	CSkin::RenderText(m_hdc, m_dat->hTheme, m_dat->szStatus, &m_rcIcon, m_dtFlags | DT_CENTER | DT_WORD_ELLIPSIS, 10, 0, true);

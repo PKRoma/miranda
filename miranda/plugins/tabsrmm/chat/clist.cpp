@@ -152,6 +152,7 @@ int CList_RoomDoubleclicked(WPARAM wParam, LPARAM lParam)
 	DBVARIANT dbv;
 	char *szProto;
 	BOOL bRedrawFlag = FALSE;
+	bool fCreate = false;
 
 	HANDLE hContact = (HANDLE)wParam;
 	if (!hContact)
@@ -175,7 +176,15 @@ int CList_RoomDoubleclicked(WPARAM wParam, LPARAM lParam)
 					DBFreeVariant(&dbv);
 					return 1;
 				}
+				else
+					fCreate = true;
+
 				ShowRoom(si, WINDOW_VISIBLE, TRUE);
+				if(lParam && fCreate) {
+					SendMessage(si->hWnd, DM_ACTIVATEME, 0, 0);
+					if(si->dat)
+						SetForegroundWindow(si->dat->pContainer->hwnd);
+				}
 			}
 			DBFreeVariant(&dbv);
 			return 1;

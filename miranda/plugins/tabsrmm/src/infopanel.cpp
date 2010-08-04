@@ -778,6 +778,7 @@ LRESULT CInfoPanel::cmdHandler(UINT cmd)
  */
 void CInfoPanel::handleClick(const POINT& pt)
 {
+#if !defined(__DELAYED_FOR_3_1)
 	if(!m_active || m_hoverFlags == 0)
 		return;
 
@@ -793,6 +794,7 @@ void CInfoPanel::handleClick(const POINT& pt)
 		Utils::CmdDispatcher(Utils::CMD_INFOPANEL, m_dat->hwnd, r, 0, 0, m_dat, m_dat->pContainer);
 	m_hoverFlags = 0;
 	Invalidate(TRUE);
+#endif
 }
 
 /**

@@ -2290,9 +2290,6 @@ INT_PTR CALLBACK RoomWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 		case GC_ADDLOG: {
 			BOOL	fInactive = (GetForegroundWindow() != dat->pContainer->hwnd || GetActiveWindow() != dat->pContainer->hwnd);
 
-			if(fInactive)
-				dat->dwUnread++;
-
 			if (g_Settings.UseDividers && g_Settings.DividersUsePopupConfig) {
 				if (!MessageWindowOpened(0, (LPARAM)hwndDlg))
 					SendMessage(hwndDlg, DM_ADDDIVIDER, 0, 0);
@@ -2732,6 +2729,10 @@ LABEL_SHOWWINDOW:
 								return(_dlgReturn(hwndDlg, 1));
 							case TABSRMM_HK_LISTTOGGLE:
 								SendMessage(hwndDlg, WM_COMMAND, MAKEWPARAM(IDC_SHOWNICKLIST, BN_CLICKED), 0);
+								return(_dlgReturn(hwndDlg, 1));
+							case TABSRMM_HK_MUC_SHOWSERVER:
+								if(si->iType != GCW_SERVER)
+									DoEventHookAsync(hwndDlg, si->ptszID, si->pszModule, GC_USER_MESSAGE, NULL, L"/servershow", (LPARAM)NULL);
 								return(_dlgReturn(hwndDlg, 1));
 							default:
 								break;

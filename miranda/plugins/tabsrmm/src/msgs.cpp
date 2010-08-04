@@ -938,7 +938,7 @@ int TABSRMM_FireEvent(HANDLE hContact, HWND hwnd, unsigned int type, unsigned in
 	if (hContact == NULL || hwnd == NULL)
 		return 0;
 
-	if (!M->GetByte("eventapi", 1))
+	if (!M->GetByte("_eventapi", 1))
 		return 0;
 	mwe.cbSize = sizeof(mwe);
 	mwe.hContact = hContact;

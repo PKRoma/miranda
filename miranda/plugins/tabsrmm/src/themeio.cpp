@@ -454,7 +454,7 @@ const TCHAR* TSAPI GetThemeFileName(int iMode)
 	ofn.lpstrInitialDir = szInitialDir;
 	ofn.nMaxFile = MAX_PATH;
 	ofn.nMaxFileTitle = MAX_PATH;
-	ofn.Flags = OFN_HIDEREADONLY | OFN_DONTADDTORECENT | OFN_DONTADDTORECENT;
+	ofn.Flags = OFN_HIDEREADONLY | OFN_DONTADDTORECENT;
 	ofn.lpstrDefExt = _T("tabsrmm");
 	if (!iMode) {
 		if (GetOpenFileName(&ofn))

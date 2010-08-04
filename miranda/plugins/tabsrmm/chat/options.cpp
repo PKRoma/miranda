@@ -187,10 +187,13 @@ static struct branch_t branch1[] = {
 	{LPGENT("Open new chat rooms in the default container"), "DefaultContainer", 0, 1, NULL},
 	{LPGENT("Flash window when someone speaks"), "FlashWindow", 0, 0, NULL},
 	{LPGENT("Flash window when a word is highlighted"), "FlashWindowHighlight", 0, 1, NULL},
-//MAD: highlight mod
+//TODO Fix for 3.0 !!!
+
+#if !defined(__DELAYED_FOR_3_1)
 	{LPGENT("Create tabs or windows for highlight events"), "CreateWindowOnHighlight", 0,0, NULL},
 	{LPGENT("Activate chat window on highlight"), "AnnoyingHighlight", 0,0, NULL},
-//
+#endif
+
 	{LPGENT("Show list of users in the chat room"), "ShowNicklist", 0, 1, NULL},
 	{LPGENT("Colorize nicknames in member list"), "ColorizeNicks", 0, 1, NULL},
 	{LPGENT("Show button menus when right clicking the buttons"), "RightClickFilter", 0, 0, NULL},
@@ -1038,7 +1041,7 @@ INT_PTR CALLBACK DlgProcOptions2(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
 					ofn.lpstrFile = tszReturnName;
 					ofn.nMaxFile = MAX_PATH;
 					ofn.nMaxFileTitle = MAX_PATH;
-					ofn.Flags = OFN_HIDEREADONLY | OFN_DONTADDTORECENT | OFN_DONTADDTORECENT;
+					ofn.Flags = OFN_HIDEREADONLY | OFN_DONTADDTORECENT;
 					ofn.lpstrDefExt = _T("log");
 					GetOpenFileName(&ofn);
 					break;

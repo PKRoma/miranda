@@ -1009,6 +1009,7 @@ typedef struct {
 #define TABSRMM_HK_CHANNELMGR	 28
 #define TABSRMM_HK_FILTERTOGGLE  29
 #define TABSRMM_HK_LISTTOGGLE	 30
+#define TABSRMM_HK_MUC_SHOWSERVER 31
 
 #define TABSRMM_HK_SECTION_IM "Message windows - IM"
 #define TABSRMM_HK_SECTION_GENERIC "Message windows - all"
