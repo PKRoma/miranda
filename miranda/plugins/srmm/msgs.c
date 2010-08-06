@@ -126,7 +126,6 @@ static INT_PTR SendMessageCmd(HANDLE hContact, char* msg, int isWchar)
 				SendMessageA(hEdit, EM_REPLACESEL, FALSE, (LPARAM)msg);
 		}
 		ShowWindow(hwnd, SW_RESTORE);
-		SetWindowPos(hwnd, HWND_TOP, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW);
 	}
 	else 
 	{
@@ -134,8 +133,10 @@ static INT_PTR SendMessageCmd(HANDLE hContact, char* msg, int isWchar)
 		newData.hContact = hContact;
 		newData.szInitialText = msg;
 		newData.isWchar = isWchar;
-		CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_MSG), NULL, DlgProcMessage, (LPARAM)&newData);
+		hwnd = CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_MSG), NULL, DlgProcMessage, (LPARAM)&newData);
 	}
+	SetWindowPos(hwnd, HWND_TOP, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW);
+	SetForegroundWindow(hwnd);
 	return 0;
 }
 
