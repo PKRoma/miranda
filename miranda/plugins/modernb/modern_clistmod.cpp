@@ -574,7 +574,7 @@ int cliShowHide(WPARAM wParam,LPARAM lParam)
 			}
 		}
 
-		if (MySetProcessWorkingSetSize!=NULL && ModernGetSettingByte(NULL,"CList","DisableWorkingSet",SETTING_DISABLEWORKINGSET_DEFAULT)) 
+		if (MySetProcessWorkingSetSize != NULL) 
 			MySetProcessWorkingSetSize(GetCurrentProcess(),-1,-1);
 	}
 	return 0;
