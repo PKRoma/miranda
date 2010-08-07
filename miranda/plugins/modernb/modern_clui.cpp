@@ -2122,6 +2122,8 @@ LRESULT CLUI::OnSizingMoving( UINT msg, WPARAM wParam, LPARAM lParam )
 					ModernWriteSettingByte(NULL,"CList","State",SETTING_STATE_HIDDEN);
 				}
 				else ModernWriteSettingByte(NULL,"CList","State",SETTING_STATE_MINIMIZED);
+				if (MySetProcessWorkingSetSize != NULL) 
+					MySetProcessWorkingSetSize(GetCurrentProcess(),-1,-1);
 			}
 
 			return TRUE;
