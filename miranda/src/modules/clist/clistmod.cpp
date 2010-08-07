@@ -121,19 +121,20 @@ TCHAR* fnGetStatusModeDescription( int mode, int flags )
 
 static INT_PTR GetStatusModeDescription(WPARAM wParam, LPARAM lParam)
 {
+	TCHAR* buf1 = cli.pfnGetStatusModeDescription( wParam, lParam );
+
 	#ifdef UNICODE
 		if ( !( lParam & GCMDF_TCHAR ))
 		{
-			static char szMode[64]={0};
-			TCHAR* buf1 = (TCHAR*)cli.pfnGetStatusModeDescription( wParam, lParam );
+			static char szMode[64];
 			char *buf2 = mir_u2a(buf1);
-			_snprintf(szMode,sizeof(szMode),"%s",buf2);
+			mir_snprintf(szMode, SIZEOF(szMode), "%s", buf2);
 			mir_free(buf2);
 			return (INT_PTR)szMode;
 		}
 	#endif
 
-	return (INT_PTR)cli.pfnGetStatusModeDescription(wParam,lParam);
+	return (INT_PTR)buf1;
 }
 
 static int ProtocolAck(WPARAM, LPARAM lParam)
