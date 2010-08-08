@@ -363,6 +363,7 @@ struct CServerDlg : public CProtoDlgBase<CIrcProto>
 		m_port2( this, IDC_ADD_PORT2 )
 	{
 		m_OK.OnClick = Callback( this, &CServerDlg::OnOk );
+		m_autoClose = CLOSE_ON_CANCEL;
 	}
 
 	virtual void OnInitDialog()
@@ -451,6 +452,7 @@ struct CServerDlg : public CProtoDlgBase<CIrcProto>
 		m_owner->OnServerCombo( NULL );
 
 		m_owner->m_serverlistModified = true;
+		Close();
 	}
 };
 
