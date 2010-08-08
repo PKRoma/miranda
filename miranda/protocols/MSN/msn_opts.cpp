@@ -307,8 +307,7 @@ LBL_Continue:
 			}
 			else
 			{
-				if (screenStr[0])
-					proto->MSN_SendNickname(screenStr);
+				proto->MSN_SendNickname(screenStr);
 			}
 
 			BYTE mblsnd = IsDlgButtonChecked(hwndDlg, IDC_MOBILESEND) == BST_CHECKED;
