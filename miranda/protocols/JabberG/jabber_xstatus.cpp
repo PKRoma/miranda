@@ -381,7 +381,8 @@ BOOL CJabberDlgPepSimple::OnWmDrawItem(UINT, WPARAM, LPARAM lParam)
 	{
 		TCHAR text[128];
 		mir_sntprintf(text, SIZEOF(text), _T("...%s"), mode->m_title);
-		TextOut(lpdis->hDC, lpdis->rcItem.left + 30, (lpdis->rcItem.top+lpdis->rcItem.bottom-tm.tmHeight)/2, text, lstrlen(text));
+		DrawIconEx(lpdis->hDC, lpdis->rcItem.left+23, (lpdis->rcItem.top+lpdis->rcItem.bottom-16)/2, mode->m_hIcon, 16, 16, 0, NULL, DI_NORMAL);
+		TextOut(lpdis->hDC, lpdis->rcItem.left + 44, (lpdis->rcItem.top+lpdis->rcItem.bottom-tm.tmHeight)/2, text, lstrlen(text));
 	}
 
 	return TRUE;
@@ -1207,8 +1208,8 @@ void CPepActivity::ShowSetDialog()
 {
 	CJabberDlgPepSimple dlg(m_proto, TranslateT("Set Activity"));
 	for (int i = 0; i < SIZEOF(g_arrActivities); ++i)
-		if (g_arrActivities[i].szFirst || g_arrActivities[i].szSecond)			
-			dlg.AddStatusMode(i, ActivityGetId(i), m_icons.GetIcon(returnActivity(i)), TranslateTS(g_arrActivities[i].szTitle), false);
+		if (g_arrActivities[i].szFirst || g_arrActivities[i].szSecond)
+			dlg.AddStatusMode(i, ActivityGetId(i), m_icons.GetIcon(returnActivity(i)), TranslateTS(g_arrActivities[i].szTitle), (g_arrActivities[i].szSecond != NULL) );
 	dlg.SetActiveStatus(m_mode, m_text);
 	dlg.DoModal();
 
