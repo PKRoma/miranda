@@ -2323,7 +2323,7 @@ INT_PTR CALLBACK DlgProcAbout(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
 			}
 			hIcon = LoadIcon(GetModuleHandleA("miranda32.exe"), MAKEINTRESOURCE(102));
 			SendDlgItemMessage(hwndDlg, IDC_LOGO, STM_SETICON, (WPARAM)hIcon, 0);
-			SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)hIcon);
+			SendMessage(hwndDlg, WM_SETICON, ICON_SMALL, (LPARAM)hIcon);
 			DestroyIcon(hIcon);
 			return TRUE;
 		case WM_COMMAND:

@@ -44,7 +44,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <math.h>
 #include <shlwapi.h>
 #include "resource.h"
-#include <win2k.h>
 #include <newpluginapi.h>
 #include <m_clist.h>
 #include <m_clistint.h>
@@ -78,6 +77,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "m_popup.h"
 #include "m_metacontacts.h"
 #include "m_fontservice.h"
+#include <win2k.h>
 
 // shared vars
 extern HINSTANCE g_hInst;
