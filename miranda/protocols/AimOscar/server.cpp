@@ -390,7 +390,7 @@ void CAimProto::snac_user_online(SNAC &snac)//family 0x0003
 				bool f002=0, f003=0, f004=0, f005=0, f007=0, f008=0, 
 					O101=0, O102=0, O103=0, O104=0, O105=0, O107=0, O1ff=0, 
 					O10a=0, O10c=0, O10d=0,
-					l341=0, l343=0, l345=0, l346=0, l347=0, l348=0, l34b=0, l34e=0;
+					l341=0, l343=0, l345=0, l346=0, l347=0, l348=0, l349=0, l34b=0, l34e=0;
 					//utf8=0;//O actually means 0 in this case
 				for(int i=0;i<tlv.len();i=i+2)
 				{
@@ -446,6 +446,8 @@ void CAimProto::snac_user_online(SNAC &snac)//family 0x0003
 						l347=1;
 					if(cap==0x1348)
 						l348=1;
+					if(cap==0x1349)
+						l349=1;
 					if(cap==0x134b)
 						l34b=1;
 					if(cap==0x134e)
@@ -464,6 +466,8 @@ void CAimProto::snac_user_online(SNAC &snac)//family 0x0003
 				else if(l343&&l345&&l346&&tlv.len()==6)
 					strcpy(client,CLIENT_GAIM);
 				else if(l343&&l345&&l346&&l34e&&tlv.len()==8)
+					strcpy(client,CLIENT_PURPLE);
+				else if(l343&&l345&&l346&&l349&&l34e&&tlv.len()==10)
 					strcpy(client,CLIENT_PURPLE);
 				else if(l343&&l345&&l34e&&tlv.len()==6)
 					strcpy(client,CLIENT_ADIUM);
