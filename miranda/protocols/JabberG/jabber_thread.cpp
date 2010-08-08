@@ -1193,8 +1193,10 @@ void CJabberProto::OnProcessMessage( HXML node, ThreadData* info )
 		JCallService( MS_PROTO_CONTACTISTYPING, ( WPARAM )hContact, PROTOTYPE_CONTACTTYPING_OFF );
 
 	// message receipts delivery notification
-	if ( xmlGetChildByTag( node, "received", "xmlns", _T( JABBER_FEAT_MESSAGE_RECEIPTS ))) {
-		int nPacketId = JabberGetPacketID( node );
+	if ( n = xmlGetChildByTag( node, "received", "xmlns", _T( JABBER_FEAT_MESSAGE_RECEIPTS ))) {
+		int nPacketId = JabberGetPacketID( n );
+		if ( nPacketId == -1 )
+			nPacketId = JabberGetPacketID( node );
 		if ( nPacketId != -1)
 			JSendBroadcast( hContact, ACKTYPE_MESSAGE, ACKRESULT_SUCCESS, ( HANDLE ) nPacketId, 0 );
 	}
