@@ -324,6 +324,49 @@ static INT_PTR CALLBACK DlgProcSkinOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 					RescanSkins(GetDlgItem(hwndDlg, IDC_SKINNAME));
 					break;
 
+				case IDC_THEMEEXPORT: {
+					const TCHAR *szFilename = GetThemeFileName(1);
+					if (szFilename != NULL)
+						WriteThemeToINI(szFilename, 0);
+					break;
+				}
+
+				case IDC_THEMEIMPORT: {
+					LRESULT r;
+					
+					if(CSkin::m_skinEnabled) {
+						r = CWarning::show(CWarning::WARN_THEME_OVERWRITE, MB_YESNOCANCEL|MB_ICONQUESTION);
+						if(r == IDNO || r == IDCANCEL)
+							return(0);
+					}
+
+					r = CWarning::show(CWarning::WARN_OPTION_CLOSE, MB_YESNOCANCEL|MB_ICONQUESTION);
+					if(r == IDNO || r == IDCANCEL)
+						return(0);
+
+					const wchar_t*	szFilename = GetThemeFileName(0);
+					DWORD dwFlags = THEME_READ_FONTS;
+					int   result;
+
+					if (szFilename != NULL) {
+						result = MessageBox(0, CTranslator::get(CTranslator::GEN_WARNING_LOADTEMPLATES),
+							CTranslator::get(CTranslator::GEN_TITLE_LOADTHEME), MB_YESNOCANCEL);
+						if (result == IDCANCEL)
+							return 1;
+						else if (result == IDYES)
+							dwFlags |= THEME_READ_TEMPLATES;
+						ReadThemeFromINI(szFilename, 0, 0, dwFlags);
+						CacheLogFonts();
+						CacheMsgLogIcons();
+						PluginConfig.reloadSettings();
+						CSkin::setAeroEffect(-1);
+						M->BroadcastMessage(DM_OPTIONSAPPLIED, 1, 0);
+						M->BroadcastMessage(DM_FORCEDREMAKELOG, 0, 0);
+						SendMessage(GetParent(hwndDlg), WM_COMMAND, IDCANCEL, 0);
+					}
+					break;
+				}
+
 				case IDC_HELP_GENERAL:
 					CallService(MS_UTILS_OPENURL, 1, (LPARAM)"http://blog.miranda.or.at/tabsrmm/skin-selection-changes/");
 					break;

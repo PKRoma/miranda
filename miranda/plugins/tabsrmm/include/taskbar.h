@@ -69,6 +69,7 @@ protected:
 
 private:
 	virtual void			renderContent		() = 0;
+	void					setupRect			();
 
 private:
 	bool					m_isValid;
@@ -105,6 +106,7 @@ public:
 	void					updateIcon			(const HICON hIcon) const;
 	void					updateTitle			(const TCHAR *tszTitle) const;
 	void					setBigIcon			(const HICON hIcon, bool fInvalidate = true);
+	void					setOverlayIcon		(const HICON hIcon, bool fInvalidate = true);
 	void					activateTab			() const;
 	void					Invalidate			() const;
 	const TWindowData*		getDat				() const { return(m_dat); }
@@ -112,6 +114,7 @@ public:
 	const LONG				getHeight			() const { return(m_height); }
 	const HWND				getHwnd				() const { return(m_hwndProxy); }
 	const HICON				getBigIcon			() const { return(m_hBigIcon); }
+	const HICON				getOverlayIcon		() const { return(m_hOverlayIcon); }
 	void					verifyDwmState		();
 
 	static	LRESULT CALLBACK stubWndProc		(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -122,7 +125,7 @@ private:
 	const TWindowData*		m_dat;
 	HWND					m_hwndProxy;
 	LONG					m_width, m_height;
-	HICON					m_hBigIcon;
+	HICON					m_hBigIcon, m_hOverlayIcon;
 
 	LRESULT CALLBACK		wndProc				(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 	void 					sendThumb			(LONG width, LONG height);

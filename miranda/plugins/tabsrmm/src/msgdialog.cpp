@@ -234,7 +234,7 @@ static void ShowPopupMenu(TWindowData *dat, int idFrom, HWND hwndFrom, POINT pt)
 		}
 	}
 	if (idFrom == IDC_LOG)
-		RemoveMenu(hSubMenu, 6, MF_BYPOSITION);
+		RemoveMenu(hSubMenu, 7, MF_BYPOSITION);
 	DestroyMenu(hMenu);
 	if (dat->codePage != oldCodepage) {
 		SendMessage(hwndDlg, DM_REMAKELOG, 0, 0);
@@ -1934,10 +1934,14 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 										PostMessage(hwndDlg, WM_COMMAND, MAKELONG(IDC_PIC, BN_CLICKED), 0);
 										return(_dlgReturn(hwndDlg, 1));
 									case TABSRMM_HK_TOGGLESENDLATER:
-										dat->sendMode ^= SMODE_SENDLATER;
-										SetWindowPos(GetDlgItem(hwndDlg, IDC_MESSAGE), 0, 0, 0, 0, 0, SWP_DRAWFRAME|SWP_FRAMECHANGED|SWP_NOZORDER|
-													 SWP_NOMOVE|SWP_NOSIZE|SWP_NOCOPYBITS);
-										RedrawWindow(hwndDlg, 0, 0, RDW_INVALIDATE|RDW_ERASE|RDW_UPDATENOW|RDW_ALLCHILDREN);
+										if(sendLater->isAvail()) {
+											dat->sendMode ^= SMODE_SENDLATER;
+											SetWindowPos(GetDlgItem(hwndDlg, IDC_MESSAGE), 0, 0, 0, 0, 0, SWP_DRAWFRAME|SWP_FRAMECHANGED|SWP_NOZORDER|
+													SWP_NOMOVE|SWP_NOSIZE|SWP_NOCOPYBITS);
+											RedrawWindow(hwndDlg, 0, 0, RDW_INVALIDATE|RDW_ERASE|RDW_UPDATENOW|RDW_ALLCHILDREN);
+										}
+										else
+											CWarning::show(CWarning::WARN_NO_SENDLATER, MB_OK|MB_ICONINFORMATION, CTranslator::get(CTranslator::QMGR_ERROR_NOMULTISEND));
 										return(_dlgReturn(hwndDlg, 1));
 									case TABSRMM_HK_TOGGLERTL:
 									{
@@ -2956,12 +2960,12 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 					FINDTEXTEXA fi = {0};
 					int final_sendformat = dat->SendFormat;
 					HWND hwndEdit = GetDlgItem(hwndDlg, IDC_MESSAGE);
-					_PARAFORMAT2 pf2;
+					PARAFORMAT2 pf2;
 
 					// don't parse text formatting when the message contains curly braces - these are used by the rtf syntax
 					// and the parser currently cannot handle them properly in the text - XXX needs to be fixed later.
 
-					ZeroMemory(&pf2, sizeof(_PARAFORMAT2));
+					ZeroMemory(&pf2, sizeof(PARAFORMAT2));
 					fi.chrg.cpMin = 0;
 					fi.chrg.cpMax = -1;
 					fi.lpstrText = "{";
@@ -3604,15 +3608,6 @@ quote_from_last:
 						return TRUE;
 				}
 			}
-
-			if (!lParam) {
-				if (PluginConfig.m_WarnOnClose) {
-					if (MessageBox(hwndContainer, CTranslator::get(CTranslator::GEN_WARN_CLOSE), _T("Miranda"), MB_YESNO | MB_ICONQUESTION) == IDNO) {
-						return TRUE;
-					}
-				}
-			}
-
 			iTabs = TabCtrl_GetItemCount(hwndTab);
 			if (iTabs == 1) {
 				PostMessage(hwndContainer, WM_CLOSE, 0, 1);
@@ -3641,7 +3636,7 @@ quote_from_last:
 			 * normally, this tab has the same index after the deletion of the formerly active tab
 			 * unless, of course, we closed the last (rightmost) tab.
 			 */
-			if (!m_pContainer->bDontSmartClose && iTabs > 1) {
+			if (!m_pContainer->bDontSmartClose && iTabs > 1 && lParam != 3) {
 				if (i == iTabs - 1)
 					i--;
 				else

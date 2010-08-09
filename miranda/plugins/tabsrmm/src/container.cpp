@@ -1624,10 +1624,6 @@ buttons_done:
 			int iItem;
 			TCITEM item = {0};
 
-			if (M->GetByte("warnonexit", 0)) {
-				if (MessageBox(pContainer->hwnd, CTranslator::get(CTranslator::GEN_WARN_CLOSE), _T("Miranda"), MB_YESNO | MB_ICONQUESTION) == IDNO)
-					break;
-			}
 			hwndCurrent = pContainer->hwndActive;
 			if ((iItem = GetTabItemFromMouse(hwndTab, pt)) == -1)
 				break;
@@ -2065,15 +2061,17 @@ buttons_done:
 				char szCName[40];
 				char *szSetting = "CNTW_";
 
+				if(TabCtrl_GetItemCount(hwndTab) > 1) {
+					LRESULT res = CWarning::show(CWarning::WARN_CLOSEWINDOW, MB_YESNOCANCEL|MB_ICONQUESTION);
+					if(IDNO == res || IDCANCEL == res)
+						break;
+				}
+
 				if (lParam == 0 && TabCtrl_GetItemCount(GetDlgItem(hwndDlg, IDC_MSGTABS)) > 0) {    // dont ask if container is empty (no tabs)
 					int    clients = TabCtrl_GetItemCount(hwndTab), i;
 					TCITEM item = {0};
 					int    iOpenJobs = 0;
 
-					if (M->GetByte("warnonexit", 0)) {
-						if (MessageBox(hwndDlg, CTranslator::get(CTranslator::GEN_WARN_CLOSE), _T("Miranda"), MB_YESNO | MB_ICONQUESTION) == IDNO)
-							return TRUE;
-					}
 					item.mask = TCIF_PARAM;
 					for (i = 0; i < clients; i++) {
 						TabCtrl_GetItem(hwndTab, i, &item);

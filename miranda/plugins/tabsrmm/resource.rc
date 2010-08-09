@@ -27,17 +27,17 @@ LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL
 // Dialog
 //
 
-IDD_EXCEPTION DIALOG 0, 0, 370, 131
-STYLE DS_SETFONT | DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
+IDD_EXCEPTION DIALOGEX 0, 0, 370, 131
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "TabSRMM exception"
-FONT 8, "MS Shell Dlg"
+FONT 8, "MS Shell Dlg", 0, 0, 0x0
 BEGIN
     EDITTEXT        IDC_EXCEPTION_DETAILS,7,18,356,60,ES_MULTILINE | ES_READONLY
     DEFPUSHBUTTON   "Copy to clipboard",IDC_COPY_EXCEPTION,108,114,80,14
     PUSHBUTTON      "Continue",IDOK,196,114,80,14
     PUSHBUTTON      "Exit Miranda",IDCANCEL,284,114,80,14
-    LTEXT           "An application error has occurred:",IDC_STATIC,7,5,256,9
-    LTEXT           "Although the exception was caught and you may continue working with Mranda, you should restart the program as soon as possible. The exception may have damaged internal data structures and can have a serious impact on stability.",IDC_STATIC,7,83,352,26
+    LTEXT           "",IDC_EX_REASON,7,5,354,9
+    LTEXT           "Although the exception was caught and you may continue working with Miranda, you should restart the program as soon as possible. The exception may have damaged internal data structures and can have a serious impact on stability.",IDC_STATIC,7,83,352,26
 END
 
 IDD_INFOPANEL DIALOGEX 0, 0, 282, 176
@@ -153,37 +153,37 @@ BEGIN
     CONTROL         "",IDC_MSGTABS,"TSTabCtrlClass",0xc048,31,7,5,5
 END
 
-IDD_USERPREFS DIALOGEX 0, 0, 286, 265
+IDD_USERPREFS DIALOGEX 0, 0, 316, 265
 STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD | WS_CAPTION
 CAPTION "Dialog"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    GROUPBOX        "Message log view mode (does not affect open windows)",IDC_STATIC,4,5,274,39
-    COMBOBOX        IDC_IEVIEWMODE,8,25,114,46,CBS_DROPDOWNLIST | WS_VSCROLL | WS_GROUP | WS_TABSTOP
-    LTEXT           "Select how to display the message log. This setting can be ignored when one of the listed plugins is not installed.",IDC_STATIC,126,17,141,24
-    GROUPBOX        "Send text formatting method",IDC_STATIC,4,45,274,33
-    COMBOBOX        IDC_TEXTFORMATTING,8,57,114,46,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "You can override the global setting for text formatting here. Use ""Force Off"" to never send formatting info for this contact.",IDC_STATIC,126,52,141,24
-    GROUPBOX        "ANSI codepage",IDC_STATIC,4,82,274,32
-    COMBOBOX        IDC_CODEPAGES,8,94,114,46,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Codepage for ANSI encoding/decoding when sending or receiving non-unicode messages.",IDC_STATIC,126,87,141,24
-    GROUPBOX        "Other options",IDC_STATIC,4,118,274,142
-    LTEXT           "Info panel mode",IDC_STATIC,12,128,104,8
-    COMBOBOX        IDC_INFOPANEL,9,138,114,46,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    GROUPBOX        "Message log view mode (does not affect open windows)",IDC_STATIC,4,5,310,39
+    COMBOBOX        IDC_IEVIEWMODE,8,25,128,46,CBS_DROPDOWNLIST | WS_VSCROLL | WS_GROUP | WS_TABSTOP
+    LTEXT           "Select how to display the message log. This setting can be ignored when one of the listed plugins is not installed.",IDC_STATIC,143,17,164,24
+    GROUPBOX        "Send text formatting method",IDC_STATIC,4,45,310,33
+    COMBOBOX        IDC_TEXTFORMATTING,8,57,128,46,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "You can override the global setting for text formatting here. Use ""Force Off"" to never send formatting info for this contact.",IDC_STATIC,143,52,164,24
+    GROUPBOX        "ANSI codepage",IDC_STATIC,4,82,310,32
+    COMBOBOX        IDC_CODEPAGES,8,94,128,46,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Codepage for ANSI encoding/decoding when sending or receiving non-unicode messages.",IDC_STATIC,143,87,164,24
+    GROUPBOX        "Other options",IDC_STATIC,4,118,310,142
+    LTEXT           "Info panel mode",IDC_STATIC,12,128,128,8
+    COMBOBOX        IDC_INFOPANEL,9,138,130,46,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     LTEXT           "Show avatar in message window",IDC_STATIC,12,158,127,8
-    COMBOBOX        IDC_SHOWAVATAR,9,169,114,46,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_SHOWAVATAR,9,169,130,46,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     CONTROL         "Use private splitter position",IDC_PRIVATESPLITTER,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,187,134,12
-    CONTROL         "Contact is a favorite contact",IDC_ISFAVORITE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,199,131,12
-    CONTROL         "Force ANSI send / receive",IDC_FORCEANSI,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,145,130,126,12
-    CONTROL         "Ignore sending timeouts",IDC_IGNORETIMEOUTS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,145,142,126,12
-    CONTROL         "Load only actual history",IDC_LOADONLYACTUAL,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,145,154,126,12
-    CONTROL         "Always trim message log to",IDC_ALWAYSTRIM2,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,145,168,105,12
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,187,296,12
+    CONTROL         "Contact is a favorite contact",IDC_ISFAVORITE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,199,297,12
+    CONTROL         "Force ANSI send / receive",IDC_FORCEANSI,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,145,142,164,12
+    CONTROL         "Ignore sending timeouts",IDC_IGNORETIMEOUTS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,145,154,164,12
+    CONTROL         "Load only actual history",IDC_LOADONLYACTUAL,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,145,166,164,12
+    CONTROL         "Always trim message log to",IDC_ALWAYSTRIM2,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,214,163,12
     LTEXT           "Contact time zone",IDC_STATIC,12,230,210,9
-    COMBOBOX        IDC_TIMEZONE,9,241,255,46,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    EDITTEXT        IDC_TRIM,156,184,33,12,ES_RIGHT | ES_NUMBER | WS_DISABLED
-    CONTROL         "",IDC_TRIMSPIN,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | UDS_NOTHOUSANDS | UDS_HOTTRACK | WS_DISABLED,191,178,10,14
-    LTEXT           "Events",IDC_STATIC,218,186,38,8
+    COMBOBOX        IDC_TIMEZONE,9,241,300,46,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    EDITTEXT        IDC_TRIM,178,213,33,12,ES_RIGHT | ES_NUMBER | WS_DISABLED
+    CONTROL         "",IDC_TRIMSPIN,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | UDS_NOTHOUSANDS | UDS_HOTTRACK | WS_DISABLED,213,207,10,14
+    LTEXT           "Events",IDC_STATIC,240,215,64,8
 END
 
 IDD_CONTAINEROPTIONS DIALOGEX 0, 0, 428, 258
@@ -540,64 +540,68 @@ IDD_OPT_SKIN DIALOGEX 0, 0, 303, 224
 STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    LTEXT           "Static",IDC_SKINROOTFOLDER,10,11,284,33
-    GROUPBOX        "Selected skin",IDC_STATIC,7,49,289,36
-    COMBOBOX        IDC_SKINNAME,12,60,183,14,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
-    PUSHBUTTON      "Rescan",IDC_RESCANSKIN,202,60,90,14
-    CONTROL         "Load this skin on startup",IDC_USESKIN,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,87,188,10
-    PUSHBUTTON      "Reload active skin",IDC_RELOADSKIN,202,103,90,14
-    GROUPBOX        "Skin options",IDC_STATIC,3,125,297,37
+    LTEXT           "Static",IDC_SKINROOTFOLDER,10,8,284,25
+    GROUPBOX        "Selected skin",IDC_STATIC,7,39,289,29
+    COMBOBOX        IDC_SKINNAME,12,50,183,14,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    PUSHBUTTON      "Rescan",IDC_RESCANSKIN,202,50,90,14
+    CONTROL         "Load this skin on startup",IDC_USESKIN,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,72,188,10
+    PUSHBUTTON      "Reload active skin",IDC_RELOADSKIN,202,73,90,14
+    GROUPBOX        "Skin options",IDC_STATIC,3,87,297,37
     CONTROL         "Load fonts and colors provided by skin",IDC_SKIN_LOADFONTS,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,137,281,11
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,99,281,11
     CONTROL         "Load templates provided by skin (use with care, will overwrite your templates)",IDC_SKIN_LOADTEMPLATES,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,148,281,11
-    GROUPBOX        "Skin root folder",IDC_STATIC,7,2,289,45
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,110,281,11
+    GROUPBOX        "Skin root folder",IDC_STATIC,7,0,289,36
     CONTROL         "Help on this",IDC_HELP_GENERAL,"Hyperlink",WS_TABSTOP | 0x1,224,211,67,9
-    CTEXT           "Before you can load or unload a skin, you must close all message windows.",IDC_SKIN_WARN,9,173,283,20
+    CTEXT           "Before you can load or unload a skin, you must close all message windows.",IDC_SKIN_WARN,9,186,283,20
     PUSHBUTTON      "Close open message windows now",IDC_SKIN_CLOSENOW,9,209,174,12
+    GROUPBOX        "Theme support",IDC_STATIC,3,126,297,56
+    LTEXT           "You can export and import all your color and font settings here. This allows you to create a Theme file which can be shared between different profiles or with your buddies.",IDC_STATIC,9,137,286,26
+    PUSHBUTTON      "Export to a file...",IDC_THEMEEXPORT,9,164,139,14
+    PUSHBUTTON      "Import from a file...",IDC_THEMEIMPORT,156,164,139,14
 END
 
-IDD_USERPREFS_FRAME DIALOGEX 0, 0, 289, 316
+IDD_USERPREFS_FRAME DIALOGEX 0, 0, 326, 316
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Dialog"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    CONTROL         "",IDC_OPTIONSTAB,"SysTabControl32",0x0,2,5,285,284
+    CONTROL         "",IDC_OPTIONSTAB,"SysTabControl32",0x0,2,5,323,284
     PUSHBUTTON      "Ok",IDOK,124,296,71,16
     PUSHBUTTON      "Cancel",IDCANCEL,201,296,71,16
 END
 
-IDD_USERPREFS1 DIALOGEX 0, 0, 286, 265
+IDD_USERPREFS1 DIALOGEX 0, 0, 316, 265
 STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD | WS_CAPTION
 CAPTION "Dialog"
 FONT 8, "MS Shell Dlg", 0, 0, 0x0
 BEGIN
-    GROUPBOX        "Icons",IDC_STATIC,8,36,266,57
+    GROUPBOX        "Icons",IDC_STATIC,8,36,302,57
     CONTROL         "Event type icons in the message log",IDC_UPREFS_SHOWICONS,
-                    "Button",BS_AUTO3STATE | WS_TABSTOP,15,47,252,11
+                    "Button",BS_AUTO3STATE | WS_TABSTOP,15,47,290,11
     CONTROL         "Text symbols as event markers",IDC_UPREFS_SHOWSYMBOLS,
-                    "Button",BS_AUTO3STATE | WS_TABSTOP,15,63,247,11
+                    "Button",BS_AUTO3STATE | WS_TABSTOP,15,63,289,11
     CONTROL         "Use different icons to mark incoming and outgoing messages",IDC_UPREFS_INOUTICONS,
-                    "Button",BS_AUTO3STATE | WS_TABSTOP,15,79,252,11
-    GROUPBOX        "Date and time",IDC_STATIC,8,96,266,45
-    CONTROL         "Show timestamps",IDC_UPREFS_SHOWTIMESTAMP,"Button",BS_AUTO3STATE | WS_TABSTOP,15,107,121,11
+                    "Button",BS_AUTO3STATE | WS_TABSTOP,15,79,291,11
+    GROUPBOX        "Date and time",IDC_STATIC,8,96,302,45
+    CONTROL         "Show timestamps",IDC_UPREFS_SHOWTIMESTAMP,"Button",BS_AUTO3STATE | WS_TABSTOP,15,107,136,11
     CONTROL         "Show seconds in timestamp",IDC_UPREFS_SHOWSECONDS,
-                    "Button",BS_AUTO3STATE | WS_TABSTOP,15,120,121,11
-    CONTROL         "Show date in timestamps",IDC_UPREFS_SHOWDATES,"Button",BS_AUTO3STATE | WS_TABSTOP,147,107,121,11
-    CONTROL         "Use contacts local time",IDC_UPREFS_LOCALTIME,"Button",BS_AUTO3STATE | WS_TABSTOP,147,120,121,11
-    GROUPBOX        "Format",IDC_STATIC,8,144,266,42
-    CONTROL         "Indent message body",IDC_UPREFS_INDENT,"Button",BS_AUTO3STATE | WS_TABSTOP,15,154,121,11
-    CONTROL         "Display grid lines",IDC_UPREFS_GRID,"Button",BS_AUTO3STATE | WS_TABSTOP,15,167,121,11
-    CONTROL         "Message grouping",IDC_UPREFS_GROUPING,"Button",BS_AUTO3STATE | WS_TABSTOP,147,154,121,11
-    CONTROL         "Support BBCODE",IDC_UPREFS_BBCODE,"Button",BS_AUTO3STATE | WS_TABSTOP,147,167,121,11
-    GROUPBOX        "Misc",IDC_STATIC,8,186,266,52
-    CONTROL         "RTL is default text direction",IDC_UPREFS_RTL,"Button",BS_AUTO3STATE | WS_TABSTOP,15,196,248,11
+                    "Button",BS_AUTO3STATE | WS_TABSTOP,15,120,136,11
+    CONTROL         "Show date in timestamps",IDC_UPREFS_SHOWDATES,"Button",BS_AUTO3STATE | WS_TABSTOP,155,107,150,11
+    CONTROL         "Use contacts local time",IDC_UPREFS_LOCALTIME,"Button",BS_AUTO3STATE | WS_TABSTOP,155,120,150,11
+    GROUPBOX        "Format",IDC_STATIC,8,144,302,42
+    CONTROL         "Indent message body",IDC_UPREFS_INDENT,"Button",BS_AUTO3STATE | WS_TABSTOP,15,154,136,11
+    CONTROL         "Display grid lines",IDC_UPREFS_GRID,"Button",BS_AUTO3STATE | WS_TABSTOP,15,167,136,11
+    CONTROL         "Message grouping",IDC_UPREFS_GROUPING,"Button",BS_AUTO3STATE | WS_TABSTOP,155,154,150,11
+    CONTROL         "Support BBCODE",IDC_UPREFS_BBCODE,"Button",BS_AUTO3STATE | WS_TABSTOP,155,167,150,11
+    GROUPBOX        "Misc",IDC_STATIC,8,186,302,52
+    CONTROL         "RTL is default text direction",IDC_UPREFS_RTL,"Button",BS_AUTO3STATE | WS_TABSTOP,15,196,290,11
     CONTROL         "Log status changes (in open message windows only)",IDC_UPREFS_LOGSTATUS,
-                    "Button",BS_AUTO3STATE | WS_TABSTOP,15,210,248,11
-    PUSHBUTTON      "Revert to global options",IDC_REVERTGLOBAL,49,242,177,18
-    LTEXT           "You can set private message log options for this contact here. Filled boxes are inherited from the global settings which can be found on Message Sessions->Message Log",IDC_STATIC,16,4,251,28
+                    "Button",BS_AUTO3STATE | WS_TABSTOP,15,210,290,11
+    PUSHBUTTON      "Revert to global options",IDC_REVERTGLOBAL,62,242,191,18
+    LTEXT           "You can set private message log options for this contact here. Filled boxes are inherited from the global settings which can be found on Message Sessions->Message Log",IDC_STATIC,16,4,296,28
     CONTROL         "Use normal templates (uncheck to use simple templates)",IDC_UPREFS_NORMALTEMPLATES,
-                    "Button",BS_AUTO3STATE | WS_TABSTOP,15,224,248,11
+                    "Button",BS_AUTO3STATE | WS_TABSTOP,15,224,290,11
 END
 
 
@@ -683,9 +687,6 @@ BEGIN
             MENUITEM "&Global...",                  ID_MESSAGELOGSETTINGS_GLOBAL
             MENUITEM "&For this Contact...",        ID_MESSAGELOGSETTINGS_FORTHISCONTACT
         END
-        MENUITEM SEPARATOR
-        MENUITEM "&Export Message Log Settings...", ID_MESSAGELOG_EXPORTMESSAGELOGSETTINGS
-        MENUITEM "&Import Message Log Settings...", ID_MESSAGELOG_IMPORTMESSAGELOGSETTINGS
     END
     POPUP "Sendmenu"
     BEGIN
@@ -838,9 +839,6 @@ BEGIN
             MENUITEM "&Global...",                  ID_MESSAGELOGSETTINGS_GLOBAL
             MENUITEM "&For this Contact...",        ID_MESSAGELOGSETTINGS_FORTHISCONTACT
         END
-        MENUITEM SEPARATOR
-        MENUITEM "&Export Message Log Settings...", 40128
-        MENUITEM "&Import Message Log Settings...", 40129
     END
     POPUP "&Container"
     BEGIN
@@ -884,6 +882,14 @@ IDI_FEATURE_ENABLED     ICON                    "res/overlay_enabled.ico"
 #ifdef APSTUDIO_INVOKED
 GUIDELINES DESIGNINFO
 BEGIN
+    IDD_EXCEPTION, DIALOG
+    BEGIN
+    END
+
+    IDD_USERPREFS, DIALOG
+    BEGIN
+    END
+
     IDD_CONTAINEROPTIONS, DIALOG
     BEGIN
     END
@@ -988,7 +994,6 @@ BEGIN
 
     IDD_WARNING, DIALOG
     BEGIN
-        MOCKUP, 0, 100, 0, 0, ".\res\Logo.ico"
         LEFTMARGIN, 7
         RIGHTMARGIN, 291
         TOPMARGIN, 7

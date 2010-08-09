@@ -196,7 +196,7 @@ void CTaskbarInteract::SetTabActive(const HWND hwndTab, const HWND hwndGroup) co
  */
 void CProxyWindow::add(TWindowData *dat)
 {
-	if(PluginConfig.m_bIsWin7 && PluginConfig.m_useAeroPeek && (!CSkin::m_skinEnabled || M->GetByte("forceAeroPeek", 0)))
+	if(PluginConfig.m_bIsWin7 && PluginConfig.m_useAeroPeek) // && (!CSkin::m_skinEnabled || M->GetByte("forceAeroPeek", 0)))
 		dat->pWnd = new CProxyWindow(dat);
 	else
 		dat->pWnd = 0;
@@ -255,7 +255,6 @@ CProxyWindow::CProxyWindow(const TWindowData *dat)
 	if(CMimAPI::m_pfnDwmSetWindowAttribute) {
 		BOOL	fIconic = TRUE;
 		BOOL	fHasIconicBitmap = TRUE;
-		HWND	hwndSrc = m_hwndProxy;
 
 		CMimAPI::m_pfnDwmSetWindowAttribute(m_hwndProxy, DWMWA_FORCE_ICONIC_REPRESENTATION, &fIconic,  sizeof(fIconic));
 		CMimAPI::m_pfnDwmSetWindowAttribute(m_hwndProxy, DWMWA_HAS_ICONIC_BITMAP, &fHasIconicBitmap, sizeof(fHasIconicBitmap));
@@ -391,8 +390,10 @@ void CProxyWindow::sendPreview()
 		HBITMAP hbm = CSkin::CreateAeroCompatibleBitmap(rcContainer, hdc);
 		HBITMAP hbmOld = reinterpret_cast<HBITMAP>(::SelectObject(hdc, hbm));
 
-		CSkin::FillBack(hdc, &rcContainer);
-		CImageItem::SetBitmap32Alpha(hbm, 180);
+		HBRUSH brb = ::CreateSolidBrush(RGB(20, 20, 20));
+		::FillRect(hdc, &rcContainer, brb);
+		::DeleteObject(brb);
+		CImageItem::SetBitmap32Alpha(hbm, 100);
 
 		LRESULT first = ::SendMessage(hwndRich, EM_CHARFROMPOS, 0, reinterpret_cast<LPARAM>(&ptOrigin));
 
@@ -411,8 +412,10 @@ void CProxyWindow::sendPreview()
 
 		if(m_dat->hwndIEView)
 			::SendMessage(m_dat->hwndIEView, WM_PRINT, reinterpret_cast<WPARAM>(hdcRich), PRF_CLIENT | PRF_NONCLIENT);
-		else if(m_dat->hwndHPP)
-			::SendMessage(m_dat->hwndHPP, WM_PRINT, reinterpret_cast<WPARAM>(hdcRich), PRF_CLIENT | PRF_NONCLIENT);
+		else if(m_dat->hwndHPP) {
+			CSkin::RenderText(hdcRich, m_dat->hTheme, CTranslator::get(CTranslator::GEN_AEROPEEK_NOHPP),
+							  &rcRich, DT_VCENTER | DT_CENTER | DT_WORDBREAK, 10, m_dat->pContainer->theme.fontColors[MSGFONTID_MYMSG], false);
+		}
 		else {
 			rcRich.right *= twips;
 			rcRich.bottom *= twips;
@@ -427,8 +430,6 @@ void CProxyWindow::sendPreview()
 			::SendMessage(hwndRich, EM_FORMATRANGE, 1, reinterpret_cast<LPARAM>(&fr));
 		}
 
-		//::BitBlt(hdcRich, 0, 0, cx, cy, dc, 0, 0, CAPTUREBLT|SRCCOPY);
-
 		::SelectObject(hdcRich, hbmRichOld);
 		CImageItem::SetBitmap32Alpha(hbmRich, 255);
 		::SelectObject(hdcRich, hbmRich);
@@ -439,7 +440,12 @@ void CProxyWindow::sendPreview()
 
 		::SelectObject(hdc, hbmOld);
 		::DeleteDC(hdc);
-		pt.x = pt.y = 0;
+		if(CSkin::m_skinEnabled && CSkin::m_frameSkins) {
+			pt.x = CSkin::m_SkinnedFrame_left;
+			pt.y = CSkin::m_SkinnedFrame_caption + CSkin::m_SkinnedFrame_bottom;
+		}
+		else
+			pt.x = pt.y = 0;
 		CMimAPI::m_pfnDwmSetIconicLivePreviewBitmap(m_hwndProxy, hbm, &pt, m_dat->pContainer->dwFlags & CNT_CREATE_MINIMIZED ? 0 : DWM_SIT_DISPLAYFRAME);
 		::ReleaseDC(m_dat->hwnd, dc);
 		::DeleteObject(hbm);
@@ -459,6 +465,22 @@ void CProxyWindow::sendPreview()
 void CProxyWindow::setBigIcon(const HICON hIcon, bool fInvalidate)
 {
 	m_hBigIcon = hIcon;
+	if(fInvalidate)
+		Invalidate();
+}
+
+/**
+ * set a overlay icon for the thumbnail. This is mostly used by group chats
+ * to indicate last active event in the session.
+ *
+ * hIcon may be 0 to remove a custom overlay icon.
+ *
+ * @param hIcon			icon handle (should be a 16x16 icon)
+ * @param fInvalidate	invalidate the thumbnail (default value = true)
+ */
+void CProxyWindow::setOverlayIcon(const HICON hIcon, bool fInvalidate)
+{
+	m_hOverlayIcon = hIcon;
 	if(fInvalidate)
 		Invalidate();
 }
@@ -551,13 +573,26 @@ LRESULT CALLBACK CProxyWindow::wndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
 			_DebugTraceW(_T("create proxy WINDOW for: %s"), m_dat->cache->getNick());
 			break;
 #endif
+        case WM_CLOSE: {
+        	TContainerData* pC = m_dat->pContainer;
+
+        	if(m_dat->hwnd != pC->hwndActive)
+        		SendMessage(m_dat->hwnd, WM_CLOSE, 1, 3);
+        	else
+        		SendMessage(m_dat->hwnd, WM_CLOSE, 1, 2);
+        	if(!IsIconic(pC->hwnd))
+        		SetForegroundWindow(pC->hwnd);
+        	return(0);
+        }
+
 			/*
 			 * proxy window was activated by clicking on the thumbnail. Send this
 			 * to the real message window.
 			 */
 		case WM_ACTIVATE:
 			if(WA_ACTIVE == wParam) {
-				::PostMessage(m_dat->hwnd, DM_ACTIVATEME, 0, 0);
+				if(IsWindow(m_dat->hwnd))
+					::PostMessage(m_dat->hwnd, DM_ACTIVATEME, 0, 0);
 				return(0);			// no default processing, avoid flickering.
 			}
 			break;
@@ -576,10 +611,6 @@ LRESULT CALLBACK CProxyWindow::wndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
         case WM_DWMSENDICONICLIVEPREVIEWBITMAP:
        		sendPreview();
             return(0);
-
-        case WM_CLOSE:
-        	::SendMessage(m_dat->hwnd, WM_CLOSE, 1, 2);
-        	break;
 
 		default:
 			break;
@@ -638,12 +669,12 @@ void CThumbBase::renderBase()
 	m_hbmOld = reinterpret_cast<HBITMAP>(::SelectObject(m_hdc, m_hbmThumb));
 	ReleaseDC(m_pWnd->getHwnd(), dc);
 
-	brBack = ::CreateSolidBrush(m_dat->dwUnread ? RGB(70, 60, 60) : RGB(60, 60, 60));
+	brBack = ::CreateSolidBrush(m_dat->dwUnread ? RGB(80, 60, 60) : RGB(60, 60, 60));
 	::FillRect(m_hdc, &m_rc, brBack);
 	::DeleteObject(brBack);
 
 	::SelectObject(m_hdc, m_hbmOld);
-	CImageItem::SetBitmap32Alpha(m_hbmThumb, m_dat->dwUnread ? 80 : 60);
+	CImageItem::SetBitmap32Alpha(m_hbmThumb, m_dat->dwUnread ? 110 : 60);
 	m_hbmOld = reinterpret_cast<HBITMAP>(::SelectObject(m_hdc, m_hbmThumb));
 
 	SetBkMode(m_hdc, TRANSPARENT);
@@ -653,14 +684,7 @@ void CThumbBase::renderBase()
 
 	InflateRect(&m_rc, -3, -3);
 
-	m_rcTop = m_rc;
-	m_rcBottom = m_rc;
-	m_rcBottom.top = m_rc.bottom - ( 2 * (m_rcBottom.bottom / 5)) - 2;
-	m_rcTop.bottom = m_rcBottom.top - 2;
-
-	m_rcIcon = m_rcTop;
-	m_rcIcon.right = m_rc.right / 3;
-
+	setupRect();
 	hIcon = m_pWnd->getBigIcon();
 
 	if(0 == hIcon) {
@@ -681,11 +705,14 @@ void CThumbBase::renderBase()
 		}
 	}
 	::DrawIconEx(m_hdc, m_rcIcon.right / 2 - lIconSize / 2, m_rcIcon.top, hIcon, lIconSize, lIconSize, 0, 0, DI_NORMAL);
+	hIcon = m_pWnd->getOverlayIcon();
+	if(hIcon)
+		::DrawIconEx(m_hdc, m_rcIcon.right - 16, m_rcIcon.top + 16, hIcon, 16, 16, 0, 0, DI_NORMAL);
 
 	m_rcIcon.top += (lIconSize + 3);
 	CSkin::RenderText(m_hdc, m_dat->hTheme, m_dat->szStatus, &m_rcIcon, m_dtFlags | DT_CENTER | DT_WORD_ELLIPSIS, 10, 0, true);
-	if(m_dat->dwUnread) {
-		TCHAR	tszTemp[30];
+	if(m_dat->dwUnread && SESSIONTYPE_IM == m_dat->bType) {
+		wchar_t	tszTemp[30];
 
 		m_rcIcon.top += m_sz.cy;
 		mir_sntprintf(tszTemp, 30, CTranslator::get(CTranslator::GEN_TASKBAR_STRING_UNREAD), m_dat->dwUnread);
@@ -697,6 +724,32 @@ void CThumbBase::renderBase()
 	m_cx = m_rcIcon.right - m_rcIcon.left;
 	m_cy = m_rcIcon.bottom - m_rcIcon.top;
 }
+
+/**
+ * divide space into content rectangles for normal thumbnails
+ */
+void CThumbBase::setupRect()
+{
+	if(SESSIONTYPE_IM == m_pWnd->getDat()->bType) {
+		m_rcTop = m_rc;
+		m_rcBottom = m_rc;
+		m_rcBottom.top = m_rc.bottom - ( 2 * (m_rcBottom.bottom / 5)) - 2;
+		m_rcTop.bottom = m_rcBottom.top - 2;
+
+		m_rcIcon = m_rcTop;
+		m_rcIcon.right = m_rc.right / 3;
+	}
+	else {
+		m_rcTop = m_rc;
+		m_rcBottom = m_rc;
+		m_rcBottom.top = m_rc.bottom - ( 2 * (m_rcBottom.bottom / 5)) - 2;
+		m_rcTop.bottom = m_rcBottom.top - 2;
+
+		m_rcIcon = m_rcTop;
+		m_rcIcon.right = m_rc.left + 42;
+	}
+}
+
 /**
  * destroy the thumbnail object. Just delete the bitmap we cached
  * @return
@@ -718,7 +771,6 @@ CThumbBase::~CThumbBase()
  * bitmap and render the background.
  *
  * @param _p	our owner (CProxyWindow object)
- * @return
  */
 CThumbIM::CThumbIM(const CProxyWindow* _p) : CThumbBase(_p)
 {
@@ -727,7 +779,7 @@ CThumbIM::CThumbIM(const CProxyWindow* _p) : CThumbBase(_p)
 }
 
 /**
- * update the thumbnail
+ * update the thumbnail, render everything and set it valid
  */
 void CThumbIM::update()
 {
@@ -748,7 +800,7 @@ void CThumbIM::renderContent()
 	bool			fFree = false;
 	HRGN			hRgn = 0;
 	HDC				dc;
-	const TCHAR*	tszStatusMsg = 0;
+	const wchar_t*	tszStatusMsg = 0;
 
 	hbmAvatar = (m_dat->ace && m_dat->ace->hbmPic) ? m_dat->ace->hbmPic : PluginConfig.g_hbmUnknown;
 	Utils::scaleAvatarHeightLimited(hbmAvatar, dNewWidth, dNewHeight, m_rcIcon.bottom - m_rcIcon.top);
@@ -783,7 +835,7 @@ void CThumbIM::renderContent()
 	m_rcBottom.bottom -= ((m_rcBottom.bottom - m_rcBottom.top) % m_sz.cy);		// adjust to a multiple of line height
 
 	if(0 == (tszStatusMsg = m_dat->cache->getStatusMsg()))
-			tszStatusMsg = CTranslator::get(CTranslator::GEN_NO_STATUS);
+		tszStatusMsg = CTranslator::get(CTranslator::GEN_NO_STATUS);
 
 	CSkin::RenderText(m_hdc, m_dat->hTheme, tszStatusMsg, &m_rcBottom, DT_WORD_ELLIPSIS | DT_END_ELLIPSIS | m_dtFlags, 10, 0, true);
 	m_rcBottom.bottom = m_rc.bottom;
@@ -791,6 +843,12 @@ void CThumbIM::renderContent()
 	CSkin::RenderText(m_hdc, m_dat->hTheme, Win7Taskbar->haveAlwaysGroupingMode() ? m_dat->cache->getUIN() : m_dat->cache->getNick(),
 					  &m_rcBottom, m_dtFlags | DT_SINGLELINE | DT_WORD_ELLIPSIS | DT_END_ELLIPSIS, 10, 0, true);
 
+	/*
+	 * finalize it
+	 * do NOT delete the bitmap, the dwm will need the handle
+	 * m_hbm is deleted when a new thumbnail is generated on dwm's request.
+	 * this is not a leak!
+	 */
 	if(m_hOldFont)
 		::SelectObject(m_hdc, m_hOldFont);
 
@@ -820,6 +878,7 @@ void CThumbMUC::update()
 	renderContent();
 	setValid(true);
 }
+
 /**
  * render content area for a MUC thumbnail
  */
@@ -827,31 +886,36 @@ void CThumbMUC::renderContent()
 {
 	if(m_dat->si) {
 		const MODULEINFO*	mi = MM_FindModule(m_dat->si->pszModule);
-		TCHAR				tszTemp[250];
-		const TCHAR*		tszStatusMsg = 0;
+		wchar_t				szTemp[250];
+		const wchar_t*		szStatusMsg = 0;
 
 		if(mi) {
+			if(m_dat->dwUnread) {
+				mir_sntprintf(szTemp, 30, CTranslator::get(CTranslator::GEN_TASKBAR_STRING_UNREAD), m_dat->dwUnread);
+				CSkin::RenderText(m_hdc, m_dat->hTheme, szTemp, &m_rcIcon, m_dtFlags | DT_SINGLELINE | DT_RIGHT, 10, 0, true);
+				m_rcIcon.top += m_sz.cy;
+			}
 			if(m_dat->si->iType != GCW_SERVER) {
-				TCHAR* _p = NULL;
+				wchar_t* _p = NULL;
 				if ( m_dat->si->ptszStatusbarText )
-					_p = _tcschr(m_dat->si->ptszStatusbarText, ']');
+					_p = wcschr(m_dat->si->ptszStatusbarText, ']');
 				if( _p ) {
 					_p++;
-					TCHAR	_t = *_p;
+					wchar_t	_t = *_p;
 					*_p = 0;
-					mir_sntprintf(tszTemp, SIZEOF(tszTemp), CTranslator::get(CTranslator::GEN_TASKBAR_STRING_CHAT_ROOM), m_dat->si->ptszStatusbarText);
+					mir_sntprintf(szTemp, SIZEOF(szTemp), CTranslator::get(CTranslator::GEN_TASKBAR_STRING_CHAT_ROOM), m_dat->si->ptszStatusbarText);
 					*_p = _t;
 				}
 				else
-					mir_sntprintf(tszTemp, SIZEOF(tszTemp), CTranslator::get(CTranslator::GEN_TASKBAR_STRING_CHAT_ROOM), _T(""));
-				CSkin::RenderText(m_hdc, m_dat->hTheme, tszTemp, &m_rcIcon, m_dtFlags | DT_SINGLELINE | DT_RIGHT, 10, 0, true);
+					mir_sntprintf(szTemp, SIZEOF(szTemp), CTranslator::get(CTranslator::GEN_TASKBAR_STRING_CHAT_ROOM), L"");
+				CSkin::RenderText(m_hdc, m_dat->hTheme, szTemp, &m_rcIcon, m_dtFlags | DT_SINGLELINE | DT_RIGHT, 10, 0, true);
 				m_rcIcon.top += m_sz.cy;
-				mir_sntprintf(tszTemp, SIZEOF(tszTemp), CTranslator::get(CTranslator::GEN_TASKBAR_STRING_USERS), m_dat->si->nUsersInNicklist);
-				CSkin::RenderText(m_hdc, m_dat->hTheme, tszTemp, &m_rcIcon, m_dtFlags | DT_SINGLELINE | DT_RIGHT, 10, 0, true);
+				mir_sntprintf(szTemp, SIZEOF(szTemp), CTranslator::get(CTranslator::GEN_TASKBAR_STRING_USERS), m_dat->si->nUsersInNicklist);
+				CSkin::RenderText(m_hdc, m_dat->hTheme, szTemp, &m_rcIcon, m_dtFlags | DT_SINGLELINE | DT_RIGHT, 10, 0, true);
 			}
 			else {
-				mir_sntprintf(tszTemp, SIZEOF(tszTemp), CTranslator::get(CTranslator::GEN_TASKBAR_STRING_SERVER_WINDOW));
-				CSkin::RenderText(m_hdc, m_dat->hTheme, tszTemp, &m_rcIcon, m_dtFlags | DT_SINGLELINE | DT_RIGHT, 10, 0, true);
+				mir_sntprintf(szTemp, SIZEOF(szTemp), CTranslator::get(CTranslator::GEN_TASKBAR_STRING_SERVER_WINDOW));
+				CSkin::RenderText(m_hdc, m_dat->hTheme, szTemp, &m_rcIcon, m_dtFlags | DT_SINGLELINE | DT_RIGHT, 10, 0, true);
 				if(mi->tszIdleMsg[0] && _tcslen(mi->tszIdleMsg) > 2) {
 					m_rcIcon.top += m_sz.cy;
 					CSkin::RenderText(m_hdc, m_dat->hTheme, &mi->tszIdleMsg[2], &m_rcIcon, m_dtFlags | DT_SINGLELINE | DT_RIGHT, 10, 0, true);
@@ -865,18 +929,21 @@ void CThumbMUC::renderContent()
 		m_rcBottom.bottom -= ((m_rcBottom.bottom - m_rcBottom.top) % m_sz.cy);		// adjust to a multiple of line height
 
 		if(m_dat->si->iType != GCW_SERVER) {
-			if(0 == (tszStatusMsg = m_dat->si->ptszTopic))
-				tszStatusMsg = CTranslator::get(CTranslator::GEN_MUC_NO_TOPIC);
+			if(0 == (szStatusMsg = m_dat->si->ptszTopic))
+				szStatusMsg = CTranslator::get(CTranslator::GEN_MUC_NO_TOPIC);
 		}
 		else if(mi) {
-			mir_sntprintf(tszTemp, SIZEOF(tszTemp), CTranslator::get(CTranslator::MUC_SBAR_ON_SERVER), m_dat->szMyNickname, mi->ptszModDispName, _T(""));
-			tszStatusMsg = tszTemp;
+			mir_sntprintf(szTemp, SIZEOF(szTemp), CTranslator::get(CTranslator::MUC_SBAR_ON_SERVER), m_dat->szMyNickname, mi->ptszModDispName, L"");
+			szStatusMsg = szTemp;
 		}
 
-		CSkin::RenderText(m_hdc, m_dat->hTheme, tszStatusMsg, &m_rcBottom, DT_WORD_ELLIPSIS | DT_END_ELLIPSIS | m_dtFlags, 10, 0, true);
+		CSkin::RenderText(m_hdc, m_dat->hTheme, szStatusMsg, &m_rcBottom, DT_WORD_ELLIPSIS | DT_END_ELLIPSIS | m_dtFlags, 10, 0, true);
 	}
 	/*
 	 * finalize it
+	 * do NOT delete the bitmap, the dwm will need the handle
+	 * m_hbm is deleted when a new thumbnail is generated on dwm's request.
+	 * this is not a leak!
 	 */
 	if(m_hOldFont)
 		::SelectObject(m_hdc, m_hOldFont);

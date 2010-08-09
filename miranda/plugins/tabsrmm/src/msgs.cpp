@@ -406,38 +406,47 @@ static INT_PTR TypingMessageCommand(WPARAM wParam, LPARAM lParam)
 
 int SplitmsgShutdown(void)
 {
-	DestroyCursor(PluginConfig.hCurSplitNS);
-	DestroyCursor(PluginConfig.hCurHyperlinkHand);
-	DestroyCursor(PluginConfig.hCurSplitWE);
-	FreeLibrary(GetModuleHandleA("riched20"));
-	if (g_hIconDLL)
-		FreeLibrary(g_hIconDLL);
+#if defined(__USE_EX_HANDLERS)
+	__try {
+#endif
+		DestroyCursor(PluginConfig.hCurSplitNS);
+		DestroyCursor(PluginConfig.hCurHyperlinkHand);
+		DestroyCursor(PluginConfig.hCurSplitWE);
+		FreeLibrary(GetModuleHandleA("riched20"));
+		if (g_hIconDLL)
+			FreeLibrary(g_hIconDLL);
 
-	ImageList_RemoveAll(PluginConfig.g_hImageList);
-	ImageList_Destroy(PluginConfig.g_hImageList);
+		ImageList_RemoveAll(PluginConfig.g_hImageList);
+		ImageList_Destroy(PluginConfig.g_hImageList);
 
-	delete Win7Taskbar;
-	delete mREOLECallback;
+		delete Win7Taskbar;
+		delete mREOLECallback;
 
-	OleUninitialize();
-	DestroyMenu(PluginConfig.g_hMenuContext);
-	if (PluginConfig.g_hMenuContainer)
-		DestroyMenu(PluginConfig.g_hMenuContainer);
-	if (PluginConfig.g_hMenuEncoding)
-		DestroyMenu(PluginConfig.g_hMenuEncoding);
+		OleUninitialize();
+		DestroyMenu(PluginConfig.g_hMenuContext);
+		if (PluginConfig.g_hMenuContainer)
+			DestroyMenu(PluginConfig.g_hMenuContainer);
+		if (PluginConfig.g_hMenuEncoding)
+			DestroyMenu(PluginConfig.g_hMenuEncoding);
 
-	UnloadIcons();
-	FreeTabConfig();
+		UnloadIcons();
+		FreeTabConfig();
 
-	if (Utils::rtf_ctable)
-		free(Utils::rtf_ctable);
+		if (Utils::rtf_ctable)
+			free(Utils::rtf_ctable);
 
-	UnloadTSButtonModule();
+		UnloadTSButtonModule();
 
-	if (g_hIconDLL) {
-		FreeLibrary(g_hIconDLL);
-		g_hIconDLL = 0;
+		if (g_hIconDLL) {
+			FreeLibrary(g_hIconDLL);
+			g_hIconDLL = 0;
+		}
+#if defined(__USE_EX_HANDLERS)
 	}
+	__except(CGlobals::Ex_ShowDialog(GetExceptionInformation(), __FILE__, __LINE__, L"SHUTDOWN_STAGE3", false)) {
+		return(0);
+	}
+#endif
 	return 0;
 }
 
@@ -858,9 +867,13 @@ HWND TSAPI CreateNewTabForContact(struct TContainerData *pContainer, HANDLE hCon
 		}
 		SendMessage(pContainer->hwndActive, WM_SIZE, 0, 0);
 	}
-	if(PluginConfig.m_bIsWin7 && PluginConfig.m_useAeroPeek && CSkin::m_skinEnabled && !M->GetByte("forceAeroPeek", 0))
-		CWarning::show(CWarning::WARN_AEROPEEK_SKIN, CWarning::CWF_UNTRANSLATED|MB_ICONWARNING|MB_OK);
+	if(PluginConfig.m_bIsWin7 && PluginConfig.m_useAeroPeek && CSkin::m_skinEnabled) // && !M->GetByte("forceAeroPeek", 0))
+		CWarning::show(CWarning::WARN_AEROPEEK_SKIN, MB_ICONWARNING|MB_OK);
 
+	if(ServiceExists(MS_HPP_EG_EVENT) && ServiceExists(MS_IEVIEW_EVENT) && M->GetByte(0, "HistoryPlusPlus", "IEViewAPI", 0)) {
+		if(IDYES == CWarning::show(CWarning::WARN_HPP_APICHECK, MB_ICONWARNING|MB_YESNO))
+			M->WriteByte(0, "HistoryPlusPlus", "IEViewAPI", 0);
+	}
 	return hwndNew;		// return handle of the new dialog
 }
 
@@ -934,7 +947,7 @@ int TABSRMM_FireEvent(HANDLE hContact, HWND hwnd, unsigned int type, unsigned in
 	if (hContact == NULL || hwnd == NULL)
 		return 0;
 
-	if (!M->GetByte("eventapi", 1))
+	if (!M->GetByte("_eventapi", 1))
 		return 0;
 	mwe.cbSize = sizeof(mwe);
 	mwe.hContact = hContact;

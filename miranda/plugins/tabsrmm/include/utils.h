@@ -102,7 +102,13 @@ public:
 	static	void				TSAPI scaleAvatarHeightLimited		(const HBITMAP hBm, double& dNewWidth, double& dNewHeight, const LONG maxHeight);
 
 	static	AVATARCACHEENTRY*	TSAPI loadAvatarFromAVS				(const HANDLE hContact);
-	static	void				TSAPI sanitizeFilename				(TCHAR *tszFilename);
+	static	void				TSAPI sanitizeFilename				(wchar_t *tszFilename);
+	static	void				TSAPI ensureTralingBackslash		(wchar_t *szPathname);
+
+	static 	void*				TSAPI safeAlloc						(const size_t size);
+	static	void*				TSAPI safeCalloc					(const size_t size);
+	static 	void*				TSAPI safeMirAlloc						(const size_t size);
+	static	void*				TSAPI safeMirCalloc					(const size_t size);
 
 	static	INT_PTR CALLBACK		  PopupDlgProcError				(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 	static	const TCHAR*			  extractURLFromRichEdit		(const ENLINK* _e, const HWND hwndRich);
@@ -210,6 +216,12 @@ public:
 		WARN_AEROPEEK_SKIN					= 4,
 		WARN_CHAT_ENABLED					= 5,
 		WARN_IMGSVC_MISSING					= 6,
+		WARN_HPP_APICHECK					= 7,
+		WARN_NO_SENDLATER					= 8,
+		WARN_CLOSEWINDOW					= 9,
+		WARN_OPTION_CLOSE					= 10,
+		WARN_THEME_OVERWRITE				= 11,
+		WARN_LAST							= 12
 	};
 
 	/*
@@ -221,7 +233,7 @@ public:
 		CWF_NOALLOWHIDE						= 0x00020000			// critical message, hide the "do not show this again" check box
 	};
 
-	CWarning(const TCHAR* tszTitle, const TCHAR* tszText, const UINT uId, const DWORD dwFlags);
+	CWarning(const wchar_t* tszTitle, const wchar_t* tszText, const UINT uId, const DWORD dwFlags);
 	~CWarning();
 
 public:
@@ -229,12 +241,13 @@ public:
 	 * static function to construct and show the dialog, returns the
 	 * user's choice
 	 */
-	static	LRESULT			show				(const int uId, DWORD dwFlags = 0, const TCHAR* tszTxt = 0);
+	static	LRESULT			show				(const int uId, DWORD dwFlags = 0, const wchar_t* tszTxt = 0);
+	static	void			destroyAll			();
 	LRESULT					ShowDialog			() const;
 
 private:
-	std::basic_string<TCHAR>*		m_szTitle;
-	std::basic_string<TCHAR>*		m_szText;
+	std::basic_string<wchar_t>*		m_szTitle;
+	std::basic_string<wchar_t>*		m_szText;
 	UINT							m_uId;
 	HFONT							m_hFontCaption;
 	DWORD							m_dwFlags;
@@ -245,6 +258,9 @@ private:
 	//void					resize				() const;
 	static INT_PTR CALLBACK	stubDlgProc			(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 	static  __int64			getMask				();		// get bit mask for disabled message classes
+
+private:
+	static	HANDLE			hWindowList;
 };
 
 #endif /* __UTILS_H */

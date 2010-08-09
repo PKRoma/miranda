@@ -71,7 +71,10 @@
 #define IDC_MAXIMIZE                    1001
 #define IDC_SKINFILE                    1002
 #define IDC_MESSAGE                     1002
+#define IDC_THEMEEXPORT                 1002
 #define IDC_HYPERLINKHAND               1003
+#define IDC_THEMEEXPORT2                1003
+#define IDC_THEMEIMPORT                 1003
 #define IDC_EXPORT                      1005
 #define IDC_IMPORT                      1006
 #define IDC_PREVIEW                     1006
@@ -528,6 +531,7 @@
 #define IDC_WARNTEXT                    1449
 #define IDC_WARNICON                    1450
 #define IDC_WARNGROUP                   1451
+#define IDC_EX_REASON                   1452
 #define IDC_FLASHICON                   1489
 #define IDC_FLASHLABEL                  1490
 #define IDC_STATIC_VISIBILTY            1491
@@ -677,8 +681,6 @@
 #define ID_LOGMENU_MESSAGELOGSETTINGSAREGLOBAL 40124
 #define ID_USER                         40125
 #define ID_TITLEBAR_USESTATICCONTAINERICON 40126
-#define ID_MESSAGELOG_EXPORTMESSAGELOGSETTINGS 40128
-#define ID_MESSAGELOG_IMPORTMESSAGELOGSETTINGS 40129
 #define ID_PICMENU_ALWAYSKEEPTHEBUTTONBARATFULLWIDTH 40134
 #define ID_SENDMENU_SENDDEFAULT         40135
 #define ID_SENDMENU_SENDTOMULTIPLEUSERS 40136
@@ -783,7 +785,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        17
 #define _APS_NEXT_COMMAND_VALUE         40263
-#define _APS_NEXT_CONTROL_VALUE         1452
+#define _APS_NEXT_CONTROL_VALUE         1453
 #define _APS_NEXT_SYMED_VALUE           40283
 #endif
 #endif

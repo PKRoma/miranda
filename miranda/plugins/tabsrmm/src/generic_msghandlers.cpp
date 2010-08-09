@@ -518,7 +518,10 @@ LRESULT TSAPI DM_MsgWindowCmdHandler(HWND hwndDlg, TContainerData *m_pContainer,
 					dat->sendMode ^= SMODE_FORCEANSI;
 					break;
 				case ID_SENDMENU_SENDLATER:
-					dat->sendMode ^= SMODE_SENDLATER;
+					if(sendLater->isAvail())
+						dat->sendMode ^= SMODE_SENDLATER;
+					else
+						CWarning::show(CWarning::WARN_NO_SENDLATER, MB_OK|MB_ICONINFORMATION, CTranslator::get(CTranslator::QMGR_ERROR_NOMULTISEND));
 					break;
 				case ID_SENDMENU_SENDWITHOUTTIMEOUTS:
 					dat->sendMode ^= SMODE_NOACK;
@@ -761,8 +764,6 @@ LRESULT TSAPI DM_ContainerCmdHandler(TContainerData *pContainer, UINT cmd, WPARA
 		 * commands from the message log popup will be routed to the
 		 * message log menu handler
 		 */
-		case ID_MESSAGELOG_EXPORTMESSAGELOGSETTINGS:
-		case ID_MESSAGELOG_IMPORTMESSAGELOGSETTINGS:
 		case ID_MESSAGELOGSETTINGS_FORTHISCONTACT:
 		case ID_MESSAGELOGSETTINGS_GLOBAL: {
 			struct TWindowData *dat = (struct TWindowData *)GetWindowLongPtr(pContainer->hwndActive, GWLP_USERDATA);
@@ -804,7 +805,7 @@ void TSAPI DM_InitRichEdit(TWindowData *dat)
 	ZeroMemory(&cf2, sizeof(CHARFORMAT2A));
 
 	dat->inputbg = fIsChat ? M->GetDword(FONTMODULE, "inputbg", SRMSGDEFSET_BKGCOLOUR) : dat->pContainer->theme.inputbg;
-	colour = fIsChat ? M->GetDword(FONTMODULE, SRMSGSET_BKGCOLOUR, SRMSGDEFSET_BKGCOLOUR) : dat->pContainer->theme.inbg;
+	colour = fIsChat ? M->GetDword(FONTMODULE, SRMSGSET_BKGCOLOUR_MUC, SRMSGDEFSET_BKGCOLOUR) : dat->pContainer->theme.bg;
 
 	if(!fIsChat) {
 		if (GetWindowTextLengthA(hwndEdit) > 0)
@@ -863,7 +864,8 @@ void TSAPI DM_InitRichEdit(TWindowData *dat)
 	 * and textflow formatting commands to the
 	 */
 
-	_PARAFORMAT2 pf2 = {0};
+	PARAFORMAT2 pf2;
+	ZeroMemory(&pf2, sizeof(PARAFORMAT2));
 
 	pf2.cbSize = sizeof(pf2);
 
@@ -1315,7 +1317,7 @@ LRESULT TSAPI DM_WMCopyHandler(HWND hwnd, WNDPROC oldWndProc, WPARAM wParam, LPA
 HWND TSAPI DM_CreateClist(TWindowData *dat)
 {
 	if(!sendLater->isAvail()) {
-		SendMessage(dat->hwnd, DM_ACTIVATETOOLTIP, IDC_MESSAGE, (LPARAM)CTranslator::get(CTranslator::QMGR_ERROR_NOMULTISEND));
+		CWarning::show(CWarning::WARN_NO_SENDLATER, MB_OK|MB_ICONINFORMATION, CTranslator::get(CTranslator::QMGR_ERROR_NOMULTISEND));
 		dat->sendMode &= ~SMODE_MULTIPLE;
 		return(0);
 	}
@@ -1519,8 +1521,10 @@ void TSAPI DM_OptionsApplied(TWindowData *dat, WPARAM wParam, LPARAM lParam)
 	if (wParam == 1)      // 1 means, the message came from message log options page, so reload the defaults...
 		LoadLocalFlags(hwndDlg, dat);
 
-	if (!(dat->pContainer->theme.isPrivate))
+	if (!(dat->pContainer->theme.isPrivate)) {
 		LoadThemeDefaults(dat->pContainer);
+		dat->dwFlags = dat->pContainer->theme.dwFlags;
+	}
 
 	LoadTimeZone(dat);
 
@@ -1856,7 +1860,7 @@ void TSAPI DM_EventAdded(TWindowData *dat, WPARAM wParam, LPARAM lParam)
 		* never switch for status changes...
 		*/
 		if (!(dbei.flags & DBEF_SENT) && !fIsStatusChangeEvent) {
-			if(PluginConfig.m_AutoSwitchTabs && m_pContainer->hwndActive != hwndDlg) {
+			if(PluginConfig.haveAutoSwitch() && m_pContainer->hwndActive != hwndDlg) {
 				if ((IsIconic(hwndContainer) && !IsZoomed(hwndContainer)) || (PluginConfig.m_HideOnClose && !IsWindowVisible(m_pContainer->hwnd))) {
 					int iItem = GetTabIndexFromHWND(GetParent(hwndDlg), hwndDlg);
 					if (iItem >= 0) {

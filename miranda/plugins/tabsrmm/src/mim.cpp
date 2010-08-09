@@ -378,7 +378,7 @@ void CMimAPI::configureCustomFolders()
 
 INT_PTR CMimAPI::foldersPathChanged()
 {
-	TCHAR szTemp[MAX_PATH] = {'\0'};
+	TCHAR szTemp[MAX_PATH + 2] = {'\0'};
 
 	if(m_hDataPath) {
 		FoldersGetCustomPathT(m_hDataPath, szTemp, MAX_PATH, const_cast<TCHAR *>(getDataPath()));
@@ -391,19 +391,28 @@ INT_PTR CMimAPI::foldersPathChanged()
 		 * make sure skins root path always ends with a '\' - this is assumed by the skin
 		 * selection code.
 		 */
-		if(m_szSkinsPath[lstrlen(m_szSkinsPath) - 1] != '\\')
-			_tcscat(m_szSkinsPath, _T("\\"));
+
+		Utils::ensureTralingBackslash(m_szSkinsPath);
 
 		FoldersGetCustomPathT(m_hAvatarsPath, szTemp, MAX_PATH, const_cast<TCHAR *>(getSavedAvatarPath()));
 		mir_sntprintf(m_szSavedAvatarsPath, MAX_PATH, _T("%s"), szTemp);
 
 		FoldersGetCustomPathT(m_hChatLogsPath, szTemp, MAX_PATH, const_cast<TCHAR *>(getChatLogPath()));
 		mir_sntprintf(m_szChatLogsPath, MAX_PATH, _T("%s"), szTemp);
+
+		Utils::ensureTralingBackslash(m_szChatLogsPath);
 	}
 	CallService(MS_UTILS_CREATEDIRTREET, 0, (LPARAM)m_szProfilePath);
 	CallService(MS_UTILS_CREATEDIRTREET, 0, (LPARAM)m_szSkinsPath);
 	CallService(MS_UTILS_CREATEDIRTREET, 0, (LPARAM)m_szSavedAvatarsPath);
 	CallService(MS_UTILS_CREATEDIRTREET, 0, (LPARAM)m_szChatLogsPath);
+
+	mir_sntprintf(szTemp, MAX_PATH, L"%sfolder.lck", m_szChatLogsPath);
+
+	if(m_hChatLogLock != INVALID_HANDLE_VALUE)
+		CloseHandle(m_hChatLogLock);
+
+	m_hChatLogLock = CreateFile(szTemp, GENERIC_WRITE, 0, 0, OPEN_ALWAYS, FILE_ATTRIBUTE_HIDDEN, 0);
 
 	Skin->extractSkinsAndLogo(true);
 	Skin->setupAeroSkins();
@@ -413,10 +422,9 @@ INT_PTR CMimAPI::foldersPathChanged()
 const TCHAR* CMimAPI::getUserDir()
 {
 	if(m_userDir[0] == 0) {
-		TCHAR *userdata = ::Utils_ReplaceVarsT(_T("%miranda_userdata%"));
+		wchar_t*	userdata = ::Utils_ReplaceVarsT(L"%miranda_userdata%");
 		mir_sntprintf(m_userDir, MAX_PATH, userdata);
-		if(m_userDir[lstrlen(m_userDir) - 1] != '\\')
-		   _tcscat(m_userDir, _T("\\"));
+		Utils::ensureTralingBackslash(m_userDir);
 		mir_free(userdata); 
 	}
 	return(m_userDir);
@@ -431,7 +439,7 @@ void CMimAPI::InitPaths()
 	const TCHAR *szUserdataDir = getUserDir();
 
 	mir_sntprintf(m_szProfilePath, MAX_PATH, _T("%stabSRMM"), szUserdataDir);
-	mir_sntprintf(m_szChatLogsPath, MAX_PATH, _T("%s"), szUserdataDir);
+	mir_sntprintf(m_szChatLogsPath, MAX_PATH, _T("%sLogs\\"), szUserdataDir);
 
 	mir_sntprintf(m_szSkinsPath, MAX_PATH, _T("%s\\skins\\"), m_szProfilePath);
 	mir_sntprintf(m_szSavedAvatarsPath, MAX_PATH, _T("%s\\Saved Contact Pictures"), m_szProfilePath);
@@ -865,18 +873,16 @@ int CMimAPI::MessageEventAdded(WPARAM wParam, LPARAM lParam)
 			bPopup = (BOOL) M->GetByte("cpopup", 0);
 			pContainer = FindContainerByName(szName);
 			if (pContainer != NULL) {
-				if ((IsIconic(pContainer->hwnd)) && PluginConfig.m_AutoSwitchTabs) {
-					bActivate = TRUE;
-					pContainer->dwFlags |= CNT_DEFERREDTABSELECT;
-				}
-				if (M->GetByte("limittabs", 0) &&  !_tcsncmp(pContainer->szName, _T("default"), 6)) {
-					if ((pContainer = FindMatchingContainer(_T("default"), (HANDLE)wParam)) != NULL) {
+				//if ((IsIconic(pContainer->hwnd)) && PluginConfig.haveAutoSwitch())
+				//	pContainer->dwFlags |= CNT_DEFERREDTABSELECT;
+				if (M->GetByte("limittabs", 0) &&  !wcsncmp(pContainer->szName, L"default", 6)) {
+					if ((pContainer = FindMatchingContainer(L"default", (HANDLE)wParam)) != NULL) {
 						CreateNewTabForContact(pContainer, (HANDLE) wParam, 0, NULL, bActivate, bPopup, TRUE, (HANDLE)lParam);
 						return 0;
 					} else if (bAutoContainer) {
 						pContainer = CreateContainer(szName, CNT_CREATEFLAG_MINIMIZED, (HANDLE)wParam);         // 2 means create minimized, don't popup...
 						CreateNewTabForContact(pContainer, (HANDLE) wParam,  0, NULL, bActivate, bPopup, TRUE, (HANDLE)lParam);
-						SendMessage(pContainer->hwnd, WM_SIZE, 0, 0);
+						SendMessageW(pContainer->hwnd, WM_SIZE, 0, 0);
 						return 0;
 					}
 				} else {
@@ -888,7 +894,7 @@ int CMimAPI::MessageEventAdded(WPARAM wParam, LPARAM lParam)
 				if (bAutoContainer) {
 					pContainer = CreateContainer(szName, CNT_CREATEFLAG_MINIMIZED, (HANDLE)wParam);         // 2 means create minimized, don't popup...
 					CreateNewTabForContact(pContainer, (HANDLE) wParam,  0, NULL, bActivate, bPopup, TRUE, (HANDLE)lParam);
-					SendMessage(pContainer->hwnd, WM_SIZE, 0, 0);
+					SendMessageW(pContainer->hwnd, WM_SIZE, 0, 0);
 					return 0;
 				}
 			}

@@ -279,7 +279,9 @@ public:
 		GEN_TASKBAR_STRING_SERVER_WINDOW						= 230,
 		GEN_TASKBAR_STRING_UNREAD								= 231,
 		GEN_TASKBAR_STRING_USERS								= 232,
-		STR_LAST 												= 233
+		GEN_AEROPEEK_NOHPP										= 233,
+		GEN_STRING_WARNING_TITLE								= 234,
+		STR_LAST 												= 235
 	};
 
 	enum {
@@ -396,7 +398,12 @@ public:
 		WARN_AEROPEEKSKIN										= 4,
 		WARN_CHAT_ENABLED										= 5,
 		WARN_IMGSVC_MISSING										= 6,
-		WARN_LAST												= 7
+		WARN_HPP_APICHECK										= 7,
+		WARN_NO_SENDLATER										= 8,
+		WARN_CLOSEWINDOW										= 9,
+		WARN_OPTION_CLOSE										= 10,
+		WARN_THEME_OVERWRITE									= 11,
+		WARN_LAST												= 12
 	};
 	/*
 	 * identities for the option trees
@@ -413,32 +420,32 @@ public:
 	CTranslator();
 	~CTranslator();
 
-	inline static const TCHAR* get(const UINT id)
+	inline static const wchar_t* get(const UINT id)
 	{
 		return(m_translated[id]);
 	}
 
-	inline static const TCHAR* getOpt(const UINT id)
+	inline static const wchar_t* getOpt(const UINT id)
 	{
 		return(m_OptTranslated[id]);
 	}
 
-	inline static const TCHAR* getWarning(const UINT id)
+	inline static const wchar_t* getWarning(const UINT id)
 	{
 		return(m_WarningsTranslated[id]);
 	}
 
-	inline static const TCHAR* getUntranslatedWarning(const UINT id)
+	inline static const wchar_t* getUntranslatedWarning(const UINT id)
 	{
 		return(m_Warnings[id]);
 	}
 
-	inline static const TCHAR *getWeekday(const UINT id)
+	inline static const wchar_t* getWeekday(const UINT id)
 	{
 		return(weekDays_translated[id]);
 	}
 
-	inline static const TCHAR *getMonth(const UINT id)
+	inline static const wchar_t* getMonth(const UINT id)
 	{
 		return(months_translated[id]);
 	}
@@ -482,20 +489,20 @@ public:
 	static  TOptionListGroup* 	getGroupTree(UINT id);
 
 private:
-	static TCHAR *m_strings[STR_LAST];
-	static TCHAR *m_translated[STR_LAST];
+	static wchar_t *m_strings[STR_LAST];
+	static wchar_t *m_translated[STR_LAST];
 
-	static TCHAR *m_OptStrings[OPT_LAST];
-	static TCHAR *m_OptTranslated[OPT_LAST];
+	static wchar_t *m_OptStrings[OPT_LAST];
+	static wchar_t *m_OptTranslated[OPT_LAST];
 
-	static TCHAR *m_Warnings[WARN_LAST];
-	static TCHAR *m_WarningsTranslated[WARN_LAST];
+	static wchar_t *m_Warnings[WARN_LAST];
+	static wchar_t *m_WarningsTranslated[WARN_LAST];
 
-	static TCHAR *weekDays[7];
-	static TCHAR *months[12];
+	static wchar_t *weekDays[7];
+	static wchar_t *months[12];
 
-	static TCHAR *weekDays_translated[7];
-	static TCHAR *months_translated[12];
+	static wchar_t *weekDays_translated[7];
+	static wchar_t *months_translated[12];
 
 	static TOptionListGroup		m_lvGroupsModPlus[], m_lvGroupsNEN[], m_lvGroupsMsg[], m_lvGroupsLog[], m_lvGroupsTab[];
 	static TOptionListItem		m_lvItemsModPlus[], m_lvItemsNEN[], m_lvItemsMsg[], m_lvItemsLog[], m_lvItemsTab[];

@@ -84,23 +84,8 @@ void CContactCache::initPhaseTwo()
 	if(m_Valid) {
 		m_isMeta = (PluginConfig.bMetaEnabled && !strcmp(m_szProto, PluginConfig.szMetaName)) ? true : false;
 		m_isSubcontact = (M->GetByte(m_hContact, PluginConfig.szMetaName, "IsSubcontact", 0) ? true : false);
-		if(m_isMeta) {
-			/*
-			int 	i = 0;
-			char 	buf[20];
-			HANDLE	h;
-			do {
-				mir_snprintf(buf, 20, "Handle%d", i);
-				if((h = reinterpret_cast<HANDLE>(M->GetDword(m_hContact, m_szProto, buf, 0))) == 0)
-					break;
-				CContactCache* _c = CGlobals::getContactCache(h);
-				if(_c)
-					_c->setMasterContact(m_hContact);
-				i++;
-			} while(true);
-			*/
+		if(m_isMeta)
 			updateMeta(true);
-		}
 		updateState();
 		updateFavorite();
 	}

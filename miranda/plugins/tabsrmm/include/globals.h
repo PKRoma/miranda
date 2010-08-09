@@ -103,6 +103,7 @@ public:
 	void		reloadSettings(bool fReloadSkins = true);
 
 	void		hookSystemEvents();
+	bool		haveAutoSwitch();
 
 	const HMENU getMenuBar();
 
@@ -136,7 +137,6 @@ public:
 	int         m_DividersUsePopupConfig;
 	int         m_MsgTimeout;
 	int         m_EscapeCloses;
-	int         m_WarnOnClose;
 	int         m_FlashOnClist;
 	int         m_AlwaysFullToolbarWidth;
 	int         m_LimitStaticAvatarHeight;
@@ -172,7 +172,7 @@ public:
 	DWORD       local_gmt_diff;
 	int         m_PasteAndSend;
 	TCHAR       *m_szNoStatus;
-	COLORREF    crDefault, crIncoming, crOutgoing, crOldIncoming, crOldOutgoing, crStatus;
+	COLORREF    crIncoming, crOutgoing, crOldIncoming, crOldOutgoing, crStatus;
 	BOOL        bUnicodeBuild;
 	HFONT       hFontCaption;
 	DWORD       m_LangPackCP;
@@ -208,7 +208,7 @@ public:
 
 	static  void 			 		Ex_CopyEditToClipboard(HWND hWnd);
 	static  void 			 		Ex_Handler();
-	static 	int				 		Ex_ShowDialog(EXCEPTION_POINTERS *ep, const char *szFile, int line);
+	static 	int				 		Ex_ShowDialog(EXCEPTION_POINTERS *ep, const char *szFile, int line, wchar_t* szReason, bool fAllowContinue);
 	static  INT_PTR CALLBACK 		Ex_DlgProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 private:
 	bool				m_TypingSoundAdded;
@@ -223,7 +223,9 @@ private:
 	static CONTEXT			m_exCtx;
 	static LRESULT			m_exLastResult;
 	static char				m_exSzFile[MAX_PATH];
+	static wchar_t			m_exReason[256];
 	static int				m_exLine;
+	static bool				m_exAllowContinue;
 private:
 	static	int		ModulesLoaded(WPARAM wParam, LPARAM lParam);
 	static	int 	DBSettingChanged(WPARAM wParam, LPARAM lParam);

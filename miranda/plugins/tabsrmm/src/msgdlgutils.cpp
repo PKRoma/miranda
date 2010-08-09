@@ -486,38 +486,13 @@ int TSAPI MsgWindowMenuHandler(TWindowData *dat, int selection, int menuId)
 				CallService (MS_OPT_OPENOPTIONS, 0, (LPARAM)&ood);
 				return 1;
 			}
+
 			case ID_MESSAGELOGSETTINGS_FORTHISCONTACT:
 				CallService(MS_TABMSG_SETUSERPREFS, (WPARAM)dat->hContact, (LPARAM)0);
 				return 1;
 
-			case ID_MESSAGELOG_EXPORTMESSAGELOGSETTINGS: {
-				const TCHAR *szFilename = GetThemeFileName(1);
-				if (szFilename != NULL)
-					WriteThemeToINI(szFilename, dat);
-				return 1;
-			}
-			case ID_MESSAGELOG_IMPORTMESSAGELOGSETTINGS: {
-				const TCHAR *szFilename = GetThemeFileName(0);
-				DWORD dwFlags = THEME_READ_FONTS;
-				int   result;
-
-				if (szFilename != NULL) {
-					result = MessageBox(0, CTranslator::get(CTranslator::GEN_WARNING_LOADTEMPLATES),
-										CTranslator::get(CTranslator::GEN_TITLE_LOADTHEME), MB_YESNOCANCEL);
-					if (result == IDCANCEL)
-						return 1;
-					else if (result == IDYES)
-						dwFlags |= THEME_READ_TEMPLATES;
-					ReadThemeFromINI(szFilename, 0, 0, dwFlags);
-					CacheLogFonts();
-					CacheMsgLogIcons();
-					PluginConfig.reloadSettings();
-					CSkin::setAeroEffect(-1);
-					M->BroadcastMessage(DM_OPTIONSAPPLIED, 1, 0);
-					M->BroadcastMessage(DM_FORCEDREMAKELOG, (WPARAM)hwndDlg, (LPARAM)(dat->dwFlags & MWF_LOG_ALL));
-				}
-				return 1;
-			}
+			default:
+				break;
 		}
 	}
 	return 0;
@@ -1609,13 +1584,13 @@ void TSAPI GetLocaleID(TWindowData *dat, const TCHAR *szKLName)
 	TCHAR szLI[256], *stopped = NULL;
 	USHORT langID;
 	WORD   wCtype2[3];
-	_PARAFORMAT2 pf2;
+	PARAFORMAT2 pf2;
 	BOOL fLocaleNotSet;
 	char szTest[4] = {(char)0xe4, (char)0xf6, (char)0xfc, 0 };
 
 	szLI[0] = szLI[1] = 0;
 
-	ZeroMemory(&pf2, sizeof(_PARAFORMAT2));
+	ZeroMemory(&pf2, sizeof(PARAFORMAT2));
 	langID = (USHORT)_tcstol(szKLName, &stopped, 16);
 	dat->lcid = MAKELCID(langID, 0);
 	/*
@@ -2139,12 +2114,12 @@ void TSAPI LoadThemeDefaults(TContainerData *pContainer)
 	COLORREF 	colour;
 	ZeroMemory(&pContainer->theme, sizeof(TLogTheme));
 
+	pContainer->theme.bg = M->GetDword(FONTMODULE, SRMSGSET_BKGCOLOUR, GetSysColor(COLOR_WINDOW));
 	pContainer->theme.statbg = PluginConfig.crStatus;
 	pContainer->theme.oldinbg = PluginConfig.crOldIncoming;
 	pContainer->theme.oldoutbg = PluginConfig.crOldOutgoing;
 	pContainer->theme.inbg = PluginConfig.crIncoming;
 	pContainer->theme.outbg = PluginConfig.crOutgoing;
-	pContainer->theme.bg = PluginConfig.crDefault;
 	pContainer->theme.hgrid = M->GetDword(FONTMODULE, "hgrid", RGB(224, 224, 224));
 	pContainer->theme.left_indent = M->GetDword("IndentAmount", 20) * 15;
 	pContainer->theme.right_indent = M->GetDword("RightIndent", 20) * 15;
@@ -2196,6 +2171,10 @@ void TSAPI LoadOverrideTheme(TContainerData *pContainer)
 			pContainer->theme.left_indent *= 15;
 			pContainer->theme.right_indent *= 15;
 			pContainer->theme.isPrivate = true;
+			if(CSkin::m_skinEnabled)
+				pContainer->theme.bg = SkinItems[ID_EXTBKCONTAINER].COLOR;
+			else
+				pContainer->theme.bg = PluginConfig.m_fillColor ? PluginConfig.m_fillColor : GetSysColor(COLOR_WINDOW);
 			return;
 		}
 	}

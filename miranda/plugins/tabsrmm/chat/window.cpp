@@ -281,10 +281,12 @@ static void Chat_UpdateWindowState(TWindowData *dat, UINT msg)
 	}
 #endif
 	dat->Panel->dismissConfig();
-	if(dat->pWnd)
-		dat->pWnd->activateTab();
-
 	dat->dwUnread = 0;
+	if(dat->pWnd) {
+		dat->pWnd->activateTab();
+		dat->pWnd->setOverlayIcon(0, true);
+	}
+
 	if (dat->pContainer->hwndSaved == hwndDlg || dat->bWasDeleted)
 		return;
 
@@ -2288,9 +2290,6 @@ INT_PTR CALLBACK RoomWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 		case GC_ADDLOG: {
 			BOOL	fInactive = (GetForegroundWindow() != dat->pContainer->hwnd || GetActiveWindow() != dat->pContainer->hwnd);
 
-			if(fInactive)
-				dat->dwUnread++;
-
 			if (g_Settings.UseDividers && g_Settings.DividersUsePopupConfig) {
 				if (!MessageWindowOpened(0, (LPARAM)hwndDlg))
 					SendMessage(hwndDlg, DM_ADDDIVIDER, 0, 0);
@@ -2730,6 +2729,10 @@ LABEL_SHOWWINDOW:
 								return(_dlgReturn(hwndDlg, 1));
 							case TABSRMM_HK_LISTTOGGLE:
 								SendMessage(hwndDlg, WM_COMMAND, MAKEWPARAM(IDC_SHOWNICKLIST, BN_CLICKED), 0);
+								return(_dlgReturn(hwndDlg, 1));
+							case TABSRMM_HK_MUC_SHOWSERVER:
+								if(si->iType != GCW_SERVER)
+									DoEventHookAsync(hwndDlg, si->ptszID, si->pszModule, GC_USER_MESSAGE, NULL, L"/servershow", (LPARAM)NULL);
 								return(_dlgReturn(hwndDlg, 1));
 							default:
 								break;
@@ -3489,11 +3492,6 @@ LABEL_SHOWWINDOW:
 				}
 				_dlgReturn(hwndDlg, TRUE);
 			}
-
-			if (lParam && PluginConfig.m_WarnOnClose)
-				if (MessageBox(dat->pContainer->hwnd, CTranslator::get(CTranslator::GEN_WARN_CLOSE), _T("Miranda"), MB_YESNO | MB_ICONQUESTION) == IDNO)
-					return TRUE;
-
 			SendMessage(hwndDlg, GC_CLOSEWINDOW, 0, 1);
 			break;
 

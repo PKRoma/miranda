@@ -81,8 +81,9 @@ struct ColorOptionsList {
  * (GetSysColor(default_color & 0x00ffffff)), not a rgb value.
  */
 static ColorOptionsList _clrs[] = {
-	0, LPGENT("TabSRMM/Group Chats"), LPGENT("Log background"), SRMSGSET_BKGCOLOUR, SRMSGDEFSET_BKGCOLOUR,
+	0, LPGENT("TabSRMM/Group Chats"), LPGENT("Group chat log background"), SRMSGSET_BKGCOLOUR_MUC, SRMSGDEFSET_BKGCOLOUR,
 	1, LPGENT("TabSRMM"), LPGENT("Input area background"), "inputbg", SRMSGDEFSET_BKGCOLOUR,
+	2, LPGENT("TabSRMM"), LPGENT("Log background"), SRMSGSET_BKGCOLOUR, SRMSGDEFSET_BKGCOLOUR,
 	0, LPGENT("TabSRMM/Single Messaging"), LPGENT("Outgoing background"), "outbg", SRMSGDEFSET_BKGOUTCOLOUR,
 	1, LPGENT("TabSRMM/Single Messaging"), LPGENT("Incoming background"), "inbg", SRMSGDEFSET_BKGINCOLOUR,
 	2, LPGENT("TabSRMM/Single Messaging"), LPGENT("Status background"), "statbg", SRMSGDEFSET_BKGCOLOUR,
@@ -187,10 +188,13 @@ static struct branch_t branch1[] = {
 	{LPGENT("Open new chat rooms in the default container"), "DefaultContainer", 0, 1, NULL},
 	{LPGENT("Flash window when someone speaks"), "FlashWindow", 0, 0, NULL},
 	{LPGENT("Flash window when a word is highlighted"), "FlashWindowHighlight", 0, 1, NULL},
-//MAD: highlight mod
+//TODO Fix for 3.0 !!!
+
+#if !defined(__DELAYED_FOR_3_1)
 	{LPGENT("Create tabs or windows for highlight events"), "CreateWindowOnHighlight", 0,0, NULL},
 	{LPGENT("Activate chat window on highlight"), "AnnoyingHighlight", 0,0, NULL},
-//
+#endif
+
 	{LPGENT("Show list of users in the chat room"), "ShowNicklist", 0, 1, NULL},
 	{LPGENT("Colorize nicknames in member list"), "ColorizeNicks", 0, 1, NULL},
 	{LPGENT("Show button menus when right clicking the buttons"), "RightClickFilter", 0, 0, NULL},
@@ -805,7 +809,7 @@ void RegisterFontServiceFonts() {
 		fid.deffontsettings.charset = lf.lfCharSet;
 		_tcsncpy(fid.deffontsettings.szFace, lf.lfFaceName, LF_FACESIZE);
 		_tcsncpy(fid.backgroundGroup, _T("TabSRMM/Group Chats"), SIZEOF(fid.backgroundGroup));
-		_tcsncpy(fid.backgroundName, _T("Log background"), SIZEOF(fid.backgroundName));
+		_tcsncpy(fid.backgroundName, _T("Group chat log background"), SIZEOF(fid.backgroundName));
 		if(i == 18 || i == 19)
 			_tcsncpy(fid.backgroundName, _T("Userlist background"), SIZEOF(fid.backgroundName));
 		CallService(MS_FONT_REGISTERT, (WPARAM)&fid, 0);

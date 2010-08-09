@@ -67,7 +67,9 @@ EXCEPTION_RECORD CGlobals::m_exRecord = {0};
 CONTEXT		 	 CGlobals::m_exCtx = {0};
 LRESULT			 CGlobals::m_exLastResult = 0;
 char			 CGlobals::m_exSzFile[MAX_PATH] = "\0";
+wchar_t			 CGlobals::m_exReason[256] = L"\0";
 int				 CGlobals::m_exLine = 0;
+bool			 CGlobals::m_exAllowContinue = false;
 
 #if defined(_WIN64)
 	static char szCurrentVersion[30];
@@ -235,7 +237,7 @@ void CGlobals::reloadSystemModulesChanged()
 
 	if(g_MetaContactsAvail) {
 		mir_snprintf(szMetaName, 256, "%s", (char *)CallService(MS_MC_GETPROTOCOLNAME, 0, 0));
-		bMetaEnabled = M->GetByte(0, szMetaName, "Enabled", 0);
+		bMetaEnabled = abs(M->GetByte(0, szMetaName, "Enabled", -1));
 	}
 	else {
 		szMetaName[0] = 0;
@@ -275,7 +277,7 @@ void CGlobals::reloadSettings(bool fReloadSkins)
 	m_SendOnShiftEnter = 				(int)M->GetByte("sendonshiftenter", 0);
 	m_SendOnEnter = 					(int)M->GetByte(SRMSGSET_SENDONENTER, SRMSGDEFSET_SENDONENTER);
 	m_SendOnDblEnter = 					(int)M->GetByte("SendOnDblEnter", 0);
-	m_AutoLocaleSupport = 				(int)M->GetByte("al", 1);
+	m_AutoLocaleSupport = 				(int)M->GetByte("al", 0);
 	m_AutoSwitchTabs = 					(int)M->GetByte("autoswitchtabs", 1);
 	m_CutContactNameTo = 				(int) DBGetContactSettingWord(NULL, SRMSGMOD_T, "cut_at", 15);
 	m_CutContactNameOnTabs = 			(int)M->GetByte("cuttitle", 0);
@@ -293,7 +295,6 @@ void CGlobals::reloadSettings(bool fReloadSkins)
 	m_HideOnClose =						(int) M->GetByte("hideonclose", 0);
 	m_AllowTab =						(int) M->GetByte("tabmode", 0);
 
-	m_WarnOnClose = 					(int)M->GetByte("warnonexit", 0);
 	m_FlashOnClist = 					(int)M->GetByte("flashcl", 0);
 	m_AlwaysFullToolbarWidth = 			(int)M->GetByte("alwaysfulltoolbar", 1);
 	m_LimitStaticAvatarHeight = 		(int)M->GetDword("avatarheight", 96);
@@ -527,7 +528,7 @@ int CGlobals::DBSettingChanged(WPARAM wParam, LPARAM lParam)
 
 	if(wParam == 0 && !lstrcmpA(setting, "Enabled")) {
 		if(PluginConfig.g_MetaContactsAvail && !lstrcmpA(cws->szModule, PluginConfig.szMetaName)) { 		// catch the disabled meta contacts
-			PluginConfig.bMetaEnabled = M->GetByte(0, PluginConfig.szMetaName, "Enabled", 0);
+			PluginConfig.bMetaEnabled = abs(M->GetByte(0, PluginConfig.szMetaName, "Enabled", -1));
 			cacheUpdateMetaChanged();
 		}
 	}
@@ -620,85 +621,105 @@ int CGlobals::PreshutdownSendRecv(WPARAM wParam, LPARAM lParam)
 	HANDLE 	hContact;
 	int		i;
 
-	if (PluginConfig.m_chat_enabled)
-		::Chat_PreShutdown();
+#if defined(__USE_EX_HANDLERS)
+	__try {
+#endif
+		if (PluginConfig.m_chat_enabled)
+			::Chat_PreShutdown();
 
-	::TN_ModuleDeInit();
+		::TN_ModuleDeInit();
 
-	while(pFirstContainer){
-		if (PluginConfig.m_HideOnClose)
-			PluginConfig.m_HideOnClose = FALSE;
-		::SendMessage(pFirstContainer->hwnd, WM_CLOSE, 0, 1);
+		while(pFirstContainer){
+			if (PluginConfig.m_HideOnClose)
+				PluginConfig.m_HideOnClose = FALSE;
+			::SendMessage(pFirstContainer->hwnd, WM_CLOSE, 0, 1);
+		}
+
+		hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
+		while (hContact) {
+			M->WriteDword(hContact, SRMSGMOD_T, "messagecount", 0);
+			hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM) hContact, 0);
+		}
+
+		for(i = 0; i < SERVICE_LAST; i++) {
+			if(PluginConfig.hSvc[i])
+				DestroyServiceFunction(PluginConfig.hSvc[i]);
+		}
+
+		::SI_DeinitStatusIcons();
+		::CB_DeInitCustomButtons();
+		/*
+		 * the event API
+		 */
+
+		DestroyHookableEvent(PluginConfig.m_event_MsgWin);
+		DestroyHookableEvent(PluginConfig.m_event_MsgPopup);
+
+		::NEN_WriteOptions(&nen_options);
+		::DestroyWindow(PluginConfig.g_hwndHotkeyHandler);
+
+		::UnregisterClass(_T("TSStatusBarClass"), g_hInst);
+		::UnregisterClass(_T("SideBarClass"), g_hInst);
+		::UnregisterClassA("TSTabCtrlClass", g_hInst);
+		::UnregisterClass(_T("RichEditTipClass"), g_hInst);
+		::UnregisterClass(_T("TSHK"), g_hInst);
+#if defined(__USE_EX_HANDLERS)
 	}
-
-	hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
-	while (hContact) {
-		M->WriteDword(hContact, SRMSGMOD_T, "messagecount", 0);
-		hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM) hContact, 0);
+	__except(CGlobals::Ex_ShowDialog(GetExceptionInformation(), __FILE__, __LINE__, L"SHUTDOWN_STAGE2", false)) {
+		return(0);
 	}
-
-	for(i = 0; i < SERVICE_LAST; i++) {
-		if(PluginConfig.hSvc[i])
-			DestroyServiceFunction(PluginConfig.hSvc[i]);
-	}
-
-	::SI_DeinitStatusIcons();
-	::CB_DeInitCustomButtons();
-	/*
-	 * the event API
-	 */
-
-	DestroyHookableEvent(PluginConfig.m_event_MsgWin);
-	DestroyHookableEvent(PluginConfig.m_event_MsgPopup);
-
-	::NEN_WriteOptions(&nen_options);
-	::DestroyWindow(PluginConfig.g_hwndHotkeyHandler);
-
-	::UnregisterClass(_T("TSStatusBarClass"), g_hInst);
-	::UnregisterClass(_T("SideBarClass"), g_hInst);
-	::UnregisterClassA("TSTabCtrlClass", g_hInst);
-	::UnregisterClass(_T("RichEditTipClass"), g_hInst);
-	::UnregisterClass(_T("TSHK"), g_hInst);
+#endif
 	return 0;
 }
 
 int CGlobals::OkToExit(WPARAM wParam, LPARAM lParam)
 {
-	::CreateSystrayIcon(0);
-	::CreateTrayMenus(0);
-
-	CMimAPI::m_shutDown = true;
-	UnhookEvent(m_event_EventAdded);
-	UnhookEvent(m_event_Dispatch);
-	UnhookEvent(m_event_PrebuildMenu);
-	UnhookEvent(m_event_SettingChanged);
-	UnhookEvent(m_event_ContactDeleted);
 	UnhookEvent(m_event_OkToExit);
-	UnhookEvent(m_event_AvatarChanged);
-	UnhookEvent(m_event_MyAvatarChanged);
-	UnhookEvent(m_event_ProtoAck);
-	UnhookEvent(m_event_TypingEvent);
-	UnhookEvent(m_event_FontsChanged);
-	UnhookEvent(m_event_IcoLibChanged);
-	UnhookEvent(m_event_IconsChanged);
+#if defined(__USE_EX_HANDLERS)
+	__try {
+#endif
+		::CreateSystrayIcon(0);
+		::CreateTrayMenus(0);
 
-	if(m_event_SmileyAdd)
-		UnhookEvent(m_event_SmileyAdd);
+		CWarning::destroyAll();
 
-	if(m_event_IEView)
-		UnhookEvent(m_event_IEView);
+		CMimAPI::m_shutDown = true;
+		UnhookEvent(m_event_EventAdded);
+		UnhookEvent(m_event_Dispatch);
+		UnhookEvent(m_event_PrebuildMenu);
+		UnhookEvent(m_event_SettingChanged);
+		UnhookEvent(m_event_ContactDeleted);
+		UnhookEvent(m_event_AvatarChanged);
+		UnhookEvent(m_event_MyAvatarChanged);
+		UnhookEvent(m_event_ProtoAck);
+		UnhookEvent(m_event_TypingEvent);
+		UnhookEvent(m_event_FontsChanged);
+		UnhookEvent(m_event_IcoLibChanged);
+		UnhookEvent(m_event_IconsChanged);
 
-	if(m_event_FoldersChanged)
-		UnhookEvent(m_event_FoldersChanged);
+		if(m_event_SmileyAdd)
+			UnhookEvent(m_event_SmileyAdd);
 
-	if(m_event_ME_MC_FORCESEND) {
-		UnhookEvent(m_event_ME_MC_FORCESEND);
-		UnhookEvent(m_event_ME_MC_SUBCONTACTSCHANGED);
-		UnhookEvent(m_event_ME_MC_UNFORCESEND);
+		if(m_event_IEView)
+			UnhookEvent(m_event_IEView);
+
+		if(m_event_FoldersChanged)
+			UnhookEvent(m_event_FoldersChanged);
+
+		if(m_event_ME_MC_FORCESEND) {
+			UnhookEvent(m_event_ME_MC_FORCESEND);
+			UnhookEvent(m_event_ME_MC_SUBCONTACTSCHANGED);
+			UnhookEvent(m_event_ME_MC_UNFORCESEND);
+		}
+		::ModPlus_PreShutdown(wParam, lParam);
+		PluginConfig.globalContainerSettings.fPrivate = false;
+		::DBWriteContactSettingBlob(0, SRMSGMOD_T, CNT_KEYNAME, &PluginConfig.globalContainerSettings, sizeof(TContainerSettings));
+#if defined(__USE_EX_HANDLERS)
 	}
-	::ModPlus_PreShutdown(wParam, lParam);
-	PluginConfig.globalContainerSettings.fPrivate = false;
-	::DBWriteContactSettingBlob(0, SRMSGMOD_T, CNT_KEYNAME, &PluginConfig.globalContainerSettings, sizeof(TContainerSettings));
+	__except(CGlobals::Ex_ShowDialog(GetExceptionInformation(), __FILE__, __LINE__, L"SHUTDOWN_STAGE1", false)) {
+		return(0);
+	}
+#endif
 	return 0;
 }
 
@@ -846,6 +867,24 @@ void CGlobals::cacheUpdateMetaChanged()
 	}
 }
 
+/**
+ * on Windows 7, when using new task bar features (grouping mode and per tab
+ * previews), autoswitching does not work relieably, so it is disabled.
+ *
+ * @return: true if configuration dictates autoswitch
+ */
+bool CGlobals::haveAutoSwitch()
+{
+	if(m_bIsWin7) {
+		if(m_useAeroPeek && !CSkin::m_skinEnabled)
+			return(false);
+	}
+	return(m_AutoSwitchTabs ? true : false);
+}
+/**
+ * exception handling - copy error message to clip board
+ * @param hWnd: 	window handle of the edit control containing the error message
+ */
 void CGlobals::Ex_CopyEditToClipboard(HWND hWnd)
 {
 	SendMessage(hWnd, EM_SETSEL, 0, 65535L);
@@ -875,7 +914,9 @@ INT_PTR CALLBACK CGlobals::Ex_DlgProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LP
 #endif
 				SetDlgItemTextA(hwndDlg, IDC_EXCEPTION_DETAILS, szBuffer);
 				SetFocus(GetDlgItem(hwndDlg, IDC_EXCEPTION_DETAILS));
-				SendDlgItemMessage(hwndDlg, IDC_EXCEPTION_DETAILS, WM_SETFONT, (WPARAM)GetStockObject(ANSI_FIXED_FONT), 0);
+				SendDlgItemMessage(hwndDlg, IDC_EXCEPTION_DETAILS, WM_SETFONT, (WPARAM)GetStockObject(OEM_FIXED_FONT), 0);
+				SetDlgItemTextW(hwndDlg, IDC_EX_REASON, m_exReason);
+				Utils::enableDlgControl(hwndDlg, IDOK, m_exAllowContinue ? TRUE : FALSE);
 			}
 			break;
 
@@ -902,7 +943,7 @@ void CGlobals::Ex_Handler()
 		ExitProcess(1);
 }
 
-int CGlobals::Ex_ShowDialog(EXCEPTION_POINTERS *ep, const char *szFile, int line)
+int CGlobals::Ex_ShowDialog(EXCEPTION_POINTERS *ep, const char *szFile, int line, wchar_t* szReason, bool fAllowContinue)
 {
 	char	szDrive[MAX_PATH], szDir[MAX_PATH], szName[MAX_PATH], szExt[MAX_PATH];
 
@@ -911,8 +952,11 @@ int CGlobals::Ex_ShowDialog(EXCEPTION_POINTERS *ep, const char *szFile, int line
 	memcpy(&m_exCtx, ep->ContextRecord, sizeof(CONTEXT));
 
 	_snprintf(m_exSzFile, MAX_PATH, "%s%s", szName, szExt);
+	mir_sntprintf(m_exReason, 256, L"An application error has occured: %s", szReason);
 	m_exLine = line;
 	m_exLastResult = DialogBoxParam(g_hInst, MAKEINTRESOURCE(IDD_EXCEPTION), 0, CGlobals::Ex_DlgProc, 0);
-
+	m_exAllowContinue = fAllowContinue;
+	if(IDCANCEL == m_exLastResult)
+		ExitProcess(1);
 	return 1;
 }

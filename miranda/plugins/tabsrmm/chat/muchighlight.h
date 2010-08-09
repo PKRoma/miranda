@@ -39,7 +39,7 @@ public:
 	enum {
 		MATCH_TEXT = 1,
 		MATCH_NICKNAME = 2,
-		MATCH_UIN = 4
+		MATCH_UIN = 4,
 	};
 
 	CMUCHighlight()
@@ -77,6 +77,7 @@ private:
 	TCHAR*                                 	m_NickPatternString;
 	TCHAR*                                 	m_TextPatternString;
 	bool									m_Valid;
+	bool									m_fHighlightMe;
 };
 
 struct THighLightEdit
