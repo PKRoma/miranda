@@ -25,7 +25,7 @@ UNICODE done
 */
 #include "commonheaders.h"
 #include <m_icq.h>
-#include <m_timezones.h>
+#include "m_timezones.h"
 
 CRITICAL_SECTION cs_extcache;
 extern struct CluiData g_CluiData;
@@ -470,7 +470,6 @@ static LONG TZ_GetTimeZoneOffset(REG_TZI_FORMAT *tzi)
 static void TZ_LoadTimeZone(HANDLE hContact, struct ExtraCache *c, const char *szProto)
 {
 #if defined(_UNICODE)						// real time zone stuff only for Win 2000 or later
-	DBVARIANT	dbv;
 	if(ServiceExists("TZ/GetInfoByContact")) {
 		MIM_TIMEZONE  *tzi;
 		tzi = (MIM_TIMEZONE *)CallService("TZ/GetInfoByContact", (WPARAM)hContact, 0);
