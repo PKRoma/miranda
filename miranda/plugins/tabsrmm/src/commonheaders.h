@@ -43,7 +43,7 @@
 
 #define __USE_EX_HANDLERS 1
 
-//#define __DELAYED_FOR_3_1 1							// features not going into 3.0.x and will be completed later
+#define __DELAYED_FOR_3_1 1							// features not going into 3.0.x and will be completed later
 
 #if !defined __DELAYED_FOR_3_1
 	#define __FEAT_EXP_AUTOSPLITTER 1
