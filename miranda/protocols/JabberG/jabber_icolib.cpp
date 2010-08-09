@@ -32,7 +32,7 @@ Last change by : $Author$
 
 #include <m_icolib.h>
 
-#include "sdk/m_cluiframes.h"
+#include <m_cluiframes.h>
 
 #define IDI_ONLINE                      104
 #define IDI_OFFLINE                     105
@@ -578,7 +578,7 @@ BOOL CJabberProto::DBCheckIsTransportedContact(const TCHAR* jid, HANDLE hContact
 
 	if ( m_lstTransports.getIndex( domain ) == -1 ) {
 		if ( isAgent ) {
-			m_lstTransports.insert( mir_tstrdup(domain) ); 
+			m_lstTransports.insert( mir_tstrdup(domain) );
 			JSetByte( hContact, "IsTransport", 1 );
 	}	}
 
@@ -610,8 +610,8 @@ void CJabberProto::CheckAllContactsAreTransported()
 static TIconListItem sharedIconList[] =
 {
 	{   LPGEN("Privacy Lists"),         "privacylists",     IDI_PRIVACY_LISTS,      NULL },
-	{   LPGEN("Bookmarks"),             "bookmarks",        IDI_BOOKMARKS,          NULL }, 
-	{   LPGEN("Notes"),                 "notes",            IDI_NOTES,              NULL }, 
+	{   LPGEN("Bookmarks"),             "bookmarks",        IDI_BOOKMARKS,          NULL },
+	{   LPGEN("Notes"),                 "notes",            IDI_NOTES,              NULL },
 	{   LPGEN("Multi-User Conference"), "group",            IDI_GROUP,              NULL },
 	{   LPGEN("Agents list"),           "Agents",           IDI_AGENTS,             NULL },
 
@@ -626,7 +626,7 @@ static TIconListItem sharedIconList[] =
 	{   LPGEN("Add to roster"),         "addroster",        IDI_ADDROSTER,          NULL },
 	{   LPGEN("Login/logout"),          "trlogonoff",       IDI_LOGIN,              NULL },
 	{   LPGEN("Resolve nicks"),         "trresolve",        IDI_REFRESH,            NULL },
-	{   LPGEN("Send note"),             "sendnote",         IDI_SEND_NOTE,          NULL }, 
+	{   LPGEN("Send note"),             "sendnote",         IDI_SEND_NOTE,          NULL },
 	{   LPGEN("Service Discovery"),     "servicediscovery", IDI_SERVICE_DISCOVERY,  NULL },
 	{   LPGEN("AdHoc Command"),         "adhoc",            IDI_COMMAND,            NULL },
 	{   LPGEN("XML Console"),           "xmlconsole",       IDI_CONSOLE,            NULL },
@@ -678,7 +678,7 @@ static void sttProcessIcons( int iAmount )
 	for ( int i = 0; i < iAmount; i++ ) {
 		char szSettingName[100], szSectionName[100];
 
-		mir_snprintf( szSettingName, sizeof( szSettingName ), "%s_%s", 
+		mir_snprintf( szSettingName, sizeof( szSettingName ), "%s_%s",
 			GLOBAL_SETTING_PREFIX, sharedIconList[i].szName);
 
 		if ( sharedIconList[i].szSection ) {
