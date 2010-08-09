@@ -33,7 +33,7 @@ Last change by : $Author$
 #include <m_icolib.h>
 #include <m_fontservice.h>
 
-#include "sdk/m_cluiframes.h"
+#include <m_cluiframes.h>
 
 #include "sdk/m_proto_listeningto.h"
 #include "sdk/m_skin_eng.h"
@@ -418,7 +418,7 @@ void CPepService::Publish()
 			<< XCHILD( _T("publish")) << XATTR( _T("node"), m_node )
 				<< XCHILD( _T("item")) << XATTR( _T("id"), _T("current")));
 	m_proto->m_ThreadInfo->send( iq );
-	
+
 	m_wasPublished = TRUE;
 }
 
@@ -571,7 +571,7 @@ struct
 	{ LPGENT("Excited"),      "excited"       },
 	{ LPGENT("Flirtatious"),  "flirtatious"   },
 	{ LPGENT("Frustrated"),   "frustrated"    },
-	{ LPGENT("Grateful"),     "grateful"      }, 
+	{ LPGENT("Grateful"),     "grateful"      },
 	{ LPGENT("Grieving"),     "grieving"      },
 	{ LPGENT("Grumpy"),       "grumpy"        },
 	{ LPGENT("Guilty"),       "guilty"        },
@@ -1067,7 +1067,7 @@ void CPepActivity::InitGui()
 			m_icons.RegisterIcon(g_arrActivities[i].szFirst, szFile, g_arrActivities[i].iconid, szSection, TranslateTS(g_arrActivities[i].szTitle));
 		if (g_arrActivities[i].szSecond)
 			m_icons.RegisterIcon(g_arrActivities[i].szSecond, szFile, g_arrActivities[i].iconid, szSection, TranslateTS(g_arrActivities[i].szTitle));}
-			
+
 }
 
 void CPepActivity::ProcessItems(const TCHAR *from, HXML itemsNode)
@@ -1143,7 +1143,7 @@ void CPepActivity::SetExtraIcon(HANDLE hContact, char *szActivity)
 {
 	if (hExtraActivity != NULL)
 	{
-		ExtraIcon_SetIcon(hExtraActivity, hContact, 
+		ExtraIcon_SetIcon(hExtraActivity, hContact,
 						  szActivity == NULL ? NULL : m_icons.GetIcolibName(szActivity));
 	}
 	else
