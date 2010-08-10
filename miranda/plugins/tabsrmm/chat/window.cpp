@@ -881,13 +881,13 @@ static LRESULT CALLBACK MessageSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, 
 				return TRUE;
 			}
 			if (wParam == VK_TAB && !isCtrl && !isShift) {    //tab-autocomplete
-				int 	iLen, end, topicStart;
-				BOOL 	isTopic = FALSE;
-				BOOL 	isRoom = FALSE;
-				TCHAR* 	pszText = NULL;
-				GETTEXTEX gt = {0};
-				LRESULT lResult = (LRESULT)SendMessage(hwnd, EM_GETSEL, (WPARAM)NULL, (LPARAM)NULL);
-				bool	fCompleted = false;
+				int 		iLen, end, topicStart;
+				BOOL 		isTopic = FALSE;
+				BOOL 		isRoom = FALSE;
+				wchar_t*	pszText = NULL;
+				GETTEXTEX	gt = {0};
+				LRESULT		lResult = (LRESULT)SendMessage(hwnd, EM_GETSEL, (WPARAM)NULL, (LPARAM)NULL);
+				bool		fCompleted = false;
 
 				SendMessage(hwnd, WM_SETREDRAW, FALSE, 0);
 				start = LOWORD(lResult);
@@ -895,34 +895,40 @@ static LRESULT CALLBACK MessageSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, 
 				SendMessage(hwnd, EM_SETSEL, end, end);
 
 				gt.codepage = 1200;
-				iLen = SendMessage(hwnd, EM_GETTEXTLENGTHEX, (WPARAM)&gt, (LPARAM)NULL);
-				if (iLen >0) {
-					TCHAR *pszName = NULL;
-					pszText = (TCHAR *)mir_alloc(iLen + 100 * sizeof(TCHAR));
-					gt.cb = iLen + 99 * sizeof(TCHAR);
+				gt.flags = GTL_DEFAULT | GTL_PRECISE;
+
+				iLen = SendMessage(hwnd, EM_GETTEXTLENGTHEX, (WPARAM)&gt, (LPARAM)0);
+				if (iLen > 0) {
+					wchar_t*	pszName = NULL;
+					pszText = reinterpret_cast<wchar_t*>(Utils::safeMirCalloc((iLen + 10) * sizeof(wchar_t)));
 					gt.flags = GT_DEFAULT;
+					gt.cb = (iLen + 9) * sizeof(wchar_t);
 
 					SendMessage(hwnd, EM_GETTEXTEX, (WPARAM)&gt, (LPARAM)pszText);
-					if(start > 1 && pszText[start-1] == ' ' && pszText[start-2] == ':') {
+					
+					if(start > 1 && pszText[start-1] == ' ' && pszText[start-2] == ':')
 						start--;
-					}
-					while ( start >0 && pszText[start-1] != ' ' && pszText[start-1] != 13 && pszText[start-1] != VK_TAB)
+
+					while( start > 0 && pszText[start-1] != ' ' && pszText[start-1] != 13 && pszText[start-1] != VK_TAB)
 						start--;
+					
 					while (end < iLen && pszText[end] != ' ' && pszText[end] != 13 && pszText[end-1] != VK_TAB)
 						end ++;
-					if (pszText[start] == '#') {
+
+					if(pszText[start] == '#')
 						isRoom = TRUE;
-					} else {
+					else {
 						topicStart = (int)start;
 						while ( topicStart >0 && (pszText[topicStart-1] == ' ' || pszText[topicStart-1] == 13 || pszText[topicStart-1] == VK_TAB))
 							topicStart--;
-						if (topicStart > 5 && _tcsstr(&pszText[topicStart-6], _T("/topic")) == &pszText[topicStart-6]) {
+						if (topicStart > 5 && _tcsstr(&pszText[topicStart-6], _T("/topic")) == &pszText[topicStart-6])
 							isTopic = TRUE;
-						}
 					}
 					if (dat->szSearchQuery == NULL) {
-						dat->szSearchQuery = (TCHAR *)mir_alloc( sizeof(TCHAR)*( end-start+1 ));
-						lstrcpyn( dat->szSearchQuery, pszText + start, (int)(end - start + 1L));
+						size_t len = (end - start) + 1;
+						dat->szSearchQuery = reinterpret_cast<wchar_t*>(Utils::safeMirAlloc(sizeof(wchar_t) * len));
+						wcsncpy( dat->szSearchQuery, pszText + start, len);
+						dat->szSearchQuery[len - 1] = 0;
 						dat->szSearchResult = mir_tstrdup(dat->szSearchQuery);
 						dat->lastSession = NULL;
 					}
@@ -930,17 +936,16 @@ static LRESULT CALLBACK MessageSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, 
 						pszName = Parentsi->ptszTopic;
 					} else if (isRoom) {
 						dat->lastSession = SM_FindSessionAutoComplete(Parentsi->pszModule, Parentsi, dat->lastSession, dat->szSearchQuery, dat->szSearchResult);
-						if (dat->lastSession != NULL) {
+						if (dat->lastSession != NULL)
 							pszName = dat->lastSession->ptszName;
-						}
-					} else {
+					} else
 						pszName = UM_FindUserAutoComplete(Parentsi->pUsers, dat->szSearchQuery, dat->szSearchResult);
-					}
+
 					mir_free(pszText);
 					pszText = NULL;
 					mir_free(dat->szSearchResult);
-					dat->szSearchResult = NULL;
-					if (pszName == NULL) {
+					dat->szSearchResult = 0;
+					if (pszName == 0) {
 						if ((int)end != (int)start) {
 							SendMessage(hwnd, EM_SETSEL, start, end);
 							SendMessage(hwnd, EM_REPLACESEL, FALSE, (LPARAM) dat->szSearchQuery);
@@ -948,18 +953,20 @@ static LRESULT CALLBACK MessageSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, 
 						mir_free(dat->szSearchQuery);
 						dat->szSearchQuery = NULL;
 					} else {
+						pszText = 0;
 						dat->szSearchResult = mir_tstrdup(pszName);
 						if ((int)end != (int)start) {
 							if (!isRoom && !isTopic && g_Settings.AddColonToAutoComplete && start == 0) {
-								pszText = (TCHAR *)mir_alloc((lstrlen(pszName) + 4) * sizeof(TCHAR));
-								_tcscpy(pszText, pszName);
-								_tcscat(pszText, _T(": "));
+								pszText = reinterpret_cast<wchar_t*>(Utils::safeMirAlloc((wcslen(pszName) + 4) * sizeof(wchar_t)));
+								wcscpy(pszText, pszName);
+								wcscat(pszText, L": ");
 								pszName = pszText;
 							}
 							SendMessage(hwnd, EM_SETSEL, start, end);
-							SendMessage(hwnd, EM_REPLACESEL, FALSE, (LPARAM) pszName);
+							SendMessage(hwnd, EM_REPLACESEL, FALSE, (LPARAM)pszName);
 						}
-						mir_free(pszText);
+						if(pszText)
+							mir_free(pszText);
 						fCompleted = true;
 					}
 				}
