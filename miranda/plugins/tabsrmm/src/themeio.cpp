@@ -73,7 +73,7 @@ static struct _tagExtSettings_v5 {
 	char*	szDbModule;
 	char*	szDbSetting;
 	DWORD	dwDef;
-} _extSettings_v5[17] = {
+} _extSettings_v5[18] = {
 		"CommonClrs", "IP_High", FONTMODULE, "ipfieldsbgHigh", 0xf0f0f0,
 		"CommonClrs", "IP_Low", FONTMODULE, "ipfieldsbg", 0x62caff,
 		"CommonClrs", "TB_High", FONTMODULE, "tbBgHigh", 0,
@@ -92,7 +92,8 @@ static struct _tagExtSettings_v5 {
 		"Colored Tabs", "NormalBG", SRMSGMOD_T, "tab_bg_normal", 0xf0f0f0,
 		"Colored Tabs", "ActiveBG", SRMSGMOD_T, "tab_bg_active", 0xf0f0f0,
 		"Colored Tabs", "HottrackBG", SRMSGMOD_T, "tab_bg_hottrack", 0xf0f0f0,
-		"Colored Tabs", "UnreadBG", SRMSGMOD_T, "tab_bg_unread", 0xf0f0f0
+		"Colored Tabs", "UnreadBG", SRMSGMOD_T, "tab_bg_unread", 0xf0f0f0,
+		"Chat", "Background", FONTMODULE, SRMSGSET_BKGCOLOUR_MUC, SRMSGDEFSET_BKGCOLOUR
 };
 
 /*

@@ -764,8 +764,6 @@ LRESULT TSAPI DM_ContainerCmdHandler(TContainerData *pContainer, UINT cmd, WPARA
 		 * commands from the message log popup will be routed to the
 		 * message log menu handler
 		 */
-		case ID_MESSAGELOG_EXPORTMESSAGELOGSETTINGS:
-		case ID_MESSAGELOG_IMPORTMESSAGELOGSETTINGS:
 		case ID_MESSAGELOGSETTINGS_FORTHISCONTACT:
 		case ID_MESSAGELOGSETTINGS_GLOBAL: {
 			struct TWindowData *dat = (struct TWindowData *)GetWindowLongPtr(pContainer->hwndActive, GWLP_USERDATA);
@@ -807,7 +805,7 @@ void TSAPI DM_InitRichEdit(TWindowData *dat)
 	ZeroMemory(&cf2, sizeof(CHARFORMAT2A));
 
 	dat->inputbg = fIsChat ? M->GetDword(FONTMODULE, "inputbg", SRMSGDEFSET_BKGCOLOUR) : dat->pContainer->theme.inputbg;
-	colour = fIsChat ? M->GetDword(FONTMODULE, SRMSGSET_BKGCOLOUR, SRMSGDEFSET_BKGCOLOUR) : dat->pContainer->theme.inbg;
+	colour = fIsChat ? M->GetDword(FONTMODULE, SRMSGSET_BKGCOLOUR_MUC, SRMSGDEFSET_BKGCOLOUR) : dat->pContainer->theme.bg;
 
 	if(!fIsChat) {
 		if (GetWindowTextLengthA(hwndEdit) > 0)
@@ -1523,8 +1521,10 @@ void TSAPI DM_OptionsApplied(TWindowData *dat, WPARAM wParam, LPARAM lParam)
 	if (wParam == 1)      // 1 means, the message came from message log options page, so reload the defaults...
 		LoadLocalFlags(hwndDlg, dat);
 
-	if (!(dat->pContainer->theme.isPrivate))
+	if (!(dat->pContainer->theme.isPrivate)) {
 		LoadThemeDefaults(dat->pContainer);
+		dat->dwFlags = dat->pContainer->theme.dwFlags;
+	}
 
 	LoadTimeZone(dat);
 

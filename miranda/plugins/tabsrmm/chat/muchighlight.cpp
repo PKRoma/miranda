@@ -59,6 +59,8 @@ void CMUCHighlight::init()
 	DBVARIANT dbv = {0};
 	char *p = 0;
 
+	void *_p = Utils::safeAlloc(0);
+
 	if(m_fInitialized)
 		cleanup();							// clean up first, if we were already initialized
 
@@ -66,6 +68,7 @@ void CMUCHighlight::init()
 
 	if(0 == M->GetTString(0, "Chat", "HighlightWords", &dbv)) {
 		m_TextPatternString = dbv.ptszVal;
+		_wsetlocale(LC_ALL, L"");
 		wcslwr(m_TextPatternString);
 	}
 
@@ -73,12 +76,13 @@ void CMUCHighlight::init()
 		m_NickPatternString = dbv.ptszVal;
 
 	m_dwFlags = M->GetByte("Chat", "HighlightEnabled", MATCH_TEXT);
+	m_fHighlightMe = (M->GetByte("Chat", "HighlightMe", 1) ? true : false);
 
 	__try {
 		tokenize(m_TextPatternString, m_TextPatterns, m_iTextPatterns);
 		tokenize(m_NickPatternString, m_NickPatterns, m_iNickPatterns);
 	}
-	__except(CGlobals::Ex_ShowDialog(GetExceptionInformation(), __FILE__, __LINE__)) {
+	__except(CGlobals::Ex_ShowDialog(GetExceptionInformation(), __FILE__, __LINE__, L"MUC_TOKENIZER_ERROR", false)) {
 		m_Valid = false;
 	}
 }
@@ -146,9 +150,15 @@ int CMUCHighlight::match(const GCEVENT *pgce, const SESSION_INFO *psi, DWORD dwF
 			TCHAR  	*p1;
 			UINT	i = 0;
 
-			TCHAR	*tszMe = ((psi && psi->pMe) ? mir_tstrdup(psi->pMe->pszNick) : 0);
-			if(tszMe)
+			//TCHAR	*tszMe = ((psi && psi->pMe) ? mir_tstrdup(psi->pMe->pszNick) : 0);
+			TCHAR	*tszMe = ((psi && psi->pMe) ? mir_tstrdup(L"Night:Wish") : 0);
+			if(tszMe) {
+				_wsetlocale(LC_ALL, L"");
 				_tcslwr(tszMe);
+			}
+
+			if(m_fHighlightMe && tszMe)
+				result = wcsstr(p, tszMe) ? MATCH_TEXT : 0;
 
 			while(p && !result) {
 				while(*p && (*p == ' ' || *p == ',' || *p == '.' || *p == ':' || *p == ';' || *p == '?' || *p == '!'))
@@ -164,12 +174,8 @@ int CMUCHighlight::match(const GCEVENT *pgce, const SESSION_INFO *psi, DWORD dwF
 					else
 						p1 = 0;
 
-					for(i = 0; i < m_iTextPatterns && !result; i++) {
-						if(*(m_TextPatterns[i]) == '%' && *((m_TextPatterns[i]) + 1)  == 'm' && tszMe) {
-							result = wildmatch(tszMe, p) ? MATCH_TEXT : 0;
-						} else
-							result = wildmatch(m_TextPatterns[i], p) ? MATCH_TEXT : 0;
-					}
+					for(i = 0; i < m_iTextPatterns && !result; i++)
+						result = wildmatch(m_TextPatterns[i], p) ? MATCH_TEXT : 0;
 
 					if(p1) {
 						*p1 = ' ';
@@ -193,7 +199,8 @@ int CMUCHighlight::match(const GCEVENT *pgce, const SESSION_INFO *psi, DWORD dwF
 					::SendMessage(psi->dat->pContainer->hwndStatus, SB_SETTEXT, 0, (LPARAM)psi->dat->szStatusBar);
 			}
 	#endif
-			mir_free(tszMe);
+			if(tszMe)
+				mir_free(tszMe);
 		}
 
 		/*
@@ -210,7 +217,7 @@ int CMUCHighlight::match(const GCEVENT *pgce, const SESSION_INFO *psi, DWORD dwF
 
 		return(result | nResult);
 	}
-	__except(CGlobals::Ex_ShowDialog(GetExceptionInformation(), __FILE__, __LINE__)) {
+	__except(CGlobals::Ex_ShowDialog(GetExceptionInformation(), __FILE__, __LINE__, L"MUC_HIGHLIGHT_EXCEPTION", false)) {
 		m_Valid = false;
 		return(0);
 	}
@@ -281,6 +288,7 @@ INT_PTR CALLBACK CMUCHighlight::dlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, L
 			::CheckDlgButton(hwndDlg, IDC_HIGHLIGHTNICKENABLE, dwFlags & MATCH_NICKNAME ? BST_CHECKED : BST_UNCHECKED);
 			::CheckDlgButton(hwndDlg, IDC_HIGHLIGHTNICKUID, dwFlags & MATCH_UIN ? BST_CHECKED : BST_UNCHECKED);
 			::CheckDlgButton(hwndDlg, IDC_HIGHLIGHTTEXTENABLE, dwFlags & MATCH_TEXT ? BST_CHECKED : BST_UNCHECKED);
+			::CheckDlgButton(hwndDlg, IDC_HIGHLIGHTME, M->GetByte("Chat", "HighlightMe", 1) ? BST_CHECKED : BST_UNCHECKED);
 
 			::SendMessageW(hwndDlg, WM_USER + 100, 0, 0);
 			return(TRUE);
@@ -337,6 +345,7 @@ INT_PTR CALLBACK CMUCHighlight::dlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, L
 								dwFlags |= (::IsDlgButtonChecked(hwndDlg, IDC_HIGHLIGHTNICKUID) ? MATCH_UIN : 0);
 
 							M->WriteByte("Chat", "HighlightEnabled", dwFlags);
+							M->WriteByte("Chat", "HighlightMe", ::IsDlgButtonChecked(hwndDlg, IDC_HIGHLIGHTME) ? 1 : 0);
 							g_Settings.Highlight->init();
 						}
 						return TRUE;

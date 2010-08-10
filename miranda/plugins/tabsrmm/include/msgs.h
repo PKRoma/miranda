@@ -730,6 +730,8 @@ extern const int msgDlgFontCount;
 #define SRMSGSET_SHOWFILES         "ShowFiles"
 #define SRMSGDEFSET_SHOWFILES      1
 #define SRMSGSET_BKGCOLOUR         "BkgColour"
+#define SRMSGSET_BKGCOLOUR_MUC     "BkgColourMUC"
+
 #define SRMSGDEFSET_BKGCOLOUR      RGB(250,250,250)
 //#define SRMSGDEFSET_BKGCOLOUR      GetSysColor(COLOR_WINDOW)
 #define SRMSGDEFSET_BKGINCOLOUR    RGB(245,255,245)

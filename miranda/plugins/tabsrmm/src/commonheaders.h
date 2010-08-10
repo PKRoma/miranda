@@ -41,6 +41,8 @@
 //#define __LOGDEBUG_	1								// log some stuff to %profile_dir%/tabsrmm_debug.log
 //#define __FEAT_DEPRECATED_DYNAMICSWITCHLOGVIEWER 1
 
+#define __USE_EX_HANDLERS 1
+
 #define __DELAYED_FOR_3_1 1							// features not going into 3.0.x and will be completed later
 
 #if !defined __DELAYED_FOR_3_1

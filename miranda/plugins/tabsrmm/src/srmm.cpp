@@ -125,15 +125,25 @@ extern "C" int __declspec(dllexport) Load(PLUGINLINK * link)
 
 extern "C" int __declspec(dllexport) Unload(void)
 {
-	FreeLogFonts();
-	Chat_Unload();
-	int iRet = SplitmsgShutdown();
-	Skin->setupTabCloseBitmap(true);
-	Skin->UnloadAeroTabs();
-	delete Skin;
-	delete sendLater;
-	delete sendQueue;
-	delete M;
+	int iRet;
+#if defined(__USE_EX_HANDLERS)
+	__try {
+#endif
+		FreeLogFonts();
+		Chat_Unload();
+		iRet = SplitmsgShutdown();
+		Skin->setupTabCloseBitmap(true);
+		Skin->UnloadAeroTabs();
+		delete Skin;
+		delete sendLater;
+		delete sendQueue;
+		delete M;
+#if defined(__USE_EX_HANDLERS)
+	}
+	__except(CGlobals::Ex_ShowDialog(GetExceptionInformation(), __FILE__, __LINE__, L"SHUTDOWN_STAGE_UNLOAD", false)) {
+		return(0);
+	}
+#endif
 	return iRet;
 }
 

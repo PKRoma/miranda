@@ -401,7 +401,9 @@ public:
 		WARN_HPP_APICHECK										= 7,
 		WARN_NO_SENDLATER										= 8,
 		WARN_CLOSEWINDOW										= 9,
-		WARN_LAST												= 10
+		WARN_OPTION_CLOSE										= 10,
+		WARN_THEME_OVERWRITE									= 11,
+		WARN_LAST												= 12
 	};
 	/*
 	 * identities for the option trees

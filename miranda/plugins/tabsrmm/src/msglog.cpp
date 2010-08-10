@@ -179,7 +179,6 @@ void TSAPI CacheLogFonts()
 	ReleaseDC(PluginConfig.g_hwndHotkeyHandler, hdc);
 	PluginConfig.hFontCaption = CInfoPanel::m_ipConfig.hFonts[IPFONTCOUNT - 1];
 
-	PluginConfig.crDefault = M->GetDword(FONTMODULE, SRMSGSET_BKGCOLOUR, SRMSGDEFSET_BKGCOLOUR);
 	PluginConfig.crIncoming = M->GetDword(FONTMODULE, "inbg", SRMSGDEFSET_BKGINCOLOUR);
 	PluginConfig.crOutgoing = M->GetDword(FONTMODULE, "outbg", SRMSGDEFSET_BKGOUTCOLOUR);
 	PluginConfig.crStatus = M->GetDword(FONTMODULE, "statbg", SRMSGDEFSET_BKGCOLOUR);

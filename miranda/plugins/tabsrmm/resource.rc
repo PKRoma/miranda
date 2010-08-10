@@ -27,16 +27,16 @@ LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL
 // Dialog
 //
 
-IDD_EXCEPTION DIALOG 0, 0, 370, 131
-STYLE DS_SETFONT | DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
+IDD_EXCEPTION DIALOGEX 0, 0, 370, 131
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "TabSRMM exception"
-FONT 8, "MS Shell Dlg"
+FONT 8, "MS Shell Dlg", 0, 0, 0x0
 BEGIN
     EDITTEXT        IDC_EXCEPTION_DETAILS,7,18,356,60,ES_MULTILINE | ES_READONLY
     DEFPUSHBUTTON   "Copy to clipboard",IDC_COPY_EXCEPTION,108,114,80,14
     PUSHBUTTON      "Continue",IDOK,196,114,80,14
     PUSHBUTTON      "Exit Miranda",IDCANCEL,284,114,80,14
-    LTEXT           "An application error has occurred:",IDC_STATIC,7,5,256,9
+    LTEXT           "",IDC_EX_REASON,7,5,354,9
     LTEXT           "Although the exception was caught and you may continue working with Miranda, you should restart the program as soon as possible. The exception may have damaged internal data structures and can have a serious impact on stability.",IDC_STATIC,7,83,352,26
 END
 
@@ -540,21 +540,25 @@ IDD_OPT_SKIN DIALOGEX 0, 0, 303, 224
 STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    LTEXT           "Static",IDC_SKINROOTFOLDER,10,11,284,33
-    GROUPBOX        "Selected skin",IDC_STATIC,7,49,289,36
-    COMBOBOX        IDC_SKINNAME,12,60,183,14,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
-    PUSHBUTTON      "Rescan",IDC_RESCANSKIN,202,60,90,14
-    CONTROL         "Load this skin on startup",IDC_USESKIN,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,87,188,10
-    PUSHBUTTON      "Reload active skin",IDC_RELOADSKIN,202,103,90,14
-    GROUPBOX        "Skin options",IDC_STATIC,3,125,297,37
+    LTEXT           "Static",IDC_SKINROOTFOLDER,10,8,284,25
+    GROUPBOX        "Selected skin",IDC_STATIC,7,39,289,29
+    COMBOBOX        IDC_SKINNAME,12,50,183,14,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    PUSHBUTTON      "Rescan",IDC_RESCANSKIN,202,50,90,14
+    CONTROL         "Load this skin on startup",IDC_USESKIN,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,72,188,10
+    PUSHBUTTON      "Reload active skin",IDC_RELOADSKIN,202,73,90,14
+    GROUPBOX        "Skin options",IDC_STATIC,3,87,297,37
     CONTROL         "Load fonts and colors provided by skin",IDC_SKIN_LOADFONTS,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,137,281,11
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,99,281,11
     CONTROL         "Load templates provided by skin (use with care, will overwrite your templates)",IDC_SKIN_LOADTEMPLATES,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,148,281,11
-    GROUPBOX        "Skin root folder",IDC_STATIC,7,2,289,45
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,110,281,11
+    GROUPBOX        "Skin root folder",IDC_STATIC,7,0,289,36
     CONTROL         "Help on this",IDC_HELP_GENERAL,"Hyperlink",WS_TABSTOP | 0x1,224,211,67,9
-    CTEXT           "Before you can load or unload a skin, you must close all message windows.",IDC_SKIN_WARN,9,173,283,20
+    CTEXT           "Before you can load or unload a skin, you must close all message windows.",IDC_SKIN_WARN,9,186,283,20
     PUSHBUTTON      "Close open message windows now",IDC_SKIN_CLOSENOW,9,209,174,12
+    GROUPBOX        "Theme support",IDC_STATIC,3,126,297,56
+    LTEXT           "You can export and import all your color and font settings here. This allows you to create a Theme file which can be shared between different profiles or with your buddies.",IDC_STATIC,9,137,286,26
+    PUSHBUTTON      "Export to a file...",IDC_THEMEEXPORT,9,164,139,14
+    PUSHBUTTON      "Import from a file...",IDC_THEMEIMPORT,156,164,139,14
 END
 
 IDD_USERPREFS_FRAME DIALOGEX 0, 0, 326, 316
@@ -683,9 +687,6 @@ BEGIN
             MENUITEM "&Global...",                  ID_MESSAGELOGSETTINGS_GLOBAL
             MENUITEM "&For this Contact...",        ID_MESSAGELOGSETTINGS_FORTHISCONTACT
         END
-        MENUITEM SEPARATOR
-        MENUITEM "&Export Message Log Settings...", ID_MESSAGELOG_EXPORTMESSAGELOGSETTINGS
-        MENUITEM "&Import Message Log Settings...", ID_MESSAGELOG_IMPORTMESSAGELOGSETTINGS
     END
     POPUP "Sendmenu"
     BEGIN
@@ -838,9 +839,6 @@ BEGIN
             MENUITEM "&Global...",                  ID_MESSAGELOGSETTINGS_GLOBAL
             MENUITEM "&For this Contact...",        ID_MESSAGELOGSETTINGS_FORTHISCONTACT
         END
-        MENUITEM SEPARATOR
-        MENUITEM "&Export Message Log Settings...", 40128
-        MENUITEM "&Import Message Log Settings...", 40129
     END
     POPUP "&Container"
     BEGIN
@@ -884,6 +882,10 @@ IDI_FEATURE_ENABLED     ICON                    "res/overlay_enabled.ico"
 #ifdef APSTUDIO_INVOKED
 GUIDELINES DESIGNINFO
 BEGIN
+    IDD_EXCEPTION, DIALOG
+    BEGIN
+    END
+
     IDD_USERPREFS, DIALOG
     BEGIN
     END
@@ -992,7 +994,6 @@ BEGIN
 
     IDD_WARNING, DIALOG
     BEGIN
-        MOCKUP, 0, 100, 0, 0, ".\res\Logo.ico"
         LEFTMARGIN, 7
         RIGHTMARGIN, 291
         TOPMARGIN, 7

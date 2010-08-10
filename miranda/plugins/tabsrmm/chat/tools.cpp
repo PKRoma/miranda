@@ -103,8 +103,10 @@ TCHAR* RemoveFormatting(const TCHAR* pszWord, bool fToLower)
 			i++;
 		}
 	}
-	if(fToLower)
-		_tcslwr(szTemp);
+	if(fToLower) {
+		_wsetlocale(LC_ALL, L"");
+		wcslwr(szTemp);
+	}
 	return (TCHAR*) &szTemp;
 }
 

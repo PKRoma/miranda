@@ -35,11 +35,25 @@ are currently no downloads for it, you'll have to compile it from source.
 			Detailed change log
 			===================
 
-Version 3.0.1.1 - 2010/08/XX
+Version 3.0.1.2 - 2010/08/09
+
+	* finished v5 theme support (improved exporting and importing group
+	  chat settings)
+
+	* re-activated global message log background color and separated it 
+	  from MUC background color (allows for different background colors for
+	  single and group chats)
+
+	* fixed autocomplete (MUC) bugs
+	
+Version 3.0.1.1 - 2010/08/05
 
 	* fixed disappearing code page selection menu.
 	
 	* don't create MUC log files in the main profile directory any longer.
+	
+	* MUC highlight: removed %m for own nick and replaced it with a separate
+	  setting that allows white spaces in own nick names.
 	
 	
 Version 3.0.1.0 - 2010/08/04

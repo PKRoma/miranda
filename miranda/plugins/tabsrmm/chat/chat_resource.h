@@ -71,6 +71,8 @@
 #define IDC_HIGHLIGHTTEXTPATTERN        1093
 #define IDC_ADDHIGHLIGHTTITLE           1093
 #define IDC_ADDHIGHLIGHTEXPLAIN         1094
+#define IDC_HIGHLIGHTNICKUID2           1094
+#define IDC_HIGHLIGHTME                 1094
 #define IDC_ADDHIGHLIGHTEDITLIST        1095
 #define IDC_MUC_OPENLOGBASEDIR          1096
 #define IDC_CHAT_BOLD                   1106

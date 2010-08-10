@@ -81,8 +81,9 @@ struct ColorOptionsList {
  * (GetSysColor(default_color & 0x00ffffff)), not a rgb value.
  */
 static ColorOptionsList _clrs[] = {
-	0, LPGENT("TabSRMM/Group Chats"), LPGENT("Log background"), SRMSGSET_BKGCOLOUR, SRMSGDEFSET_BKGCOLOUR,
+	0, LPGENT("TabSRMM/Group Chats"), LPGENT("Group chat log background"), SRMSGSET_BKGCOLOUR_MUC, SRMSGDEFSET_BKGCOLOUR,
 	1, LPGENT("TabSRMM"), LPGENT("Input area background"), "inputbg", SRMSGDEFSET_BKGCOLOUR,
+	2, LPGENT("TabSRMM"), LPGENT("Log background"), SRMSGSET_BKGCOLOUR, SRMSGDEFSET_BKGCOLOUR,
 	0, LPGENT("TabSRMM/Single Messaging"), LPGENT("Outgoing background"), "outbg", SRMSGDEFSET_BKGOUTCOLOUR,
 	1, LPGENT("TabSRMM/Single Messaging"), LPGENT("Incoming background"), "inbg", SRMSGDEFSET_BKGINCOLOUR,
 	2, LPGENT("TabSRMM/Single Messaging"), LPGENT("Status background"), "statbg", SRMSGDEFSET_BKGCOLOUR,
@@ -808,7 +809,7 @@ void RegisterFontServiceFonts() {
 		fid.deffontsettings.charset = lf.lfCharSet;
 		_tcsncpy(fid.deffontsettings.szFace, lf.lfFaceName, LF_FACESIZE);
 		_tcsncpy(fid.backgroundGroup, _T("TabSRMM/Group Chats"), SIZEOF(fid.backgroundGroup));
-		_tcsncpy(fid.backgroundName, _T("Log background"), SIZEOF(fid.backgroundName));
+		_tcsncpy(fid.backgroundName, _T("Group chat log background"), SIZEOF(fid.backgroundName));
 		if(i == 18 || i == 19)
 			_tcsncpy(fid.backgroundName, _T("Userlist background"), SIZEOF(fid.backgroundName));
 		CallService(MS_FONT_REGISTERT, (WPARAM)&fid, 0);
