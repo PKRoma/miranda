@@ -936,22 +936,23 @@ void CJabberProto::GlobalMenuInit()
 	hkd.cbSize = sizeof(hkd);
 	hkd.pszName = text;
 	hkd.pszService = text;
-	hkd.pszSection = m_szModuleName;	// title!!!!!!!!!!!
+	hkd.ptszSection = m_tszUserName;
+	hkd.dwFlags = HKD_TCHAR;
 
 	strcpy(tDest, "/Groupchat");
-	hkd.pszDescription = "Join conference";
+	hkd.ptszDescription = _T("Join conference");
 	CallService(MS_HOTKEY_REGISTER, 0, (LPARAM)&hkd);
 
 	strcpy(tDest, "/Bookmarks");
-	hkd.pszDescription = "Open bookmarks";
+	hkd.ptszDescription = _T("Open bookmarks");
 	CallService(MS_HOTKEY_REGISTER, 0, (LPARAM)&hkd);
 
 	strcpy(tDest, "/PrivacyLists");
-	hkd.pszDescription = "Privacy lists";
+	hkd.ptszDescription = _T("Privacy lists");
 	CallService(MS_HOTKEY_REGISTER, 0, (LPARAM)&hkd);
 
 	strcpy(tDest, "/ServiceDiscovery");
-	hkd.pszDescription = "Service discovery";
+	hkd.ptszDescription = _T("Service discovery");
 	CallService(MS_HOTKEY_REGISTER, 0, (LPARAM)&hkd);
 }
 
