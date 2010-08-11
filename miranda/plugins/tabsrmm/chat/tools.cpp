@@ -197,7 +197,7 @@ static int ShowPopup(HANDLE hContact, SESSION_INFO* si, HICON hIcon,  char* pszP
 		pd.colorBack = g_Settings.crPUBkgColour;
 		pd.colorText = g_Settings.crPUTextColour;
 	} else {
-		pd.colorBack = M->GetDword(FONTMODULE, SRMSGSET_BKGCOLOUR, SRMSGDEFSET_BKGCOLOUR);
+		pd.colorBack = M->GetDword(FONTMODULE, SRMSGSET_BKGCOLOUR_MUC, SRMSGDEFSET_BKGCOLOUR);
 		pd.colorText = crBkg;
 	}
 
@@ -979,13 +979,14 @@ UINT CreateGCMenu(HWND hwndDlg, HMENU *hMenu, int iIndex, POINT pt, SESSION_INFO
 		mir_free(ptszDescr);
 	}
 
+#if !defined(__DELAYED_FOR_3_1)
 	if (iIndex == 0) {
 		AppendMenu(*hMenu, MF_SEPARATOR, 0, 0);
 		pos = GetMenuItemCount(*hMenu);
 		InsertMenu(*hMenu, pos, MF_BYPOSITION, (UINT_PTR)20020, CTranslator::get(CTranslator::GEN_MUC_MENU_ADDTOHIGHLIGHT));
 		InsertMenu(*hMenu, pos, MF_BYPOSITION, (UINT_PTR)20021, CTranslator::get(CTranslator::GEN_MUC_MENU_EDITHIGHLIGHTLIST));
 	}
-
+#endif
 	if (iIndex == 1 && si->iType != GCW_SERVER && !(si->dwFlags && GC_UNICODE)) {
 		AppendMenu(*hMenu, MF_SEPARATOR, 0, 0);
 		InsertMenu(PluginConfig.g_hMenuEncoding, 1, MF_BYPOSITION | MF_STRING, (UINT_PTR)CP_UTF8, CTranslator::get(CTranslator::GEN_STRING_UTF8));

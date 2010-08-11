@@ -35,6 +35,74 @@ are currently no downloads for it, you'll have to compile it from source.
 			Detailed change log
 			===================
 
+Version 3.0.1.3 - 2010/08/10
+
+	* MUC: added code for case-insensitive highlighting of messages
+	  containing your own nick name.
+
+	* MUC: fixed background color for popups (should now use the correct
+	  color set for the MUC log background).
+
+	* added custom warning messages when importing a theme via 
+	  Customize->Message window skin.
+
+	* fixed wrong 32 pixel icon in the container options dialog. Now using
+	  the message icon (for which we have both 16 and 32 pixel variants).
+	  
+	* avoid creating new windows and event notifications on non-message
+	  events (e.g. file transfers).
+	  
+	  
+Version 3.0.1.2 - 2010/08/09
+
+	* finished v5 theme support (improved exporting and importing group
+	  chat settings)
+
+	* re-activated global message log background color and separated it 
+	  from MUC background color (allows for different background colors for
+	  single and group chats)
+
+	* fixed autocomplete (MUC) bugs
+	
+Version 3.0.1.1 - 2010/08/05
+
+	* fixed disappearing code page selection menu.
+	
+	* don't create MUC log files in the main profile directory any longer.
+	
+	* MUC highlight: removed %m for own nick and replaced it with a separate
+	  setting that allows white spaces in own nick names.
+	
+	
+Version 3.0.1.0 - 2010/08/04
+
+	* disabled some known buggy and incomplete features to get ready for 
+	  3.0 release.
+
+	* set final feature set for version 3 - some less important things are 
+	  pushed back.
+
+	* MUC: disc logging, properly check log base path for trailing backslashes 
+	  when using folders plugin.
+	  
+	* MUC: protect log root folder from being deleted while MIM is running.
+
+
+Version 3.0.0.40 - 2010/07/10
+
+	* various fixes and improvements for Windows 7 task bar support.
+	
+	* option to warn when closing a tab is gone. A replacement has been added which
+	  will show you a warning when you are about to close a window with multiple tabs.
+	  This warning uses a custom warning dialog and can be disabled by checking its 
+	  "Do not show this message again" option.
+	  
+	* fix for auto switching tabs incorrectly focusing tab when creating a new
+	  one in the background.
+	  
+	* fixed crash when forcefully terminating Miranda while a custom warning
+	  dialog is still open.	
+
 Version 3.0.0.39 - 2010/06/24
 
 	* task bar previews: removed placeholders and implemented real previews of
