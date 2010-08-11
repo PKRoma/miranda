@@ -57,9 +57,6 @@ void CMUCHighlight::cleanup()
 void CMUCHighlight::init()
 {
 	DBVARIANT dbv = {0};
-	char *p = 0;
-
-	void *_p = Utils::safeAlloc(0);
 
 	if(m_fInitialized)
 		cleanup();							// clean up first, if we were already initialized
@@ -82,7 +79,7 @@ void CMUCHighlight::init()
 		tokenize(m_TextPatternString, m_TextPatterns, m_iTextPatterns);
 		tokenize(m_NickPatternString, m_NickPatterns, m_iNickPatterns);
 	}
-	__except(CGlobals::Ex_ShowDialog(GetExceptionInformation(), __FILE__, __LINE__, L"MUC_TOKENIZER_ERROR", false)) {
+	__except(CGlobals::Ex_ShowDialog(GetExceptionInformation(), __FILE__, __LINE__, L"MUC_HLT_TOKENIZER", false)) {
 		m_Valid = false;
 	}
 }
@@ -150,11 +147,10 @@ int CMUCHighlight::match(const GCEVENT *pgce, const SESSION_INFO *psi, DWORD dwF
 			TCHAR  	*p1;
 			UINT	i = 0;
 
-			//TCHAR	*tszMe = ((psi && psi->pMe) ? mir_tstrdup(psi->pMe->pszNick) : 0);
-			TCHAR	*tszMe = ((psi && psi->pMe) ? mir_tstrdup(L"Night:Wish") : 0);
+			TCHAR	*tszMe = ((psi && psi->pMe) ? mir_tstrdup(psi->pMe->pszNick) : 0);
 			if(tszMe) {
 				_wsetlocale(LC_ALL, L"");
-				_tcslwr(tszMe);
+				wcslwr(tszMe);
 			}
 
 			if(m_fHighlightMe && tszMe)

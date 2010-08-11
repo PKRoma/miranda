@@ -1286,7 +1286,7 @@ void LoadMsgLogBitmaps(void)
 	else
 		iIconSize = sizeX;
 
-	hBkgBrush = CreateSolidBrush(M->GetDword(FONTMODULE, SRMSGSET_BKGCOLOUR, SRMSGDEFSET_BKGCOLOUR));
+	hBkgBrush = CreateSolidBrush(M->GetDword(FONTMODULE, SRMSGSET_BKGCOLOUR_MUC, SRMSGDEFSET_BKGCOLOUR));
 	bih.biSize = sizeof(bih);
 	bih.biBitCount = 24;
 	bih.biCompression = BI_RGB;

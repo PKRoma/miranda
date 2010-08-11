@@ -819,8 +819,10 @@ int CMimAPI::MessageEventAdded(WPARAM wParam, LPARAM lParam)
 		else
 			return 0;
 	} else {
-		if(dbei.eventType == EVENTTYPE_FILE)
-			goto nowindowcreate;
+		if(dbei.eventType == EVENTTYPE_FILE) {
+			tabSRMM_ShowPopup(wParam, lParam, dbei.eventType, 0, 0, 0, dbei.szModule, 0);
+			return(0);
+		}
 	}
 
 	/*
