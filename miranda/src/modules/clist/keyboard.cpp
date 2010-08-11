@@ -75,7 +75,7 @@ static INT_PTR hkAllOffline(WPARAM, LPARAM)
 
 int InitClistHotKeys(void)
 {
-	HOTKEYDESC shk;
+	HOTKEYDESC shk = {0};
 
 	CreateServiceFunction("CLIST/HK/SHOWHIDE",hkHideShow);
 	CreateServiceFunction("CLIST/HK/Opts",hkOpts);

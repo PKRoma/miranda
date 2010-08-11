@@ -165,13 +165,26 @@ static INT_PTR svcHotkeyUnsubclass(WPARAM wParam, LPARAM)
 
 static INT_PTR svcHotkeyRegister(WPARAM wParam, LPARAM lParam)
 {
-	char nameBuf[MAXMODULELABELLENGTH], buf[256];
-
 	HOTKEYDESC *desc = (HOTKEYDESC *)lParam;
-	THotkeyItem *item = ( THotkeyItem* )mir_alloc(sizeof(THotkeyItem));
+	if ( desc->cbSize != sizeof(HOTKEYDESC) && desc->cbSize != HOTKEYDESC_SIZE_V1 )
+		return 0;
 
-	item->ptszSection = mir_a2t(desc->pszSection);
-	item->ptszDescription = mir_a2t(desc->pszDescription);
+	DWORD dwFlags = ( desc->cbSize == sizeof(HOTKEYDESC)) ? desc->dwFlags : 0;
+
+	THotkeyItem *item = ( THotkeyItem* )mir_alloc(sizeof(THotkeyItem));
+	#if defined( _UNICODE )
+		if ( dwFlags & HKD_UNICODE ) {
+			item->ptszSection = mir_tstrdup( desc->ptszSection );
+			item->ptszDescription = mir_tstrdup( desc->ptszDescription );
+		}
+		else {
+			item->ptszSection = mir_a2u_cp( desc->pszSection, CP_ACP );
+			item->ptszDescription = mir_a2u_cp( desc->pszDescription, CP_ACP );
+		}
+	#else
+		item->ptszSection = mir_tstrdup( desc->pszSection );
+		item->ptszDescription = mir_tstrdup( desc->pszDescription );
+	#endif
 	item->ptszSection_tr = TranslateTS(item->ptszSection);
 	item->ptszDescription_tr = TranslateTS(item->ptszDescription);
 	item->allowSubHotkeys = TRUE;
@@ -180,6 +193,7 @@ static INT_PTR svcHotkeyRegister(WPARAM wParam, LPARAM lParam)
 
 	if ( item->rootHotkey = hotkeys.find( item )) {
 		if (item->rootHotkey->allowSubHotkeys) {
+			char nameBuf[MAXMODULELABELLENGTH];
 			mir_snprintf(nameBuf, SIZEOF(nameBuf), "%s$%d", item->rootHotkey->pszName, item->rootHotkey->nSubHotkeys);
 			item->pszName = nameBuf;
 			item->Enabled = TRUE;
@@ -203,10 +217,10 @@ static INT_PTR svcHotkeyRegister(WPARAM wParam, LPARAM lParam)
 	item->Hotkey = DBGetContactSettingWord(NULL, DBMODULENAME, item->pszName, item->DefHotkey);
 	item->type = item->pszService ?
 		( THotkeyType )DBGetContactSettingByte(NULL, DBMODULENAME "Types", item->pszName,
-			(desc->DefHotKey & HKF_MIRANDA_LOCAL) ? HKT_LOCAL : HKT_GLOBAL) :
-		HKT_MANUAL;
+			(desc->DefHotKey & HKF_MIRANDA_LOCAL) ? HKT_LOCAL : HKT_GLOBAL) : HKT_MANUAL;
 	item->lParam = desc->lParam;
 
+	char buf[256];
 	mir_snprintf(buf, SIZEOF(buf), "mir_hotkey_%d_%d", g_pid, g_hotkeyCount++);
 	item->idHotkey = GlobalAddAtomA(buf);
 	if (item->type == HKT_GLOBAL) {

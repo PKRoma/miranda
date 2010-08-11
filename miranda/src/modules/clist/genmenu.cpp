@@ -660,9 +660,9 @@ PMO_IntMenuItem MO_AddNewMenuItem( HANDLE menuobjecthandle, PMO_MenuItem pmi )
 			p->mi.ptszName = mir_tstrdup(( pmi->flags & CMIF_KEEPUNTRANSLATED ) ? pmi->ptszName : TranslateTS( pmi->ptszName ));
 		else {
 			if ( pmi->flags & CMIF_KEEPUNTRANSLATED )
-                p->mi.ptszName = mir_a2u_cp(pmi->pszName, CP_ACP);
+				p->mi.ptszName = mir_a2u_cp(pmi->pszName, CP_ACP);
 			else 
-                p->mi.ptszName = LangPackPcharToTchar( pmi->pszName );
+				p->mi.ptszName = LangPackPcharToTchar( pmi->pszName );
 		}
 	#else
 		p->mi.ptszName = mir_strdup(( pmi->flags & CMIF_KEEPUNTRANSLATED ) ? pmi->ptszName : Translate( pmi->ptszName ));
