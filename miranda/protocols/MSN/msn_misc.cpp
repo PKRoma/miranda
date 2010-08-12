@@ -449,13 +449,17 @@ LONG ThreadData::sendMessage(int msgType, const char* email, int netId, const ch
 
 void ThreadData::sendCaps(void)
 {
-	char mversion[100], capMsg[1000];
-	MSN_CallService(MS_SYSTEM_GETVERSIONTEXT, sizeof(mversion), (LPARAM)mversion);
-
+	char capMsg[1000];
 	mir_snprintf(capMsg, sizeof(capMsg),
 		"Content-Type: text/x-clientcaps\r\n\r\n"
-		"Client-Name: Miranda IM %s (MSN v.%s)\r\n",
-		mversion, __VERSION_STRING);
+		"Client-Name: Miranda IM MSN %s%s\r\n",
+		__VERSION_STRING,
+		#if defined( _UNICODE )
+			" (Unicode)"
+		#else
+			""
+		#endif
+		);
 
 	sendMessage('U', NULL, 1, capMsg, MSG_DISABLE_HDR);
 }
