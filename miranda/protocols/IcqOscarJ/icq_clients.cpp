@@ -1,22 +1,22 @@
 // ---------------------------------------------------------------------------80
 //                ICQ plugin for Miranda Instant Messenger
 //                ________________________________________
-// 
+//
 // Copyright © 2000-2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001-2002 Jon Keating, Richard Hughes
 // Copyright © 2002-2004 Martin Öberg, Sam Kothari, Robert Rainwater
 // Copyright © 2004-2010 Joe Kucera
-// 
+//
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
 // as published by the Free Software Foundation; either version 2
 // of the License, or (at your option) any later version.
-// 
+//
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
@@ -41,9 +41,9 @@ const capstr capShortCaps   = {0x09, 0x46, 0x00, 0x00, 0x4c, 0x7f, 0x11, 0xd1, 0
 
 static const char* makeClientVersion(char *szBuf, const char *szClient, unsigned v1, unsigned v2, unsigned v3, unsigned v4)
 {
-	if (v4) 
+	if (v4)
 		null_snprintf(szBuf, 64, "%s%u.%u.%u.%u", szClient, v1, v2, v3, v4);
-	else if (v3) 
+	else if (v3)
 		null_snprintf(szBuf, 64, "%s%u.%u.%u", szClient, v1, v2, v3);
 	else
 		null_snprintf(szBuf, 64, "%s%u.%u", szClient, v1, v2);
@@ -55,7 +55,7 @@ static void verToStr(char *szStr, int v)
 {
 	char szVer[64];
 
-	makeClientVersion(szVer, "", (v>>24)&0x7F, (v>>16)&0xFF, (v>>8)&0xFF, v&0xFF); 
+	makeClientVersion(szVer, "", (v>>24)&0x7F, (v>>16)&0xFF, (v>>8)&0xFF, v&0xFF);
 	strcat(szStr, szVer);
 }
 
@@ -78,7 +78,7 @@ static char* MirandaVersionToStringEx(char* szStr, int bUnicode, const char* szP
 			strcat(szStr, " ");
 		}
 		if (bUnicode)
-			strcat(szStr, "Unicode");
+			strcat(szStr, "(Unicode)");
 	}
 
 	return szStr;
@@ -215,7 +215,7 @@ const char* CIcqProto::detectUserClient(HANDLE hContact, int nIsICQ, WORD wUserC
 		{ // And this is most probably Spam Bot
 			szClient = cliSpamBot;
 		}
-		else 
+		else
 		{ // Yes this is most probably Miranda, get the version info
 			szClient = MirandaVersionToString(szClientBuf, 0, dwFT2, 0);
 			*bClientId = CLID_MIRANDA;
@@ -300,7 +300,7 @@ const char* CIcqProto::detectUserClient(HANDLE hContact, int nIsICQ, WORD wUserC
 	else if (dwFT1 == 0xFFFFF666 && !dwFT3)
 	{ // this is R&Q (Rapid Edition)
 		null_snprintf(szClientBuf, 64, "R&Q %u", (unsigned)dwFT2);
-		szClient = szClientBuf;   
+		szClient = szClientBuf;
 	}
 	else if (dwFT1 == 0x66666666 && dwFT3 == 0x66666666)
 	{ // http://darkjimm.ucoz.ru/
@@ -309,7 +309,7 @@ const char* CIcqProto::detectUserClient(HANDLE hContact, int nIsICQ, WORD wUserC
       strcpy(szClientBuf, "D[i]Chat v.");
       strcat(szClientBuf, "0.1a");
     }
-    else 
+    else
     {
       makeClientVersion(szClientBuf, "D[i]Chat v.", (dwFT2 >> 8) & 0x0F, (dwFT2 >> 4) & 0x0F, 0, 0);
       if ((dwFT2 & 0x0F) == 1)
@@ -414,7 +414,7 @@ const char* CIcqProto::detectUserClient(HANDLE hContact, int nIsICQ, WORD wUserC
 				int hiVer = (((*capId)[0xF]) >> 6) - 1;
 				unsigned loVer = (*capId)[0xF] & 0x1F;
 
-				if ((hiVer < 0) || ((hiVer == 0) && (loVer == 0))) 
+				if ((hiVer < 0) || ((hiVer == 0) && (loVer == 0)))
 					szClient = "Kopete";
 				else
 					szClient = makeClientVersion(szClientBuf, "SIM ", (unsigned)hiVer, loVer, 0, 0);
@@ -427,9 +427,9 @@ const char* CIcqProto::detectUserClient(HANDLE hContact, int nIsICQ, WORD wUserC
 				unsigned ver4 = (*capId)[0xF];
 
 				szClient = makeClientVersion(szClientBuf, "SIM ", ver1, ver2, ver3, ver4 & 0x0F);
-				if (ver4 & 0x80) 
+				if (ver4 & 0x80)
 					strcat(szClientBuf,"/Win32");
-				else if (ver4 & 0x40) 
+				else if (ver4 & 0x40)
 					strcat(szClientBuf,"/MacOS X");
 			}
 			else if (capId = MatchCapability(caps, wLen, &capLicq, 0xC))
@@ -439,7 +439,7 @@ const char* CIcqProto::detectUserClient(HANDLE hContact, int nIsICQ, WORD wUserC
 				unsigned ver3 = (*capId)[0xE];
 
 				szClient = makeClientVersion(szClientBuf, cliLicqVer, ver1, ver2, ver3, 0);
-				if ((*capId)[0xF]) 
+				if ((*capId)[0xF])
 					strcat(szClientBuf,"/SSL");
 			}
 			else if (capId = MatchCapability(caps, wLen, &capKopete, 0xC))
@@ -459,7 +459,7 @@ const char* CIcqProto::detectUserClient(HANDLE hContact, int nIsICQ, WORD wUserC
 				unsigned ver4 = (*capId)[0xF];
 
 				szClient = makeClientVersion(szClientBuf, "climm ", ver1, ver2, ver3, ver4);
-				if ((ver1 & 0x80) == 0x80) 
+				if ((ver1 & 0x80) == 0x80)
 					strcat(szClientBuf, " alpha");
 				if (dwFT3 == 0x02000020)
 					strcat(szClientBuf, "/Win32");
@@ -474,7 +474,7 @@ const char* CIcqProto::detectUserClient(HANDLE hContact, int nIsICQ, WORD wUserC
 				unsigned ver4 = (*capId)[0xF];
 
 				szClient = makeClientVersion(szClientBuf, "mICQ ", ver1, ver2, ver3, ver4);
-				if ((ver1 & 0x80) == 0x80) 
+				if ((ver1 & 0x80) == 0x80)
           strcat(szClientBuf, " alpha");
 			}
 			else if (MatchCapability(caps, wLen, &capIm2))
@@ -684,7 +684,7 @@ const char* CIcqProto::detectUserClient(HANDLE hContact, int nIsICQ, WORD wUserC
 
           makeClientVersion(szClientBuf, "qutIM ", ver1, ver2, 0, 0);
         }
-        else 
+        else
         { // new qutim id
           unsigned ver1 = (*capId)[0x6];
           unsigned ver2 = (*capId)[0x7];
@@ -797,7 +797,7 @@ const char* CIcqProto::detectUserClient(HANDLE hContact, int nIsICQ, WORD wUserC
 						{
 							if (MatchCapability(caps, wLen, &captZers))
 							{ // capable of tZers ?
-                if (MatchCapability(caps, wLen, &capIcqLiteNew) && MatchShortCapability(caps, wLen, &capStatusTextAware) && 
+                if (MatchCapability(caps, wLen, &capIcqLiteNew) && MatchShortCapability(caps, wLen, &capStatusTextAware) &&
                   MatchShortCapability(caps, wLen, &capAimLiveVideo) && MatchShortCapability(caps, wLen, &capAimLiveAudio))
                 {
                   strcpy(szClientBuf, "ICQ 7");
@@ -922,7 +922,7 @@ const char* CIcqProto::detectUserClient(HANDLE hContact, int nIsICQ, WORD wUserC
 						if (CheckContactCapabilities(hContact, CAPF_TYPING) && MatchCapability(caps, wLen, &capIs2001) &&
 							MatchCapability(caps, wLen, &capIs2002) && MatchCapability(caps, wLen, &capComm20012))
 							szClient = cliSpamBot;
-						else if (MatchShortCapability(caps, wLen, &capAimIcon) && MatchShortCapability(caps, wLen, &capAimDirect) && 
+						else if (MatchShortCapability(caps, wLen, &capAimIcon) && MatchShortCapability(caps, wLen, &capAimDirect) &&
 							CheckContactCapabilities(hContact, CAPF_OSCAR_FILE | CAPF_UTF))
 						{ // detect libgaim/libpurple versions
 							if (CheckContactCapabilities(hContact, CAPF_SRV_RELAY))
@@ -974,9 +974,9 @@ const char* CIcqProto::detectUserClient(HANDLE hContact, int nIsICQ, WORD wUserC
 					unsigned ver3 = (*capId)[0xE];
 
 					szClient = makeClientVersion(szClientBuf, "SIM ", ver1, ver2, ver3, 0);
-					if ((*capId)[0xF] & 0x80) 
+					if ((*capId)[0xF] & 0x80)
 						strcat(szClientBuf,"/Win32");
-					else if ((*capId)[0xF] & 0x40) 
+					else if ((*capId)[0xF] & 0x40)
 						strcat(szClientBuf,"/MacOS X");
 				}
 				else if (capId = MatchCapability(caps, wLen, &capKopete, 0xC))
@@ -1047,10 +1047,10 @@ const char* CIcqProto::detectUserClient(HANDLE hContact, int nIsICQ, WORD wUserC
 		case 7:
 			szClient = "ICQ 2000/Icq2Go";
 			break;
-		case 8: 
+		case 8:
 			szClient = "ICQ 2001-2003a";
 			break;
-		case 9: 
+		case 9:
 			szClient = "ICQ Lite";
 			break;
 		case 0xA:
