@@ -2,7 +2,7 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2009 Miranda ICQ/IM project,
+Copyright 2000-2010 Miranda ICQ/IM project,
 all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
@@ -371,7 +371,8 @@ INT_PTR CALLBACK DlgProcFileTransfer(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 			if ( CallService(MS_CLIST_MENUPROCESSCOMMAND, MAKEWPARAM(LOWORD(wParam),MPCF_CONTACTMENU), (LPARAM)dat->hContact ))
 				break;
 
-			switch(LOWORD(wParam)) {
+			switch (LOWORD(wParam)) 
+			{
 				case IDOK:
 				case IDCANCEL:
 					PostMessage(GetParent(hwndDlg), WM_FT_REMOVE, 0, (LPARAM)hwndDlg);
@@ -396,19 +397,16 @@ INT_PTR CALLBACK DlgProcFileTransfer(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 					break;
 
 				case IDC_OPENFOLDER:
-					if ( dat ) {
-						TCHAR* path;
-						if ( lstrlen( dat->transferStatus.tszWorkingDir ) > 0 )
-							path = mir_tstrdup( dat->transferStatus.tszWorkingDir );
-						else {
-							path = mir_tstrdup( dat->transferStatus.tszCurrentFile );
-							TCHAR* p = _tcsrchr( path, '\\' );
-							if ( p )
-								*p = 0;
+					if ( dat ) 
+					{
+						TCHAR* path = dat->transferStatus.tszWorkingDir;
+						if (!path || !path[0])
+						{
+							path = NEWTSTR_ALLOCA(dat->transferStatus.tszCurrentFile);
+							TCHAR* p = _tcsrchr(path, '\\'); if (p) *p = 0;
 						}
 
-						if ( path ) ShellExecute( NULL, _T("open"), path, NULL, NULL, SW_SHOW );
-						mir_free( path );
+						if (path) ShellExecute(NULL, _T("open"), path, NULL, NULL, SW_SHOW);
 					}
 					break;
 
@@ -474,7 +472,16 @@ INT_PTR CALLBACK DlgProcFileTransfer(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 					DestroyMenu(hMenu);
 
 					if (ret == 1)
-						ShellExecute(NULL,NULL,dat->transferStatus.tszWorkingDir,NULL,NULL,SW_SHOW);
+					{
+						TCHAR* path = dat->transferStatus.tszWorkingDir;
+						if (!path || !path[0])
+						{
+							path = NEWTSTR_ALLOCA(dat->transferStatus.tszCurrentFile);
+							TCHAR* p = _tcsrchr(path, '\\'); if (p) *p = 0;
+						}
+
+						if (path) ShellExecute(NULL, _T("open"), path, NULL, NULL, SW_SHOW);
+					}
 					else if (ret && CheckVirusScanned(hwndDlg, dat, ret))
 						ShellExecute(NULL, NULL, files[ret-10], NULL, NULL, SW_SHOW);
 
@@ -684,11 +691,10 @@ INT_PTR CALLBACK DlgProcFileTransfer(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 							dat->files=NULL;   //protocol library frees this
 						
 						} else {
-							
 							SetFtStatus(hwndDlg,
 								(dat->transferStatus.totalFiles == 1) ?
 								LPGENT("Transfer completed, open file.") :
-							LPGENT("Transfer completed, open folder."),
+								LPGENT("Transfer completed, open folder."),
 								FTS_OPEN);
 
 							int useScanner=DBGetContactSettingByte(NULL,"SRFile","UseScanner",VIRUSSCAN_DISABLE);
@@ -721,7 +727,6 @@ INT_PTR CALLBACK DlgProcFileTransfer(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 					
 					PostMessage(GetParent(hwndDlg), WM_FT_COMPLETED, ack->result, (LPARAM)hwndDlg);
 					break;
-
 			}
 			break;
 		} // switch ack->result

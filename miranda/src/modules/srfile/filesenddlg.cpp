@@ -160,7 +160,7 @@ void __cdecl ChooseFilesThread(void* param)
 		ofn.lpstrFilter = filter;
 		ofn.lpstrFile = buf; *buf = 0;
 		ofn.nMaxFile = 32767;
-		ofn.Flags = OFN_NOCHANGEDIR | OFN_FILEMUSTEXIST | OFN_ALLOWMULTISELECT | OFN_EXPLORER | OFN_HIDEREADONLY;
+		ofn.Flags = OFN_NOCHANGEDIR | OFN_FILEMUSTEXIST | OFN_ALLOWMULTISELECT | OFN_EXPLORER | OFN_HIDEREADONLY | OFN_DONTADDTORECENT;
 		if ( GetOpenFileName( &ofn ))
 			PostMessage( hwndDlg, M_FILECHOOSEDONE, 0, ( LPARAM )buf );
 		else {

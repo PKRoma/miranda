@@ -1096,7 +1096,7 @@ static TCHAR* OpenFileDlg( HWND hParent, const TCHAR* szFile, BOOL bAll )
 	ofn.lpstrDefExt = _T("dll");
 	lstrcpyn(file, szFile, SIZEOF(file));
 	ofn.lpstrFile = file;
-	ofn.Flags = OFN_FILEMUSTEXIST | OFN_HIDEREADONLY;
+	ofn.Flags = OFN_FILEMUSTEXIST | OFN_HIDEREADONLY | OFN_DONTADDTORECENT;
 	ofn.nMaxFile = MAX_PATH*2;
 
 	if (!GetOpenFileName(&ofn))
