@@ -604,10 +604,11 @@ static BOOL findUPnPGateway(void)
 
 		if ((curTime - lastDiscTime) >= expireTime)
 		{
-			lastDiscTime = curTime;
 			gatewayFound = FALSE;
 
 			discoverUPnP();
+			lastDiscTime = curTime;
+
 			NetlibLogf(NULL, "UPnP Gateway detected %d, Control URL: %s\n", gatewayFound, szCtlUrl);
 		}
 
