@@ -181,6 +181,31 @@ __inline static INT_PTR SkinAddNewSound(const char *name,const char *description
 	return CallService(MS_SKIN_ADDNEWSOUND, 0, (LPARAM)&ssd);
 }
 
+// 0.9.0+
+#if MIRANDA_VER >= 0x0900
+__inline static INT_PTR SkinAddNewSoundExT(const char *name,const TCHAR *section,const TCHAR *description)
+{
+	SKINSOUNDDESCEX ssd = { 0 };
+	ssd.cbSize=sizeof(ssd);
+	ssd.dwFlags=SSDF_TCHAR;
+	ssd.pszName=name;
+	ssd.ptszSection=section;
+	ssd.ptszDescription=description;
+	return CallService(MS_SKIN_ADDNEWSOUND, 0, (LPARAM)&ssd);
+}
+
+__inline static INT_PTR SkinAddNewSoundT(const char *name,const TCHAR *description,const TCHAR *defaultFile)
+{
+	SKINSOUNDDESCEX ssd = { 0 };
+	ssd.cbSize=sizeof(ssd);
+	ssd.pszName=name;
+	ssd.dwFlags=SSDF_TCHAR;
+	ssd.ptszDescription=description;
+	ssd.ptszDefaultFile=defaultFile;
+	return CallService(MS_SKIN_ADDNEWSOUND, 0, (LPARAM)&ssd);
+}
+#endif
+
 //play a named sound event
 //wParam=0
 //lParam=(LPARAM)(const char*)pszName
