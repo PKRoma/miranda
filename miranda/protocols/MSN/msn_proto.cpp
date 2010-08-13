@@ -144,11 +144,11 @@ CMsnProto::CMsnProto(const char* aProtoName, const TCHAR* aUserName) :
 
 	mailsoundname = (char*)mir_alloc(64);
 	mir_snprintf(mailsoundname, 64, "%s:Hotmail", m_szModuleName);
-	SkinAddNewSoundEx(mailsoundname, m_szModuleName, "Live Mail");
+	SkinAddNewSoundExT(mailsoundname, m_tszUserName, _T("Live Mail"));
 
 	alertsoundname = (char*)mir_alloc(64);
 	mir_snprintf(alertsoundname, 64, "%s:Alerts", m_szModuleName);
-	SkinAddNewSoundEx(alertsoundname, m_szModuleName, "Live Alert");
+	SkinAddNewSoundExT(alertsoundname, m_tszUserName, _T("Live Alert"));
 
 	m_iStatus = m_iDesiredStatus = ID_STATUS_OFFLINE;
 
