@@ -36,28 +36,57 @@ static HANDLE hPlayEvent = NULL;
 
 static INT_PTR ServiceSkinAddNewSound(WPARAM, LPARAM lParam)
 {
-	struct SoundItem* item;
-	SKINSOUNDDESCEX *ssd=(SKINSOUNDDESCEX*)lParam;
+	SKINSOUNDDESCEX *ssd = ( SKINSOUNDDESCEX* )lParam;
+	switch( ssd->cbSize ) {
+	case sizeof( SKINSOUNDDESCEX ):
+	case SKINSOUNDDESC_SIZE_V1:
+	case SKINSOUNDDESC_SIZE_V2:
+		break;
 
-	if (ssd->cbSize!=sizeof(SKINSOUNDDESC) && ssd->cbSize!=sizeof(SKINSOUNDDESCEX))
-		return 0;
-    if (ssd->pszName==NULL || ssd->pszDescription==NULL)
-        return 0;
+	default:
+		return 1;
+	}
+
+	if ( ssd->pszName == NULL || ssd->pszDescription == NULL)
+		return 1;
+
+	DBVARIANT dbv;
+	DWORD dwFlags = ( ssd->cbSize == sizeof(SKINSOUNDDESCEX)) ? ssd->dwFlags : 0;
 
 	soundList=(struct SoundItem*)mir_realloc(soundList,sizeof(struct SoundItem)*(soundCount+1));
-	item = &soundList[soundCount++];
+	SoundItem* item = &soundList[soundCount++];
 	item->name = mir_strdup( ssd->pszName );
-	item->description = LangPackPcharToTchar( ssd->pszDescription );
-	item->section = LangPackPcharToTchar( ssd->cbSize==sizeof(SKINSOUNDDESCEX)&&ssd->pszSection!=NULL ? ssd->pszSection : "Other" );
 	item->tempFile = NULL;
-	if ( ssd->pszDefaultFile ) {
-		DBVARIANT dbv;
+	#if defined( _UNICODE )
+		TCHAR* ptszDefaultFile;
+		if ( dwFlags & SSDF_UNICODE ) {
+			item->description = mir_tstrdup( TranslateTS( ssd->ptszDescription ));
+			item->section = mir_tstrdup( TranslateTS( ssd->cbSize != SKINSOUNDDESC_SIZE_V1 && ssd->pszSection != NULL ? ssd->ptszSection : _T("Other")));
+			ptszDefaultFile = mir_tstrdup( ssd->ptszDefaultFile );
+		}
+		else {
+			item->description = LangPackPcharToTchar( ssd->pszDescription );
+			item->section = LangPackPcharToTchar( ssd->cbSize != SKINSOUNDDESC_SIZE_V1 && ssd->pszSection != NULL ? ssd->pszSection : "Other" );
+			ptszDefaultFile = LangPackPcharToTchar( ssd->pszDefaultFile );
+		}
 
-		if ( DBGetContactSettingString(NULL, "SkinSounds", item->name, &dbv))
-			DBWriteContactSettingString(NULL, "SkinSounds", item->name, ssd->pszDefaultFile);
-		else
-			DBFreeVariant(&dbv);
-	}
+		if ( ptszDefaultFile ) {
+			if ( DBGetContactSettingString(NULL, "SkinSounds", item->name, &dbv))
+				DBWriteContactSettingTString(NULL, "SkinSounds", item->name, ssd->ptszDefaultFile);
+			else
+				DBFreeVariant(&dbv);
+			mir_free( ptszDefaultFile );
+		}
+	#else
+		item->description = mir_tstrdup( TranslateTS( ssd->pszDescription ));
+		item->section = mir_tstrdup( TranslateTS( ssd->cbSize != SKINSOUNDDESC_SIZE_V1 && ssd->pszSection != NULL ? ssd->pszSection : "Other" ));
+		if ( ssd->pszDefaultFile ) {
+			if ( DBGetContactSettingString(NULL, "SkinSounds", item->name, &dbv))
+				DBWriteContactSettingString(NULL, "SkinSounds", item->name, ssd->pszDefaultFile);
+			else
+				DBFreeVariant(&dbv);
+		}
+	#endif
 	return 0;
 }
 

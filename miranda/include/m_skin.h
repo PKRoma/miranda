@@ -116,20 +116,46 @@ __inline static HICON LoadSkinnedProtoIconBig(const char *szProto,int status) {r
 //wParam=0
 //lParam=(LPARAM)(SKINSOUNDDESC*)ssd;
 //returns 0 on success, nonzero otherwise
+
+#define SKINSOUNDDESC_SIZE_V1  (sizeof(int)+sizeof(char*)*3)
+#define SKINSOUNDDESC_SIZE_V2  (sizeof(int)+sizeof(char*)*4)
+
+#define SSDF_UNICODE 0x0001
+
+#if defined( _UNICODE )
+	#define SSDF_TCHAR  SSDF_UNICODE
+#else
+	#define SSDF_TCHAR  0
+#endif
+
 typedef struct {
 	int cbSize;
-	const char *pszName;		   //name to refer to sound when playing and in db
-	const char *pszDescription;	   //[TRANSLATED-BY-CORE] description for options dialog
-    const char *pszDefaultFile;    //default sound file to use
-    const char *pszSection;        //[TRANSLATED-BY-CORE] section name used to group sounds (NULL is acceptable) (added during 0.3.4+ (2004/10/*))
+	const char *pszName;           // name to refer to sound when playing and in db
+	union {
+		const char *pszDescription;    // [TRANSLATED-BY-CORE] description for options dialog
+		const TCHAR *ptszDescription;
+	};
+	union {
+		const char *pszDefaultFile;    // default sound file to use
+		const TCHAR *ptszDefaultFile;
+	};
+	union {
+		const char *pszSection;        // [TRANSLATED-BY-CORE] section name used to group sounds (NULL is acceptable) (added during 0.3.4+ (2004/10/*))
+		const TCHAR *ptszSection;
+	};
+	#if MIRANDA_VER >= 0x0900
+		DWORD dwFlags;
+	#endif
 } SKINSOUNDDESCEX;
+
 // Old struct pre 0.3.4
 typedef struct {
 	int cbSize;
-	const char *pszName;		   //name to refer to sound when playing and in db
-	const char *pszDescription;	   //[TRANSLATED-BY-CORE] description for options dialog
-	const char *pszDefaultFile;	   //default sound file to use
+	const char *pszName;           // name to refer to sound when playing and in db
+	const char *pszDescription;    // [TRANSLATED-BY-CORE] description for options dialog
+	const char *pszDefaultFile;    // default sound file to use
 } SKINSOUNDDESC;
+
 #define MS_SKIN_ADDNEWSOUND      "Skin/Sounds/AddNew"
 
 // inline only works after 0.3.4+ (2004/10/*)
