@@ -2,7 +2,7 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2009 Miranda ICQ/IM project,
+Copyright 2000-2010 Miranda ICQ/IM project,
 all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
@@ -316,9 +316,9 @@ static int httpTransact(char* szUrl, char* szResult, int resSize, char* szAction
 					}
 
 					//
-					bytesRecv = recv( sock, &szResult[sz], resSize-sz, 0 );
+					bytesRecv = recv(sock, &szResult[sz], resSize-sz, 0);
 					// Connection closed or aborted, all data received
-					if ( bytesRecv == 0 || bytesRecv == SOCKET_ERROR)
+					if (bytesRecv == 0 || bytesRecv == SOCKET_ERROR)
 						break;
 
 					sz += bytesRecv;
@@ -367,6 +367,7 @@ static int httpTransact(char* szUrl, char* szResult, int resSize, char* szAction
 					// Chunked encoding processing
 					if (sz > acksz && acksz != 0)
 					{
+retry:
 						// Parse out chunk size
 						char* data = szResult + acksz;
 						char* peol1 = data == hdrend ? data - 2 : strstr(data, "\r\n");
@@ -388,6 +389,7 @@ static int httpTransact(char* szUrl, char* szResult, int resSize, char* szAction
 
 								// Last chunk, all data received
 								if (chunkBytes == 0) break;
+								if (sz > acksz) goto retry;
 							}
 						}
 					}
