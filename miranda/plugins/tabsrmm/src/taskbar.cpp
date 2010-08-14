@@ -242,11 +242,11 @@ void CProxyWindow::verify(TWindowData *dat)
 CProxyWindow::CProxyWindow(const TWindowData *dat)
 {
 	m_dat = dat;
-	m_hwndProxy = ::CreateWindowEx(/*WS_EX_TOOLWINDOW | */WS_EX_NOACTIVATE, PROXYCLASSNAME, _T(""),
-		WS_POPUP | WS_BORDER | WS_SYSMENU | WS_CAPTION, -32000, -32000, 10, 10, NULL, NULL, g_hInst, (LPVOID)this);
-
 	m_hBigIcon = 0;
 	m_thumb = 0;
+
+	m_hwndProxy = ::CreateWindowEx(/*WS_EX_TOOLWINDOW | */WS_EX_NOACTIVATE, PROXYCLASSNAME, _T(""),
+		WS_POPUP | WS_BORDER | WS_SYSMENU | WS_CAPTION, -32000, -32000, 10, 10, NULL, NULL, g_hInst, (LPVOID)this);
 
 #if defined(__LOGDEBUG_)
 	_DebugTraceW(_T("create proxy object for: %s"), m_dat->cache->getNick());

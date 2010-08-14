@@ -131,13 +131,13 @@ void CMUCHighlight::tokenize(TCHAR *tszString, TCHAR**& patterns, UINT& nr)
 
 int CMUCHighlight::match(const GCEVENT *pgce, const SESSION_INFO *psi, DWORD dwFlags)
 {
-	int 			result = 0, nResult = 0;
+	int 	result = 0, nResult = 0;
 
 	if(pgce == 0 || m_Valid == false)
 		return(0);
 
 	__try {
-		if((m_dwFlags & MATCH_TEXT) && (dwFlags & MATCH_TEXT) && m_iTextPatterns > 0 && psi != 0) {
+		if((m_dwFlags & MATCH_TEXT) && (dwFlags & MATCH_TEXT) && (m_fHighlightMe || m_iTextPatterns > 0) && psi != 0) {
 	#ifdef __HLT_PERFSTATS
 			int		words = 0;
 			M->startTimer();
@@ -153,9 +153,11 @@ int CMUCHighlight::match(const GCEVENT *pgce, const SESSION_INFO *psi, DWORD dwF
 				wcslwr(tszMe);
 			}
 
-			if(m_fHighlightMe && tszMe)
+			if(m_fHighlightMe && tszMe) {
 				result = wcsstr(p, tszMe) ? MATCH_TEXT : 0;
-
+				if(0 == m_iTextPatterns)
+					goto skip_textpatterns;
+			}
 			while(p && !result) {
 				while(*p && (*p == ' ' || *p == ',' || *p == '.' || *p == ':' || *p == ';' || *p == '?' || *p == '!'))
 					p++;
@@ -186,6 +188,7 @@ int CMUCHighlight::match(const GCEVENT *pgce, const SESSION_INFO *psi, DWORD dwF
 				else
 					break;
 			}
+skip_textpatterns:
 
 	#ifdef __HLT_PERFSTATS
 			M->stopTimer(0);
@@ -300,6 +303,8 @@ INT_PTR CALLBACK CMUCHighlight::dlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, L
 			Utils::enableDlgControl(hwndDlg, IDC_HIGHLIGHTNICKUID,
 									::IsDlgButtonChecked(hwndDlg, IDC_HIGHLIGHTNICKENABLE) ? TRUE : FALSE);
 
+			Utils::enableDlgControl(hwndDlg, IDC_HIGHLIGHTME, 
+									::IsDlgButtonChecked(hwndDlg, IDC_HIGHLIGHTTEXTENABLE) ? TRUE : FALSE);
 			return(FALSE);
 
 		case WM_COMMAND:
@@ -333,6 +338,9 @@ INT_PTR CALLBACK CMUCHighlight::dlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, L
 								::GetDlgItemTextW(hwndDlg, IDC_HIGHLIGHTTEXTPATTERN, szBuf, iLen + 1);
 								M->WriteTString(0, "Chat", "HighlightWords", szBuf);
 							}
+							else
+								M->WriteTString(0, "Chat", "HighlightWords", L"");
+
 							mir_free(szBuf);
 							BYTE dwFlags = (::IsDlgButtonChecked(hwndDlg, IDC_HIGHLIGHTNICKENABLE) ? MATCH_NICKNAME : 0) |
 								(::IsDlgButtonChecked(hwndDlg, IDC_HIGHLIGHTTEXTENABLE) ? MATCH_TEXT : 0);
