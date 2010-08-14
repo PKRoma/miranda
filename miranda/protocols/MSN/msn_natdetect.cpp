@@ -69,7 +69,7 @@ static void DiscardExtraPackets(SOCKET s)
 {
 	Sleep(3000);
 
-	TIMEVAL tv = {0, 0};
+	static const TIMEVAL tv = {0, 0};
 	unsigned buf;
 
 	for (;;)
@@ -152,7 +152,7 @@ void CMsnProto::MSNatDetect(void)
 		FD_SET(s1, &fd);
 		TIMEVAL tv = {0, 200000 * (1 << i) };
 
-		if ( select(1, &fd, NULL, NULL, &tv) == 1 )
+		if (select(1, &fd, NULL, NULL, &tv) == 1)
 		{
 			MSN_DebugLog("P2PNAT Request 1 attempt %d response", i);
 			recv(s1, (char*)&rpkt, sizeof(rpkt), 0);
@@ -224,7 +224,7 @@ void CMsnProto::MSNatDetect(void)
 		FD_SET(s1, &fd);
 		TIMEVAL tv = {0, 200000 * (1 << i) };
 
-		if ( select(1, &fd, NULL, NULL, &tv) == 1 )
+		if (select(1, &fd, NULL, NULL, &tv) == 1)
 		{
 			MSN_DebugLog("P2PNAT Request 2 attempt %d response", i);
 			recv(s1, (char*)&rpkt2, sizeof(rpkt2), 0);
@@ -292,6 +292,7 @@ static bool IsIcfEnabled(void)
 	INetFwAuthorizedApplication* fwApp = NULL;
 	INetFwAuthorizedApplications* fwApps = NULL;
 	BSTR fwBstrProcessImageFileName = NULL;
+	wchar_t *wszFileName = NULL;
 
 	hr = CoInitialize(NULL);
 	if (FAILED(hr)) return false;
@@ -319,11 +320,10 @@ static bool IsIcfEnabled(void)
 	hr = fwProfile->get_AuthorizedApplications(&fwApps);
 	if (FAILED(hr)) goto error;
 
-	char szFileName[MAX_PATH];
-	GetModuleFileNameA(NULL, szFileName, sizeof(szFileName));
+	TCHAR szFileName[MAX_PATH];
+	GetModuleFileName(NULL, szFileName, sizeof(szFileName));
 
-	wchar_t wszFileName[MAX_PATH];
-	MultiByteToWideChar(CP_ACP, 0, szFileName, -1, wszFileName, SIZEOF(wszFileName));
+	wszFileName = mir_t2u(szFileName);
 
 	// Allocate a BSTR for the process image file name.
 	fwBstrProcessImageFileName = SysAllocString(wszFileName);
@@ -341,6 +341,7 @@ static bool IsIcfEnabled(void)
 error:
 	// Free the BSTR.
 	SysFreeString(fwBstrProcessImageFileName);
+	mir_free(wszFileName);
 
 	// Release the authorized application instance.
 	if (fwApp != NULL) fwApp->Release();
