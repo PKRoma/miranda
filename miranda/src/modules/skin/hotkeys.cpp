@@ -169,10 +169,9 @@ static INT_PTR svcHotkeyRegister(WPARAM wParam, LPARAM lParam)
 	if ( desc->cbSize != sizeof(HOTKEYDESC) && desc->cbSize != HOTKEYDESC_SIZE_V1 )
 		return 0;
 
-	DWORD dwFlags = ( desc->cbSize == sizeof(HOTKEYDESC)) ? desc->dwFlags : 0;
-
 	THotkeyItem *item = ( THotkeyItem* )mir_alloc(sizeof(THotkeyItem));
 	#if defined( _UNICODE )
+		DWORD dwFlags = ( desc->cbSize >= sizeof(HOTKEYDESC)) ? desc->dwFlags : 0;
 		if ( dwFlags & HKD_UNICODE ) {
 			item->ptszSection = mir_tstrdup( desc->ptszSection );
 			item->ptszDescription = mir_tstrdup( desc->ptszDescription );
@@ -195,7 +194,7 @@ static INT_PTR svcHotkeyRegister(WPARAM wParam, LPARAM lParam)
 		if (item->rootHotkey->allowSubHotkeys) {
 			char nameBuf[MAXMODULELABELLENGTH];
 			mir_snprintf(nameBuf, SIZEOF(nameBuf), "%s$%d", item->rootHotkey->pszName, item->rootHotkey->nSubHotkeys);
-			item->pszName = nameBuf;
+			item->pszName = mir_strdup(nameBuf);
 			item->Enabled = TRUE;
 
 			item->rootHotkey->nSubHotkeys++;
@@ -244,9 +243,12 @@ static INT_PTR svcHotkeyRegister(WPARAM wParam, LPARAM lParam)
 
 			svcHotkeyRegister(wParam, lParam);
 		}
-		item->allowSubHotkeys = (count >= 0) ? FALSE : TRUE;
+		item->allowSubHotkeys = count < 0;
 	}
-	else item->pszName = NULL;
+	else  {
+		mir_free( item->pszName );
+		item->pszName = NULL;
+	}
 
 	return item->idHotkey;
 }

@@ -24,8 +24,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef M_HOTKEYS_H__
 #define M_HOTKEYS_H__ 1
 
-#define HOTKEYDESC_SIZE_V1 (sizeof(void*)*4 + sizeof(int)*3 )
-
 #define HKD_UNICODE 0x0001
 
 #if defined( _UNICODE )
@@ -49,10 +47,14 @@ typedef struct
 	const char *pszService;       /* Service to call when HotKey Pressed */
 	WORD DefHotKey;               /* default hot key for action */
 	LPARAM lParam;                /* lParam to pass to service */
-	#if MIRANDA_VER >= 0x900
-		DWORD dwFlags;
-	#endif
+#if MIRANDA_VER >= 0x900
+	DWORD dwFlags;
+#endif
 } HOTKEYDESC;
+
+#if MIRANDA_VER >= 0x900
+#define HOTKEYDESC_SIZE_V1 (offsetof(HOTKEYDESC, dwFlags))
+#endif
 
 #define HKF_MIRANDA_LOCAL		0x8000
 
