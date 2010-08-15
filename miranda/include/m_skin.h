@@ -117,9 +117,6 @@ __inline static HICON LoadSkinnedProtoIconBig(const char *szProto,int status) {r
 //lParam=(LPARAM)(SKINSOUNDDESC*)ssd;
 //returns 0 on success, nonzero otherwise
 
-#define SKINSOUNDDESC_SIZE_V1  (sizeof(int)+sizeof(char*)*3)
-#define SKINSOUNDDESC_SIZE_V2  (sizeof(int)+sizeof(char*)*4)
-
 #define SSDF_UNICODE 0x0001
 
 #if defined( _UNICODE )
@@ -147,6 +144,11 @@ typedef struct {
 		DWORD dwFlags;
 	#endif
 } SKINSOUNDDESCEX;
+
+#define SKINSOUNDDESC_SIZE_V1  (offsetof(SKINSOUNDDESCEX, pszSection))
+#if MIRANDA_VER >= 0x0900
+#define SKINSOUNDDESC_SIZE_V2  (offsetof(SKINSOUNDDESCEX, dwFlags))
+#endif
 
 // Old struct pre 0.3.4
 typedef struct {
