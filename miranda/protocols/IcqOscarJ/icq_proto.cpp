@@ -126,15 +126,15 @@ CIcqProto::CIcqProto( const char* aProtoName, const TCHAR* aUserName ) :
 	// Initialize rates
 	m_ratesMutex = new icq_critical_section();
 
-  // Initialize avatars
-  m_avatarsMutex = new icq_critical_section();
+	// Initialize avatars
+	m_avatarsMutex = new icq_critical_section();
 
 	// Initialize temporary DB settings
 	CreateResidentSetting("Status"); // NOTE: XStatus cannot be temporary
 	CreateResidentSetting("TemporaryVisible");
 	CreateResidentSetting("TickTS");
 	CreateResidentSetting("IdleTS");
-  CreateResidentSetting("AwayTS");
+	CreateResidentSetting("AwayTS");
 	CreateResidentSetting("LogonTS");
 	CreateResidentSetting("DCStatus");
 	CreateResidentSetting(DBSETTING_STATUS_NOTE_TIME);
@@ -145,7 +145,7 @@ CIcqProto::CIcqProto( const char* aProtoName, const TCHAR* aUserName ) :
 	CreateProtoService(MS_ICQ_SENDSMS, &CIcqProto::SendSms);
 	CreateProtoService(PS_SET_NICKNAME, &CIcqProto::SetNickName);
 
-  CreateProtoService(PS_GETMYAWAYMSG, &CIcqProto::GetMyAwayMsg);
+	CreateProtoService(PS_GETMYAWAYMSG, &CIcqProto::GetMyAwayMsg);
 
 	CreateProtoService(PS_GETINFOSETTING, &CIcqProto::GetInfoSetting);
 
@@ -207,11 +207,10 @@ CIcqProto::CIcqProto( const char* aProtoName, const TCHAR* aUserName ) :
 	// Init extra statuses
 	InitXStatusIcons();
 
-	if (bStatusMenu = ServiceExists(MS_CLIST_ADDSTATUSMENUITEM))
-		HookProtoEvent(ME_CLIST_PREBUILDSTATUSMENU, &CIcqProto::OnPreBuildStatusMenu);
+	HookProtoEvent(ME_CLIST_PREBUILDSTATUSMENU, &CIcqProto::OnPreBuildStatusMenu);
 
-  // Register netlib users
-  NETLIBUSER nlu = {0};
+	// Register netlib users
+	NETLIBUSER nlu = {0};
 	TCHAR szBuffer[MAX_PATH + 64];
 	null_snprintf(szBuffer, SIZEOF(szBuffer), TranslateT("%s server connection"), m_tszUserName);
 	nlu.cbSize = sizeof(nlu);
@@ -226,8 +225,8 @@ CIcqProto::CIcqProto( const char* aProtoName, const TCHAR* aUserName ) :
 	nlu.pfnHttpGatewayUnwrapRecv = icq_httpGatewayUnwrapRecv;
 	m_hServerNetlibUser = (HANDLE)CallService(MS_NETLIB_REGISTERUSER, 0, (LPARAM)&nlu);
 
-  char szP2PModuleName[MAX_PATH];
-  null_snprintf(szP2PModuleName, SIZEOF(szP2PModuleName), "%sP2P", m_szModuleName);
+	char szP2PModuleName[MAX_PATH];
+	null_snprintf(szP2PModuleName, SIZEOF(szP2PModuleName), "%sP2P", m_szModuleName);
 	null_snprintf(szBuffer, SIZEOF(szBuffer), TranslateT("%s client-to-client connections"), m_tszUserName);
 	nlu.flags = NUF_OUTGOING | NUF_INCOMING | NUF_TCHAR;
 	nlu.ptszDescriptiveName = szBuffer;
@@ -235,7 +234,7 @@ CIcqProto::CIcqProto( const char* aProtoName, const TCHAR* aUserName ) :
 	nlu.minIncomingPorts = 1;
 	m_hDirectNetlibUser = (HANDLE)CallService(MS_NETLIB_REGISTERUSER, 0, (LPARAM)&nlu);
 
-  // Register custom database events
+	// Register custom database events
 	DBEVENTTYPEDESCR eventType = {0};
 	eventType.cbSize = DBEVENTTYPEDESCR_SIZE;
 	eventType.eventType = ICQEVENTTYPE_MISSEDMESSAGE;
@@ -246,7 +245,7 @@ CIcqProto::CIcqProto( const char* aProtoName, const TCHAR* aUserName ) :
 	// for now keep default "message" icon
 	CallService(MS_DB_EVENT_REGISTERTYPE, 0, (LPARAM)&eventType);
 
-  // Protocol instance is ready
+	// Protocol instance is ready
 	NetLog_Server("%s: Protocol instance '%s' created.", ICQ_PROTOCOL_NAME, m_szModuleName);
 }
 
@@ -254,7 +253,7 @@ CIcqProto::CIcqProto( const char* aProtoName, const TCHAR* aUserName ) :
 CIcqProto::~CIcqProto()
 {
 	m_bXStatusEnabled = 10; // block clist changing
-  m_bMoodsEnabled = 10;
+	m_bMoodsEnabled = 10;
 
 	// Make sure all connections are closed
 	CloseContactDirectConns(NULL);
@@ -276,9 +275,9 @@ CIcqProto::~CIcqProto()
 	servlistPendingFlushOperations();
 	SAFE_FREE((void**)&servlistQueueList);
 
-  // Finalize avatars
-  /// TODO: cleanup remaining avatar requests
-  SAFE_DELETE(&m_avatarsMutex);
+	// Finalize avatars
+	/// TODO: cleanup remaining avatar requests
+	SAFE_DELETE(&m_avatarsMutex);
 
 	// NetLib clean-up
 	NetLib_SafeCloseHandle(&m_hDirectNetlibUser);
@@ -312,7 +311,7 @@ CIcqProto::~CIcqProto()
 	SAFE_DELETE(&expectedFileRecvMutex);
 	SAFE_DELETE(&cookieMutex);
 
-  SAFE_FREE(&m_modeMsgs.szOnline);
+	SAFE_FREE(&m_modeMsgs.szOnline);
 	SAFE_FREE(&m_modeMsgs.szAway);
 	SAFE_FREE(&m_modeMsgs.szNa);
 	SAFE_FREE(&m_modeMsgs.szOccupied);
