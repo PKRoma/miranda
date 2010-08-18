@@ -2329,10 +2329,11 @@ HANDLE __cdecl CIcqProto::GetAwayMsg( HANDLE hContact )
 
 int __cdecl CIcqProto::RecvAwayMsg( HANDLE hContact, int statusMode, PROTORECVEVENT* evt )
 {
-	char* pszMsg;
 	if (evt->flags & PREF_UTF)
 	{
 		setStatusMsgVar(hContact, evt->szMessage, false);
+
+		char* pszMsg = NULL;
 		utf8_decode(evt->szMessage, &pszMsg);
 		BroadcastAck(hContact, ACKTYPE_AWAYMSG, ACKRESULT_SUCCESS, (HANDLE)evt->lParam, (LPARAM)pszMsg);
 		SAFE_FREE(&pszMsg);

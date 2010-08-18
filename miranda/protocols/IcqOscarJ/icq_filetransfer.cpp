@@ -140,12 +140,12 @@ static void file_sendNextFile(CIcqProto* ppro, directconnect* dc)
 	dc->ft->dwThisFileDate = statbuf.st_mtime;
 	dc->ft->dwFileBytesDone = 0;
 
-  char *szThisFileNameAnsi = NULL, *szThisSubDirAnsi = NULL;
-  if (!utf8_decode(pszThisFileName, &szThisFileNameAnsi))
-    szThisFileNameAnsi = NULL;
-  if (!utf8_decode(szThisSubDir, &szThisSubDirAnsi))
-    szThisSubDirAnsi = NULL;
-  WORD wThisFileNameLen = strlennull(szThisFileNameAnsi);
+	char *szThisFileNameAnsi = NULL, *szThisSubDirAnsi = NULL;
+	if (!utf8_decode(pszThisFileName, &szThisFileNameAnsi))
+		szThisFileNameAnsi = NULL;
+	if (!utf8_decode(szThisSubDir, &szThisSubDirAnsi))
+		szThisSubDirAnsi = NULL;
+	WORD wThisFileNameLen = strlennull(szThisFileNameAnsi);
 	WORD wThisSubDirLen = strlennull(szThisSubDirAnsi);
 
 	directPacketInit(&packet, (WORD)(20 + wThisFileNameLen + wThisSubDirLen));
@@ -158,8 +158,8 @@ static void file_sendNextFile(CIcqProto* ppro, directconnect* dc)
 	packLEDWord(&packet, dc->ft->dwThisFileSize);
 	packLEDWord(&packet, statbuf.st_mtime);
 	packLEDWord(&packet, dc->ft->dwTransferSpeed);
-  SAFE_FREE(&szThisFileNameAnsi);
-  SAFE_FREE(&szThisSubDirAnsi);
+	SAFE_FREE(&szThisFileNameAnsi);
+	SAFE_FREE(&szThisSubDirAnsi);
 	ppro->sendDirectPacket(dc, &packet);
 
 	ppro->BroadcastAck(dc->ft->hContact, ACKTYPE_FILE, ACKRESULT_NEXTFILE, dc->ft, 0);
