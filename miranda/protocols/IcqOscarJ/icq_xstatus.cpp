@@ -912,7 +912,7 @@ void CIcqProto::InitXStatusItems(BOOL bAllowStatus)
 
 	if (!m_bXStatusEnabled && !m_bMoodsEnabled) return;
 
-	if (bStatusMenu && !bAllowStatus) return;
+	if (!bAllowStatus) return;
 
 	// Custom Status UI is disabled, no need to continue items' init
 	if (m_bHideXStatusUI || m_bHideXStatusMenu) return;
@@ -941,10 +941,8 @@ void CIcqProto::InitXStatusItems(BOOL bAllowStatus)
 		mi.pszService = srvFce;
 		mi.pszContactOwner = m_szModuleName;
 
-		if (bStatusMenu)
-			hXStatusItems[i] = (HANDLE)CallService(MS_CLIST_ADDSTATUSMENUITEM, (WPARAM)&hXStatusRoot, (LPARAM)&mi);
-		else
-			hXStatusItems[i] = (HANDLE)CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM)&mi);
+		hXStatusItems[i] = (HANDLE)CallService(MS_CLIST_ADDSTATUSMENUITEM, (WPARAM)&hXStatusRoot, (LPARAM)&mi);
+
 		// CMIF_HIDDEN does not work for adding services
 		CListShowMenuItem(hXStatusItems[i], !(m_bHideXStatusUI || m_bHideXStatusMenu));
 	}

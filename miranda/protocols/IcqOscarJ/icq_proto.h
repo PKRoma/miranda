@@ -828,7 +828,6 @@ struct CIcqProto : public PROTO_INTERFACE
 	//----| icq_xstatus.cpp |-------------------------------------------------------------
 	int    m_bHideXStatusUI;
 	int    m_bHideXStatusMenu;
-	int    bStatusMenu;
 	int    bXStatusExtraIconsReady;
 	HANDLE hHookExtraIconsRebuild;
 	HANDLE hHookStatusBuild;
