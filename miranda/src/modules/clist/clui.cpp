@@ -341,7 +341,7 @@ int LoadCLUIModule(void)
 
 	PostMessage(cli.hwndContactList, M_RESTORESTATUS, 0, 0);
 
-    {
+	{
 		int state = DBGetContactSettingByte(NULL, "CList", "State", SETTING_STATE_NORMAL);
 		cli.hMenuMain = GetMenu(cli.hwndContactList);
 		if (!DBGetContactSettingByte(NULL, "CLUI", "ShowMainMenu", SETTING_SHOWMAINMENU_DEFAULT))
@@ -1091,10 +1091,10 @@ LRESULT CALLBACK fnContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 			DBWriteContactSettingDword(NULL, "CList", "Width", (DWORD) (rc.right - rc.left));
 		}
 
-        RemoveMenu(cli.hMenuMain, 0, MF_BYPOSITION);
-        RemoveMenu(cli.hMenuMain, 0, MF_BYPOSITION);
+		RemoveMenu(cli.hMenuMain, 0, MF_BYPOSITION);
+		RemoveMenu(cli.hMenuMain, 0, MF_BYPOSITION);
 
-        if ( cli.hwndStatus ) {
+		if ( cli.hwndStatus ) {
 			DestroyWindow( cli.hwndStatus );
 			cli.hwndStatus = NULL;
 		}
@@ -1106,6 +1106,7 @@ LRESULT CALLBACK fnContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 		DestroyWindow(cli.hwndContactTree);
 		FreeLibrary(hUserDll);
 		PostQuitMessage(0);
+
 	default:
 		return DefWindowProc(hwnd, msg, wParam, lParam);
 	}

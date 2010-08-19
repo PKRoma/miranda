@@ -294,6 +294,9 @@ __inline char* lrtrimp(char* str) { return ltrimp(rtrim(str)); };
 
 bool wildcmp(char * name, char * mask);
 
+void HotkeyToName(TCHAR *buf, int size, BYTE shift, BYTE key);
+WORD GetHotkeyValue( INT_PTR idHotkey );
+
 HBITMAP ConvertIconToBitmap(HICON hIcon, HIMAGELIST hIml, int iconId);
 
 #ifdef _UNICODE

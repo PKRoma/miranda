@@ -104,4 +104,10 @@ use it for own purposes.
 #define MS_HOTKEY_SUBCLASS			"CoreHotkeys/Subclass"
 #define MS_HOTKEY_UNSUBCLASS		"CoreHotkeys/Unsubclass"
 
+/* This event is fired when hotkeys were changed
+   wParam = lParam = 0
+*/
+
+#define ME_HOTKEYS_CHANGED       "CoreHotkeys/Changed"
+
 #endif // M_HOTKEYS_H__
