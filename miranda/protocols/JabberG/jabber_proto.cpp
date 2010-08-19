@@ -1282,6 +1282,11 @@ int __cdecl CJabberProto::SetApparentMode( HANDLE hContact, int mode )
 
 int __cdecl CJabberProto::SetStatus( int iNewStatus )
 {
+	if (m_iDesiredStatus == iNewStatus) 
+		return 0;
+
+	int oldStatus = m_iStatus;
+
 	Log( "PS_SETSTATUS( %d )", iNewStatus );
 	m_iDesiredStatus = iNewStatus;
 
@@ -1304,14 +1309,12 @@ int __cdecl CJabberProto::SetStatus( int iNewStatus )
 			}
 		}
 
-		int oldStatus = m_iStatus;
 		m_iStatus = m_iDesiredStatus = ID_STATUS_OFFLINE;
 		JSendBroadcast( NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS, ( HANDLE ) oldStatus, m_iStatus );
 	}
 	else if ( !m_bJabberConnected && !m_ThreadInfo && !( m_iStatus >= ID_STATUS_CONNECTING && m_iStatus < ID_STATUS_CONNECTING + MAX_CONNECT_RETRIES )) {
 		m_iStatus = ID_STATUS_CONNECTING;
 		ThreadData* thread = new ThreadData( this, JABBER_SESSION_NORMAL );
-		int oldStatus = m_iStatus;
 		JSendBroadcast( NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS, ( HANDLE ) oldStatus, m_iStatus );
 		thread->hThread = JForkThreadEx(( JThreadFunc )&CJabberProto::ServerThread, thread );
 
@@ -1319,6 +1322,8 @@ int __cdecl CJabberProto::SetStatus( int iNewStatus )
 	}
 	else if ( m_bJabberOnline )
 		SetServerStatus( iNewStatus );
+	else
+		JSendBroadcast( NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS, ( HANDLE ) oldStatus, m_iStatus );
 
 	return 0;
 }
