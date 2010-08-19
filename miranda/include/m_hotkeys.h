@@ -47,9 +47,9 @@ typedef struct
 	const char *pszService;       /* Service to call when HotKey Pressed */
 	WORD DefHotKey;               /* default hot key for action */
 	LPARAM lParam;                /* lParam to pass to service */
-#if MIRANDA_VER >= 0x900
-	DWORD dwFlags;
-#endif
+	#if MIRANDA_VER >= 0x900
+		DWORD dwFlags;
+	#endif
 } HOTKEYDESC;
 
 #if MIRANDA_VER >= 0x900
@@ -103,5 +103,11 @@ use it for own purposes.
 */
 #define MS_HOTKEY_SUBCLASS			"CoreHotkeys/Subclass"
 #define MS_HOTKEY_UNSUBCLASS		"CoreHotkeys/Unsubclass"
+
+/* This event is fired when hotkeys were changed
+   wParam = lParam = 0
+*/
+
+#define ME_HOTKEYS_CHANGED       "CoreHotkeys/Changed"
 
 #endif // M_HOTKEYS_H__

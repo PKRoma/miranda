@@ -23,6 +23,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "commonheaders.h"
 #pragma hdrstop
 
+#include "m_hotkeys.h"
+
 #include "clc.h"
 #include "genmenu.h"
 
@@ -71,6 +73,8 @@ static const int statusModePf2List[ MAX_STATUS_COUNT ] =
 	0xFFFFFFFF, PF2_ONLINE, PF2_SHORTAWAY, PF2_LONGAWAY, PF2_LIGHTDND,
 	PF2_HEAVYDND, PF2_FREECHAT, PF2_INVISIBLE, PF2_ONTHEPHONE, PF2_OUTTOLUNCH
 };
+
+static INT_PTR statusHotkeys[ MAX_STATUS_COUNT ];
 
 PMO_IntMenuItem* hStatusMainMenuHandles;
 int  hStatusMainMenuHandlesCnt;
@@ -863,9 +867,7 @@ void RebuildMenuOrder( void )
 {
 	int i,j,s;
 	DWORD flags;
-	TMenuParam tmp;
-	int pos=0;
-	PROTOACCOUNT* pa;
+	
 	BYTE bHideStatusMenu = DBGetContactSettingByte( NULL, "CLUI", "DontHideStatusMenu", 0 ); // cool perversion, though
 
 	//clear statusmenu
@@ -877,7 +879,8 @@ void RebuildMenuOrder( void )
 		mir_free( hStatusMainMenuHandles );
 		mir_free( hStatusMenuHandles );
 	}
-	memset(&tmp,0,sizeof(tmp));
+
+	TMenuParam tmp = { 0 };
 	tmp.cbSize = sizeof(tmp);
 	tmp.ExecService = "StatusMenuExecService";
 	tmp.CheckService = "StatusMenuCheckService";
@@ -899,8 +902,8 @@ void RebuildMenuOrder( void )
 		if ( i == -1 )
 			continue;
 
-		pa = accounts[i];
-		pos = 0;
+		PROTOACCOUNT* pa = accounts[i];
+		int pos = 0;
 		if ( !bHideStatusMenu && !cli.pfnGetProtocolVisibility( pa->szModuleName ))
 			continue;
 
@@ -1007,12 +1010,12 @@ void RebuildMenuOrder( void )
 	}	}
 
 	NotifyEventHooks(cli.hPreBuildStatusMenuEvent, 0, 0);
-	pos = 200000;
+	int pos = 200000;
 
 	//add to root menu
 	for ( j=0; j < SIZEOF(statusModeList); j++ ) {
 		for ( i=0; i < accounts.getCount(); i++ ) {
-			pa = accounts[i];
+			PROTOACCOUNT* pa = accounts[i];
 			if ( !bHideStatusMenu && !cli.pfnGetProtocolVisibility( pa->szModuleName ))
 				continue;
 
@@ -1039,10 +1042,13 @@ void RebuildMenuOrder( void )
 				tmi.ownerdata = smep;
 			}
 			{
-				TCHAR buf[ 256 ];
-				mir_sntprintf( buf, SIZEOF( buf ), TranslateT("%s\tCtrl+%c"),
-					cli.pfnGetStatusModeDescription( statusModeList[j], 0 ), '0'+j );
+				TCHAR buf[ 256 ], hotkeyName[ 100 ];
+				WORD hotKey = GetHotkeyValue( statusHotkeys[j] );
+				HotkeyToName( hotkeyName, SIZEOF(hotkeyName), HIBYTE(hotKey), LOBYTE(hotKey));
+				mir_sntprintf( buf, SIZEOF( buf ), TranslateT("%s\t%s"),
+					cli.pfnGetStatusModeDescription( statusModeList[j], 0 ), hotkeyName );
 				tmi.ptszName = buf;
+				tmi.hotKey = MAKELONG(HIBYTE(hotKey), LOBYTE(hotKey));
 				hStatusMainMenuHandles[j] = MO_AddNewMenuItem( hStatusMenuObject, &tmi );
 			}
 			{
@@ -1056,6 +1062,30 @@ void RebuildMenuOrder( void )
 
 	BuildStatusMenu(0,0);
 }
+
+/////////////////////////////////////////////////////////////////////////////////////////
+
+static INT_PTR sttRebuildHotkeys( WPARAM, LPARAM )
+{
+	TMO_MenuItem tmi = { 0 };
+	tmi.cbSize = sizeof( tmi );
+	tmi.flags = CMIM_HOTKEY | CMIM_NAME | CMIF_TCHAR;
+
+	for ( int j=0; j < SIZEOF(statusModeList); j++ ) {
+		TCHAR buf[ 256 ], hotkeyName[ 100 ];
+		WORD hotKey = GetHotkeyValue( statusHotkeys[j] );
+		HotkeyToName( hotkeyName, SIZEOF(hotkeyName), HIBYTE(hotKey), LOBYTE(hotKey));
+		mir_sntprintf( buf, SIZEOF( buf ), TranslateT("%s\t%s"),
+			cli.pfnGetStatusModeDescription( statusModeList[j], 0 ), hotkeyName );
+		tmi.ptszName = buf;
+		tmi.hotKey = MAKELONG(HIBYTE(hotKey), LOBYTE(hotKey));
+		MO_ModifyMenuItem( hStatusMainMenuHandles[j], &tmi );
+	}
+
+	return 0;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
 
 int statustopos(int status)
 {
@@ -1347,6 +1377,22 @@ void InitCustomMenus(void)
 	MO_SetOptionsMenuObject( hContactMenuObject, OPT_USERDEFINEDITEMS, TRUE );
 	MO_SetOptionsMenuObject( hContactMenuObject, OPT_MENUOBJECT_SET_FREE_SERVICE, (INT_PTR)"CLISTMENUS/FreeOwnerDataContactMenu" );
 
+	// initialize hotkeys
+	HOTKEYDESC hkd = { 0 };
+	hkd.cbSize = sizeof( hkd );
+	hkd.ptszSection = _T("Contact List");
+	hkd.dwFlags = HKD_TCHAR;
+	for ( int i = 0; i < SIZEOF(statusHotkeys); i++ ) {
+		char szName[30];
+		mir_snprintf( szName, SIZEOF(szName), "StatusHotKey_%d", i );
+		hkd.pszName = szName;
+		hkd.ptszDescription = fnGetStatusModeDescription( ID_STATUS_OFFLINE+i, 0 );
+		hkd.DefHotKey = HOTKEYCODE( HOTKEYF_CONTROL, '0'+i );
+		statusHotkeys[i] = CallService( MS_HOTKEY_REGISTER, 0, LPARAM( &hkd ));
+	}
+
+	HookEvent( ME_HOTKEYS_CHANGED, sttRebuildHotkeys );
+
    // add exit command to menu
 	{
 		CLISTMENUITEM mi = { 0 };
@@ -1355,7 +1401,7 @@ void InitCustomMenus(void)
 		mi.flags = CMIF_ICONFROMICOLIB;
 		mi.pszService = "CloseAction";
 		mi.pszName = LPGEN("E&xit");
-        mi.icolibItem = GetSkinIconHandle( SKINICON_OTHER_EXIT );
+		mi.icolibItem = GetSkinIconHandle( SKINICON_OTHER_EXIT );
 		AddMainMenuItem( 0, ( LPARAM )&mi );
 	}
 

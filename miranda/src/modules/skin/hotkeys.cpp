@@ -75,11 +75,11 @@ static HWND g_hwndHotkeyHost = NULL;
 static HWND g_hwndOptions = NULL;
 static DWORD g_pid = 0;
 static int g_hotkeyCount = 0;
+static HANDLE hEvChanged = 0;
 
 static LRESULT CALLBACK sttHotkeyHostWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 static TCHAR *sttHokeyVkToName(WORD vkKey);
-static void sttHokeyToName(TCHAR *buf, int size, BYTE shift, BYTE key);
 static void sttHotkeyEditCreate(HWND hwnd);
 static void sttHotkeyEditDestroy(HWND hwnd);
 static LRESULT CALLBACK sttHotkeyEditProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -245,7 +245,7 @@ static INT_PTR svcHotkeyRegister(WPARAM wParam, LPARAM lParam)
 		}
 		item->allowSubHotkeys = count < 0;
 	}
-	else  {
+	else {
 		mir_free( item->pszName );
 		item->pszName = NULL;
 	}
@@ -401,7 +401,7 @@ static TCHAR *sttHokeyVkToName(WORD vkKey)
 	return buf;
 }
 
-static void sttHokeyToName(TCHAR *buf, int size, BYTE shift, BYTE key)
+void HotkeyToName(TCHAR *buf, int size, BYTE shift, BYTE key)
 {
 	mir_sntprintf(buf, size, _T("%s%s%s%s%s"),
 		(shift & HOTKEYF_CONTROL)	? _T("Ctrl + ")		: _T(""),
@@ -409,6 +409,15 @@ static void sttHokeyToName(TCHAR *buf, int size, BYTE shift, BYTE key)
 		(shift & HOTKEYF_SHIFT)		? _T("Shift + ")	: _T(""),
 		(shift & HOTKEYF_EXT)		? _T("Win + ")		: _T(""),
 		sttHokeyVkToName(key));
+}
+
+WORD GetHotkeyValue( INT_PTR idHotkey )
+{
+	for ( int i = 0; i < hotkeys.getCount(); i++ )
+		if ( hotkeys[i]->idHotkey == idHotkey )
+			return hotkeys[i]->Hotkey;
+
+	return 0;
 }
 
 static LRESULT CALLBACK sttHotkeyEditProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
@@ -426,7 +435,7 @@ static LRESULT CALLBACK sttHotkeyEditProc(HWND hwnd, UINT msg, WPARAM wParam, LP
 			TCHAR buf[256] = {0};
 			data->key = (BYTE)LOWORD(wParam);
 			data->shift = (BYTE)HIWORD(wParam);
-			sttHokeyToName(buf, SIZEOF(buf), data->shift, data->key);
+			HotkeyToName(buf, SIZEOF(buf), data->shift, data->key);
 			SetWindowText(hwnd, buf);
 			return 0;
 		}
@@ -467,7 +476,7 @@ static LRESULT CALLBACK sttHotkeyEditProc(HWND hwnd, UINT msg, WPARAM wParam, LP
 				data->key = key;
 			}
 
-			sttHokeyToName(buf, SIZEOF(buf), data->shift, data->key);
+			HotkeyToName(buf, SIZEOF(buf), data->shift, data->key);
 			SetWindowText(hwnd, buf);
 
 			if (bKeyDown && data->key)
@@ -525,7 +534,7 @@ static void sttOptionsSetupItem(HWND hwndList, int idx, THotkeyItem *item)
 
 	lvi.mask = LVIF_TEXT;
 	lvi.iSubItem = COL_KEY;
-	sttHokeyToName(buf, SIZEOF(buf), HIBYTE(item->OptHotkey), LOBYTE(item->OptHotkey));
+	HotkeyToName(buf, SIZEOF(buf), HIBYTE(item->OptHotkey), LOBYTE(item->OptHotkey));
 	lvi.pszText = buf;
 	ListView_SetItem(hwndList, &lvi);
 
@@ -1116,8 +1125,7 @@ static INT_PTR CALLBACK sttOptionsDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam,
 
 				sttUnregisterHotkeys();
 
-				for (i = 0; i < hotkeys.getCount(); i++)
-				{
+				for (i = 0; i < hotkeys.getCount(); i++) {
 					THotkeyItem *item = hotkeys[i];
 					if (item->OptNew && item->OptDeleted ||
 						item->rootHotkey && !item->OptHotkey ||
@@ -1129,8 +1137,7 @@ static INT_PTR CALLBACK sttOptionsDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam,
 					}
 				}
 
-				if (lpnmhdr->code == PSN_APPLY)
-				{
+				if (lpnmhdr->code == PSN_APPLY) {
 					LVITEM lvi = {0};
 					int count = ListView_GetItemCount(hwndHotkey);
 
@@ -1146,6 +1153,7 @@ static INT_PTR CALLBACK sttOptionsDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam,
 
 				sttRegisterHotkeys();
 
+				NotifyEventHooks( hEvChanged, 0, 0 );
 				break;
 			}
 		case IDC_LV_HOTKEYS:
@@ -1412,6 +1420,8 @@ int LoadSkinHotkeys(void)
 
 	hhkKeyboard = SetWindowsHookEx(WH_KEYBOARD, sttKeyboardProc, NULL, GetCurrentThreadId());
 
+	hEvChanged = CreateHookableEvent(ME_HOTKEYS_CHANGED);
+
 	CreateServiceFunction(MS_HOTKEY_SUBCLASS, svcHotkeySubclass);
 	CreateServiceFunction(MS_HOTKEY_UNSUBCLASS, svcHotkeyUnsubclass);
 	CreateServiceFunction(MS_HOTKEY_REGISTER, svcHotkeyRegister);
@@ -1445,6 +1455,7 @@ void UnloadSkinHotkeys(void)
 
 	if ( !bModuleInitialized ) return;
 
+	DestroyHookableEvent(hEvChanged);
 	UnhookWindowsHookEx(hhkKeyboard);
 	sttUnregisterHotkeys();
 	DestroyWindow(g_hwndHotkeyHost);
