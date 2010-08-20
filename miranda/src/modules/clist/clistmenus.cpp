@@ -1386,7 +1386,7 @@ void InitCustomMenus(void)
 		char szName[30];
 		mir_snprintf( szName, SIZEOF(szName), "StatusHotKey_%d", i );
 		hkd.pszName = szName;
-		hkd.ptszDescription = fnGetStatusModeDescription( ID_STATUS_OFFLINE+i, 0 );
+		hkd.ptszDescription = fnGetStatusModeDescription( statusModeList[i], 0 );
 		hkd.DefHotKey = HOTKEYCODE( HOTKEYF_CONTROL, '0'+i );
 		statusHotkeys[i] = CallService( MS_HOTKEY_REGISTER, 0, LPARAM( &hkd ));
 	}
