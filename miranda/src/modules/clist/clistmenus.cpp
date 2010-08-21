@@ -1380,7 +1380,7 @@ void InitCustomMenus(void)
 	// initialize hotkeys
 	HOTKEYDESC hkd = { 0 };
 	hkd.cbSize = sizeof( hkd );
-	hkd.ptszSection = _T("Contact List");
+	hkd.ptszSection = _T("Status");
 	hkd.dwFlags = HKD_TCHAR;
 	for ( int i = 0; i < SIZEOF(statusHotkeys); i++ ) {
 		char szName[30];
