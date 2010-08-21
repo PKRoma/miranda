@@ -716,7 +716,9 @@ INT_PTR NetlibOpenConnection(WPARAM wParam,LPARAM lParam)
 
 INT_PTR NetlibStartSsl(WPARAM wParam, LPARAM lParam)
 {
-	struct NetlibConnection *nlc = (struct NetlibConnection*)wParam;
+	NetlibConnection *nlc = (NetlibConnection*)wParam;
+	if (nlc == NULL) return 0;
+
 	NETLIBSSL *sp = (NETLIBSSL*)lParam;
 	const char *szHost = sp ? sp->host : nlc->nloc.szHost;
 
