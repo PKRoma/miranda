@@ -1065,7 +1065,7 @@ void RebuildMenuOrder( void )
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-static INT_PTR sttRebuildHotkeys( WPARAM, LPARAM )
+static int sttRebuildHotkeys( WPARAM, LPARAM )
 {
 	TMO_MenuItem tmi = { 0 };
 	tmi.cbSize = sizeof( tmi );
