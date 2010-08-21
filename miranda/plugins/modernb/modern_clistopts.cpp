@@ -969,7 +969,7 @@ static INT_PTR CALLBACK DlgProcItemSecondLineOpts(HWND hwndDlg, UINT msg, WPARAM
 							{
 								TCHAR t[TEXT_TEXT_MAX_LENGTH];
 
-								GetWindowText(GetDlgItem(hwndDlg,IDC_VARIABLE_TEXT), t, sizeof(t));
+								GetWindowText(GetDlgItem(hwndDlg,IDC_VARIABLE_TEXT), t, SIZEOF(t));
 								t[TEXT_TEXT_MAX_LENGTH - 1] = '\0';
 
 								ModernWriteSettingTString(NULL, "CList", "SecondLineText", t);
@@ -1162,7 +1162,7 @@ static INT_PTR CALLBACK DlgProcItemThirdLineOpts(HWND hwndDlg, UINT msg, WPARAM 
 							{
 								TCHAR t[TEXT_TEXT_MAX_LENGTH];
 
-								GetWindowText(GetDlgItem(hwndDlg,IDC_VARIABLE_TEXT), t, sizeof(t));
+								GetWindowText(GetDlgItem(hwndDlg,IDC_VARIABLE_TEXT), t, SIZEOF(t));
 								t[TEXT_TEXT_MAX_LENGTH - 1] = '\0';
 
 								ModernWriteSettingTString(NULL, "CList", "ThirdLineText", t);

@@ -456,7 +456,7 @@ int LoadSkinIcons(void)
 
 	ZeroMemory( &sid, sizeof(sid) );
 	sid.cbSize = sizeof(sid);
-	GetModuleFileName(NULL, modulePath, sizeof(modulePath));
+	GetModuleFileName(NULL, modulePath, SIZEOF(modulePath));
 	sid.ptszDefaultFile = modulePath;
     sid.flags = SIDF_PATH_TCHAR;
 	sid.pszName = iconName;

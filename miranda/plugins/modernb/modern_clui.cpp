@@ -118,7 +118,7 @@ int CLUI::OnEvent_ContactMenuPreBuild(WPARAM wParam, LPARAM lParam)
 	ZeroMemory(&mi,sizeof(mi));
 	mi.cbSize = sizeof(mi);
 	mi.flags = CMIM_FLAGS;
-	GetClassName(hwndClist,cls,sizeof(cls));
+	GetClassName(hwndClist,cls,SIZEOF(cls));
 	hwndClist = (!lstrcmp(CLISTCONTROL_CLASS,cls))?hwndClist:pcli->hwndContactList;
 	hItem = (HANDLE)SendMessage(hwndClist,CLM_GETSELECTION,0,0);
 	if (!hItem) {
