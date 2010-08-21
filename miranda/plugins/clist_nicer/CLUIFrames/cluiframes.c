@@ -874,7 +874,7 @@ static int CLUIFramesModifyContextMenuForFrame(WPARAM wParam, LPARAM lParam)
 		return -1;
 
 	lockfrm();
-	pos = id2pos(wParam);
+	pos = id2pos((INT_PTR)wParam);
 
 	if (pos >= 0 && pos < nFramescount) {
 		memset(&mi, 0, sizeof(mi));
@@ -938,7 +938,7 @@ INT_PTR CLUIFramesModifyMainMenuItems(WPARAM wParam, LPARAM lParam)
 		return -1;
 
 	lockfrm();
-	pos = id2pos(wParam);
+	pos = id2pos((INT_PTR)wParam);
 
 	if (pos >= 0 && pos < nFramescount) {
 		memset(&mi, 0, sizeof(mi));
@@ -1269,7 +1269,7 @@ INT_PTR CLUIFramesShowHideFrame(WPARAM wParam, LPARAM lParam)
 		return -1;
 
 	lockfrm();
-	pos = id2pos(wParam);
+	pos = id2pos((INT_PTR)wParam);
 	if (pos >= 0 && !lstrcmp(Frames[pos].name, _T("My Contacts")))
 		Frames[pos].visible = 1;
 	else {
@@ -1294,7 +1294,7 @@ INT_PTR CLUIFramesShowHideFrameTitleBar(WPARAM wParam, LPARAM lParam)
 		return -1;
 
 	lockfrm();
-	pos = id2pos(wParam);
+	pos = id2pos((INT_PTR)wParam);
 	if (pos >= 0 && (int)pos < nFramescount) {
 		Frames[pos].TitleBar.ShowTitleBar = !Frames[pos].TitleBar.ShowTitleBar;
 		SetWindowPos(Frames[pos].hWnd, 0, 0, 0, 0, 0, SWP_NOZORDER | SWP_NOMOVE | SWP_NOSIZE | SWP_FRAMECHANGED);
@@ -1316,7 +1316,7 @@ INT_PTR CLUIFramesMoveUpDown(WPARAM wParam, LPARAM lParam)
 		return -1;
 
 	lockfrm();
-	pos = id2pos(wParam);
+	pos = id2pos((INT_PTR)wParam);
 	if (pos >= 0 && (int)pos < nFramescount) {
 		curpos = Frames[pos].order;
 		curalign = Frames[pos].align;
@@ -1412,7 +1412,7 @@ INT_PTR CLUIFramesLockUnlockFrame(WPARAM wParam, LPARAM lParam)
 		return -1;
 
 	lockfrm();
-	pos = id2pos(wParam);
+	pos = id2pos((INT_PTR)wParam);
 	if (pos >= 0 && (int)pos < nFramescount) {
 		Frames[pos].Locked = !Frames[pos].Locked;
 		CLUIFramesStoreFrameSettings(pos);
@@ -1433,7 +1433,7 @@ INT_PTR CLUIFramesSetUnSetBorder(WPARAM wParam, LPARAM lParam)
 		return -1;
 
 	lockfrm();
-	FrameId = id2pos(wParam);
+	FrameId = id2pos((INT_PTR)wParam);
 	if (FrameId == -1) {
 		ulockfrm();
 		return(-1);
@@ -1465,7 +1465,7 @@ INT_PTR CLUIFramesSetUnSetSkinned(WPARAM wParam, LPARAM lParam)
 		return -1;
 
 	lockfrm();
-	FrameId = id2pos(wParam);
+	FrameId = id2pos((INT_PTR)wParam);
 	if (FrameId == -1) {
 		ulockfrm();
 		return(-1);
@@ -1495,7 +1495,7 @@ INT_PTR CLUIFramesCollapseUnCollapseFrame(WPARAM wParam, LPARAM lParam)
 
 	TitleBarH = g_CluiData.titleBarHeight;
 	lockfrm();
-	FrameId = id2pos(wParam);
+	FrameId = id2pos((INT_PTR)wParam);
 	if (FrameId >= 0 && FrameId < nFramescount) {
 		int oldHeight;
 
@@ -2021,7 +2021,7 @@ static INT_PTR CLUIFramesRemoveFrame(WPARAM wParam, LPARAM lParam)
 		return -1;
 
 	lockfrm();
-	pos = id2pos(wParam);
+	pos = id2pos((INT_PTR)wParam);
 
 	if (pos < 0 || pos > nFramescount) {
 		ulockfrm();
@@ -2311,6 +2311,7 @@ int CLUIFramesResize(const RECT newsize)
 
 INT_PTR CLUIFramesUpdateFrame(WPARAM wParam, LPARAM lParam)
 {
+	int pos;  
 	if (FramesSysNotStarted)
 		return -1;
 	if (wParam == -1) {
@@ -2321,15 +2322,15 @@ INT_PTR CLUIFramesUpdateFrame(WPARAM wParam, LPARAM lParam)
 		CLUIFramesOnClistResize((WPARAM)pcli->hwndContactList, 1);
 
 	lockfrm();
-	wParam = id2pos(wParam);
-	if (wParam < 0 || (int)wParam >= nFramescount) {
+	pos = id2pos((INT_PTR)wParam);
+	if (pos < 0 || pos >= nFramescount) {
 		ulockfrm();
 		return -1;
 	}
 	if (lParam&FU_TBREDRAW)
-		CLUIFramesForceUpdateTB(&Frames[wParam]);
+		CLUIFramesForceUpdateTB(&Frames[pos]);
 	if (lParam&FU_FMREDRAW)
-		CLUIFramesForceUpdateFrame(&Frames[wParam]);
+		CLUIFramesForceUpdateFrame(&Frames[pos]);
 	ulockfrm();
 	return 0;
 }
@@ -2620,7 +2621,7 @@ LRESULT CALLBACK CLUIFrameTitleBarProc(HWND hwnd, UINT msg, WPARAM wParam, LPARA
 	int Frameid, Framemod, direction;
 	int xpos, ypos;
 
-	Frameid = (GetWindowLongPtr(hwnd, GWLP_USERDATA));
+	Frameid = (GetWindowLongPtr(hwnd, GWLP_USERDATA);
 	memset(&rect, 0, sizeof(rect));
 
 	switch (msg) {
@@ -3138,9 +3139,7 @@ LRESULT CALLBACK CLUIFrameContainerWndProc(HWND hwnd, UINT msg, WPARAM wParam, L
 {
 
 	RECT rect;
-	int Frameid;
-
-	Frameid = (GetWindowLongPtr(hwnd, GWLP_USERDATA));
+	INT_PTR Frameid = GetWindowLongPtr(hwnd, GWLP_USERDATA));
 	memset(&rect, 0, sizeof(rect));
 	switch (msg) {
 		case WM_CREATE: {
@@ -3270,7 +3269,7 @@ INT_PTR CLUIFrameSetFloat(WPARAM wParam, LPARAM lParam)
 	HWND hwndtmp, hwndtooltiptmp;
 
 	lockfrm();
-	wParam = id2pos(wParam);
+	wParam = id2pos((INT_PTR)wParam);
 	if (wParam >= 0 && (int)wParam < nFramescount)
 		if (Frames[wParam].floating) {
 			SetParent(Frames[wParam].hWnd, pcli->hwndContactList);
