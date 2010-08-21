@@ -55,7 +55,7 @@ extern struct CluiData g_CluiData;
 
 //we use dynamic frame list,
 //but who wants so huge number of frames ??
-#define MAX_FRAMES		16
+#define MAX_FRAMES		40
 
 #define UNCOLLAPSED_FRAME_SIZE		0
 
