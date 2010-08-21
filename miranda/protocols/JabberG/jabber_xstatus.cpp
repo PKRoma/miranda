@@ -1656,7 +1656,6 @@ CJabberInfoFrame::CJabberInfoFrame(CJabberProto *proto):
 		frame.cbSize = sizeof(frame);
 		HWND hwndClist = (HWND)CallService(MS_CLUI_GETHWND, 0, 0);
 		frame.hWnd = CreateWindowEx(0, _T("JabberInfoFrameClass"), NULL, WS_CHILD|WS_VISIBLE, 0, 0, 100, 100, hwndClist, NULL, hInst, this);
-		frame.hIcon = NULL;
 		frame.align = alBottom;
 		frame.height = 2 * SZ_FRAMEPADDING + GetSystemMetrics(SM_CYSMICON) + SZ_LINEPADDING; // compact height by default
 		frame.Flags = F_VISIBLE|F_LOCKED|F_NOBORDER|F_TCHAR;
@@ -1664,6 +1663,10 @@ CJabberInfoFrame::CJabberInfoFrame(CJabberProto *proto):
 		frame.TBtname = proto->m_tszUserName;
 		m_frameId = CallService(MS_CLIST_FRAMES_ADDFRAME, (WPARAM)&frame, 0);
 		mir_free(frame.tname);
+		if (m_frameId == -1) {
+			DestroyWindow(frame.hWnd);
+			return;
+		}
 
 		m_hhkFontsChanged = HookEventMessage(ME_FONT_RELOAD, m_hwnd, WM_APP);
 		ReloadFonts();
