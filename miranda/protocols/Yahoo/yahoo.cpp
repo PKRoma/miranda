@@ -800,7 +800,7 @@ void CYahooProto::ext_contact_added(const char *myid, const char *who, const cha
 	pre.flags			= PREF_UTF;
 	pre.timestamp		= time(NULL);
 	
-	pre.lParam = sizeof(DWORD)*2+lstrlenA(who)+lstrlenA(nick)+5;
+	pre.lParam = sizeof(DWORD)+sizeof(HANDLE)+lstrlenA(who)+lstrlenA(nick)+5;
 
 	if (fname != NULL)
 		pre.lParam += lstrlenA(fname);
@@ -827,8 +827,8 @@ void CYahooProto::ext_contact_added(const char *myid, const char *who, const cha
 	pCurBlob+=sizeof(DWORD);
 
 	// hContact
-	*( PDWORD )pCurBlob = ( DWORD )hContact; 
-	pCurBlob+=sizeof(DWORD);
+	*( PHANDLE )pCurBlob = hContact; 
+	pCurBlob+=sizeof(HANDLE);
 
 	// NICK
 	lstrcpyA((char *)pCurBlob, nick); 
@@ -1389,15 +1389,23 @@ void yahoo_callback(struct _conn *c, yahoo_input_condition cond)
 
 int CYahooProto::ext_connect_async(const char *host, int port, int type, yahoo_connect_callback callback, void *data)
 {
-    LOG(("ext_connect_async %s:%d type: %d", host, port, type));
+	int err = 0, res;
+	
+    LOG(("[ext_connect_async] %s:%d type: %d", host, port, type));
     
-    int res = ext_connect(host, port, type);
+    res = ext_connect(host, port, type);
 
+	LOG(("[ext_connect_async] %s:%d type: %d, result: %d", host, port, type, res));
+	
+	if (type == YAHOO_CONNECTION_PAGER && res < 1) {
+		err = 1;
+	} 
+		
 	/*
 	 * need to call the callback so we could handle the failure condition!!!
 	 * fd = -1 in case of an error
 	 */
-	callback(res, 0, data);
+	callback(res, err, data);
 	
 	/*
 	 * Return proper thing: 0 - ok, -1 - failed, >0 - pending connect
