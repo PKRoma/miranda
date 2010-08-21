@@ -145,7 +145,7 @@ static void SearchForLists(HWND hdlg, const TCHAR *mirandaPath, const TCHAR *mir
 	TCHAR* str2;
 	int i;
 
-	mir_sntprintf(szSearchPath, sizeof(szSearchPath), _T("%s\\%s"), mirandaPath, pattern);
+	mir_sntprintf(szSearchPath, SIZEOF(szSearchPath), _T("%s\\%s"), mirandaPath, pattern);
 	hFind = FindFirstFile(szSearchPath, &fd);
 	if (hFind != INVALID_HANDLE_VALUE)
 	{

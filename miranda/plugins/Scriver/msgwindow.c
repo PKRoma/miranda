@@ -1029,7 +1029,7 @@ INT_PTR CALLBACK DlgProcParentWindow(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 			if (tbd != NULL && dat->hwndActive == hwnd) {
 				if (tbd->iFlags & TBDF_TEXT) {
 					TCHAR oldtitle[256];
-					GetWindowText(hwndDlg, oldtitle, sizeof(oldtitle));
+					GetWindowText(hwndDlg, oldtitle, SIZEOF(oldtitle));
 					if (lstrcmp(tbd->pszText, oldtitle)) { //swt() flickers even if the title hasn't actually changed
 						SetWindowText(hwndDlg, tbd->pszText);
 						//SendMessage(hwndDlg, WM_SIZE, 0, 0);
