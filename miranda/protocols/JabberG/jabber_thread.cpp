@@ -286,7 +286,7 @@ LBL_Exit:
 LBL_FatalError:
 			m_ThreadInfo = NULL;
 			oldStatus = m_iStatus;
-			m_iStatus = ID_STATUS_OFFLINE;
+			m_iDesiredStatus = m_iStatus = ID_STATUS_OFFLINE;
 			JSendBroadcast( NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS, ( HANDLE ) oldStatus, m_iStatus );
          goto LBL_Exit;
 		}
@@ -588,7 +588,7 @@ recvRest:
 
 			// Set status to offline
 			oldStatus = m_iStatus;
-			m_iStatus = ID_STATUS_OFFLINE;
+			m_iDesiredStatus = m_iStatus = ID_STATUS_OFFLINE;
 			JSendBroadcast( NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS, ( HANDLE ) oldStatus, m_iStatus );
 
 			// Set all contacts to offline
@@ -615,7 +615,7 @@ recvRest:
 	}
 	else if ( info->type == JABBER_SESSION_NORMAL ) {
 		oldStatus = m_iStatus;
-		m_iStatus = ID_STATUS_OFFLINE;
+		m_iDesiredStatus = m_iStatus = ID_STATUS_OFFLINE;
 		JSendBroadcast( NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS, ( HANDLE ) oldStatus, m_iStatus );
 	}
 
