@@ -800,7 +800,7 @@ void CYahooProto::ext_contact_added(const char *myid, const char *who, const cha
 	pre.flags			= PREF_UTF;
 	pre.timestamp		= time(NULL);
 	
-	pre.lParam = sizeof(DWORD)*2+lstrlenA(who)+lstrlenA(nick)+5;
+	pre.lParam = sizeof(DWORD)+sizeof(HANDLE)+lstrlenA(who)+lstrlenA(nick)+5;
 
 	if (fname != NULL)
 		pre.lParam += lstrlenA(fname);
@@ -827,8 +827,8 @@ void CYahooProto::ext_contact_added(const char *myid, const char *who, const cha
 	pCurBlob+=sizeof(DWORD);
 
 	// hContact
-	*( PDWORD )pCurBlob = ( DWORD )hContact; 
-	pCurBlob+=sizeof(DWORD);
+	*( PHANDLE )pCurBlob = hContact; 
+	pCurBlob+=sizeof(HANDLE);
 
 	// NICK
 	lstrcpyA((char *)pCurBlob, nick); 
