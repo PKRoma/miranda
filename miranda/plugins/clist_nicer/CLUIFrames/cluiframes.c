@@ -2621,7 +2621,7 @@ LRESULT CALLBACK CLUIFrameTitleBarProc(HWND hwnd, UINT msg, WPARAM wParam, LPARA
 	int Frameid, Framemod, direction;
 	int xpos, ypos;
 
-	Frameid = (GetWindowLongPtr(hwnd, GWLP_USERDATA);
+	Frameid = GetWindowLongPtr(hwnd, GWLP_USERDATA);
 	memset(&rect, 0, sizeof(rect));
 
 	switch (msg) {
@@ -3139,7 +3139,7 @@ LRESULT CALLBACK CLUIFrameContainerWndProc(HWND hwnd, UINT msg, WPARAM wParam, L
 {
 
 	RECT rect;
-	INT_PTR Frameid = GetWindowLongPtr(hwnd, GWLP_USERDATA));
+	INT_PTR Frameid = GetWindowLongPtr(hwnd, GWLP_USERDATA);
 	memset(&rect, 0, sizeof(rect));
 	switch (msg) {
 		case WM_CREATE: {
