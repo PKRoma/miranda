@@ -28,6 +28,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "clc.h"
 #include "genmenu.h"
 
+#define MS_CLIST_HKSTATUS "Clist/HK/SetStatus"
+
 #define FIRSTCUSTOMMENUITEMID	30000
 #define MENU_CUSTOMITEMMAIN		0x80000000
 //#define MENU_CUSTOMITEMCONTEXT	0x40000000
@@ -1282,6 +1284,11 @@ static INT_PTR AddStatusMenuItem(WPARAM wParam,LPARAM lParam)
 	return ( INT_PTR )menuHandle;
 }
 
+static INT_PTR HotkeySetStatus(WPARAM wParam,LPARAM lParam)
+{
+	return SetStatusMode( lParam, 0 );
+}
+
 /////////////////////////////////////////////////////////////////////////////////////////
 // PROTOCOL MENU
 
@@ -1378,6 +1385,8 @@ void InitCustomMenus(void)
 	MO_SetOptionsMenuObject( hContactMenuObject, OPT_MENUOBJECT_SET_FREE_SERVICE, (INT_PTR)"CLISTMENUS/FreeOwnerDataContactMenu" );
 
 	// initialize hotkeys
+	CreateServiceFunction(MS_CLIST_HKSTATUS, HotkeySetStatus);
+
 	HOTKEYDESC hkd = { 0 };
 	hkd.cbSize = sizeof( hkd );
 	hkd.ptszSection = _T("Status");
@@ -1386,8 +1395,10 @@ void InitCustomMenus(void)
 		char szName[30];
 		mir_snprintf( szName, SIZEOF(szName), "StatusHotKey_%d", i );
 		hkd.pszName = szName;
-		hkd.ptszDescription = fnGetStatusModeDescription( statusModeList[i], 0 );
-		hkd.DefHotKey = HOTKEYCODE( HOTKEYF_CONTROL, '0'+i );
+		hkd.lParam = statusModeList[i];
+		hkd.ptszDescription = fnGetStatusModeDescription( hkd.lParam, 0 );
+		hkd.DefHotKey = HOTKEYCODE( HOTKEYF_CONTROL, '0'+i ) | HKF_MIRANDA_LOCAL;
+		hkd.pszService = MS_CLIST_HKSTATUS;
 		statusHotkeys[i] = CallService( MS_HOTKEY_REGISTER, 0, LPARAM( &hkd ));
 	}
 
