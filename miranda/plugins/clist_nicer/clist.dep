@@ -156,15 +156,6 @@
 	
 
 .\clnplus.cpp : \
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\basetsd.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\guiddef.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\propidl.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\reason.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shobjidl.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shtypes.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\stralign.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\tvout.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\winefs.h"\
 	"..\..\include\m_stdhdr.h"\
 	
 
@@ -200,14 +191,6 @@
 	
 
 .\commonheaders.c : \
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\basetsd.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\guiddef.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\propidl.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\reason.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\stralign.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\tvout.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\uxtheme.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
@@ -257,13 +240,6 @@
 	
 
 .\coolsb\coolsblib.c : \
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\basetsd.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\guiddef.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\propidl.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\reason.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\stralign.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\tvout.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\winefs.h"\
 	"..\..\include\win2k.h"\
 	".\coolsb\coolsb_internal.h"\
 	".\coolsb\coolscroll.h"\
@@ -271,11 +247,6 @@
 	
 
 .\coolsb\coolscroll.c : \
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\basetsd.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\guiddef.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\reason.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\stralign.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\tvout.h"\
 	"..\..\include\win2k.h"\
 	".\coolsb\coolsb_internal.h"\
 	".\coolsb\coolscroll.h"\

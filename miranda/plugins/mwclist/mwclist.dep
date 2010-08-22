@@ -153,13 +153,6 @@
 	
 
 .\commonheaders.c : \
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\basetsd.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\guiddef.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\propidl.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\reason.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\stralign.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\tvout.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
