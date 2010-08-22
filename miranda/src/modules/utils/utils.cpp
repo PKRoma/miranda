@@ -30,6 +30,9 @@ int InitHyperlink(void);
 int InitColourPicker(void);
 int InitBitmapFilter(void);
 void InitXmlApi(void);
+void InitTimeZones(void);
+void UninitTimeZones(void);
+
 INT_PTR GetMD5Interface(WPARAM, LPARAM);
 INT_PTR GetSHA1Interface(WPARAM, LPARAM);
 
@@ -571,6 +574,7 @@ int LoadUtilsModule(void)
 	InitColourPicker();
 	InitBitmapFilter();
 	InitXmlApi();
+	InitTimeZones();
 	return 0;
 }
 
@@ -579,4 +583,5 @@ void UnloadUtilsModule(void)
 	if ( !bModuleInitialized ) return;
 
 	FreeWindowList();
+	UninitTimeZones();
 }

@@ -179,6 +179,7 @@
       <BufferSecurityCheck>false</BufferSecurityCheck>
       <FloatingPointExceptions>false</FloatingPointExceptions>
       <CompileAsManaged>false</CompileAsManaged>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -237,6 +238,7 @@
       <FloatingPointModel>Fast</FloatingPointModel>
       <FloatingPointExceptions>false</FloatingPointExceptions>
       <CompileAsManaged>false</CompileAsManaged>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -381,7 +383,6 @@
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>commonheaders.h</PrecompiledHeaderFile>
-      <AssemblerOutput>AssemblyAndSourceCode</AssemblerOutput>
       <WarningLevel>Level3</WarningLevel>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <CompileAs>Default</CompileAs>
@@ -390,6 +391,7 @@
       <FloatingPointModel>Fast</FloatingPointModel>
       <FloatingPointExceptions>false</FloatingPointExceptions>
       <CompileAsManaged>false</CompileAsManaged>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -442,6 +444,7 @@
       <FloatingPointModel>Fast</FloatingPointModel>
       <FloatingPointExceptions>false</FloatingPointExceptions>
       <CompileAsManaged>false</CompileAsManaged>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -597,6 +600,7 @@
     <ClInclude Include="..\include\m_skin.h" />
     <ClInclude Include="..\include\m_system.h" />
     <ClInclude Include="..\include\m_system_cpp.h" />
+    <ClInclude Include="..\include\m_timezones.h" />
     <ClInclude Include="..\include\m_url.h" />
     <ClInclude Include="..\include\m_userinfo.h" />
     <ClInclude Include="..\include\m_utils.h" />
@@ -2143,6 +2147,7 @@
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|x64'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <ClCompile Include="modules\utils\sha1.cpp" />
+    <ClCompile Include="modules\utils\timezones.cpp" />
     <ClCompile Include="modules\utils\utf.cpp" />
     <ClCompile Include="modules\utils\utils.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug Unicode|Win32'">Disabled</Optimization>
