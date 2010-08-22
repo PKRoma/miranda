@@ -21,7 +21,7 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
-#include "../../core/commonheaders.h"
+#include "commonheaders.h"
 #include "../srfile/file.h"
 
 static bool bModuleInitialized = false;
@@ -104,10 +104,10 @@ static INT_PTR CALLBACK WarnIniChangeDlgProc(HWND hwndDlg,UINT message,WPARAM wP
 		case WM_INITDIALOG:
 		{	char szSettingName[256];
 			const TCHAR *pszSecurityInfo;
-			warnInfo=(struct warnSettingChangeInfo_t*)lParam;
+			warnInfo = (warnSettingChangeInfo_t*)lParam;
 			TranslateDialogDefault(hwndDlg);
-			SetDlgItemText(hwndDlg,IDC_ININAME,warnInfo->szIniPath);
-			lstrcpyA(szSettingName,warnInfo->szSection);
+			SetDlgItemText(hwndDlg, IDC_ININAME, warnInfo->szIniPath);
+			lstrcpyA(szSettingName, warnInfo->szSection);
 			lstrcatA(szSettingName," / ");
 			lstrcatA(szSettingName,warnInfo->szName);
 			SetDlgItemTextA(hwndDlg,IDC_SETTINGNAME,szSettingName);
