@@ -25,7 +25,7 @@ UNICODE done
 */
 #include "commonheaders.h"
 #include <m_icq.h>
-
+#include "m_timezones.h"
 
 CRITICAL_SECTION cs_extcache;
 extern struct CluiData g_CluiData;
@@ -470,41 +470,12 @@ static LONG TZ_GetTimeZoneOffset(REG_TZI_FORMAT *tzi)
 static void TZ_LoadTimeZone(HANDLE hContact, struct ExtraCache *c, const char *szProto)
 {
 #if defined(_UNICODE)						// real time zone stuff only for Win 2000 or later
-	DBVARIANT	dbv;
-
-	if(DBGetContactSettingTString(hContact, "UserInfo", "TzName", &dbv) == 0) {
-		TIME_ZONE_INFORMATION tzi1 = {0};
-		REG_TZI_FORMAT		  tzi;
-		TCHAR	tszKeyname[250];
-		HKEY	hkey;
-		DWORD	dwType = 0, dwLength = sizeof(tzi);
-		LONG	targetDL, myDL, result;
-
-		mir_sntprintf(tszKeyname, 250, _T("Software\\Microsoft\\Windows NT\\CurrentVersion\\Time Zones\\%s"), dbv.ptszVal);
-		DBFreeVariant(&dbv);
-
-		if(RegOpenKeyEx(HKEY_LOCAL_MACHINE, tszKeyname, 0, KEY_READ, &hkey) == ERROR_SUCCESS) {
-			result = RegQueryValueEx(hkey, _T("TZI"), 0, &dwType, (char *)&tzi, &dwLength);
-			RegCloseKey(hkey);
-			if(result == ERROR_SUCCESS) {
-				result = GetTimeZoneInformation(&tzi1);
-				c->timediff = tzi.Bias - tzi1.Bias;
-
-				if(tzi.DaylightDate.wMonth) {
-					/*
-					 * DST exists, check whether it applies
-					 */
-					targetDL = TZ_GetTimeZoneOffset(&tzi);
-				}
-				else
-					targetDL = 0;
-
-				myDL = (result == TIME_ZONE_ID_DAYLIGHT ? (tzi1.DaylightDate.wMonth ? tzi1.DaylightBias : 0) : 0);
-				c->timediff += (targetDL - myDL);
-				c->timediff *= 60;					   	// return it in seconds
-				c->dwCFlags |= ECF_HASREALTIMEZONE;		// not really needed, because format is the same as with GMT offsets
-			}
-		}
+	if(ServiceExists("TZ/GetInfoByContact")) {
+		MIM_TIMEZONE  *tzi;
+		tzi = (MIM_TIMEZONE *)CallService("TZ/GetInfoByContact", (WPARAM)hContact, 0);
+		c->timediff = tzi->Offset;
+		c->dwCFlags |= ECF_HASREALTIMEZONE;
+		return;
 	}
 	/*
 	 * the fallback method uses standard GMT offsets
@@ -761,15 +732,15 @@ int GetExtraCache(HANDLE hContact, char *szProto)
 		g_ExtraCache[g_nextExtraCacheEntry].hContact = hContact;
         memset(g_ExtraCache[g_nextExtraCacheEntry].iExtraImage, 0xff, MAXEXTRACOLUMNS);
         g_ExtraCache[g_nextExtraCacheEntry].iExtraValid = 0;
-		g_ExtraCache[g_nextExtraCacheEntry].timediff = -1;
         g_ExtraCache[g_nextExtraCacheEntry].valid = FALSE;
         g_ExtraCache[g_nextExtraCacheEntry].bStatusMsgValid = 0;
         g_ExtraCache[g_nextExtraCacheEntry].statusMsg = NULL;
         g_ExtraCache[g_nextExtraCacheEntry].status_item = NULL;
         LoadSkinItemToCache(&g_ExtraCache[g_nextExtraCacheEntry], szProto);
-        g_ExtraCache[g_nextExtraCacheEntry].dwCFlags = g_ExtraCache[g_nextExtraCacheEntry].timediff = g_ExtraCache[g_nextExtraCacheEntry].timezone = 0;
+        g_ExtraCache[g_nextExtraCacheEntry].dwCFlags = g_ExtraCache[g_nextExtraCacheEntry].timezone = 0;
         g_ExtraCache[g_nextExtraCacheEntry].dwDFlags = DBGetContactSettingDword(hContact, "CList", "CLN_Flags", 0);
         g_ExtraCache[g_nextExtraCacheEntry].dwXMask = CalcXMask(hContact);
+		g_ExtraCache[g_nextExtraCacheEntry].timediff = -1;
         GetCachedStatusMsg(g_nextExtraCacheEntry, szProto);
 		g_ExtraCache[g_nextExtraCacheEntry].dwLastMsgTime = INTSORT_GetLastMsgTime(hContact);
         iFound = g_nextExtraCacheEntry++;

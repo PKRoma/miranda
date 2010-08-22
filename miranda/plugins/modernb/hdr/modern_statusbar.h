@@ -16,6 +16,7 @@ typedef struct tagSTATUSBARDATA
   BYTE extraspace;
   BYTE Align;
   BYTE VAlign;
+  BYTE showProtoIcon;
   BYTE showProtoName;
   BYTE showStatusName;
   HFONT BarFont;

@@ -111,7 +111,7 @@ WORD   __cdecl ModernGetSettingRangedWord(HANDLE hContact, const char *szModule,
 
 BYTE gl_TrimText=1;
 
-BOOL __cdecl strstri(const char *a, const char *b)
+char * __cdecl strstri( char *a, const char *b)
 {
     char * x, *y;
     if (!a || !b) return FALSE;
@@ -119,15 +119,17 @@ BOOL __cdecl strstri(const char *a, const char *b)
     y=_strdup(b);
     x=_strupr(x);
     y=_strupr(y);
-    if (strstr(x,y))
+    char * pos = strstr(x,y);
+    if ( pos )
     {
+        char * retval = a + ( pos - x );
         free(x);
         free(y);
-        return TRUE;
+        return retval;
     }
     free(x);
     free(y);
-    return FALSE;
+    return NULL;
 }
 int __cdecl mir_strcmpi(const char *a, const char *b)
 {

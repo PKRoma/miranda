@@ -1227,7 +1227,7 @@ text:
             else
                 fLocalTime = cEntry->dwDFlags & ECF_FORCELOCALTIME ? 1 : 0;
 
-			if(cEntry->timezone != -1 && fLocalTime) {
+			if(cEntry->timediff != -1 && fLocalTime) {
 				DBTIMETOSTRING dbtts;
 				char szResult[80];
 				int  idOldFont;

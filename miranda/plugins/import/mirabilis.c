@@ -175,7 +175,7 @@ INT_PTR CALLBACK MirabilisPageProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM l
 				ofn.hwndOwner = hdlg;
 				ofn.lpstrFilter = text;
 				ofn.lpstrFile = str;
-				ofn.Flags = OFN_FILEMUSTEXIST | OFN_EXPLORER | OFN_NOCHANGEDIR;
+				ofn.Flags = OFN_FILEMUSTEXIST | OFN_EXPLORER | OFN_NOCHANGEDIR | OFN_DONTADDTORECENT;
 				ofn.nMaxFile = SIZEOF(str);
 				ofn.lpstrDefExt = _T("idx");
 				if(GetOpenFileName(&ofn))

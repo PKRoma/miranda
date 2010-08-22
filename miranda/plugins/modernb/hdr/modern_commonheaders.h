@@ -172,7 +172,7 @@ extern char *g_szMetaModuleName;
 #define SCF_BOTTOM  6
 
 
-extern BOOL __cdecl strstri(const char *a, const char *b);
+extern char* __cdecl strstri( char *a, const char *b);
 extern BOOL __cdecl mir_bool_strcmpi(const char *a, const char *b);
 extern int __cdecl mir_strcmp (const char *a, const char *b);
 extern int __cdecl mir_strlen (const char *a);

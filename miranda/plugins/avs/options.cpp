@@ -46,7 +46,6 @@ extern HANDLE GetContactThatHaveTheAvatar(HANDLE hContact, int locked = -1);
 extern int AVS_pathIsAbsolute(const char *path);
 extern size_t AVS_pathToRelative(const char *sPrc, char *pOut);
 extern size_t AVS_pathToAbsolute(const char *pSrc, char *pOut);
-extern void MakePathRelative(HANDLE hContact, char *path);
 
 extern int ProtoServiceExists(const char *szModule,const char *szService);
 extern BOOL Proto_IsAvatarsEnabled(const char *proto);
