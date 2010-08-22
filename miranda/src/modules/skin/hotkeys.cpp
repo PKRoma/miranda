@@ -37,19 +37,19 @@ struct _THotkeyItem
 	TCHAR       *ptszSection_tr, *ptszDescription_tr;
 	LPARAM       lParam;
 	WORD         DefHotkey, Hotkey;
-	BOOL         Enabled;
+	bool         Enabled;
 	ATOM         idHotkey;
 
 	THotkeyItem *rootHotkey;
-	BOOL         allowSubHotkeys;
 	int          nSubHotkeys;
+	bool         allowSubHotkeys;
 
-	BOOL         OptChanged, OptDeleted, OptNew;
+	bool         OptChanged, OptDeleted, OptNew;
 	WORD         OptHotkey;
 	THotkeyType  OptType;
-	BOOL         OptEnabled;
+	bool         OptEnabled;
 
-	BOOL         UnregisterHotkey;	// valid only during WM_APP message in options UI, used to remove unregistered hotkeys from options
+	bool         UnregisterHotkey;	// valid only during WM_APP message in options UI, used to remove unregistered hotkeys from options
 };
 
 static int sttCompareHotkeys(const THotkeyItem *p1, const THotkeyItem *p2)
@@ -177,8 +177,8 @@ static INT_PTR svcHotkeyRegister(WPARAM wParam, LPARAM lParam)
 			item->ptszDescription = mir_tstrdup( desc->ptszDescription );
 		}
 		else {
-			item->ptszSection = mir_a2u_cp( desc->pszSection, CP_ACP );
-			item->ptszDescription = mir_a2u_cp( desc->pszDescription, CP_ACP );
+			item->ptszSection = mir_a2u( desc->pszSection );
+			item->ptszDescription = mir_a2u( desc->pszDescription );
 		}
 	#else
 		item->ptszSection = mir_tstrdup( desc->pszSection );
@@ -508,7 +508,7 @@ static void sttHotkeyEditDestroy(HWND hwnd)
 	THotkeyBoxData *data = (THotkeyBoxData *)GetWindowLongPtr(hwnd, GWLP_USERDATA);
 	SetWindowLongPtr(hwnd, GWLP_WNDPROC, (ULONG_PTR)data->oldWndProc);
 	SetWindowLongPtr(hwnd, GWLP_USERDATA, 0);
-	if (data) mir_free(data);
+	mir_free(data);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
