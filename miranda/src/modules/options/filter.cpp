@@ -95,45 +95,6 @@ int OnOptionsInitialise(WPARAM wParam, LPARAM)
 
 CPageList filterStrings(1);
 
-//taken from langpack and modified (checks for NULL)
-DWORD HashFunc(const TCHAR *szStr)
-{
-	if (szStr == NULL ) { return 0; }
-#if defined _M_IX86 && !defined _NUMEGA_BC_FINALCHECK && !defined __GNUC__
-	__asm {				//this is mediocrely optimised, but I'm sure it's good enough
-		xor  edx,edx
-		mov  esi,szStr
-		xor  cl,cl
-lph_top:
-		xor  eax,eax
-		and  cl,31
-		mov  al,[esi]
-		inc  esi
-#ifdef _UNICODE		
-		inc  esi //wchar_t
-#endif		
-		test al,al
-		jz   lph_end
-		rol  eax,cl
-		add  cl,5
-		xor  edx,eax
-		jmp  lph_top
-lph_end:
-		mov  eax,edx
-	}
-#else
-	DWORD hash=0;
-	int i;
-	int shift=0;
-	for(i=0;szStr[i];i+=1) {
-		hash^=szStr[i]<<shift;
-		if(shift>24) hash^=(szStr[i]>>(32-shift))&0x7F;
-		shift=(shift+5)&0x1F;
-	}
-	return hash;
-#endif
-}
-
 void AddFilterString(const PageHash key, TCHAR *data)
 {
 	if (ContainsFilterString(key, data)) return;

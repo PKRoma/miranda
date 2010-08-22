@@ -281,46 +281,6 @@ void DestroyModularEngine(void)
 	CloseHandle( hMainThread );
 }
 
-#if __GNUC__
-#define NOINLINEASM
-#endif
-
-DWORD NameHashFunction(const char *szStr)
-{
-#if defined _M_IX86 && !defined _NUMEGA_BC_FINALCHECK && !defined NOINLINEASM
-	__asm {
-		xor   edx,edx
-		xor   eax,eax
-		mov   esi,szStr
-		mov   al,[esi]
-		dec   esi
-		xor   cl,cl
-	lph_top:	 //only 4 of 9 instructions in here don't use AL, so optimal pipe use is impossible
-		xor   edx,eax
-		inc   esi
-		and   cl,31
-		movzx eax,byte ptr [esi]
-		add   cl,5
-		test  al,al
-		rol   eax,cl		 //rol is u-pipe only, but pairable
-		                 //rol doesn't touch z-flag
-		jnz   lph_top  //5 clock tick loop. not bad.
-
-		xor   eax,edx
-	}
-#else
-	DWORD hash=0;
-	int i;
-	int shift=0;
-	for(i=0;szStr[i];i++) {
-		hash^=szStr[i]<<shift;
-		if (shift>24) hash^=(szStr[i]>>(32-shift))&0x7F;
-		shift=(shift+5)&0x1F;
-	}
-	return hash;
-#endif
-}
-
 ///////////////////////////////HOOKS
 
 HANDLE CreateHookableEvent(const char *name)
@@ -642,7 +602,7 @@ static __inline TService* FindServiceByHash(DWORD hash)
 
 static __inline TService* FindServiceByName( const char *name )
 {
-	return FindServiceByHash( NameHashFunction( name ));
+	return FindServiceByHash( hashstr( name ));
 }
 
 static HANDLE CreateServiceInt( int type, const char *name, MIRANDASERVICE serviceProc, void* object, LPARAM lParam)
@@ -658,7 +618,7 @@ static HANDLE CreateServiceInt( int type, const char *name, MIRANDASERVICE servi
 	#endif
 
 	TService tmp;
-	tmp.nameHash = NameHashFunction( name );
+	tmp.nameHash = hashstr( name );
 
 	EnterCriticalSection( &csServices );
 

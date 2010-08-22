@@ -32,7 +32,6 @@ int OnOptionsInitialise(WPARAM wParam, LPARAM lParam);
 
 typedef DWORD PageHash;
 
-DWORD	HashFunc(const TCHAR *szStr);
 void	AddFilterString(const PageHash key, const TCHAR *data);
 BOOL	ContainsFilterString(const PageHash key, TCHAR *data);
 void	ClearFilterStrings();

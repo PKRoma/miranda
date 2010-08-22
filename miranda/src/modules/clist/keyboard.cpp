@@ -69,7 +69,7 @@ INT_PTR hkRestoreStatus(WPARAM wParam,LPARAM lParam)
 
 static INT_PTR hkAllOffline(WPARAM, LPARAM)
 {
-    CallService(MS_CLIST_SETSTATUSMODE, ID_STATUS_OFFLINE, 0); 
+    CallService(MS_CLIST_SETSTATUSMODE, ID_STATUS_OFFLINE, 0);
     return 0;
 }
 */
@@ -104,42 +104,42 @@ int InitClistHotKeys(void)
 	shk.pszSection="Main";
 	shk.pszService="CLIST/HK/Search";
 	shk.DefHotKey=846;
-	CallService(MS_HOTKEY_REGISTER,0,(LPARAM)&shk);	
+	CallService(MS_HOTKEY_REGISTER,0,(LPARAM)&shk);
 */
 	shk.pszDescription="Open Options Page";
 	shk.pszName="ShowOptions";
 	shk.pszSection="Main";
 	shk.pszService="CLIST/HK/Opts";
 	shk.DefHotKey = HOTKEYCODE(HOTKEYF_CONTROL|HOTKEYF_SHIFT, 'O') | HKF_MIRANDA_LOCAL;
-	CallService(MS_HOTKEY_REGISTER,0,(LPARAM)&shk);	
+	CallService(MS_HOTKEY_REGISTER,0,(LPARAM)&shk);
 
 	shk.pszDescription="Open Find User Dialog";
 	shk.pszName="FindUsers";
 	shk.pszSection="Main";
 	shk.pszService="FindAdd/FindAddCommand";
 	shk.DefHotKey = HOTKEYCODE(HOTKEYF_CONTROL|HOTKEYF_SHIFT, 'F') | HKF_MIRANDA_LOCAL;
-	CallService(MS_HOTKEY_REGISTER,0,(LPARAM)&shk);	
+	CallService(MS_HOTKEY_REGISTER,0,(LPARAM)&shk);
 /*
 	shk.pszDescription="Close Miranda";
 	shk.pszName="CloseMiranda";
 	shk.pszSection="Main";
 	shk.pszService="CLIST/HK/CloseMiranda";
 	shk.DefHotKey=0;
-	CallService(MS_HOTKEY_REGISTER,0,(LPARAM)&shk);	
+	CallService(MS_HOTKEY_REGISTER,0,(LPARAM)&shk);
 
 	shk.pszDescription="Restore last status";
 	shk.pszName="RestoreLastStatus";
 	shk.pszSection="Status";
 	shk.pszService="CLIST/HK/RestoreStatus";
 	shk.DefHotKey=0;
-	CallService(MS_HOTKEY_REGISTER,0,(LPARAM)&shk);	
+	CallService(MS_HOTKEY_REGISTER,0,(LPARAM)&shk);
 
 	shk.pszDescription="Set All Offline";
 	shk.pszName="AllOffline";
 	shk.pszSection="Status";
 	shk.pszService="CLIST/HK/AllOffline";
 	shk.DefHotKey=0;
-	CallService(MS_HOTKEY_REGISTER,0,(LPARAM)&shk);	
+	CallService(MS_HOTKEY_REGISTER,0,(LPARAM)&shk);
 */
 	return 0;
 }

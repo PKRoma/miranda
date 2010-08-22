@@ -77,14 +77,18 @@ INT_PTR CALLBACK DlgProcAbout(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
 			char*   pszMsg    = (char*)LockResource(hRes);
 			if (pszMsg)
 			{
-				pszMsg  [ResSize] = 0;			// Resource is not NULL terminated
-				TCHAR*  ptszMsg   = mir_a2t(pszMsg);
-				SetDlgItemText(hwndDlg,IDC_CREDITSFILE, ptszMsg);
-				mir_free(ptszMsg);
+				TCHAR* ptszMsg = ( TCHAR* )alloca((ResSize + 1) * sizeof(TCHAR));
+			#if defined( _UNICODE )
+				int len = MultiByteToWideChar(1252, 0, pszMsg, ResSize, ptszMsg, ResSize + 1);
+				ptszMsg[len] = 0;
+			#else
+				strncpy(ptszMsg, pszMsg, ResSize);
+				ptszMsg[ResSize] = 0;
+			#endif
+				SetDlgItemText(hwndDlg, IDC_CREDITSFILE, ptszMsg);
 				UnlockResource(pszMsg);
 			}
 			FreeResource(hRes);
-
 		}
 		Window_SetIcon_IcoLib(hwndDlg, SKINICON_OTHER_MIRANDA);
 		return TRUE;
