@@ -348,16 +348,14 @@ int gg_event(PROTO_INTERFACE *proto, PROTOEVENTTYPE eventType, WPARAM wParam, LP
 			break;
 
 		case EV_PROTO_ONRENAME:
+#ifdef DEBUGMODE
+			gg_netlog(gg, "gg_event(EV_PROTO_ONRENAME): renaming account...");
+#endif
+			mir_free(gg->name);
+			gg->name = gg_t2a(gg->proto.m_tszUserName);
 			if (gg->hMenuRoot)
 			{
 				CLISTMENUITEM mi = {0};
-
-#ifdef DEBUGMODE
-				gg_netlog(gg, "gg_event(EV_PROTO_ONRENAME): renaming account...");
-#endif
-				mir_free(gg->name);
-				gg->name = gg_t2a(gg->proto.m_tszUserName);
-
 				mi.cbSize = sizeof(mi);
 				mi.flags = CMIM_NAME | CMIF_TCHAR | CMIF_KEEPUNTRANSLATED;
 				mi.ptszName = GG_PROTONAME;
