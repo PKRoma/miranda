@@ -577,7 +577,6 @@
 				RuntimeTypeInfo="false"
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="commonheaders.h"
-				AssemblerOutput="4"
 				BrowseInformationFile=""
 				WarningLevel="3"
 				SuppressStartupBanner="true"
