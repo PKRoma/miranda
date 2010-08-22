@@ -70,10 +70,13 @@ void ConvertBackslashes(char *str)
 			case 'r': *pstr = '\r'; break;
 			default:  *pstr = pstr[1]; break;
 			}
-			MoveMemory(pstr+1,pstr+2,lstrlenA(pstr+2)+1);
+			memmove(pstr+1, pstr+2, strlen(pstr+2) + 1);
 }	}	}
 
+#ifdef _DEBUG
 #pragma optimize( "gt", on )
+#endif
+
 // MurmurHash2 
 unsigned int __fastcall hash(const void * key, unsigned int len)
 {
@@ -121,7 +124,7 @@ unsigned int __fastcall hash(const void * key, unsigned int len)
 	return h;
 }
 
-__inline unsigned int hashstrW(const char * key)
+unsigned int __fastcall hashstrW(const char * key)
 {
 	if (key == NULL) return 0;
 	const unsigned int len = (unsigned int)wcslen((const wchar_t*)key);
@@ -131,7 +134,9 @@ __inline unsigned int hashstrW(const char * key)
 	return hash(buf, len);
 }
 
+#ifdef _DEBUG
 #pragma optimize( "", on )
+#endif
 
 static int SortLangPackHashesProc(struct LangPackEntry *arg1,struct LangPackEntry *arg2)
 {
