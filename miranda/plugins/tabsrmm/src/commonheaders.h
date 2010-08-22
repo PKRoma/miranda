@@ -41,9 +41,9 @@
 //#define __LOGDEBUG_	1								// log some stuff to %profile_dir%/tabsrmm_debug.log
 //#define __FEAT_DEPRECATED_DYNAMICSWITCHLOGVIEWER 1
 
-#define __USE_EX_HANDLERS 1
+//#define __USE_EX_HANDLERS 1
 
-#define __DELAYED_FOR_3_1 1							// features not going into 3.0.x and will be completed later
+// #define __DELAYED_FOR_3_1 1							// features not going into 3.0.x and will be completed later
 
 #if !defined __DELAYED_FOR_3_1
 	#define __FEAT_EXP_AUTOSPLITTER 1
@@ -206,6 +206,7 @@
 #include  <m_hotkeys.h>
 #include  <m_genmenu.h>
 #include  <m_popup.h>
+#include  <m_timezones.h>
 
 extern struct LIST_INTERFACE li;
 
@@ -227,7 +228,6 @@ extern struct LIST_INTERFACE li;
 #include "../API/m_buttonbar.h"
 #include "../API/m_updater.h"
 #include "../API/m_smileyadd.h"
-#include "../API/m_timezones.h"
 
 #include "../include/msgs.h"
 #include "../include/msgdlgutils.h"

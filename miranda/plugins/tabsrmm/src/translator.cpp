@@ -162,7 +162,7 @@ wchar_t* CTranslator::m_strings[STR_LAST] = {
 	LPGENT("A message failed to send successfully."),   /* GEN_MSG_FAILEDSEND */
 	LPGENT("WARNING: The message you are trying to paste exceeds the message size limit for the active protocol. It will be sent in chunks of max %d characters"), /* GEN_MSG_TOO_LONG_SPLIT */
 	LPGENT("The message you are trying to paste exceeds the message size limit for the active protocol. Only the first %d characters will be sent."), /* GEN_MSG_TOO_LONG_NOSPLIT */
-	LPGENT("Close session"),							/* GEN_MSG_CLOSE */
+	LPGENT("Close Session"),							/* GEN_MSG_CLOSE */
 	LPGENT("Save and close session"),					/* GEN_MSG_SAVEANDCLOSE */
 	LPGENT("Autoscrolling is disabled (press F12 to enable it)"),					/* GEN_MSG_LOGFROZENSTATIC */
 	LPGENT("Click for contact menu\nClick dropdown for window settings"), /*GEN_MSG_TIP_CONTACTMENU */

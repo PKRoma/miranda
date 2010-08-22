@@ -735,24 +735,29 @@ HMENU CInfoPanel::constructContextualMenu() const
 	mii.fMask 	= MIIM_DATA | MIIM_ID | MIIM_BITMAP | MIIM_STRING;
 	mii.hbmpItem = HBMMENU_CALLBACK;
 
+	if(!(m_hoverFlags & HOVER_NICK))
+		return(0);
+
 	HMENU m = ::CreatePopupMenu();
 
 	if(m_hoverFlags & HOVER_NICK) {
 		Utils::addMenuItem(m, mii, ::LoadSkinnedIcon(SKINICON_OTHER_USERDETAILS), CTranslator::get(CTranslator::GEN_IP_MENU_USER_DETAILS),
 					IDC_NAME, 0);
 		Utils::addMenuItem(m, mii, ::LoadSkinnedIcon(SKINICON_OTHER_HISTORY), CTranslator::get(CTranslator::GEN_IP_MENU_HISTORY),
-					IDC_HISTORY, 0);
+					m_isChat ? IDC_CHAT_HISTORY : IDC_HISTORY, 0);
 		if(!m_isChat)
 			Utils::addMenuItem(m, mii, PluginConfig.g_iconContainer, CTranslator::get(CTranslator::GEN_IP_MENU_MSGPREFS),
 						ID_MESSAGELOGSETTINGS_FORTHISCONTACT, 1);
-		else
-			::AppendMenu(m, MF_STRING, CMD_IP_ROOMPREFS, CTranslator::get(CTranslator::GEN_IP_MENU_ROOMPREFS));
+		else {
+			::AppendMenu(m, MF_STRING, IDC_CHANMGR, CTranslator::get(CTranslator::GEN_IP_MENU_ROOMPREFS));
+			if(GCW_SERVER & m_dat->si->iType)
+				::EnableMenuItem(m, IDC_CHANMGR, MF_BYCOMMAND | MF_GRAYED);
+		}
+		::AppendMenu(m, MF_SEPARATOR, 1000, 0);
+		Utils::addMenuItem(m, mii, PluginConfig.g_buttonBarIcons[6], CTranslator::get(CTranslator::GEN_MSG_CLOSE), IDC_SAVE, 4);
 	}
-	else
-		::AppendMenu(m, MF_STRING, 0, _T("More To Come..."));
-
 	::AppendMenu(m, MF_SEPARATOR, 1000, 0);
-	::AppendMenu(m, MF_STRING, 1000, CTranslator::get(CTranslator::GEN_IP_MENU_COPY));
+	::AppendMenu(m, MF_STRING, CMD_IP_COPY, CTranslator::get(CTranslator::GEN_IP_MENU_COPY));
 
 	return(m);
 }
@@ -763,12 +768,33 @@ HMENU CInfoPanel::constructContextualMenu() const
  * to chain the command through message window command handlers.
  *
  * @param cmd		command id
- * @return			1 if command was processed, 0 otherwise
+ * @return			0 if command was processed, != 0 otherwise
  */
 
 LRESULT CInfoPanel::cmdHandler(UINT cmd)
 {
-	return(0);				// not handled
+	switch(cmd) {
+		case CMD_IP_COPY:
+			if(m_hoverFlags & HOVER_NICK) {
+				Utils::CopyToClipBoard(const_cast<wchar_t *>(m_dat->cache->getNick()), m_dat->hwnd);
+				return(S_OK);
+			}
+			else if(m_hoverFlags & HOVER_UIN) {
+				Utils::CopyToClipBoard(m_isChat ? m_dat->si->ptszTopic : const_cast<wchar_t *>(m_dat->cache->getUIN()), m_dat->hwnd);
+				return(S_OK);
+			}
+			break;
+		case IDC_CHAT_HISTORY:
+		case IDC_CHANMGR:
+			if(m_isChat) {
+				SendMessage(m_dat->hwnd, WM_COMMAND, cmd, 0);
+				return(S_OK);
+			}
+			break;
+		default:
+			break;
+	}
+	return(S_FALSE);				// not handled
 }
 
 /**
@@ -778,7 +804,6 @@ LRESULT CInfoPanel::cmdHandler(UINT cmd)
  */
 void CInfoPanel::handleClick(const POINT& pt)
 {
-#if !defined(__DELAYED_FOR_3_1)
 	if(!m_active || m_hoverFlags == 0)
 		return;
 
@@ -787,14 +812,15 @@ void CInfoPanel::handleClick(const POINT& pt)
 		m_dat->dwFlagsEx &= ~MWF_SHOW_AWAYMSGTIMER;
 	}
 	HMENU m = constructContextualMenu();
-	LRESULT r = ::TrackPopupMenu(m, TPM_RETURNCMD, pt.x, pt.y, 0, m_dat->hwnd, NULL);
+	if(m) {
+		LRESULT r = ::TrackPopupMenu(m, TPM_RETURNCMD, pt.x, pt.y, 0, m_dat->hwnd, NULL);
 
-	::DestroyMenu(m);
-	if(cmdHandler(r) == 0)
-		Utils::CmdDispatcher(Utils::CMD_INFOPANEL, m_dat->hwnd, r, 0, 0, m_dat, m_dat->pContainer);
+		::DestroyMenu(m);
+		if(S_OK != cmdHandler(r))
+			Utils::CmdDispatcher(Utils::CMD_INFOPANEL, m_dat->hwnd, r, 0, 0, m_dat, m_dat->pContainer);
+	}
 	m_hoverFlags = 0;
 	Invalidate(TRUE);
-#endif
 }
 
 /**
@@ -884,6 +910,9 @@ void CInfoPanel::showTip(UINT ctrlId, const LPARAM lParam)
 			DBVARIANT 	dbv = {0};
 			size_t		pos;
 			BYTE		xStatus = 0;
+
+			if(m_hwndConfig)
+				return;
 
 			mir_sntprintf(temp, 1024, RTF_DEFAULT_HEADER, 0, 0, 0, 30*15);
 

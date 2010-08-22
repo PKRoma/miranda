@@ -49,6 +49,7 @@
 #define CMD_IP_USERPREFS					20001
 #define CMD_IP_ROOMPREFS					20002
 #define CMD_IP_HISTORY						20003
+#define CMD_IP_COPY							21000
 
 struct TInfoPanelConfig {
 	HFONT       hFonts[IPFONTCOUNT];
