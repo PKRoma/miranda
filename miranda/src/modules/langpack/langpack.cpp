@@ -73,74 +73,65 @@ void ConvertBackslashes(char *str)
 			MoveMemory(pstr+1,pstr+2,lstrlenA(pstr+2)+1);
 }	}	}
 
-static DWORD LangPackHash(const char *szStr)
+#pragma optimize( "gt", on )
+// MurmurHash2 
+unsigned int __fastcall hash(const void * key, unsigned int len)
 {
-#if defined _M_IX86 && !defined _NUMEGA_BC_FINALCHECK && !defined __GNUC__
-	__asm {				//this is mediocrely optimised, but I'm sure it's good enough
-		xor  edx,edx
-		mov  esi,szStr
-		xor  cl,cl
-lph_top:
-		xor  eax,eax
-		and  cl,31
-		mov  al,[esi]
-		inc  esi
-		test al,al
-		jz   lph_end
-		rol  eax,cl
-		add  cl,5
-		xor  edx,eax
-		jmp  lph_top
-lph_end:
-		mov  eax,edx
+	// 'm' and 'r' are mixing constants generated offline.
+	// They're not really 'magic', they just happen to work well.
+	const unsigned int m = 0x5bd1e995;
+	const int r = 24;
+
+	// Initialize the hash to a 'random' value
+	unsigned int h = len;
+
+	// Mix 4 bytes at a time into the hash
+	const unsigned char * data = (const unsigned char *)key;
+
+	while(len >= 4)
+	{
+		unsigned int k = *(unsigned int *)data;
+
+		k *= m; 
+		k ^= k >> r; 
+		k *= m; 
+		
+		h *= m; 
+		h ^= k;
+
+		data += 4;
+		len -= 4;
 	}
-#else
-	DWORD hash=0;
-	int i;
-	int shift=0;
-	for(i=0;szStr[i];i++) {
-		hash^=szStr[i]<<shift;
-		if(shift>24) hash^=(szStr[i]>>(32-shift))&0x7F;
-		shift=(shift+5)&0x1F;
-	}
-	return hash;
-#endif
+	
+	// Handle the last few bytes of the input array
+	switch(len)
+	{
+	case 3: h ^= data[2] << 16;
+	case 2: h ^= data[1] << 8;
+	case 1: h ^= data[0];
+			h *= m;
+	};
+
+	// Do a few final mixes of the hash to ensure the last few
+	// bytes are well-incorporated.
+	h ^= h >> 13;
+	h *= m;
+	h ^= h >> 15;
+
+	return h;
 }
 
-static DWORD LangPackHashW(const char *szStr)
+__inline unsigned int hashstrW(const char * key)
 {
-#if defined _M_IX86 && !defined _NUMEGA_BC_FINALCHECK && !defined __GNUC__
-	__asm {				//this is mediocrely optimised, but I'm sure it's good enough
-		xor  edx,edx
-		mov  esi,szStr
-		xor  cl,cl
-lph_top:
-		xor  eax,eax
-		and  cl,31
-		mov  al,[esi]
-		inc  esi
-		inc  esi
-		test al,al
-		jz   lph_end
-		rol  eax,cl
-		add  cl,5
-		xor  edx,eax
-		jmp  lph_top
-lph_end:
-		mov  eax,edx
-	}
-#else
-	DWORD hash=0;
-	int i;
-	int shift=0;
-	for(i=0;szStr[i];i+=2) {
-		hash^=szStr[i]<<shift;
-		if(shift>24) hash^=(szStr[i]>>(32-shift))&0x7F;
-		shift=(shift+5)&0x1F;
-	}
-	return hash;
-#endif
+	if (key == NULL) return 0;
+	const unsigned int len = (unsigned int)wcslen((const wchar_t*)key);
+	char* buf = (char*)alloca(len + 1);
+	for (unsigned i = 0; i <= len ; ++i)
+		buf[i] = key[i << 1];
+	return hash(buf, len);
 }
+
+#pragma optimize( "", on )
 
 static int SortLangPackHashesProc(struct LangPackEntry *arg1,struct LangPackEntry *arg2)
 {
@@ -223,7 +214,7 @@ static int LoadLangPack(const TCHAR *szLangPack)
 				langPack.entry=(struct LangPackEntry*)mir_realloc(langPack.entry,sizeof(struct LangPackEntry)*entriesAlloced);
 			}
 			langPack.entry[langPack.entryCount-1].english=NULL;
-			langPack.entry[langPack.entryCount-1].englishHash=LangPackHash(pszLine);
+			langPack.entry[langPack.entryCount-1].englishHash=hashstr(pszLine);
 			langPack.entry[langPack.entryCount-1].local=NULL;
 			langPack.entry[langPack.entryCount-1].wlocal = NULL;
 			langPack.entry[langPack.entryCount-1].linePos=linePos++;
@@ -264,7 +255,7 @@ char *LangPackTranslateString(const char *szEnglish, const int W)
 
 	if ( langPack.entryCount == 0 || szEnglish == NULL ) return (char*)szEnglish;
 
-	key.englishHash = W ? LangPackHashW(szEnglish) : LangPackHash(szEnglish);
+	key.englishHash = W ? hashstrW(szEnglish) : hashstr(szEnglish);
 	entry=(struct LangPackEntry*)bsearch(&key,langPack.entry,langPack.entryCount,sizeof(struct LangPackEntry),(int(*)(const void*,const void*))SortLangPackHashesProc2);
 	if(entry==NULL) return (char*)szEnglish;
 	while(entry>langPack.entry)

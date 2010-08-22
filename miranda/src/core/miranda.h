@@ -185,6 +185,24 @@ int    LangPackGetDefaultLocale();
 TCHAR* LangPackPcharToTchar( const char* pszStr );
 char*  LangPackTranslateString(const char *szEnglish, const int W);
 
+unsigned int __fastcall hash(const void * key, unsigned int len);
+
+#pragma optimize( "gt", on )
+__inline unsigned int hashstr(const char * key)
+{
+	if (key == NULL) return 0;
+	const unsigned int len = (unsigned int)strlen((const char*)key);
+	return hash(key, len);
+}
+
+__inline unsigned int hashstr(const wchar_t * key)
+{
+	if (key == NULL) return 0;
+	const unsigned int len = (unsigned int)wcslen((const wchar_t*)key);
+	return hash(key, len * sizeof(wchar_t));
+}
+#pragma optimize( "", on )
+
 /**** path.c ***************************************************************************/
 
 int pathToAbsolute(const char *pSrc, char *pOut, char* base);
@@ -284,15 +302,15 @@ __inline static INT_PTR CallProtoService( const char* szModule, const char* szSe
 /**** utils.c **************************************************************************/
 
 #if defined( _UNICODE )
-	char*  rtrim(char* str);
+	char*  __fastcall rtrim(char* str);
 #endif
-TCHAR* rtrim(TCHAR* str);
-char*  ltrim(char* str);
-char* ltrimp(char* str);
+TCHAR* __fastcall rtrim(TCHAR* str);
+char*  __fastcall ltrim(char* str);
+char* __fastcall ltrimp(char* str);
 __inline char* lrtrim(char* str) { return ltrim(rtrim(str)); };
 __inline char* lrtrimp(char* str) { return ltrimp(rtrim(str)); };
 
-bool wildcmp(char * name, char * mask);
+bool __fastcall wildcmp(char * name, char * mask);
 
 void HotkeyToName(TCHAR *buf, int size, BYTE shift, BYTE key);
 WORD GetHotkeyValue( INT_PTR idHotkey );

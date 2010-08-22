@@ -229,7 +229,7 @@ static TCHAR *GetPluginName(HINSTANCE hInstance, TCHAR *buffer, int size)
 
 PageHash GetPluginPageHash(const OptionsPageData *page)
 {
-	return HashFunc(page->pszGroup) + HashFunc(page->pszTitle) + HashFunc(page->pszTab);
+	return hashstr(page->pszGroup) + hashstr(page->pszTitle) + hashstr(page->pszTab);
 }
 
 static void FindFilterStrings(int enableKeywordFiltering, int current, HWND hWndParent, const OptionsPageData *page)

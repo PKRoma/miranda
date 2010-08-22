@@ -458,7 +458,7 @@ static INT_PTR GenerateRandom(WPARAM wParam, LPARAM lParam)
 /////////////////////////////////////////////////////////////////////////////////////////
 
 #if defined( _UNICODE )
-char* rtrim(char* str)
+char* __fastcall rtrim(char* str)
 {
 	if (str == NULL) return NULL;
 	char* p = strchr(str, 0);
@@ -476,7 +476,7 @@ char* rtrim(char* str)
 }
 #endif
 
-TCHAR* rtrim(TCHAR *str)
+TCHAR* __fastcall rtrim(TCHAR *str)
 {
 	if (str == NULL) return NULL;
 	TCHAR* p = _tcschr(str, 0);
@@ -493,7 +493,7 @@ TCHAR* rtrim(TCHAR *str)
 	return str;
 }
 
-char* ltrim(char* str)
+char* __fastcall ltrim(char* str)
 {
 	if (str == NULL) return NULL;
 	char* p = str;
@@ -511,7 +511,7 @@ char* ltrim(char* str)
 	}
 }
 
-char* ltrimp(char* str)
+char* __fastcall ltrimp(char* str)
 {
 	if (str == NULL) return NULL;
 	char* p = str;
@@ -528,7 +528,7 @@ char* ltrimp(char* str)
 	}
 }
 
-bool wildcmp(char * name, char * mask)
+bool __fastcall wildcmp(char * name, char * mask)
 {
 	char * last='\0';
 	for(;; mask++, name++)
@@ -546,7 +546,8 @@ bool wildcmp(char * name, char * mask)
 		}
 		if(*name == '\0') return ((BOOL)!*mask);      /* *mask == EOS */
 		if(*mask != '?' && *mask != *name) name -= (size_t)(mask - last) - 1, mask = last;
-}	}
+	}	
+}
 
 /////////////////////////////////////////////////////////////////////////////////////////
 

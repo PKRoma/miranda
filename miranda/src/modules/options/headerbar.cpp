@@ -366,7 +366,7 @@ static LRESULT CALLBACK MHeaderbarWndProc(HWND hwndDlg, UINT  msg, WPARAM wParam
 
 	case WM_DESTROY:
 		delete itc;
-		return TRUE;
+		break;
 	}
 	return DefWindowProc(hwndDlg, msg, wParam, lParam);
 }
