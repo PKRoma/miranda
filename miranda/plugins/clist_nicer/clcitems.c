@@ -469,36 +469,12 @@ static LONG TZ_GetTimeZoneOffset(REG_TZI_FORMAT *tzi)
 
 static void TZ_LoadTimeZone(HANDLE hContact, struct ExtraCache *c, const char *szProto)
 {
-#if defined(_UNICODE)						// real time zone stuff only for Win 2000 or later
-	if(ServiceExists("TZ/GetInfoByContact")) {
-		MIM_TIMEZONE  *tzi;
-		tzi = (MIM_TIMEZONE *)CallService("TZ/GetInfoByContact", (WPARAM)hContact, 0);
+	MIM_TIMEZONE  *tzi = (MIM_TIMEZONE *)CallService(MS_TZ_GETINFOBYCONTACT, (WPARAM)hContact, 0);
+	if (tzi && (INT_PTR)tzi != CALLSERVICE_NOTFOUND)
+	{
 		c->timediff = tzi->Offset;
 		c->dwCFlags |= ECF_HASREALTIMEZONE;
-		return;
 	}
-	/*
-	 * the fallback method uses standard GMT offsets
-	 */
-
-	if(!(c->dwCFlags & ECF_HASREALTIMEZONE)) {
-		c->timezone = (DWORD)DBGetContactSettingByte(hContact,"UserInfo","Timezone", DBGetContactSettingByte(hContact, szProto,"Timezone",-1));
-		if(c->timezone != -1) {
-			DWORD contact_gmt_diff;
-			contact_gmt_diff = c->timezone > 128 ? 256 - c->timezone : 0 - c->timezone;
-			c->timediff = (int)g_CluiData.local_gmt_diff - (int)contact_gmt_diff*60*60/2;
-		}
-		c->dwCFlags &= ~ECF_HASREALTIMEZONE;
-	}
-#else
-	c->timezone = (DWORD)DBGetContactSettingByte(hContact,"UserInfo","Timezone", DBGetContactSettingByte(hContact, szProto,"Timezone",-1));
-	if(c->timezone != -1) {
-		DWORD contact_gmt_diff;
-		contact_gmt_diff = c->timezone > 128 ? 256 - c->timezone : 0 - c->timezone;
-		c->timediff = (int)g_CluiData.local_gmt_diff - (int)contact_gmt_diff*60*60/2;
-	}
-	c->dwCFlags &= ECF_HASREALTIMEZONE;
-#endif
 }
 
 void ReloadExtraInfo(HANDLE hContact)
