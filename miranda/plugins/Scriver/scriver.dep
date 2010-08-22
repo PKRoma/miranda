@@ -1,6 +1,16 @@
 # Microsoft Developer Studio Generated Dependency File, included by scriver.mak
 
 .\cmdlist.c : \
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\basetsd.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\guiddef.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\propidl.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\reason.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shldisp.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shobjidl.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shtypes.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\stralign.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\tvout.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\uxtheme.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -26,6 +36,8 @@
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
+	"..\..\include\msapi\vsstyle.h"\
+	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
@@ -47,6 +59,16 @@
 	
 
 .\globals.c : \
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\basetsd.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\guiddef.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\propidl.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\reason.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shldisp.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shobjidl.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shtypes.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\stralign.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\tvout.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\uxtheme.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -72,6 +94,8 @@
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
+	"..\..\include\msapi\vsstyle.h"\
+	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
@@ -93,6 +117,16 @@
 	
 
 .\infobar.c : \
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\basetsd.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\guiddef.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\propidl.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\reason.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shldisp.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shobjidl.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shtypes.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\stralign.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\tvout.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\uxtheme.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -118,6 +152,8 @@
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
+	"..\..\include\msapi\vsstyle.h"\
+	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
@@ -139,6 +175,16 @@
 	
 
 .\input.c : \
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\basetsd.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\guiddef.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\propidl.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\reason.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shldisp.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shobjidl.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shtypes.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\stralign.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\tvout.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\uxtheme.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -164,6 +210,8 @@
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
+	"..\..\include\msapi\vsstyle.h"\
+	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
@@ -185,6 +233,16 @@
 	
 
 .\msgdialog.c : \
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\basetsd.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\guiddef.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\propidl.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\reason.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shldisp.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shobjidl.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shtypes.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\stralign.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\tvout.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\uxtheme.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -210,6 +268,8 @@
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
+	"..\..\include\msapi\vsstyle.h"\
+	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
@@ -232,6 +292,16 @@
 	
 
 .\msglog.c : \
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\basetsd.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\guiddef.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\propidl.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\reason.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shldisp.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shobjidl.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shtypes.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\stralign.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\tvout.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\uxtheme.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -257,6 +327,8 @@
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
+	"..\..\include\msapi\vsstyle.h"\
+	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
@@ -278,6 +350,16 @@
 	
 
 .\msgoptions.c : \
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\basetsd.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\guiddef.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\propidl.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\reason.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shldisp.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shobjidl.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shtypes.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\stralign.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\tvout.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\uxtheme.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -305,6 +387,8 @@
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
+	"..\..\include\msapi\vsstyle.h"\
+	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
@@ -327,6 +411,16 @@
 	
 
 .\msgs.c : \
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\basetsd.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\guiddef.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\propidl.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\reason.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shldisp.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shobjidl.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shtypes.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\stralign.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\tvout.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\uxtheme.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -352,6 +446,8 @@
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
+	"..\..\include\msapi\vsstyle.h"\
+	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
@@ -374,6 +470,16 @@
 	
 
 .\msgtimedout.c : \
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\basetsd.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\guiddef.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\propidl.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\reason.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shldisp.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shobjidl.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shtypes.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\stralign.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\tvout.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\uxtheme.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -399,6 +505,8 @@
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
+	"..\..\include\msapi\vsstyle.h"\
+	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
@@ -420,6 +528,16 @@
 	
 
 .\msgwindow.c : \
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\basetsd.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\guiddef.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\propidl.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\reason.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shldisp.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shobjidl.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shtypes.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\stralign.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\tvout.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\uxtheme.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -447,6 +565,8 @@
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
+	"..\..\include\msapi\vsstyle.h"\
+	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
@@ -471,6 +591,16 @@
 	
 
 .\richutil.c : \
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\basetsd.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\guiddef.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\propidl.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\reason.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shldisp.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shobjidl.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shtypes.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\stralign.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\tvout.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\uxtheme.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -496,6 +626,8 @@
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
+	"..\..\include\msapi\vsstyle.h"\
+	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
@@ -517,6 +649,16 @@
 	
 
 .\sendqueue.c : \
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\basetsd.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\guiddef.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\propidl.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\reason.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shldisp.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shobjidl.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shtypes.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\stralign.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\tvout.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\uxtheme.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -542,6 +684,8 @@
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
+	"..\..\include\msapi\vsstyle.h"\
+	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
@@ -563,6 +707,16 @@
 	
 
 .\srmm.c : \
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\basetsd.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\guiddef.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\propidl.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\reason.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shldisp.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shobjidl.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shtypes.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\stralign.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\tvout.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\uxtheme.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -588,6 +742,8 @@
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
+	"..\..\include\msapi\vsstyle.h"\
+	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
@@ -609,6 +765,16 @@
 	
 
 .\statusicon.c : \
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\basetsd.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\guiddef.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\propidl.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\reason.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shldisp.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shobjidl.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shtypes.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\stralign.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\tvout.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\uxtheme.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -634,6 +800,8 @@
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
+	"..\..\include\msapi\vsstyle.h"\
+	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
@@ -656,6 +824,16 @@
 	
 
 .\utils.c : \
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\basetsd.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\guiddef.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\propidl.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\reason.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shldisp.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shobjidl.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shtypes.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\stralign.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\tvout.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\uxtheme.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -682,6 +860,8 @@
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
+	"..\..\include\msapi\vsstyle.h"\
+	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
@@ -758,6 +938,16 @@
 	
 
 .\chat\clist.c : \
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\basetsd.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\guiddef.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\propidl.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\reason.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shldisp.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shobjidl.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shtypes.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\stralign.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\tvout.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\uxtheme.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -785,6 +975,8 @@
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
+	"..\..\include\msapi\vsstyle.h"\
+	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
@@ -807,6 +999,16 @@
 	
 
 .\chat\colorchooser.c : \
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\basetsd.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\guiddef.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\propidl.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\reason.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shldisp.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shobjidl.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shtypes.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\stralign.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\tvout.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\uxtheme.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -834,6 +1036,8 @@
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
+	"..\..\include\msapi\vsstyle.h"\
+	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
@@ -856,6 +1060,16 @@
 	
 
 .\chat\log.c : \
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\basetsd.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\guiddef.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\propidl.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\reason.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shldisp.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shobjidl.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shtypes.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\stralign.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\tvout.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\uxtheme.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -883,6 +1097,8 @@
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
+	"..\..\include\msapi\vsstyle.h"\
+	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
@@ -905,6 +1121,16 @@
 	
 
 .\chat\main.c : \
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\basetsd.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\guiddef.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\propidl.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\reason.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shldisp.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shobjidl.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shtypes.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\stralign.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\tvout.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\uxtheme.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -932,6 +1158,8 @@
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
+	"..\..\include\msapi\vsstyle.h"\
+	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
@@ -954,6 +1182,16 @@
 	
 
 .\chat\manager.c : \
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\basetsd.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\guiddef.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\propidl.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\reason.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shldisp.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shobjidl.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shtypes.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\stralign.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\tvout.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\uxtheme.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -981,6 +1219,8 @@
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
+	"..\..\include\msapi\vsstyle.h"\
+	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
@@ -1003,6 +1243,16 @@
 	
 
 .\chat\message.c : \
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\basetsd.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\guiddef.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\propidl.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\reason.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shldisp.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shobjidl.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shtypes.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\stralign.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\tvout.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\uxtheme.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -1030,6 +1280,8 @@
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
+	"..\..\include\msapi\vsstyle.h"\
+	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
@@ -1052,6 +1304,16 @@
 	
 
 .\chat\options.c : \
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\basetsd.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\guiddef.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\propidl.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\reason.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shldisp.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shobjidl.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shtypes.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\stralign.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\tvout.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\uxtheme.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -1079,6 +1341,8 @@
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
+	"..\..\include\msapi\vsstyle.h"\
+	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
@@ -1101,6 +1365,16 @@
 	
 
 .\chat\services.c : \
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\basetsd.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\guiddef.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\propidl.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\reason.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shldisp.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shobjidl.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shtypes.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\stralign.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\tvout.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\uxtheme.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -1128,6 +1402,8 @@
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
+	"..\..\include\msapi\vsstyle.h"\
+	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
@@ -1150,6 +1426,16 @@
 	
 
 .\chat\tools.c : \
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\basetsd.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\guiddef.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\propidl.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\reason.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shldisp.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shobjidl.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shtypes.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\stralign.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\tvout.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\uxtheme.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -1177,6 +1463,8 @@
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
+	"..\..\include\msapi\vsstyle.h"\
+	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
@@ -1199,6 +1487,16 @@
 	
 
 .\chat\window.c : \
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\basetsd.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\guiddef.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\propidl.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\reason.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shldisp.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shobjidl.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shtypes.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\stralign.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\tvout.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\uxtheme.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -1226,6 +1524,8 @@
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
+	"..\..\include\msapi\vsstyle.h"\
+	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
