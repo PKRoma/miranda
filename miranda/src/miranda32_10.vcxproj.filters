@@ -270,6 +270,9 @@
     <ClInclude Include="resource.h">
       <Filter>Resources</Filter>
     </ClInclude>
+    <ClInclude Include="..\include\m_timezones.h">
+      <Filter>SDK</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="core\commonheaders.cpp">
@@ -603,6 +606,9 @@
       <Filter>Modules\xmlparser</Filter>
     </ClCompile>
     <ClCompile Include="modules\utils\imgconv.cpp">
+      <Filter>Modules\utils</Filter>
+    </ClCompile>
+    <ClCompile Include="modules\utils\timezones.cpp">
       <Filter>Modules\utils</Filter>
     </ClCompile>
   </ItemGroup>

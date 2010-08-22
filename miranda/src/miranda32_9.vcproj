@@ -565,7 +565,6 @@
 				RuntimeTypeInfo="false"
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="commonheaders.h"
-				AssemblerOutput="4"
 				BrowseInformationFile=""
 				WarningLevel="3"
 				SuppressStartupBanner="true"
@@ -944,6 +943,10 @@
 			</File>
 			<File
 				RelativePath="..\include\m_system_cpp.h"
+				>
+			</File>
+			<File
+				RelativePath="..\include\m_timezones.h"
 				>
 			</File>
 			<File
@@ -5923,6 +5926,10 @@
 				</File>
 				<File
 					RelativePath=".\modules\utils\sha1.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\modules\utils\timezones.cpp"
 					>
 				</File>
 				<File
