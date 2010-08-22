@@ -29,6 +29,15 @@ $Id: services.cpp 96 2010-08-09 19:18:13Z silvercircle $
 #include <commonheaders.h>
 #include <m_timezones.h>
 
+typedef struct _REG_TZI_FORMAT
+{
+    LONG Bias;
+    LONG StandardBias;
+    LONG DaylightBias;
+    SYSTEMTIME StandardDate;
+    SYSTEMTIME DaylightDate;
+} REG_TZI_FORMAT;
+
 /*
  * our internal format
  */
@@ -399,7 +408,7 @@ void InitTimeZones(void)
 	SystemTimeToFileTime(&myInfo.st, &myInfo.ft);
 	myInfo.timestamp = time(NULL);
 
-	TIME_ZONE_INFORMATION	tzi;
+	REG_TZI_FORMAT	tzi;
 	TCHAR			tszKey[256];
 	HKEY			hKey;
 
