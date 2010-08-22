@@ -386,7 +386,7 @@ static INT_PTR svcPrepareList(WPARAM wParam, LPARAM lParam)
 		SendMessage(mtzd->hWnd, extMsg, (WPARAM)i + 1, (LPARAM)g_timezonesBias[i]);
 
 		// remember the display name to later select it in the listbox
-		if(mtzd->tszName[0] && !_tcsicmp(mtzd->tszName, g_timezonesBias[i]->tszName))	
+		if (iSelection == -1 && mtzd->tszName[0] && !_tcsicmp(mtzd->tszName, g_timezonesBias[i]->tszName))	
 		{
 			mir_sntprintf(tszSelectedItem, MIM_TZ_DISPLAYLEN, _T("%s"), g_timezonesBias[i]->tszDisplay);
 			iSelection = i + 1;
@@ -397,7 +397,6 @@ static INT_PTR svcPrepareList(WPARAM wParam, LPARAM lParam)
 		*/
 		//if(mtzd-> != -1 && (LONG)timediff == reg_timezones[i].Bias)
 		//	mir_sntprintf(tszSelectedItemBackup, 256, _T("%s"), reg_timezones[i].tszDisplay);
-		i++;
 	}
 	if (iSelection != -1) 
 	{
