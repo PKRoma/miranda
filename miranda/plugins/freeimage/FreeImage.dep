@@ -407,7 +407,6 @@
 	".\Source\LibJPEG\jerror.h"\
 	".\Source\LibJPEG\jinclude.h"\
 	".\Source\LibJPEG\jmorecfg.h"\
-	".\Source\LibJPEG\jpegint.h"\
 	".\Source\LibJPEG\jpeglib.h"\
 	
 
@@ -416,7 +415,6 @@
 	".\Source\LibJPEG\jerror.h"\
 	".\Source\LibJPEG\jinclude.h"\
 	".\Source\LibJPEG\jmorecfg.h"\
-	".\Source\LibJPEG\jpegint.h"\
 	".\Source\LibJPEG\jpeglib.h"\
 	
 
@@ -534,7 +532,6 @@
 	".\Source\LibJPEG\jerror.h"\
 	".\Source\LibJPEG\jinclude.h"\
 	".\Source\LibJPEG\jmorecfg.h"\
-	".\Source\LibJPEG\jpegint.h"\
 	".\Source\LibJPEG\jpeglib.h"\
 	".\Source\LibJPEG\jversion.h"\
 	
@@ -847,7 +844,6 @@
 	".\Source\LibJPEG\jerror.h"\
 	".\Source\LibJPEG\jinclude.h"\
 	".\Source\LibJPEG\jmorecfg.h"\
-	".\Source\LibJPEG\jpegint.h"\
 	".\Source\LibJPEG\jpeglib.h"\
 	".\Source\LibJPEG\transupp.h"\
 	".\Source\Utilities.h"\
@@ -855,14 +851,14 @@
 
 .\Source\FreeImageToolkit\Rescale.cpp : \
 	".\SOURCE\FreeImage.h"\
-	".\Source\FreeImageToolkit\Filters.h"\
+	".\source\freeimagetoolkit\filters.h"\
 	".\Source\FreeImageToolkit\Resize.h"\
 	".\Source\Utilities.h"\
 	
 
 .\Source\FreeImageToolkit\Resize.cpp : \
 	".\SOURCE\FreeImage.h"\
-	".\Source\FreeImageToolkit\Filters.h"\
+	".\source\freeimagetoolkit\filters.h"\
 	".\Source\FreeImageToolkit\Resize.h"\
 	".\Source\Utilities.h"\
 	
