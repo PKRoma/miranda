@@ -327,7 +327,7 @@ HANDLE CList_FindRoom ( const char* pszModule, const TCHAR* pszRoom)
 int WCCmp(TCHAR* wild, TCHAR* string)
 {
 	TCHAR *cp, *mp;
-	if ( wild == NULL || !lstrlen(wild) || string == NULL || !lstrlen(string))
+	if ( wild == NULL || wild[0] || string == NULL || string[0])
 		return 0;
 
 	while ((*string) && (*wild != '*')) {

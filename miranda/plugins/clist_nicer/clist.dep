@@ -1,847 +1,213 @@
 # Microsoft Developer Studio Generated Dependency File, included by clist.mak
 
 .\CLUIFrames\cluiframes.c : \
-	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
-	"..\..\include\m_clc.h"\
-	"..\..\include\m_clist.h"\
-	"..\..\include\m_clistint.h"\
-	"..\..\include\m_clui.h"\
-	"..\..\include\m_cluiframes.h"\
-	"..\..\include\m_contacts.h"\
-	"..\..\include\m_database.h"\
-	"..\..\include\m_file.h"\
-	"..\..\include\m_fontservice.h"\
 	"..\..\include\m_genmenu.h"\
-	"..\..\include\m_icolib.h"\
-	"..\..\include\m_langpack.h"\
-	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
-	"..\..\include\m_plugins.h"\
-	"..\..\include\m_popup.h"\
-	"..\..\include\m_protocols.h"\
-	"..\..\include\m_protosvc.h"\
-	"..\..\include\m_skin.h"\
-	"..\..\include\m_stdhdr.h"\
-	"..\..\include\m_system.h"\
-	"..\..\include\m_utils.h"\
-	"..\..\include\newpluginapi.h"\
-	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
-	".\alphablend.h"\
-	".\clc.h"\
-	".\clist.h"\
 	".\CLUIFrames\cluiframes.h"\
-	".\commonheaders.h"\
-	".\extbackg.h"\
-	".\m_avatars.h"\
-	".\m_cln_skinedit.h"\
-	".\m_metacontacts.h"\
 	".\rowheight_funcs.h"\
 	
 
 .\CLUIFrames\framesmenu.c : \
-	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
-	"..\..\include\m_clc.h"\
-	"..\..\include\m_clist.h"\
-	"..\..\include\m_clistint.h"\
-	"..\..\include\m_clui.h"\
-	"..\..\include\m_cluiframes.h"\
-	"..\..\include\m_contacts.h"\
-	"..\..\include\m_database.h"\
-	"..\..\include\m_file.h"\
-	"..\..\include\m_fontservice.h"\
 	"..\..\include\m_genmenu.h"\
-	"..\..\include\m_icolib.h"\
-	"..\..\include\m_langpack.h"\
-	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
-	"..\..\include\m_plugins.h"\
-	"..\..\include\m_popup.h"\
-	"..\..\include\m_protocols.h"\
-	"..\..\include\m_protosvc.h"\
-	"..\..\include\m_skin.h"\
-	"..\..\include\m_stdhdr.h"\
-	"..\..\include\m_system.h"\
-	"..\..\include\m_utils.h"\
-	"..\..\include\newpluginapi.h"\
-	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
-	".\alphablend.h"\
-	".\clc.h"\
-	".\clist.h"\
 	".\CLUIFrames\cluiframes.h"\
-	".\commonheaders.h"\
-	".\extbackg.h"\
-	".\m_avatars.h"\
-	".\m_cln_skinedit.h"\
-	".\m_metacontacts.h"\
 	".\rowheight_funcs.h"\
 	
 
 .\CLUIFrames\groupmenu.c : \
-	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
-	"..\..\include\m_clc.h"\
-	"..\..\include\m_clist.h"\
-	"..\..\include\m_clistint.h"\
-	"..\..\include\m_clui.h"\
-	"..\..\include\m_cluiframes.h"\
-	"..\..\include\m_contacts.h"\
-	"..\..\include\m_database.h"\
-	"..\..\include\m_file.h"\
-	"..\..\include\m_fontservice.h"\
 	"..\..\include\m_genmenu.h"\
-	"..\..\include\m_icolib.h"\
-	"..\..\include\m_langpack.h"\
-	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
-	"..\..\include\m_plugins.h"\
-	"..\..\include\m_popup.h"\
-	"..\..\include\m_protocols.h"\
-	"..\..\include\m_protosvc.h"\
-	"..\..\include\m_skin.h"\
-	"..\..\include\m_stdhdr.h"\
-	"..\..\include\m_system.h"\
-	"..\..\include\m_utils.h"\
-	"..\..\include\newpluginapi.h"\
-	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
-	".\alphablend.h"\
-	".\clc.h"\
-	".\clist.h"\
-	".\commonheaders.h"\
-	".\extbackg.h"\
-	".\m_avatars.h"\
-	".\m_cln_skinedit.h"\
-	".\m_metacontacts.h"\
 	".\rowheight_funcs.h"\
 	
 
 .\alphablend.c : \
-	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
-	"..\..\include\m_clc.h"\
-	"..\..\include\m_clist.h"\
-	"..\..\include\m_clistint.h"\
-	"..\..\include\m_clui.h"\
-	"..\..\include\m_cluiframes.h"\
-	"..\..\include\m_contacts.h"\
-	"..\..\include\m_database.h"\
-	"..\..\include\m_file.h"\
-	"..\..\include\m_fontservice.h"\
 	"..\..\include\m_genmenu.h"\
-	"..\..\include\m_icolib.h"\
-	"..\..\include\m_langpack.h"\
-	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
-	"..\..\include\m_plugins.h"\
-	"..\..\include\m_popup.h"\
-	"..\..\include\m_protocols.h"\
-	"..\..\include\m_protosvc.h"\
-	"..\..\include\m_skin.h"\
-	"..\..\include\m_stdhdr.h"\
-	"..\..\include\m_system.h"\
-	"..\..\include\m_utils.h"\
-	"..\..\include\newpluginapi.h"\
-	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
-	".\alphablend.h"\
-	".\clc.h"\
-	".\clist.h"\
-	".\commonheaders.h"\
-	".\extbackg.h"\
-	".\m_avatars.h"\
-	".\m_cln_skinedit.h"\
-	".\m_metacontacts.h"\
 	".\rowheight_funcs.h"\
 	
 
 .\clc.c : \
-	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
-	"..\..\include\m_clc.h"\
-	"..\..\include\m_clist.h"\
-	"..\..\include\m_clistint.h"\
-	"..\..\include\m_clui.h"\
-	"..\..\include\m_cluiframes.h"\
-	"..\..\include\m_contacts.h"\
-	"..\..\include\m_database.h"\
-	"..\..\include\m_file.h"\
-	"..\..\include\m_fontservice.h"\
 	"..\..\include\m_genmenu.h"\
-	"..\..\include\m_icolib.h"\
-	"..\..\include\m_langpack.h"\
-	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
-	"..\..\include\m_plugins.h"\
-	"..\..\include\m_popup.h"\
-	"..\..\include\m_protocols.h"\
-	"..\..\include\m_protosvc.h"\
-	"..\..\include\m_skin.h"\
-	"..\..\include\m_stdhdr.h"\
-	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
-	"..\..\include\m_utils.h"\
-	"..\..\include\newpluginapi.h"\
-	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
-	".\alphablend.h"\
-	".\clc.h"\
-	".\clist.h"\
 	".\CLUIFrames\cluiframes.h"\
-	".\commonheaders.h"\
 	".\coolsb\coolscroll.h"\
-	".\extbackg.h"\
-	".\m_avatars.h"\
-	".\m_cln_skinedit.h"\
-	".\m_metacontacts.h"\
 	".\rowheight_funcs.h"\
 	
 
 .\CLCButton.c : \
-	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
-	"..\..\include\m_clc.h"\
-	"..\..\include\m_clist.h"\
-	"..\..\include\m_clistint.h"\
-	"..\..\include\m_clui.h"\
-	"..\..\include\m_cluiframes.h"\
-	"..\..\include\m_contacts.h"\
-	"..\..\include\m_database.h"\
-	"..\..\include\m_file.h"\
-	"..\..\include\m_fontservice.h"\
 	"..\..\include\m_genmenu.h"\
-	"..\..\include\m_icolib.h"\
-	"..\..\include\m_langpack.h"\
-	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
-	"..\..\include\m_plugins.h"\
-	"..\..\include\m_popup.h"\
-	"..\..\include\m_protocols.h"\
-	"..\..\include\m_protosvc.h"\
-	"..\..\include\m_skin.h"\
-	"..\..\include\m_stdhdr.h"\
-	"..\..\include\m_system.h"\
-	"..\..\include\m_utils.h"\
-	"..\..\include\newpluginapi.h"\
-	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
-	".\alphablend.h"\
-	".\clc.h"\
-	".\clist.h"\
-	".\commonheaders.h"\
-	".\extbackg.h"\
-	".\m_avatars.h"\
-	".\m_cln_skinedit.h"\
-	".\m_metacontacts.h"\
 	".\rowheight_funcs.h"\
 	
 
 .\clcidents.c : \
-	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
-	"..\..\include\m_clc.h"\
-	"..\..\include\m_clist.h"\
-	"..\..\include\m_clistint.h"\
-	"..\..\include\m_clui.h"\
-	"..\..\include\m_cluiframes.h"\
-	"..\..\include\m_contacts.h"\
-	"..\..\include\m_database.h"\
-	"..\..\include\m_file.h"\
-	"..\..\include\m_fontservice.h"\
 	"..\..\include\m_genmenu.h"\
-	"..\..\include\m_icolib.h"\
-	"..\..\include\m_langpack.h"\
-	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
-	"..\..\include\m_plugins.h"\
-	"..\..\include\m_popup.h"\
-	"..\..\include\m_protocols.h"\
-	"..\..\include\m_protosvc.h"\
-	"..\..\include\m_skin.h"\
-	"..\..\include\m_stdhdr.h"\
-	"..\..\include\m_system.h"\
-	"..\..\include\m_utils.h"\
-	"..\..\include\newpluginapi.h"\
-	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
-	".\alphablend.h"\
-	".\clc.h"\
-	".\clist.h"\
-	".\commonheaders.h"\
-	".\extbackg.h"\
-	".\m_avatars.h"\
-	".\m_cln_skinedit.h"\
-	".\m_metacontacts.h"\
 	".\rowheight_funcs.h"\
 	
 
 .\clcitems.c : \
-	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
-	"..\..\include\m_clc.h"\
-	"..\..\include\m_clist.h"\
-	"..\..\include\m_clistint.h"\
-	"..\..\include\m_clui.h"\
-	"..\..\include\m_cluiframes.h"\
-	"..\..\include\m_contacts.h"\
-	"..\..\include\m_database.h"\
-	"..\..\include\m_file.h"\
-	"..\..\include\m_fontservice.h"\
 	"..\..\include\m_genmenu.h"\
-	"..\..\include\m_icolib.h"\
 	"..\..\include\m_icq.h"\
-	"..\..\include\m_langpack.h"\
-	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
-	"..\..\include\m_plugins.h"\
-	"..\..\include\m_popup.h"\
-	"..\..\include\m_protocols.h"\
-	"..\..\include\m_protosvc.h"\
-	"..\..\include\m_skin.h"\
-	"..\..\include\m_stdhdr.h"\
-	"..\..\include\m_system.h"\
-	"..\..\include\m_utils.h"\
-	"..\..\include\newpluginapi.h"\
-	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
-	".\alphablend.h"\
-	".\clc.h"\
-	".\clist.h"\
-	".\commonheaders.h"\
-	".\extbackg.h"\
-	".\m_avatars.h"\
-	".\m_cln_skinedit.h"\
-	".\m_metacontacts.h"\
 	".\rowheight_funcs.h"\
 	
 
 .\clcmsgs.c : \
-	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
-	"..\..\include\m_clc.h"\
-	"..\..\include\m_clist.h"\
-	"..\..\include\m_clistint.h"\
-	"..\..\include\m_clui.h"\
-	"..\..\include\m_cluiframes.h"\
-	"..\..\include\m_contacts.h"\
-	"..\..\include\m_database.h"\
-	"..\..\include\m_file.h"\
-	"..\..\include\m_fontservice.h"\
 	"..\..\include\m_genmenu.h"\
-	"..\..\include\m_icolib.h"\
-	"..\..\include\m_langpack.h"\
-	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
-	"..\..\include\m_plugins.h"\
-	"..\..\include\m_popup.h"\
-	"..\..\include\m_protocols.h"\
-	"..\..\include\m_protosvc.h"\
-	"..\..\include\m_skin.h"\
-	"..\..\include\m_stdhdr.h"\
-	"..\..\include\m_system.h"\
-	"..\..\include\m_utils.h"\
-	"..\..\include\newpluginapi.h"\
-	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
-	".\alphablend.h"\
-	".\clc.h"\
-	".\clist.h"\
-	".\commonheaders.h"\
-	".\extbackg.h"\
-	".\m_avatars.h"\
-	".\m_cln_skinedit.h"\
-	".\m_metacontacts.h"\
 	".\rowheight_funcs.h"\
 	
 
 .\clcopts.c : \
-	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
-	"..\..\include\m_clc.h"\
-	"..\..\include\m_clist.h"\
-	"..\..\include\m_clistint.h"\
-	"..\..\include\m_clui.h"\
-	"..\..\include\m_cluiframes.h"\
-	"..\..\include\m_contacts.h"\
-	"..\..\include\m_database.h"\
-	"..\..\include\m_file.h"\
-	"..\..\include\m_fontservice.h"\
 	"..\..\include\m_genmenu.h"\
-	"..\..\include\m_icolib.h"\
-	"..\..\include\m_langpack.h"\
-	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
-	"..\..\include\m_plugins.h"\
-	"..\..\include\m_popup.h"\
-	"..\..\include\m_protocols.h"\
-	"..\..\include\m_protosvc.h"\
-	"..\..\include\m_skin.h"\
-	"..\..\include\m_stdhdr.h"\
-	"..\..\include\m_system.h"\
-	"..\..\include\m_utils.h"\
-	"..\..\include\newpluginapi.h"\
-	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
-	".\alphablend.h"\
-	".\clc.h"\
-	".\clist.h"\
-	".\commonheaders.h"\
 	".\coolsb\coolscroll.h"\
-	".\extbackg.h"\
-	".\m_avatars.h"\
-	".\m_cln_skinedit.h"\
-	".\m_metacontacts.h"\
 	".\rowheight_funcs.h"\
 	
 
 .\clcpaint.c : \
-	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
-	"..\..\include\m_clc.h"\
-	"..\..\include\m_clist.h"\
-	"..\..\include\m_clistint.h"\
-	"..\..\include\m_clui.h"\
-	"..\..\include\m_cluiframes.h"\
-	"..\..\include\m_contacts.h"\
-	"..\..\include\m_database.h"\
-	"..\..\include\m_file.h"\
-	"..\..\include\m_fontservice.h"\
 	"..\..\include\m_genmenu.h"\
-	"..\..\include\m_icolib.h"\
-	"..\..\include\m_langpack.h"\
-	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
-	"..\..\include\m_plugins.h"\
-	"..\..\include\m_popup.h"\
-	"..\..\include\m_protocols.h"\
-	"..\..\include\m_protosvc.h"\
-	"..\..\include\m_skin.h"\
-	"..\..\include\m_stdhdr.h"\
-	"..\..\include\m_system.h"\
-	"..\..\include\m_utils.h"\
-	"..\..\include\newpluginapi.h"\
-	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
-	".\alphablend.h"\
-	".\clc.h"\
-	".\clist.h"\
-	".\commonheaders.h"\
-	".\extbackg.h"\
-	".\m_avatars.h"\
-	".\m_cln_skinedit.h"\
-	".\m_metacontacts.h"\
 	".\rowheight_funcs.h"\
 	
 
 .\clcutils.c : \
-	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
-	"..\..\include\m_clc.h"\
-	"..\..\include\m_clist.h"\
-	"..\..\include\m_clistint.h"\
-	"..\..\include\m_clui.h"\
-	"..\..\include\m_cluiframes.h"\
-	"..\..\include\m_contacts.h"\
-	"..\..\include\m_database.h"\
-	"..\..\include\m_file.h"\
-	"..\..\include\m_fontservice.h"\
 	"..\..\include\m_genmenu.h"\
-	"..\..\include\m_icolib.h"\
-	"..\..\include\m_langpack.h"\
-	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
-	"..\..\include\m_plugins.h"\
-	"..\..\include\m_popup.h"\
-	"..\..\include\m_protocols.h"\
-	"..\..\include\m_protosvc.h"\
-	"..\..\include\m_skin.h"\
-	"..\..\include\m_stdhdr.h"\
-	"..\..\include\m_system.h"\
-	"..\..\include\m_utils.h"\
-	"..\..\include\newpluginapi.h"\
-	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
-	".\alphablend.h"\
-	".\clc.h"\
-	".\clist.h"\
-	".\commonheaders.h"\
 	".\coolsb\coolscroll.h"\
-	".\extbackg.h"\
-	".\m_avatars.h"\
-	".\m_cln_skinedit.h"\
-	".\m_metacontacts.h"\
 	".\rowheight_funcs.h"\
 	
 
 .\clistevents.c : \
-	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
-	"..\..\include\m_clc.h"\
-	"..\..\include\m_clist.h"\
-	"..\..\include\m_clistint.h"\
-	"..\..\include\m_clui.h"\
-	"..\..\include\m_cluiframes.h"\
-	"..\..\include\m_contacts.h"\
-	"..\..\include\m_database.h"\
-	"..\..\include\m_file.h"\
-	"..\..\include\m_fontservice.h"\
 	"..\..\include\m_genmenu.h"\
-	"..\..\include\m_icolib.h"\
-	"..\..\include\m_langpack.h"\
-	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
-	"..\..\include\m_plugins.h"\
-	"..\..\include\m_popup.h"\
-	"..\..\include\m_protocols.h"\
-	"..\..\include\m_protosvc.h"\
-	"..\..\include\m_skin.h"\
-	"..\..\include\m_stdhdr.h"\
-	"..\..\include\m_system.h"\
-	"..\..\include\m_utils.h"\
-	"..\..\include\newpluginapi.h"\
-	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
-	".\alphablend.h"\
-	".\clc.h"\
-	".\clist.h"\
 	".\CLUIFrames\cluiframes.h"\
-	".\commonheaders.h"\
-	".\extbackg.h"\
-	".\m_avatars.h"\
-	".\m_cln_skinedit.h"\
-	".\m_metacontacts.h"\
 	".\rowheight_funcs.h"\
 	
 
 .\clistmenus.c : \
-	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
-	"..\..\include\m_clc.h"\
-	"..\..\include\m_clist.h"\
-	"..\..\include\m_clistint.h"\
-	"..\..\include\m_clui.h"\
-	"..\..\include\m_cluiframes.h"\
-	"..\..\include\m_contacts.h"\
-	"..\..\include\m_database.h"\
-	"..\..\include\m_file.h"\
-	"..\..\include\m_fontservice.h"\
 	"..\..\include\m_genmenu.h"\
-	"..\..\include\m_icolib.h"\
 	"..\..\include\m_ignore.h"\
-	"..\..\include\m_langpack.h"\
-	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
-	"..\..\include\m_plugins.h"\
-	"..\..\include\m_popup.h"\
-	"..\..\include\m_protocols.h"\
-	"..\..\include\m_protosvc.h"\
-	"..\..\include\m_skin.h"\
-	"..\..\include\m_stdhdr.h"\
-	"..\..\include\m_system.h"\
-	"..\..\include\m_utils.h"\
-	"..\..\include\newpluginapi.h"\
-	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
-	".\alphablend.h"\
-	".\clc.h"\
-	".\clist.h"\
 	".\CLUIFrames\cluiframes.h"\
-	".\commonheaders.h"\
-	".\extbackg.h"\
-	".\m_avatars.h"\
-	".\m_cln_skinedit.h"\
-	".\m_metacontacts.h"\
 	".\rowheight_funcs.h"\
 	
 
 .\clistmod.c : \
-	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
-	"..\..\include\m_clc.h"\
-	"..\..\include\m_clist.h"\
-	"..\..\include\m_clistint.h"\
-	"..\..\include\m_clui.h"\
-	"..\..\include\m_cluiframes.h"\
-	"..\..\include\m_contacts.h"\
-	"..\..\include\m_database.h"\
-	"..\..\include\m_file.h"\
-	"..\..\include\m_fontservice.h"\
 	"..\..\include\m_genmenu.h"\
-	"..\..\include\m_icolib.h"\
-	"..\..\include\m_langpack.h"\
-	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
-	"..\..\include\m_plugins.h"\
-	"..\..\include\m_popup.h"\
-	"..\..\include\m_protocols.h"\
-	"..\..\include\m_protosvc.h"\
-	"..\..\include\m_skin.h"\
-	"..\..\include\m_stdhdr.h"\
-	"..\..\include\m_system.h"\
-	"..\..\include\m_utils.h"\
-	"..\..\include\newpluginapi.h"\
-	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
-	".\alphablend.h"\
-	".\clc.h"\
-	".\clist.h"\
-	".\commonheaders.h"\
-	".\extbackg.h"\
-	".\m_avatars.h"\
-	".\m_cln_skinedit.h"\
-	".\m_metacontacts.h"\
 	".\rowheight_funcs.h"\
 	
 
 .\clistopts.c : \
-	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
-	"..\..\include\m_clc.h"\
-	"..\..\include\m_clist.h"\
-	"..\..\include\m_clistint.h"\
-	"..\..\include\m_clui.h"\
-	"..\..\include\m_cluiframes.h"\
-	"..\..\include\m_contacts.h"\
-	"..\..\include\m_database.h"\
-	"..\..\include\m_file.h"\
-	"..\..\include\m_fontservice.h"\
 	"..\..\include\m_genmenu.h"\
-	"..\..\include\m_icolib.h"\
-	"..\..\include\m_langpack.h"\
-	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
-	"..\..\include\m_plugins.h"\
-	"..\..\include\m_popup.h"\
-	"..\..\include\m_protocols.h"\
-	"..\..\include\m_protosvc.h"\
-	"..\..\include\m_skin.h"\
-	"..\..\include\m_stdhdr.h"\
-	"..\..\include\m_system.h"\
-	"..\..\include\m_utils.h"\
-	"..\..\include\newpluginapi.h"\
-	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
-	".\alphablend.h"\
-	".\clc.h"\
-	".\clist.h"\
-	".\commonheaders.h"\
-	".\extbackg.h"\
-	".\m_avatars.h"\
-	".\m_cln_skinedit.h"\
-	".\m_metacontacts.h"\
 	".\rowheight_funcs.h"\
 	
 
 .\clistsettings.c : \
-	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
-	"..\..\include\m_clc.h"\
-	"..\..\include\m_clist.h"\
-	"..\..\include\m_clistint.h"\
-	"..\..\include\m_clui.h"\
-	"..\..\include\m_cluiframes.h"\
-	"..\..\include\m_contacts.h"\
-	"..\..\include\m_database.h"\
-	"..\..\include\m_file.h"\
-	"..\..\include\m_fontservice.h"\
 	"..\..\include\m_genmenu.h"\
-	"..\..\include\m_icolib.h"\
-	"..\..\include\m_langpack.h"\
-	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
-	"..\..\include\m_plugins.h"\
-	"..\..\include\m_popup.h"\
-	"..\..\include\m_protocols.h"\
-	"..\..\include\m_protosvc.h"\
-	"..\..\include\m_skin.h"\
-	"..\..\include\m_stdhdr.h"\
-	"..\..\include\m_system.h"\
-	"..\..\include\m_utils.h"\
-	"..\..\include\newpluginapi.h"\
-	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
-	".\alphablend.h"\
-	".\clc.h"\
-	".\clist.h"\
-	".\commonheaders.h"\
-	".\extbackg.h"\
-	".\m_avatars.h"\
-	".\m_cln_skinedit.h"\
-	".\m_metacontacts.h"\
 	".\rowheight_funcs.h"\
 	
 
 .\clisttray.c : \
-	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
-	"..\..\include\m_clc.h"\
-	"..\..\include\m_clist.h"\
-	"..\..\include\m_clistint.h"\
-	"..\..\include\m_clui.h"\
-	"..\..\include\m_cluiframes.h"\
-	"..\..\include\m_contacts.h"\
-	"..\..\include\m_database.h"\
-	"..\..\include\m_file.h"\
-	"..\..\include\m_fontservice.h"\
 	"..\..\include\m_genmenu.h"\
-	"..\..\include\m_icolib.h"\
-	"..\..\include\m_langpack.h"\
-	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
-	"..\..\include\m_plugins.h"\
-	"..\..\include\m_popup.h"\
-	"..\..\include\m_protocols.h"\
-	"..\..\include\m_protosvc.h"\
-	"..\..\include\m_skin.h"\
-	"..\..\include\m_stdhdr.h"\
-	"..\..\include\m_system.h"\
-	"..\..\include\m_utils.h"\
-	"..\..\include\newpluginapi.h"\
-	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
-	".\alphablend.h"\
-	".\clc.h"\
-	".\clist.h"\
-	".\commonheaders.h"\
-	".\extbackg.h"\
-	".\m_avatars.h"\
-	".\m_cln_skinedit.h"\
-	".\m_metacontacts.h"\
 	".\rowheight_funcs.h"\
 	
 
 .\clnplus.cpp : \
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\basetsd.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\guiddef.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\propidl.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\reason.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shobjidl.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shtypes.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\stralign.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\tvout.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\winefs.h"\
 	"..\..\include\m_stdhdr.h"\
 	
 
 .\clui.c : \
-	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
-	"..\..\include\m_clc.h"\
-	"..\..\include\m_clist.h"\
-	"..\..\include\m_clistint.h"\
-	"..\..\include\m_clui.h"\
-	"..\..\include\m_cluiframes.h"\
-	"..\..\include\m_contacts.h"\
-	"..\..\include\m_database.h"\
-	"..\..\include\m_file.h"\
 	"..\..\include\m_findadd.h"\
-	"..\..\include\m_fontservice.h"\
 	"..\..\include\m_genmenu.h"\
-	"..\..\include\m_icolib.h"\
 	"..\..\include\m_icq.h"\
-	"..\..\include\m_langpack.h"\
-	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
-	"..\..\include\m_plugins.h"\
-	"..\..\include\m_popup.h"\
-	"..\..\include\m_protocols.h"\
-	"..\..\include\m_protosvc.h"\
-	"..\..\include\m_skin.h"\
-	"..\..\include\m_stdhdr.h"\
-	"..\..\include\m_system.h"\
-	"..\..\include\m_utils.h"\
-	"..\..\include\newpluginapi.h"\
-	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
-	".\alphablend.h"\
-	".\clc.h"\
-	".\clist.h"\
 	".\CLUIFrames\cluiframes.h"\
-	".\commonheaders.h"\
 	".\coolsb\coolscroll.h"\
-	".\extbackg.h"\
-	".\m_avatars.h"\
-	".\m_cln_skinedit.h"\
-	".\m_metacontacts.h"\
 	".\m_updater.h"\
 	".\rowheight_funcs.h"\
 	
 
 .\cluiopts.c : \
-	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
-	"..\..\include\m_clc.h"\
-	"..\..\include\m_clist.h"\
-	"..\..\include\m_clistint.h"\
-	"..\..\include\m_clui.h"\
-	"..\..\include\m_cluiframes.h"\
-	"..\..\include\m_contacts.h"\
-	"..\..\include\m_database.h"\
-	"..\..\include\m_file.h"\
-	"..\..\include\m_fontservice.h"\
 	"..\..\include\m_genmenu.h"\
-	"..\..\include\m_icolib.h"\
-	"..\..\include\m_langpack.h"\
-	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
-	"..\..\include\m_plugins.h"\
-	"..\..\include\m_popup.h"\
-	"..\..\include\m_protocols.h"\
-	"..\..\include\m_protosvc.h"\
-	"..\..\include\m_skin.h"\
-	"..\..\include\m_stdhdr.h"\
-	"..\..\include\m_system.h"\
-	"..\..\include\m_utils.h"\
-	"..\..\include\newpluginapi.h"\
-	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
-	".\alphablend.h"\
-	".\clc.h"\
-	".\clist.h"\
-	".\commonheaders.h"\
-	".\extbackg.h"\
-	".\m_avatars.h"\
-	".\m_cln_skinedit.h"\
-	".\m_metacontacts.h"\
 	".\rowheight_funcs.h"\
 	
 
 .\cluiservices.c : \
-	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
-	"..\..\include\m_clc.h"\
-	"..\..\include\m_clist.h"\
-	"..\..\include\m_clistint.h"\
-	"..\..\include\m_clui.h"\
-	"..\..\include\m_cluiframes.h"\
-	"..\..\include\m_contacts.h"\
-	"..\..\include\m_database.h"\
-	"..\..\include\m_file.h"\
-	"..\..\include\m_fontservice.h"\
 	"..\..\include\m_genmenu.h"\
-	"..\..\include\m_icolib.h"\
 	"..\..\include\m_icq.h"\
-	"..\..\include\m_langpack.h"\
-	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
-	"..\..\include\m_plugins.h"\
-	"..\..\include\m_popup.h"\
-	"..\..\include\m_protocols.h"\
-	"..\..\include\m_protosvc.h"\
-	"..\..\include\m_skin.h"\
-	"..\..\include\m_stdhdr.h"\
-	"..\..\include\m_system.h"\
-	"..\..\include\m_utils.h"\
-	"..\..\include\newpluginapi.h"\
-	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
-	".\alphablend.h"\
-	".\clc.h"\
-	".\clist.h"\
 	".\CLUIFrames\cluiframes.h"\
-	".\commonheaders.h"\
-	".\extbackg.h"\
-	".\m_avatars.h"\
-	".\m_cln_skinedit.h"\
-	".\m_metacontacts.h"\
 	".\rowheight_funcs.h"\
 	
 
 .\commonheaders.c : \
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\basetsd.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\guiddef.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\propidl.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\reason.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\stralign.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\tvout.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\uxtheme.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_clc.h"\
@@ -866,6 +232,8 @@
 	"..\..\include\m_stdhdr.h"\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_utils.h"\
+	"..\..\include\msapi\vsstyle.h"\
+	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
@@ -881,45 +249,21 @@
 	
 
 .\contact.c : \
-	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
-	"..\..\include\m_clc.h"\
-	"..\..\include\m_clist.h"\
-	"..\..\include\m_clistint.h"\
-	"..\..\include\m_clui.h"\
-	"..\..\include\m_cluiframes.h"\
-	"..\..\include\m_contacts.h"\
-	"..\..\include\m_database.h"\
-	"..\..\include\m_file.h"\
-	"..\..\include\m_fontservice.h"\
 	"..\..\include\m_genmenu.h"\
-	"..\..\include\m_icolib.h"\
-	"..\..\include\m_langpack.h"\
-	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
-	"..\..\include\m_plugins.h"\
-	"..\..\include\m_popup.h"\
-	"..\..\include\m_protocols.h"\
-	"..\..\include\m_protosvc.h"\
-	"..\..\include\m_skin.h"\
-	"..\..\include\m_stdhdr.h"\
-	"..\..\include\m_system.h"\
-	"..\..\include\m_utils.h"\
-	"..\..\include\newpluginapi.h"\
-	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
-	".\alphablend.h"\
-	".\clc.h"\
-	".\clist.h"\
-	".\commonheaders.h"\
-	".\extbackg.h"\
-	".\m_avatars.h"\
-	".\m_cln_skinedit.h"\
-	".\m_metacontacts.h"\
 	".\rowheight_funcs.h"\
 	
 
 .\coolsb\coolsblib.c : \
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\basetsd.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\guiddef.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\propidl.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\reason.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\stralign.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\tvout.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\winefs.h"\
 	"..\..\include\win2k.h"\
 	".\coolsb\coolsb_internal.h"\
 	".\coolsb\coolscroll.h"\
@@ -927,6 +271,11 @@
 	
 
 .\coolsb\coolscroll.c : \
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\basetsd.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\guiddef.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\reason.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\stralign.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\tvout.h"\
 	"..\..\include\win2k.h"\
 	".\coolsb\coolsb_internal.h"\
 	".\coolsb\coolscroll.h"\
@@ -934,397 +283,79 @@
 	
 
 .\Docking.c : \
-	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
-	"..\..\include\m_clc.h"\
-	"..\..\include\m_clist.h"\
-	"..\..\include\m_clistint.h"\
-	"..\..\include\m_clui.h"\
-	"..\..\include\m_cluiframes.h"\
-	"..\..\include\m_contacts.h"\
-	"..\..\include\m_database.h"\
-	"..\..\include\m_file.h"\
-	"..\..\include\m_fontservice.h"\
 	"..\..\include\m_genmenu.h"\
-	"..\..\include\m_icolib.h"\
-	"..\..\include\m_langpack.h"\
-	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
-	"..\..\include\m_plugins.h"\
-	"..\..\include\m_popup.h"\
-	"..\..\include\m_protocols.h"\
-	"..\..\include\m_protosvc.h"\
-	"..\..\include\m_skin.h"\
-	"..\..\include\m_stdhdr.h"\
-	"..\..\include\m_system.h"\
-	"..\..\include\m_utils.h"\
-	"..\..\include\newpluginapi.h"\
-	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
-	".\alphablend.h"\
-	".\clc.h"\
-	".\clist.h"\
-	".\commonheaders.h"\
-	".\extbackg.h"\
-	".\m_avatars.h"\
-	".\m_cln_skinedit.h"\
-	".\m_metacontacts.h"\
 	".\rowheight_funcs.h"\
 	
 
 .\extBackg.c : \
-	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
-	"..\..\include\m_clc.h"\
-	"..\..\include\m_clist.h"\
-	"..\..\include\m_clistint.h"\
-	"..\..\include\m_clui.h"\
-	"..\..\include\m_cluiframes.h"\
-	"..\..\include\m_contacts.h"\
-	"..\..\include\m_database.h"\
-	"..\..\include\m_file.h"\
-	"..\..\include\m_fontservice.h"\
 	"..\..\include\m_genmenu.h"\
-	"..\..\include\m_icolib.h"\
-	"..\..\include\m_langpack.h"\
-	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
-	"..\..\include\m_plugins.h"\
-	"..\..\include\m_popup.h"\
-	"..\..\include\m_protocols.h"\
-	"..\..\include\m_protosvc.h"\
-	"..\..\include\m_skin.h"\
-	"..\..\include\m_stdhdr.h"\
-	"..\..\include\m_system.h"\
-	"..\..\include\m_utils.h"\
-	"..\..\include\newpluginapi.h"\
-	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
-	".\alphablend.h"\
-	".\clc.h"\
-	".\clist.h"\
-	".\commonheaders.h"\
 	".\coolsb\coolscroll.h"\
-	".\extbackg.h"\
-	".\m_avatars.h"\
-	".\m_cln_skinedit.h"\
-	".\m_metacontacts.h"\
-	".\rowheight_funcs.h"\
-	
-
-.\forkthread.c : \
-	"..\..\include\m_addcontact.h"\
-	"..\..\include\m_button.h"\
-	"..\..\include\m_clc.h"\
-	"..\..\include\m_clist.h"\
-	"..\..\include\m_clistint.h"\
-	"..\..\include\m_clui.h"\
-	"..\..\include\m_cluiframes.h"\
-	"..\..\include\m_contacts.h"\
-	"..\..\include\m_database.h"\
-	"..\..\include\m_file.h"\
-	"..\..\include\m_fontservice.h"\
-	"..\..\include\m_genmenu.h"\
-	"..\..\include\m_icolib.h"\
-	"..\..\include\m_langpack.h"\
-	"..\..\include\m_message.h"\
-	"..\..\include\m_options.h"\
-	"..\..\include\m_plugins.h"\
-	"..\..\include\m_popup.h"\
-	"..\..\include\m_protocols.h"\
-	"..\..\include\m_protosvc.h"\
-	"..\..\include\m_skin.h"\
-	"..\..\include\m_stdhdr.h"\
-	"..\..\include\m_system.h"\
-	"..\..\include\m_utils.h"\
-	"..\..\include\newpluginapi.h"\
-	"..\..\include\statusmodes.h"\
-	"..\..\include\win2k.h"\
-	".\alphablend.h"\
-	".\clc.h"\
-	".\clist.h"\
-	".\commonheaders.h"\
-	".\extbackg.h"\
-	".\m_avatars.h"\
-	".\m_cln_skinedit.h"\
-	".\m_metacontacts.h"\
 	".\rowheight_funcs.h"\
 	
 
 .\init.c : \
-	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
-	"..\..\include\m_clc.h"\
-	"..\..\include\m_clist.h"\
-	"..\..\include\m_clistint.h"\
-	"..\..\include\m_clui.h"\
-	"..\..\include\m_cluiframes.h"\
-	"..\..\include\m_contacts.h"\
-	"..\..\include\m_database.h"\
-	"..\..\include\m_file.h"\
-	"..\..\include\m_fontservice.h"\
 	"..\..\include\m_genmenu.h"\
-	"..\..\include\m_icolib.h"\
-	"..\..\include\m_langpack.h"\
-	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
-	"..\..\include\m_plugins.h"\
-	"..\..\include\m_popup.h"\
-	"..\..\include\m_protocols.h"\
-	"..\..\include\m_protosvc.h"\
-	"..\..\include\m_skin.h"\
-	"..\..\include\m_stdhdr.h"\
-	"..\..\include\m_system.h"\
-	"..\..\include\m_utils.h"\
-	"..\..\include\newpluginapi.h"\
-	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
-	".\alphablend.h"\
-	".\clc.h"\
-	".\clist.h"\
 	".\CLUIFrames\cluiframes.h"\
-	".\commonheaders.h"\
-	".\extbackg.h"\
-	".\m_avatars.h"\
-	".\m_cln_skinedit.h"\
-	".\m_metacontacts.h"\
 	".\rowheight_funcs.h"\
 	
 
 .\CLUIFrames\movetogroup.c : \
-	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
-	"..\..\include\m_clc.h"\
-	"..\..\include\m_clist.h"\
-	"..\..\include\m_clistint.h"\
-	"..\..\include\m_clui.h"\
-	"..\..\include\m_cluiframes.h"\
-	"..\..\include\m_contacts.h"\
-	"..\..\include\m_database.h"\
-	"..\..\include\m_file.h"\
-	"..\..\include\m_fontservice.h"\
 	"..\..\include\m_genmenu.h"\
-	"..\..\include\m_icolib.h"\
-	"..\..\include\m_langpack.h"\
-	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
-	"..\..\include\m_plugins.h"\
-	"..\..\include\m_popup.h"\
-	"..\..\include\m_protocols.h"\
-	"..\..\include\m_protosvc.h"\
-	"..\..\include\m_skin.h"\
-	"..\..\include\m_stdhdr.h"\
-	"..\..\include\m_system.h"\
-	"..\..\include\m_utils.h"\
-	"..\..\include\newpluginapi.h"\
-	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
-	".\alphablend.h"\
-	".\clc.h"\
-	".\clist.h"\
-	".\commonheaders.h"\
-	".\extbackg.h"\
-	".\m_avatars.h"\
-	".\m_cln_skinedit.h"\
-	".\m_metacontacts.h"\
 	".\rowheight_funcs.h"\
 	
 
 .\rowheight_funcs.c : \
-	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
-	"..\..\include\m_clc.h"\
-	"..\..\include\m_clist.h"\
-	"..\..\include\m_clistint.h"\
-	"..\..\include\m_clui.h"\
-	"..\..\include\m_cluiframes.h"\
-	"..\..\include\m_contacts.h"\
-	"..\..\include\m_database.h"\
-	"..\..\include\m_file.h"\
-	"..\..\include\m_fontservice.h"\
 	"..\..\include\m_genmenu.h"\
-	"..\..\include\m_icolib.h"\
-	"..\..\include\m_langpack.h"\
-	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
-	"..\..\include\m_plugins.h"\
-	"..\..\include\m_popup.h"\
-	"..\..\include\m_protocols.h"\
-	"..\..\include\m_protosvc.h"\
-	"..\..\include\m_skin.h"\
-	"..\..\include\m_stdhdr.h"\
-	"..\..\include\m_system.h"\
-	"..\..\include\m_utils.h"\
-	"..\..\include\newpluginapi.h"\
-	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
-	".\alphablend.h"\
-	".\clc.h"\
-	".\clist.h"\
-	".\commonheaders.h"\
-	".\extbackg.h"\
-	".\m_avatars.h"\
-	".\m_cln_skinedit.h"\
-	".\m_metacontacts.h"\
 	".\rowheight_funcs.h"\
 	
 
 .\statusbar.c : \
-	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
-	"..\..\include\m_clc.h"\
-	"..\..\include\m_clist.h"\
-	"..\..\include\m_clistint.h"\
-	"..\..\include\m_clui.h"\
-	"..\..\include\m_cluiframes.h"\
-	"..\..\include\m_contacts.h"\
-	"..\..\include\m_database.h"\
-	"..\..\include\m_file.h"\
-	"..\..\include\m_fontservice.h"\
 	"..\..\include\m_genmenu.h"\
-	"..\..\include\m_icolib.h"\
-	"..\..\include\m_langpack.h"\
-	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
-	"..\..\include\m_plugins.h"\
-	"..\..\include\m_popup.h"\
-	"..\..\include\m_protocols.h"\
-	"..\..\include\m_protosvc.h"\
-	"..\..\include\m_skin.h"\
-	"..\..\include\m_stdhdr.h"\
-	"..\..\include\m_system.h"\
-	"..\..\include\m_utils.h"\
-	"..\..\include\newpluginapi.h"\
-	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
-	".\alphablend.h"\
-	".\clc.h"\
-	".\clist.h"\
 	".\CLUIFrames\cluiframes.h"\
-	".\commonheaders.h"\
-	".\extbackg.h"\
-	".\m_avatars.h"\
-	".\m_cln_skinedit.h"\
-	".\m_metacontacts.h"\
 	".\rowheight_funcs.h"\
 	
 
 .\statusfloater.c : \
-	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
-	"..\..\include\m_clc.h"\
-	"..\..\include\m_clist.h"\
-	"..\..\include\m_clistint.h"\
-	"..\..\include\m_clui.h"\
-	"..\..\include\m_cluiframes.h"\
-	"..\..\include\m_contacts.h"\
-	"..\..\include\m_database.h"\
-	"..\..\include\m_file.h"\
-	"..\..\include\m_fontservice.h"\
 	"..\..\include\m_genmenu.h"\
-	"..\..\include\m_icolib.h"\
-	"..\..\include\m_langpack.h"\
-	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
-	"..\..\include\m_plugins.h"\
-	"..\..\include\m_popup.h"\
-	"..\..\include\m_protocols.h"\
-	"..\..\include\m_protosvc.h"\
-	"..\..\include\m_skin.h"\
-	"..\..\include\m_stdhdr.h"\
-	"..\..\include\m_system.h"\
-	"..\..\include\m_utils.h"\
-	"..\..\include\newpluginapi.h"\
-	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
-	".\alphablend.h"\
-	".\clc.h"\
-	".\clist.h"\
-	".\commonheaders.h"\
-	".\extbackg.h"\
-	".\m_avatars.h"\
-	".\m_cln_skinedit.h"\
-	".\m_metacontacts.h"\
 	".\rowheight_funcs.h"\
 	
 
 .\viewmodes.c : \
-	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
-	"..\..\include\m_clc.h"\
-	"..\..\include\m_clist.h"\
-	"..\..\include\m_clistint.h"\
-	"..\..\include\m_clui.h"\
-	"..\..\include\m_cluiframes.h"\
-	"..\..\include\m_contacts.h"\
-	"..\..\include\m_database.h"\
-	"..\..\include\m_file.h"\
-	"..\..\include\m_fontservice.h"\
 	"..\..\include\m_genmenu.h"\
-	"..\..\include\m_icolib.h"\
-	"..\..\include\m_langpack.h"\
-	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
-	"..\..\include\m_plugins.h"\
-	"..\..\include\m_popup.h"\
-	"..\..\include\m_protocols.h"\
-	"..\..\include\m_protosvc.h"\
-	"..\..\include\m_skin.h"\
-	"..\..\include\m_stdhdr.h"\
-	"..\..\include\m_system.h"\
-	"..\..\include\m_utils.h"\
-	"..\..\include\newpluginapi.h"\
-	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
-	".\alphablend.h"\
-	".\clc.h"\
-	".\clist.h"\
 	".\CLUIFrames\cluiframes.h"\
-	".\commonheaders.h"\
-	".\extbackg.h"\
-	".\m_avatars.h"\
-	".\m_cln_skinedit.h"\
-	".\m_metacontacts.h"\
 	".\m_variables.h"\
 	".\rowheight_funcs.h"\
 	
 
 .\wallpaper.c : \
-	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
-	"..\..\include\m_clc.h"\
-	"..\..\include\m_clist.h"\
-	"..\..\include\m_clistint.h"\
-	"..\..\include\m_clui.h"\
-	"..\..\include\m_cluiframes.h"\
-	"..\..\include\m_contacts.h"\
-	"..\..\include\m_database.h"\
-	"..\..\include\m_file.h"\
-	"..\..\include\m_fontservice.h"\
 	"..\..\include\m_genmenu.h"\
-	"..\..\include\m_icolib.h"\
-	"..\..\include\m_langpack.h"\
-	"..\..\include\m_message.h"\
 	"..\..\include\m_options.h"\
-	"..\..\include\m_plugins.h"\
-	"..\..\include\m_popup.h"\
-	"..\..\include\m_protocols.h"\
-	"..\..\include\m_protosvc.h"\
-	"..\..\include\m_skin.h"\
-	"..\..\include\m_stdhdr.h"\
-	"..\..\include\m_system.h"\
-	"..\..\include\m_utils.h"\
-	"..\..\include\newpluginapi.h"\
-	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
-	".\alphablend.h"\
-	".\clc.h"\
-	".\clist.h"\
-	".\commonheaders.h"\
-	".\extbackg.h"\
-	".\m_avatars.h"\
-	".\m_cln_skinedit.h"\
-	".\m_metacontacts.h"\
 	".\rowheight_funcs.h"\
 	
 

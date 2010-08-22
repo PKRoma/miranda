@@ -1,6 +1,12 @@
 # Microsoft Developer Studio Generated Dependency File, included by chat.mak
 
 .\clist.c : \
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\basetsd.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\guiddef.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\propidl.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\reason.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\stralign.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\tvout.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_chat.h"\
@@ -20,15 +26,23 @@
 	"..\..\include\m_stdhdr.h"\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_utils.h"\
+	"..\..\include\m_version.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
 	".\chat.h"\
 	".\m_ieview.h"\
 	".\m_smileyadd.h"\
+	".\version.h"\
 	
 
 .\colorchooser.c : \
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\basetsd.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\guiddef.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\propidl.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\reason.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\stralign.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\tvout.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_chat.h"\
@@ -48,15 +62,23 @@
 	"..\..\include\m_stdhdr.h"\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_utils.h"\
+	"..\..\include\m_version.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
 	".\chat.h"\
 	".\m_ieview.h"\
 	".\m_smileyadd.h"\
+	".\version.h"\
 	
 
 .\log.c : \
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\basetsd.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\guiddef.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\propidl.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\reason.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\stralign.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\tvout.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_chat.h"\
@@ -76,15 +98,23 @@
 	"..\..\include\m_stdhdr.h"\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_utils.h"\
+	"..\..\include\m_version.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
 	".\chat.h"\
 	".\m_ieview.h"\
 	".\m_smileyadd.h"\
+	".\version.h"\
 	
 
 .\main.c : \
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\basetsd.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\guiddef.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\propidl.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\reason.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\stralign.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\tvout.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_chat.h"\
@@ -104,15 +134,23 @@
 	"..\..\include\m_stdhdr.h"\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_utils.h"\
+	"..\..\include\m_version.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
 	".\chat.h"\
 	".\m_ieview.h"\
 	".\m_smileyadd.h"\
+	".\version.h"\
 	
 
 .\manager.c : \
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\basetsd.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\guiddef.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\propidl.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\reason.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\stralign.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\tvout.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_chat.h"\
@@ -132,15 +170,23 @@
 	"..\..\include\m_stdhdr.h"\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_utils.h"\
+	"..\..\include\m_version.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
 	".\chat.h"\
 	".\m_ieview.h"\
 	".\m_smileyadd.h"\
+	".\version.h"\
 	
 
 .\message.c : \
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\basetsd.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\guiddef.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\propidl.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\reason.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\stralign.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\tvout.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_chat.h"\
@@ -160,15 +206,25 @@
 	"..\..\include\m_stdhdr.h"\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_utils.h"\
+	"..\..\include\m_version.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
 	".\chat.h"\
 	".\m_ieview.h"\
 	".\m_smileyadd.h"\
+	".\version.h"\
 	
 
 .\options.c : \
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\basetsd.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\guiddef.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\propidl.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\reason.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shobjidl.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shtypes.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\stralign.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\tvout.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_chat.h"\
@@ -189,19 +245,34 @@
 	"..\..\include\m_stdhdr.h"\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_utils.h"\
+	"..\..\include\m_version.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
 	".\chat.h"\
 	".\m_ieview.h"\
 	".\m_smileyadd.h"\
+	".\version.h"\
 	
 
 .\richutil.c : \
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\basetsd.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\guiddef.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\propidl.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\reason.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\stralign.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\tvout.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\winefs.h"\
 	".\richutil.h"\
 	
 
 .\services.c : \
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\basetsd.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\guiddef.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\propidl.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\reason.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\stralign.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\tvout.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_chat.h"\
@@ -222,15 +293,23 @@
 	"..\..\include\m_stdhdr.h"\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_utils.h"\
+	"..\..\include\m_version.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
 	".\chat.h"\
 	".\m_ieview.h"\
 	".\m_smileyadd.h"\
+	".\version.h"\
 	
 
 .\tools.c : \
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\basetsd.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\guiddef.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\propidl.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\reason.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\stralign.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\tvout.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_chat.h"\
@@ -250,15 +329,23 @@
 	"..\..\include\m_stdhdr.h"\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_utils.h"\
+	"..\..\include\m_version.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
 	".\chat.h"\
 	".\m_ieview.h"\
 	".\m_smileyadd.h"\
+	".\version.h"\
 	
 
 .\window.c : \
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\basetsd.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\guiddef.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\propidl.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\reason.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\stralign.h"\
+	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\tvout.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_chat.h"\
@@ -278,12 +365,14 @@
 	"..\..\include\m_stdhdr.h"\
 	"..\..\include\m_system.h"\
 	"..\..\include\m_utils.h"\
+	"..\..\include\m_version.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
 	".\chat.h"\
 	".\m_ieview.h"\
 	".\m_smileyadd.h"\
+	".\version.h"\
 	
 
 .\Chat.rc : \
