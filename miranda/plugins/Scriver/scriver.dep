@@ -26,6 +26,8 @@
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
+	"..\..\include\msapi\vsstyle.h"\
+	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
@@ -72,6 +74,8 @@
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
+	"..\..\include\msapi\vsstyle.h"\
+	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
@@ -118,6 +122,8 @@
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
+	"..\..\include\msapi\vsstyle.h"\
+	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
@@ -164,6 +170,8 @@
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
+	"..\..\include\msapi\vsstyle.h"\
+	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
@@ -210,6 +218,8 @@
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
+	"..\..\include\msapi\vsstyle.h"\
+	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
@@ -257,6 +267,8 @@
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
+	"..\..\include\msapi\vsstyle.h"\
+	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
@@ -305,6 +317,8 @@
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
+	"..\..\include\msapi\vsstyle.h"\
+	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
@@ -352,6 +366,8 @@
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
+	"..\..\include\msapi\vsstyle.h"\
+	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
@@ -399,6 +415,8 @@
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
+	"..\..\include\msapi\vsstyle.h"\
+	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
@@ -447,6 +465,8 @@
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
+	"..\..\include\msapi\vsstyle.h"\
+	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
@@ -496,6 +516,8 @@
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
+	"..\..\include\msapi\vsstyle.h"\
+	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
@@ -542,6 +564,8 @@
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
+	"..\..\include\msapi\vsstyle.h"\
+	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
@@ -588,6 +612,8 @@
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
+	"..\..\include\msapi\vsstyle.h"\
+	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
@@ -634,6 +660,8 @@
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
+	"..\..\include\msapi\vsstyle.h"\
+	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
@@ -682,6 +710,8 @@
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
+	"..\..\include\msapi\vsstyle.h"\
+	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
@@ -785,6 +815,8 @@
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
+	"..\..\include\msapi\vsstyle.h"\
+	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
@@ -834,6 +866,8 @@
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
+	"..\..\include\msapi\vsstyle.h"\
+	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
@@ -883,6 +917,8 @@
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
+	"..\..\include\msapi\vsstyle.h"\
+	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
@@ -932,6 +968,8 @@
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
+	"..\..\include\msapi\vsstyle.h"\
+	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
@@ -981,6 +1019,8 @@
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
+	"..\..\include\msapi\vsstyle.h"\
+	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
@@ -1030,6 +1070,8 @@
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
+	"..\..\include\msapi\vsstyle.h"\
+	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
@@ -1079,6 +1121,8 @@
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
+	"..\..\include\msapi\vsstyle.h"\
+	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
@@ -1128,6 +1172,8 @@
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
+	"..\..\include\msapi\vsstyle.h"\
+	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
@@ -1177,6 +1223,8 @@
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
+	"..\..\include\msapi\vsstyle.h"\
+	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
@@ -1226,6 +1274,8 @@
 	"..\..\include\m_system.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
+	"..\..\include\msapi\vsstyle.h"\
+	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
 	"..\..\include\win2k.h"\
