@@ -33,6 +33,8 @@
 #include "Utilities.h"
 #include "FreeImageTag.h"
 
+#include "../LibJPEG/jpeglib.h"
+
 // ==========================================================
 // Exif JPEG routines
 // ==========================================================
@@ -101,15 +103,15 @@ ReadInt16(BOOL msb_order, void *buffer) {
 	return value;
 }
 
-static long 
+static LONG 
 ReadInt32(BOOL msb_order, void *buffer) {
-	long value;
+	LONG value;
 
 	if(msb_order) {
-		value = (long)((((BYTE*) buffer)[0] << 24) | (((BYTE*) buffer)[1] << 16) | (((BYTE*) buffer)[2] << 8) | (((BYTE*) buffer)[3]));
+		value = (LONG)((((BYTE*) buffer)[0] << 24) | (((BYTE*) buffer)[1] << 16) | (((BYTE*) buffer)[2] << 8) | (((BYTE*) buffer)[3]));
 		return value;
     }
-	value = (long)((((BYTE*) buffer)[3] << 24) | (((BYTE*) buffer)[2] << 16) | (((BYTE*) buffer)[1] << 8 ) | (((BYTE*) buffer)[0]));
+	value = (LONG)((((BYTE*) buffer)[3] << 24) | (((BYTE*) buffer)[2] << 16) | (((BYTE*) buffer)[1] << 8 ) | (((BYTE*) buffer)[0]));
 	return value;
 }
 
@@ -125,9 +127,9 @@ ReadUint16(BOOL msb_order, void *buffer) {
 	return value;
 }
 
-static unsigned long 
+static DWORD 
 ReadUint32(BOOL msb_order, void *buffer) {
-	return ((unsigned long) ReadInt32(msb_order, buffer) & 0xFFFFFFFF);
+	return ((DWORD) ReadInt32(msb_order, buffer) & 0xFFFFFFFF);
 }
 
 // ----------------------------------------------------------
@@ -298,7 +300,7 @@ processCanonMakerNoteTag(FIBITMAP *dib, FITAG *tag) {
 			startIndex = 1;
 			break;
 		case TAG_CANON_CAMERA_STATE_0x12:
-			subTagTypeBase = 0xC120;
+			subTagTypeBase = 0x1200;
 			startIndex = 0;
 			break;
 		case TAG_CANON_CAMERA_STATE_0xA0:
@@ -561,7 +563,7 @@ jpeg_read_exif_dir(FIBITMAP *dib, const BYTE *tiffp, unsigned long offset, unsig
 			// get number of components
 			FreeImage_SetTagCount(tag, ReadUint32(msb_order, pde + 4));
 			// get the size of the tag value in bytes
-			FreeImage_SetTagLength(tag, FreeImage_GetTagCount(tag) * FreeImage_TagDataWidth((WORD)FreeImage_GetTagType(tag)));
+			FreeImage_SetTagLength(tag, FreeImage_GetTagCount(tag) * FreeImage_TagDataWidth(FreeImage_GetTagType(tag)));
 
 			if(FreeImage_GetTagLength(tag) <= 4) {
 				// 4 bytes or less and value is in the dir entry itself
@@ -577,7 +579,7 @@ jpeg_read_exif_dir(FIBITMAP *dib, const BYTE *tiffp, unsigned long offset, unsig
 					continue;
 				}
 				// now check if offset + tag length exceeds buffer
-				if(offset_value > length - FreeImage_GetTagLength(tag)) {
+				if((int)offset_value > (int)length - (int)FreeImage_GetTagLength(tag)) {
 					// a problem occured : delete the tag (not free'd after)
 					FreeImage_DeleteTag(tag);
 					// jump to next entry
@@ -657,7 +659,7 @@ jpeg_read_exif_dir(FIBITMAP *dib, const BYTE *tiffp, unsigned long offset, unsig
 }
 
 /**
-	Read JPEG_APP1 marker (Exif profile)
+	Read and decode JPEG_APP1 marker (Exif profile)
 	@param dib Input FIBITMAP
 	@param dataptr Pointer to the APP1 marker
 	@param datalen APP1 marker length
@@ -701,12 +703,16 @@ jpeg_read_exif_profile(FIBITMAP *dib, const BYTE *dataptr, unsigned int datalen)
 		// this is the offset to the first IFD
 		unsigned long first_offset = ReadUint32(bMotorolaOrder, profile + 4);
 
+		/*
+		Note: as FreeImage 3.14.0, this test is no longer needed for images with similar suspicious offset
+		=> tested with Pentax Optio 230, FujiFilm SP-2500 and Canon EOS 300D
 		if (first_offset < 8 || first_offset > 16) {
 			// This is usually set to 8
 			// but PENTAX Optio 230 has it set differently, and uses it as offset. 
 			FreeImage_OutputMessageProc(FIF_JPEG, "Exif: Suspicious offset of first IFD value");
 			return FALSE;
 		}
+		*/
 
 		// process Exif directories
 		return jpeg_read_exif_dir(dib, profile, first_offset, length, bMotorolaOrder);

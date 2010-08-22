@@ -1,4 +1,4 @@
-/* $Header: /cvsroot/freeimage/FreeImage/Source/LibTIFF/tif_error.c,v 1.28 2009/11/07 19:18:27 drolon Exp $ */
+/* $Header: /cvsroot/freeimage/FreeImage/Source/LibTIFF/tif_error.c,v 1.33 2010/07/25 18:46:05 drolon Exp $ */
 
 /*
  * Copyright (c) 1988-1997 Sam Leffler
@@ -71,3 +71,10 @@ TIFFErrorExt(thandle_t fd, const char* module, const char* fmt, ...)
 	va_end(ap);
 }
 
+/*
+ * Local Variables:
+ * mode: c
+ * c-basic-offset: 8
+ * fill-column: 78
+ * End:
+ */

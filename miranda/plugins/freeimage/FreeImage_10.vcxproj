@@ -572,6 +572,7 @@
   <ItemGroup>
     <ClCompile Include="Source\FreeImage\BitmapAccess.cpp" />
     <ClCompile Include="Source\FreeImage\ColorLookup.cpp" />
+    <ClCompile Include="Source\FreeImage\ConversionFloat.cpp" />
     <ClCompile Include="Source\FreeImage\FreeImage.cpp" />
     <ClCompile Include="Source\FreeImage\FreeImageC.c" />
     <ClCompile Include="Source\FreeImage\FreeImageIO.cpp" />
@@ -674,7 +675,6 @@
     <ClCompile Include="Source\LibJPEG\wrtarga.c" />
     <ClCompile Include="Source\LibPNG\png.c" />
     <ClCompile Include="Source\LibPNG\pngerror.c" />
-    <ClCompile Include="Source\LibPNG\pnggccrd.c" />
     <ClCompile Include="Source\LibPNG\pngget.c" />
     <ClCompile Include="Source\LibPNG\pngmem.c" />
     <ClCompile Include="Source\LibPNG\pngpread.c" />
@@ -685,7 +685,6 @@
     <ClCompile Include="Source\LibPNG\pngset.c" />
     <ClCompile Include="Source\LibPNG\pngtest.c" />
     <ClCompile Include="Source\LibPNG\pngtrans.c" />
-    <ClCompile Include="Source\LibPNG\pngvcrd.c" />
     <ClCompile Include="Source\LibPNG\pngwio.c" />
     <ClCompile Include="Source\LibPNG\pngwrite.c" />
     <ClCompile Include="Source\LibPNG\pngwtran.c" />
@@ -723,6 +722,7 @@
     <ClInclude Include="Source\LibPNG\pngconf.h" />
     <ClInclude Include="Source\CacheFile.h" />
     <ClInclude Include="Source\DeprecationManager\DeprecationMgr.h" />
+    <ClInclude Include="Source\LibPNG\pngpriv.h" />
     <ClInclude Include="Source\Metadata\FIRational.h" />
     <ClInclude Include="SOURCE\FreeImage.h" />
     <ClInclude Include="Source\FreeImageIO.h" />

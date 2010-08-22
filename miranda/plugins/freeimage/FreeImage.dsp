@@ -159,6 +159,10 @@ SOURCE=.\Source\FreeImage\Conversion8.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\Source\FreeImage\ConversionFloat.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\Source\FreeImage\ConversionRGBF.cpp
 # End Source File
 # Begin Source File
@@ -519,10 +523,6 @@ SOURCE=.\Source\LibPNG\pngerror.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\Source\LibPNG\pnggccrd.c
-# End Source File
-# Begin Source File
-
 SOURCE=.\Source\LibPNG\pngget.c
 # End Source File
 # Begin Source File
@@ -532,6 +532,10 @@ SOURCE=.\Source\LibPNG\pngmem.c
 # Begin Source File
 
 SOURCE=.\Source\LibPNG\pngpread.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\Source\LibPNG\pngpriv.h
 # End Source File
 # Begin Source File
 
@@ -556,10 +560,6 @@ SOURCE=.\Source\LibPNG\pngset.c
 # Begin Source File
 
 SOURCE=.\Source\LibPNG\pngtrans.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\Source\LibPNG\pngvcrd.c
 # End Source File
 # Begin Source File
 

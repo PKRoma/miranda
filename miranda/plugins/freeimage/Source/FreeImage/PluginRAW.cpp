@@ -65,11 +65,11 @@ public:
         if(substream) return substream->eof();
         return (_io->tell_proc(_handle) >= _eof);
     }
-    virtual int seek(off_t offset, int origin) { 
+    virtual int seek(INT64 offset, int origin) { 
         if(substream) return substream->seek(offset, origin);
-		return _io->seek_proc(_handle, offset, origin);
+		return _io->seek_proc(_handle, (long)offset, origin);
 	} 
-    virtual int tell() { 
+    virtual INT64 tell() { 
 		if(substream) return substream->tell();
         return _io->tell_proc(_handle);
     }
@@ -248,14 +248,27 @@ libraw_LoadRawData(LibRaw& RawProcessor, int bitspersample) {
 		// set decoding parameters
 		// -----------------------
 		
-		// (-4) Linear 16-bit or 8-bit
+		// (-6) 16-bit or 8-bit
 		RawProcessor.imgdata.params.output_bps = bitspersample;
-		// (-w) Use camera white balance, if possible
+		// (-g power toe_slope)
+		if(bitspersample == 16) {
+			// set -g 1 1 for linear curve
+			RawProcessor.imgdata.params.gamm[0] = 1;
+			RawProcessor.imgdata.params.gamm[1] = 1;
+		} else if(bitspersample == 8) {
+			// by default settings for rec. BT.709 are used: power 2.222 (i.e. gamm[0]=1/2.222) and slope 4.5
+			RawProcessor.imgdata.params.gamm[0] = 1/2.222;
+			RawProcessor.imgdata.params.gamm[1] = 4.5;
+		}
+		// (-w) Use camera white balance, if possible (otherwise, fallback to auto_wb)
 		RawProcessor.imgdata.params.use_camera_wb = 1;
-		// (-a) Average the whole image for white balance
+		// (-a) Use automatic white balance obtained after averaging over the entire image
 		RawProcessor.imgdata.params.use_auto_wb = 1;
 		// (-q 3) Adaptive homogeneity-directed demosaicing algorithm (AHD)
 		RawProcessor.imgdata.params.user_qual = 3;
+
+		// RAW data filtration mode during data unpacking and postprocessing
+		RawProcessor.imgdata.params.filtering_mode = LIBRAW_FILTERING_AUTOMATIC;
 
 		// -----------------------
 
@@ -379,27 +392,20 @@ MimeType() {
 static BOOL DLL_CALLCONV
 Validate(FreeImageIO *io, fi_handle handle) {
 	LibRaw RawProcessor;
+	BOOL bSuccess = TRUE;
 	
-	try {
-		// wrap the input datastream
-		LibRaw_freeimage_datastream datastream(io, handle);
+	// wrap the input datastream
+	LibRaw_freeimage_datastream datastream(io, handle);
 
-		// open the datastream
-		if(RawProcessor.open_datastream(&datastream) != LIBRAW_SUCCESS) {
-			throw(1);	// LibRaw : failed to open input stream (unknown format)
-		}
-
-		// clean-up internal memory allocations
-		RawProcessor.recycle();
-
-		return TRUE;
-
-	} catch(int) {
-		// clean-up and return
-		RawProcessor.recycle();
+	// open the datastream
+	if(RawProcessor.open_datastream(&datastream) != LIBRAW_SUCCESS) {
+		bSuccess = FALSE;	// LibRaw : failed to open input stream (unknown format)
 	}
 
-	return FALSE;
+	// clean-up internal memory allocations
+	RawProcessor.recycle();
+
+	return bSuccess;
 }
 
 static BOOL DLL_CALLCONV
@@ -412,12 +418,24 @@ SupportsExportType(FREE_IMAGE_TYPE type) {
 	return FALSE;
 }
 
+static BOOL DLL_CALLCONV
+SupportsICCProfiles() {
+	return TRUE;
+}
+
+static BOOL DLL_CALLCONV
+SupportsNoPixels() {
+	return TRUE;
+}
+
 // ----------------------------------------------------------
 
 static FIBITMAP * DLL_CALLCONV
 Load(FreeImageIO *io, fi_handle handle, int page, int flags, void *data) {
 	FIBITMAP *dib = NULL;
 	LibRaw RawProcessor;
+
+	BOOL header_only = (flags & FIF_LOAD_NOPIXELS) == FIF_LOAD_NOPIXELS;
 
 	try {
 		// wrap the input datastream
@@ -428,17 +446,23 @@ Load(FreeImageIO *io, fi_handle handle, int page, int flags, void *data) {
 			throw "LibRaw : failed to open input stream (unknown format)";
 		}
 
-		if((flags & RAW_PREVIEW) == RAW_PREVIEW) {
+		if(header_only) {
+			// header only mode
+			dib = FreeImage_AllocateHeaderT(header_only, FIT_RGB16, RawProcessor.imgdata.sizes.width, RawProcessor.imgdata.sizes.height);
+		}
+		else if((flags & RAW_PREVIEW) == RAW_PREVIEW) {
 			// try to get the embedded JPEG
 			dib = libraw_LoadEmbeddedPreview(RawProcessor);
 			if(!dib) {
 				// no JPEG preview: try to load as 8-bit
 				dib = libraw_LoadRawData(RawProcessor, 8);
 			}
-		} else if((flags & RAW_DISPLAY) == RAW_DISPLAY) {
+		} 
+		else if((flags & RAW_DISPLAY) == RAW_DISPLAY) {
 			// load raw data as RGB 24-bit
 			dib = libraw_LoadRawData(RawProcessor, 8);
-		} else {
+		} 
+		else {
 			// default: load raw data as linear 16-bit
 			dib = libraw_LoadRawData(RawProcessor, 16);
 		}
@@ -486,5 +510,6 @@ InitRAW(Plugin *plugin, int format_id) {
 	plugin->mime_proc = MimeType;
 	plugin->supports_export_bpp_proc = SupportsExportDepth;
 	plugin->supports_export_type_proc = SupportsExportType;
-	plugin->supports_icc_profiles_proc = NULL;
+	plugin->supports_icc_profiles_proc = SupportsICCProfiles;
+	plugin->supports_no_pixels_proc = SupportsNoPixels;
 }
