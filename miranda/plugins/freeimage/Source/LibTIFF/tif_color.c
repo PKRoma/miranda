@@ -1,4 +1,4 @@
-/* $Id: tif_color.c,v 1.28 2009/11/07 19:18:27 drolon Exp $ */
+/* $Id: tif_color.c,v 1.33 2010/07/25 18:46:05 drolon Exp $ */
 
 /*
  * Copyright (c) 1988-1997 Sam Leffler
@@ -273,3 +273,10 @@ TIFFYCbCrToRGBInit(TIFFYCbCrToRGB* ycbcr, float *luma, float *refBlackWhite)
 #undef	FIX
 
 /* vim: set ts=8 sts=8 sw=8 noet: */
+/*
+ * Local Variables:
+ * mode: c
+ * c-basic-offset: 8
+ * fill-column: 78
+ * End:
+ */

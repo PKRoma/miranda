@@ -924,6 +924,10 @@
 					>
 				</File>
 				<File
+					RelativePath=".\Source\FreeImage\ConversionFloat.cpp"
+					>
+				</File>
+				<File
 					RelativePath="Source\FreeImage\ConversionRGBF.cpp"
 					>
 				</File>
@@ -1335,10 +1339,6 @@
 						>
 					</File>
 					<File
-						RelativePath=".\Source\LibPNG\pnggccrd.c"
-						>
-					</File>
-					<File
 						RelativePath=".\Source\LibPNG\pngget.c"
 						>
 					</File>
@@ -1379,10 +1379,6 @@
 						>
 					</File>
 					<File
-						RelativePath=".\Source\LibPNG\pngvcrd.c"
-						>
-					</File>
-					<File
 						RelativePath=".\Source\LibPNG\pngwio.c"
 						>
 					</File>
@@ -1408,6 +1404,10 @@
 					</File>
 					<File
 						RelativePath=".\Source\LibPNG\pngconf.h"
+						>
+					</File>
+					<File
+						RelativePath=".\Source\LibPNG\pngpriv.h"
 						>
 					</File>
 				</Filter>
