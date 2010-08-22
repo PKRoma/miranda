@@ -245,6 +245,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="3"
 				InlineFunctionExpansion="1"
+				EnableIntrinsicFunctions="true"
 				FavorSizeOrSpeed="2"
 				WholeProgramOptimization="true"
 				AdditionalIncludeDirectories="../../include"
@@ -346,6 +347,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="3"
 				InlineFunctionExpansion="1"
+				EnableIntrinsicFunctions="true"
 				FavorSizeOrSpeed="2"
 				WholeProgramOptimization="true"
 				AdditionalIncludeDirectories="../../include"
@@ -447,6 +449,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="3"
 				InlineFunctionExpansion="1"
+				EnableIntrinsicFunctions="true"
 				FavorSizeOrSpeed="2"
 				WholeProgramOptimization="true"
 				AdditionalIncludeDirectories="../../include"
@@ -552,6 +555,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="3"
 				InlineFunctionExpansion="1"
+				EnableIntrinsicFunctions="true"
 				FavorSizeOrSpeed="2"
 				WholeProgramOptimization="true"
 				AdditionalIncludeDirectories="../../include"
@@ -881,10 +885,6 @@
 			</File>
 			<File
 				RelativePath=".\globals.h"
-				>
-			</File>
-			<File
-				RelativePath="m_message.h"
 				>
 			</File>
 			<File

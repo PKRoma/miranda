@@ -1,16 +1,6 @@
 # Microsoft Developer Studio Generated Dependency File, included by scriver.mak
 
 .\cmdlist.c : \
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\basetsd.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\guiddef.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\propidl.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\reason.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shldisp.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shobjidl.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shtypes.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\stralign.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\tvout.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\uxtheme.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -59,16 +49,6 @@
 	
 
 .\globals.c : \
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\basetsd.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\guiddef.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\propidl.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\reason.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shldisp.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shobjidl.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shtypes.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\stralign.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\tvout.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\uxtheme.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -117,16 +97,6 @@
 	
 
 .\infobar.c : \
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\basetsd.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\guiddef.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\propidl.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\reason.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shldisp.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shobjidl.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shtypes.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\stralign.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\tvout.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\uxtheme.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -175,16 +145,6 @@
 	
 
 .\input.c : \
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\basetsd.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\guiddef.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\propidl.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\reason.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shldisp.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shobjidl.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shtypes.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\stralign.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\tvout.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\uxtheme.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -233,16 +193,6 @@
 	
 
 .\msgdialog.c : \
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\basetsd.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\guiddef.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\propidl.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\reason.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shldisp.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shobjidl.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shtypes.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\stralign.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\tvout.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\uxtheme.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -292,16 +242,6 @@
 	
 
 .\msglog.c : \
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\basetsd.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\guiddef.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\propidl.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\reason.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shldisp.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shobjidl.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shtypes.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\stralign.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\tvout.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\uxtheme.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -350,16 +290,6 @@
 	
 
 .\msgoptions.c : \
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\basetsd.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\guiddef.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\propidl.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\reason.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shldisp.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shobjidl.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shtypes.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\stralign.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\tvout.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\uxtheme.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -411,16 +341,6 @@
 	
 
 .\msgs.c : \
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\basetsd.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\guiddef.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\propidl.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\reason.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shldisp.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shobjidl.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shtypes.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\stralign.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\tvout.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\uxtheme.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -470,16 +390,6 @@
 	
 
 .\msgtimedout.c : \
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\basetsd.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\guiddef.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\propidl.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\reason.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shldisp.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shobjidl.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shtypes.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\stralign.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\tvout.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\uxtheme.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -528,16 +438,6 @@
 	
 
 .\msgwindow.c : \
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\basetsd.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\guiddef.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\propidl.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\reason.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shldisp.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shobjidl.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shtypes.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\stralign.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\tvout.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\uxtheme.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -591,16 +491,6 @@
 	
 
 .\richutil.c : \
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\basetsd.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\guiddef.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\propidl.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\reason.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shldisp.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shobjidl.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shtypes.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\stralign.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\tvout.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\uxtheme.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -649,16 +539,6 @@
 	
 
 .\sendqueue.c : \
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\basetsd.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\guiddef.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\propidl.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\reason.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shldisp.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shobjidl.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shtypes.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\stralign.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\tvout.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\uxtheme.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -707,16 +587,6 @@
 	
 
 .\srmm.c : \
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\basetsd.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\guiddef.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\propidl.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\reason.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shldisp.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shobjidl.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shtypes.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\stralign.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\tvout.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\uxtheme.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -765,16 +635,6 @@
 	
 
 .\statusicon.c : \
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\basetsd.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\guiddef.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\propidl.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\reason.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shldisp.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shobjidl.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shtypes.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\stralign.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\tvout.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\uxtheme.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -824,16 +684,6 @@
 	
 
 .\utils.c : \
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\basetsd.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\guiddef.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\propidl.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\reason.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shldisp.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shobjidl.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shtypes.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\stralign.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\tvout.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\uxtheme.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -938,16 +788,6 @@
 	
 
 .\chat\clist.c : \
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\basetsd.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\guiddef.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\propidl.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\reason.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shldisp.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shobjidl.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shtypes.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\stralign.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\tvout.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\uxtheme.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -999,16 +839,6 @@
 	
 
 .\chat\colorchooser.c : \
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\basetsd.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\guiddef.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\propidl.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\reason.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shldisp.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shobjidl.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shtypes.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\stralign.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\tvout.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\uxtheme.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -1060,16 +890,6 @@
 	
 
 .\chat\log.c : \
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\basetsd.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\guiddef.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\propidl.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\reason.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shldisp.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shobjidl.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shtypes.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\stralign.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\tvout.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\uxtheme.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -1121,16 +941,6 @@
 	
 
 .\chat\main.c : \
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\basetsd.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\guiddef.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\propidl.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\reason.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shldisp.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shobjidl.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shtypes.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\stralign.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\tvout.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\uxtheme.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -1182,16 +992,6 @@
 	
 
 .\chat\manager.c : \
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\basetsd.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\guiddef.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\propidl.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\reason.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shldisp.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shobjidl.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shtypes.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\stralign.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\tvout.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\uxtheme.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -1243,16 +1043,6 @@
 	
 
 .\chat\message.c : \
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\basetsd.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\guiddef.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\propidl.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\reason.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shldisp.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shobjidl.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shtypes.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\stralign.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\tvout.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\uxtheme.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -1304,16 +1094,6 @@
 	
 
 .\chat\options.c : \
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\basetsd.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\guiddef.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\propidl.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\reason.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shldisp.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shobjidl.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shtypes.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\stralign.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\tvout.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\uxtheme.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -1365,16 +1145,6 @@
 	
 
 .\chat\services.c : \
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\basetsd.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\guiddef.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\propidl.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\reason.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shldisp.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shobjidl.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shtypes.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\stralign.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\tvout.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\uxtheme.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -1426,16 +1196,6 @@
 	
 
 .\chat\tools.c : \
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\basetsd.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\guiddef.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\propidl.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\reason.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shldisp.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shobjidl.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shtypes.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\stralign.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\tvout.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\uxtheme.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -1487,16 +1247,6 @@
 	
 
 .\chat\window.c : \
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\basetsd.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\guiddef.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\propidl.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\reason.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shldisp.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shobjidl.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shtypes.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\stralign.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\tvout.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\uxtheme.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\

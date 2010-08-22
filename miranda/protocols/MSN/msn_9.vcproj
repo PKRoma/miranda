@@ -386,7 +386,6 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="wsock32.lib comctl32.lib Rpcrt4.lib"
-				OutputFile="c:\Program Files\Miranda IM\plugins\msn.dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
 				AdditionalManifestDependencies="type=&apos;Win32&apos; name=&apos;Microsoft.Windows.Common-Controls&apos; version=&apos;6.0.0.0&apos; processorArchitecture=&apos;*&apos; publicKeyToken=&apos;6595b64144ccf1df&apos; language=&apos;*&apos;"
@@ -486,7 +485,6 @@
 				Name="VCLinkerTool"
 				IgnoreImportLibrary="true"
 				AdditionalDependencies="wsock32.lib comctl32.lib Rpcrt4.lib"
-				OutputFile="$(OutDir)\$(ProjectName).dll"
 				SuppressStartupBanner="true"
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile="$(TargetDir)$(TargetName).pdb"
@@ -587,7 +585,6 @@
 				Name="VCLinkerTool"
 				IgnoreImportLibrary="true"
 				AdditionalDependencies="wsock32.lib comctl32.lib Rpcrt4.lib"
-				OutputFile="$(OutDir)\$(ProjectName).dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
 				AdditionalManifestDependencies="type=&apos;Win32&apos; name=&apos;Microsoft.Windows.Common-Controls&apos; version=&apos;6.0.0.0&apos; processorArchitecture=&apos;*&apos; publicKeyToken=&apos;6595b64144ccf1df&apos; language=&apos;*&apos;"
@@ -760,7 +757,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				Optimization="3"
+				Optimization="2"
 				InlineFunctionExpansion="1"
 				EnableIntrinsicFunctions="true"
 				FavorSizeOrSpeed="2"

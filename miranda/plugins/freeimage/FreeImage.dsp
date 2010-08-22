@@ -54,8 +54,8 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /machine:I386
-# ADD LINK32 ..\zlib\Release\zlib.lib msimg32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /base:"0x5130000" /dll /machine:I386 /out:"../../bin/release/plugins/advaimg.dll" /opt:NOWIN98
-# SUBTRACT LINK32 /pdb:none
+# ADD LINK32 ..\zlib\Release\zlib.lib kernel32.lib user32.lib gdi32.lib /nologo /base:"0x5130000" /dll /debug /machine:I386 /out:"../../bin/release/plugins/advaimg.dll" /opt:NOWIN98
+# SUBTRACT LINK32 /pdb:none /nodefaultlib
 
 !ELSEIF  "$(CFG)" == "FreeImage - Win32 Debug"
 

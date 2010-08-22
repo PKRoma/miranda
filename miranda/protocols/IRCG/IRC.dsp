@@ -40,8 +40,8 @@ RSC=rc.exe
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 0
-# PROP Output_Dir ".\Release"
-# PROP Intermediate_Dir ".\Release"
+# PROP Output_Dir "Release"
+# PROP Intermediate_Dir "Release"
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MT /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "IRC_EXPORTS" /YX /FD /c
@@ -277,6 +277,10 @@ SOURCE=.\Icons\add.ico
 # End Source File
 # Begin Source File
 
+SOURCE=.\Icons\apply.ico
+# End Source File
+# Begin Source File
+
 SOURCE=.\Icons\block.ico
 # End Source File
 # Begin Source File
@@ -286,6 +290,10 @@ SOURCE=.\Icons\dcc.ico
 # Begin Source File
 
 SOURCE=.\Icons\delete.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\Icons\edit.ico
 # End Source File
 # Begin Source File
 
@@ -321,6 +329,10 @@ SOURCE=.\Icons\part.ico
 # End Source File
 # Begin Source File
 
+SOURCE=.\Icons\question.ico
+# End Source File
+# Begin Source File
+
 SOURCE=.\Icons\quick.ico
 # End Source File
 # Begin Source File
@@ -338,6 +350,10 @@ SOURCE=.\Icons\server.ico
 # Begin Source File
 
 SOURCE=.\Icons\show.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\Icons\whois.ico
 # End Source File
 # Begin Source File
 
@@ -364,5 +380,9 @@ SOURCE=.\Docs\IRC_Translate.txt
 SOURCE="..\..\..\CVS upload\to do.txt"
 # End Source File
 # End Group
+# Begin Source File
+
+SOURCE=.\Docs\IRC_servers.ini
+# End Source File
 # End Target
 # End Project

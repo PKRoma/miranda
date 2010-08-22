@@ -91,7 +91,6 @@
 				IgnoreImportLibrary="true"
 				AdditionalOptions="/ALIGN:4096 /ignore:4108"
 				AdditionalDependencies="wsock32.lib comctl32.lib"
-				OutputFile="$(OutDir)/icq.dll"
 				SuppressStartupBanner="true"
 				AdditionalManifestDependencies="type=&apos;Win32&apos; name=&apos;Microsoft.Windows.Common-Controls&apos; version=&apos;6.0.0.0&apos; processorArchitecture=&apos;X86&apos; publicKeyToken=&apos;6595b64144ccf1df&apos; language=&apos;*&apos;"
 				GenerateDebugInformation="true"
@@ -200,7 +199,6 @@
 				IgnoreImportLibrary="true"
 				AdditionalOptions="/ALIGN:4096 /ignore:4108"
 				AdditionalDependencies="wsock32.lib comctl32.lib"
-				OutputFile="$(OutDir)/icq.dll"
 				SuppressStartupBanner="true"
 				AdditionalManifestDependencies="type=&apos;Win32&apos; name=&apos;Microsoft.Windows.Common-Controls&apos; version=&apos;6.0.0.0&apos; processorArchitecture=&apos;*&apos; publicKeyToken=&apos;6595b64144ccf1df&apos; language=&apos;*&apos;"
 				GenerateDebugInformation="true"
@@ -299,7 +297,6 @@
 				Name="VCLinkerTool"
 				IgnoreImportLibrary="true"
 				AdditionalDependencies="wsock32.lib comctl32.lib"
-				OutputFile="$(OutDir)/icq.dll"
 				SuppressStartupBanner="true"
 				GenerateDebugInformation="true"
 				GenerateMapFile="false"
@@ -395,7 +392,6 @@
 				Name="VCLinkerTool"
 				IgnoreImportLibrary="true"
 				AdditionalDependencies="wsock32.lib comctl32.lib"
-				OutputFile="$(OutDir)/icq.dll"
 				SuppressStartupBanner="true"
 				AdditionalManifestDependencies="type=&apos;Win32&apos; name=&apos;Microsoft.Windows.Common-Controls&apos; version=&apos;6.0.0.0&apos; processorArchitecture=&apos;*&apos; publicKeyToken=&apos;6595b64144ccf1df&apos; language=&apos;*&apos;"
 				GenerateDebugInformation="true"
@@ -494,7 +490,6 @@
 				Name="VCLinkerTool"
 				IgnoreImportLibrary="true"
 				AdditionalDependencies="wsock32.lib comctl32.lib"
-				OutputFile="$(OutDir)/icq.dll"
 				SuppressStartupBanner="true"
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile="$(TargetDir)$(TargetName).pdb"
@@ -593,7 +588,6 @@
 				Name="VCLinkerTool"
 				IgnoreImportLibrary="true"
 				AdditionalDependencies="wsock32.lib comctl32.lib"
-				OutputFile="$(OutDir)/icq.dll"
 				SuppressStartupBanner="true"
 				AdditionalManifestDependencies="type=&apos;Win32&apos; name=&apos;Microsoft.Windows.Common-Controls&apos; version=&apos;6.0.0.0&apos; processorArchitecture=&apos;*&apos; publicKeyToken=&apos;6595b64144ccf1df&apos; language=&apos;*&apos;"
 				GenerateDebugInformation="true"
@@ -701,7 +695,6 @@
 				IgnoreImportLibrary="true"
 				AdditionalOptions="/ALIGN:4096 /ignore:4108"
 				AdditionalDependencies="wsock32.lib comctl32.lib"
-				OutputFile="$(OutDir)/icq.dll"
 				AdditionalManifestDependencies="type=&apos;Win32&apos; name=&apos;Microsoft.Windows.Common-Controls&apos; version=&apos;6.0.0.0&apos; processorArchitecture=&apos;X86&apos; publicKeyToken=&apos;6595b64144ccf1df&apos; language=&apos;*&apos;"
 				GenerateDebugInformation="true"
 				OptimizeReferences="2"
@@ -807,7 +800,6 @@
 				IgnoreImportLibrary="true"
 				AdditionalOptions="/ALIGN:4096 /ignore:4108"
 				AdditionalDependencies="wsock32.lib comctl32.lib"
-				OutputFile="$(OutDir)/icq.dll"
 				AdditionalManifestDependencies="type=&apos;Win32&apos; name=&apos;Microsoft.Windows.Common-Controls&apos; version=&apos;6.0.0.0&apos; processorArchitecture=&apos;*&apos; publicKeyToken=&apos;6595b64144ccf1df&apos; language=&apos;*&apos;"
 				GenerateDebugInformation="true"
 				OptimizeReferences="2"
@@ -994,11 +986,31 @@
 			Filter="ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe"
 			>
 			<File
+				RelativePath=".\icos\auth_ask.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\icos\auth_grant.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\icos\auth_revoke.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\changeinfo\expandst.ico"
+				>
+			</File>
+			<File
 				RelativePath="icos\icq.ico"
 				>
 			</File>
 			<File
 				RelativePath="resources.rc"
+				>
+			</File>
+			<File
+				RelativePath=".\icos\srvlist_add.ico"
 				>
 			</File>
 		</Filter>
@@ -2385,6 +2397,23 @@
 				RelativePath=".\oscar_filetransfer.cpp"
 				>
 			</File>
+			<Filter
+				Name="Documentation"
+				Filter=".txt"
+				>
+				<File
+					RelativePath="docs\icq-readme.txt"
+					>
+				</File>
+				<File
+					RelativePath="docs\IcqOscarJ-db settings.txt"
+					>
+				</File>
+				<File
+					RelativePath="docs\IcqOscarJ-translation.txt"
+					>
+				</File>
+			</Filter>
 		</Filter>
 		<Filter
 			Name="Miranda Bits"
@@ -2724,23 +2753,6 @@
 						AdditionalIncludeDirectories=""
 					/>
 				</FileConfiguration>
-			</File>
-		</Filter>
-		<Filter
-			Name="Documentation"
-			Filter=".txt"
-			>
-			<File
-				RelativePath="docs\icq-readme.txt"
-				>
-			</File>
-			<File
-				RelativePath="docs\IcqOscarJ-db settings.txt"
-				>
-			</File>
-			<File
-				RelativePath="docs\IcqOscarJ-translation.txt"
-				>
 			</File>
 		</Filter>
 		<Filter

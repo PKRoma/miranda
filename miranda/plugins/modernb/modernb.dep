@@ -1,14 +1,6 @@
 # Microsoft Developer Studio Generated Dependency File, included by modernb.mak
 
 .\init.cpp : \
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\basetsd.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\guiddef.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\propidl.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\reason.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\stralign.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\tvout.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\uxtheme.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -67,14 +59,6 @@
 	
 
 .\modern_aniavatars.cpp : \
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\basetsd.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\guiddef.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\propidl.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\reason.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\stralign.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\tvout.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\uxtheme.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -130,14 +114,6 @@
 	
 
 .\modern_awaymsg.cpp : \
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\basetsd.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\guiddef.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\propidl.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\reason.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\stralign.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\tvout.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\uxtheme.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -195,14 +171,6 @@
 	
 
 .\modern_cachefuncs.cpp : \
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\basetsd.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\guiddef.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\propidl.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\reason.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\stralign.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\tvout.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\uxtheme.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -260,14 +228,6 @@
 	
 
 .\modern_clc.cpp : \
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\basetsd.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\guiddef.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\propidl.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\reason.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\stralign.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\tvout.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\uxtheme.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -325,14 +285,6 @@
 	
 
 .\modern_clcidents.cpp : \
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\basetsd.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\guiddef.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\propidl.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\reason.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\stralign.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\tvout.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\uxtheme.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -388,14 +340,6 @@
 	
 
 .\modern_clcitems.cpp : \
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\basetsd.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\guiddef.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\propidl.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\reason.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\stralign.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\tvout.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\uxtheme.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -451,14 +395,6 @@
 	
 
 .\modern_clcmsgs.cpp : \
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\basetsd.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\guiddef.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\propidl.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\reason.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\stralign.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\tvout.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\uxtheme.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -514,14 +450,6 @@
 	
 
 .\modern_clcopts.cpp : \
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\basetsd.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\guiddef.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\propidl.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\reason.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\stralign.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\tvout.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\uxtheme.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -580,14 +508,6 @@
 	
 
 .\modern_clcpaint.cpp : \
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\basetsd.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\guiddef.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\propidl.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\reason.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\stralign.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\tvout.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\uxtheme.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -644,14 +564,6 @@
 	
 
 .\modern_clcutils.cpp : \
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\basetsd.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\guiddef.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\propidl.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\reason.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\stralign.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\tvout.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\uxtheme.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -707,14 +619,6 @@
 	
 
 .\modern_clistevents.cpp : \
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\basetsd.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\guiddef.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\propidl.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\reason.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\stralign.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\tvout.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\uxtheme.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -771,14 +675,6 @@
 	
 
 .\modern_clistmenus.cpp : \
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\basetsd.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\guiddef.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\propidl.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\reason.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\stralign.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\tvout.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\uxtheme.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -834,14 +730,6 @@
 	
 
 .\modern_clistmod.cpp : \
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\basetsd.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\guiddef.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\propidl.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\reason.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\stralign.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\tvout.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\uxtheme.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -900,14 +788,6 @@
 	
 
 .\modern_clistopts.cpp : \
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\basetsd.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\guiddef.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\propidl.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\reason.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\stralign.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\tvout.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\uxtheme.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -963,14 +843,6 @@
 	
 
 .\modern_clistsettings.cpp : \
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\basetsd.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\guiddef.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\propidl.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\reason.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\stralign.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\tvout.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\uxtheme.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -1027,14 +899,6 @@
 	
 
 .\modern_clisttray.cpp : \
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\basetsd.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\guiddef.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\propidl.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\reason.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\stralign.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\tvout.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\uxtheme.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -1090,14 +954,6 @@
 	
 
 .\modern_clui.cpp : \
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\basetsd.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\guiddef.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\propidl.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\reason.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\stralign.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\tvout.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\uxtheme.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -1158,14 +1014,6 @@
 	
 
 .\modern_cluiframes.cpp : \
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\basetsd.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\guiddef.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\propidl.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\reason.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\stralign.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\tvout.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\uxtheme.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -1223,14 +1071,6 @@
 	
 
 .\modern_cluiservices.cpp : \
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\basetsd.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\guiddef.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\propidl.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\reason.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\stralign.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\tvout.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\uxtheme.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -1286,14 +1126,6 @@
 	
 
 .\modern_commonheaders.cpp : \
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\basetsd.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\guiddef.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\propidl.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\reason.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\stralign.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\tvout.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\uxtheme.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -1349,14 +1181,6 @@
 	
 
 .\modern_contact.cpp : \
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\basetsd.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\guiddef.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\propidl.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\reason.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\stralign.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\tvout.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\uxtheme.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -1412,14 +1236,6 @@
 	
 
 .\modern_docking.cpp : \
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\basetsd.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\guiddef.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\propidl.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\reason.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\stralign.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\tvout.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\uxtheme.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -1477,14 +1293,6 @@
 	
 
 .\modern_extraimage.cpp : \
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\basetsd.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\guiddef.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\propidl.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\reason.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\stralign.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\tvout.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\uxtheme.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -1540,14 +1348,6 @@
 	
 
 .\modern_framesmenu.cpp : \
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\basetsd.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\guiddef.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\propidl.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\reason.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\stralign.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\tvout.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\uxtheme.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -1603,44 +1403,6 @@
 	
 
 .\modern_gdiplus.cpp : \
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\basetsd.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\gdiplus.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\gdiplusbase.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\gdiplusbitmap.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\gdiplusbrush.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\gdipluscachedbitmap.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\gdipluscolor.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\gdipluscolormatrix.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\gdiplusenums.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\gdiplusflat.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\gdiplusfont.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\gdiplusfontcollection.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\gdiplusfontfamily.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\gdiplusgpstubs.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\gdiplusgraphics.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\gdiplusheaders.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\gdiplusimageattributes.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\gdiplusimagecodec.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\gdiplusimaging.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\gdiplusinit.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\gdipluslinecaps.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\gdiplusmatrix.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\gdiplusmem.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\gdiplusmetafile.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\gdiplusmetaheader.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\gdipluspath.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\gdipluspen.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\gdipluspixelformats.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\gdiplusregion.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\gdiplusstringformat.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\gdiplustypes.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\guiddef.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\propidl.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\reason.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\stralign.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\tvout.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\uxtheme.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -1696,14 +1458,6 @@
 	
 
 .\modern_gettextasync.cpp : \
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\basetsd.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\guiddef.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\propidl.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\reason.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\stralign.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\tvout.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\uxtheme.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -1761,14 +1515,6 @@
 	
 
 .\modern_global.cpp : \
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\basetsd.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\guiddef.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\propidl.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\reason.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\stralign.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\tvout.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\uxtheme.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -1824,14 +1570,6 @@
 	
 
 .\modern_groupmenu.cpp : \
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\basetsd.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\guiddef.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\propidl.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\reason.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\stralign.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\tvout.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\uxtheme.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -1887,14 +1625,6 @@
 	
 
 .\modern_image_array.cpp : \
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\basetsd.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\guiddef.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\propidl.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\reason.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\stralign.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\tvout.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\uxtheme.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -1950,14 +1680,6 @@
 	
 
 .\modern_keyboard.cpp : \
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\basetsd.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\guiddef.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\propidl.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\reason.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\stralign.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\tvout.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\uxtheme.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -2014,14 +1736,6 @@
 	
 
 .\modern_log.cpp : \
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\basetsd.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\guiddef.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\propidl.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\reason.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\stralign.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\tvout.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\uxtheme.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -2077,14 +1791,6 @@
 	
 
 .\modern_newrowopts.cpp : \
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\basetsd.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\guiddef.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\propidl.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\reason.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\stralign.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\tvout.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\uxtheme.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -2140,14 +1846,6 @@
 	
 
 .\modern_popup.cpp : \
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\basetsd.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\guiddef.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\propidl.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\reason.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\stralign.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\tvout.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\uxtheme.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -2205,14 +1903,6 @@
 	
 
 .\modern_row.cpp : \
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\basetsd.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\guiddef.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\propidl.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\reason.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\stralign.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\tvout.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\uxtheme.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -2268,14 +1958,6 @@
 	
 
 .\modern_rowheight_funcs.cpp : \
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\basetsd.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\guiddef.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\propidl.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\reason.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\stralign.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\tvout.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\uxtheme.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -2332,14 +2014,6 @@
 	
 
 .\modern_rowtemplateopt.cpp : \
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\basetsd.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\guiddef.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\propidl.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\reason.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\stralign.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\tvout.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\uxtheme.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -2395,14 +2069,6 @@
 	
 
 .\modern_skinbutton.cpp : \
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\basetsd.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\guiddef.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\propidl.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\reason.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\stralign.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\tvout.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\uxtheme.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -2460,14 +2126,6 @@
 	
 
 .\modern_skineditor.cpp : \
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\basetsd.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\guiddef.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\propidl.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\reason.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\stralign.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\tvout.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\uxtheme.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -2524,14 +2182,6 @@
 	
 
 .\modern_skinengine.cpp : \
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\basetsd.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\guiddef.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\propidl.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\reason.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\stralign.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\tvout.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\uxtheme.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -2590,14 +2240,6 @@
 	
 
 .\modern_skinopt.cpp : \
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\basetsd.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\guiddef.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\propidl.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\reason.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\stralign.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\tvout.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\uxtheme.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -2655,14 +2297,6 @@
 	
 
 .\modern_skinselector.cpp : \
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\basetsd.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\guiddef.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\propidl.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\reason.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\stralign.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\tvout.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\uxtheme.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -2719,14 +2353,6 @@
 	
 
 .\modern_statusbar.cpp : \
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\basetsd.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\guiddef.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\propidl.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\reason.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\stralign.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\tvout.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\uxtheme.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -2784,14 +2410,6 @@
 	
 
 .\modern_statusbar_options.cpp : \
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\basetsd.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\guiddef.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\propidl.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\reason.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\stralign.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\tvout.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\uxtheme.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -2847,14 +2465,6 @@
 	
 
 .\modern_sync.cpp : \
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\basetsd.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\guiddef.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\propidl.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\reason.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\stralign.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\tvout.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\uxtheme.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -2911,14 +2521,6 @@
 	
 
 .\modern_tbbutton.cpp : \
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\basetsd.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\guiddef.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\propidl.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\reason.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\stralign.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\tvout.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\uxtheme.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -2976,14 +2578,6 @@
 	
 
 .\modern_toolbar.cpp : \
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\basetsd.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\guiddef.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\propidl.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\reason.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\stralign.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\tvout.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\uxtheme.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -3041,14 +2635,6 @@
 	
 
 .\modern_viewmodebar.cpp : \
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\basetsd.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\guiddef.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\propidl.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\reason.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\stralign.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\tvout.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\uxtheme.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -3105,14 +2691,6 @@
 	
 
 .\modern_xptheme.cpp : \
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\basetsd.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\guiddef.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\propidl.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\reason.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\stralign.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\tvout.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\uxtheme.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\winefs.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\

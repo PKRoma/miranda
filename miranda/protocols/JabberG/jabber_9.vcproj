@@ -2932,10 +2932,6 @@
 				>
 			</File>
 			<File
-				RelativePath="icos\block.ico"
-				>
-			</File>
-			<File
 				RelativePath=".\icos\bookmarks.ico"
 				>
 			</File>
@@ -2968,22 +2964,6 @@
 				>
 			</File>
 			<File
-				RelativePath="icos\gcadmin.ico"
-				>
-			</File>
-			<File
-				RelativePath="icos\gcmodera.ico"
-				>
-			</File>
-			<File
-				RelativePath="icos\gcowner.ico"
-				>
-			</File>
-			<File
-				RelativePath="icos\gcvoice.ico"
-				>
-			</File>
-			<File
 				RelativePath=".\icos\go.ico"
 				>
 			</File>
@@ -3013,10 +2993,6 @@
 			</File>
 			<File
 				RelativePath=".\icos\login.ico"
-				>
-			</File>
-			<File
-				RelativePath="icos\message.ico"
 				>
 			</File>
 			<File
@@ -3157,10 +3133,6 @@
 			</File>
 			<File
 				RelativePath=".\icos\weather.ico"
-				>
-			</File>
-			<File
-				RelativePath="icos\write.ico"
 				>
 			</File>
 		</Filter>

@@ -1,12 +1,6 @@
 # Microsoft Developer Studio Generated Dependency File, included by chat.mak
 
 .\clist.c : \
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\basetsd.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\guiddef.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\propidl.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\reason.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\stralign.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\tvout.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_chat.h"\
@@ -37,12 +31,6 @@
 	
 
 .\colorchooser.c : \
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\basetsd.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\guiddef.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\propidl.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\reason.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\stralign.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\tvout.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_chat.h"\
@@ -73,12 +61,6 @@
 	
 
 .\log.c : \
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\basetsd.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\guiddef.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\propidl.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\reason.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\stralign.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\tvout.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_chat.h"\
@@ -109,12 +91,6 @@
 	
 
 .\main.c : \
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\basetsd.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\guiddef.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\propidl.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\reason.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\stralign.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\tvout.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_chat.h"\
@@ -145,12 +121,6 @@
 	
 
 .\manager.c : \
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\basetsd.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\guiddef.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\propidl.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\reason.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\stralign.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\tvout.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_chat.h"\
@@ -181,12 +151,6 @@
 	
 
 .\message.c : \
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\basetsd.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\guiddef.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\propidl.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\reason.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\stralign.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\tvout.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_chat.h"\
@@ -217,14 +181,6 @@
 	
 
 .\options.c : \
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\basetsd.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\guiddef.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\propidl.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\reason.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shobjidl.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\shtypes.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\stralign.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\tvout.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_chat.h"\
@@ -256,23 +212,10 @@
 	
 
 .\richutil.c : \
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\basetsd.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\guiddef.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\propidl.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\reason.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\stralign.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\tvout.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\winefs.h"\
 	".\richutil.h"\
 	
 
 .\services.c : \
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\basetsd.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\guiddef.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\propidl.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\reason.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\stralign.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\tvout.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_chat.h"\
@@ -304,12 +247,6 @@
 	
 
 .\tools.c : \
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\basetsd.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\guiddef.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\propidl.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\reason.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\stralign.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\tvout.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_chat.h"\
@@ -340,12 +277,6 @@
 	
 
 .\window.c : \
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\basetsd.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\guiddef.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\propidl.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\reason.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\stralign.h"\
-	"..\..\..\..\..\..\..\program files (x86)\microsoft sdk\include\tvout.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_button.h"\
 	"..\..\include\m_chat.h"\
