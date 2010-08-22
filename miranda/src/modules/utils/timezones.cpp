@@ -255,29 +255,15 @@ static INT_PTR svcGetInfoByContact(WPARAM wParam, LPARAM lParam)
 	if(wParam == 0)
 		return 0;
 
-	TCHAR		*tszTzName = 0;
 	HANDLE		hContact = (HANDLE)wParam;
 	DBVARIANT	dbv;
-	BYTE		timezone = -1;
-	DWORD		contact_gmt_diff = 0, timediff = 0;
+	int		contact_gmt_diff = 0, timediff = 0;
 	DWORD		dwFlags = (DWORD)lParam;
 
-	if(DBGetContactSettingTString(hContact, "UserInfo", "TzName", &dbv) == 0) {
-		tszTzName = dbv.ptszVal;
-	} else {
-		/*
-		 * try the GMT offset
-		 */
-		timezone = DBGetContactSettingByte(hContact, "UserInfo", "Timezone", DBGetContactSettingByte(hContact, (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0), "Timezone", -1));
+	if (!DBGetContactSettingTString(hContact, "UserInfo", "TzName", &dbv)) 
+	{
+		TCHAR* tszTzName = dbv.ptszVal;
 
-		if(timezone == -1)			// give up, nothing found
-			return(reinterpret_cast<INT_PTR>(myInfo.myTZ));
-
-		contact_gmt_diff = timezone > 128 ? 256 - timezone : 0 - timezone;
-		timediff = -(int)contact_gmt_diff * 60 * 60 / 2;
-	}
-
-	if(tszTzName) {
 		DWORD hash = hashstr(tszTzName);
 		for(int i = 0; i < myInfo.nrZones; i++) {
 			if(hash == g_timezones[i].hash) {
@@ -290,26 +276,45 @@ static INT_PTR svcGetInfoByContact(WPARAM wParam, LPARAM lParam)
 				DBFreeVariant(&dbv);
 				if(dwFlags & MIM_PLF_FORCE)
 					TZ_ForceTimeRefresh(&g_timezones[i]);
-				return(reinterpret_cast<INT_PTR>(&g_timezones[i]));
+
+					return (INT_PTR)&g_timezones[i];
 			}
 		}
 		DBFreeVariant(&dbv);
-	} else if(timezone != -1) {
-		for(int i = 0; i < myInfo.nrZones; i++) {
-			if((LONG)timediff == g_timezones[i].Offset) {
-				time_t now = time(NULL);
+	} 
+	else 
+	{
+		/*
+		 * try the GMT offset
+		 */
+		char* szProto = (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
+		BYTE timezone = DBGetContactSettingByte(hContact, "UserInfo", "Timezone", DBGetContactSettingByte(hContact, szProto, "Timezone", 0xff));
 
-				if((now - g_timezones[i].timestamp) > 1800) {
-					g_timezones[i].timestamp = now;
-					TZ_CalcOffset(&g_timezones[i]);
+		if(timezone != 0xff) 
+		{
+			contact_gmt_diff = timezone > 128 ? 256 - timezone : 0 - timezone;
+			timediff = -contact_gmt_diff * 60 * 60 / 2;
+
+			for(int i = 0; i < myInfo.nrZones; i++) 
+			{
+				if((LONG)timediff == g_timezones[i].Offset) 
+				{
+					time_t now = time(NULL);
+
+					if((now - g_timezones[i].timestamp) > 1800) {
+						g_timezones[i].timestamp = now;
+						TZ_CalcOffset(&g_timezones[i]);
+					}
+					if(dwFlags & MIM_PLF_FORCE)
+						TZ_ForceTimeRefresh(&g_timezones[i]);
+
+					return (INT_PTR)&g_timezones[i];
 				}
-				if(dwFlags & MIM_PLF_FORCE)
-					TZ_ForceTimeRefresh(&g_timezones[i]);
-				return(reinterpret_cast<INT_PTR>(&g_timezones[i]));
 			}
 		}
 	}
-	return(reinterpret_cast<INT_PTR>(myInfo.myTZ));
+
+	return (INT_PTR)myInfo.myTZ;
 }
 
 static INT_PTR svcPrepareList(WPARAM wParam, LPARAM lParam)
@@ -412,12 +417,12 @@ void InitTimeZones(void)
 
 	if(g_timezones == NULL) {
 		REG_TZI_FORMAT	tzi;
-		char			tszKey[256];
+		TCHAR			tszKey[256];
 		HKEY			hKey;
 
-		mir_snprintf(tszKey, SIZEOF(tszKey), "Software\\Microsoft\\Windows%s\\CurrentVersion\\Time Zones", IsWinVer2000Plus() ? " NT" : "");
+		mir_sntprintf(tszKey, SIZEOF(tszKey), _T("Software\\Microsoft\\Windows%s\\CurrentVersion\\Time Zones"), IsWinVer2000Plus() ? _T(" NT") : _T(""));
 
-		if (ERROR_SUCCESS == RegOpenKeyExA(HKEY_LOCAL_MACHINE, tszKey, 0, KEY_READ, &hKey)) {
+		if (ERROR_SUCCESS == RegOpenKeyEx(HKEY_LOCAL_MACHINE, tszKey, 0, KEY_READ, &hKey)) {
 			TCHAR	tszTzKey[256];
 			DWORD	dwIndex = 0;
 			DWORD	dwSize = MIM_TZ_NAMELEN, dwLength, dwType, dwNrZones = 0;
