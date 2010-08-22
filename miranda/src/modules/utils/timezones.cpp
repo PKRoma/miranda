@@ -430,8 +430,8 @@ void InitTimeZones(void)
 		MIM_INT_TIMEZONE mtzTmp;
 		memset(&mtzTmp, 0, sizeof(mtzTmp));
 
-		char* myStdName = mir_u2t(myInfo.tzi.StandardName);
-		char* myDayName = mir_u2t(myInfo.tzi.DaylightName);
+		TCHAR* myStdName = mir_u2t(myInfo.tzi.StandardName);
+		TCHAR* myDayName = mir_u2t(myInfo.tzi.DaylightName);
 
 		while (ERROR_NO_MORE_ITEMS != RegEnumKeyEx(hKey, dwIndex, mtzTmp.tszName, &dwSize, NULL, NULL, 0, NULL))
 		{
