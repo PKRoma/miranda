@@ -66,7 +66,7 @@ struct MIM_INT_TIMEZONE
 	{ return p1->hash - p2->hash; }
 
 	static int compareBias(const MIM_INT_TIMEZONE* p1, const MIM_INT_TIMEZONE* p2 )
-	{ return p1->Bias - p2->Bias; }
+	{ return p2->Bias - p1->Bias; }
 };
 
 /*
@@ -182,7 +182,8 @@ static LONG TZ_CalcOffset(MIM_INT_TIMEZONE *tzi)
 	LONG	targetDL, myDL, timediff;
 	time_t  now = time(NULL);
 
-	if((now- myInfo.timestamp) > 1800) {		// refresh our private information
+	if((now- myInfo.timestamp) > 1800)		// refresh our private information
+	{
 		myInfo.timestamp = now;
 		myInfo.DaylightInfo = GetTimeZoneInformation(&myInfo.tzi);
 		GetSystemTime(&myInfo.st);
@@ -238,7 +239,8 @@ INT_PTR ProcessTimezone(MIM_INT_TIMEZONE *tz, DWORD	dwFlags)
 	/*
 	 * recalculate the offset if too old, otherwise just return quickly
 	*/
-	if ((now - tz->timestamp) > 1800) {
+	if ((now - tz->timestamp) > 1800)
+	{
 		tz->timestamp = now;
 		TZ_CalcOffset(tz);
 	}
@@ -286,7 +288,7 @@ static INT_PTR svcGetInfoByContact(WPARAM wParam, LPARAM lParam)
 	else 
 	{
 		/*
-		 * try the GMT offset
+		 * try the GMT Bias
 		 */
 		signed char timezone = (signed char)DBGetContactSettingByte(hContact, "UserInfo", "Timezone", -1);
 		if (timezone == -1)
@@ -309,95 +311,100 @@ static INT_PTR svcGetInfoByContact(WPARAM wParam, LPARAM lParam)
 
 static INT_PTR svcPrepareList(WPARAM wParam, LPARAM lParam)
 {
-	if(lParam == NULL)
+	if (lParam == NULL)
 		return 0;
 
-	MIM_TZ_PREPARELIST *mtzd = reinterpret_cast<MIM_TZ_PREPARELIST *>(lParam);
+	MIM_TZ_PREPARELIST *mtzd = (MIM_TZ_PREPARELIST*)lParam;
 	UINT	addMsg, selMsg, findMsg, extMsg;					// control messages for list/combo box
 
-	if(mtzd->cbSize != sizeof(MIM_TZ_PREPARELIST))
+	if (mtzd->cbSize != sizeof(MIM_TZ_PREPARELIST))
 		return 0;
 
-	if(mtzd->hWnd == 0)	   // nothing to do
+	if (mtzd->hWnd == 0)	   // nothing to do
 		return 0;
 
-	if(!(mtzd->dwFlags & MIM_TZ_PLF_CB || mtzd->dwFlags & MIM_TZ_PLF_LB)) 
+	if (!(mtzd->dwFlags & MIM_TZ_PLF_CB || mtzd->dwFlags & MIM_TZ_PLF_LB)) 
 	{
 		/*
 		 * figure it out by class name
 		 */
 		TCHAR	tszClassName[128];
 		GetClassName(mtzd->hWnd, tszClassName, SIZEOF(tszClassName));
-		if(!_tcsicmp(tszClassName, _T("COMBOBOX")))
+		if (!_tcsicmp(tszClassName, _T("COMBOBOX")))
 			mtzd->dwFlags |= MIM_TZ_PLF_CB;
 		else if(!_tcsicmp(tszClassName, _T("LISTBOX")))
 			mtzd->dwFlags |= MIM_TZ_PLF_LB;
 	}
-	if(mtzd->dwFlags & MIM_TZ_PLF_CB) {
+	if (mtzd->dwFlags & MIM_TZ_PLF_CB) 
+	{
 		addMsg = CB_ADDSTRING;
 		selMsg = CB_SETCURSEL;
 		findMsg = CB_FINDSTRING;
 		extMsg = CB_SETITEMDATA;
 	}
-	else if(mtzd->dwFlags & MIM_TZ_PLF_LB) {
+	else if(mtzd->dwFlags & MIM_TZ_PLF_LB) 
+	{
 		addMsg = LB_ADDSTRING;
 		selMsg = LB_SETCURSEL;
 		findMsg = LB_FINDSTRING;
 		extMsg  = LB_SETITEMDATA;
 	}
 	else
-		return(0);									// shouldn't happen
+		return 0;									// shouldn't happen
 
 	SendMessage(mtzd->hWnd, addMsg, 0, (LPARAM)_T("<unspecified>"));
 
-	if (g_timezonesBias.getCount()) 
+	if (g_timezonesBias.getCount() == 0) return 0; 
+
+	TCHAR	tszSelectedItem[MIM_TZ_DISPLAYLEN] = _T("");
+
+	/*
+	 * preselection by hContact has precedence
+	 * if no hContact was given, the tszName will be directly used
+	 * for preselecting the item.
+	 */
+
+	if(mtzd->hContact) 
 	{
-		unsigned i = 0;
-		TCHAR	tszSelectedItem[MIM_TZ_DISPLAYLEN] = _T("");
+		DBVARIANT dbv;
 
-		/*
-		 * preselection by hContact has precedence
-		 * if no hContact was given, the tszName will be directly used
-		 * for preselecting the item.
-		 */
-
-		if(mtzd->hContact) {
-			DBVARIANT dbv;
-
-			if(0 == DBGetContactSettingTString(mtzd->hContact, "UserInfo", "TzName", &dbv)) {
-				mir_sntprintf(mtzd->tszName, MIM_TZ_NAMELEN, _T("%s"), dbv.ptszVal);
-				DBFreeVariant(&dbv);
-			}
-		}
-
-		int iSelection = -1;
-
-		while(g_timezonesBias[i]->tszDisplay[0]) 
+		if(!DBGetContactSettingTString(mtzd->hContact, "UserInfo", "TzName", &dbv)) 
 		{
-			SendMessage(mtzd->hWnd, addMsg, 0, (LPARAM)g_timezonesBias[i]->tszDisplay);
-			/*
-			 * set the adress of our timezone struct as itemdata
-			 * caller can obtain it and use it as a pointer to extract all relevant information
-			 */
-			SendMessage(mtzd->hWnd, extMsg, (WPARAM)i + 1, (LPARAM)g_timezonesBias[i]);
-
-			if(mtzd->tszName[0] && !_tcscmp(mtzd->tszName, g_timezonesBias[i]->tszName))	{		// remember the display name to later select it in the listbox
-				mir_sntprintf(tszSelectedItem, MIM_TZ_DISPLAYLEN, _T("%s"), g_timezonesBias[i]->tszDisplay);
-				iSelection = i + 1;
-			}
-			/*
-			* if ONLY a GMT offset is known, use it anyway. Works in most cases, but not when DST
-			* is different at the target time zone
-			*/
-			//if(mtzd-> != -1 && (LONG)timediff == reg_timezones[i].Bias)
-			//	mir_sntprintf(tszSelectedItemBackup, 256, _T("%s"), reg_timezones[i].tszDisplay);
-			i++;
-		}
-		if(iSelection != -1) {
-			SendMessage(mtzd->hWnd, selMsg, (WPARAM)iSelection, 0);
-			return(iSelection);
+			mir_sntprintf(mtzd->tszName, MIM_TZ_NAMELEN, _T("%s"), dbv.ptszVal);
+			DBFreeVariant(&dbv);
 		}
 	}
+
+	int iSelection = -1;
+	for (int i = 0; i < g_timezonesBias.getCount(); ++i) 
+	{
+		SendMessage(mtzd->hWnd, addMsg, 0, (LPARAM)g_timezonesBias[i]->tszDisplay);
+		/*
+		 * set the adress of our timezone struct as itemdata
+		 * caller can obtain it and use it as a pointer to extract all relevant information
+		 */
+		SendMessage(mtzd->hWnd, extMsg, (WPARAM)i + 1, (LPARAM)g_timezonesBias[i]);
+
+		// remember the display name to later select it in the listbox
+		if(mtzd->tszName[0] && !_tcsicmp(mtzd->tszName, g_timezonesBias[i]->tszName))	
+		{
+			mir_sntprintf(tszSelectedItem, MIM_TZ_DISPLAYLEN, _T("%s"), g_timezonesBias[i]->tszDisplay);
+			iSelection = i + 1;
+		}
+		/*
+		* if ONLY a GMT offset is known, use it anyway. Works in most cases, but not when DST
+		* is different at the target time zone
+		*/
+		//if(mtzd-> != -1 && (LONG)timediff == reg_timezones[i].Bias)
+		//	mir_sntprintf(tszSelectedItemBackup, 256, _T("%s"), reg_timezones[i].tszDisplay);
+		i++;
+	}
+	if (iSelection != -1) 
+	{
+		SendMessage(mtzd->hWnd, selMsg, (WPARAM)iSelection, 0);
+		return iSelection;
+	}
+
 	return 0;
 }
 
@@ -424,6 +431,9 @@ void InitTimeZones(void)
 		MIM_INT_TIMEZONE mtzTmp;
 		memset(&mtzTmp, 0, sizeof(mtzTmp));
 
+		char* myStdName = mir_u2t(myInfo.tzi.StandardName);
+		char* myDayName = mir_u2t(myInfo.tzi.DaylightName);
+
 		while (ERROR_NO_MORE_ITEMS != RegEnumKeyEx(hKey, dwIndex, mtzTmp.tszName, &dwSize, NULL, NULL, 0, NULL))
 		{
 			mir_sntprintf(tszTzKey, SIZEOF(tszTzKey), _T("%s\\%s"), tszKey, mtzTmp.tszName);
@@ -446,7 +456,7 @@ void InitTimeZones(void)
 						g_timezones.insert(tz);
 						g_timezonesBias.insert(tz);
 						
-						if(!_tcscmp(tz->tszName, myInfo.tzi.StandardName) || !_tcscmp(tz->tszName, myInfo.tzi.DaylightName))
+						if (!_tcscmp(mtzTmp.tszName, myStdName) || !_tcscmp(mtzTmp.tszName, myDayName))
 							myInfo.myTZ = (MIM_TIMEZONE *)tz;
 					}
 				}
@@ -456,6 +466,9 @@ void InitTimeZones(void)
 			dwSize = MIM_TZ_NAMELEN;
 		}
 		RegCloseKey(hKey);
+
+		mir_free(myStdName);
+		mir_free(myDayName);
 	}
 
 	CreateServiceFunction(MS_TZ_GETINFOBYNAME, svcGetInfoByName);
