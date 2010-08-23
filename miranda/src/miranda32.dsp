@@ -434,25 +434,6 @@ SOURCE=.\modules\database\database.cpp
 # Begin Source File
 
 SOURCE=.\modules\database\dbini.cpp
-
-!IF  "$(CFG)" == "miranda32 - Win32 Release"
-
-# ADD CPP /Yu
-
-!ELSEIF  "$(CFG)" == "miranda32 - Win32 Debug"
-
-# ADD CPP /Yu"../../core/commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "miranda32 - Win32 Release Unicode"
-
-# ADD CPP /Yu"../../core/commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "miranda32 - Win32 Debug Unicode"
-
-# ADD CPP /Yu"../../core/commonheaders.h"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
