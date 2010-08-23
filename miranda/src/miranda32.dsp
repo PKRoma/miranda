@@ -441,15 +441,15 @@ SOURCE=.\modules\database\dbini.cpp
 
 !ELSEIF  "$(CFG)" == "miranda32 - Win32 Debug"
 
-# ADD CPP /Yu"../../core/commonheaders.h"
+# ADD CPP /Yu"commonheaders.h"
 
 !ELSEIF  "$(CFG)" == "miranda32 - Win32 Release Unicode"
 
-# ADD CPP /Yu"../../core/commonheaders.h"
+# ADD CPP /Yu"commonheaders.h"
 
 !ELSEIF  "$(CFG)" == "miranda32 - Win32 Debug Unicode"
 
-# ADD CPP /Yu"../../core/commonheaders.h"
+# ADD CPP /Yu"commonheaders.h"
 
 !ENDIF 
 
