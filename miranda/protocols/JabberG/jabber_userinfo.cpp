@@ -367,65 +367,59 @@ static void sttFillUserInfo( CJabberProto* ppro, HWND hwndTree, JABBER_LIST_ITEM
 {
 	SendMessage( hwndTree, WM_SETREDRAW, FALSE, 0 );
 
-//	TreeView_DeleteAllItems( hwndTree );
 	sttCleanupInfo(hwndTree, 0);
 
 	HTREEITEM htiRoot = sttFillInfoLine( hwndTree, NULL, ppro->LoadIconEx( "main" ), _T( "JID" ), item->jid, sttInfoLineId(0, INFOLINE_NAME), true );
 	TCHAR buf[256];
 
-	if (HANDLE hContact = ppro->HContactFromJID(item->jid))
-	{
+	if (HANDLE hContact = ppro->HContactFromJID(item->jid)) {
 		sttFillAdvStatusInfo( ppro, hwndTree, htiRoot, sttInfoLineId(0, INFOLINE_MOOD), hContact, TranslateT("Mood"), ADVSTATUS_MOOD );
 		sttFillAdvStatusInfo( ppro, hwndTree, htiRoot, sttInfoLineId(0, INFOLINE_ACTIVITY), hContact, TranslateT("Activity"), ADVSTATUS_ACTIVITY );
 		sttFillAdvStatusInfo( ppro, hwndTree, htiRoot, sttInfoLineId(0, INFOLINE_TUNE), hContact, TranslateT("Tune"), ADVSTATUS_TUNE );
 	}
 
-	{	// subscription
-		switch ( item->subscription ) {
-			case SUB_BOTH:
-				sttFillInfoLine( hwndTree, htiRoot, NULL, TranslateT( "Subscription" ), TranslateT( "both" ), sttInfoLineId(0, INFOLINE_SUBSCRIPTION));
-				break;
-			case SUB_TO:
-				sttFillInfoLine( hwndTree, htiRoot, NULL, TranslateT( "Subscription" ), TranslateT( "to" ), sttInfoLineId(0, INFOLINE_SUBSCRIPTION));
-				break;
-			case SUB_FROM:
-				sttFillInfoLine( hwndTree, htiRoot, NULL, TranslateT( "Subscription" ), TranslateT( "from" ), sttInfoLineId(0, INFOLINE_SUBSCRIPTION));
-				break;
-			default:
-				sttFillInfoLine( hwndTree, htiRoot, NULL, TranslateT( "Subscription" ), TranslateT( "none" ), sttInfoLineId(0, INFOLINE_SUBSCRIPTION));
-				break;
-		}
+	// subscription
+	switch ( item->subscription ) {
+		case SUB_BOTH:
+			sttFillInfoLine( hwndTree, htiRoot, NULL, TranslateT( "Subscription" ), TranslateT( "both" ), sttInfoLineId(0, INFOLINE_SUBSCRIPTION));
+			break;
+		case SUB_TO:
+			sttFillInfoLine( hwndTree, htiRoot, NULL, TranslateT( "Subscription" ), TranslateT( "to" ), sttInfoLineId(0, INFOLINE_SUBSCRIPTION));
+			break;
+		case SUB_FROM:
+			sttFillInfoLine( hwndTree, htiRoot, NULL, TranslateT( "Subscription" ), TranslateT( "from" ), sttInfoLineId(0, INFOLINE_SUBSCRIPTION));
+			break;
+		default:
+			sttFillInfoLine( hwndTree, htiRoot, NULL, TranslateT( "Subscription" ), TranslateT( "none" ), sttInfoLineId(0, INFOLINE_SUBSCRIPTION));
+			break;
 	}
 
-	{	// logoff
-		if ( item->itemResource.idleStartTime > 0 ) {
-			lstrcpyn( buf, _tctime( &item->itemResource.idleStartTime ), SIZEOF( buf ));
-			int len = lstrlen(buf);
-			if (len > 0) buf[len-1] = 0;
-		} else if ( !item->itemResource.idleStartTime )
-			lstrcpyn( buf, TranslateT( "unknown" ), SIZEOF( buf ));
-		else
-			lstrcpyn( buf, TranslateT( "<not specified>" ), SIZEOF( buf ));
+	// logoff
+	if ( item->itemResource.idleStartTime > 0 ) {
+		lstrcpyn( buf, _tctime( &item->itemResource.idleStartTime ), SIZEOF( buf ));
+		int len = lstrlen(buf);
+		if (len > 0) buf[len-1] = 0;
+	} else if ( !item->itemResource.idleStartTime )
+		lstrcpyn( buf, TranslateT( "unknown" ), SIZEOF( buf ));
+	else
+		lstrcpyn( buf, TranslateT( "<not specified>" ), SIZEOF( buf ));
 
-		sttFillInfoLine( hwndTree, htiRoot, NULL,
-			( item->jid && _tcschr( item->jid, _T( '@' ))) ? TranslateT( "Last logoff time" ) : TranslateT( "Uptime"), buf,
-			sttInfoLineId(0, INFOLINE_LOGOFF));
-	}
+	sttFillInfoLine( hwndTree, htiRoot, NULL,
+		( item->jid && _tcschr( item->jid, _T( '@' ))) ? TranslateT( "Last logoff time" ) : TranslateT( "Uptime"), buf,
+		sttInfoLineId(0, INFOLINE_LOGOFF));
 
-	{	// logoff msg
-		sttFillInfoLine( hwndTree, htiRoot, NULL, TranslateT( "Logoff message" ),
-			item->itemResource.statusMessage ? item->itemResource.statusMessage : TranslateT( "<not specified>" ), sttInfoLineId(0, INFOLINE_LOGOFF_MSG));
-	}
+	// logoff msg
+	sttFillInfoLine( hwndTree, htiRoot, NULL, TranslateT( "Logoff message" ),
+		item->itemResource.statusMessage ? item->itemResource.statusMessage : TranslateT( "<not specified>" ), sttInfoLineId(0, INFOLINE_LOGOFF_MSG));
 
-	{	// activity
-		if (( item->lastSeenResource >= 0 ) && ( item->lastSeenResource < item->resourceCount ))
-			lstrcpyn( buf, item->resource[item->lastSeenResource].resourceName, SIZEOF( buf ));
-		else
-			lstrcpyn( buf, TranslateT( "<no information available>" ), SIZEOF( buf ));
+	// activity
+	if (( item->lastSeenResource >= 0 ) && ( item->lastSeenResource < item->resourceCount ))
+		lstrcpyn( buf, item->resource[item->lastSeenResource].resourceName, SIZEOF( buf ));
+	else
+		lstrcpyn( buf, TranslateT( "<no information available>" ), SIZEOF( buf ));
 
-		sttFillInfoLine( hwndTree, htiRoot, NULL, TranslateT( "Last active resource" ), buf,
-			sttInfoLineId(0, INFOLINE_LASTACTIVE));
-	}
+	sttFillInfoLine( hwndTree, htiRoot, NULL, TranslateT( "Last active resource" ), buf,
+		sttInfoLineId(0, INFOLINE_LASTACTIVE));
 
 	// resources
 	if ( item->resourceCount ) {
@@ -434,8 +428,6 @@ static void sttFillUserInfo( CJabberProto* ppro, HWND hwndTree, JABBER_LIST_ITEM
 	} 
 	else if ( !_tcschr(item->jid, _T('@')) || (item->itemResource.status != ID_STATUS_OFFLINE) )
 		sttFillResourceInfo( ppro, hwndTree, htiRoot, item, 0 );
-
-//	TreeView_Expand( hwndTree, htiRoot, TVE_EXPAND );
 
 	sttCleanupInfo(hwndTree, 1);
 	SendMessage( hwndTree, WM_SETREDRAW, TRUE, 0 );
