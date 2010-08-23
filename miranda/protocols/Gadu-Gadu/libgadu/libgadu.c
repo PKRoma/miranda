@@ -873,6 +873,10 @@ struct gg_session *gg_login(const struct gg_login_params *p)
 			if ((addr.s_addr = inet_addr(hostname)) == INADDR_NONE) {
 				if (gg_gethostbyname_real(hostname, &addr, 0) == -1) {
 					gg_debug(GG_DEBUG_MISC, "// gg_login() host \"%s\" not found\n", hostname);
+#ifdef GG_CONFIG_MIRANDA
+					errno = EACCES;
+					gg_failno = GG_FAILURE_RESOLVING;
+#endif
 					goto fail;
 				}
 			}
