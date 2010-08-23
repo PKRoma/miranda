@@ -26,6 +26,8 @@
 #ifndef FREEIMAGE_H
 #define FREEIMAGE_H
 
+#pragma warning (disable:4291)
+
 // Version information ------------------------------------------------------
 
 #define FREEIMAGE_MAJOR_VERSION   3

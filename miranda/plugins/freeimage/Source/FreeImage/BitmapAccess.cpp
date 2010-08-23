@@ -84,7 +84,7 @@ FI_STRUCT (FREEIMAGEHEADER) {
 //  Memory allocation on a specified alignment boundary
 // ----------------------------------------------------------
 
-#if (defined(_WIN32) || defined(_WIN64)) && !defined(__MINGW32__)
+#if (defined(_WIN32) || defined(_WIN64)) && !defined(__MINGW32__) && (!defined(_MSC_VER) || _MSC_VER >= 1300)
 
 void* FreeImage_Aligned_Malloc(size_t amount, size_t alignment) {
 	assert(alignment == FIBITMAP_ALIGNMENT);
