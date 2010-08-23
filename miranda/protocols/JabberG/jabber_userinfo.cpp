@@ -348,7 +348,7 @@ static void sttFillAdvStatusInfo( CJabberProto* ppro, HWND hwndTree, HTREEITEM h
 	TCHAR *szAdvStatusTitle = ppro->ReadAdvStatusT(hContact, pszSlot, ADVSTATUS_VAL_TITLE);
 	TCHAR *szAdvStatusText = ppro->ReadAdvStatusT(hContact, pszSlot, ADVSTATUS_VAL_TEXT);
 
-	if (szAdvStatusIcon && szAdvStatusTitle) {
+	if (szAdvStatusIcon && szAdvStatusTitle && *szAdvStatusTitle) {
 		TCHAR szText[2048];
 		if ( szAdvStatusText && *szAdvStatusText )
 			mir_sntprintf(szText, 2047, _T("%s (%s)"), TranslateTS(szAdvStatusTitle), szAdvStatusText);
