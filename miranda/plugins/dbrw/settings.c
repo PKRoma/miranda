@@ -436,7 +436,7 @@ static int settings_getContactSettingWorker(HANDLE hContact, DBCONTACTGETSETTING
 						cbOrigLen = cbLen;
 					memcpy(dbcgs->pValue->pszVal, pCachedValue->pszVal, cbOrigLen);
 					dbcgs->pValue->pszVal[cbOrigLen] = 0;
-					dbcgs->pValue->cchVal = cbLen;
+					dbcgs->pValue->cchVal = (WORD)cbLen;
 				}
 				else {
 					dbcgs->pValue->pszVal = (char*)dbrw_alloc(strlen(pCachedValue->pszVal)+1);
@@ -503,7 +503,7 @@ static int settings_getContactSettingWorker(HANDLE hContact, DBCONTACTGETSETTING
 				if (!isStatic) 
 					dbcgs->pValue->pbVal=dbrw_alloc(copylen);
 				CopyMemory(dbcgs->pValue->pbVal, sqlite3_column_blob(settings_stmts_prep[SQL_SET_STMT_READ], 1), copylen);
-                dbcgs->pValue->cpbVal = copylen;
+                dbcgs->pValue->cpbVal = (WORD)copylen;
 			}
 			else {
 				dbcgs->pValue = 0;

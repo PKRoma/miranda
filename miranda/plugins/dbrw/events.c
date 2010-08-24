@@ -124,7 +124,7 @@ static char *events_moduleCacheAdd(char *szModule) {
         return 0;
     {
         int idx = 0;
-        unsigned int nameLen;
+        size_t nameLen;
 		DBCachedModuleName Vtemp, *V;
 
 		Vtemp.name = szModule;
@@ -279,9 +279,9 @@ static int events_getConditional(HANDLE hDbEvent, DBEVENTINFO *dbei, int cache) 
     stmt = cache?evt_stmts_prep[SQL_EVT_STMT_GET_CACHE]:evt_stmts_prep[SQL_EVT_STMT_GET];
 	sqlite3_bind_int(stmt, 1, (int)hDbEvent);
 	if (sql_step(stmt)==SQLITE_ROW) {
-		size_t copySize = 0;
+		unsigned copySize;
 		const void *blob = sqlite3_column_blob(stmt, 4);
-		const size_t size = sqlite3_column_int(stmt, 5);
+		const unsigned size = sqlite3_column_int(stmt, 5);
 		
 		dbei->timestamp = (DWORD)sqlite3_column_int(stmt, 1);
 		dbei->flags = (DWORD)sqlite3_column_int(stmt, 2);

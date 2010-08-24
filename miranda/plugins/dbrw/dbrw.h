@@ -31,23 +31,28 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define DBRW_EVENTS_FLUSHCACHE   1000*60
 #define DBRW_COMPACT_DAYS        7
 
+#define MIRANDA_VER 0x0800
+
+#include <m_stdhdr.h>
+
 #include <windows.h>
-#include <stdio.h>
 #include <time.h>
-#include <malloc.h>
-#include <process.h>
+
+#include "resource.h"
+
 #include <newpluginapi.h>
 #include <m_system.h>
 #include <m_database.h>
 #include <m_utils.h>
 #include <m_langpack.h>
+
 #include "sqlite3/sqlite3.h"
-#include "resource.h"
 
 extern HINSTANCE g_hInst;
 extern sqlite3 *g_sqlite;
 extern struct LIST_INTERFACE li;
 extern char g_szDbPath[MAX_PATH];
+
 extern HANDLE hSettingChangeEvent;
 extern HANDLE hContactDeletedEvent;
 extern HANDLE hContactAddedEvent;
@@ -140,6 +145,7 @@ void utils_log_init();
 void utils_log_destroy();
 void utils_log_fmt(const char *file,int line,const char *fmt,...);
 #endif
+
 INT_PTR utils_setSafetyMode(WPARAM wParam, LPARAM lParam);
 INT_PTR utils_encodeString(WPARAM wParam,LPARAM lParam);
 INT_PTR utils_decodeString(WPARAM wParam,LPARAM lParam);
