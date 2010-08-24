@@ -11,6 +11,7 @@
 !define MIM_BUILD_ICONS_HI      "icons\bin\hicolor"
 !define MIM_BUILD_OPTIONS_FILE  "miranda32.lst"
 !define MIM_BUILD_OPTIONS_SECT  "InstalledSections"
+!define MIM_BUILD_SUCCESS       "http://www.miranda-im.org/donate/"
 
 !ifdef MIM_BUILD_UNICODE
 !define MIM_BUILD_TYPE          "unicode"
@@ -62,8 +63,6 @@ VAR INST_WARN
 !define MUI_FINISHPAGE_SHOWREADME $INSTDIR\readme.txt
 !define MUI_FINISHPAGE_SHOWREADME_TEXT "View Readme"
 !define MUI_FINISHPAGE_SHOWREADME_NOTCHECKED
-!define MUI_FINISHPAGE_LINK "Support Miranda IM"
-!define MUI_FINISHPAGE_LINK_LOCATION "http://www.miranda-im.org/donate/"
 
 !insertmacro MUI_PAGE_LICENSE "${MIM_BUILD_SRC}\docs\license.txt"
 Page Custom CustomInstallPage CustomInstallPageLeave
@@ -323,6 +322,12 @@ Function .onInstSuccess
   ${If} $INST_WARN == "1"
     ;MessageBox MB_OK "Due to recent changes in Miranda IM, you may need to manually move your profiles to allow them to be recognized by Miranda IM.  Please see the support forums for more information."
   ${Endif}
+FunctionEnd
+
+Function .onGUIEnd
+  ${If} $INST_SUCCESS = 1
+    ExecShell "open" "${MIM_BUILD_SUCCESS}"
+  ${EndIf}
 FunctionEnd
 
 Function VerifyInstallDir
