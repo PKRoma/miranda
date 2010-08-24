@@ -46,7 +46,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 extern HINSTANCE g_hInst;
 extern sqlite3 *g_sqlite;
-extern struct MM_INTERFACE memoryManagerInterface;
 extern struct LIST_INTERFACE li;
 extern char g_szDbPath[MAX_PATH];
 extern HANDLE hSettingChangeEvent;
@@ -56,9 +55,9 @@ extern HANDLE hEventFilterAddedEvent;
 extern HANDLE hEventAddedEvent;
 extern HANDLE hEventDeletedEvent;
 
-#define dbrw_alloc(n)     utils_mem_alloc(n)
-#define dbrw_free(p)      utils_mem_free(p)
-#define dbrw_realloc(p,s) utils_mem_realloc(p, s)
+#define dbrw_alloc(n)     mir_alloc(n)
+#define dbrw_free(p)      mir_free(p)
+#define dbrw_realloc(p,s) mir_realloc(p, s)
 
 #ifdef DBRW_LOGGING
 #define log0(s)         utils_log_fmt(__FILE__,__LINE__,s)
@@ -82,43 +81,43 @@ extern HANDLE hEventDeletedEvent;
 // contacts.c
 void contacts_init();
 void contacts_destroy();
-int contacts_getCount(WPARAM wParam, LPARAM lParam);
-int contacts_findFirst(WPARAM wParam, LPARAM lParam);
-int contacts_findNext(WPARAM wParam, LPARAM lParam);
-int contacts_delete(WPARAM wParam, LPARAM lParam);
-int contacts_add(WPARAM wParam, LPARAM lParam);
-int contacts_isContact(WPARAM wParam, LPARAM lParam);
+INT_PTR contacts_getCount(WPARAM wParam, LPARAM lParam);
+INT_PTR contacts_findFirst(WPARAM wParam, LPARAM lParam);
+INT_PTR contacts_findNext(WPARAM wParam, LPARAM lParam);
+INT_PTR contacts_delete(WPARAM wParam, LPARAM lParam);
+INT_PTR contacts_add(WPARAM wParam, LPARAM lParam);
+INT_PTR contacts_isContact(WPARAM wParam, LPARAM lParam);
 
 // events.c
 void events_init();
 void events_destroy();
-int events_getCount(WPARAM wParam, LPARAM lParam);
-int events_add(WPARAM wParam, LPARAM lParam);
-int events_delete(WPARAM wParam, LPARAM lParam);
-int events_getBlobSize(WPARAM wParam, LPARAM lParam);
-int events_get(WPARAM wParam, LPARAM lParam);
-int events_markRead(WPARAM wParam, LPARAM lParam);
-int events_getContact(WPARAM wParam, LPARAM lParam);
-int events_findFirst(WPARAM wParam, LPARAM lParam);
-int events_findFirstUnread(WPARAM wParam, LPARAM lParam);
-int events_findLast(WPARAM wParam, LPARAM lParam);
-int events_findNext(WPARAM wParam, LPARAM lParam);
-int events_findPrev(WPARAM wParam, LPARAM lParam);
+INT_PTR events_getCount(WPARAM wParam, LPARAM lParam);
+INT_PTR events_add(WPARAM wParam, LPARAM lParam);
+INT_PTR events_delete(WPARAM wParam, LPARAM lParam);
+INT_PTR events_getBlobSize(WPARAM wParam, LPARAM lParam);
+INT_PTR events_get(WPARAM wParam, LPARAM lParam);
+INT_PTR events_markRead(WPARAM wParam, LPARAM lParam);
+INT_PTR events_getContact(WPARAM wParam, LPARAM lParam);
+INT_PTR events_findFirst(WPARAM wParam, LPARAM lParam);
+INT_PTR events_findFirstUnread(WPARAM wParam, LPARAM lParam);
+INT_PTR events_findLast(WPARAM wParam, LPARAM lParam);
+INT_PTR events_findNext(WPARAM wParam, LPARAM lParam);
+INT_PTR events_findPrev(WPARAM wParam, LPARAM lParam);
 void events_deleteContactData(HANDLE hContact);
 
 // settings.c
 void settings_init();
 void settings_destroy();
-int setting_getSetting(WPARAM wParam, LPARAM lParam);
-int setting_getSettingStr(WPARAM wParam, LPARAM lParam);
-int setting_getSettingStatic(WPARAM wParam, LPARAM lParam);
-int setting_freeVariant(WPARAM wParam, LPARAM lParam);
-int setting_writeSetting(WPARAM wParam, LPARAM lParam);
-int setting_deleteSetting(WPARAM wParam, LPARAM lParam);
-int setting_enumSettings(WPARAM wParam, LPARAM lParam);
-int setting_modulesEnum(WPARAM wParam, LPARAM lParam);
+INT_PTR setting_getSetting(WPARAM wParam, LPARAM lParam);
+INT_PTR setting_getSettingStr(WPARAM wParam, LPARAM lParam);
+INT_PTR setting_getSettingStatic(WPARAM wParam, LPARAM lParam);
+INT_PTR setting_freeVariant(WPARAM wParam, LPARAM lParam);
+INT_PTR setting_writeSetting(WPARAM wParam, LPARAM lParam);
+INT_PTR setting_deleteSetting(WPARAM wParam, LPARAM lParam);
+INT_PTR setting_enumSettings(WPARAM wParam, LPARAM lParam);
+INT_PTR setting_modulesEnum(WPARAM wParam, LPARAM lParam);
 void settings_deleteContactData(HANDLE hContact);
-int settings_setResident(WPARAM wParam, LPARAM lParam);
+INT_PTR settings_setResident(WPARAM wParam, LPARAM lParam);
 
 // sql.c
 void sql_init();
@@ -135,28 +134,18 @@ int sql_close(sqlite3 *sql);
 int sql_prepare(sqlite3 *sql, const char *query, sqlite3_stmt **stmt);
 int sql_finalize(sqlite3_stmt *stmt);
 
-// utf8.c
-void utf8_decode(char* str, wchar_t** ucs2);
-char* utf8_encode(const char* src);
-char* utf8_encodeUsc2(const wchar_t* src);
-
 // utils.c
 #ifdef DBRW_LOGGING
 void utils_log_init();
 void utils_log_destroy();
 void utils_log_fmt(const char *file,int line,const char *fmt,...);
 #endif
-int utils_setSafetyMode(WPARAM wParam, LPARAM lParam);
-int utils_getProfileName(WPARAM wParam, LPARAM lParam);
-int utils_getProfilePath(WPARAM wParam, LPARAM lParam);
-int utils_encodeString(WPARAM wParam,LPARAM lParam);
-int utils_decodeString(WPARAM wParam,LPARAM lParam);
+INT_PTR utils_setSafetyMode(WPARAM wParam, LPARAM lParam);
+INT_PTR utils_encodeString(WPARAM wParam,LPARAM lParam);
+INT_PTR utils_decodeString(WPARAM wParam,LPARAM lParam);
 DWORD utils_hashString(const char *szStr);
 int utils_private_setting_get_int(const char *setting, int defval);
 int utils_private_setting_set_int(const char *setting, int val);
 void utils_vacuum_check();
-void* utils_mem_alloc(size_t size);
-void* utils_mem_realloc(void* ptr, size_t size);
-void utils_mem_free(void* ptr);
 
 #endif

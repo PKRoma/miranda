@@ -64,7 +64,7 @@ void sql_init() {
     hSqlThreadEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
     hSqlThread = (HANDLE)mir_forkthreadex(sql_threadProc, 0, 0, &sqlThreadId);
     hAPCWindow = CreateWindowEx(0, _T("STATIC"), NULL, 0, 0, 0, 0, 0, NULL, NULL, NULL, NULL);
-    SetWindowLong(hAPCWindow, GWL_WNDPROC, (LONG)sql_apcproc);
+    SetWindowLongPtr(hAPCWindow, GWLP_WNDPROC, (LONG_PTR)sql_apcproc);
     sql_prepare_add(sql_stmts, sql_stmts_prep, SQL_STMT_NUM);
 }
 

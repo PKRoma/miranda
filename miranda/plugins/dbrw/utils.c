@@ -56,7 +56,7 @@ void utils_log_fmt(const char *file,int line,const char *fmt,...) {
 }
 #endif
 
-int utils_setSafetyMode(WPARAM wParam, LPARAM lParam) {
+INT_PTR utils_setSafetyMode(WPARAM wParam, LPARAM lParam) {
     int safeMode = (int)wParam;
 
 	log1("db_setSafetyMode: %s", safeMode?"On":"Off");
@@ -67,30 +67,7 @@ int utils_setSafetyMode(WPARAM wParam, LPARAM lParam) {
 	return 0;
 }
 
-int utils_getProfileName(WPARAM wParam, LPARAM lParam) {
-	char *p = 0;
-
-	p = strrchr(g_szDbPath, '\\');
-	if (p == 0) 
-		return 1;
-	p++;
-	strncpy((char*)lParam, p, (size_t)wParam);
-	return 0;
-}
-
-int utils_getProfilePath(WPARAM wParam, LPARAM lParam) {
-	char *dst = (char*)lParam;
-	char *p = 0;
-
-	strncpy(dst, g_szDbPath, wParam);
-	p = strrchr(dst, '\\');
-	if (p == NULL) 
-		return 1;
-	*p = 0;
-	return 0;
-}
-
-int utils_encodeString(WPARAM wParam,LPARAM lParam) {
+INT_PTR utils_encodeString(WPARAM wParam,LPARAM lParam) {
 	char *msg = (char*)lParam;
 	int i;
 
@@ -100,7 +77,7 @@ int utils_encodeString(WPARAM wParam,LPARAM lParam) {
 	return 0;
 }
 
-int utils_decodeString(WPARAM wParam,LPARAM lParam) {
+INT_PTR utils_decodeString(WPARAM wParam,LPARAM lParam) {
 	char *msg = (char*)lParam;
 	int i;
 
@@ -196,7 +173,7 @@ static void __cdecl utils_vacuum_thread(void *args) {
         SendMessage(hwndVacuum, DM_VACUUM, 0, 0);
 }
 
-static BOOL CALLBACK utils_vacuum_proc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
+static INT_PTR CALLBACK utils_vacuum_proc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
 	switch (msg) {
 	case WM_INITDIALOG:
         hwndVacuum = hwndDlg;
@@ -229,28 +206,4 @@ void utils_vacuum_check() {
     else {
         utils_private_setting_set_time(DBRW_VACUUM_KEY, now);
     }
-}
-
-/* The follow memory functions are needed so a single function
-   can be used even if the memory manager hasn't been initialized
-   from the core.  This happens when the db is being created (core
-   hasn't passed the pluginLink in dbrw_makeDatabase or dbrw_grokHeader). */
-
-void* utils_mem_alloc(size_t size) {
-    if (memoryManagerInterface.mmi_malloc) /* check for mmi initialization */
-        return memoryManagerInterface.mmi_malloc(size);
-    return malloc(size); /* fall back if no mmi */
-}
-
-void* utils_mem_realloc(void* ptr, size_t size) {
-    if (memoryManagerInterface.mmi_realloc) /* check for mmi initialization */
-        return memoryManagerInterface.mmi_realloc(ptr, size);
-    return realloc(ptr, size);  /* fall back if no mmi */
-}
-
-void utils_mem_free(void* ptr) {
-    if (memoryManagerInterface.mmi_free) /* check for mmi initialization */
-        memoryManagerInterface.mmi_free(ptr);
-    else
-		free(ptr);  /* fall back if no mmi */
 }
