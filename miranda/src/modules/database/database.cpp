@@ -32,10 +32,8 @@ bool dbCreated;
 TCHAR g_profileDir[MAX_PATH], g_profileName[MAX_PATH];
 
 const TCHAR tszMoveMsg[] =
-	_T("Your database is located in Miranda root folder.\n")
-	_T("Even though your profile folder is %s\n")
-	_T("Profiles are not allowed in the Miranda root folder.\n")
-	_T("Please move Miranda database into the current profile folder.");
+	_T("Miranda cannot move profile %s to the new location %s\n")
+	_T("Please move profile manually");
 
 
 bool fileExist(TCHAR* fname)
@@ -62,9 +60,7 @@ static void fillProfileName( const TCHAR* ptszFileName )
 int validateProfileDir(TCHAR* profiledir)
 {
 	TCHAR* pfd = Utils_ReplaceVarsT(_T("%miranda_path%"));
-
-	int res = lstrcmpi(profiledir, pfd) == 0;
-	if (res)
+	if (_tcsicmp(profiledir, pfd) == 0)
 	{
 		MessageBox(NULL,
 			_T("Profile cannot be placed into Miranda root folder.\n")
@@ -241,7 +237,7 @@ static void moveProfileDirProfiles(TCHAR * profiledir, BOOL isRootDir = TRUE)
 			if (MoveFile(path, path2) == 0)
 			{
 				TCHAR buf[512];
-				mir_sntprintf(buf, SIZEOF(buf), TranslateTS(tszMoveMsg), profiledir);
+				mir_sntprintf(buf, SIZEOF(buf), TranslateTS(tszMoveMsg), path, path2);
 				MessageBox(NULL, buf, _T("Miranda IM"), MB_ICONERROR | MB_OK);
 				break;
 			}
