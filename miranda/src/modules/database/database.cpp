@@ -33,7 +33,7 @@ TCHAR g_profileDir[MAX_PATH], g_profileName[MAX_PATH];
 
 const TCHAR tszMoveMsg[] =
 	_T("Miranda cannot move profile %s to the new location %s\n")
-	_T("Please move profile manually");
+	_T("Most likely due to insufficient privileges. Please move profile manually.");
 
 
 bool fileExist(TCHAR* fname)
