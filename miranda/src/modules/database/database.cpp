@@ -31,11 +31,6 @@ extern TCHAR mirandabootini[MAX_PATH];
 bool dbCreated;
 TCHAR g_profileDir[MAX_PATH], g_profileName[MAX_PATH];
 
-const TCHAR tszMoveMsg[] =
-	_T("Miranda cannot move profile %s to the new location %s\n")
-	_T("Most likely due to insufficient privileges. Please move profile manually.");
-
-
 bool fileExist(TCHAR* fname)
 {
 	if (fname[0] == 0) return false;
@@ -70,6 +65,15 @@ bool validateProfileDir(TCHAR* profiledir)
 	}
 	mir_free(pfd);
 
+	return res;
+}
+
+bool IsInsideRootDir(TCHAR* profiledir)
+{
+	TCHAR* pfd = Utils_ReplaceVarsT(_T("%miranda_path%"));
+	size_t len = _tcslen(pfd);
+	bool res = _tcsnicmp(profiledir, pfd, len) == 0;
+	mir_free(pfd);
 	return res;
 }
 
@@ -237,7 +241,12 @@ static void moveProfileDirProfiles(TCHAR * profiledir, BOOL isRootDir = TRUE)
 			mir_sntprintf(path2, SIZEOF(path2), _T("%s\\%s\\%s"), profiledir, profile, ffd.cFileName);
 			if (MoveFile(path, path2) == 0)
 			{
+				const TCHAR tszMoveMsg[] =
+					_T("Miranda is trying upgrade your profile structure.\n")
+					_T("It cannot move profile %s to the new location %s automatically\n")
+					_T("Most likely due to insufficient privileges. Please move profile manually.");
 				TCHAR buf[512];
+
 				mir_sntprintf(buf, SIZEOF(buf), TranslateTS(tszMoveMsg), path, path2);
 				MessageBox(NULL, buf, _T("Miranda IM"), MB_ICONERROR | MB_OK);
 				break;
@@ -254,7 +263,8 @@ static int getProfile1(TCHAR * szProfile, size_t cch, TCHAR * profiledir, BOOL *
 {
 	unsigned int found = 0;
 
-	moveProfileDirProfiles(profiledir);
+	if (IsInsideRootDir(profiledir))
+		moveProfileDirProfiles(profiledir);
 	moveProfileDirProfiles(profiledir, FALSE);
 
 	bool nodprof = szProfile[0] == 0;
