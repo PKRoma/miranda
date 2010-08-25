@@ -57,10 +57,11 @@ static void fillProfileName( const TCHAR* ptszFileName )
 	_tcsncpy( g_profileName, p, SIZEOF(g_profileName));
 }
 
-int validateProfileDir(TCHAR* profiledir)
+bool validateProfileDir(TCHAR* profiledir)
 {
 	TCHAR* pfd = Utils_ReplaceVarsT(_T("%miranda_path%"));
-	if (_tcsicmp(profiledir, pfd) == 0)
+	bool res = _tcsicmp(profiledir, pfd) == 0;
+	if (res)
 	{
 		MessageBox(NULL,
 			_T("Profile cannot be placed into Miranda root folder.\n")
