@@ -52,29 +52,19 @@ static void fillProfileName( const TCHAR* ptszFileName )
 	_tcsncpy( g_profileName, p, SIZEOF(g_profileName));
 }
 
-bool validateProfileDir(TCHAR* profiledir)
+bool IsInsideRootDir(TCHAR* profiledir, bool exact)
 {
+	int res;
 	TCHAR* pfd = Utils_ReplaceVarsT(_T("%miranda_path%"));
-	bool res = _tcsicmp(profiledir, pfd) == 0;
-	if (res)
+	if (exact)
+		res = _tcsicmp(profiledir, pfd);
+	else
 	{
-		MessageBox(NULL,
-			_T("Profile cannot be placed into Miranda root folder.\n")
-			_T("Please move Miranda profile to some other location."),
-			_T("Miranda IM"), MB_ICONERROR | MB_OK);
+		size_t len = _tcslen(pfd);
+		res = _tcsnicmp(profiledir, pfd, len);
 	}
 	mir_free(pfd);
-
-	return res;
-}
-
-bool IsInsideRootDir(TCHAR* profiledir)
-{
-	TCHAR* pfd = Utils_ReplaceVarsT(_T("%miranda_path%"));
-	size_t len = _tcslen(pfd);
-	bool res = _tcsnicmp(profiledir, pfd, len) == 0;
-	mir_free(pfd);
-	return res;
+	return res == 0;
 }
 
 // returns 1 if the profile path was returned, without trailing slash
@@ -263,7 +253,7 @@ static int getProfile1(TCHAR * szProfile, size_t cch, TCHAR * profiledir, BOOL *
 {
 	unsigned int found = 0;
 
-	if (IsInsideRootDir(profiledir))
+	if (IsInsideRootDir(profiledir, false))
 		moveProfileDirProfiles(profiledir);
 	moveProfileDirProfiles(profiledir, FALSE);
 
@@ -322,10 +312,22 @@ static int getProfileAutoRun(TCHAR * szProfile)
 static int getProfile(TCHAR * szProfile, size_t cch)
 {
 	getProfilePath(g_profileDir, SIZEOF(g_profileDir));
+	if (IsInsideRootDir(g_profileDir, true)) 
+	{
+		if (WritePrivateProfileString(_T("Database"), _T("ProfileDir"), _T(""), mirandabootini))
+			getProfilePath(g_profileDir, SIZEOF(g_profileDir));
+	}
+
 	getDefaultProfile(szProfile, cch, g_profileDir);
 	getProfileCmdLine(szProfile, cch, g_profileDir);
-	if (validateProfileDir(g_profileDir))
+	if (IsInsideRootDir(g_profileDir, true)) 
+	{
+		MessageBox(NULL,
+			_T("Profile cannot be placed into Miranda root folder.\n")
+			_T("Please move Miranda profile to some other location."),
+			_T("Miranda IM"), MB_ICONERROR | MB_OK);
 		return 0;
+	}
 	if (getProfileAutoRun(szProfile))
 		return 1;
 
