@@ -173,9 +173,6 @@
     <ClInclude Include="INCLUDE\m_metacontacts.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="INCLUDE\m_timezones.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="INCLUDE\m_updater.h">
       <Filter>Header Files</Filter>
     </ClInclude>

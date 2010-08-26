@@ -501,7 +501,6 @@
     <ClInclude Include="INCLUDE\m_avatars.h" />
     <ClInclude Include="INCLUDE\m_cln_skinedit.h" />
     <ClInclude Include="INCLUDE\m_metacontacts.h" />
-    <ClInclude Include="INCLUDE\m_timezones.h" />
     <ClInclude Include="INCLUDE\m_updater.h" />
     <ClInclude Include="INCLUDE\m_variables.h" />
     <ClInclude Include="INCLUDE\resource.h" />
