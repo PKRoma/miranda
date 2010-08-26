@@ -753,6 +753,7 @@ char* rtf_to_html(HWND hwndDlg,int DlgItem)
 
 void wcs_htons(wchar_t * ch)
 {
+	if (ch == NULL) return;
 	for(size_t i=0;i<wcslen(ch);i++)
 		ch[i]=_htons(ch[i]);
 }
