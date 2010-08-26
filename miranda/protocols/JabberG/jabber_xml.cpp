@@ -31,6 +31,30 @@ Last change by : $Author$
 #define TAG_MAX_LEN 128
 #define ATTR_MAX_LEN 8192
 
+#if defined( _UNICODE )
+	#define T2UTF(A) A 
+#else
+
+struct T2UTF
+{
+	T2UTF( const TCHAR* str ) :
+		m_text( mir_utf8encodeT( str ))
+		{}
+
+	~T2UTF()
+	{	mir_free( m_text );
+	}
+
+	__inline operator TCHAR*() const
+	{	return m_text;
+	}
+
+private:
+	TCHAR* m_text;
+};
+
+#endif
+
 /////////////////////////////////////////////////////////////////////////////////////////
 // XmlNodeIq class members
 
@@ -86,12 +110,12 @@ XmlNodeIq::XmlNodeIq( const TCHAR* type, CJabberIqInfo* pInfo ) :
 
 XmlNode::XmlNode( LPCTSTR pszName )
 {
-	m_hXml = xi.createNode( pszName, NULL, 0 );
+	m_hXml = xi.createNode( T2UTF(pszName), NULL, 0 );
 }
 
 XmlNode::XmlNode( LPCTSTR pszName, LPCTSTR ptszText )
 {
-	m_hXml = xi.createNode( pszName, ptszText, 0 );
+	m_hXml = xi.createNode( T2UTF(pszName), ptszText, 0 );
 }
 
 XmlNode::XmlNode( const XmlNode& n )
@@ -136,12 +160,12 @@ HXML __fastcall operator<<( HXML node, const XQUERY& child )
 void __fastcall xmlAddAttr( HXML hXml, LPCTSTR name, LPCTSTR value )
 {
 	if ( value )
-		xi.addAttr( hXml, name, value );
+		xi.addAttr( hXml, name, T2UTF(value));
 }
 
 void __fastcall xmlAddAttr( HXML hXml, LPCTSTR pszName, int value )
 {
-	xi.addAttrInt( hXml, pszName, value );
+	xi.addAttrInt( hXml, T2UTF(pszName), value );
 }
 
 void __fastcall xmlAddAttr( HXML hXml, LPCTSTR pszName, unsigned __int64 value )
@@ -149,7 +173,7 @@ void __fastcall xmlAddAttr( HXML hXml, LPCTSTR pszName, unsigned __int64 value )
 	TCHAR buf[60];
 	_ui64tot( value, buf, 10 );
 
-    xi.addAttr( hXml, pszName, buf );
+    xi.addAttr( hXml, T2UTF(pszName), T2UTF(buf));
 }
 
 void __fastcall xmlAddAttrID( HXML hXml, int id )
@@ -185,19 +209,19 @@ void __fastcall xmlAddChild( HXML hXml, HXML n )
 
 HXML __fastcall xmlAddChild( HXML hXml, LPCTSTR name )
 {
-	return xi.addChild( hXml, name, NULL );
+	return xi.addChild( hXml, T2UTF(name), NULL );
 }
 
 HXML __fastcall xmlAddChild( HXML hXml, LPCTSTR name, LPCTSTR value )
 {
-	return xi.addChild( hXml, name, value );
+	return xi.addChild( hXml, T2UTF(name), T2UTF(value));
 }
 
 HXML __fastcall xmlAddChild( HXML hXml, LPCTSTR name, int value )
 {
 	TCHAR buf[40];
 	_itot( value, buf, 10 );
-	return xi.addChild( hXml, name, buf );
+	return xi.addChild( hXml, T2UTF(name), buf );
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
