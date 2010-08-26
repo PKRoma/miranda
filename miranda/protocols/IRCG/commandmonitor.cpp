@@ -1840,7 +1840,7 @@ static void __stdcall sttShowNickWnd( void* param )
 	}
 	SetEvent( ppro->m_evWndCreate );
 	SetWindowText( GetDlgItem( ppro->m_nickDlg->GetHwnd(), IDC_CAPTION ), TranslateT("Change nickname"));
-	SetWindowText( GetDlgItem( ppro->m_nickDlg->GetHwnd(), IDC_TEXT    ), pmsg->parameters[2].c_str());
+	SetWindowText( GetDlgItem( ppro->m_nickDlg->GetHwnd(), IDC_TEXT    ), pmsg->parameters.getCount() > 1 ? pmsg->parameters[2].c_str() : _T(""));
 	ppro->m_nickDlg->m_Enick.SetText( pmsg->parameters[1].c_str());
 	ppro->m_nickDlg->m_Enick.SendMsg( CB_SETEDITSEL, 0, MAKELPARAM(0,-1));
 	delete pmsg;
