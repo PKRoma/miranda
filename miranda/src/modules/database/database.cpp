@@ -229,7 +229,7 @@ static void moveProfileDirProfiles(TCHAR * profiledir, BOOL isRootDir = TRUE)
 			mir_sntprintf(path2, SIZEOF(path2), _T("%s\\%s"), profiledir, profile);
 			CreateDirectory(path2, NULL);
 			mir_sntprintf(path2, SIZEOF(path2), _T("%s\\%s\\%s"), profiledir, profile, ffd.cFileName);
-			if (_taccess(path2, 0))
+			if (_taccess(path2, 0) == 0)
 			{
 				const TCHAR tszMoveMsg[] =
 					_T("Miranda is trying upgrade your profile structure.\n")
