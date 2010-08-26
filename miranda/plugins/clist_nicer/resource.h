@@ -1,5 +1,5 @@
 //{{NO_DEPENDENCIES}}
-// Microsoft Developer Studio generated include file.
+// Microsoft Visual C++ generated include file.
 // Used by resource.rc
 //
 #define IDD_OPT_VIEWMODES               1
@@ -23,7 +23,6 @@
 #define IDI_CLVM_SELECT                 177
 #define IDR_CONTEXT                     180
 #define IDC_DROP                        183
-#define IDD_OPT_HOTKEY                  184
 #define IDR_CLISTMENU                   199
 #define IDI_BLANK                       200
 #define IDI_ADDCONTACT                  210
@@ -87,7 +86,6 @@
 #define IDC_EXTRA_ICON_RES1             1058
 #define IDC_EXTRA_ICON_RES2             1059
 #define IDC_EXTRA_ICON_ADV3             1060
-#define IDC_EXTRA_ICON_ADV4             1085
 #define IDC_EXTRAORDER                  1061
 #define IDC_FRAMEGAP                    1064
 #define IDC_FRAMEGAPSPIN                1065
@@ -115,6 +113,7 @@
 #define IDC_HIDEOFFLINEOPTS             1082
 #define IDC_HKREADMSG                   1083
 #define IDC_HKSEARCH                    1084
+#define IDC_EXTRA_ICON_ADV4             1085
 #define IDC_HKSHOWOPTIONS               1086
 #define IDC_LEFTMARGINSPIN              1092
 #define IDC_NETSEARCH                   1101

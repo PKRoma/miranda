@@ -1206,9 +1206,25 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 			//NotifyEventHooks(pcli->hPreBuildStatusMenuEvent, 0, 0);
 			SendMessage(hwnd, WM_SETREDRAW, FALSE, FALSE);
 			{
+				LONG style; 
 				BYTE windowStyle = DBGetContactSettingByte(NULL, "CLUI", "WindowStyle", 0);
 				ShowWindow(pcli->hwndContactList, SW_HIDE);
-				SetWindowLong(pcli->hwndContactList, GWL_EXSTYLE, windowStyle != SETTING_WINDOWSTYLE_DEFAULT ? GetWindowLong(pcli->hwndContactList, GWL_EXSTYLE) | (WS_EX_TOOLWINDOW | WS_EX_WINDOWEDGE) : GetWindowLong(pcli->hwndContactList, GWL_EXSTYLE) & ~WS_EX_TOOLWINDOW);
+				style = GetWindowLong(pcli->hwndContactList, GWL_EXSTYLE);
+				if (windowStyle != SETTING_WINDOWSTYLE_DEFAULT)
+				{
+					style |= WS_EX_TOOLWINDOW | WS_EX_WINDOWEDGE;
+					style &= ~WS_EX_APPWINDOW;
+				}
+				else
+				{
+					style &= ~(WS_EX_TOOLWINDOW | WS_EX_WINDOWEDGE);
+					if (DBGetContactSettingByte(NULL, "CList", "AlwaysHideOnTB", 1))
+						style &= ~WS_EX_APPWINDOW;
+					else
+						style |= WS_EX_APPWINDOW;
+				}
+
+				SetWindowLong(pcli->hwndContactList, GWL_EXSTYLE, style);
 				ApplyCLUIBorderStyle(pcli->hwndContactList);
 
 				SetWindowPos(pcli->hwndContactList, 0, 0, 0, 0, 0, SWP_NOZORDER | SWP_NOMOVE | SWP_NOSIZE | SWP_FRAMECHANGED | SWP_NOACTIVATE);
@@ -1533,7 +1549,7 @@ skipbg:
 			return 0;
 		case CLUIINTM_REMOVEFROMTASKBAR: {
 			BYTE windowStyle = DBGetContactSettingByte(NULL, "CLUI", "WindowStyle", SETTING_WINDOWSTYLE_DEFAULT);
-			if (windowStyle == SETTING_WINDOWSTYLE_DEFAULT && DBGetContactSettingByte(NULL, "CList", "AlwaysHideOnTaskBar", 1))
+			if (windowStyle == SETTING_WINDOWSTYLE_DEFAULT && DBGetContactSettingByte(NULL, "CList", "AlwaysHideOnTB", 0))
 				RemoveFromTaskBar(hwnd);
 			return 0;
 		}

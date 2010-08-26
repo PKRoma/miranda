@@ -15,11 +15,13 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// English (United States) resources
+// English (U.S.) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 #pragma code_page(1252)
+#endif //_WIN32
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -356,6 +358,7 @@ BEGIN
     CONTROL         "Fade contact list in/out",IDC_FADEINOUT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,159,190,139,10
     CONTROL         "Fully transparent (like TweakUI)",IDC_FULLTRANSPARENT,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,159,205,139,10
+    CONTROL         "Always Hide On Taskbar",IDC_ALWAYSHIDEONTASKBAR,"Button",BS_AUTOCHECKBOX | BS_TOP | BS_MULTILINE | WS_TABSTOP,139,94,158,10
 END
 
 IDD_OPT_CLC DIALOGEX 0, 0, 305, 226
@@ -659,7 +662,7 @@ IDC_DROPUSER            CURSOR                  "res/dropuser.cur"
 // Menu
 //
 
-IDR_CLISTMENU MENU
+IDR_CLISTMENU MENU 
 BEGIN
     POPUP "&¤"
     BEGIN
@@ -681,7 +684,7 @@ BEGIN
     END
 END
 
-IDR_CONTEXT MENU
+IDR_CONTEXT MENU 
 BEGIN
     POPUP "Tray"
     BEGIN
@@ -749,12 +752,8 @@ END
 //
 
 #ifdef APSTUDIO_INVOKED
-GUIDELINES DESIGNINFO
+GUIDELINES DESIGNINFO 
 BEGIN
-    IDD_OPT_DSPPROFILES, DIALOG
-    BEGIN
-    END
-
     IDD_OPT_XICONS, DIALOG
     BEGIN
         RIGHTMARGIN, 225
@@ -767,7 +766,7 @@ BEGIN
 END
 #endif    // APSTUDIO_INVOKED
 
-#endif    // English (United States) resources
+#endif    // English (U.S.) resources
 /////////////////////////////////////////////////////////////////////////////
 
 
