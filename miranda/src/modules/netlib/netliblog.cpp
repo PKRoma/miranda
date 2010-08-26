@@ -514,7 +514,7 @@ void NetlibDumpData(struct NetlibConnection *nlc,PBYTE buf,int len,int sent,int 
 	else {
 		int line, col, colsInLine;
 		char *pszBuf;
-        int sz = titleLineLen + ((len+16)>>4) * 76 + 1;
+        int sz = titleLineLen + ((len+16)>>4) * 78 + 1;
         useStack = sz <= 8192;
 
         szBuf = (char*)(useStack ? alloca(sz) : mir_alloc(sz));
@@ -549,6 +549,7 @@ void NetlibDumpData(struct NetlibConnection *nlc,PBYTE buf,int len,int sent,int 
 			if (len-line<=16)
 				break;
 
+			*pszBuf++ = '\r'; // End each line with a break
 			*pszBuf++ = '\n'; // End each line with a break
 		}
 		*pszBuf = '\0';
