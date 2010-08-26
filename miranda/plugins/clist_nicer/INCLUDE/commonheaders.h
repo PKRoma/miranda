@@ -1,25 +1,34 @@
 /*
-
-Miranda IM: the free IM client for Microsoft* Windows*
-
-Copyright 2000-2004 Miranda ICQ/IM project,
-all portions of this codebase are copyrighted to the people
-listed in contributors.txt.
-
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
-of the License, or (at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-*/
+ * astyle --force-indent=tab=4 --brackets=linux --indent-switches
+ *		  --pad=oper --one-line=keep-blocks  --unpad=paren
+ *
+ * Miranda IM: the free IM client for Microsoft* Windows*
+ *
+ * Copyright 2000-2010 Miranda ICQ/IM project,
+ * all portions of this codebase are copyrighted to the people
+ * listed in contributors.txt.
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * you should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ *
+ * part of clist_nicer plugin for Miranda.
+ *
+ * (C) 2005-2010 by silvercircle _at_ gmail _dot_ com and contributors
+ *
+ * $Id$
+ *
+ */
 
 #define MIRANDA_VER 0x0700
 
@@ -62,21 +71,23 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <m_file.h>
 #include <m_addcontact.h>
 #include <m_message.h>
-#include "m_cln_skinedit.h"
+#include <m_timezones.h>
+#include <m_genmenu.h>
+#include <m_genmenu.h>
+#include <m_cluiframes.h>
+#include <m_clui.h>
+#include <m_icolib.h>
+#include <m_popup.h>
+#include <m_fontservice.h>
+
+#include <m_metacontacts.h>
+#include <m_cln_skinedit.h>
 #include "m_avatars.h"
 #include "extbackg.h"
 #include "clc.h"
 #include "clist.h"
 #include "alphablend.h"
 #include "rowheight_funcs.h"
-#include "m_genmenu.h"
-#include "m_genmenu.h"
-#include "m_cluiframes.h"
-#include "m_clui.h"
-#include "m_icolib.h"
-#include "m_popup.h"
-#include "m_metacontacts.h"
-#include "m_fontservice.h"
 
 // shared vars
 extern HINSTANCE g_hInst;

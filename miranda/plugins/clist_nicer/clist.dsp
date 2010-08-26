@@ -1,26 +1,26 @@
 # Microsoft Developer Studio Project File - Name="clist_nicer" - Package Owner=<4>
 # Microsoft Developer Studio Generated Build File, Format Version 6.00
-# ** DO NOT EDIT **
+# ** NICHT BEARBEITEN **
 
 # TARGTYPE "Win32 (x86) Dynamic-Link Library" 0x0102
 
 CFG=clist_nicer - Win32 Debug Unicode
-!MESSAGE This is not a valid makefile. To build this project using NMAKE,
-!MESSAGE use the Export Makefile command and run
+!MESSAGE Dies ist kein gültiges Makefile. Zum Erstellen dieses Projekts mit NMAKE
+!MESSAGE verwenden Sie den Befehl "Makefile exportieren" und führen Sie den Befehl
 !MESSAGE 
 !MESSAGE NMAKE /f "clist.mak".
 !MESSAGE 
-!MESSAGE You can specify a configuration when running NMAKE
-!MESSAGE by defining the macro CFG on the command line. For example:
+!MESSAGE Sie können beim Ausführen von NMAKE eine Konfiguration angeben
+!MESSAGE durch Definieren des Makros CFG in der Befehlszeile. Zum Beispiel:
 !MESSAGE 
 !MESSAGE NMAKE /f "clist.mak" CFG="clist_nicer - Win32 Debug Unicode"
 !MESSAGE 
-!MESSAGE Possible choices for configuration are:
+!MESSAGE Für die Konfiguration stehen zur Auswahl:
 !MESSAGE 
-!MESSAGE "clist_nicer - Win32 Release" (based on "Win32 (x86) Dynamic-Link Library")
-!MESSAGE "clist_nicer - Win32 Debug" (based on "Win32 (x86) Dynamic-Link Library")
-!MESSAGE "clist_nicer - Win32 Release Unicode" (based on "Win32 (x86) Dynamic-Link Library")
-!MESSAGE "clist_nicer - Win32 Debug Unicode" (based on "Win32 (x86) Dynamic-Link Library")
+!MESSAGE "clist_nicer - Win32 Release" (basierend auf  "Win32 (x86) Dynamic-Link Library")
+!MESSAGE "clist_nicer - Win32 Debug" (basierend auf  "Win32 (x86) Dynamic-Link Library")
+!MESSAGE "clist_nicer - Win32 Release Unicode" (basierend auf  "Win32 (x86) Dynamic-Link Library")
+!MESSAGE "clist_nicer - Win32 Debug Unicode" (basierend auf  "Win32 (x86) Dynamic-Link Library")
 !MESSAGE 
 
 # Begin Project
@@ -45,11 +45,11 @@ RSC=rc.exe
 # PROP Ignore_Export_Lib 1
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MT /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "CLIST_EXPORTS" /YX /FD /c
-# ADD CPP /nologo /MD /W3 /Zi /O1 /I "../../include" /I "../../include/msapi" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "CLIST_EXPORTS" /Yu"commonheaders.h" /FD /c
+# ADD CPP /nologo /MD /W3 /Zi /O1 /I "../../include" /I "./include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "CLIST_EXPORTS" /Yu"commonheaders.h" /FD /c
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x809 /d "NDEBUG"
-# ADD RSC /l 0x809 /i "../../include/" /d "NDEBUG"
+# ADD RSC /l 0x809 /i "../../include" /i "./include" /d "NDEBUG"
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
@@ -72,17 +72,18 @@ LINK32=link.exe
 # PROP Ignore_Export_Lib 1
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MTd /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "CLIST_EXPORTS" /YX /FD /GZ /c
-# ADD CPP /nologo /MDd /W3 /Gm /GX /ZI /Od /I "../../include" /I "../../include/msapi" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "CLIST_EXPORTS" /Yu"commonheaders.h" /FD /GZ /c
+# ADD CPP /nologo /MDd /W3 /Gm /GX /ZI /Od /I "../../include" /I "./include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "CLIST_EXPORTS" /FD /GZ /c
+# SUBTRACT CPP /YX /Yc /Yu
 # ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x809 /d "_DEBUG"
-# ADD RSC /l 0x809 /i "../../include/" /d "_DEBUG"
+# ADD RSC /l 0x809 /i "../../include" /i "./include" /d "_DEBUG"
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /debug /machine:I386 /pdbtype:sept
-# ADD LINK32 kernel32.lib user32.lib gdi32.lib comctl32.lib shell32.lib ole32.lib comdlg32.lib msimg32.lib advapi32.lib gdiplus.lib delayimp.lib shlwapi.lib /nologo /base:"0x6590000" /dll /debug /machine:I386 /out:"../../bin/debug/plugins/clist_nicer.dll" /pdbtype:sept
+# ADD LINK32 kernel32.lib user32.lib gdi32.lib comctl32.lib shell32.lib ole32.lib comdlg32.lib msimg32.lib advapi32.lib delayimp.lib shlwapi.lib /nologo /base:"0x6590000" /dll /debug /machine:I386 /out:"../../bin/debug/plugins/clist_nicer.dll" /pdbtype:sept
 # SUBTRACT LINK32 /pdb:none /incremental:no
 
 !ELSEIF  "$(CFG)" == "clist_nicer - Win32 Release Unicode"
@@ -100,12 +101,12 @@ LINK32=link.exe
 # PROP Ignore_Export_Lib 1
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MD /W3 /O1 /I "../../include/" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "CLIST_EXPORTS" /Yu"commonheaders.h" /FD /c
-# ADD CPP /nologo /MD /W3 /Zi /O1 /Oy /I "../../include" /I "../../include/msapi" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "UNICODE" /D "_USRDLL" /D "CLIST_EXPORTS" /Yu"commonheaders.h" /FD /c
+# ADD CPP /nologo /MD /W3 /Zi /O1 /Oy /I "../../include" /I "./include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "UNICODE" /D "_USRDLL" /D "CLIST_EXPORTS" /Yu"commonheaders.h" /FD /c
 # SUBTRACT CPP /Fr
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x809 /i "../../include/" /d "NDEBUG"
-# ADD RSC /l 0x809 /i "../../include/" /d "NDEBUG" /d "UNICODE"
+# ADD RSC /l 0x809 /i "../../include" /i "./include" /d "NDEBUG" /d "UNICODE"
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
@@ -129,17 +130,18 @@ LINK32=link.exe
 # PROP Ignore_Export_Lib 1
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MTd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "CLIST_EXPORTS" /YX /FD /GZ /c
-# ADD CPP /nologo /MDd /W3 /Gm /GX /ZI /Od /I "../../include" /I "../../include/msapi" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "UNICODE" /D "_USRDLL" /D "CLIST_EXPORTS" /Yu"commonheaders.h" /FD /GZ /c
+# ADD CPP /nologo /MDd /W3 /Gm /GX /ZI /Od /I "../../include" /I "./include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "UNICODE" /D "_USRDLL" /D "CLIST_EXPORTS" /FD /GZ /c
+# SUBTRACT CPP /YX /Yc /Yu
 # ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x809 /i "../../include/" /d "_DEBUG"
-# ADD RSC /l 0x809 /i "../../include/" /d "_DEBUG"
+# ADD RSC /l 0x809 /i "../../include" /i "./include" /d "_DEBUG"
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib comctl32.lib shell32.lib ole32.lib comdlg32.lib msimg32.lib advapi32.lib /nologo /base:"0x6590000" /dll /debug /machine:I386 /out:"../../bin/debug/plugins/clist_nicer.dll" /pdbtype:sept
-# ADD LINK32 kernel32.lib user32.lib gdi32.lib comctl32.lib shell32.lib ole32.lib comdlg32.lib msimg32.lib advapi32.lib gdiplus.lib delayimp.lib shlwapi.lib /nologo /base:"0x6590000" /dll /debug /machine:I386 /out:"../../bin/Debug Unicode/plugins/clist_nicer.dll" /pdbtype:sept
+# ADD LINK32 kernel32.lib user32.lib gdi32.lib comctl32.lib shell32.lib ole32.lib comdlg32.lib msimg32.lib advapi32.lib delayimp.lib shlwapi.lib /nologo /base:"0x6590000" /dll /debug /machine:I386 /out:"../../bin/Debug Unicode/plugins/clist_nicer.dll" /pdbtype:sept
 # SUBTRACT LINK32 /pdb:none /incremental:no
 
 !ENDIF 
@@ -158,8 +160,7 @@ LINK32=link.exe
 # PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=.\CLUIFrames\cluiframes.c
-# ADD CPP /Yu"../commonheaders.h"
+SOURCE=.\CLUIFrames\cluiframes.cpp
 # End Source File
 # Begin Source File
 
@@ -167,371 +168,96 @@ SOURCE=.\CLUIFrames\cluiframes.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\CLUIFrames\framesmenu.c
-# ADD CPP /Yu"../commonheaders.h"
+SOURCE=.\CLUIFrames\framesmenu.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\CLUIFrames\groupmenu.c
-# ADD CPP /Yu"../commonheaders.h"
+SOURCE=.\CLUIFrames\groupmenu.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\CLUIFrames\movetogroup.cpp
 # End Source File
 # End Group
 # Begin Source File
 
-SOURCE=.\alphablend.c
+SOURCE=.\SRC\alphablend.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\clc.c
-
-!IF  "$(CFG)" == "clist_nicer - Win32 Release"
-
-# ADD CPP /Yu"commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Release Unicode"
-
-# ADD BASE CPP /Yu"commonheaders.h"
-# ADD CPP /Yu"commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Debug Unicode"
-
-!ENDIF 
-
+SOURCE=.\SRC\clc.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\CLCButton.c
+SOURCE=.\SRC\CLCButton.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\clcidents.c
-
-!IF  "$(CFG)" == "clist_nicer - Win32 Release"
-
-# ADD CPP /Yu"commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Release Unicode"
-
-# ADD BASE CPP /Yu"commonheaders.h"
-# ADD CPP /Yu"commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Debug Unicode"
-
-!ENDIF 
-
+SOURCE=.\SRC\clcidents.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\clcitems.c
-
-!IF  "$(CFG)" == "clist_nicer - Win32 Release"
-
-# ADD CPP /Yu"commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Release Unicode"
-
-# ADD BASE CPP /Yu"commonheaders.h"
-# ADD CPP /Yu"commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Debug Unicode"
-
-!ENDIF 
-
+SOURCE=.\SRC\clcitems.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\clcmsgs.c
-
-!IF  "$(CFG)" == "clist_nicer - Win32 Release"
-
-# ADD CPP /Yu"commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Release Unicode"
-
-# ADD BASE CPP /Yu"commonheaders.h"
-# ADD CPP /Yu"commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Debug Unicode"
-
-!ENDIF 
-
+SOURCE=.\SRC\clcmsgs.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\clcopts.c
-
-!IF  "$(CFG)" == "clist_nicer - Win32 Release"
-
-# ADD CPP /Yu"commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Release Unicode"
-
-# ADD BASE CPP /Yu"commonheaders.h"
-# ADD CPP /Yu"commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Debug Unicode"
-
-!ENDIF 
-
+SOURCE=.\SRC\clcopts.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\clcpaint.c
-
-!IF  "$(CFG)" == "clist_nicer - Win32 Release"
-
-# ADD CPP /Yu"commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Release Unicode"
-
-# ADD BASE CPP /Yu"commonheaders.h"
-# ADD CPP /Yu"commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Debug Unicode"
-
-!ENDIF 
-
+SOURCE=.\SRC\clcpaint.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\clcutils.c
-
-!IF  "$(CFG)" == "clist_nicer - Win32 Release"
-
-# ADD CPP /Yu"commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Release Unicode"
-
-# ADD BASE CPP /Yu"commonheaders.h"
-# ADD CPP /Yu"commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Debug Unicode"
-
-!ENDIF 
-
+SOURCE=.\SRC\clcutils.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\clistevents.c
-
-!IF  "$(CFG)" == "clist_nicer - Win32 Release"
-
-# ADD CPP /Yu"commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Release Unicode"
-
-# ADD BASE CPP /Yu"commonheaders.h"
-# ADD CPP /Yu"commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Debug Unicode"
-
-!ENDIF 
-
+SOURCE=.\SRC\clistevents.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\clistmenus.c
-
-!IF  "$(CFG)" == "clist_nicer - Win32 Release"
-
-# ADD CPP /Yu"commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Release Unicode"
-
-# ADD BASE CPP /Yu"commonheaders.h"
-# ADD CPP /Yu"commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Debug Unicode"
-
-!ENDIF 
-
+SOURCE=.\SRC\clistmenus.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\clistmod.c
-
-!IF  "$(CFG)" == "clist_nicer - Win32 Release"
-
-# ADD CPP /Yu"commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Release Unicode"
-
-# ADD BASE CPP /Yu"commonheaders.h"
-# ADD CPP /Yu"commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Debug Unicode"
-
-!ENDIF 
-
+SOURCE=.\SRC\clistmod.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\clistopts.c
-
-!IF  "$(CFG)" == "clist_nicer - Win32 Release"
-
-# ADD CPP /Yu"commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Release Unicode"
-
-# ADD BASE CPP /Yu"commonheaders.h"
-# ADD CPP /Yu"commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Debug Unicode"
-
-!ENDIF 
-
+SOURCE=.\SRC\clistopts.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\clistsettings.c
-
-!IF  "$(CFG)" == "clist_nicer - Win32 Release"
-
-# ADD CPP /Yu"commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Release Unicode"
-
-# ADD BASE CPP /Yu"commonheaders.h"
-# ADD CPP /Yu"commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Debug Unicode"
-
-!ENDIF 
-
+SOURCE=.\SRC\clistsettings.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\clisttray.c
-
-!IF  "$(CFG)" == "clist_nicer - Win32 Release"
-
-# ADD CPP /Yu"commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Release Unicode"
-
-# ADD BASE CPP /Yu"commonheaders.h"
-# ADD CPP /Yu"commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Debug Unicode"
-
-!ENDIF 
-
+SOURCE=.\SRC\clisttray.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\clnplus.cpp
-
-!IF  "$(CFG)" == "clist_nicer - Win32 Release"
-
-# ADD CPP /GX
-# SUBTRACT CPP /YX /Yc /Yu
-
-!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Debug"
-
-# SUBTRACT CPP /YX /Yc /Yu
-
-!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Release Unicode"
-
-# ADD CPP /GR- /GX
-# SUBTRACT CPP /YX /Yc /Yu
-
-!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Debug Unicode"
-
-# SUBTRACT CPP /YX /Yc /Yu
-
-!ENDIF 
-
+SOURCE=.\SRC\clnplus.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\clui.c
-
-!IF  "$(CFG)" == "clist_nicer - Win32 Release"
-
-# ADD CPP /Yu"commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Release Unicode"
-
-# ADD BASE CPP /Yu"commonheaders.h"
-# ADD CPP /Yu"commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Debug Unicode"
-
-!ENDIF 
-
+SOURCE=.\SRC\clui.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\cluiopts.c
-
-!IF  "$(CFG)" == "clist_nicer - Win32 Release"
-
-# ADD CPP /Yu"commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Release Unicode"
-
-# ADD BASE CPP /Yu"commonheaders.h"
-# ADD CPP /Yu"commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Debug Unicode"
-
-!ENDIF 
-
+SOURCE=.\SRC\cluiopts.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\cluiservices.c
-
-!IF  "$(CFG)" == "clist_nicer - Win32 Release"
-
-# ADD CPP /Yu"commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Release Unicode"
-
-# ADD BASE CPP /Yu"commonheaders.h"
-# ADD CPP /Yu"commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Debug Unicode"
-
-!ENDIF 
-
+SOURCE=.\SRC\cluiservices.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\commonheaders.c
+SOURCE=.\SRC\commonheaders.cpp
 
 !IF  "$(CFG)" == "clist_nicer - Win32 Release"
 
@@ -539,102 +265,50 @@ SOURCE=.\commonheaders.c
 
 !ELSEIF  "$(CFG)" == "clist_nicer - Win32 Debug"
 
-# ADD CPP /Yc
-
 !ELSEIF  "$(CFG)" == "clist_nicer - Win32 Release Unicode"
 
-# ADD BASE CPP /Yc"commonheaders.h"
 # ADD CPP /Yc"commonheaders.h"
 
 !ELSEIF  "$(CFG)" == "clist_nicer - Win32 Debug Unicode"
 
-# ADD CPP /Yc
-
 !ENDIF 
 
 # End Source File
 # Begin Source File
 
-SOURCE=.\contact.c
-
-!IF  "$(CFG)" == "clist_nicer - Win32 Release"
-
-# ADD CPP /Yu"commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Release Unicode"
-
-# ADD BASE CPP /Yu"commonheaders.h"
-# ADD CPP /Yu"commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Debug Unicode"
-
-!ENDIF 
-
+SOURCE=.\SRC\contact.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\coolsb\coolsblib.c
-# SUBTRACT CPP /YX /Yc /Yu
+SOURCE=.\SRC\Docking.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\coolsb\coolscroll.c
-# SUBTRACT CPP /YX /Yc /Yu
+SOURCE=.\SRC\extBackg.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\Docking.c
+SOURCE=.\SRC\init.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\extBackg.c
+SOURCE=.\SRC\rowheight_funcs.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\init.c
-
-!IF  "$(CFG)" == "clist_nicer - Win32 Release"
-
-# ADD CPP /Yu"commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Release Unicode"
-
-# ADD BASE CPP /Yu"commonheaders.h"
-# ADD CPP /Yu"commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "clist_nicer - Win32 Debug Unicode"
-
-!ENDIF 
-
+SOURCE=.\SRC\statusbar.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\CLUIFrames\movetogroup.c
-# ADD CPP /Yu"../commonheaders.h"
+SOURCE=.\SRC\statusfloater.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\rowheight_funcs.c
+SOURCE=.\SRC\viewmodes.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\statusbar.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\statusfloater.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\viewmodes.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\wallpaper.c
+SOURCE=.\SRC\wallpaper.cpp
 # End Source File
 # End Group
 # Begin Group "Header Files"
@@ -642,27 +316,55 @@ SOURCE=.\wallpaper.c
 # PROP Default_Filter "h;hpp;hxx;hm;inl"
 # Begin Source File
 
-SOURCE=.\clc.h
+SOURCE=.\INCLUDE\alphablend.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\clist.h
+SOURCE=.\INCLUDE\clc.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\commonheaders.h
+SOURCE=.\INCLUDE\clist.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\forkthread.h
+SOURCE=.\INCLUDE\commonheaders.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\m_cln_skinedit.h
+SOURCE=.\INCLUDE\extBackg.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\resource.h
+SOURCE=.\INCLUDE\IcoLib.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\INCLUDE\m_avatars.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\INCLUDE\m_cln_skinedit.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\INCLUDE\m_metacontacts.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\INCLUDE\m_updater.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\INCLUDE\m_variables.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\INCLUDE\resource.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\INCLUDE\rowheight_funcs.h
 # End Source File
 # End Group
 # Begin Group "Resource Files"
@@ -811,6 +513,30 @@ SOURCE=.\res\tabsrmm_menu.ico
 # Begin Source File
 
 SOURCE=.\res\visible.ico
+# End Source File
+# End Group
+# Begin Group "CoolSB"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\coolsb\coolsb_internal.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\coolsb\coolsblib.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\coolsb\coolscroll.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\coolsb\coolscroll.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\coolsb\userdefs.h
 # End Source File
 # End Group
 # End Target
