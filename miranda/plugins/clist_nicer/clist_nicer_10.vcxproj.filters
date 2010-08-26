@@ -24,107 +24,110 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="alphablend.c">
+    <ClCompile Include="SRC\alphablend.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="clc.c">
+    <ClCompile Include="SRC\clc.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="CLCButton.c">
+    <ClCompile Include="SRC\CLCButton.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="clcidents.c">
+    <ClCompile Include="SRC\clcidents.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="clcitems.c">
+    <ClCompile Include="SRC\clcitems.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="clcmsgs.c">
+    <ClCompile Include="SRC\clcmsgs.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="clcopts.c">
+    <ClCompile Include="SRC\clcopts.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="clcpaint.c">
+    <ClCompile Include="SRC\clcpaint.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="clcutils.c">
+    <ClCompile Include="SRC\clcutils.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="clistevents.c">
+    <ClCompile Include="SRC\clistevents.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="clistmenus.c">
+    <ClCompile Include="SRC\clistmenus.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="clistmod.c">
+    <ClCompile Include="SRC\clistmod.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="clistopts.c">
+    <ClCompile Include="SRC\clistopts.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="clistsettings.c">
+    <ClCompile Include="SRC\clistsettings.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="clisttray.c">
+    <ClCompile Include="SRC\clisttray.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="clnplus.cpp">
+    <ClCompile Include="SRC\clui.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="clui.c">
+    <ClCompile Include="SRC\cluiopts.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="cluiopts.c">
+    <ClCompile Include="SRC\cluiservices.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="cluiservices.c">
+    <ClCompile Include="SRC\commonheaders.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="commonheaders.c">
+    <ClCompile Include="SRC\contact.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="contact.c">
+    <ClCompile Include="SRC\Docking.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Docking.c">
+    <ClCompile Include="SRC\extBackg.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="extBackg.c">
+    <ClCompile Include="SRC\init.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="init.c">
+    <ClCompile Include="SRC\rowheight_funcs.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="rowheight_funcs.c">
+    <ClCompile Include="SRC\statusbar.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="statusbar.c">
+    <ClCompile Include="SRC\statusfloater.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="statusfloater.c">
+    <ClCompile Include="SRC\viewmodes.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="viewmodes.c">
+    <ClCompile Include="SRC\wallpaper.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="CLUIFrames\cluiframes.c">
-      <Filter>Source Files\CLUIFrames</Filter>
-    </ClCompile>
-    <ClCompile Include="CLUIFrames\framesmenu.c">
-      <Filter>Source Files\CLUIFrames</Filter>
-    </ClCompile>
-    <ClCompile Include="CLUIFrames\groupmenu.c">
-      <Filter>Source Files\CLUIFrames</Filter>
-    </ClCompile>
-    <ClCompile Include="CLUIFrames\movetogroup.c">
-      <Filter>Source Files\CLUIFrames</Filter>
-    </ClCompile>
-    <ClCompile Include="coolsb\coolsblib.c">
+    <ClCompile Include="coolsb\coolsblib.cpp">
       <Filter>Source Files\COOLSB</Filter>
     </ClCompile>
-    <ClCompile Include="coolsb\coolscroll.c">
+    <ClCompile Include="coolsb\coolscroll.cpp">
       <Filter>Source Files\COOLSB</Filter>
+    </ClCompile>
+    <ClCompile Include="CLUIFrames\cluiframes.cpp">
+      <Filter>Source Files\CLUIFrames</Filter>
+    </ClCompile>
+    <ClCompile Include="CLUIFrames\framesmenu.cpp">
+      <Filter>Source Files\CLUIFrames</Filter>
+    </ClCompile>
+    <ClCompile Include="CLUIFrames\groupmenu.cpp">
+      <Filter>Source Files\CLUIFrames</Filter>
+    </ClCompile>
+    <ClCompile Include="CLUIFrames\movetogroup.cpp">
+      <Filter>Source Files\CLUIFrames</Filter>
+    </ClCompile>
+    <ClCompile Include="SRC\clnplus.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -143,25 +146,46 @@
     <ClInclude Include="coolsb\userdefs.h">
       <Filter>Source Files\COOLSB</Filter>
     </ClInclude>
-    <ClInclude Include="alphablend.h">
+    <ClInclude Include="INCLUDE\alphablend.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="clc.h">
+    <ClInclude Include="INCLUDE\clc.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="clist.h">
+    <ClInclude Include="INCLUDE\clist.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="commonheaders.h">
+    <ClInclude Include="INCLUDE\commonheaders.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="extBackg.h">
+    <ClInclude Include="INCLUDE\extBackg.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="m_cln_skinedit.h">
+    <ClInclude Include="INCLUDE\IcoLib.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="resource.h">
+    <ClInclude Include="INCLUDE\m_avatars.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="INCLUDE\m_cln_skinedit.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="INCLUDE\m_metacontacts.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="INCLUDE\m_timezones.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="INCLUDE\m_updater.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="INCLUDE\m_variables.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="INCLUDE\resource.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="INCLUDE\rowheight_funcs.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
