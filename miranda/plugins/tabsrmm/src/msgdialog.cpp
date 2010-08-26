@@ -3461,7 +3461,7 @@ quote_from_last:
 
 			BB_SetButtonsPos(dat);
 			return 0;
-			}
+		}
 
 		case DM_CBDESTROY:{
 			if(lParam)
@@ -3469,7 +3469,7 @@ quote_from_last:
 			else
 				CB_DestroyAllButtons(hwndDlg,dat);
 			return 0;
-			}
+		}
 	//
 		case WM_DROPFILES: {
 			BOOL not_sending = GetKeyState(VK_CONTROL) & 0x8000;

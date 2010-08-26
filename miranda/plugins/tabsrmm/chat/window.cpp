@@ -972,8 +972,8 @@ static LRESULT CALLBACK MessageSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, 
 				}
 				SendMessage(hwnd, WM_SETREDRAW, TRUE, 0);
 				RedrawWindow(hwnd, NULL, NULL, RDW_INVALIDATE);
-				if(!fCompleted) {
-					if(GetSendButtonState(mwdat->hwnd) != PBS_DISABLED)
+				if(!fCompleted && !PluginConfig.m_AllowTab) {
+					if((GetSendButtonState(mwdat->hwnd) != PBS_DISABLED))
 						SetFocus(GetDlgItem(mwdat->hwnd, IDOK));
 					else
 						SetFocus(GetDlgItem(mwdat->hwnd, IDC_CHAT_LOG));
@@ -3445,6 +3445,11 @@ LABEL_SHOWWINDOW:
 
 		case DM_SETINFOPANEL:
 			CInfoPanel::setPanelHandler(dat, wParam, lParam);
+			return(0);
+
+		case DM_INVALIDATEPANEL:
+			if(dat->Panel)
+				dat->Panel->Invalidate(true);
 			return(0);
 
 		case WM_RBUTTONUP: {

@@ -110,6 +110,8 @@ public:
 	static 	void*				TSAPI safeMirAlloc						(const size_t size);
 	static	void*				TSAPI safeMirCalloc					(const size_t size);
 
+	static	HMODULE				TSAPI loadSystemLibrary				(const wchar_t* szFilename);
+
 	static	INT_PTR CALLBACK		  PopupDlgProcError				(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 	static	const TCHAR*			  extractURLFromRichEdit		(const ENLINK* _e, const HWND hwndRich);
 

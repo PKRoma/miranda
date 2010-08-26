@@ -629,9 +629,9 @@ void CInfoPanel::Chat_RenderIPNickname(const HDC hdc, RECT& rcItem)
 	m_szNick.cx = m_szNick.cy = 0;
 
 	if(m_height < DEGRADE_THRESHOLD) {
-		TCHAR	tszText[256];
+		TCHAR	tszText[2048];
 
-		mir_sntprintf(tszText, 256, CTranslator::get(CTranslator::GEN_MUC_TOPIC_IS), si->ptszTopic ? si->ptszTopic :
+		mir_sntprintf(tszText, safe_sizeof(tszText), CTranslator::get(CTranslator::GEN_MUC_TOPIC_IS), si->ptszTopic ? si->ptszTopic :
 					  CTranslator::get(CTranslator::GEN_MUC_NO_TOPIC));
 
 		hOldFont = reinterpret_cast<HFONT>(::SelectObject(hdc, m_ipConfig.hFonts[IPFONTID_UIN]));
