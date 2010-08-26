@@ -2060,9 +2060,13 @@ int ThreadData::send( HXML node )
 	}
 	*q = 0;
 
-	char* utfStr = mir_utf8encodeT( str );
-	int result = send( utfStr, (int)strlen( utfStr ));
-	mir_free( utfStr );
+	#if defined( _UNICODE )
+		char* utfStr = mir_utf8encodeT( str );
+		int result = send( utfStr, (int)strlen( utfStr ));
+		mir_free( utfStr );
+	#else
+		int result = send( str, (int)strlen( str ));
+	#endif
 	xi.freeMem( str );
 	return result;
 }
