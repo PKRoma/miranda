@@ -3,6 +3,13 @@
                            www.miranda-im.org
 
 
+* New in 0.9.2
+Bugfixes:
+ - Fixed database upgrade logic
+ - IRC: Fixed possible crash
+ - Jabber: Can't send messages on non-English language
+
+
 * New in 0.9.1
 Enhancements:
  - Improved profile upgrade path logic
