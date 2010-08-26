@@ -35,6 +35,8 @@ extern HPEN g_hPenCLUIFrames;
  
 static int opt_clui_changed = 0;
 
+void AddToTaskBar(HWND hWnd);
+
 BOOL CALLBACK DlgProcCluiOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch (msg) {
@@ -228,7 +230,10 @@ BOOL CALLBACK DlgProcCluiOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
 					if (DBGetContactSettingByte(NULL, "CList", "AlwaysHideOnTB", 1))
 						style &= ~WS_EX_APPWINDOW;
 					else
+					{
 						style |= WS_EX_APPWINDOW;
+						AddToTaskBar(pcli->hwndContactList);
+					}
 					SetWindowLong(pcli->hwndContactList, GWL_EXSTYLE, style);
 				}
 

@@ -27,4 +27,17 @@ void RemoveFromTaskBar(HWND hWnd)
         pTaskbarList->Release();
     }
 }
+
+void AddToTaskBar(HWND hWnd)
+{
+    ITaskbarList *pTaskbarList = NULL;
+
+    if (SUCCEEDED(CoCreateInstance(CLSID_TaskbarList, 0, CLSCTX_INPROC_SERVER, IID_ITaskbarList,
+                                   (void **)(&pTaskbarList))) &&	pTaskbarList != NULL) {
+        if (SUCCEEDED(pTaskbarList->HrInit())) {
+            pTaskbarList->AddTab(hWnd);
+        }
+        pTaskbarList->Release();
+    }
+}
 }
