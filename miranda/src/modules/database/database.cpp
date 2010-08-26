@@ -229,7 +229,18 @@ static void moveProfileDirProfiles(TCHAR * profiledir, BOOL isRootDir = TRUE)
 			mir_sntprintf(path2, SIZEOF(path2), _T("%s\\%s"), profiledir, profile);
 			CreateDirectory(path2, NULL);
 			mir_sntprintf(path2, SIZEOF(path2), _T("%s\\%s\\%s"), profiledir, profile, ffd.cFileName);
-			if (MoveFile(path, path2) == 0)
+			if (_taccess(path2, 0))
+			{
+				const TCHAR tszMoveMsg[] =
+					_T("Miranda is trying upgrade your profile structure.\n")
+					_T("It cannot move profile %s to the new location %s\n")
+					_T("Because profile with this name already exist. Please resolve the issue manually.");
+				TCHAR buf[512];
+
+				mir_sntprintf(buf, SIZEOF(buf), TranslateTS(tszMoveMsg), path, path2);
+				MessageBox(NULL, buf, _T("Miranda IM"), MB_ICONERROR | MB_OK);
+			}
+			else if (MoveFile(path, path2) == 0)
 			{
 				const TCHAR tszMoveMsg[] =
 					_T("Miranda is trying upgrade your profile structure.\n")
