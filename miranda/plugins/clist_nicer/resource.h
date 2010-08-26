@@ -1,5 +1,5 @@
 //{{NO_DEPENDENCIES}}
-// Microsoft Developer Studio generated include file.
+// Microsoft Visual C++ generated include file.
 // Used by resource.rc
 //
 #define IDD_OPT_VIEWMODES               1
@@ -87,7 +87,6 @@
 #define IDC_EXTRA_ICON_RES1             1058
 #define IDC_EXTRA_ICON_RES2             1059
 #define IDC_EXTRA_ICON_ADV3             1060
-#define IDC_EXTRA_ICON_ADV4             1085
 #define IDC_EXTRAORDER                  1061
 #define IDC_FRAMEGAP                    1064
 #define IDC_FRAMEGAPSPIN                1065
@@ -115,6 +114,7 @@
 #define IDC_HIDEOFFLINEOPTS             1082
 #define IDC_HKREADMSG                   1083
 #define IDC_HKSEARCH                    1084
+#define IDC_EXTRA_ICON_ADV4             1085
 #define IDC_HKSHOWOPTIONS               1086
 #define IDC_LEFTMARGINSPIN              1092
 #define IDC_NETSEARCH                   1101
@@ -168,6 +168,7 @@
 #define IDC_AUTOHIDE                    1235
 #define IDC_HIDETIME                    1236
 #define IDC_ALWAYSHIDEONTASKBAR         1237
+#define IDC_AUTOHIDE2                   1238
 #define IDC_IMPORT                      1241
 #define IDC_MAXSIZEHEIGHT               1254
 #define IDC_MAXSIZESPIN                 1255
