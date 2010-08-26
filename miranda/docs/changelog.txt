@@ -9,6 +9,8 @@ Enhancements:
 
 Bugfixes:
  - Fixed plugin file names
+ - AIM: Fixed possible crash
+ - IRC: Fixed crash on nick change
 
 
 * New in 0.9.0
