@@ -23,7 +23,6 @@
 #define IDI_CLVM_SELECT                 177
 #define IDR_CONTEXT                     180
 #define IDC_DROP                        183
-#define IDD_OPT_HOTKEY                  184
 #define IDR_CLISTMENU                   199
 #define IDI_BLANK                       200
 #define IDI_ADDCONTACT                  210
@@ -168,7 +167,6 @@
 #define IDC_AUTOHIDE                    1235
 #define IDC_HIDETIME                    1236
 #define IDC_ALWAYSHIDEONTASKBAR         1237
-#define IDC_AUTOHIDE2                   1238
 #define IDC_IMPORT                      1241
 #define IDC_MAXSIZEHEIGHT               1254
 #define IDC_MAXSIZESPIN                 1255
