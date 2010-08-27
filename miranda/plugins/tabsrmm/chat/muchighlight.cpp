@@ -131,7 +131,7 @@ void CMUCHighlight::tokenize(TCHAR *tszString, TCHAR**& patterns, UINT& nr)
 
 int CMUCHighlight::match(const GCEVENT *pgce, const SESSION_INFO *psi, DWORD dwFlags)
 {
-	int 			result = 0, nResult = 0;
+	int 	result = 0, nResult = 0;
 
 	if(pgce == 0 || m_Valid == false)
 		return(0);

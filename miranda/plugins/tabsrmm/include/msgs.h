@@ -534,7 +534,7 @@ struct TNewWindowData {
 #define DM_UPDATEPICLAYOUT   (WM_USER+30)
 #define DM_QUERYCONTAINER    (WM_USER+31)
 #define DM_MUCFLASHWORKER    (WM_USER+32)
-//#define DM_CALCMINHEIGHT     (WM_USER+33)       // msgdialog asked to recalculate its minimum height
+#define DM_INVALIDATEPANEL   (WM_USER+33)
 //#define DM_REPORTMINHEIGHT   (WM_USER+34)       // msg dialog reports its minimum height to the container
 #define DM_CHECKINFOTIP		 (WM_USER+35) 
 #define DM_SAVESIZE          (WM_USER+36)

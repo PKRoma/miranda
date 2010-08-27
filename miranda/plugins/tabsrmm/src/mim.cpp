@@ -407,12 +407,14 @@ INT_PTR CMimAPI::foldersPathChanged()
 	CallService(MS_UTILS_CREATEDIRTREET, 0, (LPARAM)m_szSavedAvatarsPath);
 	CallService(MS_UTILS_CREATEDIRTREET, 0, (LPARAM)m_szChatLogsPath);
 
+#if defined(_FOLDER_LOCKING)
 	mir_sntprintf(szTemp, MAX_PATH, L"%sfolder.lck", m_szChatLogsPath);
 
 	if(m_hChatLogLock != INVALID_HANDLE_VALUE)
 		CloseHandle(m_hChatLogLock);
 
 	m_hChatLogLock = CreateFile(szTemp, GENERIC_WRITE, 0, 0, OPEN_ALWAYS, FILE_ATTRIBUTE_HIDDEN, 0);
+#endif
 
 	Skin->extractSkinsAndLogo(true);
 	Skin->setupAeroSkins();
@@ -484,7 +486,7 @@ void CMimAPI::InitAPI()
 	m_pfnGetMonitorInfoA = (GMIA)GetProcAddress(GetModuleHandleA("USER32"), "GetMonitorInfoA");
 
 	if (IsWinVerXPPlus()) {
-		if ((m_hUxTheme = LoadLibraryA("uxtheme.dll")) != 0) {
+		if ((m_hUxTheme = Utils::loadSystemLibrary(L"\\uxtheme.dll")) != 0) {
 			m_pfnIsThemeActive = (PITA)GetProcAddress(m_hUxTheme, "IsThemeActive");
 			m_pfnOpenThemeData = (POTD)GetProcAddress(m_hUxTheme, "OpenThemeData");
 			m_pfnDrawThemeBackground = (PDTB)GetProcAddress(m_hUxTheme, "DrawThemeBackground");
@@ -509,7 +511,7 @@ void CMimAPI::InitAPI()
 
 	m_hDwmApi = 0;
 	if (IsWinVerVistaPlus())  {
-	    m_hDwmApi = LoadLibraryA("dwmapi.dll");
+	    m_hDwmApi = Utils::loadSystemLibrary(L"\\dwmapi.dll");
 	    if (m_hDwmApi)  {
             m_pfnDwmExtendFrameIntoClientArea = (DEFICA)GetProcAddress(m_hDwmApi,"DwmExtendFrameIntoClientArea");
             m_pfnDwmIsCompositionEnabled = (DICE)GetProcAddress(m_hDwmApi,"DwmIsCompositionEnabled");

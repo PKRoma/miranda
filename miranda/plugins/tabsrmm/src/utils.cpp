@@ -1135,6 +1135,36 @@ void Utils::ensureTralingBackslash(wchar_t *szPathname)
 }
 
 /**
+ * load a system library from the Windows system path and return its module
+ * handle.
+ *
+ * return 0 and throw an exception if something goes wrong.
+ */
+HMODULE Utils::loadSystemLibrary(const wchar_t* szFilename)
+{
+	wchar_t		sysPathName[MAX_PATH + 2];
+	HMODULE		_h = 0;
+
+	try {
+		if(0 == ::GetSystemDirectoryW(sysPathName, MAX_PATH))
+			throw(CRTException("Error while loading system library", szFilename));
+
+		sysPathName[MAX_PATH - 1] = 0;
+		if(wcslen(sysPathName) + wcslen(szFilename) >= MAX_PATH)
+			throw(CRTException("Error while loading system library", szFilename));
+
+		lstrcatW(sysPathName, szFilename);
+		_h = LoadLibraryW(sysPathName);
+		if(0 == _h)
+			throw(CRTException("Error while loading system library", szFilename));
+	}
+	catch(CRTException& ex) {
+		ex.display();
+		return(0);
+	}
+	return(_h);
+}
+/**
  * implementation of the CWarning class
  */
 CWarning::CWarning(const wchar_t *tszTitle, const wchar_t *tszText, const UINT uId, const DWORD dwFlags)

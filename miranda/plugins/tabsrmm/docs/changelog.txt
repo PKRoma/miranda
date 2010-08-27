@@ -35,6 +35,26 @@ are currently no downloads for it, you'll have to compile it from source.
 			Detailed change log
 			===================
 
+Version 3.1.99.1 - 2010/08/28
+
+	! bug fix: topic in info panel did not refresh immediately when it was changed
+	
+	* updater support for the version on the addons site.
+	
+	! load system libraries in a safe way.
+	
+	! bugfix (MUC): Do not lose input focus after autocomplete did not find
+	  a matching nick name when the option to allow TAB in the input area is 
+	  enabled.
+	  
+	! bug fix (MUC): Allow undo for nick - autocomplete actions
+	
+
+Version 3.0.2 - 2010/08/25
+
+	* first stable release for 3.0.x - forked from 3.0.1.3
+
+
 Version 3.0.1.3 - 2010/08/10
 
 	* MUC: added code for case-insensitive highlighting of messages

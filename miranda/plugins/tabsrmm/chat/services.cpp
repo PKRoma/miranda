@@ -690,6 +690,8 @@ INT_PTR Service_AddEvent(WPARAM wParam, LPARAM lParam)
 					M->WriteTString(si->hContact, si->pszModule , "Topic", RemoveFormatting(si->ptszTopic));
 					if (M->GetByte("Chat", "TopicOnClist", 1))
 						M->WriteTString(si->hContact, "CList" , "StatusMsg", RemoveFormatting(si->ptszTopic));
+					if(si->hWnd)
+						SendMessage(si->hWnd, DM_INVALIDATEPANEL, 0, 0);
 				}
 			}
 			break;

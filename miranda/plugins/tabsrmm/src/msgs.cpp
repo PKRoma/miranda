@@ -603,7 +603,8 @@ int LoadSendRecvMessageModule(void)
 	}
 tzdone:
 
-	LoadLibraryA("riched20");
+	Utils::loadSystemLibrary(L"\\riched20.dll");
+
 	OleInitialize(NULL);
 	mREOLECallback = new REOLECallback;
 	Win7Taskbar = new CTaskbarInteract;
