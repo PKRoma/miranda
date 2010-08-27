@@ -31,7 +31,6 @@ $Id: viewmodes.c 10380 2009-07-19 19:26:03Z silvercircle $
 
 #define TIMERID_VIEWMODEEXPIRE 100
 
-extern struct CluiData g_CluiData;
 extern HIMAGELIST hCListImages;
 extern HPEN g_hPenCLUIFrames;
 extern int g_nextExtraCacheEntry;
@@ -709,8 +708,8 @@ INT_PTR CALLBACK DlgProcViewModesSetup(HWND hwndDlg, UINT msg, WPARAM wParam, LP
                                 mir_snprintf(szSetting, 256, "%c%s_SSM", 246, szBuf);
                                 DBDeleteContactSetting(NULL, CLVM_MODULE, szSetting);
                                 DBDeleteContactSetting(NULL, CLVM_MODULE, szBuf);
-                                if(!strcmp(g_CluiData.current_viewmode, szBuf) && lstrlenA(szBuf) == lstrlenA(g_CluiData.current_viewmode)) {
-                                    g_CluiData.bFilterEffective = 0;
+                                if(!strcmp(cfg::dat.current_viewmode, szBuf) && lstrlenA(szBuf) == lstrlenA(cfg::dat.current_viewmode)) {
+                                    cfg::dat.bFilterEffective = 0;
                                     pcli->pfnClcBroadcast(CLM_AUTOREBUILD, 0, 0);
                                     SetWindowTextA(hwndSelector, Translate("No view mode"));
                                 }
@@ -775,8 +774,8 @@ INT_PTR CALLBACK DlgProcViewModesSetup(HWND hwndDlg, UINT msg, WPARAM wParam, LP
                 case IDOK:
                 case IDC_APPLY:
                     SaveState();
-                    if(g_CluiData.bFilterEffective)
-                        ApplyViewMode(g_CluiData.current_viewmode);
+                    if(cfg::dat.bFilterEffective)
+                        ApplyViewMode(cfg::dat.current_viewmode);
                     if(LOWORD(wParam) == IDOK)
                         DestroyWindow(hwndDlg);
                     break;
@@ -944,7 +943,7 @@ LRESULT CALLBACK ViewModeFrameWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 			break;
 		}
 	case WM_USER + 100:
-		if(g_CluiData.IcoLib_Avail) {
+		if(cfg::dat.IcoLib_Avail) {
 			SendMessage(GetDlgItem(hwnd, IDC_RESETMODES), BM_SETIMAGE, IMAGE_ICON, (LPARAM)CallService(MS_SKIN2_GETICON, 0, (LPARAM)"CLN_CLVM_reset"));
 			SendMessage(GetDlgItem(hwnd, IDC_CONFIGUREMODES), BM_SETIMAGE, IMAGE_ICON, (LPARAM)CallService(MS_SKIN2_GETICON, 0, (LPARAM)"CLN_CLVM_options"));
 			SendMessage(GetDlgItem(hwnd, IDC_SELECTMODE), BM_SETIMAGE, IMAGE_ICON, (LPARAM)CallService(MS_SKIN2_GETICON, 0, (LPARAM)"CLN_CLVM_select"));
@@ -971,8 +970,8 @@ LRESULT CALLBACK ViewModeFrameWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 				i++;
 			}
 		}
-		if(g_CluiData.bFilterEffective)
-			SetWindowTextA(GetDlgItem(hwnd, IDC_SELECTMODE), g_CluiData.current_viewmode);
+		if(cfg::dat.bFilterEffective)
+			SetWindowTextA(GetDlgItem(hwnd, IDC_SELECTMODE), cfg::dat.current_viewmode);
 		else
 			SetWindowText(GetDlgItem(hwnd, IDC_SELECTMODE), TranslateT("No view mode"));
 		break;
@@ -993,7 +992,7 @@ LRESULT CALLBACK ViewModeFrameWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 			hbm = CreateCompatibleBitmap(hdc, rc.right, rc.bottom);
 			hbmold = (HBITMAP)SelectObject(hdcMem, hbm);
 
-			if(g_CluiData.bWallpaperMode)
+			if(cfg::dat.bWallpaperMode)
 				SkinDrawBg(hwnd, hdcMem);
 			else
 				FillRect(hdcMem, &rc, GetSysColorBrush(COLOR_3DFACE));
@@ -1022,10 +1021,10 @@ LRESULT CALLBACK ViewModeFrameWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 						break;
 
 					KillTimer(hwnd, wParam);
-					if(!g_CluiData.old_viewmode[0])
+					if(!cfg::dat.old_viewmode[0])
 						SendMessage(hwnd, WM_COMMAND, IDC_RESETMODES, 0);
 					else
-						ApplyViewMode((const char *)g_CluiData.old_viewmode);
+						ApplyViewMode((const char *)cfg::dat.old_viewmode);
 					break;
 			}	}
 			break;
@@ -1065,14 +1064,14 @@ LRESULT CALLBACK ViewModeFrameWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 				}
 			case IDC_RESETMODES:
 clvm_reset_command:
-				g_CluiData.bFilterEffective = 0;
+				cfg::dat.bFilterEffective = 0;
 				pcli->pfnClcBroadcast(CLM_AUTOREBUILD, 0, 0);
 				SetWindowTextA(GetDlgItem(hwnd, IDC_SELECTMODE), Translate("No view mode"));
-				CallService(MS_CLIST_SETHIDEOFFLINE, (WPARAM)g_CluiData.boldHideOffline, 0);
-				g_CluiData.boldHideOffline = (BYTE)-1;
+				CallService(MS_CLIST_SETHIDEOFFLINE, (WPARAM)cfg::dat.boldHideOffline, 0);
+				cfg::dat.boldHideOffline = (BYTE)-1;
 				SetButtonStates(pcli->hwndContactList);
-				g_CluiData.current_viewmode[0] = 0;
-				g_CluiData.old_viewmode[0] = 0;
+				cfg::dat.current_viewmode[0] = 0;
+				cfg::dat.old_viewmode[0] = 0;
                 DBWriteContactSettingString(NULL, "CList", "LastViewMode", "");
 				break;
 			case IDC_CONFIGUREMODES:
@@ -1131,35 +1130,35 @@ void ApplyViewMode(const char *name)
     char szSetting[256];
     DBVARIANT dbv = {0};
 
-    g_CluiData.bFilterEffective = 0;
+    cfg::dat.bFilterEffective = 0;
 
     mir_snprintf(szSetting, 256, "%c%s_PF", 246, name);
     if(!DBGetContactSettingString(NULL, CLVM_MODULE, szSetting, &dbv)) {
         if(lstrlenA(dbv.pszVal) >= 2) {
-            strncpy(g_CluiData.protoFilter, dbv.pszVal, sizeof(g_CluiData.protoFilter));
-            g_CluiData.protoFilter[sizeof(g_CluiData.protoFilter) - 1] = 0;
-            g_CluiData.bFilterEffective |= CLVM_FILTER_PROTOS;
+            strncpy(cfg::dat.protoFilter, dbv.pszVal, sizeof(cfg::dat.protoFilter));
+            cfg::dat.protoFilter[sizeof(cfg::dat.protoFilter) - 1] = 0;
+            cfg::dat.bFilterEffective |= CLVM_FILTER_PROTOS;
         }
         mir_free(dbv.pszVal);
     }
     mir_snprintf(szSetting, 256, "%c%s_GF", 246, name);
     if(!DBGetContactSettingTString(NULL, CLVM_MODULE, szSetting, &dbv)) {
         if(lstrlen(dbv.ptszVal) >= 2) {
-            _tcsncpy(g_CluiData.groupFilter, dbv.ptszVal, safe_sizeof(g_CluiData.groupFilter));
-            g_CluiData.groupFilter[safe_sizeof(g_CluiData.groupFilter) - 1] = 0;
-            g_CluiData.bFilterEffective |= CLVM_FILTER_GROUPS;
+            _tcsncpy(cfg::dat.groupFilter, dbv.ptszVal, safe_sizeof(cfg::dat.groupFilter));
+            cfg::dat.groupFilter[safe_sizeof(cfg::dat.groupFilter) - 1] = 0;
+            cfg::dat.bFilterEffective |= CLVM_FILTER_GROUPS;
         }
         mir_free(dbv.ptszVal);
     }
     mir_snprintf(szSetting, 256, "%c%s_SM", 246, name);
-    g_CluiData.statusMaskFilter = DBGetContactSettingDword(NULL, CLVM_MODULE, szSetting, -1);
-    if(g_CluiData.statusMaskFilter >= 1)
-        g_CluiData.bFilterEffective |= CLVM_FILTER_STATUS;
+    cfg::dat.statusMaskFilter = DBGetContactSettingDword(NULL, CLVM_MODULE, szSetting, -1);
+    if(cfg::dat.statusMaskFilter >= 1)
+        cfg::dat.bFilterEffective |= CLVM_FILTER_STATUS;
 
     mir_snprintf(szSetting, 256, "%c%s_SSM", 246, name);
-    g_CluiData.stickyMaskFilter = DBGetContactSettingDword(NULL, CLVM_MODULE, szSetting, -1);
-    if(g_CluiData.stickyMaskFilter != -1)
-        g_CluiData.bFilterEffective |= CLVM_FILTER_STICKYSTATUS;
+    cfg::dat.stickyMaskFilter = DBGetContactSettingDword(NULL, CLVM_MODULE, szSetting, -1);
+    if(cfg::dat.stickyMaskFilter != -1)
+        cfg::dat.bFilterEffective |= CLVM_FILTER_STICKYSTATUS;
 
     /*
     mir_snprintf(szSetting, 256, "%c%s_VA", 246, name);
@@ -1208,41 +1207,41 @@ void ApplyViewMode(const char *name)
         }
     }*/
 
-    g_CluiData.filterFlags = DBGetContactSettingDword(NULL, CLVM_MODULE, name, 0);
+    cfg::dat.filterFlags = DBGetContactSettingDword(NULL, CLVM_MODULE, name, 0);
 
     KillTimer(g_hwndViewModeFrame, TIMERID_VIEWMODEEXPIRE);
 
-    if(g_CluiData.filterFlags & CLVM_AUTOCLEAR) {
+    if(cfg::dat.filterFlags & CLVM_AUTOCLEAR) {
         DWORD timerexpire;
         mir_snprintf(szSetting, 256, "%c%s_OPT", 246, name);
         timerexpire = LOWORD(DBGetContactSettingDword(NULL, CLVM_MODULE, szSetting, 0));
-        strncpy(g_CluiData.old_viewmode, g_CluiData.current_viewmode, 256);
-        g_CluiData.old_viewmode[255] = 0;
+        strncpy(cfg::dat.old_viewmode, cfg::dat.current_viewmode, 256);
+        cfg::dat.old_viewmode[255] = 0;
         SetTimer(g_hwndViewModeFrame, TIMERID_VIEWMODEEXPIRE, timerexpire * 1000, NULL);
     }
-    strncpy(g_CluiData.current_viewmode, name, 256);
-    g_CluiData.current_viewmode[255] = 0;
+    strncpy(cfg::dat.current_viewmode, name, 256);
+    cfg::dat.current_viewmode[255] = 0;
 
-	if(g_CluiData.filterFlags & CLVM_USELASTMSG) {
+	if(cfg::dat.filterFlags & CLVM_USELASTMSG) {
 		DWORD unit;
 		int i;
-		BYTE bSaved = g_CluiData.sortOrder[0];
+		BYTE bSaved = cfg::dat.sortOrder[0];
 
-		g_CluiData.sortOrder[0] = SORTBY_LASTMSG;
+		cfg::dat.sortOrder[0] = SORTBY_LASTMSG;
 		for(i = 0; i < g_nextExtraCacheEntry; i++)
 			g_ExtraCache[i].dwLastMsgTime = INTSORT_GetLastMsgTime(g_ExtraCache[i].hContact);
 
-		g_CluiData.sortOrder[0] = bSaved;
+		cfg::dat.sortOrder[0] = bSaved;
 
-		g_CluiData.bFilterEffective |= CLVM_FILTER_LASTMSG;
+		cfg::dat.bFilterEffective |= CLVM_FILTER_LASTMSG;
         mir_snprintf(szSetting, 256, "%c%s_LM", 246, name);
-        g_CluiData.lastMsgFilter = DBGetContactSettingDword(NULL, CLVM_MODULE, szSetting, 0);
-		if(LOBYTE(HIWORD(g_CluiData.lastMsgFilter)))
-			g_CluiData.bFilterEffective |= CLVM_FILTER_LASTMSG_NEWERTHAN;
+        cfg::dat.lastMsgFilter = DBGetContactSettingDword(NULL, CLVM_MODULE, szSetting, 0);
+		if(LOBYTE(HIWORD(cfg::dat.lastMsgFilter)))
+			cfg::dat.bFilterEffective |= CLVM_FILTER_LASTMSG_NEWERTHAN;
 		else
-			g_CluiData.bFilterEffective |= CLVM_FILTER_LASTMSG_OLDERTHAN;
-		unit = LOWORD(g_CluiData.lastMsgFilter);
-		switch(HIBYTE(HIWORD(g_CluiData.lastMsgFilter))) {
+			cfg::dat.bFilterEffective |= CLVM_FILTER_LASTMSG_OLDERTHAN;
+		unit = LOWORD(cfg::dat.lastMsgFilter);
+		switch(HIBYTE(HIWORD(cfg::dat.lastMsgFilter))) {
 			case 0:
 				unit *= 60;
 				break;
@@ -1253,21 +1252,21 @@ void ApplyViewMode(const char *name)
 				unit *= 86400;
 				break;
 		}
-		g_CluiData.lastMsgFilter = unit;
+		cfg::dat.lastMsgFilter = unit;
 	}
 
-	if(HIWORD(g_CluiData.filterFlags) > 0)
-        g_CluiData.bFilterEffective |= CLVM_STICKY_CONTACTS;
+	if(HIWORD(cfg::dat.filterFlags) > 0)
+        cfg::dat.bFilterEffective |= CLVM_STICKY_CONTACTS;
 
-    if(g_CluiData.boldHideOffline == (BYTE)-1)
-        g_CluiData.boldHideOffline = DBGetContactSettingByte(NULL, "CList", "HideOffline", 0);
+    if(cfg::dat.boldHideOffline == (BYTE)-1)
+        cfg::dat.boldHideOffline = DBGetContactSettingByte(NULL, "CList", "HideOffline", 0);
 
     CallService(MS_CLIST_SETHIDEOFFLINE, 0, 0);
     SetWindowTextA(hwndSelector, name);
     pcli->pfnClcBroadcast(CLM_AUTOREBUILD, 0, 0);
     SetButtonStates(pcli->hwndContactList);
 
-    DBWriteContactSettingString(NULL, "CList", "LastViewMode", g_CluiData.current_viewmode);
+    DBWriteContactSettingString(NULL, "CList", "LastViewMode", cfg::dat.current_viewmode);
 }
 
 

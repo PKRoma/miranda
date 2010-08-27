@@ -25,7 +25,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "../coolsb/coolscroll.h"
 
 extern int g_hottrack;
-extern struct CluiData g_CluiData;
 extern struct ClcData *g_clcData;
 
 extern HWND g_hwndViewModeFrame;
@@ -353,7 +352,7 @@ void LoadExtBkSettingsFromDB()
 			StatusItems[n]. BORDERSTYLE = ret;
 		}
 	}
-	if(g_CluiData.bFirstRun) {
+	if(cfg::dat.bFirstRun) {
 		StatusItems_t *item = &StatusItems[ID_EXTBKBUTTONBAR - ID_STATUS_OFFLINE];
 
 		item->COLOR = GetSysColor(COLOR_3DFACE);
@@ -418,7 +417,7 @@ static void SaveCompleteStructToDB(void)
 
 void SetButtonToSkinned()
 {
-    int bSkinned = g_CluiData.bSkinnedButtonMode = DBGetContactSettingByte(NULL, "CLCExt", "bskinned", 0);
+    int bSkinned = cfg::dat.bSkinnedButtonMode = DBGetContactSettingByte(NULL, "CLCExt", "bskinned", 0);
 
     SendDlgItemMessage(pcli->hwndContactList, IDC_TBMENU, BM_SETSKINNED, 0, bSkinned);
     SendDlgItemMessage(pcli->hwndContactList, IDC_TBGLOBALSTATUS, BM_SETSKINNED, 0, bSkinned);
@@ -439,13 +438,13 @@ void SetButtonToSkinned()
 
 void Reload3dBevelColors()
 {
-    if(g_CluiData.hPen3DBright)
-        DeleteObject(g_CluiData.hPen3DBright);
-    if(g_CluiData.hPen3DDark)
-        DeleteObject(g_CluiData.hPen3DDark);
+    if(cfg::dat.hPen3DBright)
+        DeleteObject(cfg::dat.hPen3DBright);
+    if(cfg::dat.hPen3DDark)
+        DeleteObject(cfg::dat.hPen3DDark);
 
-    g_CluiData.hPen3DBright = CreatePen(PS_SOLID, 1, DBGetContactSettingDword(NULL, "CLCExt", "3dbright", GetSysColor(COLOR_3DLIGHT)));
-    g_CluiData.hPen3DDark = CreatePen(PS_SOLID, 1, DBGetContactSettingDword(NULL, "CLCExt", "3ddark", GetSysColor(COLOR_3DSHADOW)));
+    cfg::dat.hPen3DBright = CreatePen(PS_SOLID, 1, DBGetContactSettingDword(NULL, "CLCExt", "3dbright", GetSysColor(COLOR_3DLIGHT)));
+    cfg::dat.hPen3DDark = CreatePen(PS_SOLID, 1, DBGetContactSettingDword(NULL, "CLCExt", "3ddark", GetSysColor(COLOR_3DSHADOW)));
 
 }
 
@@ -458,24 +457,24 @@ void SaveNonStatusItemsSettings(HWND hwndDlg)
     DBWriteContactSettingByte(NULL, "CLCExt", "EXBK_SelBlend", (BYTE)IsDlgButtonChecked(hwndDlg, IDC_SELBLEND));
     DBWriteContactSettingByte(NULL, "CLCExt", "EXBK_FillWallpaper", (BYTE)IsDlgButtonChecked(hwndDlg, IDC_FILLWALLPAPER));
 
-    g_CluiData.cornerRadius = GetDlgItemInt(hwndDlg, IDC_CORNERRAD, &translated, FALSE);
-    g_CluiData.bApplyIndentToBg = IsDlgButtonChecked(hwndDlg, IDC_APPLYINDENTBG) ? 1 : 0;
-    g_CluiData.bUsePerProto = IsDlgButtonChecked(hwndDlg, IDC_USEPERPROTO) ? 1 : 0;
-	g_CluiData.bWantFastGradients = IsDlgButtonChecked(hwndDlg, IDC_FASTGRADIENT) ? 1 : 0;
-    g_CluiData.bOverridePerStatusColors = IsDlgButtonChecked(hwndDlg, IDC_OVERRIDEPERSTATUSCOLOR) ? 1 : 0;
-    g_CluiData.titleBarHeight = (BYTE)GetDlgItemInt(hwndDlg, IDC_LASTITEMPADDING, &translated, FALSE);
-    g_CluiData.group_padding = GetDlgItemInt(hwndDlg, IDC_GRPTOPPADDING, &translated, FALSE);
+    cfg::dat.cornerRadius = GetDlgItemInt(hwndDlg, IDC_CORNERRAD, &translated, FALSE);
+    cfg::dat.bApplyIndentToBg = IsDlgButtonChecked(hwndDlg, IDC_APPLYINDENTBG) ? 1 : 0;
+    cfg::dat.bUsePerProto = IsDlgButtonChecked(hwndDlg, IDC_USEPERPROTO) ? 1 : 0;
+	cfg::dat.bWantFastGradients = IsDlgButtonChecked(hwndDlg, IDC_FASTGRADIENT) ? 1 : 0;
+    cfg::dat.bOverridePerStatusColors = IsDlgButtonChecked(hwndDlg, IDC_OVERRIDEPERSTATUSCOLOR) ? 1 : 0;
+    cfg::dat.titleBarHeight = (BYTE)GetDlgItemInt(hwndDlg, IDC_LASTITEMPADDING, &translated, FALSE);
+    cfg::dat.group_padding = GetDlgItemInt(hwndDlg, IDC_GRPTOPPADDING, &translated, FALSE);
 
-    DBWriteContactSettingByte(NULL, "CLCExt", "CornerRad", g_CluiData.cornerRadius);
-    DBWriteContactSettingByte(NULL, "CLCExt", "applyindentbg", (BYTE)g_CluiData.bApplyIndentToBg);
-    DBWriteContactSettingByte(NULL, "CLCExt", "useperproto", (BYTE)g_CluiData.bUsePerProto);
-    DBWriteContactSettingByte(NULL, "CLCExt", "override_status", (BYTE)g_CluiData.bOverridePerStatusColors);
+    DBWriteContactSettingByte(NULL, "CLCExt", "CornerRad", cfg::dat.cornerRadius);
+    DBWriteContactSettingByte(NULL, "CLCExt", "applyindentbg", (BYTE)cfg::dat.bApplyIndentToBg);
+    DBWriteContactSettingByte(NULL, "CLCExt", "useperproto", (BYTE)cfg::dat.bUsePerProto);
+    DBWriteContactSettingByte(NULL, "CLCExt", "override_status", (BYTE)cfg::dat.bOverridePerStatusColors);
     DBWriteContactSettingByte(NULL, "CLCExt", "bskinned", (BYTE)(IsDlgButtonChecked(hwndDlg, IDC_SETALLBUTTONSKINNED) ? 1 : 0));
-	DBWriteContactSettingByte(NULL, "CLCExt", "FastGradients", g_CluiData.bWantFastGradients);
+	DBWriteContactSettingByte(NULL, "CLCExt", "FastGradients", cfg::dat.bWantFastGradients);
     DBWriteContactSettingByte(NULL, "CLC", "IgnoreSelforGroups", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_IGNORESELFORGROUPS));
 
-    DBWriteContactSettingDword(NULL, "CLCExt", "grp_padding", g_CluiData.group_padding);
-    DBWriteContactSettingByte(NULL, "CLCExt", "frame_height", g_CluiData.titleBarHeight);
+    DBWriteContactSettingDword(NULL, "CLCExt", "grp_padding", cfg::dat.group_padding);
+    DBWriteContactSettingByte(NULL, "CLCExt", "frame_height", cfg::dat.titleBarHeight);
 
     Reload3dBevelColors();
     SetButtonToSkinned();
@@ -958,7 +957,7 @@ done_with_glyph:
                     g_CLUIImageItem = newItem;
                     GetPrivateProfileStringA(itemname, "Colorkey", "e5e5e5", buffer, 500, szFileName);
                     clr = HexStringToLong(buffer);
-                    g_CluiData.colorkey = clr;
+                    cfg::dat.colorkey = clr;
                     DBWriteContactSettingDword(NULL, "CLUI", "ColorKey", clr);
                     if(g_CLUISkinnedBkColor)
                         DeleteObject(g_CLUISkinnedBkColor);
@@ -1215,7 +1214,7 @@ static void BTN_ReadItem(char *itemName, char *file)
     GetPrivateProfileStringA(itemName, "Tip", "None", szBuffer, 1000, file);
     if(strcmp(szBuffer, "None")) {
 #if defined(_UNICODE)
-        MultiByteToWideChar(g_CluiData.langPackCP, 0, szBuffer, -1, tmpItem.szTip, 256);
+        MultiByteToWideChar(cfg::dat.langPackCP, 0, szBuffer, -1, tmpItem.szTip, 256);
         tmpItem.szTip[255] = 0;
 #else
         mir_snprintf(tmpItem.szTip, 256, "%s", szBuffer);
@@ -1313,7 +1312,7 @@ void IMG_LoadItems()
             }
             i++;
         }
-        g_CluiData.dwFlags &= ~CLUI_FRAME_SHOWTOPBUTTONS;
+        cfg::dat.dwFlags &= ~CLUI_FRAME_SHOWTOPBUTTONS;
         ConfigureCLUIGeometry(0);
     }
     if(g_ImageItems) {
@@ -1321,14 +1320,14 @@ void IMG_LoadItems()
         SetButtonToSkinned();
     }
     if(g_CLUIImageItem) {
-        g_CluiData.bFullTransparent = TRUE;
-        g_CluiData.dwFlags &= ~CLUI_FRAME_CLISTSUNKEN;
-        DBWriteContactSettingByte(NULL, "CLUI", "fulltransparent", (BYTE)g_CluiData.bFullTransparent);
+        cfg::dat.bFullTransparent = TRUE;
+        cfg::dat.dwFlags &= ~CLUI_FRAME_CLISTSUNKEN;
+        DBWriteContactSettingByte(NULL, "CLUI", "fulltransparent", (BYTE)cfg::dat.bFullTransparent);
         DBWriteContactSettingByte(NULL, "CLUI", "WindowStyle", SETTING_WINDOWSTYLE_NOBORDER);
         ApplyCLUIBorderStyle(pcli->hwndContactList);
         SetWindowLong(pcli->hwndContactList, GWL_EXSTYLE, GetWindowLong(pcli->hwndContactList, GWL_EXSTYLE) | WS_EX_LAYERED);
         if(MySetLayeredWindowAttributes)
-            MySetLayeredWindowAttributes(pcli->hwndContactList, g_CluiData.colorkey, 0, LWA_COLORKEY);
+            MySetLayeredWindowAttributes(pcli->hwndContactList, cfg::dat.colorkey, 0, LWA_COLORKEY);
     }
     CoolSB_SetupScrollBar();
 }
@@ -1445,7 +1444,7 @@ void extbk_import(char *file, HWND hwndDlg)
     char buffer[255];
     char szKey[255], szSection[255];
     DWORD data, version = 0;
-    int oldexIconScale = g_CluiData.exIconScale;
+    int oldexIconScale = cfg::dat.exIconScale;
 
     for (n = 0; n <= ID_EXTBK_LAST - ID_STATUS_OFFLINE; n++) {
         if (StatusItems[n].statusID != ID_EXTBKSEPARATOR) {
@@ -1547,7 +1546,7 @@ void extbk_import(char *file, HWND hwndDlg)
 
     Reload3dBevelColors();
     ReloadThemedOptions();
-    SetTBSKinned(g_CluiData.bSkinnedToolbar);
+    SetTBSKinned(cfg::dat.bSkinnedToolbar);
     // refresh
     if(hwndDlg && ServiceExists(MS_CLNSE_FILLBYCURRENTSEL))
         CallService(MS_CLNSE_FILLBYCURRENTSEL, (WPARAM)hwndDlg, 0);
@@ -1555,9 +1554,9 @@ void extbk_import(char *file, HWND hwndDlg)
     ConfigureCLUIGeometry(1);
     SendMessage(pcli->hwndContactList, WM_SIZE, 0, 0);
     RedrawWindow(pcli->hwndContactList,NULL,NULL,RDW_INVALIDATE|RDW_ERASE|RDW_FRAME|RDW_UPDATENOW|RDW_ALLCHILDREN);
-    if(oldexIconScale != g_CluiData.exIconScale) {
-        ImageList_SetIconSize(himlExtraImages, g_CluiData.exIconScale, g_CluiData.exIconScale);
-        if(g_CluiData.IcoLib_Avail)
+    if(oldexIconScale != cfg::dat.exIconScale) {
+        ImageList_SetIconSize(himlExtraImages, cfg::dat.exIconScale, cfg::dat.exIconScale);
+        if(cfg::dat.IcoLib_Avail)
             IcoLibReloadIcons();
         else {
             CLN_LoadAllIcons(0);
@@ -1611,18 +1610,18 @@ static INT_PTR CALLBACK DlgProcSkinOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
             CheckDlgButton(hwndDlg, IDC_SETALLBUTTONSKINNED, DBGetContactSettingByte(NULL, "CLCExt", "bskinned", 0));
 
             SendDlgItemMessage(hwndDlg, IDC_CORNERSPIN, UDM_SETRANGE, 0, MAKELONG(10, 0));
-            SendDlgItemMessage(hwndDlg, IDC_CORNERSPIN, UDM_SETPOS, 0, g_CluiData.cornerRadius);
+            SendDlgItemMessage(hwndDlg, IDC_CORNERSPIN, UDM_SETPOS, 0, cfg::dat.cornerRadius);
 
             SendDlgItemMessage(hwndDlg, IDC_GRPPADDINGSPIN, UDM_SETRANGE, 0, MAKELONG(20, 0));
-            SendDlgItemMessage(hwndDlg, IDC_GRPPADDINGSPIN, UDM_SETPOS, 0, g_CluiData.group_padding);
+            SendDlgItemMessage(hwndDlg, IDC_GRPPADDINGSPIN, UDM_SETPOS, 0, cfg::dat.group_padding);
 
             SendDlgItemMessage(hwndDlg, IDC_LASTITEMPADDINGSPIN, UDM_SETRANGE, 0, MAKELONG(40, 0));
-            SendDlgItemMessage(hwndDlg, IDC_LASTITEMPADDINGSPIN, UDM_SETPOS, 0, g_CluiData.titleBarHeight);
+            SendDlgItemMessage(hwndDlg, IDC_LASTITEMPADDINGSPIN, UDM_SETPOS, 0, cfg::dat.titleBarHeight);
 
-            CheckDlgButton(hwndDlg, IDC_APPLYINDENTBG, g_CluiData.bApplyIndentToBg);
-            CheckDlgButton(hwndDlg, IDC_USEPERPROTO, g_CluiData.bUsePerProto);
-            CheckDlgButton(hwndDlg, IDC_OVERRIDEPERSTATUSCOLOR, g_CluiData.bOverridePerStatusColors);
-            CheckDlgButton(hwndDlg, IDC_FASTGRADIENT, g_CluiData.bWantFastGradients);
+            CheckDlgButton(hwndDlg, IDC_APPLYINDENTBG, cfg::dat.bApplyIndentToBg);
+            CheckDlgButton(hwndDlg, IDC_USEPERPROTO, cfg::dat.bUsePerProto);
+            CheckDlgButton(hwndDlg, IDC_OVERRIDEPERSTATUSCOLOR, cfg::dat.bOverridePerStatusColors);
+            CheckDlgButton(hwndDlg, IDC_FASTGRADIENT, cfg::dat.bWantFastGradients);
             CheckDlgButton(hwndDlg, IDC_IGNORESELFORGROUPS, DBGetContactSettingByte(NULL, "CLC", "IgnoreSelforGroups", 0) ? BST_CHECKED : BST_UNCHECKED);
 
 
@@ -1654,7 +1653,7 @@ static INT_PTR CALLBACK DlgProcSkinOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
                 case IDC_UNLOAD:
                     IMG_DeleteItems();
                     CreateButtonBar(pcli->hwndContactList);
-                    if(g_CluiData.bSkinnedToolbar)
+                    if(cfg::dat.bSkinnedToolbar)
                         SetTBSKinned(1);
                     ConfigureFrame();
                     SetButtonStates(pcli->hwndContactList);
@@ -1900,7 +1899,7 @@ int CoolSB_SetupScrollBar()
      * and no item is set to ignored
      */
 
-    g_CluiData.bSkinnedScrollbar = !StatusItems[ID_EXTBKSCROLLBACK - ID_STATUS_OFFLINE].IGNORED &&
+    cfg::dat.bSkinnedScrollbar = !StatusItems[ID_EXTBKSCROLLBACK - ID_STATUS_OFFLINE].IGNORED &&
         !StatusItems[ID_EXTBKSCROLLBACKLOWER - ID_STATUS_OFFLINE].IGNORED &&
         !StatusItems[ID_EXTBKSCROLLTHUMB - ID_STATUS_OFFLINE].IGNORED &&
         !StatusItems[ID_EXTBKSCROLLTHUMBHOVER - ID_STATUS_OFFLINE].IGNORED &&
@@ -1919,13 +1918,13 @@ int CoolSB_SetupScrollBar()
         !StatusItems[ID_EXTBKSCROLLBUTTONHOVER - ID_STATUS_OFFLINE].imageItem ||
         !StatusItems[ID_EXTBKSCROLLBUTTONPRESSED - ID_STATUS_OFFLINE].imageItem)
 
-        g_CluiData.bSkinnedScrollbar = FALSE;
+        cfg::dat.bSkinnedScrollbar = FALSE;
 
     if(DBGetContactSettingByte(NULL, "CLC", "NoVScrollBar", 0)) {
         UninitializeCoolSB(pcli->hwndContactTree);
         return 0;
     }
-    if(g_CluiData.bSkinnedScrollbar) {
+    if(cfg::dat.bSkinnedScrollbar) {
         InitializeCoolSB(pcli->hwndContactTree);
         CoolSB_SetStyle(pcli->hwndContactTree, SB_VERT, CSBS_HOTTRACKED);
     }

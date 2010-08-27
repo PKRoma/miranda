@@ -28,7 +28,6 @@ UNICODE done
 #include <m_icq.h>
 
 extern HIMAGELIST hCListImages, himlExtraImages;;
-extern struct CluiData g_CluiData;
 extern int g_shutDown;
 extern PLUGININFOEX pluginInfo;
 
@@ -80,7 +79,7 @@ void CluiProtocolStatusChanged( int parStatus, const char* szProto )
 	DBVARIANT dbv = {0};
 	int iIcon = 0;
 	HICON hIcon = 0;
-	int rdelta = g_CluiData.bCLeft + g_CluiData.bCRight;
+	int rdelta = cfg::dat.bCLeft + cfg::dat.bCRight;
 	BYTE windowStyle;
 
 	if (pcli->hwndStatus == 0 || g_shutDown)
@@ -98,7 +97,7 @@ void CluiProtocolStatusChanged( int parStatus, const char* szProto )
 
 	partWidths=(int*)_alloca(( protoCount+1)*sizeof(int));
 
-	if (g_CluiData.bEqualSections) {
+	if (cfg::dat.bEqualSections) {
 		RECT rc;
 		int part;
 		//SendMessage(pcli->hwndStatus,WM_SIZE,0,0);        // XXX fix (may break status bar geometry)
@@ -114,9 +113,9 @@ void CluiProtocolStatusChanged( int parStatus, const char* szProto )
 				if ( !pcli->pfnGetProtocolVisibility( accs[i]->szModuleName ))
 					continue;
 
-				partWidths[ part ] = ((rc.right-rc.left-rdelta)/toshow)*(part+1) + g_CluiData.bCLeft;
+				partWidths[ part ] = ((rc.right-rc.left-rdelta)/toshow)*(part+1) + cfg::dat.bCLeft;
 				if ( part == toshow-1 )
-					partWidths[ part ] += g_CluiData.bCRight;
+					partWidths[ part ] += cfg::dat.bCRight;
 				part++;
 		}	}
 
@@ -159,7 +158,7 @@ void CluiProtocolStatusChanged( int parStatus, const char* szProto )
 				GetTextExtentPoint32(hdc, modeDescr, lstrlen(modeDescr), &textSize );
 				x += textSize.cx + GetSystemMetrics(SM_CXBORDER) * 4; // The SB panel doesnt allocate enough room
 			}
-			partWidths[partCount]=(partCount?partWidths[partCount-1]:g_CluiData.bCLeft)+ x + 2;
+			partWidths[partCount]=(partCount?partWidths[partCount-1]:cfg::dat.bCLeft)+ x + 2;
 			partCount++;
 		}
 		SelectObject(hdc,hofont);
@@ -173,7 +172,7 @@ void CluiProtocolStatusChanged( int parStatus, const char* szProto )
 
 	partWidths[partCount-1]=-1;
 	windowStyle = DBGetContactSettingByte(NULL, "CLUI", "WindowStyle", 0);
-	SendMessage(pcli->hwndStatus,SB_SETMINHEIGHT, 18 + g_CluiData.bClipBorder + ((windowStyle == SETTING_WINDOWSTYLE_THINBORDER || windowStyle == SETTING_WINDOWSTYLE_NOBORDER) ? 3 : 0), 0);
+	SendMessage(pcli->hwndStatus,SB_SETMINHEIGHT, 18 + cfg::dat.bClipBorder + ((windowStyle == SETTING_WINDOWSTYLE_THINBORDER || windowStyle == SETTING_WINDOWSTYLE_NOBORDER) ? 3 : 0), 0);
 	SendMessage(pcli->hwndStatus, SB_SETPARTS, partCount, (LPARAM)partWidths);
 
 	for ( partCount=0, i=0; i < protoCount; i++ ) {      //count down since built in ones tend to go at the end

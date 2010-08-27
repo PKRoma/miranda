@@ -1,28 +1,35 @@
 /*
+ * astyle --force-indent=tab=4 --brackets=linux --indent-switches
+ *		  --pad=oper --one-line=keep-blocks  --unpad=paren
+ *
+ * Miranda IM: the free IM client for Microsoft* Windows*
+ *
+ * Copyright 2000-2010 Miranda ICQ/IM project,
+ * all portions of this codebase are copyrighted to the people
+ * listed in contributors.txt.
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * you should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ *
+ * part of clist_nicer plugin for Miranda.
+ *
+ * (C) 2005-2010 by silvercircle _at_ gmail _dot_ com and contributors
+ *
+ * $Id$
+ *
+ */
 
-Miranda IM: the free IM client for Microsoft* Windows*
-
-Copyright 2000-2003 Miranda ICQ/IM project,
-all portions of this codebase are copyrighted to the people
-listed in contributors.txt.
-
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
-of the License, or (at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-
-UNICODE done
-
-*/
 #include <commonheaders.h>
 
 BOOL (WINAPI *MySetProcessWorkingSetSize)(HANDLE, SIZE_T, SIZE_T) = 0;
@@ -43,8 +50,6 @@ extern int       g_maxStatus;
 extern HANDLE    hSvc_GetContactStatusMsg;
 extern ImageItem *g_CLUIImageItem;
 
-extern struct CluiData g_CluiData;
-
 static INT_PTR GetStatusMode(WPARAM wParam, LPARAM lParam)
 {
 	return(g_maxStatus == ID_STATUS_OFFLINE ? pcli->currentDesiredStatusMode : g_maxStatus);
@@ -57,7 +62,7 @@ int IconFromStatusMode(const char *szProto, int status, HANDLE hContact, HICON *
 	char *szFinalProto;
 	int finalStatus;
 
-	if (szProto != NULL && !strcmp(szProto, g_CluiData.szMetaName) && g_CluiData.bMetaAvail && hContact != 0 && !(g_CluiData.dwFlags & CLUI_USEMETAICONS)) {
+	if (szProto != NULL && !strcmp(szProto, cfg::dat.szMetaName) && cfg::dat.bMetaAvail && hContact != 0 && !(cfg::dat.dwFlags & CLUI_USEMETAICONS)) {
 		HANDLE hSubContact = (HANDLE) CallService(MS_MC_GETMOSTONLINECONTACT, (WPARAM) hContact, 0);
 		szFinalProto = (char*) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hSubContact, 0);
 		finalStatus = (status == 0) ? (WORD) DBGetContactSettingWord(hSubContact, szFinalProto, "Status", ID_STATUS_OFFLINE) : status;
@@ -67,13 +72,13 @@ int IconFromStatusMode(const char *szProto, int status, HANDLE hContact, HICON *
 	}
 
 	if(status >= ID_STATUS_CONNECTING && status < ID_STATUS_OFFLINE && phIcon != NULL) {
-		if(szProto && g_CluiData.IcoLib_Avail) {
+		if(szProto && cfg::dat.IcoLib_Avail) {
 			char szBuf[128];
 			mir_snprintf(szBuf, 128, "%s_conn", szProto);
 			*phIcon = (HICON)CallService(MS_SKIN2_GETICON, 0, (LPARAM)szBuf);
 		}
 		else if(szProto)
-			*phIcon = g_CluiData.hIconConnecting;;
+			*phIcon = cfg::dat.hIconConnecting;;
 	}
 	return saveIconFromStatusMode(szFinalProto, finalStatus, hContact);
 }
@@ -128,7 +133,7 @@ int GetWindowVisibleState(HWND hWnd, int iStepX, int iStepY)
 		HRGN rgn = 0;
 		POINT ptOrig;
         RECT  rcClient;
-		int clip = (int)g_CluiData.bClipBorder;
+		int clip = (int)cfg::dat.bClipBorder;
 
         GetClientRect(hWnd, &rcClient);
         ptOrig.x = ptOrig.y = 0;

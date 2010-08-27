@@ -42,7 +42,6 @@ extern INT_PTR CALLBACK DlgProcGenOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 extern BOOL (WINAPI *MyEnableThemeDialogTexture)(HANDLE, DWORD);
 extern void ReloadExtraIcons( void );
 
-extern struct CluiData g_CluiData;
 extern int    g_nextExtraCacheEntry;
 extern struct ExtraCache *g_ExtraCache;
 extern HIMAGELIST himlExtraImages;
@@ -318,36 +317,36 @@ static int DSP_Read(DISPLAYPROFILESET *p)
 
 static void DSP_LoadFromDefaults(DISPLAYPROFILE *p)
 {
-    p->dwExtraImageMask = g_CluiData.dwExtraImageMask;
-    p->exIconScale = g_CluiData.exIconScale;
-    p->bCenterStatusIcons = g_CluiData.bCenterStatusIcons;
-    p->dwFlags = g_CluiData.dwFlags;
+    p->dwExtraImageMask = cfg::dat.dwExtraImageMask;
+    p->exIconScale = cfg::dat.exIconScale;
+    p->bCenterStatusIcons = cfg::dat.bCenterStatusIcons;
+    p->dwFlags = cfg::dat.dwFlags;
     p->bDimIdle = DBGetContactSettingByte(NULL, "CLC", "ShowIdle", CLCDEFAULT_SHOWIDLE);
-    p->avatarBorder = g_CluiData.avatarBorder;
-    p->avatarSize = g_CluiData.avatarSize;
-    p->avatarRadius = g_CluiData.avatarRadius;
-    p->dualRowMode = g_CluiData.dualRowMode;
-    p->bNoOfflineAvatars = g_CluiData.bNoOfflineAvatars;
-    p->bShowLocalTime = g_CluiData.bShowLocalTime;
-    p->bShowLocalTimeSelective = g_CluiData.bShowLocalTimeSelective;
+    p->avatarBorder = cfg::dat.avatarBorder;
+    p->avatarSize = cfg::dat.avatarSize;
+    p->avatarRadius = cfg::dat.avatarRadius;
+    p->dualRowMode = cfg::dat.dualRowMode;
+    p->bNoOfflineAvatars = cfg::dat.bNoOfflineAvatars;
+    p->bShowLocalTime = cfg::dat.bShowLocalTime;
+    p->bShowLocalTimeSelective = cfg::dat.bShowLocalTimeSelective;
     p->clcExStyle = DBGetContactSettingDword(NULL, "CLC", "ExStyle", pcli->pfnGetDefaultExStyle());
     p->clcOfflineModes = DBGetContactSettingDword(NULL, "CLC", "OfflineModes", CLCDEFAULT_OFFLINEMODES);
-    p->bDontSeparateOffline = g_CluiData.bDontSeparateOffline;
-    p->sortOrder[0] = g_CluiData.sortOrder[0];
-    p->sortOrder[1] = g_CluiData.sortOrder[1];
-    p->sortOrder[2] = g_CluiData.sortOrder[2];
-    p->bUseDCMirroring = g_CluiData.bUseDCMirroring;
+    p->bDontSeparateOffline = cfg::dat.bDontSeparateOffline;
+    p->sortOrder[0] = cfg::dat.sortOrder[0];
+    p->sortOrder[1] = cfg::dat.sortOrder[1];
+    p->sortOrder[2] = cfg::dat.sortOrder[2];
+    p->bUseDCMirroring = cfg::dat.bUseDCMirroring;
     p->bCenterGroupNames = DBGetContactSettingByte(NULL, "CLCExt", "EXBK_CenterGroupnames", 0);
-    p->bGroupAlign = g_CluiData.bGroupAlign;
-    p->avatarPadding = g_CluiData.avatarPadding;
+    p->bGroupAlign = cfg::dat.bGroupAlign;
+    p->avatarPadding = cfg::dat.avatarPadding;
 
     p->bLeftMargin = DBGetContactSettingByte(NULL, "CLC", "LeftMargin", CLCDEFAULT_LEFTMARGIN);
     p->bRightMargin =  DBGetContactSettingByte(NULL, "CLC", "RightMargin", CLCDEFAULT_LEFTMARGIN);
-    p->bRowSpacing = g_CluiData.bRowSpacing;
+    p->bRowSpacing = cfg::dat.bRowSpacing;
     p->bGroupIndent = DBGetContactSettingByte(NULL, "CLC", "GroupIndent", CLCDEFAULT_GROUPINDENT);
     p->bRowHeight = DBGetContactSettingByte(NULL, "CLC", "RowHeight", CLCDEFAULT_ROWHEIGHT);
     p->bGroupRowHeight = DBGetContactSettingByte(NULL, "CLC", "GRowHeight", CLCDEFAULT_ROWHEIGHT);
-    CopyMemory(p->exIconOrder, g_CluiData.exIconOrder, EXICON_COUNT);
+    CopyMemory(p->exIconOrder, cfg::dat.exIconOrder, EXICON_COUNT);
 }
 
 /*
@@ -356,25 +355,25 @@ static void DSP_LoadFromDefaults(DISPLAYPROFILE *p)
 
 void DSP_Apply(DISPLAYPROFILE *p)
 {
-    int   oldexIconScale = g_CluiData.exIconScale;
-    DWORD oldMask = g_CluiData.dwExtraImageMask;
+    int   oldexIconScale = cfg::dat.exIconScale;
+    DWORD oldMask = cfg::dat.dwExtraImageMask;
     int   i;
     DWORD exStyle;
     char  temp[EXICON_COUNT + 1];
     /*
      * icons page
      */
-    g_CluiData.dwFlags &= ~(CLUI_FRAME_STATUSICONS | CLUI_SHOWVISI | CLUI_USEMETAICONS | CLUI_FRAME_USEXSTATUSASSTATUS | CLUI_FRAME_OVERLAYICONS | CLUI_FRAME_SELECTIVEICONS);
-    g_CluiData.dwExtraImageMask = p->dwExtraImageMask;
-    g_CluiData.exIconScale = p->exIconScale;
-    g_CluiData.bCenterStatusIcons = p->bCenterStatusIcons;
+    cfg::dat.dwFlags &= ~(CLUI_FRAME_STATUSICONS | CLUI_SHOWVISI | CLUI_USEMETAICONS | CLUI_FRAME_USEXSTATUSASSTATUS | CLUI_FRAME_OVERLAYICONS | CLUI_FRAME_SELECTIVEICONS);
+    cfg::dat.dwExtraImageMask = p->dwExtraImageMask;
+    cfg::dat.exIconScale = p->exIconScale;
+    cfg::dat.bCenterStatusIcons = p->bCenterStatusIcons;
 
-    DBWriteContactSettingDword(NULL, "CLUI", "ximgmask", g_CluiData.dwExtraImageMask);
-    DBWriteContactSettingByte(NULL, "CLC", "ExIconScale", (BYTE)g_CluiData.exIconScale);
-    DBWriteContactSettingByte(NULL, "CLC", "si_centered", (BYTE)g_CluiData.bCenterStatusIcons);
+    DBWriteContactSettingDword(NULL, "CLUI", "ximgmask", cfg::dat.dwExtraImageMask);
+    DBWriteContactSettingByte(NULL, "CLC", "ExIconScale", (BYTE)cfg::dat.exIconScale);
+    DBWriteContactSettingByte(NULL, "CLC", "si_centered", (BYTE)cfg::dat.bCenterStatusIcons);
     DBWriteContactSettingByte(NULL, "CLC", "ShowIdle", (BYTE)p->bDimIdle);
 
-    CopyMemory(g_CluiData.exIconOrder, p->exIconOrder, EXICON_COUNT);
+    CopyMemory(cfg::dat.exIconOrder, p->exIconOrder, EXICON_COUNT);
     CopyMemory(temp, p->exIconOrder, EXICON_COUNT);
     temp[EXICON_COUNT] = 0;
     DBWriteContactSettingString(NULL, "CLUI", "exIconOrder", temp);
@@ -383,49 +382,49 @@ void DSP_Apply(DISPLAYPROFILE *p)
      * advanced (avatars & 2nd row)
      */
 
-    g_CluiData.dwFlags &= ~(CLUI_FRAME_AVATARSLEFT | CLUI_FRAME_AVATARSRIGHT | CLUI_FRAME_AVATARSRIGHTWITHNICK |
+    cfg::dat.dwFlags &= ~(CLUI_FRAME_AVATARSLEFT | CLUI_FRAME_AVATARSRIGHT | CLUI_FRAME_AVATARSRIGHTWITHNICK |
                             CLUI_FRAME_AVATARS | CLUI_FRAME_AVATARBORDER | CLUI_FRAME_ROUNDAVATAR |
                             CLUI_FRAME_ALWAYSALIGNNICK | CLUI_FRAME_SHOWSTATUSMSG | CLUI_FRAME_GDIPLUS);
 
-    g_CluiData.avatarSize = p->avatarSize;
-    g_CluiData.avatarBorder = p->avatarBorder;
-    g_CluiData.avatarRadius = p->avatarRadius;
-    g_CluiData.dualRowMode = p->dualRowMode;
-    g_CluiData.bNoOfflineAvatars = p->bNoOfflineAvatars;
-    g_CluiData.bShowLocalTime = p->bShowLocalTime;
-    g_CluiData.bShowLocalTimeSelective = p->bShowLocalTimeSelective;
+    cfg::dat.avatarSize = p->avatarSize;
+    cfg::dat.avatarBorder = p->avatarBorder;
+    cfg::dat.avatarRadius = p->avatarRadius;
+    cfg::dat.dualRowMode = p->dualRowMode;
+    cfg::dat.bNoOfflineAvatars = p->bNoOfflineAvatars;
+    cfg::dat.bShowLocalTime = p->bShowLocalTime;
+    cfg::dat.bShowLocalTimeSelective = p->bShowLocalTimeSelective;
 
-    if(g_CluiData.hBrushAvatarBorder)
-        DeleteObject(g_CluiData.hBrushAvatarBorder);
-    g_CluiData.hBrushAvatarBorder = CreateSolidBrush(g_CluiData.avatarBorder);
+    if(cfg::dat.hBrushAvatarBorder)
+        DeleteObject(cfg::dat.hBrushAvatarBorder);
+    cfg::dat.hBrushAvatarBorder = CreateSolidBrush(cfg::dat.avatarBorder);
 
     /*
      * items page
      */
 
-    g_CluiData.dwFlags &= ~CLUI_STICKYEVENTS;
+    cfg::dat.dwFlags &= ~CLUI_STICKYEVENTS;
 
-    g_CluiData.sortOrder[0] = p->sortOrder[0];
-    g_CluiData.sortOrder[1] = p->sortOrder[1];
-    g_CluiData.sortOrder[2] = p->sortOrder[2];
-    g_CluiData.bDontSeparateOffline = p->bDontSeparateOffline;
-    DBWriteContactSettingByte(NULL, "CList", "DontSeparateOffline", (BYTE)g_CluiData.bDontSeparateOffline);
+    cfg::dat.sortOrder[0] = p->sortOrder[0];
+    cfg::dat.sortOrder[1] = p->sortOrder[1];
+    cfg::dat.sortOrder[2] = p->sortOrder[2];
+    cfg::dat.bDontSeparateOffline = p->bDontSeparateOffline;
+    DBWriteContactSettingByte(NULL, "CList", "DontSeparateOffline", (BYTE)cfg::dat.bDontSeparateOffline);
     DBWriteContactSettingDword(NULL, "CLC", "OfflineModes", p->clcOfflineModes);
 
     DBWriteContactSettingDword(NULL, "CList", "SortOrder",
-        MAKELONG(MAKEWORD(g_CluiData.sortOrder[0], g_CluiData.sortOrder[1]),
-        MAKEWORD(g_CluiData.sortOrder[2], 0)));
+        MAKELONG(MAKEWORD(cfg::dat.sortOrder[0], cfg::dat.sortOrder[1]),
+        MAKEWORD(cfg::dat.sortOrder[2], 0)));
 
-    g_CluiData.bUseDCMirroring = p->bUseDCMirroring;
-    DBWriteContactSettingByte(NULL, "CLC", "MirrorDC", g_CluiData.bUseDCMirroring);
+    cfg::dat.bUseDCMirroring = p->bUseDCMirroring;
+    DBWriteContactSettingByte(NULL, "CLC", "MirrorDC", cfg::dat.bUseDCMirroring);
 
     /*
      * groups page
      */
 
-    g_CluiData.dwFlags &= ~CLUI_FRAME_NOGROUPICON;
-    g_CluiData.bGroupAlign = p->bGroupAlign;
-    DBWriteContactSettingByte(NULL, "CLC", "GroupAlign", g_CluiData.bGroupAlign);
+    cfg::dat.dwFlags &= ~CLUI_FRAME_NOGROUPICON;
+    cfg::dat.bGroupAlign = p->bGroupAlign;
+    DBWriteContactSettingByte(NULL, "CLC", "GroupAlign", cfg::dat.bGroupAlign);
     DBWriteContactSettingByte(NULL, "CLCExt", "EXBK_CenterGroupnames", (BYTE)p->bCenterGroupNames);
 
     exStyle = DBGetContactSettingDword(NULL, "CLC", "ExStyle", pcli->pfnGetDefaultExStyle());
@@ -434,11 +433,11 @@ void DSP_Apply(DISPLAYPROFILE *p)
 
     exStyle |= p->clcExStyle;
     DBWriteContactSettingDword(NULL, "CLC", "ExStyle", exStyle);
-    g_CluiData.avatarPadding = p->avatarPadding;
-    DBWriteContactSettingByte(NULL, "CList", "AvatarPadding", g_CluiData.avatarPadding);
+    cfg::dat.avatarPadding = p->avatarPadding;
+    DBWriteContactSettingByte(NULL, "CList", "AvatarPadding", cfg::dat.avatarPadding);
 
-    g_CluiData.bRowSpacing = p->bRowSpacing;
-    DBWriteContactSettingByte(NULL, "CLC", "RowGap", g_CluiData.bRowSpacing);
+    cfg::dat.bRowSpacing = p->bRowSpacing;
+    DBWriteContactSettingByte(NULL, "CLC", "RowGap", cfg::dat.bRowSpacing);
 
     DBWriteContactSettingByte(NULL, "CLC", "LeftMargin", (BYTE)p->bLeftMargin);
     DBWriteContactSettingByte(NULL, "CLC", "RightMargin", (BYTE)p->bRightMargin);
@@ -446,27 +445,27 @@ void DSP_Apply(DISPLAYPROFILE *p)
     DBWriteContactSettingByte(NULL, "CLC", "RowHeight", (BYTE)p->bRowHeight);
     DBWriteContactSettingByte(NULL, "CLC", "GRowHeight", (BYTE)p->bGroupRowHeight);
 
-    if(g_CluiData.sortOrder[0] == SORTBY_LASTMSG || g_CluiData.sortOrder[1] == SORTBY_LASTMSG || g_CluiData.sortOrder[2] == SORTBY_LASTMSG) {
+    if(cfg::dat.sortOrder[0] == SORTBY_LASTMSG || cfg::dat.sortOrder[1] == SORTBY_LASTMSG || cfg::dat.sortOrder[2] == SORTBY_LASTMSG) {
         int i;
 
         for(i = 0; i < g_nextExtraCacheEntry; i++)
             g_ExtraCache[i].dwLastMsgTime = INTSORT_GetLastMsgTime(g_ExtraCache[i].hContact);
     }
 
-    DBWriteContactSettingByte(NULL, "CLC", "ShowLocalTime", (BYTE)g_CluiData.bShowLocalTime);
-    DBWriteContactSettingByte(NULL, "CLC", "SelectiveLocalTime", (BYTE)g_CluiData.bShowLocalTimeSelective);
-    DBWriteContactSettingDword(NULL, "CLC", "avatarborder", g_CluiData.avatarBorder);
-    DBWriteContactSettingDword(NULL, "CLC", "avatarradius", g_CluiData.avatarRadius);
-    DBWriteContactSettingWord(NULL, "CList", "AvatarSize", (WORD)g_CluiData.avatarSize);
-    DBWriteContactSettingByte(NULL, "CLC", "DualRowMode", g_CluiData.dualRowMode);
-    DBWriteContactSettingByte(NULL, "CList", "NoOfflineAV", (BYTE)g_CluiData.bNoOfflineAvatars);
+    DBWriteContactSettingByte(NULL, "CLC", "ShowLocalTime", (BYTE)cfg::dat.bShowLocalTime);
+    DBWriteContactSettingByte(NULL, "CLC", "SelectiveLocalTime", (BYTE)cfg::dat.bShowLocalTimeSelective);
+    DBWriteContactSettingDword(NULL, "CLC", "avatarborder", cfg::dat.avatarBorder);
+    DBWriteContactSettingDword(NULL, "CLC", "avatarradius", cfg::dat.avatarRadius);
+    DBWriteContactSettingWord(NULL, "CList", "AvatarSize", (WORD)cfg::dat.avatarSize);
+    DBWriteContactSettingByte(NULL, "CLC", "DualRowMode", cfg::dat.dualRowMode);
+    DBWriteContactSettingByte(NULL, "CList", "NoOfflineAV", (BYTE)cfg::dat.bNoOfflineAvatars);
 
     KillTimer(pcli->hwndContactTree, TIMERID_REFRESH);
-    if(g_CluiData.bShowLocalTime)
+    if(cfg::dat.bShowLocalTime)
         SetTimer(pcli->hwndContactTree, TIMERID_REFRESH, 65000, NULL);
 
-    g_CluiData.dwFlags |= p->dwFlags;
-    DBWriteContactSettingDword(NULL, "CLUI", "Frameflags", g_CluiData.dwFlags);
+    cfg::dat.dwFlags |= p->dwFlags;
+    DBWriteContactSettingDword(NULL, "CLUI", "Frameflags", cfg::dat.dwFlags);
 
     pDrawAlpha = NULL;
     if(!pDrawAlpha)
@@ -475,10 +474,10 @@ void DSP_Apply(DISPLAYPROFILE *p)
     for(i = 0; i < g_nextExtraCacheEntry; i++)
         g_ExtraCache[i].dwXMask = CalcXMask(g_ExtraCache[i].hContact);
 
-    if(oldexIconScale != g_CluiData.exIconScale) {
+    if(oldexIconScale != cfg::dat.exIconScale) {
         ImageList_RemoveAll(himlExtraImages);
-        ImageList_SetIconSize(himlExtraImages, g_CluiData.exIconScale, g_CluiData.exIconScale);
-        if(g_CluiData.IcoLib_Avail)
+        ImageList_SetIconSize(himlExtraImages, cfg::dat.exIconScale, cfg::dat.exIconScale);
+        if(cfg::dat.IcoLib_Avail)
             IcoLibReloadIcons();
         else {
             CLN_LoadAllIcons(0);
@@ -734,7 +733,7 @@ static INT_PTR CALLBACK DlgProcDspAdvanced(HWND hwndDlg, UINT msg, WPARAM wParam
             SendDlgItemMessage(hwndDlg, IDC_ALIGNMENT, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Far right"));
             SendDlgItemMessage(hwndDlg, IDC_ALIGNMENT, CB_INSERTSTRING, -1, (LPARAM)TranslateT("With Nickname - right"));
 
-            if(g_CluiData.bAvatarServiceAvail) {
+            if(cfg::dat.bAvatarServiceAvail) {
                 EnableWindow(GetDlgItem(hwndDlg, IDC_CLISTAVATARS), TRUE);
                 while(avatar_controls[i] != 0)
                     EnableWindow(GetDlgItem(hwndDlg, avatar_controls[i++]), TRUE);
@@ -1478,9 +1477,9 @@ static INT_PTR CALLBACK DlgProcClcMainOpts(HWND hwndDlg, UINT msg, WPARAM wParam
                 for (i = 0; i < sizeof(checkBoxToStyleEx) / sizeof(checkBoxToStyleEx[0]); i++)
                     CheckDlgButton(hwndDlg, checkBoxToStyleEx[i].id, (exStyle & checkBoxToStyleEx[i].flag) ^ (checkBoxToStyleEx[i].flag * checkBoxToStyleEx[i].not) ? BST_CHECKED : BST_UNCHECKED);
             }
-            CheckDlgButton(hwndDlg, IDC_FULLROWSELECT, (g_CluiData.dwFlags & CLUI_FULLROWSELECT) ? BST_CHECKED : BST_UNCHECKED);
+            CheckDlgButton(hwndDlg, IDC_FULLROWSELECT, (cfg::dat.dwFlags & CLUI_FULLROWSELECT) ? BST_CHECKED : BST_UNCHECKED);
 
-            CheckDlgButton(hwndDlg, IDC_DBLCLKAVATARS, g_CluiData.bDblClkAvatars);
+            CheckDlgButton(hwndDlg, IDC_DBLCLKAVATARS, cfg::dat.bDblClkAvatars);
             CheckDlgButton(hwndDlg, IDC_GREYOUT, DBGetContactSettingDword(NULL, "CLC", "GreyoutFlags", CLCDEFAULT_GREYOUTFLAGS) ? BST_CHECKED : BST_UNCHECKED);
             EnableWindow(GetDlgItem(hwndDlg, IDC_SMOOTHTIME), IsDlgButtonChecked(hwndDlg, IDC_NOTNOSMOOTHSCROLLING));
             EnableWindow(GetDlgItem(hwndDlg, IDC_GREYOUTOPTS), IsDlgButtonChecked(hwndDlg, IDC_GREYOUT));
@@ -1549,10 +1548,10 @@ static INT_PTR CALLBACK DlgProcClcMainOpts(HWND hwndDlg, UINT msg, WPARAM wParam
                             }
                             DBWriteContactSettingWord(NULL, "CLC", "ScrollTime", (WORD) SendDlgItemMessage(hwndDlg, IDC_SMOOTHTIMESPIN, UDM_GETPOS, 0, 0));
                             DBWriteContactSettingByte(NULL, "CLC", "NoVScrollBar", (BYTE) (IsDlgButtonChecked(hwndDlg, IDC_NOSCROLLBAR) ? 1 : 0));
-                            g_CluiData.dwFlags = IsDlgButtonChecked(hwndDlg, IDC_FULLROWSELECT) ? g_CluiData.dwFlags | CLUI_FULLROWSELECT : g_CluiData.dwFlags & ~CLUI_FULLROWSELECT;
-                            g_CluiData.bDblClkAvatars = IsDlgButtonChecked(hwndDlg, IDC_DBLCLKAVATARS) ? TRUE : FALSE;
-                            DBWriteContactSettingByte(NULL, "CLC", "dblclkav", (BYTE)g_CluiData.bDblClkAvatars);
-                            DBWriteContactSettingDword(NULL, "CLUI", "Frameflags", g_CluiData.dwFlags);
+                            cfg::dat.dwFlags = IsDlgButtonChecked(hwndDlg, IDC_FULLROWSELECT) ? cfg::dat.dwFlags | CLUI_FULLROWSELECT : cfg::dat.dwFlags & ~CLUI_FULLROWSELECT;
+                            cfg::dat.bDblClkAvatars = IsDlgButtonChecked(hwndDlg, IDC_DBLCLKAVATARS) ? TRUE : FALSE;
+                            DBWriteContactSettingByte(NULL, "CLC", "dblclkav", (BYTE)cfg::dat.bDblClkAvatars);
+                            DBWriteContactSettingDword(NULL, "CLUI", "Frameflags", cfg::dat.dwFlags);
 
                             pcli->pfnClcOptionsChanged();
                             CoolSB_SetupScrollBar();
@@ -1583,7 +1582,7 @@ static INT_PTR CALLBACK DlgProcClcBkgOpts(HWND hwndDlg, UINT msg, WPARAM wParam,
             SendDlgItemMessage(hwndDlg, IDC_BKGCOLOUR, CPM_SETDEFAULTCOLOUR, 0, CLCDEFAULT_BKCOLOUR);
             SendDlgItemMessage(hwndDlg, IDC_BKGCOLOUR, CPM_SETCOLOUR, 0, DBGetContactSettingDword(NULL, "CLC", "BkColour", CLCDEFAULT_BKCOLOUR));
             CheckDlgButton(hwndDlg, IDC_WINCOLOUR, DBGetContactSettingByte(NULL, "CLC", "UseWinColours", 0));
-            CheckDlgButton(hwndDlg, IDC_SKINMODE, g_CluiData.bWallpaperMode);
+            CheckDlgButton(hwndDlg, IDC_SKINMODE, cfg::dat.bWallpaperMode);
             SendMessage(hwndDlg, WM_USER + 11, 0, 0); {
                 DBVARIANT dbv;
 
@@ -1699,8 +1698,8 @@ static INT_PTR CALLBACK DlgProcClcBkgOpts(HWND hwndDlg, UINT msg, WPARAM wParam,
                                 if (IsDlgButtonChecked(hwndDlg, IDC_PROPORTIONAL))
                                     flags |= CLBF_PROPORTIONAL;
                                 DBWriteContactSettingWord(NULL, "CLC", "BkBmpUse", flags);
-                                g_CluiData.bWallpaperMode = IsDlgButtonChecked(hwndDlg, IDC_SKINMODE) ? 1 : 0;
-                                DBWriteContactSettingByte(NULL, "CLUI", "UseBkSkin", (BYTE)g_CluiData.bWallpaperMode);
+                                cfg::dat.bWallpaperMode = IsDlgButtonChecked(hwndDlg, IDC_SKINMODE) ? 1 : 0;
+                                DBWriteContactSettingByte(NULL, "CLUI", "UseBkSkin", (BYTE)cfg::dat.bWallpaperMode);
                             }
                             pcli->pfnClcOptionsChanged();
                             PostMessage(pcli->hwndContactList, CLUIINTM_REDRAW, 0, 0);

@@ -25,7 +25,6 @@ UNICODE done
 */
 #include "commonheaders.h"
 
-extern struct CluiData g_CluiData;
 extern int g_nextExtraCacheEntry;
 extern struct ExtraCache *g_ExtraCache;
 extern struct ClcData *g_clcData;
@@ -249,7 +248,7 @@ int __forceinline INTSORT_CompareContacts(const struct ClcContact* c1, const str
 	}
 
     // separate contacts treated as "offline"
-	if ( !g_CluiData.bDontSeparateOffline && ((statusa == ID_STATUS_OFFLINE) != (statusb == ID_STATUS_OFFLINE )))
+	if ( !cfg::dat.bDontSeparateOffline && ((statusa == ID_STATUS_OFFLINE) != (statusb == ID_STATUS_OFFLINE )))
 		return 2 * (statusa == ID_STATUS_OFFLINE) - 1;
 
 	switch( bywhat ) {
@@ -297,8 +296,8 @@ int CompareContacts(const struct ClcContact* c1, const struct ClcContact* c2)
 		return result;
 
 	for(i = 0; i <= 2; i++) {
-		if(g_CluiData.sortOrder[i]) {
-			result = INTSORT_CompareContacts(c1, c2, g_CluiData.sortOrder[i]);
+		if(cfg::dat.sortOrder[i]) {
+			result = INTSORT_CompareContacts(c1, c2, cfg::dat.sortOrder[i]);
 			if(result != 0)
 				return result;
 		}

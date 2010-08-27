@@ -32,7 +32,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 int DefaultImageListColorDepth = ILC_COLOR32;
 
 extern CRITICAL_SECTION cs_extcache;
-extern struct CluiData g_CluiData;
 extern struct ClcData *g_clcData;
 extern HPEN g_hPenCLUIFrames;
 extern HANDLE hExtraImageApplying;
@@ -85,7 +84,7 @@ static int ClcEventAdded(WPARAM wParam, LPARAM lParam)
 	int iEntry;
 	DWORD new_freq = 0;
 
-	g_CluiData.t_now = time(NULL);
+	cfg::dat.t_now = time(NULL);
 
 	if (wParam && lParam) {
 		dbei.cbSize = sizeof(dbei);
@@ -169,18 +168,18 @@ static int ClcSettingChanged(WPARAM wParam, LPARAM lParam)
 				else if (!__strcmp(cws->szSetting, "MirVer"))
 					NotifyEventHooks(hExtraImageApplying, wParam, 0);
 
-				if (g_CluiData.bMetaAvail && !(g_CluiData.dwFlags & CLUI_USEMETAICONS) && !__strcmp(szProto, g_CluiData.szMetaName)) {
+				if (cfg::dat.bMetaAvail && !(cfg::dat.dwFlags & CLUI_USEMETAICONS) && !__strcmp(szProto, cfg::dat.szMetaName)) {
 					if ((lstrlenA(cws->szSetting) > 6 && !strncmp(cws->szSetting, "Status", 6)) || strstr("Default,ForceSend,Nick", cws->szSetting))
 						pcli->pfnClcBroadcast(INTM_NAMEORDERCHANGED, wParam, lParam);
 				}
 			}
-			if (g_CluiData.bMetaAvail && g_CluiData.bMetaEnabled && !__strcmp(cws->szModule, g_CluiData.szMetaName) && !__strcmp(cws->szSetting, "IsSubcontact"))
+			if (cfg::dat.bMetaAvail && cfg::dat.bMetaEnabled && !__strcmp(cws->szModule, cfg::dat.szMetaName) && !__strcmp(cws->szSetting, "IsSubcontact"))
 				pcli->pfnClcBroadcast(INTM_HIDDENCHANGED, wParam, lParam);
 		}
-	} else if (wParam == 0 && !__strcmp(cws->szModule, g_CluiData.szMetaName)) {
-		BYTE bMetaEnabled = DBGetContactSettingByte(NULL, g_CluiData.szMetaName, "Enabled", 1);
-		if (bMetaEnabled != (BYTE)g_CluiData.bMetaEnabled) {
-			g_CluiData.bMetaEnabled = bMetaEnabled;
+	} else if (wParam == 0 && !__strcmp(cws->szModule, cfg::dat.szMetaName)) {
+		BYTE bMetaEnabled = DBGetContactSettingByte(NULL, cfg::dat.szMetaName, "Enabled", 1);
+		if (bMetaEnabled != (BYTE)cfg::dat.bMetaEnabled) {
+			cfg::dat.bMetaEnabled = bMetaEnabled;
 			pcli->pfnClcBroadcast(CLM_AUTOREBUILD, 0, 0);
 		}
 	} else if (wParam == 0 && !__strcmp(cws->szModule, "Skin")) {
@@ -189,10 +188,10 @@ static int ClcSettingChanged(WPARAM wParam, LPARAM lParam)
 				UnhookEvent(hSoundHook);
 				hSoundHook = 0;
 			}
-			g_CluiData.soundsOff = DBGetContactSettingByte(0, cws->szModule, cws->szSetting, 0) ? 0 : 1;
-			if (g_CluiData.soundsOff && hSoundHook == 0)
+			cfg::dat.soundsOff = DBGetContactSettingByte(0, cws->szModule, cws->szSetting, 0) ? 0 : 1;
+			if (cfg::dat.soundsOff && hSoundHook == 0)
 				hSoundHook = HookEvent(ME_SKIN_PLAYINGSOUND, ClcSoundHook);
-			CheckDlgButton(pcli->hwndContactList, IDC_TBSOUND, g_CluiData.soundsOff ? BST_UNCHECKED : BST_CHECKED);
+			CheckDlgButton(pcli->hwndContactList, IDC_TBSOUND, cfg::dat.soundsOff ? BST_UNCHECKED : BST_CHECKED);
 			SetButtonStates(pcli->hwndContactList);
 		}
 	} else if (szProto == NULL && wParam == 0) {
@@ -223,19 +222,19 @@ static int ClcPreshutdown(WPARAM wParam, LPARAM lParam)
 
 int ClcShutdown(WPARAM wParam, LPARAM lParam)
 {
-	if (g_CluiData.hIconInvisible)
-		DestroyIcon(g_CluiData.hIconInvisible);
-	if (g_CluiData.hIconVisible)
-		DestroyIcon(g_CluiData.hIconVisible);
-	if (g_CluiData.hIconChatactive)
-		DestroyIcon(g_CluiData.hIconChatactive);
+	if (cfg::dat.hIconInvisible)
+		DestroyIcon(cfg::dat.hIconInvisible);
+	if (cfg::dat.hIconVisible)
+		DestroyIcon(cfg::dat.hIconVisible);
+	if (cfg::dat.hIconChatactive)
+		DestroyIcon(cfg::dat.hIconChatactive);
 
-	DeleteObject(g_CluiData.hPen3DBright);
-	DeleteObject(g_CluiData.hPen3DDark);
-	DeleteObject(g_CluiData.hBrushColorKey);
-	DeleteObject(g_CluiData.hBrushCLCBk);
-	DeleteObject(g_CluiData.hBrushAvatarBorder);
-    DestroyMenu(g_CluiData.hMenuNotify);
+	DeleteObject(cfg::dat.hPen3DBright);
+	DeleteObject(cfg::dat.hPen3DDark);
+	DeleteObject(cfg::dat.hBrushColorKey);
+	DeleteObject(cfg::dat.hBrushCLCBk);
+	DeleteObject(cfg::dat.hBrushAvatarBorder);
+    DestroyMenu(cfg::dat.hMenuNotify);
 	ClearIcons(1);
 	pDrawAlpha = 0;
 	SFL_UnregisterWindowClass();
@@ -304,7 +303,7 @@ LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam, L
 			memset(dat, 0, sizeof(struct ClcData));
 			SetWindowLongPtr(hwnd, 0, (LONG_PTR) dat);
 
-			RowHeights_Initialize(dat);
+			RowHeight::Init(dat);
 			dat->forceScroll = 0;
 			dat->lastRepaint = 0;
 			dat->himlExtraColumns = himlExtraImages;
@@ -317,7 +316,7 @@ LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam, L
 					dat->bisEmbedded = FALSE;
 					dat->bHideSubcontacts = TRUE;
 					g_clcData = dat;
-					if (g_CluiData.bShowLocalTime)
+					if (cfg::dat.bShowLocalTime)
 						SetTimer(hwnd, TIMERID_REFRESH, 65000, NULL);
 				} else
 					dat->bisEmbedded = TRUE;
@@ -387,7 +386,7 @@ LBL_Def:
 			else
 				status = DBGetContactSettingWord((HANDLE) wParam, szProto, "Status", ID_STATUS_OFFLINE);
 
-			shouldShow = (GetWindowLong(hwnd, GWL_STYLE) & CLS_SHOWHIDDEN || !CLVM_GetContactHiddenStatus((HANDLE)wParam, szProto, dat)) && ((g_CluiData.bFilterEffective ? TRUE : !pcli->pfnIsHiddenMode(dat, status)) || CallService(MS_CLIST_GETCONTACTICON, wParam, 0) != lParam);// XXX CLVM changed - this means an offline msg is flashing, so the contact should be shown
+			shouldShow = (GetWindowLong(hwnd, GWL_STYLE) & CLS_SHOWHIDDEN || !CLVM_GetContactHiddenStatus((HANDLE)wParam, szProto, dat)) && ((cfg::dat.bFilterEffective ? TRUE : !pcli->pfnIsHiddenMode(dat, status)) || CallService(MS_CLIST_GETCONTACTICON, wParam, 0) != lParam);// XXX CLVM changed - this means an offline msg is flashing, so the contact should be shown
 			if (!FindItem(hwnd, dat, (HANDLE) wParam, &contact, &group, NULL)) {
 				if (shouldShow && CallService(MS_DB_CONTACT_IS, wParam, 0)) {
 					if (dat->selection >= 0 && pcli->pfnGetRowByIndex(dat, dat->selection, &selcontact, NULL) != -1)
@@ -405,7 +404,7 @@ LBL_Def:
 				DWORD style = GetWindowLong(hwnd, GWL_STYLE);
 				if (contact->iImage == (WORD) lParam)
 					break;
-				if (!shouldShow && !(style & CLS_NOHIDEOFFLINE) && (style & CLS_HIDEOFFLINE || group->hideOffline || g_CluiData.bFilterEffective)) {        // CLVM changed
+				if (!shouldShow && !(style & CLS_NOHIDEOFFLINE) && (style & CLS_HIDEOFFLINE || group->hideOffline || cfg::dat.bFilterEffective)) {        // CLVM changed
 					if (dat->selection >= 0 && pcli->pfnGetRowByIndex(dat, dat->selection, &selcontact, NULL) != -1)
 						hSelItem = pcli->pfnContactToHItem(selcontact);
 					pcli->pfnRemoveItemFromGroup(hwnd, group, contact, 0);
@@ -437,7 +436,7 @@ LBL_Def:
 			struct ClcContact *contact;
 			if (!pcli->pfnFindItem(hwnd, dat, (HANDLE) wParam, &contact, NULL, NULL))
 				break;
-			if (contact->bIsMeta && g_CluiData.bMetaAvail && !(g_CluiData.dwFlags & CLUI_USEMETAICONS)) {
+			if (contact->bIsMeta && cfg::dat.bMetaAvail && !(cfg::dat.dwFlags & CLUI_USEMETAICONS)) {
 				contact->hSubContact = (HANDLE) CallService(MS_MC_GETMOSTONLINECONTACT, (WPARAM) contact->hContact, 0);
 				contact->metaProto = (char*) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) contact->hSubContact, 0);
 				contact->iImage = CallService(MS_CLIST_GETCONTACTICON, (WPARAM) contact->hSubContact, 0);
@@ -489,9 +488,9 @@ LBL_Def:
 
 			if (wParam == 0) {
 				//RemoveFromImgCache(0, cEntry);
-				g_CluiData.bForceRefetchOnPaint = TRUE;
+				cfg::dat.bForceRefetchOnPaint = TRUE;
 				RedrawWindow(hwnd, NULL, NULL, RDW_ERASE | RDW_INVALIDATE | RDW_UPDATENOW);
-				g_CluiData.bForceRefetchOnPaint = FALSE;
+				cfg::dat.bForceRefetchOnPaint = FALSE;
 				goto LBL_Def;
 			}
 
@@ -507,7 +506,7 @@ LBL_Def:
 					dwFlags = g_ExtraCache[contact->extraCacheEntry].dwDFlags;
 				else
 					dwFlags = DBGetContactSettingDword(contact->hContact, "CList", "CLN_Flags", 0);
-				if (g_CluiData.dwFlags & CLUI_FRAME_AVATARS)
+				if (cfg::dat.dwFlags & CLUI_FRAME_AVATARS)
 					contact->cFlags = (dwFlags & ECF_HIDEAVATAR ? contact->cFlags & ~ECF_AVATAR : contact->cFlags | ECF_AVATAR);
 				else
 					contact->cFlags = (dwFlags & ECF_FORCEAVATAR ? contact->cFlags | ECF_AVATAR : contact->cFlags & ~ECF_AVATAR);
@@ -538,9 +537,9 @@ LBL_Def:
 				break;
 
 			wStatus = DBGetContactSettingWord((HANDLE)wParam, contact->proto, "Status", ID_STATUS_OFFLINE);
-			if (g_CluiData.bNoOfflineAvatars && wStatus != ID_STATUS_OFFLINE && contact->wStatus == ID_STATUS_OFFLINE) {
+			if (cfg::dat.bNoOfflineAvatars && wStatus != ID_STATUS_OFFLINE && contact->wStatus == ID_STATUS_OFFLINE) {
 				contact->wStatus = wStatus;
-				if (g_CluiData.bAvatarServiceAvail && contact->ace == NULL)
+				if (cfg::dat.bAvatarServiceAvail && contact->ace == NULL)
 					LoadAvatarForContact(contact);
 			}
 			contact->wStatus = wStatus;
@@ -634,11 +633,11 @@ LBL_Def:
 
 			if (!FindItem(hwnd, dat, (HANDLE) wParam, &contact, NULL, NULL)) {
 				index = GetExtraCache((HANDLE)wParam, szProto);
-				if (!dat->bisEmbedded && g_CluiData.bMetaAvail && szProto) {				// may be a subcontact, forward the xstatus
-					if (DBGetContactSettingByte((HANDLE)wParam, g_CluiData.szMetaName, "IsSubcontact", 0)) {
-						HANDLE hMasterContact = (HANDLE)DBGetContactSettingDword((HANDLE)wParam, g_CluiData.szMetaName, "Handle", 0);
+				if (!dat->bisEmbedded && cfg::dat.bMetaAvail && szProto) {				// may be a subcontact, forward the xstatus
+					if (DBGetContactSettingByte((HANDLE)wParam, cfg::dat.szMetaName, "IsSubcontact", 0)) {
+						HANDLE hMasterContact = (HANDLE)DBGetContactSettingDword((HANDLE)wParam, cfg::dat.szMetaName, "Handle", 0);
 						if (hMasterContact && hMasterContact != (HANDLE)wParam)				// avoid recursive call of settings handler
-							DBWriteContactSettingByte(hMasterContact, g_CluiData.szMetaName, "XStatusId",
+							DBWriteContactSettingByte(hMasterContact, cfg::dat.szMetaName, "XStatusId",
 													  (BYTE)DBGetContactSettingByte((HANDLE)wParam, szProto, "XStatusId", 0));
 						break;
 					}
@@ -737,7 +736,7 @@ LBL_Def:
 			InvalidateRect(hwnd, NULL, FALSE);
 			if (dat->selection != -1)
 				pcli->pfnEnsureVisible(hwnd, dat, dat->selection, 0);
-			if (hitFlags & CLCHT_ONAVATAR && g_CluiData.bDblClkAvatars) {
+			if (hitFlags & CLCHT_ONAVATAR && cfg::dat.bDblClkAvatars) {
 				CallService(MS_USERINFO_SHOWDIALOG, (WPARAM)contact->hContact, 0);
 				return TRUE;
 			}
@@ -768,7 +767,7 @@ LBL_Def:
 				if (dat->selection != -1)
 					pcli->pfnEnsureVisible(hwnd, dat, dat->selection, 0);
 				pt.x = dat->iconXSpace + 15;
-				pt.y = RowHeights_GetItemTopY(dat, dat->selection) - dat->yScroll + (int)(dat->row_heights[dat->selection] * .7);
+				pt.y = RowHeight::getItemTopY(dat, dat->selection) - dat->yScroll + (int)(dat->row_heights[dat->selection] * .7);
 				hitFlags = dat->selection == -1 ? CLCHT_NOWHERE : CLCHT_ONITEMLABEL;
 			} else {
 				ScreenToClient(hwnd, &pt);
@@ -822,7 +821,7 @@ LBL_Def:
 						DestroyWindow(g_ExtraCache[i].floater->hwnd);
 				}
 			}
-			RowHeights_Free(dat);
+			RowHeight::Free(dat);
 			break;
 		}
 	}

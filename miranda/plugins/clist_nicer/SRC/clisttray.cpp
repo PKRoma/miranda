@@ -31,8 +31,6 @@ UNICODE done
 
 extern HIMAGELIST hCListImages;
 
-extern struct CluiData g_CluiData;
-
 // don't move to win2k.h, need new and old versions to work on 9x/2000/XP
 #define NIF_STATE       0x00000008
 #define NIF_INFO        0x00000010
@@ -164,7 +162,7 @@ INT_PTR TrayIconProcessMessage(WPARAM wParam, LPARAM lParam)
 {
 	MSG* msg = ( MSG* )wParam;
 	if ( msg->message == TIM_CALLBACK && msg->lParam == WM_MOUSEMOVE ) {
-		if ( g_CluiData.bNoTrayTips ) {
+		if ( cfg::dat.bNoTrayTips ) {
 			*((LRESULT *) lParam) = 0;
 			return TRUE;
 	}	}

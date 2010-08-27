@@ -1,6 +1,6 @@
 // Microsoft Visual C++ generated resource script.
 //
-#include "resource.h"
+#include "include\resource.h"
 
 #define APSTUDIO_READONLY_SYMBOLS
 /////////////////////////////////////////////////////////////////////////////
@@ -10,18 +10,66 @@
 #include <windows.h>
 #include <winres.h>
 #include <statusmodes.h>
-
+#include <version.rc>
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// English (U.S.) resources
+// German (Germany) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_DEU)
+LANGUAGE LANG_GERMAN, SUBLANG_GERMAN
+#pragma code_page(1252)
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Version
+//
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION 0,9,2,1
+ PRODUCTVERSION 0,9,2,1
+ FILEFLAGSMASK 0x17L
+#ifdef _DEBUG
+ FILEFLAGS 0x1L
+#else
+ FILEFLAGS 0x0L
+#endif
+ FILEOS 0x4L
+ FILETYPE 0x2L
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "000004b0"
+        BEGIN
+            VALUE "CompanyName", "Miranda IM project"
+            VALUE "FileDescription", "Clist_Nicer+ (Ansi)"
+            VALUE "FileVersion", "0.9.2.1"
+            VALUE "InternalName", "clist_nicer"
+            VALUE "LegalCopyright", "Copyright (C) 2004-2010"
+            VALUE "LegalTrademarks", "Licensed under the Gnu general public license V2 or any later version."
+            VALUE "OriginalFilename", "clist_nicer.dll"
+            VALUE "ProductName", "Contact list plugin for Miranda IM"
+            VALUE "ProductVersion", "0.9.2.1"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x0, 1200
+    END
+END
+
+#endif    // German (Germany) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+/////////////////////////////////////////////////////////////////////////////
+// English (United States) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
-#ifdef _WIN32
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 #pragma code_page(1252)
-#endif //_WIN32
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -529,7 +577,7 @@ FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     CONTROL         "",IDC_OPTIONSTAB,"SysTabControl32",WS_TABSTOP,1,1,310,226,WS_EX_ACCEPTFILES
     PUSHBUTTON      "Load from skin file",IDC_IMPORT,167,229,125,15
-    PUSHBUTTON      "Export to skin file",IDC_EXPORT,20,229,125,15
+    PUSHBUTTON      "Export to skin file",IDC_EXPORT,19,229,125,15
 END
 
 IDD_QUICKIGNORE DIALOGEX 0, 0, 357, 247
@@ -589,7 +637,7 @@ END
 
 1 TEXTINCLUDE 
 BEGIN
-    "resource.h\0"
+    "include\\resource.h\0"
 END
 
 2 TEXTINCLUDE 
@@ -597,7 +645,7 @@ BEGIN
     "#include <windows.h>\r\n"
     "#include <winres.h>\r\n"
     "#include <statusmodes.h>\r\n"
-    "\0"
+    "#include <version.rc>\0"
 END
 
 3 TEXTINCLUDE 
@@ -662,7 +710,7 @@ IDC_DROPUSER            CURSOR                  "res/dropuser.cur"
 // Menu
 //
 
-IDR_CLISTMENU MENU 
+IDR_CLISTMENU MENU
 BEGIN
     POPUP "&¤"
     BEGIN
@@ -684,7 +732,7 @@ BEGIN
     END
 END
 
-IDR_CONTEXT MENU 
+IDR_CONTEXT MENU
 BEGIN
     POPUP "Tray"
     BEGIN
@@ -752,7 +800,7 @@ END
 //
 
 #ifdef APSTUDIO_INVOKED
-GUIDELINES DESIGNINFO 
+GUIDELINES DESIGNINFO
 BEGIN
     IDD_OPT_XICONS, DIALOG
     BEGIN
@@ -763,10 +811,14 @@ BEGIN
     BEGIN
         HORZGUIDE, 127
     END
+
+    IDD_OPT, DIALOG
+    BEGIN
+    END
 END
 #endif    // APSTUDIO_INVOKED
 
-#endif    // English (U.S.) resources
+#endif    // English (United States) resources
 /////////////////////////////////////////////////////////////////////////////
 
 

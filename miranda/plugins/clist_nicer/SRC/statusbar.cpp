@@ -30,7 +30,6 @@ static RECT rcMouse = {0};
 static int timer_set = 0, tooltip_active = 0;
 extern HANDLE hStatusBarShowToolTipEvent, hStatusBarHideToolTipEvent;
 extern pfnDrawAlpha pDrawAlpha;
-extern struct CluiData g_CluiData;
 extern int g_shutDown;
 extern StatusItems_t *StatusItems;
 extern HBRUSH g_CLUISkinnedBkColor;
@@ -73,7 +72,7 @@ LRESULT CALLBACK NewStatusBarWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
 		break;
 	}
 	case WM_ERASEBKGND:
-		if(g_CluiData.bSkinnedStatusBar)
+		if(cfg::dat.bSkinnedStatusBar)
 			return 1;
 		return CallWindowProc(OldStatusBarProc, hwnd, msg, wParam, lParam);
 
@@ -89,7 +88,7 @@ LRESULT CALLBACK NewStatusBarWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
 		if(g_shutDown)
 			return 0;
 
-		if(g_CluiData.bSkinnedStatusBar) {
+		if(cfg::dat.bSkinnedStatusBar) {
 			PAINTSTRUCT ps;
 			HDC hdc = BeginPaint(hwnd, &ps);
 			HDC hdcMem = CreateCompatibleDC(hdc);
@@ -102,7 +101,7 @@ LRESULT CALLBACK NewStatusBarWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
 			HFONT hOldFont = 0;
 			POINT pt;
 			BYTE windowStyle = DBGetContactSettingByte(NULL, "CLUI", "WindowStyle", SETTING_WINDOWSTYLE_DEFAULT);
-			LONG b_offset = g_CluiData.bClipBorder + (windowStyle == SETTING_WINDOWSTYLE_NOBORDER ? 2 : (windowStyle == SETTING_WINDOWSTYLE_THINBORDER ? 1 : 0));
+			LONG b_offset = cfg::dat.bClipBorder + (windowStyle == SETTING_WINDOWSTYLE_NOBORDER ? 2 : (windowStyle == SETTING_WINDOWSTYLE_THINBORDER ? 1 : 0));
 
 			GetClientRect(hwnd, &rcClient);
 			GetWindowRect(hwnd, &rcWindow);
@@ -114,7 +113,7 @@ LRESULT CALLBACK NewStatusBarWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
 			hbmOld = reinterpret_cast<HBITMAP>(SelectObject(hdcMem, hbmMem));
 			SetBkMode(hdcMem, TRANSPARENT);
 			hOldFont = reinterpret_cast<HFONT>(SelectObject(hdcMem, GetStockObject(DEFAULT_GUI_FONT)));
-			BitBlt(hdcMem, 0, 0, rcClient.right, rcClient.bottom, g_CluiData.hdcBg, pt.x, pt.y, SRCCOPY);
+			BitBlt(hdcMem, 0, 0, rcClient.right, rcClient.bottom, cfg::dat.hdcBg, pt.x, pt.y, SRCCOPY);
 			item = &StatusItems[ID_EXTBKSTATUSBAR - ID_STATUS_OFFLINE];
 			if(!item->IGNORED) {
 				RECT rc = rcClient;

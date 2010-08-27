@@ -32,8 +32,6 @@ UNICODE done
 #endif
 //loads of stuff that didn't really fit anywhere else
 
-extern struct CluiData g_CluiData;
-
 extern struct ExtraCache *g_ExtraCache;
 extern int g_nextExtraCacheEntry;
 extern int /*g_isConnecting,*/ during_sizing;
@@ -60,8 +58,8 @@ size_t MY_pathToRelative(const TCHAR *pSrc, TCHAR *pOut)
 		TCHAR szTmp[MAX_PATH];
 		mir_sntprintf(szTmp, SIZEOF(szTmp), _T("%s"), pSrc);
 		_tcslwr(szTmp);
-		if (_tcsstr(szTmp, g_CluiData.tszProfilePath)) {
-			mir_sntprintf(pOut, MAX_PATH, _T("%s"), pSrc + lstrlen(g_CluiData.tszProfilePath) - 1);
+		if (_tcsstr(szTmp, cfg::dat.tszProfilePath)) {
+			mir_sntprintf(pOut, MAX_PATH, _T("%s"), pSrc + lstrlen(cfg::dat.tszProfilePath) - 1);
 			pOut[0]='.';
 			return lstrlen(pOut);
 		} else {
@@ -78,7 +76,7 @@ size_t MY_pathToAbsolute(const TCHAR *pSrc, TCHAR *pOut)
 	if (MY_pathIsAbsolute(pSrc)&&pSrc[0]!='.')
 		mir_sntprintf(pOut, MAX_PATH, _T("%s"), pSrc);
 	else if (pSrc[0]=='.')
-		mir_sntprintf(pOut, MAX_PATH, _T("%s\\%s"), g_CluiData.tszProfilePath, pSrc);
+		mir_sntprintf(pOut, MAX_PATH, _T("%s\\%s"), cfg::dat.tszProfilePath, pSrc);
 
 	return lstrlen(pOut);
 }
@@ -101,8 +99,8 @@ int RTL_HitTest(HWND hwnd, struct ClcData *dat, int testx, int testy, struct Clc
     right = clRect.right;
 
     // avatar check
-    if(hitcontact->type == CLCIT_CONTACT && g_CluiData.dwFlags & CLUI_FRAME_AVATARS && hitcontact->ace != NULL && hitcontact->avatarLeft != -1) {
-        if(testx < right - hitcontact->avatarLeft && testx > right - hitcontact->avatarLeft - g_CluiData.avatarSize) {
+    if(hitcontact->type == CLCIT_CONTACT && cfg::dat.dwFlags & CLUI_FRAME_AVATARS && hitcontact->ace != NULL && hitcontact->avatarLeft != -1) {
+        if(testx < right - hitcontact->avatarLeft && testx > right - hitcontact->avatarLeft - cfg::dat.avatarSize) {
             if(flags)
                 *flags |= CLCHT_ONAVATAR;
         }
@@ -149,7 +147,7 @@ int RTL_HitTest(HWND hwnd, struct ClcData *dat, int testx, int testy, struct Clc
             if(!((1 << i) & g_ExtraCache[hitcontact->extraCacheEntry].dwXMask))
                 continue;
             images_present++;
-            if (testx < right - (rightOffset - (g_CluiData.exIconScale + 2) * images_present) && testx > right - (rightOffset - (g_CluiData.exIconScale + 2) * images_present + (g_CluiData.exIconScale))) {
+            if (testx < right - (rightOffset - (cfg::dat.exIconScale + 2) * images_present) && testx > right - (rightOffset - (cfg::dat.exIconScale + 2) * images_present + (cfg::dat.exIconScale))) {
                 if (flags)
                     *flags |= (CLCHT_ONITEMEXTRAEX | ((i + 1) << 24));
                 return hit;
@@ -177,12 +175,12 @@ int RTL_HitTest(HWND hwnd, struct ClcData *dat, int testx, int testy, struct Clc
     }
     SelectObject(hdc, hFont);
     ReleaseDC(hwnd, hdc);
-    if (testx > right - (dat->leftMargin + indent * dat->groupIndent + checkboxWidth + dat->iconXSpace + width + 4 + (g_CluiData.dwFlags & CLUI_FRAME_AVATARS ? g_CluiData.avatarSize : 0))) {
+    if (testx > right - (dat->leftMargin + indent * dat->groupIndent + checkboxWidth + dat->iconXSpace + width + 4 + (cfg::dat.dwFlags & CLUI_FRAME_AVATARS ? cfg::dat.avatarSize : 0))) {
         if (flags)
             *flags |= CLCHT_ONITEMLABEL;
         return hit;
     }
-    if (g_CluiData.dwFlags & CLUI_FULLROWSELECT && !(GetKeyState(VK_SHIFT) & 0x8000) && testx < right - (dat->leftMargin + indent * dat->groupIndent + checkboxWidth + dat->iconXSpace + width + 4 + (g_CluiData.dwFlags & CLUI_FRAME_AVATARS ? g_CluiData.avatarSize : 0))) {
+    if (cfg::dat.dwFlags & CLUI_FULLROWSELECT && !(GetKeyState(VK_SHIFT) & 0x8000) && testx < right - (dat->leftMargin + indent * dat->groupIndent + checkboxWidth + dat->iconXSpace + width + 4 + (cfg::dat.dwFlags & CLUI_FRAME_AVATARS ? cfg::dat.avatarSize : 0))) {
         if (flags)
             *flags |= CLCHT_ONITEMSPACE;
         return hit;
@@ -203,7 +201,7 @@ int HitTest(HWND hwnd, struct ClcData *dat, int testx, int testy, struct ClcCont
     RECT clRect;
     HFONT hFont;
     DWORD style = GetWindowLong(hwnd, GWL_STYLE);
-	BYTE mirror_mode = g_CluiData.bUseDCMirroring;
+	BYTE mirror_mode = cfg::dat.bUseDCMirroring;
 
     if (flags)
         *flags = 0;
@@ -226,7 +224,7 @@ int HitTest(HWND hwnd, struct ClcData *dat, int testx, int testy, struct ClcCont
             *flags |= CLCHT_INLEFTMARGIN | CLCHT_NOWHERE;
         return -1;
     }
-   	hit = RowHeights_HitTest(dat, dat->yScroll + testy);
+   	hit = RowHeight::hitTest(dat, dat->yScroll + testy);
 	if (hit != -1)
 		hit = pcli->pfnGetRowByIndex(dat, hit, &hitcontact, &hitgroup);
 
@@ -250,14 +248,14 @@ int HitTest(HWND hwnd, struct ClcData *dat, int testx, int testy, struct ClcCont
                 return RTL_HitTest(hwnd, dat, testx, testy, hitcontact, flags, indent, hit);
         }
         else if(hitcontact->type == CLCIT_GROUP) {
-            if(g_CluiData.bGroupAlign == CLC_GROUPALIGN_RIGHT || (hitcontact->isRtl && g_CluiData.bGroupAlign == CLC_GROUPALIGN_AUTO))
+            if(cfg::dat.bGroupAlign == CLC_GROUPALIGN_RIGHT || (hitcontact->isRtl && cfg::dat.bGroupAlign == CLC_GROUPALIGN_AUTO))
                 return RTL_HitTest(hwnd, dat, testx, testy, hitcontact, flags, indent, hit);
         }
     }
 
     // avatar check
-    if(hitcontact->type == CLCIT_CONTACT && g_CluiData.dwFlags & CLUI_FRAME_AVATARS && hitcontact->ace != NULL && hitcontact->avatarLeft != -1) {
-        if(testx >hitcontact->avatarLeft && testx < hitcontact->avatarLeft + g_CluiData.avatarSize) {
+    if(hitcontact->type == CLCIT_CONTACT && cfg::dat.dwFlags & CLUI_FRAME_AVATARS && hitcontact->ace != NULL && hitcontact->avatarLeft != -1) {
+        if(testx >hitcontact->avatarLeft && testx < hitcontact->avatarLeft + cfg::dat.avatarSize) {
             if(flags)
                 *flags |= CLCHT_ONAVATAR;
         }
@@ -305,7 +303,7 @@ int HitTest(HWND hwnd, struct ClcData *dat, int testx, int testy, struct ClcCont
             if(!((1 << i) & g_ExtraCache[hitcontact->extraCacheEntry].dwXMask))
                 continue;
             images_present++;
-            if (testx > (rightOffset - (g_CluiData.exIconScale + 2) * images_present) && testx < (rightOffset - (g_CluiData.exIconScale + 2) * images_present + (g_CluiData.exIconScale))) {
+            if (testx > (rightOffset - (cfg::dat.exIconScale + 2) * images_present) && testx < (rightOffset - (cfg::dat.exIconScale + 2) * images_present + (cfg::dat.exIconScale))) {
                 if (flags)
                     *flags |= (CLCHT_ONITEMEXTRAEX | ((i + 1) << 24));
                 return hit;
@@ -332,12 +330,12 @@ int HitTest(HWND hwnd, struct ClcData *dat, int testx, int testy, struct ClcCont
     }
     SelectObject(hdc, hFont);
     ReleaseDC(hwnd, hdc);
-    if (g_CluiData.dwFlags & CLUI_FULLROWSELECT && !(GetKeyState(VK_SHIFT) & 0x8000) && testx > dat->leftMargin + indent * dat->groupIndent + checkboxWidth + dat->iconXSpace + width + 4 + (g_CluiData.dwFlags & CLUI_FRAME_AVATARS ? g_CluiData.avatarSize : 0)) {
+    if (cfg::dat.dwFlags & CLUI_FULLROWSELECT && !(GetKeyState(VK_SHIFT) & 0x8000) && testx > dat->leftMargin + indent * dat->groupIndent + checkboxWidth + dat->iconXSpace + width + 4 + (cfg::dat.dwFlags & CLUI_FRAME_AVATARS ? cfg::dat.avatarSize : 0)) {
         if (flags)
             *flags |= CLCHT_ONITEMSPACE;
         return hit;
     }
-    if (testx< dat->leftMargin + indent * dat->groupIndent + checkboxWidth + dat->iconXSpace + width + 4 + (g_CluiData.dwFlags & CLUI_FRAME_AVATARS ? g_CluiData.avatarSize : 0)) {
+    if (testx< dat->leftMargin + indent * dat->groupIndent + checkboxWidth + dat->iconXSpace + width + 4 + (cfg::dat.dwFlags & CLUI_FRAME_AVATARS ? cfg::dat.avatarSize : 0)) {
         if (flags)
             *flags |= CLCHT_ONITEMLABEL;
         return hit;
@@ -362,7 +360,7 @@ void ScrollTo(HWND hwnd, struct ClcData *dat, int desty, int noSmooth)
 	GetClientRect(hwnd, &clRect);
 	rcInvalidate = clRect;
 
-	maxy=RowHeights_GetTotalHeight(dat)-clRect.bottom;
+	maxy = RowHeight::getTotalHeight(dat)-clRect.bottom;
 	if (desty > maxy)
 		desty = maxy;
 	if (desty < 0)
@@ -384,7 +382,7 @@ void ScrollTo(HWND hwnd, struct ClcData *dat, int desty, int noSmooth)
 			else
 				InvalidateRect(hwnd, NULL, FALSE);
 			previousy = dat->yScroll;
-            if(g_CluiData.bSkinnedScrollbar && !dat->bisEmbedded)
+            if(cfg::dat.bSkinnedScrollbar && !dat->bisEmbedded)
                 CoolSB_SetScrollPos(hwnd, SB_VERT, dat->yScroll, TRUE);
             else
                 SetScrollPos(hwnd, SB_VERT, dat->yScroll, TRUE);
@@ -401,7 +399,7 @@ void ScrollTo(HWND hwnd, struct ClcData *dat, int desty, int noSmooth)
 	else
 		InvalidateRect(hwnd, NULL, FALSE);
 
-    if(g_CluiData.bSkinnedScrollbar && !dat->bisEmbedded)
+    if(cfg::dat.bSkinnedScrollbar && !dat->bisEmbedded)
         CoolSB_SetScrollPos(hwnd, SB_VERT, dat->yScroll, TRUE);
     else
         SetScrollPos(hwnd, SB_VERT, dat->yScroll, TRUE);
@@ -414,7 +412,7 @@ void RecalcScrollBar(HWND hwnd, struct ClcData *dat)
     RECT clRect;
     NMCLISTCONTROL nm;
 
-    RowHeights_CalcRowHeights(dat, hwnd);
+    RowHeight::calcRowHeights(dat, hwnd);
 
     GetClientRect(hwnd, &clRect);
     si.cbSize = sizeof(si);
@@ -426,14 +424,14 @@ void RecalcScrollBar(HWND hwnd, struct ClcData *dat)
 
     if (GetWindowLong(hwnd, GWL_STYLE) & CLS_CONTACTLIST) {
         if (dat->noVScrollbar == 0) {
-            if(g_CluiData.bSkinnedScrollbar && !dat->bisEmbedded)
+            if(cfg::dat.bSkinnedScrollbar && !dat->bisEmbedded)
                 CoolSB_SetScrollInfo(hwnd, SB_VERT, &si, TRUE);
             else
                 SetScrollInfo(hwnd, SB_VERT, &si, TRUE);
         }
     }
     else {
-        if(g_CluiData.bSkinnedScrollbar && !dat->bisEmbedded)
+        if(cfg::dat.bSkinnedScrollbar && !dat->bisEmbedded)
             CoolSB_SetScrollInfo(hwnd, SB_VERT, &si, TRUE);
         else
             SetScrollInfo(hwnd, SB_VERT, &si, TRUE);
@@ -472,10 +470,10 @@ void SetGroupExpand(HWND hwnd,struct ClcData *dat,struct ClcGroup *group,int new
 
 	GetClientRect(hwnd,&clRect);
 	newy=dat->yScroll;
-	posy = RowHeights_GetItemBottomY(dat, groupy+contentCount);
+	posy = RowHeight::getItemBottomY(dat, groupy+contentCount);
 	if(posy>=newy+clRect.bottom)
 		newy=posy-clRect.bottom;
-	posy = RowHeights_GetItemTopY(dat, groupy);
+	posy = RowHeight::getItemTopY(dat, groupy);
 	if(newy>posy) newy=posy;
 	ScrollTo(hwnd,dat,newy,0);
 
@@ -538,7 +536,7 @@ void BeginRenameSelection(HWND hwnd, struct ClcData *dat)
     GetClientRect(hwnd, &clRect);
     x = indent * dat->groupIndent + dat->iconXSpace - 2;
     //y = dat->selection * dat->rowHeight - dat->yScroll;
-   	y=RowHeights_GetItemTopY(dat, dat->selection)-dat->yScroll;
+   	y = RowHeight::getItemTopY(dat, dat->selection)-dat->yScroll;
 
     h=dat->row_heights[dat->selection];
     {
@@ -580,34 +578,34 @@ void LoadClcOptions(HWND hwnd, struct ClcData *dat)
 
 	saveLoadClcOptions(hwnd, dat);
 
-	dat->min_row_heigh = (int)DBGetContactSettingByte(NULL,"CLC","RowHeight",CLCDEFAULT_ROWHEIGHT);
-	dat->group_row_height = (int)DBGetContactSettingByte(NULL,"CLC","GRowHeight",CLCDEFAULT_ROWHEIGHT);
+	dat->min_row_heigh = (int)cfg::getByte("CLC","RowHeight",CLCDEFAULT_ROWHEIGHT);
+	dat->group_row_height = (int)cfg::getByte("CLC","GRowHeight",CLCDEFAULT_ROWHEIGHT);
 	dat->row_border = 0;
-	dat->rightMargin = DBGetContactSettingByte(NULL, "CLC", "RightMargin", CLCDEFAULT_LEFTMARGIN);
-	dat->bkColour =  DBGetContactSettingByte(NULL, "CLC", "UseWinColours", CLCDEFAULT_USEWINDOWSCOLOURS) ?
+	dat->rightMargin = cfg::getByte("CLC", "RightMargin", CLCDEFAULT_LEFTMARGIN);
+	dat->bkColour =  cfg::getByte("CLC", "UseWinColours", CLCDEFAULT_USEWINDOWSCOLOURS) ?
                      GetSysColor(COLOR_3DFACE) : DBGetContactSettingDword(NULL, "CLC", "BkColour", CLCDEFAULT_BKCOLOUR);
 	if (!dat->bkChanged) {
-		if(g_CluiData.hBrushCLCBk)
-			DeleteObject(g_CluiData.hBrushCLCBk);
-		g_CluiData.hBrushCLCBk = CreateSolidBrush(dat->bkColour);
+		if(cfg::dat.hBrushCLCBk)
+			DeleteObject(cfg::dat.hBrushCLCBk);
+		cfg::dat.hBrushCLCBk = CreateSolidBrush(dat->bkColour);
 		if (dat->hBmpBackground) {
-			if(g_CluiData.hdcPic) {
-				SelectObject(g_CluiData.hdcPic, g_CluiData.hbmPicOld);
-				DeleteDC(g_CluiData.hdcPic);
-				g_CluiData.hdcPic = 0;
-				g_CluiData.hbmPicOld = 0;
+			if(cfg::dat.hdcPic) {
+				SelectObject(cfg::dat.hdcPic, cfg::dat.hbmPicOld);
+				DeleteDC(cfg::dat.hdcPic);
+				cfg::dat.hdcPic = 0;
+				cfg::dat.hbmPicOld = 0;
 		}	}
 
-		g_CluiData.bmpBackground = dat->hBmpBackground;
-		if(g_CluiData.bmpBackground) {
+		cfg::dat.bmpBackground = dat->hBmpBackground;
+		if(cfg::dat.bmpBackground) {
 			HDC hdcThis = GetDC(pcli->hwndContactList);
-			GetObject(g_CluiData.bmpBackground, sizeof(g_CluiData.bminfoBg), &(g_CluiData.bminfoBg));
-			g_CluiData.hdcPic = CreateCompatibleDC(hdcThis);
-			g_CluiData.hbmPicOld = reinterpret_cast<HBITMAP>(SelectObject(g_CluiData.hdcPic, g_CluiData.bmpBackground));
+			GetObject(cfg::dat.bmpBackground, sizeof(cfg::dat.bminfoBg), &(cfg::dat.bminfoBg));
+			cfg::dat.hdcPic = CreateCompatibleDC(hdcThis);
+			cfg::dat.hbmPicOld = reinterpret_cast<HBITMAP>(SelectObject(cfg::dat.hdcPic, cfg::dat.bmpBackground));
 			ReleaseDC(pcli->hwndContactList, hdcThis);
 		}
 	}
-	if (DBGetContactSettingByte(NULL, "CLCExt", "EXBK_FillWallpaper", 0)) {
+	if (cfg::getByte("CLCExt", "EXBK_FillWallpaper", 0)) {
 		char wpbuf[MAX_PATH];
 		if (dat->hBmpBackground)
 			DeleteObject(dat->hBmpBackground); dat->hBmpBackground = NULL;
@@ -618,18 +616,13 @@ void LoadClcOptions(HWND hwnd, struct ClcData *dat)
 		if (strlen(wpbuf) > 0) {
 			dat->hBmpBackground = reinterpret_cast<HBITMAP>(LoadImageA(NULL, wpbuf, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE));
 		}
-		g_CluiData.bmpBackground = dat->hBmpBackground;
-		if(g_CluiData.bmpBackground) {
+		cfg::dat.bmpBackground = dat->hBmpBackground;
+		if(cfg::dat.bmpBackground) {
 			HDC hdcThis = GetDC(pcli->hwndContactList);
-			GetObject(g_CluiData.bmpBackground, sizeof(g_CluiData.bminfoBg), &(g_CluiData.bminfoBg));
-			g_CluiData.hdcPic = CreateCompatibleDC(hdcThis);
-			g_CluiData.hbmPicOld = reinterpret_cast<HBITMAP>(SelectObject(g_CluiData.hdcPic, g_CluiData.bmpBackground));
+			GetObject(cfg::dat.bmpBackground, sizeof(cfg::dat.bminfoBg), &(cfg::dat.bminfoBg));
+			cfg::dat.hdcPic = CreateCompatibleDC(hdcThis);
+			cfg::dat.hbmPicOld = reinterpret_cast<HBITMAP>(SelectObject(cfg::dat.hdcPic, cfg::dat.bmpBackground));
 			ReleaseDC(pcli->hwndContactList, hdcThis);
 		}
 	}
-}
-
-BYTE MY_DBGetContactSettingByte(HANDLE hContact, char *szModule, char *szSetting, BYTE defaultval)
-{
-    return((BYTE)DBGetContactSettingByte(hContact, szModule, szSetting, defaultval));
 }

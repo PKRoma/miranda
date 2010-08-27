@@ -37,6 +37,11 @@
 
 #define  EXTRA_ICON_COUNT	11
 
+#undef FASTCALL
+
+#define TSAPI __stdcall
+#define FASTCALL __fastcall
+
 #include <m_stdhdr.h>
 #include <windows.h>
 #include <commctrl.h>
@@ -79,15 +84,19 @@
 #include <m_icolib.h>
 #include <m_popup.h>
 #include <m_fontservice.h>
-
 #include <m_metacontacts.h>
 #include <m_cln_skinedit.h>
+
 #include "m_avatars.h"
 #include "extbackg.h"
 #include "clc.h"
+#include <config.h>
+
+
 #include "clist.h"
 #include "alphablend.h"
 #include "rowheight_funcs.h"
+
 
 // shared vars
 extern HINSTANCE g_hInst;
@@ -138,3 +147,4 @@ void FreeAndNil( void** );
 #if _MSC_VER >= 1500
 	#define wEffects wReserved
 #endif
+

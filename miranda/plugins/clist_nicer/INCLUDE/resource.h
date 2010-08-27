@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by resource.rc
+// Used by C:\tabsrmm\trunk\miranda\plugins\clist_nicer\resource.rc
 //
 #define IDD_OPT_VIEWMODES               1
 #define IDD_OPT_FLOATING                3

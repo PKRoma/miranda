@@ -1,30 +1,39 @@
 /*
+ * astyle --force-indent=tab=4 --brackets=linux --indent-switches
+ *		  --pad=oper --one-line=keep-blocks  --unpad=paren
+ *
+ * Miranda IM: the free IM client for Microsoft* Windows*
+ *
+ * Copyright 2000-2010 Miranda ICQ/IM project,
+ * all portions of this codebase are copyrighted to the people
+ * listed in contributors.txt.
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * you should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ *
+ * part of clist_nicer plugin for Miranda.
+ *
+ * (C) 2005-2010 by silvercircle _at_ gmail _dot_ com and contributors
+ *
+ * $Id$
+ *
+ */
 
-Miranda IM: the free IM client for Microsoft* Windows*
-
-Copyright 2000-2003 Miranda ICQ/IM project, 
-all portions of this codebase are copyrighted to the people 
-listed in contributors.txt.
-
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
-of the License, or (at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-
-*/
 #include <commonheaders.h>
 #include <rowheight_funcs.h>
 
-BOOL RowHeights_Initialize(struct ClcData *dat)
+BOOL RowHeight::Init(ClcData *dat)
 {
 	dat->max_row_height = 0;
 	dat->row_heights_size = 0;
@@ -34,7 +43,7 @@ BOOL RowHeights_Initialize(struct ClcData *dat)
 	return TRUE;
 }
 
-void RowHeights_Free(struct ClcData *dat)
+void RowHeight::Free(ClcData *dat)
 {
 	if (dat->row_heights != NULL)
 	{
@@ -46,13 +55,13 @@ void RowHeights_Free(struct ClcData *dat)
 	dat->row_heights_size = 0;
 }
 
-void RowHeights_Clear(struct ClcData *dat)
+void RowHeight::Clear(ClcData *dat)
 {
 	dat->row_heights_size = 0;
 }
 
 
-BOOL RowHeights_Alloc(struct ClcData *dat, int size)
+BOOL RowHeight::Alloc(ClcData *dat, int size)
 {
 	if (size > dat->row_heights_size)
 	{
@@ -65,7 +74,7 @@ BOOL RowHeights_Alloc(struct ClcData *dat, int size)
 				int *tmp = (int *) realloc((void *)dat->row_heights, sizeof(int) * size_grow);
 
 				if (tmp == NULL) {
-					RowHeights_Free(dat);
+					Free(dat);
 					return FALSE;
 				}
 
@@ -75,7 +84,7 @@ BOOL RowHeights_Alloc(struct ClcData *dat, int size)
 				dat->row_heights = (int *) malloc(sizeof(int) * size_grow);
 
 				if (dat->row_heights == NULL) {
-					RowHeights_Free(dat);
+					Free(dat);
 					return FALSE;
 				}
 			}
@@ -87,7 +96,7 @@ BOOL RowHeights_Alloc(struct ClcData *dat, int size)
 }
 
 // Calc and store max row height
-int RowHeights_GetMaxRowHeight(struct ClcData *dat, HWND hwnd)
+int RowHeight::getMaxRowHeight(ClcData *dat, const HWND hwnd)
 {
 	int max_height = 0, i;
 	DWORD style=GetWindowLong(hwnd,GWL_STYLE);
@@ -102,7 +111,7 @@ int RowHeights_GetMaxRowHeight(struct ClcData *dat, HWND hwnd)
             max_height = dat->fontInfo[contact_fonts[i]].fontHeight;
     }
 
-    if (g_CluiData.dualRowMode == 1 && !dat->bisEmbedded)
+    if (cfg::dat.dualRowMode == 1 && !dat->bisEmbedded)
         max_height += ROW_SPACE_BEETWEEN_LINES + dat->fontInfo[FONTID_STATUS].fontHeight;
 
     // Get other font sizes
@@ -112,8 +121,8 @@ int RowHeights_GetMaxRowHeight(struct ClcData *dat, HWND hwnd)
     }
 
 	// Avatar size
-	if (g_CluiData.dwFlags & CLUI_FRAME_AVATARS && !dat->bisEmbedded)
-		max_height = max(max_height, g_CluiData.avatarSize + g_CluiData.avatarPadding);
+	if (cfg::dat.dwFlags & CLUI_FRAME_AVATARS && !dat->bisEmbedded)
+		max_height = max(max_height, cfg::dat.avatarSize + cfg::dat.avatarPadding);
 
 	// Checkbox size
 	if (style&CLS_CHECKBOXES || style&CLS_GROUPCHECKBOXES)
@@ -122,7 +131,7 @@ int RowHeights_GetMaxRowHeight(struct ClcData *dat, HWND hwnd)
 	//max_height += 2 * dat->row_border;
 	// Min size
 	max_height = max(max_height, dat->min_row_heigh);
-    max_height += g_CluiData.bRowSpacing;
+    max_height += cfg::dat.bRowSpacing;
 
 	dat->max_row_height = max_height;
 
@@ -130,7 +139,7 @@ int RowHeights_GetMaxRowHeight(struct ClcData *dat, HWND hwnd)
 }
 
 // Calc and store row height for all itens in the list
-void RowHeights_CalcRowHeights(struct ClcData *dat, HWND hwnd)
+void RowHeight::calcRowHeights(ClcData *dat, HWND hwnd)
 {
 	int indent, subindex, line_num;
 	struct ClcContact *Drawing;
@@ -144,7 +153,7 @@ void RowHeights_CalcRowHeights(struct ClcData *dat, HWND hwnd)
 	//subindex=-1;
 	line_num = -1;
 
-	RowHeights_Clear(dat);
+	Clear(dat);
 	
 	while(TRUE)
 	{
@@ -162,7 +171,7 @@ void RowHeights_CalcRowHeights(struct ClcData *dat, HWND hwnd)
 		line_num++;
 
 		// Calc row height
-		RowHeights_GetRowHeight(dat, hwnd, Drawing, line_num, dwStyle);
+		getRowHeight(dat, hwnd, Drawing, line_num, dwStyle);
 
 		if(group->cl.items[group->scanIndex]->type==CLCIT_GROUP && /*!IsBadCodePtr((FARPROC)group->cl.items[group->scanIndex]->group) && */ (group->cl.items[group->scanIndex]->group->expanded & 0x0000ffff)) {
 			group=group->cl.items[group->scanIndex]->group;
@@ -177,7 +186,7 @@ void RowHeights_CalcRowHeights(struct ClcData *dat, HWND hwnd)
 
 
 // Calc item top Y (using stored data)
-int RowHeights_GetItemTopY(struct ClcData *dat, int item)
+int RowHeight::getItemTopY(ClcData *dat, int item)
 {
 	int i;
 	int y = 0;
@@ -195,7 +204,7 @@ int RowHeights_GetItemTopY(struct ClcData *dat, int item)
 
 
 // Calc item bottom Y (using stored data)
-int RowHeights_GetItemBottomY(struct ClcData *dat, int item)
+int RowHeight::getItemBottomY(ClcData *dat, int item)
 {
 	int i;
 	int y = 0;
@@ -213,7 +222,7 @@ int RowHeights_GetItemBottomY(struct ClcData *dat, int item)
 
 
 // Calc total height of rows (using stored data)
-int RowHeights_GetTotalHeight(struct ClcData *dat)
+int RowHeight::getTotalHeight(ClcData *dat)
 {
 	int i;
 	int y = 0;
@@ -227,7 +236,7 @@ int RowHeights_GetTotalHeight(struct ClcData *dat)
 }
 
 // Return the line that pos_y is at or -1 (using stored data)
-int RowHeights_HitTest(struct ClcData *dat, int pos_y)
+int RowHeight::hitTest(ClcData *dat, int pos_y)
 {
 	int i;
 	int y = 0;
@@ -246,7 +255,7 @@ int RowHeights_HitTest(struct ClcData *dat, int pos_y)
 	return -1;
 }
 
-int RowHeights_GetHeight(struct ClcData *dat, int item)
+int RowHeight::getHeight(ClcData *dat, int item)
 {
 	if ( dat->row_heights == 0 )
 		return 0;
@@ -254,7 +263,7 @@ int RowHeights_GetHeight(struct ClcData *dat, int item)
 	return dat->row_heights[ item ];
 }
 
-int RowHeights_GetFloatingRowHeight(struct ClcData *dat, HWND hwnd, struct ClcContact *contact, DWORD dwFlags)
+int RowHeight::getFloatingRowHeight(const ClcData *dat, HWND hwnd, ClcContact *contact, DWORD dwFlags)
 {
 	int height = 0;
 
@@ -263,16 +272,16 @@ int RowHeights_GetFloatingRowHeight(struct ClcData *dat, HWND hwnd, struct ClcCo
     if(!dat->bisEmbedded) {
 		if(!(dwFlags & FLT_SIMPLE)){
 			if(dwFlags & FLT_DUALROW) {
-				height += (dat->fontInfo[FONTID_STATUS].fontHeight + g_CluiData.avatarPadding);
+				height += (dat->fontInfo[FONTID_STATUS].fontHeight + cfg::dat.avatarPadding);
 			}
 			// Avatar size
 			if (dwFlags & FLT_AVATARS && contact->cFlags & ECF_AVATAR && contact->type == CLCIT_CONTACT && contact->ace != NULL && !(contact->ace->dwFlags & AVS_HIDEONCLIST))
-				height = max(height, g_CluiData.avatarSize + g_CluiData.avatarPadding);
+				height = max(height, cfg::dat.avatarSize + cfg::dat.avatarPadding);
 		}
 	}
 
     height = max(height, dat->min_row_heigh);
-    height += g_CluiData.bRowSpacing;
+    height += cfg::dat.bRowSpacing;
 
 	return height;
 }

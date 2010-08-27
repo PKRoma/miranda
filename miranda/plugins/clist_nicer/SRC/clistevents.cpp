@@ -34,7 +34,6 @@ extern pfnDrawAlpha pDrawAlpha;
 extern struct ClcData *g_clcData;
 extern HPEN g_hPenCLUIFrames;
 
-extern struct CluiData g_CluiData;
 extern StatusItems_t *StatusItems;
 
 HWND g_hwndEventArea = 0;
@@ -72,8 +71,8 @@ void HideShowNotifyFrame()
 	int dwVisible = CallService(MS_CLIST_FRAMES_GETFRAMEOPTIONS, MAKEWPARAM(FO_FLAGS, hNotifyFrame), 0) & F_VISIBLE;
     int desired;
 
-    if(g_CluiData.dwFlags & CLUI_FRAME_AUTOHIDENOTIFY)
-        desired = g_CluiData.notifyActive ? TRUE : FALSE;
+    if(cfg::dat.dwFlags & CLUI_FRAME_AUTOHIDENOTIFY)
+        desired = cfg::dat.notifyActive ? TRUE : FALSE;
     else
         desired = dwVisible;
 
@@ -113,7 +112,7 @@ LRESULT CALLBACK EventAreaWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPa
 
 			mii.cbSize = sizeof(mii);
 			mii.fMask = MIIM_DATA | MIIM_ID;
-			if (GetMenuItemInfoA(g_CluiData.hMenuNotify, lpi->itemID, FALSE, &mii) != 0) {
+			if (GetMenuItemInfoA(cfg::dat.hMenuNotify, lpi->itemID, FALSE, &mii) != 0) {
 				if (mii.dwItemData == lpi->itemData) {
 					lpi->itemWidth = 8 + 16;
 					lpi->itemHeight = 0;
@@ -132,7 +131,7 @@ LRESULT CALLBACK EventAreaWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPa
 		{
 			LPDRAWITEMSTRUCT dis = (LPDRAWITEMSTRUCT) lParam;
 
-			if (dis->hwndItem == (HWND) g_CluiData.hMenuNotify) {
+			if (dis->hwndItem == (HWND) cfg::dat.hMenuNotify) {
 				MENUITEMINFOA mii = {0};
 
 				struct NotifyMenuItemExData *nmi = 0;
@@ -141,7 +140,7 @@ LRESULT CALLBACK EventAreaWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPa
 
 				mii.cbSize = sizeof(mii);
 				mii.fMask = MIIM_DATA;
-				if (GetMenuItemInfoA(g_CluiData.hMenuNotify, (UINT) dis->itemID, FALSE, &mii) != 0) {
+				if (GetMenuItemInfoA(cfg::dat.hMenuNotify, (UINT) dis->itemID, FALSE, &mii) != 0) {
 					nmi = (struct NotifyMenuItemExData *) mii.dwItemData;
 					if (nmi) {
 						iIcon = CallService(MS_CLIST_GETCONTACTICON, (WPARAM) nmi->hContact, 0);
@@ -154,7 +153,7 @@ LRESULT CALLBACK EventAreaWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPa
 			break;
 		}
 	case WM_LBUTTONUP:
-		if(g_CluiData.bEventAreaEnabled)
+		if(cfg::dat.bEventAreaEnabled)
 			SendMessage(hwnd, WM_COMMAND, MAKEWPARAM(IDC_NOTIFYBUTTON, 0), 0);
 		break;
 	case WM_COMMAND:
@@ -163,17 +162,17 @@ LRESULT CALLBACK EventAreaWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPa
 			MENUITEMINFO mii = {0};
 			POINT pt;
 			struct NotifyMenuItemExData *nmi = 0;
-			int iCount = GetMenuItemCount(g_CluiData.hMenuNotify);
+			int iCount = GetMenuItemCount(cfg::dat.hMenuNotify);
 			BOOL result;
 
 			GetCursorPos(&pt);
 			mii.cbSize = sizeof(mii);
 			mii.fMask = MIIM_DATA;
 			if (iCount > 1)
-				iSelection = TrackPopupMenu(g_CluiData.hMenuNotify, TPM_RETURNCMD, pt.x, pt.y, 0, hwnd, NULL);
+				iSelection = TrackPopupMenu(cfg::dat.hMenuNotify, TPM_RETURNCMD, pt.x, pt.y, 0, hwnd, NULL);
 			else
-				iSelection = GetMenuItemID(g_CluiData.hMenuNotify, 0);
-			result = GetMenuItemInfo(g_CluiData.hMenuNotify, (UINT) iSelection, FALSE, &mii);
+				iSelection = GetMenuItemID(cfg::dat.hMenuNotify, 0);
+			result = GetMenuItemInfo(cfg::dat.hMenuNotify, (UINT) iSelection, FALSE, &mii);
 			if (result != 0) {
 				nmi = (struct NotifyMenuItemExData *) mii.dwItemData;
 				if (nmi) {
@@ -217,7 +216,7 @@ LRESULT CALLBACK EventAreaWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPa
 				hFontOld = ChangeToFont(hdcMem, g_clcData, FONTID_EVENTAREA, &height);
 
 			if(pDrawAlpha != NULL) {
-				if(g_CluiData.bWallpaperMode)
+				if(cfg::dat.bWallpaperMode)
 					SkinDrawBg(hwnd, hdcMem);
 				item = &StatusItems[ID_EXTBKEVTAREA - ID_STATUS_OFFLINE];
 				if(item->IGNORED) {
@@ -238,7 +237,7 @@ LRESULT CALLBACK EventAreaWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPa
 			dwLeft = rc.left;
 
 			PaintNotifyArea(hdcMem, &rc);
-			if(g_CluiData.dwFlags & CLUI_FRAME_EVENTAREASUNKEN) {
+			if(cfg::dat.dwFlags & CLUI_FRAME_EVENTAREASUNKEN) {
 				rc.left = dwLeft;
 				InflateRect(&rc, -2, -2);
 				DrawEdge(hdcMem, &rc, BDR_SUNKENOUTER, BF_RECT);
@@ -276,8 +275,8 @@ struct CListEvent* AddEvent(CLISTEVENT *cle)
 			mii.fMask = MIIM_DATA | MIIM_BITMAP | MIIM_ID;
 			if (p->cle.pszService && !strncmp("SRMsg/ReadMessage", p->cle.pszService, 17)) {
 				// dup check only for msg events
-				for (j = 0; j < GetMenuItemCount(g_CluiData.hMenuNotify); j++) {
-					if (GetMenuItemInfo(g_CluiData.hMenuNotify, j, TRUE, &mii) != 0) {
+				for (j = 0; j < GetMenuItemCount(cfg::dat.hMenuNotify); j++) {
+					if (GetMenuItemInfo(cfg::dat.hMenuNotify, j, TRUE, &mii) != 0) {
 						nmi = (struct NotifyMenuItemExData *) mii.dwItemData;
 						if (nmi != 0 && (HANDLE) nmi->hContact == (HANDLE) p->cle.hContact && nmi->iIcon == p->imlIconIndex)
 							return p;
@@ -299,27 +298,27 @@ struct CListEvent* AddEvent(CLISTEVENT *cle)
 					_snprintf(szBuffer, SIZEOF(szBuffer), "%s: %s (%s)", szProto, szName, szStatus);
 #endif
 					szBuffer[127] = 0;
-					AppendMenu(g_CluiData.hMenuNotify, MF_BYCOMMAND | MF_STRING, g_CluiData.wNextMenuID, szBuffer);
+					AppendMenu(cfg::dat.hMenuNotify, MF_BYCOMMAND | MF_STRING, cfg::dat.wNextMenuID, szBuffer);
 					mii.hbmpItem = HBMMENU_CALLBACK;
 					nmi->hContact = p->cle.hContact;
 					nmi->iIcon = p->imlIconIndex;
 					nmi->hIcon = p->cle.hIcon;
 					nmi->hDbEvent = p->cle.hDbEvent;
 					mii.dwItemData = (ULONG_PTR) nmi;
-					mii.wID = g_CluiData.wNextMenuID;
-					SetMenuItemInfo(g_CluiData.hMenuNotify, g_CluiData.wNextMenuID, FALSE, &mii);
-					p-> menuId = g_CluiData.wNextMenuID;
-					g_CluiData.wNextMenuID++;
-					if (g_CluiData.wNextMenuID > 0x7fff)
-						g_CluiData.wNextMenuID = 1;
-					g_CluiData.hIconNotify = p->imlIconIndex;
+					mii.wID = cfg::dat.wNextMenuID;
+					SetMenuItemInfo(cfg::dat.hMenuNotify, cfg::dat.wNextMenuID, FALSE, &mii);
+					p-> menuId = cfg::dat.wNextMenuID;
+					cfg::dat.wNextMenuID++;
+					if (cfg::dat.wNextMenuID > 0x7fff)
+						cfg::dat.wNextMenuID = 1;
+					cfg::dat.hIconNotify = p->imlIconIndex;
 				}
 			}
 		} else if (p->cle.hContact != 0 && (p->cle.flags & CLEF_ONLYAFEW)) {
-			g_CluiData.hIconNotify = p->imlIconIndex;
-			g_CluiData.hUpdateContact = p->cle.hContact;
+			cfg::dat.hIconNotify = p->imlIconIndex;
+			cfg::dat.hUpdateContact = p->cle.hContact;
 		}
-		if (g_CluiData.dwFlags & CLUI_STICKYEVENTS) {
+		if (cfg::dat.dwFlags & CLUI_STICKYEVENTS) {
 			HANDLE hItem = (HANDLE) SendMessage(pcli->hwndContactTree, CLM_FINDCONTACT, (WPARAM) p->cle.hContact, 0);
 			if (hItem) {
 				SendMessage(pcli->hwndContactTree, CLM_SETSTICKY, (WPARAM) hItem, 1);
@@ -327,14 +326,14 @@ struct CListEvent* AddEvent(CLISTEVENT *cle)
 			}
 		}
 		if (pcli->events.count > 0) {
-			g_CluiData.bEventAreaEnabled = TRUE;
-			if (g_CluiData.notifyActive == 0) {
-				g_CluiData.notifyActive = 1;
+			cfg::dat.bEventAreaEnabled = TRUE;
+			if (cfg::dat.notifyActive == 0) {
+				cfg::dat.notifyActive = 1;
 				HideShowNotifyFrame();
 			}
 		}
 		InvalidateRect(hwndEventFrame, NULL, FALSE);
-		if(g_CluiData.bUseFloater & CLUI_USE_FLOATER && g_CluiData.bUseFloater & CLUI_FLOATER_EVENTS)
+		if(cfg::dat.bUseFloater & CLUI_USE_FLOATER && cfg::dat.bUseFloater & CLUI_FLOATER_EVENTS)
 			SFL_Update(0, 0, 0, NULL, FALSE);
 	}
 
@@ -368,19 +367,19 @@ int RemoveEvent(HANDLE hContact, HANDLE hDbEvent)
 			MENUITEMINFO mii = {0};
 			mii.cbSize = sizeof(mii);
 			mii.fMask = MIIM_DATA;
-			if (GetMenuItemInfo(g_CluiData.hMenuNotify, pcli->events.items[i]->menuId, FALSE, &mii) != 0) {
+			if (GetMenuItemInfo(cfg::dat.hMenuNotify, pcli->events.items[i]->menuId, FALSE, &mii) != 0) {
 				struct NotifyMenuItemExData *nmi = (struct NotifyMenuItemExData *) mii.dwItemData;
 				if (nmi && nmi->hContact == hContact && nmi->hDbEvent == hDbEvent) {
 					free(nmi);
-					DeleteMenu(g_CluiData.hMenuNotify, pcli->events.items[i]->menuId, MF_BYCOMMAND);
+					DeleteMenu(cfg::dat.hMenuNotify, pcli->events.items[i]->menuId, MF_BYCOMMAND);
 	}	}	}	}
 
 	saveRemoveEvent(hContact, hDbEvent);
 
 	if (pcli->events.count == 0) {
-		g_CluiData.bEventAreaEnabled = FALSE;
-		if (g_CluiData.dwFlags & CLUI_FRAME_AUTOHIDENOTIFY) {
-			g_CluiData.notifyActive = 0;
+		cfg::dat.bEventAreaEnabled = FALSE;
+		if (cfg::dat.dwFlags & CLUI_FRAME_AUTOHIDENOTIFY) {
+			cfg::dat.notifyActive = 0;
 			HideShowNotifyFrame();
 	}	}
 
@@ -393,12 +392,12 @@ int RemoveEvent(HANDLE hContact, HANDLE hDbEvent)
 			pcli->pfnClcBroadcast(INTM_PROTOCHANGED, (WPARAM)hContact, 0);
 	}	}
 
-	if (hContact == g_CluiData.hUpdateContact || (INT_PTR)hDbEvent == 1)
-		g_CluiData.hUpdateContact = 0;
+	if (hContact == cfg::dat.hUpdateContact || (INT_PTR)hDbEvent == 1)
+		cfg::dat.hUpdateContact = 0;
 
-	if (g_CluiData.notifyActive) {
+	if (cfg::dat.notifyActive) {
 		InvalidateRect(hwndEventFrame, NULL, FALSE);
-		if(g_CluiData.bUseFloater & CLUI_USE_FLOATER && g_CluiData.bUseFloater & CLUI_FLOATER_EVENTS)
+		if(cfg::dat.bUseFloater & CLUI_USE_FLOATER && cfg::dat.bUseFloater & CLUI_FLOATER_EVENTS)
 			SFL_Update(0, 0, 0, NULL, FALSE);
 	}
 

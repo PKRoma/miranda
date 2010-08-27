@@ -276,6 +276,10 @@ SOURCE=.\SRC\commonheaders.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\SRC\config.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\SRC\contact.cpp
 # End Source File
 # Begin Source File
@@ -329,6 +333,10 @@ SOURCE=.\INCLUDE\clist.h
 # Begin Source File
 
 SOURCE=.\INCLUDE\commonheaders.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\INCLUDE\config.h
 # End Source File
 # Begin Source File
 

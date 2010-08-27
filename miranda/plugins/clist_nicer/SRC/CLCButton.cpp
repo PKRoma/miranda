@@ -22,7 +22,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 // - Support for bitmap buttons (simple call to DrawIconEx())
 extern HINSTANCE g_hInst;
 extern LONG g_cxsmIcon, g_cysmIcon;
-extern struct CluiData g_CluiData;
 extern pfnDrawAlpha pDrawAlpha;
 extern StatusItems_t *StatusItems;
 extern ImageItem *g_glyphItem;
@@ -211,7 +210,7 @@ static void PaintWorker(MButtonCtrl *ctl, HDC hdcPaint)
 
                     ScreenToClient(pcli->hwndContactList, &pt);
 
-                    BitBlt(hdcMem, 0, 0, rc.right, rc.bottom, g_CluiData.hdcBg, pt.x, pt.y, SRCCOPY);
+                    BitBlt(hdcMem, 0, 0, rc.right, rc.bottom, cfg::dat.hdcBg, pt.x, pt.y, SRCCOPY);
                     if(imgItem)
                         DrawAlpha(hdcMem, &rc, 0, 0, 0, 0, 0, 0, 0, imgItem);
                     if(g_glyphItem) {
@@ -244,16 +243,16 @@ static void PaintWorker(MButtonCtrl *ctl, HDC hdcPaint)
                         //GetItemByStatus(ctl->stateId == PBS_PRESSED ? ID_EXTBKBUTTONSPRESSED : ID_EXTBKBUTTONSNPRESSED, &item);
                     SetTextColor(hdcMem, item->TEXTCOLOR);
                     if(item->IGNORED) {
-                        if(pt.y < 10 || g_CluiData.bWallpaperMode)
+                        if(pt.y < 10 || cfg::dat.bWallpaperMode)
                             //SkinDrawBg(ctl->hwnd, hdcMem);
-                            BitBlt(hdcMem, 0, 0, rc.right, rc.bottom, g_CluiData.hdcBg, pt.x, pt.y, SRCCOPY);
+                            BitBlt(hdcMem, 0, 0, rc.right, rc.bottom, cfg::dat.hdcBg, pt.x, pt.y, SRCCOPY);
                         else
                             FillRect(hdcMem, &rc, GetSysColorBrush(COLOR_3DFACE));
                     }
                     else {
-                        if(pt.y < 10 || g_CluiData.bWallpaperMode)
+                        if(pt.y < 10 || cfg::dat.bWallpaperMode)
                             //SkinDrawBg(ctl->hwnd, hdcMem);
-                            BitBlt(hdcMem, 0, 0, rc.right, rc.bottom, g_CluiData.hdcBg, pt.x, pt.y, SRCCOPY);
+                            BitBlt(hdcMem, 0, 0, rc.right, rc.bottom, cfg::dat.hdcBg, pt.x, pt.y, SRCCOPY);
                         else
                             FillRect(hdcMem, &rc, GetSysColorBrush(COLOR_3DFACE));
                         rc.top += item->MARGIN_TOP; rc.bottom -= item->MARGIN_BOTTOM;
@@ -300,7 +299,7 @@ static void PaintWorker(MButtonCtrl *ctl, HDC hdcPaint)
                 pt.x = rcParent.left;
                 pt.y = rcParent.top;
                 ScreenToClient(pcli->hwndContactList, &pt);
-                BitBlt(hdcMem, 0, 0, rcClient.right, rcClient.bottom, g_CluiData.hdcBg, pt.x, pt.y, SRCCOPY);
+                BitBlt(hdcMem, 0, 0, rcClient.right, rcClient.bottom, cfg::dat.hdcBg, pt.x, pt.y, SRCCOPY);
 
                 if (MyIsThemeBackgroundPartiallyTransparent(ctl->hThemeButton, BP_PUSHBUTTON, state)) {
                     MyDrawThemeParentBackground(ctl->hwnd, hdcMem, &rcClient);

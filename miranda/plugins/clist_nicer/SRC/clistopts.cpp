@@ -25,7 +25,6 @@ UNICODE done
 */
 #include "commonheaders.h"
 
-extern struct CluiData g_CluiData;      // even more nasty :)
 extern int g_nextExtraCacheEntry;
 extern struct ExtraCache *g_ExtraCache;
 
@@ -36,7 +35,7 @@ static int opt_gen_opts_changed = 0;
 
 static void __setFlag(DWORD dwFlag, int iMode)
 {
-	g_CluiData.dwFlags = iMode ? g_CluiData.dwFlags | dwFlag : g_CluiData.dwFlags & ~dwFlag;
+	cfg::dat.dwFlags = iMode ? cfg::dat.dwFlags | dwFlag : cfg::dat.dwFlags & ~dwFlag;
 }
 
 INT_PTR CALLBACK DlgProcGenOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
@@ -76,11 +75,11 @@ INT_PTR CALLBACK DlgProcGenOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			}
 		}
 
-		CheckDlgButton(hwndDlg, IDC_SHOWBUTTONBAR, g_CluiData.dwFlags & CLUI_FRAME_SHOWTOPBUTTONS);
-		CheckDlgButton(hwndDlg, IDC_SHOWBOTTOMBUTTONS, g_CluiData.dwFlags & CLUI_FRAME_SHOWBOTTOMBUTTONS);
-		CheckDlgButton(hwndDlg, IDC_CLISTSUNKEN, g_CluiData.dwFlags & CLUI_FRAME_CLISTSUNKEN);
-		CheckDlgButton(hwndDlg, IDC_EVENTAREAAUTOHIDE, g_CluiData.dwFlags & CLUI_FRAME_AUTOHIDENOTIFY);
-		CheckDlgButton(hwndDlg, IDC_EVENTAREASUNKEN, (g_CluiData.dwFlags & CLUI_FRAME_EVENTAREASUNKEN) ? BST_CHECKED : BST_UNCHECKED);
+		CheckDlgButton(hwndDlg, IDC_SHOWBUTTONBAR, cfg::dat.dwFlags & CLUI_FRAME_SHOWTOPBUTTONS);
+		CheckDlgButton(hwndDlg, IDC_SHOWBOTTOMBUTTONS, cfg::dat.dwFlags & CLUI_FRAME_SHOWBOTTOMBUTTONS);
+		CheckDlgButton(hwndDlg, IDC_CLISTSUNKEN, cfg::dat.dwFlags & CLUI_FRAME_CLISTSUNKEN);
+		CheckDlgButton(hwndDlg, IDC_EVENTAREAAUTOHIDE, cfg::dat.dwFlags & CLUI_FRAME_AUTOHIDENOTIFY);
+		CheckDlgButton(hwndDlg, IDC_EVENTAREASUNKEN, (cfg::dat.dwFlags & CLUI_FRAME_EVENTAREASUNKEN) ? BST_CHECKED : BST_UNCHECKED);
 
 		CheckDlgButton(hwndDlg, IDC_ONECLK, DBGetContactSettingByte(NULL, "CList", "Tray1Click", SETTING_TRAY1CLICK_DEFAULT) ? BST_CHECKED : BST_UNCHECKED);
 		CheckDlgButton(hwndDlg, IDC_ALWAYSSTATUS, DBGetContactSettingByte(NULL, "CList", "AlwaysStatus", SETTING_ALWAYSSTATUS_DEFAULT) ? BST_CHECKED : BST_UNCHECKED);
@@ -130,7 +129,7 @@ INT_PTR CALLBACK DlgProcGenOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 		SendDlgItemMessage(hwndDlg, IDC_BLINKSPIN, UDM_SETBUDDY, (WPARAM) GetDlgItem(hwndDlg, IDC_BLINKTIME), 0);       // set buddy            
 		SendDlgItemMessage(hwndDlg, IDC_BLINKSPIN, UDM_SETRANGE, 0, MAKELONG(0x3FFF, 250));
 		SendDlgItemMessage(hwndDlg, IDC_BLINKSPIN, UDM_SETPOS, 0, MAKELONG(DBGetContactSettingWord(NULL, "CList", "IconFlashTime", 550), 0));
-		CheckDlgButton(hwndDlg, IDC_NOTRAYINFOTIPS, g_CluiData.bNoTrayTips ? 1 : 0);
+		CheckDlgButton(hwndDlg, IDC_NOTRAYINFOTIPS, cfg::dat.bNoTrayTips ? 1 : 0);
 		CheckDlgButton(hwndDlg, IDC_APPLYLASTVIEWMODE, DBGetContactSettingByte(NULL, "CList", "AutoApplyLastViewMode", 0) ? 1 : 0);
 		return TRUE;
 
@@ -193,8 +192,8 @@ INT_PTR CALLBACK DlgProcGenOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 				__setFlag(CLUI_FRAME_SHOWBOTTOMBUTTONS, IsDlgButtonChecked(hwndDlg, IDC_SHOWBOTTOMBUTTONS));
 				__setFlag(CLUI_FRAME_CLISTSUNKEN, IsDlgButtonChecked(hwndDlg, IDC_CLISTSUNKEN));
 
-				g_CluiData.bNoTrayTips = IsDlgButtonChecked(hwndDlg, IDC_NOTRAYINFOTIPS) ? 1 : 0;
-				DBWriteContactSettingByte(NULL, "CList", "NoTrayTips", (BYTE)g_CluiData.bNoTrayTips);
+				cfg::dat.bNoTrayTips = IsDlgButtonChecked(hwndDlg, IDC_NOTRAYINFOTIPS) ? 1 : 0;
+				DBWriteContactSettingByte(NULL, "CList", "NoTrayTips", (BYTE)cfg::dat.bNoTrayTips);
 				{
 					int cursel = SendDlgItemMessage(hwndDlg, IDC_PRIMARYSTATUS, CB_GETCURSEL, 0, 0);
 					PROTOACCOUNT* pa = (PROTOACCOUNT*)SendDlgItemMessage(hwndDlg, IDC_PRIMARYSTATUS, CB_GETITEMDATA, cursel, 0);
@@ -204,7 +203,7 @@ INT_PTR CALLBACK DlgProcGenOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 						DBWriteContactSettingString(NULL, "CList", "PrimaryStatus", pa->szModuleName );
 				}
 				pcli->pfnTrayIconIconsChanged();
-				DBWriteContactSettingDword(NULL, "CLUI", "Frameflags", g_CluiData.dwFlags);
+				DBWriteContactSettingDword(NULL, "CLUI", "Frameflags", cfg::dat.dwFlags);
 				ConfigureFrame();
 				ConfigureCLUIGeometry(1);
 				ConfigureEventArea(pcli->hwndContactList);

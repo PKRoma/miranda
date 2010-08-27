@@ -25,8 +25,6 @@ UNICODE done
 */
 #include "commonheaders.h"
 
-extern struct CluiData g_CluiData;
-
 extern struct ExtraCache *g_ExtraCache;
 extern int g_nextExtraCacheEntry;
 
@@ -96,7 +94,7 @@ LRESULT ProcessExternalMessages(HWND hwnd, struct ClcData *dat, UINT msg, WPARAM
                 g_ExtraCache[index].iExtraValid = g_ExtraCache[index].iExtraImage[LOWORD(lParam)] != (BYTE)0xff ? (g_ExtraCache[index].iExtraValid | (1 << LOWORD(lParam))) : (g_ExtraCache[index].iExtraValid & ~(1 << LOWORD(lParam)));
             }
 
-			hMasterContact = (HANDLE)DBGetContactSettingDword((HANDLE)wParam, g_CluiData.szMetaName, "Handle", 0);
+			hMasterContact = (HANDLE)DBGetContactSettingDword((HANDLE)wParam, cfg::dat.szMetaName, "Handle", 0);
 
 			index = GetExtraCache(hMasterContact, NULL);
 			if(index >= 0 && index < g_nextExtraCacheEntry) {
@@ -205,7 +203,7 @@ LRESULT ProcessExternalMessages(HWND hwnd, struct ClcData *dat, UINT msg, WPARAM
 		dat->fontInfo[HIWORD(lParam)].hFont = (HFONT)wParam;
 		dat->fontInfo[HIWORD(lParam)].changed = 1;
 
-		RowHeights_GetMaxRowHeight(dat, hwnd);
+		RowHeight::getMaxRowHeight(dat, hwnd);
 
 		if(LOWORD(lParam))
 			InvalidateRect(hwnd,NULL,FALSE);

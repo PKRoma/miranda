@@ -32,7 +32,6 @@ extern int      g_shutDown;
 extern struct   ClcData *g_clcData;
 extern int      g_nextExtraCacheEntry;
 extern struct   ExtraCache *g_ExtraCache;
-extern struct   CluiData g_CluiData;
 
 static HMENU hMainMenu, hMainStatusMenu;
 
@@ -114,7 +113,7 @@ static INT_PTR CALLBACK IgnoreDialogProc(HWND hWnd, UINT msg, WPARAM wParam, LPA
 
 			hContact = (HANDLE)lParam;
 			SetWindowLongPtr(hWnd, GWLP_USERDATA, (LONG_PTR)hContact);
-			dwMask = DBGetContactSettingDword(hContact, "Ignore", "Mask1", 0);
+			dwMask = cfg::getDword(hContact, "Ignore", "Mask1", 0);
 			SendMessage(hWnd, WM_USER + 100, (WPARAM)hContact, dwMask);
 			SendMessage(hWnd, WM_USER + 120, 0, 0);
 			TranslateDialogDefault(hWnd);
@@ -124,7 +123,7 @@ static INT_PTR CALLBACK IgnoreDialogProc(HWND hWnd, UINT msg, WPARAM wParam, LPA
 
 			SendMessage(hwndAdd, BM_SETIMAGE, IMAGE_ICON, (LPARAM)LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(210), IMAGE_ICON, 16, 16, LR_SHARED));
 			SetWindowText(hwndAdd, TranslateT("Add permanently"));
-			EnableWindow(hwndAdd, DBGetContactSettingByte(hContact, "CList", "NotOnList", 0));
+			EnableWindow(hwndAdd, cfg::getByte(hContact, "CList", "NotOnList", 0));
 
             hwndAdd = GetDlgItem(hWnd, IDC_DSP_LOADDEFAULT); // CreateWindowEx(0, _T("CLCButtonClass"), _T("FOO"), WS_VISIBLE | BS_PUSHBUTTON | WS_CHILD | WS_TABSTOP, 200, 276, 106, 24, hWnd, (HMENU)IDC_IGN_ADDPERMANENTLY, g_hInst, NULL);
             SendMessage(hwndAdd, BUTTONSETASFLATBTN, 0, 1);
@@ -151,9 +150,9 @@ static INT_PTR CALLBACK IgnoreDialogProc(HWND hWnd, UINT msg, WPARAM wParam, LPA
                     return FALSE;
                 } else {
                     TCHAR szTitle[512];
-                    DWORD dwFlags = DBGetContactSettingDword(hContact, "CList", "CLN_Flags", 0);
-                    BYTE  bSecondLine = DBGetContactSettingByte(hContact, "CList", "CLN_2ndline", -1);
-                    DWORD dwXMask = DBGetContactSettingDword(hContact, "CList", "CLN_xmask", 0);
+                    DWORD dwFlags = cfg::getDword(hContact, "CList", "CLN_Flags", 0);
+                    BYTE  bSecondLine = cfg::getByte(hContact, "CList", "CLN_2ndline", -1);
+                    DWORD dwXMask = cfg::getDword(hContact, "CList", "CLN_xmask", 0);
                     int   i = 0;
 
                     mir_sntprintf(szTitle, 512, TranslateT("Contact list display and ignore options for %s"), contact ? contact->szText : (TCHAR *)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)hContact, GCDNF_TCHAR));
@@ -163,7 +162,7 @@ static INT_PTR CALLBACK IgnoreDialogProc(HWND hWnd, UINT msg, WPARAM wParam, LPA
                     pCaps = CallProtoService(contact ? contact->proto : (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0), PS_GETCAPS, PFLAGNUM_1, 0);
                     EnableWindow(GetDlgItem(hWnd, IDC_IGN_ALWAYSONLINE), pCaps & PF1_INVISLIST ? TRUE : FALSE);
                     EnableWindow(GetDlgItem(hWnd, IDC_IGN_ALWAYSOFFLINE), pCaps & PF1_VISLIST ? TRUE : FALSE);
-                    CheckDlgButton(hWnd, IDC_IGN_PRIORITY, DBGetContactSettingByte(hContact, "CList", "Priority", 0) ? 1 : 0);
+                    CheckDlgButton(hWnd, IDC_IGN_PRIORITY, cfg::getByte(hContact, "CList", "Priority", 0) ? 1 : 0);
                     EnableWindow(GetDlgItem(hWnd, IDC_IGN_PRIORITY), TRUE);
                     EnableWindow(GetDlgItem(hWnd, IDC_AVATARDISPMODE), TRUE);
                     EnableWindow(GetDlgItem(hWnd, IDC_SECONDLINEMODE), TRUE);
@@ -235,7 +234,7 @@ static INT_PTR CALLBACK IgnoreDialogProc(HWND hWnd, UINT msg, WPARAM wParam, LPA
 				CheckDlgButton(hWnd, IDC_IGN_ALWAYSONLINE, FALSE);
 		  	break;
 	  	case IDC_HIDECONTACT:
-			DBWriteContactSettingByte(hContact, "CList", "Hidden", (BYTE)(IsDlgButtonChecked(hWnd, IDC_HIDECONTACT) ? 1 : 0));
+			cfg::writeByte(hContact, "CList", "Hidden", (BYTE)(IsDlgButtonChecked(hWnd, IDC_HIDECONTACT) ? 1 : 0));
 		  	break;
 	  	case IDC_IGN_ADDPERMANENTLY:
 			{
@@ -245,7 +244,7 @@ static INT_PTR CALLBACK IgnoreDialogProc(HWND hWnd, UINT msg, WPARAM wParam, LPA
 			  	acs.handleType = HANDLE_CONTACT;
 			  	acs.szProto = 0;
 			  	CallService(MS_ADDCONTACT_SHOW, (WPARAM)hWnd, (LPARAM)&acs);
-			  	EnableWindow(GetDlgItem(hWnd, IDC_IGN_ADDPERMANENTLY), DBGetContactSettingByte(hContact, "CList", "NotOnList", 0));
+			  	EnableWindow(GetDlgItem(hWnd, IDC_IGN_ADDPERMANENTLY), cfg::getByte(hContact, "CList", "NotOnList", 0));
 			  	break;
 		  	}
         case IDC_DSP_LOADDEFAULT:
@@ -268,12 +267,12 @@ static INT_PTR CALLBACK IgnoreDialogProc(HWND hWnd, UINT msg, WPARAM wParam, LPA
                 struct ClcContact *contact = NULL;
 
 			  	SendMessage(hWnd, WM_USER + 110, 0, (LPARAM)&newMask);
-			  	DBWriteContactSettingDword(hContact, "Ignore", "Mask1", newMask);
+			  	cfg::writeDword(hContact, "Ignore", "Mask1", newMask);
 			  	SendMessage(hWnd, WM_USER + 130, 0, 0);
 
                 if(g_clcData) {
                     LRESULT iSel = SendDlgItemMessage(hWnd, IDC_AVATARDISPMODE, CB_GETCURSEL, 0, 0);
-                    DWORD dwFlags = DBGetContactSettingDword(hContact, "CList", "CLN_Flags", 0), dwXMask = 0;
+                    DWORD dwFlags = cfg::getDword(hContact, "CList", "CLN_Flags", 0), dwXMask = 0;
                     LRESULT  checked = 0;
                     int      i = 0;
 
@@ -310,13 +309,13 @@ static INT_PTR CALLBACK IgnoreDialogProc(HWND hWnd, UINT msg, WPARAM wParam, LPA
                     else if(checked == BST_UNCHECKED)
                         dwFlags |= ECF_HIDEVISIBILITY;
 
-                    DBWriteContactSettingDword(hContact, "CList", "CLN_Flags", dwFlags);
+                    cfg::writeDword(hContact, "CList", "CLN_Flags", dwFlags);
 
                     if((iSel = SendDlgItemMessage(hWnd, IDC_SECONDLINEMODE, CB_GETCURSEL, 0, 0)) != CB_ERR) {
                         if(iSel == 0) {
                             DBDeleteContactSetting(hContact, "CList", "CLN_2ndline");
                             if(contact)
-                                contact->bSecondLine = g_CluiData.dualRowMode;
+                                contact->bSecondLine = cfg::dat.dualRowMode;
                         }
                         else {
                             DBWriteContactSettingByte(hContact, "CList", "CLN_2ndline", (BYTE)(iSel - 1));
@@ -332,7 +331,7 @@ static INT_PTR CALLBACK IgnoreDialogProc(HWND hWnd, UINT msg, WPARAM wParam, LPA
                             dwXMask |= (1 << (2 * xImgCtrlBits[i] + 1));
                         i++;
                     }
-                    DBWriteContactSettingDword(hContact, "CList", "CLN_xmask", dwXMask);
+                    cfg::writeDword(hContact, "CList", "CLN_xmask", dwXMask);
                     if(contact) {
                         if(contact->extraCacheEntry >= 0 && contact->extraCacheEntry <= g_nextExtraCacheEntry) {
                             g_ExtraCache[contact->extraCacheEntry].dwDFlags = dwFlags;
@@ -346,7 +345,7 @@ static INT_PTR CALLBACK IgnoreDialogProc(HWND hWnd, UINT msg, WPARAM wParam, LPA
                             g_ExtraCache[iIndex].dwXMask = CalcXMask(hContact);
                         }
                     }
-                    DBWriteContactSettingByte(hContact, "CList", "Priority", (BYTE)(IsDlgButtonChecked(hWnd, IDC_IGN_PRIORITY) ? 1 : 0));
+                    cfg::writeByte(hContact, "CList", "Priority", (BYTE)(IsDlgButtonChecked(hWnd, IDC_IGN_PRIORITY) ? 1 : 0));
                     pcli->pfnClcBroadcast(CLM_AUTOREBUILD, 0, 0);
                 }
 		  	}

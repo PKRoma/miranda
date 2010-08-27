@@ -37,7 +37,6 @@ extern int hClcProtoCount;
 extern ORDERTREEDATA OrderTreeData[];
 
 extern HIMAGELIST hCListImages;
-extern struct CluiData g_CluiData;
 static BYTE divide3[765] = {255};
 extern char *im_clients[];
 extern HICON im_clienthIcons[];
@@ -249,16 +248,16 @@ void PaintNotifyArea(HDC hDC, RECT *rc)
 	static int ev_lastIcon = 0;
 
 	rc->left += 26;             // button
-	iCount = GetMenuItemCount(g_CluiData.hMenuNotify);
-	if (g_CluiData.hUpdateContact != 0) {
-		TCHAR *szName = pcli->pfnGetContactDisplayName(g_CluiData.hUpdateContact, 0);
-		int iIcon = CallService(MS_CLIST_GETCONTACTICON, (WPARAM) g_CluiData.hUpdateContact, 0);
+	iCount = GetMenuItemCount(cfg::dat.hMenuNotify);
+	if (cfg::dat.hUpdateContact != 0) {
+		TCHAR *szName = pcli->pfnGetContactDisplayName(cfg::dat.hUpdateContact, 0);
+		int iIcon = CallService(MS_CLIST_GETCONTACTICON, (WPARAM) cfg::dat.hUpdateContact, 0);
 
 		ImageList_DrawEx(hCListImages, iIcon, hDC, rc->left, (rc->bottom + rc->top - g_cysmIcon) / 2, g_cxsmIcon, g_cysmIcon, CLR_NONE, CLR_NONE, ILD_NORMAL);
 		rc->left += 18;
 		DrawText(hDC, szName, -1, rc, DT_VCENTER | DT_SINGLELINE);
-		ImageList_DrawEx(hCListImages, (int)g_CluiData.hIconNotify, hDC, 4, (rc->bottom + rc->top - 16) / 2, 16, 16, CLR_NONE, CLR_NONE, ILD_NORMAL);
-		ev_lastIcon = g_CluiData.hIconNotify;
+		ImageList_DrawEx(hCListImages, (int)cfg::dat.hIconNotify, hDC, 4, (rc->bottom + rc->top - 16) / 2, 16, 16, CLR_NONE, CLR_NONE, ILD_NORMAL);
+		ev_lastIcon = cfg::dat.hIconNotify;
 	} else if (iCount > 0) {
 		MENUITEMINFO mii = {0};
 		struct NotifyMenuItemExData *nmi;
@@ -267,7 +266,7 @@ void PaintNotifyArea(HDC hDC, RECT *rc)
 
 		mii.cbSize = sizeof(mii);
 		mii.fMask = MIIM_DATA;
-		GetMenuItemInfo(g_CluiData.hMenuNotify, iCount - 1, TRUE, &mii);
+		GetMenuItemInfo(cfg::dat.hMenuNotify, iCount - 1, TRUE, &mii);
 		nmi = (struct NotifyMenuItemExData *) mii.dwItemData;
 		szName = pcli->pfnGetContactDisplayName(nmi->hContact, 0);
 		iIcon = CallService(MS_CLIST_GETCONTACTICON, (WPARAM) nmi->hContact, 0);
@@ -278,7 +277,7 @@ void PaintNotifyArea(HDC hDC, RECT *rc)
 		ev_lastIcon = (int)nmi->hIcon;
 	} else {
 		HICON hIcon = reinterpret_cast<HICON>(LoadImage(g_hInst, MAKEINTRESOURCE(IDI_BLANK), IMAGE_ICON, 16, 16, 0));
-		DrawText(hDC, g_CluiData.szNoEvents, lstrlen(g_CluiData.szNoEvents), rc, DT_VCENTER | DT_SINGLELINE);
+		DrawText(hDC, cfg::dat.szNoEvents, lstrlen(cfg::dat.szNoEvents), rc, DT_VCENTER | DT_SINGLELINE);
 		DrawIconEx(hDC, 4, (rc->bottom + rc->top - 16) / 2, hIcon, 16, 16, 0, 0, DI_NORMAL | DI_COMPAT);
 		DestroyIcon(hIcon);
 	}
@@ -307,19 +306,19 @@ static int __fastcall DrawAvatar(HDC hdcMem, RECT *rc, struct ClcContact *contac
 	float dAspect;
 	HBITMAP hbm, hbmOldAV;
 	HRGN rgn = 0;
-	int avatar_size = g_CluiData.avatarSize;
+	int avatar_size = cfg::dat.avatarSize;
 	DWORD av_saved_left;
     StatusItems_t *item = contact->wStatus == ID_STATUS_OFFLINE ? &StatusItems[ID_EXTBKAVATARFRAMEOFFLINE - ID_STATUS_OFFLINE] : &StatusItems[ID_EXTBKAVATARFRAME - ID_STATUS_OFFLINE];
     int  skinMarginX, skinMarginY;
-    BOOL fOverlay = (g_CluiData.dwFlags & CLUI_FRAME_OVERLAYICONS);
+    BOOL fOverlay = (cfg::dat.dwFlags & CLUI_FRAME_OVERLAYICONS);
 
     contact->avatarLeft = -1;
-	if(!g_CluiData.bAvatarServiceAvail || dat->bisEmbedded)
+	if(!cfg::dat.bAvatarServiceAvail || dat->bisEmbedded)
 		return 0;
 
 	if(contact->ace != NULL && contact->ace->cbSize == sizeof(struct avatarCacheEntry)) {
 		if(contact->ace->dwFlags & AVS_HIDEONCLIST) {
-			if (g_CluiData.dwFlags & CLUI_FRAME_ALWAYSALIGNNICK)
+			if (cfg::dat.dwFlags & CLUI_FRAME_ALWAYSALIGNNICK)
 				return avatar_size + 2;
 			else
 				return 0;
@@ -331,9 +330,9 @@ static int __fastcall DrawAvatar(HDC hdcMem, RECT *rc, struct ClcContact *contac
 		else
 			dAspect = 1.0;
 		hbm = contact->ace->hbmPic;
-		contact->ace->t_lastAccess = g_CluiData.t_now;
+		contact->ace->t_lastAccess = cfg::dat.t_now;
 	}
-	else if (g_CluiData.dwFlags & CLUI_FRAME_ALWAYSALIGNNICK)
+	else if (cfg::dat.dwFlags & CLUI_FRAME_ALWAYSALIGNNICK)
 		return avatar_size + 2;
 	else
 		return 0;
@@ -368,11 +367,11 @@ static int __fastcall DrawAvatar(HDC hdcMem, RECT *rc, struct ClcContact *contac
 	// create the region for the avatar border - use the same region for clipping, if needed.
 
 	av_saved_left = rc->left;
-	if(g_CluiData.bCenterStatusIcons && newWidth < newHeight)
+	if(cfg::dat.bCenterStatusIcons && newWidth < newHeight)
 		rc->left += (((avatar_size - 2) - ((int)newWidth + skinMarginX)) / 2);
 
-	if(g_CluiData.dwFlags & CLUI_FRAME_ROUNDAVATAR)
-		rgn = CreateRoundRectRgn(leftoffset + rc->left, y + topoffset, leftoffset + rc->left + (int)newWidth + 1, y + topoffset + (int)newHeight + 1, 2 * g_CluiData.avatarRadius, 2 * g_CluiData.avatarRadius);
+	if(cfg::dat.dwFlags & CLUI_FRAME_ROUNDAVATAR)
+		rgn = CreateRoundRectRgn(leftoffset + rc->left, y + topoffset, leftoffset + rc->left + (int)newWidth + 1, y + topoffset + (int)newHeight + 1, 2 * cfg::dat.avatarRadius, 2 * cfg::dat.avatarRadius);
 	else
 		rgn = CreateRectRgn(leftoffset + rc->left, y + topoffset, leftoffset + rc->left + (int)newWidth, y + topoffset + (int)newHeight);
 
@@ -401,10 +400,10 @@ static int __fastcall DrawAvatar(HDC hdcMem, RECT *rc, struct ClcContact *contac
     }
     SelectObject(hdcAV, hbmOldAV);
 
-	if(g_CluiData.dwFlags & CLUI_FRAME_AVATARBORDER) {
+	if(cfg::dat.dwFlags & CLUI_FRAME_AVATARBORDER) {
 		if(g_RTL)
 			OffsetRgn(rgn, -1 , 0);
-		FrameRgn(hdcMem, rgn, g_CluiData.hBrushAvatarBorder, 1, 1);
+		FrameRgn(hdcMem, rgn, cfg::dat.hBrushAvatarBorder, 1, 1);
 	}
 
     if(fOverlay)
@@ -497,11 +496,11 @@ void __inline PaintItem(HDC hdcMem, struct ClcGroup *group, struct ClcContact *c
 	int rightIcons = 0;
 	DWORD dt_nickflags = 0, dt_2ndrowflags = 0;
 	struct ExtraCache *cEntry = NULL;
-	DWORD dwFlags = g_CluiData.dwFlags;
+	DWORD dwFlags = cfg::dat.dwFlags;
 	int scanIndex;
 	BOOL check_selected, av_local_wanted, fLocalTime;
 
-	rowHeight -= g_CluiData.bRowSpacing;
+	rowHeight -= cfg::dat.bRowSpacing;
 	savedCORNER = -1;
 
 	if(group == NULL || contact == NULL)
@@ -527,33 +526,33 @@ void __inline PaintItem(HDC hdcMem, struct ClcGroup *group, struct ClcContact *c
     if(type == CLCIT_CONTACT && (cEntry->dwCFlags & ECF_RTLNICK || mirror_always)) {
 		if(pfnSetLayout != NULL && (mirror_rtl || mirror_always)) {
 			g_RTL = TRUE;
-			bg_indent_r = g_CluiData.bApplyIndentToBg ? indent * dat->groupIndent : 0;
+			bg_indent_r = cfg::dat.bApplyIndentToBg ? indent * dat->groupIndent : 0;
 		}
 		else if(mirror_rtltext) {
-			bg_indent_l = g_CluiData.bApplyIndentToBg ? indent * dat->groupIndent : 0;
+			bg_indent_l = cfg::dat.bApplyIndentToBg ? indent * dat->groupIndent : 0;
 			dt_nickflags = DT_RTLREADING | DT_RIGHT;
 		}
 		else
-			bg_indent_l = g_CluiData.bApplyIndentToBg ? indent * dat->groupIndent : 0;
+			bg_indent_l = cfg::dat.bApplyIndentToBg ? indent * dat->groupIndent : 0;
 	}
 	else if(type == CLCIT_GROUP && pfnSetLayout != NULL) {
-		if((contact->isRtl && g_CluiData.bGroupAlign == CLC_GROUPALIGN_AUTO) || g_CluiData.bGroupAlign == CLC_GROUPALIGN_RIGHT) {
+		if((contact->isRtl && cfg::dat.bGroupAlign == CLC_GROUPALIGN_AUTO) || cfg::dat.bGroupAlign == CLC_GROUPALIGN_RIGHT) {
 			g_RTL = TRUE;
-			bg_indent_r = g_CluiData.bApplyIndentToBg ? indent * dat->groupIndent : 0;
+			bg_indent_r = cfg::dat.bApplyIndentToBg ? indent * dat->groupIndent : 0;
 		}
 		else
-			bg_indent_l = g_CluiData.bApplyIndentToBg ? indent * dat->groupIndent : 0;
+			bg_indent_l = cfg::dat.bApplyIndentToBg ? indent * dat->groupIndent : 0;
 	}
 	else
-		bg_indent_l = g_CluiData.bApplyIndentToBg ? indent * dat->groupIndent : 0;
+		bg_indent_l = cfg::dat.bApplyIndentToBg ? indent * dat->groupIndent : 0;
 #else
-	if(type == CLCIT_GROUP && g_CluiData.bGroupAlign == CLC_GROUPALIGN_RIGHT && !dat->bisEmbedded && pfnSetLayout != 0) {
+	if(type == CLCIT_GROUP && cfg::dat.bGroupAlign == CLC_GROUPALIGN_RIGHT && !dat->bisEmbedded && pfnSetLayout != 0) {
 		g_RTL = TRUE;
-		bg_indent_r = g_CluiData.bApplyIndentToBg ? indent * dat->groupIndent : 0;
+		bg_indent_r = cfg::dat.bApplyIndentToBg ? indent * dat->groupIndent : 0;
 	}
 	else {
 		g_RTL = FALSE;
-		bg_indent_l = g_CluiData.bApplyIndentToBg ? indent * dat->groupIndent : 0;
+		bg_indent_l = cfg::dat.bApplyIndentToBg ? indent * dat->groupIndent : 0;
 	}
 #endif
 
@@ -622,7 +621,7 @@ set_bg_l:
             SetTextColor(hdcMem, dat->selTextColour);
         }
         else {
-            FillRect(hdcMem, &rc, g_CluiData.hBrushCLCBk);
+            FillRect(hdcMem, &rc, cfg::dat.hBrushCLCBk);
             if(g_hottrack)
                 SetHotTrackColour(hdcMem,dat);
         }
@@ -647,9 +646,9 @@ set_bg_l:
                 if (!(perstatus_ignored = sitem->IGNORED) && !(flags & CONTACTF_NOTONLIST))
                     SetTextColor(hdcMem, sitem->TEXTCOLOR);
 
-                if(g_CluiData.bUsePerProto && pp_item && !pp_item->IGNORED) {
+                if(cfg::dat.bUsePerProto && pp_item && !pp_item->IGNORED) {
                     sitem = pp_item;
-                    if((perstatus_ignored || g_CluiData.bOverridePerStatusColors) && sitem->TEXTCOLOR != -1)
+                    if((perstatus_ignored || cfg::dat.bOverridePerStatusColors) && sitem->TEXTCOLOR != -1)
                         SetTextColor(hdcMem, sitem->TEXTCOLOR);
                 }
             }
@@ -884,7 +883,7 @@ set_bg_l:
                 rc.top = y + sselected->MARGIN_TOP;
                 rc.right = clRect->right - sselected->MARGIN_RIGHT - bg_indent_r;
                 rc.bottom = y + rowHeight - sselected->MARGIN_BOTTOM;
-				if (DBGetContactSettingByte(NULL, "CLCExt", "EXBK_EqualSelection", 0) == 1 && savedCORNER != -1) {
+				if (cfg::getByte("CLCExt", "EXBK_EqualSelection", 0) == 1 && savedCORNER != -1) {
 					DrawAlpha(hdcMem, &rc, sselected->COLOR, sselected->ALPHA, sselected->COLOR2, sselected->COLOR2_TRANSPARENT, sselected->GRADIENT, savedCORNER, sselected->BORDERSTYLE, sselected->imageItem);
 				} else {
 					DrawAlpha(hdcMem, &rc, sselected->COLOR, sselected->ALPHA, sselected->COLOR2, sselected->COLOR2_TRANSPARENT, sselected->GRADIENT, sselected->CORNER, sselected->BORDERSTYLE, sselected->imageItem);
@@ -976,16 +975,16 @@ bgskipped:
 			leftX += leftOffset;
 		}
 		else {
-			rc.left = (rcContent.right - g_CluiData.avatarSize) + 1;
+			rc.left = (rcContent.right - cfg::dat.avatarSize) + 1;
 			rightOffset += DrawAvatar(hdcMem, &rc, contact, y, dat, (WORD)(iImage ? cstatus : 0), rowHeight, cEntry->dwDFlags);
 			rcContent.right -= (rightOffset);
 		}
 	}
 	else if(type == CLCIT_CONTACT && !dat->bisEmbedded && !g_selectiveIcon && (dwFlags & CLUI_FRAME_ALWAYSALIGNNICK) && av_local_wanted && (av_left || av_right)) {
 		if(av_right)
-			rcContent.right -= (g_CluiData.avatarSize + 2);
+			rcContent.right -= (cfg::dat.avatarSize + 2);
 		if(av_left)
-			rcContent.left += (g_CluiData.avatarSize + 2);
+			rcContent.left += (cfg::dat.avatarSize + 2);
 	}
 	//icon
 
@@ -1024,15 +1023,15 @@ bgskipped:
 				mode = ILD_SELECTED;
 
 			if(pi_selectiveIcon && av_right) {
-				ImageList_DrawEx(hImgList, iImage, hdcMem, rcContent.right - 18, (twoRows && type == CLCIT_CONTACT && !g_CluiData.bCenterStatusIcons) ? y + 2 : y + ((rowHeight - 16) >> 1), 0, 0, CLR_NONE, colourFg, mode);
+				ImageList_DrawEx(hImgList, iImage, hdcMem, rcContent.right - 18, (twoRows && type == CLCIT_CONTACT && !cfg::dat.bCenterStatusIcons) ? y + 2 : y + ((rowHeight - 16) >> 1), 0, 0, CLR_NONE, colourFg, mode);
 				rcContent.right -= 18;
 			}
 			else {
 				LONG offset = 0;
 				BOOL centered = FALSE;
-				offset +=  (type != CLCIT_CONTACT || avatar_done || !(av_local_wanted) ? 20 : dwFlags & CLUI_FRAME_ALWAYSALIGNNICK && av_left && g_selectiveIcon ? g_CluiData.avatarSize + 2 : 20);
-				centered = (g_CluiData.bCenterStatusIcons && offset == g_CluiData.avatarSize + 2);
-				ImageList_DrawEx(hImgList, iImage, hdcMem,  centered ? rcContent.left + offset / 2 - 10 : rcContent.left, (twoRows && type == CLCIT_CONTACT && !g_CluiData.bCenterStatusIcons) ? y + 2 : y + ((rowHeight - 16) >> 1), 0, 0, CLR_NONE, colourFg, mode);
+				offset +=  (type != CLCIT_CONTACT || avatar_done || !(av_local_wanted) ? 20 : dwFlags & CLUI_FRAME_ALWAYSALIGNNICK && av_left && g_selectiveIcon ? cfg::dat.avatarSize + 2 : 20);
+				centered = (cfg::dat.bCenterStatusIcons && offset == cfg::dat.avatarSize + 2);
+				ImageList_DrawEx(hImgList, iImage, hdcMem,  centered ? rcContent.left + offset / 2 - 10 : rcContent.left, (twoRows && type == CLCIT_CONTACT && !cfg::dat.bCenterStatusIcons) ? y + 2 : y + ((rowHeight - 16) >> 1), 0, 0, CLR_NONE, colourFg, mode);
 				rcContent.left += offset;
 			}
 		}
@@ -1048,13 +1047,13 @@ bgskipped:
                     cEntry->dwXMask &= ~EIMG_SHOW_ADV1;
 
 				for(i = EXICON_COUNT - 1; i >= 0; i--) {
-                    iIndex = g_CluiData.exIconOrder[i] - 1;
+                    iIndex = cfg::dat.exIconOrder[i] - 1;
                     if(iIndex >= 0 && iIndex < EXICON_COUNT) {
                         id = OrderTreeData[iIndex].ID;
                         if(cEntry->iExtraImage[id] != 0xff && ((1 << id) & cEntry->dwXMask)) {
                             if(contact->extraIconRightBegin == 0 && i != (EXICON_COUNT - 1))
                                 contact->extraIconRightBegin = rcContent.right;
-                            ImageList_DrawEx(dat->himlExtraColumns, cEntry->iExtraImage[id], hdcMem, rcContent.right - g_CluiData.exIconScale, twoRows ? rcContent.bottom - g_exIconSpacing : y + ((rowHeight - g_CluiData.exIconScale) >> 1),
+                            ImageList_DrawEx(dat->himlExtraColumns, cEntry->iExtraImage[id], hdcMem, rcContent.right - cfg::dat.exIconScale, twoRows ? rcContent.bottom - g_exIconSpacing : y + ((rowHeight - cfg::dat.exIconScale) >> 1),
                                 0, 0, CLR_NONE, CLR_NONE, ILD_NORMAL);
                             rcContent.right -= g_exIconSpacing;
                             rightIcons++;
@@ -1073,11 +1072,11 @@ bgskipped:
 
                 if(fVisi) {
                     if(cEntry->isChatRoom)
-                        DrawIconEx(hdcMem, rcContent.right - g_CluiData.exIconScale, twoRows ? rcContent.bottom - g_exIconSpacing : y + ((rowHeight - g_CluiData.exIconScale) >> 1),
-                        g_CluiData.hIconChatactive, g_CluiData.exIconScale, g_CluiData.exIconScale, 0, 0, DI_NORMAL | DI_COMPAT);
+                        DrawIconEx(hdcMem, rcContent.right - cfg::dat.exIconScale, twoRows ? rcContent.bottom - g_exIconSpacing : y + ((rowHeight - cfg::dat.exIconScale) >> 1),
+                        cfg::dat.hIconChatactive, cfg::dat.exIconScale, cfg::dat.exIconScale, 0, 0, DI_NORMAL | DI_COMPAT);
                     else
-                        DrawIconEx(hdcMem, rcContent.right - g_CluiData.exIconScale, twoRows ? rcContent.bottom - g_exIconSpacing : y + ((rowHeight - g_CluiData.exIconScale) >> 1),
-                        flags & CONTACTF_VISTO ? g_CluiData.hIconVisible : g_CluiData.hIconInvisible, g_CluiData.exIconScale, g_CluiData.exIconScale, 0, 0, DI_NORMAL | DI_COMPAT);
+                        DrawIconEx(hdcMem, rcContent.right - cfg::dat.exIconScale, twoRows ? rcContent.bottom - g_exIconSpacing : y + ((rowHeight - cfg::dat.exIconScale) >> 1),
+                        flags & CONTACTF_VISTO ? cfg::dat.hIconVisible : cfg::dat.hIconInvisible, cfg::dat.exIconScale, cfg::dat.exIconScale, 0, 0, DI_NORMAL | DI_COMPAT);
                     rcContent.right -= g_exIconSpacing;
                     rightIcons++;
                 }
@@ -1100,7 +1099,7 @@ text:
 		RECT rc;
 		int leftMargin = 0, countStart = 0, leftLineEnd, rightLineStart;
 		fontHeight = dat->fontInfo[FONTID_GROUPS].fontHeight;
-		rc.top = y + ((rowHeight - fontHeight) >> 1) + g_CluiData.group_padding;
+		rc.top = y + ((rowHeight - fontHeight) >> 1) + cfg::dat.group_padding;
 		rc.bottom = rc.top + textSize.cy;
 		if (szCounts[0]) {
 			int required, labelWidth, offset = 0;
@@ -1196,15 +1195,15 @@ text:
 				if(av_rightwithnick) {
 					RECT rcAvatar = rcContent;
 
-					rcAvatar.left = rcContent.right - (g_CluiData.avatarSize - 1);
+					rcAvatar.left = rcContent.right - (cfg::dat.avatarSize - 1);
 					DrawAvatar(hdcMem, &rcAvatar, contact, y, dat, (WORD)(iImage ? cstatus : 0), rowHeight, cEntry->dwDFlags);
-					rcContent.right -= (g_CluiData.avatarSize + 2);
+					rcContent.right -= (cfg::dat.avatarSize + 2);
 				}
 				else
 					rcContent.left += DrawAvatar(hdcMem, &rcContent, contact, y, dat, (WORD)(iImage ? cstatus : 0), rowHeight, cEntry->dwDFlags);
 			}
 			else if(dwFlags & CLUI_FRAME_ALWAYSALIGNNICK && !avatar_done && av_local_wanted)
-				rcContent.left += (dwFlags & (CLUI_FRAME_AVATARSLEFT | CLUI_FRAME_AVATARSRIGHT | CLUI_FRAME_AVATARSRIGHTWITHNICK) ? 0 : g_CluiData.avatarSize + 2);
+				rcContent.left += (dwFlags & (CLUI_FRAME_AVATARSLEFT | CLUI_FRAME_AVATARSRIGHT | CLUI_FRAME_AVATARSRIGHTWITHNICK) ? 0 : cfg::dat.avatarSize + 2);
 		}
 
 		// nickname
@@ -1220,9 +1219,9 @@ text:
 			DWORD saved_right = rcContent.right;
 			BOOL verticalfit = FALSE;
 
-			rcContent.top = y + g_CluiData.avatarPadding / 2;
+			rcContent.top = y + cfg::dat.avatarPadding / 2;
 
-            if(g_CluiData.bShowLocalTime)
+            if(cfg::dat.bShowLocalTime)
                 fLocalTime = cEntry->dwDFlags & ECF_HIDELOCALTIME ? 0 : 1;
             else
                 fLocalTime = cEntry->dwDFlags & ECF_FORCELOCALTIME ? 1 : 0;
@@ -1232,7 +1231,7 @@ text:
 				char szResult[80];
 				int  idOldFont;
 				DWORD final_time;
-				DWORD now = g_CluiData.t_now;
+				DWORD now = cfg::dat.t_now;
 				SIZE szTime;
 				RECT rc = rcContent;
 				COLORREF oldColor;
@@ -1240,7 +1239,7 @@ text:
 
 				final_time = now - cEntry->timediff;
 
-				if(final_time == now && g_CluiData.bShowLocalTimeSelective)
+				if(final_time == now && cfg::dat.bShowLocalTimeSelective)
 					goto nodisplay;
 
 				dbtts.szDest = szResult;
@@ -1251,7 +1250,7 @@ text:
 				idOldFont = dat->currentFontID;
 				ChangeToFont(hdcMem, dat, FONTID_TIMESTAMP, &fHeight);
 				GetTextExtentPoint32A(hdcMem, szResult, lstrlenA(szResult), &szTime);
-				verticalfit = (rowHeight - fHeight >= g_CluiData.exIconScale + 1);
+				verticalfit = (rowHeight - fHeight >= cfg::dat.exIconScale + 1);
 
 				if(av_right) {
 					if(verticalfit)
@@ -1279,18 +1278,18 @@ text:
 				ChangeToFont(hdcMem, dat, idOldFont, 0);
 				SetTextColor(hdcMem, oldColor);
 
-				verticalfit = (rowHeight - fontHeight >= g_CluiData.exIconScale + 1);
+				verticalfit = (rowHeight - fontHeight >= cfg::dat.exIconScale + 1);
 				if(verticalfit && av_right)
-					rcContent.right = min(clRect->right - g_CluiData.avatarSize - 2, rc.left - 2);
+					rcContent.right = min(clRect->right - cfg::dat.avatarSize - 2, rc.left - 2);
 				else if(verticalfit && !av_rightwithnick)
 					rcContent.right = min(clRect->right - dat->rightMargin, rc.left - 3);
 			}
 			else {
 nodisplay:
-				verticalfit = (rowHeight - fontHeight >= g_CluiData.exIconScale + 1);
+				verticalfit = (rowHeight - fontHeight >= cfg::dat.exIconScale + 1);
 				if(avatar_done) {
 					if(verticalfit && av_right)
-						rcContent.right = clRect->right - g_CluiData.avatarSize - 2;
+						rcContent.right = clRect->right - cfg::dat.avatarSize - 2;
 					else if(verticalfit && !av_rightwithnick)
 						rcContent.right = clRect->right - dat->rightMargin;
 				}
@@ -1316,7 +1315,7 @@ nodisplay:
 #else
 					szText = statusNames[cstatus - ID_STATUS_OFFLINE];
 #endif
-				if(cEntry->dwCFlags & ECF_RTLSTATUSMSG && g_CluiData.bUseDCMirroring == 3)
+				if(cEntry->dwCFlags & ECF_RTLSTATUSMSG && cfg::dat.bUseDCMirroring == 3)
 					dt_2ndrowflags |= (DT_RTLREADING | DT_RIGHT);
 
 				if(rightIcons == 0) {
@@ -1410,7 +1409,7 @@ void SkinDrawBg(HWND hwnd, HDC hdc)
 	ClientToScreen(hwnd, &ptTest);
 	GetClientRect(hwnd, &rcCl);
 
-	BitBlt(hdc, 0, 0, rcCl.right - rcCl.left, rcCl.bottom - rcCl.top, g_CluiData.hdcBg, ptTest.x - g_CluiData.ptW.x, ptTest.y - g_CluiData.ptW.y, SRCCOPY);
+	BitBlt(hdc, 0, 0, rcCl.right - rcCl.left, rcCl.bottom - rcCl.top, cfg::dat.hdcBg, ptTest.x - cfg::dat.ptW.x, ptTest.y - cfg::dat.ptW.y, SRCCOPY);
 }
 
 void PaintClc(HWND hwnd, struct ClcData *dat, HDC hdc, RECT *rcPaint)
@@ -1427,7 +1426,7 @@ void PaintClc(HWND hwnd, struct ClcData *dat, HDC hdc, RECT *rcPaint)
 	int line_num = -1;
 	COLORREF tmpbkcolour = style & CLS_CONTACTLIST ? (dat->useWindowsColours ? GetSysColor(COLOR_3DFACE) : dat->bkColour) : dat->bkColour;
 	DWORD done, now = GetTickCount();
-	selBlend = DBGetContactSettingByte(NULL, "CLCExt", "EXBK_SelBlend", 1);
+	selBlend = cfg::getByte("CLCExt", "EXBK_SelBlend", 1);
 	g_inCLCpaint = TRUE;
 	g_focusWnd = GetFocus();
 	my_status = GetGeneralisedStatus();
@@ -1444,23 +1443,23 @@ void PaintClc(HWND hwnd, struct ClcData *dat, HDC hdc, RECT *rcPaint)
     hbmTempAV = CreateCompatibleBitmap(g_HDC, g_maxAV_X, g_maxAV_Y);
     hbmTempOldAV = reinterpret_cast<HBITMAP>(SelectObject(hdcTempAV, hbmTempAV));
 
-    g_CluiData.t_now = time(NULL);
-	GetSystemTime(&g_CluiData.st);
-	SystemTimeToFileTime(&g_CluiData.st, &g_CluiData.ft);
+    cfg::dat.t_now = time(NULL);
+	GetSystemTime(&cfg::dat.st);
+	SystemTimeToFileTime(&cfg::dat.st, &cfg::dat.ft);
 
-    g_CluiData.bUseFastGradients = g_CluiData.bWantFastGradients && (MyGradientFill != 0);
+    cfg::dat.bUseFastGradients = cfg::dat.bWantFastGradients && (MyGradientFill != 0);
 
-	av_left = (g_CluiData.dwFlags & CLUI_FRAME_AVATARSLEFT);
-	av_right = (g_CluiData.dwFlags & CLUI_FRAME_AVATARSRIGHT);
-	av_rightwithnick = (g_CluiData.dwFlags & CLUI_FRAME_AVATARSRIGHTWITHNICK);
+	av_left = (cfg::dat.dwFlags & CLUI_FRAME_AVATARSLEFT);
+	av_right = (cfg::dat.dwFlags & CLUI_FRAME_AVATARSRIGHT);
+	av_rightwithnick = (cfg::dat.dwFlags & CLUI_FRAME_AVATARSRIGHTWITHNICK);
 
-	mirror_rtl = (g_CluiData.bUseDCMirroring == 2);
-	mirror_always = (g_CluiData.bUseDCMirroring == 1);
-	mirror_rtltext = (g_CluiData.bUseDCMirroring == 3);
+	mirror_rtl = (cfg::dat.bUseDCMirroring == 2);
+	mirror_always = (cfg::dat.bUseDCMirroring == 1);
+	mirror_rtltext = (cfg::dat.bUseDCMirroring == 3);
 
-	g_center = DBGetContactSettingByte(NULL, "CLCExt", "EXBK_CenterGroupnames", 0) && !dat->bisEmbedded;
-	g_ignoreselforgroups = DBGetContactSettingByte(NULL, "CLC", "IgnoreSelforGroups", 0);
-	g_exIconSpacing = g_CluiData.exIconScale + 2;
+	g_center = cfg::getByte("CLCExt", "EXBK_CenterGroupnames", 0) && !dat->bisEmbedded;
+	g_ignoreselforgroups = cfg::getByte("CLC", "IgnoreSelforGroups", 0);
+	g_exIconSpacing = cfg::dat.exIconScale + 2;
 
 	if (dat->greyoutFlags & pcli->pfnClcStatusToPf2(my_status) || style & WS_DISABLED)
 		grey = 1;
@@ -1504,7 +1503,7 @@ void PaintClc(HWND hwnd, struct ClcData *dat, HDC hdc, RECT *rcPaint)
 		DeleteObject(hBrush);
 
 		if(1) {
-			if(g_CluiData.bWallpaperMode && !dat->bisEmbedded) {
+			if(cfg::dat.bWallpaperMode && !dat->bisEmbedded) {
 				SkinDrawBg(hwnd, hdcMem);
 				goto bgdone;
 			}
@@ -1524,7 +1523,7 @@ void PaintClc(HWND hwnd, struct ClcData *dat, HDC hdc, RECT *rcPaint)
 				y = dat->backgroundBmpUse & CLBF_SCROLL ? -dat->yScroll : 0;
 				maxx = dat->backgroundBmpUse & CLBF_TILEH ? clRect.right : 1;
 				maxy = dat->backgroundBmpUse & CLBF_TILEV ? maxy = rcPaint->bottom : y + 1;
-				if (dat->bisEmbedded || !DBGetContactSettingByte(NULL, "CLCExt", "EXBK_FillWallpaper", 0)) {
+				if (dat->bisEmbedded || !cfg::getByte("CLCExt", "EXBK_FillWallpaper", 0)) {
 					switch (dat->backgroundBmpUse & CLBM_TYPE) {
 					case CLB_STRETCH:
 						if (dat->backgroundBmpUse & CLBF_PROPORTIONAL) {
@@ -1569,7 +1568,7 @@ void PaintClc(HWND hwnd, struct ClcData *dat, HDC hdc, RECT *rcPaint)
 					desth = bmp.bmHeight;
 				}
 
-				if (!dat->bisEmbedded && DBGetContactSettingByte(NULL, "CLCExt", "EXBK_FillWallpaper", 0)) {
+				if (!dat->bisEmbedded && cfg::getByte("CLCExt", "EXBK_FillWallpaper", 0)) {
 					RECT mrect;
 					GetWindowRect(hwnd, &mrect);
 					bitx = mrect.left;
@@ -1583,7 +1582,7 @@ void PaintClc(HWND hwnd, struct ClcData *dat, HDC hdc, RECT *rcPaint)
 					if (y< rcPaint->top - desth)
 						continue;
 					for (x = 0; x < maxx; x += destw) {
-						StretchBlt(hdcMem, x, y, destw, desth, g_CluiData.hdcPic, bitx, bity, bmp.bmWidth, bmp.bmHeight, SRCCOPY);
+						StretchBlt(hdcMem, x, y, destw, desth, cfg::dat.hdcPic, bitx, bity, bmp.bmWidth, bmp.bmHeight, SRCCOPY);
 					}
 				}
 				DeleteDC(hdcBmp);
@@ -1595,7 +1594,7 @@ bgdone:
 	group->scanIndex = 0;
 
 	if ( dat->row_heights == NULL )
-		RowHeights_CalcRowHeights(dat, hwnd);
+		RowHeight::calcRowHeights(dat, hwnd);
 
     group = &dat->list;
     group->scanIndex = 0;
@@ -1621,7 +1620,7 @@ bgdone:
         }
         group->scanIndex++;
     }
-    g_selectiveIcon = (g_list_avatars > 0) && (g_CluiData.dwFlags & CLUI_FRAME_SELECTIVEICONS) && !dat->bisEmbedded;
+    g_selectiveIcon = (g_list_avatars > 0) && (cfg::dat.dwFlags & CLUI_FRAME_SELECTIVEICONS) && !dat->bisEmbedded;
 
     group = &dat->list;
     group->scanIndex = 0;
@@ -1639,13 +1638,13 @@ bgdone:
 		}
 
 		line_num++;
-        if(g_CluiData.bForceRefetchOnPaint)
+        if(cfg::dat.bForceRefetchOnPaint)
             group->cl.items[group->scanIndex]->ace = (struct avatarCacheEntry*)-1;
 
 		if (y > rcPaint->top - dat->row_heights[line_num] && y <= rcPaint->bottom) {
             if (group->cl.items[group->scanIndex]->ace == (struct avatarCacheEntry*)-1 )
                 group->cl.items[group->scanIndex]->ace = (struct avatarCacheEntry *)CallService(MS_AV_GETAVATARBITMAP, (WPARAM)group->cl.items[group->scanIndex]->hContact, 0);
-			RowHeights_GetRowHeight(dat, hwnd, group->cl.items[group->scanIndex], line_num, style);
+			RowHeight::getRowHeight(dat, hwnd, group->cl.items[group->scanIndex], line_num, style);
 			PaintItem(hdcMem, group, group->cl.items[group->scanIndex], indent, y, dat, index, hwnd, style, &clRect, &bFirstNGdrawn, groupCountsFontTopShift, dat->row_heights[line_num]);
 		}
 		index++;
@@ -1671,7 +1670,7 @@ bgdone:
 		POINT pts[8];
 		HRGN hRgn;
 
-		pts[0].x=dat->leftMargin; pts[0].y= RowHeights_GetItemTopY(dat, dat->iInsertionMark) - dat->yScroll - 4;
+		pts[0].x=dat->leftMargin; pts[0].y = RowHeight::getItemTopY(dat, dat->iInsertionMark) - dat->yScroll - 4;
 		//pts[0]. x = dat->leftMargin; pts[0]. y = dat->iInsertionMark * rowHeight - dat->yScroll - 4;
 		pts[1]. x = pts[0].x + 2;      pts[1]. y = pts[0].y + 3;
 		pts[2]. x = clRect.right - 4;  pts[2]. y = pts[1].y;

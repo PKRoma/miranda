@@ -34,8 +34,6 @@ UNICODE - done.
 #define DOCKED_RIGHT   2
 static int docked;
 
-extern struct CluiData g_CluiData;
-
 extern RECT cluiPos;
 
 static void Docking_GetMonitorRectFromPoint(POINT pt, RECT *rc)
@@ -79,11 +77,11 @@ static void Docking_AdjustPosition(HWND hwnd, RECT *rcDisplay, RECT *rc)
     abd.rc.top = rcDisplay->top;
     abd.rc.bottom = rcDisplay->bottom;
     if (docked == DOCKED_LEFT) {
-        abd.rc.right = rcDisplay->left + (abd.rc.right - abd.rc.left) - g_CluiData.bClipBorder;
-        abd.rc.left = rcDisplay->left - g_CluiData.bClipBorder;
+        abd.rc.right = rcDisplay->left + (abd.rc.right - abd.rc.left) - cfg::dat.bClipBorder;
+        abd.rc.left = rcDisplay->left - cfg::dat.bClipBorder;
     } else {
-        abd.rc.left = rcDisplay->right - (abd.rc.right - abd.rc.left) + g_CluiData.bClipBorder;
-        abd.rc.right = rcDisplay->right + g_CluiData.bClipBorder;
+        abd.rc.left = rcDisplay->right - (abd.rc.right - abd.rc.left) + cfg::dat.bClipBorder;
+        abd.rc.right = rcDisplay->right + cfg::dat.bClipBorder;
     }
     SHAppBarMessage(ABM_SETPOS, &abd);
     *rc = abd.rc;

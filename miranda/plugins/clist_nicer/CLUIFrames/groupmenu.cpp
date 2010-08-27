@@ -42,7 +42,6 @@ HANDLE hNewGroupMenuItem;
 HANDLE hNewSubGroupMenuItem;
 
 int NewGroupIconidx;
-extern struct CluiData g_CluiData;
 
 extern HIMAGELIST hCListImages;
 extern HICON LoadIconFromExternalFile (char *filename,int i,boolean UseLibrary,boolean registerit,char *IconName,char *SectName,char *Description,int internalidx);
@@ -171,20 +170,20 @@ INT_PTR GroupMenuonAddService(WPARAM wParam,LPARAM lParam) {
 		hMenuOldContext = GetSubMenu(LoadMenu(g_hInst, MAKEINTRESOURCE(IDR_CONTEXT)), 4);
 		CallService(MS_LANGPACK_TRANSLATEMENU, (WPARAM) hMenuOldContext, 0);
 
-		CheckMenuItem(hMenuOldContext, POPUP_VISIBILITY, MF_BYCOMMAND | (g_CluiData.dwFlags & CLUI_SHOWVISI ? MF_CHECKED : MF_UNCHECKED));
-		CheckMenuItem(hMenuOldContext, POPUP_FRAME, MF_BYCOMMAND | (g_CluiData.dwFlags & CLUI_FRAME_CLISTSUNKEN ? MF_CHECKED : MF_UNCHECKED));
-		CheckMenuItem(hMenuOldContext, POPUP_TOOLBAR, MF_BYCOMMAND | (g_CluiData.dwFlags & CLUI_FRAME_SHOWTOPBUTTONS ? MF_CHECKED : MF_UNCHECKED));
-		CheckMenuItem(hMenuOldContext, POPUP_BUTTONS, MF_BYCOMMAND | (g_CluiData.dwFlags & CLUI_FRAME_SHOWBOTTOMBUTTONS ? MF_CHECKED : MF_UNCHECKED));
-		CheckMenuItem(hMenuOldContext, POPUP_SHOWMETAICONS, MF_BYCOMMAND | (g_CluiData.dwFlags & CLUI_USEMETAICONS ? MF_CHECKED : MF_UNCHECKED));
-		CheckMenuItem(hMenuOldContext, POPUP_SHOWSTATUSICONS, MF_BYCOMMAND | (g_CluiData.dwFlags & CLUI_FRAME_STATUSICONS ? MF_CHECKED : MF_UNCHECKED));
+		CheckMenuItem(hMenuOldContext, POPUP_VISIBILITY, MF_BYCOMMAND | (cfg::dat.dwFlags & CLUI_SHOWVISI ? MF_CHECKED : MF_UNCHECKED));
+		CheckMenuItem(hMenuOldContext, POPUP_FRAME, MF_BYCOMMAND | (cfg::dat.dwFlags & CLUI_FRAME_CLISTSUNKEN ? MF_CHECKED : MF_UNCHECKED));
+		CheckMenuItem(hMenuOldContext, POPUP_TOOLBAR, MF_BYCOMMAND | (cfg::dat.dwFlags & CLUI_FRAME_SHOWTOPBUTTONS ? MF_CHECKED : MF_UNCHECKED));
+		CheckMenuItem(hMenuOldContext, POPUP_BUTTONS, MF_BYCOMMAND | (cfg::dat.dwFlags & CLUI_FRAME_SHOWBOTTOMBUTTONS ? MF_CHECKED : MF_UNCHECKED));
+		CheckMenuItem(hMenuOldContext, POPUP_SHOWMETAICONS, MF_BYCOMMAND | (cfg::dat.dwFlags & CLUI_USEMETAICONS ? MF_CHECKED : MF_UNCHECKED));
+		CheckMenuItem(hMenuOldContext, POPUP_SHOWSTATUSICONS, MF_BYCOMMAND | (cfg::dat.dwFlags & CLUI_FRAME_STATUSICONS ? MF_CHECKED : MF_UNCHECKED));
 
 		// floater menu items
 
-		EnableMenuItem(hMenuOldContext, POPUP_FLOATER_AUTOHIDE, MF_BYCOMMAND | (g_CluiData.bUseFloater & CLUI_USE_FLOATER ? MF_ENABLED : MF_GRAYED));
-		EnableMenuItem(hMenuOldContext, POPUP_FLOATER_EVENTS, MF_BYCOMMAND | (g_CluiData.bUseFloater & CLUI_USE_FLOATER ? MF_ENABLED : MF_GRAYED));
-		CheckMenuItem(hMenuOldContext, POPUP_FLOATER, MF_BYCOMMAND | (g_CluiData.bUseFloater & CLUI_USE_FLOATER ? MF_CHECKED : MF_UNCHECKED));
-		CheckMenuItem(hMenuOldContext, POPUP_FLOATER_AUTOHIDE, MF_BYCOMMAND | (g_CluiData.bUseFloater & CLUI_FLOATER_AUTOHIDE ? MF_CHECKED : MF_UNCHECKED));
-		CheckMenuItem(hMenuOldContext, POPUP_FLOATER_EVENTS, MF_BYCOMMAND | (g_CluiData.bUseFloater & CLUI_FLOATER_EVENTS ? MF_CHECKED : MF_UNCHECKED));
+		EnableMenuItem(hMenuOldContext, POPUP_FLOATER_AUTOHIDE, MF_BYCOMMAND | (cfg::dat.bUseFloater & CLUI_USE_FLOATER ? MF_ENABLED : MF_GRAYED));
+		EnableMenuItem(hMenuOldContext, POPUP_FLOATER_EVENTS, MF_BYCOMMAND | (cfg::dat.bUseFloater & CLUI_USE_FLOATER ? MF_ENABLED : MF_GRAYED));
+		CheckMenuItem(hMenuOldContext, POPUP_FLOATER, MF_BYCOMMAND | (cfg::dat.bUseFloater & CLUI_USE_FLOATER ? MF_CHECKED : MF_UNCHECKED));
+		CheckMenuItem(hMenuOldContext, POPUP_FLOATER_AUTOHIDE, MF_BYCOMMAND | (cfg::dat.bUseFloater & CLUI_FLOATER_AUTOHIDE ? MF_CHECKED : MF_UNCHECKED));
+		CheckMenuItem(hMenuOldContext, POPUP_FLOATER_EVENTS, MF_BYCOMMAND | (cfg::dat.bUseFloater & CLUI_FLOATER_EVENTS ? MF_CHECKED : MF_UNCHECKED));
 
 		mii->fMask|=MIIM_SUBMENU;
 		//mi.fType=MFT_STRING;

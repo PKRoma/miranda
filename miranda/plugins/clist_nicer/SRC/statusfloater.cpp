@@ -66,7 +66,6 @@ extern BOOL (WINAPI *MyUpdateLayeredWindow)(HWND hwnd, HDC hdcDst, POINT *pptDst
 extern int g_nextExtraCacheEntry, g_padding_y;
 extern struct ExtraCache *g_ExtraCache;
 
-extern struct CluiData g_CluiData;
 extern HIMAGELIST hCListImages;
 extern HWND g_hwndEventArea;
 extern struct ClcData *g_clcData;
@@ -535,7 +534,7 @@ LRESULT CALLBACK StatusFloaterClassProc(HWND hwnd, UINT msg, WPARAM wParam, LPAR
 
 				GetCursorPos(&pt);
 				GetWindowRect(hwnd, &rcWindow);
-				if(g_CluiData.bUseFloater & CLUI_FLOATER_EVENTS) {
+				if(cfg::dat.bUseFloater & CLUI_FLOATER_EVENTS) {
 					if(pt.y > rcWindow.top + ((rcWindow.bottom - rcWindow.top) / 2))
 						SendMessage(g_hwndEventArea, WM_COMMAND, MAKEWPARAM(IDC_NOTIFYBUTTON, 0), 0);
 					else
@@ -814,7 +813,7 @@ void SFL_Update(HICON hIcon, int iIcon, HIMAGELIST hIml, const TCHAR *szText, BO
 
 	rcStatusArea = rcClient;
 
-	if(g_CluiData.bUseFloater & CLUI_FLOATER_EVENTS)
+	if(cfg::dat.bUseFloater & CLUI_FLOATER_EVENTS)
 		rcStatusArea.bottom = 20;
 
 	cy = rcStatusArea.bottom - rcStatusArea.top;
@@ -847,7 +846,7 @@ void SFL_Update(HICON hIcon, int iIcon, HIMAGELIST hIml, const TCHAR *szText, BO
 	GetTextExtentPoint32(g_SFLCachedDC, sfl_statustext, lstrlen(sfl_statustext), &szT);
 	TextOut(g_SFLCachedDC, 24, (cy - szT.cy) / 2, sfl_statustext, lstrlen(sfl_statustext));
 
-	if(g_CluiData.bUseFloater & CLUI_FLOATER_EVENTS) {
+	if(cfg::dat.bUseFloater & CLUI_FLOATER_EVENTS) {
 		RECT rcNA = rcClient;
 
 		rcNA.top = 18;
@@ -871,11 +870,11 @@ void SFL_SetState(int uMode)
 {
 	BYTE bClistState;
 
-	if(g_hwndSFL == 0 || !(g_CluiData.bUseFloater & CLUI_USE_FLOATER))
+	if(g_hwndSFL == 0 || !(cfg::dat.bUseFloater & CLUI_USE_FLOATER))
 		return;
 
 	if(uMode == -1) {
-		if(g_CluiData.bUseFloater & CLUI_FLOATER_AUTOHIDE) {
+		if(cfg::dat.bUseFloater & CLUI_FLOATER_AUTOHIDE) {
 			bClistState = DBGetContactSettingByte(NULL, "CList", "State", SETTING_STATE_NORMAL);
 			ShowWindow(g_hwndSFL, bClistState == SETTING_STATE_NORMAL ? SW_SHOW : SW_HIDE);
 		}
@@ -908,7 +907,7 @@ void SFL_SetSize()
 		GetTextExtentPoint32A(hdc, szStatusMode, lstrlenA(szStatusMode), &sz);
 		lWidth = max(lWidth, sz.cx + 16 + 8);
 	}
-	SetWindowPos(g_hwndSFL, HWND_TOPMOST, rcWindow.left, rcWindow.top, lWidth, max(g_CluiData.bUseFloater & CLUI_FLOATER_EVENTS ? 36 : 20, sz.cy + 4), SWP_SHOWWINDOW);
+	SetWindowPos(g_hwndSFL, HWND_TOPMOST, rcWindow.left, rcWindow.top, lWidth, max(cfg::dat.bUseFloater & CLUI_FLOATER_EVENTS ? 36 : 20, sz.cy + 4), SWP_SHOWWINDOW);
 	GetWindowRect(g_hwndSFL, &rcWindow);
 
 	if(g_SFLCachedDC) {
@@ -928,7 +927,7 @@ void SFL_SetSize()
 
 void SFL_Create()
 {
-	if(g_hwndSFL == 0 && g_CluiData.bUseFloater & CLUI_USE_FLOATER && MyUpdateLayeredWindow != NULL)
+	if(g_hwndSFL == 0 && cfg::dat.bUseFloater & CLUI_USE_FLOATER && MyUpdateLayeredWindow != NULL)
 		g_hwndSFL = CreateWindowEx(WS_EX_TOOLWINDOW | WS_EX_LAYERED, _T("StatusFloaterClass"), _T("sfl"), WS_VISIBLE, 0, 0, 0, 0, 0, 0, g_hInst, 0);
 	else
 		return;
@@ -1041,7 +1040,7 @@ void FLT_Update(struct ClcData *dat, struct ClcContact *contact)
 	if(g_ExtraCache[contact->extraCacheEntry].floater == NULL)
 		return;
 
-	FLT_SetSize(&g_ExtraCache[contact->extraCacheEntry], g_floatoptions.width, RowHeights_GetFloatingRowHeight(dat, pcli->hwndContactTree, contact, g_floatoptions.dwFlags) + (2*g_floatoptions.pad_top));
+	FLT_SetSize(&g_ExtraCache[contact->extraCacheEntry], g_floatoptions.width, RowHeight::getFloatingRowHeight(dat, pcli->hwndContactTree, contact, g_floatoptions.dwFlags) + (2*g_floatoptions.pad_top));
 
 	hwnd = g_ExtraCache[contact->extraCacheEntry].floater->hwnd;
 	hdc = g_ExtraCache[contact->extraCacheEntry].floater->hdc;
@@ -1083,8 +1082,8 @@ void FLT_Update(struct ClcData *dat, struct ClcContact *contact)
 	}
 
 	if(FindItem(pcli->hwndContactTree, dat, contact->hContact, &newContact, &group, 0)) {
-		DWORD oldFlags = g_CluiData.dwFlags;
-		BYTE oldPadding = g_CluiData.avatarPadding;
+		DWORD oldFlags = cfg::dat.dwFlags;
+		BYTE oldPadding = cfg::dat.avatarPadding;
 		DWORD oldExtraImageMask = g_ExtraCache[contact->extraCacheEntry].dwXMask;
 		struct avatarCacheEntry *ace_old = contact->ace;
 		BYTE oldDualRow = contact->bSecondLine;
@@ -1095,7 +1094,7 @@ void FLT_Update(struct ClcData *dat, struct ClcContact *contact)
 		if(g_floatoptions.dwFlags & FLT_SIMPLE) {
 			contact->ace = 0;
 			contact->bSecondLine = MULTIROW_NEVER;
-			g_CluiData.dwFlags &= ~(CLUI_SHOWCLIENTICONS | CLUI_SHOWVISI);
+			cfg::dat.dwFlags &= ~(CLUI_SHOWCLIENTICONS | CLUI_SHOWVISI);
 			g_ExtraCache[contact->extraCacheEntry].dwXMask = 0;
 		}
 		else{
@@ -1112,7 +1111,7 @@ void FLT_Update(struct ClcData *dat, struct ClcContact *contact)
 				contact->bSecondLine = MULTIROW_ALWAYS;
 
 			if(!(g_floatoptions.dwFlags & FLT_EXTRAICONS)) {
-				g_CluiData.dwFlags &= ~(CLUI_SHOWCLIENTICONS | CLUI_SHOWVISI);
+				cfg::dat.dwFlags &= ~(CLUI_SHOWCLIENTICONS | CLUI_SHOWVISI);
 				g_ExtraCache[contact->extraCacheEntry].dwXMask = 0;
 			}
 		}
@@ -1137,8 +1136,8 @@ void FLT_Update(struct ClcData *dat, struct ClcContact *contact)
         DeleteDC(hdcTempAV);
         DeleteDC(hdcAV);
 
-		g_CluiData.dwFlags = oldFlags;
-		g_CluiData.avatarPadding = oldPadding;
+		cfg::dat.dwFlags = oldFlags;
+		cfg::dat.avatarPadding = oldPadding;
 		contact->ace = ace_old;
 		contact->bSecondLine = oldDualRow;
 		g_ExtraCache[contact->extraCacheEntry].dwXMask = oldExtraImageMask;

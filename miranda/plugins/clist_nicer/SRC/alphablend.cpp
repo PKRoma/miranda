@@ -30,7 +30,6 @@ extern DWORD savedCORNER;
 extern StatusItems_t *StatusItems;
 extern ImageItem *g_glyphItem;
 
-extern struct CluiData g_CluiData;
 PGF MyGradientFill = 0;
 
 BYTE __forceinline percent_to_byte(UINT32 percent)
@@ -58,21 +57,21 @@ void __forceinline DrawBorderStyle(HDC hdcwnd, RECT *rc, DWORD BORDERSTYLE)
         switch(BORDERSTYLE) {
             case BDR_RAISEDOUTER:                 // raised
                 MoveToEx(hdcwnd, rc->left, rc->bottom - 1, &pt);
-                hPenOld = reinterpret_cast<HPEN>(SelectObject(hdcwnd, g_CluiData.hPen3DBright));
+                hPenOld = reinterpret_cast<HPEN>(SelectObject(hdcwnd, cfg::dat.hPen3DBright));
                 LineTo(hdcwnd, rc->left, rc->top);
                 LineTo(hdcwnd, rc->right, rc->top);
-                SelectObject(hdcwnd, g_CluiData.hPen3DDark);
+                SelectObject(hdcwnd, cfg::dat.hPen3DDark);
                 MoveToEx(hdcwnd, rc->right - 1, rc->top + 1, &pt);
                 LineTo(hdcwnd, rc->right - 1, rc->bottom - 1);
                 LineTo(hdcwnd, rc->left - 1, rc->bottom - 1);
                 break;
             case BDR_SUNKENINNER:
                 MoveToEx(hdcwnd, rc->left, rc->bottom - 1, &pt);
-                hPenOld = reinterpret_cast<HPEN>(SelectObject(hdcwnd, g_CluiData.hPen3DDark));
+                hPenOld = reinterpret_cast<HPEN>(SelectObject(hdcwnd, cfg::dat.hPen3DDark));
                 LineTo(hdcwnd, rc->left, rc->top);
                 LineTo(hdcwnd, rc->right, rc->top);
                 MoveToEx(hdcwnd, rc->right - 1, rc->top + 1, &pt);
-                SelectObject(hdcwnd, g_CluiData.hPen3DBright);
+                SelectObject(hdcwnd, cfg::dat.hPen3DBright);
                 LineTo(hdcwnd, rc->right - 1, rc->bottom - 1);
                 LineTo(hdcwnd, rc->left, rc->bottom - 1);
                 break;
@@ -139,7 +138,7 @@ void DrawAlpha(HDC hdcwnd, PRECT rc, DWORD basecolor, int alpha, DWORD basecolor
     if (rc->right < rc->left || rc->bottom < rc->top || (realHeight <= 0) || (realWidth <= 0))
         return;
 
-	if(g_CluiData.bUseFastGradients && !(FLG_CORNER & CORNER_ACTIVE)) {
+	if(cfg::dat.bUseFastGradients && !(FLG_CORNER & CORNER_ACTIVE)) {
 		GRADIENT_RECT grect;
 		TRIVERTEX tvtx[2];
 		int orig = 1, dest = 0;
@@ -319,7 +318,7 @@ void DrawAlpha(HDC hdcwnd, PRECT rc, DWORD basecolor, int alpha, DWORD basecolor
  
         holdbrush = reinterpret_cast<HBRUSH>(SelectObject(hdc, BrMask));
         holdbitmap = reinterpret_cast<HBITMAP>(SelectObject(hdc, hbitmap));
-        RoundRect(hdc, -1, -1, ulBitmapWidth * 2 + 1, (realHeight + 1), g_CluiData.cornerRadius << 1, g_CluiData.cornerRadius << 1);
+        RoundRect(hdc, -1, -1, ulBitmapWidth * 2 + 1, (realHeight + 1), cfg::dat.cornerRadius << 1, cfg::dat.cornerRadius << 1);
 
         for (y = 0; y < ulBitmapHeight; y++) {
             for (x = 0; x < ulBitmapWidth; x++) {
@@ -353,7 +352,7 @@ void DrawAlpha(HDC hdcwnd, PRECT rc, DWORD basecolor, int alpha, DWORD basecolor
 
         //SelectObject(hdc, BrMask); // already BrMask?
         holdbitmap = reinterpret_cast<HBITMAP>(SelectObject(hdc, hbitmap));
-        RoundRect(hdc, -1 - ulBitmapWidth, -1, ulBitmapWidth + 1, (realHeight + 1), g_CluiData.cornerRadius << 1, g_CluiData.cornerRadius << 1);
+        RoundRect(hdc, -1 - ulBitmapWidth, -1, ulBitmapWidth + 1, (realHeight + 1), cfg::dat.cornerRadius << 1, cfg::dat.cornerRadius << 1);
 
         for (y = 0; y < ulBitmapHeight; y++) {
             for (x = 0; x < ulBitmapWidth; x++) {
