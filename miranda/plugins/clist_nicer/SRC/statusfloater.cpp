@@ -39,7 +39,6 @@ Also implementes floating contacts (FLT_*() functions)
 #define MS_TOOLTIP_SHOWTIP		"mToolTip/ShowTip"
 #define MS_TOOLTIP_HIDETIP		"mToolTip/HideTip"
 
-
 BYTE __forceinline percent_to_byte(UINT32 percent)
 {
     return(BYTE) ((FLOAT) (((FLOAT) percent) / 100) * 255);
@@ -63,12 +62,10 @@ POINT start_pos;
 extern StatusItems_t *StatusItems;
 extern BOOL (WINAPI *MySetLayeredWindowAttributes)(HWND, COLORREF, BYTE, DWORD);
 extern BOOL (WINAPI *MyUpdateLayeredWindow)(HWND hwnd, HDC hdcDst, POINT *pptDst,SIZE *psize, HDC hdcSrc, POINT *pptSrc, COLORREF crKey, BLENDFUNCTION *pblend, DWORD dwFlags);
-extern int g_nextExtraCacheEntry, g_padding_y;
-extern struct ExtraCache *g_ExtraCache;
+extern int g_padding_y;
 
 extern HIMAGELIST hCListImages;
 extern HWND g_hwndEventArea;
-extern struct ClcData *g_clcData;
 extern HDC g_HDC;
 
 extern int g_list_avatars;
@@ -584,10 +581,10 @@ void CALLBACK ShowTooltip(HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime){
 LRESULT CALLBACK ContactFloaterClassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	INT_PTR iEntry = GetWindowLongPtr(hwnd, GWLP_USERDATA);
-	struct ExtraCache *centry = NULL;
+	struct TExtraCache *centry = NULL;
 
-	if(iEntry >= 0 && iEntry < g_nextExtraCacheEntry)
-		centry = &g_ExtraCache[iEntry];
+	if(iEntry >= 0 && iEntry < cfg::nextCacheEntry)
+		centry = &cfg::eCache[iEntry];
 
 	switch(msg) {
 		case WM_NCCREATE:
@@ -595,8 +592,8 @@ LRESULT CALLBACK ContactFloaterClassProc(HWND hwnd, UINT msg, WPARAM wParam, LPA
 				CREATESTRUCT *cs = (CREATESTRUCT *)lParam;
 				SetWindowLongPtr(hwnd, GWLP_USERDATA, (LONG_PTR)cs->lpCreateParams);
 				iEntry = (int)cs->lpCreateParams;
-				if(iEntry >= 0 && iEntry < g_nextExtraCacheEntry)
-					centry = &g_ExtraCache[iEntry];
+				if(iEntry >= 0 && iEntry < cfg::nextCacheEntry)
+					centry = &cfg::eCache[iEntry];
 				return TRUE;
 			}
 		case WM_DESTROY:
@@ -669,9 +666,9 @@ LRESULT CALLBACK ContactFloaterClassProc(HWND hwnd, UINT msg, WPARAM wParam, LPA
 				while(pCurrent->hwnd != hwnd)
 					pCurrent = pCurrent->pNextFloater;
 
-				if(FindItem(pcli->hwndContactTree, g_clcData, pCurrent->hContact, &contact, NULL, 0)){
+				if(FindItem(pcli->hwndContactTree, cfg::clcdat, pCurrent->hContact, &contact, NULL, 0)){
 					g_floatoptions.trans = g_floatoptions.act_trans;
-					FLT_Update(g_clcData, contact);
+					FLT_Update(cfg::clcdat, contact);
 					g_floatoptions.trans = oldTrans;
 				}
 
@@ -685,8 +682,8 @@ LRESULT CALLBACK ContactFloaterClassProc(HWND hwnd, UINT msg, WPARAM wParam, LPA
 				while(pCurrent->hwnd != hwnd)
 					pCurrent = pCurrent->pNextFloater;
 
-				if(FindItem(pcli->hwndContactTree, g_clcData, pCurrent->hContact, &contact, NULL, 0))
-					FLT_Update(g_clcData, contact);
+				if(FindItem(pcli->hwndContactTree, cfg::clcdat, pCurrent->hContact, &contact, NULL, 0))
+					FLT_Update(cfg::clcdat, contact);
 
                 if (hTooltipTimer)
                 { 
@@ -938,7 +935,7 @@ void SFL_Create()
 	SFL_SetSize();
 }
 
-void FLT_SetSize(struct ExtraCache *centry, LONG width, LONG height)
+void FLT_SetSize(struct TExtraCache *centry, LONG width, LONG height)
 {
 	HDC hdc;
 	RECT rcWindow;
@@ -973,13 +970,13 @@ void FLT_SetSize(struct ExtraCache *centry, LONG width, LONG height)
 
 void FLT_Create(int iEntry)
 {
-	struct ExtraCache *centry = NULL;
+	struct TExtraCache *centry = NULL;
 
-	if(iEntry >= 0 && iEntry < g_nextExtraCacheEntry) {
+	if(iEntry >= 0 && iEntry < cfg::nextCacheEntry) {
 		struct ClcContact *contact = NULL;
 		struct ClcGroup *group = NULL;
 
-        centry = &g_ExtraCache[iEntry];
+        centry = &cfg::eCache[iEntry];
 		if(centry->floater == 0 && MyUpdateLayeredWindow != NULL) {
 
 			centry->floater = (struct ContactFloater *)malloc(sizeof(struct ContactFloater));
@@ -1002,9 +999,9 @@ void FLT_Create(int iEntry)
 
 		//FLT_SetSize(centry, 100, 20);
 		ShowWindow(centry->floater->hwnd, SW_SHOWNOACTIVATE);
-		if(FindItem(pcli->hwndContactTree, g_clcData, centry->hContact, &contact, &group, 0)) {
+		if(FindItem(pcli->hwndContactTree, cfg::clcdat, centry->hContact, &contact, &group, 0)) {
 			if(contact)
-				FLT_Update(g_clcData, contact);
+				FLT_Update(cfg::clcdat, contact);
 		}
 	}
 }
@@ -1034,16 +1031,16 @@ void FLT_Update(struct ClcData *dat, struct ClcContact *contact)
 	if(contact == NULL || dat == NULL)
 		return;
 
-	if(contact->extraCacheEntry < 0 || contact->extraCacheEntry >= g_nextExtraCacheEntry)
+	if(contact->extraCacheEntry < 0 || contact->extraCacheEntry >= cfg::nextCacheEntry)
 		return;
 
-	if(g_ExtraCache[contact->extraCacheEntry].floater == NULL)
+	if(cfg::eCache[contact->extraCacheEntry].floater == NULL)
 		return;
 
-	FLT_SetSize(&g_ExtraCache[contact->extraCacheEntry], g_floatoptions.width, RowHeight::getFloatingRowHeight(dat, pcli->hwndContactTree, contact, g_floatoptions.dwFlags) + (2*g_floatoptions.pad_top));
+	FLT_SetSize(&cfg::eCache[contact->extraCacheEntry], g_floatoptions.width, RowHeight::getFloatingRowHeight(dat, pcli->hwndContactTree, contact, g_floatoptions.dwFlags) + (2*g_floatoptions.pad_top));
 
-	hwnd = g_ExtraCache[contact->extraCacheEntry].floater->hwnd;
-	hdc = g_ExtraCache[contact->extraCacheEntry].floater->hdc;
+	hwnd = cfg::eCache[contact->extraCacheEntry].floater->hwnd;
+	hdc = cfg::eCache[contact->extraCacheEntry].floater->hdc;
 
 	if(hwnd == 0)
 		return;
@@ -1060,7 +1057,7 @@ void FLT_Update(struct ClcData *dat, struct ClcContact *contact)
      * fill with a DESATURATED representation of the clist bg color and use this later as a color key 
      */
 
-    greyLevel = (float)(GetRValue(g_clcData->bkColour) * 0.299 + GetGValue(g_clcData->bkColour) * 0.587 + GetBValue(g_clcData->bkColour) * 0.144);
+    greyLevel = (float)(GetRValue(cfg::clcdat->bkColour) * 0.299 + GetGValue(cfg::clcdat->bkColour) * 0.587 + GetBValue(cfg::clcdat->bkColour) * 0.144);
     if (greyLevel > 255)
         greyLevel = 255;
 
@@ -1075,7 +1072,7 @@ void FLT_Update(struct ClcData *dat, struct ClcContact *contact)
 		rgn = CreateRoundRectRgn(0, 0, rcClient.right, rcClient.bottom, g_floatoptions.radius, g_floatoptions.radius);
 		SelectClipRgn(hdc, rgn);
         if(g_floatoptions.dwFlags & FLT_FILLSTDCOLOR) {
-            HBRUSH br = CreateSolidBrush(g_clcData->bkColour);
+            HBRUSH br = CreateSolidBrush(cfg::clcdat->bkColour);
             FillRect(hdc, &rcClient, br);
             DeleteObject(br);
         }
@@ -1084,7 +1081,7 @@ void FLT_Update(struct ClcData *dat, struct ClcContact *contact)
 	if(FindItem(pcli->hwndContactTree, dat, contact->hContact, &newContact, &group, 0)) {
 		DWORD oldFlags = cfg::dat.dwFlags;
 		BYTE oldPadding = cfg::dat.avatarPadding;
-		DWORD oldExtraImageMask = g_ExtraCache[contact->extraCacheEntry].dwXMask;
+		DWORD oldExtraImageMask = cfg::eCache[contact->extraCacheEntry].dwXMask;
 		struct avatarCacheEntry *ace_old = contact->ace;
 		BYTE oldDualRow = contact->bSecondLine;
 
@@ -1095,7 +1092,7 @@ void FLT_Update(struct ClcData *dat, struct ClcContact *contact)
 			contact->ace = 0;
 			contact->bSecondLine = MULTIROW_NEVER;
 			cfg::dat.dwFlags &= ~(CLUI_SHOWCLIENTICONS | CLUI_SHOWVISI);
-			g_ExtraCache[contact->extraCacheEntry].dwXMask = 0;
+			cfg::eCache[contact->extraCacheEntry].dwXMask = 0;
 		}
 		else{
 			if(!(g_floatoptions.dwFlags & FLT_AVATARS)) {
@@ -1112,7 +1109,7 @@ void FLT_Update(struct ClcData *dat, struct ClcContact *contact)
 
 			if(!(g_floatoptions.dwFlags & FLT_EXTRAICONS)) {
 				cfg::dat.dwFlags &= ~(CLUI_SHOWCLIENTICONS | CLUI_SHOWVISI);
-				g_ExtraCache[contact->extraCacheEntry].dwXMask = 0;
+				cfg::eCache[contact->extraCacheEntry].dwXMask = 0;
 			}
 		}
 
@@ -1140,7 +1137,7 @@ void FLT_Update(struct ClcData *dat, struct ClcContact *contact)
 		cfg::dat.avatarPadding = oldPadding;
 		contact->ace = ace_old;
 		contact->bSecondLine = oldDualRow;
-		g_ExtraCache[contact->extraCacheEntry].dwXMask = oldExtraImageMask;
+		cfg::eCache[contact->extraCacheEntry].dwXMask = oldExtraImageMask;
 
 		dat->leftMargin = oldLeftMargin;
 		dat->rightMargin = oldRightMargin;
@@ -1184,8 +1181,8 @@ void FLT_SyncWithClist()
 		while(pCurrent) {
 			hwnd = pCurrent->hwnd;
 			if(hwnd && IsWindow(hwnd)){
-				if(FindItem(pcli->hwndContactTree, g_clcData, pCurrent->hContact, &contact, NULL, 0)) {
-                    FLT_Update(g_clcData, contact);
+				if(FindItem(pcli->hwndContactTree, cfg::clcdat, pCurrent->hContact, &contact, NULL, 0)) {
+                    FLT_Update(cfg::clcdat, contact);
                     if(((g_floatoptions.dwFlags & FLT_AUTOHIDE) && (iVis == 2 || iVis == 4)) || !(g_floatoptions.dwFlags & FLT_AUTOHIDE))
                         ShowWindow(hwnd, SW_SHOWNOACTIVATE);
                     else
@@ -1214,7 +1211,7 @@ void FLT_ShowHideAll(int showCmd)
 		while(pCurrent) {
 			hwnd = pCurrent->hwnd;
 			if(hwnd && IsWindow(hwnd)){
-				if(showCmd == SW_SHOWNOACTIVATE && FindItem(pcli->hwndContactTree, g_clcData, pCurrent->hContact, &contact, NULL, 0))
+				if(showCmd == SW_SHOWNOACTIVATE && FindItem(pcli->hwndContactTree, cfg::clcdat, pCurrent->hContact, &contact, NULL, 0))
 					ShowWindow(hwnd, SW_SHOWNOACTIVATE);
 				else if(showCmd != SW_SHOWNOACTIVATE)
 					ShowWindow(hwnd, showCmd);
@@ -1234,10 +1231,10 @@ void FLT_RefreshAll()
 	struct ContactFloater *pCurrent = pFirstFloater;
 
 	while(pCurrent) {
-		if(FindItem(pcli->hwndContactTree, g_clcData, pCurrent->hContact, &contact, NULL, 0)) {
+		if(FindItem(pcli->hwndContactTree, cfg::clcdat, pCurrent->hContact, &contact, NULL, 0)) {
 			HWND hwnd = pCurrent->hwnd;
 			if(hwnd && IsWindow(hwnd))
-				FLT_Update(g_clcData, contact);
+				FLT_Update(cfg::clcdat, contact);
 		}
 		pCurrent = pCurrent->pNextFloater;
 	}

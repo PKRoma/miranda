@@ -25,9 +25,6 @@ UNICODE done
 */
 #include "commonheaders.h"
 
-extern int g_nextExtraCacheEntry;
-extern struct ExtraCache *g_ExtraCache;
-
 void LoadContactTree(void);
 void SortContacts(void);
 

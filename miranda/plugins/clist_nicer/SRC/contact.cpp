@@ -1,33 +1,36 @@
 /*
+ * astyle --force-indent=tab=4 --brackets=linux --indent-switches
+ *		  --pad=oper --one-line=keep-blocks  --unpad=paren
+ *
+ * Miranda IM: the free IM client for Microsoft* Windows*
+ *
+ * Copyright 2000-2010 Miranda ICQ/IM project,
+ * all portions of this codebase are copyrighted to the people
+ * listed in contributors.txt.
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * you should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ *
+ * part of clist_nicer plugin for Miranda.
+ *
+ * (C) 2005-2010 by silvercircle _at_ gmail _dot_ com and contributors
+ *
+ * $Id$
+ *
+ */
 
-Miranda IM: the free IM client for Microsoft* Windows*
-
-Copyright 2000-2003 Miranda ICQ/IM project, 
-all portions of this codebase are copyrighted to the people 
-listed in contributors.txt.
-
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
-of the License, or (at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-
-UNICODE done
-
-*/
-#include "commonheaders.h"
-
-extern int g_nextExtraCacheEntry;
-extern struct ExtraCache *g_ExtraCache;
-extern struct ClcData *g_clcData;
+#include <commonheaders.h>
 
 struct {
 	int status,order;
@@ -228,7 +231,7 @@ int __forceinline INTSORT_CompareContacts(const struct ClcContact* c1, const str
 		return 2 * (c2->flags & CONTACTF_STICKY) - 1;
 
 	if(bywhat == SORTBY_PRIOCONTACTS) {
-		if((g_clcData->exStyle & CLS_EX_DIVIDERONOFF) && ((c1->flags & CONTACTF_ONLINE) != (c2->flags & CONTACTF_ONLINE)))
+		if((cfg::clcdat->exStyle & CLS_EX_DIVIDERONOFF) && ((c1->flags & CONTACTF_ONLINE) != (c2->flags & CONTACTF_ONLINE)))
 			return 0;
 		if ((c1->flags & CONTACTF_PRIORITY) != (c2->flags & CONTACTF_PRIORITY))
 			return 2 * (c2->flags & CONTACTF_PRIORITY) - 1;
@@ -258,9 +261,9 @@ int __forceinline INTSORT_CompareContacts(const struct ClcContact* c1, const str
 		return CompareString(LOCALE_USER_DEFAULT, NORM_IGNORECASE, namea, -1, nameb, -1) - 2;
 	
 	case SORTBY_LASTMSG:
-		if(c1->extraCacheEntry >= 0 && c1->extraCacheEntry < g_nextExtraCacheEntry && 
-		   c2->extraCacheEntry >= 0 && c2->extraCacheEntry < g_nextExtraCacheEntry)
-			return(g_ExtraCache[c2->extraCacheEntry].dwLastMsgTime - g_ExtraCache[c1->extraCacheEntry].dwLastMsgTime);
+		if(c1->extraCacheEntry >= 0 && c1->extraCacheEntry < cfg::nextCacheEntry && 
+		   c2->extraCacheEntry >= 0 && c2->extraCacheEntry < cfg::nextCacheEntry)
+			return(cfg::eCache[c2->extraCacheEntry].dwLastMsgTime - cfg::eCache[c1->extraCacheEntry].dwLastMsgTime);
 		else {
 			DWORD timestamp1 = INTSORT_GetLastMsgTime(c1->hContact);
 			DWORD timestamp2 = INTSORT_GetLastMsgTime(c2->hContact);
@@ -268,9 +271,9 @@ int __forceinline INTSORT_CompareContacts(const struct ClcContact* c1, const str
 		}
     
 	case SORTBY_FREQUENCY:
-		if ( c1->extraCacheEntry >= 0 && c1->extraCacheEntry < g_nextExtraCacheEntry && 
-			 c2->extraCacheEntry >= 0 && c2->extraCacheEntry < g_nextExtraCacheEntry )
-			return(g_ExtraCache[c1->extraCacheEntry].msgFrequency - g_ExtraCache[c2->extraCacheEntry].msgFrequency);
+		if ( c1->extraCacheEntry >= 0 && c1->extraCacheEntry < cfg::nextCacheEntry && 
+			 c2->extraCacheEntry >= 0 && c2->extraCacheEntry < cfg::nextCacheEntry )
+			return(cfg::eCache[c1->extraCacheEntry].msgFrequency - cfg::eCache[c2->extraCacheEntry].msgFrequency);
 		break;
 
 	case SORTBY_PROTO:

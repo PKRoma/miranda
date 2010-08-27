@@ -31,7 +31,6 @@ extern int ( *saveRemoveEvent )(HANDLE hContact, HANDLE hDbEvent);
 extern wndFrame *wndFrameEventArea;
 
 extern pfnDrawAlpha pDrawAlpha;
-extern struct ClcData *g_clcData;
 extern HPEN g_hPenCLUIFrames;
 
 extern StatusItems_t *StatusItems;
@@ -212,8 +211,8 @@ LRESULT CALLBACK EventAreaWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPa
 			hbmold = reinterpret_cast<HBITMAP>(SelectObject(hdcMem, hbm));
 			SetBkMode(hdcMem, TRANSPARENT);
 
-			if(g_clcData)
-				hFontOld = ChangeToFont(hdcMem, g_clcData, FONTID_EVENTAREA, &height);
+			if(cfg::clcdat)
+				hFontOld = ChangeToFont(hdcMem, cfg::clcdat, FONTID_EVENTAREA, &height);
 
 			if(pDrawAlpha != NULL) {
 				if(cfg::dat.bWallpaperMode)

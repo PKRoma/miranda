@@ -42,8 +42,6 @@ extern INT_PTR CALLBACK DlgProcGenOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 extern BOOL (WINAPI *MyEnableThemeDialogTexture)(HANDLE, DWORD);
 extern void ReloadExtraIcons( void );
 
-extern int    g_nextExtraCacheEntry;
-extern struct ExtraCache *g_ExtraCache;
 extern HIMAGELIST himlExtraImages;
 extern pfnDrawAlpha pDrawAlpha;
 
@@ -448,8 +446,8 @@ void DSP_Apply(DISPLAYPROFILE *p)
     if(cfg::dat.sortOrder[0] == SORTBY_LASTMSG || cfg::dat.sortOrder[1] == SORTBY_LASTMSG || cfg::dat.sortOrder[2] == SORTBY_LASTMSG) {
         int i;
 
-        for(i = 0; i < g_nextExtraCacheEntry; i++)
-            g_ExtraCache[i].dwLastMsgTime = INTSORT_GetLastMsgTime(g_ExtraCache[i].hContact);
+        for(i = 0; i < cfg::nextCacheEntry; i++)
+            cfg::eCache[i].dwLastMsgTime = INTSORT_GetLastMsgTime(cfg::eCache[i].hContact);
     }
 
     DBWriteContactSettingByte(NULL, "CLC", "ShowLocalTime", (BYTE)cfg::dat.bShowLocalTime);
@@ -471,8 +469,8 @@ void DSP_Apply(DISPLAYPROFILE *p)
     if(!pDrawAlpha)
         pDrawAlpha = (pfnDrawAlpha)DrawAlpha;
 
-    for(i = 0; i < g_nextExtraCacheEntry; i++)
-        g_ExtraCache[i].dwXMask = CalcXMask(g_ExtraCache[i].hContact);
+    for(i = 0; i < cfg::nextCacheEntry; i++)
+        cfg::eCache[i].dwXMask = CalcXMask(cfg::eCache[i].hContact);
 
     if(oldexIconScale != cfg::dat.exIconScale) {
         ImageList_RemoveAll(himlExtraImages);

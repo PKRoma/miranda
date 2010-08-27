@@ -21,7 +21,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 contact list view modes (CLVM)
 
-$Id: viewmodes.c 10380 2009-07-19 19:26:03Z silvercircle $
+$Id$
 
 */
 
@@ -33,8 +33,6 @@ $Id: viewmodes.c 10380 2009-07-19 19:26:03Z silvercircle $
 
 extern HIMAGELIST hCListImages;
 extern HPEN g_hPenCLUIFrames;
-extern int g_nextExtraCacheEntry;
-extern struct ExtraCache *g_ExtraCache;
 extern BOOL (WINAPI *MyEnableThemeDialogTexture)(HANDLE, DWORD);
 extern wndFrame *wndFrameViewMode;
 
@@ -1228,8 +1226,8 @@ void ApplyViewMode(const char *name)
 		BYTE bSaved = cfg::dat.sortOrder[0];
 
 		cfg::dat.sortOrder[0] = SORTBY_LASTMSG;
-		for(i = 0; i < g_nextExtraCacheEntry; i++)
-			g_ExtraCache[i].dwLastMsgTime = INTSORT_GetLastMsgTime(g_ExtraCache[i].hContact);
+		for(i = 0; i < cfg::nextCacheEntry; i++)
+			cfg::eCache[i].dwLastMsgTime = INTSORT_GetLastMsgTime(cfg::eCache[i].hContact);
 
 		cfg::dat.sortOrder[0] = bSaved;
 

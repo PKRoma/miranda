@@ -1,27 +1,34 @@
 /*
-astyle --force-indent=tab=4 --brackets=linux --indent-switches
-		--pad=oper --one-line=keep-blocks  --unpad=paren
-
-Miranda IM: the free IM client for Microsoft* Windows*
-
-Copyright 2000-2003 Miranda ICQ/IM project,
-all portions of this codebase are copyrighted to the people
-listed in contributors.txt.
-
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
-of the License, or (at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-*/
+ * astyle --force-indent=tab=4 --brackets=linux --indent-switches
+ *		  --pad=oper --one-line=keep-blocks  --unpad=paren
+ *
+ * Miranda IM: the free IM client for Microsoft* Windows*
+ *
+ * Copyright 2000-2010 Miranda ICQ/IM project,
+ * all portions of this codebase are copyrighted to the people
+ * listed in contributors.txt.
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * you should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ *
+ * part of clist_nicer plugin for Miranda.
+ *
+ * (C) 2005-2010 by silvercircle _at_ gmail _dot_ com and contributors
+ *
+ * $Id$
+ *
+ */
 
 #include <commonheaders.h>
 #include <resource.h>
@@ -31,8 +38,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 int DefaultImageListColorDepth = ILC_COLOR32;
 
-extern CRITICAL_SECTION cs_extcache;
-extern struct ClcData *g_clcData;
 extern HPEN g_hPenCLUIFrames;
 extern HANDLE hExtraImageApplying;
 extern wndFrame *wndFrameCLC;
@@ -42,8 +47,6 @@ extern pfnDrawAlpha pDrawAlpha;
 extern int during_sizing;
 extern StatusItems_t *StatusItems;
 extern int g_shutDown;
-extern int g_nextExtraCacheEntry;
-extern struct ExtraCache *g_ExtraCache;
 
 HIMAGELIST hCListImages;
 extern HIMAGELIST himlExtraImages;
@@ -92,17 +95,17 @@ static int ClcEventAdded(WPARAM wParam, LPARAM lParam)
 		dbei.cbBlob = 0;
 		CallService(MS_DB_EVENT_GET, (WPARAM)lParam, (LPARAM)&dbei);
 		if (dbei.eventType == EVENTTYPE_MESSAGE && !(dbei.flags & DBEF_SENT)) {
-			DWORD firstTime = DBGetContactSettingDword((HANDLE)wParam, "CList", "mf_firstEvent", 0);
-			DWORD count = DBGetContactSettingDword((HANDLE)wParam, "CList", "mf_count", 0);
+			DWORD firstTime = cfg::getDword((HANDLE)wParam, "CList", "mf_firstEvent", 0);
+			DWORD count = cfg::getDword((HANDLE)wParam, "CList", "mf_count", 0);
 			count++;
 			new_freq = count ? (dbei.timestamp - firstTime) / count : 0x7fffffff;
-			DBWriteContactSettingDword((HANDLE)wParam, "CList", "mf_freq", new_freq);
-			DBWriteContactSettingDword((HANDLE)wParam, "CList", "mf_count", count);
-			iEntry = GetExtraCache((HANDLE)wParam, NULL);
-			if (iEntry >= 0 && iEntry < g_nextExtraCacheEntry) {
-				g_ExtraCache[iEntry].dwLastMsgTime = dbei.timestamp;
+			cfg::writeDword((HANDLE)wParam, "CList", "mf_freq", new_freq);
+			cfg::writeDword((HANDLE)wParam, "CList", "mf_count", count);
+			iEntry = cfg::getCache((HANDLE)wParam, NULL);
+			if (iEntry >= 0 && iEntry < cfg::nextCacheEntry) {
+				cfg::eCache[iEntry].dwLastMsgTime = dbei.timestamp;
 				if (new_freq)
-					g_ExtraCache[iEntry].msgFrequency = new_freq;
+					cfg::eCache[iEntry].msgFrequency = new_freq;
 				pcli->pfnClcBroadcast(INTM_FORCESORT, 0, 1);
 			}
 		}
@@ -238,30 +241,30 @@ int ClcShutdown(WPARAM wParam, LPARAM lParam)
 	ClearIcons(1);
 	pDrawAlpha = 0;
 	SFL_UnregisterWindowClass();
-	if (g_ExtraCache) {
+	if (cfg::eCache) {
 		int i;
 
-		for (i = 0; i < g_nextExtraCacheEntry; i++) {
-			if (g_ExtraCache[i].statusMsg)
-				free(g_ExtraCache[i].statusMsg);
-			if (g_ExtraCache[i].status_item) {
-				StatusItems_t *item = g_ExtraCache[i].status_item;
+		for (i = 0; i < cfg::nextCacheEntry; i++) {
+			if (cfg::eCache[i].statusMsg)
+				free(cfg::eCache[i].statusMsg);
+			if (cfg::eCache[i].status_item) {
+				StatusItems_t *item = cfg::eCache[i].status_item;
 				int j;
 
-				free(g_ExtraCache[i].status_item);
-				g_ExtraCache[i].status_item = 0;
-				for (j = i; j < g_nextExtraCacheEntry; j++) {			// avoid duplicate free()'ing status item pointers (there are references from sub to master contacts, so compare the pointers...
-					if (g_ExtraCache[j].status_item == item)
-						g_ExtraCache[j].status_item = 0;
+				free(cfg::eCache[i].status_item);
+				cfg::eCache[i].status_item = 0;
+				for (j = i; j < cfg::nextCacheEntry; j++) {			// avoid duplicate free()'ing status item pointers (there are references from sub to master contacts, so compare the pointers...
+					if (cfg::eCache[j].status_item == item)
+						cfg::eCache[j].status_item = 0;
 				}
 			}
 		}
-		free(g_ExtraCache);
-		g_ExtraCache = NULL;
+		free(cfg::eCache);
+		cfg::eCache = NULL;
 	}
 	IMG_DeleteItems();
 	free(StatusItems);
-	DeleteCriticalSection(&cs_extcache);
+	DeleteCriticalSection(&cfg::cachecs);
 	return 0;
 }
 
@@ -315,7 +318,7 @@ LRESULT CALLBACK ContactListControlWndProc(HWND hwnd, UINT msg, WPARAM wParam, L
 				if (cs->lpCreateParams == (LPVOID)0xff00ff00) {
 					dat->bisEmbedded = FALSE;
 					dat->bHideSubcontacts = TRUE;
-					g_clcData = dat;
+					cfg::clcdat = dat;
 					if (cfg::dat.bShowLocalTime)
 						SetTimer(hwnd, TIMERID_REFRESH, 65000, NULL);
 				} else
@@ -440,13 +443,13 @@ LBL_Def:
 				contact->hSubContact = (HANDLE) CallService(MS_MC_GETMOSTONLINECONTACT, (WPARAM) contact->hContact, 0);
 				contact->metaProto = (char*) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) contact->hSubContact, 0);
 				contact->iImage = CallService(MS_CLIST_GETCONTACTICON, (WPARAM) contact->hSubContact, 0);
-				if (contact->extraCacheEntry >= 0 && contact->extraCacheEntry < g_nextExtraCacheEntry) {
-					int subIndex = GetExtraCache(contact->hSubContact, contact->metaProto);
-					g_ExtraCache[contact->extraCacheEntry].proto_status_item = GetProtocolStatusItem(contact->metaProto);
-					if (subIndex >= 0 && subIndex <= g_nextExtraCacheEntry) {
-						g_ExtraCache[contact->extraCacheEntry].status_item = g_ExtraCache[subIndex].status_item;
-						CopyMemory(g_ExtraCache[contact->extraCacheEntry].iExtraImage, g_ExtraCache[subIndex].iExtraImage, MAXEXTRACOLUMNS);
-						g_ExtraCache[contact->extraCacheEntry].iExtraValid = g_ExtraCache[subIndex].iExtraValid;
+				if (contact->extraCacheEntry >= 0 && contact->extraCacheEntry < cfg::nextCacheEntry) {
+					int subIndex = cfg::getCache(contact->hSubContact, contact->metaProto);
+					cfg::eCache[contact->extraCacheEntry].proto_status_item = GetProtocolStatusItem(contact->metaProto);
+					if (subIndex >= 0 && subIndex <= cfg::nextCacheEntry) {
+						cfg::eCache[contact->extraCacheEntry].status_item = cfg::eCache[subIndex].status_item;
+						CopyMemory(cfg::eCache[contact->extraCacheEntry].iExtraImage, cfg::eCache[subIndex].iExtraImage, MAXEXTRACOLUMNS);
+						cfg::eCache[contact->extraCacheEntry].iExtraValid = cfg::eCache[subIndex].iExtraValid;
 					}
 				}
 			}
@@ -502,8 +505,8 @@ LBL_Def:
 			else {
 				DWORD dwFlags;
 
-				if (contact->extraCacheEntry >= 0 && contact->extraCacheEntry < g_nextExtraCacheEntry)
-					dwFlags = g_ExtraCache[contact->extraCacheEntry].dwDFlags;
+				if (contact->extraCacheEntry >= 0 && contact->extraCacheEntry < cfg::nextCacheEntry)
+					dwFlags = cfg::eCache[contact->extraCacheEntry].dwDFlags;
 				else
 					dwFlags = DBGetContactSettingDword(contact->hContact, "CList", "CLN_Flags", 0);
 				if (cfg::dat.dwFlags & CLUI_FRAME_AVATARS)
@@ -520,7 +523,7 @@ LBL_Def:
 			char *szProto = NULL;
 
 			if (!FindItem(hwnd, dat, (HANDLE) wParam, &contact, NULL, NULL))
-				index = GetExtraCache((HANDLE)wParam, NULL);
+				index = cfg::getCache((HANDLE)wParam, NULL);
 			else {
 				index = contact->extraCacheEntry;
 				szProto = contact->proto;
@@ -573,7 +576,7 @@ LBL_Def:
 				struct ClcContact *contact = NULL;
 
 				if (FindItem(hwnd, dat, (HANDLE)lParam, &contact, NULL, 0)) {
-					if (contact && contact->extraCacheEntry >= 0 && contact->extraCacheEntry < g_nextExtraCacheEntry && g_ExtraCache[contact->extraCacheEntry].floater)
+					if (contact && contact->extraCacheEntry >= 0 && contact->extraCacheEntry < cfg::nextCacheEntry && cfg::eCache[contact->extraCacheEntry].floater)
 						FLT_Update(dat, contact);
 				}
 			}
@@ -632,7 +635,7 @@ LBL_Def:
 			szProto = (char *)cws->szModule;
 
 			if (!FindItem(hwnd, dat, (HANDLE) wParam, &contact, NULL, NULL)) {
-				index = GetExtraCache((HANDLE)wParam, szProto);
+				index = cfg::getCache((HANDLE)wParam, szProto);
 				if (!dat->bisEmbedded && cfg::dat.bMetaAvail && szProto) {				// may be a subcontact, forward the xstatus
 					if (DBGetContactSettingByte((HANDLE)wParam, cfg::dat.szMetaName, "IsSubcontact", 0)) {
 						HANDLE hMasterContact = (HANDLE)DBGetContactSettingDword((HANDLE)wParam, cfg::dat.szMetaName, "Handle", 0);
@@ -816,9 +819,9 @@ LBL_Def:
 			int i;
 
 			if (!dat->bisEmbedded) {
-				for (i = 0; i < g_nextExtraCacheEntry; i++) {
-					if (g_ExtraCache[i].floater && g_ExtraCache[i].floater->hwnd)
-						DestroyWindow(g_ExtraCache[i].floater->hwnd);
+				for (i = 0; i < cfg::nextCacheEntry; i++) {
+					if (cfg::eCache[i].floater && cfg::eCache[i].floater->hwnd)
+						DestroyWindow(cfg::eCache[i].floater->hwnd);
 				}
 			}
 			RowHeight::Free(dat);

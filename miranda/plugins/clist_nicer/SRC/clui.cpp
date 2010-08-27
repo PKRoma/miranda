@@ -1,30 +1,35 @@
 /*
-astyle --force-indent=tab=4 --brackets=linux --indent-switches
-		--pad=oper --one-line=keep-blocks  --unpad=paren
+ * astyle --force-indent=tab=4 --brackets=linux --indent-switches
+ *		  --pad=oper --one-line=keep-blocks  --unpad=paren
+ *
+ * Miranda IM: the free IM client for Microsoft* Windows*
+ *
+ * Copyright 2000-2010 Miranda ICQ/IM project,
+ * all portions of this codebase are copyrighted to the people
+ * listed in contributors.txt.
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * you should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ *
+ * part of clist_nicer plugin for Miranda.
+ *
+ * (C) 2005-2010 by silvercircle _at_ gmail _dot_ com and contributors
+ *
+ * $Id$
+ *
+ */
 
-Miranda IM: the free IM client for Microsoft* Windows*
-
-Copyright 2000-2003 Miranda ICQ/IM project,
-all portions of this codebase are copyrighted to the people
-listed in contributors.txt.
-
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
-of the License, or (at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-
-UNICODE done
-
-*/
 #include <commonheaders.h>
 #include <m_findadd.h>
 #include <m_icq.h>
@@ -58,10 +63,6 @@ extern pfnDrawAlpha pDrawAlpha;
 extern BOOL g_trayTooltipActive;
 extern POINT tray_hover_pos;
 extern HWND g_hwndViewModeFrame, g_hwndEventArea;
-
-struct ClcData *g_clcData = NULL;
-struct ExtraCache *g_ExtraCache = NULL;
-int g_nextExtraCacheEntry = 0;
 
 extern ImageItem *g_CLUIImageItem;
 extern HBRUSH g_CLUISkinnedBkColor;
@@ -173,10 +174,10 @@ static INT_PTR CLN_GetTimeOffset(WPARAM wParam, LPARAM lParam)
 {
 	HANDLE 	hContact = (HANDLE)wParam;
 	char	*szProto = (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
-	int iIndex = GetExtraCache(hContact, szProto);
+	int iIndex = cfg::getCache(hContact, szProto);
 
-	if(iIndex >= 0 || iIndex < g_nextExtraCacheEntry) {
-		return (int)(g_ExtraCache[iIndex].timediff);					// in seconds
+	if(iIndex >= 0 || iIndex < cfg::nextCacheEntry) {
+		return (int)(cfg::eCache[iIndex].timediff);					// in seconds
 	}
 	return 0;
 }
@@ -273,7 +274,7 @@ static HWND PreCreateCLC(HWND parent)
 										 | CLS_MULTICOLUMN
 										 , 0, 0, 0, 0, parent, NULL, g_hInst, (LPVOID)0xff00ff00);
 
-	g_clcData = (struct ClcData *)GetWindowLongPtr(pcli->hwndContactTree, 0);
+	cfg::clcdat = (struct ClcData *)GetWindowLongPtr(pcli->hwndContactTree, 0);
 	return pcli->hwndContactTree;
 }
 
@@ -581,9 +582,9 @@ void IcoLibReloadIcons()
 	{
 		int i;
 
-		for (i = 0; i < g_nextExtraCacheEntry; i++) {
-			if (g_ExtraCache[i].hContact)
-				NotifyEventHooks(hExtraImageApplying, (WPARAM)g_ExtraCache[i].hContact, 0);
+		for (i = 0; i < cfg::nextCacheEntry; i++) {
+			if (cfg::eCache[i].hContact)
+				NotifyEventHooks(hExtraImageApplying, (WPARAM)cfg::eCache[i].hContact, 0);
 		}
 	}
 	//
@@ -731,11 +732,11 @@ void SetDBButtonStates(HANDLE hPassedContact)
 	ButtonItem *buttonItem = g_ButtonItems;
 	HANDLE hContact = 0, hFinalContact = 0;
 	char *szModule, *szSetting;
-	int sel = g_clcData ? g_clcData->selection : -1;
+	int sel = cfg::clcdat ? cfg::clcdat->selection : -1;
 	struct ClcContact *contact = 0;
 
 	if (sel != -1 && hPassedContact == 0) {
-		sel = pcli->pfnGetRowByIndex(g_clcData, g_clcData->selection, &contact, NULL);
+		sel = pcli->pfnGetRowByIndex(cfg::clcdat, cfg::clcdat->selection, &contact, NULL);
 		if (contact && contact->type == CLCIT_CONTACT) {
 			hContact = contact->hContact;
 		}
@@ -1237,7 +1238,7 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 			SetButtonStates(hwnd);
 
 			CreateCLC(hwnd);
-			g_clcData = (struct ClcData *)GetWindowLongPtr(pcli->hwndContactTree, 0);
+			cfg::clcdat = (struct ClcData *)GetWindowLongPtr(pcli->hwndContactTree, 0);
 
 			if (MySetLayeredWindowAttributes != 0 && cfg::dat.bFullTransparent) {
 				if (g_CLUISkinnedBkColorRGB)
@@ -1245,7 +1246,7 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 				else if (cfg::dat.bClipBorder || (cfg::dat.dwFlags & CLUI_FRAME_ROUNDEDFRAME))
 					Tweak_It(RGB(255, 0, 255));
 				else
-					Tweak_It(g_clcData->bkColour);
+					Tweak_It(cfg::clcdat->bkColour);
 			}
 
 			DBWriteContactSettingByte(NULL, "CList", "State", old_cliststate);
@@ -1264,7 +1265,7 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 				ShowCLUI(hwnd);
 			else {
 				show_on_first_autosize = TRUE;
-				RecalcScrollBar(pcli->hwndContactTree, g_clcData);
+				RecalcScrollBar(pcli->hwndContactTree, cfg::clcdat);
 			}
 			return 0;
 		}
@@ -1368,10 +1369,10 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 			//if(g_CluiData.neeedSnap)
 			//    goto skipbg;
 			if (cfg::dat.dwFlags & CLUI_FRAME_CLISTSUNKEN) {
-				if (cfg::dat.bWallpaperMode && g_clcData != NULL) {
+				if (cfg::dat.bWallpaperMode && cfg::clcdat != NULL) {
 					InflateRect(&rcFrame, -1, -1);
 					if (cfg::dat.bmpBackground)
-						BlitWallpaper(hdc, &rcFrame, &ps.rcPaint, g_clcData);
+						BlitWallpaper(hdc, &rcFrame, &ps.rcPaint, cfg::clcdat);
 					cfg::dat.ptW.x = cfg::dat.ptW.y = 0;
 					ClientToScreen(hwnd, &cfg::dat.ptW);
 				}
@@ -1379,9 +1380,9 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 				if (cfg::dat.bSkinnedButtonMode)
 					rcFrame.bottom -= (cfg::dat.bottomOffset);
 				DrawEdge(hdc, &rcFrame, BDR_SUNKENOUTER, BF_RECT);
-			} else if (cfg::dat.bWallpaperMode && g_clcData != NULL) {
+			} else if (cfg::dat.bWallpaperMode && cfg::clcdat != NULL) {
 				if (cfg::dat.bmpBackground)
-					BlitWallpaper(hdc, &rcFrame, &ps.rcPaint, g_clcData);
+					BlitWallpaper(hdc, &rcFrame, &ps.rcPaint, cfg::clcdat);
 				cfg::dat.ptW.x = cfg::dat.ptW.y = 0;
 				ClientToScreen(hwnd, &cfg::dat.ptW);
 			}
@@ -1736,11 +1737,11 @@ skipbg:
 					LPARAM llParam = 0;
 					HANDLE hContact = 0;
 					struct ClcContact *contact = 0;
-					int sel = g_clcData ? g_clcData->selection : -1;
+					int sel = cfg::clcdat ? cfg::clcdat->selection : -1;
 					int serviceFailure = FALSE;
 
 					if (sel != -1) {
-						sel = pcli->pfnGetRowByIndex(g_clcData, g_clcData->selection, &contact, NULL);
+						sel = pcli->pfnGetRowByIndex(cfg::clcdat, cfg::clcdat->selection, &contact, NULL);
 						if (contact && contact->type == CLCIT_CONTACT) {
 							hContact = contact->hContact;
 						}
@@ -1754,7 +1755,7 @@ skipbg:
 									CallService(item->szService, wwParam, llParam);
 								else if (contactOK)
 									serviceFailure = TRUE;
-							} else if (item->dwFlags & BUTTON_ISPROTOSERVICE && g_clcData) {
+							} else if (item->dwFlags & BUTTON_ISPROTOSERVICE && cfg::clcdat) {
 								if (contactOK) {
 									char szFinalService[512];
 

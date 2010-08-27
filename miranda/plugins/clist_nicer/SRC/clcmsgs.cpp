@@ -1,32 +1,36 @@
 /*
+ * astyle --force-indent=tab=4 --brackets=linux --indent-switches
+ *		  --pad=oper --one-line=keep-blocks  --unpad=paren
+ *
+ * Miranda IM: the free IM client for Microsoft* Windows*
+ *
+ * Copyright 2000-2010 Miranda ICQ/IM project,
+ * all portions of this codebase are copyrighted to the people
+ * listed in contributors.txt.
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * you should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ *
+ * part of clist_nicer plugin for Miranda.
+ *
+ * (C) 2005-2010 by silvercircle _at_ gmail _dot_ com and contributors
+ *
+ * $Id$
+ *
+ */
 
-Miranda IM: the free IM client for Microsoft* Windows*
-
-Copyright 2000-2003 Miranda ICQ/IM project, 
-all portions of this codebase are copyrighted to the people 
-listed in contributors.txt.
-
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
-of the License, or (at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-
-UNICODE done
-
-*/
-#include "commonheaders.h"
-
-extern struct ExtraCache *g_ExtraCache;
-extern int g_nextExtraCacheEntry;
+#include <commonheaders.h>
 
 //processing of all the CLM_ messages incoming
 
@@ -73,9 +77,9 @@ LRESULT ProcessExternalMessages(HWND hwnd, struct ClcData *dat, UINT msg, WPARAM
                 _DebugTraceA("set extra image %d", LOWORD(lParam));
             }
             */
-			if(index >= 0 && index < g_nextExtraCacheEntry) {
-				g_ExtraCache[index].iExtraImage[LOWORD(lParam)] = (BYTE)HIWORD(lParam);
-				g_ExtraCache[index].iExtraValid = g_ExtraCache[index].iExtraImage[LOWORD(lParam)] != (BYTE)0xff ? (g_ExtraCache[index].iExtraValid | (1 << LOWORD(lParam))) : (g_ExtraCache[index].iExtraValid & ~(1 << LOWORD(lParam)));
+			if(index >= 0 && index < cfg::nextCacheEntry) {
+				cfg::eCache[index].iExtraImage[LOWORD(lParam)] = (BYTE)HIWORD(lParam);
+				cfg::eCache[index].iExtraValid = cfg::eCache[index].iExtraImage[LOWORD(lParam)] != (BYTE)0xff ? (cfg::eCache[index].iExtraValid | (1 << LOWORD(lParam))) : (cfg::eCache[index].iExtraValid & ~(1 << LOWORD(lParam)));
 				PostMessage(hwnd, INTM_INVALIDATE, 0, (LPARAM)(contact ? contact->hContact : 0));
 			}
 		}
@@ -88,18 +92,18 @@ LRESULT ProcessExternalMessages(HWND hwnd, struct ClcData *dat, UINT msg, WPARAM
 			if (LOWORD(lParam) >= MAXEXTRACOLUMNS)
 				return 0;
 
-            index = GetExtraCache((HANDLE)wParam, NULL);
-            if(index >= 0 && index < g_nextExtraCacheEntry) {
-                g_ExtraCache[index].iExtraImage[LOWORD(lParam)] = (BYTE)HIWORD(lParam);
-                g_ExtraCache[index].iExtraValid = g_ExtraCache[index].iExtraImage[LOWORD(lParam)] != (BYTE)0xff ? (g_ExtraCache[index].iExtraValid | (1 << LOWORD(lParam))) : (g_ExtraCache[index].iExtraValid & ~(1 << LOWORD(lParam)));
+            index = cfg::getCache((HANDLE)wParam, NULL);
+            if(index >= 0 && index < cfg::nextCacheEntry) {
+                cfg::eCache[index].iExtraImage[LOWORD(lParam)] = (BYTE)HIWORD(lParam);
+                cfg::eCache[index].iExtraValid = cfg::eCache[index].iExtraImage[LOWORD(lParam)] != (BYTE)0xff ? (cfg::eCache[index].iExtraValid | (1 << LOWORD(lParam))) : (cfg::eCache[index].iExtraValid & ~(1 << LOWORD(lParam)));
             }
 
 			hMasterContact = (HANDLE)DBGetContactSettingDword((HANDLE)wParam, cfg::dat.szMetaName, "Handle", 0);
 
-			index = GetExtraCache(hMasterContact, NULL);
-			if(index >= 0 && index < g_nextExtraCacheEntry) {
-				g_ExtraCache[index].iExtraImage[LOWORD(lParam)] = (BYTE)HIWORD(lParam);
-				g_ExtraCache[index].iExtraValid = g_ExtraCache[index].iExtraImage[LOWORD(lParam)] != (BYTE)0xff ? (g_ExtraCache[index].iExtraValid | (1 << LOWORD(lParam))) : (g_ExtraCache[index].iExtraValid & ~(1 << LOWORD(lParam)));
+			index = cfg::getCache(hMasterContact, NULL);
+			if(index >= 0 && index < cfg::nextCacheEntry) {
+				cfg::eCache[index].iExtraImage[LOWORD(lParam)] = (BYTE)HIWORD(lParam);
+				cfg::eCache[index].iExtraValid = cfg::eCache[index].iExtraImage[LOWORD(lParam)] != (BYTE)0xff ? (cfg::eCache[index].iExtraValid | (1 << LOWORD(lParam))) : (cfg::eCache[index].iExtraValid & ~(1 << LOWORD(lParam)));
 				PostMessage(hwnd, INTM_INVALIDATE, 0, 0);
             }	
         }
@@ -116,9 +120,9 @@ LRESULT ProcessExternalMessages(HWND hwnd, struct ClcData *dat, UINT msg, WPARAM
 				return 0;
 			if(contact->type != CLCIT_CONTACT)
 				return 0;
-			if(contact->extraCacheEntry >= 0 && contact->extraCacheEntry <= g_nextExtraCacheEntry) {
-				if(g_ExtraCache[contact->extraCacheEntry].bStatusMsgValid != STATUSMSG_NOTFOUND)
-					return((INT_PTR)g_ExtraCache[contact->extraCacheEntry].statusMsg);
+			if(contact->extraCacheEntry >= 0 && contact->extraCacheEntry <= cfg::nextCacheEntry) {
+				if(cfg::eCache[contact->extraCacheEntry].bStatusMsgValid != STATUSMSG_NOTFOUND)
+					return((INT_PTR)cfg::eCache[contact->extraCacheEntry].statusMsg);
 		}	}
 		return 0;
 
@@ -171,17 +175,17 @@ LRESULT ProcessExternalMessages(HWND hwnd, struct ClcData *dat, UINT msg, WPARAM
 
 			iEntry = contact->extraCacheEntry;
 
-			if(iEntry >= 0 && iEntry <= g_nextExtraCacheEntry) {
+			if(iEntry >= 0 && iEntry <= cfg::nextCacheEntry) {
 				state = !DBGetContactSettingByte(contact->hContact, "CList", "floating", 0);
 				if(state) {
-					if(g_ExtraCache[iEntry].floater == NULL)
+					if(cfg::eCache[iEntry].floater == NULL)
 						FLT_Create(iEntry);
-					ShowWindow(g_ExtraCache[contact->extraCacheEntry].floater->hwnd, SW_SHOW);
+					ShowWindow(cfg::eCache[contact->extraCacheEntry].floater->hwnd, SW_SHOW);
 				}
 				else {
-					if(g_ExtraCache[iEntry].floater && g_ExtraCache[iEntry].floater->hwnd) {
-						DestroyWindow(g_ExtraCache[iEntry].floater->hwnd);
-						g_ExtraCache[iEntry].floater = 0;
+					if(cfg::eCache[iEntry].floater && cfg::eCache[iEntry].floater->hwnd) {
+						DestroyWindow(cfg::eCache[iEntry].floater->hwnd);
+						cfg::eCache[iEntry].floater = 0;
 					}
 				}
 				DBWriteContactSettingByte(contact->hContact, "CList", "floating", state);

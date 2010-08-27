@@ -29,8 +29,6 @@ UNICODE done
 extern struct avatarCache *g_avatarCache;
 extern int g_curAvatar;
 
-extern struct ExtraCache *g_ExtraCache;
-extern int g_nextExtraCacheEntry;
 extern ImageItem *g_glyphItem;
 
 extern int hClcProtoCount;
@@ -51,7 +49,6 @@ extern TCHAR *statusNames[];
 extern LONG g_cxsmIcon, g_cysmIcon;
 extern StatusItems_t *StatusItems;
 extern PGF MyGradientFill;
-extern struct ClcData *g_clcData;
 
 pfnDrawAlpha pDrawAlpha = NULL;
 
@@ -73,10 +70,10 @@ HFONT __fastcall ChangeToFont(HDC hdc, struct ClcData *dat, int id, int *fontHei
 	if (fontHeight)
 		*fontHeight = dat->fontInfo[id].fontHeight;
     */
-    hOldFont = reinterpret_cast<HFONT>(SelectObject(hdc, g_clcData->fontInfo[id].hFont));
-    SetTextColor(hdc, g_clcData->fontInfo[id].colour);
+    hOldFont = reinterpret_cast<HFONT>(SelectObject(hdc, cfg::clcdat->fontInfo[id].hFont));
+    SetTextColor(hdc, cfg::clcdat->fontInfo[id].colour);
     if (fontHeight)
-        *fontHeight = g_clcData->fontInfo[id].fontHeight;
+        *fontHeight = cfg::clcdat->fontInfo[id].fontHeight;
 
     dat->currentFontID = id;
 	return hOldFont;
@@ -495,7 +492,7 @@ void __inline PaintItem(HDC hdcMem, struct ClcGroup *group, struct ClcContact *c
 	int bg_indent_l = 0;
 	int rightIcons = 0;
 	DWORD dt_nickflags = 0, dt_2ndrowflags = 0;
-	struct ExtraCache *cEntry = NULL;
+	struct TExtraCache *cEntry = NULL;
 	DWORD dwFlags = cfg::dat.dwFlags;
 	int scanIndex;
 	BOOL check_selected, av_local_wanted, fLocalTime;
@@ -514,10 +511,10 @@ void __inline PaintItem(HDC hdcMem, struct ClcGroup *group, struct ClcContact *c
 	flags = contact->flags;
 	selected = index == dat->selection && (dat->showSelAlways || dat->exStyle &CLS_EX_SHOWSELALWAYS || g_focusWnd == hwnd) && type != CLCIT_DIVIDER;
 	avatar_done = FALSE;
-	if(contact->extraCacheEntry >= 0 && contact->extraCacheEntry < g_nextExtraCacheEntry)
-		cEntry = &g_ExtraCache[contact->extraCacheEntry];
+	if(contact->extraCacheEntry >= 0 && contact->extraCacheEntry < cfg::nextCacheEntry)
+		cEntry = &cfg::eCache[contact->extraCacheEntry];
 	else
-		cEntry = g_ExtraCache;
+		cEntry = cfg::eCache;
 
 #if defined(_UNICODE)
     if(dat->bisEmbedded)
@@ -1040,7 +1037,7 @@ bgskipped:
 		if (type == CLCIT_CONTACT && !dat->bisEmbedded) {
 			BYTE bApparentModeDontCare = !((flags & CONTACTF_VISTO) ^ (flags & CONTACTF_INVISTO));
 			contact->extraIconRightBegin = 0;
-            if(cEntry && (contact->extraCacheEntry >= 0 && contact->extraCacheEntry < g_nextExtraCacheEntry && cEntry->iExtraValid)) {
+            if(cEntry && (contact->extraCacheEntry >= 0 && contact->extraCacheEntry < cfg::nextCacheEntry && cEntry->iExtraValid)) {
 				int i, iIndex, id;
                 DWORD dwOldMask = cEntry->dwXMask;
                 if(dwFlags & CLUI_FRAME_USEXSTATUSASSTATUS)

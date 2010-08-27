@@ -33,7 +33,6 @@ extern HIMAGELIST himlExtraImages;
 extern int g_shutDown;
 extern HWND g_hwndViewModeFrame, g_hwndEventArea;
 extern StatusItems_t *StatusItems;
-extern struct ClcData *g_clcData;
 extern int mf_updatethread_running;
 
 extern DWORD WINAPI MF_UpdateThread(LPVOID p);
@@ -2554,8 +2553,8 @@ static int DrawTitleBar(HDC dc, RECT rect, int Frameid)
 		int fHeight, fontTop;
 		GetClientRect(Frames[pos].TitleBar.hwnd, &Frames[pos].TitleBar.wndSize);
 
-		if (g_clcData) {
-			oFont = ChangeToFont(hdcMem, g_clcData, FONTID_FRAMETITLE, &fHeight);
+		if (cfg::clcdat) {
+			oFont = ChangeToFont(hdcMem, cfg::clcdat, FONTID_FRAMETITLE, &fHeight);
 		} else {
 			oFont = reinterpret_cast<HFONT>(SelectObject(hdcMem, GetStockObject(DEFAULT_GUI_FONT)));
 			fHeight = 10;
@@ -2574,9 +2573,9 @@ static int DrawTitleBar(HDC dc, RECT rect, int Frameid)
 			DrawAlpha(hdcMem, &rc, item->COLOR, item->ALPHA, item->COLOR2, item->COLOR2_TRANSPARENT,
 					  item->GRADIENT, item->CORNER, item->BORDERSTYLE, item->imageItem);
 			SetTextColor(hdcMem, item->TEXTCOLOR);
-		} else if (g_clcData) {
+		} else if (cfg::clcdat) {
 			FillRect(hdcMem, &rect, hBack);
-			SetTextColor(hdcMem, g_clcData->fontInfo[FONTID_FRAMETITLE].colour);
+			SetTextColor(hdcMem, cfg::clcdat->fontInfo[FONTID_FRAMETITLE].colour);
 		} else {
 			FillRect(hdcMem, &rect, hBack);
 			SetTextColor(hdcMem, GetSysColor(COLOR_BTNTEXT));

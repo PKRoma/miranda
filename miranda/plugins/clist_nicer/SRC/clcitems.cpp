@@ -33,11 +33,7 @@
 #include <commonheaders.h>
 #include <m_icq.h>
 
-CRITICAL_SECTION cs_extcache;
 extern HANDLE hExtraImageListRebuilding, hExtraImageApplying;
-
-extern struct ExtraCache *g_ExtraCache;
-extern int g_nextExtraCacheEntry, g_maxExtraCacheEntry;
 
 extern int ( *saveAddContactToGroup )(struct ClcData *dat, struct ClcGroup *group, HANDLE hContact);
 extern int ( *saveAddInfoItemToGroup )(struct ClcGroup *group, int flags, const TCHAR *pszText);
@@ -45,7 +41,7 @@ extern struct ClcGroup* ( *saveRemoveItemFromGroup )(HWND hwnd, struct ClcGroup 
 
 extern struct ClcGroup* ( *saveAddGroup )(HWND hwnd, struct ClcData *dat, const TCHAR *szName, DWORD flags, int groupId, int calcTotalMembers);
 
-static void TZ_LoadTimeZone(HANDLE hContact, struct ExtraCache *c, const char *szProto);
+static void TZ_LoadTimeZone(HANDLE hContact, struct TExtraCache *c, const char *szProto);
 
 //routines for managing adding/removal of items in the list, including sorting
 
@@ -93,9 +89,9 @@ struct ClcGroup *AddGroup(HWND hwnd, struct ClcData *dat, const TCHAR *szName, D
 
 struct ClcGroup *RemoveItemFromGroup(HWND hwnd, struct ClcGroup *group, struct ClcContact *contact, int updateTotalCount)
 {
-	if(contact->extraCacheEntry >= 0 && contact->extraCacheEntry < g_nextExtraCacheEntry) {
-		if(g_ExtraCache[contact->extraCacheEntry].floater && g_ExtraCache[contact->extraCacheEntry].floater->hwnd)
-			ShowWindow(g_ExtraCache[contact->extraCacheEntry].floater->hwnd, SW_HIDE);
+	if(contact->extraCacheEntry >= 0 && contact->extraCacheEntry < cfg::nextCacheEntry) {
+		if(cfg::eCache[contact->extraCacheEntry].floater && cfg::eCache[contact->extraCacheEntry].floater->hwnd)
+			ShowWindow(cfg::eCache[contact->extraCacheEntry].floater->hwnd, SW_HIDE);
 	}
 	return(saveRemoveItemFromGroup(hwnd, group, contact, updateTotalCount));
 }
@@ -104,8 +100,8 @@ void LoadAvatarForContact(struct ClcContact *p)
 {
     DWORD dwFlags;
 
-    if(p->extraCacheEntry >= 0 && p->extraCacheEntry < g_nextExtraCacheEntry)
-        dwFlags = g_ExtraCache[p->extraCacheEntry].dwDFlags;
+    if(p->extraCacheEntry >= 0 && p->extraCacheEntry < cfg::nextCacheEntry)
+        dwFlags = cfg::eCache[p->extraCacheEntry].dwDFlags;
     else
         dwFlags = DBGetContactSettingDword(p->hContact, "CList", "CLN_Flags", 0);
 
@@ -154,15 +150,15 @@ int AddContactToGroup(struct ClcData *dat, struct ClcGroup *group, HANDLE hConta
 	if(dat->bisEmbedded)
 		p->extraCacheEntry = -1;
 	else {
-		p->extraCacheEntry = GetExtraCache(p->hContact, p->proto);
+		p->extraCacheEntry = cfg::getCache(p->hContact, p->proto);
 		GetExtendedInfo( p, dat);
-		if(p->extraCacheEntry >= 0 && p->extraCacheEntry < g_nextExtraCacheEntry) {
-			g_ExtraCache[p->extraCacheEntry].proto_status_item = GetProtocolStatusItem(p->bIsMeta ? p->metaProto : p->proto);
+		if(p->extraCacheEntry >= 0 && p->extraCacheEntry < cfg::nextCacheEntry) {
+			cfg::eCache[p->extraCacheEntry].proto_status_item = GetProtocolStatusItem(p->bIsMeta ? p->metaProto : p->proto);
 			if(DBGetContactSettingByte(p->hContact, "CList", "floating", 0) && g_floatoptions.enabled) {
-				if(g_ExtraCache[p->extraCacheEntry].floater == NULL)
+				if(cfg::eCache[p->extraCacheEntry].floater == NULL)
 					FLT_Create(p->extraCacheEntry);
 				else {
-					ShowWindow(g_ExtraCache[p->extraCacheEntry].floater->hwnd, SW_SHOWNOACTIVATE);
+					ShowWindow(cfg::eCache[p->extraCacheEntry].floater->hwnd, SW_SHOWNOACTIVATE);
 					FLT_Update(dat, p);
 				}
 			}
@@ -270,13 +266,13 @@ BYTE GetCachedStatusMsg(int iExtraCacheEntry, char *szProto)
 {
 	DBVARIANT dbv = {0};
 	HANDLE hContact;
-	struct ExtraCache *cEntry;
+	struct TExtraCache *cEntry;
 	int result;
 
-	if(iExtraCacheEntry < 0 || iExtraCacheEntry > g_nextExtraCacheEntry)
+	if(iExtraCacheEntry < 0 || iExtraCacheEntry > cfg::nextCacheEntry)
 		return 0;
 
-	cEntry = &g_ExtraCache[iExtraCacheEntry];
+	cEntry = &cfg::eCache[iExtraCacheEntry];
 
 	cEntry->bStatusMsgValid = STATUSMSG_NOTFOUND;
 	hContact = cEntry->hContact;
@@ -472,7 +468,7 @@ static LONG TZ_GetTimeZoneOffset(REG_TZI_FORMAT *tzi)
  * differences.
  */
 
-static void TZ_LoadTimeZone(HANDLE hContact, struct ExtraCache *c, const char *szProto)
+static void TZ_LoadTimeZone(HANDLE hContact, struct TExtraCache *c, const char *szProto)
 {
 	MIM_TIMEZONE  *tzi = (MIM_TIMEZONE *)CallService(MS_TZ_GETINFOBYCONTACT, (WPARAM)hContact, 0);
 	if (tzi && (INT_PTR)tzi != CALLSERVICE_NOTFOUND)
@@ -485,11 +481,11 @@ static void TZ_LoadTimeZone(HANDLE hContact, struct ExtraCache *c, const char *s
 void ReloadExtraInfo(HANDLE hContact)
 {
 	if(hContact && pcli->hwndContactTree) {
-		int index = GetExtraCache(hContact, NULL);
-		if(index >= 0 && index < g_nextExtraCacheEntry) {
+		int index = cfg::getCache(hContact, NULL);
+		if(index >= 0 && index < cfg::nextCacheEntry) {
 			char *szProto = (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
 
-			TZ_LoadTimeZone(hContact, &g_ExtraCache[index], szProto);
+			TZ_LoadTimeZone(hContact, &cfg::eCache[index], szProto);
 			InvalidateRect(pcli->hwndContactTree, NULL, FALSE);
 		}
 	}
@@ -511,19 +507,19 @@ void RTL_DetectAndSet(struct ClcContact *contact, HANDLE hContact)
 
     if(contact == NULL) {
         szText = pcli->pfnGetContactDisplayName(hContact, 0);
-        index = GetExtraCache(hContact, NULL);
+        index = cfg::getCache(hContact, NULL);
     }
     else {
         szText = contact->szText;
         index = contact->extraCacheEntry;
     }
-    if(index >= 0 && index < g_nextExtraCacheEntry) {
+    if(index >= 0 && index < cfg::nextCacheEntry) {
         iLen = min(lstrlenW(szText), 10);
         GetStringTypeW(CT_CTYPE2, szText, iLen, infoTypeC2);
-        g_ExtraCache[index].dwCFlags &= ~ECF_RTLNICK;
+        cfg::eCache[index].dwCFlags &= ~ECF_RTLNICK;
         for(i = 0; i < 10; i++) {
             if(infoTypeC2[i] == C2_RIGHTTOLEFT) {
-                g_ExtraCache[index].dwCFlags |= ECF_RTLNICK;
+                cfg::eCache[index].dwCFlags |= ECF_RTLNICK;
                 return;
             }
         }
@@ -572,27 +568,27 @@ void GetExtendedInfo(struct ClcContact *contact, struct ClcData *dat)
     //firstTime = DBGetContactSettingDword(contact->hContact, "CList", "mf_firstEvent", 0);
     //count = DBGetContactSettingDword(contact->hContact, "CList", "mf_count", 0);
     //new_freq = count ? (g_CluiData.t_now - firstTime) / count : 0x7fffffff;
-    g_ExtraCache[index].msgFrequency = DBGetContactSettingDword(contact->hContact, "CList", "mf_freq", 0x7fffffff);
+    cfg::eCache[index].msgFrequency = DBGetContactSettingDword(contact->hContact, "CList", "mf_freq", 0x7fffffff);
     //g_ExtraCache[index].msgFrequency = new_freq;
     //DBWriteContactSettingDword(contact->hContact, "CList", "mf_freq", new_freq);
 
-    if(index >= 0 && index < g_nextExtraCacheEntry) {
-        if(g_ExtraCache[index].valid)
+    if(index >= 0 && index < cfg::nextCacheEntry) {
+        if(cfg::eCache[index].valid)
             return;
-        g_ExtraCache[index].valid = TRUE;
+        cfg::eCache[index].valid = TRUE;
     }
     else
         return;
 
-    g_ExtraCache[index].isChatRoom = DBGetContactSettingByte(contact->hContact, contact->proto, "ChatRoom", 0);
+    cfg::eCache[index].isChatRoom = DBGetContactSettingByte(contact->hContact, contact->proto, "ChatRoom", 0);
 
-    g_ExtraCache[index].iExtraValid &= ~(EIMG_SHOW_EMAIL | EIMG_SHOW_SMS | EIMG_SHOW_WEB);
-    g_ExtraCache[index].iExtraImage[EXTRA_ICON_EMAIL] = g_ExtraCache[index].iExtraImage[EXTRA_ICON_WEB] = g_ExtraCache[index].iExtraImage[EXTRA_ICON_SMS] = 0xff;
+    cfg::eCache[index].iExtraValid &= ~(EIMG_SHOW_EMAIL | EIMG_SHOW_SMS | EIMG_SHOW_WEB);
+    cfg::eCache[index].iExtraImage[EXTRA_ICON_EMAIL] = cfg::eCache[index].iExtraImage[EXTRA_ICON_WEB] = cfg::eCache[index].iExtraImage[EXTRA_ICON_SMS] = 0xff;
 
     if(!DBGetContactSettingString(contact->hContact, contact->proto, "e-mail", &dbv) && lstrlenA(dbv.pszVal) > 1)
-        g_ExtraCache[index].iExtraImage[EXTRA_ICON_EMAIL] = 0;
+        cfg::eCache[index].iExtraImage[EXTRA_ICON_EMAIL] = 0;
     else if(!DBGetContactSettingString(contact->hContact, "UserInfo", "Mye-mail0", &dbv) && lstrlenA(dbv.pszVal) > 1)
-        g_ExtraCache[index].iExtraImage[EXTRA_ICON_EMAIL] = 0;
+        cfg::eCache[index].iExtraImage[EXTRA_ICON_EMAIL] = 0;
 
     if(dbv.pszVal) {
         mir_free(dbv.pszVal);
@@ -600,9 +596,9 @@ void GetExtendedInfo(struct ClcContact *contact, struct ClcData *dat)
     }
 
     if(!DBGetContactSettingString(contact->hContact, contact->proto, "Homepage", &dbv) && lstrlenA(dbv.pszVal) > 1)
-        g_ExtraCache[index].iExtraImage[EXTRA_ICON_WEB] = 1;
+        cfg::eCache[index].iExtraImage[EXTRA_ICON_WEB] = 1;
     else if(!DBGetContactSettingString(contact->hContact, "UserInfo", "Homepage", &dbv) && lstrlenA(dbv.pszVal) > 1)
-        g_ExtraCache[index].iExtraImage[EXTRA_ICON_WEB] = 1;
+        cfg::eCache[index].iExtraImage[EXTRA_ICON_WEB] = 1;
 
     if(dbv.pszVal) {
         mir_free(dbv.pszVal);
@@ -610,11 +606,11 @@ void GetExtendedInfo(struct ClcContact *contact, struct ClcData *dat)
     }
 
     if(!DBGetContactSettingString(contact->hContact, "UserInfoEx", "Cellular", &dbv) && lstrlenA(dbv.pszVal) > 1)
-        g_ExtraCache[index].iExtraImage[EXTRA_ICON_SMS] = 2;
+        cfg::eCache[index].iExtraImage[EXTRA_ICON_SMS] = 2;
     else if(!DBGetContactSettingString(contact->hContact, contact->proto, "Cellular", &dbv) && lstrlenA(dbv.pszVal) > 1)
-        g_ExtraCache[index].iExtraImage[EXTRA_ICON_SMS] = 2;
+        cfg::eCache[index].iExtraImage[EXTRA_ICON_SMS] = 2;
     else if(!DBGetContactSettingString(contact->hContact, "UserInfo", "MyPhone0", &dbv) && lstrlenA(dbv.pszVal) > 1)
-        g_ExtraCache[index].iExtraImage[EXTRA_ICON_SMS] = 2;
+        cfg::eCache[index].iExtraImage[EXTRA_ICON_SMS] = 2;
 
     if(dbv.pszVal) {
         mir_free(dbv.pszVal);
@@ -623,18 +619,18 @@ void GetExtendedInfo(struct ClcContact *contact, struct ClcData *dat)
 
     // set the mask for valid extra images...
 
-    g_ExtraCache[index].iExtraValid |= ((g_ExtraCache[index].iExtraImage[EXTRA_ICON_EMAIL] != 0xff ? EIMG_SHOW_EMAIL : 0) |
-        (g_ExtraCache[index].iExtraImage[EXTRA_ICON_WEB] != 0xff ? EIMG_SHOW_WEB : 0) |
-        (g_ExtraCache[index].iExtraImage[EXTRA_ICON_SMS] != 0xff ? EIMG_SHOW_SMS : 0));
+    cfg::eCache[index].iExtraValid |= ((cfg::eCache[index].iExtraImage[EXTRA_ICON_EMAIL] != 0xff ? EIMG_SHOW_EMAIL : 0) |
+        (cfg::eCache[index].iExtraImage[EXTRA_ICON_WEB] != 0xff ? EIMG_SHOW_WEB : 0) |
+        (cfg::eCache[index].iExtraImage[EXTRA_ICON_SMS] != 0xff ? EIMG_SHOW_SMS : 0));
 
 
 }
 
-static void LoadSkinItemToCache(struct ExtraCache *cEntry, char *szProto)
+void LoadSkinItemToCache(struct TExtraCache *cEntry, const char *szProto)
 {
     HANDLE hContact = cEntry->hContact;
 
-    if(DBGetContactSettingByte(hContact, "EXTBK", "VALID", 0)) {
+    if(cfg::getByte(hContact, "EXTBK", "VALID", 0)) {
         if(cEntry->status_item == NULL)
             cEntry->status_item = reinterpret_cast<StatusItems_t *>(malloc(sizeof(StatusItems_t)));
         ZeroMemory(cEntry->status_item, sizeof(StatusItems_t));
@@ -668,10 +664,10 @@ void ReloadSkinItemsToCache()
     int i;
     char *szProto;
 
-    for(i = 0; i < g_nextExtraCacheEntry; i++) {
-        szProto = (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)g_ExtraCache[i].hContact, 0);
+    for(i = 0; i < cfg::nextCacheEntry; i++) {
+        szProto = (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)cfg::eCache[i].hContact, 0);
         if(szProto)
-            LoadSkinItemToCache(&g_ExtraCache[i], szProto);
+            LoadSkinItemToCache(&cfg::eCache[i], szProto);
     }
 }
 
@@ -692,42 +688,6 @@ DWORD CalcXMask(HANDLE hContact)
             dwResult &= ~(1 << i);
     }
     return(dwResult);
-}
-int GetExtraCache(HANDLE hContact, char *szProto)
-{
-    int i, iFound = -1;
-
-    for(i = 0; i < g_nextExtraCacheEntry; i++) {
-        if(g_ExtraCache[i].hContact == hContact) {
-            iFound = i;
-            break;
-        }
-    }
-    if(iFound == -1) {
-		EnterCriticalSection(&cs_extcache);
-        if(g_nextExtraCacheEntry == g_maxExtraCacheEntry) {
-            g_maxExtraCacheEntry += 100;
-            g_ExtraCache = (struct ExtraCache *)realloc(g_ExtraCache, g_maxExtraCacheEntry * sizeof(struct ExtraCache));
-        }
-        memset(&g_ExtraCache[g_nextExtraCacheEntry], 0, sizeof(struct ExtraCache));
-		g_ExtraCache[g_nextExtraCacheEntry].hContact = hContact;
-        memset(g_ExtraCache[g_nextExtraCacheEntry].iExtraImage, 0xff, MAXEXTRACOLUMNS);
-        g_ExtraCache[g_nextExtraCacheEntry].iExtraValid = 0;
-        g_ExtraCache[g_nextExtraCacheEntry].valid = FALSE;
-        g_ExtraCache[g_nextExtraCacheEntry].bStatusMsgValid = 0;
-        g_ExtraCache[g_nextExtraCacheEntry].statusMsg = NULL;
-        g_ExtraCache[g_nextExtraCacheEntry].status_item = NULL;
-        LoadSkinItemToCache(&g_ExtraCache[g_nextExtraCacheEntry], szProto);
-        g_ExtraCache[g_nextExtraCacheEntry].dwCFlags = g_ExtraCache[g_nextExtraCacheEntry].timezone = 0;
-        g_ExtraCache[g_nextExtraCacheEntry].dwDFlags = DBGetContactSettingDword(hContact, "CList", "CLN_Flags", 0);
-        g_ExtraCache[g_nextExtraCacheEntry].dwXMask = CalcXMask(hContact);
-		g_ExtraCache[g_nextExtraCacheEntry].timediff = -1;
-        GetCachedStatusMsg(g_nextExtraCacheEntry, szProto);
-		g_ExtraCache[g_nextExtraCacheEntry].dwLastMsgTime = INTSORT_GetLastMsgTime(hContact);
-        iFound = g_nextExtraCacheEntry++;
-		LeaveCriticalSection(&cs_extcache);
-    }
-    return iFound;
 }
 
 /*
@@ -785,14 +745,14 @@ int __fastcall CLVM_GetContactHiddenStatus(HANDLE hContact, char *szProto, struc
         }
 		if(cfg::dat.bFilterEffective & CLVM_FILTER_LASTMSG) {
 			DWORD now;
-			int iEntry = GetExtraCache(hContact, szProto);
-			if(iEntry >= 0 && iEntry <= g_nextExtraCacheEntry) {
+			int iEntry = cfg::getCache(hContact, szProto);
+			if(iEntry >= 0 && iEntry <= cfg::nextCacheEntry) {
 				now = cfg::dat.t_now;
 				now -= cfg::dat.lastMsgFilter;
 				if(cfg::dat.bFilterEffective & CLVM_FILTER_LASTMSG_OLDERTHAN)
-					filterResult = filterResult & (g_ExtraCache[iEntry].dwLastMsgTime < now);
+					filterResult = filterResult & (cfg::eCache[iEntry].dwLastMsgTime < now);
 				else if(cfg::dat.bFilterEffective & CLVM_FILTER_LASTMSG_NEWERTHAN)
-					filterResult = filterResult & (g_ExtraCache[iEntry].dwLastMsgTime > now);
+					filterResult = filterResult & (cfg::eCache[iEntry].dwLastMsgTime > now);
 			}
 		}
         return (dbHidden | !filterResult);

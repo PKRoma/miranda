@@ -25,7 +25,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "../coolsb/coolscroll.h"
 
 extern int g_hottrack;
-extern struct ClcData *g_clcData;
 
 extern HWND g_hwndViewModeFrame;
 extern HIMAGELIST himlExtraImages;

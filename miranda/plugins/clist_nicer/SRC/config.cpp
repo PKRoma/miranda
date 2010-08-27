@@ -36,7 +36,18 @@
 
 #include <commonheaders.h>
 
-TCluiData	cfg::dat = {0};
+TCluiData		cfg::dat = {0};
+ClcData*		cfg::clcdat = 0;
+TExtraCache* 	cfg::eCache = 0;
+int 			cfg::nextCacheEntry = 0, cfg::maxCacheEntry = 0;
+
+CRITICAL_SECTION cfg::cachecs = {0};
+
+
+void cfg::init()
+{
+	InitializeCriticalSection(&cachecs);
+}
 
 DWORD cfg::getDword(const HANDLE hContact = 0, const char *szModule = 0, const char *szSetting = 0, DWORD uDefault = 0)
 {
@@ -120,4 +131,41 @@ INT_PTR cfg::writeByte(const char *szModule = 0, const char *szSetting = 0, BYTE
 INT_PTR cfg::writeTString(const HANDLE hContact, const char *szModule = 0, const char *szSetting = 0, const TCHAR *str = 0)
 {
 	return(DBWriteContactSettingTString(hContact, szModule, szSetting, str));
+}
+
+int cfg::getCache(const HANDLE hContact, const char *szProto)
+{
+    int i, iFound = -1;
+
+    for(i = 0; i < nextCacheEntry; i++) {
+        if(eCache[i].hContact == hContact) {
+            iFound = i;
+            break;
+        }
+    }
+    if(iFound == -1) {
+		EnterCriticalSection(&cachecs);
+        if(nextCacheEntry == maxCacheEntry) {
+            maxCacheEntry += 100;
+            cfg::eCache = (TExtraCache *)realloc(cfg::eCache, maxCacheEntry * sizeof(TExtraCache));
+        }
+        memset(&cfg::eCache[nextCacheEntry], 0, sizeof(TExtraCache));
+		cfg::eCache[nextCacheEntry].hContact = hContact;
+        memset(cfg::eCache[nextCacheEntry].iExtraImage, 0xff, MAXEXTRACOLUMNS);
+        cfg::eCache[nextCacheEntry].iExtraValid = 0;
+        cfg::eCache[nextCacheEntry].valid = FALSE;
+        cfg::eCache[nextCacheEntry].bStatusMsgValid = 0;
+        cfg::eCache[nextCacheEntry].statusMsg = NULL;
+        cfg::eCache[nextCacheEntry].status_item = NULL;
+        LoadSkinItemToCache(&cfg::eCache[nextCacheEntry], szProto);
+        cfg::eCache[nextCacheEntry].dwCFlags = cfg::eCache[nextCacheEntry].timezone = 0;
+        cfg::eCache[nextCacheEntry].dwDFlags = DBGetContactSettingDword(hContact, "CList", "CLN_Flags", 0);
+        cfg::eCache[nextCacheEntry].dwXMask = CalcXMask(hContact);
+		cfg::eCache[nextCacheEntry].timediff = -1;
+        GetCachedStatusMsg(nextCacheEntry, const_cast<char *>(szProto));
+		cfg::eCache[nextCacheEntry].dwLastMsgTime = INTSORT_GetLastMsgTime(hContact);
+        iFound = nextCacheEntry++;
+		LeaveCriticalSection(&cachecs);
+    }
+    return iFound;
 }

@@ -1,25 +1,34 @@
 /*
-
-Miranda IM: the free IM client for Microsoft* Windows*
-
-Copyright 2000-2004 Miranda ICQ/IM project,
-all portions of this codebase are copyrighted to the people
-listed in contributors.txt.
-
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
-of the License, or (at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-*/
+ * astyle --force-indent=tab=4 --brackets=linux --indent-switches
+ *		  --pad=oper --one-line=keep-blocks  --unpad=paren
+ *
+ * Miranda IM: the free IM client for Microsoft* Windows*
+ *
+ * Copyright 2000-2010 Miranda ICQ/IM project,
+ * all portions of this codebase are copyrighted to the people
+ * listed in contributors.txt.
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * you should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ *
+ * part of clist_nicer plugin for Miranda.
+ *
+ * (C) 2005-2010 by silvercircle _at_ gmail _dot_ com and contributors
+ *
+ * $Id$
+ *
+ */
 
 #include <commonheaders.h>
 #include "../cluiframes/cluiframes.h"
@@ -27,7 +36,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 HINSTANCE g_hInst = 0;
 PLUGINLINK *pluginLink;
 CLIST_INTERFACE* pcli = NULL;
-extern CRITICAL_SECTION cs_extcache;
 
 #define DEFAULT_TB_VISIBILITY (1 | 2 | 4 | 8 | 16 | 32 | 64 | 8192)
 TCHAR *szNoevents = _T("No events...");
@@ -45,9 +53,6 @@ extern PGF MyGradientFill;
 extern int Docking_ProcessWindowMessage(WPARAM wParam, LPARAM lParam);
 extern int SetHideOffline(WPARAM wParam, LPARAM lParam);
 
-extern struct ExtraCache *g_ExtraCache;
-extern int g_nextExtraCacheEntry;
-int g_maxExtraCacheEntry = 0;
 extern pfnDrawAlpha pDrawAlpha;
 extern DWORD g_gdiplusToken;
 extern HIMAGELIST himlExtraImages;
@@ -273,11 +278,11 @@ extern "C" int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 		if( iCount < 300 )
 			iCount = 300;
 
-		g_ExtraCache = reinterpret_cast<ExtraCache *>(malloc(sizeof(ExtraCache) * iCount));
-		ZeroMemory(g_ExtraCache, sizeof(struct ExtraCache) * iCount);
-		g_nextExtraCacheEntry = 0;
-		g_maxExtraCacheEntry = iCount;
-		InitializeCriticalSection(&cs_extcache);
+		cfg::eCache = reinterpret_cast<TExtraCache *>(malloc(sizeof(TExtraCache) * iCount));
+		ZeroMemory(cfg::eCache, sizeof(struct TExtraCache) * iCount);
+		cfg::nextCacheEntry = 0;
+		cfg::maxCacheEntry = iCount;
+		cfg::init();
 	}
 
 	cfg::dat.toolbarVisibility = DBGetContactSettingDword(NULL, "CLUI", "TBVisibility", DEFAULT_TB_VISIBILITY);

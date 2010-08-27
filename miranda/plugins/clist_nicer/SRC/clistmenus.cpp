@@ -29,9 +29,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #pragma hdrstop
 
 extern int      g_shutDown;
-extern struct   ClcData *g_clcData;
-extern int      g_nextExtraCacheEntry;
-extern struct   ExtraCache *g_ExtraCache;
 
 static HMENU hMainMenu, hMainStatusMenu;
 
@@ -143,8 +140,8 @@ static INT_PTR CALLBACK IgnoreDialogProc(HWND hWnd, UINT msg, WPARAM wParam, LPA
             SendDlgItemMessage(hWnd, IDC_SECONDLINEMODE, CB_INSERTSTRING, -1, (LPARAM)TranslateT("When space is available"));
             SendDlgItemMessage(hWnd, IDC_SECONDLINEMODE, CB_INSERTSTRING, -1, (LPARAM)TranslateT("When needed by status message"));
 
-			if(g_clcData) {
-				FindItem(pcli->hwndContactTree, g_clcData, hContact, &contact, NULL, NULL); 
+			if(cfg::clcdat) {
+				FindItem(pcli->hwndContactTree, cfg::clcdat, hContact, &contact, NULL, NULL); 
                 if(contact && contact->type != CLCIT_CONTACT) {
                     DestroyWindow(hWnd);
                     return FALSE;
@@ -270,13 +267,13 @@ static INT_PTR CALLBACK IgnoreDialogProc(HWND hWnd, UINT msg, WPARAM wParam, LPA
 			  	cfg::writeDword(hContact, "Ignore", "Mask1", newMask);
 			  	SendMessage(hWnd, WM_USER + 130, 0, 0);
 
-                if(g_clcData) {
+                if(cfg::clcdat) {
                     LRESULT iSel = SendDlgItemMessage(hWnd, IDC_AVATARDISPMODE, CB_GETCURSEL, 0, 0);
                     DWORD dwFlags = cfg::getDword(hContact, "CList", "CLN_Flags", 0), dwXMask = 0;
                     LRESULT  checked = 0;
                     int      i = 0;
 
-                    FindItem(pcli->hwndContactTree, g_clcData, hContact, &contact, NULL, NULL); 
+                    FindItem(pcli->hwndContactTree, cfg::clcdat, hContact, &contact, NULL, NULL); 
                     if(iSel != CB_ERR) {
                         dwFlags &= ~(ECF_FORCEAVATAR | ECF_HIDEAVATAR);
 
@@ -333,16 +330,16 @@ static INT_PTR CALLBACK IgnoreDialogProc(HWND hWnd, UINT msg, WPARAM wParam, LPA
                     }
                     cfg::writeDword(hContact, "CList", "CLN_xmask", dwXMask);
                     if(contact) {
-                        if(contact->extraCacheEntry >= 0 && contact->extraCacheEntry <= g_nextExtraCacheEntry) {
-                            g_ExtraCache[contact->extraCacheEntry].dwDFlags = dwFlags;
-                            g_ExtraCache[contact->extraCacheEntry].dwXMask = CalcXMask(hContact);
+                        if(contact->extraCacheEntry >= 0 && contact->extraCacheEntry <= cfg::nextCacheEntry) {
+                            cfg::eCache[contact->extraCacheEntry].dwDFlags = dwFlags;
+                            cfg::eCache[contact->extraCacheEntry].dwXMask = CalcXMask(hContact);
                         }
                     }
                     else {
-                        int iIndex = GetExtraCache(hContact, NULL);
-                        if(iIndex >= 0 && iIndex <= g_nextExtraCacheEntry) {
-                            g_ExtraCache[iIndex].dwDFlags = dwFlags;
-                            g_ExtraCache[iIndex].dwXMask = CalcXMask(hContact);
+                        int iIndex = cfg::getCache(hContact, NULL);
+                        if(iIndex >= 0 && iIndex <= cfg::nextCacheEntry) {
+                            cfg::eCache[iIndex].dwDFlags = dwFlags;
+                            cfg::eCache[iIndex].dwXMask = CalcXMask(hContact);
                         }
                     }
                     cfg::writeByte(hContact, "CList", "Priority", (BYTE)(IsDlgButtonChecked(hWnd, IDC_IGN_PRIORITY) ? 1 : 0));
@@ -383,7 +380,7 @@ static INT_PTR CALLBACK IgnoreDialogProc(HWND hWnd, UINT msg, WPARAM wParam, LPA
 		{
 			struct ClcContact *contact = NULL;
 
-			if(FindItem(pcli->hwndContactTree, g_clcData, hContact, &contact, NULL, NULL)) {
+			if(FindItem(pcli->hwndContactTree, cfg::clcdat, hContact, &contact, NULL, NULL)) {
 				if(contact) {
 					WORD wApparentMode = DBGetContactSettingWord(contact->hContact, contact->proto, "ApparentMode", 0);
 
@@ -397,7 +394,7 @@ static INT_PTR CALLBACK IgnoreDialogProc(HWND hWnd, UINT msg, WPARAM wParam, LPA
 		{
 			struct ClcContact *contact = NULL;
 
-			if(FindItem(pcli->hwndContactTree, g_clcData, hContact, &contact, NULL, NULL)) {
+			if(FindItem(pcli->hwndContactTree, cfg::clcdat, hContact, &contact, NULL, NULL)) {
 				if(contact) {
 					WORD wApparentMode = 0, oldApparentMode = DBGetContactSettingWord(hContact, contact->proto, "ApparentMode", 0);
 

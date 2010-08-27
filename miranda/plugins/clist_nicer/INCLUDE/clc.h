@@ -159,7 +159,7 @@ typedef struct DisplayProfileSet DISPLAYPROFILESET;
 
 #define DSP_PROFILES_MODULE "CLN_DspProfiles"           // db module for display profiles
 
-struct ExtraCache {
+struct TExtraCache {
 	BYTE iExtraImage[MAXEXTRACOLUMNS];
 	HANDLE hContact;
 	DWORD iExtraValid;
@@ -588,7 +588,7 @@ void SFL_Update(HICON hIcon, int iIcon, HIMAGELIST hIml, const TCHAR *szText, BO
 void FLT_Update(struct ClcData *dat, struct ClcContact *contact);
 int FLT_CheckAvail();
 void FLT_Create(int iEntry);
-void FLT_SetSize(struct ExtraCache *centry, LONG width, LONG height);
+void FLT_SetSize(struct TExtraCache *centry, LONG width, LONG height);
 void FLT_SyncWithClist();
 void FLT_ReadOptions(), FLT_WriteOptions(), FLT_RefreshAll();
 
@@ -597,6 +597,8 @@ int ClcOptInit(WPARAM wParam, LPARAM lParam);
 DWORD GetDefaultExStyle(void);
 void GetFontSetting(int i, LOGFONTA *lf, COLORREF *colour);
 void CluiProtocolStatusChanged( int parStatus, const char* szProto );
+
+void LoadSkinItemToCache(struct TExtraCache *cEntry, const char *szProto);
 
 // debugging support
 

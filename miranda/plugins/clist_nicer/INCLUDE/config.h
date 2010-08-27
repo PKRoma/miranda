@@ -37,6 +37,7 @@
 class cfg
 {
 public:
+	static void			init							();
 
 	static DWORD 		getDword						(const HANDLE hContact, const char *szModule, const char *szSetting, DWORD uDefault);
 
@@ -58,6 +59,13 @@ public:
 
 	static INT_PTR		writeTString					(const HANDLE hContact, const char *szModule, const char *szSetting, const TCHAR *st);
 
+	static int 			getCache						(const HANDLE hContact, const char *szProto);
+
 public:
 	static TCluiData	dat;
+	static ClcData*		clcdat;
+	static TExtraCache* eCache;
+	static int			nextCacheEntry, maxCacheEntry;
+
+	static CRITICAL_SECTION	cachecs;
 };

@@ -32,8 +32,6 @@ UNICODE done
 #endif
 //loads of stuff that didn't really fit anywhere else
 
-extern struct ExtraCache *g_ExtraCache;
-extern int g_nextExtraCacheEntry;
 extern int /*g_isConnecting,*/ during_sizing;
 
 extern void ( *saveRecalcScrollBar )(HWND hwnd, struct ClcData *dat);
@@ -137,14 +135,14 @@ int RTL_HitTest(HWND hwnd, struct ClcData *dat, int testx, int testy, struct Clc
             return hit;
         }
     }
-    if(hitcontact->extraCacheEntry >= 0 && hitcontact->extraCacheEntry < g_nextExtraCacheEntry && g_ExtraCache[hitcontact->extraCacheEntry].iExtraValid) {
+    if(hitcontact->extraCacheEntry >= 0 && hitcontact->extraCacheEntry < cfg::nextCacheEntry && cfg::eCache[hitcontact->extraCacheEntry].iExtraValid) {
         int rightOffset = hitcontact->extraIconRightBegin;
         int images_present = 0;
 
         for (i = 5; i >= 0; i--) {
-            if (g_ExtraCache[hitcontact->extraCacheEntry].iExtraImage[i] == 0xFF)
+            if (cfg::eCache[hitcontact->extraCacheEntry].iExtraImage[i] == 0xFF)
                 continue;
-            if(!((1 << i) & g_ExtraCache[hitcontact->extraCacheEntry].dwXMask))
+            if(!((1 << i) & cfg::eCache[hitcontact->extraCacheEntry].dwXMask))
                 continue;
             images_present++;
             if (testx < right - (rightOffset - (cfg::dat.exIconScale + 2) * images_present) && testx > right - (rightOffset - (cfg::dat.exIconScale + 2) * images_present + (cfg::dat.exIconScale))) {
@@ -244,7 +242,7 @@ int HitTest(HWND hwnd, struct ClcData *dat, int testx, int testy, struct ClcCont
 
     if(!dat->bisEmbedded) {
         if(hitcontact->type == CLCIT_CONTACT) {
-            if(mirror_mode == 1 || (mirror_mode == 2 && g_ExtraCache[hitcontact->extraCacheEntry].dwCFlags & ECF_RTLNICK))
+            if(mirror_mode == 1 || (mirror_mode == 2 && cfg::eCache[hitcontact->extraCacheEntry].dwCFlags & ECF_RTLNICK))
                 return RTL_HitTest(hwnd, dat, testx, testy, hitcontact, flags, indent, hit);
         }
         else if(hitcontact->type == CLCIT_GROUP) {
@@ -292,15 +290,15 @@ int HitTest(HWND hwnd, struct ClcData *dat, int testx, int testy, struct ClcCont
             return hit;
         }
     }
-    if(hitcontact->extraCacheEntry >= 0 && hitcontact->extraCacheEntry < g_nextExtraCacheEntry && g_ExtraCache[hitcontact->extraCacheEntry].iExtraValid) {
+    if(hitcontact->extraCacheEntry >= 0 && hitcontact->extraCacheEntry < cfg::nextCacheEntry && cfg::eCache[hitcontact->extraCacheEntry].iExtraValid) {
         //int rightOffset = clRect.right;
         int rightOffset = hitcontact->extraIconRightBegin;
         int images_present = 0;
 
         for (i = 5; i >= 0; i--) {
-            if (g_ExtraCache[hitcontact->extraCacheEntry].iExtraImage[i] == 0xFF)
+            if (cfg::eCache[hitcontact->extraCacheEntry].iExtraImage[i] == 0xFF)
                 continue;
-            if(!((1 << i) & g_ExtraCache[hitcontact->extraCacheEntry].dwXMask))
+            if(!((1 << i) & cfg::eCache[hitcontact->extraCacheEntry].dwXMask))
                 continue;
             images_present++;
             if (testx > (rightOffset - (cfg::dat.exIconScale + 2) * images_present) && testx < (rightOffset - (cfg::dat.exIconScale + 2) * images_present + (cfg::dat.exIconScale))) {
@@ -547,7 +545,7 @@ void BeginRenameSelection(HWND hwnd, struct ClcData *dat)
 #if defined(_UNICODE)
 	dat->hwndRenameEdit = CreateWindowEx(0, _T("RichEdit20W"),contact->szText,WS_CHILD|WS_BORDER|ES_MULTILINE|ES_AUTOHSCROLL,x,y,clRect.right-x,h,hwnd,NULL,g_hInst,NULL);
     {
-        if((contact->type == CLCIT_CONTACT && g_ExtraCache[contact->extraCacheEntry].dwCFlags & ECF_RTLNICK) || (contact->type == CLCIT_GROUP && contact->isRtl)) {
+        if((contact->type == CLCIT_CONTACT && cfg::eCache[contact->extraCacheEntry].dwCFlags & ECF_RTLNICK) || (contact->type == CLCIT_GROUP && contact->isRtl)) {
             PARAFORMAT2 pf2;
             ZeroMemory((void *)&pf2, sizeof(pf2));
             pf2.cbSize = sizeof(pf2);
