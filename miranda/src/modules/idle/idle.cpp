@@ -28,6 +28,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define IDL_IDLEMETHOD    "IdleMethod"
 #define IDL_IDLETIME1ST   "IdleTime1st"
 #define IDL_IDLEONSAVER   "IdleOnSaver" // IDC_SCREENSAVER
+#define IDL_IDLEONFULLSCR "IdleOnFullScr" // IDC_FULLSCREEN
 #define IDL_IDLEONLOCK    "IdleOnLock" // IDC_LOCKED
 #define IDL_IDLEONTSDC    "IdleOnTerminalDisconnect" //
 #define IDL_IDLEPRIVATE   "IdlePrivate" // IDC_IDLEPRIVATE
@@ -57,6 +58,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #define IdleObject_IdleCheckTerminal(obj) (obj->state&0x40)
 #define IdleObject_SetTerminalCheck(obj) (obj->state|=0x40)
+
+#define IdleObject_IdleCheckFullScr(obj) (obj->state&0x80)
+#define IdleObject_SetFullScrCheck(obj) (obj->state|=0x80)
 
 //#include <Wtsapi32.h>
 
@@ -163,8 +167,6 @@ static HANDLE hIdleEvent;
 static BOOL (WINAPI * MyGetLastInputInfo)(PLASTINPUTINFO);
 
 void CALLBACK IdleTimer(HWND hwnd, UINT umsg, UINT_PTR idEvent, DWORD dwTime);
-static BOOL IsWorkstationLocked(void);
-static BOOL IsScreenSaverRunning(void);
 
 static void IdleObject_ReadSettings(IdleObject * obj)
 {
@@ -174,6 +176,7 @@ static void IdleObject_ReadSettings(IdleObject * obj)
 	if ( DBGetContactSettingByte(NULL, IDLEMOD, IDL_IDLEMETHOD, 0) ) IdleObject_UseMethod1(obj);
 	else IdleObject_UseMethod0(obj);
 	if ( DBGetContactSettingByte(NULL, IDLEMOD, IDL_IDLEONSAVER, 0) ) IdleObject_SetSaverCheck(obj);
+	if ( DBGetContactSettingByte(NULL, IDLEMOD, IDL_IDLEONFULLSCR, 0) ) IdleObject_SetFullScrCheck(obj);
 	if ( DBGetContactSettingByte(NULL, IDLEMOD, IDL_IDLEONLOCK, 0 ) ) IdleObject_SetWorkstationCheck(obj);
 	if ( DBGetContactSettingByte(NULL, IDLEMOD, IDL_IDLEPRIVATE, 0) ) IdleObject_SetPrivacy(obj);
 	if ( DBGetContactSettingByte(NULL, IDLEMOD, IDL_IDLESTATUSLOCK, 0) ) IdleObject_SetStatusLock(obj);
@@ -225,6 +228,58 @@ static int IdleObject_IsUserIdle(IdleObject * obj)
 	return FALSE;
 }
 
+static bool IsWorkstationLocked (void)
+{
+	bool rc = false;
+
+	if (openInputDesktop != NULL) {
+		HDESK hDesk = openInputDesktop(0, FALSE, DESKTOP_SWITCHDESKTOP);
+		if (hDesk == NULL)
+			rc = true;
+		else if (closeDesktop != NULL)
+			closeDesktop(hDesk);
+	}
+	return rc;
+}
+
+static bool IsScreenSaverRunning(void)
+{
+	BOOL rc = FALSE;
+	SystemParametersInfo(SPI_GETSCREENSAVERRUNNING, 0, &rc, FALSE);
+	return rc != 0;
+}
+
+bool IsFullScreen(void) 
+{
+	RECT rcScreen = {0};
+
+	rcScreen.right = GetSystemMetrics(SM_CXSCREEN);
+	rcScreen.bottom = GetSystemMetrics(SM_CYSCREEN);
+
+	if (MyMonitorFromWindow)
+	{
+		HMONITOR hMon = MyMonitorFromWindow(cli.hwndContactList, MONITOR_DEFAULTTONEAREST);
+		MONITORINFO mi;
+		mi.cbSize = sizeof(mi);
+		if (MyGetMonitorInfo(hMon, &mi))
+			rcScreen = mi.rcMonitor;
+	}
+
+	HWND hWndDesktop = GetDesktopWindow();
+	HWND hWndShell = GetShellWindow();
+
+	// check foregroundwindow
+	HWND hWnd = GetForegroundWindow();
+	if (hWnd && hWnd != hWndDesktop && hWnd != hWndShell) 
+	{
+		RECT rect;
+		GetClientRect(hWnd, &rect);
+		return EqualRect(&rect, &rcScreen) != 0;
+	}
+
+	return false;
+}
+
 static void IdleObject_Tick(IdleObject * obj)
 {
 	BOOL idle = FALSE;
@@ -235,6 +290,9 @@ static void IdleObject_Tick(IdleObject * obj)
 	}
 	else if ( IdleObject_IdleCheckSaver(obj) && IsScreenSaverRunning()) {
 		idleType = 2; idle = TRUE; 
+	}
+	else if ( IdleObject_IdleCheckFullScr(obj) && IsFullScreen()) {
+		idleType = 5; idle = TRUE; 
 	}
 	else if ( IdleObject_IdleCheckWorkstation(obj) && IsWorkstationLocked()) {
 		idleType = 3; idle = TRUE; 
@@ -263,27 +321,6 @@ void CALLBACK IdleTimer(HWND, UINT, UINT_PTR idEvent, DWORD)
 		IdleObject_Tick( &gIdleObject );
 }
 
-static BOOL IsWorkstationLocked (void)
-{
-	BOOL rc = FALSE;
-
-	if (openInputDesktop != NULL) {
-		HDESK hDesk = openInputDesktop(0, FALSE, DESKTOP_SWITCHDESKTOP);
-		if (hDesk == NULL)
-			rc = TRUE;
-		else if (closeDesktop != NULL)
-			closeDesktop(hDesk);
-	}
-	return rc;
-}
-
-static BOOL IsScreenSaverRunning()
-{
-	BOOL rc = FALSE;
-	SystemParametersInfo(SPI_GETSCREENSAVERRUNNING, 0, &rc, FALSE);
-	return rc;
-}
-
 int IdleGetStatusIndex(WORD status)
 {
     int j;
@@ -306,6 +343,7 @@ static INT_PTR CALLBACK IdleOptsDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, L
 		CheckDlgButton(hwndDlg, IDC_IDLEONWINDOWS, method == 0 ? BST_CHECKED : BST_UNCHECKED);
 		CheckDlgButton(hwndDlg, IDC_IDLEONMIRANDA, method ? BST_CHECKED : BST_UNCHECKED);
 		CheckDlgButton(hwndDlg, IDC_SCREENSAVER, DBGetContactSettingByte(NULL,IDLEMOD,IDL_IDLEONSAVER,0) ? BST_CHECKED : BST_UNCHECKED);
+		CheckDlgButton(hwndDlg, IDC_FULLSCREEN, DBGetContactSettingByte(NULL,IDLEMOD,IDL_IDLEONFULLSCR,0) ? BST_CHECKED : BST_UNCHECKED);
 		CheckDlgButton(hwndDlg, IDC_LOCKED, DBGetContactSettingByte(NULL,IDLEMOD,IDL_IDLEONLOCK,0) ? BST_CHECKED : BST_UNCHECKED);
 		CheckDlgButton(hwndDlg, IDC_IDLEPRIVATE, DBGetContactSettingByte(NULL,IDLEMOD,IDL_IDLEPRIVATE,0) ? BST_CHECKED : BST_UNCHECKED);
 		CheckDlgButton(hwndDlg, IDC_IDLESTATUSLOCK, DBGetContactSettingByte(NULL,IDLEMOD,IDL_IDLESTATUSLOCK,0) ? BST_CHECKED : BST_UNCHECKED);
@@ -347,6 +385,7 @@ static INT_PTR CALLBACK IdleOptsDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, L
 			DBWriteContactSettingByte(NULL, IDLEMOD, IDL_USERIDLECHECK, (BYTE)(IsDlgButtonChecked(hwndDlg, IDC_IDLESHORT) == BST_CHECKED));
 			DBWriteContactSettingByte(NULL, IDLEMOD, IDL_IDLEMETHOD, (BYTE)(method ? 0 : 1));
 			DBWriteContactSettingByte(NULL, IDLEMOD, IDL_IDLEONSAVER, (BYTE)(IsDlgButtonChecked(hwndDlg, IDC_SCREENSAVER) == BST_CHECKED));
+			DBWriteContactSettingByte(NULL, IDLEMOD, IDL_IDLEONFULLSCR, (BYTE)(IsDlgButtonChecked(hwndDlg, IDC_FULLSCREEN) == BST_CHECKED));
 			DBWriteContactSettingByte(NULL, IDLEMOD, IDL_IDLEONLOCK, (BYTE)(IsDlgButtonChecked(hwndDlg, IDC_LOCKED) == BST_CHECKED));
 			DBWriteContactSettingByte(NULL, IDLEMOD, IDL_IDLEONTSDC, (BYTE)(IsDlgButtonChecked(hwndDlg, IDC_IDLETERMINAL) == BST_CHECKED));
 			DBWriteContactSettingByte(NULL, IDLEMOD, IDL_IDLEPRIVATE, (BYTE)(IsDlgButtonChecked(hwndDlg, IDC_IDLEPRIVATE) == BST_CHECKED));
