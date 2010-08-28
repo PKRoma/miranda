@@ -33,7 +33,6 @@ void UninitContacts(void);
 int InitEvents(void);
 void UninitEvents(void);
 int InitCrypt(void);
-int InitTime(void);
 int InitModuleNames(void);
 void UninitModuleNames(void);
 int InitCache(void);

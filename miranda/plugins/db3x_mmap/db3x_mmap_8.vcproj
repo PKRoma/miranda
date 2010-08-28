@@ -420,7 +420,6 @@
 					<Tool
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="1"
-						BrowseInformation="0"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -437,7 +436,6 @@
 					<Tool
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="1"
-						BrowseInformation="0"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -452,182 +450,38 @@
 			<File
 				RelativePath=".\database.c"
 				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						BrowseInformation="0"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug Unicode|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						BrowseInformation="0"
-					/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\dbcache.c"
 				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						BrowseInformation="0"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug Unicode|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						BrowseInformation="0"
-					/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\dbcontacts.c"
 				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						BrowseInformation="0"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug Unicode|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						BrowseInformation="0"
-					/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\dbevents.c"
 				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						BrowseInformation="0"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug Unicode|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						BrowseInformation="0"
-					/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\dbheaders.c"
 				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						BrowseInformation="0"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug Unicode|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						BrowseInformation="0"
-					/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\dbmodulechain.c"
 				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						BrowseInformation="0"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug Unicode|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						BrowseInformation="0"
-					/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\dbsettings.c"
 				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						BrowseInformation="0"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug Unicode|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						BrowseInformation="0"
-					/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\encrypt.c"
 				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						BrowseInformation="0"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug Unicode|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						BrowseInformation="0"
-					/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\init.c"
 				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						BrowseInformation="0"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug Unicode|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						BrowseInformation="0"
-					/>
-				</FileConfiguration>
 			</File>
 		</Filter>
 		<Filter
