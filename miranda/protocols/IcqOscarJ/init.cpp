@@ -186,15 +186,12 @@ extern "C" int __declspec(dllexport) Load(PLUGINLINK *link)
   // Register static services
   hStaticServices[0] = CreateServiceFunction(ICQ_DB_GETEVENTTEXT_MISSEDMESSAGE, icq_getEventTextMissedMessage);
 
-  { // Define global icons
-    TCHAR lib[MAX_PATH];
+  { 
+	// Define global icons
     char szSectionName[MAX_PATH];
-    char szProtocolsBuf[100], szNameBuf[100];
+	null_snprintf(szSectionName, sizeof(szSectionName), "Protocols/%s", ICQ_PROTOCOL_NAME);
 
-    null_snprintf(szSectionName, sizeof(szSectionName), "%s/%s", 
-      ICQTranslateUtfStatic(LPGEN("Protocols"), szProtocolsBuf, sizeof(szProtocolsBuf)), 
-      ICQTranslateUtfStatic(ICQ_PROTOCOL_NAME, szNameBuf, sizeof(szNameBuf)));
-
+    TCHAR lib[MAX_PATH];
     GetModuleFileName(hInst, lib, MAX_PATH);
     hStaticIcons[ISI_AUTH_REQUEST] = IconLibDefine(LPGEN("Request authorization"), szSectionName, NULL, "req_auth", lib, -IDI_AUTH_ASK);
     hStaticIcons[ISI_AUTH_GRANT] = IconLibDefine(LPGEN("Grant authorization"), szSectionName, NULL, "grant_auth", lib, -IDI_AUTH_GRANT);

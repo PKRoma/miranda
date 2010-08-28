@@ -178,18 +178,14 @@ CIcqProto::CIcqProto( const char* aProtoName, const TCHAR* aUserName ) :
 
 	HookProtoEvent(ME_SKIN2_ICONSCHANGED, &CIcqProto::OnReloadIcons);
 
-	{ // Initialize IconLib icons
+	{
+		// Initialize IconLib icons
+		char szSectionName[MAX_PATH], *szAccountName = tchar_to_utf8(m_tszUserName);
+		null_snprintf(szSectionName, sizeof(szSectionName), "Protocols/%s/Accounts", ICQ_PROTOCOL_NAME);
+
 		TCHAR lib[MAX_PATH];
-		char *szAccountName = tchar_to_utf8(m_tszUserName);
-		char szSectionName[MAX_PATH];
-		char szProtocolsBuf[100], szNameBuf[100], szAccountsBuf[100];
-
-		null_snprintf(szSectionName, sizeof(szSectionName), "%s/%s/%s", 
-			ICQTranslateUtfStatic(LPGEN("Protocols"), szProtocolsBuf, sizeof(szProtocolsBuf)), 
-			ICQTranslateUtfStatic(ICQ_PROTOCOL_NAME, szNameBuf, sizeof(szNameBuf)),
-			ICQTranslateUtfStatic(LPGEN("Accounts"), szAccountsBuf, sizeof(szAccountsBuf)));
-
 		GetModuleFileName(hInst, lib, MAX_PATH);
+
 		m_hIconProtocol = IconLibDefine(szAccountName, szSectionName, m_szModuleName, "main", lib, -IDI_ICQ);
 		SAFE_FREE(&szAccountName);
 	}
