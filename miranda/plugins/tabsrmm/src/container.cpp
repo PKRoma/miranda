@@ -1673,18 +1673,22 @@ buttons_done:
 				CSkin::FinalizeBufferedPaint(hbp, &rc);
 			}
 			else {
-				CSkin::FillBack(hdc, &rc);
-				if(pContainer->SideBar->isActive() && pContainer->SideBar->isVisible()) {
+				if(CSkin::m_skinEnabled)
+					CSkin::DrawItem(hdc, &rc, &SkinItems[ID_EXTBKCONTAINER]);
+				else {
+					CSkin::FillBack(hdc, &rc);
+					if(pContainer->SideBar->isActive() && pContainer->SideBar->isVisible()) {
 
-					HPEN hPen = ::CreatePen(PS_SOLID, 1, PluginConfig.m_cRichBorders ? PluginConfig.m_cRichBorders : ::GetSysColor(COLOR_3DSHADOW));
-					HPEN hOldPen = reinterpret_cast<HPEN>(::SelectObject(hdc, hPen));
-					LONG x = (pContainer->SideBar->getFlags() & CSideBar::SIDEBARORIENTATION_LEFT ? pContainer->SideBar->getWidth() - 2 + pContainer->tBorder_outer_left :
-								rc.right - pContainer->SideBar->getWidth() + 1 - pContainer->tBorder_outer_right);
-					::MoveToEx(hdc, x, rc.top, 0);
-					::LineTo(hdc, x, rc.bottom);
-					::SelectObject(hdc, hOldPen);
-					::DeleteObject(hPen);
+						HPEN hPen = ::CreatePen(PS_SOLID, 1, PluginConfig.m_cRichBorders ? PluginConfig.m_cRichBorders : ::GetSysColor(COLOR_3DSHADOW));
+						HPEN hOldPen = reinterpret_cast<HPEN>(::SelectObject(hdc, hPen));
+						LONG x = (pContainer->SideBar->getFlags() & CSideBar::SIDEBARORIENTATION_LEFT ? pContainer->SideBar->getWidth() - 2 + pContainer->tBorder_outer_left :
+									rc.right - pContainer->SideBar->getWidth() + 1 - pContainer->tBorder_outer_right);
+						::MoveToEx(hdc, x, rc.top, 0);
+						::LineTo(hdc, x, rc.bottom);
+						::SelectObject(hdc, hOldPen);
+						::DeleteObject(hPen);
 
+					}
 				}
 			}
 			SetWindowLongPtr(hwndDlg, DWLP_MSGRESULT, 1);
@@ -1762,7 +1766,7 @@ buttons_done:
 
 			SetWindowLongPtr(hwndDlg, GWL_STYLE, ws);
 
-			pContainer->tBorder = M->GetByte("tborder", 2);
+			pContainer->tBorder = M->GetByte((bSkinned ? "S_tborder" : "tborder"), 2);
 			pContainer->tBorder_outer_left = g_ButtonSet.left + M->GetByte((bSkinned ? "S_tborder_outer_left" : "tborder_outer_left"), 2);
 			pContainer->tBorder_outer_right = g_ButtonSet.right + M->GetByte((bSkinned ? "S_tborder_outer_right" : "tborder_outer_right"), 2);
 			pContainer->tBorder_outer_top = g_ButtonSet.top + M->GetByte((bSkinned ? "S_tborder_outer_top" : "tborder_outer_top"), 2);

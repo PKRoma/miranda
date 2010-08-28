@@ -6,7 +6,7 @@ http://forum.miranda.or.at
 
 ----------------------------------------------------------
 
-Version: 3.x
+Version: 3.0
 Created: August 2009
 
 1. Overview
