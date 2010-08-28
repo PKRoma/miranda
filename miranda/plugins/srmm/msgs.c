@@ -57,6 +57,7 @@ static int MessageEventAdded(WPARAM wParam, LPARAM lParam)
 {
 	DBEVENTINFO dbei = {0};
 	HWND hwnd;
+	BOOL DoNotStealFocus = DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_DONOTSTEALFOCUS, SRMSGDEFSET_DONOTSTEALFOCUS);
 
 	dbei.cbSize = sizeof(dbei);
 	CallService(MS_DB_EVENT_GET, lParam, (LPARAM) & dbei);
@@ -68,10 +69,19 @@ static int MessageEventAdded(WPARAM wParam, LPARAM lParam)
 	/* does a window for the contact exist? */
 	hwnd = WindowList_Find(g_dat->hMessageWindowList, (HANDLE) wParam);
 	if (hwnd) {
-		if (GetForegroundWindow() == hwnd)
+		if (!DoNotStealFocus)
+		{
+			SetWindowPos(hwnd, HWND_TOP, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW);
+			SetForegroundWindow(hwnd);
 			SkinPlaySound("RecvMsgActive");
-		else 
-			SkinPlaySound("RecvMsgInactive");
+		}
+		else
+		{
+			if (GetForegroundWindow() == hwnd)
+				SkinPlaySound("RecvMsgActive");
+			else 
+				SkinPlaySound("RecvMsgInactive");
+		}
 		return 0;
 	}
 	/* new message */
@@ -81,7 +91,7 @@ static int MessageEventAdded(WPARAM wParam, LPARAM lParam)
 		if (szProto && (g_dat->openFlags & SRMMStatusToPf2(CallProtoService(szProto, PS_GETSTATUS, 0, 0)))) {
 			struct NewMessageWindowLParam newData = { 0 };
 			newData.hContact = (HANDLE) wParam;
-			newData.noActivate = 1;
+			newData.noActivate = DoNotStealFocus;
 			CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_MSG), NULL, DlgProcMessage, (LPARAM) & newData);
 			return 0;
 		}
@@ -126,6 +136,8 @@ static INT_PTR SendMessageCmd(HANDLE hContact, char* msg, int isWchar)
 				SendMessageA(hEdit, EM_REPLACESEL, FALSE, (LPARAM)msg);
 		}
 		ShowWindow(hwnd, SW_RESTORE);
+		SetWindowPos(hwnd, HWND_TOP, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW);
+		SetForegroundWindow(hwnd);
 	}
 	else 
 	{
@@ -135,8 +147,6 @@ static INT_PTR SendMessageCmd(HANDLE hContact, char* msg, int isWchar)
 		newData.isWchar = isWchar;
 		hwnd = CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_MSG), NULL, DlgProcMessage, (LPARAM)&newData);
 	}
-	SetWindowPos(hwnd, HWND_TOP, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW);
-	SetForegroundWindow(hwnd);
 	return 0;
 }
 
