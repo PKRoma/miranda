@@ -417,6 +417,7 @@
 #define IDC_LOCKED                      1643
 #define IDC_IDLESHORT                   1644
 #define IDC_UPGRADE                     1645
+#define IDC_FULLSCREEN                  1645
 #define IDC_IDLE1STTIME                 1646
 #define IDC_IDLEPRIVATE                 1649
 #define IDC_AASTATUS                    1650

@@ -849,11 +849,11 @@ BEGIN
     EDITTEXT        IDC_IDLE1STTIME,59,59,27,14,ES_AUTOHSCROLL | ES_NUMBER
     CONTROL         "Spin2",IDC_IDLESPIN,"msctls_updown32",UDS_WRAP | UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_ARROWKEYS | UDS_NOTHOUSANDS | UDS_HOTTRACK,71,55,12,23
     CONTROL         "Become idle if the screen saver is active",IDC_SCREENSAVER,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,25,83,268,9
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,25,83,265,9
     CONTROL         "Become idle if the computer is locked (2000/XP+ only)",IDC_LOCKED,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,25,99,249,9
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,25,105,265,9
     CONTROL         "Become idle if a terminal session is disconnected",IDC_IDLETERMINAL,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,25,115,265,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,25,116,265,10
     CONTROL         "Do not let protocols report any idle information",IDC_IDLEPRIVATE,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,25,131,251,9
     LTEXT           "minute(s)",IDC_STATIC,91,61,76,9
@@ -863,6 +863,8 @@ BEGIN
     CONTROL         "Do not set status back to online when returning from idle",IDC_IDLESTATUSLOCK,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,35,164,254,10
     GROUPBOX        "Idle Options",IDC_STATIC,3,3,304,182
+    CONTROL         "Become idle if application full screen",IDC_FULLSCREEN,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,25,94,265,9
 END
 
 IDD_PROFILE_SELECTION DIALOGEX 0, 0, 386, 142
