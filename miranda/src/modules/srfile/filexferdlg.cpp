@@ -389,12 +389,11 @@ INT_PTR CALLBACK DlgProcFileTransfer(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 					}
 
 				case IDC_TRANSFERCOMPLETED:
-					if (dat->transferStatus.currentFileNumber > 1)
-						ShellExecute(NULL,NULL,dat->transferStatus.tszWorkingDir,NULL,NULL,SW_SHOW);
-					else if (CheckVirusScanned(hwndDlg, dat, 0))
+					if (dat->transferStatus.currentFileNumber <= 1 && CheckVirusScanned(hwndDlg, dat, 0))
+					{
 						ShellExecute(NULL, NULL, dat->files[0], NULL, NULL, SW_SHOW);
-
-					break;
+						break;
+					}
 
 				case IDC_OPENFOLDER:
 					if ( dat ) 
