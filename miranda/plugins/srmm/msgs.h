@@ -140,6 +140,8 @@ extern const int msgDlgFontCount;
 #define SRMSGMOD 	"SRMsg"
 #define DBSAVEDMSG 	"SavedMsg"
 
+#define SRMSGSET_DONOTSTEALFOCUS   "DoNotStealFocus"
+#define SRMSGDEFSET_DONOTSTEALFOCUS 0
 #define SRMSGSET_POPFLAGS          "PopupFlags"
 #define SRMSGDEFSET_POPFLAGS       0
 #define SRMSGSET_SHOWBUTTONLINE    "ShowButtonLine"

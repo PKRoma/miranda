@@ -941,7 +941,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 						CallService(MS_DB_EVENT_GET, (WPARAM) hdbEvent, (LPARAM) & dbei);
 						if (( dbei.eventType == EVENTTYPE_MESSAGE || DbEventIsForMsgWindow(&dbei) ) && !(dbei.flags & DBEF_SENT)) {
 							dat->lastMessage = dbei.timestamp;
-							SendMessage(hwndDlg, DM_UPDATELASTMESSAGE, 0, 0);
+							PostMessage(hwndDlg, DM_UPDATELASTMESSAGE, 0, 0);
 							break;
 						}
 					}
@@ -967,6 +967,12 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			}
 			if (newData->noActivate)
 				SetWindowPos(hwndDlg, HWND_BOTTOM, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE | SWP_SHOWWINDOW);
+			else 
+			{
+				SetWindowPos(hwndDlg, HWND_TOP, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW);
+				SetForegroundWindow(hwndDlg);
+			}
+
 
 			SendMessage(hwndDlg, DM_GETAVATAR, 0, 0);
 			//restore saved msg if any...
@@ -1758,7 +1764,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 				dat->cmdList = tcmdlist_append(dat->cmdList, temp);
 
 				mir_free(dat->sendBuffer);
-				if (IsUtfSendAvailable( dat->hContact)) {
+				if (IsUtfSendAvailable(dat->hContact)) {
 					flags = PREF_UTF;
 					dat->bIsUtf = TRUE;
 					dat->sendBuffer = mir_utf8encodeT(temp);
@@ -1790,9 +1796,9 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 				if (dat->hContact == NULL)
 					break;      //never happens
 				dat->sendCount = 1;
+				SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_SETREADONLY, TRUE, 0);
 				dat->hSendId = (HANDLE) CallContactService(dat->hContact, MsgServiceName(dat->hContact), flags, (LPARAM) dat->sendBuffer);
 				EnableWindow(GetDlgItem(hwndDlg, IDOK), FALSE);
-				SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_SETREADONLY, TRUE, 0);
 
 				//create a timeout timer
 				SetTimer(hwndDlg, TIMERID_MSGSEND, DBGetContactSettingDword(NULL, SRMMMOD, SRMSGSET_MSGTIMEOUT, SRMSGDEFSET_MSGTIMEOUT), NULL);
