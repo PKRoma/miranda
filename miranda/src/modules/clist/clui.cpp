@@ -455,16 +455,19 @@ void fnDrawMenuItem(DRAWITEMSTRUCT *dis, HICON hIcon, HICON eventIcon)
 #define M_CREATECLC  (WM_USER+1)
 LRESULT CALLBACK fnContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	if (msg == uMsgProcessProfile) {
+	if (msg == uMsgProcessProfile) 
+	{
 		TCHAR profile[MAX_PATH];
 		int rc;
 		// wParam = (ATOM)hProfileAtom, lParam = 0
-		if ( GlobalGetAtomName((ATOM) wParam, profile, SIZEOF(profile))) {
-			TCHAR tmp[MAX_PATH];
-			mir_sntprintf(tmp, SIZEOF(tmp), _T("%s\\%s"), g_profileDir, g_profileName);
-			rc = lstrcmpi(profile, tmp) == 0;
+		if (GlobalGetAtomName((ATOM) wParam, profile, SIZEOF(profile))) 
+		{
+			TCHAR *pfd = Utils_ReplaceVarsT(_T("%miranda_userdata%\\%miranda_profilename%.dat"));
+			rc = lstrcmpi(profile, pfd) == 0;
+			mir_free(pfd);
 			ReplyMessage(rc);
 			if (rc) {
+				ShowWindow(hwnd, SW_RESTORE);
 				ShowWindow(hwnd, SW_SHOW);
 				SetForegroundWindow(hwnd);
 				SetFocus(hwnd);
