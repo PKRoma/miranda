@@ -20,7 +20,6 @@
 #define IDC_MESSAGE                     1002
 #define IDC_AUTOCLOSE                   1004
 #define IDC_AUTOMIN                     1005
-#define IDC_SRMSGSET_DONOTSTEALFOCUS    1006
 #define IDC_DONOTSTEALFOCUS             1006
 #define IDC_NAME                        1009
 #define IDC_SPLITTER                    1017
@@ -43,9 +42,7 @@
 #define IDC_LOADTIMEN                   1045
 #define IDC_LOADTIMESPIN                1046
 #define IDC_LOADTIME                    1047
-#define IDC_CHOOSEFONT                  1049
 #define IDC_STMINSOLD                   1051
-#define IDC_STMINSOLD2                  1052
 #define IDC_DETAILS                     1069
 #define IDC_ADD                         1070
 #define IDC_USERMENU                    1071
