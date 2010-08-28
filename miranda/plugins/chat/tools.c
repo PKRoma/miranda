@@ -456,7 +456,7 @@ BOOL IsHighlighted(SESSION_INFO* si, const TCHAR* pszText)
 				return FALSE;
 
 			// copy the word into szWord1
-			lstrcpyn(szWord1, p1, p2-p1>998?999:p2-p1+1);
+			lstrcpyn(szWord1, p1, p2 - p1 > 998 ? 999 : p2 - p1 + 1);
 			p1 = p2;
 
 			// replace %m with the users nickname
