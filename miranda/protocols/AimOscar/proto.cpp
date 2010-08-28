@@ -214,7 +214,7 @@ HANDLE __cdecl CAimProto::ChangeInfo(int iInfoType, void* pInfoData)
 HANDLE __cdecl CAimProto::FileAllow(HANDLE hContact, HANDLE hTransfer, const PROTOCHAR* szPath)
 {
 	file_transfer *ft = (file_transfer*)hTransfer;
-	if (ft) 
+	if (ft && ft_list.find_by_ft(ft)) 
 	{
 		char *path = mir_utf8encodeT(szPath);
 
@@ -579,6 +579,7 @@ HANDLE __cdecl CAimProto::SendFile(HANDLE hContact, const PROTOCHAR* szDescripti
 
 int __cdecl CAimProto::SendMsg(HANDLE hContact, int flags, const char* pszSrc)
 {
+	if (state != 1) return 0;
 	if (pszSrc == NULL) return 0;
 
 	DBVARIANT dbv;
