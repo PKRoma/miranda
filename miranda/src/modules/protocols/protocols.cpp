@@ -294,7 +294,7 @@ void Proto_SetStatus(const char* szProto, unsigned status)
 		if ((INT_PTR)awayMsg == CALLSERVICE_NOTFOUND) 
 		{
 			char* awayMsgA = (char*)CallService(MS_AWAYMSG_GETSTATUSMSG, (WPARAM) status, (LPARAM) szProto);
-			if ((INT_PTR)awayMsgA != CALLSERVICE_NOTFOUND ) 
+			if ((INT_PTR)awayMsgA != CALLSERVICE_NOTFOUND)
 			{
 				awayMsg = mir_a2t(awayMsgA);
 				mir_free(awayMsgA);
