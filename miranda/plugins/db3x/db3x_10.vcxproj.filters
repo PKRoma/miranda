@@ -39,9 +39,6 @@
     <ClCompile Include="dbsettings.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="dbtime.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="encrypt.c">
       <Filter>Source Files</Filter>
     </ClCompile>

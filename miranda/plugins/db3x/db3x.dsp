@@ -163,180 +163,45 @@ SOURCE=.\commonheaders.c
 
 SOURCE=.\database.c
 
-!IF  "$(CFG)" == "db3x - Win32 Release"
-
-# ADD CPP /Yu"commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "db3x - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "db3x - Win32 Release Unicode"
-
-# ADD BASE CPP /Yu"commonheaders.h"
-# ADD CPP /Yu"commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "db3x - Win32 Debug Unicode"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=.\dbcache.c
-
-!IF  "$(CFG)" == "db3x - Win32 Release"
-
-# ADD CPP /Yu"commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "db3x - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "db3x - Win32 Release Unicode"
-
-# ADD BASE CPP /Yu"commonheaders.h"
-# ADD CPP /Yu"commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "db3x - Win32 Debug Unicode"
-
-!ENDIF 
 
 # End Source File
 # Begin Source File
 
 SOURCE=.\dbcontacts.c
 
-!IF  "$(CFG)" == "db3x - Win32 Release"
-
-# ADD CPP /Yu"commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "db3x - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "db3x - Win32 Release Unicode"
-
-# ADD BASE CPP /Yu"commonheaders.h"
-# ADD CPP /Yu"commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "db3x - Win32 Debug Unicode"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=.\dbevents.c
-
-!IF  "$(CFG)" == "db3x - Win32 Release"
-
-# ADD CPP /Yu"commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "db3x - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "db3x - Win32 Release Unicode"
-
-# ADD BASE CPP /Yu"commonheaders.h"
-# ADD CPP /Yu"commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "db3x - Win32 Debug Unicode"
-
-!ENDIF 
 
 # End Source File
 # Begin Source File
 
 SOURCE=.\dbheaders.c
 
-!IF  "$(CFG)" == "db3x - Win32 Release"
-
-# ADD CPP /Yu"commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "db3x - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "db3x - Win32 Release Unicode"
-
-# ADD BASE CPP /Yu"commonheaders.h"
-# ADD CPP /Yu"commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "db3x - Win32 Debug Unicode"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=.\dbmodulechain.c
-
-!IF  "$(CFG)" == "db3x - Win32 Release"
-
-# ADD CPP /Yu"commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "db3x - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "db3x - Win32 Release Unicode"
-
-# ADD BASE CPP /Yu"commonheaders.h"
-# ADD CPP /Yu"commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "db3x - Win32 Debug Unicode"
-
-!ENDIF 
 
 # End Source File
 # Begin Source File
 
 SOURCE=.\dbsettings.c
 
-!IF  "$(CFG)" == "db3x - Win32 Release"
-
-# ADD CPP /Yu"commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "db3x - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "db3x - Win32 Release Unicode"
-
-# ADD BASE CPP /Yu"commonheaders.h"
-# ADD CPP /Yu"commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "db3x - Win32 Debug Unicode"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=.\encrypt.c
 
-!IF  "$(CFG)" == "db3x - Win32 Release"
-
-# ADD CPP /Yu"commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "db3x - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "db3x - Win32 Release Unicode"
-
-# ADD BASE CPP /Yu"commonheaders.h"
-# ADD CPP /Yu"commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "db3x - Win32 Debug Unicode"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=.\init.c
-
-!IF  "$(CFG)" == "db3x - Win32 Release"
-
-# ADD CPP /Yu"commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "db3x - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "db3x - Win32 Release Unicode"
-
-# ADD BASE CPP /Yu"commonheaders.h"
-# ADD CPP /Yu"commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "db3x - Win32 Debug Unicode"
-
-!ENDIF 
 
 # End Source File
 # End Group

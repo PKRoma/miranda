@@ -558,14 +558,14 @@ static INT_PTR WriteContactSetting(WPARAM wParam,LPARAM lParam)
 	if ( settingNameLen > 0xFE )
 	{
 		#ifdef _DEBUG
-			OutputDebugString("WriteContactSetting() got a > 255 setting name length. \n");
+			OutputDebugString(_T("WriteContactSetting() got a > 255 setting name length. \n"));
 		#endif
 		return 1;
 	}
 	if ( moduleNameLen > 0xFE )
 	{
 		#ifdef _DEBUG
-			OutputDebugString("WriteContactSetting() got a > 255 module name length. \n");
+			OutputDebugString(_T("WriteContactSetting() got a > 255 module name length. \n"));
 		#endif
 		return 1;
 	}
@@ -576,7 +576,7 @@ static INT_PTR WriteContactSetting(WPARAM wParam,LPARAM lParam)
 		{	int len = ( tmp.value.type != DBVT_BLOB ) ? (int)strlen(tmp.value.pszVal) : tmp.value.cpbVal;
 			if ( len >= 0xFFFF ) {
 				#ifdef _DEBUG
-					OutputDebugString("WriteContactSetting() writing huge string/blob, rejecting ( >= 0xFFFF ) \n");
+					OutputDebugString(_T("WriteContactSetting() writing huge string/blob, rejecting ( >= 0xFFFF ) \n"));
 				#endif
 				return 1;
 			}
