@@ -41,14 +41,13 @@
 IcqIconHandle IconLibDefine(const char *desc, const char *section, const char *module, const char *ident, const TCHAR *def_file, int def_idx)
 {
   SKINICONDESC sid = {0};
-  char szTemp[MAX_PATH];
-  char szName[MAX_PATH + 128];
 
   sid.cbSize = SKINICONDESC_SIZE;
   sid.pwszSection = make_unicode_string(section);
-  sid.pwszDescription = make_unicode_string(ICQTranslateUtfStatic(desc, szTemp, MAX_PATH));
+  sid.pwszDescription = make_unicode_string(desc);
   sid.flags = SIDF_UNICODE | SIDF_PATH_TCHAR;
 
+  char szName[MAX_PATH + 128];
   null_snprintf(szName, sizeof(szName), "%s_%s", module ? module : ICQ_PROTOCOL_NAME, ident);
   sid.pszName = szName;
   sid.ptszDefaultFile = (TCHAR*)def_file;

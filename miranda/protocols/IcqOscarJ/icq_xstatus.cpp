@@ -957,10 +957,8 @@ void CIcqProto::InitXStatusIcons()
 	TCHAR lib[2*MAX_PATH] = {0};
 	TCHAR *icon_lib = InitXStatusIconLibrary(lib, SIZEOF(lib));
 
-	char szSection[MAX_PATH + 64];
-	char str1[64], str2[64];
-	char *szAccountName = tchar_to_utf8(m_tszUserName);
-	null_snprintf(szSection, sizeof(szSection), "%s%s%s", ICQTranslateUtfStatic(LPGEN("Status Icons/"), str1, 64), szAccountName, ICQTranslateUtfStatic(LPGEN("/Custom Status"), str2, 64));
+	char szSection[MAX_PATH + 64], *szAccountName = tchar_to_utf8(m_tszUserName);
+	null_snprintf(szSection, sizeof(szSection), "Status Icons/%s/Custom Status", szAccountName);
 	SAFE_FREE(&szAccountName);
 
 	for (int i = 0; i < XSTATUS_COUNT; i++) 
