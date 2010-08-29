@@ -442,7 +442,12 @@ void CContactCache::releaseAlloced()
 		free(m_history);
 		m_history = 0;
 	}
-	mir_free(m_tszProto);
+	if (m_tszProto != C_INVALID_PROTO_T)
+		mir_free(m_tszProto); 
+	m_tszProto = NULL;
+	mir_free(m_szStatusMsg);
+	m_szStatusMsg = NULL;
+
 }
 
 /**
