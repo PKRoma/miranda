@@ -300,7 +300,7 @@ static bool NetlibInitHttpsConnection(struct NetlibConnection *nlc, struct Netli
 
 	nlhrSend.cbSize = sizeof(nlhrSend);
 	nlhrSend.requestType = REQUEST_CONNECT;
-	nlhrSend.flags = NLHRF_GENERATEHOST | NLHRF_DUMPPROXY | NLHRF_SMARTAUTHHEADER | NLHRF_HTTP11 | NLHRF_NOPROXY;
+	nlhrSend.flags = NLHRF_GENERATEHOST | NLHRF_DUMPPROXY | NLHRF_SMARTAUTHHEADER | NLHRF_HTTP11 | NLHRF_NOPROXY | NLHRF_REDIRECT;
 	if (nlc->dnsThroughProxy) 
 	{
 		mir_snprintf(szUrl, SIZEOF(szUrl), "%s:%u", nloc->szHost, nloc->wPort);
@@ -477,10 +477,12 @@ unblock:
 
 static int NetlibHttpFallbackToDirect(struct NetlibConnection *nlc, struct NetlibUser *nlu, NETLIBOPENCONNECTION *nloc)
 {
-	NetlibLogf(nlu,"Fallback to direct connection %s:%d (Flags %x)....", nloc->szHost, nloc->wPort, nloc->flags);
-
+	NetlibLogf(nlu,"(%p:%u) Connection closed",nlc,nlc->s);
 	if (nlc->s) closesocket(nlc->s);
 	nlc->s = NULL;
+
+	NetlibLogf(nlu,"Fallback to direct connection");
+	NetlibLogf(nlu,"(%p) Connecting to server %s:%d....", nlc, nloc->szHost, nloc->wPort);
 
 	nlc->proxyAuthNeeded = false;
 	nlc->proxyType = 0;
@@ -538,7 +540,10 @@ bool NetlibDoConnect(NetlibConnection *nlc)
 	{
 		nlc->sinProxy.sin_port = htons(nloc->wPort);
 		nlc->sinProxy.sin_addr.S_un.S_addr = DnsLookup(nlu, nloc->szHost);
+		NetlibLogf(nlu,"(%p) Connecting to server %s:%d....", nlc, nloc->szHost, nloc->wPort);
 	}
+	else
+		NetlibLogf(nlu,"(%p) Connecting to proxy %s:%d for %s:%d ....", nlc, nlc->szProxyServer, nlc->wProxyPort, nloc->szHost, nloc->wPort);
 
 	if (nlc->sinProxy.sin_addr.S_un.S_addr == 0) return false;
 
@@ -653,13 +658,17 @@ bool NetlibReconnect(NetlibConnection *nlc)
 			si.sfree(nlc->hSsl);
 			nlc->hSsl = NULL;
 		}
+		NetlibLogf(nlc->nlu,"(%p:%u) Connection closed",nlc,nlc->s);
 		closesocket(nlc->s);
 		nlc->s = INVALID_SOCKET;
 
 		if (Miranda_Terminated()) return false;
 
 		if (nlc->usingHttpGateway)
+		{
+			NetlibLogf(nlc->nlu,"(%p) Connecting....", nlc);
 			return my_connect(nlc, &nlc->nloc) == 0;
+		}
 		else
 			return NetlibDoConnect(nlc);
 	}
@@ -672,7 +681,7 @@ INT_PTR NetlibOpenConnection(WPARAM wParam,LPARAM lParam)
 	struct NetlibUser *nlu = (struct NetlibUser*)wParam;
 	struct NetlibConnection *nlc;
 
-	NetlibLogf(nlu,"Connecting to %s:%d (Flags %x)....", nloc->szHost, nloc->wPort, nloc->flags);
+	NetlibLogf(nlu,"Connection request to %s:%d (Flags %x)....", nloc->szHost, nloc->wPort, nloc->flags);
 
 	if (iUPnPCleanup == 0)
 	{

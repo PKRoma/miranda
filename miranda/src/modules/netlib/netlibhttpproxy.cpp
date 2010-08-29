@@ -76,7 +76,7 @@ static int NetlibHttpGatewaySend(struct NetlibConnection *nlc, RequestType reqTy
 	nlhrSend.pData = (char*)buf;
 	nlhrSend.dataLength = len;
 
-	nlhrSend.flags = NLHRF_GENERATEHOST | NLHRF_DUMPPROXY | NLHRF_SMARTAUTHHEADER | NLHRF_NOPROXY;
+	nlhrSend.flags = NLHRF_GENERATEHOST | NLHRF_DUMPPROXY | NLHRF_SMARTAUTHHEADER | NLHRF_NOPROXY | NLHRF_REDIRECT;
 	if (nlc->nlhpi.flags & NLHPIF_HTTP11) nlhrSend.flags |= NLHRF_HTTP11;
 
 	switch (reqType)
@@ -331,6 +331,9 @@ int NetlibHttpGatewayRecv(struct NetlibConnection *nlc, char *buf, int len, int 
 		{
 			if (!NetlibHttpGatewaySend(nlc, reqOldGet, NULL, 0))
 			{
+				if (GetLastError() == ERROR_ACCESS_DENIED)
+					break;
+
 				++retryCount;
 				continue;
 			}
@@ -339,6 +342,9 @@ int NetlibHttpGatewayRecv(struct NetlibConnection *nlc, char *buf, int len, int 
 		{
 			if (!NetlibHttpGatewayStdPost(nlc, numPackets)) 
 			{
+				if (GetLastError() == ERROR_ACCESS_DENIED)
+					break;
+
 				++retryCount;
 				continue;
 			}
@@ -373,7 +379,7 @@ int NetlibHttpGatewayRecv(struct NetlibConnection *nlc, char *buf, int len, int 
 			}
 			else
 			{
-				NetlibLogf(nlc->nlu, "Error received from proxy, retry attempts exceeded");
+				NetlibLogf(nlc->nlu, "Error received from proxy, retry attempts exceeded (%u)", retryCount);
 				SetLastError(ERROR_GEN_FAILURE);
 				return SOCKET_ERROR;
 			}
