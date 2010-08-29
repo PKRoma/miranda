@@ -110,7 +110,7 @@ HANDLE NetlibInitSecurityProvider(const TCHAR* szProvider, const TCHAR* szPrinci
 {
 	HANDLE hSecurity = NULL;
 
-	if (_tcscmp(szProvider, _T("Basic")) == 0)
+	if (_tcsicmp(szProvider, _T("Basic")) == 0)
 	{
 		NtlmHandleType* hNtlm = (NtlmHandleType*)mir_calloc(sizeof(NtlmHandleType));
 		hNtlm->szProvider = mir_tstrdup(szProvider);

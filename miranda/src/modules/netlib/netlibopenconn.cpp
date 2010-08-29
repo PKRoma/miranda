@@ -43,7 +43,7 @@ DWORD DnsLookup(struct NetlibUser *nlu,const char *szHost)
 	if ( host )
 		return *( u_long* )host->h_addr_list[0];
 
-	NetlibLogf(nlu,"%s %d: %s() failed (%u)",__FILE__,__LINE__,"gethostbyname",WSAGetLastError());
+	NetlibLogf(nlu,"%s %d: %s() for host %s failed (%u)",__FILE__,__LINE__,"gethostbyname", szHost, WSAGetLastError());
 	return 0;
 }
 
@@ -419,7 +419,7 @@ retry:
 		FD_SET(nlc->s, &e);		
 		if ((rc = select(0, &r, &w, &e, &tv)) == SOCKET_ERROR) 
 			break;
-\
+
 		if (rc > 0) 
 		{			
 			if (FD_ISSET(nlc->s, &w))
@@ -477,6 +477,8 @@ unblock:
 
 static int NetlibHttpFallbackToDirect(struct NetlibConnection *nlc, struct NetlibUser *nlu, NETLIBOPENCONNECTION *nloc)
 {
+	NetlibLogf(nlu,"Fallback to direct connection %s:%d (Flags %x)....", nloc->szHost, nloc->wPort, nloc->flags);
+
 	if (nlc->s) closesocket(nlc->s);
 	nlc->s = NULL;
 
