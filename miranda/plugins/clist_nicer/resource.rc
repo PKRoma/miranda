@@ -14,55 +14,6 @@
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
 
-/////////////////////////////////////////////////////////////////////////////
-// German (Germany) resources
-
-#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_DEU)
-LANGUAGE LANG_GERMAN, SUBLANG_GERMAN
-#pragma code_page(1252)
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// Version
-//
-
-VS_VERSION_INFO VERSIONINFO
- FILEVERSION 0,9,2,1
- PRODUCTVERSION 0,9,2,1
- FILEFLAGSMASK 0x17L
-#ifdef _DEBUG
- FILEFLAGS 0x1L
-#else
- FILEFLAGS 0x0L
-#endif
- FILEOS 0x4L
- FILETYPE 0x2L
- FILESUBTYPE 0x0L
-BEGIN
-    BLOCK "StringFileInfo"
-    BEGIN
-        BLOCK "000004b0"
-        BEGIN
-            VALUE "CompanyName", "Miranda IM project"
-            VALUE "FileDescription", "Clist_Nicer+ (Ansi)"
-            VALUE "FileVersion", "0.9.2.1"
-            VALUE "InternalName", "clist_nicer"
-            VALUE "LegalCopyright", "Copyright (C) 2004-2010"
-            VALUE "LegalTrademarks", "Licensed under the Gnu general public license V2 or any later version."
-            VALUE "OriginalFilename", "clist_nicer.dll"
-            VALUE "ProductName", "Contact list plugin for Miranda IM"
-            VALUE "ProductVersion", "0.9.2.1"
-        END
-    END
-    BLOCK "VarFileInfo"
-    BEGIN
-        VALUE "Translation", 0x0, 1200
-    END
-END
-
-#endif    // German (Germany) resources
-/////////////////////////////////////////////////////////////////////////////
-
 
 /////////////////////////////////////////////////////////////////////////////
 // English (United States) resources
@@ -75,6 +26,19 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 //
 // Dialog
 //
+
+IDD_EXCEPTION DIALOGEX 0, 0, 370, 131
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "TabSRMM exception"
+FONT 8, "MS Shell Dlg", 0, 0, 0x0
+BEGIN
+    EDITTEXT        IDC_EXCEPTION_DETAILS,7,18,356,60,ES_MULTILINE | ES_READONLY
+    DEFPUSHBUTTON   "Copy to clipboard",IDC_COPY_EXCEPTION,108,114,80,14
+    PUSHBUTTON      "Continue",IDOK,196,114,80,14
+    PUSHBUTTON      "Exit Miranda",IDCANCEL,284,114,80,14
+    LTEXT           "",IDC_EX_REASON,7,5,354,9
+    LTEXT           "Although the exception was caught and you may continue working with Miranda, you should restart the program as soon as possible. The exception may have damaged internal data structures and can have a serious impact on stability.",IDC_STATIC,7,83,352,26
+END
 
 IDD_OPT_FLOATING DIALOGEX 0, 0, 313, 251
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD
@@ -169,14 +133,12 @@ STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    GROUPBOX        "Profiles (WIP)",IDC_STATIC,0,0,79,170
     LISTBOX         IDC_PROFILELIST,5,11,68,92,LBS_SORT | LBS_NOINTEGRALHEIGHT | NOT WS_VISIBLE | WS_VSCROLL | WS_TABSTOP
     CONTROL         "",IDC_DSP_ADD,"CLCButtonClass",NOT WS_VISIBLE | WS_TABSTOP,5,109,68,15,WS_EX_NOACTIVATE | 0x10000000L
     CONTROL         "",IDC_DSP_DELETE,"CLCButtonClass",NOT WS_VISIBLE | WS_DISABLED | WS_TABSTOP,5,128,68,15,WS_EX_NOACTIVATE | 0x10000000L
     CONTROL         "",IDC_DSP_RENAME,"CLCButtonClass",NOT WS_VISIBLE | WS_DISABLED | WS_TABSTOP,5,147,68,15,WS_EX_NOACTIVATE | 0x10000000L
-    CONTROL         "",IDC_OPTIONSTAB,"SysTabControl32",WS_TABSTOP,81,1,230,222
+    CONTROL         "",IDC_OPTIONSTAB,"SysTabControl32",WS_TABSTOP,41,1,230,222
     CONTROL         "",IDC_DSP_APPLY,"CLCButtonClass",NOT WS_VISIBLE | WS_TABSTOP,218,229,89,15,WS_EX_NOACTIVATE | 0x10000000L
-    GROUPBOX        "Classes (WIP)",IDC_STATIC,0,172,79,74
     LISTBOX         IDC_CLASSLIST,5,184,68,55,LBS_SORT | LBS_NOINTEGRALHEIGHT | NOT WS_VISIBLE | WS_VSCROLL | WS_TABSTOP
 END
 
@@ -802,6 +764,14 @@ END
 #ifdef APSTUDIO_INVOKED
 GUIDELINES DESIGNINFO
 BEGIN
+    IDD_OPT_DSPPROFILES, DIALOG
+    BEGIN
+    END
+
+    IDD_OPT_DSPADVANCED, DIALOG
+    BEGIN
+    END
+
     IDD_OPT_XICONS, DIALOG
     BEGIN
         RIGHTMARGIN, 225

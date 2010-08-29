@@ -60,8 +60,6 @@ POINT start_pos;
 
 
 extern StatusItems_t *StatusItems;
-extern BOOL (WINAPI *MySetLayeredWindowAttributes)(HWND, COLORREF, BYTE, DWORD);
-extern BOOL (WINAPI *MyUpdateLayeredWindow)(HWND hwnd, HDC hdcDst, POINT *pptDst,SIZE *psize, HDC hdcSrc, POINT *pptSrc, COLORREF crKey, BLENDFUNCTION *pblend, DWORD dwFlags);
 extern int g_padding_y;
 
 extern HIMAGELIST hCListImages;
@@ -124,13 +122,13 @@ void FLT_SnapToEdges(HWND hwnd)
 	RECT rcWindow;
 	HMONITOR curMonitor;
 	
-	if ( MyMonitorFromWindow == NULL )
+	if ( API::pfnMonitorFromWindow == NULL )
 		return;
 
-	curMonitor = MyMonitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST);
+	curMonitor = API::pfnMonitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST);
 
 	monInfo.cbSize = sizeof(monInfo);
-	MyGetMonitorInfo(curMonitor, &monInfo);
+	API::pfnGetMonitorInfo(curMonitor, &monInfo);
 
 	dr = monInfo.rcWork;
 	GetWindowRect(hwnd, &rcWindow);
@@ -242,7 +240,7 @@ INT_PTR CALLBACK DlgProcFloatingContacts(HWND hwndDlg, UINT msg, WPARAM wParam, 
                 else
                 {
                     CheckDlgButton(hwndDlg, IDC_FLT_SHOWTOOLTIPS, 0);
-                    EnableWindow(GetDlgItem(hwndDlg, IDC_FLT_SHOWTOOLTIPS), 0);
+                    Utils::enableDlgControl(hwndDlg, IDC_FLT_SHOWTOOLTIPS, 0);
                 }
 
 				for(i = 0; padctrlIDs[i] != 0; i++)
@@ -284,44 +282,44 @@ INT_PTR CALLBACK DlgProcFloatingContacts(HWND hwndDlg, UINT msg, WPARAM wParam, 
                         int isTooltip = IsDlgButtonChecked(hwndDlg, IDC_FLT_SHOWTOOLTIPS);
                         int isDefHoverTime = IsDlgButtonChecked(hwndDlg, IDC_FLT_DEFHOVERTIME);
 
-						EnableWindow(GetDlgItem(hwndDlg, IDC_FLT_SIMPLELAYOUT), isEnabled);		
-						EnableWindow(GetDlgItem(hwndDlg, IDC_FLT_SYNCED), isEnabled);	
-						EnableWindow(GetDlgItem(hwndDlg, IDC_FLT_AUTOHIDE), isEnabled);
-						EnableWindow(GetDlgItem(hwndDlg, IDC_FLT_SNAP), isEnabled);
-						EnableWindow(GetDlgItem(hwndDlg, IDC_FLT_ACTIVEOPACITY), isEnabled);
-						EnableWindow(GetDlgItem(hwndDlg, IDC_FLT_OPACITY), isEnabled);
-						EnableWindow(GetDlgItem(hwndDlg, IDC_FLT_PADLEFTSPIN), isEnabled);		
-						EnableWindow(GetDlgItem(hwndDlg, IDC_FLT_PADRIGHTSPIN), isEnabled);	
-						EnableWindow(GetDlgItem(hwndDlg, IDC_FLT_PADTOPSPIN), isEnabled);
-						EnableWindow(GetDlgItem(hwndDlg, IDC_FLT_PADLEFT), isEnabled);		
-						EnableWindow(GetDlgItem(hwndDlg, IDC_FLT_PADRIGHT), isEnabled);	
-						EnableWindow(GetDlgItem(hwndDlg, IDC_FLT_PADTOP), isEnabled);
+                        Utils::enableDlgControl(hwndDlg, IDC_FLT_SIMPLELAYOUT, isEnabled);
+                        Utils::enableDlgControl(hwndDlg, IDC_FLT_SYNCED, isEnabled);
+                        Utils::enableDlgControl(hwndDlg, IDC_FLT_AUTOHIDE, isEnabled);
+                        Utils::enableDlgControl(hwndDlg, IDC_FLT_SNAP, isEnabled);
+                        Utils::enableDlgControl(hwndDlg, IDC_FLT_ACTIVEOPACITY, isEnabled);
+                        Utils::enableDlgControl(hwndDlg, IDC_FLT_OPACITY, isEnabled);
+                        Utils::enableDlgControl(hwndDlg, IDC_FLT_PADLEFTSPIN, isEnabled);
+                        Utils::enableDlgControl(hwndDlg, IDC_FLT_PADRIGHTSPIN, isEnabled);
+                        Utils::enableDlgControl(hwndDlg, IDC_FLT_PADTOPSPIN, isEnabled);
+                        Utils::enableDlgControl(hwndDlg, IDC_FLT_PADLEFT, isEnabled);
+                        Utils::enableDlgControl(hwndDlg, IDC_FLT_PADRIGHT, isEnabled);
+                        Utils::enableDlgControl(hwndDlg, IDC_FLT_PADTOP, isEnabled);
 						//EnableWindow(GetDlgItem(hwndDlg, IDC_FLT_PADBOTTOMSPIN), isEnabled);
-						EnableWindow(GetDlgItem(hwndDlg, IDC_FLT_PADBOTTOM), isEnabled);
-						EnableWindow(GetDlgItem(hwndDlg, IDC_FLT_WIDTHSPIN), isEnabled);	
-						EnableWindow(GetDlgItem(hwndDlg, IDC_FLT_WIDTH), isEnabled);
-						EnableWindow(GetDlgItem(hwndDlg, IDC_FLT_BORDER), isEnabled);	
-						EnableWindow(GetDlgItem(hwndDlg, IDC_FLT_ROUNDED), isEnabled);
-						EnableWindow(GetDlgItem(hwndDlg, IDC_FLT_BORDERCOLOUR), isEnabled & isBorder);	
-						EnableWindow(GetDlgItem(hwndDlg, IDC_FLT_RADIUS), isEnabled & isRounded);
-						EnableWindow(GetDlgItem(hwndDlg, IDC_FLT_RADIUSSPIN), isEnabled & isRounded);
-                        EnableWindow(GetDlgItem(hwndDlg, IDC_FLT_SHOWTOOLTIPS), isEnabled & ServiceExists(MS_TOOLTIP_SHOWTIP));	
-                        EnableWindow(GetDlgItem(hwndDlg, IDC_FLT_DEFHOVERTIME), isEnabled & isTooltip);
-                        EnableWindow(GetDlgItem(hwndDlg, IDC_FLT_HOVERTIME), isEnabled & isTooltip & !isDefHoverTime);
-                        EnableWindow(GetDlgItem(hwndDlg, IDC_FLT_HOVERTIMESPIN), isEnabled & isTooltip & !isDefHoverTime);
+                        Utils::enableDlgControl(hwndDlg, IDC_FLT_PADBOTTOM, isEnabled);
+                        Utils::enableDlgControl(hwndDlg, IDC_FLT_WIDTHSPIN, isEnabled);
+                        Utils::enableDlgControl(hwndDlg, IDC_FLT_WIDTH, isEnabled);
+                        Utils::enableDlgControl(hwndDlg, IDC_FLT_BORDER, isEnabled);
+                        Utils::enableDlgControl(hwndDlg, IDC_FLT_ROUNDED, isEnabled);
+                        Utils::enableDlgControl(hwndDlg, IDC_FLT_BORDERCOLOUR, isEnabled & isBorder);
+                        Utils::enableDlgControl(hwndDlg, IDC_FLT_RADIUS, isEnabled & isRounded);
+                        Utils::enableDlgControl(hwndDlg, IDC_FLT_RADIUSSPIN, isEnabled & isRounded);
+                        Utils::enableDlgControl(hwndDlg, IDC_FLT_SHOWTOOLTIPS, isEnabled & ServiceExists(MS_TOOLTIP_SHOWTIP));
+                        Utils::enableDlgControl(hwndDlg, IDC_FLT_DEFHOVERTIME, isEnabled & isTooltip);
+                        Utils::enableDlgControl(hwndDlg, IDC_FLT_HOVERTIME, isEnabled & isTooltip & !isDefHoverTime);
+                        Utils::enableDlgControl(hwndDlg, IDC_FLT_HOVERTIMESPIN, isEnabled & isTooltip & !isDefHoverTime);
 
-						EnableWindow(GetDlgItem(hwndDlg, IDC_FLT_AVATARS), isEnabled & !isSimple);
-						EnableWindow(GetDlgItem(hwndDlg, IDC_FLT_EXTRAICONS), isEnabled & !isSimple);
-						EnableWindow(GetDlgItem(hwndDlg, IDC_FLT_DUALROWS), isEnabled & !isSimple);
+                        Utils::enableDlgControl(hwndDlg, IDC_FLT_AVATARS, isEnabled & !isSimple);
+                        Utils::enableDlgControl(hwndDlg, IDC_FLT_EXTRAICONS, isEnabled & !isSimple);
+                        Utils::enableDlgControl(hwndDlg, IDC_FLT_DUALROWS, isEnabled & !isSimple);
 					}
 					break;
 				case IDC_FLT_SIMPLELAYOUT:
 					{
 						if (IsDlgButtonChecked(hwndDlg, IDC_FLT_ENABLED)){
 							int isSimple = IsDlgButtonChecked(hwndDlg, IDC_FLT_SIMPLELAYOUT);
-							EnableWindow(GetDlgItem(hwndDlg, IDC_FLT_AVATARS), !isSimple);
-							EnableWindow(GetDlgItem(hwndDlg, IDC_FLT_EXTRAICONS), !isSimple);
-							EnableWindow(GetDlgItem(hwndDlg, IDC_FLT_DUALROWS), !isSimple);
+							Utils::enableDlgControl(hwndDlg, IDC_FLT_AVATARS, !isSimple);
+							Utils::enableDlgControl(hwndDlg, IDC_FLT_EXTRAICONS, !isSimple);
+							Utils::enableDlgControl(hwndDlg, IDC_FLT_DUALROWS, !isSimple);
 						}
 					}
 					break;
@@ -329,7 +327,7 @@ INT_PTR CALLBACK DlgProcFloatingContacts(HWND hwndDlg, UINT msg, WPARAM wParam, 
 					{
 						if (IsDlgButtonChecked(hwndDlg, IDC_FLT_ENABLED)){
 							int isBorder = IsDlgButtonChecked(hwndDlg, IDC_FLT_BORDER);
-							EnableWindow(GetDlgItem(hwndDlg, IDC_FLT_BORDERCOLOUR), isBorder);
+							Utils::enableDlgControl(hwndDlg, IDC_FLT_BORDERCOLOUR, isBorder);
 						}
 					}
 					break;
@@ -337,8 +335,8 @@ INT_PTR CALLBACK DlgProcFloatingContacts(HWND hwndDlg, UINT msg, WPARAM wParam, 
 					{
 						if (IsDlgButtonChecked(hwndDlg, IDC_FLT_ENABLED)){
 							int isRounded = IsDlgButtonChecked(hwndDlg, IDC_FLT_ROUNDED);
-							EnableWindow(GetDlgItem(hwndDlg, IDC_FLT_RADIUS), isRounded);
-							EnableWindow(GetDlgItem(hwndDlg, IDC_FLT_RADIUSSPIN), isRounded);
+							Utils::enableDlgControl(hwndDlg, IDC_FLT_RADIUS, isRounded);
+							Utils::enableDlgControl(hwndDlg, IDC_FLT_RADIUSSPIN, isRounded);
 						}
 					}
 					break;
@@ -347,9 +345,9 @@ INT_PTR CALLBACK DlgProcFloatingContacts(HWND hwndDlg, UINT msg, WPARAM wParam, 
                         if (IsDlgButtonChecked(hwndDlg, IDC_FLT_ENABLED)){
                             int isTooltip = IsDlgButtonChecked(hwndDlg, IDC_FLT_SHOWTOOLTIPS);
                             int isDefHoverTime = IsDlgButtonChecked(hwndDlg, IDC_FLT_DEFHOVERTIME);
-                            EnableWindow(GetDlgItem(hwndDlg, IDC_FLT_DEFHOVERTIME), isTooltip);
-                            EnableWindow(GetDlgItem(hwndDlg, IDC_FLT_HOVERTIME), isTooltip & !isDefHoverTime);
-                            EnableWindow(GetDlgItem(hwndDlg, IDC_FLT_HOVERTIMESPIN), isTooltip & !isDefHoverTime);
+                            Utils::enableDlgControl(hwndDlg, IDC_FLT_DEFHOVERTIME, isTooltip);
+                            Utils::enableDlgControl(hwndDlg, IDC_FLT_HOVERTIME, isTooltip & !isDefHoverTime);
+                            Utils::enableDlgControl(hwndDlg, IDC_FLT_HOVERTIMESPIN, isTooltip & !isDefHoverTime);
                         }
                     }
                     break;
@@ -357,8 +355,8 @@ INT_PTR CALLBACK DlgProcFloatingContacts(HWND hwndDlg, UINT msg, WPARAM wParam, 
                     {
                         if (IsDlgButtonChecked(hwndDlg, IDC_FLT_ENABLED) && IsDlgButtonChecked(hwndDlg, IDC_FLT_SHOWTOOLTIPS)){
                             int isDefHoverTime = IsDlgButtonChecked(hwndDlg, IDC_FLT_DEFHOVERTIME);
-                            EnableWindow(GetDlgItem(hwndDlg, IDC_FLT_HOVERTIME), !isDefHoverTime);
-                            EnableWindow(GetDlgItem(hwndDlg, IDC_FLT_HOVERTIMESPIN), !isDefHoverTime);
+                            Utils::enableDlgControl(hwndDlg, IDC_FLT_HOVERTIME, !isDefHoverTime);
+                            Utils::enableDlgControl(hwndDlg, IDC_FLT_HOVERTIMESPIN, !isDefHoverTime);
                         }
                     }
                     break;
@@ -422,7 +420,7 @@ INT_PTR CALLBACK DlgProcFloatingContacts(HWND hwndDlg, UINT msg, WPARAM wParam, 
 
                                 g_floatoptions.def_hover_time= IsDlgButtonChecked(hwndDlg, IDC_FLT_DEFHOVERTIME) ? 1 : 0;
                                 if (g_floatoptions.def_hover_time)
-                                    g_floatoptions.hover_time = DBGetContactSettingWord(NULL, "CLC", "InfoTipHoverTime", 200); 
+                                    g_floatoptions.hover_time = cfg::getWord("CLC", "InfoTipHoverTime", 200);
                                 else
                                     g_floatoptions.hover_time = (WORD)SendDlgItemMessage(hwndDlg, IDC_FLT_HOVERTIMESPIN, UDM_GETPOS, 0, 0);
 
@@ -444,26 +442,26 @@ void FLT_ReadOptions()
 
 	ZeroMemory(&g_floatoptions, sizeof(FLOATINGOPTIONS));
 
-	g_floatoptions.enabled = DBGetContactSettingByte(NULL, "CList", "flt_enabled", 0);
-	g_floatoptions.dwFlags = DBGetContactSettingDword(NULL, "CList", "flt_flags", FLT_SIMPLE);
-	dwPad = DBGetContactSettingDword(NULL, "CList", "flt_padding", 0);
+	g_floatoptions.enabled = cfg::getByte("CList", "flt_enabled", 0);
+	g_floatoptions.dwFlags = cfg::getDword("CList", "flt_flags", FLT_SIMPLE);
+	dwPad = cfg::getDword("CList", "flt_padding", 0);
 	
 	g_floatoptions.pad_top = LOBYTE(LOWORD(dwPad));
 	g_floatoptions.pad_right = HIBYTE(LOWORD(dwPad));
 	g_floatoptions.pad_bottom = LOBYTE(HIWORD(dwPad));
 	g_floatoptions.pad_left = HIBYTE(HIWORD(dwPad));
 
-	g_floatoptions.width = DBGetContactSettingDword(NULL, "CList", "flt_width", 100);
-	g_floatoptions.act_trans = DBGetContactSettingByte(NULL, "CList", "flt_acttrans", 255);
-	g_floatoptions.trans = DBGetContactSettingByte(NULL, "CList", "flt_trans", 255);
-	g_floatoptions.radius = DBGetContactSettingByte(NULL, "CList", "flt_radius", 3);
-	g_floatoptions.border_colour = DBGetContactSettingDword(NULL, "CList", "flt_bordercolour", 0);
-    g_floatoptions.def_hover_time = DBGetContactSettingByte(NULL, "CList", "flt_defhovertime", 1);
+	g_floatoptions.width = cfg::getDword("CList", "flt_width", 100);
+	g_floatoptions.act_trans = cfg::getByte("CList", "flt_acttrans", 255);
+	g_floatoptions.trans = cfg::getByte("CList", "flt_trans", 255);
+	g_floatoptions.radius = cfg::getByte("CList", "flt_radius", 3);
+	g_floatoptions.border_colour = cfg::getDword("CList", "flt_bordercolour", 0);
+    g_floatoptions.def_hover_time = cfg::getByte("CList", "flt_defhovertime", 1);
 
     if (g_floatoptions.def_hover_time)
-        g_floatoptions.hover_time = DBGetContactSettingWord(NULL, "CLC", "InfoTipHoverTime", 200); 
+        g_floatoptions.hover_time = cfg::getWord("CLC", "InfoTipHoverTime", 200);
     else
-        g_floatoptions.hover_time = DBGetContactSettingWord(NULL, "CList", "flt_hovertime", 200); 
+        g_floatoptions.hover_time = cfg::getWord("CList", "flt_hovertime", 200);
 
 }
 
@@ -471,19 +469,19 @@ void FLT_WriteOptions()
 {
 	DWORD dwPad;
 
-	DBWriteContactSettingByte(NULL, "CList", "flt_enabled", g_floatoptions.enabled);
-	DBWriteContactSettingDword(NULL, "CList", "flt_flags", g_floatoptions.dwFlags);
+	cfg::writeByte("CList", "flt_enabled", g_floatoptions.enabled);
+	cfg::writeDword("CList", "flt_flags", g_floatoptions.dwFlags);
 	dwPad = MAKELONG(MAKEWORD(g_floatoptions.pad_top, g_floatoptions.pad_right), 
 					 MAKEWORD(g_floatoptions.pad_bottom, g_floatoptions.pad_left));
-	DBWriteContactSettingDword(NULL, "CList", "flt_padding", dwPad);
-	DBWriteContactSettingDword(NULL, "CList", "flt_width", g_floatoptions.width);
-	DBWriteContactSettingByte(NULL, "CList", "flt_acttrans", g_floatoptions.act_trans);
-	DBWriteContactSettingByte(NULL, "CList", "flt_trans", g_floatoptions.trans);
-	DBWriteContactSettingByte(NULL, "CList", "flt_radius", g_floatoptions.radius);
-	DBWriteContactSettingDword(NULL, "CList", "flt_bordercolour", g_floatoptions.border_colour);
-    DBWriteContactSettingByte(NULL, "CList", "flt_defhovertime", g_floatoptions.def_hover_time);
+	cfg::writeDword("CList", "flt_padding", dwPad);
+	cfg::writeDword("CList", "flt_width", g_floatoptions.width);
+	cfg::writeByte("CList", "flt_acttrans", g_floatoptions.act_trans);
+	cfg::writeByte("CList", "flt_trans", g_floatoptions.trans);
+	cfg::writeByte("CList", "flt_radius", g_floatoptions.radius);
+	cfg::writeDword("CList", "flt_bordercolour", g_floatoptions.border_colour);
+	cfg::writeByte("CList", "flt_defhovertime", g_floatoptions.def_hover_time);
     if (!g_floatoptions.def_hover_time)
-        DBWriteContactSettingWord(NULL, "CList", "flt_hovertime", g_floatoptions.hover_time);
+    	cfg::writeWord("CList", "flt_hovertime", g_floatoptions.hover_time);
 
 }
 
@@ -638,13 +636,13 @@ LRESULT CALLBACK ContactFloaterClassProc(HWND hwnd, UINT msg, WPARAM wParam, LPA
 				break;
 			}
 		case WM_MOUSEMOVE:
-			if( MyTrackMouseEvent && !hover ) {
+			if( API::pfnTrackMouseEvent && !hover ) {
 				TRACKMOUSEEVENT tme;
 				tme.cbSize = sizeof(TRACKMOUSEEVENT);
 				tme.dwFlags = TME_HOVER | TME_LEAVE;
 				tme.hwndTrack = hwnd;
 				tme.dwHoverTime = 5;
-				MyTrackMouseEvent(&tme);
+				API::pfnTrackMouseEvent(&tme);
 				hover = TRUE;
 			}
 			if ( ServiceExists( MS_TOOLTIP_SHOWTIP )) {
@@ -852,8 +850,8 @@ void SFL_Update(HICON hIcon, int iIcon, HIMAGELIST hIml, const TCHAR *szText, BO
 
 	SelectObject(g_SFLCachedDC, hOldFont);
 
-	if(MyUpdateLayeredWindow)
-		MyUpdateLayeredWindow(g_hwndSFL, 0, &ptDest, &szDest, g_SFLCachedDC, &ptSrc, GetSysColor(COLOR_3DFACE), &bf, ULW_ALPHA | ULW_COLORKEY);
+	if(API::pfnUpdateLayeredWindow)
+		API::pfnUpdateLayeredWindow(g_hwndSFL, 0, &ptDest, &szDest, g_SFLCachedDC, &ptSrc, GetSysColor(COLOR_3DFACE), &bf, ULW_ALPHA | ULW_COLORKEY);
 }
 
 /*
@@ -872,7 +870,7 @@ void SFL_SetState(int uMode)
 
 	if(uMode == -1) {
 		if(cfg::dat.bUseFloater & CLUI_FLOATER_AUTOHIDE) {
-			bClistState = DBGetContactSettingByte(NULL, "CList", "State", SETTING_STATE_NORMAL);
+			bClistState = cfg::getByte("CList", "State", SETTING_STATE_NORMAL);
 			ShowWindow(g_hwndSFL, bClistState == SETTING_STATE_NORMAL ? SW_SHOW : SW_HIDE);
 		}
 		else
@@ -924,7 +922,7 @@ void SFL_SetSize()
 
 void SFL_Create()
 {
-	if(g_hwndSFL == 0 && cfg::dat.bUseFloater & CLUI_USE_FLOATER && MyUpdateLayeredWindow != NULL)
+	if(g_hwndSFL == 0 && cfg::dat.bUseFloater & CLUI_USE_FLOATER && API::pfnUpdateLayeredWindow != NULL)
 		g_hwndSFL = CreateWindowEx(WS_EX_TOOLWINDOW | WS_EX_LAYERED, _T("StatusFloaterClass"), _T("sfl"), WS_VISIBLE, 0, 0, 0, 0, 0, 0, g_hInst, 0);
 	else
 		return;
@@ -977,7 +975,7 @@ void FLT_Create(int iEntry)
 		struct ClcGroup *group = NULL;
 
         centry = &cfg::eCache[iEntry];
-		if(centry->floater == 0 && MyUpdateLayeredWindow != NULL) {
+		if(centry->floater == 0 && API::pfnUpdateLayeredWindow != NULL) {
 
 			centry->floater = (struct ContactFloater *)malloc(sizeof(struct ContactFloater));
 			if(centry->floater == NULL)
@@ -1160,8 +1158,8 @@ void FLT_Update(struct ClcData *dat, struct ClcContact *contact)
 	bf.AlphaFormat = 0;
 	bf.SourceConstantAlpha = g_floatoptions.trans;
 
-	if(MyUpdateLayeredWindow)
-		MyUpdateLayeredWindow(hwnd, 0, &ptDest, &szDest, hdc, &ptSrc, clrKey /*GetSysColor(COLOR_3DFACE)*/, &bf, ULW_COLORKEY | ULW_ALPHA);
+	if(API::pfnUpdateLayeredWindow)
+		API::pfnUpdateLayeredWindow(hwnd, 0, &ptDest, &szDest, hdc, &ptSrc, clrKey /*GetSysColor(COLOR_3DFACE)*/, &bf, ULW_COLORKEY | ULW_ALPHA);
 }
 
 /*

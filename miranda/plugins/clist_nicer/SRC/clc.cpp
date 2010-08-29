@@ -43,10 +43,8 @@ extern HANDLE hExtraImageApplying;
 extern wndFrame *wndFrameCLC;
 extern ButtonItem *g_ButtonItems;
 
-extern pfnDrawAlpha pDrawAlpha;
 extern int during_sizing;
 extern StatusItems_t *StatusItems;
-extern int g_shutDown;
 
 HIMAGELIST hCListImages;
 extern HIMAGELIST himlExtraImages;
@@ -141,15 +139,15 @@ static int ClcSettingChanged(WPARAM wParam, LPARAM lParam)
 					szProto_s = NULL;
 				else
 					szProto_s = cws->value.pszVal;
-				pcli->pfnChangeContactIcon((HANDLE) wParam, IconFromStatusMode(szProto_s, szProto_s == NULL ? ID_STATUS_OFFLINE : DBGetContactSettingWord((HANDLE) wParam, szProto_s, "Status", ID_STATUS_OFFLINE), (HANDLE) wParam, NULL), 0);
+				pcli->pfnChangeContactIcon((HANDLE) wParam, IconFromStatusMode(szProto_s, szProto_s == NULL ? ID_STATUS_OFFLINE : cfg::getWord((HANDLE) wParam, szProto_s, "Status", ID_STATUS_OFFLINE), (HANDLE) wParam, NULL), 0);
 			}
 			// something is being written to a protocol module
 			if (!__strcmp(szProto, cws->szModule)) {
 				// was a unique setting key written?
 				pcli->pfnInvalidateDisplayNameCacheEntry((HANDLE) wParam);
 				if (!__strcmp(cws->szSetting, "Status")) {
-					if (!DBGetContactSettingByte((HANDLE) wParam, "CList", "Hidden", 0)) {
-						if (DBGetContactSettingByte(NULL, "CList", "HideOffline", SETTING_HIDEOFFLINE_DEFAULT)) {
+					if (!cfg::getByte((HANDLE) wParam, "CList", "Hidden", 0)) {
+						if (cfg::getByte("CList", "HideOffline", SETTING_HIDEOFFLINE_DEFAULT)) {
 							// User's state is changing, and we are hideOffline-ing
 							if (cws->value.wVal == ID_STATUS_OFFLINE) {
 								pcli->pfnChangeContactIcon((HANDLE) wParam, IconFromStatusMode(cws->szModule, cws->value.wVal, (HANDLE) wParam, NULL), 0);
@@ -180,7 +178,7 @@ static int ClcSettingChanged(WPARAM wParam, LPARAM lParam)
 				pcli->pfnClcBroadcast(INTM_HIDDENCHANGED, wParam, lParam);
 		}
 	} else if (wParam == 0 && !__strcmp(cws->szModule, cfg::dat.szMetaName)) {
-		BYTE bMetaEnabled = DBGetContactSettingByte(NULL, cfg::dat.szMetaName, "Enabled", 1);
+		BYTE bMetaEnabled = cfg::getByte(cfg::dat.szMetaName, "Enabled", 1);
 		if (bMetaEnabled != (BYTE)cfg::dat.bMetaEnabled) {
 			cfg::dat.bMetaEnabled = bMetaEnabled;
 			pcli->pfnClcBroadcast(CLM_AUTOREBUILD, 0, 0);
@@ -191,7 +189,7 @@ static int ClcSettingChanged(WPARAM wParam, LPARAM lParam)
 				UnhookEvent(hSoundHook);
 				hSoundHook = 0;
 			}
-			cfg::dat.soundsOff = DBGetContactSettingByte(0, cws->szModule, cws->szSetting, 0) ? 0 : 1;
+			cfg::dat.soundsOff = cfg::getByte(cws->szModule, cws->szSetting, 0) ? 0 : 1;
 			if (cfg::dat.soundsOff && hSoundHook == 0)
 				hSoundHook = HookEvent(ME_SKIN_PLAYINGSOUND, ClcSoundHook);
 			CheckDlgButton(pcli->hwndContactList, IDC_TBSOUND, cfg::dat.soundsOff ? BST_UNCHECKED : BST_CHECKED);
@@ -213,7 +211,7 @@ static int ClcModulesLoaded(WPARAM wParam, LPARAM lParam)
 static int ClcPreshutdown(WPARAM wParam, LPARAM lParam)
 {
 	SFL_Destroy();
-	g_shutDown = TRUE;
+	cfg::shutDown = TRUE;
 	if (hSvc_GetContactStatusMsg)
 		DestroyServiceFunction(hSvc_GetContactStatusMsg);
 	UnhookEvent(hClcSettingsChanged);
@@ -239,7 +237,6 @@ int ClcShutdown(WPARAM wParam, LPARAM lParam)
 	DeleteObject(cfg::dat.hBrushAvatarBorder);
     DestroyMenu(cfg::dat.hMenuNotify);
 	ClearIcons(1);
-	pDrawAlpha = 0;
 	SFL_UnregisterWindowClass();
 	if (cfg::eCache) {
 		int i;
@@ -387,7 +384,7 @@ LBL_Def:
 			if (szProto == NULL)
 				status = ID_STATUS_OFFLINE;
 			else
-				status = DBGetContactSettingWord((HANDLE) wParam, szProto, "Status", ID_STATUS_OFFLINE);
+				status = cfg::getWord((HANDLE) wParam, szProto, "Status", ID_STATUS_OFFLINE);
 
 			shouldShow = (GetWindowLong(hwnd, GWL_STYLE) & CLS_SHOWHIDDEN || !CLVM_GetContactHiddenStatus((HANDLE)wParam, szProto, dat)) && ((cfg::dat.bFilterEffective ? TRUE : !pcli->pfnIsHiddenMode(dat, status)) || CallService(MS_CLIST_GETCONTACTICON, wParam, 0) != lParam);// XXX CLVM changed - this means an offline msg is flashing, so the contact should be shown
 			if (!FindItem(hwnd, dat, (HANDLE) wParam, &contact, &group, NULL)) {
@@ -481,7 +478,7 @@ LBL_Def:
 			struct ClcContact *contact = NULL;
 			if (!FindItem(hwnd, dat, (HANDLE) wParam, &contact, NULL, NULL))
 				break;
-			contact->codePage = DBGetContactSettingDword((HANDLE) wParam, "Tab_SRMsg", "ANSIcodepage", DBGetContactSettingDword((HANDLE)wParam, "UserInfo", "ANSIcodepage", CP_ACP));
+			contact->codePage = cfg::getDword((HANDLE) wParam, "Tab_SRMsg", "ANSIcodepage", cfg::getDword((HANDLE)wParam, "UserInfo", "ANSIcodepage", CP_ACP));
 			PostMessage(hwnd, INTM_INVALIDATE, 0, 0);
 			goto LBL_Def;
 		}
@@ -508,7 +505,7 @@ LBL_Def:
 				if (contact->extraCacheEntry >= 0 && contact->extraCacheEntry < cfg::nextCacheEntry)
 					dwFlags = cfg::eCache[contact->extraCacheEntry].dwDFlags;
 				else
-					dwFlags = DBGetContactSettingDword(contact->hContact, "CList", "CLN_Flags", 0);
+					dwFlags = cfg::getDword(contact->hContact, "CList", "CLN_Flags", 0);
 				if (cfg::dat.dwFlags & CLUI_FRAME_AVATARS)
 					contact->cFlags = (dwFlags & ECF_HIDEAVATAR ? contact->cFlags & ~ECF_AVATAR : contact->cFlags | ECF_AVATAR);
 				else
@@ -539,7 +536,7 @@ LBL_Def:
 			if (!FindItem(hwnd, dat, (HANDLE) wParam, &contact, NULL, NULL))
 				break;
 
-			wStatus = DBGetContactSettingWord((HANDLE)wParam, contact->proto, "Status", ID_STATUS_OFFLINE);
+			wStatus = cfg::getWord((HANDLE)wParam, contact->proto, "Status", ID_STATUS_OFFLINE);
 			if (cfg::dat.bNoOfflineAvatars && wStatus != ID_STATUS_OFFLINE && contact->wStatus == ID_STATUS_OFFLINE) {
 				contact->wStatus = wStatus;
 				if (cfg::dat.bAvatarServiceAvail && contact->ace == NULL)
@@ -620,7 +617,7 @@ LBL_Def:
 			if (szProto == NULL)
 				break;
 			contact->flags &= ~CONTACTF_IDLE;
-			if (DBGetContactSettingDword((HANDLE) wParam, szProto, "IdleTS", 0)) {
+			if (cfg::getDword((HANDLE) wParam, szProto, "IdleTS", 0)) {
 				contact->flags |= CONTACTF_IDLE;
 			}
 			PostMessage(hwnd, INTM_INVALIDATE, 0, (LPARAM)contact->hContact);
@@ -637,16 +634,16 @@ LBL_Def:
 			if (!FindItem(hwnd, dat, (HANDLE) wParam, &contact, NULL, NULL)) {
 				index = cfg::getCache((HANDLE)wParam, szProto);
 				if (!dat->bisEmbedded && cfg::dat.bMetaAvail && szProto) {				// may be a subcontact, forward the xstatus
-					if (DBGetContactSettingByte((HANDLE)wParam, cfg::dat.szMetaName, "IsSubcontact", 0)) {
-						HANDLE hMasterContact = (HANDLE)DBGetContactSettingDword((HANDLE)wParam, cfg::dat.szMetaName, "Handle", 0);
+					if (cfg::getByte((HANDLE)wParam, cfg::dat.szMetaName, "IsSubcontact", 0)) {
+						HANDLE hMasterContact = (HANDLE)cfg::getDword((HANDLE)wParam, cfg::dat.szMetaName, "Handle", 0);
 						if (hMasterContact && hMasterContact != (HANDLE)wParam)				// avoid recursive call of settings handler
-							DBWriteContactSettingByte(hMasterContact, cfg::dat.szMetaName, "XStatusId",
-													  (BYTE)DBGetContactSettingByte((HANDLE)wParam, szProto, "XStatusId", 0));
+							cfg::writeByte(hMasterContact, cfg::dat.szMetaName, "XStatusId",
+													  (BYTE)cfg::getByte((HANDLE)wParam, szProto, "XStatusId", 0));
 						break;
 					}
 				}
 			} else {
-				contact->xStatus = DBGetContactSettingByte((HANDLE) wParam, szProto, "XStatusId", 0);
+				contact->xStatus = cfg::getByte((HANDLE) wParam, szProto, "XStatusId", 0);
 				index = contact->extraCacheEntry;
 			}
 			if (szProto == NULL)
@@ -659,7 +656,7 @@ LBL_Def:
 			HDC hdc;
 			PAINTSTRUCT ps;
 			hdc = BeginPaint(hwnd, &ps);
-			if (IsWindowVisible(hwnd) && !during_sizing && !g_shutDown) {
+			if (IsWindowVisible(hwnd) && !during_sizing && !cfg::shutDown) {
 				PaintClc(hwnd, dat, hdc, &ps.rcPaint);
 				dat->bNeedPaint = FALSE;
 				dat->lastRepaint = GetTickCount();
@@ -707,9 +704,9 @@ LBL_Def:
 							char buf[4096];
 							DBVARIANT dbv = {0};
 							char *szEmail = NULL;
-							if (!DBGetContactSettingString(contact->hContact, "UserInfo", "Mye-mail0", &dbv))
+							if (!cfg::getString(contact->hContact, "UserInfo", "Mye-mail0", &dbv))
 								szEmail = dbv.pszVal;
-							else if (!DBGetContactSettingString(contact->hContact, contact->proto, "e-mail", &dbv))
+							else if (!cfg::getString(contact->hContact, contact->proto, "e-mail", &dbv))
 								szEmail = dbv.pszVal;
 
 							if (szEmail) {
@@ -723,9 +720,9 @@ LBL_Def:
 							char *homepage = NULL;
 							DBVARIANT dbv = {0};
 
-							if (!DBGetContactSettingString(contact->hContact, "UserInfo", "Homepage", &dbv))
+							if (!cfg::getString(contact->hContact, "UserInfo", "Homepage", &dbv))
 								homepage = dbv.pszVal;
-							else if (!DBGetContactSettingString(contact->hContact, contact->proto, "Homepage", &dbv))
+							else if (!cfg::getString(contact->hContact, contact->proto, "Homepage", &dbv))
 								homepage = dbv.pszVal;
 							if (homepage) {
 								ShellExecuteA(hwnd, "open", homepage, NULL, NULL, SW_SHOW);

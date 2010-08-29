@@ -41,7 +41,6 @@
 #define TIMERID_AUTOSIZE 100
 #define MENU_MIRANDAMENU         0xFFFF1234
 
-int g_shutDown = 0;
 int g_fading_active = 0;
 
 static RECT g_PreSizeRect, g_SizingRect;
@@ -49,7 +48,6 @@ static int g_sizingmethod;
 static LONG g_CLUI_x_off, g_CLUI_y_off, g_CLUI_y1_off, g_CLUI_x1_off;
 static RECT rcWPC;
 
-static HMODULE hUserDll;
 static int transparentFocus = 1;
 static byte oldhideoffline;
 static int disableautoupd = 1;
@@ -58,7 +56,6 @@ extern HIMAGELIST hCListImages;
 extern PLUGININFOEX pluginInfo;
 extern WNDPROC OldStatusBarProc;
 extern RECT old_window_rect, new_window_rect;
-extern pfnDrawAlpha pDrawAlpha;
 
 extern BOOL g_trayTooltipActive;
 extern POINT tray_hover_pos;
@@ -77,13 +74,8 @@ HIMAGELIST himlExtraImages = 0;
 static BYTE old_cliststate, show_on_first_autosize = FALSE;
 
 RECT cluiPos;
-DWORD g_gdiplusToken = 0;
 
-#if defined(_UNICODE)
-TCHAR statusNames[12][124];
-#else
 TCHAR *statusNames[12];
-#endif
 
 extern LRESULT CALLBACK EventAreaWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 extern HANDLE hNotifyFrame;
@@ -186,7 +178,7 @@ static INT_PTR CLN_GetTimeOffset(WPARAM wParam, LPARAM lParam)
 static void Tweak_It(COLORREF clr)
 {
 	SetWindowLong(pcli->hwndContactList, GWL_EXSTYLE, GetWindowLong(pcli->hwndContactList, GWL_EXSTYLE) | WS_EX_LAYERED);
-	MySetLayeredWindowAttributes(pcli->hwndContactList, clr, 0, LWA_COLORKEY);
+	API::pfnSetLayeredWindowAttributes(pcli->hwndContactList, clr, 0, LWA_COLORKEY);
 	cfg::dat.colorkey = clr;
 }
 
@@ -267,10 +259,10 @@ static HWND PreCreateCLC(HWND parent)
 {
 	pcli->hwndContactTree = CreateWindow(CLISTCONTROL_CLASS, _T(""),
 										 WS_CHILD | CLS_CONTACTLIST
-										 | (DBGetContactSettingByte(NULL, "CList", "UseGroups", SETTING_USEGROUPS_DEFAULT) ? CLS_USEGROUPS : 0)
+										 | (cfg::getByte(NULL, "CList", "UseGroups", SETTING_USEGROUPS_DEFAULT) ? CLS_USEGROUPS : 0)
 										 | CLS_HIDEOFFLINE
 										 //|(DBGetContactSettingByte(NULL,"CList","HideOffline",SETTING_HIDEOFFLINE_DEFAULT)?CLS_HIDEOFFLINE:0)
-										 | (DBGetContactSettingByte(NULL, "CList", "HideEmptyGroups", SETTING_HIDEEMPTYGROUPS_DEFAULT) ? CLS_HIDEEMPTYGROUPS : 0)
+										 | (cfg::getByte(NULL, "CList", "HideEmptyGroups", SETTING_HIDEEMPTYGROUPS_DEFAULT) ? CLS_HIDEEMPTYGROUPS : 0)
 										 | CLS_MULTICOLUMN
 										 , 0, 0, 0, 0, parent, NULL, g_hInst, (LPVOID)0xff00ff00);
 
@@ -681,14 +673,14 @@ void SetTBSKinned(int mode)
 void ConfigureCLUIGeometry(int mode)
 {
 	RECT rcStatus;
-	DWORD clmargins = DBGetContactSettingDword(NULL, "CLUI", "clmargins", 0);
+	DWORD clmargins = cfg::getDword("CLUI", "clmargins", 0);
 
 	cfg::dat.bCLeft = LOBYTE(LOWORD(clmargins));
 	cfg::dat.bCRight = HIBYTE(LOWORD(clmargins));
 	cfg::dat.bCTop = LOBYTE(HIWORD(clmargins));
 	cfg::dat.bCBottom = HIBYTE(HIWORD(clmargins));
 
-	cfg::dat.dwButtonWidth = cfg::dat.dwButtonHeight = DBGetContactSettingByte(NULL, "CLUI", "TBSize", 19);
+	cfg::dat.dwButtonWidth = cfg::dat.dwButtonHeight = cfg::getByte("CLUI", "TBSize", 19);
 
 	if (mode) {
 		if (cfg::dat.dwFlags & CLUI_FRAME_SBARSHOW) {
@@ -766,24 +758,24 @@ void SetDBButtonStates(HANDLE hPassedContact)
 		if (buttonItem->type == DBVT_ASCIIZ) {
 			DBVARIANT dbv = {0};
 
-			if (!DBGetContactSettingString(hFinalContact, szModule, szSetting, &dbv)) {
+			if (!cfg::getString(hFinalContact, szModule, szSetting, &dbv)) {
 				result = !strcmp((char *)buttonItem->bValuePush, dbv.pszVal);
 				DBFreeVariant(&dbv);
 			}
 		} else {
 			switch (buttonItem->type) {
 				case DBVT_BYTE: {
-					BYTE val = DBGetContactSettingByte(hFinalContact, szModule, szSetting, 0);
+					BYTE val = cfg::getByte(hFinalContact, szModule, szSetting, 0);
 					result = (val == buttonItem->bValuePush[0]);
 					break;
 				}
 				case DBVT_WORD: {
-					WORD val = DBGetContactSettingWord(hFinalContact, szModule, szSetting, 0);
+					WORD val = cfg::getWord(hFinalContact, szModule, szSetting, 0);
 					result = (val == *((WORD *) & buttonItem->bValuePush));
 					break;
 				}
 				case DBVT_DWORD: {
-					DWORD val = DBGetContactSettingDword(hFinalContact, szModule, szSetting, 0);
+					DWORD val = cfg::getDword(hFinalContact, szModule, szSetting, 0);
 					result = (val == *((DWORD *) & buttonItem->bValuePush));
 					break;
 				}
@@ -802,10 +794,10 @@ void SetButtonStates(HWND hwnd)
 	BYTE iMode;
 	ButtonItem *buttonItem = g_ButtonItems;
 
-	iMode = DBGetContactSettingByte(NULL, "CList", "HideOffline", 0);
+	iMode = cfg::getByte("CList", "HideOffline", 0);
 	if (!g_ButtonItems) {
 		SendDlgItemMessage(hwnd, IDC_TBSOUND, BM_SETIMAGE, IMAGE_ICON, (LPARAM)(cfg::dat.soundsOff ? top_buttons[6].hAltIcon : top_buttons[6].hIcon));
-		CheckDlgButton(hwnd, IDC_TBHIDEGROUPS, DBGetContactSettingByte(NULL, "CList", "UseGroups", 0) ? BST_CHECKED : BST_UNCHECKED);
+		CheckDlgButton(hwnd, IDC_TBHIDEGROUPS, cfg::getByte("CList", "UseGroups", 0) ? BST_CHECKED : BST_UNCHECKED);
 		CheckDlgButton(hwnd, IDC_TBHIDEOFFLINE, iMode ? BST_CHECKED : BST_UNCHECKED);
 		CheckDlgButton(hwnd, IDC_TBSOUND, cfg::dat.soundsOff ? BST_UNCHECKED : BST_CHECKED);
 	} else {
@@ -819,7 +811,7 @@ void SetButtonStates(HWND hwnd)
 						SendMessage(buttonItem->hWnd, BM_SETCHECK, iMode ? BST_CHECKED : BST_UNCHECKED, 0);
 						break;
 					case IDC_TBHIDEGROUPS:
-						SendMessage(buttonItem->hWnd, BM_SETCHECK, DBGetContactSettingByte(NULL, "CList", "UseGroups", 0) ? BST_CHECKED : BST_UNCHECKED, 0);
+						SendMessage(buttonItem->hWnd, BM_SETCHECK, cfg::getByte("CList", "UseGroups", 0) ? BST_CHECKED : BST_UNCHECKED, 0);
 						break;
 				}
 			}
@@ -856,72 +848,51 @@ void BlitWallpaper(HDC hdc, RECT *rc, RECT *rcPaint, struct ClcData *dat)
 	SelectClipRgn(hdc, my_rgn);
 	maxx = dat->backgroundBmpUse & CLBF_TILEH ? rc->right : rc->left + 1;
 	maxy = dat->backgroundBmpUse & CLBF_TILEV ? maxy = rc->bottom : y + 1;
-	if (!DBGetContactSettingByte(NULL, "CLCExt", "EXBK_FillWallpaper", 0)) {
-		switch (dat->backgroundBmpUse & CLBM_TYPE) {
-			case CLB_STRETCH:
-				if (dat->backgroundBmpUse & CLBF_PROPORTIONAL) {
-					if (width * bmp->bmHeight < height * bmp->bmWidth) {
-						desth = height;
-						destw = desth * bmp->bmWidth / bmp->bmHeight;
-					} else {
-						destw = width;
-						desth = destw * bmp->bmHeight / bmp->bmWidth;
-					}
-				} else {
-					destw = width;
-					desth = height;
-				}
-				break;
-			case CLB_STRETCHH:
-				if (dat->backgroundBmpUse & CLBF_PROPORTIONAL) {
-					destw = width;
-					desth = destw * bmp->bmHeight / bmp->bmWidth;
-				} else {
-					destw = width;
-					desth = bmp->bmHeight;
-				}
-				break;
-			case CLB_STRETCHV:
-				if (dat->backgroundBmpUse & CLBF_PROPORTIONAL) {
+	switch (dat->backgroundBmpUse & CLBM_TYPE) {
+		case CLB_STRETCH:
+			if (dat->backgroundBmpUse & CLBF_PROPORTIONAL) {
+				if (width * bmp->bmHeight < height * bmp->bmWidth) {
 					desth = height;
 					destw = desth * bmp->bmWidth / bmp->bmHeight;
 				} else {
-					destw = bmp->bmWidth;
-					desth = height;
+					destw = width;
+					desth = destw * bmp->bmHeight / bmp->bmWidth;
 				}
-				break;
-			default:
-				//clb_topleft
-				destw = bmp->bmWidth;
+			} else {
+				destw = width;
+				desth = height;
+			}
+			break;
+		case CLB_STRETCHH:
+			if (dat->backgroundBmpUse & CLBF_PROPORTIONAL) {
+				destw = width;
+				desth = destw * bmp->bmHeight / bmp->bmWidth;
+			} else {
+				destw = width;
 				desth = bmp->bmHeight;
-				break;
-		}
-	} else {
-		destw = bmp->bmWidth;
-		desth = bmp->bmHeight;
+			}
+			break;
+		case CLB_STRETCHV:
+			if (dat->backgroundBmpUse & CLBF_PROPORTIONAL) {
+				desth = height;
+				destw = desth * bmp->bmWidth / bmp->bmHeight;
+			} else {
+				destw = bmp->bmWidth;
+				desth = height;
+			}
+			break;
+		default:
+			//clb_topleft
+			destw = bmp->bmWidth;
+			desth = bmp->bmHeight;
+			break;
 	}
 
-	if (DBGetContactSettingByte(NULL, "CLCExt", "EXBK_FillWallpaper", 0)) {
-		RECT mrect;
-		POINT pt;
-		pt.x = rc->left;
-		pt.y = rc->top - cfg::dat.bClipBorder;
-		ClientToScreen(pcli->hwndContactList, &pt);
-		GetWindowRect(pcli->hwndContactList, &mrect);
-		bitx = pt.x;
-		bity = pt.y;
-	} else {
-		bitx = 0;
-		bity = 0;
-	}
+	bitx = 0;
+	bity = 0;
 	for (; y < maxy; y += desth) {
-		//if (y< rc->top - desth)
-		//    continue;
-		for (x = rc->left; x < maxx; x += destw) {
-			//_w = (x + destw < maxx) ? destw : maxx - x;
-			//_h = (y + desth < maxy) ? desth : maxy - y;
+		for (x = rc->left; x < maxx; x += destw)
 			StretchBlt(hdc, x, y, destw, desth, cfg::dat.hdcPic, bitx, bity, bmp->bmWidth, bmp->bmHeight, SRCCOPY);
-		}
 	}
 	SelectClipRgn(hdc, NULL);
 	DeleteObject(my_rgn);
@@ -929,26 +900,26 @@ void BlitWallpaper(HDC hdc, RECT *rc, RECT *rcPaint, struct ClcData *dat)
 
 void ReloadThemedOptions()
 {
-	cfg::dat.bSkinnedToolbar = DBGetContactSettingByte(NULL, "CLUI", "tb_skinned", 1);
-	cfg::dat.bSkinnedStatusBar = DBGetContactSettingByte(NULL, "CLUI", "sb_skinned", 0);
-	cfg::dat.bUsePerProto = DBGetContactSettingByte(NULL, "CLCExt", "useperproto", 0);
-	cfg::dat.bOverridePerStatusColors = DBGetContactSettingByte(NULL, "CLCExt", "override_status", 0);
-	cfg::dat.bRowSpacing = DBGetContactSettingByte(NULL, "CLC", "RowGap", 0);
-	cfg::dat.exIconScale = DBGetContactSettingByte(NULL, "CLC", "ExIconScale", 16);
-	cfg::dat.bApplyIndentToBg = DBGetContactSettingByte(NULL, "CLCExt", "applyindentbg", 0);
-	cfg::dat.bWallpaperMode = DBGetContactSettingByte(NULL, "CLUI", "UseBkSkin", 1);
-	cfg::dat.bClipBorder = DBGetContactSettingByte(NULL, "CLUI", "clipborder", 0);
-	cfg::dat.cornerRadius = DBGetContactSettingByte(NULL, "CLCExt", "CornerRad", 6);
-	cfg::dat.gapBetweenFrames = (BYTE)DBGetContactSettingDword(NULL, "CLUIFrames", "GapBetweenFrames", 1);
-	cfg::dat.bUseDCMirroring = (BYTE)DBGetContactSettingByte(NULL, "CLC", "MirrorDC", 0);
-	cfg::dat.bGroupAlign = (BYTE)DBGetContactSettingByte(NULL, "CLC", "GroupAlign", 0);
+	cfg::dat.bSkinnedToolbar = 		cfg::getByte("CLUI", "tb_skinned", 1);
+	cfg::dat.bSkinnedStatusBar = 	cfg::getByte("CLUI", "sb_skinned", 0);
+	cfg::dat.bUsePerProto = 		cfg::getByte("CLCExt", "useperproto", 0);
+	cfg::dat.bOverridePerStatusColors = cfg::getByte("CLCExt", "override_status", 0);
+	cfg::dat.bRowSpacing = 			cfg::getByte("CLC", "RowGap", 0);
+	cfg::dat.exIconScale = 			cfg::getByte("CLC", "ExIconScale", 16);
+	cfg::dat.bApplyIndentToBg = 	cfg::getByte("CLCExt", "applyindentbg", 0);
+	cfg::dat.bWallpaperMode = 		cfg::getByte("CLUI", "UseBkSkin", 1);
+	cfg::dat.bClipBorder = 			cfg::getByte("CLUI", "clipborder", 0);
+	cfg::dat.cornerRadius = 		cfg::getByte("CLCExt", "CornerRad", 6);
+	cfg::dat.gapBetweenFrames = 	(BYTE)cfg::getDword("CLUIFrames", "GapBetweenFrames", 1);
+	cfg::dat.bUseDCMirroring = 		cfg::getByte("CLC", "MirrorDC", 0);
+	cfg::dat.bGroupAlign = 			cfg::getByte("CLC", "GroupAlign", 0);
 	if (cfg::dat.hBrushColorKey)
 		DeleteObject(cfg::dat.hBrushColorKey);
 	cfg::dat.hBrushColorKey = CreateSolidBrush(RGB(255, 0, 255));
-	cfg::dat.bUseFloater = (BYTE)DBGetContactSettingByte(NULL, "CLUI", "FloaterMode", 0);
-	cfg::dat.bWantFastGradients = (BYTE)DBGetContactSettingByte(NULL, "CLCExt", "FastGradients", 0);
-	cfg::dat.titleBarHeight = DBGetContactSettingByte(NULL, "CLCExt", "frame_height", DEFAULT_TITLEBAR_HEIGHT);
-	cfg::dat.group_padding = DBGetContactSettingDword(NULL, "CLCExt", "grp_padding", 0);
+	cfg::dat.bUseFloater = 			cfg::getByte("CLUI", "FloaterMode", 0);
+	cfg::dat.bWantFastGradients = 	cfg::getByte("CLCExt", "FastGradients", 0);
+	cfg::dat.titleBarHeight = 		cfg::getByte("CLCExt", "frame_height", DEFAULT_TITLEBAR_HEIGHT);
+	cfg::dat.group_padding = 		cfg::getDword("CLCExt", "grp_padding", 0);
 }
 
 static RECT rcWindow = {0};
@@ -962,7 +933,7 @@ static void sttProcessResize(HWND hwnd, NMCLISTCONTROL *nmc)
 	if (disableautoupd)
 		return;
 
-	if (!DBGetContactSettingByte(NULL, "CLUI", "AutoSize", 0))
+	if (!cfg::getByte("CLUI", "AutoSize", 0))
 		return;
 
 	if (Docking_IsDocked(0, 0))
@@ -970,7 +941,7 @@ static void sttProcessResize(HWND hwnd, NMCLISTCONTROL *nmc)
 	if (hFrameContactTree == 0)
 		return;
 
-	maxHeight = DBGetContactSettingByte(NULL, "CLUI", "MaxSizeHeight", 75);
+	maxHeight = cfg::getByte("CLUI", "MaxSizeHeight", 75);
 	rcOld = rcWindow;
 
 	GetWindowRect(hwnd, &rcWindow);
@@ -994,7 +965,7 @@ static void sttProcessResize(HWND hwnd, NMCLISTCONTROL *nmc)
 
 	if (newHeight > (rcWorkArea.bottom - rcWorkArea.top)*maxHeight / 100)
 		newHeight = (rcWorkArea.bottom - rcWorkArea.top) * maxHeight / 100;
-	if (DBGetContactSettingByte(NULL, "CLUI", "AutoSizeUpward", 0)) {
+	if (cfg::getByte("CLUI", "AutoSizeUpward", 0)) {
 		rcWindow.top = rcWindow.bottom - newHeight;
 		if (rcWindow.top < rcWorkArea.top) rcWindow.top = rcWorkArea.top;
 	} else {
@@ -1114,10 +1085,10 @@ static int ServiceParamsOK(ButtonItem *item, WPARAM *wParam, LPARAM *lParam, HAN
 static void ShowCLUI(HWND hwnd)
 {
 	int state = old_cliststate;
-	int onTop = DBGetContactSettingByte(NULL, "CList", "OnTop", SETTING_ONTOP_DEFAULT);
+	int onTop = cfg::getByte("CList", "OnTop", SETTING_ONTOP_DEFAULT);
 
 	SendMessage(hwnd, WM_SETREDRAW, FALSE, FALSE);
-	if (!DBGetContactSettingByte(NULL, "CLUI", "ShowMainMenu", SETTING_SHOWMAINMENU_DEFAULT))
+	if (!cfg::getByte("CLUI", "ShowMainMenu", SETTING_SHOWMAINMENU_DEFAULT))
 		SetMenu(pcli->hwndContactList, NULL);
 	if (state == SETTING_STATE_NORMAL) {
 		SendMessage(pcli->hwndContactList, WM_SIZE, 0, 0);
@@ -1148,8 +1119,8 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 			int i;
 			{
 				int flags = WS_CHILD | CCS_BOTTOM;
-				flags |= DBGetContactSettingByte(NULL, "CLUI", "ShowSBar", 1) ? WS_VISIBLE : 0;
-				flags |= DBGetContactSettingByte(NULL, "CLUI", "ShowGrip", 1) ? SBARS_SIZEGRIP : 0;
+				flags |= cfg::getByte("CLUI", "ShowSBar", 1) ? WS_VISIBLE : 0;
+				flags |= cfg::getByte("CLUI", "ShowGrip", 1) ? SBARS_SIZEGRIP : 0;
 				pcli->hwndStatus = CreateWindow(STATUSCLASSNAME, NULL, flags, 0, 0, 0, 0, hwnd, NULL, g_hInst, NULL);
 				if (flags & WS_VISIBLE) {
 					ShowWindow(pcli->hwndStatus, SW_SHOW);
@@ -1159,33 +1130,27 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 				SetClassLong(pcli->hwndStatus, GCL_STYLE, GetClassLong(pcli->hwndStatus, GCL_STYLE) & ~(CS_VREDRAW | CS_HREDRAW));
 			}
 			g_oldSize.cx = g_oldSize.cy = 0;
-			old_cliststate = DBGetContactSettingByte(NULL, "CList", "State", SETTING_STATE_NORMAL);
-			DBWriteContactSettingByte(NULL, "CList", "State", SETTING_STATE_HIDDEN);
+			old_cliststate = cfg::getByte("CList", "State", SETTING_STATE_NORMAL);
+			cfg::writeByte("CList", "State", SETTING_STATE_HIDDEN);
 			SetWindowLong(hwnd, GWL_STYLE, GetWindowLong(hwnd, GWL_STYLE) & ~WS_VISIBLE);
 			SetWindowLong(hwnd, GWL_STYLE, GetWindowLong(hwnd, GWL_STYLE) | WS_CLIPCHILDREN);
 			if (!cfg::dat.bFirstRun)
 				ConfigureEventArea(hwnd);
 			CluiProtocolStatusChanged(0, 0);
 			ConfigureCLUIGeometry(0);
-			for (i = ID_STATUS_OFFLINE; i <= ID_STATUS_OUTTOLUNCH; i++) {
-#if defined(_UNICODE)
-				char *szTemp = Translate((char *)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, (WPARAM)i, 0));
-				MultiByteToWideChar(CP_ACP, 0, szTemp, -1, &statusNames[i - ID_STATUS_OFFLINE][0], 100);
-				statusNames[i - ID_STATUS_OFFLINE][100] = 0;
-#else
-				statusNames[i - ID_STATUS_OFFLINE] = Translate(((char *)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, (WPARAM)i, 0)));
-#endif
-			}
+
+			for (i = ID_STATUS_OFFLINE; i <= ID_STATUS_OUTTOLUNCH; i++)
+				statusNames[i - ID_STATUS_OFFLINE] = reinterpret_cast<TCHAR *>(CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, (WPARAM)i, GCMDF_TCHAR));
+
 			//delay creation of CLC so that it can get the status icons right the first time (needs protocol modules loaded)
-			if (MySetLayeredWindowAttributes && cfg::dat.bLayeredHack) {
+			if (cfg::dat.bLayeredHack) {
 				SetWindowLong(hwnd, GWL_EXSTYLE, GetWindowLong(hwnd, GWL_EXSTYLE) | (WS_EX_LAYERED));
-				MySetLayeredWindowAttributes(hwnd, RGB(0, 0, 0), 255, LWA_ALPHA);
+				API::SetLayeredWindowAttributes(hwnd, RGB(0, 0, 0), 255, LWA_ALPHA);
 			}
 
-			if (cfg::dat.isTransparent && MySetLayeredWindowAttributes != NULL) {
+			if (cfg::dat.isTransparent) {
 				SetWindowLong(hwnd, GWL_EXSTYLE, GetWindowLong(hwnd, GWL_EXSTYLE) | WS_EX_LAYERED);
-				if (MySetLayeredWindowAttributes)
-					MySetLayeredWindowAttributes(hwnd, cfg::dat.bFullTransparent ? cfg::dat.colorkey : RGB(0, 0, 0), cfg::dat.alpha, LWA_ALPHA | (cfg::dat.bFullTransparent ? LWA_COLORKEY : 0));
+				API::SetLayeredWindowAttributes(hwnd, cfg::dat.bFullTransparent ? cfg::dat.colorkey : RGB(0, 0, 0), cfg::dat.alpha, LWA_ALPHA | (cfg::dat.bFullTransparent ? LWA_COLORKEY : 0));
 			}
 			transparentFocus = 1;
 
@@ -1199,7 +1164,7 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 		}
 		break;
 		case M_CREATECLC: {
-			if (DBGetContactSettingByte(NULL, "CLUI", "useskin", 0))
+			if (cfg::getByte("CLUI", "useskin", 0))
 				IMG_LoadItems();
 			CreateButtonBar(hwnd);
 			//FYR: to be checked: otherwise it raises double xStatus items
@@ -1207,7 +1172,7 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 			SendMessage(hwnd, WM_SETREDRAW, FALSE, FALSE);
 			{
 				LONG style; 
-				BYTE windowStyle = DBGetContactSettingByte(NULL, "CLUI", "WindowStyle", 0);
+				BYTE windowStyle = cfg::getByte("CLUI", "WindowStyle", 0);
 				ShowWindow(pcli->hwndContactList, SW_HIDE);
 				style = GetWindowLong(pcli->hwndContactList, GWL_EXSTYLE);
 				if (windowStyle != SETTING_WINDOWSTYLE_DEFAULT)
@@ -1218,7 +1183,7 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 				else
 				{
 					style &= ~(WS_EX_TOOLWINDOW | WS_EX_WINDOWEDGE);
-					if (DBGetContactSettingByte(NULL, "CList", "AlwaysHideOnTB", 1))
+					if (cfg::getByte("CList", "AlwaysHideOnTB", 1))
 						style &= ~WS_EX_APPWINDOW;
 					else
 						style |= WS_EX_APPWINDOW;
@@ -1240,7 +1205,7 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 			CreateCLC(hwnd);
 			cfg::clcdat = (struct ClcData *)GetWindowLongPtr(pcli->hwndContactTree, 0);
 
-			if (MySetLayeredWindowAttributes != 0 && cfg::dat.bFullTransparent) {
+			if (API::sysConfig.isWin2KPlus && cfg::dat.bFullTransparent) {
 				if (g_CLUISkinnedBkColorRGB)
 					Tweak_It(g_CLUISkinnedBkColorRGB);
 				else if (cfg::dat.bClipBorder || (cfg::dat.dwFlags & CLUI_FRAME_ROUNDEDFRAME))
@@ -1249,13 +1214,13 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 					Tweak_It(cfg::clcdat->bkColour);
 			}
 
-			DBWriteContactSettingByte(NULL, "CList", "State", old_cliststate);
+			cfg::writeByte("CList", "State", old_cliststate);
 
-			if (DBGetContactSettingByte(NULL, "CList", "AutoApplyLastViewMode", 0)) {
+			if (cfg::getByte("CList", "AutoApplyLastViewMode", 0)) {
 				DBVARIANT dbv = {0};
 				if (!DBGetContactSetting(NULL, "CList", "LastViewMode", &dbv)) {
 					if (lstrlenA(dbv.pszVal) > 2) {
-						if (DBGetContactSettingDword(NULL, CLVM_MODULE, dbv.pszVal, -1) != 0xffffffff)
+						if (cfg::getDword(NULL, CLVM_MODULE, dbv.pszVal, -1) != 0xffffffff)
 							ApplyViewMode((char *)dbv.pszVal);
 					}
 					DBFreeVariant(&dbv);
@@ -1304,7 +1269,7 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 				cfg::dat.hbmBgOld = reinterpret_cast<HBITMAP>(SelectObject(cfg::dat.hdcBg, cfg::dat.hbmBg));
 			}
 
-			if (g_shutDown) {
+			if (cfg::shutDown) {
 				EndPaint(hwnd, &ps);
 				return 0;
 			}
@@ -1514,11 +1479,11 @@ skipbg:
 				}
 			}
 			if (wParam == SIZE_MINIMIZED) {
-				if (DBGetContactSettingByte(NULL, "CList", "Min2Tray", SETTING_MIN2TRAY_DEFAULT)) {
+				if (cfg::getByte("CList", "Min2Tray", SETTING_MIN2TRAY_DEFAULT)) {
 					ShowWindow(hwnd, SW_HIDE);
-					DBWriteContactSettingByte(NULL, "CList", "State", SETTING_STATE_HIDDEN);
+					cfg::writeByte("CList", "State", SETTING_STATE_HIDDEN);
 				} else
-					DBWriteContactSettingByte(NULL, "CList", "State", SETTING_STATE_MINIMIZED);
+					cfg::writeByte("CList", "State", SETTING_STATE_MINIMIZED);
 			}
 		case WM_MOVE:
 			if (!IsIconic(hwnd)) {
@@ -1536,11 +1501,11 @@ skipbg:
 					GetWindowRect(hwnd, &rc);
 
 					if (!CallService(MS_CLIST_DOCKINGISDOCKED, 0, 0)) {     //if docked, dont remember pos (except for width)
-						DBWriteContactSettingDword(NULL, "CList", "Height", (DWORD)(rc.bottom - rc.top));
-						DBWriteContactSettingDword(NULL, "CList", "x", (DWORD) rc.left);
-						DBWriteContactSettingDword(NULL, "CList", "y", (DWORD) rc.top);
+						cfg::writeDword("CList", "Height", (DWORD)(rc.bottom - rc.top));
+						cfg::writeDword("CList", "x", (DWORD) rc.left);
+						cfg::writeDword("CList", "y", (DWORD) rc.top);
 					}
-					DBWriteContactSettingDword(NULL, "CList", "Width", (DWORD)(rc.right - rc.left));
+					cfg::writeDword("CList", "Width", (DWORD)(rc.right - rc.left));
 				}
 			}
 			return TRUE;
@@ -1548,8 +1513,8 @@ skipbg:
 			SetFocus(pcli->hwndContactTree);
 			return 0;
 		case CLUIINTM_REMOVEFROMTASKBAR: {
-			BYTE windowStyle = DBGetContactSettingByte(NULL, "CLUI", "WindowStyle", SETTING_WINDOWSTYLE_DEFAULT);
-			if (windowStyle == SETTING_WINDOWSTYLE_DEFAULT && DBGetContactSettingByte(NULL, "CList", "AlwaysHideOnTB", 0))
+			BYTE windowStyle = cfg::getByte("CLUI", "WindowStyle", SETTING_WINDOWSTYLE_DEFAULT);
+			if (windowStyle == SETTING_WINDOWSTYLE_DEFAULT && cfg::getByte("CList", "AlwaysHideOnTB", 0))
 				RemoveFromTaskBar(hwnd);
 			return 0;
 		}
@@ -1567,19 +1532,18 @@ skipbg:
 			} else {
 				if (cfg::dat.isTransparent) {
 					KillTimer(hwnd, TM_AUTOALPHA);
-					if (MySetLayeredWindowAttributes)
-						MySetLayeredWindowAttributes(hwnd, cfg::dat.bFullTransparent ? cfg::dat.colorkey : RGB(0, 0, 0), cfg::dat.alpha, LWA_ALPHA | (cfg::dat.bFullTransparent ? LWA_COLORKEY : 0));
+					API::SetLayeredWindowAttributes(hwnd, cfg::dat.bFullTransparent ? cfg::dat.colorkey : RGB(0, 0, 0), cfg::dat.alpha, LWA_ALPHA | (cfg::dat.bFullTransparent ? LWA_COLORKEY : 0));
 					transparentFocus = 1;
 				}
-				SetWindowPos(pcli->hwndContactList, DBGetContactSettingByte(NULL, "CList", "OnTop", SETTING_ONTOP_DEFAULT) ? HWND_TOPMOST : HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOREDRAW | SWP_NOSENDCHANGING);
+				SetWindowPos(pcli->hwndContactList, cfg::getByte("CList", "OnTop", SETTING_ONTOP_DEFAULT) ? HWND_TOPMOST : HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOREDRAW | SWP_NOSENDCHANGING);
 			}
 			PostMessage(hwnd, CLUIINTM_REMOVEFROMTASKBAR, 0, 0);
 			return DefWindowProc(hwnd, msg, wParam, lParam);
 
 		case WM_SETCURSOR:
 			if (cfg::dat.isTransparent) {
-				if (!transparentFocus && GetForegroundWindow() != hwnd && MySetLayeredWindowAttributes) {
-					MySetLayeredWindowAttributes(hwnd, cfg::dat.bFullTransparent ? cfg::dat.colorkey : RGB(0, 0, 0), cfg::dat.alpha, LWA_ALPHA | (cfg::dat.bFullTransparent ? LWA_COLORKEY : 0));
+				if (!transparentFocus && GetForegroundWindow() != hwnd) {
+					API::SetLayeredWindowAttributes(hwnd, cfg::dat.bFullTransparent ? cfg::dat.colorkey : RGB(0, 0, 0), cfg::dat.alpha, LWA_ALPHA | (cfg::dat.bFullTransparent ? LWA_COLORKEY : 0));
 					transparentFocus = 1;
 					SetTimer(hwnd, TM_AUTOALPHA, 250, NULL);
 				}
@@ -1594,7 +1558,7 @@ skipbg:
 
 			GetWindowRect(hwnd, &r);
 			GetCursorPos(&pt);
-			if (pt.y <= r.bottom && pt.y >= r.bottom - clip - 6 && !DBGetContactSettingByte(NULL, "CLUI", "AutoSize", 0)) {
+			if (pt.y <= r.bottom && pt.y >= r.bottom - clip - 6 && !cfg::getByte("CLUI", "AutoSize", 0)) {
 				if (pt.x > r.left + clip + 10 && pt.x < r.right - clip - 10)
 					return HTBOTTOM;
 				if (pt.x < r.left + clip + 10)
@@ -1602,7 +1566,7 @@ skipbg:
 				if (pt.x > r.right - clip - 10)
 					return HTBOTTOMRIGHT;
 
-			} else if (pt.y >= r.top && pt.y <= r.top + 3 && !DBGetContactSettingByte(NULL, "CLUI", "AutoSize", 0)) {
+			} else if (pt.y >= r.top && pt.y <= r.top + 3 && !cfg::getByte("CLUI", "AutoSize", 0)) {
 				if (pt.x > r.left + clip + 10 && pt.x < r.right - clip - 10)
 					return HTTOP;
 				if (pt.x < r.left + clip + 10)
@@ -1636,13 +1600,13 @@ skipbg:
 					hwndPt = WindowFromPoint(pt);
 					inwnd = (hwndPt == hwnd || GetParent(hwndPt) == hwnd);
 				}
-				if (inwnd != transparentFocus && MySetLayeredWindowAttributes) {
+				if (inwnd != transparentFocus) {
 					//change
 					transparentFocus = inwnd;
 					if (transparentFocus)
-						MySetLayeredWindowAttributes(hwnd, cfg::dat.bFullTransparent ? cfg::dat.colorkey : RGB(0, 0, 0), cfg::dat.alpha, LWA_ALPHA | (cfg::dat.bFullTransparent ? LWA_COLORKEY : 0));
+						API::SetLayeredWindowAttributes(hwnd, cfg::dat.bFullTransparent ? cfg::dat.colorkey : RGB(0, 0, 0), cfg::dat.alpha, LWA_ALPHA | (cfg::dat.bFullTransparent ? LWA_COLORKEY : 0));
 					else
-						MySetLayeredWindowAttributes(hwnd, cfg::dat.bFullTransparent ? cfg::dat.colorkey : RGB(0, 0, 0), cfg::dat.autoalpha, LWA_ALPHA | (cfg::dat.bFullTransparent ? LWA_COLORKEY : 0));
+						API::SetLayeredWindowAttributes(hwnd, cfg::dat.bFullTransparent ? cfg::dat.colorkey : RGB(0, 0, 0), cfg::dat.autoalpha, LWA_ALPHA | (cfg::dat.bFullTransparent ? LWA_COLORKEY : 0));
 				}
 				if (!transparentFocus)
 					KillTimer(hwnd, TM_AUTOALPHA);
@@ -1661,11 +1625,11 @@ skipbg:
 			if (cfg::dat.forceResize && wParam != SW_HIDE) {
 				cfg::dat.forceResize = FALSE;
 				if (0) { //!g_CluiData.fadeinout && MySetLayeredWindowAttributes && g_CluiData.bLayeredHack) {
-					MySetLayeredWindowAttributes(hwnd, cfg::dat.bFullTransparent ? cfg::dat.colorkey : RGB(0, 0, 0), 0, LWA_ALPHA | (cfg::dat.bFullTransparent ? LWA_COLORKEY : 0));
+					API::SetLayeredWindowAttributes(hwnd, cfg::dat.bFullTransparent ? cfg::dat.colorkey : RGB(0, 0, 0), 0, LWA_ALPHA | (cfg::dat.bFullTransparent ? LWA_COLORKEY : 0));
 					SendMessage(hwnd, WM_SIZE, 0, 0);
 					ShowWindow(hwnd, SW_SHOW);
 					RedrawWindow(hwnd, NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW | RDW_ALLCHILDREN);
-					MySetLayeredWindowAttributes(hwnd, cfg::dat.bFullTransparent ? cfg::dat.colorkey : RGB(0, 0, 0), 255, LWA_ALPHA | (cfg::dat.bFullTransparent ? LWA_COLORKEY : 0));
+					API::SetLayeredWindowAttributes(hwnd, cfg::dat.bFullTransparent ? cfg::dat.colorkey : RGB(0, 0, 0), 255, LWA_ALPHA | (cfg::dat.bFullTransparent ? LWA_COLORKEY : 0));
 				} else {
 					SendMessage(hwnd, WM_SIZE, 0, 0);
 					PostMessage(hwnd, CLUIINTM_REDRAW, 0, 0);
@@ -1694,7 +1658,7 @@ skipbg:
 			if (wParam) {
 				sourceAlpha = 0;
 				destAlpha = cfg::dat.isTransparent ? cfg::dat.alpha : 255;
-				MySetLayeredWindowAttributes(hwnd, cfg::dat.bFullTransparent ? (COLORREF)cfg::dat.colorkey : RGB(0, 0, 0), (BYTE)sourceAlpha, LWA_ALPHA | (cfg::dat.bFullTransparent ? LWA_COLORKEY : 0));
+				API::SetLayeredWindowAttributes(hwnd, cfg::dat.bFullTransparent ? (COLORREF)cfg::dat.colorkey : RGB(0, 0, 0), (BYTE)sourceAlpha, LWA_ALPHA | (cfg::dat.bFullTransparent ? LWA_COLORKEY : 0));
 				noRecurse = 1;
 				ShowWindow(hwnd, SW_SHOW);
 				RedrawWindow(hwnd, NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW | RDW_ALLCHILDREN);
@@ -1707,20 +1671,19 @@ skipbg:
 				thisTick = GetTickCount();
 				if (thisTick >= startTick + 200) {
 					SFL_SetState(-1);
-					MySetLayeredWindowAttributes(hwnd, cfg::dat.bFullTransparent ? cfg::dat.colorkey : RGB(0, 0, 0), (BYTE)(destAlpha), LWA_ALPHA | (cfg::dat.bFullTransparent ? LWA_COLORKEY : 0));
+					API::SetLayeredWindowAttributes(hwnd, cfg::dat.bFullTransparent ? cfg::dat.colorkey : RGB(0, 0, 0), (BYTE)(destAlpha), LWA_ALPHA | (cfg::dat.bFullTransparent ? LWA_COLORKEY : 0));
 					g_fading_active = 0;
 					return DefWindowProc(hwnd, msg, wParam, lParam);
 				}
-				MySetLayeredWindowAttributes(hwnd, cfg::dat.bFullTransparent ? cfg::dat.colorkey : RGB(0, 0, 0), (BYTE)(sourceAlpha + (destAlpha - sourceAlpha) * (int)(thisTick - startTick) / 200), LWA_ALPHA | (cfg::dat.bFullTransparent ? LWA_COLORKEY : 0));
+				API::SetLayeredWindowAttributes(hwnd, cfg::dat.bFullTransparent ? cfg::dat.colorkey : RGB(0, 0, 0), (BYTE)(sourceAlpha + (destAlpha - sourceAlpha) * (int)(thisTick - startTick) / 200), LWA_ALPHA | (cfg::dat.bFullTransparent ? LWA_COLORKEY : 0));
 			}
-			MySetLayeredWindowAttributes(hwnd, cfg::dat.bFullTransparent ? cfg::dat.colorkey : RGB(0, 0, 0), (BYTE)(destAlpha), LWA_ALPHA | (cfg::dat.bFullTransparent ? LWA_COLORKEY : 0));
+			API::SetLayeredWindowAttributes(hwnd, cfg::dat.bFullTransparent ? cfg::dat.colorkey : RGB(0, 0, 0), (BYTE)(destAlpha), LWA_ALPHA | (cfg::dat.bFullTransparent ? LWA_COLORKEY : 0));
 			return DefWindowProc(hwnd, msg, wParam, lParam);
 		}
 		case WM_SYSCOMMAND:
 			if (wParam == SC_MAXIMIZE)
 				return 0;
 			else if (wParam == SC_MINIMIZE) {
-				//if(DBGetContactSettingByte(NULL, "CLUI", "WindowStyle", SETTING_WINDOWSTYLE_DEFAULT) == SETTING_WINDOWSTYLE_DEFAULT) {
 				pcli->pfnShowHide(0, 0);
 				return 0;
 				//}
@@ -1797,20 +1760,17 @@ skipbg:
 									} else {
 										switch (item->type) {
 											case DBVT_BYTE:
-												DBWriteContactSettingByte(finalhContact, szModule, szSetting, pValue[0]);
-												//_DebugTraceA("set byte value: %s, %s, %d ON %d", szModule, item->szSetting, pValue[0], finalhContact);
+												cfg::writeByte(finalhContact, szModule, szSetting, pValue[0]);
 												break;
 											case DBVT_WORD:
-												DBWriteContactSettingWord(finalhContact, szModule, szSetting, *((WORD *)&pValue[0]));
+												cfg::writeWord(finalhContact, szModule, szSetting, *((WORD *)&pValue[0]));
 												//_DebugTraceA("set WORD value: %s, %s, %d ON %d", szModule, item->szSetting, *((WORD *)&pValue[0]), finalhContact);
 												break;
 											case DBVT_DWORD:
-												DBWriteContactSettingDword(finalhContact, szModule, szSetting, *((DWORD *)&pValue[0]));
-												//_DebugTraceA("set DWORD value: %s, %s, %d ON %d", szModule, item->szSetting, *((DWORD *)&pValue[0]), finalhContact);
+												cfg::writeDword(finalhContact, szModule, szSetting, *((DWORD *)&pValue[0]));
 												break;
 											case DBVT_ASCIIZ:
-												DBWriteContactSettingString(finalhContact, szModule, szSetting, (char *)pValue);
-												//_DebugTraceA("set string value: %s, %s, %s ON %d", szModule, item->szSetting, (char *)pValue, finalhContact);
+												cfg::writeString(finalhContact, szModule, szSetting, (char *)pValue);
 												break;
 										}
 									}
@@ -1858,8 +1818,8 @@ skipbg:
 					}
 					case IDC_TBSOUND: {
 						cfg::dat.soundsOff = !cfg::dat.soundsOff;
-						DBWriteContactSettingByte(NULL, "CLUI", "NoSounds", (BYTE)cfg::dat.soundsOff);
-						DBWriteContactSettingByte(NULL, "Skin", "UseSound", (BYTE)(cfg::dat.soundsOff ? 0 : 1));
+						cfg::writeByte("CLUI", "NoSounds", (BYTE)cfg::dat.soundsOff);
+						cfg::writeByte("Skin", "UseSound", (BYTE)(cfg::dat.soundsOff ? 0 : 1));
 						return 0;
 					}
 					case IDC_TBSELECTVIEWMODE:
@@ -1888,7 +1848,7 @@ buttons_done:
 			switch (LOWORD(wParam)) {
 				case ID_TRAY_EXIT:
 				case ID_ICQ_EXIT:
-					g_shutDown = 1;
+					cfg::shutDown = 1;
 					if (CallService(MS_SYSTEM_OKTOEXIT, 0, 0))
 						DestroyWindow(hwnd);
 					break;
@@ -1909,14 +1869,14 @@ buttons_done:
 					break;
 				case POPUP_HIDEEMPTYGROUPS: {
 					int newVal = !(GetWindowLong(pcli->hwndContactTree, GWL_STYLE) & CLS_HIDEEMPTYGROUPS);
-					DBWriteContactSettingByte(NULL, "CList", "HideEmptyGroups", (BYTE) newVal);
+					cfg::writeByte("CList", "HideEmptyGroups", (BYTE) newVal);
 					SendMessage(pcli->hwndContactTree, CLM_SETHIDEEMPTYGROUPS, newVal, 0);
 					break;
 				}
 				case POPUP_DISABLEGROUPS:
 				case IDC_TBHIDEGROUPS: {
 					int newVal = !(GetWindowLong(pcli->hwndContactTree, GWL_STYLE) & CLS_USEGROUPS);
-					DBWriteContactSettingByte(NULL, "CList", "UseGroups", (BYTE) newVal);
+					cfg::writeByte("CList", "UseGroups", (BYTE) newVal);
 					SendMessage(pcli->hwndContactTree, CLM_SETUSEGROUPS, newVal, 0);
 					CheckDlgButton(hwnd, IDC_TBHIDEGROUPS, newVal ? BST_CHECKED : BST_UNCHECKED);
 					break;
@@ -1950,23 +1910,23 @@ buttons_done:
 						SFL_SetState(-1);
 					} else
 						SFL_Destroy();
-					DBWriteContactSettingByte(NULL, "CLUI", "FloaterMode", cfg::dat.bUseFloater);
+					cfg::writeByte("CLUI", "FloaterMode", cfg::dat.bUseFloater);
 					break;
 				case POPUP_FLOATER_AUTOHIDE:
 					cfg::dat.bUseFloater ^= CLUI_FLOATER_AUTOHIDE;
-					SFL_SetState(cfg::dat.bUseFloater & CLUI_FLOATER_AUTOHIDE ? (DBGetContactSettingByte(NULL, "CList", "State", SETTING_STATE_NORMAL) == SETTING_STATE_NORMAL ? 0 : 1) : 1);
-					DBWriteContactSettingByte(NULL, "CLUI", "FloaterMode", cfg::dat.bUseFloater);
+					SFL_SetState(cfg::dat.bUseFloater & CLUI_FLOATER_AUTOHIDE ? (cfg::getByte("CList", "State", SETTING_STATE_NORMAL) == SETTING_STATE_NORMAL ? 0 : 1) : 1);
+					cfg::writeByte("CLUI", "FloaterMode", cfg::dat.bUseFloater);
 					break;
 				case POPUP_FLOATER_EVENTS:
 					cfg::dat.bUseFloater ^= CLUI_FLOATER_EVENTS;
 					SFL_SetSize();
 					SFL_Update(0, 0, 0, NULL, FALSE);
-					DBWriteContactSettingByte(NULL, "CLUI", "FloaterMode", cfg::dat.bUseFloater);
+					cfg::writeByte("CLUI", "FloaterMode", cfg::dat.bUseFloater);
 					break;
 			}
 			if (dwOldFlags != cfg::dat.dwFlags) {
 				InvalidateRect(pcli->hwndContactTree, NULL, FALSE);
-				DBWriteContactSettingDword(NULL, "CLUI", "Frameflags", cfg::dat.dwFlags);
+				cfg::writeDword("CLUI", "Frameflags", cfg::dat.dwFlags);
 				if ((dwOldFlags & (CLUI_FRAME_SHOWTOPBUTTONS | CLUI_FRAME_SHOWBOTTOMBUTTONS | CLUI_FRAME_CLISTSUNKEN)) != (cfg::dat.dwFlags & (CLUI_FRAME_SHOWTOPBUTTONS | CLUI_FRAME_SHOWBOTTOMBUTTONS | CLUI_FRAME_CLISTSUNKEN))) {
 					ConfigureFrame();
 					ConfigureCLUIGeometry(1);
@@ -2014,7 +1974,7 @@ buttons_done:
 
 						if ((hitFlags & (CLCHT_NOWHERE | CLCHT_INLEFTMARGIN | CLCHT_BELOWITEMS)) == 0)
 							break;
-						if (DBGetContactSettingByte(NULL, "CLUI", "ClientAreaDrag", SETTING_CLIENTDRAG_DEFAULT)) {
+						if (cfg::getByte("CLUI", "ClientAreaDrag", SETTING_CLIENTDRAG_DEFAULT)) {
 							POINT pt;
 							pt = nm->pt;
 							ClientToScreen(pcli->hwndContactTree, &pt);
@@ -2052,7 +2012,7 @@ buttons_done:
 			GetWindowRect(pcli->hwndStatus, &rc);
 			if (PtInRect(&rc, pt)) {
 				HMENU hMenu;
-				if (DBGetContactSettingByte(NULL, "CLUI", "SBarRightClk", 0))
+				if (cfg::getByte("CLUI", "SBarRightClk", 0))
 					hMenu = (HMENU) CallService(MS_CLIST_MENUGETMAIN, 0, 0);
 				else
 					hMenu = (HMENU) CallService(MS_CLIST_MENUGETSTATUS, 0, 0);
@@ -2084,7 +2044,7 @@ buttons_done:
 				if (iSelection >= 50000) {
 					int iIndex = iSelection - 50000;
 					cfg::dat.toolbarVisibility ^= top_buttons[iIndex].visibilityOrder;
-					DBWriteContactSettingDword(NULL, "CLUI", "TBVisibility", cfg::dat.toolbarVisibility);
+					cfg::writeDword("CLUI", "TBVisibility", cfg::dat.toolbarVisibility);
 					ConfigureFrame();
 					SendMessage(hwnd, WM_SIZE, 0, 0);
 					InvalidateRect(hwnd, NULL, TRUE);
@@ -2095,7 +2055,7 @@ buttons_done:
 					case ID_BUTTONBAR_INCREASEBUTTONSIZE:
 						cfg::dat.dwButtonHeight += (iSelection == ID_BUTTONBAR_DECREASEBUTTONSIZE ? -1 : 1);
 						cfg::dat.dwButtonWidth = cfg::dat.dwButtonHeight;
-						DBWriteContactSettingByte(NULL, "CLUI", "TBSize", (BYTE) cfg::dat.dwButtonHeight);
+						cfg::writeByte("CLUI", "TBSize", (BYTE) cfg::dat.dwButtonHeight);
 						ConfigureCLUIGeometry(1);
 						SendMessage(hwnd, WM_SIZE, 0, 0);
 						InvalidateRect(hwnd, NULL, TRUE);
@@ -2115,11 +2075,11 @@ buttons_done:
 					case ID_BUTTONBAR_SKINNEDTOOLBAR:
 						cfg::dat.bSkinnedToolbar = !cfg::dat.bSkinnedToolbar;
 						SetTBSKinned(cfg::dat.bSkinnedToolbar);
-						DBWriteContactSettingByte(NULL, "CLUI", "tb_skinned", (BYTE)cfg::dat.bSkinnedToolbar);
+						cfg::writeByte("CLUI", "tb_skinned", (BYTE)cfg::dat.bSkinnedToolbar);
 						PostMessage(hwnd, CLUIINTM_REDRAW, 0, 0);
 						break;
 				}
-				DBWriteContactSettingDword(NULL, "CLUI", "Frameflags", cfg::dat.dwFlags);
+				cfg::writeDword("CLUI", "Frameflags", cfg::dat.dwFlags);
 				return 0;
 			}
 		}
@@ -2148,10 +2108,10 @@ buttons_done:
 				char *szProto;
 				int status, x;
 				SIZE textSize;
-				BYTE showOpts = DBGetContactSettingByte(NULL, "CLUI", "SBarShow", 1);
+				BYTE showOpts = cfg::getByte("CLUI", "SBarShow", 1);
 				if (IsBadCodePtr((FARPROC)pd))
 					return TRUE;
-				if (g_shutDown)
+				if (cfg::shutDown)
 					return TRUE;
 				szProto = pd->RealName;
 				status = CallProtoService(szProto, PS_GETSTATUS, 0, 0);
@@ -2193,8 +2153,8 @@ buttons_done:
 					DrawIconEx(dis->hDC, x, (dis->rcItem.top + dis->rcItem.bottom - 16) >> 1, hIcon, 16, 16, 0, NULL, DI_NORMAL);
 					CallService(MS_SKIN2_RELEASEICON, (WPARAM)hIcon, 0);
 
-					if (DBGetContactSettingByte(NULL, "CLUI", "sbar_showlocked", 1)) {
-						if (DBGetContactSettingByte(NULL, szProto, "LockMainStatus", 0)) {
+					if (cfg::getByte("CLUI", "sbar_showlocked", 1)) {
+						if (cfg::getByte(szProto, "LockMainStatus", 0)) {
 							hIcon = LoadSkinnedIcon(SKINICON_OTHER_STATUS_LOCKED);
 							if (hIcon != NULL) {
 								DrawIconEx(dis->hDC, x, (dis->rcItem.top + dis->rcItem.bottom - 16) >> 1, hIcon, 16, 16, 0, NULL, DI_NORMAL);
@@ -2238,8 +2198,8 @@ buttons_done:
 			return 0;
 		}
 		case WM_CLOSE:
-			if (DBGetContactSettingByte(NULL, "CLUI", "WindowStyle", SETTING_WINDOWSTYLE_DEFAULT) != SETTING_WINDOWSTYLE_DEFAULT ||
-					DBGetContactSettingByte(NULL, "CList", "Min2Tray", SETTING_MIN2TRAY_DEFAULT))
+			if (cfg::getByte("CLUI", "WindowStyle", SETTING_WINDOWSTYLE_DEFAULT) != SETTING_WINDOWSTYLE_DEFAULT ||
+					cfg::getByte("CList", "Min2Tray", SETTING_MIN2TRAY_DEFAULT))
 				pcli->pfnShowHide(0, 0);
 			else
 				SendMessage(hwnd, WM_COMMAND, ID_ICQ_EXIT, 0);
@@ -2254,6 +2214,11 @@ buttons_done:
 		case CLUIINTM_STATUSBARUPDATE:
 			CluiProtocolStatusChanged(0, 0);
 			return 0;
+
+		case WM_THEMECHANGED:
+			API::updateState();
+			break;
+
 		case WM_DESTROY:
 			if (cfg::dat.hdcBg) {
 				SelectObject(cfg::dat.hdcBg, cfg::dat.hbmBgOld);
@@ -2279,8 +2244,8 @@ buttons_done:
 			 * indicates that clist is shutting down and prevents various things
 			 * from happening at shutdown.
 			 */
-			if (!g_shutDown)
-				g_shutDown = 1;
+			if (!cfg::shutDown)
+				cfg::shutDown = 1;
 			CallService(MS_CLIST_FRAMES_REMOVEFRAME, (WPARAM)hFrameContactTree, (LPARAM)0);
 			break;
 	}
@@ -2444,11 +2409,11 @@ void LoadCLUIModule(void)
 	wndclass.lpszClassName = _T("EventAreaClass");
 	RegisterClass(&wndclass);
 
-	oldhideoffline = DBGetContactSettingByte(NULL, "CList", "HideOffline", SETTING_HIDEOFFLINE_DEFAULT);
-	cluiPos.left = DBGetContactSettingDword(NULL, "CList", "x", 600);
-	cluiPos.top = DBGetContactSettingDword(NULL, "CList", "y", 200);
-	cluiPos.right = DBGetContactSettingDword(NULL, "CList", "Width", 150);
-	cluiPos.bottom = DBGetContactSettingDword(NULL, "CList", "Height", 350);
+	oldhideoffline = cfg::getByte("CList", "HideOffline", SETTING_HIDEOFFLINE_DEFAULT);
+	cluiPos.left = cfg::getDword("CList", "x", 600);
+	cluiPos.top = cfg::getDword("CList", "y", 200);
+	cluiPos.right = cfg::getDword("CList", "Width", 150);
+	cluiPos.bottom = cfg::getDword("CList", "Height", 350);
 
 	LoadExtraIconModule();
 	SFL_RegisterWindowClass();
@@ -2500,17 +2465,17 @@ void FS_RegisterFonts()
 		fid.order = _tagFSINFO[j].id;
 		strncpy(fid.name, Translate(_tagFSINFO[j].name), 60);
 		_snprintf(szTemp, sizeof(szTemp), "Font%dCol", _tagFSINFO[j].id);
-		fid.deffontsettings.colour = (COLORREF)DBGetContactSettingDword(NULL, "CLC", szTemp, GetSysColor(COLOR_WINDOWTEXT));
+		fid.deffontsettings.colour = (COLORREF)cfg::getDword("CLC", szTemp, GetSysColor(COLOR_WINDOWTEXT));
 
 		_snprintf(szTemp, sizeof(szTemp), "Font%dSize", _tagFSINFO[j].id);
-		fid.deffontsettings.size = (BYTE)DBGetContactSettingByte(NULL, "CLC", szTemp, 8);
+		fid.deffontsettings.size = (BYTE)cfg::getByte("CLC", szTemp, 8);
 
 		_snprintf(szTemp, sizeof(szTemp), "Font%dSty", _tagFSINFO[j].id);
-		fid.deffontsettings.style = DBGetContactSettingByte(NULL, "CLC", szTemp, 0);
+		fid.deffontsettings.style = cfg::getByte("CLC", szTemp, 0);
 		_snprintf(szTemp, sizeof(szTemp), "Font%dSet", _tagFSINFO[j].id);
-		fid.deffontsettings.charset = DBGetContactSettingByte(NULL, "CLC", szTemp, DEFAULT_CHARSET);
+		fid.deffontsettings.charset = cfg::getByte("CLC", szTemp, DEFAULT_CHARSET);
 		_snprintf(szTemp, sizeof(szTemp), "Font%dName", _tagFSINFO[j].id);
-		if (DBGetContactSettingString(NULL, "CLC", szTemp, &dbv))
+		if (cfg::getString(NULL, "CLC", szTemp, &dbv))
 			lstrcpynA(fid.deffontsettings.szFace, "Arial", LF_FACESIZE);
 		else {
 			lstrcpynA(fid.deffontsettings.szFace, dbv.pszVal, LF_FACESIZE);
@@ -2549,50 +2514,3 @@ void FS_RegisterFonts()
 	CallService(MS_COLOUR_REGISTER, (WPARAM)&colourid, 0);
 
 }
-
-#ifdef __LXX
-UpdateWindowImage()
-{
-	HDC hdc;
-	RECT rc;
-	BLENDFUNCTION bf;
-	POINT ptDest, ptSrc = {0};
-	SIZE szDest;
-	HDC screenDC = GetDC(0);
-	GetWindowRect(pcli->hwndContactList, &rc);
-
-	ptDest.x = rc.left;
-	ptDest.y = rc.top;
-	szDest.cx = rc.right - rc.left;
-	szDest.cy = rc.bottom - rc.top;
-
-	if (!cfg::dat.hdcBg) {
-		HDC dc = GetDC(pcli->hwndContactList);
-		cfg::dat.hdcBg = CreateCompatibleDC(dc);
-		//g_CluiData.hbmBg = CreateCompatibleBitmap(g_CluiData.hdcBg, rc.right - rc.left, (rc.bottom - rc.top) + g_CluiData.statusBarHeight);
-		cfg::dat.hbmBg = CreateCompatibleBitmap(cfg::dat.hdcBg, 2000, 2000 + cfg::dat.statusBarHeight);
-		cfg::dat.hbmBgOld = SelectObject(cfg::dat.hdcBg, cfg::dat.hbmBg);
-		ReleaseDC(pcli->hwndContactList, dc);
-	}
-	hdc = cfg::dat.hdcBg;
-
-	if (g_CLUIImageItem) {
-		RECT rcDraw;
-		rcDraw.left = rcDraw.top = 0;
-		rcDraw.right = szDest.cx;
-		rcDraw.bottom = szDest.cy;
-		//FillRect(hdc, &rc, g_CLUISkinnedBkColor);
-		IMG_RenderImageItem(hdc, g_CLUIImageItem, &rcDraw);
-		cfg::dat.ptW.x = cfg::dat.ptW.y = 0;
-		ClientToScreen(pcli->hwndContactList, &cfg::dat.ptW);
-	}
-	bf.BlendOp = AC_SRC_OVER;
-	bf.AlphaFormat = AC_SRC_ALPHA;
-	bf.SourceConstantAlpha = 255;
-	SetWindowLong(pcli->hwndContactList, GWL_STYLE, GetWindowLong(pcli->hwndContactList, GWL_STYLE) & ~WS_EX_LAYERED);
-	SetWindowLong(pcli->hwndContactList, GWL_STYLE, GetWindowLong(pcli->hwndContactList, GWL_STYLE) | WS_EX_LAYERED);
-
-	MyUpdateLayeredWindow(pcli->hwndContactList, screenDC, &ptDest, &szDest, hdc, &ptSrc, RGB(224, 224, 224), &bf, ULW_ALPHA);
-	ReleaseDC(0, screenDC);
-}
-#endif

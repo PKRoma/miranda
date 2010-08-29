@@ -39,16 +39,14 @@ extern INT_PTR CALLBACK OptionsDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 extern INT_PTR CALLBACK DlgProcCluiOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 extern INT_PTR CALLBACK DlgProcSBarOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 extern INT_PTR CALLBACK DlgProcGenOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
-extern BOOL (WINAPI *MyEnableThemeDialogTexture)(HANDLE, DWORD);
 extern void ReloadExtraIcons( void );
 
 extern HIMAGELIST himlExtraImages;
-extern pfnDrawAlpha pDrawAlpha;
 
 struct CheckBoxToStyleEx_t {
     int id;
     DWORD flag;
-    int not;
+    int not_t;
 } static const checkBoxToStyleEx[] = {
     {IDC_DISABLEDRAGDROP,CLS_EX_DISABLEDRAGDROP,0}, {IDC_NOTEDITLABELS,CLS_EX_EDITLABELS,1},
     {IDC_SHOWSELALWAYS,CLS_EX_SHOWSELALWAYS,0}, {IDC_TRACKSELECT,CLS_EX_TRACKSELECT,0},
@@ -59,7 +57,7 @@ struct CheckBoxToStyleEx_t {
 struct CheckBoxToGroupStyleEx_t {
     int id;
     DWORD flag;
-    int not;
+    int not_t;
 } static const checkBoxToGroupStyleEx[] = {
     {IDC_SHOWGROUPCOUNTS,CLS_EX_SHOWGROUPCOUNTS,0}, {IDC_HIDECOUNTSWHENEMPTY,CLS_EX_HIDECOUNTSWHENEMPTY,0},
     {IDC_LINEWITHGROUPS,CLS_EX_LINEWITHGROUPS,0}, {IDC_QUICKSEARCHVISONLY,CLS_EX_QUICKSEARCHVISONLY,0},
@@ -172,7 +170,7 @@ static void DSP_Write(DISPLAYPROFILESET *p)
     DISPLAYPROFILE  *dp;
 
     _snprintf(szKey, 256, "[%u]", p->uID);
-    DBWriteContactSettingTString(NULL, DSP_PROFILES_MODULE, szKey, p->tszName);
+    cfg::writeTString(NULL, DSP_PROFILES_MODULE, szKey, p->tszName);
 
     for(j = 0; j < 4; j++) {
 
@@ -186,7 +184,7 @@ static void DSP_Write(DISPLAYPROFILESET *p)
         _snprintf(szBuf, 256, "%u,%u,%d,%u,%u", dp->dwFlags, dp->dwExtraImageMask, dp->avatarBorder, dp->clcExStyle, dp->clcOfflineModes);
         szBuf[255] = 0;
         _snprintf(szKey, 256, "{dw_%u_%u}", p->uID, j);
-        DBWriteContactSettingString(NULL, DSP_PROFILES_MODULE, szKey, szBuf);
+        cfg::writeString(NULL, DSP_PROFILES_MODULE, szKey, szBuf);
 
         _snprintf(szKey, 256, "{b_%u_%u}", p->uID, j);
 
@@ -206,7 +204,7 @@ static void DSP_Write(DISPLAYPROFILESET *p)
         szBuf[i++] = dp->bGroupIndent; szBuf[i++] = dp->bRowHeight; szBuf[i++] = dp->bGroupRowHeight;
         szBuf[i++] = 0;
 
-        DBWriteContactSettingString(NULL, DSP_PROFILES_MODULE, szKey, szBuf);
+        cfg::writeString(NULL, DSP_PROFILES_MODULE, szKey, szBuf);
 
         /*
          * bool values (convert to bitflags
@@ -221,7 +219,7 @@ static void DSP_Write(DISPLAYPROFILESET *p)
                    (dp->bDontSeparateOffline ? DSPF_DONTSEPARATEOFFLINE : 0) |
                    (dp->bCenterGroupNames ? DSPF_CENTERGROUPNAMES : 0));
 
-        DBWriteContactSettingDword(NULL, DSP_PROFILES_MODULE, szKey, dwFlags);
+        cfg::writeDword(NULL, DSP_PROFILES_MODULE, szKey, dwFlags);
     }
 }
 
@@ -241,7 +239,7 @@ static int DSP_Read(DISPLAYPROFILESET *p)
 
     _snprintf(szKey, 256, "[%u]", p->uID);
 
-    if(DBGetContactSettingTString(NULL, DSP_PROFILES_MODULE, szKey, &dbv))
+    if(cfg::getTString(NULL, DSP_PROFILES_MODULE, szKey, &dbv))
         return 0;
 
     mir_sntprintf(p->tszName, 60, dbv.ptszVal);
@@ -256,7 +254,7 @@ static int DSP_Read(DISPLAYPROFILESET *p)
          */
 
         mir_snprintf(szKey, 256, "{dw_%u_%u}", p->uID, j);
-        if(!DBGetContactSettingString(NULL, DSP_PROFILES_MODULE, szKey, &dbv)) {
+        if(!cfg::getString(NULL, DSP_PROFILES_MODULE, szKey, &dbv)) {
             sscanf(dbv.pszVal, "%u,%u,%u,%u,%u", dp->dwFlags, dp->dwExtraImageMask, dp->avatarBorder, dp->clcExStyle, dp->clcOfflineModes);
             DBFreeVariant(&dbv);
         }
@@ -268,7 +266,7 @@ static int DSP_Read(DISPLAYPROFILESET *p)
          */
 
         _snprintf(szKey, 256, "{b_%u_%u}", p->uID, j);
-        if(!DBGetContactSettingString(NULL, DSP_PROFILES_MODULE, szKey, &dbv)) {
+        if(!cfg::getString(NULL, DSP_PROFILES_MODULE, szKey, &dbv)) {
             if(lstrlenA(dbv.pszVal) >= 16) {
                 dp->exIconScale = (int)szBuf[i++];
                 dp->dualRowMode = szBuf[i++];
@@ -295,7 +293,7 @@ static int DSP_Read(DISPLAYPROFILESET *p)
          */
 
         _snprintf(szKey, 256, "{f_%u_%u}", p->uID, j);
-        dwFlags = DBGetContactSettingDword(NULL, DSP_PROFILES_MODULE, szKey, 0);
+        dwFlags = cfg::getDword(DSP_PROFILES_MODULE, szKey, 0);
 
         dp->bCenterStatusIcons = dwFlags & DSPF_CENTERSTATUSICON ? 1 : 0;
         dp->bDimIdle = dwFlags & DSPF_DIMIDLE ? 1 : 0;
@@ -319,7 +317,7 @@ static void DSP_LoadFromDefaults(DISPLAYPROFILE *p)
     p->exIconScale = cfg::dat.exIconScale;
     p->bCenterStatusIcons = cfg::dat.bCenterStatusIcons;
     p->dwFlags = cfg::dat.dwFlags;
-    p->bDimIdle = DBGetContactSettingByte(NULL, "CLC", "ShowIdle", CLCDEFAULT_SHOWIDLE);
+    p->bDimIdle = cfg::getByte("CLC", "ShowIdle", CLCDEFAULT_SHOWIDLE);
     p->avatarBorder = cfg::dat.avatarBorder;
     p->avatarSize = cfg::dat.avatarSize;
     p->avatarRadius = cfg::dat.avatarRadius;
@@ -327,23 +325,23 @@ static void DSP_LoadFromDefaults(DISPLAYPROFILE *p)
     p->bNoOfflineAvatars = cfg::dat.bNoOfflineAvatars;
     p->bShowLocalTime = cfg::dat.bShowLocalTime;
     p->bShowLocalTimeSelective = cfg::dat.bShowLocalTimeSelective;
-    p->clcExStyle = DBGetContactSettingDword(NULL, "CLC", "ExStyle", pcli->pfnGetDefaultExStyle());
-    p->clcOfflineModes = DBGetContactSettingDword(NULL, "CLC", "OfflineModes", CLCDEFAULT_OFFLINEMODES);
+    p->clcExStyle = cfg::getDword("CLC", "ExStyle", pcli->pfnGetDefaultExStyle());
+    p->clcOfflineModes = cfg::getDword("CLC", "OfflineModes", CLCDEFAULT_OFFLINEMODES);
     p->bDontSeparateOffline = cfg::dat.bDontSeparateOffline;
     p->sortOrder[0] = cfg::dat.sortOrder[0];
     p->sortOrder[1] = cfg::dat.sortOrder[1];
     p->sortOrder[2] = cfg::dat.sortOrder[2];
     p->bUseDCMirroring = cfg::dat.bUseDCMirroring;
-    p->bCenterGroupNames = DBGetContactSettingByte(NULL, "CLCExt", "EXBK_CenterGroupnames", 0);
+    p->bCenterGroupNames = cfg::getByte("CLCExt", "EXBK_CenterGroupnames", 0);
     p->bGroupAlign = cfg::dat.bGroupAlign;
     p->avatarPadding = cfg::dat.avatarPadding;
 
-    p->bLeftMargin = DBGetContactSettingByte(NULL, "CLC", "LeftMargin", CLCDEFAULT_LEFTMARGIN);
-    p->bRightMargin =  DBGetContactSettingByte(NULL, "CLC", "RightMargin", CLCDEFAULT_LEFTMARGIN);
+    p->bLeftMargin = cfg::getByte("CLC", "LeftMargin", CLCDEFAULT_LEFTMARGIN);
+    p->bRightMargin =  cfg::getByte("CLC", "RightMargin", CLCDEFAULT_LEFTMARGIN);
     p->bRowSpacing = cfg::dat.bRowSpacing;
-    p->bGroupIndent = DBGetContactSettingByte(NULL, "CLC", "GroupIndent", CLCDEFAULT_GROUPINDENT);
-    p->bRowHeight = DBGetContactSettingByte(NULL, "CLC", "RowHeight", CLCDEFAULT_ROWHEIGHT);
-    p->bGroupRowHeight = DBGetContactSettingByte(NULL, "CLC", "GRowHeight", CLCDEFAULT_ROWHEIGHT);
+    p->bGroupIndent = cfg::getByte("CLC", "GroupIndent", CLCDEFAULT_GROUPINDENT);
+    p->bRowHeight = cfg::getByte("CLC", "RowHeight", CLCDEFAULT_ROWHEIGHT);
+    p->bGroupRowHeight = cfg::getByte("CLC", "GRowHeight", CLCDEFAULT_ROWHEIGHT);
     CopyMemory(p->exIconOrder, cfg::dat.exIconOrder, EXICON_COUNT);
 }
 
@@ -366,15 +364,15 @@ void DSP_Apply(DISPLAYPROFILE *p)
     cfg::dat.exIconScale = p->exIconScale;
     cfg::dat.bCenterStatusIcons = p->bCenterStatusIcons;
 
-    DBWriteContactSettingDword(NULL, "CLUI", "ximgmask", cfg::dat.dwExtraImageMask);
-    DBWriteContactSettingByte(NULL, "CLC", "ExIconScale", (BYTE)cfg::dat.exIconScale);
-    DBWriteContactSettingByte(NULL, "CLC", "si_centered", (BYTE)cfg::dat.bCenterStatusIcons);
-    DBWriteContactSettingByte(NULL, "CLC", "ShowIdle", (BYTE)p->bDimIdle);
+    cfg::writeDword("CLUI", "ximgmask", cfg::dat.dwExtraImageMask);
+    cfg::writeByte("CLC", "ExIconScale", (BYTE)cfg::dat.exIconScale);
+    cfg::writeByte("CLC", "si_centered", (BYTE)cfg::dat.bCenterStatusIcons);
+    cfg::writeByte("CLC", "ShowIdle", (BYTE)p->bDimIdle);
 
     CopyMemory(cfg::dat.exIconOrder, p->exIconOrder, EXICON_COUNT);
     CopyMemory(temp, p->exIconOrder, EXICON_COUNT);
     temp[EXICON_COUNT] = 0;
-    DBWriteContactSettingString(NULL, "CLUI", "exIconOrder", temp);
+    cfg::writeString(NULL, "CLUI", "exIconOrder", temp);
 
     /*
      * advanced (avatars & 2nd row)
@@ -406,15 +404,15 @@ void DSP_Apply(DISPLAYPROFILE *p)
     cfg::dat.sortOrder[1] = p->sortOrder[1];
     cfg::dat.sortOrder[2] = p->sortOrder[2];
     cfg::dat.bDontSeparateOffline = p->bDontSeparateOffline;
-    DBWriteContactSettingByte(NULL, "CList", "DontSeparateOffline", (BYTE)cfg::dat.bDontSeparateOffline);
-    DBWriteContactSettingDword(NULL, "CLC", "OfflineModes", p->clcOfflineModes);
+    cfg::writeByte("CList", "DontSeparateOffline", (BYTE)cfg::dat.bDontSeparateOffline);
+    cfg::writeDword("CLC", "OfflineModes", p->clcOfflineModes);
 
-    DBWriteContactSettingDword(NULL, "CList", "SortOrder",
+    cfg::writeDword("CList", "SortOrder",
         MAKELONG(MAKEWORD(cfg::dat.sortOrder[0], cfg::dat.sortOrder[1]),
         MAKEWORD(cfg::dat.sortOrder[2], 0)));
 
     cfg::dat.bUseDCMirroring = p->bUseDCMirroring;
-    DBWriteContactSettingByte(NULL, "CLC", "MirrorDC", cfg::dat.bUseDCMirroring);
+    cfg::writeByte("CLC", "MirrorDC", cfg::dat.bUseDCMirroring);
 
     /*
      * groups page
@@ -422,26 +420,26 @@ void DSP_Apply(DISPLAYPROFILE *p)
 
     cfg::dat.dwFlags &= ~CLUI_FRAME_NOGROUPICON;
     cfg::dat.bGroupAlign = p->bGroupAlign;
-    DBWriteContactSettingByte(NULL, "CLC", "GroupAlign", cfg::dat.bGroupAlign);
-    DBWriteContactSettingByte(NULL, "CLCExt", "EXBK_CenterGroupnames", (BYTE)p->bCenterGroupNames);
+    cfg::writeByte("CLC", "GroupAlign", cfg::dat.bGroupAlign);
+    cfg::writeByte("CLCExt", "EXBK_CenterGroupnames", (BYTE)p->bCenterGroupNames);
 
-    exStyle = DBGetContactSettingDword(NULL, "CLC", "ExStyle", pcli->pfnGetDefaultExStyle());
+    exStyle = cfg::getDword("CLC", "ExStyle", pcli->pfnGetDefaultExStyle());
     for (i = 0; i < sizeof(checkBoxToGroupStyleEx) / sizeof(checkBoxToGroupStyleEx[0]); i++)
         exStyle &= ~(checkBoxToGroupStyleEx[i].flag);
 
     exStyle |= p->clcExStyle;
-    DBWriteContactSettingDword(NULL, "CLC", "ExStyle", exStyle);
+    cfg::writeDword("CLC", "ExStyle", exStyle);
     cfg::dat.avatarPadding = p->avatarPadding;
-    DBWriteContactSettingByte(NULL, "CList", "AvatarPadding", cfg::dat.avatarPadding);
+    cfg::writeByte("CList", "AvatarPadding", cfg::dat.avatarPadding);
 
     cfg::dat.bRowSpacing = p->bRowSpacing;
-    DBWriteContactSettingByte(NULL, "CLC", "RowGap", cfg::dat.bRowSpacing);
+    cfg::writeByte("CLC", "RowGap", cfg::dat.bRowSpacing);
 
-    DBWriteContactSettingByte(NULL, "CLC", "LeftMargin", (BYTE)p->bLeftMargin);
-    DBWriteContactSettingByte(NULL, "CLC", "RightMargin", (BYTE)p->bRightMargin);
-    DBWriteContactSettingByte(NULL, "CLC", "GroupIndent", (BYTE)p->bGroupIndent);
-    DBWriteContactSettingByte(NULL, "CLC", "RowHeight", (BYTE)p->bRowHeight);
-    DBWriteContactSettingByte(NULL, "CLC", "GRowHeight", (BYTE)p->bGroupRowHeight);
+    cfg::writeByte("CLC", "LeftMargin", (BYTE)p->bLeftMargin);
+    cfg::writeByte("CLC", "RightMargin", (BYTE)p->bRightMargin);
+    cfg::writeByte("CLC", "GroupIndent", (BYTE)p->bGroupIndent);
+    cfg::writeByte("CLC", "RowHeight", (BYTE)p->bRowHeight);
+    cfg::writeByte("CLC", "GRowHeight", (BYTE)p->bGroupRowHeight);
 
     if(cfg::dat.sortOrder[0] == SORTBY_LASTMSG || cfg::dat.sortOrder[1] == SORTBY_LASTMSG || cfg::dat.sortOrder[2] == SORTBY_LASTMSG) {
         int i;
@@ -450,24 +448,20 @@ void DSP_Apply(DISPLAYPROFILE *p)
             cfg::eCache[i].dwLastMsgTime = INTSORT_GetLastMsgTime(cfg::eCache[i].hContact);
     }
 
-    DBWriteContactSettingByte(NULL, "CLC", "ShowLocalTime", (BYTE)cfg::dat.bShowLocalTime);
-    DBWriteContactSettingByte(NULL, "CLC", "SelectiveLocalTime", (BYTE)cfg::dat.bShowLocalTimeSelective);
-    DBWriteContactSettingDword(NULL, "CLC", "avatarborder", cfg::dat.avatarBorder);
-    DBWriteContactSettingDword(NULL, "CLC", "avatarradius", cfg::dat.avatarRadius);
-    DBWriteContactSettingWord(NULL, "CList", "AvatarSize", (WORD)cfg::dat.avatarSize);
-    DBWriteContactSettingByte(NULL, "CLC", "DualRowMode", cfg::dat.dualRowMode);
-    DBWriteContactSettingByte(NULL, "CList", "NoOfflineAV", (BYTE)cfg::dat.bNoOfflineAvatars);
+    cfg::writeByte("CLC", "ShowLocalTime", (BYTE)cfg::dat.bShowLocalTime);
+    cfg::writeByte("CLC", "SelectiveLocalTime", (BYTE)cfg::dat.bShowLocalTimeSelective);
+    cfg::writeDword("CLC", "avatarborder", cfg::dat.avatarBorder);
+    cfg::writeDword("CLC", "avatarradius", cfg::dat.avatarRadius);
+    cfg::writeWord(NULL, "CList", "AvatarSize", (WORD)cfg::dat.avatarSize);
+    cfg::writeByte("CLC", "DualRowMode", cfg::dat.dualRowMode);
+    cfg::writeByte("CList", "NoOfflineAV", (BYTE)cfg::dat.bNoOfflineAvatars);
 
     KillTimer(pcli->hwndContactTree, TIMERID_REFRESH);
     if(cfg::dat.bShowLocalTime)
         SetTimer(pcli->hwndContactTree, TIMERID_REFRESH, 65000, NULL);
 
     cfg::dat.dwFlags |= p->dwFlags;
-    DBWriteContactSettingDword(NULL, "CLUI", "Frameflags", cfg::dat.dwFlags);
-
-    pDrawAlpha = NULL;
-    if(!pDrawAlpha)
-        pDrawAlpha = (pfnDrawAlpha)DrawAlpha;
+    cfg::writeDword("CLUI", "Frameflags", cfg::dat.dwFlags);
 
     for(i = 0; i < cfg::nextCacheEntry; i++)
         cfg::eCache[i].dwXMask = CalcXMask(cfg::eCache[i].hContact);
@@ -538,7 +532,7 @@ static INT_PTR CALLBACK DlgProcDspGroups(HWND hwndDlg, UINT msg, WPARAM wParam, 
                 DWORD exStyle = p->clcExStyle;
 				int   i;
                 for (i = 0; i < sizeof(checkBoxToGroupStyleEx) / sizeof(checkBoxToGroupStyleEx[0]); i++)
-                    CheckDlgButton(hwndDlg, checkBoxToGroupStyleEx[i].id, (exStyle & checkBoxToGroupStyleEx[i].flag) ^ (checkBoxToGroupStyleEx[i].flag * checkBoxToGroupStyleEx[i].not) ? BST_CHECKED : BST_UNCHECKED);
+                    CheckDlgButton(hwndDlg, checkBoxToGroupStyleEx[i].id, (exStyle & checkBoxToGroupStyleEx[i].flag) ^ (checkBoxToGroupStyleEx[i].flag * checkBoxToGroupStyleEx[i].not_t) ? BST_CHECKED : BST_UNCHECKED);
 
                 CheckDlgButton(hwndDlg, IDC_NOGROUPICON, (p->dwFlags & CLUI_FRAME_NOGROUPICON) ? BST_CHECKED : BST_UNCHECKED);
                 CheckDlgButton(hwndDlg, IDC_CENTERGROUPNAMES, p->bCenterGroupNames);
@@ -571,7 +565,7 @@ static INT_PTR CALLBACK DlgProcDspGroups(HWND hwndDlg, UINT msg, WPARAM wParam, 
                 BOOL    translated;
 
                 for (i = 0; i < sizeof(checkBoxToGroupStyleEx) / sizeof(checkBoxToGroupStyleEx[0]); i++) {
-                    if ((IsDlgButtonChecked(hwndDlg, checkBoxToGroupStyleEx[i].id) == 0) == checkBoxToGroupStyleEx[i].not)
+                    if ((IsDlgButtonChecked(hwndDlg, checkBoxToGroupStyleEx[i].id) == 0) == checkBoxToGroupStyleEx[i].not_t)
                         exStyle |= checkBoxToGroupStyleEx[i].flag;
                 }
                 p->clcExStyle = exStyle;
@@ -732,14 +726,14 @@ static INT_PTR CALLBACK DlgProcDspAdvanced(HWND hwndDlg, UINT msg, WPARAM wParam
             SendDlgItemMessage(hwndDlg, IDC_ALIGNMENT, CB_INSERTSTRING, -1, (LPARAM)TranslateT("With Nickname - right"));
 
             if(cfg::dat.bAvatarServiceAvail) {
-                EnableWindow(GetDlgItem(hwndDlg, IDC_CLISTAVATARS), TRUE);
+            	Utils::enableDlgControl(hwndDlg, IDC_CLISTAVATARS, TRUE);
                 while(avatar_controls[i] != 0)
-                    EnableWindow(GetDlgItem(hwndDlg, avatar_controls[i++]), TRUE);
+                	Utils::enableDlgControl(hwndDlg, avatar_controls[i++], TRUE);
             }
             else {
-                EnableWindow(GetDlgItem(hwndDlg, IDC_CLISTAVATARS), FALSE);
+            	Utils::enableDlgControl(hwndDlg, IDC_CLISTAVATARS, FALSE);
                 while(avatar_controls[i] != 0)
-                    EnableWindow(GetDlgItem(hwndDlg, avatar_controls[i++]), FALSE);
+                	Utils::enableDlgControl(hwndDlg, avatar_controls[i++], FALSE);
             }
 			return TRUE;
 		}
@@ -750,14 +744,14 @@ static INT_PTR CALLBACK DlgProcDspAdvanced(HWND hwndDlg, UINT msg, WPARAM wParam
                     return 0;
                 break;
             case IDC_SHOWLOCALTIME:
-                EnableWindow(GetDlgItem(hwndDlg, IDC_SHOWLOCALTIMEONLYWHENDIFFERENT), IsDlgButtonChecked(hwndDlg, IDC_SHOWLOCALTIME));
+            	Utils::enableDlgControl(hwndDlg, IDC_SHOWLOCALTIMEONLYWHENDIFFERENT, IsDlgButtonChecked(hwndDlg, IDC_SHOWLOCALTIME));
                 break;
             case IDC_AVATARSROUNDED:
-                EnableWindow(GetDlgItem(hwndDlg, IDC_RADIUS), IsDlgButtonChecked(hwndDlg, IDC_AVATARSROUNDED) ? TRUE : FALSE);
-                EnableWindow(GetDlgItem(hwndDlg, IDC_RADIUSSPIN), IsDlgButtonChecked(hwndDlg, IDC_AVATARSROUNDED) ? TRUE : FALSE);
+            	Utils::enableDlgControl(hwndDlg, IDC_RADIUS, IsDlgButtonChecked(hwndDlg, IDC_AVATARSROUNDED) ? TRUE : FALSE);
+            	Utils::enableDlgControl(hwndDlg, IDC_RADIUSSPIN, IsDlgButtonChecked(hwndDlg, IDC_AVATARSROUNDED) ? TRUE : FALSE);
                 break;
             case IDC_AVATARSBORDER:
-                EnableWindow(GetDlgItem(hwndDlg, IDC_AVATARBORDERCLR), IsDlgButtonChecked(hwndDlg, IDC_AVATARSBORDER) ? TRUE : FALSE);
+            	Utils::enableDlgControl(hwndDlg, IDC_AVATARBORDERCLR, IsDlgButtonChecked(hwndDlg, IDC_AVATARSBORDER) ? TRUE : FALSE);
                 break;
         }
         if ((LOWORD(wParam) == IDC_RADIUS || LOWORD(wParam) == IDC_AVATARHEIGHT) && (HIWORD(wParam) != EN_CHANGE || (HWND) lParam != GetFocus()))
@@ -785,13 +779,13 @@ static INT_PTR CALLBACK DlgProcDspAdvanced(HWND hwndDlg, UINT msg, WPARAM wParam
                 SendDlgItemMessage(hwndDlg, IDC_AVATARSIZESPIN, UDM_SETRANGE, 0, MAKELONG(100, 16));
                 SendDlgItemMessage(hwndDlg, IDC_AVATARSIZESPIN, UDM_SETPOS, 0, p->avatarSize);
 
-                EnableWindow(GetDlgItem(hwndDlg, IDC_RADIUS), IsDlgButtonChecked(hwndDlg, IDC_AVATARSROUNDED) ? TRUE : FALSE);
-                EnableWindow(GetDlgItem(hwndDlg, IDC_RADIUSSPIN), IsDlgButtonChecked(hwndDlg, IDC_AVATARSROUNDED) ? TRUE : FALSE);
-                EnableWindow(GetDlgItem(hwndDlg, IDC_AVATARBORDERCLR), IsDlgButtonChecked(hwndDlg, IDC_AVATARSBORDER) ? TRUE : FALSE);
+                Utils::enableDlgControl(hwndDlg, IDC_RADIUS, IsDlgButtonChecked(hwndDlg, IDC_AVATARSROUNDED) ? TRUE : FALSE);
+                Utils::enableDlgControl(hwndDlg, IDC_RADIUSSPIN, IsDlgButtonChecked(hwndDlg, IDC_AVATARSROUNDED) ? TRUE : FALSE);
+                Utils::enableDlgControl(hwndDlg, IDC_AVATARBORDERCLR, IsDlgButtonChecked(hwndDlg, IDC_AVATARSBORDER) ? TRUE : FALSE);
 
                 CheckDlgButton(hwndDlg, IDC_SHOWLOCALTIME, p->bShowLocalTime ? 1 : 0);
                 CheckDlgButton(hwndDlg, IDC_SHOWLOCALTIMEONLYWHENDIFFERENT, p->bShowLocalTimeSelective ? 1 : 0);
-                EnableWindow(GetDlgItem(hwndDlg, IDC_SHOWLOCALTIMEONLYWHENDIFFERENT), IsDlgButtonChecked(hwndDlg, IDC_SHOWLOCALTIME));
+                Utils::enableDlgControl(hwndDlg, IDC_SHOWLOCALTIMEONLYWHENDIFFERENT, IsDlgButtonChecked(hwndDlg, IDC_SHOWLOCALTIME));
 
                 if(p->dwFlags & CLUI_FRAME_AVATARSLEFT)
                     SendDlgItemMessage(hwndDlg, IDC_ALIGNMENT, CB_SETCURSEL, 1, 0);
@@ -1120,7 +1114,7 @@ static INT_PTR CALLBACK DlgProcDspProfiles(HWND hwnd, UINT msg, WPARAM wParam, L
       {
          TCITEM tci;
          RECT rcClient;
-         int oPage = DBGetContactSettingByte(NULL, "CLUI", "opage_d", 0);
+         int oPage = cfg::getByte("CLUI", "opage_d", 0);
          HWND hwndAdd;
          DISPLAYPROFILE dsp_default;
 
@@ -1159,34 +1153,34 @@ static INT_PTR CALLBACK DlgProcDspProfiles(HWND hwnd, UINT msg, WPARAM wParam, L
          tci.lParam = (LPARAM)CreateDialog(g_hInst,MAKEINTRESOURCE(IDD_OPT_DSPITEMS), hwnd, DlgProcDspItems);
          tci.pszText = TranslateT("Contacts");
          TabCtrl_InsertItem(hwndTab, 0, &tci);
-         MoveWindow((HWND)tci.lParam,124,25,rcClient.right-128,rcClient.bottom-67,1);
+         MoveWindow((HWND)tci.lParam,64,25,rcClient.right-128,rcClient.bottom-67,1);
          ShowWindow((HWND)tci.lParam, oPage == 0 ? SW_SHOW : SW_HIDE);
-         if(MyEnableThemeDialogTexture)
-             MyEnableThemeDialogTexture((HWND)tci.lParam, ETDT_ENABLETAB);
+         if(IS_THEMED)
+             API::pfnEnableThemeDialogTexture((HWND)tci.lParam, ETDT_ENABLETAB);
 
          tci.lParam = (LPARAM)CreateDialog(g_hInst,MAKEINTRESOURCE(IDD_OPT_DSPGROUPS), hwnd, DlgProcDspGroups);
          tci.pszText = TranslateT("Groups and layout");
          TabCtrl_InsertItem(hwndTab, 1, &tci);
-         MoveWindow((HWND)tci.lParam,124,25,rcClient.right-128,rcClient.bottom-67,1);
+         MoveWindow((HWND)tci.lParam,64,25,rcClient.right-128,rcClient.bottom-67,1);
          ShowWindow((HWND)tci.lParam, oPage == 1 ? SW_SHOW : SW_HIDE);
-         if(MyEnableThemeDialogTexture)
-             MyEnableThemeDialogTexture((HWND)tci.lParam, ETDT_ENABLETAB);
+         if(IS_THEMED)
+             API::pfnEnableThemeDialogTexture((HWND)tci.lParam, ETDT_ENABLETAB);
 
          tci.lParam = (LPARAM)CreateDialog(g_hInst,MAKEINTRESOURCE(IDD_OPT_XICONS), hwnd, DlgProcXIcons);
          tci.pszText = TranslateT("Icons");
          TabCtrl_InsertItem(hwndTab, 2, &tci);
-         MoveWindow((HWND)tci.lParam,124,25,rcClient.right-128,rcClient.bottom-67,1);
+         MoveWindow((HWND)tci.lParam,64,25,rcClient.right-128,rcClient.bottom-67,1);
          ShowWindow((HWND)tci.lParam, oPage == 2 ? SW_SHOW : SW_HIDE);
-         if(MyEnableThemeDialogTexture)
-             MyEnableThemeDialogTexture((HWND)tci.lParam, ETDT_ENABLETAB);
+         if(IS_THEMED)
+             API::pfnEnableThemeDialogTexture((HWND)tci.lParam, ETDT_ENABLETAB);
 
          tci.lParam = (LPARAM)CreateDialog(g_hInst,MAKEINTRESOURCE(IDD_OPT_DSPADVANCED), hwnd, DlgProcDspAdvanced);
          tci.pszText = TranslateT("Advanced");
          TabCtrl_InsertItem(hwndTab, 3, &tci);
-         MoveWindow((HWND)tci.lParam,124,25,rcClient.right-128,rcClient.bottom-67,1);
+         MoveWindow((HWND)tci.lParam,64,25,rcClient.right-128,rcClient.bottom-67,1);
          ShowWindow((HWND)tci.lParam, oPage == 3 ? SW_SHOW : SW_HIDE);
-         if(MyEnableThemeDialogTexture)
-             MyEnableThemeDialogTexture((HWND)tci.lParam, ETDT_ENABLETAB);
+         if(IS_THEMED)
+             API::pfnEnableThemeDialogTexture((HWND)tci.lParam, ETDT_ENABLETAB);
 
          TabCtrl_SetCurSel(GetDlgItem(hwnd, IDC_OPTIONSTAB), oPage);
 
@@ -1287,7 +1281,7 @@ static INT_PTR CALLBACK DlgProcDspProfiles(HWND hwnd, UINT msg, WPARAM wParam, L
                         tci.mask = TCIF_PARAM;
                         TabCtrl_GetItem(GetDlgItem(hwnd,IDC_OPTIONSTAB),TabCtrl_GetCurSel(GetDlgItem(hwnd,IDC_OPTIONSTAB)),&tci);
                         ShowWindow((HWND)tci.lParam,SW_SHOW);
-                        DBWriteContactSettingByte(NULL, "CLUI", "opage_d", (BYTE)TabCtrl_GetCurSel(GetDlgItem(hwnd, IDC_OPTIONSTAB)));
+                        cfg::writeByte("CLUI", "opage_d", (BYTE)TabCtrl_GetCurSel(GetDlgItem(hwnd, IDC_OPTIONSTAB)));
                      }
                   break;
                }
@@ -1309,7 +1303,7 @@ static INT_PTR CALLBACK TabOptionsDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LP
       {
          TCITEM tci;
          RECT rcClient;
-         int oPage = DBGetContactSettingByte(NULL, "CLUI", "opage_m", 0);
+         int oPage = cfg::getByte("CLUI", "opage_m", 0);
 
          GetClientRect(hwnd, &rcClient);
          iInit = TRUE;
@@ -1319,40 +1313,40 @@ static INT_PTR CALLBACK TabOptionsDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LP
          TabCtrl_InsertItem(GetDlgItem(hwnd, IDC_OPTIONSTAB), 0, &tci);
          MoveWindow((HWND)tci.lParam,5,25,rcClient.right-9,rcClient.bottom-30,1);
          ShowWindow((HWND)tci.lParam, oPage == 0 ? SW_SHOW : SW_HIDE);
-         if(MyEnableThemeDialogTexture)
-             MyEnableThemeDialogTexture((HWND)tci.lParam, ETDT_ENABLETAB);
+         if(IS_THEMED)
+             API::pfnEnableThemeDialogTexture((HWND)tci.lParam, ETDT_ENABLETAB);
 
          tci.lParam = (LPARAM)CreateDialog(g_hInst,MAKEINTRESOURCE(IDD_OPT_CLC), hwnd, DlgProcClcMainOpts);
          tci.pszText = TranslateT("List layout");
          TabCtrl_InsertItem(GetDlgItem(hwnd, IDC_OPTIONSTAB), 1, &tci);
          MoveWindow((HWND)tci.lParam,5,25,rcClient.right-9,rcClient.bottom-30,1);
          ShowWindow((HWND)tci.lParam, oPage == 1 ? SW_SHOW : SW_HIDE);
-         if(MyEnableThemeDialogTexture)
-             MyEnableThemeDialogTexture((HWND)tci.lParam, ETDT_ENABLETAB);
+         if(IS_THEMED)
+             API::pfnEnableThemeDialogTexture((HWND)tci.lParam, ETDT_ENABLETAB);
 
          tci.lParam = (LPARAM)CreateDialog(g_hInst,MAKEINTRESOURCE(IDD_OPT_CLUI), hwnd, DlgProcCluiOpts);
          tci.pszText = TranslateT("Window");
          TabCtrl_InsertItem(GetDlgItem(hwnd, IDC_OPTIONSTAB), 2, &tci);
          MoveWindow((HWND)tci.lParam,5,25,rcClient.right-9,rcClient.bottom-30,1);
          ShowWindow((HWND)tci.lParam, oPage == 2 ? SW_SHOW : SW_HIDE);
-         if(MyEnableThemeDialogTexture)
-             MyEnableThemeDialogTexture((HWND)tci.lParam, ETDT_ENABLETAB);
+         if(IS_THEMED)
+             API::pfnEnableThemeDialogTexture((HWND)tci.lParam, ETDT_ENABLETAB);
 
          tci.lParam = (LPARAM)CreateDialog(g_hInst,MAKEINTRESOURCE(IDD_OPT_CLCBKG), hwnd, DlgProcClcBkgOpts);
          tci.pszText = TranslateT("Background");
          TabCtrl_InsertItem(GetDlgItem(hwnd, IDC_OPTIONSTAB), 3, &tci);
          MoveWindow((HWND)tci.lParam,5,25,rcClient.right-9,rcClient.bottom-30,1);
          ShowWindow((HWND)tci.lParam, oPage == 3 ? SW_SHOW : SW_HIDE);
-         if(MyEnableThemeDialogTexture)
-             MyEnableThemeDialogTexture((HWND)tci.lParam, ETDT_ENABLETAB);
+         if(IS_THEMED)
+             API::pfnEnableThemeDialogTexture((HWND)tci.lParam, ETDT_ENABLETAB);
 
          tci.lParam = (LPARAM)CreateDialog(g_hInst,MAKEINTRESOURCE(IDD_OPT_SBAR), hwnd, DlgProcSBarOpts);
          tci.pszText = TranslateT("Status Bar");
          TabCtrl_InsertItem(GetDlgItem(hwnd, IDC_OPTIONSTAB), 4, &tci);
          MoveWindow((HWND)tci.lParam,5,25,rcClient.right-9,rcClient.bottom-30,1);
          ShowWindow((HWND)tci.lParam, oPage == 4 ? SW_SHOW : SW_HIDE);
-         if(MyEnableThemeDialogTexture)
-             MyEnableThemeDialogTexture((HWND)tci.lParam, ETDT_ENABLETAB);
+         if(IS_THEMED)
+             API::pfnEnableThemeDialogTexture((HWND)tci.lParam, ETDT_ENABLETAB);
 
          TabCtrl_SetCurSel(GetDlgItem(hwnd, IDC_OPTIONSTAB), oPage);
          iInit = FALSE;
@@ -1400,7 +1394,7 @@ static INT_PTR CALLBACK TabOptionsDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LP
                         tci.mask = TCIF_PARAM;
                         TabCtrl_GetItem(GetDlgItem(hwnd,IDC_OPTIONSTAB),TabCtrl_GetCurSel(GetDlgItem(hwnd,IDC_OPTIONSTAB)),&tci);
                         ShowWindow((HWND)tci.lParam,SW_SHOW);
-                        DBWriteContactSettingByte(NULL, "CLUI", "opage_m", (BYTE)TabCtrl_GetCurSel(GetDlgItem(hwnd, IDC_OPTIONSTAB)));
+                        cfg::writeByte("CLUI", "opage_m", (BYTE)TabCtrl_GetCurSel(GetDlgItem(hwnd, IDC_OPTIONSTAB)));
                      }
                   break;
                }
@@ -1423,7 +1417,7 @@ int ClcOptInit(WPARAM wParam, LPARAM lParam)
     odp.pszGroup = LPGEN("Contact List");
 
     odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_DSPPROFILES);
-    odp.pszTitle = LPGEN("Display Profiles");
+    odp.pszTitle = LPGEN("Contact rows");
     odp.pfnDlgProc = DlgProcDspProfiles;
     odp.flags = ODPF_BOLDGROUPS | ODPF_EXPERTONLY;
     CallService(MS_OPT_ADDPAGE, wParam, (LPARAM) &odp);
@@ -1464,25 +1458,25 @@ static INT_PTR CALLBACK DlgProcClcMainOpts(HWND hwndDlg, UINT msg, WPARAM wParam
 
             {
 				int i;
-                DWORD exStyle = DBGetContactSettingDword(NULL, "CLC", "ExStyle", pcli->pfnGetDefaultExStyle());
+                DWORD exStyle = cfg::getDword("CLC", "ExStyle", pcli->pfnGetDefaultExStyle());
                 UDACCEL accel[2] = {
                     {0,10}, {2,50}
                 };
                 SendDlgItemMessage(hwndDlg, IDC_SMOOTHTIMESPIN, UDM_SETRANGE, 0, MAKELONG(999, 0));
                 SendDlgItemMessage(hwndDlg, IDC_SMOOTHTIMESPIN, UDM_SETACCEL, sizeof(accel) / sizeof(accel[0]), (LPARAM) &accel);
-                SendDlgItemMessage(hwndDlg, IDC_SMOOTHTIMESPIN, UDM_SETPOS, 0, MAKELONG(DBGetContactSettingWord(NULL, "CLC", "ScrollTime", CLCDEFAULT_SCROLLTIME), 0));
+                SendDlgItemMessage(hwndDlg, IDC_SMOOTHTIMESPIN, UDM_SETPOS, 0, MAKELONG(cfg::getWord("CLC", "ScrollTime", CLCDEFAULT_SCROLLTIME), 0));
 
                 for (i = 0; i < sizeof(checkBoxToStyleEx) / sizeof(checkBoxToStyleEx[0]); i++)
-                    CheckDlgButton(hwndDlg, checkBoxToStyleEx[i].id, (exStyle & checkBoxToStyleEx[i].flag) ^ (checkBoxToStyleEx[i].flag * checkBoxToStyleEx[i].not) ? BST_CHECKED : BST_UNCHECKED);
+                    CheckDlgButton(hwndDlg, checkBoxToStyleEx[i].id, (exStyle & checkBoxToStyleEx[i].flag) ^ (checkBoxToStyleEx[i].flag * checkBoxToStyleEx[i].not_t) ? BST_CHECKED : BST_UNCHECKED);
             }
             CheckDlgButton(hwndDlg, IDC_FULLROWSELECT, (cfg::dat.dwFlags & CLUI_FULLROWSELECT) ? BST_CHECKED : BST_UNCHECKED);
 
             CheckDlgButton(hwndDlg, IDC_DBLCLKAVATARS, cfg::dat.bDblClkAvatars);
-            CheckDlgButton(hwndDlg, IDC_GREYOUT, DBGetContactSettingDword(NULL, "CLC", "GreyoutFlags", CLCDEFAULT_GREYOUTFLAGS) ? BST_CHECKED : BST_UNCHECKED);
-            EnableWindow(GetDlgItem(hwndDlg, IDC_SMOOTHTIME), IsDlgButtonChecked(hwndDlg, IDC_NOTNOSMOOTHSCROLLING));
-            EnableWindow(GetDlgItem(hwndDlg, IDC_GREYOUTOPTS), IsDlgButtonChecked(hwndDlg, IDC_GREYOUT));
-            FillCheckBoxTree(GetDlgItem(hwndDlg, IDC_GREYOUTOPTS), greyoutValues, sizeof(greyoutValues) / sizeof(greyoutValues[0]), DBGetContactSettingDword(NULL, "CLC", "FullGreyoutFlags", CLCDEFAULT_FULLGREYOUTFLAGS));
-            CheckDlgButton(hwndDlg, IDC_NOSCROLLBAR, DBGetContactSettingByte(NULL, "CLC", "NoVScrollBar", 0) ? BST_CHECKED : BST_UNCHECKED);
+            CheckDlgButton(hwndDlg, IDC_GREYOUT, cfg::getDword("CLC", "GreyoutFlags", CLCDEFAULT_GREYOUTFLAGS) ? BST_CHECKED : BST_UNCHECKED);
+            Utils::enableDlgControl(hwndDlg, IDC_SMOOTHTIME, IsDlgButtonChecked(hwndDlg, IDC_NOTNOSMOOTHSCROLLING));
+            Utils::enableDlgControl(hwndDlg, IDC_GREYOUTOPTS, IsDlgButtonChecked(hwndDlg, IDC_GREYOUT));
+            FillCheckBoxTree(GetDlgItem(hwndDlg, IDC_GREYOUTOPTS), greyoutValues, sizeof(greyoutValues) / sizeof(greyoutValues[0]), cfg::getDword("CLC", "FullGreyoutFlags", CLCDEFAULT_FULLGREYOUTFLAGS));
+            CheckDlgButton(hwndDlg, IDC_NOSCROLLBAR, cfg::getByte("CLC", "NoVScrollBar", 0) ? BST_CHECKED : BST_UNCHECKED);
 
             return TRUE;
         case WM_VSCROLL:
@@ -1491,9 +1485,9 @@ static INT_PTR CALLBACK DlgProcClcMainOpts(HWND hwndDlg, UINT msg, WPARAM wParam
             break;
         case WM_COMMAND:
             if (LOWORD(wParam) == IDC_NOTNOSMOOTHSCROLLING)
-                EnableWindow(GetDlgItem(hwndDlg, IDC_SMOOTHTIME), IsDlgButtonChecked(hwndDlg, IDC_NOTNOSMOOTHSCROLLING));
+            	Utils::enableDlgControl(hwndDlg, IDC_SMOOTHTIME, IsDlgButtonChecked(hwndDlg, IDC_NOTNOSMOOTHSCROLLING));
             if (LOWORD(wParam) == IDC_GREYOUT)
-                EnableWindow(GetDlgItem(hwndDlg, IDC_GREYOUTOPTS), IsDlgButtonChecked(hwndDlg, IDC_GREYOUT));
+            	Utils::enableDlgControl(hwndDlg, IDC_GREYOUTOPTS, IsDlgButtonChecked(hwndDlg, IDC_GREYOUT));
             SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
             opt_clc_main_changed = 1;
             break;
@@ -1523,7 +1517,7 @@ static INT_PTR CALLBACK DlgProcClcMainOpts(HWND hwndDlg, UINT msg, WPARAM wParam
                         case PSN_APPLY:
                             {
                                 int i;
-                                DWORD exStyle = DBGetContactSettingDword(NULL, "CLC", "ExStyle", CLCDEFAULT_EXSTYLE);
+                                DWORD exStyle = cfg::getDword("CLC", "ExStyle", CLCDEFAULT_EXSTYLE);
 
                                 if(!opt_clc_main_changed)
                                     return TRUE;
@@ -1532,24 +1526,24 @@ static INT_PTR CALLBACK DlgProcClcMainOpts(HWND hwndDlg, UINT msg, WPARAM wParam
                                     exStyle &= ~(checkBoxToStyleEx[i].flag);
 
                                 for (i = 0; i < sizeof(checkBoxToStyleEx) / sizeof(checkBoxToStyleEx[0]); i++) {
-                                    if ((IsDlgButtonChecked(hwndDlg, checkBoxToStyleEx[i].id) == 0) == checkBoxToStyleEx[i].not)
+                                    if ((IsDlgButtonChecked(hwndDlg, checkBoxToStyleEx[i].id) == 0) == checkBoxToStyleEx[i].not_t)
                                         exStyle |= checkBoxToStyleEx[i].flag;
                                 }
-                                DBWriteContactSettingDword(NULL, "CLC", "ExStyle", exStyle);
+                                cfg::writeDword("CLC", "ExStyle", exStyle);
                             } {
                                 DWORD fullGreyoutFlags = MakeCheckBoxTreeFlags(GetDlgItem(hwndDlg, IDC_GREYOUTOPTS));
-                                DBWriteContactSettingDword(NULL, "CLC", "FullGreyoutFlags", fullGreyoutFlags);
+                                cfg::writeDword("CLC", "FullGreyoutFlags", fullGreyoutFlags);
                                 if (IsDlgButtonChecked(hwndDlg, IDC_GREYOUT))
-                                    DBWriteContactSettingDword(NULL, "CLC", "GreyoutFlags", fullGreyoutFlags);
+                                	cfg::writeDword("CLC", "GreyoutFlags", fullGreyoutFlags);
                                 else
-                                    DBWriteContactSettingDword(NULL, "CLC", "GreyoutFlags", 0);
+                                	cfg::writeDword("CLC", "GreyoutFlags", 0);
                             }
-                            DBWriteContactSettingWord(NULL, "CLC", "ScrollTime", (WORD) SendDlgItemMessage(hwndDlg, IDC_SMOOTHTIMESPIN, UDM_GETPOS, 0, 0));
-                            DBWriteContactSettingByte(NULL, "CLC", "NoVScrollBar", (BYTE) (IsDlgButtonChecked(hwndDlg, IDC_NOSCROLLBAR) ? 1 : 0));
+                            cfg::writeWord("CLC", "ScrollTime", (WORD) SendDlgItemMessage(hwndDlg, IDC_SMOOTHTIMESPIN, UDM_GETPOS, 0, 0));
+                            cfg::writeByte("CLC", "NoVScrollBar", (BYTE) (IsDlgButtonChecked(hwndDlg, IDC_NOSCROLLBAR) ? 1 : 0));
                             cfg::dat.dwFlags = IsDlgButtonChecked(hwndDlg, IDC_FULLROWSELECT) ? cfg::dat.dwFlags | CLUI_FULLROWSELECT : cfg::dat.dwFlags & ~CLUI_FULLROWSELECT;
                             cfg::dat.bDblClkAvatars = IsDlgButtonChecked(hwndDlg, IDC_DBLCLKAVATARS) ? TRUE : FALSE;
-                            DBWriteContactSettingByte(NULL, "CLC", "dblclkav", (BYTE)cfg::dat.bDblClkAvatars);
-                            DBWriteContactSettingDword(NULL, "CLUI", "Frameflags", cfg::dat.dwFlags);
+                            cfg::writeByte("CLC", "dblclkav", (BYTE)cfg::dat.bDblClkAvatars);
+                            cfg::writeDword("CLUI", "Frameflags", cfg::dat.dwFlags);
 
                             pcli->pfnClcOptionsChanged();
                             CoolSB_SetupScrollBar();
@@ -1575,16 +1569,16 @@ static INT_PTR CALLBACK DlgProcClcBkgOpts(HWND hwndDlg, UINT msg, WPARAM wParam,
         case WM_INITDIALOG:
             opt_clc_bkg_changed = 0;
             TranslateDialogDefault(hwndDlg);
-            CheckDlgButton(hwndDlg, IDC_BITMAP, DBGetContactSettingByte(NULL, "CLC", "UseBitmap", CLCDEFAULT_USEBITMAP) ? BST_CHECKED : BST_UNCHECKED);
+            CheckDlgButton(hwndDlg, IDC_BITMAP, cfg::getByte("CLC", "UseBitmap", CLCDEFAULT_USEBITMAP) ? BST_CHECKED : BST_UNCHECKED);
             SendMessage(hwndDlg, WM_USER + 10, 0, 0);
             SendDlgItemMessage(hwndDlg, IDC_BKGCOLOUR, CPM_SETDEFAULTCOLOUR, 0, CLCDEFAULT_BKCOLOUR);
-            SendDlgItemMessage(hwndDlg, IDC_BKGCOLOUR, CPM_SETCOLOUR, 0, DBGetContactSettingDword(NULL, "CLC", "BkColour", CLCDEFAULT_BKCOLOUR));
-            CheckDlgButton(hwndDlg, IDC_WINCOLOUR, DBGetContactSettingByte(NULL, "CLC", "UseWinColours", 0));
+            SendDlgItemMessage(hwndDlg, IDC_BKGCOLOUR, CPM_SETCOLOUR, 0, cfg::getDword("CLC", "BkColour", CLCDEFAULT_BKCOLOUR));
+            CheckDlgButton(hwndDlg, IDC_WINCOLOUR, cfg::getByte("CLC", "UseWinColours", 0));
             CheckDlgButton(hwndDlg, IDC_SKINMODE, cfg::dat.bWallpaperMode);
             SendMessage(hwndDlg, WM_USER + 11, 0, 0); {
                 DBVARIANT dbv;
 
-                if (!DBGetContactSettingString(NULL, "CLC", "BkBitmap", &dbv)) {
+                if (!cfg::getString(NULL, "CLC", "BkBitmap", &dbv)) {
                     if (ServiceExists(MS_UTILS_PATHTOABSOLUTE)) {
                         char szPath[MAX_PATH];
 
@@ -1594,7 +1588,7 @@ static INT_PTR CALLBACK DlgProcClcBkgOpts(HWND hwndDlg, UINT msg, WPARAM wParam,
                     DBFreeVariant(&dbv);
                 }
             } {
-                WORD bmpUse = DBGetContactSettingWord(NULL, "CLC", "BkBmpUse", CLCDEFAULT_BKBMPUSE);
+                WORD bmpUse = cfg::getWord("CLC", "BkBmpUse", CLCDEFAULT_BKBMPUSE);
                 CheckDlgButton(hwndDlg, IDC_STRETCHH, bmpUse & CLB_STRETCHH ? BST_CHECKED : BST_UNCHECKED);
                 CheckDlgButton(hwndDlg, IDC_STRETCHV, bmpUse & CLB_STRETCHV ? BST_CHECKED : BST_UNCHECKED);
                 CheckDlgButton(hwndDlg, IDC_TILEH, bmpUse & CLBF_TILEH ? BST_CHECKED : BST_UNCHECKED);
@@ -1609,19 +1603,19 @@ static INT_PTR CALLBACK DlgProcClcBkgOpts(HWND hwndDlg, UINT msg, WPARAM wParam,
             }
             return TRUE;
         case WM_USER+10:
-            EnableWindow(GetDlgItem(hwndDlg, IDC_FILENAME), IsDlgButtonChecked(hwndDlg, IDC_BITMAP));
-            EnableWindow(GetDlgItem(hwndDlg, IDC_BROWSE), IsDlgButtonChecked(hwndDlg, IDC_BITMAP));
-            EnableWindow(GetDlgItem(hwndDlg, IDC_STRETCHH), IsDlgButtonChecked(hwndDlg, IDC_BITMAP));
-            EnableWindow(GetDlgItem(hwndDlg, IDC_STRETCHV), IsDlgButtonChecked(hwndDlg, IDC_BITMAP));
-            EnableWindow(GetDlgItem(hwndDlg, IDC_TILEH), IsDlgButtonChecked(hwndDlg, IDC_BITMAP));
-            EnableWindow(GetDlgItem(hwndDlg, IDC_TILEV), IsDlgButtonChecked(hwndDlg, IDC_BITMAP));
-            EnableWindow(GetDlgItem(hwndDlg, IDC_SCROLL), IsDlgButtonChecked(hwndDlg, IDC_BITMAP));
-            EnableWindow(GetDlgItem(hwndDlg, IDC_PROPORTIONAL), IsDlgButtonChecked(hwndDlg, IDC_BITMAP));
+        	Utils::enableDlgControl(hwndDlg, IDC_FILENAME, IsDlgButtonChecked(hwndDlg, IDC_BITMAP));
+        	Utils::enableDlgControl(hwndDlg, IDC_BROWSE, IsDlgButtonChecked(hwndDlg, IDC_BITMAP));
+        	Utils::enableDlgControl(hwndDlg, IDC_STRETCHH, IsDlgButtonChecked(hwndDlg, IDC_BITMAP));
+        	Utils::enableDlgControl(hwndDlg, IDC_STRETCHV, IsDlgButtonChecked(hwndDlg, IDC_BITMAP));
+        	Utils::enableDlgControl(hwndDlg, IDC_TILEH, IsDlgButtonChecked(hwndDlg, IDC_BITMAP));
+        	Utils::enableDlgControl(hwndDlg, IDC_TILEV, IsDlgButtonChecked(hwndDlg, IDC_BITMAP));
+        	Utils::enableDlgControl(hwndDlg, IDC_SCROLL, IsDlgButtonChecked(hwndDlg, IDC_BITMAP));
+        	Utils::enableDlgControl(hwndDlg, IDC_PROPORTIONAL, IsDlgButtonChecked(hwndDlg, IDC_BITMAP));
             break;
         case WM_USER+11:
             {
                 BOOL b = IsDlgButtonChecked(hwndDlg, IDC_WINCOLOUR);
-                EnableWindow(GetDlgItem(hwndDlg, IDC_BKGCOLOUR), !b);
+                Utils::enableDlgControl(hwndDlg, IDC_BKGCOLOUR, !b);
                 break;
             }
         case WM_COMMAND:
@@ -1665,22 +1659,22 @@ static INT_PTR CALLBACK DlgProcClcBkgOpts(HWND hwndDlg, UINT msg, WPARAM wParam,
                                 if(!opt_clc_bkg_changed)
                                     return TRUE;
 
-                                DBWriteContactSettingByte(NULL, "CLC", "UseBitmap", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_BITMAP)); {
+                                cfg::writeByte("CLC", "UseBitmap", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_BITMAP)); {
                                 COLORREF col;
                                 col = SendDlgItemMessage(hwndDlg, IDC_BKGCOLOUR, CPM_GETCOLOUR, 0, 0);
                                 if (col == CLCDEFAULT_BKCOLOUR)
                                     DBDeleteContactSetting(NULL, "CLC", "BkColour");
                                 else
-                                    DBWriteContactSettingDword(NULL, "CLC", "BkColour", col);
-                                DBWriteContactSettingByte(NULL, "CLC", "UseWinColours", (BYTE)IsDlgButtonChecked(hwndDlg, IDC_WINCOLOUR));
+                                	cfg::writeDword("CLC", "BkColour", col);
+                                cfg::writeByte("CLC", "UseWinColours", (BYTE)IsDlgButtonChecked(hwndDlg, IDC_WINCOLOUR));
                             } {
                                 char str[MAX_PATH], strrel[MAX_PATH];
 
                                 GetDlgItemTextA(hwndDlg, IDC_FILENAME, str, sizeof(str));
                                 if (CallService(MS_UTILS_PATHTORELATIVE, (WPARAM) str, (LPARAM) strrel))
-                                    DBWriteContactSettingString(NULL, "CLC", "BkBitmap", strrel);
+                                	cfg::writeString(NULL, "CLC", "BkBitmap", strrel);
                                 else
-                                    DBWriteContactSettingString(NULL, "CLC", "BkBitmap", str);
+                                	cfg::writeString(NULL, "CLC", "BkBitmap", str);
                             } {
                                 WORD flags = 0;
                                 if (IsDlgButtonChecked(hwndDlg, IDC_STRETCHH))
@@ -1695,9 +1689,9 @@ static INT_PTR CALLBACK DlgProcClcBkgOpts(HWND hwndDlg, UINT msg, WPARAM wParam,
                                     flags |= CLBF_SCROLL;
                                 if (IsDlgButtonChecked(hwndDlg, IDC_PROPORTIONAL))
                                     flags |= CLBF_PROPORTIONAL;
-                                DBWriteContactSettingWord(NULL, "CLC", "BkBmpUse", flags);
+                                cfg::writeWord("CLC", "BkBmpUse", flags);
                                 cfg::dat.bWallpaperMode = IsDlgButtonChecked(hwndDlg, IDC_SKINMODE) ? 1 : 0;
-                                DBWriteContactSettingByte(NULL, "CLUI", "UseBkSkin", (BYTE)cfg::dat.bWallpaperMode);
+                                cfg::writeByte("CLUI", "UseBkSkin", (BYTE)cfg::dat.bWallpaperMode);
                             }
                             pcli->pfnClcOptionsChanged();
                             PostMessage(pcli->hwndContactList, CLUIINTM_REDRAW, 0, 0);

@@ -916,11 +916,13 @@ static INT_PTR SkinEdit_Invoke(WPARAM wParam, LPARAM lParam)
     MoveWindow((HWND)tci.lParam, 5, 25, rcClient.right - 9, rcClient.bottom - 60, 1);
     psd->hwndSkinEdit = (HWND)tci.lParam;
 
+    /*
     tci.lParam = (LPARAM)CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_IMAGEITEMEDIT), psd->hWndParent, (DLGPROC)SkinEdit_ImageItemEditProc, (LPARAM)psd);
     tci.pszText = TranslateT("Image items");
     TabCtrl_InsertItem(psd->hWndTab, iTabs++, &tci);
     MoveWindow((HWND)tci.lParam, 5, 25, rcClient.right - 9, rcClient.bottom - 60, 1);
     psd->hwndImageEdit = (HWND)tci.lParam;
+    */
     
     return (INT_PTR)psd->hwndSkinEdit;
 }

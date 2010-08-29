@@ -29,7 +29,6 @@ extern int g_hottrack;
 extern HWND g_hwndViewModeFrame;
 extern HIMAGELIST himlExtraImages;
 extern struct CluiTopButton top_buttons[];
-extern BOOL (WINAPI *MyEnableThemeDialogTexture)(HANDLE, DWORD);
 
 StatusItems_t *StatusItems = NULL;
 ImageItem *g_ImageItems = NULL, *g_glyphItem = NULL;
@@ -299,55 +298,55 @@ void LoadExtBkSettingsFromDB()
 		if (StatusItems[n].statusID != ID_EXTBKSEPARATOR) {
 			StatusItems[n].imageItem = 0;
 			lstrcpyA(buffer, StatusItems[n].szDBname); lstrcatA(buffer, "_IGNORE");
-			ret = DBGetContactSettingByte(NULL, "CLCExt", buffer, StatusItems[n].IGNORED);
+			ret = cfg::getByte("CLCExt", buffer, StatusItems[n].IGNORED);
 			StatusItems[n]. IGNORED = (BYTE) ret;
 
 			lstrcpyA(buffer, StatusItems[n].szDBname); lstrcatA(buffer, "_GRADIENT");
-			ret = DBGetContactSettingDword(NULL, "CLCExt", buffer, StatusItems[n].GRADIENT);
+			ret = cfg::getDword("CLCExt", buffer, StatusItems[n].GRADIENT);
 			StatusItems[n]. GRADIENT = (BYTE) ret;
 
 			lstrcpyA(buffer, StatusItems[n].szDBname); lstrcatA(buffer, "_CORNER");
-			ret = DBGetContactSettingDword(NULL, "CLCExt", buffer, StatusItems[n].CORNER);
+			ret = cfg::getDword("CLCExt", buffer, StatusItems[n].CORNER);
 			StatusItems[n]. CORNER = (BYTE) ret;
 
 			lstrcpyA(buffer, StatusItems[n].szDBname); lstrcatA(buffer, "_COLOR");
-			ret = DBGetContactSettingDword(NULL, "CLCExt", buffer, StatusItems[n].COLOR);
+			ret = cfg::getDword("CLCExt", buffer, StatusItems[n].COLOR);
 			StatusItems[n]. COLOR = ret;
 
 			lstrcpyA(buffer, StatusItems[n].szDBname); lstrcatA(buffer, "_COLOR2");
-			ret = DBGetContactSettingDword(NULL, "CLCExt", buffer, StatusItems[n].COLOR2);
+			ret = cfg::getDword(NULL, "CLCExt", buffer, StatusItems[n].COLOR2);
 			StatusItems[n]. COLOR2 = ret;
 
 			lstrcpyA(buffer, StatusItems[n].szDBname); lstrcatA(buffer, "_COLOR2_TRANSPARENT");
-			ret = DBGetContactSettingByte(NULL, "CLCExt", buffer, StatusItems[n].COLOR2_TRANSPARENT);
+			ret = cfg::getByte("CLCExt", buffer, StatusItems[n].COLOR2_TRANSPARENT);
 			StatusItems[n]. COLOR2_TRANSPARENT = (BYTE) ret;
 
 			lstrcpyA(buffer, StatusItems[n].szDBname); lstrcatA(buffer, "_TEXTCOLOR");
-			ret = DBGetContactSettingDword(NULL, "CLCExt", buffer, StatusItems[n].TEXTCOLOR);
+			ret = cfg::getDword("CLCExt", buffer, StatusItems[n].TEXTCOLOR);
 			StatusItems[n]. TEXTCOLOR = ret;
 
 			lstrcpyA(buffer, StatusItems[n].szDBname); lstrcatA(buffer, "_ALPHA");
-			ret = DBGetContactSettingByte(NULL, "CLCExt", buffer, StatusItems[n].ALPHA);
+			ret = cfg::getByte("CLCExt", buffer, StatusItems[n].ALPHA);
 			StatusItems[n]. ALPHA = ret;
 
 			lstrcpyA(buffer, StatusItems[n].szDBname); lstrcatA(buffer, "_MRGN_LEFT");
-			ret = DBGetContactSettingByte(NULL, "CLCExt", buffer, StatusItems[n].MARGIN_LEFT);
+			ret = cfg::getByte("CLCExt", buffer, StatusItems[n].MARGIN_LEFT);
 			StatusItems[n]. MARGIN_LEFT = ret;
 
 			lstrcpyA(buffer, StatusItems[n].szDBname); lstrcatA(buffer, "_MRGN_TOP");
-			ret = DBGetContactSettingByte(NULL, "CLCExt", buffer, StatusItems[n].MARGIN_TOP);
+			ret = cfg::getByte("CLCExt", buffer, StatusItems[n].MARGIN_TOP);
 			StatusItems[n]. MARGIN_TOP = ret;
 
 			lstrcpyA(buffer, StatusItems[n].szDBname); lstrcatA(buffer, "_MRGN_RIGHT");
-			ret = DBGetContactSettingByte(NULL, "CLCExt", buffer, StatusItems[n].MARGIN_RIGHT);
+			ret = cfg::getByte("CLCExt", buffer, StatusItems[n].MARGIN_RIGHT);
 			StatusItems[n]. MARGIN_RIGHT = ret;
 
 			lstrcpyA(buffer, StatusItems[n].szDBname); lstrcatA(buffer, "_MRGN_BOTTOM");
-			ret = DBGetContactSettingByte(NULL, "CLCExt", buffer, StatusItems[n].MARGIN_BOTTOM);
+			ret = cfg::getByte("CLCExt", buffer, StatusItems[n].MARGIN_BOTTOM);
 			StatusItems[n]. MARGIN_BOTTOM = ret;
 
 			lstrcpyA(buffer, StatusItems[n].szDBname); lstrcatA(buffer, "_BDRSTYLE");
-			ret = DBGetContactSettingDword(NULL, "CLCExt", buffer, StatusItems[n].BORDERSTYLE);
+			ret = cfg::getDword("CLCExt", buffer, StatusItems[n].BORDERSTYLE);
 			StatusItems[n]. BORDERSTYLE = ret;
 		}
 	}
@@ -373,50 +372,50 @@ static void SaveCompleteStructToDB(void)
     for (n = 0; n <= ID_EXTBK_LAST - ID_STATUS_OFFLINE; n++) {
         if (StatusItems[n].statusID != ID_EXTBKSEPARATOR) {
             lstrcpyA(buffer, StatusItems[n].szDBname); lstrcatA(buffer, "_IGNORE");
-            DBWriteContactSettingByte(NULL, "CLCExt", buffer, StatusItems[n].IGNORED);
+            cfg::writeByte("CLCExt", buffer, StatusItems[n].IGNORED);
 
             lstrcpyA(buffer, StatusItems[n].szDBname); lstrcatA(buffer, "_GRADIENT");
-            DBWriteContactSettingDword(NULL, "CLCExt", buffer, StatusItems[n].GRADIENT);
+            cfg::writeDword("CLCExt", buffer, StatusItems[n].GRADIENT);
 
             lstrcpyA(buffer, StatusItems[n].szDBname); lstrcatA(buffer, "_CORNER");
-            DBWriteContactSettingDword(NULL, "CLCExt", buffer, StatusItems[n].CORNER);
+            cfg::writeDword("CLCExt", buffer, StatusItems[n].CORNER);
 
             lstrcpyA(buffer, StatusItems[n].szDBname); lstrcatA(buffer, "_COLOR");
-            DBWriteContactSettingDword(NULL, "CLCExt", buffer, StatusItems[n].COLOR);
+            cfg::writeDword("CLCExt", buffer, StatusItems[n].COLOR);
 
             lstrcpyA(buffer, StatusItems[n].szDBname); lstrcatA(buffer, "_COLOR2");
-            DBWriteContactSettingDword(NULL, "CLCExt", buffer, StatusItems[n].COLOR2);
+            cfg::writeDword("CLCExt", buffer, StatusItems[n].COLOR2);
 
             lstrcpyA(buffer, StatusItems[n].szDBname); lstrcatA(buffer, "_COLOR2_TRANSPARENT");
-            DBWriteContactSettingByte(NULL, "CLCExt", buffer, StatusItems[n].COLOR2_TRANSPARENT);
+            cfg::writeByte("CLCExt", buffer, StatusItems[n].COLOR2_TRANSPARENT);
 
             lstrcpyA(buffer, StatusItems[n].szDBname); lstrcatA(buffer, "_TEXTCOLOR");
-            DBWriteContactSettingDword(NULL, "CLCExt", buffer, StatusItems[n].TEXTCOLOR);
+            cfg::writeDword("CLCExt", buffer, StatusItems[n].TEXTCOLOR);
 
             lstrcpyA(buffer, StatusItems[n].szDBname); lstrcatA(buffer, "_ALPHA");
-            DBWriteContactSettingByte(NULL, "CLCExt", buffer, (BYTE)StatusItems[n].ALPHA);
+            cfg::writeByte("CLCExt", buffer, (BYTE)StatusItems[n].ALPHA);
 
             lstrcpyA(buffer, StatusItems[n].szDBname); lstrcatA(buffer, "_MRGN_LEFT");
-            DBWriteContactSettingByte(NULL, "CLCExt", buffer, (BYTE)StatusItems[n].MARGIN_LEFT);
+            cfg::writeByte("CLCExt", buffer, (BYTE)StatusItems[n].MARGIN_LEFT);
 
             lstrcpyA(buffer, StatusItems[n].szDBname); lstrcatA(buffer, "_MRGN_TOP");
-            DBWriteContactSettingByte(NULL, "CLCExt", buffer, (BYTE)StatusItems[n].MARGIN_TOP);
+            cfg::writeByte("CLCExt", buffer, (BYTE)StatusItems[n].MARGIN_TOP);
 
             lstrcpyA(buffer, StatusItems[n].szDBname); lstrcatA(buffer, "_MRGN_RIGHT");
-            DBWriteContactSettingByte(NULL, "CLCExt", buffer, (BYTE)StatusItems[n].MARGIN_RIGHT);
+            cfg::writeByte("CLCExt", buffer, (BYTE)StatusItems[n].MARGIN_RIGHT);
 
             lstrcpyA(buffer, StatusItems[n].szDBname); lstrcatA(buffer, "_MRGN_BOTTOM");
-            DBWriteContactSettingByte(NULL, "CLCExt", buffer, (BYTE)StatusItems[n].MARGIN_BOTTOM);
+            cfg::writeByte("CLCExt", buffer, (BYTE)StatusItems[n].MARGIN_BOTTOM);
 
             lstrcpyA(buffer, StatusItems[n].szDBname); lstrcatA(buffer, "_BDRSTYLE");
-            DBWriteContactSettingDword(NULL, "CLCExt", buffer, StatusItems[n].BORDERSTYLE);
+            cfg::writeDword("CLCExt", buffer, StatusItems[n].BORDERSTYLE);
         }
     }
 }
 
 void SetButtonToSkinned()
 {
-    int bSkinned = cfg::dat.bSkinnedButtonMode = DBGetContactSettingByte(NULL, "CLCExt", "bskinned", 0);
+    int bSkinned = cfg::dat.bSkinnedButtonMode = cfg::getByte("CLCExt", "bskinned", 0);
 
     SendDlgItemMessage(pcli->hwndContactList, IDC_TBMENU, BM_SETSKINNED, 0, bSkinned);
     SendDlgItemMessage(pcli->hwndContactList, IDC_TBGLOBALSTATUS, BM_SETSKINNED, 0, bSkinned);
@@ -442,8 +441,8 @@ void Reload3dBevelColors()
     if(cfg::dat.hPen3DDark)
         DeleteObject(cfg::dat.hPen3DDark);
 
-    cfg::dat.hPen3DBright = CreatePen(PS_SOLID, 1, DBGetContactSettingDword(NULL, "CLCExt", "3dbright", GetSysColor(COLOR_3DLIGHT)));
-    cfg::dat.hPen3DDark = CreatePen(PS_SOLID, 1, DBGetContactSettingDword(NULL, "CLCExt", "3ddark", GetSysColor(COLOR_3DSHADOW)));
+    cfg::dat.hPen3DBright = CreatePen(PS_SOLID, 1, cfg::getDword("CLCExt", "3dbright", GetSysColor(COLOR_3DLIGHT)));
+    cfg::dat.hPen3DDark = CreatePen(PS_SOLID, 1, cfg::getDword("CLCExt", "3ddark", GetSysColor(COLOR_3DSHADOW)));
 
 }
 
@@ -452,9 +451,8 @@ void SaveNonStatusItemsSettings(HWND hwndDlg)
 {
     BOOL translated;
 
-    DBWriteContactSettingByte(NULL, "CLCExt", "EXBK_EqualSelection", (BYTE)IsDlgButtonChecked(hwndDlg, IDC_EQUALSELECTION));
-    DBWriteContactSettingByte(NULL, "CLCExt", "EXBK_SelBlend", (BYTE)IsDlgButtonChecked(hwndDlg, IDC_SELBLEND));
-    DBWriteContactSettingByte(NULL, "CLCExt", "EXBK_FillWallpaper", (BYTE)IsDlgButtonChecked(hwndDlg, IDC_FILLWALLPAPER));
+    cfg::writeByte("CLCExt", "EXBK_EqualSelection", (BYTE)IsDlgButtonChecked(hwndDlg, IDC_EQUALSELECTION));
+    cfg::writeByte("CLCExt", "EXBK_SelBlend", (BYTE)IsDlgButtonChecked(hwndDlg, IDC_SELBLEND));
 
     cfg::dat.cornerRadius = GetDlgItemInt(hwndDlg, IDC_CORNERRAD, &translated, FALSE);
     cfg::dat.bApplyIndentToBg = IsDlgButtonChecked(hwndDlg, IDC_APPLYINDENTBG) ? 1 : 0;
@@ -464,16 +462,16 @@ void SaveNonStatusItemsSettings(HWND hwndDlg)
     cfg::dat.titleBarHeight = (BYTE)GetDlgItemInt(hwndDlg, IDC_LASTITEMPADDING, &translated, FALSE);
     cfg::dat.group_padding = GetDlgItemInt(hwndDlg, IDC_GRPTOPPADDING, &translated, FALSE);
 
-    DBWriteContactSettingByte(NULL, "CLCExt", "CornerRad", cfg::dat.cornerRadius);
-    DBWriteContactSettingByte(NULL, "CLCExt", "applyindentbg", (BYTE)cfg::dat.bApplyIndentToBg);
-    DBWriteContactSettingByte(NULL, "CLCExt", "useperproto", (BYTE)cfg::dat.bUsePerProto);
-    DBWriteContactSettingByte(NULL, "CLCExt", "override_status", (BYTE)cfg::dat.bOverridePerStatusColors);
-    DBWriteContactSettingByte(NULL, "CLCExt", "bskinned", (BYTE)(IsDlgButtonChecked(hwndDlg, IDC_SETALLBUTTONSKINNED) ? 1 : 0));
-	DBWriteContactSettingByte(NULL, "CLCExt", "FastGradients", cfg::dat.bWantFastGradients);
-    DBWriteContactSettingByte(NULL, "CLC", "IgnoreSelforGroups", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_IGNORESELFORGROUPS));
+    cfg::writeByte("CLCExt", "CornerRad", cfg::dat.cornerRadius);
+    cfg::writeByte("CLCExt", "applyindentbg", (BYTE)cfg::dat.bApplyIndentToBg);
+    cfg::writeByte("CLCExt", "useperproto", (BYTE)cfg::dat.bUsePerProto);
+    cfg::writeByte("CLCExt", "override_status", (BYTE)cfg::dat.bOverridePerStatusColors);
+    cfg::writeByte("CLCExt", "bskinned", (BYTE)(IsDlgButtonChecked(hwndDlg, IDC_SETALLBUTTONSKINNED) ? 1 : 0));
+    cfg::writeByte("CLCExt", "FastGradients", cfg::dat.bWantFastGradients);
+    cfg::writeByte("CLC", "IgnoreSelforGroups", (BYTE) IsDlgButtonChecked(hwndDlg, IDC_IGNORESELFORGROUPS));
 
-    DBWriteContactSettingDword(NULL, "CLCExt", "grp_padding", cfg::dat.group_padding);
-    DBWriteContactSettingByte(NULL, "CLCExt", "frame_height", cfg::dat.titleBarHeight);
+    cfg::writeDword("CLCExt", "grp_padding", cfg::dat.group_padding);
+    cfg::writeByte("CLCExt", "frame_height", cfg::dat.titleBarHeight);
 
     Reload3dBevelColors();
     SetButtonToSkinned();
@@ -555,32 +553,32 @@ void extbk_export(char *file)
         mir_snprintf(szSection, 255, "Font%d", n);
 
         mir_snprintf(szKey, 255, "Font%dName", n);
-        if(!DBGetContactSettingString(NULL, "CLC", szKey, &dbv)) {
+        if(!cfg::getString(NULL, "CLC", szKey, &dbv)) {
             WritePrivateProfileStringA(szSection, "Name", dbv.pszVal, file);
             mir_free(dbv.pszVal);
         }
         mir_snprintf(szKey, 255, "Font%dSize", n);
-        data = (DWORD)DBGetContactSettingByte(NULL, "CLC", szKey, 8);
+        data = (DWORD)cfg::getByte("CLC", szKey, 8);
         WritePrivateProfileStructA(szSection, "Size", &data, 1, file);
 
         mir_snprintf(szKey, 255, "Font%dSty", n);
-        data = (DWORD)DBGetContactSettingByte(NULL, "CLC", szKey, 8);
+        data = (DWORD)cfg::getByte("CLC", szKey, 8);
         WritePrivateProfileStructA(szSection, "Style", &data, 1, file);
 
         mir_snprintf(szKey, 255, "Font%dSet", n);
-        data = (DWORD)DBGetContactSettingByte(NULL, "CLC", szKey, 8);
+        data = (DWORD)cfg::getByte("CLC", szKey, 8);
         WritePrivateProfileStructA(szSection, "Set", &data, 1, file);
 
         mir_snprintf(szKey, 255, "Font%dCol", n);
-        data = DBGetContactSettingDword(NULL, "CLC", szKey, 8);
+        data = cfg::getDword("CLC", szKey, 8);
         WritePrivateProfileStructA(szSection, "Color", &data, 4, file);
 
         mir_snprintf(szKey, 255, "Font%dFlags", n);
-        data = (DWORD)DBGetContactSettingDword(NULL, "CLC", szKey, 8);
+        data = (DWORD)cfg::getDword("CLC", szKey, 8);
         WritePrivateProfileStructA(szSection, "Flags", &data, 4, file);
 
         mir_snprintf(szKey, 255, "Font%dAs", n);
-        data = (DWORD)DBGetContactSettingWord(NULL, "CLC", szKey, 8);
+        data = (DWORD)cfg::getWord("CLC", szKey, 8);
         WritePrivateProfileStructA(szSection, "SameAs", &data, 2, file);
     }
     i = 0;
@@ -588,19 +586,19 @@ void extbk_export(char *file)
         data = 0;
         switch(_tagSettings[i].size) {
             case 1:
-                data = (DWORD)DBGetContactSettingByte(NULL, _tagSettings[i].szModule, _tagSettings[i].szSetting, (BYTE)_tagSettings[i].defaultval);
+                data = (DWORD)cfg::getByte( _tagSettings[i].szModule, _tagSettings[i].szSetting, (BYTE)_tagSettings[i].defaultval);
                 break;
             case 2:
-                data = (DWORD)DBGetContactSettingWord(NULL, _tagSettings[i].szModule, _tagSettings[i].szSetting, (DWORD)_tagSettings[i].defaultval);
+                data = (DWORD)cfg::getWord( _tagSettings[i].szModule, _tagSettings[i].szSetting, (DWORD)_tagSettings[i].defaultval);
                 break;
             case 4:
-                data = (DWORD)DBGetContactSettingDword(NULL, _tagSettings[i].szModule, _tagSettings[i].szSetting, (DWORD)_tagSettings[i].defaultval);
+                data = (DWORD)cfg::getDword( _tagSettings[i].szModule, _tagSettings[i].szSetting, (DWORD)_tagSettings[i].defaultval);
                 break;
         }
         WritePrivateProfileStructA("Global", _tagSettings[i].szSetting, &data, _tagSettings[i].size, file);
         i++;
     }
-    if(!DBGetContactSettingString(NULL, "CLC", "BkBitmap", &dbv)) {
+    if(!cfg::getString(NULL, "CLC", "BkBitmap", &dbv)) {
         WritePrivateProfileStringA("Global", "BkBitmap", dbv.pszVal, file);
         DBFreeVariant(&dbv);
     }
@@ -957,7 +955,7 @@ done_with_glyph:
                     GetPrivateProfileStringA(itemname, "Colorkey", "e5e5e5", buffer, 500, szFileName);
                     clr = HexStringToLong(buffer);
                     cfg::dat.colorkey = clr;
-                    DBWriteContactSettingDword(NULL, "CLUI", "ColorKey", clr);
+                    cfg::writeDword("CLUI", "ColorKey", clr);
                     if(g_CLUISkinnedBkColor)
                         DeleteObject(g_CLUISkinnedBkColor);
                     g_CLUISkinnedBkColor = CreateSolidBrush(clr);
@@ -1260,7 +1258,7 @@ void IMG_LoadItems()
     TCHAR tszFileName[MAX_PATH];
     int  i = 0;
 
-    if(DBGetContactSettingTString(NULL, "CLC", "AdvancedSkin", &dbv))
+    if(cfg::getTString(NULL, "CLC", "AdvancedSkin", &dbv))
         return;
 
     MY_pathToAbsolute(dbv.ptszVal, tszFileName);
@@ -1315,18 +1313,17 @@ void IMG_LoadItems()
         ConfigureCLUIGeometry(0);
     }
     if(g_ImageItems) {
-        DBWriteContactSettingByte(NULL, "CLCExt", "bskinned", 1);
+    	cfg::writeByte("CLCExt", "bskinned", 1);
         SetButtonToSkinned();
     }
     if(g_CLUIImageItem) {
         cfg::dat.bFullTransparent = TRUE;
         cfg::dat.dwFlags &= ~CLUI_FRAME_CLISTSUNKEN;
-        DBWriteContactSettingByte(NULL, "CLUI", "fulltransparent", (BYTE)cfg::dat.bFullTransparent);
-        DBWriteContactSettingByte(NULL, "CLUI", "WindowStyle", SETTING_WINDOWSTYLE_NOBORDER);
+        cfg::writeByte("CLUI", "fulltransparent", (BYTE)cfg::dat.bFullTransparent);
+        cfg::writeByte("CLUI", "WindowStyle", SETTING_WINDOWSTYLE_NOBORDER);
         ApplyCLUIBorderStyle(pcli->hwndContactList);
         SetWindowLong(pcli->hwndContactList, GWL_EXSTYLE, GetWindowLong(pcli->hwndContactList, GWL_EXSTYLE) | WS_EX_LAYERED);
-        if(MySetLayeredWindowAttributes)
-            MySetLayeredWindowAttributes(pcli->hwndContactList, cfg::dat.colorkey, 0, LWA_COLORKEY);
+        API::SetLayeredWindowAttributes(pcli->hwndContactList, cfg::dat.colorkey, 0, LWA_COLORKEY);
     }
     CoolSB_SetupScrollBar();
 }
@@ -1403,30 +1400,30 @@ void LoadPerContactSkins(TCHAR *tszFileName)
                            && lstrlenA(szProto) == lstrlenA(items[j].szName) && lstrlenA(UIN) == lstrlenA(items[j].szDBname)) {
 
                             //_DebugPopup(hContact, "Found: %s, %s", szProto, UIN);
-                            DBWriteContactSettingDword(hContact, "EXTBK", "TEXT", items[j].TEXTCOLOR);
-                            DBWriteContactSettingDword(hContact, "EXTBK", "COLOR1", items[j].COLOR);
-                            DBWriteContactSettingDword(hContact, "EXTBK", "COLOR2", items[j].COLOR2);
-                            DBWriteContactSettingByte(hContact, "EXTBK", "ALPHA", (BYTE)items[j].ALPHA);
+                        	cfg::writeDword(hContact, "EXTBK", "TEXT", items[j].TEXTCOLOR);
+                        	cfg::writeDword(hContact, "EXTBK", "COLOR1", items[j].COLOR);
+                        	cfg::writeDword(hContact, "EXTBK", "COLOR2", items[j].COLOR2);
+                        	cfg::writeByte(hContact, "EXTBK", "ALPHA", (BYTE)items[j].ALPHA);
 
-                            DBWriteContactSettingByte(hContact, "EXTBK", "LEFT", (BYTE)items[j].MARGIN_LEFT);
-                            DBWriteContactSettingByte(hContact, "EXTBK", "RIGHT", (BYTE)items[j].MARGIN_RIGHT);
-                            DBWriteContactSettingByte(hContact, "EXTBK", "TOP", (BYTE)items[j].MARGIN_TOP);
-                            DBWriteContactSettingByte(hContact, "EXTBK", "BOTTOM", (BYTE)items[j].MARGIN_BOTTOM);
+                        	cfg::writeByte(hContact, "EXTBK", "LEFT", (BYTE)items[j].MARGIN_LEFT);
+                        	cfg::writeByte(hContact, "EXTBK", "RIGHT", (BYTE)items[j].MARGIN_RIGHT);
+                        	cfg::writeByte(hContact, "EXTBK", "TOP", (BYTE)items[j].MARGIN_TOP);
+                        	cfg::writeByte(hContact, "EXTBK", "BOTTOM", (BYTE)items[j].MARGIN_BOTTOM);
 
-                            DBWriteContactSettingByte(hContact, "EXTBK", "TRANS", items[j].COLOR2_TRANSPARENT);
-                            DBWriteContactSettingDword(hContact, "EXTBK", "BDR", items[j].BORDERSTYLE);
+                        	cfg::writeByte(hContact, "EXTBK", "TRANS", items[j].COLOR2_TRANSPARENT);
+                        	cfg::writeDword(hContact, "EXTBK", "BDR", items[j].BORDERSTYLE);
 
-                            DBWriteContactSettingByte(hContact, "EXTBK", "CORNER", items[j].CORNER);
-                            DBWriteContactSettingByte(hContact, "EXTBK", "GRAD", items[j].GRADIENT);
-                            DBWriteContactSettingByte(hContact, "EXTBK", "TRANS", items[j].COLOR2_TRANSPARENT);
+                        	cfg::writeByte(hContact, "EXTBK", "CORNER", items[j].CORNER);
+                        	cfg::writeByte(hContact, "EXTBK", "GRAD", items[j].GRADIENT);
+                        	cfg::writeByte(hContact, "EXTBK", "TRANS", items[j].COLOR2_TRANSPARENT);
 
-                            DBWriteContactSettingByte(hContact, "EXTBK", "VALID", 1);
+                        	cfg::writeByte(hContact, "EXTBK", "VALID", 1);
                             break;
                         }
                     }
                     if(j == i - 1) {            // disable the db copy if it has been disabled in the skin .ini file
-                        if(DBGetContactSettingByte(hContact, "EXTBK", "VALID", 0))
-                            DBWriteContactSettingByte(hContact, "EXTBK", "VALID", 0);
+                        if(cfg::getByte(hContact, "EXTBK", "VALID", 0))
+                        	cfg::writeByte(hContact, "EXTBK", "VALID", 0);
                     }
                 }
             }
@@ -1484,37 +1481,37 @@ void extbk_import(char *file, HWND hwndDlg)
 
             mir_snprintf(szKey, 255, "Font%dName", n);
             GetPrivateProfileStringA(szSection, "Name", "Arial", buffer, sizeof(buffer), file);
-            DBWriteContactSettingString(NULL, "CLC", szKey, buffer);
+            cfg::writeString(NULL, "CLC", szKey, buffer);
 
             mir_snprintf(szKey, 255, "Font%dSize", n);
             data = 0;
             GetPrivateProfileStructA(szSection, "Size", &data, 1, file);
-            DBWriteContactSettingByte(NULL, "CLC", szKey, (BYTE)data);
+            cfg::writeByte("CLC", szKey, (BYTE)data);
 
             mir_snprintf(szKey, 255, "Font%dSty", n);
             data = 0;
             GetPrivateProfileStructA(szSection, "Style", &data, 1, file);
-            DBWriteContactSettingByte(NULL, "CLC", szKey, (BYTE)data);
+            cfg::writeByte("CLC", szKey, (BYTE)data);
 
             mir_snprintf(szKey, 255, "Font%dSet", n);
             data = 0;
             GetPrivateProfileStructA(szSection, "Set", &data, 1, file);
-            DBWriteContactSettingByte(NULL, "CLC", szKey, (BYTE)data);
+            cfg::writeByte("CLC", szKey, (BYTE)data);
 
             mir_snprintf(szKey, 255, "Font%dCol", n);
             data = 0;
             GetPrivateProfileStructA(szSection, "Color", &data, 4, file);
-            DBWriteContactSettingDword(NULL, "CLC", szKey, data);
+            cfg::writeDword("CLC", szKey, data);
 
             mir_snprintf(szKey, 255, "Font%dFlags", n);
             data = 0;
             GetPrivateProfileStructA(szSection, "Flags", &data, 4, file);
-            DBWriteContactSettingDword(NULL, "CLC", szKey, (WORD)data);
+            cfg::writeDword("CLC", szKey, (WORD)data);
 
             mir_snprintf(szKey, 255, "Font%dAs", n);
             data = 0;
             GetPrivateProfileStructA(szSection, "SameAs", &data, 2, file);
-            DBWriteContactSettingWord(NULL, "CLC", szKey, (WORD)data);
+            cfg::writeDword("CLC", szKey, (WORD)data);
         }
     }
     i = 0;
@@ -1527,20 +1524,20 @@ void extbk_import(char *file, HWND hwndDlg)
             GetPrivateProfileStructA("Global", _tagSettings[i].szSetting, &data, _tagSettings[i].size, file);
             switch(_tagSettings[i].size) {
                 case 1:
-                    DBWriteContactSettingByte(NULL, _tagSettings[i].szModule, _tagSettings[i].szSetting, (BYTE)data);
+                	cfg::writeByte(NULL, _tagSettings[i].szModule, _tagSettings[i].szSetting, (BYTE)data);
                     break;
                 case 4:
-                    DBWriteContactSettingDword(NULL, _tagSettings[i].szModule, _tagSettings[i].szSetting, data);
+                	cfg::writeDword(NULL, _tagSettings[i].szModule, _tagSettings[i].szSetting, data);
                     break;
                 case 2:
-                    DBWriteContactSettingWord(NULL, _tagSettings[i].szModule, _tagSettings[i].szSetting, (WORD)data);
+                    cfg::writeWord( _tagSettings[i].szModule, _tagSettings[i].szSetting, (WORD)data);
                     break;
             }
             i++;
         }
         GetPrivateProfileStringA("Global", "BkBitmap", "", szString, MAX_PATH, file);
         if(lstrlenA(szString) > 0)
-            DBWriteContactSettingString(NULL, "CLC", "BkBitmap", szString);
+        	cfg::writeString(NULL, "CLC", "BkBitmap", szString);
     }
 
     Reload3dBevelColors();
@@ -1574,17 +1571,17 @@ static void ApplyCLUISkin()
     DBVARIANT   dbv = {0};
     TCHAR       tszFinalName[MAX_PATH];
     char        szFinalName[MAX_PATH];
-    if(!DBGetContactSettingTString(NULL, "CLC", "AdvancedSkin", &dbv)) {
+    if(!cfg::getTString(NULL, "CLC", "AdvancedSkin", &dbv)) {
         MY_pathToAbsolute(dbv.ptszVal, tszFinalName);
 #if defined(_UNICODE)
         WideCharToMultiByte(CP_ACP, 0, tszFinalName, MAX_PATH, szFinalName, MAX_PATH, 0, 0);
 #else
         mir_sntprintf(szFinalName, MAX_PATH, _T("%s"), tszFinalName);
 #endif
-        if(DBGetContactSettingByte(NULL, "CLUI", "skin_changed", 0)) {
+        if(cfg::getByte("CLUI", "skin_changed", 0)) {
             extbk_import(szFinalName, 0);
             SaveCompleteStructToDB();
-            DBWriteContactSettingByte(NULL, "CLUI", "skin_changed", 0);
+            cfg::writeByte("CLUI", "skin_changed", 0);
         }
         IMG_LoadItems();
         ShowWindow(pcli->hwndContactList, SW_SHOWNORMAL);
@@ -1603,10 +1600,9 @@ static INT_PTR CALLBACK DlgProcSkinOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
             DBVARIANT dbv;
             TranslateDialogDefault(hwndDlg);
 
-            CheckDlgButton(hwndDlg, IDC_EQUALSELECTION, (DBGetContactSettingByte(NULL, "CLCExt", "EXBK_EqualSelection", 1) == 1) ? BST_CHECKED : BST_UNCHECKED);
-            CheckDlgButton(hwndDlg, IDC_SELBLEND, DBGetContactSettingByte(NULL, "CLCExt", "EXBK_SelBlend", 1));
-            CheckDlgButton(hwndDlg, IDC_FILLWALLPAPER, DBGetContactSettingByte(NULL, "CLCExt", "EXBK_FillWallpaper", 0));
-            CheckDlgButton(hwndDlg, IDC_SETALLBUTTONSKINNED, DBGetContactSettingByte(NULL, "CLCExt", "bskinned", 0));
+            CheckDlgButton(hwndDlg, IDC_EQUALSELECTION, (cfg::getByte("CLCExt", "EXBK_EqualSelection", 1) == 1) ? BST_CHECKED : BST_UNCHECKED);
+            CheckDlgButton(hwndDlg, IDC_SELBLEND, cfg::getByte("CLCExt", "EXBK_SelBlend", 1));
+            CheckDlgButton(hwndDlg, IDC_SETALLBUTTONSKINNED, cfg::getByte("CLCExt", "bskinned", 0));
 
             SendDlgItemMessage(hwndDlg, IDC_CORNERSPIN, UDM_SETRANGE, 0, MAKELONG(10, 0));
             SendDlgItemMessage(hwndDlg, IDC_CORNERSPIN, UDM_SETPOS, 0, cfg::dat.cornerRadius);
@@ -1621,18 +1617,18 @@ static INT_PTR CALLBACK DlgProcSkinOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
             CheckDlgButton(hwndDlg, IDC_USEPERPROTO, cfg::dat.bUsePerProto);
             CheckDlgButton(hwndDlg, IDC_OVERRIDEPERSTATUSCOLOR, cfg::dat.bOverridePerStatusColors);
             CheckDlgButton(hwndDlg, IDC_FASTGRADIENT, cfg::dat.bWantFastGradients);
-            CheckDlgButton(hwndDlg, IDC_IGNORESELFORGROUPS, DBGetContactSettingByte(NULL, "CLC", "IgnoreSelforGroups", 0) ? BST_CHECKED : BST_UNCHECKED);
+            CheckDlgButton(hwndDlg, IDC_IGNORESELFORGROUPS, cfg::getByte("CLC", "IgnoreSelforGroups", 0) ? BST_CHECKED : BST_UNCHECKED);
 
 
-            if(!DBGetContactSettingString(NULL, "CLC", "ContactSkins", &dbv)) {
+            if(!cfg::getString(NULL, "CLC", "ContactSkins", &dbv)) {
                 SetDlgItemTextA(hwndDlg, IDC_SKINFILE, dbv.pszVal);
                 DBFreeVariant(&dbv);
-                EnableWindow(GetDlgItem(hwndDlg, IDC_RELOAD), TRUE);
+                Utils::enableDlgControl(hwndDlg, IDC_RELOAD, TRUE);
             }
             else
-                EnableWindow(GetDlgItem(hwndDlg, IDC_RELOAD), FALSE);
-            CheckDlgButton(hwndDlg, IDC_USESKIN, DBGetContactSettingByte(NULL, "CLUI", "useskin", 0) ? BST_CHECKED : BST_UNCHECKED);
-            if(!DBGetContactSettingTString(NULL, "CLC", "AdvancedSkin", &dbv)) {
+            	Utils::enableDlgControl(hwndDlg, IDC_RELOAD, FALSE);
+            CheckDlgButton(hwndDlg, IDC_USESKIN, cfg::getByte("CLUI", "useskin", 0) ? BST_CHECKED : BST_UNCHECKED);
+            if(!cfg::getTString(NULL, "CLC", "AdvancedSkin", &dbv)) {
                 SetDlgItemText(hwndDlg, IDC_SKINFILENAME, dbv.ptszVal);
                 DBFreeVariant(&dbv);
             }
@@ -1646,7 +1642,7 @@ static INT_PTR CALLBACK DlgProcSkinOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
                 {
                     int useskin = IsDlgButtonChecked(hwndDlg, IDC_USESKIN);
 
-                    DBWriteContactSettingByte(NULL, "CLUI", "useskin", (BYTE)(useskin ? 1 : 0));
+                    cfg::writeByte("CLUI", "useskin", (BYTE)(useskin ? 1 : 0));
                     break;
                 }
                 case IDC_UNLOAD:
@@ -1680,21 +1676,21 @@ static INT_PTR CALLBACK DlgProcSkinOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
                             int skinChanged = 0;
                             DBVARIANT dbv = {0};
 
-                            if(!DBGetContactSettingTString(NULL, "CLC", "AdvancedSkin", &dbv)) {
+                            if(!cfg::getTString(NULL, "CLC", "AdvancedSkin", &dbv)) {
                                 if(_tcscmp(dbv.ptszVal, final_path))
                                     skinChanged = TRUE;
                                 DBFreeVariant(&dbv);
                             }
                             else
                                 skinChanged = TRUE;
-                            DBWriteContactSettingTString(NULL, "CLC", "AdvancedSkin", final_path);
-                            DBWriteContactSettingByte(NULL, "CLUI", "skin_changed", (BYTE)skinChanged);
+                            cfg::writeTString(NULL, "CLC", "AdvancedSkin", final_path);
+                            cfg::writeByte("CLUI", "skin_changed", (BYTE)skinChanged);
                             SetDlgItemText(hwndDlg, IDC_SKINFILENAME, final_path);
                         }
                         break;
                     }
                 case IDC_RELOADSKIN:
-                    DBWriteContactSettingByte(NULL, "CLUI", "skin_changed", 1);
+                	cfg::writeByte("CLUI", "skin_changed", 1);
                     ApplyCLUISkin();
                     break;
                 case IDC_RELOAD:
@@ -1745,7 +1741,7 @@ INT_PTR CALLBACK OptionsDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
       {
          TCITEM tci;
          RECT rcClient;
-         int oPage = DBGetContactSettingByte(NULL, "CLUI", "opage", 0);
+         int oPage = cfg::getByte("CLUI", "opage", 0);
          SKINDESCRIPTION sd;
 
          TranslateDialogDefault(hwnd);
@@ -1757,8 +1753,8 @@ INT_PTR CALLBACK OptionsDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
 			TabCtrl_InsertItem(GetDlgItem(hwnd, IDC_OPTIONSTAB), 0, &tci);
          MoveWindow((HWND)tci.lParam,5,25,rcClient.right-9,rcClient.bottom-60,1);
          ShowWindow((HWND)tci.lParam, oPage == 0 ? SW_SHOW : SW_HIDE);
-         if(MyEnableThemeDialogTexture)
-             MyEnableThemeDialogTexture((HWND)tci.lParam, ETDT_ENABLETAB);
+         if(IS_THEMED)
+             API::pfnEnableThemeDialogTexture((HWND)tci.lParam, ETDT_ENABLETAB);
 
          if(ServiceExists(MS_CLNSE_INVOKE)) {
              ZeroMemory(&sd, sizeof(sd));
@@ -1776,17 +1772,14 @@ INT_PTR CALLBACK OptionsDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
 
          if(hwndSkinEdit) {
              ShowWindow(hwndSkinEdit, oPage == 1 ? SW_SHOW : SW_HIDE);
-             ShowWindow(sd.hwndImageEdit, oPage == 2 ? SW_SHOW : SW_HIDE);
              TabCtrl_SetCurSel(GetDlgItem(hwnd, IDC_OPTIONSTAB), oPage);
-             if(MyEnableThemeDialogTexture) {
-                 MyEnableThemeDialogTexture(hwndSkinEdit, ETDT_ENABLETAB);
-                 MyEnableThemeDialogTexture(sd.hwndImageEdit, ETDT_ENABLETAB);
-             }
+             if(IS_THEMED)
+                 API::pfnEnableThemeDialogTexture(hwndSkinEdit, ETDT_ENABLETAB);
          }
 
          TabCtrl_SetCurSel(GetDlgItem(hwnd, IDC_OPTIONSTAB), oPage);
-         EnableWindow(GetDlgItem(hwnd, IDC_EXPORT), TabCtrl_GetCurSel(GetDlgItem(hwnd, IDC_OPTIONSTAB)) != 0);
-         EnableWindow(GetDlgItem(hwnd, IDC_IMPORT), TabCtrl_GetCurSel(GetDlgItem(hwnd, IDC_OPTIONSTAB)) != 0);
+         Utils::enableDlgControl(hwnd, IDC_EXPORT, TabCtrl_GetCurSel(GetDlgItem(hwnd, IDC_OPTIONSTAB)) != 0);
+         Utils::enableDlgControl(hwnd, IDC_IMPORT, TabCtrl_GetCurSel(GetDlgItem(hwnd, IDC_OPTIONSTAB)) != 0);
          iInit = FALSE;
          return FALSE;
       }
@@ -1874,9 +1867,9 @@ INT_PTR CALLBACK OptionsDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
                         tci.mask = TCIF_PARAM;
                         TabCtrl_GetItem(GetDlgItem(hwnd,IDC_OPTIONSTAB),TabCtrl_GetCurSel(GetDlgItem(hwnd,IDC_OPTIONSTAB)),&tci);
                         ShowWindow((HWND)tci.lParam,SW_SHOW);
-                        DBWriteContactSettingByte(NULL, "CLUI", "opage", (BYTE)TabCtrl_GetCurSel(GetDlgItem(hwnd, IDC_OPTIONSTAB)));
-                        EnableWindow(GetDlgItem(hwnd, IDC_EXPORT), TabCtrl_GetCurSel(GetDlgItem(hwnd, IDC_OPTIONSTAB)) != 0);
-                        EnableWindow(GetDlgItem(hwnd, IDC_IMPORT), TabCtrl_GetCurSel(GetDlgItem(hwnd, IDC_OPTIONSTAB)) != 0);
+                        cfg::writeByte("CLUI", "opage", (BYTE)TabCtrl_GetCurSel(GetDlgItem(hwnd, IDC_OPTIONSTAB)));
+                        Utils::enableDlgControl(hwnd, IDC_EXPORT, TabCtrl_GetCurSel(GetDlgItem(hwnd, IDC_OPTIONSTAB)) != 0);
+                        Utils::enableDlgControl(hwnd, IDC_IMPORT, TabCtrl_GetCurSel(GetDlgItem(hwnd, IDC_OPTIONSTAB)) != 0);
                      }
                   break;
                }
@@ -1919,7 +1912,7 @@ int CoolSB_SetupScrollBar()
 
         cfg::dat.bSkinnedScrollbar = FALSE;
 
-    if(DBGetContactSettingByte(NULL, "CLC", "NoVScrollBar", 0)) {
+    if(cfg::getByte("CLC", "NoVScrollBar", 0)) {
         UninitializeCoolSB(pcli->hwndContactTree);
         return 0;
     }

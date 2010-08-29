@@ -30,7 +30,6 @@ extern struct CListEvent* ( *saveAddEvent )(CLISTEVENT *cle);
 extern int ( *saveRemoveEvent )(HANDLE hContact, HANDLE hDbEvent);
 extern wndFrame *wndFrameEventArea;
 
-extern pfnDrawAlpha pDrawAlpha;
 extern HPEN g_hPenCLUIFrames;
 
 extern StatusItems_t *StatusItems;
@@ -214,24 +213,20 @@ LRESULT CALLBACK EventAreaWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPa
 			if(cfg::clcdat)
 				hFontOld = ChangeToFont(hdcMem, cfg::clcdat, FONTID_EVENTAREA, &height);
 
-			if(pDrawAlpha != NULL) {
-				if(cfg::dat.bWallpaperMode)
-					SkinDrawBg(hwnd, hdcMem);
-				item = &StatusItems[ID_EXTBKEVTAREA - ID_STATUS_OFFLINE];
-				if(item->IGNORED) {
-					FillRect(hdcMem, &rc, GetSysColorBrush(COLOR_3DFACE));
-				}
-				else {
-					rc.top += item->MARGIN_TOP; rc.bottom -= item->MARGIN_BOTTOM;
-					rc.left += item->MARGIN_LEFT; rc.right -= item->MARGIN_RIGHT;
-
-					DrawAlpha(hdcMem, &rc, item->COLOR, item->ALPHA, item->COLOR2, item->COLOR2_TRANSPARENT,
-						item->GRADIENT, item->CORNER, item->BORDERSTYLE, item->imageItem);
-					SetTextColor(hdcMem, item->TEXTCOLOR);
-				}
-			}
-			else
+			if(cfg::dat.bWallpaperMode)
+				SkinDrawBg(hwnd, hdcMem);
+			item = &StatusItems[ID_EXTBKEVTAREA - ID_STATUS_OFFLINE];
+			if(item->IGNORED) {
 				FillRect(hdcMem, &rc, GetSysColorBrush(COLOR_3DFACE));
+			}
+			else {
+				rc.top += item->MARGIN_TOP; rc.bottom -= item->MARGIN_BOTTOM;
+				rc.left += item->MARGIN_LEFT; rc.right -= item->MARGIN_RIGHT;
+
+				DrawAlpha(hdcMem, &rc, item->COLOR, item->ALPHA, item->COLOR2, item->COLOR2_TRANSPARENT,
+					item->GRADIENT, item->CORNER, item->BORDERSTYLE, item->imageItem);
+				SetTextColor(hdcMem, item->TEXTCOLOR);
+			}
 
 			dwLeft = rc.left;
 
@@ -287,7 +282,7 @@ struct CListEvent* AddEvent(CLISTEVENT *cle)
 				nmi = (struct NotifyMenuItemExData *) malloc(sizeof(struct NotifyMenuItemExData));
 				if (nmi) {
 					TCHAR szBuffer[128];
-					TCHAR* szStatus = pcli->pfnGetStatusModeDescription(DBGetContactSettingWord(p->cle.hContact, szProto, "Status", ID_STATUS_OFFLINE), 0);
+					TCHAR* szStatus = pcli->pfnGetStatusModeDescription(cfg::getWord(p->cle.hContact, szProto, "Status", ID_STATUS_OFFLINE), 0);
 #if defined(_UNICODE)
 					TCHAR szwProto[64];
 					MultiByteToWideChar(CP_ACP, 0, szProto, -1, szwProto, 64);

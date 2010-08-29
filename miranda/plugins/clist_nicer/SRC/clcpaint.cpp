@@ -1,28 +1,34 @@
 /*
-
-Miranda IM: the free IM client for Microsoft* Windows*
-
-Copyright 2000-2003 Miranda ICQ/IM project,
-all portions of this codebase are copyrighted to the people
-listed in contributors.txt.
-
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
-of the License, or (at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-
-UNICODE done
-
-*/
+ * astyle --force-indent=tab=4 --brackets=linux --indent-switches
+ *		  --pad=oper --one-line=keep-blocks  --unpad=paren
+ *
+ * Miranda IM: the free IM client for Microsoft* Windows*
+ *
+ * Copyright 2000-2010 Miranda ICQ/IM project,
+ * all portions of this codebase are copyrighted to the people
+ * listed in contributors.txt.
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * you should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ *
+ * part of clist_nicer plugin for Miranda.
+ *
+ * (C) 2005-2010 by silvercircle _at_ gmail _dot_ com and contributors
+ *
+ * $Id$
+ *
+ */
 
 #include "commonheaders.h"
 
@@ -40,17 +46,10 @@ extern char *im_clients[];
 extern HICON im_clienthIcons[];
 extern HICON overlayicons[];
 
-#if defined(_UNICODE)
-extern TCHAR statusNames[12][124];
-#else
 extern TCHAR *statusNames[];
-#endif
 
 extern LONG g_cxsmIcon, g_cysmIcon;
 extern StatusItems_t *StatusItems;
-extern PGF MyGradientFill;
-
-pfnDrawAlpha pDrawAlpha = NULL;
 
 int g_hottrack, g_center, g_ignoreselforgroups, g_selectiveIcon, g_exIconSpacing, g_hottrack_done;
 HWND g_focusWnd;
@@ -221,23 +220,6 @@ int GetBasicFontID(struct ClcContact * contact)
 	}
 }
 
-static HMODULE themeAPIHandle = NULL; // handle to uxtheme.dll
-HANDLE   (WINAPI *MyOpenThemeData)(HWND, LPCWSTR) = 0;
-HRESULT  (WINAPI *MyCloseThemeData)(HANDLE) = 0;
-HRESULT  (WINAPI *MyDrawThemeBackground)(HANDLE, HDC, int, int, const RECT *, const RECT *) = 0;
-
-#define MGPROC(x) GetProcAddress(themeAPIHandle,x)
-
-static void InitThemeAPI()
-{
-	themeAPIHandle = GetModuleHandleA("uxtheme");
-	if (themeAPIHandle) {
-		MyOpenThemeData = (HANDLE(WINAPI *)(HWND, LPCWSTR))MGPROC("OpenThemeData");
-		MyCloseThemeData = (HRESULT(WINAPI *)(HANDLE))MGPROC("CloseThemeData");
-		MyDrawThemeBackground = (HRESULT(WINAPI *)(HANDLE, HDC, int, int, const RECT *, const RECT *))MGPROC("DrawThemeBackground");
-	}
-}
-
 void PaintNotifyArea(HDC hDC, RECT *rc)
 {
 	struct ClcData *dat = (struct ClcData *) GetWindowLongPtr(pcli->hwndContactTree, 0);
@@ -392,7 +374,7 @@ static int __fastcall DrawAvatar(HDC hdcMem, RECT *rc, struct ClcContact *contac
         */
         SetStretchBltMode(hdcTempAV, HALFTONE);
         StretchBlt(hdcTempAV, 0, 0, bmWidth, bmHeight, hdcMem, leftoffset + rc->left, y + topoffset, (int)newWidth, (int)newHeight, SRCCOPY);
-        AlphaBlend(hdcTempAV, 0, 0, bmWidth, bmHeight, hdcAvatar, 0, 0, bmWidth, bmHeight, bf);
+        API::pfnAlphaBlend(hdcTempAV, 0, 0, bmWidth, bmHeight, hdcAvatar, 0, 0, bmWidth, bmHeight, bf);
         StretchBlt(hdcMem, leftoffset + rc->left - (g_RTL ? 1 : 0), y + topoffset, (int)newWidth, (int)newHeight, hdcTempAV, 0, 0, bmWidth, bmHeight, SRCCOPY);
     }
     SelectObject(hdcAV, hbmOldAV);
@@ -925,29 +907,23 @@ bgskipped:
 
 	//checkboxes
 	if (checkboxWidth) {
-		RECT rc;
-		HANDLE hTheme = NULL;
+		RECT 	rc;
+		HANDLE 	hTheme = 0;
 
-		if (IsWinVerXPPlus()) {
-			if (!themeAPIHandle) {
-				InitThemeAPI();
-			}
-			if (MyOpenThemeData && MyCloseThemeData && MyDrawThemeBackground) {
-				hTheme = MyOpenThemeData(hwnd, L"BUTTON");
-			}
-		}
+		if (IS_THEMED)
+			hTheme = API::pfnOpenThemeData(hwnd, L"BUTTON");
+
 		rc.left = leftX;
 		rc.right = rc.left + dat->checkboxSize;
 		rc.top = y + ((rowHeight - dat->checkboxSize) >> 1);
 		rc.bottom = rc.top + dat->checkboxSize;
 		if (hTheme) {
-			MyDrawThemeBackground(hTheme, hdcMem, BP_CHECKBOX, flags & CONTACTF_CHECKED ? (g_hottrack ? CBS_CHECKEDHOT : CBS_CHECKEDNORMAL) : (g_hottrack ? CBS_UNCHECKEDHOT : CBS_UNCHECKEDNORMAL), &rc, &rc);
-		} else
-			DrawFrameControl(hdcMem, &rc, DFC_BUTTON, DFCS_BUTTONCHECK | DFCS_FLAT | (flags & CONTACTF_CHECKED ? DFCS_CHECKED : 0) | (g_hottrack ? DFCS_HOT : 0));
-		if (hTheme && MyCloseThemeData) {
-			MyCloseThemeData(hTheme);
-			hTheme = NULL;
+			API::pfnDrawThemeBackground(hTheme, hdcMem, BP_CHECKBOX, flags & CONTACTF_CHECKED ? (g_hottrack ? CBS_CHECKEDHOT : CBS_CHECKEDNORMAL) : (g_hottrack ? CBS_UNCHECKEDHOT : CBS_UNCHECKEDNORMAL), &rc, &rc);
+			API::pfnCloseThemeData(hTheme);
+			hTheme = 0;
 		}
+		else
+			DrawFrameControl(hdcMem, &rc, DFC_BUTTON, DFCS_BUTTONCHECK | DFCS_FLAT | (flags & CONTACTF_CHECKED ? DFCS_CHECKED : 0) | (g_hottrack ? DFCS_HOT : 0));
 		rcContent.left += checkboxWidth;
 		leftX += checkboxWidth;
 	}
@@ -1444,7 +1420,7 @@ void PaintClc(HWND hwnd, struct ClcData *dat, HDC hdc, RECT *rcPaint)
 	GetSystemTime(&cfg::dat.st);
 	SystemTimeToFileTime(&cfg::dat.st, &cfg::dat.ft);
 
-    cfg::dat.bUseFastGradients = cfg::dat.bWantFastGradients && (MyGradientFill != 0);
+    cfg::dat.bUseFastGradients = cfg::dat.bWantFastGradients && (API::pfnGradientFill != 0);
 
 	av_left = (cfg::dat.dwFlags & CLUI_FRAME_AVATARSLEFT);
 	av_right = (cfg::dat.dwFlags & CLUI_FRAME_AVATARSRIGHT);
@@ -1520,8 +1496,7 @@ void PaintClc(HWND hwnd, struct ClcData *dat, HDC hdc, RECT *rcPaint)
 				y = dat->backgroundBmpUse & CLBF_SCROLL ? -dat->yScroll : 0;
 				maxx = dat->backgroundBmpUse & CLBF_TILEH ? clRect.right : 1;
 				maxy = dat->backgroundBmpUse & CLBF_TILEV ? maxy = rcPaint->bottom : y + 1;
-				if (dat->bisEmbedded || !cfg::getByte("CLCExt", "EXBK_FillWallpaper", 0)) {
-					switch (dat->backgroundBmpUse & CLBM_TYPE) {
+				switch (dat->backgroundBmpUse & CLBM_TYPE) {
 					case CLB_STRETCH:
 						if (dat->backgroundBmpUse & CLBF_PROPORTIONAL) {
 							if (clRect.right * bmp.bmHeight < clRect.bottom * bmp.bmWidth) {
@@ -1559,21 +1534,10 @@ void PaintClc(HWND hwnd, struct ClcData *dat, HDC hdc, RECT *rcPaint)
 						destw = bmp.bmWidth;
 						desth = bmp.bmHeight;
 						break;
-					}
-				} else {
-					destw = bmp.bmWidth;
-					desth = bmp.bmHeight;
 				}
 
-				if (!dat->bisEmbedded && cfg::getByte("CLCExt", "EXBK_FillWallpaper", 0)) {
-					RECT mrect;
-					GetWindowRect(hwnd, &mrect);
-					bitx = mrect.left;
-					bity = mrect.top;
-				} else {
-					bitx = 0;
-					bity = 0;
-				}
+				bitx = 0;
+				bity = 0;
 
 				for (; y < maxy; y += desth) {
 					if (y< rcPaint->top - desth)
@@ -1725,7 +1689,4 @@ bgdone:
 	DeleteObject(hBmpOsb);
 	g_inCLCpaint = FALSE;
 	done = GetTickCount();
-	//_DebugPopup(0, "time = %d", done - now);
 }
-
-

@@ -25,11 +25,9 @@ UNICODE done
 */
 #include "commonheaders.h"
 
-extern int g_shutDown;
-
 INT_PTR GetContactStatusMessage(WPARAM wParam, LPARAM lParam)
 {
-	if(!g_shutDown)
+	if(!cfg::shutDown)
 		return SendMessage(pcli->hwndContactTree, CLM_GETSTATUSMSG, wParam, lParam);
 	return 0;
 }

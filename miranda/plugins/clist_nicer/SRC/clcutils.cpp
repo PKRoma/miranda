@@ -581,7 +581,7 @@ void LoadClcOptions(HWND hwnd, struct ClcData *dat)
 	dat->row_border = 0;
 	dat->rightMargin = cfg::getByte("CLC", "RightMargin", CLCDEFAULT_LEFTMARGIN);
 	dat->bkColour =  cfg::getByte("CLC", "UseWinColours", CLCDEFAULT_USEWINDOWSCOLOURS) ?
-                     GetSysColor(COLOR_3DFACE) : DBGetContactSettingDword(NULL, "CLC", "BkColour", CLCDEFAULT_BKCOLOUR);
+                     GetSysColor(COLOR_3DFACE) : cfg::getDword("CLC", "BkColour", CLCDEFAULT_BKCOLOUR);
 	if (!dat->bkChanged) {
 		if(cfg::dat.hBrushCLCBk)
 			DeleteObject(cfg::dat.hBrushCLCBk);

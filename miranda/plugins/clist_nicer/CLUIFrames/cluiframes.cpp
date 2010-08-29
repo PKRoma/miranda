@@ -28,9 +28,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 void RefreshButtons();
 HFONT __fastcall ChangeToFont(HDC hdc, struct ClcData *dat, int id, int *fontHeight);
 
-extern pfnDrawAlpha pDrawAlpha;
 extern HIMAGELIST himlExtraImages;
-extern int g_shutDown;
 extern HWND g_hwndViewModeFrame, g_hwndEventArea;
 extern StatusItems_t *StatusItems;
 extern int mf_updatethread_running;
@@ -85,21 +83,6 @@ static SortData g_sd[MAX_FRAMES];
 
 static HHOOK g_hFrameHook = 0;
 
-/*
-static int InstallDialogBoxHook(void)
-{
-    g_hFrameHook = SetWindowsHookEx(WH_CALLWNDPROC, (HOOKPROC)FrameHookProc,
-									NULL, GetCurrentThreadId());
-	return (g_hFrameHook != NULL);
-}
-
-static int RemoveDialogBoxHook(void)
-{
-    UnhookWindowsHookEx(g_hFrameHook);
-	g_hFrameHook = NULL;
-	return 0;
-}
-*/
 static int sortfunc(const void *a, const void *b)
 {
 	SortData *sd1, *sd2;
@@ -116,7 +99,7 @@ static int sortfunc(const void *a, const void *b)
 #define CLUIFRAMESSETALIGNALTOP				"CLUIFramesSetAlignalTop"
 #define CLUIFRAMESSETALIGNALCLIENT			"CLUIFramesSetAlignalClient"
 #define CLUIFRAMESSETALIGNALBOTTOM			"CLUIFramesSetAlignalBottom"
-#define CLUIFRAMESMOVEUP						"CLUIFramesMoveUp"
+#define CLUIFRAMESMOVEUP					"CLUIFramesMoveUp"
 #define CLUIFRAMESMOVEDOWN					"CLUIFramesMoveDown"
 
 static wndFrame *Frames = NULL;
@@ -497,26 +480,26 @@ int DBLoadFrameSettingsAtPos(int pos, int Frameid)
 
 	_itoa(pos, sadd, 10);
 
-	Frames[Frameid].collapsed = DBGetContactSettingByte(0, CLUIFrameModule, AS(buf, "Collapse", sadd), Frames[Frameid].collapsed);
+	Frames[Frameid].collapsed = 			  cfg::getByte(CLUIFrameModule, AS(buf, "Collapse", sadd), Frames[Frameid].collapsed);
 
-	Frames[Frameid].Locked                  = DBGetContactSettingByte(0, CLUIFrameModule, AS(buf, "Locked", sadd), Frames[Frameid].Locked);
-	Frames[Frameid].visible                 = DBGetContactSettingByte(0, CLUIFrameModule, AS(buf, "Visible", sadd), Frames[Frameid].visible);
-	Frames[Frameid].TitleBar.ShowTitleBar   = DBGetContactSettingByte(0, CLUIFrameModule, AS(buf, "TBVisile", sadd), Frames[Frameid].TitleBar.ShowTitleBar);
+	Frames[Frameid].Locked                  = cfg::getByte(CLUIFrameModule, AS(buf, "Locked", sadd), Frames[Frameid].Locked);
+	Frames[Frameid].visible                 = cfg::getByte(CLUIFrameModule, AS(buf, "Visible", sadd), Frames[Frameid].visible);
+	Frames[Frameid].TitleBar.ShowTitleBar   = cfg::getByte(CLUIFrameModule, AS(buf, "TBVisile", sadd), Frames[Frameid].TitleBar.ShowTitleBar);
 
-	Frames[Frameid].height                  = DBGetContactSettingWord(0, CLUIFrameModule, AS(buf, "Height", sadd), Frames[Frameid].height);
-	Frames[Frameid].HeightWhenCollapsed     = DBGetContactSettingWord(0, CLUIFrameModule, AS(buf, "HeightCollapsed", sadd), 0);
-	Frames[Frameid].align                   = DBGetContactSettingWord(0, CLUIFrameModule, AS(buf, "Align", sadd), Frames[Frameid].align);
+	Frames[Frameid].height                  = cfg::getWord(CLUIFrameModule, AS(buf, "Height", sadd), Frames[Frameid].height);
+	Frames[Frameid].HeightWhenCollapsed     = cfg::getWord(CLUIFrameModule, AS(buf, "HeightCollapsed", sadd), 0);
+	Frames[Frameid].align                   = cfg::getWord(CLUIFrameModule, AS(buf, "Align", sadd), Frames[Frameid].align);
 
 	Frames[Frameid].FloatingPos.x       = DBGetContactSettingRangedWord(0, CLUIFrameModule, AS(buf, "FloatX", sadd), 100, 0, 1024);
 	Frames[Frameid].FloatingPos.y       = DBGetContactSettingRangedWord(0, CLUIFrameModule, AS(buf, "FloatY", sadd), 100, 0, 1024);
 	Frames[Frameid].FloatingSize.x      = DBGetContactSettingRangedWord(0, CLUIFrameModule, AS(buf, "FloatW", sadd), 100, 0, 1024);
 	Frames[Frameid].FloatingSize.y      = DBGetContactSettingRangedWord(0, CLUIFrameModule, AS(buf, "FloatH", sadd), 100, 0, 1024);
 
-	Frames[Frameid].floating            = DBGetContactSettingByte(0, CLUIFrameModule, AS(buf, "Floating", sadd), 0);
-	Frames[Frameid].order               = DBGetContactSettingWord(0, CLUIFrameModule, AS(buf, "Order", sadd), 0);
+	Frames[Frameid].floating            = cfg::getByte(CLUIFrameModule, AS(buf, "Floating", sadd), 0);
+	Frames[Frameid].order               = cfg::getWord(CLUIFrameModule, AS(buf, "Order", sadd), 0);
 
-	Frames[Frameid].UseBorder           = DBGetContactSettingByte(0, CLUIFrameModule, AS(buf, "UseBorder", sadd), Frames[Frameid].UseBorder);
-	Frames[Frameid].Skinned             = DBGetContactSettingByte(0, CLUIFrameModule, AS(buf, "Skinned", sadd), Frames[Frameid].Skinned);
+	Frames[Frameid].UseBorder           = cfg::getByte(CLUIFrameModule, AS(buf, "UseBorder", sadd), Frames[Frameid].UseBorder);
+	Frames[Frameid].Skinned             = cfg::getByte(CLUIFrameModule, AS(buf, "Skinned", sadd), Frames[Frameid].Skinned);
 	return 0;
 }
 
@@ -527,27 +510,27 @@ int DBStoreFrameSettingsAtPos(int pos, int Frameid)
 
 	_itoa(pos, sadd, 10);
 
-	DBWriteContactSettingTString(0, CLUIFrameModule, AS(buf, "Name", sadd), Frames[Frameid].name);
+	cfg::writeTString(0, CLUIFrameModule, AS(buf, "Name", sadd), Frames[Frameid].name);
 	//boolean
-	DBWriteContactSettingByte(0, CLUIFrameModule, AS(buf, "Collapse", sadd), (BYTE)btoint(Frames[Frameid].collapsed));
-	DBWriteContactSettingByte(0, CLUIFrameModule, AS(buf, "Locked", sadd), (BYTE)btoint(Frames[Frameid].Locked));
-	DBWriteContactSettingByte(0, CLUIFrameModule, AS(buf, "Visible", sadd), (BYTE)btoint(Frames[Frameid].visible));
-	DBWriteContactSettingByte(0, CLUIFrameModule, AS(buf, "TBVisile", sadd), (BYTE)btoint(Frames[Frameid].TitleBar.ShowTitleBar));
+	cfg::writeByte(0, CLUIFrameModule, AS(buf, "Collapse", sadd), (BYTE)btoint(Frames[Frameid].collapsed));
+	cfg::writeByte(0, CLUIFrameModule, AS(buf, "Locked", sadd), (BYTE)btoint(Frames[Frameid].Locked));
+	cfg::writeByte(0, CLUIFrameModule, AS(buf, "Visible", sadd), (BYTE)btoint(Frames[Frameid].visible));
+	cfg::writeByte(0, CLUIFrameModule, AS(buf, "TBVisile", sadd), (BYTE)btoint(Frames[Frameid].TitleBar.ShowTitleBar));
 
-	DBWriteContactSettingWord(0, CLUIFrameModule, AS(buf, "Height", sadd), (WORD)Frames[Frameid].height);
-	DBWriteContactSettingWord(0, CLUIFrameModule, AS(buf, "HeightCollapsed", sadd), (WORD)Frames[Frameid].HeightWhenCollapsed);
-	DBWriteContactSettingWord(0, CLUIFrameModule, AS(buf, "Align", sadd), (WORD)Frames[Frameid].align);
+	cfg::writeWord(CLUIFrameModule, AS(buf, "Height", sadd), (WORD)Frames[Frameid].height);
+	cfg::writeWord(CLUIFrameModule, AS(buf, "HeightCollapsed", sadd), (WORD)Frames[Frameid].HeightWhenCollapsed);
+	cfg::writeWord(CLUIFrameModule, AS(buf, "Align", sadd), (WORD)Frames[Frameid].align);
 	//FloatingPos
-	DBWriteContactSettingWord(0, CLUIFrameModule, AS(buf, "FloatX", sadd), (WORD)Frames[Frameid].FloatingPos.x);
-	DBWriteContactSettingWord(0, CLUIFrameModule, AS(buf, "FloatY", sadd), (WORD)Frames[Frameid].FloatingPos.y);
-	DBWriteContactSettingWord(0, CLUIFrameModule, AS(buf, "FloatW", sadd), (WORD)Frames[Frameid].FloatingSize.x);
-	DBWriteContactSettingWord(0, CLUIFrameModule, AS(buf, "FloatH", sadd), (WORD)Frames[Frameid].FloatingSize.y);
+	cfg::writeWord(CLUIFrameModule, AS(buf, "FloatX", sadd), (WORD)Frames[Frameid].FloatingPos.x);
+	cfg::writeWord(CLUIFrameModule, AS(buf, "FloatY", sadd), (WORD)Frames[Frameid].FloatingPos.y);
+	cfg::writeWord(CLUIFrameModule, AS(buf, "FloatW", sadd), (WORD)Frames[Frameid].FloatingSize.x);
+	cfg::writeWord(0, CLUIFrameModule, AS(buf, "FloatH", sadd), (WORD)Frames[Frameid].FloatingSize.y);
 
-	DBWriteContactSettingByte(0, CLUIFrameModule, AS(buf, "Floating", sadd), (BYTE)btoint(Frames[Frameid].floating));
-	DBWriteContactSettingByte(0, CLUIFrameModule, AS(buf, "UseBorder", sadd), (BYTE)btoint(Frames[Frameid].UseBorder));
-	DBWriteContactSettingWord(0, CLUIFrameModule, AS(buf, "Order", sadd), (WORD)Frames[Frameid].order);
+	cfg::writeByte(0, CLUIFrameModule, AS(buf, "Floating", sadd), (BYTE)btoint(Frames[Frameid].floating));
+	cfg::writeByte(0, CLUIFrameModule, AS(buf, "UseBorder", sadd), (BYTE)btoint(Frames[Frameid].UseBorder));
+	cfg::writeWord(0, CLUIFrameModule, AS(buf, "Order", sadd), (WORD)Frames[Frameid].order);
 
-	DBWriteContactSettingByte(0, CLUIFrameModule, AS(buf, "Skinned", sadd), Frames[Frameid].Skinned);
+	cfg::writeByte(CLUIFrameModule, AS(buf, "Skinned", sadd), Frames[Frameid].Skinned);
 	return 0;
 }
 
@@ -580,7 +563,7 @@ int CLUIFramesLoadFrameSettings(int Frameid)
 	if (Frameid < 0 || Frameid >= nFramescount)
 		return -1;
 
-	maxstored = DBGetContactSettingWord(0, CLUIFrameModule, "StoredFrames", -1);
+	maxstored = cfg::getWord(CLUIFrameModule, "StoredFrames", -1);
 	if (maxstored == -1)
 		return 0;
 
@@ -602,7 +585,7 @@ int CLUIFramesStoreFrameSettings(int Frameid)
 	if (Frameid < 0 || Frameid >= nFramescount)
 		return -1;
 
-	maxstored = DBGetContactSettingWord(0, CLUIFrameModule, "StoredFrames", -1);
+	maxstored = cfg::getWord(CLUIFrameModule, "StoredFrames", -1);
 	if (maxstored == -1)
 		maxstored = 0;
 
@@ -613,7 +596,7 @@ int CLUIFramesStoreFrameSettings(int Frameid)
 	}
 
 	DBStoreFrameSettingsAtPos(storpos, Frameid);
-	DBWriteContactSettingWord(0, CLUIFrameModule, "StoredFrames", (WORD)maxstored);
+	cfg::writeWord(CLUIFrameModule, "StoredFrames", (WORD)maxstored);
 	return 0;
 }
 
@@ -624,7 +607,7 @@ int CLUIFramesStoreAllFrames()
 	if (FramesSysNotStarted)
 		return -1;
 
-	if (g_shutDown)
+	if (cfg::shutDown)
 		return -1;
 
 	lockfrm();
@@ -1504,7 +1487,7 @@ INT_PTR CLUIFramesCollapseUnCollapseFrame(WPARAM wParam, LPARAM lParam)
 				ulockfrm();
 				return 0;
 			}
-			if (DBGetContactSettingByte(NULL, "CLUI", "AutoSize", 0)) {
+			if (cfg::getByte("CLUI", "AutoSize", 0)) {
 				ulockfrm();
 				return 0;
 			}
@@ -1950,7 +1933,7 @@ INT_PTR CLUIFramesAddFrame(WPARAM wParam, LPARAM lParam)
 	// create frame
 	Frames[nFramescount].TitleBar.hwnd =
 		CreateWindow(CLUIFrameTitleBarClassName, Frames[nFramescount].name,
-					 (DBGetContactSettingByte(0, CLUIFrameModule, "RemoveAllTitleBarBorders", 1) ? 0 : WS_BORDER)
+					 (cfg::getByte(CLUIFrameModule, "RemoveAllTitleBarBorders", 1) ? 0 : WS_BORDER)
 					 | WS_CHILD | WS_CLIPCHILDREN | (Frames[nFramescount].TitleBar.ShowTitleBar ? WS_VISIBLE : 0) |
 					 WS_CLIPCHILDREN, 0, 0, 0, 0, pcli->hwndContactList, NULL, g_hInst, NULL);
 
@@ -2051,7 +2034,7 @@ static INT_PTR CLUIFramesRemoveFrame(WPARAM wParam, LPARAM lParam)
 	RemoveItemFromList(pos, &Frames, &nFramescount);
 
 	ulockfrm();
-	if (!g_shutDown) {
+	if (!cfg::shutDown) {
 		InvalidateRect(pcli->hwndContactList, NULL, TRUE);
 		CLUIFramesOnClistResize((WPARAM)pcli->hwndContactList, 0);
 		RedrawWindow(pcli->hwndContactList, NULL, NULL, RDW_INVALIDATE | RDW_ERASE | RDW_FRAME | RDW_UPDATENOW | RDW_ALLCHILDREN);
@@ -2193,7 +2176,7 @@ int CLUIFramesResize(const RECT newsize)
 	GapBetweenFrames = cfg::dat.gapBetweenFrames;
 	sepw = GapBetweenFrames;
 
-	if (nFramescount < 1 || g_shutDown)
+	if (nFramescount < 1 || cfg::shutDown)
 		return 0;
 
 	newheight = newsize.bottom - newsize.top;
@@ -2436,7 +2419,7 @@ int CLUIFramesOnClistResize(WPARAM wParam, LPARAM lParam)
 	int tick;
 	GapBetweenFrames = cfg::dat.gapBetweenFrames;
 
-	if (FramesSysNotStarted || g_shutDown)
+	if (FramesSysNotStarted || cfg::shutDown)
 		return -1;
 
 	lockfrm();
@@ -2501,21 +2484,21 @@ int OnFrameTitleBarBackgroundChange()
 {
 	DBVARIANT dbv;
 
-	AlignCOLLIconToLeft = DBGetContactSettingByte(NULL, "FrameTitleBar", "AlignCOLLIconToLeft", 0);
+	AlignCOLLIconToLeft = cfg::getByte("FrameTitleBar", "AlignCOLLIconToLeft", 0);
 
-	bkColour = DBGetContactSettingDword(NULL, "FrameTitleBar", "BkColour", CLCDEFAULT_BKCOLOUR);
+	bkColour = cfg::getDword("FrameTitleBar", "BkColour", CLCDEFAULT_BKCOLOUR);
 
 	if (hBmpBackground) {
 		DeleteObject(hBmpBackground);
 		hBmpBackground = NULL;
 	}
-	if (DBGetContactSettingByte(NULL, "FrameTitleBar", "UseBitmap", CLCDEFAULT_USEBITMAP)) {
+	if (cfg::getByte("FrameTitleBar", "UseBitmap", CLCDEFAULT_USEBITMAP)) {
 		if (!DBGetContactSetting(NULL, "FrameTitleBar", "BkBitmap", &dbv)) {
 			hBmpBackground = (HBITMAP)CallService(MS_UTILS_LOADBITMAP, 0, (LPARAM)dbv.pszVal);
 			mir_free(dbv.pszVal);
 		}
 	}
-	backgroundBmpUse = DBGetContactSettingWord(NULL, "FrameTitleBar", "BkBmpUse", CLCDEFAULT_BKBMPUSE);
+	backgroundBmpUse = cfg::getWord("FrameTitleBar", "BkBmpUse", CLCDEFAULT_BKBMPUSE);
 
 	CLUIFramesOnClistResize(0, 0);
 	return 0;
@@ -2532,7 +2515,7 @@ static int DrawTitleBar(HDC dc, RECT rect, int Frameid)
 	/*
 	 * no need to redraw anything while shutting down
 	 */
-	if (g_shutDown)
+	if (cfg::shutDown)
 		return 0;
 
 	TitleBarH = cfg::dat.titleBarHeight;
@@ -2564,7 +2547,7 @@ static int DrawTitleBar(HDC dc, RECT rect, int Frameid)
 		if (cfg::dat.bWallpaperMode && !Frames[pos].floating)
 			SkinDrawBg(Frames[pos].TitleBar.hwnd, hdcMem);
 
-		if (!item->IGNORED && pDrawAlpha != NULL) {
+		if (!item->IGNORED) {
 			RECT rc = Frames[pos].TitleBar.wndSize;
 			rc.top += item->MARGIN_TOP;
 			rc.bottom -= item->MARGIN_BOTTOM;
@@ -2795,7 +2778,7 @@ LRESULT CALLBACK CLUIFrameTitleBarProc(HWND hwnd, UINT msg, WPARAM wParam, LPARA
 			}
 
 			if ((!(wParam&MK_CONTROL)) && Frames[framepos].Locked && (!(Frames[framepos].floating))) {
-				if (DBGetContactSettingByte(NULL, "CLUI", "ClientAreaDrag", 0)) {
+				if (cfg::getByte("CLUI", "ClientAreaDrag", 0)) {
 					POINT pt;
 					GetCursorPos(&pt);
 					ulockfrm();
@@ -3401,7 +3384,7 @@ static INT_PTR SetIconForExtraColumn(WPARAM wParam, LPARAM lParam)
 	if (piec->cbSize != sizeof(IconExtraColumn))
 		return -1;
 
-	if (cfg::dat.bMetaAvail && cfg::dat.bMetaEnabled && DBGetContactSettingByte((HANDLE)wParam, cfg::dat.szMetaName, "IsSubcontact", 0))
+	if (cfg::dat.bMetaAvail && cfg::dat.bMetaEnabled && cfg::getByte((HANDLE)wParam, cfg::dat.szMetaName, "IsSubcontact", 0))
 		PostMessage(pcli->hwndContactTree, CLM_SETEXTRAIMAGEINTMETA, wParam, MAKELONG((WORD)piec->ColumnType, (WORD)piec->hImage));
 	else
 		PostMessage(pcli->hwndContactTree, CLM_SETEXTRAIMAGEINT, wParam, MAKELONG((WORD)piec->ColumnType, (WORD)piec->hImage));
@@ -3530,7 +3513,7 @@ int LoadCLUIFramesModule(void)
 	OnFrameTitleBarBackgroundChange();
 
 	FramesSysNotStarted = FALSE;
-	g_hPenCLUIFrames = CreatePen(PS_SOLID, 1, DBGetContactSettingDword(NULL, "CLUI", "clr_frameborder", GetSysColor(COLOR_3DDKSHADOW)));
+	g_hPenCLUIFrames = CreatePen(PS_SOLID, 1, cfg::getDword("CLUI", "clr_frameborder", GetSysColor(COLOR_3DDKSHADOW)));
 	return 0;
 }
 

@@ -38,12 +38,12 @@ extern RECT cluiPos;
 
 static void Docking_GetMonitorRectFromPoint(POINT pt, RECT *rc)
 {
-	if ( MyMonitorFromPoint ) {
+	if ( API::pfnMonitorFromPoint ) {
 		MONITORINFO monitorInfo;
-		HMONITOR hMonitor = MyMonitorFromPoint(pt, MONITOR_DEFAULTTONEAREST); // always returns a valid value
+		HMONITOR hMonitor = API::pfnMonitorFromPoint(pt, MONITOR_DEFAULTTONEAREST); // always returns a valid value
 		monitorInfo.cbSize = sizeof(MONITORINFO);
 
-		if ( MyGetMonitorInfo( hMonitor, &monitorInfo )) {
+		if ( API::pfnGetMonitorInfo( hMonitor, &monitorInfo )) {
 			CopyMemory(rc, &monitorInfo.rcMonitor, sizeof(RECT));
 			return;
 		}
@@ -99,19 +99,19 @@ int Docking_ProcessWindowMessage(WPARAM wParam, LPARAM lParam)
     MSG *msg = (MSG *) wParam;
 
     if (msg->message == WM_DESTROY)
-        DBWriteContactSettingByte(NULL, "CList", "Docked", (BYTE) docked);
+        cfg::writeByte("CList", "Docked", (BYTE) docked);
     if (!docked && msg->message != WM_CREATE && msg->message != WM_MOVING && msg->message != WM_CREATEDOCKED && msg->message != WM_MOVE)
         return 0;
     switch (msg->message) {
         case WM_CREATE:
     //if(GetSystemMetrics(SM_CMONITORS)>1) return 0;
-            if (DBGetContactSettingByte(NULL, "CList", "Docked", 0))
+            if (cfg::getByte("CList", "Docked", 0))
                 PostMessage(msg->hwnd, WM_CREATEDOCKED, 0, 0);
             draggingTitle = 0;
             return 0;
         case WM_CREATEDOCKED:
     //we need to post a message just after creation to let main message function do some work
-            docked = (int) (char) DBGetContactSettingByte(NULL, "CList", "Docked", 0);
+            docked = (int) (char) cfg::getByte("CList", "Docked", 0);
             if (IsWindowVisible(msg->hwnd) && !IsIconic(msg->hwnd)) {
                 RECT rc, rcMonitor;
                 ZeroMemory(&abd, sizeof(abd));

@@ -29,8 +29,6 @@ static POINT ptMouse = {0};
 static RECT rcMouse = {0};
 static int timer_set = 0, tooltip_active = 0;
 extern HANDLE hStatusBarShowToolTipEvent, hStatusBarHideToolTipEvent;
-extern pfnDrawAlpha pDrawAlpha;
-extern int g_shutDown;
 extern StatusItems_t *StatusItems;
 extern HBRUSH g_CLUISkinnedBkColor;
 
@@ -85,7 +83,7 @@ LRESULT CALLBACK NewStatusBarWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
 		break;
 
 	case WM_PAINT:
-		if(g_shutDown)
+		if(cfg::shutDown)
 			return 0;
 
 		if(cfg::dat.bSkinnedStatusBar) {
@@ -100,7 +98,7 @@ LRESULT CALLBACK NewStatusBarWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
 			int i;
 			HFONT hOldFont = 0;
 			POINT pt;
-			BYTE windowStyle = DBGetContactSettingByte(NULL, "CLUI", "WindowStyle", SETTING_WINDOWSTYLE_DEFAULT);
+			BYTE windowStyle = cfg::getByte("CLUI", "WindowStyle", SETTING_WINDOWSTYLE_DEFAULT);
 			LONG b_offset = cfg::dat.bClipBorder + (windowStyle == SETTING_WINDOWSTYLE_NOBORDER ? 2 : (windowStyle == SETTING_WINDOWSTYLE_THINBORDER ? 1 : 0));
 
 			GetClientRect(hwnd, &rcClient);
@@ -172,7 +170,7 @@ LRESULT CALLBACK NewStatusBarWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
 						if(PD) {
 							if(NotifyEventHooks(hStatusBarShowToolTipEvent, (WPARAM)PD->RealName, 0) > 0) // a plugin handled this event
 								tooltip_active = TRUE;
-							else if(DBGetContactSettingDword(NULL, "mToolTip", "ShowStatusTip", 0)) {
+							else if(cfg::getDword("mToolTip", "ShowStatusTip", 0)) {
 								CLCINFOTIP ti = {0};
 								BYTE isLocked = 0;
 								char szTipText[256], *szStatus = NULL;
@@ -181,7 +179,7 @@ LRESULT CALLBACK NewStatusBarWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
 								ti.cbSize = sizeof(ti);
 								ti.isTreeFocused = GetFocus() == pcli->hwndContactList ? 1 : 0;
 								wStatus = (WORD)CallProtoService(PD->RealName, PS_GETSTATUS, 0, 0);
-								isLocked = DBGetContactSettingByte(NULL, PD->RealName, "LockMainStatus", 0);
+								isLocked = cfg::getByte(PD->RealName, "LockMainStatus", 0);
 								szStatus = (char *)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, (WPARAM)wStatus, 0);
 								mir_snprintf(szTipText, 256, "<b>%s</b>: %s%s", PD->RealName, szStatus, isLocked ? "  (LOCKED)" : "");
 								CallService("mToolTip/ShowTip", (WPARAM)szTipText, (LPARAM)&ti);

@@ -28,10 +28,8 @@ UNICODE done
 #include <m_icq.h>
 
 extern HIMAGELIST hCListImages, himlExtraImages;;
-extern int g_shutDown;
-extern PLUGININFOEX pluginInfo;
-
 extern ButtonItem *g_ButtonItems;
+extern PLUGININFOEX pluginInfo;
 
 static INT_PTR GetClistVersion(WPARAM wParam, LPARAM lParam)
 {
@@ -82,7 +80,7 @@ void CluiProtocolStatusChanged( int parStatus, const char* szProto )
 	int rdelta = cfg::dat.bCLeft + cfg::dat.bCRight;
 	BYTE windowStyle;
 
-	if (pcli->hwndStatus == 0 || g_shutDown)
+	if (pcli->hwndStatus == 0 || cfg::shutDown)
 		return;
 
 	ProtoEnumAccounts( &protoCount, &accs );
@@ -124,7 +122,7 @@ void CluiProtocolStatusChanged( int parStatus, const char* szProto )
 	else {
 		HDC hdc;
 		SIZE textSize;
-		BYTE showOpts=DBGetContactSettingByte(NULL,"CLUI","SBarShow",1);
+		BYTE showOpts = cfg::getByte("CLUI","SBarShow",1);
 		int x;
 		HFONT hofont;
 		TCHAR szName[32];
@@ -171,7 +169,7 @@ void CluiProtocolStatusChanged( int parStatus, const char* szProto )
 	SendMessage(pcli->hwndStatus,SB_SIMPLE,FALSE,0);
 
 	partWidths[partCount-1]=-1;
-	windowStyle = DBGetContactSettingByte(NULL, "CLUI", "WindowStyle", 0);
+	windowStyle = cfg::getByte("CLUI", "WindowStyle", 0);
 	SendMessage(pcli->hwndStatus,SB_SETMINHEIGHT, 18 + cfg::dat.bClipBorder + ((windowStyle == SETTING_WINDOWSTYLE_THINBORDER || windowStyle == SETTING_WINDOWSTYLE_NOBORDER) ? 3 : 0), 0);
 	SendMessage(pcli->hwndStatus, SB_SETPARTS, partCount, (LPARAM)partWidths);
 
@@ -195,7 +193,7 @@ void CluiProtocolStatusChanged( int parStatus, const char* szProto )
 		{
 			int flags;
 			flags = SBT_OWNERDRAW;
-			if ( DBGetContactSettingByte(NULL,"CLUI","SBarBevel", 1)==0 )
+			if ( cfg::getByte("CLUI","SBarBevel", 1)==0 )
 				flags |= SBT_NOBORDERS;
 			SendMessageA( pcli->hwndStatus, SB_SETTEXTA, partCount|flags,(LPARAM)PD );
 		}

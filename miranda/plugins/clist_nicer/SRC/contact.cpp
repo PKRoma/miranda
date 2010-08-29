@@ -54,7 +54,7 @@ static int GetContactStatus(HANDLE hContact)
     szProto = (char*) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
     if (szProto == NULL)
         return ID_STATUS_OFFLINE;
-    return DBGetContactSettingWord(hContact, szProto, "Status", ID_STATUS_OFFLINE);
+    return cfg::getWord(hContact, szProto, "Status", ID_STATUS_OFFLINE);
 }
 
 int __forceinline GetStatusModeOrdering(int statusMode)
@@ -101,15 +101,15 @@ static void MF_CalcFrequency(HANDLE hContact, DWORD dwCutoffDays, int doSleep)
 
     if(eventCount == 0) {
         frequency = 0x7fffffff;
-        DBWriteContactSettingDword(hContact, "CList", "mf_firstEvent", curTime - (dwCutoffDays * 86400));
+        cfg::writeDword(hContact, "CList", "mf_firstEvent", curTime - (dwCutoffDays * 86400));
     }
     else {
         frequency = (curTime - dbei.timestamp) / eventCount;
-        DBWriteContactSettingDword(hContact, "CList", "mf_firstEvent", dbei.timestamp);
+        cfg::writeDword(hContact, "CList", "mf_firstEvent", dbei.timestamp);
     }
 
-    DBWriteContactSettingDword(hContact, "CList", "mf_freq", frequency);
-    DBWriteContactSettingDword(hContact, "CList", "mf_count", eventCount);
+    cfg::writeDword(hContact, "CList", "mf_freq", frequency);
+    cfg::writeDword(hContact, "CList", "mf_count", eventCount);
 }
 
 extern TCHAR g_ptszEventName[];
@@ -147,7 +147,7 @@ void LoadContactTree(void)
     int i, status, hideOffline;
     BOOL mc_disablehgh = ServiceExists(MS_MC_DISABLEHIDDENGROUP);
     DBVARIANT dbv = {0};
-    BYTE      bMsgFrequency = DBGetContactSettingByte(NULL, "CList", "fhistdata", 0);
+    BYTE      bMsgFrequency = cfg::getByte("CList", "fhistdata", 0);
 
     CallService(MS_CLUI_LISTBEGINREBUILD, 0, 0);
     for (i = 1; ; i++) {
@@ -156,7 +156,7 @@ void LoadContactTree(void)
         CallService(MS_CLUI_GROUPADDED, i, 0);
     }
 
-    hideOffline = DBGetContactSettingByte(NULL, "CList", "HideOffline", SETTING_HIDEOFFLINE_DEFAULT);
+    hideOffline = cfg::getByte("CList", "HideOffline", SETTING_HIDEOFFLINE_DEFAULT);
     hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
     while (hContact != NULL) {
         status = GetContactStatus(hContact);
@@ -177,7 +177,7 @@ void LoadContactTree(void)
 
         hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM) hContact, 0);
     }
-    DBWriteContactSettingByte(NULL, "CList", "fhistdata", 1);
+    cfg::writeByte("CList", "fhistdata", 1);
     mc_hgh_removed = TRUE;
     CallService(MS_CLUI_SORTLIST, 0, 0);
     CallService(MS_CLUI_LISTENDREBUILD, 0, 0);
@@ -322,11 +322,11 @@ int SetHideOffline(WPARAM wParam, LPARAM lParam)
 {
     switch ((int) wParam) {
         case 0:
-            DBWriteContactSettingByte(NULL, "CList", "HideOffline", 0); break;
+        	cfg::writeByte("CList", "HideOffline", 0); break;
         case 1:
-            DBWriteContactSettingByte(NULL, "CList", "HideOffline", 1); break;
+        	cfg::writeByte("CList", "HideOffline", 1); break;
         case -1:
-            DBWriteContactSettingByte(NULL, "CList", "HideOffline", (BYTE) ! DBGetContactSettingByte(NULL, "CList", "HideOffline", SETTING_HIDEOFFLINE_DEFAULT)); break;
+        	cfg::writeByte("CList", "HideOffline", (BYTE) ! cfg::getByte("CList", "HideOffline", SETTING_HIDEOFFLINE_DEFAULT)); break;
     }
     SetButtonStates(pcli->hwndContactList);
     LoadContactTree();

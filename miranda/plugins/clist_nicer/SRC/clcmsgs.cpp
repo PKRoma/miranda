@@ -98,7 +98,7 @@ LRESULT ProcessExternalMessages(HWND hwnd, struct ClcData *dat, UINT msg, WPARAM
                 cfg::eCache[index].iExtraValid = cfg::eCache[index].iExtraImage[LOWORD(lParam)] != (BYTE)0xff ? (cfg::eCache[index].iExtraValid | (1 << LOWORD(lParam))) : (cfg::eCache[index].iExtraValid & ~(1 << LOWORD(lParam)));
             }
 
-			hMasterContact = (HANDLE)DBGetContactSettingDword((HANDLE)wParam, cfg::dat.szMetaName, "Handle", 0);
+			hMasterContact = (HANDLE)cfg::getDword((HANDLE)wParam, cfg::dat.szMetaName, "Handle", 0);
 
 			index = cfg::getCache(hMasterContact, NULL);
 			if(index >= 0 && index < cfg::nextCacheEntry) {
@@ -142,7 +142,7 @@ LRESULT ProcessExternalMessages(HWND hwnd, struct ClcData *dat, UINT msg, WPARAM
 			if(contact->type != CLCIT_CONTACT)
 				return 0;
 			contact->flags ^= CONTACTF_PRIORITY;
-			DBWriteContactSettingByte(contact->hContact, "CList", "Priority", (BYTE)(contact->flags & CONTACTF_PRIORITY ? 1 : 0));
+			cfg::writeByte(contact->hContact, "CList", "Priority", (BYTE)(contact->flags & CONTACTF_PRIORITY ? 1 : 0));
 			pcli->pfnClcBroadcast(CLM_AUTOREBUILD, 0, 0);
 			return 0;
 		}
@@ -176,7 +176,7 @@ LRESULT ProcessExternalMessages(HWND hwnd, struct ClcData *dat, UINT msg, WPARAM
 			iEntry = contact->extraCacheEntry;
 
 			if(iEntry >= 0 && iEntry <= cfg::nextCacheEntry) {
-				state = !DBGetContactSettingByte(contact->hContact, "CList", "floating", 0);
+				state = !cfg::getByte(contact->hContact, "CList", "floating", 0);
 				if(state) {
 					if(cfg::eCache[iEntry].floater == NULL)
 						FLT_Create(iEntry);
@@ -188,13 +188,13 @@ LRESULT ProcessExternalMessages(HWND hwnd, struct ClcData *dat, UINT msg, WPARAM
 						cfg::eCache[iEntry].floater = 0;
 					}
 				}
-				DBWriteContactSettingByte(contact->hContact, "CList", "floating", state);
+				cfg::writeByte(contact->hContact, "CList", "floating", state);
 			}
 			return 0;
 		}
 	case CLM_QUERYFLOATINGCONTACT:
 		{
-			return(DBGetContactSettingByte((HANDLE)wParam, "CList", "floating", 0));
+			return(cfg::getByte((HANDLE)wParam, "CList", "floating", 0));
 		}
 	case CLM_SETEXTRAIMAGELIST:
 		dat->himlExtraColumns = (HIMAGELIST) lParam;

@@ -7,6 +7,7 @@
 #define IDD_OPT_SKIN                    4
 #define IDD_QUICKIGNORE                 5
 #define IDD_OPT                         6
+#define IDD_EXCEPTION					20
 #define IDI_FOLDER                      7
 #define IDI_POPUPON                     8
 #define IDI_ICON1                       9
@@ -426,6 +427,10 @@
 #define IDC_FLT_OPACITYVALUE            40070
 #define IDC_FLT_BGCOLOUR                40071
 #define IDC_FLT_BORDERCOLOUR            40072
+
+#define IDC_EXCEPTION_DETAILS			1200
+#define IDC_COPY_EXCEPTION				1201
+#define IDC_EX_REASON					1202
 
 // Next default values for new objects
 // 

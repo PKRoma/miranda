@@ -33,7 +33,6 @@ $Id$
 
 extern HIMAGELIST hCListImages;
 extern HPEN g_hPenCLUIFrames;
-extern BOOL (WINAPI *MyEnableThemeDialogTexture)(HANDLE, DWORD);
 extern wndFrame *wndFrameViewMode;
 
 typedef int (__cdecl *pfnEnumCallback)(char *szName);
@@ -159,8 +158,8 @@ static void UpdateStickies()
     while(hContact) {
         hItem = (HANDLE)SendDlgItemMessage(clvmHwnd, IDC_CLIST, CLM_FINDCONTACT, (WPARAM)hContact, 0);
         if(hItem)
-            SendDlgItemMessage(clvmHwnd, IDC_CLIST, CLM_SETCHECKMARK, (WPARAM)hItem, DBGetContactSettingByte(hContact, "CLVM", g_szModename, 0) ? 1 : 0);
-        localMask = HIWORD(DBGetContactSettingDword(hContact, "CLVM", g_szModename, 0));
+            SendDlgItemMessage(clvmHwnd, IDC_CLIST, CLM_SETCHECKMARK, (WPARAM)hItem, cfg::getByte(hContact, "CLVM", g_szModename, 0) ? 1 : 0);
+        localMask = HIWORD(cfg::getDword(hContact, "CLVM", g_szModename, 0));
         UpdateClistItem(hItem, (localMask == 0 || localMask == stickyStatusMask) ? stickyStatusMask : localMask);
         hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM)hContact, 0);
     }
@@ -230,7 +229,7 @@ static int FillDialog(HWND hwnd)
 
 		for(i = 0;;i++) {
 			mir_snprintf(buf, 20, "%d", i);
-			if(DBGetContactSettingTString(NULL, "CListGroups", buf, &dbv))
+			if(cfg::getTString(NULL, "CListGroups", buf, &dbv))
 				break;
 
 			item.pszText = &dbv.ptszVal[1];
@@ -330,19 +329,19 @@ void SaveViewMode(const char *name, const TCHAR *szGroupFilter, const char *szPr
     char szSetting[512];
 
     mir_snprintf(szSetting, 512, "%c%s_PF", 246, name);
-    DBWriteContactSettingString(NULL, CLVM_MODULE, szSetting, szProtoFilter);
+    cfg::writeString(NULL, CLVM_MODULE, szSetting, szProtoFilter);
     mir_snprintf(szSetting, 512, "%c%s_GF", 246, name);
-    DBWriteContactSettingTString(NULL, CLVM_MODULE, szSetting, szGroupFilter);
+    cfg::writeTString(NULL, CLVM_MODULE, szSetting, szGroupFilter);
     mir_snprintf(szSetting, 512, "%c%s_SM", 246, name);
-    DBWriteContactSettingDword(NULL, CLVM_MODULE, szSetting, statusMask);
+    cfg::writeDword(CLVM_MODULE, szSetting, statusMask);
     mir_snprintf(szSetting, 512, "%c%s_SSM", 246, name);
-    DBWriteContactSettingDword(NULL, CLVM_MODULE, szSetting, stickyStatusMask);
+    cfg::writeDword(CLVM_MODULE, szSetting, stickyStatusMask);
     mir_snprintf(szSetting, 512, "%c%s_OPT", 246, name);
-    DBWriteContactSettingDword(NULL, CLVM_MODULE, szSetting, options);
+    cfg::writeDword(CLVM_MODULE, szSetting, options);
     mir_snprintf(szSetting, 512, "%c%s_LM", 246, name);
-    DBWriteContactSettingDword(NULL, CLVM_MODULE, szSetting, lmdat);
+    cfg::writeDword(CLVM_MODULE, szSetting, lmdat);
 
-	DBWriteContactSettingDword(NULL, CLVM_MODULE, name, MAKELONG((unsigned short)operators, (unsigned short)stickies));
+    cfg::writeDword(CLVM_MODULE, name, MAKELONG((unsigned short)operators, (unsigned short)stickies));
 }
 
 /*
@@ -431,12 +430,12 @@ void SaveState()
                 if(hItem) {
                     if(SendDlgItemMessage(clvmHwnd, IDC_CLIST, CLM_GETCHECKMARK, (WPARAM)hItem, 0)) {
                         dwLocalMask = GetMaskForItem(hItem);
-                        DBWriteContactSettingDword(hContact, "CLVM", szModeName, MAKELONG(1, (unsigned short)dwLocalMask));
+                        cfg::writeDword(hContact, "CLVM", szModeName, MAKELONG(1, (unsigned short)dwLocalMask));
                         stickies++;
                     }
                     else {
-                        if(DBGetContactSettingDword(hContact, "CLVM", szModeName, 0))
-                            DBWriteContactSettingDword(hContact, "CLVM", szModeName, 0);
+                        if(cfg::getDword(hContact, "CLVM", szModeName, 0))
+                        	cfg::writeDword(hContact, "CLVM", szModeName, 0);
                     }
                 }
                 hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM)hContact, 0);
@@ -458,7 +457,7 @@ void SaveState()
             free(szModeName);
         }
     }
-    EnableWindow(GetDlgItem(clvmHwnd, IDC_APPLY), FALSE);
+    Utils::enableDlgControl(clvmHwnd, IDC_APPLY, FALSE);
 }
 
 
@@ -496,17 +495,17 @@ void UpdateFilters()
     if(DBGetContactSetting(NULL, CLVM_MODULE, szSetting, &dbv_pf))
         goto cleanup;
     mir_snprintf(szSetting, 128, "%c%s_GF", 246, szBuf);
-    if(DBGetContactSettingTString(NULL, CLVM_MODULE, szSetting, &dbv_gf))
+    if(cfg::getTString(NULL, CLVM_MODULE, szSetting, &dbv_gf))
         goto cleanup;
     mir_snprintf(szSetting, 128, "%c%s_OPT", 246, szBuf);
-    if((opt = DBGetContactSettingDword(NULL, CLVM_MODULE, szSetting, -1)) != -1) {
+    if((opt = cfg::getDword(NULL, CLVM_MODULE, szSetting, -1)) != -1) {
         SendDlgItemMessage(clvmHwnd, IDC_AUTOCLEARSPIN, UDM_SETPOS, 0, MAKELONG(LOWORD(opt), 0));
     }
     mir_snprintf(szSetting, 128, "%c%s_SM", 246, szBuf);
-    statusMask = DBGetContactSettingDword(NULL, CLVM_MODULE, szSetting, -1);
+    statusMask = cfg::getDword(CLVM_MODULE, szSetting, -1);
     mir_snprintf(szSetting, 128, "%c%s_SSM", 246, szBuf);
-    stickyStatusMask = DBGetContactSettingDword(NULL, CLVM_MODULE, szSetting, -1);
-    dwFlags = DBGetContactSettingDword(NULL, CLVM_MODULE, szBuf, 0);
+    stickyStatusMask = cfg::getDword(CLVM_MODULE, szSetting, -1);
+    dwFlags = cfg::getDword(CLVM_MODULE, szBuf, 0);
     {
         LVITEMA item = {0};
         char szTemp[256];
@@ -573,12 +572,12 @@ void UpdateFilters()
 		BYTE bTmp;
 
 		CheckDlgButton(clvmHwnd, IDC_LASTMSG, useLastMsg);
-		EnableWindow(GetDlgItem(clvmHwnd, IDC_LASTMESSAGEOP), useLastMsg);
-		EnableWindow(GetDlgItem(clvmHwnd, IDC_LASTMSGVALUE), useLastMsg);
-		EnableWindow(GetDlgItem(clvmHwnd, IDC_LASTMESSAGEUNIT), useLastMsg);
+		Utils::enableDlgControl(clvmHwnd, IDC_LASTMESSAGEOP, useLastMsg);
+		Utils::enableDlgControl(clvmHwnd, IDC_LASTMSGVALUE, useLastMsg);
+		Utils::enableDlgControl(clvmHwnd, IDC_LASTMESSAGEUNIT, useLastMsg);
 
 	    mir_snprintf(szSetting, 128, "%c%s_LM", 246, szBuf);
-		lmdat = DBGetContactSettingDword(NULL, CLVM_MODULE, szSetting, 0);
+		lmdat = cfg::getDword(CLVM_MODULE, szSetting, 0);
 
 		SetDlgItemInt(clvmHwnd, IDC_LASTMSGVALUE, LOWORD(lmdat), FALSE);
 		bTmp = LOBYTE(HIWORD(lmdat));
@@ -607,8 +606,8 @@ INT_PTR CALLBACK DlgProcViewModesSetup(HWND hwndDlg, UINT msg, WPARAM wParam, LP
             CLCINFOITEM cii = {0};
             HICON hIcon;
 
-            if(IsWinVerXPPlus() && MyEnableThemeDialogTexture)
-                MyEnableThemeDialogTexture(hwndDlg, ETDT_ENABLETAB);
+            if(IS_THEMED)
+                API::pfnEnableThemeDialogTexture(hwndDlg, ETDT_ENABLETAB);
 
             himlViewModes = ImageList_Create(16, 16, ILC_MASK | (IsWinVerXPPlus() ? ILC_COLOR32 : ILC_COLOR16), 12, 0);
             for(i = ID_STATUS_OFFLINE; i <= ID_STATUS_OUTTOLUNCH; i++)
@@ -631,7 +630,7 @@ INT_PTR CALLBACK DlgProcViewModesSetup(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 
             TranslateDialogDefault(hwndDlg);
             FillDialog(hwndDlg);
-            EnableWindow(GetDlgItem(hwndDlg, IDC_ADDVIEWMODE), FALSE);
+            Utils::enableDlgControl(hwndDlg, IDC_ADDVIEWMODE, FALSE);
 
             SendDlgItemMessage(hwndDlg, IDC_CLIST, CLM_SETEXTRAIMAGELIST, 0, (LPARAM)himlViewModes);
             SendDlgItemMessage(hwndDlg, IDC_CLIST, CLM_SETEXTRACOLUMNS, ID_STATUS_OUTTOLUNCH - ID_STATUS_OFFLINE, 0);
@@ -651,9 +650,7 @@ INT_PTR CALLBACK DlgProcViewModesSetup(HWND hwndDlg, UINT msg, WPARAM wParam, LP
             while(_page2Controls[i] != 0)
                 ShowWindow(GetDlgItem(hwndDlg, _page2Controls[i++]), SW_HIDE);
             ShowWindow(hwndDlg, SW_SHOWNORMAL);
-            EnableWindow(GetDlgItem(hwndDlg, IDC_APPLY), FALSE);
-            //EnableWindow(GetDlgItem(hwndDlg, IDC_VARIABLES), FALSE);
-            //EnableWindow(GetDlgItem(hwndDlg, IDC_VARIABLES), ServiceExists(MS_VARS_FORMATSTRING));
+            Utils::enableDlgControl(hwndDlg, IDC_APPLY, FALSE);
             SendDlgItemMessage(hwndDlg, IDC_AUTOCLEARSPIN, UDM_SETRANGE, 0, MAKELONG(1000, 0));
             SetWindowText(hwndDlg, TranslateT("Configure view modes"));
             return TRUE;
@@ -665,24 +662,24 @@ INT_PTR CALLBACK DlgProcViewModesSetup(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 				case IDC_LASTMESSAGEUNIT:
 				case IDC_LASTMESSAGEOP:
                     if (HIWORD(wParam) == CBN_SELCHANGE)
-                        EnableWindow(GetDlgItem(hwndDlg, IDC_APPLY), TRUE);
+                    	Utils::enableDlgControl(hwndDlg, IDC_APPLY, TRUE);
                     break;
                 case IDC_AUTOCLEAR:
-                    EnableWindow(GetDlgItem(hwndDlg, IDC_APPLY), TRUE);
+                	Utils::enableDlgControl(hwndDlg, IDC_APPLY, TRUE);
                     break;
 				case IDC_LASTMSG:
 					{
 						int bUseLastMsg = IsDlgButtonChecked(hwndDlg, IDC_LASTMSG);
-						EnableWindow(GetDlgItem(hwndDlg, IDC_LASTMESSAGEOP), bUseLastMsg);
-						EnableWindow(GetDlgItem(hwndDlg, IDC_LASTMESSAGEUNIT), bUseLastMsg);
-						EnableWindow(GetDlgItem(hwndDlg, IDC_LASTMSGVALUE), bUseLastMsg);
-	                    EnableWindow(GetDlgItem(hwndDlg, IDC_APPLY), TRUE);
+						Utils::enableDlgControl(hwndDlg, IDC_LASTMESSAGEOP, bUseLastMsg);
+						Utils::enableDlgControl(hwndDlg, IDC_LASTMESSAGEUNIT, bUseLastMsg);
+						Utils::enableDlgControl(hwndDlg, IDC_LASTMSGVALUE, bUseLastMsg);
+						Utils::enableDlgControl(hwndDlg, IDC_APPLY, TRUE);
 						break;
 					}
                 case IDC_AUTOCLEARVAL:
 				case IDC_LASTMSGVALUE:
                     if(HIWORD(wParam) == EN_CHANGE && GetFocus() == (HWND)lParam)
-                        EnableWindow(GetDlgItem(hwndDlg, IDC_APPLY), TRUE);
+                    	Utils::enableDlgControl(hwndDlg, IDC_APPLY, TRUE);
                     break;
                 case IDC_DELETEVIEWMODE:
                 {
@@ -713,8 +710,8 @@ INT_PTR CALLBACK DlgProcViewModesSetup(HWND hwndDlg, UINT msg, WPARAM wParam, LP
                                 }
                                 hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
                                 while(hContact) {
-                                    if(DBGetContactSettingDword(hContact, "CLVM", szBuf, -1) != -1)
-                                        DBWriteContactSettingDword(hContact, "CLVM", szBuf, 0);
+                                    if(cfg::getDword(hContact, "CLVM", szBuf, -1) != -1)
+                                    	cfg::writeDword(hContact, "CLVM", szBuf, 0);
                                     hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM)hContact, 0);
                                 }
                                 SendDlgItemMessage(hwndDlg, IDC_VIEWMODES, LB_DELETESTRING, SendDlgItemMessage(hwndDlg, IDC_VIEWMODES, LB_GETCURSEL, 0, 0), 0);
@@ -739,7 +736,7 @@ INT_PTR CALLBACK DlgProcViewModesSetup(HWND hwndDlg, UINT msg, WPARAM wParam, LP
                     szBuf[255] = 0;
 
                     if(lstrlenA(szBuf) > 2) {
-                        if(DBGetContactSettingDword(NULL, CLVM_MODULE, szBuf, -1) != -1)
+                        if(cfg::getDword(CLVM_MODULE, szBuf, -1) != -1)
                             MessageBox(0, TranslateT("A view mode with this name does alredy exist"), TranslateT("Duplicate name"), MB_OK);
                         else {
                             int iNewItem = SendDlgItemMessageA(hwndDlg, IDC_VIEWMODES, LB_INSERTSTRING, -1, (LPARAM)szBuf);
@@ -754,7 +751,7 @@ INT_PTR CALLBACK DlgProcViewModesSetup(HWND hwndDlg, UINT msg, WPARAM wParam, LP
                         }
                         SetDlgItemTextA(hwndDlg, IDC_NEWVIEMODE, "");
                     }
-                    EnableWindow(GetDlgItem(hwndDlg, IDC_ADDVIEWMODE), FALSE);
+                    Utils::enableDlgControl(hwndDlg, IDC_ADDVIEWMODE, FALSE);
                     break;
                 }
                 case IDC_CLEARALL:
@@ -782,13 +779,11 @@ INT_PTR CALLBACK DlgProcViewModesSetup(HWND hwndDlg, UINT msg, WPARAM wParam, LP
                     break;
             }
             if(LOWORD(wParam) == IDC_NEWVIEMODE && HIWORD(wParam) == EN_CHANGE)
-                EnableWindow(GetDlgItem(hwndDlg, IDC_ADDVIEWMODE), TRUE);
+            	Utils::enableDlgControl(hwndDlg, IDC_ADDVIEWMODE, TRUE);
             if(LOWORD(wParam) == IDC_VIEWMODES && HIWORD(wParam) == LBN_SELCHANGE) {
                 SaveState();
                 clvm_curItem = SendDlgItemMessage(hwndDlg, IDC_VIEWMODES, LB_GETCURSEL, 0, 0);
                 UpdateFilters();
-                //EnableWindow(GetDlgItem(hwndDlg, IDC_APPLY), TRUE);
-                //SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
             }
             break;
         case WM_NOTIFY:
@@ -799,7 +794,7 @@ INT_PTR CALLBACK DlgProcViewModesSetup(HWND hwndDlg, UINT msg, WPARAM wParam, LP
                 case IDC_PROTOCOLS:
                 case IDC_CLIST:
                     if (((LPNMHDR) lParam)->code == NM_CLICK || ((LPNMHDR) lParam)->code == CLN_CHECKCHANGED)
-                        EnableWindow(GetDlgItem(hwndDlg, IDC_APPLY), TRUE);
+                    	Utils::enableDlgControl(hwndDlg, IDC_APPLY, TRUE);
                     switch (((LPNMHDR)lParam)->code)
                     {
                         case CLN_NEWCONTACT:
@@ -952,7 +947,7 @@ LRESULT CALLBACK ViewModeFrameWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 			SendMessage(GetDlgItem(hwnd, IDC_SELECTMODE), BM_SETIMAGE, IMAGE_ICON, (LPARAM)LoadImage(g_hInst, MAKEINTRESOURCE(IDI_CLVM_SELECT), IMAGE_ICON, 16, 16, LR_SHARED));
 		}
 		{
-			int bSkinned = DBGetContactSettingByte(NULL, "CLCExt", "bskinned", 0);
+			int bSkinned = cfg::getByte("CLCExt", "bskinned", 0);
 			int i = 0;
 
 			while(_buttons[i] != 0) {
@@ -1070,7 +1065,7 @@ clvm_reset_command:
 				SetButtonStates(pcli->hwndContactList);
 				cfg::dat.current_viewmode[0] = 0;
 				cfg::dat.old_viewmode[0] = 0;
-                DBWriteContactSettingString(NULL, "CList", "LastViewMode", "");
+				cfg::writeString(NULL, "CList", "LastViewMode", "");
 				break;
 			case IDC_CONFIGUREMODES:
 clvm_config_command:
@@ -1131,7 +1126,7 @@ void ApplyViewMode(const char *name)
     cfg::dat.bFilterEffective = 0;
 
     mir_snprintf(szSetting, 256, "%c%s_PF", 246, name);
-    if(!DBGetContactSettingString(NULL, CLVM_MODULE, szSetting, &dbv)) {
+    if(!cfg::getString(NULL, CLVM_MODULE, szSetting, &dbv)) {
         if(lstrlenA(dbv.pszVal) >= 2) {
             strncpy(cfg::dat.protoFilter, dbv.pszVal, sizeof(cfg::dat.protoFilter));
             cfg::dat.protoFilter[sizeof(cfg::dat.protoFilter) - 1] = 0;
@@ -1140,7 +1135,7 @@ void ApplyViewMode(const char *name)
         mir_free(dbv.pszVal);
     }
     mir_snprintf(szSetting, 256, "%c%s_GF", 246, name);
-    if(!DBGetContactSettingTString(NULL, CLVM_MODULE, szSetting, &dbv)) {
+    if(!cfg::getTString(NULL, CLVM_MODULE, szSetting, &dbv)) {
         if(lstrlen(dbv.ptszVal) >= 2) {
             _tcsncpy(cfg::dat.groupFilter, dbv.ptszVal, safe_sizeof(cfg::dat.groupFilter));
             cfg::dat.groupFilter[safe_sizeof(cfg::dat.groupFilter) - 1] = 0;
@@ -1149,12 +1144,12 @@ void ApplyViewMode(const char *name)
         mir_free(dbv.ptszVal);
     }
     mir_snprintf(szSetting, 256, "%c%s_SM", 246, name);
-    cfg::dat.statusMaskFilter = DBGetContactSettingDword(NULL, CLVM_MODULE, szSetting, -1);
+    cfg::dat.statusMaskFilter = cfg::getDword(CLVM_MODULE, szSetting, -1);
     if(cfg::dat.statusMaskFilter >= 1)
         cfg::dat.bFilterEffective |= CLVM_FILTER_STATUS;
 
     mir_snprintf(szSetting, 256, "%c%s_SSM", 246, name);
-    cfg::dat.stickyMaskFilter = DBGetContactSettingDword(NULL, CLVM_MODULE, szSetting, -1);
+    cfg::dat.stickyMaskFilter = cfg::getDword(CLVM_MODULE, szSetting, -1);
     if(cfg::dat.stickyMaskFilter != -1)
         cfg::dat.bFilterEffective |= CLVM_FILTER_STICKYSTATUS;
 
@@ -1205,14 +1200,14 @@ void ApplyViewMode(const char *name)
         }
     }*/
 
-    cfg::dat.filterFlags = DBGetContactSettingDword(NULL, CLVM_MODULE, name, 0);
+    cfg::dat.filterFlags = cfg::getDword(CLVM_MODULE, name, 0);
 
     KillTimer(g_hwndViewModeFrame, TIMERID_VIEWMODEEXPIRE);
 
     if(cfg::dat.filterFlags & CLVM_AUTOCLEAR) {
         DWORD timerexpire;
         mir_snprintf(szSetting, 256, "%c%s_OPT", 246, name);
-        timerexpire = LOWORD(DBGetContactSettingDword(NULL, CLVM_MODULE, szSetting, 0));
+        timerexpire = LOWORD(cfg::getDword(CLVM_MODULE, szSetting, 0));
         strncpy(cfg::dat.old_viewmode, cfg::dat.current_viewmode, 256);
         cfg::dat.old_viewmode[255] = 0;
         SetTimer(g_hwndViewModeFrame, TIMERID_VIEWMODEEXPIRE, timerexpire * 1000, NULL);
@@ -1233,7 +1228,7 @@ void ApplyViewMode(const char *name)
 
 		cfg::dat.bFilterEffective |= CLVM_FILTER_LASTMSG;
         mir_snprintf(szSetting, 256, "%c%s_LM", 246, name);
-        cfg::dat.lastMsgFilter = DBGetContactSettingDword(NULL, CLVM_MODULE, szSetting, 0);
+        cfg::dat.lastMsgFilter = cfg::getDword(CLVM_MODULE, szSetting, 0);
 		if(LOBYTE(HIWORD(cfg::dat.lastMsgFilter)))
 			cfg::dat.bFilterEffective |= CLVM_FILTER_LASTMSG_NEWERTHAN;
 		else
@@ -1257,14 +1252,14 @@ void ApplyViewMode(const char *name)
         cfg::dat.bFilterEffective |= CLVM_STICKY_CONTACTS;
 
     if(cfg::dat.boldHideOffline == (BYTE)-1)
-        cfg::dat.boldHideOffline = DBGetContactSettingByte(NULL, "CList", "HideOffline", 0);
+        cfg::dat.boldHideOffline = cfg::getByte("CList", "HideOffline", 0);
 
     CallService(MS_CLIST_SETHIDEOFFLINE, 0, 0);
     SetWindowTextA(hwndSelector, name);
     pcli->pfnClcBroadcast(CLM_AUTOREBUILD, 0, 0);
     SetButtonStates(pcli->hwndContactList);
 
-    DBWriteContactSettingString(NULL, "CList", "LastViewMode", cfg::dat.current_viewmode);
+    cfg::writeString(NULL, "CList", "LastViewMode", cfg::dat.current_viewmode);
 }
 
 

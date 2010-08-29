@@ -60,8 +60,8 @@ void TrayIconUpdateBase(const char *szChangedProto)
 	}
 	if (netProtoCount > 1) {
 		if (averageMode > 0) {
-			if (DBGetContactSettingByte(NULL, "CList", "TrayIcon", SETTING_TRAYICON_DEFAULT) == SETTING_TRAYICON_MULTI) {
-				if (DBGetContactSettingByte(NULL, "CList", "AlwaysMulti", SETTING_ALWAYSMULTI_DEFAULT)) {
+			if (cfg::getByte("CList", "TrayIcon", SETTING_TRAYICON_DEFAULT) == SETTING_TRAYICON_MULTI) {
+				if (cfg::getByte("CList", "AlwaysMulti", SETTING_ALWAYSMULTI_DEFAULT)) {
 					HICON hIcon = 0;
 					int iIcon = IconFromStatusMode(szChangedProto, averageMode, 0, &hIcon);
 					if(hIcon)
@@ -92,14 +92,14 @@ void TrayIconUpdateBase(const char *szChangedProto)
 					changed = pcli->pfnTrayIconSetBaseInfo(ImageList_GetIcon(hCListImages, iIcon, ILD_NORMAL), NULL);
 			}
 		} else {
-			switch (DBGetContactSettingByte(NULL, "CList", "TrayIcon", SETTING_TRAYICON_DEFAULT)) {
+			switch (cfg::getByte("CList", "TrayIcon", SETTING_TRAYICON_DEFAULT)) {
 			case SETTING_TRAYICON_SINGLE:
 				{
 					DBVARIANT dbv = {DBVT_DELETED};
 					int iIcon = 0;
 					HICON hIcon = 0;
 					char *szProto;
-					if (DBGetContactSettingString(NULL, "CList", "PrimaryStatus", &dbv))
+					if (cfg::getString(NULL, "CList", "PrimaryStatus", &dbv))
 						szProto = NULL;
 					else
 						szProto = dbv.pszVal;
@@ -116,7 +116,7 @@ void TrayIconUpdateBase(const char *szChangedProto)
 					HICON hIcon = 0;
 					int iIcon = IconFromStatusMode(szChangedProto, CallProtoService(szChangedProto, PS_GETSTATUS, 0, 0), 0, &hIcon);
 
-					pcli->cycleTimerId = SetTimer(NULL, 0, DBGetContactSettingWord(NULL, "CList", "CycleTime", SETTING_CYCLETIME_DEFAULT) * 1000, pcli->pfnTrayCycleTimerProc);
+					pcli->cycleTimerId = SetTimer(NULL, 0, cfg::getWord("CList", "CycleTime", SETTING_CYCLETIME_DEFAULT) * 1000, pcli->pfnTrayCycleTimerProc);
 					if(hIcon)
 						changed = pcli->pfnTrayIconSetBaseInfo(CopyIcon(hIcon), NULL);
 					else
@@ -126,7 +126,7 @@ void TrayIconUpdateBase(const char *szChangedProto)
 			case SETTING_TRAYICON_MULTI:
 				if ( !pcli->trayIcon )
 					pcli->pfnTrayIconRemove(NULL, NULL);
-				else if (DBGetContactSettingByte(NULL, "CList", "AlwaysMulti", SETTING_ALWAYSMULTI_DEFAULT)) {
+				else if (cfg::getByte("CList", "AlwaysMulti", SETTING_ALWAYSMULTI_DEFAULT)) {
 					HICON hIcon = 0;
 					int iIcon = IconFromStatusMode(szChangedProto, CallProtoService(szChangedProto, PS_GETSTATUS, 0, 0), 0, &hIcon);
 

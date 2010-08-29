@@ -9,7 +9,7 @@ static int OnContactMenuBuild(WPARAM wParam,LPARAM lParam)
 	BYTE bSetting;
 
 	// Menu Item - Floating Contact
-	bSetting = DBGetContactSettingByte(0, "CList", "flt_enabled", 0);
+	bSetting = cfg::getByte("CList", "flt_enabled", 0);
 	if (bSetting && !hFloatingItem)
 	{
 		memset(&mi,0,sizeof(mi));

@@ -42,21 +42,11 @@ TCHAR *szNoevents = _T("No events...");
 //extern HICON im_clienthIcons[NR_CLIENTS];
 extern HICON overlayicons[10];
 
-pfnSetLayeredWindowAttributes MySetLayeredWindowAttributes = NULL;
-pfnUpdateLayeredWindow MyUpdateLayeredWindow = NULL;
-pfnMonitorFromPoint  MyMonitorFromPoint = NULL;
-pfnMonitorFromWindow MyMonitorFromWindow = NULL;
-pfnGetMonitorInfo    MyGetMonitorInfo = NULL;
-pfnTrackMouseEvent   MyTrackMouseEvent = NULL;
-
-extern PGF MyGradientFill;
 extern int Docking_ProcessWindowMessage(WPARAM wParam, LPARAM lParam);
 extern int SetHideOffline(WPARAM wParam, LPARAM lParam);
 
-extern pfnDrawAlpha pDrawAlpha;
 extern DWORD g_gdiplusToken;
 extern HIMAGELIST himlExtraImages;
-extern DWORD ( WINAPI *pfnSetLayout )(HDC, DWORD);
 
 struct LIST_INTERFACE li;
 struct MM_INTERFACE memoryManagerInterface;
@@ -212,7 +202,7 @@ static int systemModulesLoaded(WPARAM wParam, LPARAM lParam)
 
 	if(ServiceExists(MS_MC_DISABLEHIDDENGROUP))
 		CallService(MS_MC_DISABLEHIDDENGROUP, 1, 0);
-	cfg::dat.bMetaEnabled = DBGetContactSettingByte(NULL, cfg::dat.szMetaName, "Enabled", 1);
+	cfg::dat.bMetaEnabled = cfg::getByte(cfg::dat.szMetaName, "Enabled", 1);
 
 	cfg::dat.bAvatarServiceAvail = ServiceExists(MS_AV_GETAVATARBITMAP) ? TRUE : FALSE;
 	if(cfg::dat.bAvatarServiceAvail)
@@ -234,7 +224,6 @@ static int fnIconFromStatusMode( const char* szProto, int status, HANDLE hContac
 extern "C" int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 {
 	int rc = 0;
-	HMODULE hUserDll;
 	DBVARIANT dbv;
 	int       i;
 	char	  szProfilePath[MAX_PATH];
@@ -244,24 +233,6 @@ extern "C" int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 #endif
 
-	pfnSetLayout = (DWORD ( WINAPI *)(HDC, DWORD))GetProcAddress( GetModuleHandleA( "GDI32.DLL" ), "SetLayout" );
-
-	hUserDll = GetModuleHandleA("user32.dll");
-	if (hUserDll) {
-		MyMonitorFromPoint = ( pfnMonitorFromPoint )GetProcAddress(hUserDll, "MonitorFromPoint");
-		MyMonitorFromWindow = ( pfnMonitorFromWindow )GetProcAddress(hUserDll, "MonitorFromWindow");
-		MyGetMonitorInfo = ( pfnGetMonitorInfo )GetProcAddress(hUserDll, "GetMonitorInfoA");
-		MySetLayeredWindowAttributes = ( pfnSetLayeredWindowAttributes )GetProcAddress(hUserDll, "SetLayeredWindowAttributes");
-		MyUpdateLayeredWindow = ( pfnUpdateLayeredWindow )GetProcAddress(hUserDll, "UpdateLayeredWindow");
-		MyTrackMouseEvent = ( pfnTrackMouseEvent )GetProcAddress(hUserDll, "TrackMouseEvent");
-	}
-
-	MyGradientFill = (PGF)GetProcAddress(GetModuleHandleA("msimg32"), "GradientFill");
-
-	LoadCLCButtonModule();
-	RegisterCLUIFrameClasses();
-
-	// get the internal malloc/free()
 	memset(&memoryManagerInterface, 0, sizeof(memoryManagerInterface));
 	memoryManagerInterface.cbSize = sizeof(memoryManagerInterface);
 	CallService(MS_SYSTEM_GET_MMI, 0, (LPARAM) &memoryManagerInterface);
@@ -270,64 +241,66 @@ extern "C" int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 	li.cbSize = sizeof(li);
 	CallService(MS_SYSTEM_GET_LI, 0, (LPARAM)&li);
 
+	API::onInit();
+	LoadCLCButtonModule();
+	RegisterCLUIFrameClasses();
+
 	ZeroMemory((void*) &cfg::dat, sizeof(cfg::dat));
-	{
-		int iCount = CallService(MS_DB_CONTACT_GETCOUNT, 0, 0);
 
-		iCount += 20;
-		if( iCount < 300 )
-			iCount = 300;
+	int iCount = CallService(MS_DB_CONTACT_GETCOUNT, 0, 0);
 
-		cfg::eCache = reinterpret_cast<TExtraCache *>(malloc(sizeof(TExtraCache) * iCount));
-		ZeroMemory(cfg::eCache, sizeof(struct TExtraCache) * iCount);
-		cfg::nextCacheEntry = 0;
-		cfg::maxCacheEntry = iCount;
-		cfg::init();
-	}
+	iCount += 20;
+	if( iCount < 300 )
+		iCount = 300;
 
-	cfg::dat.toolbarVisibility = DBGetContactSettingDword(NULL, "CLUI", "TBVisibility", DEFAULT_TB_VISIBILITY);
-	cfg::dat.hMenuButtons = GetSubMenu(LoadMenu(g_hInst, MAKEINTRESOURCE(IDR_CONTEXT)), 3);
-	cfg::dat.hMenuNotify = CreatePopupMenu();
-	cfg::dat.wNextMenuID = 1;
-	cfg::dat.sortTimer = DBGetContactSettingDword(NULL, "CLC", "SortTimer", 150);
-	cfg::dat.szNoEvents = TranslateTS(szNoevents);
-	cfg::dat.avatarBorder = (COLORREF)DBGetContactSettingDword(NULL, "CLC", "avatarborder", 0);
-	cfg::dat.avatarRadius = (COLORREF)DBGetContactSettingDword(NULL, "CLC", "avatarradius", 4);
-	cfg::dat.hBrushAvatarBorder = CreateSolidBrush(cfg::dat.avatarBorder);
-	cfg::dat.avatarSize = DBGetContactSettingWord(NULL,"CList", "AvatarSize", 24);
-	cfg::dat.dualRowMode = DBGetContactSettingByte(NULL, "CLC", "DualRowMode", 0);
-	cfg::dat.avatarPadding = DBGetContactSettingByte(NULL, "CList", "AvatarPadding", 0);
-	cfg::dat.isTransparent = DBGetContactSettingByte(NULL, "CList", "Transparent", 0);
-	cfg::dat.alpha = DBGetContactSettingByte(NULL, "CList", "Alpha", SETTING_ALPHA_DEFAULT);
-	cfg::dat.autoalpha = DBGetContactSettingByte(NULL, "CList", "AutoAlpha", SETTING_ALPHA_DEFAULT);
-	cfg::dat.fadeinout = DBGetContactSettingByte(NULL, "CLUI", "FadeInOut", 0);
-	cfg::dat.autosize = DBGetContactSettingByte(NULL, "CLUI", "AutoSize", 0);
-	cfg::dat.dwExtraImageMask = DBGetContactSettingDword(NULL, "CLUI", "ximgmask", 0);
-	cfg::dat.bNoOfflineAvatars = DBGetContactSettingByte(NULL, "CList", "NoOfflineAV", 1);
-	cfg::dat.bFullTransparent = DBGetContactSettingByte(NULL, "CLUI", "fulltransparent", 0);
-	cfg::dat.bDblClkAvatars = DBGetContactSettingByte(NULL, "CLC", "dblclkav", 0);
-	cfg::dat.bEqualSections = DBGetContactSettingByte(NULL, "CLUI", "EqualSections", 0);
-	cfg::dat.bCenterStatusIcons = DBGetContactSettingByte(NULL, "CLC", "si_centered", 1);
-	cfg::dat.boldHideOffline = (BYTE)-1;
-	cfg::dat.bSecIMAvail = ServiceExists("SecureIM/IsContactSecured") ? 1 : 0;
-	cfg::dat.bNoTrayTips = DBGetContactSettingByte(NULL, "CList", "NoTrayTips", 0);
-	cfg::dat.bShowLocalTime = DBGetContactSettingByte(NULL, "CLC", "ShowLocalTime", 1);
-	cfg::dat.bShowLocalTimeSelective = DBGetContactSettingByte(NULL, "CLC", "SelectiveLocalTime", 1);
-	cfg::dat.bDontSeparateOffline = DBGetContactSettingByte(NULL, "CList", "DontSeparateOffline", 0);
-	cfg::dat.bShowXStatusOnSbar = DBGetContactSettingByte(NULL, "CLUI", "xstatus_sbar", 0);
-	cfg::dat.bLayeredHack = DBGetContactSettingByte(NULL, "CLUI", "layeredhack", 1);
-	cfg::dat.bFirstRun = DBGetContactSettingByte(NULL, "CLUI", "firstrun", 1);
-	cfg::dat.langPackCP = CallService(MS_LANGPACK_GETCODEPAGE, 0, 0);
-	cfg::dat.realTimeSaving = DBGetContactSettingByte(NULL, "CLUI", "save_pos_always", 0);
+	cfg::eCache = reinterpret_cast<TExtraCache *>(malloc(sizeof(TExtraCache) * iCount));
+	ZeroMemory(cfg::eCache, sizeof(struct TExtraCache) * iCount);
+	cfg::nextCacheEntry = 0;
+	cfg::maxCacheEntry = iCount;
+	cfg::init();
 
-	{
-		DWORD sortOrder = DBGetContactSettingDword(NULL, "CList", "SortOrder", SORTBY_NAME);
-		cfg::dat.sortOrder[0] = LOBYTE(LOWORD(sortOrder));
-		cfg::dat.sortOrder[1] = HIBYTE(LOWORD(sortOrder));
-		cfg::dat.sortOrder[2] = LOBYTE(HIWORD(sortOrder));
-	}
+	cfg::dat.toolbarVisibility = 		cfg::getDword("CLUI", "TBVisibility", DEFAULT_TB_VISIBILITY);
+	cfg::dat.hMenuButtons = 			GetSubMenu(LoadMenu(g_hInst, MAKEINTRESOURCE(IDR_CONTEXT)), 3);
+	cfg::dat.hMenuNotify = 				CreatePopupMenu();
+	cfg::dat.wNextMenuID = 				1;
+	cfg::dat.sortTimer = 				cfg::getDword("CLC", "SortTimer", 150);
+	cfg::dat.szNoEvents = 				TranslateTS(szNoevents);
+	cfg::dat.avatarBorder = 			(COLORREF)cfg::getDword("CLC", "avatarborder", 0);
+	cfg::dat.avatarRadius = 			(COLORREF)cfg::getDword("CLC", "avatarradius", 4);
+	cfg::dat.hBrushAvatarBorder = 		CreateSolidBrush(cfg::dat.avatarBorder);
+	cfg::dat.avatarSize = 				cfg::getWord("CList", "AvatarSize", 24);
+	cfg::dat.dualRowMode = 				cfg::getByte("CLC", "DualRowMode", 0);
+	cfg::dat.avatarPadding = 			cfg::getByte("CList", "AvatarPadding", 0);
+	cfg::dat.isTransparent = 			cfg::getByte("CList", "Transparent", 0);
+	cfg::dat.alpha = 					cfg::getByte("CList", "Alpha", SETTING_ALPHA_DEFAULT);
+	cfg::dat.autoalpha = 				cfg::getByte("CList", "AutoAlpha", SETTING_ALPHA_DEFAULT);
+	cfg::dat.fadeinout = 				cfg::getByte("CLUI", "FadeInOut", 0);
+	cfg::dat.autosize = 				cfg::getByte("CLUI", "AutoSize", 0);
+	cfg::dat.dwExtraImageMask = 		cfg::getDword("CLUI", "ximgmask", 0);
+	cfg::dat.bNoOfflineAvatars = 		cfg::getByte("CList", "NoOfflineAV", 1);
+	cfg::dat.bFullTransparent = 		cfg::getByte("CLUI", "fulltransparent", 0);
+	cfg::dat.bDblClkAvatars = 			cfg::getByte("CLC", "dblclkav", 0);
+	cfg::dat.bEqualSections = 			cfg::getByte("CLUI", "EqualSections", 0);
+	cfg::dat.bCenterStatusIcons = 		cfg::getByte("CLC", "si_centered", 1);
+	cfg::dat.boldHideOffline = 			-1;
+	cfg::dat.bSecIMAvail = 				ServiceExists("SecureIM/IsContactSecured") ? 1 : 0;
+	cfg::dat.bNoTrayTips = 				cfg::getByte("CList", "NoTrayTips", 0);
+	cfg::dat.bShowLocalTime = 			cfg::getByte("CLC", "ShowLocalTime", 1);
+	cfg::dat.bShowLocalTimeSelective = 	cfg::getByte("CLC", "SelectiveLocalTime", 1);
+	cfg::dat.bDontSeparateOffline = 	cfg::getByte("CList", "DontSeparateOffline", 0);
+	cfg::dat.bShowXStatusOnSbar = 		cfg::getByte("CLUI", "xstatus_sbar", 0);
+	cfg::dat.bLayeredHack = 			cfg::getByte("CLUI", "layeredhack", 1);
+	cfg::dat.bFirstRun = 				cfg::getByte("CLUI", "firstrun", 1);
+	cfg::dat.langPackCP = 				CallService(MS_LANGPACK_GETCODEPAGE, 0, 0);
+	cfg::dat.realTimeSaving = 			cfg::getByte("CLUI", "save_pos_always", 0);
+
+	DWORD sortOrder = cfg::getDword("CList", "SortOrder", SORTBY_NAME);
+	cfg::dat.sortOrder[0] = LOBYTE(LOWORD(sortOrder));
+	cfg::dat.sortOrder[1] = HIBYTE(LOWORD(sortOrder));
+	cfg::dat.sortOrder[2] = LOBYTE(HIWORD(sortOrder));
+
 	if(cfg::dat.bFirstRun)
-		DBWriteContactSettingByte(NULL, "CLUI", "firstrun", 0);
+		cfg::writeByte("CLUI", "firstrun", 0);
 
 	_tzset();
 	{
@@ -338,7 +311,7 @@ extern "C" int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 
 	}
 
-	if (!DBGetContactSettingString(NULL, "CLUI", "exIconOrder", &dbv)) {
+	if (!cfg::getString(NULL, "CLUI", "exIconOrder", &dbv)) {
 		if(lstrlenA(dbv.pszVal) < EXICON_COUNT) {
 			for(i = 1; i <= EXICON_COUNT; i++)
 				cfg::dat.exIconOrder[i - 1] = i;
@@ -359,10 +332,10 @@ extern "C" int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 	himlExtraImages = ImageList_Create(16, 16, ILC_MASK | (IsWinVerXPPlus() ? ILC_COLOR32 : ILC_COLOR16), 30, 2);
 	ImageList_SetIconSize(himlExtraImages, cfg::dat.exIconScale, cfg::dat.exIconScale);
 
-	cfg::dat.dwFlags = DBGetContactSettingDword(NULL, "CLUI", "Frameflags", CLUI_FRAME_SHOWTOPBUTTONS | CLUI_FRAME_STATUSICONS |
+	cfg::dat.dwFlags = cfg::getDword("CLUI", "Frameflags", CLUI_FRAME_SHOWTOPBUTTONS | CLUI_FRAME_STATUSICONS |
                                                   CLUI_FRAME_SHOWBOTTOMBUTTONS | CLUI_FRAME_BUTTONSFLAT | CLUI_FRAME_CLISTSUNKEN);
-	cfg::dat.dwFlags |= (DBGetContactSettingByte(NULL, "CLUI", "ShowSBar", 1) ? CLUI_FRAME_SBARSHOW : 0);
-	cfg::dat.soundsOff = DBGetContactSettingByte(NULL, "CLUI", "NoSounds", 0);
+	cfg::dat.dwFlags |= (cfg::getByte("CLUI", "ShowSBar", 1) ? CLUI_FRAME_SBARSHOW : 0);
+	cfg::dat.soundsOff = cfg::getByte("CLUI", "NoSounds", 0);
 
 	CallService(MS_DB_GETPROFILEPATH, MAX_PATH, (LPARAM)szProfilePath);
 
@@ -375,12 +348,8 @@ extern "C" int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 
 	_tcslwr(cfg::dat.tszProfilePath);
 
-	pDrawAlpha = NULL;
-	if(!pDrawAlpha)
-		pDrawAlpha = (pfnDrawAlpha)DrawAlpha;
-
-	if(DBGetContactSettingByte(NULL, "Skin", "UseSound", 0) != cfg::dat.soundsOff)
-		DBWriteContactSettingByte(NULL, "Skin", "UseSound", (BYTE)(cfg::dat.soundsOff ? 0 : 1));
+	if(cfg::getByte("Skin", "UseSound", 0) != cfg::dat.soundsOff)
+		cfg::writeByte("Skin", "UseSound", (BYTE)(cfg::dat.soundsOff ? 0 : 1));
 
 	// get the clist interface
 	pcli = ( CLIST_INTERFACE* )CallService(MS_CLIST_RETRIEVE_INTERFACE, 0, (LPARAM)g_hInst);

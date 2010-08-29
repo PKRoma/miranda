@@ -1183,7 +1183,11 @@ static UINT DrawScrollButton(SCROLLBUT *sbut, HDC hdc, const RECT *pctrl, UINT f
 
 		//fill in the standard header
 		nmcd.hdr.hwndFrom = hwnd;
+<<<<<<< .mine
+		nmcd.hdr.idFrom   = GetWindowLongPtr(hwnd, GWL_ID);
+=======
 		nmcd.hdr.idFrom   = GetWindowLongPtr(hwnd, GWLP_ID);
+>>>>>>> .r12533
 		nmcd.hdr.code     = NM_COOLSB_CUSTOMDRAW;
 
 		nmcd.dwDrawStage  = CDDS_ITEMPREPAINT;
@@ -1395,10 +1399,10 @@ HDC CoolSB_GetDC(HWND hwnd, WPARAM wParam)
 		hrgn = CreateRectRgnIndirect(&rc);
 	}
 
-	if(GetWindowLong(hwnd, GWL_STYLE) & WS_CLIPCHILDREN)
+	if(GetWindowLongPtr(hwnd, GWL_STYLE) & WS_CLIPCHILDREN)
 		flags |= DCX_CLIPCHILDREN;
 
-	if(GetWindowLong(hwnd, GWL_STYLE) & WS_CLIPSIBLINGS)
+	if(GetWindowLongPtr(hwnd, GWL_STYLE) & WS_CLIPSIBLINGS)
 		flags |= DCX_CLIPSIBLINGS;
 
 	return GetDCEx(hwnd, hrgn, flags | DCX_CACHE|DCX_NORESETATTRS|DCX_WINDOW | DCX_INTERSECTUPDATE);

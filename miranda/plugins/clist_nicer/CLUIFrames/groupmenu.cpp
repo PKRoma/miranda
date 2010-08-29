@@ -227,7 +227,7 @@ INT_PTR FreeOwnerDataGroupMenu (WPARAM wParam,LPARAM lParam)
 INT_PTR HideGroupsHelper(WPARAM wParam,LPARAM lParam)
 {
 	int newVal=!(GetWindowLong((HWND)CallService(MS_CLUI_GETHWNDTREE,0,0),GWL_STYLE)&CLS_HIDEEMPTYGROUPS);
-	DBWriteContactSettingByte(NULL,"CList","HideEmptyGroups",(BYTE)newVal);
+	cfg::writeByte("CList","HideEmptyGroups",(BYTE)newVal);
 	SendMessage((HWND)CallService(MS_CLUI_GETHWNDTREE,0,0),CLM_SETHIDEEMPTYGROUPS,newVal,0);
 	return 0;
 }
@@ -235,7 +235,7 @@ INT_PTR HideGroupsHelper(WPARAM wParam,LPARAM lParam)
 INT_PTR UseGroupsHelper(WPARAM wParam,LPARAM lParam)
 {
 	int newVal=!(GetWindowLong((HWND)CallService(MS_CLUI_GETHWNDTREE,0,0),GWL_STYLE)&CLS_USEGROUPS);
-	DBWriteContactSettingByte(NULL,"CList","UseGroups",(BYTE)newVal);
+	cfg::writeByte("CList","UseGroups",(BYTE)newVal);
 	SendMessage((HWND)CallService(MS_CLUI_GETHWNDTREE,0,0),CLM_SETUSEGROUPS,newVal,0);
 	return 0;
 }
@@ -257,7 +257,7 @@ static int OnBuildGroupMenu(WPARAM wParam,LPARAM lParam)
 
 	ZeroMemory(&mi,sizeof(mi));
 	mi.cbSize = sizeof(mi);
-	mi.flags = CMIM_FLAGS | (DBGetContactSettingByte(NULL,"CList","HideOffline",SETTING_HIDEOFFLINE_DEFAULT)?CMIF_CHECKED:0);
+	mi.flags = CMIM_FLAGS | (cfg::getByte("CList","HideOffline",SETTING_HIDEOFFLINE_DEFAULT)?CMIF_CHECKED:0);
 	CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM)hHideOfflineUsersMenuItem, (LPARAM)&mi);
 
 	ZeroMemory(&mi,sizeof(mi));

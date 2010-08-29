@@ -28,8 +28,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #pragma hdrstop
 
-extern int      g_shutDown;
-
 static HMENU hMainMenu, hMainStatusMenu;
 
 void DestroyTrayMenu(HMENU hMenu)
@@ -49,7 +47,7 @@ void DestroyTrayMenu(HMENU hMenu)
 INT_PTR CloseAction(WPARAM wParam,LPARAM lParam)
 {
 	int k;
-	g_shutDown = 1;
+	cfg::shutDown = 1;
 	k=CallService(MS_SYSTEM_OKTOEXIT,(WPARAM)0,(LPARAM)0);
 	if (k) {
 		DestroyWindow(pcli->hwndContactList);
@@ -157,12 +155,12 @@ static INT_PTR CALLBACK IgnoreDialogProc(HWND hWnd, UINT msg, WPARAM wParam, LPA
                     SetWindowText(hWnd, szTitle);
                     SendMessage(hWnd, WM_SETICON, ICON_BIG, (LPARAM)LoadSkinnedIcon(SKINICON_OTHER_MIRANDA));
                     pCaps = CallProtoService(contact ? contact->proto : (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0), PS_GETCAPS, PFLAGNUM_1, 0);
-                    EnableWindow(GetDlgItem(hWnd, IDC_IGN_ALWAYSONLINE), pCaps & PF1_INVISLIST ? TRUE : FALSE);
-                    EnableWindow(GetDlgItem(hWnd, IDC_IGN_ALWAYSOFFLINE), pCaps & PF1_VISLIST ? TRUE : FALSE);
+                    Utils::enableDlgControl(hWnd, IDC_IGN_ALWAYSONLINE, pCaps & PF1_INVISLIST ? TRUE : FALSE);
+                    Utils::enableDlgControl(hWnd, IDC_IGN_ALWAYSOFFLINE, pCaps & PF1_VISLIST ? TRUE : FALSE);
                     CheckDlgButton(hWnd, IDC_IGN_PRIORITY, cfg::getByte(hContact, "CList", "Priority", 0) ? 1 : 0);
-                    EnableWindow(GetDlgItem(hWnd, IDC_IGN_PRIORITY), TRUE);
-                    EnableWindow(GetDlgItem(hWnd, IDC_AVATARDISPMODE), TRUE);
-                    EnableWindow(GetDlgItem(hWnd, IDC_SECONDLINEMODE), TRUE);
+                    Utils::enableDlgControl(hWnd, IDC_IGN_PRIORITY, TRUE);
+                    Utils::enableDlgControl(hWnd, IDC_AVATARDISPMODE, TRUE);
+                    Utils::enableDlgControl(hWnd, IDC_SECONDLINEMODE, TRUE);
                     if(dwFlags & ECF_FORCEAVATAR)
                         SendDlgItemMessage(hWnd, IDC_AVATARDISPMODE, CB_SETCURSEL, 1, 0);
                     else if(dwFlags & ECF_HIDEAVATAR)
@@ -241,7 +239,7 @@ static INT_PTR CALLBACK IgnoreDialogProc(HWND hWnd, UINT msg, WPARAM wParam, LPA
 			  	acs.handleType = HANDLE_CONTACT;
 			  	acs.szProto = 0;
 			  	CallService(MS_ADDCONTACT_SHOW, (WPARAM)hWnd, (LPARAM)&acs);
-			  	EnableWindow(GetDlgItem(hWnd, IDC_IGN_ADDPERMANENTLY), cfg::getByte(hContact, "CList", "NotOnList", 0));
+			  	Utils::enableDlgControl(hWnd, IDC_IGN_ADDPERMANENTLY, cfg::getByte(hContact, "CList", "NotOnList", 0));
 			  	break;
 		  	}
         case IDC_DSP_LOADDEFAULT:
@@ -382,7 +380,7 @@ static INT_PTR CALLBACK IgnoreDialogProc(HWND hWnd, UINT msg, WPARAM wParam, LPA
 
 			if(FindItem(pcli->hwndContactTree, cfg::clcdat, hContact, &contact, NULL, NULL)) {
 				if(contact) {
-					WORD wApparentMode = DBGetContactSettingWord(contact->hContact, contact->proto, "ApparentMode", 0);
+					WORD wApparentMode = cfg::getWord(contact->hContact, contact->proto, "ApparentMode", 0);
 
 					CheckDlgButton(hWnd, IDC_IGN_ALWAYSOFFLINE, wApparentMode == ID_STATUS_OFFLINE ? TRUE : FALSE);
 					CheckDlgButton(hWnd, IDC_IGN_ALWAYSONLINE, wApparentMode == ID_STATUS_ONLINE ? TRUE : FALSE);
@@ -396,7 +394,7 @@ static INT_PTR CALLBACK IgnoreDialogProc(HWND hWnd, UINT msg, WPARAM wParam, LPA
 
 			if(FindItem(pcli->hwndContactTree, cfg::clcdat, hContact, &contact, NULL, NULL)) {
 				if(contact) {
-					WORD wApparentMode = 0, oldApparentMode = DBGetContactSettingWord(hContact, contact->proto, "ApparentMode", 0);
+					WORD wApparentMode = 0, oldApparentMode = cfg::getWord(hContact, contact->proto, "ApparentMode", 0);
 
 					if(IsDlgButtonChecked(hWnd, IDC_IGN_ALWAYSONLINE))
 						wApparentMode = ID_STATUS_ONLINE;
