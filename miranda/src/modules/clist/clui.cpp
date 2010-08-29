@@ -797,13 +797,19 @@ LRESULT CALLBACK fnContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 		((LPMINMAXINFO) lParam)->ptMinTrackSize.y = 16;
 		return 0;
 
-	case WM_DISPLAYCHANGE:
+	case WM_SETTINGCHANGE:
+		if (wParam == SPI_SETWORKAREA && (GetWindowLong(hwnd, GWL_STYLE) & (WS_VISIBLE | WS_MINIMIZE)) == WS_VISIBLE &&
+			!CallService(MS_CLIST_DOCKINGISDOCKED, 0, 0))
 		{
 			RECT rc; 
 			GetWindowRect(hwnd, &rc);
 			if (Utils_AssertInsideScreen(&rc) == 1)
 				MoveWindow(hwnd, rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top, TRUE);
 		}
+		return DefWindowProc(hwnd, msg, wParam, lParam);
+
+	case WM_DISPLAYCHANGE:
+		DefWindowProc(hwnd, msg, wParam, lParam);
 		SendMessage(cli.hwndContactTree, WM_SIZE, 0, 0);        //forces it to send a cln_listsizechanged
 		break;
 
