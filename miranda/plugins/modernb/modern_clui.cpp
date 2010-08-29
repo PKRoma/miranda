@@ -2026,6 +2026,10 @@ LRESULT CLUI::OnSizingMoving( UINT msg, WPARAM wParam, LPARAM lParam )
 	}
 	switch (msg)
 	{
+	case WM_DISPLAYCHANGE:
+		SendMessage(pcli->hwndContactTree, WM_SIZE, 0, 0);
+		return TRUE;
+
 	case WM_EXITSIZEMOVE:
 		{
 			int res=DefWindowProc(m_hWnd, msg, wParam, lParam);
