@@ -276,6 +276,12 @@ struct HttpSecurityContext
 			szAuthHdr = NtlmCreateResponseFromChallenge(m_hNtlmSecurity, 
 				szChallenge, szLogin, szPassw, true, complete);
 
+			if (!szAuthHdr)
+			{
+				NetlibLogf(NULL, "Security login %s failed, user: " TCHAR_STR_PARAM " pssw: " TCHAR_STR_PARAM, 
+					szProvider, szLogin ? szLogin : _T("(no user)"), szPassw ? _T("(exist)") : _T("(no psw)"));
+			}
+
 			mir_free(szLogin);
 			mir_free(szPassw);
 		}
