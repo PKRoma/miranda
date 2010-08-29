@@ -522,7 +522,7 @@ void CMsnProto::MSN_ReceiveMessage(ThreadData* info, char* cmdString, char* para
 		if (!MSN_RefreshContactList()) 
 		{
 			SendBroadcast(NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_NOSERVER);
-			MSN_GoOffline();
+			MSN_CloseConnections();
 		}
 		else
 		{
@@ -1154,7 +1154,9 @@ LBL_InvalidCommand:
 			}
 			else if (personleft == 2 && lstrcmpA(data.isIdle, "1")) 
 			{
-				if (MessageBox(NULL, TranslateT("There is only 1 person left in the chat, do you want to switch back to standard message window?"), TranslateT("MSN Chat"), MB_YESNO|MB_ICONQUESTION) == IDYES) {
+				if (!Miranda_Terminated() && 
+					MessageBox(NULL, TranslateT("There is only 1 person left in the chat, do you want to switch back to standard message window?"), 
+								TranslateT("MSN Chat"), MB_YESNO|MB_ICONQUESTION) == IDYES) {
 					// a flag to let the kill function know what to do
 					// if the value is 1, then it'll open up the srmm window
 					info->mJoinedCount--;
@@ -1211,6 +1213,7 @@ LBL_InvalidCommand:
 			break;
 		}
 		case ' RVC':    //********* CVR: MSNP8
+			isConnectSuccess = true;
 			break;
 
 		case ' NLF':    //********* FLN: section 7.9 Notification Messages
@@ -1593,6 +1596,9 @@ LBL_InvalidCommand:
 			}
 			break;
 		}
+
+		case ' NUU':	// UUN : MSNP13+ File sharing, P2P Bootstrap, TURN setup.
+			break;
 
 		case ' LRU':    // URL : Hotmail, Spaces URL 
 		{

@@ -1126,7 +1126,6 @@ int __cdecl CMsnProto::SetStatus(int iNewStatus)
 	if (m_iDesiredStatus == ID_STATUS_OFFLINE)
 	{
 		MSN_CloseConnections();
-//		MSN_GoOffline();
 	}
 	else if (!msnLoggedIn && m_iStatus == ID_STATUS_OFFLINE)
 	{
@@ -1146,14 +1145,16 @@ int __cdecl CMsnProto::SetStatus(int iNewStatus)
 			return 0;
 		}	
 
-		ThreadData* newThread = new ThreadData;
-
-		newThread->mType = SERVER_DISPATCH;
-		newThread->mIsMainThread = true;
+		usingGateway = false;
 		
 		int oldMode = m_iStatus;
 		m_iStatus = ID_STATUS_CONNECTING;
 		SendBroadcast(NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS, (HANDLE)oldMode, m_iStatus);
+
+		ThreadData* newThread = new ThreadData;
+
+		newThread->mType = SERVER_DISPATCH;
+		newThread->mIsMainThread = true;
 
 		newThread->startThread(&CMsnProto::MSNServerThread, this);
 	}
