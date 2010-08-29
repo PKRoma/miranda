@@ -79,6 +79,9 @@ void __cdecl CMsnProto::MSNServerThread(void* arg)
 {
 	ThreadData* info = (ThreadData*)arg;
 
+	if (info->mIsMainThread)
+		isConnectSuccess = false;
+
 	char* tPortDelim = strrchr(info->mServer, ':');
 	if (tPortDelim != NULL)
 		*tPortDelim = '\0';
@@ -155,7 +158,6 @@ void __cdecl CMsnProto::MSNServerThread(void* arg)
 
 	if (info->mType == SERVER_DISPATCH || info->mType == SERVER_NOTIFICATION) 
 	{
-		isConnectSuccess = false;
 		info->sendPacket("VER", "MSNP15 MSNP14 CVR0");
 
 		OSVERSIONINFO osvi = {0};
