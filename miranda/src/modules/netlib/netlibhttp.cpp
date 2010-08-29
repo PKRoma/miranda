@@ -639,8 +639,6 @@ INT_PTR NetlibHttpSendRequest(WPARAM wParam,LPARAM lParam)
 			}
 			else if (resultCode == 401 && !doneAuthHeader) 	//auth required
 			{
-				int error;
-
 				if (nlhr->requestType == REQUEST_HEAD)
 					nlhrReply = (NETLIBHTTPREQUEST*)NetlibHttpRecvHeaders((WPARAM)nlc, hflags);
 				else
@@ -653,7 +651,6 @@ INT_PTR NetlibHttpSendRequest(WPARAM wParam,LPARAM lParam)
 					break;
 				}
 
-				error = ERROR_SUCCESS;
 				char *szAuthStr = NetlibHttpFindHeader(nlhrReply, "WWW-Authenticate");
 				if (szAuthStr)
 				{
@@ -665,15 +662,13 @@ INT_PTR NetlibHttpSendRequest(WPARAM wParam,LPARAM lParam)
 				}
 				if (pszAuthHdr == NULL) 
 				{
-					if (error != ERROR_SUCCESS) SetLastError(error);
+					NetlibHttpSetLastErrorUsingHttpResult(resultCode);
 					bytesSent = SOCKET_ERROR;
 					break;
 				}
 			}
 			else if (resultCode == 407 && !doneProxyAuthHeader) 	//proxy auth required
 			{
-				int error;
-
 				if (nlhr->requestType == REQUEST_HEAD)
 					nlhrReply = (NETLIBHTTPREQUEST*)NetlibHttpRecvHeaders((WPARAM)nlc, hflags);
 				else
@@ -686,7 +681,6 @@ INT_PTR NetlibHttpSendRequest(WPARAM wParam,LPARAM lParam)
 					break;
 				}
 
-				error = ERROR_SUCCESS;
 				char *szAuthStr = NetlibHttpFindHeader(nlhrReply, "Proxy-Authenticate");
 				if (szAuthStr)
 				{
@@ -699,7 +693,7 @@ INT_PTR NetlibHttpSendRequest(WPARAM wParam,LPARAM lParam)
 				}
 				if (pszProxyAuthHdr == NULL) 
 				{
-					if (error != ERROR_SUCCESS) SetLastError(error);
+					NetlibHttpSetLastErrorUsingHttpResult(resultCode);
 					bytesSent = SOCKET_ERROR;
 					break;
 				}
