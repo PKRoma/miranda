@@ -83,12 +83,6 @@ void __cdecl CMsnProto::MSNServerThread(void* arg)
 	if (tPortDelim != NULL)
 		*tPortDelim = '\0';
 
-	if (info->mIsMainThread)
-	{
-		usingGateway = false;
-	}
-
-retry:
 	if (usingGateway) 
 	{
 		if (info->mServer[0] == 0)
@@ -144,15 +138,7 @@ retry:
 		{
 			case SERVER_NOTIFICATION: 
 			case SERVER_DISPATCH:
-				if (!usingGateway) { usingGateway = true; goto retry; }
-				SendBroadcast(NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_NONETWORK);
-				MSN_GoOffline();
-				msnNsThread = NULL;
-				if (hKeepAliveThreadEvt) 
-				{
-					msnPingTimeout *= -1;
-					SetEvent(hKeepAliveThreadEvt);
-				}
+				goto LBL_Exit; 
 				break;
 
 			case SERVER_SWITCHBOARD:
@@ -169,6 +155,7 @@ retry:
 
 	if (info->mType == SERVER_DISPATCH || info->mType == SERVER_NOTIFICATION) 
 	{
+		isConnectSuccess = false;
 		info->sendPacket("VER", "MSNP15 MSNP14 CVR0");
 
 		OSVERSIONINFO osvi = {0};
@@ -200,12 +187,14 @@ retry:
 	for (;;) 
 	{
 		int recvResult = info->recv(info->mData + info->mBytesInData, sizeof(info->mData) - info->mBytesInData);
-		if (recvResult == SOCKET_ERROR) {
+		if (recvResult == SOCKET_ERROR) 
+		{
 			MSN_DebugLog("Connection %08p [%08X] was abortively closed", info->s, GetCurrentThreadId());
 			break;
 		}
 
-		if (!recvResult) {
+		if (!recvResult) 
+		{
 			MSN_DebugLog("Connection %08p [%08X] was gracefully closed", info->s, GetCurrentThreadId());
 			break;
 		}
@@ -221,11 +210,11 @@ retry:
 		{
 			for(;;) 
 			{
-				char* peol = strchr(info->mData,'\r');
+				char* peol = strchr(info->mData, '\r');
 				if (peol == NULL)
 					break;
 
-				if (info->mBytesInData < peol-info->mData+2)
+				if (info->mBytesInData < peol-info->mData + 2)
 					break;  //wait for full line end
 
 				char msg[sizeof(info->mData)];
@@ -243,7 +232,7 @@ retry:
 				if (info->mType == SERVER_NOTIFICATION)
 					SetEvent(hKeepAliveThreadEvt);
 
-				if (!isalnum(msg[0]) || !isalnum(msg[1]) || !isalnum(msg[2]) || (msg[3] && msg[3]!=' ')) 
+				if (!isalnum(msg[0]) || !isalnum(msg[1]) || !isalnum(msg[2]) || (msg[3] && msg[3] != ' ')) 
 				{
 					MSN_DebugLog("Invalid command name");
 					continue;
@@ -281,13 +270,29 @@ retry:
 LBL_Exit:
 	if (info->mIsMainThread) 
 	{
-		MSN_GoOffline();
-		msnNsThread = NULL;
+		if (!isConnectSuccess && !usingGateway && m_iDesiredStatus != ID_STATUS_OFFLINE) 
+		{ 
+			msnNsThread = NULL;
+			usingGateway = true; 
 
-		if (hKeepAliveThreadEvt) 
+			ThreadData* newThread = new ThreadData;
+			newThread->mType = SERVER_DISPATCH;
+			newThread->mIsMainThread = true;
+
+			newThread->startThread(&CMsnProto::MSNServerThread, this);
+		}
+		else
 		{
-			msnPingTimeout *= -1;
-			SetEvent(hKeepAliveThreadEvt);
+			if (hKeepAliveThreadEvt) 
+			{
+				msnPingTimeout *= -1;
+				SetEvent(hKeepAliveThreadEvt);
+			}
+			if (info->s == NULL)
+				SendBroadcast(NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_NONETWORK);
+
+			MSN_GoOffline();
+			msnNsThread = NULL;
 		}
 	}
 
@@ -298,12 +303,12 @@ LBL_Exit:
 //  Added by George B. Hazan (ghazan@postman.ru)
 //  The following code is required to abortively stop all started threads upon exit
 
-void  CMsnProto::MSN_InitThreads()
+void  CMsnProto::MSN_InitThreads(void)
 {
 	InitializeCriticalSection(&sttLock);
 }
 
-void  CMsnProto::MSN_CloseConnections()
+void  CMsnProto::MSN_CloseConnections(void)
 {
 	EnterCriticalSection(&sttLock);
 
@@ -340,14 +345,10 @@ void  CMsnProto::MSN_CloseConnections()
 	LeaveCriticalSection(&sttLock);
 
 	if (hHttpsConnection)
-	{
-		HANDLE hConn = hHttpsConnection;
-		hHttpsConnection = NULL;
-		Netlib_CloseHandle(hConn);
-	}
+		MSN_CallService(MS_NETLIB_SHUTDOWN, (WPARAM)hHttpsConnection, 0);
 }
 
-void  CMsnProto::MSN_CloseThreads()
+void  CMsnProto::MSN_CloseThreads(void)
 {
 	for (unsigned j=6; --j;)
 	{	
@@ -773,7 +774,7 @@ HReadBuffer::~HReadBuffer()
 
 BYTE* HReadBuffer::surelyRead(size_t parBytes)
 {
-	const int bufferSize = sizeof(owner->mData);
+	const size_t bufferSize = sizeof(owner->mData);
 
 	if ((startOffset + parBytes) > bufferSize)
 	{
@@ -786,7 +787,7 @@ BYTE* HReadBuffer::surelyRead(size_t parBytes)
 
 		if (parBytes > bufferSize) 
 		{
-//			MSN_DebugLog("HReadBuffer::surelyRead: not enough memory, %d %d %d", parBytes, bufferSize, startOffset);
+			owner->proto->MSN_DebugLog("HReadBuffer::surelyRead: not enough memory, %d %d %d", parBytes, bufferSize, startOffset);
 			return NULL;
 		}
 	}

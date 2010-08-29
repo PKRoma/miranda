@@ -359,9 +359,15 @@ void CMsnProto::MSN_GoOffline(void)
 	msnPreviousUUX = NULL;
 	msnSearchId = NULL;
 
+	MSN_CloseConnections();
+	if (hHttpsConnection)
+	{
+		Netlib_CloseHandle(hHttpsConnection);
+		hHttpsConnection = NULL;
+	}
+
 	if (!Miranda_Terminated())
 		MSN_EnableMenuItems(false);
-	MSN_CloseConnections();
 	MSN_FreeGroups();
 	MsgQueue_Clear();
 	clearCachedMsg();

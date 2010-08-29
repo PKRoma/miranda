@@ -197,6 +197,7 @@ struct CMsnProto : public PROTO_INTERFACE
 	HANDLE		hMSNAvatarsFolder;
 	HANDLE		hCustomSmileyFolder;
 	bool		InitCstFldRan;
+	bool		isConnectSuccess;
 
 	void        InitCustomFolders(void);
 
