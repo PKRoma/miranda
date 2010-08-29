@@ -227,7 +227,7 @@ static void moveProfileDirProfiles(TCHAR * profiledir, BOOL isRootDir = TRUE)
 			TCHAR *c =_tcsrchr(profile, '.'); if (c) *c = 0;
 			mir_sntprintf(path, SIZEOF(path), _T("%s\\%s"), pfd, ffd.cFileName);
 			mir_sntprintf(path2, SIZEOF(path2), _T("%s\\%s"), profiledir, profile);
-			CreateDirectory(path2, NULL);
+			CreateDirectoryTreeT(path2);
 			mir_sntprintf(path2, SIZEOF(path2), _T("%s\\%s\\%s"), profiledir, profile, ffd.cFileName);
 			if (_taccess(path2, 0) == 0)
 			{
