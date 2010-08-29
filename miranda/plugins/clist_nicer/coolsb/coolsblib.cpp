@@ -578,7 +578,7 @@ HRESULT WINAPI UninitializeCoolSB(HWND hwnd)
 	SetWindowLongPtr(hwnd, GWLP_WNDPROC, (LONG_PTR)sw->oldproc);
 
 	RemoveProp(hwnd, szPropStr);
-	//SetWindowLong(hwnd, GWL_USERDATA, 0);
+	//SetWindowLongPtr(hwnd, GWLP_USERDATA, 0);
 
 	//finally, release the memory needed for the cool scrollbars
 	HeapFree(GetProcessHeap(), 0, sw);

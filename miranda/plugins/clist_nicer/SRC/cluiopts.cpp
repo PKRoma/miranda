@@ -271,7 +271,7 @@ INT_PTR CALLBACK DlgProcCluiOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 					ShowWindow(pcli->hwndContactList, IsDlgButtonChecked(hwndDlg, IDC_MIN2TRAY) ? SW_HIDE : SW_SHOW); 
 				{
 					TCHAR title[256];
-					GetDlgItemText(hwndDlg, IDC_TITLETEXT, title, sizeof(title));
+					GetDlgItemText(hwndDlg, IDC_TITLETEXT, title, SIZEOF(title));
 					DBWriteContactSettingTString(NULL, "CList", "TitleText", title);
 					SetWindowText(pcli->hwndContactList, title);
 				}

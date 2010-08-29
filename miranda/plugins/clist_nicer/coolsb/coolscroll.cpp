@@ -688,7 +688,7 @@ static LRESULT PostCustomPrePostPaint(HWND hwnd, HDC hdc, SCROLLBAR *sb, UINT dw
 
 	CoolSB_ZeroMemory(&nmcd, sizeof nmcd);
 	nmcd.hdr.hwndFrom = hwnd;
-	nmcd.hdr.idFrom   = GetWindowLong(hwnd, GWL_ID);
+	nmcd.hdr.idFrom   = GetWindowLongPtr(hwnd, GWLP_ID);
 	nmcd.hdr.code     = NM_COOLSB_CUSTOMDRAW;
 	nmcd.nBar		  = sb->nBarType;
 	nmcd.dwDrawStage  = dwStage;
@@ -708,7 +708,7 @@ static LRESULT PostCustomDrawNotify(HWND hwnd, HDC hdc, UINT nBar, RECT *prect, 
 
     //fill in the standard header
 	nmcd.hdr.hwndFrom = hwnd;
-	nmcd.hdr.idFrom   = GetWindowLong(hwnd, GWL_ID);
+	nmcd.hdr.idFrom   = GetWindowLongPtr(hwnd, GWLP_ID);
 	nmcd.hdr.code     = NM_COOLSB_CUSTOMDRAW;
 
 	nmcd.dwDrawStage  = CDDS_ITEMPREPAINT;
@@ -755,7 +755,7 @@ static LRESULT PostMouseNotify0(HWND hwnd, UINT msg, UINT nBar, RECT *prect, UIN
 
 	//fill in the standard header
 	nmcb.hdr.hwndFrom	= hwnd;
-	nmcb.hdr.idFrom		= GetWindowLong(hwnd, GWL_ID);
+	nmcb.hdr.idFrom		= GetWindowLongPtr(hwnd, GWLP_ID);
 	nmcb.hdr.code		= NM_CLICK;
 
 	nmcb.nBar			= nBar;
@@ -1183,7 +1183,7 @@ static UINT DrawScrollButton(SCROLLBUT *sbut, HDC hdc, const RECT *pctrl, UINT f
 
 		//fill in the standard header
 		nmcd.hdr.hwndFrom = hwnd;
-		nmcd.hdr.idFrom   = GetWindowLong(hwnd, GWL_ID);
+		nmcd.hdr.idFrom   = GetWindowLongPtr(hwnd, GWLP_ID);
 		nmcd.hdr.code     = NM_COOLSB_CUSTOMDRAW;
 
 		nmcd.dwDrawStage  = CDDS_ITEMPREPAINT;

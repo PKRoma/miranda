@@ -311,13 +311,16 @@ INT_PTR __cdecl CJabberProto::JabberSetAvatar( WPARAM, LPARAM lParam )
 	}
 	else {
 		int fileIn = _topen( tszFileName, O_RDWR | O_BINARY, S_IREAD | S_IWRITE );
-		if ( fileIn == -1 )
+		if ( fileIn == -1 ) {
+			mir_free(tszFileName);
 			return 1;
+		}
 
 		long  dwPngSize = _filelength( fileIn );
 		char* pResult = new char[ dwPngSize ];
 		if ( pResult == NULL ) {
 			_close( fileIn );
+			mir_free(tszFileName);
 			return 2;
 		}
 
@@ -350,7 +353,7 @@ INT_PTR __cdecl CJabberProto::JabberSetAvatar( WPARAM, LPARAM lParam )
 
 		JSetString( NULL, "AvatarSaved", buf );
 	}
-
+	mir_free(tszFileName);
 	return 0;
 }
 

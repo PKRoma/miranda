@@ -320,7 +320,6 @@ static void NotifyMetaAware(HANDLE hContact, struct CacheNode *node = NULL, AVAT
 				if (!DBGetContactSetting(hContact, szProto, "AvatarHash", &dbv)) {
 					if (dbv.type == DBVT_ASCIIZ) {
 						strncpy(cacn.hash, dbv.pszVal, sizeof(cacn.hash));
-						DBFreeVariant(&dbv);
 					} else if (dbv.type == DBVT_BLOB) {
 						// Lets use base64 encode
 						char *tab = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
@@ -348,6 +347,7 @@ static void NotifyMetaAware(HANDLE hContact, struct CacheNode *node = NULL, AVAT
 							cacn.hash[i*4+3] = '=';
 						}
 					}
+					DBFreeVariant(&dbv);
 				}
 			}
 
