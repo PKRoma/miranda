@@ -104,7 +104,7 @@ static void AppendToCharBuffer(struct ResizableCharBuffer *rcb,const char *fmt,.
 	rcb->iEnd+=charsDone;
 }
 
-static int RecvWithTimeoutTime(struct NetlibConnection *nlc, DWORD dwTimeoutTime, char *buf, int len, int flags)
+static int RecvWithTimeoutTime(struct NetlibConnection *nlc, unsigned dwTimeoutTime, char *buf, int len, int flags)
 {
 	DWORD dwTimeNow;
 
@@ -112,7 +112,7 @@ static int RecvWithTimeoutTime(struct NetlibConnection *nlc, DWORD dwTimeoutTime
 	{
 		while ((dwTimeNow = GetTickCount()) < dwTimeoutTime)
 		{
-			DWORD dwDeltaTime = min(dwTimeoutTime - dwTimeNow, 1000);
+			unsigned dwDeltaTime = min(dwTimeoutTime - dwTimeNow, 1000);
 			int res = WaitUntilReadable(nlc->s, dwDeltaTime);
 
 			switch (res)
@@ -1128,7 +1128,7 @@ next:
 		{
 			for(;;) 
 			{
-				recvResult = RecvWithTimeoutTime(nlc, dwCompleteTime, nlhrReply->pData + nlhrReply->dataLength,
+				recvResult = RecvWithTimeoutTime(nlc, -1, nlhrReply->pData + nlhrReply->dataLength,
 					dataBufferAlloced - nlhrReply->dataLength - 1, dflags | (cenctype ? MSG_NODUMP : 0));
 
 				if (recvResult == 0) break;
@@ -1177,7 +1177,7 @@ next:
 
 		nlhrReply->pData[nlhrReply->dataLength]='\0';
 	}
-
+ 
 	if (chunked)
 	{
 		nlhrReply->headers[chunkhdr].szName = ( char* )mir_realloc(nlhrReply->headers[chunkhdr].szName, 16);
