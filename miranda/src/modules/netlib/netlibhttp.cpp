@@ -349,7 +349,9 @@ static int HttpPeekFirstResponseLine(NetlibConnection *nlc, DWORD dwTimeoutTime,
 	}
 
 	size_t off = strcspn(buffer, " \t");
-	if (!buffer[off]) return 0;
+	if (off >= (unsigned)bytesPeeked) 
+		return 0;
+	
 	char* pResultCode = buffer + off;
 	*(pResultCode++) = 0;
 
@@ -408,6 +410,7 @@ INT_PTR NetlibHttpSendRequest(WPARAM wParam,LPARAM lParam)
 	char *pszProxyAuthHdr = NULL, *pszAuthHdr = NULL;
 	int i, doneHostHeader, doneContentLengthHeader, doneProxyAuthHeader, doneAuthHeader;
 	int bytesSent;
+	bool lastFirstLineFail = false;
 
 	if (nlhr == NULL || nlhr->cbSize < sizeof(NETLIBHTTPREQUEST) || nlhr->szUrl == NULL || nlhr->szUrl[0] == '\0') 
 	{
@@ -569,9 +572,18 @@ INT_PTR NetlibHttpSendRequest(WPARAM wParam,LPARAM lParam)
 			DWORD dwTimeOutTime = nlc->usingHttpGateway && nlhr->requestType == REQUEST_GET ? -1 : GetTickCount() + HTTPRECVHEADERSTIMEOUT;
 			if (!HttpPeekFirstResponseLine(nlc, dwTimeOutTime, fflags, &resultCode, NULL, NULL))
 			{
+				lastFirstLineFail = true;
 				NetlibLogf(nlc->nlu, "%s %d: %s Failed (%u %u)",__FILE__,__LINE__,"HttpPeekFirstResponseLine",GetLastError(), count);
-				if (GetLastError() == ERROR_TIMEOUT) break; else continue;
+				if (GetLastError() <= ERROR_TIMEOUT) 
+					break; 
+				else
+				{
+					if (lastFirstLineFail) break;
+					lastFirstLineFail = true;
+					continue;
+				}
 			}
+			lastFirstLineFail = false;
 
 			DWORD hflags = (nlhr->flags & (NLHRF_NODUMP|NLHRF_NODUMPHEADERS|NLHRF_NODUMPSEND) ? 
 				MSG_NODUMP : (nlhr->flags & NLHRF_DUMPPROXY ? MSG_DUMPPROXY : 0)) |
