@@ -85,7 +85,7 @@ avatars_request* CIcqProto::ReleaseAvatarRequestInQueue(avatars_request *request
 		ar = ar->pNext;
 	}
 
-	SAFE_DELETE((void_struct**)&request);
+	SAFE_DELETE(&request);
 
 	return pNext;
 }
@@ -799,8 +799,16 @@ void CIcqProto::handleAvatarContactHash(DWORD dwUIN, char *szUID, HANDLE hContac
 
 
 // request avatar data from server
-int CIcqProto::GetAvatarData(HANDLE hContact, DWORD dwUin, char *szUid, const BYTE *hash, unsigned int hashlen, const char *file)
+int CIcqProto::GetAvatarData(HANDLE hContact, DWORD dwUin, const char *szUid, const BYTE *hash, unsigned int hashlen, const char *file)
 {
+	uid_str szUidData;
+	char *pszUid = NULL;
+	if (!dwUin && szUid) 
+	{ // create a copy in local writable buffer
+		strcpy(szUidData, szUid);
+		pszUid = szUidData;
+	}
+
 	m_avatarsMutex->Enter();
 
 	if (m_avatarsConnection && m_avatarsConnection->isReady()) // check if we are ready
@@ -818,8 +826,7 @@ int CIcqProto::GetAvatarData(HANDLE hContact, DWORD dwUin, char *szUid, const BY
 					continue;
 				}
 				m_avatarsMutex->Leave();
-				uid_str szUidTemp;
-				NetLog_Server("Avatars: Requests for %s avatar are blocked.", dwUin ? strUID(dwUin, szUidTemp) : szUid);
+				NetLog_Server("Avatars: Requests for %s avatar are blocked.", strUID(dwUin, pszUid));
 				return 0;
 			}
 			ar = ar->pNext;
@@ -830,7 +837,7 @@ int CIcqProto::GetAvatarData(HANDLE hContact, DWORD dwUin, char *szUid, const BY
     pConnection->_Lock();
     m_avatarsMutex->Leave();
 
-    DWORD dwCookie = pConnection->sendGetAvatarRequest(hContact, dwUin, szUid, hash, hashlen, file);
+    DWORD dwCookie = pConnection->sendGetAvatarRequest(hContact, dwUin, pszUid, hash, hashlen, file);
 
     m_avatarsMutex->Enter();
     pConnection->_Release();
@@ -856,7 +863,7 @@ int CIcqProto::GetAvatarData(HANDLE hContact, DWORD dwUin, char *szUid, const BY
 				continue;
 			}
 			m_avatarsMutex->Leave();
-			NetLog_Server("Avatars: Ignoring duplicate get %s avatar request.", strUID(dwUin, szUid));
+			NetLog_Server("Avatars: Ignoring duplicate get %s avatar request.", strUID(dwUin, pszUid));
 
       // make sure avatar connection is in progress
       requestAvatarConnection();
@@ -879,7 +886,7 @@ int CIcqProto::GetAvatarData(HANDLE hContact, DWORD dwUin, char *szUid, const BY
 	if (!ar->hash)
 	{ // alloc failed
 		m_avatarsMutex->Leave();
-		SAFE_DELETE((void_struct**)&ar);
+		SAFE_DELETE(&ar);
 		return 0;
 	}
 	memcpy(ar->hash, hash, hashlen); // copy the data
@@ -889,7 +896,7 @@ int CIcqProto::GetAvatarData(HANDLE hContact, DWORD dwUin, char *szUid, const BY
 	m_avatarsQueue = ar;
 	m_avatarsMutex->Leave();
 
-	NetLog_Server("Avatars: Request to get %s image added to queue.", strUID(dwUin, szUid));
+	NetLog_Server("Avatars: Request to get %s image added to queue.", strUID(dwUin, pszUid));
 
   // make sure avatar connection is in progress
   requestAvatarConnection();
@@ -952,7 +959,7 @@ int CIcqProto::SetAvatarData(HANDLE hContact, WORD wRef, const BYTE *data, unsig
 	if (!ar->pData)
 	{ // alloc failed
 		m_avatarsMutex->Leave();
-		SAFE_DELETE((void_struct**)&ar);
+		SAFE_DELETE(&ar);
 		return 0;
 	}
 	memcpy(ar->pData, data, datalen); // copy the data
@@ -1001,7 +1008,7 @@ void __cdecl CIcqProto::AvatarThread(avatars_server_connection *pInfo)
 
 	{ // Release connection handler
 		icq_lock l(m_avatarsMutex);
-		SAFE_DELETE((lockable_struct**)&pInfo);
+		SAFE_DELETE(&pInfo);
 	}
 
 	NetLog_Server("%s thread ended.", "Avatar");
@@ -1217,7 +1224,7 @@ void avatars_server_connection::checkRequestQueue()
 			  if (GetTickCount() > pRequest->timeOut)
         { // expired contact block, remove
           *ppRequest = pRequest->pNext;
-          SAFE_DELETE((void_struct**)&pRequest);
+          SAFE_DELETE(&pRequest);
 				}
         else // it is not time, move to next request
           ppRequest = &pRequest->pNext;
@@ -1245,7 +1252,7 @@ void avatars_server_connection::checkRequestQueue()
 				sendUploadAvatarRequest(pRequest->hContact, pRequest->wRef, pRequest->pData, pRequest->cbData);
 				break;
 		}
-		SAFE_DELETE((void_struct**)&pRequest);
+		SAFE_DELETE(&pRequest);
 
     ppro->m_avatarsMutex->Enter();
 	}

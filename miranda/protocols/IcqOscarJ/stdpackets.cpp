@@ -695,13 +695,12 @@ DWORD CIcqProto::icq_sendGetAimAwayMsgServ(HANDLE hContact, char *szUID, int typ
 void CIcqProto::icq_sendSetAimAwayMsgServ(const char *szMsg)
 {
 	icq_packet packet;
-	DWORD dwCookie;
 	WORD wMsgLen = strlennull(szMsg);
 
-	dwCookie = GenerateCookie(ICQ_LOCATION_SET_USER_INFO);
+	DWORD dwCookie = GenerateCookie(ICQ_LOCATION_SET_USER_INFO);
 
 	if (wMsgLen > 0x1000) wMsgLen = 0x1000; // limit length
-	serverPacketInit(&packet, (WORD)(48 + wMsgLen));
+	serverPacketInit(&packet, (WORD)(14 + wMsgLen ? wMsgLen + 34 : 0));
 	packFNACHeader(&packet, ICQ_LOCATION_FAMILY, ICQ_LOCATION_SET_USER_INFO, 0, dwCookie);
 
 	if (wMsgLen)

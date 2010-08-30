@@ -440,7 +440,7 @@ struct CIcqProto : public PROTO_INTERFACE
 	void   GetAvatarFileName(int dwUin, const char *szUid, char *pszDest, int cbLen);
 	int    IsAvatarChanged(HANDLE hContact, const BYTE *pHash, int nHashLen);
 
-	int    GetAvatarData(HANDLE hContact, DWORD dwUin, char *szUid, const BYTE *hash, unsigned int hashlen, const char *file);
+	int    GetAvatarData(HANDLE hContact, DWORD dwUin, const char *szUid, const BYTE *hash, unsigned int hashlen, const char *file);
 	int    SetAvatarData(HANDLE hContact, WORD wRef, const BYTE *data, unsigned int datalen);
 
 	void   StartAvatarThread(HANDLE hConn, char* cookie, WORD cookieLen);
