@@ -200,53 +200,55 @@ void CJabberProto::ByteSendThread( JABBER_BYTE_TRANSFER *jbt )
 
 	pInfo = m_iqManager.AddHandler( &CJabberProto::ByteInitiateResult, JABBER_IQ_TYPE_SET, jbt->dstJID, 0, -1, jbt );
 	nIqId = pInfo->GetIqId();
-	XmlNodeIq iq( pInfo );
-	HXML query = iq << XQUERY( _T(JABBER_FEAT_BYTESTREAMS)) << XATTR( _T("sid"), jbt->sid );
+	{
+		XmlNodeIq iq( pInfo );
+		HXML query = iq << XQUERY( _T(JABBER_FEAT_BYTESTREAMS)) << XATTR( _T("sid"), jbt->sid );
 
-	if ( bDirect ) {
-		localAddr = NULL;
-		if ( m_options.BsDirectManual == TRUE ) {
-			if ( !DBGetContactSettingString( NULL, m_szModuleName, "BsDirectAddr", &dbv )) {
-				localAddr = NEWSTR_ALLOCA( dbv.pszVal );
-				JFreeVariant( &dbv );
-		}	}
+		if ( bDirect ) {
+			localAddr = NULL;
+			if ( m_options.BsDirectManual == TRUE ) {
+				if ( !DBGetContactSettingString( NULL, m_szModuleName, "BsDirectAddr", &dbv )) {
+					localAddr = NEWSTR_ALLOCA( dbv.pszVal );
+					JFreeVariant( &dbv );
+			}	}
 
-		NETLIBBIND nlb = {0};
-		nlb.cbSize = sizeof( NETLIBBIND );
-		nlb.pfnNewConnectionV2 = JabberByteSendConnection;
-		nlb.pExtra = this;
-		nlb.wPort = 0;	// Use user-specified incoming port ranges, if available
-		jbt->hConn = ( HANDLE ) JCallService( MS_NETLIB_BINDPORT, ( WPARAM ) m_hNetlibUser, ( LPARAM )&nlb );
-		if ( jbt->hConn == NULL ) {
-			Log( "Cannot allocate port for bytestream_send thread, thread ended." );
-			delete jbt;
-			return;
+			NETLIBBIND nlb = {0};
+			nlb.cbSize = sizeof( NETLIBBIND );
+			nlb.pfnNewConnectionV2 = JabberByteSendConnection;
+			nlb.pExtra = this;
+			nlb.wPort = 0;	// Use user-specified incoming port ranges, if available
+			jbt->hConn = ( HANDLE ) JCallService( MS_NETLIB_BINDPORT, ( WPARAM ) m_hNetlibUser, ( LPARAM )&nlb );
+			if ( jbt->hConn == NULL ) {
+				Log( "Cannot allocate port for bytestream_send thread, thread ended." );
+				delete jbt;
+				return;
+			}
+			if ( localAddr == NULL ) {
+				in.S_un.S_addr = htonl(nlb.dwExternalIP);
+				localAddr = NEWSTR_ALLOCA( inet_ntoa( in ));
+			}
+			in.S_un.S_addr = htonl(nlb.dwInternalIP);
+			localAddrInternal = NEWSTR_ALLOCA( inet_ntoa( in ));
+
+			mir_sntprintf( szPort, SIZEOF( szPort ), _T("%d"), nlb.wPort );
+			JABBER_LIST_ITEM *item = ListAdd( LIST_BYTE, szPort );
+			item->jbt = jbt;
+			hEvent = CreateEvent( NULL, FALSE, FALSE, NULL );
+			jbt->hEvent = hEvent;
+			jbt->hSendEvent = CreateEvent( NULL, FALSE, FALSE, NULL );
+			query << XCHILD( _T("streamhost")) << XATTR( _T("jid"), m_ThreadInfo->fullJID ) << XATTR( _T("host"), _A2T(localAddr)) << XATTRI( _T("port"), nlb.wPort );
+			if ( strcmp( localAddr, localAddrInternal ))
+				query << XCHILD( _T("streamhost")) << XATTR( _T("jid"), m_ThreadInfo->fullJID ) << XATTR( _T("host"), _A2T(localAddrInternal)) << XATTRI( _T("port"), nlb.wPort );
 		}
-		if ( localAddr == NULL ) {
-			in.S_un.S_addr = htonl(nlb.dwExternalIP);
-			localAddr = NEWSTR_ALLOCA( inet_ntoa( in ));
-		}
-		in.S_un.S_addr = htonl(nlb.dwInternalIP);
-		localAddrInternal = NEWSTR_ALLOCA( inet_ntoa( in ));
 
-		mir_sntprintf( szPort, SIZEOF( szPort ), _T("%d"), nlb.wPort );
-		JABBER_LIST_ITEM *item = ListAdd( LIST_BYTE, szPort );
-		item->jbt = jbt;
-		hEvent = CreateEvent( NULL, FALSE, FALSE, NULL );
-		jbt->hEvent = hEvent;
-		jbt->hSendEvent = CreateEvent( NULL, FALSE, FALSE, NULL );
-		query << XCHILD( _T("streamhost")) << XATTR( _T("jid"), m_ThreadInfo->fullJID ) << XATTR( _T("host"), _A2T(localAddr)) << XATTRI( _T("port"), nlb.wPort );
-		if ( strcmp( localAddr, localAddrInternal ))
-			query << XCHILD( _T("streamhost")) << XATTR( _T("jid"), m_ThreadInfo->fullJID ) << XATTR( _T("host"), _A2T(localAddrInternal)) << XATTRI( _T("port"), nlb.wPort );
+		if ( jbt->bProxyDiscovered )
+			query << XCHILD( _T("streamhost")) << XATTR( _T("jid"), jbt->szProxyJid ) << XATTR( _T("host"), jbt->szProxyHost ) << XATTR( _T("port"), jbt->szProxyPort );
+
+		jbt->hProxyEvent = CreateEvent( NULL, FALSE, FALSE, NULL );
+		jbt->szStreamhostUsed = NULL;
+
+		m_ThreadInfo->send( iq );
 	}
-
-	if ( jbt->bProxyDiscovered )
-		query << XCHILD( _T("streamhost")) << XATTR( _T("jid"), jbt->szProxyJid ) << XATTR( _T("host"), jbt->szProxyHost ) << XATTR( _T("port"), jbt->szProxyPort );
-
-	jbt->hProxyEvent = CreateEvent( NULL, FALSE, FALSE, NULL );
-	jbt->szStreamhostUsed = NULL;
-
-	m_ThreadInfo->send( iq );
 
 	WaitForSingleObject( jbt->hProxyEvent, INFINITE );
 	m_iqManager.ExpireIq( nIqId );
