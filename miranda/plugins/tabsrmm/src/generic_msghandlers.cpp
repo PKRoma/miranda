@@ -1466,46 +1466,77 @@ LRESULT TSAPI DM_ThemeChanged(TWindowData *dat)
 	return 0;
 }
 
+/**
+ * send out message typing notifications (MTN) when the
+ * user is typing/editing text in the messgae input area.
+ */
 void TSAPI DM_NotifyTyping(struct TWindowData *dat, int mode)
 {
-	DWORD protoStatus;
-	DWORD protoCaps;
-	DWORD typeCaps;
+	DWORD 	protoStatus;
+	DWORD 	protoCaps;
+	DWORD 	typeCaps;
+	const 	char* szProto = 0;
+	HANDLE 	hContact = 0;
 
 	if (dat && dat->hContact) {
 		DeletePopupsForContact(dat->hContact, PU_REMOVE_ON_TYPE);
 
-		// Don't send to protocols who don't support typing
-		// Don't send to users who are unchecked in the typing notification options
-		// Don't send to protocols that are offline
-		// Don't send to users who are not visible and
-		// Don't send to users who are not on the visible list when you are in invisible mode.
+		if(dat->bIsMeta){
+			szProto = dat->cache->getActiveProto();
+			hContact = dat->cache->getActiveContact();
+		}
+		else {
+			szProto = dat->szProto;
+			hContact = dat->hContact;
+		}
 
-		if(dat->fEditNotesActive || dat->sendMode & SMODE_SENDLATER)	// don't send them when editing user notes or send later is manually activated
+		/*
+		 * editing user notes or preparing a message for queued delivery -> don't send MTN
+		 */
+		if(dat->fEditNotesActive || dat->sendMode & SMODE_SENDLATER)
 			return;
 
+		/*
+		 * allow supression of sending out TN for the contact (NOTE: for metacontacts, do NOT use the subcontact handle)
+		 */
 		if (!M->GetByte(dat->hContact, SRMSGMOD, SRMSGSET_TYPING, M->GetByte(SRMSGMOD, SRMSGSET_TYPINGNEW, SRMSGDEFSET_TYPINGNEW)))
 			return;
-		if (!dat->szProto)
+
+		if (!dat->szProto)			// should not, but who knows...
 			return;
-		protoStatus = CallProtoService(dat->szProto, PS_GETSTATUS, 0, 0);
-		protoCaps = CallProtoService(dat->szProto, PS_GETCAPS, PFLAGNUM_1, 0);
-		typeCaps = CallProtoService(dat->szProto, PS_GETCAPS, PFLAGNUM_4, 0);
+
+		/*
+		 * check status and capabilities of the protocol
+		 */
+		protoStatus = CallProtoService(szProto, PS_GETSTATUS, 0, 0);
+		protoCaps = CallProtoService(szProto, PS_GETCAPS, PFLAGNUM_1, 0);
+		typeCaps = CallProtoService(szProto, PS_GETCAPS, PFLAGNUM_4, 0);
 
 		if (!(typeCaps & PF4_SUPPORTTYPING))
 			return;
 		if (protoStatus < ID_STATUS_ONLINE)
 			return;
-		if (protoCaps & PF1_VISLIST && DBGetContactSettingWord(dat->hContact, dat->szProto, "ApparentMode", 0) == ID_STATUS_OFFLINE)
+
+		/*
+		 * check visibility/invisibility lists to not "accidentially" send MTN to contacts who
+		 * should not see them (privacy issue)
+		 */
+		if (protoCaps & PF1_VISLIST && DBGetContactSettingWord(hContact, szProto, "ApparentMode", 0) == ID_STATUS_OFFLINE)
 			return;
-		if (protoCaps & PF1_INVISLIST && protoStatus == ID_STATUS_INVISIBLE && DBGetContactSettingWord(dat->hContact, dat->szProto, "ApparentMode", 0) != ID_STATUS_ONLINE)
+
+		if (protoCaps & PF1_INVISLIST && protoStatus == ID_STATUS_INVISIBLE && DBGetContactSettingWord(hContact, szProto, "ApparentMode", 0) != ID_STATUS_ONLINE)
 			return;
+
+		/*
+		 * don't send to contacts which are not permanently added to the contact list,
+		 * unless the option to ignore added status is set.
+		 */
 		if (M->GetByte(dat->hContact, "CList", "NotOnList", 0)
 				&& !M->GetByte(SRMSGMOD, SRMSGSET_TYPINGUNKNOWN, SRMSGDEFSET_TYPINGUNKNOWN))
 			return;
 		// End user check
 		dat->nTypeMode = mode;
-		CallService(MS_PROTO_SELFISTYPING, (WPARAM) dat->hContact, dat->nTypeMode);
+		CallService(MS_PROTO_SELFISTYPING, (WPARAM) hContact, dat->nTypeMode);
 	}
 }
 
