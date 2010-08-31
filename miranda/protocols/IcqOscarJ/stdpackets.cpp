@@ -700,7 +700,7 @@ void CIcqProto::icq_sendSetAimAwayMsgServ(const char *szMsg)
 	DWORD dwCookie = GenerateCookie(ICQ_LOCATION_SET_USER_INFO);
 
 	if (wMsgLen > 0x1000) wMsgLen = 0x1000; // limit length
-	serverPacketInit(&packet, (WORD)(14 + wMsgLen ? wMsgLen + 34 : 0));
+	serverPacketInit(&packet, (WORD)(wMsgLen ? wMsgLen + 48 : 14));
 	packFNACHeader(&packet, ICQ_LOCATION_FAMILY, ICQ_LOCATION_SET_USER_INFO, 0, dwCookie);
 
 	if (wMsgLen)
