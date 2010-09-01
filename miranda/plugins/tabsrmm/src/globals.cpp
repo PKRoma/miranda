@@ -152,11 +152,11 @@ void CGlobals::reloadSystemStartup()
 	PluginConfig.g_hMenuContext = 		LoadMenu(g_hInst, MAKEINTRESOURCE(IDR_TABCONTEXT));
 	CallService(MS_LANGPACK_TRANSLATEMENU, (WPARAM)g_hMenuContext, 0);
 
-	SkinAddNewSoundEx("RecvMsgActive", Translate("Messages"), Translate("Incoming (Focused Window)"));
-	SkinAddNewSoundEx("RecvMsgInactive", Translate("Messages"), Translate("Incoming (Unfocused Window)"));
-	SkinAddNewSoundEx("AlertMsg", Translate("Messages"), Translate("Incoming (New Session)"));
-	SkinAddNewSoundEx("SendMsg", Translate("Messages"), Translate("Outgoing"));
-	SkinAddNewSoundEx("SendError", Translate("Messages"), Translate("Error sending message"));
+	SkinAddNewSoundEx("RecvMsgActive", "Instant messages", "Incoming (Focused Window)");
+	SkinAddNewSoundEx("RecvMsgInactive", "Instant messages", "Incoming (Unfocused Window)");
+	SkinAddNewSoundEx("AlertMsg", "Instant messages", "Incoming (New Session)");
+	SkinAddNewSoundEx("SendMsg", "Instant messages", "Outgoing");
+	SkinAddNewSoundEx("SendError", "Instant messages", "Message send error");
 
 	hCurSplitNS = LoadCursor(NULL, IDC_SIZENS);
 	hCurSplitWE = LoadCursor(NULL, IDC_SIZEWE);
@@ -354,7 +354,7 @@ void CGlobals::reloadAdv()
 	g_bClientInStatusBar = 				M->GetByte("adv_ClientIconInStatusBar", 0);
 
 	if(g_bSoundOnTyping && m_TypingSoundAdded == false) {
-		SkinAddNewSoundEx("SoundOnTyping", Translate("Other"), Translate("TABSRMM: Typing"));
+		SkinAddNewSoundEx("SoundOnTyping", "Other", "TABSRMM: Typing");
 		m_TypingSoundAdded = true;
 	}
 	m_AllowOfflineMultisend =			M->GetByte("AllowOfflineMultisend", 0);

@@ -35,6 +35,14 @@ are currently no downloads for it, you'll have to compile it from source.
 			Detailed change log
 			===================
 
+Version 3.1.99.2 - 2010/09/02
+
+	! propagate outgoing typing notifications to the active subcontact
+	
+	* renamed sound group names for IM and group chats to make their meaning more
+	  obvious.
+	  
+
 Version 3.1.99.1 - 2010/08/28
 
 	! bug fix: topic in info panel did not refresh immediately when it was changed

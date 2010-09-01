@@ -559,8 +559,8 @@ int TN_ModuleInit()
 		mi.pszPopupName = LPGEN("PopUps");
 		hDisableMenu = (HANDLE) CallService(MS_CLIST_ADDMAINMENUITEM,0,(LPARAM)&mi);
 	}
-	SkinAddNewSoundEx("TNStart", Translate("Messages"), Translate("Typing Notify: is typing"));
-	SkinAddNewSoundEx("TNStop", Translate("Messages"), Translate("Typing Notify: stopped typing"));
+	SkinAddNewSoundEx("TNStart", "Instant messages", "Contact started typing");
+	SkinAddNewSoundEx("TNStop", "Instant messages", "Contact stopped typing");
 
 	return 0;
 }
