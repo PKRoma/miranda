@@ -353,7 +353,14 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
 		else
 			dat->lastEnterTime = 0; 		
 
-		if (wParam == VK_UP && (GetKeyState(VK_CONTROL) & 0x8000) && 
+		if (((wParam == VK_INSERT && (GetKeyState(VK_SHIFT) & 0x8000)) || (wParam == 'V' && (GetKeyState(VK_CONTROL) & 0x8000))) &&
+		    !(GetKeyState(VK_MENU) & 0x8000)) // ctrl-v (paste clean text)
+		{
+			SendMessage(hwnd, EM_PASTESPECIAL, CF_TEXT, 0);
+			return 0;
+		}
+
+		 if (wParam == VK_UP && (GetKeyState(VK_CONTROL) & 0x8000) && 
 			DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_CTRLSUPPORT, SRMSGDEFSET_CTRLSUPPORT) && 
 			!DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_AUTOCLOSE, SRMSGDEFSET_AUTOCLOSE))
 		{
