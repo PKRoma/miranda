@@ -82,8 +82,8 @@ int LoadStatusBarData()
     g_StatusBarData.sameWidth=ModernGetSettingByte(NULL,"CLUI","EqualSections",SETTING_EQUALSECTIONS_DEFAULT);
     g_StatusBarData.rectBorders.left=ModernGetSettingDword(NULL,"CLUI","LeftOffset",SETTING_LEFTOFFSET_DEFAULT);
     g_StatusBarData.rectBorders.right=ModernGetSettingDword(NULL,"CLUI","RightOffset",SETTING_RIGHTOFFSET_DEFAULT);
-	g_StatusBarData.rectBorders.top=ModernGetSettingDword(NULL,"CLUI","TopOffset",SETTING_LEFTOFFSET_DEFAULT);
-    g_StatusBarData.rectBorders.bottom=ModernGetSettingDword(NULL,"CLUI","BottomOffset",SETTING_RIGHTOFFSET_DEFAULT);
+    g_StatusBarData.rectBorders.top=ModernGetSettingDword(NULL,"CLUI","TopOffset",SETTING_TOPOFFSET_DEFAULT);
+    g_StatusBarData.rectBorders.bottom=ModernGetSettingDword(NULL,"CLUI","BottomOffset",SETTING_BOTTOMOFFSET_DEFAULT);
     g_StatusBarData.extraspace=(BYTE)ModernGetSettingDword(NULL,"CLUI","SpaceBetween",SETTING_SPACEBETWEEN_DEFAULT);
 
 	if (g_StatusBarData.BarFont) DeleteObject(g_StatusBarData.BarFont);
