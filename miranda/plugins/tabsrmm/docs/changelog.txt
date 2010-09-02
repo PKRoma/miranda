@@ -35,7 +35,22 @@ are currently no downloads for it, you'll have to compile it from source.
 			Detailed change log
 			===================
 
-Version 3.0.3 - 2010/08/XX
+Version 3.0.4 - 2010/09/02
+
+	* modified sound group names to be more obvious
+	
+	! fixed issue with send later not being available when it actually should.
+	
+	! fixed memory leak in contact cache when a contact is deleted.
+	
+	! metacontact support: propagate outgoing typing notifications to the active 
+	  subcontact.
+	  
+	* slightly improved compatibility with old (version 2) skins.
+	  
+	* MUC: make autocomplete-nickname actions undoable.
+	  
+Version 3.0.3 - 2010/08/28
 
 	* bug fix: topic in info panel did not refresh immediately when it was changed
 	

@@ -447,7 +447,6 @@ void CContactCache::releaseAlloced()
 	m_tszProto = NULL;
 	mir_free(m_szStatusMsg);
 	m_szStatusMsg = NULL;
-
 }
 
 /**

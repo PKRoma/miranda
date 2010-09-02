@@ -182,7 +182,7 @@ CSendLater::CSendLater()
 	m_fAvail = M->GetByte("sendLaterAvail", 0) ? true : false;
 	m_last_sendlater_processed = time(0);
 	m_hwndDlg = 0;
-
+	m_fIsInteractive = false;
 	m_fErrorPopups = M->GetByte(0, SRMSGMOD_T, "qmgrErrorPopups", 0) ? true : false;
 	m_fSuccessPopups = M->GetByte(0, SRMSGMOD_T, "qmgrSuccessPopups", 0) ? true : false;
 }
@@ -624,7 +624,6 @@ void CSendLater::qMgrFillList(bool fClear)
 				it++;
 				continue;
 			}
-
 			lvItem.mask = LVIF_TEXT|LVIF_PARAM;
 			mir_sntprintf(tszBuf, 255, _T("%s [%s]"), tszNick, c->getRealAccount());
 			lvItem.pszText = tszBuf;

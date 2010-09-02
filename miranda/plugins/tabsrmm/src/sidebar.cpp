@@ -1008,7 +1008,7 @@ void __fastcall CSideBar::m_DefaultBackgroundRenderer(const HDC hdc, const RECT 
 	bool	fIsActiveItem = (item->m_sideBar->getActiveItem() == item);
 
 	if(CSkin::m_skinEnabled) {
-		const		TWindowData*	dat = item->getDat();
+		TContainerData*	pContainer = const_cast<TContainerData *>(item->m_sideBar->getContainer());
 		int 		id = stateId == PBS_PRESSED || fIsActiveItem ? ID_EXTBKBUTTONSPRESSED : (stateId == PBS_HOT ? ID_EXTBKBUTTONSMOUSEOVER : ID_EXTBKBUTTONSNPRESSED);
 		CSkinItem*	skinItem = &SkinItems[id];
 		HWND		hwnd;
@@ -1020,15 +1020,16 @@ void __fastcall CSideBar::m_DefaultBackgroundRenderer(const HDC hdc, const RECT 
 		else
 			hwnd = item->m_buttonControl->hwnd;
 
-		HBRUSH br = ::CreateSolidBrush(CSkin::m_sideBarContainerBG);
-		::FillRect(hdc, const_cast<RECT *>(rc), br);
-		::DeleteObject(br);
-
+		CSkin::SkinDrawBG(hwnd, pContainer->hwnd, pContainer, const_cast<RECT *>(rc), hdc);
 		CSkin::DrawItem(hdc, rc, skinItem);
 	}
 	else if(M->isAero() || PluginConfig.m_fillColor) {
 		if(id == IDC_SIDEBARUP || id == IDC_SIDEBARDOWN) {
-			::FillRect(hdc, const_cast<RECT *>(rc), CSkin::m_BrushBack);
+			if(M->isAero())
+				::FillRect(hdc, const_cast<RECT *>(rc), CSkin::m_BrushBack);
+			else
+				CSkin::FillBack(hdc, const_cast<RECT *>(rc));
+
 			if(stateId == PBS_HOT || stateId == PBS_PRESSED)
 				DrawAlpha(hdc, const_cast<RECT *>(rc), 0xf0f0f0, 70, 0x000000, 0, 9,
 						  31, 4, 0);

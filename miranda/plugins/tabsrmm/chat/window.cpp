@@ -948,7 +948,7 @@ static LRESULT CALLBACK MessageSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, 
 					if (pszName == 0) {
 						if ((int)end != (int)start) {
 							SendMessage(hwnd, EM_SETSEL, start, end);
-							SendMessage(hwnd, EM_REPLACESEL, FALSE, (LPARAM) dat->szSearchQuery);
+							SendMessage(hwnd, EM_REPLACESEL, TRUE, (LPARAM) dat->szSearchQuery);
 						}
 						mir_free(dat->szSearchQuery);
 						dat->szSearchQuery = NULL;
@@ -963,7 +963,7 @@ static LRESULT CALLBACK MessageSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, 
 								pszName = pszText;
 							}
 							SendMessage(hwnd, EM_SETSEL, start, end);
-							SendMessage(hwnd, EM_REPLACESEL, FALSE, (LPARAM)pszName);
+							SendMessage(hwnd, EM_REPLACESEL, TRUE, (LPARAM)pszName);
 						}
 						if(pszText)
 							mir_free(pszText);
