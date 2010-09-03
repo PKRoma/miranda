@@ -252,7 +252,6 @@ copy ..\..\plugins\db3x_mmap\Release\dbx_mmap.pdb      %Temp%\pdba\plugins
 copy ..\..\plugins\freeimage\Release\advaimg.pdb       %Temp%\pdba\plugins
 copy ..\..\plugins\import\Release\import.pdb           %Temp%\pdba\plugins
 copy ..\..\plugins\modernb\Release\clist_modern.pdb    %Temp%\pdba\plugins
-copy ..\..\plugins\modernopt\Release\modernopt.pdb     %Temp%\pdba\plugins
 copy ..\..\plugins\mwclist\Release\clist_mw.pdb        %Temp%\pdba\plugins
 copy ..\..\plugins\scriver\Release\scriver.pdb         %Temp%\pdba\plugins
 copy ..\..\plugins\srmm\Release\srmm.pdb               %Temp%\pdba\plugins
