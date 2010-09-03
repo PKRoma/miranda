@@ -166,7 +166,6 @@ SOURCE=.\jabber_adhoc.cpp
 # Begin Source File
 
 SOURCE=.\jabber_agent.cpp
-# ADD CPP /Yu
 # End Source File
 # Begin Source File
 
@@ -175,7 +174,6 @@ SOURCE=.\jabber_bookmarks.cpp
 # Begin Source File
 
 SOURCE=.\jabber_byte.cpp
-# ADD CPP /Yu
 # End Source File
 # Begin Source File
 
@@ -200,22 +198,18 @@ SOURCE=.\jabber_events.cpp
 # Begin Source File
 
 SOURCE=.\jabber_file.cpp
-# ADD CPP /Yu
 # End Source File
 # Begin Source File
 
 SOURCE=.\jabber_form.cpp
-# ADD CPP /Yu
 # End Source File
 # Begin Source File
 
 SOURCE=.\jabber_ft.cpp
-# ADD CPP /Yu
 # End Source File
 # Begin Source File
 
 SOURCE=.\jabber_groupchat.cpp
-# ADD CPP /Yu
 # End Source File
 # Begin Source File
 
@@ -228,7 +222,6 @@ SOURCE=.\jabber_icolib.cpp
 # Begin Source File
 
 SOURCE=.\jabber_iq.cpp
-# ADD CPP /Yu
 # End Source File
 # Begin Source File
 
@@ -237,12 +230,10 @@ SOURCE=.\jabber_iq_handlers.cpp
 # Begin Source File
 
 SOURCE=.\jabber_iqid.cpp
-# ADD CPP /Yu
 # End Source File
 # Begin Source File
 
 SOURCE=.\jabber_iqid_muc.cpp
-# ADD CPP /Yu
 # End Source File
 # Begin Source File
 
@@ -251,12 +242,10 @@ SOURCE=.\jabber_libstr.cpp
 # Begin Source File
 
 SOURCE=.\jabber_list.cpp
-# ADD CPP /Yu
 # End Source File
 # Begin Source File
 
 SOURCE=.\jabber_menu.cpp
-# ADD CPP /Yu
 # End Source File
 # Begin Source File
 
@@ -269,7 +258,6 @@ SOURCE=.\jabber_message_manager.cpp
 # Begin Source File
 
 SOURCE=.\jabber_misc.cpp
-# ADD CPP /Yu
 # End Source File
 # Begin Source File
 
@@ -278,7 +266,6 @@ SOURCE=.\jabber_notes.cpp
 # Begin Source File
 
 SOURCE=.\jabber_opt.cpp
-# ADD CPP /Yu
 # End Source File
 # Begin Source File
 
@@ -287,7 +274,6 @@ SOURCE=.\jabber_opttree.cpp
 # Begin Source File
 
 SOURCE=.\jabber_password.cpp
-# ADD CPP /Yu
 # End Source File
 # Begin Source File
 
@@ -304,7 +290,6 @@ SOURCE=.\jabber_proto.cpp
 # Begin Source File
 
 SOURCE=.\jabber_proxy.cpp
-# ADD CPP /Yu
 # End Source File
 # Begin Source File
 
@@ -329,12 +314,10 @@ SOURCE=.\jabber_std.cpp
 # Begin Source File
 
 SOURCE=.\jabber_svc.cpp
-# ADD CPP /Yu
 # End Source File
 # Begin Source File
 
 SOURCE=.\jabber_thread.cpp
-# ADD CPP /Yu
 # End Source File
 # Begin Source File
 
@@ -343,27 +326,22 @@ SOURCE=.\jabber_treelist.cpp
 # Begin Source File
 
 SOURCE=.\jabber_userinfo.cpp
-# ADD CPP /Yu
 # End Source File
 # Begin Source File
 
 SOURCE=.\jabber_util.cpp
-# ADD CPP /Yu
 # End Source File
 # Begin Source File
 
 SOURCE=.\jabber_vcard.cpp
-# ADD CPP /Yu
 # End Source File
 # Begin Source File
 
 SOURCE=.\jabber_ws.cpp
-# ADD CPP /Yu
 # End Source File
 # Begin Source File
 
 SOURCE=.\jabber_xml.cpp
-# ADD CPP /Yu
 # End Source File
 # Begin Source File
 
