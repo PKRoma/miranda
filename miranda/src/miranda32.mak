@@ -2955,48 +2955,48 @@ SOURCE=.\vc6.rc
 !IF  "$(CFG)" == "miranda32 - Win32 Release"
 
 "zlib - Win32 Release" : 
-   cd "\Develop\miranda\plugins\miranda\miranda\plugins\zlib"
+   cd "..\plugins\zlib"
    $(MAKE) /$(MAKEFLAGS) /F .\zlib.mak CFG="zlib - Win32 Release" 
    cd "..\..\src"
 
 "zlib - Win32 ReleaseCLEAN" : 
-   cd "\Develop\miranda\plugins\miranda\miranda\plugins\zlib"
+   cd "..\plugins\zlib"
    $(MAKE) /$(MAKEFLAGS) /F .\zlib.mak CFG="zlib - Win32 Release" RECURSE=1 CLEAN 
    cd "..\..\src"
 
 !ELSEIF  "$(CFG)" == "miranda32 - Win32 Debug"
 
 "zlib - Win32 Debug" : 
-   cd "\Develop\miranda\plugins\miranda\miranda\plugins\zlib"
+   cd "..\plugins\zlib"
    $(MAKE) /$(MAKEFLAGS) /F .\zlib.mak CFG="zlib - Win32 Debug" 
    cd "..\..\src"
 
 "zlib - Win32 DebugCLEAN" : 
-   cd "\Develop\miranda\plugins\miranda\miranda\plugins\zlib"
+   cd "..\plugins\zlib"
    $(MAKE) /$(MAKEFLAGS) /F .\zlib.mak CFG="zlib - Win32 Debug" RECURSE=1 CLEAN 
    cd "..\..\src"
 
 !ELSEIF  "$(CFG)" == "miranda32 - Win32 Release Unicode"
 
 "zlib - Win32 Release Unicode" : 
-   cd "\Develop\miranda\plugins\miranda\miranda\plugins\zlib"
+   cd "..\plugins\zlib"
    $(MAKE) /$(MAKEFLAGS) /F .\zlib.mak CFG="zlib - Win32 Release Unicode" 
    cd "..\..\src"
 
 "zlib - Win32 Release UnicodeCLEAN" : 
-   cd "\Develop\miranda\plugins\miranda\miranda\plugins\zlib"
+   cd "..\plugins\zlib"
    $(MAKE) /$(MAKEFLAGS) /F .\zlib.mak CFG="zlib - Win32 Release Unicode" RECURSE=1 CLEAN 
    cd "..\..\src"
 
 !ELSEIF  "$(CFG)" == "miranda32 - Win32 Debug Unicode"
 
 "zlib - Win32 Debug Unicode" : 
-   cd "\Develop\miranda\plugins\miranda\miranda\plugins\zlib"
+   cd "..\plugins\zlib"
    $(MAKE) /$(MAKEFLAGS) /F .\zlib.mak CFG="zlib - Win32 Debug Unicode" 
    cd "..\..\src"
 
 "zlib - Win32 Debug UnicodeCLEAN" : 
-   cd "\Develop\miranda\plugins\miranda\miranda\plugins\zlib"
+   cd "..\plugins\zlib"
    $(MAKE) /$(MAKEFLAGS) /F .\zlib.mak CFG="zlib - Win32 Debug Unicode" RECURSE=1 CLEAN 
    cd "..\..\src"
 
