@@ -85,6 +85,11 @@
 	".\Source\Utilities.h"\
 	
 
+.\Source\FreeImage\ConversionFloat.cpp : \
+	".\SOURCE\FreeImage.h"\
+	".\Source\Utilities.h"\
+	
+
 .\Source\FreeImage\ConversionRGBF.cpp : \
 	".\SOURCE\FreeImage.h"\
 	".\Source\Utilities.h"\
@@ -171,6 +176,9 @@
 
 .\Source\Metadata\Exif.cpp : \
 	".\SOURCE\FreeImage.h"\
+	".\Source\LibJPEG\jconfig.h"\
+	".\Source\LibJPEG\jmorecfg.h"\
+	".\Source\LibJPEG\jpeglib.h"\
 	".\Source\Metadata\FreeImageTag.h"\
 	".\Source\Utilities.h"\
 	
@@ -656,6 +664,7 @@
 .\Source\LibPNG\png.c : \
 	".\Source\LibPNG\png.h"\
 	".\Source\LibPNG\pngconf.h"\
+	".\Source\LibPNG\pngpriv.h"\
 	".\source\zlib\zconf.h"\
 	".\source\zlib\zlib.h"\
 	
@@ -663,6 +672,7 @@
 .\Source\LibPNG\pngerror.c : \
 	".\Source\LibPNG\png.h"\
 	".\Source\LibPNG\pngconf.h"\
+	".\Source\LibPNG\pngpriv.h"\
 	".\source\zlib\zconf.h"\
 	".\source\zlib\zlib.h"\
 	
@@ -670,6 +680,7 @@
 .\Source\LibPNG\pngget.c : \
 	".\Source\LibPNG\png.h"\
 	".\Source\LibPNG\pngconf.h"\
+	".\Source\LibPNG\pngpriv.h"\
 	".\source\zlib\zconf.h"\
 	".\source\zlib\zlib.h"\
 	
@@ -677,6 +688,7 @@
 .\Source\LibPNG\pngmem.c : \
 	".\Source\LibPNG\png.h"\
 	".\Source\LibPNG\pngconf.h"\
+	".\Source\LibPNG\pngpriv.h"\
 	".\source\zlib\zconf.h"\
 	".\source\zlib\zlib.h"\
 	
@@ -684,6 +696,7 @@
 .\Source\LibPNG\pngpread.c : \
 	".\Source\LibPNG\png.h"\
 	".\Source\LibPNG\pngconf.h"\
+	".\Source\LibPNG\pngpriv.h"\
 	".\source\zlib\zconf.h"\
 	".\source\zlib\zlib.h"\
 	
@@ -691,6 +704,7 @@
 .\Source\LibPNG\pngread.c : \
 	".\Source\LibPNG\png.h"\
 	".\Source\LibPNG\pngconf.h"\
+	".\Source\LibPNG\pngpriv.h"\
 	".\source\zlib\zconf.h"\
 	".\source\zlib\zlib.h"\
 	
@@ -698,6 +712,7 @@
 .\Source\LibPNG\pngrio.c : \
 	".\Source\LibPNG\png.h"\
 	".\Source\LibPNG\pngconf.h"\
+	".\Source\LibPNG\pngpriv.h"\
 	".\source\zlib\zconf.h"\
 	".\source\zlib\zlib.h"\
 	
@@ -705,6 +720,7 @@
 .\Source\LibPNG\pngrtran.c : \
 	".\Source\LibPNG\png.h"\
 	".\Source\LibPNG\pngconf.h"\
+	".\Source\LibPNG\pngpriv.h"\
 	".\source\zlib\zconf.h"\
 	".\source\zlib\zlib.h"\
 	
@@ -712,6 +728,7 @@
 .\Source\LibPNG\pngrutil.c : \
 	".\Source\LibPNG\png.h"\
 	".\Source\LibPNG\pngconf.h"\
+	".\Source\LibPNG\pngpriv.h"\
 	".\source\zlib\zconf.h"\
 	".\source\zlib\zlib.h"\
 	
@@ -719,6 +736,7 @@
 .\Source\LibPNG\pngset.c : \
 	".\Source\LibPNG\png.h"\
 	".\Source\LibPNG\pngconf.h"\
+	".\Source\LibPNG\pngpriv.h"\
 	".\source\zlib\zconf.h"\
 	".\source\zlib\zlib.h"\
 	
@@ -726,6 +744,7 @@
 .\Source\LibPNG\pngtrans.c : \
 	".\Source\LibPNG\png.h"\
 	".\Source\LibPNG\pngconf.h"\
+	".\Source\LibPNG\pngpriv.h"\
 	".\source\zlib\zconf.h"\
 	".\source\zlib\zlib.h"\
 	
@@ -733,6 +752,7 @@
 .\Source\LibPNG\pngwio.c : \
 	".\Source\LibPNG\png.h"\
 	".\Source\LibPNG\pngconf.h"\
+	".\Source\LibPNG\pngpriv.h"\
 	".\source\zlib\zconf.h"\
 	".\source\zlib\zlib.h"\
 	
@@ -740,6 +760,7 @@
 .\Source\LibPNG\pngwrite.c : \
 	".\Source\LibPNG\png.h"\
 	".\Source\LibPNG\pngconf.h"\
+	".\Source\LibPNG\pngpriv.h"\
 	".\source\zlib\zconf.h"\
 	".\source\zlib\zlib.h"\
 	
@@ -747,6 +768,7 @@
 .\Source\LibPNG\pngwtran.c : \
 	".\Source\LibPNG\png.h"\
 	".\Source\LibPNG\pngconf.h"\
+	".\Source\LibPNG\pngpriv.h"\
 	".\source\zlib\zconf.h"\
 	".\source\zlib\zlib.h"\
 	
@@ -754,6 +776,7 @@
 .\Source\LibPNG\pngwutil.c : \
 	".\Source\LibPNG\png.h"\
 	".\Source\LibPNG\pngconf.h"\
+	".\Source\LibPNG\pngpriv.h"\
 	".\source\zlib\zconf.h"\
 	".\source\zlib\zlib.h"\
 	

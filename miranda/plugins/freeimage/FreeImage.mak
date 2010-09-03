@@ -59,6 +59,7 @@ CLEAN :
 	-@erase "$(INTDIR)\Conversion32.obj"
 	-@erase "$(INTDIR)\Conversion4.obj"
 	-@erase "$(INTDIR)\Conversion8.obj"
+	-@erase "$(INTDIR)\ConversionFloat.obj"
 	-@erase "$(INTDIR)\ConversionRGBF.obj"
 	-@erase "$(INTDIR)\ConversionType.obj"
 	-@erase "$(INTDIR)\CopyPaste.obj"
@@ -136,7 +137,6 @@ CLEAN :
 	-@erase "$(INTDIR)\PluginPNG.obj"
 	-@erase "$(INTDIR)\png.obj"
 	-@erase "$(INTDIR)\pngerror.obj"
-	-@erase "$(INTDIR)\pnggccrd.obj"
 	-@erase "$(INTDIR)\pngget.obj"
 	-@erase "$(INTDIR)\pngmem.obj"
 	-@erase "$(INTDIR)\pngpread.obj"
@@ -146,7 +146,6 @@ CLEAN :
 	-@erase "$(INTDIR)\pngrutil.obj"
 	-@erase "$(INTDIR)\pngset.obj"
 	-@erase "$(INTDIR)\pngtrans.obj"
-	-@erase "$(INTDIR)\pngvcrd.obj"
 	-@erase "$(INTDIR)\pngwio.obj"
 	-@erase "$(INTDIR)\pngwrite.obj"
 	-@erase "$(INTDIR)\pngwtran.obj"
@@ -166,7 +165,6 @@ CLEAN :
 	-@erase "$(INTDIR)\WuQuantizer.obj"
 	-@erase "$(INTDIR)\ZLibInterface.obj"
 	-@erase "$(OUTDIR)\advaimg.exp"
-	-@erase "$(OUTDIR)\advaimg.lib"
 	-@erase "$(OUTDIR)\advaimg.pdb"
 	-@erase "..\..\bin\release\plugins\advaimg.dll"
 
@@ -231,6 +229,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\Conversion32.obj" \
 	"$(INTDIR)\Conversion4.obj" \
 	"$(INTDIR)\Conversion8.obj" \
+	"$(INTDIR)\ConversionFloat.obj" \
 	"$(INTDIR)\ConversionRGBF.obj" \
 	"$(INTDIR)\ConversionType.obj" \
 	"$(INTDIR)\Halftoning.obj" \
@@ -301,7 +300,6 @@ LINK32_OBJS= \
 	"$(INTDIR)\transupp.obj" \
 	"$(INTDIR)\png.obj" \
 	"$(INTDIR)\pngerror.obj" \
-	"$(INTDIR)\pnggccrd.obj" \
 	"$(INTDIR)\pngget.obj" \
 	"$(INTDIR)\pngmem.obj" \
 	"$(INTDIR)\pngpread.obj" \
@@ -311,7 +309,6 @@ LINK32_OBJS= \
 	"$(INTDIR)\pngrutil.obj" \
 	"$(INTDIR)\pngset.obj" \
 	"$(INTDIR)\pngtrans.obj" \
-	"$(INTDIR)\pngvcrd.obj" \
 	"$(INTDIR)\pngwio.obj" \
 	"$(INTDIR)\pngwrite.obj" \
 	"$(INTDIR)\pngwtran.obj" \
@@ -393,6 +390,8 @@ CLEAN :
 	-@erase "$(INTDIR)\Conversion4.sbr"
 	-@erase "$(INTDIR)\Conversion8.obj"
 	-@erase "$(INTDIR)\Conversion8.sbr"
+	-@erase "$(INTDIR)\ConversionFloat.obj"
+	-@erase "$(INTDIR)\ConversionFloat.sbr"
 	-@erase "$(INTDIR)\ConversionRGBF.obj"
 	-@erase "$(INTDIR)\ConversionRGBF.sbr"
 	-@erase "$(INTDIR)\ConversionType.obj"
@@ -546,8 +545,6 @@ CLEAN :
 	-@erase "$(INTDIR)\png.sbr"
 	-@erase "$(INTDIR)\pngerror.obj"
 	-@erase "$(INTDIR)\pngerror.sbr"
-	-@erase "$(INTDIR)\pnggccrd.obj"
-	-@erase "$(INTDIR)\pnggccrd.sbr"
 	-@erase "$(INTDIR)\pngget.obj"
 	-@erase "$(INTDIR)\pngget.sbr"
 	-@erase "$(INTDIR)\pngmem.obj"
@@ -566,8 +563,6 @@ CLEAN :
 	-@erase "$(INTDIR)\pngset.sbr"
 	-@erase "$(INTDIR)\pngtrans.obj"
 	-@erase "$(INTDIR)\pngtrans.sbr"
-	-@erase "$(INTDIR)\pngvcrd.obj"
-	-@erase "$(INTDIR)\pngvcrd.sbr"
 	-@erase "$(INTDIR)\pngwio.obj"
 	-@erase "$(INTDIR)\pngwio.sbr"
 	-@erase "$(INTDIR)\pngwrite.obj"
@@ -666,6 +661,7 @@ BSC32_SBRS= \
 	"$(INTDIR)\Conversion32.sbr" \
 	"$(INTDIR)\Conversion4.sbr" \
 	"$(INTDIR)\Conversion8.sbr" \
+	"$(INTDIR)\ConversionFloat.sbr" \
 	"$(INTDIR)\ConversionRGBF.sbr" \
 	"$(INTDIR)\ConversionType.sbr" \
 	"$(INTDIR)\Halftoning.sbr" \
@@ -736,7 +732,6 @@ BSC32_SBRS= \
 	"$(INTDIR)\transupp.sbr" \
 	"$(INTDIR)\png.sbr" \
 	"$(INTDIR)\pngerror.sbr" \
-	"$(INTDIR)\pnggccrd.sbr" \
 	"$(INTDIR)\pngget.sbr" \
 	"$(INTDIR)\pngmem.sbr" \
 	"$(INTDIR)\pngpread.sbr" \
@@ -746,7 +741,6 @@ BSC32_SBRS= \
 	"$(INTDIR)\pngrutil.sbr" \
 	"$(INTDIR)\pngset.sbr" \
 	"$(INTDIR)\pngtrans.sbr" \
-	"$(INTDIR)\pngvcrd.sbr" \
 	"$(INTDIR)\pngwio.sbr" \
 	"$(INTDIR)\pngwrite.sbr" \
 	"$(INTDIR)\pngwtran.sbr" \
@@ -792,6 +786,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\Conversion32.obj" \
 	"$(INTDIR)\Conversion4.obj" \
 	"$(INTDIR)\Conversion8.obj" \
+	"$(INTDIR)\ConversionFloat.obj" \
 	"$(INTDIR)\ConversionRGBF.obj" \
 	"$(INTDIR)\ConversionType.obj" \
 	"$(INTDIR)\Halftoning.obj" \
@@ -862,7 +857,6 @@ LINK32_OBJS= \
 	"$(INTDIR)\transupp.obj" \
 	"$(INTDIR)\png.obj" \
 	"$(INTDIR)\pngerror.obj" \
-	"$(INTDIR)\pnggccrd.obj" \
 	"$(INTDIR)\pngget.obj" \
 	"$(INTDIR)\pngmem.obj" \
 	"$(INTDIR)\pngpread.obj" \
@@ -872,7 +866,6 @@ LINK32_OBJS= \
 	"$(INTDIR)\pngrutil.obj" \
 	"$(INTDIR)\pngset.obj" \
 	"$(INTDIR)\pngtrans.obj" \
-	"$(INTDIR)\pngvcrd.obj" \
 	"$(INTDIR)\pngwio.obj" \
 	"$(INTDIR)\pngwrite.obj" \
 	"$(INTDIR)\pngwtran.obj" \
@@ -1163,6 +1156,24 @@ SOURCE=.\Source\FreeImage\Conversion8.cpp
 
 
 "$(INTDIR)\Conversion8.obj"	"$(INTDIR)\Conversion8.sbr" : $(SOURCE) "$(INTDIR)"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ENDIF 
+
+SOURCE=.\Source\FreeImage\ConversionFloat.cpp
+
+!IF  "$(CFG)" == "FreeImage - Win32 Release"
+
+
+"$(INTDIR)\ConversionFloat.obj" : $(SOURCE) "$(INTDIR)"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ELSEIF  "$(CFG)" == "FreeImage - Win32 Debug"
+
+
+"$(INTDIR)\ConversionFloat.obj"	"$(INTDIR)\ConversionFloat.sbr" : $(SOURCE) "$(INTDIR)"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
@@ -2428,24 +2439,6 @@ SOURCE=.\Source\LibPNG\pngerror.c
 
 !ENDIF 
 
-SOURCE=.\Source\LibPNG\pnggccrd.c
-
-!IF  "$(CFG)" == "FreeImage - Win32 Release"
-
-
-"$(INTDIR)\pnggccrd.obj" : $(SOURCE) "$(INTDIR)"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-!ELSEIF  "$(CFG)" == "FreeImage - Win32 Debug"
-
-
-"$(INTDIR)\pnggccrd.obj"	"$(INTDIR)\pnggccrd.sbr" : $(SOURCE) "$(INTDIR)"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-!ENDIF 
-
 SOURCE=.\Source\LibPNG\pngget.c
 
 !IF  "$(CFG)" == "FreeImage - Win32 Release"
@@ -2603,24 +2596,6 @@ SOURCE=.\Source\LibPNG\pngtrans.c
 
 
 "$(INTDIR)\pngtrans.obj"	"$(INTDIR)\pngtrans.sbr" : $(SOURCE) "$(INTDIR)"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-!ENDIF 
-
-SOURCE=.\Source\LibPNG\pngvcrd.c
-
-!IF  "$(CFG)" == "FreeImage - Win32 Release"
-
-
-"$(INTDIR)\pngvcrd.obj" : $(SOURCE) "$(INTDIR)"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-!ELSEIF  "$(CFG)" == "FreeImage - Win32 Debug"
-
-
-"$(INTDIR)\pngvcrd.obj"	"$(INTDIR)\pngvcrd.sbr" : $(SOURCE) "$(INTDIR)"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
@@ -3031,24 +3006,24 @@ SOURCE=.\Source\FreeImageToolkit\Resize.cpp
 !IF  "$(CFG)" == "FreeImage - Win32 Release"
 
 "zlib - Win32 Release" : 
-   cd "..\zlib"
+   cd "\Develop\miranda\plugins\miranda\miranda\plugins\zlib"
    $(MAKE) /$(MAKEFLAGS) /F .\zlib.mak CFG="zlib - Win32 Release" 
    cd "..\freeimage"
 
 "zlib - Win32 ReleaseCLEAN" : 
-   cd "..\zlib"
+   cd "\Develop\miranda\plugins\miranda\miranda\plugins\zlib"
    $(MAKE) /$(MAKEFLAGS) /F .\zlib.mak CFG="zlib - Win32 Release" RECURSE=1 CLEAN 
    cd "..\freeimage"
 
 !ELSEIF  "$(CFG)" == "FreeImage - Win32 Debug"
 
 "zlib - Win32 Debug" : 
-   cd "..\zlib"
+   cd "\Develop\miranda\plugins\miranda\miranda\plugins\zlib"
    $(MAKE) /$(MAKEFLAGS) /F .\zlib.mak CFG="zlib - Win32 Debug" 
    cd "..\freeimage"
 
 "zlib - Win32 DebugCLEAN" : 
-   cd "..\zlib"
+   cd "\Develop\miranda\plugins\miranda\miranda\plugins\zlib"
    $(MAKE) /$(MAKEFLAGS) /F .\zlib.mak CFG="zlib - Win32 Debug" RECURSE=1 CLEAN 
    cd "..\freeimage"
 
