@@ -68,9 +68,11 @@ static int MessageEventAdded(WPARAM wParam, LPARAM lParam)
 	CallServiceSync(MS_CLIST_REMOVEEVENT, wParam, (LPARAM) 1);
 	/* does a window for the contact exist? */
 	hwnd = WindowList_Find(g_dat->hMessageWindowList, (HANDLE) wParam);
-	if (hwnd) {
+	if (hwnd) 
+	{
 		if (!DoNotStealFocus)
 		{
+			ShowWindow(hwnd, SW_RESTORE);
 			SetWindowPos(hwnd, HWND_TOP, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW);
 			SetForegroundWindow(hwnd);
 			SkinPlaySound("RecvMsgActive");
