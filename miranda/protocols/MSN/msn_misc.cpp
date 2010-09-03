@@ -359,13 +359,6 @@ void CMsnProto::MSN_GoOffline(void)
 	msnPreviousUUX = NULL;
 	msnSearchId = NULL;
 
-	MSN_CloseConnections();
-	if (hHttpsConnection)
-	{
-		Netlib_CloseHandle(hHttpsConnection);
-		hHttpsConnection = NULL;
-	}
-
 	if (!Miranda_Terminated())
 		MSN_EnableMenuItems(false);
 	MSN_FreeGroups();
@@ -455,17 +448,13 @@ LONG ThreadData::sendMessage(int msgType, const char* email, int netId, const ch
 
 void ThreadData::sendCaps(void)
 {
-	char capMsg[1000];
+	char mversion[100], capMsg[1000];
+	MSN_CallService(MS_SYSTEM_GETVERSIONTEXT, sizeof(mversion), (LPARAM)mversion);
+
 	mir_snprintf(capMsg, sizeof(capMsg),
 		"Content-Type: text/x-clientcaps\r\n\r\n"
-		"Client-Name: Miranda IM MSN %s%s\r\n",
-		__VERSION_STRING,
-		#if defined( _UNICODE )
-			" (Unicode)"
-		#else
-			""
-		#endif
-		);
+		"Client-Name: Miranda IM %s (MSN v.%s)\r\n",
+		mversion, __VERSION_STRING);
 
 	sendMessage('U', NULL, 1, capMsg, MSG_DISABLE_HDR);
 }

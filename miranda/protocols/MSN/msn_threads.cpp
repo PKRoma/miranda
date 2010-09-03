@@ -292,6 +292,14 @@ LBL_Exit:
 			}
 			if (info->s == NULL)
 				SendBroadcast(NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_NONETWORK);
+			else
+				MSN_CloseConnections();
+
+			if (hHttpsConnection)
+			{
+				Netlib_CloseHandle(hHttpsConnection);
+				hHttpsConnection = NULL;
+			}
 
 			MSN_GoOffline();
 			msnNsThread = NULL;
