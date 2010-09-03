@@ -327,22 +327,6 @@ SOURCE=.\core\memory.cpp
 # Begin Source File
 
 SOURCE=.\core\miranda.cpp
-
-!IF  "$(CFG)" == "miranda32 - Win32 Release"
-
-# ADD CPP /Yu"commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "miranda32 - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "miranda32 - Win32 Release Unicode"
-
-# ADD BASE CPP /Yu"commonheaders.h"
-# ADD CPP /Yu"commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "miranda32 - Win32 Debug Unicode"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
@@ -351,22 +335,6 @@ SOURCE=.\core\miranda.h
 # Begin Source File
 
 SOURCE=.\core\modules.cpp
-
-!IF  "$(CFG)" == "miranda32 - Win32 Release"
-
-# ADD CPP /Yu"commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "miranda32 - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "miranda32 - Win32 Release Unicode"
-
-# ADD BASE CPP /Yu"commonheaders.h"
-# ADD CPP /Yu"commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "miranda32 - Win32 Debug Unicode"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
@@ -382,22 +350,6 @@ SOURCE=.\core\modules.h
 # Begin Source File
 
 SOURCE=.\modules\addcontact\addcontact.cpp
-
-!IF  "$(CFG)" == "miranda32 - Win32 Release"
-
-# ADD CPP /Yu"commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "miranda32 - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "miranda32 - Win32 Release Unicode"
-
-# ADD BASE CPP /Yu"../../core/commonheaders.h"
-# ADD CPP /Yu"commonheaders.h"
-
-!ELSEIF  "$(CFG)" == "miranda32 - Win32 Debug Unicode"
-
-!ENDIF 
-
 # End Source File
 # End Group
 # Begin Group "autoaway"
