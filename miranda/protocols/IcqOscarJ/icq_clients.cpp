@@ -57,6 +57,7 @@ static void verToStr(char *szStr, int v)
 
 	makeClientVersion(szVer, "", (v>>24)&0x7F, (v>>16)&0xFF, (v>>8)&0xFF, v&0xFF);
 	strcat(szStr, szVer);
+	if (v&0x80000000) strcat(szStr, " alpha");
 }
 
 static char* MirandaVersionToStringEx(char* szStr, int bUnicode, const char* szPlug, int v, int m)
@@ -65,8 +66,6 @@ static char* MirandaVersionToStringEx(char* szStr, int bUnicode, const char* szP
 		return NULL;
 
 	strcpy(szStr, "Miranda IM ");
-	strcat(szStr, szPlug);
-	strcat(szStr, " ");
 
 	if (!m && v == 1)
 		verToStr(szStr, 0x80010200);
@@ -78,7 +77,13 @@ static char* MirandaVersionToStringEx(char* szStr, int bUnicode, const char* szP
 			strcat(szStr, " ");
 		}
 		if (bUnicode)
-			strcat(szStr, "(Unicode)");
+			strcat(szStr, "Unicode ");
+
+		strcat(szStr, "(");
+		strcat(szStr, szPlug);
+		strcat(szStr, " v");
+		verToStr(szStr, v);
+		strcat(szStr, ")");
 	}
 
 	return szStr;
