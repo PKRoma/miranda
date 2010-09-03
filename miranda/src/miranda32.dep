@@ -529,6 +529,7 @@
 	"..\include\m_genmenu.h"\
 	"..\include\m_plugins.h"\
 	"..\include\m_protomod.h"\
+	".\modules\database\profilemanager.h"\
 	".\modules\srfile\file.h"\
 	
 
@@ -542,6 +543,13 @@
 	"..\include\m_genmenu.h"\
 	"..\include\m_plugins.h"\
 	"..\include\m_protomod.h"\
+	
+
+.\modules\utils\timezones.cpp : \
+	"..\include\m_genmenu.h"\
+	"..\include\m_plugins.h"\
+	"..\include\m_protomod.h"\
+	"..\include\m_timezones.h"\
 	
 
 .\modules\utils\utf.cpp : \
