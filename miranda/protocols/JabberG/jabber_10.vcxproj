@@ -660,7 +660,7 @@
     <ClCompile Include="jabber_svc.cpp" />
     <ClCompile Include="jabber_thread.cpp" />
     <ClCompile Include="jabber_treelist.cpp" />
-    <ClCompile Include="jabber_userinfo.cpp">
+    <ClCompile Include="jabber_userinfo.cpp" />
     <ClCompile Include="jabber_util.cpp" />
     <ClCompile Include="jabber_vcard.cpp" />
     <ClCompile Include="jabber_ws.cpp" />
