@@ -3006,24 +3006,24 @@ SOURCE=.\Source\FreeImageToolkit\Resize.cpp
 !IF  "$(CFG)" == "FreeImage - Win32 Release"
 
 "zlib - Win32 Release" : 
-   cd "\Develop\miranda\plugins\miranda\miranda\plugins\zlib"
+   cd "..\zlib"
    $(MAKE) /$(MAKEFLAGS) /F .\zlib.mak CFG="zlib - Win32 Release" 
    cd "..\freeimage"
 
 "zlib - Win32 ReleaseCLEAN" : 
-   cd "\Develop\miranda\plugins\miranda\miranda\plugins\zlib"
+   cd "..\zlib"
    $(MAKE) /$(MAKEFLAGS) /F .\zlib.mak CFG="zlib - Win32 Release" RECURSE=1 CLEAN 
    cd "..\freeimage"
 
 !ELSEIF  "$(CFG)" == "FreeImage - Win32 Debug"
 
 "zlib - Win32 Debug" : 
-   cd "\Develop\miranda\plugins\miranda\miranda\plugins\zlib"
+   cd "..\zlib"
    $(MAKE) /$(MAKEFLAGS) /F .\zlib.mak CFG="zlib - Win32 Debug" 
    cd "..\freeimage"
 
 "zlib - Win32 DebugCLEAN" : 
-   cd "\Develop\miranda\plugins\miranda\miranda\plugins\zlib"
+   cd "..\zlib"
    $(MAKE) /$(MAKEFLAGS) /F .\zlib.mak CFG="zlib - Win32 Debug" RECURSE=1 CLEAN 
    cd "..\freeimage"
 
