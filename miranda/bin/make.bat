@@ -83,11 +83,6 @@ call :Nmake clist.mak "clist - Win32 Release"
 popd
 if errorlevel 1 goto :Error
 
-pushd ..\..\miranda\plugins\clist_nicer
-call :Nmake clist.mak "clist_nicer - Win32 Release"
-popd
-if errorlevel 1 goto :Error
-
 pushd ..\..\miranda\plugins\db3x
 call :Nmake db3x.mak "db3x - Win32 Release"
 popd
@@ -252,7 +247,6 @@ rem  Plugins
 copy ..\..\plugins\avs\Release\avs.pdb                 %Temp%\pdba\plugins
 copy ..\..\plugins\chat\Release\chat.pdb               %Temp%\pdba\plugins
 copy ..\..\plugins\clist\Release\clist_classic.pdb     %Temp%\pdba\plugins
-copy ..\..\plugins\clist_nicer\Release\clist_nicer.pdb %Temp%\pdba\plugins
 copy ..\..\plugins\db3x\Release\dbx_3x.pdb             %Temp%\pdba\plugins
 copy ..\..\plugins\db3x_mmap\Release\dbx_mmap.pdb      %Temp%\pdba\plugins
 copy ..\..\plugins\freeimage\Release\advaimg.pdb       %Temp%\pdba\plugins
