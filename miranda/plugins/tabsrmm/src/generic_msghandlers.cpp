@@ -1549,13 +1549,11 @@ void TSAPI DM_OptionsApplied(TWindowData *dat, WPARAM wParam, LPARAM lParam)
 	TContainerData *m_pContainer = dat->pContainer;
 
 	dat->szMicroLf[0] = 0;
-	if (wParam == 1)      // 1 means, the message came from message log options page, so reload the defaults...
-		LoadLocalFlags(hwndDlg, dat);
-
 	if (!(dat->pContainer->theme.isPrivate)) {
 		LoadThemeDefaults(dat->pContainer);
 		dat->dwFlags = dat->pContainer->theme.dwFlags;
 	}
+	LoadLocalFlags(hwndDlg, dat);
 
 	LoadTimeZone(dat);
 
