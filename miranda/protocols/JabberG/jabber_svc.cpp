@@ -196,7 +196,10 @@ INT_PTR __cdecl CJabberProto::JabberGetAvatarInfo( WPARAM wParam, LPARAM lParam 
 
 				JFreeVariant( &dbv );
 				return GAIR_WAITFOR;
-	}	}	}
+			}
+			JFreeVariant( &dbv );
+		}
+	}
 
 	Log( "No avatar" );
 	return GAIR_NOAVATAR;

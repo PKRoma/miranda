@@ -67,12 +67,12 @@ static INT_PTR ServiceSkinAddNewSound(WPARAM, LPARAM lParam)
 		else {
 			item->description = LangPackPcharToTchar( ssd->pszDescription );
 			item->section = LangPackPcharToTchar( ssd->cbSize != SKINSOUNDDESC_SIZE_V1 && ssd->pszSection != NULL ? ssd->pszSection : "Other" );
-			ptszDefaultFile = LangPackPcharToTchar( ssd->pszDefaultFile );
+			ptszDefaultFile = mir_a2t( ssd->pszDefaultFile );
 		}
 
 		if ( ptszDefaultFile ) {
 			if ( DBGetContactSettingString(NULL, "SkinSounds", item->name, &dbv))
-				DBWriteContactSettingTString(NULL, "SkinSounds", item->name, ssd->ptszDefaultFile);
+				DBWriteContactSettingTString(NULL, "SkinSounds", item->name, ptszDefaultFile);
 			else
 				DBFreeVariant(&dbv);
 			mir_free( ptszDefaultFile );
