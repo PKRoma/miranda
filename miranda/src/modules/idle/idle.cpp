@@ -272,9 +272,15 @@ bool IsFullScreen(void)
 	HWND hWnd = GetForegroundWindow();
 	if (hWnd && hWnd != hWndDesktop && hWnd != hWndShell) 
 	{
-		RECT rect;
-		GetClientRect(hWnd, &rect);
-		return EqualRect(&rect, &rcScreen) != 0;
+		TCHAR tszClassName[128] = _T("");
+		GetClassName(hWnd, tszClassName, SIZEOF(tszClassName));
+		if (_tcscmp(tszClassName, _T("WorkerW")))
+		{
+			RECT rect;
+			GetClientRect(hWnd, &rect);
+			if (EqualRect(&rect, &rcScreen))
+				return true;
+		}
 	}
 
 	return false;
