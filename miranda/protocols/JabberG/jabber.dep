@@ -989,7 +989,6 @@
 	
 
 .\jabber_thread.cpp : \
-	{$(INCLUDE)}"windns.h"\
 	"..\..\include\m_clistint.h"\
 	"..\..\include\m_clui.h"\
 	"..\..\include\m_genmenu.h"\
