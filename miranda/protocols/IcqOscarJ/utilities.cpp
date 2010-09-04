@@ -379,24 +379,25 @@ void CIcqProto::AddToContactsCache(HANDLE hContact, DWORD dwUin, const char *szU
 
 void CIcqProto::InitContactsCache()
 {
+	if (!gatewayMutex)
+		gatewayMutex = new icq_critical_section();
+	else
+		gatewayMutex->_Lock();
+
 	contactsCacheMutex = new icq_critical_section();
-  if (!gatewayMutex)
-	  gatewayMutex = new icq_critical_section();
-  else
-    gatewayMutex->_Lock();
 
 	// build cache
 	icq_lock l(contactsCacheMutex);
 
-  HANDLE hContact = FindFirstContact();
+	HANDLE hContact = FindFirstContact();
 
 	while (hContact)
 	{
 		DWORD dwUin;
-    uid_str szUid;
+		uid_str szUid;
 
-    if (!getContactUid(hContact, &dwUin, &szUid))
-      AddToContactsCache(hContact, dwUin, szUid);
+		if (!getContactUid(hContact, &dwUin, &szUid))
+			AddToContactsCache(hContact, dwUin, szUid);
 
 		hContact = FindNextContact(hContact);
 	}
@@ -405,22 +406,27 @@ void CIcqProto::InitContactsCache()
 
 void CIcqProto::UninitContactsCache(void)
 {
-  icq_lock l(contactsCacheMutex);
-  // cleanup the cache
+	contactsCacheMutex->Enter();
+
+	// cleanup the cache
 	for (int i = 0; i < contactsCache.getCount(); i++)
-  {
-    icq_contacts_cache *cache_item = contactsCache[i];
+	{
+		icq_contacts_cache *cache_item = contactsCache[i];
 
-    SAFE_FREE((void**)&cache_item->szUid);
-    SAFE_FREE((void**)&cache_item);
-  }
-  contactsCache.destroy();
+		SAFE_FREE((void**)&cache_item->szUid);
+		SAFE_FREE((void**)&cache_item);
+	}
+	
+	contactsCache.destroy();
+
+	contactsCacheMutex->Leave();
+
 	SAFE_DELETE(&contactsCacheMutex);
-
-  if (gatewayMutex && gatewayMutex->getLockCount() > 1)
-	  gatewayMutex->_Release();
-  else
-    SAFE_DELETE(&gatewayMutex);
+	
+	if (gatewayMutex && gatewayMutex->getLockCount() > 1)
+		gatewayMutex->_Release();
+	else
+		SAFE_DELETE(&gatewayMutex);
 }
 
 
@@ -1761,69 +1767,6 @@ DWORD ICQWaitForSingleObject(HANDLE hObject, DWORD dwMilliseconds, int bWaitAlwa
   } while (dwResult == WAIT_IO_COMPLETION && (bWaitAlways || !Miranda_Terminated()));
 
   return dwResult;
-}
-
-
-CRITICAL_SECTION criticalSectionMutex;
-
-icq_critical_section::icq_critical_section()
-{
-  InitializeCriticalSection(&hMutex);
-}
-
-
-icq_critical_section::~icq_critical_section()
-{
-  DeleteCriticalSection(&hMutex);
-}
-
-
-void icq_critical_section::Enter()
-{
-  EnterCriticalSection(&criticalSectionMutex);
-
-  _Lock();
-
-  if (TryEnterCriticalSection(&hMutex))
-  { // entered successfuly
-    LeaveCriticalSection(&criticalSectionMutex);
-    return;
-  }
-  if (hEvent)
-  { // recursively entering locked critical section,
-    // wait for critical section in alertable state
-    do {
-      ICQWaitForSingleObject(hEvent, INFINITE, FALSE);
-    } while (!TryEnterCriticalSection(&hMutex) && !Miranda_Terminated());
-    // reset event state
-    ResetEvent(hEvent);
-  }
-  else
-  { // trying to enter locked critical section, create event, wait for it
-    hEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
-    LeaveCriticalSection(&criticalSectionMutex);
-    // wait for critical section in alertable state
-    do {
-      ICQWaitForSingleObject(hEvent, INFINITE, FALSE);
-    } while (!TryEnterCriticalSection(&hMutex) && !Miranda_Terminated());
-    // critical section lock acquired, destroy waiting event
-    EnterCriticalSection(&criticalSectionMutex);
-    CloseHandle(hEvent);
-    hEvent = NULL;
-    LeaveCriticalSection(&criticalSectionMutex);
-  }
-}
-
-
-void icq_critical_section::Leave()
-{
-  LeaveCriticalSection(&hMutex);
-  EnterCriticalSection(&criticalSectionMutex);
-  if (hEvent)
-    SetEvent(hEvent);
-
-  _Release();
-  LeaveCriticalSection(&criticalSectionMutex);
 }
 
 

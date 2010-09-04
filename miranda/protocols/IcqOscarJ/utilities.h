@@ -146,14 +146,14 @@ DWORD ICQWaitForSingleObject(HANDLE hHandle, DWORD dwMilliseconds, int bWaitAlwa
 struct icq_critical_section: public lockable_struct
 {
 private:
-  CRITICAL_SECTION hMutex;
-  HANDLE hEvent;
-public:
-  icq_critical_section();
-  virtual ~icq_critical_section();
+	HANDLE hMutex;
 
-  void Enter();
-  void Leave();
+public:
+	icq_critical_section() { hMutex = CreateMutex(NULL, FALSE, NULL); }
+	~icq_critical_section() { CloseHandle(hMutex); }
+
+	void Enter(void) { ICQWaitForSingleObject(hMutex, INFINITE, TRUE); }
+	void Leave(void) { ReleaseMutex(hMutex); }
 };
 
 __inline static void SAFE_DELETE(icq_critical_section **p) { SAFE_DELETE((lockable_struct**)p); }

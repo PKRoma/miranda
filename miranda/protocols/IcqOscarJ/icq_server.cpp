@@ -64,17 +64,17 @@ void __cdecl CIcqProto::ServerThread(serverthread_start_info *infoParam)
 
 		hServerConn = NetLib_OpenConnection(m_hServerNetlibUser, NULL, &nloc);
 
-    if (hServerConn && m_bSecureConnection)
-    {
+		if (hServerConn && m_bSecureConnection)
+		{
 #ifdef _DEBUG
-      NetLog_Server("(%d) Starting SSL negotiation", CallService(MS_NETLIB_GETSOCKET, (WPARAM)hServerConn, 0));
+			NetLog_Server("(%d) Starting SSL negotiation", CallService(MS_NETLIB_GETSOCKET, (WPARAM)hServerConn, 0));
 #endif
-	    CallService(MS_NETLIB_STARTSSL, (WPARAM)hServerConn, 0);
-    }
+			CallService(MS_NETLIB_STARTSSL, (WPARAM)hServerConn, 0);
+		}
 
 		SAFE_FREE((void**)&nloc.szHost);
+		SAFE_FREE((void**)&infoParam);
 	}
-  SAFE_FREE((void**)&infoParam);
 
 	// Login error
 	if (hServerConn == NULL)
@@ -105,13 +105,13 @@ void __cdecl CIcqProto::ServerThread(serverthread_start_info *infoParam)
 			setSettingDword(NULL, "RealIP", dwInternalIP);
 	}
 
-  // Initialize rate limiting queues
-  { 
-    icq_lock l(m_ratesMutex);
+	// Initialize rate limiting queues
+	{ 
+		icq_lock l(m_ratesMutex);
 
-    m_ratesQueue_Request = new rates_queue(this, "request", RML_IDLE_30, RML_IDLE_50, 1);
-    m_ratesQueue_Response = new rates_queue(this, "response", RML_IDLE_10, RML_IDLE_30, -1);
-  }
+		m_ratesQueue_Request = new rates_queue(this, "request", RML_IDLE_30, RML_IDLE_50, 1);
+		m_ratesQueue_Response = new rates_queue(this, "response", RML_IDLE_10, RML_IDLE_30, -1);
+	}
 
 	// This is the "infinite" loop that receives the packets from the ICQ server
 	{
@@ -145,16 +145,17 @@ void __cdecl CIcqProto::ServerThread(serverthread_start_info *infoParam)
 				break;
 			}
 
-      if (m_iDesiredStatus == ID_STATUS_OFFLINE)
-      { // Disconnect requested, send disconnect packet
-			  icq_sendCloseConnection();
+			if (m_iDesiredStatus == ID_STATUS_OFFLINE)
+			{ // Disconnect requested, send disconnect packet
+				icq_sendCloseConnection();
 
-        // disconnected upon request
-        m_bConnectionLost = FALSE;
+				// disconnected upon request
+				m_bConnectionLost = FALSE;
+				SetCurrentStatus(ID_STATUS_OFFLINE);
 
-	  		NetLog_Server("Logged off.");
-        break;
-      }
+				NetLog_Server("Logged off.");
+				break;
+			}
 
 			// Deal with the packet
 			packetRecv.bytesUsed = handleServerPackets(packetRecv.buffer, packetRecv.bytesAvailable, &info);
@@ -180,8 +181,8 @@ void __cdecl CIcqProto::ServerThread(serverthread_start_info *infoParam)
 		if (!info.bLoggedIn)
 			icq_LogMessage(LOG_FATAL, LPGEN("Connection failed.\nLogin sequence failed for unknown reason.\nTry again later."));
 
-    // set flag indicating we were kicked out
-    m_bConnectionLost = TRUE;
+		// set flag indicating we were kicked out
+		m_bConnectionLost = TRUE;
 
 		SetCurrentStatus(ID_STATUS_OFFLINE);
 	}
