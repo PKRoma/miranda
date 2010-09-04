@@ -431,7 +431,7 @@ void CYahooProto::ext_status_logon(const char *who, int protocol, int stat, cons
 	if (protocol == 0) {
 		char *s = NULL;
 		
-		switch (client_version) {
+		switch (client_version & 0x7FFFBF) {
 		case 2:
 			s = "Yahoo Mobile";
 			break;
