@@ -24,9 +24,6 @@ NULL=
 NULL=nul
 !ENDIF 
 
-CPP=cl.exe
-MTL=midl.exe
-RSC=rc.exe
 OUTDIR=.\Release
 INTDIR=.\Release
 
@@ -35,28 +32,15 @@ ALL : "..\..\..\bin\release\Icons\xstatus_ICQ.dll"
 
 CLEAN :
 	-@erase "$(INTDIR)\ICONS.res"
-	-@erase "$(OUTDIR)\xstatus_icons.exp"
-	-@erase "$(OUTDIR)\xstatus_icons.lib"
-	-@erase "$(OUTDIR)\xstatus_icons.pdb"
+	-@erase "$(OUTDIR)\xstatus_ICQ.exp"
+	-@erase "$(OUTDIR)\xstatus_ICQ.lib"
+	-@erase "$(OUTDIR)\xstatus_ICQ.pdb"
 	-@erase "..\..\..\bin\release\Icons\xstatus_ICQ.dll"
 
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
-BSC32=bscmake.exe
-BSC32_FLAGS=/nologo /o"$(OUTDIR)\ICONS.bsc" 
-BSC32_SBRS= \
-	
-LINK32=link.exe
-LINK32_FLAGS=/nologo /dll /incremental:no /pdb:"$(OUTDIR)\xstatus_icons.pdb" /debug /machine:I386 /out:"..\..\..\bin\release\Icons\xstatus_ICQ.dll" /implib:"$(OUTDIR)\xstatus_icons.lib" /noentry /ALIGN:4096 /ignore:4108 
-LINK32_OBJS= \
-	"$(INTDIR)\ICONS.res"
-
-"..\..\..\bin\release\Icons\xstatus_ICQ.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
-    $(LINK32) @<<
-  $(LINK32_FLAGS) $(LINK32_OBJS)
-<<
-
+CPP=cl.exe
 CPP_PROJ=/nologo /MT /W3 /GX /Zi /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_USRDLL" /D "ICONS_EXPORTS" /D "_MBCS" /Fp"$(INTDIR)\ICONS.pch" /Yu"stdafx.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /c 
 
 .c{$(INTDIR)}.obj::
@@ -89,8 +73,24 @@ CPP_PROJ=/nologo /MT /W3 /GX /Zi /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_USRDL
    $(CPP_PROJ) $< 
 <<
 
+MTL=midl.exe
 MTL_PROJ=/nologo /win32 
+RSC=rc.exe
 RSC_PROJ=/l 0x409 /fo"$(INTDIR)\ICONS.res" 
+BSC32=bscmake.exe
+BSC32_FLAGS=/nologo /o"$(OUTDIR)\ICONS.bsc" 
+BSC32_SBRS= \
+	
+LINK32=link.exe
+LINK32_FLAGS=/nologo /dll /incremental:no /pdb:"$(OUTDIR)\xstatus_ICQ.pdb" /debug /machine:I386 /out:"..\..\..\bin\release\Icons\xstatus_ICQ.dll" /implib:"$(OUTDIR)\xstatus_ICQ.lib" /noentry /ALIGN:4096 /ignore:4108 
+LINK32_OBJS= \
+	"$(INTDIR)\ICONS.res"
+
+"..\..\..\bin\release\Icons\xstatus_ICQ.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
+    $(LINK32) @<<
+  $(LINK32_FLAGS) $(LINK32_OBJS)
+<<
+
 
 !IF "$(NO_EXTERNAL_DEPS)" != "1"
 !IF EXISTS("ICONS.dep")
