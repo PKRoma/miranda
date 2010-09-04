@@ -51,8 +51,6 @@ IcqIconHandle hStaticIcons[4];
 HANDLE hStaticHooks[1];;
 HANDLE hExtraXStatus = NULL;
 
-extern CRITICAL_SECTION criticalSectionMutex;
-
 PLUGININFOEX pluginInfo = {
 	sizeof(PLUGININFOEX),
 	"IcqOscarJ Protocol",
@@ -168,9 +166,6 @@ extern "C" int __declspec(dllexport) Load(PLUGINLINK *link)
 	srand(time(NULL));
 	_tzset();
 
-  // Initialize generic critical section
-  InitializeCriticalSection(&criticalSectionMutex);
-
 	// Register the module
 	PROTOCOLDESCRIPTOR pd = {0};
 	pd.cbSize   = sizeof(pd);
@@ -222,9 +217,6 @@ extern "C" int __declspec(dllexport) Unload(void)
   for (i = 0; i < SIZEOF(hStaticServices); i++)
     if (hStaticServices[i])
       DestroyServiceFunction(hStaticServices[i]);
-
-  // Finalize critical section
-  DeleteCriticalSection(&criticalSectionMutex);
 
 	return 0;
 }
