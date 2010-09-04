@@ -2104,7 +2104,7 @@ int __cdecl CIcqProto::SetStatus(int iNewStatus)
 					if (m_dwLocalUIN == 0)
 					{
 						SetCurrentStatus(ID_STATUS_OFFLINE);
-
+						BroadcastAck(NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_BADUSERID);
 						icq_LogMessage(LOG_FATAL, LPGEN("You have not entered a ICQ number.\nConfigure this in Options->Network->ICQ and try again."));
 						return 0;
 					}
