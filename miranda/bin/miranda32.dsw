@@ -150,7 +150,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "clist_nicer"="..\plugins\clist_nicer\clist.dsp" - Package Owner=<4>
+Project: "clist_nicer"="..\plugins\clist_nicer\clist_nicer.dsp" - Package Owner=<4>
 
 Package=<5>
 {{{

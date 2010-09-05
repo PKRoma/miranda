@@ -263,4 +263,5 @@ goto :eof
 
 :Error
 echo Make failed
+pause
 goto :eof

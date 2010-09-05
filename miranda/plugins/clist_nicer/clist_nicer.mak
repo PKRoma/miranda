@@ -1,4 +1,4 @@
-# Microsoft Developer Studio Generated NMAKE File, Based on clist.dsp
+# Microsoft Developer Studio Generated NMAKE File, Based on clist_nicer.dsp
 !IF "$(CFG)" == ""
 CFG=clist_nicer - Win32 Debug Unicode
 !MESSAGE No configuration specified. Defaulting to clist_nicer - Win32 Debug Unicode.
@@ -9,7 +9,7 @@ CFG=clist_nicer - Win32 Debug Unicode
 !MESSAGE You can specify a configuration when running NMAKE
 !MESSAGE by defining the macro CFG on the command line. For example:
 !MESSAGE 
-!MESSAGE NMAKE /f "clist.mak" CFG="clist_nicer - Win32 Debug Unicode"
+!MESSAGE NMAKE /f "clist_nicer.mak" CFG="clist_nicer - Win32 Debug Unicode"
 !MESSAGE 
 !MESSAGE Possible choices for configuration are:
 !MESSAGE 
@@ -45,7 +45,7 @@ CLEAN :
 	-@erase "$(INTDIR)\clcopts.obj"
 	-@erase "$(INTDIR)\clcpaint.obj"
 	-@erase "$(INTDIR)\clcutils.obj"
-	-@erase "$(INTDIR)\clist.pch"
+	-@erase "$(INTDIR)\clist_nicer.pch"
 	-@erase "$(INTDIR)\clistevents.obj"
 	-@erase "$(INTDIR)\clistmenus.obj"
 	-@erase "$(INTDIR)\clistmod.obj"
@@ -85,7 +85,7 @@ CLEAN :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
 CPP=cl.exe
-CPP_PROJ=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /I "./include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "CLIST_EXPORTS" /Fp"$(INTDIR)\clist.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+CPP_PROJ=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /I "./include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "CLIST_EXPORTS" /Fp"$(INTDIR)\clist_nicer.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 
 .c{$(INTDIR)}.obj::
    $(CPP) @<<
@@ -122,7 +122,7 @@ MTL_PROJ=/nologo /D "NDEBUG" /mktyplib203 /win32
 RSC=rc.exe
 RSC_PROJ=/l 0x809 /fo"$(INTDIR)\resource.res" /i "../../include" /i "./include" /d "NDEBUG" 
 BSC32=bscmake.exe
-BSC32_FLAGS=/nologo /o"$(OUTDIR)\clist.bsc" 
+BSC32_FLAGS=/nologo /o"$(OUTDIR)\clist_nicer.bsc" 
 BSC32_SBRS= \
 	
 LINK32=link.exe
@@ -265,7 +265,7 @@ MTL_PROJ=/nologo /D "_DEBUG" /mktyplib203 /win32
 RSC=rc.exe
 RSC_PROJ=/l 0x809 /fo"$(INTDIR)\resource.res" /i "../../include" /i "./include" /d "_DEBUG" 
 BSC32=bscmake.exe
-BSC32_FLAGS=/nologo /o"$(OUTDIR)\clist.bsc" 
+BSC32_FLAGS=/nologo /o"$(OUTDIR)\clist_nicer.bsc" 
 BSC32_SBRS= \
 	
 LINK32=link.exe
@@ -332,7 +332,7 @@ CLEAN :
 	-@erase "$(INTDIR)\clcopts.obj"
 	-@erase "$(INTDIR)\clcpaint.obj"
 	-@erase "$(INTDIR)\clcutils.obj"
-	-@erase "$(INTDIR)\clist.pch"
+	-@erase "$(INTDIR)\clist_nicer.pch"
 	-@erase "$(INTDIR)\clistevents.obj"
 	-@erase "$(INTDIR)\clistmenus.obj"
 	-@erase "$(INTDIR)\clistmod.obj"
@@ -372,7 +372,7 @@ CLEAN :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
 CPP=cl.exe
-CPP_PROJ=/nologo /MD /W3 /GX /Zi /O1 /Oy /I "../../include" /I "./include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "UNICODE" /D "_USRDLL" /D "CLIST_EXPORTS" /Fp"$(INTDIR)\clist.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+CPP_PROJ=/nologo /MD /W3 /GX /Zi /O1 /Oy /I "../../include" /I "./include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "UNICODE" /D "_USRDLL" /D "CLIST_EXPORTS" /Fp"$(INTDIR)\clist_nicer.pch" /Yu"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 
 .c{$(INTDIR)}.obj::
    $(CPP) @<<
@@ -409,7 +409,7 @@ MTL_PROJ=/nologo /D "NDEBUG" /mktyplib203 /win32
 RSC=rc.exe
 RSC_PROJ=/l 0x809 /fo"$(INTDIR)\resource.res" /i "../../include" /i "./include" /d "NDEBUG" /d "UNICODE" 
 BSC32=bscmake.exe
-BSC32_FLAGS=/nologo /o"$(OUTDIR)\clist.bsc" 
+BSC32_FLAGS=/nologo /o"$(OUTDIR)\clist_nicer.bsc" 
 BSC32_SBRS= \
 	
 LINK32=link.exe
@@ -552,7 +552,7 @@ MTL_PROJ=/nologo /D "_DEBUG" /mktyplib203 /win32
 RSC=rc.exe
 RSC_PROJ=/l 0x809 /fo"$(INTDIR)\resource.res" /i "../../include" /i "./include" /d "_DEBUG" 
 BSC32=bscmake.exe
-BSC32_FLAGS=/nologo /o"$(OUTDIR)\clist.bsc" 
+BSC32_FLAGS=/nologo /o"$(OUTDIR)\clist_nicer.bsc" 
 BSC32_SBRS= \
 	
 LINK32=link.exe
@@ -605,10 +605,10 @@ LINK32_OBJS= \
 
 
 !IF "$(NO_EXTERNAL_DEPS)" != "1"
-!IF EXISTS("clist.dep")
-!INCLUDE "clist.dep"
+!IF EXISTS("clist_nicer.dep")
+!INCLUDE "clist_nicer.dep"
 !ELSE 
-!MESSAGE Warning: cannot find "clist.dep"
+!MESSAGE Warning: cannot find "clist_nicer.dep"
 !ENDIF 
 !ENDIF 
 
@@ -616,139 +616,139 @@ LINK32_OBJS= \
 !IF "$(CFG)" == "clist_nicer - Win32 Release" || "$(CFG)" == "clist_nicer - Win32 Debug" || "$(CFG)" == "clist_nicer - Win32 Release Unicode" || "$(CFG)" == "clist_nicer - Win32 Debug Unicode"
 SOURCE=.\CLUIFrames\cluiframes.cpp
 
-"$(INTDIR)\cluiframes.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\clist.pch"
+"$(INTDIR)\cluiframes.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\clist_nicer.pch"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
 SOURCE=.\CLUIFrames\framesmenu.cpp
 
-"$(INTDIR)\framesmenu.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\clist.pch"
+"$(INTDIR)\framesmenu.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\clist_nicer.pch"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
 SOURCE=.\CLUIFrames\groupmenu.cpp
 
-"$(INTDIR)\groupmenu.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\clist.pch"
+"$(INTDIR)\groupmenu.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\clist_nicer.pch"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
 SOURCE=.\CLUIFrames\movetogroup.cpp
 
-"$(INTDIR)\movetogroup.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\clist.pch"
+"$(INTDIR)\movetogroup.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\clist_nicer.pch"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
 SOURCE=.\SRC\alphablend.cpp
 
-"$(INTDIR)\alphablend.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\clist.pch"
+"$(INTDIR)\alphablend.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\clist_nicer.pch"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
 SOURCE=.\SRC\clc.cpp
 
-"$(INTDIR)\clc.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\clist.pch"
+"$(INTDIR)\clc.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\clist_nicer.pch"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
 SOURCE=.\SRC\CLCButton.cpp
 
-"$(INTDIR)\CLCButton.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\clist.pch"
+"$(INTDIR)\CLCButton.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\clist_nicer.pch"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
 SOURCE=.\SRC\clcidents.cpp
 
-"$(INTDIR)\clcidents.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\clist.pch"
+"$(INTDIR)\clcidents.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\clist_nicer.pch"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
 SOURCE=.\SRC\clcitems.cpp
 
-"$(INTDIR)\clcitems.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\clist.pch"
+"$(INTDIR)\clcitems.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\clist_nicer.pch"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
 SOURCE=.\SRC\clcmsgs.cpp
 
-"$(INTDIR)\clcmsgs.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\clist.pch"
+"$(INTDIR)\clcmsgs.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\clist_nicer.pch"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
 SOURCE=.\SRC\clcopts.cpp
 
-"$(INTDIR)\clcopts.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\clist.pch"
+"$(INTDIR)\clcopts.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\clist_nicer.pch"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
 SOURCE=.\SRC\clcpaint.cpp
 
-"$(INTDIR)\clcpaint.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\clist.pch"
+"$(INTDIR)\clcpaint.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\clist_nicer.pch"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
 SOURCE=.\SRC\clcutils.cpp
 
-"$(INTDIR)\clcutils.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\clist.pch"
+"$(INTDIR)\clcutils.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\clist_nicer.pch"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
 SOURCE=.\SRC\clistevents.cpp
 
-"$(INTDIR)\clistevents.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\clist.pch"
+"$(INTDIR)\clistevents.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\clist_nicer.pch"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
 SOURCE=.\SRC\clistmenus.cpp
 
-"$(INTDIR)\clistmenus.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\clist.pch"
+"$(INTDIR)\clistmenus.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\clist_nicer.pch"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
 SOURCE=.\SRC\clistmod.cpp
 
-"$(INTDIR)\clistmod.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\clist.pch"
+"$(INTDIR)\clistmod.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\clist_nicer.pch"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
 SOURCE=.\SRC\clistopts.cpp
 
-"$(INTDIR)\clistopts.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\clist.pch"
+"$(INTDIR)\clistopts.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\clist_nicer.pch"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
 SOURCE=.\SRC\clistsettings.cpp
 
-"$(INTDIR)\clistsettings.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\clist.pch"
+"$(INTDIR)\clistsettings.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\clist_nicer.pch"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
 SOURCE=.\SRC\clisttray.cpp
 
-"$(INTDIR)\clisttray.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\clist.pch"
+"$(INTDIR)\clisttray.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\clist_nicer.pch"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
 SOURCE=.\SRC\clnplus.cpp
 
-"$(INTDIR)\clnplus.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\clist.pch"
+"$(INTDIR)\clnplus.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\clist_nicer.pch"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
 SOURCE=.\SRC\clui.cpp
 
-"$(INTDIR)\clui.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\clist.pch"
+"$(INTDIR)\clui.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\clist_nicer.pch"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
 SOURCE=.\SRC\cluiopts.cpp
 
-"$(INTDIR)\cluiopts.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\clist.pch"
+"$(INTDIR)\cluiopts.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\clist_nicer.pch"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
 SOURCE=.\SRC\cluiservices.cpp
 
-"$(INTDIR)\cluiservices.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\clist.pch"
+"$(INTDIR)\cluiservices.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\clist_nicer.pch"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
@@ -756,9 +756,9 @@ SOURCE=.\SRC\commonheaders.cpp
 
 !IF  "$(CFG)" == "clist_nicer - Win32 Release"
 
-CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /I "./include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "CLIST_EXPORTS" /Fp"$(INTDIR)\clist.pch" /Yc"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /I "./include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "CLIST_EXPORTS" /Fp"$(INTDIR)\clist_nicer.pch" /Yc"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 
-"$(INTDIR)\commonheaders.obj"	"$(INTDIR)\clist.pch" : $(SOURCE) "$(INTDIR)"
+"$(INTDIR)\commonheaders.obj"	"$(INTDIR)\clist_nicer.pch" : $(SOURCE) "$(INTDIR)"
 	$(CPP) @<<
   $(CPP_SWITCHES) $(SOURCE)
 <<
@@ -776,9 +776,9 @@ CPP_SWITCHES=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../../include" /I "./include" 
 
 !ELSEIF  "$(CFG)" == "clist_nicer - Win32 Release Unicode"
 
-CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /Oy /I "../../include" /I "./include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "UNICODE" /D "_USRDLL" /D "CLIST_EXPORTS" /Fp"$(INTDIR)\clist.pch" /Yc"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+CPP_SWITCHES=/nologo /MD /W3 /GX /Zi /O1 /Oy /I "../../include" /I "./include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "UNICODE" /D "_USRDLL" /D "CLIST_EXPORTS" /Fp"$(INTDIR)\clist_nicer.pch" /Yc"commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 
-"$(INTDIR)\commonheaders.obj"	"$(INTDIR)\clist.pch" : $(SOURCE) "$(INTDIR)"
+"$(INTDIR)\commonheaders.obj"	"$(INTDIR)\clist_nicer.pch" : $(SOURCE) "$(INTDIR)"
 	$(CPP) @<<
   $(CPP_SWITCHES) $(SOURCE)
 <<
@@ -798,61 +798,61 @@ CPP_SWITCHES=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../../include" /I "./include" 
 
 SOURCE=.\SRC\config.cpp
 
-"$(INTDIR)\config.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\clist.pch"
+"$(INTDIR)\config.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\clist_nicer.pch"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
 SOURCE=.\SRC\contact.cpp
 
-"$(INTDIR)\contact.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\clist.pch"
+"$(INTDIR)\contact.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\clist_nicer.pch"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
 SOURCE=.\SRC\Docking.cpp
 
-"$(INTDIR)\Docking.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\clist.pch"
+"$(INTDIR)\Docking.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\clist_nicer.pch"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
 SOURCE=.\SRC\extBackg.cpp
 
-"$(INTDIR)\extBackg.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\clist.pch"
+"$(INTDIR)\extBackg.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\clist_nicer.pch"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
 SOURCE=.\SRC\init.cpp
 
-"$(INTDIR)\init.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\clist.pch"
+"$(INTDIR)\init.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\clist_nicer.pch"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
 SOURCE=.\SRC\rowheight_funcs.cpp
 
-"$(INTDIR)\rowheight_funcs.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\clist.pch"
+"$(INTDIR)\rowheight_funcs.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\clist_nicer.pch"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
 SOURCE=.\SRC\statusbar.cpp
 
-"$(INTDIR)\statusbar.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\clist.pch"
+"$(INTDIR)\statusbar.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\clist_nicer.pch"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
 SOURCE=.\SRC\statusfloater.cpp
 
-"$(INTDIR)\statusfloater.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\clist.pch"
+"$(INTDIR)\statusfloater.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\clist_nicer.pch"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
 SOURCE=.\SRC\viewmodes.cpp
 
-"$(INTDIR)\viewmodes.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\clist.pch"
+"$(INTDIR)\viewmodes.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\clist_nicer.pch"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
 SOURCE=.\SRC\wallpaper.cpp
 
-"$(INTDIR)\wallpaper.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\clist.pch"
+"$(INTDIR)\wallpaper.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\clist_nicer.pch"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
@@ -864,13 +864,13 @@ SOURCE=.\resource.rc
 
 SOURCE=.\coolsb\coolsblib.cpp
 
-"$(INTDIR)\coolsblib.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\clist.pch"
+"$(INTDIR)\coolsblib.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\clist_nicer.pch"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
 SOURCE=.\coolsb\coolscroll.cpp
 
-"$(INTDIR)\coolscroll.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\clist.pch"
+"$(INTDIR)\coolscroll.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\clist_nicer.pch"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 

@@ -74,7 +74,7 @@ popd
 if errorlevel 1 goto :Error
 
 pushd ..\..\miranda\plugins\clist_nicer
-call :Nmake clist.mak "clist_nicer - Win32 Release Unicode"
+call :Nmake clist_nicer.mak "clist_nicer - Win32 Release Unicode"
 popd
 if errorlevel 1 goto :Error
 
@@ -258,4 +258,5 @@ goto :eof
 
 :Error
 echo Make failed
+pause
 goto :eof

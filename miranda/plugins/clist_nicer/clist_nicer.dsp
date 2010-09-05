@@ -8,12 +8,12 @@ CFG=clist_nicer - Win32 Debug Unicode
 !MESSAGE Dies ist kein gültiges Makefile. Zum Erstellen dieses Projekts mit NMAKE
 !MESSAGE verwenden Sie den Befehl "Makefile exportieren" und führen Sie den Befehl
 !MESSAGE 
-!MESSAGE NMAKE /f "clist.mak".
+!MESSAGE NMAKE /f "clist_nicer.mak".
 !MESSAGE 
 !MESSAGE Sie können beim Ausführen von NMAKE eine Konfiguration angeben
 !MESSAGE durch Definieren des Makros CFG in der Befehlszeile. Zum Beispiel:
 !MESSAGE 
-!MESSAGE NMAKE /f "clist.mak" CFG="clist_nicer - Win32 Debug Unicode"
+!MESSAGE NMAKE /f "clist_nicer.mak" CFG="clist_nicer - Win32 Debug Unicode"
 !MESSAGE 
 !MESSAGE Für die Konfiguration stehen zur Auswahl:
 !MESSAGE 
