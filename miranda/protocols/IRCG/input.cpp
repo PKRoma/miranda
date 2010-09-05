@@ -235,7 +235,7 @@ BOOL CIrcProto::DoHardcodedCommand( CMString text, TCHAR* window, HANDLE hContac
 		return true;
 	}
 
-	else if (command == _T("/sleep")) {
+	else if (command == _T("/sleep") || command == _T("/wait")) {
    	if (!one.IsEmpty()) {
       	int ms;
          if (_stscanf(one.c_str(), _T("%d"), &ms) == 1 && ms > 0 && ms <= 4000)
