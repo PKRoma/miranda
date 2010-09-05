@@ -315,13 +315,14 @@ int NetlibHttpGatewayRecv(struct NetlibConnection *nlc, char *buf, int len, int 
 			/* We Need to sleep/wait for the data to send before we do receive */
 			for (int pollCount = nlc->pollingTimeout; pollCount--; )
 			{
-				if (nlc->pHttpProxyPacketQueue != NULL)
+				if (nlc->pHttpProxyPacketQueue != NULL && GetTickCount() - nlc->lastPost > 1000)
 					break;
 
 				if (SleepEx(1000, TRUE) && Miranda_Terminated())
 					return SOCKET_ERROR;
 			}
 
+			nlc->lastPost = GetTickCount();
 			if (nlc->pHttpProxyPacketQueue == 0 && nlc->nlu->user.pfnHttpGatewayWrapSend != NULL)
 				nlc->nlu->user.pfnHttpGatewayWrapSend(nlc, (PBYTE)"", 0, MSG_NOHTTPGATEWAYWRAP, NetlibSend);
 		}

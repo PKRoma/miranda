@@ -76,6 +76,7 @@ struct NetlibConnection
 	WORD wProxyPort;
 	int proxyType;
 	int pollingTimeout;
+	unsigned lastPost;
 	NETLIBOPENCONNECTION nloc;
 };
 
