@@ -821,7 +821,10 @@ void CThumbIM::renderContent()
 
 	::DeleteObject(hRgn);
 	::SelectObject(dc, hbmOldAv);
-	::DeleteObject(hbmResized);
+
+	if(hbmResized != hbmAvatar)
+		::DeleteObject(hbmResized);
+
 	::DeleteDC(dc);
 	m_rcBottom.bottom -= 16;
 
