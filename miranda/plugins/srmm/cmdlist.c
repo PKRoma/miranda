@@ -55,6 +55,7 @@ void tcmdlist_free(SortedList *list)
 		mir_free(n[i]);
 	}
 	li.List_Destroy(list);
+	mir_free(list);
 }
 
 static SortedList msgQueue = { NULL, 0, 0, 5, NULL };
@@ -107,7 +108,6 @@ void msgQueue_add(HANDLE hContact, HANDLE id, const TCHAR* szMsg, HANDLE hDbEven
 	li.List_InsertPtr(&msgQueue, item);
 	LeaveCriticalSection(&csMsgQueue);
 
-	Netlib_Logf(NULL, "Added queue %d", id);
 }
 
 void msgQueue_processack(HANDLE hContact, HANDLE id, BOOL success, const char* szErr)
@@ -131,12 +131,12 @@ void msgQueue_processack(HANDLE hContact, HANDLE id, BOOL success, const char* s
 			}
 			break;
 		}
+		item = NULL;
 	}
 	LeaveCriticalSection(&csMsgQueue);
 	
-	if (item && i < msgQueue.realCount)
+	if (item)
 	{
-		Netlib_Logf(NULL, "Removed queue %d", item->id);
 		if (success)
 		{
 			mir_free(item->szMsg);
@@ -165,9 +165,7 @@ void msgQueue_destroy(void)
 		mir_free(item->szMsg);
 		mir_free(item);
 	}
-	mir_free(msgQueue.items);
-	msgQueue.items = NULL;
-	msgQueue.realCount = 0;
+	li.List_Destroy(&msgQueue);
 
 	LeaveCriticalSection(&csMsgQueue);
 
