@@ -125,7 +125,10 @@ int icq_httpGatewayWrapSend(HANDLE hConn, PBYTE buf, int len, int flags, MIRANDA
 		packet.wLen = curLen;
 		write_httphdr(&packet, HTTP_PACKETTYPE_FLAP, GetGatewayIndex(hConn));
 		packBuffer(&packet, sendBuf, (WORD)curLen);
-		curResult = Netlib_Send(hConn, (char*)packet.pData, packet.wLen, flags);
+
+		NETLIBBUFFER nlb={ (char*)packet.pData, packet.wLen, flags };
+		curResult = pfnNetlibSend((WPARAM)hConn, (LPARAM)&nlb);
+		
 		SAFE_FREE((void**)&packet.pData);
 
 		// sending failed, end loop
