@@ -98,7 +98,7 @@ int LoadHelpModule(void)
 
 	mi.icolibItem = GetSkinIconHandle(SKINICON_OTHER_HELP);
 	mi.position = -500050000;
-	mi.pszName = LPGEN("&Support\tF1");
+	mi.pszName = LPGEN("&Support");
 	mi.pszService = "Help/IndexCommand";
 	CallService(MS_CLIST_ADDMAINMENUITEM,0,(LPARAM)&mi);
 
