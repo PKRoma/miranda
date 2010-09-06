@@ -315,7 +315,7 @@ int NetlibHttpGatewayRecv(struct NetlibConnection *nlc, char *buf, int len, int 
 			/* We Need to sleep/wait for the data to send before we do receive */
 			for (int pollCount = nlc->pollingTimeout; pollCount--; )
 			{
-				if (nlc->pHttpProxyPacketQueue != NULL)
+				if (nlc->pHttpProxyPacketQueue != NULL && GetTickCount() - nlc->lastPost > 1000)
 					break;
 
 				if (SleepEx(1000, TRUE) && Miranda_Terminated())
@@ -334,6 +334,7 @@ int NetlibHttpGatewayRecv(struct NetlibConnection *nlc, char *buf, int len, int 
 				if (GetLastError() == ERROR_ACCESS_DENIED)
 					break;
 
+				nlc->lastPost = GetTickCount();
 				++retryCount;
 				continue;
 			}
@@ -345,11 +346,13 @@ int NetlibHttpGatewayRecv(struct NetlibConnection *nlc, char *buf, int len, int 
 				if (GetLastError() == ERROR_ACCESS_DENIED)
 					break;
 
+				nlc->lastPost = GetTickCount();
 				++retryCount;
 				continue;
 			}
 		}
 		NETLIBHTTPREQUEST *nlhrReply = NetlibHttpRecv(nlc, flags | MSG_RAW | MSG_DUMPPROXY, MSG_RAW | MSG_DUMPPROXY);
+		nlc->lastPost = GetTickCount();
 		if (nlhrReply == NULL) return SOCKET_ERROR;
 
 		if (nlc->nlu->user.pfnHttpGatewayUnwrapRecv && !(flags & MSG_NOHTTPGATEWAYWRAP)) 
