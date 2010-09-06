@@ -140,9 +140,9 @@ static INT_PTR Proto_GetContactBaseProto(WPARAM wParam, LPARAM)
 	dbcgs.szModule = "Protocol";
 	dbcgs.szSetting = "p";
 	if ( CallService( MS_DB_CONTACT_GETSETTINGSTATIC, wParam, (LPARAM)&dbcgs ))
-		return (INT_PTR)(char*)NULL;
+		return 0;
 
-	PROTOACCOUNT* pa = ProtoGetAccount(( char* )dbv.pszVal );
+	PROTOACCOUNT* pa = Proto_GetAccount(( char* )dbv.pszVal );
 	return (INT_PTR)( Proto_IsAccountEnabled( pa ) ? pa->szModuleName : NULL);
 }
 
@@ -159,9 +159,9 @@ static INT_PTR Proto_GetContactBaseAccount(WPARAM wParam, LPARAM)
 	dbcgs.szModule = "Protocol";
 	dbcgs.szSetting = "p";
 	if ( CallService( MS_DB_CONTACT_GETSETTINGSTATIC, wParam, (LPARAM)&dbcgs ))
-		return (INT_PTR)(char*)NULL;
+		return 0;
 
-	PROTOACCOUNT* pa = ProtoGetAccount(( char* )dbv.pszVal );
+	PROTOACCOUNT* pa = Proto_GetAccount(( char* )dbv.pszVal );
     return (INT_PTR)( pa ? pa->szModuleName : NULL );
 }
 
@@ -198,7 +198,7 @@ static INT_PTR Proto_AddToContact(WPARAM wParam,LPARAM lParam)
 
 	pd = Proto_IsProtocolLoaded(( char* )lParam );
 	if ( pd == NULL ) {
-		PROTOACCOUNT* pa = ProtoGetAccount(( char* )lParam );
+		PROTOACCOUNT* pa = Proto_GetAccount(( char* )lParam );
 		if ( pa ) {
 			DBWriteContactSettingString((HANDLE)wParam,"Protocol","p",(char*)lParam);
 			return 0;
@@ -247,7 +247,7 @@ static INT_PTR Proto_RemoveFromContact(WPARAM wParam,LPARAM lParam)
 	DBVARIANT dbv;
 	char str[10];
 
-	i=Proto_IsProtoOnContact(wParam,lParam);
+	i = Proto_IsProtoOnContact(wParam,lParam);
 	if(!i) return 1;
 	if(i==-1)
 		DBDeleteContactSetting((HANDLE)wParam,"Protocol","p");
