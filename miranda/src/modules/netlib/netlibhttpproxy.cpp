@@ -322,7 +322,6 @@ int NetlibHttpGatewayRecv(struct NetlibConnection *nlc, char *buf, int len, int 
 					return SOCKET_ERROR;
 			}
 
-			nlc->lastPost = GetTickCount();
 			if (nlc->pHttpProxyPacketQueue == 0 && nlc->nlu->user.pfnHttpGatewayWrapSend != NULL)
 				nlc->nlu->user.pfnHttpGatewayWrapSend(nlc, (PBYTE)"", 0, MSG_NOHTTPGATEWAYWRAP, NetlibSend);
 		}
@@ -335,6 +334,7 @@ int NetlibHttpGatewayRecv(struct NetlibConnection *nlc, char *buf, int len, int 
 				if (GetLastError() == ERROR_ACCESS_DENIED)
 					break;
 
+				nlc->lastPost = GetTickCount();
 				++retryCount;
 				continue;
 			}
@@ -346,11 +346,13 @@ int NetlibHttpGatewayRecv(struct NetlibConnection *nlc, char *buf, int len, int 
 				if (GetLastError() == ERROR_ACCESS_DENIED)
 					break;
 
+				nlc->lastPost = GetTickCount();
 				++retryCount;
 				continue;
 			}
 		}
 		NETLIBHTTPREQUEST *nlhrReply = NetlibHttpRecv(nlc, flags | MSG_RAW | MSG_DUMPPROXY, MSG_RAW | MSG_DUMPPROXY);
+		nlc->lastPost = GetTickCount();
 		if (nlhrReply == NULL) return SOCKET_ERROR;
 
 		if (nlc->nlu->user.pfnHttpGatewayUnwrapRecv && !(flags & MSG_NOHTTPGATEWAYWRAP)) 
