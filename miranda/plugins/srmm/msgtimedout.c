@@ -19,26 +19,42 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
 #include "commonheaders.h"
-#pragma hdrstop
 #include "msgs.h"
+
+typedef struct
+{
+	const char *szMsg;
+	TMsgQueue *item;
+} ErrorDlgParam;
+
+INT_PTR SendMessageCmd(HANDLE hContact, char* msg, int isWchar);
 
 INT_PTR CALLBACK ErrorDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	switch (msg) {
+	TMsgQueue *item = (TMsgQueue*)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
+
+	switch (msg) 
+	{
 	case WM_INITDIALOG:
 		{
 			RECT rc, rcParent;
-			char *pszError = (char *) lParam;
+			ErrorDlgParam *param = (ErrorDlgParam *) lParam;
+			item = param->item;
 
 			TranslateDialogDefault(hwndDlg);
 
-			if (!pszError || !pszError[0])
+			SetWindowLongPtr(hwndDlg, GWLP_USERDATA, (LONG_PTR)item);
+
+			if (!param->szMsg || !param->szMsg[0])
 				SetDlgItemText(hwndDlg, IDC_ERRORTEXT, TranslateT("An unknown error has occured."));
-			else {
-				TCHAR* ptszError = (TCHAR*)CallService(MS_LANGPACK_PCHARTOTCHAR, 0, (LPARAM)pszError);
+			else 
+			{
+				TCHAR* ptszError = (TCHAR*)CallService(MS_LANGPACK_PCHARTOTCHAR, 0, (LPARAM)param->szMsg);
 				SetDlgItemText(hwndDlg, IDC_ERRORTEXT, ptszError);
 				mir_free(ptszError);
 			}
+
+			SetDlgItemText(hwndDlg, IDC_MSGTEXT, item->szMsg);
 
 			GetWindowRect(hwndDlg, &rc);
 			GetWindowRect(GetParent(hwndDlg), &rcParent);
@@ -48,24 +64,44 @@ INT_PTR CALLBACK ErrorDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
 		}
 		return TRUE;
 
+	case WM_DESTROY:
+		mir_free(item->szMsg);
+		mir_free(item);
+		break;
+
 	case WM_COMMAND:
-		switch (LOWORD(wParam)) {
+		switch (LOWORD(wParam)) 
+		{
 		case IDOK:
-			SendMessage(GetParent(hwndDlg), DM_ERRORDECIDED, MSGERROR_RETRY, 0);
+			SendMessageCmd(item->hContact, (char*)item->szMsg, sizeof(TCHAR) == sizeof(wchar_t));
 			DestroyWindow(hwndDlg);
 			break;
+
 		case IDCANCEL:
-			SendMessage(GetParent(hwndDlg), DM_ERRORDECIDED, MSGERROR_CANCEL, 0);
 			DestroyWindow(hwndDlg);
 			break;
 		}
 		break;
-
-	case DM_ERRORDECIDED:
-		if (wParam != MSGERROR_DONE) break;
-		SendMessage(GetParent(hwndDlg), DM_ERRORDECIDED, MSGERROR_DONE, 0);
-		DestroyWindow(hwndDlg);
-		break;
 	}
 	return FALSE;
 }
+
+void MessageFailureProcess(TMsgQueue *item, const char* err)
+{
+	HWND hwnd;
+	ErrorDlgParam param = { err, item };
+
+	CallService(MS_DB_EVENT_DELETE, (WPARAM)item->hContact, (LPARAM)item->hDbEvent);
+	
+	hwnd = WindowList_Find(g_dat->hMessageWindowList, (HANDLE)item->hContact);
+	if (hwnd == NULL)
+	{
+		SendMessageCmd(item->hContact, NULL, 0);
+		hwnd = WindowList_Find(g_dat->hMessageWindowList, (HANDLE)item->hContact);
+	}
+	else
+		SendMessage(hwnd, DM_REMAKELOG, 0, 0);
+
+	CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_MSGSENDERROR), hwnd, ErrorDlgProc, (LPARAM) &param);
+}
+

@@ -70,3 +70,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #if _MSC_VER >= 1500
 	#define wEffects wReserved
 #endif
+
+extern struct LIST_INTERFACE li;
+extern HINSTANCE g_hInst;
+
+

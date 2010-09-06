@@ -18,97 +18,158 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 #include "commonheaders.h"
+#include "winsock.h"
+#include "m_netlib.h"
 
-static unsigned long tcmdlist_hash(const CMDCHAR *data) {
-	unsigned long hash = 0;
-	int i, shift = 0;
-
-	for(i=0; data[i]; i++) {
-		hash ^= data[i]<<shift;
-		if(shift>24) hash ^= (data[i]>>(32-shift))&0x7F;
-		shift = (shift+5)&0x1F;
-	}
-	return hash;
-}
-
-TCmdList *tcmdlist_append(TCmdList *list, CMDCHAR *data)
+int tcmdlist_append(SortedList *list, TCHAR *data)
 {
-	TCmdList *n;
-	TCmdList *new_list = mir_alloc(sizeof(TCmdList));
-	TCmdList *attach_to = NULL;
+	TCmdList *new_list;
 	
-	if (!data) {
-		mir_free(new_list);
-		return list;
-	}
-	new_list->next = NULL;
-	new_list->szCmd = mir_tstrdup(data);
-	new_list->hash = tcmdlist_hash(data);
-	for (n=list; n!=NULL; n=n->next) {
-		attach_to = n;
-	}
-	if (attach_to==NULL) {
-		new_list->prev = NULL;
-		return new_list;
-	} 
-	else {
-		new_list->prev = attach_to;
-		attach_to->next = new_list;
-		if (tcmdlist_len(list)>20) {
-			list = tcmdlist_remove(list, list->szCmd);
-		}
-		return list;
-	}
-}
+	if (!data)
+		return list->realCount - 1;
 
-TCmdList *tcmdlist_remove(TCmdList *list, CMDCHAR *data) {
-	TCmdList *n;
-	unsigned long hash;
-
-	if (!data) return list;
-	hash = tcmdlist_hash(data);
-	for (n=list; n!=NULL; n=n->next) {
-		if (n->hash==hash && !_tcscmp(n->szCmd, data)) 
-		{
-			if (n->next) n->next->prev = n->prev;
-			if (n->prev) n->prev->next = n->next;
-			if (n==list) list = n->next;
-			mir_free(n->szCmd);
-			mir_free(n);
-			return list;
-		}
-	}
-	return list;
-}
-
-int tcmdlist_len(TCmdList *list)
-{
-	TCmdList *n;
-	int i = 0;
-
-	for (n=list; n!=NULL; n=n->next) {
-		i++;
-	}
-	return i;
-}
-
-TCmdList *tcmdlist_last(TCmdList *list) {
-	TCmdList *n;
-
-	for (n=list; n!=NULL; n=n->next) {
-		if (!n->next) 
-			return n;
-	}
-	return NULL;
-}
-
-void tcmdlist_free(TCmdList *list) {
-	TCmdList *n = list, *next;
-
-	while (n!=NULL) {
-		next = n->next;
+	if (list->realCount >= 20)
+	{
+		TCmdList* n = (TCmdList*)list->items[0];
 		mir_free(n->szCmd);
 		mir_free(n);
-		n = next;
+		li.List_Remove(list, 0);
 	}
+
+	new_list = mir_alloc(sizeof(TCmdList));
+	new_list->szCmd = mir_tstrdup(data);
+
+	li.List_InsertPtr(list, new_list);
+
+	return list->realCount - 1;
+}
+
+void tcmdlist_free(SortedList *list) 
+{
+	int i;
+	TCmdList** n = (TCmdList**)list->items;
+
+	for (i = 0; i < list->realCount; ++i) 
+	{
+		mir_free(n[i]->szCmd);
+		mir_free(n[i]);
+	}
+	li.List_Destroy(list);
+}
+
+static SortedList msgQueue = { NULL, 0, 0, 5, NULL };
+static CRITICAL_SECTION csMsgQueue;
+static UINT_PTR timerId;
+static unsigned msgTimeout;
+
+void MessageFailureProcess(TMsgQueue *item, const char* err);
+
+static VOID CALLBACK MsgTimer(HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime)
+{
+	int i, ntl = 0;
+	time_t ts = time(NULL);
+	TMsgQueue **tmlst = NULL;
+	
+	EnterCriticalSection(&csMsgQueue);
+
+	for (i = 0; i < msgQueue.realCount; ++i) 
+	{
+		TMsgQueue *item = (TMsgQueue*)msgQueue.items[i];
+		if (ts - item->ts > msgTimeout)
+		{
+			if (!ntl)
+				tmlst = (TMsgQueue**)alloca((msgQueue.realCount - i) * sizeof(TMsgQueue*));
+			tmlst[ntl++] = item;
+
+			li.List_Remove(&msgQueue, i--);
+		}
+	}
+	LeaveCriticalSection(&csMsgQueue);
+
+	for (i = 0; i < ntl; ++i) 
+		MessageFailureProcess(tmlst[i], LPGEN("The message send timed out."));
+}
+
+void msgQueue_add(HANDLE hContact, HANDLE id, const TCHAR* szMsg, HANDLE hDbEvent, time_t ts)
+{
+	TMsgQueue *item;
+	
+	item = mir_alloc(sizeof(TMsgQueue));
+	item->hContact = hContact;
+	item->id = id;
+	item->szMsg = mir_tstrdup(szMsg);
+	item->hDbEvent = hDbEvent;
+	item->ts = ts;
+
+	EnterCriticalSection(&csMsgQueue);
+	if (!msgQueue.realCount && !timerId)
+		timerId = SetTimer(NULL, 0, 5000, MsgTimer);
+	li.List_InsertPtr(&msgQueue, item);
+	LeaveCriticalSection(&csMsgQueue);
+
+	Netlib_Logf(NULL, "Added queue %d", id);
+}
+
+void msgQueue_processack(HANDLE hContact, HANDLE id, BOOL success, const char* szErr)
+{
+	int i;
+	TMsgQueue* item = NULL;;
+	
+	EnterCriticalSection(&csMsgQueue);
+
+	for (i = 0; i < msgQueue.realCount; ++i) 
+	{
+		item = (TMsgQueue*)msgQueue.items[i];
+		if (item->hContact == hContact && item->id == id)
+		{
+			li.List_Remove(&msgQueue, i);
+
+			if (!msgQueue.realCount && timerId)
+			{
+				KillTimer(NULL, timerId);
+				timerId = 0;
+			}
+			break;
+		}
+	}
+	LeaveCriticalSection(&csMsgQueue);
+	
+	if (item && i < msgQueue.realCount)
+	{
+		Netlib_Logf(NULL, "Removed queue %d", item->id);
+		if (success)
+		{
+			mir_free(item->szMsg);
+			mir_free(item);
+		}
+		else
+			MessageFailureProcess(item, szErr);
+	}
+}
+
+void msgQueue_init(void)
+{
+	InitializeCriticalSection(&csMsgQueue);
+	msgTimeout = DBGetContactSettingDword(NULL, SRMMMOD, SRMSGSET_MSGTIMEOUT, SRMSGDEFSET_MSGTIMEOUT) / 1000;
+}
+
+void msgQueue_destroy(void)
+{
+	int i;
+	
+	EnterCriticalSection(&csMsgQueue);
+
+	for (i = 0; i < msgQueue.realCount; ++i) 
+	{
+		TMsgQueue* item = (TMsgQueue*)msgQueue.items[i];
+		mir_free(item->szMsg);
+		mir_free(item);
+	}
+	mir_free(msgQueue.items);
+	msgQueue.items = NULL;
+	msgQueue.realCount = 0;
+
+	LeaveCriticalSection(&csMsgQueue);
+
+	DeleteCriticalSection(&csMsgQueue);
 }

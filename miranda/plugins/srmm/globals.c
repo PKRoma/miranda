@@ -19,8 +19,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 #include "commonheaders.h"
 
-extern HINSTANCE g_hInst;
-
 struct GlobalMessageData *g_dat;
 static HANDLE g_hooks[3];
 
@@ -147,13 +145,17 @@ static int ackevent(WPARAM wParam, LPARAM lParam)
 	ACKDATA *pAck = (ACKDATA *)lParam;
 	
 	if (!pAck) return 0;
-	else if (pAck->type==ACKTYPE_AVATAR) {
+	else if (pAck->type == ACKTYPE_AVATAR) 
+	{
 		HWND h = WindowList_Find(g_dat->hMessageWindowList, (HANDLE)pAck->hContact);
 		if(h) SendMessage(h, HM_AVATARACK, wParam, lParam);
 	}
-	else if (pAck->type==ACKTYPE_MESSAGE) {
-		HWND h = WindowList_Find(g_dat->hMessageWindowList, (HANDLE)pAck->hContact);
-		if(h) SendMessage(h, HM_EVENTSENT, wParam, lParam);
+	else if (pAck->type == ACKTYPE_MESSAGE) 
+	{
+		msgQueue_processack(pAck->hContact, pAck->hProcess, pAck->result == ACKRESULT_SUCCESS, (char*)pAck->lParam);
+
+		if (pAck->result == ACKRESULT_SUCCESS) 
+			SkinPlaySound("SendMsg");
 	}
 	return 0;
 }

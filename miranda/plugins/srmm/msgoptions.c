@@ -18,12 +18,9 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 #include "commonheaders.h"
-#pragma hdrstop
 
 #include "m_fontservice.h"
 #include "m_modernopt.h"
-
-extern HINSTANCE g_hInst;
 
 #define FONTF_BOLD   1
 #define FONTF_ITALIC 2

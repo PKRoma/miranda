@@ -19,7 +19,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 #include "commonheaders.h"
 #include "statusicon.h"
-#pragma hdrstop
 
 /* Missing MinGW GUIDs */
 #ifdef __MINGW32__
@@ -33,8 +32,6 @@ HCURSOR hCurSplitNS, hCurSplitWE, hCurHyperlinkHand;
 HANDLE hHookWinEvt, hHookWinPopup, hMsgMenuItem;
 static HANDLE hServices[7];
 static HANDLE hHooks[8];
-
-extern HINSTANCE g_hInst;
 
 static int SRMMStatusToPf2(int status)
 {
@@ -57,12 +54,11 @@ static int MessageEventAdded(WPARAM wParam, LPARAM lParam)
 {
 	DBEVENTINFO dbei = {0};
 	HWND hwnd;
-	BOOL DoNotStealFocus = DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_DONOTSTEALFOCUS, SRMSGDEFSET_DONOTSTEALFOCUS);
 
 	dbei.cbSize = sizeof(dbei);
 	CallService(MS_DB_EVENT_GET, lParam, (LPARAM) & dbei);
 
-	if (dbei.flags & (DBEF_SENT | DBEF_READ) || !( dbei.eventType == EVENTTYPE_MESSAGE || DbEventIsForMsgWindow(&dbei)))
+	if (dbei.flags & (DBEF_SENT | DBEF_READ) || !(dbei.eventType == EVENTTYPE_MESSAGE || DbEventIsForMsgWindow(&dbei)))
 		return 0;
 
 	CallServiceSync(MS_CLIST_REMOVEEVENT, wParam, (LPARAM) 1);
@@ -70,7 +66,7 @@ static int MessageEventAdded(WPARAM wParam, LPARAM lParam)
 	hwnd = WindowList_Find(g_dat->hMessageWindowList, (HANDLE) wParam);
 	if (hwnd) 
 	{
-		if (!DoNotStealFocus)
+		if (!DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_DONOTSTEALFOCUS, SRMSGDEFSET_DONOTSTEALFOCUS))
 		{
 			ShowWindow(hwnd, SW_RESTORE);
 			SetWindowPos(hwnd, HWND_TOP, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW);
@@ -93,7 +89,7 @@ static int MessageEventAdded(WPARAM wParam, LPARAM lParam)
 		if (szProto && (g_dat->openFlags & SRMMStatusToPf2(CallProtoService(szProto, PS_GETSTATUS, 0, 0)))) {
 			struct NewMessageWindowLParam newData = { 0 };
 			newData.hContact = (HANDLE) wParam;
-			newData.noActivate = DoNotStealFocus;
+			newData.noActivate = DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_DONOTSTEALFOCUS, SRMSGDEFSET_DONOTSTEALFOCUS);
 			CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_MSG), NULL, DlgProcMessage, (LPARAM) & newData);
 			return 0;
 		}
@@ -115,7 +111,7 @@ static int MessageEventAdded(WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
-static INT_PTR SendMessageCmd(HANDLE hContact, char* msg, int isWchar)
+INT_PTR SendMessageCmd(HANDLE hContact, char* msg, int isWchar)
 {
 	char *szProto;
 	HWND hwnd;
@@ -349,6 +345,7 @@ int SplitmsgShutdown(void)
 	FreeLibrary(GetModuleHandleA("riched20"));
 	OleUninitialize();
 	RichUtil_Unload();
+	msgQueue_destroy();
 	FreeGlobals();
 	return 0;
 }
@@ -433,6 +430,7 @@ int LoadSendRecvMessageModule(void)
 	OleInitialize(NULL);
 	InitREOleCallback();
 	InitOptions();
+	msgQueue_init();
 
 	hHooks[0] = HookEvent(ME_DB_EVENT_ADDED, MessageEventAdded);
 	hHooks[1] = HookEvent(ME_DB_CONTACT_SETTINGCHANGED, MessageSettingChanged);

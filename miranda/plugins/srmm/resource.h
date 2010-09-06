@@ -50,6 +50,7 @@
 #define IDC_STMSGLOGGROUP               1442
 #define IDC_PROTOCOL                    1580
 #define IDC_ERRORTEXT                   1596
+#define IDC_MSGTEXT                     1597
 #define IDC_SHOWNOTIFY                  1600
 #define IDC_STATUSWIN                   1601
 #define IDC_TYPEWIN                     1602
