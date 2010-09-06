@@ -20,27 +20,32 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef SRMM_CMDLIST_H
 #define SRMM_CMDLIST_H
 
-#ifdef _UNICODE
-	#define CMDCHAR TCHAR
-#else
-	#define CMDCHAR char
-#endif
+typedef struct _TCmdList 
+{
+	TCHAR *szCmd;
+} 
+TCmdList;
 
-typedef struct _TCmdList {
-	struct _TCmdList *next;
-	struct _TCmdList *prev;
-#ifdef _UNICODE
-	wchar_t *szCmd;
-#else
-	char *szCmd;
-#endif
-	unsigned long hash;
-} TCmdList;
+int tcmdlist_append(SortedList *list, TCHAR *data);
+void tcmdlist_free(SortedList *list);
 
-TCmdList *tcmdlist_append(TCmdList *list, CMDCHAR *data);
-TCmdList *tcmdlist_remove(TCmdList *list, CMDCHAR *data);
-int tcmdlist_len(TCmdList *list);
-TCmdList *tcmdlist_last(TCmdList *list);
-void tcmdlist_free(TCmdList * list);
+__inline TCHAR* tcmdlist_getitem(SortedList *list, int ind) 
+{ return ((TCmdList*)list->items[ind])->szCmd; }
+
+
+typedef struct _TMsgQueue 
+{
+	HANDLE id;
+	HANDLE hContact;
+	TCHAR* szMsg;
+	HANDLE hDbEvent;
+	unsigned ts;
+} 
+TMsgQueue;
+
+void msgQueue_add(HANDLE hContact, HANDLE id, const TCHAR* szMsg, HANDLE hDbEvent);
+void msgQueue_processack(HANDLE hContact, HANDLE id, BOOL success, const char* szErr);
+void msgQueue_init(void);
+void msgQueue_destroy(void);
 
 #endif

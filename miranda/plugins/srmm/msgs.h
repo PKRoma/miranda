@@ -22,9 +22,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include <richedit.h>
 #include <richole.h>
-#define MSGERROR_CANCEL	0
-#define MSGERROR_RETRY	1
-#define MSGERROR_DONE	2
 
 struct NewMessageWindowLParam
 {
@@ -38,11 +35,8 @@ struct MessageWindowData
 {
 	HANDLE hContact;
 	HANDLE hDbEventFirst, hDbEventLast;
-	HANDLE hSendId;
-	int sendCount;
 	HBRUSH hBkgBrush;
 	int splitterPos, originalSplitterPos;
-	char *sendBuffer;
 	SIZE minEditBoxSize;
 	RECT minEditInit;
 	int lineHeight;
@@ -63,15 +57,11 @@ struct MessageWindowData
 	char *szProto;
 	WORD wStatus;
 	WORD wOldStatus;
-	TCmdList *cmdList;
-	TCmdList *cmdListCurrent;
-	TCHAR* lastMsg;
-	int bIsRtl, bIsAutoRTL, bIsUtf;
-	int lastEventType;
-	HWND hwndErrorDlg;
+	int cmdListInd;
+	SortedList *cmdList;
+	int bIsAutoRTL;
 };
 
-#define HM_EVENTSENT         (WM_USER+10)
 #define DM_REMAKELOG         (WM_USER+11)
 #define HM_DBEVENTADDED      (WM_USER+12)
 #define DM_CASCADENEWWINDOW  (WM_USER+13)
@@ -79,7 +69,6 @@ struct MessageWindowData
 #define DM_SPLITTERMOVED     (WM_USER+15)
 #define DM_UPDATETITLE       (WM_USER+16)
 #define DM_APPENDTOLOG       (WM_USER+17)
-#define DM_ERRORDECIDED      (WM_USER+18)
 #define DM_SCROLLLOGTOBOTTOM (WM_USER+19)
 #define DM_TYPING            (WM_USER+20)
 #define DM_UPDATEWINICON     (WM_USER+21)
@@ -90,7 +79,6 @@ struct MessageWindowData
 #define DM_GETAVATAR         (WM_USER+26)
 #define DM_UPDATESIZEBAR     (WM_USER+27)
 #define HM_AVATARACK         (WM_USER+28)
-#define HM_ACKEVENT          (WM_USER+29)
 #define DM_GETWINDOWSTATE    (WM_USER+30)
 #define DM_STATUSICONCHANGE  (WM_USER+31)
 
@@ -171,8 +159,8 @@ extern const int msgDlgFontCount;
 #define SRMSGSET_DELTEMP           "DeleteTempCont"
 #define SRMSGDEFSET_DELTEMP        0
 #define SRMSGSET_MSGTIMEOUT        "MessageTimeout"
-#define SRMSGDEFSET_MSGTIMEOUT     10000
-#define SRMSGSET_MSGTIMEOUT_MIN    4000 // minimum value (4 seconds)
+#define SRMSGDEFSET_MSGTIMEOUT     65000
+#define SRMSGSET_MSGTIMEOUT_MIN    5000 // minimum value (5 seconds)
 #define SRMSGSET_FLASHCOUNT        "FlashMax"
 #define SRMSGDEFSET_FLASHCOUNT     5
 

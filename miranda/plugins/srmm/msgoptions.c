@@ -18,12 +18,11 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 #include "commonheaders.h"
-#pragma hdrstop
 
 #include "m_fontservice.h"
 #include "m_modernopt.h"
 
-extern HINSTANCE g_hInst;
+extern unsigned msgTimeout;
 
 #define FONTF_BOLD   1
 #define FONTF_ITALIC 2
@@ -254,7 +253,7 @@ static INT_PTR CALLBACK DlgProcOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 	switch (msg) {
 		case WM_INITDIALOG:
 		{
-			DWORD msgTimeout, avatarHeight;
+			DWORD avatarHeight;
 
 			TranslateDialogDefault(hwndDlg);
 			SetWindowLongPtr(GetDlgItem(hwndDlg, IDC_POPLIST), GWL_STYLE, GetWindowLongPtr(GetDlgItem(hwndDlg, IDC_POPLIST), GWL_STYLE) | TVS_NOHSCROLL | TVS_CHECKBOXES);
@@ -351,7 +350,7 @@ static INT_PTR CALLBACK DlgProcOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 					switch (((LPNMHDR) lParam)->code) {
 						case PSN_APPLY:
 						{
-							DWORD msgTimeout, avatarHeight;
+							DWORD avatarHeight;
 
 							DBWriteContactSettingDword(NULL, SRMMMOD, SRMSGSET_POPFLAGS, MakeCheckBoxTreeFlags(GetDlgItem(hwndDlg, IDC_POPLIST)));
 							DBWriteContactSettingByte(NULL, SRMMMOD, SRMSGSET_DONOTSTEALFOCUS, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_DONOTSTEALFOCUS));

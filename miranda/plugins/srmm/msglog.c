@@ -18,9 +18,7 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 #include "commonheaders.h"
-#pragma hdrstop
 
-extern HINSTANCE g_hInst;
 extern HANDLE hIconLibItem[];
 
 static int logPixelSY;
@@ -412,7 +410,6 @@ static char *CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE hContact
 	if(dat->bIsAutoRTL)
 		AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, "\\par");
 
-	dat->lastEventType = dbei.flags;
 	mir_free(dbei.pBlob);
 	return buffer;
 }
