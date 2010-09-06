@@ -1684,7 +1684,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 						SendMessage(hwndDlg, DM_REMAKELOG, 0, 0);
 					}
 					hSendId = (HANDLE) CallContactService(dat->hContact, MsgServiceName(dat->hContact), flags, (LPARAM) sendBuffer);
-					msgQueue_add(dat->hContact, hSendId, temp, hNewEvent, dbei.timestamp);
+					msgQueue_add(dat->hContact, hSendId, temp, hNewEvent);
 					mir_free(sendBuffer);
 				}
 

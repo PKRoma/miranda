@@ -39,11 +39,11 @@ typedef struct _TMsgQueue
 	HANDLE hContact;
 	TCHAR* szMsg;
 	HANDLE hDbEvent;
-	time_t ts;
+	unsigned ts;
 } 
 TMsgQueue;
 
-void msgQueue_add(HANDLE hContact, HANDLE id, const TCHAR* szMsg, HANDLE hDbEvent, time_t ts);
+void msgQueue_add(HANDLE hContact, HANDLE id, const TCHAR* szMsg, HANDLE hDbEvent);
 void msgQueue_processack(HANDLE hContact, HANDLE id, BOOL success, const char* szErr);
 void msgQueue_init(void);
 void msgQueue_destroy(void);

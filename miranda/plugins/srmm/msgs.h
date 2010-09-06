@@ -160,7 +160,7 @@ extern const int msgDlgFontCount;
 #define SRMSGDEFSET_DELTEMP        0
 #define SRMSGSET_MSGTIMEOUT        "MessageTimeout"
 #define SRMSGDEFSET_MSGTIMEOUT     65000
-#define SRMSGSET_MSGTIMEOUT_MIN    4000 // minimum value (4 seconds)
+#define SRMSGSET_MSGTIMEOUT_MIN    5000 // minimum value (5 seconds)
 #define SRMSGSET_FLASHCOUNT        "FlashMax"
 #define SRMSGDEFSET_FLASHCOUNT     5
 
