@@ -52,7 +52,7 @@ static INT_PTR WebsiteCommand(WPARAM, LPARAM)
 
 static int BugCommandEvent(WPARAM wParam, LPARAM lParam) {
     char *szUrl = (char*)lParam;
-    
+
     if (szUrl) {
         CallService(MS_UTILS_OPENURL,1,(LPARAM)szUrl);
     }
@@ -75,17 +75,17 @@ int ShutdownHelpModule(WPARAM, LPARAM)
 
 int LoadHelpModule(void)
 {
-	CLISTMENUITEM mi = { 0 };
-
 	HookEvent(ME_SYSTEM_PRESHUTDOWN,ShutdownHelpModule);
 
 	CreateServiceFunction("Help/AboutCommand",AboutCommand);
 	CreateServiceFunction("Help/IndexCommand",IndexCommand);
 	CreateServiceFunction("Help/WebsiteCommand",WebsiteCommand);
 	CreateServiceFunction("Help/BugCommand",BugCommand);
-    hBugEvent = CreateHookableEvent(ME_HELP_BUGREPORT);
-    SetHookDefaultForHookableEvent(hBugEvent, BugCommandEvent);
-    
+
+	hBugEvent = CreateHookableEvent(ME_HELP_BUGREPORT);
+	SetHookDefaultForHookableEvent(hBugEvent, BugCommandEvent);
+
+	CLISTMENUITEM mi = { 0 };
 	mi.cbSize = sizeof(mi);
 	mi.flags = CMIF_ICONFROMICOLIB;
 	mi.icolibItem = GetSkinIconHandle(SKINICON_OTHER_MIRANDA);
@@ -99,14 +99,12 @@ int LoadHelpModule(void)
 	mi.icolibItem = GetSkinIconHandle(SKINICON_OTHER_HELP);
 	mi.position = -500050000;
 	mi.pszName = LPGEN("&Support\tF1");
-	mi.hotKey = MAKELPARAM(0,VK_F1);
 	mi.pszService = "Help/IndexCommand";
 	CallService(MS_CLIST_ADDMAINMENUITEM,0,(LPARAM)&mi);
 
 	mi.icolibItem = GetSkinIconHandle(SKINICON_OTHER_MIRANDAWEB);
 	mi.position = 2000050000;
 	mi.pszName = LPGEN("&Miranda IM Homepage");
-	mi.hotKey = 0;
 	mi.pszService = "Help/WebsiteCommand";
 	CallService(MS_CLIST_ADDMAINMENUITEM,0,(LPARAM)&mi);
 
