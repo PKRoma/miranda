@@ -258,9 +258,7 @@ void CIrcProto::Disconnect(void)
 	for ( int i = 0; i < 20 && con; ++i ) Sleep(50);
 
 	if ( con )
-		Netlib_CloseHandle(con);
-
-	con = NULL;
+		Netlib_Shutdown(con);
 
 	m_info.Reset();
 	return;
