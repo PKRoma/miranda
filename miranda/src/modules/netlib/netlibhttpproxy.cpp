@@ -233,7 +233,7 @@ static int NetlibHttpGatewayOscarPost(NetlibConnection *nlc, const char *buf, in
 	CloseHandle(nlcSend.hOkToCloseEvent);
 
 	nlc->s2 = nlcSend.s;
-	nlc->nloc = nlcSend.nloc;
+	mir_free((char*)nlcSend.nloc.szHost);
 
 	EnterCriticalSection(&nlc->csHttpSequenceNums);
 
