@@ -937,8 +937,8 @@ int CIrcProto::SetStatusInternal( int iNewStatus, bool bIsInternal )
 	if ( !bChatInstalled )
 		return 0;
 
-	if ( iNewStatus != ID_STATUS_OFFLINE && lstrlenA(m_network) < 1 ) {
-		if (lstrlen(m_nick) > 0 && !m_disableDefaultServer) {
+	if ( iNewStatus != ID_STATUS_OFFLINE && !m_network[0] ) {
+		if (m_nick[0] && !m_disableDefaultServer) {
 			CQuickDlg* dlg = new CQuickDlg( this );
 			dlg->GetProto()->m_quickComboSelection = dlg->GetProto()->m_serverComboSelection + 1;
 			dlg->Show();
@@ -953,7 +953,7 @@ int CIrcProto::SetStatusInternal( int iNewStatus, bool bIsInternal )
 		return 0;
 	}
 
-	if ( iNewStatus != ID_STATUS_OFFLINE && (lstrlen(m_nick) <1 || lstrlen(m_userID) < 1 || lstrlen(m_name) < 1)) {
+	if ( iNewStatus != ID_STATUS_OFFLINE && !m_nick[0] || !m_userID[0] || !m_name[0]) {
 		MIRANDASYSTRAYNOTIFY msn;
 		msn.cbSize = sizeof( MIRANDASYSTRAYNOTIFY );
 		msn.szProto = m_szModuleName;
