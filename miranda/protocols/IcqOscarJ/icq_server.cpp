@@ -65,12 +65,7 @@ void __cdecl CIcqProto::ServerThread(serverthread_start_info *infoParam)
 		hServerConn = NetLib_OpenConnection(m_hServerNetlibUser, NULL, &nloc);
 
 		if (hServerConn && m_bSecureConnection)
-		{
-#ifdef _DEBUG
-			NetLog_Server("(%d) Starting SSL negotiation", CallService(MS_NETLIB_GETSOCKET, (WPARAM)hServerConn, 0));
-#endif
 			CallService(MS_NETLIB_STARTSSL, (WPARAM)hServerConn, 0);
-		}
 
 		SAFE_FREE((void**)&nloc.szHost);
 		SAFE_FREE((void**)&infoParam);
@@ -120,7 +115,9 @@ void __cdecl CIcqProto::ServerThread(serverthread_start_info *infoParam)
 
 		info.hPacketRecver = (HANDLE)CallService(MS_NETLIB_CREATEPACKETRECVER, (WPARAM)hServerConn, 0x2400);
 		packetRecv.cbSize = sizeof(packetRecv);
-		packetRecv.dwTimeout = INFINITE;
+		packetRecv.dwTimeout = 	!m_bGatewayMode && getSettingByte(NULL, "KeepAlive", DEFAULT_KEEPALIVE_ENABLED) ? 
+			getSettingDword(NULL, "KeepAliveInterval", KEEPALIVE_INTERVAL) : INFINITE;
+
 		while(hServerConn)
 		{
 			if (info.bReinitRecver)
@@ -128,7 +125,8 @@ void __cdecl CIcqProto::ServerThread(serverthread_start_info *infoParam)
 				info.bReinitRecver = 0;
 				ZeroMemory(&packetRecv, sizeof(packetRecv));
 				packetRecv.cbSize = sizeof(packetRecv);
-				packetRecv.dwTimeout = INFINITE;
+				packetRecv.dwTimeout = 	!m_bGatewayMode && getSettingByte(NULL, "KeepAlive", DEFAULT_KEEPALIVE_ENABLED) ? 
+					getSettingDword(NULL, "KeepAliveInterval", KEEPALIVE_INTERVAL) : INFINITE;
 			}
 
 			recvResult = CallService(MS_NETLIB_GETMOREPACKETS, (WPARAM)info.hPacketRecver, (LPARAM)&packetRecv);
@@ -141,8 +139,18 @@ void __cdecl CIcqProto::ServerThread(serverthread_start_info *infoParam)
 
 			if (recvResult == SOCKET_ERROR)
 			{
-				NetLog_Server("Abortive closure of server socket, error: %d", GetLastError());
-				break;
+				if (WSAGetLastError() == ERROR_TIMEOUT)
+				{
+					icq_packet packet = {0};
+					write_flap(&packet, ICQ_PING_CHAN);
+					sendServPacket(&packet);
+					continue;
+				}
+				else
+				{
+					NetLog_Server("Abortive closure of server socket, error: %d", GetLastError());
+					break;
+				}
 			}
 
 			if (m_iDesiredStatus == ID_STATUS_OFFLINE)
@@ -161,6 +169,9 @@ void __cdecl CIcqProto::ServerThread(serverthread_start_info *infoParam)
 			packetRecv.bytesUsed = handleServerPackets(packetRecv.buffer, packetRecv.bytesAvailable, &info);
 		}
 
+		// Time to shutdown
+		NetLib_CloseConnection(&hServerConn, TRUE);
+
 		// Close the packet receiver (connection may still be open)
 		NetLib_SafeCloseHandle(&info.hPacketRecver);
 
@@ -168,14 +179,9 @@ void __cdecl CIcqProto::ServerThread(serverthread_start_info *infoParam)
 		NetLib_SafeCloseHandle(&info.hDirectBoundPort);
 	}
 
-	// signal keep-alive thread to stop
-	StopKeepAlive(&info);
-
 	// disable auto info-update thread
 	icq_EnableUserLookup(FALSE);
 
-	// Time to shutdown
-	icq_serverDisconnect(FALSE);
 	if (m_iStatus != ID_STATUS_OFFLINE && m_iDesiredStatus != ID_STATUS_OFFLINE)
 	{
 		if (!info.bLoggedIn)
@@ -239,17 +245,18 @@ void CIcqProto::icq_serverDisconnect(BOOL bBlock)
 
 	if (hServerConn)
 	{
-		NetLib_CloseConnection(&hServerConn, TRUE);
+		Netlib_Shutdown(hServerConn);
 		connectionHandleMutex->Leave();
 
-		// Not called from network thread?
-		if (bBlock && GetCurrentThreadId() != serverThreadId)
+		if (serverThreadHandle)
 		{
-			while (ICQWaitForSingleObject(serverThreadHandle, INFINITE) != WAIT_OBJECT_0);
+			// Not called from network thread?
+			if (bBlock && GetCurrentThreadId() != serverThreadId)
+				while (ICQWaitForSingleObject(serverThreadHandle, INFINITE) != WAIT_OBJECT_0);
+
 			CloseHandle(serverThreadHandle);
+			serverThreadHandle = NULL;
 		}
-		else
-			CloseHandle(serverThreadHandle);
 	}
 	else
 		connectionHandleMutex->Leave();
@@ -325,15 +332,15 @@ int CIcqProto::handleServerPackets(BYTE *buf, int len, serverthread_info *info)
 
 void CIcqProto::sendServPacket(icq_packet *pPacket)
 {
-  // make sure to have the connection handle
-  connectionHandleMutex->Enter();
+	// make sure to have the connection handle
+	connectionHandleMutex->Enter();
 
 	if (hServerConn)
 	{
 		int nSendResult;
 
-    // This critsec makes sure that the sequence order doesn't get screwed up
-    localSeqMutex->Enter();
+		// This critsec makes sure that the sequence order doesn't get screwed up
+		localSeqMutex->Enter();
 
 		// :IMPORTANT:
 		// The FLAP sequence must be a WORD. When it reaches 0xFFFF it should wrap to
@@ -354,8 +361,8 @@ void CIcqProto::sendServPacket(icq_packet *pPacket)
 			Sleep(1000);
 		}
 
-    localSeqMutex->Leave();
-    connectionHandleMutex->Leave();
+		localSeqMutex->Leave();
+		connectionHandleMutex->Leave();
 
 		{ // Rates management
 			icq_lock l(m_ratesMutex);

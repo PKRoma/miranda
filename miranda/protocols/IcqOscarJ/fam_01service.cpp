@@ -942,9 +942,6 @@ void CIcqProto::handleServUINSettings(int nPort, serverthread_info *info)
 		// Request info updates on all contacts
 		icq_RescanInfoUpdate();
 
-		// Start sending Keep-Alive packets
-		StartKeepAlive(info);
-
 		if (m_bAvatarsEnabled)
 		{ // Send SNAC 1,4 - request avatar family 0x10 connection
 			icq_requestnewfamily(ICQ_AVATAR_FAMILY, &CIcqProto::StartAvatarThread);

@@ -88,6 +88,7 @@ public:
 
   void connectionThread();
   void closeConnection();
+  void shutdownConnection();
 
   __inline BOOL isPending() { return !isLoggedIn; };
   __inline BOOL isReady() { return isLoggedIn && isActive && !stopThread; };

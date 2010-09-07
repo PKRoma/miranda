@@ -324,14 +324,12 @@ void CIcqProto::StartAvatarThread(HANDLE hConn, char *cookie, WORD cookieLen) //
 {
 	if (!hConn)
 	{
-    icq_lock l(m_avatarsMutex); // place avatars lock
+		icq_lock l(m_avatarsMutex); // place avatars lock
 
 		if (m_avatarsConnection && m_avatarsConnection->isPending())
 		{
 			NetLog_Server("Avatar, Multiple start thread attempt, ignored.");
-
-      SAFE_FREE((void**)&cookie);
-
+			SAFE_FREE((void**)&cookie);
 			return;
 		}
 		NetLog_Server("Avatars: Connection failed");
@@ -363,7 +361,7 @@ void CIcqProto::StartAvatarThread(HANDLE hConn, char *cookie, WORD cookieLen) //
 		return;
 	}
 
-  icq_lock l(m_avatarsMutex);
+	icq_lock l(m_avatarsMutex);
 
 	if (m_avatarsConnection && m_avatarsConnection->isPending())
 	{
@@ -375,13 +373,13 @@ void CIcqProto::StartAvatarThread(HANDLE hConn, char *cookie, WORD cookieLen) //
 
 		return;
 	}
-  else if (m_avatarsConnection)
-    m_avatarsConnection->closeConnection();
+	else if (m_avatarsConnection)
+		m_avatarsConnection->closeConnection();
 
 	m_avatarsConnection = new avatars_server_connection(this, hConn, cookie, cookieLen); // the old connection should not be used anymore
 
-  // connection object created, remove the connection request pending flag
-  m_avatarsConnectionPending = FALSE;
+	// connection object created, remove the connection request pending flag
+	m_avatarsConnectionPending = FALSE;
 }
 
 
@@ -391,8 +389,7 @@ void CIcqProto::StopAvatarThread()
 
 	if (m_avatarsConnection)
 	{
-		m_avatarsConnection->closeConnection(); // make the thread stop
-		m_avatarsConnection = NULL; // the thread will finish in background
+		m_avatarsConnection->shutdownConnection(); // make the thread stop
 	}
 
 	return;
@@ -997,8 +994,8 @@ void __cdecl CIcqProto::AvatarThread(avatars_server_connection *pInfo)
 {
   NetLog_Server("%s thread started.", "Avatar");
 
-  // Execute connection handler
-  pInfo->connectionThread();
+	// Execute connection handler
+	pInfo->connectionThread();
 
 	{ // Remove connection reference
 		icq_lock l(m_avatarsMutex);
@@ -1047,7 +1044,7 @@ int avatars_server_connection::NetLog_Server(const char *fmt,...)
 	va_list va;
 	char szText[1024 + 9];
 
-  strcpy(szText, "Avatars: ");
+	strcpy(szText, "Avatars: ");
 	va_start(va, fmt);
 	mir_vsnprintf(szText + 9, sizeof(szText) - 9, fmt, va);
 	va_end(va);
@@ -1057,13 +1054,22 @@ int avatars_server_connection::NetLog_Server(const char *fmt,...)
 
 void avatars_server_connection::closeConnection()
 {
-  stopThread = TRUE;
+	stopThread = TRUE;
 
-  icq_lock l(localSeqMutex);
-  if (hConnection)
-    NetLib_SafeCloseHandle(&hConnection);
+	icq_lock l(localSeqMutex);
+	if (hConnection)
+		NetLib_SafeCloseHandle(&hConnection);
 }
 
+
+void avatars_server_connection::shutdownConnection()
+{
+	stopThread = TRUE;
+
+	icq_lock l(localSeqMutex);
+	if (hConnection)
+		Netlib_Shutdown(hConnection);
+}
 
 DWORD avatars_server_connection::sendGetAvatarRequest(HANDLE hContact, DWORD dwUin, char *szUid, const BYTE *hash, unsigned int hashlen, const char *file)
 {
@@ -1286,17 +1292,17 @@ void avatars_server_connection::connectionThread()
 			if (GetLastError() == ERROR_TIMEOUT)
 			{  // timeout, check if we should be still running
 				if (Miranda_Terminated())
-        { // we must stop here, cause due to a hack in netlib, we always get timeout, even if the connection is already dead
+				{ // we must stop here, cause due to a hack in netlib, we always get timeout, even if the connection is already dead
 					stopThread = 1;
-          continue;
-        }
+					continue;
+				}
 #ifdef _DEBUG
 				else
 					NetLog_Server("Thread is Idle.");
 #endif
 				if (GetTickCount() > wLastKeepAlive)
 				{ // limit frequency (HACK: on some systems select() does not work well)
-					if (ppro->getSettingByte(NULL, "KeepAlive", DEFAULT_KEEPALIVE_ENABLED))
+					if (!ppro->m_bGatewayMode && ppro->getSettingByte(NULL, "KeepAlive", DEFAULT_KEEPALIVE_ENABLED))
 					{ // send keep-alive packet
 						icq_packet packet;
 
