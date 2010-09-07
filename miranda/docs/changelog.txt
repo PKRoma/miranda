@@ -3,6 +3,28 @@
                            www.miranda-im.org
 
 
+* New in 0.9.3
+Bugfixes:
+ - Last message received text missing
+ - Fixed message window popup
+ - Fixed group chat message highlighting
+ - Fixed opening directory in file transfer
+ - Fixed Basic authentication
+ - Fixed contact list off the screen adjustment
+ - Fixed upgrading profile path
+ - Fixed full screen window detection with Win-D key
+ - HTTP proxy processing improvements
+ - AIM: Fixed possible crash in file transfer
+ - ICQ: Translation fixes
+ - ICQ: Fixed crash during avatar retrieval
+ - ICQ: Improved client detection
+ - ICQ: Fixed issues with setting away message
+ - ICQ: Fixed deadlocks
+ - IRC: Fixed disconnect issues
+ - Jabber: Fixed rare crash
+ - MSN: Fixed possible crash on disconnect
+
+
 * New in 0.9.2
 Bugfixes:
  - Fixed database upgrade logic
