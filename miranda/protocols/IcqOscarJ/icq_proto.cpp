@@ -414,11 +414,6 @@ int CIcqProto::OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 int CIcqProto::OnPreShutdown(WPARAM wParam,LPARAM lParam)
 {
 	// all threads should be terminated here
-	if (hServerConn) {
-		icq_sendCloseConnection();
-		icq_serverDisconnect(TRUE);
-	}
-
 	icq_InfoUpdateCleanup();
 	return 0;
 }

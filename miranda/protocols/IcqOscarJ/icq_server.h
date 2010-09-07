@@ -64,8 +64,6 @@ struct serverthread_info
 //
 	HANDLE hDirectBoundPort;
 //
-	HANDLE hKeepAliveEvent;
-	HANDLE hKeepAliveThread;
 };
 
 /*---------* Functions *---------------*/

@@ -1803,8 +1803,6 @@ void NetLib_CloseConnection(HANDLE *hConnection, int bServerConn)
 {
 	if (*hConnection)
 	{
-		CallService(MS_NETLIB_SHUTDOWN, (WPARAM)*hConnection, 0);
-
 		NetLib_SafeCloseHandle(hConnection);
 
 		if (bServerConn)
