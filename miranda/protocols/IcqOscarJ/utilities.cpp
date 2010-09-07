@@ -1066,12 +1066,14 @@ BOOL IsStringUIN(const char *pszString)
 
 void __cdecl CIcqProto::ProtocolAckThread(icq_ack_args* pArguments)
 {
-	BroadcastAck(pArguments->hContact, pArguments->nAckType, pArguments->nAckResult, pArguments->hSequence, pArguments->pszMessage);
+	Sleep(150);
 
 	if (pArguments->nAckResult == ACKRESULT_SUCCESS)
 		NetLog_Server("Sent fake message ack");
 	else if (pArguments->nAckResult == ACKRESULT_FAILED)
 		NetLog_Server("Message delivery failed");
+
+	BroadcastAck(pArguments->hContact, pArguments->nAckType, pArguments->nAckResult, pArguments->hSequence, pArguments->pszMessage);
 
 	SAFE_FREE((void**)(char **)&pArguments->pszMessage);
 	SAFE_FREE((void**)&pArguments);
