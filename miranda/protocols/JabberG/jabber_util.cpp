@@ -565,25 +565,27 @@ TCHAR* __stdcall JabberErrorStr( int errorCode )
 	return JabberErrorCodeToStrMapping[i].str;
 }
 
-TCHAR* __stdcall JabberErrorMsg( HXML errorNode )
+TCHAR* __stdcall JabberErrorMsg( HXML errorNode, int* pErrorCode )
 {
-	TCHAR *errorStr;
-	const TCHAR *str;
-	int errorCode;
-
-	errorStr = ( TCHAR* )mir_alloc( 256 * sizeof( TCHAR ));
+	TCHAR* errorStr = ( TCHAR* )mir_alloc( 256 * sizeof( TCHAR ));
 	if ( errorNode == NULL ) {
+		if ( pErrorCode )
+			*pErrorCode = -1;
 		mir_sntprintf( errorStr, 256, _T("%s -1: %s"), TranslateT( "Error" ), TranslateT( "Unknown error message" ));
 		return errorStr;
 	}
 
-	errorCode = -1;
+	int errorCode = -1;
+	const TCHAR *str;
 	if (( str = xmlGetAttrValue( errorNode, _T("code"))) != NULL )
 		errorCode = _ttoi( str );
 	if (( str=xmlGetText( errorNode ) ) != NULL )
 		mir_sntprintf( errorStr, 256, _T("%s %d: %s\r\n%s"), TranslateT( "Error" ), errorCode, TranslateTS( JabberErrorStr( errorCode )), str );
 	else
 		mir_sntprintf( errorStr, 256, _T("%s %d: %s"), TranslateT( "Error" ), errorCode, TranslateTS( JabberErrorStr( errorCode )) );
+
+	if ( pErrorCode )
+		*pErrorCode = errorCode;
 	return errorStr;
 }
 
