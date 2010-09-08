@@ -123,28 +123,33 @@ void CJabberProto::OnProcessLoginRq( ThreadData* info, DWORD rq )
 		(info->dwLoginRqs & JABBER_LOGIN_SERVERINFO) && !(info->dwLoginRqs & JABBER_LOGIN_BOOKMARKS_AJ))
 	{
 		if ( jabberChatDllPresent && m_options.AutoJoinBookmarks) {
-			JABBER_LIST_ITEM* item;
+			LIST<JABBER_LIST_ITEM> ll( 10 );
 			LISTFOREACH(i, this, LIST_BOOKMARK)
 			{
-				if ((( item = ListGetItemPtrFromIndex( i )) != NULL ) && !lstrcmp( item->type, _T("conference") )) {
-					if ( item->bAutoJoin ) {
-						TCHAR room[256], *server, *p;
-						TCHAR text[128];
-						_tcsncpy( text, item->jid, SIZEOF( text ));
-						_tcsncpy( room, text, SIZEOF( room ));
-						p = _tcstok( room, _T( "@" ));
-						server = _tcstok( NULL, _T( "@" ));
-						if ( item->nick && item->nick[0] != 0 )
-							GroupchatJoinRoom( server, p, item->nick, item->password, true );
-						else {
-							TCHAR* nick = JabberNickFromJID( m_szJabberJID );
-							GroupchatJoinRoom( server, p, nick, item->password, true );
-							mir_free( nick );
-		}	}	}	}	}
+				JABBER_LIST_ITEM* item = ListGetItemPtrFromIndex( i );
+				if ( item != NULL && !lstrcmp( item->type, _T("conference")) && item->bAutoJoin )
+					ll.insert( item );
+			}
+
+			for ( int j=0; j < ll.getCount(); j++ ) {
+				JABBER_LIST_ITEM* item = ll[j];
+
+				TCHAR room[256], *server, *p;
+				TCHAR text[128];
+				_tcsncpy( text, item->jid, SIZEOF( text ));
+				_tcsncpy( room, text, SIZEOF( room ));
+				p = _tcstok( room, _T( "@" ));
+				server = _tcstok( NULL, _T( "@" ));
+				if ( item->nick && item->nick[0] != 0 )
+					GroupchatJoinRoom( server, p, item->nick, item->password, true );
+				else {
+					TCHAR* nick = JabberNickFromJID( m_szJabberJID );
+					GroupchatJoinRoom( server, p, nick, item->password, true );
+					mir_free( nick );
+		}	}	}
 
 		OnProcessLoginRq( info, JABBER_LOGIN_BOOKMARKS_AJ );
-	}
-}
+}	}
 
 void CJabberProto::OnLoggedIn()
 {
