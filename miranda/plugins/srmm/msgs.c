@@ -453,10 +453,10 @@ int LoadSendRecvMessageModule(void)
 	hHookWinEvt   = CreateHookableEvent(ME_MSG_WINDOWEVENT);
 	hHookWinPopup = CreateHookableEvent(ME_MSG_WINDOWPOPUP);
 	
-	SkinAddNewSoundEx("RecvMsgActive", "Messages", "Incoming (Focused Window)");
-	SkinAddNewSoundEx("RecvMsgInactive", "Messages", "Incoming (Unfocused Window)");
-	SkinAddNewSoundEx("AlertMsg", "Messages", "Incoming (New Session)");
-	SkinAddNewSoundEx("SendMsg", "Messages", "Outgoing");
+	SkinAddNewSoundEx("RecvMsgActive", LPGEN("Instant messages"), LPGEN("Incoming (Focused Window)"));
+	SkinAddNewSoundEx("RecvMsgInactive", LPGEN("Instant messages"), LPGEN("Incoming (Unfocused Window)"));
+	SkinAddNewSoundEx("AlertMsg", LPGEN("Instant messages"), LPGEN("Incoming (New Session)"));
+	SkinAddNewSoundEx("SendMsg", LPGEN("Instant messages"), LPGEN("Outgoing"));
 	
 	hCurSplitNS = LoadCursor(NULL, IDC_SIZENS);
 	hCurSplitWE = LoadCursor(NULL, IDC_SIZEWE);
