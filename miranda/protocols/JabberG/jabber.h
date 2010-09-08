@@ -764,7 +764,7 @@ void          __stdcall JabberHttpUrlDecode( TCHAR* str );
 TCHAR*        __stdcall JabberHttpUrlEncode( const TCHAR* str );
 int           __stdcall JabberCombineStatus( int status1, int status2 );
 TCHAR*        __stdcall JabberErrorStr( int errorCode );
-TCHAR*        __stdcall JabberErrorMsg( HXML errorNode );
+TCHAR*        __stdcall JabberErrorMsg( HXML errorNode, int* errorCode = NULL );
 void          __stdcall JabberUtfToTchar( const char* str, size_t cbLen, LPTSTR& dest );
 char*         __stdcall JabberBase64Encode( const char* buffer, int bufferLen );
 char*         __stdcall JabberBase64Decode( const TCHAR* buffer, int *resultLen );

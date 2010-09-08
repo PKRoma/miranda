@@ -796,6 +796,48 @@ void CJabberProto::GroupchatJoinRoomByJid( HWND, TCHAR *jid )
 /////////////////////////////////////////////////////////////////////////////////////////
 // JabberGroupchatProcessPresence - handles the group chat presence packet
 
+struct JabberGroupchatChangeNicknameParam
+{
+	JabberGroupchatChangeNicknameParam( CJabberProto* ppro_, const TCHAR* jid_ ) :
+		ppro( ppro_ ),
+		jid( mir_tstrdup( jid_ ))
+		{}
+
+	~JabberGroupchatChangeNicknameParam()
+	{	mir_free( jid );
+	}
+
+	CJabberProto* ppro;
+	TCHAR* jid;
+};
+
+static VOID CALLBACK JabberGroupchatChangeNickname( void* arg )
+{
+	JabberGroupchatChangeNicknameParam* param = ( JabberGroupchatChangeNicknameParam* )arg;
+	if ( param == NULL )
+		return;
+
+	JABBER_LIST_ITEM* item = param->ppro->ListGetItemPtr( LIST_CHATROOM, param->jid );
+	if ( item != NULL ) {
+		TCHAR szBuffer[ 1024 ];
+		TCHAR szCaption[ 1024 ];
+		szBuffer[ 0 ] = _T('\0');
+
+		TCHAR* roomName = item->name ? item->name : item->jid;
+		mir_sntprintf( szCaption, SIZEOF(szCaption), _T("%s <%s>"), TranslateT( "Change nickname in" ), roomName );
+		if ( item->nick )
+			mir_sntprintf( szBuffer, SIZEOF(szBuffer), _T("%s"), item->nick );
+
+		if ( param->ppro->EnterString( szBuffer, SIZEOF(szBuffer), szCaption, JES_COMBO, "gcNick_" )) {
+			TCHAR text[ 1024 ];
+			replaceStr( item->nick, szBuffer );
+			mir_sntprintf( text, SIZEOF( text ), _T("%s/%s"), item->jid, szBuffer );
+			param->ppro->SendPresenceTo( param->ppro->m_iStatus, text, NULL );
+	}	}
+
+	delete param;
+}
+
 static int sttGetStatusCode( HXML node )
 {
 	HXML statusNode = xmlGetChild( node , "status" );
@@ -853,7 +895,7 @@ void CJabberProto::RenameParticipantNick( JABBER_LIST_ITEM* item, const TCHAR* o
 
 void CJabberProto::GroupchatProcessPresence( HXML node )
 {
-	HXML showNode, statusNode, errorNode, itemNode, n, priorityNode;
+	HXML showNode, statusNode, itemNode, n, priorityNode;
 	const TCHAR* from;
 	int status, newRes = 0;
 	bool bStatusChanged = false;
@@ -875,6 +917,8 @@ void CJabberProto::GroupchatProcessPresence( HXML node )
 	HXML xNode = xmlGetChildByTag( node, "x", "xmlns", _T("http://jabber.org/protocol/muc#user"));
 
 	const TCHAR* type = xmlGetAttrValue( node, _T("type"));
+
+	// entering room or a usual room presence
 	if ( type == NULL || !_tcscmp( type, _T("available"))) {
 		TCHAR* room = JabberNickFromJID( from );
 		if ( room == NULL )
@@ -1000,8 +1044,11 @@ void CJabberProto::GroupchatProcessPresence( HXML node )
 		}
 
 		mir_free( room );
+		return;
 	}
-	else if ( !lstrcmp( type, _T("unavailable"))) {
+	
+	// leaving room
+	if ( !lstrcmp( type, _T("unavailable"))) {
 		const TCHAR* str = 0;
 		if ( xNode != NULL && item->nick != NULL ) {
 			itemNode = xmlGetChild( xNode , "item" );
@@ -1049,15 +1096,25 @@ void CJabberProto::GroupchatProcessPresence( HXML node )
 		HANDLE hContact = HContactFromJID( from );
 		if ( hContact != NULL )
 			JSetWord( hContact, "Status", ID_STATUS_OFFLINE );
+		return;
 	}
-	else if ( !lstrcmp( type, _T("error"))) {
-		errorNode = xmlGetChild( node , "error" );
-		TCHAR* str = JabberErrorMsg( errorNode );
+	
+	// processing room errors
+	if ( !lstrcmp( type, _T("error"))) {
+		int errorCode = 0;
+		HXML errorNode = xmlGetChild( node , "error" );
+		TCHAR* str = JabberErrorMsg( errorNode, &errorCode );
+
+		if ( errorCode == 409 ) {
+			mir_free( str );
+			CallFunctionAsync( JabberGroupchatChangeNickname, new JabberGroupchatChangeNicknameParam( this, from ));
+			return;
+		}
+
 		MessageBox( NULL, str, TranslateT( "Jabber Error Message" ), MB_OK|MB_SETFOREGROUND );
-		//JabberListRemoveResource( LIST_CHATROOM, from );
-		JABBER_LIST_ITEM* item = ListGetItemPtr (LIST_CHATROOM, from );
+
 		if ( item != NULL)
-			if (!item->bChatActive) ListRemove( LIST_CHATROOM, from );
+			if ( !item->bChatActive ) ListRemove( LIST_CHATROOM, from );
 		mir_free( str );
 }	}
 
