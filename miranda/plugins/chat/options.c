@@ -1084,7 +1084,6 @@ int OptionsInit(void)
 	LoadGlobalSettings();
 
 	SkinAddNewSoundEx("ChatMessage", LPGEN("Group chats"), LPGEN("Incoming message"));
-	SkinAddNewSoundEx("ChatSent", LPGEN("Group chats"), LPGEN("Outgoing message"));
 	SkinAddNewSoundEx("ChatHighlight", LPGEN("Group chats"), LPGEN("Message is highlighted"));
 	SkinAddNewSoundEx("ChatAction", LPGEN("Group chats"), LPGEN("User has performed an action"));
 	SkinAddNewSoundEx("ChatJoin", LPGEN("Group chats"), LPGEN("User has joined"));
