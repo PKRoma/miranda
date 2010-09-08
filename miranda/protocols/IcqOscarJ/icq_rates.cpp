@@ -392,29 +392,25 @@ void rates_queue::cleanup()
 
 void rates_queue::processQueue()
 {
-	listsMutex->Enter();
 	if (!pendingList)
-	{
-		listsMutex->Leave();
 		return;
-	}
 
 	if (!ppro->icqOnline())
 	{
-    cleanup();
-		listsMutex->Leave();
+		cleanup();
 		return;
 	}
 	// take from queue, execute
 	rates_queue_item *item = pendingList[0];
 
 	ppro->m_ratesMutex->Enter();
+	listsMutex->Enter();
 	if (item->isOverRate(limitLevel))
 	{ // the rate is higher, keep sleeping
 		int nDelay = ppro->m_rates->getDelayToLimitLevel(item->wGroup, ppro->m_rates->getLimitLevel(item->wGroup, waitLevel));
 
-		ppro->m_ratesMutex->Leave();
 		listsMutex->Leave();
+		ppro->m_ratesMutex->Leave();
 		if (nDelay < 10) nDelay = 10;
 		initDelay(nDelay, &rates_queue::processQueue);
 		return;
@@ -439,7 +435,7 @@ void rates_queue::processQueue()
 	if (ppro->icqOnline())
 	{
 		ppro->NetLog_Server("Rates: Resuming %s.", szDescr);
-    item->execute();
+		item->execute();
 	}
 	else
 		ppro->NetLog_Server("Rates: Discarding %s.", szDescr);
@@ -454,7 +450,7 @@ void rates_queue::processQueue()
 		if (nDelay < 10) nDelay = 10;
 		initDelay(nDelay, &rates_queue::processQueue);
 	}
-  SAFE_DELETE((void_struct**)&item);
+	SAFE_DELETE((void_struct**)&item);
 }
 
 
@@ -533,7 +529,7 @@ int CIcqProto::handleRateItem(rates_queue_item *item, int nQueueType, int nMinDe
 		{ // limit reached or min delay configured, add to queue
 			pQueue->putItem(item, nMinDelay);
 
-      m_ratesMutex->Leave();
+			m_ratesMutex->Leave();
 			return 1;
 		}
   }
