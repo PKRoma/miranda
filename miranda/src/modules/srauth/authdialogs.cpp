@@ -95,6 +95,8 @@ INT_PTR CALLBACK DlgProcAdded(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
 			mir_free(nickT);
 			mir_free(emailT);
 
+			SetWindowLongPtr(GetDlgItem(hwndDlg, IDC_DETAILS), GWLP_USERDATA, (LONG_PTR)hContact);
+
 			if (hContact == INVALID_HANDLE_VALUE || !DBGetContactSettingByte(hContact, "CList", "NotOnList", 0))
 				ShowWindow(GetDlgItem(hwndDlg, IDC_ADD), FALSE);
 		}
@@ -238,7 +240,7 @@ INT_PTR CALLBACK DlgProcAuthReq(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 				SetDlgItemText(hwndDlg, IDC_DENYREASON, TranslateT("Feature is not supported by protocol"));
 			}
 
-			SetWindowLongPtr(GetDlgItem(hwndDlg,IDC_DETAILS), GWLP_USERDATA, (LONG_PTR)hContact);
+			SetWindowLongPtr(GetDlgItem(hwndDlg, IDC_DETAILS), GWLP_USERDATA, (LONG_PTR)hContact);
 		}
 		return TRUE;
 
