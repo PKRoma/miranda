@@ -640,6 +640,14 @@ INT_PTR CallProtoServiceInt( HANDLE hContact, const char *szModule, const char *
 			}
 			case 107:
 				return ( INT_PTR )pa->ppro->AuthDeny(( HANDLE )wParam, ( const TCHAR* )lParam );
+			case 108:
+				return ( INT_PTR )pa->ppro->SearchBasic(( const TCHAR* )lParam );
+			case 109: {
+				PROTOSEARCHBYNAME* psbn = ( PROTOSEARCHBYNAME* )lParam;
+				return ( INT_PTR )pa->ppro->SearchByName( psbn->pszNick, psbn->pszFirstName, psbn->pszLastName ); 
+			}
+			case 110:
+				return ( INT_PTR )pa->ppro->SearchByEmail(( const TCHAR* )lParam );
 	}	}
 #endif
 
