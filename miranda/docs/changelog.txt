@@ -13,6 +13,7 @@ Bugfixes:
  - Fixed contact list off the screen adjustment
  - Fixed upgrading profile path
  - Fixed full screen window detection with Win-D key
+ - Fixed display issues with 'You were added' dialog
  - HTTP proxy processing improvements
  - AIM: Fixed possible crash in file transfer
  - ICQ: Translation fixes
