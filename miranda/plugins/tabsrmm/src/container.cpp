@@ -1953,6 +1953,7 @@ buttons_done:
 			 */
 			if ((HICON)lParam == PluginConfig.g_buttonBarIcons[ICON_DEFAULT_TYPING]) {              // always set typing icon, but don't save it...
 				SendMessage(hwndDlg, WM_SETICON, ICON_BIG, lParam);
+				SendMessage(hwndDlg, WM_SETICON, ICON_SMALL, lParam);
 				break;
 			}
 			if(reinterpret_cast<HICON>(lParam) == hIconMsg)
