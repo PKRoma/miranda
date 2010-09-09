@@ -830,6 +830,24 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			}
 
 			SendMessage(hwndDlg, DM_OPTIONSAPPLIED, 1, 0);
+
+			//restore saved msg if any...
+			if (dat->hContact) 
+			{
+				DBVARIANT dbv;
+				if (!DBGetContactSettingTString(dat->hContact, SRMSGMOD, DBSAVEDMSG, &dbv)) 
+				{
+					if (dbv.ptszVal[0])
+					{
+						SetDlgItemText(hwndDlg, IDC_MESSAGE, dbv.ptszVal);
+						EnableWindow(GetDlgItem(hwndDlg, IDOK), TRUE);
+						UpdateReadChars(hwndDlg, dat->hwndStatus);
+						PostMessage(GetDlgItem(hwndDlg, IDC_MESSAGE), EM_SETSEL, -1, -1);
+					}
+					DBFreeVariant(&dbv);
+				}
+			}
+
 			SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_SETEVENTMASK, 0, ENM_CHANGE);
 
 			{
@@ -854,24 +872,8 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 				SetForegroundWindow(hwndDlg);
 			}
 
-
 			SendMessage(hwndDlg, DM_GETAVATAR, 0, 0);
-			//restore saved msg if any...
-			if(dat->hContact) 
-			{
-				DBVARIANT dbv;
-				if (!DBGetContactSettingTString(dat->hContact, SRMSGMOD, DBSAVEDMSG, &dbv)) 
-				{
-					if (dbv.ptszVal[0])
-					{
-						SetDlgItemText(hwndDlg, IDC_MESSAGE, dbv.ptszVal);
-						EnableWindow(GetDlgItem(hwndDlg, IDOK), TRUE);
-						UpdateReadChars(hwndDlg, dat->hwndStatus);
-						PostMessage(GetDlgItem(hwndDlg, IDC_MESSAGE), EM_SETSEL, -1, -1);
-					}
-					DBFreeVariant(&dbv);
-				}
-			}
+
 			NotifyLocalWinEvent(dat->hContact, hwndDlg, MSG_WINDOW_EVT_OPEN);
 			return !newData->noActivate;
 		}
@@ -1690,7 +1692,9 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 
 				SetDlgItemText(hwndDlg, IDC_MESSAGE, _T(""));
 
-				if (DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_AUTOMIN, SRMSGDEFSET_AUTOMIN))
+				if (DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_AUTOCLOSE, SRMSGDEFSET_AUTOCLOSE))
+					DestroyWindow(hwndDlg);
+				else if (DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_AUTOMIN, SRMSGDEFSET_AUTOMIN))
 					ShowWindow(hwndDlg, SW_MINIMIZE);
 			}
 			return TRUE;
