@@ -22,6 +22,7 @@ Bugfixes:
  - ICQ: Fixed issues with setting away message
  - ICQ: Fixed deadlocks
  - IRC: Fixed disconnect issues
+ - IRC: Show private messages in ANSI build
  - Jabber: Fixed rare crash
  - MSN: Fixed possible crash on disconnect
 
