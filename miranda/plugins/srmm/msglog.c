@@ -387,7 +387,7 @@ static char *CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE hContact
 		case EVENTTYPE_FILE:
 		{
 			char* filename = dbei.pBlob + sizeof(DWORD);
-			char* descr = filename + lstrlenA( filename ) + 1;
+			char* descr = filename + strlen( filename ) + 1;
 			TCHAR* ptszFileName = DbGetEventStringT( &dbei, filename );
 
 			AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, " %s ", SetToStyle(MSGFONTID_NOTICE));
