@@ -1,8 +1,8 @@
-#define VER_PLAIN	"3,1,99,2"
+#define VER_PLAIN	"3,1,99,3"
 #define _VER_MAJOR	3
 #define _VER_MINOR  1
 #define _VER_REVISION 99
-#define _VER_BUILD	2
+#define _VER_BUILD	3
 
 #if defined(_WIN64)
 	#define RES_FILE_DESC "TabSRMM (Unicode) x86_amd64"
