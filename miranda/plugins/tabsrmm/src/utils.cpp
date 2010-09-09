@@ -898,7 +898,8 @@ HICON Utils::iconFromAvatar(const TWindowData *dat)
 			::DeleteDC(dc);
 
 			::SelectObject(dcResized, hbmOldResized);
-			::DeleteObject(hbmResized);
+			if(hbmResized != ace->hbmPic)
+				::DeleteObject(hbmResized);
 			::DeleteDC(dcResized);
 			hIcon = ::ImageList_GetIcon(hIml_c, 0, ILD_NORMAL);
 			::ImageList_RemoveAll(hIml_c);

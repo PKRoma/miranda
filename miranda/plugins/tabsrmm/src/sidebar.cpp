@@ -1148,7 +1148,8 @@ void __fastcall CSideBar::m_AdvancedContentRenderer(const HDC hdc, const RECT *r
 
 			CMimAPI::m_MyAlphaBlend(hdc, xOff, yOff, (LONG)dNewWidth, (LONG)dNewHeight, dc, 0, 0, (LONG)dNewWidth, (LONG)dNewHeight, CSkin::m_default_bf);
 			::SelectObject(dc, hbmOld);
-			::DeleteObject(hbmResized);
+			if(hbmResized != dat->ace->hbmPic)
+				::DeleteObject(hbmResized);
 			::DeleteDC(dc);
 			rc.right -= (maxHeight + 6);
 		}
