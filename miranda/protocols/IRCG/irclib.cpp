@@ -1374,17 +1374,17 @@ void CDccSession::DoChatReceive()
 			
 			if( *pStart ) {
 				// send it off to some messaging module
-				CCSDATA ccs; 
-				PROTORECVEVENT pre;
-				ccs.szProtoService = PSR_MESSAGE;
-				
-				ccs.hContact = di->hContact;
-				ccs.wParam = 0;
-				ccs.lParam = (LPARAM) &pre;
-				pre.flags = 0;
+
+				PROTORECVEVENT pre = {0};
 				pre.timestamp = (DWORD)time(NULL);
-				pre.szMessage = (char*)DoColorCodes((TCHAR*)pStart, true, false); //!!!! // remove color codes
-				pre.lParam = 0;
+//				pre.szMessage = (char*)DoColorCodes((TCHAR*)pStart, true, false); //!!!! // remove color codes
+				pre.szMessage = pStart;
+
+				CCSDATA ccs = {0}; 
+				ccs.szProtoService = PSR_MESSAGE;
+				ccs.hContact = di->hContact;
+				ccs.lParam = (LPARAM) &pre;
+				
 				CallService( MS_PROTO_CHAINRECV, 0, (LPARAM) & ccs);
 			}
 			
