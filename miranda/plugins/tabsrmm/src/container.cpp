@@ -276,7 +276,7 @@ static BOOL CALLBACK ContainerWndProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 				 * icon
 				 */
 
-				hIcon = (HICON)SendMessage(hwndDlg, WM_GETICON, Win7Taskbar->haveLargeIcons() ? ICON_SMALL : ICON_BIG, 0);
+				hIcon = (HICON)SendMessage(hwndDlg, WM_GETICON, ICON_SMALL, 0);
 				DrawIconEx(dcMem, 4 + CSkin::m_SkinnedFrame_left + CSkin::m_bClipBorder + CSkin::m_titleBarLeftOff, rcText.top + (rcText.bottom - rcText.top) / 2 - 8, hIcon, 16, 16, 0, 0, DI_NORMAL);
 
 				// title buttons;
@@ -1903,9 +1903,11 @@ buttons_done:
 		}
 
 		case DM_SETICON: {
-			HICON 		hIconMsg = PluginConfig.g_IconMsgEvent;
+			HICON 			hIconMsg = PluginConfig.g_IconMsgEvent;
+			TWindowData*	dat = (TWindowData *)wParam;
+			HICON 			hIconBig = (dat && dat->cache) ? LoadSkinnedProtoIconBig(dat->cache->getActiveProto(), dat->cache->getActiveStatus()) : 0;
+
 			if(Win7Taskbar->haveLargeIcons()) {
-				TWindowData*dat = (TWindowData *)wParam;
 
 				if ((HICON)lParam == PluginConfig.g_buttonBarIcons[ICON_DEFAULT_TYPING] || (HICON)lParam == hIconMsg) {
 					Win7Taskbar->setOverlayIcon(hwndDlg, lParam);
@@ -1931,7 +1933,6 @@ buttons_done:
 						Win7Taskbar->setOverlayIcon(hwndDlg, (LPARAM)(dat->hTabIcon ? (LPARAM)dat->hTabIcon : lParam));
 					}
 					else {
-						HICON hIconBig = LoadSkinnedProtoIconBig(dat->cache->getActiveProto(), dat->cache->getActiveStatus());
 						if(0 == hIconBig || (HICON)CALLSERVICE_NOTFOUND == hIconBig)
 							SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)lParam);
 						else
@@ -1954,11 +1955,16 @@ buttons_done:
 				SendMessage(hwndDlg, WM_SETICON, ICON_BIG, lParam);
 				break;
 			}
+			if(reinterpret_cast<HICON>(lParam) == hIconMsg)
+				hIconBig = LoadSkinnedIconBig(SKINICON_EVENT_MESSAGE);
 
-			if (pContainer->hIcon == STICK_ICON_MSG && (HICON)lParam != hIconMsg && pContainer->dwFlags & CNT_NEED_UPDATETITLE)
+			if (pContainer->hIcon == STICK_ICON_MSG && (HICON)lParam != hIconMsg && pContainer->dwFlags & CNT_NEED_UPDATETITLE) {
 				lParam = (LPARAM)hIconMsg;
-			//break;          // don't overwrite the new message indicator flag
-			SendMessage(hwndDlg, WM_SETICON, ICON_BIG, lParam);
+				hIconBig = LoadSkinnedIconBig(SKINICON_EVENT_MESSAGE);
+			}
+			SendMessage(hwndDlg, WM_SETICON, ICON_SMALL, lParam);
+			if(0 != hIconBig && reinterpret_cast<HICON>(CALLSERVICE_NOTFOUND) != hIconBig)
+				SendMessage(hwndDlg, WM_SETICON, ICON_BIG, reinterpret_cast<LPARAM>(hIconBig));
 			pContainer->hIcon = (lParam == (LPARAM)hIconMsg) ? STICK_ICON_MSG : 0;
 			return(0);
 		}

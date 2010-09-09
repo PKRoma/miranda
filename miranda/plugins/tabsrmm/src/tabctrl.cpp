@@ -1,5 +1,4 @@
-/*
- * astyle --force-indent=tab=4 --brackets=linux --indent-switches
+/* astyle --force-indent=tab=4 --brackets=linux --indent-switches
  *		  --pad=oper --one-line=keep-blocks  --unpad=paren
  *
  * Miranda IM: the free IM client for Microsoft* Windows*
@@ -1133,7 +1132,7 @@ static LRESULT CALLBACK TabControlSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
 				ExcludeClipRect(hdc, rctClip.left, rctClip.top, rctClip.right, rctClip.bottom);
 			else
 				ZeroMemory(&rctClip, sizeof(RECT));
-			if ((!bClassicDraw || PluginConfig.m_fillColor) && IntersectRect(&rectTemp, &rctPage, &ps.rcPaint)) {
+			if ((!bClassicDraw || PluginConfig.m_fillColor) && IntersectRect(&rectTemp, &rctPage, &ps.rcPaint) && !CSkin::m_skinEnabled) {
 				RECT rcClient = rctPage;
 				if (dwStyle & TCS_BOTTOM) {
 					rcClient.bottom = rctPage.bottom;
