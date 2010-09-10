@@ -1084,9 +1084,9 @@ void __cdecl CIrcProto::ConnectServerThread( void* )
 		nickflag = true;
 		ProtoBroadcastAck(m_szModuleName,NULL,ACKTYPE_STATUS,ACKRESULT_SUCCESS,(HANDLE)Temp,ID_STATUS_CONNECTING);
 		Sleep(100);
-	    EnterCriticalSection(&cs);
+		EnterCriticalSection(&cs);
 		Connect(si);
-	    LeaveCriticalSection(&cs);
+		LeaveCriticalSection(&cs);
 		if (IsConnected()) {
 			KillChatTimer( RetryTimer );
 
@@ -1097,8 +1097,9 @@ void __cdecl CIrcProto::ConnectServerThread( void* )
 		}
 		else {
 			Temp = m_iDesiredStatus;
-			m_iDesiredStatus = ID_STATUS_OFFLINE;
-			ProtoBroadcastAck(m_szModuleName,NULL,ACKTYPE_STATUS,ACKRESULT_SUCCESS,(HANDLE)Temp,ID_STATUS_OFFLINE);
+			m_iStatus = m_iDesiredStatus = ID_STATUS_OFFLINE;
+			ProtoBroadcastAck(m_szModuleName, NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_NONETWORK );
+			ProtoBroadcastAck(m_szModuleName,NULL,ACKTYPE_STATUS,ACKRESULT_FAILED,(HANDLE)Temp,ID_STATUS_OFFLINE);
 			Sleep(100);
 	}	}
 
