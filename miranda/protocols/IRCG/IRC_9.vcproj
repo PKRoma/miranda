@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="9.00"
+	Version="9,00"
 	Name="IRC"
 	ProjectGUID="{3A12F777-56A8-42EC-BD17-8F325524241E}"
 	RootNamespace="IRC"
@@ -418,7 +418,7 @@
 		</Configuration>
 		<Configuration
 			Name="Debug Unicode|Win32"
-			OutputDirectory="c:\miranda im/Plugins"
+			OutputDirectory="$(SolutionDir)$(ConfigurationName)/Plugins"
 			IntermediateDirectory="$(SolutionDir)$(ConfigurationName)/Obj/$(ProjectName)"
 			ConfigurationType="2"
 			UseOfMFC="0"
