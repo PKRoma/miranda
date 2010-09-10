@@ -169,11 +169,6 @@
 	"..\..\include\m_options.h"\
 	"..\..\include\win2k.h"\
 	".\INCLUDE\rowheight_funcs.h"\
-	"c:\program files\microsoft visual studio\vc98\include\propkeydef.h"\
-	"c:\program files\microsoft visual studio\vc98\include\propsys.h"\
-	"c:\program files\microsoft visual studio\vc98\include\sherrors.h"\
-	"c:\program files\microsoft visual studio\vc98\include\shobjidl.h"\
-	"c:\program files\microsoft visual studio\vc98\include\structuredquery.h"\
 	
 
 .\SRC\clui.cpp : \
@@ -248,25 +243,6 @@
 	".\INCLUDE\rowheight_funcs.h"\
 	".\include\vsstyle.h"\
 	".\include\vssym32.h"\
-	"c:\program files\microsoft visual studio\vc98\include\basetsd.h"\
-	"c:\program files\microsoft visual studio\vc98\include\bcrypt.h"\
-	"c:\program files\microsoft visual studio\vc98\include\guiddef.h"\
-	"c:\program files\microsoft visual studio\vc98\include\inaddr.h"\
-	"c:\program files\microsoft visual studio\vc98\include\ktmtypes.h"\
-	"c:\program files\microsoft visual studio\vc98\include\ncrypt.h"\
-	"c:\program files\microsoft visual studio\vc98\include\propidl.h"\
-	"c:\program files\microsoft visual studio\vc98\include\reason.h"\
-	"c:\program files\microsoft visual studio\vc98\include\rpcsal.h"\
-	"c:\program files\microsoft visual studio\vc98\include\sal.h"\
-	"c:\program files\microsoft visual studio\vc98\include\sdkddkver.h"\
-	"c:\program files\microsoft visual studio\vc98\include\shtypes.h"\
-	"c:\program files\microsoft visual studio\vc98\include\specstrings.h"\
-	"c:\program files\microsoft visual studio\vc98\include\specstrings_adt.h"\
-	"c:\program files\microsoft visual studio\vc98\include\specstrings_strict.h"\
-	"c:\program files\microsoft visual studio\vc98\include\stralign.h"\
-	"c:\program files\microsoft visual studio\vc98\include\tvout.h"\
-	"c:\program files\microsoft visual studio\vc98\include\uxtheme.h"\
-	"c:\program files\microsoft visual studio\vc98\include\winefs.h"\
 	
 
 .\SRC\config.cpp : \
