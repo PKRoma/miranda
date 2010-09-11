@@ -431,7 +431,7 @@ INT_PTR NetlibHttpSendRequest(WPARAM wParam,LPARAM lParam)
 			return SOCKET_ERROR;
 	}
 
-	if (nlc->nlhpi.szHttpGetUrl == NULL)
+	if (!nlc->usingHttpGateway)
 	{
 		if (!NetlibEnterNestedCS(nlc, NLNCS_SEND)) 
 			return SOCKET_ERROR;
@@ -744,7 +744,7 @@ INT_PTR NetlibHttpSendRequest(WPARAM wParam,LPARAM lParam)
 	mir_free(szHost);
 	mir_free(szNewUrl);
 
-	if (nlc->nlhpi.szHttpGetUrl == NULL)
+	if (!nlc->usingHttpGateway)
 		NetlibLeaveNestedCS(&nlc->ncsSend);
 
 	return bytesSent;
