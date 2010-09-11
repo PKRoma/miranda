@@ -54,7 +54,12 @@ int msn_httpGatewayWrapSend(HANDLE hConn, PBYTE buf, int len, int flags, MIRANDA
 {
 	ThreadData* T = FindThreadConn(hConn);
 	if (T != NULL)
+	{
+		if (T->sessionClosed)
+			return SOCKET_ERROR;
+
 		T->applyGatewayData(hConn, len == 0);
+	}
 
 	NETLIBBUFFER tBuf = { (char*)buf, len, flags };
 	return pfnNetlibSend((LPARAM)hConn, WPARAM(&tBuf));

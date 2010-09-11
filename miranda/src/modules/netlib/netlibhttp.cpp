@@ -444,7 +444,11 @@ INT_PTR NetlibHttpSendRequest(WPARAM wParam,LPARAM lParam)
 	int count = 11;
 	while (--count)
 	{
-		if (!NetlibReconnect(nlc)) { bytesSent = SOCKET_ERROR; break; }
+		if (!NetlibReconnect(nlc)) 
+		{ 
+			bytesSent = SOCKET_ERROR; 
+			break; 
+		}
 
 		if (!pszUrl)
 		{
@@ -741,9 +745,8 @@ INT_PTR NetlibHttpSendRequest(WPARAM wParam,LPARAM lParam)
 	mir_free(szNewUrl);
 
 	if (nlc->nlhpi.szHttpGetUrl == NULL)
-	{
 		NetlibLeaveNestedCS(&nlc->ncsSend);
-	}
+
 	return bytesSent;
 }
 
@@ -1043,7 +1046,7 @@ char* gzip_decode(char *gzip_data, int *len_ptr, int window)
 	return output_data;
 }
 
-static int NetlibHttpRecvChunkHeader(NetlibConnection* nlc, BOOL first)
+static int NetlibHttpRecvChunkHeader(NetlibConnection* nlc, bool first)
 {
 	char data[64], *peol1;
 
@@ -1054,19 +1057,19 @@ static int NetlibHttpRecvChunkHeader(NetlibConnection* nlc, BOOL first)
 
 		data[recvResult] = 0;
 
-		peol1 = strstr(data, "\r\n");
+		peol1 = strchr(data, '\n');
 		if (peol1 != NULL)
 		{
-			char *peol2 = first ? peol1 : strstr(peol1 + 2, "\r\n");
+			char *peol2 = first ? peol1 : strchr(peol1 + 1, '\n');
 			if (peol2 != NULL)
 			{
-				int sz = peol2 - data + 2;
-				int r = strtol(first ? data : peol1 + 2, NULL, 16);
+				int sz = peol2 - data + 1;
+				int r = strtol(first ? data : peol1 + 1, NULL, 16);
 				if (r == 0)
 				{
-					char *peol3 = strstr(peol2 + 2, "\r\n");
+					char *peol3 = strchr(peol2 + 1, '\n');
 					if (peol3 == NULL) continue;
-					sz = peol3 - data + 2;
+					sz = peol3 - data + 1;
 				}
 				NLRecv(nlc, data, sz, 0);
 				return r;
@@ -1125,7 +1128,7 @@ next:
 
 		if (chunked)
 		{
-			chunksz = NetlibHttpRecvChunkHeader(nlc, TRUE);
+			chunksz = NetlibHttpRecvChunkHeader(nlc, true);
 			if (chunksz == SOCKET_ERROR) 
 			{
 				NetlibHttpFreeRequestStruct(0, (LPARAM)nlhrReply);
@@ -1174,7 +1177,7 @@ next:
 
 			if (chunked)
 			{
-				chunksz = NetlibHttpRecvChunkHeader(nlc, FALSE);
+				chunksz = NetlibHttpRecvChunkHeader(nlc, false);
 				if (chunksz == SOCKET_ERROR) 
 				{
 					NetlibHttpFreeRequestStruct(0, (LPARAM)nlhrReply);
