@@ -344,12 +344,12 @@ oscar_listener* CIcqProto::CreateOscarListener(oscar_filetransfer *ft, NETLIBNEW
 {
 	oscar_listener *listener = (oscar_listener*)SAFE_MALLOC(sizeof(oscar_listener));
 
-  if (listener)
-  {
-    listener->ppro = this;
-	  listener->ft = ft;
-	  if (listener->hBoundPort = NetLib_BindPort(handler, listener, &listener->wPort, NULL))
-		  return listener; // Success
+	if (listener)
+	{
+		listener->ppro = this;
+		listener->ft = ft;
+		if (listener->hBoundPort = NetLib_BindPort(handler, listener, &listener->wPort, NULL))
+		return listener; // Success
 
 	  SAFE_FREE((void**)&listener);
   }
@@ -1290,8 +1290,6 @@ void __cdecl CIcqProto::oft_connectionThread( oscarthreadstartinfo *otsi )
 			oc.hContact = oc.ft->hContact;
 			oc.ft->connection = &oc;
 			oc.status = OCS_CONNECTED;
-
-			ReleaseOscarListener((oscar_listener**)&oc.ft->listener);
 		}
 		else
 		{ // FT is already over, kill listener
@@ -1547,6 +1545,7 @@ void __cdecl CIcqProto::oft_connectionThread( oscarthreadstartinfo *otsi )
 	NetLib_SafeCloseHandle(&hPacketRecver);
 
 	CloseOscarConnection(&oc);
+	ReleaseOscarListener((oscar_listener**)&oc.ft->listener);
 
 	{ // Clean up
 		icq_lock l(oftMutex);
