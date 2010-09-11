@@ -1,4 +1,4 @@
-`/*
+/*
  * $Id$
  *
  * myYahoo Miranda Plugin 
