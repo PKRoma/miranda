@@ -1545,7 +1545,6 @@ void __cdecl CIcqProto::oft_connectionThread( oscarthreadstartinfo *otsi )
 	NetLib_SafeCloseHandle(&hPacketRecver);
 
 	CloseOscarConnection(&oc);
-	ReleaseOscarListener((oscar_listener**)&oc.ft->listener);
 
 	{ // Clean up
 		icq_lock l(oftMutex);
