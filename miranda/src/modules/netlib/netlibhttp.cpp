@@ -1052,7 +1052,7 @@ static int NetlibHttpRecvChunkHeader(NetlibConnection* nlc, bool first)
 
 	for (;;)
 	{
-		int recvResult = NLRecv(nlc, data, 31, MSG_PEEK);
+		int recvResult = NLRecv(nlc, data, 31, MSG_RAW | MSG_PEEK);
 		if (recvResult <= 0) return SOCKET_ERROR;
 
 		data[recvResult] = 0;
@@ -1071,7 +1071,7 @@ static int NetlibHttpRecvChunkHeader(NetlibConnection* nlc, bool first)
 					if (peol3 == NULL) continue;
 					sz = peol3 - data + 1;
 				}
-				NLRecv(nlc, data, sz, 0);
+				NLRecv(nlc, data, sz, MSG_RAW);
 				return r;
 			}
 			else
@@ -1118,6 +1118,7 @@ next:
 		{
 			chunked = true;
 			chunkhdr = i;
+			dataLen = -1;
 		}
 	}
 
