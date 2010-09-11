@@ -63,7 +63,6 @@
 				RuntimeLibrary="2"
 				BufferSecurityCheck="false"
 				EnableFunctionLevelLinking="false"
-				EnableEnhancedInstructionSet="0"
 				FloatingPointModel="2"
 				DefaultCharIsUnsigned="true"
 				RuntimeTypeInfo="false"
@@ -72,7 +71,6 @@
 				AssemblerOutput="2"
 				BrowseInformation="0"
 				WarningLevel="3"
-				SuppressStartupBanner="true"
 				DebugInformationFormat="3"
 				CompileAs="0"
 				DisableSpecificWarnings="4996"
@@ -104,7 +102,6 @@
 				LinkTimeCodeGeneration="1"
 				BaseAddress=""
 				RandomizedBaseAddress="1"
-				DataExecutionPrevention="0"
 				ImportLibrary="$(IntDir)/$(TargetName).lib"
 				TargetMachine="1"
 			/>
@@ -175,7 +172,6 @@
 				RuntimeLibrary="2"
 				BufferSecurityCheck="false"
 				EnableFunctionLevelLinking="false"
-				EnableEnhancedInstructionSet="0"
 				FloatingPointModel="2"
 				DefaultCharIsUnsigned="true"
 				RuntimeTypeInfo="false"
@@ -184,7 +180,6 @@
 				AssemblerOutput="2"
 				BrowseInformation="0"
 				WarningLevel="3"
-				SuppressStartupBanner="true"
 				DebugInformationFormat="3"
 				CompileAs="0"
 				DisableSpecificWarnings="4996"
@@ -216,7 +211,6 @@
 				LinkTimeCodeGeneration="1"
 				BaseAddress=""
 				RandomizedBaseAddress="1"
-				DataExecutionPrevention="0"
 				ImportLibrary="$(IntDir)/$(TargetName).lib"
 				TargetMachine="17"
 			/>
@@ -286,7 +280,6 @@
 				PrecompiledHeaderThrough="hdr/modern_commonheaders.h"
 				BrowseInformation="1"
 				WarningLevel="3"
-				SuppressStartupBanner="true"
 				DebugInformationFormat="4"
 				DisableSpecificWarnings="4996"
 				ShowIncludes="false"
@@ -315,7 +308,6 @@
 				GenerateDebugInformation="true"
 				BaseAddress=""
 				RandomizedBaseAddress="1"
-				DataExecutionPrevention="0"
 				ImportLibrary="$(IntDir)/$(TargetName).lib"
 				TargetMachine="1"
 			/>
@@ -385,7 +377,6 @@
 				PrecompiledHeaderThrough="hdr/modern_commonheaders.h"
 				BrowseInformation="1"
 				WarningLevel="3"
-				SuppressStartupBanner="true"
 				DebugInformationFormat="3"
 				DisableSpecificWarnings="4996"
 				ShowIncludes="false"
@@ -414,7 +405,6 @@
 				GenerateDebugInformation="true"
 				BaseAddress=""
 				RandomizedBaseAddress="1"
-				DataExecutionPrevention="0"
 				ImportLibrary="$(IntDir)/$(TargetName).lib"
 				TargetMachine="17"
 			/>
@@ -485,7 +475,6 @@
 				PrecompiledHeaderThrough="hdr/modern_commonheaders.h"
 				BrowseInformation="1"
 				WarningLevel="3"
-				SuppressStartupBanner="true"
 				DebugInformationFormat="4"
 				DisableSpecificWarnings="4996"
 				ShowIncludes="false"
@@ -513,7 +502,6 @@
 				GenerateDebugInformation="true"
 				BaseAddress=""
 				RandomizedBaseAddress="1"
-				DataExecutionPrevention="0"
 				ImportLibrary="$(IntDir)/$(TargetName).lib"
 				TargetMachine="1"
 			/>
@@ -584,7 +572,6 @@
 				PrecompiledHeaderThrough="hdr/modern_commonheaders.h"
 				BrowseInformation="1"
 				WarningLevel="3"
-				SuppressStartupBanner="true"
 				DebugInformationFormat="3"
 				DisableSpecificWarnings="4996"
 				ShowIncludes="false"
@@ -612,7 +599,6 @@
 				GenerateDebugInformation="true"
 				BaseAddress=""
 				RandomizedBaseAddress="1"
-				DataExecutionPrevention="0"
 				ImportLibrary="$(IntDir)/$(TargetName).lib"
 				TargetMachine="17"
 			/>
@@ -682,7 +668,6 @@
 				RuntimeLibrary="2"
 				BufferSecurityCheck="false"
 				EnableFunctionLevelLinking="true"
-				EnableEnhancedInstructionSet="0"
 				FloatingPointModel="2"
 				DefaultCharIsUnsigned="true"
 				RuntimeTypeInfo="false"
@@ -690,7 +675,6 @@
 				PrecompiledHeaderThrough="hdr/modern_commonheaders.h"
 				BrowseInformation="0"
 				WarningLevel="3"
-				SuppressStartupBanner="true"
 				DebugInformationFormat="3"
 				CompileAs="0"
 				DisableSpecificWarnings="4996"
@@ -721,7 +705,6 @@
 				LinkTimeCodeGeneration="1"
 				BaseAddress=""
 				RandomizedBaseAddress="1"
-				DataExecutionPrevention="0"
 				ImportLibrary="$(IntDir)/$(TargetName).lib"
 				TargetMachine="1"
 			/>
@@ -791,7 +774,6 @@
 				RuntimeLibrary="2"
 				BufferSecurityCheck="false"
 				EnableFunctionLevelLinking="true"
-				EnableEnhancedInstructionSet="0"
 				FloatingPointModel="2"
 				DefaultCharIsUnsigned="true"
 				RuntimeTypeInfo="false"
@@ -800,7 +782,6 @@
 				AssemblerOutput="2"
 				BrowseInformation="0"
 				WarningLevel="3"
-				SuppressStartupBanner="true"
 				DebugInformationFormat="3"
 				CompileAs="0"
 				DisableSpecificWarnings="4996"
@@ -831,7 +812,6 @@
 				LinkTimeCodeGeneration="1"
 				BaseAddress=""
 				RandomizedBaseAddress="1"
-				DataExecutionPrevention="0"
 				ImportLibrary="$(IntDir)/$(TargetName).lib"
 				TargetMachine="17"
 			/>
@@ -1032,70 +1012,6 @@
 			<File
 				RelativePath=".\modern_gdiplus.cpp"
 				>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|x64"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|x64"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug Unicode|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug Unicode|x64"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release Unicode|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release Unicode|x64"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"
-					/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\modern_gettextasync.cpp"
