@@ -146,7 +146,10 @@ void CJabberProto::OnProcessLoginRq( ThreadData* info, DWORD rq )
 					TCHAR* nick = JabberNickFromJID( m_szJabberJID );
 					GroupchatJoinRoom( server, p, nick, item->password, true );
 					mir_free( nick );
-		}	}	}
+			}	}
+
+			ll.destroy();
+		}
 
 		OnProcessLoginRq( info, JABBER_LOGIN_BOOKMARKS_AJ );
 }	}
