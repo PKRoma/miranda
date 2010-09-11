@@ -65,7 +65,7 @@ void HttpGatewayRemovePacket(NetlibConnection *nlc, int pck)
 }
 
 
-static int NetlibHttpGatewaySend(struct NetlibConnection *nlc, RequestType reqType, const char *buf, int len)
+static bool NetlibHttpGatewaySend(struct NetlibConnection *nlc, RequestType reqType, const char *buf, int len)
 {
 	NETLIBHTTPREQUEST nlhrSend = {0};
 	char szUrl[512];
@@ -139,7 +139,8 @@ static int NetlibHttpGatewaySend(struct NetlibConnection *nlc, RequestType reqTy
 
 			mir_free((char*)nlc->nloc.szHost);
 			nlc->nloc = nloc;
-			if (!NetlibDoConnect(nlc)) return SOCKET_ERROR;
+			if (!NetlibDoConnect(nlc)) 
+				return false;
 		}
 		else
 			mir_free((char*)nloc.szHost);
@@ -156,13 +157,10 @@ static int NetlibHttpGatewaySend(struct NetlibConnection *nlc, RequestType reqTy
 //	nlhrSend.headers[3].szName  = "Accept-Encoding";
 //	nlhrSend.headers[3].szValue = "deflate, gzip";
 
-	if (NetlibHttpSendRequest((WPARAM)nlc,(LPARAM)&nlhrSend) == SOCKET_ERROR) 
-		return 0;
-
-	return 1;
+	return NetlibHttpSendRequest((WPARAM)nlc,(LPARAM)&nlhrSend) != SOCKET_ERROR; 
 }
 
-static int NetlibHttpGatewayStdPost(NetlibConnection *nlc, int& numPackets)
+static bool NetlibHttpGatewayStdPost(NetlibConnection *nlc, int& numPackets)
 {
 	int np = 0, len = 0;
 	
@@ -189,7 +187,7 @@ static int NetlibHttpGatewayStdPost(NetlibConnection *nlc, int& numPackets)
 	return NetlibHttpGatewaySend(nlc, reqNewPost, buf, len);
 }
 
-static int NetlibHttpGatewayOscarPost(NetlibConnection *nlc, const char *buf, int len, int flags)
+static bool NetlibHttpGatewayOscarPost(NetlibConnection *nlc, const char *buf, int len, int flags)
 {
 	NETLIBHTTPREQUEST *nlhrReply = NULL;
 	NetlibConnection nlcSend = {0};
@@ -204,14 +202,14 @@ static int NetlibHttpGatewayOscarPost(NetlibConnection *nlc, const char *buf, in
 	nlcSend.wProxyPort       = nlc->wProxyPort;
 	nlcSend.proxyType        = nlc->proxyType;
 
-	if (!NetlibReconnect(&nlcSend)) return 0;
+	if (!NetlibReconnect(&nlcSend)) return false;
 	nlc->s2 = nlcSend.s;
 
 	nlcSend.hOkToCloseEvent	= CreateEvent(NULL, TRUE, TRUE, NULL);
 	NetlibInitializeNestedCS(&nlcSend.ncsRecv);
 	NetlibInitializeNestedCS(&nlcSend.ncsSend);
 
-	int res = NetlibHttpGatewaySend(&nlcSend, reqOldPost, buf, len);
+	bool res = NetlibHttpGatewaySend(&nlcSend, reqOldPost, buf, len);
 	if (res)
 	{
 		NETLIBHTTPREQUEST *nlhrReply = NetlibHttpRecv(&nlcSend, flags | MSG_RAW | MSG_DUMPPROXY, MSG_RAW | MSG_DUMPPROXY);
@@ -220,12 +218,12 @@ static int NetlibHttpGatewayOscarPost(NetlibConnection *nlc, const char *buf, in
 			if (nlhrReply->resultCode != 200) 
 			{
 				NetlibHttpSetLastErrorUsingHttpResult(nlhrReply->resultCode);
-				res = 0;
+				res = false;
 			}
 			NetlibHttpFreeRequestStruct(0, (LPARAM)nlhrReply);
 		}
 		else
-			res = 0;
+			res = false;
 	}
 
 	NetlibDeleteNestedCS(&nlcSend.ncsSend);
@@ -323,7 +321,10 @@ int NetlibHttpGatewayRecv(struct NetlibConnection *nlc, char *buf, int len, int 
 			}
 
 			if (nlc->pHttpProxyPacketQueue == 0 && nlc->nlu->user.pfnHttpGatewayWrapSend != NULL)
-				nlc->nlu->user.pfnHttpGatewayWrapSend(nlc, (PBYTE)"", 0, MSG_NOHTTPGATEWAYWRAP, NetlibSend);
+			{
+				if (nlc->nlu->user.pfnHttpGatewayWrapSend(nlc, (PBYTE)"", 0, MSG_NOHTTPGATEWAYWRAP, NetlibSend) == SOCKET_ERROR)
+					return SOCKET_ERROR;
+			}
 		}
 
 		int numPackets = 0;
