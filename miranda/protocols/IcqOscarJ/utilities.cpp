@@ -228,8 +228,8 @@ char** CIcqProto::MirandaStatusToAwayMsg(int nStatus)
 {
 	switch (nStatus) {
 
-  case ID_STATUS_ONLINE:
-    return &m_modeMsgs.szOnline;
+	case ID_STATUS_ONLINE:
+		return &m_modeMsgs.szOnline;
 
 	case ID_STATUS_AWAY:
 		return &m_modeMsgs.szAway;
