@@ -2070,7 +2070,7 @@ void CJabberDlgAccMgrUI::setupGoogle()
 	m_txtManualHost.SetTextA("talk.google.com");
 	m_txtPort.SetInt(5222);
 
-	//m_cbServer.Disable();
+	m_cbServer.Enable();
 	m_chkManualHost.Disable();
 	m_txtManualHost.Disable();
 	//m_txtPort.Disable();
