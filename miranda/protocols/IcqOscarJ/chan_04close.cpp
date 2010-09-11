@@ -245,6 +245,7 @@ void CIcqProto::handleSignonError(WORD wError)
 	case 0x14: // Reservation map error
 	case 0x15: // Reservation link error
 	case 0x1A: // Reservation timeout
+		BroadcastAck(NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_NOSERVER);
 		icq_LogFatalParam(LPGEN("Connection failed.\nThe server is temporarily unavailable (%d)."), wError);
 		break;
 
@@ -255,10 +256,12 @@ void CIcqProto::handleSignonError(WORD wError)
 
 	case 0x18: // Reservation rate limit exceeded
 	case 0x1D: // Rate limit exceeded
+		BroadcastAck(NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_NOSERVER);
 		icq_LogFatalParam(LPGEN("Connection failed.\nYou have connected too quickly,\nplease wait and retry 10 to 20 minutes later (%d)."), wError);
 		break;
 
 	case 0x1B: // You are using an older version of ICQ. Upgrade required
+		BroadcastAck(NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_WRONGPROTOCOL);
 		icq_LogMessage(LOG_FATAL, LPGEN("Connection failed.\nThe server did not accept this client version."));
 		break;
 

@@ -2153,10 +2153,7 @@ int __cdecl CIcqProto::SetStatus(int iNewStatus)
 				{
 					icq_lock l(m_modeMsgsMutex);
 
-					char **pszStatusNote = NULL;
-					// only set away message for appropriate statuses
-					if (m_iStatus == ID_STATUS_AWAY)
-						pszStatusNote = MirandaStatusToAwayMsg(m_iStatus);
+					char ** pszStatusNote = MirandaStatusToAwayMsg(m_iStatus);
 
 					if (pszStatusNote)
 						icq_sendSetAimAwayMsgServ(*pszStatusNote);
@@ -2260,11 +2257,10 @@ HANDLE __cdecl CIcqProto::GetAwayMsg( HANDLE hContact )
 
 		switch(wStatus)
 		{
-
-    case ID_STATUS_ONLINE:
-      if (CheckContactCapabilities(hContact, CAPF_STATUS_MESSAGES))
-        wMessageType = MTYPE_AUTOONLINE;
-      break;
+		case ID_STATUS_ONLINE:
+			if (CheckContactCapabilities(hContact, CAPF_STATUS_MESSAGES))
+				wMessageType = MTYPE_AUTOONLINE;
+			break;
 
 		case ID_STATUS_AWAY:
 			wMessageType = MTYPE_AUTOAWAY;
@@ -2306,10 +2302,10 @@ HANDLE __cdecl CIcqProto::GetAwayMsg( HANDLE hContact )
 		}
 	}
 	else
-  { // AIM contact
-    if (wStatus == ID_STATUS_AWAY)
-		  return (HANDLE)icq_sendGetAimAwayMsgServ(hContact, szUID, MTYPE_AUTOAWAY);
-  }
+	{ // AIM contact
+		if (wStatus == ID_STATUS_AWAY)
+			  return (HANDLE)icq_sendGetAimAwayMsgServ(hContact, szUID, MTYPE_AUTOAWAY);
+	}
 
 	return 0; // Failure
 }
@@ -2378,8 +2374,10 @@ int __cdecl CIcqProto::SetAwayMsg(int status, const TCHAR* msg)
 			if (!bXStatus)
 				SetStatusNote(szNote, 1000, FALSE);
 
-			if (m_bAimEnabled && (m_iStatus == status) && m_iStatus == ID_STATUS_AWAY)
+			if (m_bAimEnabled && (m_iStatus == status))
+			{
 				icq_sendSetAimAwayMsgServ(*ppszMsg);
+			}
 		}
 	}
 	SAFE_FREE(&szNewUtf);

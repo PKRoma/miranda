@@ -423,12 +423,8 @@ void rates_queue::processQueue()
 	}
 	else
 		SAFE_FREE((void**)&pendingList);
-	pendingListSize--;
 
-	int bSetupTimer = 0;
-
-	if (pendingListSize)
-		bSetupTimer = 1;
+	int bSetupTimer = --pendingListSize != 0;
 
 	listsMutex->Leave();
 
@@ -463,24 +459,24 @@ void rates_queue::putItem(rates_queue_item *pItem, int nMinDelay)
 
 	ppro->NetLog_Server("Rates: Delaying %s.", szDescr);
 
-  listsMutex->Enter();
+	listsMutex->Enter();
 	if (pendingListSize)
 	{
 		for (int i = 0; i < pendingListSize; i++)
 		{
 			if (pendingList[i]->isEqual(pItem))
 			{ 
-        if (duplicates == -1)
-        { // discard existing, append new item
-          SAFE_DELETE((void_struct**)&pendingList[i]);
-				  memcpy(&pendingList[i], &pendingList[i + 1], (pendingListSize - i - 1) * sizeof(rates_queue_item*));
-  				bFound = TRUE;
-        }
-        else if (duplicates == 1)
-        { // keep existing, ignore new
-          listsMutex->Leave();
-          return;
-        }
+				if (duplicates == -1)
+				{ // discard existing, append new item
+					SAFE_DELETE((void_struct**)&pendingList[i]);
+					memcpy(&pendingList[i], &pendingList[i + 1], (pendingListSize - i - 1) * sizeof(rates_queue_item*));
+					bFound = TRUE;
+				}
+				else if (duplicates == 1)
+				{ // keep existing, ignore new
+					listsMutex->Leave();
+					return;
+				}
         // otherwise keep existing and append new
 			}
 		}
@@ -488,13 +484,13 @@ void rates_queue::putItem(rates_queue_item *pItem, int nMinDelay)
 	if (!bFound)
 	{ // not found, enlarge the queue
 		pendingListSize++;
-    pendingList = (rates_queue_item**)SAFE_REALLOC(pendingList, pendingListSize * sizeof(rates_queue_item*));
+		pendingList = (rates_queue_item**)SAFE_REALLOC(pendingList, pendingListSize * sizeof(rates_queue_item*));
 	}
 	pendingList[pendingListSize - 1] = pItem->copyItem();
 
 	if (pendingListSize == 1)
 	{ // queue was empty setup timer
-    listsMutex->Leave();
+		listsMutex->Leave();
 		ppro->m_ratesMutex->Enter();
 		int nDelay = ppro->m_rates->getDelayToLimitLevel(pItem->wGroup, waitLevel);
 		ppro->m_ratesMutex->Leave();
@@ -503,8 +499,8 @@ void rates_queue::putItem(rates_queue_item *pItem, int nMinDelay)
 		if (nDelay < nMinDelay) nDelay = nMinDelay;
 		initDelay(nDelay, &rates_queue::processQueue);
 	}
-  else
-    listsMutex->Leave();
+	else
+		listsMutex->Leave();
 }
 
 

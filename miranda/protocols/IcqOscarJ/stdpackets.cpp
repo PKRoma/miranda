@@ -699,13 +699,47 @@ void CIcqProto::icq_sendSetAimAwayMsgServ(const char *szMsg)
 
 	DWORD dwCookie = GenerateCookie(ICQ_LOCATION_SET_USER_INFO);
 
-	if (wMsgLen > 0x1000) wMsgLen = 0x1000; // limit length
-	serverPacketInit(&packet, (WORD)(wMsgLen ? wMsgLen + 48 : 14));
-	packFNACHeader(&packet, ICQ_LOCATION_FAMILY, ICQ_LOCATION_SET_USER_INFO, 0, dwCookie);
-
 	if (wMsgLen)
-		packTLV(&packet, 0x03, 0x1E, (LPBYTE)"text/x-aolrtf; charset=\"utf-8\"");
-	packTLV(&packet, 0x04, wMsgLen, (LPBYTE)szMsg);
+	{
+		if (wMsgLen > 0x1000) wMsgLen = 0x1000; // limit length
+
+		if (IsUSASCII(szMsg, wMsgLen))
+		{
+			const char* fmt = "text/x-aolrtf; charset=\"us-ascii\"";
+			const WORD fmtlen = (WORD)strlen(fmt);
+
+			serverPacketInit(&packet, 23 + wMsgLen + fmtlen);
+			packFNACHeader(&packet, ICQ_LOCATION_FAMILY, ICQ_LOCATION_SET_USER_INFO, 0, dwCookie);
+			packTLV(&packet, 0x0f, 1, (LPBYTE)"\x02");
+			packTLV(&packet, 0x03, fmtlen, (LPBYTE)fmt);
+			packTLV(&packet, 0x04, wMsgLen, (LPBYTE)szMsg);
+		}
+		else
+		{
+			const char* fmt = "text/x-aolrtf; charset=\"unicode-2-0\"";
+			const WORD fmtlen = (WORD)strlen(fmt);
+
+			WCHAR *szMsgW = make_unicode_string(szMsg);
+			wMsgLen = (WORD)strlennull(szMsgW) * sizeof(WCHAR);
+
+			WCHAR *szMsgW2 = (WCHAR*)alloca(wMsgLen), *szMsgW3 = szMsgW;
+			unpackWideString((BYTE**)&szMsgW3, szMsgW2, wMsgLen);
+			SAFE_FREE(&szMsgW);
+
+			serverPacketInit(&packet, 23 + wMsgLen + fmtlen);
+			packFNACHeader(&packet, ICQ_LOCATION_FAMILY, ICQ_LOCATION_SET_USER_INFO, 0, dwCookie);
+			packTLV(&packet, 0x0f, 1, (LPBYTE)"\x02");
+			packTLV(&packet, 0x03, fmtlen, (LPBYTE)fmt);
+			packTLV(&packet, 0x04, wMsgLen, (LPBYTE)szMsgW2);
+		}
+	}
+	else
+	{
+		serverPacketInit(&packet, 19);
+		packFNACHeader(&packet, ICQ_LOCATION_FAMILY, ICQ_LOCATION_SET_USER_INFO, 0, dwCookie);
+		packTLV(&packet, 0x0f, 1, (LPBYTE)"\x02");
+		packTLV(&packet, 0x04, 0, NULL);
+	}
 
 	sendServPacket(&packet);
 }
@@ -737,8 +771,8 @@ void CIcqProto::icq_sendFileSendServv7(filetransfer* ft, const char *szFiles)
 	packLEDWord(&packet, ft->dwTotalSize);
 	packLEDWord(&packet, 0);   // unknown
 
-  SAFE_FREE(&szFilesAnsi);
-  SAFE_FREE(&szDescrAnsi);
+	SAFE_FREE(&szFilesAnsi);
+	SAFE_FREE(&szDescrAnsi);
 
 	sendServPacket(&packet);
 }
