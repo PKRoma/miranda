@@ -1794,7 +1794,7 @@ HANDLE CIcqProto::NetLib_BindPort(NETLIBNEWCONNECTIONPROC_V2 pFunc, void* lParam
 
 	HANDLE hBoundPort = (HANDLE)CallService(MS_NETLIB_BINDPORT, (WPARAM)m_hDirectNetlibUser, (LPARAM)&nlb);
 
-  if (pwPort) *pwPort = nlb.wPort;
+	if (pwPort) *pwPort = nlb.wPort;
 	if (pdwIntIP) *pdwIntIP = nlb.dwInternalIP;
 
 	return hBoundPort;
