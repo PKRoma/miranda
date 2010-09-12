@@ -61,11 +61,12 @@ struct MIM_INT_TIMEZONE
 
 	MIM_INT_TIMEZONE() {};
 	MIM_INT_TIMEZONE(const MIM_INT_TIMEZONE & mtz) { *this = mtz; }
+	MIM_INT_TIMEZONE(const MIM_TIMEZONE & mtz) { *(MIM_TIMEZONE*)this = mtz; hash = 0; timestamp = 0; }
 
-	static int compareHash(const MIM_INT_TIMEZONE* p1, const MIM_INT_TIMEZONE* p2 )
+	static int compareHash(const MIM_INT_TIMEZONE* p1, const MIM_INT_TIMEZONE* p2)
 	{ return p1->hash - p2->hash; }
 
-	static int compareBias(const MIM_INT_TIMEZONE* p1, const MIM_INT_TIMEZONE* p2 )
+	static int compareBias(const MIM_INT_TIMEZONE* p1, const MIM_INT_TIMEZONE* p2)
 	{ return p2->Bias - p1->Bias; }
 };
 
@@ -185,7 +186,7 @@ static LONG TZ_CalcOffset(MIM_INT_TIMEZONE *tzi)
 	LONG	targetDL, myDL, timediff;
 	time_t  now = time(NULL);
 
-	if ((now- myInfo.timestamp) > 1800)		// refresh our private information
+	if ((now - myInfo.timestamp) > 1800)		// refresh our private information
 	{
 		myInfo.timestamp = now;
 		myInfo.DaylightInfo = GetTimeZoneInformation(&myInfo.tzi);
@@ -305,9 +306,22 @@ static INT_PTR svcGetInfoByContact(WPARAM wParam, LPARAM lParam)
 		{
 			MIM_INT_TIMEZONE tzsearch;
 			tzsearch.Bias = timezone * 30;
+			int i = g_timezonesBias.getIndex(&tzsearch);
+			
+			while (i >= 0 && g_timezonesBias[i]->Bias == tzsearch.Bias) --i; 
+			
+			int delta = LONG_MAX;
+			for (int j = ++i; j < g_timezonesBias.getCount() && g_timezonesBias[j]->Bias == tzsearch.Bias; ++j)
+			{
+				int delta1 = abs(g_timezonesBias[j]->DaylightDate.wMonth - myInfo.myTZ->DaylightTime.wMonth);
+				if (delta1 <= delta)
+				{
+					delta = delta1;
+					i = j;
+				}
+			}
 
-			MIM_INT_TIMEZONE *tz = g_timezonesBias.find(&tzsearch);
-			return tz ? ProcessTimezone(tz, dwFlags) : (INT_PTR)myInfo.myTZ;
+			return i >= 0 ? ProcessTimezone(g_timezonesBias[i], dwFlags) : (INT_PTR)myInfo.myTZ;
 		}
 		return (INT_PTR)myInfo.myTZ;
 	}
