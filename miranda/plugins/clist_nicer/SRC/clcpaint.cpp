@@ -1200,8 +1200,8 @@ text:
                 fLocalTime = cEntry->dwDFlags & ECF_FORCELOCALTIME ? 1 : 0;
 
 			if(cEntry->timediff != -1 && fLocalTime) {
-				DBTIMETOSTRING dbtts;
-				char szResult[80];
+				DBTIMETOSTRINGT dbtts;
+				TCHAR szResult[80];
 				int  idOldFont;
 				DWORD final_time;
 				DWORD now = cfg::dat.t_now;
@@ -1217,12 +1217,12 @@ text:
 
 				dbtts.szDest = szResult;
 				dbtts.cbDest = 70;
-				dbtts.szFormat = "t";
-				CallService(MS_DB_TIME_TIMESTAMPTOSTRING, (WPARAM)final_time, (LPARAM)&dbtts);
+				dbtts.szFormat = _T("t");
+				CallService(MS_DB_TIME_TIMESTAMPTOSTRINGT, (WPARAM)final_time, (LPARAM)&dbtts);
 				oldColor = GetTextColor(hdcMem);
 				idOldFont = dat->currentFontID;
 				ChangeToFont(hdcMem, dat, FONTID_TIMESTAMP, &fHeight);
-				GetTextExtentPoint32A(hdcMem, szResult, lstrlenA(szResult), &szTime);
+				GetTextExtentPoint32(hdcMem, szResult, lstrlen(szResult), &szTime);
 				verticalfit = (rowHeight - fHeight >= cfg::dat.exIconScale + 1);
 
 				if(av_right) {
@@ -1247,7 +1247,7 @@ text:
 					else
 						rc.left = rcContent.right - szTime.cx - 2;
 				}
-				DrawTextA(hdcMem, szResult, -1, &rc, DT_NOPREFIX | DT_NOCLIP | DT_SINGLELINE);
+				DrawText(hdcMem, szResult, -1, &rc, DT_NOPREFIX | DT_NOCLIP | DT_SINGLELINE);
 				ChangeToFont(hdcMem, dat, idOldFont, 0);
 				SetTextColor(hdcMem, oldColor);
 
