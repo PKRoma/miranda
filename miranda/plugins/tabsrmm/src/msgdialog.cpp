@@ -1901,7 +1901,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 								UINT ctrlId = 0;
 
 								if(wp == VK_MENU) {
-									if(!dat->fkeyProcessed)
+									if(!dat->fkeyProcessed && !(GetKeyState(VK_CONTROL) & 0x8000) && !(GetKeyState(VK_SHIFT) & 0x8000))
 										m_pContainer->MenuBar->autoShow();
 								}
 								return(_dlgReturn(hwndDlg, 0));

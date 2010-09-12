@@ -2690,7 +2690,7 @@ LABEL_SHOWWINDOW:
 
 					if(msg == WM_SYSKEYUP) {
 						if(wp == VK_MENU) {
-							if(!dat->fkeyProcessed)
+							if(!dat->fkeyProcessed && !(GetKeyState(VK_CONTROL) & 0x8000) && !(GetKeyState(VK_SHIFT) & 0x8000))
 								dat->pContainer->MenuBar->autoShow();
 						}
 						return(_dlgReturn(hwndDlg, 0));
