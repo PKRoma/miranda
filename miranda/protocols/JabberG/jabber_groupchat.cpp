@@ -1120,7 +1120,7 @@ void CJabberProto::GroupchatProcessPresence( HXML node )
 
 void CJabberProto::GroupchatProcessMessage( HXML node )
 {
-	HXML n, xNode;
+	HXML n, xNode, m;
 	const TCHAR* from, *type, *p, *nick;
 	JABBER_LIST_ITEM *item;
 
@@ -1147,13 +1147,24 @@ void CJabberProto::GroupchatProcessMessage( HXML node )
 
 		if ( from != NULL ) {
 			nick = _tcschr( from, '/' );
-			if ( nick == NULL || nick[1] == '\0' )
-				nick = NULL;
-			else
-				nick++;
+			if ( nick == NULL || nick[1] == '\0' ) {
+				if (( m = xmlGetChild( node, "body" )) != NULL ) {
+					TCHAR* tmpnick = ( TCHAR* )xmlGetText( m );
+					if ( tmpnick == NULL || *tmpnick == 0 )
+						return;
+					
+					TCHAR* tmptr = _tcsstr( tmpnick, _T("has set the subject to:")); //ejabberd
+					if ( tmptr == NULL || *tmptr == 0 )
+						nick = NULL;
+					else {
+						*(--tmptr) = 0;
+						nick = tmpnick;
+				}	}
+			}
+			else nick++;
 		}
 		else nick = NULL;
-		replaceStr(item->itemResource.statusMessage, msgText);
+		replaceStr( item->itemResource.statusMessage, msgText );
 	}
 	else {
 		if (( n = xmlGetChildByTag( node , "body", "xml:lang", m_tszSelectedLang )) == NULL )
