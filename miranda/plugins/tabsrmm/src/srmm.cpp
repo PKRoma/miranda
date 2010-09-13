@@ -50,7 +50,7 @@ LOGFONT lfDefault = {0};
 
 struct LIST_INTERFACE li;
 struct MM_INTERFACE mmi;
-TIME_API tmi;
+TIME_API tmi = {0};
 
 PLUGININFOEX pluginInfo = {
 	sizeof(PLUGININFOEX),

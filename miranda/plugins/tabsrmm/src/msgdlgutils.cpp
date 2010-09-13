@@ -1695,7 +1695,7 @@ void TSAPI LoadOwnAvatar(TWindowData *dat)
 void TSAPI LoadTimeZone(TWindowData *dat)
 {
 	if (dat)
-		dat->hTimeZone = tmi.createByContact(dat->hContact, TZF_KNOWNONLY);
+		dat->hTimeZone = tmi.createByContact ? tmi.createByContact(dat->hContact, TZF_KNOWNONLY) : 0;
 }
 
 /*
