@@ -223,9 +223,21 @@ static INT_PTR CALLBACK LocationDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, L
 {
 	switch(msg) {
 		case WM_INITDIALOG:
+
+			MIM_TZ_PREPARELIST mtzp;
 			SetWindowLongPtr(hwndDlg,GWLP_USERDATA,lParam);
 			TranslateDialogDefault(hwndDlg);
 			SetTimer(hwndDlg,1,1000,NULL);
+
+			ZeroMemory(&mtzp, sizeof(MIM_TZ_PREPARELIST));
+			mtzp.cbSize = sizeof(MIM_TZ_PREPARELIST);
+			mtzp.hContact = (HANDLE)lParam;
+			mtzp.hWnd = GetDlgItem(hwndDlg, IDC_TIMEZONESELECT);
+			mtzp.dwFlags = TZF_PLF_CB;
+			CallService(MS_TZ_PREPARELIST, (WPARAM)0, (LPARAM)&mtzp);
+			if(SendDlgItemMessage(hwndDlg, IDC_TIMEZONESELECT, CB_GETCURSEL, 0, 0) == CB_ERR)
+				SendDlgItemMessage(hwndDlg, IDC_TIMEZONESELECT, CB_SETCURSEL, 0, 0);
+
 			SendMessage(hwndDlg,WM_TIMER,0,0);
 			break;
 
@@ -276,7 +288,24 @@ static INT_PTR CALLBACK LocationDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, L
 						SetValue(hwndDlg,IDC_LANGUAGE2,hContact,szProto,"Language2",SVS_ZEROISUNSPEC);
 						SetValue(hwndDlg,IDC_LANGUAGE3,hContact,szProto,"Language3",SVS_ZEROISUNSPEC);
 						SetValue(hwndDlg,IDC_TIMEZONE,hContact,szProto,"Timezone",SVS_TIMEZONE);
-				}	}
+					}
+				} else if (((LPNMHDR)lParam)->code == PSN_APPLY )
+				{	HANDLE hContact=(HANDLE)GetWindowLongPtr(hwndDlg,GWLP_USERDATA);
+					INT_PTR offset = SendDlgItemMessage(hwndDlg, IDC_TIMEZONESELECT, CB_GETCURSEL, 0, 0);
+					/*
+					if (offset > 0) {
+						MIM_TIMEZONE *ptz = (MIM_TIMEZONE *)SendDlgItemMessage(hwndDlg, IDC_TIMEZONESELECT, CB_GETITEMDATA, (WPARAM)offset, 0);
+						if((INT_PTR)ptz != CB_ERR && ptz != 0) {
+							char	*szProto = (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
+							DBWriteContactSettingTString(hContact, "UserInfo", "TzName", ptz->tszName);
+							DBWriteContactSettingByte(hContact, "UserInfo", "Timezone", (char)(ptz->GMT_Offset));
+						}
+					} else {
+						DBDeleteContactSetting(hContact, "UserInfo", "Timezone");
+						DBDeleteContactSetting(hContact, "UserInfo", "TzName");
+					}
+					*/
+				}
 				break;
 			}
 			break;
@@ -284,6 +313,14 @@ static INT_PTR CALLBACK LocationDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, L
 			switch(LOWORD(wParam)) {
 				case IDCANCEL:
 					SendMessage(GetParent(hwndDlg),msg,wParam,lParam);
+					break;
+				case IDC_TIMEZONESELECT:
+					if(HIWORD(wParam) == CBN_SELCHANGE) {
+						HANDLE hContact = (HANDLE)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
+
+						SendMessage(GetParent(hwndDlg),PSM_CHANGED, 0,0);
+						CallService(MS_TZ_STORELISTRESULT, (WPARAM)hContact, (LPARAM)GetDlgItem(hwndDlg, IDC_TIMEZONESELECT));
+					}
 					break;
 			}
 			break;

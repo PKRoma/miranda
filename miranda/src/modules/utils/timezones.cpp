@@ -579,30 +579,41 @@ void InitTimeZones(void)
 				dwLength = SIZEOF(tz->tszDisplay);
 				RegQueryValueEx(hSubKey, _T("Display"), NULL, NULL, (unsigned char *)tz->tszDisplay, &dwLength); 
 
-				if(!fOwnFound && isVista && pfnGetDynamicTimeZoneInformation) {
-					if (!_tcscmp(tszName, dtzi.TimeZoneKeyName)) {			// compare registry key names (= not localized, so it's easy)
+				if(isVista && pfnGetDynamicTimeZoneInformation) {
+					if (!fOwnFound && !_tcscmp(tszName, dtzi.TimeZoneKeyName)) {			// compare registry key names (= not localized, so it's easy)
 						myInfo.myTZ = (MIM_TIMEZONE *)tz;
 						fOwnFound = true;
 					}
+					dwLength = sizeof(szStdName);
+					RegQueryValueEx(hSubKey, _T("Std"), NULL, NULL, (unsigned char *)szStdName, &dwLength);
+					dwLength = sizeof(szDayName);
+					RegQueryValueEx(hSubKey, _T("Dlt"), NULL, NULL, (unsigned char *)szDayName, &dwLength);
+
+					szDayName[MIM_TZ_NAMELEN - 1] = 0;
+					szStdName[MIM_TZ_NAMELEN - 1] = 0;
 				}
-				else if(!fOwnFound) {
+				else {
 					szStdName[0] = 0;
-					dwLength = SIZEOF(szStdName);
+					dwLength = sizeof(szStdName);
 					if(ERROR_SUCCESS != RegQueryValueEx(hSubKey, _T("MUI_Std"), NULL, NULL, (unsigned char *)szStdName, &dwLength)) {
 						szStdName[0] = 0;
-						dwLength = SIZEOF(szStdName);
+						dwLength = sizeof(szStdName);
 						RegQueryValueEx(hSubKey, _T("Std"), NULL, NULL, (unsigned char *)szStdName, &dwLength);
 					}
+					//else {
+						// TODO: read translated time zone name from MUI
+					//}
 
 					szDayName[0] = 0;
-					dwLength = SIZEOF(szDayName);
+					dwLength = sizeof(szDayName);
 					if(ERROR_SUCCESS != RegQueryValueEx(hSubKey, _T("MUI_Dlt"), NULL, NULL, (unsigned char *)szDayName, &dwLength)) {
 						szDayName[0] = 0;
-						dwLength = SIZEOF(szDayName);
+						dwLength = sizeof(szDayName);
 						RegQueryValueEx(hSubKey, _T("Dlt"), NULL, NULL, (unsigned char *)szDayName, &dwLength);
 					}
-
-					if (!_tcscmp(szStdName, myStdName) || !_tcscmp(szDayName, myDayName)) {
+					szDayName[MIM_TZ_NAMELEN - 1] = 0;
+					szStdName[MIM_TZ_NAMELEN - 1] = 0;
+					if (!fOwnFound && !_tcscmp(szStdName, myStdName) || !_tcscmp(szDayName, myDayName)) {
 						myInfo.myTZ = tz;
 						fOwnFound = true;
 					}
