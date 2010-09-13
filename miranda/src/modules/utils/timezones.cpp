@@ -25,6 +25,25 @@ simple GMT offsets.
 
 #include <commonheaders.h>
 
+static bool	fOwnFound = false;
+
+#if _MSC_VER < 1500
+	typedef struct _TIME_DYNAMIC_ZONE_INFORMATION_T {
+		LONG Bias;
+		WCHAR StandardName[ 32 ];
+		SYSTEMTIME StandardDate;
+		LONG StandardBias;
+		WCHAR DaylightName[ 32 ];
+		SYSTEMTIME DaylightDate;
+		LONG DaylightBias;
+		WCHAR TimeZoneKeyName[ 128 ];
+		BOOLEAN DynamicDaylightTimeDisabled;
+	} DYNAMIC_TIME_ZONE_INFORMATION;
+#endif
+
+typedef DWORD 		(WINAPI *pfnGetDynamicTimeZoneInformation_t)(DYNAMIC_TIME_ZONE_INFORMATION *pdtzi);
+static pfnGetDynamicTimeZoneInformation_t pfnGetDynamicTimeZoneInformation = 0;
+
 typedef struct _REG_TZI_FORMAT
 {
     LONG Bias;
@@ -505,16 +524,31 @@ void InitTimeZones(void)
 
 	REG_TZI_FORMAT	tzi;
 	HKEY			hKey;
+	bool			isVista = IsWinVerVistaPlus();
+	DYNAMIC_TIME_ZONE_INFORMATION dtzi;
 
 	const TCHAR *tszKey = IsWinVer2000Plus() ?
 		_T("SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Time Zones") :
 		_T("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Time Zones");
+
+	/*
+	 * use GetDynamicTimeZoneInformation() on Vista+ - this will return a structure with
+	 * the registry key name, so finding our own time zone later will be MUCH easier for
+	 * localized systems or systems with a MUI pack installed
+	 */
+	if(isVista) {
+		pfnGetDynamicTimeZoneInformation = (pfnGetDynamicTimeZoneInformation_t)GetProcAddress(GetModuleHandle(_T("kernel32")), "GetDynamicTimeZoneInformation");
+		if(pfnGetDynamicTimeZoneInformation)
+			pfnGetDynamicTimeZoneInformation(&dtzi);
+	}
+
 
 	if (ERROR_SUCCESS == RegOpenKeyEx(HKEY_LOCAL_MACHINE, tszKey, 0, KEY_ENUMERATE_SUB_KEYS, &hKey)) 
 	{
 		TCHAR	tszName[MIM_TZ_NAMELEN];
 		DWORD	dwIndex = 0;
 		HKEY	hSubKey;
+		TCHAR	szStdName[MIM_TZ_NAMELEN], szDayName[MIM_TZ_NAMELEN];
 
 		TCHAR* myStdName = mir_u2t(myInfo.tzi.StandardName);
 		TCHAR* myDayName = mir_u2t(myInfo.tzi.DaylightName);
@@ -545,17 +579,34 @@ void InitTimeZones(void)
 				dwLength = SIZEOF(tz->tszDisplay);
 				RegQueryValueEx(hSubKey, _T("Display"), NULL, NULL, (unsigned char *)tz->tszDisplay, &dwLength); 
 
-				TCHAR szStdName[MIM_TZ_NAMELEN] = _T("");
-				dwLength = SIZEOF(szStdName);
-				RegQueryValueEx(hSubKey, _T("Std"), NULL, NULL, (unsigned char *)szStdName, &dwLength);
+				if(!fOwnFound && isVista && pfnGetDynamicTimeZoneInformation) {
+					if (!_tcscmp(tszName, dtzi.TimeZoneKeyName)) {			// compare registry key names (= not localized, so it's easy)
+						myInfo.myTZ = (MIM_TIMEZONE *)tz;
+						fOwnFound = true;
+					}
+				}
+				else if(!fOwnFound) {
+					szStdName[0] = 0;
+					dwLength = SIZEOF(szStdName);
+					if(ERROR_SUCCESS != RegQueryValueEx(hSubKey, _T("MUI_Std"), NULL, NULL, (unsigned char *)szStdName, &dwLength)) {
+						szStdName[0] = 0;
+						dwLength = SIZEOF(szStdName);
+						RegQueryValueEx(hSubKey, _T("Std"), NULL, NULL, (unsigned char *)szStdName, &dwLength);
+					}
 
-				TCHAR szDayName[MIM_TZ_NAMELEN] = _T("");
-				dwLength = SIZEOF(szDayName);
-				RegQueryValueEx(hSubKey, _T("Dlt"), NULL, NULL, (unsigned char *)szDayName, &dwLength); 
+					szDayName[0] = 0;
+					dwLength = SIZEOF(szDayName);
+					if(ERROR_SUCCESS != RegQueryValueEx(hSubKey, _T("MUI_Dlt"), NULL, NULL, (unsigned char *)szDayName, &dwLength)) {
+						szDayName[0] = 0;
+						dwLength = SIZEOF(szDayName);
+						RegQueryValueEx(hSubKey, _T("Dlt"), NULL, NULL, (unsigned char *)szDayName, &dwLength);
+					}
 
-				if (!_tcscmp(szStdName, myStdName) || !_tcscmp(szDayName, myDayName))
-					myInfo.myTZ = tz;
-
+					if (!_tcscmp(szStdName, myStdName) || !_tcscmp(szDayName, myDayName)) {
+						myInfo.myTZ = tz;
+						fOwnFound = true;
+					}
+				}
 #ifndef _UNICODE
 				MultiByteToWideChar(CP_ACP, 0, szStdName, -1, tz->tzi.StandardName, SIZEOF(tz->tzi.StandardName));
 				MultiByteToWideChar(CP_ACP, 0, szDayName, -1, tz->tzi.DaylightName, SIZEOF(tz->tzi.DaylightName));
