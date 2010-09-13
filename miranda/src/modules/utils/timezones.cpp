@@ -25,6 +25,7 @@ simple GMT offsets.
 
 #include <commonheaders.h>
 
+TIME_API tmi;
 static bool	fOwnFound = false;
 
 #if _MSC_VER < 1500
@@ -104,57 +105,38 @@ static bool IsSameTime(TIME_ZONE_INFORMATION *tzi)
 	return st.wHour == stl.wHour && st.wMinute == stl.wMinute;
 }
 
-static INT_PTR svcGetInfoByName(WPARAM wParam, LPARAM lParam)
+static HANDLE timeapiGetInfoByName(LPCTSTR tszName, DWORD dwFlags)
 {
-	TCHAR *tszName = (TCHAR*)wParam;
-	DWORD  dwFlags = (DWORD)lParam;
-
 	if (tszName == NULL)
-		return (dwFlags & (TZF_DIFONLY | TZF_KNOWNONLY)) ? 0 : (INT_PTR)myInfo.myTZ;
-
-#ifdef _UNICODE
-	if (!(dwFlags & TZF_UNICODE))
-		tszName = mir_a2t((char*)wParam);
-#endif
+		return (dwFlags & (TZF_DIFONLY | TZF_KNOWNONLY)) ? NULL : myInfo.myTZ;
 
 	MIM_TIMEZONE tzsearch;
 	tzsearch.hash = hashstr(tszName);
 
 	MIM_TIMEZONE *tz = g_timezones.find(&tzsearch);
 	if (tz == NULL)
-		return (dwFlags & (TZF_DIFONLY | TZF_KNOWNONLY)) ? 0 : (INT_PTR)myInfo.myTZ;
+		return (dwFlags & (TZF_DIFONLY | TZF_KNOWNONLY)) ? NULL : myInfo.myTZ;
 
 	if (dwFlags & TZF_DIFONLY)
-		return IsSameTime(&tz->tzi) ? 0 : (INT_PTR)tz;
+		return IsSameTime(&tz->tzi) ? NULL : tz;
 
-#ifdef _UNICODE
-	if (!(dwFlags & TZF_UNICODE))
-		mir_free(tszName);
-#endif
-
-	return (INT_PTR)tz;
+	return tz;
 }
 
-static INT_PTR svcGetInfoByContact(WPARAM wParam, LPARAM lParam)
+static HANDLE timeapiGetInfoByContact(HANDLE hContact, DWORD dwFlags)
 {
-	HANDLE hContact = (HANDLE)wParam;
-	DWORD  dwFlags = (DWORD)lParam;
-
 	if (hContact == NULL)
-		return (dwFlags & (TZF_DIFONLY | TZF_KNOWNONLY)) ? 0 : (INT_PTR)myInfo.myTZ;
+		return (dwFlags & (TZF_DIFONLY | TZF_KNOWNONLY)) ? NULL : myInfo.myTZ;
 
 	DBVARIANT	dbv;
 	if (!DBGetContactSettingTString(hContact, "UserInfo", "TzName", &dbv)) 
 	{
-		INT_PTR res = svcGetInfoByName((WPARAM)dbv.ptszVal, lParam | TZF_TCHAR);  
+		HANDLE res = timeapiGetInfoByName(dbv.ptszVal, dwFlags);  
 		DBFreeVariant(&dbv);
 		return res;
 	} 
 	else 
 	{
-		/*
-		 * try the GMT Bias
-		 */
 		signed char timezone = (signed char)DBGetContactSettingByte(hContact, "UserInfo", "Timezone", -1);
 		if (timezone == -1)
 		{
@@ -185,33 +167,31 @@ static INT_PTR svcGetInfoByContact(WPARAM wParam, LPARAM lParam)
 			{
 				MIM_TIMEZONE *tz = g_timezonesBias[i];
 				if (dwFlags & TZF_DIFONLY)
-					return IsSameTime(&tz->tzi) ? 0 : (INT_PTR)tz;
+					return IsSameTime(&tz->tzi) ? NULL : tz;
 
-				return (INT_PTR)tz;
+				return tz;
 			}
 		}
-		return (dwFlags & (TZF_DIFONLY | TZF_KNOWNONLY)) ? 0 : (INT_PTR)myInfo.myTZ;
+		return (dwFlags & (TZF_DIFONLY | TZF_KNOWNONLY)) ? NULL : myInfo.myTZ;
 	}
 }
 
-static INT_PTR svcSetInfoByContact(WPARAM wParam, LPARAM lParam)
+static void timeapiSetInfoByContact(HANDLE hContact, HANDLE hTZ)
 {
-	HANDLE hContact = (HANDLE)wParam;
-	MIM_TIMEZONE *ptz = (MIM_TIMEZONE*)lParam;
+	MIM_TIMEZONE *tz = (MIM_TIMEZONE*)hTZ;
 
-	if (hContact == NULL) return 0;
+	if (hContact == NULL) return;
 
-	if (ptz) 
+	if (tz)
 	{
-		DBWriteContactSettingTString(hContact, "UserInfo", "TzName", ptz->tszName);
-		DBWriteContactSettingByte(hContact, "UserInfo", "Timezone", (char)((ptz->tzi.Bias + ptz->tzi.StandardBias) / -60));
+		DBWriteContactSettingTString(hContact, "UserInfo", "TzName", tz->tszName);
+		DBWriteContactSettingByte(hContact, "UserInfo", "Timezone", (char)((tz->tzi.Bias + tz->tzi.StandardBias) / -60));
 	} 
 	else 
 	{
 		DBDeleteContactSetting(hContact, "UserInfo", "Timezone");
 		DBDeleteContactSetting(hContact, "UserInfo", "TzName");
 	}
-	return 0;
 }
 
 #ifndef _UNICODE
@@ -373,17 +353,10 @@ BOOL MySystemTimeToTzSpecificLocalTime(const TIME_ZONE_INFORMATION *ptzi, const 
 #endif
 
 
-INT_PTR svcPrintDateTime(WPARAM wParam, LPARAM lParam)
+static int timeapiPrintDateTime(HANDLE hTZ, LPCTSTR szFormat, LPTSTR szDest, int cbDest, DWORD dwFlags)
 {
-	TZTOSTRING *tzt  = (TZTOSTRING*)wParam;
-	MIM_TIMEZONE *tz;
+	MIM_TIMEZONE *tz = (MIM_TIMEZONE*)hTZ;
 
-	if (tzt == NULL) return 1;
-
-	tz = (tzt->flags & TZF_HCONTACT) ? 
-		(MIM_TIMEZONE*)svcGetInfoByContact((WPARAM)tzt->hTimeZone, tzt->flags) : 
-		(MIM_TIMEZONE*)tzt->hTimeZone;
-	
 	if (tz == NULL) return 1;
 
 	SYSTEMTIME st, stl;
@@ -392,55 +365,44 @@ INT_PTR svcPrintDateTime(WPARAM wParam, LPARAM lParam)
 #ifdef _UNICODE 
 	if (!SystemTimeToTzSpecificLocalTime(&tz->tzi, &st, &stl))
 		return 1;
-
-	if (tzt->flags & TZF_UNICODE)
-		FormatTime(&stl, tzt->szFormat, tzt->szDest, tzt->cbDest);
-	else
-		FormatTimeA(&stl, (char*)tzt->szFormat, (char*)tzt->szDest, tzt->cbDest);
 #else
 	if (!MySystemTimeToTzSpecificLocalTime(&tz->tzi, &st, &stl))
 		return 1;
-
-	FormatTime(&stl, tzt->szFormat, tzt->szDest, tzt->cbDest);
 #endif
+	FormatTime(&stl, szFormat, szDest, cbDest);
 
 	return 0;
 }
 
-static INT_PTR svcPrepareList(WPARAM wParam, LPARAM lParam)
+static int timeapiPrintDateTimeByContact(HANDLE hContact, LPCTSTR szFormat, LPTSTR szDest, int cbDest, DWORD dwFlags)
 {
-	if (lParam == 0)
+	return timeapiPrintDateTime(timeapiGetInfoByContact(hContact, dwFlags), szFormat, szDest, cbDest, dwFlags);
+}
+
+static int timeapiPrepareList(HANDLE hContact, HWND hWnd, DWORD dwFlags)
+{
+	UINT addMsg, selMsg, findMsg, extMsg;					// control messages for list/combo box
+
+	if (hWnd == NULL)	   // nothing to do
 		return 0;
 
-	MIM_TZ_PREPARELIST *mtzd = (MIM_TZ_PREPARELIST*)lParam;
-	UINT	addMsg, selMsg, findMsg, extMsg;					// control messages for list/combo box
-
-	if (mtzd->cbSize != sizeof(MIM_TZ_PREPARELIST))
-		return 0;
-
-	if (mtzd->hWnd == NULL)	   // nothing to do
-		return 0;
-
-	if (!(mtzd->dwFlags & TZF_PLF_CB || mtzd->dwFlags & TZF_PLF_LB)) 
+	if (!(dwFlags & (TZF_PLF_CB | TZF_PLF_LB))) 
 	{
-		/*
-		 * figure it out by class name
-		 */
 		TCHAR	tszClassName[128];
-		GetClassName(mtzd->hWnd, tszClassName, SIZEOF(tszClassName));
+		GetClassName(hWnd, tszClassName, SIZEOF(tszClassName));
 		if (!_tcsicmp(tszClassName, _T("COMBOBOX")))
-			mtzd->dwFlags |= TZF_PLF_CB;
+			dwFlags |= TZF_PLF_CB;
 		else if(!_tcsicmp(tszClassName, _T("LISTBOX")))
-			mtzd->dwFlags |= TZF_PLF_LB;
+			dwFlags |= TZF_PLF_LB;
 	}
-	if (mtzd->dwFlags & TZF_PLF_CB) 
+	if (dwFlags & TZF_PLF_CB) 
 	{
 		addMsg = CB_ADDSTRING;
 		selMsg = CB_SETCURSEL;
 		findMsg = CB_FINDSTRING;
 		extMsg = CB_SETITEMDATA;
 	}
-	else if(mtzd->dwFlags & TZF_PLF_LB) 
+	else if(dwFlags & TZF_PLF_LB) 
 	{
 		addMsg = LB_ADDSTRING;
 		selMsg = LB_SETCURSEL;
@@ -450,7 +412,7 @@ static INT_PTR svcPrepareList(WPARAM wParam, LPARAM lParam)
 	else
 		return 0;									// shouldn't happen
 
-	SendMessage(mtzd->hWnd, addMsg, 0, (LPARAM)_T("<unspecified>"));
+	SendMessage(hWnd, addMsg, 0, (LPARAM)_T("<unspecified>"));
 
 	if (g_timezonesBias.getCount() == 0) return 0; 
 
@@ -462,13 +424,14 @@ static INT_PTR svcPrepareList(WPARAM wParam, LPARAM lParam)
 	 * for preselecting the item.
 	 */
 
-	if(mtzd->hContact) 
+	TCHAR tszName[MIM_TZ_NAMELEN] = _T("");
+	if (hContact) 
 	{
 		DBVARIANT dbv;
 
-		if(!DBGetContactSettingTString(mtzd->hContact, "UserInfo", "TzName", &dbv)) 
+		if(!DBGetContactSettingTString(hContact, "UserInfo", "TzName", &dbv)) 
 		{
-			mir_sntprintf(mtzd->tszName, MIM_TZ_NAMELEN, _T("%s"), dbv.ptszVal);
+			mir_sntprintf(tszName, MIM_TZ_NAMELEN, _T("%s"), dbv.ptszVal);
 			DBFreeVariant(&dbv);
 		}
 	}
@@ -476,46 +439,90 @@ static INT_PTR svcPrepareList(WPARAM wParam, LPARAM lParam)
 	int iSelection = -1;
 	for (int i = 0; i < g_timezonesBias.getCount(); ++i) 
 	{
-		SendMessage(mtzd->hWnd, addMsg, 0, (LPARAM)g_timezonesBias[i]->tszDisplay);
+		SendMessage(hWnd, addMsg, 0, (LPARAM)g_timezonesBias[i]->tszDisplay);
 		/*
 		 * set the adress of our timezone struct as itemdata
 		 * caller can obtain it and use it as a pointer to extract all relevant information
 		 */
-		SendMessage(mtzd->hWnd, extMsg, (WPARAM)i + 1, (LPARAM)g_timezonesBias[i]);
+		SendMessage(hWnd, extMsg, (WPARAM)i + 1, (LPARAM)g_timezonesBias[i]);
 
 		// remember the display name to later select it in the listbox
-		if (iSelection == -1 && mtzd->tszName[0] && !_tcsicmp(mtzd->tszName, g_timezonesBias[i]->tszName))	
+		if (iSelection == -1 && tszName[0] && !_tcsicmp(tszName, g_timezonesBias[i]->tszName))	
 		{
-			mir_sntprintf(tszSelectedItem, MIM_TZ_DISPLAYLEN, _T("%s"), g_timezonesBias[i]->tszDisplay);
+			_tcscpy(tszSelectedItem, g_timezonesBias[i]->tszDisplay);
 			iSelection = i + 1;
 		}
 	}
 	if (iSelection != -1) 
 	{
-		SendMessage(mtzd->hWnd, selMsg, (WPARAM)iSelection, 0);
+		SendMessage(hWnd, selMsg, iSelection, 0);
 		return iSelection;
 	}
 
+	SendMessage(hWnd, selMsg, 0, 0);
 	return 0;
 }
 
-static INT_PTR svcStoreListResult(WPARAM wParam, LPARAM lParam)
+static void timeapiStoreListResult(HANDLE hContact, HWND hWnd, DWORD dwFlags)
 {
-	HANDLE hContact = (HANDLE)wParam;
-	HWND hwnd = (HWND)lParam;
+	UINT getMsg, extMsg;					// control messages for list/combo box
+	
+	if (!(dwFlags & (TZF_PLF_CB | TZF_PLF_LB))) 
+	{
+		TCHAR	tszClassName[128];
+		GetClassName(hWnd, tszClassName, SIZEOF(tszClassName));
+		if (!_tcsicmp(tszClassName, _T("COMBOBOX")))
+			dwFlags |= TZF_PLF_CB;
+		else if(!_tcsicmp(tszClassName, _T("LISTBOX")))
+			dwFlags |= TZF_PLF_LB;
+	}
+	if (dwFlags & TZF_PLF_CB) 
+	{
+		getMsg = CB_SETCURSEL;
+		extMsg = CB_GETITEMDATA;
+	}
+	else if(dwFlags & TZF_PLF_LB) 
+	{
+		getMsg = LB_GETCURSEL;
+		extMsg = LB_GETITEMDATA;
+	}
+	else
+		return;									// shouldn't happen
 
-	LRESULT offset = SendMessage(hwnd, CB_GETCURSEL, 0, 0);
+	LRESULT offset = SendMessage(hWnd, getMsg, 0, 0);
 	if (offset > 0) 
 	{
-		MIM_TIMEZONE *ptz = (MIM_TIMEZONE*)SendMessage(hwnd, CB_GETITEMDATA, offset, 0);
-		if ((INT_PTR)ptz != CB_ERR && ptz != 0) 
-			svcSetInfoByContact((WPARAM)hContact, (LPARAM)ptz);
+		MIM_TIMEZONE *tz = (MIM_TIMEZONE*)SendMessage(hWnd, extMsg, offset, 0);
+		if ((INT_PTR)tz != CB_ERR && tz != NULL) 
+			timeapiSetInfoByContact(hContact, tz);
 	} 
 	else 
-		svcSetInfoByContact((WPARAM)hContact, 0);
-
-	return 0;
+		timeapiSetInfoByContact(hContact, NULL);
 }
+
+
+static INT_PTR GetTimeApi( WPARAM, LPARAM lParam )
+{
+	TIME_API* tmi = (TIME_API*)lParam;
+	if (tmi == NULL)
+		return FALSE;
+
+	if (tmi->cbSize != sizeof(TIME_API))
+		return FALSE;
+
+	tmi->createByName                = timeapiGetInfoByName;
+	tmi->createByContact             = timeapiGetInfoByContact;
+	tmi->storeByContact              = timeapiSetInfoByContact;
+
+	tmi->printCurrentTime            = timeapiPrintDateTime;
+	tmi->printCurrentTimeByContact   = timeapiPrintDateTimeByContact;
+
+	tmi->prepareList                = timeapiPrepareList;
+	tmi->storeListResults           = timeapiStoreListResult;
+
+	return TRUE;
+}
+
 
 void InitTimeZones(void)
 {
@@ -639,12 +646,10 @@ void InitTimeZones(void)
 		mir_free(myDayName);
 	}
 
-	CreateServiceFunction(MS_TZ_GETINFOBYNAME, svcGetInfoByName);
-	CreateServiceFunction(MS_TZ_GETINFOBYCONTACT, svcGetInfoByContact);
-	CreateServiceFunction(MS_TZ_SETINFOBYCONTACT, svcSetInfoByContact);
-	CreateServiceFunction(MS_TZ_PRINTDATETIME, svcPrintDateTime);
-	CreateServiceFunction(MS_TZ_PREPARELIST, svcPrepareList);
-	CreateServiceFunction(MS_TZ_STORELISTRESULT, svcStoreListResult);
+	CreateServiceFunction(MS_SYSTEM_GET_TMI, GetTimeApi);
+
+	tmi.cbSize = sizeof(tmi);
+	GetTimeApi(0, (LPARAM)&tmi);
 }
 
 void UninitTimeZones(void)

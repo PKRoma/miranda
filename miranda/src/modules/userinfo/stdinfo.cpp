@@ -224,20 +224,11 @@ static INT_PTR CALLBACK LocationDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, L
 	switch(msg) {
 		case WM_INITDIALOG:
 
-			MIM_TZ_PREPARELIST mtzp;
 			SetWindowLongPtr(hwndDlg,GWLP_USERDATA,lParam);
 			TranslateDialogDefault(hwndDlg);
 			SetTimer(hwndDlg,1,1000,NULL);
 
-			ZeroMemory(&mtzp, sizeof(MIM_TZ_PREPARELIST));
-			mtzp.cbSize = sizeof(MIM_TZ_PREPARELIST);
-			mtzp.hContact = (HANDLE)lParam;
-			mtzp.hWnd = GetDlgItem(hwndDlg, IDC_TIMEZONESELECT);
-			mtzp.dwFlags = TZF_PLF_CB;
-			CallService(MS_TZ_PREPARELIST, (WPARAM)0, (LPARAM)&mtzp);
-			if(SendDlgItemMessage(hwndDlg, IDC_TIMEZONESELECT, CB_GETCURSEL, 0, 0) == CB_ERR)
-				SendDlgItemMessage(hwndDlg, IDC_TIMEZONESELECT, CB_SETCURSEL, 0, 0);
-
+			tmi.prepareList((HANDLE)lParam, GetDlgItem(hwndDlg, IDC_TIMEZONESELECT), TZF_PLF_CB);
 			SendMessage(hwndDlg,WM_TIMER,0,0);
 			break;
 
@@ -249,15 +240,7 @@ static INT_PTR CALLBACK LocationDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, L
 			{
 				TCHAR szTime[80];
 				
-				TZTOSTRING tzt = {0};
-				tzt.cbSize = sizeof(tzt);
-				tzt.szDest = szTime;
-				tzt.cbDest = SIZEOF(szTime);
-				tzt.szFormat = _T("s");
-				tzt.hTimeZone = hContact;
-				tzt.flags = TZF_TCHAR | TZF_HCONTACT | TZF_KNOWNONLY;
-
-				if (CallService(MS_TZ_PRINTDATETIME, (WPARAM)&tzt, 0))
+				if (tmi.printCurrentTimeByContact(hContact, _T("s"), szTime, SIZEOF(szTime), TZF_KNOWNONLY))
 				{
 					EnableWindow(GetDlgItem(hwndDlg,IDC_LOCALTIME),FALSE);
 					SetDlgItemText(hwndDlg, IDC_LOCALTIME, TranslateT("<not specified>"));
@@ -319,7 +302,7 @@ static INT_PTR CALLBACK LocationDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, L
 						HANDLE hContact = (HANDLE)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 
 						SendMessage(GetParent(hwndDlg),PSM_CHANGED, 0,0);
-						CallService(MS_TZ_STORELISTRESULT, (WPARAM)hContact, (LPARAM)GetDlgItem(hwndDlg, IDC_TIMEZONESELECT));
+						tmi.storeListResults(hContact, GetDlgItem(hwndDlg, IDC_TIMEZONESELECT), TZF_PLF_CB);
 					}
 					break;
 			}
