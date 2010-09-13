@@ -709,8 +709,8 @@ static char *Template_CreateRTFFromDbEvent(struct TWindowData *dat, HANDLE hCont
 	if (dwEffectiveFlags & MWF_LOG_SHOWTIME) {
 		final_time = dbei.timestamp;
 		if (dat->dwFlags & MWF_LOG_LOCALTIME) {
-			if (!isSent && dat->timediff != 0)
-				final_time = dbei.timestamp - dat->timediff;
+//			if (!isSent && dat->timediff != 0)
+//				final_time = dbei.timestamp - dat->timediff;
 		}
 		_tzset();
 		event_time = *localtime(&final_time);

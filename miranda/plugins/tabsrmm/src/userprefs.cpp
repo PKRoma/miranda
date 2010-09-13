@@ -73,9 +73,7 @@ static INT_PTR CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, 
 	switch (msg) {
 		case WM_INITDIALOG: {
 			DWORD sCodePage;
-			DWORD contact_gmt_diff, timediff;
 			int i;
-			BYTE timezone;
 			DWORD maxhist = M->GetDword((HANDLE)lParam, "maxhist", 0);
 			BYTE bIEView = M->GetByte((HANDLE)lParam, "ieview", 0);
 			BYTE bHPP = M->GetByte((HANDLE)lParam, "hpplog", 0);
@@ -171,31 +169,21 @@ static INT_PTR CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, 
 			}
 			CheckDlgButton(hwndDlg, IDC_FORCEANSI, M->GetByte(hContact, "forceansi", 0) ? 1 : 0);
 			CheckDlgButton(hwndDlg, IDC_IGNORETIMEOUTS, M->GetByte(hContact, "no_ack", 0));
-			timezone = M->GetByte(hContact, "UserInfo", "Timezone", M->GetByte(hContact, (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0), "Timezone", -1));
-
-			contact_gmt_diff = timezone > 128 ? 256 - timezone : 0 - timezone;
-			timediff = /* (int)myGlobals.local_gmt_diff - */ - (int)contact_gmt_diff * 60 * 60 / 2;
 
 			/*
 			 * already populated and prepared
 			 */
 
-			if(ServiceExists(MS_TZ_PREPARELIST)) {
-				MIM_TZ_PREPARELIST mtzp;
+			MIM_TZ_PREPARELIST mtzp;
 
-				ZeroMemory(&mtzp, sizeof(MS_TZ_PREPARELIST));
-				mtzp.cbSize = sizeof(MIM_TZ_PREPARELIST);
-				mtzp.hContact = hContact;
-				mtzp.hWnd = GetDlgItem(hwndDlg, IDC_TIMEZONE);
-				mtzp.dwFlags = MIM_TZ_PLF_CB;
-				CallService(MS_TZ_PREPARELIST, (WPARAM)0, (LPARAM)&mtzp);
-				if(SendDlgItemMessage(hwndDlg, IDC_TIMEZONE, CB_GETCURSEL, 0, 0) == CB_ERR)
-					SendDlgItemMessage(hwndDlg, IDC_TIMEZONE, CB_SETCURSEL, 0, 0);
-			}
-			else {
-				SendDlgItemMessage(hwndDlg, IDC_TIMEZONE, CB_ADDSTRING, 0, (LPARAM)CTranslator::getOpt(CTranslator::OPT_UPREFS_NOTZSVC));
+			ZeroMemory(&mtzp, sizeof(MS_TZ_PREPARELIST));
+			mtzp.cbSize = sizeof(MIM_TZ_PREPARELIST);
+			mtzp.hContact = hContact;
+			mtzp.hWnd = GetDlgItem(hwndDlg, IDC_TIMEZONE);
+			mtzp.dwFlags = TZF_PLF_CB;
+			CallService(MS_TZ_PREPARELIST, (WPARAM)0, (LPARAM)&mtzp);
+			if(SendDlgItemMessage(hwndDlg, IDC_TIMEZONE, CB_GETCURSEL, 0, 0) == CB_ERR)
 				SendDlgItemMessage(hwndDlg, IDC_TIMEZONE, CB_SETCURSEL, 0, 0);
-			}
 
 			ShowWindow(hwndDlg, SW_SHOW);
 			return TRUE;
@@ -214,7 +202,6 @@ static INT_PTR CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, 
 					unsigned int iOldIEView;
 					HWND	hWnd = M->FindWindow(hContact);
 					DWORD	sCodePage = M->GetDword(hContact, "ANSIcodepage", 0);
-					DWORD	oldTZ = (DWORD)M->GetByte(hContact, "UserInfo", "Timezone", M->GetByte(hContact, (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0), "Timezone", -1));
 					BYTE	bInfoPanel, bOldInfoPanel = M->GetByte(hContact, "infopanel", 0);
 					BYTE	bAvatarVisible = 0;
 
@@ -288,20 +275,7 @@ static INT_PTR CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, 
 					M->WriteByte(hContact, TEMPLATES_MODULE, "enabled", (BYTE)(IsDlgButtonChecked(hwndDlg, IDC_TEMPLOVERRIDE)));
 					M->WriteByte(hContact, RTLTEMPLATES_MODULE, "enabled", (BYTE)(IsDlgButtonChecked(hwndDlg, IDC_RTLTEMPLOVERRIDE)));
 
-					INT_PTR offset = SendDlgItemMessage(hwndDlg, IDC_TIMEZONE, CB_GETCURSEL, 0, 0);
-					if (offset > 0) {
-						MIM_TIMEZONE *ptz = (MIM_TIMEZONE *)SendDlgItemMessage(hwndDlg, IDC_TIMEZONE, CB_GETITEMDATA, (WPARAM)offset, 0);
-						if(reinterpret_cast<INT_PTR>(ptz) != CB_ERR && ptz != 0) {
-							char	*szProto = (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
-							M->WriteTString(hContact, "UserInfo", "TzName", ptz->tszName);
-							M->WriteByte(hContact, "UserInfo", "Timezone", (char)(ptz->GMT_Offset));
-							if(szProto)
-								M->WriteByte(hContact, szProto, "Timezone", (char)(ptz->GMT_Offset));
-						}
-					} else {
-						DBDeleteContactSetting(hContact, "UserInfo", "Timezone");
-						DBDeleteContactSetting(hContact, "UserInfo", "TzName");
-					}
+					CallService(MS_TZ_STORELISTRESULT, (WPARAM)hContact, (LPARAM)GetDlgItem(hwndDlg, IDC_TIMEZONE));
 
 					if (hWnd && dat) {
 						LoadTimeZone(dat);
