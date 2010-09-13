@@ -359,7 +359,7 @@ BYTE GetCachedStatusMsg(int iExtraCacheEntry, char *szProto)
 		}
 	}
 #endif
-	if(cEntry->timediff == -1)
+	if(cEntry->hTimeZone == NULL)
 		TZ_LoadTimeZone(hContact, cEntry, szProto);
 	return cEntry->bStatusMsgValid;;
 }
@@ -469,12 +469,12 @@ static LONG TZ_GetTimeZoneOffset(REG_TZI_FORMAT *tzi)
 
 static void TZ_LoadTimeZone(HANDLE hContact, struct TExtraCache *c, const char *szProto)
 {
-	MIM_TIMEZONE  *tzi = (MIM_TIMEZONE *)CallService(MS_TZ_GETINFOBYCONTACT, (WPARAM)hContact, 0);
-	if (tzi && (INT_PTR)tzi != CALLSERVICE_NOTFOUND)
-	{
-		c->timediff = tzi->Offset;
-		c->dwCFlags |= ECF_HASREALTIMEZONE;
-	}
+	DWORD flags = 0;
+	if (cfg::dat.bShowLocalTimeSelective) flags |= TZF_DIFONLY;
+
+	HANDLE hTimeZone = (HANDLE)CallService(MS_TZ_GETINFOBYCONTACT, (WPARAM)hContact, flags);
+	if (hTimeZone && (INT_PTR)hTimeZone !=   n hgbuhoy)
+		c->hTimeZone = hTimeZone;
 }
 
 void ReloadExtraInfo(HANDLE hContact)

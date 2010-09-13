@@ -1199,26 +1199,26 @@ text:
             else
                 fLocalTime = cEntry->dwDFlags & ECF_FORCELOCALTIME ? 1 : 0;
 
-			if(cEntry->timediff != -1 && fLocalTime) {
-				DBTIMETOSTRINGT dbtts;
-				TCHAR szResult[80];
+			if (cEntry->hTimeZone && fLocalTime) {
 				int  idOldFont;
-				DWORD final_time;
 				DWORD now = cfg::dat.t_now;
 				SIZE szTime;
 				RECT rc = rcContent;
 				COLORREF oldColor;
 				int fHeight = 0;
 
-				final_time = now - cEntry->timediff;
 
-				if(final_time == now && cfg::dat.bShowLocalTimeSelective)
+				TCHAR szResult[80];
+				TZTOSTRING tzt = {0};
+				tzt.cbSize = sizeof(tzt);
+				tzt.szDest = szResult;
+				tzt.cbDest = SIZEOF(szResult);
+				tzt.szFormat = _T("t");
+				tzt.hTimeZone = cEntry->hTimeZone;
+				tzt.flags = TZF_TCHAR;
+				if (CallService(MS_TZ_PRINTDATETIME, (WPARAM)&tzt, 0))
 					goto nodisplay;
 
-				dbtts.szDest = szResult;
-				dbtts.cbDest = 70;
-				dbtts.szFormat = _T("t");
-				CallService(MS_DB_TIME_TIMESTAMPTOSTRINGT, (WPARAM)final_time, (LPARAM)&dbtts);
 				oldColor = GetTextColor(hdcMem);
 				idOldFont = dat->currentFontID;
 				ChangeToFont(hdcMem, dat, FONTID_TIMESTAMP, &fHeight);

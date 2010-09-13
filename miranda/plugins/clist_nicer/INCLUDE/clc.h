@@ -162,12 +162,11 @@ typedef struct DisplayProfileSet DISPLAYPROFILESET;
 struct TExtraCache {
 	BYTE iExtraImage[MAXEXTRACOLUMNS];
 	HANDLE hContact;
+	HANDLE hTimeZone;
 	DWORD iExtraValid;
 	BYTE valid;
 	TCHAR *statusMsg;
 	BYTE bStatusMsgValid;
-	DWORD timezone;
-	int	  timediff;
 	DWORD dwCFlags;
     DWORD dwDFlags;     // display flags for caching only
     DWORD dwXMask;      // local extra icon mask, calculated from CLN_xmask

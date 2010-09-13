@@ -22,206 +22,191 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
 #include "commonheaders.h"
-//#include "database.h"
 
-static int daysInMonth[12]={31,28,31,30,31,30,31,31,30,31,30,31};
-static int IsLeapYear(int year)
+
+//KB167296
+void UnixTimeToFileTime(time_t ts, LPFILETIME pft)
 {
-	if(year&3) return 0;
-	if(year%100) return 1;
-	if(year%400) return 0;
-	return 1;
+	unsigned __int64 ll = UInt32x32To64(ts, 10000000) + 116444736000000000i64;
+	pft->dwLowDateTime = (DWORD)ll;
+	pft->dwHighDateTime = ll >> 32;
 }
 
-static int CompareSystemTimes(SYSTEMTIME *st,SYSTEMTIME *switchDate)
+time_t FileTimeToUnixTime(LPFILETIME pft)
 {
-	FILETIME ft1,ft2;
-	
-	if(switchDate->wYear==0) {	   //strange day-in-month thing
-		SYSTEMTIME tempst;
-
-		//short-circuit if the months aren't the same
-		if(st->wMonth<switchDate->wMonth) return -1;
-		if(st->wMonth>switchDate->wMonth) return 1;
-		
-		tempst=*switchDate;
-		tempst.wYear=st->wYear;
-		tempst.wDay=1;
-		SystemTimeToFileTime(&tempst,&ft1);
-		FileTimeToSystemTime(&ft1,&tempst);	  //gets the day of week of the first of the month
-		tempst.wDay=1+(7+switchDate->wDayOfWeek-tempst.wDayOfWeek)%7;
-		if(switchDate->wDay==5) {	  //last wDayOfWeek in month
-			if(tempst.wMonth==2) {
-				if(IsLeapYear(tempst.wYear)) daysInMonth[1]=29;
-				else daysInMonth[1]=28;
-			}
-			tempst.wDay+=7*3;		//can't be less than 4 of that day in the month
-			if(tempst.wDay+7<=daysInMonth[switchDate->wMonth-1]) tempst.wDay+=7;
-		}
-		else tempst.wDay+=7*(switchDate->wDay-1);	//nth of month
-		SystemTimeToFileTime(&tempst,&ft2);
-	}
-	else {
-		switchDate->wYear=st->wYear;
-		SystemTimeToFileTime(switchDate,&ft2);
-	}
-	SystemTimeToFileTime(st,&ft1);
-	return CompareFileTime(&ft1,&ft2);
+	unsigned __int64 ll = (unsigned __int64)pft->dwHighDateTime << 32 | pft->dwLowDateTime;
+	ll -= 116444736000000000i64;
+	return (time_t)(ll / 10000000);
 }
 
 static INT_PTR TimestampToLocal(WPARAM wParam,LPARAM)
 {
-	TIME_ZONE_INFORMATION tzInfo;
-	LARGE_INTEGER liFiletime;
-	FILETIME filetime;
-	SYSTEMTIME st;
-	INT_PTR iReturn = 0;
+	FILETIME ft, lft;
 
-	GetTimeZoneInformation(&tzInfo);
-	if(tzInfo.StandardDate.wMonth==0)
-	{
-		//no daylight savings time
-		iReturn = (INT_PTR)(wParam-tzInfo.Bias*60);
-	}
-	else
-	{
-		//this huge number is the difference between 1970 and 1601 in seconds
-		liFiletime.QuadPart=((__int64)11644473600+(__int64)wParam)*10000000;
-		filetime.dwHighDateTime=liFiletime.HighPart;
-		filetime.dwLowDateTime=liFiletime.LowPart;
-		FileTimeToSystemTime(&filetime,&st);
+	UnixTimeToFileTime((time_t)wParam, &ft);
+	FileTimeToLocalFileTime(&ft, &lft);
 
-		if(tzInfo.DaylightDate.wMonth<tzInfo.StandardDate.wMonth)
-		{
-			//northern hemisphere
-			if(CompareSystemTimes(&st,&tzInfo.DaylightDate)<0 ||
-			   CompareSystemTimes(&st,&tzInfo.StandardDate)>0)
-			{
-				iReturn = (INT_PTR)(wParam-(tzInfo.Bias+tzInfo.StandardBias)*60);
-			}
-			else
-			{
-				iReturn = (INT_PTR)(wParam-(tzInfo.Bias+tzInfo.DaylightBias)*60);
-			}
-		}
-		else
-		{
-			//southern hemisphere
-			if(CompareSystemTimes(&st,&tzInfo.StandardDate)<0 ||
-			   CompareSystemTimes(&st,&tzInfo.DaylightDate)>0)
-			{
-				iReturn = (INT_PTR)(wParam-(tzInfo.Bias+tzInfo.DaylightBias)*60);
-			}
-			else
-			{
-				iReturn = (INT_PTR)(wParam-(tzInfo.Bias+tzInfo.StandardBias)*60);
-			}
-		}
-	}
-
-	return iReturn;
+	return FileTimeToUnixTime(&lft);
 }
 
-static INT_PTR TimestampToString(WPARAM wParam,LPARAM lParam)
+void FormatTime(const SYSTEMTIME *st, const TCHAR *szFormat, TCHAR *szDest, int cbDest)
 {
-	DBTIMETOSTRING *tts=(DBTIMETOSTRING*)lParam;
-	LARGE_INTEGER liFiletime;
-	FILETIME filetime;
-	SYSTEMTIME st;
-	char dateTimeStr[64];
-	char *pDest,*pFormat;
-	size_t destCharsLeft, dateTimeStrLen;
+	if (szDest == NULL || cbDest == 0) return;
 
-	//this huge number is the difference between 1970 and 1601 in seconds
-	liFiletime.QuadPart=((__int64)11644473600+(__int64)(DWORD)TimestampToLocal(wParam,0))*10000000;
-	filetime.dwHighDateTime=liFiletime.HighPart;
-	filetime.dwLowDateTime=liFiletime.LowPart;
-	FileTimeToSystemTime(&filetime,&st);
-	destCharsLeft=tts->cbDest;
-	for(pFormat=tts->szFormat,pDest=tts->szDest;*pFormat;pFormat++) {
-		switch(*pFormat) {
-			case 't':
-				GetTimeFormatA(LOCALE_USER_DEFAULT,TIME_NOSECONDS,&st,NULL,dateTimeStr,SIZEOF(dateTimeStr));
-				break;
-			case 's':
-				GetTimeFormatA(LOCALE_USER_DEFAULT,0,&st,NULL,dateTimeStr,SIZEOF(dateTimeStr));
-				break;
-			case 'm':
-				GetTimeFormatA(LOCALE_USER_DEFAULT,TIME_NOMINUTESORSECONDS,&st,NULL,dateTimeStr,SIZEOF(dateTimeStr));
-				break;
-			case 'd':
-				GetDateFormatA(LOCALE_USER_DEFAULT,DATE_SHORTDATE,&st,NULL,dateTimeStr,SIZEOF(dateTimeStr));
-				break;
-			case 'D':
-				GetDateFormatA(LOCALE_USER_DEFAULT,DATE_LONGDATE,&st,NULL,dateTimeStr,SIZEOF(dateTimeStr));
-				break;
-			default:
-				if(destCharsLeft) {
-					*pDest++=*pFormat;
-					destCharsLeft--;
-				}
-				continue;
-		}
-		dateTimeStrLen=strlen(dateTimeStr);
-		if(destCharsLeft<dateTimeStrLen) dateTimeStrLen=destCharsLeft;
-		CopyMemory(pDest,dateTimeStr,dateTimeStrLen);
-		destCharsLeft-=dateTimeStrLen;
-		pDest+=dateTimeStrLen;
-	}
-	if(destCharsLeft) *pDest=0;
-	else tts->szDest[tts->cbDest-1]=0;
-	return 0;
-}
+	TCHAR *pDest = szDest;
+	int destCharsLeft = cbDest - 1;
 
-#if defined( _UNICODE )
-static INT_PTR TimestampToStringW(WPARAM wParam,LPARAM lParam)
-{
-	DBTIMETOSTRINGT *tts = ( DBTIMETOSTRINGT* )lParam;
-	LARGE_INTEGER liFiletime;
-	FILETIME filetime;
-	SYSTEMTIME st;
-	TCHAR dateTimeStr[64];
-	TCHAR *pDest,*pFormat;
-	size_t destCharsLeft, dateTimeStrLen;
-
-	//this huge number is the difference between 1970 and 1601 in seconds
-	liFiletime.QuadPart=((__int64)11644473600+(__int64)(DWORD)TimestampToLocal(wParam,0))*10000000;
-	filetime.dwHighDateTime = liFiletime.HighPart;
-	filetime.dwLowDateTime = liFiletime.LowPart;
-	FileTimeToSystemTime(&filetime,&st);
-	destCharsLeft = tts->cbDest;
-	for ( pFormat = tts->szFormat, pDest=tts->szDest; *pFormat; pFormat++ ) {
-		switch(*pFormat) {
+	for (const TCHAR* pFormat = szFormat; *pFormat; ++pFormat) 
+	{
+		DWORD fmt;
+		bool date;
+		switch (*pFormat) 
+		{
 		case 't':
-			GetTimeFormat(LOCALE_USER_DEFAULT,TIME_NOSECONDS,&st,NULL,dateTimeStr,SIZEOF(dateTimeStr));
+			fmt = TIME_NOSECONDS;
+			date = false;
 			break;
+
 		case 's':
-			GetTimeFormat(LOCALE_USER_DEFAULT,0,&st,NULL,dateTimeStr,SIZEOF(dateTimeStr));
+			fmt = 0;
+			date = false;
 			break;
+
 		case 'm':
-			GetTimeFormat(LOCALE_USER_DEFAULT,TIME_NOMINUTESORSECONDS,&st,NULL,dateTimeStr,SIZEOF(dateTimeStr));
+			fmt = TIME_NOMINUTESORSECONDS;
+			date = false;
 			break;
+
 		case 'd':
-			GetDateFormat(LOCALE_USER_DEFAULT,DATE_SHORTDATE,&st,NULL,dateTimeStr,SIZEOF(dateTimeStr));
+			fmt = DATE_SHORTDATE;
+			date = true;
 			break;
+
 		case 'D':
-			GetDateFormat(LOCALE_USER_DEFAULT,DATE_LONGDATE,&st,NULL,dateTimeStr,SIZEOF(dateTimeStr));
+			fmt = DATE_LONGDATE;
+			date = true;
 			break;
+
 		default:
-			if ( destCharsLeft ) {
+			if (destCharsLeft--) 
 				*pDest++ = *pFormat;
-				destCharsLeft--;
-			}
 			continue;
 		}
-		dateTimeStrLen = _tcslen(dateTimeStr);
+		
+		TCHAR dateTimeStr[64];
+		int dateTimeStrLen;
+
+		if (date) 
+			dateTimeStrLen = GetDateFormat(LOCALE_USER_DEFAULT, fmt, st, NULL, dateTimeStr, SIZEOF(dateTimeStr));
+		else
+			dateTimeStrLen = GetTimeFormat(LOCALE_USER_DEFAULT, fmt, st, NULL, dateTimeStr, SIZEOF(dateTimeStr));
+
+		if (dateTimeStrLen) --dateTimeStrLen;
 		if (destCharsLeft < dateTimeStrLen) dateTimeStrLen = destCharsLeft;
-		CopyMemory(pDest, dateTimeStr, dateTimeStrLen*sizeof(TCHAR));
+		memcpy(pDest, dateTimeStr, dateTimeStrLen * sizeof(dateTimeStr[0]));
 		destCharsLeft -= dateTimeStrLen;
 		pDest += dateTimeStrLen;
 	}
-	if ( destCharsLeft ) *pDest=0;
-	else tts->szDest[ tts->cbDest-1 ] = 0;
+	*pDest = 0;
+}
+
+#ifdef _UNICODE
+void FormatTimeA(const SYSTEMTIME *st, const char *szFormat, char *szDest, int cbDest)
+{
+	if (szDest == NULL || cbDest == 0) return;
+
+	char *pDest = szDest;
+	int destCharsLeft = cbDest - 1;
+
+	for (const char* pFormat = szFormat; *pFormat; ++pFormat) 
+	{
+		DWORD fmt;
+		bool date;
+		switch (*pFormat) 
+		{
+		case 't':
+			fmt = TIME_NOSECONDS;
+			date = false;
+			break;
+
+		case 's':
+			fmt = 0;
+			date = false;
+			break;
+
+		case 'm':
+			fmt = TIME_NOMINUTESORSECONDS;
+			date = false;
+			break;
+
+		case 'd':
+			fmt = DATE_SHORTDATE;
+			date = true;
+			break;
+
+		case 'D':
+			fmt = DATE_LONGDATE;
+			date = true;
+			break;
+
+		default:
+			if (destCharsLeft--) 
+				*pDest++ = *pFormat;
+			continue;
+		}
+		
+		char dateTimeStr[64];
+		int dateTimeStrLen;
+
+		if (date) 
+			dateTimeStrLen = GetDateFormatA(LOCALE_USER_DEFAULT, fmt, st, NULL, dateTimeStr, SIZEOF(dateTimeStr));
+		else
+			dateTimeStrLen = GetTimeFormatA(LOCALE_USER_DEFAULT, fmt, st, NULL, dateTimeStr, SIZEOF(dateTimeStr));
+
+		if (dateTimeStrLen) --dateTimeStrLen;
+		if (destCharsLeft < dateTimeStrLen) dateTimeStrLen = destCharsLeft;
+		memcpy(pDest, dateTimeStr, dateTimeStrLen * sizeof(dateTimeStr[0]));
+		destCharsLeft -= dateTimeStrLen;
+		pDest += dateTimeStrLen;
+	}
+	*pDest = 0;
+}
+#endif
+
+void TimeStampToSystemTime(time_t ts, SYSTEMTIME *st)
+{
+	FILETIME ft, lft;
+
+	UnixTimeToFileTime(ts, &ft);
+	FileTimeToLocalFileTime(&ft, &lft);
+	FileTimeToSystemTime(&lft, st);
+}
+
+static INT_PTR TimestampToString(WPARAM wParam, LPARAM lParam)
+{
+	DBTIMETOSTRING *tts = (DBTIMETOSTRING*)lParam;
+	if (tts == NULL) return 0;
+
+	SYSTEMTIME st;
+	TimeStampToSystemTime((time_t)wParam, &st);
+
+#ifdef _UNICODE
+	FormatTimeA(&st, tts->szFormat, tts->szDest, tts->cbDest);
+#else
+	FormatTime(&st, tts->szFormat, tts->szDest, tts->cbDest); 
+#endif
+	return 0;
+}
+
+#ifdef _UNICODE
+static INT_PTR TimestampToStringW(WPARAM wParam, LPARAM lParam)
+{
+	DBTIMETOSTRINGT *tts = (DBTIMETOSTRINGT*)lParam;
+	if (tts == NULL) return 0;
+
+	SYSTEMTIME st;
+	TimeStampToSystemTime((time_t)wParam, &st);
+	FormatTime(&st, tts->szFormat, tts->szDest, tts->cbDest); 
 	return 0;
 }
 #endif

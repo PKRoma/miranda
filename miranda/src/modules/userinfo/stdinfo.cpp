@@ -228,38 +228,32 @@ static INT_PTR CALLBACK LocationDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, L
 			SetTimer(hwndDlg,1,1000,NULL);
 			SendMessage(hwndDlg,WM_TIMER,0,0);
 			break;
+
 		case WM_TIMER:
-		{	char *szProto;
-			HANDLE hContact=(HANDLE)GetWindowLongPtr(hwndDlg,GWLP_USERDATA);
-			int timezone;
-			FILETIME ft;
-			LARGE_INTEGER lift;
-			char szTime[80];
-			SYSTEMTIME st;
+		{
+			HANDLE hContact = (HANDLE)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 
-			if (hContact != NULL) {
-				szProto=(char*)CallService(MS_PROTO_GETCONTACTBASEPROTO,(WPARAM)hContact,0);
-				if (szProto==NULL) break;
-				timezone=DBGetContactSettingByte(hContact,szProto,"Timezone",256);
-				if(timezone==256 || (char)timezone==-100) {
+			if (hContact != NULL) 
+			{
+				TCHAR szTime[80];
+				
+				TZTOSTRING tzt = {0};
+				tzt.cbSize = sizeof(tzt);
+				tzt.szDest = szTime;
+				tzt.cbDest = SIZEOF(szTime);
+				tzt.szFormat = _T("s");
+				tzt.hTimeZone = hContact;
+				tzt.flags = TZF_TCHAR | TZF_HCONTACT | TZF_KNOWNONLY;
+
+				if (CallService(MS_TZ_PRINTDATETIME, (WPARAM)&tzt, 0))
+				{
 					EnableWindow(GetDlgItem(hwndDlg,IDC_LOCALTIME),FALSE);
-					SetDlgItemText(hwndDlg,IDC_LOCALTIME,TranslateT("<not specified>"));
+					SetDlgItemText(hwndDlg, IDC_LOCALTIME, TranslateT("<not specified>"));
 				}
-				else {
-					TIME_ZONE_INFORMATION tzi;
-
-					EnableWindow(GetDlgItem(hwndDlg,IDC_LOCALTIME),TRUE);
-					timezone=(char)timezone;
-					GetSystemTimeAsFileTime(&ft);
-					if (GetTimeZoneInformation(&tzi) == TIME_ZONE_ID_DAYLIGHT)
-						timezone+=tzi.DaylightBias/30;
-
-					lift.QuadPart=*(__int64*)&ft;
-					lift.QuadPart-=(__int64)timezone*BIGI(30)*BIGI(60)*BIGI(10000000);
-					*(__int64*)&ft=lift.QuadPart;
-					FileTimeToSystemTime(&ft,&st);
-					GetTimeFormatA(LOCALE_USER_DEFAULT,0,&st,NULL,szTime,SIZEOF(szTime));
-					SetDlgItemTextA(hwndDlg,IDC_LOCALTIME,szTime);
+				else
+				{
+					EnableWindow(GetDlgItem(hwndDlg,IDC_LOCALTIME), TRUE);
+					SetDlgItemText(hwndDlg, IDC_LOCALTIME, szTime);
 				}
 			}
 			break;

@@ -1,8 +1,7 @@
 /*
-
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2009 Miranda ICQ/IM project,
+Copyright 2000-2010 Miranda ICQ/IM project,
 all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
@@ -19,41 +18,25 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-
-$Id: m_timezones.h 86 2010-04-25 04:08:45Z silvercircle $
-
-implements time zone services for Miranda IM
-
 */
 
 #ifndef __M_TIMEZONES_H
 #define __M_TIMEZONES_H
 
 #define MIM_TZ_NAMELEN 64
-#define MIM_TZ_DISPLAYLEN 128
 
-/*
- * the time zone information structure. One per TZ
- * most values are READ ONLY, do not touch them
- */
+#define TZF_PLF_CB		1				// UI element is assumed to be a combo box
+#define TZF_PLF_LB		2				// UI element is assumed to be a list box
+#define TZF_HCONTACT    4
+#define TZF_UNICODE	    8
+#define TZF_DIFONLY    16
+#define TZF_KNOWNONLY  32
 
-typedef struct _tagTimeZone {
-	DWORD	cbSize;						// caller must supply this
-	TCHAR	tszName[MIM_TZ_NAMELEN];				// windows name for the time zone
-	TCHAR	tszDisplay[MIM_TZ_DISPLAYLEN];			// more descriptive display name (that's what usually appears in dialogs)
-	LONG	Bias;						// Standardbias (gmt offset)
-	LONG	DaylightBias;				// daylight Bias (dst offset, relative to standard bias, -60 for most time zones)
-	SYSTEMTIME StandardTime;			// when DST ends (month/dayofweek/time)
-	SYSTEMTIME DaylightTime;			// when DST begins (month/dayofweek/time)
-	char	GMT_Offset;					// simple GMT offset (+/-, measured in half-hours, may be incorrect for DST timezones)
-	LONG	Offset;						// time offset to local time, in seconds. It is relativ to the current local time, NOT GMT
-										// the sign is inverted, so you have to subtract it from the current time.
-	SYSTEMTIME CurrentTime;				// current system time. only updated when forced by the caller
-	time_t	   now;						// same in unix time format (seconds since 1970).
-} MIM_TIMEZONE;
-
-#define MIM_TZ_PLF_CB		1				// UI element is assumed to be a combo box
-#define MIM_TZ_PLF_LB		2				// UI element is assumed to be a list box
+#ifdef _UNICODE
+#define TZF_TCHAR TZF_UNICODE
+#else
+#define TZF_TCHAR 0
+#endif
 
 typedef struct _tagPrepareList {
 	DWORD	cbSize;							// caller must supply this
@@ -67,21 +50,15 @@ typedef struct _tagPrepareList {
 											// <unspecified> entry will be preselected.
 } MIM_TZ_PREPARELIST;
 
-/*
- * services
- */
-
-#define	MIM_PLF_FORCE	4				// update MIM_TIMEZONE.CurrentTime
-										// if not set, only the offsets are kept current
 
 /*
  * Obtain time zone information by time zone name
  * wParam = (TCHAR *)tszName
  * lParam =  dwFlags
  *
- * returns pointer to MIM_TIMEZONE if everything ok, 0 otherwise.
+ * returns pointer to TZHANDLE if everything ok, 0 otherwise.
  */
-#define MS_TZ_GETINFOBYNAME  "TZ/GetInfoByName"
+#define MS_TZ_GETINFOBYNAME  "TZ2/GetInfoByName"
 
 
 /*
@@ -89,10 +66,31 @@ typedef struct _tagPrepareList {
  * wParam = (HANDLE)hContact
  * lParam =  dwFlags
  *
- * returns MIM_TIMEZONE if everything ok, 0 otherwise.
+ * returns TZHANDLE if everything ok, 0 otherwise.
  */
-#define MS_TZ_GETINFOBYCONTACT "TZ/GetInfoByContact"
+#define MS_TZ_GETINFOBYCONTACT "TZ2/GetInfoByContact"
 
+
+/*
+ * Set time zone information by contact handle
+ * wParam = (HANDLE)hContact - Contact handle
+ * lParam =  TZHANDLE - Time zone Handle
+ *
+ * returns 0
+ */
+#define MS_TZ_SETINFOBYCONTACT "TZ2/SetInfoByContact"
+
+typedef struct 
+{
+	int cbSize;
+	HANDLE hTimeZone;
+	const TCHAR *szFormat;  // format string, as above
+	TCHAR *szDest;          // place to put the output string
+	int cbDest;             // maximum number of bytes to put in szDest
+	int flags;
+} TZTOSTRING;
+
+#define MS_TZ_PRINTDATETIME "TZ2/PrintDateTime"
 
 /*
  * this service fills a combo or list box with time zone information
@@ -115,7 +113,15 @@ typedef struct _tagPrepareList {
  * 	  DO NOT modify the data inside the struct. It's supposed to be read-only.
  *
  */
-#define MS_TZ_PREPARELIST "TZ/PrepareList"
+#define MS_TZ_PREPARELIST "TZ2/PrepareList"
 
+/*
+ * Store selected listbox setting in the database
+ * wParam = (HANDLE)hContact - Contact handle
+ * lParam =  hWnd - Listbox/ComboBox window handle
+ *
+ * returns 0
+ */
+#define MS_TZ_STORELISTRESULT "TZ2/StoreListResult"
 
 #endif /* __M_TIMEZONES_H */

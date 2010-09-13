@@ -1,5 +1,4 @@
 /*
-
 Miranda IM: the free IM client for Microsoft* Windows*
 
 Copyright 2000-2010 Miranda ICQ/IM project,
@@ -22,12 +21,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 implements services to handle location - based timezones, instead of
 simple GMT offsets.
-
-$Id: services.cpp 96 2010-08-09 19:18:13Z silvercircle $
-
 */
+
 #include <commonheaders.h>
-#include <m_timezones.h>
 
 typedef struct _REG_TZI_FORMAT
 {
@@ -38,255 +34,100 @@ typedef struct _REG_TZI_FORMAT
     SYSTEMTIME DaylightDate;
 } REG_TZI_FORMAT;
 
-/*
- * our internal format
- */
+#define MIM_TZ_DISPLAYLEN 128
 
-struct MIM_INT_TIMEZONE
+struct MIM_TIMEZONE
 {
-	DWORD	cbSize;
-	TCHAR	tszName[MIM_TZ_NAMELEN];				// windows name for the time zone
-	TCHAR	tszDisplay[MIM_TZ_DISPLAYLEN];			// more descriptive display name (that's what usually appears in dialogs)
-	LONG	Bias;						// Standardbias
-	LONG	DaylightBias;				// daylight Bias
-	SYSTEMTIME StandardDate;			// when DST ends
-	SYSTEMTIME DaylightDate;			// when DST begins
-	char	GMT_Offset;					// simple GMT offset (+/-, measured in half-hours
-	LONG	Offset;						// time offset to local time, in seconds
-	SYSTEMTIME CurrentTime;
-	time_t	now;
-	ULONG	hash;
-	DWORD	timestamp;					// last time the offset was calculated. Don't do this on every request, it's a waste.
-										// every hour should be sufficient.
+	TCHAR	tszName[MIM_TZ_NAMELEN];			// windows name for the time zone
+	TCHAR	tszDisplay[MIM_TZ_DISPLAYLEN];		// more descriptive display name (that's what usually appears in dialogs)
+												// every hour should be sufficient.
+	TIME_ZONE_INFORMATION tzi;
+	unsigned hash;
 
-	MIM_INT_TIMEZONE() {};
-	MIM_INT_TIMEZONE(const MIM_INT_TIMEZONE & mtz) { *this = mtz; }
-	MIM_INT_TIMEZONE(const MIM_TIMEZONE & mtz) { *(MIM_TIMEZONE*)this = mtz; hash = 0; timestamp = 0; }
-
-	static int compareHash(const MIM_INT_TIMEZONE* p1, const MIM_INT_TIMEZONE* p2)
+	static int compareHash(const MIM_TIMEZONE* p1, const MIM_TIMEZONE* p2)
 	{ return p1->hash - p2->hash; }
 
-	static int compareBias(const MIM_INT_TIMEZONE* p1, const MIM_INT_TIMEZONE* p2)
-	{ return p2->Bias - p1->Bias; }
+	static int compareBias(const MIM_TIMEZONE* p1, const MIM_TIMEZONE* p2)
+	{ return p2->tzi.Bias - p1->tzi.Bias; }
 };
 
 /*
  * our own time zone information
  */
+typedef struct
+{
+	MIM_TIMEZONE *tz;						// set to my own timezone
+	DWORD	timestamp;	                    // last time updated
+} TZ_HANDLE;
 
-typedef struct _tagInfo 
+
+typedef struct
 {
 	TIME_ZONE_INFORMATION tzi;
-	LONG		DaylightInfo;
-	SYSTEMTIME 	st;
-	FILETIME	ft;
 	DWORD		timestamp;					// last time updated
 	MIM_TIMEZONE *myTZ;						// set to my own timezone
 } TZ_INT_INFO;
 
+static TZ_INT_INFO myInfo;
 
-static TZ_INT_INFO			myInfo;
+static OBJLIST<MIM_TIMEZONE>  g_timezones(55, MIM_TIMEZONE::compareHash);
+static LIST<MIM_TIMEZONE>     g_timezonesBias(55, MIM_TIMEZONE::compareBias);
 
-static OBJLIST<MIM_INT_TIMEZONE> 	g_timezones(50, MIM_INT_TIMEZONE::compareHash);
-static LIST<MIM_INT_TIMEZONE> 	    g_timezonesBias(50, MIM_INT_TIMEZONE::compareBias);
+void FormatTime (const SYSTEMTIME *st, const TCHAR *szFormat, TCHAR *szDest, int cbDest);
+void FormatTimeA(const SYSTEMTIME *st, const char *szFormat, char *szDest, int cbDest);
 
-/*
- * time zone calculations
- */
-
-static char iDays [12] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
-
-static LONG TZ_TimeCompare(const SYSTEMTIME *target)
+static bool IsSameTime(TIME_ZONE_INFORMATION *tzi)
 {
-	if (target->wYear == 0) 
-	{
-		/*
-		 * the following covers most cases, only the actual switching months need a more
-		 * deeply investigation later.
-		 */
-
-		if (myInfo.st.wMonth < target->wMonth)
-			return -1;
-		if (myInfo.st.wMonth > target->wMonth)
-			return 1;
-
-		/*
-		 * leap year, fix the february
-		 */
-
-		if ((myInfo.st.wYear % 4 == 0) && ((myInfo.st.wYear % 100 != 0) || (myInfo.st.wYear % 400 == 0)))
-			iDays[1] = 29 ;
-
-		/*
-		 * 1) figure out day of week for the 1st day of the given month
-		 * 2) calculate the actual date
-		 * 3) convert to file times for comparison
-		 */
-
-		SYSTEMTIME	stTemp = {0};
-		FILETIME	ft;
-
-		memcpy(&stTemp, target, sizeof(SYSTEMTIME));
-
-		stTemp.wDay = 1;
-		stTemp.wYear = myInfo.st.wYear;
-		SystemTimeToFileTime(&stTemp, &ft);
-		FileTimeToSystemTime(&ft, &stTemp);
-
-		stTemp.wDay = 1 + (7 + target->wDayOfWeek - stTemp.wDayOfWeek) % 7;
-
-		if (target->wDay == 5) 
-		{
-			stTemp.wDay = stTemp.wDay + 21;
-			if((stTemp.wDay + 7) <= iDays[myInfo.st.wMonth - 1])
-				stTemp.wDay += 7;
-		}
-		else
-			stTemp.wDay = (target->wDay - 1) * 7;
-
-		SystemTimeToFileTime(&stTemp, &ft);
-
-		if(CompareFileTime(&myInfo.ft, &ft) < 0)
-		   return -1;
-		else
-			return 1;
-	}
-	return 0;
+	SYSTEMTIME st, stl;
+	GetSystemTime(&st);
+	SystemTimeToTzSpecificLocalTime(tzi, &st, &stl);
+	GetLocalTime(&st);
+	return st.wHour == stl.wHour && st.wMinute == stl.wMinute;
 }
 
-static LONG TZ_GetTimeZoneOffset(const MIM_INT_TIMEZONE *tzi)
+static INT_PTR svcGetInfoByName(WPARAM wParam, LPARAM lParam)
 {
-	if(tzi->StandardDate.wMonth == 0)
-		return 0;
+	TCHAR *tszName = (TCHAR*)wParam;
+	DWORD  dwFlags = (DWORD)lParam;
 
-	// standard
-	if (tzi->DaylightDate.wMonth < tzi->StandardDate.wMonth) 
-	{
-		if (TZ_TimeCompare(&tzi->DaylightDate) < 0 || TZ_TimeCompare(&tzi->StandardDate) > 0)
-			return 0;
-		else
-			return tzi->DaylightBias;
-	}
-	else 
-	{
-		// e.g. brazil or nz (only a few, still important)
-		if (TZ_TimeCompare(&tzi->StandardDate) < 0 || TZ_TimeCompare(&tzi->DaylightDate) > 0)
-			return tzi->DaylightBias;
-		else
-			return 0;
-	}
-}
+	if (tszName == NULL)
+		return (dwFlags & (TZF_DIFONLY | TZF_KNOWNONLY)) ? 0 : (INT_PTR)myInfo.myTZ;
 
-/*
- * calculate the offset (in seconds) for a given time zone structure
- */
+#ifdef _UNICODE
+	if (!(dwFlags & TZF_UNICODE))
+		tszName = mir_a2t((char*)wParam);
+#endif
 
-static LONG TZ_CalcOffset(MIM_INT_TIMEZONE *tzi)
-{
-	LONG	targetDL, myDL, timediff;
-	time_t  now = time(NULL);
+	MIM_TIMEZONE tzsearch;
+	tzsearch.hash = hashstr(tszName);
 
-	if ((now - myInfo.timestamp) > 1800)		// refresh our private information
-	{
-		myInfo.timestamp = now;
-		myInfo.DaylightInfo = GetTimeZoneInformation(&myInfo.tzi);
-		GetSystemTime(&myInfo.st);
-		SystemTimeToFileTime(&myInfo.st, &myInfo.ft);
-	}
-	timediff = tzi->Bias - myInfo.tzi.Bias;
+	MIM_TIMEZONE *tz = g_timezones.find(&tzsearch);
+	if (tz == NULL)
+		return (dwFlags & (TZF_DIFONLY | TZF_KNOWNONLY)) ? 0 : (INT_PTR)myInfo.myTZ;
 
-	if (tzi->DaylightDate.wMonth) 
-	{
-		/*
-		 * DST exists, check whether it applies
-		 */
-		targetDL = TZ_GetTimeZoneOffset(tzi);
-	}
-	else
-		targetDL = 0;
+	if (dwFlags & TZF_DIFONLY)
+		return IsSameTime(&tz->tzi) ? 0 : (INT_PTR)tz;
 
-	myDL = (myInfo.DaylightInfo == TIME_ZONE_ID_DAYLIGHT ? 
-		(myInfo.tzi.DaylightDate.wMonth ? myInfo.tzi.DaylightBias : 0) : 0);
-
-	timediff += (targetDL - myDL);
-	timediff *= 60;					   	// return it in seconds
-	tzi->Offset = timediff;
-	tzi->GMT_Offset = timediff / 1800;
-	
-	return timediff;
-}
-
-/*
- * refresh the current time for that time zone
- * simply use UNIX time(), add the offset and convert it to a SYSTEMTIME
- * structure.
- */
-
-static void TZ_ForceTimeRefresh(MIM_INT_TIMEZONE *tzi)
-{
-	time_t	now = time(NULL);
-	now -= tzi->Offset;
-
-	tzi->now = now;
-
-	LONGLONG ll;
-	FILETIME ft;
-
-	ll = Int32x32To64(now, 10000000) + 116444736000000000;
-	ft.dwLowDateTime = (DWORD)ll;
-	ft.dwHighDateTime = ll >> 32;
-
-	FileTimeToSystemTime(&ft, &tzi->CurrentTime);
-}
-
-INT_PTR ProcessTimezone(MIM_INT_TIMEZONE *tz, DWORD	dwFlags)
-{
-	time_t now = time(NULL);
-	/*
-	 * recalculate the offset if too old, otherwise just return quickly
-	*/
-	if ((now - tz->timestamp) > 1800)
-	{
-		tz->timestamp = now;
-		TZ_CalcOffset(tz);
-	}
-	if (dwFlags & MIM_PLF_FORCE)
-		TZ_ForceTimeRefresh(tz);
+#ifdef _UNICODE
+	if (!(dwFlags & TZF_UNICODE))
+		mir_free(tszName);
+#endif
 
 	return (INT_PTR)tz;
 }
 
-/*
- * implementation of services
- */
-
-static INT_PTR svcGetInfoByName(WPARAM wParam, LPARAM lParam)
-{
-	if (wParam == 0)
-		return (INT_PTR)myInfo.myTZ;
-
-	TCHAR	*tszName = (TCHAR*)wParam;
-	DWORD	dwFlags = (DWORD)lParam;
-
-	MIM_INT_TIMEZONE tzsearch;
-	tzsearch.hash = hashstr(tszName);
-
-	MIM_INT_TIMEZONE *tz = g_timezones.find(&tzsearch);
-	return tz ? ProcessTimezone(tz, dwFlags) : (INT_PTR)myInfo.myTZ;
-}
-
 static INT_PTR svcGetInfoByContact(WPARAM wParam, LPARAM lParam)
 {
-	if (wParam == 0)
-		return 0;
+	HANDLE hContact = (HANDLE)wParam;
+	DWORD  dwFlags = (DWORD)lParam;
 
-	HANDLE		hContact = (HANDLE)wParam;
+	if (hContact == NULL)
+		return (dwFlags & (TZF_DIFONLY | TZF_KNOWNONLY)) ? 0 : (INT_PTR)myInfo.myTZ;
+
 	DBVARIANT	dbv;
-	DWORD		dwFlags = (DWORD)lParam;
-
 	if (!DBGetContactSettingTString(hContact, "UserInfo", "TzName", &dbv)) 
 	{
-		INT_PTR res = svcGetInfoByName((WPARAM)dbv.ptszVal, lParam);  
+		INT_PTR res = svcGetInfoByName((WPARAM)dbv.ptszVal, lParam | TZF_TCHAR);  
 		DBFreeVariant(&dbv);
 		return res;
 	} 
@@ -304,16 +145,16 @@ static INT_PTR svcGetInfoByContact(WPARAM wParam, LPARAM lParam)
 
 		if (timezone != -1) 
 		{
-			MIM_INT_TIMEZONE tzsearch;
-			tzsearch.Bias = timezone * 30;
+			MIM_TIMEZONE tzsearch;
+			tzsearch.tzi.Bias = timezone * 30;
 			int i = g_timezonesBias.getIndex(&tzsearch);
 			
-			while (i >= 0 && g_timezonesBias[i]->Bias == tzsearch.Bias) --i; 
+			while (i >= 0 && g_timezonesBias[i]->tzi.Bias == tzsearch.tzi.Bias) --i; 
 			
 			int delta = LONG_MAX;
-			for (int j = ++i; j < g_timezonesBias.getCount() && g_timezonesBias[j]->Bias == tzsearch.Bias; ++j)
+			for (int j = ++i; j < g_timezonesBias.getCount() && g_timezonesBias[j]->tzi.Bias == tzsearch.tzi.Bias; ++j)
 			{
-				int delta1 = abs(g_timezonesBias[j]->DaylightDate.wMonth - myInfo.myTZ->DaylightTime.wMonth);
+				int delta1 = abs(g_timezonesBias[j]->tzi.DaylightDate.wMonth - myInfo.tzi.DaylightDate.wMonth);
 				if (delta1 <= delta)
 				{
 					delta = delta1;
@@ -321,10 +162,230 @@ static INT_PTR svcGetInfoByContact(WPARAM wParam, LPARAM lParam)
 				}
 			}
 
-			return i >= 0 ? ProcessTimezone(g_timezonesBias[i], dwFlags) : (INT_PTR)myInfo.myTZ;
+			if (i >= 0)
+			{
+				MIM_TIMEZONE *tz = g_timezonesBias[i];
+				if (dwFlags & TZF_DIFONLY)
+					return IsSameTime(&tz->tzi) ? 0 : (INT_PTR)tz;
+
+				return (INT_PTR)tz;
+			}
 		}
-		return (INT_PTR)myInfo.myTZ;
+		return (dwFlags & (TZF_DIFONLY | TZF_KNOWNONLY)) ? 0 : (INT_PTR)myInfo.myTZ;
 	}
+}
+
+static INT_PTR svcSetInfoByContact(WPARAM wParam, LPARAM lParam)
+{
+	HANDLE hContact = (HANDLE)wParam;
+	MIM_TIMEZONE *ptz = (MIM_TIMEZONE*)lParam;
+
+	if (hContact == NULL) return 0;
+
+	if (ptz) 
+	{
+		DBWriteContactSettingTString(hContact, "UserInfo", "TzName", ptz->tszName);
+		DBWriteContactSettingByte(hContact, "UserInfo", "Timezone", (char)((ptz->tzi.Bias + ptz->tzi.StandardBias) / -60));
+	} 
+	else 
+	{
+		DBDeleteContactSetting(hContact, "UserInfo", "Timezone");
+		DBDeleteContactSetting(hContact, "UserInfo", "TzName");
+	}
+	return 0;
+}
+
+#ifndef _UNICODE
+void ConvertToAbsolute (const SYSTEMTIME * pstLoc, const SYSTEMTIME * pstDst, SYSTEMTIME * pstDstAbs)
+{
+     static int    iDays [12] = { 31, 28, 31, 30, 31, 30, 
+                                  31, 31, 30, 31, 30, 31 } ;
+     int           iDay ;
+
+          // Set up the aboluste date structure except for wDay, which we must find
+
+     pstDstAbs->wYear         = pstLoc->wYear ;      // Notice from local date/time
+     pstDstAbs->wMonth        = pstDst->wMonth ;
+     pstDstAbs->wDayOfWeek    = pstDst->wDayOfWeek ;
+
+     pstDstAbs->wHour         = pstDst->wHour ;
+     pstDstAbs->wMinute       = pstDst->wMinute ;
+     pstDstAbs->wSecond       = pstDst->wSecond ;
+     pstDstAbs->wMilliseconds = pstDst->wMilliseconds ;
+
+          // Fix the iDays array for leap years
+
+     if ((pstLoc->wYear % 4 == 0) && ((pstLoc->wYear % 100 != 0) || 
+                                      (pstLoc->wYear % 400 == 0)))
+     {
+          iDays[1] = 29 ;
+     }
+
+          // Find a day of the month that falls on the same 
+          //   day of the week as the transition.
+
+          // Suppose today is the 20th of the month (pstLoc->wDay = 20)
+          // Suppose today is a Wednesday (pstLoc->wDayOfWeek = 3)
+          // Suppose the transition occurs on a Friday (pstDst->wDayOfWeek = 5)
+          // Then iDay = 31, meaning that the 31st falls on a Friday
+          // (The 7 is this formula avoids negatives.)
+
+     iDay = pstLoc->wDay + pstDst->wDayOfWeek + 7 - pstLoc->wDayOfWeek ;
+
+          // Now shrink iDay to a value between 1 and 7.
+
+     iDay = (iDay - 1) % 7 + 1 ;
+
+          // Now iDay is a day of the month ranging from 1 to 7.
+          // Recall that the wDay field of the structure can range
+          //   from 1 to 5, 1 meaning "first", 2 meaning "second",
+          //   and 5 meaning "last".
+          // So, increase iDay so it's the proper day of the month.
+
+     iDay += 7 * (pstDst->wDay - 1) ;
+
+          // Could be that iDay overshot the end of the month, so
+          //   fix it up using the number of days in each month
+
+     if (iDay > iDays[pstDst->wMonth - 1])
+          iDay -= 7 ;
+
+          // Assign that day to the structure. 
+
+     pstDstAbs->wDay = iDay ;
+}
+
+BOOL LocalGreaterThanTransition (const SYSTEMTIME * pstLoc, const SYSTEMTIME * pstTran)
+{
+     FILETIME      ftLoc, ftTran ;
+     LARGE_INTEGER liLoc, liTran ;
+     SYSTEMTIME    stTranAbs ;
+
+          // Easy case: Just compare the two months
+
+     if (pstLoc->wMonth != pstTran->wMonth)
+          return (pstLoc->wMonth > pstTran->wMonth) ;
+
+          // Well, we're in a transition month. That requires a bit more work.
+
+          // Check if pstDst is in absolute or day-in-month format.
+          //   (See documentation of TIME_ZONE_INFORMATION, StandardDate field.)
+
+     if (pstTran->wYear)       // absolute format (haven't seen one yet!)
+     {
+          stTranAbs = * pstTran ;
+     }
+     else                     // day-in-month format
+     {
+          ConvertToAbsolute (pstLoc, pstTran, &stTranAbs) ;
+     }
+
+          // Now convert both date/time structures to large integers & compare
+     
+     SystemTimeToFileTime (pstLoc, &ftLoc) ;
+     liLoc = * (LARGE_INTEGER *) (void *) &ftLoc ;
+
+     SystemTimeToFileTime (&stTranAbs, &ftTran) ;
+     liTran = * (LARGE_INTEGER *) (void *) &ftTran ;
+
+     return (liLoc.QuadPart > liTran.QuadPart) ;
+}
+
+BOOL MySystemTimeToTzSpecificLocalTime(const TIME_ZONE_INFORMATION *ptzi, const SYSTEMTIME *pstUtc, SYSTEMTIME *pstLoc) 
+{
+	// st is UTC
+
+	FILETIME      ft ;
+	LARGE_INTEGER li ;
+	SYSTEMTIME    stDst ;
+
+	// Convert time to a LARGE_INTEGER and subtract the bias
+
+	SystemTimeToFileTime (pstUtc, &ft) ;
+	li = * (LARGE_INTEGER *) (void *) &ft;
+	li.QuadPart -= (LONGLONG) 600000000 * ptzi->Bias ;
+
+	// Convert to a local date/time before application of daylight saving time.
+	// The local date/time must be used to determine when the conversion occurs.
+
+	ft = * (FILETIME *) (void *) &li ;
+	FileTimeToSystemTime (&ft, pstLoc) ;
+
+	// Find the time assuming Daylight Saving Time
+
+	li.QuadPart -= (LONGLONG) 600000000 * ptzi->DaylightBias ;
+	ft = * (FILETIME *) (void *) &li ;
+	FileTimeToSystemTime (&ft, &stDst) ;
+
+	// Now put li back the way it was
+
+	li.QuadPart += (LONGLONG) 600000000 * ptzi->DaylightBias ;
+
+	if (ptzi->StandardDate.wMonth)          // ie, daylight savings time
+	{
+          // Northern hemisphere
+          if ((ptzi->DaylightDate.wMonth < ptzi->StandardDate.wMonth) &&
+
+               (stDst.wMonth >= pstLoc->wMonth) &&           // avoid the end of year problem
+               
+               LocalGreaterThanTransition (pstLoc, &ptzi->DaylightDate) &&
+              !LocalGreaterThanTransition (&stDst, &ptzi->StandardDate))
+          {
+               li.QuadPart -= (LONGLONG) 600000000 * ptzi->DaylightBias ;
+          }
+               // Southern hemisphere
+
+          else if ((ptzi->StandardDate.wMonth < ptzi->DaylightDate.wMonth) &&
+                  (!LocalGreaterThanTransition (&stDst, &ptzi->StandardDate) ||
+                    LocalGreaterThanTransition (pstLoc, &ptzi->DaylightDate)))
+          {
+               li.QuadPart -= (LONGLONG) 600000000 * ptzi->DaylightBias ;
+          }
+          else
+          {
+               li.QuadPart -= (LONGLONG) 600000000 * ptzi->StandardBias ;
+          }
+     }
+
+     ft = * (FILETIME *) (void *) &li ;
+     FileTimeToSystemTime (&ft, pstLoc) ;
+     return TRUE ;
+}
+#endif
+
+
+INT_PTR svcPrintDateTime(WPARAM wParam, LPARAM lParam)
+{
+	TZTOSTRING *tzt  = (TZTOSTRING*)wParam;
+	MIM_TIMEZONE *tz;
+
+	if (tzt == NULL) return 1;
+
+	tz = (tzt->flags & TZF_HCONTACT) ? 
+		(MIM_TIMEZONE*)svcGetInfoByContact((WPARAM)tzt->hTimeZone, tzt->flags) : 
+		(MIM_TIMEZONE*)tzt->hTimeZone;
+	
+	if (tz == NULL) return 1;
+
+	SYSTEMTIME st, stl;
+	GetSystemTime(&st);
+
+#ifdef _UNICODE 
+	if (!SystemTimeToTzSpecificLocalTime(&tz->tzi, &st, &stl))
+		return 1;
+
+	if (tzt->flags & TZF_UNICODE)
+		FormatTime(&stl, tzt->szFormat, tzt->szDest, tzt->cbDest);
+	else
+		FormatTimeA(&stl, (char*)tzt->szFormat, (char*)tzt->szDest, tzt->cbDest);
+#else
+	if (!MySystemTimeToTzSpecificLocalTime(&tz->tzi, &st, &stl))
+		return 1;
+
+	FormatTime(&stl, tzt->szFormat, tzt->szDest, tzt->cbDest);
+#endif
+
+	return 0;
 }
 
 static INT_PTR svcPrepareList(WPARAM wParam, LPARAM lParam)
@@ -341,7 +402,7 @@ static INT_PTR svcPrepareList(WPARAM wParam, LPARAM lParam)
 	if (mtzd->hWnd == NULL)	   // nothing to do
 		return 0;
 
-	if (!(mtzd->dwFlags & MIM_TZ_PLF_CB || mtzd->dwFlags & MIM_TZ_PLF_LB)) 
+	if (!(mtzd->dwFlags & TZF_PLF_CB || mtzd->dwFlags & TZF_PLF_LB)) 
 	{
 		/*
 		 * figure it out by class name
@@ -349,18 +410,18 @@ static INT_PTR svcPrepareList(WPARAM wParam, LPARAM lParam)
 		TCHAR	tszClassName[128];
 		GetClassName(mtzd->hWnd, tszClassName, SIZEOF(tszClassName));
 		if (!_tcsicmp(tszClassName, _T("COMBOBOX")))
-			mtzd->dwFlags |= MIM_TZ_PLF_CB;
+			mtzd->dwFlags |= TZF_PLF_CB;
 		else if(!_tcsicmp(tszClassName, _T("LISTBOX")))
-			mtzd->dwFlags |= MIM_TZ_PLF_LB;
+			mtzd->dwFlags |= TZF_PLF_LB;
 	}
-	if (mtzd->dwFlags & MIM_TZ_PLF_CB) 
+	if (mtzd->dwFlags & TZF_PLF_CB) 
 	{
 		addMsg = CB_ADDSTRING;
 		selMsg = CB_SETCURSEL;
 		findMsg = CB_FINDSTRING;
 		extMsg = CB_SETITEMDATA;
 	}
-	else if(mtzd->dwFlags & MIM_TZ_PLF_LB) 
+	else if(mtzd->dwFlags & TZF_PLF_LB) 
 	{
 		addMsg = LB_ADDSTRING;
 		selMsg = LB_SETCURSEL;
@@ -409,12 +470,6 @@ static INT_PTR svcPrepareList(WPARAM wParam, LPARAM lParam)
 			mir_sntprintf(tszSelectedItem, MIM_TZ_DISPLAYLEN, _T("%s"), g_timezonesBias[i]->tszDisplay);
 			iSelection = i + 1;
 		}
-		/*
-		* if ONLY a GMT offset is known, use it anyway. Works in most cases, but not when DST
-		* is different at the target time zone
-		*/
-		//if(mtzd-> != -1 && (LONG)timediff == reg_timezones[i].Bias)
-		//	mir_sntprintf(tszSelectedItemBackup, 256, _T("%s"), reg_timezones[i].tszDisplay);
 	}
 	if (iSelection != -1) 
 	{
@@ -425,61 +480,96 @@ static INT_PTR svcPrepareList(WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
+static INT_PTR svcStoreListResult(WPARAM wParam, LPARAM lParam)
+{
+	HANDLE hContact = (HANDLE)wParam;
+	HWND hwnd = (HWND)lParam;
+
+	LRESULT offset = SendMessage(hwnd, CB_GETCURSEL, 0, 0);
+	if (offset > 0) 
+	{
+		MIM_TIMEZONE *ptz = (MIM_TIMEZONE*)SendMessage(hwnd, CB_GETITEMDATA, offset, 0);
+		if ((INT_PTR)ptz != CB_ERR && ptz != 0) 
+			svcSetInfoByContact((WPARAM)hContact, (LPARAM)ptz);
+	} 
+	else 
+		svcSetInfoByContact((WPARAM)hContact, 0);
+
+	return 0;
+}
+
 void InitTimeZones(void)
 {
-	myInfo.DaylightInfo = GetTimeZoneInformation(&myInfo.tzi);
-	GetSystemTime(&myInfo.st);
-	SystemTimeToFileTime(&myInfo.st, &myInfo.ft);
+	GetTimeZoneInformation(&myInfo.tzi);
 	myInfo.timestamp = time(NULL);
 
 	REG_TZI_FORMAT	tzi;
-	TCHAR			tszKey[256];
 	HKEY			hKey;
 
-	mir_sntprintf(tszKey, SIZEOF(tszKey), _T("Software\\Microsoft\\Windows%s\\CurrentVersion\\Time Zones"), IsWinVer2000Plus() ? _T(" NT") : _T(""));
+	const TCHAR *tszKey = IsWinVer2000Plus() ?
+		_T("SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Time Zones") :
+		_T("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Time Zones");
 
-	if (ERROR_SUCCESS == RegOpenKeyEx(HKEY_LOCAL_MACHINE, tszKey, 0, KEY_READ, &hKey)) 
+	if (ERROR_SUCCESS == RegOpenKeyEx(HKEY_LOCAL_MACHINE, tszKey, 0, KEY_ENUMERATE_SUB_KEYS, &hKey)) 
 	{
-		TCHAR	tszTzKey[256];
+		TCHAR	tszName[MIM_TZ_NAMELEN];
 		DWORD	dwIndex = 0;
 		HKEY	hSubKey;
-
-		MIM_INT_TIMEZONE mtzTmp;
-		memset(&mtzTmp, 0, sizeof(mtzTmp));
 
 		TCHAR* myStdName = mir_u2t(myInfo.tzi.StandardName);
 		TCHAR* myDayName = mir_u2t(myInfo.tzi.DaylightName);
 
-		DWORD dwSize = SIZEOF(mtzTmp.tszName);
-		while (ERROR_NO_MORE_ITEMS != RegEnumKeyEx(hKey, dwIndex++, mtzTmp.tszName, &dwSize, NULL, NULL, 0, NULL))
+		DWORD dwSize = SIZEOF(tszName);
+		while (ERROR_NO_MORE_ITEMS != RegEnumKeyEx(hKey, dwIndex++, tszName, &dwSize, NULL, NULL, 0, NULL))
 		{
-			mir_sntprintf(tszTzKey, SIZEOF(tszTzKey), _T("%s\\%s"), tszKey, mtzTmp.tszName);
-			if (ERROR_SUCCESS == RegOpenKeyEx(HKEY_LOCAL_MACHINE, tszTzKey, 0, KEY_READ, &hSubKey)) 
+			if (ERROR_SUCCESS == RegOpenKeyEx(hKey, tszName, 0, KEY_QUERY_VALUE, &hSubKey)) 
 			{
-				DWORD dwLength = SIZEOF(mtzTmp.tszDisplay);
-				if (ERROR_SUCCESS == RegQueryValueEx(hSubKey, _T("Display"), NULL, NULL, (unsigned char *)mtzTmp.tszDisplay, &dwLength)) 
-				{
-					dwLength = sizeof(tzi);
-					if (ERROR_SUCCESS == RegQueryValueEx(hSubKey, _T("TZI"), NULL, NULL, (unsigned char *)&tzi, &dwLength)) 
-					{
-						mtzTmp.Bias = tzi.Bias;
-						mtzTmp.DaylightBias = tzi.DaylightBias;
-						mtzTmp.StandardDate = tzi.StandardDate;
-						mtzTmp.DaylightDate = tzi.DaylightDate;
-						mtzTmp.hash = hashstr(mtzTmp.tszName);
+				dwSize = SIZEOF(tszName);
 
-						MIM_INT_TIMEZONE *tz = new MIM_INT_TIMEZONE(mtzTmp);
+				DWORD dwLength = sizeof(tzi);
+				if (ERROR_SUCCESS != RegQueryValueEx(hSubKey, _T("TZI"), NULL, NULL, (unsigned char *)&tzi, &dwLength)) 
+					continue;
 
-						g_timezones.insert(tz);
-						g_timezonesBias.insert(tz);
-						
-						if (!_tcscmp(mtzTmp.tszName, myStdName) || !_tcscmp(mtzTmp.tszName, myDayName))
-							myInfo.myTZ = (MIM_TIMEZONE *)tz;
-					}
-				}
+				MIM_TIMEZONE *tz = new MIM_TIMEZONE;
+
+				tz->tzi.Bias = tzi.Bias;
+				tz->tzi.StandardDate = tzi.StandardDate;
+				tz->tzi.StandardBias = tzi.StandardBias;
+				tz->tzi.DaylightDate = tzi.DaylightDate;
+				tz->tzi.DaylightBias = tzi.DaylightBias;
+
+				_tcscpy(tz->tszName, tszName);
+				tz->hash = hashstr(tszName);
+
+				tz->tszDisplay[0] = 0;
+				dwLength = SIZEOF(tz->tszDisplay);
+				RegQueryValueEx(hSubKey, _T("Display"), NULL, NULL, (unsigned char *)tz->tszDisplay, &dwLength); 
+
+				TCHAR szStdName[MIM_TZ_NAMELEN] = _T("");
+				dwLength = SIZEOF(szStdName);
+				RegQueryValueEx(hSubKey, _T("Std"), NULL, NULL, (unsigned char *)szStdName, &dwLength);
+
+				TCHAR szDayName[MIM_TZ_NAMELEN] = _T("");
+				dwLength = SIZEOF(szDayName);
+				RegQueryValueEx(hSubKey, _T("Dlt"), NULL, NULL, (unsigned char *)szDayName, &dwLength); 
+
+				if (!_tcscmp(szStdName, myStdName) || !_tcscmp(szDayName, myDayName))
+					myInfo.myTZ = tz;
+
+#ifndef _UNICODE
+				MultiByteToWideChar(CP_ACP, 0, szStdName, -1, tz->tzi.StandardName, SIZEOF(tz->tzi.StandardName));
+				MultiByteToWideChar(CP_ACP, 0, szDayName, -1, tz->tzi.DaylightName, SIZEOF(tz->tzi.DaylightName));
+#else
+				lstrcpyn(tz->tzi.StandardName, szStdName, SIZEOF(tz->tzi.StandardName));
+				lstrcpyn(tz->tzi.DaylightName, szDayName, SIZEOF(tz->tzi.DaylightName));
+#endif
+
+				g_timezones.insert(tz);
+				g_timezonesBias.insert(tz);
+
 				RegCloseKey(hSubKey);
 			}
-			dwSize = SIZEOF(mtzTmp.tszName);
+			dwSize = SIZEOF(tszName);
 		}
 		RegCloseKey(hKey);
 
@@ -489,7 +579,10 @@ void InitTimeZones(void)
 
 	CreateServiceFunction(MS_TZ_GETINFOBYNAME, svcGetInfoByName);
 	CreateServiceFunction(MS_TZ_GETINFOBYCONTACT, svcGetInfoByContact);
+	CreateServiceFunction(MS_TZ_SETINFOBYCONTACT, svcSetInfoByContact);
+	CreateServiceFunction(MS_TZ_PRINTDATETIME, svcPrintDateTime);
 	CreateServiceFunction(MS_TZ_PREPARELIST, svcPrepareList);
+	CreateServiceFunction(MS_TZ_STORELISTRESULT, svcStoreListResult);
 }
 
 void UninitTimeZones(void)
