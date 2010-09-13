@@ -478,7 +478,7 @@ static void timeapiStoreListResult(HANDLE hContact, HWND hWnd, DWORD dwFlags)
 	}
 	if (dwFlags & TZF_PLF_CB) 
 	{
-		getMsg = CB_SETCURSEL;
+		getMsg = CB_GETCURSEL;
 		extMsg = CB_GETITEMDATA;
 	}
 	else if(dwFlags & TZF_PLF_LB) 
@@ -493,10 +493,10 @@ static void timeapiStoreListResult(HANDLE hContact, HWND hWnd, DWORD dwFlags)
 	if (offset > 0) 
 	{
 		MIM_TIMEZONE *tz = (MIM_TIMEZONE*)SendMessage(hWnd, extMsg, offset, 0);
-		if ((INT_PTR)tz != CB_ERR && tz != NULL) 
+		if ((INT_PTR)tz != CB_ERR && tz != NULL)
 			timeapiSetInfoByContact(hContact, tz);
 	} 
-	else 
+	else
 		timeapiSetInfoByContact(hContact, NULL);
 }
 
@@ -560,12 +560,13 @@ void InitTimeZones(void)
 		TCHAR* myStdName = mir_u2t(myInfo.tzi.StandardName);
 		TCHAR* myDayName = mir_u2t(myInfo.tzi.DaylightName);
 
-		DWORD dwSize = SIZEOF(tszName);
+		DWORD dwSize = sizeof(tszName);
 		while (ERROR_NO_MORE_ITEMS != RegEnumKeyEx(hKey, dwIndex++, tszName, &dwSize, NULL, NULL, 0, NULL))
 		{
+			tszName[MIM_TZ_NAMELEN -1 ] = 0;
 			if (ERROR_SUCCESS == RegOpenKeyEx(hKey, tszName, 0, KEY_QUERY_VALUE, &hSubKey)) 
 			{
-				dwSize = SIZEOF(tszName);
+				dwSize = sizeof(tszName);
 
 				DWORD dwLength = sizeof(tzi);
 				if (ERROR_SUCCESS != RegQueryValueEx(hSubKey, _T("TZI"), NULL, NULL, (unsigned char *)&tzi, &dwLength)) 
@@ -583,21 +584,22 @@ void InitTimeZones(void)
 				tz->hash = hashstr(tszName);
 
 				tz->tszDisplay[0] = 0;
-				dwLength = SIZEOF(tz->tszDisplay);
+				dwLength = sizeof(tz->tszDisplay);
 				RegQueryValueEx(hSubKey, _T("Display"), NULL, NULL, (unsigned char *)tz->tszDisplay, &dwLength); 
 
 				if(isVista && pfnGetDynamicTimeZoneInformation) {
 					if (!fOwnFound && !_tcscmp(tszName, dtzi.TimeZoneKeyName)) {			// compare registry key names (= not localized, so it's easy)
 						myInfo.myTZ = (MIM_TIMEZONE *)tz;
 						fOwnFound = true;
+
+						szDayName[MIM_TZ_NAMELEN - 1] = 0;
+						szStdName[MIM_TZ_NAMELEN - 1] = 0;
 					}
 					dwLength = sizeof(szStdName);
 					RegQueryValueEx(hSubKey, _T("Std"), NULL, NULL, (unsigned char *)szStdName, &dwLength);
 					dwLength = sizeof(szDayName);
 					RegQueryValueEx(hSubKey, _T("Dlt"), NULL, NULL, (unsigned char *)szDayName, &dwLength);
 
-					szDayName[MIM_TZ_NAMELEN - 1] = 0;
-					szStdName[MIM_TZ_NAMELEN - 1] = 0;
 				}
 				else {
 					szStdName[0] = 0;
