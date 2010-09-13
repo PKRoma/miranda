@@ -604,10 +604,10 @@ void InitTimeZones(void)
 #endif
 				if (myInfo.myTZ == NULL)
 				{
-					if (dtzi.TimeZoneKeyName[0]) 
+					// compare registry key names (= not localized, so it's easy)
+					if (dtzi.TimeZoneKeyName[0] && !_tcscmp(tszName, dtzi.TimeZoneKeyName)) 
 					{
-						if (!myInfo.myTZ && !_tcscmp(tszName, dtzi.TimeZoneKeyName))			// compare registry key names (= not localized, so it's easy)
-							myInfo.myTZ = tz;
+						myInfo.myTZ = tz;
 					}
 					else 
 					{
