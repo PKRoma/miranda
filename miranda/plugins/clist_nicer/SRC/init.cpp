@@ -49,7 +49,8 @@ extern DWORD g_gdiplusToken;
 extern HIMAGELIST himlExtraImages;
 
 struct LIST_INTERFACE li;
-struct MM_INTERFACE memoryManagerInterface;
+struct MM_INTERFACE mmi;
+TIME_API tmi;
 
 HMENU  BuildGroupPopupMenu( struct ClcGroup* group );
 struct ClcContact* CreateClcContact( void );
@@ -233,13 +234,9 @@ extern "C" int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 #endif
 
-	memset(&memoryManagerInterface, 0, sizeof(memoryManagerInterface));
-	memoryManagerInterface.cbSize = sizeof(memoryManagerInterface);
-	CallService(MS_SYSTEM_GET_MMI, 0, (LPARAM) &memoryManagerInterface);
-
-	// get the list control interface
-	li.cbSize = sizeof(li);
-	CallService(MS_SYSTEM_GET_LI, 0, (LPARAM)&li);
+	mir_getMMI(&mmi);
+	mir_getLI(&li);
+	mir_getTMI(&tmi);
 
 	API::onInit();
 	LoadCLCButtonModule();

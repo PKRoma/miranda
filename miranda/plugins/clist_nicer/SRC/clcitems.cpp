@@ -472,9 +472,7 @@ static void TZ_LoadTimeZone(HANDLE hContact, struct TExtraCache *c, const char *
 	DWORD flags = 0;
 	if (cfg::dat.bShowLocalTimeSelective) flags |= TZF_DIFONLY;
 
-	HANDLE hTimeZone = (HANDLE)CallService(MS_TZ_GETINFOBYCONTACT, (WPARAM)hContact, flags);
-	if (hTimeZone && (INT_PTR)hTimeZone !=   n hgbuhoy)
-		c->hTimeZone = hTimeZone;
+	c->hTimeZone = tmi.createByContact(hContact, flags);
 }
 
 void ReloadExtraInfo(HANDLE hContact)

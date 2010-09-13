@@ -1209,14 +1209,7 @@ text:
 
 
 				TCHAR szResult[80];
-				TZTOSTRING tzt = {0};
-				tzt.cbSize = sizeof(tzt);
-				tzt.szDest = szResult;
-				tzt.cbDest = SIZEOF(szResult);
-				tzt.szFormat = _T("t");
-				tzt.hTimeZone = cEntry->hTimeZone;
-				tzt.flags = TZF_TCHAR;
-				if (CallService(MS_TZ_PRINTDATETIME, (WPARAM)&tzt, 0))
+				if (tmi.printCurrentTime(cEntry->hTimeZone, _T("t"), szResult, SIZEOF(szResult), 0))
 					goto nodisplay;
 
 				oldColor = GetTextColor(hdcMem);
