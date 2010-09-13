@@ -1694,8 +1694,8 @@ void TSAPI LoadOwnAvatar(TWindowData *dat)
 
 void TSAPI LoadTimeZone(TWindowData *dat)
 {
-	if(dat)
-		dat->hTimeZone = (HANDLE)CallService(MS_TZ_GETINFOBYCONTACT, (WPARAM)dat->hContact, TZF_KNOWNONLY);
+	if (dat)
+		dat->hTimeZone = tmi.createByContact(dat->hContact, TZF_KNOWNONLY);
 }
 
 /*

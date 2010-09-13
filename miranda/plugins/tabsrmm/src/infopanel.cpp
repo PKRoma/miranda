@@ -549,14 +549,7 @@ void CInfoPanel::RenderIPStatus(const HDC hdc, RECT& rcItem)
 	}
 
 	if (m_dat->hTimeZone) {
-		TZTOSTRING tzt = {0};
-		tzt.cbSize = sizeof(tzt);
-		tzt.szDest = szResult;
-		tzt.cbDest = SIZEOF(szResult);
-		tzt.szFormat = _T("t");
-		tzt.hTimeZone = m_dat->hTimeZone;
-		tzt.flags = TZF_TCHAR;
-		CallService(MS_TZ_PRINTDATETIME, (WPARAM)&tzt, 0);
+		tmi.printCurrentTime(m_dat->hTimeZone, _T("t"), szResult, SIZEOF(szResult), 0);
 		GetTextExtentPoint32(hdc, szResult, lstrlen(szResult), &sTime);
 	}
 

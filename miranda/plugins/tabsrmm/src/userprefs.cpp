@@ -170,20 +170,7 @@ static INT_PTR CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, 
 			CheckDlgButton(hwndDlg, IDC_FORCEANSI, M->GetByte(hContact, "forceansi", 0) ? 1 : 0);
 			CheckDlgButton(hwndDlg, IDC_IGNORETIMEOUTS, M->GetByte(hContact, "no_ack", 0));
 
-			/*
-			 * already populated and prepared
-			 */
-
-			MIM_TZ_PREPARELIST mtzp;
-
-			ZeroMemory(&mtzp, sizeof(MS_TZ_PREPARELIST));
-			mtzp.cbSize = sizeof(MIM_TZ_PREPARELIST);
-			mtzp.hContact = hContact;
-			mtzp.hWnd = GetDlgItem(hwndDlg, IDC_TIMEZONE);
-			mtzp.dwFlags = TZF_PLF_CB;
-			CallService(MS_TZ_PREPARELIST, (WPARAM)0, (LPARAM)&mtzp);
-			if(SendDlgItemMessage(hwndDlg, IDC_TIMEZONE, CB_GETCURSEL, 0, 0) == CB_ERR)
-				SendDlgItemMessage(hwndDlg, IDC_TIMEZONE, CB_SETCURSEL, 0, 0);
+			tmi.prepareList(hContact, GetDlgItem(hwndDlg, IDC_TIMEZONE), TZF_PLF_CB);
 
 			ShowWindow(hwndDlg, SW_SHOW);
 			return TRUE;
@@ -275,7 +262,7 @@ static INT_PTR CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, 
 					M->WriteByte(hContact, TEMPLATES_MODULE, "enabled", (BYTE)(IsDlgButtonChecked(hwndDlg, IDC_TEMPLOVERRIDE)));
 					M->WriteByte(hContact, RTLTEMPLATES_MODULE, "enabled", (BYTE)(IsDlgButtonChecked(hwndDlg, IDC_RTLTEMPLOVERRIDE)));
 
-					CallService(MS_TZ_STORELISTRESULT, (WPARAM)hContact, (LPARAM)GetDlgItem(hwndDlg, IDC_TIMEZONE));
+					tmi.storeListResults(hContact, GetDlgItem(hwndDlg, IDC_TIMEZONE), TZF_PLF_CB);
 
 					if (hWnd && dat) {
 						LoadTimeZone(dat);
