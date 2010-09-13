@@ -534,7 +534,7 @@ void InitTimeZones(void)
 	bool			isVista = IsWinVerVistaPlus();
 	DYNAMIC_TIME_ZONE_INFORMATION dtzi;
 
-	const TCHAR *tszKey = IsWinVer2000Plus() ?
+	const TCHAR *tszKey = GetVersion() < 0x80000000 ?
 		_T("SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Time Zones") :
 		_T("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Time Zones");
 
