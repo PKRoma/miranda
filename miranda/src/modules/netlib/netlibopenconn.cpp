@@ -666,6 +666,7 @@ bool NetlibReconnect(NetlibConnection *nlc)
 
 		if (nlc->usingHttpGateway)
 		{
+			nlc->proxyAuthNeeded = true;
 			NetlibLogf(nlc->nlu,"(%p) Connecting....", nlc);
 			return my_connect(nlc, &nlc->nloc) == 0;
 		}

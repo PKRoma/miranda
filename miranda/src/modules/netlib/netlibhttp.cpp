@@ -576,9 +576,9 @@ INT_PTR NetlibHttpSendRequest(WPARAM wParam,LPARAM lParam)
 			DWORD dwTimeOutTime = nlc->usingHttpGateway && nlhr->requestType == REQUEST_GET ? -1 : GetTickCount() + HTTPRECVHEADERSTIMEOUT;
 			if (!HttpPeekFirstResponseLine(nlc, dwTimeOutTime, fflags, &resultCode, NULL, NULL))
 			{
-				lastFirstLineFail = true;
 				NetlibLogf(nlc->nlu, "%s %d: %s Failed (%u %u)",__FILE__,__LINE__,"HttpPeekFirstResponseLine",GetLastError(), count);
-				if (GetLastError() <= ERROR_TIMEOUT) 
+				DWORD err = GetLastError();
+				if (err == ERROR_TIMEOUT || err == ERROR_BAD_FORMAT || err == ERROR_BUFFER_OVERFLOW) 
 					break; 
 				else
 				{
