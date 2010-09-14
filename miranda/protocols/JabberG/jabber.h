@@ -377,6 +377,7 @@ struct ThreadData
 	TCHAR newPassword[128];
 
 	void  close( void );
+	void  shutdown( void );
 	int   recv( char* buf, size_t len );
 	int   send( char* buffer, int bufsize );
 	int   send( const char* fmt, ... );

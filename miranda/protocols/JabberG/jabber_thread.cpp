@@ -975,7 +975,12 @@ void CJabberProto::OnProcessProceed( HXML node, ThreadData* info )
 		ssl.host = isHosted ? info->manualHost : info->server;
 		if (!JCallService( MS_NETLIB_STARTSSL, ( WPARAM )info->s, ( LPARAM )&ssl)) {
 			Log( "SSL initialization failed" );
-			SetStatus(ID_STATUS_OFFLINE);
+			if (info->type == JABBER_SESSION_REGISTER) {
+				info->send( "</stream:stream>" );
+				info->shutdown();
+			} 
+			else
+				SetStatus(ID_STATUS_OFFLINE);
 		}
 		else
 			xmlStreamInitialize( "after successful StartTLS" );
@@ -1983,12 +1988,18 @@ ThreadData::~ThreadData()
 	CloseHandle(hThread);
 }
 
-void ThreadData::close()
+void ThreadData::close( void )
 {
 	if ( s ) {
 		Netlib_CloseHandle(s);
 		s = NULL;
 }	}
+
+void ThreadData::shutdown( void )
+{
+	if ( s )
+		Netlib_Shutdown(s);
+}
 
 int ThreadData::recvws( char* buf, size_t len, int flags )
 {

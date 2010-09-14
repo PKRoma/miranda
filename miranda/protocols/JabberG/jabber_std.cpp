@@ -226,7 +226,11 @@ char* __fastcall JTranslate( const char* str )
 // save/load crypted strings
 void __forceinline sttCryptString(char *str)
 {
-	while (*str) if (*str != 0xc3) *str++ ^= 0xc3;
+	for (;*str; ++str) 
+	{
+		const char c = *str ^ 0xc3;
+		if (c) *str = c;
+	}
 }
 
 TCHAR* CJabberProto::JGetStringCrypt( HANDLE hContact, char* valueName )
