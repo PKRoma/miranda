@@ -1300,8 +1300,7 @@ int __cdecl CJabberProto::SetStatus( int iNewStatus )
 			}
 
 			m_ThreadInfo->send( "</stream:stream>" );
-			m_ThreadInfo->close();
-			m_ThreadInfo = NULL;
+			m_ThreadInfo->shutdown();
 
 			if ( m_bJabberConnected ) {
 				m_bJabberConnected = m_bJabberOnline = FALSE;
