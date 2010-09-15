@@ -3552,9 +3552,9 @@ LABEL_SHOWWINDOW:
 			iTabs = TabCtrl_GetItemCount(hwndTab);
 			if (iTabs == 1) {
 				if (/*!bForced && */CMimAPI::m_shutDown == 0) {
-					DestroyWindow(GetParent(GetParent(hwndDlg)));
+					//DestroyWindow(GetParent(GetParent(hwndDlg)));
 					//PostMessage(hwndDlg, WM_CLOSE, 0, 1);
-					//PostMessage(GetParent(GetParent(hwndDlg)), WM_CLOSE, 0, 1);
+					SendMessage(GetParent(GetParent(hwndDlg)), WM_CLOSE, 0, 1);
 					return 1;
 				}
 			}
