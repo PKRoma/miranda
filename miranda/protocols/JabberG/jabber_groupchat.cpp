@@ -1154,6 +1154,8 @@ void CJabberProto::GroupchatProcessMessage( HXML node )
 						return;
 					
 					TCHAR* tmptr = _tcsstr( tmpnick, _T("has set the subject to:")); //ejabberd
+					if ( tmptr == NULL )
+						tmptr = _tcsstr( tmpnick, TranslateT("has set the subject to:")); //ejabberd
 					if ( tmptr == NULL || *tmptr == 0 )
 						nick = NULL;
 					else {
