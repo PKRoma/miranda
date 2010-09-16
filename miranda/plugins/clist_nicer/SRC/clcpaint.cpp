@@ -1209,7 +1209,7 @@ text:
 
 
 				TCHAR szResult[80];
-				if (tmi.printCurrentTime(cEntry->hTimeZone, _T("t"), szResult, SIZEOF(szResult), 0))
+				if (tmi.printDateTime(cEntry->hTimeZone, _T("t"), szResult, SIZEOF(szResult), 0))
 					goto nodisplay;
 
 				oldColor = GetTextColor(hdcMem);
