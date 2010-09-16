@@ -524,6 +524,8 @@ void __inline PaintItem(HDC hdcMem, struct ClcGroup *group, struct ClcContact *c
 	}
 	else
 		bg_indent_l = cfg::dat.bApplyIndentToBg ? indent * dat->groupIndent : 0;
+
+set_bg_l:
 #else
 	if(type == CLCIT_GROUP && cfg::dat.bGroupAlign == CLC_GROUPALIGN_RIGHT && !dat->bisEmbedded && pfnSetLayout != 0) {
 		g_RTL = TRUE;
@@ -535,7 +537,6 @@ void __inline PaintItem(HDC hdcMem, struct ClcGroup *group, struct ClcContact *c
 	}
 #endif
 
-set_bg_l:
 	g_hottrack = dat->exStyle & CLS_EX_TRACKSELECT && type == CLCIT_CONTACT && dat->iHotTrack == index;
 	if (g_hottrack == selected)
 		g_hottrack = 0;
