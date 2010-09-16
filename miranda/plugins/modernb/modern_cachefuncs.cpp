@@ -63,7 +63,7 @@ void Cache_GetTimezone(struct ClcData *dat, HANDLE hContact)
         dat=(struct ClcData *)GetWindowLongPtr(pcli->hwndContactTree,0);
 
 	DWORD flags = 0;
-	if (dat->contact_time_show_only_if_different) flags |= TZF_DIFONLY;
+	if (dat && dat->contact_time_show_only_if_different) flags |= TZF_DIFONLY;
 
 	pdnce->hTimeZone = tmi.createByContact ? tmi.createByContact(hContact, flags) : 0;
 }
