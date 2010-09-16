@@ -98,7 +98,6 @@ INT_PTR CALLBACK DlgProcUrlRecv(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 		WindowList_Add(hUrlWindowList, hwndDlg, dat->hContact);
 		{
 			DBEVENTINFO dbei;
-			DBTIMETOSTRINGT dbtts;
 			TCHAR* contactName;
 			TCHAR  msg[128];
 
@@ -119,10 +118,7 @@ INT_PTR CALLBACK DlgProcUrlRecv(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			SetDlgItemText(hwndDlg,IDC_FROM,contactName);
 			SendDlgItemMessage(hwndDlg,IDOK,BUTTONSETARROW,1,0);
 			{	TCHAR str[128];
-				dbtts.szFormat = _T("t d");
-				dbtts.szDest = str;
-				dbtts.cbDest = SIZEOF(str);
-				CallService(MS_DB_TIME_TIMESTAMPTOSTRINGT, dbei.timestamp, (LPARAM)&dbtts);
+				tmi.printTimeStamp(NULL, dbei.timestamp, _T("t d"), str, SIZEOF(str), 0);
 				SetDlgItemText(hwndDlg, IDC_DATE, str);
 		}	}
 

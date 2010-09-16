@@ -516,7 +516,6 @@ int LoadDatabaseModule(void)
 	szProfile[0] = 0;
 
 	// load the older basic services of the db
-	InitTime();
 	InitUtils();
 
 	// find out which profile to load

@@ -1,7 +1,7 @@
 /*
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2010 Miranda ICQ/IM project,
+Copyright 2010 Miranda ICQ/IM project,
 all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
@@ -62,6 +62,7 @@ struct MIM_TIMEZONE
 												// every hour should be sufficient.
 	TIME_ZONE_INFORMATION tzi;
 	unsigned hash;
+	int offset;
 
 	static int compareHash(const MIM_TIMEZONE* p1, const MIM_TIMEZONE* p2)
 	{ return p1->hash - p2->hash; }
@@ -69,16 +70,6 @@ struct MIM_TIMEZONE
 	static int compareBias(const MIM_TIMEZONE* p1, const MIM_TIMEZONE* p2)
 	{ return p2->tzi.Bias - p1->tzi.Bias; }
 };
-
-/*
- * our own time zone information
- */
-typedef struct
-{
-	MIM_TIMEZONE *tz;						// set to my own timezone
-	DWORD	timestamp;	                    // last time updated
-} TZ_HANDLE;
-
 
 typedef struct
 {
@@ -93,14 +84,62 @@ static OBJLIST<MIM_TIMEZONE>  g_timezones(55, MIM_TIMEZONE::compareHash);
 static LIST<MIM_TIMEZONE>     g_timezonesBias(55, MIM_TIMEZONE::compareBias);
 
 void FormatTime (const SYSTEMTIME *st, const TCHAR *szFormat, TCHAR *szDest, int cbDest);
-void FormatTimeA(const SYSTEMTIME *st, const char *szFormat, char *szDest, int cbDest);
+void UnixTimeToFileTime(time_t ts, LPFILETIME pft);
+time_t FileTimeToUnixTime(LPFILETIME pft);
 
-static bool IsSameTime(TIME_ZONE_INFORMATION *tzi)
+#ifdef _UNICODE 
+#define fnSystemTimeToTzSpecificLocalTime SystemTimeToTzSpecificLocalTime
+#else
+#define fnSystemTimeToTzSpecificLocalTime MySystemTimeToTzSpecificLocalTime
+#endif
+
+
+static int timeapiGetTimeZoneTime(HANDLE hTZ, SYSTEMTIME *st)
+{
+	if (st == NULL) return 1;
+
+
+	MIM_TIMEZONE *tz = (MIM_TIMEZONE*)hTZ;
+	if (tz && tz != myInfo.myTZ)
+	{
+		SYSTEMTIME sto;
+		GetSystemTime(&sto);
+		return !fnSystemTimeToTzSpecificLocalTime(&tz->tzi, &sto, st);
+	}
+	else
+		GetLocalTime(st);
+
+	return 0;
+}
+
+static void CalcTsOffset(MIM_TIMEZONE *tz)
 {
 	SYSTEMTIME st, stl;
 	GetSystemTime(&st);
-	SystemTimeToTzSpecificLocalTime(tzi, &st, &stl);
-	GetLocalTime(&st);
+
+	FILETIME ft;
+	SystemTimeToFileTime(&st, &ft);
+	time_t ts1 = FileTimeToUnixTime(&ft);
+
+	if (!fnSystemTimeToTzSpecificLocalTime(&tz->tzi, &st, &stl))
+		return;
+
+	SystemTimeToFileTime(&stl, &ft);
+	time_t ts2 = FileTimeToUnixTime(&ft);
+
+	tz->offset = ts2 - ts1;
+}
+
+static bool IsSameTime(MIM_TIMEZONE *tz)
+{
+	SYSTEMTIME st, stl;
+
+	if (tz == myInfo.myTZ) 
+		return true;
+
+	timeapiGetTimeZoneTime(tz, &stl);
+	timeapiGetTimeZoneTime(NULL, &st);
+
 	return st.wHour == stl.wHour && st.wMinute == stl.wMinute;
 }
 
@@ -117,7 +156,7 @@ static HANDLE timeapiGetInfoByName(LPCTSTR tszName, DWORD dwFlags)
 		return (dwFlags & (TZF_DIFONLY | TZF_KNOWNONLY)) ? NULL : myInfo.myTZ;
 
 	if (dwFlags & TZF_DIFONLY)
-		return IsSameTime(&tz->tzi) ? NULL : tz;
+		return IsSameTime(tz) ? NULL : tz;
 
 	return tz;
 }
@@ -166,7 +205,7 @@ static HANDLE timeapiGetInfoByContact(HANDLE hContact, DWORD dwFlags)
 			{
 				MIM_TIMEZONE *tz = g_timezonesBias[i];
 				if (dwFlags & TZF_DIFONLY)
-					return IsSameTime(&tz->tzi) ? NULL : tz;
+					return IsSameTime(tz) ? NULL : tz;
 
 				return tz;
 			}
@@ -193,189 +232,59 @@ static void timeapiSetInfoByContact(HANDLE hContact, HANDLE hTZ)
 	}
 }
 
-#ifndef _UNICODE
-void ConvertToAbsolute (const SYSTEMTIME * pstLoc, const SYSTEMTIME * pstDst, SYSTEMTIME * pstDstAbs)
-{
-     static int    iDays [12] = { 31, 28, 31, 30, 31, 30, 
-                                  31, 31, 30, 31, 30, 31 } ;
-     int           iDay ;
-
-          // Set up the aboluste date structure except for wDay, which we must find
-
-     pstDstAbs->wYear         = pstLoc->wYear ;      // Notice from local date/time
-     pstDstAbs->wMonth        = pstDst->wMonth ;
-     pstDstAbs->wDayOfWeek    = pstDst->wDayOfWeek ;
-
-     pstDstAbs->wHour         = pstDst->wHour ;
-     pstDstAbs->wMinute       = pstDst->wMinute ;
-     pstDstAbs->wSecond       = pstDst->wSecond ;
-     pstDstAbs->wMilliseconds = pstDst->wMilliseconds ;
-
-          // Fix the iDays array for leap years
-
-     if ((pstLoc->wYear % 4 == 0) && ((pstLoc->wYear % 100 != 0) || 
-                                      (pstLoc->wYear % 400 == 0)))
-     {
-          iDays[1] = 29 ;
-     }
-
-          // Find a day of the month that falls on the same 
-          //   day of the week as the transition.
-
-          // Suppose today is the 20th of the month (pstLoc->wDay = 20)
-          // Suppose today is a Wednesday (pstLoc->wDayOfWeek = 3)
-          // Suppose the transition occurs on a Friday (pstDst->wDayOfWeek = 5)
-          // Then iDay = 31, meaning that the 31st falls on a Friday
-          // (The 7 is this formula avoids negatives.)
-
-     iDay = pstLoc->wDay + pstDst->wDayOfWeek + 7 - pstLoc->wDayOfWeek ;
-
-          // Now shrink iDay to a value between 1 and 7.
-
-     iDay = (iDay - 1) % 7 + 1 ;
-
-          // Now iDay is a day of the month ranging from 1 to 7.
-          // Recall that the wDay field of the structure can range
-          //   from 1 to 5, 1 meaning "first", 2 meaning "second",
-          //   and 5 meaning "last".
-          // So, increase iDay so it's the proper day of the month.
-
-     iDay += 7 * (pstDst->wDay - 1) ;
-
-          // Could be that iDay overshot the end of the month, so
-          //   fix it up using the number of days in each month
-
-     if (iDay > iDays[pstDst->wMonth - 1])
-          iDay -= 7 ;
-
-          // Assign that day to the structure. 
-
-     pstDstAbs->wDay = iDay ;
-}
-
-BOOL LocalGreaterThanTransition (const SYSTEMTIME * pstLoc, const SYSTEMTIME * pstTran)
-{
-     FILETIME      ftLoc, ftTran ;
-     LARGE_INTEGER liLoc, liTran ;
-     SYSTEMTIME    stTranAbs ;
-
-          // Easy case: Just compare the two months
-
-     if (pstLoc->wMonth != pstTran->wMonth)
-          return (pstLoc->wMonth > pstTran->wMonth) ;
-
-          // Well, we're in a transition month. That requires a bit more work.
-
-          // Check if pstDst is in absolute or day-in-month format.
-          //   (See documentation of TIME_ZONE_INFORMATION, StandardDate field.)
-
-     if (pstTran->wYear)       // absolute format (haven't seen one yet!)
-     {
-          stTranAbs = * pstTran ;
-     }
-     else                     // day-in-month format
-     {
-          ConvertToAbsolute (pstLoc, pstTran, &stTranAbs) ;
-     }
-
-          // Now convert both date/time structures to large integers & compare
-     
-     SystemTimeToFileTime (pstLoc, &ftLoc) ;
-     liLoc = * (LARGE_INTEGER *) (void *) &ftLoc ;
-
-     SystemTimeToFileTime (&stTranAbs, &ftTran) ;
-     liTran = * (LARGE_INTEGER *) (void *) &ftTran ;
-
-     return (liLoc.QuadPart > liTran.QuadPart) ;
-}
-
-BOOL MySystemTimeToTzSpecificLocalTime(const TIME_ZONE_INFORMATION *ptzi, const SYSTEMTIME *pstUtc, SYSTEMTIME *pstLoc) 
-{
-	// st is UTC
-
-	FILETIME      ft ;
-	LARGE_INTEGER li ;
-	SYSTEMTIME    stDst ;
-
-	// Convert time to a LARGE_INTEGER and subtract the bias
-
-	SystemTimeToFileTime (pstUtc, &ft) ;
-	li = * (LARGE_INTEGER *) (void *) &ft;
-	li.QuadPart -= (LONGLONG) 600000000 * ptzi->Bias ;
-
-	// Convert to a local date/time before application of daylight saving time.
-	// The local date/time must be used to determine when the conversion occurs.
-
-	ft = * (FILETIME *) (void *) &li ;
-	FileTimeToSystemTime (&ft, pstLoc) ;
-
-	// Find the time assuming Daylight Saving Time
-
-	li.QuadPart -= (LONGLONG) 600000000 * ptzi->DaylightBias ;
-	ft = * (FILETIME *) (void *) &li ;
-	FileTimeToSystemTime (&ft, &stDst) ;
-
-	// Now put li back the way it was
-
-	li.QuadPart += (LONGLONG) 600000000 * ptzi->DaylightBias ;
-
-	if (ptzi->StandardDate.wMonth)          // ie, daylight savings time
-	{
-          // Northern hemisphere
-          if ((ptzi->DaylightDate.wMonth < ptzi->StandardDate.wMonth) &&
-
-               (stDst.wMonth >= pstLoc->wMonth) &&           // avoid the end of year problem
-               
-               LocalGreaterThanTransition (pstLoc, &ptzi->DaylightDate) &&
-              !LocalGreaterThanTransition (&stDst, &ptzi->StandardDate))
-          {
-               li.QuadPart -= (LONGLONG) 600000000 * ptzi->DaylightBias ;
-          }
-               // Southern hemisphere
-
-          else if ((ptzi->StandardDate.wMonth < ptzi->DaylightDate.wMonth) &&
-                  (!LocalGreaterThanTransition (&stDst, &ptzi->StandardDate) ||
-                    LocalGreaterThanTransition (pstLoc, &ptzi->DaylightDate)))
-          {
-               li.QuadPart -= (LONGLONG) 600000000 * ptzi->DaylightBias ;
-          }
-          else
-          {
-               li.QuadPart -= (LONGLONG) 600000000 * ptzi->StandardBias ;
-          }
-     }
-
-     ft = * (FILETIME *) (void *) &li ;
-     FileTimeToSystemTime (&ft, pstLoc) ;
-     return TRUE ;
-}
-#endif
-
-
 static int timeapiPrintDateTime(HANDLE hTZ, LPCTSTR szFormat, LPTSTR szDest, int cbDest, DWORD dwFlags)
 {
 	MIM_TIMEZONE *tz = (MIM_TIMEZONE*)hTZ;
-
-	if (tz == NULL) return 1;
-
-	SYSTEMTIME st, stl;
-	GetSystemTime(&st);
-
-#ifdef _UNICODE 
-	if (!SystemTimeToTzSpecificLocalTime(&tz->tzi, &st, &stl))
+	if (tz == NULL && (dwFlags & (TZF_DIFONLY | TZF_KNOWNONLY))) 
 		return 1;
-#else
-	if (!MySystemTimeToTzSpecificLocalTime(&tz->tzi, &st, &stl))
+
+	SYSTEMTIME st;
+	if (timeapiGetTimeZoneTime(tz, &st))
 		return 1;
-#endif
-	FormatTime(&stl, szFormat, szDest, cbDest);
+
+	FormatTime(&st, szFormat, szDest, cbDest);
 
 	return 0;
 }
 
-static int timeapiPrintDateTimeByContact(HANDLE hContact, LPCTSTR szFormat, LPTSTR szDest, int cbDest, DWORD dwFlags)
+static int timeapiPrintTimeStamp(HANDLE hTZ, time_t ts, LPCTSTR szFormat, LPTSTR szDest, int cbDest, DWORD dwFlags)
 {
-	return timeapiPrintDateTime(timeapiGetInfoByContact(hContact, dwFlags), szFormat, szDest, cbDest, dwFlags);
+	MIM_TIMEZONE *tz = (MIM_TIMEZONE*)hTZ;
+	if (tz == NULL && (dwFlags & (TZF_DIFONLY | TZF_KNOWNONLY))) 
+		return 1;
+
+	if (tz->offset == INT_MIN)
+		CalcTsOffset(tz);
+
+	FILETIME ft;
+	UnixTimeToFileTime(ts + tz->offset, &ft);
+	
+	SYSTEMTIME st;
+	FileTimeToSystemTime(&ft, &st);
+
+	FormatTime(&st, szFormat, szDest, cbDest);
+
+	return 0;
+}
+
+static LPTIME_ZONE_INFORMATION timeapiGetTzi(HANDLE hTZ)
+{
+	MIM_TIMEZONE *tz = (MIM_TIMEZONE*)hTZ;
+	return tz ? &tz->tzi : &myInfo.tzi;
+}
+
+
+static time_t timeapiTimeStampToTimeZoneTimeStamp(HANDLE hTZ, time_t ts)
+{
+	MIM_TIMEZONE *tz = (MIM_TIMEZONE*)hTZ;
+	
+	if (tz == NULL) tz = myInfo.myTZ; 
+	if (tz == NULL) return ts;
+	
+	if (tz->offset == INT_MIN)
+		CalcTsOffset(tz);
+
+	return ts + tz->offset;
 }
 
 static int timeapiPrepareList(HANDLE hContact, HWND hWnd, DWORD dwFlags)
@@ -509,18 +418,48 @@ static INT_PTR GetTimeApi( WPARAM, LPARAM lParam )
 	if (tmi->cbSize != sizeof(TIME_API))
 		return FALSE;
 
-	tmi->createByName                = timeapiGetInfoByName;
-	tmi->createByContact             = timeapiGetInfoByContact;
-	tmi->storeByContact              = timeapiSetInfoByContact;
+	tmi->createByName                    = timeapiGetInfoByName;
+	tmi->createByContact                 = timeapiGetInfoByContact;
+	tmi->storeByContact                  = timeapiSetInfoByContact;
 
-	tmi->printCurrentTime            = timeapiPrintDateTime;
-	tmi->printCurrentTimeByContact   = timeapiPrintDateTimeByContact;
+	tmi->printDateTime                   = timeapiPrintDateTime;
+	tmi->prepareList                     = timeapiPrepareList;
+	tmi->storeListResults                = timeapiStoreListResult;
 
-	tmi->prepareList                = timeapiPrepareList;
-	tmi->storeListResults           = timeapiStoreListResult;
+	tmi->printTimeStamp                  = timeapiPrintTimeStamp;
+	tmi->getTzi                          = timeapiGetTzi;
+	tmi->getTimeZoneTime                 = timeapiGetTimeZoneTime;
+	tmi->timeStampToTimeZoneTimeStamp    = timeapiTimeStampToTimeZoneTimeStamp;
 
 	return TRUE;
 }
+
+static INT_PTR TimestampToLocal(WPARAM wParam, LPARAM)
+{
+	return timeapiTimeStampToTimeZoneTimeStamp(NULL, (time_t)wParam);
+}
+
+static INT_PTR TimestampToStringT(WPARAM wParam, LPARAM lParam)
+{
+	DBTIMETOSTRINGT *tts = (DBTIMETOSTRINGT*)lParam;
+	if (tts == NULL) return 0;
+
+	timeapiPrintTimeStamp(NULL, (time_t)wParam, tts->szFormat, tts->szDest, tts->cbDest, 0); 
+	return 0;
+}
+
+#ifdef _UNICODE
+static INT_PTR TimestampToStringA(WPARAM wParam, LPARAM lParam)
+{
+	DBTIMETOSTRING *tts = (DBTIMETOSTRING*)lParam;
+	if (tts == NULL) return 0;
+
+	TCHAR *szDest = (TCHAR*)alloca(tts->cbDest);
+	timeapiPrintTimeStamp(NULL, (time_t)wParam, StrConvT(tts->szFormat), szDest, tts->cbDest, 0); 
+	WideCharToMultiByte(CP_ACP, 0, szDest, -1, tts->szDest, tts->cbDest, NULL, NULL);
+	return 0;
+}
+#endif
 
 
 void InitTimeZones(void)
@@ -530,8 +469,9 @@ void InitTimeZones(void)
 
 	REG_TZI_FORMAT	tzi;
 	HKEY			hKey;
+	TCHAR           *myTzKey = NULL;
 	bool			isWin2KPlus = IsWinVer2000Plus();
-	DYNAMIC_TIME_ZONE_INFORMATION dtzi = {0};
+	DYNAMIC_TIME_ZONE_INFORMATION dtzi;
 
 	const TCHAR *tszKey = IsWinVerNT() ?
 		_T("SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Time Zones") :
@@ -546,7 +486,8 @@ void InitTimeZones(void)
 	{
 		pfnGetDynamicTimeZoneInformation = (pfnGetDynamicTimeZoneInformation_t)GetProcAddress(GetModuleHandle(_T("kernel32")), "GetDynamicTimeZoneInformation");
 		if (pfnGetDynamicTimeZoneInformation)
-			pfnGetDynamicTimeZoneInformation(&dtzi);
+			if (pfnGetDynamicTimeZoneInformation(&dtzi) != TIME_ZONE_ID_INVALID)
+				myTzKey = mir_u2t(dtzi.TimeZoneKeyName);
 	}
 
 
@@ -582,6 +523,7 @@ void InitTimeZones(void)
 
 				_tcscpy(tz->tszName, tszName);
 				tz->hash = hashstr(tszName);
+				tz->offset = INT_MIN;
 
 				tz->tszDisplay[0] = 0;
 				dwLength = sizeof(tz->tszDisplay);
@@ -605,7 +547,7 @@ void InitTimeZones(void)
 				if (myInfo.myTZ == NULL)
 				{
 					// compare registry key names (= not localized, so it's easy)
-					if (dtzi.TimeZoneKeyName[0] && !_tcscmp(tszName, dtzi.TimeZoneKeyName)) 
+					if (myTzKey && !_tcscmp(tszName, myTzKey)) 
 					{
 						myInfo.myTZ = tz;
 					}
@@ -637,8 +579,18 @@ void InitTimeZones(void)
 		mir_free(myStdName);
 		mir_free(myDayName);
 	}
+	mir_free(myTzKey);
 
 	CreateServiceFunction(MS_SYSTEM_GET_TMI, GetTimeApi);
+
+	CreateServiceFunction(MS_DB_TIME_TIMESTAMPTOLOCAL, TimestampToLocal);
+	CreateServiceFunction(MS_DB_TIME_TIMESTAMPTOSTRINGT, TimestampToStringT);
+#ifdef _UNICODE
+	CreateServiceFunction(MS_DB_TIME_TIMESTAMPTOSTRING, TimestampToStringA);
+#else
+	CreateServiceFunction(MS_DB_TIME_TIMESTAMPTOSTRING, TimestampToStringT);
+#endif
+
 
 	tmi.cbSize = sizeof(tmi);
 	GetTimeApi(0, (LPARAM)&tmi);

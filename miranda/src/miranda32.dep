@@ -34,9 +34,11 @@
 	"..\include\m_stdhdr.h"\
 	"..\include\m_system.h"\
 	"..\include\m_system_cpp.h"\
+	"..\include\m_timezones.h"\
 	"..\include\m_userinfo.h"\
 	"..\include\m_utils.h"\
 	"..\include\m_xml.h"\
+	"..\include\msapi\vsstyle.h"\
 	"..\include\msapi\vssym32.h"\
 	"..\include\newpluginapi.h"\
 	"..\include\statusmodes.h"\
@@ -106,12 +108,6 @@
 	
 
 .\modules\database\dblists.cpp : \
-	"..\include\m_genmenu.h"\
-	"..\include\m_plugins.h"\
-	"..\include\m_protomod.h"\
-	
-
-.\modules\database\dbtime.cpp : \
 	"..\include\m_genmenu.h"\
 	"..\include\m_plugins.h"\
 	"..\include\m_protomod.h"\
@@ -549,7 +545,6 @@
 	"..\include\m_genmenu.h"\
 	"..\include\m_plugins.h"\
 	"..\include\m_protomod.h"\
-	"..\include\m_timezones.h"\
 	
 
 .\modules\utils\utf.cpp : \
@@ -635,6 +630,7 @@
 
 .\modules\clist\clistmenus.cpp : \
 	"..\include\m_genmenu.h"\
+	"..\include\m_hotkeys.h"\
 	"..\include\m_plugins.h"\
 	"..\include\m_protomod.h"\
 	".\modules\clist\clc.h"\
@@ -667,6 +663,7 @@
 	"..\include\m_plugins.h"\
 	"..\include\m_protomod.h"\
 	".\modules\clist\clc.h"\
+	".\modules\database\profilemanager.h"\
 	
 
 .\modules\clist\cluiservices.cpp : \

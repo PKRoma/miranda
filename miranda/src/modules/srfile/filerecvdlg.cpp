@@ -255,7 +255,6 @@ INT_PTR CALLBACK DlgProcRecvFile(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 		CallService(MS_DB_EVENT_MARKREAD,(WPARAM)dat->hContact,(LPARAM)dat->hDbEvent);
 		{
 			DBEVENTINFO dbei={0};
-			DBTIMETOSTRINGT dbtts;
 			TCHAR datetimestr[64];
 			char buf[540];
 
@@ -274,10 +273,7 @@ INT_PTR CALLBACK DlgProcRecvFile(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 			mir_free(ptszDescription);
 			mir_free(dbei.pBlob);
 
-			dbtts.szFormat = _T("t d");
-			dbtts.szDest = datetimestr;
-			dbtts.cbDest = SIZEOF(datetimestr);
-			CallService(MS_DB_TIME_TIMESTAMPTOSTRINGT, dbei.timestamp, ( LPARAM )&dbtts);
+			tmi.printTimeStamp(NULL, dbei.timestamp, _T("t d"), datetimestr, SIZEOF(datetimestr), 0);
 			SetDlgItemText(hwndDlg, IDC_DATE, datetimestr);
 		}
 		{

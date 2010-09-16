@@ -110,8 +110,6 @@ CLEAN :
 	-@erase "$(INTDIR)\dbini.sbr"
 	-@erase "$(INTDIR)\dblists.obj"
 	-@erase "$(INTDIR)\dblists.sbr"
-	-@erase "$(INTDIR)\dbtime.obj"
-	-@erase "$(INTDIR)\dbtime.sbr"
 	-@erase "$(INTDIR)\dbutils.obj"
 	-@erase "$(INTDIR)\dbutils.sbr"
 	-@erase "$(INTDIR)\descbutton.obj"
@@ -251,6 +249,8 @@ CLEAN :
 	-@erase "$(INTDIR)\sounds.sbr"
 	-@erase "$(INTDIR)\stdinfo.obj"
 	-@erase "$(INTDIR)\stdinfo.sbr"
+	-@erase "$(INTDIR)\timeutils.obj"
+	-@erase "$(INTDIR)\timeutils.sbr"
 	-@erase "$(INTDIR)\timezones.obj"
 	-@erase "$(INTDIR)\timezones.sbr"
 	-@erase "$(INTDIR)\updatenotify.obj"
@@ -336,7 +336,6 @@ BSC32_SBRS= \
 	"$(INTDIR)\database.sbr" \
 	"$(INTDIR)\dbini.sbr" \
 	"$(INTDIR)\dblists.sbr" \
-	"$(INTDIR)\dbtime.sbr" \
 	"$(INTDIR)\dbutils.sbr" \
 	"$(INTDIR)\profilemanager.sbr" \
 	"$(INTDIR)\findadd.sbr" \
@@ -436,7 +435,8 @@ BSC32_SBRS= \
 	"$(INTDIR)\skin2icons.sbr" \
 	"$(INTDIR)\updatenotify.sbr" \
 	"$(INTDIR)\xmlApi.sbr" \
-	"$(INTDIR)\xmlParser.sbr"
+	"$(INTDIR)\xmlParser.sbr" \
+	"$(INTDIR)\timeutils.sbr"
 
 "$(OUTDIR)\miranda32.bsc" : "$(OUTDIR)" $(BSC32_SBRS)
     $(BSC32) @<<
@@ -457,7 +457,6 @@ LINK32_OBJS= \
 	"$(INTDIR)\database.obj" \
 	"$(INTDIR)\dbini.obj" \
 	"$(INTDIR)\dblists.obj" \
-	"$(INTDIR)\dbtime.obj" \
 	"$(INTDIR)\dbutils.obj" \
 	"$(INTDIR)\profilemanager.obj" \
 	"$(INTDIR)\findadd.obj" \
@@ -559,6 +558,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\xmlApi.obj" \
 	"$(INTDIR)\xmlParser.obj" \
 	"$(INTDIR)\vc6.res" \
+	"$(INTDIR)\timeutils.obj" \
 	"..\plugins\zlib\Release\zlib.lib"
 
 "..\bin\release\miranda32.exe" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
@@ -649,8 +649,6 @@ CLEAN :
 	-@erase "$(INTDIR)\dbini.sbr"
 	-@erase "$(INTDIR)\dblists.obj"
 	-@erase "$(INTDIR)\dblists.sbr"
-	-@erase "$(INTDIR)\dbtime.obj"
-	-@erase "$(INTDIR)\dbtime.sbr"
 	-@erase "$(INTDIR)\dbutils.obj"
 	-@erase "$(INTDIR)\dbutils.sbr"
 	-@erase "$(INTDIR)\descbutton.obj"
@@ -790,6 +788,8 @@ CLEAN :
 	-@erase "$(INTDIR)\sounds.sbr"
 	-@erase "$(INTDIR)\stdinfo.obj"
 	-@erase "$(INTDIR)\stdinfo.sbr"
+	-@erase "$(INTDIR)\timeutils.obj"
+	-@erase "$(INTDIR)\timeutils.sbr"
 	-@erase "$(INTDIR)\timezones.obj"
 	-@erase "$(INTDIR)\timezones.sbr"
 	-@erase "$(INTDIR)\updatenotify.obj"
@@ -876,7 +876,6 @@ BSC32_SBRS= \
 	"$(INTDIR)\database.sbr" \
 	"$(INTDIR)\dbini.sbr" \
 	"$(INTDIR)\dblists.sbr" \
-	"$(INTDIR)\dbtime.sbr" \
 	"$(INTDIR)\dbutils.sbr" \
 	"$(INTDIR)\profilemanager.sbr" \
 	"$(INTDIR)\findadd.sbr" \
@@ -976,7 +975,8 @@ BSC32_SBRS= \
 	"$(INTDIR)\skin2icons.sbr" \
 	"$(INTDIR)\updatenotify.sbr" \
 	"$(INTDIR)\xmlApi.sbr" \
-	"$(INTDIR)\xmlParser.sbr"
+	"$(INTDIR)\xmlParser.sbr" \
+	"$(INTDIR)\timeutils.sbr"
 
 "$(OUTDIR)\miranda32.bsc" : "$(OUTDIR)" $(BSC32_SBRS)
     $(BSC32) @<<
@@ -997,7 +997,6 @@ LINK32_OBJS= \
 	"$(INTDIR)\database.obj" \
 	"$(INTDIR)\dbini.obj" \
 	"$(INTDIR)\dblists.obj" \
-	"$(INTDIR)\dbtime.obj" \
 	"$(INTDIR)\dbutils.obj" \
 	"$(INTDIR)\profilemanager.obj" \
 	"$(INTDIR)\findadd.obj" \
@@ -1099,6 +1098,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\xmlApi.obj" \
 	"$(INTDIR)\xmlParser.obj" \
 	"$(INTDIR)\vc6.res" \
+	"$(INTDIR)\timeutils.obj" \
 	"..\plugins\zlib\Debug\zlib.lib"
 
 "..\bin\debug\miranda32.exe" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
@@ -1189,8 +1189,6 @@ CLEAN :
 	-@erase "$(INTDIR)\dbini.sbr"
 	-@erase "$(INTDIR)\dblists.obj"
 	-@erase "$(INTDIR)\dblists.sbr"
-	-@erase "$(INTDIR)\dbtime.obj"
-	-@erase "$(INTDIR)\dbtime.sbr"
 	-@erase "$(INTDIR)\dbutils.obj"
 	-@erase "$(INTDIR)\dbutils.sbr"
 	-@erase "$(INTDIR)\descbutton.obj"
@@ -1330,6 +1328,8 @@ CLEAN :
 	-@erase "$(INTDIR)\sounds.sbr"
 	-@erase "$(INTDIR)\stdinfo.obj"
 	-@erase "$(INTDIR)\stdinfo.sbr"
+	-@erase "$(INTDIR)\timeutils.obj"
+	-@erase "$(INTDIR)\timeutils.sbr"
 	-@erase "$(INTDIR)\timezones.obj"
 	-@erase "$(INTDIR)\timezones.sbr"
 	-@erase "$(INTDIR)\updatenotify.obj"
@@ -1415,7 +1415,6 @@ BSC32_SBRS= \
 	"$(INTDIR)\database.sbr" \
 	"$(INTDIR)\dbini.sbr" \
 	"$(INTDIR)\dblists.sbr" \
-	"$(INTDIR)\dbtime.sbr" \
 	"$(INTDIR)\dbutils.sbr" \
 	"$(INTDIR)\profilemanager.sbr" \
 	"$(INTDIR)\findadd.sbr" \
@@ -1515,7 +1514,8 @@ BSC32_SBRS= \
 	"$(INTDIR)\skin2icons.sbr" \
 	"$(INTDIR)\updatenotify.sbr" \
 	"$(INTDIR)\xmlApi.sbr" \
-	"$(INTDIR)\xmlParser.sbr"
+	"$(INTDIR)\xmlParser.sbr" \
+	"$(INTDIR)\timeutils.sbr"
 
 "$(OUTDIR)\miranda32.bsc" : "$(OUTDIR)" $(BSC32_SBRS)
     $(BSC32) @<<
@@ -1536,7 +1536,6 @@ LINK32_OBJS= \
 	"$(INTDIR)\database.obj" \
 	"$(INTDIR)\dbini.obj" \
 	"$(INTDIR)\dblists.obj" \
-	"$(INTDIR)\dbtime.obj" \
 	"$(INTDIR)\dbutils.obj" \
 	"$(INTDIR)\profilemanager.obj" \
 	"$(INTDIR)\findadd.obj" \
@@ -1638,6 +1637,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\xmlApi.obj" \
 	"$(INTDIR)\xmlParser.obj" \
 	"$(INTDIR)\vc6.res" \
+	"$(INTDIR)\timeutils.obj" \
 	"..\plugins\zlib\Release_Unicode\zlib.lib"
 
 "..\bin\Release Unicode\miranda32.exe" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
@@ -1728,8 +1728,6 @@ CLEAN :
 	-@erase "$(INTDIR)\dbini.sbr"
 	-@erase "$(INTDIR)\dblists.obj"
 	-@erase "$(INTDIR)\dblists.sbr"
-	-@erase "$(INTDIR)\dbtime.obj"
-	-@erase "$(INTDIR)\dbtime.sbr"
 	-@erase "$(INTDIR)\dbutils.obj"
 	-@erase "$(INTDIR)\dbutils.sbr"
 	-@erase "$(INTDIR)\descbutton.obj"
@@ -1869,6 +1867,8 @@ CLEAN :
 	-@erase "$(INTDIR)\sounds.sbr"
 	-@erase "$(INTDIR)\stdinfo.obj"
 	-@erase "$(INTDIR)\stdinfo.sbr"
+	-@erase "$(INTDIR)\timeutils.obj"
+	-@erase "$(INTDIR)\timeutils.sbr"
 	-@erase "$(INTDIR)\timezones.obj"
 	-@erase "$(INTDIR)\timezones.sbr"
 	-@erase "$(INTDIR)\updatenotify.obj"
@@ -1955,7 +1955,6 @@ BSC32_SBRS= \
 	"$(INTDIR)\database.sbr" \
 	"$(INTDIR)\dbini.sbr" \
 	"$(INTDIR)\dblists.sbr" \
-	"$(INTDIR)\dbtime.sbr" \
 	"$(INTDIR)\dbutils.sbr" \
 	"$(INTDIR)\profilemanager.sbr" \
 	"$(INTDIR)\findadd.sbr" \
@@ -2055,7 +2054,8 @@ BSC32_SBRS= \
 	"$(INTDIR)\skin2icons.sbr" \
 	"$(INTDIR)\updatenotify.sbr" \
 	"$(INTDIR)\xmlApi.sbr" \
-	"$(INTDIR)\xmlParser.sbr"
+	"$(INTDIR)\xmlParser.sbr" \
+	"$(INTDIR)\timeutils.sbr"
 
 "$(OUTDIR)\miranda32.bsc" : "$(OUTDIR)" $(BSC32_SBRS)
     $(BSC32) @<<
@@ -2076,7 +2076,6 @@ LINK32_OBJS= \
 	"$(INTDIR)\database.obj" \
 	"$(INTDIR)\dbini.obj" \
 	"$(INTDIR)\dblists.obj" \
-	"$(INTDIR)\dbtime.obj" \
 	"$(INTDIR)\dbutils.obj" \
 	"$(INTDIR)\profilemanager.obj" \
 	"$(INTDIR)\findadd.obj" \
@@ -2178,6 +2177,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\xmlApi.obj" \
 	"$(INTDIR)\xmlParser.obj" \
 	"$(INTDIR)\vc6.res" \
+	"$(INTDIR)\timeutils.obj" \
 	"..\plugins\zlib\Debug_Unicode\zlib.lib"
 
 "..\bin\Debug Unicode\miranda32.exe" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
@@ -2299,12 +2299,6 @@ SOURCE=.\modules\database\dbini.cpp
 SOURCE=.\modules\database\dblists.cpp
 
 "$(INTDIR)\dblists.obj"	"$(INTDIR)\dblists.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-SOURCE=.\modules\database\dbtime.cpp
-
-"$(INTDIR)\dbtime.obj"	"$(INTDIR)\dbtime.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
@@ -2698,6 +2692,12 @@ SOURCE=.\modules\utils\sha1.cpp
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
+SOURCE=.\modules\utils\timeutils.cpp
+
+"$(INTDIR)\timeutils.obj"	"$(INTDIR)\timeutils.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
 SOURCE=.\modules\utils\timezones.cpp
 
 "$(INTDIR)\timezones.obj"	"$(INTDIR)\timezones.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\miranda32.pch"
@@ -2955,48 +2955,48 @@ SOURCE=.\vc6.rc
 !IF  "$(CFG)" == "miranda32 - Win32 Release"
 
 "zlib - Win32 Release" : 
-   cd "..\plugins\zlib"
+   cd "\Develop\miranda\plugins\miranda\miranda\plugins\zlib"
    $(MAKE) /$(MAKEFLAGS) /F .\zlib.mak CFG="zlib - Win32 Release" 
    cd "..\..\src"
 
 "zlib - Win32 ReleaseCLEAN" : 
-   cd "..\plugins\zlib"
+   cd "\Develop\miranda\plugins\miranda\miranda\plugins\zlib"
    $(MAKE) /$(MAKEFLAGS) /F .\zlib.mak CFG="zlib - Win32 Release" RECURSE=1 CLEAN 
    cd "..\..\src"
 
 !ELSEIF  "$(CFG)" == "miranda32 - Win32 Debug"
 
 "zlib - Win32 Debug" : 
-   cd "..\plugins\zlib"
+   cd "\Develop\miranda\plugins\miranda\miranda\plugins\zlib"
    $(MAKE) /$(MAKEFLAGS) /F .\zlib.mak CFG="zlib - Win32 Debug" 
    cd "..\..\src"
 
 "zlib - Win32 DebugCLEAN" : 
-   cd "..\plugins\zlib"
+   cd "\Develop\miranda\plugins\miranda\miranda\plugins\zlib"
    $(MAKE) /$(MAKEFLAGS) /F .\zlib.mak CFG="zlib - Win32 Debug" RECURSE=1 CLEAN 
    cd "..\..\src"
 
 !ELSEIF  "$(CFG)" == "miranda32 - Win32 Release Unicode"
 
 "zlib - Win32 Release Unicode" : 
-   cd "..\plugins\zlib"
+   cd "\Develop\miranda\plugins\miranda\miranda\plugins\zlib"
    $(MAKE) /$(MAKEFLAGS) /F .\zlib.mak CFG="zlib - Win32 Release Unicode" 
    cd "..\..\src"
 
 "zlib - Win32 Release UnicodeCLEAN" : 
-   cd "..\plugins\zlib"
+   cd "\Develop\miranda\plugins\miranda\miranda\plugins\zlib"
    $(MAKE) /$(MAKEFLAGS) /F .\zlib.mak CFG="zlib - Win32 Release Unicode" RECURSE=1 CLEAN 
    cd "..\..\src"
 
 !ELSEIF  "$(CFG)" == "miranda32 - Win32 Debug Unicode"
 
 "zlib - Win32 Debug Unicode" : 
-   cd "..\plugins\zlib"
+   cd "\Develop\miranda\plugins\miranda\miranda\plugins\zlib"
    $(MAKE) /$(MAKEFLAGS) /F .\zlib.mak CFG="zlib - Win32 Debug Unicode" 
    cd "..\..\src"
 
 "zlib - Win32 Debug UnicodeCLEAN" : 
-   cd "..\plugins\zlib"
+   cd "\Develop\miranda\plugins\miranda\miranda\plugins\zlib"
    $(MAKE) /$(MAKEFLAGS) /F .\zlib.mak CFG="zlib - Win32 Debug Unicode" RECURSE=1 CLEAN 
    cd "..\..\src"
 

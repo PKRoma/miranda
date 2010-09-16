@@ -308,9 +308,6 @@
     <ClCompile Include="modules\database\dblists.cpp">
       <Filter>Modules\database</Filter>
     </ClCompile>
-    <ClCompile Include="modules\database\dbtime.cpp">
-      <Filter>Modules\database</Filter>
-    </ClCompile>
     <ClCompile Include="modules\database\dbutils.cpp">
       <Filter>Modules\database</Filter>
     </ClCompile>
@@ -609,6 +606,9 @@
       <Filter>Modules\utils</Filter>
     </ClCompile>
     <ClCompile Include="modules\utils\timezones.cpp">
+      <Filter>Modules\utils</Filter>
+    </ClCompile>
+    <ClCompile Include="modules\utils\timeutils.cpp">
       <Filter>Modules\utils</Filter>
     </ClCompile>
   </ItemGroup>

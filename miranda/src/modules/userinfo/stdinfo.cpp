@@ -240,7 +240,7 @@ static INT_PTR CALLBACK LocationDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, L
 			{
 				TCHAR szTime[80];
 				
-				if (tmi.printCurrentTimeByContact(hContact, _T("s"), szTime, SIZEOF(szTime), TZF_KNOWNONLY))
+				if (tmi.printDateTimeByContact(hContact, _T("s"), szTime, SIZEOF(szTime), TZF_KNOWNONLY))
 				{
 					EnableWindow(GetDlgItem(hwndDlg,IDC_LOCALTIME),FALSE);
 					SetDlgItemText(hwndDlg, IDC_LOCALTIME, TranslateT("<not specified>"));

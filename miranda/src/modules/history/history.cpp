@@ -196,7 +196,6 @@ static void FillHistoryThread(void* param)
 	HANDLE hDbEvent;
 	DBEVENTINFO dbei;
 	int newBlobSize,oldBlobSize,i;
-	DBTIMETOSTRINGT dbtts;
 	HWND hwndList;
 	THistoryThread *hInfo = ( THistoryThread* )param;
 
@@ -206,12 +205,8 @@ static void FillHistoryThread(void* param)
 
 	ZeroMemory(&dbei,sizeof(dbei));
 	dbei.cbSize=sizeof(dbei);
-	dbei.pBlob=NULL;
 	oldBlobSize=0;
 	hDbEvent=(HANDLE)CallService(MS_DB_EVENT_FINDLAST,(WPARAM)hInfo->hContact,0);
-	dbtts.cbDest = SIZEOF(strdatetime);
-	dbtts.szDest = strdatetime;
-	dbtts.szFormat = _T("d t");
 	hwndList = GetDlgItem(hInfo->hwnd,IDC_LIST);
 	while ( hDbEvent != NULL ) {
 		if ( !IsWindow( hInfo->hwnd ))
@@ -225,7 +220,7 @@ static void FillHistoryThread(void* param)
 		CallService( MS_DB_EVENT_GET, (WPARAM)hDbEvent, (LPARAM)&dbei );
 		GetObjectSummary(&dbei,str,SIZEOF(str));
 		if(str[0]) {
-			CallService(MS_DB_TIME_TIMESTAMPTOSTRINGT, dbei.timestamp,( LPARAM )&dbtts );
+			tmi.printTimeStamp(NULL, dbei.timestamp, _T("d t"), strdatetime, SIZEOF(strdatetime), 0);
 			mir_sntprintf( eventText, SIZEOF(eventText), _T("%s: %s"), strdatetime, str );
 			i = SendMessage(hwndList, LB_ADDSTRING, 0, (LPARAM)eventText );
 			SendMessage(hwndList, LB_SETITEMDATA, i, (LPARAM)hDbEvent);

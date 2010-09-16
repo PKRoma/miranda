@@ -1225,20 +1225,13 @@ LRESULT TSAPI DM_UpdateLastMessage(const TWindowData *dat)
 			SendMessage(dat->pContainer->hwndStatus, SB_SETICON, 0, 0);
 
 		if (dat->lastMessage || dat->pContainer->dwFlags & CNT_UINSTATUSBAR) {
-			DBTIMETOSTRINGT dbtts;
 			TCHAR date[64], time[64];
 
 			if (!(dat->pContainer->dwFlags & CNT_UINSTATUSBAR)) {
-				dbtts.szFormat = _T("d");
-				dbtts.cbDest = safe_sizeof(date);
-				dbtts.szDest = date;
-				CallService(MS_DB_TIME_TIMESTAMPTOSTRINGT, dat->lastMessage, (LPARAM) & dbtts);
+				tmi.printTimeStamp(NULL, dat->lastMessage, _T("d"), date, safe_sizeof(date), 0); 
 				if (dat->pContainer->dwFlags & CNT_UINSTATUSBAR && lstrlen(date) > 6)
 					date[lstrlen(date) - 5] = 0;
-				dbtts.szFormat = _T("t");
-				dbtts.cbDest = safe_sizeof(time);
-				dbtts.szDest = time;
-				CallService(MS_DB_TIME_TIMESTAMPTOSTRINGT, dat->lastMessage, (LPARAM) & dbtts);
+				tmi.printTimeStamp(NULL, dat->lastMessage, _T("t"), time, safe_sizeof(time), 0); 
 			}
 			if (dat->pContainer->dwFlags & CNT_UINSTATUSBAR) {
 				TCHAR fmt[100];

@@ -39,16 +39,34 @@ typedef struct
 	HANDLE  ( *createByContact )( HANDLE hContact, DWORD dwFlags );
 	void    ( *storeByContact )( HANDLE hContact, HANDLE hTZ );
 
-	int     ( *printCurrentTime )( HANDLE hTZ, LPCTSTR szFormat, LPTSTR szDest, int cbDest, DWORD dwFlags );
-	int     ( *printCurrentTimeByContact )( HANDLE hContact, LPCTSTR szFormat, LPTSTR szDest, int cbDest, DWORD dwFlags );
-
-//	LPTIME_ZONE_INFORMATION ( *getTzi )( HANDLE hTZ );
-//	void    ( *printTimeStamp )( HANDLE hTZ, time_t ts, LPCTSTR szFormat, LPTSTR szDest, int cbDest, DWORD dwFlags );
+	int     ( *printDateTime )( HANDLE hTZ, LPCTSTR szFormat, LPTSTR szDest, int cbDest, DWORD dwFlags );
 
 	int     ( *prepareList )( HANDLE hContact, HWND hWnd, DWORD dwFlags );
 	void    ( *storeListResults )( HANDLE hContact, HWND hWnd, DWORD dwFlags );
-}
-	TIME_API;
+
+	int     ( *printTimeStamp )( HANDLE hTZ, time_t ts, LPCTSTR szFormat, LPTSTR szDest, int cbDest, DWORD dwFlags );
+	int     ( *getTimeZoneTime )( HANDLE hTZ, SYSTEMTIME *st );
+	time_t  ( *timeStampToTimeZoneTimeStamp )( HANDLE hTZ, time_t ts );
+
+	LPTIME_ZONE_INFORMATION ( *getTzi )( HANDLE hTZ );
+
+
+	int printDateTimeByContact (HANDLE hContact, LPCTSTR szFormat, LPTSTR szDest, int cbDest, DWORD dwFlags)
+	{ return printDateTime(createByContact(hContact, dwFlags), szFormat, szDest, cbDest, dwFlags); }
+
+	int printTimeStampByContact(HANDLE hContact, time_t ts, LPCTSTR szFormat, LPTSTR szDest, int cbDest, DWORD dwFlags)
+	{ return printTimeStamp(createByContact(hContact, dwFlags), ts, szFormat, szDest, cbDest, dwFlags); }
+
+	LPTIME_ZONE_INFORMATION getTziByContact(HANDLE hContact)
+	{ return getTzi(createByContact(hContact, 0)); }
+
+	int getTimeZoneTimeByContact(HANDLE hContact, SYSTEMTIME *st)
+	{ return getTimeZoneTime(createByContact(hContact, 0), st); }
+
+	time_t timeStampToTimeZoneTimeStampByContact(HANDLE hContact, time_t ts)
+	{ return timeStampToTimeZoneTimeStamp(createByContact(hContact, 0), ts); }
+
+} TIME_API;
 
 /* every protocol should declare this variable to use the Time API */
 extern TIME_API tmi;

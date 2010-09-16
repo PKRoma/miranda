@@ -397,10 +397,6 @@ SOURCE=.\modules\database\dblists.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\modules\database\dbtime.cpp
-# End Source File
-# Begin Source File
-
 SOURCE=.\modules\database\dbutils.cpp
 # End Source File
 # Begin Source File
@@ -758,6 +754,10 @@ SOURCE=.\modules\utils\resizer.cpp
 # Begin Source File
 
 SOURCE=.\modules\utils\sha1.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\modules\utils\timeutils.cpp
 # End Source File
 # Begin Source File
 
