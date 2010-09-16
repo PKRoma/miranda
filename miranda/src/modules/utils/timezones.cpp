@@ -254,6 +254,8 @@ static int timeapiPrintTimeStamp(HANDLE hTZ, time_t ts, LPCTSTR szFormat, LPTSTR
 	if (tz == NULL && (dwFlags & (TZF_DIFONLY | TZF_KNOWNONLY))) 
 		return 1;
 
+	tz = myInfo.myTZ;
+
 	if (tz->offset == INT_MIN)
 		CalcTsOffset(tz);
 
