@@ -41,8 +41,18 @@ TIME_API tmi;
 	} DYNAMIC_TIME_ZONE_INFORMATION;
 #endif
 
-typedef DWORD 		(WINAPI *pfnGetDynamicTimeZoneInformation_t)(DYNAMIC_TIME_ZONE_INFORMATION *pdtzi);
+typedef DWORD 	(WINAPI *pfnGetDynamicTimeZoneInformation_t)(DYNAMIC_TIME_ZONE_INFORMATION *pdtzi);
 static pfnGetDynamicTimeZoneInformation_t pfnGetDynamicTimeZoneInformation;
+
+typedef HRESULT	(WINAPI *pfnSHLoadIndirectString_t)(LPCWSTR pszSource, LPWSTR pszOutBuf, UINT cchOutBuf,  void **ppvReserved);
+static pfnSHLoadIndirectString_t pfnSHLoadIndirectString;
+
+typedef LANGID (WINAPI *pfnGetUserDefaultUILanguage_t)(void);
+static pfnGetUserDefaultUILanguage_t pfnGetUserDefaultUILanguage;
+
+typedef LANGID (WINAPI *pfnGetSystemDefaultUILanguage_t)(void);
+static pfnGetSystemDefaultUILanguage_t pfnGetSystemDefaultUILanguage;
+
 
 typedef struct _REG_TZI_FORMAT
 {
@@ -79,6 +89,7 @@ typedef struct
 } TZ_INT_INFO;
 
 static TZ_INT_INFO myInfo;
+bool muiInstalled;
 
 static OBJLIST<MIM_TIMEZONE>  g_timezones(55, MIM_TIMEZONE::compareHash);
 static LIST<MIM_TIMEZONE>     g_timezonesBias(55, MIM_TIMEZONE::compareBias);
@@ -464,6 +475,25 @@ static INT_PTR TimestampToStringA(WPARAM wParam, LPARAM lParam)
 }
 #endif
 
+void GetLocalizedString(HKEY hSubKey, const TCHAR *szName, TCHAR *szBuf, DWORD cbLen)
+{
+	szBuf[0] = 0;
+#ifdef _UNICODE
+	if (muiInstalled)
+	{
+		TCHAR tszTempBuf[MIM_TZ_NAMELEN], tszName[30];
+		mir_sntprintf(tszName, SIZEOF(tszName), _T("MUI_%s"), szName);
+		DWORD dwLength = cbLen * sizeof(TCHAR);
+		if (ERROR_SUCCESS == RegQueryValueEx(hSubKey, tszName, NULL, NULL, (unsigned char *)tszTempBuf, &dwLength))
+			pfnSHLoadIndirectString(tszTempBuf, szBuf, cbLen, NULL);
+	}
+	if (szBuf[0] == 0)
+#endif
+	{
+		DWORD dwLength = cbLen * sizeof(TCHAR);
+		RegQueryValueEx(hSubKey, szName, NULL, NULL, (unsigned char *)szBuf, &dwLength);
+	}
+}
 
 void InitTimeZones(void)
 {
@@ -473,7 +503,6 @@ void InitTimeZones(void)
 	REG_TZI_FORMAT	tzi;
 	HKEY			hKey;
 	TCHAR           *myTzKey = NULL;
-	bool			isWin2KPlus = IsWinVer2000Plus();
 	DYNAMIC_TIME_ZONE_INFORMATION dtzi;
 
 	const TCHAR *tszKey = IsWinVerNT() ?
@@ -493,6 +522,15 @@ void InitTimeZones(void)
 				myTzKey = mir_u2t(dtzi.TimeZoneKeyName);
 	}
 
+#ifdef _UNICODE
+	if (IsWinVer2000Plus())
+	{
+		pfnSHLoadIndirectString = (pfnSHLoadIndirectString_t)GetProcAddress(GetModuleHandle(_T("shlwapi")), "SHLoadIndirectString");
+		pfnGetSystemDefaultUILanguage = (pfnGetSystemDefaultUILanguage_t)GetProcAddress(GetModuleHandle(_T("kernel32")), "GetSystemDefaultUILanguage");
+		pfnGetUserDefaultUILanguage = (pfnGetUserDefaultUILanguage_t)GetProcAddress(GetModuleHandle(_T("kernel32")), "GetUserDefaultUILanguage");
+		muiInstalled = pfnSHLoadIndirectString && pfnGetSystemDefaultUILanguage() != pfnGetUserDefaultUILanguage();
+	}
+#endif
 
 	if (ERROR_SUCCESS == RegOpenKeyEx(HKEY_LOCAL_MACHINE, tszKey, 0, KEY_ENUMERATE_SUB_KEYS, &hKey)) 
 	{
@@ -528,17 +566,9 @@ void InitTimeZones(void)
 				tz->hash = hashstr(tszName);
 				tz->offset = INT_MIN;
 
-				tz->tszDisplay[0] = 0;
-				dwLength = sizeof(tz->tszDisplay);
-				RegQueryValueEx(hSubKey, _T("Display"), NULL, NULL, (unsigned char *)tz->tszDisplay, &dwLength); 
-
-				szStdName[0] = 0;
-				dwLength = sizeof(szStdName);
-				RegQueryValueEx(hSubKey, _T("Std"), NULL, NULL, (unsigned char *)szStdName, &dwLength);
-
-				szDayName[0] = 0;
-				dwLength = sizeof(szDayName);
-				RegQueryValueEx(hSubKey, _T("Dlt"), NULL, NULL, (unsigned char *)szDayName, &dwLength);
+				GetLocalizedString(hSubKey, _T("Display"), tz->tszDisplay, SIZEOF(tz->tszDisplay));
+				GetLocalizedString(hSubKey, _T("Std"), szStdName, SIZEOF(szStdName));
+				GetLocalizedString(hSubKey, _T("Dlt"), szDayName, SIZEOF(szDayName));
 
 #ifndef _UNICODE
 				MultiByteToWideChar(CP_ACP, 0, szStdName, -1, tz->tzi.StandardName, SIZEOF(tz->tzi.StandardName));
@@ -556,15 +586,6 @@ void InitTimeZones(void)
 					}
 					else 
 					{
-						if (isWin2KPlus)
-						{
-							dwLength = sizeof(szStdName);
-							RegQueryValueEx(hSubKey, _T("MUI_Std"), NULL, NULL, (unsigned char *)szStdName, &dwLength); 
-
-							dwLength = sizeof(szDayName);
-							RegQueryValueEx(hSubKey, _T("MUI_Dlt"), NULL, NULL, (unsigned char *)szDayName, &dwLength);
-						}
-
 						if (!_tcscmp(szStdName, myStdName) || !_tcscmp(szDayName, myDayName)) 
 							myInfo.myTZ = tz;
 					}
