@@ -71,6 +71,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define UPDATER_PATH "http://miranda-im.org/download/details.php?action=viewfile&id=3684"
 
 #include "m_stdhdr.h"
+
 #include <windows.h>
 #include <commctrl.h>
 #include <uxtheme.h>
@@ -78,7 +79,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <stdio.h>
 #include <time.h>
 #include <stddef.h>
-#include <process.h>
+//#include <process.h>
 #include <io.h>
 #include <math.h>
 #include <string.h>
@@ -92,7 +93,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <m_system_cpp.h>
 #include <m_utils.h>
 
-
 #include <m_database.h>
 #include <m_langpack.h>
 #include <m_button.h>
@@ -104,20 +104,22 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <m_contacts.h>
 #include <m_plugins.h>
 #include <m_avatars.h>
-#include "m_genmenu.h"
-#include "m_clui.h"
-#include "m_clc.h"
+#include <m_genmenu.h>
+#include <m_clui.h>
+#include <m_clc.h>
+#include <m_icolib.h>
+#include <m_userinfo.h>
+#include <m_addcontact.h>
+#include <m_fontservice.h>
+#include <m_file.h>
+#include <m_timezones.h>
+
 #include "modern_clc.h"
 #include "modern_clist.h"
-#include "m_icolib.h"
-#include <m_userinfo.h>
 #include "modern_cluiframes.h"
 #include "m_cluiframes.h"
 #include "../m_api/m_metacontacts.h"
 #include "../m_api/m_skin_eng.h"
-#include <m_file.h>
-#include <m_addcontact.h>
-#include <m_fontservice.h>
 
 #include "modern_rowheight_funcs.h"
 #include "modern_cache_funcs.h"

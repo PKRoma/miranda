@@ -309,26 +309,14 @@ int mod_CalcRowHeight_worker(struct ClcData *dat, HWND hwnd, struct ClcContact *
 		  }
 	  case TC_TIME:
         {
-          if (contact->type == CLCIT_CONTACT && dat->contact_time_show && pdnce->timezone != -1 && 
-            (!dat->contact_time_show_only_if_different || pdnce->timediff != 0))
+          if (contact->type == CLCIT_CONTACT && dat->contact_time_show && pdnce->hTimeZone)
           {
             gl_RowTabAccess[i]->h=dat->fontModernInfo[FONTID_CONTACT_TIME].fontHeight;
             if (item==-1)
             {
-
-              DBTIMETOSTRINGT dbtts;
-              time_t contact_time;
               TCHAR szResult[80];
 
-              contact_time = time(NULL) - pdnce->timediff;
-              szResult[0] = '\0';
-
-              dbtts.szDest = szResult;
-              dbtts.cbDest = sizeof(szResult);
-              dbtts.szFormat = _T("t");
-              CallService(MS_DB_TIME_TIMESTAMPTOSTRINGT, (WPARAM)contact_time, (LPARAM) & dbtts);
-
-              if (szResult[0] != '\0')
+			  if (!tmi.printDateTime(pdnce->hTimeZone, _T("t"), szResult, SIZEOF(szResult), 0))
               {
                 SIZE text_size={0};
                 RECT rc={0};

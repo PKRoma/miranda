@@ -39,9 +39,10 @@ CLIST_INTERFACE *pcli=NULL;
 CLIST_INTERFACE corecli={0};
 CLUIDATA g_CluiData={0};
 
-struct MM_INTERFACE   mmi  = {sizeof(struct MM_INTERFACE  ),0};
-struct LIST_INTERFACE li   = {sizeof(struct LIST_INTERFACE),0};
-struct UTF8_INTERFACE utfi = {sizeof(struct UTF8_INTERFACE),0};
+MM_INTERFACE   mmi;
+LIST_INTERFACE li;
+UTF8_INTERFACE utfi;
+TIME_API       tmi;
 
 static HRESULT SubclassClistInterface();
 static HRESULT CreateHookableEvents();
@@ -104,9 +105,10 @@ PLUGININTERFACE int CListInitialise(PLUGINLINK * link)
 	g_dwMainThreadID=GetCurrentThreadId();
     DuplicateHandle(GetCurrentProcess(),GetCurrentThread(),GetCurrentProcess(),&g_hMainThread,0,FALSE,DUPLICATE_SAME_ACCESS);
 
-	CallService( MS_SYSTEM_GET_MMI,	 0, (LPARAM)&mmi  );
-	CallService( MS_SYSTEM_GET_UTFI, 0, (LPARAM)&utfi );
-	CallService( MS_SYSTEM_GET_LI,   0, (LPARAM)&li   );
+	mir_getMMI(&mmi);
+	mir_getUTFI(&utfi);
+	mir_getLI(&li);
+	mir_getTMI(&tmi);
 
 	CHECKRES ( PreLoadContactListModule ( )	);
 	CHECKRES ( SubclassClistInterface ( )	);

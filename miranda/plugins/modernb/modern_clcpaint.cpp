@@ -1224,25 +1224,15 @@ void CLCPaint::_PaintRowItemsEx( HWND hwnd, HDC hdcMem, struct ClcData *dat, str
                     SIZE text_size;
                     UINT uTextFormat = ( dat->text_rtl ? DT_RTLREADING : 0 ) ;
                     {
-                        if ( dat->second_line_show && dat->second_line_type == TEXT_CONTACT_TIME && pdnce->timezone != -1 &&
-                            ( !dat->contact_time_show_only_if_different || pdnce->timediff != 0 ) )
+                        if ( dat->second_line_show && dat->second_line_type == TEXT_CONTACT_TIME && pdnce->hTimeZone )
                         {
                             // Get contact time
-                            DBTIMETOSTRINGT dbtts;
-                            time_t contact_time;
-                            TCHAR buf[70] = {0};
-                            contact_time = g_CluiData.t_now - pdnce->timediff;
-                            if ( pdnce->szSecondLineText ) mir_free_and_nill( pdnce->szSecondLineText );
-                            pdnce->szSecondLineText = NULL;
+                            TCHAR buf[70] = _T("");
+                            mir_free_and_nill( pdnce->szSecondLineText );
 
-                            dbtts.szDest = buf;
-                            dbtts.cbDest = sizeof( buf );
-
-                            dbtts.szFormat = _T( "t" );
-                            CallService( MS_DB_TIME_TIMESTAMPTOSTRINGT, ( WPARAM )contact_time, ( LPARAM ) & dbtts );
-                            pdnce->szSecondLineText = mir_tstrdup( buf );
+							tmi.printDateTime(pdnce->hTimeZone, _T("t"), buf, SIZEOF(buf), 0);
+							pdnce->szSecondLineText = mir_tstrdup( buf );
                         }
-
                     }
                     uTextFormat|= ( gl_RowTabAccess[i]->valign == TC_VCENTER )?DT_VCENTER:( gl_RowTabAccess[i]->valign == TC_BOTTOM )?DT_BOTTOM:0;
                     uTextFormat|= ( gl_RowTabAccess[i]->halign == TC_HCENTER )?DT_CENTER:( gl_RowTabAccess[i]->halign == TC_RIGHT )?DT_RIGHT:0;
@@ -1263,21 +1253,13 @@ void CLCPaint::_PaintRowItemsEx( HWND hwnd, HDC hdcMem, struct ClcData *dat, str
                     SIZE text_size;
                     UINT uTextFormat = ( dat->text_rtl ? DT_RTLREADING : 0 ) ;
                     {
-                        if ( dat->third_line_show && dat->third_line_type == TEXT_CONTACT_TIME && pdnce->timezone != -1 &&
-                            ( !dat->contact_time_show_only_if_different || pdnce->timediff != 0 ) )
+                        if ( dat->third_line_show && dat->third_line_type == TEXT_CONTACT_TIME && pdnce->hTimeZone )
                         {
                             // Get contact time
-                            DBTIMETOSTRINGT dbtts;
-                            time_t contact_time;
-                            TCHAR buf[70] = {0};
-                            contact_time = g_CluiData.t_now- pdnce->timediff;
-                            if ( pdnce->szThirdLineText ) mir_free_and_nill( pdnce->szThirdLineText );
-                            pdnce->szThirdLineText = NULL;
+                            TCHAR buf[70] = _T("");
+                            mir_free_and_nill( pdnce->szThirdLineText );
 
-                            dbtts.szDest = buf;
-                            dbtts.cbDest = sizeof( buf );
-                            dbtts.szFormat = _T( "t" );
-                            CallService( MS_DB_TIME_TIMESTAMPTOSTRINGT, ( WPARAM )contact_time, ( LPARAM ) & dbtts );
+							tmi.printDateTime(pdnce->hTimeZone, _T("t"), buf, SIZEOF(buf), 0);
                             pdnce->szThirdLineText = mir_tstrdup( buf );
                         }
                     }
@@ -1680,19 +1662,9 @@ void CLCPaint::_PaintRowItemsEx( HWND hwnd, HDC hdcMem, struct ClcData *dat, str
                 }
             case TC_TIME:
                 {
-                    DBTIMETOSTRINGT dbtts;
-                    time_t contact_time;
                     TCHAR szResult[80];
 
-                    contact_time = g_CluiData.t_now - pdnce->timediff;
-                    szResult[0] = '\0';
-
-                    dbtts.szDest = szResult;
-                    dbtts.cbDest = sizeof( szResult );
-                    dbtts.szFormat = _T( "t" );
-                    CallService( MS_DB_TIME_TIMESTAMPTOSTRINGT, ( WPARAM )contact_time, ( LPARAM ) & dbtts );
-
-                    if ( szResult[0] != '\0' )
+                    if (!tmi.printDateTime(pdnce->hTimeZone, _T("t"), szResult, SIZEOF(szResult), 0))
                     {
                         // Select font
                         ChangeToFont( hdcMem, dat, FONTID_CONTACT_TIME, NULL );
@@ -2999,22 +2971,11 @@ void CLCPaint::_CalcItemsPos( HWND hwnd, HDC hdcMem, struct ClcData *dat, struct
         case ITEM_CONTACT_TIME: /////////////////////////////////////////////////////////////////////////////////////////////////////
             {
                 PDNCE pdnce = ( PDNCE )( ( Drawing->type == CLCIT_CONTACT )?pcli->pfnGetCacheEntry( Drawing->hContact ):NULL );
-                if ( Drawing->type == CLCIT_CONTACT && dat->contact_time_show && pdnce->timezone != -1 &&
-                    ( !dat->contact_time_show_only_if_different || pdnce->timediff != 0 ) )
+                if ( Drawing->type == CLCIT_CONTACT && dat->contact_time_show && pdnce->hTimeZone )
                 {
-                    DBTIMETOSTRINGT dbtts;
-                    time_t contact_time;
                     TCHAR szResult[80];
 
-                    contact_time = g_CluiData.t_now - pdnce->timediff;
-                    szResult[0] = '\0';
-
-                    dbtts.szDest = szResult;
-                    dbtts.cbDest = sizeof( szResult );
-                    dbtts.szFormat = _T( "t" );
-                    CallService( MS_DB_TIME_TIMESTAMPTOSTRINGT, ( WPARAM )contact_time, ( LPARAM ) & dbtts );
-
-                    if ( szResult[0] != '\0' )
+					if (!tmi.printDateTime(pdnce->hTimeZone, _T("t"), szResult, SIZEOF(szResult), 0))
                     {
                         SIZE text_size;
                         RECT rc;
@@ -3216,22 +3177,13 @@ void CLCPaint::_CalcItemsPos( HWND hwnd, HDC hdcMem, struct ClcData *dat, struct
         {
             int tmp;
             PDNCE pdnce = ( PDNCE )( ( Drawing->type == CLCIT_CONTACT )?pcli->pfnGetCacheEntry( Drawing->hContact ):NULL );
-            if ( dat->second_line_show && dat->second_line_type == TEXT_CONTACT_TIME && pdnce->timezone != -1 &&
-                ( !dat->contact_time_show_only_if_different || pdnce->timediff != 0 ) )
+            if ( dat->second_line_show && dat->second_line_type == TEXT_CONTACT_TIME && pdnce->hTimeZone)
             {
                 // Get contact time
-                DBTIMETOSTRINGT dbtts;
-                time_t contact_time;
-                TCHAR buf[70] = {0};
-                contact_time = g_CluiData.t_now - pdnce->timediff;
-                if ( pdnce->szSecondLineText ) mir_free_and_nill( pdnce->szSecondLineText );
-                pdnce->szSecondLineText = NULL;
+                TCHAR buf[70] = _T("");
+                mir_free_and_nill( pdnce->szThirdLineText );
 
-                dbtts.szDest = buf;
-                dbtts.cbDest = sizeof( buf );
-
-                dbtts.szFormat = _T( "t" );
-                CallService( MS_DB_TIME_TIMESTAMPTOSTRINGT, ( WPARAM )contact_time, ( LPARAM ) & dbtts );
+				tmi.printDateTime(pdnce->hTimeZone, _T("t"), buf, SIZEOF(buf), 0);
                 pdnce->szSecondLineText = mir_tstrdup( buf );
             }
 
@@ -3263,21 +3215,13 @@ void CLCPaint::_CalcItemsPos( HWND hwnd, HDC hdcMem, struct ClcData *dat, struct
 
                 max_bottom_selection_border = min( max_bottom_selection_border, dat->second_line_top_space / 2 );
             }
-            if ( dat->third_line_show && dat->third_line_type == TEXT_CONTACT_TIME && pdnce->timezone != -1 &&
-                ( !dat->contact_time_show_only_if_different || pdnce->timediff != 0 ) )
+            if ( dat->third_line_show && dat->third_line_type == TEXT_CONTACT_TIME && pdnce->hTimeZone )
             {
                 // Get contact time
-                DBTIMETOSTRINGT dbtts;
-                time_t contact_time;
-                TCHAR buf[70] = {0};
-                contact_time = g_CluiData.t_now - pdnce->timediff;
-                if ( pdnce->szThirdLineText ) mir_free_and_nill( pdnce->szThirdLineText );
-                pdnce->szThirdLineText = NULL;
+                TCHAR buf[70] = _T("");
+                mir_free_and_nill( pdnce->szThirdLineText );
 
-                dbtts.szDest = buf;
-                dbtts.cbDest = sizeof( buf );
-                dbtts.szFormat = _T( "t" );
-                CallService( MS_DB_TIME_TIMESTAMPTOSTRINGT, ( WPARAM )contact_time, ( LPARAM ) & dbtts );
+				tmi.printDateTime(pdnce->hTimeZone, _T("t"), buf, SIZEOF(buf), 0);
                 pdnce->szThirdLineText = mir_tstrdup( buf );
             }
             if ( dat->third_line_show && pdnce->szThirdLineText != NULL && pdnce->szThirdLineText[0]
@@ -3750,22 +3694,12 @@ void CLCPaint::_DrawContactSubText( HDC hdcMem, struct ClcData *dat, struct ClcC
 }
 void CLCPaint::_DrawContactTime( HDC hdcMem, struct ClcData *dat, struct ClcContact *Drawing, int& selected, int& hottrack, RECT& text_rc, RECT * prcItem )
 {
-	DBTIMETOSTRINGT dbtts;
-	time_t contact_time;
 	TCHAR szResult[80];
 	PDNCE pdnce = ( PDNCE )( ( Drawing->type == CLCIT_CONTACT )?pcli->pfnGetCacheEntry( Drawing->hContact ):NULL );
 
 	if ( !pdnce ) return;
 
-	contact_time = g_CluiData.t_now - pdnce->timediff;
-	szResult[0] = '\0';
-
-	dbtts.szDest = szResult;
-	dbtts.cbDest = sizeof( szResult );
-	dbtts.szFormat = _T( "t" );
-	CallService( MS_DB_TIME_TIMESTAMPTOSTRINGT, ( WPARAM )contact_time, ( LPARAM ) & dbtts );
-
-	if ( szResult[0] != '\0' )
+    if (!tmi.printDateTime(pdnce->hTimeZone, _T("t"), szResult, SIZEOF(szResult), 0))
 	{
 		// Select font
 		ChangeToFont( hdcMem, dat, FONTID_CONTACT_TIME, NULL );

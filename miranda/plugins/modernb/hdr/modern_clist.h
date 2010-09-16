@@ -105,8 +105,7 @@ struct tag_DNCE{
 	TCHAR	*	szThirdLineText;
 	CSmileyString ssThirdLine;
 
-	DWORD	timezone;
-    DWORD	timediff;
+	HANDLE	hTimeZone;
 	DWORD	dwLastMsgTime;
 };
 typedef tag_DNCE displayNameCacheEntry,*pdisplayNameCacheEntry, *PDNCE;

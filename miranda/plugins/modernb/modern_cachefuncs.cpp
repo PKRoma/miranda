@@ -61,22 +61,11 @@ void Cache_GetTimezone(struct ClcData *dat, HANDLE hContact)
     PDNCE pdnce=(PDNCE)pcli->pfnGetCacheEntry(hContact);
     if (dat==NULL && pcli->hwndContactTree) 
         dat=(struct ClcData *)GetWindowLongPtr(pcli->hwndContactTree,0);
-    if (!IsBadStringPtrA(pdnce->m_cache_cszProto,10))
-        pdnce->timezone = (DWORD)ModernGetSettingByte(hContact,"UserInfo","Timezone", 
-        ModernGetSettingByte(hContact, pdnce->m_cache_cszProto,"Timezone",-1));
-    else pdnce->timezone =-1;
-    pdnce->timediff = 0;
 
-    if (pdnce->timezone != -1)
-    {
-        int pdnce_gmt_diff = pdnce->timezone;
-        pdnce_gmt_diff = pdnce_gmt_diff > 128 ? 256 - pdnce_gmt_diff : 0 - pdnce_gmt_diff;
-        pdnce_gmt_diff *= 60*60/2;
+	DWORD flags = 0;
+	if (dat->contact_time_show_only_if_different) flags |= TZF_DIFONLY;
 
-        // Only in case of same timezone, ignore DST
-        if (pdnce_gmt_diff != (dat?dat->local_gmt_diff:0))
-            pdnce->timediff = (int)(dat?dat->local_gmt_diff_dst:0) - pdnce_gmt_diff;
-    }
+	pdnce->hTimeZone = tmi.createByContact ? tmi.createByContact(hContact, flags) : 0;
 }
 
 /*
@@ -570,19 +559,11 @@ int Cache_GetLineText(PDNCE pdnce, int type, LPTSTR text, int text_size, TCHAR *
         }
     case TEXT_CONTACT_TIME:
         {
-            if (pdnce->timezone != -1 && (!pdnce_time_show_only_if_different || pdnce->timediff != 0))
+            if (pdnce->hTimeZone)
             {
                 // Get pdnce time
-                DBTIMETOSTRINGT dbtts;
-                time_t pdnce_time;
-
-                pdnce_time = time(NULL) - pdnce->timediff;
-                text[0] = '\0';
-
-                dbtts.szDest = text;
-                dbtts.cbDest = 70;
-                dbtts.szFormat = TEXT("t");
-                CallService(MS_DB_TIME_TIMESTAMPTOSTRINGT, (WPARAM)pdnce_time, (LPARAM) & dbtts);
+                text[0] = 0;
+				tmi.printDateTime(pdnce->hTimeZone, _T("t"), text, SIZEOF(text), 0);
             }
 
             return TEXT_CONTACT_TIME;
