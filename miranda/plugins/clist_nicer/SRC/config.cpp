@@ -72,8 +72,8 @@ pfnDwmIsCompositionEnabled_t				API::pfnDwmIsCompositionEnabled = 0;
 EXCEPTION_RECORD API::exRecord = {0};
 CONTEXT		 	 API::exCtx = {0};
 LRESULT			 API::exLastResult = 0;
-char			 API::exSzFile[MAX_PATH] = "\0";
-wchar_t			 API::exReason[256] = L"\0";
+char			 API::exSzFile[MAX_PATH] = "";
+TCHAR			 API::exReason[256] = _T("");
 int				 API::exLine = 0;
 bool			 API::exAllowContinue = false;
 HMODULE			 API::hUxTheme = 0, API::hDwm = 0;
@@ -268,7 +268,7 @@ void API::onInit()
 	sysConfig.isWin2KPlus = (IsWinVer2000Plus() ? true : false);
 
 	if(sysConfig.isXPPlus) {
-		if ((hUxTheme = Utils::loadSystemLibrary(L"\\uxtheme.dll"), true) != 0) {
+		if ((hUxTheme = Utils::loadSystemLibrary(_T("\\uxtheme.dll")), true) != 0) {
 			pfnIsThemeActive = (pfnIsThemeActive_t)GetProcAddress(hUxTheme, "IsThemeActive");
 			pfnOpenThemeData = (pfnOpenThemeData_t)GetProcAddress(hUxTheme, "OpenThemeData");
 			pfnDrawThemeBackground = (pfnDrawThemeBackground_t)GetProcAddress(hUxTheme, "DrawThemeBackground");
@@ -287,7 +287,7 @@ void API::onInit()
 		}
 	}
 	if(sysConfig.isVistaPlus) {
-		if ((hDwm = Utils::loadSystemLibrary(L"\\dwmapi.dll"), true) != 0) {
+		if ((hDwm = Utils::loadSystemLibrary(_T("\\dwmapi.dll")), true) != 0) {
 			pfnDwmIsCompositionEnabled = (pfnDwmIsCompositionEnabled_t)GetProcAddress(hDwm, "DwmIsCompositionEnabled");
             pfnDwmExtendFrameIntoClientArea = (pfnDwmExtendFrameIntoClientArea_t)GetProcAddress(hDwm,"DwmExtendFrameIntoClientArea");
 		}
@@ -369,7 +369,7 @@ INT_PTR CALLBACK API::Ex_DlgProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
 				SetDlgItemTextA(hwndDlg, IDC_EXCEPTION_DETAILS, szBuffer);
 				SetFocus(GetDlgItem(hwndDlg, IDC_EXCEPTION_DETAILS));
 				SendDlgItemMessage(hwndDlg, IDC_EXCEPTION_DETAILS, WM_SETFONT, (WPARAM)GetStockObject(OEM_FIXED_FONT), 0);
-				SetDlgItemTextW(hwndDlg, IDC_EX_REASON, exReason);
+				SetDlgItemText(hwndDlg, IDC_EX_REASON, exReason);
 				Utils::enableDlgControl(hwndDlg, IDOK, exAllowContinue ? TRUE : FALSE);
 			}
 			break;
@@ -406,7 +406,7 @@ int API::Ex_ShowDialog(EXCEPTION_POINTERS *ep, const char *szFile, int line, TCH
 	memcpy(&exCtx, ep->ContextRecord, sizeof(CONTEXT));
 
 	_snprintf(exSzFile, MAX_PATH, "%s%s", szName, szExt);
-	mir_sntprintf(exReason, 256, L"An application error has occured: %s", szReason);
+	mir_sntprintf(exReason, 256, _T("An application error has occured: %s"), szReason);
 	exLine = line;
 	exLastResult = DialogBoxParam(g_hInst, MAKEINTRESOURCE(IDD_EXCEPTION), 0, Ex_DlgProc, 0);
 	exAllowContinue = fAllowContinue;
@@ -438,24 +438,24 @@ void TSAPI Utils::showDlgControl(const HWND hwnd, UINT id, int showCmd)
  *
  * return 0 and throw an exception if something goes wrong.
  */
-HMODULE Utils::loadSystemLibrary(const wchar_t* szFilename, bool useGetHandle)
+HMODULE Utils::loadSystemLibrary(const TCHAR* szFilename, bool useGetHandle)
 {
-	wchar_t		sysPathName[MAX_PATH + 2];
+	TCHAR		sysPathName[MAX_PATH + 2];
 	HMODULE		_h = 0;
 
 	try {
-		if(0 == ::GetSystemDirectoryW(sysPathName, MAX_PATH))
+		if(0 == ::GetSystemDirectory(sysPathName, MAX_PATH))
 			throw(CRTException("Error while loading system library", szFilename));
 
 		sysPathName[MAX_PATH - 1] = 0;
-		if(wcslen(sysPathName) + wcslen(szFilename) >= MAX_PATH)
+		if(_tcslen(sysPathName) + _tcslen(szFilename) >= MAX_PATH)
 			throw(CRTException("Error while loading system library", szFilename));
 
-		lstrcatW(sysPathName, szFilename);
+		lstrcat(sysPathName, szFilename);
 		if(useGetHandle)
 			_h = ::GetModuleHandle(sysPathName);
 		else
-			_h = LoadLibraryW(sysPathName);
+			_h = LoadLibrary(sysPathName);
 		if(0 == _h)
 			throw(CRTException("Error while loading system library", szFilename));
 	}

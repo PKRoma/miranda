@@ -144,7 +144,7 @@ public:
 	static void 			Ex_CopyEditToClipboard		(HWND hWnd);
 	static INT_PTR CALLBACK Ex_DlgProc					(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 	static void 			Ex_Handler					();
-	static int 				Ex_ShowDialog				(EXCEPTION_POINTERS *ep, const char *szFile, int line, wchar_t* szReason, bool fAllowContinue);
+	static int 				Ex_ShowDialog				(EXCEPTION_POINTERS *ep, const char *szFile, int line, TCHAR* szReason, bool fAllowContinue);
 
 
 	/*
@@ -189,7 +189,7 @@ public:
 	static CONTEXT			exCtx;
 	static LRESULT			exLastResult;
 	static char				exSzFile[MAX_PATH];
-	static wchar_t			exReason[256];
+	static TCHAR			exReason[256];
 	static int				exLine;
 	static bool				exAllowContinue;
 
@@ -202,7 +202,7 @@ class Utils
 public:
 	static void TSAPI 		enableDlgControl(const HWND hwnd, UINT id, BOOL fEnable);
 	static void TSAPI 		showDlgControl(const HWND hwnd, UINT id, int showCmd);
-	static HMODULE 			loadSystemLibrary(const wchar_t* szFilename, bool useGetHandle = false);
+	static HMODULE 			loadSystemLibrary(const TCHAR* szFilename, bool useGetHandle = false);
 
 };
 
