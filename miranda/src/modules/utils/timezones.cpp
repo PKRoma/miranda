@@ -224,7 +224,7 @@ static void timeapiSetInfoByContact(HANDLE hContact, HANDLE hTZ)
 	if (tz)
 	{
 		DBWriteContactSettingTString(hContact, "UserInfo", "TzName", tz->tszName);
-		DBWriteContactSettingByte(hContact, "UserInfo", "Timezone", (char)((tz->tzi.Bias + tz->tzi.StandardBias) / -60));
+		DBWriteContactSettingByte(hContact, "UserInfo", "Timezone", (char)((tz->tzi.Bias + tz->tzi.StandardBias) / 60));
 	} 
 	else 
 	{
