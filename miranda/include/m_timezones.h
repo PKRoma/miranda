@@ -24,23 +24,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define __M_TIMEZONES_H
 
 #define MIM_TZ_NAMELEN 64
-#define MIM_TZ_DISPLAYLEN 128
-
-struct MIM_TIMEZONE
-{
-	TCHAR	tszName[MIM_TZ_NAMELEN];			// windows name for the time zone
-	TCHAR	tszDisplay[MIM_TZ_DISPLAYLEN];		// more descriptive display name (that's what usually appears in dialogs)
-												// every hour should be sufficient.
-	TIME_ZONE_INFORMATION tzi;
-	unsigned hash;
-	int offset;
-
-	static int compareHash(const MIM_TIMEZONE* p1, const MIM_TIMEZONE* p2)
-	{ return p1->hash - p2->hash; }
-
-	static int compareBias(const MIM_TIMEZONE* p1, const MIM_TIMEZONE* p2)
-	{ return p2->tzi.Bias - p1->tzi.Bias; }
-};
 
 #define TZF_PLF_CB		1				// UI element is assumed to be a combo box
 #define TZF_PLF_LB		2				// UI element is assumed to be a list box
