@@ -63,24 +63,6 @@ typedef struct _REG_TZI_FORMAT
     SYSTEMTIME DaylightDate;
 } REG_TZI_FORMAT;
 
-#define MIM_TZ_DISPLAYLEN 128
-
-struct MIM_TIMEZONE
-{
-	TCHAR	tszName[MIM_TZ_NAMELEN];			// windows name for the time zone
-	TCHAR	tszDisplay[MIM_TZ_DISPLAYLEN];		// more descriptive display name (that's what usually appears in dialogs)
-												// every hour should be sufficient.
-	TIME_ZONE_INFORMATION tzi;
-	unsigned hash;
-	int offset;
-
-	static int compareHash(const MIM_TIMEZONE* p1, const MIM_TIMEZONE* p2)
-	{ return p1->hash - p2->hash; }
-
-	static int compareBias(const MIM_TIMEZONE* p1, const MIM_TIMEZONE* p2)
-	{ return p2->tzi.Bias - p1->tzi.Bias; }
-};
-
 typedef struct
 {
 	TIME_ZONE_INFORMATION tzi;
@@ -351,7 +333,7 @@ static int timeapiPrepareList(HANDLE hContact, HWND hWnd, DWORD dwFlags)
 	else
 		return 0;									// shouldn't happen
 
-	SendMessage(hWnd, addMsg, 0, (LPARAM)_T("<unspecified>"));
+	SendMessage(hWnd, addMsg, 0, (LPARAM)TranslateT("<unspecified>"));
 
 	if (g_timezonesBias.getCount() == 0) return 0; 
 
