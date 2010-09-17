@@ -318,13 +318,13 @@ static time_t timeapiTimeStampToTimeZoneTimeStamp(HANDLE hTZ, time_t ts)
 	return ts + tz->offset;
 }
 
-static int timeapiPrepareList(HANDLE hContact, HWND hWnd, DWORD dwFlags)
+typedef struct
 {
-	UINT addMsg, selMsg, findMsg, extMsg;					// control messages for list/combo box
+	UINT addStr, getSel, setSel, findStr, setData, getData;
+} ListMessages;
 
-	if (hWnd == NULL)	   // nothing to do
-		return 0;
-
+static bool GetListMessages(ListMessages &lstMsg, HWND hWnd, DWORD dwFlags)
+{
 	if (!(dwFlags & (TZF_PLF_CB | TZF_PLF_LB))) 
 	{
 		TCHAR	tszClassName[128];
@@ -336,22 +336,38 @@ static int timeapiPrepareList(HANDLE hContact, HWND hWnd, DWORD dwFlags)
 	}
 	if (dwFlags & TZF_PLF_CB) 
 	{
-		addMsg = CB_ADDSTRING;
-		selMsg = CB_SETCURSEL;
-		findMsg = CB_FINDSTRING;
-		extMsg = CB_SETITEMDATA;
+		lstMsg.addStr  = CB_ADDSTRING;
+		lstMsg.findStr = CB_FINDSTRING;
+		lstMsg.getSel  = CB_GETCURSEL;
+		lstMsg.setSel  = CB_SETCURSEL;
+		lstMsg.setData = CB_SETITEMDATA;
+		lstMsg.getData = CB_GETITEMDATA;
 	}
 	else if(dwFlags & TZF_PLF_LB) 
 	{
-		addMsg = LB_ADDSTRING;
-		selMsg = LB_SETCURSEL;
-		findMsg = LB_FINDSTRING;
-		extMsg  = LB_SETITEMDATA;
+		lstMsg.addStr  = LB_ADDSTRING;
+		lstMsg.findStr = LB_FINDSTRING;
+		lstMsg.getSel  = LB_GETCURSEL;
+		lstMsg.setSel  = LB_SETCURSEL;
+		lstMsg.setData = LB_SETITEMDATA;
+		lstMsg.getData = LB_GETITEMDATA;
 	}
 	else
-		return 0;									// shouldn't happen
+		return false;
 
-	SendMessage(hWnd, addMsg, 0, (LPARAM)_T("<unspecified>"));
+	return true;
+}
+
+
+static int timeapiPrepareList(HANDLE hContact, HWND hWnd, DWORD dwFlags)
+{
+	if (hWnd == NULL)	   // nothing to do
+		return 0;
+
+	ListMessages lstMsg;
+	if (!GetListMessages(lstMsg, hWnd, dwFlags)) return 0;
+
+	SendMessage(hWnd, lstMsg.addStr, 0, (LPARAM)TranslateT("<unspecified>"));
 
 	if (g_timezonesBias.getCount() == 0) return 0; 
 
@@ -378,12 +394,12 @@ static int timeapiPrepareList(HANDLE hContact, HWND hWnd, DWORD dwFlags)
 	int iSelection = -1;
 	for (int i = 0; i < g_timezonesBias.getCount(); ++i) 
 	{
-		SendMessage(hWnd, addMsg, 0, (LPARAM)g_timezonesBias[i]->tszDisplay);
+		SendMessage(hWnd, lstMsg.addStr, 0, (LPARAM)g_timezonesBias[i]->tszDisplay);
 		/*
-		 * set the adress of our timezone struct as itemdata
-		 * caller can obtain it and use it as a pointer to extract all relevant information
+		 * set the adress of our timezone handle as itemdata
+		 * caller can obtain the handle to extract all relevant information
 		 */
-		SendMessage(hWnd, extMsg, (WPARAM)i + 1, (LPARAM)g_timezonesBias[i]);
+		SendMessage(hWnd, lstMsg.setData, (WPARAM)i + 1, (LPARAM)g_timezonesBias[i]);
 
 		// remember the display name to later select it in the listbox
 		if (iSelection == -1 && tszName[0] && !_tcsicmp(tszName, g_timezonesBias[i]->tszName))	
@@ -392,46 +408,19 @@ static int timeapiPrepareList(HANDLE hContact, HWND hWnd, DWORD dwFlags)
 			iSelection = i + 1;
 		}
 	}
-	if (iSelection != -1) 
-	{
-		SendMessage(hWnd, selMsg, iSelection, 0);
-		return iSelection;
-	}
-
-	SendMessage(hWnd, selMsg, 0, 0);
-	return 0;
+	SendMessage(hWnd, lstMsg.setSel, iSelection >= 0 ? iSelection : 0, 0);
+	return iSelection >= 0;
 }
 
 static void timeapiStoreListResult(HANDLE hContact, HWND hWnd, DWORD dwFlags)
 {
-	UINT getMsg, extMsg;					// control messages for list/combo box
-	
-	if (!(dwFlags & (TZF_PLF_CB | TZF_PLF_LB))) 
-	{
-		TCHAR	tszClassName[128];
-		GetClassName(hWnd, tszClassName, SIZEOF(tszClassName));
-		if (!_tcsicmp(tszClassName, _T("COMBOBOX")))
-			dwFlags |= TZF_PLF_CB;
-		else if(!_tcsicmp(tszClassName, _T("LISTBOX")))
-			dwFlags |= TZF_PLF_LB;
-	}
-	if (dwFlags & TZF_PLF_CB) 
-	{
-		getMsg = CB_GETCURSEL;
-		extMsg = CB_GETITEMDATA;
-	}
-	else if(dwFlags & TZF_PLF_LB) 
-	{
-		getMsg = LB_GETCURSEL;
-		extMsg = LB_GETITEMDATA;
-	}
-	else
-		return;									// shouldn't happen
+	ListMessages lstMsg;
+	if (!GetListMessages(lstMsg, hWnd, dwFlags)) return;
 
-	LRESULT offset = SendMessage(hWnd, getMsg, 0, 0);
+	LRESULT offset = SendMessage(hWnd, lstMsg.getSel, 0, 0);
 	if (offset > 0) 
 	{
-		MIM_TIMEZONE *tz = (MIM_TIMEZONE*)SendMessage(hWnd, extMsg, offset, 0);
+		MIM_TIMEZONE *tz = (MIM_TIMEZONE*)SendMessage(hWnd, lstMsg.getData, offset, 0);
 		if ((INT_PTR)tz != CB_ERR && tz != NULL)
 			timeapiSetInfoByContact(hContact, tz);
 	} 
