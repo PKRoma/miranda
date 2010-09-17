@@ -265,13 +265,23 @@ static int timeapiPrintTimeStamp(HANDLE hTZ, time_t ts, LPCTSTR szFormat, LPTSTR
 	if (tz == NULL && (dwFlags & (TZF_DIFONLY | TZF_KNOWNONLY))) 
 		return 1;
 
-	tz = myInfo.myTZ;
-
-	if (tz->offset == INT_MIN)
-		CalcTsOffset(tz);
-
 	FILETIME ft;
-	UnixTimeToFileTime(ts + tz->offset, &ft);
+
+	if (tz == NULL) tz = myInfo.myTZ; 
+	if (tz == NULL)
+	{
+		FILETIME lft;
+
+		UnixTimeToFileTime(ts, &lft);
+		FileTimeToLocalFileTime(&lft, &ft);
+	}
+	else
+	{
+		if (tz->offset == INT_MIN)
+			CalcTsOffset(tz);
+
+		UnixTimeToFileTime(ts + tz->offset, &ft);
+	}
 	
 	SYSTEMTIME st;
 	FileTimeToSystemTime(&ft, &st);
@@ -293,7 +303,14 @@ static time_t timeapiTimeStampToTimeZoneTimeStamp(HANDLE hTZ, time_t ts)
 	MIM_TIMEZONE *tz = (MIM_TIMEZONE*)hTZ;
 	
 	if (tz == NULL) tz = myInfo.myTZ; 
-	if (tz == NULL) return ts;
+	if (tz == NULL)
+	{
+		FILETIME ft, lft;
+
+		UnixTimeToFileTime(ts, &ft);
+		FileTimeToLocalFileTime(&ft, &lft);
+		return FileTimeToUnixTime(&lft);
+	}
 	
 	if (tz->offset == INT_MIN)
 		CalcTsOffset(tz);
