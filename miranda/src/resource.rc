@@ -15,11 +15,13 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// English (United States) resources
+// English (U.S.) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 #pragma code_page(1252)
+#endif //_WIN32
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -333,7 +335,7 @@ BEGIN
     LTEXT           "Local time:",IDC_STATIC,5,108,51,8
     EDITTEXT        IDC_LOCALTIME,56,108,161,8,ES_AUTOHSCROLL | ES_READONLY | NOT WS_BORDER
     COMBOBOX        IDC_TIMEZONESELECT,4,132,214,46,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Set custom time zone",IDC_STATIC,11,121,200,10
+    LTEXT           "Set custom time zone",IDC_STATIC,5,121,212,8
 END
 
 IDD_INFO_WORK DIALOGEX 0, 0, 222, 132
@@ -1299,7 +1301,7 @@ END
 //
 
 #ifdef APSTUDIO_INVOKED
-GUIDELINES DESIGNINFO
+GUIDELINES DESIGNINFO 
 BEGIN
     IDD_AUTHREQ, DIALOG
     BEGIN
@@ -1928,12 +1930,12 @@ IDC_DROPUSER            CURSOR                  "res/cursor_drop_user.cur"
 // Menu
 //
 
-IDR_CLISTMENU MENU
+IDR_CLISTMENU MENU 
 BEGIN
     MENUITEM SEPARATOR
 END
 
-IDR_CONTEXT MENU
+IDR_CONTEXT MENU 
 BEGIN
     POPUP "Tray"
     BEGIN
@@ -1987,7 +1989,7 @@ BEGIN
     END
 END
 
-IDR_ICOLIB_CONTEXT MENU
+IDR_ICOLIB_CONTEXT MENU 
 BEGIN
     POPUP "IconOptions"
     BEGIN
@@ -2011,7 +2013,7 @@ IDR_CREDITS             TEXT                    "../docs/contributors.txt"
 
 IDB_SORTCOLUP           BITMAP                  "res/arrow_sort_column_up.bmp"
 IDB_SORTCOLDOWN         BITMAP                  "res/arrow_sort_column_down.bmp"
-#endif    // English (United States) resources
+#endif    // English (U.S.) resources
 /////////////////////////////////////////////////////////////////////////////
 
 
