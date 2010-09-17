@@ -2075,9 +2075,9 @@ int __cdecl CIcqProto::SetStatus(int iNewStatus)
 
 			if (hServerConn)
 			{ // Connected, Send disconnect packet
-				  icq_sendCloseConnection();
+				icq_sendCloseConnection();
 
-				  icq_serverDisconnect(FALSE);
+				icq_serverDisconnect(FALSE);
 
 				SetCurrentStatus(ID_STATUS_OFFLINE);
 

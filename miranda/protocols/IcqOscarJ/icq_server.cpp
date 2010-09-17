@@ -76,8 +76,6 @@ void __cdecl CIcqProto::ServerThread(serverthread_start_info *infoParam)
 	{
 		DWORD dwError = GetLastError();
 
-		hServerConn = NULL;
-
 		SetCurrentStatus(ID_STATUS_OFFLINE);
 
 		icq_LogUsingErrorCode(LOG_ERROR, dwError, LPGEN("Unable to connect to ICQ login server"));
@@ -118,7 +116,7 @@ void __cdecl CIcqProto::ServerThread(serverthread_start_info *infoParam)
 		packetRecv.dwTimeout = 	!m_bGatewayMode && getSettingByte(NULL, "KeepAlive", DEFAULT_KEEPALIVE_ENABLED) ? 
 			getSettingDword(NULL, "KeepAliveInterval", KEEPALIVE_INTERVAL) : INFINITE;
 
-		while(hServerConn)
+		while (serverThreadHandle)
 		{
 			if (info.bReinitRecver)
 			{ // we reconnected, reinit struct
@@ -141,6 +139,9 @@ void __cdecl CIcqProto::ServerThread(serverthread_start_info *infoParam)
 			{
 				if (WSAGetLastError() == ERROR_TIMEOUT)
 				{
+					if (Miranda_Terminated())
+						break;
+
 					icq_packet packet = {0};
 					write_flap(&packet, ICQ_PING_CHAN);
 					sendServPacket(&packet);
@@ -210,7 +211,7 @@ void __cdecl CIcqProto::ServerThread(serverthread_start_info *infoParam)
 		{
 			if (getContactStatus(hContact) != ID_STATUS_OFFLINE)
 			{
-        char tmp = 0;
+				char tmp = 0;
 
 				setSettingWord(hContact, "Status", ID_STATUS_OFFLINE);
 
@@ -241,12 +242,10 @@ void __cdecl CIcqProto::ServerThread(serverthread_start_info *infoParam)
 
 void CIcqProto::icq_serverDisconnect(BOOL bBlock)
 {
-	connectionHandleMutex->Enter();
-
 	if (hServerConn)
 	{
+		NetLog_Server("Server shutdown requested");
 		Netlib_Shutdown(hServerConn);
-		connectionHandleMutex->Leave();
 
 		if (serverThreadHandle)
 		{
@@ -258,8 +257,6 @@ void CIcqProto::icq_serverDisconnect(BOOL bBlock)
 			serverThreadHandle = NULL;
 		}
 	}
-	else
-		connectionHandleMutex->Leave();
 }
 
 
