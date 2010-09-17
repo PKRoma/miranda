@@ -22,43 +22,57 @@ the file listing the same day.
 			Global version information:
 			===========================
 -----------------
-Version 2.0.x.x was released in October 2007 and is the current "stable" version.
-It NEEDS Miranda 0.7.x and will not work on older versions.
+Version 2.0.x is no longer available and supported.
 
-Version 2.2.1.x is for Miranda 0.8 and was released in June 2009
+Version 2.2.1.x is for Miranda 0.8 and was released in June 2009. It can be
+considered obsolete and is not supported in any way.
 
-Version 3.x is for Miranda 0.9 and incompatible with older Miranda cores. There
-are currently no downloads for it, you'll have to compile it from source.
+Version 3.x is for Miranda 0.9 and was released in August 2010, beginning with
+3.0.2 as its first stable release.
 
 -----------------
 
 			Detailed change log
 			===================
 
-Version 3.0.4 - 2010/09/02
+Version 3.0.5 - 2010/09/15
 
 	* modified sound group names to be more obvious
 	
-	! fixed issue with send later not being available when it actually should.
-	
 	! fixed memory leak in contact cache when a contact is deleted.
 	
-	! metacontact support: propagate outgoing typing notifications to the active 
+	* metacontact support: propagate outgoing typing notifications to the active 
 	  subcontact.
 	  
 	* slightly improved compatibility with old (version 2) skins.
 	  
 	* MUC: make autocomplete-nickname actions undoable.
+	
+	! fix: possible crash when closing the last tab in a container and this
+	  tab was a MUC session.
+	  
+	! removed ancient hardcoded size limit for the container height. This prevented
+	  containers to restore at a height lower than 300 pixels.
+	  
+	! fixed an issue which could cause the unattended send feature being un-
+	  available, despite the option saying otherwise.
+	  
+	! additonal checks to prevent uncommanded invokation of the container
+	  menu bar, when using hotkeys with an ALT modifier.
+	
+	* support 32x32 icons for the ALT-TAB preview on all supported operating 
+	  systems.	
+
 	  
 Version 3.0.3 - 2010/08/28
 
-	* bug fix: topic in info panel did not refresh immediately when it was changed
+	! MUC: topic in info panel did not refresh immediately when it was changed
 	
 	* updater support for the version on the addons site.
 	
 	* load system libraries in a safe way.
 	
-	* bugfix (MUC): Do not lose input focus after autocomplete did not find
+	! fix (MUC): Do not lose input focus after autocomplete did not find
 	  a matching nick name when the option to allow TAB in the input area is 
 	  enabled.
 	  

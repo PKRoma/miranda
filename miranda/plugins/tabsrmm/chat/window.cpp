@@ -3551,8 +3551,11 @@ LABEL_SHOWWINDOW:
 
 			iTabs = TabCtrl_GetItemCount(hwndTab);
 			if (iTabs == 1) {
-				if (!bForced && CMimAPI::m_shutDown == 0) {
-					PostMessage(GetParent(GetParent(hwndDlg)), WM_CLOSE, 0, 1);
+				if (/* !bForced && */CMimAPI::m_shutDown == 0) {
+					// FIXME old code could trigger a crash on close, when the MUC tab was the last in a container window
+					//DestroyWindow(GetParent(GetParent(hwndDlg)));
+					//PostMessage(hwndDlg, WM_CLOSE, 0, 1);
+					SendMessage(GetParent(GetParent(hwndDlg)), WM_CLOSE, 0, 1);
 					return 1;
 				}
 			}
@@ -3584,12 +3587,13 @@ LABEL_SHOWWINDOW:
 				SendMessage(dat->pContainer->hwnd, WM_SIZE, 0, 0);
 			}
 			//SM_SetTabbedWindowHwnd(0, 0);
-			DestroyWindow(hwndDlg);
+			//DestroyWindow(hwndDlg);
 			if (iTabs == 1)
-				PostMessage(GetParent(GetParent(hwndDlg)), WM_CLOSE, 0, 1);
-			else
-				SendMessage(pContainer->hwnd, WM_SIZE, 0, 0);
-
+				SendMessage(GetParent(GetParent(hwndDlg)), WM_CLOSE, 0, 1);
+			else {
+				PostMessage(pContainer->hwnd, WM_SIZE, 0, 0);
+				DestroyWindow(hwndDlg);
+			}
 			return 0;
 		}
 
