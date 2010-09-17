@@ -147,11 +147,6 @@ int CIcqProto::connectNewServer(serverthread_info *info)
 {
 	int res = 0;
 
-	if (!m_bGatewayMode)
-	{ // close connection only if not in gateway mode
-		NetLib_CloseConnection(&hServerConn, TRUE);
-	}
-
 	/* Get the ip and port */
 	WORD wServerPort = info->wServerPort; // prepare default port
 	parseServerAddress(info->newServer, &wServerPort);
@@ -163,23 +158,19 @@ int CIcqProto::connectNewServer(serverthread_info *info)
 
 	if (!m_bGatewayMode)
 	{
-		{ /* Time to release packet receiver, connection already closed */
-			NetLib_SafeCloseHandle(&info->hPacketRecver);
+		NetLib_SafeCloseHandle(&info->hPacketRecver);
+		NetLib_CloseConnection(&hServerConn, TRUE);
 
-			NetLog_Server("Closed connection to login server");
-		}
+		NetLog_Server("Closed connection to login server");
 
 		hServerConn = NetLib_OpenConnection(m_hServerNetlibUser, NULL, &nloc);
 		if (hServerConn)
 		{ /* Start SSL session if requested */
-      if (info->newServerSSL)
-      {
-#ifdef _DEBUG
-        NetLog_Server("(%d) Starting SSL negotiation", CallService(MS_NETLIB_GETSOCKET, (WPARAM)hServerConn, 0));
-#endif
-  	    CallService(MS_NETLIB_STARTSSL, (WPARAM)hServerConn, 0);
-      }
-      /* Time to recreate the packet receiver */
+			if (info->newServerSSL)
+			{
+				CallService(MS_NETLIB_STARTSSL, (WPARAM)hServerConn, 0);
+			}
+			/* Time to recreate the packet receiver */
 			info->hPacketRecver = (HANDLE)CallService(MS_NETLIB_CREATEPACKETRECVER, (WPARAM)hServerConn, 0x2400);
 			if (!info->hPacketRecver)
 			{

@@ -1318,15 +1318,20 @@ void avatars_server_connection::connectionThread()
 					NetLog_Server("Thread is Forcing Idle.");
 #endif
 					SleepEx(500, TRUE); // wait some time, can we do anything else ??
+					if (Miranda_Terminated())
+					{ 
+						stopThread = 1;
+						continue;
+					}
 				}
-        // check if we got something to request
-        checkRequestQueue();
+				// check if we got something to request
+				checkRequestQueue();
 				continue; 
 			}
-      if (!stopThread)
-			  NetLog_Server("Abortive closure of server socket, error: %d", GetLastError());
-      else
-        NetLog_Server("Connection closed.");
+			if (!stopThread)
+				  NetLog_Server("Abortive closure of server socket, error: %d", GetLastError());
+			else
+				NetLog_Server("Connection closed.");
 			break;
 		}
 
@@ -1335,7 +1340,7 @@ void avatars_server_connection::connectionThread()
 
 		if (isActive && (packetRecv.bytesAvailable == packetRecv.bytesUsed)) // no packets pending
 		{ // process request queue
-      checkRequestQueue();
+			checkRequestQueue();
 		}
 	}
   { // release connection
