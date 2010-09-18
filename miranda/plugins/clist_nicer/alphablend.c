@@ -31,7 +31,8 @@ extern StatusItems_t *StatusItems;
 extern ImageItem *g_glyphItem;
 
 extern struct CluiData g_CluiData;
-PGF MyGradientFill = 0;
+PGF MyGradientFill;
+PAB MyAlphaBlend;
 
 BYTE __forceinline percent_to_byte(UINT32 percent)
 {
@@ -194,7 +195,7 @@ void DrawAlpha(HDC hdcwnd, PRECT rc, DWORD basecolor, int alpha, DWORD basecolor
 			hbmOld = SelectObject(hdc, hbm);
 			MyGradientFill(hdc, tvtx, 2, &grect, 1, (FLG_GRADIENT & GRADIENT_TB || FLG_GRADIENT & GRADIENT_BT) ? GRADIENT_FILL_RECT_V : GRADIENT_FILL_RECT_H);
 			//BitBlt(hdcwnd, rc->left, rc->top, width, height, hdc, 0, 0, SRCCOPY);
-		    AlphaBlend(hdcwnd, rc->left, rc->top, width, height, hdc, 0, 0, width, height, bf);
+		    MyAlphaBlend(hdcwnd, rc->left, rc->top, width, height, hdc, 0, 0, width, height, bf);
 
 			SelectObject(hdc, hbmOld);
 			DeleteObject(hbm);
@@ -288,7 +289,7 @@ void DrawAlpha(HDC hdcwnd, PRECT rc, DWORD basecolor, int alpha, DWORD basecolor
     bf.SourceConstantAlpha = (UCHAR) (basecolor >> 24);
     bf.AlphaFormat = AC_SRC_ALPHA; // so it will use our specified alpha value
 
-    AlphaBlend(hdcwnd, rc->left + realHeightHalf, rc->top, (realWidth - realHeightHalf * 2), realHeight, hdc, 0, 0, ulBitmapWidth, ulBitmapHeight, bf);
+    MyAlphaBlend(hdcwnd, rc->left + realHeightHalf, rc->top, (realWidth - realHeightHalf * 2), realHeight, hdc, 0, 0, ulBitmapWidth, ulBitmapHeight, bf);
 
     SelectObject(hdc, holdbitmap);
     DeleteObject(hbitmap);
@@ -344,7 +345,7 @@ void DrawAlpha(HDC hdcwnd, PRECT rc, DWORD basecolor, int alpha, DWORD basecolor
                 }
             }
         }           
-        AlphaBlend(hdcwnd, rc->left, rc->top, ulBitmapWidth, ulBitmapHeight, hdc, 0, 0, ulBitmapWidth, ulBitmapHeight, bf);
+        MyAlphaBlend(hdcwnd, rc->left, rc->top, ulBitmapWidth, ulBitmapHeight, hdc, 0, 0, ulBitmapWidth, ulBitmapHeight, bf);
         SelectObject(hdc, holdbitmap);
         DeleteObject(hbitmap);
 
@@ -380,7 +381,7 @@ void DrawAlpha(HDC hdcwnd, PRECT rc, DWORD basecolor, int alpha, DWORD basecolor
                 }
             }
         }           
-        AlphaBlend(hdcwnd, rc->right - realHeightHalf, rc->top, ulBitmapWidth, ulBitmapHeight, hdc, 0, 0, ulBitmapWidth, ulBitmapHeight, bf);
+        MyAlphaBlend(hdcwnd, rc->right - realHeightHalf, rc->top, ulBitmapWidth, ulBitmapHeight, hdc, 0, 0, ulBitmapWidth, ulBitmapHeight, bf);
     }   
 	DrawBorderStyle(hdcwnd, rc, BORDERSTYLE);
 
@@ -463,13 +464,13 @@ void __fastcall IMG_RenderImageItem(HDC hdc, ImageItem *item, RECT *rc)
     if(item->dwFlags & IMAGE_FLAG_DIVIDED) {
         // top 3 items
 
-        AlphaBlend(hdc, rc->left, rc->top, l, t, hdcSrc, srcOrigX, srcOrigY, l, t, item->bf);
-        AlphaBlend(hdc, rc->left + l, rc->top, width - l - r, t, hdcSrc, srcOrigX + l, srcOrigY, item->inner_width, t, item->bf);
-        AlphaBlend(hdc, rc->right - r, rc->top, r, t, hdcSrc, srcOrigX + (item->width - r), srcOrigY, r, t, item->bf);
+        MyAlphaBlend(hdc, rc->left, rc->top, l, t, hdcSrc, srcOrigX, srcOrigY, l, t, item->bf);
+        MyAlphaBlend(hdc, rc->left + l, rc->top, width - l - r, t, hdcSrc, srcOrigX + l, srcOrigY, item->inner_width, t, item->bf);
+        MyAlphaBlend(hdc, rc->right - r, rc->top, r, t, hdcSrc, srcOrigX + (item->width - r), srcOrigY, r, t, item->bf);
 
         // middle 3 items
 
-        AlphaBlend(hdc, rc->left, rc->top + t, l, height - t - b, hdcSrc, srcOrigX, srcOrigY + t, l, item->inner_height, item->bf);
+        MyAlphaBlend(hdc, rc->left, rc->top + t, l, height - t - b, hdcSrc, srcOrigX, srcOrigY + t, l, item->inner_height, item->bf);
 
         if(item->dwFlags & IMAGE_FILLSOLID && item->fillBrush) {
             RECT rcFill;
@@ -478,15 +479,15 @@ void __fastcall IMG_RenderImageItem(HDC hdc, ImageItem *item, RECT *rc)
             FillRect(hdc, &rcFill, item->fillBrush);
         }
         else
-            AlphaBlend(hdc, rc->left + l, rc->top + t, width - l - r, height - t - b, hdcSrc, srcOrigX + l, srcOrigY + t, item->inner_width, item->inner_height, item->bf);
+            MyAlphaBlend(hdc, rc->left + l, rc->top + t, width - l - r, height - t - b, hdcSrc, srcOrigX + l, srcOrigY + t, item->inner_width, item->inner_height, item->bf);
 
-        AlphaBlend(hdc, rc->right - r, rc->top + t, r, height - t - b, hdcSrc, srcOrigX + (item->width - r), srcOrigY + t, r, item->inner_height, item->bf);
+        MyAlphaBlend(hdc, rc->right - r, rc->top + t, r, height - t - b, hdcSrc, srcOrigX + (item->width - r), srcOrigY + t, r, item->inner_height, item->bf);
 
         // bottom 3 items
 
-        AlphaBlend(hdc, rc->left, rc->bottom - b, l, b, hdcSrc, srcOrigX, srcOrigY + (item->height - b), l, b, item->bf);
-        AlphaBlend(hdc, rc->left + l, rc->bottom - b, width - l - r, b, hdcSrc, srcOrigX + l, srcOrigY + (item->height - b), item->inner_width, b, item->bf);
-        AlphaBlend(hdc, rc->right - r, rc->bottom - b, r, b, hdcSrc, srcOrigX + (item->width - r), srcOrigY + (item->height - b), r, b, item->bf);
+        MyAlphaBlend(hdc, rc->left, rc->bottom - b, l, b, hdcSrc, srcOrigX, srcOrigY + (item->height - b), l, b, item->bf);
+        MyAlphaBlend(hdc, rc->left + l, rc->bottom - b, width - l - r, b, hdcSrc, srcOrigX + l, srcOrigY + (item->height - b), item->inner_width, b, item->bf);
+        MyAlphaBlend(hdc, rc->right - r, rc->bottom - b, r, b, hdcSrc, srcOrigX + (item->width - r), srcOrigY + (item->height - b), r, b, item->bf);
     }
     else {
         switch(item->bStretch) {
@@ -497,11 +498,11 @@ void __fastcall IMG_RenderImageItem(HDC hdc, ImageItem *item, RECT *rc)
 
                 do {
                     if(top + item->height <= rc->bottom) {
-                        AlphaBlend(hdc, rc->left, top, width, item->height, hdcSrc, srcOrigX, srcOrigY, item->width, item->height, item->bf);
+                        MyAlphaBlend(hdc, rc->left, top, width, item->height, hdcSrc, srcOrigX, srcOrigY, item->width, item->height, item->bf);
                         top += item->height;
                     }
                     else {
-                        AlphaBlend(hdc, rc->left, top, width, rc->bottom - top, hdcSrc, srcOrigX, srcOrigY, item->width, rc->bottom - top, item->bf);
+                        MyAlphaBlend(hdc, rc->left, top, width, rc->bottom - top, hdcSrc, srcOrigX, srcOrigY, item->width, rc->bottom - top, item->bf);
                         break;
                     }
                 } while (TRUE);
@@ -514,11 +515,11 @@ void __fastcall IMG_RenderImageItem(HDC hdc, ImageItem *item, RECT *rc)
 
                 do {
                     if(left + item->width <= rc->right) {
-                        AlphaBlend(hdc, left, rc->top, item->width, height, hdcSrc, srcOrigX, srcOrigY, item->width, item->height, item->bf);
+                        MyAlphaBlend(hdc, left, rc->top, item->width, height, hdcSrc, srcOrigX, srcOrigY, item->width, item->height, item->bf);
                         left += item->width;
                     }
                     else {
-                        AlphaBlend(hdc, left, rc->top, rc->right - left, height, hdcSrc, srcOrigX, srcOrigY, rc->right - left, item->height, item->bf);
+                        MyAlphaBlend(hdc, left, rc->top, rc->right - left, height, hdcSrc, srcOrigX, srcOrigY, rc->right - left, item->height, item->bf);
                         break;
                     }
                 } while (TRUE);
@@ -526,20 +527,20 @@ void __fastcall IMG_RenderImageItem(HDC hdc, ImageItem *item, RECT *rc)
             }
             case IMAGE_STRETCH_B:
                 // stretch the image in both directions...
-                AlphaBlend(hdc, rc->left, rc->top, width, height, hdcSrc, srcOrigX, srcOrigY, item->width, item->height, item->bf);
+                MyAlphaBlend(hdc, rc->left, rc->top, width, height, hdcSrc, srcOrigX, srcOrigY, item->width, item->height, item->bf);
                 break;
             /*
             case IMAGE_STRETCH_V:
                 // stretch vertically, draw 3 horizontal tiles...
-                AlphaBlend(hdc, rc->left, rc->top, l, height, item->hdc, 0, 0, l, item->height, item->bf);
-                AlphaBlend(hdc, rc->left + l, rc->top, width - l - r, height, item->hdc, l, 0, item->inner_width, item->height, item->bf);
-                AlphaBlend(hdc, rc->right - r, rc->top, r, height, item->hdc, item->width - r, 0, r, item->height, item->bf);
+                MyAlphaBlend(hdc, rc->left, rc->top, l, height, item->hdc, 0, 0, l, item->height, item->bf);
+                MyAlphaBlend(hdc, rc->left + l, rc->top, width - l - r, height, item->hdc, l, 0, item->inner_width, item->height, item->bf);
+                MyAlphaBlend(hdc, rc->right - r, rc->top, r, height, item->hdc, item->width - r, 0, r, item->height, item->bf);
                 break;
             case IMAGE_STRETCH_H:
                 // stretch horizontally, draw 3 vertical tiles...
-                AlphaBlend(hdc, rc->left, rc->top, width, t, item->hdc, 0, 0, item->width, t, item->bf);
-                AlphaBlend(hdc, rc->left, rc->top + t, width, height - t - b, item->hdc, 0, t, item->width, item->inner_height, item->bf);
-                AlphaBlend(hdc, rc->left, rc->bottom - b, width, b, item->hdc, 0, item->height - b, item->width, b, item->bf);
+                MyAlphaBlend(hdc, rc->left, rc->top, width, t, item->hdc, 0, 0, item->width, t, item->bf);
+                MyAlphaBlend(hdc, rc->left, rc->top + t, width, height - t - b, item->hdc, 0, t, item->width, item->inner_height, item->bf);
+                MyAlphaBlend(hdc, rc->left, rc->bottom - b, width, b, item->hdc, 0, item->height - b, item->width, b, item->bf);
                 break;
             */
             default:

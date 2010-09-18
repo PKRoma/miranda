@@ -41,7 +41,6 @@ pfnMonitorFromWindow MyMonitorFromWindow = NULL;
 pfnGetMonitorInfo    MyGetMonitorInfo = NULL;
 pfnTrackMouseEvent   MyTrackMouseEvent = NULL;
 
-extern PGF MyGradientFill;
 extern int Docking_ProcessWindowMessage(WPARAM wParam, LPARAM lParam);
 extern int SetHideOffline(WPARAM wParam, LPARAM lParam);
 
@@ -255,6 +254,10 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 	MyGradientFill = (PGF) GetProcAddress(GetModuleHandleA("gdi32"), "GdiGradientFill");
 	if (MyGradientFill == 0)
 		MyGradientFill = (PGF) GetProcAddress(GetModuleHandleA("msimg32"), "GradientFill");
+
+	MyAlphaBlend = (PAB) GetProcAddress(GetModuleHandleA("gdi32"), "GdiAlphaBlend");
+	if (MyAlphaBlend == 0)
+		MyAlphaBlend = (PAB) GetProcAddress(GetModuleHandleA("msimg32"), "AlphaBlend");
 
 	LoadCLCButtonModule();
 	RegisterCLUIFrameClasses();

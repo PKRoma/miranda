@@ -215,7 +215,7 @@ static void PaintWorker(MButtonCtrl *ctl, HDC hdcPaint)
                     if(imgItem)
                         DrawAlpha(hdcMem, &rc, 0, 0, 0, 0, 0, 0, 0, imgItem);
                     if(g_glyphItem) {
-                        AlphaBlend(hdcMem, (rc.right - glyphMetrics[2]) / 2, (rc.bottom - glyphMetrics[3]) / 2,
+                        MyAlphaBlend(hdcMem, (rc.right - glyphMetrics[2]) / 2, (rc.bottom - glyphMetrics[3]) / 2,
                                    glyphMetrics[2], glyphMetrics[3], g_glyphItem->hdc,
                                    glyphMetrics[0], glyphMetrics[1], glyphMetrics[2],
                                    glyphMetrics[3], g_glyphItem->bf);

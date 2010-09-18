@@ -668,6 +668,7 @@ int CoolSB_SetupScrollBar();
 #define NR_CLIENTS 40
 
 typedef BOOL (WINAPI *PGF)(HDC, PTRIVERTEX, ULONG, PVOID, ULONG, ULONG);
+typedef BOOL (WINAPI *PAB)(HDC, int, int, int, int, HDC, int, int, int, int, BLENDFUNCTION);
 
 /*
  * floating stuff

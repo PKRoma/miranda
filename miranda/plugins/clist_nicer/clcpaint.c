@@ -51,7 +51,6 @@ extern TCHAR *statusNames[];
 
 extern LONG g_cxsmIcon, g_cysmIcon;
 extern StatusItems_t *StatusItems;
-extern PGF MyGradientFill;
 extern struct ClcData *g_clcData;
 
 pfnDrawAlpha pDrawAlpha = NULL;
@@ -396,7 +395,7 @@ static int __fastcall DrawAvatar(HDC hdcMem, RECT *rc, struct ClcContact *contac
         */
         SetStretchBltMode(hdcTempAV, HALFTONE);
         StretchBlt(hdcTempAV, 0, 0, bmWidth, bmHeight, hdcMem, leftoffset + rc->left, y + topoffset, (int)newWidth, (int)newHeight, SRCCOPY);
-        AlphaBlend(hdcTempAV, 0, 0, bmWidth, bmHeight, hdcAvatar, 0, 0, bmWidth, bmHeight, bf);
+        MyAlphaBlend(hdcTempAV, 0, 0, bmWidth, bmHeight, hdcAvatar, 0, 0, bmWidth, bmHeight, bf);
         StretchBlt(hdcMem, leftoffset + rc->left - (g_RTL ? 1 : 0), y + topoffset, (int)newWidth, (int)newHeight, hdcTempAV, 0, 0, bmWidth, bmHeight, SRCCOPY);
     }
     SelectObject(hdcAV, hbmOldAV);
