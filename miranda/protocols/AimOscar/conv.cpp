@@ -119,6 +119,8 @@ void  html_decode( char* str )
 			else if ( !strnicmp( p, "</u>", 4 )) { strcpy(q, "[/u]"); q += 3; p += 3; }
 			else if ( !strnicmp( p, "<i>",  3 )) { strcpy(q, "[i]");  q += 2; p += 2; }
 			else if ( !strnicmp( p, "</i>", 4 )) { strcpy(q, "[/i]"); q += 3; p += 3; }
+			else if ( !strnicmp( p, "<s>",  3 )) { strcpy(q, "[s]");  q += 2; p += 2; }
+			else if ( !strnicmp( p, "</s>", 4 )) { strcpy(q, "[/s]"); q += 3; p += 3; }
 			else if ( !strnicmp( p, "<a href", 7 )) { 
 				strcpy(q, "[url"); q += 4; p += 7;
 				while (*p != '>' && *p) *(q++) = *(p++);
@@ -243,6 +245,23 @@ char* html_to_bbcodes(char *src)
 		{
 			dest=(char*)mir_realloc(dest,strlen(dest)+6);
 			memcpy(&dest[strlen(dest)],"[/u]",5);
+		}
+	}
+	while ((ptr = strstr(dest, "<S>")) != NULL || (ptr = strstr(dest, "<s>")) != NULL)
+	{
+		*ptr = '[';
+		*(ptr+1) = 's';
+		*(ptr+2) = ']';
+		if((ptr = strstr(dest, "</S>")) != NULL || (ptr = strstr(dest, "</s>")) != NULL)
+		{
+			*ptr = '[';
+			*(ptr+2) = 's';
+			*(ptr+3) = ']';
+		}
+		else
+		{
+			dest=(char*)mir_realloc(dest,strlen(dest)+6);
+			memcpy(&dest[strlen(dest)],"[/s]",5);
 		}
 	}
 	rptr = dest;
@@ -481,6 +500,18 @@ char* bbcodes_to_html(const char *src)
 	{
 		*ptr = '<';
 		*(ptr+2) = 'u';
+		*(ptr+3) = '>';
+	}
+	while ((ptr = strstr(dest, "[s]")) != NULL) 
+	{
+		*ptr = '<';
+		*(ptr+1) = 's';
+		*(ptr+2) = '>';
+	}
+	while ((ptr = strstr(dest, "[/s]")) != NULL) 
+	{
+		*ptr = '<';
+		*(ptr+2) = 's';
 		*(ptr+3) = '>';
 	}
 	rptr = dest;
