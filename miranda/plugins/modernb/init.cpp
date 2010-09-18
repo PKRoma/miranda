@@ -44,6 +44,8 @@ LIST_INTERFACE li;
 UTF8_INTERFACE utfi;
 TIME_API       tmi;
 
+pfnTryEnterCriticalSection fnTryEnterCriticalSection;
+
 static HRESULT SubclassClistInterface();
 static HRESULT CreateHookableEvents();
 int EventArea_UnloadModule();
@@ -102,8 +104,11 @@ PLUGININTERFACE int CListInitialise(PLUGINLINK * link)
 	_CrtSetBreakAlloc(11166);
 #endif
 */
+	HMODULE hKernel = GetModuleHandleA( "kernel32.dll" );
+	fnTryEnterCriticalSection = ( pfnTryEnterCriticalSection )GetProcAddress( hKernel, "TryEnterCriticalSection" );
+
 	g_dwMainThreadID=GetCurrentThreadId();
-    DuplicateHandle(GetCurrentProcess(),GetCurrentThread(),GetCurrentProcess(),&g_hMainThread,0,FALSE,DUPLICATE_SAME_ACCESS);
+	DuplicateHandle(GetCurrentProcess(),GetCurrentThread(),GetCurrentProcess(),&g_hMainThread,0,FALSE,DUPLICATE_SAME_ACCESS);
 
 	mir_getMMI(&mmi);
 	mir_getUTFI(&utfi);

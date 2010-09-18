@@ -80,7 +80,15 @@ int SyncCallProxy(PSYNCCALLBACKPROC pfnProc, WPARAM wParam, LPARAM lParam, CRITI
 
 	if ( cs != NULL )
 	{
-		if ( TryEnterCriticalSection( cs ) )
+		if ( !fnTryEnterCriticalSection ) // for poor OSes like Win98
+		{
+			EnterCriticalSection( cs );
+			int result = pfnProc( wParam, lParam );
+			LeaveCriticalSection( cs );
+			return result;
+		}
+
+		if ( fnTryEnterCriticalSection( cs ))
 		{   //simple call (Fastest)
 			int result=pfnProc(wParam,lParam);
 			LeaveCriticalSection( cs );
