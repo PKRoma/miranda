@@ -511,15 +511,48 @@ void GetLocalizedString(HKEY hSubKey, const TCHAR *szName, wchar_t *szBuf, DWORD
 	}
 }
 
-void InitTimeZones(void)
+void RecalculateTime(void)
 {
 	GetTimeZoneInformation(&myInfo.tzi);
 	myInfo.timestamp = time(NULL);
 
+	TCHAR  *myTzKey = NULL;
+	DYNAMIC_TIME_ZONE_INFORMATION dtzi;
+	
+	if (pfnGetDynamicTimeZoneInformation && pfnGetDynamicTimeZoneInformation(&dtzi) != TIME_ZONE_ID_INVALID)
+		myTzKey = mir_u2t(dtzi.TimeZoneKeyName);
+
+	bool found = false;
+	for (int i = 0; i < g_timezones.getCount(); ++i) 
+	{
+		MIM_TIMEZONE &tz = g_timezones[i];
+		if (tz.offset != INT_MIN) tz.offset = INT_MIN;
+
+		if (!found)
+		{
+			// compare registry key names (= not localized, so it's easy)
+			if (myTzKey && !_tcscmp(tz.tszName, myTzKey)) 
+			{
+				myInfo.myTZ = &tz;
+				found = true;
+			}
+			else 
+			{
+				if (!wcscmp(tz.tzi.StandardName, myInfo.tzi.StandardName) || !wcscmp(tz.tzi.DaylightName, myInfo.tzi.DaylightName))
+				{
+					myInfo.myTZ = &tz;
+					found = true;
+				}
+			}
+		}
+	}
+	mir_free(myTzKey);
+}
+
+void InitTimeZones(void)
+{
 	REG_TZI_FORMAT	tzi;
 	HKEY			hKey;
-	TCHAR           *myTzKey = NULL;
-	DYNAMIC_TIME_ZONE_INFORMATION dtzi;
 
 	const TCHAR *tszKey = IsWinVerNT() ?
 		_T("SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Time Zones") :
@@ -531,12 +564,7 @@ void InitTimeZones(void)
 	 * localized systems or systems with a MUI pack installed
 	 */
 	if (IsWinVerVistaPlus()) 
-	{
 		pfnGetDynamicTimeZoneInformation = (pfnGetDynamicTimeZoneInformation_t)GetProcAddress(GetModuleHandle(_T("kernel32")), "GetDynamicTimeZoneInformation");
-		if (pfnGetDynamicTimeZoneInformation)
-			if (pfnGetDynamicTimeZoneInformation(&dtzi) != TIME_ZONE_ID_INVALID)
-				myTzKey = mir_u2t(dtzi.TimeZoneKeyName);
-	}
 
 	if (IsWinVer2000Plus())
 	{
@@ -581,20 +609,6 @@ void InitTimeZones(void)
 				GetLocalizedString(hSubKey, _T("Std"), tz->tzi.StandardName, SIZEOF(tz->tzi.StandardName));
 				GetLocalizedString(hSubKey, _T("Dlt"), tz->tzi.DaylightName, SIZEOF(tz->tzi.DaylightName));
 
-				if (myInfo.myTZ == NULL)
-				{
-					// compare registry key names (= not localized, so it's easy)
-					if (myTzKey && !_tcscmp(tszName, myTzKey)) 
-					{
-						myInfo.myTZ = tz;
-					}
-					else 
-					{
-						if (!wcscmp(tz->tzi.StandardName, myInfo.tzi.StandardName) || !wcscmp(tz->tzi.DaylightName, myInfo.tzi.DaylightName)) 
-							myInfo.myTZ = tz;
-					}
-				}
-
 				g_timezones.insert(tz);
 				g_timezonesBias.insert(tz);
 
@@ -604,7 +618,8 @@ void InitTimeZones(void)
 		}
 		RegCloseKey(hKey);
 	}
-	mir_free(myTzKey);
+
+	RecalculateTime();
 
 	CreateServiceFunction(MS_SYSTEM_GET_TMI, GetTimeApi);
 
@@ -625,42 +640,4 @@ void UninitTimeZones(void)
 {
 	g_timezonesBias.destroy();
 	g_timezones.destroy();
-}
-
-void RecalculateTime(void)
-{
-	GetTimeZoneInformation(&myInfo.tzi);
-	myInfo.timestamp = time(NULL);
-
-	TCHAR  *myTzKey = NULL;
-	DYNAMIC_TIME_ZONE_INFORMATION dtzi;
-	
-	if (pfnGetDynamicTimeZoneInformation && pfnGetDynamicTimeZoneInformation(&dtzi) != TIME_ZONE_ID_INVALID)
-		myTzKey = mir_u2t(dtzi.TimeZoneKeyName);
-
-	bool found = false;
-	for (int i = 0; i < g_timezones.getCount(); ++i) 
-	{
-		MIM_TIMEZONE &tz = g_timezones[i];
-		if (tz.offset != INT_MIN) tz.offset = INT_MIN;
-
-		if (!found)
-		{
-			// compare registry key names (= not localized, so it's easy)
-			if (myTzKey && !_tcscmp(tz.tszName, myTzKey)) 
-			{
-				myInfo.myTZ = &tz;
-				found = true;
-			}
-			else 
-			{
-				if (!wcscmp(tz.tzi.StandardName, myInfo.tzi.StandardName) || !wcscmp(tz.tzi.DaylightName, myInfo.tzi.DaylightName))
-				{
-					myInfo.myTZ = &tz;
-					found = true;
-				}
-			}
-		}
-	}
-	mir_free(myTzKey);
 }
