@@ -82,7 +82,7 @@ static int gtaThreadProc(void * lpParam)
 	HWND hwnd=pcli->hwndContactList;
 	struct SHORTDATA data={0};
 	struct SHORTDATA * dat;
-//	MsgWaitForMultipleObjectsEx(1,&hamProcessEvent, INFINITE, QS_ALLINPUT, MWMO_ALERTABLE );
+
 	while (!MirandaExiting())
 	{
 		Sync(CLUI_SyncGetShortData,(WPARAM)pcli->hwndContactTree,(LPARAM)&data);       
@@ -132,7 +132,7 @@ static int gtaThreadProc(void * lpParam)
 			}
 		}
 		while (!exit);
-//		MsgWaitForMultipleObjectsEx(1,&hgtaWakeupEvent, INFINITE, 0, MWMO_ALERTABLE );
+
 		WaitForSingleObjectEx(hgtaWakeupEvent, INFINITE, FALSE );
 		ResetEvent(hgtaWakeupEvent);
 	}

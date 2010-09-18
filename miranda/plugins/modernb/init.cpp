@@ -46,6 +46,11 @@ TIME_API       tmi;
 
 pfnTryEnterCriticalSection fnTryEnterCriticalSection;
 
+pfnGetAncestor fnGetAncestor;
+pfnGetMenuBarInfo fnGetMenuBarInfo;
+pfnGetScrollBarInfo fnGetScrollBarInfo;
+pfnMsgWaitForMultipleObjectsEx fnMsgWaitForMultipleObjectsEx;
+
 static HRESULT SubclassClistInterface();
 static HRESULT CreateHookableEvents();
 int EventArea_UnloadModule();
@@ -83,18 +88,16 @@ BOOL WINAPI DllMain(HINSTANCE hInstDLL, DWORD dwReason, LPVOID reserved)
 
 inline int MakeVer(int a, int b, int c, int d)
 {
-    return PLUGIN_MAKE_VERSION(a,b,c,d);
+	return PLUGIN_MAKE_VERSION(a,b,c,d);
 }
 
 PLUGININTERFACE PLUGININFOEX* MirandaPluginInfoEx(DWORD mirandaVersion)
 {
 	if ( mirandaVersion < MINIMAL_COREVERSION_NUM )
 		return NULL;
-    pluginInfo.version=MakeVer(PRODUCT_VERSION);
+	pluginInfo.version=MakeVer(PRODUCT_VERSION);
 	return &pluginInfo;
 }
-
-
 
 PLUGININTERFACE int CListInitialise(PLUGINLINK * link)
 {
@@ -107,7 +110,15 @@ PLUGININTERFACE int CListInitialise(PLUGINLINK * link)
 	HMODULE hKernel = GetModuleHandleA( "kernel32.dll" );
 	fnTryEnterCriticalSection = ( pfnTryEnterCriticalSection )GetProcAddress( hKernel, "TryEnterCriticalSection" );
 
-	g_dwMainThreadID=GetCurrentThreadId();
+	HMODULE hUser = GetModuleHandleA( "user32.dll" );
+	fnGetMenuBarInfo = ( pfnGetMenuBarInfo )GetProcAddress( hKernel, "GetMenuBarInfo" );
+	fnGetScrollBarInfo = ( pfnGetScrollBarInfo )GetProcAddress( hKernel, "GetScrollBarInfo" );
+	fnMsgWaitForMultipleObjectsEx = ( pfnMsgWaitForMultipleObjectsEx )GetProcAddress( hKernel, "MsgWaitForMultipleObjectsEx" );
+
+	if (( fnGetAncestor = ( pfnGetAncestor )GetProcAddress( hKernel, "GetAncestor" )) == NULL )
+		fnGetAncestor = MyGetAncestor;
+
+	g_dwMainThreadID = GetCurrentThreadId();
 	DuplicateHandle(GetCurrentProcess(),GetCurrentThread(),GetCurrentProcess(),&g_hMainThread,0,FALSE,DUPLICATE_SAME_ACCESS);
 
 	mir_getMMI(&mmi);
@@ -154,7 +165,7 @@ PLUGININTERFACE int Unload(void)
 	UnloadAvatarOverlayIcon();
 	UninitSkinHotKeys();
 	FreeRowCell();
-    EventArea_UnloadModule();
+	EventArea_UnloadModule();
 
 	TRACE("Unloading Clist Modern COMPLETE\r\n");
 	return 0;

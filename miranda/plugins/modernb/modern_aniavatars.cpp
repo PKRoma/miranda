@@ -355,7 +355,7 @@ void AniAva_UpdateParent()
 	aalock;
 	{
 		int i;
-		HWND parent = GetAncestor(pcli->hwndContactList,GA_PARENT);
+		HWND parent = fnGetAncestor(pcli->hwndContactList,GA_PARENT);
 		for (i=0; i<AniAva.Objects->realCount; i++)
 		{
 			ANIAVA_OBJECT * pai=(ANIAVA_OBJECT *)AniAva.Objects->items[i];
@@ -426,7 +426,7 @@ int AniAva_SetAvatarPos(HANDLE hContact, RECT * rc, int overlayIdx, BYTE bAlpha)
 					tszName = mir_a2t( szName );
 					hwnd=_AniAva_CreateAvatarWindowSync(tszName);
 					mir_free( tszName );
-					parent=GetAncestor(pcli->hwndContactList,GA_PARENT);
+					parent=fnGetAncestor(pcli->hwndContactList,GA_PARENT);
 					pai->hWindow=hwnd;
 					SendMessage(hwnd,AAM_SETPARENT,(WPARAM)parent,0);
 					if (_AniAva_GetAvatarImageInfo(pai->dwAvatarUniqId,&avii))
@@ -1068,7 +1068,11 @@ static void _AniAva_AnimationTreadProc(HANDLE hExitEvent)
 	SetThreadPriority(hThread,THREAD_PRIORITY_LOWEST);
 	for (;;)
 	{
-		rc = MsgWaitForMultipleObjectsEx(1,&hExitEvent, INFINITE, QS_ALLINPUT, MWMO_ALERTABLE );
+		if ( fnMsgWaitForMultipleObjectsEx )
+			rc = fnMsgWaitForMultipleObjectsEx(1,&hExitEvent, INFINITE, QS_ALLINPUT, MWMO_ALERTABLE);
+		else
+			rc = MsgWaitForMultipleObjects(1,&hExitEvent, FALSE, INFINITE, QS_ALLINPUT);
+
 		ResetEvent(hExitEvent);
 		if ( rc == WAIT_OBJECT_0 + 1 )
 		{
@@ -1302,3 +1306,24 @@ static LRESULT CALLBACK _AniAva_WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPAR
 #undef aalock
 #undef aaunlock
 
+/////////////////////////////////////////////////////////////////
+// some stub
+
+HWND WINAPI MyGetAncestor( HWND hWnd, UINT option )
+{
+	if ( option == GA_PARENT )
+		return GetParent( hWnd );
+
+	if ( option == GA_ROOTOWNER ) {
+		HWND result = hWnd;
+		while( true ) {
+			HWND hParent = GetParent( hWnd );
+			if ( !hParent )
+				return result;
+
+			result = hParent;
+		}
+	}
+
+	return NULL;
+}

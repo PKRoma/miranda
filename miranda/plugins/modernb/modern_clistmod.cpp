@@ -447,7 +447,7 @@ int GetWindowVisibleState(HWND hWnd, int iStepX, int iStepY) {
 						}
 						//hAux = GetParent(hAux);
 						hAuxOld=hAux;
-						hAux = GetAncestor(hAux,GA_ROOTOWNER);
+						hAux = fnGetAncestor(hAux,GA_ROOTOWNER);
 						if (hAuxOld==hAux)
 						{
 							TCHAR buf[255];

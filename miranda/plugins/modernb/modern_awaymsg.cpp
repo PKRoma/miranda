@@ -175,7 +175,6 @@ static int amThreadProc(HWND hwnd)
 				return 0;			
 			}
 		}
-		//MsgWaitForMultipleObjectsEx(1,&hamProcessEvent, INFINITE, 0, 0 );
 		WaitForSingleObjectEx(hamProcessEvent, INFINITE, TRUE);
 		ResetEvent(hamProcessEvent);
 		if (MirandaExiting()) 

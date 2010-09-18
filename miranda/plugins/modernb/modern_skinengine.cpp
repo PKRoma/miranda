@@ -3876,52 +3876,50 @@ static int ske_ValidateSingleFrameImage(FRAMEWND * Frame, BOOL SkipBkgBlitting) 
 			//BLENDFUNCTION bf={AC_SRC_OVER, 0, 255, AC_SRC_ALPHA };
 			//MyAlphaBlend(g_pCachedWindow->hImageDC,x+x1,y+y1,w1,h1,hdc,x1,y1,w1,h1,bf);  
 		}
+		
+		if ( fnGetScrollBarInfo && (GetWindowLong(Frame->hWnd,GWL_STYLE) & WS_VSCROLL))
 		{
-			if (GetWindowLong(Frame->hWnd,GWL_STYLE)&WS_VSCROLL)
+			//Draw vertical scroll bar
+			//
+			RECT rThumb;
+			RECT rUpBtn;
+			RECT rDnBtn;
+			RECT rLine;
+			int dx,dy;
+			SCROLLBARINFO si={0};
+			si.cbSize=sizeof(SCROLLBARINFO);
+			fnGetScrollBarInfo(Frame->hWnd,OBJID_VSCROLL,&si);
+			rLine=(si.rcScrollBar);
+			rUpBtn=rLine;
+			rDnBtn=rLine;
+			rThumb=rLine;
+
+			rUpBtn.bottom=rUpBtn.top+si.dxyLineButton;
+			rDnBtn.top=rDnBtn.bottom-si.dxyLineButton;
+			rThumb.top=rLine.top+si.xyThumbTop;
+			rThumb.bottom=rLine.top+si.xyThumbBottom;
 			{
-				//Draw vertical scroll bar
-				//
-				RECT rThumb;
-				RECT rUpBtn;
-				RECT rDnBtn;
-				RECT rLine;
-				int dx,dy;
-				SCROLLBARINFO si={0};
-				si.cbSize=sizeof(SCROLLBARINFO);
-				GetScrollBarInfo(Frame->hWnd,OBJID_VSCROLL,&si);
-				rLine=(si.rcScrollBar);
-//				rLine.left=(rLine.left>0)?rLine.left:rLine.right-20;
-				rUpBtn=rLine;
-				rDnBtn=rLine;
-				rThumb=rLine;
-
-				rUpBtn.bottom=rUpBtn.top+si.dxyLineButton;
-				rDnBtn.top=rDnBtn.bottom-si.dxyLineButton;
-				rThumb.top=rLine.top+si.xyThumbTop;
-				rThumb.bottom=rLine.top+si.xyThumbBottom;
-				{
-					dx=Frame->wndSize.right-rLine.right;
-					dy=-rLine.top+Frame->wndSize.top;
-				}
-				OffsetRect(&rLine,dx,dy);
-				OffsetRect(&rUpBtn,dx,dy);
-				OffsetRect(&rDnBtn,dx,dy);
-				OffsetRect(&rThumb,dx,dy);
-				BitBlt(g_pCachedWindow->hImageDC,rLine.left,rLine.top,rLine.right-rLine.left,rLine.bottom-rLine.top,g_pCachedWindow->hBackDC,rLine.left,rLine.top,SRCCOPY);
-				{
-					char req[255];
-					_snprintf(req,sizeof(req),"Main,ID=ScrollBar,Frame=%s,Part=Back",Frame->szName);
-					SkinDrawGlyph(g_pCachedWindow->hImageDC,&rLine,&rLine,req);
-					_snprintf(req,sizeof(req),"Main,ID=ScrollBar,Frame=%s,Part=Thumb",Frame->szName);
-					SkinDrawGlyph(g_pCachedWindow->hImageDC,&rThumb,&rThumb,req);
-					_snprintf(req,sizeof(req),"Main,ID=ScrollBar,Frame=%s,Part=UpLineButton",Frame->szName);
-					SkinDrawGlyph(g_pCachedWindow->hImageDC,&rUpBtn,&rUpBtn,req);
-					_snprintf(req,sizeof(req),"Main,ID=ScrollBar,Frame=%s,Part=DownLineButton",Frame->szName);
-					SkinDrawGlyph(g_pCachedWindow->hImageDC,&rDnBtn,&rDnBtn,req);
-				}
+				dx=Frame->wndSize.right-rLine.right;
+				dy=-rLine.top+Frame->wndSize.top;
 			}
-
+			OffsetRect(&rLine,dx,dy);
+			OffsetRect(&rUpBtn,dx,dy);
+			OffsetRect(&rDnBtn,dx,dy);
+			OffsetRect(&rThumb,dx,dy);
+			BitBlt(g_pCachedWindow->hImageDC,rLine.left,rLine.top,rLine.right-rLine.left,rLine.bottom-rLine.top,g_pCachedWindow->hBackDC,rLine.left,rLine.top,SRCCOPY);
+			{
+				char req[255];
+				_snprintf(req,sizeof(req),"Main,ID=ScrollBar,Frame=%s,Part=Back",Frame->szName);
+				SkinDrawGlyph(g_pCachedWindow->hImageDC,&rLine,&rLine,req);
+				_snprintf(req,sizeof(req),"Main,ID=ScrollBar,Frame=%s,Part=Thumb",Frame->szName);
+				SkinDrawGlyph(g_pCachedWindow->hImageDC,&rThumb,&rThumb,req);
+				_snprintf(req,sizeof(req),"Main,ID=ScrollBar,Frame=%s,Part=UpLineButton",Frame->szName);
+				SkinDrawGlyph(g_pCachedWindow->hImageDC,&rUpBtn,&rUpBtn,req);
+				_snprintf(req,sizeof(req),"Main,ID=ScrollBar,Frame=%s,Part=DownLineButton",Frame->szName);
+				SkinDrawGlyph(g_pCachedWindow->hImageDC,&rDnBtn,&rDnBtn,req);
+			}
 		}
+
 		SelectObject(hdc,o);
 		DeleteObject(n);
 		mod_DeleteDC(hdc);
