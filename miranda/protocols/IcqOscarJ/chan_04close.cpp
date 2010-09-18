@@ -108,7 +108,7 @@ void CIcqProto::handleLoginReply(BYTE *buf, WORD datalen, serverthread_info *inf
 		{
 			disposeChain(&chain);
 			SetCurrentStatus(ID_STATUS_OFFLINE);
-			NetLib_CloseConnection(&hServerConn, TRUE);
+			icq_serverDisconnect(FALSE);
 			return; // Failure
 		}
 	}

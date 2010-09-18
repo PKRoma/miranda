@@ -316,9 +316,9 @@ void CIcqProto::handleServiceFam(BYTE *pBuffer, WORD wBufferLength, snac_header 
 				if (!m_bSsiEnabled || info->isMigrating)
 					handleServUINSettings(wListenPort, info);
 			}
-      else if (m_hNotifyNameInfoEvent)
-        // Just notify that the set status note & mood process is finished
-        SetEvent(m_hNotifyNameInfoEvent);
+			else if (m_hNotifyNameInfoEvent)
+				// Just notify that the set status note & mood process is finished
+				SetEvent(m_hNotifyNameInfoEvent);
 		}
 		break;
 
