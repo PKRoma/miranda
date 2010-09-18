@@ -520,7 +520,7 @@ BOOL CLUI_CheckOwnedByClui(HWND hWnd)
 	HWND hWndMid, hWndClui;
 	if (!hWnd) return FALSE;
 	hWndClui=pcli->hwndContactList;
-	hWndMid=GetAncestor(hWnd,GA_ROOTOWNER);
+	hWndMid=fnGetAncestor(hWnd,GA_ROOTOWNER);
 	if(hWndMid==hWndClui) return TRUE;
 	{
 		TCHAR buf[255];

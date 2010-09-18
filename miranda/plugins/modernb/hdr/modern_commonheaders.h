@@ -248,6 +248,19 @@ extern void IvalidateDisplayNameCache(DWORD mode);
 typedef BOOL (WINAPI *pfnTryEnterCriticalSection)( LPCRITICAL_SECTION );
 extern pfnTryEnterCriticalSection fnTryEnterCriticalSection;
 
+typedef BOOL (WINAPI *pfnGetScrollBarInfo)( HWND, LONG, PSCROLLBARINFO );
+extern pfnGetScrollBarInfo fnGetScrollBarInfo;
+
+typedef DWORD (WINAPI *pfnMsgWaitForMultipleObjectsEx)( DWORD, CONST HANDLE*, DWORD, DWORD, DWORD );
+extern pfnMsgWaitForMultipleObjectsEx fnMsgWaitForMultipleObjectsEx;
+
+typedef HWND (WINAPI *pfnGetAncestor)( HWND, UINT );
+extern pfnGetAncestor fnGetAncestor;
+HWND WINAPI MyGetAncestor( HWND, UINT );
+
+typedef BOOL (WINAPI *pfnGetMenuBarInfo)( HWND, LONG, LONG, PMENUBARINFO );
+extern pfnGetMenuBarInfo fnGetMenuBarInfo;
+
 void FreeAndNil( void **p );
 
 extern SortedList *clistCache;
