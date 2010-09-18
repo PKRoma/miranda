@@ -40,11 +40,12 @@ typedef struct
 	void    ( *storeByContact )( HANDLE hContact, HANDLE hTZ );
 
 	int     ( *printDateTime )( HANDLE hTZ, LPCTSTR szFormat, LPTSTR szDest, int cbDest, DWORD dwFlags );
+	int     ( *printTimeStamp )( HANDLE hTZ, time_t ts, LPCTSTR szFormat, LPTSTR szDest, int cbDest, DWORD dwFlags );
 
 	int     ( *prepareList )( HANDLE hContact, HWND hWnd, DWORD dwFlags );
+	int     ( *selectListItem )( HANDLE hContact, HWND hWnd, DWORD dwFlags );
 	void    ( *storeListResults )( HANDLE hContact, HWND hWnd, DWORD dwFlags );
 
-	int     ( *printTimeStamp )( HANDLE hTZ, time_t ts, LPCTSTR szFormat, LPTSTR szDest, int cbDest, DWORD dwFlags );
 	int     ( *getTimeZoneTime )( HANDLE hTZ, SYSTEMTIME *st );
 	time_t  ( *timeStampToTimeZoneTimeStamp )( HANDLE hTZ, time_t ts );
 

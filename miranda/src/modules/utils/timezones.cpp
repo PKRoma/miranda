@@ -235,7 +235,7 @@ static void timeapiSetInfoByContact(HANDLE hContact, HANDLE hTZ)
 	if (tz)
 	{
 		DBWriteContactSettingTString(hContact, "UserInfo", "TzName", tz->tszName);
-		DBWriteContactSettingByte(hContact, "UserInfo", "Timezone", (char)((tz->tzi.Bias + tz->tzi.StandardBias) / 60));
+		DBWriteContactSettingByte(hContact, "UserInfo", "Timezone", (char)((tz->tzi.Bias + tz->tzi.StandardBias) / 30));
 	} 
 	else 
 	{
@@ -320,10 +320,16 @@ static time_t timeapiTimeStampToTimeZoneTimeStamp(HANDLE hTZ, time_t ts)
 
 typedef struct
 {
-	UINT addStr, getSel, setSel, findStr, setData, getData;
+	UINT addStr, getSel, setSel, getData, setData;
 } ListMessages;
 
-static bool GetListMessages(ListMessages &lstMsg, HWND hWnd, DWORD dwFlags)
+static const ListMessages lbMessages =
+{ LB_ADDSTRING, LB_GETCURSEL, LB_SETCURSEL, LB_GETITEMDATA, LB_SETITEMDATA };
+
+static const ListMessages cbMessages =
+{ CB_ADDSTRING, CB_GETCURSEL, CB_SETCURSEL, CB_GETITEMDATA, CB_SETITEMDATA };
+
+static const ListMessages *GetListMessages(HWND hWnd, DWORD dwFlags)
 {
 	if (!(dwFlags & (TZF_PLF_CB | TZF_PLF_LB))) 
 	{
@@ -335,27 +341,34 @@ static bool GetListMessages(ListMessages &lstMsg, HWND hWnd, DWORD dwFlags)
 			dwFlags |= TZF_PLF_LB;
 	}
 	if (dwFlags & TZF_PLF_CB) 
-	{
-		lstMsg.addStr  = CB_ADDSTRING;
-		lstMsg.findStr = CB_FINDSTRING;
-		lstMsg.getSel  = CB_GETCURSEL;
-		lstMsg.setSel  = CB_SETCURSEL;
-		lstMsg.setData = CB_SETITEMDATA;
-		lstMsg.getData = CB_GETITEMDATA;
-	}
+		return & cbMessages;
 	else if(dwFlags & TZF_PLF_LB) 
-	{
-		lstMsg.addStr  = LB_ADDSTRING;
-		lstMsg.findStr = LB_FINDSTRING;
-		lstMsg.getSel  = LB_GETCURSEL;
-		lstMsg.setSel  = LB_SETCURSEL;
-		lstMsg.setData = LB_SETITEMDATA;
-		lstMsg.getData = LB_GETITEMDATA;
-	}
+		return & lbMessages;
 	else
-		return false;
+		return NULL;
+}
 
-	return true;
+
+static int timeapiSelectListItem(HANDLE hContact, HWND hWnd, DWORD dwFlags)
+{
+	if (hWnd == NULL || hContact == NULL)	   // nothing to do
+		return -1;
+
+	const ListMessages *lstMsg = GetListMessages(hWnd, dwFlags);
+	if (lstMsg == NULL) return -1;
+
+	int iSelection = 0;
+	DBVARIANT dbv;
+	if (!DBGetContactSettingTString(hContact, "UserInfo", "TzName", &dbv)) 
+	{
+		MIM_TIMEZONE tzsearch;
+		tzsearch.hash = hashstr(dbv.ptszVal);
+		iSelection = g_timezones.getIndex(&tzsearch) + 1;
+		DBFreeVariant(&dbv);
+	}
+
+	SendMessage(hWnd, lstMsg->setSel, iSelection, 0);
+	return iSelection;
 }
 
 
@@ -364,63 +377,32 @@ static int timeapiPrepareList(HANDLE hContact, HWND hWnd, DWORD dwFlags)
 	if (hWnd == NULL)	   // nothing to do
 		return 0;
 
-	ListMessages lstMsg;
-	if (!GetListMessages(lstMsg, hWnd, dwFlags)) return 0;
+	const ListMessages *lstMsg = GetListMessages(hWnd, dwFlags);
+	if (lstMsg == NULL) return 0;
 
-	SendMessage(hWnd, lstMsg.addStr, 0, (LPARAM)TranslateT("<unspecified>"));
+	SendMessage(hWnd, lstMsg->addStr, 0, (LPARAM)TranslateT("<unspecified>"));
 
-	if (g_timezonesBias.getCount() == 0) return 0; 
-
-	TCHAR	tszSelectedItem[MIM_TZ_DISPLAYLEN] = _T("");
-
-	/*
-	 * preselection by hContact has precedence
-	 * if no hContact was given, the tszName will be directly used
-	 * for preselecting the item.
-	 */
-
-	TCHAR tszName[MIM_TZ_NAMELEN] = _T("");
-	if (hContact) 
-	{
-		DBVARIANT dbv;
-
-		if(!DBGetContactSettingTString(hContact, "UserInfo", "TzName", &dbv)) 
-		{
-			mir_sntprintf(tszName, MIM_TZ_NAMELEN, _T("%s"), dbv.ptszVal);
-			DBFreeVariant(&dbv);
-		}
-	}
-
-	int iSelection = -1;
 	for (int i = 0; i < g_timezonesBias.getCount(); ++i) 
 	{
-		SendMessage(hWnd, lstMsg.addStr, 0, (LPARAM)g_timezonesBias[i]->tszDisplay);
-		/*
-		 * set the adress of our timezone handle as itemdata
-		 * caller can obtain the handle to extract all relevant information
-		 */
-		SendMessage(hWnd, lstMsg.setData, (WPARAM)i + 1, (LPARAM)g_timezonesBias[i]);
+		MIM_TIMEZONE *tz = g_timezonesBias[i];
 
-		// remember the display name to later select it in the listbox
-		if (iSelection == -1 && tszName[0] && !_tcsicmp(tszName, g_timezonesBias[i]->tszName))	
-		{
-			_tcscpy(tszSelectedItem, g_timezonesBias[i]->tszDisplay);
-			iSelection = i + 1;
-		}
+		SendMessage(hWnd, lstMsg->addStr, 0, (LPARAM)tz->tszDisplay);
+		SendMessage(hWnd, lstMsg->setData, i + 1, (LPARAM)tz);
 	}
-	SendMessage(hWnd, lstMsg.setSel, iSelection >= 0 ? iSelection : 0, 0);
-	return iSelection >= 0;
+
+	return timeapiSelectListItem(hContact, hWnd, dwFlags);
 }
+
 
 static void timeapiStoreListResult(HANDLE hContact, HWND hWnd, DWORD dwFlags)
 {
-	ListMessages lstMsg;
-	if (!GetListMessages(lstMsg, hWnd, dwFlags)) return;
+	const ListMessages *lstMsg = GetListMessages(hWnd, dwFlags);
+	if (lstMsg == NULL) return;
 
-	LRESULT offset = SendMessage(hWnd, lstMsg.getSel, 0, 0);
+	LRESULT offset = SendMessage(hWnd, lstMsg->getSel, 0, 0);
 	if (offset > 0) 
 	{
-		MIM_TIMEZONE *tz = (MIM_TIMEZONE*)SendMessage(hWnd, lstMsg.getData, offset, 0);
+		MIM_TIMEZONE *tz = (MIM_TIMEZONE*)SendMessage(hWnd, lstMsg->getData, offset, 0);
 		if ((INT_PTR)tz != CB_ERR && tz != NULL)
 			timeapiSetInfoByContact(hContact, tz);
 	} 
@@ -443,10 +425,12 @@ static INT_PTR GetTimeApi( WPARAM, LPARAM lParam )
 	tmi->storeByContact                  = timeapiSetInfoByContact;
 
 	tmi->printDateTime                   = timeapiPrintDateTime;
+	tmi->printTimeStamp                  = timeapiPrintTimeStamp;
+
 	tmi->prepareList                     = timeapiPrepareList;
+	tmi->selectListItem                  = timeapiSelectListItem;
 	tmi->storeListResults                = timeapiStoreListResult;
 
-	tmi->printTimeStamp                  = timeapiPrintTimeStamp;
 	tmi->getTzi                          = timeapiGetTzi;
 	tmi->getTimeZoneTime                 = timeapiGetTimeZoneTime;
 	tmi->timeStampToTimeZoneTimeStamp    = timeapiTimeStampToTimeZoneTimeStamp;
