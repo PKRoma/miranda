@@ -245,6 +245,9 @@ extern BOOL ske_ResetTextEffect(HDC hdc);
 extern BOOL ske_SelectTextEffect(HDC hdc, BYTE EffectID, DWORD FirstColor, DWORD SecondColor);
 extern void IvalidateDisplayNameCache(DWORD mode);
 
+typedef BOOL (WINAPI *pfnTryEnterCriticalSection)( LPCRITICAL_SECTION );
+extern pfnTryEnterCriticalSection fnTryEnterCriticalSection;
+
 void FreeAndNil( void **p );
 
 extern SortedList *clistCache;
