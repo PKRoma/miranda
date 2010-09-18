@@ -351,20 +351,23 @@ static const ListMessages *GetListMessages(HWND hWnd, DWORD dwFlags)
 
 static int timeapiSelectListItem(HANDLE hContact, HWND hWnd, DWORD dwFlags)
 {
-	if (hWnd == NULL || hContact == NULL)	   // nothing to do
+	if (hWnd == NULL)	   // nothing to do
 		return -1;
 
 	const ListMessages *lstMsg = GetListMessages(hWnd, dwFlags);
 	if (lstMsg == NULL) return -1;
 
 	int iSelection = 0;
-	DBVARIANT dbv;
-	if (!DBGetContactSettingTString(hContact, "UserInfo", "TzName", &dbv)) 
+	if (hContact)
 	{
-		MIM_TIMEZONE tzsearch;
-		tzsearch.hash = hashstr(dbv.ptszVal);
-		iSelection = g_timezones.getIndex(&tzsearch) + 1;
-		DBFreeVariant(&dbv);
+		DBVARIANT dbv;
+		if (!DBGetContactSettingTString(hContact, "UserInfo", "TzName", &dbv)) 
+		{
+			MIM_TIMEZONE tzsearch;
+			tzsearch.hash = hashstr(dbv.ptszVal);
+			iSelection = g_timezones.getIndex(&tzsearch) + 1;
+			DBFreeVariant(&dbv);
+		}
 	}
 
 	SendMessage(hWnd, lstMsg->setSel, iSelection, 0);
