@@ -193,6 +193,7 @@
 #define IDC_COMPANY                     1066
 #define IDC_LANGUAGE1                   1066
 #define IDC_TIMEZONE                    1067
+#define IDC_TIMEZONESELECT              1071
 #define IDC_DEPARTMENT                  1067
 #define IDC_LOCALTIME                   1068
 #define IDC_DETAILS                     1069

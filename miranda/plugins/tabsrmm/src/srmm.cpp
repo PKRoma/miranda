@@ -50,6 +50,7 @@ LOGFONT lfDefault = {0};
 
 struct LIST_INTERFACE li;
 struct MM_INTERFACE mmi;
+TIME_API tmi = {0};
 
 PLUGININFOEX pluginInfo = {
 	sizeof(PLUGININFOEX),
@@ -111,6 +112,7 @@ extern "C" int __declspec(dllexport) Load(PLUGINLINK * link)
 
 	mir_getMMI(&mmi);
 	mir_getLI(&li);
+	mir_getTMI(&tmi);
 
 	CTranslator::preTranslateAll();
 

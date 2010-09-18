@@ -29,7 +29,6 @@ typedef struct {
 	DATABASELINK * dblink;	// out
 } PROFILEMANAGERDATA;
 
-int InitTime(void);
 int InitUtils(void);
 
 char* makeFileName( const TCHAR* tszOriginalName );

@@ -55,7 +55,8 @@ extern HIMAGELIST himlExtraImages;
 extern DWORD ( WINAPI *pfnSetLayout )(HDC, DWORD);
 
 struct LIST_INTERFACE li;
-struct MM_INTERFACE memoryManagerInterface;
+struct MM_INTERFACE mmi;
+TIME_API tmi;
 
 HMENU  BuildGroupPopupMenu( struct ClcGroup* group );
 struct ClcContact* CreateClcContact( void );
@@ -239,9 +240,9 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 #endif
 
-	pfnSetLayout = (DWORD ( WINAPI *)(HDC, DWORD))GetProcAddress( GetModuleHandleA( "GDI32.DLL" ), "SetLayout" );
+	pfnSetLayout = (DWORD ( WINAPI *)(HDC, DWORD))GetProcAddress( GetModuleHandleA( "gdi32" ), "SetLayout" );
 
-	hUserDll = GetModuleHandleA("user32.dll");
+	hUserDll = GetModuleHandleA("user32");
 	if (hUserDll) {
 		MyMonitorFromPoint = ( pfnMonitorFromPoint )GetProcAddress(hUserDll, "MonitorFromPoint");
 		MyMonitorFromWindow = ( pfnMonitorFromWindow )GetProcAddress(hUserDll, "MonitorFromWindow");
@@ -251,19 +252,16 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 		MyTrackMouseEvent = ( pfnTrackMouseEvent )GetProcAddress(hUserDll, "TrackMouseEvent");
 	}
 
-	MyGradientFill = (PGF)GetProcAddress(GetModuleHandleA("msimg32"), "GradientFill");
+	MyGradientFill = (PGF) GetProcAddress(GetModuleHandleA("gdi32"), "GdiGradientFill");
+	if (MyGradientFill == 0)
+		MyGradientFill = (PGF) GetProcAddress(GetModuleHandleA("msimg32"), "GradientFill");
 
 	LoadCLCButtonModule();
 	RegisterCLUIFrameClasses();
 
-	// get the internal malloc/free()
-	memset(&memoryManagerInterface, 0, sizeof(memoryManagerInterface));
-	memoryManagerInterface.cbSize = sizeof(memoryManagerInterface);
-	CallService(MS_SYSTEM_GET_MMI, 0, (LPARAM) &memoryManagerInterface);
-
-	// get the list control interface
-	li.cbSize = sizeof(li);
-	CallService(MS_SYSTEM_GET_LI, 0, (LPARAM)&li);
+	mir_getMMI(&mmi);
+	mir_getLI(&li);
+	mir_getTMI(&tmi);
 
 	ZeroMemory((void*) &g_CluiData, sizeof(g_CluiData));
 	{

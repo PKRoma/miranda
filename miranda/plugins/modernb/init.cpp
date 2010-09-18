@@ -42,6 +42,7 @@ CLUIDATA g_CluiData={0};
 MM_INTERFACE   mmi;
 LIST_INTERFACE li;
 UTF8_INTERFACE utfi;
+TIME_API       tmi;
 
 pfnTryEnterCriticalSection fnTryEnterCriticalSection;
 
@@ -110,11 +111,11 @@ PLUGININTERFACE int CListInitialise(PLUGINLINK * link)
 	fnTryEnterCriticalSection = ( pfnTryEnterCriticalSection )GetProcAddress( hKernel, "TryEnterCriticalSection" );
 
 	HMODULE hUser = GetModuleHandleA( "user32.dll" );
-	fnGetMenuBarInfo = ( pfnGetMenuBarInfo )GetProcAddress( hUser, "GetMenuBarInfo" );
-	fnGetScrollBarInfo = ( pfnGetScrollBarInfo )GetProcAddress( hUser, "GetScrollBarInfo" );
-	fnMsgWaitForMultipleObjectsEx = ( pfnMsgWaitForMultipleObjectsEx )GetProcAddress( hUser, "MsgWaitForMultipleObjectsEx" );
+	fnGetMenuBarInfo = ( pfnGetMenuBarInfo )GetProcAddress( hKernel, "GetMenuBarInfo" );
+	fnGetScrollBarInfo = ( pfnGetScrollBarInfo )GetProcAddress( hKernel, "GetScrollBarInfo" );
+	fnMsgWaitForMultipleObjectsEx = ( pfnMsgWaitForMultipleObjectsEx )GetProcAddress( hKernel, "MsgWaitForMultipleObjectsEx" );
 
-	if (( fnGetAncestor = ( pfnGetAncestor )GetProcAddress( hUser, "GetAncestor" )) == NULL )
+	if (( fnGetAncestor = ( pfnGetAncestor )GetProcAddress( hKernel, "GetAncestor" )) == NULL )
 		fnGetAncestor = MyGetAncestor;
 
 	g_dwMainThreadID = GetCurrentThreadId();
@@ -123,6 +124,7 @@ PLUGININTERFACE int CListInitialise(PLUGINLINK * link)
 	mir_getMMI(&mmi);
 	mir_getUTFI(&utfi);
 	mir_getLI(&li);
+	mir_getTMI(&tmi);
 
 	CHECKRES ( PreLoadContactListModule ( )	);
 	CHECKRES ( SubclassClistInterface ( )	);

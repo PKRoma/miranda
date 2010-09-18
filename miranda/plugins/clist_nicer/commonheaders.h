@@ -45,6 +45,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <shlwapi.h>
 #include "resource.h"
 #include <newpluginapi.h>
+#include <win2k.h>
 #include <m_clist.h>
 #include <m_clistint.h>
 #include <m_clc.h>
@@ -62,22 +63,23 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <m_file.h>
 #include <m_addcontact.h>
 #include <m_message.h>
+#include <m_timezones.h>
+#include <m_genmenu.h>
+#include <m_cluiframes.h>
+#include <m_clui.h>
+#include <m_icolib.h>
+#include <m_popup.h>
+#include <m_fontservice.h>
+#include <m_avatars.h>
+
+#include "m_metacontacts.h"
 #include "m_cln_skinedit.h"
-#include "m_avatars.h"
+
 #include "extbackg.h"
 #include "clc.h"
 #include "clist.h"
 #include "alphablend.h"
 #include "rowheight_funcs.h"
-#include "m_genmenu.h"
-#include "m_genmenu.h"
-#include "m_cluiframes.h"
-#include "m_clui.h"
-#include "m_icolib.h"
-#include "m_popup.h"
-#include "m_metacontacts.h"
-#include "m_fontservice.h"
-#include <win2k.h>
 
 // shared vars
 extern HINSTANCE g_hInst;

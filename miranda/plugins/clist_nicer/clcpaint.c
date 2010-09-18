@@ -1227,30 +1227,21 @@ text:
             else
                 fLocalTime = cEntry->dwDFlags & ECF_FORCELOCALTIME ? 1 : 0;
 
-			if(cEntry->timediff != -1 && fLocalTime) {
-				DBTIMETOSTRING dbtts;
-				char szResult[80];
+			if (cEntry->hTimeZone && fLocalTime) {
 				int  idOldFont;
-				DWORD final_time;
-				DWORD now = g_CluiData.t_now;
 				SIZE szTime;
 				RECT rc = rcContent;
 				COLORREF oldColor;
 				int fHeight = 0;
 
-				final_time = now - cEntry->timediff;
-
-				if(final_time == now && g_CluiData.bShowLocalTimeSelective)
+				TCHAR szResult[80];
+				if (tmi.printDateTime(cEntry->hTimeZone, _T("t"), szResult, SIZEOF(szResult), 0))
 					goto nodisplay;
 
-				dbtts.szDest = szResult;
-				dbtts.cbDest = 70;
-				dbtts.szFormat = "t";
-				CallService(MS_DB_TIME_TIMESTAMPTOSTRING, (WPARAM)final_time, (LPARAM)&dbtts);
 				oldColor = GetTextColor(hdcMem);
 				idOldFont = dat->currentFontID;
 				ChangeToFont(hdcMem, dat, FONTID_TIMESTAMP, &fHeight);
-				GetTextExtentPoint32A(hdcMem, szResult, lstrlenA(szResult), &szTime);
+				GetTextExtentPoint32(hdcMem, szResult, lstrlen(szResult), &szTime);
 				verticalfit = (rowHeight - fHeight >= g_CluiData.exIconScale + 1);
 
 				if(av_right) {
@@ -1275,7 +1266,7 @@ text:
 					else
 						rc.left = rcContent.right - szTime.cx - 2;
 				}
-				DrawTextA(hdcMem, szResult, -1, &rc, DT_NOPREFIX | DT_NOCLIP | DT_SINGLELINE);
+				DrawText(hdcMem, szResult, -1, &rc, DT_NOPREFIX | DT_NOCLIP | DT_SINGLELINE);
 				ChangeToFont(hdcMem, dat, idOldFont, 0);
 				SetTextColor(hdcMem, oldColor);
 

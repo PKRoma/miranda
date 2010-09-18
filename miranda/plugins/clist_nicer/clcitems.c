@@ -359,7 +359,7 @@ BYTE GetCachedStatusMsg(int iExtraCacheEntry, char *szProto)
 		}
 	}
 #endif
-	if(cEntry->timediff == -1)
+	if(cEntry->hTimeZone)
 		TZ_LoadTimeZone(hContact, cEntry, szProto);
 	return cEntry->bStatusMsgValid;;
 }
@@ -469,12 +469,10 @@ static LONG TZ_GetTimeZoneOffset(REG_TZI_FORMAT *tzi)
 
 static void TZ_LoadTimeZone(HANDLE hContact, struct ExtraCache *c, const char *szProto)
 {
-	MIM_TIMEZONE  *tzi = (MIM_TIMEZONE *)CallService(MS_TZ_GETINFOBYCONTACT, (WPARAM)hContact, 0);
-	if (tzi && (INT_PTR)tzi != CALLSERVICE_NOTFOUND)
-	{
-		c->timediff = tzi->Offset;
-		c->dwCFlags |= ECF_HASREALTIMEZONE;
-	}
+	DWORD flags = 0;
+	if (g_CluiData.bShowLocalTimeSelective) flags |= TZF_DIFONLY;
+
+	c->hTimeZone = tmi.createByContact(hContact, flags);
 }
 
 void ReloadExtraInfo(HANDLE hContact)
@@ -706,6 +704,7 @@ int GetExtraCache(HANDLE hContact, char *szProto)
         }
         memset(&g_ExtraCache[g_nextExtraCacheEntry], 0, sizeof(struct ExtraCache));
 		g_ExtraCache[g_nextExtraCacheEntry].hContact = hContact;
+		g_ExtraCache[g_nextExtraCacheEntry].hTimeZone = NULL;
         memset(g_ExtraCache[g_nextExtraCacheEntry].iExtraImage, 0xff, MAXEXTRACOLUMNS);
         g_ExtraCache[g_nextExtraCacheEntry].iExtraValid = 0;
         g_ExtraCache[g_nextExtraCacheEntry].valid = FALSE;
@@ -713,10 +712,9 @@ int GetExtraCache(HANDLE hContact, char *szProto)
         g_ExtraCache[g_nextExtraCacheEntry].statusMsg = NULL;
         g_ExtraCache[g_nextExtraCacheEntry].status_item = NULL;
         LoadSkinItemToCache(&g_ExtraCache[g_nextExtraCacheEntry], szProto);
-        g_ExtraCache[g_nextExtraCacheEntry].dwCFlags = g_ExtraCache[g_nextExtraCacheEntry].timezone = 0;
+        g_ExtraCache[g_nextExtraCacheEntry].dwCFlags = 0;
         g_ExtraCache[g_nextExtraCacheEntry].dwDFlags = DBGetContactSettingDword(hContact, "CList", "CLN_Flags", 0);
         g_ExtraCache[g_nextExtraCacheEntry].dwXMask = CalcXMask(hContact);
-		g_ExtraCache[g_nextExtraCacheEntry].timediff = -1;
         GetCachedStatusMsg(g_nextExtraCacheEntry, szProto);
 		g_ExtraCache[g_nextExtraCacheEntry].dwLastMsgTime = INTSORT_GetLastMsgTime(hContact);
         iFound = g_nextExtraCacheEntry++;

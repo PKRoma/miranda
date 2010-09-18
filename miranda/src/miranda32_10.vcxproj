@@ -648,7 +648,6 @@
     <ClCompile Include="modules\database\database.cpp" />
     <ClCompile Include="modules\database\dbini.cpp" />
     <ClCompile Include="modules\database\dblists.cpp" />
-    <ClCompile Include="modules\database\dbtime.cpp" />
     <ClCompile Include="modules\database\dbutils.cpp" />
     <ClCompile Include="modules\database\profilemanager.cpp" />
     <ClCompile Include="modules\findadd\findadd.cpp" />
@@ -715,6 +714,7 @@
     <ClCompile Include="modules\utils\path.cpp" />
     <ClCompile Include="modules\utils\resizer.cpp" />
     <ClCompile Include="modules\utils\sha1.cpp" />
+    <ClCompile Include="modules\utils\timeutils.cpp" />
     <ClCompile Include="modules\utils\timezones.cpp" />
     <ClCompile Include="modules\utils\utf.cpp" />
     <ClCompile Include="modules\utils\utils.cpp" />

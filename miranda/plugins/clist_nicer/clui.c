@@ -169,20 +169,6 @@ static struct IconDesc myIcons[] = {
  * If no real time zone is set, the service falls back to ordinary GMT offsets
  */
 
-#if defined(_UNICODE)
-static INT_PTR CLN_GetTimeOffset(WPARAM wParam, LPARAM lParam)
-{
-	HANDLE 	hContact = (HANDLE)wParam;
-	char	*szProto = (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
-	int iIndex = GetExtraCache(hContact, szProto);
-
-	if(iIndex >= 0 || iIndex < g_nextExtraCacheEntry) {
-		return (int)(g_ExtraCache[iIndex].timediff);					// in seconds
-	}
-	return 0;
-}
-#endif
-
 static void Tweak_It(COLORREF clr)
 {
 	SetWindowLong(pcli->hwndContactList, GWL_EXSTYLE, GetWindowLong(pcli->hwndContactList, GWL_EXSTYLE) | WS_EX_LAYERED);
@@ -2458,9 +2444,6 @@ void LoadCLUIModule(void)
 	CreateServiceFunction("CLN/About", CLN_ShowAbout);
 	CreateServiceFunction(MS_CLUI_SHOWMAINMENU, CLN_ShowMainMenu);
 	CreateServiceFunction(MS_CLUI_SHOWSTATUSMENU, CLN_ShowStatusMenu);
-#if defined(_UNICODE)
-	CreateServiceFunction("CLN/GetTimeOffset", CLN_GetTimeOffset);
-#endif
 }
 
 static struct {

@@ -548,13 +548,8 @@ void CInfoPanel::RenderIPStatus(const HDC hdc, RECT& rcItem)
 		GetTextExtentPoint32(hdc, szFinalProto, lstrlen(szFinalProto), &sProto);
 	}
 
-	if (m_dat->timezone != -1) {
-		TCHAR *formatTime = _T("%H:%M");
-		time_t 			final_time;
-		time_t 			now = time(NULL);
-
-		final_time = now - m_dat->timediff;
-		_tcsftime(szResult, 30, formatTime, _localtime32((__time32_t *)&final_time));
+	if (m_dat->hTimeZone) {
+		tmi.printDateTime(m_dat->hTimeZone, _T("t"), szResult, SIZEOF(szResult), 0);
 		GetTextExtentPoint32(hdc, szResult, lstrlen(szResult), &sTime);
 	}
 

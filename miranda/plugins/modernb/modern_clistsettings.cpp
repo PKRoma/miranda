@@ -177,8 +177,7 @@ void CListSettings_CopyCacheItems(pdisplayNameCacheEntry pDst, pdisplayNameCache
 	}
 	if ( flag & CCI_TIME)	
 	{
-		pDst->timezone=pSrc->timezone;
-		pDst->timediff=pSrc->timediff;
+		pDst->hTimeZone=pSrc->hTimeZone;
 	}
 	if ( flag & CCI_OTHER)
 	{
@@ -418,8 +417,7 @@ void InvalidateDNCEbyPointer(HANDLE hContact,pdisplayNameCacheEntry pdnce,int Se
 			if (pdnce->szThirdLineText) mir_free_and_nill(pdnce->szThirdLineText);
 			pdnce->ssSecondLine.iMaxSmileyHeight=0;
 			pdnce->ssThirdLine.iMaxSmileyHeight=0;
-			pdnce->timediff=0;
-			pdnce->timezone=-1;
+			pdnce->hTimeZone=NULL;
 			pdnce->dwLastMsgTime=0;//CompareContacts2_getLMTime(pdnce->hContact);
 			Cache_GetTimezone(NULL,pdnce->m_cache_hContact);
 			SettingType&=~16;

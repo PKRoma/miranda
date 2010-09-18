@@ -1317,7 +1317,7 @@ HWND WINAPI MyGetAncestor( HWND hWnd, UINT option )
 	if ( option == GA_ROOTOWNER ) {
 		HWND result = hWnd;
 		while( true ) {
-			HWND hParent = GetParent( result );
+			HWND hParent = GetParent( hWnd );
 			if ( !hParent )
 				return result;
 

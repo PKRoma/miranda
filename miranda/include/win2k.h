@@ -46,7 +46,7 @@ File created by Christian Kästner, and tweaked a bit by Richard Hughes*/
 #define IsWinVerNT4Plus()  (WinVerMajor()>=5 || WinVerMinor()>0 || IsWinVerNT())
 #define IsWinVer98Plus()   (LOWORD(GetVersion())!=4)
 #define IsWinVerMEPlus()   (WinVerMajor()>=5 || WinVerMinor()>10)
-#define IsWinVer2000Plus() (WinVerMajor()>=5)
+#define IsWinVer2000Plus() (WinVerMajor()>=5 && IsWinVerNT())
 #define IsWinVerXPPlus()   (WinVerMajor()>=5 && LOWORD(GetVersion())!=5)
 #define IsWinVerVistaPlus() (WinVerMajor()>=6)
 #define IsWinVer7Plus()     (WinVerMajor()>6 || (WinVerMajor()==6 && WinVerMinor()>=1))

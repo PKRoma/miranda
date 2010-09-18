@@ -709,8 +709,8 @@ static char *Template_CreateRTFFromDbEvent(struct TWindowData *dat, HANDLE hCont
 	if (dwEffectiveFlags & MWF_LOG_SHOWTIME) {
 		final_time = dbei.timestamp;
 		if (dat->dwFlags & MWF_LOG_LOCALTIME) {
-			if (!isSent && dat->timediff != 0)
-				final_time = dbei.timestamp - dat->timediff;
+			if (!isSent && dat->hTimeZone)
+				final_time = tmi.timeStampToTimeZoneTimeStamp(dat->hTimeZone, final_time);
 		}
 		_tzset();
 		event_time = *localtime(&final_time);
@@ -1600,25 +1600,23 @@ void TSAPI BuildCodePageList()
 static TCHAR *Template_MakeRelativeDate(struct TWindowData *dat, time_t check, int groupBreak, TCHAR code)
 {
 	static TCHAR szResult[100];
-	DBTIMETOSTRINGT dbtts;
-	szResult[0] = 0;
-	dbtts.cbDest = 70;;
-	dbtts.szDest = szResult;
+	const TCHAR *szFormat;
 
 	if ((code == (TCHAR)'R' || code == (TCHAR)'r') && check >= today) {
-		lstrcpy(szResult, szToday);
+		_tcscpy(szResult, szToday);
 	} else if ((code == (TCHAR)'R' || code == (TCHAR)'r') && check > (today - 86400)) {
-		lstrcpy(szResult, szYesterday);
+		_tcscpy(szResult, szYesterday);
 	} else {
-		if (code == (TCHAR)'D' || code == (TCHAR)'R')
-			dbtts.szFormat = _T("D");
-		else if (code == (TCHAR)'T')
-			dbtts.szFormat = _T("s");
-		else if (code == (TCHAR)'t')
-			dbtts.szFormat = _T("t");
+		if (code == 'D' || code == 'R')
+			szFormat = _T("D");
+		else if (code == 'T')
+			szFormat = _T("s");
+		else if (code == 't')
+			szFormat = _T("t");
 		else
-			dbtts.szFormat = _T("d");
-		CallService(MS_DB_TIME_TIMESTAMPTOSTRINGT, check, (LPARAM)&dbtts);
+			szFormat = _T("d");
+
+		tmi.printTimeStamp(NULL, check, szFormat, szResult, safe_sizeof(szResult), 0); 
 	}
 	return szResult;
 }

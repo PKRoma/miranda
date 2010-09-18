@@ -317,39 +317,47 @@ WORD GetHotkeyValue( INT_PTR idHotkey );
 
 HBITMAP ConvertIconToBitmap(HICON hIcon, HIMAGELIST hIml, int iconId);
 
-#ifdef _UNICODE
-class StrConvT
+class StrConvUT
 {
 private:
 	wchar_t* m_body;
 
 public:
-	StrConvT( const char* pSrc ) :
+	StrConvUT( const char* pSrc ) :
 		m_body( mir_a2u( pSrc )) {}
 
-    ~StrConvT() {  mir_free( m_body ); }
+    ~StrConvUT() {  mir_free( m_body ); }
 	operator const wchar_t* () const { return m_body; }
 };
 
-class StrConvA
+class StrConvAT
 {
 private:
 	char* m_body;
 
 public:
-	StrConvA( const wchar_t* pSrc ) :
+	StrConvAT( const wchar_t* pSrc ) :
 		m_body( mir_u2a( pSrc )) {}
 
-    ~StrConvA() {  mir_free( m_body ); }
+    ~StrConvAT() {  mir_free( m_body ); }
 	operator const char*  () const { return m_body; }
 	operator const wchar_t* () const { return ( wchar_t* )m_body; }  // type cast to fake the interface definition
 	operator const LPARAM () const { return ( LPARAM )m_body; }
 };
 
+#ifdef _UNICODE
+
+#define StrConvT( x ) StrConvUT( x )
+#define StrConvTu( x ) x
+#define StrConvA( x ) StrConvAT( x )
+#define StrConvU( x ) x
+
 #else
 
 #define StrConvT( x ) x
+#define StrConvTu( x ) StrConvAT( x )
 #define StrConvA( x ) x
+#define StrConvU( x ) StrConvUT( x )
 
 #endif
 

@@ -1301,13 +1301,16 @@ static int CLUI_DrawMenuBackGround(HWND hwnd, HDC hdc, int item, int state)
 	HRGN treg,treg2;
 	struct ClcData * dat;
 
+	if ( !fnGetMenuBarInfo )
+		return 1;
+
 	dat=(struct ClcData*)GetWindowLongPtr(pcli->hwndContactTree,0);
 	if (!dat) return 1;
 	GetWindowRect(hwnd,&ra);
 	{
 		MENUBARINFO mbi={0};
 		mbi.cbSize=sizeof(MENUBARINFO);
-		GetMenuBarInfo(hwnd,OBJID_MENU, 0, &mbi);
+		fnGetMenuBarInfo(hwnd,OBJID_MENU, 0, &mbi);
 		if (!(mbi.rcBar.right-mbi.rcBar.left>0 && mbi.rcBar.bottom-mbi.rcBar.top>0)) return 1;
 		r1=mbi.rcBar;  
 		r1.bottom+= !ModernGetSettingByte(NULL,"CLUI","LineUnderMenu",SETTING_LINEUNDERMENU_DEFAULT);
@@ -1319,7 +1322,7 @@ static int CLUI_DrawMenuBackGround(HWND hwnd, HDC hdc, int item, int state)
 				int t;
 				for (t=1; t<=2; t++)
 				{
-					GetMenuBarInfo(hwnd,OBJID_MENU, t, &mbi);
+					fnGetMenuBarInfo(hwnd,OBJID_MENU, t, &mbi);
 					treg2=CreateRectRgn(mbi.rcBar.left,mbi.rcBar.top,mbi.rcBar.right,mbi.rcBar.bottom);
 					CombineRgn(treg,treg,treg2,RGN_DIFF);
 					DeleteObject(treg2);  
@@ -1329,7 +1332,7 @@ static int CLUI_DrawMenuBackGround(HWND hwnd, HDC hdc, int item, int state)
 		}
 		else
 		{
-			GetMenuBarInfo(hwnd,OBJID_MENU, item, &mbi);
+			fnGetMenuBarInfo(hwnd,OBJID_MENU, item, &mbi);
 			treg=CreateRectRgn(mbi.rcBar.left,mbi.rcBar.top,mbi.rcBar.right,mbi.rcBar.bottom+!ModernGetSettingByte(NULL,"CLUI","LineUnderMenu",SETTING_LINEUNDERMENU_DEFAULT));
 		}
 		OffsetRgn(treg,-ra.left,-ra.top);

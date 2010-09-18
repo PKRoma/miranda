@@ -329,7 +329,7 @@ struct TWindowData {
 	DWORD   idle;
 	HWND    hwndTip;
 	TOOLINFO ti;
-	DWORD   timezone, timediff;
+	HANDLE  hTimeZone;
 	DWORD   panelStatusCX;
 	COLORREF inputbg;
 	struct  avatarCacheEntry *ace, *ownAce;
