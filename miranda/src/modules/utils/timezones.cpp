@@ -313,7 +313,7 @@ static INT_PTR svcGetInfoByContact(WPARAM wParam, LPARAM lParam)
 			int delta = LONG_MAX;
 			for (int j = ++i; j < g_timezonesBias.getCount() && g_timezonesBias[j]->Bias == tzsearch.Bias; ++j)
 			{
-				int delta1 = abs(g_timezonesBias[j]->DaylightDate.wMonth - myInfo.myTZ->DaylightTime.wMonth);
+				int delta1 = abs(g_timezonesBias[j]->DaylightDate.wMonth - myInfo.tzi.DaylightTime.wMonth);
 				if (delta1 <= delta)
 				{
 					delta = delta1;
