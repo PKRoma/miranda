@@ -51,7 +51,7 @@ typedef struct
 
 	LPTIME_ZONE_INFORMATION ( *getTzi )( HANDLE hTZ );
 
-
+#ifdef __cplusplus
 	int printDateTimeByContact (HANDLE hContact, LPCTSTR szFormat, LPTSTR szDest, int cbDest, DWORD dwFlags)
 	{ return printDateTime(createByContact(hContact, dwFlags), szFormat, szDest, cbDest, dwFlags); }
 
@@ -66,6 +66,7 @@ typedef struct
 
 	time_t timeStampToTimeZoneTimeStampByContact(HANDLE hContact, time_t ts)
 	{ return timeStampToTimeZoneTimeStamp(createByContact(hContact, 0), ts); }
+#endif
 
 } TIME_API;
 
