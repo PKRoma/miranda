@@ -111,11 +111,11 @@ PLUGININTERFACE int CListInitialise(PLUGINLINK * link)
 	fnTryEnterCriticalSection = ( pfnTryEnterCriticalSection )GetProcAddress( hKernel, "TryEnterCriticalSection" );
 
 	HMODULE hUser = GetModuleHandleA( "user32.dll" );
-	fnGetMenuBarInfo = ( pfnGetMenuBarInfo )GetProcAddress( hKernel, "GetMenuBarInfo" );
-	fnGetScrollBarInfo = ( pfnGetScrollBarInfo )GetProcAddress( hKernel, "GetScrollBarInfo" );
-	fnMsgWaitForMultipleObjectsEx = ( pfnMsgWaitForMultipleObjectsEx )GetProcAddress( hKernel, "MsgWaitForMultipleObjectsEx" );
+	fnGetMenuBarInfo = ( pfnGetMenuBarInfo )GetProcAddress( hUser, "GetMenuBarInfo" );
+	fnGetScrollBarInfo = ( pfnGetScrollBarInfo )GetProcAddress( hUser, "GetScrollBarInfo" );
+	fnMsgWaitForMultipleObjectsEx = ( pfnMsgWaitForMultipleObjectsEx )GetProcAddress( hUser, "MsgWaitForMultipleObjectsEx" );
 
-	if (( fnGetAncestor = ( pfnGetAncestor )GetProcAddress( hKernel, "GetAncestor" )) == NULL )
+	if (( fnGetAncestor = ( pfnGetAncestor )GetProcAddress( hUser, "GetAncestor" )) == NULL )
 		fnGetAncestor = MyGetAncestor;
 
 	g_dwMainThreadID = GetCurrentThreadId();
