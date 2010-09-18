@@ -33,6 +33,7 @@ int LoadDefaultModules(void);
 void DestroyModularEngine(void);
 void UnloadNewPluginsModule(void);
 void UnloadDefaultModules(void);
+void RecalculateTime(void);
 
 HINSTANCE GetInstByAddress( void* codePtr );
 
@@ -448,6 +449,7 @@ static void __cdecl compactHeapsThread(void*)
 LRESULT CALLBACK APCWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	if (msg==WM_NULL) SleepEx(0,TRUE);
+	if (msg == WM_TIMECHANGE) RecalculateTime();
 	return DefWindowProc(hwnd,msg,wParam,lParam);
 }
 
@@ -664,8 +666,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int )
 				HWND h=GetForegroundWindow();
 				DWORD pid = 0;
 				checkIdle(&msg);
-				if ( h != NULL && GetWindowThreadProcessId(h,&pid) && pid==myPid
-					&& GetClassLongPtr(h, GCW_ATOM)==32770 ) {
+				if ( h != NULL && GetWindowThreadProcessId(h, &pid) && pid == myPid && 
+					 GetClassLongPtr(h, GCW_ATOM)==32770 ) 
+				{
 					if ( IsDialogMessage(h, &msg) ) 
 						continue;
 				}

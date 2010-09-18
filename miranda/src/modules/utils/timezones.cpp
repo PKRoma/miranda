@@ -53,6 +53,8 @@ static pfnGetUserDefaultUILanguage_t pfnGetUserDefaultUILanguage;
 typedef LANGID (WINAPI *pfnGetSystemDefaultUILanguage_t)(void);
 static pfnGetSystemDefaultUILanguage_t pfnGetSystemDefaultUILanguage;
 
+typedef LPARAM (WINAPI *pfnSendMessageW_t)(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam);
+static pfnSendMessageW_t pfnSendMessageW;
 
 typedef struct _REG_TZI_FORMAT
 {
@@ -68,7 +70,7 @@ typedef struct _REG_TZI_FORMAT
 struct MIM_TIMEZONE
 {
 	TCHAR	tszName[MIM_TZ_NAMELEN];			// windows name for the time zone
-	TCHAR	tszDisplay[MIM_TZ_DISPLAYLEN];		// more descriptive display name (that's what usually appears in dialogs)
+	wchar_t	szDisplay[MIM_TZ_DISPLAYLEN];		// more descriptive display name (that's what usually appears in dialogs)
 												// every hour should be sufficient.
 	TIME_ZONE_INFORMATION tzi;
 	unsigned hash;
@@ -363,9 +365,15 @@ static int timeapiSelectListItem(HANDLE hContact, HWND hWnd, DWORD dwFlags)
 		DBVARIANT dbv;
 		if (!DBGetContactSettingTString(hContact, "UserInfo", "TzName", &dbv)) 
 		{
-			MIM_TIMEZONE tzsearch;
-			tzsearch.hash = hashstr(dbv.ptszVal);
-			iSelection = g_timezones.getIndex(&tzsearch) + 1;
+			unsigned hash = hashstr(dbv.ptszVal);
+			for (int i = 0; i < g_timezonesBias.getCount(); ++i) 
+			{
+				if (hash == g_timezonesBias[i]->hash)
+				{
+					iSelection = i + 1;
+					break;
+				}
+			}
 			DBFreeVariant(&dbv);
 		}
 	}
@@ -389,7 +397,11 @@ static int timeapiPrepareList(HANDLE hContact, HWND hWnd, DWORD dwFlags)
 	{
 		MIM_TIMEZONE *tz = g_timezonesBias[i];
 
-		SendMessage(hWnd, lstMsg->addStr, 0, (LPARAM)tz->tszDisplay);
+		if (pfnSendMessageW)
+			pfnSendMessageW(hWnd, lstMsg->addStr, 0, (LPARAM)tz->szDisplay);
+		else
+			SendMessage(hWnd, lstMsg->addStr, 0, (LPARAM)StrConvTu(tz->szDisplay));
+
 		SendMessage(hWnd, lstMsg->setData, i + 1, (LPARAM)tz);
 	}
 
@@ -468,23 +480,34 @@ static INT_PTR TimestampToStringA(WPARAM wParam, LPARAM lParam)
 }
 #endif
 
-void GetLocalizedString(HKEY hSubKey, const TCHAR *szName, TCHAR *szBuf, DWORD cbLen)
+void GetLocalizedString(HKEY hSubKey, const TCHAR *szName, wchar_t *szBuf, DWORD cbLen)
 {
 	szBuf[0] = 0;
-#ifdef _UNICODE
 	if (muiInstalled)
 	{
 		TCHAR tszTempBuf[MIM_TZ_NAMELEN], tszName[30];
 		mir_sntprintf(tszName, SIZEOF(tszName), _T("MUI_%s"), szName);
 		DWORD dwLength = cbLen * sizeof(TCHAR);
 		if (ERROR_SUCCESS == RegQueryValueEx(hSubKey, tszName, NULL, NULL, (unsigned char *)tszTempBuf, &dwLength))
-			pfnSHLoadIndirectString(tszTempBuf, szBuf, cbLen, NULL);
+		{
+			tszTempBuf[min(dwLength / sizeof(TCHAR), cbLen - 1)] = 0;
+			if (pfnSHLoadIndirectString)
+				pfnSHLoadIndirectString(StrConvU(tszTempBuf), szBuf, cbLen, NULL);
+		}
 	}
 	if (szBuf[0] == 0)
-#endif
 	{
-		DWORD dwLength = cbLen * sizeof(TCHAR);
+		DWORD dwLength = cbLen * sizeof(wchar_t);
+
+#ifdef _UNICODE
 		RegQueryValueEx(hSubKey, szName, NULL, NULL, (unsigned char *)szBuf, &dwLength);
+		szBuf[min(dwLength / sizeof(TCHAR), cbLen - 1)] = 0;
+#else
+		char* szBufP = (char*)alloca(dwLength); 
+		RegQueryValueEx(hSubKey, szName, NULL, NULL, (unsigned char *)szBufP, &dwLength);
+		szBufP[min(dwLength, cbLen * sizeof(wchar_t) - 1)] = 0;
+		MultiByteToWideChar(CP_ACP, 0, szBufP, -1, szBuf, cbLen);
+#endif
 	}
 }
 
@@ -515,7 +538,6 @@ void InitTimeZones(void)
 				myTzKey = mir_u2t(dtzi.TimeZoneKeyName);
 	}
 
-#ifdef _UNICODE
 	if (IsWinVer2000Plus())
 	{
 		pfnSHLoadIndirectString = (pfnSHLoadIndirectString_t)GetProcAddress(GetModuleHandle(_T("shlwapi")), "SHLoadIndirectString");
@@ -523,22 +545,18 @@ void InitTimeZones(void)
 		pfnGetUserDefaultUILanguage = (pfnGetUserDefaultUILanguage_t)GetProcAddress(GetModuleHandle(_T("kernel32")), "GetUserDefaultUILanguage");
 		muiInstalled = pfnSHLoadIndirectString && pfnGetSystemDefaultUILanguage() != pfnGetUserDefaultUILanguage();
 	}
-#endif
+
+	pfnSendMessageW = (pfnSendMessageW_t)GetProcAddress(GetModuleHandle(_T("user32")), "SendMessageW");
 
 	if (ERROR_SUCCESS == RegOpenKeyEx(HKEY_LOCAL_MACHINE, tszKey, 0, KEY_ENUMERATE_SUB_KEYS, &hKey)) 
 	{
 		DWORD	dwIndex = 0;
 		HKEY	hSubKey;
 		TCHAR	tszName[MIM_TZ_NAMELEN];
-		TCHAR	szStdName[MIM_TZ_NAMELEN], szDayName[MIM_TZ_NAMELEN];
 
-		TCHAR* myStdName = mir_u2t(myInfo.tzi.StandardName);
-		TCHAR* myDayName = mir_u2t(myInfo.tzi.DaylightName);
-
-		DWORD dwSize = sizeof(tszName);
+		DWORD dwSize = SIZEOF(tszName);
 		while (ERROR_NO_MORE_ITEMS != RegEnumKeyEx(hKey, dwIndex++, tszName, &dwSize, NULL, NULL, 0, NULL))
 		{
-			tszName[MIM_TZ_NAMELEN -1 ] = 0;
 			if (ERROR_SUCCESS == RegOpenKeyEx(hKey, tszName, 0, KEY_QUERY_VALUE, &hSubKey)) 
 			{
 				dwSize = sizeof(tszName);
@@ -559,17 +577,10 @@ void InitTimeZones(void)
 				tz->hash = hashstr(tszName);
 				tz->offset = INT_MIN;
 
-				GetLocalizedString(hSubKey, _T("Display"), tz->tszDisplay, SIZEOF(tz->tszDisplay));
-				GetLocalizedString(hSubKey, _T("Std"), szStdName, SIZEOF(szStdName));
-				GetLocalizedString(hSubKey, _T("Dlt"), szDayName, SIZEOF(szDayName));
+				GetLocalizedString(hSubKey, _T("Display"), tz->szDisplay, SIZEOF(tz->szDisplay));
+				GetLocalizedString(hSubKey, _T("Std"), tz->tzi.StandardName, SIZEOF(tz->tzi.StandardName));
+				GetLocalizedString(hSubKey, _T("Dlt"), tz->tzi.DaylightName, SIZEOF(tz->tzi.DaylightName));
 
-#ifndef _UNICODE
-				MultiByteToWideChar(CP_ACP, 0, szStdName, -1, tz->tzi.StandardName, SIZEOF(tz->tzi.StandardName));
-				MultiByteToWideChar(CP_ACP, 0, szDayName, -1, tz->tzi.DaylightName, SIZEOF(tz->tzi.DaylightName));
-#else
-				lstrcpyn(tz->tzi.StandardName, szStdName, SIZEOF(tz->tzi.StandardName));
-				lstrcpyn(tz->tzi.DaylightName, szDayName, SIZEOF(tz->tzi.DaylightName));
-#endif
 				if (myInfo.myTZ == NULL)
 				{
 					// compare registry key names (= not localized, so it's easy)
@@ -579,7 +590,7 @@ void InitTimeZones(void)
 					}
 					else 
 					{
-						if (!_tcscmp(szStdName, myStdName) || !_tcscmp(szDayName, myDayName)) 
+						if (!wcscmp(tz->tzi.StandardName, myInfo.tzi.StandardName) || !wcscmp(tz->tzi.DaylightName, myInfo.tzi.DaylightName)) 
 							myInfo.myTZ = tz;
 					}
 				}
@@ -592,9 +603,6 @@ void InitTimeZones(void)
 			dwSize = SIZEOF(tszName);
 		}
 		RegCloseKey(hKey);
-
-		mir_free(myStdName);
-		mir_free(myDayName);
 	}
 	mir_free(myTzKey);
 
@@ -617,4 +625,42 @@ void UninitTimeZones(void)
 {
 	g_timezonesBias.destroy();
 	g_timezones.destroy();
+}
+
+void RecalculateTime(void)
+{
+	GetTimeZoneInformation(&myInfo.tzi);
+	myInfo.timestamp = time(NULL);
+
+	TCHAR  *myTzKey = NULL;
+	DYNAMIC_TIME_ZONE_INFORMATION dtzi;
+	
+	if (pfnGetDynamicTimeZoneInformation && pfnGetDynamicTimeZoneInformation(&dtzi) != TIME_ZONE_ID_INVALID)
+		myTzKey = mir_u2t(dtzi.TimeZoneKeyName);
+
+	bool found = false;
+	for (int i = 0; i < g_timezones.getCount(); ++i) 
+	{
+		MIM_TIMEZONE &tz = g_timezones[i];
+		if (tz.offset != INT_MIN) tz.offset = INT_MIN;
+
+		if (!found)
+		{
+			// compare registry key names (= not localized, so it's easy)
+			if (myTzKey && !_tcscmp(tz.tszName, myTzKey)) 
+			{
+				myInfo.myTZ = &tz;
+				found = true;
+			}
+			else 
+			{
+				if (!wcscmp(tz.tzi.StandardName, myInfo.tzi.StandardName) || !wcscmp(tz.tzi.DaylightName, myInfo.tzi.DaylightName))
+				{
+					myInfo.myTZ = &tz;
+					found = true;
+				}
+			}
+		}
+	}
+	mir_free(myTzKey);
 }
