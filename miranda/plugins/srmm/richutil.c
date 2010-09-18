@@ -229,6 +229,9 @@ static LRESULT CALLBACK RichUtil_Proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 			RedrawWindow(hwnd, NULL, NULL, RDW_INVALIDATE | RDW_NOCHILDREN | RDW_UPDATENOW | RDW_FRAME);
 			break;
 
+		case WM_GETDLGCODE:
+			return CallWindowProc(ru->origProc, hwnd, msg, wParam, lParam) & ~DLGC_HASSETSEL;
+
 		case WM_DESTROY:
 		{
 			LRESULT ret = CallWindowProc(ru->origProc, hwnd, msg, wParam, lParam);

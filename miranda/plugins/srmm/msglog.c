@@ -520,8 +520,8 @@ void StreamInEvents(HWND hwndDlg, HANDLE hDbEventFirst, int count, int fAppend)
 	else
 	{
 		SendMessage(hwndLog, EM_EXSETSEL, 0, (LPARAM) & oldSel);
-		SendMessage(hwndLog, EM_HIDESELECTION, FALSE, 0);
 	}
+	SendMessage(hwndLog, EM_HIDESELECTION, FALSE, 0);
 
 	dat->hDbEventLast = streamData.hDbEventLast;
 }

@@ -35,7 +35,6 @@ extern struct CREOleCallback reOleCallback;
 
 static void UpdateReadChars(HWND hwndDlg, HWND hwndStatus);
 
-static WNDPROC OldMessageEditProc, OldSplitterProc;
 static const UINT infoLineControls[] = { IDC_PROTOCOL, IDC_NAME };
 static const UINT buttonLineControls[] = { IDC_ADD, IDC_USERMENU, IDC_DETAILS, IDC_HISTORY };
 static const UINT sendControls[] = { IDC_MESSAGE };
@@ -194,8 +193,7 @@ static void SetEditorText(HWND hwnd, const TCHAR* txt)
 #define EM_SUBCLASSED             (WM_USER+0x101)
 #define EM_UNSUBCLASSED           (WM_USER+0x102)
 #define ENTERCLICKTIME   1000   //max time in ms during which a double-tap on enter will cause a send
-#define EDITMSGQUEUE_PASSTHRUCLIPBOARD  //if set the typing queue won't capture ctrl-C etc because people might want to use them on the read only text
-                                                  //todo: decide if this should be set or not
+
 static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	struct MessageWindowData *pdat = (struct MessageWindowData *)GetWindowLongPtr(GetParent(hwnd),GWLP_USERDATA);
@@ -431,11 +429,13 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
 		mir_free(dat);
 		return 0;
 	}
-	return CallWindowProc(OldMessageEditProc, hwnd, msg, wParam, lParam);
+	return CallWindowProc(pdat->OldMessageEditProc, hwnd, msg, wParam, lParam);
 }
 
 static LRESULT CALLBACK SplitterSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
+	struct MessageWindowData *pdat = (struct MessageWindowData *)GetWindowLongPtr(GetParent(hwnd),GWLP_USERDATA);
+
 	switch (msg) {
 		case WM_NCHITTEST:
 		  return HTCLIENT;
@@ -464,7 +464,7 @@ static LRESULT CALLBACK SplitterSubclassProc(HWND hwnd, UINT msg, WPARAM wParam,
 			ReleaseCapture();
 			return 0;
 	}
-	return CallWindowProc(OldSplitterProc, hwnd, msg, wParam, lParam);
+	return CallWindowProc(pdat->OldSplitterProc, hwnd, msg, wParam, lParam);
 }
 
 static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * urc)
@@ -744,9 +744,9 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 				SendDlgItemMessage(hwndDlg, IDC_LOG, EM_LIMITTEXT, (WPARAM) sizeof(TCHAR) * 0x7FFFFFFF, 0);
 			}
 
-			OldMessageEditProc = (WNDPROC) SetWindowLongPtr(GetDlgItem(hwndDlg, IDC_MESSAGE), GWLP_WNDPROC, (LONG_PTR) MessageEditSubclassProc);
+			dat->OldMessageEditProc = (WNDPROC) SetWindowLongPtr(GetDlgItem(hwndDlg, IDC_MESSAGE), GWLP_WNDPROC, (LONG_PTR) MessageEditSubclassProc);
 			SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_SUBCLASSED, 0, 0);
-			OldSplitterProc = (WNDPROC) SetWindowLongPtr(GetDlgItem(hwndDlg, IDC_SPLITTER), GWLP_WNDPROC, (LONG_PTR) SplitterSubclassProc);
+			dat->OldSplitterProc = (WNDPROC) SetWindowLongPtr(GetDlgItem(hwndDlg, IDC_SPLITTER), GWLP_WNDPROC, (LONG_PTR) SplitterSubclassProc);
 
 			if (dat->hContact) 
 			{
@@ -870,12 +870,13 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			{
 				SetWindowPos(hwndDlg, HWND_TOP, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW);
 				SetForegroundWindow(hwndDlg);
+				SetFocus(GetDlgItem(hwndDlg, IDC_MESSAGE));
 			}
 
 			SendMessage(hwndDlg, DM_GETAVATAR, 0, 0);
 
 			NotifyLocalWinEvent(dat->hContact, hwndDlg, MSG_WINDOW_EVT_OPEN);
-			return !newData->noActivate;
+			return FALSE;
 		}
 
 	case WM_CONTEXTMENU:
@@ -1305,15 +1306,13 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 	case WM_ACTIVATE:
 		if (LOWORD(wParam) != WA_ACTIVE)
 			break;
+
+		SetFocus(GetDlgItem(hwndDlg, IDC_MESSAGE));
 		//fall through
 
 	case WM_MOUSEACTIVATE:
 		if (KillTimer(hwndDlg, TIMERID_FLASHWND))
 			FlashWindow(hwndDlg, FALSE);
-		break;
-
-	case WM_SETFOCUS:
-		SetFocus(GetDlgItem(hwndDlg, IDC_MESSAGE));
 		break;
 
 	case WM_GETMINMAXINFO:
@@ -1935,6 +1934,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			else 
 				DBDeleteContactSetting(dat->hContact, SRMSGMOD, DBSAVEDMSG);
 		}
+		KillTimer(hwndDlg, TIMERID_TYPE);
 		if (dat->nTypeMode == PROTOTYPE_SELFTYPING_ON)
 			NotifyTyping(dat, PROTOTYPE_SELFTYPING_OFF);
 
@@ -1945,9 +1945,9 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 		tcmdlist_free(dat->cmdList);
 		WindowList_Remove(g_dat->hMessageWindowList, hwndDlg);
 		DBWriteContactSettingDword(DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_SAVEPERCONTACT, SRMSGDEFSET_SAVEPERCONTACT)?dat->hContact:NULL, SRMMMOD, "splitterPos", dat->splitterPos);
-		SetWindowLongPtr(GetDlgItem(hwndDlg, IDC_SPLITTER), GWLP_WNDPROC, (LONG_PTR) OldSplitterProc);
+		SetWindowLongPtr(GetDlgItem(hwndDlg, IDC_SPLITTER), GWLP_WNDPROC, (LONG_PTR) dat->OldSplitterProc);
 		SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_UNSUBCLASSED, 0, 0);
-		SetWindowLongPtr(GetDlgItem(hwndDlg, IDC_MESSAGE), GWLP_WNDPROC, (LONG_PTR) OldMessageEditProc);
+		SetWindowLongPtr(GetDlgItem(hwndDlg, IDC_MESSAGE), GWLP_WNDPROC, (LONG_PTR) dat->OldMessageEditProc);
 		{
 			HFONT hFont;
 			hFont = (HFONT) SendDlgItemMessage(hwndDlg, IDC_MESSAGE, WM_GETFONT, 0, 0);
