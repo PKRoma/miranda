@@ -41,7 +41,7 @@ CYahooProto::CYahooProto( const char* aProtoName, const TCHAR* aUserName ) :
 	
 	logoff_buddies();
 
-	SkinAddNewSoundEx(Translate( "mail" ), m_szModuleName, "New E-mail available in Inbox" );
+	SkinAddNewSoundExT("mail", m_tszUserName, LPGENT("New E-mail available in Inbox"));
 	
 	LoadYahooServices();
 	IconsInit();
