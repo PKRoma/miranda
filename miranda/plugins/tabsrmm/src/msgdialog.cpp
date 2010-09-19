@@ -537,12 +537,14 @@ static LRESULT CALLBACK MessageLogSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
 
 	switch (msg) {
 		case WM_KILLFOCUS: {
+			/*
 			CHARRANGE cr;
 			SendMessage(hwnd, EM_EXGETSEL, 0, (LPARAM)&cr);
 			if (cr.cpMax != cr.cpMin) {
 				cr.cpMin = cr.cpMax;
 				SendMessage(hwnd, EM_EXSETSEL, 0, (LPARAM)&cr);
 			}
+			*/
 			break;
 		}
 	   //MAD
@@ -585,11 +587,11 @@ static LRESULT CALLBACK MessageLogSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
 					wParam != VK_LEFT&&wParam != VK_RIGHT&&wParam != VK_TAB&&
 					wParam != VK_SPACE)
 				{
+					// TODO issues here...
+					//SetFocus(GetDlgItem(mwdat->hwnd,IDC_MESSAGE));
+					//keybd_event((BYTE)wParam, (BYTE)MapVirtualKey(wParam,0), KEYEVENTF_EXTENDEDKEY | 0, 0);
 
-					SetFocus(GetDlgItem(mwdat->hwnd,IDC_MESSAGE));
-					keybd_event((BYTE)wParam, (BYTE)MapVirtualKey(wParam,0), KEYEVENTF_EXTENDEDKEY | 0, 0);
-
-					return 0;
+					//return 0;
 				}
 			}
 			break;
@@ -2151,7 +2153,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 									break;
 								}
 							}
-							if (msg == WM_LBUTTONDOWN || msg == WM_KEYUP || msg == WM_LBUTTONUP) {
+							if ((msg == WM_LBUTTONDOWN || msg == WM_KEYUP || msg == WM_LBUTTONUP) && ((NMHDR *)lParam)->idFrom == IDC_MESSAGE) {
 								int bBold = IsDlgButtonChecked(hwndDlg, IDC_FONTBOLD);
 								int bItalic = IsDlgButtonChecked(hwndDlg, IDC_FONTITALIC);
 								int bUnder = IsDlgButtonChecked(hwndDlg, IDC_FONTUNDERLINE);
