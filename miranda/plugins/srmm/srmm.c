@@ -30,6 +30,7 @@ int bNewDbApi = FALSE;
 struct MM_INTERFACE mmi;
 struct UTF8_INTERFACE utfi;
 struct LIST_INTERFACE li;
+TIME_API tmi;
 
 PLUGININFOEX pluginInfo = {
 	sizeof(PLUGININFOEX),
@@ -74,6 +75,7 @@ int __declspec(dllexport) Load(PLUGINLINK * link)
 	mir_getMMI(&mmi);
 	mir_getUTFI(&utfi);
 	mir_getLI(&li);
+	mir_getTMI(&tmi);
 
 	if (ServiceExists(MS_DB_EVENT_GETTEXT))
 		bNewDbApi = TRUE;

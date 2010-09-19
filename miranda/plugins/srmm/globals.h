@@ -33,6 +33,13 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define SMF_SHOWDATE        0x00000400
 #define SMF_HIDENAMES       0x00000800
 #define SMF_SHOWSECS        0x00001000
+#define SMF_SHOWREADCHAR    0x00002000
+#define SMF_SENDONENTER     0x00004000
+#define SMF_SENDONDBLENTER  0x00008000
+#define SMF_AUTOCLOSE       0x00010000
+#define SMF_AUTOMIN         0x00020000
+#define SMF_TYPINGUNKNOWN   0x00040000
+#define SMF_CTRLSUPPORT     0x00080000
 
 #define SMF_ICON_TYPING     0
 
@@ -41,6 +48,7 @@ struct GlobalMessageData
 	unsigned int flags;
 	HANDLE hMessageWindowList;
 	DWORD openFlags;
+	DWORD msgTimeout;
 };
 
 void InitGlobals();
