@@ -71,6 +71,7 @@ struct MessageWindowData
 #define DM_SPLITTERMOVED     (WM_USER+15)
 #define DM_UPDATETITLE       (WM_USER+16)
 #define DM_APPENDTOLOG       (WM_USER+17)
+#define DM_NEWTIMEZONE       (WM_USER+18)
 #define DM_SCROLLLOGTOBOTTOM (WM_USER+19)
 #define DM_TYPING            (WM_USER+20)
 #define DM_UPDATEWINICON     (WM_USER+21)
