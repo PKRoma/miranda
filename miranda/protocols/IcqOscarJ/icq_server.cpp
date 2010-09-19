@@ -166,9 +166,6 @@ void __cdecl CIcqProto::ServerThread(serverthread_start_info *infoParam)
 		NetLib_SafeCloseHandle(&info.hDirectBoundPort);
 	}
 
-	// signal keep-alive thread to stop
-	StopKeepAlive(&info);
-
 	// disable auto info-update thread
 	icq_EnableUserLookup(FALSE);
 
@@ -182,6 +179,9 @@ void __cdecl CIcqProto::ServerThread(serverthread_start_info *infoParam)
 
 		SetCurrentStatus(ID_STATUS_OFFLINE);
 	}
+
+	// signal keep-alive thread to stop
+	StopKeepAlive(&info);
 
 	// Close all open DC connections
 	CloseContactDirectConns(NULL);
