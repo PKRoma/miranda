@@ -293,12 +293,13 @@ int CIcqProto::OnReloadIcons(WPARAM wParam, LPARAM lParam)
 
 void CIcqProto::UpdateGlobalSettings()
 {
+	m_bSecureConnection = getSettingByte(NULL, "SecureConnection", DEFAULT_SECURE_CONNECTION);
 	if (m_hServerNetlibUser)
 	{
 		NETLIBUSERSETTINGS nlus = {0};
 
 		nlus.cbSize = sizeof(NETLIBUSERSETTINGS);
-		if (CallService(MS_NETLIB_GETUSERSETTINGS, (WPARAM)m_hServerNetlibUser, (LPARAM)&nlus))
+		if (!m_bSecureConnection && CallService(MS_NETLIB_GETUSERSETTINGS, (WPARAM)m_hServerNetlibUser, (LPARAM)&nlus))
 		{
 			if (nlus.useProxy && nlus.proxyType == PROXYTYPE_HTTP)
 				m_bGatewayMode = 1;
@@ -310,7 +311,6 @@ void CIcqProto::UpdateGlobalSettings()
 	}
 
 	m_bSecureLogin = getSettingByte(NULL, "SecureLogin", DEFAULT_SECURE_LOGIN);
-	m_bSecureConnection = getSettingByte(NULL, "SecureConnection", DEFAULT_SECURE_CONNECTION);
 	m_bAimEnabled = getSettingByte(NULL, "AimEnabled", DEFAULT_AIM_ENABLED);
 	m_bUtfEnabled = getSettingByte(NULL, "UtfEnabled", DEFAULT_UTF_ENABLED);
 	m_wAnsiCodepage = getSettingWord(NULL, "AnsiCodePage", DEFAULT_ANSI_CODEPAGE);
@@ -320,5 +320,5 @@ void CIcqProto::UpdateGlobalSettings()
 	m_bSsiSimpleGroups = FALSE; /// TODO: enable, after server-list revolution is over
 	m_bAvatarsEnabled = getSettingByte(NULL, "AvatarsEnabled", DEFAULT_AVATARS_ENABLED);
 	m_bXStatusEnabled = getSettingByte(NULL, "XStatusEnabled", DEFAULT_XSTATUS_ENABLED);
-  m_bMoodsEnabled = getSettingByte(NULL, "MoodsEnabled", DEFAULT_MOODS_ENABLED);
+	m_bMoodsEnabled = getSettingByte(NULL, "MoodsEnabled", DEFAULT_MOODS_ENABLED);
 }

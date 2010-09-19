@@ -60,6 +60,7 @@ struct NetlibConnection
 	bool usingDirectHttpGateway;
 	bool proxyAuthNeeded;
 	bool dnsThroughProxy;
+	bool termRequested;
 	struct NetlibUser *nlu;
 	SOCKADDR_IN sinProxy;
 	NETLIBHTTPPROXYINFO nlhpi;

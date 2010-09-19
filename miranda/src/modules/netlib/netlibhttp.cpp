@@ -124,7 +124,7 @@ static int RecvWithTimeoutTime(struct NetlibConnection *nlc, unsigned dwTimeoutT
 				return NLRecv(nlc, buf, len, flags);
 			}
 
-			if (Miranda_Terminated()) return 0;
+			if (nlc->termRequested || Miranda_Terminated()) return 0;
 		}
 		SetLastError(ERROR_TIMEOUT);
 		return SOCKET_ERROR;
@@ -578,11 +578,13 @@ INT_PTR NetlibHttpSendRequest(WPARAM wParam,LPARAM lParam)
 			{
 				NetlibLogf(nlc->nlu, "%s %d: %s Failed (%u %u)",__FILE__,__LINE__,"HttpPeekFirstResponseLine",GetLastError(), count);
 				DWORD err = GetLastError();
-				if (err == ERROR_TIMEOUT || err == ERROR_BAD_FORMAT || err == ERROR_BUFFER_OVERFLOW) 
-					break; 
+				if (err == ERROR_TIMEOUT || err == ERROR_BAD_FORMAT || err == ERROR_BUFFER_OVERFLOW || lastFirstLineFail || nlc->termRequested)
+				{
+					 bytesSent = SOCKET_ERROR;
+					 break; 
+				}
 				else
 				{
-					if (lastFirstLineFail) break;
 					lastFirstLineFail = true;
 					continue;
 				}

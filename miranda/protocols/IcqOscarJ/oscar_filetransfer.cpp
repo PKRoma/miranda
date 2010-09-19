@@ -1252,6 +1252,8 @@ int CIcqProto::CreateOscarProxyConnection(oscar_connection *oc)
 	nloc.wPort = getSettingWord(NULL, "OscarPort", DEFAULT_SERVER_PORT);
 	if (nloc.wPort == 0)
 		nloc.wPort = RandRange(1024, 65535);
+	if (m_bGatewayMode)
+		nloc.flags |= NLOCF_HTTPGATEWAY;
 
 	oc->hConnection = NetLib_OpenConnection(m_hServerNetlibUser, "Proxy ", &nloc);
 	if (!oc->hConnection)
@@ -1425,6 +1427,8 @@ void __cdecl CIcqProto::oft_connectionThread( oscarthreadstartinfo *otsi )
 				nloc.wPort = getSettingWord(NULL, "OscarPort", DEFAULT_SERVER_PORT);
 				if (nloc.wPort == 0)
 					nloc.wPort = RandRange(1024, 65535);
+				if (m_bGatewayMode)
+					nloc.flags |= NLOCF_HTTPGATEWAY;
 				oc.hConnection = NetLib_OpenConnection(m_hServerNetlibUser, "Proxy ", &nloc);
 				if (!oc.hConnection)
 				{ // proxy connection failed, we are out of possibilities

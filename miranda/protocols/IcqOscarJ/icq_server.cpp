@@ -61,6 +61,8 @@ void __cdecl CIcqProto::ServerThread(serverthread_start_info *infoParam)
 	{
 		NETLIBOPENCONNECTION nloc = infoParam->nloc;
 		nloc.timeout = 6;
+		if (m_bGatewayMode)
+			nloc.flags |= NLOCF_HTTPGATEWAY;
 
 		hServerConn = NetLib_OpenConnection(m_hServerNetlibUser, NULL, &nloc);
 
@@ -113,9 +115,7 @@ void __cdecl CIcqProto::ServerThread(serverthread_start_info *infoParam)
 
 		info.hPacketRecver = (HANDLE)CallService(MS_NETLIB_CREATEPACKETRECVER, (WPARAM)hServerConn, 0x2400);
 		packetRecv.cbSize = sizeof(packetRecv);
-		packetRecv.dwTimeout = 	!m_bGatewayMode && getSettingByte(NULL, "KeepAlive", DEFAULT_KEEPALIVE_ENABLED) ? 
-			getSettingDword(NULL, "KeepAliveInterval", KEEPALIVE_INTERVAL) : INFINITE;
-
+		packetRecv.dwTimeout = INFINITE;
 		while (serverThreadHandle)
 		{
 			if (info.bReinitRecver)
@@ -123,8 +123,7 @@ void __cdecl CIcqProto::ServerThread(serverthread_start_info *infoParam)
 				info.bReinitRecver = 0;
 				ZeroMemory(&packetRecv, sizeof(packetRecv));
 				packetRecv.cbSize = sizeof(packetRecv);
-				packetRecv.dwTimeout = 	!m_bGatewayMode && getSettingByte(NULL, "KeepAlive", DEFAULT_KEEPALIVE_ENABLED) ? 
-					getSettingDword(NULL, "KeepAliveInterval", KEEPALIVE_INTERVAL) : INFINITE;
+				packetRecv.dwTimeout = INFINITE;
 			}
 
 			recvResult = CallService(MS_NETLIB_GETMOREPACKETS, (WPARAM)info.hPacketRecver, (LPARAM)&packetRecv);
@@ -137,21 +136,8 @@ void __cdecl CIcqProto::ServerThread(serverthread_start_info *infoParam)
 
 			if (recvResult == SOCKET_ERROR)
 			{
-				if (WSAGetLastError() == ERROR_TIMEOUT)
-				{
-					if (Miranda_Terminated())
-						break;
-
-					icq_packet packet = {0};
-					write_flap(&packet, ICQ_PING_CHAN);
-					sendServPacket(&packet);
-					continue;
-				}
-				else
-				{
-					NetLog_Server("Abortive closure of server socket, error: %d", GetLastError());
-					break;
-				}
+				NetLog_Server("Abortive closure of server socket, error: %d", GetLastError());
+				break;
 			}
 
 			if (m_iDesiredStatus == ID_STATUS_OFFLINE)
@@ -179,6 +165,9 @@ void __cdecl CIcqProto::ServerThread(serverthread_start_info *infoParam)
 		// Close DC port
 		NetLib_SafeCloseHandle(&info.hDirectBoundPort);
 	}
+
+	// signal keep-alive thread to stop
+	StopKeepAlive(&info);
 
 	// disable auto info-update thread
 	icq_EnableUserLookup(FALSE);
@@ -348,24 +337,10 @@ void CIcqProto::sendServPacket(icq_packet *pPacket)
 		pPacket->pData[2] = ((wLocalSequence & 0xff00) >> 8);
 		pPacket->pData[3] = (wLocalSequence & 0x00ff);
 
-		for (int nRetries = 3; nRetries >= 0; nRetries--)
-		{
-			nSendResult = Netlib_Send(hServerConn, (const char *)pPacket->pData, pPacket->wLen, 0);
-
-			if (nSendResult != SOCKET_ERROR)
-				break;
-
-			Sleep(1000);
-		}
+		nSendResult = Netlib_Send(hServerConn, (const char *)pPacket->pData, pPacket->wLen, 0);
 
 		localSeqMutex->Leave();
 		connectionHandleMutex->Leave();
-
-		{ // Rates management
-			icq_lock l(m_ratesMutex);
-
-			m_rates->packetSent(pPacket);
-		}
 
 		// Send error
 		if (nSendResult == SOCKET_ERROR)
@@ -378,11 +353,16 @@ void CIcqProto::sendServPacket(icq_packet *pPacket)
 				SetCurrentStatus(ID_STATUS_OFFLINE);
 			}
 		}
+		else
+		{ // Rates management
+			icq_lock l(m_ratesMutex);
+			m_rates->packetSent(pPacket);
+		}
+
 	}
 	else
 	{
-    connectionHandleMutex->Leave();
-
+		connectionHandleMutex->Leave();
 		NetLog_Server("Error: Failed to send packet (no connection)");
 	}
 
@@ -455,8 +435,8 @@ void CIcqProto::icq_login(const char* szPassword)
 
 	m_dwLocalUIN = dwUin;
 
-  // Initialize members
-  m_avatarsConnectionPending = TRUE;
+	// Initialize members
+	m_avatarsConnectionPending = TRUE;
 
 	serverThreadHandle = ForkThreadEx(( IcqThreadFunc )&CIcqProto::ServerThread, stsi, &serverThreadId);
 }

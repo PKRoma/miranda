@@ -347,28 +347,27 @@ INT_PTR NetlibShutdown(WPARAM wParam, LPARAM)
 {
 	if (wParam) 
 	{
-		SOCKET s = INVALID_SOCKET;
-
 		WaitForSingleObject(hConnectionHeaderMutex,INFINITE);
 		switch(GetNetlibHandleType(wParam)) {
 			case NLH_CONNECTION:
 				{
 					struct NetlibConnection* nlc = (struct NetlibConnection*)wParam;
 					if (nlc->hSsl) si.shutdown(nlc->hSsl);
-					s = nlc->s;
+					if (nlc->s != INVALID_SOCKET) shutdown(nlc->s, 2);
+					if (nlc->s2 != INVALID_SOCKET) shutdown(nlc->s2, 2);
 					nlc->sinProxy.sin_addr.S_un.S_addr = 0;
+					nlc->termRequested = true;
 				}
 				break;
 			case NLH_BOUNDPORT:
 				{
 					struct NetlibBoundPort* nlb = (struct NetlibBoundPort*)wParam;
-					s = nlb->s;
+					if (nlb->s != INVALID_SOCKET) shutdown(nlb->s, 2);
 				}
 				break;
 		}
 		ReleaseMutex(hConnectionHeaderMutex);
 
-		if (s != INVALID_SOCKET) shutdown(s, 2);
 	}
 	return 0;
 }

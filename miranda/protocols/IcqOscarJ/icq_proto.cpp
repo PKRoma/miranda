@@ -210,7 +210,7 @@ CIcqProto::CIcqProto( const char* aProtoName, const TCHAR* aUserName ) :
 	TCHAR szBuffer[MAX_PATH + 64];
 	null_snprintf(szBuffer, SIZEOF(szBuffer), TranslateT("%s server connection"), m_tszUserName);
 	nlu.cbSize = sizeof(nlu);
-	nlu.flags = NUF_OUTGOING | NUF_HTTPGATEWAY | NUF_TCHAR;
+	nlu.flags = NUF_OUTGOING | NUF_HTTPCONNS | NUF_TCHAR;
 	nlu.ptszDescriptiveName = szBuffer;
 	nlu.szSettingsModule = m_szModuleName;
 	nlu.szHttpGatewayHello = "http://http.proxy.icq.com/hello";

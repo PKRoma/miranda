@@ -151,7 +151,7 @@ static bool NetlibHttpGatewaySend(struct NetlibConnection *nlc, RequestType reqT
 	nlhrSend.headers[0].szName  = "User-Agent";
 	nlhrSend.headers[0].szValue = nlc->nlu->user.szHttpGatewayUserAgent;
 	nlhrSend.headers[1].szName  = "Cache-Control";
-	nlhrSend.headers[1].szValue = "no-store, no-cache";
+	nlhrSend.headers[1].szValue = "no-cache, no-store ";
 	nlhrSend.headers[2].szName  = "Pragma";
 	nlhrSend.headers[2].szValue = "no-cache";
 //	nlhrSend.headers[3].szName  = "Accept-Encoding";
@@ -316,7 +316,7 @@ int NetlibHttpGatewayRecv(struct NetlibConnection *nlc, char *buf, int len, int 
 				if (nlc->pHttpProxyPacketQueue != NULL && GetTickCount() - nlc->lastPost > 1000)
 					break;
 
-				if (SleepEx(1000, TRUE) && Miranda_Terminated())
+				if (nlc->termRequested || (SleepEx(1000, TRUE) && Miranda_Terminated()))
 					return SOCKET_ERROR;
 			}
 
@@ -332,7 +332,7 @@ int NetlibHttpGatewayRecv(struct NetlibConnection *nlc, char *buf, int len, int 
 		{
 			if (!NetlibHttpGatewaySend(nlc, reqOldGet, NULL, 0))
 			{
-				if (GetLastError() == ERROR_ACCESS_DENIED)
+				if (GetLastError() == ERROR_ACCESS_DENIED || nlc->termRequested)
 					break;
 
 				nlc->lastPost = GetTickCount();
@@ -344,7 +344,7 @@ int NetlibHttpGatewayRecv(struct NetlibConnection *nlc, char *buf, int len, int 
 		{
 			if (!NetlibHttpGatewayStdPost(nlc, numPackets)) 
 			{
-				if (GetLastError() == ERROR_ACCESS_DENIED)
+				if (GetLastError() == ERROR_ACCESS_DENIED || nlc->termRequested)
 					break;
 
 				nlc->lastPost = GetTickCount();
