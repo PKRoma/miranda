@@ -966,7 +966,7 @@ void CYahooProto::ext_mail_notify(const char *from, const char *subj, int cnt)
 	LOG(("[ext_mail_notify] from: %s subject: %s count: %d", from, subj, cnt));
 	
 	if (cnt > 0) {
-		SkinPlaySound( Translate( "mail" ) );
+		SkinPlaySound("mail");
 	
 		if (!GetByte( "DisableYahoomail", 0)) {    
 			char z[MAX_SECONDLINE], title[MAX_CONTACTNAME];
