@@ -59,7 +59,6 @@ void tcmdlist_free(SortedList *list)
 static SortedList msgQueue = { NULL, 0, 0, 5, NULL };
 static CRITICAL_SECTION csMsgQueue;
 static UINT_PTR timerId;
-unsigned msgTimeout;
 
 void MessageFailureProcess(TMsgQueue *item, const char* err);
 
@@ -73,7 +72,7 @@ static VOID CALLBACK MsgTimer(HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTi
 	for (i = 0; i < msgQueue.realCount; ++i) 
 	{
 		TMsgQueue *item = (TMsgQueue*)msgQueue.items[i];
-		if (dwTime - item->ts > msgTimeout)
+		if (dwTime - item->ts > g_dat->msgTimeout)
 		{
 			if (!ntl)
 				tmlst = (TMsgQueue**)alloca((msgQueue.realCount - i) * sizeof(TMsgQueue*));
@@ -147,8 +146,6 @@ void msgQueue_processack(HANDLE hContact, HANDLE id, BOOL success, const char* s
 void msgQueue_init(void)
 {
 	InitializeCriticalSection(&csMsgQueue);
-	msgTimeout = DBGetContactSettingDword(NULL, SRMMMOD, SRMSGSET_MSGTIMEOUT, SRMSGDEFSET_MSGTIMEOUT);
-	if (msgTimeout < SRMSGSET_MSGTIMEOUT_MIN) msgTimeout = SRMSGDEFSET_MSGTIMEOUT;
 }
 
 void msgQueue_destroy(void)

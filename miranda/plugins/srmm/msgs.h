@@ -53,8 +53,9 @@ struct MessageWindowData
 	HBITMAP avatarPic;
 	DWORD nLastTyping;
 	int showTyping;
-	HWND hwndStatus;
 	DWORD lastMessage;
+	HWND hwndStatus;
+	HANDLE hTimeZone;
 	char *szProto;
 	WORD wStatus;
 	WORD wOldStatus;

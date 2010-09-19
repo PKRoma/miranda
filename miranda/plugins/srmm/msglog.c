@@ -279,17 +279,18 @@ static char *CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE hContact
 		CopyMemory(buffer + bufferEnd, pLogIconBmpBits[i], logIconBmpSize[i]);
 		bufferEnd += logIconBmpSize[i];
 	}
-	if (g_dat->flags&SMF_SHOWTIME) {
-		DBTIMETOSTRINGT dbtts;
+	if (g_dat->flags & SMF_SHOWTIME) 
+	{
+		const TCHAR* szFormat; 
 		TCHAR str[64];
 		
-		if (g_dat->flags&SMF_SHOWSECS) 
-			dbtts.szFormat = g_dat->flags&SMF_SHOWDATE ? _T("d s") : _T("s");
+		if (g_dat->flags & SMF_SHOWSECS) 
+			szFormat = g_dat->flags & SMF_SHOWDATE ? _T("d s") : _T("s");
 		else
-			dbtts.szFormat = g_dat->flags&SMF_SHOWDATE ? _T("d t") : _T("t");
-		dbtts.cbDest = SIZEOF(str);
-		dbtts.szDest = str;
-		CallService(MS_DB_TIME_TIMESTAMPTOSTRINGT, dbei.timestamp, (LPARAM)&dbtts);
+			szFormat = g_dat->flags & SMF_SHOWDATE ? _T("d t") : _T("t");
+
+		tmi.printTimeStamp(NULL, dbei.timestamp, szFormat, str, SIZEOF(str), 0);
+
 		AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, " %s ", SetToStyle(dbei.flags & DBEF_SENT ? MSGFONTID_MYTIME : MSGFONTID_YOURTIME));
 		AppendToBufferWithRTF(&buffer, &bufferEnd, &bufferAlloced, str);
 		showColon = 1;

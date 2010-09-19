@@ -18,6 +18,7 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 #include "commonheaders.h"
+#include "richutil.h"
 
 /*
 	To initialize this library, call:
@@ -41,25 +42,24 @@ static int RichUtil_CmpVal(void *p1, void *p2)
 {
 	TRichUtil *tp1 = (TRichUtil*)p1;
 	TRichUtil *tp2 = (TRichUtil*)p2;
-	if (tp1->hwnd == tp2->hwnd)
-		return 0;
 	return (int)((INT_PTR)tp1->hwnd - (INT_PTR)tp2->hwnd);
 }
 
 // UxTheme Stuff
-static HMODULE mTheme = 0;
-static HANDLE  (WINAPI *MyOpenThemeData)(HWND,LPCWSTR) = 0;
-static HRESULT (WINAPI *MyCloseThemeData)(HANDLE) = 0;
-static BOOL    (WINAPI *MyIsThemeActive)() = 0;
-static HRESULT (WINAPI *MyDrawThemeBackground)(HANDLE,HDC,int,int,const RECT*,const RECT *) = 0;
-static HRESULT (WINAPI *MyGetThemeBackgroundContentRect)(HANDLE,HDC,int,int,const RECT *,RECT *) = 0;
-static HRESULT (WINAPI *MyDrawThemeParentBackground)(HWND,HDC,RECT*) = 0;
-static BOOL    (WINAPI *MyIsThemeBackgroundPartiallyTransparent)(HANDLE,int,int) = 0;
+static HMODULE mTheme;
+
+static HANDLE  (WINAPI *MyOpenThemeData)(HWND, LPCWSTR);
+static HRESULT (WINAPI *MyCloseThemeData)(HANDLE);
+static BOOL    (WINAPI *MyIsThemeActive)(VOID);
+static HRESULT (WINAPI *MyDrawThemeBackground)(HANDLE, HDC, int, int, LPCRECT, LPCRECT);
+static HRESULT (WINAPI *MyGetThemeBackgroundContentRect)(HANDLE, HDC, int, int, LPCRECT, LPRECT);
+static HRESULT (WINAPI *MyDrawThemeParentBackground)(HWND, HDC, LPRECT);
+static BOOL    (WINAPI *MyIsThemeBackgroundPartiallyTransparent)(HANDLE, int, int);
 
 static CRITICAL_SECTION csRich;
 
 static LRESULT CALLBACK RichUtil_Proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
-static RichUtil_ClearUglyBorder(TRichUtil *ru);
+static void RichUtil_ClearUglyBorder(TRichUtil *ru);
 
 void RichUtil_Load(void) 
 {
@@ -73,18 +73,19 @@ void RichUtil_Load(void)
 
 	MyOpenThemeData = (HANDLE (WINAPI *)(HWND, LPCWSTR))GetProcAddress(mTheme, "OpenThemeData");
 	MyCloseThemeData = (HRESULT (WINAPI *)(HANDLE))GetProcAddress(mTheme, "CloseThemeData");
-	MyIsThemeActive = (BOOL (WINAPI *)())GetProcAddress(mTheme, "IsThemeActive");
+	MyIsThemeActive = (BOOL (WINAPI *)(VOID))GetProcAddress(mTheme, "IsThemeActive");
 	MyDrawThemeBackground = (HRESULT (WINAPI *)(HANDLE, HDC, int, int, const RECT*, const RECT *))GetProcAddress(mTheme, "DrawThemeBackground");
 	MyGetThemeBackgroundContentRect = (HRESULT (WINAPI *)(HANDLE, HDC, int, int,  const RECT *, RECT *))GetProcAddress(mTheme, "GetThemeBackgroundContentRect");
 	MyDrawThemeParentBackground = (HRESULT (WINAPI *)(HWND, HDC, RECT*))GetProcAddress(mTheme, "DrawThemeParentBackground");
 	MyIsThemeBackgroundPartiallyTransparent = (BOOL (WINAPI *)(HANDLE, int, int))GetProcAddress(mTheme, "IsThemeBackgroundPartiallyTransparent");
-	if (!MyOpenThemeData||
-			!MyCloseThemeData||
-			!MyIsThemeActive||
-			!MyDrawThemeBackground||
-			!MyGetThemeBackgroundContentRect||
-			!MyDrawThemeParentBackground||
-			!MyIsThemeBackgroundPartiallyTransparent) 
+
+	if (!MyOpenThemeData ||
+		!MyCloseThemeData ||
+		!MyIsThemeActive ||
+		!MyDrawThemeBackground ||
+		!MyGetThemeBackgroundContentRect ||
+		!MyDrawThemeParentBackground ||
+		!MyIsThemeBackgroundPartiallyTransparent) 
 	{
 		FreeLibrary(mTheme);
 		mTheme = NULL;
@@ -109,13 +110,12 @@ int RichUtil_SubClass(HWND hwndEdit)
 		
 		ru->hwnd = hwndEdit;
 		ru->hasUglyBorder = 0;
-		
+
 		EnterCriticalSection(&csRich);
 		if (!li.List_GetIndex(&sListInt, ru, &idx))
 			li.List_Insert(&sListInt, ru, idx);
 		LeaveCriticalSection(&csRich);
 
-		SetWindowLongPtr(ru->hwnd, GWLP_USERDATA, (LONG_PTR)ru); // Ugly hack
 		ru->origProc = (WNDPROC)SetWindowLongPtr(ru->hwnd, GWLP_WNDPROC, (LONG_PTR)&RichUtil_Proc);
 		RichUtil_ClearUglyBorder(ru);
 		return 1;
@@ -123,24 +123,26 @@ int RichUtil_SubClass(HWND hwndEdit)
 	return 0;
 }
 
-static LRESULT CALLBACK RichUtil_Proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
-	TRichUtil *ru = NULL, tru;
-	int idx;
-	
-	tru.hwnd = hwnd;
+static LRESULT CALLBACK RichUtil_Proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+	TRichUtil *ru;
 
 	EnterCriticalSection(&csRich);
-	if (li.List_GetIndex(&sListInt, &tru, &idx))
-		ru = (TRichUtil*)sListInt.items[idx];
+	ru = li.List_Find(&sListInt, (TRichUtil*)&hwnd);
 	LeaveCriticalSection(&csRich);
-	
+
+	if (ru == NULL) return 0;
+
 	switch(msg) 
 	{
 		case WM_CHAR:
 		{
 			HWND hwndMsg = GetDlgItem(GetParent(hwnd), IDC_MESSAGE);
-			SetFocus(hwndMsg);
-			SendMessage(hwndMsg, WM_CHAR, wParam, lParam);
+			if (hwndMsg != hwnd)
+			{
+				SetFocus(hwndMsg);
+				SendMessage(hwndMsg, WM_CHAR, wParam, lParam);
+			}
 			break;
 		}
 		
@@ -157,13 +159,13 @@ static LRESULT CALLBACK RichUtil_Proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 			if (ru->hasUglyBorder && MyIsThemeActive()) 
 			{
 				HANDLE hTheme = MyOpenThemeData(ru->hwnd, L"EDIT");
-
 				if (hTheme) 
 				{
 					RECT rcBorder;
 					RECT rcClient;
 					int nState;
 					HDC hdc = GetWindowDC(ru->hwnd);
+					LONG style = GetWindowLong(hwnd, GWL_STYLE);
 
 					GetWindowRect(hwnd, &rcBorder);
 					rcBorder.right -= rcBorder.left; rcBorder.bottom -= rcBorder.top;
@@ -174,16 +176,17 @@ static LRESULT CALLBACK RichUtil_Proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 					rcClient.right -= ru->rect.right;
 					rcClient.bottom -= ru->rect.bottom;
 					ExcludeClipRect(hdc, rcClient.left, rcClient.top, rcClient.right, rcClient.bottom);
-					
+
 					if (MyIsThemeBackgroundPartiallyTransparent(hTheme, EP_EDITTEXT, ETS_NORMAL))
 						MyDrawThemeParentBackground(hwnd, hdc, &rcBorder);
 
-					if (!IsWindowEnabled(hwnd))
+					if (style & WS_DISABLED)
 						nState = ETS_DISABLED;
-					else if (SendMessage(hwnd, EM_GETOPTIONS, 0, 0) & ECO_READONLY)
+					else if (style & ES_READONLY)
 						nState = ETS_READONLY;
-					else nState = ETS_NORMAL;
-					
+					else 
+						nState = ETS_NORMAL;
+
 					MyDrawThemeBackground(hTheme, hdc, EP_EDITTEXT, nState, &rcBorder, NULL);
 					MyCloseThemeData(hTheme);
 					ReleaseDC(hwnd, hdc);
@@ -197,7 +200,7 @@ static LRESULT CALLBACK RichUtil_Proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 			LRESULT ret = CallWindowProc(ru->origProc, hwnd, msg, wParam, lParam);
 			NCCALCSIZE_PARAMS *ncsParam = (NCCALCSIZE_PARAMS*)lParam;
 			
-			if (ru->hasUglyBorder&&MyIsThemeActive()) 
+			if (ru->hasUglyBorder && MyIsThemeActive()) 
 			{
 				HANDLE hTheme = MyOpenThemeData(hwnd, L"EDIT");
 
@@ -212,7 +215,7 @@ static LRESULT CALLBACK RichUtil_Proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 						ru->rect.top = rcClient.top-ncsParam->rgrc[0].top;
 						ru->rect.right = ncsParam->rgrc[0].right-rcClient.right;
 						ru->rect.bottom = ncsParam->rgrc[0].bottom-rcClient.bottom;
-						CopyRect(&ncsParam->rgrc[0], &rcClient);
+						ncsParam->rgrc[0] = rcClient;
 
 						MyCloseThemeData(hTheme);
 						ReleaseDC(GetParent(hwnd), hdc);
@@ -232,7 +235,7 @@ static LRESULT CALLBACK RichUtil_Proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 		case WM_GETDLGCODE:
 			return CallWindowProc(ru->origProc, hwnd, msg, wParam, lParam) & ~DLGC_HASSETSEL;
 
-		case WM_DESTROY:
+		case WM_NCDESTROY:
 		{
 			LRESULT ret = CallWindowProc(ru->origProc, hwnd, msg, wParam, lParam);
 
@@ -243,9 +246,9 @@ static LRESULT CALLBACK RichUtil_Proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 			}
 
 			EnterCriticalSection(&csRich);
-			li.List_Remove(&sListInt, idx);
+			li.List_RemovePtr(&sListInt, ru);
 			LeaveCriticalSection(&csRich);
-			
+
 			mir_free(ru);
 			return ret;
 		}
@@ -253,9 +256,9 @@ static LRESULT CALLBACK RichUtil_Proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 	return CallWindowProc(ru->origProc, hwnd, msg, wParam, lParam);
 }
 
-static RichUtil_ClearUglyBorder(TRichUtil *ru) 
+static void RichUtil_ClearUglyBorder(TRichUtil *ru)
 {
-	if (mTheme && MyIsThemeActive() && GetWindowLongPtr(ru->hwnd, GWL_EXSTYLE) & WS_EX_CLIENTEDGE) 
+	if (mTheme && MyIsThemeActive() && GetWindowLongPtr(ru->hwnd, GWL_EXSTYLE) & WS_EX_CLIENTEDGE)
 	{
 		ru->hasUglyBorder = 1;
 		SetWindowLongPtr(ru->hwnd, GWL_EXSTYLE, GetWindowLongPtr(ru->hwnd, GWL_EXSTYLE) ^ WS_EX_CLIENTEDGE);
