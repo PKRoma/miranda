@@ -243,8 +243,8 @@ static void timeapiSetInfoByContact(HANDLE hContact, HANDLE hTZ)
 	} 
 	else 
 	{
-		DBDeleteContactSetting(hContact, "UserInfo", "Timezone");
 		DBDeleteContactSetting(hContact, "UserInfo", "TzName");
+		DBDeleteContactSetting(hContact, "UserInfo", "Timezone");
 	}
 }
 
