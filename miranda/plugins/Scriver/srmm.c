@@ -26,6 +26,7 @@ int OnLoadModule(void);
 int OnUnloadModule(void);
 
 struct MM_INTERFACE mmi;
+struct LIST_INTERFACE li;
 struct UTF8_INTERFACE utfi;
 
 PLUGINLINK *pluginLink;
@@ -82,6 +83,7 @@ int __declspec(dllexport) Load(PLUGINLINK * link)
 
 	// set the memory manager
 	mir_getMMI( &mmi );
+	mir_getMMI( &li );
 	mir_getUTFI( &utfi );
 
 	if (IsWinVer7Plus())
