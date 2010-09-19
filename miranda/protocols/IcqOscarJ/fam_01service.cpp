@@ -382,7 +382,7 @@ void CIcqProto::handleServiceFam(BYTE *pBuffer, WORD wBufferLength, snac_header 
 
 			{ // new family entry point received
 				char *pServer = pChain->getString(0x05, 1);
-        BYTE bServerSSL = pChain->getNumber(0x8E, 1);
+				BYTE bServerSSL = pChain->getNumber(0x8E, 1);
 				char *pCookie = pChain->getString(0x06, 1);
 				WORD wCookieLen = pChain->getLength(0x06, 1);
 
@@ -393,7 +393,7 @@ void CIcqProto::handleServiceFam(BYTE *pBuffer, WORD wBufferLength, snac_header 
 					SAFE_FREE(&pServer);
 					SAFE_FREE(&pCookie);
 					SAFE_FREE((void**)&pCookieData);
-          disposeChain(&pChain);
+					disposeChain(&pChain);
 					break;
 				}
 
@@ -403,7 +403,8 @@ void CIcqProto::handleServiceFam(BYTE *pBuffer, WORD wBufferLength, snac_header 
 
 				// establish connection
 				NETLIBOPENCONNECTION nloc = {0};
-				nloc.flags = 0;
+				if (m_bGatewayMode)
+					nloc.flags |= NLOCF_HTTPGATEWAY;
 				nloc.szHost = pServer; 
 				nloc.wPort = wPort;
 
@@ -804,11 +805,11 @@ void CIcqProto::handleServUINSettings(int nPort, serverthread_info *info)
 		BYTE bXStatus = getContactXStatus(NULL);
 		char szMoodData[32];
 
-		  // prepare mood id
+		// prepare mood id
 		if (m_bMoodsEnabled && bXStatus && moodXStatus[bXStatus-1] != -1)
-		  null_snprintf(szMoodData, SIZEOF(szMoodData), "icqmood%d", moodXStatus[bXStatus-1]);
-		  else
-		  szMoodData[0] = '\0';
+			null_snprintf(szMoodData, SIZEOF(szMoodData), "icqmood%d", moodXStatus[bXStatus-1]);
+		else
+			szMoodData[0] = '\0';
 
 		//! Tricky code, this ensures that the status note will be saved to the directory
 		SetStatusNote(szStatusNote, m_bGatewayMode ? 5000 : 2500, TRUE);
@@ -941,6 +942,9 @@ void CIcqProto::handleServUINSettings(int nPort, serverthread_info *info)
 
 		// Request info updates on all contacts
 		icq_RescanInfoUpdate();
+
+		// Start sending Keep-Alive packets
+		StartKeepAlive(info);
 
 		if (m_bAvatarsEnabled)
 		{ // Send SNAC 1,4 - request avatar family 0x10 connection

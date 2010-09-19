@@ -58,6 +58,7 @@
 
 /* Some default settings */
 #define DEFAULT_SERVER_PORT         5190
+#define DEFAULT_SERVER_PORT_SSL     443
 #define DEFAULT_SERVER_HOST         "login.icq.com"
 #define DEFAULT_SERVER_HOST_SSL     "slogin.oscar.aol.com"
 #define DEFAULT_SS_ENABLED          1
