@@ -200,8 +200,10 @@ static HANDLE timeapiGetInfoByContact(HANDLE hContact, DWORD dwFlags)
 		{
 			MIM_TIMEZONE tzsearch;
 			tzsearch.tzi.Bias = timezone * 30;
+			if (myInfo.tzi.Bias == tzsearch.tzi.Bias && myInfo.myTZ)
+				return (dwFlags & TZF_DIFONLY) ? NULL : myInfo.myTZ;
+
 			int i = g_timezonesBias.getIndex(&tzsearch);
-			
 			while (i >= 0 && g_timezonesBias[i]->tzi.Bias == tzsearch.tzi.Bias) --i; 
 			
 			int delta = LONG_MAX;
