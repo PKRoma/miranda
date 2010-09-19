@@ -1289,6 +1289,10 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			}
 			break;
 		}
+	case DM_NEWTIMEZONE:
+		dat->hTimeZone = tmi.createByContact(dat->hContact, TZF_KNOWNONLY);
+		SendMessage(hwndDlg, WM_SIZE, 0, 0);
+		break;
 
 	case DM_GETWINDOWSTATE:
 		{
