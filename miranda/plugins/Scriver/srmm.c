@@ -83,7 +83,7 @@ int __declspec(dllexport) Load(PLUGINLINK * link)
 
 	// set the memory manager
 	mir_getMMI( &mmi );
-	mir_getMMI( &li );
+	mir_getLI( &li );
 	mir_getUTFI( &utfi );
 
 	if (IsWinVer7Plus())
