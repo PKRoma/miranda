@@ -1865,6 +1865,10 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			break;
 		}
 
+		case WM_TIMECHANGE:
+			PostMessage(hwndDlg, DM_OPTIONSAPPLIED, 0, 0);
+			break;
+
 		case WM_NOTIFY:
 			if (dat != 0 && ((NMHDR *)lParam)->hwndFrom == dat->hwndTip) {
 				if (((NMHDR *)lParam)->code == NM_CLICK)
