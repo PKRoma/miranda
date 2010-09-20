@@ -1484,6 +1484,11 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 		}	}
 		break;
 
+	case WM_TIMECHANGE:
+		PostMessage(hwndDlg, DM_NEWTIMEZONE, 0, 0);
+		PostMessage(hwndDlg, DM_REMAKELOG, 0, 0);
+		break;
+
 	case WM_TIMER:
 		if (wParam == TIMERID_FLASHWND) 
 		{
