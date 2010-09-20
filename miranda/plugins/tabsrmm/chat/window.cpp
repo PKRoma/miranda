@@ -1852,57 +1852,6 @@ int GetTextPixelSize(TCHAR* pszText, HFONT hFont, BOOL bWidth)
 	return bWidth ? rc.right - rc.left : rc.bottom - rc.top;
 }
 
-struct FORK_ARG {
-	HANDLE hEvent;
-	void (__cdecl *threadcode)(void*);
-	unsigned(__stdcall *threadcodeex)(void*);
-	void *arg;
-};
-
-
-/*
- * thread supporting functions. Needed when a large chunk of evetns must be sent to the message
- * history display. This is done in a separate thread to avoid blocking the main thread for
- * longer than absolutely needed.
- */
-
-static void __cdecl forkthread_r(void *param)
-{
-	struct FORK_ARG *fa = (struct FORK_ARG*)param;
-	void (*callercode)(void*) = fa->threadcode;
-	void *arg = fa->arg;
-
-	CallService(MS_SYSTEM_THREAD_PUSH, 0, 0);
-
-	SetEvent(fa->hEvent);
-
-	__try {
-		callercode(arg);
-	} __finally {
-		CallService(MS_SYSTEM_THREAD_POP, 0, 0);
-	}
-}
-
-
-static unsigned long forkthread(void (__cdecl *threadcode)(void*), unsigned long stacksize, void *arg)
-{
-	uintptr_t rc;
-	struct FORK_ARG fa;
-
-	fa.hEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
-	fa.threadcode = threadcode;
-	fa.arg = arg;
-
-	rc = _beginthread(forkthread_r, stacksize, &fa);
-
-	if ((uintptr_t) - 1L != rc)
-		WaitForSingleObject(fa.hEvent, INFINITE);
-
-	CloseHandle(fa.hEvent);
-	return rc;
-}
-
-
 static void __cdecl phase2(void * lParam)
 {
 	SESSION_INFO* si = (SESSION_INFO*) lParam;
@@ -2059,6 +2008,10 @@ INT_PTR CALLBACK RoomWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 			Chat_UpdateWindowState(dat, WM_SETFOCUS);
 			SetFocus(GetDlgItem(hwndDlg, IDC_CHAT_MESSAGE));
 			return 1;
+
+		case WM_TIMECHANGE:
+			PostMessage(hwndDlg, GC_REDRAWLOG, 0, 0);
+			break;
 
 		case DM_LOADBUTTONBARICONS: {
 			BB_UpdateIcons(hwndDlg, dat);
@@ -2279,7 +2232,7 @@ INT_PTR CALLBACK RoomWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 							index++;
 					}
 					Log_StreamInEvent(hwndDlg, pLog, si, TRUE, FALSE);
-					forkthread(phase2, 0, (void *)si);
+					mir_forkthread(phase2, si);
 				} else Log_StreamInEvent(hwndDlg, si->pLogEnd, si, TRUE, FALSE);
 			} else SendMessage(hwndDlg, GC_EVENT_CONTROL + WM_USER + 500, WINDOW_CLEARLOG, 0);
 			break;
@@ -3553,8 +3506,7 @@ LABEL_SHOWWINDOW:
 
 			iTabs = TabCtrl_GetItemCount(hwndTab);
 			if (iTabs == 1) {
-				if (/* !bForced && */CMimAPI::m_shutDown == 0) {
-					// FIXME old code could trigger a crash on close, when the MUC tab was the last in a container window
+				if (/*!bForced && */CMimAPI::m_shutDown == 0) {
 					//DestroyWindow(GetParent(GetParent(hwndDlg)));
 					//PostMessage(hwndDlg, WM_CLOSE, 0, 1);
 					SendMessage(GetParent(GetParent(hwndDlg)), WM_CLOSE, 0, 1);
