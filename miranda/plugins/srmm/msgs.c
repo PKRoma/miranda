@@ -251,8 +251,8 @@ static int ContactDeleted(WPARAM wParam, LPARAM lParam)
 
 static void RestoreUnreadMessageAlerts(void)
 {
-	CLISTEVENT cle = { 0 };
-	DBEVENTINFO dbei = { 0 };
+	CLISTEVENT cle = {0};
+	DBEVENTINFO dbei = {0};
 	TCHAR toolTip[256];
 	int windowAlreadyExists;
 	HANDLE hDbEvent, hContact;
@@ -266,29 +266,35 @@ static void RestoreUnreadMessageAlerts(void)
 	cle.ptszTooltip = toolTip;
 
 	hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
-	while (hContact) {
+	while (hContact) 
+	{
 		hDbEvent = (HANDLE) CallService(MS_DB_EVENT_FINDFIRSTUNREAD, (WPARAM) hContact, 0);
-		while (hDbEvent) {
+		while (hDbEvent) 
+		{
 			autoPopup = 0;
 			dbei.cbBlob = 0;
 			CallService(MS_DB_EVENT_GET, (WPARAM) hDbEvent, (LPARAM) & dbei);
-			if (!(dbei.flags & (DBEF_SENT | DBEF_READ)) && ( dbei.eventType == EVENTTYPE_MESSAGE || DbEventIsForMsgWindow(&dbei) )) {
+			if (!(dbei.flags & (DBEF_SENT | DBEF_READ)) && ( dbei.eventType == EVENTTYPE_MESSAGE || DbEventIsForMsgWindow(&dbei))) 
+			{
 				windowAlreadyExists = WindowList_Find(g_dat->hMessageWindowList, hContact) != NULL;
 				if (windowAlreadyExists)
 					continue;
 				{
 					char *szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
-					if (szProto && (g_dat->openFlags & SRMMStatusToPf2(CallProtoService(szProto, PS_GETSTATUS, 0, 0)))) {
+					if (szProto && (g_dat->openFlags & SRMMStatusToPf2(CallProtoService(szProto, PS_GETSTATUS, 0, 0)))) 
+					{
 						autoPopup = 1;
 					}
 				}
-				if (autoPopup && !windowAlreadyExists) {
-					struct NewMessageWindowLParam newData = { 0 };
+				if (autoPopup && !windowAlreadyExists)
+				{
+					struct NewMessageWindowLParam newData = {0};
 					newData.hContact = hContact;
-					newData.noActivate = 1;
+					newData.noActivate = DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_DONOTSTEALFOCUS, SRMSGDEFSET_DONOTSTEALFOCUS);
 					CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_MSG), NULL, DlgProcMessage, (LPARAM) & newData);
 				}
-				else {
+				else 
+				{
 					cle.hContact = hContact;
 					cle.hDbEvent = hDbEvent;
 					mir_sntprintf(toolTip, SIZEOF(toolTip), TranslateT("Message from %s"), (TCHAR *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM) hContact, GCDNF_TCHAR));
