@@ -1696,18 +1696,22 @@ void CJabberProto::OnIqResultEntityTime( HXML pIqNode, CJabberIqInfo* pInfo )
 		LPCTSTR szTzo = XPathFmt( pIqNode, _T("time[@xmlns='%s']/tzo"), _T( JABBER_FEAT_ENTITY_TIME ));
 		if ( szTzo && szTzo[0] ) {
 			LPCTSTR szMin = _tcschr( szTzo, ':' );
-			int nTz = _ttoi( szTzo ) * 2;
+			int nTz = _ttoi( szTzo ) * -2;
 			nTz += ( nTz < 0 ? -1 : 1 ) * ( szMin ? _ttoi( szMin + 1 ) / 30 : 0 );
 
 			TIME_ZONE_INFORMATION tzinfo;
 			if ( GetTimeZoneInformation( &tzinfo ) == TIME_ZONE_ID_DAYLIGHT )
-				nTz += tzinfo.DaylightBias / 30;
+				nTz -= tzinfo.DaylightBias / 30;
 
-			JSetByte( pInfo->m_hContact, "Timezone", (signed char)-nTz );
+			JSetByte( pInfo->m_hContact, "Timezone", (signed char)nTz );
 			return;
 		}
 	}
-
+	else if ( pInfo->m_nIqType == JABBER_IQ_TYPE_ERROR )
+	{
+		if ( JGetWord( pInfo->m_hContact, "Status", ID_STATUS_OFFLINE ) == ID_STATUS_OFFLINE )
+			return;
+	}
+			
 	JDeleteSetting( pInfo->m_hContact, "Timezone" );
-	return;
 }
