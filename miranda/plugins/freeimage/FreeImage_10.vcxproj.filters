@@ -447,16 +447,10 @@
     <ClInclude Include="Source\LibJPEG\cdjpeg.h">
       <Filter>Source Files\LibJPEG\Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Source\LibJPEG\jchuff.h">
-      <Filter>Source Files\LibJPEG\Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Source\LibJPEG\jconfig.h">
       <Filter>Source Files\LibJPEG\Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Source\LibJPEG\jdct.h">
-      <Filter>Source Files\LibJPEG\Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\LibJPEG\jdhuff.h">
       <Filter>Source Files\LibJPEG\Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Source\LibJPEG\jerror.h">
@@ -492,9 +486,6 @@
     <ClInclude Include="Source\CacheFile.h">
       <Filter>Source Files\LibJPEG\Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Source\DeprecationManager\DeprecationMgr.h">
-      <Filter>Source Files\LibJPEG\Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Source\Metadata\FIRational.h">
       <Filter>Source Files\LibJPEG\Header Files</Filter>
     </ClInclude>
@@ -505,12 +496,6 @@
       <Filter>Source Files\LibJPEG\Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Source\Metadata\FreeImageTag.h">
-      <Filter>Source Files\LibJPEG\Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Miranda\include\m_freeimage.h">
-      <Filter>Source Files\LibJPEG\Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Miranda\include\m_imgsrvc.h">
       <Filter>Source Files\LibJPEG\Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Source\Plugin.h">
@@ -537,6 +522,5 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Todo.txt" />
-    <None Include="Whatsnew.txt" />
   </ItemGroup>
 </Project>

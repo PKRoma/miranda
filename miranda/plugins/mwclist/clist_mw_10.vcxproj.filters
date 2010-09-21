@@ -104,12 +104,6 @@
     <ClInclude Include="commonheaders.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="m_clist.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="m_clui.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="resource.h">
       <Filter>Header Files</Filter>
     </ClInclude>

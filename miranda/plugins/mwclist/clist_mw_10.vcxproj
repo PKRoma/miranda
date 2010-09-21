@@ -1356,8 +1356,6 @@
     <ClInclude Include="clc.h" />
     <ClInclude Include="clist.h" />
     <ClInclude Include="commonheaders.h" />
-    <ClInclude Include="m_clist.h" />
-    <ClInclude Include="m_clui.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="statusmodes.h" />
   </ItemGroup>

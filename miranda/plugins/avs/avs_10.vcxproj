@@ -615,7 +615,6 @@
     <ClInclude Include="commonheaders.h" />
     <ClInclude Include="image_utils.h" />
     <ClInclude Include="m_avatarhistory.h" />
-    <ClInclude Include="m_avatars.h" />
     <ClInclude Include="m_flash.h" />
     <ClInclude Include="m_folders.h" />
     <ClInclude Include="m_metacontacts.h" />

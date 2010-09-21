@@ -601,7 +601,6 @@
     <ClInclude Include="cmdlist.h" />
     <ClInclude Include="commonheaders.h" />
     <ClInclude Include="globals.h" />
-    <ClInclude Include="m_message.h" />
     <ClInclude Include="msgs.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="richutil.h" />
