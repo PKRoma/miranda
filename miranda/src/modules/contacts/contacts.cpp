@@ -322,19 +322,15 @@ static INT_PTR GetContactInfo(WPARAM, LPARAM lParam) {
 			break;
 
 		case CNF_TIMEZONE: {
-			char str[80];
-			DBVARIANT dbv;
+			HANDLE hTz = tmi.createByContact(ci->hContact, TZF_KNOWNONLY);
+			if (hTz)
+			{
+				LPTIME_ZONE_INFORMATION tzi = tmi.getTzi(hTz);
+				int offset = tzi->Bias + tzi->StandardBias;
 
-			if (!DBGetContactSetting(ci->hContact,ci->szProto,"Timezone",&dbv)) {
-				mir_snprintf(str, SIZEOF(str), dbv.cVal?"GMT%+d:%02d":"GMT",-dbv.cVal/2,(dbv.cVal&1)*30);
-				if ( ci->dwFlag & CNF_UNICODE ) {
-					int cbLen = MultiByteToWideChar( CP_ACP, 0, ( LPCSTR )str, -1, NULL, 0 );
-					WCHAR* buf = ( WCHAR* )mir_alloc( sizeof( WCHAR )*(cbLen+1) );
-					if ( buf != NULL )
-						MultiByteToWideChar( CP_ACP, 0, ( LPCSTR )str, -1, buf, cbLen );
-					ci->pszVal = ( TCHAR* )buf;
-				}
-				else ci->pszVal = ( TCHAR* )mir_strdup(str);
+				char str[80];
+				mir_snprintf(str, SIZEOF(str), offset ? "GMT%+d:%02d" : "GMT", offset / -60, abs(offset % 60));
+				ci->pszVal = ci->dwFlag & CNF_UNICODE ? (TCHAR*)mir_a2u(str) : (TCHAR*)mir_strdup(str);
 				ci->type = CNFT_ASCIIZ;
 				return 0;
 			}
