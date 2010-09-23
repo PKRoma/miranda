@@ -1145,7 +1145,7 @@ next:
 		{
 			for(;;) 
 			{
-				recvResult = RecvWithTimeoutTime(nlc, -1, nlhrReply->pData + nlhrReply->dataLength,
+				recvResult = RecvWithTimeoutTime(nlc, GetTickCount() + 6000, nlhrReply->pData + nlhrReply->dataLength,
 					dataBufferAlloced - nlhrReply->dataLength - 1, dflags | (cenctype ? MSG_NODUMP : 0));
 
 				if (recvResult == 0) break;
