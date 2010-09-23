@@ -795,7 +795,6 @@ INT_PTR NetlibHttpRecvHeaders(WPARAM wParam,LPARAM lParam)
 	dwRequestTimeoutTime = GetTickCount() + HTTPRECVHEADERSTIMEOUT;
 	nlhr = (NETLIBHTTPREQUEST*)mir_calloc(sizeof(NETLIBHTTPREQUEST));
 	nlhr->cbSize = sizeof(NETLIBHTTPREQUEST);
-	nlhr->nlc = nlc;
 	nlhr->requestType = REQUEST_RESPONSE;
 	
 	if (!HttpPeekFirstResponseLine(nlc, dwRequestTimeoutTime, lParam | MSG_PEEK,
