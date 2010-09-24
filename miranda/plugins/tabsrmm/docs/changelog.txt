@@ -35,7 +35,7 @@ Version 3.x is for Miranda 0.9 and was released in August 2010, beginning with
 			Detailed change log
 			===================
 
-Version 3.0.5 - 2010/09/15
+Version 3.0.5 - 2010/09/20
 
 	* modified sound group names to be more obvious
 	
@@ -63,6 +63,12 @@ Version 3.0.5 - 2010/09/15
 	* support 32x32 icons for the ALT-TAB preview on all supported operating 
 	  systems.	
 
+	! dragging text from the message log was broken
+	
+	! MUC: respect the setting for "auto copy on select text" in group chat
+	  sessions
+	  
+	
 	  
 Version 3.0.3 - 2010/08/28
 
