@@ -111,7 +111,9 @@ void  html_decode( char* str )
 			if      ( !strnicmp( p, "<p>",  3 )) { strcpy(q, "\r\n\r\n"); q += 3; p += 2; }
 			else if ( !strnicmp( p, "</p>", 4 )) { strcpy(q, "\r\n\r\n"); q += 3; p += 3; }
 			else if ( !strnicmp( p, "<br>", 4 )) { strcpy(q, "\r\n"); ++q; p += 3; }
+			else if ( !strnicmp( p, "<br />", 6 )) { strcpy(q, "\r\n"); ++q; p += 5; }
 			else if ( !strnicmp( p, "<hr>", 4 )) { strcpy(q, "\r\n"); ++q; p += 3; }
+			else if ( !strnicmp( p, "<hr />", 6 )) { strcpy(q, "\r\n"); ++q; p += 5; }
 /*			
 			else if ( !strnicmp( p, "<b>",  3 )) { strcpy(q, "[b]");  q += 2; p += 2; }
 			else if ( !strnicmp( p, "</b>", 4 )) { strcpy(q, "[/b]"); q += 3; p += 3; }
