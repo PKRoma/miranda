@@ -103,7 +103,7 @@ time_t FileTimeToUnixTime(LPFILETIME pft);
 #ifdef _UNICODE 
 #define fnSystemTimeToTzSpecificLocalTime SystemTimeToTzSpecificLocalTime
 #else
-BOOL MySystemTimeToTzSpecificLocalTime(const TIME_ZONE_INFORMATION *ptzi, const SYSTEMTIME *pstUtc, SYSTEMTIME *pstLoc);
+BOOL MySystemTimeToTzSpecificLocalTime(LPTIME_ZONE_INFORMATION ptzi, LPSYSTEMTIME pstUtc, LPSYSTEMTIME pstLoc);
 #define fnSystemTimeToTzSpecificLocalTime MySystemTimeToTzSpecificLocalTime
 #endif
 
