@@ -537,11 +537,13 @@ static LRESULT CALLBACK MessageLogSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
 
 	switch (msg) {
 		case WM_KILLFOCUS: {
-			CHARRANGE cr;
-			SendMessage(hwnd, EM_EXGETSEL, 0, (LPARAM)&cr);
-			if (cr.cpMax != cr.cpMin) {
-				cr.cpMin = cr.cpMax;
-				SendMessage(hwnd, EM_EXSETSEL, 0, (LPARAM)&cr);
+			if(wParam != (WPARAM)hwnd && 0 != wParam) {
+				CHARRANGE cr;
+				SendMessage(hwnd, EM_EXGETSEL, 0, (LPARAM)&cr);
+				if (cr.cpMax != cr.cpMin) {
+					cr.cpMin = cr.cpMax;
+					SendMessage(hwnd, EM_EXSETSEL, 0, (LPARAM)&cr);
+				}
 			}
 			break;
 		}
@@ -582,14 +584,14 @@ static LRESULT CALLBACK MessageLogSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
 				if (/*wParam != VK_ESCAPE&&*/wParam != VK_PRIOR&&wParam != VK_NEXT&&
 					wParam != VK_DELETE&&wParam != VK_MENU&&wParam != VK_END&&
 					wParam != VK_HOME&&wParam != VK_UP&&wParam != VK_DOWN&&
-					wParam != VK_LEFT&&wParam != VK_RIGHT&&wParam != VK_TAB&&
+					wParam != VK_LEFT&&wParam != VK_RIGHT &&
 					wParam != VK_SPACE)
 				{
+					// TODO causes issues when pressing keys in the log
+					//SetFocus(GetDlgItem(mwdat->hwnd,IDC_MESSAGE));
+					//keybd_event((BYTE)wParam, (BYTE)MapVirtualKey(wParam,0), KEYEVENTF_EXTENDEDKEY | 0, 0);
 
-					SetFocus(GetDlgItem(mwdat->hwnd,IDC_MESSAGE));
-					keybd_event((BYTE)wParam, (BYTE)MapVirtualKey(wParam,0), KEYEVENTF_EXTENDEDKEY | 0, 0);
-
-					return 0;
+					//return 0;
 				}
 			}
 			break;
@@ -2155,7 +2157,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 									break;
 								}
 							}
-							if (msg == WM_LBUTTONDOWN || msg == WM_KEYUP || msg == WM_LBUTTONUP) {
+							if ((msg == WM_LBUTTONDOWN || msg == WM_KEYUP || msg == WM_LBUTTONUP) && ((NMHDR *)lParam)->idFrom == IDC_MESSAGE) {
 								int bBold = IsDlgButtonChecked(hwndDlg, IDC_FONTBOLD);
 								int bItalic = IsDlgButtonChecked(hwndDlg, IDC_FONTITALIC);
 								int bUnder = IsDlgButtonChecked(hwndDlg, IDC_FONTUNDERLINE);
@@ -2699,6 +2701,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 					if (!(dat->dwFlags & MWF_ERRORSTATE))
 						break;
 
+					dat->cache->saveHistory(0, 0);
 					if (wParam == MSGERROR_SENDLATER)
 						sendQueue->doSendLater(dat->iCurrentQueueError, dat);							// to be implemented at a later time
 					dat->iOpenJobs--;
@@ -2720,6 +2723,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 					if (!(dat->dwFlags & MWF_ERRORSTATE))
 						break;
 
+					dat->cache->saveHistory(0, 0);
 					if (dat->iCurrentQueueError >= 0 && dat->iCurrentQueueError < SendQueue::NR_SENDJOBS) {
 						SendJob *job = sendQueue->getJobByIndex(dat->iCurrentQueueError);
 

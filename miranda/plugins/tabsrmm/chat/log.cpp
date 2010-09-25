@@ -1161,26 +1161,24 @@ void Log_StreamInEvent(HWND hwndDlg,  LOGINFO* lin, SESSION_INFO* si, BOOL bRedr
 		}
 
 		// scroll log to bottom if the log was previously scrolled to bottom, else restore old position
-		if ((dat->hwndIEView || dat->hwndHPP) || (bRedraw || (UINT)scroll.nPos >= (UINT)scroll.nMax - scroll.nPage - 5 || scroll.nMax - scroll.nMin - scroll.nPage < 50))
+		if ((bRedraw || (UINT)scroll.nPos >= (UINT)scroll.nMax - scroll.nPage - 5 || scroll.nMax - scroll.nMin - scroll.nPage < 50))
 			SendMessage(GetParent(hwndRich), GC_SCROLLTOBOTTOM, 0, 0);
 		else
 			SendMessage(hwndRich, EM_SETSCROLLPOS, 0, (LPARAM) &point);
 
 		// do we need to restore the selection
-		if(dat->hwndIEView == 0 && dat->hwndHPP == 0) {
-			if (oldsel.cpMax != oldsel.cpMin) {
-				SendMessage(hwndRich, EM_EXSETSEL, 0, (LPARAM) & oldsel);
-				SendMessage(hwndRich, WM_SETREDRAW, TRUE, 0);
-				InvalidateRect(hwndRich, NULL, TRUE);
-			}
+		if (oldsel.cpMax != oldsel.cpMin) {
+			SendMessage(hwndRich, EM_EXSETSEL, 0, (LPARAM) & oldsel);
+			SendMessage(hwndRich, WM_SETREDRAW, TRUE, 0);
+			InvalidateRect(hwndRich, NULL, TRUE);
+		}
 
-			// need to invalidate the window
-			if (bFlag) {
-				sel.cpMin = sel.cpMax = GetRichTextLength(hwndRich);
-				SendMessage(hwndRich, EM_EXSETSEL, 0, (LPARAM) & sel);
-				SendMessage(hwndRich, WM_SETREDRAW, TRUE, 0);
-				InvalidateRect(hwndRich, NULL, TRUE);
-			}
+		// need to invalidate the window
+		if (bFlag) {
+			sel.cpMin = sel.cpMax = GetRichTextLength(hwndRich);
+			SendMessage(hwndRich, EM_EXSETSEL, 0, (LPARAM) & sel);
+			SendMessage(hwndRich, WM_SETREDRAW, TRUE, 0);
+			InvalidateRect(hwndRich, NULL, TRUE);
 		}
 	}
 }

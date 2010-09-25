@@ -1373,12 +1373,14 @@ static LRESULT CALLBACK LogSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPAR
 				POINT pt={LOWORD(lParam), HIWORD(lParam)};
 				CheckCustomLink(hwnd, &pt, msg, wParam, lParam, TRUE);
 			}
-			SendMessage(hwnd, EM_EXGETSEL, 0, (LPARAM) &sel);
-			if (sel.cpMin != sel.cpMax) {
-				SendMessage(hwnd, WM_COPY, 0, 0);
-				sel.cpMin = sel.cpMax ;
-				SendMessage(hwnd, EM_EXSETSEL, 0, (LPARAM) & sel);
-				SetFocus(GetDlgItem(hwndParent, IDC_CHAT_MESSAGE));
+			if(M->GetByte("autocopy", 0)) {
+				SendMessage(hwnd, EM_EXGETSEL, 0, (LPARAM) &sel);
+				if (sel.cpMin != sel.cpMax) {
+					SendMessage(hwnd, WM_COPY, 0, 0);
+					sel.cpMin = sel.cpMax ;
+					SendMessage(hwnd, EM_EXSETSEL, 0, (LPARAM) & sel);
+					SetFocus(GetDlgItem(hwndParent, IDC_CHAT_MESSAGE));
+				}
 			}
 		}
 		break;

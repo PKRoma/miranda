@@ -1452,7 +1452,11 @@ int OptionsInit(void)
 	ZeroMemory(&g_Settings, sizeof(TMUCSettings));
 	g_Settings.NameFont = CreateFontIndirect(&lf);
 	g_Settings.iSplitterX = DBGetContactSettingWord(NULL, "Chat", "SplitterX", 105);
+	if(g_Settings.iSplitterX <= 50)
+		g_Settings.iSplitterX = 105;
 	g_Settings.iSplitterY = DBGetContactSettingWord(NULL, "Chat", "splitY", 50);
+	if(g_Settings.iSplitterY <= 20)
+		g_Settings.iSplitterY = 50;
 	g_Settings.hGroup = 0;
 	LoadGlobalSettings();
 	g_Settings.Highlight = new CMUCHighlight();

@@ -1274,10 +1274,7 @@ LRESULT CWarning::show(const int uId, DWORD dwFlags, const wchar_t* tszTxt)
 			return(-1);
 	}
 
-	wchar_t *s = reinterpret_cast<wchar_t *>(mir_alloc((wcslen(_s) + 1) * 2));
-
-	wcscpy(s, _s);
-	if((wcslen(s) > 3) && ((separator_pos = wcschr(s, '|')) != 0)) {
+	if((wcslen(_s) > 3) && ((separator_pos = wcschr(_s, '|')) != 0)) {
 
 		if(uId >= 0) {
 			mask = getMask();
@@ -1288,18 +1285,26 @@ LRESULT CWarning::show(const int uId, DWORD dwFlags, const wchar_t* tszTxt)
 
 		if(0 == (mask & val) || dwFlags & CWF_NOALLOWHIDE) {
 
-			separator_pos[0] = 0;
+			wchar_t *s = reinterpret_cast<wchar_t *>(mir_alloc((wcslen(_s) + 1) * 2));
+			wcscpy(s, _s);
+			separator_pos = wcschr(s, '|');
 
-			CWarning *w = new CWarning(s, &separator_pos[1], uId, dwFlags);
-			if(!(dwFlags & MB_YESNO || dwFlags & MB_YESNOCANCEL)) {
-				w->ShowDialog();
-				mir_free(s);
+			if(separator_pos) {
+				separator_pos[0] = 0;
+
+				CWarning *w = new CWarning(s, &separator_pos[1], uId, dwFlags);
+				if(!(dwFlags & MB_YESNO || dwFlags & MB_YESNOCANCEL)) {
+					w->ShowDialog();
+					mir_free(s);
+				}
+				else {
+					result = w->ShowDialog();
+					mir_free(s);
+					return(result);
+				}
 			}
-			else {
-				result = w->ShowDialog();
+			else
 				mir_free(s);
-				return(result);
-			}
 		}
 	}
 	return(-1);
