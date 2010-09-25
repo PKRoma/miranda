@@ -49,7 +49,7 @@ int ThreadData::send(const char data[], size_t datalen)
 
 void ThreadData::resetTimeout(bool term)
 {
-	int timeout = term ? 10 : 120;
+	int timeout = term ? 10 : mIsMainThread ? 60 : 120;
 	mWaitPeriod = clock() + timeout * CLOCKS_PER_SEC;
 }
 
@@ -59,7 +59,11 @@ bool ThreadData::isTimeout(void)
 
 	if (mWaitPeriod >= clock()) return false;
 
-	if (!mIsMainThread && (mJoinedCount <= 1 || mChatID[0] == 0)) 
+	if (mIsMainThread)
+	{
+		res = true;
+	}
+	else if (mJoinedCount <= 1 || mChatID[0] == 0) 
 	{
 		if (mJoinedCount == 0 || termPending)
 			res = true;
