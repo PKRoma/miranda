@@ -198,7 +198,7 @@ BOOL LocalGreaterThanTransition (const SYSTEMTIME * pstLoc, const SYSTEMTIME * p
      return (liLoc.QuadPart > liTran.QuadPart) ;
 }
 
-BOOL MySystemTimeToTzSpecificLocalTime(const TIME_ZONE_INFORMATION *ptzi, const SYSTEMTIME *pstUtc, SYSTEMTIME *pstLoc) 
+BOOL MySystemTimeToTzSpecificLocalTime(LPTIME_ZONE_INFORMATION ptzi, LPSYSTEMTIME pstUtc, LPSYSTEMTIME pstLoc) 
 {
 	// st is UTC
 
