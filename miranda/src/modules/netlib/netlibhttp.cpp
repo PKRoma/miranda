@@ -795,6 +795,7 @@ INT_PTR NetlibHttpRecvHeaders(WPARAM wParam,LPARAM lParam)
 	dwRequestTimeoutTime = GetTickCount() + HTTPRECVHEADERSTIMEOUT;
 	nlhr = (NETLIBHTTPREQUEST*)mir_calloc(sizeof(NETLIBHTTPREQUEST));
 	nlhr->cbSize = sizeof(NETLIBHTTPREQUEST);
+	nlhr->nlc = nlc;  // Needed to id connection in the protocol HTTP gateway wrapper functions
 	nlhr->requestType = REQUEST_RESPONSE;
 	
 	if (!HttpPeekFirstResponseLine(nlc, dwRequestTimeoutTime, lParam | MSG_PEEK,
@@ -975,7 +976,10 @@ INT_PTR NetlibHttpTransaction(WPARAM wParam, LPARAM lParam)
 	}
 
 	if ((nlhr->flags & NLHRF_PERSISTENT) == 0 || nlhrReply == NULL)
+	{
 		NetlibCloseHandle((WPARAM)nlc, 0);
+		nlhrReply->nlc = NULL;
+	}
 	else
 		nlhrReply->nlc = nlc;
 
