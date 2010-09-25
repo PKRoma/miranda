@@ -244,7 +244,7 @@ static int httpTransact(char* szUrl, char* szResult, int resSize, char* szAction
 		}
 		szResult[0] = 0;
 		{
-			static TIMEVAL tv = { 5, 0 };
+			static TIMEVAL tv = { 6, 0 };
 			static unsigned ttl = 4;
 			static u_long mode = 1;
 			fd_set readfd;
@@ -264,7 +264,7 @@ static int httpTransact(char* szUrl, char* szResult, int resSize, char* szAction
 					enetaddr.sin_addr.s_addr = *(unsigned*)he->h_addr_list[0];
 			}
 
-			NetlibLogf(NULL, "UPnP HTTP connection Host: %s Port: %u\n", szHost, sPort);
+			NetlibLogf(NULL, "UPnP HTTP connection Host: %s Port: %u", szHost, sPort);
 
 			FD_ZERO(&readfd);
 			FD_SET(sock, &readfd);
@@ -609,7 +609,7 @@ static BOOL findUPnPGateway(void)
 			discoverUPnP();
 			lastDiscTime = curTime;
 
-			NetlibLogf(NULL, "UPnP Gateway detected %d, Control URL: %s\n", gatewayFound, szCtlUrl);
+			NetlibLogf(NULL, "UPnP Gateway detected %d, Control URL: %s", gatewayFound, szCtlUrl);
 		}
 
 		ReleaseMutex(portListMutex);
