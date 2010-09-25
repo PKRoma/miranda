@@ -577,12 +577,12 @@ static void MessageDialogResize(HWND hwndDlg, struct MessageWindowData *dat, int
 	}
 	if (g_dat->flags & SMF_AUTORESIZE) {
 		hSplitterPos = dat->desiredInputAreaHeight + SPLITTER_HEIGHT + 3;
-		if (hSplitterPos < h / 8) {
-			hSplitterPos = h / 8;
-			if (dat->desiredInputAreaHeight <= 80 && hSplitterPos > 80) {
-				hSplitterPos = 80;
-			}
-		}
+//		if (hSplitterPos < h / 8) {
+//			hSplitterPos = h / 8;
+//			if (dat->desiredInputAreaHeight <= 80 && hSplitterPos > 80) {
+//				hSplitterPos = 80;
+//			}
+//		}
 	}
 	if (h - hSplitterPos - INFO_BAR_HEIGHT< hSplitterMinTop) {
 		hSplitterPos = h - hSplitterMinTop - INFO_BAR_HEIGHT;

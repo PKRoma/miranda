@@ -178,12 +178,12 @@ static void MessageDialogResize(HWND hwndDlg, SESSION_INFO *si, int w, int h) {
 
 	if (g_dat->flags & SMF_AUTORESIZE) {
 		si->iSplitterY = si->desiredInputAreaHeight + SPLITTER_HEIGHT + 3;
-		if (si->iSplitterY < h / 8) {
-			si->iSplitterY = h / 8;
-			if (si->desiredInputAreaHeight <= 80 && si->iSplitterY > 80) {
-				si->iSplitterY = 80;
-			}
-		}
+//		if (si->iSplitterY < h / 8) {
+//			si->iSplitterY = h / 8;
+//			if (si->desiredInputAreaHeight <= 80 && si->iSplitterY > 80) {
+//				si->iSplitterY = 80;
+//			}
+//		}
 	}
 
 	if (h - si->iSplitterY < hSplitterMinTop) {
