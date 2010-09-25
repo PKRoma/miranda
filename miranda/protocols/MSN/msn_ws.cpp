@@ -59,9 +59,9 @@ bool ThreadData::isTimeout(void)
 
 	if (mWaitPeriod >= clock()) return false;
 
-	if (mIsMainThread && !proto->usingGateway)
+	if (mIsMainThread)
 	{
-		res = true;
+		res = !proto->usingGateway;
 	}
 	else if (mJoinedCount <= 1 || mChatID[0] == 0) 
 	{
