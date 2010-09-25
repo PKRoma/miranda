@@ -3,6 +3,35 @@
                            www.miranda-im.org
 
 
+* New in 0.9.4
+Enhancements:
+ - Added skinnable sound for message sending error
+ - Added display of current contact time in message status bar
+ - AIM: Added support for strike-thru formatting
+
+Bugfixes:
+ - Fixed message window auto close
+ - Fixed message window input area focus issue
+ - Fixed typing notifications
+ - Improved time zone estimation from GMT offset
+ - HTTP gateway improvements
+ - Fixed proxy authentication issues
+ - AIM: Improved processing of XHTML
+ - ICQ: Fixed ICQ statuses
+ - ICQ: Fixed file transfer with UPnP router
+ - ICQ: Fix for hang on exit
+ - ICQ: Fixed crash in SSL mode
+ - ICQ: Fixed HTTP gateway disconnect issues
+ - ICQ: Fixed inability to connect when SSL and HTTP proxy selected
+ - IRC: Fix for wrong IRC status
+ - Jabber: Fixed memory leak
+ - Jabber: Fixed profile manager UI issues
+ - Jabber: Fix for groupchat's nick extraction
+ - Jabber: Fixed password encryption
+ - Jabber: Account registration does not abort on inability to establish TLS connection
+ - Yahoo: Improved sound registration
+
+
 * New in 0.9.3
 Bugfixes:
  - Last message received text missing
