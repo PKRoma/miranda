@@ -380,7 +380,7 @@ BOOL CJabberProto::OnIqRequestTime( HXML, CJabberIqInfo *pInfo )
 	XmlNodeIq iq( _T("result"), pInfo );
 	HXML timeNode = iq << XCHILDNS( _T("time"), _T(JABBER_FEAT_ENTITY_TIME));
 	timeNode << XCHILD( _T("utc"), stime); timeNode << XCHILD( _T("tzo"), szTZ );
-	TCHAR *szTZName = mir_a2t( _tzname[1] );
+	TCHAR *szTZName = mir_a2t( _tzname[0] );
 	if ( szTZName )
 		timeNode << XCHILD( _T("tz"), szTZName );
 	m_ThreadInfo->send( iq );
@@ -405,7 +405,7 @@ BOOL CJabberProto::OnIqProcessIqOldTime( HXML, CJabberIqInfo *pInfo )
 	XmlNodeIq iq( _T("result"), pInfo );
 	HXML queryNode = iq << XQUERY( _T(JABBER_FEAT_ENTITY_TIME_OLD) );
 	queryNode << XCHILD( _T("utc"), stime );
-	TCHAR *szTZName = mir_a2t( _tzname[1] );
+	TCHAR *szTZName = mir_a2t( _tzname[0] );
 	if ( szTZName )
 		queryNode << XCHILD( _T("tz"), szTZName );
 	mir_free( szTZName );

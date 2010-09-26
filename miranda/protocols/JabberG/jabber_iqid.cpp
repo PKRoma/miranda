@@ -1704,6 +1704,12 @@ void CJabberProto::OnIqResultEntityTime( HXML pIqNode, CJabberIqInfo* pInfo )
 				nTz -= tzinfo.DaylightBias / 30;
 
 			JSetByte( pInfo->m_hContact, "Timezone", (signed char)nTz );
+
+			LPCTSTR szTz = XPathFmt( pIqNode, _T("time[@xmlns='%s']/tz"), _T( JABBER_FEAT_ENTITY_TIME ));
+			if (szTz)
+				JSetStringT( pInfo->m_hContact, "TzName", szTz );
+			else
+				JDeleteSetting( pInfo->m_hContact, "TzName" );
 			return;
 		}
 	}
@@ -1714,4 +1720,5 @@ void CJabberProto::OnIqResultEntityTime( HXML pIqNode, CJabberIqInfo* pInfo )
 	}
 			
 	JDeleteSetting( pInfo->m_hContact, "Timezone" );
+	JDeleteSetting( pInfo->m_hContact, "TzName" );
 }
