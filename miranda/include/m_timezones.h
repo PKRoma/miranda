@@ -50,6 +50,7 @@ typedef struct
 	time_t  ( *timeStampToTimeZoneTimeStamp )( HANDLE hTZ, time_t ts );
 
 	LPTIME_ZONE_INFORMATION ( *getTzi )( HANDLE hTZ );
+	LPCTSTR ( *getTzName )( HANDLE hTZ );
 
 #ifdef __cplusplus
 	int printDateTimeByContact (HANDLE hContact, LPCTSTR szFormat, LPTSTR szDest, int cbDest, DWORD dwFlags)

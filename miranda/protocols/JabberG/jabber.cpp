@@ -69,6 +69,7 @@ UTF8_INTERFACE  utfi;
 MD5_INTERFACE   md5i;
 SHA1_INTERFACE  sha1i;
 XML_API         xi;
+TIME_API        tmi;
 
 CLIST_INTERFACE* pcli;
 
@@ -247,6 +248,7 @@ extern "C" int __declspec( dllexport ) Load( PLUGINLINK *link )
 	mir_getMD5I( &md5i );
 	mir_getSHA1I( &sha1i );
 	mir_getXI( &xi );
+	mir_getTMI( &tmi );
 
 	mir_snprintf( szVersion, sizeof( szVersion ), Translate("Jabber protocol plugin for Miranda IM (%s)"), __DATE__ );
 

@@ -126,6 +126,15 @@ static int timeapiGetTimeZoneTime(HANDLE hTZ, SYSTEMTIME *st)
 	return 0;
 }
 
+static LPCTSTR timeapiGetTzName(HANDLE hTZ)
+{
+	MIM_TIMEZONE *tz = (MIM_TIMEZONE*)hTZ;
+	if (tz == NULL)
+		return myInfo.myTZ ? myInfo.myTZ->tszName : NULL;
+
+	return tz->tszName;
+}
+
 static void CalcTsOffset(MIM_TIMEZONE *tz)
 {
 	SYSTEMTIME st, stl;
@@ -452,9 +461,10 @@ static INT_PTR GetTimeApi( WPARAM, LPARAM lParam )
 	tmi->selectListItem                  = timeapiSelectListItem;
 	tmi->storeListResults                = timeapiStoreListResult;
 
-	tmi->getTzi                          = timeapiGetTzi;
 	tmi->getTimeZoneTime                 = timeapiGetTimeZoneTime;
 	tmi->timeStampToTimeZoneTimeStamp    = timeapiTimeStampToTimeZoneTimeStamp;
+	tmi->getTzi                          = timeapiGetTzi;
+	tmi->getTzName                       = timeapiGetTzName;
 
 	return TRUE;
 }
