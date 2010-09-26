@@ -83,6 +83,7 @@ Last change by : $Author$
 #include <m_button.h>
 #include <m_avatars.h>
 #include <m_idle.h>
+#include <m_timezones.h>
 #include <m_jabber.h>
 #include <win2k.h>
 
