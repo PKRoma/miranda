@@ -1676,24 +1676,9 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 				mir_free(szContactName);
 				dat->nTypeSecs--;
 			} else if (dat->lastMessage) {
-				DBTIMETOSTRINGT dbtts;
 				TCHAR date[64], time[64];
-				dbtts.szFormat = _T("d");
-				dbtts.cbDest = SIZEOF(date);
-				dbtts.szDest = date;
-#if defined ( _UNICODE )
-				CallService(MS_DB_TIME_TIMESTAMPTOSTRINGT, dat->lastMessage, (LPARAM) & dbtts);
-#else
-				CallService(MS_DB_TIME_TIMESTAMPTOSTRING, dat->lastMessage, (LPARAM) & dbtts);
-#endif
-				dbtts.szFormat = _T("t");
-				dbtts.cbDest = SIZEOF(time);
-				dbtts.szDest = time;
-#if defined ( _UNICODE )
-				CallService(MS_DB_TIME_TIMESTAMPTOSTRINGT, dat->lastMessage, (LPARAM) & dbtts);
-#else
-				CallService(MS_DB_TIME_TIMESTAMPTOSTRING, dat->lastMessage, (LPARAM) & dbtts);
-#endif
+				tmi.printTimeStamp(NULL, dat->lastMessage, _T("d"), date, SIZEOF(date), 0);
+	            tmi.printTimeStamp(NULL, dat->lastMessage, _T("t"), time, SIZEOF(time), 0);
 				mir_sntprintf(szText, SIZEOF(szText), TranslateT("Last message received on %s at %s."), date, time);
 				sbd.pszText = szText;
 			} else {

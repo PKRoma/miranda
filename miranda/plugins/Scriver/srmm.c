@@ -28,6 +28,7 @@ int OnUnloadModule(void);
 struct MM_INTERFACE mmi;
 struct LIST_INTERFACE li;
 struct UTF8_INTERFACE utfi;
+TIME_API tmi;
 
 PLUGINLINK *pluginLink;
 HINSTANCE g_hInst;
@@ -85,6 +86,7 @@ int __declspec(dllexport) Load(PLUGINLINK * link)
 	mir_getMMI( &mmi );
 	mir_getLI( &li );
 	mir_getUTFI( &utfi );
+	mir_getTMI(&tmi);
 
 	if (IsWinVer7Plus())
 		CoCreateInstance(&CLSID_TaskbarList, NULL, CLSCTX_ALL, &IID_ITaskbarList3, (void**)&pTaskbarInterface);
