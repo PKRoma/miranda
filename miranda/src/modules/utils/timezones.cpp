@@ -214,8 +214,11 @@ static HANDLE timeapiGetInfoByContact(HANDLE hContact, DWORD dwFlags)
 	{
 		MIM_TIMEZONE tzsearch;
 		tzsearch.tzi.Bias = timezone * 30;
-		if (myInfo.tzi.Bias == tzsearch.tzi.Bias && myInfo.myTZ)
-			return (dwFlags & TZF_DIFONLY) ? NULL : myInfo.myTZ;
+		if (myInfo.tzi.Bias == tzsearch.tzi.Bias)
+		{
+			if (dwFlags & TZF_DIFONLY) return NULL;
+			if (myInfo.myTZ) return myInfo.myTZ;
+		}
 
 		int i = g_timezonesBias.getIndex(&tzsearch);
 		while (i >= 0 && g_timezonesBias[i]->tzi.Bias == tzsearch.tzi.Bias) --i; 
@@ -234,10 +237,7 @@ static HANDLE timeapiGetInfoByContact(HANDLE hContact, DWORD dwFlags)
 		if (i >= 0)
 		{
 			MIM_TIMEZONE *tz = g_timezonesBias[i];
-			if (dwFlags & TZF_DIFONLY)
-				return IsSameTime(tz) ? NULL : tz;
-
-			return tz;
+			return ((dwFlags & TZF_DIFONLY) && IsSameTime(tz)) ? NULL : tz;
 		}
 	}
 	return (dwFlags & (TZF_DIFONLY | TZF_KNOWNONLY)) ? NULL : myInfo.myTZ;
