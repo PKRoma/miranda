@@ -380,6 +380,9 @@ BOOL CJabberProto::OnIqRequestTime( HXML, CJabberIqInfo *pInfo )
 	XmlNodeIq iq( _T("result"), pInfo );
 	HXML timeNode = iq << XCHILDNS( _T("time"), _T(JABBER_FEAT_ENTITY_TIME));
 	timeNode << XCHILD( _T("utc"), stime); timeNode << XCHILD( _T("tzo"), szTZ );
+	TCHAR *szTZName = mir_a2t( _tzname[1] );
+	if ( szTZName )
+		timeNode << XCHILD( _T("tz"), szTZName );
 	m_ThreadInfo->send( iq );
 	return TRUE;
 }
