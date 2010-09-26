@@ -555,7 +555,10 @@ static BOOL scanPluginsDir (WIN32_FIND_DATA * fd, TCHAR * path, WPARAM, LPARAM)
 					if ( pluginListSM != NULL ) p->nextclass = pluginListSM;
 					pluginListSM=p;
 	                if (pluginList_crshdmp == NULL &&  lstrcmpi(fd->cFileName, _T("svc_crshdmp.dll")) == 0)
+					{
 		                pluginList_crshdmp = p;
+						p->pclass |= PCLASS_LAST;
+					}
 					break;
 				}
 			}
