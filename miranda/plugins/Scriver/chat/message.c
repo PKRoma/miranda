@@ -268,7 +268,11 @@ TCHAR* DoRtfToTags( char* pszText, SESSION_INFO* si)
 				bTextHasStarted = TRUE;
 				bJustRemovedRTF = FALSE;
 				iRemoveChars = 2;
-				mir_snprintf(InsertThis, SIZEOF(InsertThis), "\xA0" );
+#if defined(_UNICODE)
+				strcpy(InsertThis, "\xC2\xA0");
+#else
+				strcpy(InsertThis, "\xA0");
+#endif
 			}
 			else if ( p1[1] == '\'' ) { // special character
 				char tmp[4], *p3 = tmp;

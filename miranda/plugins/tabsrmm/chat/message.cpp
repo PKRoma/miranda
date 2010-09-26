@@ -149,15 +149,15 @@ TCHAR* Chat_DoRtfToTags(char* pszText, SESSION_INFO* si)
 				} else if (!memcmp(p1, "\\endash", 7)) {
 					bTextHasStarted = bJustRemovedRTF = TRUE;
 					iRemoveChars = 7;
-					mir_snprintf(InsertThis, SIZEOF(InsertThis), "\xE2\x80\x93");
+					strcpy(InsertThis, "\xE2\x80\x93");
 				} else if (!memcmp(p1, "\\emdash", 7)) {
 					bTextHasStarted = bJustRemovedRTF = TRUE;
 					iRemoveChars = 7;
-					mir_snprintf(InsertThis, SIZEOF(InsertThis), "\xE2\x80\x94");
+					strcpy(InsertThis, "\xE2\x80\x94");
 				} else if (!memcmp(p1, "\\bullet", 7)) {
 					bTextHasStarted = bJustRemovedRTF = TRUE;
 					iRemoveChars = 7;
-					mir_snprintf(InsertThis, SIZEOF(InsertThis), "\xE2\x80\xA2");
+					strcpy(InsertThis, "\xE2\x80\xA2");
 				} else if (!memcmp(p1, "\\line", 5)) {  // newline
 					bTextHasStarted = bJustRemovedRTF = TRUE;
 					iRemoveChars = 5;
@@ -165,11 +165,11 @@ TCHAR* Chat_DoRtfToTags(char* pszText, SESSION_INFO* si)
 				} else if (!memcmp(p1, "\\b", 2)) {  //bold
 					bTextHasStarted = bJustRemovedRTF = TRUE;
 					iRemoveChars = (p1[2] != '0') ? 2 : 3;
-					mir_snprintf(InsertThis, SIZEOF(InsertThis), (p1[2] != '0') ? "%%b" : "%%B");
+					strcpy(InsertThis, (p1[2] != '0') ? "%b" : "%B");
 				} else if (!memcmp(p1, "\\i", 2)) {  // italics
 					bTextHasStarted = bJustRemovedRTF = TRUE;
 					iRemoveChars = (p1[2] != '0') ? 2 : 3;
-					mir_snprintf(InsertThis, SIZEOF(InsertThis), (p1[2] != '0') ? "%%i" : "%%I");
+					strcpy(InsertThis, (p1[2] != '0') ? "%i" : "%I");
 				} else if (!memcmp(p1, "\\uc", 3)) {  // number of Unicode chars
 					bTextHasStarted = bJustRemovedRTF = TRUE;
 					iUcMode = p1[3] - '0';
@@ -195,7 +195,7 @@ TCHAR* Chat_DoRtfToTags(char* pszText, SESSION_INFO* si)
 					bTextHasStarted = TRUE;
 					bJustRemovedRTF = FALSE;
 					iRemoveChars = 2;
-					mir_snprintf(InsertThis, SIZEOF(InsertThis), "\xA0");
+					strcpy(InsertThis, "\xC2\xA0");
 				}
 
 
@@ -203,19 +203,19 @@ TCHAR* Chat_DoRtfToTags(char* pszText, SESSION_INFO* si)
 					bTextHasStarted = TRUE;
 					bJustRemovedRTF = TRUE;
 					iRemoveChars = 4;
-					mir_snprintf(InsertThis, safe_sizeof(InsertThis), "\x09");
+					strcpy(InsertThis, "\x09");
 				}
 				else if (!memcmp(p1, "\\ldblquote",10)) {
 					bTextHasStarted = TRUE;
 					bJustRemovedRTF = TRUE;
 					iRemoveChars = 10;
-					mir_snprintf(InsertThis, safe_sizeof(InsertThis), "\xe2\x80\x9c");
+					strcpy(InsertThis, "\xe2\x80\x9c");
 				}
 				else if (!memcmp(p1, "\\rdblquote",10)) {
 					bTextHasStarted = TRUE;
 					bJustRemovedRTF = TRUE;
 					iRemoveChars = 10;
-					mir_snprintf(InsertThis, safe_sizeof(InsertThis), "\xe2\x80\x9d");
+					strcpy(InsertThis, "\xe2\x80\x9d");
 				}
 				else if (!memcmp(p1, "\\lquote",7)) {
 					bTextHasStarted = TRUE;
@@ -270,7 +270,7 @@ TCHAR* Chat_DoRtfToTags(char* pszText, SESSION_INFO* si)
 				bTextHasStarted = TRUE;
 				bJustRemovedRTF = FALSE;
 				iRemoveChars = 1;
-				mir_snprintf(InsertThis, SIZEOF(InsertThis), "%%%%");
+				strcpy(InsertThis, "%%");
 				break;
 			case ' ': // remove spaces following a RTF command
 				if (bJustRemovedRTF)
