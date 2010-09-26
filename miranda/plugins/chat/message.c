@@ -107,7 +107,7 @@ TCHAR* DoRtfToTags( char* pszText, SESSION_INFO* si)
 
 	p1 += 5;
 
-	MoveMemory( pszText, p1, lstrlenA( p1 ) + 1 );
+	memmove(pszText, p1, strlen(p1) + 1);
 	p1 = pszText;
 
 	// iterate through all characters, if rtf control character found then take action
@@ -264,7 +264,11 @@ TCHAR* DoRtfToTags( char* pszText, SESSION_INFO* si)
 				bTextHasStarted = TRUE;
 				bJustRemovedRTF = FALSE;
 				iRemoveChars = 2;
-				mir_snprintf(InsertThis, SIZEOF(InsertThis), "\xA0" );
+#if defined(_UNICODE)
+				strcpy(InsertThis, "\xC2\xA0");
+#else
+				strcpy(InsertThis, "\xA0");
+#endif
 			}
 			else if ( p1[1] == '\'' ) { // special character
 				char tmp[4], *p3 = tmp;
@@ -308,7 +312,7 @@ TCHAR* DoRtfToTags( char* pszText, SESSION_INFO* si)
 			bTextHasStarted = TRUE;
 			bJustRemovedRTF = FALSE;
 			iRemoveChars = 1;
-			mir_snprintf(InsertThis, SIZEOF(InsertThis), "%%%%" );
+			strcpy(InsertThis, "%%");
 			break;
 		case ' ': // remove spaces following a RTF command
 			if (bJustRemovedRTF)
@@ -324,10 +328,12 @@ TCHAR* DoRtfToTags( char* pszText, SESSION_INFO* si)
 		}
 
 		// move the memory and paste in new commands instead of the old RTF
-		if ( InsertThis[0] || iRemoveChars ) {
-			MoveMemory(p1 + lstrlenA(InsertThis) , p1 + iRemoveChars, lstrlenA(p1) - iRemoveChars +1 );
-			CopyMemory(p1, InsertThis, lstrlenA(InsertThis));
-			p1 += lstrlenA(InsertThis);
+		if (InsertThis[0] || iRemoveChars) 
+		{
+			size_t len = strlen(InsertThis);
+			memmove(p1 + len , p1 + iRemoveChars, strlen(p1) - iRemoveChars + 1);
+			memcpy(p1, InsertThis, len);
+			p1 += len;
 		}
 		else p1++;
 	}
