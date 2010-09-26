@@ -180,54 +180,58 @@ static HANDLE timeapiGetInfoByContact(HANDLE hContact, DWORD dwFlags)
 	if (hContact == NULL)
 		return (dwFlags & (TZF_DIFONLY | TZF_KNOWNONLY)) ? NULL : myInfo.myTZ;
 
-	DBVARIANT	dbv;
+	DBVARIANT dbv;
 	if (!DBGetContactSettingTString(hContact, "UserInfo", "TzName", &dbv)) 
 	{
 		HANDLE res = timeapiGetInfoByName(dbv.ptszVal, dwFlags);  
 		DBFreeVariant(&dbv);
-		return res;
+		if (res) return res;
 	} 
-	else 
+
+	signed char timezone = (signed char)DBGetContactSettingByte(hContact, "UserInfo", "Timezone", -1);
+	if (timezone == -1)
 	{
-		signed char timezone = (signed char)DBGetContactSettingByte(hContact, "UserInfo", "Timezone", -1);
-		if (timezone == -1)
+		char* szProto = (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
+		if (!DBGetContactSettingTString(hContact, szProto, "TzName", &dbv)) 
 		{
-			char* szProto = (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
-			timezone = (signed char)DBGetContactSettingByte(hContact, szProto, "Timezone", -1);
+			HANDLE res = timeapiGetInfoByName(dbv.ptszVal, dwFlags);  
+			DBFreeVariant(&dbv);
+			if (res) return res;
 		}
-
-		if (timezone != -1) 
-		{
-			MIM_TIMEZONE tzsearch;
-			tzsearch.tzi.Bias = timezone * 30;
-			if (myInfo.tzi.Bias == tzsearch.tzi.Bias && myInfo.myTZ)
-				return (dwFlags & TZF_DIFONLY) ? NULL : myInfo.myTZ;
-
-			int i = g_timezonesBias.getIndex(&tzsearch);
-			while (i >= 0 && g_timezonesBias[i]->tzi.Bias == tzsearch.tzi.Bias) --i; 
-			
-			int delta = LONG_MAX;
-			for (int j = ++i; j < g_timezonesBias.getCount() && g_timezonesBias[j]->tzi.Bias == tzsearch.tzi.Bias; ++j)
-			{
-				int delta1 = abs(g_timezonesBias[j]->tzi.DaylightDate.wMonth - myInfo.tzi.DaylightDate.wMonth);
-				if (delta1 <= delta)
-				{
-					delta = delta1;
-					i = j;
-				}
-			}
-
-			if (i >= 0)
-			{
-				MIM_TIMEZONE *tz = g_timezonesBias[i];
-				if (dwFlags & TZF_DIFONLY)
-					return IsSameTime(tz) ? NULL : tz;
-
-				return tz;
-			}
-		}
-		return (dwFlags & (TZF_DIFONLY | TZF_KNOWNONLY)) ? NULL : myInfo.myTZ;
+		timezone = (signed char)DBGetContactSettingByte(hContact, szProto, "Timezone", -1);
 	}
+
+	if (timezone != -1) 
+	{
+		MIM_TIMEZONE tzsearch;
+		tzsearch.tzi.Bias = timezone * 30;
+		if (myInfo.tzi.Bias == tzsearch.tzi.Bias && myInfo.myTZ)
+			return (dwFlags & TZF_DIFONLY) ? NULL : myInfo.myTZ;
+
+		int i = g_timezonesBias.getIndex(&tzsearch);
+		while (i >= 0 && g_timezonesBias[i]->tzi.Bias == tzsearch.tzi.Bias) --i; 
+		
+		int delta = LONG_MAX;
+		for (int j = ++i; j < g_timezonesBias.getCount() && g_timezonesBias[j]->tzi.Bias == tzsearch.tzi.Bias; ++j)
+		{
+			int delta1 = abs(g_timezonesBias[j]->tzi.DaylightDate.wMonth - myInfo.tzi.DaylightDate.wMonth);
+			if (delta1 <= delta)
+			{
+				delta = delta1;
+				i = j;
+			}
+		}
+
+		if (i >= 0)
+		{
+			MIM_TIMEZONE *tz = g_timezonesBias[i];
+			if (dwFlags & TZF_DIFONLY)
+				return IsSameTime(tz) ? NULL : tz;
+
+			return tz;
+		}
+	}
+	return (dwFlags & (TZF_DIFONLY | TZF_KNOWNONLY)) ? NULL : myInfo.myTZ;
 }
 
 static void timeapiSetInfoByContact(HANDLE hContact, HANDLE hTZ)
