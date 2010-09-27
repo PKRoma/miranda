@@ -237,11 +237,7 @@ INT_PTR CALLBACK MirandaPageProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM lPa
 				TCHAR *pfd;
 				int index;
 
-				REPLACEVARSDATA dat = {0};
-				dat.cbSize = sizeof(dat);
-				dat.dwFlags = RVF_TCHAR;
-
-				pfd = (TCHAR*)CallService(MS_UTILS_REPLACEVARS, (WPARAM)_T("%miranda_profile%"), (LPARAM)&dat);
+				pfd = Utils_ReplaceVarsT(_T("%miranda_profile%"));
 
 				// TranslateTS doesnt translate \0 separated strings
 				index = mir_sntprintf(text, 64, _T("%s (*.dat)"), TranslateT("Miranda IM database")) + 1;
