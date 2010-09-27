@@ -233,6 +233,7 @@ typedef int ( *FSortFunc )( void*, void* );
 // in much better performance as no compare function calls needed 
 // Incredibly useful for Hash Tables
 #define NumericKeySort (FSortFunc)(void*) -1
+#define HandleKeySort  (FSortFunc)(void*) -2
 
 typedef struct
 {

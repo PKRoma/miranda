@@ -70,56 +70,92 @@ int List_GetIndex( SortedList* p_list, void* p_value, int* p_index )
 		*p_index = -1;
 		return 0;
 	}
-	if (p_list->sortFunc == NULL)
-		return 0;
 
-	if (p_list->sortFunc == NumericKeySort)
+	switch ((INT_PTR)p_list->sortFunc)
 	{
-		const unsigned val = *(unsigned*)p_value;
-		int low  = 0;
-		int high = p_list->realCount - 1;
+	case 0:
+		break;
 
-		while (low <= high)
-		{  
-			int i = (low + high) / 2;
-			unsigned vali = *(unsigned*)p_list->items[i];
-			if (vali == val)
-			{	
-				*p_index = i;
-				return 1;
+	case HandleKeySort:
+#ifdef _WIN64
+		{
+			const unsigned __int64 val = *(unsigned *)p_value;
+			int low  = 0;
+			int high = p_list->realCount - 1;
+
+			while (low <= high)
+			{  
+				int i = (low + high) / 2;
+				unsigned __int64 vali = *(unsigned __int64 *)p_list->items[i];
+				if (vali == val)
+				{	
+					*p_index = i;
+					return 1;
+				}
+
+				if (vali < val)
+					low = i + 1;
+				else
+					high = i - 1;
 			}
 
-			if (vali < val)
-				low = i + 1;
-			else
-				high = i - 1;
+			*p_index = low;
 		}
+		break;
+#endif
 
-		*p_index = low;
-	}
-	else
-	{
-		int low  = 0;
-		int high = p_list->realCount - 1;
+	case NumericKeySort:
+		{
+			const unsigned val = *(unsigned *)p_value;
+			int low  = 0;
+			int high = p_list->realCount - 1;
 
-		while (low <= high)
-		{  
-			int i = (low + high) / 2;
-			int result = p_list->sortFunc(p_list->items[i], p_value);
-			if (result == 0)
-			{	
-				*p_index = i;
-				return 1;
+			while (low <= high)
+			{  
+				int i = (low + high) / 2;
+				unsigned vali = *(unsigned *)p_list->items[i];
+				if (vali == val)
+				{	
+					*p_index = i;
+					return 1;
+				}
+
+				if (vali < val)
+					low = i + 1;
+				else
+					high = i - 1;
 			}
 
-			if (result < 0)
-				low = i + 1;
-			else
-				high = i - 1;
+			*p_index = low;
 		}
+		break;
 
-		*p_index = low;
+	default:
+		{
+			int low  = 0;
+			int high = p_list->realCount - 1;
+
+			while (low <= high)
+			{  
+				int i = (low + high) / 2;
+				int result = p_list->sortFunc(p_list->items[i], p_value);
+				if (result == 0)
+				{	
+					*p_index = i;
+					return 1;
+				}
+
+				if (result < 0)
+					low = i + 1;
+				else
+					high = i - 1;
+			}
+
+			*p_index = low;
+		}
+		break;
 	}
+
 	return 0;
 }
 
