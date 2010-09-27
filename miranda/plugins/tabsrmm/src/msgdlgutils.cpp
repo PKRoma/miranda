@@ -2424,3 +2424,118 @@ LONG TSAPI GetDefaultMinimumInputHeight(const TWindowData* dat)
 	return(height);
 }
 #endif
+
+static std::vector<TCHAR *> vTempFilenames;
+
+/**
+ * send a pasted bitmap by file transfer.
+ */
+void TSAPI SendHBitmapAsFile(const TWindowData* dat, HBITMAP hbmp)
+{
+	const wchar_t* 	mirandatempdir = L"Miranda";
+	const wchar_t* 	filenametemplate = L"\\clp-%Y%m%d-%H%M%S0.jpg";
+	TCHAR 			filename[MAX_PATH];
+	size_t 			tempdirlen = GetTempPath(MAX_PATH, filename);
+	bool			fSend = true;
+
+	const char* szProto = dat->cache->getActiveProto();
+	WORD  wMyStatus = (WORD)CallProtoService(szProto, PS_GETSTATUS, 0, 0);
+
+	DWORD protoCaps = CallProtoService(szProto, PS_GETCAPS, PFLAGNUM_1, 0);
+	DWORD typeCaps = CallProtoService(szProto, PS_GETCAPS, PFLAGNUM_4, 0);
+
+	/*
+	 * check protocol capabilities, status modes and visibility lists (privacy)
+	 * to determine whether the file can be sent. Throw a warning if any of
+	 * these checks fails.
+	 */
+	if(!(protoCaps & PF1_FILESEND))
+		fSend = false;
+
+	if(ID_STATUS_OFFLINE == wMyStatus || ID_STATUS_OFFLINE == dat->cache->getActiveStatus())
+		fSend = false;
+
+	if (protoCaps & PF1_VISLIST && DBGetContactSettingWord(dat->cache->getActiveContact(), szProto, "ApparentMode", 0) == ID_STATUS_OFFLINE)
+		fSend = false;
+
+	if (protoCaps & PF1_INVISLIST && wMyStatus == ID_STATUS_INVISIBLE && DBGetContactSettingWord(dat->cache->getActiveContact(), szProto, "ApparentMode", 0) != ID_STATUS_ONLINE)
+		fSend = false;
+
+	if(!fSend) {
+		CWarning::show(CWarning::WARN_SENDFILE, MB_OK|MB_ICONEXCLAMATION);
+		return;
+	}
+	if (tempdirlen <=0 || tempdirlen >= MAX_PATH-_tcslen(mirandatempdir)-_tcslen(filenametemplate)-2) // -2 is because %Y takes 4 symbols
+		filename[0] = 0;					// prompt for a new name
+	else {
+		_tcscpy(filename+tempdirlen, mirandatempdir);
+		if ((GetFileAttributes(filename) == INVALID_FILE_ATTRIBUTES || ((GetFileAttributes(filename) & FILE_ATTRIBUTE_DIRECTORY) == 0)) && CreateDirectory(filename, NULL)==0)
+			filename[0] = 0;
+		else {
+			tempdirlen = _tcslen(filename);
+
+			time_t rawtime;
+			time(&rawtime);
+			const tm* timeinfo;
+			timeinfo = _localtime32((__time32_t *)&rawtime);
+			_tcsftime(filename + tempdirlen, MAX_PATH-tempdirlen, filenametemplate, timeinfo);
+			size_t firstnumberpos = tempdirlen+14;
+			size_t lastnumberpos = tempdirlen+20;
+			while (GetFileAttributes(filename) != INVALID_FILE_ATTRIBUTES) {	// while it exists
+				for (size_t pos = lastnumberpos; pos >= firstnumberpos; pos--)
+					if (filename[pos]++ != '9')
+						break;
+					else
+						if (pos == firstnumberpos)
+							filename[0] = 0;	// all filenames exist => prompt for a new name
+						else
+							filename[pos] = '0';
+			}
+		}
+	}
+	if (filename[0] == 0) {	// prompting to save
+		OPENFILENAME dlg;
+		dlg.lStructSize = sizeof(dlg);
+		dlg.hwndOwner = NULL; //dat->hwnd;
+		dlg.lpstrFilter = L"JPEG-compressed images\0*.jpg\0\0";
+		dlg.nFilterIndex = 1;
+		dlg.lpstrFile = filename;
+		dlg.nMaxFile = MAX_PATH;
+		dlg.Flags = OFN_NOREADONLYRETURN | OFN_OVERWRITEPROMPT | OFN_PATHMUSTEXIST;
+		dlg.lpstrDefExt = L"jpg";
+		if (!GetSaveFileName(&dlg))
+			return;
+	}
+	IMGSRVC_INFO ii;
+	ii.cbSize = sizeof(ii);
+	ii.hbm = hbmp;
+	ii.wszName = filename;
+	ii.dwMask = IMGI_HBITMAP;
+	ii.fif = FIF_JPEG;
+	CallService(MS_IMG_SAVE, (WPARAM)&ii, IMGL_TCHAR);
+
+	int fileCount = 1, totalCount = 0;
+	TCHAR** ppFiles = NULL;
+	Utils::AddToFileList(&ppFiles, &totalCount, filename);
+
+	wchar_t* _t = mir_tstrdup(filename);
+	vTempFilenames.push_back(_t);
+
+	CallService(MS_FILE_SENDSPECIFICFILEST, (WPARAM)dat->hContact, (LPARAM)ppFiles);
+
+	mir_free(ppFiles[0]);
+	mir_free(ppFiles);
+}
+
+/**
+ * remove all temporary files created by the "send clipboard as file" feature.
+ */
+void TSAPI CleanTempFiles()
+{
+	std::vector<wchar_t *>::iterator it = vTempFilenames.begin();
+
+	while(it != vTempFilenames.end()) {
+		DeleteFileW(*it);
+		mir_free(*it++);
+	}
+}

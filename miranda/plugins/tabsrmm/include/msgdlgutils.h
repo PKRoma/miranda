@@ -94,6 +94,9 @@ void	TSAPI DetermineMinHeight			(TWindowData* dat);
 
 void	TSAPI MTH_updateMathWindow			(const TWindowData *dat);
 
+void	TSAPI CleanTempFiles				();
+void 	TSAPI SendHBitmapAsFile				(const TWindowData* dat, HBITMAP hbmp);
+
 extern INT_PTR CALLBACK SelectContainerDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 extern INT_PTR CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 

@@ -711,8 +711,8 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
 		case WM_PASTE:
 		case EM_PASTESPECIAL: {
 			if (OpenClipboard(hwnd)) {
-				HANDLE hClip = GetClipboardData(CF_TEXT);
-				if (hClip) {
+				HANDLE hClip;
+				if(hClip = GetClipboardData(CF_TEXT)) {
 					if (lstrlenA((char *)hClip) > mwdat->nMax) {
 						TCHAR szBuffer[512];
 						if (M->GetByte("autosplit", 0))
@@ -722,6 +722,9 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
 						SendMessage(hwndParent, DM_ACTIVATETOOLTIP, IDC_MESSAGE, (LPARAM)szBuffer);
 					}
 				}
+				else if(hClip = GetClipboardData(CF_BITMAP))
+					SendHBitmapAsFile(mwdat, (HBITMAP)hClip);
+
 				CloseClipboard();
 			}
 			return CallWindowProc(OldMessageEditProc, hwnd, msg, wParam, lParam);

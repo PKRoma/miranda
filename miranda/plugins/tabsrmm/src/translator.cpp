@@ -451,7 +451,7 @@ wchar_t* CTranslator::m_Warnings[WARN_LAST] = {
 	L"Missing component|The icon pack is missing. Please install it to the default icons folder.\n\nNo icons will be available",		/* WARN_ICONPACKMISSING */ /* NOT TRANSLATABLE */
 	LPGENT("Aero peek warning|You have enabled Aero Peek features and loaded a custom container window skin\n\nThis can result in minor visual anomalies in the live preview feature."),	/* WARN_AEROPEEKSKIN */
 	L"TabSRMM group chat module|TabSRMM could not enable its group chat module. The most likely cause is that you have installed and enabled \\b1chat.dll\\b0  or another plugin that provides groupchat services.\n\nShould I try to fix this now \\b1(a restart of Miranda is required to apply these changes)?\\b0", /* WARN_CHAT_ENABLED */ /* NOT TRANSLATABLE */
-	L"Missing component|The image service plugin (\\b1advaimg.dll\\b0 ) is not properly installed. Please check your plugin configuration.\n\n\\b1TabSRMM is disabled.\\b0 ", /* WARN_IMGSVC_MISSING */ /* NOT TRANSLATABLE */
+	L"Filetransfer problem|Sending the image by file transfer failed.\n\nPossible reasons: File transfers not supported, either you or the target contact is offline, or you are invisible and the target contact is not on your visibilty list.", /* WARN_IMGSVC_MISSING */ /* NOT TRANSLATABLE */
 	LPGENT("Settings problem|The option \\b1 History->Imitate IEView API\\b0  is enabled and the History++ plugin is active. This can cause problems when using IEView as message log viewer.\n\nShould I correct the option (a restart is required)?"), /* WARN_HPP_APICHECK */
 	L" ", /* WARN_NO_SENDLATER */ /*uses QMGR_ERROR_NOMULTISEND */
 	LPGENT("Closing Window|You are about to close a window with multiple tabs open.\n\nProceed?"),		/* WARN_CLOSEWINDOW */

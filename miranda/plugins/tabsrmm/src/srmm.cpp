@@ -136,6 +136,7 @@ extern "C" int __declspec(dllexport) Unload(void)
 		iRet = SplitmsgShutdown();
 		Skin->setupTabCloseBitmap(true);
 		Skin->UnloadAeroTabs();
+		CleanTempFiles();
 		delete Skin;
 		delete sendLater;
 		delete sendQueue;
