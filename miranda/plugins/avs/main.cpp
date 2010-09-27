@@ -62,7 +62,7 @@ static int ComparePicture( const protoPicCacheEntry* p1, const protoPicCacheEntr
 	return lstrcmpA( p1->szProtoname, p2->szProtoname );
 }
 
-OBJLIST<protoPicCacheEntry> 
+OBJLIST<protoPicCacheEntry>
 	g_ProtoPictures( 10, ComparePicture ),
 	g_MyAvatars( 10, ComparePicture );
 
@@ -275,7 +275,7 @@ size_t AVS_pathToAbsolute(const char *pSrc, char *pOut)
 #if defined(_UNICODE)
 int AVS_pathToAbsoluteW(const wchar_t *pSrc, wchar_t *pOut)
 {
-    if (!pSrc || !lstrlenW(pSrc) || lstrlenW(pSrc) > MAX_PATH) 
+    if (!pSrc || !lstrlenW(pSrc) || lstrlenW(pSrc) > MAX_PATH)
         return 0;
     if (AVS_pathIsAbsoluteW(pSrc) || !iswalnum(pSrc[0])) {
         mir_sntprintf(pOut, MAX_PATH, _T("%s"), pSrc);
@@ -347,7 +347,7 @@ static void NotifyMetaAware(HANDLE hContact, struct CacheNode *node = NULL, AVAT
 							cacn.hash[i*4+3] = '=';
 						}
 					}
-				DBFreeVariant(&dbv);
+					DBFreeVariant(&dbv);
 				}
 			}
 
@@ -1101,7 +1101,7 @@ const char *GetFormatExtension(int format)
 		return ".swf";
 	if (format == PA_FORMAT_XML)
 		return ".xml";
-	
+
 	return NULL;
 }
 
@@ -1114,19 +1114,19 @@ int GetImageFormat(char *filename)
 
 	if (_strcmpi(".png", &filename[len-4]) == 0)
 		return PA_FORMAT_PNG;
-	
+
 	if (_strcmpi(".jpg", &filename[len-4]) == 0 || _strcmpi(".jpeg", &filename[len-4]) == 0)
 		return PA_FORMAT_JPEG;
 
 	if (_strcmpi(".ico", &filename[len-4]) == 0)
 		return PA_FORMAT_ICON;
-	
+
 	if (_strcmpi(".bmp", &filename[len-4]) == 0 || _strcmpi(".rle", &filename[len-4]) == 0)
 		return PA_FORMAT_BMP;
-	
+
 	if (_strcmpi(".gif", &filename[len-4]) == 0)
 		return PA_FORMAT_GIF;
-	
+
 	if (_strcmpi(".swf", &filename[len-4]) == 0)
 		return PA_FORMAT_SWF;
 
@@ -2007,9 +2007,9 @@ static int DestroyServicesAndEvents()
 	DestroyServiceFunction(hSvc_MS_AV_REPORTMYAVATARCHANGED);
 	DestroyServiceFunction(hSvc_MS_AV_LOADBITMAP32);
 	DestroyServiceFunction(hSvc_MS_AV_SAVEBITMAP);
-#if defined(_UNICODE)    
+#if defined(_UNICODE)
 	DestroyServiceFunction(hSvc_MS_AV_SAVEBITMAPW);
-#endif    
+#endif
 	DestroyServiceFunction(hSvc_MS_AV_CANSAVEBITMAP);
 	DestroyServiceFunction(hSvc_MS_AV_RESIZEBITMAP);
 
@@ -2048,7 +2048,7 @@ static int OnAccChanged(WPARAM wParam, LPARAM lParam)
 	case PRAC_ADDED:
 		LoadAccountInfo( pa );
 		break;
-		
+
 	case PRAC_REMOVED:
 		{
 			int idx;
@@ -2407,7 +2407,7 @@ INT_PTR DrawAvatarPicture(WPARAM wParam, LPARAM lParam)
 		InternalDrawAvatar(r, ace->hbmPic, ace->bmWidth, ace->bmHeight, ace->dwFlags);
 		return 1;
 	}
-    
+
 	return 0;
 }
 
@@ -2473,9 +2473,9 @@ static int LoadAvatarModule()
 	hSvc_MS_AV_REPORTMYAVATARCHANGED = CreateServiceFunction(MS_AV_REPORTMYAVATARCHANGED, ReportMyAvatarChanged);
 	hSvc_MS_AV_LOADBITMAP32 = CreateServiceFunction(MS_AV_LOADBITMAP32, BmpFilterLoadBitmap32);
 	hSvc_MS_AV_SAVEBITMAP = CreateServiceFunction(MS_AV_SAVEBITMAP, BmpFilterSaveBitmap);
-#if defined(_UNICODE)    
+#if defined(_UNICODE)
 	hSvc_MS_AV_SAVEBITMAPW = CreateServiceFunction(MS_AV_SAVEBITMAPW, BmpFilterSaveBitmapW);
-#endif    
+#endif
 	hSvc_MS_AV_CANSAVEBITMAP = CreateServiceFunction(MS_AV_CANSAVEBITMAP, BmpFilterCanSaveBitmap);
 	hSvc_MS_AV_RESIZEBITMAP = CreateServiceFunction(MS_AV_RESIZEBITMAP, BmpFilterResizeBitmap);
 
@@ -2496,7 +2496,7 @@ static int LoadAvatarModule()
 	mir_free(tmpPath);
 	g_szDataPath[MAX_PATH - 1] = 0;
 	_strlwr(g_szDataPath);
-    
+
 #if defined(_UNICODE)
 	TCHAR* tmpPathT = Utils_ReplaceVarsT( _T("%miranda_userdata%"));
 	lstrcpyn(g_wszDataPath, tmpPathT, SIZEOF(g_wszDataPath)-1);
@@ -2535,7 +2535,7 @@ extern "C" int __declspec(dllexport) Load(PLUGINLINK * link)
 		result = CallService(MS_IMG_GETINTERFACE, FI_IF_VERSION, (LPARAM)&fei);
 
 	if(fei == NULL || result != S_OK) {
-		MessageBox(0, _T("Fatal error, image services not found. Avatar services will be disabled."), _T("Avatar Service"), MB_OK);
+		MessageBox(0, TranslateT("Fatal error, image services not found. Avatar services will be disabled."), TranslateT("Avatar Service"), MB_OK);
 		return 1;
 	}
 	LoadACC();
