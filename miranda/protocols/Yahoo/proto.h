@@ -236,9 +236,8 @@ struct CYahooProto : public PROTO_INTERFACE
 	DWORD  GetDword( HANDLE hContact, const char* valueName, DWORD parDefltValue );
 	DWORD  SetDword( HANDLE hContact, const char* valueName, DWORD parValue );
 
-
 	WORD   GetWord( HANDLE hContact, const char* valueName, int parDefltValue );
-	WORD  SetWord( HANDLE hContact, const char* valueName, int parValue );
+	WORD   SetWord( HANDLE hContact, const char* valueName, int parValue );
 
 	DWORD  Set_Protocol( HANDLE hContact, int protocol );
 
@@ -314,10 +313,9 @@ private:
 	HGENMENU hShowProfileMenuItem;
 	HGENMENU menuItemsAll[ 7 ];
 
-    HANDLE		hYahooAvatarsFolder;
-    bool		InitCstFldRan;
-	void        InitCustomFolders(void);
-
+	HANDLE hYahooAvatarsFolder;
+	bool   InitCstFldRan;
+	void   InitCustomFolders(void);
 
 	void   YCreateService( const char* szService, YServiceFunc serviceProc );
 	void   YCreateServiceParam( const char* szService, YServiceFuncParam serviceProc, LPARAM lParam );
