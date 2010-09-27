@@ -2111,7 +2111,7 @@ bool CIrcProto::OnIrc_USERHOST_REPLY( const CIrcMessage* pmsg )
 			int j;
 
 			// Status-check pre-processing: Setup check-list
-			OBJLIST<CMString> checklist( 10, NULL );
+			OBJLIST<CMString> checklist( 10 );
 			if ( command[0] == 'S' ) {
 				j = 0;
 				sTemp = GetWord(command.c_str(), 0);

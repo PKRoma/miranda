@@ -525,9 +525,9 @@ void cli_SaveStateAndRebuildList(HWND hwnd, struct ClcData *dat)
 
 	NMCLISTCONTROL nm;
 	int i, j;
-	OBJLIST<SavedGroupState_t> savedGroup( 4, NULL );
-	OBJLIST<SavedContactState_t> savedContact( 4, NULL );
-	OBJLIST<SavedInfoState_t> savedInfo( 4, NULL );
+	OBJLIST<SavedGroupState_t> savedGroup( 4 );
+	OBJLIST<SavedContactState_t> savedContact( 4 );
+	OBJLIST<SavedInfoState_t> savedInfo( 4 );
 
 	struct ClcGroup *group;
 	struct ClcContact *contact;

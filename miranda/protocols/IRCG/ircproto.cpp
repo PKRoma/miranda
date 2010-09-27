@@ -32,9 +32,9 @@ static int CompareSessions( const CDccSession* p1, const CDccSession* p2 )
 CIrcProto::CIrcProto( const char* szModuleName, const TCHAR* tszUserName ) :
 	m_dcc_chats( 10, CompareSessions ),
 	m_dcc_xfers( 10, CompareSessions ),
-	m_ignoreItems( 10, NULL ),
-	vUserhostReasons( 10, NULL ),
-	vWhoInProgress( 10, NULL )
+	m_ignoreItems( 10 ),
+	vUserhostReasons( 10 ),
+	vWhoInProgress( 10 )
 {
 	m_iVersion = 2;
 	m_tszUserName = mir_tstrdup( tszUserName );
@@ -308,7 +308,7 @@ int CIrcProto::OnModulesLoaded( WPARAM, LPARAM )
 	}
 
 	if ( !getByte( "PerformConversionDone", 0 )) {
-		OBJLIST<String> performToConvert( 10, NULL );
+		OBJLIST<String> performToConvert( 10 );
 		DBCONTACTENUMSETTINGS dbces;
 		dbces.pfnEnumProc = sttCheckPerform;
 		dbces.lParam = ( LPARAM )&performToConvert;
