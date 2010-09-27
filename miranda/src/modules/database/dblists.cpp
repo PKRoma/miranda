@@ -59,37 +59,68 @@ void* List_Find( SortedList* p_list, void* p_value )
 	return(p_list->items[ index ]);
 }
 
+#ifdef _DEBUG
+#pragma optimize( "gt", on )
+#endif
+
 int List_GetIndex( SortedList* p_list, void* p_value, int* p_index )
 {
-	if ( p_value == NULL )
+	if (p_value == NULL)
 	{
 		*p_index = -1;
-		return -1;
+		return 0;
 	}
+	if (p_list->sortFunc == NULL)
+		return 0;
 
-	if ( p_list->sortFunc != NULL )
+	if (p_list->sortFunc == NumericKeySort)
 	{
+		const unsigned val = *(unsigned*)p_value;
 		int low  = 0;
-		int high = p_list->realCount-1;
+		int high = p_list->realCount - 1;
 
-		while( low <= high )
+		while (low <= high)
 		{  
-			int i = ( low+high )/2;
-			int result = p_list->sortFunc( p_list->items[ i ], p_value );
-			if ( result == 0 )
-			{	*p_index = i;
+			int i = (low + high) / 2;
+			unsigned vali = *(unsigned*)p_list->items[i];
+			if (vali == val)
+			{	
+				*p_index = i;
 				return 1;
 			}
 
-			if ( result < 0 )
-				low = i+1;
+			if (vali < val)
+				low = i + 1;
 			else
-				high = i-1;
+				high = i - 1;
 		}
 
 		*p_index = low;
 	}
-   return 0;
+	else
+	{
+		int low  = 0;
+		int high = p_list->realCount - 1;
+
+		while (low <= high)
+		{  
+			int i = (low + high) / 2;
+			int result = p_list->sortFunc(p_list->items[i], p_value);
+			if (result == 0)
+			{	
+				*p_index = i;
+				return 1;
+			}
+
+			if (result < 0)
+				low = i + 1;
+			else
+				high = i - 1;
+		}
+
+		*p_index = low;
+	}
+	return 0;
 }
 
 int List_IndexOf( SortedList* p_list, void* p_value )
@@ -104,6 +135,10 @@ int List_IndexOf( SortedList* p_list, void* p_value )
 
 	return -1;
 }
+
+#ifdef _DEBUG
+#pragma optimize( "", on )
+#endif
 
 int List_Insert( SortedList* p_list, void* p_value, int p_index) 
 {

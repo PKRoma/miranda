@@ -69,15 +69,13 @@ typedef struct _REG_TZI_FORMAT
 
 struct MIM_TIMEZONE
 {
+	unsigned hash;
+	int offset;
+
 	TCHAR	tszName[MIM_TZ_NAMELEN];			// windows name for the time zone
 	wchar_t	szDisplay[MIM_TZ_DISPLAYLEN];		// more descriptive display name (that's what usually appears in dialogs)
 												// every hour should be sufficient.
 	TIME_ZONE_INFORMATION tzi;
-	unsigned hash;
-	int offset;
-
-	static int compareHash(const MIM_TIMEZONE* p1, const MIM_TIMEZONE* p2)
-	{ if (p1->hash == p2->hash) return 0; return p1->hash > p2->hash ? 1 : -1; }
 
 	static int compareBias(const MIM_TIMEZONE* p1, const MIM_TIMEZONE* p2)
 	{ return p2->tzi.Bias - p1->tzi.Bias; }
@@ -93,7 +91,7 @@ typedef struct
 static TZ_INT_INFO myInfo;
 bool muiInstalled;
 
-static OBJLIST<MIM_TIMEZONE>  g_timezones(55, MIM_TIMEZONE::compareHash);
+static OBJLIST<MIM_TIMEZONE>  g_timezones(55, NumericKeySortT);
 static LIST<MIM_TIMEZONE>     g_timezonesBias(55, MIM_TIMEZONE::compareBias);
 
 void FormatTime (const SYSTEMTIME *st, const TCHAR *szFormat, TCHAR *szDest, int cbDest);

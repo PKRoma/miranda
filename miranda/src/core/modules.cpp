@@ -59,15 +59,7 @@ struct TService
 	char name[1];
 };
 
-static int compareServices( const TService* p1, const TService* p2 )
-{
-	if ( p1->nameHash == p2->nameHash )
-		return 0;
-
-	return ( p1->nameHash > p2->nameHash ) ? 1 : -1;
-}
-
-static LIST<TService> services( 100, compareServices );
+LIST<TService> services( 100, NumericKeySortT );
 
 typedef struct
 {

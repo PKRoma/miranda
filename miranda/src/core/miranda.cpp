@@ -126,12 +126,7 @@ typedef struct
 }
  THREAD_WAIT_ENTRY;
 
-static int compareThreads( const THREAD_WAIT_ENTRY* p1, const THREAD_WAIT_ENTRY* p2 )
-{
-	return ( int )p1->dwThreadId - ( int )p2->dwThreadId;
-}
-
-static LIST<THREAD_WAIT_ENTRY> threads( 10, compareThreads );
+static LIST<THREAD_WAIT_ENTRY> threads( 10, NumericKeySortT );
 
 struct FORK_ARG {
 	HANDLE hEvent;
