@@ -77,7 +77,7 @@ struct MIM_TIMEZONE
 	int offset;
 
 	static int compareHash(const MIM_TIMEZONE* p1, const MIM_TIMEZONE* p2)
-	{ return p1->hash - p2->hash; }
+	{ if (p1->hash == p2->hash) return 0; return p1->hash > p2->hash ? 1 : -1; }
 
 	static int compareBias(const MIM_TIMEZONE* p1, const MIM_TIMEZONE* p2)
 	{ return p2->tzi.Bias - p1->tzi.Bias; }
