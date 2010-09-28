@@ -256,7 +256,7 @@ void API::onInit()
 
 	pfnAlphaBlend = (pfnAlphaBlend_t) GetProcAddress(GetModuleHandleA("gdi32"), "GdiAlphaBlend");
 	if (0 == pfnAlphaBlend)
-		pfnAlphaBlend = (pfnAlphaBlend_t)GetProcAddress(GetModuleHandleA("msimg32"), "AlphaBlend");
+		pfnAlphaBlend = (pfnAlphaBlend_t)GetProcAddress(LoadLibraryA("msimg32"), "AlphaBlend");
 
 	pfnGradientFill = (PGF) GetProcAddress(GetModuleHandleA("gdi32"), "GdiGradientFill");
 	if (0 == pfnGradientFill)
