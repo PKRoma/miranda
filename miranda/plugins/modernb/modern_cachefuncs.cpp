@@ -58,14 +58,15 @@ void CListSettings_FreeCacheItemDataOption( pdisplayNameCacheEntry pDst, DWORD f
 */
 void Cache_GetTimezone(struct ClcData *dat, HANDLE hContact)
 {
-    PDNCE pdnce=(PDNCE)pcli->pfnGetCacheEntry(hContact);
-    if (dat==NULL && pcli->hwndContactTree) 
-        dat=(struct ClcData *)GetWindowLongPtr(pcli->hwndContactTree,0);
+	PDNCE pdnce = (PDNCE)pcli->pfnGetCacheEntry(hContact);
+	if (dat == NULL && pcli->hwndContactTree) 
+		dat = (struct ClcData *)GetWindowLongPtr(pcli->hwndContactTree,0);
 
-	DWORD flags = 0;
-	if (dat && dat->contact_time_show_only_if_different) flags |= TZF_DIFONLY;
-
-	pdnce->hTimeZone = tmi.createByContact ? tmi.createByContact(hContact, flags) : 0;
+	if (dat && dat->hWnd == pcli->hwndContactTree)
+	{
+		DWORD flags = dat->contact_time_show_only_if_different ? TZF_DIFONLY : 0;
+		pdnce->hTimeZone = tmi.createByContact ? tmi.createByContact(hContact, flags) : 0;
+	}
 }
 
 /*
