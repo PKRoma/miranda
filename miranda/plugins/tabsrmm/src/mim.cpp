@@ -476,7 +476,7 @@ void CMimAPI::InitAPI()
 
 	m_MyAlphaBlend = (PAB) GetProcAddress(GetModuleHandleA("gdi32"), "GdiAlphaBlend");
 	if (m_MyAlphaBlend == 0)
-		m_MyAlphaBlend = (PAB) GetProcAddress(GetModuleHandleA("msimg32"), "AlphaBlend");
+		m_MyAlphaBlend = (PAB) GetProcAddress(LoadLibraryA("msimg32.dll"), "AlphaBlend");
 
 	m_MyGradientFill = (PGF) GetProcAddress(GetModuleHandleA("gdi32"), "GdiGradientFill");
 	if (m_MyGradientFill == 0)

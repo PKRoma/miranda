@@ -253,7 +253,7 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 
 	MyGradientFill = (PGF) GetProcAddress(GetModuleHandleA("gdi32"), "GdiGradientFill");
 	if (MyGradientFill == 0)
-		MyGradientFill = (PGF) GetProcAddress(GetModuleHandleA("msimg32"), "GradientFill");
+		MyGradientFill = (PGF) GetProcAddress(LoadLibraryA("msimg32.dll"), "GradientFill");
 
 	MyAlphaBlend = (PAB) GetProcAddress(GetModuleHandleA("gdi32"), "GdiAlphaBlend");
 	if (MyAlphaBlend == 0)

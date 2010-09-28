@@ -2488,7 +2488,7 @@ static int LoadAvatarModule()
 	HMODULE hDll;
 	if (hDll = GetModuleHandleA("gdi32"))
 		AvsAlphaBlend = (BOOL (WINAPI *)(HDC, int, int, int, int, HDC, int, int, int, int, BLENDFUNCTION)) GetProcAddress(hDll, "GdiAlphaBlend");
-	if (AvsAlphaBlend == NULL && (hDll = LoadLibraryA("msimg32")))
+	if (AvsAlphaBlend == NULL && (hDll = LoadLibraryA("msimg32.dll")))
 		AvsAlphaBlend = (BOOL (WINAPI *)(HDC, int, int, int, int, HDC, int, int, int, int, BLENDFUNCTION)) GetProcAddress(hDll, "AlphaBlend");
 
 	char* tmpPath = Utils_ReplaceVars("%miranda_userdata%");
