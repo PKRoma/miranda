@@ -2452,7 +2452,7 @@ void TSAPI SendHBitmapAsFile(const TWindowData* dat, HBITMAP hbmp)
 	if(!(protoCaps & PF1_FILESEND))
 		fSend = false;
 
-	if(ID_STATUS_OFFLINE == wMyStatus || ID_STATUS_OFFLINE == dat->cache->getActiveStatus())
+	if((ID_STATUS_OFFLINE == wMyStatus) || (ID_STATUS_OFFLINE == dat->cache->getActiveStatus() && !(typeCaps & PF4_OFFLINEFILES)))
 		fSend = false;
 
 	if (protoCaps & PF1_VISLIST && DBGetContactSettingWord(dat->cache->getActiveContact(), szProto, "ApparentMode", 0) == ID_STATUS_OFFLINE)
@@ -2462,7 +2462,7 @@ void TSAPI SendHBitmapAsFile(const TWindowData* dat, HBITMAP hbmp)
 		fSend = false;
 
 	if(!fSend) {
-		CWarning::show(CWarning::WARN_SENDFILE, MB_OK|MB_ICONEXCLAMATION);
+		CWarning::show(CWarning::WARN_SENDFILE, MB_OK|MB_ICONEXCLAMATION|CWarning::CWF_NOALLOWHIDE);
 		return;
 	}
 	if (tempdirlen <=0 || tempdirlen >= MAX_PATH-_tcslen(mirandatempdir)-_tcslen(filenametemplate)-2) // -2 is because %Y takes 4 symbols
@@ -2521,7 +2521,7 @@ void TSAPI SendHBitmapAsFile(const TWindowData* dat, HBITMAP hbmp)
 	wchar_t* _t = mir_tstrdup(filename);
 	vTempFilenames.push_back(_t);
 
-	CallService(MS_FILE_SENDSPECIFICFILEST, (WPARAM)dat->hContact, (LPARAM)ppFiles);
+	CallService(MS_FILE_SENDSPECIFICFILEST, (WPARAM)dat->cache->getActiveContact(), (LPARAM)ppFiles);
 
 	mir_free(ppFiles[0]);
 	mir_free(ppFiles);
