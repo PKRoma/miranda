@@ -584,30 +584,21 @@ void KillObjectEventHooks( void* pObject )
 
 /////////////////////SERVICES
 
-static __inline TService* FindServiceByHash(DWORD hash)
-{
-	int idx;
-	if (( idx = services.getIndex(( TService* )&hash )) != -1 )
-		return services[idx];
-	return NULL;
-}
-
 static __inline TService* FindServiceByName( const char *name )
 {
-	return FindServiceByHash( hashstr( name ));
+	unsigned hash = hashstr( name );
+	return services.find(( TService* )&hash );
 }
 
 static HANDLE CreateServiceInt( int type, const char *name, MIRANDASERVICE serviceProc, void* object, LPARAM lParam)
 {
-	#ifdef _DEBUG
-		if ( name == NULL ) {
-			MessageBoxA(0,"Someone tried to create a NULL'd service, see call stack for more info","",0);
-			DebugBreak();
-			return NULL;
-		}
-	#else
-		if ( name == NULL ) return NULL;
-	#endif
+	if ( name == NULL ) {
+#ifdef _DEBUG
+		MessageBoxA(0,"Someone tried to create a NULL'd service, see call stack for more info","",0);
+		DebugBreak();
+#endif
+		return NULL;
+	}
 
 	TService tmp;
 	tmp.nameHash = hashstr( name );
