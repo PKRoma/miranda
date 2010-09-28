@@ -1039,12 +1039,18 @@ LBL_InvalidCommand:
 		case ' SNA':    //********* ANS: section 8.4 Getting Invited to a Switchboard Session
 			if (strcmp(params, "OK") == 0) 
 			{
-				info->sendCaps();
 				if (info->mJoinedCount == 1) 
 				{
 					MsgQueueEntry E;
 					bool typing = false;
 					HANDLE hContact = info->mJoinedContacts[0];
+
+					char szEmail[MSN_MAX_EMAIL_LEN] = "";
+					getStaticString(hContact, "e-mail", szEmail, sizeof(szEmail));
+					int netId = Lists_GetNetId(szEmail);
+
+					if (netId == NETID_MSN)
+						info->sendCaps();
 
 					for (int i=3; --i;)
 					{
@@ -1055,7 +1061,7 @@ LBL_InvalidCommand:
 								typing = E.flags != 0;
 							else if (E.msgSize == 0) 
 							{
-								info->sendMessage(E.msgType, NULL, 1, E.message, E.flags);
+								info->sendMessage(E.msgType, NULL, netId, E.message, E.flags);
 								SendBroadcast(hContact, ACKTYPE_MESSAGE, ACKRESULT_SUCCESS, (HANDLE)E.seq, 0);
 							}
 							else 
@@ -1078,6 +1084,7 @@ LBL_InvalidCommand:
 				}
 				else 
 				{
+					info->sendCaps();
 					if (info->mInitialContact != NULL && MsgQueue_CheckContact(info->mInitialContact))
 						msnNsThread->sendPacket("XFR", "SB");
 					info->mInitialContact = NULL;
@@ -1368,7 +1375,12 @@ LBL_InvalidCommand:
 
 			if (info->contactJoined(hContact) == 1) 
 			{
-				info->sendCaps();
+				char szEmail[MSN_MAX_EMAIL_LEN] = "";
+				getStaticString(hContact, "e-mail", szEmail, sizeof(szEmail));
+				int netId = Lists_GetNetId(szEmail);
+
+				if (netId == NETID_MSN)
+					info->sendCaps();
 
 				bool typing = false;
 
@@ -1382,7 +1394,7 @@ LBL_InvalidCommand:
 							typing = E.flags != 0;
 						else if (E.msgSize == 0) 
 						{
-							info->sendMessage(E.msgType, NULL, 1, E.message, E.flags);
+							info->sendMessage(E.msgType, NULL, netId, E.message, E.flags);
 							SendBroadcast(hContact, ACKTYPE_MESSAGE, ACKRESULT_SUCCESS, (HANDLE)E.seq, 0);
 						}
 						else info->sendRawMessage(E.msgType, E.message, E.msgSize);
