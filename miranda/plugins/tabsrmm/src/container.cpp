@@ -1311,7 +1311,7 @@ buttons_done:
 				 * protect against invalid values...
 				 */
 				if(mmi->ptMinTrackSize.y < 50 || mmi->ptMinTrackSize.y > rcDesktop.bottom)
-					mmi->ptMinTrackSize.y = 300;
+					mmi->ptMinTrackSize.y = 130;
 
 				if (PluginConfig.m_MathModAvail) {
 					if (CallService(MTH_GET_PREVIEW_SHOWN, 0, 0)) {
