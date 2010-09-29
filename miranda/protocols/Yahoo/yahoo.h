@@ -57,6 +57,7 @@ extern "C"
 #include <m_protosvc.h>
 #include <m_protoint.h>
 #include <m_langpack.h>
+#include <win2k.h>
 
 //=======================================================
 //	Definitions
