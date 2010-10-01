@@ -132,10 +132,9 @@ extern "C" int __declspec(dllexport)Load(PLUGINLINK *link)
 
 	NETLIBUSER nlu = {0};
 	nlu.cbSize = sizeof(nlu);
-  	nlu.flags = NUF_OUTGOING | NUF_HTTPCONNS;
+  	nlu.flags = NUF_TCHAR | NUF_OUTGOING | NUF_HTTPCONNS;
 	nlu.szSettingsModule = "YAHOO/libyahoo2";
-	nlu.szDescriptiveName = "YAHOO plugin HTTP connections";
-	
+	nlu.ptszDescriptiveName = TranslateT("YAHOO plugin HTTP connections");
 	g_hNetlibUser = ( HANDLE )YAHOO_CallService( MS_NETLIB_REGISTERUSER, 0, ( LPARAM )&nlu );
 
 	/**
