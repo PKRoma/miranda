@@ -3442,6 +3442,13 @@ quote_from_last:
 				ChangeClientIconInStatusBar(dat);
 			return 0;
 		}
+		case DM_UPDATEUIN:
+			if(dat->Panel->isActive())
+				dat->Panel->Invalidate();
+			if(dat->pContainer->dwFlags & CNT_UINSTATUSBAR)
+				UpdateStatusBar(dat);
+			return(0);
+
 		case DM_REMOVEPOPUPS:
 			DeletePopupsForContact(dat->hContact, (DWORD)wParam);
 			return 0;

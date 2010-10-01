@@ -192,11 +192,12 @@ void CContactCache::updateMeta(bool fForce)
  * obtain the UIN. This is only maintained for open message windows
  * it also run when the subcontact for a MC changes.
  */
-void CContactCache::updateUIN()
+bool CContactCache::updateUIN()
 {
+	bool		fChanged = false;
+
 	if(m_Valid) {
-		CONTACTINFO ci;
-		ZeroMemory((void *)&ci, sizeof(ci));
+		CONTACTINFO ci = {0};
 
 		ci.hContact = getActiveContact();
 		ci.szProto = const_cast<char *>(getActiveProto());
@@ -218,9 +219,12 @@ void CContactCache::updateUIN()
 			}
 		} else
 			m_szUIN[0] = 0;
+
 	}
 	else
 		m_szUIN[0] = 0;
+
+	return(fChanged);
 }
 
 void CContactCache::updateStats(int iType, size_t value)

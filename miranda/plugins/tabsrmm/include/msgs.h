@@ -601,6 +601,7 @@ struct TNewWindowData {
 #define DM_SC_INITDIALOG     (WM_USER+101)
 #define DM_SC_CONFIG		 (WM_USER+104)
 #define DM_SCROLLIEVIEW		 (WM_USER+102)
+#define DM_UPDATEUIN		 (WM_USER+103)
 
 #define MINSPLITTERY         42
 #define MINLOGHEIGHT         30

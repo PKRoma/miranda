@@ -1234,7 +1234,7 @@ LRESULT TSAPI DM_UpdateLastMessage(const TWindowData *dat)
 				tmi.printTimeStamp(NULL, dat->lastMessage, _T("t"), time, safe_sizeof(time), 0); 
 			}
 			if (dat->pContainer->dwFlags & CNT_UINSTATUSBAR) {
-				TCHAR fmt[100];
+				TCHAR 		fmt[100];
 				mir_sntprintf(fmt, safe_sizeof(fmt), _T("UID: %s"), dat->cache->getUIN());
 				SendMessage(dat->pContainer->hwndStatus, SB_SETTEXT, 0, (LPARAM)fmt);
 			} else {

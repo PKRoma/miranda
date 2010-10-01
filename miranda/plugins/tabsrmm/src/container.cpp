@@ -1260,7 +1260,6 @@ buttons_done:
 
 			mmi->ptMinTrackSize.x = 275;
 			mmi->ptMinTrackSize.y = 130;
-
 			GetClientRect(GetDlgItem(hwndDlg, IDC_MSGTABS), &rc);
 			if(pContainer->hwndActive)								// at container creation time, there is no hwndActive yet..
 				GetClientRect(pContainer->hwndActive, &rcClient);
@@ -1311,7 +1310,7 @@ buttons_done:
 				 * protect against invalid values...
 				 */
 				if(mmi->ptMinTrackSize.y < 50 || mmi->ptMinTrackSize.y > rcDesktop.bottom)
-					mmi->ptMinTrackSize.y = 300;
+					mmi->ptMinTrackSize.y = 130;
 
 				if (PluginConfig.m_MathModAvail) {
 					if (CallService(MTH_GET_PREVIEW_SHOWN, 0, 0)) {

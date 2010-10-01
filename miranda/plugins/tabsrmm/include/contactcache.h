@@ -112,7 +112,7 @@ public:
 	bool					updateStatus			();
 	bool					updateNick				();
 	void					updateMeta				(bool fForce = false);
-	void					updateUIN				();
+	bool					updateUIN				();
 	void					updateStatusMsg			(const char *szKey = 0);
 	void					setWindowData			(const HWND hwnd = 0, TWindowData *dat = 0);
 	void					resetMeta				();
