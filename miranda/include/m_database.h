@@ -132,8 +132,10 @@ Returns 0 on success or nonzero otherwise
 #define MS_DB_GETPROFILENAMEW "DB/GetProfileNameW"
 
 /* DB/Contact/GetProfilePath service
-Gets the path of the profile currently being used by the database module. This
-path does not include the last '\'.
+Get the path of the base folder where Miranda will store all individual profiles
+The returned path does NOT include a trailing backslash.
+Essentially this is what has been set in mirandaboot.ini as ProfileDir.
+For more options to retrieve profile paths check MS_UTILS_REPLACEVARS
   wParam=(WPARAM)(UINT)cbName
   lParam=(LPARAM)(char*)pszName
 pszName is a pointer to the buffer that receives the path of the profile
@@ -554,7 +556,7 @@ Caller must free the result using mir_free
 #define MS_DB_EVENT_GETSTRINGT "DB/Event/GetStringT"
 
 __inline static TCHAR* DbGetEventStringT( DBEVENTINFO* dbei, const char* str )
-{  
+{
    return (TCHAR*)CallService( MS_DB_EVENT_GETSTRINGT, (WPARAM)dbei, (LPARAM)str );
 }
 
