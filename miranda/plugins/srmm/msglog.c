@@ -63,17 +63,21 @@ static void AppendToBuffer(char **buffer, int *cbBufferEnd, int *cbBufferAlloced
 	*cbBufferEnd += charsDone;
 }
 
+static const TCHAR *bbcodes[] = { _T("[b]"), _T("[i]"), _T("[u]"), _T("[s]"), _T("[/b]"), _T("[/i]"), _T("[/u]"), _T("[/s]") };
+static const char *bbcodefmt[] = { "\\b ", "\\i ", "\\ul ", "\\strike ", "\\b0 ", "\\i0 ", "\\ul0 ", "\\strike0 " };
+
 static int AppendToBufferWithRTF(char **buffer, int *cbBufferEnd, int *cbBufferAlloced, TCHAR* line)
 {
 	DWORD textCharsCount = 0;
 	char *d;
 	int lineLen;
 
-	if ( line == NULL )
+	if (line == NULL)
 		return 0;
 
 	lineLen = (int)_tcslen(line) * 9 + 8;
-	if (*cbBufferEnd + lineLen > *cbBufferAlloced) {
+	if (*cbBufferEnd + lineLen > *cbBufferAlloced) 
+	{
 		cbBufferAlloced[0] += (lineLen + 1024 - lineLen % 1024);
 		*buffer = (char *) mir_realloc(*buffer, *cbBufferAlloced);
 	}
@@ -82,38 +86,101 @@ static int AppendToBufferWithRTF(char **buffer, int *cbBufferEnd, int *cbBufferA
 	strcpy(d, "{\\uc1 ");
 	d += 6;
 
-	for (; *line; line++, textCharsCount++) {
-		if (*line == '\r' && line[1] == '\n') {
-			CopyMemory(d, "\\par ", 5);
+	for (; *line; line++, textCharsCount++) 
+	{
+		if (*line == '\r' && line[1] == '\n') 
+		{
+			memcpy(d, "\\par ", 5);
 			line++;
 			d += 5;
 		}
 		else if (*line == '\n') {
-			CopyMemory(d, "\\par ", 5);
+			memcpy(d, "\\par ", 5);
 			d += 5;
 		}
-		else if (*line == '\t') {
-			CopyMemory(d, "\\tab ", 5);
+		else if (*line == '\t') 
+		{
+			memcpy(d, "\\tab ", 5);
 			d += 5;
 		}
-		else if (*line == '\\' || *line == '{' || *line == '}') {
+		else if (*line == '\\' || *line == '{' || *line == '}') 
+		{
 			*d++ = '\\';
 			*d++ = (char) *line;
 		}
-		else if (*line < 128) {
-			*d++ = (char) *line;
+		else if (*line == '[' && (g_dat->flags & SMF_SHOWFORMAT))
+		{
+			int i, found = 0;
+			for (i = 0; i < SIZEOF(bbcodes); ++i)
+			{
+				if (line[1] == bbcodes[i][1])
+				{
+					size_t lenb = _tcslen(bbcodes[i]);
+					if (!_tcsnicmp(line, bbcodes[i], lenb))
+					{
+						size_t len = strlen(bbcodefmt[i]);
+						memcpy(d, bbcodefmt[i], len);
+						d += len;
+						line += lenb - 1;
+						found = 1;
+						break;
+					}
+				}
+			}
+			if (!found)
+			{
+				if (!_tcsnicmp(line, _T("[url"), 4))
+				{
+					TCHAR* tag = _tcschr(line + 4, ']');
+					if (tag)
+					{
+						TCHAR *tagu = (line[4] == '=') ? line + 5 : tag + 1;
+						TCHAR *tage = _tcsstr(tag, _T("[/url]"));
+						if (!tage) tage = _tcsstr(tag, _T("[/URL]"));
+						if (tage)
+						{
+							*tag = 0;
+							*tage = 0;
+							d += sprintf(d, "{\\field{\\*\\fldinst HYPERLINK \"%s\"}{\\fldrslt %s}}", mir_t2a(tagu), mir_t2a(tag + 1));
+//							d += sprintf(d, "{\\field{\\*\\fldinst HYPERLINK \"%s\"}{\\fldrslt \\ul\\cf%d %s}}", mir_t2a(tagu), msgDlgFontCount, mir_t2a(tag + 1));
+							line = tage + 5;
+							found = 1;
+						}
+					}
+				}
+				else if (!_tcsnicmp(line, _T("[color="), 7))
+				{
+					TCHAR* tag = _tcschr(line + 7, ']');
+					if (tag)
+					{
+						line = tag;
+						found = 1;
+					}
+				}
+				else if (!_tcsnicmp(line, _T("[/color]"), 8))
+				{
+					line += 7;
+					found = 1;
+				}
+			}
+			if (!found)
+			{
+				if (*line < 128)  *d++ = (char) *line;
+				else d += sprintf(d, "\\u%d ?", *line);
+			}
 		}
+		else if (*line < 128) *d++ = (char) *line;
 		else d += sprintf(d, "\\u%d ?", *line);
 	}
 
-	strcpy(d, "}");
-	d++;
+	*(d++) = '}';
+	*d = 0;
 
 	*cbBufferEnd = (int) (d - *buffer);
 	return textCharsCount;
 }
 
-#if defined( _UNICODE )
+#ifdef _UNICODE
 	#define FONT_FORMAT "{\\f%u\\fnil\\fcharset%u %S;}"
 #else
 	#define FONT_FORMAT "{\\f%u\\fnil\\fcharset%u %s;}"
@@ -297,20 +364,15 @@ static char *CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE hContact
 	}
 	if (!(g_dat->flags&SMF_HIDENAMES) && dbei.eventType != EVENTTYPE_STATUSCHANGE && dbei.eventType != EVENTTYPE_JABBER_CHATSTATES && dbei.eventType != EVENTTYPE_JABBER_PRESENCE) {
 		TCHAR* szName;
-		CONTACTINFO ci;
-		ZeroMemory(&ci, sizeof(ci));
+		CONTACTINFO ci = {0};
 
 		if (dbei.flags & DBEF_SENT) {
 			ci.cbSize = sizeof(ci);
-			ci.hContact = NULL;
 			ci.szProto = dbei.szModule;
-			ci.dwFlag = CNF_DISPLAY;
-			#if defined( _UNICODE )
-				ci.dwFlag += CNF_UNICODE;
-			#endif
+			ci.dwFlag = CNF_DISPLAY | CNF_TCHAR;
 			if (!CallService(MS_CONTACT_GETCONTACTINFO, 0, (LPARAM) & ci)) {
 				// CNF_DISPLAY always returns a string type
-				szName = ( TCHAR* )ci.pszVal;
+				szName = ci.pszVal;
 			}
 		}
 		else szName = ( TCHAR* ) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM) hContact, GCDNF_TCHAR);
@@ -341,20 +403,17 @@ static char *CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE hContact
 		case EVENTTYPE_STATUSCHANGE:
 		{
 			TCHAR *msg, *szName;
-			CONTACTINFO ci;
-			ZeroMemory(&ci, sizeof(ci));
+			CONTACTINFO ci = {0};
 
 			if (dbei.flags & DBEF_SENT) {
 				ci.cbSize = sizeof(ci);
 				ci.hContact = NULL;
 				ci.szProto = dbei.szModule;
-				ci.dwFlag = CNF_DISPLAY;
-				#if defined( _UNICODE )
-					ci.dwFlag += CNF_UNICODE;
-				#endif
+				ci.dwFlag = CNF_DISPLAY | CNF_TCHAR;
+
 				if (!CallService(MS_CONTACT_GETCONTACTINFO, 0, (LPARAM) & ci)) {
 					// CNF_DISPLAY always returns a string type
-					szName = ( TCHAR* )ci.pszVal;
+					szName = ci.pszVal;
 				}
 			}
 			else szName = ( TCHAR* )CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM) hContact, GCDNF_TCHAR);
@@ -362,27 +421,13 @@ static char *CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE hContact
 			AppendToBuffer(&buffer, &bufferEnd, &bufferAlloced, " %s ", SetToStyle(MSGFONTID_NOTICE));
 			AppendToBufferWithRTF(&buffer, &bufferEnd, &bufferAlloced, szName);
 			AppendToBufferWithRTF(&buffer, &bufferEnd, &bufferAlloced, _T(" "));
-			if ( bNewDbApi ) {
-				TCHAR* msg = DbGetEventTextT( &dbei, CP_ACP );
-				if ( msg ) {
-					AppendToBufferWithRTF(&buffer, &bufferEnd, &bufferAlloced, msg);
-					mir_free( msg );
-				}
-			}
-			else {
-				#if defined( _UNICODE )
-				{
-					int msglen = MultiByteToWideChar(CP_ACP, 0, (char *)dbei.pBlob, -1, NULL, 0);
-					msg = (TCHAR*)alloca(sizeof(TCHAR) * msglen);
-					MultiByteToWideChar(CP_ACP, 0, (char *) dbei.pBlob, -1, msg, msglen);
-				}
-				#else
-					msg = (BYTE *) dbei.pBlob;
-				#endif
+
+			msg = DbGetEventTextT( &dbei, CP_ACP );
+			if ( msg ) {
 				AppendToBufferWithRTF(&buffer, &bufferEnd, &bufferAlloced, msg);
+				mir_free( msg );
 			}
-			if (ci.pszVal)
-				mir_free(ci.pszVal);
+			mir_free(ci.pszVal);
 			break;
 		}
 		case EVENTTYPE_FILE:
@@ -457,7 +502,7 @@ static DWORD CALLBACK LogStreamInEvents(DWORD_PTR dwCookie, LPBYTE pbBuff, LONG 
 				*pcb = 0;
 				return 0;
 		}
-		dat->bufferLen = lstrlenA(dat->buffer);
+		dat->bufferLen = strlen(dat->buffer);
 	}
 	*pcb = min(cb, dat->bufferLen - dat->bufferOffset);
 	CopyMemory(pbBuff, dat->buffer + dat->bufferOffset, *pcb);
@@ -476,11 +521,12 @@ void StreamInEvents(HWND hwndDlg, HANDLE hDbEventFirst, int count, int fAppend)
 	struct LogStreamData streamData = {0};
 	struct MessageWindowData *dat = (struct MessageWindowData*)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 	CHARRANGE oldSel, sel;
+	POINT scrollPos;
 	BOOL bottomScroll = TRUE;
 
 	HWND hwndLog = GetDlgItem(hwndDlg, IDC_LOG);
 
-	SendMessage(hwndLog, EM_HIDESELECTION, TRUE, 0);
+	SendMessage(hwndLog, WM_SETREDRAW, FALSE, 0);
 	SendMessage(hwndLog, EM_EXGETSEL, 0, (LPARAM) & oldSel);
 	streamData.hContact = dat->hContact;
 	streamData.hDbEvent = hDbEventFirst;
@@ -499,6 +545,8 @@ void StreamInEvents(HWND hwndDlg, HANDLE hDbEventFirst, int count, int fAppend)
 			si.fMask = SIF_PAGE | SIF_RANGE | SIF_POS;
 			GetScrollInfo(hwndLog, SB_VERT, &si);
 			bottomScroll = (si.nPos + (int)si.nPage) >= si.nMax;
+			if (!bottomScroll)
+				SendMessage(hwndLog, EM_GETSCROLLPOS, 0, (LPARAM) & scrollPos);
 		}
 	}
 	if (fAppend) 
@@ -513,7 +561,7 @@ void StreamInEvents(HWND hwndDlg, HANDLE hDbEventFirst, int count, int fAppend)
 	SendMessage(hwndLog, EM_STREAMIN, fAppend ? SFF_SELECTION | SF_RTF : SF_RTF, (LPARAM) & stream);
 	if (bottomScroll)
 	{
-		sel.cpMin = sel.cpMax = GetWindowTextLength(hwndLog);
+		sel.cpMin = sel.cpMax = -1;
 		SendMessage(hwndLog, EM_EXSETSEL, 0, (LPARAM) & sel);
 		if (GetWindowLongPtr(hwndLog, GWL_STYLE) & WS_VSCROLL)
 			PostMessage(hwndDlg, DM_SCROLLLOGTOBOTTOM, 0, 0);
@@ -521,8 +569,12 @@ void StreamInEvents(HWND hwndDlg, HANDLE hDbEventFirst, int count, int fAppend)
 	else
 	{
 		SendMessage(hwndLog, EM_EXSETSEL, 0, (LPARAM) & oldSel);
+		SendMessage(hwndLog, EM_SETSCROLLPOS, 0, (LPARAM) & scrollPos);
 	}
-	SendMessage(hwndLog, EM_HIDESELECTION, FALSE, 0);
+
+	SendMessage(hwndLog, WM_SETREDRAW, TRUE, 0);
+	if (bottomScroll)
+		RedrawWindow(hwndLog, NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW);
 
 	dat->hDbEventLast = streamData.hDbEventLast;
 }

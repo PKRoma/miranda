@@ -105,14 +105,11 @@ static void AddToFileList(TCHAR ***pppFiles,int *totalCount,const TCHAR* szFilen
 		WIN32_FIND_DATA fd;
 		HANDLE hFind;
 		TCHAR szPath[MAX_PATH];
-		lstrcpy(szPath,szFilename);
-		lstrcat(szPath,_T("\\*"));
+		mir_sntprintf(szPath, SIZEOF(szPath), _T("%s\\*"), szFilename);
 		if (( hFind = FindFirstFile( szPath, &fd )) != INVALID_HANDLE_VALUE ) {
 			do {
-				if ( !lstrcmp(fd.cFileName,_T(".")) || !lstrcmp(fd.cFileName,_T(".."))) continue;
-				lstrcpy(szPath,szFilename);
-				lstrcat(szPath,_T("\\"));
-				lstrcat(szPath,fd.cFileName);
+				if ( !_tcscmp(fd.cFileName,_T(".")) || !_tcscmp(fd.cFileName,_T(".."))) continue;
+				mir_sntprintf(szPath, SIZEOF(szPath), _T("%s\\%s"), szFilename, fd.cFileName);
 				AddToFileList(pppFiles,totalCount,szPath);
 			} 
 				while( FindNextFile( hFind,&fd ));
@@ -138,15 +135,21 @@ static void UpdateReadChars(HWND hwndDlg, HWND hwndStatus)
 	}	
 }
 
-static void ShowTime(HWND hwndStatus, HANDLE hTimeZone)
+static void ShowTime(struct MessageWindowData *dat)
 {
-	if (hwndStatus && hTimeZone)
+	if (dat->hwndStatus && dat->hTimeZone)
 	{
-		TCHAR buf[32];
-		unsigned i = (g_dat->flags & SMF_SHOWREADCHAR) ? 2 : 1; 
+		SYSTEMTIME st;
+		GetSystemTime(&st);
+		if (dat->wMinute != st.wMinute)
+		{
+			TCHAR buf[32];
+			unsigned i = (g_dat->flags & SMF_SHOWREADCHAR) ? 2 : 1; 
 
-		tmi.printDateTime(hTimeZone, _T("t"), buf, SIZEOF(buf), 0);
-		SendMessage(hwndStatus, SB_SETTEXT, i, (LPARAM) buf);
+			tmi.printDateTime(dat->hTimeZone, _T("t"), buf, SIZEOF(buf), 0);
+			SendMessage(dat->hwndStatus, SB_SETTEXT, i, (LPARAM) buf);
+			dat->wMinute = st.wMinute;
+		}
 	}	
 }
 
@@ -173,7 +176,7 @@ static void SetupStatusBar(HWND hwndDlg, struct MessageWindowData *dat)
 	SendMessage(dat->hwndStatus, SB_SETPARTS, i, (LPARAM) statwidths);
 
 	UpdateReadChars(hwndDlg, dat->hwndStatus);
-	ShowTime(dat->hwndStatus, dat->hTimeZone);
+	ShowTime(dat);
 	SendMessage(hwndDlg, DM_STATUSICONCHANGE, 0, 0);
 }
 
@@ -401,6 +404,7 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
 			// Someone added items?
 			if (GetMenuItemCount(mwpd.hMenu) > 0) 
 			{
+				SetCursor(LoadCursor(NULL, IDC_ARROW));
 				mwpd.selection = TrackPopupMenu(mwpd.hMenu, TPM_RETURNCMD, mwpd.pt.x, mwpd.pt.y, 0, hwnd, NULL);
 			}
 
@@ -688,6 +692,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 
 			dat->hContact = newData->hContact;
 			dat->hTimeZone = tmi.createByContact(dat->hContact, TZF_KNOWNONLY);
+			dat->wMinute = 61;
 
 			NotifyLocalWinEvent(dat->hContact, hwndDlg, MSG_WINDOW_EVT_OPENING);
 			if (newData->szInitialText) 
@@ -721,7 +726,6 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			dat->cmdListInd = -1;
 			dat->nTypeMode = PROTOTYPE_SELFTYPING_OFF;
 			SetTimer(hwndDlg, TIMERID_TYPE, 1000, NULL);
-			dat->nFlashMax = DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_FLASHCOUNT, SRMSGDEFSET_FLASHCOUNT);
 			{
 				RECT rc, rc2;
 				GetWindowRect(GetDlgItem(hwndDlg, IDC_USERMENU), &rc);
@@ -754,7 +758,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			EnableWindow(GetDlgItem(hwndDlg, IDC_PROTOCOL), FALSE);
 			EnableWindow(GetDlgItem(hwndDlg, IDC_AVATAR), FALSE);
 			SendDlgItemMessage(hwndDlg, IDC_LOG, EM_SETOLECALLBACK, 0, (LPARAM) & reOleCallback);
-			SendDlgItemMessage(hwndDlg, IDC_LOG, EM_SETEVENTMASK, 0, ENM_MOUSEEVENTS | ENM_LINK);
+			SendDlgItemMessage(hwndDlg, IDC_LOG, EM_SETEVENTMASK, 0, ENM_MOUSEEVENTS | ENM_LINK | ENM_SCROLL);
 			/* duh, how come we didnt use this from the start? */
 			SendDlgItemMessage(hwndDlg, IDC_LOG, EM_AUTOURLDETECT, (WPARAM) TRUE, 0);
 			if (dat->hContact && dat->szProto) {
@@ -1074,13 +1078,12 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 
 	case DM_USERNAMETOCLIP:
 		{
-			CONTACTINFO ci;
 			char buf[128];
 			HGLOBAL hData;
 
 			buf[0] = 0;
 			if(dat->hContact) {
-				ZeroMemory(&ci, sizeof(ci));
+				CONTACTINFO ci = {0};
 				ci.cbSize = sizeof(ci);
 				ci.hContact = dat->hContact;
 				ci.szProto = dat->szProto;
@@ -1096,10 +1099,10 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 							break;
 					}
 				}
-				if (!OpenClipboard(hwndDlg) || !lstrlenA(buf)) break;
+				if (!OpenClipboard(hwndDlg) || !buf[0]) break;
 				EmptyClipboard();
-				hData = GlobalAlloc(GMEM_MOVEABLE, lstrlenA(buf) + 1);
-				lstrcpyA(GlobalLock(hData), buf);
+				hData = GlobalAlloc(GMEM_MOVEABLE, strlen(buf) + 1);
+				strcpy(GlobalLock(hData), buf);
 				GlobalUnlock(hData);
 				SetClipboardData(CF_TEXT, hData);
 				CloseClipboard();
@@ -1286,14 +1289,16 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			else lstrcpyn(newtitle, pszNewTitleEnd, SIZEOF(newtitle));
 
 			GetWindowText(hwndDlg, oldtitle, SIZEOF(oldtitle));
-			if ( lstrcmp(newtitle, oldtitle )) { //swt() flickers even if the title hasn't actually changed
+			if ( _tcscmp(newtitle, oldtitle )) { //swt() flickers even if the title hasn't actually changed
 				SetWindowText(hwndDlg, newtitle);
 				SendMessage(hwndDlg, WM_SIZE, 0, 0);
 			}
 			break;
 		}
+
 	case DM_NEWTIMEZONE:
 		dat->hTimeZone = tmi.createByContact(dat->hContact, TZF_KNOWNONLY);
+		dat->wMinute = 61;
 		SendMessage(hwndDlg, WM_SIZE, 0, 0);
 		break;
 
@@ -1480,11 +1485,27 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 					SendMessage(hwndDlg, DM_APPENDTOLOG, lParam, 0);
 				else
 					SendMessage(hwndDlg, DM_REMAKELOG, 0, 0);
-				if ((GetActiveWindow() != hwndDlg || GetForegroundWindow() != hwndDlg) && !(dbei.flags & DBEF_SENT)
-					&& dbei.eventType != EVENTTYPE_STATUSCHANGE) {
-						SetTimer(hwndDlg, TIMERID_FLASHWND, TIMEOUT_FLASHWND, NULL);
+
+				if (!(dbei.flags & DBEF_SENT) && dbei.eventType != EVENTTYPE_STATUSCHANGE)
+				{
+					if (GetActiveWindow() == hwndDlg && GetForegroundWindow() == hwndDlg)
+					{
+						HWND hwndLog = GetDlgItem(hwndDlg, IDC_LOG);
+						if (GetWindowLongPtr(hwndLog, GWL_STYLE) & WS_VSCROLL)
+						{
+							SCROLLINFO si = {0};
+							si.cbSize = sizeof(si);
+							si.fMask = SIF_PAGE | SIF_RANGE | SIF_POS;
+							GetScrollInfo(hwndLog, SB_VERT, &si);
+							if ((si.nPos + (int)si.nPage + 5) < si.nMax)
+								SetTimer(hwndDlg, TIMERID_FLASHWND, TIMEOUT_FLASHWND, NULL);
+						}
 					}
-		}	}
+					else
+						SetTimer(hwndDlg, TIMERID_FLASHWND, TIMEOUT_FLASHWND, NULL);
+				}
+			}	
+		}
 		break;
 
 	case WM_TIMECHANGE:
@@ -1496,7 +1517,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 		if (wParam == TIMERID_FLASHWND) 
 		{
 			FlashWindow(hwndDlg, TRUE);
-			if (dat->nFlash > dat->nFlashMax) 
+			if (dat->nFlash > 2 * g_dat->nFlashMax) 
 			{
 				KillTimer(hwndDlg, TIMERID_FLASHWND);
 				FlashWindow(hwndDlg, FALSE);
@@ -1506,7 +1527,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 		}
 		else if (wParam == TIMERID_TYPE) 
 		{
-			ShowTime(dat->hwndStatus, dat->hTimeZone);
+			ShowTime(dat);
 			if (dat->nTypeMode == PROTOTYPE_SELFTYPING_ON && GetTickCount() - dat->nLastTyping > TIMEOUT_TYPEOFF)
 				NotifyTyping(dat, PROTOTYPE_SELFTYPING_OFF);
 
@@ -1854,7 +1875,21 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 						DestroyMenu(hMenu);
 						SetWindowLongPtr(hwndDlg, DWLP_MSGRESULT, TRUE);
 						return TRUE;
-				}	}
+					}	
+				}
+				break;
+
+			case EN_VSCROLL:
+				if (LOWORD(wParam) == IDC_LOG && GetWindowLongPtr((HWND)lParam, GWL_STYLE) & WS_VSCROLL)
+				{
+					SCROLLINFO si = {0};
+					si.cbSize = sizeof(si);
+					si.fMask = SIF_PAGE | SIF_RANGE | SIF_POS;
+					GetScrollInfo((HWND)lParam, SB_VERT, &si);
+					if ((si.nPos + (int)si.nPage + 5) >= si.nMax)
+						if (KillTimer(hwndDlg, TIMERID_FLASHWND))
+							FlashWindow(hwndDlg, FALSE);
+				}
 				break;
 	
 			case EN_LINK:
@@ -1906,8 +1941,8 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 									if (!OpenClipboard(hwndDlg))
 										break;
 									EmptyClipboard();
-									hData = GlobalAlloc(GMEM_MOVEABLE, lstrlenA(link) + 1);
-									lstrcpyA(GlobalLock(hData), link);
+									hData = GlobalAlloc(GMEM_MOVEABLE, strlen(link) + 1);
+									strcpy(GlobalLock(hData), link);
 									GlobalUnlock(hData);
 									SetClipboardData(CF_TEXT, hData);
 									CloseClipboard();
@@ -1937,6 +1972,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 		break;
 
 	case WM_DESTROY:
+		if (!dat) return 0;
 		NotifyLocalWinEvent(dat->hContact, hwndDlg, MSG_WINDOW_EVT_CLOSING);
 		//save string from the editor
 		if(dat->hContact) 

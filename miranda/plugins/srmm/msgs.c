@@ -181,20 +181,18 @@ static int TypingMessage(WPARAM wParam, LPARAM lParam)
 		SendMessage(hwnd, DM_TYPING, 0, lParam);
 		foundWin = 1;
 	}
-	if ((int) lParam && !foundWin && (g_dat->flags&SMF_SHOWTYPINGTRAY)) {
+	if (lParam && !foundWin && (g_dat->flags&SMF_SHOWTYPINGTRAY)) {
 		TCHAR szTip[256];
 		mir_sntprintf(szTip, SIZEOF(szTip), TranslateT("%s is typing a message"), (TCHAR *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, wParam, GCDNF_TCHAR));
 
 		if (ServiceExists(MS_CLIST_SYSTRAY_NOTIFY) && !(g_dat->flags&SMF_SHOWTYPINGCLIST)) {
-			MIRANDASYSTRAYNOTIFY tn;
-			tn.szProto = NULL;
+			MIRANDASYSTRAYNOTIFY tn = {0};
 			tn.cbSize = sizeof(tn);
 			tn.tszInfoTitle = TranslateT("Typing Notification");
 			tn.tszInfo = szTip;
-#ifdef UNICODE
-			tn.dwInfoFlags = NIIF_INFO | NIIF_INTERN_UNICODE;
-#else
 			tn.dwInfoFlags = NIIF_INFO;
+#ifdef _UNICODE
+			tn.dwInfoFlags |= NIIF_INTERN_UNICODE;
 #endif			
 			tn.uTimeout = 1000 * 4;
 			CallService(MS_CLIST_SYSTRAY_NOTIFY, 0, (LPARAM) & tn);
@@ -459,7 +457,7 @@ int LoadSendRecvMessageModule(void)
 	hHooks[7] = HookEvent(ME_CLIST_PREBUILDCONTACTMENU, PrebuildContactMenu);
 
 	hServices[0] = CreateServiceFunction(MS_MSG_SENDMESSAGE, SendMessageCommand);
-#if defined(_UNICODE)
+#ifdef _UNICODE
 	hServices[1] = CreateServiceFunction(MS_MSG_SENDMESSAGE "W", SendMessageCommand_W);
 #endif
 	hServices[2] = CreateServiceFunction(MS_MSG_GETWINDOWAPI, GetWindowAPI);

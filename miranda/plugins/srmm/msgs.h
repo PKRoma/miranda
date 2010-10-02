@@ -42,8 +42,7 @@ struct MessageWindowData
 	RECT minEditInit;
 	int lineHeight;
 	int windowWasCascaded;
-	int nFlash;
-	int nFlashMax;
+	DWORD nFlash;
 	int nLabelRight;
 	int nTypeSecs;
 	int nTypeMode;
@@ -62,6 +61,7 @@ struct MessageWindowData
 	int cmdListInd;
 	SortedList *cmdList;
 	int bIsAutoRTL;
+	WORD wMinute;
 };
 
 #define DM_REMAKELOG         (WM_USER+11)
@@ -186,6 +186,8 @@ extern const int msgDlgFontCount;
 #define SRMSGDEFSET_SHOWDATE       0
 #define SRMSGSET_SHOWSTATUSCH      "ShowStatusChanges"
 #define SRMSGDEFSET_SHOWSTATUSCH   1
+#define SRMSGSET_SHOWFORMAT        "ShowFormatting"
+#define SRMSGDEFSET_SHOWFORMAT     1
 #define SRMSGSET_BKGCOLOUR         "BkgColour"
 #define SRMSGDEFSET_BKGCOLOUR      GetSysColor(COLOR_WINDOW)
 

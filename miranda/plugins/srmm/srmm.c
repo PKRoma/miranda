@@ -25,7 +25,6 @@ int SplitmsgShutdown(void);
 
 PLUGINLINK* pluginLink;
 HINSTANCE   g_hInst;
-int bNewDbApi = FALSE;
 
 struct MM_INTERFACE mmi;
 struct UTF8_INTERFACE utfi;
@@ -58,7 +57,7 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)
 
 __declspec(dllexport) PLUGININFOEX *MirandaPluginInfoEx(DWORD mirandaVersion)
 {
-	if (mirandaVersion < PLUGIN_MAKE_VERSION(0, 7, 0, 2))
+	if (mirandaVersion < PLUGIN_MAKE_VERSION(0, 9, 0, 0))
 		return NULL;
 	return &pluginInfo;
 }
@@ -76,9 +75,6 @@ int __declspec(dllexport) Load(PLUGINLINK * link)
 	mir_getUTFI(&utfi);
 	mir_getLI(&li);
 	mir_getTMI(&tmi);
-
-	if (ServiceExists(MS_DB_EVENT_GETTEXT))
-		bNewDbApi = TRUE;
 
 	return LoadSendRecvMessageModule();
 }

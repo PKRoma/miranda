@@ -40,6 +40,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define SMF_AUTOMIN         0x00020000
 #define SMF_TYPINGUNKNOWN   0x00040000
 #define SMF_CTRLSUPPORT     0x00080000
+#define SMF_SHOWFORMAT      0x00100000
 
 #define SMF_ICON_TYPING     0
 
@@ -49,6 +50,7 @@ struct GlobalMessageData
 	HANDLE hMessageWindowList;
 	DWORD openFlags;
 	DWORD msgTimeout;
+	DWORD nFlashMax;
 };
 
 void InitGlobals();
@@ -56,6 +58,5 @@ void FreeGlobals();
 void ReloadGlobals();
 
 extern struct GlobalMessageData *g_dat;
-extern int bNewDbApi;
 
 #endif
