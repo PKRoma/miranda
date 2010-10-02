@@ -51,7 +51,7 @@ void __cdecl CIcqProto::KeepAliveThread(void *arg)
 
 	NetLog_Server("Keep alive thread starting.");
 
-	info->hKeepAliveEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
+	info->hKeepAliveEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
 
 	for(;;)
 	{
