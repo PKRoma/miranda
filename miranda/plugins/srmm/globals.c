@@ -140,13 +140,14 @@ void ReloadGlobals()
 		g_dat->flags |= SMF_TYPINGUNKNOWN;
 	if (DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_CTRLSUPPORT, SRMSGDEFSET_CTRLSUPPORT))
 		g_dat->flags |= SMF_CTRLSUPPORT;
-
+	if (DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_SHOWFORMAT, SRMSGDEFSET_SHOWFORMAT))
+		g_dat->flags |= SMF_SHOWFORMAT;
 
 	g_dat->openFlags = DBGetContactSettingDword(NULL, SRMMMOD, SRMSGSET_POPFLAGS, SRMSGDEFSET_POPFLAGS);
+	g_dat->nFlashMax = DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_FLASHCOUNT, SRMSGDEFSET_FLASHCOUNT);
 
 	g_dat->msgTimeout = DBGetContactSettingDword(NULL, SRMMMOD, SRMSGSET_MSGTIMEOUT, SRMSGDEFSET_MSGTIMEOUT);
 	if (g_dat->msgTimeout < SRMSGSET_MSGTIMEOUT_MIN) g_dat->msgTimeout = SRMSGDEFSET_MSGTIMEOUT;
-
 }
 
 static int dbaddedevent(WPARAM wParam, LPARAM lParam)

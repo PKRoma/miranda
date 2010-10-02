@@ -30,6 +30,7 @@
 #define IDC_SHOWDATES                   1034
 #define IDC_CLIST                       1035
 #define IDC_SHOWSTATUSCHANGES           1035
+#define IDC_SHOWFORMATTING              1036
 #define IDC_SAVEPERCONTACT              1037
 #define IDC_LOADCOUNTN                  1039
 #define IDC_LOADCOUNTSPIN               1040
@@ -59,6 +60,7 @@
 #define IDC_CASCADE                     1604
 #define IDC_SECONDS                     1605
 #define IDC_NOTIFYTRAY                  1606
+#define IDC_NFLASHES                    1606
 #define IDC_NOTIFYBALLOON               1607
 #define IDC_CTRLSUPPORT                 1608
 #define IDC_DELTEMP                     1609

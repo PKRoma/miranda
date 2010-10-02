@@ -126,16 +126,16 @@ void LoadMsgDlgFont(int i, LOGFONT* lf, COLORREF * colour)
 	DBVARIANT dbv;
 
 	if ( colour ) {
-		wsprintfA(str, "SRMFont%dCol", i);
+		mir_snprintf(str, SIZEOF(str), "SRMFont%dCol", i);
 		*colour = DBGetContactSettingDword(NULL, SRMMMOD, str, fontOptionsList[i].defColour);
 	}
 	if ( lf ) {
-		wsprintfA(str, "SRMFont%dSize", i);
+		mir_snprintf(str, SIZEOF(str), "SRMFont%dSize", i);
 		lf->lfHeight = (char) DBGetContactSettingByte(NULL, SRMMMOD, str, fontOptionsList[i].defSize);
 		lf->lfWidth = 0;
 		lf->lfEscapement = 0;
 		lf->lfOrientation = 0;
-		wsprintfA(str, "SRMFont%dSty", i);
+		mir_snprintf(str, SIZEOF(str), "SRMFont%dSty", i);
 		style = DBGetContactSettingByte(NULL, SRMMMOD, str, fontOptionsList[i].defStyle);
 		lf->lfWeight = style & FONTF_BOLD ? FW_BOLD : FW_NORMAL;
 		lf->lfItalic = style & FONTF_ITALIC ? 1 : 0;
@@ -145,14 +145,14 @@ void LoadMsgDlgFont(int i, LOGFONT* lf, COLORREF * colour)
 		lf->lfClipPrecision = CLIP_DEFAULT_PRECIS;
 		lf->lfQuality = DEFAULT_QUALITY;
 		lf->lfPitchAndFamily = DEFAULT_PITCH | FF_DONTCARE;
-		wsprintfA(str, "SRMFont%d", i);
+		mir_snprintf(str, SIZEOF(str), "SRMFont%d", i);
 		if (DBGetContactSettingTString(NULL, SRMMMOD, str, &dbv))
-			lstrcpy(lf->lfFaceName, fontOptionsList[i].szDefFace);
+			_tcscpy(lf->lfFaceName, fontOptionsList[i].szDefFace);
 		else {
 			lstrcpyn(lf->lfFaceName, dbv.ptszVal, SIZEOF(lf->lfFaceName));
 			DBFreeVariant(&dbv);
 		}
-		wsprintfA(str, "SRMFont%dSet", i);
+		mir_snprintf(str, SIZEOF(str), "SRMFont%dSet", i);
 		lf->lfCharSet = DBGetContactSettingByte(NULL, SRMMMOD, str, MsgDlgGetFontDefaultCharset(lf->lfFaceName));
 }	}
 
@@ -166,11 +166,11 @@ void RegisterSRMMFonts( void )
 	fontid.cbSize = sizeof(FontID);
 	fontid.flags = FIDF_ALLOWREREGISTER | FIDF_DEFAULTVALID;
 	for ( i = 0; i < msgDlgFontCount; i++, index++ ) {
-		strncpy(fontid.dbSettingsGroup, SRMMMOD, sizeof(fontid.dbSettingsGroup));
-		_tcsncpy(fontid.group, TranslateT("Message Log"), SIZEOF(fontid.group));
-		_tcsncpy(fontid.name, TranslateTS(fontOptionsList[i].szDescr), SIZEOF(fontid.name));
-		sprintf(idstr, "SRMFont%d", index);
-		strncpy(fontid.prefix, idstr, SIZEOF(fontid.prefix));
+		strcpy(fontid.dbSettingsGroup, SRMMMOD);
+		_tcscpy(fontid.group, LPGENT("Message Log"));
+		_tcscpy(fontid.name, fontOptionsList[i].szDescr);
+		mir_snprintf(idstr, SIZEOF(idstr), "SRMFont%d", index);
+		strcpy(fontid.prefix, idstr);
 		fontid.order = index;
 
 		fontid.flags &= ~FIDF_CLASSMASK;
@@ -179,17 +179,17 @@ void RegisterSRMMFonts( void )
 		fontid.deffontsettings.colour = fontOptionsList[i].defColour;
 		fontid.deffontsettings.size = fontOptionsList[i].defSize;
 		fontid.deffontsettings.style = fontOptionsList[i].defStyle;
-		_tcsncpy(fontid.deffontsettings.szFace, fontOptionsList[i].szDefFace, SIZEOF(fontid.deffontsettings.szFace));
+		_tcscpy(fontid.deffontsettings.szFace, fontOptionsList[i].szDefFace);
 		fontid.deffontsettings.charset = MsgDlgGetFontDefaultCharset(fontOptionsList[i].szDefFace);
 		CallService(MS_FONT_REGISTERT, (WPARAM)&fontid, 0);
 	}
 
 	colourid.cbSize = sizeof(ColourID);
-	strncpy(colourid.dbSettingsGroup, SRMMMOD, sizeof(colourid.dbSettingsGroup));
-	strncpy(colourid.setting, SRMSGSET_BKGCOLOUR, sizeof(colourid.setting));
+	strcpy(colourid.dbSettingsGroup, SRMMMOD);
+	strcpy(colourid.setting, SRMSGSET_BKGCOLOUR);
 	colourid.defcolour = SRMSGDEFSET_BKGCOLOUR;
-	_tcsncpy(colourid.name, TranslateT("Background"), SIZEOF(colourid.name));
-	_tcsncpy(colourid.group, TranslateT("Message Log"), SIZEOF(colourid.group));
+	_tcscpy(colourid.name, LPGENT("Background"));
+	_tcscpy(colourid.group, LPGENT("Message Log"));
 	CallService(MS_COLOUR_REGISTERT, (WPARAM)&colourid, 0);
 }
 
@@ -255,9 +255,9 @@ static INT_PTR CALLBACK DlgProcOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 
 			TranslateDialogDefault(hwndDlg);
 			SetWindowLongPtr(GetDlgItem(hwndDlg, IDC_POPLIST), GWL_STYLE, GetWindowLongPtr(GetDlgItem(hwndDlg, IDC_POPLIST), GWL_STYLE) | TVS_NOHSCROLL | TVS_CHECKBOXES);
-			FillCheckBoxTree(GetDlgItem(hwndDlg, IDC_POPLIST), statusValues, SIZEOF(statusValues),
-                             DBGetContactSettingDword(NULL, SRMMMOD, SRMSGSET_POPFLAGS, SRMSGDEFSET_POPFLAGS));
+			FillCheckBoxTree(GetDlgItem(hwndDlg, IDC_POPLIST), statusValues, SIZEOF(statusValues), DBGetContactSettingDword(NULL, SRMMMOD, SRMSGSET_POPFLAGS, SRMSGDEFSET_POPFLAGS));
 			CheckDlgButton(hwndDlg, IDC_DONOTSTEALFOCUS, DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_DONOTSTEALFOCUS, SRMSGDEFSET_DONOTSTEALFOCUS));
+			SetDlgItemInt(hwndDlg, IDC_NFLASHES, DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_FLASHCOUNT, SRMSGDEFSET_FLASHCOUNT), FALSE);
 			CheckDlgButton(hwndDlg, IDC_SHOWBUTTONLINE, g_dat->flags&SMF_SHOWBTNS);
 			CheckDlgButton(hwndDlg, IDC_SHOWINFOLINE, g_dat->flags&SMF_SHOWINFO);
 			CheckDlgButton(hwndDlg, IDC_AUTOMIN, DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_AUTOMIN, SRMSGDEFSET_AUTOMIN));
@@ -371,8 +371,12 @@ static INT_PTR CALLBACK DlgProcOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 							DBWriteContactSettingByte(NULL, SRMMMOD, SRMSGSET_CHARCOUNT, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_CHARCOUNT));
 							DBWriteContactSettingByte(NULL, SRMMMOD, SRMSGSET_CTRLSUPPORT, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_CTRLSUPPORT));
 							DBWriteContactSettingByte(NULL, SRMMMOD, SRMSGSET_DELTEMP, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_DELTEMP));
-							msgTimeout = GetDlgItemInt(hwndDlg, IDC_SECONDS, NULL, TRUE) >= SRMSGSET_MSGTIMEOUT_MIN / 1000 ? GetDlgItemInt(hwndDlg, IDC_SECONDS, NULL, TRUE) * 1000 : SRMSGDEFSET_MSGTIMEOUT;
+							DBWriteContactSettingByte(NULL, SRMMMOD, SRMSGSET_FLASHCOUNT, (BYTE) GetDlgItemInt(hwndDlg, IDC_NFLASHES, NULL, TRUE));
+
+							msgTimeout = GetDlgItemInt(hwndDlg, IDC_SECONDS, NULL, TRUE) * 1000;
+							if (msgTimeout < SRMSGSET_MSGTIMEOUT_MIN) msgTimeout = SRMSGDEFSET_MSGTIMEOUT;
 							DBWriteContactSettingDword(NULL, SRMMMOD, SRMSGSET_MSGTIMEOUT, msgTimeout);
+
 							ReloadGlobals();
 							WindowList_Broadcast(g_dat->hMessageWindowList, DM_OPTIONSAPPLIED, 0, 0);
 							return TRUE;
@@ -423,6 +427,7 @@ static INT_PTR CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam,
 			EnableWindow(GetDlgItem(hwndDlg, IDC_SHOWDATES), IsDlgButtonChecked(hwndDlg, IDC_SHOWTIMES));
 			CheckDlgButton(hwndDlg, IDC_SHOWDATES, DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_SHOWDATE, SRMSGDEFSET_SHOWDATE));
 			CheckDlgButton(hwndDlg, IDC_SHOWSTATUSCHANGES, DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_SHOWSTATUSCH, SRMSGDEFSET_SHOWSTATUSCH));
+			CheckDlgButton(hwndDlg, IDC_SHOWFORMATTING, DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_SHOWFORMAT, SRMSGDEFSET_SHOWFORMAT));
 			return TRUE;
 
 		case WM_COMMAND:
@@ -469,6 +474,7 @@ static INT_PTR CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam,
 							DBWriteContactSettingByte(NULL, SRMMMOD, SRMSGSET_SHOWSECS, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_SHOWSECS));
 							DBWriteContactSettingByte(NULL, SRMMMOD, SRMSGSET_SHOWDATE, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_SHOWDATES));
 							DBWriteContactSettingByte(NULL, SRMMMOD, SRMSGSET_SHOWSTATUSCH, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_SHOWSTATUSCHANGES));
+							DBWriteContactSettingByte(NULL, SRMMMOD, SRMSGSET_SHOWSTATUSCH, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_SHOWFORMATTING));
 
 							FreeMsgLogIcons();
 							LoadMsgLogIcons();
