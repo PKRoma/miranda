@@ -247,7 +247,7 @@ static int httpTransact(char* szUrl, char* szResult, int resSize, char* szAction
 			static TIMEVAL tv = { 6, 0 };
 			static unsigned ttl = 4;
 			static u_long mode = 1;
-			fd_set readfd;
+			fd_set rfd, wfd, efd;
 			SOCKADDR_IN enetaddr;
 
 			sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
@@ -266,8 +266,8 @@ static int httpTransact(char* szUrl, char* szResult, int resSize, char* szAction
 
 			NetlibLogf(NULL, "UPnP HTTP connection Host: %s Port: %u", szHost, sPort);
 
-			FD_ZERO(&readfd);
-			FD_SET(sock, &readfd);
+			FD_ZERO(&rfd); FD_ZERO(&wfd); FD_ZERO(&efd);
+			FD_SET(sock, &rfd); FD_SET(sock, &wfd); FD_SET(sock, &efd);
 
 			// Limit the scope of the connection (does not work for
 			setsockopt(sock, IPPROTO_IP, IP_TTL, (char *)&ttl, sizeof(unsigned));
@@ -287,9 +287,14 @@ static int httpTransact(char* szUrl, char* szResult, int resSize, char* szAction
 					break;
 				}
 				// Wait for socket to connect
-				else if (select(1, NULL, &readfd, NULL, &tv) != 1)
+				else if (select(1, &rfd, &wfd, &efd, &tv) != 1)
 				{
 					NetlibLogf(NULL, "UPnP connect timeout");
+					break;
+				}
+				else if (!FD_ISSET(sock, &wfd))
+				{
+					NetlibLogf(NULL, "UPnP connect failed");
 					break;
 				}
 			}
@@ -305,11 +310,11 @@ static int httpTransact(char* szUrl, char* szResult, int resSize, char* szAction
 				{
 					int bytesRecv;
 
-					FD_ZERO(&readfd);
-					FD_SET(sock, &readfd);
+					FD_ZERO(&rfd);
+					FD_SET(sock, &rfd);
 
 					// Wait for the next packet
-					if (select(1, &readfd, NULL, NULL, &tv) != 1)
+					if (select(1, &rfd, NULL, NULL, &tv) != 1)
 					{
 						NetlibLogf(NULL, "UPnP recieve timeout");
 						break;
