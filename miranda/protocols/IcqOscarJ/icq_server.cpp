@@ -155,6 +155,7 @@ void __cdecl CIcqProto::ServerThread(serverthread_start_info *infoParam)
 			// Deal with the packet
 			packetRecv.bytesUsed = handleServerPackets(packetRecv.buffer, packetRecv.bytesAvailable, &info);
 		}
+		serverThreadHandle = NULL;
 
 		// Time to shutdown
 		NetLib_CloseConnection(&hServerConn, TRUE);
