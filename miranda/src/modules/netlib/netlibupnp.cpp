@@ -105,6 +105,7 @@ static int expireTime = 120;
 static int retryCount;
 static SOCKET sock = INVALID_SOCKET;
 static char szConnHost[256];
+static unsigned short sConnPort;
 
 static WORD *portList;
 static unsigned numports, numportsAlloc;
@@ -251,7 +252,7 @@ static int httpTransact(char* szUrl, char* szResult, int resSize, char* szAction
 
 	parseURL(szUrl, szHost, &sPort, szPath);
 
-	if (_stricmp(szHost, szConnHost))
+	if (sPort != sConnPort || _stricmp(szHost, szConnHost))
 		closeRouterConnection();
 	else
 		validateSocket();
@@ -354,7 +355,7 @@ retrycon:
 						break;
 					}
 				}
-				strcpy(szConnHost, szHost);
+				strcpy(szConnHost, szHost); sConnPort = sPort;
 			}
 
 			if (send(sock, szData, sz, 0) != SOCKET_ERROR)
