@@ -1927,7 +1927,7 @@ bool CIrcProto::OnIrc_NOOFCHANNELS( const CIrcMessage* pmsg )
 
 bool CIrcProto::OnIrc_ERROR( const CIrcMessage* pmsg )
 {
-	if	( pmsg->m_bIncoming && !m_disableErrorPopups ) {
+	if	( pmsg->m_bIncoming && !m_disableErrorPopups && m_iDesiredStatus != ID_STATUS_OFFLINE) {
 		MIRANDASYSTRAYNOTIFY msn;
 		msn.cbSize = sizeof(MIRANDASYSTRAYNOTIFY);
 		msn.szProto = m_szModuleName;
