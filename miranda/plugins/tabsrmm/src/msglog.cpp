@@ -62,7 +62,7 @@ struct TCpTable cpTable[] = {
 	{   -1,     NULL}
 };
 
-static TCHAR    *Template_MakeRelativeDate(struct TWindowData *dat, time_t check, int groupBreak, TCHAR code);
+static TCHAR    *Template_MakeRelativeDate(struct TWindowData *dat, HANDLE hTimeZone, time_t check, int groupBreak, TCHAR code);
 static void     ReplaceIcons(HWND hwndDlg, struct TWindowData *dat, LONG startAt, int fAppend, BOOL isSent);
 
 static time_t today;
@@ -582,7 +582,7 @@ static char *Template_CreateRTFFromDbEvent(struct TWindowData *dat, HANDLE hCont
 	int isSent = 0;
 	int iFontIDOffset = 0;
 	TCHAR *szTemplate;
-	time_t final_time;
+	HANDLE hTimeZone;
 	BOOL skipToNext = FALSE, showTime = TRUE, showDate = TRUE, skipFont = FALSE;
 	struct tm event_time;
 	TTemplateSet *this_templateset;
@@ -707,13 +707,9 @@ static char *Template_CreateRTFFromDbEvent(struct TWindowData *dat, HANDLE hCont
 	 * templated code starts here
 	 */
 	if (dwEffectiveFlags & MWF_LOG_SHOWTIME) {
-		final_time = dbei.timestamp;
-		if (dat->dwFlags & MWF_LOG_LOCALTIME) {
-			if (!isSent && dat->hTimeZone)
-				final_time = tmi.timeStampToTimeZoneTimeStamp(dat->hTimeZone, final_time);
-		}
-		_tzset();
-		event_time = *localtime(&final_time);
+		hTimeZone = ((dat->dwFlags & MWF_LOG_LOCALTIME) && !isSent) ? dat->hTimeZone : NULL;
+		time_t local_time = tmi.timeStampToTimeZoneTimeStamp(hTimeZone, dbei.timestamp);
+		event_time = *gmtime(&local_time);
 	}
 	this_templateset = dbei.flags & DBEF_RTL ? dat->pContainer->rtl_templates : dat->pContainer->ltr_templates;
 
@@ -830,14 +826,14 @@ static char *Template_CreateRTFFromDbEvent(struct TWindowData *dat, HANDLE hCont
 				}
 				case 'D':           // long date
 					if (showTime && showDate) {
-						szFinalTimestamp = Template_MakeRelativeDate(dat, final_time, g_groupBreak, (TCHAR)'D');
+						szFinalTimestamp = Template_MakeRelativeDate(dat, hTimeZone, dbei.timestamp, g_groupBreak, (TCHAR)'D');
 						AppendTimeStamp(szFinalTimestamp, isSent, &buffer, &bufferEnd, &bufferAlloced, skipFont, dat, iFontIDOffset);
 					} else
 						skipToNext = TRUE;
 					break;
 				case 'E':           // short date...
 					if (showTime && showDate) {
-						szFinalTimestamp = Template_MakeRelativeDate(dat, final_time, g_groupBreak, (TCHAR)'E');
+						szFinalTimestamp = Template_MakeRelativeDate(dat, hTimeZone, dbei.timestamp, g_groupBreak, (TCHAR)'E');
 						AppendTimeStamp(szFinalTimestamp, isSent, &buffer, &bufferEnd, &bufferAlloced, skipFont, dat, iFontIDOffset);
 					} else
 						skipToNext = TRUE;
@@ -933,7 +929,7 @@ static char *Template_CreateRTFFromDbEvent(struct TWindowData *dat, HANDLE hCont
 				case 'R':
 				case 'r':           // long date
 					if (showTime && showDate) {
-						szFinalTimestamp = Template_MakeRelativeDate(dat, final_time, g_groupBreak, cc);
+						szFinalTimestamp = Template_MakeRelativeDate(dat, hTimeZone, dbei.timestamp, g_groupBreak, cc);
 						AppendTimeStamp(szFinalTimestamp, isSent, &buffer, &bufferEnd, &bufferAlloced, skipFont, dat, iFontIDOffset);
 					} else
 						skipToNext = TRUE;
@@ -941,7 +937,7 @@ static char *Template_CreateRTFFromDbEvent(struct TWindowData *dat, HANDLE hCont
 				case 't':
 				case 'T':
 					if (showTime) {
-							szFinalTimestamp = Template_MakeRelativeDate(dat, final_time, g_groupBreak, (TCHAR)((dwEffectiveFlags & MWF_LOG_SHOWSECONDS) ? cc : (TCHAR)'t'));
+							szFinalTimestamp = Template_MakeRelativeDate(dat, hTimeZone, dbei.timestamp, g_groupBreak, (TCHAR)((dwEffectiveFlags & MWF_LOG_SHOWSECONDS) ? cc : (TCHAR)'t'));
 							AppendTimeStamp(szFinalTimestamp, isSent, &buffer, &bufferEnd, &bufferAlloced, skipFont, dat, iFontIDOffset);
 					} else
 						skipToNext = TRUE;
@@ -1597,7 +1593,7 @@ void TSAPI BuildCodePageList()
 	EnumSystemCodePages(LangAddCallback, CP_INSTALLED);
 }
 
-static TCHAR *Template_MakeRelativeDate(struct TWindowData *dat, time_t check, int groupBreak, TCHAR code)
+static TCHAR *Template_MakeRelativeDate(struct TWindowData *dat, HANDLE hTimeZone, time_t check, int groupBreak, TCHAR code)
 {
 	static TCHAR szResult[100];
 	const TCHAR *szFormat;
@@ -1616,7 +1612,7 @@ static TCHAR *Template_MakeRelativeDate(struct TWindowData *dat, time_t check, i
 		else
 			szFormat = _T("d");
 
-		tmi.printTimeStamp(NULL, check, szFormat, szResult, safe_sizeof(szResult), 0); 
+		tmi.printTimeStamp(hTimeZone, check, szFormat, szResult, safe_sizeof(szResult), 0); 
 	}
 	return szResult;
 }
