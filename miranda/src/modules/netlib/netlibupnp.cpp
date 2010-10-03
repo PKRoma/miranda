@@ -70,13 +70,13 @@ static const char soap_action[] =
 
 static const char soap_query[] =
 	"<s:Envelope\r\n"
-	"  xmlns:s=\"http://schemas.xmlsoap.org/soap/envelope/\"\r\n" 
-	"  s:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">\r\n" 
-	"<s:Body>\r\n"
-	"	<u:QueryStateVariable xmlns:u=\"urn:schemas-upnp-org:control-1-0\">\r\n"
-	"	  <u:varName>%s</u:varName>\r\n"
-	"   </u:QueryStateVariable>\r\n"
-	"</s:Body>\r\n"
+	"    xmlns:s=\"http://schemas.xmlsoap.org/soap/envelope/\"\r\n" 
+	"    s:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">\r\n" 
+	"  <s:Body>\r\n"
+	"    <u:QueryStateVariable xmlns:u=\"urn:schemas-upnp-org:control-1-0\">\r\n"
+	"      <u:varName>%s</u:varName>\r\n"
+	"    </u:QueryStateVariable>\r\n"
+	"  </s:Body>\r\n"
 	"</s:Envelope>\r\n";
 
 static const char add_port_mapping[] =
