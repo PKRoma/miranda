@@ -871,12 +871,22 @@ HANDLE __cdecl CJabberProto::SearchBasic( const TCHAR* szJid )
 	if ( _tcschr( szJid, '@' ) == NULL ) {
 		TCHAR *szServer = mir_a2t( m_ThreadInfo->server );
 		const TCHAR* p = _tcsstr( szJid, szServer );
-		if ( !p ) {
+		if ( !p )
+		{
+			bool numericjid = true;
+			for (const TCHAR * i = szJid; *i && numericjid; ++i)
+				numericjid = (*i >= '0') && (*i <= '9');
+
 			mir_free( szServer );
 			szServer = JGetStringT( NULL, "LoginServer" ); 
 			if ( !szServer )
+			{
 				szServer = mir_tstrdup( _T( "jabber.org" ));
-
+			} else if (numericjid && !_tcsicmp(szServer, _T("S.ms")))
+			{
+				mir_free(szServer);
+				szServer = mir_tstrdup(_T("sms"));
+			}
 			mir_sntprintf( jsb->jid, SIZEOF(jsb->jid), _T("%s@%s"), szJid, szServer );
 		}
 		else _tcsncpy( jsb->jid, szJid, SIZEOF(jsb->jid));

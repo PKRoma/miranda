@@ -226,7 +226,10 @@ static void ShowTinySearchDlg(HWND hwndDlg,struct FindAddDlgData *dat)
 	if(szProto==NULL) return;
 	if(dat->hwndTinySearch==NULL) {
 		dat->hwndTinySearch=(HWND)CallProtoService(szProto,PS_CREATEADVSEARCHUI,0,(LPARAM)/*GetDlgItem(*/hwndDlg/*,IDC_TINYEXTENDEDGROUP)*/);
-		ReposTinySearchDlg(hwndDlg, dat);
+		if (dat->hwndTinySearch)
+			ReposTinySearchDlg(hwndDlg, dat);
+		else
+			dat->showTiny = false;
 	}
 	ShowWindow(dat->hwndTinySearch,SW_SHOW);
 }
@@ -479,6 +482,15 @@ static INT_PTR CALLBACK DlgProcFindAdd(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 					else SetWindowLongPtr(GetDlgItem(hwndDlg,IDC_PROTOID),GWL_STYLE,GetWindowLongPtr(GetDlgItem(hwndDlg,IDC_PROTOID),GWL_STYLE)&~ES_NUMBER);
 				}
 			}
+
+			if (dat->showTiny)
+				ShowTinySearchDlg(hwndDlg, dat);
+			else {
+				if (dat->hwndTinySearch) {
+					DestroyWindow(dat->hwndTinySearch);
+					dat->hwndTinySearch=NULL;
+				}	}
+
 #define en(id,t) ShowWindow(GetDlgItem(hwndDlg,IDC_##id),dat->show##t?SW_SHOW:SW_HIDE)
 			en(PROTOIDGROUP,ProtoId); en(BYPROTOID,ProtoId); en(PROTOID,ProtoId);
 			en(EMAILGROUP,Email); en(BYEMAIL,Email); en(EMAIL,Email);
@@ -489,14 +501,7 @@ static INT_PTR CALLBACK DlgProcFindAdd(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			en(ADVANCEDGROUP,Advanced); en(BYADVANCED,Advanced); en(ADVANCED,Advanced);
 			en(BYCUSTOM, Tiny); en(TINYEXTENDEDGROUP, Tiny);
 #undef en
-			if (dat->showTiny)
-				ShowTinySearchDlg(hwndDlg, dat);
-			else {
-				if (dat->hwndTinySearch) {
-					DestroyWindow(dat->hwndTinySearch);
-					dat->hwndTinySearch=NULL;
-			}	}
-
+			
 			checkmarkVisible=(dat->showAdvanced && IsDlgButtonChecked(hwndDlg,IDC_BYADVANCED)) ||
 			                 (dat->showEmail && IsDlgButtonChecked(hwndDlg,IDC_BYEMAIL)) ||
 							 (dat->showTiny && IsDlgButtonChecked(hwndDlg,IDC_BYCUSTOM)) ||
