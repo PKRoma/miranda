@@ -213,7 +213,7 @@ static int isPluginBanned(MUUID u1, DWORD dwVersion) {
 
     for (i=0; i<pluginBannedListCount; i++) {
         if (equalUUID(pluginBannedList[i].uuid, u1)) {
-            if (dwVersion<=pluginBannedList[i].maxVersion)
+            if (dwVersion<pluginBannedList[i].maxVersion)
                 return 1;
             return 0;
         }
