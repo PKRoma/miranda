@@ -46,7 +46,6 @@ CIrcProto::CIrcProto( const char* szModuleName, const TCHAR* tszUserName ) :
 
 	IrcHookEvent( ME_DB_CONTACT_DELETED,   &CIrcProto::OnDeletedContact );
 
-	CreateProtoService( PS_GETSTATUS,      &CIrcProto::GetStatus );
 	CreateProtoService( PS_GETMYAWAYMSG,   &CIrcProto::GetMyAwayMsg );
 
 	CreateProtoService( PS_CREATEACCMGRUI, &CIrcProto::SvcCreateAccMgrUI );
@@ -357,7 +356,7 @@ int CIrcProto::OnModulesLoaded( WPARAM, LPARAM )
 
 HANDLE __cdecl CIrcProto::AddToList( int, PROTOSEARCHRESULT* psr )
 {
-	if ( m_iDesiredStatus == ID_STATUS_OFFLINE || m_iDesiredStatus == ID_STATUS_CONNECTING )
+	if ( m_iStatus == ID_STATUS_OFFLINE || m_iStatus == ID_STATUS_CONNECTING )
 		return 0;
 
 	TCHAR *id = psr->id ? psr->id : psr->nick;
@@ -625,7 +624,7 @@ void __cdecl CIrcProto::AckBasicSearch( void* param )
 HANDLE __cdecl CIrcProto::SearchBasic( const PROTOCHAR* szId )
 {
 	if ( szId ) {
-		if (m_iDesiredStatus != ID_STATUS_OFFLINE && m_iDesiredStatus != ID_STATUS_CONNECTING && 
+		if (m_iStatus != ID_STATUS_OFFLINE && m_iStatus != ID_STATUS_CONNECTING && 
 			szId && szId[0] && !IsChannel(szId)) {
 			AckBasicSearchParam* param = new AckBasicSearchParam;
 			lstrcpyn( param->buf, szId, 50 );
@@ -871,7 +870,7 @@ int __cdecl CIrcProto::SendMsg( HANDLE hContact, int flags, const char* pszSrc )
 {
 	BYTE bDcc = getByte( hContact, "DCC", 0) ;
 	WORD wStatus = getWord( hContact, "Status", ID_STATUS_OFFLINE) ;
-	if ( m_iDesiredStatus != ID_STATUS_OFFLINE && m_iDesiredStatus != ID_STATUS_CONNECTING && !bDcc || bDcc && wStatus == ID_STATUS_ONLINE ) {
+	if ( m_iStatus != ID_STATUS_OFFLINE && m_iStatus != ID_STATUS_CONNECTING && !bDcc || bDcc && wStatus == ID_STATUS_ONLINE ) {
 		int codepage = getCodepage();
 
 		TCHAR* result;
@@ -966,11 +965,11 @@ int CIrcProto::SetStatusInternal( int iNewStatus, bool bIsInternal )
 	}
 
 	if ( !bIsInternal )
-		m_iStatus = iNewStatus;
+		m_iDesiredStatus = iNewStatus;
 
 	if (( iNewStatus == ID_STATUS_ONLINE || iNewStatus == ID_STATUS_AWAY || iNewStatus == ID_STATUS_FREECHAT) && !IsConnected() ) //go from offline to online
 		ConnectToServer();
-	else if (( iNewStatus == ID_STATUS_ONLINE || iNewStatus == ID_STATUS_FREECHAT) && IsConnected() && m_iDesiredStatus == ID_STATUS_AWAY) //go to online while connected
+	else if (( iNewStatus == ID_STATUS_ONLINE || iNewStatus == ID_STATUS_FREECHAT) && IsConnected() && m_iStatus == ID_STATUS_AWAY) //go to online while connected
 	{
 		m_statusMessage = _T("");
 		PostIrcMessage( _T("/AWAY"));
@@ -984,7 +983,10 @@ int CIrcProto::SetStatusInternal( int iNewStatus, bool bIsInternal )
 		return 0;
 	}
 	else if ( iNewStatus == ID_STATUS_AWAY && IsConnected()) //go to away while connected
+	{
+		PostIrcMessage( _T("/AWAY %s"), m_statusMessage.Mid(0,450).c_str());
 		return 0;
+	}
 	else if ( iNewStatus == ID_STATUS_ONLINE && IsConnected()) //already online
 		return 0;
 	else
@@ -1048,12 +1050,13 @@ int __cdecl CIrcProto::SetAwayMsg( int status, const TCHAR* msg )
 		CMString newStatus = msg;
 		ReplaceString( newStatus, _T("\r\n"), _T(" "));
 		if ( m_statusMessage.IsEmpty() || msg == NULL || m_statusMessage != newStatus ) {
-			if ( msg == NULL || *( char* )msg == '\0')
+			if ( msg == NULL || *msg == 0 )
 				m_statusMessage = _T(STR_AWAYMESSAGE);
 			else
 				m_statusMessage = newStatus;
 
-			PostIrcMessage( _T("/AWAY %s"), m_statusMessage.Mid(0,450).c_str());
+			if ( m_iStatus == ID_STATUS_AWAY )
+				PostIrcMessage( _T("/AWAY %s"), m_statusMessage.Mid(0,450).c_str());
 	}	}
 
 	return 0;

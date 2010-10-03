@@ -1079,8 +1079,8 @@ void __cdecl CIrcProto::ConnectServerThread( void* )
 		}
 
 		m_info.bNickFlag = false;
-		int Temp = m_iDesiredStatus;
-		m_iDesiredStatus = ID_STATUS_CONNECTING;
+		int Temp = m_iStatus;
+		m_iStatus = ID_STATUS_CONNECTING;
 		nickflag = true;
 		ProtoBroadcastAck(m_szModuleName,NULL,ACKTYPE_STATUS,ACKRESULT_SUCCESS,(HANDLE)Temp,ID_STATUS_CONNECTING);
 		Sleep(100);
@@ -1099,7 +1099,7 @@ void __cdecl CIrcProto::ConnectServerThread( void* )
 			Temp = m_iDesiredStatus;
 			m_iStatus = m_iDesiredStatus = ID_STATUS_OFFLINE;
 			ProtoBroadcastAck(m_szModuleName, NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_NONETWORK );
-			ProtoBroadcastAck(m_szModuleName,NULL,ACKTYPE_STATUS,ACKRESULT_FAILED,(HANDLE)Temp,ID_STATUS_OFFLINE);
+			ProtoBroadcastAck(m_szModuleName,NULL,ACKTYPE_STATUS,ACKRESULT_SUCCESS,(HANDLE)Temp,ID_STATUS_OFFLINE);
 			Sleep(100);
 	}	}
 
@@ -1190,18 +1190,6 @@ INT_PTR __cdecl CIrcProto::GetMyAwayMsg(WPARAM wParam,LPARAM lParam)
 	const TCHAR* p = m_statusMessage.c_str();
 
 	return (lParam & SGMA_UNICODE) ? (INT_PTR)mir_t2u(p) : (INT_PTR)mir_t2a(p);
-}
-
-INT_PTR __cdecl CIrcProto::GetStatus(WPARAM, LPARAM)
-{
-	if (m_iDesiredStatus == ID_STATUS_CONNECTING)
-		return ID_STATUS_CONNECTING;
-	else if (IsConnected() && m_iDesiredStatus == ID_STATUS_ONLINE)
-		return ID_STATUS_ONLINE;
-	else if (IsConnected() && m_iDesiredStatus == ID_STATUS_AWAY)
-		return ID_STATUS_AWAY;
-	else
-		return ID_STATUS_OFFLINE;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////

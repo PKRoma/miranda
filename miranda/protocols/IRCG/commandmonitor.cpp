@@ -33,7 +33,7 @@ VOID CALLBACK IdentTimerProc( HWND, UINT, UINT_PTR idEvent, DWORD )
 		return;
 
 	ppro->KillChatTimer( ppro->IdentTimer );
-	if ( ppro->m_iDesiredStatus == ID_STATUS_OFFLINE || ppro->m_iDesiredStatus == ID_STATUS_CONNECTING )
+	if ( ppro->m_iStatus == ID_STATUS_OFFLINE || ppro->m_iStatus == ID_STATUS_CONNECTING )
 		return;
 
 	if ( ppro->IsConnected() && ppro->m_identTimer )
@@ -47,7 +47,7 @@ VOID CALLBACK TimerProc( HWND, UINT, UINT_PTR idEvent, DWORD )
 		return;
 
 	ppro->KillChatTimer( ppro->InitTimer );
-	if ( ppro->m_iDesiredStatus == ID_STATUS_OFFLINE || ppro->m_iDesiredStatus == ID_STATUS_CONNECTING )
+	if ( ppro->m_iStatus == ID_STATUS_OFFLINE || ppro->m_iStatus == ID_STATUS_CONNECTING )
 		return;
 
 	if ( ppro->m_forceVisible )
@@ -63,7 +63,7 @@ VOID CALLBACK KeepAliveTimerProc( HWND, UINT, UINT_PTR idEvent, DWORD )
 	if ( !ppro )
 		return;
 
-	if ( !ppro->m_sendKeepAlive || ( ppro->m_iDesiredStatus == ID_STATUS_OFFLINE || ppro->m_iDesiredStatus == ID_STATUS_CONNECTING )) {
+	if ( !ppro->m_sendKeepAlive || ( ppro->m_iStatus == ID_STATUS_OFFLINE || ppro->m_iStatus == ID_STATUS_CONNECTING )) {
 		ppro->KillChatTimer( ppro->KeepAliveTimer );
 		return;
 	}
@@ -85,7 +85,7 @@ VOID CALLBACK OnlineNotifTimerProc3( HWND, UINT, UINT_PTR idEvent, DWORD )
 		return;
 
 	if ( !ppro->m_channelAwayNotification || 
-		  ppro->m_iDesiredStatus == ID_STATUS_OFFLINE || ppro->m_iDesiredStatus == ID_STATUS_CONNECTING || 
+		  ppro->m_iStatus == ID_STATUS_OFFLINE || ppro->m_iStatus == ID_STATUS_CONNECTING || 
 		  ( !ppro->m_autoOnlineNotification && !ppro->bTempForceCheck) || ppro->bTempDisableCheck ) {
 		ppro->KillChatTimer( ppro->OnlineNotifTimer3 );
 		ppro->m_channelsToWho = _T("");
@@ -127,7 +127,7 @@ VOID CALLBACK OnlineNotifTimerProc( HWND, UINT, UINT_PTR idEvent, DWORD )
 	if ( !ppro )
 		return;
 
-	if ( ppro->m_iDesiredStatus == ID_STATUS_OFFLINE || ppro->m_iDesiredStatus == ID_STATUS_CONNECTING || 
+	if ( ppro->m_iStatus == ID_STATUS_OFFLINE || ppro->m_iStatus == ID_STATUS_CONNECTING || 
 		  ( !ppro->m_autoOnlineNotification && !ppro->bTempForceCheck) || ppro->bTempDisableCheck ) {
 		ppro->KillChatTimer( ppro->OnlineNotifTimer );
 		ppro->m_namesToWho = _T("");
@@ -218,7 +218,7 @@ VOID CALLBACK OnlineNotifTimerProc( HWND, UINT, UINT_PTR idEvent, DWORD )
 
 int CIrcProto::AddOutgoingMessageToDB(HANDLE hContact, TCHAR* msg)
 {
-	if ( m_iDesiredStatus == ID_STATUS_OFFLINE || m_iDesiredStatus == ID_STATUS_CONNECTING )
+	if ( m_iStatus == ID_STATUS_OFFLINE || m_iStatus == ID_STATUS_CONNECTING )
 		return 0;
 
 	CMString S = DoColorCodes( msg, TRUE, FALSE );
@@ -308,9 +308,9 @@ bool CIrcProto::OnIrc_WHOTOOLONG( const CIrcMessage* pmsg )
 bool CIrcProto::OnIrc_BACKFROMAWAY( const CIrcMessage* pmsg )
 {
 	if ( pmsg->m_bIncoming ) {
-		int Temp = m_iDesiredStatus;
-		m_iDesiredStatus = ID_STATUS_ONLINE;
-		ProtoBroadcastAck(m_szModuleName,NULL,ACKTYPE_STATUS,ACKRESULT_SUCCESS,(HANDLE)Temp,ID_STATUS_ONLINE);
+		int Temp = m_iStatus;
+		m_iStatus = m_iDesiredStatus = ID_STATUS_ONLINE;
+		ProtoBroadcastAck(m_szModuleName,NULL,ACKTYPE_STATUS,ACKRESULT_SUCCESS,(HANDLE)Temp, ID_STATUS_ONLINE);
 
 		if ( m_perform )
 			DoPerform( "Event: Available" );
@@ -324,8 +324,8 @@ bool CIrcProto::OnIrc_SETAWAY( const CIrcMessage* pmsg )
 {
 	if ( pmsg->m_bIncoming ) {
 		int Temp = m_iDesiredStatus;
-		m_iDesiredStatus = ID_STATUS_AWAY;
-		ProtoBroadcastAck(m_szModuleName,NULL,ACKTYPE_STATUS,ACKRESULT_SUCCESS,(HANDLE)Temp,ID_STATUS_AWAY);
+		m_iStatus = m_iDesiredStatus = ID_STATUS_AWAY;
+		ProtoBroadcastAck(m_szModuleName,NULL,ACKTYPE_STATUS,ACKRESULT_SUCCESS,(HANDLE)Temp, ID_STATUS_AWAY);
 
 		if ( m_perform ) {
 			switch ( m_iStatus ) {
@@ -2324,13 +2324,13 @@ void CIrcProto::OnIrcDisconnected()
 
 	m_myHost[0] = '\0';
 
-	int Temp = m_iDesiredStatus;
+	int Temp = m_iStatus;
 	KillChatTimer( OnlineNotifTimer );
 	KillChatTimer( OnlineNotifTimer3 );
 	KillChatTimer( KeepAliveTimer );
 	KillChatTimer( InitTimer );
 	KillChatTimer( IdentTimer );
-	m_iDesiredStatus = ID_STATUS_OFFLINE;
+	m_iStatus = m_iDesiredStatus = ID_STATUS_OFFLINE;
 	ProtoBroadcastAck(m_szModuleName,NULL,ACKTYPE_STATUS,ACKRESULT_SUCCESS,(HANDLE)Temp, ID_STATUS_OFFLINE);
 
 	CMString sDisconn = _T("\0035\002");
@@ -2393,16 +2393,12 @@ bool CIrcProto::DoOnConnect( const CIrcMessage* )
 	CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hMenuList, ( LPARAM )&clmi );
 	CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hMenuNick, ( LPARAM )&clmi );
 
-	int Temp = m_iDesiredStatus;
-	m_iDesiredStatus = ID_STATUS_ONLINE;
-	ProtoBroadcastAck( m_szModuleName, NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS, ( HANDLE )Temp, ID_STATUS_ONLINE );
+	int Temp = m_iStatus;
+	m_iStatus = ID_STATUS_ONLINE;
+	ProtoBroadcastAck( m_szModuleName, NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS, ( HANDLE )Temp, m_iStatus );
 
-	if ( !m_statusMessage.IsEmpty()) {
-		CMString S = _T("/AWAY ");
-		S += m_statusMessage;
-		ReplaceString( S, _T("\r\n"), _T(" "));
-		PostIrcMessageWnd( NULL, NULL, S.c_str());
-	}
+	if ( m_iDesiredStatus == ID_STATUS_AWAY )
+		PostIrcMessage( _T("/AWAY %s"), m_statusMessage.Mid(0,450).c_str());
 	
 	if ( m_perform ) {
 		DoPerform( "ALL NETWORKS" );
