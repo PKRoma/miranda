@@ -1091,8 +1091,6 @@ NETLIBHTTPREQUEST* NetlibHttpRecv(NetlibConnection* nlc, DWORD hflags, DWORD dfl
 	bool chunked = false;
 	int cenc = 0, cenctype = 0;
 
-	DWORD dwCompleteTime = GetTickCount() + 10000;
-
 next:
 	NETLIBHTTPREQUEST *nlhrReply = (NETLIBHTTPREQUEST*)NetlibHttpRecvHeaders((WPARAM)nlc, hflags);
 	if (nlhrReply == NULL) 
@@ -1196,7 +1194,7 @@ next:
 			}
 		} while (chunksz != 0);
 
-		nlhrReply->pData[nlhrReply->dataLength]='\0';
+		nlhrReply->pData[nlhrReply->dataLength] = '\0';
 	}
  
 	if (chunked)
