@@ -97,14 +97,18 @@ static const char delete_port_mapping[] =
 static const char get_port_mapping[] =
 	"     <NewPortMappingIndex>%i</NewPortMappingIndex>\r\n";
 
-static BOOL gatewayFound = FALSE;
+static bool gatewayFound;
 static SOCKADDR_IN locIP;
-static time_t lastDiscTime = 0;
+static time_t lastDiscTime;
 static int expireTime = 120;
+
+static int retryCount;
+static SOCKET sock = INVALID_SOCKET;
+static char szConnHost[256];
 
 static WORD *portList;
 static unsigned numports, numportsAlloc;
-HANDLE portListMutex;
+static HANDLE portListMutex;
 
 static char szCtlUrl[256], szDev[256];
 
@@ -193,6 +197,46 @@ static void LongLog(char* szData)
     CallService(MS_NETLIB_LOG, 0, (LPARAM)szData);
 }
 
+static void closeRouterConnection(void)
+{
+	if (sock != INVALID_SOCKET)
+	{
+		closesocket(sock);
+		sock = INVALID_SOCKET;
+	}
+}
+
+static void validateSocket(void)
+{
+	static const TIMEVAL tv = { 0, 0 };
+	fd_set rfd;
+	char buf[4];
+	bool opened;  
+
+	if (sock == INVALID_SOCKET)
+		return;
+
+	FD_ZERO(&rfd);
+	FD_SET(sock, &rfd);
+
+	switch (select(1, &rfd, NULL, NULL, &tv))
+	{
+	case SOCKET_ERROR:
+		opened = false;
+		break;
+
+	case 0:
+		opened = true;
+		break;
+
+	case 1:
+		opened = recv(sock, buf, 1, MSG_PEEK) > 0;
+		break;
+	}
+
+	if (!opened)
+		closeRouterConnection();
+}
 
 static int httpTransact(char* szUrl, char* szResult, int resSize, char* szActionName, ReqType reqtype)
 {
@@ -200,7 +244,6 @@ static int httpTransact(char* szUrl, char* szResult, int resSize, char* szAction
 	char szHost[256], szPath[256], szRes[16];
 	int sz = 0, res = 0;
 	unsigned short sPort;
-	SOCKET sock = INVALID_SOCKET;
 
 	const char* szPostHdr = soap_post_hdr;
 	char* szData = ( char* )mir_alloc(4096);
@@ -208,9 +251,16 @@ static int httpTransact(char* szUrl, char* szResult, int resSize, char* szAction
 
 	parseURL(szUrl, szHost, &sPort, szPath);
 
+	if (_stricmp(szHost, szConnHost))
+		closeRouterConnection();
+	else
+		validateSocket();
+
 	for (;;)
 	{
-		switch(reqtype) {
+		retryCount = 0;
+		switch(reqtype) 
+		{
 		case DeviceGetReq:
 			sz = mir_snprintf (szData, 4096, xml_get_hdr, szPath, szHost, sPort);
 			break;
@@ -244,62 +294,70 @@ static int httpTransact(char* szUrl, char* szResult, int resSize, char* szAction
 		}
 		szResult[0] = 0;
 		{
-			static TIMEVAL tv = { 6, 0 };
+			static const TIMEVAL tv = { 6, 0 };
 			static unsigned ttl = 4;
 			static u_long mode = 1;
 			fd_set rfd, wfd, efd;
 			SOCKADDR_IN enetaddr;
 
-			sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-
-			enetaddr.sin_family = AF_INET;
-			enetaddr.sin_port = htons(sPort);
-			enetaddr.sin_addr.s_addr = inet_addr(szHost);
-
-			// Resolve host name if needed
-			if (enetaddr.sin_addr.s_addr == INADDR_NONE)
+retrycon:
+			if (sock == INVALID_SOCKET)
 			{
-				PHOSTENT he = gethostbyname(szHost);
-				if (he)
-					enetaddr.sin_addr.s_addr = *(unsigned*)he->h_addr_list[0];
+				sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+
+				enetaddr.sin_family = AF_INET;
+				enetaddr.sin_port = htons(sPort);
+				enetaddr.sin_addr.s_addr = inet_addr(szHost);
+
+				// Resolve host name if needed
+				if (enetaddr.sin_addr.s_addr == INADDR_NONE)
+				{
+					PHOSTENT he = gethostbyname(szHost);
+					if (he)
+						enetaddr.sin_addr.s_addr = *(unsigned*)he->h_addr_list[0];
+				}
+
+				NetlibLogf(NULL, "UPnP HTTP connection Host: %s Port: %u", szHost, sPort);
+
+				FD_ZERO(&rfd); FD_ZERO(&wfd); FD_ZERO(&efd);
+				FD_SET(sock, &rfd); FD_SET(sock, &wfd); FD_SET(sock, &efd);
+
+				// Limit the scope of the connection (does not work for
+				setsockopt(sock, IPPROTO_IP, IP_TTL, (char *)&ttl, sizeof(unsigned));
+
+				// Put socket into non-blocking mode for timeout on connect
+				ioctlsocket(sock, FIONBIO, &mode);
+
+				// Connect to the remote host
+				if (connect(sock, (SOCKADDR*)&enetaddr, sizeof(enetaddr)) == SOCKET_ERROR)
+				{
+					int err = WSAGetLastError();
+
+					// Socket connection failed
+					if (err != WSAEWOULDBLOCK)
+					{
+						closeRouterConnection();
+						NetlibLogf(NULL, "UPnP connect failed %d", err);
+						break;
+					}
+					// Wait for socket to connect
+					else if (select(1, &rfd, &wfd, &efd, &tv) != 1)
+					{
+						closeRouterConnection();
+						NetlibLogf(NULL, "UPnP connect timeout");
+						break;
+					}
+					else if (!FD_ISSET(sock, &wfd))
+					{
+						closeRouterConnection();
+						NetlibLogf(NULL, "UPnP connect failed");
+						break;
+					}
+				}
+				strcpy(szConnHost, szHost);
 			}
 
-			NetlibLogf(NULL, "UPnP HTTP connection Host: %s Port: %u", szHost, sPort);
-
-			FD_ZERO(&rfd); FD_ZERO(&wfd); FD_ZERO(&efd);
-			FD_SET(sock, &rfd); FD_SET(sock, &wfd); FD_SET(sock, &efd);
-
-			// Limit the scope of the connection (does not work for
-			setsockopt(sock, IPPROTO_IP, IP_TTL, (char *)&ttl, sizeof(unsigned));
-
-			// Put socket into non-blocking mode for timeout on connect
-			ioctlsocket(sock, FIONBIO, &mode);
-
-			// Connect to the remote host
-			if (connect(sock, (SOCKADDR*)&enetaddr, sizeof(enetaddr)) == SOCKET_ERROR)
-			{
-				int err = WSAGetLastError();
-
-				// Socket connection failed
-				if (err != WSAEWOULDBLOCK)
-				{
-					NetlibLogf(NULL, "UPnP connect failed %d", err);
-					break;
-				}
-				// Wait for socket to connect
-				else if (select(1, &rfd, &wfd, &efd, &tv) != 1)
-				{
-					NetlibLogf(NULL, "UPnP connect timeout");
-					break;
-				}
-				else if (!FD_ISSET(sock, &wfd))
-				{
-					NetlibLogf(NULL, "UPnP connect failed");
-					break;
-				}
-			}
-
-			if (send( sock, szData, sz, 0 ) != SOCKET_ERROR)
+			if (send(sock, szData, sz, 0) != SOCKET_ERROR)
 			{
 				char *hdrend = NULL;
 				int acksz = 0, pktsz = 0;
@@ -316,15 +374,25 @@ static int httpTransact(char* szUrl, char* szResult, int resSize, char* szAction
 					// Wait for the next packet
 					if (select(1, &rfd, NULL, NULL, &tv) != 1)
 					{
+						closeRouterConnection();
 						NetlibLogf(NULL, "UPnP recieve timeout");
 						break;
 					}
 
 					//
 					bytesRecv = recv(sock, &szResult[sz], resSize-sz, 0);
+
 					// Connection closed or aborted, all data received
 					if (bytesRecv == 0 || bytesRecv == SOCKET_ERROR)
+					{
+						closeRouterConnection();
+						if ((bytesRecv == SOCKET_ERROR || sz == 0) && retryCount < 2)
+						{
+							++retryCount;
+							goto retrycon;
+						}
 						break;
+					}
 
 					sz += bytesRecv;
 
@@ -342,22 +410,25 @@ static int httpTransact(char* szUrl, char* szResult, int resSize, char* szAction
 					{
 						// Find HTTP header end
 						hdrend = strstr(szResult, "\r\n\r\n");
+						if (hdrend == NULL)
+							hdrend = strstr(szResult, "\n\n");
+
 						if (hdrend != NULL)
 						{
 							hdrend += 4;
 
 							// Get packet size if provided
-							if (txtParseParam(szResult, NULL, "Content-Length:", "\r", szRes, sizeof(szRes)) ||
-								txtParseParam(szResult, NULL, "CONTENT-LENGTH:", "\r", szRes, sizeof(szRes)))
+							if (txtParseParam(szResult, NULL, "Content-Length:", "\n", szRes, sizeof(szRes)) ||
+								txtParseParam(szResult, NULL, "CONTENT-LENGTH:", "\n", szRes, sizeof(szRes)))
 							{
 								// Add size of HTTP header to the packet size to compute full transmission size
-								pktsz = atol(szRes) + (hdrend - szResult);
+								pktsz = atol(ltrimp(szRes)) + (hdrend - szResult);
 							}
 							// Get encoding type if provided
-							if (txtParseParam(szResult, NULL, "Transfer-Encoding:", "\r", szRes, sizeof(szRes)) &&
-								_stricmp(szRes, "Chunked") == 0)
+							else if (txtParseParam(szResult, NULL, "Transfer-Encoding:", "\n", szRes, sizeof(szRes)))
 							{
-								acksz = hdrend - szResult;
+								if (_stricmp(lrtrimp(szRes), "Chunked") == 0)
+									acksz = hdrend - szResult;
 							}
 						}
 					}
@@ -375,21 +446,18 @@ static int httpTransact(char* szUrl, char* szResult, int resSize, char* szAction
 retry:
 						// Parse out chunk size
 						char* data = szResult + acksz;
-						char* peol1 = data == hdrend ? data - 2 : strstr(data, "\r\n");
+						char* peol1 = data == hdrend ? data - 1 : strchr(data, '\n');
 						if (peol1 != NULL)
 						{
-							char *peol2;
-							peol1 += 2;
-
-							peol2 = strstr(peol1, "\r\n");
+							char *peol2 = strchr(++peol1, '\n');
 							if (peol2 != NULL)
 							{
 								// Get chunk size
 								int chunkBytes = strtol(peol1, NULL, 16);
 								acksz += chunkBytes;
-								peol2 += 2;
+								peol2++;
 
-								memmove(data, peol2, strlen(peol2)+1);
+								memmove(data, peol2, strlen(peol2) + 1);
 								sz -= peol2 - data;
 
 								// Last chunk, all data received
@@ -402,7 +470,16 @@ retry:
 				LongLog(szResult);
 			}
 			else
-				NetlibLogf(NULL, "UPnP send failed %d", WSAGetLastError());
+			{
+				if (retryCount < 2)
+				{
+					closeRouterConnection();
+					++retryCount;
+					goto retrycon;
+				}
+				else
+					NetlibLogf(NULL, "UPnP send failed %d", WSAGetLastError());
+			}
 
 			if (szActionName == NULL)
 			{
@@ -418,10 +495,6 @@ retry:
 						locIP.sin_addr.S_un.S_addr = *(PDWORD)he->h_addr_list[0];
 				}
 			}
-
-			shutdown(sock, 2);
-			closesocket(sock);
-			sock = INVALID_SOCKET;
 		}
 		txtParseParam(szResult, "HTTP", " ", " ", szRes, sizeof(szRes));
 		res = atol(szRes);
@@ -429,12 +502,6 @@ retry:
 			szPostHdr = soap_post_hdr_m;
 		else
 			break;
-	}
-
-	if (sock != INVALID_SOCKET)
-	{
-		shutdown(sock, 2);
-		closesocket(sock);
 	}
 
 	mir_free(szData);
