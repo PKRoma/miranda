@@ -10,8 +10,10 @@
 #include <windows.h>
 #include <winres.h>
 #include "../../include/statusmodes.h"
-
-
+
+
+
+
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
 
@@ -179,8 +181,6 @@ BEGIN
     CONTROL         "Ignore sending timeouts",IDC_IGNORETIMEOUTS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,145,154,164,12
     CONTROL         "Load only actual history",IDC_LOADONLYACTUAL,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,145,166,164,12
     CONTROL         "Always trim message log to",IDC_ALWAYSTRIM2,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,214,163,12
-    LTEXT           "Contact time zone",IDC_STATIC,12,230,210,9
-    COMBOBOX        IDC_TIMEZONE,9,241,300,46,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     EDITTEXT        IDC_TRIM,178,213,33,12,ES_RIGHT | ES_NUMBER | WS_DISABLED
     CONTROL         "",IDC_TRIMSPIN,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | UDS_NOTHOUSANDS | UDS_HOTTRACK | WS_DISABLED,213,207,10,14
     LTEXT           "Events",IDC_STATIC,240,215,64,8

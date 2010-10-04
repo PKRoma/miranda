@@ -1612,7 +1612,7 @@ static TCHAR *Template_MakeRelativeDate(struct TWindowData *dat, HANDLE hTimeZon
 		else
 			szFormat = _T("d");
 
-		tmi.printTimeStamp(hTimeZone, check, szFormat, szResult, safe_sizeof(szResult), 0); 
+		tmi.printTimeStamp(hTimeZone, check, szFormat, szResult, safe_sizeof(szResult), 0);
 	}
 	return szResult;
 }

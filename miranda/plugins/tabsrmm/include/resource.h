@@ -333,7 +333,6 @@
 #define IDC_AVATARMODE                  1267
 #define IDC_CODEPAGES                   1268
 #define IDC_OWNAVATARMODE               1268
-#define IDC_TIMEZONE                    1269
 #define IDC_SENDFORMATTING              1270
 #define IDC_EMPTYLINEFIX                1272
 #define IDC_SPLITTERSTATICEDGES         1273
@@ -780,7 +779,7 @@
 #define ID_QUEUEMANAGER_COPYMESSAGETOCLIPBOARD 40261
 
 // Next default values for new objects
-// 
+//
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        17
