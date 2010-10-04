@@ -325,15 +325,6 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 	if(g_CluiData.bFirstRun)
 		DBWriteContactSettingByte(NULL, "CLUI", "firstrun", 0);
 
-	_tzset();
-	{
-		time_t now = time(NULL);
-		struct tm gmt = *gmtime(&now);
-		time_t gmt_time = mktime(&gmt);
-		g_CluiData.local_gmt_diff = (int)difftime(now, gmt_time);
-
-	}
-
 	if (!DBGetContactSettingString(NULL, "CLUI", "exIconOrder", &dbv)) {
 		if(lstrlenA(dbv.pszVal) < EXICON_COUNT) {
 			for(i = 1; i <= EXICON_COUNT; i++)
