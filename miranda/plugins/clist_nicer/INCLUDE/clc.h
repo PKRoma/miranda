@@ -415,7 +415,6 @@ struct TCluiData {
 	BOOL bSecIMAvail;
 	BOOL bNoTrayTips;
 	int exIconScale;
-	DWORD local_gmt_diff;
 	BOOL bShowLocalTime;
 	BOOL bShowLocalTimeSelective;
 	BOOL bShowXStatusOnSbar;

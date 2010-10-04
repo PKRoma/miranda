@@ -299,15 +299,6 @@ extern "C" int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 	if(cfg::dat.bFirstRun)
 		cfg::writeByte("CLUI", "firstrun", 0);
 
-	_tzset();
-	{
-		time_t now = time(NULL);
-		struct tm gmt = *gmtime(&now);
-		time_t gmt_time = mktime(&gmt);
-		cfg::dat.local_gmt_diff = (int)difftime(now, gmt_time);
-
-	}
-
 	if (!cfg::getString(NULL, "CLUI", "exIconOrder", &dbv)) {
 		if(lstrlenA(dbv.pszVal) < EXICON_COUNT) {
 			for(i = 1; i <= EXICON_COUNT; i++)

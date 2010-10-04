@@ -255,12 +255,12 @@ void API::onInit()
 	}
 
 	pfnAlphaBlend = (pfnAlphaBlend_t) GetProcAddress(GetModuleHandleA("gdi32"), "GdiAlphaBlend");
-	if (0 == pfnAlphaBlend)
-		pfnAlphaBlend = (pfnAlphaBlend_t)GetProcAddress(LoadLibraryA("msimg32"), "AlphaBlend");
-
 	pfnGradientFill = (PGF) GetProcAddress(GetModuleHandleA("gdi32"), "GdiGradientFill");
-	if (0 == pfnGradientFill)
-		pfnGradientFill = (PGF) GetProcAddress(GetModuleHandleA("msimg32"), "GradientFill");
+	if (0 == pfnAlphaBlend) {
+		HMODULE hMsImgDll = LoadLibraryA("msimg32.dll");
+		pfnAlphaBlend = (pfnAlphaBlend_t)GetProcAddress(hMsImgDll, "AlphaBlend");
+		pfnGradientFill = (PGF) GetProcAddress(hMsImgDll, "GradientFill");
+	}
 
 	sysConfig.isVistaPlus = (IsWinVerVistaPlus() ? true : false);
 	sysConfig.isSevenPlus = (IsWinVer7Plus() ? true : false);
