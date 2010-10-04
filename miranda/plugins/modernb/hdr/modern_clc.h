@@ -376,8 +376,6 @@ struct ClcData {
 	// Contact time
 	BOOL contact_time_show;
 	BOOL contact_time_show_only_if_different;
-	DWORD local_gmt_diff;
-	DWORD local_gmt_diff_dst;
 
 	// Text
 	BOOL text_rtl;

@@ -589,15 +589,7 @@ void LoadCLCOptions(HWND hwnd, struct ClcData *dat )
 		dat->contact_time_show = 0;
 		dat->contact_time_show_only_if_different = 0;
 	}
-	//issue #0065 "Client time shows wrong" fix
-	{
-		TIME_ZONE_INFORMATION tzinfo;
-		int nOffset=0;
-		DWORD dwResult;
-		dwResult = GetTimeZoneInformation(&tzinfo);
-		nOffset = -(tzinfo.Bias + tzinfo.StandardBias) * 60;
-		dat->local_gmt_diff=dat->local_gmt_diff_dst=(DWORD)nOffset;
-	}
+
 	// Text
 	dat->text_rtl = ModernGetSettingByte(NULL,"CList","TextRTL",SETTING_TEXT_RTL_DEFAULT);
 	dat->text_align_right = ModernGetSettingByte(NULL,"CList","TextAlignToRight",SETTING_TEXT_RIGHTALIGN_DEFAULT);
