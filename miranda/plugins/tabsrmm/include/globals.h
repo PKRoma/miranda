@@ -169,7 +169,6 @@ public:
 	WINDOWPLACEMENT m_GlobalContainerWpos;
 	int         m_IdleDetect;
 	int         m_smcxicon, m_smcyicon;
-	DWORD       local_gmt_diff;
 	int         m_PasteAndSend;
 	TCHAR       *m_szNoStatus;
 	COLORREF    crIncoming, crOutgoing, crOldIncoming, crOldOutgoing, crStatus;

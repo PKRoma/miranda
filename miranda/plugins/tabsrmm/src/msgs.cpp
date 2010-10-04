@@ -564,7 +564,6 @@ static void TSAPI InitAPI()
 
 int LoadSendRecvMessageModule(void)
 {
-	int 					nOffset = 0;
 	INITCOMMONCONTROLSEX 	icex;
 
 	if(FIF == 0) {
@@ -574,34 +573,6 @@ int LoadSendRecvMessageModule(void)
 	icex.dwSize = sizeof(INITCOMMONCONTROLSEX);
 	icex.dwICC   = ICC_COOL_CLASSES | ICC_BAR_CLASSES | ICC_LISTVIEW_CLASSES;;
 	InitCommonControlsEx(&icex);
-
-	TIME_ZONE_INFORMATION tzinfo;
-	DWORD dwResult;
-
-
-	dwResult = GetTimeZoneInformation(&tzinfo);
-
-	nOffset = -(tzinfo.Bias + tzinfo.StandardBias) * 60;
-	goto tzdone;
-
-	switch (dwResult) {
-
-		case TIME_ZONE_ID_STANDARD:
-			nOffset = -(tzinfo.Bias + tzinfo.StandardBias) * 60;
-			break;
-
-		case TIME_ZONE_ID_DAYLIGHT:
-			nOffset = -(tzinfo.Bias + tzinfo.DaylightBias) * 60;
-			break;
-
-		case TIME_ZONE_ID_UNKNOWN:
-		case TIME_ZONE_ID_INVALID:
-		default:
-			nOffset = 0;
-			break;
-
-	}
-tzdone:
 
 	Utils::loadSystemLibrary(L"\\riched20.dll");
 
@@ -629,7 +600,6 @@ tzdone:
 	LoadDefaultTemplates();
 
 	BuildCodePageList();
-	PluginConfig.local_gmt_diff = nOffset;
 
 	return 0;
 }
