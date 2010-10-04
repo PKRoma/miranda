@@ -1375,9 +1375,7 @@ LBL_InvalidCommand:
 
 			if (info->contactJoined(hContact) == 1) 
 			{
-				char szEmail[MSN_MAX_EMAIL_LEN] = "";
-				getStaticString(hContact, "e-mail", szEmail, sizeof(szEmail));
-				int netId = Lists_GetNetId(szEmail);
+				int netId = Lists_GetNetId(data.userEmail);
 
 				if (netId == NETID_MSN)
 					info->sendCaps();
