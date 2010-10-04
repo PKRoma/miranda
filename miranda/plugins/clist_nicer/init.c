@@ -252,12 +252,12 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 	}
 
 	MyGradientFill = (PGF) GetProcAddress(GetModuleHandleA("gdi32"), "GdiGradientFill");
-	if (MyGradientFill == 0)
-		MyGradientFill = (PGF) GetProcAddress(LoadLibraryA("msimg32.dll"), "GradientFill");
-
 	MyAlphaBlend = (PAB) GetProcAddress(GetModuleHandleA("gdi32"), "GdiAlphaBlend");
-	if (MyAlphaBlend == 0)
-		MyAlphaBlend = (PAB) GetProcAddress(GetModuleHandleA("msimg32"), "AlphaBlend");
+	if (MyGradientFill == 0) {
+		HMODULE hMsImgDll = LoadLibraryA("msimg32.dll");
+		MyGradientFill = (PGF) GetProcAddress(hMsImgDll, "GradientFill");
+		MyAlphaBlend = (PAB) GetProcAddress(hMsImgDll, "AlphaBlend");
+	}
 
 	LoadCLCButtonModule();
 	RegisterCLUIFrameClasses();
