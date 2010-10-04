@@ -1090,7 +1090,7 @@ void __cdecl CIrcProto::ConnectServerThread( void* )
 		if (IsConnected()) {
 			KillChatTimer( RetryTimer );
 
-			if ( lstrlenA( m_mySpecifiedHost ))
+			if ( m_mySpecifiedHost[0] )
 				ircFork( &CIrcProto::ResolveIPThread, new IPRESOLVE( m_mySpecifiedHost, IP_MANUAL ));
 
 			DoEvent(GC_EVENT_CHANGESESSIONAME, SERVERWINDOW, NULL, m_info.sNetwork.c_str(), NULL, NULL, NULL, FALSE, TRUE);

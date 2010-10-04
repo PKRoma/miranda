@@ -250,7 +250,7 @@ void CIrcProto::Disconnect(void)
 	if( con == NULL )
 		return;
 
-	if ( m_quitMessage && lstrlen(m_quitMessage) > 0 )
+	if ( m_quitMessage && m_quitMessage[0] )
 		NLSend( _T("QUIT :%s\r\n"), m_quitMessage);
 	else
 		NLSend( "QUIT \r\n" );
