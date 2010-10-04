@@ -635,11 +635,13 @@ static void discoverUPnP(void)
 				buf[buflen] = 0;
 				LongLog(buf);
 
-				if (txtParseParam(buf, NULL, "LOCATION:", "\r", szUrl, sizeof(szUrl)) ||
-					txtParseParam(buf, NULL, "Location:", "\r", szUrl, sizeof(szUrl)))
+				if (txtParseParam(buf, NULL, "LOCATION:", "\n", szUrl, sizeof(szUrl)) ||
+					txtParseParam(buf, NULL, "Location:", "\n", szUrl, sizeof(szUrl)))
 				{
 					char age[30];
 					char szHostNew[256], szHostExist[256];
+
+					lrtrim(szUrl);
 
 					parseURL(szUrl, szHostNew, NULL, NULL);
 					parseURL(szCtlUrl, szHostExist, NULL, NULL);
@@ -649,9 +651,10 @@ static void discoverUPnP(void)
 						break;
 					}
 
-					txtParseParam(buf, NULL, "ST:", "\r", szDev, sizeof(szDev));
-					txtParseParam(buf, "max-age", "=", "\r", age, sizeof(age));
-					expireTime = atoi(age);
+					txtParseParam(buf, NULL, "ST:", "\n", szDev, sizeof(szDev));
+					txtParseParam(buf, "max-age", "=", "\n", age, sizeof(age));
+					expireTime = atoi(lrtrimp(age));
+					lrtrim(szDev);
 
 					if (getUPnPURLs(szUrl, sizeof(szUrl))) break;
 				}
