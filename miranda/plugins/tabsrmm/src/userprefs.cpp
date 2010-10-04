@@ -170,9 +170,6 @@ static INT_PTR CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, 
 			CheckDlgButton(hwndDlg, IDC_FORCEANSI, M->GetByte(hContact, "forceansi", 0) ? 1 : 0);
 			CheckDlgButton(hwndDlg, IDC_IGNORETIMEOUTS, M->GetByte(hContact, "no_ack", 0));
 
-			if(tmi.prepareList)
-				tmi.prepareList(hContact, GetDlgItem(hwndDlg, IDC_TIMEZONE), TZF_PLF_CB);
-
 			ShowWindow(hwndDlg, SW_SHOW);
 			return TRUE;
 		}
@@ -262,14 +259,6 @@ static INT_PTR CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, 
 
 					M->WriteByte(hContact, TEMPLATES_MODULE, "enabled", (BYTE)(IsDlgButtonChecked(hwndDlg, IDC_TEMPLOVERRIDE)));
 					M->WriteByte(hContact, RTLTEMPLATES_MODULE, "enabled", (BYTE)(IsDlgButtonChecked(hwndDlg, IDC_RTLTEMPLOVERRIDE)));
-
-					if(tmi.storeListResults)
-						tmi.storeListResults(hContact, GetDlgItem(hwndDlg, IDC_TIMEZONE), TZF_PLF_CB);
-
-					if (hWnd && dat) {
-						LoadTimeZone(dat);
-						dat->Panel->Invalidate();
-					}
 
 					bAvatarVisible = (BYTE)SendDlgItemMessage(hwndDlg, IDC_SHOWAVATAR, CB_GETCURSEL, 0, 0);
 					if(bAvatarVisible == 0)
