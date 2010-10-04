@@ -967,9 +967,9 @@ int CIrcProto::SetStatusInternal( int iNewStatus, bool bIsInternal )
 	if ( !bIsInternal )
 		m_iDesiredStatus = iNewStatus;
 
-	if ( iNewStatus == ID_STATUS_ONLINE || iNewStatus == ID_STATUS_AWAY || iNewStatus == ID_STATUS_FREECHAT ) //go from offline to online
+	if (( iNewStatus == ID_STATUS_ONLINE || iNewStatus == ID_STATUS_AWAY || iNewStatus == ID_STATUS_FREECHAT) && !IsConnected()) //go from offline to online
 	{
-		if (!IsConnected() && !m_bConnectThreadRunning)
+		if (!m_bConnectThreadRunning)
 			ConnectToServer();
 	}
 	else if (( iNewStatus == ID_STATUS_ONLINE || iNewStatus == ID_STATUS_FREECHAT) && IsConnected() && m_iStatus == ID_STATUS_AWAY) //go to online while connected
