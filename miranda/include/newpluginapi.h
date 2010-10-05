@@ -81,6 +81,7 @@ typedef struct _MUUID {
 #define MIID_IDLE           {0x296f9f3b, 0x5b6f, 0x40e5, {0x8f, 0xb0, 0xa6, 0x49, 0x6c, 0x18, 0xbf, 0xa}}
 #define MIID_FONTSERVICE    {0x56f39112, 0xe37f, 0x4234, {0xa9, 0xe6, 0x7a, 0x81, 0x17, 0x45, 0xc1, 0x75}}
 #define MIID_UPDATENOTIFY   {0x4e68b12a, 0x6b54, 0x44de, {0x86, 0x37, 0xf1, 0x12, 0xd, 0xb6, 0x81, 0x40}}
+#define MIID_CRYPTO         {0x415ca6e1, 0x895f, 0x40e6, {0x87, 0xbd, 0x9b, 0x39, 0x60, 0x16, 0xd0, 0xe5}}
 
 /* Common plugin interfaces (core plugins) */
 #define MIID_DATABASE       {0xae77fd33, 0xe484, 0x4dc7, {0x8c, 0xbc, 0x9, 0x9f, 0xed, 0xcc, 0xcf, 0xdd}}
@@ -204,7 +205,7 @@ typedef struct tagPLUGINLINK {
 		#define SetHookDefaultForHookableEvent(a,b)       pluginLink->SetHookDefaultForHookableEvent(a,b)
 		#define CreateServiceFunctionParam(a,b,c)         pluginLink->CreateServiceFunctionParam(a,b,c)
 		#define NotifyEventHooksDirect(a,b,c)             pluginLink->NotifyEventHooksDirect(a,b,c)
-		#if MIRANDA_VER >= 0x800							
+		#if MIRANDA_VER >= 0x800
 			#define CallProtoService(a,b,c,d)              pluginLink->CallProtoService(a,b,c,d)
 			#define CallContactService(a,b,c,d)            pluginLink->CallContactService(a,b,c,d)
 			#define HookEventParam(a,b,c)                  pluginLink->HookEventParam(a,b,c)
