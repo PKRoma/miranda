@@ -476,6 +476,12 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
 			}
 			else
 				dat->lastEnterTime = 0;
+			if (((wParam == VK_INSERT && (GetKeyState(VK_SHIFT) & 0x8000)) || (wParam == 'V' && (GetKeyState(VK_CONTROL) & 0x8000))) &&
+				!(GetKeyState(VK_MENU) & 0x8000))
+			{
+				SendMessage(hwnd, WM_PASTE, 0, 0);
+				return 0;
+			}
 
 		}
 		break;
@@ -498,6 +504,20 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
 			return 0;
 		}
 		break;
+	case WM_PASTE:
+		if (IsClipboardFormatAvailable(CF_HDROP))
+		{
+			if (OpenClipboard(hwnd)) 
+			{
+				HANDLE hDrop = GetClipboardData(CF_HDROP);
+				if (hDrop)
+					SendMessage(hwnd, WM_DROPFILES, (WPARAM)hDrop, 0);
+				CloseClipboard();
+			}
+		}
+		else
+			SendMessage(hwnd, EM_PASTESPECIAL, CF_TEXT, 0);
+		return 0;
 	case WM_DROPFILES:
 		SendMessage(GetParent(hwnd), WM_DROPFILES, wParam, lParam);
 		return 0;

@@ -55,8 +55,9 @@ void InputAreaContextMenu(HWND hwnd, WPARAM wParam, LPARAM lParam, HANDLE hConta
 		EnableMenuItem(hSubMenu, IDM_REDO, MF_BYCOMMAND | MF_GRAYED);
 	}
 	if (!SendMessage(hwnd, EM_CANPASTE, 0, 0)) {
-		EnableMenuItem(hSubMenu, IDM_PASTE, MF_BYCOMMAND | MF_GRAYED);
 		EnableMenuItem(hSubMenu, IDM_PASTESEND, MF_BYCOMMAND | MF_GRAYED);
+		if (!IsClipboardFormatAvailable(CF_HDROP))
+			EnableMenuItem(hSubMenu, IDM_PASTE, MF_BYCOMMAND | MF_GRAYED);
 	}
 	if (lParam == 0xFFFFFFFF) {
 		SendMessage(hwnd, EM_POSFROMCHAR, (WPARAM) & pt, (LPARAM) sel.cpMax);
@@ -99,7 +100,7 @@ void InputAreaContextMenu(HWND hwnd, WPARAM wParam, LPARAM lParam, HANDLE hConta
 		SendMessage(hwnd, WM_COPY, 0, 0);
 		break;
 	case IDM_PASTE:
-		SendMessage(hwnd, EM_PASTESPECIAL, CF_TEXT, 0);
+		SendMessage(hwnd, WM_PASTE, 0, 0);
 		break;
 	case IDM_PASTESEND:
 		SendMessage(hwnd, EM_PASTESPECIAL, CF_TEXT, 0);

@@ -493,7 +493,6 @@ TCHAR *TimestampToString(DWORD dwFlags, time_t check, int mode)
 
     szResult[0] = '\0';
     format[0] = '\0';
-
     if ((mode == 0 || mode == 1) && (dwFlags & SMF_SHOWDATE)) {
 		struct tm tm_now, tm_today;
 		time_t now = time(NULL);
@@ -529,7 +528,7 @@ TCHAR *TimestampToString(DWORD dwFlags, time_t check, int mode)
     if (format[0] != '\0') {
 		tmi.printTimeStamp(NULL, check, format, str, SIZEOF(str), 0);
 		_tcsncat(szResult, str, 500);
-    }
+	}
     return szResult;
 }
 
