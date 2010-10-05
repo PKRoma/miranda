@@ -287,7 +287,7 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
 		if (((wParam == VK_INSERT && (GetKeyState(VK_SHIFT) & 0x8000)) || (wParam == 'V' && (GetKeyState(VK_CONTROL) & 0x8000))) &&
 		    !(GetKeyState(VK_MENU) & 0x8000)) // ctrl-v (paste clean text)
 		{
-			SendMessage(hwnd, EM_PASTESPECIAL, CF_TEXT, 0);
+			SendMessage(hwnd, WM_PASTE, 0, 0);
 			return 0;
 		}
 
@@ -383,7 +383,8 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
 			}
 			if (!SendMessage(hwnd, EM_CANPASTE, 0, 0)) 
 			{
-				EnableMenuItem(mwpd.hMenu, IDM_PASTE, MF_BYCOMMAND | MF_GRAYED);
+				if (!IsClipboardFormatAvailable(CF_HDROP))
+					EnableMenuItem(mwpd.hMenu, IDM_PASTE, MF_BYCOMMAND | MF_GRAYED);
 				EnableMenuItem(mwpd.hMenu, IDM_PASTESEND, MF_BYCOMMAND | MF_GRAYED);
 			}
 			if (lParam == 0xFFFFFFFF) 
@@ -431,7 +432,7 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
 				break;
 
 			case IDM_PASTE:
-				SendMessage(hwnd, EM_PASTESPECIAL, CF_TEXT, 0);
+				SendMessage(hwnd, WM_PASTE, 0, 0);
 				break;
 
 			case IDM_PASTESEND:
@@ -456,7 +457,18 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
 		}
 
 	case WM_PASTE:
-		SendMessage(hwnd, EM_PASTESPECIAL, CF_TEXT, 0);
+		if (IsClipboardFormatAvailable(CF_HDROP))
+		{
+			if (OpenClipboard(hwnd)) 
+			{
+				HANDLE hDrop = GetClipboardData(CF_HDROP);
+				if (hDrop)
+					SendMessage(hwnd, WM_DROPFILES, (WPARAM)hDrop, 0);
+				CloseClipboard();
+			}
+		}
+		else
+			SendMessage(hwnd, EM_PASTESPECIAL, CF_TEXT, 0);
 		return 0;
 
 	case EM_UNSUBCLASSED:

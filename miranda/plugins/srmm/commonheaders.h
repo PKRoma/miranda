@@ -31,6 +31,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <windowsx.h>
 #include <ole2.h>
 #include <shellapi.h>
+#include <shlobj.h>
 #include <commctrl.h>
 #include <vssym32.h>
 
