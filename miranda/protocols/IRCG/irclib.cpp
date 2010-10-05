@@ -1454,7 +1454,7 @@ void DoIdent(HANDLE hConnection, DWORD, void* extra )
 	char szBuf[1024];
 	int cbTotal = 0;
 
-	do {
+	for (;;) {
 		int cbRead = Netlib_Recv(hConnection, szBuf+cbTotal, sizeof(szBuf)-1-cbTotal, 0);
 		if( cbRead == SOCKET_ERROR || cbRead == 0)
 			break;
@@ -1499,5 +1499,4 @@ LBL_Parse:
 		strdel(szBuf, int(EOLPos + 2 - szBuf));
 		goto LBL_Parse;
 	}
-		while (true);
 }
