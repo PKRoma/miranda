@@ -424,11 +424,17 @@ void CPepService::Publish()
 
 void CPepService::Retract()
 {
+	TCHAR* tempName = mir_a2t( m_name );
+	_tcslwr( tempName );
+
 	m_proto->m_ThreadInfo->send(
 		XmlNodeIq( _T("set"), m_proto->SerialNext())
 			<< XCHILDNS( _T("pubsub"), _T(JABBER_FEAT_PUBSUB))
-				<< XCHILD( _T("retract")) << XATTR( _T("node"), m_node) << XATTRI( _T("notify"), 1 )
-					<< XCHILD( _T("item")) << XATTR( _T("id"), _T("current")));
+				<< XCHILD( _T("publish")) << XATTR( _T("node"), m_node )
+					<< XCHILD( _T("item"))
+						<< XCHILDNS( tempName, m_node ));
+
+	mir_free( tempName );
 }
 
 void CPepService::ResetPublish()
