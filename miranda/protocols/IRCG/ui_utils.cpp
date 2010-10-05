@@ -1316,7 +1316,7 @@ void CCtrlTreeView::TranslateTree()
 			hItem = hItemTmp;
 		else
 		{
-			while (1)
+			for (;;)
 			{
 				if (!(hItem = GetParent(hItem))) break;
 				if (hItemTmp = GetNextSibling(hItem))

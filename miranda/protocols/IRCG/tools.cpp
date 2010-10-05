@@ -111,7 +111,7 @@ void CIrcProto::AddToJTemp(TCHAR op, CMString& sCommand)
 	CMString res;	
 
 	int pos = 0;
-	while( true ) {
+	for ( ;; ) {
 		CMString tmp = sCommand.Tokenize( _T(","), pos );
 		if ( pos == -1 )
 			break;

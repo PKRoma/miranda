@@ -250,7 +250,7 @@ HICON CIrcProto::LoadIconEx( int iconId, bool big )
 {
 	for ( int i=0; i < SIZEOF(iconList); i++ )
 		if ( iconList[i].defIconID == iconId )
-			return ( HICON )CallService( MS_SKIN2_GETICONBYHANDLE, 0, (LPARAM)hIconLibItems[i] );
+			return ( HICON )CallService( MS_SKIN2_GETICONBYHANDLE, big, (LPARAM)hIconLibItems[i] );
 
 	return NULL;
 }
@@ -1437,7 +1437,7 @@ void CIrcProto::InitIgnore( void )
 
 	int idx = 0;
 	char settingName[40];
-	while ( TRUE ) {
+	for ( ;; ) {
 		mir_snprintf( settingName, sizeof(settingName), "IGNORE:%d", idx++ );
 
 		DBVARIANT dbv;
@@ -1456,7 +1456,7 @@ void CIrcProto::RewriteIgnoreSettings( void )
 	char settingName[ 40 ];
 
 	int i=0;
-	while ( TRUE ) {
+	for ( ;; ) {
 		mir_snprintf( settingName, sizeof(settingName), "IGNORE:%d", i++ );
 		if ( DBDeleteContactSetting( NULL, m_szModuleName, settingName ))
 			break;
