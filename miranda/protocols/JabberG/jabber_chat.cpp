@@ -776,8 +776,8 @@ public:
 
 		TCHAR buf[256];
 		mir_sntprintf(buf, SIZEOF(buf), _T("%s\n%s"), m_room, TranslateT("Send groupchat invitation.") );
-		SetDlgItemText( m_hwnd, IDC_HEADERBAR, buf );
-		SendMessage( m_hwnd, WM_SETICON, ICON_SMALL, ( LPARAM )m_proto->LoadIconEx( "group" ));
+		SetDlgItemText(m_hwnd, IDC_HEADERBAR, buf);
+		WindowSetIcon(m_hwnd, m_proto, "group");
 
 		SetWindowLong(GetDlgItem(m_hwnd, IDC_CLIST), GWL_STYLE,
 			GetWindowLong(GetDlgItem(m_hwnd, IDC_CLIST), GWL_STYLE)|CLS_HIDEOFFLINE|CLS_CHECKBOXES|CLS_HIDEEMPTYGROUPS|CLS_USEGROUPS|CLS_GREYALTERNATE|CLS_GROUPCHECKBOXES);
