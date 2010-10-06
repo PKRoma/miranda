@@ -1312,8 +1312,6 @@ BOOL CJabberProto::SendPepTune( TCHAR* szArtist, TCHAR* szLength, TCHAR* szSourc
 	HXML tuneNode = itemNode << XCHILDNS( _T("tune"), _T(JABBER_FEAT_USER_TUNE));
 
 	if ( szArtist || szLength || szSource || szTitle || szUri ) {
-		itemNode << XATTR( _T("id"), _T("current"));
-
 		if ( szArtist ) tuneNode << XCHILD( _T("artist"), szArtist );
 		if ( szLength ) tuneNode << XCHILD( _T("length"), szLength );
 		if ( szSource ) tuneNode << XCHILD( _T("source"), szSource );
