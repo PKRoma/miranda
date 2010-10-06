@@ -39,13 +39,15 @@ static void xmlapiDestroyNode( HXML n )
 
 static HXML xmlapiParseString( LPCTSTR str, int* datalen, LPCTSTR tag )
 {
+	if (str == NULL) return NULL;
+
 	XMLResults res;
 	XMLNode result = XMLNode::parseString( str, tag, &res );
 
 	if ( datalen != NULL )
 		datalen[0] += res.nChars;
 
-	return (tag != NULL || res.error == eXMLErrorNone) ? result.detach() : NULL;
+	return (res.error == eXMLErrorNone || (tag != NULL && res.error == eXMLErrorMissingEndTag)) ? result.detach() : NULL;
 }
 
 static HXML xmlapiAddChild( HXML _n, LPCTSTR name, LPCTSTR text )
