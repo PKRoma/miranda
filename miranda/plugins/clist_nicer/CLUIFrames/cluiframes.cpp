@@ -1154,17 +1154,39 @@ INT_PTR CLUIFramesSetFrameOptions(WPARAM wParam, LPARAM lParam)
 			return 0;
 
 		case FO_HEIGHT:
+		{
 			if (lParam < 0) {
 				ulockfrm();
 				return -1;
 			}
-			retval = Frames[pos].height;
-			Frames[pos].height = lParam;
-			if (!CLUIFramesFitInSize())
-				Frames[pos].height = retval;
-			retval = Frames[pos].height;
+			if(Frames[pos].Skinned) {
+				int uID = (Frames[pos].TitleBar.ShowTitleBar ? ID_EXTBKOWNEDFRAMEBORDERTB - ID_STATUS_OFFLINE : ID_EXTBKOWNEDFRAMEBORDER - ID_STATUS_OFFLINE);
+				lParam += (StatusItems[uID].MARGIN_BOTTOM + StatusItems[uID].MARGIN_TOP);
+			}
+			if (Frames[pos].collapsed)	{
+				int oldHeight = Frames[pos].height;
+				retval = Frames[pos].height;
+				Frames[pos].height = lParam;
+				if(!CLUIFramesFitInSize())
+					Frames[pos].height = retval;
+				retval = Frames[pos].height;
+
+				if (Frames[pos].height != oldHeight) {
+					CLUIFramesOnClistResize((WPARAM)pcli->hwndContactList,(LPARAM)0);
+					if(Frames[pos].Skinned)
+						RedrawWindow(Frames[pos].hWnd, 0, 0, RDW_FRAME|RDW_UPDATENOW|RDW_INVALIDATE);
+				}
+			}
+			else {
+				retval = Frames[pos].HeightWhenCollapsed;
+				Frames[pos].HeightWhenCollapsed = lParam;
+				if(!CLUIFramesFitInSize())
+					Frames[pos].HeightWhenCollapsed = retval;
+				retval = Frames[pos].HeightWhenCollapsed;
+			}
 			ulockfrm();
-			return retval;
+			return(retval);
+		}
 
 		case FO_FLOATING:
 			if (lParam < 0) {

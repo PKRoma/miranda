@@ -266,7 +266,6 @@ static BLENDFUNCTION bf = {0, 0, AC_SRC_OVER, 0};
 static BOOL avatar_done = FALSE;
 HDC g_HDC;
 static BOOL g_RTL;
-DWORD ( WINAPI *pfnSetLayout )(HDC, DWORD) = NULL;
 HDC hdcTempAV;
 HBITMAP hbmTempAV, hbmTempOldAV;
 
@@ -417,10 +416,10 @@ static int __fastcall DrawAvatar(HDC hdcMem, RECT *rc, struct ClcContact *contac
             hdcTemp = CreateCompatibleDC(g_HDC);
             hbmTemp = CreateCompatibleBitmap(g_HDC, rcTemp.right, rcTemp.bottom);
             hbmOld = reinterpret_cast<HBITMAP>(SelectObject(hdcTemp, hbmTemp));
-            pfnSetLayout(hdcTemp, LAYOUT_RTL);
+            API::pfnSetLayout(hdcTemp, LAYOUT_RTL);
             BitBlt(hdcTemp, 0, 0, rcTemp.right, rcTemp.bottom,
                    hdcMem, rcFrame.left, rcFrame.top, SRCCOPY);
-            pfnSetLayout(hdcTemp, 0);
+            API::pfnSetLayout(hdcTemp, 0);
             DrawAlpha(hdcTemp, &rcTemp, item->COLOR, item->ALPHA, item->COLOR2, item->COLOR2_TRANSPARENT, item->GRADIENT,
                       item->CORNER, item->BORDERSTYLE, item->imageItem);
             BitBlt(hdcMem, rcFrame.left, rcFrame.top, rcFrame.right - rcFrame.left, rcFrame.bottom - rcFrame.top,
@@ -503,7 +502,7 @@ void __inline PaintItem(HDC hdcMem, struct ClcGroup *group, struct ClcContact *c
         goto set_bg_l;
 
     if(type == CLCIT_CONTACT && (cEntry->dwCFlags & ECF_RTLNICK || mirror_always)) {
-		if(pfnSetLayout != NULL && (mirror_rtl || mirror_always)) {
+		if(API::pfnSetLayout != NULL && (mirror_rtl || mirror_always)) {
 			g_RTL = TRUE;
 			bg_indent_r = cfg::dat.bApplyIndentToBg ? indent * dat->groupIndent : 0;
 		}
@@ -514,7 +513,7 @@ void __inline PaintItem(HDC hdcMem, struct ClcGroup *group, struct ClcContact *c
 		else
 			bg_indent_l = cfg::dat.bApplyIndentToBg ? indent * dat->groupIndent : 0;
 	}
-	else if(type == CLCIT_GROUP && pfnSetLayout != NULL) {
+	else if(type == CLCIT_GROUP && API::pfnSetLayout != NULL) {
 		if((contact->isRtl && cfg::dat.bGroupAlign == CLC_GROUPALIGN_AUTO) || cfg::dat.bGroupAlign == CLC_GROUPALIGN_RIGHT) {
 			g_RTL = TRUE;
 			bg_indent_r = cfg::dat.bApplyIndentToBg ? indent * dat->groupIndent : 0;
@@ -527,7 +526,7 @@ void __inline PaintItem(HDC hdcMem, struct ClcGroup *group, struct ClcContact *c
 
 set_bg_l:
 #else
-	if(type == CLCIT_GROUP && cfg::dat.bGroupAlign == CLC_GROUPALIGN_RIGHT && !dat->bisEmbedded && pfnSetLayout != 0) {
+	if(type == CLCIT_GROUP && cfg::dat.bGroupAlign == CLC_GROUPALIGN_RIGHT && !dat->bisEmbedded && API::pfnSetLayout != 0) {
 		g_RTL = TRUE;
 		bg_indent_r = cfg::dat.bApplyIndentToBg ? indent * dat->groupIndent : 0;
 	}
@@ -895,7 +894,7 @@ set_bg_l:
 	}
 
 	if(g_RTL)
-		pfnSetLayout(hdcMem, LAYOUT_RTL | LAYOUT_BITMAPORIENTATIONPRESERVED);
+		API::pfnSetLayout(hdcMem, LAYOUT_RTL | LAYOUT_BITMAPORIENTATIONPRESERVED);
 bgskipped:
 
     rcContent.top = y + g_padding_y;
@@ -1365,7 +1364,7 @@ nodisplay:
 		ImageList_DrawEx(dat->himlExtraColumns, contact->iExtraImage[iImage], hdcMem, clRect->right - rightOffset - dat->extraColumnSpacing * (dat->extraColumnsCount - iImage), y + ((rowHeight - 16) >> 1), 0, 0, CLR_NONE, colourFg, mode);
 	}
 	if(g_RTL)
-		pfnSetLayout(hdcMem, 0);
+		API::pfnSetLayout(hdcMem, 0);
 }
 
 void SkinDrawBg(HWND hwnd, HDC hdc)

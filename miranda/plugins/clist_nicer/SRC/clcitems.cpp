@@ -365,100 +365,6 @@ BYTE GetCachedStatusMsg(int iExtraCacheEntry, char *szProto)
 }
 
 /*
- * this is how time zone information is stored in the registry
- */
-
-typedef struct _REG_TZI_FORMAT
-{
-    LONG Bias;
-    LONG StandardBias;
-    LONG DaylightBias;
-    SYSTEMTIME StandardDate;
-    SYSTEMTIME DaylightDate;
-} REG_TZI_FORMAT;
-
-/*
- * figure out whether DST is active for the target timezone
- * target: SYSTEMTIME *  __IN
- *
- * uses g_CLuiData.st for the current date and time, which is kept current
- * in other places.
- */
-
-#if defined(_UNICODE)
-static LONG TZ_TimeCompare(SYSTEMTIME *target)
-{
-	if(target->wYear == 0 ) {
-		SYSTEMTIME	stTemp = {0};
-		FILETIME	ft;
-
-		/*
-		 * the following covers most cases, only the actual switching months need a more
-		 * deeply investigation later.
-		 */
-
-		if(cfg::dat.st.wMonth < target->wMonth )
-			return -1;
-		if(cfg::dat.st.wMonth > target->wMonth )
-			return 1;
-
-		/*
-		 * 1) figure out day of week for the 1st day of the given month
-		 * 2) calculate the actual date
-		 * 3) convert to file times for comparison
-		 */
-
-		CopyMemory(&stTemp, target, sizeof(SYSTEMTIME));
-		stTemp.wDay = 1;
-		stTemp.wYear = cfg::dat.st.wYear;
-		SystemTimeToFileTime(&stTemp, &ft);
-		FileTimeToSystemTime(&ft, &stTemp);
-
-		stTemp.wDay = (1 + (7 + target->wDayOfWeek - stTemp.wDayOfWeek) % 7);
-
-		if(target->wDay == 5 ) {
-			stTemp.wDay = stTemp.wDay + 21;
-			if((stTemp.wDay + 7) <= 30)  // XXXX FIXME!! need a method to get the # of days in the month before. 30 probably works, but not always
-				stTemp.wDay += 7;
-		}
-		else
-			stTemp.wDay = (target->wDay - 1) * 7;
-
-		SystemTimeToFileTime(&stTemp, &ft);
-
-		if(CompareFileTime(&cfg::dat.ft, &ft) < 0)
-		   return -1;
-		else
-			return 1;
-	}
-	return 0;
-}
-
-static LONG TZ_GetTimeZoneOffset(REG_TZI_FORMAT *tzi)
-{
-	if(tzi->StandardDate.wMonth == 0)
-		return 0;
-
-		// standard
-	if(tzi->DaylightDate.wMonth < tzi->StandardDate.wMonth ) {
-		if(TZ_TimeCompare(&tzi->DaylightDate) < 0 || TZ_TimeCompare(&tzi->StandardDate) > 0 )
-			return 0;
-		else
-			return tzi->DaylightBias;
-	}
-	else {
-		// e.g. brazil or nz (only a few, still important)
-		if(TZ_TimeCompare(&tzi->StandardDate) < 0 || TZ_TimeCompare(&tzi->DaylightDate) > 0)
-			return tzi->DaylightBias;
-		else
-			return 0;
-	}
-	return tzi->DaylightBias;
-}
-
-#endif
-
-/*
  * load time zone information for the contact
  * if TzName is set, use it. It has to be a standard windows time zone name
  * Currently, it can only be set by using UserInfoEx plugin
@@ -471,8 +377,7 @@ static void TZ_LoadTimeZone(HANDLE hContact, struct TExtraCache *c, const char *
 {
 	DWORD flags = 0;
 	if (cfg::dat.bShowLocalTimeSelective) flags |= TZF_DIFONLY;
-
-	c->hTimeZone = tmi.createByContact(hContact, flags);
+		c->hTimeZone = tmi.createByContact(hContact, flags);
 }
 
 void ReloadExtraInfo(HANDLE hContact)
