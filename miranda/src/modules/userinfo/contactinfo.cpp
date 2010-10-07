@@ -74,7 +74,7 @@ static INT_PTR CALLBACK EditUserPhoneDlgProc(HWND hwndDlg, UINT msg, WPARAM wPar
 			CallService(MS_UTILS_GETCOUNTRYLIST,(WPARAM)&countryCount,(LPARAM)&countries);
 			for(i=0;i<countryCount;i++) {
 				if(countries[i].id==0 || countries[i].id==0xFFFF) continue;
-				item=SendDlgItemMessageA(hwndDlg,IDC_COUNTRY,CB_ADDSTRING,0,(LPARAM)countries[i].szName);
+				item=SendDlgItemMessageA(hwndDlg,IDC_COUNTRY,CB_ADDSTRING,0,(LPARAM)Translate(countries[i].szName));
 				SendDlgItemMessage(hwndDlg,IDC_COUNTRY,CB_SETITEMDATA,item,countries[i].id);
 			}
 			SetDlgItemTextA(hwndDlg,IDC_PHONE,szText);
@@ -217,6 +217,8 @@ INT_PTR CALLBACK ContactDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 				GetClientRect(GetDlgItem(hwndDlg,IDC_EMAILS),&rc);
 				rc.right-=GetSystemMetrics(SM_CXVSCROLL);
 				lvc.mask=LVCF_WIDTH;
+				ListView_SetExtendedListViewStyleEx(GetDlgItem(hwndDlg,IDC_EMAILS), LVS_EX_FULLROWSELECT | LVS_EX_INFOTIP, LVS_EX_FULLROWSELECT | LVS_EX_INFOTIP);
+				ListView_SetExtendedListViewStyleEx(GetDlgItem(hwndDlg,IDC_PHONES), LVS_EX_FULLROWSELECT | LVS_EX_INFOTIP, LVS_EX_FULLROWSELECT | LVS_EX_INFOTIP);
 				lvc.cx=rc.right/4;
 				ListView_InsertColumn(GetDlgItem(hwndDlg,IDC_EMAILS),0,&lvc);
 				ListView_InsertColumn(GetDlgItem(hwndDlg,IDC_PHONES),0,&lvc);
