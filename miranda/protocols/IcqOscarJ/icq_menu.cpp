@@ -164,7 +164,6 @@ void g_MenuInit(void)
 
 	// "Show custom status details"
  	mi.pszName = LPGEN("Show custom status details");
-	mi.flags = CMIF_DEFAULT;
 	mi.position = -2000004999;
 	strcpy(pszDest, MS_XSTATUS_SHOWDETAILS);
 	g_hContactMenuItems[ICMI_XSTATUS_DETAILS] = (HGENMENU)CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM)&mi);
