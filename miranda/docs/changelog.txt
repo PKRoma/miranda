@@ -3,6 +3,24 @@
                            www.miranda-im.org
 
 
+* New in 0.9.5
+Enhancements:
+ - Added ability to paste files into the message window
+ - Improved UPnP performance
+
+Bugfixes:
+ - Fixed crashes with OS older than Windows 2000
+ - Fixed log scrolling down on message reception
+ - ICQ: Fixed large icon retrieval
+ - ICQ: Fixed not setting all the contacts offline on connection failure
+ - IRC: Removed warning when manually going offline
+ - IRC: Fixed connect on start failure
+ - IRC: Fixed status handling on disconnect
+ - Jabber: Fixed icon in group chat invitation
+ - Jabber: Full XEP-0118 "User tune" conformance
+ - Yahoo: Fixed random crash
+
+
 * New in 0.9.4
 Enhancements:
  - Added skinnable sound for message sending error
