@@ -260,10 +260,6 @@ CIcqProto::~CIcqProto()
 		Sleep(10);     /* yeah, ugly */
 	}
 
-	// Delete account items from contact menu
-	for (int i = 0; i < SIZEOF(m_hContactMenuItems); i++)
-		CallService(MS_CLIST_REMOVECONTACTMENUITEM, (WPARAM)m_hContactMenuItems[i], 0);
-
 	// Serv-list update board clean-up
 	FlushServerIDs();
 	/// TODO: make sure server-list handler thread is not running
@@ -849,7 +845,7 @@ HICON __cdecl CIcqProto::GetIcon( int iconIndex )
 	{
 		if (iconIndex & PLIF_ICOLIBHANDLE)
 			return (HICON)m_hIconProtocol->Handle();
-		
+
 		bool big = (iconIndex & PLIF_SMALL) == 0;
 		HICON hIcon = m_hIconProtocol->GetIcon(big);
 
@@ -1611,11 +1607,11 @@ int __cdecl CIcqProto::SendMsg( HANDLE hContact, int flags, const char* pszSrc )
 			{ // unicode is not available for target contact, convert to good codepage
 				if (!plain_ascii)
 				{ // do not convert plain ascii messages
-					char *szUserAnsi = ConvertMsgToUserSpecificAnsi(hContact, puszText); 
+					char *szUserAnsi = ConvertMsgToUserSpecificAnsi(hContact, puszText);
 
 					if (szUserAnsi)
 					{ // we have special encoding, use it
-						pszText = szUserAnsi; 
+						pszText = szUserAnsi;
 						bNeedFreeA = 1;
 					}
 					else if (!pszText)
@@ -2171,7 +2167,7 @@ struct status_message_thread_data
 void __cdecl CIcqProto::GetAwayMsgThread( void *pStatusData )
 {
   status_message_thread_data *pThreadData = (status_message_thread_data*)pStatusData;
-	
+
   if (pThreadData)
   {
     char *szAnsiMsg = NULL;
@@ -2424,13 +2420,13 @@ int __cdecl CIcqProto::UserIsTyping( HANDLE hContact, int type )
 int __cdecl CIcqProto::OnEvent(PROTOEVENTTYPE eventType, WPARAM wParam, LPARAM lParam)
 {
 	switch( eventType ) {
-		case EV_PROTO_ONLOAD:    
+		case EV_PROTO_ONLOAD:
       return OnModulesLoaded(0, 0);
 
-		case EV_PROTO_ONEXIT:    
+		case EV_PROTO_ONEXIT:
       return OnPreShutdown(0, 0);
 
-		case EV_PROTO_ONOPTIONS: 
+		case EV_PROTO_ONOPTIONS:
       return OnOptionsInit(wParam, lParam);
 
     case EV_PROTO_ONERASE:
