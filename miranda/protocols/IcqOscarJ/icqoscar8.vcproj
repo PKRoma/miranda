@@ -1126,6 +1126,9 @@
 				RelativePath=".\icq_db.cpp">
 			</File>
 			<File
+				RelativePath=".\icq_menu.cpp">
+			</File>
+			<File
 				RelativePath=".\icq_popups.cpp">
 			</File>
 			<File

@@ -304,5 +304,8 @@
     <ClCompile Include="stdpackets.cpp" />
     <ClCompile Include="tlv.cpp" />
     <ClCompile Include="utilities.cpp" />
+    <ClCompile Include="icq_menu.cpp">
+      <Filter>Miranda Bits</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

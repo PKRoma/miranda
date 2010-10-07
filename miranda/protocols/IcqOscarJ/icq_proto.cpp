@@ -330,24 +330,6 @@ CIcqProto::~CIcqProto()
 ////////////////////////////////////////////////////////////////////////////////////////
 // OnModulesLoadedEx - performs hook registration
 
-static HANDLE CListAddContactMenuItem(const char *szName, const IcqIconHandle hIcon, int nPosition, const char *szOwnerModule, const char *szServiceName, int flags)
-{
-  CLISTMENUITEM mi = {0};
-	char pszServiceName[MAX_PATH+30];
-
-	strcpy(pszServiceName, szOwnerModule);
-	strcat(pszServiceName, szServiceName);
-
-	mi.cbSize = sizeof(mi);
-	mi.position = nPosition;
-  mi.flags = (hIcon ? CMIF_ICONFROMICOLIB : 0) | flags;
-	mi.icolibItem = hIcon->Handle();
-	mi.pszContactOwner = (char*)szOwnerModule;
-	mi.pszName = (char*)szName;
-	mi.pszService = pszServiceName;
-
-	return (HANDLE)CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM)&mi);
-}
 
 int CIcqProto::OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 {
@@ -375,14 +357,6 @@ int CIcqProto::OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 	// Init extra optional modules
 	InitPopUps();
 	InitXStatusItems(FALSE);
-
-  // Add account items to contact menu
-	m_hContactMenuItems[ICMI_AUTH_REQUEST] = CListAddContactMenuItem(LPGEN("Request authorization"), hStaticIcons[ISI_AUTH_REQUEST], 1000030000, m_szModuleName, MS_REQ_AUTH, 0);
-  m_hContactMenuItems[ICMI_AUTH_GRANT] = CListAddContactMenuItem(LPGEN("Grant authorization"), hStaticIcons[ISI_AUTH_GRANT], 1000029999, m_szModuleName, MS_GRANT_AUTH, 0);
-  m_hContactMenuItems[ICMI_AUTH_REVOKE] = CListAddContactMenuItem(LPGEN("Revoke authorization"), hStaticIcons[ISI_AUTH_REVOKE], 1000029998, m_szModuleName, MS_REVOKE_AUTH, 0);
-  m_hContactMenuItems[ICMI_ADD_TO_SERVLIST] = CListAddContactMenuItem(LPGEN("Add to server list"), hStaticIcons[ISI_ADD_TO_SERVLIST], -2049999999, m_szModuleName, MS_ICQ_ADDSERVCONTACT, 0);
-
-  m_hContactMenuItems[ICMI_XSTATUS_DETAILS] = CListAddContactMenuItem(LPGEN("Show custom status details"), NULL, -2000004999, m_szModuleName, MS_XSTATUS_SHOWDETAILS, CMIF_NOTOFFLINE);
 
 	// TODO: add beta builds support to devel builds :)
 	CallService(MS_UPDATE_REGISTERFL, 1683, (WPARAM)&pluginInfo);

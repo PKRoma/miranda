@@ -42,3 +42,6 @@
 #define DBG_NEWCAPS
 #define DBG_OSCARFT
 #define DBG_AIMCONTACTSEND
+
+void g_MenuInit();
+void g_MenuUninit();

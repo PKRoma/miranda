@@ -624,6 +624,10 @@ SOURCE=.\icq_firstrun.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\icq_menu.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\icq_opts.cpp
 # End Source File
 # Begin Source File
