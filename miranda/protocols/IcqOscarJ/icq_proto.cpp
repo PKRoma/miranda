@@ -345,7 +345,6 @@ int CIcqProto::OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 
 	HookProtoEvent(ME_OPT_INITIALISE, &CIcqProto::OnOptionsInit);
 	HookProtoEvent(ME_USERINFO_INITIALISE, &CIcqProto::OnUserInfoInit);
-	HookProtoEvent(ME_CLIST_PREBUILDCONTACTMENU, &CIcqProto::OnPreBuildContactMenu);
 	HookProtoEvent(ME_IDLE_CHANGED, &CIcqProto::OnIdleChanged);
 
 	InitAvatars();
