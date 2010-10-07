@@ -127,7 +127,7 @@ struct CIcqProto : public PROTO_INTERFACE
 	INT_PTR  __cdecl ChangeInfoEx(WPARAM wParam, LPARAM lParam);
 	INT_PTR  __cdecl GetAvatarCaps(WPARAM wParam, LPARAM lParam);
 	INT_PTR  __cdecl GetAvatarInfo(WPARAM wParam, LPARAM lParam);
-	INT_PTR  __cdecl GetMyAvatar(WPARAM wParam, LPARAM lParam);	
+	INT_PTR  __cdecl GetMyAvatar(WPARAM wParam, LPARAM lParam);
 	INT_PTR  __cdecl GetMyAwayMsg(WPARAM wParam, LPARAM lParam);
 	INT_PTR  __cdecl GetXStatus(WPARAM wParam, LPARAM lParam);
 	INT_PTR  __cdecl GetXStatusEx(WPARAM wParam, LPARAM lParam);
@@ -139,7 +139,7 @@ struct CIcqProto : public PROTO_INTERFACE
 	INT_PTR  __cdecl RequestAuthorization(WPARAM wParam, LPARAM lParam);
 	INT_PTR  __cdecl RequestXStatusDetails(WPARAM wParam, LPARAM lParam);
 	INT_PTR  __cdecl RevokeAuthorization(WPARAM wParam, LPARAM lParam);
-	INT_PTR  __cdecl SendSms(WPARAM wParam, LPARAM lParam);	
+	INT_PTR  __cdecl SendSms(WPARAM wParam, LPARAM lParam);
 	INT_PTR  __cdecl SendYouWereAdded(WPARAM wParam, LPARAM lParam);
 	INT_PTR  __cdecl SetMyAvatar(WPARAM wParam, LPARAM lParam);
 	INT_PTR  __cdecl SetNickName(WPARAM wParam, LPARAM lParam);
@@ -174,7 +174,6 @@ struct CIcqProto : public PROTO_INTERFACE
 
 	//====| Data |========================================================================
 	IcqIconHandle m_hIconProtocol;
-	HANDLE m_hContactMenuItems[5];
 	HANDLE m_hServerNetlibUser, m_hDirectNetlibUser;
 	HANDLE hxstatuschanged, hxstatusiconchanged;
 
@@ -191,7 +190,7 @@ struct CIcqProto : public PROTO_INTERFACE
 	BYTE m_bAvatarsEnabled;
 	BYTE m_bXStatusEnabled;
 	BYTE m_bMoodsEnabled;
-	
+
 	icq_critical_section *localSeqMutex;
 	icq_critical_section *connectionHandleMutex;
 
@@ -363,7 +362,7 @@ struct CIcqProto : public PROTO_INTERFACE
 
 	//----| fam_13servclist.cpp |---------------------------------------------------------
 	BOOL   bIsSyncingCL;
-	
+
 	WORD   m_wServerListLimits[0x20];
 	WORD   m_wServerListGroupMaxContacts;
 	WORD   m_wServerListRecordNameMaxLength;
@@ -473,7 +472,7 @@ struct CIcqProto : public PROTO_INTERFACE
 
 	int    deleteSetting(HANDLE hContact, const char *szSetting);
 
-	int    setSettingByte(HANDLE hContact, const char *szSetting, BYTE byValue);	
+	int    setSettingByte(HANDLE hContact, const char *szSetting, BYTE byValue);
 	int    setSettingWord(HANDLE hContact, const char *szSetting, WORD wValue);
 	int    setSettingDword(HANDLE hContact, const char *szSetting, DWORD dwValue);
 	int    setSettingDouble(HANDLE hContact, const char *szSetting, double dValue);
@@ -591,7 +590,7 @@ struct CIcqProto : public PROTO_INTERFACE
 	rates_queue *m_ratesQueue_Response; // rate queue for msg responses
 
 	int    handleRateItem(rates_queue_item *item, int nQueueType = RQT_DEFAULT, int nMinDelay = 0, BOOL bAllowDelay = TRUE);
-	
+
 	void   __cdecl rateDelayThread(struct rate_delay_args *pArgs);
 
 	//----| icq_server.cpp |--------------------------------------------------------------
@@ -796,26 +795,26 @@ struct CIcqProto : public PROTO_INTERFACE
 
 	void   icq_sendAdvancedMsgAck(DWORD, DWORD, DWORD, WORD, BYTE, BYTE);
 	void   icq_sendContactsAck(DWORD dwUin, char *szUid, DWORD dwMsgID1, DWORD dwMsgID2);
-		  
+
 	void   icq_sendReverseReq(directconnect *dc, DWORD dwCookie, cookie_message_data *pCookie);
 	void   icq_sendReverseFailed(directconnect* dc, DWORD dwMsgID1, DWORD dwMsgID2, DWORD dwCookie);
-		  
+
 	void   icq_sendXtrazRequestServ(DWORD dwUin, DWORD dwCookie, char* szBody, int nBodyLen, cookie_message_data *pCookieData);
 	void   icq_sendXtrazResponseServ(DWORD dwUin, DWORD dwMID, DWORD dwMID2, WORD wCookie, char* szBody, int nBodyLen, int nType);
 
 	DWORD  SearchByUin(DWORD dwUin);
 	DWORD  SearchByNames(const char *pszNick, const char *pszFirstName, const char *pszLastName, WORD wPage);
 	DWORD  SearchByMail(const char *pszEmail);
-		   
+
 	DWORD  icq_searchAimByEmail(const char* pszEmail, DWORD dwSearchId);
-		  
+
 	void   oft_sendFileRequest(DWORD dwUin, char *szUid, oscar_filetransfer *ft, const char *pszFiles, DWORD dwLocalInternalIP);
 	void   oft_sendFileAccept(DWORD dwUin, char *szUid, oscar_filetransfer *ft);
 	void   oft_sendFileDeny(DWORD dwUin, char *szUid, oscar_filetransfer *ft);
 	void   oft_sendFileCancel(DWORD dwUin, char *szUid, oscar_filetransfer *ft);
 	void   oft_sendFileResponse(DWORD dwUin, char *szUid, oscar_filetransfer *ft, WORD wResponse);
 	void   oft_sendFileRedirect(DWORD dwUin, char *szUid, oscar_filetransfer *ft, DWORD dwIP, WORD wPort, int bProxy);
-		    
+
 	//---- | icq_svcs.cpp |----------------------------------------------------------------
 	HANDLE AddToListByUIN(DWORD dwUin, DWORD dwFlags);
 	HANDLE AddToListByUID(const char *szUID, DWORD dwFlags);
@@ -856,7 +855,7 @@ struct CIcqProto : public PROTO_INTERFACE
 	//----| icq_xtraz.cpp |---------------------------------------------------------------
 	void   handleXtrazNotify(DWORD dwUin, DWORD dwMID, DWORD dwMID2, WORD wCookie, char* szMsg, int nMsgLen, BOOL bThruDC);
 	void   handleXtrazNotifyResponse(DWORD dwUin, HANDLE hContact, WORD wCookie, char* szMsg, int nMsgLen);
-		  
+
 	void   handleXtrazInvitation(DWORD dwUin, DWORD dwMID, DWORD dwMID2, WORD wCookie, char* szMsg, int nMsgLen, BOOL bThruDC);
 	void   handleXtrazData(DWORD dwUin, DWORD dwMID, DWORD dwMID2, WORD wCookie, char* szMsg, int nMsgLen, BOOL bThruDC);
 
@@ -933,7 +932,7 @@ struct CIcqProto : public PROTO_INTERFACE
 
 	void   ForkThread( IcqThreadFunc pFunc, void* arg );
 	HANDLE ForkThreadEx( IcqThreadFunc pFunc, void* arg, UINT* threadID = NULL );
-	
+
 	void   __cdecl ProtocolAckThread(icq_ack_args* pArguments);
 	void   SendProtoAck(HANDLE hContact, DWORD dwCookie, int nAckResult, int nAckType, char* pszMessage);
 
