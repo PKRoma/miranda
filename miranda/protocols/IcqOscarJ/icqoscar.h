@@ -139,3 +139,5 @@
 #include "changeinfo/changeinfo.h"
 #include "icq_popups.h"
 #include "icq_proto.h"
+
+extern LIST<CIcqProto> g_Instances;

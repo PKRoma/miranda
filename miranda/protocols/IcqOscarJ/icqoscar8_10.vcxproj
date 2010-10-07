@@ -648,6 +648,7 @@
     <ClCompile Include="icq_directmsg.cpp" />
     <ClCompile Include="icq_filerequests.cpp" />
     <ClCompile Include="icq_filetransfer.cpp" />
+    <ClCompile Include="icq_menu.cpp" />
     <ClCompile Include="oscar_filetransfer.cpp" />
     <ClCompile Include="icq_advsearch.cpp" />
     <ClCompile Include="icq_db.cpp" />

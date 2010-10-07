@@ -99,12 +99,15 @@ extern "C" BOOL WINAPI DllMain(HINSTANCE hinstDLL,DWORD fdwReason,LPVOID lpvRese
 
 static PROTO_INTERFACE* icqProtoInit( const char* pszProtoName, const TCHAR* tszUserName )
 {
-	return new CIcqProto( pszProtoName, tszUserName );
+	CIcqProto *ppro = new CIcqProto(pszProtoName, tszUserName);
+	g_Instances.insert(ppro);
+	return ppro;
 }
 
 
 static int icqProtoUninit( PROTO_INTERFACE* ppro )
 {
+	g_Instances.remove(( CIcqProto* )ppro);
 	delete ( CIcqProto* )ppro;
 	return 0;
 }
@@ -125,8 +128,8 @@ extern "C" int __declspec(dllexport) Load(PLUGINLINK *link)
 	mir_getUTFI( &utfi );
 	mir_getMD5I( &md5i );
 
-  // Get Miranda version
-  MIRANDA_VERSION = (DWORD)CallService(MS_SYSTEM_GETVERSION, 0, 0);
+	// Get Miranda version
+	MIRANDA_VERSION = (DWORD)CallService(MS_SYSTEM_GETVERSION, 0, 0);
 
 	{ // Are we running under unicode Miranda core ?
 		char szVer[MAX_PATH];
@@ -149,7 +152,7 @@ extern "C" int __declspec(dllexport) Load(PLUGINLINK *link)
     {
       char szMsg[MAX_PATH], szCaption[100];
 
-      MessageBoxUtf(NULL, ICQTranslateUtfStatic("You cannot use Unicode version of ICQ Protocol plug-in with Ansi version of Miranda IM.", szMsg, MAX_PATH), 
+      MessageBoxUtf(NULL, ICQTranslateUtfStatic("You cannot use Unicode version of ICQ Protocol plug-in with Ansi version of Miranda IM.", szMsg, MAX_PATH),
         ICQTranslateUtfStatic("ICQ Plugin", szCaption, 100), MB_OK|MB_ICONWARNING|MB_SETFOREGROUND|MB_TOPMOST);
       return 1; // Failure
     }
@@ -181,7 +184,7 @@ extern "C" int __declspec(dllexport) Load(PLUGINLINK *link)
   // Register static services
   hStaticServices[0] = CreateServiceFunction(ICQ_DB_GETEVENTTEXT_MISSEDMESSAGE, icq_getEventTextMissedMessage);
 
-  { 
+  {
 	// Define global icons
     char szSectionName[MAX_PATH];
 	null_snprintf(szSectionName, sizeof(szSectionName), "Protocols/%s", ICQ_PROTOCOL_NAME);
@@ -194,8 +197,9 @@ extern "C" int __declspec(dllexport) Load(PLUGINLINK *link)
     hStaticIcons[ISI_ADD_TO_SERVLIST] = IconLibDefine(LPGEN("Add to server list"), szSectionName, NULL, "add_to_server", lib, -IDI_SERVLIST_ADD);
   }
 
-  hStaticHooks[0] = HookEvent(ME_SYSTEM_MODULESLOADED, OnModulesLoaded);
+	hStaticHooks[0] = HookEvent(ME_SYSTEM_MODULESLOADED, OnModulesLoaded);
 
+	g_MenuInit();
 	return 0;
 }
 
@@ -212,6 +216,9 @@ extern "C" int __declspec(dllexport) Unload(void)
   for (i = 0; i < SIZEOF(hStaticHooks); i++)
     if (hStaticHooks[i])
       UnhookEvent(hStaticHooks[i]);
+
+	// destroying contact menu
+  	g_MenuUninit();
 
   // Destroy static service functions
   for (i = 0; i < SIZEOF(hStaticServices); i++)
@@ -247,36 +254,6 @@ static void CListSetMenuItemIcon(HANDLE hMenuItem, HICON hIcon)
 
 	mi.hIcon = hIcon;
 	CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM)hMenuItem, (LPARAM)&mi);
-}
-
-
-int CIcqProto::OnPreBuildContactMenu(WPARAM wParam, LPARAM lParam)
-{
-	CListShowMenuItem(m_hContactMenuItems[ICMI_AUTH_REQUEST], getSettingByte((HANDLE)wParam, "Auth", 0));
-	CListShowMenuItem(m_hContactMenuItems[ICMI_AUTH_GRANT], getSettingByte((HANDLE)wParam, "Grant", 0));
-	CListShowMenuItem(m_hContactMenuItems[ICMI_AUTH_REVOKE], getSettingByte(NULL, "PrivacyItems", 0) && !getSettingByte((HANDLE)wParam, "Grant", 0));
-	if (m_bSsiEnabled && !getSettingWord((HANDLE)wParam, DBSETTING_SERVLIST_ID, 0) && !getSettingWord((HANDLE)wParam, DBSETTING_SERVLIST_IGNORE, 0))
-		CListShowMenuItem(m_hContactMenuItems[ICMI_ADD_TO_SERVLIST], 1);
-	else
-		CListShowMenuItem(m_hContactMenuItems[ICMI_ADD_TO_SERVLIST], 0);
-
-	BYTE bXStatus = getContactXStatus((HANDLE)wParam);
-
-  CListShowMenuItem(m_hContactMenuItems[ICMI_XSTATUS_DETAILS], (BYTE)(m_bHideXStatusUI ? 0 : bXStatus));
-	if (bXStatus && !m_bHideXStatusUI)
-		CListSetMenuItemIcon(m_hContactMenuItems[ICMI_XSTATUS_DETAILS], getXStatusIcon(bXStatus, LR_SHARED));
-
-	return 0;
-}
-
-
-/////////////////////////////////////////////////////////////////////////////////////////
-// OnPrebuildContactMenu event
-
-int CIcqProto::OnPreBuildStatusMenu(WPARAM wParam, LPARAM lParam)
-{
-	InitXStatusItems(TRUE);
-	return 0;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
