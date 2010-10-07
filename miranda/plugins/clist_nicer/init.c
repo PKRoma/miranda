@@ -325,21 +325,21 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 	if(g_CluiData.bFirstRun)
 		DBWriteContactSettingByte(NULL, "CLUI", "firstrun", 0);
 
-	if(!cfg::getString(NULL, "CLUI", "exIconOrder", &dbv)) {
+	if (!DBGetContactSettingString(NULL, "CLUI", "exIconOrder", &dbv)) {
 		if(lstrlenA(dbv.pszVal) < EXICON_COUNT) {
 			for(i = 1; i <= EXICON_COUNT; i++)
-				cfg::dat.exIconOrder[i - 1] = i;
+				g_CluiData.exIconOrder[i - 1] = i;
 		} else {
 			for(i = 0; i < EXICON_COUNT; i++)
 				if(dbv.pszVal[i] < EXICON_COUNT && dbv.pszVal[i] >= 0)
-					cfg::dat.exIconOrder[i] = dbv.pszVal[i];
+					g_CluiData.exIconOrder[i] = dbv.pszVal[i];
 				else
-					cfg::dat.exIconOrder[i] = i;
+					g_CluiData.exIconOrder[i] = i;
 		}
 		DBFreeVariant(&dbv);
 	} else {
 		for(i = 1; i <= EXICON_COUNT; i++)
-			cfg::dat.exIconOrder[i - 1] = i;
+			g_CluiData.exIconOrder[i - 1] = i;
 	}
 	ReloadThemedOptions();
 	FLT_ReadOptions();
