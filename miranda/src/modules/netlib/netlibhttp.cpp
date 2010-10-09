@@ -24,11 +24,13 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "../plugins/zlib/zlib.h"
 #include "netlib.h"
 
-#define HTTPRECVHEADERSTIMEOUT   60000  //in ms
+#define HTTPRECVHEADERSTIMEOUT   30000  //in ms
+#define HTTPRECVDATATIMEOUT       6000
 
-struct ResizableCharBuffer {
+struct ResizableCharBuffer 
+{
 	char *sz;
-	int iEnd,cbAlloced;
+	int iEnd, cbAlloced;
 };
 
 struct ProxyAuth
@@ -84,24 +86,26 @@ struct ProxyAuthList : OBJLIST<ProxyAuth>
 
 ProxyAuthList proxyAuthList;
 
-static void AppendToCharBuffer(struct ResizableCharBuffer *rcb,const char *fmt,...)
+static void AppendToCharBuffer(struct ResizableCharBuffer *rcb, const char *fmt, ...)
 {
 	va_list va;
 	int charsDone;
 
-	if(rcb->cbAlloced==0) {
-		rcb->cbAlloced=512;
-		rcb->sz=(char*)mir_alloc(rcb->cbAlloced);
+	if (rcb->cbAlloced == 0) 
+	{
+		rcb->cbAlloced = 512;
+		rcb->sz = (char*)mir_alloc(rcb->cbAlloced);
 	}
-	va_start(va,fmt);
-	for(;;) {
-		charsDone=mir_vsnprintf(rcb->sz+rcb->iEnd,rcb->cbAlloced-rcb->iEnd,fmt,va);
-		if(charsDone>=0) break;
-		rcb->cbAlloced+=512;
-		rcb->sz=(char*)mir_realloc(rcb->sz,rcb->cbAlloced);
+	va_start(va, fmt);
+	for (;;) 
+	{
+		charsDone = mir_vsnprintf(rcb->sz + rcb->iEnd, rcb->cbAlloced-rcb->iEnd, fmt, va);
+		if(charsDone >= 0) break;
+		rcb->cbAlloced += 512;
+		rcb->sz = (char*)mir_realloc(rcb->sz, rcb->cbAlloced);
 	}
 	va_end(va);
-	rcb->iEnd+=charsDone;
+	rcb->iEnd += charsDone;
 }
 
 static int RecvWithTimeoutTime(struct NetlibConnection *nlc, unsigned dwTimeoutTime, char *buf, int len, int flags)
@@ -578,7 +582,8 @@ INT_PTR NetlibHttpSendRequest(WPARAM wParam,LPARAM lParam)
 			{
 				NetlibLogf(nlc->nlu, "%s %d: %s Failed (%u %u)",__FILE__,__LINE__,"HttpPeekFirstResponseLine",GetLastError(), count);
 				DWORD err = GetLastError();
-				if (err == ERROR_TIMEOUT || err == ERROR_BAD_FORMAT || err == ERROR_BUFFER_OVERFLOW || lastFirstLineFail || nlc->termRequested)
+				if (err == ERROR_TIMEOUT || err == ERROR_BAD_FORMAT || err == ERROR_BUFFER_OVERFLOW || 
+					lastFirstLineFail || nlc->termRequested || nlhr->requestType == REQUEST_CONNECT)
 				{
 					 bytesSent = SOCKET_ERROR;
 					 break; 
@@ -924,16 +929,17 @@ INT_PTR NetlibHttpTransaction(WPARAM wParam, LPARAM lParam)
 		bool doneUserAgentHeader = NetlibHttpFindHeader(nlhr, "User-Agent") != NULL;
 		bool doneAcceptEncoding = NetlibHttpFindHeader(nlhr, "Accept-Encoding") != NULL;
 
-		if(!doneUserAgentHeader||!doneAcceptEncoding) {
-			nlhrSend.headers=(NETLIBHTTPHEADER*)mir_alloc(sizeof(NETLIBHTTPHEADER)*(nlhrSend.headersCount+2));
-			memcpy(nlhrSend.headers,nlhr->headers,sizeof(NETLIBHTTPHEADER)*nlhr->headersCount);
+		if (!doneUserAgentHeader || !doneAcceptEncoding) 
+		{
+			nlhrSend.headers = (NETLIBHTTPHEADER*)mir_alloc(sizeof(NETLIBHTTPHEADER) * (nlhrSend.headersCount + 2));
+			memcpy(nlhrSend.headers, nlhr->headers, sizeof(NETLIBHTTPHEADER) * nlhr->headersCount);
 		}
 		if (!doneUserAgentHeader) 
 		{
 			char *pspace,szMirandaVer[64];
 
-			nlhrSend.headers[nlhrSend.headersCount].szName="User-Agent";
-			nlhrSend.headers[nlhrSend.headersCount].szValue=szUserAgent;
+			nlhrSend.headers[nlhrSend.headersCount].szName = "User-Agent";
+			nlhrSend.headers[nlhrSend.headersCount].szValue = szUserAgent;
 			++nlhrSend.headersCount;
 			CallService(MS_SYSTEM_GETVERSIONTEXT,SIZEOF(szMirandaVer),(LPARAM)szMirandaVer);
 			pspace=strchr(szMirandaVer,' ');
@@ -947,8 +953,8 @@ INT_PTR NetlibHttpTransaction(WPARAM wParam, LPARAM lParam)
 		}
 		if (!doneAcceptEncoding)
 		{
-			nlhrSend.headers[nlhrSend.headersCount].szName="Accept-Encoding";
-			nlhrSend.headers[nlhrSend.headersCount].szValue="deflate, gzip";
+			nlhrSend.headers[nlhrSend.headersCount].szName = "Accept-Encoding";
+			nlhrSend.headers[nlhrSend.headersCount].szValue = "deflate, gzip";
 			++nlhrSend.headersCount;
 		}
 		if (NetlibHttpSendRequest((WPARAM)nlc, (LPARAM)&nlhrSend) == SOCKET_ERROR) 
@@ -988,11 +994,13 @@ INT_PTR NetlibHttpTransaction(WPARAM wParam, LPARAM lParam)
 
 void NetlibHttpSetLastErrorUsingHttpResult(int result)
 {
-	if(result>=200 && result<300) {
+	if (result >= 200 && result < 300) 
+	{
 		SetLastError(ERROR_SUCCESS);
 		return;
 	}
-	switch(result) {
+	switch(result) 
+	{
 		case 400: SetLastError(ERROR_BAD_FORMAT); break;
 		case 401:
 		case 402:
@@ -1147,8 +1155,10 @@ next:
 		{
 			for(;;) 
 			{
-				recvResult = RecvWithTimeoutTime(nlc, GetTickCount() + 6000, nlhrReply->pData + nlhrReply->dataLength,
-					dataBufferAlloced - nlhrReply->dataLength - 1, dflags | (cenctype ? MSG_NODUMP : 0));
+				recvResult = RecvWithTimeoutTime(nlc, GetTickCount() + HTTPRECVDATATIMEOUT, 
+					nlhrReply->pData + nlhrReply->dataLength,
+					dataBufferAlloced - nlhrReply->dataLength - 1, 
+					dflags | (cenctype ? MSG_NODUMP : 0));
 
 				if (recvResult == 0) break;
 				if (recvResult == SOCKET_ERROR) 
