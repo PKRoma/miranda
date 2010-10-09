@@ -96,6 +96,7 @@ PBYTE msn_httpGatewayUnwrapRecv(NETLIBHTTPREQUEST* nlhr, PBYTE buf, int len, int
 				break;
 
 			T->processSessionData(tHeader.szValue);
+			T->applyGatewayData(nlhr->nlc, false);
 		}
 	}
 
