@@ -4,6 +4,12 @@
 
 
 * New in 0.9.5
+Bugfixes:
+ - Fixed crash on failed http connection
+ - ICQ: Prevent user from setting free for chat message
+
+
+* New in 0.9.5
 Enhancements:
  - Added ability to paste files into the message window
  - Improved UPnP performance
