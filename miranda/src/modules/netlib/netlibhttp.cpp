@@ -984,7 +984,7 @@ INT_PTR NetlibHttpTransaction(WPARAM wParam, LPARAM lParam)
 	if ((nlhr->flags & NLHRF_PERSISTENT) == 0 || nlhrReply == NULL)
 	{
 		NetlibCloseHandle((WPARAM)nlc, 0);
-		nlhrReply->nlc = NULL;
+		if (nlhrReply) nlhrReply->nlc = NULL;
 	}
 	else
 		nlhrReply->nlc = nlc;
