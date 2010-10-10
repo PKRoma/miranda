@@ -790,6 +790,7 @@ DWORD_PTR __cdecl CIcqProto::GetCaps( int type, HANDLE hContact )
 		break;
 
 	case PFLAGNUM_5:
+		nReturn = PF2_FREECHAT;
 		if (m_bAimEnabled)
 			nReturn |= PF2_ONTHEPHONE;
 		break;
