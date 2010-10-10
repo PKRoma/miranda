@@ -3,7 +3,7 @@
                            www.miranda-im.org
 
 
-* New in 0.9.5
+* New in 0.9.6
 Bugfixes:
  - Fixed crash on failed http connection
  - ICQ: Prevent user from setting free for chat message
