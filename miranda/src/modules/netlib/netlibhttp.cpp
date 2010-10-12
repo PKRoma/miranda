@@ -148,6 +148,27 @@ static char* NetlibHttpFindHeader(NETLIBHTTPREQUEST *nlhrReply, const char *hdr)
 	return NULL;
 }
 
+static char* NetlibHttpFindAuthHeader(NETLIBHTTPREQUEST *nlhrReply, const char *hdr)
+{
+	char *szBasicHdr = NULL;
+	char *szNtlmHdr = NULL;
+
+	for (int i = 0; i < nlhrReply->headersCount; i++) 
+	{
+		if (_stricmp(nlhrReply->headers[i].szName, hdr) == 0) 
+		{
+			if (_strnicmp(nlhrReply->headers[i].szValue, "Negotiate", 9) == 0)
+				return nlhrReply->headers[i].szValue;
+			else if (_strnicmp(nlhrReply->headers[i].szValue, "NTLM", 4) == 0)
+				szNtlmHdr = nlhrReply->headers[i].szValue;
+			else if (_strnicmp(nlhrReply->headers[i].szValue, "Basic", 5) == 0)
+				szBasicHdr = nlhrReply->headers[i].szValue;
+		}
+	}
+	if (szNtlmHdr) return szNtlmHdr;
+	return szBasicHdr;
+}
+
 void NetlibConnFromUrl(const char* szUrl, bool secur, NETLIBOPENCONNECTION &nloc)
 {
 	secur = secur || _strnicmp(szUrl, "https", 5) == 0;
@@ -251,9 +272,12 @@ struct HttpSecurityContext
 		if (m_hNtlmSecurity == NULL)
 		{
 			char szSpnStr[256] = "";
-			if (szHost)
+			if (szHost && _stricmp(szProvider, "Basic"))
 			{
-				mir_snprintf(szSpnStr, SIZEOF(szSpnStr), "HTTP/%s", szHost);
+				unsigned long ip = inet_addr(szHost);
+				PHOSTENT host = (ip == INADDR_NONE) ? gethostbyname(szHost) : gethostbyaddr((char*)&ip, 4, AF_INET);
+				mir_snprintf(szSpnStr, SIZEOF(szSpnStr), "HTTP/%s", host ? host->h_name : szHost);
+
 				_strlwr(szSpnStr + 5);
 			}
 			m_hNtlmSecurity = NetlibInitSecurityProvider(szProvider, szSpnStr[0] ? szSpnStr : NULL);
@@ -674,7 +698,7 @@ INT_PTR NetlibHttpSendRequest(WPARAM wParam,LPARAM lParam)
 					break;
 				}
 
-				char *szAuthStr = NetlibHttpFindHeader(nlhrReply, "WWW-Authenticate");
+				char *szAuthStr = NetlibHttpFindAuthHeader(nlhrReply, "WWW-Authenticate");
 				if (szAuthStr)
 				{
 					char *szChallenge = strchr(szAuthStr, ' '); 
@@ -704,7 +728,7 @@ INT_PTR NetlibHttpSendRequest(WPARAM wParam,LPARAM lParam)
 					break;
 				}
 
-				char *szAuthStr = NetlibHttpFindHeader(nlhrReply, "Proxy-Authenticate");
+				char *szAuthStr = NetlibHttpFindAuthHeader(nlhrReply, "Proxy-Authenticate");
 				if (szAuthStr)
 				{
 					char *szChallenge = strchr(szAuthStr, ' '); 
