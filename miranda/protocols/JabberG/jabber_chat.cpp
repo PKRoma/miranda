@@ -148,7 +148,15 @@ int CJabberProto::JabberGcInit( WPARAM wParam, LPARAM )
 	HANDLE hContact = HContactFromJID( item->jid );
 	if ( hContact != NULL ) {
 		DBVARIANT dbv;
-		if ( !DBGetContactSettingTString( hContact, m_szModuleName, "MyNick", &dbv )) {
+		if ( JABBER_LIST_ITEM* bookmark = ListGetItemPtr( LIST_BOOKMARK, item->jid ))
+			if ( bookmark->name ) {
+				if ( !DBGetContactSettingTString( hContact, "CList", "MyHandle", &dbv ))
+					JFreeVariant( &dbv );
+				else
+					DBWriteContactSettingTString( hContact, "CList", "MyHandle", bookmark->name );
+			}
+
+		if ( !JGetStringT( hContact, "MyNick", &dbv )) {
 			if ( !lstrcmp( dbv.ptszVal, szNick ))
 				JDeleteSetting( hContact, "MyNick" );
 			else
