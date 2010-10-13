@@ -85,11 +85,67 @@ void CIrcProto::InitMainMenus(void)
 		hMenuServer = ( HGENMENU )CallService( MS_CLIST_ADDPROTOMENUITEM, (WPARAM)0, (LPARAM)&mi);
 	}
 }
+
+/////////////////////////////////////////////////////////////////////////////////////////
+
+static HGENMENU hUMenuChanSettings, hUMenuWhois, hUMenuDisconnect, hUMenuIgnore;
+
+static CIrcProto* IrcGetInstanceByHContact(HANDLE hContact)
+{
+	char* szProto = ( char* )CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
+	if (szProto == NULL)
+		return NULL;
+
+	for (int i = 0; i < g_Instances.getCount(); i++)
+		if (!strcmp(szProto, g_Instances[i]->m_szModuleName))
+			return g_Instances[i];
+
+	return NULL;
+}
+
+static INT_PTR IrcMenuChanSettings(WPARAM wParam, LPARAM lParam)
+{
+	CIrcProto* ppro = IrcGetInstanceByHContact((HANDLE)wParam);
+	return (ppro) ? ppro->OnMenuChanSettings(wParam, lParam) : 0;
+}
+
+static INT_PTR IrcMenuWhois(WPARAM wParam, LPARAM lParam)
+{
+	CIrcProto* ppro = IrcGetInstanceByHContact((HANDLE)wParam);
+	return (ppro) ? ppro->OnMenuWhois(wParam, lParam) : 0;
+}
+
+static INT_PTR IrcMenuDisconnect(WPARAM wParam, LPARAM lParam)
+{
+	CIrcProto* ppro = IrcGetInstanceByHContact((HANDLE)wParam);
+	return (ppro) ? ppro->OnMenuDisconnect(wParam, lParam) : 0;
+}
+
+static INT_PTR IrcMenuIgnore(WPARAM wParam, LPARAM lParam)
+{
+	CIrcProto* ppro = IrcGetInstanceByHContact((HANDLE)wParam);
+	return (ppro) ? ppro->OnMenuIgnore(wParam, lParam) : 0;
+}
+
+int IrcPrebuildContactMenu( WPARAM wParam, LPARAM lParam )
+{
+	CLISTMENUITEM clmi = {0};
+	clmi.cbSize = sizeof( CLISTMENUITEM );
+	clmi.flags = CMIM_FLAGS | CMIF_HIDDEN;
+
+	CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hUMenuChanSettings, ( LPARAM )&clmi );
+	CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hUMenuWhois,        ( LPARAM )&clmi );
+	CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hUMenuDisconnect,   ( LPARAM )&clmi );
+	CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hUMenuIgnore,       ( LPARAM )&clmi );
 	
-void CIrcProto::InitContactMenus(void)
+	CIrcProto* ppro = IrcGetInstanceByHContact((HANDLE)wParam);
+	return (ppro) ? ppro->OnMenuPreBuild(wParam, lParam) : 0;
+}
+
+void InitContactMenus(void)
 {
 	char temp[ MAXMODULELABELLENGTH ];
-	char *d = temp + sprintf( temp, m_szModuleName );
+	char *d = temp + sprintf( temp, "IRC" );
 
 	CLISTMENUITEM mi = { 0 };
 	mi.cbSize = sizeof( mi );
@@ -99,31 +155,38 @@ void CIrcProto::InitContactMenus(void)
 	mi.pszName = LPGEN("Channel &settings");
 	mi.icolibItem = GetIconHandle(IDI_MANAGER);
 	strcpy( d, IRC_UM_CHANSETTINGS );
-	mi.pszContactOwner = m_szModuleName;
 	mi.popupPosition = 500090002;
 	hUMenuChanSettings = ( HGENMENU )CallService( MS_CLIST_ADDCONTACTMENUITEM, (WPARAM)0, (LPARAM)&mi);
+	CreateServiceFunction( temp, IrcMenuChanSettings );
 
 	mi.pszName = LPGEN("&WhoIs info");
 	mi.icolibItem = GetIconHandle(IDI_WHOIS);
 	strcpy( d, IRC_UM_WHOIS );
-	mi.pszContactOwner = m_szModuleName;
 	mi.popupPosition = 500090001;
 	hUMenuWhois = ( HGENMENU )CallService( MS_CLIST_ADDCONTACTMENUITEM, (WPARAM)0, (LPARAM)&mi);
+	CreateServiceFunction( temp, IrcMenuWhois );
 
 	mi.pszName = LPGEN("Di&sconnect");
 	mi.icolibItem = GetIconHandle(IDI_DELETE);
 	strcpy( d, IRC_UM_DISCONNECT );
-	mi.pszContactOwner = m_szModuleName;
 	mi.popupPosition = 500090001;
 	hUMenuDisconnect = ( HGENMENU )CallService( MS_CLIST_ADDCONTACTMENUITEM, (WPARAM)0, (LPARAM)&mi);
+	CreateServiceFunction( temp, IrcMenuDisconnect );
 
 	mi.pszName = LPGEN("&Add to ignore list");
 	mi.icolibItem = GetIconHandle(IDI_BLOCK);
 	strcpy( d, IRC_UM_IGNORE );
-	mi.pszContactOwner = m_szModuleName;
 	mi.popupPosition = 500090002;
 	hUMenuIgnore = ( HGENMENU )CallService( MS_CLIST_ADDCONTACTMENUITEM, (WPARAM)0, (LPARAM)&mi);
+	CreateServiceFunction( temp, IrcMenuIgnore );
+}
 
+void UninitContactMenus( void )
+{
+	CallService( MS_CLIST_REMOVECONTACTMENUITEM, ( WPARAM )hUMenuChanSettings, 0 );
+	CallService( MS_CLIST_REMOVECONTACTMENUITEM, ( WPARAM )hUMenuWhois, 0 );
+	CallService( MS_CLIST_REMOVECONTACTMENUITEM, ( WPARAM )hUMenuDisconnect, 0 );
+	CallService( MS_CLIST_REMOVECONTACTMENUITEM, ( WPARAM )hUMenuIgnore, 0 );
 }
 
 INT_PTR __cdecl CIrcProto::OnDoubleclicked(WPARAM, LPARAM lParam)
@@ -953,55 +1016,14 @@ int __cdecl CIrcProto::OnMenuPreBuild(WPARAM wParam, LPARAM)
 		bool bIsOnline = getWord(hContact, "Status", ID_STATUS_OFFLINE)== ID_STATUS_OFFLINE ? false : true;
 		if ( getByte(hContact, "ChatRoom", 0) == GCW_CHATROOM) {
 			// context menu for chatrooms
-			clmi.flags |= CMIF_NOTOFFLINE;
-			clmi.icolibItem = GetIconHandle(IDI_SHOW);
-			clmi.pszName = LPGEN("Show channel");
-			CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hUMenuShowChannel, ( LPARAM )&clmi );
-
 			clmi.flags = CMIM_FLAGS | CMIF_NOTOFFLINE;
 			CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hUMenuChanSettings, ( LPARAM )&clmi );
-
-			clmi.flags = CMIM_FLAGS | CMIM_NAME | CMIM_ICON;
-
-			if (bIsOnline)
-				{ // for online chatrooms
-				clmi.icolibItem = LoadSkinnedIconHandle(SKINICON_CHAT_LEAVE);//GetIconHandle(IDI_PART);
-				clmi.pszName = LPGEN("&Leave channel");
-				}
-			else
-				{ // for offline chatrooms
-				clmi.icolibItem = LoadSkinnedIconHandle(SKINICON_CHAT_JOIN);//GetIconHandle(IDI_JOIN);
-				clmi.pszName = LPGEN("&Join channel");
-				if ( !IsConnected() )
-					clmi.flags |= CMIF_HIDDEN;				
-				}
-			CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hUMenuJoinLeave, ( LPARAM )&clmi );
-
-			clmi.flags = CMIM_FLAGS | CMIF_HIDDEN;
-			CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hUMenuWhois,			( LPARAM )&clmi );
-			CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hUMenuDisconnect,		( LPARAM )&clmi );
-			CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hUMenuIgnore,			( LPARAM )&clmi );
-		}
-		else if ( getByte(hContact, "ChatRoom", 0) == GCW_SERVER ) {
-			//context menu for server window
-			clmi.icolibItem = GetIconHandle(IDI_SERVER);
-			clmi.pszName = LPGEN("&Show server");
-			CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hUMenuShowChannel,		( LPARAM )&clmi );
-
-			clmi.flags = CMIM_FLAGS | CMIF_HIDDEN;
-			CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hUMenuJoinLeave,		( LPARAM )&clmi );
-			CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hUMenuChanSettings,		( LPARAM )&clmi );
-			CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hUMenuWhois,			( LPARAM )&clmi );
-			CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hUMenuDisconnect,		( LPARAM )&clmi );
-			CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hUMenuIgnore,			( LPARAM )&clmi );
 		}
 		else if ( !getTString( hContact, "Default", &dbv )) {
 			// context menu for contact
 			BYTE bDcc = getByte( hContact, "DCC", 0) ;
 
 			clmi.flags = CMIM_FLAGS | CMIF_HIDDEN;
-			CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hUMenuShowChannel,		( LPARAM )&clmi );
-			CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hUMenuJoinLeave,		( LPARAM )&clmi );
 			CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hUMenuChanSettings,		( LPARAM )&clmi );
 
 			clmi.flags = CMIM_FLAGS;
@@ -1009,16 +1031,9 @@ int __cdecl CIrcProto::OnMenuPreBuild(WPARAM wParam, LPARAM)
 				// for DCC contact
 				clmi.flags = CMIM_FLAGS | CMIF_NOTOFFLINE;
 				CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hUMenuDisconnect,		( LPARAM )&clmi );
-
-				clmi.flags = CMIM_FLAGS | CMIF_HIDDEN;
-				CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hUMenuWhois,			( LPARAM )&clmi );
-				CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hUMenuIgnore,			( LPARAM )&clmi );
 			}
 			else {
 				// for normal contact
-				clmi.flags = CMIM_FLAGS | CMIF_HIDDEN;
-				CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hUMenuDisconnect,		( LPARAM )&clmi );
-
 				clmi.flags = CMIM_FLAGS | CMIF_NOTOFFLINE;
 				if ( !IsConnected() )
 					clmi.flags = CMIM_FLAGS | CMIF_HIDDEN;

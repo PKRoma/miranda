@@ -164,13 +164,6 @@ CIrcProto::~CIrcProto()
 	DeleteCriticalSection( &cs );
 	DeleteCriticalSection( &m_gchook );
 
-	CallService( MS_CLIST_REMOVECONTACTMENUITEM, ( WPARAM )hUMenuShowChannel, 0 );
-	CallService( MS_CLIST_REMOVECONTACTMENUITEM, ( WPARAM )hUMenuJoinLeave, 0 );
-	CallService( MS_CLIST_REMOVECONTACTMENUITEM, ( WPARAM )hUMenuChanSettings, 0 );
-	CallService( MS_CLIST_REMOVECONTACTMENUITEM, ( WPARAM )hUMenuWhois, 0 );
-	CallService( MS_CLIST_REMOVECONTACTMENUITEM, ( WPARAM )hUMenuDisconnect, 0 );
-	CallService( MS_CLIST_REMOVECONTACTMENUITEM, ( WPARAM )hUMenuIgnore, 0 );
-
 	if (hMenuRoot)
 		CallService( MS_CLIST_REMOVEMAINMENUITEM, ( WPARAM )hMenuRoot, 0 );
 
@@ -183,8 +176,6 @@ CIrcProto::~CIrcProto()
 	DeleteCriticalSection(&m_dcc);
 	KillChatTimer(OnlineNotifTimer);
 	KillChatTimer(OnlineNotifTimer3);
-
-	delete[] hIconLibItems;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -211,7 +202,6 @@ int CIrcProto::OnModulesLoaded( WPARAM, LPARAM )
 	NETLIBUSER nlu = {0};
 	TCHAR name[128];
 
-	InitContactMenus();
 	DBDeleteContactSetting( NULL, m_szModuleName, "JTemp" );
 
 	nlu.cbSize = sizeof(nlu);
@@ -330,7 +320,6 @@ int CIrcProto::OnModulesLoaded( WPARAM, LPARAM )
 	InitIgnore();
 
 	IrcHookEvent( ME_USERINFO_INITIALISE, &CIrcProto::OnInitUserInfo );
-	IrcHookEvent( ME_CLIST_PREBUILDCONTACTMENU, &CIrcProto::OnMenuPreBuild );
 	IrcHookEvent( ME_OPT_INITIALISE, &CIrcProto::OnInitOptionsPages );
 	IrcHookEvent( ME_DB_CONTACT_SETTINGCHANGED, &CIrcProto::OnDbSettingChanged );
 

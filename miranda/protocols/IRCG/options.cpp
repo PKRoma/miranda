@@ -27,6 +27,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 static WNDPROC  OldProc;
 static WNDPROC  OldListViewProc;
 
+static HANDLE* hIconLibItems;
+
 static const CIrcProto* pZero = NULL;
 
 void CIrcProto::ReadSettings( TDbSetting* sets, int count )
@@ -220,17 +222,14 @@ static iconList[] =
 	{ LPGENT("Logo (48x48)"),      "logo",    48, IDI_LOGO    }
 };
 
-void CIrcProto::AddIcons(void)
+void AddIcons(void)
 {
 	char szFile[MAX_PATH];
 	GetModuleFileNameA(hInst, szFile, MAX_PATH);
-	TCHAR szSectionName[100];
-
-	mir_sntprintf(szSectionName, SIZEOF( szSectionName ), _T("%s/%s"), LPGENT("Protocols"), m_tszUserName);
 
 	SKINICONDESC sid = {0};
 	sid.cbSize = sizeof(SKINICONDESC);
-	sid.ptszSection = szSectionName;
+	sid.ptszSection = _T("Protocols/IRC");
 	sid.pszDefaultFile = szFile;
 	sid.flags = SIDF_TCHAR;
 	hIconLibItems = new HANDLE[ SIZEOF(iconList) ];
@@ -238,7 +237,7 @@ void CIrcProto::AddIcons(void)
 	// add them one by one
 	for ( int i=0; i < SIZEOF(iconList); i++ ) {
 		char szTemp[255];
-		mir_snprintf(szTemp, sizeof(szTemp), "%s_%s", m_szModuleName, iconList[i].szName );
+		mir_snprintf(szTemp, sizeof(szTemp), "IRC_%s", iconList[i].szName );
 		sid.pszName = szTemp;
 		sid.ptszDescription = iconList[i].szDescr;
 		sid.iDefaultIndex = -iconList[i].defIconID;
@@ -246,7 +245,12 @@ void CIrcProto::AddIcons(void)
 		hIconLibItems[i] = ( HANDLE )CallService( MS_SKIN2_ADDICON, 0, ( LPARAM )&sid );
 }	}
 
-HICON CIrcProto::LoadIconEx( int iconId, bool big )
+void UninitIcons(void)
+{
+	delete[] hIconLibItems;
+}
+
+HICON LoadIconEx( int iconId, bool big )
 {
 	for ( int i=0; i < SIZEOF(iconList); i++ )
 		if ( iconList[i].defIconID == iconId )
@@ -255,7 +259,7 @@ HICON CIrcProto::LoadIconEx( int iconId, bool big )
 	return NULL;
 }
 
-HANDLE CIrcProto::GetIconHandle( int iconId )
+HANDLE GetIconHandle( int iconId )
 {
 	for ( int i=0; i < SIZEOF(iconList); i++ )
 		if ( iconList[i].defIconID == iconId )
@@ -264,18 +268,18 @@ HANDLE CIrcProto::GetIconHandle( int iconId )
 	return NULL;
 }
 
-void CIrcProto::ReleaseIconEx( HICON hIcon )
+void ReleaseIconEx( HICON hIcon )
 {
 	if ( hIcon ) CallService(MS_SKIN2_RELEASEICON, (WPARAM)hIcon, 0);
 }
 
-void CIrcProto::WindowSetIcon( HWND hWnd, int iconId )
+void WindowSetIcon( HWND hWnd, int iconId )
 {
 	SendMessage(hWnd, WM_SETICON, ICON_BIG, ( LPARAM )LoadIconEx( iconId, true ));
 	SendMessage(hWnd, WM_SETICON, ICON_SMALL, ( LPARAM )LoadIconEx( iconId ));
 }
 
-void CIrcProto::WindowFreeIcon( HWND hWnd )
+void WindowFreeIcon( HWND hWnd )
 {
 	ReleaseIconEx(( HICON )SendMessage(hWnd, WM_SETICON, ICON_BIG, 0));
 	ReleaseIconEx(( HICON )SendMessage(hWnd, WM_SETICON, ICON_SMALL, 0));
@@ -505,9 +509,9 @@ CConnectPrefsDlg::CConnectPrefsDlg( CIrcProto* _pro ) :
 	m_port( this, IDC_PORT ),
 	m_port2( this, IDC_PORT2 ),
 	m_pass( this, IDC_PASS ),
-	m_add( this, IDC_ADDSERVER, _pro->LoadIconEx(IDI_ADD), LPGEN("Add a new network")),
-	m_edit( this, IDC_EDITSERVER, _pro->LoadIconEx(IDI_EDIT), LPGEN("Edit this network")),
-	m_del( this, IDC_DELETESERVER, _pro->LoadIconEx(IDI_DELETE), LPGEN("Delete this network")),
+	m_add( this, IDC_ADDSERVER, LoadIconEx(IDI_ADD), LPGEN("Add a new network")),
+	m_edit( this, IDC_EDITSERVER, LoadIconEx(IDI_EDIT), LPGEN("Edit this network")),
+	m_del( this, IDC_DELETESERVER, LoadIconEx(IDI_DELETE), LPGEN("Delete this network")),
 	m_nick( this, IDC_NICK ),
 	m_nick2( this, IDC_NICK2 ),
 	m_name( this, IDC_NAME ),
@@ -1065,8 +1069,8 @@ COtherPrefsDlg::COtherPrefsDlg( CIrcProto* _pro ) :
 	m_autodetect( this, IDC_UTF_AUTODETECT ),
 	m_quitMessage( this, IDC_QUITMESSAGE ),
 	m_alias( this, IDC_ALIASEDIT ),
-	m_add( this, IDC_ADD, _pro->LoadIconEx(IDI_ADD), LPGEN("Click to set commands that will be performed for this event")),
-	m_delete( this, IDC_DELETE, _pro->LoadIconEx(IDI_DELETE), LPGEN("Click to delete the commands for this event")),
+	m_add( this, IDC_ADD, LoadIconEx(IDI_ADD), LPGEN("Click to set commands that will be performed for this event")),
+	m_delete( this, IDC_DELETE, LoadIconEx(IDI_DELETE), LPGEN("Click to delete the commands for this event")),
 	m_performlistModified( false )
 {
 	m_url.OnClick = Callback( this, &COtherPrefsDlg::OnUrl );
@@ -1472,9 +1476,9 @@ void CIrcProto::RewriteIgnoreSettings( void )
 CIgnorePrefsDlg::CIgnorePrefsDlg( CIrcProto* _pro ) :
 	CProtoDlgBase<CIrcProto>( _pro, IDD_PREFS_IGNORE, NULL ),
 	m_list( this, IDC_LIST ),
-	m_add( this, IDC_ADD, _pro->LoadIconEx(IDI_ADD), LPGEN("Add new ignore")),
-	m_edit( this, IDC_EDIT, _pro->LoadIconEx(IDI_EDIT), LPGEN("Edit this ignore")),
-	m_del( this, IDC_DELETE, _pro->LoadIconEx(IDI_DELETE), LPGEN("Delete this ignore")),
+	m_add( this, IDC_ADD, LoadIconEx(IDI_ADD), LPGEN("Add new ignore")),
+	m_edit( this, IDC_EDIT, LoadIconEx(IDI_EDIT), LPGEN("Edit this ignore")),
+	m_del( this, IDC_DELETE, LoadIconEx(IDI_DELETE), LPGEN("Delete this ignore")),
 	m_enable( this, IDC_ENABLEIGNORE ),
 	m_ignoreChat( this, IDC_IGNORECHAT ),
 	m_ignoreFile( this, IDC_IGNOREFILE ),

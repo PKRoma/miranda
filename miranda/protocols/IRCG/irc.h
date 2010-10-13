@@ -449,7 +449,6 @@ struct CIrcProto : public PROTO_INTERFACE, public CCallocBase
 	DWORD     m_bConnectThreadRunning;
 
 	HGENMENU hMenuRoot, hMenuQuick, hMenuServer, hMenuJoin, hMenuNick, hMenuList;
-	HGENMENU hUMenuShowChannel, hUMenuJoinLeave, hUMenuChanSettings, hUMenuWhois, hUMenuDisconnect, hUMenuIgnore;
 	HANDLE   hNetlib, hNetlibDCC;
 
 	bool  bTempDisableCheck, bTempForceCheck, bEcho;
@@ -529,16 +528,8 @@ struct CIrcProto : public PROTO_INTERFACE, public CCallocBase
 	CMString m_namesToUserhost;
 
 	void    InitPrefs(void);
-
-	HANDLE* hIconLibItems;
-	void    AddIcons(void);
 	void    InitIgnore(void);
-	HICON   LoadIconEx(int iIndex, bool big = false);
-	HANDLE  GetIconHandle(int iconId);
-	void    ReleaseIconEx(HICON hIcon);
-	void	WindowSetIcon(HWND hWnd, int iconId);
-	void	WindowFreeIcon(HWND hWnd);
-	
+
 	void    ReadSettings( TDbSetting* sets, int count );
 	void    RewriteIgnoreSettings( void );
 	void    WriteSettings( TDbSetting* sets, int count );
@@ -563,7 +554,6 @@ struct CIrcProto : public PROTO_INTERFACE, public CCallocBase
 	void   DoNetlibLog( const char* fmt, ... );
 	void   IrcHookEvent( const char*, IrcEventFunc );
 	void   InitMainMenus(void);
-	void   InitContactMenus(void);
 
 	void   ircFork( IrcThreadFunc, void* arg );
 	HANDLE ircForkEx( IrcThreadFunc, void* arg );
@@ -751,6 +741,8 @@ private :
 //main.cpp
 extern HINSTANCE hInst;
 
+extern LIST<CIrcProto> g_Instances;
+
 extern char mirandapath[MAX_PATH];
 extern int mirVersion;
 extern OBJLIST<SERVER_INFO> g_servers;
@@ -769,8 +761,19 @@ VOID CALLBACK RetryTimerProc( HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTi
 
 // options.cpp
 
-void InitServers( void );
-void RereadServers( void );
+void    InitServers( void );
+void    RereadServers( void );
+
+void    InitContactMenus(void);
+
+void    WindowSetIcon(HWND hWnd, int iconId);
+void    WindowFreeIcon(HWND hWnd);
+
+void    AddIcons(void);
+void    UninitIcons(void);
+HICON   LoadIconEx(int iIndex, bool big = false);
+HANDLE  GetIconHandle(int iconId);
+void    ReleaseIconEx(HICON hIcon);
 
 // services.cpp
 

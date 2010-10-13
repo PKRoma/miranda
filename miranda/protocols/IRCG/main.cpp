@@ -32,12 +32,23 @@ UTF8_INTERFACE utfi;
 MM_INTERFACE   mmi;
 LIST_INTERFACE li;
 
+static HANDLE hModulesLoaded;
+
+int IrcPrebuildContactMenu( WPARAM, LPARAM );
+
 static int CompareServers( const SERVER_INFO* p1, const SERVER_INFO* p2 )
 {
 	return lstrcmpA( p1->m_name, p2->m_name );
 }
 
 OBJLIST<SERVER_INFO> g_servers( 20, CompareServers );
+
+static int sttCompareProtocols(const CIrcProto *p1, const CIrcProto *p2)
+{
+	return strcmp(p1->m_szModuleName, p2->m_szModuleName);
+}
+
+LIST<CIrcProto> g_Instances(1, sttCompareProtocols);
 
 void InitTimers( void );
 void UninitTimers( void );
@@ -90,12 +101,22 @@ extern "C" __declspec(dllexport) const MUUID* MirandaPluginInterfaces(void)
 
 static CIrcProto* ircProtoInit( const char* pszProtoName, const TCHAR* tszUserName )
 {
-	return new CIrcProto( pszProtoName, tszUserName );
+	CIrcProto* ppro = new CIrcProto( pszProtoName, tszUserName );
+	g_Instances.insert( ppro );
+	return ppro;
 }
 
 static int ircProtoUninit( CIrcProto* ppro )
 {
+	g_Instances.remove(( CIrcProto* )ppro);
 	delete ppro;
+	return 0;
+}
+
+static int OnModulesLoaded( WPARAM, LPARAM )
+{
+	HookEvent( ME_CLIST_PREBUILDCONTACTMENU, IrcPrebuildContactMenu );
+	InitContactMenus();
 	return 0;
 }
 
@@ -125,6 +146,9 @@ extern "C" int __declspec(dllexport) Load( PLUGINLINK *link )
 			p2++;
 	}	}
 
+	hModulesLoaded = HookEvent(ME_SYSTEM_MODULESLOADED, OnModulesLoaded);
+
+	AddIcons();
 	InitTimers();
 	InitServers();
 
@@ -143,6 +167,9 @@ extern "C" int __declspec(dllexport) Load( PLUGINLINK *link )
 
 extern "C" int __declspec(dllexport) Unload(void)
 {
+	UnhookEvent(hModulesLoaded);
+
+	UninitIcons();
 	UninitTimers();
 	return 0;
 }
