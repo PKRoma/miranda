@@ -187,8 +187,8 @@ Section "Miranda IM (core)"
   ${If} ${FileExists} "$INSTDIR\Plugins\clist_mw.dll"
     !insertmacro InstallMirandaPlugin "clist_mw.dll"
   ${EndIf}
-  ${If} ${FileExists} "$INSTDIR\Plugins\clist_nider.dll"
-    !insertmacro InstallMirandaPlugin "clist_nider.dll"
+  ${If} ${FileExists} "$INSTDIR\Plugins\clist_nicer.dll"
+    !insertmacro InstallMirandaPlugin "clist_nicer.dll"
   ${EndIf}
   ${If} ${FileExists} "$INSTDIR\Plugins\scriver.dll"
     !insertmacro InstallMirandaPlugin "scriver.dll"
