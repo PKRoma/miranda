@@ -183,17 +183,17 @@ INT_PTR CALLBACK ChangeInfoDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 	case WM_INITDIALOG:
 		ICQTranslateDialog(hwndDlg);
 
-    dat = new ChangeInfoData();
+		dat = new ChangeInfoData();
 		SetWindowLongPtr(hwndDlg, GWLP_USERDATA, (LONG_PTR)dat);
 
-    dat->hwndDlg = hwndDlg;
-    dat->ppro = (CIcqProto*)lParam;
+		dat->hwndDlg = hwndDlg;
+		dat->ppro = (CIcqProto*)lParam;
 		dat->hwndList = GetDlgItem(hwndDlg, IDC_LIST);
 
 		ListView_SetExtendedListViewStyle(dat->hwndList, LVS_EX_FULLROWSELECT);
 		dat->iEditItem = -1;
 		{
-      HFONT hFont;
+			HFONT hFont;
 			LOGFONT lf;
 
 			dat->hListFont = (HFONT)SendMessage(dat->hwndList, WM_GETFONT, 0, 0);
@@ -218,13 +218,13 @@ INT_PTR CALLBACK ChangeInfoDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 			LV_ITEM lvi = {0};
 			lvi.mask = LVIF_PARAM | LVIF_TEXT;
 
-			for (lvi.iItem=0; lvi.iItem<settingCount; lvi.iItem++) 
+			for (lvi.iItem = 0; lvi.iItem < settingCount; lvi.iItem++) 
 			{
-        TCHAR text[MAX_PATH];
+				TCHAR text[MAX_PATH];
 
 				lvi.lParam = lvi.iItem;
-        lvi.pszText = text;
-        utf8_to_tchar_static(setting[lvi.iItem].szDescription, text, SIZEOF(text));
+				lvi.pszText = text;
+				utf8_to_tchar_static(setting[lvi.iItem].szDescription, text, SIZEOF(text));
 				ListView_InsertItem(dat->hwndList, &lvi);
 			}
 		}

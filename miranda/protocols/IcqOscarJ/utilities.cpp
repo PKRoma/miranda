@@ -188,9 +188,12 @@ int MirandaStatusToSupported(int nMirandaStatus)
 	case ID_STATUS_OCCUPIED:
 	case ID_STATUS_DND:
 	case ID_STATUS_INVISIBLE:
-	case ID_STATUS_FREECHAT:
 	case ID_STATUS_OFFLINE:
 		nSupportedStatus = nMirandaStatus;
+		break;
+
+	case ID_STATUS_FREECHAT:
+		nSupportedStatus = ID_STATUS_ONLINE;
 		break;
 
 		// This mode is not support and must be mapped to something else
