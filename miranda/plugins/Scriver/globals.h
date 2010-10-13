@@ -39,7 +39,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define SMF_AVATAR          		0x00000800
 #define SMF_STATUSICON				0x00002000
 #define SMF_RTL						0x00004000
-#define SMF_DISABLE_UNICODE			0x00008000
 #define SMF_USEIEVIEW				0x00010000
 #define SMF_SHOWICONS       		0x00020000
 #define SMF_HIDENAMES       		0x00040000

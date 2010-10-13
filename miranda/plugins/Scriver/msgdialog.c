@@ -848,9 +848,6 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			if (DBGetContactSettingByte(dat->windowData.hContact, SRMMMOD, "UseRTL", (BYTE) 0)) {
 				dat->flags |= SMF_RTL;
 			}
-			if (DBGetContactSettingByte(dat->windowData.hContact, SRMMMOD, "DisableUnicode", (BYTE) 0)) {
-				dat->flags |= SMF_DISABLE_UNICODE;
-			}
 			dat->flags |= ServiceExists(MS_IEVIEW_WINDOW) ? g_dat->flags & SMF_USEIEVIEW : 0;
 			{
 				PARAFORMAT2 pf2;
@@ -1426,19 +1423,6 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 		dat->windowData.codePage = (int) lParam;
 		SendMessage(hwndDlg, DM_REMAKELOG, 0, 0);
 		break;
-	case DM_SWITCHUNICODE:
-#if defined( _UNICODE )
-		{
-			StatusIconData sid = {0};
-			dat->flags ^= SMF_DISABLE_UNICODE;
-			sid.cbSize = sizeof(sid);
-			sid.szModule = SRMMMOD;
-			sid.flags = (dat->flags & SMF_DISABLE_UNICODE) ? MBF_DISABLED : 0;
-			ModifyStatusIcon((WPARAM)dat->windowData.hContact, (LPARAM) &sid);
-			SendMessage(hwndDlg, DM_REMAKELOG, 0, 0);
-		}
-#endif
-		break;
 	case DM_SWITCHTYPING:
 		if (IsTypingNotificationSupported(dat)) {
 			StatusIconData sid = {0};
@@ -1708,11 +1692,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			UpdateReadChars(hwndDlg, dat);
 			sid.cbSize = sizeof(sid);
 			sid.szModule = SRMMMOD;
-#if defined ( _UNICODE )
-			sid.flags = (dat->flags & SMF_DISABLE_UNICODE) ? MBF_DISABLED : 0;
-#else
 			sid.flags = MBF_DISABLED;
-#endif
 			ModifyStatusIcon((WPARAM)dat->windowData.hContact, (LPARAM) &sid);
 			sid.dwId = 1;
 			if (IsTypingNotificationSupported(dat) && g_dat->flags2 & SMF2_SHOWTYPINGSWITCH) {
@@ -1731,7 +1711,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			ZeroMemory(&event, sizeof(event));
 			event.cbSize = sizeof(event);
 			event.iType = IEE_CLEAR_LOG;
-			event.dwFlags = ((dat->flags & SMF_RTL) ? IEEF_RTL : 0) | ((dat->flags & SMF_DISABLE_UNICODE) ? IEEF_NO_UNICODE : 0);
+			event.dwFlags = ((dat->flags & SMF_RTL) ? IEEF_RTL : 0);
 			event.hwnd = dat->windowData.hwndLog;
 			event.hContact = dat->windowData.hContact;
 			event.codepage = dat->windowData.codePage;
@@ -2245,7 +2225,6 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 				DeleteObject(hFont);
 		}
 		DBWriteContactSettingByte(dat->windowData.hContact, SRMMMOD, "UseRTL", (BYTE) ((dat->flags & SMF_RTL) ? 1 : 0));
-		DBWriteContactSettingByte(dat->windowData.hContact, SRMMMOD, "DisableUnicode", (BYTE) ((dat->flags & SMF_DISABLE_UNICODE) ? 1 : 0));
 		DBWriteContactSettingWord(dat->windowData.hContact, SRMMMOD, "CodePage", (WORD) dat->windowData.codePage);
 		if (!(g_dat->flags & SMF_AUTORESIZE)) {
 			DBWriteContactSettingDword(NULL, SRMMMOD, "splitterPos", dat->splitterPos);

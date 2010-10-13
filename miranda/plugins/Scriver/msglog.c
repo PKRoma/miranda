@@ -230,12 +230,6 @@ EventData *getEventFromDB(struct MessageWindowData *dat, HANDLE hContact, HANDLE
 		}
 	} else {
 		event->pszTextT = DbGetEventTextT( &dbei, dat->windowData.codePage );
-		if (dat->flags & SMF_DISABLE_UNICODE) {
-			char * tmpStr = t2acp(event->pszTextT, dat->windowData.codePage);
-			mir_free(event->pszTextT);
-			event->pszTextT = a2tcp(tmpStr, dat->windowData.codePage);
-			mir_free(tmpStr);
-		}
 	}
 	if ( !(dat->flags & SMF_RTL)) {
 		if ( RTL_Detect(event->pszTextT)) {
@@ -1070,7 +1064,7 @@ void StreamInEvents(HWND hwndDlg, HANDLE hDbEventFirst, int count, int fAppend)
 		IEVIEWWINDOW ieWindow;
 		ZeroMemory(&event, sizeof(event));
 		event.cbSize = sizeof(event);
-		event.dwFlags = ((dat->flags & SMF_RTL) ? IEEF_RTL : 0) | ((dat->flags & SMF_DISABLE_UNICODE) ? IEEF_NO_UNICODE : 0);
+		event.dwFlags = ((dat->flags & SMF_RTL) ? IEEF_RTL : 0);
 		event.hwnd = dat->windowData.hwndLog;
 		event.hContact = dat->windowData.hContact;
 		event.codepage = dat->windowData.codePage;

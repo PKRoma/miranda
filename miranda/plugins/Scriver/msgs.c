@@ -466,12 +466,14 @@ static void RegisterStatusIcons() {
 	sid.szTooltip = NULL;
 	AddStickyStatusIcon((WPARAM) 0, (LPARAM) &sid);
 
+#if !defined( _UNICODE )
 	sid.dwId = 0;
-	sid.hIcon = CopyIcon(GetCachedIcon("scriver_UNICODEON"));
+	sid.hIcon = CopyIcon(GetCachedIcon("scriver_UNICODEOFF"));
 	sid.hIconDisabled = CopyIcon(GetCachedIcon("scriver_UNICODEOFF"));
 	sid.flags = 0;
 	sid.szTooltip = NULL;
 	AddStickyStatusIcon((WPARAM) 0, (LPARAM) &sid);
+#endif
 }
 
 void ChangeStatusIcons() {
@@ -522,8 +524,6 @@ int StatusIconPressed(WPARAM wParam, LPARAM lParam) {
 							SendMessage(hwnd, DM_SETCODEPAGE, 0, iSel);
 						}
 					}
-				} else {
-					SendMessage(hwnd, DM_SWITCHUNICODE, 0, 0);
 				}
 			} else {
 				SendMessage(hwnd, DM_SWITCHTYPING, 0, 0);
