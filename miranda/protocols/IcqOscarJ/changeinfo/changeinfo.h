@@ -60,10 +60,10 @@
 
 struct SettingItem
 {
-  char *szDescription;
+  const char *szDescription;
   unsigned displayType;    //LI_ constant
   int dbType;              //DBVT_ constant
-  char *szDbSetting;
+  const char *szDbSetting;
   const void *pList;
 };
 
