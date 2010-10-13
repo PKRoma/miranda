@@ -181,7 +181,27 @@ Section "Miranda IM (core)"
   Delete "$INSTDIR\Plugins\dbx_mmap.dll"
   !endif
   !insertmacro InstallMirandaPlugin "chat.dll"
-  
+  ${If} ${FileExists} "$INSTDIR\Plugins\clist_modern.dll"
+    !insertmacro InstallMirandaPlugin "clist_modern.dll"
+  ${EndIf}
+  ${If} ${FileExists} "$INSTDIR\Plugins\clist_mw.dll"
+    !insertmacro InstallMirandaPlugin "clist_mw.dll"
+  ${EndIf}
+  ${If} ${FileExists} "$INSTDIR\Plugins\clist_nider.dll"
+    !insertmacro InstallMirandaPlugin "clist_nider.dll"
+  ${EndIf}
+  ${If} ${FileExists} "$INSTDIR\Plugins\scriver.dll"
+    !insertmacro InstallMirandaPlugin "scriver.dll"
+  ${EndIf}
+  !ifdef MIM_BUILD_UNICODE
+  ${If} ${FileExists} "$INSTDIR\Plugins\tabsrmm.dll"
+    !insertmacro InstallMirandaPlugin "tabsrmm.dll"
+    SetOutPath "$INSTDIR\Icons"
+    File "${MIM_BUILD_DIRANSI}\Icons\tabsrmm_icons.dll"
+    File "${MIM_BUILD_DIRANSI}\Icons\toolbar_icons.dll"
+  ${EndIf}
+  !endif
+
   ${If} $INST_MODE = 0
    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Miranda IM" "DisplayName" "Miranda IM ${MIM_VERSION}" 
    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Miranda IM" "UninstallString" "$INSTDIR\Uninstall.exe"
