@@ -93,7 +93,7 @@ void CWhoisDlg::OnInitDialog()
 
 	CCoolIrcDlg::OnInitDialog();
 
-	m_proto->WindowSetIcon( m_hwnd, IDI_WHOIS );
+	WindowSetIcon( m_hwnd, IDI_WHOIS );
 }
 
 void CWhoisDlg::OnClose()
@@ -214,7 +214,7 @@ CNickDlg::CNickDlg(CIrcProto *_pro) :
 void CNickDlg::OnInitDialog()
 {
 	CCoolIrcDlg::OnInitDialog();
-	m_proto->WindowSetIcon( m_hwnd, IDI_RENAME );
+	WindowSetIcon( m_hwnd, IDI_RENAME );
 
 	DBVARIANT dbv;
 	if ( !m_proto->getTString( "RecentNicks", &dbv)) {
@@ -297,7 +297,7 @@ void CListDlg::OnInitDialog()
 
 	m_list.SetExtendedListViewStyle( LVS_EX_FULLROWSELECT );
 	m_list2.SetExtendedListViewStyle( LVS_EX_FULLROWSELECT );
-	m_proto->WindowSetIcon( m_hwnd, IDI_LIST );
+	WindowSetIcon( m_hwnd, IDI_LIST );
 	m_status.SetText( TranslateT( "Please wait..." ));
 }
 
@@ -721,7 +721,7 @@ void CQuestionDlg::OnInitDialog()
 {
 	CCoolIrcDlg::OnInitDialog();
 
-	m_proto->WindowSetIcon( m_hwnd, IDI_IRCQUESTION );
+	WindowSetIcon( m_hwnd, IDI_IRCQUESTION );
 }
 
 void CQuestionDlg::OnClose()
@@ -802,11 +802,11 @@ CManagerDlg::CManagerDlg(CIrcProto *_pro) :
 	m_limit( this, IDC_LIMIT ),
 	m_topic( this, IDC_TOPIC ),
 
-	m_add( this, IDC_ADD, _pro->LoadIconEx(IDI_ADD), LPGEN("Add ban/invite/exception")),
-	m_edit( this, IDC_EDIT, _pro->LoadIconEx(IDI_EDIT), LPGEN("Edit selected ban/invite/exception")),
-	m_remove( this, IDC_REMOVE, _pro->LoadIconEx(IDI_DELETE), LPGEN("Delete selected ban/invite/exception")),
-	m_applyModes( this, IDC_APPLYMODES, _pro->LoadIconEx( IDI_APPLY ), LPGEN("Set these modes for the channel")),
-	m_applyTopic( this, IDC_APPLYTOPIC, _pro->LoadIconEx( IDI_APPLY ), LPGEN("Set this topic for the channel")),
+	m_add( this, IDC_ADD, LoadIconEx(IDI_ADD), LPGEN("Add ban/invite/exception")),
+	m_edit( this, IDC_EDIT, LoadIconEx(IDI_EDIT), LPGEN("Edit selected ban/invite/exception")),
+	m_remove( this, IDC_REMOVE, LoadIconEx(IDI_DELETE), LPGEN("Delete selected ban/invite/exception")),
+	m_applyModes( this, IDC_APPLYMODES, LoadIconEx( IDI_APPLY ), LPGEN("Set these modes for the channel")),
+	m_applyTopic( this, IDC_APPLYTOPIC, LoadIconEx( IDI_APPLY ), LPGEN("Set this topic for the channel")),
 
 	m_radio1( this, IDC_RADIO1 ),
 	m_radio2( this, IDC_RADIO2 ),
@@ -879,7 +879,7 @@ void CManagerDlg::OnInitDialog()
 	HWND hwndEdit = ChildWindowFromPoint( m_topic.GetHwnd(), pt); 
 	OldMgrEditProc = (WNDPROC)SetWindowLongPtr(hwndEdit, GWLP_WNDPROC,(LONG_PTR)MgrEditSubclassProc); 
 	
-	m_proto->WindowSetIcon( m_hwnd, IDI_MANAGER );
+	WindowSetIcon( m_hwnd, IDI_MANAGER );
 
 	m_list.SendMsg( LB_SETHORIZONTALEXTENT, 750, NULL );
 	m_radio1.SetState( true );
@@ -1388,7 +1388,7 @@ void CCoolIrcDlg::OnInitDialog()
 	hFont=CreateFontIndirect(&lf);
 	SendDlgItemMessage( m_hwnd,IDC_CAPTION,WM_SETFONT,(WPARAM)hFont,0);
 
-	SendDlgItemMessage( m_hwnd, IDC_LOGO, STM_SETICON,(LPARAM)(HICON)m_proto->LoadIconEx(IDI_LOGO), 0);
+	SendDlgItemMessage( m_hwnd, IDC_LOGO, STM_SETICON,(LPARAM)(HICON)LoadIconEx(IDI_LOGO), 0);
 }
 
 void CCoolIrcDlg::OnDestroy()
@@ -1397,8 +1397,8 @@ void CCoolIrcDlg::OnDestroy()
 	SendDlgItemMessage( m_hwnd,IDC_CAPTION,WM_SETFONT,SendDlgItemMessage( m_hwnd,IDOK,WM_GETFONT,0,0),0);
 	DeleteObject(hFont);
 
-	m_proto->ReleaseIconEx((HICON)SendDlgItemMessage(m_hwnd, IDC_LOGO, STM_SETICON, 0, 0));
-	m_proto->WindowFreeIcon(m_hwnd);
+	ReleaseIconEx((HICON)SendDlgItemMessage(m_hwnd, IDC_LOGO, STM_SETICON, 0, 0));
+	WindowFreeIcon(m_hwnd);
 }
 
 INT_PTR CCoolIrcDlg::DlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
