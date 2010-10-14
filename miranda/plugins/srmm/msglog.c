@@ -536,9 +536,10 @@ void StreamInEvents(HWND hwndDlg, HANDLE hDbEventFirst, int count, int fAppend)
 	stream.pfnCallback = LogStreamInEvents;
 	stream.dwCookie = (DWORD_PTR)&streamData;
 
-	if (!streamData.isEmpty && (GetWindowLongPtr(hwndLog, GWL_STYLE) & WS_VSCROLL))
+	if (!streamData.isEmpty)
 	{
-		if (GetFocus() != hwndLog)
+		bottomScroll = (GetFocus() != hwndLog);
+		if (bottomScroll && (GetWindowLongPtr(hwndLog, GWL_STYLE) & WS_VSCROLL))
 		{
 			SCROLLINFO si = {0};
 			si.cbSize = sizeof(si);
@@ -546,9 +547,6 @@ void StreamInEvents(HWND hwndDlg, HANDLE hDbEventFirst, int count, int fAppend)
 			GetScrollInfo(hwndLog, SB_VERT, &si);
 			bottomScroll = (si.nPos + (int)si.nPage) >= si.nMax;
 		}
-		else
-			bottomScroll = FALSE;
-
 		if (!bottomScroll)
 			SendMessage(hwndLog, EM_GETSCROLLPOS, 0, (LPARAM) & scrollPos);
 	}
