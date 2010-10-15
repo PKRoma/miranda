@@ -936,6 +936,18 @@ static INT_PTR CALLBACK DlgProcXIcons(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 	case WM_COMMAND:
 		if ((LOWORD(wParam) == IDC_EXICONSCALE) && (HIWORD(wParam) != EN_CHANGE || (HWND) lParam != GetFocus()))
 			return 0;
+
+		if(IDC_RESETXICONS == LOWORD(wParam)) {
+			DISPLAYPROFILE *p = reinterpret_cast<DISPLAYPROFILE *>(GetWindowLongPtr(hwndDlg, GWLP_USERDATA));
+			if(p) {
+				for(int i = 0; i < EXICON_COUNT; i++) {
+					OrderTreeData[i].Visible = TRUE;
+					p->exIconOrder[i] = i + 1;
+				}
+				p->dwExtraImageMask = 0xffffffff;
+				FillOrderTree(hwndDlg, GetDlgItem(hwndDlg, IDC_EXTRAORDER), p);
+			}
+		}
 		SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
 		break;
 
@@ -943,6 +955,7 @@ static INT_PTR CALLBACK DlgProcXIcons(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
         {
             DISPLAYPROFILE *p = (DISPLAYPROFILE *)lParam;
             if(p) {
+				SetWindowLongPtr(hwndDlg, GWLP_USERDATA, (INT_PTR)p);
                 CheckDlgButton(hwndDlg, IDC_XSTATUSASSTATUS, p->dwFlags & CLUI_FRAME_USEXSTATUSASSTATUS ? 1 : 0);
 
                 CheckDlgButton(hwndDlg, IDC_SHOWSTATUSICONS, (p->dwFlags & CLUI_FRAME_STATUSICONS) ? BST_CHECKED : BST_UNCHECKED);

@@ -427,6 +427,7 @@
 #define IDC_FLT_OPACITYVALUE            40070
 #define IDC_FLT_BGCOLOUR                40071
 #define IDC_FLT_BORDERCOLOUR            40072
+#define IDC_RESETXICONS                 40067
 
 #define IDC_EXCEPTION_DETAILS			1200
 #define IDC_COPY_EXCEPTION				1201
