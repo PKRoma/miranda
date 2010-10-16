@@ -1667,7 +1667,7 @@ public:
 	}
 
 protected:
-	enum { ACC_PUBLIC, ACC_TLS, ACC_SSL, ACC_GTALK, ACC_LJTALK, ACC_FBOOK };
+	enum { ACC_PUBLIC, ACC_TLS, ACC_SSL, ACC_GTALK, ACC_LJTALK, ACC_FBOOK, ACC_SMS };
 
 	void OnInitDialog()
 	{
@@ -1717,6 +1717,7 @@ protected:
 		m_cbType.AddString(TranslateT("Google Talk!"), ACC_GTALK);
 		m_cbType.AddString(TranslateT("LiveJournal Talk"), ACC_LJTALK);
 		m_cbType.AddString(TranslateT("Facebook Chat"), ACC_FBOOK);
+		m_cbType.AddString(TranslateT("S.ms"), ACC_SMS);
 
 		m_cbServer.GetTextA(server, SIZEOF(server));
 		if (!DBGetContactSettingString(NULL, m_proto->m_szModuleName, "ManualHost", &dbv))
@@ -1739,6 +1740,11 @@ protected:
 		else if (!lstrcmpA(server, "chat.facebook.com"))
 		{
 			m_cbType.SetCurSel(ACC_FBOOK);
+			m_canregister = false;
+		}
+		else if (!lstrcmpA(server, "S.ms"))
+		{
+			m_cbType.SetCurSel(ACC_SMS);
 			m_canregister = false;
 		}
 		else if (m_proto->m_options.UseSSL)
@@ -1829,6 +1835,7 @@ protected:
 		case ACC_TLS:
 		case ACC_GTALK:
 		case ACC_LJTALK:
+		case ACC_SMS:
 		{
 			m_proto->m_options.UseSSL = FALSE;
 			m_proto->m_options.UseTLS = TRUE;
@@ -1973,6 +1980,7 @@ private:
 	void setupGoogle();
 	void setupLJ();
 	void setupFB();
+	void setupSMS();
 	void RefreshServers( HXML node);
 	static void QueryServerListThread(void *arg);
 };
@@ -2010,6 +2018,7 @@ void CJabberDlgAccMgrUI::setupConnection(int type)
 		case ACC_GTALK: setupGoogle(); break;
 		case ACC_LJTALK: setupLJ(); break;
 		case ACC_FBOOK: setupFB(); break;
+		case ACC_SMS: setupSMS(); break;
 	}
 }
 
@@ -2112,6 +2121,25 @@ void CJabberDlgAccMgrUI::setupFB()
 	m_txtPort.Disable();
 	m_btnRegister.Disable();
 //	m_cbResource.Disable();
+}
+
+void CJabberDlgAccMgrUI::setupSMS()
+{
+	m_canregister = false;
+	m_gotservers = true;
+	m_cbServer.ResetContent();
+	m_cbServer.SetTextA("S.ms");
+	m_cbServer.AddStringA("S.ms");
+	m_chkManualHost.SetState(BST_UNCHECKED);
+	m_txtManualHost.SetTextA("");
+	m_txtPort.SetInt(5222);
+
+	m_cbServer.Disable();
+	m_chkManualHost.Disable();
+	m_txtManualHost.Disable();
+	m_txtPort.Disable();
+	m_btnRegister.Disable();
+	//	m_cbResource.Disable();
 }
 
 void CJabberDlgAccMgrUI::RefreshServers( HXML node )

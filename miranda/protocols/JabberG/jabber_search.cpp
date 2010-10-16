@@ -704,7 +704,8 @@ static INT_PTR CALLBACK JabberSearchAdvancedDlgProc(HWND hwndDlg, UINT msg, WPAR
 
 HWND __cdecl CJabberProto::CreateExtendedSearchUI( HWND parent )
 {
-	if ( parent && hInst )
+	TCHAR szServer[128];
+	if (parent && hInst && (!JGetStringT(NULL, "LoginServer", szServer, SIZEOF(szServer)) || _tcsicmp(szServer, _T("S.ms"))))
 		return CreateDialogParam( hInst, MAKEINTRESOURCE(IDD_SEARCHUSER), parent, JabberSearchAdvancedDlgProc, ( LPARAM )this );
 
 	return 0; // Failure
