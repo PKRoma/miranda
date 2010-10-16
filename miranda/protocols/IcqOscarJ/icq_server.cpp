@@ -417,12 +417,12 @@ void CIcqProto::icq_login(const char* szPassword)
 	// Server host name
 	char szServer[MAX_PATH];
 	if (getSettingStringStatic(NULL, "OscarServer", szServer, MAX_PATH))
-		stsi->nloc.szHost = null_strdup(DEFAULT_SERVER_HOST);
+		stsi->nloc.szHost = null_strdup(m_bSecureConnection ? DEFAULT_SERVER_HOST_SSL : DEFAULT_SERVER_HOST);
 	else
 		stsi->nloc.szHost = null_strdup(szServer);
 
 	// Server port
-	stsi->nloc.wPort = getSettingWord(NULL, "OscarPort", DEFAULT_SERVER_PORT);
+	stsi->nloc.wPort = getSettingWord(NULL, "OscarPort", m_bSecureConnection ? DEFAULT_SERVER_PORT_SSL : DEFAULT_SERVER_PORT);
 	if (stsi->nloc.wPort == 0)
 		stsi->nloc.wPort = RandRange(1024, 65535);
 

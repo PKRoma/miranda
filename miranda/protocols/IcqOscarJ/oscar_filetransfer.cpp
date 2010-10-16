@@ -1249,7 +1249,7 @@ int CIcqProto::CreateOscarProxyConnection(oscar_connection *oc)
 	BroadcastAck(oc->ft->hContact, ACKTYPE_FILE, ACKRESULT_CONNECTPROXY, oc->ft, 0);
 
 	nloc.szHost = OSCAR_PROXY_HOST;
-	nloc.wPort = getSettingWord(NULL, "OscarPort", DEFAULT_SERVER_PORT);
+	nloc.wPort = getSettingWord(NULL, "OscarPort", m_bSecureConnection ? DEFAULT_SERVER_PORT_SSL : DEFAULT_SERVER_PORT);
 	if (nloc.wPort == 0)
 		nloc.wPort = RandRange(1024, 65535);
 	if (m_bGatewayMode)
@@ -1424,7 +1424,7 @@ void __cdecl CIcqProto::oft_connectionThread( oscarthreadstartinfo *otsi )
 
 				addr.S_un.S_addr = htonl(oc.ft->dwProxyIP);
 				nloc.szHost = inet_ntoa(addr);
-				nloc.wPort = getSettingWord(NULL, "OscarPort", DEFAULT_SERVER_PORT);
+				nloc.wPort = getSettingWord(NULL, "OscarPort", m_bSecureConnection ? DEFAULT_SERVER_PORT_SSL : DEFAULT_SERVER_PORT);
 				if (nloc.wPort == 0)
 					nloc.wPort = RandRange(1024, 65535);
 				if (m_bGatewayMode)
