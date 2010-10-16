@@ -23,10 +23,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #define _WIN32_WINNT 0x0501
 
-#include "m_stdhdr.h"
+#include <m_stdhdr.h>
 
 #include <windows.h>
-#include <gdiplus.h>
 #include <commctrl.h>
 #include <stdio.h>
 #include <time.h>
@@ -55,7 +54,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <m_addcontact.h>
 #include <m_png.h>
 
-#include "../m_cln_skinedit.h"
+#include "../include/m_cln_skinedit.h"
 
 // shared vars
 extern HINSTANCE g_hInst;

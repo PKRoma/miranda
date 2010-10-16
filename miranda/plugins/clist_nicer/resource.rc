@@ -1,6 +1,6 @@
 // Microsoft Visual C++ generated resource script.
 //
-#include "resource.h"
+#include "include\resource.h"
 
 #define APSTUDIO_READONLY_SYMBOLS
 /////////////////////////////////////////////////////////////////////////////
@@ -10,23 +10,35 @@
 #include <windows.h>
 #include <winres.h>
 #include <statusmodes.h>
-
+#include <version.rc>
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
 
+
 /////////////////////////////////////////////////////////////////////////////
-// English (U.S.) resources
+// English (United States) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
-#ifdef _WIN32
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 #pragma code_page(1252)
-#endif //_WIN32
 
 /////////////////////////////////////////////////////////////////////////////
 //
 // Dialog
 //
+
+IDD_EXCEPTION DIALOGEX 0, 0, 370, 131
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "TabSRMM exception"
+FONT 8, "MS Shell Dlg", 0, 0, 0x0
+BEGIN
+    EDITTEXT        IDC_EXCEPTION_DETAILS,7,18,356,60,ES_MULTILINE | ES_READONLY
+    DEFPUSHBUTTON   "Copy to clipboard",IDC_COPY_EXCEPTION,108,114,80,14
+    PUSHBUTTON      "Continue",IDOK,196,114,80,14
+    PUSHBUTTON      "Exit Miranda",IDCANCEL,284,114,80,14
+    LTEXT           "",IDC_EX_REASON,7,5,354,9
+    LTEXT           "Although the exception was caught and you may continue working with Miranda, you should restart the program as soon as possible. The exception may have damaged internal data structures and can have a serious impact on stability.",IDC_STATIC,7,83,352,26
+END
 
 IDD_OPT_FLOATING DIALOGEX 0, 0, 313, 251
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD
@@ -121,14 +133,12 @@ STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    GROUPBOX        "Profiles (WIP)",IDC_STATIC,0,0,79,170
     LISTBOX         IDC_PROFILELIST,5,11,68,92,LBS_SORT | LBS_NOINTEGRALHEIGHT | NOT WS_VISIBLE | WS_VSCROLL | WS_TABSTOP
     CONTROL         "",IDC_DSP_ADD,"CLCButtonClass",NOT WS_VISIBLE | WS_TABSTOP,5,109,68,15,WS_EX_NOACTIVATE | 0x10000000L
     CONTROL         "",IDC_DSP_DELETE,"CLCButtonClass",NOT WS_VISIBLE | WS_DISABLED | WS_TABSTOP,5,128,68,15,WS_EX_NOACTIVATE | 0x10000000L
     CONTROL         "",IDC_DSP_RENAME,"CLCButtonClass",NOT WS_VISIBLE | WS_DISABLED | WS_TABSTOP,5,147,68,15,WS_EX_NOACTIVATE | 0x10000000L
-    CONTROL         "",IDC_OPTIONSTAB,"SysTabControl32",WS_TABSTOP,81,1,230,222
+    CONTROL         "",IDC_OPTIONSTAB,"SysTabControl32",WS_TABSTOP,41,1,230,222
     CONTROL         "",IDC_DSP_APPLY,"CLCButtonClass",NOT WS_VISIBLE | WS_TABSTOP,218,229,89,15,WS_EX_NOACTIVATE | 0x10000000L
-    GROUPBOX        "Classes (WIP)",IDC_STATIC,0,172,79,74
     LISTBOX         IDC_CLASSLIST,5,184,68,55,LBS_SORT | LBS_NOINTEGRALHEIGHT | NOT WS_VISIBLE | WS_VSCROLL | WS_TABSTOP
 END
 
@@ -280,10 +290,10 @@ IDD_OPT_XICONS DIALOGEX 0, 0, 227, 205
 STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD
 FONT 8, "MS Shell Dlg", 0, 0, 0x0
 BEGIN
-    GROUPBOX        "Extra icons (drag items to reorder them)",IDC_STATIC,1,102,224,80
-    EDITTEXT        IDC_EXICONSCALE,141,187,31,12,ES_RIGHT | ES_AUTOHSCROLL | ES_NUMBER
+    GROUPBOX        "Extra icons (drag items to reorder them)",IDC_STATIC,1,100,224,87
+    EDITTEXT        IDC_EXICONSCALE,141,192,31,12,ES_RIGHT | ES_AUTOHSCROLL | ES_NUMBER
     CONTROL         "",IDC_EXICONSCALESPIN,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | UDS_HOTTRACK,160,187,12,14
-    LTEXT           "Extra icon size",IDC_STATIC,51,189,87,11
+    LTEXT           "Extra icon size",IDC_STATIC,51,193,87,11
     CONTROL         "Show status icons",IDC_SHOWSTATUSICONS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,10,106,10
     GROUPBOX        "Icons",IDC_STATIC,1,0,224,99
     CONTROL         "Show visibility icons",IDC_SHOWVISIBILITY,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,22,214,10
@@ -296,7 +306,8 @@ BEGIN
     CONTROL         "Dim idle contacts",IDC_IDLE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,70,214,10
     CONTROL         "Replace status icons with xStatus",IDC_XSTATUSASSTATUS,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,82,214,10
-    CONTROL         "",IDC_EXTRAORDER,"SysTreeView32",TVS_NOTOOLTIPS | WS_BORDER | WS_HSCROLL | WS_TABSTOP,22,113,182,64
+    CONTROL         "",IDC_EXTRAORDER,"SysTreeView32",TVS_NOTOOLTIPS | WS_BORDER | WS_HSCROLL | WS_TABSTOP,22,111,182,56
+    PUSHBUTTON      "Reset order and visibility to default",IDC_RESETXICONS,5,169,216,15
 END
 
 IDD_OPT_CLUI DIALOGEX 0, 0, 305, 226
@@ -529,7 +540,7 @@ FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     CONTROL         "",IDC_OPTIONSTAB,"SysTabControl32",WS_TABSTOP,1,1,310,226,WS_EX_ACCEPTFILES
     PUSHBUTTON      "Load from skin file",IDC_IMPORT,167,229,125,15
-    PUSHBUTTON      "Export to skin file",IDC_EXPORT,20,229,125,15
+    PUSHBUTTON      "Export to skin file",IDC_EXPORT,19,229,125,15
 END
 
 IDD_QUICKIGNORE DIALOGEX 0, 0, 357, 247
@@ -589,7 +600,7 @@ END
 
 1 TEXTINCLUDE 
 BEGIN
-    "resource.h\0"
+    "include\\resource.h\0"
 END
 
 2 TEXTINCLUDE 
@@ -597,7 +608,7 @@ BEGIN
     "#include <windows.h>\r\n"
     "#include <winres.h>\r\n"
     "#include <statusmodes.h>\r\n"
-    "\0"
+    "#include <version.rc>\0"
 END
 
 3 TEXTINCLUDE 
@@ -662,7 +673,7 @@ IDC_DROPUSER            CURSOR                  "res/dropuser.cur"
 // Menu
 //
 
-IDR_CLISTMENU MENU 
+IDR_CLISTMENU MENU
 BEGIN
     POPUP "&¤"
     BEGIN
@@ -684,7 +695,7 @@ BEGIN
     END
 END
 
-IDR_CONTEXT MENU 
+IDR_CONTEXT MENU
 BEGIN
     POPUP "Tray"
     BEGIN
@@ -752,8 +763,16 @@ END
 //
 
 #ifdef APSTUDIO_INVOKED
-GUIDELINES DESIGNINFO 
+GUIDELINES DESIGNINFO
 BEGIN
+    IDD_OPT_DSPPROFILES, DIALOG
+    BEGIN
+    END
+
+    IDD_OPT_DSPADVANCED, DIALOG
+    BEGIN
+    END
+
     IDD_OPT_XICONS, DIALOG
     BEGIN
         RIGHTMARGIN, 225
@@ -763,10 +782,14 @@ BEGIN
     BEGIN
         HORZGUIDE, 127
     END
+
+    IDD_OPT, DIALOG
+    BEGIN
+    END
 END
 #endif    // APSTUDIO_INVOKED
 
-#endif    // English (U.S.) resources
+#endif    // English (United States) resources
 /////////////////////////////////////////////////////////////////////////////
 
 
