@@ -228,6 +228,13 @@ wParam=0, lParam = (LPARAM)LIST_INTERFACE*
 
 typedef int ( *FSortFunc )( void*, void* );
 
+// Assumes first 32 bit value of the data is the numeric key 
+// and uses it to perform sort/search operations, this results
+// in much better performance as no compare function calls needed 
+// Incredibly useful for Hash Tables
+#define NumericKeySort (FSortFunc)(void*) -1
+#define HandleKeySort  (FSortFunc)(void*) -2
+
 typedef struct
 {
 	void**		items;

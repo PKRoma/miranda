@@ -945,14 +945,6 @@ static int stringCompare2( DBCachedGlobalValue* p1, DBCachedGlobalValue* p2 )
 	return strcmp( p1->name, p2->name );
 }
 
-static int handleCompare( void* p1, void* p2 )
-{
-	if ( *( long* )p1 == *( long* )p2 )
-		return 0;
-
-	return *( long* )p1 - *( long* )p2;
-}
-
 int InitSettings(void)
 {
 	CreateServiceFunction(MS_DB_CONTACT_GETSETTING,GetContactSetting);
@@ -970,7 +962,7 @@ int InitSettings(void)
 	hCacheHeap=HeapCreate(0,0,0);
 	lSettings.sortFunc=stringCompare;
 	lSettings.increment=50;
-	lContacts.sortFunc=handleCompare;
+	lContacts.sortFunc=HandleKeySort;
 	lContacts.increment=100;
 	lGlobalSettings.sortFunc=stringCompare2;
 	lGlobalSettings.increment=100;

@@ -47,9 +47,9 @@ typedef struct
 	const char *pszService;       /* Service to call when HotKey Pressed */
 	WORD DefHotKey;               /* default hot key for action */
 	LPARAM lParam;                /* lParam to pass to service */
-#if MIRANDA_VER >= 0x900
-	DWORD dwFlags;
-#endif
+	#if MIRANDA_VER >= 0x900
+		DWORD dwFlags;
+	#endif
 } HOTKEYDESC;
 
 #if MIRANDA_VER >= 0x900

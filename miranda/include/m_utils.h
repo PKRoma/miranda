@@ -325,6 +325,35 @@ __inline static INT_PTR Utils_AssertInsideScreen(RECT *rc) {
 //wParam=(char*/TCHAR*/WCHAR*)string (depends on RVF_UNICODE/RVF_TCHAR flag)
 //lParam=(REPLACEVARSDATA *) data about variables, item with key=0 terminates the list
 //returns new string, use mir_free to destroy
+
+// variables known by the core:
+// ----------------------------
+// %miranda_profile%  -> same as MS_DB_GETPROFILEPATH, base folder for all profiles
+// %miranda_userdata% -> the active profile folder (home of the .dat file and all
+//                       profile data)
+// %miranda_path%     -> home path of the miranda installation (installation path
+//                       of miranda32/64.exe
+// %miranda_profilename% -> Name of the profile in use. Essentially, the name of the
+//                          .dat file without file name extension. Also: the folder name
+//                          relative to %miranda_profile% where all profile data is stored.
+// %miranda_logpath%     -> base folder for log files. This is \Logs relative to the
+//                          current profile folder.
+// %miranda_avatarcache% -> base folder for all protocol avatars. internal use only.
+//
+// the following variables operate on contacts. REPLACEVARSDATA::hContact must be
+// supplied by the caller.
+//
+// %nick%                -> a contact nick name.
+// %proto%               -> internal protocol name for a given contact. NOT the user-
+//                          defined account name.
+// %userid%              -> Unique ID for a given contact (UIN, JID etc.)
+
+// the following variables are system variables - unrelated to miranda profiles.
+
+// %appdata%			-> same as %APPDATA% environment variable.
+// %destkop%            -> location of the desktop folder in a user's profile.
+// %mydocuments%        -> location of the "My Documents" shell folder.
+
 typedef struct
 {
 	union
