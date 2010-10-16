@@ -33,7 +33,7 @@ struct AwayMsgDlgData {
 	HANDLE hAwayMsgEvent;
 };
 #define HM_AWAYMSG  (WM_USER+10)
-static INT_PTR CALLBACK ReadAwayMsgDlgProc(HWND hwndDlg,UINT message,WPARAM wParam,LPARAM lParam)
+static INT_PTR CALLBACK ReadAwayMsgDlgProc(HWND hwndDlg, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	AwayMsgDlgData *dat = (AwayMsgDlgData*)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 
@@ -65,6 +65,15 @@ static INT_PTR CALLBACK ReadAwayMsgDlgProc(HWND hwndDlg,UINT message,WPARAM wPar
 				SetDlgItemText(hwndDlg, IDC_RETRIEVING, str);
 
 				Window_SetProtoIcon_IcoLib(hwndDlg, szProto, dwStatus);
+			}
+			if (dat->hSeq == NULL)
+			{
+				ACKDATA ack = {0};
+				ack.cbSize = sizeof(ack);
+				ack.hContact = dat->hContact; 
+				ack.type = ACKTYPE_AWAYMSG;
+				ack.result = ACKRESULT_SUCCESS;
+				SendMessage(hwndDlg, HM_AWAYMSG, 0, (LPARAM)&ack);
 			}
 			return TRUE;
 
