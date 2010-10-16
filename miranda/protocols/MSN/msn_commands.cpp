@@ -1539,7 +1539,7 @@ LBL_InvalidCommand:
 			newThread->mInitialContact = MSN_HContactFromEmail(data.callerEmail, data.callerNick, true, true);
 			mir_snprintf(newThread->mCookie, sizeof(newThread->mCookie), "%s %d", data.authChallengeInfo, trid);
 
-			ReleaseSemaphore(newThread->hWaitEvent, 5, NULL);
+			ReleaseSemaphore(newThread->hWaitEvent, MSN_PACKETS_COMBINE, NULL);
 
 			MSN_DebugLog("Opening caller's switchboard server '%s'...", data.newServer);
 			newThread->startThread(&CMsnProto::MSNServerThread, this);
