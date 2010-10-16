@@ -89,7 +89,7 @@ popd
 if errorlevel 1 goto :Error
 
 pushd ..\..\miranda\plugins\clist_nicer
-call :Nmake clist.mak "clist_nicer - Win32 Release"
+call :Nmake clist_nicer.mak "clist_nicer - Win32 Release"
 popd
 if errorlevel 1 goto :Error
 

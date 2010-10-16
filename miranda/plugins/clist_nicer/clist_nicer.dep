@@ -316,9 +316,9 @@
 	"..\..\include\m_button.h"\
 	"..\..\include\m_genmenu.h"\
 	"..\..\include\m_options.h"\
-	"..\..\include\m_variables.h"\
 	"..\..\include\win2k.h"\
 	".\CLUIFrames\cluiframes.h"\
+	".\INCLUDE\m_variables.h"\
 	".\INCLUDE\rowheight_funcs.h"\
 	
 
