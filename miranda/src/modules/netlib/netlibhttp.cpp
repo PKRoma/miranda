@@ -25,7 +25,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "netlib.h"
 
 #define HTTPRECVHEADERSTIMEOUT   30000  //in ms
-#define HTTPRECVDATATIMEOUT       6000
+#define HTTPRECVDATATIMEOUT      20000
 
 struct ResizableCharBuffer 
 {
@@ -276,9 +276,9 @@ struct HttpSecurityContext
 			{
 				unsigned long ip = inet_addr(szHost);
 				PHOSTENT host = (ip == INADDR_NONE) ? gethostbyname(szHost) : gethostbyaddr((char*)&ip, 4, AF_INET);
-				mir_snprintf(szSpnStr, SIZEOF(szSpnStr), "HTTP/%s", host ? host->h_name : szHost);
-
+				mir_snprintf(szSpnStr, SIZEOF(szSpnStr), "HTTP/%s", host && host->h_name ? host->h_name : szHost);
 				_strlwr(szSpnStr + 5);
+				NetlibLogf(nlc->nlu, "Host SPN: %s", szSpnStr);
 			}
 			m_hNtlmSecurity = NetlibInitSecurityProvider(szProvider, szSpnStr[0] ? szSpnStr : NULL);
 			if (m_hNtlmSecurity)
