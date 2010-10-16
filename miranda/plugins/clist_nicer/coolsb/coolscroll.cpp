@@ -1183,11 +1183,7 @@ static UINT DrawScrollButton(SCROLLBUT *sbut, HDC hdc, const RECT *pctrl, UINT f
 
 		//fill in the standard header
 		nmcd.hdr.hwndFrom = hwnd;
-<<<<<<< .mine
-		nmcd.hdr.idFrom   = GetWindowLongPtr(hwnd, GWL_ID);
-=======
 		nmcd.hdr.idFrom   = GetWindowLongPtr(hwnd, GWLP_ID);
->>>>>>> .r12533
 		nmcd.hdr.code     = NM_COOLSB_CUSTOMDRAW;
 
 		nmcd.dwDrawStage  = CDDS_ITEMPREPAINT;

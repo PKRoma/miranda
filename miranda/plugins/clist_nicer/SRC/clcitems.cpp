@@ -455,7 +455,7 @@ void RTL_DetectGroupName(struct ClcContact *group)
 
 void GetExtendedInfo(struct ClcContact *contact, struct ClcData *dat)
 {
-    DBVARIANT dbv = {0};
+	CONTACTINFO ci;
     BOOL iCacheNew = FALSE;
     int index;
 
@@ -487,37 +487,35 @@ void GetExtendedInfo(struct ClcContact *contact, struct ClcData *dat)
     cfg::eCache[index].iExtraValid &= ~(EIMG_SHOW_EMAIL | EIMG_SHOW_SMS | EIMG_SHOW_WEB);
     cfg::eCache[index].iExtraImage[EXTRA_ICON_EMAIL] = cfg::eCache[index].iExtraImage[EXTRA_ICON_WEB] = cfg::eCache[index].iExtraImage[EXTRA_ICON_SMS] = 0xff;
 
-    if(!cfg::getString(contact->hContact, contact->proto, "e-mail", &dbv) && lstrlenA(dbv.pszVal) > 1)
-        cfg::eCache[index].iExtraImage[EXTRA_ICON_EMAIL] = 0;
-    else if(!cfg::getString(contact->hContact, "UserInfo", "Mye-mail0", &dbv) && lstrlenA(dbv.pszVal) > 1)
-        cfg::eCache[index].iExtraImage[EXTRA_ICON_EMAIL] = 0;
+	ZeroMemory(&ci,sizeof(CONTACTINFO));
+	ci.cbSize	= sizeof(CONTACTINFO);
+	ci.hContact	= contact->hContact;
+	ci.szProto	= contact->proto;
 
-    if(dbv.pszVal) {
-        mir_free(dbv.pszVal);
-        dbv.pszVal = NULL;
-    }
+	ci.dwFlag	= CNF_EMAIL;
+	if (!CallService(MS_CONTACT_GETCONTACTINFO,(WPARAM)0,(LPARAM)&ci)) {
+		cfg::eCache[index].iExtraImage[EXTRA_ICON_EMAIL] = 0;
+		mir_free(ci.pszVal);
+	}
 
-    if(!cfg::getString(contact->hContact, contact->proto, "Homepage", &dbv) && lstrlenA(dbv.pszVal) > 1)
-        cfg::eCache[index].iExtraImage[EXTRA_ICON_WEB] = 1;
-    else if(!cfg::getString(contact->hContact, "UserInfo", "Homepage", &dbv) && lstrlenA(dbv.pszVal) > 1)
-        cfg::eCache[index].iExtraImage[EXTRA_ICON_WEB] = 1;
+	ci.dwFlag	= CNF_HOMEPAGE;
+	if (!CallService(MS_CONTACT_GETCONTACTINFO,(WPARAM)0,(LPARAM)&ci)) {
+		cfg::eCache[index].iExtraImage[EXTRA_ICON_WEB] = 1;
+		mir_free(ci.pszVal);
+	}
 
-    if(dbv.pszVal) {
-        mir_free(dbv.pszVal);
-        dbv.pszVal = NULL;
-    }
-
-    if(!cfg::getString(contact->hContact, "UserInfoEx", "Cellular", &dbv) && lstrlenA(dbv.pszVal) > 1)
-        cfg::eCache[index].iExtraImage[EXTRA_ICON_SMS] = 2;
-    else if(!cfg::getString(contact->hContact, contact->proto, "Cellular", &dbv) && lstrlenA(dbv.pszVal) > 1)
-        cfg::eCache[index].iExtraImage[EXTRA_ICON_SMS] = 2;
-    else if(!cfg::getString(contact->hContact, "UserInfo", "MyPhone0", &dbv) && lstrlenA(dbv.pszVal) > 1)
-        cfg::eCache[index].iExtraImage[EXTRA_ICON_SMS] = 2;
-
-    if(dbv.pszVal) {
-        mir_free(dbv.pszVal);
-        dbv.pszVal = NULL;
-    }
+	ci.dwFlag	= CNF_CELLULAR;
+	if (!CallService(MS_CONTACT_GETCONTACTINFO,(WPARAM)0,(LPARAM)&ci)) {
+		cfg::eCache[index].iExtraImage[EXTRA_ICON_SMS] = 2;
+		mir_free(ci.pszVal);
+	}
+	else {
+		ci.dwFlag	= CNF_PHONE;
+		if (!CallService(MS_CONTACT_GETCONTACTINFO,(WPARAM)0,(LPARAM)&ci)) {
+			cfg::eCache[index].iExtraImage[EXTRA_ICON_SMS] = 2;
+			mir_free(ci.pszVal);
+		}
+	}
 
     // set the mask for valid extra images...
 

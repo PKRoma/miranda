@@ -700,33 +700,27 @@ LBL_Def:
 				int column = hitFlags >> 24;
 				if (column-- > 0) {
 					if (contact->type == CLCIT_CONTACT) {
-						if (column == 0) {
-							char buf[4096];
-							DBVARIANT dbv = {0};
-							char *szEmail = NULL;
-							if (!cfg::getString(contact->hContact, "UserInfo", "Mye-mail0", &dbv))
-								szEmail = dbv.pszVal;
-							else if (!cfg::getString(contact->hContact, contact->proto, "e-mail", &dbv))
-								szEmail = dbv.pszVal;
+						CONTACTINFO ci;
+						ZeroMemory(&ci,sizeof(CONTACTINFO));
+						ci.cbSize		= sizeof(CONTACTINFO);
+						ci.hContact		= contact->hContact;
+						ci.szProto		= contact->proto;
 
-							if (szEmail) {
-								mir_snprintf(buf, sizeof(buf), "mailto:%s", szEmail);
-								mir_free(szEmail);
+						if (column == 0) {
+							ci.dwFlag	= CNF_EMAIL;
+							if (!CallService(MS_CONTACT_GETCONTACTINFO,(WPARAM)0,(LPARAM)&ci)) {
+								char buf[4096];
+								mir_snprintf(buf, sizeof(buf), "mailto:%s", (LPCSTR)ci.pszVal);
+								mir_free(ci.pszVal);
 								ShellExecuteA(hwnd, "open", buf, NULL, NULL, SW_SHOW);
 							}
 							return TRUE;
 						}
 						if (column == 1) {
-							char *homepage = NULL;
-							DBVARIANT dbv = {0};
-
-							if (!cfg::getString(contact->hContact, "UserInfo", "Homepage", &dbv))
-								homepage = dbv.pszVal;
-							else if (!cfg::getString(contact->hContact, contact->proto, "Homepage", &dbv))
-								homepage = dbv.pszVal;
-							if (homepage) {
-								ShellExecuteA(hwnd, "open", homepage, NULL, NULL, SW_SHOW);
-								mir_free(homepage);
+							ci.dwFlag	= CNF_HOMEPAGE;
+							if (!CallService(MS_CONTACT_GETCONTACTINFO,(WPARAM)0,(LPARAM)&ci)) {
+								ShellExecuteA(hwnd, "open", (LPCSTR)ci.pszVal, NULL, NULL, SW_SHOW);
+								mir_free(ci.pszVal);
 							}
 							return TRUE;
 						}
