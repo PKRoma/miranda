@@ -305,10 +305,10 @@ extern "C" int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 				cfg::dat.exIconOrder[i - 1] = i;
 		} else {
 			for(i = 0; i < EXICON_COUNT; i++)
-				if(dbv.pszVal[i] < EXICON_COUNT && dbv.pszVal[i] >= 0)
+				if(dbv.pszVal[i] < EXICON_COUNT+1 && dbv.pszVal[i] >0)
 					cfg::dat.exIconOrder[i] = dbv.pszVal[i];
 				else
-					cfg::dat.exIconOrder[i] = i;
+					cfg::dat.exIconOrder[i] = i+1;
 		}
 		DBFreeVariant(&dbv);
 	} else {
