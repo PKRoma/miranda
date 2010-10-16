@@ -70,11 +70,15 @@ ezxml_t CMsnProto::abSoapHdr(const char* service, const char* scenario, ezxml_t&
 
 ezxml_t CMsnProto::getSoapResponse(ezxml_t bdy, const char* service)
 {
-	char resp[40], res[40];
-	mir_snprintf(resp, sizeof(resp), "%sResponse", service);
-	mir_snprintf(res, sizeof(res), "%sResult", service);
+	char resp1[40], resp2[40];
+	mir_snprintf(resp1, sizeof(resp1), "%sResponse", service);
+	mir_snprintf(resp2, sizeof(resp2), "%sResult", service);
 
-	return ezxml_get(bdy, "soap:Body", 0, resp, 0, res, -1); 
+	ezxml_t res = ezxml_get(bdy, "soap:Body", 0, resp1, 0, resp2, -1); 
+	if (res == NULL)
+		res = ezxml_get(bdy, "s:Body", 0, resp1, 0, resp2, -1);
+
+	return res; 
 }
 
 ezxml_t CMsnProto::getSoapFault(ezxml_t bdy, bool err)

@@ -482,7 +482,7 @@ void  CMsnProto::p2p_sendSlp(
 
 	p = pHeaders.writeToBuffer(p);
 
-	p += sprintf(p, "Content-Length: %d\r\n\r\n", szContLen);
+	p += sprintf(p, "Content-Length: %d\r\n\r\n", szContLen + 2);
 	memcpy(p, szContent, szContLen);
 	p += szContLen;
 
@@ -1195,7 +1195,7 @@ void CMsnProto::p2p_InitDirectTransfer(P2P_Header* hdrdata, MimeHeaders& tFileIn
 	MimeHeaders chdrs(12);
 	bool listen = false;
 
-	MSN_DebugLog("Connection weight His: %d mine: %d", conType.weight, MyConnection.weight);
+	MSN_DebugLog("Connection weight, his: %d mine: %d", conType.weight, MyConnection.weight);
 	if (conType.weight <= MyConnection.weight)
 		listen = p2p_createListener(ft, dc, chdrs);
 

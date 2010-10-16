@@ -104,7 +104,6 @@ CMsnProto::CMsnProto(const char* aProtoName, const TCHAR* aUserName) :
 	HookProtoEvent(ME_DB_CONTACT_DELETED,        &CMsnProto::OnContactDeleted);
 	HookProtoEvent(ME_DB_CONTACT_SETTINGCHANGED, &CMsnProto::OnDbSettingChanged);
 	HookProtoEvent(ME_MSG_WINDOWEVENT,           &CMsnProto::OnWindowEvent);
-	HookProtoEvent(ME_CLIST_PREBUILDCONTACTMENU, &CMsnProto::OnPrebuildContactMenu);
 	HookProtoEvent(ME_CLIST_GROUPCHANGE,         &CMsnProto::OnGroupChange);
 	HookProtoEvent(ME_OPT_INITIALISE,            &CMsnProto::OnOptionsInit);
 	HookProtoEvent(ME_CLIST_DOUBLECLICKED,       &CMsnProto::OnContactDoubleClicked);
@@ -189,7 +188,6 @@ CMsnProto::CMsnProto(const char* aProtoName, const TCHAR* aUserName) :
 CMsnProto::~CMsnProto()
 {
 	MsnRemoveMainMenus();
-	MsnRemoveContactMenus();
 
 	DestroyHookableEvent(hMSNNudge);
 
@@ -247,8 +245,6 @@ int CMsnProto::OnModulesLoaded(WPARAM, LPARAM)
 	}
 
 	HookProtoEvent(ME_IDLE_CHANGED, &CMsnProto::OnIdleChanged);
-	MsnInitContactMenu();
-
 	return 0;
 }
 

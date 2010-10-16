@@ -141,6 +141,8 @@ extern "C" int __declspec(dllexport) Load(PLUGINLINK* link)
 	MSN_CallService(MS_PROTO_REGISTERMODULE, 0, (LPARAM)&pd);
 
 	MsnInitIcons();
+	MSN_InitContactMenu();
+
 	return 0;
 }
 
@@ -149,6 +151,7 @@ extern "C" int __declspec(dllexport) Load(PLUGINLINK* link)
 
 extern "C" int __declspec(dllexport) Unload(void)
 {
+	MSN_RemoveContactMenus();
 	MsnLinks_Destroy();
 	UnhookEvent(hMooduleLoaded);
 	return 0;
