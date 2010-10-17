@@ -384,7 +384,7 @@ static int validguess_db_name(TCHAR * name)
 	// this is ONLY SAFE because name -> ffd.cFileName == MAX_PATH
 	TCHAR x = name[4];
 	name[4]=0;
-	rc = lstrcmpi(name, _T("dbx_")) == 0;
+	rc = lstrcmpi(name, _T("dbx_")) == 0 || lstrcmpi(name, _T("dbrw")) == 0;
 	name[4] = x;
 	return rc;
 }
