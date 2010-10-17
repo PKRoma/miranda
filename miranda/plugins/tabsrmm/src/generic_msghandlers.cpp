@@ -1660,7 +1660,7 @@ void TSAPI DM_Typing(TWindowData *dat, bool fForceOff)
 					}
 				}
 			}
-			if ((GetForegroundWindow() != hwndContainer) || (dat->pContainer->hwndStatus == 0))
+			if ((GetForegroundWindow() != hwndContainer) || (dat->pContainer->hwndStatus == 0) || (dat->pContainer->hwndActive != hwndDlg))
 				SendMessage(hwndContainer, DM_SETICON, (WPARAM)dat, (LPARAM) PluginConfig.g_buttonBarIcons[ICON_DEFAULT_TYPING]);
 			dat->showTyping = 1;
 		}
@@ -1898,8 +1898,8 @@ void TSAPI DM_EventAdded(TWindowData *dat, WPARAM wParam, LPARAM lParam)
 		/*
 		* flash window if it is not focused
 		*/
-		if ((GetActiveWindow() != hwndContainer || GetForegroundWindow() != hwndContainer) && !(dbei.flags & DBEF_SENT) && !fIsStatusChangeEvent) {
-			if (!(m_pContainer->dwFlags & CNT_NOFLASH))
+		if ((GetActiveWindow() != hwndContainer || GetForegroundWindow() != hwndContainer || dat->pContainer->hwndActive != hwndDlg) && !(dbei.flags & DBEF_SENT) && !fIsStatusChangeEvent) {
+			if (!(m_pContainer->dwFlags & CNT_NOFLASH) && (GetActiveWindow() != hwndContainer || GetForegroundWindow() != hwndContainer))
 				FlashContainer(m_pContainer, 1, 0);
 			SendMessage(hwndContainer, DM_SETICON, (WPARAM)dat, (LPARAM)LoadSkinnedIcon(SKINICON_EVENT_MESSAGE));
 			m_pContainer->dwFlags |= CNT_NEED_UPDATETITLE;

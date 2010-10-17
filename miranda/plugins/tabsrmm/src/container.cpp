@@ -1911,7 +1911,8 @@ buttons_done:
 
 				if ((HICON)lParam == PluginConfig.g_buttonBarIcons[ICON_DEFAULT_TYPING] || (HICON)lParam == hIconMsg) {
 					Win7Taskbar->setOverlayIcon(hwndDlg, lParam);
-					SendMessage(hwndDlg, WM_SETICON, ICON_SMALL, lParam);
+					if(GetForegroundWindow() != hwndDlg)
+						SendMessage(hwndDlg, WM_SETICON, ICON_SMALL, lParam);
 					if((HICON)lParam == hIconMsg)
 						pContainer->hIconTaskbarOverlay = hIconMsg;
 					break;
