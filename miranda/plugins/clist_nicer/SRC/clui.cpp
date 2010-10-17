@@ -1396,6 +1396,10 @@ skipbg:
 				szrect->right = g_PreSizeRect.right;
 			return TRUE;
 		}
+
+		case WM_WINDOWPOSCHANGED:
+			return(0);
+
 		case WM_WINDOWPOSCHANGING: {
 			WINDOWPOS *wp = (WINDOWPOS *)lParam;
 
@@ -1406,71 +1410,63 @@ skipbg:
 				break;
 
 			if (pcli->hwndContactList != NULL) {
-				RECT rcOld;
-				GetWindowRect(hwnd, &rcOld);
-				if ((wp->cx != rcOld.right - rcOld.left || wp->cy != rcOld.bottom - rcOld.top) && !(wp->flags & SWP_NOSIZE)) {
-					during_sizing = 1;
-					new_window_rect.left = 0;
-					new_window_rect.right = wp->cx - (g_CLUI_x_off + g_CLUI_x1_off);
-					new_window_rect.top = 0;
-					new_window_rect.bottom = wp->cy - g_CLUI_y_off - g_CLUI_y1_off;
-					SizeFramesByWindowRect(&new_window_rect);
-					dock_prevent_moving = 0;
-					LayoutButtons(hwnd, &new_window_rect);
-					//SetWindowPos(pcli->hwndStatus, 0, 0, new_window_rect.bottom - g_CluiData.statusBarHeight, new_window_rect.right,
-					//	g_CluiData.statusBarHeight, SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOREDRAW | SWP_NOCOPYBITS);
-					if (wp->cx != g_oldSize.cx)
+				RedrawWindow(hwnd, NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW);
+				during_sizing = true;
+
+				new_window_rect.left = 0;
+				new_window_rect.right = wp->cx - (g_CLUI_x_off + g_CLUI_x1_off);
+				new_window_rect.top = 0;
+				new_window_rect.bottom = wp->cy - g_CLUI_y_off - g_CLUI_y1_off;
+
+				if (cfg::dat.dwFlags & CLUI_FRAME_SBARSHOW) {
+					RECT rcStatus;
+					SetWindowPos(pcli->hwndStatus, 0, 0, new_window_rect.bottom - 20, new_window_rect.right, 20, SWP_NOZORDER);
+					GetWindowRect(pcli->hwndStatus, &rcStatus);
+					cfg::dat.statusBarHeight = (rcStatus.bottom - rcStatus.top);
+					if(wp->cx != g_oldSize.cx)
 						SendMessage(hwnd, CLUIINTM_STATUSBARUPDATE, 0, 0);
-					dock_prevent_moving = 1;
-					g_oldPos.x = wp->x;
-					g_oldPos.y = wp->y;
-					g_oldSize.cx = wp->cx;
-					g_oldSize.cy = wp->cy;
-					rcWPC = new_window_rect;
-					RedrawWindow(hwnd, NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW);
+					RedrawWindow(pcli->hwndStatus, NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW);
+				} else
+					cfg::dat.statusBarHeight = 0;
 
-					during_sizing = 0;
-					return(SendMessage(hwnd, WM_WINDOWPOSCHANGED, wParam, (LPARAM)wp));
-				}
+				SizeFramesByWindowRect(&new_window_rect);
+				dock_prevent_moving = 0;
+				LayoutButtons(hwnd, &new_window_rect);
+				dock_prevent_moving = 1;
+				g_oldPos.x = wp->x;
+				g_oldPos.y = wp->y;
+				g_oldSize.cx = wp->cx;
+				g_oldSize.cy = wp->cy;
+				rcWPC = new_window_rect;
+
+				during_sizing = false;
 			}
-			during_sizing = 0;
-			return DefWindowProc(hwnd, msg, wParam, lParam);
+			during_sizing = false;
+			return(0);
 		}
-		case WM_SIZE:
 
-			if (cfg::dat.dwFlags & CLUI_FRAME_SBARSHOW) {
-				RECT rcStatus;
-				SendMessage(pcli->hwndStatus, WM_SIZE, 0, 0);
-				GetWindowRect(pcli->hwndStatus, &rcStatus);
-				cfg::dat.statusBarHeight = (rcStatus.bottom - rcStatus.top);
-			} else
-				cfg::dat.statusBarHeight = 0;
-
+		case WM_SIZE: {
+			RECT rc;
 
 			if ((wParam == 0 && lParam == 0) || Docking_IsDocked(0, 0)) {
 
 				if (IsZoomed(hwnd))
 					ShowWindow(hwnd, SW_SHOWNORMAL);
 
-				if (pcli->hwndContactList != NULL) {
-					RECT rcClient;
-
-					GetClientRect(hwnd, &rcClient);
-					SizeFramesByWindowRect(&rcClient);
-					LayoutButtons(hwnd, &rcClient);
-					if (rcClient.right != g_oldSize.cx)
-						PostMessage(hwnd, CLUIINTM_STATUSBARUPDATE, 0, 0);
-					g_oldSize.cx = rcClient.right;
-					g_oldSize.cy = rcClient.bottom;
+				if (pcli->hwndContactList != 0) {
+					SendMessage(hwnd, WM_ENTERSIZEMOVE, 0, 0);
+					GetWindowRect(hwnd, &rc);
+					WINDOWPOS	wp = {0};
+					wp.cx = rc.right - rc.left;
+					wp.cy = rc.bottom - rc.top;
+					wp.x = rc.left;
+					wp.y = rc.top;
+					wp.flags = 0;
+					SendMessage(hwnd, WM_WINDOWPOSCHANGING, 0, (LPARAM)&wp);
+					SendMessage(hwnd, WM_EXITSIZEMOVE, 0, 0);
 				}
 			}
-			if (wParam == SIZE_MINIMIZED) {
-				if (cfg::getByte("CList", "Min2Tray", SETTING_MIN2TRAY_DEFAULT)) {
-					ShowWindow(hwnd, SW_HIDE);
-					cfg::writeByte("CList", "State", SETTING_STATE_HIDDEN);
-				} else
-					cfg::writeByte("CList", "State", SETTING_STATE_MINIMIZED);
-			}
+		}
 		case WM_MOVE:
 			if (!IsIconic(hwnd)) {
 				RECT rc;
@@ -1495,6 +1491,7 @@ skipbg:
 				}
 			}
 			return TRUE;
+
 		case WM_SETFOCUS:
 			SetFocus(pcli->hwndContactTree);
 			return 0;
@@ -1666,15 +1663,36 @@ skipbg:
 			API::SetLayeredWindowAttributes(hwnd, cfg::dat.bFullTransparent ? cfg::dat.colorkey : RGB(0, 0, 0), (BYTE)(destAlpha), LWA_ALPHA | (cfg::dat.bFullTransparent ? LWA_COLORKEY : 0));
 			return DefWindowProc(hwnd, msg, wParam, lParam);
 		}
-		case WM_SYSCOMMAND:
+
+		case WM_SYSCOMMAND: {
+			BYTE	bWindowStyle = cfg::getByte("CLUI", "WindowStyle", SETTING_WINDOWSTYLE_DEFAULT);
+			if(SETTING_WINDOWSTYLE_DEFAULT == bWindowStyle) {
+				if(wParam == SC_RESTORE) {
+					CallWindowProc(DefWindowProc, hwnd, msg, wParam, lParam);
+					SendMessage(hwnd, WM_SIZE, 0, 0);
+					SendMessage(hwnd, CLUIINTM_REDRAW, 0, 0);
+					cfg::writeByte("CList", "State", SETTING_STATE_NORMAL);
+					break;
+				}
+			}
+
 			if (wParam == SC_MAXIMIZE)
 				return 0;
 			else if (wParam == SC_MINIMIZE) {
+				if(SETTING_WINDOWSTYLE_DEFAULT == bWindowStyle && !cfg::getByte("CList", "AlwaysHideOnTB", 0)) {
+					cfg::writeByte("CList", "State", SETTING_STATE_MINIMIZED);
+					break;
+				}
 				pcli->pfnShowHide(0, 0);
 				return 0;
-				//}
+			}
+			else if (wParam == SC_RESTORE) {
+				pcli->pfnShowHide(0, 0);
+				return(0);
 			}
 			return DefWindowProc(hwnd, msg, wParam, lParam);
+		}
+
 		case WM_COMMAND: {
 			DWORD dwOldFlags = cfg::dat.dwFlags;
 			if (HIWORD(wParam) == BN_CLICKED && lParam != 0) {
@@ -2183,13 +2201,15 @@ buttons_done:
 			}
 			return 0;
 		}
+
 		case WM_CLOSE:
-			if (cfg::getByte("CLUI", "WindowStyle", SETTING_WINDOWSTYLE_DEFAULT) != SETTING_WINDOWSTYLE_DEFAULT ||
-					cfg::getByte("CList", "Min2Tray", SETTING_MIN2TRAY_DEFAULT))
-				pcli->pfnShowHide(0, 0);
-			else
-				SendMessage(hwnd, WM_COMMAND, ID_ICQ_EXIT, 0);
-			return FALSE;
+			if(SETTING_WINDOWSTYLE_DEFAULT == cfg::getByte("CLUI", "WindowStyle", SETTING_WINDOWSTYLE_DEFAULT) && !cfg::getByte("CList", "AlwaysHideOnTB", 0)) {
+				PostMessage(hwnd, WM_SYSCOMMAND, SC_MINIMIZE, 0);
+				return(0);
+			}
+			pcli->pfnShowHide(0, 0);
+			return(0);
+
 		case CLUIINTM_REDRAW:
 			if (show_on_first_autosize) {
 				show_on_first_autosize = FALSE;

@@ -100,7 +100,6 @@
 #define IDC_CLEFTSPIN                   1071
 #define IDC_GREYOUT                     1072
 #define IDC_CTOP                        1072
-#define IDC_MIN2TRAY                    1073
 #define IDC_ONTOP                       1074
 #define IDC_SHOWMAINMENU                1075
 #define IDC_CLIENTDRAG                  1076
