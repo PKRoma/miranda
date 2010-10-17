@@ -422,8 +422,12 @@ BEGIN
     CONTROL         "",IDC_FLASHINTERVALSPIN,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,185,115,10,10
     LTEXT           "milliseconds",IDC_STATIC,205,113,81,12
     CONTROL         "Help on containers",IDC_HELP_CONTAINERS,"Hyperlink",WS_TABSTOP | 0x1,21,210,262,9
-    COMBOBOX        IDC_AEROEFFECT,9,183,158,36,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
-    GROUPBOX        "Aero effect",IDC_STATIC,3,170,300,35
+    GROUPBOX        "Windows Aero settings",IDC_STATIC,3,150,300,42
+    CONTROL         "Use Aero UI elements(only when not using a custom skin)",IDC_USEAERO,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,9,160,281,11
+    COMBOBOX        IDC_AEROEFFECT,9,175,158,36,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "Use Windows 7 task bar enhancements (restart required)",IDC_USEAEROPEEK,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,9,195,281,11
 END
 
 IDD_OPT_TYPINGNOTIFYPOPUP DIALOGEX 0, 0, 318, 174

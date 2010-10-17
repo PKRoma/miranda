@@ -1268,7 +1268,7 @@ buttons_done:
 			TabCtrl_AdjustRect(GetDlgItem(hwndDlg, IDC_MSGTABS), FALSE, &rc);
 			/*
 			 * uChildMinHeight holds the min height for the client window only
-			 * so let's add the container's vertical padding (title bar, tab bar, 
+			 * so let's add the container's vertical padding (title bar, tab bar,
 			 * window border, status bar) to this value
 			 */
 			if(pContainer->hwndActive)
@@ -1910,7 +1910,8 @@ buttons_done:
 
 				if ((HICON)lParam == PluginConfig.g_buttonBarIcons[ICON_DEFAULT_TYPING] || (HICON)lParam == hIconMsg) {
 					Win7Taskbar->setOverlayIcon(hwndDlg, lParam);
-					SendMessage(hwndDlg, WM_SETICON, ICON_SMALL, lParam);
+					if(GetForegroundWindow() != hwndDlg)
+						SendMessage(hwndDlg, WM_SETICON, ICON_SMALL, lParam);
 					if((HICON)lParam == hIconMsg)
 						pContainer->hIconTaskbarOverlay = hIconMsg;
 					break;

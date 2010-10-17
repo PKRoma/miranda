@@ -333,7 +333,7 @@ static INT_PTR CALLBACK DlgProcSkinOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 
 				case IDC_THEMEIMPORT: {
 					LRESULT r;
-					
+
 					if(CSkin::m_skinEnabled) {
 						r = CWarning::show(CWarning::WARN_THEME_OVERWRITE, MB_YESNOCANCEL|MB_ICONQUESTION);
 						if(r == IDNO || r == IDCANCEL)
@@ -1208,15 +1208,18 @@ static INT_PTR CALLBACK DlgProcContainerSettings(HWND hwndDlg, UINT msg, WPARAM 
 			SendDlgItemMessage(hwndDlg, IDC_FLASHINTERVALSPIN, UDM_SETRANGE, 0, MAKELONG(10000, 500));
 			SendDlgItemMessage(hwndDlg, IDC_FLASHINTERVALSPIN, UDM_SETPOS, 0, (int)M->GetDword("flashinterval", 1000));
 			SendDlgItemMessage(hwndDlg, IDC_FLASHINTERVALSPIN, UDM_SETACCEL, 0, (int)M->GetDword("flashinterval", 1000));
-			CheckDlgButton(hwndDlg, IDC_USESKIN, M->GetByte("useskin", 0) ? 1 : 0);
-			SendMessage(hwndDlg, WM_COMMAND, MAKELONG(IDC_USESKIN, BN_CLICKED), 0);
-			Utils::enableDlgControl(hwndDlg, IDC_USESKIN, IsWinVer2000Plus() ? TRUE : FALSE);
-
+			CheckDlgButton(hwndDlg, IDC_USEAERO, M->GetByte("useAero", 1));
+			CheckDlgButton(hwndDlg, IDC_USEAEROPEEK, M->GetByte("useAeroPeek", 1));
 			for(int i = 0; i < CSkin::AERO_EFFECT_LAST; i++)
 				SendDlgItemMessage(hwndDlg, IDC_AEROEFFECT, CB_INSERTSTRING, -1, (LPARAM)TranslateTS(CSkin::m_aeroEffects[i].tszName));
 
 			SendDlgItemMessage(hwndDlg, IDC_AEROEFFECT, CB_SETCURSEL, (WPARAM)CSkin::m_aeroEffect, 0);
 			Utils::enableDlgControl(hwndDlg, IDC_AEROEFFECT, PluginConfig.m_bIsVista ? TRUE : FALSE);
+			Utils::enableDlgControl(hwndDlg, IDC_USEAERO, PluginConfig.m_bIsVista ? TRUE : FALSE);
+			Utils::enableDlgControl(hwndDlg, IDC_USEAEROPEEK, PluginConfig.m_bIsWin7 ? TRUE : FALSE);
+			if(PluginConfig.m_bIsVista)
+				Utils::enableDlgControl(hwndDlg, IDC_AEROEFFECT, IsDlgButtonChecked(hwndDlg, IDC_USEAERO) ? 1 : 0);
+
 			return TRUE;
 		}
 		case WM_COMMAND:
@@ -1224,6 +1227,9 @@ static INT_PTR CALLBACK DlgProcContainerSettings(HWND hwndDlg, UINT msg, WPARAM 
 				case IDC_TABLIMIT:
 					if (HIWORD(wParam) != EN_CHANGE || (HWND) lParam != GetFocus())
 						return TRUE;
+					break;
+				case IDC_USEAERO:
+					Utils::enableDlgControl(hwndDlg, IDC_AEROEFFECT, IsDlgButtonChecked(hwndDlg, IDC_USEAERO) ? 1 : 0);
 					break;
 				case IDC_LIMITTABS:
 				case IDC_SINGLEWINDOWMODE:
@@ -1244,14 +1250,21 @@ static INT_PTR CALLBACK DlgProcContainerSettings(HWND hwndDlg, UINT msg, WPARAM 
 						case PSN_APPLY: {
 							BOOL translated;
 
+							bool	fOldAeroState = M->getAeroState();
 							M->WriteByte(SRMSGMOD_T, "useclistgroups", (BYTE)(IsDlgButtonChecked(hwndDlg, IDC_CONTAINERGROUPMODE)));
 							M->WriteByte(SRMSGMOD_T, "limittabs", (BYTE)(IsDlgButtonChecked(hwndDlg, IDC_LIMITTABS)));
 							M->WriteDword(SRMSGMOD_T, "maxtabs", GetDlgItemInt(hwndDlg, IDC_TABLIMIT, &translated, FALSE));
 							M->WriteByte(SRMSGMOD_T, "singlewinmode", (BYTE)(IsDlgButtonChecked(hwndDlg, IDC_SINGLEWINDOWMODE)));
 							M->WriteDword(SRMSGMOD_T, "flashinterval", GetDlgItemInt(hwndDlg, IDC_FLASHINTERVAL, &translated, FALSE));
 							M->WriteByte(SRMSGMOD_T, "nrflash", (BYTE)(GetDlgItemInt(hwndDlg, IDC_NRFLASH, &translated, FALSE)));
+							M->WriteByte(0, SRMSGMOD_T, "useAero", IsDlgButtonChecked(hwndDlg, IDC_USEAERO) ? 1 : 0);
+							M->WriteByte(0, SRMSGMOD_T, "useAeroPeek", IsDlgButtonChecked(hwndDlg, IDC_USEAEROPEEK) ? 1 : 0);
 							CSkin::setAeroEffect(SendDlgItemMessage(hwndDlg, IDC_AEROEFFECT, CB_GETCURSEL, 0, 0));
 
+							if(M->getAeroState() != fOldAeroState) {
+								SendMessage(PluginConfig.g_hwndHotkeyHandler, WM_DWMCOMPOSITIONCHANGED, 0, 0);	// simulate aero state change
+								SendMessage(PluginConfig.g_hwndHotkeyHandler, WM_DWMCOLORIZATIONCOLORCHANGED, 0, 0);	// simulate aero state change
+							}
 							BuildContainerMenu();
 							return TRUE;
 						}

@@ -475,8 +475,6 @@ TOptionListItem CTranslator::m_lvItemsModPlus[] = {
 	0, LPGENT("Disable animated GIF avatars (will not affect already open message windows)"), 0, LOI_TYPE_SETTING, (UINT_PTR)"adv_DisableAniAvatars", 0,
 	0, LPGENT("Close current tab on send"), 0, LOI_TYPE_SETTING, (UINT_PTR)"adv_AutoClose_2", 0,
 	0, LPGENT("Disable error popups on sending failures"), 0, LOI_TYPE_SETTING, (UINT_PTR)"adv_noErrorPopups", 1,
-	0, LPGENT("Use Aero Glass for the message window (Vista+)"), 1, LOI_TYPE_SETTING, (UINT_PTR)"useAero", 0,
-	0, LPGENT("Use Windows 7 task bar features for tabbed windows (*)"), 1, LOI_TYPE_SETTING, (UINT_PTR)"useAeroPeek", 0,
 	0, LPGENT("Automatic keyboard layout: Do not load the system default for new contacts"), 1, LOI_TYPE_SETTING, (UINT_PTR)"adv_leaveKeyboardAlone", 0,
 	0, LPGENT("Enable unattended send (experimental feature, required for multisend and send later) (*)"), 0, LOI_TYPE_SETTING, (UINT_PTR)"sendLaterAvail", 0,
 	0, NULL, 0, 0, 0, 0

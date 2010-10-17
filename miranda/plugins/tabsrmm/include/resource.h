@@ -479,6 +479,8 @@
 #define IDC_CLOSEONESC                  1423
 #define IDC_ALWAYSPOPUP                 1424
 #define IDC_AEROEFFECT                  1424
+#define IDC_USEAERO						1531
+#define IDC_USEAEROPEEK					1532
 #define IDC_CREATEMIN                   1425
 #define IDC_ESCMODE                     1425
 #define IDC_CHECK5                      1426

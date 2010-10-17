@@ -590,7 +590,7 @@ LRESULT TSAPI DM_MsgWindowCmdHandler(HWND hwndDlg, TContainerData *m_pContainer,
 				GetDlgItemText(hwndDlg, IDC_MESSAGE, buf, iLen + 1);
 				M->WriteTString(dat->hContact, "UserInfo", "MyNotes", buf);
 				SetDlgItemText(hwndDlg, IDC_MESSAGE, _T(""));
-				
+
 				if(!dat->fIsAutosizingInput) {
 					dat->splitterY = dat->iSplitterSaved;
 					SendMessage(hwndDlg, WM_SIZE, 0, 0);
@@ -1228,10 +1228,10 @@ LRESULT TSAPI DM_UpdateLastMessage(const TWindowData *dat)
 			TCHAR date[64], time[64];
 
 			if (!(dat->pContainer->dwFlags & CNT_UINSTATUSBAR)) {
-				tmi.printTimeStamp(NULL, dat->lastMessage, _T("d"), date, safe_sizeof(date), 0); 
+				tmi.printTimeStamp(NULL, dat->lastMessage, _T("d"), date, safe_sizeof(date), 0);
 				if (dat->pContainer->dwFlags & CNT_UINSTATUSBAR && lstrlen(date) > 6)
 					date[lstrlen(date) - 5] = 0;
-				tmi.printTimeStamp(NULL, dat->lastMessage, _T("t"), time, safe_sizeof(time), 0); 
+				tmi.printTimeStamp(NULL, dat->lastMessage, _T("t"), time, safe_sizeof(time), 0);
 			}
 			if (dat->pContainer->dwFlags & CNT_UINSTATUSBAR) {
 				TCHAR 		fmt[100];
@@ -1605,7 +1605,7 @@ void TSAPI DM_Typing(TWindowData *dat, bool fForceOff)
 				SendMessage(hwndDlg, DM_UPDATEWINICON, 0, 0);
 		} else {
 			struct TWindowData *dat_active = NULL;
-			
+
 			if(!fForceOff) {
 				dat->showTyping = 2;
 				dat->nTypeSecs = 86400;
@@ -1660,7 +1660,7 @@ void TSAPI DM_Typing(TWindowData *dat, bool fForceOff)
 					}
 				}
 			}
-			if ((GetForegroundWindow() != hwndContainer) || (dat->pContainer->hwndStatus == 0))
+			if ((GetForegroundWindow() != hwndContainer) || (dat->pContainer->hwndStatus == 0) || (dat->pContainer->hwndActive != hwndDlg))
 				SendMessage(hwndContainer, DM_SETICON, (WPARAM)dat, (LPARAM) PluginConfig.g_buttonBarIcons[ICON_DEFAULT_TYPING]);
 			dat->showTyping = 1;
 		}
@@ -1898,8 +1898,8 @@ void TSAPI DM_EventAdded(TWindowData *dat, WPARAM wParam, LPARAM lParam)
 		/*
 		* flash window if it is not focused
 		*/
-		if ((GetActiveWindow() != hwndContainer || GetForegroundWindow() != hwndContainer) && !(dbei.flags & DBEF_SENT) && !fIsStatusChangeEvent) {
-			if (!(m_pContainer->dwFlags & CNT_NOFLASH))
+		if ((GetActiveWindow() != hwndContainer || GetForegroundWindow() != hwndContainer || dat->pContainer->hwndActive != hwndDlg) && !(dbei.flags & DBEF_SENT) && !fIsStatusChangeEvent) {
+			if (!(m_pContainer->dwFlags & CNT_NOFLASH) && (GetActiveWindow() != hwndContainer || GetForegroundWindow() != hwndContainer))
 				FlashContainer(m_pContainer, 1, 0);
 			SendMessage(hwndContainer, DM_SETICON, (WPARAM)dat, (LPARAM)LoadSkinnedIcon(SKINICON_EVENT_MESSAGE));
 			m_pContainer->dwFlags |= CNT_NEED_UPDATETITLE;
@@ -1922,7 +1922,7 @@ void TSAPI DM_HandleAutoSizeRequest(TWindowData *dat, REQRESIZE* rr)
 			LONG heightLimit = M->GetDword("autoSplitMinLimit", 0);
 			LONG iNewHeight = rr->rc.bottom - rr->rc.top;
 
-			if(CSkin::m_skinEnabled && !SkinItems[ID_EXTBKINPUTAREA].IGNORED) 
+			if(CSkin::m_skinEnabled && !SkinItems[ID_EXTBKINPUTAREA].IGNORED)
 				iNewHeight += (SkinItems[ID_EXTBKINPUTAREA].MARGIN_TOP + SkinItems[ID_EXTBKINPUTAREA].MARGIN_BOTTOM - 2);
 
 			if(heightLimit && iNewHeight < heightLimit)
