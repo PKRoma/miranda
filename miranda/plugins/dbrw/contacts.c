@@ -75,7 +75,7 @@ static int contacts_isRealContact(int id) {
 	return 0;
 }
 
-int contacts_getCount(WPARAM wParam, LPARAM lParam) {
+INT_PTR contacts_getCount(WPARAM wParam, LPARAM lParam) {
 	int rc;
 
 	EnterCriticalSection(&csContactsDb);
@@ -84,7 +84,7 @@ int contacts_getCount(WPARAM wParam, LPARAM lParam) {
 	return rc;
 }
 
-int contacts_findFirst(WPARAM wParam, LPARAM lParam) {
+INT_PTR contacts_findFirst(WPARAM wParam, LPARAM lParam) {
 	int rc;
 
 	EnterCriticalSection(&csContactsDb);
@@ -97,7 +97,7 @@ int contacts_findFirst(WPARAM wParam, LPARAM lParam) {
 	return rc;
 }
 
-int contacts_findNext(WPARAM wParam, LPARAM lParam) {
+INT_PTR contacts_findNext(WPARAM wParam, LPARAM lParam) {
 	int id = (int)wParam;
 	int rc, idx;
 
@@ -119,7 +119,7 @@ int contacts_findNext(WPARAM wParam, LPARAM lParam) {
 	return rc;
 }
 
-int contacts_delete(WPARAM wParam, LPARAM lParam) {
+INT_PTR contacts_delete(WPARAM wParam, LPARAM lParam) {
 	int id = (int)wParam;
 	int rc = 0;
 	
@@ -158,7 +158,7 @@ int contacts_delete(WPARAM wParam, LPARAM lParam) {
 	return rc;
 }
 
-int contacts_add(WPARAM wParam, LPARAM lParam) {
+INT_PTR contacts_add(WPARAM wParam, LPARAM lParam) {
 	int id = 0;
 	int idx;
 
@@ -178,7 +178,7 @@ int contacts_add(WPARAM wParam, LPARAM lParam) {
 	return id;
 }
 
-int contacts_isContact(WPARAM wParam, LPARAM lParam) {
+INT_PTR contacts_isContact(WPARAM wParam, LPARAM lParam) {
 	int id = (int)wParam;
 	int rc = 0;
 

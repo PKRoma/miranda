@@ -112,10 +112,6 @@ SOURCE=.\sql.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\utf8.c
-# End Source File
-# Begin Source File
-
 SOURCE=.\utils.c
 # End Source File
 # End Group

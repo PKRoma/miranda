@@ -3,7 +3,6 @@ SRC =   contacts.c \
         events.c \
         settings.c \
         sql.c \
-        utf8.c \
         utils.c \
         sqlite3\sqlite3.c
 RS  = resource.rc

@@ -124,7 +124,7 @@ static char *events_moduleCacheAdd(char *szModule) {
         return 0;
     {
         int idx = 0;
-        unsigned int nameLen;
+        size_t nameLen;
 		DBCachedModuleName Vtemp, *V;
 
 		Vtemp.name = szModule;
@@ -170,7 +170,7 @@ static unsigned __stdcall events_timerProcThread(void *arg) {
     return 0;
 }
 
-int events_getCount(WPARAM wParam, LPARAM lParam) {
+INT_PTR events_getCount(WPARAM wParam, LPARAM lParam) {
 	int rc = 0;
 	
 	EnterCriticalSection(&csEventsDb);
@@ -186,7 +186,7 @@ int events_getCount(WPARAM wParam, LPARAM lParam) {
 	return rc;
 }
 
-int events_add(WPARAM wParam, LPARAM lParam) {
+INT_PTR events_add(WPARAM wParam, LPARAM lParam) {
 	HANDLE hContact = (HANDLE)wParam;
 	DBEVENTINFO *dbei = (DBEVENTINFO*)lParam;
 	int rc = 0;
@@ -221,7 +221,7 @@ int events_add(WPARAM wParam, LPARAM lParam) {
 	return rc;
 }
 
-int events_delete(WPARAM wParam, LPARAM lParam) {
+INT_PTR events_delete(WPARAM wParam, LPARAM lParam) {
 	HANDLE hContact = (HANDLE)wParam, hContactFind;
 	HANDLE hDbEvent = (HANDLE)lParam;
 	int rc = 1;
@@ -256,7 +256,7 @@ static int events_getBlobSizeConditional(HANDLE hDbEvent, int cache) {
     return rc;
 }
 
-int events_getBlobSize(WPARAM wParam, LPARAM lParam) {
+INT_PTR events_getBlobSize(WPARAM wParam, LPARAM lParam) {
 	HANDLE hDbEvent = (HANDLE)wParam;
 	int rc = events_getBlobSizeConditional(hDbEvent, 1);
 
@@ -279,9 +279,9 @@ static int events_getConditional(HANDLE hDbEvent, DBEVENTINFO *dbei, int cache) 
     stmt = cache?evt_stmts_prep[SQL_EVT_STMT_GET_CACHE]:evt_stmts_prep[SQL_EVT_STMT_GET];
 	sqlite3_bind_int(stmt, 1, (int)hDbEvent);
 	if (sql_step(stmt)==SQLITE_ROW) {
-		size_t copySize = 0;
+		unsigned copySize;
 		const void *blob = sqlite3_column_blob(stmt, 4);
-		const size_t size = sqlite3_column_int(stmt, 5);
+		const unsigned size = sqlite3_column_int(stmt, 5);
 		
 		dbei->timestamp = (DWORD)sqlite3_column_int(stmt, 1);
 		dbei->flags = (DWORD)sqlite3_column_int(stmt, 2);
@@ -297,7 +297,7 @@ static int events_getConditional(HANDLE hDbEvent, DBEVENTINFO *dbei, int cache) 
 	return rc; 
 }
 
-int events_get(WPARAM wParam, LPARAM lParam) {
+INT_PTR events_get(WPARAM wParam, LPARAM lParam) {
 	HANDLE hDbEvent = (HANDLE)wParam;
 	DBEVENTINFO *dbei = (DBEVENTINFO*)lParam;
     int rc = events_getConditional(hDbEvent, dbei, 1);
@@ -307,7 +307,7 @@ int events_get(WPARAM wParam, LPARAM lParam) {
     return events_getConditional(hDbEvent, dbei, 0);
 }
 
-int events_markRead(WPARAM wParam, LPARAM lParam) {
+INT_PTR events_markRead(WPARAM wParam, LPARAM lParam) {
 	HANDLE hDbEvent = (HANDLE)lParam;
 	int rc = -1;
 	
@@ -349,7 +349,7 @@ static int events_getContactConditional(HANDLE hDbEvent, int cache) {
     return rc;
 }
 
-int events_getContact(WPARAM wParam, LPARAM lParam) {
+INT_PTR events_getContact(WPARAM wParam, LPARAM lParam) {
 	HANDLE hDbEvent = (HANDLE)wParam;
 	int rc = events_getContactConditional(hDbEvent, 1);
     
@@ -358,7 +358,7 @@ int events_getContact(WPARAM wParam, LPARAM lParam) {
 	return events_getContactConditional(hDbEvent, 0);
 }
 
-int events_findFirst(WPARAM wParam, LPARAM lParam) {
+INT_PTR events_findFirst(WPARAM wParam, LPARAM lParam) {
 	HANDLE hContact = (HANDLE)wParam;
 	int rc = 0;
 
@@ -372,7 +372,7 @@ int events_findFirst(WPARAM wParam, LPARAM lParam) {
 	return rc;
 }
 
-int events_findFirstUnread(WPARAM wParam, LPARAM lParam) {
+INT_PTR events_findFirstUnread(WPARAM wParam, LPARAM lParam) {
 	HANDLE hContact = (HANDLE)wParam;
 	int rc = 0;
 	DWORD flags = 0;
@@ -393,7 +393,7 @@ int events_findFirstUnread(WPARAM wParam, LPARAM lParam) {
 	return rc;
 }
 
-int events_findLast(WPARAM wParam, LPARAM lParam) {
+INT_PTR events_findLast(WPARAM wParam, LPARAM lParam) {
 	HANDLE hContact = (HANDLE)wParam;
 	int rc = 0;
 
@@ -406,7 +406,7 @@ int events_findLast(WPARAM wParam, LPARAM lParam) {
 	return rc;
 }
 
-int events_findNext(WPARAM wParam, LPARAM lParam) {
+INT_PTR events_findNext(WPARAM wParam, LPARAM lParam) {
 	HANDLE hDbEvent = (HANDLE)wParam;
     int hContact = -1, rc = 0;
 	
@@ -426,7 +426,7 @@ int events_findNext(WPARAM wParam, LPARAM lParam) {
 	return rc;
 }
 
-int events_findPrev(WPARAM wParam, LPARAM lParam) {
+INT_PTR events_findPrev(WPARAM wParam, LPARAM lParam) {
 	HANDLE hDbEvent = (HANDLE)wParam;
 	int hContact = -1, rc = 0;
 
