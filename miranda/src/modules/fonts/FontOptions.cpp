@@ -71,7 +71,7 @@ OBJLIST<TEffectID> effect_id_list( 10, sttCompareEffect ), effect_id_list_w2( 10
 
 typedef struct DrawTextWithEffectParam_tag
 {
-    int cbSize;   
+    int cbSize;
     HDC             hdc;                  // handle to DC
     LPCTSTR         lpchText;             // text to draw
     int             cchText;              // length of text to draw
@@ -85,24 +85,24 @@ typedef struct DrawTextWithEffectParam_tag
 #define MS_DRAW_TEXT_WITH_EFFECTW "Modern/SkinEngine/DrawTextWithEffectW"
 
 #ifdef _UNICODE
-    #define MS_DRAW_TEXT_WITH_EFFECT MS_DRAW_TEXT_WITH_EFFECTW 
+    #define MS_DRAW_TEXT_WITH_EFFECT MS_DRAW_TEXT_WITH_EFFECTW
 #else
     #define MS_DRAW_TEXT_WITH_EFFECT MS_DRAW_TEXT_WITH_EFFECTA
 #endif
 
-// Helper 
+// Helper
 int __inline DrawTextWithEffect( HDC hdc, LPCTSTR lpchText, int cchText, RECT * lprc, UINT dwDTFormat, FONTEFFECT * pEffect )
 {
     DrawTextWithEffectParam params;
     static BYTE bIfServiceExists = ServiceExists( MS_DRAW_TEXT_WITH_EFFECT ) ? 1 : 0;
-    
-    if ( pEffect == NULL || pEffect->effectIndex == 0 ) 
+
+    if ( pEffect == NULL || pEffect->effectIndex == 0 )
         return DrawText ( hdc, lpchText, cchText, lprc, dwDTFormat );   // If no effect specified draw by GDI it just more careful with ClearType
-    
-    if ( bIfServiceExists == 0) 
+
+    if ( bIfServiceExists == 0)
         return DrawText ( hdc, lpchText, cchText, lprc, dwDTFormat );
 
-    // else    
+    // else
     params.cbSize       = sizeof( DrawTextWithEffectParam );
     params.hdc          = hdc;
     params.lpchText     = lpchText;
@@ -260,11 +260,20 @@ void OptionsChanged()
 TOOLINFO ti;
 int x, y;
 
-UINT_PTR CALLBACK CFHookProc(HWND hdlg, UINT uiMsg, WPARAM, LPARAM) {
+UINT_PTR CALLBACK CFHookProc(HWND hdlg, UINT uiMsg, WPARAM wParam, LPARAM lParam) {
 	switch(uiMsg) {
-		case WM_INITDIALOG:
+		case WM_INITDIALOG: {
+			CHOOSEFONT* cf = (CHOOSEFONT *)lParam;
+
 			TranslateDialogDefault(hdlg);
+			ShowWindow(GetDlgItem(hdlg, 1095), SW_HIDE);
+			if(cf && (cf->lCustData & FIDF_DISABLESTYLES)) {
+				EnableWindow(GetDlgItem(hdlg, 1137), FALSE);
+				ShowWindow(GetDlgItem(hdlg, 1137), SW_HIDE);
+				ShowWindow(GetDlgItem(hdlg, 1095), SW_SHOW);
+			}
 			return 0;
+		}
 	}
 
 	return 0;
@@ -441,12 +450,12 @@ static void sttSaveCollapseState( HWND hwndTree )
 		hti = ht;
 }	}
 
-static void sttFreeListItems(HWND hList) 
+static void sttFreeListItems(HWND hList)
 {
 	int idx = 0;
 	LRESULT res;
 	FSUIListItemData *itemData;
-	int count = SendMessage( hList, LB_GETCOUNT, 0, 0 ); 
+	int count = SendMessage( hList, LB_GETCOUNT, 0, 0 );
 	if ( count > 0 ) {
 		while ( idx < count) {
 			res = SendMessage( hList, LB_GETITEMDATA, idx++, 0 );
@@ -472,7 +481,7 @@ static INT_PTR CALLBACK ChooseEffectDlgProc( HWND hwndDlg, UINT uMsg, WPARAM wPa
 	static TEffectSettings * pEffect = NULL;
 
 	switch (uMsg) {
-	case WM_INITDIALOG: 
+	case WM_INITDIALOG:
 		TranslateDialogDefault(hwndDlg);
 		pEffect = ( TEffectSettings*) lParam;
 		{
@@ -739,7 +748,7 @@ static INT_PTR CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam,
 			EnableWindow(GetDlgItem(hwndDlg, IDC_BKGCOLOUR), FALSE);
 			EnableWindow(GetDlgItem(hwndDlg, IDC_FONTCOLOUR), FALSE);
 			EnableWindow(GetDlgItem(hwndDlg, IDC_CHOOSEFONT), FALSE);
-			EnableWindow(GetDlgItem(hwndDlg, IDC_BTN_RESET), FALSE);            
+			EnableWindow(GetDlgItem(hwndDlg, IDC_BTN_RESET), FALSE);
 			ShowEffectButton(hwndDlg, FALSE);
 		}
 		return TRUE;
@@ -767,7 +776,7 @@ static INT_PTR CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam,
 			hFont = CreateFontIndirect(&lf);
 			itemName = TranslateTS(font_id_list_w2[iItem].name);
 		}
-		
+
 		if (itemData->colour_id >= 0) {
 			int iItem = itemData->colour_id;
 			if ( !itemName )
@@ -829,7 +838,7 @@ static INT_PTR CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam,
 
          if ( itemData->effect_id >= 0 ) {
              int iItem = itemData->effect_id;
-             
+
              Effect.effectIndex = effect_id_list_w2[iItem].value.effectIndex;
              Effect.baseColour = effect_id_list_w2[iItem].value.baseColour;
              Effect.secondaryColour = effect_id_list_w2[iItem].value.secondaryColour;
@@ -849,7 +858,7 @@ static INT_PTR CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam,
 		if (dis->itemState & ODS_SELECTED) {
 			SetTextColor(dis->hDC, GetSysColor(COLOR_HIGHLIGHTTEXT));
 			FillRect(dis->hDC, &dis->rcItem, GetSysColorBrush(COLOR_HIGHLIGHT));
-		} 
+		}
 		else {
 			SetTextColor(dis->hDC, bIsFont?clText:GetSysColor(COLOR_WINDOWTEXT));
 			if (bIsFont && (clBack != (COLORREF)-1)) {
@@ -969,7 +978,7 @@ static INT_PTR CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam,
 							clText = font_id_list_w2[itemData->font_id].value.colour;
 					}
 					mir_free(selItems);
-				} 
+				}
 				else {
 					bEnableFont = 0;
 					bEnableClText = 0;
@@ -978,7 +987,7 @@ static INT_PTR CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam,
                      bEnableEffect = 0;
 				}
 
-				EnableWindow(GetDlgItem(hwndDlg, IDC_BKGCOLOUR), bEnableClBack);                
+				EnableWindow(GetDlgItem(hwndDlg, IDC_BKGCOLOUR), bEnableClBack);
                  ShowEffectButton( hwndDlg, bEnableEffect && !bEnableClBack );
 
 				EnableWindow(GetDlgItem(hwndDlg, IDC_FONTCOLOUR), bEnableClText);
@@ -1020,6 +1029,8 @@ static INT_PTR CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam,
 				cf.lStructSize = sizeof(cf);
 				cf.hwndOwner = hwndDlg;
 				cf.lpLogFont = &lf;
+				cf.lCustData = 0;
+
 				if ( F.flags & FIDF_ALLOWEFFECTS )
 				{
 					cf.Flags = CF_FORCEFONTEXIST | CF_INITTOLOGFONTSTRUCT | CF_SCREENFONTS | CF_EFFECTS | CF_ENABLETEMPLATE | CF_ENABLEHOOK;
@@ -1027,6 +1038,15 @@ static INT_PTR CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam,
 					cf.hInstance = hMirandaInst;
 					cf.lpTemplateName = MAKEINTRESOURCE(IDD_CUSTOM_FONT);
 					cf.lpfnHook = CFHookProc;
+				}
+				else if ( F.flags & FIDF_DISABLESTYLES ) {		// no style selection, mutually exclusive with FIDF_ALLOWEFFECTS
+					cf.Flags = CF_FORCEFONTEXIST | CF_INITTOLOGFONTSTRUCT | CF_SCREENFONTS | CF_ENABLETEMPLATE | CF_ENABLEHOOK | CF_TTONLY | CF_NOOEMFONTS;
+					cf.lCustData = F.flags;
+					cf.hInstance = hMirandaInst;
+					cf.lpTemplateName = MAKEINTRESOURCE(IDD_CUSTOM_FONT);
+					cf.lpfnHook = CFHookProc;
+					lf.lfWeight = FW_NORMAL;
+					lf.lfItalic = lf.lfUnderline = lf.lfStrikeOut = FALSE;
 				}
 				else cf.Flags = CF_FORCEFONTEXIST | CF_INITTOLOGFONTSTRUCT | CF_SCREENFONTS;
 
@@ -1041,7 +1061,7 @@ static INT_PTR CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam,
 						F1.value.style = (lf.lfWeight >= FW_BOLD ? DBFONTF_BOLD : 0) | (lf.lfItalic ? DBFONTF_ITALIC : 0) | (lf.lfUnderline ? DBFONTF_UNDERLINE : 0) | (lf.lfStrikeOut ? DBFONTF_STRIKEOUT : 0);
 						F1.value.charset = lf.lfCharSet;
 						_tcscpy(F1.value.szFace, lf.lfFaceName);
-						
+
 						MEASUREITEMSTRUCT mis = { 0 };
 						mis.CtlID = IDC_FONTLIST;
 						mis.itemID = selItems[i];
@@ -1077,7 +1097,7 @@ static INT_PTR CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam,
 							continue;
 
 						TEffectID& E1 = effect_id_list_w2[itemData->effect_id];
-						E1.value = es;                               
+						E1.value = es;
 					}
 					InvalidateRect(GetDlgItem(hwndDlg, IDC_FONTLIST), NULL, TRUE);
 					EnableWindow(GetDlgItem(hwndDlg, IDC_BTN_UNDO), TRUE);
@@ -1140,7 +1160,7 @@ static INT_PTR CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam,
 
 					if((itemData->font_id >= 0) && (font_id_list_w2[itemData->font_id].flags & FIDF_DEFAULTVALID)) {
 						font_id_list_w2[itemData->font_id].value = font_id_list_w2[itemData->font_id].deffontsettings;
-						
+
 						MEASUREITEMSTRUCT mis = { 0 };
 						mis.CtlID = IDC_FONTLIST;
 						mis.itemID = selItems[i];
