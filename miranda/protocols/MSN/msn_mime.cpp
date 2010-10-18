@@ -136,47 +136,39 @@ char* MimeHeaders::writeToBuffer(char* pDest)
 /////////////////////////////////////////////////////////////////////////////////////////
 // read set of values from buffer
 
-char* MimeHeaders::readFromBuffer(char* parString)
+char* MimeHeaders::readFromBuffer(char* src)
 {
 	clear();
 
-	while (*parString) 
+	while (*src) 
 	{
-		if (parString[0] == '\r' && parString[1] == '\n') 
-		{
-			parString += 2;
-			break;
-		}
+		char* peol = strchr(src, '\n');
 
-		char* peol = strchr(parString, '\r');
 		if (peol == NULL)
-			peol = parString + strlen(parString);
-		*peol = '\0';
-		
-		if (*++peol == '\n')
-			peol++;
+			return strchr(src, 0);
+		else if (peol == src)
+			return src + 1;
+		else if (peol == (src + 1) &&  *src == '\r')
+			return src + 2;
 
-		char* delim = strchr(parString, ':');
-		if (delim == NULL) 
+		*peol = 0;
+
+		char* delim = strchr(src, ':');
+		if (delim) 
 		{
-			parString = peol;
-			continue;
+			*delim = 0;
+
+			MimeHeader& H = mVals[allocSlot()];
+
+			H.name = lrtrimp(src);
+			H.value = lrtrimp(delim + 1);
+			H.flags = 0;
 		}
-		*delim++ = '\0';
-		
-		while (*delim == ' ' || *delim == '\t')
-			delim++;
-		
-		MimeHeader& H = mVals[allocSlot()];
 
-		H.name = parString;
-		H.value = delim;
-		H.flags = 0;
-
-		parString = peol;
+		src = peol + 1;
 	}
 
-	return parString;
+	return src;
 }
 
 const char* MimeHeaders::find(const char* szFieldName)
