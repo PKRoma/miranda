@@ -3,6 +3,23 @@
                            www.miranda-im.org
 
 
+* New in 0.9.7
+Enhancements:
+ - Improved method selection for proxy authentication
+ - Jabber: Added SMS service support
+
+Bugfixes:
+ - HTTP authentication fixes
+ - Fixed SPN resolution for Kerberos authentication
+ - Fixed auto scroll if log is focused (srmm only)
+ - Fixed message window blinking even if focused (srmm only)
+ - ICQ: Fixed retrieving user details deleting status message
+ - ICQ: Fixed read status dialog
+ - ICQ: Fixed default settings for SSL connection
+ - Jabber: Hide custom search option if no interface is available
+ - MSN: Fixed offline messaging
+
+
 * New in 0.9.6
 Bugfixes:
  - Fixed crash on failed http connection
