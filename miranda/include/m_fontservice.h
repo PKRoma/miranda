@@ -22,6 +22,8 @@
 #define FIDF_NEEDRESTART		64		// setting changes will not take effect until miranda is restarted
 #define FIDF_ALLOWREREGISTER	128		// allow plugins to register this font again (i.e. override already registered settings such as flags)
 #define FIDF_ALLOWEFFECTS		256		// allow setting of font effects (i.e. underline and strikeout)
+#define FIDF_DISABLESTYLES		512		// don't allow to select font attributes (bold/underline/italics)
+										// FIDF_ALLOWEFFECTS has priority and will override this flag!
 
 // font class
 #define FIDF_CLASSMASK			0x70000000
@@ -223,7 +225,7 @@ typedef struct EffectID_tag
     int      order;
 
     FONTEFFECT value;
-} 
+}
     EffectID;
 
 typedef struct EffectIDW_tag
@@ -238,7 +240,7 @@ typedef struct EffectIDW_tag
     int      order;
 
     FONTEFFECT value;
-} 
+}
     EffectIDW;
 
 #if defined( _UNICODE )
