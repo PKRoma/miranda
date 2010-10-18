@@ -3,6 +3,11 @@
                            www.miranda-im.org
 
 
+* New in 0.9.8
+Bugfixes:
+ - MSN: Fixed offline messaging
+
+
 * New in 0.9.7
 Enhancements:
  - Improved method selection for proxy authentication
@@ -17,7 +22,6 @@ Bugfixes:
  - ICQ: Fixed read status dialog
  - ICQ: Fixed default settings for SSL connection
  - Jabber: Hide custom search option if no interface is available
- - MSN: Fixed offline messaging
 
 
 * New in 0.9.6
