@@ -704,10 +704,6 @@
 					>
 				</File>
 				<File
-					RelativePath=".\modules\database\dbtime.cpp"
-					>
-				</File>
-				<File
 					RelativePath=".\modules\database\dbutils.cpp"
 					>
 				</File>
@@ -1077,6 +1073,10 @@
 				</File>
 				<File
 					RelativePath=".\modules\utils\sha1.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\modules\utils\timeutils.cpp"
 					>
 				</File>
 				<File
