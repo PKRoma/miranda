@@ -520,6 +520,10 @@
 					>
 				</File>
 				<File
+					RelativePath=".\Source\FreeImage\ConversionFloat.cpp"
+					>
+				</File>
+				<File
 					RelativePath="Source\FreeImage\ConversionRGBF.cpp"
 					>
 				</File>
@@ -627,11 +631,19 @@
 					Name="Source Files"
 					>
 					<File
+						RelativePath=".\Source\LibJPEG\jaricom.c"
+						>
+					</File>
+					<File
 						RelativePath=".\Source\LibJPEG\jcapimin.c"
 						>
 					</File>
 					<File
 						RelativePath=".\Source\LibJPEG\jcapistd.c"
+						>
+					</File>
+					<File
+						RelativePath=".\Source\LibJPEG\jcarith.c"
 						>
 					</File>
 					<File
@@ -675,10 +687,6 @@
 						>
 					</File>
 					<File
-						RelativePath=".\Source\LibJPEG\jcphuff.c"
-						>
-					</File>
-					<File
 						RelativePath=".\Source\LibJPEG\jcprepct.c"
 						>
 					</File>
@@ -696,6 +704,10 @@
 					</File>
 					<File
 						RelativePath=".\Source\LibJPEG\jdapistd.c"
+						>
+					</File>
+					<File
+						RelativePath=".\Source\LibJPEG\jdarith.c"
 						>
 					</File>
 					<File
@@ -740,10 +752,6 @@
 					</File>
 					<File
 						RelativePath=".\Source\LibJPEG\jdmerge.c"
-						>
-					</File>
-					<File
-						RelativePath=".\Source\LibJPEG\jdphuff.c"
 						>
 					</File>
 					<File
@@ -871,19 +879,11 @@
 						>
 					</File>
 					<File
-						RelativePath=".\Source\LibJPEG\jchuff.h"
-						>
-					</File>
-					<File
 						RelativePath=".\Source\LibJPEG\jconfig.h"
 						>
 					</File>
 					<File
 						RelativePath=".\Source\LibJPEG\jdct.h"
-						>
-					</File>
-					<File
-						RelativePath=".\Source\LibJPEG\jdhuff.h"
 						>
 					</File>
 					<File
@@ -935,10 +935,6 @@
 						>
 					</File>
 					<File
-						RelativePath=".\Source\LibPNG\pnggccrd.c"
-						>
-					</File>
-					<File
 						RelativePath=".\Source\LibPNG\pngget.c"
 						>
 					</File>
@@ -979,10 +975,6 @@
 						>
 					</File>
 					<File
-						RelativePath=".\Source\LibPNG\pngvcrd.c"
-						>
-					</File>
-					<File
 						RelativePath=".\Source\LibPNG\pngwio.c"
 						>
 					</File>
@@ -1010,6 +1002,10 @@
 						RelativePath=".\Source\LibPNG\pngconf.h"
 						>
 					</File>
+					<File
+						RelativePath=".\Source\LibPNG\pngpriv.h"
+						>
+					</File>
 				</Filter>
 			</Filter>
 		</Filter>
@@ -1019,6 +1015,10 @@
 			>
 			<File
 				RelativePath="Source\CacheFile.h"
+				>
+			</File>
+			<File
+				RelativePath="Source\DeprecationManager\DeprecationMgr.h"
 				>
 			</File>
 			<File
@@ -1114,14 +1114,6 @@
 				>
 			</File>
 		</Filter>
-		<File
-			RelativePath="Todo.txt"
-			>
-		</File>
-		<File
-			RelativePath="Whatsnew.txt"
-			>
-		</File>
 	</Files>
 	<Globals>
 	</Globals>
