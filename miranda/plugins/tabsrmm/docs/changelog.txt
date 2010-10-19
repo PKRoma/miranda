@@ -38,35 +38,38 @@ are currently no downloads for it, you'll have to compile it from source.
 Version 3.1.99.5 - 2010/10/15
 
 	! fixes for overlay icons
-	
+
 	* changed location for aero settings. It's no longer considered an advanced
 	  tweak. The options are now global container settings.
-	  
+
 	* merged all fixes from stable tree
 
-	  
+	* MUC: strip all formatting codes from topics so that they are not messed
+	  up in the info panel or status bar.
+
+
 Version 3.1.99.2 - 2010/09/02
 
 	! propagate outgoing typing notifications to the active subcontact
-	
+
 	* renamed sound group names for IM and group chats to make their meaning more
 	  obvious.
-	  
+
 
 Version 3.1.99.1 - 2010/08/28
 
 	! bug fix: topic in info panel did not refresh immediately when it was changed
-	
+
 	* updater support for the version on the addons site.
-	
+
 	! load system libraries in a safe way.
-	
+
 	! bugfix (MUC): Do not lose input focus after autocomplete did not find
-	  a matching nick name when the option to allow TAB in the input area is 
+	  a matching nick name when the option to allow TAB in the input area is
 	  enabled.
-	  
+
 	! bug fix (MUC): Allow undo for nick - autocomplete actions
-	
+
 
 Version 3.0.2 - 2010/08/25
 
@@ -81,65 +84,65 @@ Version 3.0.1.3 - 2010/08/10
 	* MUC: fixed background color for popups (should now use the correct
 	  color set for the MUC log background).
 
-	* added custom warning messages when importing a theme via 
+	* added custom warning messages when importing a theme via
 	  Customize->Message window skin.
 
 	* fixed wrong 32 pixel icon in the container options dialog. Now using
 	  the message icon (for which we have both 16 and 32 pixel variants).
-	  
+
 	* avoid creating new windows and event notifications on non-message
 	  events (e.g. file transfers).
-	  
-	  
+
+
 Version 3.0.1.2 - 2010/08/09
 
 	* finished v5 theme support (improved exporting and importing group
 	  chat settings)
 
-	* re-activated global message log background color and separated it 
+	* re-activated global message log background color and separated it
 	  from MUC background color (allows for different background colors for
 	  single and group chats)
 
 	* fixed autocomplete (MUC) bugs
-	
+
 Version 3.0.1.1 - 2010/08/05
 
 	* fixed disappearing code page selection menu.
-	
+
 	* don't create MUC log files in the main profile directory any longer.
-	
+
 	* MUC highlight: removed %m for own nick and replaced it with a separate
 	  setting that allows white spaces in own nick names.
-	
-	
+
+
 Version 3.0.1.0 - 2010/08/04
 
-	* disabled some known buggy and incomplete features to get ready for 
+	* disabled some known buggy and incomplete features to get ready for
 	  3.0 release.
 
-	* set final feature set for version 3 - some less important things are 
+	* set final feature set for version 3 - some less important things are
 	  pushed back.
 
-	* MUC: disc logging, properly check log base path for trailing backslashes 
+	* MUC: disc logging, properly check log base path for trailing backslashes
 	  when using folders plugin.
-	  
+
 	* MUC: protect log root folder from being deleted while MIM is running.
 
 
 Version 3.0.0.40 - 2010/07/10
 
 	* various fixes and improvements for Windows 7 task bar support.
-	
+
 	* option to warn when closing a tab is gone. A replacement has been added which
 	  will show you a warning when you are about to close a window with multiple tabs.
-	  This warning uses a custom warning dialog and can be disabled by checking its 
+	  This warning uses a custom warning dialog and can be disabled by checking its
 	  "Do not show this message again" option.
-	  
+
 	* fix for auto switching tabs incorrectly focusing tab when creating a new
 	  one in the background.
-	  
+
 	* fixed crash when forcefully terminating Miranda while a custom warning
-	  dialog is still open.	
+	  dialog is still open.
 
 Version 3.0.0.39 - 2010/06/24
 
@@ -148,7 +151,7 @@ Version 3.0.0.39 - 2010/06/24
 
 	* redesigned container options dialog for better translations. Most
 	  options now offer much more space for translated strings.
-	  
+
 	* attempt to fix stuck typing notifications on arriving messages
 
 Version 3.0.0.38 - 2010/06/21 - released with Miranda 0.9.alpha#11
@@ -176,12 +179,12 @@ Version 3.0.0.36 - 2010/06/04 - released with Miranda 0.9.alpha#10
 	* task bar support (Win 7), removed check for running DWM. Task bar tabs should
 	  now work with classic and non-aero themes in Windows 7 (no thumbnails, though,
 	  because they require Aero to be active).
-	  
+
 	* renamed misleading option for task bar support as it implied to require an Aero
 	  theme (which is not the case).
-	
+
 	* another tool bar rendering fix - don't use gradients for the tool bar background
-	  at all with classic Windows theme, unless both tool bar background colors are 
+	  at all with classic Windows theme, unless both tool bar background colors are
 	  properly set.
 
 	* Aero peek (task bar tabs) now default to enabled.
@@ -190,26 +193,26 @@ Version 3.0.0.35 - 2010/05/29
 
 	* taskbar thumbnails (Win7): better support for MUC tabs, set active session
 	  should now work.
-	  
-	* autoclose tabs: converted to a more useful autoclose/autohide container 
+
+	* autoclose tabs: converted to a more useful autoclose/autohide container
 	  feature and moved to container options.
-	  
+
 	* fixed a bug where installing a language pack could break hotkeys (translation
 	  issue)
-	
+
 	* fixed "black tool bar bug" when classic windows theme is active on XP or later.
-			  
+
 Version 3.0.0.34 - 2010/05/27
 
 	* fixed crash when running on Windows 2000
-	
+
 	* cleaned up the mess in the TSButton class
-	
+
 	* More work on Aero Peek thumbnail previews. Added custom thumbnails for MUC chat
 	  rooms and server windows.
-	  
+
 	* updated msglog mark read code with some recent changes for srmm.
-	
+
 
 Version 3.0.0.33 - 2010/05/22
 
@@ -223,22 +226,22 @@ Version 3.0.0.33 - 2010/05/22
 	* option to show avatars on task bar added to container settings (only
 	  when running on Windows 7).
 
-	* option to enable/disable Windows 7 task bar features removed (now always on, 
+	* option to enable/disable Windows 7 task bar features removed (now always on,
 	  when running on Windows 7).
-	  
+
 	* Added aero peek for the Windows 7 task bar. Per tab thumbnails are partially
 	  implemented, so you get a similar UI as seen in other tabbed applications
-	  under Windows 7 (IE 8, Opera 10, for example). Still experimental, so it is 
+	  under Windows 7 (IE 8, Opera 10, for example). Still experimental, so it is
 	  disabled by default (Message Sessions->Advanced tweaks is where you can enable
 	  it). A Restart is required.
 
 
 Version 3.0.0.32 - 2010/05/16
 
-	* menu bar is now using tool bar colors when using custom message window 
+	* menu bar is now using tool bar colors when using custom message window
 	  colors
-	
-	* fixed changelog URL for users of updater plugin and created new online 
+
+	* fixed changelog URL for users of updater plugin and created new online
 	  change log for TabSRMM 3 development versions
 
 	* added separate translation for default container name (avoid using common
@@ -246,44 +249,44 @@ Version 3.0.0.32 - 2010/05/16
 
 Version 3.0.0.31 - 2010/05/xx
 
-	* fixed drawing problem with animated info panel avatars 
-	
+	* fixed drawing problem with animated info panel avatars
+
 	* moved all legacy color settings to font service
-	
+
 	* added theme support for new color settings (+ updated theme version to
 	  v5).
-	  
+
 	* fixed issue with own nickname when it has not been set on the protocol's
 	  option page (use own UID instead).
-	  
-	  	  
+
+
 Version 3.0.0.30 - 2010/05/12
 
 	* MUC: replaced (non working) log truncating with log rotation. Old log files
 	  are archived when the size exceeds the maximum allowed length for a single
 	  channel log file.
-	  
+
 	* updated some dialogs to make more space for translations.
-	
+
 	* added UI button for quickly opening the MUC logs base folder.
-	
+
 	* implemented right and middle click actions for side bar buttons (close/context
 	  menu)
-	  
-	  
+
+
 Version 3.0.0.29 - 2010/05/11
 
 	* fixed a number of drawing problems
-	
+
 	* DB tweak to force tool bar always use visual styles
-	
+
 	* added 2 new common colors for painting the UI in aero and visual styles
 	  mode.
-	  
+
 	* improved exporting and importing of theme files to support UI settings that
 	  are new in TabSRMM 3.
-	  
-	   
+
+
 Version 3.0.0.27 - 2010/05/06
 
 	* send menu pulldown button is now always available, even if the
@@ -317,10 +320,10 @@ Version 3.0.0.22 - 2010/04/01
 	* Alpha snapshot released to my googlecode site.
 	* many bug fixes and small improvements, new skin selection dialog
 	* still INCOMPLETE and not all features are fully working.
-	
+
 Version 3.0.0.8  - 3.0.0.21
 
-	* again, many, many changes and new things. Refer to the Wiki page 
+	* again, many, many changes and new things. Refer to the Wiki page
 	  (http://miranda.or.at/TabSrmm:Development3_0_KnownIssues) for more information.
 
 Version 3.0.0.4  - 3.0.0.8

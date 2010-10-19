@@ -154,7 +154,7 @@ HANDLE        CList_FindRoom (const char* pszModule, const TCHAR* pszRoom) ;
 int           WCCmp(TCHAR* wild, TCHAR*string);
 
 //tools.c
-TCHAR*        RemoveFormatting(const TCHAR* pszText, bool fLower = false);
+TCHAR*        RemoveFormatting(const TCHAR* pszText, bool fLower = false, TCHAR* buf = 0, const size_t len = 0);
 BOOL          DoSoundsFlashPopupTrayStuff(SESSION_INFO* si, GCEVENT * gce, BOOL bHighlight, int bManyFix);
 int           Chat_GetColorIndex(const char* pszModule, COLORREF cr);
 void          CheckColorsInModule(const char* pszModule);

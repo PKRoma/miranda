@@ -905,13 +905,13 @@ static LRESULT CALLBACK MessageSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, 
 					gt.cb = (iLen + 9) * sizeof(wchar_t);
 
 					SendMessage(hwnd, EM_GETTEXTEX, (WPARAM)&gt, (LPARAM)pszText);
-					
+
 					if(start > 1 && pszText[start-1] == ' ' && pszText[start-2] == ':')
 						start--;
 
 					while( start > 0 && pszText[start-1] != ' ' && pszText[start-1] != 13 && pszText[start-1] != VK_TAB)
 						start--;
-					
+
 					while (end < iLen && pszText[end] != ' ' && pszText[end] != 13 && pszText[end-1] != VK_TAB)
 						end ++;
 
@@ -3356,7 +3356,7 @@ LABEL_SHOWWINDOW:
 			}
 			else {
 				CSkin::FillBack(hdcMem, &rcClient);
-				
+
 				if(M->isAero()) {
 					LONG temp = rcClient.bottom;
 					rcClient.bottom = dat->Panel->isActive() ? dat->Panel->getHeight() + 5 : 5;
@@ -3724,7 +3724,7 @@ LABEL_SHOWWINDOW:
 
 			if(!dat->fIsAutosizingInput)
 				DBWriteContactSettingWord(NULL, "Chat", "SplitterX", (WORD)g_Settings.iSplitterX);
-			
+
 			if(dat->pContainer->settings->fPrivate && !IsAutoSplitEnabled(dat))
 				DBWriteContactSettingWord(NULL, "Chat", "splitY", (WORD)g_Settings.iSplitterY);
 
@@ -3741,7 +3741,7 @@ LABEL_SHOWWINDOW:
 				DestroyWindow(dat->hwndTip);
 
 			if (hCurHyperlinkHand)
- 						DestroyCursor(hCurHyperlinkHand);
+				DestroyCursor(hCurHyperlinkHand);
 
 			i = GetTabIndexFromHWND(hwndTab, hwndDlg);
 			if (i >= 0) {

@@ -54,17 +54,42 @@ int GetRichTextLength(HWND hwnd)
 	return (int) SendMessage(hwnd, EM_GETTEXTLENGTHEX, (WPARAM)&gtl, 0);
 }
 
-TCHAR* RemoveFormatting(const TCHAR* pszWord, bool fToLower)
+/**
+ * @param pszWord 		string to strip of any IRC-style
+ *  					formatting
+ * @param fToLower  	convert to lowercase
+ * @param buf 			caller-provided buffer, use a static one
+ *  					when the caller does not provide a
+ *  					buffer
+ *  					caller provided buffer is NEEDED to make
+ *  					this thread-safe.
+ *
+ * @return TCHAR*		the stripped string
+ */
+TCHAR* RemoveFormatting(const TCHAR* pszWord, bool fToLower, TCHAR* buf, const size_t len)
 {
-	static TCHAR szTemp[20000];
+	static TCHAR 	_szTemp[20000];
+	TCHAR*			szTemp = 0;
+	size_t			_buflen = 0;
+
+	if(0 == buf) {
+		szTemp = _szTemp;
+		_buflen = 20000;
+	} else {
+		szTemp = buf;
+		_buflen = len;
+		szTemp[len - 1] = 0;
+	}
+
 	size_t i = 0;
 	int j = 0;
+
 	if (pszWord == 0)
 		return NULL;
 
 	size_t wordlen = lstrlen(pszWord);
 
-	while (j < 19999 && i <= wordlen) {
+	while (j < _buflen && i <= wordlen) {
 		if (pszWord[i] == '%') {
 			switch (pszWord[i+1]) {
 				case '%':
@@ -107,7 +132,7 @@ TCHAR* RemoveFormatting(const TCHAR* pszWord, bool fToLower)
 		_wsetlocale(LC_ALL, L"");
 		wcslwr(szTemp);
 	}
-	return (TCHAR*) &szTemp;
+	return(szTemp);
 }
 
 static void __stdcall ShowRoomFromPopup(void * pi)
@@ -528,7 +553,7 @@ BOOL DoSoundsFlashPopupTrayStuff(SESSION_INFO* si, GCEVENT * gce, BOOL bHighligh
 #if !defined(__DELAYED_FOR_3_1)
 		if(g_Settings.CreateWindowOnHighlight && 0 == dat)
 			wParamForHighLight = 1;
-		
+
 		if(dat && g_Settings.AnnoyingHighlight && params->bInactive && dat->pContainer->hwnd != GetForegroundWindow()) {
 			wParamForHighLight = 2;
 			params->hWnd = dat->hwnd;

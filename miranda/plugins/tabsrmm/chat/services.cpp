@@ -686,10 +686,10 @@ INT_PTR Service_AddEvent(WPARAM wParam, LPARAM lParam)
 			si = SM_FindSession(gce->pDest->ptszID, gce->pDest->pszModule);
 			if (si) {
 				if (gce->pszText) {
-					replaceStr(&si->ptszTopic, gce->ptszText);
-					M->WriteTString(si->hContact, si->pszModule , "Topic", RemoveFormatting(si->ptszTopic));
+					replaceStr(&si->ptszTopic, RemoveFormatting(gce->ptszText));
+					M->WriteTString(si->hContact, si->pszModule , "Topic", /*RemoveFormatting*/(si->ptszTopic));
 					if (M->GetByte("Chat", "TopicOnClist", 1))
-						M->WriteTString(si->hContact, "CList" , "StatusMsg", RemoveFormatting(si->ptszTopic));
+						M->WriteTString(si->hContact, "CList" , "StatusMsg", /*RemoveFormatting*/(si->ptszTopic));
 					if(si->hWnd)
 						SendMessage(si->hWnd, DM_INVALIDATEPANEL, 0, 0);
 				}
