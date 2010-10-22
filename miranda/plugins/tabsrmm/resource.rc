@@ -10,10 +10,8 @@
 #include <windows.h>
 #include <winres.h>
 #include "../../include/statusmodes.h"
-
-
-
-
+
+
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
 
@@ -272,20 +270,17 @@ IDD_OPT_MSGDLG DIALOGEX 0, 0, 303, 226
 STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD | WS_VISIBLE
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    GROUPBOX        "Message window options",IDC_STATIC,3,0,300,112
-    CONTROL         "",IDC_WINDOWOPTIONS,"SysTreeView32",TVS_DISABLEDRAGDROP | TVS_SHOWSELALWAYS | WS_BORDER | WS_HSCROLL | WS_TABSTOP,6,9,294,100
-    GROUPBOX        "Avatar options (size and scaling only for bottom avatar display)",IDC_STATIC,3,117,300,42
-    LTEXT           "Maximum display height (pixels)",IDC_STATIC,10,129,160,10
-    EDITTEXT        IDC_MAXAVATARHEIGHT,174,128,35,12,ES_AUTOHSCROLL | ES_NUMBER
-    CONTROL         "",IDC_AVATARSPIN,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,209,125,9,11
-    LTEXT           "(0 = no limit)",IDC_STATIC,224,129,75,11
-    GROUPBOX        "Miscellaneous options",IDC_STATIC,3,161,300,60
-    LTEXT           "Send text formatting:",IDC_STATIC,9,174,132,11
-    COMBOBOX        IDC_SENDFORMATTING,143,172,74,46,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    GROUPBOX        "Message window options",IDC_STATIC,3,0,300,156
+    CONTROL         "",IDC_WINDOWOPTIONS,"SysTreeView32",TVS_DISABLEDRAGDROP | TVS_SHOWSELALWAYS | WS_BORDER | WS_HSCROLL | WS_TABSTOP,6,9,294,141
+    GROUPBOX        "Size and scaling options for the bottom avatar display",IDC_STATIC,3,158,300,42
+    LTEXT           "Maximum display height (pixels)",IDC_STATIC,10,170,160,10
+    EDITTEXT        IDC_MAXAVATARHEIGHT,174,169,35,12,ES_AUTOHSCROLL | ES_NUMBER
+    CONTROL         "",IDC_AVATARSPIN,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,209,166,9,11
+    LTEXT           "(0 = no limit)",IDC_STATIC,224,170,75,11
     CONTROL         "Try to keep original size",IDC_PRESERVEAVATARSIZE,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,143,285,9
-    CONTROL         "Help on this",IDC_HELP_GENERAL,"Hyperlink",WS_TABSTOP | 0x1,224,174,67,9
-    PUSHBUTTON      "Reset all hidden warnings",IDC_RESETWARNINGS,144,197,153,15
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,184,285,9
+    CONTROL         "Help on this",IDC_HELP_GENERAL,"Hyperlink",WS_TABSTOP | 0x1,4,209,67,9
+    PUSHBUTTON      "Reset all hidden warnings",IDC_RESETWARNINGS,144,206,153,15
 END
 
 IDD_OPT_MSGLOG DIALOGEX 0, 0, 303, 226

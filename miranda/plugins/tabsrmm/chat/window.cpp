@@ -3663,7 +3663,7 @@ LABEL_SHOWWINDOW:
 
 		case WM_DWMCOMPOSITIONCHANGED:
 			BB_RefreshTheme(dat);
-			ZeroMemory(&dat->pContainer->mOld, sizeof(MARGINS));
+			memset((void *)&dat->pContainer->mOld, -1000, sizeof(MARGINS));
 			CProxyWindow::verify(dat);
 			break;
 
@@ -3689,7 +3689,7 @@ LABEL_SHOWWINDOW:
 
 		case WM_NCDESTROY:
 			if (dat) {
-				ZeroMemory(&dat->pContainer->mOld, sizeof(MARGINS));
+				memset((void *)&dat->pContainer->mOld, -1000, sizeof(MARGINS));
 				PostMessage(dat->pContainer->hwnd, WM_SIZE, 0, 1);
 				delete dat->Panel;
 				if(dat->pContainer->dwFlags & CNT_SIDEBAR)

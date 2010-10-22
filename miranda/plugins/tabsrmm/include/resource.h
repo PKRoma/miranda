@@ -333,7 +333,6 @@
 #define IDC_AVATARMODE                  1267
 #define IDC_CODEPAGES                   1268
 #define IDC_OWNAVATARMODE               1268
-#define IDC_SENDFORMATTING              1270
 #define IDC_EMPTYLINEFIX                1272
 #define IDC_SPLITTERSTATICEDGES         1273
 #define IDC_MAXAVATARHEIGHT             1275
