@@ -1,6 +1,6 @@
 /*
 Plugin of Miranda IM for communicating with users of the AIM protocol.
-Copyright (c) 2008-2009 Boris Krasnovskiy
+Copyright (c) 2008-2010 Boris Krasnovskiy
 Copyright (C) 2005-2006 Aaron Myles Landwehr
 
 This program is free software; you can redistribute it and/or
@@ -369,12 +369,6 @@ char* trim_str(char* s)
 	memcpy(s,sc,strlen(sc)+1);
 
 	return s;
-}
-
-void __cdecl CAimProto::msg_ack_success(void* hContact)
-{
-	Sleep(150);
-	sendBroadcast(hContact, ACKTYPE_MESSAGE, ACKRESULT_SUCCESS, (HANDLE) 1, 0);
 }
 
 void CAimProto::execute_cmd(const char* arg) 

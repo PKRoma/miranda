@@ -1,6 +1,6 @@
 /*
 Plugin of Miranda IM for communicating with users of the AIM protocol.
-Copyright (c) 2008-2009 Boris Krasnovskiy
+Copyright (c) 2008-2010 Boris Krasnovskiy
 Copyright (C) 2005-2006 Aaron Myles Landwehr
 
 This program is free software; you can redistribute it and/or
@@ -370,7 +370,7 @@ int CAimProto::aim_send_message(HANDLE hServerConn,unsigned short &seqno,const c
 		aim_writetlv(0x03,0,0,offset,buf);                           // message ack request
 		aim_writetlv(0x06,0,0,offset,buf);                           // offline message storage
 	}
-	return aim_sendflap(hServerConn,0x02,offset,buf,seqno)==0;
+	return aim_sendflap(hServerConn,0x02,offset,buf,seqno) == 0;
 }
 
 int CAimProto::aim_query_profile(HANDLE hServerConn,unsigned short &seqno,char* sn)
@@ -688,7 +688,7 @@ int CAimProto::aim_activate_mail(HANDLE hServerConn,unsigned short &seqno)
 	return aim_sendflap(hServerConn,0x02,offset,buf,seqno);
 }
 
-int CAimProto::aim_request_avatar(HANDLE hServerConn,unsigned short &seqno, const char* sn, const char* hash, unsigned short hash_size)
+int CAimProto::aim_request_avatar(HANDLE hServerConn,unsigned short &seqno, const char* sn, unsigned short bart_type, const char* hash, unsigned short hash_size)
 {
 	unsigned short offset=0;
 	unsigned char sn_length=(unsigned char)strlen(sn);
@@ -697,17 +697,22 @@ int CAimProto::aim_request_avatar(HANDLE hServerConn,unsigned short &seqno, cons
 	aim_writechar(sn_length,offset,buf);                            // screen name length
 	aim_writegeneric(sn_length,sn,offset,buf);                      // screen name
 	aim_writechar(1,offset,buf);                                    // number of BART ID
-	aim_writebartid(1,0,hash_size,hash,offset,buf);
+	aim_writebartid(bart_type,0,hash_size,hash,offset,buf);
 	return aim_sendflap(hServerConn,0x02,offset,buf,seqno);
 }
 
-int CAimProto::aim_set_avatar_hash(HANDLE hServerConn,unsigned short &seqno, char flags, char size, const char* hash)
+int CAimProto::aim_set_avatar_hash(HANDLE hServerConn, unsigned short &seqno, char flags, unsigned short bart_type, char size, const char* hash)
 {
 	unsigned short offset=0;
-	char* buf = (char*)alloca(SNAC_SIZE+TLV_HEADER_SIZE*2+size+20);
+	
+	char bart_type_txt[8];
+	ultoa(bart_type, bart_type_txt, 10);
+	unsigned short bart_type_len = (unsigned short)strlen(bart_type_txt);
+
+	char* buf = (char*)alloca(SNAC_SIZE + TLV_HEADER_SIZE * 2 + 20 + size + bart_type_len);
 	aim_writesnac(0x13,0x09,offset,buf);                            // SSI Edit
-	aim_writeshort(1,offset,buf);                                   // name length
-	aim_writechar('1',offset,buf);                                  // name 
+	aim_writeshort(bart_type_len,offset,buf);                       // name length
+	aim_writegeneric(bart_type_len,bart_type_txt,offset,buf);       // name 
 	aim_writeshort(0,offset,buf);                                   // group id
 	aim_writeshort(avatar_id,offset,buf);                           // buddy id
 	aim_writeshort(0x14,offset,buf);                                // buddy type: Buddy Icon
@@ -718,17 +723,17 @@ int CAimProto::aim_set_avatar_hash(HANDLE hServerConn,unsigned short &seqno, cha
 	buf2[0] = flags;
 	buf2[1] = (char)size;
 	memcpy(&buf2[2], hash, size);
-	aim_writetlv(0xd5,2+size,buf2,offset,buf);                      // BART id
+	aim_writetlv(0xd5, 2+size, buf2, offset, buf);                  // BART
 
 	return aim_sendflap(hServerConn,0x02,offset,buf,seqno);
 }
 
-int CAimProto::aim_upload_avatar(HANDLE hServerConn,unsigned short &seqno, const char* avatar, unsigned short avatar_size)
+int CAimProto::aim_upload_avatar(HANDLE hServerConn, unsigned short &seqno, unsigned short bart_type, const char* avatar, unsigned short avatar_size)
 {
 	unsigned short offset=0;
 	char* buf=(char*)alloca(SNAC_SIZE+22+avatar_size);
 	aim_writesnac(0x10,0x02,offset,buf);
-	aim_writeshort(1,offset,buf);                                   // BART id
+	aim_writeshort(bart_type,offset,buf);                                   // BART id
 	aim_writeshort(avatar_size,offset,buf);
 	aim_writegeneric(avatar_size,avatar,offset,buf);
 	return aim_sendflap(hServerConn,0x02,offset,buf,seqno);
