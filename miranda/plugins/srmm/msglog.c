@@ -565,7 +565,10 @@ void StreamInEvents(HWND hwndDlg, HANDLE hDbEventFirst, int count, int fAppend)
 		sel.cpMin = sel.cpMax = -1;
 		SendMessage(hwndLog, EM_EXSETSEL, 0, (LPARAM) & sel);
 		if (GetWindowLongPtr(hwndLog, GWL_STYLE) & WS_VSCROLL)
+		{
 			SendMessage(hwndDlg, DM_SCROLLLOGTOBOTTOM, 0, 0);
+			PostMessage(hwndDlg, DM_SCROLLLOGTOBOTTOM, 0, 0);
+		}
 	}
 	else
 	{
