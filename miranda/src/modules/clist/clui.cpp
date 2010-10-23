@@ -739,9 +739,21 @@ LRESULT CALLBACK fnContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 		case SC_MAXIMIZE:
 			return 0;
 
+		case SC_MINIMIZE:
 		case SC_CLOSE:
-			PostMessage(hwnd, WM_SYSCOMMAND, SC_MINIMIZE, lParam);
-			return 0;
+			if ((GetWindowLongPtr(hwnd, GWL_EXSTYLE) & WS_EX_TOOLWINDOW) || 
+				DBGetContactSettingByte(NULL, "CList", "Min2Tray", SETTING_MIN2TRAY_DEFAULT)) 
+			{
+				ShowWindow(hwnd, SW_HIDE);
+				DBWriteContactSettingByte(NULL, "CList", "State", SETTING_STATE_HIDDEN);
+
+				if (MySetProcessWorkingSetSize != NULL && DBGetContactSettingByte(NULL, "CList", "DisableWorkingSet", 1))
+					MySetProcessWorkingSetSize(GetCurrentProcess(), -1, -1);
+				
+				return 0;
+			}
+			else if (wParam == SC_CLOSE)
+				wParam = SC_MINIMIZE;
 		}
 		return DefWindowProc(hwnd, msg, wParam, lParam);
 
