@@ -1832,8 +1832,9 @@ protected:
 			m_proto->m_options.UseTLS = FALSE;
 			break;
 		}
-		case ACC_TLS:
 		case ACC_GTALK:
+			m_proto->JSetWord(NULL, "Priority", 24);
+		case ACC_TLS:
 		case ACC_LJTALK:
 		case ACC_SMS:
 		{
