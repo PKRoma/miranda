@@ -1916,7 +1916,6 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 					{
 						TEXTRANGE tr;
 						CHARRANGE sel;
-						char *link;
 
 						SendDlgItemMessage(hwndDlg, IDC_LOG, EM_EXGETSEL, 0, (LPARAM) & sel);
 						if (sel.cpMin != sel.cpMax)
@@ -1924,12 +1923,13 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 						tr.chrg = ((ENLINK *) lParam)->chrg;
 						tr.lpstrText = _alloca((tr.chrg.cpMax - tr.chrg.cpMin + 8) * sizeof(TCHAR));
 						SendDlgItemMessage(hwndDlg, IDC_LOG, EM_GETTEXTRANGE, 0, (LPARAM) & tr);
-						link  = mir_t2a(tr.lpstrText);
-						if (strchr(link, '@') != NULL && strchr(link, ':') == NULL && strchr(link, '/') == NULL) {
-							MoveMemory(tr.lpstrText + 7, tr.lpstrText, tr.chrg.cpMax - tr.chrg.cpMin + 1);
-							CopyMemory(tr.lpstrText, "mailto:", 7);
+						if (_tcschr(tr.lpstrText, '@') != NULL && _tcschr(tr.lpstrText, ':') == NULL && _tcschr(tr.lpstrText, '/') == NULL) 
+						{
+							memmove(tr.lpstrText + 7, tr.lpstrText, (tr.chrg.cpMax - tr.chrg.cpMin + 1) * sizeof(TCHAR));
+							memcpy(tr.lpstrText, _T("mailto:"), 7 * sizeof(TCHAR));
 						}
-						if (((ENLINK *) lParam)->msg == WM_RBUTTONDOWN) {
+						if (((ENLINK *) lParam)->msg == WM_RBUTTONDOWN) 
+						{
 							HMENU hMenu, hSubMenu;
 							POINT pt;
 
@@ -1940,36 +1940,38 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 							pt.y = (short) HIWORD(((ENLINK *) lParam)->lParam);
 							ClientToScreen(((NMHDR *) lParam)->hwndFrom, &pt);
 
-							switch (TrackPopupMenu(hSubMenu, TPM_RETURNCMD, pt.x, pt.y, 0, hwndDlg, NULL)) {
-							case IDM_OPENNEW:
-								CallService(MS_UTILS_OPENURL, 1, (LPARAM) link);
+							switch (TrackPopupMenu(hSubMenu, TPM_RETURNCMD, pt.x, pt.y, 0, hwndDlg, NULL)) 
+							{
+							case IDM_OPENLINK:
+								ShellExecute(NULL, _T("open"), tr.lpstrText, NULL, NULL, SW_SHOW);
 								break;
-							case IDM_OPENEXISTING:
-								CallService(MS_UTILS_OPENURL, 0, (LPARAM) link);
-								break;
+
 							case IDM_COPYLINK:
+								if (OpenClipboard(hwndDlg))
 								{
 									HGLOBAL hData;
-									if (!OpenClipboard(hwndDlg))
-										break;
 									EmptyClipboard();
-									hData = GlobalAlloc(GMEM_MOVEABLE, strlen(link) + 1);
-									strcpy(GlobalLock(hData), link);
+									hData = GlobalAlloc(GMEM_MOVEABLE, (_tcslen(tr.lpstrText) + 1) * sizeof(TCHAR));
+									_tcscpy(GlobalLock(hData), tr.lpstrText);
 									GlobalUnlock(hData);
+#ifdef _UNICODE
+									SetClipboardData(CF_UNICODETEXT, hData);
+#else
 									SetClipboardData(CF_TEXT, hData);
+#endif
 									CloseClipboard();
-									break;
-							}	}
+								}
+								break;
+							}
 
 							DestroyMenu(hMenu);
 							SetWindowLongPtr(hwndDlg, DWLP_MSGRESULT, TRUE);
-							mir_free(link);
 							return TRUE;
 						}
-						else {
-							CallService(MS_UTILS_OPENURL, 1, (LPARAM) link);
+						else 
+						{
+							ShellExecute(NULL, _T("open"), tr.lpstrText, NULL, NULL, SW_SHOW);
 							SetFocus(GetDlgItem(hwndDlg, IDC_MESSAGE));
-							mir_free(link);
 						}
 						break;
 		}	}	}	}
