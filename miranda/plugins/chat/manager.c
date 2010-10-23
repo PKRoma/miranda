@@ -1491,7 +1491,7 @@ TCHAR* UM_FindUserAutoComplete(USERINFO* pUserList, const TCHAR* pszOriginal, co
 		return NULL;
 
 	while ( pTemp != NULL ) {
-		if ( my_strstri( pTemp->pszNick, pszOriginal) == pTemp->pszNick )
+		if ( pTemp->pszNick && my_strstri( pTemp->pszNick, pszOriginal) == pTemp->pszNick )
 			if ( lstrcmpi( pTemp->pszNick, pszCurrent ) > 0 && ( !pszName || lstrcmpi( pTemp->pszNick, pszName ) < 0) )
 				pszName = pTemp->pszNick;
 
