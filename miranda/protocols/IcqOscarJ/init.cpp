@@ -271,6 +271,13 @@ int CIcqProto::OnReloadIcons(WPARAM wParam, LPARAM lParam)
 void CIcqProto::UpdateGlobalSettings()
 {
 	m_bSecureConnection = getSettingByte(NULL, "SecureConnection", DEFAULT_SECURE_CONNECTION);
+	if (m_bSecureConnection)
+	{
+		char szServer[MAX_PATH];
+		if (!getSettingStringStatic(NULL, "OscarServer", szServer, MAX_PATH))
+			if (_strnicmp(szServer, "login.", 6) == 0)
+				setSettingString(NULL, "OscarServer", DEFAULT_SERVER_HOST_SSL);
+	}
 	if (m_hServerNetlibUser)
 	{
 		NETLIBUSERSETTINGS nlus = {0};
