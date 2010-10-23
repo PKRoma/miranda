@@ -1832,8 +1832,9 @@ protected:
 			m_proto->m_options.UseTLS = FALSE;
 			break;
 		}
-		case ACC_TLS:
 		case ACC_GTALK:
+			m_proto->JSetWord(NULL, "Priority", 24);
+		case ACC_TLS:
 		case ACC_LJTALK:
 		case ACC_SMS:
 		{
@@ -2012,13 +2013,13 @@ void CJabberDlgAccMgrUI::setupConnection(int type)
 {
 	switch (type)
 	{
-		case ACC_PUBLIC: setupPublic(); break;
-		case ACC_TLS: setupSecure(); break;
-		case ACC_SSL: setupSecureSSL(); break;
-		case ACC_GTALK: setupGoogle(); break;
-		case ACC_LJTALK: setupLJ(); break;
-		case ACC_FBOOK: setupFB(); break;
-		case ACC_SMS: setupSMS(); break;
+	case ACC_PUBLIC: setupPublic(); break;
+	case ACC_TLS: setupSecure(); break;
+	case ACC_SSL: setupSecureSSL(); break;
+	case ACC_GTALK: setupGoogle(); break;
+	case ACC_LJTALK: setupLJ(); break;
+	case ACC_FBOOK: setupFB(); break;
+	case ACC_SMS: setupSMS(); break;
 	}
 }
 
