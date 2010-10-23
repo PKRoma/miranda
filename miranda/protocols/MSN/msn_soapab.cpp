@@ -1437,6 +1437,8 @@ unsigned CMsnProto::MSN_ABContactAdd(const char* szEmail, const char* szNick, in
 				status = 2;
 			else if (strcmp(szErr, "BadEmailArgument") == 0)
 				status = 4;
+			else if (strcmp(szErr, "QuotaLimitReached") == 0)
+				status = 4;
 			else if (strcmp(szErr, "ContactAlreadyExists") == 0) 
 			{
 				status = 3;
