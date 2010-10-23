@@ -374,7 +374,7 @@ LBL_FatalError:
 	}
 
 	int jabberNetworkBufferSize = 2048;
-	if (( buffer=( char* )mir_alloc( jabberNetworkBufferSize+1 )) == NULL ) {	// +1 is for '\0' when debug logging this buffer
+	if (( buffer=( char* )mir_alloc( jabberNetworkBufferSize + 1 )) == NULL ) {	// +1 is for '\0' when debug logging this buffer
 		Log( "Cannot allocate network buffer, thread ended" );
 		if ( info->type == JABBER_SESSION_NORMAL ) {
 			JSendBroadcast( NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_NONETWORK );
@@ -485,7 +485,7 @@ LBL_FatalError:
 					continue;
 			}	}
 
-			int recvResult = info->recv( buffer+datalen, jabberNetworkBufferSize-datalen), bytesParsed;
+			int recvResult = info->recv( buffer + datalen, jabberNetworkBufferSize - datalen);
 			Log( "recvResult = %d", recvResult );
 			if ( recvResult <= 0 )
 				break;
@@ -501,7 +501,7 @@ recvRest:
 				str = buffer;
 			#endif
 
-			bytesParsed = 0;
+			int bytesParsed = 0;
 			XmlNode root( str, &bytesParsed, tag );
 			if ( root && tag )
 			{
@@ -545,11 +545,11 @@ recvRest:
 					memmove( buffer, buffer+bytesParsed, datalen-bytesParsed );
 				datalen -= bytesParsed;
 			}
-			else if ( datalen == jabberNetworkBufferSize ) {
+			else if ( datalen >= jabberNetworkBufferSize ) {
 				//jabberNetworkBufferSize += 65536;
 				jabberNetworkBufferSize *= 2;
 				Log( "Increasing network buffer size to %d", jabberNetworkBufferSize );
-				if (( buffer=( char* )mir_realloc( buffer, jabberNetworkBufferSize+1 )) == NULL ) {
+				if (( buffer=( char* )mir_realloc( buffer, jabberNetworkBufferSize + 1 )) == NULL ) {
 					Log( "Cannot reallocate more network buffer, go offline now" );
 					break;
 			}	}
@@ -1476,8 +1476,9 @@ void CJabberProto::OnProcessPresenceCapabilites( HXML node )
 
 	HXML n;
 
-	// check XEP-0115 support:
-	if (( n = xmlGetChildByTag( node, "c", "xmlns", _T(JABBER_FEAT_ENTITY_CAPS))) != NULL ) {
+	// check XEP-0115 support, and old style:
+	if (( n = xmlGetChildByTag( node, "c", "xmlns", _T(JABBER_FEAT_ENTITY_CAPS))) != NULL ||
+		( n = xmlGetChildByTag( node, "caps:c", "xmlns:caps", _T(JABBER_FEAT_ENTITY_CAPS))) != NULL ) {
 		const TCHAR *szNode = xmlGetAttrValue( n, _T("node"));
 		const TCHAR *szVer = xmlGetAttrValue( n, _T("ver"));
 		const TCHAR *szExt = xmlGetAttrValue( n, _T("ext"));

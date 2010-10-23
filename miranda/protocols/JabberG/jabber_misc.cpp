@@ -458,6 +458,9 @@ static sttCapsNodeToName_Map[] =
 {
 	{ _T("http://miranda-im.org"), _T("Miranda IM Jabber") },
 	{ _T("http://www.google.com"), _T("GTalk") },
+	{ _T("http://mail.google.com"), _T("GMail") },
+	{ _T("http://talk.google.com/xmpp/bot"), _T("GTalk Bot") },
+	{ _T("http://www.android.com"), _T("Android") },
 };
 
 void CJabberProto::UpdateMirVer(JABBER_LIST_ITEM *item)
