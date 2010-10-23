@@ -1,6 +1,6 @@
 /*
 Plugin of Miranda IM for communicating with users of the AIM protocol.
-Copyright (c) 2008-2009 Boris Krasnovskiy
+Copyright (c) 2008-2010 Boris Krasnovskiy
 Copyright (C) 2005-2006 Aaron Myles Landwehr
 
 This program is free software; you can redistribute it and/or
@@ -79,7 +79,8 @@ int CAimProto::OnWindowEvent(WPARAM wParam, LPARAM lParam)
 		DBVARIANT dbv;
 		if (!getString(msgEvData->hContact, AIM_KEY_SN, &dbv)) 
 		{
-			aim_typing_notification(hServerConn, seqno, dbv.pszVal, 0x000f);
+			if (_stricmp(dbv.pszVal, SYSTEM_BUDDY))
+				aim_typing_notification(hServerConn, seqno, dbv.pszVal, 0x000f);
 			DBFreeVariant(&dbv);
 		}
 	}
