@@ -821,37 +821,51 @@ static INT_PTR CALLBACK DlgProcFindAdd(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 					// Column inserting Done
 				} else {	//  blob contain info about found contacts
 
-					LVITEM lvi={0};
-					int i,col;
+					LVITEM lvi = {0};
+					int i, col;
 					struct ListSearchResult *lsr;
 					char *szComboProto;
-					COMBOBOXEXITEM cbei={0};
+					COMBOBOXEXITEM cbei = {0};
 
-					lsr=(struct ListSearchResult*)mir_alloc(offsetof(struct ListSearchResult,psr)+psr->cbSize);
+					lsr = (struct ListSearchResult*)mir_alloc(offsetof(struct ListSearchResult,psr)+psr->cbSize);
 					lsr->szProto = ack->szModule;
 					memcpy(&lsr->psr, psr, psr->cbSize);
 					
 					/* Next block is not needed but behavior will be kept */
-					lsr->psr.nick = psr->flags & PSR_UNICODE ? mir_u2t((wchar_t*)psr->nick) : mir_a2t((char*)psr->nick);
-					lsr->psr.firstName = psr->flags & PSR_UNICODE ? mir_u2t((wchar_t*)psr->firstName) : mir_a2t((char*)psr->firstName);
-					lsr->psr.lastName = psr->flags & PSR_UNICODE ? mir_u2t((wchar_t*)psr->lastName) : mir_a2t((char*)psr->lastName);
-					lsr->psr.email = psr->flags & PSR_UNICODE ? mir_u2t((wchar_t*)psr->email) : mir_a2t((char*)psr->email);
-					lsr->psr.id = psr->flags & PSR_UNICODE ? mir_u2t((wchar_t*)psr->id) : mir_a2t((char*)psr->id);
+					bool isUnicode = (psr->flags & PSR_UNICODE) != 0;
+					if (psr->id)
+					{
+						BOOL validPtr = isUnicode ? IsBadStringPtrW((wchar_t*)psr->id, 25) : IsBadStringPtrA((char*)psr->id, 25);
+						if (!validPtr)
+						{
+							isUnicode = false;
+							lsr->psr.id = NULL;
+						}
+						else
+							lsr->psr.id = isUnicode ? mir_u2t((wchar_t*)psr->id) : mir_a2t((char*)psr->id);
+					}
+
+					lsr->psr.nick = isUnicode ? mir_u2t((wchar_t*)psr->nick) : mir_a2t((char*)psr->nick);
+					lsr->psr.firstName = isUnicode ? mir_u2t((wchar_t*)psr->firstName) : mir_a2t((char*)psr->firstName);
+					lsr->psr.lastName = isUnicode ? mir_u2t((wchar_t*)psr->lastName) : mir_a2t((char*)psr->lastName);
+					lsr->psr.email = isUnicode ? mir_u2t((wchar_t*)psr->email) : mir_a2t((char*)psr->email);
 					lsr->psr.flags = psr->flags & ~PSR_UNICODE | PSR_TCHAR;
 
-					lvi.mask = LVIF_PARAM|LVIF_IMAGE;
-					lvi.lParam=(LPARAM)lsr;
-					for(i=SendDlgItemMessage(hwndDlg,IDC_PROTOLIST,CB_GETCOUNT,0,0)-1;i>=0;i--) {
-						szComboProto=(char*)SendDlgItemMessage(hwndDlg,IDC_PROTOLIST,CB_GETITEMDATA,i,0);
-						if(szComboProto==NULL) continue;
-						if(!lstrcmpA(szComboProto,ack->szModule)) {
-							cbei.mask=CBEIF_IMAGE;
-							cbei.iItem=i;
+					lvi.mask = LVIF_PARAM | LVIF_IMAGE;
+					lvi.lParam = (LPARAM)lsr;
+					for (i = SendDlgItemMessage(hwndDlg, IDC_PROTOLIST, CB_GETCOUNT, 0, 0); i--; ) 
+					{
+						szComboProto=(char*)SendDlgItemMessage(hwndDlg, IDC_PROTOLIST, CB_GETITEMDATA, i, 0);
+						if (szComboProto==NULL) continue;
+						if (!lstrcmpA(szComboProto,ack->szModule)) 
+						{
+							cbei.mask = CBEIF_IMAGE;
+							cbei.iItem = i;
 							SendDlgItemMessage(hwndDlg,IDC_PROTOLIST,CBEM_GETITEM,0,(LPARAM)&cbei);
-							lvi.iImage=cbei.iImage;
+							lvi.iImage = cbei.iImage;
 						}
 					}
-					i=ListView_InsertItem(hwndList, &lvi);
+					i = ListView_InsertItem(hwndList, &lvi);
 					for (col=0; col<csr->nFieldCount; col++) {
 						SetListItemText(hwndList, i, col+1 , csr->pszFields[col] );
 					}
