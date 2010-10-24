@@ -1020,8 +1020,17 @@ void CMsnProto::p2p_InitFileTransfer(
 					ezxml_t xmldb = ezxml_parse_str(dbv.pszVal, strlen(dbv.pszVal));
 
 					const char *szCtBuf = ezxml_attr(xmlcon, "SHA1C");
-					const char *szPtBuf = ezxml_attr(xmldb,  "SHA1C");
-					pictmatch = szCtBuf && szPtBuf && strcmp(szCtBuf, szPtBuf) == 0;
+					if (szCtBuf)
+					{
+						const char *szPtBuf = ezxml_attr(xmldb,  "SHA1C");
+						pictmatch = szPtBuf && strcmp(szCtBuf, szPtBuf) == 0;
+					}
+					else
+					{
+						const char *szCtBuf = ezxml_attr(xmlcon, "SHA1D");
+						const char *szPtBuf = ezxml_attr(xmldb,  "SHA1D");
+						pictmatch = szCtBuf && szPtBuf && strcmp(szCtBuf, szPtBuf) == 0;
+					}
 
 					ezxml_free(xmlcon);
 					ezxml_free(xmldb);
