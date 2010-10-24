@@ -528,6 +528,7 @@ bool NetlibDoConnect(NetlibConnection *nlc)
 
 	if (usingProxy) 
 	{
+		NetlibLogf(nlu,"(%p) Resolving proxy %s:%d for %s:%d ....", nlc, nlc->szProxyServer, nlc->wProxyPort, nloc->szHost, nloc->wPort);
 		nlc->sinProxy.sin_port = htons(nlc->wProxyPort);
 		nlc->sinProxy.sin_addr.S_un.S_addr = DnsLookup(nlu, nlc->szProxyServer);
 		if (nlc->sinProxy.sin_addr.S_un.S_addr == 0) 
@@ -538,9 +539,9 @@ bool NetlibDoConnect(NetlibConnection *nlc)
 	}
 	if (!usingProxy)
 	{
+		NetlibLogf(nlu,"(%p) Connecting to server %s:%d....", nlc, nloc->szHost, nloc->wPort);
 		nlc->sinProxy.sin_port = htons(nloc->wPort);
 		nlc->sinProxy.sin_addr.S_un.S_addr = DnsLookup(nlu, nloc->szHost);
-		NetlibLogf(nlu,"(%p) Connecting to server %s:%d....", nlc, nloc->szHost, nloc->wPort);
 	}
 	else
 		NetlibLogf(nlu,"(%p) Connecting to proxy %s:%d for %s:%d ....", nlc, nlc->szProxyServer, nlc->wProxyPort, nloc->szHost, nloc->wPort);
