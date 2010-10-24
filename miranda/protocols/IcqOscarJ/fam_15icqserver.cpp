@@ -982,6 +982,7 @@ void CIcqProto::parseDirectoryUserDetailsData(HANDLE hContact, oscar_tlv_chain *
 //	if (hContact)
 //		writeDbInfoSettingTLVStringUtf(hContact, DBSETTING_STATUS_NOTE, cDetails, 0x226);
 //	else
+	if (!hContact)
 	{ // Owner contact needs special processing, in the database is current status note for the client
 		// We just received the last status note set on directory, if it differs call SetStatusNote() to 
 		// ensure the directory will be updated (it should be in process anyway)
