@@ -324,10 +324,10 @@ void SetStatusIcon(struct MessageWindowData *dat) {
 }
 
 void GetTitlebarIcon(struct MessageWindowData *dat, TitleBarData *tbd) {
-	if (dat->showTyping && (g_dat->flags2&SMF2_SHOWTYPINGWIN)) {
+	if (dat->showTyping && (g_dat->flags2 & SMF2_SHOWTYPINGWIN)) {
 		tbd->hIconNot = tbd->hIcon = GetCachedIcon("scriver_TYPING");
 	} else if (dat->showUnread && (GetActiveWindow() != dat->hwndParent || GetForegroundWindow() != dat->hwndParent)) {
-		tbd->hIcon = (g_dat->flags & SMF_STATUSICON) ? dat->statusIcon : g_dat->hMsgIcon;
+		tbd->hIcon = g_dat->hMsgIcon;
 		tbd->hIconNot = (g_dat->flags & SMF_STATUSICON) ? g_dat->hMsgIcon : GetCachedIcon("scriver_OVERLAY");
 	} else {
 		tbd->hIcon = (g_dat->flags & SMF_STATUSICON) ? dat->statusIcon : g_dat->hMsgIcon;
@@ -476,6 +476,12 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
 			}
 			else
 				dat->lastEnterTime = 0;
+			if (((wParam == VK_INSERT && (GetKeyState(VK_SHIFT) & 0x8000)) || (wParam == 'V' && (GetKeyState(VK_CONTROL) & 0x8000))) &&
+				!(GetKeyState(VK_MENU) & 0x8000))
+			{
+				SendMessage(hwnd, WM_PASTE, 0, 0);
+				return 0;
+			}
 
 		}
 		break;
@@ -498,6 +504,20 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
 			return 0;
 		}
 		break;
+	case WM_PASTE:
+		if (IsClipboardFormatAvailable(CF_HDROP))
+		{
+			if (OpenClipboard(hwnd)) 
+			{
+				HANDLE hDrop = GetClipboardData(CF_HDROP);
+				if (hDrop)
+					SendMessage(hwnd, WM_DROPFILES, (WPARAM)hDrop, 0);
+				CloseClipboard();
+			}
+		}
+		else
+			SendMessage(hwnd, EM_PASTESPECIAL, CF_TEXT, 0);
+		return 0;
 	case WM_DROPFILES:
 		SendMessage(GetParent(hwnd), WM_DROPFILES, wParam, lParam);
 		return 0;
@@ -577,12 +597,12 @@ static void MessageDialogResize(HWND hwndDlg, struct MessageWindowData *dat, int
 	}
 	if (g_dat->flags & SMF_AUTORESIZE) {
 		hSplitterPos = dat->desiredInputAreaHeight + SPLITTER_HEIGHT + 3;
-		if (hSplitterPos < h / 8) {
-			hSplitterPos = h / 8;
-			if (dat->desiredInputAreaHeight <= 80 && hSplitterPos > 80) {
-				hSplitterPos = 80;
-			}
-		}
+//		if (hSplitterPos < h / 8) {
+//			hSplitterPos = h / 8;
+//			if (dat->desiredInputAreaHeight <= 80 && hSplitterPos > 80) {
+//				hSplitterPos = 80;
+//			}
+//		}
 	}
 	if (h - hSplitterPos - INFO_BAR_HEIGHT< hSplitterMinTop) {
 		hSplitterPos = h - hSplitterMinTop - INFO_BAR_HEIGHT;
@@ -827,9 +847,6 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			dat->flags = 0;
 			if (DBGetContactSettingByte(dat->windowData.hContact, SRMMMOD, "UseRTL", (BYTE) 0)) {
 				dat->flags |= SMF_RTL;
-			}
-			if (DBGetContactSettingByte(dat->windowData.hContact, SRMMMOD, "DisableUnicode", (BYTE) 0)) {
-				dat->flags |= SMF_DISABLE_UNICODE;
 			}
 			dat->flags |= ServiceExists(MS_IEVIEW_WINDOW) ? g_dat->flags & SMF_USEIEVIEW : 0;
 			{
@@ -1406,19 +1423,6 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 		dat->windowData.codePage = (int) lParam;
 		SendMessage(hwndDlg, DM_REMAKELOG, 0, 0);
 		break;
-	case DM_SWITCHUNICODE:
-#if defined( _UNICODE )
-		{
-			StatusIconData sid = {0};
-			dat->flags ^= SMF_DISABLE_UNICODE;
-			sid.cbSize = sizeof(sid);
-			sid.szModule = SRMMMOD;
-			sid.flags = (dat->flags & SMF_DISABLE_UNICODE) ? MBF_DISABLED : 0;
-			ModifyStatusIcon((WPARAM)dat->windowData.hContact, (LPARAM) &sid);
-			SendMessage(hwndDlg, DM_REMAKELOG, 0, 0);
-		}
-#endif
-		break;
 	case DM_SWITCHTYPING:
 		if (IsTypingNotificationSupported(dat)) {
 			StatusIconData sid = {0};
@@ -1676,24 +1680,9 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 				mir_free(szContactName);
 				dat->nTypeSecs--;
 			} else if (dat->lastMessage) {
-				DBTIMETOSTRINGT dbtts;
 				TCHAR date[64], time[64];
-				dbtts.szFormat = _T("d");
-				dbtts.cbDest = SIZEOF(date);
-				dbtts.szDest = date;
-#if defined ( _UNICODE )
-				CallService(MS_DB_TIME_TIMESTAMPTOSTRINGT, dat->lastMessage, (LPARAM) & dbtts);
-#else
-				CallService(MS_DB_TIME_TIMESTAMPTOSTRING, dat->lastMessage, (LPARAM) & dbtts);
-#endif
-				dbtts.szFormat = _T("t");
-				dbtts.cbDest = SIZEOF(time);
-				dbtts.szDest = time;
-#if defined ( _UNICODE )
-				CallService(MS_DB_TIME_TIMESTAMPTOSTRINGT, dat->lastMessage, (LPARAM) & dbtts);
-#else
-				CallService(MS_DB_TIME_TIMESTAMPTOSTRING, dat->lastMessage, (LPARAM) & dbtts);
-#endif
+				tmi.printTimeStamp(NULL, dat->lastMessage, _T("d"), date, SIZEOF(date), 0);
+	            tmi.printTimeStamp(NULL, dat->lastMessage, _T("t"), time, SIZEOF(time), 0);
 				mir_sntprintf(szText, SIZEOF(szText), TranslateT("Last message received on %s at %s."), date, time);
 				sbd.pszText = szText;
 			} else {
@@ -1703,11 +1692,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			UpdateReadChars(hwndDlg, dat);
 			sid.cbSize = sizeof(sid);
 			sid.szModule = SRMMMOD;
-#if defined ( _UNICODE )
-			sid.flags = (dat->flags & SMF_DISABLE_UNICODE) ? MBF_DISABLED : 0;
-#else
 			sid.flags = MBF_DISABLED;
-#endif
 			ModifyStatusIcon((WPARAM)dat->windowData.hContact, (LPARAM) &sid);
 			sid.dwId = 1;
 			if (IsTypingNotificationSupported(dat) && g_dat->flags2 & SMF2_SHOWTYPINGSWITCH) {
@@ -1726,7 +1711,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			ZeroMemory(&event, sizeof(event));
 			event.cbSize = sizeof(event);
 			event.iType = IEE_CLEAR_LOG;
-			event.dwFlags = ((dat->flags & SMF_RTL) ? IEEF_RTL : 0) | ((dat->flags & SMF_DISABLE_UNICODE) ? IEEF_NO_UNICODE : 0);
+			event.dwFlags = ((dat->flags & SMF_RTL) ? IEEF_RTL : 0);
 			event.hwnd = dat->windowData.hwndLog;
 			event.hContact = dat->windowData.hContact;
 			event.codepage = dat->windowData.codePage;
@@ -2240,7 +2225,6 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 				DeleteObject(hFont);
 		}
 		DBWriteContactSettingByte(dat->windowData.hContact, SRMMMOD, "UseRTL", (BYTE) ((dat->flags & SMF_RTL) ? 1 : 0));
-		DBWriteContactSettingByte(dat->windowData.hContact, SRMMMOD, "DisableUnicode", (BYTE) ((dat->flags & SMF_DISABLE_UNICODE) ? 1 : 0));
 		DBWriteContactSettingWord(dat->windowData.hContact, SRMMMOD, "CodePage", (WORD) dat->windowData.codePage);
 		if (!(g_dat->flags & SMF_AUTORESIZE)) {
 			DBWriteContactSettingDword(NULL, SRMMMOD, "splitterPos", dat->splitterPos);
