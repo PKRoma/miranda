@@ -102,7 +102,7 @@ BEGIN
     PUSHBUTTON      "Default",IDC_RESETSERVER,244,106,50,12
     LTEXT           "Hint: Use port 0 to connect on a random port. Try port 80 or port 443 if you are having problems connecting through a http proxy server.",
                     IDC_STATIC,12,123,286,19
-    CONTROL         "Secure Connection (SSL) [experimental]",IDC_SSL,"Button",BS_AUTOCHECKBOX | 
+    CONTROL         "Secure Connection (SSL)",IDC_SSL,"Button",BS_AUTOCHECKBOX | 
                     BS_TOP | WS_TABSTOP,12,143,286,10
     CONTROL         "Secure (MD5) login",IDC_MD5LOGIN,"Button",BS_AUTOCHECKBOX | 
                     BS_TOP | WS_TABSTOP,12,154,286,10
