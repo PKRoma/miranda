@@ -148,9 +148,10 @@ static char* NetlibHttpFindHeader(NETLIBHTTPREQUEST *nlhrReply, const char *hdr)
 	return NULL;
 }
 
-static char* NetlibHttpFindAuthHeader(NETLIBHTTPREQUEST *nlhrReply, const char *hdr)
+static char* NetlibHttpFindAuthHeader(NETLIBHTTPREQUEST *nlhrReply, const char *hdr, const char *szProvider)
 {
 	char *szBasicHdr = NULL;
+	char *szNegoHdr = NULL;
 	char *szNtlmHdr = NULL;
 
 	for (int i = 0; i < nlhrReply->headersCount; i++) 
@@ -158,15 +159,18 @@ static char* NetlibHttpFindAuthHeader(NETLIBHTTPREQUEST *nlhrReply, const char *
 		if (_stricmp(nlhrReply->headers[i].szName, hdr) == 0) 
 		{
 			if (_strnicmp(nlhrReply->headers[i].szValue, "Negotiate", 9) == 0)
-				return nlhrReply->headers[i].szValue;
+				szNegoHdr = nlhrReply->headers[i].szValue;
 			else if (_strnicmp(nlhrReply->headers[i].szValue, "NTLM", 4) == 0)
 				szNtlmHdr = nlhrReply->headers[i].szValue;
 			else if (_strnicmp(nlhrReply->headers[i].szValue, "Basic", 5) == 0)
 				szBasicHdr = nlhrReply->headers[i].szValue;
 		}
 	}
-	if (szNtlmHdr) return szNtlmHdr;
-	return szBasicHdr;
+
+	if (szNegoHdr && (!szProvider || !_stricmp(szProvider, "Negotiate"))) return szNegoHdr;
+	if (szNtlmHdr && (!szProvider || !_stricmp(szProvider, "NTLM"))) return szNtlmHdr;
+	if (!szProvider || !_stricmp(szProvider, "Basic")) return szBasicHdr;
+	return NULL;
 }
 
 void NetlibConnFromUrl(const char* szUrl, bool secur, NETLIBOPENCONNECTION &nloc)
@@ -253,13 +257,19 @@ struct HttpSecurityContext
 		NetlibDestroySecurityProvider(m_hNtlmSecurity);
 		m_hNtlmSecurity = NULL;
 		mir_free(m_szHost); m_szHost = NULL;
-		mir_free(m_szProvider); m_szHost = NULL;
+		mir_free(m_szProvider); m_szProvider = NULL;
+	}
+
+	bool TryBasic(void)
+	{
+		return m_hNtlmSecurity && m_szProvider && _stricmp(m_szProvider, "Basic");
 	}
 
 	char* Execute(NetlibConnection *nlc, char* szHost, const char* szProvider, 
 		const char* szChallenge, unsigned& complete)
 	{
 		char* szAuthHdr = NULL;
+		bool justCreated = false;
 
 		if (m_hNtlmSecurity)
 		{
@@ -285,7 +295,7 @@ struct HttpSecurityContext
 			{
 				m_szProvider = mir_strdup(szProvider);
 				m_szHost = mir_strdup(szHost);
-				proxyAuthList.add(m_szHost, m_szProvider);
+				justCreated = true;
 			}
 		}
 
@@ -309,6 +319,8 @@ struct HttpSecurityContext
 				NetlibLogf(NULL, "Security login %s failed, user: " TCHAR_STR_PARAM " pssw: " TCHAR_STR_PARAM, 
 					szProvider, szLogin ? szLogin : _T("(no user)"), szPassw ? _T("(exist)") : _T("(no psw)"));
 			}
+			else if (justCreated)
+				proxyAuthList.add(m_szHost, m_szProvider);
 
 			mir_free(szLogin);
 			mir_free(szPassw);
@@ -691,24 +703,37 @@ INT_PTR NetlibHttpSendRequest(WPARAM wParam,LPARAM lParam)
 				else
 					nlhrReply = NetlibHttpRecv(nlc, hflags, dflags);
 
-				if (nlhrReply == NULL || complete) 
+				mir_free(pszAuthHdr); pszAuthHdr = NULL;
+				if (nlhrReply) 
 				{
-					NetlibHttpSetLastErrorUsingHttpResult(resultCode);
-					bytesSent = SOCKET_ERROR;
-					break;
-				}
+					char *szAuthStr = NULL;
+					if (!complete)
+					{
+						szAuthStr = NetlibHttpFindAuthHeader(nlhrReply, "WWW-Authenticate", 
+							httpSecurity.m_szProvider);
+						if (szAuthStr)
+						{
+							char *szChallenge = strchr(szAuthStr, ' '); 
+							if (!szChallenge || !*lrtrimp(szChallenge)) complete = true;
+						}
+					}
+					if (complete)
+					{
+						szAuthStr = httpSecurity.TryBasic() ? 
+							NetlibHttpFindAuthHeader(nlhrReply, "WWW-Authenticate", "Basic") : NULL;
+					}
 
-				char *szAuthStr = NetlibHttpFindAuthHeader(nlhrReply, "WWW-Authenticate");
-				if (szAuthStr)
-				{
-					char *szChallenge = strchr(szAuthStr, ' '); 
-					if (szChallenge) { *szChallenge = 0; ++szChallenge; }
+					if (szAuthStr)
+					{
+						char *szChallenge = strchr(szAuthStr, ' '); 
+						if (szChallenge) { *szChallenge = 0; szChallenge = lrtrimp(szChallenge + 1); }
 
-					mir_free(pszAuthHdr);
-					pszAuthHdr = httpSecurity.Execute(nlc, szHost, szAuthStr, szChallenge, complete); 
+						pszAuthHdr = httpSecurity.Execute(nlc, szHost, szAuthStr, szChallenge, complete); 
+					}
 				}
 				if (pszAuthHdr == NULL) 
 				{
+					proxyAuthList.add(szHost, NULL);
 					NetlibHttpSetLastErrorUsingHttpResult(resultCode);
 					bytesSent = SOCKET_ERROR;
 					break;
@@ -721,25 +746,37 @@ INT_PTR NetlibHttpSendRequest(WPARAM wParam,LPARAM lParam)
 				else
 					nlhrReply = NetlibHttpRecv(nlc, hflags, dflags);
 
-				if (nlhrReply == NULL || complete) 
+				mir_free(pszProxyAuthHdr); pszProxyAuthHdr = NULL;
+				if (nlhrReply) 
 				{
-					NetlibHttpSetLastErrorUsingHttpResult(resultCode);
-					bytesSent = SOCKET_ERROR;
-					break;
-				}
+					char *szAuthStr = NULL;
+					if (!complete)
+					{
+						szAuthStr = NetlibHttpFindAuthHeader(nlhrReply, "Proxy-Authenticate", 
+							httpSecurity.m_szProvider);
+						if (szAuthStr)
+						{
+							char *szChallenge = strchr(szAuthStr, ' '); 
+							if (!szChallenge || !*lrtrimp(szChallenge + 1)) complete = true;
+						}
+					}
+					if (complete && httpSecurity.m_hNtlmSecurity)
+					{
+						szAuthStr = httpSecurity.TryBasic() ? 
+							NetlibHttpFindAuthHeader(nlhrReply, "Proxy-Authenticate", "Basic") : NULL;
+					}
 
-				char *szAuthStr = NetlibHttpFindAuthHeader(nlhrReply, "Proxy-Authenticate");
-				if (szAuthStr)
-				{
-					char *szChallenge = strchr(szAuthStr, ' '); 
-					if (szChallenge) { *szChallenge = 0; ++szChallenge; }
+					if (szAuthStr)
+					{
+						char *szChallenge = strchr(szAuthStr, ' '); 
+						if (szChallenge) { *szChallenge = 0; szChallenge = lrtrimp(szChallenge + 1); }
 
-
-					mir_free(pszProxyAuthHdr);
-					pszProxyAuthHdr = httpSecurity.Execute(nlc, nlc->szProxyServer, szAuthStr, szChallenge, complete); 
+						pszProxyAuthHdr = httpSecurity.Execute(nlc, nlc->szProxyServer, szAuthStr, szChallenge, complete); 
+					}
 				}
 				if (pszProxyAuthHdr == NULL) 
 				{
+					proxyAuthList.add(nlc->szProxyServer, NULL);
 					NetlibHttpSetLastErrorUsingHttpResult(resultCode);
 					bytesSent = SOCKET_ERROR;
 					break;
