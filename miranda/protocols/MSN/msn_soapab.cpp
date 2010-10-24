@@ -324,7 +324,7 @@ bool CMsnProto::MSN_SharingFindMembership(bool deltas, bool allowRecurse)
 			else if (strcmp(szErr, "PassportAuthFail") == 0 && allowRecurse)
 			{
 				MSN_GetPassportAuth();
-				status = MSN_SharingFindMembership(false) ? 200 : 500;
+				status = MSN_SharingFindMembership(deltas, false) ? 200 : 500;
 			}
 		}
 		ezxml_free(xmlm);
@@ -609,7 +609,7 @@ bool CMsnProto::MSN_ABFind(const char* szMethod, const char* szGuid, bool deltas
 	mir_free(reqHdr);
 	free(szData);
 
-	if (tResult != NULL && status == 200)
+	if (tResult != NULL)
 	{
 		UpdateABHost(szMethod, abUrl);
 		ezxml_t xmlm = ezxml_parse_str(tResult, strlen(tResult));
@@ -862,7 +862,7 @@ bool CMsnProto::MSN_ABFind(const char* szMethod, const char* szGuid, bool deltas
 			}
 			else if (strcmp(szErr, "FullSyncRequired") == 0 && deltas)
 			{
-				status = MSN_ABFind(szMethod, szGuid, false, false) ? 200 : 500;
+				status = MSN_ABFind(szMethod, szGuid) ? 200 : 500;
 			}
 		}
 		ezxml_free(xmlm);

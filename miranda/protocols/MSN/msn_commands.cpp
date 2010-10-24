@@ -942,7 +942,8 @@ void CMsnProto::sttProcessNotificationMessage(char* buf, unsigned len)
 
 	ezxml_t xmlmsg = ezxml_child(xmlnot, "MSG");
 	ezxml_t xmlact = ezxml_child(xmlmsg, "ACTION");
-	ezxml_t xmltxt = ezxml_get(xmlmsg, "BODY", 0, "TEXT", -1);
+	ezxml_t xmlbdy = ezxml_child(xmlmsg, "BODY");
+	ezxml_t xmltxt = ezxml_child(xmlbdy, "TEXT");
 
 	if (xmltxt != NULL)
 	{
@@ -965,6 +966,15 @@ void CMsnProto::sttProcessNotificationMessage(char* buf, unsigned len)
 		TCHAR* alrt = mir_utf8decodeT(ezxml_txt(xmltxt));
 		MSN_ShowPopup(TranslateT("MSN Alert"), alrt, MSN_ALERT_POPUP | MSN_ALLOW_MSGBOX, fullurl);
 		mir_free(alrt);
+	}
+	else if (xmlbdy)
+	{
+		const char *txt = ezxml_txt(xmlbdy);
+		if (strstr(txt, "ABCHInternal"))
+		{
+			MSN_SharingFindMembership(true);
+			MSN_ABFind("ABFindAll", NULL, true);
+		}
 	}
 	ezxml_free(xmlnot);
 }
