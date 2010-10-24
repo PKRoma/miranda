@@ -324,10 +324,10 @@ void SetStatusIcon(struct MessageWindowData *dat) {
 }
 
 void GetTitlebarIcon(struct MessageWindowData *dat, TitleBarData *tbd) {
-	if (dat->showTyping && (g_dat->flags2&SMF2_SHOWTYPINGWIN)) {
+	if (dat->showTyping && (g_dat->flags2 & SMF2_SHOWTYPINGWIN)) {
 		tbd->hIconNot = tbd->hIcon = GetCachedIcon("scriver_TYPING");
 	} else if (dat->showUnread && (GetActiveWindow() != dat->hwndParent || GetForegroundWindow() != dat->hwndParent)) {
-		tbd->hIcon = (g_dat->flags & SMF_STATUSICON) ? dat->statusIcon : g_dat->hMsgIcon;
+		tbd->hIcon = g_dat->hMsgIcon;
 		tbd->hIconNot = (g_dat->flags & SMF_STATUSICON) ? g_dat->hMsgIcon : GetCachedIcon("scriver_OVERLAY");
 	} else {
 		tbd->hIcon = (g_dat->flags & SMF_STATUSICON) ? dat->statusIcon : g_dat->hMsgIcon;
