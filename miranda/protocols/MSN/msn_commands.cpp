@@ -72,7 +72,7 @@ void CMsnProto::sttSetMirVer(HANDLE hContact, DWORD dwValue, bool always)
 		"WLM 8.5",
 		"WLM 9.0 Beta",
 		"WLM 2009",
-		"WLM 2010",
+		"WLM 2011",
 		"WLM Unknown",
 	};
 
