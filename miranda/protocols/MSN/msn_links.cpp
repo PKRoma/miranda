@@ -25,8 +25,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 static HANDLE hServiceParseLink;
 
-static HANDLE GetContact(TCHAR *arg, TCHAR **email, CMsnProto *proto)
+static HANDLE GetContact(TCHAR *arg, TCHAR **pemail, CMsnProto *proto)
 {
+	TCHAR* email;
 	do 
 	{
 		TCHAR *tok = _tcschr(arg, '&'); /* next token */
@@ -36,18 +37,19 @@ static HANDLE GetContact(TCHAR *arg, TCHAR **email, CMsnProto *proto)
 		{
 			arg += 8;
 			UrlDecode(arg);
-			*email = arg;
+			email = arg;
 		}
 		arg = tok;
 	} 
 	while(arg != NULL);
 
-	if (*email == NULL || *email[0] == '\0')
+	if (email == NULL || email[0] == '\0')
 	{
-		*email = NULL;
+		if (pemail) *pemail = NULL;
 		return NULL;
 	}
-	HANDLE hContact = proto->MSN_HContactFromEmail(UTF8(*email), NULL, false, false);
+	if (pemail) *pemail = email;
+	HANDLE hContact = proto->MSN_HContactFromEmail(UTF8(email), NULL, true, true);
 	return hContact;
 }
 
