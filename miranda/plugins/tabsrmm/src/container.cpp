@@ -111,6 +111,9 @@ void TSAPI SetAeroMargins(TContainerData *pContainer)
 			GetClientRect(pContainer->hwnd, &rcWnd);
 			m.cyBottomHeight = (rcWnd.bottom - pt.y);
 
+			if(m.cyBottomHeight < 0 || m.cyBottomHeight >= rcWnd.bottom)
+				m.cyBottomHeight = 0;
+
 			m.cxLeftWidth = pContainer->tBorder_outer_left;
 			m.cxRightWidth = pContainer->tBorder_outer_right;
 			m.cxLeftWidth += sbar_left;
@@ -603,6 +606,8 @@ static INT_PTR CALLBACK DlgProcContainer(HWND hwndDlg, UINT msg, WPARAM wParam, 
 			ws = GetWindowLongPtr(hwndTab, GWL_STYLE);
 			if(pContainer->dwFlagsEx & TCF_FLAT)
 				ws |= TCS_BUTTONS;
+
+			memset((void *)&pContainer->mOld, -1000, sizeof(MARGINS));
 
 			if (pContainer->dwFlagsEx & TCF_SINGLEROWTABCONTROL) {
 				ws &= ~TCS_MULTILINE;
@@ -1457,7 +1462,7 @@ buttons_done:
 					break;
 				case SC_RESTORE:
 					pContainer->oldSize.cx = pContainer->oldSize.cy = 0;
-					ZeroMemory(&pContainer->mOld, sizeof(MARGINS));
+					memset((void *)&pContainer->mOld, -1000, sizeof(MARGINS));
 					break;
 				case SC_MINIMIZE: {
 					TWindowData* dat = reinterpret_cast<TWindowData *>(GetWindowLongPtr(pContainer->hwndActive, GWLP_USERDATA));

@@ -135,7 +135,7 @@ INT_PTR CALLBACK PlusOptionsProc(HWND hwndDlg,UINT msg,WPARAM wParam,LPARAM lPar
 				break;
 		case WM_COMMAND: {
 			if(LOWORD(wParam) == IDC_PLUS_HELP) {
-				CallService(MS_UTILS_OPENURL, 0, (LPARAM)"http://wiki.miranda.or.at/TabSRMM_AdvancedTweaks");
+				CallService(MS_UTILS_OPENURL, 0, (LPARAM)"http://wiki.miranda.or.at/TabSRMM/AdvancedTweaks");
 				break;
 			}
 			else if(LOWORD(wParam) == IDC_PLUS_REVERT) {		// revert to defaults...

@@ -3828,7 +3828,7 @@ quote_from_last:
 			break;
 		case WM_DWMCOMPOSITIONCHANGED:
 			BB_RefreshTheme(dat);
-			ZeroMemory(&m_pContainer->mOld, sizeof(MARGINS));
+			memset((void *)&dat->pContainer->mOld, -1000, sizeof(MARGINS));
 			CProxyWindow::verify(dat);
 			break;
 
@@ -3842,7 +3842,7 @@ quote_from_last:
 
 		case WM_NCDESTROY:
 			if (dat) {
-				ZeroMemory(&m_pContainer->mOld, sizeof(MARGINS));
+				memset((void *)&dat->pContainer->mOld, -1000, sizeof(MARGINS));
 				PostMessage(dat->pContainer->hwnd, WM_SIZE, 0, 1);
 				if(m_pContainer->dwFlags & CNT_SIDEBAR)
 					m_pContainer->SideBar->removeSession(dat);

@@ -291,7 +291,7 @@ INT_PTR CALLBACK DlgProcAbout(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
 					DestroyWindow(hwndDlg);
 					return TRUE;
 				case IDC_SUPPORT:
-					CallService(MS_UTILS_OPENURL, 1, (LPARAM)"http://miranda.or.at/TabSrmm:Development3_0_KnownIssues");
+					CallService(MS_UTILS_OPENURL, 1, (LPARAM)"http://miranda.or.at/");
 					break;
 				case IDC_RESETWARNINGS:
 					M->WriteDword(SRMSGMOD_T, "cWarningsL", 0);

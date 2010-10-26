@@ -333,7 +333,7 @@ static INT_PTR CALLBACK DlgProcSkinOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 
 				case IDC_THEMEIMPORT: {
 					LRESULT r;
-					
+
 					if(CSkin::m_skinEnabled) {
 						r = CWarning::show(CWarning::WARN_THEME_OVERWRITE, MB_YESNOCANCEL|MB_ICONQUESTION);
 						if(r == IDNO || r == IDCANCEL)
@@ -482,11 +482,6 @@ static INT_PTR CALLBACK DlgProcOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			SendDlgItemMessage(hwndDlg, IDC_AVATARSPIN, UDM_SETRANGE, 0, MAKELONG(150, 0));
 			SendDlgItemMessage(hwndDlg, IDC_AVATARSPIN, UDM_SETPOS, 0, GetDlgItemInt(hwndDlg, IDC_MAXAVATARHEIGHT, &translated, FALSE));
 
-			SendDlgItemMessage(hwndDlg, IDC_SENDFORMATTING, CB_INSERTSTRING, -1, (LPARAM)CTranslator::getOpt(CTranslator::OPT_GEN_OFF));
-			SendDlgItemMessage(hwndDlg, IDC_SENDFORMATTING, CB_INSERTSTRING, -1, (LPARAM)CTranslator::getOpt(CTranslator::OPT_GEN_BBCODE));
-
-			SendDlgItemMessage(hwndDlg, IDC_SENDFORMATTING, CB_SETCURSEL, (WPARAM)PluginConfig.m_SendFormat ? 1 : 0, 0);
-
 			return TRUE;
 		}
 		case WM_DESTROY:
@@ -501,7 +496,7 @@ static INT_PTR CALLBACK DlgProcOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 					break;
 				}
 				case IDC_HELP_GENERAL:
-					CallService(MS_UTILS_OPENURL, 1, (LPARAM)"http://wiki.miranda.or.at/GeneralSettings");
+					CallService(MS_UTILS_OPENURL, 1, (LPARAM)"http://wiki.miranda.or.at/TabSRMM/GeneralSettings");
 					break;
 				case IDC_RESETWARNINGS:
 					M->WriteDword(SRMSGMOD_T, "cWarningsL", 0);
@@ -552,7 +547,6 @@ static INT_PTR CALLBACK DlgProcOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 
 							M->WriteDword(SRMSGMOD_T, "avatarheight", GetDlgItemInt(hwndDlg, IDC_MAXAVATARHEIGHT, &translated, FALSE));
 
-							M->WriteByte(SRMSGMOD_T, "sendformat", (BYTE)SendDlgItemMessage(hwndDlg, IDC_SENDFORMATTING, CB_GETCURSEL, 0, 0));
 							M->WriteByte(SRMSGMOD_T, "dontscaleavatars", (BYTE)(IsDlgButtonChecked(hwndDlg, IDC_PRESERVEAVATARSIZE) ? 1 : 0));
 
 							/*
@@ -988,7 +982,7 @@ static INT_PTR CALLBACK DlgProcTypeOptions(HWND hwndDlg, UINT msg, WPARAM wParam
 						(IsDlgButtonChecked(hwndDlg, IDC_TYPEWIN) || IsDlgButtonChecked(hwndDlg, IDC_TYPENOWIN)));
 					break;
 				case IDC_MTN_HELP:
-					CallService(MS_UTILS_OPENURL, 1, (LPARAM)"http://wiki.miranda.or.at/TypingNotifications_TabSRMM");
+					CallService(MS_UTILS_OPENURL, 1, (LPARAM)"http://wiki.miranda.or.at/TabSRMM/TypingNotifications");
 					return 0;
 			}
 			SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
@@ -1232,7 +1226,7 @@ static INT_PTR CALLBACK DlgProcContainerSettings(HWND hwndDlg, UINT msg, WPARAM 
 					Utils::enableDlgControl(hwndDlg, IDC_TABLIMIT, IsDlgButtonChecked(hwndDlg, IDC_LIMITTABS));
 					break;
 				case IDC_HELP_CONTAINERS:
-					CallService(MS_UTILS_OPENURL, 1, (LPARAM)"http://wiki.miranda.or.at/Containers");
+					CallService(MS_UTILS_OPENURL, 1, (LPARAM)"http://wiki.miranda.or.at/TabSRMM/Containers");
 					break;
 			}
 			SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);

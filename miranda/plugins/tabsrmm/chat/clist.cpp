@@ -50,15 +50,15 @@ static HANDLE Clist_GroupExists(TCHAR *tszGroup)
 	int			 match;
 
 	do {
-		i++;
 		_itoa(i, str, 10);
 		result = M->GetTString(0, "CListGroups", str, &dbv);
 		if(!result) {
-			match = _tcscmp(tszGroup, &dbv.ptszVal[1]);
+			match = (!_tcscmp(tszGroup, &dbv.ptszVal[1]) && (lstrlen(tszGroup) == lstrlen(&dbv.ptszVal[1])));
 			DBFreeVariant(&dbv);
-			if(!match)
+			if(match)
 				return((HANDLE)(i + 1));
 		}
+		i++;
 	}
 	while(result == 0);
 	return(0);
@@ -275,7 +275,7 @@ void CList_CreateGroup(TCHAR* group)
 
 		if(g_Settings.hGroup) {
 			CallService(MS_CLUI_GROUPADDED, (WPARAM)g_Settings.hGroup, 0);
-			CallService(MS_CLIST_GROUPSETEXPANDED, (WPARAM)g_Settings.hGroup, 0);
+			CallService(MS_CLIST_GROUPSETEXPANDED, (WPARAM)g_Settings.hGroup, 1);
 		}
 	}
 }

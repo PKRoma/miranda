@@ -541,6 +541,7 @@ TOptionListItem CTranslator::m_lvItemsMsg[] = {
 	0, LPGENT("Always flash contact list and tray icon for new messages"), 0, LOI_TYPE_SETTING, (UINT_PTR)"flashcl", 0,
 	0, LPGENT("Delete temporary contacts on close"), 0, LOI_TYPE_SETTING, (UINT_PTR)"deletetemp", 0,
 	0, LPGENT("Enable \"Paste and send\" feature"), 1, LOI_TYPE_SETTING, (UINT_PTR)"pasteandsend", 1,
+	0, LPGENT("Allow BBCode formatting in outgoing messages"), 0, LOI_TYPE_SETTING, (UINT_PTR)"sendformat", 1,
 	0, LPGENT("Automatically split long messages (experimental, use with care)"), 0, LOI_TYPE_SETTING, (UINT_PTR)"autosplit", 2,
 	0, NULL, 0, 0, 0, 0
 };
