@@ -26,7 +26,7 @@
  *
  * (C) 2005-2010 by silvercircle _at_ gmail _dot_ com and contributors
  *
- * $Id: clistmod.cpp 12535 2010-08-29 23:48:32Z silvercircle $
+ * $Id: clistmod.cpp 12978 2010-10-17 06:50:51Z silvercircle $
  *
  */
 
@@ -210,22 +210,28 @@ int ShowHide(WPARAM wParam, LPARAM lParam)
 
 	int iVisibleState = pcli->pfnGetWindowVisibleState(pcli->hwndContactList, 0, 0);
 
-	//bShow is FALSE when we enter the switch.
-	switch (iVisibleState) {
-	case GWVS_PARTIALLY_COVERED:
-		//If we don't want to bring it to top, we can use a simple break. This goes against readability ;-) but the comment explains it.
-		if (!cfg::getByte("CList", "BringToFront", SETTING_BRINGTOFRONT_DEFAULT))
-			break;
-	case GWVS_COVERED:     //Fall through (and we're already falling)
-	case GWVS_HIDDEN:
+	if(IsIconic(pcli->hwndContactList)) {
+		SendMessage(pcli->hwndContactList, WM_SYSCOMMAND, SC_RESTORE, 0);
 		bShow = TRUE;
-		break;
-	case GWVS_VISIBLE:     //This is not needed, but goes for readability.
-		bShow = FALSE;
-		break;
-	case -1:               //We can't get here, both cli.hwndContactList and iStepX and iStepY are right.
-		return 0;
 	}
+	else {
+		switch (iVisibleState) {
+			case GWVS_PARTIALLY_COVERED:
+				//If we don't want to bring it to top, we can use a simple break. This goes against readability ;-) but the comment explains it.
+				if (!cfg::getByte("CList", "BringToFront", SETTING_BRINGTOFRONT_DEFAULT))
+					break;
+			case GWVS_COVERED:     //Fall through (and we're already falling)
+			case GWVS_HIDDEN:
+				bShow = TRUE;
+				break;
+			case GWVS_VISIBLE:     //This is not needed, but goes for readability.
+				bShow = FALSE;
+				break;
+			case -1:               //We can't get here, both cli.hwndContactList and iStepX and iStepY are right.
+				return 0;
+		}
+	}
+
 	if (bShow == TRUE) {
 		RECT rcWindow;
 
