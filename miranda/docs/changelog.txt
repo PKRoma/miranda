@@ -3,6 +3,24 @@
                            www.miranda-im.org
 
 
+* New in 0.9.9
+Bugfixes:
+ - Fixed scrolling issues with smilies (srmm only)
+ - Fixed url processing (srmm only)
+ - Fixed search logic with old protocols
+ - Fixed crash with autocomplete in chat window
+ - Fixed taskbar blinking when hiding contact list
+ - Improved HTTP authentication support
+ - AIM: Fixed error message on closing system buddy window
+ - ICQ: SSL fixes
+ - ICQ: Fixed status message unrequested change
+ - Jabber: Improved support for Jabber services
+ - MSN: Fixed QuotaLimitExceeded issue
+ - MSN: Fixes for contact addition
+ - MSN: Fixed avatar transfer
+ - Yahoo: Fixed setting avatar
+
+
 * New in 0.9.8
 Bugfixes:
  - MSN: Fixed offline messaging
