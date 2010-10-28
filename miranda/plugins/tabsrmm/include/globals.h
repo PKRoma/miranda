@@ -83,6 +83,7 @@ public:
 	CGlobals()
 	{
 		::ZeroMemory(this, sizeof(CGlobals));
+		m_TypingSoundAdded = false;
 	}
 
 	~CGlobals()

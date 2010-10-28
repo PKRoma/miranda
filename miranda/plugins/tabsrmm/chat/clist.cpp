@@ -50,15 +50,15 @@ static HANDLE Clist_GroupExists(TCHAR *tszGroup)
 	int			 match;
 
 	do {
-		i++;
 		_itoa(i, str, 10);
 		result = M->GetTString(0, "CListGroups", str, &dbv);
 		if(!result) {
-			match = _tcscmp(tszGroup, &dbv.ptszVal[1]);
+			match = (!_tcscmp(tszGroup, &dbv.ptszVal[1]) && (lstrlen(tszGroup) == lstrlen(&dbv.ptszVal[1])));
 			DBFreeVariant(&dbv);
-			if(!match)
+			if(match)
 				return((HANDLE)(i + 1));
 		}
+		i++;
 	}
 	while(result == 0);
 	return(0);
@@ -81,18 +81,8 @@ HANDLE CList_AddRoom(const char* pszModule, const TCHAR* pszRoom, const TCHAR* p
 	if (pszGroup[0])
 		CList_CreateGroup(pszGroup);
 
-	if (hContact) {   //contact exist, make sure it is in the right group
-		/*
-		if(M->GetTString(hContact, "CList", "Group", &dbv)) {
-			CallService(MS_CLIST_CONTACTCHANGEGROUP, (WPARAM)hContact, (LPARAM)g_Settings.hGroup);
-			DBWriteContactSettingWord(hContact, pszModule, "Status", ID_STATUS_OFFLINE);
-			M->WriteTString(hContact, pszModule, "Nick", pszDisplayName);
-		}
-		else
-			DBFreeVariant(&dbv);
-			*/
+	if (hContact)
 		return hContact;
-	}
 
 	// here we create a new one since no one is to be found
 
@@ -275,7 +265,7 @@ void CList_CreateGroup(TCHAR* group)
 
 		if(g_Settings.hGroup) {
 			CallService(MS_CLUI_GROUPADDED, (WPARAM)g_Settings.hGroup, 0);
-			CallService(MS_CLIST_GROUPSETEXPANDED, (WPARAM)g_Settings.hGroup, 0);
+			CallService(MS_CLIST_GROUPSETEXPANDED, (WPARAM)g_Settings.hGroup, 1);
 		}
 	}
 }

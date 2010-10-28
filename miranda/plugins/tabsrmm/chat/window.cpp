@@ -256,7 +256,7 @@ static void Chat_UpdateWindowState(TWindowData *dat, UINT msg)
 	SESSION_INFO *si = (SESSION_INFO *)dat->si;
 
 	if (msg == WM_ACTIVATE) {
-		if (dat->pContainer->dwFlags & CNT_TRANSPARENCY && CMimAPI::m_pSetLayeredWindowAttributes != NULL && !CSkin::m_skinEnabled) {
+		if (dat->pContainer->dwFlags & CNT_TRANSPARENCY && CMimAPI::m_pSetLayeredWindowAttributes != NULL) {
 			DWORD trans = LOWORD(dat->pContainer->settings->dwTransparency);
 			CMimAPI::m_pSetLayeredWindowAttributes(dat->pContainer->hwnd, CSkin::m_ContainerColorKey, (BYTE)trans, (CSkin::m_skinEnabled ? LWA_COLORKEY : 0) | (dat->pContainer->dwFlags & CNT_TRANSPARENCY ? LWA_ALPHA : 0));
 		}
