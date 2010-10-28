@@ -206,7 +206,7 @@ INT_PTR Service_Register(WPARAM wParam, LPARAM lParam)
 			mi->crColors = (COLORREF *)mir_alloc(sizeof(COLORREF) * gcr->nColors);
 			memcpy(mi->crColors, gcr->pColors, sizeof(COLORREF) * gcr->nColors);
 		}
-		mi->pszHeader = Log_CreateRtfHeader(mi);
+		mi->pszHeader = 0;
 
 		CheckColorsInModule((char*)gcr->pszModule);
 		CList_SetAllOffline(TRUE, gcr->pszModule);

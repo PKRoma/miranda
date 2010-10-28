@@ -782,6 +782,8 @@ static char* Log_CreateRTF(LOGSTREAMDATA *streamData)
 	buffer[0] = '\0';
 
 	// ### RTF HEADER
+	if(0 == mi->pszHeader)
+		mi->pszHeader = Log_CreateRtfHeader(mi);
 	header = mi->pszHeader;
 	streamData->crCount = mi->nColorCount;
 
