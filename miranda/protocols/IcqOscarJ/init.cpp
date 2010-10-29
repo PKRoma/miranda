@@ -275,8 +275,13 @@ void CIcqProto::UpdateGlobalSettings()
 	{
 		char szServer[MAX_PATH];
 		if (!getSettingStringStatic(NULL, "OscarServer", szServer, MAX_PATH))
+		{
 			if (_strnicmp(szServer, "login.", 6) == 0)
+			{
 				setSettingString(NULL, "OscarServer", DEFAULT_SERVER_HOST_SSL);
+				setSettingWord(NULL, "OscarPort", DEFAULT_SERVER_PORT_SSL);
+			}
+		}
 	}
 	if (m_hServerNetlibUser)
 	{
