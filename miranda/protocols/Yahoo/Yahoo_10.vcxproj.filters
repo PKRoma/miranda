@@ -84,6 +84,9 @@
     <ClCompile Include="libyahoo2\yahoo_util.c">
       <Filter>Source Files\libyahoo2</Filter>
     </ClCompile>
+    <ClCompile Include="links.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="libyahoo2\config.h">
