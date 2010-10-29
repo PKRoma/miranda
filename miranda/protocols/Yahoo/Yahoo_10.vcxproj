@@ -571,6 +571,7 @@
     <ClCompile Include="icolib.cpp" />
     <ClCompile Include="ignore.cpp" />
     <ClCompile Include="im.cpp" />
+    <ClCompile Include="links.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="options.cpp" />
     <ClCompile Include="proto.cpp" />
