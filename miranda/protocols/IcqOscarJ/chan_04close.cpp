@@ -164,12 +164,14 @@ int CIcqProto::connectNewServer(serverthread_info *info)
 		NetLog_Server("Closed connection to login server");
 
 		hServerConn = NetLib_OpenConnection(m_hServerNetlibUser, NULL, &nloc);
-		if (hServerConn)
+		if (hServerConn && info->newServerSSL)
 		{ /* Start SSL session if requested */
-			if (info->newServerSSL)
-			{
-				CallService(MS_NETLIB_STARTSSL, (WPARAM)hServerConn, 0);
-			}
+			if (!CallService(MS_NETLIB_STARTSSL, (WPARAM)hServerConn, 0))
+				NetLib_CloseConnection(&hServerConn, FALSE);
+		}
+
+		if (hServerConn)
+		{ 
 			/* Time to recreate the packet receiver */
 			info->hPacketRecver = (HANDLE)CallService(MS_NETLIB_CREATEPACKETRECVER, (WPARAM)hServerConn, 0x2400);
 			if (!info->hPacketRecver)
