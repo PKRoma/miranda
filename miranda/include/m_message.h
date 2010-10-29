@@ -32,10 +32,14 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 //szText is the text to put in the edit box of the window (but not send)
 //szText=NULL will not use any text
 //szText!=NULL is only supported on v0.1.2.0+
-//NB: Current versions of the convers plugin use the name
-//"SRMsg/LaunchMessageWindow" instead. For compatibility you should call
-//both names and the correct one will work.
-#define MS_MSG_SENDMESSAGE  "SRMsg/SendCommand"
+#define MS_MSG_SENDMESSAGE   "SRMsg/SendCommand"
+#define MS_MSG_SENDMESSAGEW  "SRMsg/SendCommandW"
+
+#ifdef _UNICODE
+#define MS_MSG_SENDMESSAGET MS_MSG_SENDMESSAGEW
+#else
+#define MS_MSG_SENDMESSAGET MS_MSG_SENDMESSAGE
+#endif
 
 #define ME_MSG_WINDOWEVENT "MessageAPI/WindowEvent"
 //wparam=0
