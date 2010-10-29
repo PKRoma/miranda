@@ -646,11 +646,11 @@
 
 #define CLIENT_ID_STRING            "ICQ Client"  // Client identification, mimic ICQ 6.5
 #define CLIENT_ID_CODE              0x010a
-#define CLIENT_VERSION_MAJOR        0x0006
-#define CLIENT_VERSION_MINOR        0x0005
+#define CLIENT_VERSION_MAJOR        0x0014
+#define CLIENT_VERSION_MINOR        0x0034
 #define CLIENT_VERSION_LESSER       0x0000
-#define CLIENT_VERSION_BUILD        0x07e8
-#define CLIENT_DISTRIBUTION         0x00007537
+#define CLIENT_VERSION_BUILD        0x0c18
+#define CLIENT_DISTRIBUTION         0x00000611
 #define CLIENT_LANGUAGE             "en"
 #define CLIENT_COUNTRY              "us"
 
