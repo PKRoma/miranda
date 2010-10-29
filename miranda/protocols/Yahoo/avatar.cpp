@@ -618,7 +618,7 @@ void CYahooProto::InitCustomFolders(void)
 	{
 		TCHAR AvatarsFolder[MAX_PATH];
 		TCHAR *tmpPath = Utils_ReplaceVarsT( _T("%miranda_avatarcache%"));
-		mir_sntprintf(AvatarsFolder, MAX_PATH, _T("%s\\%s"), tmpPath, m_szModuleName);
+		mir_sntprintf(AvatarsFolder, MAX_PATH, _T("%s\\") _T(TCHAR_STR_PARAM), tmpPath, m_szModuleName);
 		hYahooAvatarsFolder = FoldersRegisterCustomPathT(m_szModuleName, "Avatars", AvatarsFolder);
 		mir_free(tmpPath);
 	}
