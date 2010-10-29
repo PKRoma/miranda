@@ -129,7 +129,7 @@ static int TSAPI ScanSkinDir(const TCHAR* tszFolder, HWND hwndCombobox)
 	HANDLE h = FindFirstFile(tszMask, &fd);
 
 	while(h != INVALID_HANDLE_VALUE) {
-		if(lstrlen(fd.cFileName) >= 5 && !_tcsncmp(fd.cFileName + lstrlen(fd.cFileName) - 4, _T(".tsk"), 4)) {
+		if(lstrlen(fd.cFileName) >= 5 && !_tcsnicmp(fd.cFileName + lstrlen(fd.cFileName) - 4, _T(".tsk"), 4)) {
 			fValid = true;
 			break;
 		}

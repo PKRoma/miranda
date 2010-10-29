@@ -39,6 +39,11 @@ Version 3.0.9 - 2010/10/xx
 
 	* try to strip control and formatting codes from topic text before
 	  using it for status bar and info panel.
+	  
+	* MUC: delay RTF header creation (workaround for hang on start with
+	  some fonts). not really a fix.
+	  
+	* MUC: don't always touch clist group's expanded/collapsed on startup 	  
 
 Version 3.0.8 - 2010/10/18
 
