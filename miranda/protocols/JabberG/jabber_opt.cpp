@@ -1823,31 +1823,31 @@ protected:
 			m_proto->JDeleteSetting(NULL, "LoginPassword");
 		}
 
-		switch (m_cbType.GetItemData(m_cbType.GetCurSel()))
-		{
+		switch (m_cbType.GetItemData(m_cbType.GetCurSel())) {
 		case ACC_FBOOK:
 		case ACC_PUBLIC:
-		{
-			m_proto->m_options.UseSSL = FALSE;
-			m_proto->m_options.UseTLS = FALSE;
+			m_proto->m_options.UseSSL = m_proto->m_options.UseTLS = FALSE;
 			break;
-		}
+
 		case ACC_GTALK:
 			m_proto->JSetWord(NULL, "Priority", 24);
+			if ( m_proto->JGetByte( NULL, "UseSSL", 100 ) == 100 )
+				m_proto->m_options.UseSSL = FALSE;
+			if ( m_proto->JGetByte( NULL, "UseTLS", 100 ) == 100 )
+				m_proto->m_options.UseTLS = TRUE;
+			break;
+
 		case ACC_TLS:
 		case ACC_LJTALK:
 		case ACC_SMS:
-		{
 			m_proto->m_options.UseSSL = FALSE;
 			m_proto->m_options.UseTLS = TRUE;
 			break;
-		}
+
 		case ACC_SSL:
-		{
 			m_proto->m_options.UseSSL = TRUE;
 			m_proto->m_options.UseTLS = FALSE;
 			break;
-		}
 		}
 
 		char server[256];
@@ -2013,13 +2013,13 @@ void CJabberDlgAccMgrUI::setupConnection(int type)
 {
 	switch (type)
 	{
-	case ACC_PUBLIC: setupPublic(); break;
-	case ACC_TLS: setupSecure(); break;
-	case ACC_SSL: setupSecureSSL(); break;
-	case ACC_GTALK: setupGoogle(); break;
-	case ACC_LJTALK: setupLJ(); break;
-	case ACC_FBOOK: setupFB(); break;
-	case ACC_SMS: setupSMS(); break;
+		case ACC_PUBLIC: setupPublic(); break;
+		case ACC_TLS: setupSecure(); break;
+		case ACC_SSL: setupSecureSSL(); break;
+		case ACC_GTALK: setupGoogle(); break;
+		case ACC_LJTALK: setupLJ(); break;
+		case ACC_FBOOK: setupFB(); break;
+		case ACC_SMS: setupSMS(); break;
 	}
 }
 
