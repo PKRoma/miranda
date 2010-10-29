@@ -271,15 +271,6 @@ struct CJabberOptions
 		ConnectionKeepAliveInterval(proto, "ConnectionKeepAliveInterval", 60000),
 		ConnectionKeepAliveTimeout(proto, "ConnectionKeepAliveTimeout", 50000)
 		{}
-/*
-JGetByte( hContact, "ChatRoom", 0 )
-JGetByte( hContact, "AvatarType", 0 )
-JGetByte( hContact, "AvatarXVcard", 0 )
-JGetByte( hContact, "ChatRoom", 0)
-JGetByte( hContact, "IsTransport", 0 )
-JGetByte( hContact, "IsTransported", 0 )
-JGetByte( hContact, "MsgAck", TRUE )
-*/
 };
 
 #endif // __jabber_db_utils_h__
