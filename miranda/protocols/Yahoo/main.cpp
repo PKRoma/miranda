@@ -53,6 +53,9 @@ PLUGININFOEX pluginInfo={
         #endif
 };
 
+void YmsgrLinksInit(void);
+void YmsgrLinksUninit(void);
+
 /*
  * WINAPI DllMain - main entry point into a DLL
  * Parameters: 
@@ -137,6 +140,7 @@ extern "C" int __declspec(dllexport)Load(PLUGINLINK *link)
 	nlu.ptszDescriptiveName = TranslateT("YAHOO plugin HTTP connections");
 	g_hNetlibUser = ( HANDLE )YAHOO_CallService( MS_NETLIB_REGISTERUSER, 0, ( LPARAM )&nlu );
 
+	YmsgrLinksInit();
 	/**
 	 * Register LibYahoo2 callback functions
 	 */
@@ -154,6 +158,7 @@ extern "C" int __declspec(dllexport) Unload(void)
 {
 	LOG(( "Unload" ));
 	
+	YmsgrLinksUninit();
 	Netlib_CloseHandle( g_hNetlibUser );
 	g_instances.destroy();
 	return 0;

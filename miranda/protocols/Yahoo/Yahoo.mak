@@ -45,6 +45,7 @@ CLEAN :
 	-@erase "$(INTDIR)\ignore.obj"
 	-@erase "$(INTDIR)\im.obj"
 	-@erase "$(INTDIR)\libyahoo2.obj"
+	-@erase "$(INTDIR)\links.obj"
 	-@erase "$(INTDIR)\main.obj"
 	-@erase "$(INTDIR)\options.obj"
 	-@erase "$(INTDIR)\proto.obj"
@@ -127,6 +128,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\icolib.obj" \
 	"$(INTDIR)\ignore.obj" \
 	"$(INTDIR)\im.obj" \
+	"$(INTDIR)\links.obj" \
 	"$(INTDIR)\main.obj" \
 	"$(INTDIR)\options.obj" \
 	"$(INTDIR)\proto.obj" \
@@ -162,6 +164,7 @@ CLEAN :
 	-@erase "$(INTDIR)\ignore.obj"
 	-@erase "$(INTDIR)\im.obj"
 	-@erase "$(INTDIR)\libyahoo2.obj"
+	-@erase "$(INTDIR)\links.obj"
 	-@erase "$(INTDIR)\main.obj"
 	-@erase "$(INTDIR)\options.obj"
 	-@erase "$(INTDIR)\proto.obj"
@@ -244,6 +247,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\icolib.obj" \
 	"$(INTDIR)\ignore.obj" \
 	"$(INTDIR)\im.obj" \
+	"$(INTDIR)\links.obj" \
 	"$(INTDIR)\main.obj" \
 	"$(INTDIR)\options.obj" \
 	"$(INTDIR)\proto.obj" \
@@ -279,6 +283,7 @@ CLEAN :
 	-@erase "$(INTDIR)\ignore.obj"
 	-@erase "$(INTDIR)\im.obj"
 	-@erase "$(INTDIR)\libyahoo2.obj"
+	-@erase "$(INTDIR)\links.obj"
 	-@erase "$(INTDIR)\main.obj"
 	-@erase "$(INTDIR)\options.obj"
 	-@erase "$(INTDIR)\proto.obj"
@@ -361,6 +366,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\icolib.obj" \
 	"$(INTDIR)\ignore.obj" \
 	"$(INTDIR)\im.obj" \
+	"$(INTDIR)\links.obj" \
 	"$(INTDIR)\main.obj" \
 	"$(INTDIR)\options.obj" \
 	"$(INTDIR)\proto.obj" \
@@ -396,6 +402,7 @@ CLEAN :
 	-@erase "$(INTDIR)\ignore.obj"
 	-@erase "$(INTDIR)\im.obj"
 	-@erase "$(INTDIR)\libyahoo2.obj"
+	-@erase "$(INTDIR)\links.obj"
 	-@erase "$(INTDIR)\main.obj"
 	-@erase "$(INTDIR)\options.obj"
 	-@erase "$(INTDIR)\proto.obj"
@@ -478,6 +485,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\icolib.obj" \
 	"$(INTDIR)\ignore.obj" \
 	"$(INTDIR)\im.obj" \
+	"$(INTDIR)\links.obj" \
 	"$(INTDIR)\main.obj" \
 	"$(INTDIR)\options.obj" \
 	"$(INTDIR)\proto.obj" \
@@ -761,6 +769,11 @@ SOURCE=.\ignore.cpp
 SOURCE=.\im.cpp
 
 "$(INTDIR)\im.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\Yahoo.pch"
+
+
+SOURCE=.\links.cpp
+
+"$(INTDIR)\links.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\Yahoo.pch"
 
 
 SOURCE=.\main.cpp

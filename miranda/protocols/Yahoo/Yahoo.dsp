@@ -237,6 +237,10 @@ SOURCE=.\im.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\links.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\main.cpp
 # ADD CPP /Yu"yahoo.h"
 # End Source File
