@@ -714,9 +714,8 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 				if(newData->isWchar)
 					SetDlgItemText(hwndDlg, IDC_MESSAGE, (TCHAR *)newData->szInitialText);
 				else
-#else
-					SetDlgItemTextA(hwndDlg, IDC_MESSAGE, newData->szInitialText);
 #endif
+					SetDlgItemTextA(hwndDlg, IDC_MESSAGE, newData->szInitialText);
 				len = GetWindowTextLength(GetDlgItem(hwndDlg, IDC_MESSAGE));
 				PostMessage(GetDlgItem(hwndDlg, IDC_MESSAGE), EM_SETSEL, len, len);
 			}

@@ -458,7 +458,7 @@ int LoadSendRecvMessageModule(void)
 
 	hServices[0] = CreateServiceFunction(MS_MSG_SENDMESSAGE, SendMessageCommand);
 #ifdef _UNICODE
-	hServices[1] = CreateServiceFunction(MS_MSG_SENDMESSAGE "W", SendMessageCommand_W);
+	hServices[1] = CreateServiceFunction(MS_MSG_SENDMESSAGEW, SendMessageCommand_W);
 #endif
 	hServices[2] = CreateServiceFunction(MS_MSG_GETWINDOWAPI, GetWindowAPI);
 	hServices[3] = CreateServiceFunction(MS_MSG_GETWINDOWCLASS, GetWindowClass);
