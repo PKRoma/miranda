@@ -60,7 +60,7 @@
 #define DEFAULT_SERVER_PORT         5190
 #define DEFAULT_SERVER_PORT_SSL     443
 #define DEFAULT_SERVER_HOST         "login.icq.com"
-#define DEFAULT_SERVER_HOST_SSL     "slogin.oscar.aol.com"
+#define DEFAULT_SERVER_HOST_SSL     "slogin.icq.com"
 #define DEFAULT_SS_ENABLED          1
 #define DEFAULT_SS_ADDSERVER        1
 #define DEFAULT_SS_LOAD             0
@@ -641,7 +641,7 @@
 #define UNIQUEIDSETTING             "UIN"
 #define UINMAXLEN                   11 // DWORD string max len + 1
 #define PASSWORDMAXLEN              16
-#define OSCAR_PROXY_HOST            "ars.oscar.aol.com"
+#define OSCAR_PROXY_HOST            "ars.icq.com"
 #define OSCAR_PROXY_VERSION         0x044A
 
 #define CLIENT_ID_STRING            "ICQ Client"  // Client identification, mimic ICQ 6.5
