@@ -111,6 +111,9 @@ CAimProto::~CAimProto()
 	for (int i=0; i<9; ++i)
 		mir_free(modeMsgs[i]);
 
+	mir_free(pref2_flags);
+	mir_free(pref2_set_flags);
+
 	mir_free(COOKIE);
 	mir_free(MAIL_COOKIE);
 	mir_free(AVATAR_COOKIE);

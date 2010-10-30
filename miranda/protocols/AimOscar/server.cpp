@@ -756,7 +756,7 @@ void CAimProto::process_ssi_list(SNAC &snac, int &offset)
 			break;
 	}
 
-	offset += name_length+10+tlv_size;
+	offset += name_length + 10 + tlv_size;
 	mir_free(name);
 }
 
