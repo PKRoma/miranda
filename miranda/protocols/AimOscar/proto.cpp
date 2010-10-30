@@ -1,6 +1,6 @@
 /*
 Plugin of Miranda IM for communicating with users of the AIM protocol.
-Copyright (c) 2008-2009 Boris Krasnovskiy
+Copyright (c) 2008-2010 Boris Krasnovskiy
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -110,6 +110,9 @@ CAimProto::~CAimProto()
 
 	for (int i=0; i<9; ++i)
 		mir_free(modeMsgs[i]);
+
+	mir_free(pref2_flags);
+	mir_free(pref2_set_flags);
 
 	mir_free(COOKIE);
 	mir_free(MAIL_COOKIE);
@@ -576,6 +579,13 @@ HANDLE __cdecl CAimProto::SendFile(HANDLE hContact, const PROTOCHAR* szDescripti
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // SendMessage - sends a message
+
+void __cdecl CAimProto::msg_ack_success(void* hContact)
+{
+	Sleep(150);
+	sendBroadcast(hContact, ACKTYPE_MESSAGE, ACKRESULT_SUCCESS, (HANDLE) 1, 0);
+}
+
 
 int __cdecl CAimProto::SendMsg(HANDLE hContact, int flags, const char* pszSrc)
 {
