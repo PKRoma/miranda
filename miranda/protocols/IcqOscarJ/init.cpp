@@ -225,6 +225,8 @@ extern "C" int __declspec(dllexport) Unload(void)
     if (hStaticServices[i])
       DestroyServiceFunction(hStaticServices[i]);
 
+  g_Instances.destroy();
+
 	return 0;
 }
 
