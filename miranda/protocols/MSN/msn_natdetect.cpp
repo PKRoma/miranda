@@ -349,14 +349,14 @@ error:
 	// Release the authorized application collection.
 	if (fwApps != NULL) fwApps->Release();
 
+	// Release the firewall profile.
+	if (fwProfile != NULL) fwProfile->Release();
+
 	// Release the local firewall policy.
 	if (fwPolicy != NULL) fwPolicy->Release();
 
 	// Release the firewall settings manager.
 	if (fwMgr != NULL) fwMgr->Release();
-
-	// Release the firewall profile.
-	if (fwProfile != NULL) fwProfile->Release();
 
 	CoUninitialize();
 
