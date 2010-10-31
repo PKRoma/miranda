@@ -171,5 +171,8 @@ extern "C" int __declspec(dllexport) Unload(void)
 
 	UninitIcons();
 	UninitTimers();
+
+	g_Instances.destroy();
+	
 	return 0;
 }
