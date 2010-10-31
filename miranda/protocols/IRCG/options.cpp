@@ -1405,9 +1405,10 @@ static LRESULT CALLBACK ListviewSubclassProc(HWND hwnd, UINT msg, WPARAM wParam,
 
 void CIrcProto::InitIgnore( void )
 {
-	char szTemp[ MAX_PATH ];
-	mir_snprintf(szTemp, sizeof(szTemp), "%s\\%s_ignore.ini", mirandapath, m_szModuleName);
-	char* pszIgnoreData = IrcLoadFile(szTemp);
+	TCHAR szTemp[ MAX_PATH ];
+	mir_sntprintf(szTemp, SIZEOF(szTemp), _T("%%miranda_path%%\\Plugins\\") _T(TCHAR_STR_PARAM) _T("_perform.ini"), m_szModuleName);
+	TCHAR *szLoadFileName = Utils_ReplaceVarsT( szTemp );
+	char* pszIgnoreData = IrcLoadFile(szLoadFileName);
 	if ( pszIgnoreData != NULL ) {
 		char *p1 = pszIgnoreData;
 		while ( *p1 != '\0' ) {
@@ -1436,8 +1437,9 @@ void CIrcProto::InitIgnore( void )
 
 		RewriteIgnoreSettings();
 		delete[] pszIgnoreData;
-		::remove( szTemp );
+		::_tremove( szLoadFileName );
 	}
+	mir_free( szLoadFileName );
 
 	int idx = 0;
 	char settingName[40];
@@ -1919,9 +1921,9 @@ INT_PTR CIrcProto::SvcCreateAccMgrUI(WPARAM, LPARAM lParam)
 /////////////////////////////////////////////////////////////////////////////////////////
 // Initialize servers list
 
-static void sttImportIni( const char* szIniFile )
+static void sttImportIni( const TCHAR* szIniFile )
 {
-	FILE* serverFile = fopen( szIniFile, "r" );
+	FILE* serverFile = _tfopen( szIniFile, _T("r") );
 	if ( serverFile == NULL )
 		return;
 
@@ -1942,20 +1944,20 @@ static void sttImportIni( const char* szIniFile )
 		DBWriteContactSettingString( NULL, SERVERSMODULE, buf2, p1 );
 	}
 	fclose( serverFile );
-	::remove( szIniFile );
+	::_tremove( szIniFile );
 }
 
 void InitServers()
 {
-	char szTemp[MAX_PATH];
-	mir_snprintf(szTemp, sizeof(szTemp), "%s\\IRC_servers.ini", mirandapath );
+	TCHAR *szTemp = Utils_ReplaceVarsT(_T("%miranda_path%\\Plugins\\IRC_servers.ini"));
 	sttImportIni( szTemp );
+	mir_free( szTemp );
 
 	RereadServers();
 
 	if ( g_servers.getCount() == 0 ) {
-		char *szIniFile = Utils_ReplaceVars("%temp%\\default_servers.ini");
-		FILE *serverFile = fopen( szIniFile, "a" );
+		TCHAR *szIniFile = Utils_ReplaceVarsT(_T("%temp%\\default_servers.ini"));
+		FILE *serverFile = _tfopen( szIniFile, _T("a") );
 		if (serverFile) {
 			char* pszSvrs = ( char* )LockResource(LoadResource(hInst,FindResource(hInst,MAKEINTRESOURCE(IDR_SERVERS),_T("TEXT"))));
 			if (pszSvrs)
@@ -1965,7 +1967,6 @@ void InitServers()
 			sttImportIni( szIniFile );
 			RereadServers();
 		}
-
 		mir_free(szIniFile);
 	}
 }

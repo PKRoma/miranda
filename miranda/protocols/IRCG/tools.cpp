@@ -259,11 +259,11 @@ CMString& __stdcall ReplaceString ( CMString& text, const TCHAR* replaceme, cons
 	return text;
 }
 
-char* __stdcall IrcLoadFile( char* szPath)
+char* __stdcall IrcLoadFile( TCHAR* szPath)
 {
 	char * szContainer = NULL;
 	DWORD dwSiz = 0;
-	FILE *hFile = fopen(szPath,"rb");	
+	FILE *hFile = _tfopen(szPath, _T("rb"));	
 	if ( hFile != NULL )
 	{
 		fseek(hFile,0,SEEK_END); // seek to end

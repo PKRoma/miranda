@@ -197,7 +197,6 @@ static int sttCheckPerform( const char *szSetting, LPARAM lParam )
 
 int CIrcProto::OnModulesLoaded( WPARAM, LPARAM )
 {
-	char szTemp[MAX_PATH];
 	char szTemp3[256];
 	NETLIBUSER nlu = {0};
 	TCHAR name[128];
@@ -273,8 +272,10 @@ int CIrcProto::OnModulesLoaded( WPARAM, LPARAM )
 			CallService( MS_UTILS_OPENURL, 1, (LPARAM) "http://www.miranda-im.org/download/");
 	}
 
-	mir_snprintf(szTemp, sizeof(szTemp), "%s\\%s_perform.ini", mirandapath, m_szModuleName);
-	char* pszPerformData = IrcLoadFile( szTemp );
+	TCHAR szTemp[MAX_PATH];
+	mir_sntprintf(szTemp, SIZEOF(szTemp), _T("%%miranda_path%%\\Plugins\\") _T(TCHAR_STR_PARAM) _T("_perform.ini"), m_szModuleName);
+	TCHAR *szLoadFileName = Utils_ReplaceVarsT( szTemp );
+	char* pszPerformData = IrcLoadFile( szLoadFileName );
 	if ( pszPerformData != NULL ) {
 		char *p1 = pszPerformData, *p2 = pszPerformData;
 		while (( p1 = strstr( p2, "NETWORK: " )) != NULL ) {
@@ -293,8 +294,9 @@ int CIrcProto::OnModulesLoaded( WPARAM, LPARAM )
 			setString(("PERFORM:" + sNetwork).c_str(), rtrim( p1 ));
 		}
 		delete[] pszPerformData;
-		::remove( szTemp );
+		::_tremove( szLoadFileName );
 	}
+	mir_free( szLoadFileName );
 
 	if ( !getByte( "PerformConversionDone", 0 )) {
 		OBJLIST<String> performToConvert( 10 );

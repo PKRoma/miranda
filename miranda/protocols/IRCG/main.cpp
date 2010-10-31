@@ -25,7 +25,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 PLUGINLINK*    pluginLink;
 HINSTANCE      hInst = NULL;
 
-char           mirandapath[MAX_PATH];
 int            mirVersion;
 
 UTF8_INTERFACE utfi;
@@ -122,29 +121,10 @@ static int OnModulesLoaded( WPARAM, LPARAM )
 
 extern "C" int __declspec(dllexport) Load( PLUGINLINK *link )
 {
-	#ifndef NDEBUG
-		int flag = _CrtSetDbgFlag(_CRTDBG_REPORT_FLAG);
-		flag |= _CRTDBG_LEAK_CHECK_DF;
-		_CrtSetDbgFlag(flag);
-	#endif
-
 	pluginLink = link;
 	mir_getMMI( &mmi );
 	mir_getUTFI( &utfi );
 	mir_getLI( &li );
-
-	GetModuleFileNameA(hInst, mirandapath, MAX_PATH);
-	char* p = strrchr( mirandapath, '\\' );
-	if ( p ) {
-		*p++ = '\0';
-		char* p1 = strrchr( p, '.' );
-		*p1 = '\0';
-		char* p2 = p;
-		while ( *p2 ) {
-			if ( *p2 == ' ' )
-				*p2 = '_';
-			p2++;
-	}	}
 
 	hModulesLoaded = HookEvent(ME_SYSTEM_MODULESLOADED, OnModulesLoaded);
 

@@ -743,7 +743,6 @@ extern HINSTANCE hInst;
 
 extern LIST<CIrcProto> g_Instances;
 
-extern char mirandapath[MAX_PATH];
 extern int mirVersion;
 extern OBJLIST<SERVER_INFO> g_servers;
 
@@ -781,7 +780,7 @@ extern BOOL bChatInstalled, m_bMbotInstalled;
 
 //tools.cpp
 int          __stdcall WCCmp(const TCHAR* wild, const TCHAR* string);
-char*        __stdcall IrcLoadFile(char * szPath);
+char*        __stdcall IrcLoadFile(TCHAR * szPath);
 CMString     __stdcall GetWord(const TCHAR* text, int index);
 CMString&    __stdcall ReplaceString (CMString& text, const TCHAR* replaceme, const TCHAR* newword);
 const TCHAR* __stdcall GetWordAddress(const TCHAR* text, int index);
