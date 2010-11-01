@@ -717,7 +717,7 @@ INT_PTR NetlibHttpSendRequest(WPARAM wParam,LPARAM lParam)
 							if (!szChallenge || !*lrtrimp(szChallenge)) complete = true;
 						}
 					}
-					if (complete)
+					if (complete && httpSecurity.m_hNtlmSecurity)
 					{
 						szAuthStr = httpSecurity.TryBasic() ? 
 							NetlibHttpFindAuthHeader(nlhrReply, "WWW-Authenticate", "Basic") : NULL;
