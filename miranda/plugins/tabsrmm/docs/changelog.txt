@@ -35,6 +35,15 @@ are currently no downloads for it, you'll have to compile it from source.
 			Detailed change log
 			===================
 
+Version 3.1.99.6 - 2010/10/28
+
+	* MUC: don't touch clist group at startup
+	
+	* MUC: delay RTF header creation (workaround for a nasty bug that could
+	  cause a hang on start). Not really a fix at this time.
+	  
+	* fixed a few minor visual glitches.
+
 Version 3.1.99.5 - 2010/10/15
 
 	! fixes for overlay icons
