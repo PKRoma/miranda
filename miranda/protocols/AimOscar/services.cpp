@@ -477,7 +477,7 @@ INT_PTR CAimProto::SetAvatar(WPARAM wParam, LPARAM lParam)
 
 	if (szFileName == NULL)
 	{
-		aim_set_avatar_hash(hServerConn, seqno, 0, 5, "\x02\x01\xd2\x04\x72");
+		aim_set_avatar_hash(hServerConn, seqno, 0, 1, 5, "\x02\x01\xd2\x04\x72");
 	}
 	else
 	{

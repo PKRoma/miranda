@@ -1,5 +1,6 @@
 /*
 Plugin of Miranda IM for communicating with users of the AIM protocol.
+Copyright (c) 2008-2010 Boris Krasnovskiy
 Copyright (C) 2005-2006 Aaron Myles Landwehr
 
 This program is free software; you can redistribute it and/or
@@ -54,7 +55,7 @@ int    aim_writetlv(unsigned short type,unsigned short size, const char* value,u
 int    aim_writetlvchar(unsigned short type, unsigned char value, unsigned short &offset, char* out);
 int    aim_writetlvshort(unsigned short type, unsigned short value, unsigned short &offset, char* out);
 int    aim_writetlvlong(unsigned short type, unsigned long value, unsigned short &offset, char* out);
-int     aim_writetlvlong64(unsigned short type, unsigned __int64 value, unsigned short &offset, char* out);
+int    aim_writetlvlong64(unsigned short type, unsigned __int64 value, unsigned short &offset, char* out);
 void   aim_writefamily(const char *buf,unsigned short &offset,char* out);
 void   aim_writegeneric(unsigned short size,const char *buf,unsigned short &offset,char* out);
 void   aim_writebartid(unsigned short type, unsigned char flags, unsigned short size,const char *buf,unsigned short &offset,char* out);

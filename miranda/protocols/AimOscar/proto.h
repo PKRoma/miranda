@@ -1,3 +1,21 @@
+/*
+Plugin of Miranda IM for communicating with users of the AIM protocol.
+Copyright (c) 2008-2010 Boris Krasnovskiy
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 #ifndef _AIM_PROTO_H_
 #define _AIM_PROTO_H_
 
@@ -281,9 +299,9 @@ struct CAimProto : public PROTO_INTERFACE
 	int    aim_set_idle(HANDLE hServerConn,unsigned short &seqno,unsigned long seconds);
 	int    aim_request_mail(HANDLE hServerConn,unsigned short &seqno);
 	int    aim_activate_mail(HANDLE hServerConn,unsigned short &seqno);
-	int    aim_request_avatar(HANDLE hServerConn,unsigned short &seqno,const char* sn, const char* hash, unsigned short hash_size);//family 0x0010
-	int    aim_set_avatar_hash(HANDLE hServerConn,unsigned short &seqno, char flags, char size, const char* hash);
-	int    aim_upload_avatar(HANDLE hServerConn,unsigned short &seqno, const char* avatar, unsigned short avatar_size);
+	int    aim_request_avatar(HANDLE hServerConn,unsigned short &seqno,const char* sn, unsigned short bart_type, const char* hash, unsigned short hash_size);//family 0x0010
+	int    aim_set_avatar_hash(HANDLE hServerConn,unsigned short &seqno, char flags, unsigned short bart_type, char size, const char* hash);
+	int    aim_upload_avatar(HANDLE hServerConn,unsigned short &seqno, unsigned short bart_type, const char* avatar, unsigned short avatar_size);
 	int    aim_search_by_email(HANDLE hServerConn,unsigned short &seqno, const char* email);
 	int    aim_set_pd_info(HANDLE hServerConn, unsigned short &seqno);
 	int    aim_block_buddy(HANDLE hServerConn, unsigned short &seqno, bool remove, const char* sn, unsigned short item_id);

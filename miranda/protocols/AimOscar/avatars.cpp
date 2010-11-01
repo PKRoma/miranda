@@ -1,6 +1,6 @@
 /*
 Plugin of Miranda IM for communicating with users of the AIM protocol.
-Copyright (c) 2008-2009 Boris Krasnovskiy
+Copyright (c) 2008-2010 Boris Krasnovskiy
 Copyright (C) 2005-2006 Aaron Myles Landwehr
 
 This program is free software; you can redistribute it and/or
@@ -31,7 +31,7 @@ void __cdecl CAimProto::avatar_request_thread( void* param )
 		char* hash = (char*)alloca(len);
 		string_to_bytes(data->hash, hash);
 		LOG("Requesting an Avatar: %s (Hash: %s)", data->sn, data->hash);
-		aim_request_avatar(hAvatarConn, avatar_seqno, data->sn, hash, (unsigned short)len);
+		aim_request_avatar(hAvatarConn, avatar_seqno, data->sn, 1, hash, (unsigned short)len);
 	}
 	delete data;
 }
@@ -46,8 +46,8 @@ void __cdecl CAimProto::avatar_upload_thread( void* param )
 		unsigned short size;
 		if (get_avatar_hash(file, hash, &data, size))
 		{
-			aim_set_avatar_hash(hServerConn, seqno, 1, 16, (char*)hash);
-			aim_upload_avatar(hAvatarConn, avatar_seqno, data, size);
+			aim_set_avatar_hash(hServerConn, seqno, 1, 1, 16, (char*)hash);
+			aim_upload_avatar(hAvatarConn, avatar_seqno, 1, data, size);
 			mir_free(data);
 		}
 	}
