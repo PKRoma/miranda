@@ -3,6 +3,13 @@
                            www.miranda-im.org
 
 
+* New in 0.9.10
+Bugfixes:
+ - Fixed memory leaks
+ - ICQ: Fixed connection issues
+ - Jabber: Fixed account manager dialog to not allow manually setting SSL/TLS flag for the GTalk accounts
+
+
 * New in 0.9.9
 Bugfixes:
  - Fixed scrolling issues with smilies (srmm only)
