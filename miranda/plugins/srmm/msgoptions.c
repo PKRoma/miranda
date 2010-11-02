@@ -474,7 +474,7 @@ static INT_PTR CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam,
 							DBWriteContactSettingByte(NULL, SRMMMOD, SRMSGSET_SHOWSECS, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_SHOWSECS));
 							DBWriteContactSettingByte(NULL, SRMMMOD, SRMSGSET_SHOWDATE, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_SHOWDATES));
 							DBWriteContactSettingByte(NULL, SRMMMOD, SRMSGSET_SHOWSTATUSCH, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_SHOWSTATUSCHANGES));
-							DBWriteContactSettingByte(NULL, SRMMMOD, SRMSGSET_SHOWSTATUSCH, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_SHOWFORMATTING));
+							DBWriteContactSettingByte(NULL, SRMMMOD, SRMSGSET_SHOWFORMAT, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_SHOWFORMATTING));
 
 							FreeMsgLogIcons();
 							LoadMsgLogIcons();
