@@ -2,12 +2,9 @@
 
 for /F "tokens=1,2,3 delims= " %%i in (build.no) do call :WriteVer %%i %%j %%k
 
-md Release
-md "Release/Icons"
-md "Release/Plugins"
-md "Release Unicode"
-md "Release Unicode/Icons"
-md "Release Unicode/Plugins"
+if not exist "Release Unicode" md "Release Unicode"
+if not exist "Release Unicode/Icons" md "Release Unicode/Icons"
+if not exist "Release Unicode/Plugins" md "Release Unicode/Plugins"
 
 rem ---------------------------------------------------------------------------
 rem Main modules
@@ -29,11 +26,6 @@ rem ---------------------------------------------------------------------------
 
 pushd ..\..\miranda\protocols\AimOscar
 call :Nmake aimoscar.mak "aim - Win32 Release Unicode"
-popd
-if errorlevel 1 goto :Error
-
-pushd ..\..\miranda\protocols\Gadu-Gadu
-call :Nmake Gadu-Gadu.mak "GG - Win32 Release"
 popd
 if errorlevel 1 goto :Error
 
@@ -106,10 +98,10 @@ call :Nmake modernb.mak "modernb - Win32 Release Unicode"
 popd
 if errorlevel 1 goto :Error
 
-pushd ..\..\miranda\plugins\modernopt
-call :Nmake modernopt.mak "modernopt - Win32 Release Unicode"
-popd
-if errorlevel 1 goto :Error
+rem pushd ..\..\miranda\plugins\modernopt
+rem call :Nmake modernopt.mak "modernopt - Win32 Release Unicode"
+rem popd
+rem if errorlevel 1 goto :Error
 
 pushd ..\..\miranda\plugins\mwclist
 call :Nmake mwclist.mak "mwclist - Win32 Release Unicode"
@@ -131,15 +123,22 @@ call :Nmake tabSRMM.mak "tabSRMM - Win32 Release Unicode"
 popd
 if errorlevel 1 goto :Error
 
+pushd ..\..\miranda\plugins\tabsrmm\icons\ICONS_NOVA\
+call :Nmake ICONS_NOVA.mak "ICONS_NOVA - Win32 Release"
+popd
+if errorlevel 1 goto :Error
+
 rem ---------------------------------------------------------------------------
 rem Zip it
 rem ---------------------------------------------------------------------------
 
 pushd "Release Unicode"
 
-copy ..\release\zlib.dll
+copy ..\Release\zlib.dll
 
-copy ..\release\Icons\xstatus_ICQ.dll    Icons
+copy ..\Release\Icons\xstatus_ICQ.dll    Icons
+copy ..\Release\Icons\xstatus_jabber.dll Icons
+copy ..\Release\Icons\toolbar_icons.dll  Icons
 
 copy ..\release\Plugins\advaimg.dll      Plugins
 copy ..\release\Plugins\GG.dll           Plugins
@@ -167,11 +166,10 @@ goto :eof
 
 :WriteVer2
 copy m_version.h.in ..\include\m_version.h
-set /A BetaNo=%3-12
 
-echo #define MIRANDA_VERSION_FILEVERSION  0,%1,%2,%3                               >>..\include\m_version.h
+echo #define MIRANDA_VERSION_FILEVERSION 0,%1,%2,%3                                >>..\include\m_version.h
 echo #define MIRANDA_VERSION_STRING      "0.%1.%2.%3"                              >>..\include\m_version.h
-echo #define MIRANDA_VERSION_DISPLAY     "0.%1.%2 beta #%BetaNo%"                  >>..\include\m_version.h
+echo #define MIRANDA_VERSION_DISPLAY     "0.%1.%2 alpha build #%3"                 >>..\include\m_version.h
 echo #define MIRANDA_VERSION_DWORD       MIRANDA_MAKE_VERSION(0, %1, %2, %3)       >>..\include\m_version.h
 echo.                                                                              >>..\include\m_version.h
 echo #endif // M_VERSION_H__                                                       >>..\include\m_version.h
@@ -219,22 +217,22 @@ if %2 == 00 (
    set FileVer=v0%1%2a%3w.7z
 )
 
-del /Q /F "%Temp%\miranda-%FileVer%"
+if exist "%Temp%\miranda-%FileVer%" del /Q /F "%Temp%\miranda-%FileVer%"
 "%PROGRAMFILES%\7-zip\7z.exe" a -r -mx=9 "%Temp%\miranda-%FileVer%" ./* ..\ChangeLog.txt
 
-rd /Q /S %Temp%\pdbw >nul
+if exist %Temp%\pdbw rd /Q /S %Temp%\pdbw >nul
 md %Temp%\pdbw
 md %Temp%\pdbw\plugins
 
 copy ..\..\src\Release_Unicode\miranda32.pdb                   %Temp%\pdbw
-copy ..\..\..\miranda-tools\dbtool\Release\dbtool.pdb          %Temp%\pdbw
+copy ..\..\..\miranda-tools\dbtool\Release_Unicode\dbtool.pdb  %Temp%\pdbw
 rem  Protocols
 copy ..\..\protocols\AimOscar\Release_Unicode\Aim.pdb          %Temp%\pdbw\plugins
 copy ..\..\protocols\IcqOscarJ\Release_Unicode\ICQ.pdb         %Temp%\pdbw\plugins
 copy ..\..\protocols\IRCG\Release_Unicode\IRC.pdb              %Temp%\pdbw\plugins
 copy ..\..\protocols\JabberG\Release_Unicode\jabber.pdb        %Temp%\pdbw\plugins
 copy ..\..\protocols\MSN\Release_Unicode\MSN.pdb               %Temp%\pdbw\plugins
-copy ..\..\protocols\Yahoo\Release\Yahoo.pdb                   %Temp%\pdbw\plugins
+copy ..\..\protocols\Yahoo\Release_Unicode\Yahoo.pdb           %Temp%\pdbw\plugins
 copy ..\..\protocols\Gadu-Gadu\Release\GG.pdb                  %Temp%\pdbw\plugins
 rem  Unicode plugins
 copy ..\..\plugins\avs\Release_Unicode\avs.pdb                 %Temp%\pdbw\plugins
@@ -248,15 +246,17 @@ copy ..\..\plugins\db3x_mmap\Release_Unicode\dbx_mmap.pdb      %Temp%\pdbw\plugi
 copy ..\..\plugins\scriver\Release_Unicode\scriver.pdb         %Temp%\pdbw\plugins
 copy ..\..\plugins\srmm\Release_Unicode\srmm.pdb               %Temp%\pdbw\plugins
 copy ..\..\plugins\tabSRMM\Release_Unicode\tabSRMM.pdb         %Temp%\pdbw\plugins
+copy ..\..\plugins\import\Release_Unicode\import.pdb           %Temp%\pdbw\plugins
+copy ..\..\plugins\modernopt\Release_Unicode\modernopt.pdb     %Temp%\pdbw\plugins
 rem  Non-Unicode plugins
-copy ..\..\plugins\import\Release\import.pdb                   %Temp%\pdbw\plugins
-copy ..\..\plugins\freeimage\Release\freeimage.pdb             %Temp%\pdbw\plugins
+copy ..\..\plugins\freeimage\Release\advaimg.pdb               %Temp%\pdbw\plugins
 
-del /Q /F "%Temp%\miranda-pdb-%FileVer%"
+if exist "%Temp%\miranda-pdb-%FileVer%" del /Q /F "%Temp%\miranda-pdb-%FileVer%"
 "%PROGRAMFILES%\7-zip\7z.exe" a -r -mx=9 "%Temp%\miranda-pdb-%FileVer%" %Temp%\pdbw/*
 rd /Q /S %Temp%\pdbw
 goto :eof
 
 :Error
 echo Make failed
+pause
 goto :eof
