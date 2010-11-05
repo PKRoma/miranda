@@ -1831,10 +1831,19 @@ protected:
 
 		case ACC_GTALK:
 			m_proto->JSetWord(NULL, "Priority", 24);
-			if ( m_proto->JGetByte( NULL, "UseSSL", 100 ) == 100 )
-				m_proto->m_options.UseSSL = FALSE;
-			if ( m_proto->JGetByte( NULL, "UseTLS", 100 ) == 100 )
-				m_proto->m_options.UseTLS = TRUE;
+			{
+				int port = m_txtPort.GetInt();
+				if (port == 443 || port == 5223)
+				{
+					m_proto->m_options.UseSSL = TRUE;
+					m_proto->m_options.UseTLS = FALSE;
+				}
+				else if (port == 5222)
+				{
+					m_proto->m_options.UseSSL = FALSE;
+					m_proto->m_options.UseTLS = TRUE;
+				}
+			}
 			break;
 
 		case ACC_TLS:
@@ -2078,7 +2087,7 @@ void CJabberDlgAccMgrUI::setupGoogle()
 	m_cbServer.SetTextA("gmail.com");
 	m_chkManualHost.SetState(BST_CHECKED);
 	m_txtManualHost.SetTextA("talk.google.com");
-	m_txtPort.SetInt(5222);
+	m_txtPort.SetInt(443);
 
 	m_cbServer.Enable();
 	m_chkManualHost.Disable();
