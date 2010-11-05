@@ -1907,13 +1907,13 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 								UINT ctrlId = 0;
 
 								if(wp == VK_MENU) {
-									if(!dat->fkeyProcessed && !(GetKeyState(VK_CONTROL) & 0x8000) && !(GetKeyState(VK_SHIFT) & 0x8000))
+									if(!dat->fkeyProcessed && !(GetKeyState(VK_CONTROL) & 0x8000) && !(GetKeyState(VK_SHIFT) & 0x8000) && !(lp & (1 << 24)))
 										m_pContainer->MenuBar->autoShow();
 								}
 								return(_dlgReturn(hwndDlg, 0));
 							}
 
-							if(msg == WM_KEYDOWN || msg == WM_SYSKEYDOWN) {
+							if ((msg == WM_KEYDOWN || msg == WM_SYSKEYDOWN) && !(GetKeyState(VK_RMENU) & 0x8000)) {
 								LRESULT mim_hotkey_check = CallService(MS_HOTKEY_CHECK, (WPARAM)&message, (LPARAM)(TABSRMM_HK_SECTION_IM));
 								if(mim_hotkey_check)
 									dat->fkeyProcessed = true;
