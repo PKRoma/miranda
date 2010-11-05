@@ -2645,7 +2645,7 @@ LABEL_SHOWWINDOW:
 
 					if(msg == WM_SYSKEYUP) {
 						if(wp == VK_MENU) {
-							if(!dat->fkeyProcessed && !(GetKeyState(VK_CONTROL) & 0x8000) && !(GetKeyState(VK_SHIFT) & 0x8000))
+							if(!dat->fkeyProcessed && !(GetKeyState(VK_CONTROL) & 0x8000) && !(GetKeyState(VK_SHIFT) & 0x8000) && !(lp & (1 << 24)))
 								dat->pContainer->MenuBar->autoShow();
 						}
 						return(_dlgReturn(hwndDlg, 0));
@@ -2671,7 +2671,7 @@ LABEL_SHOWWINDOW:
 					if(msg == WM_LBUTTONDOWN || msg == WM_RBUTTONDOWN || msg == WM_MBUTTONDOWN)
 						dat->pContainer->MenuBar->Cancel();
 
-					if (msg == WM_KEYDOWN || msg == WM_SYSKEYDOWN) {
+					if ((msg == WM_KEYDOWN || msg == WM_SYSKEYDOWN) && !(GetKeyState(VK_RMENU) & 0x8000)) {
 
 						if(DM_GenericHotkeysCheck(&message, dat)) {
 							dat->fkeyProcessed = true;

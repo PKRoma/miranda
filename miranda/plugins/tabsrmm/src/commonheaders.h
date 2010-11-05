@@ -285,4 +285,6 @@ extern	HINSTANCE g_hInst;
 extern CSkinItem SkinItems[];
 extern TContainerData *pFirstContainer, *pLastActiveContainer;
 
+#define IS_EXTKEY(a) (a & (1 << 24))
+
 #endif /* __COMMONHEADERS_H */
