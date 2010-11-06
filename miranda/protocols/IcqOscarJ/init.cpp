@@ -272,19 +272,22 @@ int CIcqProto::OnReloadIcons(WPARAM wParam, LPARAM lParam)
 
 void CIcqProto::UpdateGlobalSettings()
 {
+	char szServer[MAX_PATH] = "";
+	getSettingStringStatic(NULL, "OscarServer", szServer, MAX_PATH);
+
 	m_bSecureConnection = getSettingByte(NULL, "SecureConnection", DEFAULT_SECURE_CONNECTION);
-	if (m_bSecureConnection)
+	if (szServer[0])
 	{
-		char szServer[MAX_PATH];
-		if (!getSettingStringStatic(NULL, "OscarServer", szServer, MAX_PATH))
+		if (strstr(szServer, "aol.com"))
+			setSettingString(NULL, "OscarServer", m_bSecureConnection ? DEFAULT_SERVER_HOST_SSL : DEFAULT_SERVER_HOST);
+
+		if (m_bSecureConnection && !_strnicmp(szServer, "login.", 6))
 		{
-			if (_strnicmp(szServer, "login.", 6) == 0)
-			{
-				setSettingString(NULL, "OscarServer", DEFAULT_SERVER_HOST_SSL);
-				setSettingWord(NULL, "OscarPort", DEFAULT_SERVER_PORT_SSL);
-			}
+			setSettingString(NULL, "OscarServer", DEFAULT_SERVER_HOST_SSL);
+			setSettingWord(NULL, "OscarPort", DEFAULT_SERVER_PORT_SSL);
 		}
 	}
+	
 	if (m_hServerNetlibUser)
 	{
 		NETLIBUSERSETTINGS nlus = {0};
