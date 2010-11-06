@@ -959,7 +959,7 @@ static LRESULT CALLBACK ToolBar_WndProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM 
 				{
 					RECT rcClient;
 					GetClientRect(pMTBInfo->hWnd, &rcClient);
-					if (rcClient.bottom-rcClient.top != Height)
+					if (rcClient.bottom-rcClient.top != Height && Height)
 					{
 						supressRepos=TRUE;
 						PostMessage(pMTBInfo->hWnd,MTBM_UPDATEFRAMEVISIBILITY, -1, 0);
