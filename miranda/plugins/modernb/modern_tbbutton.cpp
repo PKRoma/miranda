@@ -30,10 +30,10 @@ struct tagTBBUTTONDATA
 	int		pbState;		// state of push button
 
 	HANDLE  hIcolibHandle;	// handle of icon in iconlib
-    
+
 	XPTHANDLE	hThemeButton;
-    XPTHANDLE	hThemeToolbar;
-    BOOL	bThemed;
+	XPTHANDLE	hThemeToolbar;
+	BOOL	bThemed;
 };
 typedef struct tagTBBUTTONDATA TBBUTTONDATA;
 
@@ -94,6 +94,7 @@ static LRESULT CALLBACK TollbarButtonProc(HWND hwndDlg, UINT  msg, WPARAM wParam
 			lpSBData->pushBtn = FALSE;
 			lpSBData->pbState = 0;
 			lpSBData->fSendOnDown = FALSE;
+			lpSBData->fHotMark = FALSE;
 			lpSBData->nFontID = -1;
 			SetWindowLongPtr(hwndDlg, 0, (LONG_PTR) lpSBData);
 			if (((CREATESTRUCTA *) lParam)->lpszName)
@@ -185,11 +186,11 @@ static LRESULT CALLBACK TollbarButtonProc(HWND hwndDlg, UINT  msg, WPARAM wParam
 			lpSBData->nFontID = (int) lParam - 1;
 			break;
 		}
-    case BUTTONSETSENDONDOWN:
-        {
-            lpSBData->fSendOnDown = (BOOL) lParam;
-            break;
-        }
+	case BUTTONSETSENDONDOWN:
+		{
+			lpSBData->fSendOnDown = (BOOL) lParam;
+			break;
+		}
 	case BUTTONSETMARGINS:
 		{
 			if (lParam)	lpSBData->rcMargins=*(RECT*)lParam;
@@ -302,17 +303,17 @@ static LRESULT CALLBACK TollbarButtonProc(HWND hwndDlg, UINT  msg, WPARAM wParam
 			}
 			break;
 		}
-        */
-    case WM_CAPTURECHANGED:
-        {                
-            if ( (HWND)lParam != lpSBData->hWnd && lpSBData->nStateId != PBS_DISABLED) 
-            {
-                // don't change states if disabled
-                lpSBData->nStateId = PBS_NORMAL;
-                InvalidateParentRect(lpSBData->hWnd, NULL, TRUE);
-            }
-            break;
-        }
+		*/
+	case WM_CAPTURECHANGED:
+		{                
+			if ( (HWND)lParam != lpSBData->hWnd && lpSBData->nStateId != PBS_DISABLED) 
+			{
+				// don't change states if disabled
+				lpSBData->nStateId = PBS_NORMAL;
+				InvalidateParentRect(lpSBData->hWnd, NULL, TRUE);
+			}
+			break;
+		}
 	case WM_LBUTTONDOWN:
 		{
 			int xPos=( ( int )( short ) LOWORD( lParam ) );
@@ -324,6 +325,7 @@ static LRESULT CALLBACK TollbarButtonProc(HWND hwndDlg, UINT  msg, WPARAM wParam
 
 			if ( !PtInRect( &rcClient, ptMouse ) )
 			{
+				lpSBData->fHotMark = FALSE;
 				ReleaseCapture();
 				break;
 			}
@@ -331,6 +333,7 @@ static LRESULT CALLBACK TollbarButtonProc(HWND hwndDlg, UINT  msg, WPARAM wParam
 			if (lpSBData->nStateId != PBS_DISABLED && lpSBData->nStateId != PBS_PRESSED) 
 			{
 				lpSBData->nStateId = PBS_PRESSED;
+				lpSBData->fHotMark = TRUE;
 				InvalidateParentRect(lpSBData->hWnd, NULL, TRUE);
 				if(lpSBData->fSendOnDown) 
 				{
@@ -343,6 +346,7 @@ static LRESULT CALLBACK TollbarButtonProc(HWND hwndDlg, UINT  msg, WPARAM wParam
 			break;
 		}
 	case WM_LBUTTONUP:
+		if ( GetCapture() == lpSBData->hWnd )
 		{
 
 			int xPos=( ( int )( short ) LOWORD( lParam ) );
@@ -354,6 +358,7 @@ static LRESULT CALLBACK TollbarButtonProc(HWND hwndDlg, UINT  msg, WPARAM wParam
 			
 			if ( !PtInRect( &rcClient, ptMouse ) )
 			{
+				lpSBData->fHotMark = FALSE;
 				ReleaseCapture();
 				break;
 			}
@@ -375,28 +380,30 @@ static LRESULT CALLBACK TollbarButtonProc(HWND hwndDlg, UINT  msg, WPARAM wParam
 					lpSBData->nStateId = PBS_NORMAL;
 				InvalidateParentRect(lpSBData->hWnd, NULL, TRUE);
 			}
-			if(!lpSBData->fSendOnDown)
+			if(!lpSBData->fSendOnDown && lpSBData->fHotMark)
 				SendMessage(GetParent(hwndDlg), WM_COMMAND, MAKELONG(GetDlgCtrlID(hwndDlg), BN_CLICKED), (LPARAM) hwndDlg);
+			lpSBData->fHotMark = FALSE;
 			break;
 		}
 	case WM_MOUSEMOVE:
-    //	if ( GetCapture() == lpSBData->hWnd )
 		{
 			RECT rc;
 			POINT pt;
-            BOOL bPressed = wParam != 0;
+			BOOL bPressed = (wParam & MK_LBUTTON) != 0;
+			if ( bPressed && !lpSBData->fHotMark )
+				break;
 			GetWindowRect(hwndDlg, &rc);
 			GetCursorPos(&pt);
 			BOOL inClient = PtInRect(&rc, pt);
-            if ( inClient )
-            {
-                SetCapture( lpSBData->hWnd );
-                if ( lpSBData->nStateId == PBS_NORMAL ) 
-                {
-                    lpSBData->nStateId = PBS_HOT;
-                    InvalidateParentRect(lpSBData->hWnd, NULL, TRUE);
-                }
-            }
+			if ( inClient )
+			{
+				SetCapture( lpSBData->hWnd );
+				if ( lpSBData->nStateId == PBS_NORMAL ) 
+				{
+					lpSBData->nStateId = PBS_HOT;
+					InvalidateParentRect(lpSBData->hWnd, NULL, TRUE);
+				}
+			}
 
 			if ( !inClient && lpSBData->nStateId == PBS_PRESSED )
 			{
@@ -405,13 +412,17 @@ static LRESULT CALLBACK TollbarButtonProc(HWND hwndDlg, UINT  msg, WPARAM wParam
 			}
 			else if ( inClient && lpSBData->nStateId == PBS_HOT && bPressed )
 			{
-				lpSBData->nStateId = PBS_PRESSED;
-				InvalidateParentRect(lpSBData->hWnd, NULL, TRUE);
+				if( lpSBData->fHotMark )
+				{
+					lpSBData->nStateId = PBS_PRESSED;
+					InvalidateParentRect(lpSBData->hWnd, NULL, TRUE);
+				}
 			}
-            else if ( !inClient && !bPressed)
-            {
-                ReleaseCapture();
-            }
+			else if ( !inClient && !bPressed)
+			{
+				lpSBData->fHotMark = FALSE;
+				ReleaseCapture();
+			}
 		}
 	//	else
 		{
@@ -455,7 +466,7 @@ static LRESULT CALLBACK TollbarButtonProc(HWND hwndDlg, UINT  msg, WPARAM wParam
 			}
 			break;
 		}
-        */
+		*/
 	case WM_ERASEBKGND:
 		{
 			return 1;
