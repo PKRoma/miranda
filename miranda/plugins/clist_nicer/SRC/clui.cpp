@@ -1158,7 +1158,7 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 			SendMessage(hwnd, WM_SETREDRAW, FALSE, FALSE);
 			{
 				LONG style; 
-				BYTE windowStyle = cfg::getByte("CLUI", "WindowStyle", 0);
+				BYTE windowStyle = cfg::getByte("CLUI", "WindowStyle", SETTING_WINDOWSTYLE_TOOLWINDOW);
 				ShowWindow(pcli->hwndContactList, SW_HIDE);
 				style = GetWindowLong(pcli->hwndContactList, GWL_EXSTYLE);
 				if (windowStyle != SETTING_WINDOWSTYLE_DEFAULT)

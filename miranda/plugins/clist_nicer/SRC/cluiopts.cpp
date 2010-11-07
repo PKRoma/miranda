@@ -57,7 +57,7 @@ INT_PTR CALLBACK DlgProcCluiOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 			SendDlgItemMessage(hwndDlg, IDC_BORDERSTYLE, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Tool Window"));
 			SendDlgItemMessage(hwndDlg, IDC_BORDERSTYLE, CB_INSERTSTRING, -1, (LPARAM)TranslateT("Thin border"));
 			SendDlgItemMessage(hwndDlg, IDC_BORDERSTYLE, CB_INSERTSTRING, -1, (LPARAM)TranslateT("No border"));
-			SendDlgItemMessage(hwndDlg, IDC_BORDERSTYLE, CB_SETCURSEL, cfg::getByte("CLUI", "WindowStyle", 1), 0);
+			SendDlgItemMessage(hwndDlg, IDC_BORDERSTYLE, CB_SETCURSEL, cfg::getByte("CLUI", "WindowStyle", SETTING_WINDOWSTYLE_TOOLWINDOW), 0);
 
 			SendDlgItemMessage(hwndDlg, IDC_MAXSIZESPIN, UDM_SETRANGE, 0, MAKELONG(100, 0));
 			SendDlgItemMessage(hwndDlg, IDC_MAXSIZESPIN, UDM_SETPOS, 0, cfg::getByte("CLUI", "MaxSizeHeight", 75));
@@ -447,7 +447,7 @@ DWORD GetCLUIWindowStyle(BYTE style)
 
 void ApplyCLUIBorderStyle(HWND hwnd)
 {
-    BYTE windowStyle = cfg::getByte("CLUI", "WindowStyle", 0);
+    BYTE windowStyle = cfg::getByte("CLUI", "WindowStyle", SETTING_WINDOWSTYLE_TOOLWINDOW);
 	WINDOWPLACEMENT p;
 	bool	minToTray = TRUE;
 
