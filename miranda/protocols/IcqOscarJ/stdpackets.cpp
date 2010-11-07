@@ -223,7 +223,7 @@ void CIcqProto::icq_requestnewfamily(WORD wFamily, void (CIcqProto::*familyhandl
 {
 	icq_packet packet;
 	cookie_family_request *request;
-  int bRequestSSL = m_bSecureConnection && (wFamily != ICQ_AVATAR_FAMILY); // Avatar servers does not support SSL
+	int bRequestSSL = m_bSecureConnection && (wFamily != ICQ_AVATAR_FAMILY); // Avatar servers does not support SSL
 
 	request = (cookie_family_request*)SAFE_MALLOC(sizeof(cookie_family_request));
 	request->wFamily = wFamily;
@@ -231,11 +231,11 @@ void CIcqProto::icq_requestnewfamily(WORD wFamily, void (CIcqProto::*familyhandl
 
 	DWORD dwCookie = AllocateCookie(CKT_SERVICEREQUEST, ICQ_CLIENT_NEW_SERVICE, 0, request); // generate and alloc cookie
 
-  serverPacketInit(&packet, 12 + (bRequestSSL ? 4 : 0));
+	serverPacketInit(&packet, 12 + (bRequestSSL ? 4 : 0));
 	packFNACHeader(&packet, ICQ_SERVICE_FAMILY, ICQ_CLIENT_NEW_SERVICE, 0, dwCookie);
 	packWord(&packet, wFamily);
-  if (bRequestSSL)
-    packDWord(&packet, 0x008C0000); // use SSL
+	if (bRequestSSL)
+		packDWord(&packet, 0x008C0000); // use SSL
 
 	sendServPacket(&packet);
 }
@@ -264,28 +264,28 @@ void CIcqProto::icq_setidle(int bAllow)
 void CIcqProto::icq_setstatus(WORD wStatus, const char *szStatusNote)
 {
 	icq_packet packet;
-  char *szCurrentStatusNote = szStatusNote ? getSettingStringUtf(NULL, DBSETTING_STATUS_NOTE, NULL) : NULL;
-  WORD wStatusMoodLen = 0, wStatusNoteLen = 0, wSessionDataLen = 0;
-  char *szMoodData = NULL;
+	char *szCurrentStatusNote = szStatusNote ? getSettingStringUtf(NULL, DBSETTING_STATUS_NOTE, NULL) : NULL;
+	WORD wStatusMoodLen = 0, wStatusNoteLen = 0, wSessionDataLen = 0;
+	char *szMoodData = NULL;
 
 	if (szStatusNote && strcmpnull(szCurrentStatusNote, szStatusNote))
 	{ // status note was changed, update now
-    DBVARIANT dbv = {DBVT_DELETED};
+		DBVARIANT dbv = {DBVT_DELETED};
 
-    if (m_bMoodsEnabled && !getSettingString(NULL, DBSETTING_STATUS_MOOD, &dbv))
-      szMoodData = null_strdup(dbv.pszVal);
+		if (m_bMoodsEnabled && !getSettingString(NULL, DBSETTING_STATUS_MOOD, &dbv))
+		  szMoodData = null_strdup(dbv.pszVal);
 
-    ICQFreeVariant(&dbv);
+		ICQFreeVariant(&dbv);
 
-    wStatusNoteLen = strlennull(szStatusNote);
-    wStatusMoodLen = strlennull(szMoodData);
+		wStatusNoteLen = strlennull(szStatusNote);
+		wStatusMoodLen = strlennull(szMoodData);
 
-    wSessionDataLen = (wStatusNoteLen ? wStatusNoteLen + 4 : 0) + 4 + wStatusMoodLen + 4;
+		wSessionDataLen = (wStatusNoteLen ? wStatusNoteLen + 4 : 0) + 4 + wStatusMoodLen + 4;
 	}
-  SAFE_FREE(&szCurrentStatusNote);
+	SAFE_FREE(&szCurrentStatusNote);
 
 	// Pack data in packet
-  serverPacketInit(&packet, (WORD)(18 + (wSessionDataLen ? wSessionDataLen + 4 : 0)));
+	serverPacketInit(&packet, (WORD)(18 + (wSessionDataLen ? wSessionDataLen + 4 : 0)));
 	packFNACHeader(&packet, ICQ_SERVICE_FAMILY, ICQ_CLIENT_SET_STATUS);
 	packWord(&packet, 0x06);                // TLV 6
 	packWord(&packet, 0x04);                // TLV length
@@ -295,26 +295,26 @@ void CIcqProto::icq_setstatus(WORD wStatus, const char *szStatusNote)
 	{ // Pack session data
 		packWord(&packet, 0x1D);              // TLV 1D
 		packWord(&packet, wSessionDataLen);   // TLV length
-    packWord(&packet, 0x02);              // Item Type
-    if (wStatusNoteLen)
-    {
-      packWord(&packet, 0x400 | (WORD)(wStatusNoteLen + 4)); // Flags + Item Length
-      packWord(&packet, wStatusNoteLen);  // Text Length
-      packBuffer(&packet, (LPBYTE)szStatusNote, wStatusNoteLen);
-      packWord(&packet, 0);               // Encoding not specified (utf-8 is default)
-    }
-    else
-      packWord(&packet, 0);               // Flags + Item Length
+		packWord(&packet, 0x02);              // Item Type
+		if (wStatusNoteLen)
+		{
+			packWord(&packet, 0x400 | (WORD)(wStatusNoteLen + 4)); // Flags + Item Length
+			packWord(&packet, wStatusNoteLen);  // Text Length
+			packBuffer(&packet, (LPBYTE)szStatusNote, wStatusNoteLen);
+			packWord(&packet, 0);               // Encoding not specified (utf-8 is default)
+		}
+		else
+			packWord(&packet, 0);               // Flags + Item Length
 		packWord(&packet, 0x0E);              // Item Type
-	  packWord(&packet, wStatusMoodLen);    // Flags + Item Length
-    if (wStatusMoodLen)
-	    packBuffer(&packet, (LPBYTE)szMoodData, wStatusMoodLen); // Mood
+		packWord(&packet, wStatusMoodLen);    // Flags + Item Length
+		if (wStatusMoodLen)
+			packBuffer(&packet, (LPBYTE)szMoodData, wStatusMoodLen); // Mood
 
-    // Save current status note
-    setSettingStringUtf(NULL, DBSETTING_STATUS_NOTE, szStatusNote);
+		// Save current status note
+		setSettingStringUtf(NULL, DBSETTING_STATUS_NOTE, szStatusNote);
 	}
-  // Release memory
-  SAFE_FREE(&szMoodData);
+	// Release memory
+	SAFE_FREE(&szMoodData);
 
 	// Send packet
 	sendServPacket(&packet);
@@ -449,7 +449,7 @@ DWORD CIcqProto::icq_SendChannel2Contacts(DWORD dwUin, char *szUid, HANDLE hCont
 {
 	icq_packet packet;
 
-  DWORD dwCookie = AllocateCookie(CKT_MESSAGE, 0, hContact, pCookieData);
+	DWORD dwCookie = AllocateCookie(CKT_MESSAGE, 0, hContact, pCookieData);
 
 	WORD wPacketLength = wDataLen + wNamesLen + 0x12;
 
@@ -518,18 +518,18 @@ void CIcqProto::sendOwnerInfoRequest(void)
 {
 	icq_packet packet;
 
-  cookie_directory_data *pCookieData = (cookie_directory_data*)SAFE_MALLOC(sizeof(cookie_directory_data));
-  pCookieData->bRequestType = DIRECTORYREQUEST_INFOOWNER;
+	cookie_directory_data *pCookieData = (cookie_directory_data*)SAFE_MALLOC(sizeof(cookie_directory_data));
+	pCookieData->bRequestType = DIRECTORYREQUEST_INFOOWNER;
 
-  DWORD dwCookie = AllocateCookie(CKT_DIRECTORY_QUERY, 0, NULL, (void*)pCookieData);
-  WORD wDataLen = getUINLen(m_dwLocalUIN) + 4;
+	DWORD dwCookie = AllocateCookie(CKT_DIRECTORY_QUERY, 0, NULL, (void*)pCookieData);
+	WORD wDataLen = getUINLen(m_dwLocalUIN) + 4;
 
-  packServIcqDirectoryHeader(&packet, this, wDataLen + 8, META_DIRECTORY_QUERY, DIRECTORY_QUERY_INFO, (WORD)dwCookie);
-  packWord(&packet, 0x03); // with interests (ICQ6 uses 2 at login)
-  packDWord(&packet, 0x01);
-  packWord(&packet, wDataLen);
+	packServIcqDirectoryHeader(&packet, this, wDataLen + 8, META_DIRECTORY_QUERY, DIRECTORY_QUERY_INFO, (WORD)dwCookie);
+	packWord(&packet, 0x03); // with interests (ICQ6 uses 2 at login)
+	packDWord(&packet, 0x01);
+	packWord(&packet, wDataLen);
 
-  packTLVUID(&packet, 0x32, m_dwLocalUIN, NULL);
+	packTLVUID(&packet, 0x32, m_dwLocalUIN, NULL);
 
 	sendServPacket(&packet);
 }
@@ -539,58 +539,58 @@ DWORD CIcqProto::sendUserInfoMultiRequest(BYTE *pRequestData, WORD wDataLen, int
 {
 	icq_packet packet;
 
-  cookie_directory_data *pCookieData = (cookie_directory_data*)SAFE_MALLOC(sizeof(cookie_directory_data));
-  if (!pCookieData) return 0; // Failure
-  pCookieData->bRequestType = DIRECTORYREQUEST_INFOMULTI;
+	cookie_directory_data *pCookieData = (cookie_directory_data*)SAFE_MALLOC(sizeof(cookie_directory_data));
+	if (!pCookieData) return 0; // Failure
+	pCookieData->bRequestType = DIRECTORYREQUEST_INFOMULTI;
 
-  DWORD dwCookie = AllocateCookie(CKT_DIRECTORY_QUERY, 0, NULL, (void*)pCookieData);
+	DWORD dwCookie = AllocateCookie(CKT_DIRECTORY_QUERY, 0, NULL, (void*)pCookieData);
 
-  packServIcqDirectoryHeader(&packet, this, wDataLen + 2, META_DIRECTORY_QUERY, DIRECTORY_QUERY_MULTI_INFO, (WORD)dwCookie);
-  packWord(&packet, nItems);
-  packBuffer(&packet, pRequestData, wDataLen);
+	packServIcqDirectoryHeader(&packet, this, wDataLen + 2, META_DIRECTORY_QUERY, DIRECTORY_QUERY_MULTI_INFO, (WORD)dwCookie);
+	packWord(&packet, nItems);
+	packBuffer(&packet, pRequestData, wDataLen);
 
-  sendServPacket(&packet);
+	sendServPacket(&packet);
 
-  return dwCookie;
+	return dwCookie;
 }
 
 
 DWORD CIcqProto::icq_sendGetInfoServ(HANDLE hContact, DWORD dwUin, int bManual)
 {
 	icq_packet packet;
-  DWORD dwCookie = 0;
+	DWORD dwCookie = 0;
 
 	if (IsServerOverRate(ICQ_EXTENSIONS_FAMILY, ICQ_META_CLI_REQUEST, bManual ? RML_IDLE_10 : RML_IDLE_50))
 		return dwCookie;
 
-  DBVARIANT infoToken = {DBVT_DELETED};
-  BYTE *pToken = NULL;
-  WORD cbToken = 0;
+	DBVARIANT infoToken = {DBVT_DELETED};
+	BYTE *pToken = NULL;
+	WORD cbToken = 0;
 
-  if (!getSetting(hContact, DBSETTING_METAINFO_TOKEN, &infoToken))
-  { // retrieve user details using privacy token
-    cbToken = infoToken.cpbVal;
-    pToken = (BYTE*)_alloca(cbToken);
-    memcpy(pToken, infoToken.pbVal, cbToken);
+	if (!getSetting(hContact, DBSETTING_METAINFO_TOKEN, &infoToken))
+	{ // retrieve user details using privacy token
+		cbToken = infoToken.cpbVal;
+		pToken = (BYTE*)_alloca(cbToken);
+		memcpy(pToken, infoToken.pbVal, cbToken);
 
-    ICQFreeVariant(&infoToken);
-  }
+		ICQFreeVariant(&infoToken);
+	}
 
-  cookie_directory_data *pCookieData = (cookie_directory_data*)SAFE_MALLOC(sizeof(cookie_directory_data));
-  pCookieData->bRequestType = DIRECTORYREQUEST_INFOUSER;
+	cookie_directory_data *pCookieData = (cookie_directory_data*)SAFE_MALLOC(sizeof(cookie_directory_data));
+	pCookieData->bRequestType = DIRECTORYREQUEST_INFOUSER;
 
-  dwCookie = AllocateCookie(CKT_DIRECTORY_QUERY, 0, hContact, (void*)pCookieData);
-  WORD wDataLen = cbToken + getUINLen(dwUin) + (cbToken ? 8 : 4);
+	dwCookie = AllocateCookie(CKT_DIRECTORY_QUERY, 0, hContact, (void*)pCookieData);
+	WORD wDataLen = cbToken + getUINLen(dwUin) + (cbToken ? 8 : 4);
 
-  packServIcqDirectoryHeader(&packet, this, wDataLen + 8, META_DIRECTORY_QUERY, DIRECTORY_QUERY_INFO, (WORD)dwCookie);
-  packWord(&packet, 0x03);
-  packDWord(&packet, 1);
-  packWord(&packet, wDataLen);
-  if (pToken)
-    packTLV(&packet, 0x3C, cbToken, pToken);
-  packTLVUID(&packet, 0x32, dwUin, NULL);
+	packServIcqDirectoryHeader(&packet, this, wDataLen + 8, META_DIRECTORY_QUERY, DIRECTORY_QUERY_INFO, (WORD)dwCookie);
+	packWord(&packet, 0x03);
+	packDWord(&packet, 1);
+	packWord(&packet, wDataLen);
+	if (pToken)
+		packTLV(&packet, 0x3C, cbToken, pToken);
+	packTLVUID(&packet, 0x32, dwUin, NULL);
 
-  sendServPacket(&packet);
+	sendServPacket(&packet);
 
 	return dwCookie;
 }
@@ -751,15 +751,15 @@ void CIcqProto::icq_sendFileSendServv7(filetransfer* ft, const char *szFiles)
 	WORD wDescrLen = 0, wFilesLen = 0;
 	char *szFilesAnsi = NULL, *szDescrAnsi = NULL;
 
-  if (!utf8_decode(szFiles, &szFilesAnsi))
-    szFilesAnsi = NULL;
-  else
-  	wFilesLen = strlennull(szFilesAnsi);
+	if (!utf8_decode(szFiles, &szFilesAnsi))
+		szFilesAnsi = NULL;
+	else
+		wFilesLen = strlennull(szFilesAnsi);
 
-  if (!utf8_decode(ft->szDescription, &szDescrAnsi))
-    szDescrAnsi = NULL;
-  else
-	  wDescrLen = strlennull(szDescrAnsi);
+	if (!utf8_decode(ft->szDescription, &szDescrAnsi))
+		szDescrAnsi = NULL;
+	else
+		wDescrLen = strlennull(szDescrAnsi);
 
 	packServChannel2Header(&packet, this, ft->dwUin, (WORD)(18 + wDescrLen + wFilesLen), ft->pMessage.dwMsgID1, ft->pMessage.dwMsgID2, ft->dwCookie, ICQ_VERSION, MTYPE_FILEREQ, 0, 1, 0, 1, 1);
 
@@ -784,15 +784,15 @@ void CIcqProto::icq_sendFileSendServv8(filetransfer* ft, const char *szFiles, in
 	WORD wDescrLen = 0, wFilesLen = 0;
 	char *szFilesAnsi = NULL, *szDescrAnsi = NULL;
 
-  if (!utf8_decode(szFiles, &szFilesAnsi))
-    szFilesAnsi = NULL;
-  else
-  	wFilesLen = strlennull(szFilesAnsi);
+	if (!utf8_decode(szFiles, &szFilesAnsi))
+		szFilesAnsi = NULL;
+	else
+		wFilesLen = strlennull(szFilesAnsi);
 
-  if (!utf8_decode(ft->szDescription, &szDescrAnsi))
-    szDescrAnsi = NULL;
-  else
-	  wDescrLen = strlennull(szDescrAnsi);
+	if (!utf8_decode(ft->szDescription, &szDescrAnsi))
+		szDescrAnsi = NULL;
+	else
+		wDescrLen = strlennull(szDescrAnsi);
 
 	// 202 + UIN len + file description (no null) + file name (null included)
 	// Packet size = Flap length + 4
@@ -823,7 +823,7 @@ void CIcqProto::icq_sendFileSendServv8(filetransfer* ft, const char *szFiles, in
 	packLEDWord(&packet, 0x0008c82); // Unknown, (seen 0xf680 ~33000)
 
 	SAFE_FREE(&szFilesAnsi);
-  SAFE_FREE(&szDescrAnsi);
+	SAFE_FREE(&szDescrAnsi);
 
 	// Pack request server ack TLV
 	if (nAckType == ACKTYPE_SERVER)
@@ -845,11 +845,11 @@ void CIcqProto::icq_sendFileAcceptServv8(DWORD dwUin, DWORD TS1, DWORD TS2, DWOR
 
 	if (!accepted) szFiles = "";
 
-  if (!utf8_decode(szFiles, &szFilesAnsi))
-    szFilesAnsi = NULL;
+	if (!utf8_decode(szFiles, &szFilesAnsi))
+		szFilesAnsi = NULL;
 
-  if (!utf8_decode(szDescr, &szDescrAnsi))
-    szDescrAnsi = NULL;
+	if (!utf8_decode(szDescr, &szDescrAnsi))
+		szDescrAnsi = NULL;
 
 	wDescrLen = strlennull(szDescrAnsi);
 	wFilesLen = strlennull(szFilesAnsi);
@@ -883,7 +883,7 @@ void CIcqProto::icq_sendFileAcceptServv8(DWORD dwUin, DWORD TS1, DWORD TS2, DWOR
 	packLEDWord(&packet, (DWORD)wPort); // Unknown
 
 	SAFE_FREE(&szFilesAnsi);
-  SAFE_FREE(&szDescrAnsi);
+	SAFE_FREE(&szDescrAnsi);
 
 	// Pack request server ack TLV
 	if (nAckType == ACKTYPE_SERVER)
@@ -906,11 +906,11 @@ void CIcqProto::icq_sendFileAcceptServv7(DWORD dwUin, DWORD TS1, DWORD TS2, DWOR
 
 	if (!accepted) szFiles = "";
 
-  if (!utf8_decode(szFiles, &szFilesAnsi))
-    szFilesAnsi = NULL;
+	if (!utf8_decode(szFiles, &szFilesAnsi))
+		szFilesAnsi = NULL;
 
-  if (!utf8_decode(szDescr, &szDescrAnsi))
-    szDescrAnsi = NULL;
+	if (!utf8_decode(szDescr, &szDescrAnsi))
+		szDescrAnsi = NULL;
 
 	wDescrLen = strlennull(szDescrAnsi);
 	wFilesLen = strlennull(szFilesAnsi);
@@ -940,7 +940,7 @@ void CIcqProto::icq_sendFileAcceptServv7(DWORD dwUin, DWORD TS1, DWORD TS2, DWOR
 	packLEDWord(&packet, (DWORD)wPort); // Unknown
 
 	SAFE_FREE(&szFilesAnsi);
-  SAFE_FREE(&szDescrAnsi);
+	SAFE_FREE(&szDescrAnsi);
 
 	// Pack request server ack TLV
 	if (nAckType == ACKTYPE_SERVER)
@@ -1081,11 +1081,11 @@ void CIcqProto::icq_sendAwayMsgReplyServExt(DWORD dwUin, char *szUID, DWORD dwMs
 
 			packServAdvancedMsgReply(&packet, dwUin, szUID, dwMsgID1, dwMsgID2, wCookie, wReplyVersion, MTYPE_PLUGIN, 0, wMsgLen + 27 + getPluginTypeIdLen(msgType));
 			packLEWord(&packet, 0);   // Message size
-      packPluginTypeId(&packet, msgType);
+			packPluginTypeId(&packet, msgType);
 
-      packLEDWord(&packet, wMsgLen + 21);
-      packLEDWord(&packet, wMsgLen);
-      packBuffer(&packet, (LPBYTE)pszMsg, wMsgLen);
+			packLEDWord(&packet, wMsgLen + 21);
+			packLEDWord(&packet, wMsgLen);
+			packBuffer(&packet, (LPBYTE)pszMsg, wMsgLen);
 
 			packLEDWord(&packet, 0x0D);
 			packBuffer(&packet, (LPBYTE)"text/x-aolrtf", 0x0D);
@@ -1182,10 +1182,10 @@ DWORD CIcqProto::SearchByNames(const char *pszNick, const char *pszFirstName, co
     packTLV(&pBuffer, 0x64, wFirstLen, (PBYTE)pszFirstName);
 
 	// Send it off for further packing
-  if (wInfoLen)
-	  return sendDirectorySearchPacket(pBuffer.pData, wInfoLen, wPage, FALSE);
-  else
-    return 0; // Failure
+	if (wInfoLen)
+		return sendDirectorySearchPacket(pBuffer.pData, wInfoLen, wPage, FALSE);
+	else
+		return 0; // Failure
 }
 
 
@@ -1229,26 +1229,26 @@ DWORD CIcqProto::sendDirectorySearchPacket(const BYTE *pSearchData, WORD wDataLe
 	_ASSERTE(pSearchData);
 	_ASSERTE(wDataLen >= 4);
 
-  cookie_directory_data *pCookieData = (cookie_directory_data*)SAFE_MALLOC(sizeof(cookie_directory_data));
-  if (pCookieData)
-  {
-    pCookieData->bRequestType = DIRECTORYREQUEST_SEARCH;
-    dwCookie = AllocateCookie(CKT_DIRECTORY_QUERY, 0, NULL, (void*)pCookieData);
-  }
-  else
-    return 0;
+	cookie_directory_data *pCookieData = (cookie_directory_data*)SAFE_MALLOC(sizeof(cookie_directory_data));
+	if (pCookieData)
+	{
+		pCookieData->bRequestType = DIRECTORYREQUEST_SEARCH;
+		dwCookie = AllocateCookie(CKT_DIRECTORY_QUERY, 0, NULL, (void*)pCookieData);
+	}
+	else
+		return 0;
 
-  // Pack headers
-  packServIcqDirectoryHeader(&packet, this, wDataLen + (bOnlineUsersOnly ? 14 : 8), META_DIRECTORY_QUERY, DIRECTORY_QUERY_INFO, (WORD)dwCookie);
-  packWord(&packet, 0x02);
+	// Pack headers
+	packServIcqDirectoryHeader(&packet, this, wDataLen + (bOnlineUsersOnly ? 14 : 8), META_DIRECTORY_QUERY, DIRECTORY_QUERY_INFO, (WORD)dwCookie);
+	packWord(&packet, 0x02);
 
-  // Pack requested page number
-  packWord(&packet, wPage);
+	// Pack requested page number
+	packWord(&packet, wPage);
 
-  // Pack search data
-  packWord(&packet, 0x0001);
-  packWord(&packet, wDataLen + (bOnlineUsersOnly ? 6 : 0));
-  packBuffer(&packet, pSearchData, wDataLen);
+	// Pack search data
+	packWord(&packet, 0x0001);
+	packWord(&packet, wDataLen + (bOnlineUsersOnly ? 6 : 0));
+	packBuffer(&packet, pSearchData, wDataLen);
 
 	if (bOnlineUsersOnly)
 	{ // Pack "Online users only" flag
@@ -1359,13 +1359,13 @@ DWORD CIcqProto::icq_searchAimByEmail(const char* pszEmail, DWORD dwSearchId)
 DWORD CIcqProto::icq_changeUserPasswordServ(const char *szPassword)
 {
 	icq_packet packet;
-  WORD wPasswordLen = strlennull(szPassword);
+	WORD wPasswordLen = strlennull(szPassword);
 	DWORD dwCookie = GenerateCookie(0);
 
 	packServIcqExtensionHeader(&packet, this, (WORD)(wPasswordLen + 4), CLI_META_INFO_REQ, (WORD)dwCookie);
 	packLEWord(&packet, META_SET_PASSWORD_REQ);
-  packLEWord(&packet, wPasswordLen);
-  packBuffer(&packet, (BYTE*)szPassword, wPasswordLen);
+	packLEWord(&packet, wPasswordLen);
+	packBuffer(&packet, (BYTE*)szPassword, wPasswordLen);
 
 	sendServPacket(&packet);
 
@@ -1375,19 +1375,19 @@ DWORD CIcqProto::icq_changeUserPasswordServ(const char *szPassword)
 
 DWORD CIcqProto::icq_changeUserDirectoryInfoServ(const BYTE *pData, WORD wDataLen, BYTE bRequestType)
 {
-  icq_packet packet;
-  cookie_directory_data *pCookieData = (cookie_directory_data*)SAFE_MALLOC(sizeof(cookie_directory_data));
-  pCookieData->bRequestType = bRequestType;
-  DWORD dwCookie = AllocateCookie(CKT_DIRECTORY_UPDATE, 0, NULL, pCookieData);
+	icq_packet packet;
+	cookie_directory_data *pCookieData = (cookie_directory_data*)SAFE_MALLOC(sizeof(cookie_directory_data));
+	pCookieData->bRequestType = bRequestType;
+	DWORD dwCookie = AllocateCookie(CKT_DIRECTORY_UPDATE, 0, NULL, pCookieData);
 
-  packServIcqDirectoryHeader(&packet, this, wDataLen + 4, META_DIRECTORY_UPDATE, DIRECTORY_SET_INFO, (WORD)dwCookie);
-  packWord(&packet, 0x0003);
-  packWord(&packet, wDataLen);
-  packBuffer(&packet, pData, wDataLen);
+	packServIcqDirectoryHeader(&packet, this, wDataLen + 4, META_DIRECTORY_UPDATE, DIRECTORY_SET_INFO, (WORD)dwCookie);
+	packWord(&packet, 0x0003);
+	packWord(&packet, wDataLen);
+	packBuffer(&packet, pData, wDataLen);
 
-  sendServPacket(&packet);
+	sendServPacket(&packet);
 
-  return dwCookie;
+	return dwCookie;
 }
 
 
