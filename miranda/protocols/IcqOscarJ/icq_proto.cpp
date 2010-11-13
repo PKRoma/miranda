@@ -480,7 +480,7 @@ HANDLE __cdecl CIcqProto::AddToListByEvent( int flags, int iContact, HANDLE hDbE
 	}
 	else // auth req or added event
 	{
-		HANDLE hContact = ((HANDLE*)dbei.pBlob)[1]; // this sucks - awaiting new auth system
+		HANDLE hContact = *(HANDLE*)(dbei.pBlob + sizeof(DWORD)); // this sucks - awaiting new auth system
 		if (getContactUid(hContact, &uin, &uid))
 			return 0;
 	}
@@ -572,9 +572,9 @@ int __cdecl CIcqProto::AuthRequest( HANDLE hContact, const TCHAR* szMessage )
 		if (getContactUid(hContact, &dwUin, &szUid))
 			return 1; // Invalid contact
 
-		if (dwUin && szMessage)
+		if (dwUin)
 		{
-			char *utf = tchar_to_utf8(szMessage); // Miranda is ANSI only here
+			char *utf = tchar_to_utf8(szMessage);
 			icq_sendAuthReqServ(dwUin, szUid, utf);
 			SAFE_FREE(&utf);
 			return 0; // Success
