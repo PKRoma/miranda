@@ -583,7 +583,7 @@ static void SetPluginOnWhiteList(TCHAR * pluginname, int allow)
 // returns 1 if the plugin should be enabled within this profile, filename is always lower case
 static int isPluginOnWhiteList(TCHAR * pluginname)
 {
-	char* pluginnameA = mir_t2a(pluginname);
+	char* pluginnameA = _strlwr(mir_t2a(pluginname));
 	int rc = DBGetContactSettingByte(NULL, PLUGINDISABLELIST, pluginnameA, 0);
 	mir_free(pluginnameA);
 	if ( rc != 0 && askAboutIgnoredPlugins ) 
