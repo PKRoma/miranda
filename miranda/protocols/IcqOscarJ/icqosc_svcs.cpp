@@ -360,18 +360,8 @@ INT_PTR CIcqProto::GetAvatarCaps(WPARAM wParam, LPARAM lParam)
 
 		if (size)
 		{
-/*
-			if (getSettingByte(NULL, "AvatarsAllowBigger", DEFAULT_BIGGER_AVATARS))
-			{ // experimental server limits
-				size->x = 128;
-				size->y = 128;
-			}
-			else
-*/
-			{ // default limits (older)
-				size->x = 64;
-				size->y = 64;
-			}
+			size->x = 64;
+			size->y = 64;
 
 			return 0;
 		}
