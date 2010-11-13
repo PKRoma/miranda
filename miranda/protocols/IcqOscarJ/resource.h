@@ -172,7 +172,6 @@
 #define IDC_IGNORE                      1528
 #define IDC_ENABLE                      1529
 #define IDC_LOADFROMSERVER              1530
-#define IDC_BIGGERAVATARS               1531
 #define IDC_ADDSERVER                   1532
 #define IDC_SAVETOSERVER                1533
 #define IDC_ENABLEAVATARS               1536
