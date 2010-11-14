@@ -124,7 +124,7 @@ void  CMsnProto::MSN_AddAuthRequest(const char *email, const char *nick, const c
 {
 	//blob is: UIN=0(DWORD), hContact(DWORD), nick(ASCIIZ), ""(ASCIIZ), ""(ASCIIZ), email(ASCIIZ), ""(ASCIIZ)
 
-	HANDLE hContact = MSN_HContactFromEmail(email, nick, true, false);
+	HANDLE hContact = MSN_HContactFromEmail(email, nick, true, true);
 	
 	int emaillen = (int)strlen(email);
 

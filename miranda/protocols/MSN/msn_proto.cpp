@@ -398,7 +398,6 @@ int CMsnProto::Authorize(HANDLE hDbEvent)
 
 	MSN_AddUser(hContact, email, netId, LIST_AL);
 	MSN_AddUser(hContact, email, netId, LIST_BL + LIST_REMOVE);
-	MSN_AddUser(hContact, email, netId, LIST_FL);
 	MSN_AddUser(hContact, email, netId, LIST_RL);
 	MSN_AddUser(hContact, email, netId, LIST_PL + LIST_REMOVE);
 
