@@ -239,6 +239,13 @@ INT_PTR CALLBACK DlgProcAuthReq(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 				EnableWindow(GetDlgItem(hwndDlg, IDC_DENYREASON), FALSE);
 				SetDlgItemText(hwndDlg, IDC_DENYREASON, TranslateT("Feature is not supported by protocol"));
 			}
+			if (!DBGetContactSettingByte(hContact, "CList", "NotOnList", 0))
+			{
+				EnableWindow(GetDlgItem(hwndDlg, IDC_ADDCHECK), FALSE);
+				CheckDlgButton(hwndDlg, IDC_ADDCHECK, BST_UNCHECKED);
+			}
+			else
+				CheckDlgButton(hwndDlg, IDC_ADDCHECK, BST_CHECKED);
 
 			SetWindowLongPtr(GetDlgItem(hwndDlg, IDC_DETAILS), GWLP_USERDATA, (LONG_PTR)hContact);
 		}
@@ -247,20 +254,6 @@ INT_PTR CALLBACK DlgProcAuthReq(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 	case WM_COMMAND:
 		switch (LOWORD(wParam)) 
 		{
-		case IDC_ADD:
-			{	
-				ADDCONTACTSTRUCT acs = {0};
-				acs.handle = hDbEvent;
-				acs.handleType = HANDLE_EVENT;
-				acs.szProto = "";
-				CallService(MS_ADDCONTACT_SHOW, (WPARAM)hwndDlg, (LPARAM)&acs);
-
-				HANDLE hContact = (HANDLE)GetWindowLongPtr(GetDlgItem(hwndDlg, IDC_DETAILS), GWLP_USERDATA);
-				if (hContact == INVALID_HANDLE_VALUE || !DBGetContactSettingByte(hContact, "CList", "NotOnList", 0))
-					ShowWindow(GetDlgItem(hwndDlg,IDC_ADD), FALSE);
-			}
-			break;
-
 		case IDC_DETAILS:
 			CallService(MS_USERINFO_SHOWDIALOG, GetWindowLongPtr((HWND)lParam, GWLP_USERDATA), 0);
 			break;
@@ -275,6 +268,15 @@ INT_PTR CALLBACK DlgProcAuthReq(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 				dbei.cbSize = sizeof(dbei);
 				CallService(MS_DB_EVENT_GET, (WPARAM)hDbEvent, (LPARAM)&dbei);
 				CallProtoService(dbei.szModule, PS_AUTHALLOW, (WPARAM)hDbEvent,0);
+
+				if (IsDlgButtonChecked(hwndDlg, IDC_ADDCHECK))
+				{
+					ADDCONTACTSTRUCT acs = {0};
+					acs.handle = hDbEvent;
+					acs.handleType = HANDLE_EVENT;
+					acs.szProto = "";
+					CallService(MS_ADDCONTACT_SHOW, (WPARAM)hwndDlg, (LPARAM)&acs);
+				}
 			}
 			DestroyWindow(hwndDlg);
 			break;

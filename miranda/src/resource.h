@@ -193,7 +193,6 @@
 #define IDC_COMPANY                     1066
 #define IDC_LANGUAGE1                   1066
 #define IDC_TIMEZONE                    1067
-#define IDC_TIMEZONESELECT              1071
 #define IDC_DEPARTMENT                  1067
 #define IDC_LOCALTIME                   1068
 #define IDC_DETAILS                     1069
@@ -201,6 +200,7 @@
 #define IDC_LANGUAGE2                   1069
 #define IDC_ADD                         1070
 #define IDC_LANGUAGE3                   1070
+#define IDC_TIMEZONESELECT              1071
 #define IDC_MOREOPTIONS                 1071
 #define IDC_USERMENU                    1071
 #define IDC_EDIT                        1078
@@ -483,6 +483,7 @@
 #define IDC_STORELASTPROFILE            1739
 #define IDC_RADIO1                      1740
 #define IDC_RADIO2                      1741
+#define IDC_ADDCHECK                    1742
 #define IDC_EFFECT_COLOUR_TEXT1         1853
 #define IDC_EFFECT_COLOUR_SPIN1         1854
 #define IDC_EFFECT_COLOUR_TEXT2         11803
@@ -518,7 +519,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        323
 #define _APS_NEXT_COMMAND_VALUE         40018
-#define _APS_NEXT_CONTROL_VALUE         1742
+#define _APS_NEXT_CONTROL_VALUE         1744
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif
