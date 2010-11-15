@@ -19,8 +19,6 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 #include "irc.h"
-#include "tchar.h"
-#include <stdio.h>
 
 #define DCCCHATTIMEOUT 300
 #define DCCSENDTIMEOUT 120
@@ -1125,14 +1123,14 @@ void CDccSession::DoSendFile()
 	// is there a connection?
 	if ( con ) {
 		// open the file for reading
-		FILE* hFile = _tfopen( di->sFileAndPath.c_str(), _T("rb"));
-		if ( hFile ) {	
+		int hFile = _topen( di->sFileAndPath.c_str(), _O_RDONLY | _O_BINARY, _S_IREAD);
+		if (hFile >= 0) {	
 			unsigned __int64 dwLastAck = 0;
 
 			// if the user has chosen to resume a file, dwResumePos will contain a value (set using InterlockedExchange())
 			// and then the variables and the file pointer are changed accordingly.
 			if ( dwResumePos && dwWhatNeedsDoing == FILERESUME_RESUME ) {
-				_fseeki64 (hFile,dwResumePos,SEEK_SET);
+				_lseeki64(hFile, dwResumePos, SEEK_SET);
 				dwTotal = dwResumePos;
 				dwLastAck = dwResumePos;
 				pfts.totalProgress = dwResumePos;
@@ -1155,12 +1153,12 @@ void CDccSession::DoSendFile()
 			// until the connection is dropped it will spin around in this while() loop
 			while ( con ) {
 				// read a packet
-				size_t iRead = fread(chBuf, 1, wPacketSize, hFile);
-				if ( iRead == 0 )
+				int iRead = _read(hFile, chBuf, wPacketSize);
+				if ( iRead <= 0 )
 					break; // break out if everything has already been read
 
 				// send the package
-				int cbSent = NLSend((unsigned char*)chBuf, (int)iRead);
+				int cbSent = NLSend((unsigned char*)chBuf, iRead);
 				if ( cbSent <= 0 )
 					break; // break out if connection is lost or a transmission error has occured
 
@@ -1240,7 +1238,7 @@ DCC_STOP:
 			pfts.currentFileProgress = dwTotal;
 			ProtoBroadcastAck(m_proto->m_szModuleName, di->hContact, ACKTYPE_FILE, ACKRESULT_DATA, (void *)di, (LPARAM) &pfts);
 
-			fclose(hFile);
+			_close(hFile);
 		}
 		else // file was not possible to open for reading
 		{
@@ -1266,14 +1264,16 @@ void CDccSession::DoReceiveFile()
 	ProtoBroadcastAck(m_proto->m_szModuleName, di->hContact, ACKTYPE_FILE, ACKRESULT_NEXTFILE, (void *)di, 0);
 
 	// open the file for writing (and reading in case it is a resume)
-	FILE* hFile = _tfopen( di->sFileAndPath.c_str(), dwWhatNeedsDoing == FILERESUME_RESUME ? _T("rb+"): _T("wb"));
-	if ( hFile ) {	
+	int hFile = _topen( di->sFileAndPath.c_str(), 
+		(dwWhatNeedsDoing == FILERESUME_RESUME ? _O_APPEND : _O_TRUNC | _O_CREAT) | _O_RDWR | _O_BINARY, 
+		_S_IREAD | _S_IWRITE);
+	if ( hFile >= 0 ) {	
 		unsigned __int64 dwLastAck = 0;
 
 		// dwResumePos and dwWhatNeedsDoing has possibly been set using InterlockedExchange()
 		// if set it is a resume and we adjust variables and the file pointer accordingly.
 		if ( dwResumePos && dwWhatNeedsDoing == FILERESUME_RESUME ) {
-			_fseeki64 (hFile,dwResumePos,SEEK_SET);
+			_lseeki64(hFile, dwResumePos, SEEK_SET);
 			dwTotal = dwResumePos;
 			dwLastAck = dwResumePos;
 			pfts.totalProgress = dwResumePos;
@@ -1291,7 +1291,7 @@ void CDccSession::DoReceiveFile()
 				break;
 			
 			// write it to the file
-			fwrite(chBuf, 1, cbRead, hFile);
+			_write(hFile, chBuf, cbRead);
 
 			dwTotal += cbRead;
 
@@ -1324,7 +1324,7 @@ void CDccSession::DoReceiveFile()
 		pfts.totalProgress = dwTotal;
 		pfts.currentFileProgress = dwTotal;
 		ProtoBroadcastAck(m_proto->m_szModuleName, di->hContact, ACKTYPE_FILE, ACKRESULT_DATA, (void *)di, (LPARAM) &pfts);
-		fclose(hFile);
+		_close(hFile);
 	}
 	else  {
 		ProtoBroadcastAck(m_proto->m_szModuleName, di->hContact, ACKTYPE_FILE, ACKRESULT_FAILED, (void *)di, 0);

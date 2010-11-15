@@ -497,16 +497,10 @@ int __cdecl CIrcProto::FileResume( HANDLE hTransfer, int* action, const TCHAR** 
 
 		if (*action == FILERESUME_RESUME) {
 			unsigned __int64 dwPos = 0;
-			String sFile;
-			FILE * hFile = NULL;
 
-			hFile = _tfopen(di->sFileAndPath.c_str(), _T("rb"));
-			if (hFile) {
-				fseek(hFile,0,SEEK_END);
-				dwPos = _ftelli64(hFile);
-				rewind (hFile);
-				fclose(hFile); hFile = NULL;
-			}
+			struct _stati64 statbuf;
+			if (_tstati64(di->sFileAndPath.c_str(), &statbuf) == 0 && (statbuf.st_mode & _S_IFDIR) == 0)
+				dwPos = statbuf.st_size;
 
 			CMString sFileWithQuotes = di->sFile;
 
@@ -723,14 +717,10 @@ HANDLE __cdecl CIrcProto::SendFile( HANDLE hContact, const TCHAR*, TCHAR** ppszF
 	if ( ppszFiles[index] ) {
 
 		//get file size
-		FILE * hFile = NULL;
-		while (ppszFiles[index] && hFile == 0) {
-			hFile = _tfopen ( ppszFiles[index] , _T("rb"));
-			if (hFile) {
-				fseek (hFile , 0 , SEEK_END);
-				size = _ftelli64 (hFile);
-				rewind (hFile);
-				fclose(hFile);
+		while (ppszFiles[index]) {
+			struct _stati64 statbuf;
+			if (_tstati64(ppszFiles[index], &statbuf) == 0 && (statbuf.st_mode & _S_IFDIR) == 0) {
+				size = statbuf.st_size;
 				break;
 			}
 			index++;
@@ -822,10 +812,7 @@ HANDLE __cdecl CIrcProto::SendFile( HANDLE hContact, const TCHAR*, TCHAR** ppszF
 			// fix for sending multiple files
 			index++;
 			while( ppszFiles[index] ) {
-				hFile = NULL;
-				hFile = _tfopen( ppszFiles[index] , _T("rb"));
-				if ( hFile ) {
-					fclose(hFile);
+				if ( _taccess(ppszFiles[index], 0) == 0 ) {
 					PostIrcMessage( _T("/DCC SEND %s ") _T(TCHAR_STR_PARAM), dci->sContactName.c_str(), ppszFiles[index]);
 				}
 				index++;
