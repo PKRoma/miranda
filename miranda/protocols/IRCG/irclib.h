@@ -36,7 +36,7 @@ namespace irc {
 struct DCCINFO : public CCallocBase
 {
 	DWORD   dwAdr;
-	DWORD   dwSize;
+	unsigned __int64   dwSize;
 	DWORD   iType;
 	CMString sToken;
 	int     iPort;
@@ -126,7 +126,7 @@ protected:
 	HANDLE con;			// connection handle	
 	HANDLE hBindPort;	// handle for listening port
 	static int nDcc;	// number of dcc objects
-	DWORD iTotal;		// total bytes sent/received
+	unsigned __int64 dwTotal;		// total bytes sent/received
 
 	int iPacketSize;	// size of outgoing packets
 	int iGlobalToken;
@@ -155,7 +155,7 @@ public:
 	HANDLE hEvent;                // Manual object
 	long   dwWhatNeedsDoing;      // Set to indicate what FILERESUME_ action is chosen by the user
 	TCHAR* NewFileName;           // contains new file name if FILERESUME_RENAME chosen
-	long   dwResumePos;           // position to resume from if FILERESUME_RESUME
+	unsigned __int64 dwResumePos;           // position to resume from if FILERESUME_RESUME
 
 	int iToken;                   // used to identify (find) objects in reverse dcc filetransfers
 

@@ -770,7 +770,7 @@ CDccSession::CDccSession( CIrcProto* _pro, DCCINFO* pdci ) :
 	NewFileName(0),
 	dwWhatNeedsDoing(0),
 	tLastPercentageUpdate(0),
-	iTotal(0),
+	dwTotal(0),
 	iGlobalToken(),
 	dwResumePos(0),
 	hEvent(0),
@@ -807,7 +807,7 @@ CDccSession::~CDccSession() // destroy all that needs destroying
 {
 	if ( di->iType == DCC_SEND ) {
 		// ack SUCCESS or FAILURE
-		if (iTotal == di->dwSize )
+		if (dwTotal == di->dwSize )
 			ProtoBroadcastAck(m_proto->m_szModuleName, di->hContact, ACKTYPE_FILE, ACKRESULT_SUCCESS, (void *)di, 0);
 		else
 			ProtoBroadcastAck(m_proto->m_szModuleName, di->hContact, ACKTYPE_FILE, ACKRESULT_FAILED, (void *)di, 0);
@@ -1034,7 +1034,7 @@ int CDccSession::SetupConnection()
 				ulAdr = m_proto->m_IPFromServer ? ConvertIPToInteger( m_proto->m_myHost ) : nb.dwExternalIP;
 
 			if ( di->iPort && ulAdr )
-				m_proto->PostIrcMessage( _T("/CTCP %s DCC SEND %s %u %u %u %s"), di->sContactName.c_str(), sFileWithQuotes.c_str(), ulAdr, di->iPort, di->dwSize, di->sToken.c_str());
+				m_proto->PostIrcMessage( _T("/CTCP %s DCC SEND %s %u %u %I64u %s"), di->sContactName.c_str(), sFileWithQuotes.c_str(), ulAdr, di->iPort, di->dwSize, di->sToken.c_str());
 
 			return TRUE; 			
 		}
@@ -1127,14 +1127,14 @@ void CDccSession::DoSendFile()
 		// open the file for reading
 		FILE* hFile = _tfopen( di->sFileAndPath.c_str(), _T("rb"));
 		if ( hFile ) {	
-			DWORD iLastAck = 0;
+			unsigned __int64 dwLastAck = 0;
 
 			// if the user has chosen to resume a file, dwResumePos will contain a value (set using InterlockedExchange())
 			// and then the variables and the file pointer are changed accordingly.
 			if ( dwResumePos && dwWhatNeedsDoing == FILERESUME_RESUME ) {
-				fseek (hFile,dwResumePos,SEEK_SET);
-				iTotal = dwResumePos;
-				iLastAck = dwResumePos;
+				_fseeki64 (hFile,dwResumePos,SEEK_SET);
+				dwTotal = dwResumePos;
+				dwLastAck = dwResumePos;
 				pfts.totalProgress = dwResumePos;
 				pfts.currentFileProgress = dwResumePos;
 			}
@@ -1160,14 +1160,14 @@ void CDccSession::DoSendFile()
 					break; // break out if everything has already been read
 
 				// send the package
-				DWORD cbSent = NLSend((unsigned char*)chBuf, (int)iRead);
+				int cbSent = NLSend((unsigned char*)chBuf, (int)iRead);
 				if ( cbSent <= 0 )
 					break; // break out if connection is lost or a transmission error has occured
 
 				if ( !con )
 					break;
 
-				iTotal += cbSent;
+				dwTotal += cbSent;
 
 				// block connection and receive ack's from remote computer (if applicable)
 				if ( m_proto->m_DCCMode == 0 ) {
@@ -1181,11 +1181,11 @@ void CDccSession::DoSendFile()
 						if( dwRead <= 0)
 							break; // connection closed, or a timeout occurred.
 
-						memcpy(&dwPacket, npr.buffer, 4);
-						iLastAck = ntohl((u_long)dwPacket);
+						dwPacket  = *(DWORD*)npr.buffer;
+						dwLastAck = ntohl(dwPacket);
 
 					}
-						while(con && iTotal != iLastAck);
+						while(con && dwTotal != dwLastAck);
 
 					if ( !con || dwRead <= 0 )
 						goto DCC_STOP;
@@ -1193,7 +1193,7 @@ void CDccSession::DoSendFile()
 
 				if ( m_proto->m_DCCMode == 1 ) {
 					DWORD dwRead = 0;
-					DWORD dwPacket = NULL;
+					DWORD dwPacket = 0;
 
 					do {					
 						dwRead = CallService( MS_NETLIB_GETMOREPACKETS, (WPARAM)hPackrcver, (LPARAM)&npr);
@@ -1201,13 +1201,13 @@ void CDccSession::DoSendFile()
 						if ( dwRead <= 0)
 							break; // connection closed, or a timeout occurred.
 
-						memcpy(&dwPacket, npr.buffer, 4);
-						iLastAck = ntohl((u_long)dwPacket);
+						dwPacket =  *(DWORD*)npr.buffer;
+						dwLastAck = ntohl(dwPacket);
 					}
-						while(con && (di->dwSize != iTotal
-						&& iTotal - iLastAck >= 100*1024
-						|| di->dwSize == iTotal // get the last packets when the whole file has been sent
-						&& iTotal != iLastAck));
+						while(con && (di->dwSize != dwTotal
+						&& dwTotal - dwLastAck >= 100*1024
+						|| di->dwSize == dwTotal // get the last packets when the whole file has been sent
+						&& dwTotal != dwLastAck));
 
 					if ( !con || dwRead <= 0 )
 						goto DCC_STOP;
@@ -1216,13 +1216,13 @@ void CDccSession::DoSendFile()
 				// update the filetransfer dialog's 'percentage-ready meter' once per second only to save cpu
 				if ( tLastPercentageUpdate < time(0)) {
 					tLastPercentageUpdate = time(0);
-					pfts.totalProgress = iTotal;
-					pfts.currentFileProgress = iTotal;
+					pfts.totalProgress = dwTotal;
+					pfts.currentFileProgress = dwTotal;
 					ProtoBroadcastAck(m_proto->m_szModuleName, di->hContact, ACKTYPE_FILE, ACKRESULT_DATA, (void *)di, (LPARAM) &pfts);
 				}
 
 				// close the connection once the whole file has been sent an completely ack'ed
-				if ( iLastAck >= di->dwSize ) {
+				if ( dwLastAck >= di->dwSize ) {
 					Netlib_CloseHandle(con);
 					con = NULL;
 			}	}
@@ -1236,8 +1236,8 @@ DCC_STOP:
 
 			// ack the progress one final time
 			tLastActivity = time(0);
-			pfts.totalProgress = iTotal;
-			pfts.currentFileProgress = iTotal;
+			pfts.totalProgress = dwTotal;
+			pfts.currentFileProgress = dwTotal;
 			ProtoBroadcastAck(m_proto->m_szModuleName, di->hContact, ACKTYPE_FILE, ACKRESULT_DATA, (void *)di, (LPARAM) &pfts);
 
 			fclose(hFile);
@@ -1268,14 +1268,14 @@ void CDccSession::DoReceiveFile()
 	// open the file for writing (and reading in case it is a resume)
 	FILE* hFile = _tfopen( di->sFileAndPath.c_str(), dwWhatNeedsDoing == FILERESUME_RESUME ? _T("rb+"): _T("wb"));
 	if ( hFile ) {	
-		DWORD iLastAck = 0;
+		unsigned __int64 dwLastAck = 0;
 
 		// dwResumePos and dwWhatNeedsDoing has possibly been set using InterlockedExchange()
 		// if set it is a resume and we adjust variables and the file pointer accordingly.
 		if ( dwResumePos && dwWhatNeedsDoing == FILERESUME_RESUME ) {
-			fseek (hFile,dwResumePos,SEEK_SET);
-			iTotal = dwResumePos;
-			iLastAck = dwResumePos;
+			_fseeki64 (hFile,dwResumePos,SEEK_SET);
+			dwTotal = dwResumePos;
+			dwLastAck = dwResumePos;
 			pfts.totalProgress = dwResumePos;
 			pfts.currentFileProgress = dwResumePos;
 		}
@@ -1286,42 +1286,43 @@ void CDccSession::DoReceiveFile()
 		// the while loop will spin around till the connection is dropped, locally or by the remote computer.
 		while ( con ) {
 			// read
-			DWORD cbRead = NLReceive((unsigned char*)chBuf, sizeof(chBuf));
+			int cbRead = NLReceive((unsigned char*)chBuf, sizeof(chBuf));
 			if ( cbRead <= 0 )
 				break;
 			
 			// write it to the file
 			fwrite(chBuf, 1, cbRead, hFile);
 
-			iTotal += cbRead;
+			dwTotal += cbRead;
 
 			// this snippet sends out an ack for every 4 kb received in send ahead
 			// or every packet for normal mode
 			if ( !di->bTurbo ) {
-				DWORD no = htonl(iTotal);
-				NLSend((const unsigned char *)&no, sizeof(DWORD));
-				iLastAck = iTotal;
+				DWORD no = dwTotal;
+				no = htonl(no);
+				NLSend((unsigned char *)&no, sizeof(DWORD));
+				dwLastAck = dwTotal;
 			}
-			else iLastAck = iTotal;
+			else dwLastAck = dwTotal;
 
 			// sets the 'last update time' to check for timed out connections, and also make sure we only
 			// ack the 'percentage-ready meter' only once a second to save CPU.
 			if ( tLastPercentageUpdate < time( 0 )) {
 				tLastPercentageUpdate = time (0);
-				pfts.totalProgress = iTotal;
-				pfts.currentFileProgress = iTotal;
+				pfts.totalProgress = dwTotal;
+				pfts.currentFileProgress = dwTotal;
 				ProtoBroadcastAck(m_proto->m_szModuleName, di->hContact, ACKTYPE_FILE, ACKRESULT_DATA, (void *)di, (LPARAM) &pfts);
 			}	
 			
 			// if file size is known and everything is received then disconnect 
-			if ( di->dwSize && di->dwSize == iTotal ) {
+			if ( di->dwSize && di->dwSize == dwTotal ) {
 				Netlib_CloseHandle(con);
 				con = NULL;
 		}	}
 		// receiving loop broken locally or by remote computer, just some cleaning up left....
 		
-		pfts.totalProgress = iTotal;
-		pfts.currentFileProgress = iTotal;
+		pfts.totalProgress = dwTotal;
+		pfts.currentFileProgress = dwTotal;
 		ProtoBroadcastAck(m_proto->m_szModuleName, di->hContact, ACKTYPE_FILE, ACKRESULT_DATA, (void *)di, (LPARAM) &pfts);
 		fclose(hFile);
 	}
