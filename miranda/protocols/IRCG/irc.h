@@ -45,6 +45,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <time.h>
 #include <ctype.h>
 #include <io.h>
+#include <fcntl.h>
+#include <sys/stat.h>
 
 #include "newpluginapi.h"
 #include "m_system.h"
