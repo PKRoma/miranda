@@ -496,14 +496,14 @@ int __cdecl CIrcProto::FileResume( HANDLE hTransfer, int* action, const TCHAR** 
 		}
 
 		if (*action == FILERESUME_RESUME) {
-			DWORD dwPos = 0;
+			unsigned __int64 dwPos = 0;
 			String sFile;
 			FILE * hFile = NULL;
 
 			hFile = _tfopen(di->sFileAndPath.c_str(), _T("rb"));
 			if (hFile) {
 				fseek(hFile,0,SEEK_END);
-				dwPos = ftell(hFile);
+				dwPos = _ftelli64(hFile);
 				rewind (hFile);
 				fclose(hFile); hFile = NULL;
 			}
@@ -517,9 +517,9 @@ int __cdecl CIrcProto::FileResume( HANDLE hTransfer, int* action, const TCHAR** 
 			}
 
 			if (di->bReverse)
-				PostIrcMessage( _T("/PRIVMSG %s \001DCC RESUME %s 0 %u %s\001"), di->sContactName.c_str(), sFileWithQuotes.c_str(), dwPos, dcc->di->sToken.c_str());
+				PostIrcMessage( _T("/PRIVMSG %s \001DCC RESUME %s 0 %I64u %s\001"), di->sContactName.c_str(), sFileWithQuotes.c_str(), dwPos, dcc->di->sToken.c_str());
 			else
-				PostIrcMessage( _T("/PRIVMSG %s \001DCC RESUME %s %u %u\001"), di->sContactName.c_str(), sFileWithQuotes.c_str(), di->iPort, dwPos);
+				PostIrcMessage( _T("/PRIVMSG %s \001DCC RESUME %s %u %I64u\001"), di->sContactName.c_str(), sFileWithQuotes.c_str(), di->iPort, dwPos);
 
 			return 0;
 		}
@@ -702,7 +702,7 @@ HANDLE __cdecl CIrcProto::SendFile( HANDLE hContact, const TCHAR*, TCHAR** ppszF
 	DCCINFO* dci = NULL;
 	int iPort = 0;
 	int index= 0;
-	DWORD size = 0;
+	unsigned __int64 size = 0;
 
 	// do not send to channels :-P
 	if ( getByte(hContact, "ChatRoom", 0) != 0)
@@ -728,7 +728,7 @@ HANDLE __cdecl CIrcProto::SendFile( HANDLE hContact, const TCHAR*, TCHAR** ppszF
 			hFile = _tfopen ( ppszFiles[index] , _T("rb"));
 			if (hFile) {
 				fseek (hFile , 0 , SEEK_END);
-				size = ftell (hFile);
+				size = _ftelli64 (hFile);
 				rewind (hFile);
 				fclose(hFile);
 				break;
@@ -781,7 +781,7 @@ HANDLE __cdecl CIrcProto::SendFile( HANDLE hContact, const TCHAR*, TCHAR** ppszF
 			// is it an reverse filetransfer (receiver acts as server)
 			if (dci->bReverse) {
 				TCHAR szTemp[256];
-				PostIrcMessage( _T("/CTCP %s DCC SEND %s 200 0 %u %u"),
+				PostIrcMessage( _T("/CTCP %s DCC SEND %s 200 0 %I64u %u"),
 					dci->sContactName.c_str(), sFileWithQuotes.c_str(), dci->dwSize, dcc->iToken);
 
 				mir_sntprintf(szTemp, SIZEOF(szTemp),
@@ -791,7 +791,7 @@ HANDLE __cdecl CIrcProto::SendFile( HANDLE hContact, const TCHAR*, TCHAR** ppszF
 
 				if (m_sendNotice) {
 					mir_sntprintf(szTemp, SIZEOF(szTemp),
-						_T("/NOTICE %s I am sending the file \'\002%s\002\' (%u kB) to you, please accept it. [Reverse transfer]"),
+						_T("/NOTICE %s I am sending the file \'\002%s\002\' (%I64u kB) to you, please accept it. [Reverse transfer]"),
 						dci->sContactName.c_str(), sFileCorrect.c_str(), dci->dwSize/1024);
 					PostIrcMessage(szTemp);
 				}
@@ -800,7 +800,7 @@ HANDLE __cdecl CIrcProto::SendFile( HANDLE hContact, const TCHAR*, TCHAR** ppszF
 				iPort = dcc->Connect();
 				if ( iPort ) {
 					TCHAR szTemp[256];
-					PostIrcMessage( _T("/CTCP %s DCC SEND %s %u %u %u"),
+					PostIrcMessage( _T("/CTCP %s DCC SEND %s %u %u %I64u"),
 						dci->sContactName.c_str(), sFileWithQuotes.c_str(), ulAdr, iPort, dci->dwSize);
 
 					mir_sntprintf(szTemp, SIZEOF(szTemp),
@@ -810,7 +810,7 @@ HANDLE __cdecl CIrcProto::SendFile( HANDLE hContact, const TCHAR*, TCHAR** ppszF
 
 					if ( m_sendNotice ) {
 						mir_sntprintf(szTemp, SIZEOF(szTemp),
-							_T("/NOTICE %s I am sending the file \'\002%s\002\' (%u kB) to you, please accept it. [IP: %s]"),
+							_T("/NOTICE %s I am sending the file \'\002%s\002\' (%I64u kB) to you, please accept it. [IP: %s]"),
 							dci->sContactName.c_str(), sFileCorrect.c_str(), dci->dwSize/1024, (TCHAR*)_A2T(ConvertIntegerToIP(ulAdr)));
 						PostIrcMessage(szTemp);
 					}

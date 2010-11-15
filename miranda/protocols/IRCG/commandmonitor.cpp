@@ -899,7 +899,7 @@ bool CIrcProto::IsCTCP( const CIrcMessage* pmsg )
 			CMString sFile = _T("");
 			DWORD dwAdr = 0;
 			int iPort = 0;
-			DWORD dwSize = 0;
+			unsigned __int64 dwSize = 0;
 			CMString sToken = _T("");
 			bool bIsChat = ( type == _T("chat"));
 
@@ -917,9 +917,9 @@ bool CIrcProto::IsCTCP( const CIrcMessage* pmsg )
 							begin = mess.Find(' ', end);
 							if ( begin >= 0 ) {
 								CMString rest = mess.Mid(begin, mess.GetLength());
-								dwAdr = _ttoi(GetWord(rest.c_str(), 0).c_str());
+								dwAdr = _tcstoul(GetWord(rest.c_str(), 0).c_str(), NULL, 10);
 								iPort = _ttoi(GetWord(rest.c_str(), 1).c_str());
-								dwSize = _ttoi(GetWord(rest.c_str(), 2).c_str());
+								dwSize = _ttoi64(GetWord(rest.c_str(), 2).c_str());
 								sToken = GetWord(rest.c_str(), 3);
 					}	}	}
 				}
@@ -968,9 +968,9 @@ bool CIrcProto::IsCTCP( const CIrcMessage* pmsg )
 
 						free( p1 );
 
-						dwAdr = _ttoi(GetWord(mess.c_str(), index - (bIsChat?2:3)).c_str());
+						dwAdr = _tcstoul(GetWord(mess.c_str(), index - (bIsChat?2:3)).c_str(), NULL, 10);
 						iPort = _ttoi(GetWord(mess.c_str(), index - (bIsChat?1:2)).c_str());
-						dwSize = _ttoi(GetWord(mess.c_str(), index-1).c_str());
+						dwSize = _ttoi64(GetWord(mess.c_str(), index-1).c_str());
 						sToken = GetWord(mess.c_str(), index);
 				}	} 
 			}
@@ -1030,7 +1030,7 @@ bool CIrcProto::IsCTCP( const CIrcMessage* pmsg )
 						free( p1 );
 
 						iPort = _ttoi(GetWord(mess.c_str(), index-2).c_str());
-						dwSize = _ttoi(GetWord(mess.c_str(), index-1).c_str());
+						dwSize = _ttoi64(GetWord(mess.c_str(), index-1).c_str());
 						sToken = GetWord(mess.c_str(), index);
 			}	}	} 
 			// end separating dcc commands
@@ -1125,7 +1125,7 @@ bool CIrcProto::IsCTCP( const CIrcMessage* pmsg )
 
 				if ( dcc ) {
 					InterlockedExchange(&dcc->dwWhatNeedsDoing, (long)FILERESUME_RESUME);
-					InterlockedExchange(&dcc->dwResumePos, dwSize); // dwSize is the resume position
+					dcc->dwResumePos = dwSize; // dwSize is the resume position
 					PostIrcMessage( _T("/PRIVMSG %s \001DCC ACCEPT %s\001"), pmsg->prefix.sNick.c_str(), GetWordAddress(mess.c_str(), 2));
 			}	}
 
@@ -1139,7 +1139,7 @@ bool CIrcProto::IsCTCP( const CIrcMessage* pmsg )
 
 				if ( dcc ) {
 					InterlockedExchange( &dcc->dwWhatNeedsDoing, (long)FILERESUME_RESUME );
-					InterlockedExchange( &dcc->dwResumePos, dwSize );	// dwSize is the resume position					
+					dcc->dwResumePos = dwSize;	// dwSize is the resume position					
 					SetEvent( dcc->hEvent );
 			}	}
 
@@ -1192,7 +1192,7 @@ bool CIrcProto::IsCTCP( const CIrcMessage* pmsg )
 						TCHAR* tszTemp = ( TCHAR* )sFile.c_str();
 
 						PROTORECVFILET pre = {0};
-						pre.flags = PREF_UNICODE;
+						pre.flags = PREF_TCHAR;
 						pre.timestamp = (DWORD)time(NULL);
 						pre.fileCount = 1;
 						pre.ptszFiles = &tszTemp;						
