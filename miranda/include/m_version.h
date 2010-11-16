@@ -29,7 +29,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #define MIRANDA_VERSION_FILEVERSION  0,9,11,1                               
 #define MIRANDA_VERSION_STRING      "0.9.11.1"                              
-#define MIRANDA_VERSION_DISPLAY     "0.9.11"                  
+#define MIRANDA_VERSION_DISPLAY     "0.9.11 beta #1"                  
 #define MIRANDA_VERSION_DWORD       MIRANDA_MAKE_VERSION(0, 9, 11, 1)       
                                                                               
 #endif // M_VERSION_H__                                                       
