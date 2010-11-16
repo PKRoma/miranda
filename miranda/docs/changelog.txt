@@ -3,6 +3,17 @@
                            www.miranda-im.org
 
 
+* New in 0.9.11
+Bugfixes:
+ - Fixed 401 HTTP authentication
+ - Show Status Changes option is not maintained (srmm only)
+ - ICQ: Added automatic server upgrade for server migration
+ - ICQ: Fix rare crash
+ - ICQ: Fixed authorization requests
+ - IRC: DCC fixes
+ - Jabber: Updated GTalk default server settings
+
+
 * New in 0.9.10
 Bugfixes:
  - Fixed memory leaks
