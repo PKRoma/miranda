@@ -706,8 +706,8 @@ void SendQueue::NotifyDeliveryFailure(const TWindowData *dat)
 		ppd.lchContact = dat->hContact;
 		mir_sntprintf(ppd.lptzContactName, MAX_CONTACTNAME, _T("%s"), dat->cache->getNick());
 		mir_sntprintf(ppd.lptzText, MAX_SECONDLINE, _T("%s"), CTranslator::get(CTranslator::GEN_SQ_DELIVERYFAILED));
-		ppd.colorText = RGB(255, 245, 225);
-		ppd.colorBack = RGB(191, 0, 0);
+		ppd.colorText = M->GetDword("errorPopupFG",  RGB(255, 245, 225));
+		ppd.colorBack = M->GetDword("errorPopupBG", RGB(191, 0, 0));
 		ppd.PluginWindowProc = reinterpret_cast<WNDPROC>(Utils::PopupDlgProcError);
 		ppd.lchIcon = PluginConfig.g_iconErr;
 		ppd.PluginData = (void *)dat->hContact;
