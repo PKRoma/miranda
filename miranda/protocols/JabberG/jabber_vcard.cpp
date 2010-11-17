@@ -18,7 +18,6 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
-File name      : $URL$
 Revision       : $Revision$
 Last change on : $Date$
 Last change by : $Author$
@@ -325,7 +324,7 @@ static INT_PTR CALLBACK PhotoDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 				ofn.lpstrCustomFilter = NULL;
 				ofn.lpstrFile = szFileName;
 				ofn.nMaxFile = _MAX_PATH;
-				ofn.Flags = OFN_FILEMUSTEXIST;
+				ofn.Flags = OFN_FILEMUSTEXIST | OFN_DONTADDTORECENT;
 				szFileName[0] = '\0';
 				if ( GetOpenFileName( &ofn )) {
 					struct _stat st;
