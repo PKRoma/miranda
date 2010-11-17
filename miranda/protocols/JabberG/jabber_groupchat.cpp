@@ -18,7 +18,6 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
-File name      : $URL$
 Revision       : $Revision$
 Last change on : $Date$
 Last change by : $Author$
@@ -1156,7 +1155,7 @@ void CJabberProto::GroupchatProcessMessage( HXML node )
 					TCHAR* tmptr = _tcsstr( tmpnick, _T("has set the subject to:")); //ejabberd
 					if ( tmptr == NULL )
 						tmptr = _tcsstr( tmpnick, TranslateT("has set the subject to:")); //ejabberd
-   				if ( tmptr == NULL || *tmptr == 0 )
+					if ( tmptr == NULL || *tmptr == 0 )
 						nick = NULL;
 					else {
 						*(--tmptr) = 0;

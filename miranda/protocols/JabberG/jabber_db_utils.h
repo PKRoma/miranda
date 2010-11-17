@@ -20,7 +20,6 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
-File name      : $URL: https://miranda.svn.sourceforge.net/svnroot/miranda/trunk/miranda/protocols/JabberG/ui_utils.h $
 Revision       : $Revision: 8244 $
 Last change on : $Date: 2008-09-17 15:09:42 +0300 (Íä, 17 Cåð 2008) $
 Last change by : $Author: vpavlychko $

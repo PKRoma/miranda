@@ -20,7 +20,6 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
-File name      : $URL: https://miranda.svn.sourceforge.net/svnroot/miranda/trunk/miranda/protocols/JabberG/jabber_send_manager.cpp $
 Revision       : $Revision: 7543 $
 Last change on : $Date: 2008-03-30 22:55:23 +0300 (Вс, 30 мар 2008) $
 Last change by : $Author: dchervov $
