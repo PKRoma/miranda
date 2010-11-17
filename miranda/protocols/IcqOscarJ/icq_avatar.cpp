@@ -801,8 +801,13 @@ int CIcqProto::GetAvatarData(HANDLE hContact, DWORD dwUin, const char *szUid, co
 	uid_str szUidData;
 	char *pszUid = NULL;
 	if (!dwUin && szUid) 
-	{ // create a copy in local writable buffer
+	{	// create a copy in local writable buffer
 		strcpy(szUidData, szUid);
+		pszUid = szUidData;
+	}
+	else if (dwUin)
+	{	// prepare empty writable buffer
+		szUidData[0] = '\0';
 		pszUid = szUidData;
 	}
 
