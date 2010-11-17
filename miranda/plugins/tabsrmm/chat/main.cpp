@@ -56,8 +56,10 @@ char		*pszActiveWndModule = 0;
 
 int Chat_Load(PLUGINLINK *link)
 {
-	BOOL bFlag = FALSE;
-
+	if(M->GetByte("forceDisableMUC", 0)) {
+		PluginConfig.m_chat_enabled = false;
+		return(0);
+	}
 	g_hMenu = LoadMenu(g_hInst, MAKEINTRESOURCE(IDR_MENU));
 	if(CreateServiceFunctions()) {
 		HookEvents();
