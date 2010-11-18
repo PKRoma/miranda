@@ -177,6 +177,22 @@ static INT_PTR CALLBACK IniImportDoneDlgProc(HWND hwndDlg,UINT message,WPARAM wP
 	return FALSE;
 }
 
+// settings:
+struct SettingsList
+{
+	char *name;
+	SettingsList *next;
+} *setting_items = NULL;
+
+int SettingsEnumProc(const char *szSetting, LPARAM lParam)
+{
+	SettingsList *newItem =  (SettingsList *)mir_alloc(sizeof(SettingsList));
+	newItem->name = mir_strdup(szSetting);
+	newItem->next = setting_items;
+	setting_items = newItem;
+	return 0;
+}
+
 void ConvertBackslashes(char *);
 static void ProcessIniFile(TCHAR* szIniPath, char *szSafeSections, char *szUnsafeSections, int secur, bool secFN)
 {
@@ -226,6 +242,26 @@ static void ProcessIniFile(TCHAR* szIniPath, char *szSafeSections, char *szUnsaf
 					break;
 				}
 				if (secFN) warnThisSection=0;
+			}
+			if (szLine[1] == '?') {
+				DBCONTACTENUMSETTINGS dbces;
+				dbces.pfnEnumProc=SettingsEnumProc;
+				lstrcpynA(szSection,szLine+2,min(sizeof(szSection),(int)(szEnd-szLine-1)));
+				dbces.szModule=szSection;
+				dbces.ofsSettings=0;
+				CallService(MS_DB_CONTACT_ENUMSETTINGS,0,(LPARAM)&dbces);
+				while (setting_items) {
+					SettingsList *next = setting_items->next;
+
+					DBCONTACTGETSETTING dbcgs;
+					dbcgs.szModule = szSection;
+					dbcgs.szSetting = setting_items->name;
+					CallService(MS_DB_CONTACT_DELETESETTING, 0, (LPARAM)&dbcgs);
+
+					mir_free(setting_items->name);
+					mir_free(setting_items);
+					setting_items = next;
+				}
 			}
 			continue;
 		}
