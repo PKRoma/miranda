@@ -245,6 +245,7 @@ static int httpTransact(char* szUrl, char* szResult, int resSize, char* szAction
 	char szHost[256], szPath[256], szRes[16];
 	int sz = 0, res = 0;
 	unsigned short sPort;
+	bool needClose;
 
 	const char* szPostHdr = soap_post_hdr;
 	char* szData = ( char* )mir_alloc(4096);
@@ -412,12 +413,16 @@ retrycon:
 						// Find HTTP header end
 						hdrend = strstr(szResult, "\r\n\r\n");
 						if (hdrend == NULL)
+						{
 							hdrend = strstr(szResult, "\n\n");
+							if (hdrend) hdrend += 2;
+						}
+
+						else
+							hdrend += 4;
 
 						if (hdrend != NULL)
 						{
-							hdrend += 4;
-
 							// Get packet size if provided
 							if (txtParseParam(szResult, NULL, "Content-Length:", "\n", szRes, sizeof(szRes)) ||
 								txtParseParam(szResult, NULL, "CONTENT-LENGTH:", "\n", szRes, sizeof(szRes)))
@@ -430,6 +435,10 @@ retrycon:
 							{
 								if (_stricmp(lrtrimp(szRes), "Chunked") == 0)
 									acksz = hdrend - szResult;
+							}
+							else if (txtParseParam(szResult, NULL, "Connection:", "\n", szRes, sizeof(szRes)))
+							{
+								needClose = (_stricmp(lrtrimp(szRes), "close") == 0);
 							}
 						}
 					}
@@ -504,6 +513,9 @@ retry:
 		else
 			break;
 	}
+
+	if (needClose)
+		closeRouterConnection();
 
 	mir_free(szData);
 	mir_free(szReq);
