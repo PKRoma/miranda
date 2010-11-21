@@ -804,6 +804,11 @@ const char* CIcqProto::detectUserClient(HANDLE hContact, int nIsICQ, WORD wUserC
 						}
 					}
 				}
+				else if (wVersion == 8)
+				{
+					if (CheckContactCapabilities(hContact, CAPF_UTF | CAPF_TYPING) && MatchShortCapability(caps, wLen, &capAimIcon) && MatchShortCapability(caps, wLen, &capAimDirect))
+						szClient = "imo.im"; //https://imo.im/ - Web IM
+				}
 				else if (wVersion == 9)
 				{	// try to determine lite versions
 					if (CheckContactCapabilities(hContact, CAPF_XTRAZ))
@@ -857,6 +862,7 @@ const char* CIcqProto::detectUserClient(HANDLE hContact, int nIsICQ, WORD wUserC
 						}
 						else if (!CheckContactCapabilities(hContact, CAPF_ICQDIRECT))
 						{
+							*bClientId = CLID_ALTERNATIVE;
 							if (CheckContactCapabilities(hContact, CAPF_RTF))
 							{
 								// most probably Qnext - try to make that shit at least receiving our msgs
