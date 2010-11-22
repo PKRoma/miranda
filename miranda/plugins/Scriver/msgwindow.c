@@ -58,13 +58,13 @@ void UnsubclassTabCtrl(HWND hwnd) {
 	SetWindowLongPtr(hwnd, GWLP_WNDPROC, (LONG_PTR) OldTabCtrlProc);
 }
 
-static TCHAR *titleTokenNames[] = {_T("%name%"), _T("%status%"), _T("%statusmsg%"), _T("%account%")};
+static const TCHAR *titleTokenNames[] = {_T("%name%"), _T("%status%"), _T("%statusmsg%"), _T("%account%")};
 
 TCHAR* GetWindowTitle(HANDLE *hContact, const char *szProto)
 {
 	int isTemplate;
 	int i, j, len;
-    TCHAR* tokens[4] = {NULL};
+    TCHAR* tokens[4] = {0};
     int tokenLen[4] = {0};
 	TCHAR *p, *tmplt, *title;
     char *accModule;
@@ -73,7 +73,8 @@ TCHAR* GetWindowTitle(HANDLE *hContact, const char *szProto)
 	if (hContact && szProto) {
 		tokens[0] = GetNickname(hContact, szProto);
 		tokenLen[0] = lstrlen(tokens[0]);
-		tokens[1] = a2t((char *) CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, szProto == NULL ? ID_STATUS_OFFLINE : DBGetContactSettingWord(hContact, szProto, "Status", ID_STATUS_OFFLINE), 0));
+		tokens[1] = mir_tstrdup((TCHAR *)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, szProto ? 
+			DBGetContactSettingWord(hContact, szProto, "Status", ID_STATUS_OFFLINE) : ID_STATUS_OFFLINE, GCMDF_TCHAR));
 		tokenLen[1] = lstrlen(tokens[1]);
 		tokens[2] = DBGetStringT(hContact, "CList", "StatusMsg");
 		if (tokens[2] != NULL) {
@@ -112,18 +113,17 @@ TCHAR* GetWindowTitle(HANDLE *hContact, const char *szProto)
 	} else {
 		tmplt = _T("");
 	}
-	for (len = 0, p = tmplt; *p; p++) {
+	for (len = 0, p = tmplt; *p; p++, len++) {
 		if (*p == '%') {
             for (i = 0; i < SIZEOF(titleTokenNames); i ++) {
-                int tnlen = lstrlen(titleTokenNames[i]);
+                int tnlen = (int)_tcslen(titleTokenNames[i]);
                 if (!_tcsncmp(p, titleTokenNames[i], tnlen)) {
-                    len += tokenLen[i];
-                    p += tnlen;
+                    len += tokenLen[i] - 1;
+                    p += tnlen - 1;
                     break;
                 }
             }
 		}
-		len++;
 	}
 	if (!isTemplate) {
 		len += lstrlen(pszNewTitleEnd);
@@ -138,10 +138,11 @@ TCHAR* GetWindowTitle(HANDLE *hContact, const char *szProto)
                         memcpy(title+len, tokens[i], sizeof(TCHAR) * tokenLen[i]);
                         len += tokenLen[i];
                     }
-                    p += tnlen;
+                    p += tnlen - 1;
                     break;
                 }
             }
+			if (i < SIZEOF(titleTokenNames)) continue;
 		}
 		title[len++] = *p;
 	}
