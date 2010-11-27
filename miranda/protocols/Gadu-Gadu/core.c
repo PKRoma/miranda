@@ -615,7 +615,7 @@ retry:
 						{
 							char strFmt1[64];
 							char strFmt2[64];
-							GGSEARCHRESULT sr;
+							GGSEARCHRESULT sr = {0};
 
 							mir_snprintf(strFmt2, sizeof(strFmt2), "%s", (char *)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, status_gg2m(gg, atoi(__status)), 0));
 							if(__city)
