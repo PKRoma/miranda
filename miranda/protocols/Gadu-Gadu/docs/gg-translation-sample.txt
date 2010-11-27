@@ -1,4 +1,4 @@
-; ** Gadu-Gadu 0.0.5.3
+; ** Gadu-Gadu translation strings
 
 ; Info page
 [Public Info]
@@ -17,8 +17,9 @@ Rok urodzenia:
 ; Expert short
 [Ex.]
 Eks.
-[connection]
-po³¹czenie
+;[connection] @ deprecated 0.0.5.0
+[%s connection]
+Po³¹czenie %s
 [Friends only]
 Tylko dla przyjació³
 [Show offline users with status message as invisible in contact list]
@@ -148,6 +149,8 @@ Po³¹czenie z hubem Gadu-Gadu nie uda³o siê.
 ; Token stuff
 [Token retrieval failed because of error:\n\t%s]
 Nie mo¿na by³o pobraæ tokena z powodu b³êdu:\n\t%s
+[Could not load token image.]
+Nie mo¿na za³adowaæ obrazka tokena.
 [Enter token to continue]
 WprowadŸ token aby kontynuowaæ
 ;[Token]
@@ -270,8 +273,14 @@ Szukaj tylko wœród dostêpnych
 &Obrazek
 [Image saved.]
 Zapisano obrazek.
+[Image received]
+Odebrano obrazek
+[Save image to disk]
+Zapisz obrazek na dysk
 [Image cannot be written to disk.]
 Nie mo¿na zapisaæ obrazka na dysku.
+[Delete image from the list]
+Usuñ obrazek z listy
 [Image from %s]
 Obrazek od %s
 [Image for %s]
@@ -286,8 +295,6 @@ Wybierz obrazek do wys³ania
 Nie mo¿na za³adowaæ obrazka. Wybrany plik mo¿e mieæ nieznany format.
 [Image exceeds maximum allowed size of 255 KB.]
 Rozmiar pliku obrazka przekracza maksymalny dozwolony rozmiar 255 KB.
-[Image received]
-Odebrano obrazek
 
 ; Conferences
 [Open new conference]

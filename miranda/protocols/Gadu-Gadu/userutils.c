@@ -46,7 +46,7 @@ void *gg_doregister(GGPROTO *gg, char *newPass, char *newEmail)
 		MessageBox(
 			NULL,
 			error,
-			GG_PROTOERROR,
+			GG_PROTONAME,
 			MB_OK | MB_ICONSTOP
 		);
 		gg_netlog(gg, "gg_doregister(): Cannot register because of \"%s\".", strerror(errno));
@@ -100,7 +100,7 @@ void *gg_dounregister(GGPROTO *gg, uin_t uin, char *password)
 		MessageBox(
 			NULL,
 			error,
-			GG_PROTOERROR,
+			GG_PROTONAME,
 			MB_OK | MB_ICONSTOP
 		);
 		gg_netlog(gg, "gg_dounregister(): Cannot remove account because of \"%s\".", strerror(errno));
@@ -160,7 +160,7 @@ void *gg_dochpass(GGPROTO *gg, uin_t uin, char *password, char *newPass)
 		MessageBox(
 			NULL,
 			error,
-			GG_PROTOERROR,
+			GG_PROTONAME,
 			MB_OK | MB_ICONSTOP
 		);
 		gg_netlog(gg, "gg_dochpass(): Cannot change password because of \"%s\".", strerror(errno));

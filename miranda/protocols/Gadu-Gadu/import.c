@@ -321,7 +321,7 @@ static INT_PTR gg_import_server(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
 	{
 		MessageBox(NULL,
 			Translate("You have to be connected before you can import/export contacts from/to server."),
-			GG_PROTOERROR, MB_OK | MB_ICONSTOP
+			GG_PROTONAME, MB_OK | MB_ICONSTOP
 		);
 		return 0;
 	}
@@ -348,7 +348,7 @@ static INT_PTR gg_import_server(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
 		MessageBox(
 			NULL,
 			error,
-			GG_PROTOERROR,
+			GG_PROTONAME,
 			MB_OK | MB_ICONSTOP
 		);
 		gg_netlog(gg, "gg_import_server(): Cannot import list because of \"%s\".", strerror(errno));
@@ -372,7 +372,7 @@ static INT_PTR gg_remove_server(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
 	{
 		MessageBox(NULL,
 			Translate("You have to be connected before you can import/export contacts from/to server."),
-			GG_PROTOERROR, MB_OK | MB_ICONSTOP
+			GG_PROTONAME, MB_OK | MB_ICONSTOP
 		);
 		return 0;
 	}
@@ -399,7 +399,7 @@ static INT_PTR gg_remove_server(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
 		MessageBox(
 			NULL,
 			error,
-			GG_PROTOERROR,
+			GG_PROTONAME,
 			MB_OK | MB_ICONSTOP
 		);
 		gg_netlog(gg, "gg_remove_server(): Cannot remove list because of \"%s\".", strerror(errno));
@@ -413,32 +413,15 @@ static INT_PTR gg_remove_server(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
-
-#if (_WIN32_WINNT >= 0x0500) && !defined(OPENFILENAME_SIZE_VERSION_400)
-#ifndef CDSIZEOF_STRUCT
-#define CDSIZEOF_STRUCT(structname, member)  (((int)((LPBYTE)(&((structname*)0)->member) - ((LPBYTE)((structname*)0)))) + sizeof(((structname*)0)->member))
-#endif
-#define OPENFILENAME_SIZE_VERSION_400A	CDSIZEOF_STRUCT(OPENFILENAMEA,lpTemplateName)
-#define OPENFILENAME_SIZE_VERSION_400W	CDSIZEOF_STRUCT(OPENFILENAMEW,lpTemplateName)
-#ifdef UNICODE
-#define OPENFILENAME_SIZE_VERSION_400  OPENFILENAME_SIZE_VERSION_400W
-#else
-#define OPENFILENAME_SIZE_VERSION_400  OPENFILENAME_SIZE_VERSION_400A
-#endif // !UNICODE
-#endif // (_WIN32_WINNT >= 0x0500) && !defined(OPENFILENAME_SIZE_VERSION_400)
-
 static INT_PTR gg_import_text(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
 {
 	char str[MAX_PATH] = "\0";
-	OPENFILENAME ofn;
+	OPENFILENAME ofn = {0};
 	char filter[512], *pfilter;
 	struct _stat st;
 	FILE *f;
 
-	ZeroMemory(&ofn, sizeof(ofn));
 	ofn.lStructSize = OPENFILENAME_SIZE_VERSION_400;
-	ofn.hwndOwner = NULL;
-	ofn.hInstance = NULL;
 	strncpy(filter, Translate("Text files"), sizeof(filter));
 	strncat(filter, " (*.txt)", sizeof(filter) - strlen(filter));
 	pfilter = filter + strlen(filter) + 1;
@@ -491,7 +474,7 @@ static INT_PTR gg_import_text(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
 		MessageBox(
 			NULL,
 			error,
-			GG_PROTOERROR,
+			GG_PROTONAME,
 			MB_OK | MB_ICONSTOP
 		);
 		gg_netlog(gg, "gg_import_text(): Cannot import list from file \"%s\" because of \"%s\".", str, strerror(errno));
@@ -503,17 +486,14 @@ static INT_PTR gg_import_text(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
 static INT_PTR gg_export_text(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
 {
 	char str[MAX_PATH];
-	OPENFILENAME ofn;
+	OPENFILENAME ofn = {0};
 	char filter[512], *pfilter;
 	FILE *f;
 
 	strncpy(str, Translate("contacts"), sizeof(str));
 	strncat(str, ".txt", sizeof(str) - strlen(str));
 
-	ZeroMemory(&ofn, sizeof(ofn));
 	ofn.lStructSize = OPENFILENAME_SIZE_VERSION_400;
-	ofn.hwndOwner = NULL;
-	ofn.hInstance = NULL;
 	strncpy(filter, Translate("Text files"), sizeof(filter));
 	strncat(filter, " (*.txt)", sizeof(filter) - strlen(filter));
 	pfilter = filter + strlen(filter) + 1;
@@ -562,7 +542,7 @@ static INT_PTR gg_export_text(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
 		MessageBox(
 			NULL,
 			error,
-			GG_PROTOERROR,
+			GG_PROTONAME,
 			MB_OK | MB_ICONSTOP
 		);
 		gg_netlog(gg, "gg_import_text(): Cannot export list to file \"%s\" because of \"%s\".", str, strerror(errno));
@@ -584,7 +564,7 @@ static INT_PTR gg_export_server(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
 	{
 		MessageBox(NULL,
 			Translate("You have to be connected before you can import/export contacts from/to server."),
-			GG_PROTOERROR, MB_OK | MB_ICONSTOP
+			GG_PROTONAME, MB_OK | MB_ICONSTOP
 		);
 		return 0;
 	}
@@ -617,7 +597,7 @@ static INT_PTR gg_export_server(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
 		MessageBox(
 			NULL,
 			error,
-			GG_PROTOERROR,
+			GG_PROTONAME,
 			MB_OK | MB_ICONSTOP
 		);
 		gg_netlog(gg, "gg_export_server(): Cannot export list because of \"%s\".", strerror(errno));

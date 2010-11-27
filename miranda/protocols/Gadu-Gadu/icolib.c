@@ -45,7 +45,7 @@ static const iconList[] =
 	{ LPGEN("Clear ignored conferences"),	"clearignored",	IDI_CLEAR_CONFERENCE	}
 };
 
-HANDLE hIconLibItem[sizeof(iconList) / sizeof(iconList[0])];
+HANDLE hIconLibItem[SIZEOF(iconList)];
 
 void gg_icolib_init()
 {
@@ -61,7 +61,7 @@ void gg_icolib_init()
 	sid.pszDefaultFile = szFile;
 	sid.pszSection = szSectionName;
 
-	for(i = 0; i < sizeof(iconList) / sizeof(iconList[0]); i++) {
+	for(i = 0; i < SIZEOF(iconList); i++) {
 		char szSettingName[100];
 		mir_snprintf(szSettingName, sizeof(szSettingName), "%s_%s", GGDEF_PROTO, iconList[i].szName);
 		sid.pszName = szSettingName;
@@ -81,7 +81,7 @@ HICON LoadIconEx(const char* name, BOOL big)
 HANDLE GetIconHandle(int iconId)
 {
 	int i;
-	for(i = 0; i < sizeof(iconList) / sizeof(iconList[0]); i++)
+	for(i = 0; i < SIZEOF(iconList); i++)
 		if (iconList[i].defIconID == iconId)
 			return hIconLibItem[i];
 	return NULL;

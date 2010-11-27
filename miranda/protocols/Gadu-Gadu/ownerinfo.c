@@ -55,7 +55,7 @@ void __cdecl gg_remindpasswordthread(GGPROTO *gg, void *param)
 		MessageBox(
 			NULL,
 			error,
-			GG_PROTOERROR,
+			GG_PROTONAME,
 			MB_OK | MB_ICONSTOP
 		);
 		gg_netlog(gg, "gg_remindpasswordthread(): Password could not be reminded because of \"%s\".", strerror(errno));

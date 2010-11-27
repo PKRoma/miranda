@@ -134,7 +134,7 @@ int gg_gettoken(GGPROTO *gg, GGTOKEN *token)
 		MessageBox(
 				NULL,
 				error,
-				GG_PROTOERROR,
+				GG_PROTONAME,
 				MB_OK | MB_ICONSTOP
 		);
 		gg_free_pubdir(h);
@@ -148,7 +148,7 @@ int gg_gettoken(GGPROTO *gg, GGTOKEN *token)
 		MessageBox(
 				NULL,
 				error,
-				GG_PROTOERROR,
+				GG_PROTONAME,
 				MB_OK | MB_ICONSTOP
 		);
 		gg_free_pubdir(h);
@@ -171,7 +171,7 @@ int gg_gettoken(GGPROTO *gg, GGTOKEN *token)
 		MessageBox(
 				NULL,
 				Translate("Could not load token image."),
-				GG_PROTOERROR,
+				GG_PROTONAME,
 				MB_OK | MB_ICONSTOP
 		);
 		gg_free_pubdir(h);

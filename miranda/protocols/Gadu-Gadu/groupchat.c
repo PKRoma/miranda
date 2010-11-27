@@ -32,8 +32,7 @@ int gg_gc_clearignored(GGPROTO *gg, WPARAM wParam, LPARAM lParam);
 // Inits Gadu-Gadu groupchat module using chat.dll
 int gg_gc_init(GGPROTO *gg)
 {
-	// Chat.dll required Miranda version 0.4 or higher
-	if(gMirandaVersion && gMirandaVersion >= PLUGIN_MAKE_VERSION(0, 4, 0, 0) && ServiceExists(MS_GC_REGISTER))
+	if(ServiceExists(MS_GC_REGISTER))
 	{
 		char service[64];
 		GCREGISTER gcr = {0};
@@ -452,7 +451,7 @@ static INT_PTR CALLBACK gg_gc_openconfdlg(HWND hwndDlg,UINT message,WPARAM wPara
 					{
 						MessageBox(NULL,
 							Translate("You have to be connected to open new conference."),
-							GG_PROTOERROR, MB_OK | MB_ICONSTOP
+							GG_PROTONAME, MB_OK | MB_ICONSTOP
 						);
 					}
 					else if(hwndList)
@@ -608,7 +607,7 @@ int gg_gc_clearignored(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
 		cleared ?
 			Translate("All ignored conferences are now unignored and the conference policy will act again.") :
 			Translate("There are no ignored conferences."),
-		GG_PROTO,
+		GG_PROTONAME,
 		MB_OK | MB_ICONINFORMATION
 	);
 
@@ -622,7 +621,7 @@ int gg_gc_openconf(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
 	{
 		MessageBox(NULL,
 			Translate("You have to be connected to open new conference."),
-			GG_PROTOERROR, MB_OK | MB_ICONSTOP
+			GG_PROTONAME, MB_OK | MB_ICONSTOP
 		);
 		return 0;
 	}
