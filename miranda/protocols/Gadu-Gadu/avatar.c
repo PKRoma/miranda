@@ -73,7 +73,7 @@ void gg_getavatarfileinfo(GGPROTO *gg, uin_t uin, char **avatarurl, int *type)
 	req.requestType = REQUEST_GET;
 	req.szUrl = szUrl;
 	mir_snprintf(szUrl, 128, "http://api.gadu-gadu.pl/avatars/%d/0.xml", uin);
-	req.flags = NLHRF_NODUMP | NLHRF_HTTP11;
+	req.flags = NLHRF_NODUMP | NLHRF_HTTP11 | NLHRF_REDIRECT;
 	resp = (NETLIBHTTPREQUEST *)CallService(MS_NETLIB_HTTPTRANSACTION, (WPARAM)gg->netlib, (LPARAM)&req);
 	if (resp) {
 		if (resp->resultCode == 200 && resp->dataLength > 0 && resp->pData) {
@@ -232,7 +232,7 @@ void __cdecl gg_avatarrequestthread(GGPROTO *gg, void *empty)
 			req.cbSize = sizeof(req);
 			req.requestType = REQUEST_GET;
 			req.szUrl = data->AvatarURL;
-			req.flags = NLHRF_NODUMP | NLHRF_HTTP11;
+			req.flags = NLHRF_NODUMP | NLHRF_HTTP11 | NLHRF_REDIRECT;
 			resp = (NETLIBHTTPREQUEST *)CallService(MS_NETLIB_HTTPTRANSACTION, (WPARAM)gg->netlib, (LPARAM)&req);
 			if (resp) {
 				if (resp->resultCode == 200 && resp->dataLength > 0 && resp->pData) {
