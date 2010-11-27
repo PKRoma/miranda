@@ -82,6 +82,7 @@ extern "C" {
 #include <m_xml.h>
 #include <m_chat.h>
 #include <m_idle.h>
+#include <win2k.h>
 
 // Custom profile folders plugin header
 #include "m_folders.h"
@@ -192,7 +193,6 @@ typedef void (__cdecl GGThreadFunc)(void*, void*);
 // Wrappers of the old interface
 #define GG_PROTO		(gg->proto.m_szModuleName)
 #define GG_PROTONAME	(gg->name)
-#define GG_PROTOERROR	(gg->name)
 #define GGDEF_PROTO 	 "GG"        // Default Proto
 #define GGDEF_PROTONAME  "Gadu-Gadu" // Default ProtoName
 
@@ -328,10 +328,6 @@ typedef void (__cdecl GGThreadFunc)(void*, void*);
 #define GG_USERUTIL_REMOVE	2
 #define GG_USERUTIL_EMAIL	3
 
-#define WinVerMajor()			LOBYTE(LOWORD(GetVersion()))
-#define WinVerMinor()			HIBYTE(LOWORD(GetVersion()))
-#define IsWinVer2000Plus()		(WinVerMajor()>=5)
-#define IsWinVerXPPlus()		(WinVerMajor()>=5 && LOWORD(GetVersion())!=5)
 #define LocalEventUnhook(hook)	if(hook) UnhookEvent(hook)
 
 // Some MSVC compatibility with gcc
@@ -351,8 +347,6 @@ extern HINSTANCE hInstance;
 extern PLUGINLINK *pluginLink;
 extern CLIST_INTERFACE *pcli;
 extern struct LIST_INTERFACE li;
-extern DWORD gMirandaVersion;
-extern HANDLE hNetlib;
 #ifdef GG_CONFIG_HAVE_OPENSSL
 extern HANDLE hLibSSL;
 extern HANDLE hLibEAY;

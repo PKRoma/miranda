@@ -70,10 +70,9 @@ INT_PTR gg_img_sendimg(GGPROTO *gg, WPARAM wParam, LPARAM lParam);
 // Image Module : Adding item to contact menu, creating sync objects
 int gg_img_init(GGPROTO *gg)
 {
-	CLISTMENUITEM mi;
+	CLISTMENUITEM mi = {0};
 	char service[64];
 
-	ZeroMemory(&mi,sizeof(mi));
 	mi.cbSize = sizeof(mi);
 	mi.flags = CMIF_ICONFROMICOLIB;
 
@@ -233,23 +232,21 @@ char *gg_img_getfilter(char *szFilter, int nSize)
 // Save specified image entry
 int gg_img_saveimage(HWND hwnd, GGIMAGEENTRY *dat)
 {
-	OPENFILENAME ofn;
+	OPENFILENAME ofn = {0};
 	char szFileName[MAX_PATH];
 	char szFilter[128];
-	gg_img_getfilter(szFilter, sizeof(szFilter));
-
-	memset(&ofn, 0, sizeof(OPENFILENAME));
 
 	if(!dat) return FALSE;
 
-	ofn.lStructSize = sizeof(OPENFILENAME);
+	gg_img_getfilter(szFilter, sizeof(szFilter));
+	strncpy(szFileName, dat->lpszFileName, sizeof(szFileName));
+	ofn.lStructSize = OPENFILENAME_SIZE_VERSION_400;
 	ofn.hwndOwner = hwnd;
 	ofn.hInstance = hInstance;
-	strncpy(szFileName, dat->lpszFileName, sizeof(szFileName));
 	ofn.lpstrFile = szFileName;
 	ofn.lpstrFilter = szFilter;
 	ofn.nMaxFile = MAX_PATH;
-	ofn.Flags = OFN_NOCHANGEDIR;
+	ofn.Flags = OFN_PATHMUSTEXIST | OFN_NOCHANGEDIR | OFN_OVERWRITEPROMPT;
 	if(GetSaveFileName(&ofn))
 	{
 		FILE *fp = fopen(szFileName, "w+b" );
@@ -262,7 +259,7 @@ int gg_img_saveimage(HWND hwnd, GGIMAGEENTRY *dat)
 		else
 		{
 			gg_netlog(((GGIMAGEDLGDATA *)GetWindowLongPtr(hwnd, GWLP_USERDATA))->gg, "gg_img_saveimage(): Cannot save image to %s.", szFileName);
-			MessageBox(hwnd, Translate("Image cannot be written to disk."), ((GGIMAGEDLGDATA *)GetWindowLongPtr(hwnd, GWLP_USERDATA))->gg->proto.m_szProtoName, MB_OK | MB_ICONERROR);
+			MessageBox(hwnd, Translate("Image cannot be written to disk."), ((GGIMAGEDLGDATA *)GetWindowLongPtr(hwnd, GWLP_USERDATA))->gg->name, MB_OK | MB_ICONERROR);
 		}
 	}
 
@@ -400,16 +397,22 @@ static INT_PTR CALLBACK gg_img_dlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 				else gg_netlog(dat->gg, "gg_img_dlgproc(): Creation event not found, but someone might be waiting.");
 
 				// Making buttons flat
-				SendDlgItemMessage(hwndDlg, IDC_IMG_SAVE,	BUTTONSETASFLATBTN, 0, 0);
 				SendDlgItemMessage(hwndDlg, IDC_IMG_PREV,	BUTTONSETASFLATBTN, 0, 0);
 				SendDlgItemMessage(hwndDlg, IDC_IMG_NEXT,	BUTTONSETASFLATBTN, 0, 0);
 				SendDlgItemMessage(hwndDlg, IDC_IMG_DELETE,	BUTTONSETASFLATBTN, 0, 0);
+				SendDlgItemMessage(hwndDlg, IDC_IMG_SAVE,	BUTTONSETASFLATBTN, 0, 0);
 
 				// Setting images for buttons
 				SendDlgItemMessage(hwndDlg, IDC_IMG_PREV,	BM_SETIMAGE, IMAGE_ICON, (LPARAM)LoadIconEx("previous", FALSE));
 				SendDlgItemMessage(hwndDlg, IDC_IMG_NEXT,	BM_SETIMAGE, IMAGE_ICON, (LPARAM)LoadIconEx("next", FALSE));
 				SendDlgItemMessage(hwndDlg, IDC_IMG_DELETE,	BM_SETIMAGE, IMAGE_ICON, (LPARAM)LoadIconEx("delete", FALSE));
 				SendDlgItemMessage(hwndDlg, IDC_IMG_SAVE,	BM_SETIMAGE, IMAGE_ICON, (LPARAM)LoadIconEx("save", FALSE));
+
+				// Setting tooltips for buttons
+				SendDlgItemMessage(hwndDlg, IDC_IMG_PREV,	BUTTONADDTOOLTIP, (WPARAM)TranslateT("Previous image"), BATF_TCHAR);
+				SendDlgItemMessage(hwndDlg, IDC_IMG_NEXT,	BUTTONADDTOOLTIP, (WPARAM)TranslateT("Next image"), BATF_TCHAR);
+				SendDlgItemMessage(hwndDlg, IDC_IMG_DELETE,	BUTTONADDTOOLTIP, (WPARAM)TranslateT("Delete image from the list"), BATF_TCHAR);
+				SendDlgItemMessage(hwndDlg, IDC_IMG_SAVE,	BUTTONADDTOOLTIP, (WPARAM)TranslateT("Save image to disk"), BATF_TCHAR);
 
 				// Set main window image
 				SendMessage(hwndDlg, WM_SETICON, ICON_SMALL, (LPARAM)LoadIconEx("image", FALSE));
@@ -690,20 +693,18 @@ static INT_PTR CALLBACK gg_img_dlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 		{
 			char szFilter[128];
 			char szFileName[MAX_PATH];
-			OPENFILENAME ofn;
+			OPENFILENAME ofn = {0};
 
 			gg_img_getfilter(szFilter, sizeof(szFilter));
-
-			ZeroMemory(&ofn, sizeof(ofn));
 			*szFileName = 0;
-			ofn.lStructSize = sizeof(OPENFILENAME);
+			ofn.lStructSize = OPENFILENAME_SIZE_VERSION_400;
 			ofn.hwndOwner = hwndDlg;
 			ofn.hInstance = hInstance;
 			ofn.lpstrFilter = szFilter;
 			ofn.lpstrFile = szFileName;
 			ofn.nMaxFile = MAX_PATH;
 			ofn.lpstrTitle = Translate("Select picture to send");
-			ofn.Flags = OFN_FILEMUSTEXIST | OFN_NOCHANGEDIR;
+			ofn.Flags = OFN_FILEMUSTEXIST | OFN_NOCHANGEDIR | OFN_HIDEREADONLY;
 			if(GetOpenFileName(&ofn))
 			{
 				if(dat->lpImages)

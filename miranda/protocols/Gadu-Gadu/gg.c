@@ -138,7 +138,6 @@ const char *http_error_string(int h)
 
 //////////////////////////////////////////////////////////
 // Gets plugin info
-DWORD gMirandaVersion = 0;
 __declspec(dllexport) PLUGININFOEX *MirandaPluginInfoEx(DWORD mirandaVersion)
 {
 	if (mirandaVersion < PLUGIN_MAKE_VERSION(0, 9, 0, 0))
@@ -151,7 +150,6 @@ __declspec(dllexport) PLUGININFOEX *MirandaPluginInfoEx(DWORD mirandaVersion)
 		);
 		return NULL;
 	}
-	gMirandaVersion = mirandaVersion;
 	return &pluginInfo;
 }
 __declspec(dllexport) const MUUID* MirandaPluginInterfaces(void)

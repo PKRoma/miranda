@@ -376,7 +376,7 @@ void __cdecl gg_mainthread(GGPROTO *gg, void *empty)
 				MessageBox(
 					NULL,
 					error,
-					GG_PROTOERROR,
+					GG_PROTONAME,
 					MB_OK | MB_ICONEXCLAMATION
 				);
 			}
@@ -409,7 +409,7 @@ retry:
 			MessageBox(
 				NULL,
 				error,
-				GG_PROTOERROR,
+				GG_PROTONAME,
 				MB_OK | MB_ICONEXCLAMATION
 			);
 		}
@@ -455,7 +455,7 @@ retry:
 			MessageBox(
 				NULL,
 				perror,
-				GG_PROTOERROR,
+				GG_PROTONAME,
 				MB_OK | MB_ICONSTOP
 			);
 			gg_netlog(gg, "gg_mainthread(%x): %s", gg, perror);
