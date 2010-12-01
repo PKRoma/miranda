@@ -142,16 +142,20 @@ void CAimProto::aim_connection_authorization(void)
 					{
 						snac_md5_authkey(snac,hServerConn,seqno, username, password);
 						int authres = snac_authorization_reply(snac);
-						if(authres==1)
+						switch (authres)
 						{
+						case 1:
 							mir_free(password);
 							Netlib_CloseHandle(hServerPacketRecver);
 							LOG("Connection Authorization Thread Ending: Negotiation Beginning");
 							return;
-						}
-						else if (authres==2)
-						{
+
+						case 2:
 							sendBroadcast(NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_WRONGPASSWORD);
+							goto exit;
+
+						case 3:
+							sendBroadcast(NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_NOSERVER);
 							goto exit;
 						}
 					}

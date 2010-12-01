@@ -34,15 +34,15 @@ int CAimProto::snac_authorization_reply(SNAC &snac)//family 0x0017
 {
 	if (snac.subcmp(0x0003))
 	{
-		char* server=NULL;
-		int address=0;
-		unsigned char use_ssl=0;
-		while (address<snac.len())
+		char* server = NULL;
+		int address = 0;
+		unsigned char use_ssl = 0;
+		while (address < snac.len())
 		{
 			TLV tlv(snac.val(address));
-			if(tlv.cmp(0x0005))
-				server=tlv.dup();
-			else if(tlv.cmp(0x0006))
+			if (tlv.cmp(0x0005))
+				server = tlv.dup();
+			else if (tlv.cmp(0x0006))
 			{
 				Netlib_CloseHandle(hServerConn);
 
@@ -50,19 +50,21 @@ int CAimProto::snac_authorization_reply(SNAC &snac)//family 0x0017
 				char* delim = strchr(server, ':');
 				if (delim)
 				{
-					port = (unsigned short)atol(delim+1);
+					port = (unsigned short)atol(delim + 1);
 					*delim = 0;
 				}
 				hServerConn = aim_connect(server, port, use_ssl != 0, "bos.oscar.aol.com");
 				mir_free(server);
-				if(hServerConn)
+				if (hServerConn)
 				{
 					mir_free(COOKIE);
-					COOKIE_LENGTH=tlv.len();
-					COOKIE=tlv.dup();
-					ForkThread( &CAimProto::aim_protocol_negotiation, 0 );
+					COOKIE_LENGTH = tlv.len();
+					COOKIE = tlv.dup();
+					ForkThread(&CAimProto::aim_protocol_negotiation, 0);
 					return 1;
 				}
+				else
+					return 3;
 			}
 			else if (tlv.cmp(0x0008))
 			{
@@ -77,9 +79,9 @@ int CAimProto::snac_authorization_reply(SNAC &snac)//family 0x0017
 			}
 			else if (tlv.cmp(0x008e))
 			{
-				use_ssl=tlv.ubyte();
+				use_ssl = tlv.ubyte();
 			}
-			address+=tlv.len()+4;
+			address += tlv.len() + 4;
 		}
 	} 
 	return 0;
