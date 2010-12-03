@@ -364,6 +364,21 @@ retrycon:
 				char *hdrend = NULL;
 				int acksz = 0, pktsz = 0;
 
+				if (szActionName == NULL)
+				{
+					int len = sizeof(locIP);
+					getsockname(sock, (SOCKADDR*)&locIP, &len);
+					if (locIP.sin_addr.S_un.S_addr == 0x0100007f)
+					{
+						struct hostent *he;
+
+						gethostname(szPath, sizeof(szPath));
+						he = gethostbyname(szPath);
+						if (he != NULL)
+							locIP.sin_addr.S_un.S_addr = *(PDWORD)he->h_addr_list[0];
+					}
+				}
+
 				LongLog(szData);
 				sz = 0;
 				for(;;)
@@ -489,21 +504,6 @@ retry:
 				}
 				else
 					NetlibLogf(NULL, "UPnP send failed %d", WSAGetLastError());
-			}
-
-			if (szActionName == NULL)
-			{
-				int len = sizeof(locIP);
-				getsockname(sock, (SOCKADDR*)&locIP, &len);
-				if (locIP.sin_addr.S_un.S_addr == 0x0100007f)
-				{
-					struct hostent *he;
-
-					gethostname(szPath, sizeof(szPath));
-					he = gethostbyname(szPath);
-					if (he != NULL)
-						locIP.sin_addr.S_un.S_addr = *(PDWORD)he->h_addr_list[0];
-				}
 			}
 		}
 		txtParseParam(szResult, "HTTP", " ", " ", szRes, sizeof(szRes));
