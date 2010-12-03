@@ -39,11 +39,16 @@ DWORD DnsLookup(struct NetlibUser *nlu,const char *szHost)
 	if ( ip != INADDR_NONE )
 		return ip;
 
-	host = gethostbyname( szHost );
-	if ( host )
-		return *( u_long* )host->h_addr_list[0];
+	__try 
+	{
+		host = gethostbyname( szHost );
+		if ( host )
+			return *( u_long* )host->h_addr_list[0];
 
-	NetlibLogf(nlu,"%s %d: %s() for host %s failed (%u)",__FILE__,__LINE__,"gethostbyname", szHost, WSAGetLastError());
+		NetlibLogf(nlu,"%s %d: %s() for host %s failed (%u)",__FILE__,__LINE__,"gethostbyname", szHost, WSAGetLastError());
+	}
+	__except(EXCEPTION_EXECUTE_HANDLER) {}
+
 	return 0;
 }
 
