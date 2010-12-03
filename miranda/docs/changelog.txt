@@ -3,6 +3,22 @@
                            www.miranda-im.org
 
 
+* New in 0.9.12
+Bugfixes:
+ - Fixed UPnP for some routers
+ - Fixed UPnP port forwarding
+ - Fixed possible crash in file transfers window
+ - AIM: Fixed crash when server not available
+ - Gadu-Gadu: Improvements to the image dialog window
+ - Gadu-Gadu: Fixed fetching avatars
+ - Gadu-Gadu: Fixed search results encoding
+ - ICQ: Improved client detection
+ - ICQ: Fixed bug in client detection of Qnext v4
+ - IRC: Improved Ident implementation
+ - Jabber: Fixed changing status in jabber group chat 
+ - MSN: Fixes for bogus address book URL stuck in database
+
+
 * New in 0.9.11
 Bugfixes:
  - Fixed 401 HTTP authentication
