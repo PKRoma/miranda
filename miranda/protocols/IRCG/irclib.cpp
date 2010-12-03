@@ -1475,16 +1475,26 @@ LBL_Parse:
 		unsigned int PeerPortNrRcvd = 0, LocalPortNrRcvd = 0;
 		int iParamCnt = sscanf( szBuf, "%d , %d", &LocalPortNrRcvd, &PeerPortNrRcvd );
 
-		int cbLen;
+		int cbLen = 0;
 		char buf[1024*4];
 
-		if ( PeerPortNrRcvd == ppro->m_info.iPort && LocalPortNrRcvd == ppro->m_myLocalPort && iParamCnt == 2 )
-			cbLen = mir_snprintf(buf, SIZEOF(buf), "%s : USERID : " TCHAR_STR_PARAM " : " TCHAR_STR_PARAM "\r\n", 
-				szBuf, ppro->m_info.sIdentServerType.c_str() , ppro->m_info.sUserID.c_str());
-		else if( PeerPortNrRcvd != 0 && LocalPortNrRcvd != 0 && iParamCnt == 2)
-			cbLen = mir_snprintf(buf, SIZEOF(buf), "%s : ERROR : INVALID-PORT\r\n", szBuf);
-		else 
+		if (iParamCnt != 2)
 			cbLen = mir_snprintf(buf, SIZEOF(buf), "%s : ERROR : UNKNOWN-ERROR\r\n", szBuf);
+		else 
+		{
+			for (int i = 0; i < g_Instances.getCount(); i++) 
+			{
+				if (PeerPortNrRcvd == g_Instances[i]->m_info.iPort && LocalPortNrRcvd == g_Instances[i]->m_myLocalPort) 
+				{
+					cbLen = mir_snprintf(buf, SIZEOF(buf), "%s : USERID : " TCHAR_STR_PARAM " : " TCHAR_STR_PARAM "\r\n", 
+						szBuf, g_Instances[i]->m_info.sIdentServerType.c_str() , g_Instances[i]->m_info.sUserID.c_str());
+					break;
+				}
+			}
+
+			if (cbLen == 0)
+				cbLen = mir_snprintf(buf, SIZEOF(buf), "%s : ERROR : INVALID-PORT\r\n", szBuf);
+		}
 
 		if ( Netlib_Send(hConnection, (const char*)buf, cbLen, 0) > 0)
 			ppro->DoNetlibLog("Sent Ident answer: %s", buf);
