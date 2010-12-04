@@ -1245,9 +1245,16 @@ INT_PTR __cdecl CJabberProto::OnMenuHandleDirectPresence(WPARAM wParam, LPARAM l
 	if (result) result = JGetStringT( hContact, "ChatRoomID", &dbv );
 	if (result) return 0;
 
-	TCHAR buf[1024] = {0};
+	JABBER_LIST_ITEM* item = ListGetItemPtr( LIST_CHATROOM, dbv.ptszVal );
+	if (!item) return 0;
+
+	TCHAR text[ 1024 ];
+	mir_sntprintf( text, SIZEOF( text ), _T("%s/%s"), item->jid, item->nick );
+
+	TCHAR buf[1024] = _T("");
 	EnterString(buf, SIZEOF(buf), TranslateT("Status Message"), JES_MULTINE);
-	SendPresenceTo(res, dbv.ptszVal, NULL, buf);
+
+	SendPresenceTo(res, text, NULL, buf);
 	JFreeVariant(&dbv);
 	return 0;
 }
