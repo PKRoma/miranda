@@ -1240,21 +1240,28 @@ INT_PTR __cdecl CJabberProto::OnMenuHandleDirectPresence(WPARAM wParam, LPARAM l
 
 	HANDLE hContact = (HANDLE)wParam;
 
+	TCHAR *jid, text[ 1024 ];
+
 	DBVARIANT dbv;
 	int result = JGetStringT( hContact, "jid", &dbv );
-	if (result) result = JGetStringT( hContact, "ChatRoomID", &dbv );
-	if (result) return 0;
+	if (result)
+	{
+		result = JGetStringT( hContact, "ChatRoomID", &dbv );
+		if ( result ) return 0;
 
-	JABBER_LIST_ITEM* item = ListGetItemPtr( LIST_CHATROOM, dbv.ptszVal );
-	if (!item) return 0;
-
-	TCHAR text[ 1024 ];
-	mir_sntprintf( text, SIZEOF( text ), _T("%s/%s"), item->jid, item->nick );
+		JABBER_LIST_ITEM* item = ListGetItemPtr( LIST_CHATROOM, dbv.ptszVal );
+		if ( !item ) return 0;
+		
+		mir_sntprintf( text, SIZEOF( text ), _T("%s/%s"), item->jid, item->nick );
+		jid = text;
+	}
+	else
+		jid = dbv.ptszVal;
 
 	TCHAR buf[1024] = _T("");
 	EnterString(buf, SIZEOF(buf), TranslateT("Status Message"), JES_MULTINE);
 
-	SendPresenceTo(res, text, NULL, buf);
+	SendPresenceTo(res, jid, NULL, buf);
 	JFreeVariant(&dbv);
 	return 0;
 }
