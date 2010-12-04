@@ -262,9 +262,18 @@ int x, y;
 
 UINT_PTR CALLBACK CFHookProc(HWND hdlg, UINT uiMsg, WPARAM wParam, LPARAM lParam) {
 	switch(uiMsg) {
-		case WM_INITDIALOG:
+		case WM_INITDIALOG: {
+			CHOOSEFONT* cf = (CHOOSEFONT *)lParam;
+
 			TranslateDialogDefault(hdlg);
+			ShowWindow(GetDlgItem(hdlg, 1095), SW_HIDE);
+			if(cf && (cf->lCustData & FIDF_DISABLESTYLES)) {
+				EnableWindow(GetDlgItem(hdlg, 1137), FALSE);
+				ShowWindow(GetDlgItem(hdlg, 1137), SW_HIDE);
+				ShowWindow(GetDlgItem(hdlg, 1095), SW_SHOW);
+			}
 			return 0;
+		}
 	}
 
 	return 0;
@@ -1020,6 +1029,8 @@ static INT_PTR CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam,
 				cf.lStructSize = sizeof(cf);
 				cf.hwndOwner = hwndDlg;
 				cf.lpLogFont = &lf;
+				cf.lCustData = 0;
+
 				if ( F.flags & FIDF_ALLOWEFFECTS )
 				{
 					cf.Flags = CF_FORCEFONTEXIST | CF_INITTOLOGFONTSTRUCT | CF_SCREENFONTS | CF_EFFECTS | CF_ENABLETEMPLATE | CF_ENABLEHOOK;
@@ -1027,6 +1038,15 @@ static INT_PTR CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam,
 					cf.hInstance = hMirandaInst;
 					cf.lpTemplateName = MAKEINTRESOURCE(IDD_CUSTOM_FONT);
 					cf.lpfnHook = CFHookProc;
+				}
+				else if ( F.flags & FIDF_DISABLESTYLES ) {		// no style selection, mutually exclusive with FIDF_ALLOWEFFECTS
+					cf.Flags = CF_FORCEFONTEXIST | CF_INITTOLOGFONTSTRUCT | CF_SCREENFONTS | CF_ENABLETEMPLATE | CF_ENABLEHOOK | CF_TTONLY | CF_NOOEMFONTS;
+					cf.lCustData = F.flags;
+					cf.hInstance = hMirandaInst;
+					cf.lpTemplateName = MAKEINTRESOURCE(IDD_CUSTOM_FONT);
+					cf.lpfnHook = CFHookProc;
+					lf.lfWeight = FW_NORMAL;
+					lf.lfItalic = lf.lfUnderline = lf.lfStrikeOut = FALSE;
 				}
 				else cf.Flags = CF_FORCEFONTEXIST | CF_INITTOLOGFONTSTRUCT | CF_SCREENFONTS;
 
@@ -1041,7 +1061,7 @@ static INT_PTR CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam,
 						F1.value.style = (lf.lfWeight >= FW_BOLD ? DBFONTF_BOLD : 0) | (lf.lfItalic ? DBFONTF_ITALIC : 0) | (lf.lfUnderline ? DBFONTF_UNDERLINE : 0) | (lf.lfStrikeOut ? DBFONTF_STRIKEOUT : 0);
 						F1.value.charset = lf.lfCharSet;
 						_tcscpy(F1.value.szFace, lf.lfFaceName);
-						
+
 						MEASUREITEMSTRUCT mis = { 0 };
 						mis.CtlID = IDC_FONTLIST;
 						mis.itemID = selItems[i];
