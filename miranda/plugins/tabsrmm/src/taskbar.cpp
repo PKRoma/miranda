@@ -212,7 +212,7 @@ void CProxyWindow::add(TWindowData *dat)
  */
 void CProxyWindow::verify(TWindowData *dat)
 {
-	if(PluginConfig.m_bIsWin7) {
+	if(PluginConfig.m_bIsWin7 && PluginConfig.m_useAeroPeek) {
 		if(0 == dat->pWnd) {
 			dat->pWnd = new CProxyWindow(dat);
 			if(dat->pWnd) {
