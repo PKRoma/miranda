@@ -1,7 +1,7 @@
-#define VER_PLAIN	"3,0,11,0"
+#define VER_PLAIN	"3,0,12,0"
 #define _VER_MAJOR	3
 #define _VER_MINOR  0
-#define _VER_REVISION 11
+#define _VER_REVISION 12
 #define _VER_BUILD	0
 
 #if defined(_WIN64)
