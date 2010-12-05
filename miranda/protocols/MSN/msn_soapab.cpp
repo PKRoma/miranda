@@ -232,15 +232,15 @@ bool CMsnProto::MSN_SharingFindMembership(bool deltas, bool allowRecurse)
 	{
 		UpdateABHost("FindMembership", abUrl);
 		ezxml_t xmlm = ezxml_parse_str(tResult, strlen(tResult));
-		ezxml_t body = getSoapResponse(xmlm, "FindMembership");
 
-		if (!xmlm || !body)
+		if (!xmlm || !ezxml_child(xmlm, "soap:Body"))
 		{
 			UpdateABHost("FindMembership", NULL);
 			status = MSN_SharingFindMembership(deltas, false) ? 200 : 500;
 		}
 		else if (status == 200)
 		{
+			ezxml_t body = getSoapResponse(xmlm, "FindMembership");
 			ezxml_t svcs = ezxml_get(body, "Services", 0, "Service", -1);
 
 			while (svcs != NULL)
@@ -618,15 +618,15 @@ bool CMsnProto::MSN_ABFind(const char* szMethod, const char* szGuid, bool deltas
 	{
 		UpdateABHost(szMethod, abUrl);
 		ezxml_t xmlm = ezxml_parse_str(tResult, strlen(tResult));
-		ezxml_t body = getSoapResponse(xmlm, szMethod);
 
-		if (!xmlm || !body)
+		if (!xmlm || !ezxml_child(xmlm, "soap:Body"))
 		{
 			UpdateABHost(szMethod, NULL);
 			status = MSN_ABFind(szMethod, szGuid, false) ? 200 : 500;
 		}
 		else if (status == 200)
 		{
+			ezxml_t body = getSoapResponse(xmlm, szMethod);
 			ezxml_t ab = ezxml_child(body, "ab");
 			if (strcmp(szMethod, "ABFindByContacts"))
 			{
