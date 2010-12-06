@@ -104,9 +104,9 @@ void RecalcScrollBar(HWND hwnd, struct ClcData *dat);
 
 PLUGININFOEX pluginInfo = {
 #if defined(_UNICODE)
-		sizeof(PLUGININFOEX), "CList Nicer+ (Unicode)", PLUGIN_MAKE_VERSION(0, 9, 12, 0),
+		sizeof(PLUGININFOEX), "CList Nicer+ (Unicode)", PLUGIN_MAKE_VERSION(0, 9, 13, 0),
 #else
-		sizeof(PLUGININFOEX), "CList Nicer+", PLUGIN_MAKE_VERSION(0, 9, 12, 0),
+		sizeof(PLUGININFOEX), "CList Nicer+", PLUGIN_MAKE_VERSION(0, 9, 13, 0),
 #endif
 		"Display contacts, event notifications, protocol status",
 		"Pixel, egoDust, cyreve, Nightwish", "", "Copyright 2000-2010 Miranda-IM project", "http://www.miranda-im.org",

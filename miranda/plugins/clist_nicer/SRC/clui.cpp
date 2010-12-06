@@ -1398,7 +1398,10 @@ skipbg:
 		}
 
 		case WM_WINDOWPOSCHANGED:
-			return(0);
+			if(!Docking_IsDocked(0, 0))
+				return(0);
+			else
+				break;
 
 		case WM_WINDOWPOSCHANGING: {
 			WINDOWPOS *wp = (WINDOWPOS *)lParam;
@@ -1406,8 +1409,8 @@ skipbg:
 			if (wp && wp->flags & SWP_NOSIZE)
 				return FALSE;
 
-			if (Docking_IsDocked(0, 0))
-				break;
+			//if (Docking_IsDocked(0, 0))
+			//	break;
 
 			if (pcli->hwndContactList != NULL) {
 				RedrawWindow(hwnd, NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW);
