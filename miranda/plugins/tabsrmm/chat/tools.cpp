@@ -58,6 +58,7 @@ int GetRichTextLength(HWND hwnd)
  * @param pszWord 		string to strip of any IRC-style
  *  					formatting
  * @param fToLower  	convert to lowercase
+ * @param fStripCR		strip cr/lf sequences (only for highlighter, defaults to false)
  * @param buf 			caller-provided buffer, use a static one
  *  					when the caller does not provide a
  *  					buffer
@@ -66,7 +67,7 @@ int GetRichTextLength(HWND hwnd)
  *
  * @return TCHAR*		the stripped string
  */
-TCHAR* RemoveFormatting(const TCHAR* pszWord, bool fToLower, TCHAR* buf, const size_t len)
+TCHAR* RemoveFormatting(const TCHAR* pszWord, bool fToLower, bool fStripCR, TCHAR* buf, const size_t len)
 {
 	static TCHAR 	_szTemp[20000];
 	TCHAR*			szTemp = 0;
@@ -123,6 +124,13 @@ TCHAR* RemoveFormatting(const TCHAR* pszWord, bool fToLower, TCHAR* buf, const s
 					break;
 			}
 		} else {
+			if(fStripCR) {
+				if(0x0a == pszWord[i] || 0x0c == pszWord[i]) {
+					szTemp[j++] = ' ';
+					i++;
+					continue;
+				}
+			}
 			szTemp[j] = pszWord[i];
 			j++;
 			i++;

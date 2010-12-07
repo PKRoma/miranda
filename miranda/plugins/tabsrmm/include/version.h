@@ -1,4 +1,4 @@
-#define VER_PLAIN	"3,1,99,6"
+#define VER_PLAIN	"3,1,99,7"
 #define _VER_MAJOR	3
 #define _VER_MINOR  1
 #define _VER_REVISION 99
