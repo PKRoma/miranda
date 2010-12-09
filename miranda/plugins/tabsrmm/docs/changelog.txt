@@ -35,6 +35,17 @@ Version 3.x is for Miranda 0.9 and was released in August 2010, beginning with
 			Detailed change log
 			===================
 
+Version 3.0.13 - 2010/12/10
+
+	* fixed visual anomalies with some message window elements when 
+	  the tool bar is hidden
+	
+	* TAB does no longer focus the send button when the tool bar
+	  is hidden.
+	  
+	* MUC: strip unneeded trailing white space characters from messages
+	  to prevent them from breaking highlight word matching.
+
 Version 3.0.9 - 2010/10/xx
 
 	* try to strip control and formatting codes from topic text before

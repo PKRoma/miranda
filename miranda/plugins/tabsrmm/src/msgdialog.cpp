@@ -1223,18 +1223,30 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
 			urc->rcItem.right = urc->dlgNewSize.cx - 50;
 			urc->rcItem.bottom = msgTop - (bBottomToolbar ? 0 : 28);
 			urc->rcItem.top = msgTop - 16 - (bBottomToolbar ? 0 : 28);
+			if (!showToolbar && !bBottomToolbar) {
+				urc->rcItem.bottom += 21;
+				urc->rcItem.top += 21;
+			}
 			return RD_ANCHORX_CUSTOM | RD_ANCHORY_BOTTOM;
 		case IDC_ADD:
 			urc->rcItem.bottom = msgTop - (bBottomToolbar ? 0 : 28);
 			urc->rcItem.top = msgTop - 18 - (bBottomToolbar ? 0 : 28);
 			urc->rcItem.right = urc->dlgNewSize.cx - 28;
 			urc->rcItem.left = urc->rcItem.right - 20;
+			if (!showToolbar && !bBottomToolbar) {
+				urc->rcItem.bottom += 21;
+				urc->rcItem.top += 21;
+			}
 			return RD_ANCHORX_CUSTOM | RD_ANCHORY_BOTTOM;
 		case IDC_CANCELADD:
 			urc->rcItem.bottom = msgTop - (bBottomToolbar ? 0 : 28);
 			urc->rcItem.top = msgTop - 18 - (bBottomToolbar ? 0 : 28);
 			urc->rcItem.right = urc->dlgNewSize.cx - 4;
 			urc->rcItem.left = urc->rcItem.right - 20;
+			if (!showToolbar && !bBottomToolbar) {
+				urc->rcItem.bottom += 21;
+				urc->rcItem.top += 21;
+			}
 			return RD_ANCHORX_CUSTOM | RD_ANCHORY_BOTTOM;
 		case IDC_TOGGLESIDEBAR:
 			return RD_ANCHORX_CUSTOM | RD_ANCHORY_CUSTOM;
@@ -1245,12 +1257,20 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
 				urc->rcItem.bottom = msgTop - 5 - (bBottomToolbar ? 0 : 28) - ((dat->bNotOnList || dat->dwFlagsEx & MWF_SHOW_SCROLLINGDISABLED) ? 20 : 0);
 				urc->rcItem.top = msgTop - 25 - (bBottomToolbar ? 0 : 28) - ((dat->bNotOnList || dat->dwFlagsEx & MWF_SHOW_SCROLLINGDISABLED) ? 20 : 0);
 			}
+			if (!showToolbar && !bBottomToolbar) {
+				urc->rcItem.bottom += 21;
+				urc->rcItem.top += 21;
+			}
 			return RD_ANCHORX_LEFT | RD_ANCHORY_BOTTOM;
 		case IDC_STATICTEXT:
 		case IDC_STATICERRORICON:
 			if(fErrorState) {
 				urc->rcItem.bottom = msgTop - 28 - (bBottomToolbar ? 0 : 28) - ((dat->bNotOnList || dat->dwFlagsEx & MWF_SHOW_SCROLLINGDISABLED) ? 20 : 0);
 				urc->rcItem.top = msgTop - 45 - (bBottomToolbar ? 0 : 28) - ((dat->bNotOnList || dat->dwFlagsEx & MWF_SHOW_SCROLLINGDISABLED) ? 20 : 0);
+			}
+			if (!showToolbar && !bBottomToolbar) {
+				urc->rcItem.bottom += 21;
+				urc->rcItem.top += 21;
 			}
 			return RD_ANCHORX_LEFT | RD_ANCHORY_BOTTOM;
 	}
@@ -2114,7 +2134,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 								}
 								else {
 									if(((NMHDR *)lParam)->idFrom == IDC_MESSAGE) {
-										if(GetSendButtonState(hwndDlg) != PBS_DISABLED) {
+										if(GetSendButtonState(hwndDlg) != PBS_DISABLED && !(dat->pContainer->dwFlags & CNT_HIDETOOLBAR)) {
 											SetFocus(GetDlgItem(hwndDlg, IDOK));
 											return(_dlgReturn(hwndDlg, 1));
 										}
