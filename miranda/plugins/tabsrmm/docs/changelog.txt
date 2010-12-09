@@ -35,6 +35,16 @@ are currently no downloads for it, you'll have to compile it from source.
 			Detailed change log
 			===================
 
+Version 3.1.99.7 - 2010/12/10
+
+	* fixed visual anomalies when the tool bar is hidden
+	
+	* TAB does no longer focus the send button when the tool bar
+	  is hidden.
+	  
+	* MUC: strip unneeded trailing white space characters from messages
+	  to prevent them from breaking highlighting.
+
 Version 3.1.99.6 - 2010/10/28
 
 	* MUC: don't touch clist group at startup
