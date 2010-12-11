@@ -274,7 +274,7 @@ static void SetListItemText( HWND hwndList, int idx, int col, TCHAR* szText )
 
 static INT_PTR CALLBACK DlgProcFindAdd(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	struct FindAddDlgData* dat = ( struct FindAddDlgData* )GetWindowLongPtr(hwndDlg,GWLP_USERDATA);
+	struct FindAddDlgData* dat = ( struct FindAddDlgData* )GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 	HWND hwndList = GetDlgItem(hwndDlg, IDC_RESULTS);
 
 	switch (msg) {
@@ -286,16 +286,15 @@ static INT_PTR CALLBACK DlgProcFindAdd(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 
 			TranslateDialogDefault(hwndDlg);
 			Window_SetIcon_IcoLib(hwndDlg, SKINICON_OTHER_FINDUSER);
-			ListView_SetExtendedListViewStyle(hwndList,LVS_EX_FULLROWSELECT|LVS_EX_HEADERDRAGDROP);
-			dat=(struct FindAddDlgData*)mir_alloc(sizeof(struct FindAddDlgData));
-			memset(dat,0,sizeof(struct FindAddDlgData));
-			SetWindowLongPtr(hwndDlg,GWLP_USERDATA,(LONG_PTR)dat);
+			dat=(struct FindAddDlgData*)mir_calloc(sizeof(struct FindAddDlgData));
+			SetWindowLongPtr(hwndDlg, GWLP_USERDATA, (LONG_PTR)dat);
 			dat->notSearchedYet=1;
 			dat->iLastColumnSortIndex=1;
 			dat->bSortAscending=1;
 			dat->hBmpSortUp=(HBITMAP)LoadImage(hMirandaInst,MAKEINTRESOURCE(IDB_SORTCOLUP),IMAGE_BITMAP,0,0,LR_LOADMAP3DCOLORS);
 			dat->hBmpSortDown=(HBITMAP)LoadImage(hMirandaInst,MAKEINTRESOURCE(IDB_SORTCOLDOWN),IMAGE_BITMAP,0,0,LR_LOADMAP3DCOLORS);
 			SendDlgItemMessage(hwndDlg,IDC_MOREOPTIONS,BUTTONSETARROW,1,0);
+			ListView_SetExtendedListViewStyle(hwndList,LVS_EX_FULLROWSELECT|LVS_EX_HEADERDRAGDROP);
 
 			{	LVCOLUMN lvc;
 				RECT rc;
@@ -414,12 +413,13 @@ static INT_PTR CALLBACK DlgProcFindAdd(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 		}
 			//fall through
 		case WM_MOVE:
-		{	RECT rc;
-			if(dat->hwndAdvSearch==NULL) break;
-			GetWindowRect(hwndList,&rc);
-			SetWindowPos(dat->hwndAdvSearch,0,rc.left,rc.top,0,0,SWP_NOZORDER|SWP_NOSIZE);
+			if (dat && dat->hwndAdvSearch)
+			{
+				RECT rc;
+				GetWindowRect(hwndList,&rc);
+				SetWindowPos(dat->hwndAdvSearch,0,rc.left,rc.top,0,0,SWP_NOZORDER|SWP_NOSIZE);
+			}
 			break;
-		}
 		case WM_GETMINMAXINFO:
 		{	MINMAXINFO *mmi=(MINMAXINFO*)lParam;
 			RECT rc,rc2;
