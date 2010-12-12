@@ -1214,6 +1214,10 @@ static INT_PTR CALLBACK OptionsDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPAR
 			{
 				int i;
 				PSHNOTIFY pshn;
+				
+				if (LOWORD(wParam) == IDOK  && GetParent(GetFocus()) == GetDlgItem(hdlg, IDC_KEYWORD_FILTER))
+					return TRUE;
+				
 				EnableWindow(GetDlgItem(hdlg,IDC_APPLY),FALSE);
 				SetFocus(hwndTree);
 				if(dat->currentPage!=(-1)) {
