@@ -3,6 +3,13 @@
                            www.miranda-im.org
 
 
+* New in 0.9.13
+Bugfixes:
+ - Closing Find/Add Contacts caused crash
+ - Enter on options search closed options
+ - ICQ: Added hints on password limiation to options
+
+
 * New in 0.9.12
 Bugfixes:
  - Fixed UPnP for some routers
