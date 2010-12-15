@@ -1120,11 +1120,11 @@ HANDLE ImportContact(HANDLE hDbFile, struct DBContact Contact)
 
 static void ImportHistory(HANDLE hDbFile, struct DBContact Contact, PROTOCOLDESCRIPTOR **protocol, int protoCount)
 {
-	DBEVENTINFO dbei;
 	HANDLE hContact = INVALID_HANDLE_VALUE;
 	DWORD dwOffset;
 	MSG msg;
 	DBVARIANT proto;
+	int i, skipAll, bIsVoidContact;
 
 	// Is it contats history import?
 	if ( protoCount == 0 ) {
@@ -1153,99 +1153,103 @@ static void ImportHistory(HANDLE hDbFile, struct DBContact Contact, PROTOCOLDESC
 	else hContact = NULL; //system history import
 
 	// OK to import this chain?
-	if (hContact != INVALID_HANDLE_VALUE) {
-		int i = 0;
-		int skipAll = 0;
+	if (hContact == INVALID_HANDLE_VALUE) {
+		nSkippedContacts++;
+		return;
+	}
 
-		// Get the start of the event chain
-		dwOffset = Contact.ofsFirstEvent;
-		while (dwOffset) {
-			int skip = 0;
+	i = skipAll = 0;
+	bIsVoidContact = CallService( MS_DB_EVENT_GETCOUNT, ( WPARAM )hContact, 0 ) == 0;
 
-			// Copy the event and import it
-			ZeroMemory(&dbei, sizeof(dbei));
-			if (GetEvent(hDbFile, dwOffset, &dbei)) {
-				// check protocols during system history import
-				if (hContact == NULL) {
-					int i;
-					skipAll = 1;
+	// Get the start of the event chain
+	dwOffset = Contact.ofsFirstEvent;
+	while (dwOffset) {
+		int skip = 0;
 
-					for(i = 0; i < protoCount; i++)
-						if (!strcmp(dbei.szModule, protocol[i]->szName)) { //&& protocol[i]->type == PROTOTYPE_PROTOCOL)
-							skipAll = 0;
-							break;
-						}
+		// Copy the event and import it
+		DBEVENTINFO dbei = { 0 };
+		if (GetEvent(hDbFile, dwOffset, &dbei)) {
+			// check protocols during system history import
+			if (hContact == NULL) {
+				int i;
+				skipAll = 1;
 
-					skip = skipAll;
-				}
-
-				// custom filtering
-				if (!skip && nImportOption == IMPORT_CUSTOM) {
-					BOOL sent = (dbei.flags&DBEF_SENT);
-
-					if (dbei.timestamp < (DWORD)dwSinceDate)
-						skip = 1;
-
-					if (!skip) {
-						if (hContact) {
-							skip = 1;
-							switch(dbei.eventType) {
-							case EVENTTYPE_MESSAGE:
-								if ((sent?IOPT_MSGSENT:IOPT_MSGRECV)&nCustomOptions)
-									skip = 0;
-								break;
-							case EVENTTYPE_FILE:
-								if ((sent?IOPT_FILESENT:IOPT_FILERECV)&nCustomOptions)
-									skip = 0;
-								break;
-							case EVENTTYPE_URL:
-								if ((sent?IOPT_URLSENT:IOPT_URLRECV)&nCustomOptions)
-									skip = 0;
-								break;
-							default:
-								if ((sent?IOPT_OTHERSENT:IOPT_OTHERRECV)&nCustomOptions)
-									skip = 0;
-								break;
-							}
-						}
-						else if ( !( nCustomOptions & IOPT_SYSTEM ))
-							skip = 1;
+				for(i = 0; i < protoCount; i++)
+					if (!strcmp(dbei.szModule, protocol[i]->szName)) { //&& protocol[i]->type == PROTOTYPE_PROTOCOL)
+						skipAll = 0;
+						break;
 					}
 
-					if (skip)
-						nSkippedEvents++;
-				}
-
-				if (!skip) {
-					// Check for duplicate entries
-					if ( !IsDuplicateEvent( hContact, dbei )) {
-						// Add dbevent
-						if (CallService(MS_DB_EVENT_ADD, (WPARAM)hContact, (LPARAM)&dbei))
-							nMessagesCount++;
-						else
-							AddMessage( LPGEN("Failed to add message"));
-					}
-					else
-						nDupes++;
-				}
+				skip = skipAll;
 			}
 
-			if ( !( i%10 )) {
-				if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
-					TranslateMessage(&msg);
-					DispatchMessage(&msg);
-			}	}
+			// custom filtering
+			if (!skip && nImportOption == IMPORT_CUSTOM) {
+				BOOL sent = (dbei.flags&DBEF_SENT);
 
-			// skip this chain if needed
-			if ( skipAll )
-				break;
+				if (dbei.timestamp < (DWORD)dwSinceDate)
+					skip = 1;
 
-			// Get next event
-			dwOffset = FindNextEvent(hDbFile, dwOffset);
-			i++;
+				if (!skip) {
+					if (hContact) {
+						skip = 1;
+						switch(dbei.eventType) {
+						case EVENTTYPE_MESSAGE:
+							if ((sent?IOPT_MSGSENT:IOPT_MSGRECV)&nCustomOptions)
+								skip = 0;
+							break;
+						case EVENTTYPE_FILE:
+							if ((sent?IOPT_FILESENT:IOPT_FILERECV)&nCustomOptions)
+								skip = 0;
+							break;
+						case EVENTTYPE_URL:
+							if ((sent?IOPT_URLSENT:IOPT_URLRECV)&nCustomOptions)
+								skip = 0;
+							break;
+						default:
+							if ((sent?IOPT_OTHERSENT:IOPT_OTHERRECV)&nCustomOptions)
+								skip = 0;
+							break;
+						}
+					}
+					else if ( !( nCustomOptions & IOPT_SYSTEM ))
+						skip = 1;
+				}
+
+				if (skip)
+					nSkippedEvents++;
+			}
+
+			if (!skip) {
+				// Check for duplicate entries
+				if ( !IsDuplicateEvent( hContact, dbei )) {
+					// Add dbevent
+					if (!bIsVoidContact)
+						dbei.flags &= ~DBEF_FIRST;
+					if (CallService(MS_DB_EVENT_ADD, (WPARAM)hContact, (LPARAM)&dbei))
+						nMessagesCount++;
+					else
+						AddMessage( LPGEN("Failed to add message"));
+				}
+				else
+					nDupes++;
+			}
 		}
+
+		if ( !( i%10 )) {
+			if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
+				TranslateMessage(&msg);
+				DispatchMessage(&msg);
+		}	}
+
+		// skip this chain if needed
+		if ( skipAll )
+			break;
+
+		// Get next event
+		dwOffset = FindNextEvent(hDbFile, dwOffset);
+		i++;
 	}
-	else nSkippedContacts++;
 }
 
 static void MirandaImport(HWND hdlg)
