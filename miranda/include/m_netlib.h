@@ -761,6 +761,7 @@ static INT_PTR Netlib_Logf(HANDLE hUser, const char *fmt, ...)
 
 // Inits a required security provider. Right now only NTLM is supported
 // Returns HANDLE = NULL on error or non-null value on success
+// Known providers: Basic, NTLM, Negotiate, Kerberos, GSSAPI - (Kerberos SASL)
 #define MS_NETLIB_INITSECURITYPROVIDER "Netlib/InitSecurityProvider"
 
 static __inline HANDLE Netlib_InitSecurityProvider( char* szProviderName )
@@ -825,7 +826,7 @@ typedef struct {
 
 static __inline char* Netlib_NtlmCreateResponse2( HANDLE hProvider, char* szChallenge, TCHAR* szLogin, TCHAR* szPass, unsigned *complete )
 {
-	NETLIBNTLMREQUEST2 temp = { sizeof(temp), szChallenge, szLogin, szPass, 0, NNR_TCHAR };
+	NETLIBNTLMREQUEST2 temp = { sizeof(temp), szChallenge, szLogin, szPass, *complete, NNR_TCHAR };
 	char* res = (char*)CallService( MS_NETLIB_NTLMCREATERESPONSE2, (WPARAM)hProvider, (LPARAM)&temp );
 	*complete = temp.complete;
 	return res;

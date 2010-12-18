@@ -133,7 +133,9 @@ HANDLE NetlibInitSecurityProvider(const TCHAR* szProvider, const TCHAR* szPrinci
 	if (g_pSSPI != NULL) 
 	{
 		PSecPkgInfo ntlmSecurityPackageInfo;
-		SECURITY_STATUS sc = g_pSSPI->QuerySecurityPackageInfo((LPTSTR)szProvider, &ntlmSecurityPackageInfo);
+		bool isGSSAPI = _tcsicmp(szProvider, _T("GSSAPI")) == 0;
+		const TCHAR *szProviderC = isGSSAPI ? _T("Kerberos") : szProvider;
+		SECURITY_STATUS sc = g_pSSPI->QuerySecurityPackageInfo((LPTSTR)szProviderC, &ntlmSecurityPackageInfo);
 		if (sc == SEC_E_OK)
 		{
 			NtlmHandleType* hNtlm;
@@ -186,6 +188,82 @@ void NetlibDestroySecurityProvider(HANDLE hSecurity)
 	ReleaseMutex(hSecMutex);
 }
 
+char* CompleteGssapi(HANDLE hSecurity, unsigned char *szChallenge, unsigned chlsz)
+{
+	if (!szChallenge || !szChallenge[0]) return NULL;
+
+	NtlmHandleType* hNtlm = (NtlmHandleType*)hSecurity;
+	unsigned char inDataBuffer[1024];
+
+	SecBuffer inBuffers[2] = 
+	{
+		{ sizeof(inDataBuffer), SECBUFFER_DATA, inDataBuffer },
+		{ chlsz, SECBUFFER_STREAM, szChallenge },
+	};
+
+	SecBufferDesc inBuffersDesc = { SECBUFFER_VERSION, 2, inBuffers };
+
+	unsigned long qop = 0;
+	SECURITY_STATUS sc = g_pSSPI->DecryptMessage(&hNtlm->hClientContext, &inBuffersDesc, 0, &qop);
+	if (sc != SEC_E_OK) 
+	{
+		ReportSecError(sc, __LINE__);
+		return NULL;
+	}
+
+	unsigned char LayerMask = inDataBuffer[0];
+	unsigned int MaxMessageSize = htonl(*(unsigned*)&inDataBuffer[1]);
+
+	SecPkgContext_Sizes sizes;
+	sc = g_pSSPI->QueryContextAttributes(&hNtlm->hClientContext, SECPKG_ATTR_SIZES, &sizes);
+	if (sc != SEC_E_OK) 
+	{
+		ReportSecError(sc, __LINE__);
+		return NULL;
+	}
+
+	unsigned char *tokenBuffer = (unsigned char*)alloca(sizes.cbSecurityTrailer);
+	unsigned char *paddingBuffer = (unsigned char*)alloca(sizes.cbBlockSize);
+
+	unsigned char outDataBuffer[4] = { 1, 0, 16, 0 };
+
+	SecBuffer outBuffers[3] = 
+	{
+		{ sizes.cbSecurityTrailer, SECBUFFER_TOKEN, tokenBuffer },
+		{ sizeof(outDataBuffer), SECBUFFER_DATA, outDataBuffer },
+		{ sizes.cbBlockSize, SECBUFFER_PADDING, paddingBuffer }
+	};
+	SecBufferDesc outBuffersDesc = { SECBUFFER_VERSION, 3, outBuffers };
+
+	sc = g_pSSPI->EncryptMessage(&hNtlm->hClientContext, SECQOP_WRAP_NO_ENCRYPT, &outBuffersDesc, 0);
+	if (sc != SEC_E_OK) 
+	{
+		ReportSecError(sc, __LINE__);
+		return NULL;
+	}
+
+	unsigned i, ressz = 0;
+	for (i = 0; i < outBuffersDesc.cBuffers; i++) 
+		ressz += outBuffersDesc.pBuffers[i].cbBuffer;
+
+
+	unsigned char *response = (unsigned char*)alloca(ressz), *p = response;
+	for (i = 0; i < outBuffersDesc.cBuffers; i++) 
+	{
+		memcpy(p, outBuffersDesc.pBuffers[i].pvBuffer, outBuffersDesc.pBuffers[i].cbBuffer);
+		p += outBuffersDesc.pBuffers[i].cbBuffer;
+	}
+
+	NETLIBBASE64 nlb64;
+	nlb64.cbDecoded = ressz;
+	nlb64.pbDecoded = response;
+	nlb64.cchEncoded = Netlib_GetBase64EncodedBufferSize(nlb64.cbDecoded);
+	nlb64.pszEncoded = (char*)alloca(nlb64.cchEncoded);
+	if (!NetlibBase64Encode(0,(LPARAM)&nlb64)) return NULL;
+
+	return mir_strdup(nlb64.pszEncoded);
+} 
+
 char* NtlmCreateResponseFromChallenge(HANDLE hSecurity, const char *szChallenge, const TCHAR* login, const TCHAR* psw, 
 									  bool http, unsigned& complete)
 {
@@ -202,7 +280,8 @@ char* NtlmCreateResponseFromChallenge(HANDLE hSecurity, const char *szChallenge,
 
  	if (_tcsicmp(hNtlm->szProvider, _T("Basic")))
 	{
-		bool isKerberos = _tcsicmp(hNtlm->szProvider, _T("Kerberos")) == 0;
+		bool isGSSAPI = _tcsicmp(hNtlm->szProvider, _T("GSSAPI")) == 0;
+		TCHAR *szProvider = isGSSAPI ? _T("Kerberos") : hNtlm->szProvider;
 		bool hasChallenge = szChallenge != NULL && szChallenge[0] != '\0';
 		if (hasChallenge) 
 		{
@@ -212,12 +291,15 @@ char* NtlmCreateResponseFromChallenge(HANDLE hSecurity, const char *szChallenge,
 			nlb64.pbDecoded = (PBYTE)alloca(nlb64.cbDecoded);
 			if (!NetlibBase64Decode(0, (LPARAM)&nlb64)) return NULL;
 
-			inputBufferDescriptor.cBuffers=1;
-			inputBufferDescriptor.pBuffers=&inputSecurityToken;
-			inputBufferDescriptor.ulVersion=SECBUFFER_VERSION;
-			inputSecurityToken.BufferType=SECBUFFER_TOKEN;
-			inputSecurityToken.cbBuffer=nlb64.cbDecoded;
-			inputSecurityToken.pvBuffer=nlb64.pbDecoded;
+			if (isGSSAPI && complete)
+				return CompleteGssapi(hSecurity, nlb64.pbDecoded, nlb64.cbDecoded);
+
+			inputBufferDescriptor.cBuffers = 1;
+			inputBufferDescriptor.pBuffers = &inputSecurityToken;
+			inputBufferDescriptor.ulVersion = SECBUFFER_VERSION;
+			inputSecurityToken.BufferType = SECBUFFER_TOKEN;
+			inputSecurityToken.cbBuffer = nlb64.cbDecoded;
+			inputSecurityToken.pvBuffer = nlb64.pbDecoded;
 
 			// try to decode the domain name from the NTLM challenge
 			if (login != NULL && login[0] != '\0' && !hNtlm->hasDomain) 
@@ -323,7 +405,7 @@ char* NtlmCreateResponseFromChallenge(HANDLE hSecurity, const char *szChallenge,
 				hNtlm->hasDomain = domainLen != 0;
 			}
 
-			sc = g_pSSPI->AcquireCredentialsHandle(NULL, hNtlm->szProvider, 
+			sc = g_pSSPI->AcquireCredentialsHandle(NULL, szProvider, 
 				SECPKG_CRED_OUTBOUND, NULL, hNtlm->hasDomain ? &auth : NULL, NULL, NULL, 
 				&hNtlm->hClientCredential, &tokenExpiration);
 			if (sc != SEC_E_OK) 
@@ -342,7 +424,7 @@ char* NtlmCreateResponseFromChallenge(HANDLE hSecurity, const char *szChallenge,
 
 		sc = g_pSSPI->InitializeSecurityContext(&hNtlm->hClientCredential,
 			hasChallenge ? &hNtlm->hClientContext : NULL,
-			hNtlm->szPrincipal, isKerberos ? ISC_REQ_MUTUAL_AUTH | ISC_REQ_STREAM : 0, 0, SECURITY_NATIVE_DREP,
+			hNtlm->szPrincipal, isGSSAPI ? ISC_REQ_MUTUAL_AUTH | ISC_REQ_STREAM : 0, 0, SECURITY_NATIVE_DREP,
 			hasChallenge ? &inputBufferDescriptor : NULL, 0, &hNtlm->hClientContext,
 			&outputBufferDescriptor, &contextAttributes, &tokenExpiration);
 
