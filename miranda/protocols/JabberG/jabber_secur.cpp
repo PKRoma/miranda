@@ -42,7 +42,7 @@ TNtlmAuth::TNtlmAuth( ThreadData* info, const char* mechanism ) :
 	if ( !strcmp( mechanism, "GSS-SPNEGO" ))
 		szProvider = _T("Negotiate");
 	else if ( !strcmp( mechanism, "GSSAPI" ))
-		szProvider = _T("Kerberos");
+		szProvider = _T("GSSAPI");
 	else if ( !strcmp( mechanism, "NTLM" ))
 		szProvider = _T("NTLM");
 	else {
@@ -50,7 +50,7 @@ TNtlmAuth::TNtlmAuth( ThreadData* info, const char* mechanism ) :
 		return;
 	}
 
-	TCHAR szSpn[ 256 ] = _T( "" );
+	TCHAR szSpn[ 1024 ] = _T( "" );
 	if ( strcmp( mechanism, "NTLM" )) {
 		if ( !getSpn( szSpn, SIZEOF( szSpn )) && !strcmp( mechanism, "GSSAPI" )) {
 			bIsValid = false;
