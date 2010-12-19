@@ -64,11 +64,12 @@ static CTransportProtoTableItem TransportProtoTable[] =
 	{ _T("tv*"),             "TV" },
 	{ _T("dict*"),           "Dictionary" },
 	{ _T("weather*"),        "Weather" },
+	{ _T("skype*"),          "Skype" }, 
 	{ _T("sms*"),            "SMS" },
 	{ _T("smtp*"),           "SMTP" },
 	//j2j
 	{ _T("gtalk.*.*"),       "GTalk" },
-	{ _T("xmpp.*.*"),        "Jabber2Jabber" },
+	{ _T("|xmpp.*.*|j2j.*.*"),"Jabber2Jabber" },
 	//jabbim.cz - services
 	{ _T("disk*"),           "Jabber Disk" },
 	{ _T("irc*"),            "IRC" },
