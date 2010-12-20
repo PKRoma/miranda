@@ -310,25 +310,23 @@ void TScramAuth::Hi( mir_sha1_byte_t* res , char* passw, size_t passwLen, char* 
 char* TScramAuth::getChallenge( const TCHAR* challenge )
 {
 	int chlLen;
-	char* chl = JabberBase64DecodeT( challenge, &chlLen );
-	char *snonce = NULL, *salt = NULL;
+	char *chl = JabberBase64DecodeT( challenge, &chlLen );
 
-	char *r = strstr( chl, "r=" ); if ( !r ) goto LBL_Abort;
+	char *r = strstr( chl, "r=" ); if ( !r ) { mir_free( chl ); return NULL; }
 	char *e = strchr( r, ',' ); if ( e ) *e = 0; 
-	snonce = mir_strdup(r + 2);
+	char *snonce = mir_strdup(r + 2);
 	if ( e ) *e = ',';
 
 	size_t cnlen = strlen( cnonce );
-	if (strncmp(cnonce, snonce, cnlen )) goto LBL_Abort;
+	if (strncmp(cnonce, snonce, cnlen )) { mir_free( chl ); mir_free( snonce ); return NULL; }
 
-	char *s = strstr( chl, "s=" ); if ( !s ) goto LBL_Abort;
+	char *s = strstr( chl, "s=" ); if ( !s ) { mir_free( chl ); mir_free( snonce ); return NULL; }
 	e = strchr( s, ',' ); if ( e ) *e = 0;
 	int saltLen;
-	salt = JabberBase64Decode( s + 2, &saltLen );
+	char *salt = JabberBase64Decode( s + 2, &saltLen );
 	if ( e ) *e = ',';
 
 	if ( saltLen > 16 ) {
-LBL_Abort:
 		mir_free( salt );
 		mir_free( snonce );
 		mir_free( chl );
