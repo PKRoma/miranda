@@ -840,11 +840,12 @@ struct CJabberProto : public PROTO_INTERFACE
 
 	//---- jabber_thread.c ----------------------------------------------
 
-	TCHAR   m_savedPassword[128];
+	TCHAR   m_savedPassword[512];
 
 	typedef struct {
 		bool isPlainAvailable;
-		bool isMd5available;
+		bool isMd5Available;
+		bool isScramAvailable;
 		bool isNtlmAvailable;
 		bool isSpnegoAvailable;
 		bool isKerberosAvailable;

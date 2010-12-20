@@ -183,7 +183,7 @@ BOOL CJabberProto::OnIbbRecvdData( const TCHAR *data, const TCHAR *sid, const TC
 	item->jibb->wPacketId++;
 
 	int length = 0;
-	char *decodedData = JabberBase64Decode( data, &length );
+	char *decodedData = JabberBase64DecodeT( data, &length );
 	if ( !decodedData )
 		return FALSE;
 

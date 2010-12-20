@@ -635,7 +635,7 @@ void CJabberProto::OnIqResultGetVcardPhoto( const TCHAR* jid, HXML n, HANDLE hCo
 		return;
 
 	int bufferLen;
-	char* buffer = JabberBase64Decode( xmlGetText( o ), &bufferLen );
+	char* buffer = JabberBase64DecodeT( xmlGetText( o ), &bufferLen );
 	if ( buffer == NULL )
 		return;
 
@@ -1485,7 +1485,7 @@ void CJabberProto::OnIqResultGetServerAvatar( HXML iqNode )
 void CJabberProto::OnIqResultGotAvatar( HANDLE hContact, HXML n, const TCHAR* mimeType ) 
 {
 	int resultLen = 0;
-	char* body = JabberBase64Decode( xmlGetText( n ), &resultLen );
+	char* body = JabberBase64DecodeT( xmlGetText( n ), &resultLen );
 
 	int pictureType;
 	if ( mimeType != NULL ) {

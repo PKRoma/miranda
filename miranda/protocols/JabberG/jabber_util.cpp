@@ -659,14 +659,24 @@ char* __stdcall JabberBase64Encode( const char* buffer, int bufferLen )
 
 static unsigned char b64rtable[256];
 
-char* __stdcall JabberBase64Decode( const TCHAR* str, int *resultLen )
+#ifdef _UNICODE
+char* __stdcall JabberBase64DecodeW( const WCHAR* str, int *resultLen )
+{
+	char *stra = mir_u2a(str);
+	char *res = JabberBase64Decode(stra, resultLen);
+	mir_free(stra);
+	return res;
+}
+#endif
+
+char* __stdcall JabberBase64Decode( const char* str, int *resultLen )
 {
 	char* res;
 	unsigned char* r, igroup[4], a[4];
 	int n, num, count;
 
 	if ( str==NULL || resultLen==NULL ) return NULL;
-	if (( res=( char* )mir_alloc(( ( _tcslen( str )+3 )/4 )*3 )) == NULL ) return NULL;
+	if (( res=( char* )mir_alloc(( ( strlen( str )+3 )/4 )*3 )) == NULL ) return NULL;
 
 	for ( n=0; n<256; n++ )
 		b64rtable[n] = ( unsigned char ) 0x80;
