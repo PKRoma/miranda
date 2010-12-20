@@ -277,7 +277,7 @@ void CJabberProto::GroupchatJoinRoom( const TCHAR* server, const TCHAR* room, co
 		info.saveRecent(0);
 	}
 
-	TCHAR text[128];
+	TCHAR text[512];
 	mir_sntprintf( text, SIZEOF(text), _T("%s@%s/%s"), room, server, nick );
 
 	JABBER_LIST_ITEM* item = ListAdd( LIST_CHATROOM, text );

@@ -577,7 +577,7 @@ private:
 
 	void btnRegister_OnClick(CCtrlButton *)
 	{
-		TCHAR buf[128] = {0}, pass[128];
+		TCHAR buf[512] = _T(""), pass[512];
 		if (!m_proto->EnterString(buf, SIZEOF(buf), TranslateT("Confirm password"), JES_PASSWORD))
 			return;
 
@@ -1916,7 +1916,7 @@ private:
 
 	void btnRegister_OnClick(CCtrlButton *)
 	{
-		TCHAR buf[128] = {0}, pass[128];
+		TCHAR buf[512] = _T(""), pass[512];
 		if (!m_proto->EnterString(buf, SIZEOF(buf), TranslateT("Confirm password"), JES_PASSWORD))
 			return;
 

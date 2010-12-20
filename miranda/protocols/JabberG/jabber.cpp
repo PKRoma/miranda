@@ -279,8 +279,6 @@ extern "C" int __declspec( dllexport ) Load( PLUGINLINK *link )
 			JabberIsThemeActive = (BOOL (WINAPI *)())GetProcAddress(hDll, "IsThemeActive");
 	}	}
 
-	srand(( unsigned ) time( NULL ));
-
 	g_IconsInit();
 	g_MenuInit();
 	hModulesLoaded = HookEvent(ME_SYSTEM_MODULESLOADED, OnModulesLoaded);
