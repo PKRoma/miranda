@@ -78,7 +78,7 @@ static INT_PTR CALLBACK JabberPasswordDlgProc( HWND hwndDlg, UINT msg, WPARAM wP
 			param = (JabberPasswordDlgParam*)lParam;
 			SetWindowLongPtr( hwndDlg, GWLP_USERDATA, lParam );
 
-			TCHAR text[128];
+			TCHAR text[512];
 			mir_sntprintf( text, SIZEOF(text), _T("%s %s"), TranslateT( "Enter password for" ), ( TCHAR* )param->ptszJid );
 			SetDlgItemText( hwndDlg, IDC_JID, text );
 
@@ -313,7 +313,7 @@ LBL_FatalError:
 				_tcscpy( info->resource, _T( "Miranda" ));
 		}
 
-		TCHAR jidStr[128];
+		TCHAR jidStr[512];
 		mir_sntprintf( jidStr, SIZEOF( jidStr ), _T("%s@") _T(TCHAR_STR_PARAM) _T("/%s"), info->username, info->server, info->resource );
 		_tcsncpy( info->fullJID, jidStr, SIZEOF( info->fullJID )-1 );
 
@@ -720,8 +720,13 @@ void CJabberProto::PerformAuthentication( ThreadData* info )
 				auth = NULL;
 	}	}	}
 
-	if ( auth == NULL && m_AuthMechs.isMd5available ) {
-		m_AuthMechs.isMd5available = false;
+	if ( auth == NULL && m_AuthMechs.isScramAvailable ) {
+		m_AuthMechs.isScramAvailable = false;
+		auth = new TScramAuth( info );
+	}
+
+	if ( auth == NULL && m_AuthMechs.isMd5Available ) {
+		m_AuthMechs.isMd5Available = false;
 		auth = new TMD5Auth( info );
 	}
 
@@ -737,7 +742,7 @@ void CJabberProto::PerformAuthentication( ThreadData* info )
 			return;
 		}
 
-		TCHAR text[128];
+		TCHAR text[1024];
 		mir_sntprintf( text, SIZEOF( text ), _T("%s %s@")_T(TCHAR_STR_PARAM)_T("."), TranslateT( "Authentication failed for" ), info->username, info->server );
 		MessageBox( NULL, text, TranslateT( "Jabber Authentication" ), MB_OK|MB_ICONSTOP|MB_SETFOREGROUND );
 		JSendBroadcast( NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_WRONGPASSWORD );
@@ -801,7 +806,8 @@ void CJabberProto::OnProcessFeatures( HXML node, ThreadData* info )
 				if ( !_tcscmp( xmlGetName( c ), _T("mechanism"))) {
 					//JabberLog("Mechanism: %s",xmlGetText( c ));
 					     if ( !_tcscmp( xmlGetText( c ), _T("PLAIN")))          m_AuthMechs.isPlainAvailable = true;
-					else if ( !_tcscmp( xmlGetText( c ), _T("DIGEST-MD5")))     m_AuthMechs.isMd5available = true;
+					else if ( !_tcscmp( xmlGetText( c ), _T("DIGEST-MD5")))     m_AuthMechs.isMd5Available = true;
+					else if ( !_tcscmp( xmlGetText( c ), _T("SCRAM-SHA-1")))    m_AuthMechs.isScramAvailable = true;
 					else if ( !_tcscmp( xmlGetText( c ), _T("NTLM")))           m_AuthMechs.isNtlmAvailable = true;
 					else if ( !_tcscmp( xmlGetText( c ), _T("GSS-SPNEGO")))     m_AuthMechs.isSpnegoAvailable = true;
 					else if ( !_tcscmp( xmlGetText( c ), _T("GSSAPI")))         m_AuthMechs.isKerberosAvailable = true;
@@ -893,6 +899,11 @@ void CJabberProto::OnProcessSuccess( HXML node, ThreadData* info )
 
 	if ( !_tcscmp( type, _T("urn:ietf:params:xml:ns:xmpp-sasl") )) {
 		DBVARIANT dbv;
+
+		if ( !info->auth->validateLogin( xmlGetText( node ))) {
+			info->send( "</stream:stream>" );
+			return;
+		}
 
 		Log( "Success: Logged-in." );
 		if ( DBGetContactSettingString( NULL, m_szModuleName, "Nick", &dbv ))
