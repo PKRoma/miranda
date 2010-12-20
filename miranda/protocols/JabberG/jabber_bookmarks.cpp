@@ -38,7 +38,7 @@ static INT_PTR CALLBACK JabberAddBookmarkDlgProc( HWND hwndDlg, UINT msg, WPARAM
 {
 	JabberAddBookmarkDlgParam* param = (JabberAddBookmarkDlgParam*)GetWindowLongPtr( hwndDlg, GWLP_USERDATA );
 
-	TCHAR text[128];
+	TCHAR text[512];
 	JABBER_LIST_ITEM *item;
 
 	switch ( msg ) {
