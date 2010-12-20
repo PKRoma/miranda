@@ -42,6 +42,7 @@ public:
 
 	virtual	char* getInitialRequest();
 	virtual	char* getChallenge( const TCHAR* challenge );
+	virtual	bool validateLogin( const TCHAR* challenge );
 
 	inline   const char* getName() const
 				{	return szName;
@@ -77,6 +78,22 @@ public:
 	virtual ~TMD5Auth();
 
 	virtual	char* getChallenge( const TCHAR* challenge );
+};
+
+class TScramAuth : public TJabberAuth
+{
+	typedef TJabberAuth CSuper;
+
+				char *cnonce, *msg1, *serverSignature;
+public:		
+				TScramAuth( ThreadData* );
+	virtual ~TScramAuth();
+
+	virtual	char* getInitialRequest();
+	virtual	char* getChallenge( const TCHAR* challenge );
+	virtual bool validateLogin( const TCHAR* challenge );
+	
+	void Hi( mir_sha1_byte_t* res , char* passw, size_t passwLen, char* salt, size_t saltLen, int ind );
 };
 
 // ntlm auth - LanServer based authorization
