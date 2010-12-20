@@ -311,10 +311,11 @@ char* TScramAuth::getChallenge( const TCHAR* challenge )
 {
 	int chlLen;
 	char* chl = JabberBase64DecodeT( challenge, &chlLen );
+	char *snonce = NULL, *salt = NULL;
 
 	char *r = strstr( chl, "r=" ); if ( !r ) goto LBL_Abort;
 	char *e = strchr( r, ',' ); if ( e ) *e = 0; 
-	char *snonce = mir_strdup(r + 2);
+	snonce = mir_strdup(r + 2);
 	if ( e ) *e = ',';
 
 	size_t cnlen = strlen( cnonce );
@@ -323,7 +324,7 @@ char* TScramAuth::getChallenge( const TCHAR* challenge )
 	char *s = strstr( chl, "s=" ); if ( !s ) goto LBL_Abort;
 	e = strchr( s, ',' ); if ( e ) *e = 0;
 	int saltLen;
-	char* salt = JabberBase64Decode( s + 2, &saltLen );
+	salt = JabberBase64Decode( s + 2, &saltLen );
 	if ( e ) *e = ',';
 
 	if ( saltLen > 16 ) {
