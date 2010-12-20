@@ -367,14 +367,14 @@ struct ThreadData
 	DWORD	dwLoginRqs;
 
 	// connection & login data
-	TCHAR username[128];
-	TCHAR password[128];
+	TCHAR username[512];
+	TCHAR password[512];
 	char  server[128];
 	char  manualHost[128];
 	TCHAR resource[128];
 	TCHAR fullJID[256];
 	WORD  port;
-	TCHAR newPassword[128];
+	TCHAR newPassword[512];
 
 	void  close( void );
 	void  shutdown( void );
@@ -398,8 +398,8 @@ struct JABBER_MODEMSGS
 
 struct JABBER_REG_ACCOUNT
 {
-	TCHAR username[128];
-	TCHAR password[128];
+	TCHAR username[512];
+	TCHAR password[512];
 	char server[128];
 	char manualHost[128];
 	WORD port;
@@ -768,7 +768,8 @@ TCHAR*        __stdcall JabberErrorStr( int errorCode );
 TCHAR*        __stdcall JabberErrorMsg( HXML errorNode, int* errorCode = NULL );
 void          __stdcall JabberUtfToTchar( const char* str, size_t cbLen, LPTSTR& dest );
 char*         __stdcall JabberBase64Encode( const char* buffer, int bufferLen );
-char*         __stdcall JabberBase64Decode( const TCHAR* buffer, int *resultLen );
+char*         __stdcall JabberBase64Decode( const char* buffer, int *resultLen );
+char*         __stdcall JabberBase64DecodeW( const WCHAR* buffer, int *resultLen );
 time_t        __stdcall JabberIsoToUnixTime( const TCHAR* stamp );
 void          __stdcall JabberStringAppend( char* *str, int *sizeAlloced, const char* fmt, ... );
 TCHAR*        __stdcall JabberStripJid( const TCHAR* jid, TCHAR* dest, size_t destLen );
@@ -777,8 +778,10 @@ int           __stdcall JabberGetPacketID( HXML n );
 
 #if defined( _UNICODE )
 	#define JabberUnixToDosT JabberUnixToDosW
+	#define JabberBase64DecodeT JabberBase64DecodeW
 #else
 	#define JabberUnixToDosT JabberUnixToDos
+	#define JabberBase64DecodeT JabberBase64Decode
 #endif
 
 const TCHAR *JabberStrIStr( const TCHAR *str, const TCHAR *substr);
