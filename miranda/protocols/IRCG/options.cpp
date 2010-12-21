@@ -876,7 +876,7 @@ static TDbSetting CtcpSettings[] =
 	{	FIELD_OFFSET(CIrcProto, m_DCCPassive ), "DccPassive", DBVT_BYTE },
 	{	FIELD_OFFSET(CIrcProto, m_DCCMode ), "DCCMode", DBVT_BYTE },
 	{	FIELD_OFFSET(CIrcProto, m_manualHost ), "ManualHost", DBVT_BYTE },
-	{	FIELD_OFFSET(CIrcProto, m_IPFromServer ), "IPFromServer", DBVT_BYTE },
+	{	FIELD_OFFSET(CIrcProto, m_IPFromServer ), "IPFromServer", DBVT_BYTE, 0, 1 },
 	{	FIELD_OFFSET(CIrcProto, m_disconnectDCCChats ), "DisconnectDCCChats", DBVT_BYTE },
 	{	FIELD_OFFSET(CIrcProto, m_mySpecifiedHost ), "SpecHost", DBVT_ASCIIZ, SIZEOF(pZero->m_mySpecifiedHost) },
 	{	FIELD_OFFSET(CIrcProto, m_DCCChatAccept ), "CtcpChatAccept", DBVT_BYTE, 0, 1 },
