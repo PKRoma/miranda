@@ -1501,13 +1501,12 @@ LBL_Parse:
 		else
 			ppro->DoNetlibLog("Sending Ident answer failed.");
 		
-		if ( ppro->m_identTimer ) {
-			Netlib_CloseHandle(hConnection);
+		if ( ppro->m_identTimer )
 			break;
-		}
 
 		cbTotal -= EOLPos + 2 - szBuf;
 		strdel(szBuf, int(EOLPos + 2 - szBuf));
 		goto LBL_Parse;
 	}
+	Netlib_CloseHandle(hConnection);
 }
