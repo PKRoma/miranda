@@ -986,7 +986,6 @@ struct CIcqProto : public PROTO_INTERFACE
 	void   writeDbInfoSettingTLVByte(HANDLE hContact, const char *szSetting, oscar_tlv_chain *chain, WORD wTlv);
 	void   writeDbInfoSettingTLVDouble(HANDLE hContact, const char *szSetting, oscar_tlv_chain *chain, WORD wTlv);
 	void   writeDbInfoSettingTLVDate(HANDLE hContact, const char *szSettingYear, const char *szSettingMonth, const char *szSettingDay, oscar_tlv_chain *chain, WORD wTlv);
-	void   writeDbInfoSettingTLVTimestamp(HANDLE hContact, const char *szSetting, oscar_tlv_chain *chain, WORD wTlv);
 	void   writeDbInfoSettingTLVBlob(HANDLE hContact, const char *szSetting, oscar_tlv_chain *chain, WORD wTlv);
 
 	char** MirandaStatusToAwayMsg(int nStatus);

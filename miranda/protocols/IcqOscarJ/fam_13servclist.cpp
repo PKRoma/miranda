@@ -1911,14 +1911,14 @@ void CIcqProto::updateServVisibilityCode(BYTE bCode)
 // not stored in the local DB, a new ID will be added to the server list.
 void CIcqProto::updateServAvatarHash(BYTE *pHash, int size)
 {
-  void** pDoubleObject = NULL;
-  void* doubleObject = NULL;
-  DWORD dwOperationFlags = 0;
+	void** pDoubleObject = NULL;
+	void* doubleObject = NULL;
+	DWORD dwOperationFlags = 0;
 	WORD wAvatarID;
 	WORD wCommand;
 	DBVARIANT dbvHash;
 	int bResetHash = 0;
-  char szItemName[2] = {0, 0};
+	char szItemName[2] = {0, 0};
 
 	if (!getSetting(NULL, "AvatarHash", &dbvHash))
 	{
@@ -1933,10 +1933,10 @@ void CIcqProto::updateServAvatarHash(BYTE *pHash, int size)
 	}
 
 	if (bResetHash) // start update session
-  { // pair the packets (need to be send in the correct order
+	{ // pair the packets (need to be send in the correct order
 		dwOperationFlags |= SSOF_BEGIN_OPERATION | SSOF_END_OPERATION;
-    pDoubleObject = &doubleObject;
-  }
+		pDoubleObject = &doubleObject;
+	}
 
 	if (bResetHash || !pHash)
 	{
@@ -1956,7 +1956,7 @@ void CIcqProto::updateServAvatarHash(BYTE *pHash, int size)
 			ack->wContactId = wAvatarID;
 			dwCookie = AllocateCookie(CKT_SERVERLIST, ICQ_LISTS_REMOVEFROMLIST, 0, ack); // take cookie
 
-      icq_sendServerItem(dwCookie, ICQ_LISTS_REMOVEFROMLIST, 0, wAvatarID, szItemName, NULL, 0, SSI_ITEM_BUDDYICON, SSOP_ITEM_ACTION | dwOperationFlags, 400, pDoubleObject);
+			icq_sendServerItem(dwCookie, ICQ_LISTS_REMOVEFROMLIST, 0, wAvatarID, szItemName, NULL, 0, SSI_ITEM_BUDDYICON, SSOP_ITEM_ACTION | dwOperationFlags, 400, pDoubleObject);
 		}
 	}
 
@@ -1964,8 +1964,8 @@ void CIcqProto::updateServAvatarHash(BYTE *pHash, int size)
 	{
 		cookie_servlist_action* ack;
 		DWORD dwCookie;
-    WORD wTLVlen;
-    icq_packet pBuffer;
+		WORD wTLVlen;
+		icq_packet pBuffer;
 		WORD hashsize = size - 2;
 
 		// Do we have a known server avatar ID? We should, unless we just subscribed to the serv-list for the first time
@@ -1996,20 +1996,20 @@ void CIcqProto::updateServAvatarHash(BYTE *pHash, int size)
 		ack->wContactId = wAvatarID;
 		dwCookie = AllocateCookie(CKT_SERVERLIST, wCommand, 0, ack); // take cookie
 
-    szItemName[0] = 0x30 + pHash[1];
+		szItemName[0] = 0x30 + pHash[1];
 
-  	// Build the packet
-	  wTLVlen = 8 + hashsize;
+		// Build the packet
+		wTLVlen = 8 + hashsize;
 
-	  // Initialize our handy data buffer
-	  pBuffer.wPlace = 0;
-	  pBuffer.pData = (BYTE *)_alloca(wTLVlen);
-	  pBuffer.wLen = wTLVlen;
+		// Initialize our handy data buffer
+		pBuffer.wPlace = 0;
+		pBuffer.pData = (BYTE *)_alloca(wTLVlen);
+		pBuffer.wLen = wTLVlen;
 
 		packTLV(&pBuffer, SSI_TLV_NAME, 0, NULL);                    // TLV (Name)
 		packTLV(&pBuffer, SSI_TLV_AVATARHASH, hashsize, pHash + 2);  // TLV (Hash)
 
-    icq_sendServerItem(dwCookie, wCommand, 0, wAvatarID, szItemName, pBuffer.pData, wTLVlen, SSI_ITEM_BUDDYICON, SSOP_ITEM_ACTION | dwOperationFlags, 400, pDoubleObject);
+		icq_sendServerItem(dwCookie, wCommand, 0, wAvatarID, szItemName, pBuffer.pData, wTLVlen, SSI_ITEM_BUDDYICON, SSOP_ITEM_ACTION | dwOperationFlags, 400, pDoubleObject);
 		// There is no need to send ICQ_LISTS_CLI_MODIFYSTART or
 		// ICQ_LISTS_CLI_MODIFYEND when modifying the avatar hash
 	}
