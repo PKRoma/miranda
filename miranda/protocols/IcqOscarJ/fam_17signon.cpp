@@ -126,9 +126,9 @@ void CIcqProto::sendClientAuth(const char *szKey, WORD wKeyLen, BOOL bSecure)
 	packTLVDWord(&packet, 0x0014, CLIENT_DISTRIBUTION);
 	packTLV(&packet, 0x000f, 0x0002, (LPBYTE)CLIENT_LANGUAGE);
 	packTLV(&packet, 0x000e, 0x0002, (LPBYTE)CLIENT_COUNTRY);
-  packTLV(&packet, 0x0094, 0x0001, &m_bConnectionLost); // CLIENT_RECONNECT flag
-  if (m_bSecureConnection)
-    packDWord(&packet, 0x008C0000); // empty TLV(0x8C): use SSL
+	packTLV(&packet, 0x0094, 0x0001, &m_bConnectionLost); // CLIENT_RECONNECT flag
+	if (m_bSecureConnection)
+		packDWord(&packet, 0x008C0000); // empty TLV(0x8C): use SSL
 
 	sendServPacket(&packet);
 }

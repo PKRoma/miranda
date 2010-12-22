@@ -190,7 +190,7 @@ static INT_PTR CALLBACK DlgProcIcqOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 					ppro->setSettingString(NULL, "OscarServer", str);
 					ppro->setSettingWord(NULL, "OscarPort", (WORD)GetDlgItemInt(hwndDlg, IDC_ICQPORT, NULL, FALSE));
 					StoreDBCheckState(ppro, hwndDlg, IDC_KEEPALIVE, "KeepAlive");
-          StoreDBCheckState(ppro, hwndDlg, IDC_SSL, "SecureConnection");
+					StoreDBCheckState(ppro, hwndDlg, IDC_SSL, "SecureConnection");
 					StoreDBCheckState(ppro, hwndDlg, IDC_MD5LOGIN, "SecureLogin");
 					StoreDBCheckState(ppro, hwndDlg, IDC_NOERRMULTI, "IgnoreMultiErrorBox");
 					ppro->setSettingByte(NULL, "ShowLogLevel", (BYTE)(4-SendDlgItemMessage(hwndDlg, IDC_LOGLEVEL, TBM_GETPOS, 0, 0)));

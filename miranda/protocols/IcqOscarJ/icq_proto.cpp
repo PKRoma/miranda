@@ -725,14 +725,14 @@ int __cdecl CIcqProto::FileResume( HANDLE hTransfer, int* action, const TCHAR** 
 	{
 		basic_filetransfer *ft = (basic_filetransfer *)hTransfer;
 
-    if (!IsValidFileTransfer(ft))
-      return 1; // Invalid transfer
+		if (!IsValidFileTransfer(ft))
+			return 1; // Invalid transfer
 
 		if (ft->ft_magic == FT_MAGIC_ICQ)
 		{
-      char *szFileNameUtf = tchar_to_utf8(*szFilename);
-			icq_sendFileResume((filetransfer *)hTransfer, *action, szFileNameUtf);
-      SAFE_FREE(&szFileNameUtf);
+			char *szFileNameUtf = tchar_to_utf8(*szFilename);
+				icq_sendFileResume((filetransfer *)hTransfer, *action, szFileNameUtf);
+			SAFE_FREE(&szFileNameUtf);
 		}
 		else if (ft->ft_magic == FT_MAGIC_OSCAR)
 		{

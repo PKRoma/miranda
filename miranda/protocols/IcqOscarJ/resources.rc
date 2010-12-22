@@ -50,7 +50,6 @@ BEGIN
     LTEXT           "Password:",IDC_STATIC,0,16,53,12
     EDITTEXT        IDC_PW,54,16,131,12,ES_PASSWORD | ES_AUTOHSCROLL
     CONTROL         "Create a new ICQ account",IDC_REGISTER,"Hyperlink",WS_TABSTOP,0,49,174,12
-    LTEXT           "ICQ accepts only up to 8 characters in password.",IDC_STATIC,54,30,132,17
 END
 
 IDD_ASKAUTH DIALOGEX 0, 0, 186, 95
@@ -73,7 +72,6 @@ BEGIN
     DEFPUSHBUTTON   "OK",IDOK,24,66,50,14
     PUSHBUTTON      "Cancel",IDCANCEL,84,66,50,14
     LTEXT           "Enter a password for UIN %d:",IDC_INSTRUCTION,7,7,142,8
-    LTEXT           "ICQ accepts only up to 8 characters in password.",IDC_STATIC,18,30,120,17
 END
 
 IDD_OPT_ICQ DIALOGEX 0, 0, 310, 234
@@ -86,7 +84,7 @@ BEGIN
     EDITTEXT        IDC_ICQNUM,68,12,106,12,ES_AUTOHSCROLL | ES_NUMBER
     RTEXT           "Password:",IDC_STATIC12,12,28,51,8
     EDITTEXT        IDC_PASSWORD,68,26,106,12,ES_PASSWORD | ES_AUTOHSCROLL
-    LTEXT           "Hint: If you don't enter your password here, Miranda will ask for the password everytime you try to go online. ICQ accepts only up to 8 characters in password.",IDC_STATIC,12,43,286,19
+    LTEXT           "Hint: If you don't enter your password here, Miranda will ask for the password everytime you try to go online.",IDC_STATIC,12,43,286,19
     CONTROL         "Retrieve a lost password or ICQ number",IDC_LOOKUPLINK,
                     "Hyperlink",WS_TABSTOP,12,78,286,8
     CONTROL         "Create a new ICQ account using the ICQ website",IDC_NEWUINLINK,

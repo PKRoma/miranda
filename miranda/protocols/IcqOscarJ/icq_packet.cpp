@@ -109,8 +109,8 @@ void __fastcall serverCookieInit(icq_packet *pPacket, BYTE *pCookie, WORD wCooki
 	packTLVDWord(pPacket, 0x0014, CLIENT_DISTRIBUTION);
 	packTLV(pPacket, 0x000f, 0x0002, (LPBYTE)CLIENT_LANGUAGE);
 	packTLV(pPacket, 0x000e, 0x0002, (LPBYTE)CLIENT_COUNTRY);
-  packDWord(pPacket, 0x00940001); // reconnect flag
-  packByte(pPacket, 0);
+	packDWord(pPacket, 0x00940001); // reconnect flag
+	packByte(pPacket, 0);
 	packTLVDWord(pPacket, 0x8003, 0x00100000); // Unknown
 }
 

@@ -195,7 +195,7 @@ int ChangeInfoData::SaveSettingsToDb(HWND hwndDlg)
 					ret=0;
 					break;
 				}
-        PwConfirmDlgParam param = { ppro, (char*)settingData[i].value };
+				PwConfirmDlgParam param = { ppro, (char*)settingData[i].value };
 				if (IDOK != DialogBoxParam(hInst, MAKEINTRESOURCE(IDD_PWCONFIRM), hwndDlg, PwConfirmDlgProc, (LPARAM)&param))
 				{
 					ret = 0;

@@ -437,7 +437,7 @@ void CIcqProto::icq_login(const char* szPassword)
 
 	// User password
 	stsi->wPassLen = strlennull(szPassword);
-	if (stsi->wPassLen >= SIZEOF(stsi->szPass)) stsi->wPassLen = SIZEOF(stsi->szPass) - 1;
+	if (stsi->wPassLen > 8) stsi->wPassLen = 8;
 	null_strcpy(stsi->szPass, szPassword, stsi->wPassLen);
 
 	// Randomize sequence

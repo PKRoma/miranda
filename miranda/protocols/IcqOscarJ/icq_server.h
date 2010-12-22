@@ -41,7 +41,7 @@ struct serverthread_start_info
 {
 	NETLIBOPENCONNECTION nloc;
 	WORD wPassLen;
-	char szPass[20];
+	char szPass[128];
 };
 
 struct serverthread_info
@@ -55,7 +55,7 @@ struct serverthread_info
 	char *newServer;
 	BYTE *cookieData;
 	int cookieDataLen;
-  int newServerSSL;
+	int newServerSSL;
 	int newServerReady;
 	int isMigrating;
 	HANDLE hPacketRecver;

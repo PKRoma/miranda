@@ -243,7 +243,7 @@ void CIcqProto::handleServiceFam(BYTE *pBuffer, WORD wBufferLength, snac_header 
 				SAFE_FREE((void**)&info->cookieData);
 
 			info->newServer = chain->getString(0x05, 1);
-      info->newServerSSL = chain->getNumber(0x8E, 1);
+			info->newServerSSL = chain->getNumber(0x8E, 1);
 			info->cookieData = (BYTE*)chain->getString(0x06, 1);
 			info->cookieDataLen = chain->getLength(0x06, 1);
 

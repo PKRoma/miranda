@@ -1460,27 +1460,14 @@ void CIcqProto::writeDbInfoSettingTLVDate(HANDLE hContact, const char* szSetting
 }
 
 
-void CIcqProto::writeDbInfoSettingTLVTimestamp(HANDLE hContact, const char* szSetting, oscar_tlv_chain* chain, WORD wTlv)
-{
-  double time = chain->getDouble(wTlv, 1); 
-
-  if (time > 0)
-  { // date is stored as double with unit equal to a day, incrementing since 1/1/1900 0:00 GMT
-    setSettingDword(hContact, szSetting, (time - 25567) * 86400);
-  }
-  else
-    deleteSetting(hContact, szSetting);
-}
-
-
 void CIcqProto::writeDbInfoSettingTLVBlob(HANDLE hContact, const char *szSetting, oscar_tlv_chain *chain, WORD wTlv)
 {
-  oscar_tlv *pTLV = chain->getTLV(wTlv, 1);
+	oscar_tlv *pTLV = chain->getTLV(wTlv, 1);
 
-  if (pTLV && pTLV->wLen > 0)
-    setSettingBlob(hContact, szSetting, pTLV->pData, pTLV->wLen);
-  else
-    deleteSetting(hContact, szSetting);
+	if (pTLV && pTLV->wLen > 0)
+		setSettingBlob(hContact, szSetting, pTLV->pData, pTLV->wLen);
+	else
+		deleteSetting(hContact, szSetting);
 }
 
 
@@ -1604,51 +1591,18 @@ BOOL CIcqProto::writeDbInfoSettingByteWithTable(HANDLE hContact, const char *szS
 	return TRUE;
 }
 
-// Returns the current GMT offset in seconds
-int GetGMTOffset(void)
-{
-	TIME_ZONE_INFORMATION tzinfo;
-	DWORD dwResult;
-	int nOffset = 0;
-
-
-	dwResult = GetTimeZoneInformation(&tzinfo);
-
-	switch(dwResult)
-	{
-
-	case TIME_ZONE_ID_STANDARD:
-		nOffset = -(tzinfo.Bias + tzinfo.StandardBias) * 60;
-		break;
-
-	case TIME_ZONE_ID_DAYLIGHT:
-		nOffset = -(tzinfo.Bias + tzinfo.DaylightBias) * 60;
-		break;
-
-	case TIME_ZONE_ID_UNKNOWN:
-	case TIME_ZONE_ID_INVALID:
-	default:
-		nOffset = 0;
-		break;
-
-	}
-
-	return nOffset;
-}
-
-
 char* time2text(time_t time)
 {
-  tm *local = localtime(&time);
+	tm *local = localtime(&time);
 
-  if (local)
-  {
-    char *str = asctime(local);
-    str[24] = '\0'; // remove new line
-    return str;
-  }
-  else
-    return "<invalid>";
+	if (local)
+	{
+		char *str = asctime(local);
+		str[24] = '\0'; // remove new line
+		return str;
+	}
+	else
+		return "<invalid>";
 }
 
 
@@ -1709,21 +1663,21 @@ BOOL CIcqProto::validateStatusMessageRequest(HANDLE hContact, WORD byMessageType
 
 void __fastcall SAFE_DELETE(void_struct **p)
 {
-  if (*p)
-  {
-    delete *p;
-    *p = NULL;
-  }
+	if (*p)
+	{
+		delete *p;
+		*p = NULL;
+	}
 }
 
 
 void __fastcall SAFE_DELETE(lockable_struct **p)
 {
-  if (*p)
-  {
-    (*p)->_Release();
-    *p = NULL;
-  }
+	if (*p)
+	{
+		(*p)->_Release();
+		*p = NULL;
+	}
 }
 
 
@@ -1765,13 +1719,13 @@ void* __fastcall SAFE_REALLOC(void* p, size_t size)
 
 DWORD ICQWaitForSingleObject(HANDLE hObject, DWORD dwMilliseconds, int bWaitAlways)
 {
-  DWORD dwResult;
+	DWORD dwResult;
 
-  do { // will get WAIT_IO_COMPLETION for QueueUserAPC(), ignore it unless terminating
+	do { // will get WAIT_IO_COMPLETION for QueueUserAPC(), ignore it unless terminating
 		dwResult = WaitForSingleObjectEx(hObject, dwMilliseconds, TRUE);
-  } while (dwResult == WAIT_IO_COMPLETION && (bWaitAlways || !Miranda_Terminated()));
+	} while (dwResult == WAIT_IO_COMPLETION && (bWaitAlways || !Miranda_Terminated()));
 
-  return dwResult;
+	return dwResult;
 }
 
 
@@ -1948,8 +1902,8 @@ char* CIcqProto::GetUserStoredPassword(char *szBuffer, int cbSize)
 	{
 		CallService(MS_DB_CRYPT_DECODESTRING, strlennull(szBuffer) + 1, (LPARAM)szBuffer);
 
-    if (strlennull(szBuffer))
-      return szBuffer;
+		if (strlennull(szBuffer))
+			return szBuffer;
   }
   return NULL;
 }
@@ -2076,12 +2030,12 @@ int FileStatUtf(const char *path, struct _stati64 *buffer)
 int MakeDirUtf(const char *dir)
 {
 	int wRes = -1;
-  int size = strlennull(dir) + 2;
+	int size = strlennull(dir) + 2;
 	TCHAR *szDir = (TCHAR*)_alloca(size * sizeof(TCHAR));
   
-  if (utf8_to_tchar_static(dir, szDir, size))
-  { // _tmkdir can created only one dir at once
-	  wRes = _tmkdir(szDir);
+	if (utf8_to_tchar_static(dir, szDir, size))
+	{ // _tmkdir can created only one dir at once
+		wRes = _tmkdir(szDir);
 		// check if dir not already existed - return success if yes
 		if (wRes == -1 && errno == 17 /* EEXIST */)
 			wRes = 0;
@@ -2109,10 +2063,10 @@ int MakeDirUtf(const char *dir)
 int OpenFileUtf(const char *filename, int oflag, int pmode)
 {
 	int size = strlennull(filename) + 2;
-  TCHAR *szFile = (TCHAR*)_alloca(size * sizeof(TCHAR));
+	TCHAR *szFile = (TCHAR*)_alloca(size * sizeof(TCHAR));
 
-  if (utf8_to_tchar_static(filename, szFile, size))
-    return _topen(szFile, oflag, pmode);
+	if (utf8_to_tchar_static(filename, szFile, size))
+		return _topen(szFile, oflag, pmode);
 
 	return -1;
 }
@@ -2181,8 +2135,8 @@ void SetWindowTextUtf(HWND hWnd, const char *szText)
 	int size = strlennull(szText) + 2;
 	TCHAR *tszText = (TCHAR*)_alloca(size * sizeof(TCHAR));
 
-  if (utf8_to_tchar_static(szText, tszText, size))
-    SetWindowText(hWnd, tszText);
+	if (utf8_to_tchar_static(szText, tszText, size))
+		SetWindowText(hWnd, tszText);
 }
 
 
