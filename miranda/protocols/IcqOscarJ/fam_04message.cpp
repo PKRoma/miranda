@@ -392,7 +392,7 @@ void CIcqProto::handleRecvServMsgType1(BYTE *buf, WORD wLen, DWORD dwUin, char *
 							{ // found Offline timestamp
 								BYTE *pBuf = pTimeTLV;
 
-                unpackDWord(&pBuf, &dwRecvTime);
+								unpackDWord(&pBuf, &dwRecvTime);
 								NetLog_Server("Message (format %u) - Offline timestamp is %s", 1, time2text(dwRecvTime));
 							}
 							SAFE_FREE((void**)&pTimeTLV);
@@ -460,7 +460,7 @@ void CIcqProto::handleRecvServMsgType2(BYTE *buf, WORD wLen, DWORD dwUin, char *
 		if (wTLVLen < 26)
 		{ // just check if all basic data is there
 			NetLog_Server("Message (format %u) - Ignoring empty message", 2);
-      SAFE_FREE((void**)&pBuf);
+			SAFE_FREE((void**)&pBuf);
 			return;
 		}
 
@@ -507,12 +507,12 @@ void CIcqProto::handleRecvServMsgType2(BYTE *buf, WORD wLen, DWORD dwUin, char *
 			// TLV(0x2711): The next message level
 
 			chain = readIntoTLVChain(&pDataBuf, wTLVLen, 0);
-      if (!chain)
-      { // sanity check
-        NetLog_Server("Message (format %u) - Invalid data", 2);
-        SAFE_FREE((void**)&pBuf);
-        return;
-      }
+			if (!chain)
+			{ // sanity check
+				NetLog_Server("Message (format %u) - Invalid data", 2);
+				SAFE_FREE((void**)&pBuf);
+				return;
+			}
 
 			WORD wAckType = chain->getWord(0x0A, 1);
 
@@ -530,11 +530,11 @@ void CIcqProto::handleRecvServMsgType2(BYTE *buf, WORD wLen, DWORD dwUin, char *
 					setSettingWord(hContact, "UserPort", wPort);
 
 				// Save tick value
-        BYTE bClientID = getSettingByte(hContact, "ClientID", 0);
-        if (bClientID == CLID_GENERIC || bClientID == CLID_ICQ6)
-				  setSettingDword(hContact, "TickTS", time(NULL) - (dwMsgID1/1000));
-        else
-          setSettingDword(hContact, "TickTS", 0);
+				BYTE bClientID = getSettingByte(hContact, "ClientID", 0);
+				if (bClientID == CLID_GENERIC || bClientID == CLID_ICQ6)
+					setSettingDword(hContact, "TickTS", time(NULL) - (dwMsgID1/1000));
+				else
+					setSettingDword(hContact, "TickTS", 0);
 			}
 
 			// Parse the next message level
@@ -570,12 +570,12 @@ void CIcqProto::handleRecvServMsgType2(BYTE *buf, WORD wLen, DWORD dwUin, char *
 				return;
 			}
 			chain = readIntoTLVChain(&pDataBuf, wTLVLen, 0);
-      if (!chain)
-      { // Malformed packet
-        NetLog_Server("Error: Malformed data in packet");
-        SAFE_FREE((void**)&pBuf);
-        return;
-      }
+			if (!chain)
+			{ // Malformed packet
+				NetLog_Server("Error: Malformed data in packet");
+				SAFE_FREE((void**)&pBuf);
+				return;
+			}
 
 			WORD wAckType = chain->getWord(0x0A, 1);
 			// Parse the next message level
@@ -787,11 +787,11 @@ void CIcqProto::parseServRelayData(BYTE *pDataBuf, WORD wLen, HANDLE hContact, D
 				// Plugin messages, need further parsing
 			case MTYPE_PLUGIN:
 				{
-          if (wLen < wMsgLen)
-	        { // sanity check
-		        NetLog_Server("Error: Malformed server Greeting message");
-		        return;
-	        }
+					if (wLen < wMsgLen)
+					{ // sanity check
+						NetLog_Server("Error: Malformed server Greeting message");
+						return;
+					}
 
 					parseServRelayPluginData(pDataBuf + wMsgLen, wLen - wMsgLen, hContact, dwUin, szUID, dwMsgID1, dwMsgID2, wAckType, bFlags, wStatus, wCookie, wVersion);
 					break;
@@ -977,28 +977,30 @@ void CIcqProto::parseServRelayPluginData(BYTE *pDataBuf, WORD wLen, HANDLE hCont
 		}
 		else if (nTypeId == MTYPE_STATUSMSGEXT && wFunction >= 1 && wFunction <= 3)
 		{ // handle extended status message request
-      int nMsgType = 0;
+			int nMsgType = 0;
 
-      switch (wFunction)
-      {
-      case 1: // Away
-        if (m_iStatus == ID_STATUS_ONLINE || m_iStatus == ID_STATUS_INVISIBLE)
-          nMsgType = MTYPE_AUTOONLINE;
-        else if (m_iStatus == ID_STATUS_AWAY)
-          nMsgType = MTYPE_AUTOAWAY;
-        else if (m_iStatus == ID_STATUS_FREECHAT)
-          nMsgType = MTYPE_AUTOFFC;
-        break;
-      case 2: // Busy
-        if (m_iStatus == ID_STATUS_OCCUPIED)
-          nMsgType = MTYPE_AUTOBUSY;
-        else if (m_iStatus == ID_STATUS_DND)
-          nMsgType = MTYPE_AUTODND;
-        break;
-      case 3: // N/A
-        if (m_iStatus == ID_STATUS_NA)
-          nMsgType = MTYPE_AUTONA;
-      }
+			switch (wFunction)
+			{
+			case 1: // Away
+				if (m_iStatus == ID_STATUS_ONLINE || m_iStatus == ID_STATUS_INVISIBLE)
+					nMsgType = MTYPE_AUTOONLINE;
+				else if (m_iStatus == ID_STATUS_AWAY)
+					nMsgType = MTYPE_AUTOAWAY;
+				else if (m_iStatus == ID_STATUS_FREECHAT)
+					nMsgType = MTYPE_AUTOFFC;
+				break;
+
+			case 2: // Busy
+				if (m_iStatus == ID_STATUS_OCCUPIED)
+					nMsgType = MTYPE_AUTOBUSY;
+				else if (m_iStatus == ID_STATUS_DND)
+					nMsgType = MTYPE_AUTODND;
+				break;
+
+			case 3: // N/A
+				if (m_iStatus == ID_STATUS_NA)
+					nMsgType = MTYPE_AUTONA;
+			}
 			handleMessageTypes(dwUin, szUID, time(NULL), dwMsgID1, dwMsgID2, wCookie, wVersion, nMsgType, bFlags, wAckType, dwLengthToEnd, 0, (char*)pDataBuf, MTF_PLUGIN | MTF_STATUS_EXTENDED, NULL);
 		}
 		else if (nTypeId)
@@ -1041,11 +1043,11 @@ void CIcqProto::handleRecvServMsgContacts(BYTE *buf, WORD wLen, DWORD dwUin, cha
 			return;
 		}
 		oscar_tlv_chain *chain = readIntoTLVChain(&buf, wLen, 0);
-    if (!chain)
-    { // sanity check
-      NetLog_Server("Message (format %u) - Invalid data", 2);
-      return;
-    }
+		if (!chain)
+		{ // sanity check
+			NetLog_Server("Message (format %u) - Invalid data", 2);
+			return;
+		}
 
 		WORD wAckType = chain->getWord(0x0A, 1);
 
@@ -1103,7 +1105,7 @@ void CIcqProto::handleRecvServMsgContacts(BYTE *buf, WORD wLen, DWORD dwUin, cha
 						}
 						contacts[iContact] = (ICQSEARCHRESULT*)SAFE_MALLOC(sizeof(ICQSEARCHRESULT));
 						contacts[iContact]->hdr.cbSize = sizeof(ICQSEARCHRESULT);
-            contacts[iContact]->hdr.flags = PSR_TCHAR;
+						contacts[iContact]->hdr.flags = PSR_TCHAR;
 						contacts[iContact]->hdr.nick = null_strdup(_T(""));
 						contacts[iContact]->hdr.id = ansi_to_tchar(szUid);
 
@@ -1120,7 +1122,7 @@ void CIcqProto::handleRecvServMsgContacts(BYTE *buf, WORD wLen, DWORD dwUin, cha
 						}
 						iContact++;
 
-            SAFE_FREE(&szUid);
+						SAFE_FREE(&szUid);
 					}
 					else 
 					{
@@ -1352,11 +1354,10 @@ void CIcqProto::handleRecvServMsgType4(BYTE *buf, WORD wLen, DWORD dwUin, char *
 							dwDataLen = wLen;
 
 						if (typeId)
-            {
-              uid_str szUID;
-
+						{
+							uid_str szUID;
 							handleMessageTypes(dwUin, szUID, dwRecvTime, dwMsgID1, dwMsgID2, 0, 0, typeId, bFlags, 0, dwLengthToEnd, (WORD)dwDataLen, (char*)pmsg, MTF_PLUGIN, NULL);
-            }
+						}
 						else
 						{
 							NetLog_Server("Unsupported plugin message type %d", typeId);
@@ -1364,11 +1365,10 @@ void CIcqProto::handleRecvServMsgType4(BYTE *buf, WORD wLen, DWORD dwUin, char *
 					}
 				}
 				else
-        {
-          uid_str szUID;
-
+				{
+					uid_str szUID;
 					handleMessageTypes(dwUin, szUID, dwRecvTime, dwMsgID1, dwMsgID2, 0, 0, bMsgType, bFlags, 0, wTLVLen - 8, wMsgLen, (char*)pmsg, 0, NULL);
-        }
+				}
 			}
 		}
 		else
@@ -1532,7 +1532,7 @@ int getPluginTypeIdLen(int nTypeID)
 	case MTYPE_FILEREQ:
 		return 0x2B;
 
-  case MTYPE_AUTOONLINE:
+	case MTYPE_AUTOONLINE:
 	case MTYPE_AUTOAWAY:
 	case MTYPE_AUTOBUSY:
 	case MTYPE_AUTODND:
@@ -1584,7 +1584,7 @@ void packPluginTypeId(icq_packet *packet, int nTypeID)
 
 		break;
 
-  case MTYPE_AUTOONLINE:
+	case MTYPE_AUTOONLINE:
 	case MTYPE_AUTOAWAY:
 	case MTYPE_AUTOFFC:
 		packLEWord(packet, 0x03A);                // Length
@@ -2000,7 +2000,7 @@ void CIcqProto::handleMessageTypes(DWORD dwUin, char *szUID, DWORD dwTimestamp, 
 			{
 				isrList[i] = (ICQSEARCHRESULT*)SAFE_MALLOC(sizeof(ICQSEARCHRESULT));
 				isrList[i]->hdr.cbSize = sizeof(ICQSEARCHRESULT);
-        isrList[i]->hdr.flags = PSR_TCHAR;
+				isrList[i]->hdr.flags = PSR_TCHAR;
 				if (IsStringUIN(pszMsgField[1 + i * 2]))
 				{ // icq contact
 					isrList[i]->uin = atoi(pszMsgField[1 + i * 2]);
@@ -2037,11 +2037,11 @@ void CIcqProto::handleMessageTypes(DWORD dwUin, char *szUID, DWORD dwTimestamp, 
 			}
 
 			for (i = 0; i < nContacts; i++)
-      {
-        SAFE_FREE(&isrList[i]->hdr.id);
-        SAFE_FREE(&isrList[i]->hdr.nick);
+			{
+				SAFE_FREE(&isrList[i]->hdr.id);
+				SAFE_FREE(&isrList[i]->hdr.nick);
 				SAFE_FREE((void**)&isrList[i]);
-      }
+			}
 		}
 		break;
 
@@ -2149,7 +2149,7 @@ void CIcqProto::handleMessageTypes(DWORD dwUin, char *szUID, DWORD dwTimestamp, 
 		handleXtrazData(dwUin, dwMsgID, dwMsgID2, wCookie, szMsg, wMsgLen, bThruDC);
 		break;
 
-  case MTYPE_AUTOONLINE:
+	case MTYPE_AUTOONLINE:
 	case MTYPE_AUTOAWAY:
 	case MTYPE_AUTOBUSY:
 	case MTYPE_AUTONA:
@@ -2159,53 +2159,56 @@ void CIcqProto::handleMessageTypes(DWORD dwUin, char *szUID, DWORD dwTimestamp, 
 			char **szMsg = MirandaStatusToAwayMsg(AwayMsgTypeToStatus(type));
 			if (szMsg)
 			{
-        struct rates_status_message_response: public rates_queue_item {
-        protected:
-          virtual rates_queue_item* copyItem(rates_queue_item *aDest = NULL) {
-            rates_status_message_response *pDest = (rates_status_message_response*)aDest;
-            if (!pDest)
-              pDest = new rates_status_message_response(ppro, wGroup);
+				struct rates_status_message_response: public rates_queue_item 
+				{
+				protected:
+					virtual rates_queue_item* copyItem(rates_queue_item *aDest = NULL) 
+					{
+						rates_status_message_response *pDest = (rates_status_message_response*)aDest;
+						if (!pDest)
+							pDest = new rates_status_message_response(ppro, wGroup);
 
-            pDest->bExtended = bExtended;
-            pDest->dwMsgID1 = dwMsgID1;
-            pDest->dwMsgID2 = dwMsgID2;
-            pDest->wCookie = wCookie;
-            pDest->wVersion = wVersion;
-            pDest->nMsgType = nMsgType;
+						pDest->bExtended = bExtended;
+						pDest->dwMsgID1 = dwMsgID1;
+						pDest->dwMsgID2 = dwMsgID2;
+						pDest->wCookie = wCookie;
+						pDest->wVersion = wVersion;
+						pDest->nMsgType = nMsgType;
 
-            return rates_queue_item::copyItem(pDest);
-          };
-        public:
-          rates_status_message_response(CIcqProto *ppro, WORD wGroup): rates_queue_item(ppro, wGroup) { };
-          virtual ~rates_status_message_response() { };
+						return rates_queue_item::copyItem(pDest);
+					};
+				public:
+					rates_status_message_response(CIcqProto *ppro, WORD wGroup): rates_queue_item(ppro, wGroup) { };
+					virtual ~rates_status_message_response() { };
 
-          virtual void execute() {
-            char **pszMsg = ppro->MirandaStatusToAwayMsg(AwayMsgTypeToStatus(nMsgType));
-            if (bExtended) 
-              ppro->icq_sendAwayMsgReplyServExt(dwUin, szUid, dwMsgID1, dwMsgID2, wCookie, wVersion, nMsgType, pszMsg);
-            else if (dwUin)
-              ppro->icq_sendAwayMsgReplyServ(dwUin, dwMsgID1, dwMsgID2, wCookie, wVersion, (BYTE)nMsgType, pszMsg);
-            else
-	  					ppro->NetLog_Server("Error: Malformed UIN in packet");
-          };
+					virtual void execute() 
+					{
+						char **pszMsg = ppro->MirandaStatusToAwayMsg(AwayMsgTypeToStatus(nMsgType));
+						if (bExtended) 
+							ppro->icq_sendAwayMsgReplyServExt(dwUin, szUid, dwMsgID1, dwMsgID2, wCookie, wVersion, nMsgType, pszMsg);
+						else if (dwUin)
+							ppro->icq_sendAwayMsgReplyServ(dwUin, dwMsgID1, dwMsgID2, wCookie, wVersion, (BYTE)nMsgType, pszMsg);
+						else
+							ppro->NetLog_Server("Error: Malformed UIN in packet");
+					};
 
-          BOOL bExtended;
-          DWORD dwMsgID1;
-          DWORD dwMsgID2;
-          WORD wCookie;
-          WORD wVersion;
-          int nMsgType;
-        };
+					BOOL bExtended;
+					DWORD dwMsgID1;
+					DWORD dwMsgID2;
+					WORD wCookie;
+					WORD wVersion;
+					int nMsgType;
+				};
 
 				m_ratesMutex->Enter();
-        WORD wGroup = m_rates->getGroupFromSNAC(ICQ_MSG_FAMILY, ICQ_MSG_RESPONSE);
+				WORD wGroup = m_rates->getGroupFromSNAC(ICQ_MSG_FAMILY, ICQ_MSG_RESPONSE);
 				m_ratesMutex->Leave();
 
 				rates_status_message_response rr(this, wGroup);
-        rr.bExtended = (nMsgFlags & MTF_STATUS_EXTENDED) == MTF_STATUS_EXTENDED;
-        rr.hContact = hContact;
+				rr.bExtended = (nMsgFlags & MTF_STATUS_EXTENDED) == MTF_STATUS_EXTENDED;
+				rr.hContact = hContact;
 				rr.dwUin = dwUin;
-        rr.szUid = szUID;
+				rr.szUid = szUID;
 				rr.dwMsgID1 = dwMsgID;
 				rr.dwMsgID2 = dwMsgID2;
 				rr.wCookie = wCookie;
@@ -2429,16 +2432,16 @@ void CIcqProto::handleRecvMsgResponse(BYTE *buf, WORD wLen, WORD wFlags, DWORD d
 
 				// This packet is malformed. Possibly a file accept from Miranda IM 0.1.2.1
 				if (wLen < 20) 
-        {
-          ReleaseCookie(dwCookie);
-          return;
-        }
+				{
+					ReleaseCookie(dwCookie);
+					return;
+				}
 
 				if (!unpackPluginTypeId(&buf, &wLen, &typeId, &wFunctionId, FALSE))
-        {
-          ReleaseCookie(dwCookie);
-          return;
-        }
+				{
+					ReleaseCookie(dwCookie);
+					return;
+				}
 
 				if (wLen < 4)
 				{
@@ -2470,8 +2473,8 @@ void CIcqProto::handleRecvMsgResponse(BYTE *buf, WORD wLen, WORD wFlags, DWORD d
 						szMsg[dwDataLen] = '\0';
 						handleStatusMsgReply("SNAC(4.B) ", hContact, dwUin, wVersion, pCookieData->nAckType, (WORD)dwCookie, szMsg, 0);
             
-            ReleaseCookie(dwCookie);
-            return;
+						ReleaseCookie(dwCookie);
+						return;
 					}
 					else
 						ackType = ACKTYPE_MESSAGE;
@@ -2576,7 +2579,7 @@ void CIcqProto::handleRecvMsgResponse(BYTE *buf, WORD wLen, WORD wFlags, DWORD d
 				// Set DC status to failed
 				setSettingByte(hContact, "DCStatus", 2);
 
-        ReleaseCookie(dwCookie);
+				ReleaseCookie(dwCookie);
 			}
 			return;
 
@@ -2615,10 +2618,10 @@ void CIcqProto::handleRecvServMsgError(BYTE *buf, WORD wLen, WORD wFlags, DWORD 
 		uid_str szUid;
 
 		if (getContactUid(hContact, &dwUin, &szUid))
-    { // Invalid contact
+		{ // Invalid contact
 			FreeCookie((WORD)dwSequence);
-      return;
-    }
+			return;
+		}
 
 		// Error code
 		unpackWord(&buf, &wError);
@@ -2882,12 +2885,12 @@ void CIcqProto::handleMissedMsg(BYTE *buf, WORD wLen, WORD wFlags, DWORD dwRef)
 	unpackWord(&buf, &wError);
 	wLen -= 2;
 
-  { // offline retrieval process in progress, note that we received missed message notification
-    cookie_offline_messages *cookie;
+	{ // offline retrieval process in progress, note that we received missed message notification
+		cookie_offline_messages *cookie;
 
-    if (FindCookieByType(CKT_OFFLINEMESSAGE, NULL, NULL, (void**)&cookie))
-      cookie->nMissed++;
-  }
+		if (FindCookieByType(CKT_OFFLINEMESSAGE, NULL, NULL, (void**)&cookie))
+			cookie->nMissed++;
+	}
 
 	switch (wError) {
 
@@ -2917,28 +2920,28 @@ void CIcqProto::handleOffineMessagesReply(BYTE *buf, WORD wLen, WORD wFlags, DWO
 	if (FindCookie(dwRef, NULL, (void**)&cookie))
 	{
 		NetLog_Server("End of offline msgs, %u received", cookie->nMessages);
-    if (cookie->nMissed)
-    { // NASTY WORKAROUND!!
-      // The ICQ server has a bug that causes offline messages to be received again and again when some 
-      // missed message notification is present (most probably it is not processed correctly and causes
-      // the server to fail the purging process); try to purge them using the old offline messages
-      // protocol.  2008/05/21
-      NetLog_Server("Warning: Received %u missed message notifications, trying to fix the server.", cookie->nMissed);
+		if (cookie->nMissed)
+		{	// NASTY WORKAROUND!!
+			// The ICQ server has a bug that causes offline messages to be received again and again when some 
+			// missed message notification is present (most probably it is not processed correctly and causes
+			// the server to fail the purging process); try to purge them using the old offline messages
+			// protocol.  2008/05/21
+			NetLog_Server("Warning: Received %u missed message notifications, trying to fix the server.", cookie->nMissed);
 
-      icq_packet packet;
-      // This will delete the messages stored on server
-      serverPacketInit(&packet, 24);
-      packFNACHeader(&packet, ICQ_EXTENSIONS_FAMILY, ICQ_META_CLI_REQUEST);
-      packWord(&packet, 1);             // TLV Type
-      packWord(&packet, 10);            // TLV Length
-      packLEWord(&packet, 8);           // Data length
-      packLEDWord(&packet, m_dwLocalUIN); // My UIN
-      packLEWord(&packet, CLI_DELETE_OFFLINE_MSGS_REQ); // Ack offline msgs
-      packLEWord(&packet, 0x0000);      // Request sequence number (we dont use this for now)
+			icq_packet packet;
+			// This will delete the messages stored on server
+			serverPacketInit(&packet, 24);
+			packFNACHeader(&packet, ICQ_EXTENSIONS_FAMILY, ICQ_META_CLI_REQUEST);
+			packWord(&packet, 1);             // TLV Type
+			packWord(&packet, 10);            // TLV Length
+			packLEWord(&packet, 8);           // Data length
+			packLEDWord(&packet, m_dwLocalUIN); // My UIN
+			packLEWord(&packet, CLI_DELETE_OFFLINE_MSGS_REQ); // Ack offline msgs
+			packLEWord(&packet, 0x0000);      // Request sequence number (we dont use this for now)
 
-      // Send it
-      sendServPacket(&packet);
-    }
+			// Send it
+			sendServPacket(&packet);
+		}
 
 		ReleaseCookie(dwRef);
 	}
