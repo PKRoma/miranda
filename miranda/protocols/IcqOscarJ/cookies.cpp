@@ -44,15 +44,15 @@ void CIcqProto::RemoveExpiredCookies()
 	time_t tNow = time(NULL);
 
 	for (int i = cookies.getCount()-1; i >= 0; i--)
-  {
-    icq_cookie_info *cookie = cookies[i];
+	{
+		icq_cookie_info *cookie = cookies[i];
 
 		if ((cookie->dwTime + COOKIE_TIMEOUT) < tNow)
-    {
+		{
 			cookies.remove(i);
-      SAFE_FREE((void**)&cookie);
-    }
-  }
+			SAFE_FREE((void**)&cookie);
+		}
+	}
 }
 
 
@@ -66,24 +66,24 @@ DWORD CIcqProto::AllocateCookie(BYTE bType, WORD wIdent, HANDLE hContact, void *
 	dwThisSeq |= wIdent<<0x10;
 
 	icq_cookie_info* p = (icq_cookie_info*)SAFE_MALLOC(sizeof(icq_cookie_info));
-  if (p)
-  {
-	  p->bType = bType;
-	  p->dwCookie = dwThisSeq;
-	  p->hContact = hContact;
-	  p->pvExtra = pvExtra;
-	  p->dwTime = time(NULL);
-	  cookies.insert(p);
-  }
+	if (p)
+	{
+		p->bType = bType;
+		p->dwCookie = dwThisSeq;
+		p->hContact = hContact;
+		p->pvExtra = pvExtra;
+		p->dwTime = time(NULL);
+		cookies.insert(p);
+	}
 	return dwThisSeq;
 }
 
 
 DWORD CIcqProto::GenerateCookie(WORD wIdent)
 {
-  icq_lock l(cookieMutex);
+	icq_lock l(cookieMutex);
 
-  DWORD dwThisSeq = wCookieSeq++;
+	DWORD dwThisSeq = wCookieSeq++;
 	dwThisSeq &= 0x7FFF;
 	dwThisSeq |= wIdent<<0x10;
 
@@ -147,25 +147,25 @@ int CIcqProto::FindCookieByData(void *pvExtra, DWORD *pdwCookie, HANDLE *phConta
 
 int CIcqProto::FindCookieByType(BYTE bType, DWORD *pdwCookie, HANDLE *phContact, void** ppvExtra)
 {
-  icq_lock l(cookieMutex);
+	icq_lock l(cookieMutex);
 
-  for (int i = 0; i < cookies.getCount(); i++)
-  {
-    if (bType == cookies[i]->bType)
-    {
-      if (pdwCookie)
-        *pdwCookie = cookies[i]->dwCookie;
-      if (phContact)
-        *phContact = cookies[i]->hContact;
-      if (ppvExtra)
-        *ppvExtra = cookies[i]->pvExtra;
+	for (int i = 0; i < cookies.getCount(); i++)
+	{
+		if (bType == cookies[i]->bType)
+		{
+			if (pdwCookie)
+				*pdwCookie = cookies[i]->dwCookie;
+			if (phContact)
+				*phContact = cookies[i]->hContact;
+			if (ppvExtra)
+				*ppvExtra = cookies[i]->pvExtra;
 
-      // Cookie found
-      return 1;
-    }
-  }
+			// Cookie found
+			return 1;
+		}
+	}
 
-  return 0;
+	return 0;
 }
 
 
@@ -204,12 +204,12 @@ void CIcqProto::FreeCookie(DWORD dwCookie)
 
 	int i = cookies.getIndex((icq_cookie_info*)&dwCookie);
 	if (i != INVALID_COOKIE_INDEX)
-  {	// Cookie found, remove from list
-    icq_cookie_info *cookie = cookies[i];
+	{	// Cookie found, remove from list
+		icq_cookie_info *cookie = cookies[i];
 
 		cookies.remove(i);
-    SAFE_FREE((void**)&cookie);
-  }
+		SAFE_FREE((void**)&cookie);
+	}
 
 	RemoveExpiredCookies();
 }
@@ -220,16 +220,16 @@ void CIcqProto::FreeCookieByData(BYTE bType, void *pvExtra)
 	icq_lock l(cookieMutex);
 
 	for (int i = 0; i < cookies.getCount(); i++)
-  {
-    icq_cookie_info *cookie = cookies[i];
+	{
+		icq_cookie_info *cookie = cookies[i];
 
 		if (bType == cookie->bType && pvExtra == cookie->pvExtra)
 		{ // Cookie found, remove from list
 			cookies.remove(i);
-      SAFE_FREE((void**)&cookie);
+			SAFE_FREE((void**)&cookie);
 			break;
 		}
-  }
+	}
 
 	RemoveExpiredCookies();
 }
@@ -242,11 +242,11 @@ void CIcqProto::ReleaseCookie(DWORD dwCookie)
 	int i = cookies.getIndex(( icq_cookie_info* )&dwCookie );
 	if (i != INVALID_COOKIE_INDEX)
 	{ // Cookie found, remove from list
-    icq_cookie_info *cookie = cookies[i];
+		icq_cookie_info *cookie = cookies[i];
 
 		cookies.remove(i);
 		SAFE_FREE((void**)&cookie->pvExtra);
-    SAFE_FREE((void**)&cookie);
+		SAFE_FREE((void**)&cookie);
 	}
 	RemoveExpiredCookies();
 }

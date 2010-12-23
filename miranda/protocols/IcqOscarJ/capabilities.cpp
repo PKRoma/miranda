@@ -68,8 +68,8 @@ static const icq_capability CapabilityRecord[] =
 #ifdef _DEBUG
 struct icq_capability_name
 {
-  DWORD capID;
-  const char* capName;
+	DWORD capID;
+	const char* capName;
 };
 
 static const icq_capability_name CapabilityNames[] = 
@@ -83,29 +83,29 @@ static const icq_capability_name CapabilityNames[] =
 	{CAPF_ICQDIRECT,      "Direct Connections"},
 	{CAPF_XTRAZ,          "Xtraz"},
 	{CAPF_OSCAR_FILE,     "File Transfers"},
-  {CAPF_STATUS_MESSAGES,"Individual Status Messages"},
-  {CAPF_STATUS_MOOD,    "Mood"},
-  {CAPF_XSTATUS,        "Custom Status"}
+	{CAPF_STATUS_MESSAGES,"Individual Status Messages"},
+	{CAPF_STATUS_MOOD,    "Mood"},
+	{CAPF_XSTATUS,        "Custom Status"}
 };
 
 void NetLog_CapabilityChange(CIcqProto *ppro, const char *szChange, DWORD fdwCapabilities)
 {
-  char szBuffer[MAX_PATH] = {0};
+	char szBuffer[MAX_PATH] = {0};
 
-  if (!fdwCapabilities) return;
+	if (!fdwCapabilities) return;
 
 	for (int nIndex = 0; nIndex < SIZEOF(CapabilityNames); nIndex++)
 	{
-  	// Check if the current capability is present
-	  if ((fdwCapabilities & CapabilityNames[nIndex].capID) == CapabilityNames[nIndex].capID)
+		// Check if the current capability is present
+		if ((fdwCapabilities & CapabilityNames[nIndex].capID) == CapabilityNames[nIndex].capID)
 		{
-      if (strlennull(szBuffer))
-        strcat(szBuffer, ", ");
-      strcat(szBuffer, CapabilityNames[nIndex].capName);
+			if (strlennull(szBuffer))
+				strcat(szBuffer, ", ");
+			strcat(szBuffer, CapabilityNames[nIndex].capName);
 		}
 	}
-  // Log the change
-  ppro->NetLog_Server("Capabilities: %s %s", szChange, szBuffer);
+	// Log the change
+	ppro->NetLog_Server("Capabilities: %s %s", szChange, szBuffer);
 }
 #endif
 
@@ -123,17 +123,17 @@ void CIcqProto::ClearContactCapabilities(HANDLE hContact, DWORD fdwCapabilities)
 	// Get current capability flags
 	DWORD fdwContactCaps =  getSettingDword(hContact, DBSETTING_CAPABILITIES, 0);
 
-  if (fdwContactCaps != (fdwContactCaps & ~fdwCapabilities))
-  { 
+	if (fdwContactCaps != (fdwContactCaps & ~fdwCapabilities))
+	{ 
 #ifdef _DEBUG
-    NetLog_CapabilityChange(this, "Removed", fdwCapabilities & fdwContactCaps);
+		NetLog_CapabilityChange(this, "Removed", fdwCapabilities & fdwContactCaps);
 #endif
-    // Clear unwanted capabilities
-	  fdwContactCaps &= ~fdwCapabilities;
+		// Clear unwanted capabilities
+		fdwContactCaps &= ~fdwCapabilities;
 
-	  // And write it back to disk
-	  setSettingDword(hContact, DBSETTING_CAPABILITIES, fdwContactCaps);
-  }
+		// And write it back to disk
+		setSettingDword(hContact, DBSETTING_CAPABILITIES, fdwContactCaps);
+	}
 }
 
 
@@ -143,17 +143,17 @@ void CIcqProto::SetContactCapabilities(HANDLE hContact, DWORD fdwCapabilities)
 	// Get current capability flags
 	DWORD fdwContactCaps =  getSettingDword(hContact, DBSETTING_CAPABILITIES, 0);
 
-  if (fdwContactCaps != (fdwContactCaps | fdwCapabilities))
-  { 
+	if (fdwContactCaps != (fdwContactCaps | fdwCapabilities))
+	{ 
 #ifdef _DEBUG
-    NetLog_CapabilityChange(this, "Added", fdwCapabilities & ~fdwContactCaps);
+		NetLog_CapabilityChange(this, "Added", fdwCapabilities & ~fdwContactCaps);
 #endif
-    // Update them
-	  fdwContactCaps |= fdwCapabilities;
+		// Update them
+		fdwContactCaps |= fdwCapabilities;
 
-	  // And write it back to disk
-	  setSettingDword(hContact, DBSETTING_CAPABILITIES, fdwContactCaps);
-  }
+		// And write it back to disk
+		setSettingDword(hContact, DBSETTING_CAPABILITIES, fdwContactCaps);
+	}
 }
 
 
@@ -231,20 +231,20 @@ void CIcqProto::AddCapabilitiesFromBuffer(HANDLE hContact, BYTE *pBuffer, int nL
 {
 	// Get current capability flags
 	DWORD fdwContactCaps = getSettingDword(hContact, DBSETTING_CAPABILITIES, 0);
-  // Get capability flags from buffer
-  DWORD fdwCapabilities = GetCapabilitiesFromBuffer(pBuffer, nLength);
+	// Get capability flags from buffer
+	DWORD fdwCapabilities = GetCapabilitiesFromBuffer(pBuffer, nLength);
 
-  if (fdwContactCaps != (fdwContactCaps | fdwCapabilities))
-  { 
+	if (fdwContactCaps != (fdwContactCaps | fdwCapabilities))
+	{ 
 #ifdef _DEBUG
-    NetLog_CapabilityChange(this, "Added", fdwCapabilities & ~fdwContactCaps);
+		NetLog_CapabilityChange(this, "Added", fdwCapabilities & ~fdwContactCaps);
 #endif
-    // Add capability flags from buffer
-    fdwContactCaps |= fdwCapabilities;
+		// Add capability flags from buffer
+		fdwContactCaps |= fdwCapabilities;
 
-	  // And write them back to database
-	  setSettingDword(hContact, DBSETTING_CAPABILITIES, fdwContactCaps);
-  }
+		// And write them back to database
+		setSettingDword(hContact, DBSETTING_CAPABILITIES, fdwContactCaps);
+	}
 }
 
 
@@ -253,28 +253,28 @@ void CIcqProto::AddCapabilitiesFromBuffer(HANDLE hContact, BYTE *pBuffer, int nL
 void CIcqProto::SetCapabilitiesFromBuffer(HANDLE hContact, BYTE *pBuffer, int nLength, BOOL bReset)
 {
 	// Get current capability flags
-  DWORD fdwContactCaps = bReset ? 0 : getSettingDword(hContact, DBSETTING_CAPABILITIES, 0);
-  // Get capability flags from buffer
-  DWORD fdwCapabilities = GetCapabilitiesFromBuffer(pBuffer, nLength);
+	DWORD fdwContactCaps = bReset ? 0 : getSettingDword(hContact, DBSETTING_CAPABILITIES, 0);
+	// Get capability flags from buffer
+	DWORD fdwCapabilities = GetCapabilitiesFromBuffer(pBuffer, nLength);
 
 #ifdef _DEBUG
-  if (bReset)
-    NetLog_CapabilityChange(this, "Set", fdwCapabilities);
-  else
-  {
-    NetLog_CapabilityChange(this, "Removed", fdwContactCaps & ~fdwCapabilities & CapabilityFlagsMask);
-    NetLog_CapabilityChange(this, "Added", fdwCapabilities & ~fdwContactCaps); 
-  }
+	if (bReset)
+		NetLog_CapabilityChange(this, "Set", fdwCapabilities);
+	else
+	{
+		NetLog_CapabilityChange(this, "Removed", fdwContactCaps & ~fdwCapabilities & CapabilityFlagsMask);
+		NetLog_CapabilityChange(this, "Added", fdwCapabilities & ~fdwContactCaps); 
+	}
 #endif
 
-  if (fdwCapabilities != (fdwContactCaps & ~CapabilityFlagsMask))
-  { // Get current unmanaged capability flags
-    fdwContactCaps &= ~CapabilityFlagsMask;
+	if (fdwCapabilities != (fdwContactCaps & ~CapabilityFlagsMask))
+	{ // Get current unmanaged capability flags
+		fdwContactCaps &= ~CapabilityFlagsMask;
 
-    // Add capability flags from buffer
-    fdwContactCaps |= fdwCapabilities;
+		// Add capability flags from buffer
+		fdwContactCaps |= fdwCapabilities;
 
-	  // And write them back to database
-	  setSettingDword(hContact, DBSETTING_CAPABILITIES, fdwContactCaps);
-  }
+		// And write them back to database
+		setSettingDword(hContact, DBSETTING_CAPABILITIES, fdwContactCaps);
+	}
 }
