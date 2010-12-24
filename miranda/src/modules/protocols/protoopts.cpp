@@ -902,6 +902,11 @@ INT_PTR CALLBACK AccMgrDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LPARAM 
 
 		case IDC_LNK_NETWORK:
 			{
+				PSHNOTIFY pshn = {0};
+				pshn.hdr.code = PSN_APPLY;
+				pshn.hdr.hwndFrom = hwndDlg;
+				SendMessage(hwndDlg, WM_NOTIFY, 0, (LPARAM)&pshn);
+
 				OPENOPTIONSDIALOG ood = {0};
 				ood.cbSize = sizeof(ood);
 				ood.pszPage = "Network";
