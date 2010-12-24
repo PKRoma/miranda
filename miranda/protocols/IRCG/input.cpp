@@ -812,7 +812,7 @@ bool CIrcProto::PostIrcMessage( const TCHAR* fmt, ... )
 bool CIrcProto::PostIrcMessageWnd( TCHAR* window, HANDLE hContact, const TCHAR* szBuf )
 {
 	DBVARIANT dbv;
-	TCHAR windowname[256];
+	TCHAR windowname[256], str[32];
 	BYTE bDCC = 0;
 
 	if ( hContact )
@@ -848,7 +848,19 @@ bool CIrcProto::PostIrcMessageWnd( TCHAR* window, HANDLE hContact, const TCHAR* 
 			return 1;
 		}
 
+		ReplaceString( Message, _T("%mnick"), m_nick);
+		ReplaceString( Message, _T("%anick"), m_alternativeNick);
+		ReplaceString( Message, _T("%awaymsg"), m_statusMessage.c_str());
+		ReplaceString( Message, _T("%module"), m_tszUserName);
+		ReplaceString( Message, _T("%name"), m_name);
 		ReplaceString( Message, _T("%newl"), _T("\r\n"));
+		ReplaceString( Message, _T("%network"), m_info.sNetwork.c_str());
+		ReplaceString( Message, _T("%me"), m_info.sNick.c_str());
+
+		mir_sntprintf( str, SIZEOF(str), _T("%d.%d.%d.%d"),(mirVersion>>24)&0xFF,(mirVersion>>16)&0xFF,(mirVersion>>8)&0xFF,mirVersion&0xFF);
+		ReplaceString(Message, _T("%mirver"), str);
+
+		ReplaceString(Message, _T("%version"), _T(__VERSION_STRING));
 		RemoveLinebreaks( Message );
 	}
 
