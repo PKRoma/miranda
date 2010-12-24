@@ -2777,13 +2777,13 @@ LRESULT CLUI::OnListSizeChangeNotify( NMCLISTCONTROL * pnmc )
 	}
 	nLastRequiredHeight=pnmc->pt.y;
 	newHeight=max(CLUIFramesGetMinHeight(),max(pnmc->pt.y,3)+1+((winstyle&WS_BORDER)?2:0)+(rcWindow.bottom-rcWindow.top)-(rcTree.bottom-rcTree.top));
-	if (newHeight==(rcWindow.bottom-rcWindow.top)) return 0;
-
 	if(newHeight<(rcWorkArea.bottom-rcWorkArea.top)*minHeight/100)
 		newHeight=(rcWorkArea.bottom-rcWorkArea.top)*minHeight/100;
 
 	if(newHeight>(rcWorkArea.bottom-rcWorkArea.top)*maxHeight/100)
 		newHeight=(rcWorkArea.bottom-rcWorkArea.top)*maxHeight/100;
+
+	if (newHeight==(rcWindow.bottom-rcWindow.top)) return 0;
 
 	if(ModernGetSettingByte(NULL,"CLUI","AutoSizeUpward",SETTING_AUTOSIZEUPWARD_DEFAULT)) {
 		rcWindow.top=rcWindow.bottom-newHeight;
