@@ -88,6 +88,7 @@ static bool NetlibHttpGatewaySend(struct NetlibConnection *nlc, RequestType reqT
 
 	case reqOldGet:
 		nlhrSend.requestType = REQUEST_GET;
+		nlhrSend.timeout = -1;
 		if ((nlc->nlhpi.flags & NLHPIF_USEGETSEQUENCE) && (nlc->nlhpi.szHttpGetUrl != NULL)) 
 		{
 			EnterCriticalSection(&nlc->csHttpSequenceNums);
