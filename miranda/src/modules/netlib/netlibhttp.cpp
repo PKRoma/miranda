@@ -437,7 +437,7 @@ static int SendHttpRequestAndData(struct NetlibConnection *nlc,struct ResizableC
 	return bytesSent;
 }
 
-INT_PTR NetlibHttpSendRequest(WPARAM wParam,LPARAM lParam)
+INT_PTR NetlibHttpSendRequest(WPARAM wParam, LPARAM lParam)
 {
 	struct NetlibConnection *nlc=(struct NetlibConnection*)wParam;
 	NETLIBHTTPREQUEST *nlhr=(NETLIBHTTPREQUEST*)lParam;
@@ -452,11 +452,13 @@ INT_PTR NetlibHttpSendRequest(WPARAM wParam,LPARAM lParam)
 	int bytesSent;
 	bool lastFirstLineFail = false;
 
-	if (nlhr == NULL || nlhr->cbSize < sizeof(NETLIBHTTPREQUEST) || nlhr->szUrl == NULL || nlhr->szUrl[0] == '\0') 
+	if (nlhr == NULL || nlhr->cbSize < NETLIBHTTPREQUEST_V1_SIZE || nlhr->szUrl == NULL || nlhr->szUrl[0] == '\0') 
 	{
 		SetLastError(ERROR_INVALID_PARAMETER);
 		return SOCKET_ERROR;
 	}
+
+	int hdrTimeout = nlhr->cbSize > NETLIBHTTPREQUEST_V1_SIZE && nlhr->timeout ? nlhr->timeout : HTTPRECVHEADERSTIMEOUT; 
 
 	switch(nlhr->requestType) 
 	{
@@ -613,7 +615,7 @@ INT_PTR NetlibHttpSendRequest(WPARAM wParam,LPARAM lParam)
 			int resultCode = 0;
 
 			DWORD fflags = MSG_PEEK | MSG_NODUMP | ((nlhr->flags & NLHRF_NOPROXY) ? MSG_RAW : 0);
-			DWORD dwTimeOutTime = nlc->usingHttpGateway && nlhr->requestType == REQUEST_GET ? -1 : GetTickCount() + HTTPRECVHEADERSTIMEOUT;
+			DWORD dwTimeOutTime = hdrTimeout < 0 ? -1 : GetTickCount() + hdrTimeout;
 			if (!HttpPeekFirstResponseLine(nlc, dwTimeOutTime, fflags, &resultCode, NULL, NULL))
 			{
 				NetlibLogf(nlc->nlu, "%s %d: %s Failed (%u %u)",__FILE__,__LINE__,"HttpPeekFirstResponseLine",GetLastError(), count);
@@ -858,7 +860,7 @@ INT_PTR NetlibHttpRecvHeaders(WPARAM wParam,LPARAM lParam)
 	if(!NetlibEnterNestedCS(nlc,NLNCS_RECV))
 		return 0;
 
-	dwRequestTimeoutTime = GetTickCount() + HTTPRECVHEADERSTIMEOUT;
+	dwRequestTimeoutTime = GetTickCount() + HTTPRECVDATATIMEOUT;
 	nlhr = (NETLIBHTTPREQUEST*)mir_calloc(sizeof(NETLIBHTTPREQUEST));
 	nlhr->cbSize = sizeof(NETLIBHTTPREQUEST);
 	nlhr->nlc = nlc;  // Needed to id connection in the protocol HTTP gateway wrapper functions
@@ -969,7 +971,7 @@ INT_PTR NetlibHttpTransaction(WPARAM wParam, LPARAM lParam)
 	DWORD dflags;
 
 	if (GetNetlibHandleType(nlu) != NLH_USER || !(nlu->user.flags & NUF_OUTGOING) || 
-		nlhr == NULL || nlhr->cbSize != sizeof(NETLIBHTTPREQUEST) || 
+		nlhr == NULL || nlhr->cbSize < NETLIBHTTPREQUEST_V1_SIZE || 
 		nlhr->szUrl == NULL || nlhr->szUrl[0] == 0) 
 	{
 		SetLastError(ERROR_INVALID_PARAMETER);
