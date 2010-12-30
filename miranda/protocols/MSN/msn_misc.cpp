@@ -516,11 +516,13 @@ static VOID CALLBACK TypingTimerProc(HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWO
 
 void  CMsnProto::MSN_StartStopTyping(ThreadData* info, bool start)
 {
-	if (start && info->mTimerId == 0) {
+	if (start && info->mTimerId == 0) 
+	{
 		info->mTimerId = SetTimer(NULL, 0, 5000, TypingTimerProc);
 		MSN_SendTyping(info, NULL, 1);
 	}
-	else if (!start && info->mTimerId != 0) {
+	else if (!start && info->mTimerId != 0) 
+	{
 			KillTimer(NULL, info->mTimerId);
 			info->mTimerId = 0;
 	}
@@ -675,7 +677,9 @@ void  CMsnProto::MSN_SetServerStatus(int newStatus)
 	if (!msnLoggedIn)
 		return;
 
-	const char* szStatusName = MirandaStatusToMSN(newStatus );
+	const char* szStatusName = MirandaStatusToMSN(newStatus);
+	unsigned status = newStatus == ID_STATUS_IDLE ? ID_STATUS_ONLINE : newStatus;
+	m_iStatus = status;
 
 	if (newStatus != ID_STATUS_OFFLINE) 
 	{
@@ -690,8 +694,6 @@ void  CMsnProto::MSN_SetServerStatus(int newStatus)
 			flags |= 0x40;
 
 		msnNsThread->sendPacket("CHG", "%s %u %s", szStatusName, flags, szMsnObject);
-
-		unsigned status = newStatus == ID_STATUS_IDLE ? ID_STATUS_ONLINE : newStatus;
 
 		char** msgptr = GetStatusMsgLoc(status);
 		if (msgptr != NULL)
