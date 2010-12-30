@@ -175,8 +175,6 @@ bool CMsnProto::MSN_AddUser(HANDLE hContact, const char* email, int netId, int f
 
 			if (res)
 			{
-				AddDelUserContList(email, flags, netId, false);
-
 				DBVARIANT dbv;
 				if (!DBGetContactSettingStringUtf(hContact, "CList", "Group", &dbv)) 
 				{
@@ -189,6 +187,9 @@ bool CMsnProto::MSN_AddUser(HANDLE hContact, const char* email, int netId, int f
 				{
 					MSN_ABFind("ABFindByContacts", szContactID);
 				}
+
+				MSN_SharingFindMembership(true);
+				AddDelUserContList(email, flags, netId, false);
 			}
 			else
 			{

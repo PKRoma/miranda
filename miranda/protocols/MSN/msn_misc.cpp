@@ -124,7 +124,7 @@ void  CMsnProto::MSN_AddAuthRequest(const char *email, const char *nick, const c
 {
 	//blob is: UIN=0(DWORD), hContact(DWORD), nick(ASCIIZ), ""(ASCIIZ), ""(ASCIIZ), email(ASCIIZ), ""(ASCIIZ)
 
-	HANDLE hContact = MSN_HContactFromEmail(email, nick, true, false);
+	HANDLE hContact = MSN_HContactFromEmail(email, nick, true, true);
 	
 	int emaillen = (int)strlen(email);
 
@@ -516,11 +516,13 @@ static VOID CALLBACK TypingTimerProc(HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWO
 
 void  CMsnProto::MSN_StartStopTyping(ThreadData* info, bool start)
 {
-	if (start && info->mTimerId == 0) {
+	if (start && info->mTimerId == 0) 
+	{
 		info->mTimerId = SetTimer(NULL, 0, 5000, TypingTimerProc);
 		MSN_SendTyping(info, NULL, 1);
 	}
-	else if (!start && info->mTimerId != 0) {
+	else if (!start && info->mTimerId != 0) 
+	{
 			KillTimer(NULL, info->mTimerId);
 			info->mTimerId = 0;
 	}
@@ -675,7 +677,9 @@ void  CMsnProto::MSN_SetServerStatus(int newStatus)
 	if (!msnLoggedIn)
 		return;
 
-	const char* szStatusName = MirandaStatusToMSN(newStatus );
+	const char* szStatusName = MirandaStatusToMSN(newStatus);
+	unsigned status = newStatus == ID_STATUS_IDLE ? ID_STATUS_ONLINE : newStatus;
+	m_iStatus = status;
 
 	if (newStatus != ID_STATUS_OFFLINE) 
 	{
@@ -684,14 +688,12 @@ void  CMsnProto::MSN_SetServerStatus(int newStatus)
 			 getStaticString(NULL, "PictObject", szMsnObject, sizeof(szMsnObject)))
 			szMsnObject[0] = 0;
 
-		// Capabilties: WLM 8.1, Chunking 
-		unsigned flags = 0x80000020;
+		// Capabilties: WLM 8.5, Chunking, UUN Bootstrap 
+		myFlags = 0x80000020 | 0x4000000;
 		if (getByte("MobileEnabled", 0) && getByte("MobileAllowed", 0))
-			flags |= 0x40;
+			myFlags |= 0x40;
 
-		msnNsThread->sendPacket("CHG", "%s %u %s", szStatusName, flags, szMsnObject);
-
-		unsigned status = newStatus == ID_STATUS_IDLE ? ID_STATUS_ONLINE : newStatus;
+		msnNsThread->sendPacket("CHG", "%s %u %s", szStatusName, myFlags, szMsnObject);
 
 		char** msgptr = GetStatusMsgLoc(status);
 		if (msgptr != NULL)
@@ -910,12 +912,14 @@ filetransfer::filetransfer(CMsnProto* prt)
 
 filetransfer::~filetransfer(void)
 {
-	proto->MSN_DebugLog("Destroying file transfer session %08X", p2p_sessionid);
+	if (p2p_sessionid)
+		proto->MSN_DebugLog("Destroying file transfer session %08X", p2p_sessionid);
 
 	WaitForSingleObject(hLockHandle, 2000);
 	CloseHandle(hLockHandle);
 
-	if (!bCompleted) {
+	if (!bCompleted && p2p_appID == MSN_APPID_FILE) 
+	{
 		std.ptszFiles = NULL;
 		std.totalFiles = 0;
 		proto->SendBroadcast(std.hContact, ACKTYPE_FILE, ACKRESULT_FAILED, this, 0);
@@ -1010,11 +1014,12 @@ int filetransfer::openNext(void)
 	return fileId;
 }
 
-directconnection::directconnection(filetransfer* ft)
+directconnection::directconnection(const char* CallID, HANDLE HContact)
 {
 	memset(this, 0, sizeof(directconnection));
 
-	callId = mir_strdup(ft->p2p_callID);
+	hContact = HContact;
+	callId = mir_strdup(CallID);
 	mNonce = (UUID*)mir_alloc(sizeof(UUID));
 	UuidCreate(mNonce);
 	ts = time(NULL);

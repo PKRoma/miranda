@@ -57,7 +57,24 @@ void overrideStr(TCHAR*& dest, const TCHAR* src, bool unicode, const TCHAR* def)
 		dest = mir_tstrdup(def);
 }
 
-char* rtrim(char *string)
+char* __fastcall ltrimp(char* str)
+{
+	if (str == NULL) return NULL;
+	char* p = str;
+
+	for (;;)
+	{
+		switch (*p)
+		{
+		case ' ': case '\t': case '\n': case '\r':
+			++p; break;
+		default:
+			return p;
+		}
+	}
+}
+
+char* __fastcall rtrim(char *string)
 {
    char* p = string + strlen(string) - 1;
 
@@ -71,7 +88,7 @@ char* rtrim(char *string)
    return string;
 }
 
-wchar_t* rtrim(wchar_t* string)
+wchar_t* __fastcall rtrim(wchar_t* string)
 {
    wchar_t* p = string + wcslen(string) - 1;
 

@@ -181,6 +181,7 @@ struct CMsnProto : public PROTO_INTERFACE
 	unsigned	langpref;
 	unsigned    emailEnabled;
 	unsigned    abchMigrated;
+	unsigned    myFlags;
 
 	HANDLE		msnSearchId;
 	unsigned	msnOtherContactsBlocked;
@@ -256,15 +257,10 @@ struct CMsnProto : public PROTO_INTERFACE
 	// MSN menus
 
 	HGENMENU mainMenuRoot;
-	HGENMENU hBlockMenuItem;
-	HGENMENU hOpenInboxMenuItem;
-	HGENMENU menuItems[1];
-	HGENMENU menuItemsAll[7];
+	HGENMENU menuItemsMain[4];
 
 	void MsnInitMainMenu(void);
-	void MsnInitContactMenu(void);
 	void MsnRemoveMainMenus(void);
-	void MsnRemoveContactMenus(void);
 	void MSN_EnableMenuItems(bool parEnable);
 	void MsnInvokeMyURL(bool ismail, const char* url);
 
@@ -350,15 +346,17 @@ struct CMsnProto : public PROTO_INTERFACE
 	void  p2p_clearDormantSessions(void);
 	void  p2p_cancelAllSessions(void);
 	void  p2p_redirectSessions(HANDLE hContact);
+	void  p2p_startSessions(HANDLE hContact);
 
 	void  p2p_invite(HANDLE hContact, int iAppID, filetransfer* ft = NULL);
+	void  p2p_inviteDc(filetransfer* ft);
 	void  p2p_processMsg(ThreadData* info, char* msgbody);
-	void  p2p_processSIP(ThreadData* info, char* msgbody, void* hdr);
+	void  p2p_processSIP(ThreadData* info, char* msgbody, void* hdr, HANDLE hContact);
 	
-	void  p2p_AcceptTransfer(P2P_Header* hdrdata, MimeHeaders& tFileInfo, MimeHeaders& tFileInfo2);
-	void  p2p_InitDirectTransfer(P2P_Header* hdrdata, MimeHeaders& tFileInfo, MimeHeaders& tFileInfo2);
-	void  p2p_InitDirectTransfer2(P2P_Header* hdrdata, MimeHeaders& tFileInfo, MimeHeaders& tFileInfo2);
-	void  p2p_InitFileTransfer(P2P_Header* hdrdata, ThreadData* info, MimeHeaders& tFileInfo, MimeHeaders& tFileInfo2);
+	void  p2p_AcceptTransfer(MimeHeaders& tFileInfo, MimeHeaders& tFileInfo2, HANDLE hContact);
+	void  p2p_InitDirectTransfer(MimeHeaders& tFileInfo, MimeHeaders& tFileInfo2, HANDLE hContact);
+	void  p2p_InitDirectTransfer2(MimeHeaders& tFileInfo, MimeHeaders& tFileInfo2, HANDLE hContact);
+	void  p2p_InitFileTransfer(ThreadData* info, MimeHeaders& tFileInfo, MimeHeaders& tFileInfo2, HANDLE hContact);
 	void  p2p_logHeader(P2P_Header* hdrdata);
 	void  p2p_pictureTransferFailed(filetransfer* ft);
 	void  p2p_savePicture2disk(filetransfer* ft);
@@ -393,7 +391,7 @@ struct CMsnProto : public PROTO_INTERFACE
 	filetransfer*  p2p_getThreadSession(HANDLE hContact, TInfoType mType);
 	filetransfer*  p2p_getSessionByID(unsigned id);
 	filetransfer*  p2p_getSessionByUniqueID(unsigned id);
-	filetransfer*  p2p_getSessionByCallID(const char* CallID);
+	filetransfer*  p2p_getSessionByCallID(const char* CallID, HANDLE hContact);
 
 	bool     p2p_sessionRegistered(filetransfer* ft);
 	bool     p2p_isAvatarOnly(HANDLE hContact);
@@ -401,7 +399,7 @@ struct CMsnProto : public PROTO_INTERFACE
 
 	void  p2p_registerDC(directconnection* ft);
 	void  p2p_unregisterDC(directconnection* dc);
-	directconnection*  p2p_getDCByCallID(const char* CallID);
+	directconnection*  p2p_getDCByCallID(const char* CallID, HANDLE hContact);
 
 	/////////////////////////////////////////////////////////////////////////////////////////
 	// MSN MSNFTP file transfer

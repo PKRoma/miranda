@@ -77,7 +77,7 @@ void CMsnProto::msnftp_invite(filetransfer *ft)
 	if (thread == NULL)
 		MsgQueue_Add(ft->std.hContact, 'S', msg, -1, ft);
 	else
-		thread->sendMessage('S', NULL, 1, msg, MSG_DISABLE_HDR);
+		thread->sendMessage('S', NULL, NETID_MSN, msg, MSG_DISABLE_HDR);
 }
 
 

@@ -680,7 +680,11 @@ int CMsnProto::OnWindowEvent(WPARAM wParam, LPARAM lParam)
 {
 	MessageWindowEventData* msgEvData  = (MessageWindowEventData*)lParam;
 
-	if (msgEvData->uType == MSG_WINDOW_EVT_OPENING) {
+	if (msgEvData->uType == MSG_WINDOW_EVT_OPENING) 
+	{
+		if (m_iStatus == ID_STATUS_OFFLINE || m_iStatus == ID_STATUS_INVISIBLE)
+			return 0;
+
 		if (!MSN_IsMyContact(msgEvData->hContact)) return 0;
 		
 		char tEmail[MSN_MAX_EMAIL_LEN];
@@ -689,8 +693,7 @@ int CMsnProto::OnWindowEvent(WPARAM wParam, LPARAM lParam)
 		int netId = Lists_GetNetId(tEmail);
 		if (netId != NETID_MSN && netId != NETID_LCS) return 0;
 
-		if (m_iStatus == ID_STATUS_OFFLINE || m_iStatus == ID_STATUS_INVISIBLE)
-			return 0;
+		if (Lists_IsInList(LIST_BL, tEmail)) return 0;
 
 		bool isOffline;
 		ThreadData* thread = MSN_StartSB(msgEvData->hContact, isOffline);

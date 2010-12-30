@@ -118,9 +118,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 /////////////////////////////////////////////////////////////////////////////////////////
 //	Global definitions
 
-#define MSN_MAX_EMAIL_LEN        128
-#define MSN_GUID_LEN			  40
+#define MSN_MAX_EMAIL_LEN         128
+#define MSN_GUID_LEN			   40
 
+#define MSN_PACKETS_COMBINE         7
 #define MSN_DEFAULT_PORT         1863
 #define MSN_DEFAULT_GATEWAY_PORT   80
 const char MSN_DEFAULT_LOGIN_SERVER[] = "messenger.hotmail.com";
@@ -178,11 +179,13 @@ int			MSN_GetImageFormat(void* buf, const char** ext);
 INT_PTR     MSN_CallService(const char* szSvcName, WPARAM wParam, LPARAM lParam);
 #endif
 
-void        MSN_EnableMenuItems(bool);
 void		MSN_FreeVariant(DBVARIANT* dbv);
 TCHAR*      MSN_GetContactNameT(HANDLE hContact);
 char*       MSN_Translate(const char* str);
 unsigned    MSN_GenRandom(void);
+
+void        MSN_InitContactMenu(void);
+void        MSN_RemoveContactMenus(void);
 
 HANDLE      GetIconHandle(int iconId);
 HICON       LoadIconEx(const char* name, bool big = false);
@@ -198,12 +201,16 @@ TCHAR* EscapeChatTags(const TCHAR* pszText);
 TCHAR* UnEscapeChatTags(TCHAR* str_in);
 
 void   overrideStr(TCHAR*& dest, const TCHAR* src, bool unicode, const TCHAR* def = NULL);
-char*  rtrim(char* string);
-wchar_t* rtrim(wchar_t* string);
-char* arrayToHex(BYTE* data, size_t datasz);
-
 void   replaceStr(char*& dest, const char* src);
 void   replaceStr(wchar_t*& dest, const wchar_t* src);
+
+char*    __fastcall ltrimp(char* str);
+char*    __fastcall rtrim(char* string);
+wchar_t* __fastcall rtrim(wchar_t* string);
+
+__inline char* lrtrimp(char* str) { return ltrimp(rtrim(str)); };
+
+char* arrayToHex(BYTE* data, size_t datasz);
 
 #if defined(_UNICODE) || defined(_WIN64)
 
@@ -237,21 +244,22 @@ public:
 	MimeHeaders(unsigned);
 	~MimeHeaders();
 
-	void clear(void);
-	char*	readFromBuffer(char* pSrc);
+	void        clear(void);
+	char*       decodeMailBody(char* msgBody);
 	const char* find(const char* fieldName);
+	char*       flipStr(const char* src, size_t len, char* dest);
+	size_t      getLength(void);
+	char*       readFromBuffer(char* src);
+	char*       writeToBuffer(char* dest);
+
+	void        addString(const char* name, const char* szValue, unsigned flags = 0);
+	void        addLong(const char* name, long lValue, unsigned flags = 0);
+	void        addULong(const char* name, unsigned lValue);
+	void	    addBool(const char* name, bool lValue);
+
 	const char* operator[](const char* fieldName) { return find(fieldName); }
-	char* decodeMailBody(char* msgBody);
 
 	static wchar_t* decode(const char* val);
-
-	void  addString(const char* name, const char* szValue, unsigned flags = 0);
-	void    addLong(const char* name, long lValue);
-	void   addULong(const char* name, unsigned lValue);
-	void	addBool(const char* name, bool lValue);
-
-	size_t  getLength(void);
-	char* writeToBuffer(char* pDest);
 
 private:
 	typedef struct tag_MimeHeader
@@ -344,7 +352,7 @@ struct filetransfer
 
 struct directconnection
 {
-	directconnection(filetransfer* ft);
+	directconnection(const char* CallID, HANDLE HContact);
 	~directconnection();
 
 	char* calcHashedNonce(UUID* nonce);
@@ -354,7 +362,9 @@ struct directconnection
 
 	UUID* mNonce;
 	char* xNonce;
+
 	char* callId;
+	HANDLE hContact;
 
 	time_t ts;
 

@@ -75,7 +75,7 @@ void MsnInitIcons(void)
 		sid.pszDescription = (char*)iconList[i].szDescr;
 		sid.iDefaultIndex = -iconList[i].defIconID;
 		hIconLibItem[i] = (HANDLE)CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
-	}	
+	}
 }
 
 HICON LoadIconEx(const char* name, bool big)
@@ -615,42 +615,41 @@ static INT_PTR CALLBACK DlgProcHotmailPopUpOpts(HWND hwndDlg, UINT msg, WPARAM w
 			switch (((LPNMHDR)lParam)->code) 
 			{
 			case PSN_RESET: 
-			{
+				{
 					CMsnProto* proto = (CMsnProto*)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 					proto->LoadOptions();
 					return TRUE;
-			}
+				}
 
 			case PSN_APPLY: 
-			{
-				CMsnProto* proto = (CMsnProto*)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
-				
-				proto->MyOptions.TextColour = SendDlgItemMessage(hwndDlg,IDC_TEXTCOLOUR,CPM_GETCOLOUR,0,0);
-				proto->setDword("TextColour", proto->MyOptions.TextColour);
+				{
+					CMsnProto* proto = (CMsnProto*)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
+					
+					proto->MyOptions.TextColour = SendDlgItemMessage(hwndDlg,IDC_TEXTCOLOUR,CPM_GETCOLOUR,0,0);
+					proto->setDword("TextColour", proto->MyOptions.TextColour);
 
-				proto->MyOptions.BGColour = SendDlgItemMessage(hwndDlg,IDC_BGCOLOUR,CPM_GETCOLOUR,0,0);
-				proto->setDword("BackgroundColour", proto->MyOptions.BGColour);
+					proto->MyOptions.BGColour = SendDlgItemMessage(hwndDlg,IDC_BGCOLOUR,CPM_GETCOLOUR,0,0);
+					proto->setDword("BackgroundColour", proto->MyOptions.BGColour);
 
-				proto->MyOptions.PopupTimeoutHotmail = GetDlgItemInt(hwndDlg, IDC_POPUP_TIMEOUT, NULL, FALSE);
-				proto->setDword(NULL, "PopupTimeout", proto->MyOptions.PopupTimeoutHotmail);
+					proto->MyOptions.PopupTimeoutHotmail = GetDlgItemInt(hwndDlg, IDC_POPUP_TIMEOUT, NULL, FALSE);
+					proto->setDword(NULL, "PopupTimeout", proto->MyOptions.PopupTimeoutHotmail);
 
-				proto->MyOptions.PopupTimeoutOther = GetDlgItemInt(hwndDlg, IDC_POPUP_TIMEOUT2, NULL, FALSE);
-				proto->setDword(NULL, "PopupTimeoutOther", proto->MyOptions.PopupTimeoutOther);
+					proto->MyOptions.PopupTimeoutOther = GetDlgItemInt(hwndDlg, IDC_POPUP_TIMEOUT2, NULL, FALSE);
+					proto->setDword(NULL, "PopupTimeoutOther", proto->MyOptions.PopupTimeoutOther);
 
-				proto->MyOptions.ShowErrorsAsPopups = IsDlgButtonChecked(hwndDlg, IDC_ERRORS_USING_POPUPS) != 0;
-				proto->setByte("ShowErrorsAsPopups", proto->MyOptions.ShowErrorsAsPopups);
+					proto->MyOptions.ShowErrorsAsPopups = IsDlgButtonChecked(hwndDlg, IDC_ERRORS_USING_POPUPS) != 0;
+					proto->setByte("ShowErrorsAsPopups", proto->MyOptions.ShowErrorsAsPopups);
 
-				proto->setByte("UseWinColors",	(BYTE)IsDlgButtonChecked(hwndDlg, IDC_USEWINCOLORS));
-				proto->setByte("DisableHotmail", (BYTE)IsDlgButtonChecked(hwndDlg, IDC_DISABLEHOTMAILPOPUP));
-				proto->setByte("DisableHotmailCL", (BYTE)IsDlgButtonChecked(hwndDlg, IDC_DISABLEHOTMAILCL));
-				proto->setByte("DisableHotmailTray", (BYTE)IsDlgButtonChecked(hwndDlg, IDC_DISABLEHOTMAILTRAY));
-				proto->setByte("DisableHotmailJunk",(BYTE)IsDlgButtonChecked(hwndDlg, IDC_DISABLEHOTJUNK));
-				proto->setByte("EnableDeliveryPopup", (BYTE)IsDlgButtonChecked(hwndDlg, IDC_NOTIFY_FIRSTMSG));
-				proto->setByte("EnableSessionPopup", (BYTE)IsDlgButtonChecked(hwndDlg, IDC_NOTIFY_ENDSESSION));
+					proto->setByte("UseWinColors",	(BYTE)IsDlgButtonChecked(hwndDlg, IDC_USEWINCOLORS));
+					proto->setByte("DisableHotmail", (BYTE)IsDlgButtonChecked(hwndDlg, IDC_DISABLEHOTMAILPOPUP));
+					proto->setByte("DisableHotmailCL", (BYTE)IsDlgButtonChecked(hwndDlg, IDC_DISABLEHOTMAILCL));
+					proto->setByte("DisableHotmailTray", (BYTE)IsDlgButtonChecked(hwndDlg, IDC_DISABLEHOTMAILTRAY));
+					proto->setByte("DisableHotmailJunk",(BYTE)IsDlgButtonChecked(hwndDlg, IDC_DISABLEHOTJUNK));
+					proto->setByte("EnableDeliveryPopup", (BYTE)IsDlgButtonChecked(hwndDlg, IDC_NOTIFY_FIRSTMSG));
+					proto->setByte("EnableSessionPopup", (BYTE)IsDlgButtonChecked(hwndDlg, IDC_NOTIFY_ENDSESSION));
 
-				HANDLE hContact = proto->MSN_HContactFromEmail(proto->MyOptions.szEmail, NULL, false, false);
-				if (hContact) proto->displayEmailCount(hContact);
-
+					HANDLE hContact = proto->MSN_HContactFromEmail(proto->MyOptions.szEmail, NULL, false, false);
+					if (hContact) proto->displayEmailCount(hContact);
 				}
 				return TRUE;
 			}

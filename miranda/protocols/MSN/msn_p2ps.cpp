@@ -169,7 +169,9 @@ void  CMsnProto::p2p_clearDormantSessions(void)
 	for (int i=0; i < sessionList.getCount(); i++) 
 	{
 		filetransfer* FT = &sessionList[i];
-		if (FT->p2p_waitack && (ts - FT->ts) > 60) 
+		if (!FT->p2p_sessionid && ts - FT->ts)
+			p2p_invite(FT->std.hContact, FT->p2p_type, FT);
+		else if (FT->p2p_waitack && (ts - FT->ts) > 60) 
 		{
 			LeaveCriticalSection(&sessionLock);
 			p2p_unregisterSession(FT);
@@ -210,6 +212,20 @@ void  CMsnProto::p2p_redirectSessions(HANDLE hContact)
 	LeaveCriticalSection(&sessionLock);
 }
 
+void  CMsnProto::p2p_startSessions(HANDLE hContact)
+{
+	EnterCriticalSection(&sessionLock);
+
+	for (int i=0; i < sessionList.getCount(); i++) 
+	{
+		filetransfer* FT = &sessionList[i];
+		if (!FT->p2p_sessionid && FT->std.hContact == hContact)
+			p2p_invite(hContact, FT->p2p_type, FT);
+	}
+
+	LeaveCriticalSection(&sessionLock);
+}
+
 void  CMsnProto::p2p_cancelAllSessions(void)
 {
 	EnterCriticalSection(&sessionLock);
@@ -225,7 +241,7 @@ void  CMsnProto::p2p_cancelAllSessions(void)
 	LeaveCriticalSection(&sessionLock);
 }
 
-filetransfer*  CMsnProto::p2p_getSessionByCallID(const char* CallID)
+filetransfer*  CMsnProto::p2p_getSessionByCallID(const char* CallID, HANDLE hContact)
 {
 	if (CallID == NULL)
 		return NULL;
@@ -236,7 +252,7 @@ filetransfer*  CMsnProto::p2p_getSessionByCallID(const char* CallID)
 	for (int i=0; i < sessionList.getCount(); i++) 
 	{
 		filetransfer* FT = &sessionList[i];
-		if (FT->p2p_callID != NULL && !strcmp(FT->p2p_callID, CallID)) 
+		if (FT->p2p_callID && !_stricmp(FT->p2p_callID, CallID) && FT->std.hContact == hContact) 
 		{
 			ft = FT;
 			break;
@@ -269,7 +285,7 @@ void  CMsnProto::p2p_unregisterDC(directconnection* dc)
 	LeaveCriticalSection(&sessionLock);
 }
 
-directconnection*  CMsnProto::p2p_getDCByCallID(const char* CallID)
+directconnection*  CMsnProto::p2p_getDCByCallID(const char* CallID, HANDLE hContact)
 {
 	if (CallID == NULL)
 		return NULL;
@@ -280,7 +296,7 @@ directconnection*  CMsnProto::p2p_getDCByCallID(const char* CallID)
 	for (int i=0; i < dcList.getCount(); i++) 
 	{
 		directconnection* DC = &dcList[i];
-		if (DC->callId != NULL && !strcmp(DC->callId, CallID)) 
+		if (DC->callId != NULL && !strcmp(DC->callId, CallID) && DC->hContact == hContact) 
 		{
 			dc = DC;
 			break;

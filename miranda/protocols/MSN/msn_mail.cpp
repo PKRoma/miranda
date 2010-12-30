@@ -102,7 +102,8 @@ void CMsnProto::getOIMs(ezxml_t xmli)
 				txtParseParam(arrTime, "FILETIME", "[", "]", szTime, sizeof(szTime));
 
 				unsigned filetimeLo = strtoul(szTime, &p, 16);
-				if (*p == ':') { 
+				if (*p == ':') 
+				{ 
 					unsigned __int64 filetime = strtoul(p+1, &p, 16);
 					filetime <<= 32;
 					filetime |= filetimeLo;

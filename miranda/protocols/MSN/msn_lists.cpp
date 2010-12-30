@@ -190,8 +190,8 @@ void CMsnProto::MSN_CleanupLists(void)
 				MSN_AddAuthRequest(p.email, NULL, p.invite);
 		}
 
-		if (p.list == LIST_RL)
-			MSN_AddAuthRequest(p.email, NULL, p.invite);
+//		if (p.list == LIST_RL)
+//			MSN_AddAuthRequest(p.email, NULL, p.invite);
 
 		if (p.hContact && !(p.list & (LIST_LL | LIST_FL | LIST_PL)) && p.list != LIST_RL)
 		{
