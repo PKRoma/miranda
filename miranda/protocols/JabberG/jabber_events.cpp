@@ -197,7 +197,7 @@ void __cdecl CJabberProto::OnAddContactForever( DBCONTACTWRITESETTING* cws, HAND
 		AddContactToRoster( jid.ptszVal, nick, dbv.ptszVal );
 		JFreeVariant( &dbv );
 	}
-	else AddContactToRoster( jid.ptszVal, NULL, NULL );
+	else AddContactToRoster( jid.ptszVal, nick, NULL );
 
 	m_ThreadInfo->send( XmlNode( _T("presence")) << XATTR( _T("to"), jid.ptszVal ) << XATTR( _T("type"), _T("subscribe")));
 
