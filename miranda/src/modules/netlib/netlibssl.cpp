@@ -37,6 +37,7 @@ static HMODULE g_hSchannel;
 static PSecurityFunctionTableA g_pSSPI;
 static HANDLE g_hSslMutex; 
 static SSL_EMPTY_CACHE_FN_M MySslEmptyCache;
+static CredHandle hCreds;
 
 typedef enum
 {
@@ -51,7 +52,6 @@ struct SslHandle
 	SOCKET s;
 
 	CtxtHandle hContext;
-	CredHandle hCreds;
 
 	BYTE *pbRecDataBuf;
 	int cbRecDataBuf;
@@ -77,10 +77,12 @@ static void ReportSslError(SECURITY_STATUS scRet, int line)
 		msg = "Proper security package not installed. To resolve this error install IE5 or later";
 		break;
 
+	case CERT_E_CN_NO_MATCH:
 	case SEC_E_WRONG_PRINCIPAL:
 		msg = "Host we are connecting to is not the one certificate was issued for";
 		break;
 
+	case CERT_E_UNTRUSTEDROOT:
 	case SEC_E_UNTRUSTED_ROOT:
 		msg = "The certificate chain was issued by not trusted authority";
 		break;
@@ -93,6 +95,7 @@ static void ReportSslError(SECURITY_STATUS scRet, int line)
 		msg = "An unknown error occurred while processing the certificate";
 		break;
 
+	case CERT_E_EXPIRED:
 	case SEC_E_CERT_EXPIRED:
 		msg = "The received certificate has expired";
 		break;
@@ -101,6 +104,7 @@ static void ReportSslError(SECURITY_STATUS scRet, int line)
 		msg = "The client and server cannot communicate, because they do not possess a common algorithm";
 		break;
 
+	case CERT_E_REVOKED:
 	case CRYPT_E_REVOKED:
 		msg = "The certificate is revoked";
 		break;
@@ -112,13 +116,42 @@ static void ReportSslError(SECURITY_STATUS scRet, int line)
 	NetlibLogf(NULL, "SSL connection failure (%x %u): %s", scRet, line, msg);
 }
 
-static int SSL_library_init(void)
+static BOOL AcquireCredentials(void)
+{
+	SCHANNEL_CRED   SchannelCred;
+	TimeStamp       tsExpiry;
+	SECURITY_STATUS scRet;
+
+	ZeroMemory(&SchannelCred, sizeof(SchannelCred));
+
+	SchannelCred.dwVersion  = SCHANNEL_CRED_VERSION;
+	SchannelCred.grbitEnabledProtocols = SP_PROT_SSL3TLS1_CLIENTS /*| 0xA00 TLS1.1 & 1.2*/;
+
+	SchannelCred.dwFlags |= SCH_CRED_NO_DEFAULT_CREDS | SCH_CRED_MANUAL_CRED_VALIDATION;
+
+	// Create an SSPI credential.
+	scRet = g_pSSPI->AcquireCredentialsHandleA(
+		NULL,                   // Name of principal    
+		UNISP_NAME_A,           // Name of package
+		SECPKG_CRED_OUTBOUND,   // Flags indicating use
+		NULL,                   // Pointer to logon ID
+		&SchannelCred,          // Package specific data
+		NULL,                   // Pointer to GetKey() func
+		NULL,                   // Value to pass to GetKey()
+		&hCreds,				// (out) Cred Handle
+		&tsExpiry);             // (out) Lifetime (optional)
+
+	ReportSslError(scRet, __LINE__);
+	return scRet == SEC_E_OK;
+}
+
+static bool SSL_library_init(void)
 {
 	if (g_pSSPI) return 1;
 
 	WaitForSingleObject(g_hSslMutex, INFINITE); 
 
-	int res = g_pSSPI != NULL;
+	bool res = g_pSSPI != NULL;
 	if (!res)
 	{
 		g_hSchannel = LoadLibraryA("schannel.dll");
@@ -138,6 +171,7 @@ static int SSL_library_init(void)
 			else
 			{
 				MySslEmptyCache = (SSL_EMPTY_CACHE_FN_M)GetProcAddress(g_hSchannel, "SslEmptyCache");
+				AcquireCredentials();
 			}
 		}
 	}
@@ -146,45 +180,10 @@ static int SSL_library_init(void)
 	return res;
 }
 
-static BOOL AcquireCredentials(SslHandle *ssl, BOOL verify, BOOL chkname)
-{
-	SCHANNEL_CRED   SchannelCred;
-	TimeStamp       tsExpiry;
-	SECURITY_STATUS scRet;
-
-	ZeroMemory(&SchannelCred, sizeof(SchannelCred));
-
-	SchannelCred.dwVersion  = SCHANNEL_CRED_VERSION;
-	SchannelCred.grbitEnabledProtocols = SP_PROT_SSL3TLS1_CLIENTS /*| 0xA00 TLS1.1 & 1.2*/;
-
-	SchannelCred.dwFlags |= SCH_CRED_NO_DEFAULT_CREDS;
-
-	if (!verify) 
-		SchannelCred.dwFlags |= SCH_CRED_MANUAL_CRED_VALIDATION;
-	else if (!chkname)
-		SchannelCred.dwFlags |= SCH_CRED_NO_SERVERNAME_CHECK;
-
-	// Create an SSPI credential.
-	scRet = g_pSSPI->AcquireCredentialsHandleA(
-		NULL,                   // Name of principal    
-		UNISP_NAME_A,           // Name of package
-		SECPKG_CRED_OUTBOUND,   // Flags indicating use
-		NULL,                   // Pointer to logon ID
-		&SchannelCred,          // Package specific data
-		NULL,                   // Pointer to GetKey() func
-		NULL,                   // Value to pass to GetKey()
-		&ssl->hCreds,			// (out) Cred Handle
-		&tsExpiry);             // (out) Lifetime (optional)
-
-	ReportSslError(scRet, __LINE__);
-	return scRet == SEC_E_OK;
-}
-
 void NetlibSslFree(SslHandle *ssl)
 {
 	if (ssl == NULL) return;
 
-	g_pSSPI->FreeCredentialsHandle(&ssl->hCreds);
 	g_pSSPI->DeleteSecurityContext(&ssl->hContext);
 
 	mir_free(ssl->pbRecDataBuf);
@@ -196,6 +195,84 @@ void NetlibSslFree(SslHandle *ssl)
 BOOL NetlibSslPending(SslHandle *ssl)
 {
 	return ssl != NULL && ( ssl->cbRecDataBuf != 0 || ssl->cbIoBuffer != 0 );
+}
+
+static bool VerifyCertificate(SslHandle *ssl, PCSTR pszServerName, DWORD dwCertFlags)
+{
+    static LPSTR rgszUsages[] = 
+	{  
+		szOID_PKIX_KP_SERVER_AUTH,
+        szOID_SERVER_GATED_CRYPTO,
+        szOID_SGC_NETSCAPE 
+	};
+    
+	CERT_CHAIN_PARA          ChainPara = {0};
+	HTTPSPolicyCallbackData  polHttps = {0};
+	CERT_CHAIN_POLICY_PARA   PolicyPara = {0};
+	CERT_CHAIN_POLICY_STATUS PolicyStatus = {0};
+    PCCERT_CHAIN_CONTEXT     pChainContext = NULL;
+    PCCERT_CONTEXT           pServerCert = NULL;
+    DWORD scRet;
+
+    PWSTR pwszServerName = mir_a2u(pszServerName);
+
+    scRet = g_pSSPI->QueryContextAttributesA(&ssl->hContext,
+		SECPKG_ATTR_REMOTE_CERT_CONTEXT, &pServerCert);
+    if (scRet != SEC_E_OK)
+        goto cleanup;
+
+	if (pServerCert == NULL)
+    {
+        scRet = SEC_E_WRONG_PRINCIPAL;
+        goto cleanup;
+    }
+
+    ChainPara.cbSize = sizeof(ChainPara);
+    ChainPara.RequestedUsage.dwType = USAGE_MATCH_TYPE_OR;
+    ChainPara.RequestedUsage.Usage.cUsageIdentifier     = SIZEOF(rgszUsages);
+    ChainPara.RequestedUsage.Usage.rgpszUsageIdentifier = rgszUsages;
+
+    if (!CertGetCertificateChain(NULL, pServerCert, NULL, pServerCert->hCertStore, 
+		&ChainPara, 0, NULL, &pChainContext))
+    {
+        scRet = GetLastError();
+        goto cleanup;
+    }
+
+    polHttps.cbStruct           = sizeof(HTTPSPolicyCallbackData);
+    polHttps.dwAuthType         = AUTHTYPE_SERVER;
+    polHttps.fdwChecks          = dwCertFlags;
+    polHttps.pwszServerName     = pwszServerName;
+
+    PolicyPara.cbSize            = sizeof(PolicyPara);
+    PolicyPara.pvExtraPolicyPara = &polHttps;
+
+    PolicyStatus.cbSize = sizeof(PolicyStatus);
+
+    if (!CertVerifyCertificateChainPolicy(CERT_CHAIN_POLICY_SSL, pChainContext,
+		&PolicyPara, &PolicyStatus))
+    {
+        scRet = GetLastError();
+        goto cleanup;
+    }
+
+    if (PolicyStatus.dwError)
+    {
+        scRet = PolicyStatus.dwError;
+        goto cleanup;
+    }
+
+    scRet = SEC_E_OK;
+
+cleanup:
+    if (pChainContext)
+        CertFreeCertificateChain(pChainContext);
+	if (pServerCert)
+	   CertFreeCertificateContext(pServerCert);
+    mir_free(pwszServerName);
+
+	ReportSslError(scRet, __LINE__);
+    return scRet == SEC_E_OK;
 }
 
 static SECURITY_STATUS ClientHandshakeLoop(SslHandle *ssl, BOOL fDoInitialRead)    
@@ -303,7 +380,8 @@ static SECURITY_STATUS ClientHandshakeLoop(SslHandle *ssl, BOOL fDoInitialRead)
 		OutBuffer.pBuffers      = OutBuffers;
 		OutBuffer.ulVersion     = SECBUFFER_VERSION;
 
-		scRet = g_pSSPI->InitializeSecurityContextA(&ssl->hCreds,
+		scRet = g_pSSPI->InitializeSecurityContextA(
+			&hCreds,
 			&ssl->hContext,
 			NULL,
 			dwSSPIFlags,
@@ -398,7 +476,7 @@ static SECURITY_STATUS ClientHandshakeLoop(SslHandle *ssl, BOOL fDoInitialRead)
 	return scRet;
 }
 
-static int ClientConnect(SslHandle *ssl, const char *host)
+static bool ClientConnect(SslHandle *ssl, const char *host)
 {
 	SecBufferDesc   OutBuffer;
 	SecBuffer       OutBuffers[1];
@@ -434,7 +512,7 @@ static int ClientConnect(SslHandle *ssl, const char *host)
 	OutBuffer.ulVersion = SECBUFFER_VERSION;
 
 	scRet = g_pSSPI->InitializeSecurityContextA(
-		&ssl->hCreds,
+		&hCreds,
 		NULL,
 		(SEC_CHAR*)host,
 		dwSSPIFlags,
@@ -476,20 +554,20 @@ static int ClientConnect(SslHandle *ssl, const char *host)
 
 SslHandle *NetlibSslConnect(SOCKET s, const char* host, int verify)
 {
-	BOOL res, chkname;
-
 	SslHandle *ssl = (SslHandle*)mir_calloc(sizeof(SslHandle));
 	ssl->s = s;
 
-	SecInvalidateHandle(&ssl->hCreds);
 	SecInvalidateHandle(&ssl->hContext);
 
-	res = SSL_library_init();
+	DWORD dwFlags = 0;
+	
+	if (!host || inet_addr(host) != INADDR_NONE) 
+		dwFlags |= 0x00001000;
 
-	chkname = host && inet_addr(host) == INADDR_NONE;
+	bool res = SSL_library_init();
 
-	if (res) res = AcquireCredentials(ssl, verify, chkname);
 	if (res) res = ClientConnect(ssl, host);
+    if (res && verify) res = VerifyCertificate(ssl, host, dwFlags);
 
 	if (!res) 
 	{
@@ -547,7 +625,7 @@ void NetlibSslShutdown(SslHandle *ssl)
 	OutBuffer.ulVersion = SECBUFFER_VERSION;
 
 	scRet = g_pSSPI->InitializeSecurityContextA(
-		&ssl->hCreds,
+		&hCreds,
 		&ssl->hContext,
 		NULL,
 		dwSSPIFlags,
@@ -883,11 +961,14 @@ int LoadSslModule(void)
 {
 	CreateServiceFunction(MS_SYSTEM_GET_SI, GetSslApi);
 	g_hSslMutex = CreateMutex(NULL, FALSE, NULL); 
+	SecInvalidateHandle(&hCreds);
 	return 0;
 }
 
 void UnloadSslModule(void)
 {
+	if (SecIsValidHandle(&hCreds))
+		g_pSSPI->FreeCredentialsHandle(&hCreds);
 	CloseHandle(g_hSslMutex);
 	if (g_hSchannel) FreeLibrary(g_hSchannel);
 }
