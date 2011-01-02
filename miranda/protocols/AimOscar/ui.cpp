@@ -830,8 +830,8 @@ static INT_PTR CALLBACK options_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			CheckDlgButton(hwndDlg, IDC_ES, ppro->getByte(AIM_KEY_ES, 0));//Extended Status Type Icons
 			CheckDlgButton(hwndDlg, IDC_HF, ppro->getByte(AIM_KEY_HF, 0));//Fake hiptopness
 			CheckDlgButton(hwndDlg, IDC_DM, ppro->getByte(AIM_KEY_DM, 0));//Disable Sending Mode Message
-			CheckDlgButton(hwndDlg, IDC_FI, ppro->getByte(AIM_KEY_FI, 0));//Format imcoming messages
-			CheckDlgButton(hwndDlg, IDC_FO, ppro->getByte(AIM_KEY_FO, 0));//Format outgoing messages
+			CheckDlgButton(hwndDlg, IDC_FI, ppro->getByte(AIM_KEY_FI, 1));//Format incoming messages
+			CheckDlgButton(hwndDlg, IDC_FO, ppro->getByte(AIM_KEY_FO, 1));//Format outgoing messages
 			CheckDlgButton(hwndDlg, IDC_II, ppro->getByte(AIM_KEY_II, 0));//Instant Idle
 			CheckDlgButton(hwndDlg, IDC_CM, ppro->getByte(AIM_KEY_CM, 0));//Check Mail
 			CheckDlgButton(hwndDlg, IDC_MG, ppro->getByte(AIM_KEY_MG, 1));//Manage Groups
