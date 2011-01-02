@@ -22,6 +22,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
 #include "commonheaders.h"
+#include <m_popup.h>
 #include "netlib.h"
 
 #define SECURITY_WIN32
@@ -64,9 +65,9 @@ struct SslHandle
 	SocketState state; 
 };
 
-static void ReportSslError(SECURITY_STATUS scRet, int line)
+static void ReportSslError(SECURITY_STATUS scRet, int line, bool showPopup = false)
 {
-	const char *msg;
+	TCHAR szMsgBuf[256];
 	switch (scRet)
 	{
 	case 0:
@@ -74,46 +75,28 @@ static void ReportSslError(SECURITY_STATUS scRet, int line)
 		return;
 
 	case SEC_E_INVALID_TOKEN:
-		msg = "Proper security package not installed. To resolve this error install IE5 or later";
+		_tcscpy(szMsgBuf, TranslateT("Client cannot decode host message. Possible causes: Host does not support SSL or requires not existing security package"));
 		break;
 
 	case CERT_E_CN_NO_MATCH:
 	case SEC_E_WRONG_PRINCIPAL:
-		msg = "Host we are connecting to is not the one certificate was issued for";
-		break;
-
-	case CERT_E_UNTRUSTEDROOT:
-	case SEC_E_UNTRUSTED_ROOT:
-		msg = "The certificate chain was issued by not trusted authority";
-		break;
-
-	case SEC_E_ILLEGAL_MESSAGE:
-		msg = "The message received was unexpected or badly formatted";
-		break;
-
-	case SEC_E_CERT_UNKNOWN:
-		msg = "An unknown error occurred while processing the certificate";
-		break;
-
-	case CERT_E_EXPIRED:
-	case SEC_E_CERT_EXPIRED:
-		msg = "The received certificate has expired";
-		break;
-
-	case SEC_E_ALGORITHM_MISMATCH:
-		msg = "The client and server cannot communicate, because they do not possess a common algorithm";
-		break;
-
-	case CERT_E_REVOKED:
-	case CRYPT_E_REVOKED:
-		msg = "The certificate is revoked";
+		_tcscpy(szMsgBuf, TranslateT("Host we are connecting to is not the one certificate was issued for"));
 		break;
 
 	default:
-		msg = "Unknown Error"; 
-		break;
+		FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+			NULL, scRet, LANG_USER_DEFAULT, szMsgBuf, SIZEOF(szMsgBuf), NULL);
 	}
-	NetlibLogf(NULL, "SSL connection failure (%x %u): %s", scRet, line, msg);
+
+	TCHAR szMsgBuf2[512];
+	mir_sntprintf(szMsgBuf2, SIZEOF(szMsgBuf2), _T("SSL connection failure (%x %u): %s"), scRet, line, szMsgBuf);
+
+	char* szMsg = Utf8EncodeUcs2(szMsgBuf2);
+	NetlibLogf(NULL, szMsg);
+	mir_free(szMsg);
+
+	SetLastError(scRet);
+	PUShowMessageT(szMsgBuf2, SM_WARNING);
 }
 
 static BOOL AcquireCredentials(void)
@@ -271,7 +254,7 @@ cleanup:
 	   CertFreeCertificateContext(pServerCert);
     mir_free(pwszServerName);
 
-	ReportSslError(scRet, __LINE__);
+	ReportSslError(scRet, __LINE__, true);
     return scRet == SEC_E_OK;
 }
 
@@ -967,7 +950,7 @@ int LoadSslModule(void)
 
 void UnloadSslModule(void)
 {
-	if (SecIsValidHandle(&hCreds))
+	if (g_pSSPI && SecIsValidHandle(&hCreds))
 		g_pSSPI->FreeCredentialsHandle(&hCreds);
 	CloseHandle(g_hSslMutex);
 	if (g_hSchannel) FreeLibrary(g_hSchannel);
