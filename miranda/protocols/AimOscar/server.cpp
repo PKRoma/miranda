@@ -1610,7 +1610,7 @@ void CAimProto::snac_service_redirect(SNAC &snac)//family 0x0001
 		}
 		if (family == 0x0018)
 		{
-			hMailConn = aim_connect(server, get_default_port(), use_ssl != 0, host);
+			hMailConn = aim_connect(server, get_default_port(), false/*use_ssl != 0*/, host);
 			if(hMailConn)
 			{
 				LOG("Successfully Connected to the Mail Server.");

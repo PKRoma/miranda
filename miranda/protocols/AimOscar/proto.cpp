@@ -477,7 +477,7 @@ int __cdecl CAimProto::RecvMsg(HANDLE hContact, PROTORECVEVENT* pre)
 
 	char *omsg = pre->szMessage;
 	char *bbuf = NULL;
-	if (getByte(AIM_KEY_FI, 0)) 		
+	if (getByte(AIM_KEY_FI, 1)) 		
 	{
 		LOG("Converting from html to bbcodes then stripping leftover html.");
 		pre->szMessage = bbuf = html_to_bbcodes(pre->szMessage);
@@ -613,7 +613,7 @@ int __cdecl CAimProto::SendMsg(HANDLE hContact, int flags, const char* pszSrc)
 	char* smsg = html_encode(msg);
 	mir_free(msg);
 
-	if (getByte(AIM_KEY_FO, 0)) 
+	if (getByte(AIM_KEY_FO, 1)) 
 	{
 		msg = bbcodes_to_html(smsg);
 		mir_free(smsg);
