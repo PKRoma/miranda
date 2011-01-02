@@ -401,6 +401,7 @@ BSC32_SBRS= \
 	"$(INTDIR)\path.sbr" \
 	"$(INTDIR)\resizer.sbr" \
 	"$(INTDIR)\sha1.sbr" \
+	"$(INTDIR)\timeutils.sbr" \
 	"$(INTDIR)\timezones.sbr" \
 	"$(INTDIR)\utf.sbr" \
 	"$(INTDIR)\utils.sbr" \
@@ -435,8 +436,7 @@ BSC32_SBRS= \
 	"$(INTDIR)\skin2icons.sbr" \
 	"$(INTDIR)\updatenotify.sbr" \
 	"$(INTDIR)\xmlApi.sbr" \
-	"$(INTDIR)\xmlParser.sbr" \
-	"$(INTDIR)\timeutils.sbr"
+	"$(INTDIR)\xmlParser.sbr"
 
 "$(OUTDIR)\miranda32.bsc" : "$(OUTDIR)" $(BSC32_SBRS)
     $(BSC32) @<<
@@ -444,7 +444,7 @@ BSC32_SBRS= \
 <<
 
 LINK32=link.exe
-LINK32_FLAGS=wsock32.lib kernel32.lib user32.lib gdi32.lib shell32.lib winspool.lib comdlg32.lib advapi32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib winmm.lib version.lib /nologo /subsystem:windows /incremental:no /pdb:"$(OUTDIR)\miranda32.pdb" /debug /machine:I386 /out:"../bin/release/miranda32.exe" /fixed /ALIGN:4096 /ignore:4108 
+LINK32_FLAGS=wsock32.lib kernel32.lib user32.lib gdi32.lib shell32.lib comdlg32.lib advapi32.lib ole32.lib oleaut32.lib uuid.lib comctl32.lib winmm.lib version.lib crypt32.lib /nologo /subsystem:windows /incremental:no /pdb:"$(OUTDIR)\miranda32.pdb" /debug /machine:I386 /out:"../bin/release/miranda32.exe" /fixed /ALIGN:4096 /ignore:4108 
 LINK32_OBJS= \
 	"$(INTDIR)\commonheaders.obj" \
 	"$(INTDIR)\memory.obj" \
@@ -522,6 +522,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\path.obj" \
 	"$(INTDIR)\resizer.obj" \
 	"$(INTDIR)\sha1.obj" \
+	"$(INTDIR)\timeutils.obj" \
 	"$(INTDIR)\timezones.obj" \
 	"$(INTDIR)\utf.obj" \
 	"$(INTDIR)\utils.obj" \
@@ -558,7 +559,6 @@ LINK32_OBJS= \
 	"$(INTDIR)\xmlApi.obj" \
 	"$(INTDIR)\xmlParser.obj" \
 	"$(INTDIR)\vc6.res" \
-	"$(INTDIR)\timeutils.obj" \
 	"..\plugins\zlib\Release\zlib.lib"
 
 "..\bin\release\miranda32.exe" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
@@ -941,6 +941,7 @@ BSC32_SBRS= \
 	"$(INTDIR)\path.sbr" \
 	"$(INTDIR)\resizer.sbr" \
 	"$(INTDIR)\sha1.sbr" \
+	"$(INTDIR)\timeutils.sbr" \
 	"$(INTDIR)\timezones.sbr" \
 	"$(INTDIR)\utf.sbr" \
 	"$(INTDIR)\utils.sbr" \
@@ -975,8 +976,7 @@ BSC32_SBRS= \
 	"$(INTDIR)\skin2icons.sbr" \
 	"$(INTDIR)\updatenotify.sbr" \
 	"$(INTDIR)\xmlApi.sbr" \
-	"$(INTDIR)\xmlParser.sbr" \
-	"$(INTDIR)\timeutils.sbr"
+	"$(INTDIR)\xmlParser.sbr"
 
 "$(OUTDIR)\miranda32.bsc" : "$(OUTDIR)" $(BSC32_SBRS)
     $(BSC32) @<<
@@ -984,7 +984,7 @@ BSC32_SBRS= \
 <<
 
 LINK32=link.exe
-LINK32_FLAGS=wsock32.lib kernel32.lib user32.lib gdi32.lib shell32.lib winspool.lib comdlg32.lib advapi32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib winmm.lib version.lib /nologo /subsystem:windows /incremental:yes /pdb:"$(OUTDIR)\miranda32.pdb" /debug /machine:I386 /out:"../bin/debug/miranda32.exe" 
+LINK32_FLAGS=wsock32.lib kernel32.lib user32.lib gdi32.lib shell32.lib comdlg32.lib advapi32.lib ole32.lib oleaut32.lib uuid.lib comctl32.lib winmm.lib version.lib crypt32.lib /nologo /subsystem:windows /incremental:yes /pdb:"$(OUTDIR)\miranda32.pdb" /debug /machine:I386 /out:"../bin/debug/miranda32.exe" 
 LINK32_OBJS= \
 	"$(INTDIR)\commonheaders.obj" \
 	"$(INTDIR)\memory.obj" \
@@ -1062,6 +1062,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\path.obj" \
 	"$(INTDIR)\resizer.obj" \
 	"$(INTDIR)\sha1.obj" \
+	"$(INTDIR)\timeutils.obj" \
 	"$(INTDIR)\timezones.obj" \
 	"$(INTDIR)\utf.obj" \
 	"$(INTDIR)\utils.obj" \
@@ -1098,7 +1099,6 @@ LINK32_OBJS= \
 	"$(INTDIR)\xmlApi.obj" \
 	"$(INTDIR)\xmlParser.obj" \
 	"$(INTDIR)\vc6.res" \
-	"$(INTDIR)\timeutils.obj" \
 	"..\plugins\zlib\Debug\zlib.lib"
 
 "..\bin\debug\miranda32.exe" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
@@ -1480,6 +1480,7 @@ BSC32_SBRS= \
 	"$(INTDIR)\path.sbr" \
 	"$(INTDIR)\resizer.sbr" \
 	"$(INTDIR)\sha1.sbr" \
+	"$(INTDIR)\timeutils.sbr" \
 	"$(INTDIR)\timezones.sbr" \
 	"$(INTDIR)\utf.sbr" \
 	"$(INTDIR)\utils.sbr" \
@@ -1514,8 +1515,7 @@ BSC32_SBRS= \
 	"$(INTDIR)\skin2icons.sbr" \
 	"$(INTDIR)\updatenotify.sbr" \
 	"$(INTDIR)\xmlApi.sbr" \
-	"$(INTDIR)\xmlParser.sbr" \
-	"$(INTDIR)\timeutils.sbr"
+	"$(INTDIR)\xmlParser.sbr"
 
 "$(OUTDIR)\miranda32.bsc" : "$(OUTDIR)" $(BSC32_SBRS)
     $(BSC32) @<<
@@ -1523,7 +1523,7 @@ BSC32_SBRS= \
 <<
 
 LINK32=link.exe
-LINK32_FLAGS=wsock32.lib kernel32.lib user32.lib gdi32.lib shell32.lib winspool.lib comdlg32.lib advapi32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib winmm.lib version.lib /nologo /subsystem:windows /incremental:no /pdb:"$(OUTDIR)\miranda32.pdb" /debug /machine:I386 /out:"../bin/Release Unicode/miranda32.exe" /fixed /ALIGN:4096 /ignore:4108 
+LINK32_FLAGS=wsock32.lib kernel32.lib user32.lib gdi32.lib shell32.lib comdlg32.lib advapi32.lib ole32.lib oleaut32.lib uuid.lib comctl32.lib winmm.lib version.lib crypt32.lib /nologo /subsystem:windows /incremental:no /pdb:"$(OUTDIR)\miranda32.pdb" /debug /machine:I386 /out:"../bin/Release Unicode/miranda32.exe" /fixed /ALIGN:4096 /ignore:4108 
 LINK32_OBJS= \
 	"$(INTDIR)\commonheaders.obj" \
 	"$(INTDIR)\memory.obj" \
@@ -1601,6 +1601,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\path.obj" \
 	"$(INTDIR)\resizer.obj" \
 	"$(INTDIR)\sha1.obj" \
+	"$(INTDIR)\timeutils.obj" \
 	"$(INTDIR)\timezones.obj" \
 	"$(INTDIR)\utf.obj" \
 	"$(INTDIR)\utils.obj" \
@@ -1637,7 +1638,6 @@ LINK32_OBJS= \
 	"$(INTDIR)\xmlApi.obj" \
 	"$(INTDIR)\xmlParser.obj" \
 	"$(INTDIR)\vc6.res" \
-	"$(INTDIR)\timeutils.obj" \
 	"..\plugins\zlib\Release_Unicode\zlib.lib"
 
 "..\bin\Release Unicode\miranda32.exe" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
@@ -2020,6 +2020,7 @@ BSC32_SBRS= \
 	"$(INTDIR)\path.sbr" \
 	"$(INTDIR)\resizer.sbr" \
 	"$(INTDIR)\sha1.sbr" \
+	"$(INTDIR)\timeutils.sbr" \
 	"$(INTDIR)\timezones.sbr" \
 	"$(INTDIR)\utf.sbr" \
 	"$(INTDIR)\utils.sbr" \
@@ -2054,8 +2055,7 @@ BSC32_SBRS= \
 	"$(INTDIR)\skin2icons.sbr" \
 	"$(INTDIR)\updatenotify.sbr" \
 	"$(INTDIR)\xmlApi.sbr" \
-	"$(INTDIR)\xmlParser.sbr" \
-	"$(INTDIR)\timeutils.sbr"
+	"$(INTDIR)\xmlParser.sbr"
 
 "$(OUTDIR)\miranda32.bsc" : "$(OUTDIR)" $(BSC32_SBRS)
     $(BSC32) @<<
@@ -2063,7 +2063,7 @@ BSC32_SBRS= \
 <<
 
 LINK32=link.exe
-LINK32_FLAGS=wsock32.lib kernel32.lib user32.lib gdi32.lib shell32.lib winspool.lib comdlg32.lib advapi32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib winmm.lib version.lib /nologo /subsystem:windows /incremental:yes /pdb:"$(OUTDIR)\miranda32.pdb" /debug /machine:I386 /out:"../bin/Debug Unicode/miranda32.exe" 
+LINK32_FLAGS=wsock32.lib kernel32.lib user32.lib gdi32.lib shell32.lib comdlg32.lib advapi32.lib ole32.lib oleaut32.lib uuid.lib comctl32.lib winmm.lib version.lib crypt32.lib /nologo /subsystem:windows /incremental:yes /pdb:"$(OUTDIR)\miranda32.pdb" /debug /machine:I386 /out:"../bin/Debug Unicode/miranda32.exe" 
 LINK32_OBJS= \
 	"$(INTDIR)\commonheaders.obj" \
 	"$(INTDIR)\memory.obj" \
@@ -2141,6 +2141,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\path.obj" \
 	"$(INTDIR)\resizer.obj" \
 	"$(INTDIR)\sha1.obj" \
+	"$(INTDIR)\timeutils.obj" \
 	"$(INTDIR)\timezones.obj" \
 	"$(INTDIR)\utf.obj" \
 	"$(INTDIR)\utils.obj" \
@@ -2177,7 +2178,6 @@ LINK32_OBJS= \
 	"$(INTDIR)\xmlApi.obj" \
 	"$(INTDIR)\xmlParser.obj" \
 	"$(INTDIR)\vc6.res" \
-	"$(INTDIR)\timeutils.obj" \
 	"..\plugins\zlib\Debug_Unicode\zlib.lib"
 
 "..\bin\Debug Unicode\miranda32.exe" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
