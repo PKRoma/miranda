@@ -36,9 +36,20 @@ BOOL CJabberProto::OnMessageError( HXML node, ThreadData *pThreadData, CJabberMe
 	JABBER_LIST_ITEM* item = ListGetItemPtr( LIST_ROSTER, pInfo->GetFrom() );
 	if ( item != NULL ) { // yes, it is
 		TCHAR *szErrText = JabberErrorMsg( pInfo->GetChildNode() );
-		char *errText = mir_t2a(szErrText);
-		JSendBroadcast( pInfo->GetHContact(), ACKTYPE_MESSAGE, ACKRESULT_FAILED, ( HANDLE ) id, (LPARAM)errText );
-		mir_free(errText);
+		if ( id != -1 ) {
+			char *errText = mir_t2a(szErrText);
+			JSendBroadcast( pInfo->GetHContact(), ACKTYPE_MESSAGE, ACKRESULT_FAILED, ( HANDLE ) id, (LPARAM)errText );
+			mir_free(errText);
+		} else {
+			TCHAR buf[512];
+			HXML bodyNode = xmlGetChild( node, "body" );
+			if (bodyNode)
+				mir_sntprintf( buf, SIZEOF( buf ), _T( "%s:\n%s\n%s" ), pInfo->GetFrom(), xmlGetText( bodyNode ), szErrText );
+			else
+				mir_sntprintf( buf, SIZEOF( buf ), _T( "%s:\n%s" ), pInfo->GetFrom(), szErrText );
+
+			 MessageBox( NULL, buf, TranslateT( "Jabber Error" ), MB_OK|MB_ICONSTOP | MB_SETFOREGROUND );
+		}
 		mir_free(szErrText);
 	}
 	return TRUE;
