@@ -547,7 +547,7 @@ static int AwayMsgOptInitialise(WPARAM wParam, LPARAM)
 	odp.position = 870000000;
 	odp.hInstance = hMirandaInst;
 	odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_AWAYMSG);
-	odp.pszTitle = LPGEN("Messages");
+	odp.pszTitle = LPGEN("Status Messages");
 	odp.pszGroup = LPGEN("Status");
 	odp.pfnDlgProc = DlgProcAwayMsgOpts;
 	odp.flags = ODPF_BOLDGROUPS;
