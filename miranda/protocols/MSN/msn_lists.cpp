@@ -203,7 +203,7 @@ void CMsnProto::MSN_CleanupLists(void)
 				mir_sntprintf(text, SIZEOF(text), _T("Contact %s has been removed from the server.\nWould you like to keep it as \"Local Only\" contact to preserve history?"), sze);
 				mir_free(sze);
 			   
-				if (MessageBox(NULL, text, TranslateT("MSN protocol"), MB_YESNO | MB_ICONQUESTION | MB_SETFOREGROUND) == IDYES) 
+				if (MessageBox(NULL, text, TranslateT("MSN Protocol"), MB_YESNO | MB_ICONQUESTION | MB_SETFOREGROUND) == IDYES) 
 				{
 					MSN_AddUser(p.hContact, p.email, 0, LIST_LL);
 					setByte(p.hContact, "LocalList", 1);

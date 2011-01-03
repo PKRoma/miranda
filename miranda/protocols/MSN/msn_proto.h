@@ -235,6 +235,7 @@ struct CMsnProto : public PROTO_INTERFACE
 	
 	void        LoadOptions(void);
 
+	void		InitPopups(void);
 	void		MSN_ShowPopup(const TCHAR* nickname, const TCHAR* msg, int flags, const char* url, HANDLE hContact = NULL);
 	void		MSN_ShowPopup(const HANDLE hContact, const TCHAR* msg, int flags);
 	void		MSN_ShowError(const char* msgtext, ...);

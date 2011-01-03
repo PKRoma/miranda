@@ -228,8 +228,9 @@ extern LONG (WINAPI *MyInterlockedIncrement)(LONG volatile* pVal);
 typedef struct _tag_PopupData
 {
 	unsigned flags;
-	HICON hIcon;
 	char* url;
+	TCHAR* title;
+	TCHAR* text;
 	CMsnProto* proto;
 } PopupData;
 
@@ -566,19 +567,12 @@ struct MsnContact
 
 typedef struct _tag_MYOPTIONS
 {
-	COLORREF	BGColour;
-	COLORREF	TextColour;
-	bool		UseWinColors;
-
 	bool		EnableSounds;
 
 	bool		ShowErrorsAsPopups;
 	bool		AwayAsBrb;
 	bool		SlowSend;
 	bool		ManageServer;
-
-	DWORD		PopupTimeoutHotmail;
-	DWORD		PopupTimeoutOther;
 
 	char		szEmail[MSN_MAX_EMAIL_LEN];
 }

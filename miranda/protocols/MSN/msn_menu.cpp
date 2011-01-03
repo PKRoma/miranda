@@ -245,7 +245,7 @@ INT_PTR CMsnProto::MsnSendNetMeeting(WPARAM wParam, LPARAM)
 	ThreadData* thread = MSN_GetThreadByContact(hContact);
 
 	if (thread == NULL) {
-		MessageBox(NULL, TranslateT("You must be talking to start Netmeeting"), _T("MSN Protocol"), MB_OK | MB_ICONERROR);
+		MessageBox(NULL, TranslateT("You must be talking to start Netmeeting"), TranslateT("MSN Protocol"), MB_OK | MB_ICONERROR);
 		return 0;
 	}
 

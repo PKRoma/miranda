@@ -245,6 +245,7 @@ int CMsnProto::OnModulesLoaded(WPARAM, LPARAM)
 	}
 
 	HookProtoEvent(ME_IDLE_CHANGED, &CMsnProto::OnIdleChanged);
+	InitPopups();
 	return 0;
 }
 

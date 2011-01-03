@@ -599,7 +599,8 @@ int CMsnProto::OnDbSettingChanged(WPARAM wParam,LPARAM lParam)
 		   (strcmp(cws->szModule, "SRMM") == 0 || strcmp(cws->szModule, "SRMsg") == 0))
 		{ 
 			if (cws->value.dVal < 60000)
-				MessageBox(NULL, TranslateT("MSN requires message send timeout in your Message window plugin to be not less then 60 sec. Please correct the timeout value."), TranslateT("MSN"), MB_OK|MB_ICONINFORMATION);
+				MessageBox(NULL, TranslateT("MSN requires message send timeout in your Message window plugin to be not less then 60 sec. Please correct the timeout value."), 
+					TranslateT("MSN Protocol"), MB_OK|MB_ICONINFORMATION);
 		}
 		return 0;
 	}

@@ -305,7 +305,7 @@ void CMsnProto::sttNotificationMessage(char* msgBody, bool isInitial)
 		CallService(MS_CLIST_REMOVEEVENT, (WPARAM)hContact, (LPARAM) 1);
 		displayEmailCount(hContact);
 
-		if (ShowPopUp && !getByte("DisableHotmailTray", 0))
+		if (ShowPopUp && !getByte("DisableHotmailTray", 1))
 		{
 			CLISTEVENT cle = {0};
 
@@ -326,7 +326,7 @@ void CMsnProto::sttNotificationMessage(char* msgBody, bool isInitial)
 	SendBroadcast(NULL, ACKTYPE_EMAIL, ACKRESULT_STATUS, NULL, 0);
 
 	// Disable to notify receiving hotmail
-	if (ShowPopUp && !getByte("DisableHotmail", 1))
+	if (ShowPopUp && !getByte("DisableHotmail", 0))
 	{
 		SkinPlaySound(mailsoundname);
 

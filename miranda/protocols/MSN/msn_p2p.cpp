@@ -77,7 +77,6 @@ unsigned CMsnProto::p2p_getMsgId(HANDLE hContact, int inc)
 	return res;
 }
 
-
 bool CMsnProto::p2p_createListener(filetransfer* ft, directconnection *dc, MimeHeaders& chdrs)
 {
 	if (MyConnection.extIP == 0) return false;
@@ -110,7 +109,7 @@ bool CMsnProto::p2p_createListener(filetransfer* ft, directconnection *dc, MimeH
 
 	hostname[0] = 0;
 	bool ipInt = false;
-	for(unsigned i=0; i<sizeof(hostname)/16; ++i) 
+	for (unsigned i = 0; i < sizeof(hostname) / 16; ++i) 
 	{
 		const PIN_ADDR addr = (PIN_ADDR)he->h_addr_list[i];
 
@@ -468,6 +467,7 @@ void  CMsnProto::p2p_sendSlp(
 
 	switch (iKind) 
 	{
+		case -3:   p += sprintf(p, "ACK MSNMSGR:%s MSNSLP/1.0", ft->p2p_dest); break;
 		case -2:   p += sprintf(p, "INVITE MSNMSGR:%s MSNSLP/1.0", ft->p2p_dest); break;
 		case -1:   p += sprintf(p, "BYE MSNMSGR:%s MSNSLP/1.0", ft->p2p_dest); break;
 		case 200:  p += sprintf(p, "MSNSLP/1.0 200 OK");	break;
@@ -1947,7 +1947,30 @@ void CMsnProto::p2p_inviteDc(filetransfer* ft)
 
 	p2p_sendSlp(ft, tResult, -2, szBody, cbBody);
 }
+/*
+void CMsnProto::p2p_sendSessionAck(filetransfer* ft)
+{
+	MimeHeaders tResult(8);
+	tResult.addString("CSeq", "0 ");
+	tResult.addString("Call-ID", "{00000000-0000-0000-0000-000000000000}");
+	tResult.addLong("Max-Forwards", 0);
+	tResult.addString("Content-Type", "application/x-msnmsgr-transdestaddrupdate");
 
+	MimeHeaders chdrs(8);
+
+	chdrs.addString("IPv4ExternalAddrsAndPorts", mir_strdup(MyConnection.GetMyExtIPStr()), 6);
+	chdrs.addString("IPv4InternalAddrsAndPorts", mir_strdup(MyConnection.GetMyExtIPStr()), 6);
+	chdrs.addString("SessionID", "0");
+	chdrs.addString("SChannelState", "0");
+	chdrs.addString("Capabilities-Flags", "1");
+
+	size_t cbBody = chdrs.getLength() + 1;
+	char* szBody = (char*)alloca(cbBody);
+	chdrs.writeToBuffer(szBody);
+
+	p2p_sendSlp(ft, tResult, -3, szBody, cbBody);
+}
+*/
 void  CMsnProto::p2p_sessionComplete(filetransfer* ft)
 {
 	if (ft->std.flags & PFTS_SENDING) 

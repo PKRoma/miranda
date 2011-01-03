@@ -113,6 +113,51 @@ char* CMsnProto::GetABHost(const char* service, bool isSharing)
 	return host;
 }
 
+/*
+ezxml_t CMsnProto::PerformSoapReq(const char *service, bool isSharing, char *szData, const char* hdrs, unsigned& status)
+{
+	unsigned status = 0;
+	char *abUrl = NULL, *tResult = NULL;
+
+	for (int k = 4; --k;)
+	{
+		mir_free(abUrl);
+		abUrl = GetABHost(service, true);
+		tResult = getSslResult(&abUrl, szData, hdrs, status);
+		if (tResult == NULL) UpdateABHost(service, NULL);
+		else break;
+	}
+
+	mir_free(reqHdr);
+	free(szData);
+
+	if (tResult != NULL)
+	{
+		UpdateABHost(service, abUrl);
+		ezxml_t xmlm = ezxml_parse_str(tResult, strlen(tResult));
+		if (!xmlm || !ezxml_child(xmlm, "soap:Body"))
+		{
+			mir_free(tResult);
+			ezxml_free(xmlm);
+			UpdateABHost("service", NULL);
+			PerformSoapReq(service, isSharing, szData, hdrs, status);
+		}
+		else if (status == 500)
+		{
+			const char* szErr = ezxml_txt(getSoapFault(xmlm, true));
+			if (!szErr[0])
+			{
+				mir_free(tResult);
+				ezxml_free(xmlm);
+				UpdateABHost("service", NULL);
+				PerformSoapReq(service, isSharing, szData, hdrs, status);
+			}
+		}
+	}
+	mir_free(abUrl);
+}
+*/
+
 
 bool CMsnProto::MSN_ABAdd(bool allowRecurse)
 {

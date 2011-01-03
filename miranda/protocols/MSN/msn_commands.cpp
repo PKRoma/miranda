@@ -228,9 +228,11 @@ void CMsnProto::sttInviteMessage(ThreadData* info, char* msgBody, char* email, c
 		char command[1024];
 		int nBytes;
 
-		mir_snprintf(command, sizeof(command), "Accept NetMeeting request from %s?", email);
+		TCHAR text[512], *tszEmail = mir_a2t(email);
+		mir_sntprintf(text, SIZEOF(text), TranslateT("Accept NetMeeting request from %s?"), tszEmail);
+		mir_free(tszEmail);
 
-		if (MessageBoxA(NULL, command, "MSN Protocol", MB_YESNO | MB_ICONQUESTION) == IDYES) 
+		if (MessageBox(NULL, text, TranslateT("MSN Protocol"), MB_YESNO | MB_ICONQUESTION) == IDYES) 
 		{
 			nBytes = mir_snprintf(command, sizeof(command),
 				"MIME-Version: 1.0\r\n"

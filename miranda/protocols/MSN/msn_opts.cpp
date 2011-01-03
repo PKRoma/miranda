@@ -23,7 +23,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <commdlg.h>
 
-#define STYLE_DEFAULTBGCOLOUR     RGB(173,206,247)
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // Icons init
@@ -335,7 +334,8 @@ LBL_Continue:
 			proto->setTString("MailerPath", screenStr);
 
 			if (reconnectRequired && proto->msnLoggedIn)
-				MessageBox(hwndDlg, TranslateT("The changes you have made require you to reconnect to the MSN Messenger network before they take effect"), _T("MSN Options"), MB_OK);
+				MessageBox(hwndDlg, TranslateT("The changes you have made require you to reconnect to the MSN Messenger network before they take effect"), 
+					TranslateT("MSN Options"), MB_OK);
 
 			proto->LoadOptions();
 			return TRUE;
@@ -468,7 +468,8 @@ static INT_PTR CALLBACK DlgProcMsnConnOpts(HWND hwndDlg, UINT msg, WPARAM wParam
 				if (DBGetContactSettingDword(NULL, "SRMsg", "MessageTimeout", 60000) < 60000 ||  
 					DBGetContactSettingDword(NULL, "SRMM",  "MessageTimeout", 60000) < 60000) 
 				{
-					MessageBox(NULL, TranslateT("MSN Protocol requires message timeout to be not less then 60 sec. Correct the timeout value."), TranslateT("MSN"), MB_OK|MB_ICONINFORMATION);
+					MessageBox(NULL, TranslateT("MSN Protocol requires message timeout to be not less then 60 sec. Correct the timeout value."), 
+						TranslateT("MSN Protocol"), MB_OK|MB_ICONINFORMATION);
 				}
 			}
 
@@ -491,7 +492,8 @@ static INT_PTR CALLBACK DlgProcMsnConnOpts(HWND hwndDlg, UINT msg, WPARAM wParam
 			}
 
 			if (reconnectRequired && proto->msnLoggedIn)
-				MessageBox(hwndDlg, TranslateT("The changes you have made require you to reconnect to the MSN Messenger network before they take effect"), TranslateT("MSN Options"), MB_OK);
+				MessageBox(hwndDlg, TranslateT("The changes you have made require you to reconnect to the MSN Messenger network before they take effect"), 
+					TranslateT("MSN Options"), MB_OK);
 
 			proto->LoadOptions();
 			return TRUE;
@@ -518,33 +520,15 @@ static INT_PTR CALLBACK DlgProcHotmailPopUpOpts(HWND hwndDlg, UINT msg, WPARAM w
 		SetWindowLongPtr(hwndDlg, GWLP_USERDATA, lParam);
 		CMsnProto* proto = (CMsnProto*)lParam;
 
-		//Colours. First step is configuring the colours.
-		SendDlgItemMessage(hwndDlg, IDC_BGCOLOUR, CPM_SETCOLOUR, 0, proto->MyOptions.BGColour);
-		SendDlgItemMessage(hwndDlg, IDC_TEXTCOLOUR, CPM_SETCOLOUR, 0, proto->MyOptions.TextColour);
-
-		//Second step is disabling them if we want to use default Windows ones.
-		CheckDlgButton(hwndDlg, IDC_USEWINCOLORS, proto->MyOptions.UseWinColors ? BST_CHECKED : BST_UNCHECKED);
-		EnableWindow(GetDlgItem(hwndDlg, IDC_BGCOLOUR), !proto->MyOptions.UseWinColors);
-		EnableWindow(GetDlgItem(hwndDlg, IDC_TEXTCOLOUR), !proto->MyOptions.UseWinColors);
-
-		SetDlgItemInt(hwndDlg, IDC_POPUP_TIMEOUT, proto->MyOptions.PopupTimeoutHotmail, FALSE);
-
-		int disableHotmailPopup = proto->getByte("DisableHotmail", 1);
+		int disableHotmailPopup = proto->getByte("DisableHotmail", 0);
 
 		CheckDlgButton(hwndDlg, IDC_DISABLEHOTMAILPOPUP, disableHotmailPopup);
-		CheckDlgButton(hwndDlg, IDC_DISABLEHOTMAILTRAY,  proto->getByte("DisableHotmailTray", 0));
+		CheckDlgButton(hwndDlg, IDC_DISABLEHOTMAILTRAY,  proto->getByte("DisableHotmailTray", 1));
 		CheckDlgButton(hwndDlg, IDC_DISABLEHOTMAILCL,    proto->getByte("DisableHotmailCL", 0));
 		CheckDlgButton(hwndDlg, IDC_DISABLEHOTJUNK,      proto->getByte("DisableHotmailJunk", 0));
 		CheckDlgButton(hwndDlg, IDC_NOTIFY_ENDSESSION,   proto->getByte("EnableSessionPopup", 0));
 		CheckDlgButton(hwndDlg, IDC_NOTIFY_FIRSTMSG,     proto->getByte("EnableDeliveryPopup", 0));
 		CheckDlgButton(hwndDlg, IDC_ERRORS_USING_POPUPS, proto->getByte("ShowErrorsAsPopups", 0));
-
-		int tTimeout = proto->getDword("PopupTimeout", 3);
-		SetDlgItemInt(hwndDlg, IDC_POPUP_TIMEOUT, tTimeout, FALSE);
-		SetDlgItemInt(hwndDlg, IDC_POPUP_TIMEOUT2, proto->getDword("PopupTimeoutOther", tTimeout), FALSE);
-
-		EnableWindow(GetDlgItem(hwndDlg, IDC_POPUP_TIMEOUT),  !disableHotmailPopup);
-		EnableWindow(GetDlgItem(hwndDlg, IDC_POPUP_TIMEOUT2), !disableHotmailPopup);
 
 		bEnabled = true;
 		return TRUE;
@@ -552,58 +536,14 @@ static INT_PTR CALLBACK DlgProcHotmailPopUpOpts(HWND hwndDlg, UINT msg, WPARAM w
 	case WM_COMMAND:
 		switch (LOWORD(wParam)) 
 		{
-		case IDC_DISABLEHOTMAILPOPUP: 
-			{
-				bool toSet = SendMessage(HWND(lParam), BM_GETCHECK, 0, 0) != BST_CHECKED;
-				EnableWindow(GetDlgItem(hwndDlg, IDC_POPUP_TIMEOUT), toSet);
-				EnableWindow(GetDlgItem(hwndDlg, IDC_PREVIEW), toSet);
-			}
-
 		case IDC_DISABLEHOTMAILTRAY: 
 		case IDC_DISABLEHOTMAILCL: 
 		case IDC_DISABLEHOTJUNK:
 		case IDC_NOTIFY_ENDSESSION:
-		case IDC_POPUP_TIMEOUT:
-		case IDC_POPUP_TIMEOUT2:
 		case IDC_NOTIFY_FIRSTMSG:
 		case IDC_ERRORS_USING_POPUPS:
 			if (bEnabled)
 				SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
-			break;
-
-		case IDC_BGCOLOUR: //Fall through
-		case IDC_TEXTCOLOUR:
-			if (HIWORD(wParam) == CPN_COLOURCHANGED) {
-				CMsnProto* proto = (CMsnProto*)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
-				proto->MyOptions.BGColour = SendDlgItemMessage(hwndDlg, IDC_BGCOLOUR, CPM_GETCOLOUR, 0, 0);
-				proto->MyOptions.TextColour = SendDlgItemMessage(hwndDlg, IDC_TEXTCOLOUR, CPM_GETCOLOUR, 0, 0);
-				SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
-			}
-			break;
-
-		case IDC_USEWINCOLORS:
-			{
-				CMsnProto* proto = (CMsnProto*)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
-				proto->MyOptions.UseWinColors = IsDlgButtonChecked(hwndDlg, IDC_USEWINCOLORS) != 0;
-
-				EnableWindow(GetDlgItem(hwndDlg, IDC_BGCOLOUR), !(proto->MyOptions.UseWinColors));
-				EnableWindow(GetDlgItem(hwndDlg, IDC_TEXTCOLOUR), !(proto->MyOptions.UseWinColors));
-				SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
-			}
-			break;
-
-		case IDC_PREVIEW: 
-			{
-				CMsnProto* proto = (CMsnProto*)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
-				proto->MSN_ShowPopup(TranslateT("A New Hotmail has come!"), TranslateT("Test: Arrival Hotmail"), MSN_HOTMAIL_POPUP);
-			}
-			break;
-
-		case IDC_PREVIEW2:
-			{
-				CMsnProto* proto = (CMsnProto*)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
-				proto->MSN_ShowPopup(_T("john.doe@hotmail.com"), TranslateT("Chat session established"), 0, NULL);
-			}
 			break;
 		}
 		break;
@@ -625,22 +565,9 @@ static INT_PTR CALLBACK DlgProcHotmailPopUpOpts(HWND hwndDlg, UINT msg, WPARAM w
 				{
 					CMsnProto* proto = (CMsnProto*)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 					
-					proto->MyOptions.TextColour = SendDlgItemMessage(hwndDlg,IDC_TEXTCOLOUR,CPM_GETCOLOUR,0,0);
-					proto->setDword("TextColour", proto->MyOptions.TextColour);
-
-					proto->MyOptions.BGColour = SendDlgItemMessage(hwndDlg,IDC_BGCOLOUR,CPM_GETCOLOUR,0,0);
-					proto->setDword("BackgroundColour", proto->MyOptions.BGColour);
-
-					proto->MyOptions.PopupTimeoutHotmail = GetDlgItemInt(hwndDlg, IDC_POPUP_TIMEOUT, NULL, FALSE);
-					proto->setDword(NULL, "PopupTimeout", proto->MyOptions.PopupTimeoutHotmail);
-
-					proto->MyOptions.PopupTimeoutOther = GetDlgItemInt(hwndDlg, IDC_POPUP_TIMEOUT2, NULL, FALSE);
-					proto->setDword(NULL, "PopupTimeoutOther", proto->MyOptions.PopupTimeoutOther);
-
 					proto->MyOptions.ShowErrorsAsPopups = IsDlgButtonChecked(hwndDlg, IDC_ERRORS_USING_POPUPS) != 0;
 					proto->setByte("ShowErrorsAsPopups", proto->MyOptions.ShowErrorsAsPopups);
 
-					proto->setByte("UseWinColors",	(BYTE)IsDlgButtonChecked(hwndDlg, IDC_USEWINCOLORS));
 					proto->setByte("DisableHotmail", (BYTE)IsDlgButtonChecked(hwndDlg, IDC_DISABLEHOTMAILPOPUP));
 					proto->setByte("DisableHotmailCL", (BYTE)IsDlgButtonChecked(hwndDlg, IDC_DISABLEHOTMAILCL));
 					proto->setByte("DisableHotmailTray", (BYTE)IsDlgButtonChecked(hwndDlg, IDC_DISABLEHOTMAILTRAY));
@@ -824,26 +751,11 @@ void  CMsnProto::LoadOptions(void)
 {
 	memset(&MyOptions, 0, sizeof(MyOptions));
 
-	char module[128]; 
-	mir_snprintf(module, sizeof(module), "%s:HotmailNotify", m_szModuleName);
-	if (DBGetContactSettingDword(NULL, module, "TextColour", 0xabcd) != 0xabcd)
-	{
-		setDword("TextColour", DBGetContactSettingDword(NULL, module, "TextColour", GetSysColor(COLOR_WINDOWTEXT)));
-		setDword("BackgroundColour", DBGetContactSettingDword(NULL, module, "BackgroundColour", STYLE_DEFAULTBGCOLOUR));
-		MSN_CallService(MS_DB_MODULE_DELETE, 0, (LPARAM)module);
-	}
-
 	//PopUp Options
-	MyOptions.BGColour = getDword("BackgroundColour", STYLE_DEFAULTBGCOLOUR);
-	MyOptions.TextColour = getDword("TextColour", GetSysColor(COLOR_WINDOWTEXT));
-
 	MyOptions.AwayAsBrb = getByte("AwayAsBrb", FALSE) != 0;
 	MyOptions.ManageServer = getByte("ManageServer", TRUE) != 0;
-	MyOptions.PopupTimeoutHotmail = getDword("PopupTimeout", 3);
-	MyOptions.PopupTimeoutOther = getDword("PopupTimeoutOther", MyOptions.PopupTimeoutHotmail);
-	MyOptions.ShowErrorsAsPopups = getByte("ShowErrorsAsPopups", FALSE) != 0;
+	MyOptions.ShowErrorsAsPopups = getByte("ShowErrorsAsPopups", TRUE) != 0;
 	MyOptions.SlowSend = getByte("SlowSend", FALSE) != 0;
-	MyOptions.UseWinColors = getByte("UseWinColors", FALSE) != 0;
 	if (getStaticString(NULL, "e-mail", MyOptions.szEmail, sizeof(MyOptions.szEmail)))
 		MyOptions.szEmail[0] = 0;
 	_strlwr(MyOptions.szEmail);

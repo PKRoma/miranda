@@ -163,7 +163,8 @@ extern "C" __declspec(dllexport) PLUGININFOEX* MirandaPluginInfoEx(DWORD miranda
 {
 	if (mirandaVersion < PLUGIN_MAKE_VERSION(0, 9, 0, 0)) 
 	{
-		MessageBox(NULL, _T("The MSN protocol plugin cannot be loaded. It requires Miranda IM 0.9.0.0 or later."), _T("MSN Protocol Plugin"), MB_OK|MB_ICONWARNING|MB_SETFOREGROUND|MB_TOPMOST);
+		MessageBox(NULL, _T("The MSN protocol plugin cannot be loaded. It requires Miranda IM 0.9.0.0 or later."), 
+			_T("MSN Protocol"), MB_OK | MB_ICONWARNING | MB_SETFOREGROUND | MB_TOPMOST);
 		return NULL;
 	}
 
