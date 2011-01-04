@@ -370,9 +370,10 @@ static VOID CALLBACK TrayIconAutoHideTimer(HWND hwnd,UINT message,UINT_PTR idEve
 
 INT_PTR TrayIconPauseAutoHide(WPARAM wParam,LPARAM lParam)
 {
-	if(ModernGetSettingByte(NULL,"CList","AutoHide",SETTING_AUTOHIDE_DEFAULT)) {
-		if(GetActiveWindow()!=pcli->hwndContactList
-			&&GetWindow(GetParent(GetActiveWindow()),GW_OWNER) != pcli->hwndContactList )
+	if (ModernGetSettingByte(NULL,"CList","AutoHide",SETTING_AUTOHIDE_DEFAULT)) 
+	{
+		if (GetActiveWindow() != pcli->hwndContactList
+			&& GetWindow(GetParent(GetActiveWindow()),GW_OWNER) != pcli->hwndContactList)
 		{
 			KillTimer(NULL,autoHideTimerId);
 			autoHideTimerId=CLUI_SafeSetTimer(NULL,0,1000*ModernGetSettingWord(NULL,"CList","HideTime",SETTING_HIDETIME_DEFAULT),TrayIconAutoHideTimer);
@@ -417,9 +418,16 @@ INT_PTR cli_TrayIconProcessMessage(WPARAM wParam,LPARAM lParam)
 			h2=h1?GetParent(h1):NULL;
 			h4=pcli->hwndContactList;
 			if(ModernGetSettingByte(NULL,"CList","AutoHide",SETTING_AUTOHIDE_DEFAULT)) {
-				if(LOWORD(msg->wParam)==WA_INACTIVE && h2!=h4)
+				if (LOWORD(msg->wParam)==WA_INACTIVE && h2!=h4)
 					autoHideTimerId=CLUI_SafeSetTimer(NULL,0,1000*ModernGetSettingWord(NULL,"CList","HideTime",SETTING_HIDETIME_DEFAULT),TrayIconAutoHideTimer);
-				else KillTimer(NULL,autoHideTimerId);
+				else { 
+					KillTimer(NULL,autoHideTimerId);
+					autoHideTimerId = 0;
+				}
+			}
+			else if (autoHideTimerId) {
+				KillTimer(NULL, autoHideTimerId);
+				autoHideTimerId = 0;
 			}
 		}
 		return FALSE; //to avoid autohideTimer in core
