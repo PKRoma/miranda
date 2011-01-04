@@ -1866,8 +1866,8 @@ static int SkinOptionsInit( WPARAM wParam,LPARAM )
 	odp.flags = ODPF_BOLDGROUPS;
 	odp.position = -180000000;
 	odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_ICOLIB);
-	odp.ptszTitle = LPGEN("Icons");
-	odp.ptszGroup = LPGEN("Customize");
+	odp.pszTitle = LPGEN("Icons");
+	odp.pszGroup = LPGEN("Customize");
 	odp.pfnDlgProc = DlgProcIcoLibOpts;
 	odp.expertOnlyControls = iconsExpertOnlyControls;
 	odp.nExpertOnlyControls = SIZEOF(iconsExpertOnlyControls);
