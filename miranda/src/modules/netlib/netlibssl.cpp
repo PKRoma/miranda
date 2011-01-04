@@ -39,6 +39,7 @@ static PSecurityFunctionTableA g_pSSPI;
 static HANDLE g_hSslMutex; 
 static SSL_EMPTY_CACHE_FN_M MySslEmptyCache;
 static CredHandle hCreds;
+static bool bSslInitDone;
 
 typedef enum
 {
@@ -99,7 +100,7 @@ static void ReportSslError(SECURITY_STATUS scRet, int line, bool showPopup = fal
 	PUShowMessageT(szMsgBuf2, SM_WARNING);
 }
 
-static BOOL AcquireCredentials(void)
+static bool AcquireCredentials(void)
 {
 	SCHANNEL_CRED   SchannelCred;
 	TimeStamp       tsExpiry;
@@ -125,17 +126,18 @@ static BOOL AcquireCredentials(void)
 		&tsExpiry);             // (out) Lifetime (optional)
 
 	ReportSslError(scRet, __LINE__);
+	NetlibLogf(NULL, "Credentials acquired");
+
 	return scRet == SEC_E_OK;
 }
 
 static bool SSL_library_init(void)
 {
-	if (g_pSSPI) return 1;
+	if (bSslInitDone) return true;
 
 	WaitForSingleObject(g_hSslMutex, INFINITE); 
 
-	bool res = g_pSSPI != NULL;
-	if (!res)
+	if (!bSslInitDone)
 	{
 		g_hSchannel = LoadLibraryA("schannel.dll");
 		if (g_hSchannel)
@@ -145,22 +147,22 @@ static bool SSL_library_init(void)
 			if (pInitSecurityInterface != NULL) 
 				g_pSSPI = pInitSecurityInterface();
 
-			res = g_pSSPI != NULL;
-			if (!res) 
-			{
-				FreeLibrary(g_hSchannel);
-				g_hSchannel = NULL;
-			}
-			else
+			if (g_pSSPI) 
 			{
 				MySslEmptyCache = (SSL_EMPTY_CACHE_FN_M)GetProcAddress(g_hSchannel, "SslEmptyCache");
 				AcquireCredentials();
+				bSslInitDone = true;
+			}
+			else
+			{
+				FreeLibrary(g_hSchannel);
+				g_hSchannel = NULL;
 			}
 		}
 	}
 
 	ReleaseMutex(g_hSslMutex);
-	return res;
+	return bSslInitDone;
 }
 
 void NetlibSslFree(SslHandle *ssl)
@@ -510,6 +512,7 @@ static bool ClientConnect(SslHandle *ssl, const char *host)
 
 	if (scRet != SEC_I_CONTINUE_NEEDED)
 	{
+		NetlibLogf(NULL, "SSL failure %x %x", hCreds.dwLower, hCreds.dwUpper);
 		ReportSslError(scRet, __LINE__);
 		return 0;
 	}
