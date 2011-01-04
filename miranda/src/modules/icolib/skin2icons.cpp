@@ -1863,11 +1863,11 @@ static int SkinOptionsInit( WPARAM wParam,LPARAM )
 
 	odp.cbSize = sizeof(odp);
 	odp.hInstance = hMirandaInst;
-	odp.flags = ODPF_BOLDGROUPS | ODPF_TCHAR;
+	odp.flags = ODPF_BOLDGROUPS;
 	odp.position = -180000000;
 	odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_ICOLIB);
-	odp.ptszTitle = TranslateT("Icons");
-	odp.ptszGroup = TranslateT("Customize");
+	odp.ptszTitle = LPGEN("Icons");
+	odp.ptszGroup = LPGEN("Customize");
 	odp.pfnDlgProc = DlgProcIcoLibOpts;
 	odp.expertOnlyControls = iconsExpertOnlyControls;
 	odp.nExpertOnlyControls = SIZEOF(iconsExpertOnlyControls);
