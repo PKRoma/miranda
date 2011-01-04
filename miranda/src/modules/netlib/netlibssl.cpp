@@ -126,8 +126,6 @@ static bool AcquireCredentials(void)
 		&tsExpiry);             // (out) Lifetime (optional)
 
 	ReportSslError(scRet, __LINE__);
-	NetlibLogf(NULL, "Credentials acquired");
-
 	return scRet == SEC_E_OK;
 }
 
@@ -512,7 +510,6 @@ static bool ClientConnect(SslHandle *ssl, const char *host)
 
 	if (scRet != SEC_I_CONTINUE_NEEDED)
 	{
-		NetlibLogf(NULL, "SSL failure %x %x", hCreds.dwLower, hCreds.dwUpper);
 		ReportSslError(scRet, __LINE__);
 		return 0;
 	}
