@@ -864,8 +864,8 @@ void CMsnProto::InitPopups(void)
 	ppc.ptszDescription = desc;
 	ppc.pszName = name;
 	ppc.hIcon = (HICON)LoadImage(NULL, IDI_WARNING, IMAGE_ICON, 0, 0, LR_SHARED);
-	ppc.colorBack = RGB(173, 206, 247);
-	ppc.colorText = RGB(0, 0, 0);
+	ppc.colorBack = RGB(191, 0, 0); //Red
+	ppc.colorText = RGB(255, 245, 225); //Yellow
 	ppc.iSeconds = 60;
 
 	mir_sntprintf(desc, SIZEOF(desc), _T("%s/%s"), m_tszUserName, TranslateT("Error"));
