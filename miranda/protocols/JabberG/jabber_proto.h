@@ -849,9 +849,9 @@ struct CJabberProto : public PROTO_INTERFACE
 		bool isNtlmAvailable;
 		bool isSpnegoAvailable;
 		bool isKerberosAvailable;
-		bool isXGoogleTokenAvailable;
 		bool isAuthAvailable;
 		bool isSessionAvailable;
+		TCHAR *m_gssapiHostName;
 	} AUTHMECHS;
 
 	AUTHMECHS m_AuthMechs;

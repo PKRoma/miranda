@@ -766,8 +766,6 @@ void CJabberProto::OnProcessFeatures( HXML node, ThreadData* info )
 	bool isRegisterAvailable = false;
 	bool areMechanismsDefined = false;
 
-	const TCHAR *hostname = NULL;
-
 	for ( int i=0; ;i++ ) {
 		HXML n = xmlGetChild( node ,i);
 		if ( !n )
@@ -796,6 +794,14 @@ void CJabberProto::OnProcessFeatures( HXML node, ThreadData* info )
 		}	}	}	}
 
 		if ( !_tcscmp( xmlGetName( n ), _T("mechanisms"))) {
+			m_AuthMechs.isPlainAvailable = false;
+			m_AuthMechs.isMd5Available = false;
+			m_AuthMechs.isScramAvailable = false;
+			m_AuthMechs.isNtlmAvailable = false;
+			m_AuthMechs.isSpnegoAvailable = false;
+			m_AuthMechs.isKerberosAvailable = false;
+			mir_free( m_AuthMechs.m_gssapiHostName ); m_AuthMechs.m_gssapiHostName = NULL;
+
 			areMechanismsDefined = true;
 			//JabberLog("%d mechanisms\n",n->numChild);
 			for ( int k=0; ; k++ ) {
@@ -811,10 +817,12 @@ void CJabberProto::OnProcessFeatures( HXML node, ThreadData* info )
 					else if ( !_tcscmp( xmlGetText( c ), _T("NTLM")))           m_AuthMechs.isNtlmAvailable = true;
 					else if ( !_tcscmp( xmlGetText( c ), _T("GSS-SPNEGO")))     m_AuthMechs.isSpnegoAvailable = true;
 					else if ( !_tcscmp( xmlGetText( c ), _T("GSSAPI")))         m_AuthMechs.isKerberosAvailable = true;
-					else if ( !_tcscmp( xmlGetText( c ), _T("X-GOOGLE-TOKEN"))) m_AuthMechs.isXGoogleTokenAvailable = true;
 				}
 				else if ( !_tcscmp( xmlGetName( c ), _T("hostname"))) {
-					hostname = xmlGetText( c );
+					const TCHAR *mech = xmlGetAttrValue( c, _T("mechanism"));
+					if ( mech && _tcsicmp( mech, _T("GSSAPI")) == 0 ) {
+						m_AuthMechs.m_gssapiHostName = mir_tstrdup( xmlGetText( c )); 
+					}
 				}
 		}	}
 		else if ( !_tcscmp( xmlGetName( n ), _T("register" ))) isRegisterAvailable = true;
