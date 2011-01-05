@@ -30,7 +30,7 @@ Last change by : $Author$
 #include "jabber_caps.h"
 #include "version.h"
 
-JabberFeatCapPair g_JabberFeatCapPairs[] = {
+const JabberFeatCapPair g_JabberFeatCapPairs[] = {
 	{	_T(JABBER_FEAT_DISCO_INFO),           JABBER_CAPS_DISCO_INFO,           _T("Supports Service Discovery info"), },
 	{	_T(JABBER_FEAT_DISCO_ITEMS),          JABBER_CAPS_DISCO_ITEMS,          _T("Supports Service Discovery items list"), },
 	{	_T(JABBER_FEAT_ENTITY_CAPS),          JABBER_CAPS_ENTITY_CAPS,          _T("Can inform about its Jabber capabilities"), },
@@ -74,7 +74,7 @@ JabberFeatCapPair g_JabberFeatCapPairs[] = {
 	{	NULL,                                 0,                                NULL}
 };
 
-JabberFeatCapPair g_JabberFeatCapPairsExt[] = {
+const JabberFeatCapPair g_JabberFeatCapPairsExt[] = {
 	{	_T(JABBER_EXT_SECUREIM),          JABBER_CAPS_SECUREIM             },
 	{	_T(JABBER_EXT_COMMANDS),          JABBER_CAPS_COMMANDS             },
 	{	_T(JABBER_EXT_USER_MOOD),         JABBER_CAPS_USER_MOOD_NOTIFY     },
@@ -372,7 +372,7 @@ JabberCapsBits CJabberProto::GetResourceCapabilites( const TCHAR *jid, BOOL appe
 /////////////////////////////////////////////////////////////////////////////////////////
 //  CJabberClientPartialCaps class members
 
-CJabberClientPartialCaps::CJabberClientPartialCaps( TCHAR *szVer )
+CJabberClientPartialCaps::CJabberClientPartialCaps( const TCHAR *szVer )
 {
 	m_szVer = mir_tstrdup( szVer );
 	m_jcbCaps = JABBER_RESOURCE_CAPS_ERROR;
@@ -414,7 +414,7 @@ JabberCapsBits CJabberClientPartialCaps::GetCaps()
 	return m_jcbCaps;
 }
 
-CJabberClientPartialCaps* CJabberClientCaps::FindByVersion( TCHAR *szVer )
+CJabberClientPartialCaps* CJabberClientCaps::FindByVersion( const TCHAR *szVer )
 {
 	if ( !m_pCaps || !szVer )
 		return NULL;
@@ -471,7 +471,7 @@ JabberCapsBits CJabberClientCaps::GetPartialCaps( TCHAR *szVer ) {
 	return pCaps->GetCaps();
 }
 
-BOOL CJabberClientCaps::SetPartialCaps( TCHAR *szVer, JabberCapsBits jcbCaps, int nIqId /*= -1*/ ) {
+BOOL CJabberClientCaps::SetPartialCaps( const TCHAR *szVer, JabberCapsBits jcbCaps, int nIqId /*= -1*/ ) {
 	CJabberClientPartialCaps *pCaps = FindByVersion( szVer );
 	if ( !pCaps ) {
 		pCaps = new CJabberClientPartialCaps( szVer );
@@ -550,7 +550,7 @@ JabberCapsBits CJabberClientCapsManager::GetClientCaps( TCHAR *szNode, TCHAR *sz
 	return jcbCaps;
 }
 
-BOOL CJabberClientCapsManager::SetClientCaps( const TCHAR *szNode, TCHAR *szVer, JabberCapsBits jcbCaps, int nIqId /*= -1*/ )
+BOOL CJabberClientCapsManager::SetClientCaps( const TCHAR *szNode, const TCHAR *szVer, JabberCapsBits jcbCaps, int nIqId /*= -1*/ )
 {
 	Lock();
 	CJabberClientCaps *pClient = FindClient( szNode );
@@ -625,6 +625,9 @@ BOOL CJabberClientCapsManager::HandleInfoRequest( HXML, CJabberIqInfo* pInfo, co
 			jcb |= ppro->m_lstJabberFeatCapPairsDynamic[i]->jcbCap;
 	}
 
+	if (!ppro->m_options.AllowVersionRequests)
+		jcb &= ~JABBER_CAPS_VERSION;
+
 	XmlNodeIq iq( _T("result"), pInfo );
 
 	HXML query = iq << XQUERY( _T(JABBER_FEAT_DISCO_INFO));
@@ -634,7 +637,7 @@ BOOL CJabberClientCapsManager::HandleInfoRequest( HXML, CJabberIqInfo* pInfo, co
 	query << XCHILD( _T("identity")) << XATTR( _T("category"), _T("client")) 
 			<< XATTR( _T("type"), _T("pc")) << XATTR( _T("name"), _T("Miranda"));
 
-	for ( i = 0; g_JabberFeatCapPairs[i].szFeature; i++ ) 
+	for ( i = 0; g_JabberFeatCapPairs[i].szFeature; i++ )
 		if ( jcb & g_JabberFeatCapPairs[i].jcbCap )
 			query << XCHILD( _T("feature")) << XATTR( _T("var"), g_JabberFeatCapPairs[i].szFeature );
 
@@ -642,7 +645,7 @@ BOOL CJabberClientCapsManager::HandleInfoRequest( HXML, CJabberIqInfo* pInfo, co
 		if ( jcb & ppro->m_lstJabberFeatCapPairsDynamic[i]->jcbCap )
 			query << XCHILD( _T("feature")) << XATTR( _T("var"), ppro->m_lstJabberFeatCapPairsDynamic[i]->szFeature );
 
-	if ( !szNode ) {
+	if ( ppro->m_options.AllowVersionRequests && !szNode ) {
 		TCHAR szOsBuffer[256] = {0};
 		TCHAR *os = szOsBuffer;
 

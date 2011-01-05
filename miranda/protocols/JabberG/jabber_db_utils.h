@@ -169,6 +169,7 @@ private:
 
 struct CJabberOptions
 {
+	CMOption<BYTE> AllowVersionRequests;
 	CMOption<BYTE> AcceptHttpAuth;
 	CMOption<BYTE> AddRoster2Bookmarks;
 	CMOption<BYTE> AutoAcceptAuthorization;
@@ -221,6 +222,7 @@ struct CJabberOptions
 
 	CJabberOptions(PROTO_INTERFACE *proto):
 		BsDirect(proto, "BsDirect", FALSE),
+		AllowVersionRequests(proto, "AllowVersionRequests", TRUE),
 		AcceptHttpAuth(proto, "AcceptHttpAuth", TRUE),
 		AddRoster2Bookmarks(proto, "AddRoster2Bookmarks", TRUE),
 		AutoAcceptAuthorization(proto, "AutoAcceptAuthorization", FALSE),
