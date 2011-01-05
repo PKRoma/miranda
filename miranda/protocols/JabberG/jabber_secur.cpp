@@ -97,13 +97,14 @@ bool TNtlmAuth::getSpn( TCHAR* szSpn, size_t dwSpnLen )
 		mir_free( szFullUserNameU );
 	} else {
 		const char* connectHost = info->manualHost[0] ? info->manualHost : info->server;
-/*
+
+		 unsigned long ip = inet_addr( connectHost );
 		// Convert host name to FQDN
-		unsigned long ip = inet_addr( connectHost );
-		PHOSTENT host = (ip == INADDR_NONE) ? gethostbyname( szHost ) : gethostbyaddr(( char* )&ip, 4, AF_INET );
+//		PHOSTENT host = (ip == INADDR_NONE) ? gethostbyname( szHost ) : gethostbyaddr(( char* )&ip, 4, AF_INET );
+		PHOSTENT host = (ip == INADDR_NONE) ? NULL : gethostbyaddr(( char* )&ip, 4, AF_INET );
 		if ( host && host->h_name ) 
 			connectHost = host->h_name;
-*/
+
 		TCHAR *connectHostT = mir_a2t( connectHost );
 		mir_sntprintf( szSpn, dwSpnLen, _T( "xmpp/%s@%s" ), connectHostT, _tcsupr( szFullUserName ));
 		mir_free( connectHostT );
