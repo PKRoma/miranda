@@ -294,8 +294,8 @@ BOOL CJabberProto::OnIqRequestVersion( HXML, CJabberIqInfo* pInfo )
 	if ( !m_options.AllowVersionRequests )
 	{
 		XmlNodeIq iq( _T("error"), pInfo );
-		HXML e = xmlAddChild( iq, _T("error"), _T("Not implemented"));
-		xmlAddAttr( e, _T("code"), 501 );
+		HXML error = iq << XCHILD( _T("error")) << XATTRI( _T("code"), 501 ) << XATTR( _T("type"), _T("cancel"));
+		error << XCHILDNS( _T("feature-not-implemented"), _T("urn:ietf:params:xml:ns:xmpp-stanzas"));
 		m_ThreadInfo->send( iq );
 		return TRUE;
 	}
