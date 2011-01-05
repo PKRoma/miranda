@@ -709,7 +709,7 @@ void CJabberProto::PerformAuthentication( ThreadData* info )
 
 	if ( auth == NULL && m_AuthMechs.isKerberosAvailable ) {
 		m_AuthMechs.isKerberosAvailable = false;
-		auth = new TNtlmAuth( info, "GSSAPI" );
+		auth = new TNtlmAuth( info, "GSSAPI", m_AuthMechs.m_gssapiHostName );
 		if ( !auth->isValid() ) {
 			delete auth;
 			auth = NULL;
