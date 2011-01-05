@@ -292,13 +292,7 @@ BOOL CJabberProto::OnIqRequestVersion( HXML, CJabberIqInfo* pInfo )
 		return TRUE;
 
 	if ( !m_options.AllowVersionRequests )
-	{
-		XmlNodeIq iq( _T("error"), pInfo );
-		HXML error = iq << XCHILD( _T("error")) << XATTRI( _T("code"), 501 ) << XATTR( _T("type"), _T("cancel"));
-		error << XCHILDNS( _T("feature-not-implemented"), _T("urn:ietf:params:xml:ns:xmpp-stanzas"));
-		m_ThreadInfo->send( iq );
-		return TRUE;
-	}
+		return FALSE;
 
 	XmlNodeIq iq( _T("result"), pInfo );
 	HXML query = iq << XQUERY( _T(JABBER_FEAT_VERSION));
