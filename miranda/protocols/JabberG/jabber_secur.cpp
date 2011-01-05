@@ -33,10 +33,11 @@ typedef BYTE (WINAPI *GetUserNameExType )( int NameFormat, LPTSTR lpNameBuffer, 
 /////////////////////////////////////////////////////////////////////////////////////////
 // ntlm auth - LanServer based authorization
 
-TNtlmAuth::TNtlmAuth( ThreadData* info, const char* mechanism ) :
+TNtlmAuth::TNtlmAuth( ThreadData* info, const char* mechanism, const TCHAR* hostname ) :
 	TJabberAuth( info )
 {
 	szName = mechanism;
+	szHostName = hostname;
 
 	const TCHAR *szProvider;
 	if ( !strcmp( mechanism, "GSS-SPNEGO" ))
@@ -86,34 +87,30 @@ bool TNtlmAuth::getSpn( TCHAR* szSpn, size_t dwSpnLen )
 		myGetUserNameEx( 2, szFullUserName, &szFullUserNameLen );
 	}
 
-	TCHAR* name = _tcsrchr(szFullUserName, '\\');
-	if (name) *name = 0;
+	TCHAR* name = _tcsrchr( szFullUserName, '\\' );
+	if ( name ) *name = 0;
 	else return false; 
 
-	_tcsupr(szFullUserName);
-
-	const char* connectHost = info->manualHost[0] ? info->manualHost : info->server;
-	TCHAR *connectHostDSN = mir_a2t( connectHost );
-
-	unsigned long ip = inet_addr( connectHost );
-	if ( ip == INADDR_NONE && !strchr(connectHost, '.' )) {
-		PHOSTENT host = gethostbyname( connectHost );
-		if ( host != NULL )
-			ip = (( PIN_ADDR )host->h_addr )->S_un.S_addr;
+	if ( szHostName && szHostName[0] ) {
+		TCHAR *szFullUserNameU = _tcsupr( mir_tstrdup( szFullUserName ));
+		mir_sntprintf( szSpn, dwSpnLen, _T( "xmpp/%s/%s@%s" ), szHostName, szFullUserName, szFullUserNameU );
+		mir_free( szFullUserNameU );
+	} else {
+		const char* connectHost = info->manualHost[0] ? info->manualHost : info->server;
+/*
+		// Convert host name to FQDN
+		unsigned long ip = inet_addr( connectHost );
+		PHOSTENT host = (ip == INADDR_NONE) ? gethostbyname( szHost ) : gethostbyaddr(( char* )&ip, 4, AF_INET );
+		if ( host && host->h_name ) 
+			connectHost = host->h_name;
+*/
+		TCHAR *connectHostT = mir_a2t( connectHost );
+		mir_sntprintf( szSpn, dwSpnLen, _T( "xmpp/%s@%s" ), connectHostT, _tcsupr( szFullUserName ));
+		mir_free( connectHostT );
 	}
 
-	if ( ip != INADDR_NONE ) {
-		PHOSTENT host = gethostbyaddr(( char* )&ip, 4, AF_INET );
-		if ( host ) {
-			mir_free( connectHostDSN );
-			connectHostDSN = mir_a2t( host->h_name );
-		}
-	}
-
-	mir_sntprintf( szSpn, dwSpnLen, _T( "xmpp/%s@%s" ), connectHostDSN, szFullUserName );
 	Netlib_Logf( NULL, "SPN: " TCHAR_STR_PARAM, szSpn );
 
-	mir_free( connectHostDSN );
 
 	return true;
 }

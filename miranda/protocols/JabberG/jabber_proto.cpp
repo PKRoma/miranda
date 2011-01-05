@@ -241,6 +241,7 @@ CJabberProto::~CJabberProto()
 
 	mir_free( m_tszSelectedLang );
 	mir_free( m_phIconLibItems );
+	mir_free( m_AuthMechs.m_gssapiHostName );
 
 	DeleteCriticalSection( &m_filterInfo.csPatternLock );
 	DeleteCriticalSection( &m_csModeMsgMutex );
