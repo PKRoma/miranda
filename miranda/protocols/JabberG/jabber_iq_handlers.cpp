@@ -291,6 +291,15 @@ BOOL CJabberProto::OnIqRequestVersion( HXML, CJabberIqInfo* pInfo )
 	if ( !pInfo->GetFrom() )
 		return TRUE;
 
+	if ( !m_options.AllowVersionRequests )
+	{
+		XmlNodeIq iq( _T("error"), pInfo );
+		HXML e = xmlAddChild( iq, _T("error"), _T("Not implemented"));
+		xmlAddAttr( e, _T("code"), 501 );
+		m_ThreadInfo->send( iq );
+		return TRUE;
+	}
+
 	XmlNodeIq iq( _T("result"), pInfo );
 	HXML query = iq << XQUERY( _T(JABBER_FEAT_VERSION));
 	#if defined( _UNICODE )

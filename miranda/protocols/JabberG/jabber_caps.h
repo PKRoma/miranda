@@ -178,7 +178,7 @@ protected:
 	DWORD m_dwRequestTime;
 
 public:
-	CJabberClientPartialCaps( TCHAR *szVer );
+	CJabberClientPartialCaps( const TCHAR *szVer );
 	~CJabberClientPartialCaps();
 
 	CJabberClientPartialCaps* SetNext( CJabberClientPartialCaps *pCaps );
@@ -207,7 +207,7 @@ protected:
 	CJabberClientCaps *m_pNext;
 
 protected:
-	CJabberClientPartialCaps* FindByVersion( TCHAR *szVer );
+	CJabberClientPartialCaps* FindByVersion( const TCHAR *szVer );
 	CJabberClientPartialCaps* FindById( int nIqId );
 
 public:
@@ -220,7 +220,7 @@ public:
 	}
 
 	JabberCapsBits GetPartialCaps( TCHAR *szVer );
-	BOOL SetPartialCaps( TCHAR *szVer, JabberCapsBits jcbCaps, int nIqId = -1 );
+	BOOL SetPartialCaps( const TCHAR *szVer, JabberCapsBits jcbCaps, int nIqId = -1 );
 	BOOL SetPartialCaps( int nIqId, JabberCapsBits jcbCaps );
 
 	__inline TCHAR* GetNode()
@@ -253,7 +253,7 @@ public:
 	void AddDefaultCaps();
 
 	JabberCapsBits GetClientCaps( TCHAR *szNode, TCHAR *szVer );
-	BOOL SetClientCaps( const TCHAR *szNode, TCHAR *szVer, JabberCapsBits jcbCaps, int nIqId = -1 );
+	BOOL SetClientCaps( const TCHAR *szNode, const TCHAR *szVer, JabberCapsBits jcbCaps, int nIqId = -1 );
 	BOOL SetClientCaps( int nIqId, JabberCapsBits jcbCaps );
 
 	BOOL HandleInfoRequest( HXML iqNode, CJabberIqInfo* pInfo, const TCHAR* szNode );
@@ -261,9 +261,9 @@ public:
 
 struct JabberFeatCapPair
 {
-	TCHAR *szFeature;
+	const TCHAR *szFeature;
 	JabberCapsBits jcbCap;
-	TCHAR *szDescription;
+	const TCHAR *szDescription;
 };
 
 struct JabberFeatCapPairDynamic
@@ -274,7 +274,7 @@ struct JabberFeatCapPairDynamic
 	TCHAR *szDescription;
 };
 
-extern JabberFeatCapPair g_JabberFeatCapPairs[];
-extern JabberFeatCapPair g_JabberFeatCapPairsExt[];
+extern const JabberFeatCapPair g_JabberFeatCapPairs[];
+extern const JabberFeatCapPair g_JabberFeatCapPairsExt[];
 
 #endif
