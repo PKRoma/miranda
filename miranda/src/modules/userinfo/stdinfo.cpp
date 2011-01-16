@@ -196,6 +196,7 @@ static INT_PTR CALLBACK SummaryDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 					SetValue(hwndDlg,IDC_DOBDAY,hContact,szProto,"BirthDay",0);
 					SetValue(hwndDlg,IDC_DOBMONTH,hContact,szProto,"BirthMonth",SVS_MONTH);
 					SetValue(hwndDlg,IDC_DOBYEAR,hContact,szProto,"BirthYear",0);
+					SetValue(hwndDlg,IDC_MARITAL,hContact,szProto,"MaritalStatus",0);
 			}	}
 			break;
 		}
