@@ -1039,6 +1039,7 @@
 #define POPUP_DELETEGROUP               40053
 #define IDC_FRAME_META                  40054
 #define IDC_FRAME_META2                 40055
+#define IDC_STATIC						-1
 
 // Next default values for new objects
 // 

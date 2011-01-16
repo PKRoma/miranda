@@ -1,55 +1,14 @@
 // Microsoft Visual C++ generated resource script.
 //
-#include "resource.h "
+#include "resource.h"
 
 #define APSTUDIO_READONLY_SYMBOLS
 /////////////////////////////////////////////////////////////////////////////
 //
 // Generated from the TEXTINCLUDE 2 resource.
 //
-#include "afxres.h"
+#include <winresrc.h>
 #include "hdr/modern_statusmodes.h"
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// Version
-//
-#ifndef APSTUDIO_INVOKED
-#include "version.h"
-VS_VERSION_INFO VERSIONINFO
- FILEVERSION FILE_VERSION
- PRODUCTVERSION PRODUCT_VERSION
- FILEFLAGSMASK 0x3fL
-#ifdef _DEBUG
- FILEFLAGS 0x1L
-#else
- FILEFLAGS 0x0L
-#endif
- FILEOS 0x40004L
- FILETYPE 0x1L
- FILESUBTYPE 0x0L
-BEGIN
-    BLOCK "StringFileInfo"
-    BEGIN
-        BLOCK "000004b0"
-        BEGIN
-            VALUE "Comments", "Licensed under the terms of the GNU General Public License"
-            VALUE "CompanyName", " "
-            VALUE "FileDescription", "Miranda IM Contact List. Display contacts, event notifications, protocol status with advantage visual modifications. Supported MW modifications, enchanced metacontact cooperation."
-            VALUE "FileVersion", FILE_VERSION_STR
-            VALUE "InternalName", "Modern Contact List"
-            VALUE "LegalCopyright", "Copyright © 2000-2005 Artem Shpynov, Richard Hughes, Roland Rabien, Tristan Van de Vreede, Martin Oberg, Robert Rainwater, Sam Kothari and Lyon Lim"
-            VALUE "OriginalFilename", "clist_modern.dll"
-            VALUE "ProductName", "Miranda IM Contact List. Display contacts, event notifications, protocol status with advantage visual modifications. Supported MW modifications, enchanced metacontact cooperation."
-            VALUE "ProductVersion", PRODUCT_VERSION_STR
-        END
-    END
-    BLOCK "VarFileInfo"
-    BEGIN
-        VALUE "Translation", 0x0, 1200
-    END
-END
-#endif
 
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
@@ -60,7 +19,7 @@ END
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_NEU)
 #ifdef _WIN32
 LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL
-#pragma code_page(1251)
+#pragma code_page(1252)
 #endif //_WIN32
 
 /////////////////////////////////////////////////////////////////////////////
@@ -206,7 +165,7 @@ BEGIN
     LTEXT           "WARNING: \tSkins can modify your current profile. Rollback is not possible. \n\t\tPlease BACKUP your database before applying skin.",IDC_STATIC,3,188,294,17
     LTEXT           "* Restart may be required for all changes to take effect",IDC_STATIC,3,210,200,8
     COMBOBOX        IDC_COMBO1,177,189,123,76,CBS_DROPDOWN | CBS_SORT | NOT WS_VISIBLE | WS_VSCROLL | WS_TABSTOP
-    CONTROL         "",IDC_TREE1,"SysTreeView32",TVS_HASBUTTONS | TVS_HASLINES | TVS_LINESATROOT | TVS_SHOWSELALWAYS | WS_BORDER | WS_TABSTOP | 0x400,5,30,161,133
+    CONTROL         "",IDC_TREE1,"SysTreeView32",TVS_HASBUTTONS | TVS_HASLINES | TVS_LINESATROOT | TVS_SHOWSELALWAYS | TVS_SINGLEEXPAND | WS_BORDER | WS_TABSTOP,5,30,161,133
 END
 
 IDD_OPT_SKINEDITOR DIALOGEX 0, 0, 305, 222
@@ -387,74 +346,6 @@ BEGIN
     CONTROL         "",IDC_OFFSETSPIN_RIGHT,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | UDS_NOTHOUSANDS | UDS_HOTTRACK,261,201,10,12
 END
 
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// DESIGNINFO
-//
-
-#ifdef APSTUDIO_INVOKED
-GUIDELINES DESIGNINFO 
-BEGIN
-    IDD_OPT_SKINEDITOR, DIALOG
-    BEGIN
-        TOPMARGIN, 1
-        BOTTOMMARGIN, 219
-        HORZGUIDE, 22
-        HORZGUIDE, 35
-        HORZGUIDE, 55
-        HORZGUIDE, 76
-        HORZGUIDE, 172
-        HORZGUIDE, 201
-        HORZGUIDE, 207
-    END
-
-    IDD_SKIN_TAB, DIALOG
-    BEGIN
-        RIGHTMARGIN, 298
-    END
-
-    IDD_TAB, DIALOG
-    BEGIN
-        RIGHTMARGIN, 298
-    END
-
-    IDD_OPT_SBAR, DIALOG
-    BEGIN
-        RIGHTMARGIN, 297
-        VERTGUIDE, 17
-        VERTGUIDE, 27
-        VERTGUIDE, 88
-        VERTGUIDE, 93
-        VERTGUIDE, 150
-        VERTGUIDE, 160
-        VERTGUIDE, 170
-        VERTGUIDE, 178
-        VERTGUIDE, 294
-        BOTTOMMARGIN, 228
-        HORZGUIDE, 19
-    END
-END
-#endif    // APSTUDIO_INVOKED
-
-#endif    // Neutral resources
-/////////////////////////////////////////////////////////////////////////////
-
-
-/////////////////////////////////////////////////////////////////////////////
-// Neutral (Default) resources
-
-#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_NEUD)
-#ifdef _WIN32
-LANGUAGE LANG_NEUTRAL, SUBLANG_DEFAULT
-#pragma code_page(1251)
-#endif //_WIN32
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// Dialog
-//
-
 IDD_OPT_ITEM_EXTRAICONS DIALOGEX 0, 0, 222, 162
 STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD
 EXSTYLE WS_EX_CONTROLPARENT
@@ -485,81 +376,6 @@ BEGIN
     CONTROL         "Multiline toolbar",IDC_CHECK_MULTILINE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,157,86,139,10
     CONTROL         "Autosize toolbar",IDC_CHECK_AUTOSIZE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,157,100,139,10
 END
-
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// DESIGNINFO
-//
-
-#ifdef APSTUDIO_INVOKED
-GUIDELINES DESIGNINFO 
-BEGIN
-    IDD_OPT_ITEM_EXTRAICONS, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 212
-        VERTGUIDE, 18
-        VERTGUIDE, 200
-        TOPMARGIN, 5
-        BOTTOMMARGIN, 155
-    END
-
-    IDD_OPT_TOOLBAR, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 297
-        VERTGUIDE, 18
-        VERTGUIDE, 296
-        TOPMARGIN, 5
-        BOTTOMMARGIN, 209
-    END
-END
-#endif    // APSTUDIO_INVOKED
-
-#endif    // Neutral (Default) resources
-/////////////////////////////////////////////////////////////////////////////
-
-
-/////////////////////////////////////////////////////////////////////////////
-// Russian resources
-
-#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_RUS)
-#ifdef _WIN32
-LANGUAGE LANG_RUSSIAN, SUBLANG_DEFAULT
-#pragma code_page(1251)
-#endif //_WIN32
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// TGA
-//
-
-IDR_TGA_DEFAULT_SKIN    TGA                     "res/Back.tga"
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// MSF
-//
-
-IDR_MSF_DEFAULT_SKIN    MSF                     "res/skin.msf"
-#endif    // Russian resources
-/////////////////////////////////////////////////////////////////////////////
-
-
-/////////////////////////////////////////////////////////////////////////////
-// English (U.S.) resources
-
-#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
-#ifdef _WIN32
-LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
-#pragma code_page(1252)
-#endif //_WIN32
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// Dialog
-//
 
 IDD_DELETECONTACT DIALOGEX 0, 0, 284, 90
 STYLE DS_SETFONT | DS_MODALFRAME | DS_SETFOREGROUND | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
@@ -672,7 +488,7 @@ BEGIN
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,77,175,10
     CONTROL         "Dim idle contacts",IDC_IDLE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,89,153,10
     LTEXT           "'Hide Offline' means to hide:",IDC_STATIC,191,14,104,8
-    CONTROL         "Tree1",IDC_HIDEOFFLINEOPTS,"SysTreeView32",TVS_DISABLEDRAGDROP | TVS_NOTOOLTIPS | WS_BORDER | WS_TABSTOP | 0x4000,191,24,105,73
+    CONTROL         "Tree1",IDC_HIDEOFFLINEOPTS,"SysTreeView32",TVS_DISABLEDRAGDROP | TVS_NOTOOLTIPS | TVS_NONEVENHEIGHT | WS_BORDER | WS_TABSTOP,191,24,105,73
     GROUPBOX        "Groups",IDC_STATIC,2,105,148,115
     CONTROL         "Draw a line alongside group names",IDC_LINEWITHGROUPS,
                     "Button",BS_AUTOCHECKBOX | BS_MULTILINE | WS_TABSTOP,11,114,131,16
@@ -695,7 +511,7 @@ BEGIN
     LTEXT           "milliseconds",IDC_STATIC12,250,129,45,8,SS_CENTERIMAGE
     CONTROL         "Hide vertical scrollbar",IDC_NOSCROLLBAR,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,165,144,130,10
     CONTROL         "Fade out entire list when:",IDC_GREYOUT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,165,156,130,10
-    CONTROL         "Tree1",IDC_GREYOUTOPTS,"SysTreeView32",TVS_DISABLEDRAGDROP | TVS_NOTOOLTIPS | WS_BORDER | WS_TABSTOP | 0x4000,165,168,130,46
+    CONTROL         "Tree1",IDC_GREYOUTOPTS,"SysTreeView32",TVS_DISABLEDRAGDROP | TVS_NOTOOLTIPS | TVS_NONEVENHEIGHT | WS_BORDER | WS_TABSTOP,165,168,130,46
 END
 
 IDD_OPT_TRAY DIALOGEX 0, 0, 296, 152
@@ -763,281 +579,6 @@ BEGIN
     CONTROL         "Show contact time as row item",IDC_SHOW,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,25,217,8
 END
 
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// DESIGNINFO
-//
-
-#ifdef APSTUDIO_INVOKED
-GUIDELINES DESIGNINFO 
-BEGIN
-    IDD_DELETECONTACT, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 277
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 85
-    END
-
-    IDD_OPT_CLIST, DIALOG
-    BEGIN
-        LEFTMARGIN, 2
-        RIGHTMARGIN, 300
-        VERTGUIDE, 10
-        VERTGUIDE, 107
-        VERTGUIDE, 136
-        VERTGUIDE, 146
-        VERTGUIDE, 171
-        VERTGUIDE, 294
-        VERTGUIDE, 300
-        TOPMARGIN, 2
-        BOTTOMMARGIN, 199
-        HORZGUIDE, 86
-        HORZGUIDE, 93
-    END
-
-    IDD_OPT_CLUI_2, DIALOG
-    BEGIN
-        LEFTMARGIN, 4
-        RIGHTMARGIN, 263
-        VERTGUIDE, 13
-        VERTGUIDE, 23
-        VERTGUIDE, 75
-        VERTGUIDE, 124
-        VERTGUIDE, 128
-        VERTGUIDE, 136
-        VERTGUIDE, 142
-        VERTGUIDE, 164
-        VERTGUIDE, 258
-        TOPMARGIN, 4
-        HORZGUIDE, 14
-        HORZGUIDE, 36
-        HORZGUIDE, 141
-        HORZGUIDE, 148
-        HORZGUIDE, 194
-    END
-
-    IDD_OPT_CLC, DIALOG
-    BEGIN
-        LEFTMARGIN, 2
-        RIGHTMARGIN, 301
-        VERTGUIDE, 11
-        VERTGUIDE, 164
-        VERTGUIDE, 186
-        VERTGUIDE, 216
-        VERTGUIDE, 295
-        VERTGUIDE, 300
-        TOPMARGIN, 2
-        BOTTOMMARGIN, 221
-        HORZGUIDE, 145
-        HORZGUIDE, 163
-    END
-
-    IDD_OPT_TRAY, DIALOG
-    BEGIN
-        LEFTMARGIN, 4
-        RIGHTMARGIN, 291
-        BOTTOMMARGIN, 149
-    END
-
-    IDD_OPT_META_CLC, DIALOG
-    BEGIN
-        LEFTMARGIN, 2
-        RIGHTMARGIN, 220
-        VERTGUIDE, 11
-        VERTGUIDE, 16
-        VERTGUIDE, 212
-        TOPMARGIN, 2
-        BOTTOMMARGIN, 168
-    END
-
-    IDD_OPT_ITEM_CONTACT_TIME, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 236
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 35
-    END
-END
-#endif    // APSTUDIO_INVOKED
-
-
-#ifdef APSTUDIO_INVOKED
-/////////////////////////////////////////////////////////////////////////////
-//
-// TEXTINCLUDE
-//
-
-1 TEXTINCLUDE 
-BEGIN
-    "resource.h \0"
-END
-
-2 TEXTINCLUDE 
-BEGIN
-    "#include ""afxres.h""\r\n"
-    "#include ""hdr/modern_statusmodes.h""\r\n"
-    "\r\n"
-    "/////////////////////////////////////////////////////////////////////////////\r\n"
-    "//\r\n"
-    "// Version\r\n"
-    "//\r\n"
-    "#ifndef APSTUDIO_INVOKED\r\n"
-    "#include ""version.h""\r\n"
-    "VS_VERSION_INFO VERSIONINFO\r\n"
-    " FILEVERSION FILE_VERSION\r\n"
-    " PRODUCTVERSION PRODUCT_VERSION\r\n"
-    " FILEFLAGSMASK 0x3fL\r\n"
-    "#ifdef _DEBUG\r\n"
-    " FILEFLAGS 0x1L\r\n"
-    "#else\r\n"
-    " FILEFLAGS 0x0L\r\n"
-    "#endif\r\n"
-    " FILEOS 0x40004L\r\n"
-    " FILETYPE 0x1L\r\n"
-    " FILESUBTYPE 0x0L\r\n"
-    "BEGIN\r\n"
-    "    BLOCK ""StringFileInfo""\r\n"
-    "    BEGIN\r\n"
-    "        BLOCK ""000004b0""\r\n"
-    "        BEGIN\r\n"
-    "            VALUE ""Comments"", ""Licensed under the terms of the GNU General Public License""\r\n"
-    "            VALUE ""CompanyName"", "" ""\r\n"
-    "            VALUE ""FileDescription"", ""Miranda IM Contact List. Display contacts, event notifications, protocol status with advantage visual modifications. Supported MW modifications, enchanced metacontact cooperation.""\r\n"
-    "            VALUE ""FileVersion"", FILE_VERSION_STR\r\n"
-    "            VALUE ""InternalName"", ""Modern Contact List""\r\n"
-    "            VALUE ""LegalCopyright"", ""Copyright © 2000-2005 Artem Shpynov, Richard Hughes, Roland Rabien, Tristan Van de Vreede, Martin Oberg, Robert Rainwater, Sam Kothari and Lyon Lim""\r\n"
-    "            VALUE ""OriginalFilename"", ""clist_modern.dll""\r\n"
-    "            VALUE ""ProductName"", ""Miranda IM Contact List. Display contacts, event notifications, protocol status with advantage visual modifications. Supported MW modifications, enchanced metacontact cooperation.""\r\n"
-    "            VALUE ""ProductVersion"", PRODUCT_VERSION_STR\r\n"
-    "        END\r\n"
-    "    END\r\n"
-    "    BLOCK ""VarFileInfo""\r\n"
-    "    BEGIN\r\n"
-    "        VALUE ""Translation"", 0x0, 1200\r\n"
-    "    END\r\n"
-    "END\r\n"
-    "#endif\r\n"
-    "\0"
-END
-
-3 TEXTINCLUDE 
-BEGIN
-    "\0"
-END
-
-1 TEXTINCLUDE 
-BEGIN
-    "resource.h\0"
-END
-
-2 TEXTINCLUDE 
-BEGIN
-    "#include <windows.h>\r\n"
-    "#include <winres.h>\r\n"
-    "#include ""hdr/modern_statusmodes.h""\r\n"
-    "#include ""version.h""\r\n"
-    "\r\n"
-    "#include ""resource2.rc""\0"
-END
-
-3 TEXTINCLUDE 
-BEGIN
-    "\0"
-END
-
-#endif    // APSTUDIO_INVOKED
-
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// Menu
-//
-
-IDR_CLISTMENU MENU 
-BEGIN
-    POPUP "&¤"
-    BEGIN
-        MENUITEM SEPARATOR
-        MENUITEM "E&xit",                       ID_ICQ_EXIT
-    END
-    POPUP "&Status"
-    BEGIN
-        MENUITEM "&Offline\tCtrl+0",            ID_STATUS_OFFLINE, CHECKED
-        MENUITEM "On&line\tCtrl+1",             ID_STATUS_ONLINE
-        MENUITEM "&Away\tCtrl+2",               ID_STATUS_AWAY
-        MENUITEM "&NA\tCtrl+3",                 ID_STATUS_NA
-        MENUITEM "Occ&upied\tCtrl+4",           ID_STATUS_OCCUPIED
-        MENUITEM "&DND\tCtrl+5",                ID_STATUS_DND
-        MENUITEM "&Free for chat\tCtrl+6",      ID_STATUS_FREECHAT
-        MENUITEM "&Invisible\tCtrl+7",          ID_STATUS_INVISIBLE
-        MENUITEM "On the &Phone\tCtrl+8",       ID_STATUS_ONTHEPHONE
-        MENUITEM "Out to &Lunch\tCtrl+9",       ID_STATUS_OUTTOLUNCH
-    END
-END
-
-IDR_CONTEXT MENU 
-BEGIN
-    POPUP "Tray"
-    BEGIN
-        MENUITEM "&Hide/Show",                  ID_TRAY_HIDE
-        MENUITEM SEPARATOR
-        MENUITEM "E&xit",                       ID_TRAY_EXIT
-    END
-    POPUP "Nowhere"
-    BEGIN
-        MENUITEM "&New Group",                  POPUP_NEWGROUP
-        MENUITEM SEPARATOR
-        MENUITEM "&Hide Offline Users",         POPUP_HIDEOFFLINE
-        MENUITEM "Hide &Offline Users out here", POPUP_HIDEOFFLINEROOT
-        MENUITEM "Hide &Empty Groups",          POPUP_HIDEEMPTYGROUPS
-        MENUITEM "Disable &Groups",             POPUP_DISABLEGROUPS
-        MENUITEM SEPARATOR
-        MENUITEM "Hide Miranda",                POPUP_HIDEMIRANDA
-    END
-    POPUP "Group"
-    BEGIN
-        MENUITEM "&New Subgroup",               POPUP_NEWSUBGROUP
-        MENUITEM "&Hide Offline Users in here", POPUP_GROUPHIDEOFFLINE
-        MENUITEM "&Show Offline Users in here", POPUP_GROUPSHOWOFFLINE
-        MENUITEM SEPARATOR
-        MENUITEM "&Rename Group",               POPUP_RENAMEGROUP
-        MENUITEM "&Delete Group",               POPUP_DELETEGROUP
-    END
-END
-
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// Dialog Info
-//
-
-IDD_OPT_CLUI_2 DLGINIT
-BEGIN
-    IDC_HIDEMETHOD, 0x403, 9, 0
-0x6f63, 0x706d, 0x656c, 0x6574, "\000" 
-    0
-END
-
-#endif    // English (U.S.) resources
-/////////////////////////////////////////////////////////////////////////////
-
-
-/////////////////////////////////////////////////////////////////////////////
-// English (U.K.) resources
-
-#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENG)
-#ifdef _WIN32
-LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_UK
-#pragma code_page(1252)
-#endif //_WIN32
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// Dialog
-//
-
 IDD_OPT_CLUI DIALOGEX 0, 0, 307, 214
 STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | DS_CENTER | WS_CHILD
 EXSTYLE WS_EX_CONTROLPARENT
@@ -1090,56 +631,6 @@ BEGIN
     CONTROL         "Disable Skin Engine",IDC_DISABLEENGINE,"Button",BS_AUTOCHECKBOX | BS_MULTILINE | WS_TABSTOP,13,60,102,11
     CONTROL         "Enable Aero Glass (Vista)",IDC_AEROGLASS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,130,197,166,10
 END
-
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// DESIGNINFO
-//
-
-#ifdef APSTUDIO_INVOKED
-GUIDELINES DESIGNINFO 
-BEGIN
-    IDD_OPT_CLUI, DIALOG
-    BEGIN
-        LEFTMARGIN, 4
-        RIGHTMARGIN, 304
-        VERTGUIDE, 13
-        VERTGUIDE, 23
-        VERTGUIDE, 75
-        VERTGUIDE, 115
-        VERTGUIDE, 119
-        VERTGUIDE, 136
-        VERTGUIDE, 142
-        VERTGUIDE, 164
-        VERTGUIDE, 230
-        VERTGUIDE, 234
-        VERTGUIDE, 303
-        TOPMARGIN, 4
-        BOTTOMMARGIN, 210
-        HORZGUIDE, 14
-        HORZGUIDE, 36
-    END
-END
-#endif    // APSTUDIO_INVOKED
-
-#endif    // English (U.K.) resources
-/////////////////////////////////////////////////////////////////////////////
-
-
-/////////////////////////////////////////////////////////////////////////////
-// English (Canada) resources
-
-#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENC)
-#ifdef _WIN32
-LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_CAN
-#pragma code_page(1252)
-#endif //_WIN32
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// Dialog
-//
 
 IDD_OPT_ITEM_ROW DIALOGEX 0, 0, 178, 222
 STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | DS_CENTER | WS_CHILD
@@ -1379,6 +870,174 @@ END
 #ifdef APSTUDIO_INVOKED
 GUIDELINES DESIGNINFO 
 BEGIN
+    IDD_OPT_SKINEDITOR, DIALOG
+    BEGIN
+        TOPMARGIN, 1
+        BOTTOMMARGIN, 219
+        HORZGUIDE, 22
+        HORZGUIDE, 35
+        HORZGUIDE, 55
+        HORZGUIDE, 76
+        HORZGUIDE, 172
+        HORZGUIDE, 201
+        HORZGUIDE, 207
+    END
+
+    IDD_SKIN_TAB, DIALOG
+    BEGIN
+        RIGHTMARGIN, 298
+    END
+
+    IDD_TAB, DIALOG
+    BEGIN
+        RIGHTMARGIN, 298
+    END
+
+    IDD_OPT_SBAR, DIALOG
+    BEGIN
+        RIGHTMARGIN, 297
+        VERTGUIDE, 17
+        VERTGUIDE, 27
+        VERTGUIDE, 88
+        VERTGUIDE, 93
+        VERTGUIDE, 150
+        VERTGUIDE, 160
+        VERTGUIDE, 170
+        VERTGUIDE, 178
+        VERTGUIDE, 294
+        BOTTOMMARGIN, 228
+        HORZGUIDE, 19
+    END
+
+    IDD_OPT_ITEM_EXTRAICONS, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 212
+        VERTGUIDE, 18
+        VERTGUIDE, 200
+        TOPMARGIN, 5
+        BOTTOMMARGIN, 155
+    END
+
+    IDD_OPT_TOOLBAR, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 297
+        VERTGUIDE, 18
+        VERTGUIDE, 296
+        TOPMARGIN, 5
+        BOTTOMMARGIN, 209
+    END
+
+    IDD_DELETECONTACT, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 277
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 85
+    END
+
+    IDD_OPT_CLIST, DIALOG
+    BEGIN
+        LEFTMARGIN, 2
+        RIGHTMARGIN, 300
+        VERTGUIDE, 10
+        VERTGUIDE, 107
+        VERTGUIDE, 136
+        VERTGUIDE, 146
+        VERTGUIDE, 171
+        VERTGUIDE, 294
+        VERTGUIDE, 300
+        TOPMARGIN, 2
+        BOTTOMMARGIN, 199
+        HORZGUIDE, 86
+        HORZGUIDE, 93
+    END
+
+    IDD_OPT_CLUI_2, DIALOG
+    BEGIN
+        LEFTMARGIN, 4
+        RIGHTMARGIN, 263
+        VERTGUIDE, 13
+        VERTGUIDE, 23
+        VERTGUIDE, 75
+        VERTGUIDE, 124
+        VERTGUIDE, 128
+        VERTGUIDE, 136
+        VERTGUIDE, 142
+        VERTGUIDE, 164
+        VERTGUIDE, 258
+        TOPMARGIN, 4
+        HORZGUIDE, 14
+        HORZGUIDE, 36
+        HORZGUIDE, 141
+        HORZGUIDE, 148
+        HORZGUIDE, 194
+    END
+
+    IDD_OPT_CLC, DIALOG
+    BEGIN
+        LEFTMARGIN, 2
+        RIGHTMARGIN, 301
+        VERTGUIDE, 11
+        VERTGUIDE, 164
+        VERTGUIDE, 186
+        VERTGUIDE, 216
+        VERTGUIDE, 295
+        VERTGUIDE, 300
+        TOPMARGIN, 2
+        BOTTOMMARGIN, 221
+        HORZGUIDE, 145
+        HORZGUIDE, 163
+    END
+
+    IDD_OPT_TRAY, DIALOG
+    BEGIN
+        LEFTMARGIN, 4
+        RIGHTMARGIN, 291
+        BOTTOMMARGIN, 149
+    END
+
+    IDD_OPT_META_CLC, DIALOG
+    BEGIN
+        LEFTMARGIN, 2
+        RIGHTMARGIN, 220
+        VERTGUIDE, 11
+        VERTGUIDE, 16
+        VERTGUIDE, 212
+        TOPMARGIN, 2
+        BOTTOMMARGIN, 168
+    END
+
+    IDD_OPT_ITEM_CONTACT_TIME, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 236
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 35
+    END
+
+    IDD_OPT_CLUI, DIALOG
+    BEGIN
+        LEFTMARGIN, 4
+        RIGHTMARGIN, 304
+        VERTGUIDE, 13
+        VERTGUIDE, 23
+        VERTGUIDE, 75
+        VERTGUIDE, 115
+        VERTGUIDE, 119
+        VERTGUIDE, 136
+        VERTGUIDE, 142
+        VERTGUIDE, 164
+        VERTGUIDE, 230
+        VERTGUIDE, 234
+        VERTGUIDE, 303
+        TOPMARGIN, 4
+        BOTTOMMARGIN, 210
+        HORZGUIDE, 14
+        HORZGUIDE, 36
+    END
+
     IDD_OPT_ITEM_ROW, DIALOG
     BEGIN
         LEFTMARGIN, 7
@@ -1460,7 +1119,119 @@ BEGIN
 END
 #endif    // APSTUDIO_INVOKED
 
-#endif    // English (Canada) resources
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// TGA
+//
+
+IDR_TGA_DEFAULT_SKIN    TGA                     "res/Back.tga"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// MSF
+//
+
+IDR_MSF_DEFAULT_SKIN    MSF                     "res/skin.msf"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Menu
+//
+
+IDR_CLISTMENU MENU 
+BEGIN
+    POPUP "&¤"
+    BEGIN
+        MENUITEM SEPARATOR
+        MENUITEM "E&xit",                       ID_ICQ_EXIT
+    END
+    POPUP "&Status"
+    BEGIN
+        MENUITEM "&Offline\tCtrl+0",            ID_STATUS_OFFLINE, CHECKED
+        MENUITEM "On&line\tCtrl+1",             ID_STATUS_ONLINE
+        MENUITEM "&Away\tCtrl+2",               ID_STATUS_AWAY
+        MENUITEM "&NA\tCtrl+3",                 ID_STATUS_NA
+        MENUITEM "Occ&upied\tCtrl+4",           ID_STATUS_OCCUPIED
+        MENUITEM "&DND\tCtrl+5",                ID_STATUS_DND
+        MENUITEM "&Free for chat\tCtrl+6",      ID_STATUS_FREECHAT
+        MENUITEM "&Invisible\tCtrl+7",          ID_STATUS_INVISIBLE
+        MENUITEM "On the &Phone\tCtrl+8",       ID_STATUS_ONTHEPHONE
+        MENUITEM "Out to &Lunch\tCtrl+9",       ID_STATUS_OUTTOLUNCH
+    END
+END
+
+IDR_CONTEXT MENU 
+BEGIN
+    POPUP "Tray"
+    BEGIN
+        MENUITEM "&Hide/Show",                  ID_TRAY_HIDE
+        MENUITEM SEPARATOR
+        MENUITEM "E&xit",                       ID_TRAY_EXIT
+    END
+    POPUP "Nowhere"
+    BEGIN
+        MENUITEM "&New Group",                  POPUP_NEWGROUP
+        MENUITEM SEPARATOR
+        MENUITEM "&Hide Offline Users",         POPUP_HIDEOFFLINE
+        MENUITEM "Hide &Offline Users out here", POPUP_HIDEOFFLINEROOT
+        MENUITEM "Hide &Empty Groups",          POPUP_HIDEEMPTYGROUPS
+        MENUITEM "Disable &Groups",             POPUP_DISABLEGROUPS
+        MENUITEM SEPARATOR
+        MENUITEM "Hide Miranda",                POPUP_HIDEMIRANDA
+    END
+    POPUP "Group"
+    BEGIN
+        MENUITEM "&New Subgroup",               POPUP_NEWSUBGROUP
+        MENUITEM "&Hide Offline Users in here", POPUP_GROUPHIDEOFFLINE
+        MENUITEM "&Show Offline Users in here", POPUP_GROUPSHOWOFFLINE
+        MENUITEM SEPARATOR
+        MENUITEM "&Rename Group",               POPUP_RENAMEGROUP
+        MENUITEM "&Delete Group",               POPUP_DELETEGROUP
+    END
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog Info
+//
+
+IDD_OPT_CLUI_2 DLGINIT
+BEGIN
+    IDC_HIDEMETHOD, 0x403, 9, 0
+0x6f63, 0x706d, 0x656c, 0x6574, "\000" 
+    0
+END
+
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE 
+BEGIN
+    "#include <winresrc.h>\r\n"
+    "#include ""hdr/modern_statusmodes.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE 
+BEGIN
+    "\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+#endif    // Neutral resources
 /////////////////////////////////////////////////////////////////////////////
 
 
@@ -1470,6 +1241,7 @@ END
 //
 // Generated from the TEXTINCLUDE 3 resource.
 //
+
 
 /////////////////////////////////////////////////////////////////////////////
 #endif    // not APSTUDIO_INVOKED

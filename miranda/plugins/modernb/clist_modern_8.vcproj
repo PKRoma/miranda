@@ -968,6 +968,10 @@
 				RelativePath=".\resource.rc"
 				>
 			</File>
+			<File
+				RelativePath=".\version.rc"
+				>
+			</File>
 			<Filter
 				Name="res"
 				>
