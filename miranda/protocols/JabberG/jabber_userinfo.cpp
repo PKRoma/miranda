@@ -230,10 +230,13 @@ static void sttFillResourceInfo( CJabberProto* ppro, HWND hwndTree, HTREEITEM ht
 	// Software
 	HICON hIcon = NULL;
 	if (ServiceExists( "Fingerprint/GetClientIcon" )) {
-		char *szMirver = mir_t2a(res->software);
-		hIcon = (HICON)CallService( "Fingerprint/GetClientIcon", (WPARAM)szMirver, 0 );
-		mir_free( szMirver );
-	}
+		char *szMirver = NULL;
+		if (res->software != NULL) {
+			mir_sntprintf(buf, SIZEOF(buf), _T("%s %s"), res->software, res->version);
+			szMirver = mir_t2a(buf);
+			hIcon = (HICON)CallService( "Fingerprint/GetClientIcon", (WPARAM)szMirver, 0 );
+			mir_free( szMirver );
+	}	}
 
 	sttFillInfoLine( hwndTree, htiResource, hIcon, TranslateT( "Software" ),
 		res->software ? res->software : TranslateT( "<not specified>" ),
