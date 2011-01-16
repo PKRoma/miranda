@@ -869,6 +869,14 @@ void CJabberProto::OnIqResultGetVcard( HXML iqNode )
 								JSetWord( hContact, "BirthYear", ( WORD )nYear );
 								JSetByte( hContact, "BirthMonth", ( BYTE ) nMonth );
 								JSetByte( hContact, "BirthDay", ( BYTE ) nDay );
+
+								SYSTEMTIME sToday = {0};
+								GetLocalTime(&sToday);
+								int nAge = sToday.wYear - nYear;
+								if (sToday.wMonth < nMonth || (sToday.wMonth == nMonth && sToday.wDay < nDay))
+									nAge--;
+								if (nAge)
+									JSetWord( hContact, "Age", ( WORD )nAge );
 							}
 						}
 						else {
@@ -1113,6 +1121,7 @@ void CJabberProto::OnIqResultGetVcard( HXML iqNode )
 			JDeleteSetting( hContact, "BirthMonth" );
 			JDeleteSetting( hContact, "BirthDay" );
 			JDeleteSetting( hContact, "BirthDate" );
+			JDeleteSetting( hContact, "Age" );
 		}
 		if ( !hasGender ) {
 			if ( hContact != NULL )
