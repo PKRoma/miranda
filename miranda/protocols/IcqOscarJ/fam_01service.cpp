@@ -749,15 +749,10 @@ void CIcqProto::setUserInfo()
 		packBuffer(&packet, capXStatus[bXStatus-1], BINARY_CAP_SIZE);
 	}
 
-	packShortCapability(&packet, 0x1344);    // CAP_ICQDIRECT
+	packShortCapability(&packet, 0x1344);      // CAP_ICQDIRECT
 
 #ifdef DBG_CAPHTML
-	{
-		packDWord(&packet, 0x0138ca7b); // CAP_HTMLMSGS
-		packDWord(&packet, 0x769a4915); // Broadcasts the capability to receive
-		packDWord(&packet, 0x88f213fc); // HTML messages
-		packDWord(&packet, 0x00979ea8);
-	}
+	packShortCapability(&packet, 0x0002);      // CAP_HTMLMSGS
 #endif
 
 	packDWord(&packet, 0x4D697261);   // Miranda Signature

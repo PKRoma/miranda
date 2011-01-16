@@ -1246,7 +1246,7 @@ DWORD CIcqProto::icq_sendServerContact(HANDLE hContact, DWORD dwCookie, WORD wAc
 	}
 
 	// Build the packet
-  wTLVlen = (nNickLen?4+nNickLen:0) + (nNoteLen?4+nNoteLen:0) + (bAuth?4:0) + nDataLen + (nMetaTokenLen?4+nMetaTokenLen:0) + (nMetaTimeLen?4+nMetaTimeLen:0);
+	wTLVlen = (nNickLen?4+nNickLen:0) + (nNoteLen?4+nNoteLen:0) + (bAuth?4:0) + nDataLen + (nMetaTokenLen?4+nMetaTokenLen:0) + (nMetaTimeLen?4+nMetaTimeLen:0);
 
 	// Initialize our handy data buffer
 	pBuffer.wPlace = 0;

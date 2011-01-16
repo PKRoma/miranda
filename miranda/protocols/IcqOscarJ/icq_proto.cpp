@@ -1656,8 +1656,7 @@ int __cdecl CIcqProto::SendMsg( HANDLE hContact, int flags, const char* pszSrc )
 				bNeedFreeU = 1;
 			}
 
-//			if (!dwUin)
-			{ // prepare AIM Html message
+			{
 				char *src, *mng;
 
 				if (puszText)
