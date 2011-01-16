@@ -358,8 +358,8 @@ void CIcqProto::handleRecvServMsgType1(BYTE *buf, WORD wLen, DWORD dwUin, char *
 					wMsgPart++;
 				}
 				if (strlennull(szMsg))
-				{ /// TODO: Add inteligent HTML detection & stripping - support for CAPF_HTML
-					if (!dwUin)
+				{
+					if (!dwUin || CheckContactCapabilities(hContact, CAPF_HTML))
 					{ // strip HTML formating from AIM message
 						szMsg = EliminateHtml(szMsg, strlennull(szMsg));
 					}

@@ -35,7 +35,7 @@
 // -----------------------------------------------------------------------------
 
 // Debug defines
-#undef DBG_CAPHTML
+#define DBG_CAPHTML
 #define DBG_CAPMTN
 #define DBG_CAPXTRAZ
 #undef DBG_CAPXTRAZ_MUC

@@ -185,7 +185,7 @@ void CIcqProto::handleLocationUserInfoReply(BYTE* buf, WORD wLen, DWORD dwCookie
 				// Get extra chain
 				if (pChain = readIntoTLVChain(&buf, wLen, 2))
 				{
-          oscar_tlv *pTLV;
+					oscar_tlv *pTLV;
 					char *szEncoding = NULL;
 
 					// Get Profile encoding TLV
