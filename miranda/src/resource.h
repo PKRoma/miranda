@@ -184,6 +184,7 @@
 #define IDC_EFFECT_STATIC               1059
 #define IDC_GENDER                      1060
 #define IDC_CITY                        1061
+#define IDC_MARITAL                     1061
 #define IDC_STATE                       1062
 #define IDC_COUNTRY                     1063
 #define IDC_AGE                         1064
