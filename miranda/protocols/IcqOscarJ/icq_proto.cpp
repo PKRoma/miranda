@@ -1656,32 +1656,6 @@ int __cdecl CIcqProto::SendMsg( HANDLE hContact, int flags, const char* pszSrc )
 				bNeedFreeU = 1;
 			}
 
-			{
-				char *src, *mng;
-
-				if (puszText)
-					src = puszText;
-				else
-					src = pszText;
-				mng = MangleXml(src, strlennull(src));
-				src = (char*)SAFE_MALLOC(strlennull(mng) + 28);
-				strcpy(src, "<HTML><BODY>"); /// TODO: add support for RTL & user customizable font
-				strcat(src, mng);
-				SAFE_FREE(&mng);
-				strcat(src, "</BODY></HTML>");
-				if (puszText)
-				{ // convert to UCS-2
-					if (bNeedFreeU) SAFE_FREE(&puszText);
-					puszText = src;
-					bNeedFreeU = 1;
-				}
-				else
-				{
-					if (bNeedFreeA) SAFE_FREE(&pszText);
-					pszText = src;
-					bNeedFreeA = 1;
-				}
-			}
 			// Set up the ack type
 			cookie_message_data *pCookieData = CreateMessageCookieData(MTYPE_PLAIN, hContact, dwUin, TRUE);
 
@@ -1712,8 +1686,34 @@ int __cdecl CIcqProto::SendMsg( HANDLE hContact, int flags, const char* pszSrc )
 			}
 			if (!dwUin || !CheckContactCapabilities(hContact, CAPF_SRV_RELAY) || wRecipientStatus == ID_STATUS_OFFLINE)
 			{
-				WCHAR *pwszText = NULL;
+				{
+					char *src, *mng;
 
+					if (puszText)
+						src = puszText;
+					else
+						src = pszText;
+					mng = MangleXml(src, strlennull(src));
+					src = (char*)SAFE_MALLOC(strlennull(mng) + 28);
+					strcpy(src, "<HTML><BODY>"); /// TODO: add support for RTL & user customizable font
+					strcat(src, mng);
+					SAFE_FREE(&mng);
+					strcat(src, "</BODY></HTML>");
+					if (puszText)
+					{ // convert to UCS-2
+						if (bNeedFreeU) SAFE_FREE(&puszText);
+						puszText = src;
+						bNeedFreeU = 1;
+					}
+					else
+					{
+						if (bNeedFreeA) SAFE_FREE(&pszText);
+						pszText = src;
+						bNeedFreeA = 1;
+					}
+				}
+
+				WCHAR *pwszText = NULL;
 				if (puszText) pwszText = make_unicode_string(puszText);
 				if ((pwszText ? strlennull(pwszText) * sizeof(WCHAR) : strlennull(pszText)) > MAX_MESSAGESNACSIZE)
 				{ // max length check // TLV(2) is currently limited to 0xA00 bytes in online mode
