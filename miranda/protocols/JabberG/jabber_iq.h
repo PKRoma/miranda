@@ -85,7 +85,7 @@ protected:
 	friend class CJabberIqManager;
 	JABBER_IQ_HANDLER m_pHandler;
 	CJabberIqInfo* m_pNext;
-	
+
 	int m_nIqId;
 	DWORD m_dwParamsToParse;
 	DWORD m_dwRequestTime;
@@ -101,7 +101,7 @@ public:// parsed data
 	TCHAR *m_szChildTagXmlns;
 	TCHAR *m_szChildTagName;
 	HXML   m_pChildNode;
-	HANDLE m_hContact; 
+	HANDLE m_hContact;
 	TCHAR *m_szTo;
 	TCHAR *m_szId;
 public:
@@ -284,7 +284,7 @@ protected:
 		DWORD dwCurrentTime = GetTickCount();
 
 		CJabberIqInfo* pInfo = m_pIqs;
-		if (pInfo->m_dwRequestTime + pInfo->m_dwTimeout < dwCurrentTime)
+		if (dwCurrentTime - pInfo->m_dwRequestTime > pInfo->m_dwTimeout )
 		{
 			m_pIqs = pInfo->m_pNext;
 			pInfo->m_pNext = NULL;
@@ -293,7 +293,7 @@ protected:
 
 		while (pInfo->m_pNext)
 		{
-			if (pInfo->m_pNext->m_dwRequestTime + pInfo->m_pNext->m_dwTimeout < dwCurrentTime)
+			if (dwCurrentTime - pInfo->m_pNext->m_dwRequestTime > pInfo->m_pNext->m_dwTimeout )
 			{
 				CJabberIqInfo* pRetVal = pInfo->m_pNext;
 				pInfo->m_pNext = pInfo->m_pNext->m_pNext;
