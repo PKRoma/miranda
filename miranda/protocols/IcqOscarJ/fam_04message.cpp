@@ -1742,7 +1742,7 @@ void CIcqProto::sendMessageTypesAck(HANDLE hContact, int bUnicode, message_ack_p
 void CIcqProto::handleMessageTypes(DWORD dwUin, char *szUID, DWORD dwTimestamp, DWORD dwMsgID, DWORD dwMsgID2, WORD wCookie, WORD wVersion, int type, int flags, WORD wAckType, DWORD dwDataLen, WORD wMsgLen, char *pMsg, int nMsgFlags, message_ack_params *pAckParams)
 {
 	HANDLE hContact = INVALID_HANDLE_VALUE;
-  BOOL bThruDC = (nMsgFlags & MTF_DIRECT) == MTF_DIRECT;
+	BOOL bThruDC = (nMsgFlags & MTF_DIRECT) == MTF_DIRECT;
 	int bAdded;
 
 
