@@ -978,6 +978,11 @@ const char* CIcqProto::detectUserClient(HANDLE hContact, int nIsICQ, WORD wUserC
 							szClient = "Digsby"; // http://www.digsby.com
 						else if (CheckContactCapabilities(hContact, CAPF_UTF | CAPF_SRV_RELAY | CAPF_CONTACTS | CAPF_HTML) && MatchShortCapability(caps, wLen, &capAimIcon))
 							szClient = "mundu IM"; // http://messenger.mundu.com
+						else if (CheckContactCapabilities(hContact, CAPF_UTF | CAPF_OSCAR_FILE) && MatchCapability(caps, wLen, &capOscarChat))
+							szClient = "eBuddy"; //http://www.ebuddy.com
+						else if (CheckContactCapabilities(hContact, CAPF_CONTACTS | CAPF_OSCAR_FILE) && MatchShortCapability(caps, wLen, &capAimIcon) && MatchShortCapability(caps, wLen, &capAimDirect) && MatchCapability(caps, wLen, &capOscarChat))
+							szClient = "IloveIM"; //http://www.iloveim.com/
+
 					}
 				}
 			}
