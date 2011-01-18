@@ -38,7 +38,7 @@ PLUGININFOEX pluginInfo = {
 	"Send and receive instant messages",
 	"Miranda IM Development Team",
 	"rainwater@miranda-im.org",
-	"Copyright 2000-2010 Miranda IM project",
+	"Copyright 2000-2011 Miranda IM project",
 	"http://www.miranda-im.org",
 	UNICODE_AWARE,
 	DEFMOD_SRMESSAGE,            // replace internal version (if any)

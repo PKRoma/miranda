@@ -3,6 +3,27 @@
                            www.miranda-im.org
 
 
+* New in 0.9.14
+Enhancements:
+ - Configurable timeout for http requests
+ - ICQ: Improved client detection
+ - IRC: Added support for extra variables
+ - Jabber: Added option to disable version
+
+Bugfixes:
+ - AIM: Disabled SSL for mail connection
+ - ICQ: Fixed password limitation issues
+ - ICQ: Fixed message timeouts
+ - IRC: Fixed memory leak
+ - Jabber: Fixed Jabber GSSAPI authentication 
+ - Jabber: Fixed transport not supporting Skype transport with icons
+ - Jabber: Fixed when contact added on the root level nick is lost 
+ - Jabber: Fixed the client's icon in Jabber user info
+ - Jabber: Fixed age calculation in Jabber user info
+ - MSN: Fixed invisibility issues
+ - MSN: Fixed double status change
+
+
 * New in 0.9.13
 Bugfixes:
  - Closing Find/Add Contacts caused crash

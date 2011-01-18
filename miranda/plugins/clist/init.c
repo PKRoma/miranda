@@ -66,7 +66,7 @@ PLUGININFOEX pluginInfo = {
 	"Display contacts, event notifications, protocol status",
 	"Miranda IM project",
 	"ghazan@miranda-im.org",
-	"Copyright 2000-2008 Miranda IM project",
+	"Copyright 2000-2011 Miranda IM project",
 	"http://www.miranda-im.org",
 	UNICODE_AWARE,
 	DEFMOD_CLISTALL,
