@@ -210,6 +210,7 @@ static INT_PTR CALLBACK SetAwayMsgDlgProc(HWND hwndDlg, UINT message, WPARAM wPa
 	case WM_INITDIALOG:
 		{
 			SetAwasMsgNewData *newdat = (SetAwasMsgNewData*)lParam;
+			Utils_RestoreWindowPosition(hwndDlg,NULL,"SRAway","AwayMsgDlg");
 			TranslateDialogDefault(hwndDlg);
 			dat = (SetAwayMsgData*)mir_alloc(sizeof(SetAwayMsgData));
 			SetWindowLongPtr(hwndDlg, GWLP_USERDATA, (LONG_PTR)dat);
@@ -293,6 +294,7 @@ static INT_PTR CALLBACK SetAwayMsgDlgProc(HWND hwndDlg, UINT message, WPARAM wPa
 		break;
 
 	case WM_DESTROY:
+		Utils_SaveWindowPosition(hwndDlg,NULL,"SRAway","AwayMsgDlg");
 		KillTimer(hwndDlg, 1);
 		UnhookEvent(dat->hPreshutdown); 
 		Window_FreeIcon_IcoLib(hwndDlg);
