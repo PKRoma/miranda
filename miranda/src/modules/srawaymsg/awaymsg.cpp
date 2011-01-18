@@ -42,6 +42,7 @@ static INT_PTR CALLBACK ReadAwayMsgDlgProc(HWND hwndDlg, UINT message, WPARAM wP
 		case WM_INITDIALOG:
 			TranslateDialogDefault(hwndDlg);
 			dat = (AwayMsgDlgData*)mir_alloc(sizeof(AwayMsgDlgData));
+			Utils_RestoreWindowPosition(hwndDlg,(HANDLE)lParam,"SRAway","AwayMsgDlg");
 			SetWindowLongPtr(hwndDlg, GWLP_USERDATA, (LONG_PTR)dat);
 
 			dat->hContact = (HANDLE)lParam;
@@ -120,6 +121,7 @@ static INT_PTR CALLBACK ReadAwayMsgDlgProc(HWND hwndDlg, UINT message, WPARAM wP
 
 		case WM_DESTROY:
 			if (dat->hAwayMsgEvent) UnhookEvent(dat->hAwayMsgEvent);
+			Utils_SaveWindowPosition(hwndDlg,dat->hContact,"SRAway","AwayMsgDlg");
 			WindowList_Remove(hWindowList,hwndDlg);
 			Window_FreeIcon_IcoLib(hwndDlg);
 			mir_free(dat);
