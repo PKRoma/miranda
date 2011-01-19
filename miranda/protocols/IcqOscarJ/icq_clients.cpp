@@ -184,7 +184,7 @@ const capstr capSimpPro   = {0x53, 0x49, 0x4D, 0x50, 0x5F, 0x50, 0x52, 0x4F, 0x5
 const capstr capIMsecure  = {'I', 'M', 's', 'e', 'c', 'u', 'r', 'e', 'C', 'p', 'h', 'r', 0x00, 0x00, 0x06, 0x01}; // ZoneLabs
 const capstr capIMSecKey1 = {1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}; // ZoneLabs
 const capstr capIMSecKey2 = {2, 2, 2, 2, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}; // ZoneLabs
-
+const capstr capFakeHtml  = {0x01, 0x38, 0xca, 0x7b, 0x76, 0x9a, 0x49, 0x15, 0x88, 0xf2, 0x13, 0xfc, 0x00, 0x97, 0x9e, 0xa8};
 
 const char* cliLibicq2k  = "libicq2000";
 const char* cliLicqVer   = "Licq ";
@@ -410,7 +410,7 @@ const char* CIcqProto::detectUserClient(HANDLE hContact, int nIsICQ, WORD wUserC
 						szClient = "Trillian v3";
 					}
 				}
-				else if (CheckContactCapabilities(hContact, CAPF_HTML) || CheckContactCapabilities(hContact, CAPF_OSCAR_FILE))
+				else if (MatchCapability(caps, wLen, &capFakeHtml) || CheckContactCapabilities(hContact, CAPF_OSCAR_FILE))
 					szClient = cliTrillian4;
 				else
 					szClient = cliTrillian;
@@ -794,7 +794,9 @@ const char* CIcqProto::detectUserClient(HANDLE hContact, int nIsICQ, WORD wUserC
 							szClient = "ICQ 2002/2003a";
 						}
 					}
-					else if (CheckContactCapabilities(hContact, CAPF_SRV_RELAY | CAPF_UTF | CAPF_TYPING | CAPF_HTML | CAPF_XTRAZ) && MatchCapability(caps, wLen, &capOscarChat) && MatchShortCapability(caps, wLen, &capAimIcon))
+					else if (CheckContactCapabilities(hContact, CAPF_SRV_RELAY | CAPF_UTF | CAPF_TYPING | CAPF_XTRAZ) && 
+						MatchCapability(caps, wLen, &capOscarChat) && MatchShortCapability(caps, wLen, &capAimIcon) &&
+						MatchCapability(caps, wLen, &capFakeHtml))
 					{	// libpurple (e.g. Pidgin 2.7.x)
 						if (MatchShortCapability(caps, wLen, &capAimDirect))
 							szClient = "libpurple";
@@ -828,7 +830,7 @@ const char* CIcqProto::detectUserClient(HANDLE hContact, int nIsICQ, WORD wUserC
 								{
 									strcpy(szClientBuf, "ICQ 7");
 								}
-								else if (CheckContactCapabilities(hContact, CAPF_HTML))
+								else if (MatchCapability(caps, wLen, &capFakeHtml))
 								{
 									if (MatchShortCapability(caps, wLen, &capAimLiveVideo) && MatchShortCapability(caps, wLen, &capAimLiveAudio))
 									{
@@ -875,7 +877,7 @@ const char* CIcqProto::detectUserClient(HANDLE hContact, int nIsICQ, WORD wUserC
 								NetLog_Server("Forcing simple messages (QNext client).");
 								szClient = "Qnext";
 							}
-							else if (CheckContactCapabilities(hContact, CAPF_HTML | CAPF_TYPING) && MatchCapability(caps, wLen, &captZers))
+							else if (CheckContactCapabilities(hContact, CAPF_TYPING) && MatchCapability(caps, wLen, &captZers) && MatchCapability(caps, wLen, &capFakeHtml))
 							{
 								if (CheckContactCapabilities(hContact, CAPF_SRV_RELAY | CAPF_UTF) && MatchShortCapability(caps, wLen, &capAimLiveAudio))
 									szClient = "Mail.ru Agent (PC)";
@@ -892,7 +894,7 @@ const char* CIcqProto::detectUserClient(HANDLE hContact, int nIsICQ, WORD wUserC
 						szClient = "ICQ Lite"; // the new ICQ Lite based on ICQ6
 					else if (!CheckContactCapabilities(hContact, CAPF_ICQDIRECT))
 					{
-						if (CheckContactCapabilities(hContact, CAPF_HTML) && MatchCapability(caps, wLen, &capOscarChat) && MatchShortCapability(caps, wLen, &capAimSmartCaps))
+						if (MatchCapability(caps, wLen, &capFakeHtml) && MatchCapability(caps, wLen, &capOscarChat) && MatchShortCapability(caps, wLen, &capAimSmartCaps))
 							szClient = cliTrillian4;
 						else if (CheckContactCapabilities(hContact, CAPF_UTF) && !CheckContactCapabilities(hContact, CAPF_RTF))
 							szClient = "pyICQ";
@@ -976,7 +978,7 @@ const char* CIcqProto::detectUserClient(HANDLE hContact, int nIsICQ, WORD wUserC
 							szClient = "Slick"; // http://lonelycatgames.com/?app=slick
 						else if (CheckContactCapabilities(hContact, CAPF_UTF | CAPF_SRV_RELAY | CAPF_OSCAR_FILE | CAPF_CONTACTS) && MatchShortCapability(caps, wLen, &capAimFileShare) && MatchShortCapability(caps, wLen, &capAimIcon))
 							szClient = "Digsby"; // http://www.digsby.com
-						else if (CheckContactCapabilities(hContact, CAPF_UTF | CAPF_SRV_RELAY | CAPF_CONTACTS | CAPF_HTML) && MatchShortCapability(caps, wLen, &capAimIcon))
+						else if (CheckContactCapabilities(hContact, CAPF_UTF | CAPF_SRV_RELAY | CAPF_CONTACTS) && MatchShortCapability(caps, wLen, &capAimIcon) && MatchCapability(caps, wLen, &capFakeHtml))
 							szClient = "mundu IM"; // http://messenger.mundu.com
 						else if (CheckContactCapabilities(hContact, CAPF_UTF | CAPF_OSCAR_FILE) && MatchCapability(caps, wLen, &capOscarChat))
 							szClient = "eBuddy"; //http://www.ebuddy.com
@@ -1028,25 +1030,26 @@ const char* CIcqProto::detectUserClient(HANDLE hContact, int nIsICQ, WORD wUserC
 				{
 					szClient = "naim";
 				}
-        else if (MatchCapability(caps, wLen, &capDigsby, 0x06))
-        { // http://www.dibsby.com (newer builds)
-          szClient = "Digsby";
-        }
-        else if (MatchCapability(caps, wLen, &capDigsbyBeta))
-        { // http://www.digsby.com
-          szClient = "Digsby";
-        }
-				else if (MatchShortCapability(caps, wLen, &capAimIcon) && MatchCapability(caps, wLen, &capOscarChat) && CheckContactCapabilities(hContact, CAPF_UTF | CAPF_TYPING) && wLen == 0x40)
+				else if (MatchCapability(caps, wLen, &capDigsby, 0x06) || MatchCapability(caps, wLen, &capDigsbyBeta))
+				{ // http://www.dibsby.com
+					szClient = "Digsby";
+				}
+				else if (MatchShortCapability(caps, wLen, &capAimIcon) && MatchCapability(caps, wLen, &capOscarChat) && 
+					CheckContactCapabilities(hContact, CAPF_UTF | CAPF_TYPING) && wLen == 0x40)
 					szClient = "Meebo";
-        else if (CheckContactCapabilities(hContact, CAPF_SRV_RELAY | CAPF_UTF | CAPF_TYPING | CAPF_HTML | CAPF_XTRAZ) && MatchCapability(caps, wLen, &capOscarChat) && MatchShortCapability(caps, wLen, &capAimIcon) && MatchShortCapability(caps, wLen, &capAimDirect) && wLen == 0x90)
-        { // libpurple (e.g. Pidgin 2.7.x)
-          szClient = "libpurple";
-        }
-        else if (CheckContactCapabilities(hContact, CAPF_SRV_RELAY | CAPF_UTF | CAPF_TYPING | CAPF_HTML | CAPF_XTRAZ) && MatchCapability(caps, wLen, &capOscarChat) && MatchShortCapability(caps, wLen, &capAimIcon) && wLen == 0x70)
-        { // libpurple - Meebo (without DirectIM and OFT)
-          szClient = "Meebo";
-        }
-        else
+				else if (wLen == 0x90 && CheckContactCapabilities(hContact, CAPF_SRV_RELAY | CAPF_UTF | CAPF_TYPING | CAPF_XTRAZ) && 
+					MatchCapability(caps, wLen, &capOscarChat) && MatchShortCapability(caps, wLen, &capAimIcon) && 
+					MatchShortCapability(caps, wLen, &capAimDirect) && MatchCapability(caps, wLen, &capFakeHtml))
+				{ // libpurple (e.g. Pidgin 2.7.x)
+					szClient = "libpurple";
+				}
+				else if (wLen == 0x70 && CheckContactCapabilities(hContact, CAPF_SRV_RELAY | CAPF_UTF | CAPF_TYPING | CAPF_XTRAZ) && 
+					MatchCapability(caps, wLen, &capOscarChat) && MatchShortCapability(caps, wLen, &capAimIcon) && 
+					MatchCapability(caps, wLen, &capFakeHtml))
+				{ // libpurple - Meebo (without DirectIM and OFT)
+					szClient = "Meebo";
+				}
+				else
 					szClient = "AIM";
 			}
 			else
