@@ -27,7 +27,6 @@
 	"..\..\include\m_timezones.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
-	"..\..\include\msapi\vsstyle.h"\
 	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
@@ -86,7 +85,6 @@
 	"..\..\include\m_timezones.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
-	"..\..\include\msapi\vsstyle.h"\
 	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
@@ -142,7 +140,6 @@
 	"..\..\include\m_timezones.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
-	"..\..\include\msapi\vsstyle.h"\
 	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
@@ -200,7 +197,6 @@
 	"..\..\include\m_timezones.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
-	"..\..\include\msapi\vsstyle.h"\
 	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
@@ -259,7 +255,6 @@
 	"..\..\include\m_timezones.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
-	"..\..\include\msapi\vsstyle.h"\
 	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
@@ -316,7 +311,6 @@
 	"..\..\include\m_timezones.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
-	"..\..\include\msapi\vsstyle.h"\
 	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
@@ -372,7 +366,6 @@
 	"..\..\include\m_timezones.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
-	"..\..\include\msapi\vsstyle.h"\
 	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
@@ -428,7 +421,6 @@
 	"..\..\include\m_timezones.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
-	"..\..\include\msapi\vsstyle.h"\
 	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
@@ -485,7 +477,6 @@
 	"..\..\include\m_timezones.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
-	"..\..\include\msapi\vsstyle.h"\
 	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
@@ -543,7 +534,6 @@
 	"..\..\include\m_timezones.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
-	"..\..\include\msapi\vsstyle.h"\
 	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
@@ -600,7 +590,6 @@
 	"..\..\include\m_timezones.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
-	"..\..\include\msapi\vsstyle.h"\
 	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
@@ -656,7 +645,6 @@
 	"..\..\include\m_timezones.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
-	"..\..\include\msapi\vsstyle.h"\
 	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
@@ -713,7 +701,6 @@
 	"..\..\include\m_timezones.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
-	"..\..\include\msapi\vsstyle.h"\
 	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
@@ -770,7 +757,6 @@
 	"..\..\include\m_timezones.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
-	"..\..\include\msapi\vsstyle.h"\
 	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
@@ -828,7 +814,6 @@
 	"..\..\include\m_timezones.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
-	"..\..\include\msapi\vsstyle.h"\
 	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
@@ -884,7 +869,6 @@
 	"..\..\include\m_timezones.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
-	"..\..\include\msapi\vsstyle.h"\
 	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
@@ -941,7 +925,6 @@
 	"..\..\include\m_timezones.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
-	"..\..\include\msapi\vsstyle.h"\
 	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
@@ -997,7 +980,6 @@
 	"..\..\include\m_timezones.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
-	"..\..\include\msapi\vsstyle.h"\
 	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
@@ -1058,7 +1040,6 @@
 	"..\..\include\m_timezones.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
-	"..\..\include\msapi\vsstyle.h"\
 	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
@@ -1116,7 +1097,6 @@
 	"..\..\include\m_timezones.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
-	"..\..\include\msapi\vsstyle.h"\
 	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
@@ -1172,7 +1152,6 @@
 	"..\..\include\m_timezones.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
-	"..\..\include\msapi\vsstyle.h"\
 	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
@@ -1228,7 +1207,6 @@
 	"..\..\include\m_timezones.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
-	"..\..\include\msapi\vsstyle.h"\
 	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
@@ -1284,7 +1262,6 @@
 	"..\..\include\m_timezones.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
-	"..\..\include\msapi\vsstyle.h"\
 	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
@@ -1342,7 +1319,6 @@
 	"..\..\include\m_timezones.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
-	"..\..\include\msapi\vsstyle.h"\
 	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
@@ -1398,7 +1374,6 @@
 	"..\..\include\m_timezones.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
-	"..\..\include\msapi\vsstyle.h"\
 	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
@@ -1428,6 +1403,36 @@
 	
 
 .\modern_gdiplus.cpp : \
+	"..\..\..\..\program files\microsoft platform sdk\include\gdiplus.h"\
+	"..\..\..\..\program files\microsoft platform sdk\include\gdiplusbase.h"\
+	"..\..\..\..\program files\microsoft platform sdk\include\gdiplusbitmap.h"\
+	"..\..\..\..\program files\microsoft platform sdk\include\gdiplusbrush.h"\
+	"..\..\..\..\program files\microsoft platform sdk\include\gdipluscachedbitmap.h"\
+	"..\..\..\..\program files\microsoft platform sdk\include\gdipluscolor.h"\
+	"..\..\..\..\program files\microsoft platform sdk\include\gdipluscolormatrix.h"\
+	"..\..\..\..\program files\microsoft platform sdk\include\gdiplusenums.h"\
+	"..\..\..\..\program files\microsoft platform sdk\include\gdiplusflat.h"\
+	"..\..\..\..\program files\microsoft platform sdk\include\gdiplusfont.h"\
+	"..\..\..\..\program files\microsoft platform sdk\include\gdiplusfontcollection.h"\
+	"..\..\..\..\program files\microsoft platform sdk\include\gdiplusfontfamily.h"\
+	"..\..\..\..\program files\microsoft platform sdk\include\gdiplusgpstubs.h"\
+	"..\..\..\..\program files\microsoft platform sdk\include\gdiplusgraphics.h"\
+	"..\..\..\..\program files\microsoft platform sdk\include\gdiplusheaders.h"\
+	"..\..\..\..\program files\microsoft platform sdk\include\gdiplusimageattributes.h"\
+	"..\..\..\..\program files\microsoft platform sdk\include\gdiplusimagecodec.h"\
+	"..\..\..\..\program files\microsoft platform sdk\include\gdiplusimaging.h"\
+	"..\..\..\..\program files\microsoft platform sdk\include\gdiplusinit.h"\
+	"..\..\..\..\program files\microsoft platform sdk\include\gdipluslinecaps.h"\
+	"..\..\..\..\program files\microsoft platform sdk\include\gdiplusmatrix.h"\
+	"..\..\..\..\program files\microsoft platform sdk\include\gdiplusmem.h"\
+	"..\..\..\..\program files\microsoft platform sdk\include\gdiplusmetafile.h"\
+	"..\..\..\..\program files\microsoft platform sdk\include\gdiplusmetaheader.h"\
+	"..\..\..\..\program files\microsoft platform sdk\include\gdipluspath.h"\
+	"..\..\..\..\program files\microsoft platform sdk\include\gdipluspen.h"\
+	"..\..\..\..\program files\microsoft platform sdk\include\gdipluspixelformats.h"\
+	"..\..\..\..\program files\microsoft platform sdk\include\gdiplusregion.h"\
+	"..\..\..\..\program files\microsoft platform sdk\include\gdiplusstringformat.h"\
+	"..\..\..\..\program files\microsoft platform sdk\include\gdiplustypes.h"\
 	"..\..\include\m_addcontact.h"\
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -1454,7 +1459,6 @@
 	"..\..\include\m_timezones.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
-	"..\..\include\msapi\vsstyle.h"\
 	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
@@ -1510,7 +1514,6 @@
 	"..\..\include\m_timezones.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
-	"..\..\include\msapi\vsstyle.h"\
 	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
@@ -1568,7 +1571,6 @@
 	"..\..\include\m_timezones.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
-	"..\..\include\msapi\vsstyle.h"\
 	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
@@ -1624,7 +1626,6 @@
 	"..\..\include\m_timezones.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
-	"..\..\include\msapi\vsstyle.h"\
 	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
@@ -1680,7 +1681,6 @@
 	"..\..\include\m_timezones.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
-	"..\..\include\msapi\vsstyle.h"\
 	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
@@ -1737,7 +1737,6 @@
 	"..\..\include\m_timezones.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
-	"..\..\include\msapi\vsstyle.h"\
 	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
@@ -1793,7 +1792,6 @@
 	"..\..\include\m_timezones.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
-	"..\..\include\msapi\vsstyle.h"\
 	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
@@ -1849,7 +1847,6 @@
 	"..\..\include\m_timezones.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
-	"..\..\include\msapi\vsstyle.h"\
 	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
@@ -1906,7 +1903,6 @@
 	"..\..\include\m_timezones.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
-	"..\..\include\msapi\vsstyle.h"\
 	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
@@ -1963,7 +1959,6 @@
 	"..\..\include\m_timezones.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
-	"..\..\include\msapi\vsstyle.h"\
 	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
@@ -2019,7 +2014,6 @@
 	"..\..\include\m_timezones.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
-	"..\..\include\msapi\vsstyle.h"\
 	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
@@ -2076,7 +2070,6 @@
 	"..\..\include\m_timezones.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
-	"..\..\include\msapi\vsstyle.h"\
 	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
@@ -2132,7 +2125,6 @@
 	"..\..\include\m_timezones.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
-	"..\..\include\msapi\vsstyle.h"\
 	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
@@ -2190,7 +2182,6 @@
 	"..\..\include\m_timezones.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
-	"..\..\include\msapi\vsstyle.h"\
 	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
@@ -2248,7 +2239,6 @@
 	"..\..\include\m_timezones.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
-	"..\..\include\msapi\vsstyle.h"\
 	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
@@ -2307,7 +2297,6 @@
 	"..\..\include\m_timezones.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
-	"..\..\include\msapi\vsstyle.h"\
 	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
@@ -2364,7 +2353,6 @@
 	"..\..\include\m_timezones.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
-	"..\..\include\msapi\vsstyle.h"\
 	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
@@ -2421,7 +2409,6 @@
 	"..\..\include\m_timezones.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
-	"..\..\include\msapi\vsstyle.h"\
 	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
@@ -2479,7 +2466,6 @@
 	"..\..\include\m_timezones.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
-	"..\..\include\msapi\vsstyle.h"\
 	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
@@ -2535,7 +2521,6 @@
 	"..\..\include\m_timezones.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
-	"..\..\include\msapi\vsstyle.h"\
 	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
@@ -2592,7 +2577,6 @@
 	"..\..\include\m_timezones.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
-	"..\..\include\msapi\vsstyle.h"\
 	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
@@ -2650,7 +2634,6 @@
 	"..\..\include\m_timezones.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
-	"..\..\include\msapi\vsstyle.h"\
 	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
@@ -2708,7 +2691,6 @@
 	"..\..\include\m_timezones.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
-	"..\..\include\msapi\vsstyle.h"\
 	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
@@ -2765,7 +2747,6 @@
 	"..\..\include\m_timezones.h"\
 	"..\..\include\m_userinfo.h"\
 	"..\..\include\m_utils.h"\
-	"..\..\include\msapi\vsstyle.h"\
 	"..\..\include\msapi\vssym32.h"\
 	"..\..\include\newpluginapi.h"\
 	"..\..\include\statusmodes.h"\
