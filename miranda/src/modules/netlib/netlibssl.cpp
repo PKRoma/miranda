@@ -33,13 +33,24 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 typedef BOOL (* SSL_EMPTY_CACHE_FN_M)(VOID);
 
-
 static HMODULE g_hSchannel;
 static PSecurityFunctionTableA g_pSSPI;
 static HANDLE g_hSslMutex; 
 static SSL_EMPTY_CACHE_FN_M MySslEmptyCache;
 static CredHandle hCreds;
 static bool bSslInitDone;
+
+typedef BOOL (WINAPI *pfnCertGetCertificateChain )( HCERTCHAINENGINE, PCCERT_CONTEXT, LPFILETIME, HCERTSTORE, PCERT_CHAIN_PARA, DWORD, LPVOID, PCCERT_CHAIN_CONTEXT* );
+static pfnCertGetCertificateChain fnCertGetCertificateChain = NULL;
+
+typedef VOID (WINAPI *pfnCertFreeCertificateChain)( PCCERT_CHAIN_CONTEXT );
+static pfnCertFreeCertificateChain fnCertFreeCertificateChain = NULL;
+
+typedef BOOL (WINAPI *pfnCertFreeCertificateContext)( PCCERT_CONTEXT );
+static pfnCertFreeCertificateContext fnCertFreeCertificateContext = NULL;
+
+typedef BOOL (WINAPI *pfnCertVerifyCertificateChainPolicy)( LPCSTR, PCCERT_CHAIN_CONTEXT, PCERT_CHAIN_POLICY_PARA, PCERT_CHAIN_POLICY_STATUS );
+static pfnCertVerifyCertificateChainPolicy fnCertVerifyCertificateChainPolicy = NULL;
 
 typedef enum
 {
@@ -182,80 +193,83 @@ BOOL NetlibSslPending(SslHandle *ssl)
 
 static bool VerifyCertificate(SslHandle *ssl, PCSTR pszServerName, DWORD dwCertFlags)
 {
-    static LPSTR rgszUsages[] = 
+	if ( !fnCertGetCertificateChain )
+		return true;
+
+	static LPSTR rgszUsages[] = 
 	{  
 		szOID_PKIX_KP_SERVER_AUTH,
-        szOID_SERVER_GATED_CRYPTO,
-        szOID_SGC_NETSCAPE 
+		szOID_SERVER_GATED_CRYPTO,
+		szOID_SGC_NETSCAPE 
 	};
-    
+
 	CERT_CHAIN_PARA          ChainPara = {0};
 	HTTPSPolicyCallbackData  polHttps = {0};
 	CERT_CHAIN_POLICY_PARA   PolicyPara = {0};
 	CERT_CHAIN_POLICY_STATUS PolicyStatus = {0};
-    PCCERT_CHAIN_CONTEXT     pChainContext = NULL;
-    PCCERT_CONTEXT           pServerCert = NULL;
-    DWORD scRet;
+	PCCERT_CHAIN_CONTEXT     pChainContext = NULL;
+	PCCERT_CONTEXT           pServerCert = NULL;
+	DWORD scRet;
 
-    PWSTR pwszServerName = mir_a2u(pszServerName);
+	PWSTR pwszServerName = mir_a2u(pszServerName);
 
-    scRet = g_pSSPI->QueryContextAttributesA(&ssl->hContext,
+	scRet = g_pSSPI->QueryContextAttributesA(&ssl->hContext,
 		SECPKG_ATTR_REMOTE_CERT_CONTEXT, &pServerCert);
-    if (scRet != SEC_E_OK)
-        goto cleanup;
+	if (scRet != SEC_E_OK)
+		goto cleanup;
 
 	if (pServerCert == NULL)
-    {
-        scRet = SEC_E_WRONG_PRINCIPAL;
-        goto cleanup;
-    }
+	{
+		scRet = SEC_E_WRONG_PRINCIPAL;
+		goto cleanup;
+	}
 
-    ChainPara.cbSize = sizeof(ChainPara);
-    ChainPara.RequestedUsage.dwType = USAGE_MATCH_TYPE_OR;
-    ChainPara.RequestedUsage.Usage.cUsageIdentifier     = SIZEOF(rgszUsages);
-    ChainPara.RequestedUsage.Usage.rgpszUsageIdentifier = rgszUsages;
+	ChainPara.cbSize = sizeof(ChainPara);
+	ChainPara.RequestedUsage.dwType = USAGE_MATCH_TYPE_OR;
+	ChainPara.RequestedUsage.Usage.cUsageIdentifier     = SIZEOF(rgszUsages);
+	ChainPara.RequestedUsage.Usage.rgpszUsageIdentifier = rgszUsages;
 
-    if (!CertGetCertificateChain(NULL, pServerCert, NULL, pServerCert->hCertStore, 
+	if (!fnCertGetCertificateChain(NULL, pServerCert, NULL, pServerCert->hCertStore, 
 		&ChainPara, 0, NULL, &pChainContext))
-    {
-        scRet = GetLastError();
-        goto cleanup;
-    }
+	{
+		scRet = GetLastError();
+		goto cleanup;
+	}
 
-    polHttps.cbStruct           = sizeof(HTTPSPolicyCallbackData);
-    polHttps.dwAuthType         = AUTHTYPE_SERVER;
-    polHttps.fdwChecks          = dwCertFlags;
-    polHttps.pwszServerName     = pwszServerName;
+	polHttps.cbStruct           = sizeof(HTTPSPolicyCallbackData);
+	polHttps.dwAuthType         = AUTHTYPE_SERVER;
+	polHttps.fdwChecks          = dwCertFlags;
+	polHttps.pwszServerName     = pwszServerName;
 
-    PolicyPara.cbSize            = sizeof(PolicyPara);
-    PolicyPara.pvExtraPolicyPara = &polHttps;
+	PolicyPara.cbSize            = sizeof(PolicyPara);
+	PolicyPara.pvExtraPolicyPara = &polHttps;
 
-    PolicyStatus.cbSize = sizeof(PolicyStatus);
+	PolicyStatus.cbSize = sizeof(PolicyStatus);
 
-    if (!CertVerifyCertificateChainPolicy(CERT_CHAIN_POLICY_SSL, pChainContext,
+	if (!fnCertVerifyCertificateChainPolicy(CERT_CHAIN_POLICY_SSL, pChainContext,
 		&PolicyPara, &PolicyStatus))
-    {
-        scRet = GetLastError();
-        goto cleanup;
-    }
+	{
+		scRet = GetLastError();
+		goto cleanup;
+	}
 
-    if (PolicyStatus.dwError)
-    {
-        scRet = PolicyStatus.dwError;
-        goto cleanup;
-    }
+	if (PolicyStatus.dwError)
+	{
+		scRet = PolicyStatus.dwError;
+		goto cleanup;
+	}
 
-    scRet = SEC_E_OK;
+	scRet = SEC_E_OK;
 
 cleanup:
-    if (pChainContext)
-        CertFreeCertificateChain(pChainContext);
+	if (pChainContext)
+		fnCertFreeCertificateChain(pChainContext);
 	if (pServerCert)
-	   CertFreeCertificateContext(pServerCert);
-    mir_free(pwszServerName);
+		fnCertFreeCertificateContext(pServerCert);
+	mir_free(pwszServerName);
 
 	ReportSslError(scRet, __LINE__, true);
-    return scRet == SEC_E_OK;
+	return scRet == SEC_E_OK;
 }
 
 static SECURITY_STATUS ClientHandshakeLoop(SslHandle *ssl, BOOL fDoInitialRead)    
@@ -271,7 +285,6 @@ static SECURITY_STATUS ClientHandshakeLoop(SslHandle *ssl, BOOL fDoInitialRead)
 	DWORD           cbData;
 
 	BOOL            fDoRead;
-
 
 	dwSSPIFlags = 
 		ISC_REQ_SEQUENCE_DETECT   |
@@ -945,6 +958,18 @@ int LoadSslModule(void)
 	CreateServiceFunction(MS_SYSTEM_GET_SI, GetSslApi);
 	g_hSslMutex = CreateMutex(NULL, FALSE, NULL); 
 	SecInvalidateHandle(&hCreds);
+
+	HINSTANCE hCrypt = LoadLibraryA( "crypt32.dll" );
+	if ( hCrypt ) {
+		fnCertGetCertificateChain = (pfnCertGetCertificateChain)GetProcAddress( hCrypt, "CertGetCertificateChain" );
+		fnCertFreeCertificateChain = (pfnCertFreeCertificateChain)GetProcAddress( hCrypt, "CertFreeCertificateChain" );
+		fnCertFreeCertificateContext = (pfnCertFreeCertificateContext)GetProcAddress( hCrypt, "CertFreeCertificateContext" );
+		fnCertVerifyCertificateChainPolicy = (pfnCertVerifyCertificateChainPolicy)GetProcAddress( hCrypt, "CertVerifyCertificateChainPolicy" );
+
+		if ( !fnCertGetCertificateChain || !fnCertFreeCertificateChain || !fnCertFreeCertificateContext || !fnCertVerifyCertificateChainPolicy )
+			fnCertGetCertificateChain = 0, fnCertFreeCertificateChain = 0, fnCertFreeCertificateContext = 0, fnCertVerifyCertificateChainPolicy = 0;
+	}
+
 	return 0;
 }
 
