@@ -55,6 +55,7 @@ static const icq_capability CapabilityRecord[] =
 	{CAPF_RTF,       {CAP_RTF       }},
 	{CAPF_HTML,      {CAP_HTML1     }},
 	{CAPF_HTML,      {CAP_HTML2     }},
+	{CAPF_HTML,      {CAP_HTML3     }},
 	{CAPF_CONTACTS,  {CAP_CONTACTS  }},
 	{CAPF_TYPING,    {CAP_TYPING    }},
 	{CAPF_ICQDIRECT, {CAP_ICQDIRECT }},
