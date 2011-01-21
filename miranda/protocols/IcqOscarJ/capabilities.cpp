@@ -53,9 +53,6 @@ static const icq_capability CapabilityRecord[] =
 	{CAPF_SRV_RELAY, {CAP_SRV_RELAY }},
 	{CAPF_UTF,       {CAP_UTF       }},
 	{CAPF_RTF,       {CAP_RTF       }},
-	{CAPF_HTML,      {CAP_HTML1     }},
-	{CAPF_HTML,      {CAP_HTML2     }},
-	{CAPF_HTML,      {CAP_HTML3     }},
 	{CAPF_CONTACTS,  {CAP_CONTACTS  }},
 	{CAPF_TYPING,    {CAP_TYPING    }},
 	{CAPF_ICQDIRECT, {CAP_ICQDIRECT }},
@@ -64,7 +61,7 @@ static const icq_capability CapabilityRecord[] =
 };
 
 // Mask of all handled capabilities' flags
-#define CapabilityFlagsMask  (CAPF_SRV_RELAY | CAPF_UTF | CAPF_RTF | CAPF_HTML | CAPF_CONTACTS | CAPF_TYPING | CAPF_ICQDIRECT | CAPF_XTRAZ | CAPF_OSCAR_FILE)
+#define CapabilityFlagsMask  (CAPF_SRV_RELAY | CAPF_UTF | CAPF_RTF | CAPF_CONTACTS | CAPF_TYPING | CAPF_ICQDIRECT | CAPF_XTRAZ | CAPF_OSCAR_FILE)
 
 
 #ifdef _DEBUG
@@ -79,7 +76,6 @@ static const icq_capability_name CapabilityNames[] =
 	{CAPF_SRV_RELAY,      "ServerRelay"},
 	{CAPF_UTF,            "UTF8 Messages"},
 	{CAPF_RTF,            "RTF Messages"},
-	{CAPF_HTML,           "HTML Messages"},
 	{CAPF_CONTACTS,       "Contact Transfer"},
 	{CAPF_TYPING,         "Typing Notifications"},
 	{CAPF_ICQDIRECT,      "Direct Connections"},
