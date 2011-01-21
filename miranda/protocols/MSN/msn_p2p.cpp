@@ -1716,7 +1716,7 @@ void  CMsnProto::p2p_processMsg(ThreadData* info,  char* msgbody)
 
 		if (ft->tType == info->mType) 
 		{
-			if (dsz > 0) 
+			if (dsz > 0 && ft->fileId >= 0) 
 			{
 				if (ft->lstFilePtr != hdrdata->mOffset)
 					_lseeki64(ft->fileId, hdrdata->mOffset, SEEK_SET);
