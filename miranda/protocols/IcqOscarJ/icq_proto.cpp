@@ -2102,7 +2102,7 @@ int __cdecl CIcqProto::SetStatus(int iNewStatus)
 				//! This is a bit tricky, we do trigger status note change thread and then
 				// change the status note right away (this spares one packet) - so SetStatusNote()
 				// will only change User Details Directory
-				SetStatusNote(szStatusNote, 6000, FALSE);
+ 				SetStatusNote(szStatusNote, 6000, FALSE);
 
 				if (m_iStatus == ID_STATUS_INVISIBLE)
 				{
@@ -2335,7 +2335,7 @@ int __cdecl CIcqProto::SetAwayMsg(int status, const TCHAR* msg)
 		*ppszMsg = szNewUtf;
 		szNewUtf = NULL;
 
-		if (icqOnline())
+		if ((m_iStatus == status) && icqOnline())
 		{	// update current status note
 			char *szNote = *ppszMsg ? *ppszMsg : "";
 
@@ -2343,10 +2343,8 @@ int __cdecl CIcqProto::SetAwayMsg(int status, const TCHAR* msg)
 			if (!bXStatus)
 				SetStatusNote(szNote, 1000, FALSE);
 
-			if (m_bAimEnabled && (m_iStatus == status))
-			{
+			if (m_bAimEnabled)
 				icq_sendSetAimAwayMsgServ(*ppszMsg);
-			}
 		}
 	}
 	SAFE_FREE(&szNewUtf);
