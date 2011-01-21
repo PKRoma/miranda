@@ -359,7 +359,7 @@ void CIcqProto::handleRecvServMsgType1(BYTE *buf, WORD wLen, DWORD dwUin, char *
 				}
 				if (strlennull(szMsg))
 				{
-					if (!dwUin || CheckContactCapabilities(hContact, CAPF_HTML))
+					if (_strnicmp(szMsg, "<html>", 6) == 0)
 					{ // strip HTML formating from AIM message
 						szMsg = EliminateHtml(szMsg, strlennull(szMsg));
 					}

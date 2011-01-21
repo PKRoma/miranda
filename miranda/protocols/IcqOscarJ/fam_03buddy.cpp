@@ -466,7 +466,7 @@ void CIcqProto::handleUserOnline(BYTE *buf, WORD wLen, serverthread_info *info)
 		if (!nIsICQ)
 		{
 			// AIM clients does not advertise these, but do support them
-			SetContactCapabilities(hContact, CAPF_UTF | CAPF_HTML | CAPF_TYPING);
+			SetContactCapabilities(hContact, CAPF_UTF | CAPF_TYPING);
 			// Server relayed messages are only supported by ICQ clients
 			ClearContactCapabilities(hContact, CAPF_SRV_RELAY);
 
