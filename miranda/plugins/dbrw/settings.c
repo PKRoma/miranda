@@ -530,8 +530,29 @@ INT_PTR setting_getSetting(WPARAM wParam, LPARAM lParam) {
 		return 1;
 	}
 	if (dgs->pValue->type==DBVT_UTF8 ) {
-		mir_utf8decode(dgs->pValue->pszVal, NULL);
-		dgs->pValue->type = DBVT_ASCIIZ;
+		WCHAR* tmp = NULL;
+		char*  p = NEWSTR_ALLOCA(dgs->pValue->pszVal);
+		if ( mir_utf8decode( p, &tmp ) != NULL ) {
+			BOOL bUsed = FALSE;
+			int  result = WideCharToMultiByte( mirCp, WC_NO_BEST_FIT_CHARS, tmp, -1, NULL, 0, NULL, &bUsed );
+
+			mir_free( dgs->pValue->pszVal );
+
+			if ( bUsed || result == 0 ) {
+				dgs->pValue->type = DBVT_WCHAR;
+				dgs->pValue->pwszVal = tmp;
+			}
+			else {
+				dgs->pValue->type = DBVT_ASCIIZ;
+				dgs->pValue->pszVal = mir_alloc( result );
+				WideCharToMultiByte( mirCp, WC_NO_BEST_FIT_CHARS, tmp, -1, dgs->pValue->pszVal, result, NULL, NULL );
+				mir_free( tmp );
+			}
+		}
+		else {
+			dgs->pValue->type = DBVT_ASCIIZ;
+			mir_free( tmp );
+		}
 	}
 	LeaveCriticalSection(&csSettingsDb);
 	return 0;
