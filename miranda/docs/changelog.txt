@@ -3,6 +3,12 @@
                            www.miranda-im.org
 
 
+* New in 0.9.15
+Bugfixes:
+ - ICQ: HTML decoding issues
+ - MSN: Fixed possible crash
+
+
 * New in 0.9.14
 Enhancements:
  - Configurable timeout for http requests
