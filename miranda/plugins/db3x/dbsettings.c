@@ -388,7 +388,7 @@ static INT_PTR GetContactSetting(WPARAM wParam,LPARAM lParam)
 		char*  p = NEWSTR_ALLOCA(dgs->pValue->pszVal);
 		if ( mir_utf8decode( p, &tmp ) != NULL ) {
 			BOOL bUsed = FALSE;
-			int  result = WideCharToMultiByte( mirCp, 0, tmp, -1, NULL, 0, "?", &bUsed );
+			int  result = WideCharToMultiByte( mirCp, WC_NO_BEST_FIT_CHARS, tmp, -1, NULL, 0, NULL, &bUsed );
 
 			mir_free( dgs->pValue->pszVal );
 
@@ -398,7 +398,8 @@ static INT_PTR GetContactSetting(WPARAM wParam,LPARAM lParam)
 			}
 			else {
 				dgs->pValue->type = DBVT_ASCIIZ;
-				dgs->pValue->pszVal = mir_strdup( p );
+				dgs->pValue->pszVal = mir_alloc( result );
+				WideCharToMultiByte( mirCp, WC_NO_BEST_FIT_CHARS, tmp, -1, dgs->pValue->pszVal, result, NULL, NULL );
 				mir_free( tmp );
 			}
 		}
