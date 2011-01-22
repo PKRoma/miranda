@@ -787,7 +787,7 @@ int           __stdcall JabberGetPacketID( HXML n );
 const TCHAR *JabberStrIStr( const TCHAR *str, const TCHAR *substr);
 void JabberCopyText(HWND hwnd, TCHAR *text);
 void JabberBitmapPremultiplyChannels(HBITMAP hBitmap);
-CJabberProto *JabberChooseInstance(bool bAllowOffline=false, bool atCursor=true);
+CJabberProto *JabberChooseInstance(bool bIsLink=false);
 
 //---- jabber_xml.cpp -------------------------------------------------------------------
 
