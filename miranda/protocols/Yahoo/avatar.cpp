@@ -642,7 +642,7 @@ void CYahooProto::GetAvatarFileName(HANDLE hContact, TCHAR* pszDest, int cbLen, 
 	}
 
 	if ( _taccess(pszDest, 0))
-		YAHOO_CallService(MS_UTILS_CREATEDIRTREE, 0, (LPARAM)pszDest);
+		YAHOO_CallService(MS_UTILS_CREATEDIRTREET, 0, (LPARAM)pszDest);
 
 	if (hContact != NULL) {
 		int ck_sum = DBGetContactSettingDword(hContact, m_szModuleName,"PictCK", 0);
