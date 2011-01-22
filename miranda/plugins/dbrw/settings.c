@@ -22,6 +22,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 CRITICAL_SECTION csSettingsDb;
 static HANDLE hHeap = 0, hSettingsThread = 0, hSettingsEvent = 0;
 static SortedList sSettingNames, sContactSettings, sGlobalSettings, sResidentSettings;
+static int mirCp = CP_ACP;
 
 static int settings_cmpSettingNames(void *p1, void *p2);
 static int settings_cmpGlobalSettings(void* p1, void* p2);
@@ -102,6 +103,7 @@ void settings_init() {
     sResidentSettings.increment = 100;
     sResidentSettings.sortFunc = settings_cmpResidentSettings;
 	sql_prepare_add(settings_stmts, settings_stmts_prep, SQL_SET_STMT_NUM);
+	mirCp = CallService(MS_LANGPACK_GETCODEPAGE, 0, 0);
     hSettingsEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
     hSettingsThread = (HANDLE)mir_forkthreadex(settings_threadProc, 0, 0, 0);
 }
@@ -530,28 +532,27 @@ INT_PTR setting_getSetting(WPARAM wParam, LPARAM lParam) {
 		return 1;
 	}
 	if (dgs->pValue->type==DBVT_UTF8 ) {
-		WCHAR* tmp = NULL;
-		char*  p = NEWSTR_ALLOCA(dgs->pValue->pszVal);
-		if ( mir_utf8decode( p, &tmp ) != NULL ) {
+		WCHAR* tmp = mir_utf8decodeW(dgs->pValue->pszVal);
+		if (tmp) {
 			BOOL bUsed = FALSE;
-			int  result = WideCharToMultiByte( mirCp, WC_NO_BEST_FIT_CHARS, tmp, -1, NULL, 0, NULL, &bUsed );
+			int  result = WideCharToMultiByte(CP_ACP, WC_NO_BEST_FIT_CHARS, tmp, -1, NULL, 0, NULL, &bUsed);
 
-			mir_free( dgs->pValue->pszVal );
+			mir_free(dgs->pValue->pszVal);
 
-			if ( bUsed || result == 0 ) {
+			if (bUsed || result == 0) {
 				dgs->pValue->type = DBVT_WCHAR;
 				dgs->pValue->pwszVal = tmp;
 			}
 			else {
 				dgs->pValue->type = DBVT_ASCIIZ;
-				dgs->pValue->pszVal = mir_alloc( result );
-				WideCharToMultiByte( mirCp, WC_NO_BEST_FIT_CHARS, tmp, -1, dgs->pValue->pszVal, result, NULL, NULL );
-				mir_free( tmp );
+				dgs->pValue->pszVal = mir_alloc(result);
+				WideCharToMultiByte(mirCp, WC_NO_BEST_FIT_CHARS, tmp, -1, dgs->pValue->pszVal, result, NULL, NULL);
+				mir_free(tmp);
 			}
 		}
 		else {
 			dgs->pValue->type = DBVT_ASCIIZ;
-			mir_free( tmp );
+			mir_free(tmp);
 		}
 	}
 	LeaveCriticalSection(&csSettingsDb);
