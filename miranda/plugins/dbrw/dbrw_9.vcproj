@@ -72,6 +72,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				OutputFile="$(OutDir)\dbx_rw.dll"
 				LinkIncremental="2"
 				GenerateDebugInformation="true"
 				RandomizedBaseAddress="1"
@@ -156,6 +157,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				OutputFile="$(OutDir)\dbx_rw.dll"
 				LinkIncremental="2"
 				GenerateDebugInformation="true"
 				RandomizedBaseAddress="1"
@@ -249,6 +251,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				OutputFile="$(OutDir)\dbx_rw.dll"
 				LinkIncremental="1"
 				GenerateDebugInformation="true"
 				OptimizeReferences="2"
@@ -346,6 +349,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				OutputFile="$(OutDir)\dbx_rw.dll"
 				LinkIncremental="1"
 				GenerateDebugInformation="true"
 				OptimizeReferences="2"
@@ -442,6 +446,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				OutputFile="$(OutDir)\dbx_rw.dll"
 				LinkIncremental="1"
 				GenerateDebugInformation="true"
 				OptimizeReferences="2"
@@ -540,6 +545,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				IgnoreImportLibrary="true"
+				OutputFile="$(OutDir)\dbx_rw.dll"
 				LinkIncremental="1"
 				GenerateDebugInformation="true"
 				OptimizeReferences="2"
@@ -627,6 +633,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				OutputFile="$(OutDir)\dbx_rw.dll"
 				LinkIncremental="2"
 				GenerateDebugInformation="true"
 				RandomizedBaseAddress="1"
@@ -711,6 +718,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				OutputFile="$(OutDir)\dbx_rw.dll"
 				LinkIncremental="2"
 				GenerateDebugInformation="true"
 				RandomizedBaseAddress="1"
