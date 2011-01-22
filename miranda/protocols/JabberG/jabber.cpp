@@ -164,7 +164,7 @@ int __cdecl CJabberProto::OnPreShutdown( WPARAM, LPARAM )
 
 static INT_PTR g_SvcParseXmppUri(WPARAM w, LPARAM l)
 {
-	if (CJabberProto *ppro = JabberChooseInstance(false))
+	if (CJabberProto *ppro = JabberChooseInstance(true))
 		return ppro->JabberServiceParseXmppURI(w, l);
 	return 0;
 }

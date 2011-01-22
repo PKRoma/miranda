@@ -1268,15 +1268,21 @@ INT_PTR __cdecl CJabberProto::OnMenuHandleDirectPresence(WPARAM wParam, LPARAM l
 
 ////////////////////////////////////////////////////////////////////////
 // Choose protocol instance
-CJabberProto *JabberChooseInstance(bool bAllowOffline, bool /*atCursor*/)
+CJabberProto *JabberChooseInstance(bool bIsLink)
 {
-	if (g_Instances.getCount() == 0)
+	if ( g_Instances.getCount() == 0 )
 		return NULL;
 
-	if (g_Instances.getCount() == 1) {
-		if (bAllowOffline || ((g_Instances[0]->m_iStatus != ID_STATUS_OFFLINE) && (g_Instances[0]->m_iStatus != ID_STATUS_CONNECTING)))
+	if ( g_Instances.getCount() == 1 ) {
+		if ( g_Instances[0]->m_iStatus != ID_STATUS_OFFLINE && g_Instances[0]->m_iStatus != ID_STATUS_CONNECTING )
 			return g_Instances[0];
 		return NULL;
+	}
+
+	if ( bIsLink ) {
+		for ( int i = 0; i < g_Instances.getCount(); i++ )
+			if ( g_Instances[i]->m_options.ProcessXMPPLinks )
+				return g_Instances[i];
 	}
 
 	CLISTMENUITEM clmi = {0};
@@ -1287,8 +1293,7 @@ CJabberProto *JabberChooseInstance(bool bAllowOffline, bool /*atCursor*/)
 		clmi.flags = CMIM_FLAGS;
 
 		CJabberProto* ppro = g_Instances[i];
-		if (bAllowOffline || (ppro->m_iStatus != ID_STATUS_OFFLINE && ppro->m_iStatus != ID_STATUS_CONNECTING))
-		{
+		if ( ppro->m_iStatus != ID_STATUS_OFFLINE && ppro->m_iStatus != ID_STATUS_CONNECTING ) {
 			++nItems;
 			lastItemId = i+1;
 			clmi.flags |= CMIM_ICON;
@@ -1299,7 +1304,7 @@ CJabberProto *JabberChooseInstance(bool bAllowOffline, bool /*atCursor*/)
 		JCallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )ppro->m_hChooseMenuItem, ( LPARAM )&clmi );
 	}
 
-	if (nItems > 1) {
+	if ( nItems > 1 ) {
 		ListParam param = { 0 };
 		param.MenuObjectHandle = hChooserMenu;
 		HMENU hMenu = CreatePopupMenu();

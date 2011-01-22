@@ -219,6 +219,7 @@ struct CJabberOptions
 	CMOption<BYTE> RcMarkMessagesAsRead;
 	CMOption<DWORD> ConnectionKeepAliveInterval;
 	CMOption<DWORD> ConnectionKeepAliveTimeout;
+	CMOption<BYTE> ProcessXMPPLinks;
 
 	CJabberOptions(PROTO_INTERFACE *proto):
 		BsDirect(proto, "BsDirect", FALSE),
@@ -270,7 +271,8 @@ struct CJabberOptions
 		AutosaveNotes(proto, "AutosaveNotes", FALSE),
 		RcMarkMessagesAsRead(proto, "RcMarkMessagesAsRead", 1),
 		ConnectionKeepAliveInterval(proto, "ConnectionKeepAliveInterval", 60000),
-		ConnectionKeepAliveTimeout(proto, "ConnectionKeepAliveTimeout", 50000)
+		ConnectionKeepAliveTimeout(proto, "ConnectionKeepAliveTimeout", 50000),
+		ProcessXMPPLinks(proto, "ProcessXMPPLinks", FALSE)
 		{}
 };
 
