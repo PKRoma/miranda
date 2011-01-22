@@ -51,7 +51,7 @@ PLUGININFOEX pluginInfo = {
 	szVersion,
 	"George Hazan, Maxim Mluhov, Victor Pavlychko, Artem Shpynov, Michael Stepura",
 	"ghazan@miranda-im.org",
-	"(c) 2005-10 George Hazan, Maxim Mluhov, Victor Pavlychko, Artem Shpynov, Michael Stepura",
+	"(c) 2005-11 George Hazan, Maxim Mluhov, Victor Pavlychko, Artem Shpynov, Michael Stepura",
 	"http://miranda-im.org",
 	UNICODE_AWARE,
 	0,
