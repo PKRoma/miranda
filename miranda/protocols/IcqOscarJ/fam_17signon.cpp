@@ -89,7 +89,7 @@ void CIcqProto::sendClientAuth(const char *szKey, WORD wKeyLen, BOOL bSecure)
 
 	wUinLen = strlennull(strUID(m_dwLocalUIN, szUin));
 
-  packet.wLen = 70 + sizeof(CLIENT_ID_STRING) + wUinLen + wKeyLen + (m_bSecureConnection ? 4 : 0);
+	packet.wLen = 70 + sizeof(CLIENT_ID_STRING) + wUinLen + wKeyLen + (m_bSecureConnection ? 4 : 0);
 
 	if (bSecure)
 	{

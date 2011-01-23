@@ -270,9 +270,9 @@ void CIcqProto::handleUserOnline(BYTE *buf, WORD wLen, serverthread_info *info)
 			unpackWord(&pBuffer, &wStatusFlags);
 			unpackWord(&pBuffer, &wStatus);
 		}
-    else if (!nIsICQ)
-    {
-      // Connected thru AIM client, guess by user class
+		else if (!nIsICQ)
+		{
+			// Connected thru AIM client, guess by user class
 			if (wClass & CLASS_AWAY)
 				wStatus = ID_STATUS_AWAY;
 			else if (wClass & CLASS_WIRELESS)
@@ -281,7 +281,7 @@ void CIcqProto::handleUserOnline(BYTE *buf, WORD wLen, serverthread_info *info)
 				wStatus = ID_STATUS_ONLINE;
 
 			wStatusFlags = 0;
-    }
+		}
 		else
 		{
 			// Huh? No status TLV? Lets guess then...
@@ -443,15 +443,15 @@ void CIcqProto::handleUserOnline(BYTE *buf, WORD wLen, serverthread_info *info)
 
 		unpackSessionDataItem(pChain, 0x0E, (BYTE**)&moodData, &moodSize, NULL);
 		if (capLen || wOldStatus == ID_STATUS_OFFLINE)
-			  handleXStatusCaps(dwUIN, szUID, hContact, capBuf, capLen, moodData, moodSize);
+			handleXStatusCaps(dwUIN, szUID, hContact, capBuf, capLen, moodData, moodSize);
 		else
-			  handleXStatusCaps(dwUIN, szUID, hContact, NULL, 0, moodData, moodSize);
+			handleXStatusCaps(dwUIN, szUID, hContact, NULL, 0, moodData, moodSize);
 
 		// Determine support for extended status messages
 		if (pChain->getWord(0x08, 1) == 0x0A06)
-		  SetContactCapabilities(hContact, CAPF_STATUS_MESSAGES);
+			SetContactCapabilities(hContact, CAPF_STATUS_MESSAGES);
 		else if (wOldStatus == ID_STATUS_OFFLINE)
-		  ClearContactCapabilities(hContact, CAPF_STATUS_MESSAGES);
+			ClearContactCapabilities(hContact, CAPF_STATUS_MESSAGES);
 
 #ifdef _DEBUG
 		if (wOldStatus == ID_STATUS_OFFLINE)
@@ -478,7 +478,7 @@ void CIcqProto::handleUserOnline(BYTE *buf, WORD wLen, serverthread_info *info)
 		{
 			ClearContactCapabilities(hContact, CAPF_SRV_RELAY);
 			if (wOldStatus == ID_STATUS_OFFLINE)
-					NetLog_Server("Forcing simple messages due to compability issues");
+				NetLog_Server("Forcing simple messages due to compability issues");
 		}
 
 		// Process Avatar Hash

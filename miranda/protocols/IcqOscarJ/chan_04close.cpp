@@ -116,7 +116,7 @@ void CIcqProto::handleLoginReply(BYTE *buf, WORD datalen, serverthread_info *inf
 	// We are in the login phase and no errors were reported.
 	// Extract communication server info.
 	info->newServer = chain->getString(0x05, 1);
-  info->newServerSSL = chain->getNumber(0x8E, 1);
+	info->newServerSSL = chain->getNumber(0x8E, 1);
 	info->cookieData = (BYTE*)chain->getString(0x06, 1);
 	info->cookieDataLen = chain->getLength(0x06, 1);
 

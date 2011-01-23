@@ -48,7 +48,7 @@ static const char* makeClientVersion(char *szBuf, const char *szClient, unsigned
 	else
 		null_snprintf(szBuf, 64, "%s%u.%u", szClient, v1, v2);
 
-  return szBuf;
+	return szBuf;
 }
 
 static void verToStr(char *szStr, int v)
@@ -197,10 +197,10 @@ const char* cliIM2       = "IM2";
 const char* cliSpamBot   = "Spam Bot";
 
 const char* CIcqProto::detectUserClient(HANDLE hContact, int nIsICQ, WORD wUserClass, DWORD dwOnlineSince, const char *szCurrentClient,
-                                        WORD wVersion, DWORD dwFT1, DWORD dwFT2, DWORD dwFT3, BYTE bDirectFlag, DWORD dwDirectCookie, DWORD dwWebPort, /* ICQ specific */
-                                        BYTE *caps, WORD wLen, /* Client capabilities */
-                                        BYTE *bClientId, /* Output: detected client-type */
-                                        char *szClientBuf)
+										WORD wVersion, DWORD dwFT1, DWORD dwFT2, DWORD dwFT3, BYTE bDirectFlag, DWORD dwDirectCookie, DWORD dwWebPort, /* ICQ specific */
+										BYTE *caps, WORD wLen, /* Client capabilities */
+										BYTE *bClientId, /* Output: detected client-type */
+										char *szClientBuf)
 {
 	LPCSTR szClient = NULL;
 	int bMirandaIM = FALSE;
@@ -705,15 +705,15 @@ const char* CIcqProto::detectUserClient(HANDLE hContact, int nIsICQ, WORD wUserC
 
 					switch ((*capId)[0x5])
 					{
-						case 'l':
-							strcat(szClientBuf, "/Linux");
-							break;
-						case 'w':
-							strcat(szClientBuf, "/Win32");
-							break;
-						case 'm':
-							strcat(szClientBuf, "/MacOS X");
-							break;
+					case 'l':
+						strcat(szClientBuf, "/Linux");
+						break;
+					case 'w':
+						strcat(szClientBuf, "/Win32");
+						break;
+					case 'm':
+						strcat(szClientBuf, "/MacOS X");
+						break;
 					}
 				}
 				szClient = szClientBuf;
@@ -1066,11 +1066,11 @@ const char* CIcqProto::detectUserClient(HANDLE hContact, int nIsICQ, WORD wUserC
 
 			null_snprintf(szPack, 16, " [%.12s]", (*capId)+4);
 
-      if (szClient != szClientBuf)
-      { // make sure client string is not constant
-        strcpy(szClientBuf, szClient);
-        szClient = szClientBuf;
-      }
+			if (szClient != szClientBuf)
+			{ // make sure client string is not constant
+				strcpy(szClientBuf, szClient);
+				szClient = szClientBuf;
+			}
 
 			strcat(szClientBuf, szPack);
 		}

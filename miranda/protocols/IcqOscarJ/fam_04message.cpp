@@ -138,7 +138,7 @@ void CIcqProto::handleRecvServMsg(BYTE *buf, WORD wLen, WORD wFlags, DWORD dwRef
 	// The message type used:
 	unpackWord(&buf, &wMessageFormat); //  0x0001: Simple message format
 	wLen -= 2;                         //  0x0002: Advanced message format
-                                     //  0x0004: 'New' message format
+	//  0x0004: 'New' message format
 	// Sender UIN
 	if (!unpackUID(&buf, &wLen, &dwUin, &szUID)) return;
 
@@ -1026,7 +1026,7 @@ void CIcqProto::parseServRelayPluginData(BYTE *pDataBuf, WORD wLen, HANDLE hCont
 			NetLog_Server("Unsupported plugin message type %d", nTypeId);
 		}
 	}
-  else
+	else
 		NetLog_Server("Error: Malformed server plugin message");
 }
 
@@ -1540,7 +1540,7 @@ int getPluginTypeIdLen(int nTypeID)
 		return 0x3C;
 
 	case MTYPE_AUTONA:
-    return 0x3B;
+		return 0x3B;
 
 	default:
 		return 0;
@@ -2472,7 +2472,7 @@ void CIcqProto::handleRecvMsgResponse(BYTE *buf, WORD wLen, WORD wFlags, DWORD d
 							memcpy(szMsg, buf, dwDataLen);
 						szMsg[dwDataLen] = '\0';
 						handleStatusMsgReply("SNAC(4.B) ", hContact, dwUin, wVersion, pCookieData->nAckType, (WORD)dwCookie, szMsg, 0);
-            
+
 						ReleaseCookie(dwCookie);
 						return;
 					}
@@ -2533,7 +2533,7 @@ void CIcqProto::handleRecvMsgResponse(BYTE *buf, WORD wLen, WORD wFlags, DWORD d
 
 						SAFE_FREE(&szMsg);
 
-            ReleaseCookie(dwCookie);
+						ReleaseCookie(dwCookie);
 					}
 					return;
 
@@ -2841,7 +2841,7 @@ void CIcqProto::handleServerAck(BYTE *buf, WORD wLen, WORD wFlags, DWORD dwSeque
 void CIcqProto::handleMissedMsg(BYTE *buf, WORD wLen, WORD wFlags, DWORD dwRef)
 {
 	DWORD dwUin;
-  uid_str szUid;
+	uid_str szUid;
 	WORD wChannel;
 	WORD wWarningLevel;
 	WORD wCount;
@@ -2909,7 +2909,7 @@ void CIcqProto::handleMissedMsg(BYTE *buf, WORD wLen, WORD wFlags, DWORD dwRef)
 	// Create event to notify user
 	int bAdded;
 
-  AddEvent(HContactFromUID(dwUin, szUid, &bAdded), ICQEVENTTYPE_MISSEDMESSAGE, time(NULL), 0, sizeof(wError), (PBYTE)&wError);
+	AddEvent(HContactFromUID(dwUin, szUid, &bAdded), ICQEVENTTYPE_MISSEDMESSAGE, time(NULL), 0, sizeof(wError), (PBYTE)&wError);
 }
 
 

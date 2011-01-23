@@ -42,7 +42,7 @@ void CIcqProto::handleLoginChannel(BYTE *buf, WORD datalen, serverthread_info *i
 	icq_packet packet;
 
 #ifdef _DEBUG
-  NetLog_Server("Received SRV_HELLO from %s", info->isLoginServer ? "login server" : "communication server");
+	NetLog_Server("Received SRV_HELLO from %s", info->isLoginServer ? "login server" : "communication server");
 #endif
 
 	// isLoginServer is "1" if we just received SRV_HELLO
@@ -106,7 +106,7 @@ void CIcqProto::handleLoginChannel(BYTE *buf, WORD datalen, serverthread_info *i
 		else
 		{
 			// We need a cookie to identify us to the communication server
-      NetLog_Server("Error: Connected to %s without a cookie!", "communication server");
+			NetLog_Server("Error: Connected to %s without a cookie!", "communication server");
 		}
 	}
 }

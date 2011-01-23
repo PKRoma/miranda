@@ -62,11 +62,11 @@ PLUGININFOEX pluginInfo = {
 	"http://addons.miranda-im.org/details.php?action=viewfile&id=1683",
 	UNICODE_AWARE,
 	0,   //doesn't replace anything built-in
-    #if defined( _UNICODE )
-    {0x73a9615c, 0x7d4e, 0x4555, {0xba, 0xdb, 0xee, 0x5, 0xdc, 0x92, 0x8e, 0xff}} // {73A9615C-7D4E-4555-BADB-EE05DC928EFF}
-    #else
-    {0x89cf4c3d, 0x7014, 0x4658, {0xa1, 0x3b, 0x46, 0xdb, 0x49, 0x68, 0xc7, 0x3b}} // {89CF4C3D-7014-4658-A13B-46DB4968C73B}
-    #endif
+#if defined( _UNICODE )
+	{0x73a9615c, 0x7d4e, 0x4555, {0xba, 0xdb, 0xee, 0x5, 0xdc, 0x92, 0x8e, 0xff}} // {73A9615C-7D4E-4555-BADB-EE05DC928EFF}
+#else
+	{0x89cf4c3d, 0x7014, 0x4658, {0xa1, 0x3b, 0x46, 0xdb, 0x49, 0x68, 0xc7, 0x3b}} // {89CF4C3D-7014-4658-A13B-46DB4968C73B}
+#endif
 };
 
 extern "C" PLUGININFOEX __declspec(dllexport) *MirandaPluginInfoEx(DWORD mirandaVersion)
@@ -146,23 +146,23 @@ extern "C" int __declspec(dllexport) Load(PLUGINLINK *link)
 			MIRANDA_VERSION &= 0xFFFFFF00;
 		}
 
-    // Check if _UNICODE matches Miranda's _UNICODE
+		// Check if _UNICODE matches Miranda's _UNICODE
 #if defined( _UNICODE )
-  	if (strstrnull(szVer, "unicode") == NULL)
-    {
-      char szMsg[MAX_PATH], szCaption[100];
+		if (strstrnull(szVer, "unicode") == NULL)
+		{
+			char szMsg[MAX_PATH], szCaption[100];
 
-      MessageBoxUtf(NULL, ICQTranslateUtfStatic("You cannot use Unicode version of ICQ Protocol plug-in with Ansi version of Miranda IM.", szMsg, MAX_PATH),
-        ICQTranslateUtfStatic("ICQ Plugin", szCaption, 100), MB_OK|MB_ICONWARNING|MB_SETFOREGROUND|MB_TOPMOST);
-      return 1; // Failure
-    }
+			MessageBoxUtf(NULL, ICQTranslateUtfStatic("You cannot use Unicode version of ICQ Protocol plug-in with Ansi version of Miranda IM.", szMsg, MAX_PATH),
+				ICQTranslateUtfStatic("ICQ Plugin", szCaption, 100), MB_OK|MB_ICONWARNING|MB_SETFOREGROUND|MB_TOPMOST);
+			return 1; // Failure
+		}
 #else
-	  if (strstrnull(szVer, "unicode") != NULL)
-    {
-      MessageBox(NULL, Translate("You cannot use Ansi version of ICQ Protocol plug-in with Unicode version of Miranda IM."), Translate("ICQ Plugin"),
-  			MB_OK|MB_ICONWARNING|MB_SETFOREGROUND|MB_TOPMOST);
-      return 1; // Failure
-    }
+		if (strstrnull(szVer, "unicode") != NULL)
+		{
+			MessageBox(NULL, Translate("You cannot use Ansi version of ICQ Protocol plug-in with Unicode version of Miranda IM."), Translate("ICQ Plugin"),
+				MB_OK|MB_ICONWARNING|MB_SETFOREGROUND|MB_TOPMOST);
+			return 1; // Failure
+		}
 #endif
 	}
 
@@ -181,21 +181,21 @@ extern "C" int __declspec(dllexport) Load(PLUGINLINK *link)
 	// Initialize charset conversion routines
 	InitI18N();
 
-  // Register static services
-  hStaticServices[0] = CreateServiceFunction(ICQ_DB_GETEVENTTEXT_MISSEDMESSAGE, icq_getEventTextMissedMessage);
+	// Register static services
+	hStaticServices[0] = CreateServiceFunction(ICQ_DB_GETEVENTTEXT_MISSEDMESSAGE, icq_getEventTextMissedMessage);
 
-  {
-	// Define global icons
-    char szSectionName[MAX_PATH];
-	null_snprintf(szSectionName, sizeof(szSectionName), "Protocols/%s", ICQ_PROTOCOL_NAME);
+	{
+		// Define global icons
+		char szSectionName[MAX_PATH];
+		null_snprintf(szSectionName, sizeof(szSectionName), "Protocols/%s", ICQ_PROTOCOL_NAME);
 
-    TCHAR lib[MAX_PATH];
-    GetModuleFileName(hInst, lib, MAX_PATH);
-    hStaticIcons[ISI_AUTH_REQUEST] = IconLibDefine(LPGEN("Request authorization"), szSectionName, NULL, "req_auth", lib, -IDI_AUTH_ASK);
-    hStaticIcons[ISI_AUTH_GRANT] = IconLibDefine(LPGEN("Grant authorization"), szSectionName, NULL, "grant_auth", lib, -IDI_AUTH_GRANT);
-    hStaticIcons[ISI_AUTH_REVOKE] = IconLibDefine(LPGEN("Revoke authorization"), szSectionName, NULL, "revoke_auth", lib, -IDI_AUTH_REVOKE);
-    hStaticIcons[ISI_ADD_TO_SERVLIST] = IconLibDefine(LPGEN("Add to server list"), szSectionName, NULL, "add_to_server", lib, -IDI_SERVLIST_ADD);
-  }
+		TCHAR lib[MAX_PATH];
+		GetModuleFileName(hInst, lib, MAX_PATH);
+		hStaticIcons[ISI_AUTH_REQUEST] = IconLibDefine(LPGEN("Request authorization"), szSectionName, NULL, "req_auth", lib, -IDI_AUTH_ASK);
+		hStaticIcons[ISI_AUTH_GRANT] = IconLibDefine(LPGEN("Grant authorization"), szSectionName, NULL, "grant_auth", lib, -IDI_AUTH_GRANT);
+		hStaticIcons[ISI_AUTH_REVOKE] = IconLibDefine(LPGEN("Revoke authorization"), szSectionName, NULL, "revoke_auth", lib, -IDI_AUTH_REVOKE);
+		hStaticIcons[ISI_ADD_TO_SERVLIST] = IconLibDefine(LPGEN("Add to server list"), szSectionName, NULL, "add_to_server", lib, -IDI_SERVLIST_ADD);
+	}
 
 	hStaticHooks[0] = HookEvent(ME_SYSTEM_MODULESLOADED, OnModulesLoaded);
 
@@ -206,26 +206,26 @@ extern "C" int __declspec(dllexport) Load(PLUGINLINK *link)
 
 extern "C" int __declspec(dllexport) Unload(void)
 {
-  int i;
+	int i;
 
-  // Release static icon handles
-  for (i = 0; i < SIZEOF(hStaticIcons); i++)
-    IconLibRemove(&hStaticIcons[i]);
+	// Release static icon handles
+	for (i = 0; i < SIZEOF(hStaticIcons); i++)
+		IconLibRemove(&hStaticIcons[i]);
 
-  // Release static event hooks
-  for (i = 0; i < SIZEOF(hStaticHooks); i++)
-    if (hStaticHooks[i])
-      UnhookEvent(hStaticHooks[i]);
+	// Release static event hooks
+	for (i = 0; i < SIZEOF(hStaticHooks); i++)
+		if (hStaticHooks[i])
+			UnhookEvent(hStaticHooks[i]);
 
 	// destroying contact menu
-  	g_MenuUninit();
+	g_MenuUninit();
 
-  // Destroy static service functions
-  for (i = 0; i < SIZEOF(hStaticServices); i++)
-    if (hStaticServices[i])
-      DestroyServiceFunction(hStaticServices[i]);
+	// Destroy static service functions
+	for (i = 0; i < SIZEOF(hStaticServices); i++)
+		if (hStaticServices[i])
+			DestroyServiceFunction(hStaticServices[i]);
 
-  g_Instances.destroy();
+	g_Instances.destroy();
 
 	return 0;
 }
@@ -287,7 +287,7 @@ void CIcqProto::UpdateGlobalSettings()
 			setSettingWord(NULL, "OscarPort", DEFAULT_SERVER_PORT_SSL);
 		}
 	}
-	
+
 	if (m_hServerNetlibUser)
 	{
 		NETLIBUSERSETTINGS nlus = {0};

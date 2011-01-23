@@ -50,7 +50,7 @@ void CIcqProto::handleDataChannel(BYTE *pBuffer, WORD wBufferLength, serverthrea
 #ifdef _DEBUG
 		if (snacHeader.wFlags & 0x8000)
 			NetLog_Server(" Received SNAC(x%02X,x%02X), version %u", snacHeader.wFamily, snacHeader.wSubtype, snacHeader.wVersion);
-    else
+		else
 			NetLog_Server(" Received SNAC(x%02X,x%02X)", snacHeader.wFamily, snacHeader.wSubtype);
 #endif
 

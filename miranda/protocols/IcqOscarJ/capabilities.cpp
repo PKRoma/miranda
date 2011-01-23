@@ -219,7 +219,7 @@ DWORD GetCapabilitiesFromBuffer(BYTE *pBuffer, int nLength)
 		}
 	}
 
-  return fdwCaps;
+	return fdwCaps;
 }
 
 

@@ -71,13 +71,13 @@ static void packServIcqExtensionHeader(icq_packet *p, CIcqProto *ppro, WORD wLen
 
 static void packServIcqDirectoryHeader(icq_packet *p, CIcqProto *ppro, WORD wLen, WORD wType, WORD wCommand, WORD wSeq)
 {
-  packServIcqExtensionHeader(p, ppro, wLen + 0x1E, CLI_META_INFO_REQ, wSeq);
-  packLEWord(p, wType);
-  packLEWord(p, wLen + 0x1A);
-  packFNACHeader(p, 0x5b9, wCommand, 0, 0, 2);
-  packWord(p, 0);
-  packWord(p, (WORD)GetACP());
-  packDWord(p, 2);
+	packServIcqExtensionHeader(p, ppro, wLen + 0x1E, CLI_META_INFO_REQ, wSeq);
+	packLEWord(p, wType);
+	packLEWord(p, wLen + 0x1A);
+	packFNACHeader(p, 0x5b9, wCommand, 0, 0, 2);
+	packWord(p, 0);
+	packWord(p, (WORD)GetACP());
+	packDWord(p, 2);
 }
 
 
@@ -273,7 +273,7 @@ void CIcqProto::icq_setstatus(WORD wStatus, const char *szStatusNote)
 		DBVARIANT dbv = {DBVT_DELETED};
 
 		if (m_bMoodsEnabled && !getSettingString(NULL, DBSETTING_STATUS_MOOD, &dbv))
-		  szMoodData = null_strdup(dbv.pszVal);
+			szMoodData = null_strdup(dbv.pszVal);
 
 		ICQFreeVariant(&dbv);
 
@@ -1063,7 +1063,7 @@ void CIcqProto::icq_sendAwayMsgReplyServExt(DWORD dwUin, char *szUID, DWORD dwMs
 				utf8_decode_static(*szMsg, szAnsiMsg, wMsgLen);
 				pszMsg = szAnsiMsg;
 			}
-      // convert to HTML 
+			// convert to HTML 
 			char *mng = MangleXml(pszMsg, strlennull(pszMsg));
 			pszMsg = (char*)SAFE_MALLOC(strlennull(mng) + 28);
 			strcpy(pszMsg, "<HTML><BODY>"); /// TODO: add support for RTL & user customizable font
@@ -1126,7 +1126,7 @@ DWORD CIcqProto::SearchByUin(DWORD dwUin)
 {
 	WORD wInfoLen;
 	icq_packet pBuffer; // I reuse the ICQ packet type as a generic buffer
-                      // I should be ashamed! ;)
+	// I should be ashamed! ;)
 
 	// Calculate data size
 	wInfoLen = 4 + getUINLen(dwUin);
@@ -1149,7 +1149,7 @@ DWORD CIcqProto::SearchByNames(const char *pszNick, const char *pszFirstName, co
 	WORD wInfoLen = 0;
 	WORD wNickLen,wFirstLen,wLastLen;
 	icq_packet pBuffer; // I reuse the ICQ packet type as a generic buffer
-                      // I should be ashamed! ;)
+	// I should be ashamed! ;)
 
 	wNickLen = strlennull(pszNick);
 	wFirstLen = strlennull(pszFirstName);
@@ -1179,7 +1179,7 @@ DWORD CIcqProto::SearchByNames(const char *pszNick, const char *pszFirstName, co
 		packTLV(&pBuffer, 0x6E, wLastLen, (PBYTE)pszLastName);
 
 	if (wFirstLen)
-    packTLV(&pBuffer, 0x64, wFirstLen, (PBYTE)pszFirstName);
+		packTLV(&pBuffer, 0x64, wFirstLen, (PBYTE)pszFirstName);
 
 	// Send it off for further packing
 	if (wInfoLen)
@@ -1224,7 +1224,7 @@ DWORD CIcqProto::SearchByMail(const char* pszEmail)
 DWORD CIcqProto::sendDirectorySearchPacket(const BYTE *pSearchData, WORD wDataLen, WORD wPage, BOOL bOnlineUsersOnly)
 {
 	icq_packet packet;
-  DWORD dwCookie;
+	DWORD dwCookie;
 
 	_ASSERTE(pSearchData);
 	_ASSERTE(wDataLen >= 4);
@@ -1482,15 +1482,15 @@ void CIcqProto::icq_sendGenericContact(DWORD dwUin, const char *szUid, WORD wFam
 
 void CIcqProto::icq_sendNewContact(DWORD dwUin, const char *szUid)
 {
-  /* Try to add to temporary buddy list */
+	/* Try to add to temporary buddy list */
 	icq_sendGenericContact(dwUin, szUid, ICQ_BUDDY_FAMILY, ICQ_USER_ADDTOTEMPLIST);
 }
 
 
 void CIcqProto::icq_sendRemoveContact(DWORD dwUin, const char *szUid)
 {
-  /* Remove from temporary buddy list */
-  icq_sendGenericContact(dwUin, szUid, ICQ_BUDDY_FAMILY, ICQ_USER_REMOVEFROMTEMPLIST);
+	/* Remove from temporary buddy list */
+	icq_sendGenericContact(dwUin, szUid, ICQ_BUDDY_FAMILY, ICQ_USER_REMOVEFROMTEMPLIST);
 }
 
 

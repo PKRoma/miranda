@@ -105,11 +105,11 @@ void CIcqProto::handleLookupEmailReply(BYTE* buf, WORD wLen, DWORD dwCookie)
 		NetLog_Server("Error: Received unexpected lookup reply");
 		return;
 	}
-	
+
 	NetLog_Server("SNAC(0x0A,0x3): Lookup reply");
 
 	sr.hdr.cbSize = sizeof(sr);
-  sr.hdr.flags = PSR_TCHAR;
+	sr.hdr.flags = PSR_TCHAR;
 	sr.hdr.email = ansi_to_tchar(pCookie->szObject);
 
 	// Syntax check, read chain
@@ -119,7 +119,7 @@ void CIcqProto::handleLookupEmailReply(BYTE* buf, WORD wLen, DWORD dwCookie)
 		{ // collect the results
 			char *szUid = pChain->getString(0x01, i);
 			if (!szUid) break;
-      sr.hdr.id = ansi_to_tchar(szUid);
+			sr.hdr.id = ansi_to_tchar(szUid);
 			sr.hdr.nick = sr.hdr.id;
 			// broadcast the result
 			if (pCookie->dwMainId)
@@ -127,11 +127,11 @@ void CIcqProto::handleLookupEmailReply(BYTE* buf, WORD wLen, DWORD dwCookie)
 			else
 				BroadcastAck(NULL, ACKTYPE_SEARCH, ACKRESULT_DATA, (HANDLE)dwCookie, (LPARAM)&sr);
 			SAFE_FREE(&sr.hdr.id);
-      SAFE_FREE(&szUid);
+			SAFE_FREE(&szUid);
 		}
 		disposeChain(&pChain);
 	}
-  SAFE_FREE(&sr.hdr.email);
+	SAFE_FREE(&sr.hdr.email);
 
 	ReleaseLookupCookie(dwCookie, pCookie);
 }

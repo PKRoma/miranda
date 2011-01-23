@@ -42,24 +42,24 @@
 
 rates::rates(CIcqProto *ppro, BYTE *pBuffer, WORD wLen)
 {
-  nGroups = 0;
-  memset(&groups, 0, MAX_RATES_GROUP_COUNT * sizeof(rates_group));
-  this->ppro = ppro;
+	nGroups = 0;
+	memset(&groups, 0, MAX_RATES_GROUP_COUNT * sizeof(rates_group));
+	this->ppro = ppro;
 
-  // Parse Rate Data Block
+	// Parse Rate Data Block
 	WORD wCount;
 	unpackWord(&pBuffer, &wCount);
 	wLen -= 2;
 
-  if (wCount > MAX_RATES_GROUP_COUNT)
-  { // just sanity check
-    ppro->NetLog_Server("Rates: Error: Data packet contains too many rate groups!");
-    wCount = MAX_RATES_GROUP_COUNT;
-  }
+	if (wCount > MAX_RATES_GROUP_COUNT)
+	{ // just sanity check
+		ppro->NetLog_Server("Rates: Error: Data packet contains too many rate groups!");
+		wCount = MAX_RATES_GROUP_COUNT;
+	}
 
 	nGroups = wCount;
 	// Parse Group details
-  int i;
+	int i;
 	for (i=0; i<wCount; i++)
 	{
 		rates_group *pGroup = &groups[i];
@@ -116,7 +116,7 @@ rates::~rates()
 	for (int i = 0; i < nGroups; i++)
 		SAFE_FREE((void**)&groups[i].pPairs);
 
-  nGroups = 0;
+	nGroups = 0;
 }
 
 
@@ -175,7 +175,7 @@ int rates::getNextRateLevel(WORD wGroup)
 {
 	rates_group *pGroup = getGroup(wGroup);
 
-  if (pGroup)
+	if (pGroup)
 	{
 		int nLevel = pGroup->rCurrentLevel*(pGroup->dwWindowSize-1)/pGroup->dwWindowSize + (GetTickCount() - pGroup->tCurrentLevel)/pGroup->dwWindowSize;
 
@@ -274,74 +274,74 @@ void rates::initAckPacket(icq_packet *pPacket)
 
 rates_queue_item::rates_queue_item(CIcqProto *ppro, WORD wGroup) : bCreated(FALSE), dwUin(0), szUid(NULL)
 {
-  this->ppro = ppro;
-  this->wGroup = wGroup;
+	this->ppro = ppro;
+	this->wGroup = wGroup;
 }
 
 rates_queue_item::~rates_queue_item()
 {
-  if (bCreated)
-  {
-    SAFE_FREE(&szUid);
-    bCreated = FALSE;
-  }
+	if (bCreated)
+	{
+		SAFE_FREE(&szUid);
+		bCreated = FALSE;
+	}
 }
 
 
 BOOL rates_queue_item::isEqual(rates_queue_item *pItem)
 { // the same event (equal address of _vftable) for the same contact
-  return (pItem->hContact == this->hContact) && (*(void**)pItem == *(void**)this);
+	return (pItem->hContact == this->hContact) && (*(void**)pItem == *(void**)this);
 }
 
 
 rates_queue_item* rates_queue_item::copyItem(rates_queue_item *pDest)
 {
-  if (!pDest)
-    pDest = new rates_queue_item(ppro, wGroup);
+	if (!pDest)
+		pDest = new rates_queue_item(ppro, wGroup);
 
-  pDest->hContact = hContact;
-  pDest->dwUin = dwUin;
-  pDest->szUid = dwUin ? null_strdup(szUid) : NULL;
-  pDest->bCreated = TRUE;
+	pDest->hContact = hContact;
+	pDest->dwUin = dwUin;
+	pDest->szUid = dwUin ? null_strdup(szUid) : NULL;
+	pDest->bCreated = TRUE;
 
-  return pDest;
+	return pDest;
 }
 
 
 void rates_queue_item::execute()
 {
 #ifdef _DEBUG
-  ppro->NetLog_Server("Rates: Error executing abstract event.");
+	ppro->NetLog_Server("Rates: Error executing abstract event.");
 #endif
 }
 
 
 BOOL rates_queue_item::isOverRate(int nLevel)
 {
-  icq_lock l(ppro->m_ratesMutex);
+	icq_lock l(ppro->m_ratesMutex);
 
-  if (ppro->m_rates)
-    return ppro->m_rates->getNextRateLevel(wGroup) < ppro->m_rates->getLimitLevel(wGroup, nLevel);
+	if (ppro->m_rates)
+		return ppro->m_rates->getNextRateLevel(wGroup) < ppro->m_rates->getLimitLevel(wGroup, nLevel);
 
-  return FALSE;
+	return FALSE;
 }
 
 
 rates_queue::rates_queue(CIcqProto *ppro, const char *szDescr, int nLimitLevel, int nWaitLevel, int nDuplicates)
 {
 	this->listsMutex = new icq_critical_section();
-  this->ppro = ppro;
-  this->szDescr = szDescr;
-  limitLevel = nLimitLevel;
-  waitLevel = nWaitLevel;
-  duplicates = nDuplicates;
+	this->ppro = ppro;
+	this->szDescr = szDescr;
+	limitLevel = nLimitLevel;
+	waitLevel = nWaitLevel;
+	duplicates = nDuplicates;
 }
 
 
 rates_queue::~rates_queue()
 {
-  cleanup();
-  SAFE_DELETE(&listsMutex);
+	cleanup();
+	SAFE_DELETE(&listsMutex);
 }
 
 
@@ -349,7 +349,7 @@ rates_queue::~rates_queue()
 struct rate_delay_args
 {
 	int nDelay;
-  rates_queue *queue;
+	rates_queue *queue;
 	IcqRateFunc delaycode;
 };
 
@@ -368,7 +368,7 @@ void rates_queue::initDelay(int nDelay, IcqRateFunc delaycode)
 #endif
 
 	rate_delay_args *pArgs = (rate_delay_args*)SAFE_MALLOC(sizeof(rate_delay_args)); // This will be freed in the new thread
-  pArgs->queue = this;
+	pArgs->queue = this;
 	pArgs->nDelay = nDelay;
 	pArgs->delaycode = delaycode;
 
@@ -378,13 +378,13 @@ void rates_queue::initDelay(int nDelay, IcqRateFunc delaycode)
 
 void rates_queue::cleanup()
 {
-  icq_lock l(listsMutex);
+	icq_lock l(listsMutex);
 
-  if (pendingListSize)
-    ppro->NetLog_Server("Rates: Purging %d %s(s).", pendingListSize, szDescr);
+	if (pendingListSize)
+		ppro->NetLog_Server("Rates: Purging %d %s(s).", pendingListSize, szDescr);
 
 	for (int i=0; i < pendingListSize; i++)
-    SAFE_DELETE((void_struct**)&pendingList[i]);
+		SAFE_DELETE((void_struct**)&pendingList[i]);
 	SAFE_FREE((void**)&pendingList);
 	pendingListSize = 0;
 }
@@ -477,7 +477,7 @@ void rates_queue::putItem(rates_queue_item *pItem, int nMinDelay)
 					listsMutex->Leave();
 					return;
 				}
-        // otherwise keep existing and append new
+				// otherwise keep existing and append new
 			}
 		}
 	}
@@ -506,21 +506,21 @@ void rates_queue::putItem(rates_queue_item *pItem, int nMinDelay)
 
 int CIcqProto::handleRateItem(rates_queue_item *item, int nQueueType, int nMinDelay, BOOL bAllowDelay)
 {
-  rates_queue *pQueue = NULL;
+	rates_queue *pQueue = NULL;
 
-  m_ratesMutex->Enter();
-  switch (nQueueType) 
-  {
-  case RQT_REQUEST: 
-    pQueue = m_ratesQueue_Request;
-    break;
-  case RQT_RESPONSE:
-    pQueue = m_ratesQueue_Response;
-    break;
-  }
+	m_ratesMutex->Enter();
+	switch (nQueueType) 
+	{
+	case RQT_REQUEST: 
+		pQueue = m_ratesQueue_Request;
+		break;
+	case RQT_RESPONSE:
+		pQueue = m_ratesQueue_Response;
+		break;
+	}
 
-  if (pQueue)
-  {
+	if (pQueue)
+	{
 		if (bAllowDelay && (item->isOverRate(pQueue->waitLevel) || nMinDelay))
 		{ // limit reached or min delay configured, add to queue
 			pQueue->putItem(item, nMinDelay);
@@ -528,9 +528,9 @@ int CIcqProto::handleRateItem(rates_queue_item *item, int nQueueType, int nMinDe
 			m_ratesMutex->Leave();
 			return 1;
 		}
-  }
-  m_ratesMutex->Leave();
+	}
+	m_ratesMutex->Leave();
 
-  item->execute();
+	item->execute();
 	return 0;
 }

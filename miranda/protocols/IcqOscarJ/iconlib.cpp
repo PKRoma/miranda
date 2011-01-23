@@ -40,58 +40,58 @@
 
 IcqIconHandle IconLibDefine(const char *desc, const char *section, const char *module, const char *ident, const TCHAR *def_file, int def_idx)
 {
-  SKINICONDESC sid = {0};
+	SKINICONDESC sid = {0};
 
-  sid.cbSize = SKINICONDESC_SIZE;
-  sid.pwszSection = make_unicode_string(section);
-  sid.pwszDescription = make_unicode_string(desc);
-  sid.flags = SIDF_UNICODE | SIDF_PATH_TCHAR;
+	sid.cbSize = SKINICONDESC_SIZE;
+	sid.pwszSection = make_unicode_string(section);
+	sid.pwszDescription = make_unicode_string(desc);
+	sid.flags = SIDF_UNICODE | SIDF_PATH_TCHAR;
 
-  char szName[MAX_PATH + 128];
-  null_snprintf(szName, sizeof(szName), "%s_%s", module ? module : ICQ_PROTOCOL_NAME, ident);
-  sid.pszName = szName;
-  sid.ptszDefaultFile = (TCHAR*)def_file;
-  sid.iDefaultIndex = def_idx;
+	char szName[MAX_PATH + 128];
+	null_snprintf(szName, sizeof(szName), "%s_%s", module ? module : ICQ_PROTOCOL_NAME, ident);
+	sid.pszName = szName;
+	sid.ptszDefaultFile = (TCHAR*)def_file;
+	sid.iDefaultIndex = def_idx;
 
-  IcqIconHandle hIcon = (IcqIconHandle)SAFE_MALLOC(sizeof(IcqIconHandle_s));
-  hIcon->szName = null_strdup(sid.pszName);
-  hIcon->hIcoLib = (HANDLE)CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
+	IcqIconHandle hIcon = (IcqIconHandle)SAFE_MALLOC(sizeof(IcqIconHandle_s));
+	hIcon->szName = null_strdup(sid.pszName);
+	hIcon->hIcoLib = (HANDLE)CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
 
-  SAFE_FREE(&sid.pwszSection);
-  SAFE_FREE(&sid.pwszDescription);
+	SAFE_FREE(&sid.pwszSection);
+	SAFE_FREE(&sid.pwszDescription);
 
-  return hIcon;
+	return hIcon;
 }
 
 
 void IconLibRemove(IcqIconHandle *phIcon)
 {
-  if (phIcon && *phIcon)
-  {
-    IcqIconHandle hIcon = *phIcon;
+	if (phIcon && *phIcon)
+	{
+		IcqIconHandle hIcon = *phIcon;
 
-    CallService(MS_SKIN2_REMOVEICON, 0, (LPARAM)hIcon->szName);
-    SAFE_FREE(&hIcon->szName);
-    SAFE_FREE((void**)phIcon);
-  }
+		CallService(MS_SKIN2_REMOVEICON, 0, (LPARAM)hIcon->szName);
+		SAFE_FREE(&hIcon->szName);
+		SAFE_FREE((void**)phIcon);
+	}
 }
 
 
 HANDLE IcqIconHandle_s::Handle()
 {
-  if (this)
-    return hIcoLib;
+	if (this)
+		return hIcoLib;
 
-  return NULL;
+	return NULL;
 }
 
 
 HICON IcqIconHandle_s::GetIcon(bool big)
 {
-  if (this)
-    return (HICON)CallService(MS_SKIN2_GETICONBYHANDLE, big, (LPARAM)hIcoLib);
+	if (this)
+		return (HICON)CallService(MS_SKIN2_GETICONBYHANDLE, big, (LPARAM)hIcoLib);
 
-  return NULL;
+	return NULL;
 }
 
 void IcqIconHandle_s::ReleaseIcon(bool big)

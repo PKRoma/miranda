@@ -54,14 +54,14 @@ static int spammerListCount = 0;
 
 void MoveDlgItem(HWND hwndDlg, int iItem, int left, int top, int width, int height)
 {
-  RECT rc;
+	RECT rc;
 
-  rc.left = left;
-  rc.top = top;
-  rc.right = left + width;
-  rc.bottom = top + height;
-  MapDialogRect(hwndDlg, &rc);
-  MoveWindow(GetDlgItem(hwndDlg, iItem), rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top, FALSE);
+	rc.left = left;
+	rc.top = top;
+	rc.right = left + width;
+	rc.bottom = top + height;
+	MapDialogRect(hwndDlg, &rc);
+	MoveWindow(GetDlgItem(hwndDlg, iItem), rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top, FALSE);
 }
 
 
@@ -73,7 +73,7 @@ void EnableDlgItem(HWND hwndDlg, UINT control, int state)
 
 void ShowDlgItem(HWND hwndDlg, UINT control, int state)
 {
-  ShowWindow(GetDlgItem(hwndDlg, control), state);
+	ShowWindow(GetDlgItem(hwndDlg, control), state);
 }
 
 
@@ -129,47 +129,47 @@ WORD MirandaStatusToIcq(int nMirandaStatus)
 	WORD nIcqStatus;
 
 	switch (nMirandaStatus) {
-	case ID_STATUS_ONLINE:
-		nIcqStatus = ICQ_STATUS_ONLINE;
-		break;
+case ID_STATUS_ONLINE:
+	nIcqStatus = ICQ_STATUS_ONLINE;
+	break;
 
-	case ID_STATUS_AWAY:
-		nIcqStatus = ICQ_STATUS_AWAY;
-		break;
+case ID_STATUS_AWAY:
+	nIcqStatus = ICQ_STATUS_AWAY;
+	break;
 
-	case ID_STATUS_OUTTOLUNCH:
-	case ID_STATUS_NA:
-		nIcqStatus = ICQ_STATUS_NA;
-		break;
+case ID_STATUS_OUTTOLUNCH:
+case ID_STATUS_NA:
+	nIcqStatus = ICQ_STATUS_NA;
+	break;
 
-	case ID_STATUS_ONTHEPHONE:
-	case ID_STATUS_OCCUPIED:
-		nIcqStatus = ICQ_STATUS_OCCUPIED;
-		break;
+case ID_STATUS_ONTHEPHONE:
+case ID_STATUS_OCCUPIED:
+	nIcqStatus = ICQ_STATUS_OCCUPIED;
+	break;
 
-	case ID_STATUS_DND:
-		nIcqStatus = ICQ_STATUS_DND;
-		break;
+case ID_STATUS_DND:
+	nIcqStatus = ICQ_STATUS_DND;
+	break;
 
-	case ID_STATUS_INVISIBLE:
-		nIcqStatus = ICQ_STATUS_INVISIBLE;
-		break;
+case ID_STATUS_INVISIBLE:
+	nIcqStatus = ICQ_STATUS_INVISIBLE;
+	break;
 
-	case ID_STATUS_FREECHAT:
-		nIcqStatus = ICQ_STATUS_FFC;
-		break;
+case ID_STATUS_FREECHAT:
+	nIcqStatus = ICQ_STATUS_FFC;
+	break;
 
-	case ID_STATUS_OFFLINE:
-		// Oscar doesnt have anything that maps to this status. This should never happen.
-		_ASSERTE(nMirandaStatus != ID_STATUS_OFFLINE);
-		nIcqStatus = 0;
-		break;
+case ID_STATUS_OFFLINE:
+	// Oscar doesnt have anything that maps to this status. This should never happen.
+	_ASSERTE(nMirandaStatus != ID_STATUS_OFFLINE);
+	nIcqStatus = 0;
+	break;
 
-	default:
-		// Online seems to be a good default.
-		// Since it cant be offline, it must be a new type of online status.
-		nIcqStatus = ICQ_STATUS_ONLINE;
-		break;
+default:
+	// Online seems to be a good default.
+	// Since it cant be offline, it must be a new type of online status.
+	nIcqStatus = ICQ_STATUS_ONLINE;
+	break;
 	}
 
 	return nIcqStatus;
@@ -182,36 +182,36 @@ int MirandaStatusToSupported(int nMirandaStatus)
 	switch (nMirandaStatus) {
 
 		// These status mode does not need any mapping
-	case ID_STATUS_ONLINE:
-	case ID_STATUS_AWAY:
-	case ID_STATUS_NA:
-	case ID_STATUS_OCCUPIED:
-	case ID_STATUS_DND:
-	case ID_STATUS_INVISIBLE:
-	case ID_STATUS_OFFLINE:
-		nSupportedStatus = nMirandaStatus;
-		break;
+case ID_STATUS_ONLINE:
+case ID_STATUS_AWAY:
+case ID_STATUS_NA:
+case ID_STATUS_OCCUPIED:
+case ID_STATUS_DND:
+case ID_STATUS_INVISIBLE:
+case ID_STATUS_OFFLINE:
+	nSupportedStatus = nMirandaStatus;
+	break;
 
-	case ID_STATUS_FREECHAT:
-		nSupportedStatus = ID_STATUS_ONLINE;
-		break;
+case ID_STATUS_FREECHAT:
+	nSupportedStatus = ID_STATUS_ONLINE;
+	break;
 
-		// This mode is not support and must be mapped to something else
-	case ID_STATUS_OUTTOLUNCH:
-		nSupportedStatus = ID_STATUS_NA;
-		break;
+	// This mode is not support and must be mapped to something else
+case ID_STATUS_OUTTOLUNCH:
+	nSupportedStatus = ID_STATUS_NA;
+	break;
 
-		// This mode is not support and must be mapped to something else
-	case ID_STATUS_ONTHEPHONE:
-		nSupportedStatus = ID_STATUS_OCCUPIED;
-		break;
+	// This mode is not support and must be mapped to something else
+case ID_STATUS_ONTHEPHONE:
+	nSupportedStatus = ID_STATUS_OCCUPIED;
+	break;
 
-		// This is not supposed to happen.
-	default:
-		_ASSERTE(0);
-		// Online seems to be a good default.
-		nSupportedStatus = ID_STATUS_ONLINE;
-		break;
+	// This is not supposed to happen.
+default:
+	_ASSERTE(0);
+	// Online seems to be a good default.
+	nSupportedStatus = ID_STATUS_ONLINE;
+	break;
 	}
 
 	return nSupportedStatus;
@@ -231,52 +231,52 @@ char** CIcqProto::MirandaStatusToAwayMsg(int nStatus)
 {
 	switch (nStatus) {
 
-	case ID_STATUS_ONLINE:
-		return &m_modeMsgs.szOnline;
+case ID_STATUS_ONLINE:
+	return &m_modeMsgs.szOnline;
 
-	case ID_STATUS_AWAY:
-		return &m_modeMsgs.szAway;
+case ID_STATUS_AWAY:
+	return &m_modeMsgs.szAway;
 
-	case ID_STATUS_NA:
-		return &m_modeMsgs.szNa;
+case ID_STATUS_NA:
+	return &m_modeMsgs.szNa;
 
-	case ID_STATUS_OCCUPIED:
-		return &m_modeMsgs.szOccupied;
+case ID_STATUS_OCCUPIED:
+	return &m_modeMsgs.szOccupied;
 
-	case ID_STATUS_DND:
-		return &m_modeMsgs.szDnd;
+case ID_STATUS_DND:
+	return &m_modeMsgs.szDnd;
 
-	case ID_STATUS_FREECHAT:
-		return &m_modeMsgs.szFfc;
+case ID_STATUS_FREECHAT:
+	return &m_modeMsgs.szFfc;
 
-	default:
-		return NULL;
+default:
+	return NULL;
 	}
 }
 
 int AwayMsgTypeToStatus(int nMsgType)
 {
 	switch (nMsgType) {
-  case MTYPE_AUTOONLINE:
-    return ID_STATUS_ONLINE;
+case MTYPE_AUTOONLINE:
+	return ID_STATUS_ONLINE;
 
-	case MTYPE_AUTOAWAY:
-		return ID_STATUS_AWAY;
+case MTYPE_AUTOAWAY:
+	return ID_STATUS_AWAY;
 
-	case MTYPE_AUTOBUSY:
-		return ID_STATUS_OCCUPIED;
+case MTYPE_AUTOBUSY:
+	return ID_STATUS_OCCUPIED;
 
-	case MTYPE_AUTONA:
-		return ID_STATUS_NA;
+case MTYPE_AUTONA:
+	return ID_STATUS_NA;
 
-	case MTYPE_AUTODND:
-		return ID_STATUS_DND;
+case MTYPE_AUTODND:
+	return ID_STATUS_DND;
 
-	case MTYPE_AUTOFFC:
-		return ID_STATUS_FREECHAT;
+case MTYPE_AUTOFFC:
+	return ID_STATUS_FREECHAT;
 
-	default:
-		return ID_STATUS_OFFLINE;
+default:
+	return ID_STATUS_OFFLINE;
 	}
 }
 
@@ -366,17 +366,17 @@ void CIcqProto::AddToContactsCache(HANDLE hContact, DWORD dwUin, const char *szU
 		return;
 
 #ifdef _DEBUG
-  NetLog_Server("Adding contact to cache: %u%s%s", dwUin, dwUin ? "" : " - ", dwUin ? "" : szUid);
+	NetLog_Server("Adding contact to cache: %u%s%s", dwUin, dwUin ? "" : " - ", dwUin ? "" : szUid);
 #endif
 
-  icq_contacts_cache *cache_item = (icq_contacts_cache*)SAFE_MALLOC(sizeof(icq_contacts_cache));
-  cache_item->hContact = hContact;
-  cache_item->dwUin = dwUin;
-  if (!dwUin)
-    cache_item->szUid = null_strdup(szUid);
+	icq_contacts_cache *cache_item = (icq_contacts_cache*)SAFE_MALLOC(sizeof(icq_contacts_cache));
+	cache_item->hContact = hContact;
+	cache_item->dwUin = dwUin;
+	if (!dwUin)
+		cache_item->szUid = null_strdup(szUid);
 
 	icq_lock l(contactsCacheMutex);
-  contactsCache.insert(cache_item);
+	contactsCache.insert(cache_item);
 }
 
 
@@ -419,13 +419,13 @@ void CIcqProto::UninitContactsCache(void)
 		SAFE_FREE((void**)&cache_item->szUid);
 		SAFE_FREE((void**)&cache_item);
 	}
-	
+
 	contactsCache.destroy();
 
 	contactsCacheMutex->Leave();
 
 	SAFE_DELETE(&contactsCacheMutex);
-	
+
 	if (gatewayMutex && gatewayMutex->getLockCount() > 1)
 		gatewayMutex->_Release();
 	else
@@ -435,35 +435,35 @@ void CIcqProto::UninitContactsCache(void)
 
 void CIcqProto::DeleteFromContactsCache(HANDLE hContact)
 {
-  icq_lock l(contactsCacheMutex);
+	icq_lock l(contactsCacheMutex);
 
 	for (int i = 0; i < contactsCache.getCount(); i++)
 	{
-    icq_contacts_cache *cache_item = contactsCache[i];
+		icq_contacts_cache *cache_item = contactsCache[i];
 
 		if (cache_item->hContact == hContact)
 		{
 #ifdef _DEBUG
 			NetLog_Server("Removing contact from cache: %u%s%s, position: %u", cache_item->dwUin, cache_item->dwUin ? "" : " - ", cache_item->dwUin ? "" : cache_item->szUid, i);
 #endif
-      contactsCache.remove(i);
-      // Release memory
-      SAFE_FREE((void**)&cache_item->szUid);
-      SAFE_FREE((void**)&cache_item);
+			contactsCache.remove(i);
+			// Release memory
+			SAFE_FREE((void**)&cache_item->szUid);
+			SAFE_FREE((void**)&cache_item);
 			break;
-    }
-  }
+		}
+	}
 }
 
 
 HANDLE CIcqProto::HandleFromCacheByUid(DWORD dwUin, const char *szUid)
 {
-  icq_contacts_cache cache_item = {NULL, dwUin, szUid};
+	icq_contacts_cache cache_item = {NULL, dwUin, szUid};
 
 	icq_lock l(contactsCacheMutex);
-  // find in list
-  int i = contactsCache.getIndex(&cache_item);
-  if (i != -1)
+	// find in list
+	int i = contactsCache.getIndex(&cache_item);
+	if (i != -1)
 		return contactsCache[i]->hContact;
 
 	return NULL;
@@ -553,8 +553,8 @@ HANDLE CIcqProto::HContactFromUID(DWORD dwUin, const char *szUid, int *Added)
 	hContact = FindFirstContact();
 	while (hContact)
 	{
-    DWORD dwContactUin;
-    uid_str szContactUid;
+		DWORD dwContactUin;
+		uid_str szContactUid;
 
 		if (!getContactUid(hContact, &dwContactUin, &szContactUid))
 		{
@@ -658,10 +658,10 @@ int __fastcall strlennull(const char *string)
 /* a wcslen() that likes NULL */
 int __fastcall strlennull(const WCHAR *string)
 {
-  if (string)
-    return (int)wcslen(string);
+	if (string)
+		return (int)wcslen(string);
 
-  return 0;
+	return 0;
 }
 
 
@@ -671,10 +671,10 @@ int __fastcall strcmpnull(const char *str1, const char *str2)
 	if (str1 && str2)
 		return strcmp(str1, str2);
 
-  if (!str1 && !str2)
-    return 0;
+	if (!str1 && !str2)
+		return 0;
 
-  return 1;
+	return 1;
 }
 
 /* a stricmp() that likes NULL */
@@ -683,8 +683,8 @@ int __fastcall stricmpnull(const char *str1, const char *str2)
 	if (str1 && str2)
 		return _stricmp(str1, str2);
 
-  if (!str1 && !str2)
-    return 0;
+	if (!str1 && !str2)
+		return 0;
 
 	return 1;
 }
@@ -711,14 +711,14 @@ int null_snprintf(char *buffer, size_t count, const char *fmt, ...)
 
 int null_snprintf(WCHAR *buffer, size_t count, const WCHAR *fmt, ...)
 {
-  va_list va;
-  int len;
+	va_list va;
+	int len;
 
-  ZeroMemory(buffer, count * sizeof(WCHAR));
-  va_start(va, fmt);
-  len = _vsnwprintf(buffer, count, fmt, va);
-  va_end(va);
-  return len;
+	ZeroMemory(buffer, count * sizeof(WCHAR));
+	va_start(va, fmt);
+	len = _vsnwprintf(buffer, count, fmt, va);
+	va_end(va);
+	return len;
 }
 
 
@@ -733,44 +733,44 @@ char* __fastcall null_strdup(const char *string)
 
 WCHAR* __fastcall null_strdup(const WCHAR *string)
 {
-  if (string)
-    return wcsdup(string);
+	if (string)
+		return wcsdup(string);
 
-  return NULL;
+	return NULL;
 }
 
 
 char* __fastcall null_strcpy(char *dest, const char *src, size_t maxlen)
 {
-  if (!dest)
-    return NULL;
+	if (!dest)
+		return NULL;
 
-  if (src && src[0])
-  {
-    strncpy(dest, src, maxlen);
-    dest[maxlen] = '\0';
-  }
-  else
-    dest[0] = '\0';
+	if (src && src[0])
+	{
+		strncpy(dest, src, maxlen);
+		dest[maxlen] = '\0';
+	}
+	else
+		dest[0] = '\0';
 
-  return dest;
+	return dest;
 }
 
 
 WCHAR* __fastcall null_strcpy(WCHAR *dest, const WCHAR *src, size_t maxlen)
 {
-  if (!dest)
-    return NULL;
+	if (!dest)
+		return NULL;
 
-  if (src && src[0])
-  {
-    wcsncpy(dest, src, maxlen);
-    dest[maxlen] = '\0';
-  }
-  else
-    dest[0] = '\0';
+	if (src && src[0])
+	{
+		wcsncpy(dest, src, maxlen);
+		dest[maxlen] = '\0';
+	}
+	else
+		dest[0] = '\0';
 
-  return dest;
+	return dest;
 }
 
 
@@ -878,13 +878,13 @@ char *MangleXml(const char *string, int len)
 			*szChar = ';';
 			szChar++;
 		}
-    else if (string[i]=='"')
-    {
-      *(DWORD*)szChar = 'ouq&';
-      szChar += 4;
-      *(WORD*)szChar = ';t';
-      szChar += 2;
-    }
+		else if (string[i]=='"')
+		{
+			*(DWORD*)szChar = 'ouq&';
+			szChar += 4;
+			*(WORD*)szChar = ';t';
+			szChar += 2;
+		}
 		else
 		{
 			*szChar = string[i];
@@ -969,11 +969,11 @@ void CIcqProto::ResetSettingsOnListReload()
 {
 	// Reset a bunch of session specific settings
 	setSettingWord(NULL, DBSETTING_SERVLIST_PRIVACY, 0);
-  setSettingWord(NULL, DBSETTING_SERVLIST_METAINFO, 0);
+	setSettingWord(NULL, DBSETTING_SERVLIST_METAINFO, 0);
 	setSettingWord(NULL, DBSETTING_SERVLIST_AVATAR, 0);
 	setSettingWord(NULL, DBSETTING_SERVLIST_PHOTO, 0);
 	setSettingWord(NULL, "SrvRecordCount", 0);
-  deleteSetting(NULL, DBSETTING_SERVLIST_UNHANDLED);
+	deleteSetting(NULL, DBSETTING_SERVLIST_UNHANDLED);
 
 	HANDLE hContact = FindFirstContact();
 
@@ -984,9 +984,9 @@ void CIcqProto::ResetSettingsOnListReload()
 		setSettingWord(hContact, DBSETTING_SERVLIST_GROUP, 0);
 		setSettingWord(hContact, DBSETTING_SERVLIST_PERMIT, 0);
 		setSettingWord(hContact, DBSETTING_SERVLIST_DENY, 0);
-    deleteSetting(hContact, DBSETTING_SERVLIST_IGNORE);
+		deleteSetting(hContact, DBSETTING_SERVLIST_IGNORE);
 		setSettingByte(hContact, "Auth", 0);
-    deleteSetting(hContact, DBSETTING_SERVLIST_DATA);
+		deleteSetting(hContact, DBSETTING_SERVLIST_DATA);
 
 		hContact = FindNextContact(hContact);
 	}
@@ -1090,7 +1090,7 @@ void CIcqProto::SendProtoAck(HANDLE hContact, DWORD dwCookie, int nAckResult, in
 	pArgs->nAckResult = nAckResult;
 	pArgs->nAckType = nAckType;
 	pArgs->pszMessage = (LPARAM)null_strdup(pszMessage);
-	
+
 	ForkThread(( IcqThreadFunc )&CIcqProto::ProtocolAckThread, pArgs );
 }
 
@@ -1105,358 +1105,358 @@ void CIcqProto::SetCurrentStatus(int nStatus)
 
 int CIcqProto::IsMetaInfoChanged(HANDLE hContact)
 {
-  DBVARIANT infoToken = {DBVT_DELETED};
-  int res = 0;
+	DBVARIANT infoToken = {DBVT_DELETED};
+	int res = 0;
 
-  if (!getSetting(hContact, DBSETTING_METAINFO_TOKEN, &infoToken))
-  { // contact does have info from directory, check if it is not outdated
-    double dInfoTime = 0;
-    double dInfoSaved = 0;
+	if (!getSetting(hContact, DBSETTING_METAINFO_TOKEN, &infoToken))
+	{ // contact does have info from directory, check if it is not outdated
+		double dInfoTime = 0;
+		double dInfoSaved = 0;
 
-    if ((dInfoTime = getSettingDouble(hContact, DBSETTING_METAINFO_TIME, 0)) > 0)
-    {
-      if ((dInfoSaved = getSettingDouble(hContact, DBSETTING_METAINFO_SAVED, 0)) > 0)
-      {
-        if (dInfoSaved < dInfoTime)
-          res = 2; // directory info outdated
-      }
-      else
-        res = 1; // directory info not saved at all
-    }
+		if ((dInfoTime = getSettingDouble(hContact, DBSETTING_METAINFO_TIME, 0)) > 0)
+		{
+			if ((dInfoSaved = getSettingDouble(hContact, DBSETTING_METAINFO_SAVED, 0)) > 0)
+			{
+				if (dInfoSaved < dInfoTime)
+					res = 2; // directory info outdated
+			}
+			else
+				res = 1; // directory info not saved at all
+		}
 
-    ICQFreeVariant(&infoToken);
-  }
-  else
-  { // it cannot be detected if user info was not changed, so use a generic threshold
-    DBVARIANT infoSaved = {DBVT_DELETED};
-    DWORD dwInfoTime = 0;
+		ICQFreeVariant(&infoToken);
+	}
+	else
+	{ // it cannot be detected if user info was not changed, so use a generic threshold
+		DBVARIANT infoSaved = {DBVT_DELETED};
+		DWORD dwInfoTime = 0;
 
-    if (!getSetting(hContact, DBSETTING_METAINFO_SAVED, &infoSaved))
-    {
-      if (infoSaved.type == DBVT_BLOB && infoSaved.cpbVal == 8)
-      {
-        double dwTime = *(double*)infoSaved.pbVal;
+		if (!getSetting(hContact, DBSETTING_METAINFO_SAVED, &infoSaved))
+		{
+			if (infoSaved.type == DBVT_BLOB && infoSaved.cpbVal == 8)
+			{
+				double dwTime = *(double*)infoSaved.pbVal;
 
-        dwInfoTime = (dwTime - 25567) * 86400;
-      }
-      else if (infoSaved.type == DBVT_DWORD)
-        dwInfoTime = infoSaved.dVal;
+				dwInfoTime = (dwTime - 25567) * 86400;
+			}
+			else if (infoSaved.type == DBVT_DWORD)
+				dwInfoTime = infoSaved.dVal;
 
-      ICQFreeVariant(&infoSaved);
+			ICQFreeVariant(&infoSaved);
 
-      if ((time(NULL) - dwInfoTime) > 14*3600*24)
-      { 
-        res = 3; // threshold exceeded
-      }
-    }
-    else
-      res = 4; // no timestamp found
-  }
+			if ((time(NULL) - dwInfoTime) > 14*3600*24)
+			{ 
+				res = 3; // threshold exceeded
+			}
+		}
+		else
+			res = 4; // no timestamp found
+	}
 
-  return res;
+	return res;
 }
 
 
 void __cdecl CIcqProto::SetStatusNoteThread(void *pDelay)
 {
-  if (pDelay)
-    SleepEx((DWORD)pDelay, TRUE);
+	if (pDelay)
+		SleepEx((DWORD)pDelay, TRUE);
 
-  cookieMutex->Enter();
+	cookieMutex->Enter();
 
-  if (icqOnline() && (setStatusNoteText || setStatusMoodData))
-  { // send status note change packets, write status note to database
-    if (setStatusNoteText)
-    { // change status note in directory
-		  m_ratesMutex->Enter();
-		  if (m_rates)
-		  { // rate management
-        WORD wGroup = m_rates->getGroupFromSNAC(ICQ_EXTENSIONS_FAMILY, ICQ_META_CLI_REQUEST);
+	if (icqOnline() && (setStatusNoteText || setStatusMoodData))
+	{ // send status note change packets, write status note to database
+		if (setStatusNoteText)
+		{ // change status note in directory
+			m_ratesMutex->Enter();
+			if (m_rates)
+			{ // rate management
+				WORD wGroup = m_rates->getGroupFromSNAC(ICQ_EXTENSIONS_FAMILY, ICQ_META_CLI_REQUEST);
 
-  			while (m_rates->getNextRateLevel(wGroup) < m_rates->getLimitLevel(wGroup, RML_LIMIT))
-	  		{ // we are over rate, need to wait before sending
-		  		int nDelay = m_rates->getDelayToLimitLevel(wGroup, RML_IDLE_10);
+				while (m_rates->getNextRateLevel(wGroup) < m_rates->getLimitLevel(wGroup, RML_LIMIT))
+				{ // we are over rate, need to wait before sending
+					int nDelay = m_rates->getDelayToLimitLevel(wGroup, RML_IDLE_10);
 
-  				m_ratesMutex->Leave();
-          cookieMutex->Leave();
+					m_ratesMutex->Leave();
+					cookieMutex->Leave();
 #ifdef _DEBUG
-		  		NetLog_Server("Rates: SetStatusNote delayed %dms", nDelay);
+					NetLog_Server("Rates: SetStatusNote delayed %dms", nDelay);
 #endif
-			  	SleepEx(nDelay, TRUE); // do not keep things locked during sleep
-          cookieMutex->Enter();
-  				m_ratesMutex->Enter();
-	  			if (!m_rates) // we lost connection when we slept, go away
-		  			break;
-			  }
-      }
-      m_ratesMutex->Leave();
+					SleepEx(nDelay, TRUE); // do not keep things locked during sleep
+					cookieMutex->Enter();
+					m_ratesMutex->Enter();
+					if (!m_rates) // we lost connection when we slept, go away
+						break;
+				}
+			}
+			m_ratesMutex->Leave();
 
-      BYTE *pBuffer = NULL;
-      int cbBuffer = 0;
+			BYTE *pBuffer = NULL;
+			int cbBuffer = 0;
 
-      ppackTLV(&pBuffer, &cbBuffer, 0x226, strlennull(setStatusNoteText), (BYTE*)setStatusNoteText);
-      icq_changeUserDirectoryInfoServ(pBuffer, cbBuffer, DIRECTORYREQUEST_UPDATENOTE);
+			ppackTLV(&pBuffer, &cbBuffer, 0x226, strlennull(setStatusNoteText), (BYTE*)setStatusNoteText);
+			icq_changeUserDirectoryInfoServ(pBuffer, cbBuffer, DIRECTORYREQUEST_UPDATENOTE);
 
-      SAFE_FREE((void**)&pBuffer);
-    }
-
-    if (setStatusNoteText || setStatusMoodData)
-    { // change status note and mood in session data
-      m_ratesMutex->Enter();
-      if (m_rates)
-      { // rate management
-        WORD wGroup = m_rates->getGroupFromSNAC(ICQ_SERVICE_FAMILY, ICQ_CLIENT_SET_STATUS);
-
-        while (m_rates->getNextRateLevel(wGroup) < m_rates->getLimitLevel(wGroup, RML_LIMIT))
-        { // we are over rate, need to wait before sending
-          int nDelay = m_rates->getDelayToLimitLevel(wGroup, RML_IDLE_10);
-
-          m_ratesMutex->Leave();
-          cookieMutex->Leave();
-#ifdef _DEBUG
-          NetLog_Server("Rates: SetStatusNote delayed %dms", nDelay);
-#endif
-          SleepEx(nDelay, TRUE); // do not keep things locked during sleep
-          cookieMutex->Enter();
-          m_ratesMutex->Enter();
-          if (!m_rates) // we lost connection when we slept, go away
-            break;
-        }
-      }
-      m_ratesMutex->Leave();
-
-      // check if the session data were not updated already
-      char *szCurrentStatusNote = getSettingStringUtf(NULL, DBSETTING_STATUS_NOTE, NULL);
-      char *szCurrentStatusMood = NULL;
-      DBVARIANT dbv = {DBVT_DELETED};
-
-      if (m_bMoodsEnabled && !getSettingString(NULL, DBSETTING_STATUS_MOOD, &dbv))
-        szCurrentStatusMood = dbv.pszVal;
-
-      if (!setStatusNoteText && szCurrentStatusNote)
-        setStatusNoteText = null_strdup(szCurrentStatusNote);
-      if (m_bMoodsEnabled && !setStatusMoodData && szCurrentStatusMood)
-        setStatusMoodData = null_strdup(szCurrentStatusMood);
-
-      if (strcmpnull(szCurrentStatusNote, setStatusNoteText) || (m_bMoodsEnabled && strcmpnull(szCurrentStatusMood, setStatusMoodData)))
-      {
-        setSettingStringUtf(NULL, DBSETTING_STATUS_NOTE, setStatusNoteText);
-        if (m_bMoodsEnabled)
-          setSettingString(NULL, DBSETTING_STATUS_MOOD, setStatusMoodData);
-
-        WORD wStatusNoteLen = strlennull(setStatusNoteText);
-        WORD wStatusMoodLen = m_bMoodsEnabled ? strlennull(setStatusMoodData) : 0;
-        icq_packet packet;
-        WORD wDataLen = (wStatusNoteLen ? wStatusNoteLen + 4 : 0) + 4 + wStatusMoodLen + 4;
-
-    		serverPacketInit(&packet, wDataLen + 14);
-		    packFNACHeader(&packet, ICQ_SERVICE_FAMILY, ICQ_CLIENT_SET_STATUS);
-        // Change only session data
-		    packWord(&packet, 0x1D);              // TLV 1D
-		    packWord(&packet, wDataLen);          // TLV length
-        packWord(&packet, 0x02);              // Item Type
-        if (wStatusNoteLen)
-        {
-          packWord(&packet, 0x400 | (WORD)(wStatusNoteLen + 4)); // Flags + Item Length
-          packWord(&packet, wStatusNoteLen);  // Text Length
-          packBuffer(&packet, (LPBYTE)setStatusNoteText, wStatusNoteLen);
-          packWord(&packet, 0);               // Encoding not specified (utf-8 is default)
-        }
-        else
-          packWord(&packet, 0);               // Flags + Item Length
-  			packWord(&packet, 0x0E);              // Item Type
-			  packWord(&packet, wStatusMoodLen);    // Flags + Item Length
-        if (wStatusMoodLen)
-			    packBuffer(&packet, (LPBYTE)setStatusMoodData, wStatusMoodLen); // Mood
-
-        sendServPacket(&packet);
-      }
-      SAFE_FREE(&szCurrentStatusNote);
-      ICQFreeVariant(&dbv);
+			SAFE_FREE((void**)&pBuffer);
 		}
-  }
-  SAFE_FREE(&setStatusNoteText);
-  SAFE_FREE(&setStatusMoodData);
 
-  cookieMutex->Leave();
+		if (setStatusNoteText || setStatusMoodData)
+		{ // change status note and mood in session data
+			m_ratesMutex->Enter();
+			if (m_rates)
+			{ // rate management
+				WORD wGroup = m_rates->getGroupFromSNAC(ICQ_SERVICE_FAMILY, ICQ_CLIENT_SET_STATUS);
+
+				while (m_rates->getNextRateLevel(wGroup) < m_rates->getLimitLevel(wGroup, RML_LIMIT))
+				{ // we are over rate, need to wait before sending
+					int nDelay = m_rates->getDelayToLimitLevel(wGroup, RML_IDLE_10);
+
+					m_ratesMutex->Leave();
+					cookieMutex->Leave();
+#ifdef _DEBUG
+					NetLog_Server("Rates: SetStatusNote delayed %dms", nDelay);
+#endif
+					SleepEx(nDelay, TRUE); // do not keep things locked during sleep
+					cookieMutex->Enter();
+					m_ratesMutex->Enter();
+					if (!m_rates) // we lost connection when we slept, go away
+						break;
+				}
+			}
+			m_ratesMutex->Leave();
+
+			// check if the session data were not updated already
+			char *szCurrentStatusNote = getSettingStringUtf(NULL, DBSETTING_STATUS_NOTE, NULL);
+			char *szCurrentStatusMood = NULL;
+			DBVARIANT dbv = {DBVT_DELETED};
+
+			if (m_bMoodsEnabled && !getSettingString(NULL, DBSETTING_STATUS_MOOD, &dbv))
+				szCurrentStatusMood = dbv.pszVal;
+
+			if (!setStatusNoteText && szCurrentStatusNote)
+				setStatusNoteText = null_strdup(szCurrentStatusNote);
+			if (m_bMoodsEnabled && !setStatusMoodData && szCurrentStatusMood)
+				setStatusMoodData = null_strdup(szCurrentStatusMood);
+
+			if (strcmpnull(szCurrentStatusNote, setStatusNoteText) || (m_bMoodsEnabled && strcmpnull(szCurrentStatusMood, setStatusMoodData)))
+			{
+				setSettingStringUtf(NULL, DBSETTING_STATUS_NOTE, setStatusNoteText);
+				if (m_bMoodsEnabled)
+					setSettingString(NULL, DBSETTING_STATUS_MOOD, setStatusMoodData);
+
+				WORD wStatusNoteLen = strlennull(setStatusNoteText);
+				WORD wStatusMoodLen = m_bMoodsEnabled ? strlennull(setStatusMoodData) : 0;
+				icq_packet packet;
+				WORD wDataLen = (wStatusNoteLen ? wStatusNoteLen + 4 : 0) + 4 + wStatusMoodLen + 4;
+
+				serverPacketInit(&packet, wDataLen + 14);
+				packFNACHeader(&packet, ICQ_SERVICE_FAMILY, ICQ_CLIENT_SET_STATUS);
+				// Change only session data
+				packWord(&packet, 0x1D);              // TLV 1D
+				packWord(&packet, wDataLen);          // TLV length
+				packWord(&packet, 0x02);              // Item Type
+				if (wStatusNoteLen)
+				{
+					packWord(&packet, 0x400 | (WORD)(wStatusNoteLen + 4)); // Flags + Item Length
+					packWord(&packet, wStatusNoteLen);  // Text Length
+					packBuffer(&packet, (LPBYTE)setStatusNoteText, wStatusNoteLen);
+					packWord(&packet, 0);               // Encoding not specified (utf-8 is default)
+				}
+				else
+					packWord(&packet, 0);               // Flags + Item Length
+				packWord(&packet, 0x0E);              // Item Type
+				packWord(&packet, wStatusMoodLen);    // Flags + Item Length
+				if (wStatusMoodLen)
+					packBuffer(&packet, (LPBYTE)setStatusMoodData, wStatusMoodLen); // Mood
+
+				sendServPacket(&packet);
+			}
+			SAFE_FREE(&szCurrentStatusNote);
+			ICQFreeVariant(&dbv);
+		}
+	}
+	SAFE_FREE(&setStatusNoteText);
+	SAFE_FREE(&setStatusMoodData);
+
+	cookieMutex->Leave();
 }
 
 
 int CIcqProto::SetStatusNote(const char *szStatusNote, DWORD dwDelay, int bForce)
 {
-  int bChanged = FALSE;
+	int bChanged = FALSE;
 
-  // bForce is intended for login sequence - need to call this earlier than icqOnline()
-  // the process is delayed and icqOnline() is ready when needed inside SetStatusNoteThread()
-  if (!bForce && !icqOnline()) return bChanged;
+	// bForce is intended for login sequence - need to call this earlier than icqOnline()
+	// the process is delayed and icqOnline() is ready when needed inside SetStatusNoteThread()
+	if (!bForce && !icqOnline()) return bChanged;
 
-  // reuse generic critical section (used for cookies list and object variables locks)
-  icq_lock l(cookieMutex);
+	// reuse generic critical section (used for cookies list and object variables locks)
+	icq_lock l(cookieMutex);
 
-  if (!setStatusNoteText && (!m_bMoodsEnabled || !setStatusMoodData))
-  { // check if the status note was changed and if yes, create thread to change it
-    char *szCurrentStatusNote = getSettingStringUtf(NULL, DBSETTING_STATUS_NOTE, NULL);
+	if (!setStatusNoteText && (!m_bMoodsEnabled || !setStatusMoodData))
+	{ // check if the status note was changed and if yes, create thread to change it
+		char *szCurrentStatusNote = getSettingStringUtf(NULL, DBSETTING_STATUS_NOTE, NULL);
 
-    if (strcmpnull(szCurrentStatusNote, szStatusNote))
-    { // status note was changed
-      // create thread to change status note on existing server connection
-      setStatusNoteText = null_strdup(szStatusNote);
+		if (strcmpnull(szCurrentStatusNote, szStatusNote))
+		{ // status note was changed
+			// create thread to change status note on existing server connection
+			setStatusNoteText = null_strdup(szStatusNote);
 
-      if (dwDelay)
-			  ForkThread(&CIcqProto::SetStatusNoteThread, (void*)dwDelay);
-      else // we cannot afford any delay, so do not run in separate thread
-        SetStatusNoteThread(NULL);
+			if (dwDelay)
+				ForkThread(&CIcqProto::SetStatusNoteThread, (void*)dwDelay);
+			else // we cannot afford any delay, so do not run in separate thread
+				SetStatusNoteThread(NULL);
 
-      bChanged = TRUE;
-    }
-    SAFE_FREE(&szCurrentStatusNote);
-  }
-  else
-  { // only alter status note object with new status note, keep the thread waiting for execution
-    SAFE_FREE(&setStatusNoteText);
-    setStatusNoteText = null_strdup(szStatusNote);
+			bChanged = TRUE;
+		}
+		SAFE_FREE(&szCurrentStatusNote);
+	}
+	else
+	{ // only alter status note object with new status note, keep the thread waiting for execution
+		SAFE_FREE(&setStatusNoteText);
+		setStatusNoteText = null_strdup(szStatusNote);
 
-    bChanged = TRUE;
-  }
+		bChanged = TRUE;
+	}
 
-  return bChanged;
+	return bChanged;
 }
 
 
 int CIcqProto::SetStatusMood(const char *szMoodData, DWORD dwDelay)
 {
-  int bChanged = FALSE;
+	int bChanged = FALSE;
 
-  if (!icqOnline()) return bChanged;
+	if (!icqOnline()) return bChanged;
 
-  // reuse generic critical section (used for cookies list and object variables locks)
-  icq_lock l(cookieMutex);
+	// reuse generic critical section (used for cookies list and object variables locks)
+	icq_lock l(cookieMutex);
 
-  if (!setStatusNoteText && !setStatusMoodData)
-  { // check if the status mood was changed and if yes, create thread to change it
-    char *szCurrentStatusMood = NULL;
-    DBVARIANT dbv = {DBVT_DELETED};
+	if (!setStatusNoteText && !setStatusMoodData)
+	{ // check if the status mood was changed and if yes, create thread to change it
+		char *szCurrentStatusMood = NULL;
+		DBVARIANT dbv = {DBVT_DELETED};
 
-    if (!getSettingString(NULL, DBSETTING_STATUS_MOOD, &dbv))
-      szCurrentStatusMood = dbv.pszVal;
+		if (!getSettingString(NULL, DBSETTING_STATUS_MOOD, &dbv))
+			szCurrentStatusMood = dbv.pszVal;
 
-    if (strcmpnull(szCurrentStatusMood, szMoodData))
-    { // status mood was changed
-      // create thread to change status mood on existing server connection
-      setStatusMoodData = null_strdup(szMoodData);
-      if (dwDelay)
-        ForkThread(&CIcqProto::SetStatusNoteThread, (void*)dwDelay);
-      else // we cannot afford any delay, so do not run in separate thread
-        SetStatusNoteThread(NULL);
+		if (strcmpnull(szCurrentStatusMood, szMoodData))
+		{ // status mood was changed
+			// create thread to change status mood on existing server connection
+			setStatusMoodData = null_strdup(szMoodData);
+			if (dwDelay)
+				ForkThread(&CIcqProto::SetStatusNoteThread, (void*)dwDelay);
+			else // we cannot afford any delay, so do not run in separate thread
+				SetStatusNoteThread(NULL);
 
-      bChanged = TRUE;
-    }
-    ICQFreeVariant(&dbv);
-  }
-  else
-  { // only alter status mood object with new status mood, keep the thread waiting for execution
-    SAFE_FREE(&setStatusMoodData);
-    setStatusMoodData = null_strdup(szMoodData);
+			bChanged = TRUE;
+		}
+		ICQFreeVariant(&dbv);
+	}
+	else
+	{ // only alter status mood object with new status mood, keep the thread waiting for execution
+		SAFE_FREE(&setStatusMoodData);
+		setStatusMoodData = null_strdup(szMoodData);
 
-    bChanged = TRUE;
-  }
+		bChanged = TRUE;
+	}
 
-  return bChanged;
+	return bChanged;
 }
 
 
 void CIcqProto::writeDbInfoSettingTLVStringUtf(HANDLE hContact, const char *szSetting, oscar_tlv_chain *chain, WORD wTlv)
 {
-  oscar_tlv *pTLV = chain->getTLV(wTlv, 1);
+	oscar_tlv *pTLV = chain->getTLV(wTlv, 1);
 
-  if (pTLV && pTLV->wLen > 0)
-  {
-    char *str = (char*)_alloca(pTLV->wLen + 1); 
+	if (pTLV && pTLV->wLen > 0)
+	{
+		char *str = (char*)_alloca(pTLV->wLen + 1); 
 
-    memcpy(str, pTLV->pData, pTLV->wLen);
-    str[pTLV->wLen] = '\0';
-    setSettingStringUtf(hContact, szSetting, str);
-  }
-  else
-    deleteSetting(hContact, szSetting);
+		memcpy(str, pTLV->pData, pTLV->wLen);
+		str[pTLV->wLen] = '\0';
+		setSettingStringUtf(hContact, szSetting, str);
+	}
+	else
+		deleteSetting(hContact, szSetting);
 }
 
 
 void CIcqProto::writeDbInfoSettingTLVString(HANDLE hContact, const char *szSetting, oscar_tlv_chain *chain, WORD wTlv)
 {
-  oscar_tlv *pTLV = chain->getTLV(wTlv, 1);
+	oscar_tlv *pTLV = chain->getTLV(wTlv, 1);
 
-  if (pTLV && pTLV->wLen > 0)
-  {
-    char *str = (char*)_alloca(pTLV->wLen + 1); 
+	if (pTLV && pTLV->wLen > 0)
+	{
+		char *str = (char*)_alloca(pTLV->wLen + 1); 
 
-    memcpy(str, pTLV->pData, pTLV->wLen);
-    str[pTLV->wLen] = '\0';
-    setSettingString(hContact, szSetting, str);
-  }
-  else
-    deleteSetting(hContact, szSetting);
+		memcpy(str, pTLV->pData, pTLV->wLen);
+		str[pTLV->wLen] = '\0';
+		setSettingString(hContact, szSetting, str);
+	}
+	else
+		deleteSetting(hContact, szSetting);
 }
 
 
 void CIcqProto::writeDbInfoSettingTLVWord(HANDLE hContact, const char *szSetting, oscar_tlv_chain *chain, WORD wTlv)
 {
-  int num = chain->getNumber(wTlv, 1);
+	int num = chain->getNumber(wTlv, 1);
 
-  if (num > 0)
-    setSettingWord(hContact, szSetting, num);
-  else
-    deleteSetting(hContact, szSetting);
+	if (num > 0)
+		setSettingWord(hContact, szSetting, num);
+	else
+		deleteSetting(hContact, szSetting);
 }
 
 
 void CIcqProto::writeDbInfoSettingTLVByte(HANDLE hContact, const char *szSetting, oscar_tlv_chain *chain, WORD wTlv)
 {
-  int num = chain->getNumber(wTlv, 1);
+	int num = chain->getNumber(wTlv, 1);
 
-  if (num > 0)
-    setSettingByte(hContact, szSetting, num);
-  else
-    deleteSetting(hContact, szSetting);
+	if (num > 0)
+		setSettingByte(hContact, szSetting, num);
+	else
+		deleteSetting(hContact, szSetting);
 }
 
 
 void CIcqProto::writeDbInfoSettingTLVDouble(HANDLE hContact, const char *szSetting, oscar_tlv_chain *chain, WORD wTlv)
 {
-  double num = chain->getDouble(wTlv, 1);
+	double num = chain->getDouble(wTlv, 1);
 
-  if (num > 0)
-    setSettingDouble(hContact, szSetting, num);
-  else
-    deleteSetting(hContact, szSetting);
+	if (num > 0)
+		setSettingDouble(hContact, szSetting, num);
+	else
+		deleteSetting(hContact, szSetting);
 }
 
 void CIcqProto::writeDbInfoSettingTLVDate(HANDLE hContact, const char* szSettingYear, const char* szSettingMonth, const char* szSettingDay, oscar_tlv_chain* chain, WORD wTlv)
 {
-  double time = chain->getDouble(wTlv, 1);
+	double time = chain->getDouble(wTlv, 1);
 
-  if (time > 0)
-  { // date is stored as double with unit equal to a day, incrementing since 1/1/1900 0:00 GMT
-    SYSTEMTIME sTime = {0};
-    if (VariantTimeToSystemTime(time + 2, &sTime))
-    {
-      setSettingWord(hContact, szSettingYear, sTime.wYear);
-      setSettingByte(hContact, szSettingMonth, (BYTE)sTime.wMonth);
-      setSettingByte(hContact, szSettingDay, (BYTE)sTime.wDay);
-    }
-    else
-    {
-      deleteSetting(hContact, szSettingYear);
-      deleteSetting(hContact, szSettingMonth);
-      deleteSetting(hContact, szSettingDay);
-    }
-  }
-  else
-  {
-    deleteSetting(hContact, szSettingYear);
-    deleteSetting(hContact, szSettingMonth);
-    deleteSetting(hContact, szSettingDay);
-  }
+	if (time > 0)
+	{ // date is stored as double with unit equal to a day, incrementing since 1/1/1900 0:00 GMT
+		SYSTEMTIME sTime = {0};
+		if (VariantTimeToSystemTime(time + 2, &sTime))
+		{
+			setSettingWord(hContact, szSettingYear, sTime.wYear);
+			setSettingByte(hContact, szSettingMonth, (BYTE)sTime.wMonth);
+			setSettingByte(hContact, szSettingDay, (BYTE)sTime.wDay);
+		}
+		else
+		{
+			deleteSetting(hContact, szSettingYear);
+			deleteSetting(hContact, szSettingMonth);
+			deleteSetting(hContact, szSettingDay);
+		}
+	}
+	else
+	{
+		deleteSetting(hContact, szSettingYear);
+		deleteSetting(hContact, szSettingMonth);
+		deleteSetting(hContact, szSettingDay);
+	}
 }
 
 
@@ -1638,7 +1638,7 @@ BOOL CIcqProto::validateStatusMessageRequest(HANDLE hContact, WORD byMessageType
 
 	// Dont respond to request for other statuses than your current one
 	if ((byMessageType == MTYPE_AUTOONLINE && m_iStatus != ID_STATUS_ONLINE) ||
-    (byMessageType == MTYPE_AUTOAWAY && m_iStatus != ID_STATUS_AWAY) ||
+		(byMessageType == MTYPE_AUTOAWAY && m_iStatus != ID_STATUS_AWAY) ||
 		(byMessageType == MTYPE_AUTOBUSY && m_iStatus != ID_STATUS_OCCUPIED) ||
 		(byMessageType == MTYPE_AUTONA   && m_iStatus != ID_STATUS_NA) ||
 		(byMessageType == MTYPE_AUTODND  && m_iStatus != ID_STATUS_DND) ||
@@ -1904,8 +1904,8 @@ char* CIcqProto::GetUserStoredPassword(char *szBuffer, int cbSize)
 
 		if (strlennull(szBuffer))
 			return szBuffer;
-  }
-  return NULL;
+	}
+	return NULL;
 }
 
 
@@ -1970,7 +1970,7 @@ const char* ExtractFileName(const char *fullname)
 {
 	const char *szFileName;
 
-	 // already is only filename
+	// already is only filename
 	if (((szFileName = strrchr(fullname, '\\')) == NULL) && ((szFileName = strrchr(fullname, '/')) == NULL))
 		return fullname;
 
@@ -2005,11 +2005,11 @@ char* FileNameToUtf(const TCHAR *filename)
 
 int FileAccessUtf(const char *path, int mode)
 {
-  int size = strlennull(path) + 2;
+	int size = strlennull(path) + 2;
 	TCHAR *szPath = (TCHAR*)_alloca(size * sizeof(TCHAR));
 
-  if (utf8_to_tchar_static(path, szPath, size))
-	  return _taccess(szPath, mode);
+	if (utf8_to_tchar_static(path, szPath, size))
+		return _taccess(szPath, mode);
 
 	return -1;
 }
@@ -2017,11 +2017,11 @@ int FileAccessUtf(const char *path, int mode)
 
 int FileStatUtf(const char *path, struct _stati64 *buffer)
 {
-  int size = strlennull(path) + 2;
+	int size = strlennull(path) + 2;
 	TCHAR *szPath = (TCHAR*)_alloca(size * sizeof(TCHAR));
 
-  if (utf8_to_tchar_static(path, szPath, size))
-	  return _tstati64(szPath, buffer);
+	if (utf8_to_tchar_static(path, szPath, size))
+		return _tstati64(szPath, buffer);
 
 	return -1;
 }
@@ -2032,7 +2032,7 @@ int MakeDirUtf(const char *dir)
 	int wRes = -1;
 	int size = strlennull(dir) + 2;
 	TCHAR *szDir = (TCHAR*)_alloca(size * sizeof(TCHAR));
-  
+
 	if (utf8_to_tchar_static(dir, szDir, size))
 	{ // _tmkdir can created only one dir at once
 		wRes = _tmkdir(szDir);
@@ -2076,40 +2076,40 @@ WCHAR *GetWindowTextUcs(HWND hWnd)
 {
 	WCHAR *utext;
 
-	#if defined( _UNICODE )
-		int nLen = GetWindowTextLengthW(hWnd);
+#if defined( _UNICODE )
+	int nLen = GetWindowTextLengthW(hWnd);
 
-		utext = (WCHAR*)SAFE_MALLOC((nLen+2)*sizeof(WCHAR));
-		GetWindowTextW(hWnd, utext, nLen + 1);
-	#else
-		char *text;
-		int wchars, nLen = GetWindowTextLengthA(hWnd);
+	utext = (WCHAR*)SAFE_MALLOC((nLen+2)*sizeof(WCHAR));
+	GetWindowTextW(hWnd, utext, nLen + 1);
+#else
+	char *text;
+	int wchars, nLen = GetWindowTextLengthA(hWnd);
 
-		text = (char*)_alloca(nLen+2);
-		GetWindowTextA(hWnd, text, nLen + 1);
+	text = (char*)_alloca(nLen+2);
+	GetWindowTextA(hWnd, text, nLen + 1);
 
-		wchars = MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, text,
-			strlennull(text), NULL, 0);
+	wchars = MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, text,
+		strlennull(text), NULL, 0);
 
-		utext = (WCHAR*)SAFE_MALLOC((wchars + 1)*sizeof(WCHAR));
+	utext = (WCHAR*)SAFE_MALLOC((wchars + 1)*sizeof(WCHAR));
 
-		MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, text,
-			strlennull(text), utext, wchars);
-	#endif
+	MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, text,
+		strlennull(text), utext, wchars);
+#endif
 	return utext;
 }
 
 
 void SetWindowTextUcs(HWND hWnd, WCHAR *text)
 {
-	#if defined( _UNICODE )
-		SetWindowTextW(hWnd, text);
-	#else
-		char *tmp = (char*)SAFE_MALLOC(strlennull(text) + 1);
-		WideCharToMultiByte(CP_ACP, 0, text, -1, tmp, strlennull(text)+1, NULL, NULL);
-		SetWindowTextA(hWnd, tmp);
-		SAFE_FREE((void**)&tmp);
-	#endif
+#if defined( _UNICODE )
+	SetWindowTextW(hWnd, text);
+#else
+	char *tmp = (char*)SAFE_MALLOC(strlennull(text) + 1);
+	WideCharToMultiByte(CP_ACP, 0, text, -1, tmp, strlennull(text)+1, NULL, NULL);
+	SetWindowTextA(hWnd, tmp);
+	SAFE_FREE((void**)&tmp);
+#endif
 }
 
 
@@ -2152,17 +2152,17 @@ static int ControlAddStringUtf(HWND ctrl, DWORD msg, const char *szString)
 	char *szItem = ICQTranslateUtfStatic(szString, str, MAX_PATH);
 	int item = -1;
 
-	#if defined( _UNICODE )
-		WCHAR *wItem = make_unicode_string(szItem);
-		item = SendMessage(ctrl, msg, 0, (LPARAM)wItem);
-		SAFE_FREE((void**)&wItem);
-	#else
-		int size = strlennull(szItem) + 2;
-		char *aItem = (char*)_alloca(size);
+#if defined( _UNICODE )
+	WCHAR *wItem = make_unicode_string(szItem);
+	item = SendMessage(ctrl, msg, 0, (LPARAM)wItem);
+	SAFE_FREE((void**)&wItem);
+#else
+	int size = strlennull(szItem) + 2;
+	char *aItem = (char*)_alloca(size);
 
-		if (utf8_decode_static(szItem, aItem, size))
-			item = SendMessage(ctrl, msg, 0, (LPARAM)aItem);
-	#endif
+	if (utf8_decode_static(szItem, aItem, size))
+		item = SendMessage(ctrl, msg, 0, (LPARAM)aItem);
+#endif
 
 	return item;
 }
@@ -2186,21 +2186,21 @@ int MessageBoxUtf(HWND hWnd, const char *szText, const char *szCaption, UINT uTy
 	char str[1024];
 	char cap[MAX_PATH];
 
-	#if defined( _UNICODE )
-		WCHAR *text = make_unicode_string(ICQTranslateUtfStatic(szText, str, 1024));
-		WCHAR *caption = make_unicode_string(ICQTranslateUtfStatic(szCaption, cap, MAX_PATH));
-		res = MessageBoxW(hWnd, text, caption, uType);
-		SAFE_FREE((void**)&caption);
-		SAFE_FREE((void**)&text);
-	#else
-		int size = strlennull(szText) + 2, size2 = strlennull(szCaption) + 2;
-		char *text = (char*)_alloca(size);
-		char *caption = (char*)_alloca(size2);
+#if defined( _UNICODE )
+	WCHAR *text = make_unicode_string(ICQTranslateUtfStatic(szText, str, 1024));
+	WCHAR *caption = make_unicode_string(ICQTranslateUtfStatic(szCaption, cap, MAX_PATH));
+	res = MessageBoxW(hWnd, text, caption, uType);
+	SAFE_FREE((void**)&caption);
+	SAFE_FREE((void**)&text);
+#else
+	int size = strlennull(szText) + 2, size2 = strlennull(szCaption) + 2;
+	char *text = (char*)_alloca(size);
+	char *caption = (char*)_alloca(size2);
 
-		utf8_decode_static(ICQTranslateUtfStatic(szText, str, 1024), text, size);
-		utf8_decode_static(ICQTranslateUtfStatic(szCaption, cap, MAX_PATH), caption, size2);
-		res = MessageBoxA(hWnd, text, caption, uType);
-	#endif
+	utf8_decode_static(ICQTranslateUtfStatic(szText, str, 1024), text, size);
+	utf8_decode_static(ICQTranslateUtfStatic(szCaption, cap, MAX_PATH), caption, size2);
+	res = MessageBoxA(hWnd, text, caption, uType);
+#endif
 
 	return res;
 }
@@ -2246,7 +2246,7 @@ void CIcqProto::CreateProtoServiceParam(const char* szService, IcqServiceFuncPar
 
 HANDLE CIcqProto::HookProtoEvent(const char* szEvent, IcqEventFunc pFunc)
 {
-  return ::HookEventObj(szEvent, (MIRANDAHOOKOBJ)*(void**)&pFunc, this);
+	return ::HookEventObj(szEvent, (MIRANDAHOOKOBJ)*(void**)&pFunc, this);
 }
 
 

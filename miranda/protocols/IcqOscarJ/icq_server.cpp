@@ -224,14 +224,14 @@ void __cdecl CIcqProto::ServerThread(serverthread_start_info *infoParam)
 	setSettingDword(NULL, "LogonTS", 0); // clear logon time
 
 	servlistPendingFlushOperations(); // clear pending operations list
-	
-  { // release rates queues
-    icq_lock l(m_ratesMutex);
 
-    SAFE_DELETE((void_struct**)&m_ratesQueue_Request);
-    SAFE_DELETE((void_struct**)&m_ratesQueue_Response);
-    SAFE_DELETE((void_struct**)&m_rates);
-  }
+	{ // release rates queues
+		icq_lock l(m_ratesMutex);
+
+		SAFE_DELETE((void_struct**)&m_ratesQueue_Request);
+		SAFE_DELETE((void_struct**)&m_ratesQueue_Response);
+		SAFE_DELETE((void_struct**)&m_rates);
+	}
 
 	FlushServerIDs();         // clear server IDs list
 
@@ -402,14 +402,14 @@ int CIcqProto::IsServerOverRate(WORD wFamily, WORD wCommand, int nLevel)
 {
 	icq_lock l(m_ratesMutex);
 
-  if (m_rates)
-  {
-	  WORD wGroup = m_rates->getGroupFromSNAC(wFamily, wCommand);
+	if (m_rates)
+	{
+		WORD wGroup = m_rates->getGroupFromSNAC(wFamily, wCommand);
 
-	  // check if the rate is not over specified level
-	  if (m_rates->getNextRateLevel(wGroup) < m_rates->getLimitLevel(wGroup, nLevel))
-		  return TRUE;
-  }
+		// check if the rate is not over specified level
+		if (m_rates->getNextRateLevel(wGroup) < m_rates->getLimitLevel(wGroup, nLevel))
+			return TRUE;
+	}
 
 	return FALSE;
 }

@@ -65,7 +65,7 @@ INT_PTR CALLBACK AdvancedSearchDlgProc(HWND hwndDlg, UINT message, WPARAM wParam
 		InitComboBox(GetDlgItem(hwndDlg, IDC_WORKFIELD), occupationField);
 		InitComboBox(GetDlgItem(hwndDlg, IDC_ORGANISATION), affiliationField);
 		InitComboBox(GetDlgItem(hwndDlg, IDC_LANGUAGE), languageField);
-    InitComboBox(GetDlgItem(hwndDlg, IDC_COUNTRY), countryField);
+		InitComboBox(GetDlgItem(hwndDlg, IDC_COUNTRY), countryField);
 		InitComboBox(GetDlgItem(hwndDlg, IDC_INTERESTSCAT), interestsField);
 		InitComboBox(GetDlgItem(hwndDlg, IDC_PASTCAT), pastField);
 
@@ -142,12 +142,12 @@ static PBYTE createAdvancedSearchStructureTLV(HWND hwndDlg, int *length)
 
 	ppackLETLVDWord(&buf, &buflen, (DWORD)getCurItemData(hwndDlg, IDC_AGERANGE),      TLV_AGERANGE,  0);
 
-  BYTE b = (BYTE)getCurItemData(hwndDlg,  IDC_GENDER);
-  switch (b) {
-    case 'F': b = 1; break;
-    case 'M': b = 2; break;
-    default: b = 0;
-  };
+	BYTE b = (BYTE)getCurItemData(hwndDlg,  IDC_GENDER);
+	switch (b) {
+	case 'F': b = 1; break;
+	case 'M': b = 2; break;
+	default: b = 0;
+	};
 	ppackLETLVByte(&buf,  &buflen, b, TLV_GENDER, 0);
 	ppackLETLVByte(&buf,  &buflen, (BYTE)getCurItemData(hwndDlg,  IDC_MARITALSTATUS), TLV_MARITAL,   0);
 	ppackLETLVWord(&buf,  &buflen, (WORD)getCurItemData(hwndDlg,  IDC_LANGUAGE),      TLV_LANGUAGE,  0);
@@ -164,11 +164,11 @@ static PBYTE createAdvancedSearchStructureTLV(HWND hwndDlg, int *length)
 	searchPackTLVWordLNTS(&buf, &buflen, hwndDlg, IDC_ORGKEYWORDS, w, TLV_AFFILATIONS);
 
 	w = (WORD)getCurItemData(hwndDlg, IDC_HOMEPAGECAT);
-  if (w != 0xFFFF)
-	  searchPackTLVWordLNTS(&buf, &buflen, hwndDlg, IDC_HOMEPAGEKEY, w, TLV_HOMEPAGE);
+	if (w != 0xFFFF)
+		searchPackTLVWordLNTS(&buf, &buflen, hwndDlg, IDC_HOMEPAGEKEY, w, TLV_HOMEPAGE);
 
-  if (IsDlgButtonChecked(hwndDlg, IDC_ONLINEONLY))
-	  ppackLETLVByte(&buf, &buflen, 1, TLV_ONLINEONLY, 1);
+	if (IsDlgButtonChecked(hwndDlg, IDC_ONLINEONLY))
+		ppackLETLVByte(&buf, &buflen, 1, TLV_ONLINEONLY, 1);
 
 	if (length)
 		*length = buflen;

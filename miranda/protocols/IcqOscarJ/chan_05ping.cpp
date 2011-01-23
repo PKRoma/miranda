@@ -68,8 +68,8 @@ void __cdecl CIcqProto::KeepAliveThread(void *arg)
 		else if (dwWait == WAIT_IO_COMPLETION)
 			// Possible shutdown in progress
 			if (Miranda_Terminated()) break;
-		else
-			break;
+			else
+				break;
 	}
 
 	NetLog_Server("Keep alive thread shutting down.");
