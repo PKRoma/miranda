@@ -90,7 +90,7 @@ static INT_PTR IcqMenuHandleXStatusDetails(WPARAM wParam, LPARAM lParam)
 	return (ppro) ? ppro->ShowXStatusDetails(wParam, lParam) : 0;
 }
 
-static void sttEnableMenuItem( HANDLE hMenuItem, BOOL bEnable )
+static void sttEnableMenuItem( HANDLE hMenuItem, bool bEnable )
 {
 	CLISTMENUITEM clmi = {0};
 	clmi.cbSize = sizeof( CLISTMENUITEM );
@@ -184,26 +184,32 @@ void g_MenuUninit(void)
 
 int CIcqProto::OnPreBuildContactMenu(WPARAM wParam, LPARAM)
 {
-	HANDLE hContact;
-	if (( hContact=( HANDLE )wParam ) == NULL )
+	HANDLE hContact = (HANDLE)wParam;
+	if (hContact == NULL)
 		return 0;
 
-	if ( icqOnline()) {
+	if (icqOnline())
+	{
 		BOOL bCtrlPressed = (GetKeyState(VK_CONTROL)&0x8000 ) != 0;
 
-		sttEnableMenuItem(g_hContactMenuItems[ICMI_AUTH_REQUEST], getSettingByte((HANDLE)wParam, "Auth", 0) || bCtrlPressed);
-		sttEnableMenuItem(g_hContactMenuItems[ICMI_AUTH_GRANT], getSettingByte((HANDLE)wParam, "Grant", 0) || bCtrlPressed);
-		sttEnableMenuItem(g_hContactMenuItems[ICMI_AUTH_REVOKE], (getSettingByte(NULL, "PrivacyItems", 0) && !getSettingByte((HANDLE)wParam, "Grant", 0)) || bCtrlPressed);
+		DWORD dwUin = getContactUin(hContact);
 
-		if (m_bSsiEnabled && !getSettingWord((HANDLE)wParam, DBSETTING_SERVLIST_ID, 0) && !getSettingWord((HANDLE)wParam, DBSETTING_SERVLIST_IGNORE, 0))
-			sttEnableMenuItem(g_hContactMenuItems[ICMI_ADD_TO_SERVLIST], TRUE);
-		else
-			sttEnableMenuItem(g_hContactMenuItems[ICMI_ADD_TO_SERVLIST], FALSE);
+
+		sttEnableMenuItem(g_hContactMenuItems[ICMI_AUTH_REQUEST], 
+			dwUin && (bCtrlPressed || (getSettingByte((HANDLE)wParam, "Auth", 0) && getSettingWord((HANDLE)wParam, DBSETTING_SERVLIST_ID, 0))));
+		sttEnableMenuItem(g_hContactMenuItems[ICMI_AUTH_GRANT], dwUin && (bCtrlPressed || getSettingByte((HANDLE)wParam, "Grant", 0)));
+		sttEnableMenuItem(g_hContactMenuItems[ICMI_AUTH_REVOKE], 
+			dwUin && (bCtrlPressed || (getSettingByte(NULL, "PrivacyItems", 0) && !getSettingByte((HANDLE)wParam, "Grant", 0))));
+
+		sttEnableMenuItem(g_hContactMenuItems[ICMI_ADD_TO_SERVLIST], 
+			m_bSsiEnabled && !getSettingWord((HANDLE)wParam, DBSETTING_SERVLIST_ID, 0) && 
+			!getSettingWord((HANDLE)wParam, DBSETTING_SERVLIST_IGNORE, 0) &&
+			!DBGetContactSettingByte(hContact, "CList", "NotOnList", 0));
 	}
 
 	BYTE bXStatus = getContactXStatus((HANDLE)wParam);
 	
-	sttEnableMenuItem(g_hContactMenuItems[ICMI_XSTATUS_DETAILS], m_bHideXStatusUI ? 0 : bXStatus);
+	sttEnableMenuItem(g_hContactMenuItems[ICMI_XSTATUS_DETAILS], m_bHideXStatusUI ? 0 : bXStatus != 0);
 	if (bXStatus && !m_bHideXStatusUI) {
 		CLISTMENUITEM clmi = {0};
 

@@ -1732,8 +1732,6 @@ void CIcqProto::handleRecvAdded(unsigned char *buf, WORD wLen)
 
 	HANDLE hContact = HContactFromUID(dwUin, szUid, &bAdded);
 
-	deleteSetting(hContact, "Grant");
-
 	cbBlob=sizeof(DWORD)+sizeof(HANDLE)+4;
 
 	if (dwUin)

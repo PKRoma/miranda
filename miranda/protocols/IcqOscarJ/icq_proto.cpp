@@ -514,6 +514,8 @@ int CIcqProto::Authorize( HANDLE hDbEvent )
 
 		icq_sendAuthResponseServ(uin, uid, 1, _T(""));
 
+		deleteSetting(hContact, "Grant");
+
 		return 0; // Success
 	}
 
@@ -538,6 +540,9 @@ int CIcqProto::AuthDeny( HANDLE hDbEvent, const TCHAR* szReason )
 			return 1;
 
 		icq_sendAuthResponseServ(uin, uid, 0, szReason);
+
+		if (DBGetContactSettingByte(hContact, "CList", "NotOnList", 0))
+			CallService(MS_DB_CONTACT_DELETE, (WPARAM)hContact, 0);
 
 		return 0; // Success
 	}
