@@ -2696,11 +2696,11 @@ int CIcqProto::ServListDbSettingChanged(WPARAM wParam, LPARAM lParam)
 	{
 		// Has a temporary contact just been added permanently?
 		if (!strcmpnull(cws->szSetting, "NotOnList") &&
-			(cws->value.type == DBVT_DELETED || (cws->value.type == DBVT_BYTE && cws->value.bVal == 0)) &&
-			getSettingByte(NULL, "ServerAddRemove", DEFAULT_SS_ADDSERVER) &&
-			!DBGetContactSettingByte((HANDLE)wParam, "CList", "Hidden", 0))
+			(cws->value.type == DBVT_DELETED || (cws->value.type == DBVT_BYTE && cws->value.bVal == 0)))
 		{ // Add to server-list
-			AddServerContact(wParam, 0);
+			setContactHidden((HANDLE)wParam, 0);
+			if (getSettingByte(NULL, "ServerAddRemove", DEFAULT_SS_ADDSERVER))
+				AddServerContact(wParam, 0);
 		}
 
 		// Has contact been renamed?
