@@ -67,6 +67,7 @@ static INT_PTR CALLBACK ReadAwayMsgDlgProc(HWND hwndDlg, UINT message, WPARAM wP
 
 				Window_SetProtoIcon_IcoLib(hwndDlg, szProto, dwStatus);
 			}
+			Utils_RestoreWindowPosition(hwndDlg, (HANDLE)lParam, "SRAway", "AwayMsgDlg");
 			if (dat->hSeq == NULL)
 			{
 				ACKDATA ack = {0};
