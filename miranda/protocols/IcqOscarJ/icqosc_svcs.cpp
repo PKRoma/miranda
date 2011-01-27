@@ -682,7 +682,8 @@ HANDLE CIcqProto::AddToListByUIN(DWORD dwUin, DWORD dwFlags)
 		if (!(dwFlags & PALF_TEMPORARY) && DBGetContactSettingByte(hContact, "CList", "NotOnList", 1))
 		{
 			setContactHidden(hContact, 0);
-			DBDeleteContactSetting(hContact, "CList", "NotOnList");
+			if (getSettingByte(NULL, "ServerAddRemove", DEFAULT_SS_ADDSERVER))
+				AddServerContact((WPARAM)hContact, 0);
 		}
 
 		return hContact; // Success
@@ -701,7 +702,8 @@ HANDLE CIcqProto::AddToListByUID(const char *szUID, DWORD dwFlags)
 		if (!(dwFlags & PALF_TEMPORARY) && DBGetContactSettingByte(hContact, "CList", "NotOnList", 1))
 		{
 			setContactHidden(hContact, 0);
-			DBDeleteContactSetting(hContact, "CList", "NotOnList");
+			if (getSettingByte(NULL, "ServerAddRemove", DEFAULT_SS_ADDSERVER))
+				AddServerContact((WPARAM)hContact, 0);
 		}
 
 		return hContact; // Success
