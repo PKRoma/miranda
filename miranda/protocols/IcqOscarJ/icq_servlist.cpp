@@ -2694,6 +2694,15 @@ int CIcqProto::ServListDbSettingChanged(WPARAM wParam, LPARAM lParam)
 
 	if (!strcmpnull(cws->szModule, "CList"))
 	{
+		// Has a temporary contact just been added permanently?
+		if (!strcmpnull(cws->szSetting, "NotOnList") &&
+			(cws->value.type == DBVT_DELETED || (cws->value.type == DBVT_BYTE && cws->value.bVal == 0)))
+		{ // Add to server-list
+			setContactHidden((HANDLE)wParam, 0);
+			if (getSettingByte(NULL, "ServerAddRemove", DEFAULT_SS_ADDSERVER))
+				AddServerContact(wParam, 0);
+		}
+
 		// Has contact been renamed?
 		if (!strcmpnull(cws->szSetting, "MyHandle") &&
 			getSettingByte(NULL, "StoreServerDetails", DEFAULT_SS_STORE))
