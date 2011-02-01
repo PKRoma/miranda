@@ -75,7 +75,7 @@ extern "C" {
 #define GG_CONFIG_HAVE_LONG_LONG
 #endif
 
-/* Defined if libgadu was compiled and linked with TLS support. */
+/* Defined if libgadu was compiled and linked with OpenSSL support. */
 #define GG_CONFIG_HAVE_OPENSSL
 
 /* Defined if uintX_t types are defined in <stdint.h>. */
@@ -134,6 +134,10 @@ extern "C" {
 typedef unsigned char   uint8_t;
 typedef unsigned short uint16_t;
 typedef unsigned int   uint32_t;
+#ifdef GG_CONFIG_HAVE_LONG_LONG
+typedef unsigned long long   uint64_t;
+#define GG_CONFIG_HAVE_UINT64_T
+#endif
 
 #ifndef __CYGWIN__
 #define __int8_t_defined
@@ -162,6 +166,8 @@ typedef   signed int    int32_t;
 #    define vsnprintf	_vsnprintf
 #    define snprintf	_snprintf
 #    define strcasecmp	_stricmp
+#    define GG_CONFIG_HAVE_STRTOULL
+#    define strtoull	_strtoui64
 #  endif
 #  define gg_sock_write(sock,buf,len)	send(sock,(void *)(buf),len,0)
 #  define gg_sock_read(sock,buf,len)	recv(sock,(void *)(buf),len,0)
@@ -214,6 +220,8 @@ struct gg_common {
 struct gg_image_queue;
 
 struct gg_dcc7;
+
+struct gg_dcc7_relay;
 
 /**
  * Sposób rozwiązywania nazw serwerów.
@@ -436,7 +444,8 @@ struct gg_dcc {
 
 #define GG_DCC7_HASH_LEN	20	/**< Maksymalny rozmiar skrótu pliku w połączeniach bezpośrenich */
 #define GG_DCC7_FILENAME_LEN	255	/**< Maksymalny rozmiar nazwy pliku w połączeniach bezpośrednich */
-#define GG_DCC7_INFO_LEN	64	/**< Maksymalny rozmiar informacji o połączeniach bezpośrednich */
+#define GG_DCC7_INFO_LEN	32	/**< Maksymalny rozmiar informacji o połączeniach bezpośrednich */
+#define GG_DCC7_INFO_HASH_LEN	32	/**< Maksymalny rozmiar skrótu ip informacji o połączeniach bezpośrednich */
 
 /**
  * Połączenie bezpośrednie od wersji Gadu-Gadu 7.x.
@@ -478,6 +487,13 @@ struct gg_dcc7 {
 
 	int soft_timeout;	/**< Flaga mówiąca, że po przekroczeniu \c timeout należy wywołać \c gg_dcc7_watch_fd() */
 	int seek;		/**< Flaga mówiąca, że można zmieniać położenie w wysyłanym pliku */
+
+	void *resolver;		/**< Dane prywatne procesu lub wątku rozwiązującego nazwę serwera */
+
+	int relay;		/**< Flaga mówiąca, że laczymy sie przez serwer */
+	int relay_index;	/**< Numer serwera pośredniczącego, do którego się łączymy */
+	int relay_count;	/**< Rozmiar listy serwerów pośredniczących */
+	struct gg_dcc7_relay *relay_list;	/**< Lista serwerów pośredniczących */
 
 #ifdef GG_CONFIG_MIRANDA
 	void *contact;
@@ -579,8 +595,12 @@ enum gg_state_t {
 	GG_STATE_WAITING_FOR_INFO,	/**< Oczekiwanie na informacje o połączeniu bezpośrednim */
 
 	GG_STATE_READING_ID,		/**< Odebranie identyfikatora połączenia bezpośredniego */
-	GG_STATE_SENDING_ID,		/**< Wysłano identyfikatora połączenia bezpośredniego */
-	GG_STATE_RESOLVING_GG		/**< Oczekiwanie na rozwiązanie nazwy serwera Gadu-Gadu */
+	GG_STATE_SENDING_ID,		/**< Wysłano identyfikator połączenia bezpośredniego */
+	GG_STATE_RESOLVING_GG,		/**< Oczekiwanie na rozwiązanie nazwy serwera Gadu-Gadu */
+
+	GG_STATE_RESOLVING_RELAY,	/**< Oczekiwanie na rozwiązanie nazwy serwera pośredniczącego */
+	GG_STATE_CONNECTING_RELAY,	/**< Oczekiwanie na połączenie z serwerem pośredniczącym */
+	GG_STATE_READING_RELAY		/**< Odbieranie danych */
 };
 
 /**
@@ -723,7 +743,8 @@ enum gg_event_t {
 	GG_EVENT_XML_EVENT,		/**< Otrzymano komunikat systemowy (7.7) */
 	GG_EVENT_DISCONNECT_ACK,	/**< \brief Potwierdzenie zakończenia sesji. Informuje o tym, że zmiana stanu na niedostępny z opisem dotarła do serwera i można zakończyć połączenie TCP. */
 	GG_EVENT_XML_ACTION,
-	GG_EVENT_TYPING_NOTIFICATION	/**< Powiadomienie o pisaniu */
+	GG_EVENT_TYPING_NOTIFICATION,	/**< Powiadomienie o pisaniu */
+	GG_EVENT_USER_DATA		/**< Informacja o kontaktach */
 };
 
 #define GG_EVENT_SEARCH50_REPLY GG_EVENT_PUBDIR50_SEARCH_REPLY
@@ -768,7 +789,8 @@ enum gg_error_t {
 	GG_ERROR_DCC7_FILE,		/**< Błąd odczytu/zapisu pliku */
 	GG_ERROR_DCC7_EOF,		/**< Przedwczesny koniec pliku */
 	GG_ERROR_DCC7_NET,		/**< Błąd wysyłania/odbierania */
-	GG_ERROR_DCC7_REFUSED 		/**< Połączenie odrzucone */
+	GG_ERROR_DCC7_REFUSED, 		/**< Połączenie odrzucone */
+	GG_ERROR_DCC7_RELAY		/**< Problem z serwerem pośredniczącym */
 };
 
 /**
@@ -983,6 +1005,33 @@ struct gg_event_typing_notification {
 };
 
 /**
+ * Atrybut użytkownika.
+ */
+struct gg_event_user_data_attr {
+	int type;		/**< Typ atrybutu */
+	char *key;		/**< Klucz */
+	char *value;		/**< Wartość */
+};
+
+/**
+ * Struktura opisująca kontakt w zdarzeniu GG_EVENT_USER_DATA.
+ */
+struct gg_event_user_data_user {
+	uin_t uin;		/**< Numer kontaktu */
+	size_t attr_count;	/**< Liczba atrybutów */
+	struct gg_event_user_data_attr *attrs;	/**< Lista atrybutów */
+};
+
+/**
+ * Opis zdarzenia \c GG_EVENT_USER_DATA.
+ */
+struct gg_event_user_data {
+	int type;		/**< Rodzaj informacji o kontaktach */
+	size_t user_count;	/**< Liczba kontaktów */
+	struct gg_event_user_data_user *users;	/**< Lista kontaktów */
+};
+
+/**
  * Unia wszystkich zdarzeń zwracanych przez funkcje \c gg_watch_fd(), 
  * \c gg_dcc_watch_fd() i \c gg_dcc7_watch_fd().
  *
@@ -1015,6 +1064,7 @@ union gg_event_union {
 	struct gg_event_dcc7_accept dcc7_accept;	/**< Zaakceptowano połączenie bezpośrednie (\c GG_EVENT_DCC7_ACCEPT) */
 	struct gg_event_dcc7_done dcc7_done;	/**< Zakończono połączenie bezpośrednie (\c GG_EVENT_DCC7_DONE) */
 	struct gg_event_typing_notification typing_notification;	/**< Powiadomienie o pisaniu (\c GG_EVENT_TYPING_NOTIFICATION) */
+	struct gg_event_user_data user_data;	/**< Informacje o kontaktach */
 };
 
 /**
@@ -1214,6 +1264,7 @@ struct gg_dcc7 *gg_dcc7_send_file(struct gg_session *sess, uin_t rcpt, const cha
 struct gg_dcc7 *gg_dcc7_send_file_fd(struct gg_session *sess, uin_t rcpt, int fd, size_t size, const char *filename1250, const char *hash);
 int gg_dcc7_accept(struct gg_dcc7 *dcc, unsigned int offset);
 int gg_dcc7_reject(struct gg_dcc7 *dcc, int reason);
+int gg_dcc7_abort(struct gg_dcc7 *dcc);
 void gg_dcc7_free(struct gg_dcc7 *d);
 
 extern int gg_debug_level;
@@ -1438,6 +1489,7 @@ int gg_dcc7_handle_new(struct gg_session *sess, struct gg_event *e, void *payloa
 int gg_dcc7_handle_info(struct gg_session *sess, struct gg_event *e, void *payload, int len) GG_DEPRECATED;
 int gg_dcc7_handle_accept(struct gg_session *sess, struct gg_event *e, void *payload, int len) GG_DEPRECATED;
 int gg_dcc7_handle_reject(struct gg_session *sess, struct gg_event *e, void *payload, int len) GG_DEPRECATED;
+int gg_dcc7_handle_abort(struct gg_session *sess, struct gg_event *e, void *payload, int len) GG_DEPRECATED;
 
 #define GG_APPMSG_HOST "appmsg.gadu-gadu.pl"
 #define GG_APPMSG_PORT 80
@@ -1447,6 +1499,8 @@ int gg_dcc7_handle_reject(struct gg_session *sess, struct gg_event *e, void *pay
 #define GG_REGISTER_PORT 80
 #define GG_REMIND_HOST "retr.gadu-gadu.pl"
 #define GG_REMIND_PORT 80
+#define GG_RELAY_HOST "relay.gadu-gadu.pl"
+#define GG_RELAY_PORT 80
 
 #define GG_DEFAULT_PORT 8074
 #define GG_HTTPS_PORT 443
@@ -2016,8 +2070,6 @@ struct gg_recv_msg {
 
 #define GG_XML_EVENT 0x0027
 
-#define GG_XML_ACTION 0x002c
-
 #ifndef DOXYGEN
 
 #define GG_USERLIST_PUT 0x00
@@ -2107,6 +2159,7 @@ struct gg_dcc7_info {
 	uint32_t type;			/* sposób połączenia */
 	gg_dcc7_id_t id;		/* identyfikator połączenia */
 	char info[GG_DCC7_INFO_LEN];	/* informacje o połączeniu "ip port" */
+	char hash[GG_DCC7_INFO_HASH_LEN];/* skrót "ip" */
 } GG_PACKED;
 
 #define GG_DCC7_NEW 0x20
@@ -2146,6 +2199,7 @@ struct gg_dcc7_reject {
 // XXX API
 #define GG_DCC7_REJECT_BUSY 0x00000001	/**< Połączenie bezpośrednie już trwa, nie umiem obsłużyć więcej */
 #define GG_DCC7_REJECT_USER 0x00000002	/**< Użytkownik odrzucił połączenie */
+#define GG_DCC7_REJECT_HIDDEN 0x00000003	/* użytkownik ojest ukryty i nie możesz mu wysłać pliku */
 #define GG_DCC7_REJECT_VERSION 0x00000006	/**< Druga strona ma wersję klienta nieobsługującą połączeń bezpośrednich tego typu */
 
 #define GG_DCC7_ID_REQUEST 0x23
@@ -2172,6 +2226,18 @@ struct gg_dcc7_dunno1 {
 	// XXX
 } GG_PACKED;
 */
+
+#define GG_DCC7_ABORT 0x0025
+
+struct gg_dcc7_abort {
+	gg_dcc7_id_t id;		/* identyfikator połączenia */
+	uint32_t uin_from;		/* numer nadawcy */
+	uint32_t uin_to;		/* numer odbiorcy */
+} GG_PACKED;
+
+struct gg_dcc7_aborted {
+	gg_dcc7_id_t id;		/* identyfikator połączenia */
+} GG_PACKED;
 
 #define GG_DCC7_TIMEOUT_CONNECT 10	/* 10 sekund */
 #define GG_DCC7_TIMEOUT_SEND 1800	/* 30 minut */

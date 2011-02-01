@@ -143,6 +143,23 @@ void gg_event_free(struct gg_event *e)
 		case GG_EVENT_XML_ACTION:
 			free(e->event.xml_action.data);
 			break;
+		case GG_EVENT_USER_DATA:
+		{
+			unsigned int i, j;
+
+			for (i = 0; i < e->event.user_data.user_count; i++) {
+				for (j = 0; j < e->event.user_data.users[i].attr_count; j++) {
+					free(e->event.user_data.users[i].attrs[j].key);
+					free(e->event.user_data.users[i].attrs[j].value);
+				}
+
+				free(e->event.user_data.users[i].attrs);
+			}
+
+			free(e->event.user_data.users);
+
+			break;
+		}
 	}
 
 	free(e);
@@ -291,19 +308,24 @@ static int gg_handle_recv_msg_options(struct gg_session *sess, struct gg_event *
 				p += sizeof(*m);
 
 				if (p > packet_end) {
-					gg_debug_session(sess, GG_DEBUG_MISC, "// gg_handle_recv_msg() packet out of bounds (1)\n");
+					gg_debug_session(sess, GG_DEBUG_MISC, "// gg_handle_recv_msg_options() packet out of bounds (1)\n");
 					goto malformed;
 				}
 
 				count = gg_fix32(m->count);
 
 				if (p + count * sizeof(uin_t) > packet_end || p + count * sizeof(uin_t) < p || count > 0xffff) {
-					gg_debug_session(sess, GG_DEBUG_MISC, "// gg_handle_recv_msg() packet out of bounds (1.5)\n");
+					gg_debug_session(sess, GG_DEBUG_MISC, "// gg_handle_recv_msg_options() packet out of bounds (1.5)\n");
 					goto malformed;
 				}
 
+				if (e->event.msg.recipients) {
+					gg_debug_session(sess, GG_DEBUG_MISC, "// gg_handle_recv_msg_options() e->event.msg.recipients already exist\n");
+					goto fail;
+				}
+
 				if (!(e->event.msg.recipients = (void*) malloc(count * sizeof(uin_t)))) {
-					gg_debug_session(sess, GG_DEBUG_MISC, "// gg_handle_recv_msg() not enough memory for recipients data\n");
+					gg_debug_session(sess, GG_DEBUG_MISC, "// gg_handle_recv_msg_options() not enough memory for recipients data\n");
 					goto fail;
 				}
 
@@ -324,22 +346,27 @@ static int gg_handle_recv_msg_options(struct gg_session *sess, struct gg_event *
 				char *buf;
 
 				if (p + 3 > packet_end) {
-					gg_debug_session(sess, GG_DEBUG_MISC, "// gg_handle_recv_msg() packet out of bounds (2)\n");
+					gg_debug_session(sess, GG_DEBUG_MISC, "// gg_handle_recv_msg_options() packet out of bounds (2)\n");
 					goto malformed;
 				}
 
 				memcpy(&len, p + 1, sizeof(uint16_t));
 				len = gg_fix16(len);
 
+				if (e->event.msg.formats) {
+					gg_debug_session(sess, GG_DEBUG_MISC, "// gg_handle_recv_msg_options() e->event.msg.formats already exist\n");
+					goto fail;
+				}
+
 				if (!(buf = malloc(len))) {
-					gg_debug_session(sess, GG_DEBUG_MISC, "// gg_handle_recv_msg() not enough memory for richtext data\n");
+					gg_debug_session(sess, GG_DEBUG_MISC, "// gg_handle_recv_msg_options() not enough memory for richtext data\n");
 					goto fail;
 				}
 
 				p += 3;
 
 				if (p + len > packet_end) {
-					gg_debug_session(sess, GG_DEBUG_MISC, "// gg_handle_recv_msg() packet out of bounds (3)\n");
+					gg_debug_session(sess, GG_DEBUG_MISC, "// gg_handle_recv_msg_options() packet out of bounds (3)\n");
 					free(buf);
 					goto malformed;
 				}
@@ -359,7 +386,7 @@ static int gg_handle_recv_msg_options(struct gg_session *sess, struct gg_event *
 				struct gg_msg_image_request *i = (void*) p;
 
 				if (p + sizeof(*i) > packet_end) {
-					gg_debug_session(sess, GG_DEBUG_MISC, "// gg_handle_recv_msg() packet out of bounds (3)\n");
+					gg_debug_session(sess, GG_DEBUG_MISC, "// gg_handle_recv_msg_options() packet out of bounds (3)\n");
 					goto malformed;
 				}
 
@@ -391,7 +418,7 @@ static int gg_handle_recv_msg_options(struct gg_session *sess, struct gg_event *
 
 				} else if (p + sizeof(struct gg_msg_image_reply) + 1 > packet_end) {
 
-					gg_debug_session(sess, GG_DEBUG_MISC, "// gg_handle_recv_msg() packet out of bounds (4)\n");
+					gg_debug_session(sess, GG_DEBUG_MISC, "// gg_handle_recv_msg_options() packet out of bounds (4)\n");
 					goto malformed;
 				}
 
@@ -404,7 +431,7 @@ static int gg_handle_recv_msg_options(struct gg_session *sess, struct gg_event *
 
 			default:
 			{
-				gg_debug_session(sess, GG_DEBUG_MISC, "// gg_handle_recv_msg() unknown payload 0x%.2x\n", *p);
+				gg_debug_session(sess, GG_DEBUG_MISC, "// gg_handle_recv_msg_options() unknown payload 0x%.2x\n", *p);
 				p = packet_end;
 			}
 		}
@@ -651,6 +678,19 @@ static int gg_handle_recv_msg80(struct gg_header *h, struct gg_event *e, struct 
 	e->event.msg.time = gg_fix32(r->time);
 	e->event.msg.seq = gg_fix32(r->seq);
 
+	if (offset_attr != 0) {
+		switch (gg_handle_recv_msg_options(sess, e, gg_fix32(r->sender), packet + offset_attr, packet + h->length)) {
+			case -1:	// handled
+				return 0;
+
+			case -2:	// failed
+				goto fail;
+
+			case -3:	// malformed
+				goto malformed;
+		}
+	}
+
 	if (sess->encoding == GG_ENCODING_CP1250) {
 		e->event.msg.message = (unsigned char*) strdup(packet + offset_plain);
 	} else {
@@ -677,19 +717,6 @@ static int gg_handle_recv_msg80(struct gg_header *h, struct gg_event *e, struct 
 			e->event.msg.xhtml_message = gg_utf8_to_cp(packet + sizeof(struct gg_recv_msg80));
 	} else {
 		e->event.msg.xhtml_message = NULL;
-	}
-
-	if (offset_attr != 0) {
-		switch (gg_handle_recv_msg_options(sess, e, gg_fix32(r->sender), packet + offset_attr, packet + h->length)) {
-			case -1:	// handled
-				return 0;
-
-			case -2:	// failed
-				goto fail;
-
-			case -3:	// malformed
-				goto malformed;
-		}
 	}
 
 	return 0;
@@ -731,6 +758,171 @@ static int gg_handle_recv_msg_ack(struct gg_session *sess)
 
 	return gg_send_packet(sess, GG_RECV_MSG_ACK, &pkt, sizeof(pkt), NULL);
 }
+
+/**
+ * \internal Analizuje przychodzący pakiet z danymi kontaktów.
+ *
+ * \param sess Struktura sesji
+ * \param e Struktura zdarzenia
+ * \param payload Treść pakietu
+ * \param len Długość pakietu
+ *
+ * \return 0 jeśli się powiodło, -1 w przypadku błędu
+ */
+static int gg_handle_user_data(struct gg_session *sess, struct gg_event *e, void *packet, size_t len)
+{
+	struct gg_user_data d;
+	char *p = (char*) packet;
+	char *packet_end = (char*) packet + len;
+	struct gg_event_user_data_user *users;
+	unsigned int i, j;
+	int res = 0;
+
+	gg_debug_session(sess, GG_DEBUG_FUNCTION, "** gg_handle_user_data(%p, %p, %p, %d);\n", sess, e, packet, len);
+
+	e->event.user_data.user_count = 0;
+	e->event.user_data.users = NULL;
+
+	if (p + sizeof(d) > packet_end)
+		goto malformed;
+
+	memcpy(&d, p, sizeof(d));
+	printf("%p %p %d\n",packet, p, sizeof(d));
+	p += sizeof(d);
+	printf("%p\n", p);
+
+	d.type = gg_fix32(d.type);
+	d.user_count = gg_fix32(d.user_count);
+
+	if (d.user_count > 0) {
+		users = calloc(d.user_count, sizeof(struct gg_event_user_data_user));
+
+		if (users == NULL)
+			goto fail;
+	} else {
+		users = NULL;
+	}
+
+	e->type = GG_EVENT_USER_DATA;
+	e->event.user_data.type = d.type;
+	e->event.user_data.user_count = d.user_count;
+	e->event.user_data.users = users;
+	
+	gg_debug_session(sess, GG_DEBUG_DUMP, "type=%d, count=%d\n", d.type, d.user_count);
+
+	for (i = 0; i < d.user_count; i++) {
+		struct gg_user_data_user u;
+		struct gg_event_user_data_attr *attrs;
+
+		printf("i=%d, p=%p\n", i, p);
+		if (p + sizeof(u) > packet_end) {
+			printf("fruuu %p %p %p\n", packet, p, packet_end);
+			goto malformed;
+		}
+
+		memcpy(&u, p, sizeof(u));
+		p += sizeof(u);
+
+		u.uin = gg_fix32(u.uin);
+		u.attr_count = gg_fix32(u.attr_count);
+
+		if (u.attr_count > 0) {
+			attrs = calloc(u.attr_count, sizeof(struct gg_event_user_data_attr));
+
+			if (attrs == NULL)
+				goto malformed;
+		} else {
+			attrs = NULL;
+		}
+
+		users[i].uin = u.uin;
+		users[i].attr_count = u.attr_count;
+		users[i].attrs = attrs;
+
+		gg_debug_session(sess, GG_DEBUG_DUMP, "    uin=%d, count=%d\n", u.uin, u.attr_count);
+
+		for (j = 0; j < u.attr_count; j++) {
+			uint32_t key_size;
+			uint32_t attr_type;
+			uint32_t value_size;
+			char *key;
+			char *value;
+
+			if (p + sizeof(key_size) > packet_end)
+				goto malformed;
+
+			memcpy(&key_size, p, sizeof(key_size));
+			p += sizeof(key_size);
+
+			key_size = gg_fix32(key_size);
+
+			if (p + key_size > packet_end)
+				goto malformed;
+
+			key = malloc(key_size + 1);
+
+			if (key == NULL)
+				goto fail;
+
+			memcpy(key, p, key_size);
+			p += key_size;
+
+			key[key_size] = 0;
+
+			attrs[j].key = key;
+
+			if (p + sizeof(attr_type) + sizeof(value_size) > packet_end)
+				goto malformed;
+
+			memcpy(&attr_type, p, sizeof(attr_type));
+			p += sizeof(attr_type);
+			memcpy(&value_size, p, sizeof(value_size));
+			p += sizeof(value_size);
+
+			attrs[j].type = gg_fix32(attr_type);
+			value_size = gg_fix32(value_size);
+
+			if (p + value_size > packet_end)
+				goto malformed;
+
+			value = malloc(value_size + 1);
+
+			if (value == NULL)
+				goto fail;
+
+			memcpy(value, p, value_size);
+			p += value_size;
+
+			value[value_size] = 0;
+
+			attrs[j].value = value;
+
+			gg_debug_session(sess, GG_DEBUG_DUMP, "        key=\"%s\", type=%d, value=\"%s\"\n", key, attr_type, value);
+		}
+	}
+
+	return 0;
+
+fail:
+	res = -1;
+
+malformed:
+	e->type = GG_EVENT_NONE;
+
+	for (i = 0; i < e->event.user_data.user_count; i++) {
+		for (j = 0; j < e->event.user_data.users[i].attr_count; j++) {
+			free(e->event.user_data.users[i].attrs[j].key);
+			free(e->event.user_data.users[i].attrs[j].value);
+		}
+
+		free(e->event.user_data.users[i].attrs);
+	}
+
+	free(e->event.user_data.users);
+
+	return res;
+}
+
 
 /**
  * \internal Odbiera pakiet od serwera.
@@ -1440,6 +1632,19 @@ static int gg_watch_fd_connected(struct gg_session *sess, struct gg_event *e)
 			break;
 		}
 
+		case GG_DCC7_ABORT:
+		{
+			gg_debug_session(sess, GG_DEBUG_MISC, "// gg_watch_fd_connected() received dcc7 abort\n");
+
+			if (h->length < sizeof(struct gg_dcc7_aborted))
+				break;
+
+			if (gg_dcc7_handle_abort(sess, e, p, h->length) == -1)
+				goto fail;
+
+			break;
+		}
+
 		case GG_DCC7_INFO:
 		{
 			gg_debug_session(sess, GG_DEBUG_MISC, "// gg_watch_fd_connected() received dcc7 info\n");
@@ -1462,7 +1667,8 @@ static int gg_watch_fd_connected(struct gg_session *sess, struct gg_event *e)
 			if (h->length < sizeof(*d))
 				break;
 
-			// XXX
+			if (gg_handle_user_data(sess, e, p, h->length) == -1)
+				goto fail;
 
 			break;
 		}
