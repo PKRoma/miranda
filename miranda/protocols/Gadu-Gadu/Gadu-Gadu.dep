@@ -134,6 +134,9 @@
 	"..\..\include\openssl\x509_vfy.h"\
 	".\libgadu\compat.h"\
 	".\libgadu\libgadu.h"\
+	".\libgadu\protocol.h"\
+	".\libgadu\resolver.h"\
+	".\libgadu\internal.h"\
 	".\libgadu\win32.h"\
 	".\ssl.h"\
 	

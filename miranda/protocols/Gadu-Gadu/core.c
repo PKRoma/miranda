@@ -943,14 +943,26 @@ retry:
 			case GG_EVENT_DCC7_REJECT:
 				{
 					struct gg_dcc7 *dcc7 = e->event.dcc7_reject.dcc7;
-					gg_netlog(gg, "gg_mainthread(%x): File transfer denied by client %d.", gg, dcc7->peer_uin);
-					ProtoBroadcastAck(GG_PROTO, dcc7->contact, ACKTYPE_FILE, ACKRESULT_DENIED, dcc7, 0);
+					if (dcc7->type == GG_SESSION_DCC7_SEND)
+					{
+						gg_netlog(gg, "gg_mainthread(%x): File transfer denied by client %d (reason = %d).", gg, dcc7->peer_uin, e->event.dcc7_reject.reason);
+						ProtoBroadcastAck(GG_PROTO, dcc7->contact, ACKTYPE_FILE, ACKRESULT_DENIED, dcc7, 0);
 
-					// Remove from watches and free
-					EnterCriticalSection(&gg->ft_mutex);
-					list_remove(&gg->watches, dcc7, 0);
-					LeaveCriticalSection(&gg->ft_mutex);
-					gg_dcc7_free(dcc7);
+						// Remove from watches and free
+						EnterCriticalSection(&gg->ft_mutex);
+						list_remove(&gg->watches, dcc7, 0);
+						LeaveCriticalSection(&gg->ft_mutex);
+						gg_dcc7_free(dcc7);
+					}
+					else
+					{
+						gg_netlog(gg, "gg_mainthread(%x): File transfer aborted by client %d.", gg, dcc7->peer_uin);
+
+						// Remove transfer from waiting list
+						EnterCriticalSection(&gg->ft_mutex);
+						list_remove(&gg->transfers, dcc7, 0);
+						LeaveCriticalSection(&gg->ft_mutex);
+					}
 				}
 				break;
 
@@ -975,6 +987,9 @@ retry:
 						case GG_ERROR_DCC7_REFUSED:
 							gg_netlog(gg, "gg_mainthread(%x): Client: %d, Connection refused error.", gg, dcc7 ? dcc7->peer_uin : 0);
 							break;
+						case GG_ERROR_DCC7_RELAY:
+							gg_netlog(gg, "gg_mainthread(%x): Client: %d, Relay connection error.", gg, dcc7 ? dcc7->peer_uin : 0);
+							break;
 						default:
 							gg_netlog(gg, "gg_mainthread(%x): Client: %d, Unknown error.", gg, dcc7 ? dcc7->peer_uin : 0);
 					}
@@ -984,11 +999,15 @@ retry:
 					list_remove(&gg->watches, dcc7, 0);
 
 					// Close file & fail
-					if(dcc7->contact)
+					if (dcc7->file_fd != -1)
 					{
-						_close(dcc7->file_fd); dcc7->file_fd = -1;
-						ProtoBroadcastAck(GG_PROTO, dcc7->contact, ACKTYPE_FILE, ACKRESULT_FAILED, dcc7, 0);
+						_close(dcc7->file_fd);
+						dcc7->file_fd = -1;
 					}
+
+					if (dcc7->contact)
+						ProtoBroadcastAck(GG_PROTO, dcc7->contact, ACKTYPE_FILE, ACKRESULT_FAILED, dcc7, 0);
+
 					// Free dcc
 					gg_dcc7_free(dcc7);
 				}

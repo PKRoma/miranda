@@ -550,6 +550,9 @@ void __cdecl gg_dccmainthread(GGPROTO *gg, void *empty)
 								case GG_ERROR_DCC7_REFUSED:
 									gg_netlog(gg, "gg_dccmainthread(): Client: %d, Connection refused error.", dcc7->peer_uin);
 									break;
+								case GG_ERROR_DCC7_RELAY:
+									gg_netlog(gg, "gg_dccmainthread(): Client: %d, Relay connection error.", dcc7->peer_uin);
+									break;
 								default:
 									gg_netlog(gg, "gg_dccmainthread(): Client: %d, Unknown error.", dcc7->peer_uin);
 							}
@@ -557,11 +560,15 @@ void __cdecl gg_dccmainthread(GGPROTO *gg, void *empty)
 							list_remove(&gg->watches, dcc7, 0);
 
 							// Close file & fail
-							if(dcc7->contact)
+							if (dcc7->file_fd != -1)
 							{
-								_close(dcc7->file_fd); dcc7->file_fd = -1;
-								ProtoBroadcastAck(GG_PROTO, dcc7->contact, ACKTYPE_FILE, ACKRESULT_FAILED, dcc7, 0);
+								_close(dcc7->file_fd);
+								dcc7->file_fd = -1;
 							}
+
+							if (dcc7->contact)
+								ProtoBroadcastAck(GG_PROTO, dcc7->contact, ACKTYPE_FILE, ACKRESULT_FAILED, dcc7, 0);
+
 							// Free dcc
 							gg_dcc7_free(dcc7);
 							break;
@@ -761,10 +768,10 @@ HANDLE gg_dccfileallow(GGPROTO *gg, HANDLE hTransfer, const PROTOCHAR* szPath)
 	// Open file for appending and check if ok
 	if((dcc->file_fd = _open(fileName, _O_WRONLY | _O_APPEND | _O_BINARY | _O_CREAT, _S_IREAD | _S_IWRITE)) == -1)
 	{
-		// Free transfer
-		gg_free_dcc(dcc);
 		gg_netlog(gg, "gg_dccfileallow(): Failed to create file \"%s\".", fileName);
 		ProtoBroadcastAck(GG_PROTO, dcc->contact, ACKTYPE_FILE, ACKRESULT_FAILED, dcc, 0);
+		// Free transfer
+		gg_free_dcc(dcc);
 		return 0;
 	}
 
@@ -785,6 +792,7 @@ HANDLE gg_dcc7fileallow(GGPROTO *gg, HANDLE hTransfer, const PROTOCHAR* szPath)
 {
 	struct gg_dcc7 *dcc7 = (struct gg_dcc7 *) hTransfer;
 	char fileName[MAX_PATH], *path = gg_t2a(szPath);
+	int iFtRemoveRes;
 	strncpy(fileName, path, sizeof(fileName));
 	strncat(fileName, dcc7->filename, sizeof(fileName) - strlen(fileName));
 	dcc7->folder = _strdup((char *) path);
@@ -793,16 +801,26 @@ HANDLE gg_dcc7fileallow(GGPROTO *gg, HANDLE hTransfer, const PROTOCHAR* szPath)
 
 	// Remove transfer from waiting list
 	EnterCriticalSection(&gg->ft_mutex);
-	list_remove(&gg->transfers, dcc7, 0);
+	iFtRemoveRes = list_remove(&gg->transfers, dcc7, 0);
 	LeaveCriticalSection(&gg->ft_mutex);
+
+	if (iFtRemoveRes == -1)
+	{
+		gg_netlog(gg, "gg_dcc7fileallow(): File transfer denied.");
+		ProtoBroadcastAck(GG_PROTO, dcc7->contact, ACKTYPE_FILE, ACKRESULT_DENIED, dcc7, 0);
+		// Free transfer
+		gg_dcc7_free(dcc7);
+		return 0;
+	}
 
 	// Open file for appending and check if ok
 	if((dcc7->file_fd = _open(fileName, _O_WRONLY | _O_APPEND | _O_BINARY | _O_CREAT, _S_IREAD | _S_IWRITE)) == -1)
 	{
+		gg_netlog(gg, "gg_dcc7fileallow(): Failed to create file \"%s\".", fileName);
+		gg_dcc7_reject(dcc7, GG_DCC7_REJECT_USER);
+		ProtoBroadcastAck(GG_PROTO, dcc7->contact, ACKTYPE_FILE, ACKRESULT_FAILED, dcc7, 0);
 		// Free transfer
 		gg_dcc7_free(dcc7);
-		gg_netlog(gg, "gg_dcc7fileallow(): Failed to create file \"%s\".", fileName);
-		ProtoBroadcastAck(GG_PROTO, dcc7->contact, ACKTYPE_FILE, ACKRESULT_FAILED, dcc7, 0);
 		return 0;
 	}
 
@@ -920,6 +938,9 @@ int gg_dccfilecancel(GGPROTO *gg, HANDLE hTransfer)
 int gg_dcc7filecancel(GGPROTO *gg, HANDLE hTransfer)
 {
 	struct gg_dcc7 *dcc7 = (struct gg_dcc7 *) hTransfer;
+
+	if (dcc7->type == GG_SESSION_DCC7_SEND && dcc7->state == GG_STATE_WAITING_FOR_ACCEPT)
+		gg_dcc7_abort(dcc7);
 
 	// Remove transfer from any list
 	EnterCriticalSection(&gg->ft_mutex);
