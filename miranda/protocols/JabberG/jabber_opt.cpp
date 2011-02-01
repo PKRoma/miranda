@@ -982,7 +982,7 @@ static int	_RosterInsertListItem(HWND hList, const TCHAR * jid, const TCHAR * ni
 	ListView_SetItemText(hList, index, 0, ( TCHAR* )jid);
 	ListView_SetItemText(hList, index, 1, ( TCHAR* )nick);
 	ListView_SetItemText(hList, index, 2, ( TCHAR* )group);
-	ListView_SetItemText(hList, index, 3, ( TCHAR* )subscr);
+	ListView_SetItemText(hList, index, 3, TranslateTS( subscr ));
 
 	return index;
 }
