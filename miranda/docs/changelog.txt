@@ -3,6 +3,17 @@
                            www.miranda-im.org
 
 
+* New in 0.9.16
+Bugfixes:
+ - Fixed minor UI issue in read status message dialog
+ - Removed unused text from auth request dialog
+ - Gadu-Gadu: Fixed file transfers with GG 8.x/10.x
+ - Gadu-Gadu: Fixed cancelling outgoing file transfer while waiting for acceptance
+ - ICQ: Fixed adding contacts to server list
+ - Jabber: Fixed the caps calculation problems for the XMPP file sending 
+ - Yahoo: Fixed inability to create avatar cache folder
+
+
 * New in 0.9.15
 Bugfixes:
  - ICQ: HTML decoding issues
