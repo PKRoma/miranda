@@ -33,7 +33,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 typedef BOOL (* SSL_EMPTY_CACHE_FN_M)(VOID);
 
-
 static HMODULE g_hSchannel;
 static PSecurityFunctionTableA g_pSSPI;
 static HANDLE g_hSslMutex; 
@@ -41,17 +40,17 @@ static SSL_EMPTY_CACHE_FN_M MySslEmptyCache;
 static CredHandle hCreds;
 static bool bSslInitDone;
 
-typedef BOOL (WINAPI *pfnCertGetCertificateChain )( HCERTCHAINENGINE, PCCERT_CONTEXT, LPFILETIME, HCERTSTORE, PCERT_CHAIN_PARA, DWORD, LPVOID, PCCERT_CHAIN_CONTEXT* );
-static pfnCertGetCertificateChain fnCertGetCertificateChain = NULL;
+typedef BOOL (WINAPI *pfnCertGetCertificateChain)(HCERTCHAINENGINE, PCCERT_CONTEXT, LPFILETIME, HCERTSTORE, PCERT_CHAIN_PARA, DWORD, LPVOID, PCCERT_CHAIN_CONTEXT*);
+static pfnCertGetCertificateChain fnCertGetCertificateChain;
 
-typedef VOID (WINAPI *pfnCertFreeCertificateChain)( PCCERT_CHAIN_CONTEXT );
-static pfnCertFreeCertificateChain fnCertFreeCertificateChain = NULL;
+typedef VOID (WINAPI *pfnCertFreeCertificateChain)(PCCERT_CHAIN_CONTEXT);
+static pfnCertFreeCertificateChain fnCertFreeCertificateChain;
 
-typedef BOOL (WINAPI *pfnCertFreeCertificateContext)( PCCERT_CONTEXT );
-static pfnCertFreeCertificateContext fnCertFreeCertificateContext = NULL;
+typedef BOOL (WINAPI *pfnCertFreeCertificateContext)(PCCERT_CONTEXT);
+static pfnCertFreeCertificateContext fnCertFreeCertificateContext;
 
-typedef BOOL (WINAPI *pfnCertVerifyCertificateChainPolicy)( LPCSTR, PCCERT_CHAIN_CONTEXT, PCERT_CHAIN_POLICY_PARA, PCERT_CHAIN_POLICY_STATUS );
-static pfnCertVerifyCertificateChainPolicy fnCertVerifyCertificateChainPolicy = NULL;
+typedef BOOL (WINAPI *pfnCertVerifyCertificateChainPolicy)(LPCSTR, PCCERT_CHAIN_CONTEXT, PCERT_CHAIN_POLICY_PARA, PCERT_CHAIN_POLICY_STATUS);
+static pfnCertVerifyCertificateChainPolicy fnCertVerifyCertificateChainPolicy;
 
 typedef enum
 {
@@ -159,6 +158,15 @@ static bool SSL_library_init(void)
 
 			if (g_pSSPI) 
 			{
+				HINSTANCE hCrypt = LoadLibraryA("crypt32.dll");
+				if (hCrypt) 
+				{
+					fnCertGetCertificateChain = (pfnCertGetCertificateChain)GetProcAddress(hCrypt, "CertGetCertificateChain");
+					fnCertFreeCertificateChain = (pfnCertFreeCertificateChain)GetProcAddress(hCrypt, "CertFreeCertificateChain");
+					fnCertFreeCertificateContext = (pfnCertFreeCertificateContext)GetProcAddress(hCrypt, "CertFreeCertificateContext");
+					fnCertVerifyCertificateChainPolicy = (pfnCertVerifyCertificateChainPolicy)GetProcAddress(hCrypt, "CertVerifyCertificateChainPolicy");
+				}
+
 				MySslEmptyCache = (SSL_EMPTY_CACHE_FN_M)GetProcAddress(g_hSchannel, "SslEmptyCache");
 				AcquireCredentials();
 				bSslInitDone = true;
@@ -194,7 +202,7 @@ BOOL NetlibSslPending(SslHandle *ssl)
 
 static bool VerifyCertificate(SslHandle *ssl, PCSTR pszServerName, DWORD dwCertFlags)
 {
-	if ( !fnCertGetCertificateChain )
+	if (!fnCertGetCertificateChain)
 		return true;
 
 	static LPSTR rgszUsages[] = 
@@ -437,7 +445,8 @@ static SECURITY_STATUS ClientHandshakeLoop(SslHandle *ssl, BOOL fDoInitialRead)
 		if (FAILED(scRet)) break;
 
 		// server just requested client authentication. 
-		if (scRet == SEC_I_INCOMPLETE_CREDENTIALS) {
+		if (scRet == SEC_I_INCOMPLETE_CREDENTIALS) 
+		{
 			// Server has requested client authentication and
 			//			GetNewClientCredentials(ssl);
 
@@ -959,17 +968,6 @@ int LoadSslModule(void)
 	CreateServiceFunction(MS_SYSTEM_GET_SI, GetSslApi);
 	g_hSslMutex = CreateMutex(NULL, FALSE, NULL); 
 	SecInvalidateHandle(&hCreds);
-
-	HINSTANCE hCrypt = LoadLibraryA( "crypt32.dll" );
-	if ( hCrypt ) {
-		fnCertGetCertificateChain = (pfnCertGetCertificateChain)GetProcAddress( hCrypt, "CertGetCertificateChain" );
-		fnCertFreeCertificateChain = (pfnCertFreeCertificateChain)GetProcAddress( hCrypt, "CertFreeCertificateChain" );
-		fnCertFreeCertificateContext = (pfnCertFreeCertificateContext)GetProcAddress( hCrypt, "CertFreeCertificateContext" );
-		fnCertVerifyCertificateChainPolicy = (pfnCertVerifyCertificateChainPolicy)GetProcAddress( hCrypt, "CertVerifyCertificateChainPolicy" );
-
-		if ( !fnCertGetCertificateChain || !fnCertFreeCertificateChain || !fnCertFreeCertificateContext || !fnCertVerifyCertificateChainPolicy )
-			fnCertGetCertificateChain = 0, fnCertFreeCertificateChain = 0, fnCertFreeCertificateContext = 0, fnCertVerifyCertificateChainPolicy = 0;
-	}
 
 	return 0;
 }
