@@ -168,7 +168,6 @@ struct CMsnProto : public PROTO_INTERFACE
 	ThreadData*	msnNsThread;
 	bool        msnLoggedIn;
 	bool        usingGateway;
-	WORD        preIdleStatus;
 
 	char*       msnExternalIP;
 	char*       msnPreviousUUX;
