@@ -168,9 +168,10 @@ struct CMsnProto : public PROTO_INTERFACE
 	ThreadData*	msnNsThread;
 	bool        msnLoggedIn;
 	bool        usingGateway;
+	WORD        preIdleStatus;
 
 	char*       msnExternalIP;
-	char*		msnPreviousUUX;
+	char*       msnPreviousUUX;
 
 	char*	    mailsoundname;
 	char*	    alertsoundname;
@@ -178,14 +179,14 @@ struct CMsnProto : public PROTO_INTERFACE
 	char*       passport;
 	char*       urlId;
 	char*       rru;
-	unsigned	langpref;
+	unsigned    langpref;
 	unsigned    emailEnabled;
 	unsigned    abchMigrated;
 
 	HANDLE		msnSearchId;
-	unsigned	msnOtherContactsBlocked;
-	int			mUnreadMessages;
-	int			mUnreadJunkEmails;
+	unsigned        msnOtherContactsBlocked;
+	int             mUnreadMessages;
+	int             mUnreadJunkEmails;
 	clock_t		mHttpsTS;
 
 	HANDLE		hNetlibUser;

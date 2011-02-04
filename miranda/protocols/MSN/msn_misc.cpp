@@ -678,8 +678,6 @@ void  CMsnProto::MSN_SetServerStatus(int newStatus)
 		return;
 
 	const char* szStatusName = MirandaStatusToMSN(newStatus);
-	unsigned status = newStatus == ID_STATUS_IDLE ? ID_STATUS_ONLINE : newStatus;
-	m_iStatus = status;
 
 	if (newStatus != ID_STATUS_OFFLINE) 
 	{
@@ -695,9 +693,12 @@ void  CMsnProto::MSN_SetServerStatus(int newStatus)
 
 		msnNsThread->sendPacket("CHG", "%s %u %s", szStatusName, flags, szMsnObject);
 
-		char** msgptr = GetStatusMsgLoc(status);
-		if (msgptr != NULL)
-			MSN_SendStatusMessage(*msgptr);
+		if (newStatus != ID_STATUS_IDLE) 
+		{
+			char** msgptr = GetStatusMsgLoc(newStatus);
+			if (msgptr != NULL)
+				MSN_SendStatusMessage(*msgptr);
+		}
 	}
 	else msnNsThread->sendPacket("CHG", szStatusName);
 }

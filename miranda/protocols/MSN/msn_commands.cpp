@@ -1212,7 +1212,7 @@ LBL_InvalidCommand:
 			}			
 			if (m_iStatus != ID_STATUS_IDLE)
 			{
-				SendBroadcast(NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS,(HANDLE)oldMode, m_iStatus);
+				SendBroadcast(NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS, (HANDLE)oldMode, m_iStatus);
 				MSN_DebugLog("Status change acknowledged: %s", params);
 				MSN_RemoveEmptyGroups();
 			}
