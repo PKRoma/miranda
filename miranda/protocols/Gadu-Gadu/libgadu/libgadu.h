@@ -76,7 +76,7 @@ extern "C" {
 #endif
 
 /* Defined if libgadu was compiled and linked with OpenSSL support. */
-#define GG_CONFIG_HAVE_OPENSSL
+#undef GG_CONFIG_HAVE_OPENSSL
 
 /* Defined if uintX_t types are defined in <stdint.h>. */
 #undef GG_CONFIG_HAVE_STDINT_H
@@ -102,12 +102,10 @@ extern "C" {
 #define GG_CONFIG_HAVE___VA_COPY
 #endif
 
-#ifdef GG_CONFIG_HAVE_OPENSSL
 #ifdef GG_CONFIG_MIRANDA
-#include "../ssl.h"
-#else
+#include <m_ssl.h>
+#elif GG_CONFIG_HAVE_OPENSSL
 #include <openssl/ssl.h>
-#endif
 #endif
 
 #ifdef GG_CONFIG_HAVE_STDINT_H
@@ -295,7 +293,10 @@ struct gg_session {
 	char *header_buf;	/**< Bufor na początek nagłówka pakietu */
 	unsigned int header_done;	/**< Liczba wczytanych bajtów nagłówka pakietu */
 
-#ifdef GG_CONFIG_HAVE_OPENSSL
+#ifdef GG_CONFIG_MIRANDA
+	HSSL ssl;
+	int tls;			/**< Flaga połączenia szyfrowanego */
+#elif GG_CONFIG_HAVE_OPENSSL
 	SSL *ssl;		/**< Struktura TLS */
 	SSL_CTX *ssl_ctx;	/**< Kontekst sesji TLS */
 #else

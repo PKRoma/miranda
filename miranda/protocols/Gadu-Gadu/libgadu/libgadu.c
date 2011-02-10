@@ -325,7 +325,10 @@ unsigned int gg_login_hash(const unsigned char *password, unsigned int seed)
  */
 int gg_read(struct gg_session *sess, char *buf, int length)
 {
-#ifdef GG_CONFIG_HAVE_OPENSSL
+#ifdef GG_CONFIG_MIRANDA
+	if (sess->ssl != NULL)
+		return si.read(sess->ssl, buf, length, 0);
+#elif GG_CONFIG_HAVE_OPENSSL
 	if (sess->ssl != NULL) {
 		for (;;) {
 			int res, err;
@@ -372,7 +375,10 @@ int gg_read(struct gg_session *sess, char *buf, int length)
  */
 static int gg_write_common(struct gg_session *sess, const char *buf, int length)
 {
-#ifdef GG_CONFIG_HAVE_OPENSSL
+#ifdef GG_CONFIG_MIRANDA
+	if (sess->ssl != NULL)
+		return si.write(sess->ssl, buf, length);
+#elif GG_CONFIG_HAVE_OPENSSL
 	if (sess->ssl != NULL) {
 		for (;;) {
 			int res, err;
@@ -843,6 +849,9 @@ struct gg_session *gg_login(const struct gg_login_params *p)
 			sess->initial_descr[max_length] = 0;
 	}
 
+#ifdef GG_CONFIG_MIRANDA
+	sess->tls = p->tls;
+#endif
 	if (p->tls == 1) {
 #ifdef GG_CONFIG_HAVE_OPENSSL
 		char buf[1024];
@@ -880,7 +889,7 @@ struct gg_session *gg_login(const struct gg_login_params *p)
 			gg_debug(GG_DEBUG_MISC, "// gg_login() SSL_new() failed: %s\n", buf);
 			goto fail;
 		}
-#else
+#elif !defined(GG_CONFIG_MIRANDA)
 		gg_debug(GG_DEBUG_MISC, "// gg_login() client requested TLS but no support compiled in\n");
 #endif
 	}
@@ -987,11 +996,7 @@ struct gg_session *gg_login(const struct gg_login_params *p)
 	return sess;
 
 fail:
-	if (sess) {
-		free(sess->password);
-		free(sess->initial_descr);
-		free(sess);
-	}
+	gg_free_session(sess);
 
 	return NULL;
 }
@@ -1052,7 +1057,10 @@ void gg_logoff(struct gg_session *sess)
 
 	gg_debug_session(sess, GG_DEBUG_FUNCTION, "** gg_logoff(%p);\n", sess);
 
-#ifdef GG_CONFIG_HAVE_OPENSSL
+#ifdef GG_CONFIG_MIRANDA
+	if (sess->ssl != NULL)
+		si.shutdown(sess->ssl);
+#elif GG_CONFIG_HAVE_OPENSSL
 	if (sess->ssl != NULL)
 		SSL_shutdown(sess->ssl);
 #endif
@@ -1095,7 +1103,10 @@ void gg_free_session(struct gg_session *sess)
 	free(sess->client_version);
 	free(sess->header_buf);
 
-#ifdef GG_CONFIG_HAVE_OPENSSL
+#ifdef GG_CONFIG_MIRANDA
+	if (sess->ssl != NULL)
+		si.sfree(sess->ssl);
+#elif GG_CONFIG_HAVE_OPENSSL
 	if (sess->ssl != NULL)
 		SSL_free(sess->ssl);
 

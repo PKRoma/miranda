@@ -526,10 +526,6 @@
 				>
 			</File>
 			<File
-				RelativePath="ssl.c"
-				>
-			</File>
-			<File
 				RelativePath="token.c"
 				>
 			</File>
@@ -1016,10 +1012,6 @@
 			</File>
 			<File
 				RelativePath="resource.h"
-				>
-			</File>
-			<File
-				RelativePath="ssl.h"
 				>
 			</File>
 			<File

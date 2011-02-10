@@ -232,7 +232,7 @@ int gg_decodehosts(char *var, GGHOST *hosts, int max)
 void __cdecl gg_mainthread(GGPROTO *gg, void *empty)
 {
 	// Miranda variables
-	NETLIBUSERSETTINGS nlus;
+	NETLIBUSERSETTINGS nlus = {0};
 	DBVARIANT dbv;
 	// Gadu-Gadu variables
 	struct gg_login_params p = {0};
@@ -324,7 +324,7 @@ void __cdecl gg_mainthread(GGPROTO *gg, void *empty)
 	if(!DBGetContactSettingString(NULL, GG_PROTO, GG_KEY_PASSWORD, &dbv))
 	{
 		CallService(MS_DB_CRYPT_DECODESTRING, strlen(dbv.pszVal) + 1, (LPARAM) dbv.pszVal);
-		p.password = _strdup(dbv.pszVal);
+		p.password = mir_strdup(dbv.pszVal);
 		DBFreeVariant(&dbv);
 	}
 	else
@@ -339,13 +339,16 @@ void __cdecl gg_mainthread(GGPROTO *gg, void *empty)
 	{
 		gg_netlog(gg, "gg_mainthread(%x): No Gadu-Gadu number specified. Exiting.", gg);
 		gg_broadcastnewstatus(gg, ID_STATUS_OFFLINE);
-		free(p.password);
+		mir_free(p.password);
 		return;
 	}
 
 	// Readup SSL/TLS setting
-	if(p.tls = (hLibSSL && DBGetContactSettingByte(NULL, GG_PROTO, GG_KEY_SSLCONN, GG_KEYDEF_SSLCONN)))
+	if(p.tls = DBGetContactSettingByte(NULL, GG_PROTO, GG_KEY_SSLCONN, GG_KEYDEF_SSLCONN))
+	{
+		if (nlus.validateSSL) p.tls++;
 		gg_netlog(gg, "gg_mainthread(%x): Using TLS/SSL for connections.", gg);
+	}
 
 	// Gadu-Gadu accepts image sizes upto 255
 	p.image_size = 255;
@@ -392,7 +395,7 @@ void __cdecl gg_mainthread(GGPROTO *gg, void *empty)
 retry:
 	// Loadup startup status & description
 	EnterCriticalSection(&gg->modemsg_mutex);
-	p.status_descr = _strdup(gg_getstatusmsg(gg, gg->proto.m_iDesiredStatus));
+	p.status_descr = mir_strdup(gg_getstatusmsg(gg, gg->proto.m_iDesiredStatus));
 	p.status = status_m2gg(gg, gg->proto.m_iDesiredStatus, p.status_descr != NULL);
 
 	gg_netlog(gg, "gg_mainthread(%x): Connecting with number %d, status %d and description \"%s\".", gg, p.uin, gg->proto.m_iDesiredStatus,
@@ -470,6 +473,7 @@ retry:
 		{
 			if(hostnum < hostcount - 1) hostnum ++;
 			gg_broadcastnewstatus(gg, ID_STATUS_CONNECTING);
+			mir_free(p.status_descr);
 			goto retry;
 		}
 		// We cannot do more about this
@@ -1077,11 +1081,12 @@ retry:
 		gg_netlog(gg, "gg_mainthread(%x): Unintentional disconnection detected. Going to reconnect...", gg);
 		hostnum = 0;
 		gg_broadcastnewstatus(gg, ID_STATUS_CONNECTING);
+		mir_free(p.status_descr);
 		goto retry;
 	}
 
-	free(p.password);
-	free(p.status_descr);
+	mir_free(p.password);
+	mir_free(p.status_descr);
 
 	// Stop dcc server
 	gg->pth_dcc.dwThreadId = 0;
