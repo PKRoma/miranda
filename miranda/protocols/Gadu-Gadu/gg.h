@@ -221,7 +221,6 @@ typedef void (__cdecl GGThreadFunc)(void*, void*);
 #define GG_KEY_PASSWORD			"Password"		// Password
 #define GG_KEY_EMAIL			"e-mail"		// E-mail
 #define GG_KEY_STATUS			"Status"		// Status
-//#define GG_KEY_STARTUPSTATUS	"StartupStatus" // Status used when starting up (deprecated)
 #define GG_KEY_NICK				"Nick"			// Nick
 #define GG_KEY_STATUSDESCR		"StatusMsg" 	// Users status description, to be compatible with MWClist
 												// should be stored in "CList" group
@@ -278,8 +277,6 @@ typedef void (__cdecl GGThreadFunc)(void*, void*);
 
 #define GG_KEY_MANUALHOST		"ManualHost"	// Specify by hand server host/port
 #define GG_KEYDEF_MANUALHOST	0
-// #define GG_KEY_SERVERHOST		"ServerHost"	// Host (deprecated)
-// #define GG_KEY_SERVERPORT		"ServerPort"	// Port (deprecated)
 #define GG_KEY_SSLCONN			"SSLConnection" // Use SSL/TLS for connections
 #define GG_KEYDEF_SSLCONN		0
 #define GG_KEY_SERVERHOSTS		"ServerHosts"	// NL separated list of hosts for server connection
@@ -347,13 +344,6 @@ extern HINSTANCE hInstance;
 extern PLUGINLINK *pluginLink;
 extern CLIST_INTERFACE *pcli;
 extern struct LIST_INTERFACE li;
-#ifdef GG_CONFIG_HAVE_OPENSSL
-extern HANDLE hLibSSL;
-extern HANDLE hLibEAY;
-#else
-#define hLibSSL FALSE
-#define hLibEAY FALSE
-#endif
 
 // Screen saver
 #ifndef SPI_GETSCREENSAVERRUNNING
@@ -485,15 +475,6 @@ void CreateProtoService(const char* szService, GGPROTOFUNC serviceProc, GGPROTO 
 // Debug functions
 int gg_netlog(const GGPROTO *gg, const char *fmt, ...);
 const char *ggdebug_eventtype(struct gg_event *e);
-
-/* SSL functions */
-#ifdef GG_CONFIG_HAVE_OPENSSL
-BOOL gg_ssl_init();
-void gg_ssl_uninit();
-#else
-#define gg_ssl_init()
-#define gg_ssl_uninit()
-#endif
 
 #ifdef __cplusplus
 }

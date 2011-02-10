@@ -247,10 +247,6 @@ SOURCE=.\services.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\ssl.c
-# End Source File
-# Begin Source File
-
 SOURCE=.\token.c
 # End Source File
 # Begin Source File
@@ -272,10 +268,6 @@ SOURCE=.\gg.h
 # Begin Source File
 
 SOURCE=.\resource.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\ssl.h
 # End Source File
 # Begin Source File
 

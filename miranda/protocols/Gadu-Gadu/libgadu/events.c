@@ -1868,7 +1868,16 @@ struct gg_event *gg_watch_fd(struct gg_session *sess)
 
 			auth = gg_proxy_auth();
 
-#ifdef GG_CONFIG_HAVE_OPENSSL
+#ifdef GG_CONFIG_MIRANDA
+			if (sess->tls) {
+				snprintf(buf, sizeof(buf) - 1,
+					"GET %s/appsvc/appmsg_ver10.asp?fmnumber=%u&fmt=2&lastmsg=%d&version=%s&age=2&gender=1 HTTP/1.0\r\n"
+					"Connection: close\r\n"
+					"Host: " GG_APPMSG_HOST "\r\n"
+					"%s"
+					"\r\n", host, sess->uin, sess->last_sysmsg, client, (auth) ? auth : "");
+			} else
+#elif GG_CONFIG_HAVE_OPENSSL
 			if (sess->ssl != NULL) {
 				snprintf(buf, sizeof(buf) - 1,
 					"GET %s/appsvc/appmsg_ver10.asp?fmnumber=%u&fmt=2&lastmsg=%d&version=%s&age=2&gender=1 HTTP/1.0\r\n"
@@ -2213,7 +2222,15 @@ struct gg_event *gg_watch_fd(struct gg_session *sess)
 				}
 			}
 
-#ifdef GG_CONFIG_HAVE_OPENSSL
+#ifdef GG_CONFIG_MIRANDA
+			if (sess->tls) {
+				sess->state = GG_STATE_TLS_NEGOTIATION;
+				sess->check = GG_CHECK_WRITE;
+				sess->timeout = GG_DEFAULT_TIMEOUT;
+
+				break;
+			}
+#elif GG_CONFIG_HAVE_OPENSSL
 			if (sess->ssl != NULL) {
 				SSL_set_fd(sess->ssl, (int)sess->fd);
 
@@ -2232,7 +2249,33 @@ struct gg_event *gg_watch_fd(struct gg_session *sess)
 			break;
 		}
 
-#ifdef GG_CONFIG_HAVE_OPENSSL
+#ifdef GG_CONFIG_MIRANDA
+		case GG_STATE_TLS_NEGOTIATION:
+		{
+			gg_debug_session(sess, GG_DEBUG_MISC, "// gg_watch_fd() GG_STATE_TLS_NEGOTIATION\n");
+
+			sess->ssl = si.connect(sess->fd, 0, sess->tls == 2);
+
+			if (sess->ssl == NULL) {
+				gg_debug_session(sess, GG_DEBUG_MISC, "// gg_watch_fd() TLS negotiation failed\n");
+
+				e->type = GG_EVENT_CONN_FAILED;
+				e->event.failure = GG_FAILURE_TLS;
+				sess->state = GG_STATE_IDLE;
+				gg_sock_close(sess->fd);
+				sess->fd = -1;
+				break;
+			}
+
+			gg_debug_session(sess, GG_DEBUG_MISC, "// gg_watch_fd() TLS negotiation succeded\n");
+
+			sess->state = GG_STATE_READING_KEY;
+			sess->check = GG_CHECK_READ;
+			sess->timeout = GG_DEFAULT_TIMEOUT;
+
+			break;
+		}
+#elif GG_CONFIG_HAVE_OPENSSL
 		case GG_STATE_TLS_NEGOTIATION:
 		{
 			int res;

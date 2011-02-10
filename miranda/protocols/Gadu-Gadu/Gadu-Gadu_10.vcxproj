@@ -660,7 +660,6 @@
     <ClCompile Include="oauth.c" />
     <ClCompile Include="ownerinfo.c" />
     <ClCompile Include="services.c" />
-    <ClCompile Include="ssl.c" />
     <ClCompile Include="token.c" />
     <ClCompile Include="userutils.c" />
     <ClCompile Include="libgadu\common.c">
@@ -891,7 +890,6 @@
     <ClInclude Include="dynstuff.h" />
     <ClInclude Include="gg.h" />
     <ClInclude Include="resource.h" />
-    <ClInclude Include="ssl.h" />
     <ClInclude Include="version.h" />
   </ItemGroup>
   <ItemGroup>

@@ -589,13 +589,7 @@ static INT_PTR CALLBACK gg_advoptsdlgproc(HWND hwndDlg, UINT msg, WPARAM wParam,
 			CheckDlgButton(hwndDlg, IDC_ARECONNECT, DBGetContactSettingByte(NULL, GG_PROTO, GG_KEY_ARECONNECT, GG_KEYDEF_ARECONNECT));
 			CheckDlgButton(hwndDlg, IDC_MSGACK, DBGetContactSettingByte(NULL, GG_PROTO, GG_KEY_MSGACK, GG_KEYDEF_MSGACK));
 			CheckDlgButton(hwndDlg, IDC_MANUALHOST, DBGetContactSettingByte(NULL, GG_PROTO, GG_KEY_MANUALHOST, GG_KEYDEF_MANUALHOST));
-			if(hLibSSL)
-				CheckDlgButton(hwndDlg, IDC_SSLCONN, DBGetContactSettingByte(NULL, GG_PROTO, GG_KEY_SSLCONN, GG_KEYDEF_SSLCONN));
-			else
-			{
-				CheckDlgButton(hwndDlg, IDC_SSLCONN, FALSE);
-				EnableWindow(GetDlgItem(hwndDlg, IDC_SSLCONN), FALSE);
-			}
+			CheckDlgButton(hwndDlg, IDC_SSLCONN, DBGetContactSettingByte(NULL, GG_PROTO, GG_KEY_SSLCONN, GG_KEYDEF_SSLCONN));
 
 			EnableWindow(GetDlgItem(hwndDlg, IDC_HOST), IsDlgButtonChecked(hwndDlg, IDC_MANUALHOST));
 			EnableWindow(GetDlgItem(hwndDlg, IDC_PORT), IsDlgButtonChecked(hwndDlg, IDC_MANUALHOST));
@@ -656,8 +650,7 @@ static INT_PTR CALLBACK gg_advoptsdlgproc(HWND hwndDlg, UINT msg, WPARAM wParam,
 					DBWriteContactSettingByte(NULL, GG_PROTO, GG_KEY_ARECONNECT, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_ARECONNECT));
 					DBWriteContactSettingByte(NULL, GG_PROTO, GG_KEY_MSGACK, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_MSGACK));
 					DBWriteContactSettingByte(NULL, GG_PROTO, GG_KEY_MANUALHOST, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_MANUALHOST));
-					if(hLibSSL)
-						DBWriteContactSettingByte(NULL, GG_PROTO, GG_KEY_SSLCONN, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_SSLCONN));
+					DBWriteContactSettingByte(NULL, GG_PROTO, GG_KEY_SSLCONN, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_SSLCONN));
 
 					// Transfer settings
 					DBWriteContactSettingByte(NULL, GG_PROTO, GG_KEY_DIRECTCONNS, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_DIRECTCONNS));

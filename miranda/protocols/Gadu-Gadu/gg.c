@@ -47,6 +47,7 @@ struct SHA1_INTERFACE sha1i;
 struct MD5_INTERFACE md5i;
 struct LIST_INTERFACE li;
 XML_API xi;
+SSL_API si;
 CLIST_INTERFACE *pcli;
 
 // Event hooks
@@ -236,11 +237,11 @@ void gg_initcustomfolders(GGPROTO *gg)
 }
 
 //////////////////////////////////////////////////////////
-// When miranda loaded its modules
+// When Miranda loaded its modules
 int gg_modulesloaded(WPARAM wParam, LPARAM lParam)
 {
-	// Init SSL library
-	gg_ssl_init();
+	// Get SSL API
+	mir_getSI(&si);
 
 	// File Association Manager support
 	gg_links_init();
@@ -525,9 +526,6 @@ int __declspec(dllexport) Unload()
 {
 	LocalEventUnhook(hHookModulesLoaded);
 	LocalEventUnhook(hHookPreShutdown);
-
-	// Uninit SSL library
-	gg_ssl_uninit();
 
 	// Cleanup WinSock
 	WSACleanup();

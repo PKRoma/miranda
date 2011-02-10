@@ -63,9 +63,6 @@
     <ClCompile Include="services.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ssl.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="token.c">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -138,9 +135,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="resource.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ssl.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="version.h">

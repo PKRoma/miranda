@@ -65,7 +65,6 @@ CLEAN :
 	-@erase "$(INTDIR)\resource.res"
 	-@erase "$(INTDIR)\services.obj"
 	-@erase "$(INTDIR)\sha1.obj"
-	-@erase "$(INTDIR)\ssl.obj"
 	-@erase "$(INTDIR)\token.obj"
 	-@erase "$(INTDIR)\userutils.obj"
 	-@erase "$(INTDIR)\vc60.idb"
@@ -151,7 +150,6 @@ LINK32_OBJS= \
 	"$(INTDIR)\oauth.obj" \
 	"$(INTDIR)\ownerinfo.obj" \
 	"$(INTDIR)\services.obj" \
-	"$(INTDIR)\ssl.obj" \
 	"$(INTDIR)\token.obj" \
 	"$(INTDIR)\userutils.obj" \
 	"$(INTDIR)\resource.res"
@@ -201,7 +199,6 @@ CLEAN :
 	-@erase "$(INTDIR)\resource.res"
 	-@erase "$(INTDIR)\services.obj"
 	-@erase "$(INTDIR)\sha1.obj"
-	-@erase "$(INTDIR)\ssl.obj"
 	-@erase "$(INTDIR)\token.obj"
 	-@erase "$(INTDIR)\userutils.obj"
 	-@erase "$(INTDIR)\vc60.idb"
@@ -288,7 +285,6 @@ LINK32_OBJS= \
 	"$(INTDIR)\oauth.obj" \
 	"$(INTDIR)\ownerinfo.obj" \
 	"$(INTDIR)\services.obj" \
-	"$(INTDIR)\ssl.obj" \
 	"$(INTDIR)\token.obj" \
 	"$(INTDIR)\userutils.obj" \
 	"$(INTDIR)\resource.res"
@@ -691,11 +687,6 @@ SOURCE=.\ownerinfo.c
 SOURCE=.\services.c
 
 "$(INTDIR)\services.obj" : $(SOURCE) "$(INTDIR)"
-
-
-SOURCE=.\ssl.c
-
-"$(INTDIR)\ssl.obj" : $(SOURCE) "$(INTDIR)"
 
 
 SOURCE=.\token.c
