@@ -123,7 +123,7 @@ void JabberContactListCreateGroup( TCHAR* groupName )
 
 void CJabberProto::DBAddAuthRequest( const TCHAR* jid, const TCHAR* nick )
 {
-	HANDLE hContact = DBCreateContact( jid, NULL, FALSE, TRUE );
+	HANDLE hContact = DBCreateContact( jid, NULL, TRUE, TRUE );
 	JDeleteSetting( hContact, "Hidden" );
 	//JSetStringT( hContact, "Nick", nick );
 
