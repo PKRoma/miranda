@@ -452,9 +452,9 @@ typedef struct {
 //------------
 #define WINDOW_VISIBLE			2     //make the room window visible
 #define WINDOW_HIDDEN			3     //close the room window. Session is not terminated.
-#define WINDOW_MAXIMIZE		4     //make the room window maximized
-#define WINDOW_MINIMIZE		5     //make the room window minimized
-#define WINDOW_CLEARLOG		6     //clear the log of the room window
+#define WINDOW_MAXIMIZE			4     //make the room window maximized
+#define WINDOW_MINIMIZE			5     //make the room window minimized
+#define WINDOW_CLEARLOG			6     //clear the log of the room window
 
 #define GC_EVENT_CONTROL		0x1005
 
@@ -475,18 +475,18 @@ typedef struct {
 
 // The GCEVENT structure
 typedef struct {
-	int			cbSize;           // Set to sizeof(GCEVENT);
-	GCDEST*		pDest;            // pointer to a GCDEST structure which specifies the session to receive the event
+	int			cbSize;             // Set to sizeof(GCEVENT);
+	GCDEST*		pDest;              // pointer to a GCDEST structure which specifies the session to receive the event
 	union {
-		const char  *pszText;      // usage depends on type of event, max 2048 characters
+		const char  *pszText;       // usage depends on type of event, max 2048 characters
 		const TCHAR *ptszText;
 	};
 	union {
-		const char*  pszNick;      // usage depends on type of event
+		const char*  pszNick;       // usage depends on type of event
 		const TCHAR* ptszNick;
 	};
 	union {
-		const char*  pszUID;       // usage depends on type of event, Do NOT use spaces for unique user identifiers.
+		const char*  pszUID;        // usage depends on type of event, Do NOT use spaces for unique user identifiers.
 		const TCHAR* ptszUID;
 	};
 	union {
@@ -497,13 +497,13 @@ typedef struct {
 		const char*  pszUserInfo;   // Additional user information that is displayed after the nickname.
 		const TCHAR* ptszUserInfo;
 	};
-                                 // IRC use it to display a hostmask for JOIN, PART (and more) events.
-	BOOL  bIsMe;                  // Is this event from the Miranda user?
+                                    // IRC use it to display a hostmask for JOIN, PART (and more) events.
+	BOOL  bIsMe;                    // Is this event from the Miranda user?
 	DWORD dwFlags;						// event flags: GCEF_ADDTOLOG, GC_UNICODE
 
-                                 // FALSE any other time than when initializing the window (before sending SESSION_INITDONE)
-	DWORD_PTR dwItemData;          // User specified data.
-	DWORD   time;                // Timestamp of the event
+                                    // FALSE any other time than when initializing the window (before sending SESSION_INITDONE)
+	DWORD_PTR dwItemData;           // User specified data.
+	DWORD   time;                   // Timestamp of the event
 }
 	GCEVENT;
 
