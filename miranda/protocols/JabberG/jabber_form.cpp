@@ -880,7 +880,7 @@ static INT_PTR CALLBACK JabberFormDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam
 	return FALSE;
 }
 
-static VOID CALLBACK JabberFormCreateDialogApcProc( DWORD_PTR param )
+static VOID CALLBACK JabberFormCreateDialogApcProc( void* param )
 {
 	CreateDialogParam( hInst, MAKEINTRESOURCE( IDD_FORM ), NULL, JabberFormDlgProc, ( LPARAM )param );
 }
@@ -896,10 +896,7 @@ void CJabberProto::FormCreateDialog( HXML xNode, TCHAR* defTitle, JABBER_FORM_SU
 	jfi->pfnSubmit = pfnSubmit;
 	jfi->userdata = userdata;
 
-	if ( GetCurrentThreadId() != jabberMainThreadId )
-		QueueUserAPC( JabberFormCreateDialogApcProc, hMainThread, ( DWORD_PTR )jfi );
-	else
-		JabberFormCreateDialogApcProc(( DWORD_PTR )jfi );
+	CallFunctionAsync( JabberFormCreateDialogApcProc, jfi );
 }
 
 //=======================================================================================
