@@ -79,8 +79,6 @@ BOOL (WINAPI *JabberIsThemeActive)() = NULL;
 HRESULT (WINAPI *JabberDrawThemeParentBackground)(HWND, HDC, RECT *) = NULL;
 /////////////////////////////////////////////////////////////////////////////
 
-HANDLE hMainThread = NULL;
-DWORD  jabberMainThreadId;
 BOOL   jabberChatDllPresent = FALSE;
 HANDLE hModulesLoaded, hModulesLoadedTB;
 
@@ -253,9 +251,6 @@ extern "C" int __declspec( dllexport ) Load( PLUGINLINK *link )
 
 	pcli = ( CLIST_INTERFACE* )CallService(MS_CLIST_RETRIEVE_INTERFACE, 0, (LPARAM)hInst);
 
-	DuplicateHandle( GetCurrentProcess(), GetCurrentThread(), GetCurrentProcess(), &hMainThread, 0, FALSE, DUPLICATE_SAME_ACCESS );
-	jabberMainThreadId = GetCurrentThreadId();
-
 	// Register protocol module
 	PROTOCOLDESCRIPTOR pd;
 	ZeroMemory( &pd, sizeof( PROTOCOLDESCRIPTOR ));
@@ -297,9 +292,6 @@ extern "C" int __declspec( dllexport ) Unload( void )
 	UnhookEvent(hModulesLoadedTB);
 
 	g_MenuUninit();
-
-	if ( hMainThread )
-		CloseHandle( hMainThread );
 
 	g_Instances.destroy();
 	return 0;

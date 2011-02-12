@@ -444,15 +444,16 @@ static INT_PTR CALLBACK JabberMucJidListDlgProc( HWND hwndDlg, UINT msg, WPARAM 
 	return FALSE;
 }
 
-static void CALLBACK JabberMucJidListCreateDialogApcProc( JABBER_MUC_JIDLIST_INFO *jidListInfo )
+static void CALLBACK JabberMucJidListCreateDialogApcProc( void* param )
 {
 	HXML iqNode, queryNode;
 	const TCHAR* from;
 	HWND *pHwndJidList;
+	JABBER_MUC_JIDLIST_INFO *jidListInfo = (JABBER_MUC_JIDLIST_INFO *)param;
 
-	if ( jidListInfo == NULL )                                        return;
-	if (( iqNode = jidListInfo->iqNode ) == NULL )                      return;
-	if (( from = xmlGetAttrValue( iqNode, _T("from"))) == NULL )     return;
+	if ( jidListInfo == NULL )                                     return;
+	if (( iqNode = jidListInfo->iqNode ) == NULL )                 return;
+	if (( from = xmlGetAttrValue( iqNode, _T("from"))) == NULL )   return;
 	if (( queryNode = xmlGetChild( iqNode , "query" )) == NULL )   return;
 
 	CJabberProto* ppro = jidListInfo->ppro;
@@ -499,13 +500,10 @@ void CJabberProto::OnIqResultMucGetJidList( HXML iqNode, JABBER_MUC_JIDLIST_TYPE
 			jidListInfo->type = listType;
 			jidListInfo->ppro = this;
 			jidListInfo->roomJid = NULL;	// Set in the dialog procedure
-			if (( jidListInfo->iqNode = xi.copyNode( iqNode )) != NULL ) {
-				if ( GetCurrentThreadId() != jabberMainThreadId )
-					QueueUserAPC(( PAPCFUNC )JabberMucJidListCreateDialogApcProc, hMainThread, ( DWORD_PTR )jidListInfo );
-				else
-					JabberMucJidListCreateDialogApcProc( jidListInfo );
-			}
-			else mir_free( jidListInfo );
+			if (( jidListInfo->iqNode = xi.copyNode( iqNode )) != NULL )
+				CallFunctionAsync( JabberMucJidListCreateDialogApcProc, jidListInfo );
+			else 
+				mir_free( jidListInfo );
 }	}	}
 
 void CJabberProto::OnIqResultMucGetVoiceList( HXML iqNode )

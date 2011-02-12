@@ -107,13 +107,14 @@ static INT_PTR CALLBACK JabberPasswordDlgProc( HWND hwndDlg, UINT msg, WPARAM wP
 	return FALSE;
 }
 
-static VOID CALLBACK JabberPasswordCreateDialogApcProc( DWORD_PTR param )
+static VOID CALLBACK JabberPasswordCreateDialogApcProc( void* param )
 {
 	CreateDialogParam( hInst, MAKEINTRESOURCE( IDD_PASSWORD ), NULL, JabberPasswordDlgProc, ( LPARAM )param );
 }
 
-static VOID CALLBACK JabberOfflineChatWindows( CJabberProto* ppro )
+static VOID CALLBACK JabberOfflineChatWindows( void* param )
 {
+	CJabberProto* ppro = ( CJabberProto* )param; 
 	GCDEST gcd = { ppro->m_szModuleName, NULL, GC_EVENT_CONTROL };
 	GCEVENT gce = { 0 };
 	gce.cbSize = sizeof(GCEVENT);
@@ -329,7 +330,7 @@ LBL_FatalError:
 				param.pro = this;
 				param.ptszJid = jidStr;
 				param.hEventPasswdDlg = CreateEvent( NULL, FALSE, FALSE, NULL );
-				QueueUserAPC( JabberPasswordCreateDialogApcProc, hMainThread, ( LPARAM )&param );
+				CallFunctionAsync( JabberPasswordCreateDialogApcProc, &param );
 				WaitForSingleObject( param.hEventPasswdDlg, INFINITE );
 				CloseHandle( param.hEventPasswdDlg );
 
@@ -576,7 +577,7 @@ recvRest:
 			}
 
 			if ( jabberChatDllPresent )
-				QueueUserAPC(( PAPCFUNC )JabberOfflineChatWindows, hMainThread, ( LPARAM )this );
+				CallFunctionAsync( JabberOfflineChatWindows, this );
 
 			ListRemoveList( LIST_CHATROOM );
 			ListRemoveList( LIST_BOOKMARK );

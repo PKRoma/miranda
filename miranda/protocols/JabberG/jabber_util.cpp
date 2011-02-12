@@ -1124,7 +1124,7 @@ void CJabberProto::ComboAddRecentString(HWND hwndDlg, UINT idcCombo, char *param
 /////////////////////////////////////////////////////////////////////////////////////////
 // jabber frame maintenance code
 
-static VOID CALLBACK sttRebuildInfoFrameApcProc( DWORD_PTR param )
+static VOID CALLBACK sttRebuildInfoFrameApcProc( void* param )
 {
 	CJabberProto *ppro = (CJabberProto *)param;
 	if (!ppro->m_pInfoFrame)
@@ -1185,7 +1185,7 @@ static VOID CALLBACK sttRebuildInfoFrameApcProc( DWORD_PTR param )
 
 void CJabberProto::RebuildInfoFrame()
 {
-	QueueUserAPC(sttRebuildInfoFrameApcProc, hMainThread, (ULONG_PTR)this);
+	CallFunctionAsync(sttRebuildInfoFrameApcProc, this);
 }
 
 ////////////////////////////////////////////////////////////////////////
