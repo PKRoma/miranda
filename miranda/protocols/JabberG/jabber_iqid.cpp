@@ -353,7 +353,7 @@ void CJabberProto::GroupchatJoinByHContact( HANDLE hContact, bool autojoin )
 		JFreeVariant( &dbv );
 	}
 
-	GroupchatJoinRoom( server, room, nick, _T(""), autojoin);
+	GroupchatJoinRoom( server, room, nick, NULL, autojoin, true);
 	mir_free( roomjid );
 }
 
