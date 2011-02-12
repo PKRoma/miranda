@@ -267,7 +267,7 @@ void CJabberProto::GroupchatJoinRoom( const TCHAR* server, const TCHAR* room, co
 		if (!info.loadRecent(i))
 			continue;
 
-		if (lastpass && info.equalsnp(room, server, nick)) 
+		if (autojoin && lastpass && info.equalsnp(room, server, nick)) 
 		{
 			found = true;
 			break;
