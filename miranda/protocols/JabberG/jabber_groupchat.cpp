@@ -301,7 +301,7 @@ void CJabberProto::GroupchatJoinRoom( const TCHAR* server, const TCHAR* room, co
 
 	int status = ( m_iStatus == ID_STATUS_INVISIBLE ) ? ID_STATUS_ONLINE : m_iStatus;
 	XmlNode x( _T("x")); x << XATTR( _T("xmlns"), _T(JABBER_FEAT_MUC));
-	if ( password && password[0] )
+	if ( info.password && info.password[0] )
 		x << XCHILD( _T("password"), info.password );
 	SendPresenceTo( status, text, x );
 }
