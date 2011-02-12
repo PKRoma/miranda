@@ -123,7 +123,7 @@ void JabberContactListCreateGroup( TCHAR* groupName )
 
 void CJabberProto::DBAddAuthRequest( const TCHAR* jid, const TCHAR* nick )
 {
-	HANDLE hContact = DBCreateContact( jid, NULL, FALSE, TRUE );
+	HANDLE hContact = DBCreateContact( jid, NULL, TRUE, TRUE );
 	JDeleteSetting( hContact, "Hidden" );
 	//JSetStringT( hContact, "Nick", nick );
 
@@ -309,7 +309,7 @@ void CJabberProto::GetAvatarFileName( HANDLE hContact, TCHAR* pszDest, size_t cb
 		mir_free( hash );
 	}
 	else if ( m_ThreadInfo != NULL ) {
-		mir_sntprintf( pszDest + tPathLen, MAX_PATH - tPathLen, _T("%s@") _T(TCHAR_STR_PARAM) _T(" avatar.") _T(TCHAR_STR_PARAM), 
+		mir_sntprintf( pszDest + tPathLen, MAX_PATH - tPathLen, _T("%s@") _T(TCHAR_STR_PARAM) _T(" avatar.") _T(TCHAR_STR_PARAM),
 			m_ThreadInfo->username, m_ThreadInfo->server, szFileType );
 	}
 	else {
