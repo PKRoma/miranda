@@ -536,7 +536,7 @@ struct CJabberProto : public PROTO_INTERFACE
 	INT_PTR    __cdecl OnJoinChat( WPARAM wParam, LPARAM lParam );
 	INT_PTR    __cdecl OnLeaveChat( WPARAM wParam, LPARAM lParam );
 
-	void   GroupchatJoinRoom( LPCTSTR server, LPCTSTR room, LPCTSTR nick, LPCTSTR password, bool autojoin=false );
+	void   GroupchatJoinRoom( LPCTSTR server, LPCTSTR room, LPCTSTR nick, LPCTSTR password, bool autojoin = false, bool lastpass = false );
 	void   GroupchatProcessPresence( HXML node );
 	void   GroupchatProcessMessage( HXML node );
 	void   GroupchatProcessInvite( LPCTSTR roomJid, LPCTSTR from, LPCTSTR reason, LPCTSTR password );

@@ -85,6 +85,14 @@ struct JabberGcRecentInfo
 			null_strequals(this->password, password);
 	}
 
+	BOOL equalsnp(const TCHAR *room, const TCHAR *server, const TCHAR *nick = NULL)
+	{
+		return
+			null_strequals(this->room, room) &&
+			null_strequals(this->server, server) &&
+			null_strequals(this->nick, nick);
+	}
+
 	void fillForm(HWND hwndDlg)
 	{
 		SetDlgItemText(hwndDlg, IDC_SERVER, server ? server : _T(""));
@@ -249,14 +257,22 @@ INT_PTR __cdecl CJabberProto::OnLeaveChat( WPARAM wParam, LPARAM )
 	return 0;
 }
 
-void CJabberProto::GroupchatJoinRoom( const TCHAR* server, const TCHAR* room, const TCHAR* nick, const TCHAR* password, bool autojoin )
+void CJabberProto::GroupchatJoinRoom( const TCHAR* server, const TCHAR* room, const TCHAR* nick, const TCHAR* password, bool autojoin, bool lastpass )
 {
+	JabberGcRecentInfo info( this );
+
 	bool found = false;
 	for (int i = 0 ; i < 5; ++i)
 	{
-		JabberGcRecentInfo info( this );
 		if (!info.loadRecent(i))
 			continue;
+
+		if (lastpass && info.equalsnp(room, server, nick)) 
+		{
+			found = true;
+			break;
+		}
+
 		if (info.equals(room, server, nick, password))
 		{
 			found = true;
@@ -266,14 +282,13 @@ void CJabberProto::GroupchatJoinRoom( const TCHAR* server, const TCHAR* room, co
 
 	if (!found)
 	{
-		for (int i = 3; i >= 0; --i)
+		for (int i = 4; i--; )
 		{
-			JabberGcRecentInfo info ( this );
-			if ( info.loadRecent( i ))
-				info.saveRecent( i+1 );
+			if (info.loadRecent(i))
+				info.saveRecent(i + 1);
 		}
 
-		JabberGcRecentInfo info(this, room, server, nick, password);
+		info.fillData(room, server, nick, password);
 		info.saveRecent(0);
 	}
 
@@ -286,8 +301,8 @@ void CJabberProto::GroupchatJoinRoom( const TCHAR* server, const TCHAR* room, co
 
 	int status = ( m_iStatus == ID_STATUS_INVISIBLE ) ? ID_STATUS_ONLINE : m_iStatus;
 	XmlNode x( _T("x")); x << XATTR( _T("xmlns"), _T(JABBER_FEAT_MUC));
-	if ( password && password[0]!='\0' )
-		x << XCHILD( _T("password"), password );
+	if ( password && password[0] )
+		x << XCHILD( _T("password"), info.password );
 	SendPresenceTo( status, text, x );
 }
 
