@@ -171,6 +171,7 @@ int CJabberProto::JabberGcInit( WPARAM wParam, LPARAM )
 			else
 				JSetStringCrypt( hContact, "LoginPassword", item->password );
 		}
+		mir_free(passw);
 	}
 	mir_free( szNick );
 
