@@ -450,7 +450,7 @@ protected:
 
 CJabberDlgGcJoin::CJabberDlgGcJoin(CJabberProto *proto, TCHAR *jid) :
 	CSuper(proto, IDD_GROUPCHAT_JOIN, NULL),
-	m_jid(jid)
+	m_jid(mir_tstrdup(jid))
 {
 	m_autoClose = 0;
 }
@@ -549,15 +549,13 @@ void CJabberDlgGcJoin::OnClose()
 
 void CJabberDlgGcJoin::OnDestroy()
 {
-	TCHAR* str = m_jid;
-	if ( str != NULL )
-		mir_free( str );
-
 	g_ReleaseIcon(( HICON )SendDlgItemMessage( m_hwnd, IDC_BOOKMARKS, BM_SETIMAGE, IMAGE_ICON, 0 ));
 	m_proto->m_pDlgJabberJoinGroupchat = NULL;
 	DeleteObject((HFONT)SendDlgItemMessage(m_hwnd, IDC_TXT_RECENT, WM_GETFONT, 0, 0));
 
 	CSuper::OnDestroy();
+
+	mir_free( m_jid ); m_jid = NULL;
 }
 
 INT_PTR CJabberDlgGcJoin::DlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
