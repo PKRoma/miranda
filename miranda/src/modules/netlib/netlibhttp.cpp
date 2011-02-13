@@ -1198,7 +1198,7 @@ next:
 
 	if (nlhrReply->resultCode >= 200 && (dataLen > 0 || (!isConnect && dataLen < 0)))
 	{
-		int recvResult, chunksz = 0;
+		int recvResult, chunksz = -1;
 		int dataBufferAlloced;
 
 		if (chunked)
@@ -1214,7 +1214,7 @@ next:
 		dataBufferAlloced = dataLen < 0 ? 2048 : dataLen + 1;
 		nlhrReply->pData = (char*)mir_realloc(nlhrReply->pData, dataBufferAlloced);
 
-		do 
+		while (chunksz != 0) 
 		{
 			for(;;) 
 			{
@@ -1265,7 +1265,9 @@ next:
 
 				nlhrReply->pData = (char*)mir_realloc(nlhrReply->pData, dataBufferAlloced);
 			}
-		} while (chunksz != 0);
+			else
+				break;
+		}
 
 		nlhrReply->pData[nlhrReply->dataLength] = '\0';
 	}
