@@ -319,41 +319,32 @@ void CJabberProto::OnIqResultSession( HXML iqNode, CJabberIqInfo* pInfo )
 
 void CJabberProto::GroupchatJoinByHContact( HANDLE hContact, bool autojoin )
 {
-	DBVARIANT dbv;
-	if( JGetStringT( hContact, "ChatRoomID", &dbv ))
-		return;
-	if( dbv.type != DBVT_ASCIIZ && dbv.type != DBVT_WCHAR )
-		return;
-
-	TCHAR* roomjid = mir_tstrdup( dbv.ptszVal );
-	JFreeVariant( &dbv );
-	if( !roomjid ) return;
+	TCHAR* roomjid = JGetStringT( hContact, "ChatRoomID" );
+	if ( !roomjid ) return;
 
 	TCHAR* room = roomjid;
 	TCHAR* server = _tcschr( roomjid, '@' );
-	if( !server ) {
+	if ( !server ) {
 		mir_free( roomjid );
 		return;
 	}
-	server[0] = '\0'; server++;
+	server[0] = 0; server++;
 
-	TCHAR nick[ 256 ];
-	if ( JGetStringT( hContact, "MyNick", &dbv )) {
-		TCHAR* jidnick = JabberNickFromJID( m_szJabberJID );
-		if( !jidnick ) {
-			mir_free( jidnick );
+	TCHAR *nick = JGetStringT( hContact, "MyNick" );
+	if ( !nick ) {
+		nick = JabberNickFromJID( m_szJabberJID );
+		if( !nick ) {
 			mir_free( roomjid );
 			return;
 		}
-		_tcsncpy( nick, jidnick, SIZEOF( nick ));
-		mir_free( jidnick );
-	}
-	else {
-		_tcsncpy( nick, dbv.ptszVal, SIZEOF( nick ));
-		JFreeVariant( &dbv );
 	}
 
-	GroupchatJoinRoom( server, room, nick, NULL, autojoin, true);
+	TCHAR *password = JGetStringCrypt( hContact, "LoginPassword" );
+
+	GroupchatJoinRoom( server, room, nick, password, autojoin );
+
+	mir_free( password );
+	mir_free( nick );
 	mir_free( roomjid );
 }
 

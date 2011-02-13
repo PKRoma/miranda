@@ -214,16 +214,18 @@ INT_PTR __cdecl CJabberProto::OnMenuHandleJoinGroupchat( WPARAM, LPARAM )
 
 INT_PTR __cdecl CJabberProto::OnJoinChat( WPARAM wParam, LPARAM )
 {
-	DBVARIANT dbv, jid;
+	DBVARIANT nick, jid;
 	HANDLE hContact = ( HANDLE )wParam;
 	if ( JGetStringT( hContact, "ChatRoomID", &jid ))
 		return 0;
 
-	if ( JGetStringT( hContact, "MyNick", &dbv ))
-		if ( JGetStringT( NULL, "Nick", &dbv )) {
+	if ( JGetStringT( hContact, "MyNick", &nick ))
+		if ( JGetStringT( NULL, "Nick", &nick )) {
 			JFreeVariant( &jid );
 			return 0;
 		}
+
+	TCHAR *password = JGetStringCrypt( hContact, "LoginPassword" );
 
 	if ( JGetWord( hContact, "Status", 0 ) != ID_STATUS_ONLINE ) {
 		if ( !jabberChatDllPresent )
@@ -232,10 +234,11 @@ INT_PTR __cdecl CJabberProto::OnJoinChat( WPARAM wParam, LPARAM )
 			TCHAR* p = _tcschr( jid.ptszVal, '@' );
 			if ( p != NULL ) {
 				*p++ = 0;
-				GroupchatJoinRoom( p, jid.ptszVal, dbv.ptszVal, _T(""));
+				GroupchatJoinRoom( p, jid.ptszVal, nick.ptszVal, password );
 	}	}	}
 
-	JFreeVariant( &dbv );
+	mir_free( password );
+	JFreeVariant( &nick );
 	JFreeVariant( &jid );
 	return 0;
 }
@@ -257,21 +260,16 @@ INT_PTR __cdecl CJabberProto::OnLeaveChat( WPARAM wParam, LPARAM )
 	return 0;
 }
 
-void CJabberProto::GroupchatJoinRoom( const TCHAR* server, const TCHAR* room, const TCHAR* nick, const TCHAR* password, bool autojoin, bool lastpass )
+void CJabberProto::GroupchatJoinRoom( const TCHAR* server, const TCHAR* room, const TCHAR* nick, const TCHAR* password, bool autojoin )
 {
 	JabberGcRecentInfo info( this );
 
+	int i = 0;
 	bool found = false;
-	for (int i = 0 ; i < 5; ++i)
+	for (i = 0 ; i < 5; ++i)
 	{
 		if (!info.loadRecent(i))
 			continue;
-
-		if (lastpass && info.equalsnp(room, server, nick)) 
-		{
-			found = true;
-			break;
-		}
 
 		if (info.equals(room, server, nick, password))
 		{
@@ -298,6 +296,7 @@ void CJabberProto::GroupchatJoinRoom( const TCHAR* server, const TCHAR* room, co
 	JABBER_LIST_ITEM* item = ListAdd( LIST_CHATROOM, text );
 	item->bAutoJoin = autojoin;
 	replaceStr( item->nick, nick );
+	replaceStr( item->password, info.password );
 
 	int status = ( m_iStatus == ID_STATUS_INVISIBLE ) ? ID_STATUS_ONLINE : m_iStatus;
 	XmlNode x( _T("x")); x << XATTR( _T("xmlns"), _T(JABBER_FEAT_MUC));
