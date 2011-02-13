@@ -164,15 +164,12 @@ int CJabberProto::JabberGcInit( WPARAM wParam, LPARAM )
 		}
 		else JSetStringT( hContact, "MyNick", item->nick );
 
-		if ( item->password ) {
-			if ( !JGetStringT( hContact, "LoginPassword", &dbv )) {
-				if ( !lstrcmp( dbv.ptszVal, item->password ))
-					JDeleteSetting( hContact, "LoginPassword" );
-				else
-					JSetStringCrypt( hContact, "LoginPassword", item->password );
-				JFreeVariant( &dbv );
-			}
-			else JSetStringCrypt( hContact, "LoginPassword", item->password );
+		TCHAR *passw = JGetStringCrypt( hContact, "LoginPassword" );
+		if ( lstrcmp_null( passw, item->password )) {
+			if ( !item->password || !item->password[0] )
+				JDeleteSetting( hContact, "LoginPassword" );
+			else
+				JSetStringCrypt( hContact, "LoginPassword", item->password );
 		}
 	}
 	mir_free( szNick );
