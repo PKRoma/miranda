@@ -55,7 +55,7 @@ returns TRUE if all is Ok, and FALSE otherwise
 
 #define MS_SYSTEM_GET_SI "Miranda/System/GetSslApi"
 
-__forceinline int mir_getSI( SSL_API* dest )
+__forceinline INT_PTR mir_getSI( SSL_API* dest )
 {
 	dest->cbSize = sizeof(*dest);
 	return CallService(MS_SYSTEM_GET_SI, 0, (LPARAM)dest);
