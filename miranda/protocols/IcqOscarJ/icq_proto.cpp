@@ -1581,9 +1581,8 @@ int __cdecl CIcqProto::SendMsg( HANDLE hContact, int flags, const char* pszSrc )
 	if (hContact && pszSrc)
 	{
 		DWORD dwCookie;
-		char* pszText = NULL;
 		char* puszText = NULL;
-		int bNeedFreeA = 0, bNeedFreeU = 0;
+		int bNeedFreeU = 0;
 
 		// Invalid contact
 		DWORD dwUin;
@@ -1591,53 +1590,27 @@ int __cdecl CIcqProto::SendMsg( HANDLE hContact, int flags, const char* pszSrc )
 		if (getContactUid(hContact, &dwUin, &szUID))
 			return ReportGenericSendError(hContact, ACKTYPE_MESSAGE, "The receiver has an invalid user ID.");
 
-		if ((flags & PREF_UTF) == PREF_UTF)
+		if (flags & PREF_UNICODE)
+		{
+			puszText = make_utf8_string((WCHAR*)(pszSrc + strlennull(pszSrc) + 1)); // get the UTF-16 part
+			bNeedFreeU = 1;
+		}
+		else if (flags & PREF_UTF)
 			puszText = (char*)pszSrc;
 		else
-			pszText = (char*)pszSrc;
-
-		if ((flags & PREF_UNICODE) == PREF_UNICODE)
 		{
-			puszText = make_utf8_string((WCHAR*)((char*)pszSrc+strlennull(pszText)+1)); // get the UTF-16 part
+			puszText = (char*)ansi_to_utf8(pszSrc);
 			bNeedFreeU = 1;
 		}
 
 		WORD wRecipientStatus = getContactStatus(hContact);
 
-		if (puszText)
-		{ // we have unicode message, check if it is possible and reasonable to send it as unicode
-			BOOL plain_ascii = IsUSASCII(puszText, strlennull(puszText));
+		BOOL plain_ascii = IsUSASCII(puszText, strlennull(puszText));
 
-			if (plain_ascii || !m_bUtfEnabled || !CheckContactCapabilities(hContact, CAPF_UTF) || !getSettingByte(hContact, "UnicodeSend", 1))
-			{ // unicode is not available for target contact, convert to good codepage
-				if (!plain_ascii)
-				{ // do not convert plain ascii messages
-					char *szUserAnsi = ConvertMsgToUserSpecificAnsi(hContact, puszText);
-
-					if (szUserAnsi)
-					{ // we have special encoding, use it
-						pszText = szUserAnsi;
-						bNeedFreeA = 1;
-					}
-					else if (!pszText)
-					{ // no ansi available, create basic
-						utf8_decode(puszText, &pszText);
-						bNeedFreeA = 1;
-					}
-				}
-				else if (!pszText)
-				{ // plain ascii unicode message, take as ansi if no ansi available
-					pszText = puszText;
-					bNeedFreeA = bNeedFreeU;
-					puszText = NULL;
-				}
-				// dispose unicode message
-				if (bNeedFreeU)
-					SAFE_FREE(&puszText);
-				else
-					puszText = NULL;
-			}
-		}
+		BOOL oldAnsi = plain_ascii || !m_bUtfEnabled || 
+			(!(flags & (PREF_UTF | PREF_UNICODE)) && m_bUtfEnabled == 1) ||
+			!CheckContactCapabilities(hContact, CAPF_UTF) || 
+			!getSettingByte(hContact, "UnicodeSend", 1);
 
 		if (m_bTempVisListEnabled && m_iStatus == ID_STATUS_INVISIBLE)
 			makeContactTemporaryVisible(hContact);  // make us temporarily visible to contact
@@ -1647,20 +1620,13 @@ int __cdecl CIcqProto::SendMsg( HANDLE hContact, int flags, const char* pszSrc )
 		{
 			dwCookie = ReportGenericSendError(hContact, ACKTYPE_MESSAGE, "You cannot send messages when you are offline.");
 		}
-		else if ((wRecipientStatus == ID_STATUS_OFFLINE) && (strlennull(pszText) > 4096))
+		else if ((wRecipientStatus == ID_STATUS_OFFLINE) && (strlennull(puszText) > 4096))
 		{
 			dwCookie = ReportGenericSendError(hContact, ACKTYPE_MESSAGE, "Messages to offline contacts must be shorter than 4096 characters.");
 		}
 		// Looks OK
 		else
 		{
-			if (!puszText && m_bUtfEnabled == 2 && !IsUSASCII(pszText, strlennull(pszText))
-				&& CheckContactCapabilities(hContact, CAPF_UTF) && getSettingByte(hContact, "UnicodeSend", 1))
-			{ // text is not unicode and contains national chars and we should send all this as Unicode, so do it
-				puszText = ansi_to_utf8(pszText);
-				bNeedFreeU = 1;
-			}
-
 			// Set up the ack type
 			cookie_message_data *pCookieData = CreateMessageCookieData(MTYPE_PLAIN, hContact, dwUin, TRUE);
 
@@ -1670,19 +1636,25 @@ int __cdecl CIcqProto::SendMsg( HANDLE hContact, int flags, const char* pszSrc )
 #endif
 			if (dwUin && m_bDCMsgEnabled && IsDirectConnectionOpen(hContact, DIRECTCONN_STANDARD, 0))
 			{ // send thru direct
-				char *dc_msg = pszText;
-				char *dc_cap = NULL;
+				char *dc_msg = puszText;
+				char *dc_cap = plain_ascii ? NULL : CAP_UTF8MSGS;
+				char *szUserAnsi = NULL;
 
-				if (puszText)
-				{ // direct connection uses utf-8, prepare
-					dc_msg = puszText;
-					dc_cap = CAP_UTF8MSGS;
+				if (!plain_ascii && oldAnsi)
+				{
+					szUserAnsi = ConvertMsgToUserSpecificAnsi(hContact, puszText);
+					if (szUserAnsi)
+					{
+						dc_msg = szUserAnsi;
+						dc_cap = NULL;
+					}
 				}
+
 				dwCookie = icq_SendDirectMessage(hContact, dc_msg, strlennull(dc_msg), 1, pCookieData, dc_cap);
 
+				SAFE_FREE(&szUserAnsi);
 				if (dwCookie)
 				{ // free the buffers if alloced
-					if (bNeedFreeA) SAFE_FREE(&pszText);
 					if (bNeedFreeU) SAFE_FREE(&puszText);
 
 					return dwCookie; // we succeded, return
@@ -1691,36 +1663,21 @@ int __cdecl CIcqProto::SendMsg( HANDLE hContact, int flags, const char* pszSrc )
 			}
 			if (!dwUin || !CheckContactCapabilities(hContact, CAPF_SRV_RELAY) || wRecipientStatus == ID_STATUS_OFFLINE)
 			{
+				/// TODO: add support for RTL & user customizable font
 				{
-					char *src, *mng;
-
-					if (puszText)
-						src = puszText;
-					else
-						src = pszText;
-					mng = MangleXml(src, strlennull(src));
-					src = (char*)SAFE_MALLOC(strlennull(mng) + 28);
-					strcpy(src, "<HTML><BODY>"); /// TODO: add support for RTL & user customizable font
-					strcat(src, mng);
-					SAFE_FREE(&mng);
-					strcat(src, "</BODY></HTML>");
-					if (puszText)
-					{ // convert to UCS-2
-						if (bNeedFreeU) SAFE_FREE(&puszText);
-						puszText = src;
-						bNeedFreeU = 1;
-					}
-					else
-					{
-						if (bNeedFreeA) SAFE_FREE(&pszText);
-						pszText = src;
-						bNeedFreeA = 1;
-					}
+					char *mng = MangleXml(puszText, strlennull(puszText));
+					int len = strlennull(mng);
+					mng = (char*)SAFE_REALLOC(mng, len + 28);
+					memmove(mng + 12, mng, len + 1);
+					memcpy(mng, "<HTML><BODY>", 12);
+					strcat(mng, "</BODY></HTML>");
+					if (bNeedFreeU) SAFE_FREE(&puszText);
+					puszText = mng;
+					bNeedFreeU = 1;
 				}
 
-				WCHAR *pwszText = NULL;
-				if (puszText) pwszText = make_unicode_string(puszText);
-				if ((pwszText ? strlennull(pwszText) * sizeof(WCHAR) : strlennull(pszText)) > MAX_MESSAGESNACSIZE)
+				WCHAR *pwszText = plain_ascii ? NULL : make_unicode_string(puszText);
+				if ((plain_ascii ? strlennull(puszText) : strlennull(pwszText) * sizeof(WCHAR)) > MAX_MESSAGESNACSIZE)
 				{ // max length check // TLV(2) is currently limited to 0xA00 bytes in online mode
 					// only limit to not get disconnected, all other will be handled by error 0x0A
 					dwCookie = ReportGenericSendError(hContact, ACKTYPE_MESSAGE, "The message could not be delivered, it is too long.");
@@ -1728,7 +1685,6 @@ int __cdecl CIcqProto::SendMsg( HANDLE hContact, int flags, const char* pszSrc )
 					SAFE_FREE((void**)&pCookieData);
 					// free the buffers if alloced
 					SAFE_FREE((void**)&pwszText);
-					if (bNeedFreeA) SAFE_FREE(&pszText);
 					if (bNeedFreeU) SAFE_FREE(&puszText);
 
 					return dwCookie;
@@ -1741,7 +1697,6 @@ int __cdecl CIcqProto::SendMsg( HANDLE hContact, int flags, const char* pszSrc )
 					SAFE_FREE((void**)&pCookieData);
 					// free the buffers if alloced
 					SAFE_FREE((void**)&pwszText);
-					if (bNeedFreeA) SAFE_FREE(&pszText);
 					if (bNeedFreeU) SAFE_FREE(&puszText);
 
 					return dwCookie;
@@ -1749,36 +1704,43 @@ int __cdecl CIcqProto::SendMsg( HANDLE hContact, int flags, const char* pszSrc )
 				// set flag for offline messages - to allow proper error handling
 				if (wRecipientStatus == ID_STATUS_OFFLINE) ((cookie_message_data_ext*)pCookieData)->isOffline = TRUE;
 
-				if (pwszText)
-					dwCookie = icq_SendChannel1MessageW(dwUin, szUID, hContact, pwszText, pCookieData);
+				if (plain_ascii)
+					dwCookie = icq_SendChannel1Message(dwUin, szUID, hContact, puszText, pCookieData);
 				else
-					dwCookie = icq_SendChannel1Message(dwUin, szUID, hContact, pszText, pCookieData);
+					dwCookie = icq_SendChannel1MessageW(dwUin, szUID, hContact, pwszText, pCookieData);
 				// free the unicode message
 				SAFE_FREE((void**)&pwszText);
 			}
 			else
 			{
 				WORD wPriority;
-				char *srv_msg = pszText;
-				char *srv_cap = NULL;
+
+				char *srv_msg = puszText;
+				char *srv_cap = plain_ascii ? NULL : CAP_UTF8MSGS;
+				char *szUserAnsi = NULL;
+
+				if (!plain_ascii && oldAnsi)
+				{
+					szUserAnsi = ConvertMsgToUserSpecificAnsi(hContact, puszText);
+					if (szUserAnsi)
+					{
+						srv_msg = szUserAnsi;
+						srv_cap = NULL;
+					}
+				}
 
 				if (wRecipientStatus == ID_STATUS_ONLINE || wRecipientStatus == ID_STATUS_FREECHAT)
 					wPriority = 0x0001;
 				else
 					wPriority = 0x0021;
 
-				if (puszText)
-				{ // type-2 messages are utf-8 encoded, prepare
-					srv_msg = (char*)puszText;
-					srv_cap = CAP_UTF8MSGS;
-				}
-				if (strlennull(srv_msg) + (puszText ? 144 : 102) > MAX_MESSAGESNACSIZE)
+				if (strlennull(srv_msg) + (!oldAnsi ? 144 : 102) > MAX_MESSAGESNACSIZE)
 				{ // max length check
 					dwCookie = ReportGenericSendError(hContact, ACKTYPE_MESSAGE, "The message could not be delivered, it is too long.");
 
+					SAFE_FREE(&szUserAnsi);
 					SAFE_FREE((void**)&pCookieData);
 					// free the buffers if alloced
-					if (bNeedFreeA) SAFE_FREE(&pszText);
 					if (bNeedFreeU) SAFE_FREE(&puszText);
 
 					return dwCookie;
@@ -1788,9 +1750,9 @@ int __cdecl CIcqProto::SendMsg( HANDLE hContact, int flags, const char* pszSrc )
 				{ // rate is too high, the message will not go thru...
 					dwCookie = ReportGenericSendError(hContact, ACKTYPE_MESSAGE, "The message could not be delivered. You are sending too fast. Wait a while and try again.");
 
+					SAFE_FREE(&szUserAnsi);
 					SAFE_FREE((void**)&pCookieData);
 					// free the buffers if alloced
-					if (bNeedFreeA) SAFE_FREE(&pszText);
 					if (bNeedFreeU) SAFE_FREE(&puszText);
 
 					return dwCookie;
@@ -1802,6 +1764,7 @@ int __cdecl CIcqProto::SendMsg( HANDLE hContact, int flags, const char* pszSrc )
 					pCookieData->nAckType = ACKTYPE_SERVER;
 
 				dwCookie = icq_SendChannel2Message(dwUin, hContact, srv_msg, strlennull(srv_msg), wPriority, pCookieData, srv_cap);
+				SAFE_FREE(&szUserAnsi);
 			}
 
 			// This will stop the message dialog from waiting for the real message delivery ack
@@ -1814,7 +1777,6 @@ int __cdecl CIcqProto::SendMsg( HANDLE hContact, int flags, const char* pszSrc )
 			}
 		}
 		// free the buffers if alloced
-		if (bNeedFreeA) SAFE_FREE(&pszText);
 		if (bNeedFreeU) SAFE_FREE(&puszText);
 
 		return dwCookie; // Success
