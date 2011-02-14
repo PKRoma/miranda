@@ -1195,10 +1195,9 @@ LBL_InvalidCommand:
 
 		case ' GHC':    //********* CHG: section 7.7 Client States
 		{
-			int oldMode = m_iStatus;
-			m_iStatus = MSNStatusToMiranda(params);
-			if (m_iStatus == ID_STATUS_OFFLINE) return 1;
-			if (oldMode <= ID_STATUS_OFFLINE)
+			int oldStatus = m_iStatus;
+			int newStatus = MSNStatusToMiranda(params);
+			if (oldStatus <= ID_STATUS_OFFLINE)
 			{
 				int count = -1;
 				for (;;)
@@ -1207,17 +1206,17 @@ LBL_InvalidCommand:
 					if (msc == NULL) break;
 
 					if (strncmp(msc->email, "tel:", 4) == 0)
-					{
 						setWord(msc->hContact, "Status", ID_STATUS_ONTHEPHONE);
-					}
 				}	
-			}			
-			if (m_iStatus != ID_STATUS_IDLE)
+			}
+			if (newStatus != ID_STATUS_IDLE)
 			{
-				SendBroadcast(NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS, (HANDLE)oldMode, m_iStatus);
+				m_iStatus = newStatus;
+				SendBroadcast(NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS, (HANDLE)oldStatus, newStatus);
 				MSN_DebugLog("Status change acknowledged: %s", params);
 				MSN_RemoveEmptyGroups();
 			}
+			if (newStatus == ID_STATUS_OFFLINE) return 1;
 			break;
 		}
 		case ' LHC':    //********* CHL: Query from Server on MSNP7

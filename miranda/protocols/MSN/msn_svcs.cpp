@@ -665,14 +665,11 @@ int CMsnProto::OnIdleChanged(WPARAM wParam, LPARAM lParam)
 
 	if (lParam & IDF_ISIDLE)
 	{
-		if (~lParam & IDF_PRIVACY && m_iStatus != ID_STATUS_IDLE)
+		if (~lParam & IDF_PRIVACY)
 			MSN_SetServerStatus(ID_STATUS_IDLE);
 	}
 	else
-	{
-		if (m_iStatus == ID_STATUS_IDLE)
-			MSN_SetServerStatus(m_iDesiredStatus);
-	}
+		MSN_SetServerStatus(m_iDesiredStatus);
 
 	return 0;
 }
