@@ -293,7 +293,7 @@ static int	  ehhToolbarOptInit(WPARAM wParam, LPARAM lParam)
 	odp.cbSize=sizeof(odp);
 	odp.position=0;
 	odp.hInstance=g_hInst;
-	odp.ptszGroup=LPGENT("Customize");
+	odp.ptszGroup=LPGENT("Contact List");
 	odp.pszTemplate=MAKEINTRESOURCEA(IDD_OPT_TOOLBAR);
 	odp.ptszTitle=LPGENT("ToolBar");
 	odp.pfnDlgProc=(DLGPROC)ToolBar_OptDlgProc;
