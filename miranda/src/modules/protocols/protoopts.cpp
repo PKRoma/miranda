@@ -784,7 +784,19 @@ INT_PTR CALLBACK AccMgrDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LPARAM 
 								}
 								else pa->type = PROTOTYPE_DISPROTO;
 							}
-							else DeactivateAccount( pa, true, false );
+							else {
+								DWORD dwStatus = CallProtoService(pa->szModuleName, PS_GETSTATUS, 0, 0);
+								if (dwStatus >= ID_STATUS_ONLINE) {
+									if (IDCANCEL == ::MessageBox(hwndDlg,
+										                  TranslateT("Account is online. Disable account?"),
+															   TranslateT("Accounts"), MB_OKCANCEL)) {
+										pa->bIsEnabled = 1;	//stay enabled
+									}
+								}
+
+								if ( !pa->bIsEnabled )
+									DeactivateAccount( pa, true, false );
+							}
 
 							WriteDbAccounts();
 							NotifyEventHooks( hAccListChanged, PRAC_CHECKED, ( LPARAM )pa );
