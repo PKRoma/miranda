@@ -2246,7 +2246,6 @@ static int OkToExitProc(WPARAM wParam, LPARAM lParam)
 	LeaveCriticalSection(&cachecs);
 
 	SetEvent(hLoaderEvent);
-	CloseHandle(hLoaderEvent);
 	FreePolls();
 	return 0;
 }
@@ -2560,6 +2559,7 @@ extern "C" int __declspec(dllexport) Unload(void)
 	g_ProtoPictures.destroy();
 	g_MyAvatars.destroy();
 
+	CloseHandle(hLoaderEvent);
 	DeleteCriticalSection(&alloccs);
 	DeleteCriticalSection(&cachecs);
 	return 0;
