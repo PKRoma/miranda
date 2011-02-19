@@ -217,14 +217,7 @@ static NetlibConnection* NetlibHttpProcessUrl(NETLIBHTTPREQUEST *nlhr, NetlibUse
 
 		if (!httpProxy && !sameHost)
 		{
-			if (nlc->hSsl)
-			{
-				si.shutdown(nlc->hSsl);
-				si.sfree(nlc->hSsl);
-				nlc->hSsl = NULL;
-			}
-			if (nlc->s != INVALID_SOCKET) closesocket(nlc->s);
-			nlc->s = INVALID_SOCKET;
+			NetlibDoClose(nlc);
 
 			mir_free((char*)nlc->nloc.szHost);
 			nlc->nloc = nloc;
@@ -1160,7 +1153,7 @@ NETLIBHTTPREQUEST* NetlibHttpRecv(NetlibConnection* nlc, DWORD hflags, DWORD dfl
 {
 	int dataLen = -1, i, chunkhdr = 0;
 	bool chunked = false;
-	int cenc = 0, cenctype = 0;
+	int cenc = 0, cenctype = 0, close = 0;
 
 next:
 	NETLIBHTTPREQUEST *nlhrReply = (NETLIBHTTPREQUEST*)NetlibHttpRecvHeaders((WPARAM)nlc, hflags);
@@ -1186,6 +1179,9 @@ next:
 			else if (strstr(nlhrReply->headers[i].szValue, "deflate"))
 				cenctype = 2;
 		}
+
+		if (!lstrcmpiA(nlhrReply->headers[i].szName, "Connection"))
+			close = !lstrcmpiA(nlhrReply->headers[i].szValue, "close");
 
 		if (!lstrcmpiA(nlhrReply->headers[i].szName, "Transfer-Encoding") && 
 			!lstrcmpiA(nlhrReply->headers[i].szValue, "chunked"))
@@ -1320,6 +1316,9 @@ next:
 			nlhrReply->dataLength = 0; 
 		}
 	}
+
+	if (close && (nlc->proxyType != PROXYTYPE_HTTP || nlc->nloc.flags & NLOCF_SSL))
+		NetlibDoClose(nlc);
 
 	return nlhrReply;
 }

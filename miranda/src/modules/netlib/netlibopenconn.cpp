@@ -482,9 +482,7 @@ unblock:
 
 static int NetlibHttpFallbackToDirect(struct NetlibConnection *nlc, struct NetlibUser *nlu, NETLIBOPENCONNECTION *nloc)
 {
-	NetlibLogf(nlu,"(%p:%u) Connection closed",nlc,nlc->s);
-	if (nlc->s) closesocket(nlc->s);
-	nlc->s = NULL;
+	NetlibDoClose(nlc, true);
 
 	NetlibLogf(nlu,"Fallback to direct connection");
 	NetlibLogf(nlu,"(%p) Connecting to server %s:%d....", nlc, nloc->szHost, nloc->wPort);
@@ -659,14 +657,7 @@ bool NetlibReconnect(NetlibConnection *nlc)
 
 	if (!opened)
 	{
-		if (nlc->hSsl)
-		{
-			si.sfree(nlc->hSsl);
-			nlc->hSsl = NULL;
-		}
-		NetlibLogf(nlc->nlu,"(%p:%u) Connection closed",nlc,nlc->s);
-		closesocket(nlc->s);
-		nlc->s = INVALID_SOCKET;
+		NetlibDoClose(nlc, true);
 
 		if (Miranda_Terminated()) return false;
 

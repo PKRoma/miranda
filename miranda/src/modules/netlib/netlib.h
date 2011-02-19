@@ -100,6 +100,7 @@ struct NetlibPacketRecver {
 
 //netlib.c
 void NetlibFreeUserSettingsStruct(NETLIBUSERSETTINGS *settings);
+void NetlibDoClose(NetlibConnection *nlc, bool noShutdown = false);
 INT_PTR NetlibCloseHandle(WPARAM wParam,LPARAM lParam);
 void NetlibInitializeNestedCS(struct NetlibNestedCriticalSection *nlncs);
 void NetlibDeleteNestedCS(struct NetlibNestedCriticalSection *nlncs);

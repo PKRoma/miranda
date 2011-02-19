@@ -141,6 +141,7 @@ static unsigned __stdcall NetlibBindAcceptThread(void* param)
 		nlc->handleType = NLH_CONNECTION;
 		nlc->nlu = nlbp->nlu;
 		nlc->s = s;
+		nlc->s2 = INVALID_SOCKET;
 		InitializeCriticalSection(&nlc->csHttpSequenceNums);
 		nlc->hOkToCloseEvent = CreateEvent(NULL, TRUE, TRUE, NULL);
 		nlc->dontCloseNow = 0;
