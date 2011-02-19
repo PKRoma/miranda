@@ -225,6 +225,19 @@ static INT_PTR NetlibSetUserSettings(WPARAM wParam,LPARAM lParam)
 	return 1;
 }
 
+void NetlibDoClose(NetlibConnection *nlc, bool noShutdown)
+{
+	NetlibLogf(nlc->nlu, "(%p:%u) Connection closed internal", nlc, nlc->s);
+	if (nlc->hSsl)
+	{
+		if (!noShutdown) si.shutdown(nlc->hSsl);
+		si.sfree(nlc->hSsl);
+		nlc->hSsl = NULL;
+	}
+	if (nlc->s != INVALID_SOCKET) closesocket(nlc->s);
+	nlc->s = INVALID_SOCKET;
+}
+
 INT_PTR NetlibCloseHandle(WPARAM wParam, LPARAM)
 {
 	switch(GetNetlibHandleType(wParam)) {
@@ -262,17 +275,9 @@ INT_PTR NetlibCloseHandle(WPARAM wParam, LPARAM)
 					SetLastError(ERROR_INVALID_PARAMETER);	  //already been closed
 					return 0;
 				}
-				if (nlc->hSsl)
-				{
-					si.shutdown(nlc->hSsl);
-					si.sfree(nlc->hSsl);
-					nlc->hSsl = NULL;
-				}
-				shutdown(nlc->s, 2);
-				closesocket(nlc->s);
-				nlc->s=INVALID_SOCKET;
-				closesocket(nlc->s2);
-				nlc->s2=INVALID_SOCKET;
+				NetlibDoClose(nlc);
+				if (nlc->s2 != INVALID_SOCKET) closesocket(nlc->s2);
+				nlc->s2 = INVALID_SOCKET;
 			}
 			ReleaseMutex(hConnectionHeaderMutex);
 

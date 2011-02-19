@@ -129,14 +129,7 @@ static bool NetlibHttpGatewaySend(struct NetlibConnection *nlc, RequestType reqT
 
 		if (!sameHost)
 		{
-			if (nlc->hSsl)
-			{
-				si.shutdown(nlc->hSsl);
-				si.sfree(nlc->hSsl);
-				nlc->hSsl = NULL;
-			}
-			if (nlc->s != INVALID_SOCKET) closesocket(nlc->s);
-			nlc->s = INVALID_SOCKET;
+			NetlibDoClose(nlc);
 
 			mir_free((char*)nlc->nloc.szHost);
 			nlc->nloc = nloc;
