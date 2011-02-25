@@ -1065,11 +1065,20 @@ static int OnAccListChanged( WPARAM eventCode, LPARAM lParam )
 	return 0;
 }
 
+static int ShutdownAccMgr(WPARAM, LPARAM)
+{
+	if ( IsWindow( hAccMgr ))
+		DestroyWindow( hAccMgr );
+	hAccMgr = NULL;
+	return 0;
+}
+
 int LoadProtoOptions( void )
 {
 	CreateServiceFunction( MS_PROTO_SHOWACCMGR, OptProtosShow );
 
 	HookEvent( ME_SYSTEM_MODULESLOADED, OptProtosLoaded );
 	HookEvent( ME_PROTO_ACCLISTCHANGED, OnAccListChanged );
+	HookEvent( ME_SYSTEM_PRESHUTDOWN, ShutdownAccMgr );
 	return 0;
 }
