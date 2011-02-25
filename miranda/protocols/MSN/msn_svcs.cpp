@@ -492,8 +492,7 @@ INT_PTR CMsnProto::SetCurrentMedia(WPARAM wParam, LPARAM lParam)
 
 	// Send it
 	char** msgptr = GetStatusMsgLoc(m_iDesiredStatus);
-	if (msgptr != NULL)
-		MSN_SendStatusMessage(*msgptr);
+	MSN_SendStatusMessage(msgptr ? *msgptr : NULL);
 
 	return 0;
 }
