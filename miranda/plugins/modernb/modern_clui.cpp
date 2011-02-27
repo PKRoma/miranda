@@ -2862,8 +2862,8 @@ LRESULT CLUI::OnClickNotify( NMCLISTCONTROL * pnmc )
 					if (!homepage)
 						homepage= ModernGetStringA(pdnce->m_cache_hContact,pdnce->m_cache_cszProto, "Homepage");
 					if (homepage!=NULL)
-					{											
-						ShellExecuteA(m_hWnd,"open",homepage,NULL,NULL,SW_SHOW);
+					{
+						CallService(MS_UTILS_OPENURL, 1, (LPARAM)homepage);
 						mir_free_and_nill(homepage);
 					}
 				}
