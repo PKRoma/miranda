@@ -2124,7 +2124,7 @@ void CJabberDlgAccMgrUI::setupFB()
 	m_cbServer.AddStringA("chat.facebook.com");
 	m_chkManualHost.SetState(BST_UNCHECKED);
 	m_txtManualHost.SetTextA("");
-	m_txtPort.SetInt(5222);
+	m_txtPort.SetInt(443);
 
 	m_cbServer.Disable();
 	m_chkManualHost.Disable();
