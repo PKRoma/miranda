@@ -178,7 +178,7 @@ int SetAlpha(BYTE Alpha)
 				}
 				g_proc_SetLayeredWindowAttributesNew(hwnd, g_CluiData.dwKeyColor,Alpha, LWA_ALPHA|LWA_COLORKEY);
 			}
-		};
+		}
 	}
 	AniAva_RedrawAllAvatars(FALSE);
 	return 0;
@@ -225,7 +225,7 @@ int CLUIFrames_SetParentForContainers( HWND parent )
 		{
 			HWND hwnd=g_pfwFrames[i].OwnerWindow;
 			SetParent(hwnd,parent);
-		};
+		}
 	}
 	return 0;
 }

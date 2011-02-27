@@ -120,9 +120,9 @@ int ExtraImage_ColumnNumToExtraID(int column)
 	if (HasExtraIconsService())
 		return column+1;
 
-	for (int i=0; i<sizeof(ExtraOrder)/sizeof(ExtraOrder[0]); i++)
-		if (ExtraOrder[i]==column)
-			return i+1;
+	for (int i=0; i<EXTRA_ICON_COUNT; i++)
+		if (ExtraImage_ExtraIDToColumnNum(i)==column)
+			return i;
 
 	return -1;
 }
