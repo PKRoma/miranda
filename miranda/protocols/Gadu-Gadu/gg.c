@@ -381,7 +381,7 @@ static GGPROTO *gg_proto_init(const char* pszProtoName, const TCHAR* tszUserName
 	_strlwr(szVer); // make sure it is lowercase
 	gg->unicode_core = (strstr(szVer, "unicode") != NULL);
 
-	// Init mutex
+	// Init mutexes
 	InitializeCriticalSection(&gg->sess_mutex);
 	InitializeCriticalSection(&gg->ft_mutex);
 	InitializeCriticalSection(&gg->img_mutex);
@@ -407,12 +407,12 @@ static GGPROTO *gg_proto_init(const char* pszProtoName, const TCHAR* tszUserName
 	nlu.szSettingsModule = gg->proto.m_szModuleName;
 	if (gg->unicode_core) {
 		WCHAR name[128];
-		_snwprintf(name, sizeof(name)/sizeof(name[0]), TranslateW(L"%s connection"), gg->proto.m_tszUserName);
-		nlu.ptszDescriptiveName = (char *)name;
+		_snwprintf(name, SIZEOF(name), TranslateW(L"%s connection"), gg->proto.m_tszUserName);
+		nlu.ptszDescriptiveName = (TCHAR *)name;
 		nlu.flags |= NUF_UNICODE;
 	} else {
 		char name[128];
-		mir_snprintf(name, sizeof(name)/sizeof(name[0]), Translate("%s connection"), gg->proto.m_tszUserName);
+		mir_snprintf(name, SIZEOF(name), Translate("%s connection"), gg->proto.m_tszUserName);
 		nlu.ptszDescriptiveName = name;
 	}
 	gg->netlib = (HANDLE)CallService(MS_NETLIB_REGISTERUSER, 0, (LPARAM)&nlu);
@@ -457,7 +457,7 @@ static int gg_proto_uninit(PROTO_INTERFACE *proto)
 	LocalEventUnhook(gg->hookSettingChanged);
 	Netlib_CloseHandle(gg->netlib);
 
-	// Destroy mutex
+	// Destroy mutexes
 	DeleteCriticalSection(&gg->sess_mutex);
 	DeleteCriticalSection(&gg->ft_mutex);
 	DeleteCriticalSection(&gg->img_mutex);
@@ -465,12 +465,12 @@ static int gg_proto_uninit(PROTO_INTERFACE *proto)
 	DeleteCriticalSection(&gg->avatar_mutex);
 
 	// Free status messages
-	if(gg->modemsg.online)    free(gg->modemsg.online);
-	if(gg->modemsg.away)      free(gg->modemsg.away);
-	if(gg->modemsg.dnd)       free(gg->modemsg.dnd);
-	if(gg->modemsg.freechat)  free(gg->modemsg.freechat);
-	if(gg->modemsg.invisible) free(gg->modemsg.invisible);
-	if(gg->modemsg.offline)   free(gg->modemsg.offline);
+	if (gg->modemsg.online)    mir_free(gg->modemsg.online);
+	if (gg->modemsg.away)      mir_free(gg->modemsg.away);
+	if (gg->modemsg.dnd)       mir_free(gg->modemsg.dnd);
+	if (gg->modemsg.freechat)  mir_free(gg->modemsg.freechat);
+	if (gg->modemsg.invisible) mir_free(gg->modemsg.invisible);
+	if (gg->modemsg.offline)   mir_free(gg->modemsg.offline);
 
 	mir_free(gg->proto.m_szModuleName);
 	mir_free(gg->proto.m_tszUserName);

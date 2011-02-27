@@ -266,11 +266,11 @@ void __cdecl gg_avatarrequestthread(GGPROTO *gg, void *empty)
 	}
 
 	for (l = gg->avatar_requests; l; l = l->next) {
-		GGREQUESTAVATARDATA *data = (GGREQUESTAVATARDATA *)gg->avatar_requests->data;
+		GGREQUESTAVATARDATA *data = (GGREQUESTAVATARDATA *)l->data;
 		mir_free(data);
 	}
 	for (l = gg->avatar_transfers; l; l = l->next) {
-		GGGETAVATARDATA *data = (GGGETAVATARDATA *)gg->avatar_transfers->data;
+		GGGETAVATARDATA *data = (GGGETAVATARDATA *)l->data;
 		mir_free(data->AvatarURL);
 		mir_free(data);
 	}

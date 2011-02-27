@@ -52,92 +52,91 @@ GGINLINE int gg_isonline(GGPROTO *gg)
 void gg_disconnect(GGPROTO *gg)
 {
 	// If main loop go and send disconnect request
-	if(gg_isonline(gg))
+	if (gg_isonline(gg))
 	{
 		// Fetch proper status msg
 		char *szMsg = NULL;
-		DBVARIANT dbv;
 
 		// Loadup status
-		if(DBGetContactSettingByte(NULL, GG_PROTO, GG_KEY_LEAVESTATUSMSG, GG_KEYDEF_LEAVESTATUSMSG))
+		if (DBGetContactSettingByte(NULL, GG_PROTO, GG_KEY_LEAVESTATUSMSG, GG_KEYDEF_LEAVESTATUSMSG))
 		{
-			switch(DBGetContactSettingWord(NULL, GG_PROTO, GG_KEY_LEAVESTATUS, GG_KEYDEF_LEAVESTATUS))
+			DBVARIANT dbv;
+			switch (DBGetContactSettingWord(NULL, GG_PROTO, GG_KEY_LEAVESTATUS, GG_KEYDEF_LEAVESTATUS))
 			{
 				case ID_STATUS_ONLINE:
 					EnterCriticalSection(&gg->modemsg_mutex);
-					szMsg = _strdup(gg->modemsg.online);
+					szMsg = mir_strdup(gg->modemsg.online);
 					LeaveCriticalSection(&gg->modemsg_mutex);
-					if(!szMsg &&
+					if (!szMsg &&
 						!DBGetContactSettingString(NULL, "SRAway", gg_status2db(ID_STATUS_ONLINE, "Default"), &dbv))
 					{
-						if(*(dbv.pszVal))
-							szMsg = _strdup(dbv.pszVal);
+						if (dbv.pszVal && *(dbv.pszVal))
+							szMsg = mir_strdup(dbv.pszVal);
 						DBFreeVariant(&dbv);
 					}
 					break;
 				case ID_STATUS_AWAY:
 					EnterCriticalSection(&gg->modemsg_mutex);
-					szMsg = _strdup(gg->modemsg.away);
+					szMsg = mir_strdup(gg->modemsg.away);
 					LeaveCriticalSection(&gg->modemsg_mutex);
-					if(!szMsg &&
+					if (!szMsg &&
 						!DBGetContactSettingString(NULL, "SRAway", gg_status2db(ID_STATUS_AWAY, "Default"), &dbv))
 					{
-						if(*(dbv.pszVal))
-							szMsg = _strdup(dbv.pszVal);
+						if (dbv.pszVal && *(dbv.pszVal))
+							szMsg = mir_strdup(dbv.pszVal);
 						DBFreeVariant(&dbv);
 					}
 					break;
 				case ID_STATUS_DND:
 					EnterCriticalSection(&gg->modemsg_mutex);
-					szMsg = _strdup(gg->modemsg.dnd);
+					szMsg = mir_strdup(gg->modemsg.dnd);
 					LeaveCriticalSection(&gg->modemsg_mutex);
-					if(!szMsg &&
+					if (!szMsg &&
 						!DBGetContactSettingString(NULL, "SRAway", gg_status2db(ID_STATUS_DND, "Default"), &dbv))
 					{
-						if(*(dbv.pszVal))
-							szMsg = _strdup(dbv.pszVal);
+						if (dbv.pszVal && *(dbv.pszVal))
+							szMsg = mir_strdup(dbv.pszVal);
 						DBFreeVariant(&dbv);
 					}
 					break;
 				case ID_STATUS_FREECHAT:
 					EnterCriticalSection(&gg->modemsg_mutex);
-					szMsg = _strdup(gg->modemsg.freechat);
+					szMsg = mir_strdup(gg->modemsg.freechat);
 					LeaveCriticalSection(&gg->modemsg_mutex);
-					if(!szMsg &&
+					if (!szMsg &&
 						!DBGetContactSettingString(NULL, "SRAway", gg_status2db(ID_STATUS_FREECHAT, "Default"), &dbv))
 					{
-						if(*(dbv.pszVal))
-							szMsg = _strdup(dbv.pszVal);
+						if (dbv.pszVal && *(dbv.pszVal))
+							szMsg = mir_strdup(dbv.pszVal);
 						DBFreeVariant(&dbv);
 					}
 					break;
 				case ID_STATUS_INVISIBLE:
 					EnterCriticalSection(&gg->modemsg_mutex);
-					szMsg = _strdup(gg->modemsg.invisible);
+					szMsg = mir_strdup(gg->modemsg.invisible);
 					LeaveCriticalSection(&gg->modemsg_mutex);
-					if(!szMsg &&
+					if (!szMsg &&
 						!DBGetContactSettingString(NULL, "SRAway", gg_status2db(ID_STATUS_INVISIBLE, "Default"), &dbv))
 					{
-						if(*(dbv.pszVal))
-							szMsg = _strdup(dbv.pszVal);
+						if (dbv.pszVal && *(dbv.pszVal))
+							szMsg = mir_strdup(dbv.pszVal);
 						DBFreeVariant(&dbv);
 					}
 					break;
-
 				default:
 					// Set last status
 					EnterCriticalSection(&gg->modemsg_mutex);
-					szMsg = _strdup(gg_getstatusmsg(gg, gg->proto.m_iStatus));
+					szMsg = mir_strdup(gg_getstatusmsg(gg, gg->proto.m_iStatus));
 					LeaveCriticalSection(&gg->modemsg_mutex);
 			}
 		}
 
 		EnterCriticalSection(&gg->sess_mutex);
 		// Check if it has message
-		if(szMsg)
+		if (szMsg)
 		{
 			gg_change_status_descr(gg->sess, GG_STATUS_NOT_AVAIL_DESCR, szMsg);
-			free(szMsg);
+			mir_free(szMsg);
 			// Wait for disconnection acknowledge
 		}
 		else
@@ -345,10 +344,7 @@ void __cdecl gg_mainthread(GGPROTO *gg, void *empty)
 
 	// Readup SSL/TLS setting
 	if(p.tls = DBGetContactSettingByte(NULL, GG_PROTO, GG_KEY_SSLCONN, GG_KEYDEF_SSLCONN))
-	{
-		if (nlus.validateSSL) p.tls++;
 		gg_netlog(gg, "gg_mainthread(%x): Using TLS/SSL for connections.", gg);
-	}
 
 	// Gadu-Gadu accepts image sizes upto 255
 	p.image_size = 255;
@@ -797,49 +793,41 @@ retry:
 						}
 					}
 					// Check if not empty message ( who needs it? )
-					else if(!e->event.msg.recipients_count && strlen(e->event.msg.message) && strcmp(e->event.msg.message, "\xA0\0"))
+					else if(!e->event.msg.recipients_count && e->event.msg.message && *e->event.msg.message && strcmp(e->event.msg.message, "\xA0\0"))
 					{
-						CCSDATA ccs;
-						PROTORECVEVENT pre;
+						CCSDATA ccs = {0};
+						PROTORECVEVENT pre = {0};
 						time_t t = time(NULL);
 						ccs.szProtoService = PSR_MESSAGE;
 						ccs.hContact = gg_getcontact(gg, e->event.msg.sender, 1, 0, NULL);
-						ccs.wParam = 0;
-						ccs.lParam = (LPARAM) & pre;
-						pre.flags = 0;
+						ccs.lParam = (LPARAM)&pre;
 						pre.timestamp = (!(e->event.msg.msgclass & GG_CLASS_OFFLINE) || e->event.msg.time > (t - timeDeviation)) ? t : e->event.msg.time;
 						pre.szMessage = e->event.msg.message;
-						pre.lParam = 0;
 						CallService(MS_PROTO_CHAINRECV, 0, (LPARAM) &ccs);
 					}
 
 					// RichEdit format included (image)
-					if( e->event.msg.formats_length
+					if(e->event.msg.formats_length
 						&& DBGetContactSettingByte(NULL, GG_PROTO, GG_KEY_IMGRECEIVE, GG_KEYDEF_IMGRECEIVE))
 					{
-					   char *formats;
-					   int len, formats_len, add_ptr;
+						char *formats = e->event.msg.formats;
+						int len = 0, formats_len = e->event.msg.formats_length, add_ptr;
 
-					   len = 0;
-					   formats = e->event.msg.formats;
-					   formats_len = e->event.msg.formats_length;
-
-						while ( len < formats_len )
+						while (len < formats_len)
 						{
 							add_ptr = sizeof(struct gg_msg_richtext_format);
-							if( ((struct gg_msg_richtext_format*)formats)->font & GG_FONT_IMAGE)
+							if (((struct gg_msg_richtext_format*)formats)->font & GG_FONT_IMAGE)
 							{
+								struct gg_msg_richtext_image *image = (struct gg_msg_richtext_image *)(formats + add_ptr);
 								EnterCriticalSection(&gg->sess_mutex);
-								gg_image_request(gg->sess, e->event.msg.sender,
-								((struct gg_msg_image_request*)(formats+4))->size,
-								((struct gg_msg_image_request*)(formats+4))->crc32 );
+								gg_image_request(gg->sess, e->event.msg.sender, image->size, image->crc32);
 								LeaveCriticalSection(&gg->sess_mutex);
 
-								gg_netlog(gg, "gg_mainthread: image request send!");
-								add_ptr += sizeof(struct gg_msg_richtext_format);
+								gg_netlog(gg, "gg_mainthread: image request sent!");
+								add_ptr += sizeof(struct gg_msg_richtext_image);
 							}
-							if( ((struct gg_msg_richtext_format*)formats)->font & GG_FONT_COLOR)
-								add_ptr += 3;
+							if (((struct gg_msg_richtext_format*)formats)->font & GG_FONT_COLOR)
+								add_ptr += sizeof(struct gg_msg_richtext_color);
 							len += add_ptr;
 							formats += add_ptr;
 						}
