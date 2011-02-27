@@ -38,74 +38,74 @@ extern INT_PTR CALLBACK gg_userutildlgproc(HWND hwndDlg, UINT msg, WPARAM wParam
 #define SVS_TIMEZONE		7
 #define SVS_GGVERSION		9
 
-static void SetValue(HWND hwndDlg,int idCtrl,HANDLE hContact,char *szModule,char *szSetting,int special,int disableIfUndef)
+static void SetValue(HWND hwndDlg, int idCtrl, HANDLE hContact, char *szModule, char *szSetting, int special, int disableIfUndef)
 {
-	DBVARIANT dbv;
-	char str[80],*pstr;
-	int unspecified=0;
+	DBVARIANT dbv = {0};
+	char str[80], *pstr = NULL;
+	int unspecified = 0;
 
-	dbv.type=DBVT_DELETED;
-	if(szModule==NULL) unspecified=1;
-	else unspecified=DBGetContactSetting(hContact,szModule,szSetting,&dbv);
-	if(!unspecified) {
-		switch(dbv.type) {
+	dbv.type = DBVT_DELETED;
+	if (szModule == NULL) unspecified = 1;
+	else unspecified = DBGetContactSettingW(hContact, szModule, szSetting, &dbv);
+	if (!unspecified) {
+		switch (dbv.type) {
 			case DBVT_BYTE:
-					if(special==SVS_GENDER) {
-							if(dbv.cVal=='M') pstr=Translate("Male");
-							else if(dbv.cVal=='F') pstr=Translate("Female");
-							else unspecified=1;
+				if (special == SVS_GENDER) {
+					if (dbv.cVal == 'M') pstr = Translate("Male");
+					else if (dbv.cVal == 'F') pstr = Translate("Female");
+					else unspecified = 1;
+				}
+				else if (special == SVS_MONTH) {
+					if (dbv.bVal > 0 && dbv.bVal <= 12) {
+						pstr = str;
+						GetLocaleInfo(LOCALE_USER_DEFAULT, LOCALE_SABBREVMONTHNAME1 - 1 + dbv.bVal, str, SIZEOF(str));
 					}
-					else if(special==SVS_MONTH) {
-							if(dbv.bVal>0 && dbv.bVal<=12) {
-									pstr=str;
-									GetLocaleInfo(LOCALE_USER_DEFAULT,LOCALE_SABBREVMONTHNAME1-1+dbv.bVal,str,sizeof(str));
-							}
-							else unspecified=1;
-					}
-					else if(special==SVS_TIMEZONE) {
-							if(dbv.cVal==-100) unspecified=1;
-							else {
-									pstr=str;
-									mir_snprintf(str,sizeof(str),dbv.cVal?"GMT%+d:%02d":"GMT",-dbv.cVal/2,(dbv.cVal&1)*30);
-							}
-					}
+					else unspecified = 1;
+				}
+				else if (special == SVS_TIMEZONE) {
+					if (dbv.cVal == -100) unspecified = 1;
 					else {
-							unspecified=(special==SVS_ZEROISUNSPEC && dbv.bVal==0);
-							pstr=_itoa(special==SVS_SIGNED?dbv.cVal:dbv.bVal,str,10);
+						pstr = str;
+						mir_snprintf(str, SIZEOF(str), dbv.cVal ? "GMT%+d:%02d" : "GMT", -dbv.cVal / 2, (dbv.cVal & 1) * 30);
 					}
-					break;
+				}
+				else {
+					unspecified = (special == SVS_ZEROISUNSPEC && dbv.bVal == 0);
+					pstr = _itoa(special == SVS_SIGNED ? dbv.cVal : dbv.bVal, str, 10);
+				}
+				break;
 			case DBVT_WORD:
-					if(special==SVS_COUNTRY) {
-							pstr=(char*)CallService(MS_UTILS_GETCOUNTRYBYNUMBER,dbv.wVal,0);
-							unspecified=pstr==NULL;
-					}
-					else {
-							unspecified=(special==SVS_ZEROISUNSPEC && dbv.wVal==0);
-							pstr=_itoa(special==SVS_SIGNED?dbv.sVal:dbv.wVal,str,10);
-					}
-					break;
+				if (special == SVS_COUNTRY) {
+					pstr = (char*)CallService(MS_UTILS_GETCOUNTRYBYNUMBER, dbv.wVal, 0);
+					unspecified = pstr == NULL;
+				}
+				else {
+					unspecified = (special == SVS_ZEROISUNSPEC && dbv.wVal == 0);
+					pstr = _itoa(special == SVS_SIGNED ? dbv.sVal : dbv.wVal, str, 10);
+				}
+				break;
 			case DBVT_DWORD:
-					unspecified=(special==SVS_ZEROISUNSPEC && dbv.dVal==0);
-					if(special==SVS_IP) {
-							struct in_addr ia;
-							ia.S_un.S_addr=htonl(dbv.dVal);
-							pstr=inet_ntoa(ia);
-							if(dbv.dVal==0) unspecified=1;
-					}
-					else if(special == SVS_GGVERSION)
-						pstr = (char *)gg_version2string(dbv.dVal);
-					else
-						pstr = _itoa(special==SVS_SIGNED?dbv.lVal:dbv.dVal,str,10);
-					break;
+				unspecified = (special == SVS_ZEROISUNSPEC && dbv.dVal == 0);
+				if (special == SVS_IP) {
+					struct in_addr ia;
+					ia.S_un.S_addr = htonl(dbv.dVal);
+					pstr = inet_ntoa(ia);
+					if (dbv.dVal == 0) unspecified = 1;
+				}
+				else if (special == SVS_GGVERSION)
+					pstr = (char *)gg_version2string(dbv.dVal);
+				else
+					pstr = _itoa(special == SVS_SIGNED ? dbv.lVal : dbv.dVal, str, 10);
+				break;
 			case DBVT_ASCIIZ:
-					unspecified=(special==SVS_ZEROISUNSPEC && dbv.pszVal[0]=='\0');
-					pstr=dbv.pszVal;
-					break;
-			default: pstr=str; lstrcpy(str,"???"); break;
+				unspecified = (special == SVS_ZEROISUNSPEC && dbv.pszVal[0] == '\0');
+				pstr = dbv.pszVal;
+				break;
+			default: pstr = str; lstrcpy(str, "???"); break;
 		}
 	}
 
-	if(disableIfUndef)
+	if (disableIfUndef)
 	{
 		EnableWindow(GetDlgItem(hwndDlg, idCtrl), !unspecified);
 		if (unspecified)
@@ -127,7 +127,6 @@ static void SetValue(HWND hwndDlg,int idCtrl,HANDLE hContact,char *szModule,char
 int gg_options_init(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
 {
 	OPTIONSDIALOGPAGE odp = { 0 };
-	HMODULE	hUxTheme = NULL;
 
 	odp.cbSize = sizeof(odp);
 	odp.position = 1003000;
@@ -150,7 +149,7 @@ int gg_options_init(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
 	odp.pszTab = LPGEN("Advanced");
 	odp.pszTemplate = MAKEINTRESOURCE(IDD_OPT_GG_ADVANCED);
 	odp.pfnDlgProc = gg_advoptsdlgproc;
-	odp.flags = ODPF_BOLDGROUPS | ODPF_EXPERTONLY | ODPF_DONTTRANSLATE;
+	odp.flags |= ODPF_EXPERTONLY;
 	CallService(MS_OPT_ADDPAGE, wParam, (LPARAM) & odp);
 
 	return 0;
@@ -706,7 +705,7 @@ static INT_PTR CALLBACK gg_detailsdlgproc(HWND hwndDlg, UINT msg, WPARAM wParam,
 			// Add genders
 			if(!dat->hContact)
 			{
-				SendDlgItemMessage(hwndDlg, IDC_GENDER, CB_ADDSTRING, 0, (LPARAM)Translate(""));		// 0
+				SendDlgItemMessage(hwndDlg, IDC_GENDER, CB_ADDSTRING, 0, (LPARAM)_T(""));				// 0
 				SendDlgItemMessage(hwndDlg, IDC_GENDER, CB_ADDSTRING, 0, (LPARAM)Translate("Male"));	// 1
 				SendDlgItemMessage(hwndDlg, IDC_GENDER, CB_ADDSTRING, 0, (LPARAM)Translate("Female"));	// 2
 			}
@@ -753,23 +752,23 @@ static INT_PTR CALLBACK gg_detailsdlgproc(HWND hwndDlg, UINT msg, WPARAM wParam,
 							// Disable when updating
 							if(dat) dat->disableUpdate = TRUE;
 
-							SetValue(hwndDlg, IDC_UIN, hContact, szProto, GG_KEY_UIN, 0, (hContact != NULL));
-							SetValue(hwndDlg, IDC_REALIP, hContact, szProto, GG_KEY_CLIENTIP, SVS_IP, (hContact != NULL));
-							SetValue(hwndDlg, IDC_PORT, hContact, szProto, GG_KEY_CLIENTPORT, SVS_ZEROISUNSPEC, (hContact != NULL));
-							SetValue(hwndDlg, IDC_VERSION, hContact, szProto, GG_KEY_CLIENTVERSION, SVS_GGVERSION, (hContact != NULL));
+							SetValue(hwndDlg, IDC_UIN, hContact, szProto, GG_KEY_UIN, 0, hContact != NULL);
+							SetValue(hwndDlg, IDC_REALIP, hContact, szProto, GG_KEY_CLIENTIP, SVS_IP, hContact != NULL);
+							SetValue(hwndDlg, IDC_PORT, hContact, szProto, GG_KEY_CLIENTPORT, SVS_ZEROISUNSPEC, hContact != NULL);
+							SetValue(hwndDlg, IDC_VERSION, hContact, szProto, GG_KEY_CLIENTVERSION, SVS_GGVERSION, hContact != NULL);
 
-							SetValue(hwndDlg, IDC_FIRSTNAME, hContact, szProto, "FirstName", SVS_NORMAL, (hContact != NULL));
-							SetValue(hwndDlg, IDC_LASTNAME, hContact, szProto, "LastName", SVS_NORMAL, (hContact != NULL));
-							SetValue(hwndDlg, IDC_NICKNAME, hContact, szProto, "NickName", SVS_NORMAL, (hContact != NULL));
-							SetValue(hwndDlg, IDC_BIRTHYEAR, hContact, szProto, "BirthYear", SVS_ZEROISUNSPEC, (hContact != NULL));
-							SetValue(hwndDlg, IDC_CITY, hContact, szProto, "City", SVS_NORMAL, (hContact != NULL));
-							SetValue(hwndDlg, IDC_FAMILYNAME, hContact, szProto, "FamilyName", SVS_NORMAL, (hContact != NULL));
-							SetValue(hwndDlg, IDC_CITYORIGIN, hContact, szProto, "CityOrigin", SVS_NORMAL, (hContact != NULL));
+							SetValue(hwndDlg, IDC_FIRSTNAME, hContact, szProto, "FirstName", SVS_NORMAL, hContact != NULL);
+							SetValue(hwndDlg, IDC_LASTNAME, hContact, szProto, "LastName", SVS_NORMAL, hContact != NULL);
+							SetValue(hwndDlg, IDC_NICKNAME, hContact, szProto, "NickName", SVS_NORMAL, hContact != NULL);
+							SetValue(hwndDlg, IDC_BIRTHYEAR, hContact, szProto, "BirthYear", SVS_ZEROISUNSPEC, hContact != NULL);
+							SetValue(hwndDlg, IDC_CITY, hContact, szProto, "City", SVS_NORMAL, hContact != NULL);
+							SetValue(hwndDlg, IDC_FAMILYNAME, hContact, szProto, "FamilyName", SVS_NORMAL, hContact != NULL);
+							SetValue(hwndDlg, IDC_CITYORIGIN, hContact, szProto, "CityOrigin", SVS_NORMAL, hContact != NULL);
 
-							if(hContact)
+							if (hContact)
 							{
-								SetValue(hwndDlg, IDC_GENDER, hContact, szProto, "Gender", SVS_GENDER, (hContact != NULL));
-								SetValue(hwndDlg, IDC_STATUSDESCR, hContact, "CList", GG_KEY_STATUSDESCR, SVS_NORMAL, (hContact != NULL));
+								SetValue(hwndDlg, IDC_GENDER, hContact, szProto, "Gender", SVS_GENDER, hContact != NULL);
+								SetValue(hwndDlg, IDC_STATUSDESCR, hContact, "CList", GG_KEY_STATUSDESCR, SVS_NORMAL, hContact != NULL);
 							}
 							else switch((char)DBGetContactSettingByte(hContact, GG_PROTO, "Gender", (BYTE)'?'))
 							{
@@ -871,8 +870,7 @@ static INT_PTR CALLBACK gg_detailsdlgproc(HWND hwndDlg, UINT msg, WPARAM wParam,
 // Info Page : Init
 int gg_details_init(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
 {
-	char* szProto;
-	szProto = (char*)CallService(MS_PROTO_GETCONTACTBASEPROTO, lParam, 0);
+	char* szProto = (char*)CallService(MS_PROTO_GETCONTACTBASEPROTO, lParam, 0);
 	if ((szProto == NULL || strcmp(szProto, GG_PROTO)) && lParam || lParam && DBGetContactSettingByte((HANDLE)lParam, GG_PROTO, "ChatRoom", 0))
 			return 0;
 
@@ -882,7 +880,6 @@ int gg_details_init(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
 
 		odp.cbSize = sizeof(odp);
 		odp.flags = ODPF_DONTTRANSLATE;
-		odp.hIcon = NULL;
 		odp.hInstance = hInstance;
 		odp.pfnDlgProc = gg_detailsdlgproc;
 		odp.position = -1900000000;

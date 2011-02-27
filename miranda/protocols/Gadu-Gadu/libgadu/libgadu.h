@@ -194,6 +194,13 @@ typedef struct {
 } gg_dcc7_id_t;
 
 /**
+ * Identyfikator sesji multilogowania.
+ */
+typedef struct {
+	uint8_t id[8];
+} gg_multilogon_id_t;
+
+/**
  * Makro deklarujące pola wspólne dla struktur sesji.
  */
 #define gg_common_head(x) \
@@ -695,6 +702,8 @@ int gg_global_set_resolver(gg_resolver_t type);
 gg_resolver_t gg_global_get_resolver(void);
 int gg_global_set_custom_resolver(int (*resolver_start)(SOCKET*, void**, const char*), void (*resolver_cleanup)(void**, int));
 
+int gg_multilogon_disconnect(struct gg_session *gs, gg_multilogon_id_t conn_id);
+
 /**
  * Rodzaj zdarzenia.
  *
@@ -745,7 +754,9 @@ enum gg_event_t {
 	GG_EVENT_DISCONNECT_ACK,	/**< \brief Potwierdzenie zakończenia sesji. Informuje o tym, że zmiana stanu na niedostępny z opisem dotarła do serwera i można zakończyć połączenie TCP. */
 	GG_EVENT_XML_ACTION,
 	GG_EVENT_TYPING_NOTIFICATION,	/**< Powiadomienie o pisaniu */
-	GG_EVENT_USER_DATA		/**< Informacja o kontaktach */
+	GG_EVENT_USER_DATA,		/**< Informacja o kontaktach */
+	GG_EVENT_MULTILOGON_MSG,	/**< Wiadomość wysłana z innej sesji multilogowania */
+	GG_EVENT_MULTILOGON_INFO	/**< Informacja o innych sesjach multilogowania */
 };
 
 #define GG_EVENT_SEARCH50_REPLY GG_EVENT_PUBDIR50_SEARCH_REPLY
@@ -826,10 +837,10 @@ struct gg_pubdir50_s {
 typedef struct gg_pubdir50_s *gg_pubdir50_t;
 
 /**
- * Opis zdarzenia \c GG_EVENT_MSG.
+ * Opis zdarzeń \c GG_EVENT_MSG i \c GG_EVENT_MULTILOGON_MSG.
  */
 struct gg_event_msg {
-	uin_t sender;		/**< Numer nadawcy */
+	uin_t sender;		/**< Numer nadawcy/odbiorcy */
 	int msgclass;		/**< Klasa wiadomości */
 	time_t time;		/**< Czas nadania */
 	unsigned char *message;	/**< Treść wiadomości */
@@ -1033,6 +1044,26 @@ struct gg_event_user_data {
 };
 
 /**
+ * Struktura opisująca sesję multilogowania.
+ */
+struct gg_multilogon_session {
+	gg_multilogon_id_t id;		/**< Identyfikator sesji */
+	char *name;			/**< Nazwa sesji (podana w \c gg_login_params.client_version) */
+	uint32_t remote_addr;		/**< Adres sesji */
+	int status_flags;		/**< Flagi statusu sesji */
+	int protocol_features;		/**< Opcje protokolu sesji */
+	time_t logon_time;		/**< Czas zalogowania */
+};
+
+/**
+ * Opis zdarzenia \c GG_EVENT_MULTILOGON_INFO.
+ */
+struct gg_event_multilogon_info {
+	int count;		/**< Liczba sesji */
+	struct gg_multilogon_session *sessions;	/** Lista sesji */
+};
+
+/**
  * Unia wszystkich zdarzeń zwracanych przez funkcje \c gg_watch_fd(), 
  * \c gg_dcc_watch_fd() i \c gg_dcc7_watch_fd().
  *
@@ -1066,6 +1097,8 @@ union gg_event_union {
 	struct gg_event_dcc7_done dcc7_done;	/**< Zakończono połączenie bezpośrednie (\c GG_EVENT_DCC7_DONE) */
 	struct gg_event_typing_notification typing_notification;	/**< Powiadomienie o pisaniu (\c GG_EVENT_TYPING_NOTIFICATION) */
 	struct gg_event_user_data user_data;	/**< Informacje o kontaktach */
+	struct gg_event_msg multilogon_msg;	/**< Inna sesja wysłała wiadomość (\c GG_EVENT_MULTILOGON_MSG) */
+	struct gg_event_multilogon_info multilogon_info;	/**< Informacja o innych sesjach multilogowania (\c GG_EVENT_MULTILOGON_INFO) */
 };
 
 /**
@@ -1513,7 +1546,7 @@ int gg_dcc7_handle_abort(struct gg_session *sess, struct gg_event *e, void *payl
 #define GG_HAS_AUDIO_MASK 0x40000000
 #define GG_HAS_AUDIO7_MASK 0x20000000
 #define GG_ERA_OMNIX_MASK 0x04000000
-#define GG_LIBGADU_VERSION "1.10.0-pre"
+#define GG_LIBGADU_VERSION "1.10.0"
 
 #ifndef DOXYGEN
 
@@ -1531,6 +1564,7 @@ int gg_dcc7_handle_abort(struct gg_session *sess, struct gg_event *e, void *payl
 #define GG_FEATURE_UNKNOWN_800		0x0800
 #define GG_FEATURE_UNKNOWN_1000		0x1000
 #define GG_FEATURE_TYPING_NOTIFICATION	0x2000
+#define GG_FEATURE_MULTILOGON		0x4000
 
 /* Poniższe makra zostały zachowane dla zgodności API */
 #define GG_FEATURE_MSG80		0

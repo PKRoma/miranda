@@ -785,19 +785,21 @@ int gg_img_displayasmsg(GGPROTO *gg, HANDLE hContact, void *img)
 	fp = fopen(szPath, "w+b");
 	if(fp)
 	{
-		char imgmsg[MAX_PATH+11];
-		PROTORECVEVENT pre;
+		char imgmsg[MAX_PATH + 11];
+		CCSDATA ccs = {0};
+		PROTORECVEVENT pre = {0};
 
 		fwrite(dat->lpData, dat->nSize, 1, fp);
 		fclose(fp);
 		gg_netlog(gg, "gg_img_displayasmsg: Image saved to %s.", szPath);
 
-		mir_snprintf(imgmsg, sizeof(imgmsg), "[img]%s[/img]", szPath);
-		pre.flags = 0;
+		ccs.szProtoService = PSR_MESSAGE;
+		ccs.hContact = hContact;
+		ccs.lParam = (LPARAM)&pre;
+		mir_snprintf(imgmsg, SIZEOF(imgmsg), "[img]%s[/img]", szPath);
 		pre.timestamp = time(NULL);
 		pre.szMessage = imgmsg;
-		pre.lParam = 0;
-		gg_recvmessage((PROTO_INTERFACE *)gg, hContact, &pre);
+		CallService(MS_PROTO_CHAINRECV, 0, (LPARAM) &ccs);
 	}
 	else
 		gg_netlog(gg, "gg_img_displayasmsg: Cannot save image to %s.", szPath);

@@ -53,14 +53,14 @@ DWORD_PTR gg_getcaps(PROTO_INTERFACE *proto, int type, HANDLE hContact)
 	switch (type) {
 		case PFLAGNUM_1:
 			return PF1_IM | PF1_BASICSEARCH | PF1_EXTSEARCH | PF1_EXTSEARCHUI | PF1_SEARCHBYNAME |
-				   PF1_SEARCHBYNAME | PF1_MODEMSG | PF1_NUMERICUSERID | PF1_VISLIST | PF1_FILE;
+				   PF1_MODEMSG | PF1_NUMERICUSERID | PF1_VISLIST | PF1_FILE;
 		case PFLAGNUM_2:
 			return PF2_ONLINE | PF2_SHORTAWAY | PF2_HEAVYDND | PF2_FREECHAT | PF2_INVISIBLE |
 				   PF2_LONGAWAY;
 		case PFLAGNUM_3:
 			return PF2_ONLINE | PF2_SHORTAWAY | PF2_HEAVYDND | PF2_FREECHAT | PF2_INVISIBLE;
 		case PFLAGNUM_4:
-			return PF4_NOCUSTOMAUTH | PF4_AVATARS | PF4_IMSENDOFFLINE | PF4_SUPPORTTYPING;
+			return PF4_NOCUSTOMAUTH | PF4_SUPPORTTYPING | PF4_AVATARS | PF4_IMSENDOFFLINE;
 		case PFLAGNUM_5:
 			return PF2_LONGAWAY;
 		case PFLAG_UNIQUEIDTEXT:
@@ -152,7 +152,7 @@ int gg_refreshstatus(GGPROTO *gg, int status)
 		LeaveCriticalSection(&gg->modemsg_mutex);
 		if(szMsg)
 		{
-			gg_netlog(gg, "gg_refreshstatus(): Setting status and away message \"%s\".", szMsg);
+			gg_netlog(gg, "gg_refreshstatus(): Setting status and away message.");
 			EnterCriticalSection(&gg->sess_mutex);
 			gg_change_status_descr(gg->sess, status_m2gg(gg, status, szMsg != NULL), szMsg);
 			LeaveCriticalSection(&gg->sess_mutex);
@@ -232,41 +232,31 @@ void __cdecl gg_sendackthread(GGPROTO *gg, void *ack)
 	SleepEx(100, FALSE);
 	ProtoBroadcastAck(GG_PROTO, ((GG_SEQ_ACK *)ack)->hContact,
 		ACKTYPE_MESSAGE, ACKRESULT_SUCCESS, (HANDLE) ((GG_SEQ_ACK *)ack)->seq, 0);
-	free(ack);
+	mir_free(ack);
 }
 int gg_sendmessage(PROTO_INTERFACE *proto, HANDLE hContact, int flags, const char *msg)
 {
 	GGPROTO *gg = (GGPROTO *)proto;
 	uin_t uin;
 
-	if(gg_isonline(gg) && (uin = (uin_t)DBGetContactSettingDword(hContact, GG_PROTO, GG_KEY_UIN, 0)))
+	if (msg && gg_isonline(gg) && (uin = (uin_t)DBGetContactSettingDword(hContact, GG_PROTO, GG_KEY_UIN, 0)))
 	{
-		if(DBGetContactSettingByte(NULL, GG_PROTO, GG_KEY_MSGACK, GG_KEYDEF_MSGACK))
-		{
-			// Return normally
-			HANDLE hRetVal;
-			EnterCriticalSection(&gg->sess_mutex);
-			hRetVal = (HANDLE) gg_send_message(gg->sess, GG_CLASS_CHAT, uin, msg);
-			LeaveCriticalSection(&gg->sess_mutex);
-			return (int) hRetVal;
-		}
-		else
+		int seq;
+		EnterCriticalSection(&gg->sess_mutex);
+		seq = gg_send_message(gg->sess, GG_CLASS_CHAT, uin, msg);
+		LeaveCriticalSection(&gg->sess_mutex);
+		if (!DBGetContactSettingByte(NULL, GG_PROTO, GG_KEY_MSGACK, GG_KEYDEF_MSGACK))
 		{
 			// Auto-ack message without waiting for server ack
-			int seq;
-			GG_SEQ_ACK *ack;
-			EnterCriticalSection(&gg->sess_mutex);
-			seq = gg_send_message(gg->sess, GG_CLASS_CHAT, uin, msg);
-			LeaveCriticalSection(&gg->sess_mutex);
-			ack = malloc(sizeof(GG_SEQ_ACK));
-			if(ack)
+			GG_SEQ_ACK *ack = mir_alloc(sizeof(GG_SEQ_ACK));
+			if (ack)
 			{
 				ack->seq = seq;
 				ack->hContact = hContact;
 				gg_forkthread(gg, gg_sendackthread, ack);
 			}
-			return seq;
 		}
+		return seq;
 	}
 	return 0;
 }
@@ -503,12 +493,12 @@ HANDLE gg_getawaymsg(PROTO_INTERFACE *proto, HANDLE hContact)
 
 //////////////////////////////////////////////////////////
 // when away message is being set
-int gg_setawaymsg(PROTO_INTERFACE *proto, int iStatus, const TCHAR *msgt)
+int gg_setawaymsg(PROTO_INTERFACE *proto, int iStatus, const PROTOCHAR *msgt)
 {
 	GGPROTO *gg = (GGPROTO *)proto;
 	int status = gg_normalizestatus(iStatus);
 	char **szMsg;
-	char* msg = gg_t2a(msgt);
+	char *msg = gg_t2a(msgt);
 
 	gg_netlog(gg, "gg_setawaymsg(): PS_SETAWAYMSG(%d, \"%s\").", iStatus, msg);
 
@@ -538,10 +528,10 @@ int gg_setawaymsg(PROTO_INTERFACE *proto, int iStatus, const TCHAR *msgt)
 	}
 
 	// Check if we change status here somehow
-	if(*szMsg && msg && !strcmp(*szMsg, msg)
+	if (*szMsg && msg && !strcmp(*szMsg, msg)
 		|| !*szMsg && (!msg || !*msg))	
 	{
-		if(status == gg->proto.m_iDesiredStatus && gg->proto.m_iDesiredStatus == gg->proto.m_iStatus)
+		if (status == gg->proto.m_iDesiredStatus && gg->proto.m_iDesiredStatus == gg->proto.m_iStatus)
 		{
 			gg_netlog(gg, "gg_setawaymsg(): Message hasn't been changed, return.");
 			LeaveCriticalSection(&gg->modemsg_mutex);
@@ -551,9 +541,9 @@ int gg_setawaymsg(PROTO_INTERFACE *proto, int iStatus, const TCHAR *msgt)
 	}
 	else
 	{
-		if(*szMsg)
-			free(*szMsg);
-		*szMsg = msg && *msg ? _strdup(msg) : NULL;
+		if (*szMsg)
+			mir_free(*szMsg);
+		*szMsg = msg && *msg ? mir_strdup(msg) : NULL;
 #ifdef DEBUGMODE
 		gg_netlog(gg, "gg_setawaymsg(): Message changed.");
 #endif
@@ -561,7 +551,7 @@ int gg_setawaymsg(PROTO_INTERFACE *proto, int iStatus, const TCHAR *msgt)
 	LeaveCriticalSection(&gg->modemsg_mutex);
 
 	// Change the status if it was desired by PS_SETSTATUS
-	if(status == gg->proto.m_iDesiredStatus)
+	if (status == gg->proto.m_iDesiredStatus)
 		gg_refreshstatus(gg, status);
 
 	mir_free(msg);
@@ -586,7 +576,7 @@ INT_PTR CALLBACK gg_advancedsearchdlgproc(HWND hwndDlg,UINT message,WPARAM wPara
 	{
 		case WM_INITDIALOG:
 			TranslateDialogDefault(hwndDlg);
-			SendDlgItemMessage(hwndDlg, IDC_GENDER, CB_ADDSTRING, 0, (LPARAM)Translate(""));		// 0
+			SendDlgItemMessage(hwndDlg, IDC_GENDER, CB_ADDSTRING, 0, (LPARAM)_T(""));				// 0
 			SendDlgItemMessage(hwndDlg, IDC_GENDER, CB_ADDSTRING, 0, (LPARAM)Translate("Male"));	// 1
 			SendDlgItemMessage(hwndDlg, IDC_GENDER, CB_ADDSTRING, 0, (LPARAM)Translate("Female"));	// 2
 			return TRUE;

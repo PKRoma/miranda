@@ -171,7 +171,6 @@ int gg_gc_event(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
 		GCDEST gcdest = {GG_PROTO, gch->pDest->pszID, GC_EVENT_MESSAGE};
 		GCEVENT gcevent = {sizeof(GCEVENT), &gcdest};
 		int lc;
-		time_t t = time(NULL);
 
 		UIN2ID(uin, id);
 
