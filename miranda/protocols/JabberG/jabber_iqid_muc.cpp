@@ -339,14 +339,13 @@ static INT_PTR CALLBACK JabberMucJidListDlgProc( HWND hwndDlg, UINT msg, WPARAM 
 						TCHAR rsn[ 1024 ];
 						_tcscpy( rsn, dat->type2str());
 						if ( dat->type == MUC_BANLIST ) {
-							dat->ppro->EnterString(rsn, SIZEOF(rsn), TranslateT("Ban reason") , JES_COMBO, "gcAddReason_");
+							dat->ppro->EnterString(rsn, SIZEOF(rsn), TranslateT("Reason to ban") , JES_COMBO, "gcAddReason_");
 							if ( szBuffer )
 								dat->ppro->AddMucListItem( dat, p , rsn);
-							else 
+							else
 								dat->ppro->AddMucListItem( dat, p );
 						}
 						else dat->ppro->AddMucListItem( dat, p );
-						
 					}
 					else {
 						//delete
@@ -502,7 +501,7 @@ void CJabberProto::OnIqResultMucGetJidList( HXML iqNode, JABBER_MUC_JIDLIST_TYPE
 			jidListInfo->roomJid = NULL;	// Set in the dialog procedure
 			if (( jidListInfo->iqNode = xi.copyNode( iqNode )) != NULL )
 				CallFunctionAsync( JabberMucJidListCreateDialogApcProc, jidListInfo );
-			else 
+			else
 				mir_free( jidListInfo );
 }	}	}
 
