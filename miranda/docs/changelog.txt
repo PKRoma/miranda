@@ -3,6 +3,22 @@
                            www.miranda-im.org
 
 
+* New in 0.9.17
+Enhancements:
+ - Gadu-Gadu: Use core SSL support
+
+Bugfixes:
+ - Fixed unneeded crypt32 loading
+ - Fixed account disabling confirmation
+ - Fixed crash on exit when the account manager window is opened
+ - Gadu-Gadu: Fixed memory leaks
+ - ICQ: Fixed sending unicode messages
+ - Jabber: Fixed adding contacts
+ - Jabber: Fixed chat room issues
+ - MSN: Status change fixes
+ - MSN: Fixed idle handling
+
+
 * New in 0.9.16
 Bugfixes:
  - Fixed minor UI issue in read status message dialog
