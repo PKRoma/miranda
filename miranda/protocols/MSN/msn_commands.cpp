@@ -1608,7 +1608,7 @@ LBL_InvalidCommand:
 
 				case 3:
 					// P2P Bootstrap
-					p2p_processSIP(info, msgBody, NULL, hContact);
+					p2p_processSIP(info, msgBody, NULL);
 					break;
 
 				case 10:
