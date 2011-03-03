@@ -566,7 +566,7 @@ void  CMsnProto::MSN_SendStatusMessage(const char* msg)
 	size_t sz;
 	char  szMsg[2048];
 	if (msnCurrentMedia.cbSize == 0) 
-		sz = mir_snprintf(szMsg, sizeof(szMsg), "<Data><PSM>%s</PSM><MachineGuid></MachineGuid></Data>", msgEnc);
+		sz = mir_snprintf(szMsg, sizeof(szMsg), "<Data><PSM>%s</PSM><CurrentMedia></CurrentMedia><MachineGuid></MachineGuid></Data>", msgEnc);
 	else 
 	{
 		char *szFormatEnc;
