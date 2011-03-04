@@ -1,6 +1,6 @@
 /*
 Plugin of Miranda IM for communicating with users of the MSN Messenger protocol.
-Copyright (c) 2006-2010 Boris Krasnovskiy.
+Copyright (c) 2006-2011 Boris Krasnovskiy.
 Copyright (c) 2003-2005 George Hazan.
 Copyright (c) 2002-2003 Richard Hughes (original version).
 
@@ -1280,8 +1280,10 @@ LBL_InvalidCommand:
 				lastStatus = getWord(hContact, "Status", ID_STATUS_OFFLINE);
 				if (lastStatus == ID_STATUS_OFFLINE || lastStatus == ID_STATUS_INVISIBLE)
 					DBDeleteContactSetting(hContact, "CList", "StatusMsg");
-				setWord(hContact, "Status", MSNStatusToMiranda(data.userStatus));
-				setDword(hContact, "IdleTS", strcmp(data.userStatus, "IDL") ? 0 : time(NULL));
+
+				int newStatus = MSNStatusToMiranda(params);
+				setWord(hContact, "Status",  newStatus != ID_STATUS_IDLE ? newStatus : ID_STATUS_AWAY);
+				setDword(hContact, "IdleTS", newStatus != ID_STATUS_IDLE ? 0 : time(NULL));
 			}
 
 			if (tArgs > 4 && tArgs <= 6) {

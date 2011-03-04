@@ -1,6 +1,6 @@
 /*
 Plugin of Miranda IM for communicating with users of the MSN Messenger protocol.
-Copyright (c) 2006-2010 Boris Krasnovskiy.
+Copyright (c) 2006-2011 Boris Krasnovskiy.
 Copyright (c) 2003-2005 George Hazan.
 Copyright (c) 2002-2003 Richard Hughes (original version).
 
@@ -662,13 +662,22 @@ int CMsnProto::OnIdleChanged(WPARAM wParam, LPARAM lParam)
 	if (!msnLoggedIn)
 		return 0;
 
-	if (lParam & IDF_ISIDLE)
+	bool bIdle = (lParam & IDF_ISIDLE) != 0;
+	bool bPrivacy = (lParam & IDF_PRIVACY) != 0;
+
+	if (bPrivacy) 
 	{
-		if (~lParam & IDF_PRIVACY)
-			MSN_SetServerStatus(ID_STATUS_IDLE);
+		if (!bIdle)
+			MSN_SetServerStatus(m_iDesiredStatus);
+		return 0;
 	}
-	else
-		MSN_SetServerStatus(m_iDesiredStatus);
+
+	MIRANDA_IDLE_INFO mii = {0};
+	mii.cbSize = sizeof(mii);
+	CallService(MS_IDLE_GETIDLEINFO, 0, (LPARAM) & mii);
+
+	if (!mii.aaStatus)
+		MSN_SetServerStatus(bIdle ? ID_STATUS_IDLE : m_iDesiredStatus);
 
 	return 0;
 }

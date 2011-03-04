@@ -1,6 +1,6 @@
 /*
 Plugin of Miranda IM for communicating with users of the MSN Messenger protocol.
-Copyright (c) 2006-2010 Boris Krasnovskiy.
+Copyright (c) 2006-2011 Boris Krasnovskiy.
 Copyright (c) 2003-2005 George Hazan.
 Copyright (c) 2002-2003 Richard Hughes (original version).
 
@@ -84,7 +84,7 @@ WORD  CMsnProto::MSNStatusToMiranda(const char *status)
 {
 	switch((*(PDWORD)status&0x00FFFFFF) | 0x20000000) 
 	{
-		case ' LDI': return ID_STATUS_ONLINE;
+		case ' LDI': return ID_STATUS_IDLE;
 		case ' NLN': return ID_STATUS_ONLINE;
 		case ' YWA': return MyOptions.AwayAsBrb ? ID_STATUS_NA : ID_STATUS_AWAY;
 		case ' BRB': return MyOptions.AwayAsBrb ? ID_STATUS_AWAY : ID_STATUS_NA;
