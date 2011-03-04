@@ -31,6 +31,7 @@ static PBYTE pDbCache = NULL;
 static HANDLE hMap = NULL;
 static DWORD dwFileSize = 0;
 static DWORD ChunkSize = 65536;
+static DWORD flushFailTick = 0;
 
 
 void Map()
@@ -130,8 +131,14 @@ static VOID CALLBACK DoBufferFlushTimerProc(HWND hwnd, UINT message, UINT_PTR id
 
 	KillTimer(NULL,flushBuffersTimerId);
 	log0("tflush1");
-	if (FlushViewOfFile(pDbCache, 0) == 0)
-		DatabaseCorruption(NULL);
+	if (FlushViewOfFile(pDbCache, 0) == 0) {
+		if (flushFailTick == 0)
+			flushFailTick = GetTickCount();
+		else if (GetTickCount() - flushFailTick > 5000) 
+			DatabaseCorruption(NULL);
+	}
+	else
+		flushFailTick = 0;
 	log0("tflush2");
 }
 
@@ -140,8 +147,14 @@ void DBFlush(int setting)
 	if(!setting) {
 		log0("nflush1");
 		if(safetyMode && pDbCache) {
-			if (FlushViewOfFile(pDbCache, 0) == 0)
-				DatabaseCorruption(NULL);
+			if (FlushViewOfFile(pDbCache, 0) == 0) {
+				if (flushFailTick == 0)
+					flushFailTick = GetTickCount();
+				else if (GetTickCount() - flushFailTick > 5000) 
+					DatabaseCorruption(NULL);
+			}
+			else
+				flushFailTick = 0;
 		}
 		log0("nflush2");
 		return;
