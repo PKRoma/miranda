@@ -299,31 +299,31 @@ struct CMsnProto : public PROTO_INTERFACE
 	// MSN thread support
 
 	void         Threads_Uninit(void);
-	void		 MSN_CloseConnections(void);
-	void		 MSN_CloseThreads(void);
-	void		 MSN_InitThreads(void);
-	int			 MSN_GetChatThreads(ThreadData** parResult);
+	void         MSN_CloseConnections(void);
+	void         MSN_CloseThreads(void);
+	void         MSN_InitThreads(void);
+	int          MSN_GetChatThreads(ThreadData** parResult);
 	int          MSN_GetActiveThreads(ThreadData**);
 	ThreadData*  MSN_GetThreadByConnection(HANDLE hConn);
-	ThreadData*	 MSN_GetThreadByContact(HANDLE hContact, TInfoType type = SERVER_SWITCHBOARD);
+	ThreadData*  MSN_GetThreadByContact(HANDLE hContact, TInfoType type = SERVER_SWITCHBOARD);
 	ThreadData*  MSN_GetP2PThreadByContact(HANDLE hContact);
 	void         MSN_StartP2PTransferByContact(HANDLE hContact);
-	ThreadData*	 MSN_GetThreadByPort(WORD wPort);
+	ThreadData*  MSN_GetThreadByPort(WORD wPort);
 	ThreadData*  MSN_GetUnconnectedThread(HANDLE hContact);
 	ThreadData*  MSN_GetOtherContactThread(ThreadData* thread);
 	ThreadData*  MSN_GetThreadByTimer(UINT timerId);
 
-	ThreadData*	 MSN_StartSB(HANDLE hContact, bool& isOffline);
+	ThreadData*  MSN_StartSB(HANDLE hContact, bool& isOffline);
 	void __cdecl ThreadStub(void* arg);
 
 	/////////////////////////////////////////////////////////////////////////////////////////
 	// MSN message queue support
 
-	int	     MsgQueue_Add(HANDLE hContact, int msgType, const char* msg, int msglen, filetransfer* ft = NULL, int flags = 0);
+	int      MsgQueue_Add(HANDLE hContact, int msgType, const char* msg, int msglen, filetransfer* ft = NULL, int flags = 0);
 	HANDLE	 MsgQueue_CheckContact(HANDLE hContact, time_t tsc = 0);
 	HANDLE	 MsgQueue_GetNextRecipient(void);
 	bool	 MsgQueue_GetNext(HANDLE hContact, MsgQueueEntry& retVal);
-	int	     MsgQueue_NumMsg(HANDLE hContact);
+	int      MsgQueue_NumMsg(HANDLE hContact);
 	void     MsgQueue_Clear(HANDLE hContact = NULL, bool msg = false);
 
 	void MsgQueue_Init(void);
@@ -429,7 +429,7 @@ struct CMsnProto : public PROTO_INTERFACE
 	/////////////////////////////////////////////////////////////////////////////////////////
 	//	MSN contact list
 
-	int		 Lists_Add(int list, int netId, const char* email, HANDLE hContact = NULL, const char* invite = NULL);
+	int      Lists_Add(int list, int netId, const char* email, HANDLE hContact = NULL, const char* nick = NULL, const char* invite = NULL);
 	bool	 Lists_IsInList(int list, const char* email);
 	int		 Lists_GetMask(const char* email);
 	int		 Lists_GetNetId(const char* email);

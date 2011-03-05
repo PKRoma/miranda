@@ -1,6 +1,6 @@
 /*
 Plugin of Miranda IM for communicating with users of the MSN Messenger protocol.
-Copyright (c) 2006-2010 Boris Krasnovskiy.
+Copyright (c) 2006-2011 Boris Krasnovskiy.
 Copyright (c) 2003-2005 George Hazan.
 Copyright (c) 2002-2003 Richard Hughes (original version).
 
@@ -102,7 +102,7 @@ int CMsnProto::Lists_GetNetId(const char* email)
 	return res;
 }
 
-int CMsnProto::Lists_Add(int list, int netId, const char* email, HANDLE hContact, const char* invite)
+int CMsnProto::Lists_Add(int list, int netId, const char* email, HANDLE hContact, const char* nick, const char* invite)
 {
 	EnterCriticalSection(&csLists);
 
@@ -114,6 +114,7 @@ int CMsnProto::Lists_Add(int list, int netId, const char* email, HANDLE hContact
 		p->netId = netId;
 		p->email = _strlwr(mir_strdup(email));
 		p->invite = mir_strdup(invite);
+		p->nick = mir_strdup(nick);
 		p->hContact = hContact;
 		p->p2pMsgId = 0;
 		contList.insert(p);
