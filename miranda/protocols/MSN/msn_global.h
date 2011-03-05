@@ -1,6 +1,6 @@
 /*
 Plugin of Miranda IM for communicating with users of the MSN Messenger protocol.
-Copyright (c) 2006-2010 Boris Krasnovskiy.
+Copyright (c) 2006-2011 Boris Krasnovskiy.
 Copyright (c) 2003-2005 George Hazan.
 Copyright (c) 2002-2003 Richard Hughes (original version).
 
@@ -119,7 +119,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //	Global definitions
 
 #define MSN_MAX_EMAIL_LEN        128
-#define MSN_GUID_LEN			  40
+#define MSN_GUID_LEN              40
 
 #define MSN_PACKETS_COMBINE         7
 #define MSN_DEFAULT_PORT         1863
@@ -534,12 +534,13 @@ struct MsnContact
 {
 	char *email;
 	char *invite;
+	char *nick;
 	HANDLE hContact;
 	int list;
 	int netId;
 	int p2pMsgId;
 
-	~MsnContact() { mir_free(email); mir_free(invite); }
+	~MsnContact() { mir_free(email); mir_free(nick); mir_free(invite); }
 };
 
 #define NETID_UNKNOWN	0x0000

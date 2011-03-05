@@ -425,7 +425,7 @@ struct CMsnProto : public PROTO_INTERFACE
 	/////////////////////////////////////////////////////////////////////////////////////////
 	//	MSN contact list
 
-	int		 Lists_Add(int list, int netId, const char* email, HANDLE hContact = NULL, const char* invite = NULL);
+	int      Lists_Add(int list, int netId, const char* email, HANDLE hContact = NULL, const char* nick = NULL, const char* invite = NULL);
 	bool	 Lists_IsInList(int list, const char* email);
 	int		 Lists_GetMask(const char* email);
 	int		 Lists_GetNetId(const char* email);

@@ -1,6 +1,6 @@
 /*
 Plugin of Miranda IM for communicating with users of the MSN Messenger protocol.
-Copyright (c) 2007-2010 Boris Krasnovskiy.
+Copyright (c) 2007-2011 Boris Krasnovskiy.
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -274,6 +274,7 @@ bool CMsnProto::MSN_SharingFindMembership(bool deltas, bool allowRecurse)
 					{
 						const char* szInvite = NULL;
 						const char* szEmail = ezxml_txt(ezxml_child(memb, "PassportName"));
+						const char* szNick = ezxml_txt(ezxml_child(memb, "DisplayName")); if (!szNick[0]) szNick = NULL;
 						ezxml_t anot = ezxml_get(memb, "Annotations", 0, "Annotation", -1);
 						while (anot != NULL)
 						{
@@ -283,7 +284,7 @@ bool CMsnProto::MSN_SharingFindMembership(bool deltas, bool allowRecurse)
 							}
 							anot = ezxml_next(anot);
 						}
-						if (!deleted) Lists_Add(lstId, NETID_MSN, szEmail, NULL, szInvite); else Lists_Remove(lstId, szEmail);
+						if (!deleted) Lists_Add(lstId, NETID_MSN, szEmail, NULL, szNick, szInvite); else Lists_Remove(lstId, szEmail);
 					}
 					else if (strcmp(szType, "Phone") == 0)
 					{
@@ -296,6 +297,7 @@ bool CMsnProto::MSN_SharingFindMembership(bool deltas, bool allowRecurse)
 					{
 						const char* szInvite = NULL;
 						const char* szEmail = ezxml_txt(ezxml_child(memb, "Email"));
+						const char* szNick = ezxml_txt(ezxml_child(memb, "DisplayName")); if (!szNick[0]) szNick = NULL;
 						int netId = strstr(szEmail, "@yahoo.com") ? NETID_YAHOO : NETID_LCS;
 						ezxml_t anot = ezxml_get(memb, "Annotations", 0, "Annotation", -1);
 						while (anot != NULL)
@@ -311,7 +313,7 @@ bool CMsnProto::MSN_SharingFindMembership(bool deltas, bool allowRecurse)
 							anot = ezxml_next(anot);
 						}
 
-						if (!deleted) Lists_Add(lstId, netId, szEmail, NULL, szInvite);  else Lists_Remove(lstId, szEmail);
+						if (!deleted) Lists_Add(lstId, netId, szEmail, NULL, szNick, szInvite);  else Lists_Remove(lstId, szEmail);
 					}
 					memb = ezxml_next(memb);
 				}
