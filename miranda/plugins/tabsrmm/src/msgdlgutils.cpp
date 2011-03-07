@@ -1079,7 +1079,7 @@ BOOL TSAPI DoRtfToTags(TCHAR * pszText, const TWindowData *dat)
 					} else if (p1 == _tcsstr(p1, _T("\\endash"))) {
 						bTextHasStarted = bJustRemovedRTF = TRUE;
 						iRemoveChars = 7;
-						_sntprintf(InsertThis, safe_sizeof(InsertThis), _T("\xE2\x80\x93"));
+						_sntprintf(InsertThis, safe_sizeof(InsertThis), _T("%c"), 0x2013);
 					} else if (p1 == _tcsstr(p1, _T("\\emdash"))) {
 						bTextHasStarted = TRUE;
 						bJustRemovedRTF = TRUE;
