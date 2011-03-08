@@ -706,9 +706,9 @@ void RegisterFontServiceFonts() {
 	cid.cbSize = sizeof(ColourIDT);
 
 	strncpy(fid.dbSettingsGroup, FONTMODULE, SIZEOF(fid.dbSettingsGroup));
-	fid.flags = FIDF_DEFAULTVALID|FIDF_ALLOWEFFECTS;
 
 	for (i = 0; i < SIZEOF(IM_fontOptionsList); i++) {
+		fid.flags = FIDF_DEFAULTVALID|FIDF_ALLOWEFFECTS;
 		LoadMsgDlgFont(FONTSECTION_IM, i , &lf, &fontOptionsList[i].colour, FONTMODULE);
 		mir_snprintf(szTemp, SIZEOF(szTemp), "Font%d", i);
 		strncpy(fid.prefix, szTemp, SIZEOF(fid.prefix));
@@ -746,6 +746,8 @@ void RegisterFontServiceFonts() {
 				_tcsncpy(fid.group, _T("TabSRMM"), SIZEOF(fid.group));
 				_tcsncpy(fid.backgroundGroup, _T("TabSRMM"), SIZEOF(fid.backgroundGroup));
 				_tcsncpy(fid.backgroundName, _T("Input area background"), SIZEOF(fid.backgroundName));
+				fid.flags |= FIDF_DISABLESTYLES;
+				fid.flags &= ~FIDF_ALLOWEFFECTS;
 				break;
 			case 17:
 				_tcsncpy(fid.backgroundName, _T("Status background"), SIZEOF(fid.backgroundName));
@@ -1035,8 +1037,9 @@ INT_PTR CALLBACK DlgProcOptions2(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
 					}
 
 					tszReturnName[0] = 0;
+					mir_sntprintf(tszTemp, SIZEOF(tszTemp), _T("%s%c*.*%c%c"), TranslateT("All Files"), 0, 0, 0);
 
-					ofn.lpstrFilter = _T("All files\0*.*\0\0");
+					ofn.lpstrFilter = tszTemp;
 					ofn.lStructSize = OPENFILENAME_SIZE_VERSION_400;
 					ofn.hwndOwner = 0;
 					ofn.lpstrFile = tszReturnName;

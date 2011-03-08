@@ -43,8 +43,6 @@ typedef struct _StatusBarProtocolOptions
 
 static StatusBarProtocolOptions _GlobalOptions = {0};
 
-INT_PTR CALLBACK DlgProcSBarOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
-
 static void UpdateXStatusIconOptions(HWND hwndDlg, BOOL perProto, StatusBarProtocolOptions* dat, int curSelProto)
 {
 	int en=IsDlgButtonChecked(hwndDlg,IDC_SHOWSBAR) && IsDlgButtonChecked(hwndDlg,IDC_SHOWICON );
@@ -537,7 +535,6 @@ static void UpdateStatusBarOptionsDisplay(HWND hwndDlg)
 		else if ( LOWORD(wParam) == IDC_STATUSBAR_PROTO_LIST )
 		{
 			UpdateStatusBarOptionsDisplay(hwndDlg);
-
 			return 0;
 		}
 		SendMessage(GetParent(hwndDlg), PSM_CHANGED, (WPARAM)hwndDlg, 0);
@@ -547,18 +544,16 @@ static void UpdateStatusBarOptionsDisplay(HWND hwndDlg)
 		{
 		case PSN_APPLY:
 			{
-				int i = 0;
 				int count = ModernGetSettingDword(0,"Protocols","ProtoCount",-1);
 				ModernWriteSettingByte(NULL, "CLUI", "SBarPerProto", IsDlgButtonChecked(hwndDlg, IDC_STATUSBAR_PER_PROTO));
 
-				for (i = 1; i < count + 1; i++)
+				for (int i = 0; i < count; i++)
 				{
-					char settingBuf[256];
-					char *defProto;
 					HWND hwndComboBox = GetDlgItem( hwndDlg, IDC_STATUSBAR_PROTO_LIST );
-					StatusBarProtocolOptions sbpo = dat[i - 1];
-					defProto = sbpo.szName;
+					StatusBarProtocolOptions sbpo = dat[i];
+					char *defProto = sbpo.szName;
 
+					char settingBuf[256];
 					mir_snprintf(settingBuf, sizeof(settingBuf), "SBarAccountIsCustom_%s", defProto);
 					ModernWriteSettingByte(NULL,"CLUI",settingBuf,(BYTE)sbpo.AccountIsCustomized);
 

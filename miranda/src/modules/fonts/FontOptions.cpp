@@ -153,9 +153,7 @@ BOOL ExportSettings(HWND hwndDlg, TCHAR *filename, OBJLIST<TFontID>& flist, OBJL
 	for ( i = 0; i < flist.getCount(); i++  ) {
 		TFontID& F = flist[i];
 
-		strcpy(buff, "[");
-		strcat(buff, F.dbSettingsGroup);
-		strcat(buff, "]");
+		mir_snprintf(buff, SIZEOF(buff), "\r\n[%s]", F.dbSettingsGroup);
 		if ( strcmp( buff, header ) != 0) {
 			strcpy(header, buff);
 			WriteLine(fhand, buff);
@@ -220,7 +218,7 @@ BOOL ExportSettings(HWND hwndDlg, TCHAR *filename, OBJLIST<TFontID>& flist, OBJL
 	for ( i=0; i < clist.getCount(); i++ ) {
 		TColourID& C = clist[i];
 
-        mir_snprintf(buff, SIZEOF(buff), "[%s]", C.dbSettingsGroup );
+		mir_snprintf(buff, SIZEOF(buff), "\r\n[%s]", C.dbSettingsGroup );
 		if(strcmp(buff, header) != 0) {
 			strcpy(header, buff);
 			WriteLine(fhand, buff);
@@ -233,7 +231,7 @@ BOOL ExportSettings(HWND hwndDlg, TCHAR *filename, OBJLIST<TFontID>& flist, OBJL
     for ( i=0; i < elist.getCount(); i++ ) {
         TEffectID& E = elist[i];
 
-        mir_snprintf(buff, SIZEOF(buff), "[%s]", E.dbSettingsGroup );
+        mir_snprintf(buff, SIZEOF(buff), "\r\n[%s]", E.dbSettingsGroup );
         if(strcmp(buff, header) != 0) {
             strcpy(header, buff);
             WriteLine(fhand, buff);
@@ -1185,7 +1183,9 @@ static INT_PTR CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam,
 		}
 		case IDC_BTN_EXPORT:
 		{
-			TCHAR fname_buff[MAX_PATH];
+			TCHAR fname_buff[MAX_PATH], filter[MAX_PATH];
+			mir_sntprintf(filter, SIZEOF(filter), _T("%s (*.ini)%c*.ini%c%s (*.txt)%c*.TXT%c%s (*.*)%c*.*%c"), TranslateT("Configuration Files"), 0, 0, TranslateT("Text Files"), 0, 0, Translate("All Files"), 0, 0);
+
 			OPENFILENAME ofn = {0};
 			ofn.lStructSize = sizeof(ofn);
 			ofn.lpstrFile = fname_buff;
@@ -1193,7 +1193,7 @@ static INT_PTR CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam,
 			ofn.nMaxFile = MAX_PATH;
 			ofn.hwndOwner = hwndDlg;
 			ofn.Flags = OFN_NOREADONLYRETURN | OFN_CREATEPROMPT | OFN_OVERWRITEPROMPT;
-			ofn.lpstrFilter = _T("Configuration Files (*.ini)\0*.ini\0Text Files (*.txt)\0*.TXT\0All Files (*.*)\0*.*\0");
+			ofn.lpstrFilter = filter;
 			ofn.nFilterIndex = 1;
 
 			ofn.lpstrDefExt = _T("ini");
@@ -1378,7 +1378,7 @@ static INT_PTR CALLBACK DlgProcModernOptions(HWND hwndDlg, UINT msg, WPARAM wPar
 			SetBkMode(dis->hDC, TRANSPARENT);
 			SetTextColor(dis->hDC, GetSysColor(COLOR_BTNTEXT));
 			FillRect(dis->hDC, &dis->rcItem, GetSysColorBrush(COLOR_BTNFACE));
-			DrawText(dis->hDC, _T("Sample Text"), (int)_tcslen(_T("Sample Text")), &dis->rcItem, DT_LEFT|DT_NOPREFIX|DT_SINGLELINE|DT_VCENTER|DT_WORD_ELLIPSIS|DT_CENTER);
+			DrawText(dis->hDC, TranslateT("Sample Text"), (int)_tcslen(TranslateT("Sample Text")), &dis->rcItem, DT_LEFT|DT_NOPREFIX|DT_SINGLELINE|DT_VCENTER|DT_WORD_ELLIPSIS|DT_CENTER);
 			if (hoFont) SelectObject(dis->hDC, hoFont);
 			return TRUE;
 		}

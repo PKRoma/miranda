@@ -267,7 +267,7 @@ INT_PTR CALLBACK DlgProcSoundOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 			break;
 		}
 		if ( LOWORD( wParam ) == IDC_CHANGE ) {
-			char str[MAX_PATH] = "", strFull[MAX_PATH], strdir[MAX_PATH]="";
+			char str[MAX_PATH] = "", strFull[MAX_PATH], strdir[MAX_PATH]="", filter[MAX_PATH];
 			OPENFILENAMEA ofn;
 			TVITEM tvi;
 			HTREEITEM hti;
@@ -294,10 +294,11 @@ INT_PTR CALLBACK DlgProcSoundOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 			mir_snprintf(strFull, SIZEOF(strFull), "%s", soundList[tvi.lParam].tempFile?soundList[tvi.lParam].tempFile:"");
 			pathToAbsolute(strFull, strdir, NULL);
 			ZeroMemory(&ofn, sizeof(ofn));
+			mir_snprintf(filter, SIZEOF(filter), "%s (*.wav; *.mp3; *.ogg; *.flac)%c*.WAV; *.MP3; *.OGG; *.FLAC%c%s (*)%c*%c", Translate("Sound Files"), 0, 0, Translate("All Files"), 0, 0);
 			ofn.lStructSize = OPENFILENAME_SIZE_VERSION_400;
 			ofn.hwndOwner = GetParent(hwndDlg);
 			ofn.hInstance = NULL;
-			ofn.lpstrFilter = "Wave Files (*.wav)\0*.WAV\0All Files (*)\0*\0";
+			ofn.lpstrFilter = filter;
 			{   char* slash = strrchr(strdir, '\\');
 				if (slash) {
 					*slash = 0;

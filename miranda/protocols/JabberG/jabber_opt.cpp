@@ -1253,7 +1253,8 @@ void CJabberProto::_RosterExportToFile(HWND hwndDlg)
 {
 	TCHAR filename[MAX_PATH]={0};
 
-	TCHAR *filter=_T("XML for MS Excel (UTF-8 encoded)(*.xml)\0*.xml\0\0");
+	TCHAR filter[MAX_PATH];
+	mir_sntprintf(filter, SIZEOF(filter), _T("%s (*.xml)%c*.xml%c%c"), TranslateT("XML for MS Excel (UTF-8 encoded)"), 0, 0, 0);
 	OPENFILENAME ofn={0};
 	ofn.lStructSize = OPENFILENAME_SIZE_VERSION_400;
 	ofn.hwndOwner = hwndDlg;

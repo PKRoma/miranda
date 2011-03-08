@@ -222,7 +222,7 @@ INT_PTR CALLBACK DlgSkinOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 						ofn.hwndOwner = hwndDlg;
 						ofn.hInstance = NULL;
 
-						_sntprintf( filter, SIZEOF( filter ), _T( "%s ( *.msf )\0*.MSF\0\0" ), TranslateT( "Miranda skin file" ) );
+						mir_sntprintf(filter, SIZEOF(filter), _T("%s (*.msf)%c*.MSF%c%c"), TranslateT("Miranda skin file"), 0, 0, 0);
 						ofn.lpstrFilter = filter;
 						ofn.lpstrFile = str;
 						ofn.Flags = isLoad?( OFN_FILEMUSTEXIST | OFN_HIDEREADONLY ) : ( OFN_OVERWRITEPROMPT|OFN_HIDEREADONLY ) | OFN_DONTADDTORECENT;
