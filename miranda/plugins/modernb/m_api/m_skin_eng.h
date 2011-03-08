@@ -239,7 +239,7 @@ int __inline SkinDrawGlyph(HDC hdc, RECT * rcSize, RECT * rcClip, char * objectI
   rq.hDC=hdc;
   rq.rcDestRect=*rcSize;
   rq.rcClipRect=*rcClip;  
-  strncpy(rq.szObjectID,objectID,sizeof(rq.szObjectID));
+  strncpy(rq.szObjectID,objectID,SIZEOF(rq.szObjectID));
   return ske_Service_DrawGlyph((WPARAM)&rq,0);
   //return CallService(MS_SKIN_DRAWGLYPH,(WPARAM)&rq,0);
 }

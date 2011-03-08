@@ -278,8 +278,8 @@ void * AddTempGroup(HWND hwnd,struct ClcData *dat,const TCHAR *szName,DWORD flag
 		char buf[20];
 		TCHAR b2[255];
 		void * res=NULL;
-		_snprintf(buf,sizeof(buf),"%d",(i-1));
-		_sntprintf(b2,sizeof(b2),_T("#%s"),szName);
+		mir_snprintf(buf,SIZEOF(buf),"%d",(i-1));
+		mir_sntprintf(b2,SIZEOF(b2),_T("#%s"),szName);
 		b2[0]=1|GROUPF_EXPANDED;
 		ModernWriteSettingTString(NULL,"CListGroups",buf,b2);
 		pcli->pfnGetGroupName(i,&groupFlags);      
@@ -776,12 +776,12 @@ int __fastcall CLVM_GetContactHiddenStatus(HANDLE hContact, char *szProto, struc
 		}
 		// check the proto, use it as a base filter result for all further checks
 		if(g_CluiData.bFilterEffective & CLVM_FILTER_PROTOS) {
-			mir_snprintf(szTemp, sizeof(szTemp), "%s|", szProto);
+			mir_snprintf(szTemp, SIZEOF(szTemp), "%s|", szProto);
 			filterResult = strstr(g_CluiData.protoFilter, szTemp) ? 1 : 0;
 		}
 		if(g_CluiData.bFilterEffective & CLVM_FILTER_GROUPS) {
 			if(!ModernGetSettingTString(hContact, "CList", "Group", &dbv)) {
-				_sntprintf(szGroupMask, SIZEOF(szGroupMask), _T("%s|"), &dbv.ptszVal[0]);
+				mir_sntprintf(szGroupMask, SIZEOF(szGroupMask), _T("%s|"), &dbv.ptszVal[0]);
 				filterResult = (g_CluiData.filterFlags & CLVM_PROTOGROUP_OP) ? (filterResult | (_tcsstr(g_CluiData.groupFilter, szGroupMask) ? 1 : 0)) : (filterResult & (_tcsstr(g_CluiData.groupFilter, szGroupMask) ? 1 : 0));
 				mir_free(dbv.ptszVal);
 			}

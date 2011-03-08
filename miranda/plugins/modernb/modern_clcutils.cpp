@@ -523,7 +523,7 @@ void LoadCLCOptions(HWND hwnd, struct ClcData *dat )
 		for (i = 0 ; i < NUM_ITEM_TYPE ; i++)
 		{
 			char tmp[128];
-			mir_snprintf(tmp, sizeof(tmp), "RowPos%d", i);
+			mir_snprintf(tmp, SIZEOF(tmp), "RowPos%d", i);
 			dat->row_items[i] = ModernGetSettingWord(NULL, "CList", tmp, defItemsOrder[i]);
 		}
 	}

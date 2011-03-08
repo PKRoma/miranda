@@ -1011,7 +1011,7 @@ static int CLUI_GetConnectingIconForProtoCount(char *szAccoName)
 	if ( szAccoName )
 	{
 		// first of all try to find by account name( or empty - global )
-		_snprintf( fileFull, sizeof(fileFull), "%s\\Icons\\proto_conn_%s.dll", szFolderPath, szAccoName );
+		mir_snprintf( fileFull, SIZEOF(fileFull), "%s\\Icons\\proto_conn_%s.dll", szFolderPath, szAccoName );
 		count = ExtractIconExA(fileFull,-1,NULL,NULL,1);
 		if ( count ) return count;
 
@@ -1021,14 +1021,14 @@ static int CLUI_GetConnectingIconForProtoCount(char *szAccoName)
 			PROTOACCOUNT * acc = ProtoGetAccount( szAccoName );
 			if ( acc && !acc->bOldProto )
 			{
-				_snprintf( fileFull, sizeof(fileFull), "%s\\Icons\\proto_conn_%s.dll", szFolderPath, acc->szProtoName );
+				mir_snprintf( fileFull, SIZEOF(fileFull), "%s\\Icons\\proto_conn_%s.dll", szFolderPath, acc->szProtoName );
 				count = ExtractIconExA(fileFull,-1,NULL,NULL,1);
 				if ( count ) return count;
 			}
 		}
 	}
 	// third try global
-	_snprintf( fileFull, sizeof(fileFull), "%s\\Icons\\proto_conn.dll", szFolderPath );
+	mir_snprintf( fileFull, SIZEOF(fileFull), "%s\\Icons\\proto_conn.dll", szFolderPath );
 	count = ExtractIconExA(fileFull,-1,NULL,NULL,1);
 	if ( count ) return count;
 
@@ -1067,8 +1067,8 @@ HICON CLUI_LoadIconFromExternalFile(char *filename,int i,boolean UseLibrary,bool
 	str=strrchr(szPath,'\\');
 	if(str!=NULL) *str=0;
 	if (UseLibrary&2) 
-		_snprintf(szMyPath, sizeof(szMyPath), "%s\\Icons\\%s", szPath, filename);
-	_snprintf(szFullPath, sizeof(szFullPath), "%s\\Icons\\%s,%d", szPath, filename, i);
+		mir_snprintf(szMyPath, SIZEOF(szMyPath), "%s\\Icons\\%s", szPath, filename);
+	mir_snprintf(szFullPath, SIZEOF(szFullPath), "%s\\Icons\\%s,%d", szPath, filename, i);
 	if(str!=NULL) *str='\\';
 	if (UseLibrary&2)
 	{
@@ -1083,7 +1083,7 @@ HICON CLUI_LoadIconFromExternalFile(char *filename,int i,boolean UseLibrary,bool
 		if (hIcon) return hIcon;
 		if (UseLibrary)
 		{
-			_snprintf(szFullPath, sizeof(szFullPath), "%s,%d", szMyPath, internalidx);
+			mir_snprintf(szFullPath, SIZEOF(szFullPath), "%s,%d", szMyPath, internalidx);
 			hIcon=CLUI_ExtractIconFromPath(szFullPath,needFree);
 			if (hIcon) return hIcon;		
 		}
@@ -1122,7 +1122,7 @@ static HICON CLUI_GetConnectingIconForProto(char *szAccoName, int b)
 	
 	if ( szAccoName )
 	{
-		_snprintf(szFullPath, sizeof(szFullPath), "proto_conn_%s.dll",szAccoName);
+		mir_snprintf(szFullPath, SIZEOF(szFullPath), "proto_conn_%s.dll",szAccoName);
 		hIcon = CLUI_LoadIconFromExternalFile(szFullPath,b+1,FALSE,FALSE,NULL,NULL,NULL,0,&needFree);
 		if (hIcon) return hIcon;
 
@@ -1132,14 +1132,14 @@ static HICON CLUI_GetConnectingIconForProto(char *szAccoName, int b)
 			PROTOACCOUNT * acc = ProtoGetAccount( szAccoName );
 			if ( acc && !acc->bOldProto )
 			{
-				_snprintf( szFullPath, sizeof(szFullPath), "proto_conn_%s.dll", acc->szProtoName );
+				mir_snprintf( szFullPath, SIZEOF(szFullPath), "proto_conn_%s.dll", acc->szProtoName );
 				hIcon = CLUI_LoadIconFromExternalFile(szFullPath,b+1,FALSE,FALSE,NULL,NULL,NULL,0,&needFree);
 				if ( hIcon ) return hIcon;
 			}
 		}
 	}
 	// third try global
-	_snprintf( szFullPath, sizeof(szFullPath), "proto_conn.dll" );
+	mir_snprintf( szFullPath, SIZEOF(szFullPath), "proto_conn.dll" );
 	hIcon = CLUI_LoadIconFromExternalFile(szFullPath,b+1,FALSE,FALSE,NULL,NULL,NULL,0,&needFree);
 	if ( hIcon ) return hIcon;
 
@@ -1903,7 +1903,7 @@ LRESULT CLUI::PreProcessWndProc( UINT msg, WPARAM wParam, LPARAM lParam, BOOL& b
 		HANDLE hMap;
 		char szName[MAX_PATH];
 		int rc = 0;
-		_snprintf( szName, sizeof(szName), "Miranda::%u", wParam ); // caller will tell us the ID of the map
+		mir_snprintf( szName, SIZEOF(szName), "Miranda::%u", wParam ); // caller will tell us the ID of the map
 		hMap = OpenFileMappingA( FILE_MAP_ALL_ACCESS,FALSE, szName );
 		if ( hMap != NULL ) 
 		{
@@ -2974,7 +2974,7 @@ LRESULT CLUI::OnDrawItem( UINT msg, WPARAM wParam, LPARAM lParam )
 				short dx=1+(dis->itemState&ODS_SELECTED?1:0)-(dis->itemState&ODS_HOTLIGHT?1:0);
 				HICON hIcon=LoadSkinnedIcon(SKINICON_OTHER_MIRANDA);
 				CLUI_DrawMenuBackGround(m_hWnd, dis->hDC, 1, dis->itemState);
-				_snprintf(buf,sizeof(buf),"Main,ID=MainMenu,Selected=%s,Hot=%s",(dis->itemState&ODS_SELECTED)?"True":"False",(dis->itemState&ODS_HOTLIGHT)?"True":"False");
+				mir_snprintf(buf,SIZEOF(buf),"Main,ID=MainMenu,Selected=%s,Hot=%s",(dis->itemState&ODS_SELECTED)?"True":"False",(dis->itemState&ODS_HOTLIGHT)?"True":"False");
 				SkinDrawGlyph(dis->hDC,&dis->rcItem,&dis->rcItem,buf);
 				DrawState(dis->hDC,NULL,NULL,(LPARAM)hIcon,0,(dis->rcItem.right+dis->rcItem.left-GetSystemMetrics(SM_CXSMICON))/2+dx,(dis->rcItem.bottom+dis->rcItem.top-GetSystemMetrics(SM_CYSMICON))/2+dx,0,0,DST_ICON|(dis->itemState&ODS_INACTIVE&&FALSE?DSS_DISABLED:DSS_NORMAL));
 				CallService(MS_SKIN2_RELEASEICON, (WPARAM)hIcon, 0);
@@ -3000,7 +3000,7 @@ LRESULT CLUI::OnDrawItem( UINT msg, WPARAM wParam, LPARAM lParam )
 				}
 				CLUI_DrawMenuBackGround(m_hWnd, dis->hDC, 2, dis->itemState);
 				SetBkMode(dis->hDC,TRANSPARENT);
-				_snprintf(buf,sizeof(buf),"Main,ID=StatusMenu,Selected=%s,Hot=%s",(dis->itemState&ODS_SELECTED)?"True":"False",(dis->itemState&ODS_HOTLIGHT)?"True":"False");
+				mir_snprintf(buf,SIZEOF(buf),"Main,ID=StatusMenu,Selected=%s,Hot=%s",(dis->itemState&ODS_SELECTED)?"True":"False",(dis->itemState&ODS_HOTLIGHT)?"True":"False");
 				SkinDrawGlyph(dis->hDC,&dis->rcItem,&dis->rcItem,buf);
 				SetTextColor(dis->hDC, (dis->itemState&ODS_SELECTED/*|dis->itemState&ODS_HOTLIGHT*/)?dat->MenuTextHiColor:dat->MenuTextColor);
 				DrawText(dis->hDC,TranslateT("Status"), lstrlen(TranslateT("Status")),&rc, DT_CENTER|DT_VCENTER|DT_SINGLELINE);
@@ -3017,7 +3017,7 @@ LRESULT CLUI::OnDrawItem( UINT msg, WPARAM wParam, LPARAM lParam )
 			short dx=1+(dis->itemState&ODS_SELECTED?1:0)-(dis->itemState&ODS_HOTLIGHT?1:0);
 			HICON hIcon = LoadSkinnedIcon(SKINICON_OTHER_MIRANDA);
 			CLUI_DrawMenuBackGround(m_hWnd, dis->hDC, 3, dis->itemState);
-			_snprintf(buf,sizeof(buf),"Main,ID=MainMenu,Selected=%s,Hot=%s",(dis->itemState&ODS_SELECTED)?"True":"False",(dis->itemState&ODS_HOTLIGHT)?"True":"False");
+			mir_snprintf(buf,SIZEOF(buf),"Main,ID=MainMenu,Selected=%s,Hot=%s",(dis->itemState&ODS_SELECTED)?"True":"False",(dis->itemState&ODS_HOTLIGHT)?"True":"False");
 			SkinDrawGlyph(dis->hDC,&dis->rcItem,&dis->rcItem,buf);
 			DrawState(dis->hDC,NULL,NULL,(LPARAM)hIcon,0,(dis->rcItem.right+dis->rcItem.left-GetSystemMetrics(SM_CXSMICON))/2+dx,(dis->rcItem.bottom+dis->rcItem.top-GetSystemMetrics(SM_CYSMICON))/2+dx,0,0,DST_ICON|(dis->itemState&ODS_INACTIVE&&FALSE?DSS_DISABLED:DSS_NORMAL));
 			CallService(MS_SKIN2_RELEASEICON, (WPARAM)hIcon, 0);

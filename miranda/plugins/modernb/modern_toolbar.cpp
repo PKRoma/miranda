@@ -571,13 +571,13 @@ static void   sttRegisterToolBarButton(char * pszButtonID, char * pszButtonName,
 		tbb.pszTooltipDn=pszTooltipDn;
 		{
 			char buf[255];
-			_snprintf(buf,sizeof(buf),"%s%s%s",TOOLBARBUTTON_ICONIDPREFIX, pszButtonID, TOOLBARBUTTON_ICONIDPRIMARYSUFFIX);
+			mir_snprintf(buf,SIZEOF(buf),"%s%s%s",TOOLBARBUTTON_ICONIDPREFIX, pszButtonID, TOOLBARBUTTON_ICONIDPRIMARYSUFFIX);
 			tbb.hPrimaryIconHandle=RegisterIcolibIconHandle( buf, "ToolBar", pszButtonName , _T("icons\\toolbar_icons.dll"),-icoDefIdx, g_hInst, defResource );
 		}
 		if (pszTooltipDn)
 		{
 			char buf[255];
-			_snprintf(buf,sizeof(buf),"%s%s%s",TOOLBARBUTTON_ICONIDPREFIX, pszButtonID, TOOLBARBUTTON_ICONIDSECONDARYSUFFIX);
+			mir_snprintf(buf,SIZEOF(buf),"%s%s%s",TOOLBARBUTTON_ICONIDPREFIX, pszButtonID, TOOLBARBUTTON_ICONIDSECONDARYSUFFIX);
 			tbb.hSecondaryIconHandle=RegisterIcolibIconHandle( buf, "ToolBar", pszTooltipDn , _T("icons\\toolbar_icons.dll"),-(icoDefIdx+1), g_hInst, defResource2 );
 		}
 	}
@@ -611,13 +611,13 @@ static void   sttGetButtonSettings(char * ID, BYTE * pbVisible, DWORD * pdwOrder
 	BYTE panel;
 
 	if (pbVisible) vis=*pbVisible;
-	_snprintf(key, sizeof(key), "visible_%s", ID);
+	mir_snprintf(key, SIZEOF(key), "visible_%s", ID);
 	vis=ModernGetSettingByte(NULL,"ModernToolBar", key, vis);
 
-	_snprintf(key, sizeof(key), "order_%s", ID);
+	mir_snprintf(key, SIZEOF(key), "order_%s", ID);
 	ord=ModernGetSettingDword(NULL,"ModernToolBar", key, 0);
 
-	_snprintf(key, sizeof(key), "panel_%s", ID);
+	mir_snprintf(key, SIZEOF(key), "panel_%s", ID);
 	panel=ModernGetSettingByte(NULL,"ModernToolBar", key, 0);
 
 	if (pbVisible)	*pbVisible=vis;
@@ -1198,10 +1198,10 @@ static LRESULT CALLBACK ToolBar_OptDlgProc(HWND hwndDlg,UINT msg,WPARAM wParam,L
 								if (mtbi)
 								{
 									char szTempSetting[200];
-									_snprintf(szTempSetting, sizeof(szTempSetting), "order_%s", mtbi->szButtonID);
+									mir_snprintf(szTempSetting, SIZEOF(szTempSetting), "order_%s", mtbi->szButtonID);
 									ModernWriteSettingDword(NULL, "ModernToolBar", szTempSetting, order);
 									order+=10;
-									_snprintf(szTempSetting, sizeof(szTempSetting), "visible_%s", mtbi->szButtonID);
+									mir_snprintf(szTempSetting, SIZEOF(szTempSetting), "visible_%s", mtbi->szButtonID);
 									ModernWriteSettingByte(NULL, "ModernToolBar", szTempSetting, TreeView_GetCheckState(hTree,hItem));
 								}
 								hItem=TreeView_GetNextSibling(hTree,hItem);

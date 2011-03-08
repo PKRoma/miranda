@@ -347,16 +347,16 @@ void RefreshTree(HWND hwndDlg,HTREEITEM hti)
 			if (!cell->child)
 			{
 				if (cell->type==0)
-					_sntprintf(buf, SIZEOF(buf), TranslateT("Empty %s cell"), cell->cont==TC_COL?TranslateT("column"):TranslateT("line"));
+					mir_sntprintf(buf, SIZEOF(buf), TranslateT("Empty %s cell"), cell->cont==TC_COL?TranslateT("column"):TranslateT("line"));
 				else
-					_sntprintf(buf, SIZEOF(buf), TranslateT("%s"), TranslateTS(types[cell->type]));
+					mir_sntprintf(buf, SIZEOF(buf), TranslateT("%s"), TranslateTS(types[cell->type]));
 			}
 			else
 			{
 				if (cell->type==0)
-					_sntprintf(buf, SIZEOF(buf), TranslateT("%s"), cell->cont!=TC_COL?TranslateT("columns"):TranslateT("lines"));
+					mir_sntprintf(buf, SIZEOF(buf), TranslateT("%s"), cell->cont!=TC_COL?TranslateT("columns"):TranslateT("lines"));
 				else
-					_sntprintf(buf, SIZEOF(buf), TranslateT("%s, contain %s"), TranslateTS(types[cell->type]),cell->cont!=TC_COL?TranslateT("columns"):TranslateT("lines"));
+					mir_sntprintf(buf, SIZEOF(buf), TranslateT("%s, contain %s"), TranslateTS(types[cell->type]),cell->cont!=TC_COL?TranslateT("columns"):TranslateT("lines"));
 			}
 			if (cell->layer) _tcsncat(buf,TranslateT(" layered"),SIZEOF(buf));
 			tvi.mask=TVIF_HANDLE|TVIF_TEXT;
@@ -400,7 +400,7 @@ INT_PTR CALLBACK DlgTmplEditorOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 			{
 				int i, item;
 
-				for (i=0; i<sizeof(types)/sizeof(char*); i++) 
+				for (i=0; i<SIZEOF(types); i++) 
 				{
 					item=SendDlgItemMessage(hwndDlg,IDC_CONTTYPE,CB_ADDSTRING,0,(LPARAM)TranslateTS(types[i]));
 					SendDlgItemMessage(hwndDlg,IDC_CONTTYPE,CB_SETITEMDATA,item,(LPARAM)0);
@@ -411,7 +411,7 @@ INT_PTR CALLBACK DlgTmplEditorOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 			{
 				int i, item;
 				TCHAR *alignment[]={_T("left"), _T("hCenter"), _T("right")};
-				for (i=0; i<sizeof(alignment)/sizeof(char*); i++) 
+				for (i=0; i<SIZEOF(alignment); i++) 
 				{
 					item=SendDlgItemMessage(hwndDlg,IDC_HALIGN,CB_ADDSTRING,0,(LPARAM)TranslateTS(alignment[i]));
 					SendDlgItemMessage(hwndDlg,IDC_HALIGN,CB_SETITEMDATA,item,(LPARAM)0);
@@ -423,7 +423,7 @@ INT_PTR CALLBACK DlgTmplEditorOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 			{
 				int i, item;
 				TCHAR *alignment[]={_T("top"), _T("vCenter"), _T("bottom")};
-				for (i=0; i<sizeof(alignment)/sizeof(char*); i++) 
+				for (i=0; i<SIZEOF(alignment); i++) 
 				{
 					item=SendDlgItemMessage(hwndDlg,IDC_VALIGN,CB_ADDSTRING,0,(LPARAM)TranslateTS(alignment[i]));
 					SendDlgItemMessage(hwndDlg,IDC_VALIGN,CB_SETITEMDATA,item,(LPARAM)0);

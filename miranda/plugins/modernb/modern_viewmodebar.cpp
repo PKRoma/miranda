@@ -579,8 +579,8 @@ static void UpdateFilters()
 #else
 	szBuf=mir_strdup(szTempBuf);
 #endif
-    strncpy(g_szModename, szBuf, sizeof(g_szModename));
-    g_szModename[sizeof(g_szModename) - 1] = 0;
+    strncpy(g_szModename, szBuf, SIZEOF(g_szModename));
+    g_szModename[SIZEOF(g_szModename) - 1] = 0;
     mir_sntprintf(szTemp, 100, TranslateT("Configuring view mode: %s"), szTempBuf);
     SetDlgItemText(clvmHwnd, IDC_CURVIEWMODE2, szTemp);
     mir_snprintf(szSetting, 128, "%c%s_PF", 246, szBuf);
@@ -1536,8 +1536,8 @@ void ApplyViewMode(const char *Name, bool onlySelector )
         if(!ModernGetSettingString(NULL, CLVM_MODULE, szSetting, &dbv)) {
             if(lstrlenA(dbv.pszVal) >= 2) 
             {
-                strncpy(g_CluiData.protoFilter, dbv.pszVal, sizeof(g_CluiData.protoFilter));
-                g_CluiData.protoFilter[sizeof(g_CluiData.protoFilter) - 1] = 0;
+                strncpy(g_CluiData.protoFilter, dbv.pszVal, SIZEOF(g_CluiData.protoFilter));
+                g_CluiData.protoFilter[SIZEOF(g_CluiData.protoFilter) - 1] = 0;
                 g_CluiData.bFilterEffective |= CLVM_FILTER_PROTOS;
             }
             mir_free(dbv.pszVal);

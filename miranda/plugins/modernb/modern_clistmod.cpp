@@ -159,7 +159,7 @@ int cli_IconFromStatusMode(const char *szProto,int nStatus, HANDLE hContact)
                 }
            }
        }
-       _snprintf(AdvancedService,sizeof(AdvancedService),"%s%s",szActProto,"/GetAdvancedStatusIcon");
+       mir_snprintf(AdvancedService,SIZEOF(AdvancedService),"%s%s",szActProto,"/GetAdvancedStatusIcon");
 
        if (ServiceExists(AdvancedService))
           result=CallService(AdvancedService,(WPARAM)hActContact, (LPARAM)0);

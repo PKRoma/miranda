@@ -239,15 +239,15 @@ int ModernDrawStatusBarWorker(HWND hWnd, HDC hDC)
 				vis=pcli->pfnGetProtocolVisibility(accs[i]->szModuleName);
 			if (!vis) continue;
 				
-			mir_snprintf(buf, sizeof(buf), "SBarAccountIsCustom_%s", accs[i]->szModuleName);
+			mir_snprintf(buf, SIZEOF(buf), "SBarAccountIsCustom_%s", accs[i]->szModuleName);
 
 			if (g_StatusBarData.perProtoConfig && ModernGetSettingByte(NULL, "CLUI", buf, SETTING_SBARACCOUNTISCUSTOM_DEFAULT))
 			{
-				mir_snprintf(buf, sizeof(buf), "HideAccount_%s", accs[i]->szModuleName);
+				mir_snprintf(buf, SIZEOF(buf), "HideAccount_%s", accs[i]->szModuleName);
 				if (ModernGetSettingByte(NULL, "CLUI", buf, SETTING_SBARHIDEACCOUNT_DEFAULT))
 					continue;
 
-				mir_snprintf(buf, sizeof(buf), "SBarShow_%s", accs[i]->szModuleName);
+				mir_snprintf(buf, SIZEOF(buf), "SBarShow_%s", accs[i]->szModuleName);
 				{
 					BYTE showOps = ModernGetSettingByte(NULL,"CLUI", buf, SETTING_SBARSHOW_DEFAULT);
 					ProtosData[visProtoCount].showProtoIcon = showOps&1;
@@ -255,22 +255,22 @@ int ModernDrawStatusBarWorker(HWND hWnd, HDC hDC)
 					ProtosData[visProtoCount].showStatusName = showOps&4;
 				}
 
-				mir_snprintf(buf, sizeof(buf), "ShowXStatus_%s", accs[i]->szModuleName);
+				mir_snprintf(buf, SIZEOF(buf), "ShowXStatus_%s", accs[i]->szModuleName);
 				ProtosData[visProtoCount].xStatusMode = ModernGetSettingByte(NULL,"CLUI", buf, SETTING_SBARSHOW_DEFAULT);
 
-				mir_snprintf(buf, sizeof(buf), "UseConnectingIcon_%s", accs[i]->szModuleName);
+				mir_snprintf(buf, SIZEOF(buf), "UseConnectingIcon_%s", accs[i]->szModuleName);
 				ProtosData[visProtoCount].connectingIcon = ModernGetSettingByte(NULL,"CLUI", buf, SETTING_USECONNECTINGICON_DEFAULT);
 
-				mir_snprintf(buf, sizeof(buf), "ShowUnreadEmails_%s", accs[i]->szModuleName);
+				mir_snprintf(buf, SIZEOF(buf), "ShowUnreadEmails_%s", accs[i]->szModuleName);
 				ProtosData[visProtoCount].showProtoEmails = ModernGetSettingByte(NULL,"CLUI", buf, SETTING_SHOWUNREADEMAILS_DEFAULT);
 
-				mir_snprintf(buf, sizeof(buf), "SBarRightClk_%s", accs[i]->szModuleName);
+				mir_snprintf(buf, SIZEOF(buf), "SBarRightClk_%s", accs[i]->szModuleName);
 				ProtosData[visProtoCount].SBarRightClk = ModernGetSettingByte(NULL,"CLUI", buf, SETTING_SBARRIGHTCLK_DEFAULT);
 
-				mir_snprintf(buf, sizeof(buf), "PaddingLeft_%s", accs[i]->szModuleName);
+				mir_snprintf(buf, SIZEOF(buf), "PaddingLeft_%s", accs[i]->szModuleName);
 				ProtosData[visProtoCount].PaddingLeft = ModernGetSettingDword(NULL,"CLUI", buf, SETTING_PADDINGLEFT_DEFAULT);
 
-				mir_snprintf(buf, sizeof(buf), "PaddingRight_%s", accs[i]->szModuleName);
+				mir_snprintf(buf, SIZEOF(buf), "PaddingRight_%s", accs[i]->szModuleName);
 				ProtosData[visProtoCount].PaddingRight = ModernGetSettingDword(NULL,"CLUI", buf, SETTING_PADDINGRIGHT_DEFAULT);
 			}
 			else
@@ -310,7 +310,7 @@ int ModernDrawStatusBarWorker(HWND hWnd, HDC hDC)
 			if(g_CluiData.bFilterEffective & CLVM_FILTER_PROTOS) 
 			{
 				char szTemp[2048];
-				mir_snprintf(szTemp, sizeof(szTemp), "%s|", ProtosData[visProtoCount].AccountName );
+				mir_snprintf(szTemp, SIZEOF(szTemp), "%s|", ProtosData[visProtoCount].AccountName );
 				ProtosData[visProtoCount].isDimmed = strstr(g_CluiData.protoFilter, szTemp) ? 0 : 1;
 			}
 			
@@ -418,8 +418,7 @@ int ModernDrawStatusBarWorker(HWND hWnd, HDC hDC)
 								if ((ProtosData[i].xStatusMode&8) && ProtosData[i].ProtoStatus>ID_STATUS_OFFLINE) 
 								{
 									char str[MAXMODULELABELLENGTH];
-									strcpy(str,ProtosData[i].AccountName);
-									strcat(str,"/GetXStatus");
+									mir_snprintf(str, SIZEOF(str), "%s/GetXStatus", ProtosData[i].AccountName);
 									if (ServiceExists(str))
 									{
 										char * dbTitle="XStatusName";
@@ -442,8 +441,7 @@ int ModernDrawStatusBarWorker(HWND hWnd, HDC hDC)
 									if (ProtosData[i].ProtoStatus>ID_STATUS_OFFLINE)
 									{
 										char str[MAXMODULELABELLENGTH];
-										strcpy(str,ProtosData[i].AccountName);
-										strcat(str,"/GetXStatusIcon");
+										mir_snprintf(str, SIZEOF(str), "%s/GetXStatusIcon", ProtosData[i].AccountName);
 										if (ServiceExists(str))
 											ProtosData[i].extraIcon=(HICON)CallService(str,0,0);
 										if (ProtosData[i].extraIcon && (ProtosData[i].xStatusMode&3)==3)
@@ -549,8 +547,7 @@ int ModernDrawStatusBarWorker(HWND hWnd, HDC hDC)
 								if (ProtosData[i].ProtoStatus>ID_STATUS_OFFLINE && ((ProtosData[i].xStatusMode)&3)>0)
 								{
 									char str[MAXMODULELABELLENGTH];
-									strcpy(str,ProtosData[i].AccountName);
-									strcat(str,"/GetXStatusIcon");
+									mir_snprintf(str, SIZEOF(str), "%s/GetXStatusIcon", ProtosData[i].AccountName);
 									if (ServiceExists(str))
 									{
 										hxIcon=ProtosData[i].extraIcon;
@@ -999,13 +996,13 @@ LRESULT CALLBACK ModernStatusProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam
                         if ( g_CluiData.bFilterEffective != CLVM_FILTER_PROTOS || !bShift )
                         {
                             ApplyViewMode( "" );
-                            mir_snprintf( g_CluiData.protoFilter, sizeof(g_CluiData.protoFilter), "%s|", ProtosData[i].AccountName );
+                            mir_snprintf( g_CluiData.protoFilter, SIZEOF(g_CluiData.protoFilter), "%s|", ProtosData[i].AccountName );
                             g_CluiData.bFilterEffective = CLVM_FILTER_PROTOS;
                         }
                         else
                         {
                             char protoF[ sizeof(g_CluiData.protoFilter) ];
-                            mir_snprintf( protoF, sizeof(protoF), "%s|", ProtosData[i].AccountName );
+                            mir_snprintf( protoF, SIZEOF(protoF), "%s|", ProtosData[i].AccountName );
                             char * pos = strstri( g_CluiData.protoFilter, ProtosData[i].AccountName );
                             if ( pos ) 
                             {
@@ -1021,7 +1018,7 @@ LRESULT CALLBACK ModernStatusProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam
                             else
                             {
                                 //add filter
-                                mir_snprintf( g_CluiData.protoFilter, sizeof(g_CluiData.protoFilter), "%s%s", g_CluiData.protoFilter, protoF );
+                                mir_snprintf( g_CluiData.protoFilter, SIZEOF(g_CluiData.protoFilter), "%s%s", g_CluiData.protoFilter, protoF );
                                 g_CluiData.bFilterEffective = CLVM_FILTER_PROTOS;
                             }
                         }
@@ -1043,13 +1040,13 @@ LRESULT CALLBACK ModernStatusProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam
                                     continue;
 
                                 char protoF[ sizeof(g_CluiData.protoFilter) ];
-                                mir_snprintf( protoF, sizeof(protoF), "%s|", accs[i]->szModuleName );
+                                mir_snprintf( protoF, SIZEOF(protoF), "%s|", accs[i]->szModuleName );
                                 if ( strstri( g_CluiData.protoFilter, protoF ) )
                                 {
                                     char * temp = mir_utf8encodeT( accs[i]->tszAccountName );
                                     if ( !first )
-                                        strncat( filterName, "; ", sizeof(filterName) - strlen(filterName) );
-                                    strncat( filterName, temp, sizeof(filterName) - strlen(filterName) );
+                                        strncat( filterName, "; ", SIZEOF(filterName) - strlen(filterName) );
+                                    strncat( filterName, temp, SIZEOF(filterName) - strlen(filterName) );
                                     first = false;
                                     mir_free( temp );
                                 }

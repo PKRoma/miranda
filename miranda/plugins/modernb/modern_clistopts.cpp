@@ -133,7 +133,7 @@ static INT_PTR CALLBACK DlgProcItemRowOpts(HWND hwndDlg, UINT msg, WPARAM wParam
 				int type;
 				int pos=0;
 
-				mir_snprintf(tmp, sizeof(tmp), "RowPos%d", i);
+				mir_snprintf(tmp, SIZEOF(tmp), "RowPos%d", i);
 				type = ModernGetSettingWord(NULL, "CList", tmp, i);
 
 				switch(type)
@@ -337,7 +337,7 @@ static INT_PTR CALLBACK DlgProcItemRowOpts(HWND hwndDlg, UINT msg, WPARAM wParam
 							for(i = 0 ; i < NUM_ITEM_TYPE ; i++)
 							{
 								char tmp[128];
-								mir_snprintf(tmp, sizeof(tmp), "RowPos%d", i);
+								mir_snprintf(tmp, SIZEOF(tmp), "RowPos%d", i);
 								ModernWriteSettingWord(NULL,"CList",tmp,(WORD)SendMessage(hwndList, LB_GETITEMDATA, i, 0));
 							}
 

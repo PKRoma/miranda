@@ -215,31 +215,31 @@ static void UpdateStatusBarOptionsDisplay(HWND hwndDlg)
 					SendMessage(hwndComboBox, CB_ADDSTRING, 0, (LPARAM)accs[i]->tszAccountName);
 #endif
 
-					mir_snprintf(buf, sizeof(buf), "SBarAccountIsCustom_%s", szName);
+					mir_snprintf(buf, SIZEOF(buf), "SBarAccountIsCustom_%s", szName);
 					dat[i].AccountIsCustomized = ModernGetSettingByte(NULL,"CLUI", buf, SETTING_SBARACCOUNTISCUSTOM_DEFAULT);
 
-					mir_snprintf(buf, sizeof(buf), "HideAccount_%s", szName);
+					mir_snprintf(buf, SIZEOF(buf), "HideAccount_%s", szName);
 					dat[i].HideAccount = ModernGetSettingByte(NULL,"CLUI", buf, SETTING_SBARHIDEACCOUNT_DEFAULT);
 
-					mir_snprintf(buf, sizeof(buf), "SBarShow_%s", szName);
+					mir_snprintf(buf, SIZEOF(buf), "SBarShow_%s", szName);
 					dat[i].SBarShow = ModernGetSettingByte(NULL,"CLUI", buf, SETTING_SBARSHOW_DEFAULT);
 
-					mir_snprintf(buf, sizeof(buf), "SBarRightClk_%s", szName);
+					mir_snprintf(buf, SIZEOF(buf), "SBarRightClk_%s", szName);
 					dat[i].SBarRightClk = ModernGetSettingByte(NULL,"CLUI", buf, SETTING_SBARRIGHTCLK_DEFAULT);
 
-					mir_snprintf(buf, sizeof(buf), "ShowUnreadEmails_%s", szName);
+					mir_snprintf(buf, SIZEOF(buf), "ShowUnreadEmails_%s", szName);
 					dat[i].ShowUnreadEmails = ModernGetSettingByte(NULL,"CLUI", buf, SETTING_SHOWUNREADEMAILS_DEFAULT);
 
-					mir_snprintf(buf, sizeof(buf), "ShowXStatus_%s", szName);
+					mir_snprintf(buf, SIZEOF(buf), "ShowXStatus_%s", szName);
 					dat[i].ShowXStatus = ModernGetSettingByte(NULL,"CLUI", buf, SETTING_SHOWXSTATUS_DEFAULT);
 
-					mir_snprintf(buf, sizeof(buf), "UseConnectingIcon_%s", szName);
+					mir_snprintf(buf, SIZEOF(buf), "UseConnectingIcon_%s", szName);
 					dat[i].UseConnectingIcon = ModernGetSettingByte(NULL,"CLUI", buf, SETTING_USECONNECTINGICON_DEFAULT);
 
-					mir_snprintf(buf, sizeof(buf), "PaddingLeft_%s", szName);
+					mir_snprintf(buf, SIZEOF(buf), "PaddingLeft_%s", szName);
 					dat[i].PaddingLeft = ModernGetSettingDword(NULL,"CLUI", buf, SETTING_PADDINGLEFT_DEFAULT);
 
-					mir_snprintf(buf, sizeof(buf), "PaddingRight_%s", szName);
+					mir_snprintf(buf, SIZEOF(buf), "PaddingRight_%s", szName);
 					dat[i].PaddingRight = ModernGetSettingDword(NULL,"CLUI", buf, SETTING_PADDINGRIGHT_DEFAULT);
 				}
 
@@ -279,7 +279,7 @@ static void UpdateStatusBarOptionsDisplay(HWND hwndDlg)
 			{
 				int i, item;
 				TCHAR *align[]={_T("Left"), _T("Center"), _T("Right")};
-				for (i=0; i<sizeof(align)/sizeof(char*); i++) {
+				for (i=0; i<SIZEOF(align); i++) {
 					item=SendDlgItemMessage(hwndDlg,IDC_SBAR_HORIZ_ALIGN,CB_ADDSTRING,0,(LPARAM)TranslateTS(align[i]));
 				}
 
@@ -289,7 +289,7 @@ static void UpdateStatusBarOptionsDisplay(HWND hwndDlg)
 			{
 				int i, item;
 				TCHAR *align[]={_T("Top"), _T("Center"), _T("Bottom")};
-				for (i=0; i<sizeof(align)/sizeof(char*); i++) {
+				for (i=0; i<SIZEOF(align); i++) {
 					item=SendDlgItemMessage(hwndDlg,IDC_SBAR_VERT_ALIGN,CB_ADDSTRING,0,(LPARAM)TranslateTS(align[i]));
 				}
 
@@ -554,25 +554,25 @@ static void UpdateStatusBarOptionsDisplay(HWND hwndDlg)
 					char *defProto = sbpo.szName;
 
 					char settingBuf[256];
-					mir_snprintf(settingBuf, sizeof(settingBuf), "SBarAccountIsCustom_%s", defProto);
+					mir_snprintf(settingBuf, SIZEOF(settingBuf), "SBarAccountIsCustom_%s", defProto);
 					ModernWriteSettingByte(NULL,"CLUI",settingBuf,(BYTE)sbpo.AccountIsCustomized);
 
-					mir_snprintf(settingBuf, sizeof(settingBuf), "HideAccount_%s", defProto);
+					mir_snprintf(settingBuf, SIZEOF(settingBuf), "HideAccount_%s", defProto);
 					ModernWriteSettingByte(NULL,"CLUI",settingBuf,(BYTE)sbpo.HideAccount);
 
-					mir_snprintf(settingBuf, sizeof(settingBuf), "SBarShow_%s", defProto);
+					mir_snprintf(settingBuf, SIZEOF(settingBuf), "SBarShow_%s", defProto);
 					ModernWriteSettingByte(NULL,"CLUI",settingBuf,(BYTE)sbpo.SBarShow);
-					mir_snprintf(settingBuf, sizeof(settingBuf), "SBarRightClk_%s", defProto);
+					mir_snprintf(settingBuf, SIZEOF(settingBuf), "SBarRightClk_%s", defProto);
 					ModernWriteSettingByte(NULL,"CLUI",settingBuf,(BYTE)sbpo.SBarRightClk);
-					mir_snprintf(settingBuf, sizeof(settingBuf), "UseConnectingIcon_%s", defProto);
+					mir_snprintf(settingBuf, SIZEOF(settingBuf), "UseConnectingIcon_%s", defProto);
 					ModernWriteSettingByte(NULL,"CLUI",settingBuf,(BYTE)sbpo.UseConnectingIcon);
-					mir_snprintf(settingBuf, sizeof(settingBuf), "ShowUnreadEmails_%s", defProto);
+					mir_snprintf(settingBuf, SIZEOF(settingBuf), "ShowUnreadEmails_%s", defProto);
 					ModernWriteSettingByte(NULL,"CLUI",settingBuf,(BYTE)sbpo.ShowUnreadEmails);
-					mir_snprintf(settingBuf, sizeof(settingBuf), "ShowXStatus_%s", defProto);
+					mir_snprintf(settingBuf, SIZEOF(settingBuf), "ShowXStatus_%s", defProto);
 					ModernWriteSettingByte(NULL,"CLUI",settingBuf,sbpo.ShowXStatus);
-					mir_snprintf(settingBuf, sizeof(settingBuf), "PaddingLeft_%s", defProto);
+					mir_snprintf(settingBuf, SIZEOF(settingBuf), "PaddingLeft_%s", defProto);
 					ModernWriteSettingDword(NULL,"CLUI",settingBuf,sbpo.PaddingLeft);
-					mir_snprintf(settingBuf, sizeof(settingBuf), "PaddingRight_%s", defProto);
+					mir_snprintf(settingBuf, SIZEOF(settingBuf), "PaddingRight_%s", defProto);
 					ModernWriteSettingDword(NULL,"CLUI",settingBuf,sbpo.PaddingRight);
 				}
 
