@@ -659,7 +659,7 @@ int CMsnProto::OnDbSettingChanged(WPARAM wParam,LPARAM lParam)
 
 int CMsnProto::OnIdleChanged(WPARAM wParam, LPARAM lParam)
 {
-	if (!msnLoggedIn)
+	if (!msnLoggedIn || m_iStatus == ID_STATUS_INVISIBLE)
 		return 0;
 
 	bool bIdle = (lParam & IDF_ISIDLE) != 0;
