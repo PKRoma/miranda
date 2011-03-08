@@ -21,7 +21,7 @@ void Log(const char *file,int line,const char *fmt,...)
 		file_tmp++;
 
 	va_start(vararg,fmt);
-	mir_vsnprintf(str,sizeof(str),fmt,vararg);
+	mir_vsnprintf(str,SIZEOF(str),fmt,vararg);
 	va_end(vararg);
     {
         char * tmp=str;
@@ -31,7 +31,7 @@ void Log(const char *file,int line,const char *fmt,...)
            tmp++;
         }        
     }
-    mir_snprintf(buf,sizeof(buf),"clist_modern:[%u - %u]: %s \t\t(%s Ln %d)\n",GetCurrentThreadId(),GetTickCount(),str,file_tmp,line);
+    mir_snprintf(buf,SIZEOF(buf),"clist_modern:[%u - %u]: %s \t\t(%s Ln %d)\n",GetCurrentThreadId(),GetTickCount(),str,file_tmp,line);
 #ifdef _FILELOG_
     {
         FILE *fp;

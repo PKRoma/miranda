@@ -625,7 +625,7 @@ static void PaintWorker(TBBUTTONDATA *lpSBData, HDC hdcPaint , POINT * pOffset)
 		{
 			char szRequest[128];
 			/* painting */
-			_snprintf(szRequest,sizeof(szRequest),"Button,ID=%s,Hovered=%s,Pressed=%s,Focused=%s",
+			mir_snprintf(szRequest,SIZEOF(szRequest),"Button,ID=%s,Hovered=%s,Pressed=%s,Focused=%s",
 				lpSBData->szButtonID,				// ID		
 				b2str(lpSBData->nStateId==PBS_HOT),	// Hovered
 				b2str(lpSBData->nStateId==PBS_PRESSED || lpSBData->pbState == TRUE),	// Pressed

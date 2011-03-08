@@ -746,7 +746,7 @@ static int LocateStorePosition(int Frameid,int maxstored)
 	for( int i=0;i<maxstored;i++) 
     {
         
-        mir_snprintf(settingname,sizeof(settingname),"Name%d",i);
+        mir_snprintf(settingname,SIZEOF(settingname),"Name%d",i);
         DBVARIANT dbv={0};
         if ( ModernGetSettingTString( NULL, CLUIFrameModule, settingname, &dbv ) )
             continue;

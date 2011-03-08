@@ -39,7 +39,7 @@ void ShowTracePopup(const char *text)
 	static int num = 0;
 	char tmp[1024];
 
-	mir_snprintf(tmp, sizeof(tmp), "CM TRACE %d: %s", num, text);
+	mir_snprintf(tmp, SIZEOF(tmp), "CM TRACE %d: %s", num, text);
 	TRACE(tmp);
 	TRACE("\n");
 	num++;
@@ -65,13 +65,13 @@ void ShowPopup(const char *title, const char *description, int type)
 	ppd.lchContact = 0; 
 	ppd.lchIcon = LoadSkinnedIcon(SKINICON_OTHER_MIRANDA);
 
-	strncpy(ppd.lpzContactName, title == NULL ? "Modern Contact List" : title, sizeof(ppd.lpzContactName)-1);
-	ppd.lpzContactName[sizeof(ppd.lpzContactName)-1] = '\0';
+	strncpy(ppd.lpzContactName, title == NULL ? "Modern Contact List" : title, SIZEOF(ppd.lpzContactName)-1);
+	ppd.lpzContactName[SIZEOF(ppd.lpzContactName)-1] = '\0';
 
 	if (description != NULL)
 	{
-		strncpy(ppd.lpzText, description, sizeof(ppd.lpzText)-1);
-		ppd.lpzText[sizeof(ppd.lpzText)-1] = '\0';
+		strncpy(ppd.lpzText, description, SIZEOF(ppd.lpzText)-1);
+		ppd.lpzText[SIZEOF(ppd.lpzText)-1] = '\0';
 	}
 
 	if (type == POPUP_TYPE_NORMAL || type == POPUP_TYPE_TEST)

@@ -122,7 +122,7 @@ static int FAV_OnContactMenuBuild(WPARAM wParam,LPARAM lParam)
 		{
 			int bufsize=(lstrlen(FAVMENUROOTNAME)+lstrlen(rates[bContactRate])+15)*sizeof(TCHAR);
 			name=(TCHAR*)_alloca(bufsize);
-			_sntprintf(name,bufsize/sizeof(TCHAR),_T("%s (%s)"),FAVMENUROOTNAME,rates[bContactRate]);
+			mir_sntprintf(name,bufsize/sizeof(TCHAR),_T("%s (%s)"),FAVMENUROOTNAME,rates[bContactRate]);
 			mi.ptszName=name;            
 		}
 		//mi.pszService="ContactRate MenuItem NoService Fake";

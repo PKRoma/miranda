@@ -117,8 +117,8 @@ struct CListEvent* cli_AddEvent(CLISTEVENT *cle)
 			MENUITEMINFO mii = {0};
 			mii.cbSize = sizeof(mii);
 			mii.fMask = MIIM_DATA | MIIM_BITMAP | MIIM_ID;
-			if (p->cle.pszService && (    !strncmp("SRMsg/ReadMessage", p->cle.pszService, sizeof("SRMsg/ReadMessage"))
-								   	   || !strncmp("GChat/DblClickEvent", p->cle.pszService, sizeof("GChat/DblClickEvent")) ))
+			if (p->cle.pszService && (    !strncmp("SRMsg/ReadMessage", p->cle.pszService, SIZEOF("SRMsg/ReadMessage"))
+								   	   || !strncmp("GChat/DblClickEvent", p->cle.pszService, SIZEOF("GChat/DblClickEvent")) ))
 										
 			{
 				// dup check only for msg events
@@ -140,9 +140,9 @@ struct CListEvent* cli_AddEvent(CLISTEVENT *cle)
 					TCHAR szwProto[64];
 					MultiByteToWideChar(CP_ACP, 0, szProto, -1, szwProto, 64);
 					szwProto[63] = 0;
-					_snwprintf(szBuffer, SIZEOF(szBuffer), L"%s: %s (%s)", szwProto, szName, szStatus);
+					mir_sntprintf(szBuffer, SIZEOF(szBuffer), _T("%s: %s (%s)"), szwProto, szName, szStatus);
 #else
-					_snprintf(szBuffer, SIZEOF(szBuffer), "%s: %s (%s)", szProto, szName, szStatus);
+					mir_snprintf(szBuffer, SIZEOF(szBuffer), "%s: %s (%s)", szProto, szName, szStatus);
 #endif
 					szBuffer[127] = 0;
 					AppendMenu(g_CluiData.hMenuNotify, MF_BYCOMMAND | MF_STRING, g_CluiData.wNextMenuID, szBuffer);

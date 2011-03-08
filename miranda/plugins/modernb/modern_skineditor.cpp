@@ -78,7 +78,7 @@ int TreeAddObject(HWND hwndDlg, int ID, OPT_OBJECT_DATA * data)
 	path=data->szPath?mir_strdup(data->szPath):(data->szName[1]=='$')?mir_strdup((data->szName)+2):NULL;
 	if (!path)
 	{
-		_snprintf(buf,sizeof(buf),"$(other)/%s",(data->szName)+1);
+		mir_snprintf(buf,SIZEOF(buf),"$(other)/%s",(data->szName)+1);
 		path=mir_strdup(buf);
 	}
 
@@ -241,7 +241,7 @@ void SetControls(HWND hwndDlg, char * str)
 		SetAppropriateGroups(hwndDlg,-1); 
 		return;
 	}
-	GetParamN(str,buf,sizeof(buf),1,',',TRUE);
+	GetParamN(str,buf,SIZEOF(buf),1,',',TRUE);
 	if (mir_bool_strcmpi(buf,"Solid")) Type=1;
 	else if (mir_bool_strcmpi(buf,"Image")) Type=2;
 	else if (mir_bool_strcmpi(buf,"Fragment")) Type=3;
@@ -254,10 +254,10 @@ void SetControls(HWND hwndDlg, char * str)
 			int r,g,b,a;
 			r=g=b=200;
 			a=255;
-			r=atoi(GetParamN(str,buf,sizeof(buf),2,',',TRUE));
-			g=atoi(GetParamN(str,buf,sizeof(buf),3,',',TRUE));
-			b=atoi(GetParamN(str,buf,sizeof(buf),4,',',TRUE));
-			a=atoi(GetParamN(str,buf,sizeof(buf),5,',',TRUE));
+			r=atoi(GetParamN(str,buf,SIZEOF(buf),2,',',TRUE));
+			g=atoi(GetParamN(str,buf,SIZEOF(buf),3,',',TRUE));
+			b=atoi(GetParamN(str,buf,SIZEOF(buf),4,',',TRUE));
+			a=atoi(GetParamN(str,buf,SIZEOF(buf),5,',',TRUE));
 			SendDlgItemMessage(hwndDlg,IDC_COLOR,CPM_SETCOLOUR,(WPARAM)0,(LPARAM)RGB(r,g,b));
 			SendDlgItemMessage(hwndDlg,IDC_COLOR,CPM_SETDEFAULTCOLOUR,(WPARAM)0,(LPARAM)RGB(r,g,b));
 			SendDlgItemMessage(hwndDlg,IDC_SPIN_ALPHA,UDM_SETPOS,0,MAKELONG(a,0));
@@ -271,11 +271,11 @@ void SetControls(HWND hwndDlg, char * str)
 			l=t=r=b=0;
 			a=255;
 			
-			l=atoi(GetParamN(str,buf,sizeof(buf),4,',',TRUE));
-			t=atoi(GetParamN(str,buf,sizeof(buf),5,',',TRUE));
-			r=atoi(GetParamN(str,buf,sizeof(buf),6,',',TRUE));
-			b=atoi(GetParamN(str,buf,sizeof(buf),7,',',TRUE));
-			a=atoi(GetParamN(str,buf,sizeof(buf),8,',',TRUE));
+			l=atoi(GetParamN(str,buf,SIZEOF(buf),4,',',TRUE));
+			t=atoi(GetParamN(str,buf,SIZEOF(buf),5,',',TRUE));
+			r=atoi(GetParamN(str,buf,SIZEOF(buf),6,',',TRUE));
+			b=atoi(GetParamN(str,buf,SIZEOF(buf),7,',',TRUE));
+			a=atoi(GetParamN(str,buf,SIZEOF(buf),8,',',TRUE));
 			
 			SendDlgItemMessage(hwndDlg,IDC_SPIN_ALPHA,UDM_SETPOS,0,MAKELONG(a,0));
 			SendDlgItemMessage(hwndDlg,IDC_SPIN_LEFT,UDM_SETPOS,0,MAKELONG(l,0));
@@ -283,10 +283,10 @@ void SetControls(HWND hwndDlg, char * str)
 			SendDlgItemMessage(hwndDlg,IDC_SPIN_RIGHT,UDM_SETPOS,0,MAKELONG(r,0));
 			SendDlgItemMessage(hwndDlg,IDC_SPIN_BOTTOM,UDM_SETPOS,0,MAKELONG(b,0));
 			
-			GetParamN(str,buf,sizeof(buf),2,',',TRUE);
+			GetParamN(str,buf,SIZEOF(buf),2,',',TRUE);
 			SendDlgItemMessageA(hwndDlg,IDC_FILE,WM_SETTEXT,0,(LPARAM)buf);
 			
-			GetParamN(str,buf,sizeof(buf),3,',',TRUE);
+			GetParamN(str,buf,SIZEOF(buf),3,',',TRUE);
 			if (mir_bool_strcmpi(buf,"TileBoth")) fitmode=FM_TILE_BOTH;
             else if (mir_bool_strcmpi(buf,"TileVert")) fitmode=FM_TILE_VERT;
             else if (mir_bool_strcmpi(buf,"TileHorz")) fitmode=FM_TILE_HORZ;
@@ -305,16 +305,16 @@ void SetControls(HWND hwndDlg, char * str)
 			x=y=w=h=0;
 			a=255;
 			
-			x=atoi(GetParamN(str,buf,sizeof(buf),3,',',TRUE));
-			y=atoi(GetParamN(str,buf,sizeof(buf),4,',',TRUE));
-			w=atoi(GetParamN(str,buf,sizeof(buf),5,',',TRUE));
-			h=atoi(GetParamN(str,buf,sizeof(buf),6,',',TRUE));
+			x=atoi(GetParamN(str,buf,SIZEOF(buf),3,',',TRUE));
+			y=atoi(GetParamN(str,buf,SIZEOF(buf),4,',',TRUE));
+			w=atoi(GetParamN(str,buf,SIZEOF(buf),5,',',TRUE));
+			h=atoi(GetParamN(str,buf,SIZEOF(buf),6,',',TRUE));
 
-			l=atoi(GetParamN(str,buf,sizeof(buf),8,',',TRUE));
-			t=atoi(GetParamN(str,buf,sizeof(buf),9,',',TRUE));
-			r=atoi(GetParamN(str,buf,sizeof(buf),10,',',TRUE));
-			b=atoi(GetParamN(str,buf,sizeof(buf),11,',',TRUE));
-			a=atoi(GetParamN(str,buf,sizeof(buf),12,',',TRUE));
+			l=atoi(GetParamN(str,buf,SIZEOF(buf),8,',',TRUE));
+			t=atoi(GetParamN(str,buf,SIZEOF(buf),9,',',TRUE));
+			r=atoi(GetParamN(str,buf,SIZEOF(buf),10,',',TRUE));
+			b=atoi(GetParamN(str,buf,SIZEOF(buf),11,',',TRUE));
+			a=atoi(GetParamN(str,buf,SIZEOF(buf),12,',',TRUE));
 			
 			SendDlgItemMessage(hwndDlg,IDC_SPIN_ALPHA,UDM_SETPOS,0,MAKELONG(a,0));
 			SendDlgItemMessage(hwndDlg,IDC_SPIN_LEFT,UDM_SETPOS,0,MAKELONG(l,0));
@@ -327,10 +327,10 @@ void SetControls(HWND hwndDlg, char * str)
 			SendDlgItemMessage(hwndDlg,IDC_SPIN_WIDTH,UDM_SETPOS,0,MAKELONG(w,0));
 			SendDlgItemMessage(hwndDlg,IDC_SPIN_HEIGHT,UDM_SETPOS,0,MAKELONG(h,0));
 			
-			GetParamN(str,buf,sizeof(buf),2,',',TRUE);
+			GetParamN(str,buf,SIZEOF(buf),2,',',TRUE);
 			SendDlgItemMessageA(hwndDlg,IDC_FILE,WM_SETTEXT,0,(LPARAM)buf);
 			
-			GetParamN(str,buf,sizeof(buf),7,',',TRUE);
+			GetParamN(str,buf,SIZEOF(buf),7,',',TRUE);
 			if (mir_bool_strcmpi(buf,"TileBoth")) fitmode=FM_TILE_BOTH;
             else if (mir_bool_strcmpi(buf,"TileVert")) fitmode=FM_TILE_VERT;
             else if (mir_bool_strcmpi(buf,"TileHorz")) fitmode=FM_TILE_HORZ;
@@ -376,7 +376,7 @@ char * MadeString(HWND hwndDlg)
 	switch (i)
 	{
 	case 0:
-		_snprintf(buf,sizeof(buf),"Glyph,Skip");
+		mir_snprintf(buf,SIZEOF(buf),"Glyph,Skip");
 		break;
 	case 1:
 		{
@@ -384,7 +384,7 @@ char * MadeString(HWND hwndDlg)
 			DWORD col;
 			a=(BYTE)SendDlgItemMessage(hwndDlg,IDC_SPIN_ALPHA,UDM_GETPOS,0,0);
 			col=(DWORD)SendDlgItemMessage(hwndDlg,IDC_COLOR,CPM_GETCOLOUR,(WPARAM)0,(LPARAM)0);
-			_snprintf(buf,sizeof(buf),"Glyph,Solid,%d,%d,%d,%d",GetRValue(col),GetGValue(col),GetBValue(col),a);
+			mir_snprintf(buf,SIZEOF(buf),"Glyph,Solid,%d,%d,%d,%d",GetRValue(col),GetGValue(col),GetBValue(col),a);
 		}
 		break;
 	case 2:
@@ -400,7 +400,7 @@ char * MadeString(HWND hwndDlg)
 			b=(WORD)SendDlgItemMessage(hwndDlg,IDC_SPIN_BOTTOM,UDM_GETPOS,0,0);
 			SendDlgItemMessageA(hwndDlg,IDC_FILE,WM_GETTEXT,(WPARAM)MAX_PATH,(LPARAM)buf_name);
 			i=SendDlgItemMessage(hwndDlg,IDC_FIT,CB_GETCURSEL,0,0);
-			_snprintf(buf,sizeof(buf),"Glyph,Image,%s,%s,%d,%d,%d,%d,%d",buf_name,
+			mir_snprintf(buf,SIZEOF(buf),"Glyph,Image,%s,%s,%d,%d,%d,%d,%d",buf_name,
 				//fitmode
 				(i==FM_TILE_BOTH)?"TileBoth":
 					(i==FM_TILE_VERT)?"TileVert":
@@ -429,7 +429,7 @@ char * MadeString(HWND hwndDlg)
 
 			SendDlgItemMessageA(hwndDlg,IDC_FILE,WM_GETTEXT,(WPARAM)MAX_PATH,(LPARAM)buf_name);
 			i=SendDlgItemMessage(hwndDlg,IDC_FIT,CB_GETCURSEL,0,0);
-			_snprintf(buf,sizeof(buf),"Glyph,Fragment,%s,%d,%d,%d,%d,%s,%d,%d,%d,%d,%d",buf_name,x,y,w,h,
+			mir_snprintf(buf,SIZEOF(buf),"Glyph,Fragment,%s,%d,%d,%d,%d,%s,%d,%d,%d,%d,%d",buf_name,x,y,w,h,
 				//fitmode
 				(i==FM_TILE_BOTH)?"TileBoth":
 					(i==FM_TILE_VERT)?"TileVert":
@@ -664,7 +664,7 @@ INT_PTR CALLBACK DlgSkinEditorOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 						ofn.hInstance = NULL;					
 						ofn.lpstrFilter = "Images (*.png,*.jpg,*.bmp,*.gif,*.tga)\0*.png;*.jpg;*.jpeg;*.bmp;*.gif;*.tga\0All files (*.*)\0*.*\0\0";
 						ofn.Flags = (OFN_FILEMUSTEXIST | OFN_HIDEREADONLY);
-						SendDlgItemMessageA(hwndDlg,IDC_FILE,WM_GETTEXT,(WPARAM)sizeof(str),(LPARAM)str);
+						SendDlgItemMessageA(hwndDlg,IDC_FILE,WM_GETTEXT,(WPARAM)SIZEOF(str),(LPARAM)str);
 						if (str[0]=='\0' || strchr(str,'%'))
 						{
 							ofn.Flags|=OFN_NOVALIDATE;
@@ -676,7 +676,7 @@ INT_PTR CALLBACK DlgSkinEditorOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 						}
 						ofn.lpstrFile = str;
 						
-						ofn.nMaxFile = sizeof(str);
+						ofn.nMaxFile = SIZEOF(str);
 						ofn.nMaxFileTitle = MAX_PATH;
 						ofn.lpstrDefExt = "*.*";
 //						{
@@ -770,7 +770,7 @@ INT_PTR CALLBACK DlgSkinEditorOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 							OPT_OBJECT_DATA * data=(OPT_OBJECT_DATA*)nmtv->itemNew.lParam;
 							char buf[255];
 							
-							_snprintf(buf,sizeof(buf),"%s=%s",data->szName, data->szValue);						
+							mir_snprintf(buf,SIZEOF(buf),"%s=%s",data->szName, data->szValue);						
 							SendDlgItemMessageA(hwndDlg,IDC_EDIT1,WM_SETTEXT,0,(LPARAM)buf);					
 							SetControls(hwndDlg,data->szValue);
 							EnableWindow(GetDlgItem(hwndDlg,IDC_COPY),TRUE);

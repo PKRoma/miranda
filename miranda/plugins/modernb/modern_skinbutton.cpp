@@ -152,15 +152,15 @@ static int ModernSkinButtonPaintWorker(HWND hwnd, HDC whdc)
 					}         
 				case 'd':
 					defval=ModernGetSettingDword(NULL,section,key,defval);
-					Value=mir_strdup(_ltoa(defval,buf,sizeof(buf)));
+					Value=mir_strdup(_ltoa(defval,buf,SIZEOF(buf)));
 					break;
 				case 'w':
 					defval=ModernGetSettingWord(NULL,section,key,defval);
-					Value=mir_strdup(_ltoa(defval,buf,sizeof(buf)));
+					Value=mir_strdup(_ltoa(defval,buf,SIZEOF(buf)));
 					break;
 				case 'b':
 					defval=ModernGetSettingByte(NULL,section,key,defval);
-					Value=mir_strdup(_ltoa(defval,buf,sizeof(buf)));
+					Value=mir_strdup(_ltoa(defval,buf,SIZEOF(buf)));
 					break;
 				}
 				mir_free_and_nill(section);
