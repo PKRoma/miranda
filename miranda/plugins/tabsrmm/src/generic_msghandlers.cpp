@@ -63,7 +63,7 @@ void TSAPI DM_SaveLogAsRTF(const TWindowData* dat)
 	} else if(dat) {
 		TCHAR  szInitialDir[MAX_PATH + 2];
 
-		_tcsncpy(szFilter, _T("Rich Edit file\0*.rtf\0\0"), MAX_PATH);
+		mir_sntprintf(szFilter, SIZEOF(szFilter), _T("%s%c*.rtf%c%c"), TranslateT("Rich Edit file"), 0, 0, 0);
 		mir_sntprintf(szFilename, MAX_PATH, _T("%s.rtf"), dat->cache->getNick());
 
 		Utils::sanitizeFilename(szFilename);
@@ -1234,7 +1234,7 @@ LRESULT TSAPI DM_UpdateLastMessage(const TWindowData *dat)
 				tmi.printTimeStamp(NULL, dat->lastMessage, _T("t"), time, safe_sizeof(time), 0);
 			}
 			if (dat->pContainer->dwFlags & CNT_UINSTATUSBAR) {
-				TCHAR 		fmt[100];
+				TCHAR fmt[100];
 				mir_sntprintf(fmt, safe_sizeof(fmt), _T("UID: %s"), dat->cache->getUIN());
 				SendMessage(dat->pContainer->hwndStatus, SB_SETTEXT, 0, (LPARAM)fmt);
 			} else {

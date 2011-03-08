@@ -182,7 +182,9 @@ static void SaveAvatarToFile(TWindowData *dat, HBITMAP hbm, int isOwnPic)
 	 */
 	Utils::sanitizeFilename(szFinalFilename);
 
-	ofn.lpstrFilter = _T("Image files\0*.bmp;*.png;*.jpg;*.gif\0\0");
+	TCHAR filter[MAX_PATH];
+	mir_sntprintf(filter, SIZEOF(filter), _T("%s%c*.bmp;*.png;*.jpg;*.gif%c%c"), TranslateT("Image files"), 0, 0, 0);
+	ofn.lpstrFilter = filter;
 	if (IsWinVer2000Plus()) {
 		ofn.Flags = OFN_HIDEREADONLY | OFN_EXPLORER | OFN_ENABLESIZING | OFN_ENABLEHOOK;
 		ofn.lpfnHook = (LPOFNHOOKPROC)OpenFileSubclass;
@@ -2497,12 +2499,14 @@ void TSAPI SendHBitmapAsFile(const TWindowData* dat, HBITMAP hbmp)
 		OPENFILENAME dlg;
 		dlg.lStructSize = sizeof(dlg);
 		dlg.hwndOwner = NULL; //dat->hwnd;
-		dlg.lpstrFilter = L"JPEG-compressed images\0*.jpg\0\0";
+		TCHAR filter[MAX_PATH];
+		mir_sntprintf(filter, SIZEOF(filter), _T("%s%c*.jpg%c%c"), TranslateT("JPEG-compressed images"), 0, 0, 0);
+		dlg.lpstrFilter = filter;
 		dlg.nFilterIndex = 1;
 		dlg.lpstrFile = filename;
 		dlg.nMaxFile = MAX_PATH;
 		dlg.Flags = OFN_NOREADONLYRETURN | OFN_OVERWRITEPROMPT | OFN_PATHMUSTEXIST;
-		dlg.lpstrDefExt = L"jpg";
+		dlg.lpstrDefExt = _T("jpg");
 		if (!GetSaveFileName(&dlg))
 			return;
 	}

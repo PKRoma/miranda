@@ -1037,8 +1037,9 @@ INT_PTR CALLBACK DlgProcOptions2(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
 					}
 
 					tszReturnName[0] = 0;
+					mir_sntprintf(tszTemp, SIZEOF(tszTemp), _T("%s%c*.*%c%c"), TranslateT("All Files"), 0, 0, 0);
 
-					ofn.lpstrFilter = _T("All files\0*.*\0\0");
+					ofn.lpstrFilter = tszTemp;
 					ofn.lStructSize = OPENFILENAME_SIZE_VERSION_400;
 					ofn.hwndOwner = 0;
 					ofn.lpstrFile = tszReturnName;
