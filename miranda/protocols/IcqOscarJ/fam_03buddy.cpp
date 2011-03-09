@@ -629,7 +629,7 @@ void CIcqProto::handleUserOffline(BYTE *buf, WORD wLen)
 				disposeChain(&pChain);
 				pChain = readIntoTLVChain(&pTLV, wLen + 4, 1);
 			}
-			else if (wTLVType = 0x29 && wTLVLen == sizeof(DWORD))
+			else if (wTLVType == 0x29 && wTLVLen == sizeof(DWORD))
 			{ // get Away Since value
 				BYTE *pData = buf;
 				unpackDWord(&pData, &dwAwaySince);

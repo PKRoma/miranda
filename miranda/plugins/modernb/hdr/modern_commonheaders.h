@@ -212,8 +212,6 @@ extern int UnhookAll();
 
 
 HBITMAP ske_CreateDIB32(int cx, int cy);
-BOOL ske_SetRectOpaqueOpt(HDC memdc,RECT *fr, BOOL force);
-BOOL ske_SetRgnOpaqueOpt(HDC memdc,HRGN hrgn, BOOL force);
 
 extern void InitDisplayNameCache(void);
 extern void FreeDisplayNameCache();

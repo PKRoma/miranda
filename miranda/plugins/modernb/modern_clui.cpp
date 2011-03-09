@@ -2971,12 +2971,22 @@ LRESULT CLUI::OnDrawItem( UINT msg, WPARAM wParam, LPARAM lParam )
 			if (!g_CluiData.fLayered)
 			{	
 				char buf[255]={0};	
-				short dx=1+(dis->itemState&ODS_SELECTED?1:0)-(dis->itemState&ODS_HOTLIGHT?1:0);
+
+				short offset = 1 + ( dis->itemState&ODS_SELECTED ? 1 : 0 ) 
+								 - ( dis->itemState&ODS_HOTLIGHT ? 1 : 0 );
+				
 				HICON hIcon=LoadSkinnedIcon(SKINICON_OTHER_MIRANDA);
+				
 				CLUI_DrawMenuBackGround(m_hWnd, dis->hDC, 1, dis->itemState);
 				mir_snprintf(buf,SIZEOF(buf),"Main,ID=MainMenu,Selected=%s,Hot=%s",(dis->itemState&ODS_SELECTED)?"True":"False",(dis->itemState&ODS_HOTLIGHT)?"True":"False");
 				SkinDrawGlyph(dis->hDC,&dis->rcItem,&dis->rcItem,buf);
-				DrawState(dis->hDC,NULL,NULL,(LPARAM)hIcon,0,(dis->rcItem.right+dis->rcItem.left-GetSystemMetrics(SM_CXSMICON))/2+dx,(dis->rcItem.bottom+dis->rcItem.top-GetSystemMetrics(SM_CYSMICON))/2+dx,0,0,DST_ICON|(dis->itemState&ODS_INACTIVE&&FALSE?DSS_DISABLED:DSS_NORMAL));
+
+				int x = dis->rcItem.right  + dis->rcItem.left - GetSystemMetrics( SM_CXSMICON ) / 2 + offset;
+				int y = dis->rcItem.bottom + dis->rcItem.top  - GetSystemMetrics( SM_CYSMICON ) / 2 + offset;
+
+				DrawState( dis->hDC, NULL, NULL, (LPARAM)hIcon, 0, x, y , 0 , 0 , 
+					DST_ICON | ( dis->itemState & ODS_INACTIVE  && (((FALSE))) ? DSS_DISABLED : DSS_NORMAL ) );
+
 				CallService(MS_SKIN2_RELEASEICON, (WPARAM)hIcon, 0);
 				nMirMenuState=dis->itemState;
 			} else {

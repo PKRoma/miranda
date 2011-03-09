@@ -564,7 +564,7 @@ int Cache_GetLineText(PDNCE pdnce, int type, LPTSTR text, int text_size, TCHAR *
             {
                 // Get pdnce time
                 text[0] = 0;
-				tmi.printDateTime(pdnce->hTimeZone, _T("t"), text, SIZEOF(text), 0);
+                tmi.printDateTime( pdnce->hTimeZone, _T("t"), text, text_size, 0);
             }
 
             return TEXT_CONTACT_TIME;

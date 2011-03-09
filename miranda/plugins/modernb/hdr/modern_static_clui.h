@@ -92,7 +92,6 @@ HBITMAP ske_CreateDIB32Point(int cx, int cy, void ** bits);
 int ske_JustUpdateWindowImage();
 void ske_LoadSkinFromDB(void);
 int ske_RedrawCompleteWindow();
-BOOL ske_SetRectOpaque(HDC memdc,RECT *fr);
 int ske_UpdateWindowImage();
 int ske_ValidateFrameImageProc(RECT * r);
 

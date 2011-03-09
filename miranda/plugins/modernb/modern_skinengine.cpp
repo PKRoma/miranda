@@ -701,7 +701,7 @@ int ske_ReleaseBufferDC(HDC hDC, int keepTime)
 	return 0;
 }
 
-BOOL ske_SetRgnOpaqueOpt(HDC memdc,HRGN hrgn, BOOL force)
+BOOL ske_SetRgnOpaque(HDC memdc,HRGN hrgn, BOOL force)
 {
 	RGNDATA * rdata;
 	DWORD rgnsz;
@@ -714,14 +714,14 @@ BOOL ske_SetRgnOpaqueOpt(HDC memdc,HRGN hrgn, BOOL force)
 	rect=(RECT *)rdata->Buffer;
 	for (d=0; d<rdata->rdh.nCount; d++)
 	{
-		ske_SetRectOpaqueOpt(memdc,&rect[d], force);
+		ske_SetRectOpaque(memdc,&rect[d], force);
 	}
 	mir_free_and_nill(rdata);
 	return TRUE;
 }
 
 
-BOOL ske_SetRectOpaqueOpt(HDC memdc,RECT *fr, BOOL force)
+BOOL ske_SetRectOpaque(HDC memdc,RECT *fr, BOOL force)
 {
 	int f=0;
 	BYTE * bits;
@@ -771,16 +771,6 @@ BOOL ske_SetRectOpaqueOpt(HDC memdc,RECT *fr, BOOL force)
 	}
 	// DeleteObject(hbmp);
 	return 1;
-}
-
-BOOL ske_SetRgnOpaque(HDC memdc,HRGN hrgn)
-{
-	return ske_SetRgnOpaqueOpt(memdc, hrgn, FALSE);
-}
-
-BOOL ske_SetRectOpaque(HDC memdc,RECT *fr)
-{
-	return ske_SetRectOpaqueOpt(memdc, fr, FALSE);
 }
 
 static BOOL ske_SkinFillRectByGlyph(HDC hDest, HDC hSource, RECT * rFill, RECT * rGlyph, RECT * rClip, BYTE mode, BYTE drawMode, int depth)
@@ -2892,10 +2882,10 @@ static BOOL ske_DrawTextEffect(BYTE* destPt,BYTE* maskPt, DWORD width, DWORD hei
 	//Here perform effect on buffer and place results to outbuf
 	for (k=0; k<(effectCount&0x7F); k++)
 	{
-		minX=max(0,minX+mcLeftStart-2);
-		minY=max(0,minY+mcTopStart-2);
-		maxX=min((int)width,maxX+mcRightEnd-1);
-		maxY=min((int)height,maxX+mcBottomEnd-1);
+		minX = max( 0,           minX + mcLeftStart - 2 );
+		minY = max( 0,           minY + mcTopStart  - 2 );
+		maxX = min( (int)width,  maxX + mcRightEnd  - 1 );
+		maxY = min( (int)height, maxY + mcBottomEnd - 1 );
 
 		outbuf=(sbyte*)malloc(width*height*sizeof(sbyte));
 		memset(outbuf,0,width*height*sizeof(sbyte));

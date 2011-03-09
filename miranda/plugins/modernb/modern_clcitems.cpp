@@ -325,6 +325,41 @@ __inline BOOL CLCItems_IsShowOfflineGroup(struct ClcGroup* group)
 	return (groupFlags&GROUPF_SHOWOFFLINE)!=0;
 }
 
+HANDLE SaveSelection( struct ClcData *dat )
+{
+	ClcContact * selcontact = NULL;
+
+	if ( pcli->pfnGetRowByIndex( dat, dat->selection, &selcontact, NULL ) == -1 )
+		return NULL;
+	else
+		return pcli->pfnContactToHItem( selcontact );
+}
+
+int RestoreSelection( struct ClcData *dat, HANDLE hSelected )
+{
+	ClcContact * selcontact = NULL;
+	ClcGroup   * selgroup   = NULL;
+
+	if ( !hSelected || !pcli->pfnFindItem( dat->hWnd, dat, hSelected, &selcontact, &selgroup, NULL) )
+	{
+		dat->selection = -1;
+		return dat->selection;
+	}
+
+	if ( !selcontact->isSubcontact )
+	{
+		dat->selection = pcli->pfnGetRowsPriorTo( &dat->list, selgroup, li.List_IndexOf((SortedList*)&selgroup->cl, selcontact ) );
+	}
+	else
+	{ 
+		dat->selection = pcli->pfnGetRowsPriorTo(&dat->list, selgroup, li.List_IndexOf((SortedList*)&selgroup->cl, selcontact->subcontacts ) );
+	
+		if (dat->selection != -1 ) 
+			dat->selection += selcontact->isSubcontact;
+	}
+	return dat->selection;
+
+}
 
 void cliRebuildEntireList(HWND hwnd,struct ClcData *dat)
 {
@@ -348,6 +383,8 @@ void cliRebuildEntireList(HWND hwnd,struct ClcData *dat)
 	dat->list.cl.count = dat->list.cl.limit = 0;
 	dat->list.cl.increment = 50;
 	dat->NeedResort=1;
+
+	HANDLE hSelected = SaveSelection( dat );
 	dat->selection=-1;
 	dat->HiLightMode=ModernGetSettingByte(NULL,"CLC","HiLightMode",SETTING_HILIGHTMODE_DEFAULT);
 	{
@@ -369,16 +406,8 @@ void cliRebuildEntireList(HWND hwnd,struct ClcData *dat)
         int nHiddenStatus;
 		cont=NULL;
 		cacheEntry=(pdisplayNameCacheEntry)pcli->pfnGetCacheEntry(hContact);
-/*
-		if( (cacheEntry->szProto || style&CLS_SHOWHIDDEN ) &&
-			(
-			 (dat->IsMetaContactsEnabled||(meta_module && mir_strcmp(cacheEntry->szProto,meta_module))
-			 &&(style&CLS_SHOWHIDDEN || (!cacheEntry->Hidden && !cacheEntry->isUnknown)) 
-			 &&(!cacheEntry->HiddenSubcontact || !dat->IsMetaContactsEnabled)
-			)
-		  )
-*/		
-        nHiddenStatus=CLVM_GetContactHiddenStatus(hContact, NULL, dat);
+
+		nHiddenStatus=CLVM_GetContactHiddenStatus(hContact, NULL, dat);
 		if ( (style&CLS_SHOWHIDDEN && nHiddenStatus!=-1) || !nHiddenStatus)
 		{
 
@@ -438,38 +467,20 @@ void cliRebuildEntireList(HWND hwnd,struct ClcData *dat)
 			group->scanIndex++;
 		}
 	}
-	
 
 	pcli->pfnSortCLC(hwnd,dat,0);
+
+	RestoreSelection( dat, hSelected );
 
 }
 
 void cli_SortCLC( HWND hwnd, struct ClcData *dat, int useInsertionSort )
 {
-	HANDLE hSelItem;
-	struct ClcContact *selcontact;
-	struct ClcGroup *selgroup;
-	
-	if ( 1 ) {
-		if (pcli->pfnGetRowByIndex(dat, dat->selection, &selcontact, NULL) == -1)
-			hSelItem = NULL;
-		else
-			hSelItem = pcli->pfnContactToHItem(selcontact);
-	}
+	HANDLE hSelected = SaveSelection( dat );
+
 	corecli.pfnSortCLC(hwnd,dat,useInsertionSort);
-	if (hSelItem)
-		if (pcli->pfnFindItem(hwnd, dat, hSelItem, &selcontact, &selgroup, NULL))
-		{
-			if (!selcontact->isSubcontact)
-				dat->selection =pcli->pfnGetRowsPriorTo(&dat->list, selgroup, li.List_IndexOf((SortedList*)&selgroup->cl,selcontact));
-			else
-			{  
-				int i=selcontact->isSubcontact;
-				dat->selection=pcli->pfnGetRowsPriorTo(&dat->list, selgroup, li.List_IndexOf((SortedList*)&selgroup->cl,selcontact->subcontacts));
-				if (dat->selection!=-1) dat->selection+=i;
-			}
-		}
-	
+
+	RestoreSelection( dat, hSelected );
 }
 
 int GetNewSelection(struct ClcGroup *group, int selection, int direction)
