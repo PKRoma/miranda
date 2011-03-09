@@ -151,7 +151,18 @@ void cliScrollTo(HWND hwnd,struct ClcData *dat,int desty,int noSmooth)
 	if(abs(desty-dat->yScroll)<4) noSmooth=1;
 	if(!noSmooth && dat->exStyle&CLS_EX_NOSMOOTHSCROLLING) noSmooth=1;
 	previousy=dat->yScroll;
-	if(!noSmooth) {
+
+	BOOL keyDown = (    ( GetKeyState( VK_UP    )
+						| GetKeyState( VK_DOWN  )
+						| GetKeyState( VK_LEFT  )
+						| GetKeyState( VK_RIGHT )
+						| GetKeyState( VK_PRIOR )
+						| GetKeyState( VK_NEXT  )
+						| GetKeyState( VK_HOME  )
+						| GetKeyState( VK_END   ) ) & 0x8000 );
+
+	if(!noSmooth && !keyDown) 
+	{
 		startTick=GetTickCount();
 		for(;;) {
 			nowTick=GetTickCount();
