@@ -583,7 +583,7 @@ static void   sttRegisterToolBarButton(char * pszButtonID, char * pszButtonName,
 	}
 	else 
 	{		
-		if ((BYTE)pszButtonName) tbb.tbbFlags=TBBF_FLEXSIZESEPARATOR;
+		if ( pszButtonName[0] == 'D' ) tbb.tbbFlags=TBBF_FLEXSIZESEPARATOR;
 		else tbb.tbbFlags=TBBF_ISSEPARATOR;
 	}
 	tbb.tbbFlags|=(bVisByDefault ? TBBF_VISIBLE :0 );
@@ -596,11 +596,11 @@ static void   sttSetButtonPressed( char * hButton, BOOL bPressed )
 }
 static void   sttAddStaticSeparator( BOOL bVisibleByDefault )
 {
-	sttRegisterToolBarButton( NULL, (char*)FALSE, NULL, NULL, NULL, 0, 0, 0, bVisibleByDefault );
+	sttRegisterToolBarButton( NULL, "Separator", NULL, NULL, NULL, 0, 0, 0, bVisibleByDefault );
 }
 static void   sttAddDynamicSeparator( BOOL bVisibleByDefault )
 {
-	sttRegisterToolBarButton( NULL, (char*)TRUE, NULL, NULL, NULL, 0, 0, 0, bVisibleByDefault );
+	sttRegisterToolBarButton( NULL, "Dynamic separator", NULL, NULL, NULL, 0, 0, 0, bVisibleByDefault );
 }
 static void   sttGetButtonSettings(char * ID, BYTE * pbVisible, DWORD * pdwOrder, BYTE * pbPanelID)
 {
