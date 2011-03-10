@@ -627,7 +627,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int )
 		CoCreateInstance(CLSID_TaskbarList, NULL, CLSCTX_ALL, IID_ITaskbarList3, (void**)&pTaskbarInterface);
 
 	InitialiseModularEngine();
-	ParseCommandLine();
+//	ParseCommandLine();
 
 	if (LoadDefaultModules()) {
 		NotifyEventHooks(hShutdownEvent,0,0);
