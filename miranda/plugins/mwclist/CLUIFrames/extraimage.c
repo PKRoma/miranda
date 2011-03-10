@@ -173,13 +173,13 @@ void SetNewExtraColumnCount()
 int OnIconLibIconChanged(WPARAM wParam,LPARAM lParam)
 {
 	HICON hicon;
-	hicon=LoadIconFromExternalFile("clisticons.dll",0,TRUE,FALSE,"Email","Contact List",Translate("Email Icon"),-IDI_EMAIL);
+	hicon=LoadIconFromExternalFile("clisticons.dll",0,TRUE,FALSE,"Email","Contact List","Email Icon",-IDI_EMAIL);
 	ExtraImageIconsIndex[0]=ImageList_ReplaceIcon(hExtraImageList,ExtraImageIconsIndex[0],hicon );		
 
-	hicon=LoadIconFromExternalFile("clisticons.dll",1,TRUE,FALSE,"Sms","Contact List",Translate("Sms Icon"),-IDI_SMS);
+	hicon=LoadIconFromExternalFile("clisticons.dll",1,TRUE,FALSE,"Sms","Contact List","Sms Icon",-IDI_SMS);
 	ExtraImageIconsIndex[1]=ImageList_ReplaceIcon(hExtraImageList,ExtraImageIconsIndex[1],hicon );		
 
-	hicon=LoadIconFromExternalFile("clisticons.dll",4,TRUE,FALSE,"Web","Contact List",Translate("Web Icon"),-IDI_GLOBUS);
+	hicon=LoadIconFromExternalFile("clisticons.dll",4,TRUE,FALSE,"Web","Contact List","Web Icon",-IDI_GLOBUS);
 	ExtraImageIconsIndex[2]=ImageList_ReplaceIcon(hExtraImageList,ExtraImageIconsIndex[2],hicon );		
 
 	NotifyEventHooks(ME_SKIN_ICONSCHANGED,0,0);
@@ -201,16 +201,16 @@ void ReloadExtraIcons()
 	if (!HasExtraIconsService())
 	{
 		//loading icons
-		hicon=LoadIconFromExternalFile("clisticons.dll",0,TRUE,TRUE,"Email","Contact List",Translate("Email Icon"),-IDI_EMAIL);
+		hicon=LoadIconFromExternalFile("clisticons.dll",0,TRUE,TRUE,"Email","Contact List","Email Icon",-IDI_EMAIL);
 		if (!hicon) hicon=LoadIcon(g_hInst, MAKEINTRESOURCE(IDI_EMAIL));
 		ExtraImageIconsIndex[0]=ImageList_AddIcon(hExtraImageList,hicon );
 
 
-		hicon=LoadIconFromExternalFile("clisticons.dll",1,TRUE,TRUE,"Sms","Contact List",Translate("Sms Icon"),-IDI_SMS);
+		hicon=LoadIconFromExternalFile("clisticons.dll",1,TRUE,TRUE,"Sms","Contact List","Sms Icon",-IDI_SMS);
 		if (!hicon) hicon=LoadIcon(g_hInst, MAKEINTRESOURCE(IDI_SMS));
 		ExtraImageIconsIndex[1]=ImageList_AddIcon(hExtraImageList,hicon );
 
-		hicon=LoadIconFromExternalFile("clisticons.dll",4,TRUE,TRUE,"Web","Contact List",Translate("Web Icon"),-IDI_GLOBUS);
+		hicon=LoadIconFromExternalFile("clisticons.dll",4,TRUE,TRUE,"Web","Contact List","Web Icon",-IDI_GLOBUS);
 		if (!hicon) hicon=LoadIcon(g_hInst, MAKEINTRESOURCE(IDI_GLOBUS));
 		ExtraImageIconsIndex[2]=ImageList_AddIcon(hExtraImageList,hicon );	
 
@@ -266,7 +266,7 @@ void SetAllExtraIcons(HWND hwndList,HANDLE hContact)
 	HANDLE hItem;
 	boolean hcontgiven=FALSE;
 	char *szProto;
-	char *(ImgIndex[64]);
+	char *ImgIndex[64];
 	int maxpr,count,i;
 	PROTOACCOUNT **accs;
 	pdisplayNameCacheEntry pdnce;
@@ -292,7 +292,7 @@ void SetAllExtraIcons(HWND hwndList,HANDLE hContact)
 		w1=ExtraToColumnNum(EXTRA_ICON_WEB);
 		c1=ExtraToColumnNum(EXTRA_ICON_CLIENT);
 
-		memset(&ImgIndex,0,sizeof(&ImgIndex));
+		memset(ImgIndex,0,sizeof(ImgIndex));
 		ProtoEnumAccounts( &count, &accs );
 
 		maxpr=0;
