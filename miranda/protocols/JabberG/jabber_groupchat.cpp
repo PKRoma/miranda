@@ -936,6 +936,7 @@ void CJabberProto::GroupchatProcessPresence( HXML node )
 			return;
 
 		GcLogCreate( item );
+		item->iChatState = 0;
 
 		// Update status of room participant
 		status = ID_STATUS_ONLINE;
@@ -1116,9 +1117,20 @@ void CJabberProto::GroupchatProcessPresence( HXML node )
 		HXML errorNode = xmlGetChild( node , "error" );
 		TCHAR* str = JabberErrorMsg( errorNode, &errorCode );
 
-		if ( errorCode == 409 ) {
+		if ( errorCode == JABBER_ERROR_CONFLICT ) {
+			// try to use our resource first
+			if ( ++item->iChatState == 1 ) {
+				replaceStr( item->nick, m_ThreadInfo->resource );
+
+				TCHAR text[ 1024 ];
+				mir_sntprintf( text, SIZEOF( text ), _T("%s/%s_%s"), item->jid, m_ThreadInfo->username, m_ThreadInfo->resource );
+				SendPresenceTo( m_iStatus, text, NULL );
+			}
+			else {
+				CallFunctionAsync( JabberGroupchatChangeNickname, new JabberGroupchatChangeNicknameParam( this, from ));
+				item->iChatState = 0;
+			}
 			mir_free( str );
-			CallFunctionAsync( JabberGroupchatChangeNickname, new JabberGroupchatChangeNicknameParam( this, from ));
 			return;
 		}
 
