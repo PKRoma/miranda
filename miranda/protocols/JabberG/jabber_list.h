@@ -159,6 +159,7 @@ struct JABBER_LIST_ITEM
 	HWND hwndGcListBan;
 	HWND hwndGcListAdmin;
 	HWND hwndGcListOwner;
+	int  iChatState;
 	// BOOL bAutoJoin; // chat sessio was started via auto-join
 
 	// LIST_FILE
