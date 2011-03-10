@@ -681,7 +681,7 @@ void InitSubGroupMenus(void)
 	tmp.cbSize=sizeof(tmp);
 	tmp.CheckService=NULL;
 	tmp.ExecService="CLISTMENUSSubGroup/ExecService";
-	tmp.name="SubGroup Menu";
+	tmp.name="SubGroupMenu";
 	hSubGroupMenuObject=(HANDLE)CallService(MO_CREATENEWMENUOBJECT,(WPARAM)0,(LPARAM)&tmp);
 	
 	
@@ -726,7 +726,8 @@ void InitSubGroupMenus(void)
 	memset(&mi,0,sizeof(mi));
 	mi.cbSize=sizeof(mi);
 	mi.position=900001;
-	mi.hIcon=LoadIcon(GetModuleHandle(NULL),MAKEINTRESOURCE(IDI_RENAME));
+	mi.flags = CMIF_ICONFROMICOLIB;
+	mi.icolibItem=LoadSkinnedIconHandle(SKINICON_OTHER_RENAME); //LoadIcon(GetModuleHandle(NULL),MAKEINTRESOURCE(IDI_RENAME));
 	mi.pszService="CLISTMENUSSubGroup/GroupMenuExecProxy";
 	mi.pszName=LPGEN("&Rename Group");	
 	gmp.lParam=0;gmp.wParam=POPUP_RENAMEGROUP;
@@ -735,7 +736,8 @@ void InitSubGroupMenus(void)
 	memset(&mi,0,sizeof(mi));
 	mi.cbSize=sizeof(mi);
 	mi.position=900002;
-	mi.hIcon=LoadIcon(GetModuleHandle(NULL),MAKEINTRESOURCE(IDI_DELETE));
+	mi.flags = CMIF_ICONFROMICOLIB;
+	mi.icolibItem=LoadSkinnedIconHandle(SKINICON_OTHER_DELETE); //LoadIcon(GetModuleHandle(NULL),MAKEINTRESOURCE(IDI_DELETE));
 	mi.pszService="CLISTMENUSSubGroup/GroupMenuExecProxy";
 	mi.pszName=LPGEN("&Delete Group");	
 	gmp.lParam=0;gmp.wParam=POPUP_DELETEGROUP;

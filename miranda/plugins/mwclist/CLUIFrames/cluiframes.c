@@ -3133,22 +3133,31 @@ static HWND CreateContainerWindow(HWND parent,int x,int y,int width,int height)
 
 INT_PTR CLUIFrameSetFloat(WPARAM wParam,LPARAM lParam)
 {
-	HWND hwndtmp,hwndtooltiptmp;
+	HWND hwndtmp, hwndtooltiptmp;
+	wndFrame *frame;
+	int pos;
 
 	lockfrm();
-	wParam=id2pos(wParam);
-	if(wParam>=0&&(int)wParam<nFramescount)
+
+	pos = id2pos(wParam);
+	if (pos < 0 || pos > nFramescount) 
+	{
+		ulockfrm();
+		return 0;
+	}
+
+	frame = &Frames[pos];
 
 	//parent=GetParent(Frames[wParam].hWnd);
-	if (Frames[wParam].floating)
+	if (frame->floating)
 	{
-		//SetWindowLong(Frames[wParam].hWnd,GWL_STYLE,Frames[wParam].oldstyles);
-		//SetWindowLong(Frames[wParam].TitleBar.hwnd,GWL_STYLE,Frames[wParam].TitleBar.oldstyles);
-		SetParent(Frames[wParam].hWnd,pcli->hwndContactList);
-		SetParent(Frames[wParam].TitleBar.hwnd,pcli->hwndContactList);
-		Frames[wParam].floating=FALSE;
-		DestroyWindow(Frames[wParam].ContainerWnd);
-		Frames[wParam].ContainerWnd=0;
+		//SetWindowLong(frame->hWnd,GWL_STYLE,Frames[wParam].oldstyles);
+		//SetWindowLong(frame->TitleBar.hwnd,GWL_STYLE,Frames[wParam].TitleBar.oldstyles);
+		SetParent(frame->hWnd,pcli->hwndContactList);
+		SetParent(frame->TitleBar.hwnd,pcli->hwndContactList);
+		frame->floating=FALSE;
+		DestroyWindow(frame->ContainerWnd);
+		frame->ContainerWnd=NULL;
 	}
 	else
 	{
@@ -3157,43 +3166,43 @@ INT_PTR CLUIFrameSetFloat(WPARAM wParam,LPARAM lParam)
 		int neww,newh;
 		BOOLEAN locked;
 
-		Frames[wParam].oldstyles=GetWindowLong(Frames[wParam].hWnd,GWL_STYLE);
-		Frames[wParam].TitleBar.oldstyles=GetWindowLong(Frames[wParam].TitleBar.hwnd,GWL_STYLE);
-		locked=Frames[wParam].Locked;
-		Frames[wParam].Locked=FALSE;
-		Frames[wParam].minmaxenabled=FALSE;
+		frame->oldstyles=GetWindowLong(frame->hWnd,GWL_STYLE);
+		frame->TitleBar.oldstyles=GetWindowLong(frame->TitleBar.hwnd,GWL_STYLE);
+		locked=frame->Locked;
+		frame->Locked=FALSE;
+		frame->minmaxenabled=FALSE;
 
-		GetWindowRect(Frames[wParam].hWnd,&rectw);
-		GetWindowRect(Frames[wParam].TitleBar.hwnd,&recttb);
-		if (!Frames[wParam].TitleBar.ShowTitleBar){
+		GetWindowRect(frame->hWnd,&rectw);
+		GetWindowRect(frame->TitleBar.hwnd,&recttb);
+		if (!frame->TitleBar.ShowTitleBar){
 		recttb.top=recttb.bottom=recttb.left=recttb.right=0;
 		}
 
-		Frames[wParam].ContainerWnd=CreateContainerWindow(pcli->hwndContactList,Frames[wParam].FloatingPos.x,Frames[wParam].FloatingPos.y,10,10);
+		frame->ContainerWnd=CreateContainerWindow(pcli->hwndContactList,frame->FloatingPos.x,frame->FloatingPos.y,10,10);
 
 
 
 
-		SetParent(Frames[wParam].hWnd,Frames[wParam].ContainerWnd);
-		SetParent(Frames[wParam].TitleBar.hwnd,Frames[wParam].ContainerWnd);
+		SetParent(frame->hWnd,frame->ContainerWnd);
+		SetParent(frame->TitleBar.hwnd,frame->ContainerWnd);
 
-		//SetWindowPos(Frames[wParam].TitleBar.hwnd,HWND_TOP,0,0,0,0,SWP_NOSIZE);
-		//SetWindowPos(Frames[wParam].hWnd,HWND_TOP,0,recttb.bottom-recttb.top,0,0,SWP_NOSIZE);
-		GetBorderSize(Frames[wParam].ContainerWnd,&border);
+		//SetWindowPos(frame->TitleBar.hwnd,HWND_TOP,0,0,0,0,SWP_NOSIZE);
+		//SetWindowPos(frame->hWnd,HWND_TOP,0,recttb.bottom-recttb.top,0,0,SWP_NOSIZE);
+		GetBorderSize(frame->ContainerWnd,&border);
 
 
-		SetWindowLongPtr(Frames[wParam].ContainerWnd, GWLP_USERDATA, Frames[wParam].id);
+		SetWindowLongPtr(frame->ContainerWnd, GWLP_USERDATA, frame->id);
 		if ((lParam==1))
 		{
-			if ((Frames[wParam].FloatingPos.x!=0)&&(Frames[wParam].FloatingPos.y!=0))
+			if ((frame->FloatingPos.x!=0)&&(frame->FloatingPos.y!=0))
 			{
-			if (Frames[wParam].FloatingPos.x<20){Frames[wParam].FloatingPos.x=40;}
-			if (Frames[wParam].FloatingPos.y<20){Frames[wParam].FloatingPos.y=40;}
+			if (frame->FloatingPos.x<20){frame->FloatingPos.x=40;}
+			if (frame->FloatingPos.y<20){frame->FloatingPos.y=40;}
 
-			SetWindowPos(Frames[wParam].ContainerWnd,HWND_TOPMOST,Frames[wParam].FloatingPos.x,Frames[wParam].FloatingPos.y,Frames[wParam].FloatingSize.x,Frames[wParam].FloatingSize.y,SWP_HIDEWINDOW);
+			SetWindowPos(frame->ContainerWnd,HWND_TOPMOST,frame->FloatingPos.x,frame->FloatingPos.y,frame->FloatingSize.x,frame->FloatingSize.y,SWP_HIDEWINDOW);
 			}else
 			{
-				SetWindowPos(Frames[wParam].ContainerWnd,HWND_TOPMOST,120,120,140,140,SWP_HIDEWINDOW);
+				SetWindowPos(frame->ContainerWnd,HWND_TOPMOST,120,120,140,140,SWP_HIDEWINDOW);
 			}
 		}
 		else
@@ -3202,33 +3211,33 @@ INT_PTR CLUIFrameSetFloat(WPARAM wParam,LPARAM lParam)
 			newh=(rectw.bottom-rectw.top)+(recttb.bottom-recttb.top)+border.top+border.bottom;
 			if (neww<20){neww=40;}
 			if (newh<20){newh=40;}
-			if (Frames[wParam].FloatingPos.x<20){Frames[wParam].FloatingPos.x=40;}
-			if (Frames[wParam].FloatingPos.y<20){Frames[wParam].FloatingPos.y=40;}
+			if (frame->FloatingPos.x<20){frame->FloatingPos.x=40;}
+			if (frame->FloatingPos.y<20){frame->FloatingPos.y=40;}
 
-			SetWindowPos(Frames[wParam].ContainerWnd,HWND_TOPMOST,Frames[wParam].FloatingPos.x,Frames[wParam].FloatingPos.y,neww,newh,SWP_HIDEWINDOW);
+			SetWindowPos(frame->ContainerWnd,HWND_TOPMOST,frame->FloatingPos.x,frame->FloatingPos.y,neww,newh,SWP_HIDEWINDOW);
 		}
 
 
-		SetWindowText(Frames[wParam].ContainerWnd,Frames[wParam].TitleBar.tbname);
+		SetWindowText(frame->ContainerWnd,frame->TitleBar.tbname);
 
-		temp=GetWindowLong(Frames[wParam].ContainerWnd,GWL_EXSTYLE);
+		temp=GetWindowLong(frame->ContainerWnd,GWL_EXSTYLE);
 		temp|=WS_EX_TOOLWINDOW|WS_EX_TOPMOST ;
-		SetWindowLong(Frames[wParam].ContainerWnd,GWL_EXSTYLE,temp);
+		SetWindowLong(frame->ContainerWnd,GWL_EXSTYLE,temp);
 
-		//SetWindowLong(Frames[wParam].hWnd,GWL_STYLE,WS_POPUP|(Frames[wParam].oldstyles&(~WS_CHILD)));
-		//SetWindowLong(Frames[wParam].TitleBar.hwnd,GWL_STYLE,WS_POPUP|(Frames[wParam].TitleBar.oldstyles&(~WS_CHILD)));
+		//SetWindowLong(frame->hWnd,GWL_STYLE,WS_POPUP|(frame->oldstyles&(~WS_CHILD)));
+		//SetWindowLong(frame->TitleBar.hwnd,GWL_STYLE,WS_POPUP|(frame->TitleBar.oldstyles&(~WS_CHILD)));
 
-		Frames[wParam].floating=TRUE;
-		Frames[wParam].Locked=locked;
+		frame->floating=TRUE;
+		frame->Locked=locked;
 
 	}
-	CLUIFramesStoreFrameSettings(wParam);
-	Frames[wParam].minmaxenabled=TRUE;
-	hwndtooltiptmp=Frames[wParam].TitleBar.hwndTip;
+	CLUIFramesStoreFrameSettings(pos);
+	frame->minmaxenabled=TRUE;
+	hwndtooltiptmp=frame->TitleBar.hwndTip;
 
-	hwndtmp=Frames[wParam].ContainerWnd;
+	hwndtmp=frame->ContainerWnd;
 	ulockfrm();
-	CLUIFramesOnClistResize((WPARAM)pcli->hwndContactList,(LPARAM)0);
+	CLUIFramesOnClistResize((WPARAM)pcli->hwndContactList, 0);
 	SendMessage(hwndtmp,WM_SIZE,0,0);
 
 	SetWindowPos(hwndtooltiptmp, HWND_TOPMOST,0, 0, 0, 0,SWP_NOMOVE | SWP_NOSIZE  );
