@@ -23,13 +23,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "commonheaders.h"
 #include "chat/chat.h"
 extern HINSTANCE g_hInst;
-extern HANDLE hEventOptInitialise;
 extern struct CREOleCallback reOleCallback;
 extern void ChangeStatusIcons();
-extern int    Chat_FontsChanged(WPARAM wParam,LPARAM lParam);
-extern int    Chat_IconsChanged(WPARAM wParam,LPARAM lParam);
-extern HANDLE hEventSkin2IconsChanged;
-extern int    Chat_SmileyOptionsChanged(WPARAM wParam,LPARAM lParam);
 extern void LoadInfobarFonts();
 
 static INT_PTR CALLBACK DlgProcOptions(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -369,7 +364,7 @@ static INT_PTR CALLBACK DlgProcTabsOptions(HWND hwndDlg, UINT msg, WPARAM wParam
 			CheckDlgButton(hwndDlg, IDC_TABCLOSEBUTTON, DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_TABCLOSEBUTTON, SRMSGDEFSET_TABCLOSEBUTTON));
 			CheckDlgButton(hwndDlg, IDC_LIMITNAMES, DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_LIMITNAMES, SRMSGDEFSET_LIMITNAMES));
 			limitLength = DBGetContactSettingDword(NULL, SRMMMOD, SRMSGSET_LIMITNAMESLEN, SRMSGDEFSET_LIMITNAMESLEN);
-			SetDlgItemInt(hwndDlg, IDC_LIMITNAMESLEN, limitLength >= SRMSGSET_LIMITNAMESLEN_MIN ? limitLength : SRMSGDEFSET_LIMITNAMESLEN, FALSE);
+			(int)SetDlgItemInt(hwndDlg, IDC_LIMITNAMESLEN, limitLength >= SRMSGSET_LIMITNAMESLEN_MIN ? limitLength : SRMSGDEFSET_LIMITNAMESLEN, FALSE);
 
 			CheckDlgButton(hwndDlg, IDC_LIMITTABS, DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_LIMITTABS, SRMSGDEFSET_LIMITTABS));
 			limitLength = DBGetContactSettingDword(NULL, SRMMMOD, SRMSGSET_LIMITTABSNUM, SRMSGDEFSET_LIMITTABSNUM);
@@ -455,7 +450,7 @@ static INT_PTR CALLBACK DlgProcTabsOptions(HWND hwndDlg, UINT msg, WPARAM wParam
 							DBWriteContactSettingByte(NULL, SRMMMOD, SRMSGSET_USETABS, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_USETABS));
 							DBWriteContactSettingByte(NULL, SRMMMOD, SRMSGSET_TABSATBOTTOM, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_TABSATBOTTOM));
 							DBWriteContactSettingByte(NULL, SRMMMOD, SRMSGSET_LIMITNAMES, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_LIMITNAMES));
-							limitLength = GetDlgItemInt(hwndDlg, IDC_LIMITNAMESLEN, NULL, TRUE) >= SRMSGSET_LIMITNAMESLEN_MIN ? GetDlgItemInt(hwndDlg, IDC_LIMITNAMESLEN, NULL, TRUE) : SRMSGSET_LIMITNAMESLEN_MIN;
+							(limitLength = GetDlgItemInt(hwndDlg, IDC_LIMITNAMESLEN, NULL, TRUE)) >= SRMSGSET_LIMITNAMESLEN_MIN ? GetDlgItemInt(hwndDlg, IDC_LIMITNAMESLEN, NULL, TRUE) : SRMSGSET_LIMITNAMESLEN_MIN;
 							DBWriteContactSettingDword(NULL, SRMMMOD, SRMSGSET_LIMITNAMESLEN, limitLength);
 
 							DBWriteContactSettingByte(NULL, SRMMMOD, SRMSGSET_LIMITTABS, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_LIMITTABS));
