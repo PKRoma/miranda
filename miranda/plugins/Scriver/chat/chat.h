@@ -22,9 +22,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef _CHAT_H_
 #define _CHAT_H_
 
-#include <malloc.h>
 #include <m_protomod.h>
-#include "m_chat.h"
+#include <m_chat.h>
 
 #ifndef TVM_GETITEMSTATE
 #define TVM_GETITEMSTATE        (TV_FIRST + 39)

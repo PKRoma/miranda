@@ -1020,7 +1020,7 @@ UINT CreateGCMenu(HWND hwndDlg, HMENU *hMenu, int iIndex, POINT pt, SESSION_INFO
 		InsertMenu(*hMenu, pos, MF_BYPOSITION, (UINT_PTR)20021, CTranslator::get(CTranslator::GEN_MUC_MENU_EDITHIGHLIGHTLIST));
 	}
 #endif
-	if (iIndex == 1 && si->iType != GCW_SERVER && !(si->dwFlags && GC_UNICODE)) {
+	if (iIndex == 1 && si->iType != GCW_SERVER && !(si->dwFlags & GC_UNICODE)) {
 		AppendMenu(*hMenu, MF_SEPARATOR, 0, 0);
 		InsertMenu(PluginConfig.g_hMenuEncoding, 1, MF_BYPOSITION | MF_STRING, (UINT_PTR)CP_UTF8, CTranslator::get(CTranslator::GEN_STRING_UTF8));
 		pos = GetMenuItemCount(*hMenu);
