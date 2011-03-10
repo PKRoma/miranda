@@ -279,8 +279,8 @@ static int ModernSkinButtonToggleDBValue(char * ValueDBSection,char *ValueTypeDe
 static char *_skipblank(char * str) //str will be modified;
 {
 	char * endstr=str+strlen(str);
-	while ((*str==' ' || *str=='\t') && str!='\0') str++;
-	while ((*endstr==' ' || *endstr=='\t') && endstr!='\0' && endstr<str) endstr--;
+	while ((*str==' ' || *str=='\t') && *str!='\0') str++;
+	while ((*endstr==' ' || *endstr=='\t') && *endstr!='\0' && endstr<str) endstr--;
 	if (*endstr!='\0') 
 	{
 		endstr++; 

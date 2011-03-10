@@ -716,17 +716,6 @@ static int	_AniAva_LoadAvatarFromImage(TCHAR * szFileName, int width, int height
 		
 		paai->nStripTop=AniAva.width;
 		
-		/*
-		if ( AniAva.bFlags&AAO_OPAQUE )
-		{
-			RECT rect;
-			rect.left  = paai->nStripTop;
-			rect.right = rect.left + paai->FrameSize.cx*paai->nFrameCount; 
-			rect.top   = 0;
-			rect.bottom = rect.top + paai->FrameSize.cy;
-
-			ske_SetRectOpaqueOpt( hNewDC, &rect, TRUE );
-		}*/
 		GdiFlush();
 		//remove temp DC
 		SelectObject(hTempDC,hOldBitmap);
@@ -866,7 +855,7 @@ static void _AniAva_RenderAvatar(ANIAVA_WINDOWINFO * dat, HDC hdcParent /* = NUL
 				hRgn=CreateRoundRectRgn( 1, 1, szWnd.cx, szWnd.cy, cornerRadius<<1, cornerRadius<<1);
 				CombineRgn( rgnOutside,rgnOutside,hRgn,RGN_DIFF);
 				FillRgn( tempDC, rgnOutside, hBrush);
-				ske_SetRgnOpaqueOpt( tempDC, rgnOutside, TRUE);
+				ske_SetRgnOpaque( tempDC, rgnOutside, TRUE);
 				SelectObject(tempDC, hOldBrush);
 				DeleteObject(hBrush);
 				DeleteObject(rgnOutside);
@@ -890,7 +879,7 @@ static void _AniAva_RenderAvatar(ANIAVA_WINDOWINFO * dat, HDC hdcParent /* = NUL
 				HBRUSH hBrush = CreateSolidBrush( AniAva.bkgColor );
 				HBRUSH hOldBrush = (HBRUSH)SelectObject( tempDC, hBrush );
 				FillRgn( tempDC, hRgn, hBrush );
-				ske_SetRgnOpaqueOpt( tempDC, hRgn, TRUE );
+				ske_SetRgnOpaque( tempDC, hRgn, TRUE );
 			}
 			// draw avatar
 			if ( !(AniAva.bFlags & AAO_OPAQUE) )
