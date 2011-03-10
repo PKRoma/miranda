@@ -220,7 +220,7 @@ void CJabberProto::GcLogShowInformation( JABBER_LIST_ITEM *item, JABBER_RESOURCE
 		case INFO_STATUS:
 			if (m_options.GcLogStatuses)
 			{
-				if (user->statusMessage && user->statusMessage)
+				if (user->statusMessage)
 				{
 					mir_sntprintf(buf, SIZEOF(buf), TranslateT("User %s changed status to %s with message: %s"),
 						user->resourceName,
