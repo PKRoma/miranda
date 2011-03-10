@@ -210,9 +210,9 @@ HICON LoadIconFromExternalFile(char *filename,int i,boolean UseLibrary,boolean r
 		if (registerit&&IconName!=NULL&&SectName!=NULL)	
 		{
 			sid.cbSize = sizeof(sid);
-			sid.pszSection = Translate(SectName);				
+			sid.pszSection = SectName;
 			sid.pszName=IconName;
-			sid.pszDescription=Translate(Description);
+			sid.pszDescription = Description;
 			if (strlen(szMyPath)!=0)
 			{
 				sid.pszDefaultFile=szMyPath;
