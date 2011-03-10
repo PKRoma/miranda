@@ -1123,7 +1123,7 @@ void CJabberProto::GroupchatProcessPresence( HXML node )
 				replaceStr( item->nick, m_ThreadInfo->resource );
 
 				TCHAR text[ 1024 ];
-				mir_sntprintf( text, SIZEOF( text ), _T("%s/%s"), item->jid, m_ThreadInfo->resource );
+				mir_sntprintf( text, SIZEOF( text ), _T("%s/%s_%s"), item->jid, m_ThreadInfo->username, m_ThreadInfo->resource );
 				SendPresenceTo( m_iStatus, text, NULL );
 			}
 			else {
