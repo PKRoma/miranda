@@ -529,7 +529,7 @@ static INT_PTR CALLBACK WaitForProcessDlgProc(HWND hwnd, UINT msg, WPARAM wParam
 	return FALSE;
 }
 
-static void ParseCommandLine()
+void ParseCommandLine()
 {
 	char* cmdline = GetCommandLineA();
 	char* p = strstr( cmdline, "/restart:" );
