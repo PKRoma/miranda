@@ -77,7 +77,7 @@ void MimeHeaders::addString(const char* name, const char* szValue, unsigned flag
 	H.flags = flags;
 }
 
-void MimeHeaders::addLong(const char* name, long lValue, unsigned flags)
+void MimeHeaders::addLong(const char* name, long lValue)
 {
 	MimeHeader& H = mVals[allocSlot()];
 	H.name = name;
@@ -85,7 +85,7 @@ void MimeHeaders::addLong(const char* name, long lValue, unsigned flags)
 	char szBuffer[20];
 	_ltoa(lValue, szBuffer, 10);
 	H.value = mir_strdup(szBuffer); 
-	H.flags = 2 | flags;
+	H.flags = 2;
 }
 
 void MimeHeaders::addULong(const char* name, unsigned lValue)
@@ -107,35 +107,10 @@ void MimeHeaders::addBool(const char* name, bool lValue)
 	H.flags = 0;
 }
 
-char* MimeHeaders::flipStr(const char* src, size_t len, char* dest)
-{
-	if (len == -1) len = strlen(src);
-
-	if (src == dest)
-	{
-		const unsigned b = (unsigned)len-- / 2;
-		for (unsigned i = 0; i < b; i++) 
-		{
-			const char c = dest[i];
-			dest[i] = dest[len - i];
-			dest[len - i] = c;
-		}
-		++len;
-	}
-	else
-	{
-		for (unsigned i = 0; i < len; i++) 
-			dest[i] = src[len - 1 - i];
-		dest[len] = 0;
-	}
-
-	return dest + len;
-}
-
 /////////////////////////////////////////////////////////////////////////////////////////
 // write all values to a buffer
 
-size_t MimeHeaders::getLength(void)
+size_t MimeHeaders::getLength()
 {
 	size_t iResult = 0;
 	for (unsigned i=0; i < mCount; i++)
@@ -147,29 +122,15 @@ size_t MimeHeaders::getLength(void)
 	return iResult;
 }
 
-char* MimeHeaders::writeToBuffer(char* dest)
+char* MimeHeaders::writeToBuffer(char* pDest)
 {
 	for (unsigned i=0; i < mCount; i++) 
 	{
 		MimeHeader& H = mVals[i];
-		if (H.flags & 4)
-		{
-			dest = flipStr(H.name, -1, dest);
-
-			*(dest++) = ':';
-			*(dest++) = ' ';
-
-			dest = flipStr(H.value, -1, dest);
-
-			*(dest++) = '\r';
-			*(dest++) = '\n';
-			*dest = 0;
-		}
-		else
-			dest += sprintf(dest, "%s: %s\r\n", H.name, H.value);
+		pDest += sprintf(pDest, "%s: %s\r\n", H.name, H.value);
 	}
 
-	return dest;
+	return pDest;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -212,27 +173,11 @@ char* MimeHeaders::readFromBuffer(char* src)
 
 const char* MimeHeaders::find(const char* szFieldName)
 {
-	size_t i;
-	for (i = 0; i < mCount; i++) 
+	for (unsigned i=0; i < mCount; i++) 
 	{
 		MimeHeader& MH = mVals[i];
 		if (_stricmp(MH.name, szFieldName) == 0)
 			return MH.value;
-	}
-
-	const size_t len = strlen(szFieldName);
-	char* szFieldNameR = (char*)alloca(len + 1);
-	flipStr(szFieldName, len, szFieldNameR);
-
-	for (i = 0; i < mCount; i++) 
-	{
-		MimeHeader& MH = mVals[i];
-		if (_stricmp(MH.name, szFieldNameR) == 0 && (MH.flags & 3) == 0)
-		{
-			strcpy((char*)MH.name, szFieldNameR);
-			flipStr(MH.value, -1, (char*)MH.value);
-			return MH.value;
-		}
 	}
 
 	return NULL;
