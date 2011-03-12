@@ -57,6 +57,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "aim", "..\protocols\AimOsca
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "modernopt", "..\plugins\modernopt\modernopt_9.vcproj", "{153DD132-084C-4DE4-8F40-A088BCB22723}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dbrw", "..\plugins\dbrw\dbrw_9.vcproj", "{E481F22E-ED6C-499F-A0CA-F2A3173376D8}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug Unicode|Win32 = Debug Unicode|Win32
@@ -449,6 +451,22 @@ Global
 		{153DD132-084C-4DE4-8F40-A088BCB22723}.Release|Win32.ActiveCfg = Release|Win32
 		{153DD132-084C-4DE4-8F40-A088BCB22723}.Release|Win32.Build.0 = Release|Win32
 		{153DD132-084C-4DE4-8F40-A088BCB22723}.Release|x64.ActiveCfg = Release|x64
+		{E481F22E-ED6C-499F-A0CA-F2A3173376D8}.Debug Unicode|Win32.ActiveCfg = Debug Unicode|Win32
+		{E481F22E-ED6C-499F-A0CA-F2A3173376D8}.Debug Unicode|Win32.Build.0 = Debug Unicode|Win32
+		{E481F22E-ED6C-499F-A0CA-F2A3173376D8}.Debug Unicode|x64.ActiveCfg = Debug Unicode|x64
+		{E481F22E-ED6C-499F-A0CA-F2A3173376D8}.Debug Unicode|x64.Build.0 = Debug Unicode|x64
+		{E481F22E-ED6C-499F-A0CA-F2A3173376D8}.Debug|Win32.ActiveCfg = Debug|Win32
+		{E481F22E-ED6C-499F-A0CA-F2A3173376D8}.Debug|Win32.Build.0 = Debug|Win32
+		{E481F22E-ED6C-499F-A0CA-F2A3173376D8}.Debug|x64.ActiveCfg = Debug|x64
+		{E481F22E-ED6C-499F-A0CA-F2A3173376D8}.Debug|x64.Build.0 = Debug|x64
+		{E481F22E-ED6C-499F-A0CA-F2A3173376D8}.Release Unicode|Win32.ActiveCfg = Release Unicode|Win32
+		{E481F22E-ED6C-499F-A0CA-F2A3173376D8}.Release Unicode|Win32.Build.0 = Release Unicode|Win32
+		{E481F22E-ED6C-499F-A0CA-F2A3173376D8}.Release Unicode|x64.ActiveCfg = Release Unicode|x64
+		{E481F22E-ED6C-499F-A0CA-F2A3173376D8}.Release Unicode|x64.Build.0 = Release Unicode|x64
+		{E481F22E-ED6C-499F-A0CA-F2A3173376D8}.Release|Win32.ActiveCfg = Release|Win32
+		{E481F22E-ED6C-499F-A0CA-F2A3173376D8}.Release|Win32.Build.0 = Release|Win32
+		{E481F22E-ED6C-499F-A0CA-F2A3173376D8}.Release|x64.ActiveCfg = Release|x64
+		{E481F22E-ED6C-499F-A0CA-F2A3173376D8}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
