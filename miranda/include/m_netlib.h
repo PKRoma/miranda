@@ -480,7 +480,7 @@ struct NETLIBHTTPREQUEST_tag {
 	int timeout;
 };
 
-#define NETLIBHTTPREQUEST_V1_SIZE offsetof(NETLIBHTTPREQUEST_tag, timeout) 
+#define NETLIBHTTPREQUEST_V1_SIZE (offsetof(NETLIBHTTPREQUEST_tag, timeout))
 //typedef struct NETLIBHTTPREQUEST_tag NETLIBHTTPREQUEST;  //(above for reasons of forward referencing)
 #define MS_NETLIB_SENDHTTPREQUEST   "Netlib/SendHttpRequest"
 
