@@ -30,8 +30,8 @@ Last change by : $Author$
 
 #include <m_addcontact.h>
 
-TCHAR xmlnsAdmin[] = _T("http://jabber.org/protocol/muc#admin");
-TCHAR xmlnsOwner[] = _T("http://jabber.org/protocol/muc#owner");
+const TCHAR xmlnsAdmin[] = _T("http://jabber.org/protocol/muc#admin");
+const TCHAR xmlnsOwner[] = _T("http://jabber.org/protocol/muc#owner");
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // Global definitions

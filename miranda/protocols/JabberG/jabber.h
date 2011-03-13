@@ -596,7 +596,7 @@ extern BOOL (WINAPI *JabberAlphaBlend)(HDC, int, int, int, int, HDC, int, int, i
 extern BOOL (WINAPI *JabberIsThemeActive)();
 extern HRESULT (WINAPI *JabberDrawThemeParentBackground)(HWND, HDC, RECT *);
 
-extern TCHAR xmlnsOwner[];
+extern const TCHAR xmlnsOwner[];
 
 /*******************************************************************
  * Function declarations
