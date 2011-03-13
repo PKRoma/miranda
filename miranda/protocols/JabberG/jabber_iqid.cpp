@@ -1069,7 +1069,18 @@ void CJabberProto::OnIqResultGetVcard( HXML iqNode )
 				else if ( !lstrcmp( xmlGetName( n ), _T("PHOTO")))
 					OnIqResultGetVcardPhoto( jid, n, hContact, hasPhoto );
 		}	}
+		
+		if ( hasFn && !hasNick ) {
+			TCHAR *name = JGetStringT( hContact, "FullName" );
+			TCHAR *nick = JGetStringT( hContact, "Nick" );
+			TCHAR *jidNick = JabberNickFromJID(jid);
+			if ( !nick || ( jidNick && !_tcsicmp( nick, jidNick )))
+				JSetStringT( hContact, "Nick", name );
 
+			mir_free( jidNick );
+			mir_free( nick );
+			mir_free( name );
+		}
 		if ( !hasFn )
 			JDeleteSetting( hContact, "FullName" );
 		// We are not deleting "Nick"
