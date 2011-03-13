@@ -445,7 +445,7 @@ struct CJabberProto : public PROTO_INTERFACE
 	//---- jabber_chat.cpp ---------------------------------------------------------------
 
 	void   GcLogCreate( JABBER_LIST_ITEM* item );
-	void   GcLogUpdateMemberStatus( JABBER_LIST_ITEM* item, const TCHAR* nick, const TCHAR* jid, int action, HXML reason, int nStatusCode = -1 );
+	void   GcLogUpdateMemberStatus( JABBER_LIST_ITEM* item, const TCHAR* resource, const TCHAR* nick, const TCHAR* jid, int action, HXML reason, int nStatusCode = -1 );
 	void   GcLogShowInformation( JABBER_LIST_ITEM *item, JABBER_RESOURCE_STATUS *user, TJabberGcLogInfoType type );
 	void   GcQuit( JABBER_LIST_ITEM* jid, int code, HXML reason );
 		  
@@ -656,7 +656,7 @@ struct CJabberProto : public PROTO_INTERFACE
 	int    ListFindNext( JABBER_LIST list, int fromOffset );
 
 	JABBER_RESOURCE_STATUS *CJabberProto::ListFindResource( JABBER_LIST list, const TCHAR* jid );
-	int    ListAddResource( JABBER_LIST list, const TCHAR* jid, int status, const TCHAR* statusMessage, char priority = 0 );
+	int    ListAddResource( JABBER_LIST list, const TCHAR* jid, int status, const TCHAR* statusMessage, char priority = 0, const TCHAR* nick = NULL );
 	void   ListRemoveResource( JABBER_LIST list, const TCHAR* jid );
 	TCHAR* ListGetBestResourceNamePtr( const TCHAR* jid );
 	TCHAR* ListGetBestClientResourceNamePtr( const TCHAR* jid );

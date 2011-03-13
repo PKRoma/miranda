@@ -165,6 +165,7 @@ typedef unsigned __int64 JabberCapsBits;
 #define JABBER_FEAT_ENTITY_TIME_OLD             "jabber:iq:time"
 
 #define JABBER_FEAT_MUC_USER                    "http://jabber.org/protocol/muc#user"
+#define JABBER_FEAT_NICK                        "http://jabber.org/protocol/nick"
 
 #define JABBER_FEAT_HTTP_AUTH                   "http://jabber.org/protocol/http-auth"
 

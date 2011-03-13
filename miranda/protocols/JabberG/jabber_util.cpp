@@ -801,11 +801,15 @@ void CJabberProto::SendPresenceTo( int status, TCHAR* to, HXML extra, TCHAR *msg
 	HXML c = p << XCHILDNS( _T("c"), _T(JABBER_FEAT_ENTITY_CAPS)) << XATTR( _T("node"), _T(JABBER_CAPS_MIRANDA_NODE)) 
 		<< XATTR( _T("ver"), _T(__VERSION_STRING));
 
-	TCHAR szExtCaps[ 512 ];
-	szExtCaps[ 0 ] = _T('\0');
+	TCHAR szExtCaps[ 512 ] = _T("");
 
-	if ( bSecureIM )
+	_tcscat( szExtCaps, _T("pmuc-v1") );
+
+	if ( bSecureIM ) {
+		if ( szExtCaps[0] )
+			_tcscat( szExtCaps, _T(" "));
 		_tcscat( szExtCaps, _T(JABBER_EXT_SECUREIM) );
+	}
 
 	if ( m_options.EnableRemoteControl ) {
 		if ( szExtCaps[0] )

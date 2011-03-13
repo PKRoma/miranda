@@ -1292,17 +1292,25 @@ void CJabberProto::OnProcessMessage( HXML node, ThreadData* info )
 		return;
 	}
 
-	if (n = xmlGetChildByTag( node, "x", "xmlns", _T(JABBER_FEAT_MIRANDA_NOTES))) {
-		if (OnIncomingNote(from, xmlGetChild(n, "note")))
-			return;
-	}
+	for ( int i = 0; ( xNode = xmlGetChild( node, i )) != NULL; i++ ) {
+		xNode = xmlGetNthChild( node, _T("x"), i );
+		if ( xNode == NULL ) {
+			xNode = xmlGetNthChild( node, _T("user:x"), i );
+			if ( xNode == NULL )
+				continue;
+		}
 
-	for ( int i = 1; ( xNode = xmlGetNthChild( node, _T("x"), i )) != NULL; i++ ) {
 		const TCHAR* ptszXmlns = xmlGetAttrValue( xNode, _T("xmlns"));
+		if ( ptszXmlns == NULL )
+			ptszXmlns = xmlGetAttrValue( xNode, _T("xmlns:user"));
 		if ( ptszXmlns == NULL )
 			continue;
 
-		if ( !_tcscmp( ptszXmlns, _T("jabber:x:encrypted" ))) {
+		if ( !_tcscmp( ptszXmlns, _T(JABBER_FEAT_MIRANDA_NOTES))) {
+			if (OnIncomingNote(from, xmlGetChild(xNode, "note")))
+				return;
+		}
+		else if ( !_tcscmp( ptszXmlns, _T("jabber:x:encrypted" ))) {
 			if ( xmlGetText( xNode ) == NULL )
 				return;
 
@@ -1379,10 +1387,17 @@ void CJabberProto::OnProcessMessage( HXML node, ThreadData* info )
 				szMessage = szTmp;
 			}
 		}
-		else if ( !_tcscmp( ptszXmlns, _T("http://jabber.org/protocol/muc#user"))) {
-			if (( inviteNode = xmlGetChild( xNode , "invite" )) != NULL ) {
+		else if ( !_tcscmp( ptszXmlns, _T(JABBER_FEAT_MUC_USER))) {
+			inviteNode = xmlGetChild( xNode , _T("invite"));
+			if ( inviteNode == NULL )
+				inviteNode = xmlGetChild( xNode , _T("user:invite"));
+
+			if ( inviteNode != NULL ) {
 				inviteFromJid = xmlGetAttrValue( inviteNode, _T("from"));
-				if (( n = xmlGetChild( inviteNode , "reason" )) != NULL )
+				n = xmlGetChild( inviteNode , _T("reason"));
+				if ( n == NULL )
+					n = xmlGetChild( inviteNode , _T("user:reason"));
+				if ( n != NULL )
 					inviteReason = xmlGetText( n );
 			}
 			inviteRoomJid = from;

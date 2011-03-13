@@ -97,6 +97,7 @@ struct JABBER_RESOURCE_STATUS
 {
 	int status;
 	TCHAR* resourceName;
+	TCHAR* nick;
 	TCHAR* statusMessage;
 	TCHAR* software;
 	TCHAR* version;
