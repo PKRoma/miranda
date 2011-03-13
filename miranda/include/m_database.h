@@ -370,9 +370,6 @@ to a call of MS_DB_EVENT_GETTEXT (see below)
 Always returns 0.
 */
 
-#define DBEVENTTYPEDESCR_SIZE    sizeof(DBEVENTTYPEDESCR)
-#define DBEVENTTYPEDESCR_SIZE_V1 0x10
-
 typedef struct
 {
 	int   cbSize;      // structure size in bytes
@@ -385,6 +382,9 @@ typedef struct
 	DWORD flags;       // flags, combination of the DETF_*
 }
 	DBEVENTTYPEDESCR;
+
+#define DBEVENTTYPEDESCR_SIZE    sizeof(DBEVENTTYPEDESCR)
+#define DBEVENTTYPEDESCR_SIZE_V1 (offsetof(DBEVENTTYPEDESCR, textService))
 
 // constants for default event behaviour
 #define DETF_HISTORY    1   // show event in history
