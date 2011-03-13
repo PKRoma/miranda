@@ -1465,6 +1465,17 @@ HANDLE gg_getcontact(GGPROTO *gg, uin_t uin, int create, int inlist, char *szNic
 		pai.cbSize = sizeof(pai);
 		pai.hContact = hContact;
 		gg_getavatarinfo(gg, (WPARAM)GAIF_FORCE, (LPARAM)&pai);
+
+		// Change status of the contact with our own UIN (if got yourself added to the contact list)
+		if (DBGetContactSettingDword(NULL, GG_PROTO, GG_KEY_UIN, 0) == uin)
+		{
+			char *szMsg;
+			EnterCriticalSection(&gg->modemsg_mutex);
+			szMsg = mir_strdup(gg_getstatusmsg(gg, gg->proto.m_iStatus));
+			LeaveCriticalSection(&gg->modemsg_mutex);
+			gg_changecontactstatus(gg, uin, status_m2gg(gg, gg->proto.m_iStatus, szMsg != NULL), szMsg, 0, 0, 0, 0);
+			mir_free(szMsg);
+		}
 	}
 
 	// TODO server side list & add buddy
@@ -1590,7 +1601,7 @@ void gg_changecontactstatus(GGPROTO *gg, uin_t uin, int status, const char *ides
 	// Check if there's description and if it's not empty
 	if(idescr && *idescr)
 	{
-		gg_netlog(gg, "gg_changecontactstatus(): Saving for %d status desct \"%s\".", uin, idescr);
+		gg_netlog(gg, "gg_changecontactstatus(): Saving for %d status descr \"%s\".", uin, idescr);
 		DBWriteContactSettingString(hContact, "CList", GG_KEY_STATUSDESCR, idescr);
 	}
 	else
