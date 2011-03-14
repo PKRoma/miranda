@@ -830,7 +830,7 @@ int TSAPI UpdateTrayMenu(const TWindowData *dat, WORD wStatus, const char *szPro
 			return(0);									// should also NOT happen
 
 		wMyStatus = (wStatus == 0) ? DBGetContactSettingWord(hContact, szProto, "Status", ID_STATUS_OFFLINE) : wStatus;
-		szMyStatus = (szStatus == NULL) ? (TCHAR *)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, (WPARAM)wMyStatus, GCMDF_TCHAR) : szStatus;
+		szMyStatus = (szStatus == NULL) ? (TCHAR *)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, (WPARAM)wMyStatus, GSMDF_TCHAR) : szStatus;
 		mii.wID = (UINT)hContact;
 		mii.hbmpItem = HBMMENU_CALLBACK;
 

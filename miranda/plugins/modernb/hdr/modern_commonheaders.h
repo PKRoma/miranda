@@ -218,9 +218,9 @@ extern void FreeDisplayNameCache();
 extern int CLUI_ShowWindowMod(HWND hwnd, int cmd);
 
 #ifdef UNICODE
-	#define GCMDF_TCHAR_MY GCMDF_TCHAR|CNF_UNICODE
+	#define GSMDF_TCHAR_MY GSMDF_TCHAR|CNF_UNICODE
 #else
-	#define GCMDF_TCHAR_MY 0
+	#define GSMDF_TCHAR_MY 0
 #endif
 
 #ifndef LWA_COLORKEY

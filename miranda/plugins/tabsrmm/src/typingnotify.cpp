@@ -68,7 +68,7 @@ int TN_TypingMessage(WPARAM wParam, LPARAM lParam)
 	if (M->GetByte((HANDLE)wParam, "CList", "Hidden", 0) || (M->GetDword((HANDLE)wParam, "Ignore", "Mask1",0) & 1)) // 9 - online notification
 		return 0;
 
-	szContactName = (TCHAR*) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, wParam, GCMDF_TCHAR);
+	szContactName = (TCHAR*) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, wParam, GSMDF_TCHAR);
 
 	if (PopupService && !Disabled) {
 		if (OnePopUp) {

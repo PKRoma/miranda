@@ -810,8 +810,8 @@ void CGlobals::logStatusChange(WPARAM wParam, const CContactCache *c)
 		TCHAR 			buffer[450];
 		HANDLE 			hNewEvent;
 
-		TCHAR*	szOldStatus = (TCHAR *)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, (WPARAM)wOldStatus, GCMDF_TCHAR);
-		TCHAR*	szNewStatus = (TCHAR *)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, (WPARAM)wStatus, GCMDF_TCHAR);
+		TCHAR*	szOldStatus = (TCHAR *)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, (WPARAM)wOldStatus, GSMDF_TCHAR);
+		TCHAR*	szNewStatus = (TCHAR *)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, (WPARAM)wStatus, GSMDF_TCHAR);
 
 		if(szOldStatus == 0 || szNewStatus == 0)
 			return;

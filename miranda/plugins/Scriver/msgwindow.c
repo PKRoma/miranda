@@ -74,7 +74,7 @@ TCHAR* GetWindowTitle(HANDLE *hContact, const char *szProto)
 		tokens[0] = GetNickname(hContact, szProto);
 		tokenLen[0] = lstrlen(tokens[0]);
 		tokens[1] = mir_tstrdup((TCHAR *)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, szProto ? 
-			DBGetContactSettingWord(hContact, szProto, "Status", ID_STATUS_OFFLINE) : ID_STATUS_OFFLINE, GCMDF_TCHAR));
+			DBGetContactSettingWord(hContact, szProto, "Status", ID_STATUS_OFFLINE) : ID_STATUS_OFFLINE, GSMDF_TCHAR));
 		tokenLen[1] = lstrlen(tokens[1]);
 		tokens[2] = DBGetStringT(hContact, "CList", "StatusMsg");
 		if (tokens[2] != NULL) {

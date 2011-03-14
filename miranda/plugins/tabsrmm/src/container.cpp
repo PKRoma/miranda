@@ -2623,7 +2623,7 @@ HMENU TSAPI BuildMCProtocolMenu(HWND hwndDlg) {
 				nick = (TCHAR *)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)handle, GCDNF_TCHAR);
 				mir_snprintf(szTemp, sizeof(szTemp), "Status%d", i);
 				wStatus = (WORD)DBGetContactSettingWord(dat->hContact, PluginConfig.szMetaName, szTemp, 0);
-				szStatusText = (TCHAR *) CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, wStatus, GCMDF_TCHAR);
+				szStatusText = (TCHAR *) CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, wStatus, GSMDF_TCHAR);
 			}
 			mir_sntprintf(szMenuLine, safe_sizeof(szMenuLine), _T("%s: %s [%s] %s"), acc->tszAccountName, nick, szStatusText,
 						  i == isForced ? CTranslator::get(CTranslator::GEN_META_FORCED) : _T(""));
