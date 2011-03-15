@@ -578,7 +578,7 @@ TCHAR* __stdcall JabberErrorMsg( HXML errorNode, int* pErrorCode )
 	const TCHAR *str;
 	if (( str = xmlGetAttrValue( errorNode, _T("code"))) != NULL )
 		errorCode = _ttoi( str );
-	if (( str=xmlGetText( errorNode ) ) != NULL )
+	if (( str=xmlGetText( errorNode )) != NULL || ( str = xmlGetText( xmlGetChild( errorNode, _T("text")))) != NULL )
 		mir_sntprintf( errorStr, 256, _T("%s %d: %s\r\n%s"), TranslateT( "Error" ), errorCode, TranslateTS( JabberErrorStr( errorCode )), str );
 	else
 		mir_sntprintf( errorStr, 256, _T("%s %d: %s"), TranslateT( "Error" ), errorCode, TranslateTS( JabberErrorStr( errorCode )) );
