@@ -885,10 +885,16 @@ void CJabberProto::OnProcessError( HXML node, ThreadData* info )
 		if ( !n )
 			break;
 
-		pos += mir_sntprintf( buff+pos, 1024-pos, _T("%s: %s\n"), xmlGetName( n ), xmlGetText( n ));
-		if ( !_tcscmp( xmlGetName( n ), _T("conflict")))
+		const TCHAR *name = xmlGetName( n );
+		const TCHAR *desc = xmlGetText( n );
+		if ( desc )
+			pos += mir_sntprintf( buff+pos, 1024-pos, _T("%s: %s\r\n"), name, desc );
+		else 
+			pos += mir_sntprintf( buff+pos, 1024-pos, _T("%s\r\n"), name );
+
+		if ( !_tcscmp( name, _T("conflict")))
 			JSendBroadcast( NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_OTHERLOCATION);
-		else if ( !_tcscmp( xmlGetName( n ), _T("see-other-host"))) {
+		else if ( !_tcscmp( name, _T("see-other-host"))) {
 			skipMsg = true;
 		}
 	}
