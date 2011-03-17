@@ -127,6 +127,10 @@ CJabberProto::CJabberProto( const char* aProtoName, const TCHAR* aUserName ) :
 	JCreateService( JS_GETCUSTOMSTATUSICON, &CJabberProto::OnGetXStatusIcon );
 	JCreateService( JS_GETXSTATUS, &CJabberProto::OnGetXStatus );
 	JCreateService( JS_SETXSTATUS, &CJabberProto::OnSetXStatus );
+	JCreateService( JS_SETXSTATUSEX, &CJabberProto::OnSetXStatusEx );
+
+	// not needed anymore and therefore commented out
+	// JCreateService( JS_GETXSTATUSEX, &CJabberProto::OnGetXStatusEx );
 
 	JCreateService( JS_HTTP_AUTH, &CJabberProto::OnHttpAuthRequest );
 	JCreateService( JS_INCOMING_NOTE_EVENT, &CJabberProto::OnIncomingNoteEvent );

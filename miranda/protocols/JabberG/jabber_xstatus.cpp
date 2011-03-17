@@ -501,12 +501,12 @@ void CPepGuiService::RebuildMenu()
 		m_hMenuItem = ( HANDLE )CallService(MS_CLIST_ADDPROTOMENUITEM, 0, (LPARAM)&mi);
 }	}
 
-bool CPepGuiService::LaunchSetGui()
+bool CPepGuiService::LaunchSetGui(BYTE bQuiet)
 {
 	if (m_bGuiOpen) return false;
 
 	m_bGuiOpen = true;
-	ShowSetDialog();
+	ShowSetDialog(bQuiet);
 	m_bGuiOpen = false;
 
 	return true;
@@ -530,7 +530,7 @@ void CPepGuiService::UpdateMenuItem(HANDLE hIcolibIcon, TCHAR *text)
 
 int CPepGuiService::OnMenuItemClick(WPARAM, LPARAM)
 {
-	LaunchSetGui();
+	LaunchSetGui(0);
 	return 0;
 }
 
@@ -797,20 +797,23 @@ void CPepMood::SetMood(HANDLE hContact, const TCHAR *szMood, const TCHAR *szText
 	NotifyEventHooks(m_proto->m_hEventXStatusChanged, (WPARAM)hContact, 0);
 }
 
-void CPepMood::ShowSetDialog()
+void CPepMood::ShowSetDialog(BYTE bQuiet)
 {
-	CJabberDlgPepSimple dlg(m_proto, TranslateT("Set Mood"));
-	for (int i = 1; i < SIZEOF(g_arrMoods); ++i)
-		dlg.AddStatusMode(i, g_arrMoods[i].szTag, m_icons.GetIcon(g_arrMoods[i].szTag), TranslateTS(g_arrMoods[i].szName));
-	dlg.SetActiveStatus(m_mode, m_text);
-	dlg.DoModal();
+	if( !bQuiet ) {
+		CJabberDlgPepSimple dlg(m_proto, TranslateT("Set Mood"));
+		for (int i = 1; i < SIZEOF(g_arrMoods); ++i)
+			dlg.AddStatusMode(i, g_arrMoods[i].szTag, m_icons.GetIcon(g_arrMoods[i].szTag), TranslateTS(g_arrMoods[i].szName));
+		dlg.SetActiveStatus(m_mode, m_text);
+		dlg.DoModal();
+		if (!dlg.OkClicked())
+			return;
 
-	if (!dlg.OkClicked()) return;
+		m_mode = dlg.GetStatusMode();
+		replaceStr(m_text, dlg.GetStatusText());
+	}
 
-	m_mode = dlg.GetStatusMode();
 	if (m_mode >= 0)
 	{
-		replaceStr(m_text, dlg.GetStatusText());
 		Publish();
 
 		UpdateMenuItem(m_icons.GetIcolibHandle(g_arrMoods[m_mode].szTag), g_arrMoods[m_mode].szName);
@@ -1209,7 +1212,7 @@ void CPepActivity::SetActivity(HANDLE hContact, LPCTSTR szFirst, LPCTSTR szSecon
 		m_proto->ResetAdvStatus(hContact, ADVSTATUS_ACTIVITY);
 }
 
-void CPepActivity::ShowSetDialog()
+void CPepActivity::ShowSetDialog(BYTE bQuiet)
 {
 	CJabberDlgPepSimple dlg(m_proto, TranslateT("Set Activity"));
 	for (int i = 0; i < SIZEOF(g_arrActivities); ++i)
@@ -1272,6 +1275,23 @@ INT_PTR __cdecl CJabberProto::OnGetXStatus( WPARAM wParam, LPARAM lParam )
 	return ((CPepMood *)m_pepServices.Find(_T(JABBER_FEAT_USER_MOOD)))->m_mode;
 }
 
+// not needed anymore and therefore commented out
+
+/*INT_PTR __cdecl CJabberProto::OnGetXStatusEx( WPARAM wParam, LPARAM lParam )
+{
+	JABBER_CUSTOM_STATUS *pData = (JABBER_CUSTOM_STATUS*)lParam;
+	HANDLE hContact = (HANDLE)wParam;
+
+	if ( !m_bJabberOnline || !m_bPepSupported )
+		return 1;
+
+	if (pData->cbSize < sizeof(JABBER_CUSTOM_STATUS)) return 1; // Failure
+
+
+	if ( wParam ) *(( char** )wParam ) = DBSETTING_XSTATUSNAME;
+	if ( lParam ) *(( char** )lParam ) = DBSETTING_XSTATUSMSG;
+	return ((CPepMood *)m_pepServices.Find(_T(JABBER_FEAT_USER_MOOD)))->m_mode;
+}*/
 /////////////////////////////////////////////////////////////////////////////////////////
 // JabberGetXStatusIcon - Retrieves specified custom status icon
 //wParam = (int)N  // custom status id, 0 = my current custom status
@@ -1476,25 +1496,45 @@ void CJabberProto::XStatusUninit()
 
 INT_PTR __cdecl CJabberProto::OnSetXStatus( WPARAM wParam, LPARAM )
 {
-	if ( !m_bPepSupported || !m_bJabberOnline)
+	if ( !m_bPepSupported || !m_bJabberOnline )
 		return 0;
 
 	CPepMood *pepMood = (CPepMood *)m_pepServices.Find(_T(JABBER_FEAT_USER_MOOD));
-	if (!wParam)
-	{
+	if ( !wParam ) {
 		pepMood->m_mode = -1;
 		pepMood->Retract();
 		return 0;
 	}
 
-	if ((wParam > 0) && (wParam < SIZEOF(g_arrMoods)))
-	{
+	if ( wParam > 0 && wParam < SIZEOF(g_arrMoods)) {
 		pepMood->m_mode = wParam;
-		pepMood->LaunchSetGui();
+		pepMood->LaunchSetGui( 0 );
 		return wParam;
 	}
 
 	return 0;
+}
+
+INT_PTR __cdecl CJabberProto::OnSetXStatusEx( WPARAM wParam, LPARAM lParam)
+{
+	JABBER_CUSTOM_STATUS *pData = (JABBER_CUSTOM_STATUS*)lParam;
+
+	if ( !m_bPepSupported || !m_bJabberOnline )
+		return 1;
+
+	if (pData->cbSize < sizeof(JABBER_CUSTOM_STATUS)) return 1; // Failure
+
+	CPepMood *pepMood = (CPepMood *)m_pepServices.Find(_T(JABBER_FEAT_USER_MOOD));
+
+	int status = *pData->status;
+	if (status > 0 && status < SIZEOF(g_arrMoods)) {
+		pepMood->m_mode = status;
+		pepMood->m_text = JabberStrFixLines( pData->ptszMessage );
+		pepMood->LaunchSetGui( 1 );
+		return 0;
+	}
+	
+	return 1;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////

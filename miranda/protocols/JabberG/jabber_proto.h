@@ -442,6 +442,12 @@ struct CJabberProto : public PROTO_INTERFACE
 	JabberCapsBits GetTotalJidCapabilites( const TCHAR *jid );
 	JabberCapsBits GetResourceCapabilites( const TCHAR *jid, BOOL appendBestResource );
 
+	//---- jabber_captcha.cpp ------------------------------------------------------------
+
+	void   GetCaptchaImage ( HXML node, char *ImageBuf, const TCHAR *PicType, TCHAR*& CaptchaPath);
+	void   sendCaptchaResult(TCHAR* buf, ThreadData* info, LPCTSTR from, LPCTSTR challenge, LPCTSTR fromjid, LPCTSTR sid);
+	void   sendCaptchaError(ThreadData* info, LPCTSTR from, LPCTSTR to, LPCTSTR challenge);
+
 	//---- jabber_chat.cpp ---------------------------------------------------------------
 
 	void   GcLogCreate( JABBER_LIST_ITEM* item );
@@ -766,10 +772,7 @@ struct CJabberProto : public PROTO_INTERFACE
 
 	void   InfoFrame_OnSetup(CJabberInfoFrame_Event *evt);
 	void   InfoFrame_OnTransport(CJabberInfoFrame_Event *evt);
-	void   GetCaptchaImage ( HXML node, char *ImageBuf, const TCHAR *PicType, TCHAR*& CaptchaPath);
-	void   sendCaptchaResult(TCHAR* buf, ThreadData* info, LPCTSTR from, LPCTSTR challenge, LPCTSTR fromjid, LPCTSTR sid);
-	void   sendCaptchaError(ThreadData* info, LPCTSTR from, LPCTSTR to, LPCTSTR challenge);
-	
+
 	//---- jabber_rc.cpp -----------------------------------------------------------------
 
 	int    RcGetUnreadEventsCount( void );
@@ -955,6 +958,7 @@ struct CJabberProto : public PROTO_INTERFACE
 	INT_PTR    __cdecl OnGetXStatusIcon( WPARAM wParam, LPARAM lParams );
 	INT_PTR    __cdecl OnGetXStatus( WPARAM wParam, LPARAM lParams );
 	INT_PTR    __cdecl OnSetXStatus( WPARAM wParam, LPARAM lParams );
+	INT_PTR    __cdecl OnSetXStatusEx( WPARAM wParam, LPARAM lParams );
 
 	HICON  GetXStatusIcon(int bStatus, UINT flags);
 

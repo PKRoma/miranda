@@ -131,11 +131,11 @@ public:
 	~CPepGuiService();
 	void InitGui();
 	void RebuildMenu();
-	bool LaunchSetGui();
+	bool LaunchSetGui(BYTE bQuiet);
 
 protected:
 	void UpdateMenuItem(HANDLE hIcolibIcon, TCHAR *text);
-	virtual void ShowSetDialog() = 0;
+	virtual void ShowSetDialog(BYTE bQuiet) = 0;
 
 private:
 	HANDLE m_hMenuService;
@@ -164,7 +164,7 @@ public: // FIXME: ugly hack
 
 protected:
 	void CreateData( HXML );
-	void ShowSetDialog();
+	void ShowSetDialog(BYTE bQuiet);
 	void SetExtraIcon(HANDLE hContact, char *szMood);
 
 	void SetMood(HANDLE hContact, const TCHAR *szMood, const TCHAR *szText);
@@ -186,7 +186,7 @@ protected:
 	int m_mode;
 
 	void CreateData( HXML );
-	void ShowSetDialog();
+	void ShowSetDialog(BYTE bQuiet);
 	void SetExtraIcon(HANDLE hContact, char *szActivity);
 
 	void SetActivity(HANDLE hContact, LPCTSTR szFirst, LPCTSTR szSecond, LPCTSTR szText);
