@@ -2399,48 +2399,48 @@ SOURCE=.\msvc6.rc
 !IF  "$(CFG)" == "jabberg - Win32 Release"
 
 "zlib - Win32 Release" :
-   cd "\mir_trunk\miranda\plugins\zlib"
+   cd "..\..\plugins\zlib"
    $(MAKE) /$(MAKEFLAGS) /F .\zlib.mak CFG="zlib - Win32 Release"
    cd "..\..\protocols\JabberG"
 
 "zlib - Win32 ReleaseCLEAN" :
-   cd "\mir_trunk\miranda\plugins\zlib"
+   cd "..\..\plugins\zlib"
    $(MAKE) /$(MAKEFLAGS) /F .\zlib.mak CFG="zlib - Win32 Release" RECURSE=1 CLEAN
    cd "..\..\protocols\JabberG"
 
 !ELSEIF  "$(CFG)" == "jabberg - Win32 Debug"
 
 "zlib - Win32 Debug" :
-   cd "\mir_trunk\miranda\plugins\zlib"
+   cd "..\..\plugins\zlib"
    $(MAKE) /$(MAKEFLAGS) /F .\zlib.mak CFG="zlib - Win32 Debug"
    cd "..\..\protocols\JabberG"
 
 "zlib - Win32 DebugCLEAN" :
-   cd "\mir_trunk\miranda\plugins\zlib"
+   cd "..\..\plugins\zlib"
    $(MAKE) /$(MAKEFLAGS) /F .\zlib.mak CFG="zlib - Win32 Debug" RECURSE=1 CLEAN
    cd "..\..\protocols\JabberG"
 
 !ELSEIF  "$(CFG)" == "jabberg - Win32 Release Unicode"
 
 "zlib - Win32 Release Unicode" :
-   cd "\mir_trunk\miranda\plugins\zlib"
+   cd "..\..\plugins\zlib"
    $(MAKE) /$(MAKEFLAGS) /F .\zlib.mak CFG="zlib - Win32 Release Unicode"
    cd "..\..\protocols\JabberG"
 
 "zlib - Win32 Release UnicodeCLEAN" :
-   cd "\mir_trunk\miranda\plugins\zlib"
+   cd "..\..\plugins\zlib"
    $(MAKE) /$(MAKEFLAGS) /F .\zlib.mak CFG="zlib - Win32 Release Unicode" RECURSE=1 CLEAN
    cd "..\..\protocols\JabberG"
 
 !ELSEIF  "$(CFG)" == "jabberg - Win32 Debug Unicode"
 
 "zlib - Win32 Debug Unicode" :
-   cd "\mir_trunk\miranda\plugins\zlib"
+   cd "..\..\plugins\zlib"
    $(MAKE) /$(MAKEFLAGS) /F .\zlib.mak CFG="zlib - Win32 Debug Unicode"
    cd "..\..\protocols\JabberG"
 
 "zlib - Win32 Debug UnicodeCLEAN" :
-   cd "\mir_trunk\miranda\plugins\zlib"
+   cd "..\..\plugins\zlib"
    $(MAKE) /$(MAKEFLAGS) /F .\zlib.mak CFG="zlib - Win32 Debug Unicode" RECURSE=1 CLEAN
    cd "..\..\protocols\JabberG"
 
