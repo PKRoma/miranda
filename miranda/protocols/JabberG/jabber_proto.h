@@ -958,6 +958,7 @@ struct CJabberProto : public PROTO_INTERFACE
 	INT_PTR    __cdecl OnGetXStatusIcon( WPARAM wParam, LPARAM lParams );
 	INT_PTR    __cdecl OnGetXStatus( WPARAM wParam, LPARAM lParams );
 	INT_PTR    __cdecl OnSetXStatus( WPARAM wParam, LPARAM lParams );
+	INT_PTR    __cdecl OnSetXStatusEx( WPARAM wParam, LPARAM lParams );
 
 	HICON  GetXStatusIcon(int bStatus, UINT flags);
 
