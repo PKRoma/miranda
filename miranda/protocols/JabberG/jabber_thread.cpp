@@ -2,7 +2,7 @@
 
 Jabber Protocol Plugin for Miranda IM
 Copyright ( C ) 2002-04  Santithorn Bunchua
-Copyright ( C ) 2005-09  George Hazan
+Copyright ( C ) 2005-11  George Hazan
 Copyright ( C ) 2007     Maxim Mluhov
 
 This program is free software; you can redistribute it and/or
@@ -35,6 +35,7 @@ Last change by : $Author$
 #include "jabber_caps.h"
 #include "jabber_privacy.h"
 #include "jabber_rc.h"
+#include "jabber_proto.h"
 
 #ifndef DNS_TYPE_SRV
 #define DNS_TYPE_SRV 0x0021
@@ -447,10 +448,7 @@ LBL_FatalError:
 			size_t len = _tcslen( info->username ) + strlen( info->server )+1;
 			m_szJabberJID = ( TCHAR* )mir_alloc( sizeof( TCHAR)*( len+1 ));
 			mir_sntprintf( m_szJabberJID, len+1, _T("%s@") _T(TCHAR_STR_PARAM), info->username, info->server );
-			if ( m_options.KeepAlive )
-				m_bSendKeepAlive = TRUE;
-			else
-				m_bSendKeepAlive = FALSE;
+			m_bSendKeepAlive = m_options.KeepAlive != 0;
 			JSetStringT(NULL, "jid", m_szJabberJID); // store jid in database
 		}
 
@@ -476,7 +474,7 @@ LBL_FatalError:
 				if ( nSelRes == -1 ) // error
 					break;
 				else if ( nSelRes == 0 ) {
-					if ( m_options.EnableServerXMPPPing )
+					if ( m_options.EnableServerXMPPPing && ( m_ThreadInfo->jabberServerCaps & JABBER_CAPS_PING ))
 						info->send( 
 							XmlNodeIq( m_iqManager.AddHandler( &CJabberProto::OnPingReply, JABBER_IQ_TYPE_GET, NULL, 0, -1, this, 0, m_options.ConnectionKeepAliveTimeout ))
 								<< XCHILDNS( _T("ping"), _T(JABBER_FEAT_PING)));
@@ -885,10 +883,16 @@ void CJabberProto::OnProcessError( HXML node, ThreadData* info )
 		if ( !n )
 			break;
 
-		pos += mir_sntprintf( buff+pos, 1024-pos, _T("%s: %s\n"), xmlGetName( n ), xmlGetText( n ));
-		if ( !_tcscmp( xmlGetName( n ), _T("conflict")))
+		const TCHAR *name = xmlGetName( n );
+		const TCHAR *desc = xmlGetText( n );
+		if ( desc )
+			pos += mir_sntprintf( buff+pos, 1024-pos, _T("%s: %s\r\n"), name, desc );
+		else 
+			pos += mir_sntprintf( buff+pos, 1024-pos, _T("%s\r\n"), name );
+
+		if ( !_tcscmp( name, _T("conflict")))
 			JSendBroadcast( NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_OTHERLOCATION);
-		else if ( !_tcscmp( xmlGetName( n ), _T("see-other-host"))) {
+		else if ( !_tcscmp( name, _T("see-other-host"))) {
 			skipMsg = true;
 		}
 	}
@@ -959,6 +963,8 @@ void CJabberProto::OnProcessProtocol( HXML node, ThreadData* info )
 		OnProcessError( node, info );
 	else if ( !lstrcmp( xmlGetName( node ), _T("challenge")))
 		OnProcessChallenge( node, info );
+	else if ( xmlGetChild( node , _T("captcha")))
+		OnProcessCaptcha( node, info );
 	else if ( info->type == JABBER_SESSION_NORMAL ) {
 		if ( !lstrcmp( xmlGetName( node ), _T("message")))
 			OnProcessMessage( node, info );
@@ -1292,17 +1298,25 @@ void CJabberProto::OnProcessMessage( HXML node, ThreadData* info )
 		return;
 	}
 
-	if (n = xmlGetChildByTag( node, "x", "xmlns", _T(JABBER_FEAT_MIRANDA_NOTES))) {
-		if (OnIncomingNote(from, xmlGetChild(n, "note")))
-			return;
-	}
+	for ( int i = 0; ( xNode = xmlGetChild( node, i )) != NULL; i++ ) {
+		xNode = xmlGetNthChild( node, _T("x"), i );
+		if ( xNode == NULL ) {
+			xNode = xmlGetNthChild( node, _T("user:x"), i );
+			if ( xNode == NULL )
+				continue;
+		}
 
-	for ( int i = 1; ( xNode = xmlGetNthChild( node, _T("x"), i )) != NULL; i++ ) {
 		const TCHAR* ptszXmlns = xmlGetAttrValue( xNode, _T("xmlns"));
+		if ( ptszXmlns == NULL )
+			ptszXmlns = xmlGetAttrValue( xNode, _T("xmlns:user"));
 		if ( ptszXmlns == NULL )
 			continue;
 
-		if ( !_tcscmp( ptszXmlns, _T("jabber:x:encrypted" ))) {
+		if ( !_tcscmp( ptszXmlns, _T(JABBER_FEAT_MIRANDA_NOTES))) {
+			if (OnIncomingNote(from, xmlGetChild(xNode, "note")))
+				return;
+		}
+		else if ( !_tcscmp( ptszXmlns, _T("jabber:x:encrypted" ))) {
 			if ( xmlGetText( xNode ) == NULL )
 				return;
 
@@ -1379,10 +1393,17 @@ void CJabberProto::OnProcessMessage( HXML node, ThreadData* info )
 				szMessage = szTmp;
 			}
 		}
-		else if ( !_tcscmp( ptszXmlns, _T("http://jabber.org/protocol/muc#user"))) {
-			if (( inviteNode = xmlGetChild( xNode , "invite" )) != NULL ) {
+		else if ( !_tcscmp( ptszXmlns, _T(JABBER_FEAT_MUC_USER))) {
+			inviteNode = xmlGetChild( xNode , _T("invite"));
+			if ( inviteNode == NULL )
+				inviteNode = xmlGetChild( xNode , _T("user:invite"));
+
+			if ( inviteNode != NULL ) {
 				inviteFromJid = xmlGetAttrValue( inviteNode, _T("from"));
-				if (( n = xmlGetChild( inviteNode , "reason" )) != NULL )
+				n = xmlGetChild( inviteNode , _T("reason"));
+				if ( n == NULL )
+					n = xmlGetChild( inviteNode , _T("user:reason"));
+				if ( n != NULL )
 					inviteReason = xmlGetText( n );
 			}
 			inviteRoomJid = from;

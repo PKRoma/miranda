@@ -340,6 +340,8 @@
 #define IDC_CHECK_BM_AUTOJOIN           3014
 #define IDI_PRIVACY_LISTS               3016
 #define IDI_SERVICE_DISCOVERY           3017
+#define IDD_CAPTCHAFORM                 3018
+#define IDC_VALUE                       3019
 
 // Next default values for new objects
 // 

@@ -2,7 +2,7 @@
 
 Jabber Protocol Plugin for Miranda IM
 Copyright ( C ) 2002-04  Santithorn Bunchua
-Copyright ( C ) 2005-09  George Hazan
+Copyright ( C ) 2005-11  George Hazan
 Copyright ( C ) 2007     Maxim Mluhov
 
 This program is free software; you can redistribute it and/or
@@ -1069,7 +1069,18 @@ void CJabberProto::OnIqResultGetVcard( HXML iqNode )
 				else if ( !lstrcmp( xmlGetName( n ), _T("PHOTO")))
 					OnIqResultGetVcardPhoto( jid, n, hContact, hasPhoto );
 		}	}
+		
+		if ( hasFn && !hasNick ) {
+			TCHAR *name = JGetStringT( hContact, "FullName" );
+			TCHAR *nick = JGetStringT( hContact, "Nick" );
+			TCHAR *jidNick = JabberNickFromJID(jid);
+			if ( !nick || ( jidNick && !_tcsicmp( nick, jidNick )))
+				JSetStringT( hContact, "Nick", name );
 
+			mir_free( jidNick );
+			mir_free( nick );
+			mir_free( name );
+		}
 		if ( !hasFn )
 			JDeleteSetting( hContact, "FullName" );
 		// We are not deleting "Nick"

@@ -2,7 +2,7 @@
 
 Jabber Protocol Plugin for Miranda IM
 Copyright ( C ) 2002-04  Santithorn Bunchua
-Copyright ( C ) 2005-09  George Hazan
+Copyright ( C ) 2005-11  George Hazan
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -578,7 +578,7 @@ TCHAR* __stdcall JabberErrorMsg( HXML errorNode, int* pErrorCode )
 	const TCHAR *str;
 	if (( str = xmlGetAttrValue( errorNode, _T("code"))) != NULL )
 		errorCode = _ttoi( str );
-	if (( str=xmlGetText( errorNode ) ) != NULL )
+	if (( str=xmlGetText( errorNode )) != NULL || ( str = xmlGetText( xmlGetChild( errorNode, _T("text")))) != NULL )
 		mir_sntprintf( errorStr, 256, _T("%s %d: %s\r\n%s"), TranslateT( "Error" ), errorCode, TranslateTS( JabberErrorStr( errorCode )), str );
 	else
 		mir_sntprintf( errorStr, 256, _T("%s %d: %s"), TranslateT( "Error" ), errorCode, TranslateTS( JabberErrorStr( errorCode )) );
@@ -801,11 +801,15 @@ void CJabberProto::SendPresenceTo( int status, TCHAR* to, HXML extra, TCHAR *msg
 	HXML c = p << XCHILDNS( _T("c"), _T(JABBER_FEAT_ENTITY_CAPS)) << XATTR( _T("node"), _T(JABBER_CAPS_MIRANDA_NODE)) 
 		<< XATTR( _T("ver"), _T(__VERSION_STRING));
 
-	TCHAR szExtCaps[ 512 ];
-	szExtCaps[ 0 ] = _T('\0');
+	TCHAR szExtCaps[ 512 ] = _T("");
 
-	if ( bSecureIM )
+	_tcscat( szExtCaps, _T("pmuc-v1") );
+
+	if ( bSecureIM ) {
+		if ( szExtCaps[0] )
+			_tcscat( szExtCaps, _T(" "));
 		_tcscat( szExtCaps, _T(JABBER_EXT_SECUREIM) );
+	}
 
 	if ( m_options.EnableRemoteControl ) {
 		if ( szExtCaps[0] )

@@ -2,7 +2,7 @@
 
 Jabber Protocol Plugin for Miranda IM
 Copyright ( C ) 2002-04  Santithorn Bunchua
-Copyright ( C ) 2005-09  George Hazan
+Copyright ( C ) 2005-11  George Hazan
 Copyright ( C ) 2007     Maxim Mluhov
 
 This program is free software; you can redistribute it and/or
@@ -596,7 +596,7 @@ extern BOOL (WINAPI *JabberAlphaBlend)(HDC, int, int, int, int, HDC, int, int, i
 extern BOOL (WINAPI *JabberIsThemeActive)();
 extern HRESULT (WINAPI *JabberDrawThemeParentBackground)(HWND, HDC, RECT *);
 
-extern TCHAR xmlnsOwner[];
+extern const TCHAR xmlnsOwner[];
 
 /*******************************************************************
  * Function declarations

@@ -920,6 +920,10 @@
 				>
 			</File>
 			<File
+				RelativePath="jabber_captcha.cpp"
+				>
+			</File>
+			<File
 				RelativePath="jabber_chat.cpp"
 				>
 			</File>

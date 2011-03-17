@@ -2,7 +2,7 @@
 
 Jabber Protocol Plugin for Miranda IM
 Copyright ( C ) 2002-04  Santithorn Bunchua
-Copyright ( C ) 2005-09  George Hazan
+Copyright ( C ) 2005-11  George Hazan
 Copyright ( C ) 2007     Maxim Mluhov
 
 This program is free software; you can redistribute it and/or
@@ -445,7 +445,7 @@ struct CJabberProto : public PROTO_INTERFACE
 	//---- jabber_chat.cpp ---------------------------------------------------------------
 
 	void   GcLogCreate( JABBER_LIST_ITEM* item );
-	void   GcLogUpdateMemberStatus( JABBER_LIST_ITEM* item, const TCHAR* nick, const TCHAR* jid, int action, HXML reason, int nStatusCode = -1 );
+	void   GcLogUpdateMemberStatus( JABBER_LIST_ITEM* item, const TCHAR* resource, const TCHAR* nick, const TCHAR* jid, int action, HXML reason, int nStatusCode = -1 );
 	void   GcLogShowInformation( JABBER_LIST_ITEM *item, JABBER_RESOURCE_STATUS *user, TJabberGcLogInfoType type );
 	void   GcQuit( JABBER_LIST_ITEM* jid, int code, HXML reason );
 		  
@@ -656,7 +656,7 @@ struct CJabberProto : public PROTO_INTERFACE
 	int    ListFindNext( JABBER_LIST list, int fromOffset );
 
 	JABBER_RESOURCE_STATUS *CJabberProto::ListFindResource( JABBER_LIST list, const TCHAR* jid );
-	int    ListAddResource( JABBER_LIST list, const TCHAR* jid, int status, const TCHAR* statusMessage, char priority = 0 );
+	int    ListAddResource( JABBER_LIST list, const TCHAR* jid, int status, const TCHAR* statusMessage, char priority = 0, const TCHAR* nick = NULL );
 	void   ListRemoveResource( JABBER_LIST list, const TCHAR* jid );
 	TCHAR* ListGetBestResourceNamePtr( const TCHAR* jid );
 	TCHAR* ListGetBestClientResourceNamePtr( const TCHAR* jid );
@@ -766,7 +766,10 @@ struct CJabberProto : public PROTO_INTERFACE
 
 	void   InfoFrame_OnSetup(CJabberInfoFrame_Event *evt);
 	void   InfoFrame_OnTransport(CJabberInfoFrame_Event *evt);
-
+	void   GetCaptchaImage ( HXML node, char *ImageBuf, const TCHAR *PicType, TCHAR*& CaptchaPath);
+	void   sendCaptchaResult(TCHAR* buf, ThreadData* info, LPCTSTR from, LPCTSTR challenge, LPCTSTR fromjid, LPCTSTR sid);
+	void   sendCaptchaError(ThreadData* info, LPCTSTR from, LPCTSTR to, LPCTSTR challenge);
+	
 	//---- jabber_rc.cpp -----------------------------------------------------------------
 
 	int    RcGetUnreadEventsCount( void );
@@ -868,6 +871,7 @@ struct CJabberProto : public PROTO_INTERFACE
 	void   OnProcessPresence( HXML node, ThreadData *info );
 	void   OnProcessPresenceCapabilites( HXML node );
 	void   OnProcessPubsubEvent( HXML node );
+	void   OnProcessCaptcha( HXML node, ThreadData *info );
 
 	void   OnProcessStreamOpening( HXML node, ThreadData *info );
 	void   OnProcessStreamClosing( HXML node, ThreadData *info );

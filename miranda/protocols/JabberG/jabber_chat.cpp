@@ -2,7 +2,7 @@
 
 Jabber Protocol Plugin for Miranda IM
 Copyright ( C ) 2002-04  Santithorn Bunchua
-Copyright ( C ) 2005-09  George Hazan
+Copyright ( C ) 2005-11  George Hazan
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -30,8 +30,8 @@ Last change by : $Author$
 
 #include <m_addcontact.h>
 
-TCHAR xmlnsAdmin[] = _T("http://jabber.org/protocol/muc#admin");
-TCHAR xmlnsOwner[] = _T("http://jabber.org/protocol/muc#owner");
+const TCHAR xmlnsAdmin[] = _T("http://jabber.org/protocol/muc#admin");
+const TCHAR xmlnsOwner[] = _T("http://jabber.org/protocol/muc#owner");
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // Global definitions
@@ -207,7 +207,7 @@ void CJabberProto::GcLogShowInformation( JABBER_LIST_ITEM *item, JABBER_RESOURCE
 {
 	if (!item || !user || (item->bChatActive != 2)) return;
 
-	TCHAR buf[512] = {0};
+	TCHAR buf[512] = _T("");
 
 	switch (type)
 	{
@@ -288,7 +288,7 @@ void CJabberProto::GcLogShowInformation( JABBER_LIST_ITEM *item, JABBER_RESOURCE
 	}
 }
 
-void CJabberProto::GcLogUpdateMemberStatus( JABBER_LIST_ITEM* item, const TCHAR* nick, const TCHAR* jid, int action, HXML reason, int nStatusCode )
+void CJabberProto::GcLogUpdateMemberStatus( JABBER_LIST_ITEM* item, const TCHAR* resource, const TCHAR* nick, const TCHAR* jid, int action, HXML reason, int nStatusCode )
 {
 	int statusToSet = 0;
 	const TCHAR* szReason = NULL;
@@ -311,7 +311,7 @@ void CJabberProto::GcLogUpdateMemberStatus( JABBER_LIST_ITEM* item, const TCHAR*
 	GCEVENT gce = {0};
 	gce.cbSize = sizeof(GCEVENT);
 	gce.ptszNick = nick;
-	gce.ptszUID = nick;
+	gce.ptszUID = resource;
 	if (jid != NULL)
 		gce.ptszUserInfo = jid;
 	gce.ptszText = szReason;
@@ -330,7 +330,7 @@ void CJabberProto::GcLogUpdateMemberStatus( JABBER_LIST_ITEM* item, const TCHAR*
 	default:
 		for ( int i=0; i < item->resourceCount; i++ ) {
 			JABBER_RESOURCE_STATUS& JS = item->resource[i];
-			if ( !lstrcmp( nick, JS.resourceName )) {
+			if ( !lstrcmp( resource, JS.resourceName )) {
 				if ( action != GC_EVENT_JOIN ) {
 					switch( action ) {
 					case 0:
@@ -357,7 +357,7 @@ void CJabberProto::GcLogUpdateMemberStatus( JABBER_LIST_ITEM* item, const TCHAR*
 		gcd.iType = GC_EVENT_SETSTATUSEX;
 		CallServiceSync( MS_GC_EVENT, NULL, ( LPARAM )&gce );
 
-		gce.ptszUID = nick;
+		gce.ptszUID = resource;
 		gce.dwItemData = statusToSet;
 		gcd.iType = GC_EVENT_SETCONTACTSTATUS;
 		CallServiceSync( MS_GC_EVENT, NULL, ( LPARAM )&gce );
@@ -396,7 +396,7 @@ void CJabberProto::GcQuit( JABBER_LIST_ITEM* item, int code, HXML reason )
 	}
 	else {
 		TCHAR* myNick = JabberNickFromJID( m_szJabberJID );
-		GcLogUpdateMemberStatus( item, myNick, NULL, GC_EVENT_KICK, reason );
+		GcLogUpdateMemberStatus( item, myNick, myNick, NULL, GC_EVENT_KICK, reason );
 		mir_free( myNick );
 		CallServiceSync( MS_GC_EVENT, SESSION_OFFLINE, ( LPARAM )&gce );
 	}
@@ -753,7 +753,7 @@ class CGroupchatInviteDlg : public CJabberDlgBase
 	{
 		XmlNode msg( _T("message"));
 		HXML invite = msg << XATTR( _T("to"), m_room ) << XATTRID( m_proto->SerialNext())
-			<< XCHILDNS( _T("x"), _T("http://jabber.org/protocol/muc#user"))
+			<< XCHILDNS( _T("x"), _T(JABBER_FEAT_MUC_USER))
 				<< XCHILD( _T("invite")) << XATTR( _T("to"), pUser );
 		if ( text )
 			invite << XCHILD( _T("reason"), text );

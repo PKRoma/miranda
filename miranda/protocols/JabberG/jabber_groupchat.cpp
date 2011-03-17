@@ -2,7 +2,7 @@
 
 Jabber Protocol Plugin for Miranda IM
 Copyright ( C ) 2002-04  Santithorn Bunchua
-Copyright ( C ) 2005-09  George Hazan
+Copyright ( C ) 2005-11  George Hazan
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -202,6 +202,16 @@ private:
 		return !lstrcmp(str1, str2);
 	}
 };
+
+JABBER_RESOURCE_STATUS* GcFindResource(JABBER_LIST_ITEM *item, const TCHAR *resource)
+{
+	JABBER_RESOURCE_STATUS *r = item->resource;
+	for ( int i=0; i<item->resourceCount; i++ )
+		if ( !_tcscmp( r[i].resourceName, resource )) 
+			return &r[i];
+
+	return NULL;
+}
 
 INT_PTR __cdecl CJabberProto::OnMenuHandleJoinGroupchat( WPARAM, LPARAM )
 {
@@ -910,22 +920,38 @@ void CJabberProto::GroupchatProcessPresence( HXML node )
 	const TCHAR* from;
 	int status, newRes = 0;
 	bool bStatusChanged = false;
-	int i;
 	BOOL roomCreated;
 
 	if ( !node || !xmlGetName( node ) || lstrcmp( xmlGetName( node ), _T("presence"))) return;
 	if (( from = xmlGetAttrValue( node, _T("from"))) == NULL ) return;
 
-	const TCHAR* nick = _tcschr( from, '/' );
-	if ( nick == NULL || nick[1] == '\0' )
+	const TCHAR* resource = _tcschr( from, '/' );
+	if ( resource == NULL || *++resource == '\0' )
 		return;
-	nick++;
 
 	JABBER_LIST_ITEM* item = ListGetItemPtr( LIST_CHATROOM, from );
 	if ( item == NULL )
 		return;
 
-	HXML xNode = xmlGetChildByTag( node, "x", "xmlns", _T("http://jabber.org/protocol/muc#user"));
+	JABBER_RESOURCE_STATUS* r = GcFindResource(item, resource);
+
+	HXML nNode = xmlGetChildByTag( node, "nick", "xmlns", _T(JABBER_FEAT_NICK));
+	if ( nNode == NULL )
+		nNode = xmlGetChildByTag( node, "nick:nick", "xmlns:nick", _T(JABBER_FEAT_NICK));
+
+	const TCHAR* cnick = nNode ? xmlGetText( nNode ) : NULL;
+	const TCHAR* nick = cnick ? cnick : (r && r->nick ? r->nick : resource);
+
+	// process custom nick change
+	if ( cnick && r && r->nick && _tcscmp( cnick, r->nick ))
+		replaceStr( r->nick, cnick );
+
+	HXML xNode = xmlGetChildByTag( node, "x", "xmlns", _T(JABBER_FEAT_MUC_USER));
+	HXML xUserNode = xmlGetChildByTag( node, "user:x", "xmlns:user", _T(JABBER_FEAT_MUC_USER));
+
+	itemNode = xmlGetChild( xNode , "item" );
+	if ( itemNode == NULL )
+		itemNode = xmlGetChild( xUserNode , "user:item" );
 
 	const TCHAR* type = xmlGetAttrValue( node, _T("type"));
 
@@ -948,11 +974,11 @@ void CJabberProto::GroupchatProcessPresence( HXML node )
 				else if ( !_tcscmp( xmlGetText( showNode ) , _T("chat"))) status = ID_STATUS_FREECHAT;
 		}	}
 
-		const TCHAR* str;
-		if (( statusNode = xmlGetChild( node , "status" )) != NULL && xmlGetText( statusNode ) != NULL )
-			str = xmlGetText( statusNode );
-		else
-			str = NULL;
+		statusNode = xmlGetChild( node , "status" );
+		if ( statusNode == NULL )
+			statusNode = xmlGetChild( node , "user:status" );
+
+		const TCHAR* str = statusNode ? xmlGetText( statusNode ) : NULL;
 
 		char priority = 0;
 		if (( priorityNode = xmlGetChild( node , "priority" )) != NULL && xmlGetText( priorityNode ) != NULL )
@@ -962,7 +988,7 @@ void CJabberProto::GroupchatProcessPresence( HXML node )
 			if ((oldRes->status != status) || lstrcmp_null(oldRes->statusMessage, str))
 				bStatusChanged = true;
 
-		newRes = ( ListAddResource( LIST_CHATROOM, from, status, str, priority ) == 0 ) ? 0 : GC_EVENT_JOIN;
+		newRes = ( ListAddResource( LIST_CHATROOM, from, status, str, priority, cnick ) == 0 ) ? 0 : GC_EVENT_JOIN;
 
 		roomCreated = FALSE;
 
@@ -970,56 +996,50 @@ void CJabberProto::GroupchatProcessPresence( HXML node )
 		bool bRoleChanged = false;
 
 		// Check additional MUC info for this user
-		JABBER_RESOURCE_STATUS* r = NULL;
-		if ( xNode != NULL ) {
-			if (( itemNode = xmlGetChild( xNode , "item" )) != NULL ) {
-				r = item->resource;
-				for ( i=0; i<item->resourceCount && _tcscmp( r->resourceName, nick ); i++, r++ );
-				if ( i < item->resourceCount ) {
-					JABBER_GC_AFFILIATION affiliation = r->affiliation;
-					JABBER_GC_ROLE role = r->role;
+		if ( itemNode != NULL ) {
+			if ( r == NULL )
+				r = GcFindResource(item, resource);
+			if ( r != NULL ) {
+				JABBER_GC_AFFILIATION affiliation = r->affiliation;
+				JABBER_GC_ROLE role = r->role;
 
-					if (( str = xmlGetAttrValue( itemNode, _T("affiliation"))) != NULL ) {
-						     if ( !_tcscmp( str, _T("owner")))       affiliation = AFFILIATION_OWNER;
-						else if ( !_tcscmp( str, _T("admin")))       affiliation = AFFILIATION_ADMIN;
-						else if ( !_tcscmp( str, _T("member")))      affiliation = AFFILIATION_MEMBER;
-						else if ( !_tcscmp( str, _T("none")))	     affiliation = AFFILIATION_NONE;
-						else if ( !_tcscmp( str, _T("outcast")))     affiliation = AFFILIATION_OUTCAST;
-					}
-					if (( str = xmlGetAttrValue( itemNode, _T("role"))) != NULL ) {
-						     if ( !_tcscmp( str, _T("moderator")))   role = ROLE_MODERATOR;
-						else if ( !_tcscmp( str, _T("participant"))) role = ROLE_PARTICIPANT;
-						else if ( !_tcscmp( str, _T("visitor")))     role = ROLE_VISITOR;
-						else                                         role = ROLE_NONE;
-					}
-
-					if ( (role != ROLE_NONE) && (JabberGcGetStatus(r) != JabberGcGetStatus(affiliation, role)) ) {
-						GcLogUpdateMemberStatus( item, nick, NULL, GC_EVENT_REMOVESTATUS, NULL );
-						if (!newRes) newRes = GC_EVENT_ADDSTATUS;
-					}
-
-					if (affiliation != r->affiliation) {
-						r->affiliation = affiliation;
-						bAffiliationChanged = true;
-					}
-
-					if (role != r->role) {
-						r->role = role;
-						if (r->role != ROLE_NONE)
-							bRoleChanged = true;
-					}
-
-					if ( str = xmlGetAttrValue( itemNode, _T("jid")))
-						replaceStr( r->szRealJid, str );
-				} else
-				{
-					r = NULL;
+				if (( str = xmlGetAttrValue( itemNode, _T("affiliation"))) != NULL ) {
+						    if ( !_tcscmp( str, _T("owner")))       affiliation = AFFILIATION_OWNER;
+					else if ( !_tcscmp( str, _T("admin")))       affiliation = AFFILIATION_ADMIN;
+					else if ( !_tcscmp( str, _T("member")))      affiliation = AFFILIATION_MEMBER;
+					else if ( !_tcscmp( str, _T("none")))	     affiliation = AFFILIATION_NONE;
+					else if ( !_tcscmp( str, _T("outcast")))     affiliation = AFFILIATION_OUTCAST;
 				}
-			}
+				if (( str = xmlGetAttrValue( itemNode, _T("role"))) != NULL ) {
+						    if ( !_tcscmp( str, _T("moderator")))   role = ROLE_MODERATOR;
+					else if ( !_tcscmp( str, _T("participant"))) role = ROLE_PARTICIPANT;
+					else if ( !_tcscmp( str, _T("visitor")))     role = ROLE_VISITOR;
+					else                                         role = ROLE_NONE;
+				}
 
-			if ( sttGetStatusCode( xNode ) == 201 )
-				roomCreated = TRUE;
+				if ( (role != ROLE_NONE) && (JabberGcGetStatus(r) != JabberGcGetStatus(affiliation, role)) ) {
+					GcLogUpdateMemberStatus( item, resource, nick, NULL, GC_EVENT_REMOVESTATUS, NULL );
+					if (!newRes) newRes = GC_EVENT_ADDSTATUS;
+				}
+
+				if (affiliation != r->affiliation) {
+					r->affiliation = affiliation;
+					bAffiliationChanged = true;
+				}
+
+				if (role != r->role) {
+					r->role = role;
+					if (r->role != ROLE_NONE)
+						bRoleChanged = true;
+				}
+
+				if ( str = xmlGetAttrValue( itemNode, _T("jid")))
+					replaceStr( r->szRealJid, str );
+			} 
 		}
+
+		if ( sttGetStatusCode( xNode ) == 201 )
+			roomCreated = TRUE;
 
 		// show status change if needed
 		if (bStatusChanged)
@@ -1027,7 +1047,7 @@ void CJabberProto::GroupchatProcessPresence( HXML node )
 				GcLogShowInformation(item, res, INFO_STATUS);
 
 		// Update groupchat log window
-		GcLogUpdateMemberStatus( item, nick, str, newRes, NULL );
+		GcLogUpdateMemberStatus( item, resource, nick, str, newRes, NULL );
 		if (r && bAffiliationChanged) GcLogShowInformation(item, r, INFO_AFFILIATION);
 		if (r && bRoleChanged) GcLogShowInformation(item, r, INFO_ROLE);
 
@@ -1056,27 +1076,20 @@ void CJabberProto::GroupchatProcessPresence( HXML node )
 		}
 
 		mir_free( room );
-		return;
 	}
 	
 	// leaving room
-	if ( !lstrcmp( type, _T("unavailable"))) {
+	else if ( !_tcscmp( type, _T("unavailable"))) {
 		const TCHAR* str = 0;
 		if ( xNode != NULL && item->nick != NULL ) {
-			itemNode = xmlGetChild( xNode , "item" );
 			HXML reasonNode = xmlGetChild( itemNode , "reason" );
 			str = xmlGetAttrValue( itemNode, _T( "jid" ));
+
 			int iStatus = sttGetStatusCode( xNode );
-			if (iStatus == 301)
-			{
-				for (int i = 0; i < item->resourceCount; ++i)
-					if (!lstrcmp(item->resource[i].resourceName, nick))
-					{
-						GcLogShowInformation(item, item->resource + i, INFO_BAN);
-						break;
-					}
-			}
-			if ( !lstrcmp( nick, item->nick )) {
+			if (iStatus == 301 && r != NULL)
+				GcLogShowInformation(item, r, INFO_BAN);
+
+			if ( !lstrcmp( resource, item->nick )) {
 				switch( iStatus ) {
 				case 301:
 				case 307:
@@ -1084,35 +1097,34 @@ void CJabberProto::GroupchatProcessPresence( HXML node )
 					return;
 
 				case 303:
-					RenameParticipantNick( item, nick, itemNode );
+					RenameParticipantNick( item, resource, itemNode );
 					return;
 			}	}
 			else {
 				switch( iStatus ) {
 				case 303:
-					RenameParticipantNick( item, nick, itemNode );
+					RenameParticipantNick( item, resource, itemNode );
 					return;
 
 				case 301:
 				case 307:
 				case 322:
 					ListRemoveResource( LIST_CHATROOM, from );
-					GcLogUpdateMemberStatus( item, nick, str, GC_EVENT_KICK, reasonNode, iStatus );
+					GcLogUpdateMemberStatus( item, resource, nick, str, GC_EVENT_KICK, reasonNode, iStatus );
 					return;
 		}	}	}
 
 		statusNode = xmlGetChild( node , "status" );
+		GcLogUpdateMemberStatus( item, resource, nick, str, GC_EVENT_PART, statusNode );
 		ListRemoveResource( LIST_CHATROOM, from );
-		GcLogUpdateMemberStatus( item, nick, str, GC_EVENT_PART, statusNode );
 
 		HANDLE hContact = HContactFromJID( from );
 		if ( hContact != NULL )
 			JSetWord( hContact, "Status", ID_STATUS_OFFLINE );
-		return;
 	}
 	
 	// processing room errors
-	if ( !lstrcmp( type, _T("error"))) {
+	else if ( !_tcscmp( type, _T("error"))) {
 		int errorCode = 0;
 		HXML errorNode = xmlGetChild( node , "error" );
 		TCHAR* str = JabberErrorMsg( errorNode, &errorCode );
@@ -1144,7 +1156,7 @@ void CJabberProto::GroupchatProcessPresence( HXML node )
 void CJabberProto::GroupchatProcessMessage( HXML node )
 {
 	HXML n, xNode, m;
-	const TCHAR* from, *type, *p, *nick;
+	const TCHAR* from, *type, *p, *nick, *resource;
 	JABBER_LIST_ITEM *item;
 
 	if ( !xmlGetName( node ) || lstrcmp( xmlGetName( node ), _T("message"))) return;
@@ -1158,37 +1170,32 @@ void CJabberProto::GroupchatProcessMessage( HXML node )
 	GCDEST gcd = { m_szModuleName, NULL, 0 };
 	gcd.ptszID = item->jid;
 
-	TCHAR* msgText = NULL;
+	const TCHAR* msgText = NULL;
+
+	resource = _tcschr( from, '/' );
+	if ( resource != NULL && *++resource == '\0' )
+		resource = NULL;
 	
 	if (( n = xmlGetChild( node , "subject" )) != NULL ) {
-		if ( xmlGetText( n ) == NULL || xmlGetText( n )[0] == '\0' )
-			return;
+		msgText = xmlGetText( n );
 
-		msgText = ( TCHAR* )xmlGetText( n );
+		if ( msgText == NULL || msgText[0] == '\0' )
+			return;
 
 		gcd.iType = GC_EVENT_TOPIC;
 
-		if ( from != NULL ) {
-			nick = _tcschr( from, '/' );
-			if ( nick == NULL || nick[1] == '\0' ) {
-				if (( m = xmlGetChild( node, "body" )) != NULL ) {
-					TCHAR* tmpnick = ( TCHAR* )xmlGetText( m );
-					if ( tmpnick == NULL || *tmpnick == 0 )
-						return;
+		if ( resource == NULL && ( m = xmlGetChild( node, "body" )) != NULL ) {
+			const TCHAR* tmpnick = xmlGetText( m );
+			if ( tmpnick == NULL || *tmpnick == 0 )
+				return;
 					
-					TCHAR* tmptr = _tcsstr( tmpnick, _T("has set the subject to:")); //ejabberd
-					if ( tmptr == NULL )
-						tmptr = _tcsstr( tmpnick, TranslateT("has set the subject to:")); //ejabberd
-					if ( tmptr == NULL || *tmptr == 0 )
-						nick = NULL;
-					else {
-						*(--tmptr) = 0;
-						nick = tmpnick;
-				}	}
-			}
-			else nick++;
-		}
-		else nick = NULL;
+			const TCHAR* tmptr = _tcsstr( tmpnick, _T("has set the subject to:")); //ejabberd
+			if ( tmptr == NULL )
+				tmptr = _tcsstr( tmpnick, TranslateT("has set the subject to:")); //ejabberd
+			if ( tmptr != NULL && *tmptr != 0 ) {
+				*(TCHAR*)(--tmptr) = 0;
+				resource = tmpnick;
+		}	}
 		replaceStr( item->itemResource.statusMessage, msgText );
 	}
 	else {
@@ -1196,19 +1203,12 @@ void CJabberProto::GroupchatProcessMessage( HXML node )
 			if (( n = xmlGetChild( node , "body" )) == NULL )
 				return;
 
-		if ( xmlGetText( n ) == NULL )
+		msgText = xmlGetText( n );
+
+		if ( msgText == NULL )
 			return;
 
-		nick = _tcschr( from, '/' );
-		if ( nick != NULL ) {
-			if ( nick[1] == '\0' )
-				return;
-			nick++;
-		}
-
-		msgText = ( TCHAR* )xmlGetText( n );
-
-		if ( nick == NULL)
+		if ( resource == NULL)
 			gcd.iType = GC_EVENT_INFORMATION;
 		else if ( _tcsncmp( msgText, _T("/me "), 4 ) == 0 && _tcslen( msgText ) > 4 ) {
 			msgText += 4;
@@ -1230,14 +1230,18 @@ void CJabberProto::GroupchatProcessMessage( HXML node )
 	if ( msgTime == 0 || msgTime > now )
 		msgTime = now;
 
+	if ( resource == NULL ) return;
+	JABBER_RESOURCE_STATUS* r = GcFindResource(item, resource);
+	nick = r && r->nick ? r->nick : resource;
+
 	GCEVENT gce = {0};
 	gce.cbSize = sizeof(GCEVENT);
 	gce.pDest = &gcd;
-	gce.ptszUID = nick;
+	gce.ptszUID = resource;
 	gce.ptszNick = nick;
 	gce.time = msgTime;
-	gce.ptszText = EscapeChatTags( msgText );
-	gce.bIsMe = nick == NULL ? FALSE : (lstrcmp( nick, item->nick ) == 0);
+	gce.ptszText = EscapeChatTags( (TCHAR*)msgText );
+	gce.bIsMe = nick == NULL ? FALSE : (lstrcmp( resource, item->nick ) == 0);
 	gce.dwFlags = GC_TCHAR | GCEF_ADDTOLOG;
 	CallServiceSync( MS_GC_EVENT, NULL, (LPARAM)&gce );
 

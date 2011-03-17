@@ -2,7 +2,7 @@
 
 Jabber Protocol Plugin for Miranda IM
 Copyright ( C ) 2002-04  Santithorn Bunchua
-Copyright ( C ) 2005-09  George Hazan
+Copyright ( C ) 2005-11  George Hazan
 Copyright ( C ) 2007     Maxim Mluhov
 
 This program is free software; you can redistribute it and/or
@@ -36,6 +36,7 @@ void MenuUpdateSrmmIcon(JABBER_LIST_ITEM *item);
 static void JabberListFreeResourceInternal( JABBER_RESOURCE_STATUS *r)
 {
 	if ( r->resourceName ) mir_free( r->resourceName );
+	if ( r->nick ) mir_free( r->nick );
 	if ( r->statusMessage ) mir_free( r->statusMessage );
 	if ( r->software ) mir_free( r->software );
 	if ( r->version ) mir_free( r->version );
@@ -230,7 +231,7 @@ JABBER_RESOURCE_STATUS *CJabberProto::ListFindResource( JABBER_LIST list, const 
 	return result;
 }
 
-int CJabberProto::ListAddResource( JABBER_LIST list, const TCHAR* jid, int status, const TCHAR* statusMessage, char priority )
+int CJabberProto::ListAddResource( JABBER_LIST list, const TCHAR* jid, int status, const TCHAR* statusMessage, char priority, const TCHAR* nick )
 {
 	EnterCriticalSection( &m_csLists );
 	int i = ListExist( list, jid );
@@ -267,6 +268,7 @@ int CJabberProto::ListAddResource( JABBER_LIST list, const TCHAR* jid, int statu
 				r->affiliation = AFFILIATION_NONE;
 				r->role = ROLE_NONE;
 				r->resourceName = mir_tstrdup( resource );
+				r->nick = mir_tstrdup( nick );
 				if ( statusMessage )
 					r->statusMessage = mir_tstrdup( statusMessage );
 				r->priority = priority;
