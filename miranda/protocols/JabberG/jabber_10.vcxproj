@@ -624,6 +624,7 @@
     <ClCompile Include="jabber_bookmarks.cpp" />
     <ClCompile Include="jabber_byte.cpp" />
     <ClCompile Include="jabber_caps.cpp" />
+    <ClCompile Include="jabber_captcha.cpp" />
     <ClCompile Include="jabber_chat.cpp" />
     <ClCompile Include="jabber_console.cpp" />
     <ClCompile Include="jabber_disco.cpp" />

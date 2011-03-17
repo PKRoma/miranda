@@ -2,7 +2,7 @@
 
 Jabber Protocol Plugin for Miranda IM
 Copyright ( C ) 2002-04  Santithorn Bunchua
-Copyright ( C ) 2005-09  George Hazan
+Copyright ( C ) 2005-11  George Hazan
 Copyright ( C ) 2007     Maxim Mluhov
 
 This program is free software; you can redistribute it and/or
@@ -35,6 +35,7 @@ Last change by : $Author$
 #include "jabber_caps.h"
 #include "jabber_privacy.h"
 #include "jabber_rc.h"
+#include "jabber_proto.h"
 
 #ifndef DNS_TYPE_SRV
 #define DNS_TYPE_SRV 0x0021
@@ -962,6 +963,8 @@ void CJabberProto::OnProcessProtocol( HXML node, ThreadData* info )
 		OnProcessError( node, info );
 	else if ( !lstrcmp( xmlGetName( node ), _T("challenge")))
 		OnProcessChallenge( node, info );
+	else if ( xmlGetChild( node , _T("captcha")))
+		OnProcessCaptcha( node, info );
 	else if ( info->type == JABBER_SESSION_NORMAL ) {
 		if ( !lstrcmp( xmlGetName( node ), _T("message")))
 			OnProcessMessage( node, info );

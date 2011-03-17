@@ -2,7 +2,7 @@
 
 Jabber Protocol Plugin for Miranda IM
 Copyright ( C ) 2002-04  Santithorn Bunchua
-Copyright ( C ) 2005-09  George Hazan
+Copyright ( C ) 2005-11  George Hazan
 Copyright ( C ) 2007     Maxim Mluhov
 
 This program is free software; you can redistribute it and/or
@@ -117,6 +117,7 @@ typedef unsigned __int64 JabberCapsBits;
 #define JABBER_CAPS_USER_TUNE_NOTIFY            ((JabberCapsBits)1<<32)
 #define JABBER_FEAT_PRIVATE_STORAGE             "jabber:iq:private"
 #define JABBER_CAPS_PRIVATE_STORAGE             ((JabberCapsBits)1<<33)
+#define JABBER_FEAT_CAPTCHA						"urn:xmpp:captcha"
 // deferred
 #define JABBER_FEAT_ATTENTION                   "http://www.xmpp.org/extensions/xep-0224.html#ns"
 #define JABBER_CAPS_ATTENTION                   ((JabberCapsBits)1<<34)

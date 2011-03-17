@@ -2,7 +2,7 @@
 
 Jabber Protocol Plugin for Miranda IM
 Copyright ( C ) 2002-04  Santithorn Bunchua
-Copyright ( C ) 2005-09  George Hazan
+Copyright ( C ) 2005-11  George Hazan
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -491,34 +491,7 @@ void CJabberDlgGcJoin::OnInitDialog()
 		}
 		CloseClipboard();
 	}
-/*
-	bool gtlk = strstr(m_proto->m_ThreadInfo->manualHost, "google.com") != NULL;
-	if (gtlk)
-	{
-		SetDlgItemText(m_hwnd, IDC_SERVER, _T("groupchat.google.com"));
 
-		unsigned tmp, a, b, tmp2, tmp3;
-
-		JCallService(MS_UTILS_GETRANDOM, sizeof(tmp), (LPARAM)&tmp);
-		a = 0x4000 | (tmp & 0xFFF); // 0x4000 to 0x4FFF 
-		tmp >>= 12;
-		b = ((1 << 3) << 12) | (tmp & 0x3FFF); // 0x8000 to 0xBFFF
-
-		JCallService(MS_UTILS_GETRANDOM, sizeof(tmp), (LPARAM)&tmp);
-		JCallService(MS_UTILS_GETRANDOM, sizeof(tmp2), (LPARAM)&tmp2);
-		JCallService(MS_UTILS_GETRANDOM, sizeof(tmp3), (LPARAM)&tmp3);
-
-		TCHAR room[256];
-		mir_sntprintf(room, SIZEOF(room), _T("%08x-%04x-%04x-%04x-%04x%08x"),
-			tmp2, tmp & 0xFFFF, a, b, (tmp >> 16) & 0xFFFF, tmp3); 
-		SetDlgItemText(m_hwnd, IDC_ROOM, room);
-
-		TCHAR *name = m_proto->JGetStringT(NULL, "FullName");
-		SetDlgItemText(m_hwnd, IDC_NICK, name);
-		mir_free(name);
-	} 
-	else 
-*/		
 	if (info)
 	{
 		info->fillForm(m_hwnd);

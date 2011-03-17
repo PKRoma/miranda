@@ -2,7 +2,7 @@
 
 Jabber Protocol Plugin for Miranda IM
 Copyright ( C ) 2002-04  Santithorn Bunchua
-Copyright ( C ) 2005-09  George Hazan
+Copyright ( C ) 2005-11  George Hazan
 Copyright ( C ) 2007     Maxim Mluhov
 
 This program is free software; you can redistribute it and/or
@@ -442,6 +442,12 @@ struct CJabberProto : public PROTO_INTERFACE
 	JabberCapsBits GetTotalJidCapabilites( const TCHAR *jid );
 	JabberCapsBits GetResourceCapabilites( const TCHAR *jid, BOOL appendBestResource );
 
+	//---- jabber_captcha.cpp ------------------------------------------------------------
+
+	void   GetCaptchaImage ( HXML node, char *ImageBuf, const TCHAR *PicType, TCHAR*& CaptchaPath);
+	void   sendCaptchaResult(TCHAR* buf, ThreadData* info, LPCTSTR from, LPCTSTR challenge, LPCTSTR fromjid, LPCTSTR sid);
+	void   sendCaptchaError(ThreadData* info, LPCTSTR from, LPCTSTR to, LPCTSTR challenge);
+
 	//---- jabber_chat.cpp ---------------------------------------------------------------
 
 	void   GcLogCreate( JABBER_LIST_ITEM* item );
@@ -868,6 +874,7 @@ struct CJabberProto : public PROTO_INTERFACE
 	void   OnProcessPresence( HXML node, ThreadData *info );
 	void   OnProcessPresenceCapabilites( HXML node );
 	void   OnProcessPubsubEvent( HXML node );
+	void   OnProcessCaptcha( HXML node, ThreadData *info );
 
 	void   OnProcessStreamOpening( HXML node, ThreadData *info );
 	void   OnProcessStreamClosing( HXML node, ThreadData *info );

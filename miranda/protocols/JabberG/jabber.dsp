@@ -181,6 +181,10 @@ SOURCE=.\jabber_caps.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\jabber_captcha.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\jabber_chat.cpp
 # End Source File
 # Begin Source File
