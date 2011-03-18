@@ -143,6 +143,9 @@ typedef void (WINAPI *DNSFREELIST)(IN OUT PDNS_RECORDA pRecordList, IN DNS_FREE_
 
 void ThreadData::xmpp_client_query( void )
 {
+	if (inet_addr(server) != INADDR_NONE)
+		return;
+
 	HMODULE hDnsapi = LoadLibraryA( "dnsapi.dll" );
 	if ( hDnsapi == NULL )
 		return;
