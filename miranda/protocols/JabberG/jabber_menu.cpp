@@ -414,8 +414,7 @@ int CJabberProto::OnPrebuildContactMenu( WPARAM wParam, LPARAM )
 	if ( bIsChatRoom ) {
 		DBVARIANT dbv;
 		if ( !JGetStringT( hContact, "ChatRoomID", &dbv )) {
-			if ( ListGetItemPtr( LIST_ROSTER, dbv.ptszVal ) == NULL )
-				sttEnableMenuItem( g_hMenuRosterAdd, TRUE );
+			sttEnableMenuItem( g_hMenuRosterAdd, FALSE );
 
 			if ( ListGetItemPtr( LIST_BOOKMARK, dbv.ptszVal ) == NULL )
 				if ( m_ThreadInfo && m_ThreadInfo->jabberServerCaps & JABBER_CAPS_PRIVATE_STORAGE )
