@@ -15,13 +15,11 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// English (U.S.) resources
+// English (United States) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
-#ifdef _WIN32
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 #pragma code_page(1252)
-#endif //_WIN32
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -785,7 +783,8 @@ BEGIN
     LTEXT           "Port:",IDC_STATIC23,177,58,35,8,WS_DISABLED
     EDITTEXT        IDC_PROXYPORT,213,56,35,12,ES_AUTOHSCROLL | ES_NUMBER | WS_DISABLED
     LTEXT           "(often %d)",IDC_STOFTENPORT,258,57,48,8,WS_DISABLED
-    CONTROL         "Enable authentication",IDC_PROXYAUTH,"Button",BS_3STATE | WS_DISABLED | WS_TABSTOP,20,80,154,10
+    CONTROL         "Use Custom Login (Domain login picked up autonmatically)",IDC_PROXYAUTH,
+                    "Button",BS_3STATE | WS_DISABLED | WS_TABSTOP,20,80,286,10
     LTEXT           "Username:",IDC_STATIC31,32,94,47,8,WS_DISABLED
     EDITTEXT        IDC_PROXYUSER,80,92,86,12,ES_AUTOHSCROLL | WS_DISABLED
     LTEXT           "Password:",IDC_STATIC32,177,94,49,8,WS_DISABLED
@@ -1304,7 +1303,7 @@ END
 //
 
 #ifdef APSTUDIO_INVOKED
-GUIDELINES DESIGNINFO 
+GUIDELINES DESIGNINFO
 BEGIN
     IDD_AUTHREQ, DIALOG
     BEGIN
@@ -1933,12 +1932,12 @@ IDC_DROPUSER            CURSOR                  "res/cursor_drop_user.cur"
 // Menu
 //
 
-IDR_CLISTMENU MENU 
+IDR_CLISTMENU MENU
 BEGIN
     MENUITEM SEPARATOR
 END
 
-IDR_CONTEXT MENU 
+IDR_CONTEXT MENU
 BEGIN
     POPUP "Tray"
     BEGIN
@@ -1992,7 +1991,7 @@ BEGIN
     END
 END
 
-IDR_ICOLIB_CONTEXT MENU 
+IDR_ICOLIB_CONTEXT MENU
 BEGIN
     POPUP "IconOptions"
     BEGIN
@@ -2016,7 +2015,7 @@ IDR_CREDITS             TEXT                    "../docs/contributors.txt"
 
 IDB_SORTCOLUP           BITMAP                  "res/arrow_sort_column_up.bmp"
 IDB_SORTCOLDOWN         BITMAP                  "res/arrow_sort_column_down.bmp"
-#endif    // English (U.S.) resources
+#endif    // English (United States) resources
 /////////////////////////////////////////////////////////////////////////////
 
 
