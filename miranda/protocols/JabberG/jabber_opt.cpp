@@ -370,6 +370,7 @@ class CDlgOptAccount: public CJabberDlgBase
 	CCtrlCheck		m_chkSavePassword;
 	CCtrlCombo		m_cbResource;
 	CCtrlCheck		m_chkUseHostnameAsResource;
+	CCtrlCheck		m_chkUseDomainLogin;
 	CCtrlCombo		m_cbServer;
 	CCtrlEdit		m_txtPort;
 	CCtrlCheck		m_chkUseSsl;
@@ -395,6 +396,7 @@ public:
 		m_chkSavePassword(this, IDC_SAVEPASSWORD),
 		m_cbResource(this, IDC_COMBO_RESOURCE),
 		m_chkUseHostnameAsResource(this,IDC_HOSTNAME_AS_RESOURCE),
+		m_chkUseDomainLogin(this, IDC_USEDOMAINLOGIN),
 		m_cbServer(this, IDC_EDIT_LOGIN_SERVER),
 		m_txtPort(this, IDC_PORT),
 		m_chkUseSsl(this, IDC_USE_SSL),
@@ -417,6 +419,7 @@ public:
 		CreateLink(m_chkSavePassword, proto->m_options.SavePassword);
 		CreateLink(m_cbResource, "Resource", _T("Miranda"));
 		CreateLink(m_chkUseHostnameAsResource, proto->m_options.HostNameAsResource);
+		CreateLink(m_chkUseDomainLogin, proto->m_options.UseDomainLogin);
 		CreateLink(m_cbServer, "LoginServer", _T("jabber.org"));
 		CreateLink(m_txtPort, "Port", DBVT_WORD, 5222);
 		CreateLink(m_chkUseSsl, proto->m_options.UseSSL);
@@ -432,6 +435,7 @@ public:
 		m_cbServer.OnDropdown = Callback(this, &CDlgOptAccount::cbServer_OnDropdown);
 		m_chkManualHost.OnChange = Callback(this, &CDlgOptAccount::chkManualHost_OnChange);
 		m_chkUseHostnameAsResource.OnChange = Callback(this, &CDlgOptAccount::chkUseHostnameAsResource_OnChange);
+		m_chkUseDomainLogin.OnChange = Callback(this, &CDlgOptAccount::chkUseDomainLogin_OnChange);
 		m_chkUseSsl.OnChange = Callback(this, &CDlgOptAccount::chkUseSsl_OnChange);
 		m_chkUseTls.OnChange = Callback(this, &CDlgOptAccount::chkUseTls_OnChange);
 
@@ -504,6 +508,9 @@ protected:
 			m_txtManualPort.Enable();
 			m_txtPort.Disable();
 		}
+
+		if (m_proto->m_options.UseDomainLogin)
+			chkUseDomainLogin_OnChange(&m_chkUseDomainLogin);
 
 		CheckRegistration();
 
@@ -668,6 +675,21 @@ private:
 			DWORD dwCompNameLength = MAX_COMPUTERNAME_LENGTH;
 			if (GetComputerName(szCompName, &dwCompNameLength))
 				m_cbResource.SetText(szCompName);
+		}
+	}
+
+	void chkUseDomainLogin_OnChange(CCtrlData *sender)
+	{
+		CCtrlCheck *chk = (CCtrlCheck *)sender;
+		BOOL checked = chk->GetState() == BST_CHECKED;
+
+		m_txtPassword.Enable(!checked);
+		m_txtUsername.Enable(!checked);
+		m_chkSavePassword.Enable(!checked);
+		if (checked) {
+			m_txtPassword.SetText(_T(""));
+			m_txtUsername.SetText(_T(""));
+			m_chkSavePassword.SetState(BST_CHECKED);
 		}
 	}
 
@@ -1634,6 +1656,7 @@ class CJabberDlgAccMgrUI: public CJabberDlgBase
 	CCtrlCombo		m_cbServer;
 	CCtrlEdit		m_txtPassword;
 	CCtrlCheck		m_chkSavePassword;
+	CCtrlCheck		m_chkUseDomainLogin;
 	CCtrlCombo		m_cbResource;
 	CCtrlCheck		m_chkManualHost;
 	CCtrlEdit		m_txtManualHost;
@@ -1646,6 +1669,7 @@ public:
 		m_cbType(this, IDC_CB_TYPE),
 		m_txtUsername(this, IDC_EDIT_USERNAME),
 		m_txtPassword(this, IDC_EDIT_PASSWORD),
+		m_chkUseDomainLogin(this, IDC_USEDOMAINLOGIN),
 		m_chkSavePassword(this, IDC_SAVEPASSWORD),
 		m_cbResource(this, IDC_COMBO_RESOURCE),
 		m_cbServer(this, IDC_EDIT_LOGIN_SERVER),
@@ -1659,11 +1683,13 @@ public:
 		CreateLink(m_cbResource, "Resource", _T("Miranda"));
 		CreateLink(m_cbServer, "LoginServer", _T("jabber.org"));
 		CreateLink(m_txtPort, "Port", DBVT_WORD, 5222);
+		CreateLink(m_chkUseDomainLogin, proto->m_options.UseDomainLogin);
 
 		// Bind events
 		m_cbType.OnChange = Callback(this, &CJabberDlgAccMgrUI::cbType_OnChange);
 		m_cbServer.OnDropdown = Callback(this, &CJabberDlgAccMgrUI::cbServer_OnDropdown);
 		m_chkManualHost.OnChange = Callback(this, &CJabberDlgAccMgrUI::chkManualHost_OnChange);
+		m_chkUseDomainLogin.OnChange = Callback(this, &CJabberDlgAccMgrUI::chkUseDomainLogin_OnChange);
 
 		m_btnRegister.OnClick = Callback(this, &CJabberDlgAccMgrUI::btnRegister_OnClick);
 	}
@@ -1795,6 +1821,9 @@ protected:
 				}
 			}
 		}
+
+		if (m_proto->m_options.UseDomainLogin)
+			chkUseDomainLogin_OnChange(&m_chkUseDomainLogin);
 
 		CheckRegistration();
 	}
@@ -1962,6 +1991,21 @@ private:
 		CCtrlCombo *chk = (CCtrlCombo *)sender;
 		setupConnection(chk->GetItemData(chk->GetCurSel()));
 		CheckRegistration();
+	}
+
+	void chkUseDomainLogin_OnChange(CCtrlData *sender)
+	{
+		CCtrlCheck *chk = (CCtrlCheck *)sender;
+		BOOL checked = chk->GetState() == BST_CHECKED;
+
+		m_txtPassword.Enable(!checked);
+		m_txtUsername.Enable(!checked);
+		m_chkSavePassword.Enable(!checked);
+		if (checked) {
+			m_txtPassword.SetText(_T(""));
+			m_txtUsername.SetText(_T(""));
+			m_chkSavePassword.SetState(BST_CHECKED);
+		}
 	}
 
 	void chkManualHost_OnChange(CCtrlData *sender)

@@ -602,8 +602,6 @@
       </MapFileName>
       <BaseAddress>0x32500000</BaseAddress>
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
-      <DataExecutionPrevention>
-      </DataExecutionPrevention>
       <ImportLibrary>$(IntDir)$(TargetName).lib</ImportLibrary>
       <TargetMachine>MachineX64</TargetMachine>
     </Link>
@@ -675,6 +673,7 @@
     <ClInclude Include="jabber.h" />
     <ClInclude Include="jabber_byte.h" />
     <ClInclude Include="jabber_caps.h" />
+    <ClInclude Include="jabber_db_utils.h" />
     <ClInclude Include="jabber_disco.h" />
     <ClInclude Include="jabber_ibb.h" />
     <ClInclude Include="jabber_iq.h" />
@@ -702,7 +701,6 @@
     <None Include="icos\arrow_down.ico" />
     <None Include="icos\arrow_up.ico" />
     <None Include="icos\auth_revoke.ico" />
-    <None Include="icos\block.ico" />
     <None Include="icos\bookmarks.ico" />
     <None Include="icos\command.ico" />
     <None Include="icos\console.ico" />
@@ -711,10 +709,6 @@
     <None Include="icos\disco_in_progress.ico" />
     <None Include="icos\disco_ok.ico" />
     <None Include="icos\filter.ico" />
-    <None Include="icos\gcadmin.ico" />
-    <None Include="icos\gcmodera.ico" />
-    <None Include="icos\gcowner.ico" />
-    <None Include="icos\gcvoice.ico" />
     <None Include="icos\go.ico" />
     <None Include="icos\grant.ico" />
     <None Include="icos\group.ico" />
@@ -722,7 +716,6 @@
     <None Include="icos\jabber.ico" />
     <None Include="icos\key.ico" />
     <None Include="icos\login.ico" />
-    <None Include="icos\message.ico" />
     <None Include="icos\message_allow.ico" />
     <None Include="icos\message_deny.ico" />
     <None Include="icos\notes.ico" />
@@ -757,10 +750,8 @@
     <None Include="icos\view_as_list.ico" />
     <None Include="icos\view_as_tree.ico" />
     <None Include="icos\weather.ico" />
-    <None Include="icos\write.ico" />
     <None Include="docs\changelog_jabber.txt" />
     <None Include="docs\readme_jabber.txt" />
-    <None Include="docs\translation_jabber.txt" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="jabber.rc" />
