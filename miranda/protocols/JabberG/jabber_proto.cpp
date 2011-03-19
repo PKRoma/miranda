@@ -173,6 +173,7 @@ CJabberProto::CJabberProto( const char* aProtoName, const TCHAR* aUserName ) :
 	m_clientCapsManager.AddDefaultCaps();
 
 	IconsInit();
+	InitPopups();
 	GlobalMenuInit();
 	WsInit();
 	IqInit();

@@ -723,6 +723,8 @@ struct CJabberProto : public PROTO_INTERFACE
 	void   UpdateSubscriptionInfo(HANDLE hContact, JABBER_LIST_ITEM *item);
 	void   SetContactOfflineStatus( HANDLE hContact );
 	void   InitCustomFolders( void );
+	void   InitPopups( void );
+	void   MsgPopup( const TCHAR *szMsg, const TCHAR *szTitle );
 
 	//---- jabber_opt.cpp ----------------------------------------------------------------
 
@@ -877,7 +879,6 @@ struct CJabberProto : public PROTO_INTERFACE
 	void   OnProcessCaptcha( HXML node, ThreadData *info );
 
 	void   OnProcessStreamOpening( HXML node, ThreadData *info );
-	void   OnProcessStreamClosing( HXML node, ThreadData *info );
 	void   OnProcessProtocol( HXML node, ThreadData *info );
 
 	void   UpdateJidDbSettings( const TCHAR *jid );

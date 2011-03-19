@@ -30,6 +30,8 @@ Last change by : $Author$
 #include "jabber_caps.h"
 #include "jabber_rc.h"
 
+#include <locale.h>
+
 #include <m_fontservice.h>
 #include <m_icolib.h>
 
@@ -102,9 +104,6 @@ LIST<CJabberProto> g_Instances(1, sttCompareProtocols);
 
 extern "C" BOOL WINAPI DllMain( HINSTANCE hModule, DWORD, LPVOID )
 {
-	#ifdef _DEBUG
-		_CrtSetDbgFlag( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF );
-	#endif
 	hInst = hModule;
 	return TRUE;
 }
@@ -247,6 +246,7 @@ extern "C" int __declspec( dllexport ) Load( PLUGINLINK *link )
 	mir_getXI( &xi );
 	mir_getTMI( &tmi );
 
+	setlocale(LC_ALL, "");
 	mir_snprintf( szVersion, sizeof( szVersion ), Translate("Jabber protocol plugin for Miranda IM (%s)"), __DATE__ );
 
 	pcli = ( CLIST_INTERFACE* )CallService(MS_CLIST_RETRIEVE_INTERFACE, 0, (LPARAM)hInst);
