@@ -420,13 +420,13 @@ void CheckColorsInModule(const char* pszModule)
 				pMod->crColors[i]++;
 }	}	}
 
-TCHAR* my_strstri( const TCHAR* s1, const TCHAR* s2)
+const TCHAR* my_strstri(const TCHAR* s1, const TCHAR* s2)
 {
 	int i,j,k;
-	for(i=0;s1[i];i++)
-		for(j=i,k=0; tolower(s1[j]) == tolower(s2[k]);j++,k++)
+	for(i=0; s1[i]; i++)
+		for(j=i, k=0; _totlower(s1[j]) == _totlower(s2[k]); j++, k++)
 			if (!s2[k+1])
-				return (TCHAR*)(s1+i);
+				return s1 + i;
 
 	return NULL;
 }
