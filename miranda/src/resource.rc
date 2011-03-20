@@ -783,7 +783,7 @@ BEGIN
     LTEXT           "Port:",IDC_STATIC23,177,58,35,8,WS_DISABLED
     EDITTEXT        IDC_PROXYPORT,213,56,35,12,ES_AUTOHSCROLL | ES_NUMBER | WS_DISABLED
     LTEXT           "(often %d)",IDC_STOFTENPORT,258,57,48,8,WS_DISABLED
-    CONTROL         "Use Custom Login (Domain login picked up autonmatically)",IDC_PROXYAUTH,
+    CONTROL         "Use Custom Login (Domain login picked up automatically)",IDC_PROXYAUTH,
                     "Button",BS_3STATE | WS_DISABLED | WS_TABSTOP,20,80,286,10
     LTEXT           "Username:",IDC_STATIC31,32,94,47,8,WS_DISABLED
     EDITTEXT        IDC_PROXYUSER,80,92,86,12,ES_AUTOHSCROLL | WS_DISABLED
