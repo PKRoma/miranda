@@ -1230,9 +1230,12 @@ void CJabberProto::GroupchatProcessMessage( HXML node )
 	if ( msgTime == 0 || msgTime > now )
 		msgTime = now;
 
-	if ( resource == NULL ) return;
-	JABBER_RESOURCE_STATUS* r = GcFindResource(item, resource);
-	nick = r && r->nick ? r->nick : resource;
+	if ( resource != NULL ) {
+		JABBER_RESOURCE_STATUS* r = GcFindResource(item, resource);
+		nick = r && r->nick ? r->nick : resource;
+	}
+	else
+		nick = NULL;
 
 	GCEVENT gce = {0};
 	gce.cbSize = sizeof(GCEVENT);
