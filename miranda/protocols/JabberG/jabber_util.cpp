@@ -575,13 +575,29 @@ TCHAR* __stdcall JabberErrorMsg( HXML errorNode, int* pErrorCode )
 	}
 
 	int errorCode = -1;
-	const TCHAR *str;
-	if (( str = xmlGetAttrValue( errorNode, _T("code"))) != NULL )
+	const TCHAR *str = xmlGetAttrValue( errorNode, _T("code"));
+	if ( str != NULL )
 		errorCode = _ttoi( str );
-	if (( str=xmlGetText( errorNode )) != NULL || ( str = xmlGetText( xmlGetChild( errorNode, _T("text")))) != NULL )
+
+	str = xmlGetText( errorNode );
+	if ( str == NULL )
+		str = xmlGetText( xmlGetChild( errorNode, _T("text")));
+	if ( str == NULL ) {
+		for (int i = 0; ; ++i ) {
+			HXML c = xmlGetChild( errorNode, i );
+			if ( c == NULL ) break;
+			const TCHAR *attr = xmlGetAttrValue( c, _T("xmlns"));
+			if ( attr && !_tcscmp( attr, _T("urn:ietf:params:xml:ns:xmpp-stanzas"))) {
+				str = xmlGetName( c );
+				break;
+			}
+		}
+	}
+
+	if ( str != NULL )
 		mir_sntprintf( errorStr, 256, _T("%s %d: %s\r\n%s"), TranslateT( "Error" ), errorCode, TranslateTS( JabberErrorStr( errorCode )), str );
 	else
-		mir_sntprintf( errorStr, 256, _T("%s %d: %s"), TranslateT( "Error" ), errorCode, TranslateTS( JabberErrorStr( errorCode )) );
+		mir_sntprintf( errorStr, 256, _T("%s %d: %s"), TranslateT( "Error" ), errorCode, TranslateTS( JabberErrorStr( errorCode )));
 
 	if ( pErrorCode )
 		*pErrorCode = errorCode;
