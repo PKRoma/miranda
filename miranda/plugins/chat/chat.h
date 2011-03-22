@@ -511,7 +511,7 @@ TCHAR*        RemoveFormatting(const TCHAR* pszText);
 BOOL          DoSoundsFlashPopupTrayStuff(SESSION_INFO* si, GCEVENT * gce, BOOL bHighlight, int bManyFix);
 int           GetColorIndex(const char* pszModule, COLORREF cr);
 void          CheckColorsInModule(const char* pszModule);
-TCHAR*        my_strstri(const TCHAR* s1, const TCHAR* s2) ;
+const TCHAR*  my_strstri(const TCHAR* s1, const TCHAR* s2) ;
 int           GetRichTextLength(HWND hwnd);
 BOOL          IsHighlighted(SESSION_INFO* si, const TCHAR* pszText);
 UINT          CreateGCMenu(HWND hwndDlg, HMENU *hMenu, int iIndex, POINT pt, SESSION_INFO* si, TCHAR* pszUID, TCHAR* pszWordText);
