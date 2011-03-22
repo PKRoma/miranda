@@ -247,7 +247,7 @@ copy ..\..\plugins\scriver\Release_Unicode\scriver.pdb         %Temp%\pdbw\plugi
 copy ..\..\plugins\srmm\Release_Unicode\srmm.pdb               %Temp%\pdbw\plugins
 copy ..\..\plugins\tabSRMM\Release_Unicode\tabSRMM.pdb         %Temp%\pdbw\plugins
 copy ..\..\plugins\import\Release_Unicode\import.pdb           %Temp%\pdbw\plugins
-copy ..\..\plugins\modernopt\Release_Unicode\modernopt.pdb     %Temp%\pdbw\plugins
+rem copy ..\..\plugins\modernopt\Release_Unicode\modernopt.pdb     %Temp%\pdbw\plugins
 rem  Non-Unicode plugins
 copy ..\..\plugins\freeimage\Release\advaimg.pdb               %Temp%\pdbw\plugins
 
