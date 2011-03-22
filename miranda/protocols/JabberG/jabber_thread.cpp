@@ -676,13 +676,6 @@ void CJabberProto::OnProcessStreamOpening( HXML node, ThreadData *info )
 		info->proto->PerformIqAuth( info );
 }
 
-void CJabberProto::OnProcessStreamClosing( HXML node, ThreadData *info )
-{
-	Netlib_CloseHandle( info->s );
-	if ( !lstrcmp( xmlGetName( node ), _T("stream:error")) && xmlGetText( node ) )
-		MessageBox( NULL, TranslateTS( xmlGetText( node ) ), TranslateT( "Jabber Connection Error" ), MB_OK|MB_ICONERROR|MB_SETFOREGROUND );
-}
-
 void CJabberProto::PerformAuthentication( ThreadData* info )
 {
 	TJabberAuth* auth = NULL;
@@ -746,7 +739,7 @@ void CJabberProto::PerformAuthentication( ThreadData* info )
 
 		TCHAR text[1024];
 		mir_sntprintf( text, SIZEOF( text ), _T("%s %s@")_T(TCHAR_STR_PARAM)_T("."), TranslateT( "Authentication failed for" ), info->username, info->server );
-		MessageBox( NULL, text, TranslateT( "Jabber Authentication" ), MB_OK|MB_ICONSTOP|MB_SETFOREGROUND );
+		MsgPopup( text, TranslateT( "Jabber Authentication" ));
 		JSendBroadcast( NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_WRONGPASSWORD );
 		info->send( "</stream:stream>" );
 		m_ThreadInfo = NULL;
@@ -899,7 +892,7 @@ void CJabberProto::OnProcessError( HXML node, ThreadData* info )
 			skipMsg = true;
 		}
 	}
-	if (!skipMsg) MessageBox( NULL, buff, TranslateT( "Jabber Error" ), MB_OK|MB_ICONSTOP | MB_SETFOREGROUND );
+	if (!skipMsg) MsgPopup( buff, TranslateT( "Jabber Error" ));
 	mir_free(buff);
 	info->send( "</stream:stream>" );
 }

@@ -209,6 +209,7 @@ struct CJabberOptions
 	CMOption<BYTE> MsgAck;
 	CMOption<BYTE> RosterSync;
 	CMOption<BYTE> SavePassword;
+	CMOption<BYTE> UseDomainLogin;
 	CMOption<BYTE> ShowForeignResourceInMirVer;
 	CMOption<BYTE> ShowOSVersion;
 	CMOption<BYTE> ShowTransport;
@@ -267,6 +268,7 @@ struct CJabberOptions
 		ShowTransport(proto, "ShowTransport", TRUE),
 		UseSSL(proto, "UseSSL", FALSE),
 		UseTLS(proto, "UseTLS", TRUE),
+		UseDomainLogin(proto, "UseDomainLogin", FALSE),
 		AcceptNotes(proto, "AcceptNotes", TRUE),
 		AutosaveNotes(proto, "AutosaveNotes", FALSE),
 		RcMarkMessagesAsRead(proto, "RcMarkMessagesAsRead", 1),

@@ -29,6 +29,7 @@ Last change by : $Author$
 #include "jabber_list.h"
 #include "jabber_caps.h"
 
+#include <m_popup.h>
 #include "sdk/m_folders.h"
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -309,7 +310,7 @@ void CJabberProto::GetAvatarFileName( HANDLE hContact, TCHAR* pszDest, size_t cb
 		mir_free( hash );
 	}
 	else if ( m_ThreadInfo != NULL ) {
-		mir_sntprintf( pszDest + tPathLen, MAX_PATH - tPathLen, _T("%s@") _T(TCHAR_STR_PARAM) _T(" avatar.") _T(TCHAR_STR_PARAM), 
+		mir_sntprintf( pszDest + tPathLen, MAX_PATH - tPathLen, _T("%s@") _T(TCHAR_STR_PARAM) _T(" avatar.") _T(TCHAR_STR_PARAM),
 			m_ThreadInfo->username, m_ThreadInfo->server, szFileType );
 	}
 	else {
@@ -604,4 +605,43 @@ void CJabberProto::SetContactOfflineStatus( HANDLE hContact )
 	ResetAdvStatus( hContact, ADVSTATUS_TUNE );
 
 	//JabberUpdateContactExtraIcon(hContact);
+}
+
+void CJabberProto::InitPopups(void)
+{
+	TCHAR desc[256];
+	char name[256];
+
+	POPUPCLASS ppc = {0};
+	ppc.cbSize = sizeof(ppc);
+	ppc.flags = PCF_TCHAR;
+
+	ppc.ptszDescription = desc;
+	ppc.pszName = name;
+	ppc.hIcon = (HICON)LoadImage(NULL, IDI_ERROR, IMAGE_ICON, 0, 0, LR_SHARED);
+	ppc.colorBack = RGB(191, 0, 0); //Red
+	ppc.colorText = RGB(255, 245, 225); //Yellow
+	ppc.iSeconds = 60;
+	mir_sntprintf(desc, SIZEOF(desc), _T("%s %s"), m_tszUserName, TranslateT("Errors"));
+	mir_snprintf(name, SIZEOF(name), "%s_%s", m_szModuleName, "Error");
+
+	JCallService(MS_POPUP_REGISTERCLASS, 0, (WPARAM)&ppc);
+}
+
+void CJabberProto::MsgPopup(const TCHAR *szMsg, const TCHAR *szTitle)
+{
+	if (ServiceExists(MS_POPUP_ADDPOPUPCLASS)) {
+		char name[256];
+
+		POPUPDATACLASS ppd = { sizeof(ppd) };
+		ppd.ptszTitle = szTitle;
+		ppd.ptszText = szMsg;
+		ppd.pszClassName = name;
+		mir_snprintf(name, SIZEOF(name), "%s_%s", m_szModuleName, "Error");
+
+		JCallService(MS_POPUP_ADDPOPUPCLASS, 0, (LPARAM)&ppd);
+	} else {
+		DWORD mtype = MB_OK | MB_SETFOREGROUND | MB_ICONSTOP;
+		MessageBox(NULL, szMsg, szTitle, mtype);
+	}
 }

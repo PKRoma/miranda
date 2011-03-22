@@ -317,6 +317,7 @@
 #define IDC_INSTRUCTIONS                1315
 #define IDC_COMBO_VALUES                1319
 #define IDC_HEADERBAR                   1320
+#define IDC_USEDOMAINLOGIN              1323
 #define IDI_BOOKMARKS                   3000
 #define IDD_BOOKMARKS                   3001
 #define IDC_BM_LIST                     3002
