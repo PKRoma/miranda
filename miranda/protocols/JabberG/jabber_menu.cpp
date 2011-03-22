@@ -497,7 +497,7 @@ int CJabberProto::OnPrebuildContactMenu( WPARAM wParam, LPARAM )
 						}
 						mir_sntprintf(szTmp, SIZEOF(szTmp), _T("%s [%s, %d]"),
 							item->resource[i].resourceName,
-							(TCHAR *)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, item->resource[i].status, GSMDF_TCHAR),
+							(TCHAR *)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, item->resource[i].status, GCMDF_TCHAR),
 							item->resource[i].priority);
 						clmi.ptszName = szTmp;
 						CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )m_phMenuResourceItems[i], ( LPARAM )&clmi );
