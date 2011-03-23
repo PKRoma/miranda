@@ -79,7 +79,7 @@ int List_GetIndex( SortedList* p_list, void* p_value, int* p_index )
 	case HandleKeySort:
 #ifdef _WIN64
 		{
-			const unsigned __int64 val = *(unsigned *)p_value;
+			const unsigned __int64 val = *(unsigned __int64 *)p_value;
 			int low  = 0;
 			int high = p_list->realCount - 1;
 
