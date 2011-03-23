@@ -961,7 +961,7 @@ INT_PTR NetlibHttpTransaction(WPARAM wParam, LPARAM lParam)
 {
 	NetlibUser *nlu =  (NetlibUser*)wParam;
 	NETLIBHTTPREQUEST *nlhr = (NETLIBHTTPREQUEST*)lParam, *nlhrReply;
-	DWORD dflags;
+	DWORD dflags, hflags;
 
 	if (GetNetlibHandleType(nlu) != NLH_USER || !(nlu->user.flags & NUF_OUTGOING) || 
 		nlhr == NULL || nlhr->cbSize < NETLIBHTTPREQUEST_V1_SIZE || 
@@ -1023,13 +1023,18 @@ INT_PTR NetlibHttpTransaction(WPARAM wParam, LPARAM lParam)
 	}
 
 	dflags = (nlhr->flags & NLHRF_DUMPASTEXT ? MSG_DUMPASTEXT:0) |
-		(nlhr->flags & NLHRF_NODUMP?MSG_NODUMP : (nlhr->flags & NLHRF_DUMPPROXY ? MSG_DUMPPROXY : 0)) |
+		(nlhr->flags & NLHRF_NODUMP ? MSG_NODUMP : (nlhr->flags & NLHRF_DUMPPROXY ? MSG_DUMPPROXY : 0)) |
 		(nlhr->flags & NLHRF_NOPROXY ? MSG_RAW : 0);
+
+	hflags = 
+		(nlhr->flags & NLHRF_NODUMP ? MSG_NODUMP : (nlhr->flags & NLHRF_DUMPPROXY ? MSG_DUMPPROXY : 0)) |
+		(nlhr->flags & NLHRF_NOPROXY ? MSG_RAW : 0);
+
 
 	if (nlhr->requestType == REQUEST_HEAD)
 		nlhrReply = (NETLIBHTTPREQUEST*)NetlibHttpRecvHeaders((WPARAM)nlc, 0);
 	else
-		nlhrReply = NetlibHttpRecv(nlc, 0, dflags);
+		nlhrReply = NetlibHttpRecv(nlc, hflags, dflags);
 
 	if (nlhrReply)
 	{
@@ -1115,7 +1120,7 @@ char* gzip_decode(char *gzip_data, int *len_ptr, int window)
 	return output_data;
 }
 
-static int NetlibHttpRecvChunkHeader(NetlibConnection* nlc, bool first)
+static int NetlibHttpRecvChunkHeader(NetlibConnection* nlc, bool first, DWORD flags)
 {
 	char data[64], *peol1;
 
@@ -1140,7 +1145,7 @@ static int NetlibHttpRecvChunkHeader(NetlibConnection* nlc, bool first)
 					if (peol3 == NULL) continue;
 					sz = peol3 - data + 1;
 				}
-				NLRecv(nlc, data, sz, MSG_RAW);
+				NLRecv(nlc, data, sz, MSG_RAW | flags);
 				return r;
 			}
 			else
@@ -1199,7 +1204,7 @@ next:
 
 		if (chunked)
 		{
-			chunksz = NetlibHttpRecvChunkHeader(nlc, true);
+			chunksz = NetlibHttpRecvChunkHeader(nlc, true, dflags);
 			if (chunksz == SOCKET_ERROR) 
 			{
 				NetlibHttpFreeRequestStruct(0, (LPARAM)nlhrReply);
@@ -1250,7 +1255,7 @@ next:
 
 			if (chunked)
 			{
-				chunksz = NetlibHttpRecvChunkHeader(nlc, false);
+				chunksz = NetlibHttpRecvChunkHeader(nlc, false, dflags);
 				if (chunksz == SOCKET_ERROR) 
 				{
 					NetlibHttpFreeRequestStruct(0, (LPARAM)nlhrReply);
