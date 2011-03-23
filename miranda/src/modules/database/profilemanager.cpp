@@ -566,7 +566,7 @@ static INT_PTR CALLBACK DlgProfileManager(HWND hwndDlg, UINT msg, WPARAM wParam,
 
 			dat->currentPage = 0;
 			dat->pageCount = psh->nPages;
-			dat->opd = ( struct DetailsPageData* )mir_alloc( sizeof( struct DetailsPageData )*dat->pageCount );
+			dat->opd = ( struct DetailsPageData* )mir_calloc( sizeof( struct DetailsPageData )*dat->pageCount );
 			odp = ( OPTIONSDIALOGPAGE* )psh->ppsp;
 
 			tci.mask = TCIF_TEXT;
