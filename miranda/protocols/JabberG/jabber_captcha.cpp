@@ -159,7 +159,7 @@ void CJabberProto::OnProcessCaptcha (HXML node, ThreadData* info ){
 void CJabberProto::GetCaptchaImage ( HXML node, char *ImageBuf, const TCHAR *PicType, TCHAR*& CaptchaPath ){
 	HXML o = xmlGetChild( node , "data" );
 	int bufferLen;
-	char* buffer = JabberBase64DecodeW(xmlGetText( o ), &bufferLen );
+	char* buffer = JabberBase64DecodeT(xmlGetText( o ), &bufferLen );
 	if ( buffer == NULL )
 		return;
 
