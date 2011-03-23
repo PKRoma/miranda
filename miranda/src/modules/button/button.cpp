@@ -59,14 +59,6 @@ typedef struct
 	HWND  hwnd;
 } TTooltips;
 
-static int compareThreads( const TTooltips* p1, const TTooltips* p2 )
-{
-	if ( p1->ThreadId == p2->ThreadId )
-		return 0;
-
-	return ( p1->ThreadId > p2->ThreadId ) ? 1 : -1;
-}
-
 int LoadButtonModule(void)
 {
 	WNDCLASSEX wc = {0};
@@ -85,7 +77,7 @@ int LoadButtonModule(void)
 
 	InitializeCriticalSection(&csTips);
 	lToolTips.increment = 1;
-	lToolTips.sortFunc = ( FSortFunc )compareThreads;
+	lToolTips.sortFunc = NumericKeySort;
 	return 0;
 }
 
