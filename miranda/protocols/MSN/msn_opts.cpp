@@ -36,18 +36,18 @@ struct _tag_iconList
 }
 static const iconList[] =
 {
-	{	"Protocol icon",          "main",        IDI_MSN        },
-	{	"Hotmail Inbox",          "inbox",       IDI_INBOX      },
-	{	"Profile",                "profile",     IDI_PROFILE    },
-	{	"MSN Services",           "services",    IDI_SERVICES   },
-	{	"Block user",             "block",       IDI_MSNBLOCK   },
-	{	"Invite to chat",         "invite",      IDI_INVITE     },
-	{	"Start Netmeeting",       "netmeeting",  IDI_NETMEETING },
-	{	"Contact list",           "list_fl",     IDI_LIST_FL    },
-	{	"Allowed list",           "list_al",     IDI_LIST_AL    },
-	{	"Blocked list",           "list_bl",     IDI_LIST_BL    },
-	{	"Relative list",          "list_rl",     IDI_LIST_RL    },
-	{	"Local list",             "list_lc",     IDI_LIST_LC    },
+	{	LPGEN("Protocol icon"),          "main",        IDI_MSN        },
+	{	LPGEN("Hotmail Inbox"),          "inbox",       IDI_INBOX      },
+	{	LPGEN("Profile"),                "profile",     IDI_PROFILE    },
+	{	LPGEN("MSN Services"),           "services",    IDI_SERVICES   },
+	{	LPGEN("Block user"),             "block",       IDI_MSNBLOCK   },
+	{	LPGEN("Invite to chat"),         "invite",      IDI_INVITE     },
+	{	LPGEN("Start Netmeeting"),       "netmeeting",  IDI_NETMEETING },
+	{	LPGEN("Contact list"),           "list_fl",     IDI_LIST_FL    },
+	{	LPGEN("Allowed list"),           "list_al",     IDI_LIST_AL    },
+	{	LPGEN("Blocked list"),           "list_bl",     IDI_LIST_BL    },
+	{	LPGEN("Relative list"),          "list_rl",     IDI_LIST_RL    },
+	{	LPGEN("Local list"),             "list_lc",     IDI_LIST_LC    },
 };
 
 HANDLE hIconLibItem[SIZEOF(iconList)];
