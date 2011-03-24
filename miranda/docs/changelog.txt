@@ -14,6 +14,7 @@ Bugfixes:
  - MSN: Fixed idle handling
  - MSN: Nickname wasn't displayed for added contact
 
+
 * New in 0.9.17
 Enhancements:
  - Gadu-Gadu: Use core SSL support
