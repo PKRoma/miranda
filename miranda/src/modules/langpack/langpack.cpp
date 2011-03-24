@@ -176,7 +176,9 @@ static void LoadLangPackFile( FILE* fp, char* line )
 				if ( p ) {
 					LoadLangPackFile( p, line );
 					fclose( p );
-			}	}
+				}
+				continue;
+			}
 		}
 
 		ConvertBackslashes( line );
@@ -239,7 +241,7 @@ static int LoadLangPack(const TCHAR *szLangPack)
 	if ( fp == NULL )
 		return 1;
 
-	char line[4096];
+	char line[ LANGPACK_BUF_SIZE ];
 	fgets( line, SIZEOF(line), fp );
 	lrtrim( line );
 	if ( lstrcmpA( line, "Miranda Language Pack Version 1" )) {
