@@ -31,7 +31,7 @@ int LoadLangPackServices(void);
 struct LangPackMuuid
 {
 	MUUID muuid;
-	bool  bLoaded;
+	PLUGININFOEX* pInfo;
 };
 
 static int CompareMuuids( const LangPackMuuid* p1, const LangPackMuuid* p2 )
@@ -152,23 +152,12 @@ unsigned int __fastcall hashstrW(const char * key)
 	return hash(buf, len);
 }
 
-#ifdef _DEBUG
-#pragma optimize( "", on )
-#endif
-
 static int SortLangPackHashesProc(LangPackEntry *arg1,LangPackEntry *arg2)
 {
 	if (arg1->englishHash < arg2->englishHash) return -1;
 	if (arg1->englishHash > arg2->englishHash) return 1;
-	return 0;
-}
 
-
-static int SortLangPackHashesProc2(LangPackEntry *arg1,LangPackEntry *arg2)
-{
-	if (arg1->englishHash < arg2->englishHash) return -1;
-	if (arg1->englishHash > arg2->englishHash) return 1;
-	return 0;
+	return (arg1->pMuuid < arg2->pMuuid) ? -1 : 1;
 }
 
 static void LoadLangPackFile( FILE* fp, char* line )
@@ -206,7 +195,7 @@ static void LoadLangPackFile( FILE* fp, char* line )
 
 				LangPackMuuid* pNew = ( LangPackMuuid* )mir_alloc( sizeof( LangPackMuuid ));
 				memcpy( &pNew->muuid, &t, sizeof( t ));
-				pNew->bLoaded = false;
+				pNew->pInfo = NULL;
 				lMuuids.insert( pNew );
 				pCurrentMuuid = pNew;
 				continue;
@@ -329,13 +318,27 @@ static int LoadLangPack(const TCHAR *szLangPack)
 	return 0;
 }
 
-char *LangPackTranslateString(const char *szEnglish, const int W)
+/////////////////////////////////////////////////////////////////////////////////////////
+
+static int SortLangPackHashesProc2(LangPackEntry *arg1,LangPackEntry *arg2)
+{
+	if (arg1->englishHash < arg2->englishHash) return -1;
+	if (arg1->englishHash > arg2->englishHash) return 1;
+
+	if (arg1->pMuuid == NULL || arg1->pMuuid == arg2->pMuuid)
+		return 0;
+
+	return (arg1->pMuuid < arg2->pMuuid) ? -1 : 1;
+}
+
+char *LangPackTranslateString(LangPackMuuid* pUuid, const char *szEnglish, const int W)
 {
 	LangPackEntry key,*entry;
 
 	if ( langPack.entryCount == 0 || szEnglish == NULL ) return (char*)szEnglish;
 
 	key.englishHash = W ? hashstrW(szEnglish) : hashstr(szEnglish);
+	key.pMuuid = pUuid;
 	entry=(LangPackEntry*)bsearch(&key,langPack.entry,langPack.entryCount,sizeof(LangPackEntry),(int(*)(const void*,const void*))SortLangPackHashesProc2);
 	if(entry==NULL) return (char*)szEnglish;
 	while(entry>langPack.entry)
@@ -376,25 +379,54 @@ TCHAR* LangPackPcharToTchar( const char* pszStr )
 	#endif
 }
 
-void LangPackMarkPluginLoaded( const MUUID& muuid )
+/////////////////////////////////////////////////////////////////////////////////////////
+
+INT_PTR UuidTranslateString( WPARAM wParam, LPARAM lParam, LPARAM pVoid );
+INT_PTR UuidTranslateDialog( WPARAM wParam, LPARAM lParam, LPARAM pVoid );
+INT_PTR UuidTranslateMenu( WPARAM wParam, LPARAM lParam, LPARAM pVoid );
+
+void LangPackMarkPluginLoaded( PLUGININFOEX* pInfo )
 {
-	LangPackMuuid tmp; tmp.muuid = muuid;
+	LangPackMuuid tmp; tmp.muuid = pInfo->uuid;
 	int idx = lMuuids.getIndex( &tmp );
-	if ( idx != -1 )
-		lMuuids[ idx ]->bLoaded = true;
+	if ( idx == -1 )
+		return;
+
+	LangPackMuuid* p = lMuuids[ idx ];
+	p->pInfo = pInfo;
+
+	char serviceName[100];
+	mir_snprintf( serviceName, SIZEOF(serviceName), "%s/TranslateString", pInfo->shortName );
+	CreateServiceFunctionParam( serviceName, UuidTranslateString, (LPARAM)p );
+	mir_snprintf( serviceName, SIZEOF(serviceName), "%s/TranslateDialog", pInfo->shortName );
+	CreateServiceFunctionParam( serviceName, UuidTranslateDialog, (LPARAM)p );
+	mir_snprintf( serviceName, SIZEOF(serviceName), "%s/TranslateMenu", pInfo->shortName );
+	CreateServiceFunctionParam( serviceName, UuidTranslateMenu, (LPARAM)p );
 }
 
 void LangPackDropUnusedItems( void )
 {
-	for ( int i=0; i < langPack.entryCount; i++ ) {
-		LangPackEntry& p = langPack.entry[i];
-		if ( p.pMuuid == NULL )
-			continue;
+	LangPackEntry *s = langPack.entry, *d = s;
 
-		if ( !p.pMuuid->bLoaded ) {
-			mir_free( p.local ); p.local = NULL;
-			mir_free( p.wlocal ); p.wlocal = NULL;
-}	}	}
+	for ( int i=0; i < langPack.entryCount; i++ ) {
+		if ( s->pMuuid == NULL || s->pMuuid->pInfo ) {
+			if ( s != d )
+				*d++ = *s++;
+			else
+				s++, d++;
+			continue;
+		}
+
+		mir_free( s->local );
+		mir_free( s->wlocal );
+		s++;
+	}
+
+	langPack.entryCount = int( d - langPack.entry );
+	mir_realloc( langPack.entry, langPack.entryCount * sizeof( LangPackEntry ));
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
 
 int LoadLangPackModule(void)
 {

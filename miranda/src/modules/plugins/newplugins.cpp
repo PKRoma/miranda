@@ -138,7 +138,7 @@ void UninitIni(void);
 int CallHookSubscribers( HANDLE hEvent, WPARAM wParam, LPARAM lParam );
 
 int LoadDatabaseModule(void);
-void LangPackMarkPluginLoaded( const MUUID& );
+void LangPackMarkPluginLoaded( PLUGININFOEX* pInfo );
 
 char * GetPluginNameByInstance( HINSTANCE hInstance )
 {
@@ -604,14 +604,16 @@ static int isPluginOnWhiteList(TCHAR * pluginname)
 	return rc == 0;
 }
 
+static void MarkPluginLPLoaded( pluginEntry* p )
+{
+	if ( p->bpi.InfoEx != NULL )
+		LangPackMarkPluginLoaded( p->bpi.pluginInfo );
+}
+
 static void MarkPluginAsLoaded( pluginEntry* p )
 {
 	pluginListAddr.insert( p );
 	p->pclass |= PCLASS_LOADED;
-
-	MUUID uuid = { 0 };
-	if ( p->bpi.InfoEx != NULL && 0 != memcmp( &p->bpi.pluginInfo->uuid, &uuid, sizeof( MUUID )))
-		LangPackMarkPluginLoaded( p->bpi.pluginInfo->uuid );
 }
 
 static pluginEntry* getCListModule(TCHAR * exe, TCHAR * slice, int useWhiteList)
@@ -626,6 +628,7 @@ static pluginEntry* getCListModule(TCHAR * exe, TCHAR * slice, int useWhiteList)
 			if ( checkAPI(exe, &bpi, mirandaVersion, CHECKAPI_CLIST, NULL) ) {
 				p->bpi = bpi;
 				p->pclass |= PCLASS_LAST | PCLASS_OK | PCLASS_BASICAPI;
+				MarkPluginLPLoaded( p );
 				if ( bpi.clistlink(&pluginCoreLink) == 0 ) {
 					p->bpi = bpi;
 					MarkPluginAsLoaded( p );
@@ -1083,6 +1086,7 @@ int LoadNewPluginsModule(void)
 					p->pclass |= PCLASS_OK | PCLASS_BASICAPI;
 
 					if ( pluginDefModList[rm] == NULL ) {
+						MarkPluginLPLoaded( p );
 						if ( bpi.Load(&pluginCoreLink) == 0 ) {
 							MarkPluginAsLoaded( p );
 							msgModule |= (bpi.pluginInfo->replacesDefaultModule == DEFMOD_SRMESSAGE);
@@ -1106,8 +1110,10 @@ int LoadNewPluginsModule(void)
 				i--;
 			}
 		}
-		else if ( p->bpi.hInst != NULL )
+		else if ( p->bpi.hInst != NULL ) {
+			MarkPluginLPLoaded( p );
 			MarkPluginAsLoaded( p );
+		}
 	}
 	if (!msgModule)
 		MessageBox(NULL, TranslateT("No messaging plugins loaded. Please install/enable one of the messaging plugins, for instance, \"srmm.dll\""), _T("Miranda IM"), MB_OK | MB_ICONINFORMATION);
