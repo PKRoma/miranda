@@ -82,6 +82,8 @@ static THook *pLastHook = NULL;
 
 HINSTANCE GetInstByAddress( void* codePtr );
 
+void LangPackDropUnusedItems( void );
+
 void ParseCommandLine();		// core: IDD_WAITRESTART
 int LoadSystemModule(void);		// core: m_system.h services
 int LoadNewPluginsModuleInfos(void); // core: preloading plugins
@@ -191,10 +193,12 @@ int LoadDefaultModules(void)
 	if (LoadAddContactModule()) return 1;
 	if (LoadNewPluginsModule()) return 1;    // will call Load() on everything, clist will load first
 
-	if (!disableDefaultModule[DEFMOD_SSL]) if (LoadSslModule()) return 1;
-    NetlibInitSsl();
+	LangPackDropUnusedItems();
 
-    if (LoadAccountsModule()) return 1;
+	if (!disableDefaultModule[DEFMOD_SSL]) if (LoadSslModule()) return 1;
+	NetlibInitSsl();
+
+	if (LoadAccountsModule()) return 1;
 
     //order becomes less important below here
 	if (!disableDefaultModule[DEFMOD_FONTSERVICE]) if (LoadFontserviceModule()) return 1;

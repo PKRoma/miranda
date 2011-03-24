@@ -22,9 +22,25 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 #include "commonheaders.h"
 
+#include "../netlib/netlib.h"
+
 #define LANGPACK_BUF_SIZE 4000
 
 int LoadLangPackServices(void);
+
+struct LangPackMuuid
+{
+	MUUID muuid;
+	bool  bLoaded;
+};
+
+static int CompareMuuids( const LangPackMuuid* p1, const LangPackMuuid* p2 )
+{
+	return memcmp( &p1->muuid, &p2->muuid, sizeof( MUUID ));
+}
+
+static LIST<LangPackMuuid> lMuuids( 10, CompareMuuids );
+static LangPackMuuid* pCurrentMuuid = NULL;
 
 static BOOL bModuleInitialized = FALSE;
 
@@ -32,6 +48,7 @@ struct LangPackEntry {
 	DWORD englishHash;
 	char *local;
 	wchar_t *wlocal;
+	LangPackMuuid* pMuuid;
 };
 
 struct LangPackStruct {
@@ -179,6 +196,21 @@ static void LoadLangPackFile( FILE* fp, char* line )
 				}
 				continue;
 			}
+
+			if ( !memcmp( line+1, "muuid", 5 )) {
+				MUUID t;
+				if ( 11 != sscanf( line+7, "{%8x-%4x-%4x-%2x%2x%2x%2x%2x%2x%2x%2x}", &t.a, &t.b, &t.c, &t.d[0], &t.d[1], &t.d[2], &t.d[3], &t.d[4], &t.d[5], &t.d[6], &t.d[7] )) {
+					NetlibLogf( NULL, "Invalid MUUID: %s\n", line+7 );
+					continue;
+				}
+
+				LangPackMuuid* pNew = ( LangPackMuuid* )mir_alloc( sizeof( LangPackMuuid ));
+				memcpy( &pNew->muuid, &t, sizeof( t ));
+				pNew->bLoaded = false;
+				lMuuids.insert( pNew );
+				pCurrentMuuid = pNew;
+				continue;
+			}
 		}
 
 		ConvertBackslashes( line );
@@ -198,6 +230,7 @@ static void LoadLangPackFile( FILE* fp, char* line )
 			E->englishHash = hashstr(pszLine);
 			E->local = NULL;
 			E->wlocal = NULL;
+			E->pMuuid = pCurrentMuuid;
 			continue;
 		}
 
@@ -343,6 +376,26 @@ TCHAR* LangPackPcharToTchar( const char* pszStr )
 	#endif
 }
 
+void LangPackMarkPluginLoaded( const MUUID& muuid )
+{
+	LangPackMuuid tmp; tmp.muuid = muuid;
+	int idx = lMuuids.getIndex( &tmp );
+	if ( idx != -1 )
+		lMuuids[ idx ]->bLoaded = true;
+}
+
+void LangPackDropUnusedItems( void )
+{
+	for ( int i=0; i < langPack.entryCount; i++ ) {
+		LangPackEntry& p = langPack.entry[i];
+		if ( p.pMuuid == NULL )
+			continue;
+
+		if ( !p.pMuuid->bLoaded ) {
+			mir_free( p.local ); p.local = NULL;
+			mir_free( p.wlocal ); p.wlocal = NULL;
+}	}	}
+
 int LoadLangPackModule(void)
 {
 	HANDLE hFind;
@@ -368,6 +421,10 @@ void UnloadLangPackModule()
 	int i;
 
 	if ( !bModuleInitialized ) return;
+
+	for ( i=0; i < lMuuids.getCount(); i++ )
+		mir_free( lMuuids[i] );
+	lMuuids.destroy();
 
 	for ( i=0; i < langPack.entryCount; i++ ) {
 		mir_free(langPack.entry[i].local);
