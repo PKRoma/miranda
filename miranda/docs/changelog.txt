@@ -3,6 +3,17 @@
                            www.miranda-im.org
 
 
+* New in 0.9.18
+Bugfixes:
+ - Fixed shutdown after resume hibernate
+ - Fixed tab autocompletion in multi-user chats
+ - Gadu-Gadu: Fixed showing correct status of your own contact
+ - Jabber: Fixed status message notification in chat window
+ - Jabber: Fix for proper extended status handling
+ - Jabber: Fixed conference topic display
+ - MSN: Fixed idle handling
+ - MSN: Nickname wasn't displayed for added contact
+
 * New in 0.9.17
 Enhancements:
  - Gadu-Gadu: Use core SSL support
