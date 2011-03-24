@@ -22,26 +22,27 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 #include "commonheaders.h"
 
+#define LANGPACK_BUF_SIZE 4000
+
 int LoadLangPackServices(void);
 
 static BOOL bModuleInitialized = FALSE;
 
 struct LangPackEntry {
-	unsigned linePos;
 	DWORD englishHash;
-	char *english;	  //not currently used, the hash does everything
 	char *local;
 	wchar_t *wlocal;
 };
 
 struct LangPackStruct {
 	TCHAR filename[MAX_PATH];
+	TCHAR filePath[MAX_PATH];
 	char  language[64];
 	char  lastModifiedUsing[64];
 	char  authors[256];
 	char  authorEmail[128];
-	struct LangPackEntry *entry;
-	int entryCount;
+	LangPackEntry *entry;
+	int entryCount, entriesAlloced;
 	LCID localeID;
 	DWORD defaultANSICp;
 } static langPack;
@@ -138,52 +139,134 @@ unsigned int __fastcall hashstrW(const char * key)
 #pragma optimize( "", on )
 #endif
 
-static int SortLangPackHashesProc(struct LangPackEntry *arg1,struct LangPackEntry *arg2)
+static int SortLangPackHashesProc(LangPackEntry *arg1,LangPackEntry *arg2)
 {
-	if(arg1->englishHash<arg2->englishHash) return -1;
-	if(arg1->englishHash>arg2->englishHash) return 1;
-	/* both source strings of the same hash (may not be the same string thou) put
-	the one that was written first to be found first */
-	if(arg1->linePos<arg2->linePos) return -1;
-	if(arg1->linePos>arg2->linePos) return 1;
+	if (arg1->englishHash < arg2->englishHash) return -1;
+	if (arg1->englishHash > arg2->englishHash) return 1;
 	return 0;
 }
 
 
-static int SortLangPackHashesProc2(struct LangPackEntry *arg1,struct LangPackEntry *arg2)
+static int SortLangPackHashesProc2(LangPackEntry *arg1,LangPackEntry *arg2)
 {
-	if(arg1->englishHash<arg2->englishHash) return -1;
-	if(arg1->englishHash>arg2->englishHash) return 1;
+	if (arg1->englishHash < arg2->englishHash) return -1;
+	if (arg1->englishHash > arg2->englishHash) return 1;
 	return 0;
+}
+
+static void LoadLangPackFile( FILE* fp, char* line )
+{
+	while ( !feof( fp )) {
+		if ( fgets( line, LANGPACK_BUF_SIZE, fp ) == NULL )
+			break;
+
+		if ( IsEmpty(line) || line[0] == ';' || line[0] == 0 )
+			continue;
+
+		rtrim( line );
+
+		if ( line[0] == '#' ) {
+			if ( !memcmp( line+1, "include", 7 )) {
+				TCHAR tszFileName[ MAX_PATH ];
+				TCHAR* fileName = mir_a2t( ltrim( line+9 ));
+				mir_sntprintf( tszFileName, SIZEOF(tszFileName), _T("%s%s"), langPack.filePath, fileName );
+				mir_free( fileName );
+
+				FILE* p = _tfopen( tszFileName, _T("r"));
+				if ( p ) {
+					LoadLangPackFile( p, line );
+					fclose( p );
+			}	}
+		}
+
+		ConvertBackslashes( line );
+
+		if ( line[0] == '[' && line[ lstrlenA(line)-1 ] == ']' ) {
+			if ( langPack.entryCount && langPack.entry[ langPack.entryCount-1].local == NULL )
+				langPack.entryCount--;
+
+			char* pszLine = line+1;
+			line[ lstrlenA(line)-1 ] = '\0';
+			if ( ++langPack.entryCount > langPack.entriesAlloced ) {
+				langPack.entriesAlloced += 128;
+				langPack.entry = ( LangPackEntry* )mir_realloc( langPack.entry, sizeof(LangPackEntry)*langPack.entriesAlloced );
+			}
+
+			LangPackEntry* E = &langPack.entry[ langPack.entryCount-1 ];
+			E->englishHash = hashstr(pszLine);
+			E->local = NULL;
+			E->wlocal = NULL;
+			continue;
+		}
+
+		if ( !langPack.entryCount )
+			continue;
+
+		LangPackEntry* E = &langPack.entry[ langPack.entryCount-1 ];
+		if ( E->local == NULL ) {
+			E->local = mir_strdup( line );
+				
+			int iNeeded = MultiByteToWideChar(langPack.defaultANSICp, 0, line, -1, 0, 0);
+			E->wlocal = (wchar_t *)mir_alloc((iNeeded+1) * sizeof(wchar_t));
+			MultiByteToWideChar( langPack.defaultANSICp, 0, line, -1, E->wlocal, iNeeded );
+		}
+		else {
+			E->local = ( char* )mir_realloc( E->local, lstrlenA(E->local)+lstrlenA(line)+2 );
+			lstrcatA( E->local, "\n" );
+			lstrcatA( E->local, line );
+				
+			int iNeeded = MultiByteToWideChar( langPack.defaultANSICp, 0, line, -1, 0, 0 );
+			size_t iOldLen = wcslen( E->wlocal );
+			E->wlocal = ( wchar_t* )mir_realloc( E->wlocal, ( sizeof(wchar_t) * ( iOldLen + iNeeded + 2)));
+			wcscat( E->wlocal, L"\n" );
+			MultiByteToWideChar( langPack.defaultANSICp, 0, line, -1, E->wlocal + iOldLen+1, iNeeded );
+		}
+	}
 }
 
 static int LoadLangPack(const TCHAR *szLangPack)
 {
-	FILE *fp;
-	char line[4096];
-	char *pszColon;
-	char *pszLine;
-	int entriesAlloced;
 	int startOfLine=0;
-	unsigned int linePos=1;
 	USHORT langID;
 
-	lstrcpy(langPack.filename,szLangPack);
-	fp = _tfopen(szLangPack,_T("rt"));
-	if(fp==NULL) return 1;
-	fgets(line,SIZEOF(line),fp);
-	lrtrim(line);
-	if(lstrcmpA(line,"Miranda Language Pack Version 1")) {fclose(fp); return 2;}
+	lstrcpy( langPack.filename, szLangPack );
+	lstrcpy( langPack.filePath, szLangPack );
+	TCHAR* p = _tcsrchr( langPack.filePath, '\\' );
+	if ( p )
+		p[1] = 0;
+
+	FILE *fp = _tfopen(szLangPack,_T("rt"));
+	if ( fp == NULL )
+		return 1;
+
+	char line[4096];
+	fgets( line, SIZEOF(line), fp );
+	lrtrim( line );
+	if ( lstrcmpA( line, "Miranda Language Pack Version 1" )) {
+		fclose(fp);
+		return 2;
+	}
+
 	//headers
-	while(!feof(fp)) {
-		startOfLine=ftell(fp);
-		if(fgets(line,SIZEOF(line),fp)==NULL) break;
-		lrtrim(line);
-		if(IsEmpty(line) || line[0]==';' || line[0]==0) continue;
-		if(line[0]=='[') break;
-		pszColon=strchr(line,':');
-		if(pszColon==NULL) {fclose(fp); return 3;}
-		*pszColon=0;
+	while ( !feof( fp )) {
+		startOfLine = ftell( fp );
+		if ( fgets( line, SIZEOF(line), fp ) == NULL )
+			break;
+
+		lrtrim( line );
+		if( IsEmpty( line ) || line[0]==';' || line[0]==0)
+			continue;
+
+		if ( line[0] == '[' )
+			break;
+
+		char* pszColon = strchr( line,':' );
+		if ( pszColon == NULL ) {
+			fclose( fp );
+			return 3;
+		}
+
+		*pszColon = 0;
 		if(!lstrcmpA(line,"Language")) {mir_snprintf(langPack.language,sizeof(langPack.language),"%s",pszColon+1); lrtrim(langPack.language);}
 		else if(!lstrcmpA(line,"Last-Modified-Using")) {mir_snprintf(langPack.lastModifiedUsing,sizeof(langPack.lastModifiedUsing),"%s",pszColon+1); lrtrim(langPack.lastModifiedUsing);}
 		else if(!lstrcmpA(line,"Authors")) {mir_snprintf(langPack.authors,sizeof(langPack.authors),"%s",pszColon+1); lrtrim(langPack.authors);}
@@ -199,69 +282,26 @@ static int LoadLangPack(const TCHAR *szLangPack)
 			langPack.defaultANSICp = atoi(szBuf);
 		}
 	}
-	//body
-	fseek(fp,startOfLine,SEEK_SET);
-	entriesAlloced=0;
-	while(!feof(fp)) {
-		if(fgets(line,SIZEOF(line),fp)==NULL) break;
-		if(IsEmpty(line) || line[0]==';' || line[0]==0) continue;
-		rtrim(line);
-		ConvertBackslashes(line);
-		if(line[0]=='[' && line[lstrlenA(line)-1]==']') {
-			if(langPack.entryCount && langPack.entry[langPack.entryCount-1].local==NULL) {
-				if(langPack.entry[langPack.entryCount-1].english!=NULL) mir_free(langPack.entry[langPack.entryCount-1].english);
-				langPack.entryCount--;
-			}
-			pszLine = line+1;
-			line[lstrlenA(line)-1]='\0';
-			if(++langPack.entryCount>entriesAlloced) {
-				entriesAlloced+=128;
-				langPack.entry=(struct LangPackEntry*)mir_realloc(langPack.entry,sizeof(struct LangPackEntry)*entriesAlloced);
-			}
-			langPack.entry[langPack.entryCount-1].english=NULL;
-			langPack.entry[langPack.entryCount-1].englishHash=hashstr(pszLine);
-			langPack.entry[langPack.entryCount-1].local=NULL;
-			langPack.entry[langPack.entryCount-1].wlocal = NULL;
-			langPack.entry[langPack.entryCount-1].linePos=linePos++;
-		}
-		else if(langPack.entryCount) {
-			struct LangPackEntry* E = &langPack.entry[langPack.entryCount-1];
 
-			if(E->local==NULL) {
-				E->local=mir_strdup(line);
-				{
-					int iNeeded = MultiByteToWideChar(langPack.defaultANSICp, 0, line, -1, 0, 0);
-					E->wlocal = (wchar_t *)mir_alloc((iNeeded+1) * sizeof(wchar_t));
-					MultiByteToWideChar(langPack.defaultANSICp, 0, line, -1, E->wlocal, iNeeded);
-				}
-			}
-			else {
-				E->local=(char*)mir_realloc(E->local,lstrlenA(E->local)+lstrlenA(line)+2);
-				lstrcatA(E->local,"\n");
-				lstrcatA(E->local,line);
-				{
-					int iNeeded = MultiByteToWideChar(langPack.defaultANSICp, 0, line, -1, 0, 0);
-					size_t iOldLen = wcslen(E->wlocal);
-					E->wlocal = (wchar_t*)mir_realloc(E->wlocal, ( sizeof(wchar_t) * ( iOldLen + iNeeded + 2)));
-					wcscat(E->wlocal, L"\n");
-					MultiByteToWideChar( langPack.defaultANSICp, 0, line, -1, E->wlocal + iOldLen+1, iNeeded);
-				}
-			}
-		}
-	}
-	qsort(langPack.entry,langPack.entryCount,sizeof(struct LangPackEntry),(int(*)(const void*,const void*))SortLangPackHashesProc);
+	//body
+	fseek( fp, startOfLine, SEEK_SET );
+	langPack.entriesAlloced = 0;
+
+	LoadLangPackFile( fp, line );
+
+	qsort(langPack.entry,langPack.entryCount,sizeof(LangPackEntry),(int(*)(const void*,const void*))SortLangPackHashesProc);
 	fclose(fp);
 	return 0;
 }
 
 char *LangPackTranslateString(const char *szEnglish, const int W)
 {
-	struct LangPackEntry key,*entry;
+	LangPackEntry key,*entry;
 
 	if ( langPack.entryCount == 0 || szEnglish == NULL ) return (char*)szEnglish;
 
 	key.englishHash = W ? hashstrW(szEnglish) : hashstr(szEnglish);
-	entry=(struct LangPackEntry*)bsearch(&key,langPack.entry,langPack.entryCount,sizeof(struct LangPackEntry),(int(*)(const void*,const void*))SortLangPackHashesProc2);
+	entry=(LangPackEntry*)bsearch(&key,langPack.entry,langPack.entryCount,sizeof(LangPackEntry),(int(*)(const void*,const void*))SortLangPackHashesProc2);
 	if(entry==NULL) return (char*)szEnglish;
 	while(entry>langPack.entry)
 	{
@@ -328,7 +368,6 @@ void UnloadLangPackModule()
 	if ( !bModuleInitialized ) return;
 
 	for ( i=0; i < langPack.entryCount; i++ ) {
-		mir_free(langPack.entry[i].english);
 		mir_free(langPack.entry[i].local);
 		mir_free(langPack.entry[i].wlocal);
 	}
