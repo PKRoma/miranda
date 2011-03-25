@@ -1160,7 +1160,7 @@ int gg_dbsettingchanged(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
 	char *szProto = NULL;
 
 	// If user UIN changed
-	if(!strcmp(cws->szModule, GG_PROTO) && !strcmp(cws->szSetting, GG_KEY_UIN)
+	if(!hContact && !strcmp(cws->szModule, GG_PROTO) && !strcmp(cws->szSetting, GG_KEY_UIN)
 		&& cws->value.dVal)
 	{
 		// Get user's avatar
