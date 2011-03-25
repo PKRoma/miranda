@@ -34,6 +34,13 @@
 #ifndef __GG_LIBGADU_H
 #define __GG_LIBGADU_H
 
+/* Defined if libgadu should be compatible with Miranda. */
+#define GG_CONFIG_MIRANDA
+
+#ifdef GG_CONFIG_MIRANDA
+#include <m_ssl.h>
+#endif
+
 #if defined(__cplusplus) || defined(_WIN32)
 #pragma pack(push, 1)
 #endif
@@ -93,18 +100,13 @@ extern "C" {
 /* Defined if uintX_t types are defined in <sys/types.h>. */
 #undef GG_CONFIG_HAVE_SYS_TYPES_H
 
-/* Defined if libgadu should be compatible with Miranda win32 sockets. */
-#define GG_CONFIG_MIRANDA
-
 /* MSC have no va_copy */
 #ifndef _MSC_VER
 #define GG_CONFIG_HAVE_VA_COPY
 #define GG_CONFIG_HAVE___VA_COPY
 #endif
 
-#ifdef GG_CONFIG_MIRANDA
-#include <m_ssl.h>
-#elif GG_CONFIG_HAVE_OPENSSL
+#if defined(GG_CONFIG_HAVE_OPENSSL) && !defined(GG_CONFIG_MIRANDA)
 #include <openssl/ssl.h>
 #endif
 
