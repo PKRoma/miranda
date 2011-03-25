@@ -1109,8 +1109,8 @@ void gg_broadcastnewstatus(GGPROTO *gg, int newStatus)
 }
 
 ////////////////////////////////////////////////////////////
-// When user is deleted
-int gg_userdeleted(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
+// When contact is deleted
+int gg_contactdeleted(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
 {
 	HANDLE hContact = (HANDLE) wParam;
 	uin_t uin; int type;
