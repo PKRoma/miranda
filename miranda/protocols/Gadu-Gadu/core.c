@@ -1116,8 +1116,6 @@ int gg_contactdeleted(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
 	uin_t uin; int type;
 	DBVARIANT dbv;
 
-	if(!hContact) return 0;
-
 	uin = (uin_t)DBGetContactSettingDword(hContact, GG_PROTO, GG_KEY_UIN, 0);
 	type = DBGetContactSettingByte(hContact, GG_PROTO, "ChatRoom", 0);
 
@@ -1162,7 +1160,7 @@ int gg_dbsettingchanged(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
 	char *szProto = NULL;
 
 	// If user UIN changed
-	if(!hContact && !strcmp(cws->szModule, GG_PROTO) && !strcmp(cws->szSetting, GG_KEY_UIN)
+	if(!strcmp(cws->szModule, GG_PROTO) && !strcmp(cws->szSetting, GG_KEY_UIN)
 		&& cws->value.dVal)
 	{
 		// Get user's avatar
@@ -1170,11 +1168,7 @@ int gg_dbsettingchanged(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
 	}
 
 	// Check if the contact is NULL or we are not online
-	if(!hContact || !gg_isonline(gg))
-		return 0;
-
-	// Fetch protocol name and check if it's our
-	if(!(szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, wParam, 0)) || strcmp(szProto, GG_PROTO))
+	if(!gg_isonline(gg))
 		return 0;
 
 	// If ignorance changed
