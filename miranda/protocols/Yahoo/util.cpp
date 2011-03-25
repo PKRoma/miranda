@@ -306,7 +306,7 @@ INT_PTR __cdecl CYahooProto::OnSettingChanged(WPARAM wParam, LPARAM lParam)
 	if (!m_bLoggedIn)
 		return 0;
 
-	if (!strcmp(cws->szModule, "CList") && !strcmp(cws->szModule, m_szModuleName)) {
+	if (!strcmp(cws->szModule, "CList")) {
 		// A temporary contact has been added permanently
 		if (!strcmp(cws->szSetting, "NotOnList")) {
 			if (DBGetContactSettingByte((HANDLE) wParam, "CList", "Hidden", 0))
