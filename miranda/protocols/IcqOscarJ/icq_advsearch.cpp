@@ -44,12 +44,19 @@ static void InitComboBox(HWND hwndCombo, const FieldNamesItem *names)
 	iItem = ComboBoxAddStringUtf(hwndCombo, NULL, 0);
 	SendMessage(hwndCombo, CB_SETCURSEL, iItem, 0);
 
-	for (i = 0; ; i++)
-	{
-		if (names[i].text == NULL)
-			break;
-
-		iItem = ComboBoxAddStringUtf(hwndCombo, names[i].text, names[i].code);
+	if (names){
+		for (i = 0; names[i].text; i++) {
+			iItem = ComboBoxAddStringUtf(hwndCombo, names[i].text, names[i].code);
+		}
+	}
+	else {
+		int ctryCount;
+		struct CountryListEntry *countries;
+		CallService( MS_UTILS_GETCOUNTRYLIST, ( WPARAM )&ctryCount, ( LPARAM )&countries );
+		for (i = 0; i < ctryCount; i++)	{
+			if (countries[i].id != 0xFFFF && countries[i].id != 0)
+				iItem = ComboBoxAddStringUtf(hwndCombo, LPGEN(countries[i].szName), countries[i].id);
+		}
 	}
 }
 

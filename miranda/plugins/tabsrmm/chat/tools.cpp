@@ -83,7 +83,7 @@ TCHAR* RemoveFormatting(const TCHAR* pszWord, bool fToLower, bool fStripCR, TCHA
 	}
 
 	size_t i = 0;
-	int j = 0;
+	size_t j = 0;
 
 	if (pszWord == 0)
 		return NULL;
