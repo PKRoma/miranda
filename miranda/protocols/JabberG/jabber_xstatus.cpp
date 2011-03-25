@@ -1325,10 +1325,9 @@ BOOL CJabberProto::SendPepTune( TCHAR* szArtist, TCHAR* szLength, TCHAR* szSourc
 		return FALSE;
 
 	XmlNodeIq iq( _T("set"), SerialNext() );
-	HXML itemNode = iq << XCHILDNS( _T("pubsub"), _T(JABBER_FEAT_PUBSUB))
+	HXML tuneNode = iq << XCHILDNS( _T("pubsub"), _T(JABBER_FEAT_PUBSUB))
 							<< XCHILD( _T("publish")) << XATTR( _T("node"), _T(JABBER_FEAT_USER_TUNE))
-								<< XCHILD( _T("item"));
-	HXML tuneNode = itemNode << XCHILDNS( _T("tune"), _T(JABBER_FEAT_USER_TUNE));
+							<< XCHILD( _T("item")) << XCHILDNS( _T("tune"), _T(JABBER_FEAT_USER_TUNE));
 
 	if ( szArtist || szLength || szSource || szTitle || szUri ) {
 		if ( szArtist ) tuneNode << XCHILD( _T("artist"), szArtist );
