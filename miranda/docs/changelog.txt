@@ -13,6 +13,7 @@ Bugfixes:
  - Jabber: Fixed conference topic display
  - MSN: Fixed idle handling
  - MSN: Nickname wasn't displayed for added contact
+ - Yahoo: Fixed adding contact to the list
 
 
 * New in 0.9.17
