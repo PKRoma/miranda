@@ -211,7 +211,7 @@ INT_PTR __cdecl CIrcProto::OnDoubleclicked(WPARAM, LPARAM lParam)
 	return 0;
 }
 
-int __cdecl CIrcProto::OnDeletedContact(WPARAM wp, LPARAM)
+int __cdecl CIrcProto::OnContactDeleted(WPARAM wp, LPARAM)
 {
 	HANDLE hContact = ( HANDLE )wp;
 	if ( !hContact )
@@ -1066,10 +1066,6 @@ int __cdecl CIrcProto::OnDbSettingChanged(WPARAM wParam, LPARAM lParam)
 		return 0;
 
 	if ( cws->value.type != DBVT_DELETED && !( cws->value.type==DBVT_BYTE && cws->value.bVal==0 ))
-		return 0;
-
-	char* szProto = ( char* )CallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM ) hContact, 0 );
-	if ( szProto == NULL || strcmp( szProto, m_szModuleName ))
 		return 0;
 
 	if ( !strcmp( cws->szSetting, "NotOnList" ) ) {

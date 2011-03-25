@@ -306,7 +306,7 @@ INT_PTR __cdecl CYahooProto::OnSettingChanged(WPARAM wParam, LPARAM lParam)
 	if (!m_bLoggedIn)
 		return 0;
 
-	if (!strcmp(cws->szModule, "CList") && !strcmp(cws->szModule, m_szModuleName)) {
+	if (!strcmp(cws->szModule, "CList")) {
 		// A temporary contact has been added permanently
 		if (!strcmp(cws->szSetting, "NotOnList")) {
 			if (DBGetContactSettingByte((HANDLE) wParam, "CList", "Hidden", 0))
@@ -314,9 +314,6 @@ INT_PTR __cdecl CYahooProto::OnSettingChanged(WPARAM wParam, LPARAM lParam)
 			if (cws->value.type == DBVT_DELETED || (cws->value.type == DBVT_BYTE && cws->value.bVal == 0)) {
 				char *szProto;
 				DBVARIANT dbv;
-
-				szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, wParam, 0);
-				if (szProto==NULL || strcmp(szProto, m_szModuleName)) return 0;
 
 				if ( !DBGetContactSettingString( (HANDLE) wParam, m_szModuleName, YAHOO_LOGINID, &dbv )){
 					DebugLog("Adding Permanently %s to list.", dbv.pszVal);

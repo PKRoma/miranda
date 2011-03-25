@@ -119,7 +119,7 @@ struct CAimProto : public PROTO_INTERFACE
 	int  __cdecl OnOptionsInit(WPARAM wParam,LPARAM lParam);
 	int  __cdecl OnPreBuildContactMenu(WPARAM wParam,LPARAM lParam);
 //    int  __cdecl OnPreShutdown(WPARAM wParam,LPARAM lParam);
-	int  __cdecl OnSettingChanged(WPARAM wParam,LPARAM lParam);
+	int  __cdecl OnDbSettingChanged(WPARAM wParam,LPARAM lParam);
 	int  __cdecl OnUserInfoInit(WPARAM wParam,LPARAM lParam);
 	int  __cdecl OnGCEvent(WPARAM wParam,LPARAM lParam);
 	int  __cdecl OnGCMenuHook(WPARAM wParam,LPARAM lParam);

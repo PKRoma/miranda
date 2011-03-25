@@ -37,8 +37,8 @@ int CAimProto::OnIdleChanged(WPARAM /*wParam*/, LPARAM lParam)
 	if (instantidle) //ignore- we are instant idling at the moment
 		return 0;
 
-	BOOL bIdle = (lParam & IDF_ISIDLE);
-	BOOL bPrivacy = (lParam & IDF_PRIVACY);
+	bool bIdle = (lParam & IDF_ISIDLE) != 0;
+	bool bPrivacy = (lParam & IDF_PRIVACY) != 0;
 
 	if (bPrivacy && idle) 
 	{
@@ -51,11 +51,10 @@ int CAimProto::OnIdleChanged(WPARAM /*wParam*/, LPARAM lParam)
 
 	if (bIdle)  //don't want to change idle time if we are already idle
 	{
-		MIRANDA_IDLE_INFO mii;
-
-		ZeroMemory(&mii, sizeof(mii));
+		MIRANDA_IDLE_INFO mii = {0};
 		mii.cbSize = sizeof(mii);
 		CallService(MS_IDLE_GETIDLEINFO, 0, (LPARAM) & mii);
+
 		idle = 1;
 		aim_set_idle(hServerConn,seqno,mii.idleTime * 60);
 	}
@@ -116,7 +115,7 @@ INT_PTR CAimProto::GetHTMLAwayMsg(WPARAM wParam, LPARAM /*lParam*/)
 	return 0;
 }
 
-int CAimProto::OnSettingChanged(WPARAM wParam,LPARAM lParam)
+int CAimProto::OnDbSettingChanged(WPARAM wParam,LPARAM lParam)
 {
 	DBCONTACTWRITESETTING *cws = (DBCONTACTWRITESETTING*)lParam;
 
@@ -125,7 +124,7 @@ int CAimProto::OnSettingChanged(WPARAM wParam,LPARAM lParam)
 		HANDLE hContact = (HANDLE)wParam;
 		if (strcmp(cws->szSetting, AIM_KEY_NL) == 0)
 		{
-			if (cws->value.type == DBVT_DELETED && is_my_contact(hContact))
+			if (cws->value.type == DBVT_DELETED)
 			{
 				DBVARIANT dbv;
 				if(!DBGetContactSettingStringUtf(hContact, MOD_KEY_CL, OTH_KEY_GP, &dbv) && dbv.pszVal[0])
@@ -139,31 +138,28 @@ int CAimProto::OnSettingChanged(WPARAM wParam,LPARAM lParam)
 		}
 		else if (strcmp(cws->szSetting, "MyHandle") == 0)
 		{
-			if (is_my_contact(hContact))
+			char* name;
+			switch (cws->value.type)
 			{
-				char* name;
-				switch (cws->value.type)
-				{
-				case DBVT_DELETED:
-					set_local_nick(hContact, NULL, NULL);
-					break;
+			case DBVT_DELETED:
+				set_local_nick(hContact, NULL, NULL);
+				break;
 
-				case DBVT_ASCIIZ:
-					name = mir_utf8encode(cws->value.pszVal);
-					set_local_nick(hContact, name, NULL);
-					mir_free(name);
-					break;
+			case DBVT_ASCIIZ:
+				name = mir_utf8encode(cws->value.pszVal);
+				set_local_nick(hContact, name, NULL);
+				mir_free(name);
+				break;
 
-				case DBVT_UTF8:
-					set_local_nick(hContact, cws->value.pszVal, NULL);
-					break;
+			case DBVT_UTF8:
+				set_local_nick(hContact, cws->value.pszVal, NULL);
+				break;
 
-				case DBVT_WCHAR:
-					name = mir_utf8encodeW(cws->value.pwszVal);
-					set_local_nick(hContact, name, NULL);
-					mir_free(name);
-					break;
-				}
+			case DBVT_WCHAR:
+				name = mir_utf8encodeW(cws->value.pwszVal);
+				set_local_nick(hContact, name, NULL);
+				mir_free(name);
+				break;
 			}
 		}
 	}
@@ -177,7 +173,7 @@ int CAimProto::OnContactDeleted(WPARAM wParam,LPARAM /*lParam*/)
 
 	const HANDLE hContact = (HANDLE)wParam;
 
-	if (!is_my_contact(hContact) || DBGetContactSettingByte(hContact, MOD_KEY_CL, AIM_KEY_NL, 0))
+	if (DBGetContactSettingByte(hContact, MOD_KEY_CL, AIM_KEY_NL, 0))
 		return 0;
 
 	DBVARIANT dbv;

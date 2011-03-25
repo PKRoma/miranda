@@ -101,8 +101,6 @@ CMsnProto::CMsnProto(const char* aProtoName, const TCHAR* aUserName) :
 	// service to get from protocol chat buddy info
 //	CreateProtoService(MS_GC_PROTO_GETTOOLTIPTEXT, &CMsnProto::GCGetToolTipText);
 
-	HookProtoEvent(ME_DB_CONTACT_DELETED,        &CMsnProto::OnContactDeleted);
-	HookProtoEvent(ME_DB_CONTACT_SETTINGCHANGED, &CMsnProto::OnDbSettingChanged);
 	HookProtoEvent(ME_MSG_WINDOWEVENT,           &CMsnProto::OnWindowEvent);
 	HookProtoEvent(ME_CLIST_GROUPCHANGE,         &CMsnProto::OnGroupChange);
 	HookProtoEvent(ME_OPT_INITIALISE,            &CMsnProto::OnOptionsInit);
@@ -1261,6 +1259,12 @@ int __cdecl CMsnProto::OnEvent(PROTOEVENTTYPE eventType, WPARAM wParam, LPARAM l
 			MSN_CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM)mainMenuRoot, (LPARAM)&clmi);
 		}
 		break;
+
+	case EV_PROTO_ONCONTACTDELETED:
+		return OnContactDeleted(wParam, lParam);
+
+	case EV_PROTO_DBSETTINGSCHANGED:
+		return OnDbSettingChanged(wParam, lParam);
 	}
 	return 1;
 }

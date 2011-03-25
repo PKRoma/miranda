@@ -50,8 +50,6 @@ CAimProto::CAimProto(const char* aProtoName, const TCHAR* aUserName)
 	CreateProtoService(PS_JOINCHAT,       &CAimProto::OnJoinChat);
 	CreateProtoService(PS_LEAVECHAT,      &CAimProto::OnLeaveChat);
 
-	HookProtoEvent(ME_DB_CONTACT_SETTINGCHANGED, &CAimProto::OnSettingChanged);
-	HookProtoEvent(ME_DB_CONTACT_DELETED,        &CAimProto::OnContactDeleted);
 	HookProtoEvent(ME_CLIST_PREBUILDCONTACTMENU, &CAimProto::OnPreBuildContactMenu);
 	HookProtoEvent(ME_CLIST_GROUPCHANGE,         &CAimProto::OnGroupChange);
 	HookProtoEvent(ME_OPT_INITIALISE,            &CAimProto::OnOptionsInit);
@@ -863,6 +861,12 @@ int __cdecl CAimProto::OnEvent(PROTOEVENTTYPE eventType, WPARAM wParam, LPARAM l
 				CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM)hMenuRoot, (LPARAM)&clmi);
 			}
 			break;
+
+		case EV_PROTO_ONCONTACTDELETED:
+			return OnContactDeleted(wParam, lParam);
+
+		case EV_PROTO_DBSETTINGSCHANGED:
+			return OnDbSettingChanged(wParam, lParam);
 	}
 	return 1;
 }
