@@ -196,6 +196,27 @@ void WriteDbAccounts()
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
+static int OnContactDeleted(WPARAM wParam, LPARAM lParam)
+{
+	const HANDLE hContact = (HANDLE)wParam;
+	PROTOACCOUNT* pa = Proto_GetAccount(hContact);
+
+	if (Proto_IsAccountEnabled(pa))
+		pa->ppro->OnEvent(EV_PROTO_ONCONTACTDELETED, wParam, lParam);
+
+	return 0;
+}
+
+static int OnDbSettingsChanged(WPARAM wParam, LPARAM lParam)
+{
+	const HANDLE hContact = (HANDLE)wParam;
+	PROTOACCOUNT* pa = Proto_GetAccount(hContact);
+
+	if (Proto_IsAccountEnabled(pa))
+		pa->ppro->OnEvent(EV_PROTO_DBSETTINGSCHANGED, wParam, lParam);
+
+	return 0;
+}
 
 static int InitializeStaticAccounts( WPARAM, LPARAM )
 {
@@ -258,6 +279,8 @@ int LoadAccountsModule( void )
 
 	HookEvent( ME_SYSTEM_MODULESLOADED, InitializeStaticAccounts );
 	HookEvent( ME_SYSTEM_PRESHUTDOWN, UninitializeStaticAccounts );
+	HookEvent( ME_DB_CONTACT_DELETED, OnContactDeleted );
+	HookEvent( ME_DB_CONTACT_SETTINGCHANGED, OnDbSettingsChanged );
 	return 0;
 }
 
