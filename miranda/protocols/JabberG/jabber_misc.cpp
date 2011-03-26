@@ -618,7 +618,6 @@ void CJabberProto::InitPopups(void)
 
 	ppc.ptszDescription = desc;
 	ppc.pszName = name;
-	ppc.hIcon = (HICON)LoadImage(NULL, IDI_ERROR, IMAGE_ICON, 0, 0, LR_SHARED);
 	ppc.colorBack = RGB(191, 0, 0); //Red
 	ppc.colorText = RGB(255, 245, 225); //Yellow
 	ppc.iSeconds = 60;
