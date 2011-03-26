@@ -724,7 +724,7 @@ struct CJabberProto : public PROTO_INTERFACE
 	void   SetContactOfflineStatus( HANDLE hContact );
 	void   InitCustomFolders( void );
 	void   InitPopups( void );
-	void   MsgPopup( const TCHAR *szMsg, const TCHAR *szTitle );
+	void   MsgPopup( HANDLE hContact, const TCHAR *szMsg, const TCHAR *szTitle );
 
 	//---- jabber_opt.cpp ----------------------------------------------------------------
 

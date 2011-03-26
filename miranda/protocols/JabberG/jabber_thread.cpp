@@ -739,7 +739,7 @@ void CJabberProto::PerformAuthentication( ThreadData* info )
 
 		TCHAR text[1024];
 		mir_sntprintf( text, SIZEOF( text ), _T("%s %s@")_T(TCHAR_STR_PARAM)_T("."), TranslateT( "Authentication failed for" ), info->username, info->server );
-		MsgPopup( text, TranslateT( "Jabber Authentication" ));
+		MsgPopup( NULL, text, TranslateT( "Jabber Authentication" ));
 		JSendBroadcast( NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_WRONGPASSWORD );
 		info->send( "</stream:stream>" );
 		m_ThreadInfo = NULL;
@@ -892,7 +892,7 @@ void CJabberProto::OnProcessError( HXML node, ThreadData* info )
 			skipMsg = true;
 		}
 	}
-	if (!skipMsg) MsgPopup( buff, TranslateT( "Jabber Error" ));
+	if (!skipMsg) MsgPopup( NULL, buff, TranslateT( "Jabber Error" ));
 	mir_free(buff);
 	info->send( "</stream:stream>" );
 }
@@ -1324,7 +1324,7 @@ void CJabberProto::OnProcessMessage( HXML node, ThreadData* info )
 			_tcsncpy( tempstring + _tcslen( prolog ) + _tcslen(xmlGetText( xNode ) ), epilog, _tcslen( epilog ) + 1);
 			szMessage = tempstring;
       }
-		else if ( !_tcscmp( ptszXmlns, _T("jabber:x:delay")) && msgTime == 0 ) {
+		else if ( !_tcscmp( ptszXmlns, _T(JABBER_FEAT_DELAY)) && msgTime == 0 ) {
 			const TCHAR* ptszTimeStamp = xmlGetAttrValue( xNode, _T("stamp"));
 			if ( ptszTimeStamp != NULL )
 				msgTime = JabberIsoToUnixTime( ptszTimeStamp );
@@ -1376,7 +1376,7 @@ void CJabberProto::OnProcessMessage( HXML node, ThreadData* info )
 					item->messageEventIdStr = ( idStr==NULL )?NULL:mir_tstrdup( idStr );
 			}	}
 		}
-		else if ( !_tcscmp( ptszXmlns, _T("jabber:x:oob"))) {
+		else if ( !_tcscmp( ptszXmlns, _T(JABBER_FEAT_OOB2))) {
 			HXML urlNode;
 			if ( ((urlNode = xmlGetChild( xNode , "url" )) != NULL) && xmlGetText( urlNode ) && xmlGetText( urlNode )[0] != _T('\0')) {
 				size_t cbLen = (szMessage ? _tcslen( szMessage ) : 0) + _tcslen( xmlGetText( urlNode ) ) + 32;
@@ -1409,6 +1409,31 @@ void CJabberProto::OnProcessMessage( HXML node, ThreadData* info )
 			if (( n = xmlGetChild( xNode , "password" )) != NULL )
 				invitePassword = xmlGetText( n );
 		}
+		else if ( !_tcscmp( ptszXmlns, _T(JABBER_FEAT_ROSTER_EXCHANGE)) && 
+			item != NULL && (item->subscription == SUB_BOTH || item->subscription == SUB_TO)) {
+			for ( int i = 0; ; ++i ) { 
+				HXML iNode = xmlGetNthChild( xNode , _T("item"), i );
+				const TCHAR *action = xmlGetAttrValue( iNode, _T("action"));
+				const TCHAR *jid = xmlGetAttrValue( iNode, _T("jid"));
+				const TCHAR *nick = xmlGetAttrValue( iNode, _T("name"));
+				const TCHAR *group =  xmlGetText( xmlGetChild( iNode, _T("group")));
+				if ( action && jid ) {
+					if ( _tcscmp( action, _T("add"))) {
+						HANDLE hContact = DBCreateContact( jid, nick, TRUE, FALSE );
+						if ( group )
+							DBWriteContactSettingTString( hContact, "CList", "Group", group );
+					}
+					else if ( _tcscmp( action, _T("modify"))) {
+//						HANDLE hContact = HContactFromJID( jid );
+					}
+					else if ( _tcscmp( action, _T("delete"))) {
+						HANDLE hContact = HContactFromJID( jid );
+						if ( hContact )
+							JCallService( MS_DB_CONTACT_DELETE, ( WPARAM ) hContact, 0 );
+					}
+				}
+			}
+		}
 		else if ( !isChatRoomInvitation && !_tcscmp( ptszXmlns, _T("jabber:x:conference"))) {
 			inviteRoomJid = xmlGetAttrValue( xNode, _T("jid"));
 			inviteFromJid = from;
@@ -1417,7 +1442,8 @@ void CJabberProto::OnProcessMessage( HXML node, ThreadData* info )
 			if ( !inviteReason )
 				inviteReason = szMessage;
 			isChatRoomInvitation = TRUE;
-	}	}
+		}	
+	}
 
 	if ( isChatRoomInvitation ) {
 		if ( inviteRoomJid != NULL ) {
@@ -1514,7 +1540,8 @@ void CJabberProto::OnProcessPresenceCapabilites( HXML node )
 
 	// check XEP-0115 support, and old style:
 	if (( n = xmlGetChildByTag( node, "c", "xmlns", _T(JABBER_FEAT_ENTITY_CAPS))) != NULL ||
-		( n = xmlGetChildByTag( node, "caps:c", "xmlns:caps", _T(JABBER_FEAT_ENTITY_CAPS))) != NULL ) {
+		( n = xmlGetChildByTag( node, "caps:c", "xmlns:caps", _T(JABBER_FEAT_ENTITY_CAPS))) != NULL ||
+		( n = xmlGetChild( node, "c" )) != NULL ) {
 		const TCHAR *szNode = xmlGetAttrValue( n, _T("node"));
 		const TCHAR *szVer = xmlGetAttrValue( n, _T("ver"));
 		const TCHAR *szExt = xmlGetAttrValue( n, _T("ext"));

@@ -1054,6 +1054,10 @@ HANDLE __cdecl CJabberProto::SendFile( HANDLE hContact, const TCHAR* szDescripti
 	}
 
 	JabberCapsBits jcb = GetResourceCapabilites( item->jid, TRUE );
+	if ( jcb == JABBER_RESOURCE_CAPS_IN_PROGRESS ) {
+		Sleep(400);
+		jcb = GetResourceCapabilites( item->jid, TRUE );
+	}
 
 	// fix for very smart clients, like gajim
 	if ( !m_options.BsDirect && !m_options.BsProxyManual ) {
@@ -1074,6 +1078,7 @@ HANDLE __cdecl CJabberProto::SendFile( HANDLE hContact, const TCHAR* szDescripti
 		|| !(jcb & ( JABBER_CAPS_SI_FT | JABBER_CAPS_OOB ) )
 		) {
 		JFreeVariant( &dbv );
+		MsgPopup( hContact, TranslateT("No compatible file transfer machanism exist"), item->jid );
 		return 0;
 	}
 

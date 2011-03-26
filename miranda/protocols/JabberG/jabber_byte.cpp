@@ -75,6 +75,8 @@ void CJabberProto::IqResultProxyDiscovery( HXML iqNode, CJabberIqInfo* pInfo )
 						jbt->szProxyPort = mir_tstrdup( streamPort );
 						jbt->bProxyDiscovered = TRUE;
 	}	}	}	}	}
+	else if ( pInfo->GetIqType() == JABBER_IQ_TYPE_ERROR )
+		jbt->state = JBT_ERROR;
 
 	if ( jbt->hProxyEvent )
 		SetEvent( jbt->hProxyEvent );
@@ -190,11 +192,21 @@ void CJabberProto::ByteSendThread( JABBER_BYTE_TRANSFER *jbt )
 			m_ThreadInfo->send( iq );
 
 			WaitForSingleObject( jbt->hProxyEvent, INFINITE );
-			m_iqManager.ExpireIq( nIqId );
+			m_iqManager.ExpireIq ( nIqId );
 			CloseHandle( jbt->hProxyEvent );
 			jbt->hProxyEvent = NULL;
 
 			mir_free( proxyJid );
+
+			if ( jbt->state == JBT_ERROR && !bDirect ) {
+				Log( "Bytestream proxy failure" );
+				MsgPopup(  pInfo->GetHContact(), TranslateT("Bytestream Proxy not available"), pInfo->GetReceiver());
+				jbt->ft->state = FT_DENIED;
+				(this->*jbt->pfnFinal)( FALSE, jbt->ft );
+				jbt->ft = NULL;
+				delete jbt;
+				return;
+			}	
 	}	}
 
 	pInfo = m_iqManager.AddHandler( &CJabberProto::ByteInitiateResult, JABBER_IQ_TYPE_SET, jbt->dstJID, 0, -1, jbt );
