@@ -381,27 +381,21 @@ TCHAR* LangPackPcharToTchar( const char* pszStr )
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-INT_PTR UuidTranslateString( WPARAM wParam, LPARAM lParam, LPARAM pVoid );
-INT_PTR UuidTranslateDialog( WPARAM wParam, LPARAM lParam, LPARAM pVoid );
-INT_PTR UuidTranslateMenu( WPARAM wParam, LPARAM lParam, LPARAM pVoid );
+LangPackMuuid* __fastcall LangPackLookupUuid( WPARAM wParam )
+{
+	int idx = (wParam >> 16) & 0xFFFF;
+	return ( idx <= lMuuids.getCount()) ? lMuuids[ idx-1 ] : NULL;
+}
 
-void LangPackMarkPluginLoaded( PLUGININFOEX* pInfo )
+int LangPackMarkPluginLoaded( PLUGININFOEX* pInfo )
 {
 	LangPackMuuid tmp; tmp.muuid = pInfo->uuid;
 	int idx = lMuuids.getIndex( &tmp );
 	if ( idx == -1 )
-		return;
+		return 0;
 
-	LangPackMuuid* p = lMuuids[ idx ];
-	p->pInfo = pInfo;
-
-	char serviceName[100];
-	mir_snprintf( serviceName, SIZEOF(serviceName), "%s/TranslateString", pInfo->shortName );
-	CreateServiceFunctionParam( serviceName, UuidTranslateString, (LPARAM)p );
-	mir_snprintf( serviceName, SIZEOF(serviceName), "%s/TranslateDialog", pInfo->shortName );
-	CreateServiceFunctionParam( serviceName, UuidTranslateDialog, (LPARAM)p );
-	mir_snprintf( serviceName, SIZEOF(serviceName), "%s/TranslateMenu", pInfo->shortName );
-	CreateServiceFunctionParam( serviceName, UuidTranslateMenu, (LPARAM)p );
+	lMuuids[ idx ]->pInfo = pInfo;
+	return (idx+1) << 16;
 }
 
 void LangPackDropUnusedItems( void )

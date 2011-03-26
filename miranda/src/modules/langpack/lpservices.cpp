@@ -28,26 +28,25 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 	#define FLAGS 0
 #endif
 
-/////////////////////////////////////////////////////////////////////////////////////////
+LangPackMuuid* __fastcall LangPackLookupUuid( WPARAM );
+int LangPackMarkPluginLoaded( PLUGININFOEX* pInfo );
 
-INT_PTR UuidTranslateString( WPARAM wParam, LPARAM lParam, LPARAM pVoid )
-{
-	return (INT_PTR)LangPackTranslateString(( LangPackMuuid* )pVoid, (const char *)lParam, (wParam & LANG_UNICODE) ? 1 : 0);
-}
+/////////////////////////////////////////////////////////////////////////////////////////
 
 static INT_PTR TranslateString(WPARAM wParam,LPARAM lParam)
 {
-	return (INT_PTR)LangPackTranslateString( NULL, (const char *)lParam, (wParam & LANG_UNICODE) ? 1 : 0);
+	return (INT_PTR)LangPackTranslateString( LangPackLookupUuid(wParam), (const char *)lParam, (wParam & LANG_UNICODE) ? 1 : 0);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-INT_PTR UuidTranslateMenu( WPARAM wParam, LPARAM lParam, LPARAM pVoid )
+static INT_PTR TranslateMenu(WPARAM wParam, LPARAM lParam)
 {
 	HMENU        hMenu = ( HMENU )wParam;
 	int          i;
 	MENUITEMINFO mii;
 	TCHAR        str[256];
+	LangPackMuuid* uuid = LangPackLookupUuid( lParam );
 
 	mii.cbSize = MENUITEMINFO_V4_SIZE;
 	for ( i = GetMenuItemCount( hMenu )-1; i >= 0; i--) {
@@ -57,21 +56,16 @@ INT_PTR UuidTranslateMenu( WPARAM wParam, LPARAM lParam, LPARAM pVoid )
 		GetMenuItemInfo(hMenu, i, TRUE, &mii);
 
 		if ( mii.cch && mii.dwTypeData ) {
-			TCHAR* result = ( TCHAR* )LangPackTranslateString(( LangPackMuuid* )pVoid, ( const char* )mii.dwTypeData, FLAGS );
+			TCHAR* result = ( TCHAR* )LangPackTranslateString( uuid, ( const char* )mii.dwTypeData, FLAGS );
 			if ( result != mii.dwTypeData ) {
 				mii.dwTypeData = result;
 				mii.fMask = MIIM_TYPE;
 				SetMenuItemInfo( hMenu, i, TRUE, &mii );
 		}	}
 
-		if ( mii.hSubMenu != NULL ) UuidTranslateMenu(( WPARAM )mii.hSubMenu, lParam, pVoid);
+		if ( mii.hSubMenu != NULL ) TranslateMenu(( WPARAM )mii.hSubMenu, lParam );
 	}
 	return 0;
-}
-
-static INT_PTR TranslateMenu(WPARAM wParam,LPARAM lParam)
-{
-	return UuidTranslateMenu( wParam, lParam, 0 );
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -86,17 +80,9 @@ static void TranslateWindow( LangPackMuuid* pUuid, HWND hwnd )
 			SetWindowText(hwnd, result );
 }	}
 
-struct LANGPACKTRANSLATEDIALOG2
-{
-	LANGPACKTRANSLATEDIALOG* lptd;
-	LangPackMuuid* pUuid;
-};
-
 static BOOL CALLBACK TranslateDialogEnumProc(HWND hwnd,LPARAM lParam)
 {
-	LANGPACKTRANSLATEDIALOG2 *pParam = (LANGPACKTRANSLATEDIALOG2*)lParam;
-
-	LANGPACKTRANSLATEDIALOG *lptd = pParam->lptd;
+	LANGPACKTRANSLATEDIALOG *lptd = (LANGPACKTRANSLATEDIALOG*)lParam;
 	TCHAR szClass[32];
 	int i,id = GetDlgCtrlID( hwnd );
 
@@ -105,36 +91,38 @@ static BOOL CALLBACK TranslateDialogEnumProc(HWND hwnd,LPARAM lParam)
 			if ( lptd->ignoreControls[i] == id )
 				return TRUE;
 
+	LangPackMuuid* uuid = LangPackLookupUuid( lptd->flags );
+
 	GetClassName( hwnd, szClass, SIZEOF(szClass));
 	if(!lstrcmpi(szClass,_T("static")) || !lstrcmpi(szClass,_T("hyperlink")) || !lstrcmpi(szClass,_T("button")) || !lstrcmpi(szClass,_T("MButtonClass")) || !lstrcmpi(szClass,_T("MHeaderbarCtrl")))
-		TranslateWindow( pParam->pUuid, hwnd );
+		TranslateWindow( uuid, hwnd );
 	else if ( !lstrcmpi( szClass,_T("edit"))) {
 		if( lptd->flags & LPTDF_NOIGNOREEDIT || GetWindowLongPtr(hwnd,GWL_STYLE) & ES_READONLY )
-			TranslateWindow( pParam->pUuid, hwnd );
+			TranslateWindow( uuid, hwnd );
 	}
 	return TRUE;
 }
 
-INT_PTR UuidTranslateDialog( WPARAM wParam, LPARAM lParam, LPARAM pVoid )
+static INT_PTR TranslateDialog(WPARAM wParam, LPARAM lParam)
 {
-	LANGPACKTRANSLATEDIALOG *lptd=(LANGPACKTRANSLATEDIALOG*)lParam;
+	LANGPACKTRANSLATEDIALOG *lptd = (LANGPACKTRANSLATEDIALOG*)lParam;
 	if ( lptd == NULL || lptd->cbSize != sizeof(LANGPACKTRANSLATEDIALOG))
 		return 1;
 
 	if ( !( lptd->flags & LPTDF_NOTITLE ))
-		TranslateWindow(( LangPackMuuid* )pVoid, lptd->hwndDlg );
+		TranslateWindow( LangPackLookupUuid( lptd->flags ), lptd->hwndDlg );
 
-	LANGPACKTRANSLATEDIALOG2 lptd2 = { lptd, ( LangPackMuuid* )pVoid };
-	EnumChildWindows( lptd->hwndDlg, TranslateDialogEnumProc, LPARAM( &lptd2 ));
+	EnumChildWindows( lptd->hwndDlg, TranslateDialogEnumProc, lParam );
 	return 0;
 }
 
-static INT_PTR TranslateDialog(WPARAM wParam, LPARAM lParam)
-{
-	return UuidTranslateDialog( wParam, lParam, 0 );
-}
-
 /////////////////////////////////////////////////////////////////////////////////////////
+
+static INT_PTR LPRegister(WPARAM wParam, LPARAM lParam)
+{
+	*( int* )wParam = LangPackMarkPluginLoaded(( PLUGININFOEX* )lParam );
+	return 0;
+}
 
 static INT_PTR GetDefaultCodePage(WPARAM,LPARAM)
 {
@@ -146,9 +134,24 @@ static INT_PTR GetDefaultLocale(WPARAM, LPARAM)
 	return LangPackGetDefaultLocale();
 }
 
-static INT_PTR PcharToTchar(WPARAM, LPARAM lParam)
+static INT_PTR PcharToTchar(WPARAM wParam, LPARAM lParam)
 {
-	return ( INT_PTR )LangPackPcharToTchar((char*)lParam );
+	char* pszStr = ( char* )lParam;
+	if ( pszStr == NULL )
+		return NULL;
+
+	LangPackMuuid* uuid = LangPackLookupUuid( wParam );
+
+	#if defined( _UNICODE )
+	{	int len = (int)strlen( pszStr );
+		TCHAR* result = ( TCHAR* )alloca(( len+1 )*sizeof( TCHAR ));
+		MultiByteToWideChar( LangPackGetDefaultCodePage(), 0, pszStr, -1, result, len );
+		result[len] = 0;
+		return ( INT_PTR )mir_wstrdup(( wchar_t* )LangPackTranslateString( uuid, ( char* )result, 1 ));
+	}
+	#else
+		return ( INT_PTR )mir_strdup( LangPackTranslateString( uuid, pszStr, 0 ));
+	#endif
 }
 
 int LoadLangPackServices(void)
@@ -159,6 +162,7 @@ int LoadLangPackServices(void)
 	CreateServiceFunction(MS_LANGPACK_GETCODEPAGE,GetDefaultCodePage);
 	CreateServiceFunction(MS_LANGPACK_GETLOCALE,GetDefaultLocale);
 	CreateServiceFunction(MS_LANGPACK_PCHARTOTCHAR,PcharToTchar);
+	CreateServiceFunction(MS_LANGPACK_REGISTER,LPRegister);
 	return 0;
 }
 
