@@ -215,7 +215,7 @@ static int OnDbSettingsChanged(WPARAM wParam, LPARAM lParam)
 	if (hContact)
 	{
 		PROTOACCOUNT* pa = Proto_GetAccount(hContact);
-		if (Proto_IsAccountEnabled(pa))
+		if (pa->ppro && Proto_IsAccountEnabled(pa))
 			pa->ppro->OnEvent(EV_PROTO_DBSETTINGSCHANGED, wParam, lParam);
 	}
 	return 0;
