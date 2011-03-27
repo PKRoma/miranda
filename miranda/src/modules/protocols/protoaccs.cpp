@@ -203,7 +203,7 @@ static int OnContactDeleted(WPARAM wParam, LPARAM lParam)
 	{
 		PROTOACCOUNT* pa = Proto_GetAccount(hContact);
 
-		if (Proto_IsAccountEnabled(pa))
+		if (pa->ppro && Proto_IsAccountEnabled(pa))
 			pa->ppro->OnEvent(EV_PROTO_ONCONTACTDELETED, wParam, lParam);
 	}
 	return 0;
