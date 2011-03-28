@@ -203,7 +203,7 @@ static int OnContactDeleted(WPARAM wParam, LPARAM lParam)
 	{
 		PROTOACCOUNT* pa = Proto_GetAccount(hContact);
 
-		if (pa && pa->ppro && Proto_IsAccountEnabled(pa))
+		if (Proto_IsAccountEnabled(pa) && pa->ppro)
 			pa->ppro->OnEvent(EV_PROTO_ONCONTACTDELETED, wParam, lParam);
 	}
 	return 0;
@@ -215,7 +215,7 @@ static int OnDbSettingsChanged(WPARAM wParam, LPARAM lParam)
 	if (hContact)
 	{
 		PROTOACCOUNT* pa = Proto_GetAccount(hContact);
-		if (pa && pa->ppro && Proto_IsAccountEnabled(pa))
+		if (Proto_IsAccountEnabled(pa) && pa->ppro)
 			pa->ppro->OnEvent(EV_PROTO_DBSETTINGSCHANGED, wParam, lParam);
 	}
 	return 0;
