@@ -691,6 +691,9 @@ void CIcqProto::setUserInfo()
 	wAdditionalData += 16;
 #endif
 
+	//MIM/PackName
+	wAdditionalData += 16;
+
 	serverPacketInit(&packet, (WORD)(62 + wAdditionalData));
 	packFNACHeader(&packet, ICQ_LOCATION_FAMILY, ICQ_LOCATION_SET_USER_INFO);
 
@@ -759,6 +762,15 @@ void CIcqProto::setUserInfo()
 	packDWord(&packet, 0x6E64614D);
 	packDWord(&packet, MIRANDA_VERSION);
 	packDWord(&packet, ICQ_PLUG_VERSION);
+
+	//MIM/PackName
+	DBVARIANT dbv;
+	if ( !DBGetContactSettingString(NULL, "ICQCaps", "PackName", &dbv ))
+	{
+		packBuffer(&packet, (BYTE*)dbv.pszVal, 0x10);
+		DBFreeVariant(&dbv);
+	}
+	else packBuffer(&packet, (BYTE*)"", 0x10);
 
 	sendServPacket(&packet);
 }
