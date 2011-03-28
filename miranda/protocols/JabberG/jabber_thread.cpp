@@ -1295,9 +1295,10 @@ void CJabberProto::OnProcessMessage( HXML node, ThreadData* info )
 	}
 
 	for ( int i = 0; ( xNode = xmlGetChild( node, i )) != NULL; i++ ) {
-		xNode = xmlGetNthChild( node, _T("x"), i );
+		// xmlGetNthChild() nth parameter starts from 1, not from 0
+		xNode = xmlGetNthChild( node, _T("x"), i + 1 );
 		if ( xNode == NULL ) {
-			xNode = xmlGetNthChild( node, _T("user:x"), i );
+			xNode = xmlGetNthChild( node, _T("user:x"), i + 1 );
 			if ( xNode == NULL )
 				continue;
 		}
