@@ -271,7 +271,7 @@ static INT_PTR CALLBACK PhotoDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 			dat->ppro->m_szPhotoFileName[0] = '\0';
 		}
 		EnableWindow( GetDlgItem( hwndDlg, IDC_DELETE ), FALSE );
-		dat->ppro->GetAvatarFileName( NULL, szAvatarFileName, sizeof( szAvatarFileName ));
+		dat->ppro->GetAvatarFileName( NULL, szAvatarFileName, SIZEOF( szAvatarFileName ));
 		if ( _taccess( szAvatarFileName, 0 ) == 0 ) {
 			if ( GetTempPath( SIZEOF( szTempPath ), szTempPath ) <= 0 )
 				_tcscpy( szTempPath, _T(".\\"));
@@ -1108,7 +1108,7 @@ void CJabberProto::SetServerVcard( BOOL bPhotoChanged, TCHAR* szPhotoFileName )
 	}
 
 	TCHAR szAvatarName[ MAX_PATH ];
-	GetAvatarFileName( NULL, szAvatarName, sizeof( szAvatarName ));
+	GetAvatarFileName( NULL, szAvatarName, SIZEOF( szAvatarName ));
 	if ( bPhotoChanged )
 		szFileName = szPhotoFileName;
 	else
@@ -1165,7 +1165,7 @@ void CJabberProto::SetServerVcard( BOOL bPhotoChanged, TCHAR* szPhotoFileName )
 							if ( bPhotoChanged ) {
 								DeleteFile( szAvatarName );
 
-								GetAvatarFileName( NULL, szAvatarName, sizeof( szAvatarName ));
+								GetAvatarFileName( NULL, szAvatarName, SIZEOF( szAvatarName ));
 
 								CopyFile( szFileName, szAvatarName, FALSE );
 							}

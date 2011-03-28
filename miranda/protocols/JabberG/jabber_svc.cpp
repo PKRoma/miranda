@@ -403,7 +403,7 @@ INT_PTR __cdecl CJabberProto::JabberGCGetToolTipText( WPARAM wParam, LPARAM lPar
 	// JID:			real@jid/resource or
 	// Nick:		Nickname
 	// Status:		StatusText
-	// Role:		Moderaror
+	// Role:		Moderator
 	// Affiliation:  Affiliation
 
 	TCHAR outBuf[2048];
@@ -423,7 +423,7 @@ INT_PTR __cdecl CJabberProto::JabberGCGetToolTipText( WPARAM wParam, LPARAM lPar
 
 
 	//JID:
-	if ( _tcschr(info->resourceName,_T('@') != NULL ) ) {
+	if ( _tcschr(info->resourceName, _T('@') ) != NULL ) {
 		_tcsncat( outBuf, TranslateT("JID:\t\t"), SIZEOF(outBuf) );
 		_tcsncat( outBuf, info->resourceName, SIZEOF(outBuf) );
 	} else if (lParam) { //or simple nick

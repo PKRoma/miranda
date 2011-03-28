@@ -377,7 +377,7 @@ BOOL CJabberProto::OnIqRequestTime( HXML, CJabberIqInfo *pInfo )
 	ltime = abs(nGmtOffset);
 
 	gmt = gmtime( &ltime );
-	wsprintf(szTZ, _T("%s%.2i:%.2i"), nGmtOffset > 0 ? "+" : "-", gmt->tm_hour, gmt->tm_min );
+	wsprintf(szTZ, _T("%s%.2i:%.2i"), nGmtOffset > 0 ? _T("+") : _T("-"), gmt->tm_hour, gmt->tm_min );
 
 	XmlNodeIq iq( _T("result"), pInfo );
 	HXML timeNode = iq << XCHILDNS( _T("time"), _T(JABBER_FEAT_ENTITY_TIME));

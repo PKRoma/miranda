@@ -672,7 +672,7 @@ LBL_Ret:
 		if ( p != NULL )
 			lstrcpy( p+1, szPicType + 6 );
 	}
-	else GetAvatarFileName( NULL, szAvatarFileName, sizeof( szAvatarFileName ));
+	else GetAvatarFileName( NULL, szAvatarFileName, SIZEOF( szAvatarFileName ));
 
 	Log( "Picture file name set to " TCHAR_STR_PARAM, szAvatarFileName );
 	HANDLE hFile = CreateFile( szAvatarFileName, GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL );
