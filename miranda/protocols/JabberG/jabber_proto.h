@@ -876,7 +876,6 @@ struct CJabberProto : public PROTO_INTERFACE
 	void   OnProcessPresence( HXML node, ThreadData *info );
 	void   OnProcessPresenceCapabilites( HXML node );
 	void   OnProcessPubsubEvent( HXML node );
-	void   OnProcessCaptcha( HXML node, ThreadData *info );
 
 	void   OnProcessStreamOpening( HXML node, ThreadData *info );
 	void   OnProcessProtocol( HXML node, ThreadData *info );
@@ -896,6 +895,8 @@ struct CJabberProto : public PROTO_INTERFACE
 	void   OnProcessIq( HXML node );
 	void   OnProcessRegIq( HXML node, ThreadData* info );
 	void   OnPingReply( HXML node, CJabberIqInfo* pInfo );
+
+	bool   ProcessCaptcha( HXML node, HXML parentNode, ThreadData *info );
 
 	//---- jabber_util.c -----------------------------------------------------------------
 

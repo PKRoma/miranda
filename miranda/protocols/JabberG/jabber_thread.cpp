@@ -959,8 +959,6 @@ void CJabberProto::OnProcessProtocol( HXML node, ThreadData* info )
 		OnProcessError( node, info );
 	else if ( !lstrcmp( xmlGetName( node ), _T("challenge")))
 		OnProcessChallenge( node, info );
-	else if ( xmlGetChild( node , _T("captcha")))
-		OnProcessCaptcha( node, info );
 	else if ( info->type == JABBER_SESSION_NORMAL ) {
 		if ( !lstrcmp( xmlGetName( node ), _T("message")))
 			OnProcessMessage( node, info );
@@ -1152,6 +1150,12 @@ void CJabberProto::OnProcessMessage( HXML node, ThreadData* info )
 
 	hContact = HContactFromJID( from );
 	JABBER_LIST_ITEM *chatItem = ListGetItemPtr( LIST_CHATROOM, from );
+	if ( chatItem ) {
+		HXML xCaptcha = xmlGetChild( node, "captcha" );
+		if ( xCaptcha )
+			if ( ProcessCaptcha( xCaptcha, node, info ))
+				return;
+	}
 
 	const TCHAR* szMessage = NULL;
 	HXML bodyNode = xmlGetChildByTag( node , "body", "xml:lang", m_tszSelectedLang );
