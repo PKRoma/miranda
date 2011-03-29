@@ -1415,31 +1415,34 @@ void CJabberProto::OnProcessMessage( HXML node, ThreadData* info )
 				invitePassword = xmlGetText( n );
 		}
 		// temporary disabled due to security holes (roster modification), infinite loops and invalid _tcscmp() usage
-// 		else if ( !_tcscmp( ptszXmlns, _T(JABBER_FEAT_ROSTER_EXCHANGE)) && 
-// 			item != NULL && (item->subscription == SUB_BOTH || item->subscription == SUB_TO)) {
-// 			for ( int i = 0; ; ++i ) { 
-// 				HXML iNode = xmlGetNthChild( xNode , _T("item"), i );
-// 				const TCHAR *action = xmlGetAttrValue( iNode, _T("action"));
-// 				const TCHAR *jid = xmlGetAttrValue( iNode, _T("jid"));
-// 				const TCHAR *nick = xmlGetAttrValue( iNode, _T("name"));
-// 				const TCHAR *group =  xmlGetText( xmlGetChild( iNode, _T("group")));
-// 				if ( action && jid ) {
-// 					if ( _tcscmp( action, _T("add"))) {
-// 						HANDLE hContact = DBCreateContact( jid, nick, TRUE, FALSE );
-// 						if ( group )
-// 							DBWriteContactSettingTString( hContact, "CList", "Group", group );
-// 					}
-// 					else if ( _tcscmp( action, _T("modify"))) {
-// //						HANDLE hContact = HContactFromJID( jid );
-// 					}
-// 					else if ( _tcscmp( action, _T("delete"))) {
-// 						HANDLE hContact = HContactFromJID( jid );
-// 						if ( hContact )
-// 							JCallService( MS_DB_CONTACT_DELETE, ( WPARAM ) hContact, 0 );
-// 					}
-// 				}
-// 			}
-// 		}
+ 		else if ( !_tcscmp( ptszXmlns, _T(JABBER_FEAT_ROSTER_EXCHANGE)) && 
+ 			item != NULL && (item->subscription == SUB_BOTH || item->subscription == SUB_TO)) {
+			TCHAR chkJID[512]
+			mir_sntprntf( chkJID, SIZEOF( chkJID ), _T("@%s"), from );
+ 			for ( int i = 1; ; ++i ) { 
+ 				HXML iNode = xmlGetNthChild( xNode , _T("item"), i );
+				if ( iNode == NULL ) break;
+ 				const TCHAR *action = xmlGetAttrValue( iNode, _T("action"));
+ 				const TCHAR *jid = xmlGetAttrValue( iNode, _T("jid"));
+ 				const TCHAR *nick = xmlGetAttrValue( iNode, _T("name"));
+ 				const TCHAR *group =  xmlGetText( xmlGetChild( iNode, _T("group")));
+ 				if ( action && jid && _tcsstr( jid, chkJID )) {
+ 					if ( !_tcscmp( action, _T("add"))) {
+ 						HANDLE hContact = DBCreateContact( jid, nick, TRUE, FALSE );
+ 						if ( group )
+							DBWriteContactSettingTString( hContact, "CList", "Group", group );
+ 					}
+ 					else if ( !_tcscmp( action, _T("modify"))) {
+//						HANDLE hContact = HContactFromJID( jid );
+ 					}
+ 					else if ( !_tcscmp( action, _T("delete"))) {
+ 						HANDLE hContact = HContactFromJID( jid );
+ 						if ( hContact )
+ 							JCallService( MS_DB_CONTACT_DELETE, ( WPARAM ) hContact, 0 );
+ 					}
+ 				}
+ 			}
+ 		}
 		else if ( !isChatRoomInvitation && !_tcscmp( ptszXmlns, _T("jabber:x:conference"))) {
 			inviteRoomJid = xmlGetAttrValue( xNode, _T("jid"));
 			inviteFromJid = from;
