@@ -1428,7 +1428,7 @@ void CJabberProto::OnProcessMessage( HXML node, ThreadData* info )
  				const TCHAR *group =  xmlGetText( xmlGetChild( iNode, _T("group")));
  				if ( action && jid && _tcsstr( jid, chkJID )) {
  					if ( !_tcscmp( action, _T("add"))) {
- 						HANDLE hContact = DBCreateContact( jid, nick, TRUE, FALSE );
+ 						HANDLE hContact = DBCreateContact( jid, nick, FALSE, FALSE );
  						if ( group )
 							DBWriteContactSettingTString( hContact, "CList", "Group", group );
  					}
