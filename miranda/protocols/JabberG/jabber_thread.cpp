@@ -1417,8 +1417,8 @@ void CJabberProto::OnProcessMessage( HXML node, ThreadData* info )
 		// temporary disabled due to security holes (roster modification), infinite loops and invalid _tcscmp() usage
  		else if ( !_tcscmp( ptszXmlns, _T(JABBER_FEAT_ROSTER_EXCHANGE)) && 
  			item != NULL && (item->subscription == SUB_BOTH || item->subscription == SUB_TO)) {
-			TCHAR chkJID[512]
-			mir_sntprntf( chkJID, SIZEOF( chkJID ), _T("@%s"), from );
+			TCHAR chkJID[512];
+			mir_sntprintf( chkJID, SIZEOF( chkJID ), _T("@%s"), from );
  			for ( int i = 1; ; ++i ) { 
  				HXML iNode = xmlGetNthChild( xNode , _T("item"), i );
 				if ( iNode == NULL ) break;
