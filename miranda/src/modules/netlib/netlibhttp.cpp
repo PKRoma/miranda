@@ -1322,7 +1322,9 @@ next:
 		}
 	}
 
-	if (close && (nlc->proxyType != PROXYTYPE_HTTP || nlc->nloc.flags & NLOCF_SSL))
+	if (close && 
+		(nlc->proxyType != PROXYTYPE_HTTP || nlc->nloc.flags & NLOCF_SSL) && 
+		(!isConnect || nlhrReply->resultCode != 200))
 		NetlibDoClose(nlc);
 
 	return nlhrReply;
