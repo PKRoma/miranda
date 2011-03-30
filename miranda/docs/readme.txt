@@ -48,7 +48,7 @@ b) Update to the latest alpha version.
    section of our website.
 c) Check the list of known bugs.
    The official buglist is available at:
-   http://bugs.miranda-im.org/
+   http://code.google.com/p/miranda/issues/list
    Look here before you submit a new report, dont submit a new report if
    it has already been reported.
 d) Submit a bugreport.
@@ -98,7 +98,7 @@ Miranda IM is released under the terms of the GNU General Public License. See
 "License.txt" for more details.
 
 Miranda IM is copyright 2000-2009 by Richard Hughes, Roland Rabien,
-Tristan Van de Vreede, Martin Öberg, Robert Rainwater, Sam Kothari, and Lyon Lim.
+Tristan Van de Vreede, Martin Ã–berg, Robert Rainwater, Sam Kothari, and Lyon Lim.
 
 The plugins included with this release is copyrighted by their authors. See the
 documentation for each plugin for more information.
