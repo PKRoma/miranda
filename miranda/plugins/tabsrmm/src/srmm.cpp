@@ -137,6 +137,7 @@ extern "C" int __declspec(dllexport) Unload(void)
 		Skin->setupTabCloseBitmap(true);
 		Skin->UnloadAeroTabs();
 		delete Skin;
+		DestroyServiceFunction(hTypingNotify);
 		delete sendLater;
 		delete sendQueue;
 		delete M;

@@ -1,5 +1,6 @@
 #include "commonheaders.h"
 #pragma hdrstop
+HANDLE hTypingNotify;
 
 static INT_PTR EnableDisableMenuCommand(WPARAM wParam,LPARAM lParam)
 {
@@ -543,7 +544,7 @@ int TN_ModuleInit()
 
 	if (PopupService && ShowMenu) {
 		CLISTMENUITEM mi = { 0 };
-		CreateServiceFunction("TypingNotify/EnableDisableMenuCommand",EnableDisableMenuCommand);
+		hTypingNotify = CreateServiceFunction("TypingNotify/EnableDisableMenuCommand", EnableDisableMenuCommand);
 
 		mi.cbSize = sizeof(mi);
 		mi.flags = 0;
