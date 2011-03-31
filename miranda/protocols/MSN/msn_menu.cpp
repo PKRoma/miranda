@@ -28,6 +28,7 @@ static HGENMENU
 	hNetmeetingMenuItem, 
 	hChatInviteMenuItem, 
 	hOpenInboxMenuItem;
+HANDLE hNetMeeting, hBlockCom, hSendHotMail, hInviteChat, hViewProfile;
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // Block command callback function
@@ -245,7 +246,7 @@ INT_PTR CMsnProto::MsnSendNetMeeting(WPARAM wParam, LPARAM)
 	ThreadData* thread = MSN_GetThreadByContact(hContact);
 
 	if (thread == NULL) {
-		MessageBox(NULL, TranslateT("You must be talking to start Netmeeting"), _T("MSN Protocol"), MB_OK | MB_ICONERROR);
+		MessageBox(NULL, TranslateT("You must be talking to start Netmeeting"), TranslateT("MSN Protocol"), MB_OK | MB_ICONERROR);
 		return 0;
 	}
 
@@ -509,21 +510,21 @@ void MSN_InitContactMenu(void)
 	mi.pszService = servicefunction;
 
 	strcpy(tDest, MSN_BLOCK);
-	CreateServiceFunction(servicefunction, MsnMenuBlockCommand);
+	hBlockCom = CreateServiceFunction(servicefunction, MsnMenuBlockCommand);
 	mi.position = -500050000;
 	mi.icolibItem = GetIconHandle(IDI_MSNBLOCK);
 	mi.pszName = LPGEN("&Block");
 	hBlockMenuItem = (HGENMENU)MSN_CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM)&mi);
 
 	strcpy(tDest, MSN_VIEW_PROFILE);
-	CreateServiceFunction(servicefunction, MsnMenuViewProfile);
+	hViewProfile = CreateServiceFunction(servicefunction, MsnMenuViewProfile);
 	mi.position = -500050003;
 	mi.icolibItem = GetIconHandle(IDI_PROFILE);
 	mi.pszName = LPGEN("View Live &Space");
 	hLiveSpaceMenuItem = (HGENMENU)MSN_CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM)&mi);
 
 	strcpy(tDest, MSN_NETMEETING);
-	CreateServiceFunction(servicefunction, MsnMenuSendNetMeeting);
+	hNetMeeting = CreateServiceFunction(servicefunction, MsnMenuSendNetMeeting);
 	mi.flags = CMIF_ICONFROMICOLIB | CMIF_NOTOFFLINE;
 	mi.position = -500050002;
 	mi.icolibItem = GetIconHandle(IDI_NETMEETING);
@@ -531,14 +532,14 @@ void MSN_InitContactMenu(void)
 	hNetmeetingMenuItem = (HGENMENU)MSN_CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM)&mi);
 
 	strcpy(tDest, MSN_INVITE);
-	CreateServiceFunction(servicefunction, MsnMenuInviteCommand);
+	hInviteChat = CreateServiceFunction(servicefunction, MsnMenuInviteCommand);
 	mi.position = -500050001;
 	mi.icolibItem = GetIconHandle(IDI_INVITE);
 	mi.pszName = LPGEN("&Invite to chat");
 	hChatInviteMenuItem = (HGENMENU)MSN_CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM)&mi);
 
 	strcpy(tDest, "/SendHotmail");
-	CreateServiceFunction(servicefunction, MsnMenuSendHotmail);
+	hSendHotMail = CreateServiceFunction(servicefunction, MsnMenuSendHotmail);
 	mi.position = -2000010005;
 	mi.flags = CMIF_ICONFROMICOLIB | CMIF_HIDDEN;
 	mi.icolibItem = LoadSkinnedIconHandle(SKINICON_OTHER_SENDEMAIL);
@@ -557,4 +558,10 @@ void MSN_RemoveContactMenus(void)
 	MSN_CallService(MS_CLIST_REMOVECONTACTMENUITEM, (WPARAM)hNetmeetingMenuItem, 0);
 	MSN_CallService(MS_CLIST_REMOVECONTACTMENUITEM, (WPARAM)hChatInviteMenuItem, 0);
 	MSN_CallService(MS_CLIST_REMOVECONTACTMENUITEM, (WPARAM)hOpenInboxMenuItem, 0);
+
+	DestroyServiceFunction(hNetMeeting);
+	DestroyServiceFunction(hBlockCom);
+	DestroyServiceFunction(hSendHotMail);
+	DestroyServiceFunction(hInviteChat);
+	DestroyServiceFunction(hViewProfile);
 }
