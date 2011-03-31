@@ -284,6 +284,7 @@ typedef std::basic_string<TCHAR> tstring;
 extern	HINSTANCE g_hInst;
 extern CSkinItem SkinItems[];
 extern TContainerData *pFirstContainer, *pLastActiveContainer;
+extern HANDLE hTypingNotify;
 
 #define IS_EXTKEY(a) (a & (1 << 24))
 

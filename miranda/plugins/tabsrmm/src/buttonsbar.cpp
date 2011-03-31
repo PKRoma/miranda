@@ -163,6 +163,9 @@ void CB_DeInitCustomButtons()
 	DestroyHookableEvent(hHookButtonPressedEvt);
 	DestroyServiceFunction(hButtonsBarAddButton);
 	DestroyServiceFunction(hButtonsBarRemoveButton);
+	DestroyServiceFunction(hButtonsBarModifyButton);
+	DestroyServiceFunction(hButtonsBarGetButtonState);
+	DestroyServiceFunction(hButtonsBarSetButtonState);
 }
 
 void CB_DestroyAllButtons(HWND hwndDlg, struct TWindowData *dat)
