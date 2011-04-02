@@ -95,6 +95,9 @@ void CJabberProto::OnIqResultCapsDiscoInfoSI( HXML, CJabberIqInfo* pInfo )
 	if ( !r )
 		return;
 
+	if ( r->szCapsNode == NULL )
+		OnIqResultCapsDiscoInfo( NULL, pInfo );
+
 	HXML query = pInfo->GetChildNode();
 	if ( pInfo->GetIqType() == JABBER_IQ_TYPE_RESULT && query ) {
 		// XEP-0232 support
@@ -165,7 +168,8 @@ void CJabberProto::OnIqResultCapsDiscoInfo( HXML, CJabberIqInfo* pInfo )
 			return;
 		}
 
-		m_clientCapsManager.SetClientCaps( pInfo->GetIqId(), jcbCaps );
+		if (!m_clientCapsManager.SetClientCaps( pInfo->GetIqId(), jcbCaps ))
+			r->jcbCachedCaps = jcbCaps;
 		JabberUserInfoUpdate( pInfo->GetHContact() );
 	}
 	else {
@@ -363,7 +367,7 @@ JabberCapsBits CJabberProto::GetResourceCapabilites( const TCHAR *jid, BOOL appe
 				m_clientCapsManager.SetClientCaps( r->software, r->version, jcbMainCaps );
 		}	}
 
-		if ( jcbMainCaps == JABBER_RESOURCE_CAPS_ERROR ) {
+		else if ( jcbMainCaps == JABBER_RESOURCE_CAPS_UNINIT ) {
 			// send disco#info query
 
 			CJabberIqInfo *pInfo = m_iqManager.AddHandler( &CJabberProto::OnIqResultCapsDiscoInfo, JABBER_IQ_TYPE_GET, fullJid, JABBER_IQ_PARSE_FROM | JABBER_IQ_PARSE_CHILD_TAG_NODE, -1, NULL, 0, JABBER_RESOURCE_CAPS_QUERY_TIMEOUT );
