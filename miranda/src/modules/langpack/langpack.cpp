@@ -95,7 +95,7 @@ void ConvertBackslashes(char *str)
 #pragma optimize( "gt", on )
 #endif
 
-// MurmurHash2 
+// MurmurHash2
 unsigned int __fastcall hash(const void * key, unsigned int len)
 {
 	// 'm' and 'r' are mixing constants generated offline.
@@ -113,17 +113,17 @@ unsigned int __fastcall hash(const void * key, unsigned int len)
 	{
 		unsigned int k = *(unsigned int *)data;
 
-		k *= m; 
-		k ^= k >> r; 
-		k *= m; 
-		
-		h *= m; 
+		k *= m;
+		k ^= k >> r;
+		k *= m;
+
+		h *= m;
 		h ^= k;
 
 		data += 4;
 		len -= 4;
 	}
-	
+
 	// Handle the last few bytes of the input array
 	switch(len)
 	{
@@ -229,7 +229,7 @@ static void LoadLangPackFile( FILE* fp, char* line )
 		LangPackEntry* E = &langPack.entry[ langPack.entryCount-1 ];
 		if ( E->local == NULL ) {
 			E->local = mir_strdup( line );
-				
+
 			int iNeeded = MultiByteToWideChar(langPack.defaultANSICp, 0, line, -1, 0, 0);
 			E->wlocal = (wchar_t *)mir_alloc((iNeeded+1) * sizeof(wchar_t));
 			MultiByteToWideChar( langPack.defaultANSICp, 0, line, -1, E->wlocal, iNeeded );
@@ -238,7 +238,7 @@ static void LoadLangPackFile( FILE* fp, char* line )
 			E->local = ( char* )mir_realloc( E->local, lstrlenA(E->local)+lstrlenA(line)+2 );
 			lstrcatA( E->local, "\n" );
 			lstrcatA( E->local, line );
-				
+
 			int iNeeded = MultiByteToWideChar( langPack.defaultANSICp, 0, line, -1, 0, 0 );
 			size_t iOldLen = wcslen( E->wlocal );
 			E->wlocal = ( wchar_t* )mir_realloc( E->wlocal, ( sizeof(wchar_t) * ( iOldLen + iNeeded + 2)));
@@ -281,7 +281,7 @@ static int LoadLangPack(const TCHAR *szLangPack)
 		if( IsEmpty( line ) || line[0]==';' || line[0]==0)
 			continue;
 
-		if ( line[0] == '[' )
+		if ( line[0] == '[' || line[0] == '#' )
 			break;
 
 		char* pszColon = strchr( line,':' );
@@ -432,10 +432,10 @@ int LoadLangPackModule(void)
 
 	ZeroMemory(&langPack,sizeof(langPack));
 	LoadLangPackServices();
-	pathToAbsoluteT(_T("langpack_*.txt"), szSearch, NULL); 
+	pathToAbsoluteT(_T("langpack_*.txt"), szSearch, NULL);
 	hFind = FindFirstFile( szSearch, &fd );
 	if( hFind != INVALID_HANDLE_VALUE ) {
-		pathToAbsoluteT(fd.cFileName, szSearch, NULL); 
+		pathToAbsoluteT(fd.cFileName, szSearch, NULL);
 		FindClose(hFind);
 		LoadLangPack(szSearch);
 	}
