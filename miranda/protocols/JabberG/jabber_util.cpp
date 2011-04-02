@@ -822,7 +822,7 @@ void CJabberProto::SendPresenceTo( int status, TCHAR* to, HXML extra, TCHAR *msg
 
 	TCHAR szExtCaps[ 512 ] = _T("");
 
-	_tcscat( szExtCaps, _T("pmuc-v1") );
+	_tcscat( szExtCaps, _T(JABBER_EXT_GTALK_PMUC) );
 
 	if ( bSecureIM ) {
 		if ( szExtCaps[0] )
