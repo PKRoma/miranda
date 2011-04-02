@@ -1087,7 +1087,7 @@ HANDLE __cdecl CJabberProto::SendFile( HANDLE hContact, const TCHAR* szDescripti
 
 	JabberCapsBits jcb = GetResourceCapabilites( item->jid, TRUE );
 	if ( jcb == JABBER_RESOURCE_CAPS_IN_PROGRESS ) {
-		Sleep(400);
+		Sleep(600);
 		jcb = GetResourceCapabilites( item->jid, TRUE );
 	}
 
