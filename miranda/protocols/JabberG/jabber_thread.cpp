@@ -1295,9 +1295,9 @@ void CJabberProto::OnProcessMessage( HXML node, ThreadData* info )
 	}
 
 	for ( int i = 0; ( xNode = xmlGetChild( node, i )) != NULL; i++ ) {
-		xNode = xmlGetNthChild( node, _T("x"), i );
+		xNode = xmlGetNthChild( node, _T("x"), i + 1 );
 		if ( xNode == NULL ) {
-			xNode = xmlGetNthChild( node, _T("user:x"), i );
+			xNode = xmlGetNthChild( node, _T("user:x"), i + 1 );
 			if ( xNode == NULL )
 				continue;
 		}
@@ -1324,7 +1324,7 @@ void CJabberProto::OnProcessMessage( HXML node, ThreadData* info )
 			_tcsncpy( tempstring + _tcslen( prolog ) + _tcslen(xmlGetText( xNode ) ), epilog, _tcslen( epilog ) + 1);
 			szMessage = tempstring;
       }
-		else if ( !_tcscmp( ptszXmlns, _T("jabber:x:delay")) && msgTime == 0 ) {
+		else if ( !_tcscmp( ptszXmlns, _T(JABBER_FEAT_DELAY)) && msgTime == 0 ) {
 			const TCHAR* ptszTimeStamp = xmlGetAttrValue( xNode, _T("stamp"));
 			if ( ptszTimeStamp != NULL )
 				msgTime = JabberIsoToUnixTime( ptszTimeStamp );
@@ -1376,7 +1376,7 @@ void CJabberProto::OnProcessMessage( HXML node, ThreadData* info )
 					item->messageEventIdStr = ( idStr==NULL )?NULL:mir_tstrdup( idStr );
 			}	}
 		}
-		else if ( !_tcscmp( ptszXmlns, _T("jabber:x:oob"))) {
+		else if ( !_tcscmp( ptszXmlns, _T(JABBER_FEAT_OOB2))) {
 			HXML urlNode;
 			if ( ((urlNode = xmlGetChild( xNode , "url" )) != NULL) && xmlGetText( urlNode ) && xmlGetText( urlNode )[0] != _T('\0')) {
 				size_t cbLen = (szMessage ? _tcslen( szMessage ) : 0) + _tcslen( xmlGetText( urlNode ) ) + 32;
@@ -1514,7 +1514,8 @@ void CJabberProto::OnProcessPresenceCapabilites( HXML node )
 
 	// check XEP-0115 support, and old style:
 	if (( n = xmlGetChildByTag( node, "c", "xmlns", _T(JABBER_FEAT_ENTITY_CAPS))) != NULL ||
-		( n = xmlGetChildByTag( node, "caps:c", "xmlns:caps", _T(JABBER_FEAT_ENTITY_CAPS))) != NULL ) {
+		( n = xmlGetChildByTag( node, "caps:c", "xmlns:caps", _T(JABBER_FEAT_ENTITY_CAPS))) != NULL ||
+		( n = xmlGetChild( node, "c" )) != NULL ) {
 		const TCHAR *szNode = xmlGetAttrValue( n, _T("node"));
 		const TCHAR *szVer = xmlGetAttrValue( n, _T("ver"));
 		const TCHAR *szExt = xmlGetAttrValue( n, _T("ext"));

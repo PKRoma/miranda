@@ -39,6 +39,7 @@ const JabberFeatCapPair g_JabberFeatCapPairs[] = {
 	{	_T(JABBER_FEAT_BYTESTREAMS),          JABBER_CAPS_BYTESTREAMS,          _T("Supports file transfers via SOCKS5 Bytestreams"), },
 	{	_T(JABBER_FEAT_IBB),                  JABBER_CAPS_IBB,                  _T("Supports file transfers via In-Band Bytestreams"), },
 	{	_T(JABBER_FEAT_OOB),                  JABBER_CAPS_OOB,                  _T("Supports file transfers via Out-of-Band Bytestreams"), },
+	{	_T(JABBER_FEAT_OOB2),                 JABBER_CAPS_OOB,                  _T("Supports file transfers via Out-of-Band Bytestreams"), },
 	{	_T(JABBER_FEAT_COMMANDS),             JABBER_CAPS_COMMANDS,             _T("Supports execution of Ad-Hoc commands"), },
 	{	_T(JABBER_FEAT_REGISTER),             JABBER_CAPS_REGISTER,             _T("Supports in-band registration"), },
 	{	_T(JABBER_FEAT_MUC),                  JABBER_CAPS_MUC,                  _T("Supports multi-user chat"), },
@@ -71,6 +72,8 @@ const JabberFeatCapPair g_JabberFeatCapPairs[] = {
 	{	_T(JABBER_FEAT_USER_ACTIVITY_NOTIFY), JABBER_CAPS_USER_ACTIVITY_NOTIFY, _T("Receives information about user activity"), },
 	{	_T(JABBER_FEAT_MIRANDA_NOTES),        JABBER_CAPS_MIRANDA_NOTES,        _T("Supports Miranda IM notes extension"), },
 	{	_T(JABBER_FEAT_JINGLE),               JABBER_CAPS_JINGLE,               _T("Supports Jingle"), },
+	{	_T(JABBER_FEAT_ROSTER_EXCHANGE),      JABBER_CAPS_ROSTER_EXCHANGE,      _T("Supports Roster Exchange"), },
+	{	_T(JABBER_FEAT_GTALK_PMUC),           JABBER_CAPS_GTALK_PMUC,           _T("Supports private multi-user chat"), },
 	{	NULL,                                 0,                                NULL}
 };
 
@@ -80,6 +83,7 @@ const JabberFeatCapPair g_JabberFeatCapPairsExt[] = {
 	{	_T(JABBER_EXT_USER_MOOD),         JABBER_CAPS_USER_MOOD_NOTIFY     },
 	{	_T(JABBER_EXT_USER_TUNE),         JABBER_CAPS_USER_TUNE_NOTIFY     },
 	{	_T(JABBER_EXT_USER_ACTIVITY),     JABBER_CAPS_USER_ACTIVITY_NOTIFY },
+	{	_T(JABBER_EXT_GTALK_PMUC),        JABBER_CAPS_GTALK_PMUC           },
 	{	_T(JABBER_EXT_MIR_NOTES),         JABBER_CAPS_MIRANDA_NOTES,       },
 	{	_T(__VERSION_STRING),             JABBER_CAPS_MIRANDA_PARTIAL      },
 	{	NULL,                             0                                }

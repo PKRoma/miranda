@@ -63,6 +63,7 @@ typedef unsigned __int64 JabberCapsBits;
 #define JABBER_FEAT_IBB                         "http://jabber.org/protocol/ibb"
 #define JABBER_CAPS_IBB                         ((JabberCapsBits)1<<6)
 #define JABBER_FEAT_OOB                         "jabber:iq:oob"
+#define JABBER_FEAT_OOB2                        "jabber:x:oob"
 #define JABBER_CAPS_OOB                         ((JabberCapsBits)1<<7)
 #define JABBER_FEAT_COMMANDS                    "http://jabber.org/protocol/commands"
 #define JABBER_CAPS_COMMANDS                    ((JabberCapsBits)1<<8)
@@ -131,6 +132,10 @@ typedef unsigned __int64 JabberCapsBits;
 #define JABBER_CAPS_MIRANDA_NOTES               ((JabberCapsBits)1<<38)
 #define JABBER_FEAT_JINGLE                      "urn:xmpp:jingle:1"
 #define JABBER_CAPS_JINGLE                      ((JabberCapsBits)1<<39)
+#define JABBER_FEAT_ROSTER_EXCHANGE             "http://jabber.org/protocol/rosterx"
+#define JABBER_CAPS_ROSTER_EXCHANGE             ((JabberCapsBits)1<<40)
+#define JABBER_FEAT_GTALK_PMUC                  "http://www.google.com/xmpp/protocol/pmuc/v1"
+#define JABBER_CAPS_GTALK_PMUC                  ((JabberCapsBits)1<<41)
 
 #define JABBER_FEAT_PUBSUB_EVENT                "http://jabber.org/protocol/pubsub#event"
 #define JABBER_FEAT_PUBSUB_NODE_CONFIG          "http://jabber.org/protocol/pubsub#node_config"
@@ -148,6 +153,7 @@ typedef unsigned __int64 JabberCapsBits;
 #define JABBER_EXT_USER_MOOD                    "mood"
 #define JABBER_EXT_USER_TUNE                    "tune"
 #define JABBER_EXT_USER_ACTIVITY                "activity"
+#define JABBER_EXT_GTALK_PMUC                   "pmuc-v1"
 #define JABBER_EXT_MIR_NOTES                    "mir_notes"
 
 #define JABBER_FEAT_EXT_ADDRESSING              "http://jabber.org/protocol/address"
