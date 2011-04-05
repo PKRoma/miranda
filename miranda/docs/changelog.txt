@@ -3,6 +3,15 @@
                            www.miranda-im.org
 
 
+* New in 0.9.19
+Bugfixes:
+ - Fixed connection with some broken proxies
+ - Fixed link to bug tracker
+ - Gadu-Gadu: Fixed SSL connection issue in x64 version
+ - IRC: Fixed ansi build issues
+ - Jabber: Fixed handling caps for clients with no cap node in presence
+ 
+ 
 * New in 0.9.18
 Bugfixes:
  - Fixed shutdown after resume hibernate
