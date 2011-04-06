@@ -404,58 +404,60 @@ static void CacheClientIcons()
 static void InitIcoLib()
 {
 	SKINICONDESC sid = {0};
-	char szFilename[MAX_PATH];
+	TCHAR szFilename[MAX_PATH];
 	int i = 0, version = 0;
 	char szBuffer[128];
 	int p_count = 0;
 	PROTOACCOUNT **accs = NULL;
 
-	GetModuleFileNameA(g_hInst, szFilename, MAX_PATH);
+	GetModuleFileName(g_hInst, szFilename, MAX_PATH);
 
 	sid.cbSize = sizeof(SKINICONDESC);
-	sid.pszSection = "CList - Nicer/Default";
-	sid.pszDefaultFile = szFilename;
+	sid.flags = SIDF_PATH_UNICODE;
+	sid.pszSection = LPGEN("CList - Nicer/Default");
+	sid.ptszDefaultFile = szFilename;
 	i = 0;
 	do {
 		if (myIcons[i].szName == NULL)
 			break;
 		sid.pszName = myIcons[i].szName;
-		sid.pszDescription = Translate(myIcons[i].szDesc);
+		sid.pszDescription = myIcons[i].szDesc;
 		sid.iDefaultIndex = myIcons[i].uId;
 		CallService(MS_SKIN2_ADDICON, 0, (LPARAM) &sid);
 	} while (++i);
 
 	sid.pszName = "CLN_visible";
-	sid.pszDescription = "Contact on visible list";
+	sid.pszDescription = LPGEN("Contact on visible list");
 	sid.iDefaultIndex = -IDI_CLVISIBLE;
 	CallService(MS_SKIN2_ADDICON, 0, (LPARAM) &sid);
 	sid.pszName = "CLN_invisible";
-	sid.pszDescription = "Contact on invisible list or blocked";
+	sid.pszDescription = LPGEN("Contact on invisible list or blocked");
 	sid.iDefaultIndex = -IDI_CLINVISIBLE;
 	CallService(MS_SKIN2_ADDICON, 0, (LPARAM) &sid);
 	sid.pszName = "CLN_chatactive";
-	sid.pszDescription = "Chat room/IRC channel activity";
+	sid.pszDescription = LPGEN("Chat room/IRC channel activity");
 	sid.iDefaultIndex = -IDI_OVL_FREEFORCHAT;
 	CallService(MS_SKIN2_ADDICON, 0, (LPARAM) &sid);
 
-	sid.pszSection = "CList - Nicer/Overlay Icons";
+	sid.flags = SIDF_ALL_UNICODE;
+	sid.ptszSection = LPGENT("CList - Nicer/Overlay Icons");
 	for (i = IDI_OVL_OFFLINE; i <= IDI_OVL_OUTTOLUNCH; i++) {
 		mir_snprintf(szBuffer, sizeof(szBuffer), "cln_ovl_%d", ID_STATUS_OFFLINE + (i - IDI_OVL_OFFLINE));
 		sid.pszName = szBuffer;
-		sid.pszDescription = (char *)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, ID_STATUS_OFFLINE + (i - IDI_OVL_OFFLINE), 0);
+		sid.ptszDescription = (TCHAR *)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, ID_STATUS_OFFLINE + (i - IDI_OVL_OFFLINE), GSMDF_TCHAR);
 		sid.iDefaultIndex = -i;
 		CallService(MS_SKIN2_ADDICON, 0, (LPARAM) &sid);
 	}
-	sid.pszSection = "CList - Nicer/Connecting Icons";
+	sid.ptszSection = LPGENT("CList - Nicer/Connecting Icons");
 	ProtoEnumAccounts( &p_count, &accs );
 	for (i = 0; i < p_count; i++) {
-		char szDescr[128];
+		TCHAR szDescr[128];
 		if ( !IsAccountEnabled(accs[i]) || CallProtoService(accs[i]->szModuleName, PS_GETCAPS, PFLAGNUM_2, 0) == 0)
 			continue;
 		mir_snprintf(szBuffer, 128, "%s_conn", accs[i]->szModuleName );
 		sid.pszName = szBuffer;
-		mir_snprintf(szDescr, 128, "%s Connecting", accs[i]->szModuleName );
-		sid.pszDescription = szDescr;
+		mir_sntprintf(szDescr, 128, TranslateT("%s Connecting"), accs[i]->tszAccountName );
+		sid.ptszDescription = szDescr;
 		sid.iDefaultIndex = -IDI_PROTOCONNECTING;
 		CallService(MS_SKIN2_ADDICON, 0, (LPARAM) &sid);
 	}
