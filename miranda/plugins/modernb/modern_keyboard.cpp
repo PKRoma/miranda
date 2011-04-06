@@ -48,16 +48,16 @@ int InitSkinHotKeys(void)
 
 	shk.cbSize=sizeof(shk);
 
-	shk.pszDescription="Close Miranda";
+	shk.pszDescription=LPGEN("Close Miranda");
 	shk.pszName="CloseMiranda";
-	shk.pszSection="Main";
+	shk.pszSection=LPGEN("Main");
 	shk.pszService="CLIST/HK/CloseMiranda";
 	shk.DefHotKey=0;
 	CallService(MS_HOTKEY_REGISTER,0,(LPARAM)&shk);	
 
-	shk.pszDescription="Restore last status";
+	shk.pszDescription=LPGEN("Restore last status");
 	shk.pszName="RestoreLastStatus";
-	shk.pszSection="Status";
+	shk.pszSection=LPGEN("Status");
 	shk.pszService="CLIST/HK/RestoreStatus";
 	shk.DefHotKey=0;
 	CallService(MS_HOTKEY_REGISTER,0,(LPARAM)&shk);	

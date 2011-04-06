@@ -1096,7 +1096,7 @@ HICON CLUI_LoadIconFromExternalFile(char *filename,int i,boolean UseLibrary,bool
 			sid.cx=16;
 			sid.cy=16;
 			sid.hDefaultIcon = (has_proto_icon||!(UseLibrary&2))?NULL:(HICON)CallService(MS_SKIN_LOADPROTOICON,(WPARAM)NULL,(LPARAM)(-internalidx));
-			sid.pszSection = Translate(SectName);				
+			sid.pszSection=SectName;
 			sid.pszName=IconName;
 			sid.pszDescription=Description;
 			sid.pszDefaultFile=internalidx<0?szMyPath:szPath;
@@ -1848,7 +1848,7 @@ HANDLE RegisterIcolibIconHandle(char * szIcoID, char *szSectionName,  char * szD
 	sid.cbSize = sizeof(sid);
 	sid.cx = 16;
 	sid.cy = 16;
-	sid.pszSection = Translate(szSectionName);
+	sid.pszSection = szSectionName;
 	sid.pszName = szIcoID;
 	sid.flags|=SIDF_PATH_TCHAR;
 	sid.pszDescription = szDescription;
