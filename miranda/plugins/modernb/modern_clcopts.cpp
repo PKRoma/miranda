@@ -264,13 +264,13 @@ static struct TabItemOptionConf
 	DWORD flag;				// Expertonly
 } clist_opt_items[] = 
 { 
-	{ _T("General"), IDD_OPT_CLIST, DlgProcClistOpts, NULL, 0, 0},
-    { _T("Tray"), IDD_OPT_TRAY, DlgProcTrayOpts, NULL, 0, 0 },
-	{ _T("List"), IDD_OPT_CLC, DlgProcClistListOpts, NULL, 0, 0 },
-	{ _T("Window"), IDD_OPT_CLUI, DlgProcClistWindowOpts, NULL, 0, 0 },
-	{ _T("Behaviour"), IDD_OPT_CLUI_2, DlgProcClistBehaviourOpts, NULL, 0, 0 },
-	{ _T("Status Bar"), IDD_OPT_SBAR, DlgProcSBarOpts, StatusBarExpertControls, SIZEOF(StatusBarExpertControls), 0},	
-	{ _T("Additional stuff"), IDD_OPT_META_CLC, DlgProcClistAdditionalOpts, NULL, 0, 0 },
+	{ LPGENT("General"), IDD_OPT_CLIST, DlgProcClistOpts, NULL, 0, 0},
+	{ LPGENT("Tray"), IDD_OPT_TRAY, DlgProcTrayOpts, NULL, 0, 0 },
+	{ LPGENT("List"), IDD_OPT_CLC, DlgProcClistListOpts, NULL, 0, 0 },
+	{ LPGENT("Window"), IDD_OPT_CLUI, DlgProcClistWindowOpts, NULL, 0, 0 },
+	{ LPGENT("Behaviour"), IDD_OPT_CLUI_2, DlgProcClistBehaviourOpts, NULL, 0, 0 },
+	{ LPGENT("Status Bar"), IDD_OPT_SBAR, DlgProcSBarOpts, StatusBarExpertControls, SIZEOF(StatusBarExpertControls), 0},	
+	{ LPGENT("Additional stuff"), IDD_OPT_META_CLC, DlgProcClistAdditionalOpts, NULL, 0, 0 },
 	{ 0 }
 };
 
@@ -294,7 +294,7 @@ int ClcOptInit(WPARAM wParam,LPARAM lParam)
 		for (i=0; clist_opt_items[i].id!=0; i++)
 		{
 			odp.pszTemplate=MAKEINTRESOURCEA(clist_opt_items[i].id);
-			odp.ptszTab=TranslateTS(clist_opt_items[i].name);
+			odp.ptszTab=clist_opt_items[i].name;
 			odp.pfnDlgProc=clist_opt_items[i].wnd_proc;
 			odp.flags=ODPF_BOLDGROUPS|ODPF_TCHAR|clist_opt_items[i].flag;
 			odp.expertOnlyControls = clist_opt_items[i].expertControls;
@@ -306,9 +306,9 @@ int ClcOptInit(WPARAM wParam,LPARAM lParam)
 	if (g_CluiData.fDisableSkinEngine)
 	{
 		odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_CLIST_LISTBKG);
-		odp.ptszGroup = TranslateT("Customize");
-		odp.ptszTitle = TranslateT("Contact list skin");
-		odp.ptszTab  = TranslateT("List Background");
+		odp.ptszGroup = LPGENT("Customize");
+		odp.ptszTitle = LPGENT("Contact list skin");
+		odp.ptszTab  = LPGENT("List Background");
 		odp.pfnDlgProc = DlgProcClcBkgOpts;
 		odp.flags = ODPF_BOLDGROUPS|ODPF_TCHAR;
 		CallService(MS_OPT_ADDPAGE, wParam, (LPARAM) & odp);
@@ -343,30 +343,30 @@ struct CheckBoxValues_t {
 	TCHAR *szDescr;
 };
 static const struct CheckBoxValues_t greyoutValues[]={
-	{GREYF_UNFOCUS,_T("Not focused")},
-	{MODEF_OFFLINE,_T("Offline")},
-	{PF2_ONLINE,_T("Online")},
-	{PF2_SHORTAWAY,_T("Away")},
-	{PF2_LONGAWAY,_T("NA")},
-	{PF2_LIGHTDND,_T("Occupied")},
-	{PF2_HEAVYDND,_T("DND")},
-	{PF2_FREECHAT,_T("Free for chat")},
-	{PF2_INVISIBLE,_T("Invisible")},
-	{PF2_OUTTOLUNCH,_T("Out to lunch")},
-	{PF2_ONTHEPHONE,_T("On the phone")}
+	{GREYF_UNFOCUS,LPGENT("Not focused")},
+	{MODEF_OFFLINE,LPGENT("Offline")},
+	{PF2_ONLINE,LPGENT("Online")},
+	{PF2_SHORTAWAY,LPGENT("Away")},
+	{PF2_LONGAWAY,LPGENT("NA")},
+	{PF2_LIGHTDND,LPGENT("Occupied")},
+	{PF2_HEAVYDND,LPGENT("DND")},
+	{PF2_FREECHAT,LPGENT("Free for chat")},
+	{PF2_INVISIBLE,LPGENT("Invisible")},
+	{PF2_OUTTOLUNCH,LPGENT("Out to lunch")},
+	{PF2_ONTHEPHONE,LPGENT("On the phone")}
 };
 static const struct CheckBoxValues_t offlineValues[]=
 {
-	{MODEF_OFFLINE,_T("Offline")},
-	{PF2_ONLINE,_T("Online")},
-	{PF2_SHORTAWAY,_T("Away")},
-	{PF2_LONGAWAY,_T("NA")},
-	{PF2_LIGHTDND,_T("Occupied")},
-	{PF2_HEAVYDND,_T("DND")},
-	{PF2_FREECHAT,_T("Free for chat")},
-	{PF2_INVISIBLE,_T("Invisible")},
-	{PF2_OUTTOLUNCH,_T("Out to lunch")},
-	{PF2_ONTHEPHONE,_T("On the phone")}
+	{MODEF_OFFLINE,LPGENT("Offline")},
+	{PF2_ONLINE,LPGENT("Online")},
+	{PF2_SHORTAWAY,LPGENT("Away")},
+	{PF2_LONGAWAY,LPGENT("NA")},
+	{PF2_LIGHTDND,LPGENT("Occupied")},
+	{PF2_HEAVYDND,LPGENT("DND")},
+	{PF2_FREECHAT,LPGENT("Free for chat")},
+	{PF2_INVISIBLE,LPGENT("Invisible")},
+	{PF2_OUTTOLUNCH,LPGENT("Out to lunch")},
+	{PF2_ONTHEPHONE,LPGENT("On the phone")}
 };
 
 static void FillCheckBoxTree(HWND hwndTree,const struct CheckBoxValues_t *values,int nValues,DWORD style)

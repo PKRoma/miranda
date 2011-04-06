@@ -47,13 +47,13 @@ static struct _RowItemOptionConf
 #ifdef _DEBUG
 	{ _T("Row design"), IDD_OPT_ROWTMPL, DlgTmplEditorOpts },
 #endif
-	{ _T("Avatar"), IDD_OPT_ITEM_AVATAR, DlgProcItemAvatarOpts },
-	{ _T("Icon"), IDD_OPT_ITEM_ICON, DlgProcItemIconOpts },
-	{ _T("Contact time"), IDD_OPT_ITEM_CONTACT_TIME, DlgProcItemContactTimeOpts },
-	{ _T("Text"), IDD_OPT_ITEM_TEXT, DlgProcItemTextOpts },
-	{ _T("Second Line"), IDD_OPT_ITEM_SECOND_LINE, DlgProcItemSecondLineOpts },
-	{ _T("Third Line"), IDD_OPT_ITEM_THIRD_LINE, DlgProcItemThirdLineOpts },
-	{ _T("Extra Icons"), IDD_OPT_ITEM_EXTRAICONS, DlgProcExtraIconsOpts},
+	{ LPGENT("Avatar"), IDD_OPT_ITEM_AVATAR, DlgProcItemAvatarOpts },
+	{ LPGENT("Icon"), IDD_OPT_ITEM_ICON, DlgProcItemIconOpts },
+	{ LPGENT("Contact time"), IDD_OPT_ITEM_CONTACT_TIME, DlgProcItemContactTimeOpts },
+	{ LPGENT("Text"), IDD_OPT_ITEM_TEXT, DlgProcItemTextOpts },
+	{ LPGENT("Second Line"), IDD_OPT_ITEM_SECOND_LINE, DlgProcItemSecondLineOpts },
+	{ LPGENT("Third Line"), IDD_OPT_ITEM_THIRD_LINE, DlgProcItemThirdLineOpts },
+	{ LPGENT("Extra Icons"), IDD_OPT_ITEM_EXTRAICONS, DlgProcExtraIconsOpts},
 	{	0	}
 };
 
@@ -83,7 +83,7 @@ int CListOptInit(WPARAM wParam,LPARAM lParam)
 				continue;
 
 			odp.pszTemplate=MAKEINTRESOURCEA(row_opt_items[i].id);
-			odp.ptszTab=TranslateTS(row_opt_items[i].name);
+			odp.ptszTab=row_opt_items[i].name;
 			odp.pfnDlgProc=row_opt_items[i].wnd_proc;
 			CallService(MS_OPT_ADDPAGE,wParam,(LPARAM)&odp);
 		}

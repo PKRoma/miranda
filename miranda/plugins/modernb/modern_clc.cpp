@@ -92,26 +92,26 @@ static int clcHookModulesLoaded(WPARAM wParam,LPARAM lParam)
 		sid.cy=16;
 		sid.pszDefaultFile = szMyPath;
 
-		sid.pszSection = Translate("Contact List");
-		sid.pszDescription = Translate("Listening to");
+		sid.pszSection = LPGEN("Contact List");
+		sid.pszDescription = LPGEN("Listening to");
 		sid.pszName = "LISTENING_TO_ICON";
 		sid.iDefaultIndex = - IDI_LISTENING_TO;
 		CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
 
-		sid.pszSection = Translate("Contact List/Avatar Overlay");
+		sid.pszSection = LPGEN("Contact List/Avatar Overlay");
 
 		for (i = 0 ; i < MAX_REGS(g_pAvatarOverlayIcons) ; i++)
 		{
-			sid.pszDescription = Translate(g_pAvatarOverlayIcons[i].description);
+			sid.pszDescription = g_pAvatarOverlayIcons[i].description;
 			sid.pszName = g_pAvatarOverlayIcons[i].name;
 			sid.iDefaultIndex = - g_pAvatarOverlayIcons[i].id;
 			CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
 		}
-		sid.pszSection = Translate("Contact List/Status Overlay");
+		sid.pszSection = LPGEN("Contact List/Status Overlay");
 
 		for (i = 0 ; i < MAX_REGS(g_pStatusOverlayIcons) ; i++)
 		{
-			sid.pszDescription = Translate(g_pStatusOverlayIcons[i].description);
+			sid.pszDescription = g_pStatusOverlayIcons[i].description;
 			sid.pszName = g_pStatusOverlayIcons[i].name;
 			sid.iDefaultIndex = - g_pStatusOverlayIcons[i].id;
 			CallService(MS_SKIN2_ADDICON, 0, (LPARAM)&sid);
