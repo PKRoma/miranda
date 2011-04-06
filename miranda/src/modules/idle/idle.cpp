@@ -278,6 +278,8 @@ bool IsFullScreen(void)
 		{
 			RECT rect;
 			GetClientRect(hWnd, &rect);
+			ClientToScreen(hWnd, (LPPOINT)&rect);
+			ClientToScreen(hWnd, (LPPOINT)&rect.right);
 			if (EqualRect(&rect, &rcScreen))
 				return true;
 		}
@@ -468,7 +470,7 @@ static INT_PTR IdleGetInfo(WPARAM, LPARAM lParam)
 
 static int IdleModernOptInit(WPARAM wParam, LPARAM)
 {
-	static int iBoldControls[] =
+	static const int iBoldControls[] =
 	{
 		IDC_TXT_TITLE1, IDC_TXT_TITLE2, IDC_TXT_TITLE3,
 		MODERNOPT_CTRL_LAST
@@ -480,7 +482,7 @@ static int IdleModernOptInit(WPARAM wParam, LPARAM)
 	obj.dwFlags = MODEROPT_FLG_TCHAR | MODEROPT_FLG_NORESIZE;
 	obj.iSection = MODERNOPT_PAGE_STATUS;
 	obj.iType = MODERNOPT_TYPE_SECTIONPAGE;
-	obj.iBoldControls = iBoldControls;
+	obj.iBoldControls = (int*)iBoldControls;
 	obj.lpzTemplate = MAKEINTRESOURCEA(IDD_MODERNOPT_IDLE);
 	obj.pfnDlgProc = IdleOptsDlgProc;
 //	obj.lpzClassicGroup = "Status";
