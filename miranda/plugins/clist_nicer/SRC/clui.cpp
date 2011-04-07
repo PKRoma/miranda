@@ -26,7 +26,7 @@
  *
  * (C) 2005-2010 by silvercircle _at_ gmail _dot_ com and contributors
  *
- * $Id: clui.cpp 13546 2011-04-06 02:43:56Z borkra $
+ * $Id: clui.cpp 13551 2011-04-07 01:29:11Z borkra $
  *
  */
 
@@ -314,23 +314,18 @@ static int CreateCLC(HWND parent)
 static int CluiModulesLoaded(WPARAM wParam, LPARAM lParam)
 {
 	static Update upd = {0};
-	static char *szPrefix = "clist_nicer_plus ";
+	static const char *szPrefix = "clist_nicer_plus ";
+
 #if defined(_UNICODE)
 	static char *component = "CList Nicer+ (Unicode)";
 	static char szCurrentVersion[30];
-	static char *szVersionUrl = "http://download.miranda.or.at/clist_nicer/0.8/versionW.txt";
-	static char *szUpdateUrl = "http://download.miranda.or.at/clist_nicer/0.8/clist_nicer_plusW.zip";
-	static char *szFLVersionUrl = "http://addons.miranda-im.org/details.php?action=viewfile&id=4071";
-	static char *szFLUpdateurl = "http://addons.miranda-im.org/feed.php?dlfile=4071";
-	upd.pbVersionPrefix = (BYTE *)"<span class=\"fileNameHeader\">Clist Nicer+ UNICODE ";
+	static char *szVersionUrl = "http://download.miranda.or.at/clist_nicer/0.9/versionW.txt";
+	static char *szUpdateUrl = "http://download.miranda.or.at/clist_nicer/0.9/clist_nicer_plusW.zip";
 #else
 	static char *component = "CList Nicer+";
 	static char szCurrentVersion[30];
-	static char *szVersionUrl = "http://download.miranda.or.at/clist_nicer/0.8/version.txt";
-	static char *szUpdateUrl = "http://download.miranda.or.at/clist_nicer/0.8/clist_nicer_plus.zip";
-	static char *szFLVersionUrl = "http://addons.miranda-im.org/details.php?action=viewfile&id=4073";
-	static char *szFLUpdateurl = "http://addons.miranda-im.org/feed.php?dlfile=4073";
-	upd.pbVersionPrefix = (BYTE *)"<span class=\"fileNameHeader\">Clist Nicer+ ANSI ";
+	static char *szVersionUrl = "http://download.miranda.or.at/clist_nicer/0.9/version.txt";
+	static char *szUpdateUrl = "http://download.miranda.or.at/clist_nicer/0.9/clist_nicer_plus.zip";
 #endif
 
 	// updater plugin support
@@ -339,20 +334,15 @@ static int CluiModulesLoaded(WPARAM wParam, LPARAM lParam)
 	upd.szComponentName = pluginInfo.shortName;
 	upd.pbVersion = (BYTE *)CreateVersionStringPluginEx(&pluginInfo, szCurrentVersion);
 	upd.cpbVersion = (int)strlen((char *)upd.pbVersion);
-	upd.szVersionURL = szFLVersionUrl;
-	upd.szUpdateURL = szFLUpdateurl;
+	upd.szUpdateURL = UPDATER_AUTOREGISTER;
 
 	upd.szBetaUpdateURL = szUpdateUrl;
 	upd.szBetaVersionURL = szVersionUrl;
 	upd.pbBetaVersionPrefix = (BYTE *)szPrefix;
-	upd.pbVersion = reinterpret_cast<unsigned char*>(szCurrentVersion);
-	upd.cpbVersion = lstrlenA(szCurrentVersion);
-
-	upd.cpbVersionPrefix = (int)strlen((char *)upd.pbVersionPrefix);
 	upd.cpbBetaVersionPrefix = (int)strlen((char *)upd.pbBetaVersionPrefix);
 
-	if (ServiceExists(MS_UPDATE_REGISTER))
-		CallService(MS_UPDATE_REGISTER, 0, (LPARAM)&upd);
+	CallService(MS_UPDATE_REGISTER, 0, (LPARAM)&upd);
+
 	MTG_OnmodulesLoad(wParam, lParam);
 	if (ServiceExists(MS_FONT_REGISTER)) {
 		cfg::dat.bFontServiceAvail = TRUE;
@@ -413,7 +403,7 @@ static void InitIcoLib()
 	GetModuleFileName(g_hInst, szFilename, MAX_PATH);
 
 	sid.cbSize = sizeof(SKINICONDESC);
-	sid.flags = SIDF_PATH_UNICODE;
+	sid.flags = SIDF_PATH_TCHAR;
 	sid.pszSection = LPGEN("CList - Nicer/Default");
 	sid.ptszDefaultFile = szFilename;
 	i = 0;
@@ -439,7 +429,7 @@ static void InitIcoLib()
 	sid.iDefaultIndex = -IDI_OVL_FREEFORCHAT;
 	CallService(MS_SKIN2_ADDICON, 0, (LPARAM) &sid);
 
-	sid.flags = SIDF_ALL_UNICODE;
+	sid.flags = SIDF_ALL_TCHAR;
 	sid.ptszSection = LPGENT("CList - Nicer/Overlay Icons");
 	for (i = IDI_OVL_OFFLINE; i <= IDI_OVL_OUTTOLUNCH; i++) {
 		mir_snprintf(szBuffer, sizeof(szBuffer), "cln_ovl_%d", ID_STATUS_OFFLINE + (i - IDI_OVL_OFFLINE));
