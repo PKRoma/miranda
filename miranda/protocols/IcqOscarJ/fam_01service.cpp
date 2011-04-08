@@ -710,7 +710,7 @@ void CIcqProto::setUserInfo()
 	}
 #endif
 	{
-		packShortCapability(&packet, 0x1349);  // AIM_CAPS_ICQSERVERRELAY
+//		packShortCapability(&packet, 0x1349);  // AIM_CAPS_ICQSERVERRELAY
 	}
 	if (m_bUtfEnabled)
 	{

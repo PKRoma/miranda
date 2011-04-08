@@ -152,8 +152,6 @@ struct CIcqProto : public PROTO_INTERFACE
 
     //====| Events |======================================================================
 	void __cdecl OnAddContactForever( DBCONTACTWRITESETTING* cws, HANDLE hContact );
-	int  __cdecl OnContactDeleted( WPARAM, LPARAM );
-	int  __cdecl OnDbSettingChanged( WPARAM, LPARAM );
 	int  __cdecl OnIdleChanged( WPARAM, LPARAM );
 	int  __cdecl OnModernOptInit( WPARAM, LPARAM );
 	int  __cdecl OnModulesLoaded( WPARAM, LPARAM );
@@ -379,6 +377,8 @@ struct CIcqProto : public PROTO_INTERFACE
 	void   handleRecvAdded(BYTE *buf, WORD wLen);
 
 	HANDLE HContactFromRecordName(const char *szRecordName, int *bAdded);
+
+	void   processCListReply(const char *szRecordName, WORD wGroupId, WORD wItemId, WORD wItemType, oscar_tlv_chain *pItemData);
 
 	void   icq_sendServerBeginOperation(int bImport);
 	void   icq_sendServerEndOperation();

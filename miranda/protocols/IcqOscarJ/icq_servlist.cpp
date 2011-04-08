@@ -2678,13 +2678,6 @@ int CIcqProto::ServListDbSettingChanged(WPARAM wParam, LPARAM lParam)
 	if (!icqOnline() || !m_bSsiEnabled || bIsSyncingCL)
 		return 0;
 
-	{ // only our contacts will be handled
-		if (IsICQContact((HANDLE)wParam))
-			;// our contact, fine; otherwise return
-		else 
-			return 0;
-	}
-
 #ifdef _DEBUG
 	if (cws->value.type == DBVT_DELETED)
 		NetLog_Server("DB-Events: Module \"%s\", setting \"%s\" deleted.", cws->szModule, cws->szSetting);
@@ -2738,8 +2731,6 @@ int CIcqProto::ServListDbSettingChanged(WPARAM wParam, LPARAM lParam)
 
 int CIcqProto::ServListDbContactDeleted(WPARAM wParam, LPARAM lParam)
 {
-	if (!IsICQContact((HANDLE)wParam)) return 0;
-
 #ifdef _DEBUG
 	NetLog_Server("DB-Events: Contact %x deleted.", wParam);
 #endif
