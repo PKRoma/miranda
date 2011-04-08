@@ -169,7 +169,8 @@ void CJabberProto::OnIqResultCapsDiscoInfo( HXML, CJabberIqInfo* pInfo )
 		}
 
 		if (!m_clientCapsManager.SetClientCaps( pInfo->GetIqId(), jcbCaps ))
-			r->jcbCachedCaps = jcbCaps;
+			if ( r )
+				r->jcbCachedCaps = jcbCaps;
 		JabberUserInfoUpdate( pInfo->GetHContact() );
 	}
 	else {
