@@ -274,7 +274,7 @@ bool IsFullScreen(void)
 	{
 		TCHAR tszClassName[128] = _T("");
 		GetClassName(hWnd, tszClassName, SIZEOF(tszClassName));
-		if (!_tcscmp(tszClassName, _T("WorkerW")))
+		if (_tcscmp(tszClassName, _T("WorkerW")))
 		{
 			RECT rect;
 			GetClientRect(hWnd, &rect);
