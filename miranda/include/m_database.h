@@ -694,6 +694,7 @@ szFormat can have the following special characters:
   m  Time without minutes, eg hh
   d  Short date, eg dd/mm/yyyy
   D  Long date, eg d mmmm yyyy
+  I  ISO 8061 Time yyyy-mm-ddThh:mm:ssZ
 All other characters are copied across to szDest as-is
 */
 typedef struct {
