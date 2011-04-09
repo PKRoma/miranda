@@ -582,6 +582,7 @@ HWND FtMgr_AddTransfer(FileDlgData *fdd)
 {
 	bool bForceActivate = fdd->send || !DBGetContactSettingByte(NULL, "SRFile", "AutoAccept", 0);
 	TFtMgrData *dat = (TFtMgrData*)GetWindowLongPtr(FtMgr_Show(bForceActivate, false), GWLP_USERDATA);
+	if (dat == NULL) return NULL;
 	HWND hwndBox = fdd->send ? dat->hwndOutgoing : dat->hwndIncoming;
 	HWND hwndFt = CreateDialogParam(hMirandaInst, MAKEINTRESOURCE(IDD_FILETRANSFERINFO), hwndBox, DlgProcFileTransfer, (LPARAM)fdd);
 	ShowWindow(hwndFt, SW_SHOWNA);
