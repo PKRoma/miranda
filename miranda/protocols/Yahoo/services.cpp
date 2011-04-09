@@ -89,7 +89,6 @@ void CYahooProto::BroadcastStatus(int s)
 //=======================================================
 INT_PTR __cdecl CYahooProto::OnContactDeleted( WPARAM wParam, LPARAM lParam )
 {
-	char* szProto;
 	DBVARIANT dbv;
 	HANDLE hContact = (HANDLE) wParam;
 	

@@ -312,7 +312,6 @@ INT_PTR __cdecl CYahooProto::OnSettingChanged(WPARAM wParam, LPARAM lParam)
 			if (DBGetContactSettingByte((HANDLE) wParam, "CList", "Hidden", 0))
 				return 0;
 			if (cws->value.type == DBVT_DELETED || (cws->value.type == DBVT_BYTE && cws->value.bVal == 0)) {
-				char *szProto;
 				DBVARIANT dbv;
 
 				if ( !DBGetContactSettingString( (HANDLE) wParam, m_szModuleName, YAHOO_LOGINID, &dbv )){

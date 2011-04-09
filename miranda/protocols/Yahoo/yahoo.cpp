@@ -293,7 +293,7 @@ HANDLE CYahooProto::add_buddy( const char *yahoo_id, const char *yahoo_name, int
 	
 	hContact = getbuddyH(yid);
 	if (hContact != NULL) {
-		LOG(("[add_buddy] Found buddy id: %s, handle: %lu", yid, (DWORD)hContact));
+		LOG(("[add_buddy] Found buddy id: %s, handle: %p", yid, hContact));
 		if ( !( flags & PALF_TEMPORARY ) && DBGetContactSettingByte( hContact, "CList", "NotOnList", 1 )) 
 		{
 			LOG(("[add_buddy] Making Perm id: %s, flags: %lu", yahoo_id, flags));
