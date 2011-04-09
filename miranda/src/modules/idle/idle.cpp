@@ -294,23 +294,23 @@ bool IsFullScreen(void)
 
 static void IdleObject_Tick(IdleObject * obj)
 {
-	BOOL idle = FALSE;
+	bool idle = false;
 	int  idleType = 0, flags = 0;
 
 	if ( obj->useridlecheck && IdleObject_IsUserIdle(obj)) {
-		idleType = 1; idle = TRUE; 
+		idleType = 1; idle = true; 
 	}
 	else if ( IdleObject_IdleCheckSaver(obj) && IsScreenSaverRunning()) {
-		idleType = 2; idle = TRUE; 
+		idleType = 2; idle = true; 
 	}
 	else if ( IdleObject_IdleCheckFullScr(obj) && IsFullScreen()) {
-		idleType = 5; idle = TRUE; 
+		idleType = 5; idle = true; 
 	}
 	else if ( IdleObject_IdleCheckWorkstation(obj) && IsWorkstationLocked()) {
-		idleType = 3; idle = TRUE; 
+		idleType = 3; idle = true; 
 	}
 	else if ( IdleObject_IdleCheckTerminal(obj) && IsTerminalDisconnected()) {
-		idleType = 4; idle = TRUE; 
+		idleType = 4; idle = true; 
 	}
 
 	if ( IdleObject_IsPrivacy(obj))
