@@ -334,6 +334,12 @@ void CYahooProto::ext_got_picture(const char *me, const char *who, const char *p
 				return;
 			}
 			
+			if (!cksum && pic_url) {
+				const char *chk = strstr(pic_url, "chksum=");
+				if (chk)
+					cksum = strtol(chk + 7, NULL, 10);
+			}
+
 			if (!cksum || cksum == -1) {
 				LOG(("[ext_yahoo_got_picture] Resetting avatar."));
 				DBWriteContactSettingDword(hContact, m_szModuleName, "PictCK", 0);
