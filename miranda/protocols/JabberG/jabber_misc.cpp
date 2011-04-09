@@ -52,7 +52,7 @@ void JabberChatDllError()
 {
 	MessageBox( NULL,
 		TranslateT( "CHAT plugin is required for conferences. Install it before chatting" ),
-		TranslateT( "Jabber Error Message" ), MB_OK|MB_SETFOREGROUND );
+		TranslateT( "Jabber Error" ), MB_OK|MB_SETFOREGROUND );
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -618,7 +618,7 @@ void CJabberProto::InitPopups(void)
 
 	ppc.ptszDescription = desc;
 	ppc.pszName = name;
-	ppc.hIcon = (HICON)LoadImage(NULL, IDI_ERROR, IMAGE_ICON, 0, 0, LR_SHARED);
+	ppc.hIcon = LoadIconEx("main");
 	ppc.colorBack = RGB(191, 0, 0); //Red
 	ppc.colorText = RGB(255, 245, 225); //Yellow
 	ppc.iSeconds = 60;
