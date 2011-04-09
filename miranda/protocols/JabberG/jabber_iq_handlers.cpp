@@ -341,13 +341,13 @@ int GetGMTOffset(void)
 
 	switch(dwResult) {
 	case TIME_ZONE_ID_STANDARD:
-		nOffset = -(tzinfo.Bias + tzinfo.StandardBias) * 60;
+		nOffset = tzinfo.Bias + tzinfo.StandardBias;
 		break;
 	case TIME_ZONE_ID_DAYLIGHT:
-		nOffset = -(tzinfo.Bias + tzinfo.DaylightBias) * 60;
+		nOffset = tzinfo.Bias + tzinfo.DaylightBias;
 		break;
 	case TIME_ZONE_ID_UNKNOWN:
-		nOffset = -(tzinfo.Bias) * 60;
+		nOffset = tzinfo.Bias;
 		break;
 	case TIME_ZONE_ID_INVALID:
 	default:
@@ -355,29 +355,19 @@ int GetGMTOffset(void)
 		break;
 	}
 
-	return nOffset;
+	return -nOffset;
 }
 
 // entity time (XEP-0202) support
 BOOL CJabberProto::OnIqRequestTime( HXML, CJabberIqInfo *pInfo )
 {
-	struct tm *gmt;
-	time_t ltime;
 	TCHAR stime[100];
 	TCHAR szTZ[10];
 
-	_tzset();
-	time(&ltime);
-	gmt = gmtime(&ltime);
-	wsprintf(stime,_T("%.4i-%.2i-%.2iT%.2i:%.2i:%.2iZ"), 
-		gmt->tm_year + 1900, gmt->tm_mon + 1,
-		gmt->tm_mday, gmt->tm_hour, gmt->tm_min, gmt->tm_sec);
+	tmi.printDateTime(UTC_TIME_HANDLE, _T("I"), stime, SIZEOF(stime), 0);
 
 	int nGmtOffset = GetGMTOffset();
-	ltime = abs(nGmtOffset);
-
-	gmt = gmtime( &ltime );
-	wsprintf(szTZ, _T("%s%.2i:%.2i"), nGmtOffset > 0 ? _T("+") : _T("-"), gmt->tm_hour, gmt->tm_min );
+	mir_sntprintf(szTZ, SIZEOF(szTZ), _T("%03d:%02d"), nGmtOffset / 60, nGmtOffset % 60 );
 
 	XmlNodeIq iq( _T("result"), pInfo );
 	HXML timeNode = iq << XCHILDNS( _T("time"), _T(JABBER_FEAT_ENTITY_TIME));
@@ -398,7 +388,7 @@ BOOL CJabberProto::OnIqProcessIqOldTime( HXML, CJabberIqInfo *pInfo )
 	_tzset();
 	time( &ltime );
 	gmt = gmtime( &ltime );
-	wsprintf( stime, _T("%.4i%.2i%.2iT%.2i:%.2i:%.2i"),
+	mir_sntprintf( stime, SIZEOF(stime), _T("%.4i%.2i%.2iT%.2i:%.2i:%.2i"),
 		gmt->tm_year + 1900, gmt->tm_mon + 1,
 		gmt->tm_mday, gmt->tm_hour, gmt->tm_min, gmt->tm_sec );
 	dtime = _tctime( &ltime );
