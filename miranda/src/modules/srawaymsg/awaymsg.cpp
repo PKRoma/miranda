@@ -66,7 +66,6 @@ static INT_PTR CALLBACK ReadAwayMsgDlgProc(HWND hwndDlg, UINT message, WPARAM wP
 
 				Window_SetProtoIcon_IcoLib(hwndDlg, szProto, dwStatus);
 			}
-			Utils_RestoreWindowPosition(hwndDlg, (HANDLE)lParam, "SRAway", "AwayMsgDlg");
 			if (dat->hSeq == NULL)
 			{
 				ACKDATA ack = {0};
@@ -76,6 +75,7 @@ static INT_PTR CALLBACK ReadAwayMsgDlgProc(HWND hwndDlg, UINT message, WPARAM wP
 				ack.result = ACKRESULT_SUCCESS;
 				SendMessage(hwndDlg, HM_AWAYMSG, 0, (LPARAM)&ack);
 			}
+			Utils_RestoreWindowPosition(hwndDlg, (HANDLE)lParam, "SRAway", "AwayMsgDlg");
 			return TRUE;
 
 		case HM_AWAYMSG:
