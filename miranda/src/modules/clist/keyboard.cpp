@@ -106,11 +106,18 @@ int InitClistHotKeys(void)
 	shk.DefHotKey=846;
 	CallService(MS_HOTKEY_REGISTER,0,(LPARAM)&shk);
 */
-	shk.pszDescription="Open Options Page";
-	shk.pszName="ShowOptions";
-	shk.pszSection="Main";
-	shk.pszService="CLIST/HK/Opts";
+	shk.pszDescription = "Open Options Page";
+	shk.pszName = "ShowOptions";
+	shk.pszSection = "Main";
+	shk.pszService = "CLIST/HK/Opts";
 	shk.DefHotKey = HOTKEYCODE(HOTKEYF_CONTROL|HOTKEYF_SHIFT, 'O') | HKF_MIRANDA_LOCAL;
+	CallService(MS_HOTKEY_REGISTER,0,(LPARAM)&shk);
+
+	shk.pszDescription = "Open Logging Options";
+	shk.pszName = "ShowLogOptions";
+	shk.pszSection = "Main";
+	shk.pszService = "Netlib/Log/Win";
+	shk.DefHotKey = 0;
 	CallService(MS_HOTKEY_REGISTER,0,(LPARAM)&shk);
 
 	shk.pszDescription="Open Find User Dialog";
@@ -119,6 +126,7 @@ int InitClistHotKeys(void)
 	shk.pszService="FindAdd/FindAddCommand";
 	shk.DefHotKey = HOTKEYCODE(HOTKEYF_CONTROL|HOTKEYF_SHIFT, 'F') | HKF_MIRANDA_LOCAL;
 	CallService(MS_HOTKEY_REGISTER,0,(LPARAM)&shk);
+
 /*
 	shk.pszDescription="Close Miranda";
 	shk.pszName="CloseMiranda";
