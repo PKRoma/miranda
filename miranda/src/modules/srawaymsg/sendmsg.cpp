@@ -210,7 +210,6 @@ static INT_PTR CALLBACK SetAwayMsgDlgProc(HWND hwndDlg, UINT message, WPARAM wPa
 	case WM_INITDIALOG:
 		{
 			SetAwasMsgNewData *newdat = (SetAwasMsgNewData*)lParam;
-			Utils_RestoreWindowPosition(hwndDlg,NULL,"SRAway","AwayMsgDlg");
 			TranslateDialogDefault(hwndDlg);
 			dat = (SetAwayMsgData*)mir_alloc(sizeof(SetAwayMsgData));
 			SetWindowLongPtr(hwndDlg, GWLP_USERDATA, (LONG_PTR)dat);
@@ -234,6 +233,7 @@ static INT_PTR CALLBACK SetAwayMsgDlgProc(HWND hwndDlg, UINT message, WPARAM wPa
 			dat->countdown = 6;
 			SendMessage(hwndDlg, WM_TIMER, 0, 0);
 			Window_SetProtoIcon_IcoLib(hwndDlg, dat->szProto, dat->statusMode);
+			Utils_RestoreWindowPosition(hwndDlg,NULL,"SRAway","AwayMsgDlg");
 			SetTimer(hwndDlg, 1, 1000, 0);
 			dat->hPreshutdown = HookEventMessage(ME_SYSTEM_PRESHUTDOWN, hwndDlg, DM_SRAWAY_SHUTDOWN);
 		}
