@@ -276,11 +276,15 @@ bool IsFullScreen(void)
 		GetClassName(hWnd, tszClassName, SIZEOF(tszClassName));
 		if (_tcscmp(tszClassName, _T("WorkerW")))
 		{
-			RECT rect;
+			RECT rect, rectw, recti;
+			GetWindowRect(hWnd, &rectw);
+
 			GetClientRect(hWnd, &rect);
 			ClientToScreen(hWnd, (LPPOINT)&rect);
 			ClientToScreen(hWnd, (LPPOINT)&rect.right);
-			if (EqualRect(&rect, &rcScreen))
+			
+			if (EqualRect(&rect, &rectw) && IntersectRect(&recti, &rect, &rcScreen) && 
+				EqualRect(&recti, &rcScreen))
 				return true;
 		}
 	}
