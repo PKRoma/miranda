@@ -367,7 +367,7 @@ BOOL CJabberProto::OnIqRequestTime( HXML, CJabberIqInfo *pInfo )
 	tmi.printDateTime(UTC_TIME_HANDLE, _T("I"), stime, SIZEOF(stime), 0);
 
 	int nGmtOffset = GetGMTOffset();
-	mir_sntprintf(szTZ, SIZEOF(szTZ), _T("%03d:%02d"), nGmtOffset / 60, nGmtOffset % 60 );
+	mir_sntprintf(szTZ, SIZEOF(szTZ), _T("%+03d:%02d"), nGmtOffset / 60, nGmtOffset % 60 );
 
 	XmlNodeIq iq( _T("result"), pInfo );
 	HXML timeNode = iq << XCHILDNS( _T("time"), _T(JABBER_FEAT_ENTITY_TIME));
