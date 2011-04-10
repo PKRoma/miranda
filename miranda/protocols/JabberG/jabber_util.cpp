@@ -118,9 +118,12 @@ HANDLE CJabberProto::HContactFromJID( const TCHAR* jid , BOOL bStripResource )
 		char* szProto = ( char* )JCallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM ) hContact, 0 );
 		if ( szProto != NULL && !strcmp( m_szModuleName, szProto )) {
 			DBVARIANT dbv;
-			int result = JGetStringT( hContact, "jid", &dbv );
-			if ( result )
+			int result;
+			//safer way to check UID (coz some contact have both setting from convert to chat)
+			if(DBGetContactSettingByte(hContact, szProto, "ChatRoom",0))
 				result = JGetStringT( hContact, "ChatRoomID", &dbv );
+			else
+				result = JGetStringT( hContact, "jid", &dbv );
 
 			if ( !result ) {
 				int result;
@@ -819,7 +822,7 @@ void CJabberProto::SendPresenceTo( int status, TCHAR* to, HXML extra, TCHAR *msg
 
 	TCHAR szExtCaps[ 512 ] = _T("");
 
-	_tcscat( szExtCaps, _T("pmuc-v1") );
+	_tcscat( szExtCaps, _T(JABBER_EXT_GTALK_PMUC) );
 
 	if ( bSecureIM ) {
 		if ( szExtCaps[0] )

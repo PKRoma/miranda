@@ -1146,7 +1146,7 @@ void CJabberProto::GroupchatProcessPresence( HXML node )
 			return;
 		}
 
-		MsgPopup( str, TranslateT( "Jabber Error Message" ));
+		MsgPopup( NULL, str, TranslateT( "Jabber Error" ));
 
 		if ( item != NULL)
 			if ( !item->bChatActive ) ListRemove( LIST_CHATROOM, from );

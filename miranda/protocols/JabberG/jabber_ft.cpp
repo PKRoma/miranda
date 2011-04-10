@@ -279,7 +279,7 @@ void CJabberProto::FtSendFinal( BOOL success, filetransfer* ft )
 {
 	if ( !success ) {
 		Log( "File transfer complete with error" );
-		JSendBroadcast( ft->std.hContact, ACKTYPE_FILE, ACKRESULT_FAILED, ft, 0 );
+		JSendBroadcast( ft->std.hContact, ACKTYPE_FILE, ft->state == FT_DENIED ? ACKRESULT_DENIED : ACKRESULT_FAILED, ft, 0 );
 	}
 	else {
 		if ( ft->std.currentFileNumber < ft->std.totalFiles-1 ) {

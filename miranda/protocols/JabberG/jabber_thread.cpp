@@ -739,7 +739,7 @@ void CJabberProto::PerformAuthentication( ThreadData* info )
 
 		TCHAR text[1024];
 		mir_sntprintf( text, SIZEOF( text ), _T("%s %s@")_T(TCHAR_STR_PARAM)_T("."), TranslateT( "Authentication failed for" ), info->username, info->server );
-		MsgPopup( text, TranslateT( "Jabber Authentication" ));
+		MsgPopup( NULL, text, TranslateT( "Jabber Authentication" ));
 		JSendBroadcast( NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_WRONGPASSWORD );
 		info->send( "</stream:stream>" );
 		m_ThreadInfo = NULL;
@@ -892,7 +892,7 @@ void CJabberProto::OnProcessError( HXML node, ThreadData* info )
 			skipMsg = true;
 		}
 	}
-	if (!skipMsg) MsgPopup( buff, TranslateT( "Jabber Error" ));
+	if (!skipMsg) MsgPopup( NULL, buff, TranslateT( "Jabber Error" ));
 	mir_free(buff);
 	info->send( "</stream:stream>" );
 }

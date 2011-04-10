@@ -249,7 +249,7 @@ void CJabberProto::OnIqResultGetAuth( HXML iqNode )
 
 		TCHAR text[128];
 		mir_sntprintf( text, SIZEOF( text ), _T("%s %s."), TranslateT( "Authentication failed for" ), m_ThreadInfo->username );
-		MessageBox( NULL, text, TranslateT( "Jabber Authentication" ), MB_OK|MB_ICONSTOP|MB_SETFOREGROUND );
+		MsgPopup( NULL, text, TranslateT( "Jabber Authentication" ));
 		JSendBroadcast( NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_WRONGPASSWORD );
 		m_ThreadInfo = NULL;	// To disallow auto reconnect
 }	}
@@ -278,7 +278,7 @@ void CJabberProto::OnIqResultSetAuth( HXML iqNode )
 
 		m_ThreadInfo->send( "</stream:stream>" );
 		mir_sntprintf( text, SIZEOF( text ), _T("%s %s."), TranslateT( "Authentication failed for" ), m_ThreadInfo->username );
-		MessageBox( NULL, text, TranslateT( "Jabber Authentication" ), MB_OK|MB_ICONSTOP|MB_SETFOREGROUND );
+		MsgPopup( NULL, text, TranslateT( "Jabber Authentication" ));
 		JSendBroadcast( NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_WRONGPASSWORD );
 		m_ThreadInfo = NULL;	// To disallow auto reconnect
 }	}

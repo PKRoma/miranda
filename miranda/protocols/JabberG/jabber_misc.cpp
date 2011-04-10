@@ -628,7 +628,7 @@ void CJabberProto::InitPopups(void)
 	JCallService(MS_POPUP_REGISTERCLASS, 0, (WPARAM)&ppc);
 }
 
-void CJabberProto::MsgPopup(const TCHAR *szMsg, const TCHAR *szTitle)
+void CJabberProto::MsgPopup(HANDLE hContact, const TCHAR *szMsg, const TCHAR *szTitle)
 {
 	if (ServiceExists(MS_POPUP_ADDPOPUPCLASS)) {
 		char name[256];
@@ -637,6 +637,7 @@ void CJabberProto::MsgPopup(const TCHAR *szMsg, const TCHAR *szTitle)
 		ppd.ptszTitle = szTitle;
 		ppd.ptszText = szMsg;
 		ppd.pszClassName = name;
+		ppd.hContact = hContact;
 		mir_snprintf(name, SIZEOF(name), "%s_%s", m_szModuleName, "Error");
 
 		JCallService(MS_POPUP_ADDPOPUPCLASS, 0, (LPARAM)&ppd);

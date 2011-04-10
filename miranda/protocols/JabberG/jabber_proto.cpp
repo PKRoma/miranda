@@ -1080,6 +1080,7 @@ HANDLE __cdecl CJabberProto::SendFile( HANDLE hContact, const TCHAR* szDescripti
 		|| !(jcb & ( JABBER_CAPS_SI_FT | JABBER_CAPS_OOB ) )
 		) {
 		JFreeVariant( &dbv );
+		MsgPopup( hContact, TranslateT("No compatible file transfer machanism exist"), item->jid );
 		return 0;
 	}
 
@@ -1138,8 +1139,8 @@ int __cdecl CJabberProto::SendMsg( HANDLE hContact, int flags, const char* pszSr
 
 	DBVARIANT dbv;
 	if ( !m_bJabberOnline || JGetStringT( hContact, "jid", &dbv )) {
-		JSendBroadcast( hContact, ACKTYPE_MESSAGE, ACKRESULT_FAILED, ( HANDLE ) 1, 0 );
-		return 0;
+		JForkThread( &CJabberProto::SendMessageAckThread, hContact );
+		return 1;
 	}
 
 	TCHAR *msg;
