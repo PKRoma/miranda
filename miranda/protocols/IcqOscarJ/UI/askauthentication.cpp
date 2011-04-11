@@ -55,7 +55,7 @@ static INT_PTR CALLBACK AskAuthProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 		ICQTranslateDialog(hwndDlg);
 		SetWindowLongPtr(hwndDlg, GWLP_USERDATA, lParam);
 		SendDlgItemMessage(hwndDlg, IDC_EDITAUTH, EM_LIMITTEXT, (WPARAM)255, 0);
-		SetDlgItemText(hwndDlg, IDC_EDITAUTH, TranslateT(LPGEN("Please authorize me to add you to my contact list.")));
+		SetDlgItemText(hwndDlg, IDC_EDITAUTH, TranslateT("Please authorize me to add you to my contact list."));
 		return TRUE;
 
 	case WM_COMMAND:
