@@ -68,17 +68,18 @@ static INT_PTR CALLBACK PersonalDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, 
 
 	switch ( msg ) {
 	case WM_INITDIALOG:
-		if (!lParam) break; // Launched from userinfo
-		ppro = ( CJabberProto* )lParam;
-		TranslateDialogDefault( hwndDlg );
-		SendMessage( GetDlgItem( hwndDlg, IDC_GENDER ), CB_ADDSTRING, 0, ( LPARAM )TranslateT( "Male" ));
-		SendMessage( GetDlgItem( hwndDlg, IDC_GENDER ), CB_ADDSTRING, 0, ( LPARAM )TranslateT( "Female" ));
-		SetWindowLongPtr( hwndDlg, GWLP_USERDATA, lParam );
-		SendMessage( hwndDlg, WM_JABBER_REFRESH_VCARD, 0, 0 );
-		ppro->WindowSubscribe(hwndDlg);
+		if ( lParam ) {
+			ppro = ( CJabberProto* )lParam;
+			TranslateDialogDefault( hwndDlg );
+			SendMessage( GetDlgItem( hwndDlg, IDC_GENDER ), CB_ADDSTRING, 0, ( LPARAM )TranslateT( "Male" ));
+			SendMessage( GetDlgItem( hwndDlg, IDC_GENDER ), CB_ADDSTRING, 0, ( LPARAM )TranslateT( "Female" ));
+			SetWindowLongPtr( hwndDlg, GWLP_USERDATA, lParam );
+			SendMessage( hwndDlg, WM_JABBER_REFRESH_VCARD, 0, 0 );
+			ppro->WindowSubscribe(hwndDlg);
+		}
 		break;
+
 	case WM_JABBER_REFRESH_VCARD:
-	{
 		SetDialogField( ppro, hwndDlg, IDC_FULLNAME, "FullName" );
 		SetDialogField( ppro, hwndDlg, IDC_NICKNAME, "Nick" );
 		SetDialogField( ppro, hwndDlg, IDC_FIRSTNAME, "FirstName" );
@@ -89,7 +90,7 @@ static INT_PTR CALLBACK PersonalDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, 
 		SetDialogField( ppro, hwndDlg, IDC_OCCUPATION, "Role" );
 		SetDialogField( ppro, hwndDlg, IDC_HOMEPAGE, "Homepage" );
 		break;
-	}
+
 	case WM_COMMAND:
 		if (( ( HWND )lParam==GetFocus() && HIWORD( wParam )==EN_CHANGE ) ||
 			(( HWND )lParam==GetDlgItem( hwndDlg, IDC_GENDER ) && ( HIWORD( wParam )==CBN_EDITCHANGE||HIWORD( wParam )==CBN_SELCHANGE )) )
@@ -98,6 +99,7 @@ static INT_PTR CALLBACK PersonalDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, 
 			SendMessage( GetParent( hwndDlg ), PSM_CHANGED, 0, 0 );
 		}
 		break;
+
 	case WM_NOTIFY:
 		if (((LPNMHDR)lParam)->idFrom == 0) {
 			switch (((LPNMHDR)lParam)->code) {
@@ -112,6 +114,7 @@ static INT_PTR CALLBACK PersonalDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, 
 				break;
 		}	}
 		break;
+
 	case WM_DESTROY:
 		ppro->WindowUnsubscribe(hwndDlg);
 		break;
@@ -126,30 +129,40 @@ static INT_PTR CALLBACK HomeDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 
 	switch ( msg ) {
 	case WM_INITDIALOG:
-		if (!lParam) break; // Launched from userinfo
-		ppro = ( CJabberProto* )lParam;
-		TranslateDialogDefault( hwndDlg );
-		SetWindowLongPtr( hwndDlg, GWLP_USERDATA, lParam );
-		SendMessage( hwndDlg, WM_JABBER_REFRESH_VCARD, 0, 0 );
-		ppro->WindowSubscribe(hwndDlg);
+		if ( lParam ) {
+			ppro = ( CJabberProto* )lParam;
+			TranslateDialogDefault( hwndDlg );
+			for (int i = 0; i < g_cbCountries; i++)	{
+				if ( g_countries[i].id != 0xFFFF && g_countries[i].id != 0) {
+					TCHAR *country = mir_a2t(g_countries[i].szName);
+					SendMessage( GetDlgItem( hwndDlg, IDC_COUNTRY ), CB_ADDSTRING, 0, ( LPARAM )TranslateTS(country));
+					mir_free(country);
+				}
+			}
+			SetWindowLongPtr( hwndDlg, GWLP_USERDATA, lParam );
+			SendMessage( hwndDlg, WM_JABBER_REFRESH_VCARD, 0, 0 );
+			ppro->WindowSubscribe(hwndDlg);
+		}
 		break;
+
 	case WM_JABBER_REFRESH_VCARD:
-	{
 		SetDialogField( ppro, hwndDlg, IDC_ADDRESS1, "Street" );
 		SetDialogField( ppro, hwndDlg, IDC_ADDRESS2, "Street2" );
 		SetDialogField( ppro, hwndDlg, IDC_CITY, "City" );
 		SetDialogField( ppro, hwndDlg, IDC_STATE, "State" );
 		SetDialogField( ppro, hwndDlg, IDC_ZIP, "ZIP" );
-		SetDialogField( ppro, hwndDlg, IDC_COUNTRY, "Country" );
+		SetDialogField( ppro, hwndDlg, IDC_COUNTRY, "Country", true );
 		break;
-	}
+
 	case WM_COMMAND:
-		if (( HWND )lParam==GetFocus() && HIWORD( wParam )==EN_CHANGE )
+		if ((( HWND )lParam==GetFocus() && HIWORD( wParam )==EN_CHANGE) ||
+			(( HWND )lParam==GetDlgItem( hwndDlg, IDC_COUNTRY ) && ( HIWORD( wParam )==CBN_EDITCHANGE||HIWORD( wParam )==CBN_SELCHANGE )) )
 		{
 			ppro->m_vCardUpdates |= (1UL<<iPageId);
 			SendMessage( GetParent( hwndDlg ), PSM_CHANGED, 0, 0 );
 		}
 		break;
+
 	case WM_NOTIFY:
 		if (((LPNMHDR)lParam)->idFrom == 0) {
 			switch (((LPNMHDR)lParam)->code) {
@@ -164,6 +177,7 @@ static INT_PTR CALLBACK HomeDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 				break;
 		}	}
 		break;
+
 	case WM_DESTROY:
 		ppro->WindowUnsubscribe(hwndDlg);
 		break;
@@ -178,15 +192,23 @@ static INT_PTR CALLBACK WorkDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 
 	switch ( msg ) {
 	case WM_INITDIALOG:
-		if (!lParam) break; // Launched from userinfo
-		ppro = ( CJabberProto* )lParam;
-		TranslateDialogDefault( hwndDlg );
-		SetWindowLongPtr( hwndDlg, GWLP_USERDATA, lParam );
-		SendMessage( hwndDlg, WM_JABBER_REFRESH_VCARD, 0, 0 );
-		ppro->WindowSubscribe(hwndDlg);
+		if ( lParam ) { // proto info is available
+			ppro = ( CJabberProto* )lParam;
+			TranslateDialogDefault( hwndDlg );
+			for (int i = 0; i < g_cbCountries; i++)	{
+				if ( g_countries[i].id != 0xFFFF && g_countries[i].id != 0 ) {
+					TCHAR *country = mir_a2t( g_countries[i].szName );
+					SendMessage( GetDlgItem( hwndDlg, IDC_COUNTRY ), CB_ADDSTRING, 0, ( LPARAM )TranslateTS(country));
+					mir_free(country);
+				}
+			}
+			SetWindowLongPtr( hwndDlg, GWLP_USERDATA, lParam );
+			SendMessage( hwndDlg, WM_JABBER_REFRESH_VCARD, 0, 0 );
+			ppro->WindowSubscribe(hwndDlg);
+		}
 		break;
+
 	case WM_JABBER_REFRESH_VCARD:
-	{
 		SetDialogField( ppro, hwndDlg, IDC_COMPANY, "Company" );
 		SetDialogField( ppro, hwndDlg, IDC_DEPARTMENT, "CompanyDepartment" );
 		SetDialogField( ppro, hwndDlg, IDC_TITLE, "CompanyPosition" );
@@ -195,16 +217,18 @@ static INT_PTR CALLBACK WorkDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 		SetDialogField( ppro, hwndDlg, IDC_CITY, "CompanyCity" );
 		SetDialogField( ppro, hwndDlg, IDC_STATE, "CompanyState" );
 		SetDialogField( ppro, hwndDlg, IDC_ZIP, "CompanyZIP" );
-		SetDialogField( ppro, hwndDlg, IDC_COUNTRY, "CompanyCountry" );
+		SetDialogField( ppro, hwndDlg, IDC_COUNTRY, "CompanyCountry", true );
 		break;
-	}
+
 	case WM_COMMAND:
-		if (( HWND )lParam==GetFocus() && HIWORD( wParam )==EN_CHANGE )
+		if ((( HWND )lParam==GetFocus() && HIWORD( wParam )==EN_CHANGE) ||
+			(( HWND )lParam==GetDlgItem( hwndDlg, IDC_COUNTRY ) && ( HIWORD( wParam )==CBN_EDITCHANGE||HIWORD( wParam )==CBN_SELCHANGE )) )
 		{
 			ppro->m_vCardUpdates |= (1UL<<iPageId);
 			SendMessage( GetParent( hwndDlg ), PSM_CHANGED, 0, 0 );
 		}
 		break;
+
 	case WM_NOTIFY:
 		if (((LPNMHDR)lParam)->idFrom == 0) {
 			switch (((LPNMHDR)lParam)->code) {
@@ -219,6 +243,7 @@ static INT_PTR CALLBACK WorkDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 				break;
 		}	}
 		break;
+
 	case WM_DESTROY:
 		ppro->WindowUnsubscribe(hwndDlg);
 		break;
@@ -271,7 +296,7 @@ static INT_PTR CALLBACK PhotoDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 			dat->ppro->m_szPhotoFileName[0] = '\0';
 		}
 		EnableWindow( GetDlgItem( hwndDlg, IDC_DELETE ), FALSE );
-		dat->ppro->GetAvatarFileName( NULL, szAvatarFileName, sizeof( szAvatarFileName ));
+		dat->ppro->GetAvatarFileName( NULL, szAvatarFileName, SIZEOF( szAvatarFileName ));
 		if ( _taccess( szAvatarFileName, 0 ) == 0 ) {
 			if ( GetTempPath( SIZEOF( szTempPath ), szTempPath ) <= 0 )
 				_tcscpy( szTempPath, _T(".\\"));
@@ -955,8 +980,12 @@ void CJabberProto::SaveVcardToDB( HWND hwndPage, int iPage )
 		JSetStringT( NULL, "State", text );
 		GetDlgItemText( hwndPage, IDC_ZIP, text, SIZEOF( text ));
 		JSetStringT( NULL, "ZIP", text );
-		GetDlgItemText( hwndPage, IDC_COUNTRY, text, SIZEOF( text ));
-		JSetStringT( NULL, "Country", text );
+		{
+			int i = SendMessage( GetDlgItem( hwndPage, IDC_COUNTRY ), CB_GETCURSEL, 0, 0 );
+			TCHAR *country = mir_a2t((i) ? g_countries[i+2].szName : g_countries[1].szName);
+			JSetStringT( NULL, "Country", country );
+			mir_free(country);
+		}
 		break;
 
 	// Page 2: Work
@@ -977,8 +1006,12 @@ void CJabberProto::SaveVcardToDB( HWND hwndPage, int iPage )
 		JSetStringT( NULL, "CompanyState", text );
 		GetDlgItemText( hwndPage, IDC_ZIP, text, SIZEOF( text ));
 		JSetStringT( NULL, "CompanyZIP", text );
-		GetDlgItemText( hwndPage, IDC_COUNTRY, text, SIZEOF( text ));
-		JSetStringT( NULL, "CompanyCountry", text );
+		{
+			int i = SendMessage( GetDlgItem( hwndPage, IDC_COUNTRY ), CB_GETCURSEL, 0, 0 );
+			TCHAR *country = mir_a2t((i) ? g_countries[i+2].szName : g_countries[1].szName);
+			JSetStringT( NULL, "CompanyCountry", country );
+			mir_free(country);
+		}
 		break;
 
 	// Page 3: Photo
@@ -1108,7 +1141,7 @@ void CJabberProto::SetServerVcard( BOOL bPhotoChanged, TCHAR* szPhotoFileName )
 	}
 
 	TCHAR szAvatarName[ MAX_PATH ];
-	GetAvatarFileName( NULL, szAvatarName, sizeof( szAvatarName ));
+	GetAvatarFileName( NULL, szAvatarName, SIZEOF( szAvatarName ));
 	if ( bPhotoChanged )
 		szFileName = szPhotoFileName;
 	else
@@ -1165,7 +1198,7 @@ void CJabberProto::SetServerVcard( BOOL bPhotoChanged, TCHAR* szPhotoFileName )
 							if ( bPhotoChanged ) {
 								DeleteFile( szAvatarName );
 
-								GetAvatarFileName( NULL, szAvatarName, sizeof( szAvatarName ));
+								GetAvatarFileName( NULL, szAvatarName, SIZEOF( szAvatarName ));
 
 								CopyFile( szFileName, szAvatarName, FALSE );
 							}

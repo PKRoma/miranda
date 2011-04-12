@@ -598,6 +598,9 @@ extern HRESULT (WINAPI *JabberDrawThemeParentBackground)(HWND, HDC, RECT *);
 
 extern const TCHAR xmlnsOwner[];
 
+extern int g_cbCountries;
+extern struct CountryListEntry* g_countries;
+
 /*******************************************************************
  * Function declarations
  *******************************************************************/
