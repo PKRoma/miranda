@@ -350,10 +350,13 @@ static BOOL DoPopup(SESSION_INFO* si, GCEVENT* gce, struct TWindowData* dat)
 					goto passed;
 			}
 			if (pContainer->dwFlags & CNT_ALWAYSREPORTINACTIVE) {
+				if (pContainer->dwFlags & CNT_DONTREPORTFOCUSED)
+					goto passed;
+				
 				if (pContainer->hwndActive == si->hWnd)
 					return 0;
-				else
-					goto passed;
+				
+				goto passed;
 			}
 			return 0;
 		}
