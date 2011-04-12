@@ -10,8 +10,10 @@
 #include <windows.h>
 #include <winres.h>
 #include "../../include/statusmodes.h"
-
-
+
+
+
+
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
 
@@ -205,10 +207,10 @@ BEGIN
     CONTROL         "Flash until focused",IDC_O_FLASHALWAYS,"Button",BS_AUTORADIOBUTTON,105,53,310,10
     CONTROL         "Disable flashing",IDC_O_FLASHNEVER,"Button",BS_AUTORADIOBUTTON,105,64,310,11
     CONTROL         "Enable popups if minimized",IDC_O_DONTREPORT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,105,44,310,10
-    CONTROL         "Enable popups if unfocused",IDC_DONTREPORTUNFOCUSED2,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,105,55,310,10
+    CONTROL         "Enable popups if unfocused",IDC_DONTREPORTUNFOCUSED2,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,105,55,310,10
+    CONTROL         "Enable popups if focused",IDC_DONTREPORTFOCUSED2,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,105,66,310,10
     CONTROL         "Show popups for inactive tabs in active containers",IDC_ALWAYSPOPUPSINACTIVE,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,105,66,310,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,105,77,310,10
     CONTROL         "Hide the status bar",IDC_CNTNOSTATUSBAR,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,105,44,310,10
     CONTROL         "Hide the menu bar",IDC_HIDEMENUBAR,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,105,55,310,10
     CONTROL         "User ID in status bar",IDC_UIDSTATUSBAR,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,105,66,310,10
@@ -845,6 +847,7 @@ BEGIN
             MENUITEM SEPARATOR
             MENUITEM "Show Popups if Window is minimized", 40110
             MENUITEM "Show Popups if Window is unfocused", 40111
+            MENUITEM "Show Popups if Window is focused", 40120
             MENUITEM "Show Popups for all inactive sessions", 40112
         END
         MENUITEM SEPARATOR

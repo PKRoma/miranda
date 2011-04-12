@@ -714,13 +714,16 @@ LRESULT TSAPI DM_ContainerCmdHandler(TContainerData *pContainer, UINT cmd, WPARA
 			SendMessage(hwndDlg, WM_SYSCOMMAND, IDM_MOREOPTIONS, 0);
 			break;
 		case ID_EVENTPOPUPS_DISABLEALLEVENTPOPUPS:
-			ApplyContainerSetting(pContainer, (CNT_DONTREPORT | CNT_DONTREPORTUNFOCUSED | CNT_ALWAYSREPORTINACTIVE), 0, false);
+			ApplyContainerSetting(pContainer, (CNT_DONTREPORT | CNT_DONTREPORTUNFOCUSED | CNT_DONTREPORTFOCUSED | CNT_ALWAYSREPORTINACTIVE), 0, false);
 			return 0;
 		case ID_EVENTPOPUPS_SHOWPOPUPSIFWINDOWISMINIMIZED:
 			ApplyContainerSetting(pContainer, CNT_DONTREPORT, pContainer->dwFlags & CNT_DONTREPORT ? 0 : 1, false);
 			return 0;
 		case ID_EVENTPOPUPS_SHOWPOPUPSIFWINDOWISUNFOCUSED:
 			ApplyContainerSetting(pContainer, CNT_DONTREPORTUNFOCUSED, pContainer->dwFlags & CNT_DONTREPORTUNFOCUSED ? 0 : 1, false);
+			return 0;
+		case ID_EVENTPOPUPS_SHOWPOPUPSIFWINDOWISFOCUSED:
+			ApplyContainerSetting(pContainer, CNT_DONTREPORTFOCUSED, pContainer->dwFlags & CNT_DONTREPORTFOCUSED ? 0 : 1, false);
 			return 0;
 		case ID_EVENTPOPUPS_SHOWPOPUPSFORALLINACTIVESESSIONS:
 			ApplyContainerSetting(pContainer, CNT_ALWAYSREPORTINACTIVE, pContainer->dwFlags & CNT_ALWAYSREPORTINACTIVE ? 0 : 1, false);

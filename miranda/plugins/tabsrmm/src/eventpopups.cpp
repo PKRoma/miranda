@@ -919,6 +919,9 @@ int tabSRMM_ShowPopup(WPARAM wParam, LPARAM lParam, WORD eventType, int windowOp
 				goto passed;
 		}
 		if (pContainer->dwFlags & CNT_ALWAYSREPORTINACTIVE) {
+			if (pContainer->dwFlags & CNT_DONTREPORTFOCUSED)
+				goto passed;
+
 			if (pContainer->hwndActive == hwndChild)
 				return 0;
 			else

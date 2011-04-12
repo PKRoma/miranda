@@ -454,6 +454,7 @@ struct TNewWindowData {
 #define CNT_FLASHALWAYS 0x80
 #define CNT_TRANSPARENCY 0x100
 #define CNT_AUTOHIDE 0x200
+#define CNT_DONTREPORTFOCUSED 0x400
 //#define CNT_GLOBALSETTINGS 0x400
 #define CNT_GLOBALSIZE 0x800
 #define CNT_INFOPANEL 0x1000
@@ -601,6 +602,7 @@ struct TNewWindowData {
 #define DM_SC_INITDIALOG     (WM_USER+101)
 #define DM_SC_CONFIG		 (WM_USER+104)
 #define DM_SCROLLIEVIEW		 (WM_USER+102)
+#define DM_UPDATEUIN		 (WM_USER+103)
 
 #define MINSPLITTERY         42
 #define MINLOGHEIGHT         30

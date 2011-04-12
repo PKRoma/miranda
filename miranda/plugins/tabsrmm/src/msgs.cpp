@@ -234,6 +234,9 @@ INT_PTR MessageWindowOpened(WPARAM wParam, LPARAM lParam)
 					return 0;
 			}
 			if (pContainer->dwFlags & CNT_ALWAYSREPORTINACTIVE) {
+				if (pContainer->dwFlags & CNT_DONTREPORTFOCUSED)
+					return 0;
+
 				if (pContainer->hwndActive == hwnd)
 					return 1;
 				else

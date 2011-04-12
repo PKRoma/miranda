@@ -83,7 +83,7 @@ TCHAR* RemoveFormatting(const TCHAR* pszWord, bool fToLower, bool fStripCR, TCHA
 	}
 
 	size_t i = 0;
-	int j = 0;
+	size_t j = 0;
 
 	if (pszWord == 0)
 		return NULL;
@@ -350,10 +350,13 @@ static BOOL DoPopup(SESSION_INFO* si, GCEVENT* gce, struct TWindowData* dat)
 					goto passed;
 			}
 			if (pContainer->dwFlags & CNT_ALWAYSREPORTINACTIVE) {
+				if (pContainer->dwFlags & CNT_DONTREPORTFOCUSED)
+					goto passed;
+				
 				if (pContainer->hwndActive == si->hWnd)
 					return 0;
-				else
-					goto passed;
+				
+				goto passed;
 			}
 			return 0;
 		}
