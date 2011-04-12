@@ -44,6 +44,9 @@ Last change by : $Author$
 HINSTANCE hInst;
 PLUGINLINK *pluginLink;
 
+int g_cbCountries;
+struct CountryListEntry* g_countries;
+
 static char szVersion[200] = "";
 
 PLUGININFOEX pluginInfo = {
@@ -246,6 +249,8 @@ extern "C" int __declspec( dllexport ) Load( PLUGINLINK *link )
 	mir_getXI( &xi );
 	mir_getTMI( &tmi );
 
+	CallService( MS_UTILS_GETCOUNTRYLIST, ( WPARAM )&g_cbCountries, ( LPARAM )&g_countries );
+	
 	setlocale(LC_ALL, "");
 	mir_snprintf( szVersion, sizeof( szVersion ), Translate("Jabber protocol plugin for Miranda IM (%s)"), __DATE__ );
 
