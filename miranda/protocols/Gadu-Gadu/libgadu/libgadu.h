@@ -340,7 +340,6 @@ struct gg_session {
 
 	int protocol_features;	/**< Opcje protokołu */
 	int status_flags;	/**< Flagi statusu */
-	int recv_msg_count;	/**< Liczba odebranych wiadomości */
 };
 
 /**
