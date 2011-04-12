@@ -783,8 +783,10 @@ malformed:
  *
  * \return 0 jeśli się powiodło, -1 jeśli wystąpił błąd
  */
-static int gg_handle_recv_msg_ack(struct gg_session *sess)
+static int gg_handle_recv_msg_ack(struct gg_header *h, struct gg_session *sess)
 {
+	char *packet = (char*) h + sizeof(struct gg_header);
+	struct gg_recv_msg80 *r = (struct gg_recv_msg80*) packet;
 	struct gg_recv_msg_ack pkt;
 
 	gg_debug_session(sess, GG_DEBUG_FUNCTION, "** gg_handle_recv_msg_ack(%p);\n", sess);
@@ -792,8 +794,7 @@ static int gg_handle_recv_msg_ack(struct gg_session *sess)
 	if ((sess->protocol_features & GG_FEATURE_MSG_ACK) == 0)
 		return 0;
 
-	sess->recv_msg_count++;
-	pkt.count = gg_fix32(sess->recv_msg_count);
+	pkt.seq = gg_fix32(r->seq);
 
 	return gg_send_packet(sess, GG_RECV_MSG_ACK, &pkt, sizeof(pkt), NULL);
 }
@@ -1114,7 +1115,7 @@ static int gg_watch_fd_connected(struct gg_session *sess, struct gg_event *e)
 		{
 			if (h->length >= sizeof(struct gg_recv_msg)) {
 				if (gg_handle_recv_msg(h, e, sess) != -1)
-					gg_handle_recv_msg_ack(sess);
+					gg_handle_recv_msg_ack(h, sess);
 				else
 					goto fail;
 			}
@@ -1126,7 +1127,7 @@ static int gg_watch_fd_connected(struct gg_session *sess, struct gg_event *e)
 		{
 			if (h->length >= sizeof(struct gg_recv_msg80)) {
 				if (gg_handle_recv_msg80(h, e, sess, GG_EVENT_MSG) != -1)
-					gg_handle_recv_msg_ack(sess);
+					gg_handle_recv_msg_ack(h, sess);
 				else
 					goto fail;
 			}
