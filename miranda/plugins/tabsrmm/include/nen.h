@@ -99,16 +99,16 @@ int tabSRMM_ShowPopup(WPARAM wParam, LPARAM lParam, WORD eventType, int windowOp
 #define OPT_REMOVEMASK "removemask"
 
 struct NEN_OPTIONS {
-    BOOL bPreview;
-    BOOL bDefaultColorMsg;
+	BOOL bPreview;
+	BOOL bDefaultColorMsg;
 	BOOL bDefaultColorOthers;
 	BOOL bDisableNonMessage;
-    COLORREF colBackMsg;
-    COLORREF colTextMsg;
+	COLORREF colBackMsg;
+	COLORREF colTextMsg;
 	COLORREF colBackOthers;
-    COLORREF colTextOthers;
-    UINT maskActL;
-    UINT maskActR;
+	COLORREF colTextOthers;
+	UINT maskActL;
+	UINT maskActR;
 	UINT maskActTE;
 	int iDelayMsg;
 	int iDelayOthers;
@@ -116,38 +116,39 @@ struct NEN_OPTIONS {
 	BOOL bMergePopup;
 	BOOL bShowHeaders;
 	BOOL bNoRSS;
-    int  iDisable;
+	int  iDisable;
 	int	 iMUCDisable;
-    int  dwStatusMask;
-    BOOL bTraySupport;
-    BOOL bTrayExist;
-    BOOL iNoSounds;
-    BOOL iNoAutoPopup;
-    BOOL bWindowCheck;
-    int  iLimitPreview;
-    WORD wMaxRecent;
-    WORD wMaxFavorites;
-    DWORD dwRemoveMask;
+	int  dwStatusMask;
+	BOOL bTraySupport;
+	BOOL bTrayExist;
+	BOOL iNoSounds;
+	BOOL iNoAutoPopup;
+	BOOL bWindowCheck;
+	int  iLimitPreview;
+	WORD wMaxRecent;
+	WORD wMaxFavorites;
+	DWORD dwRemoveMask;
 };
 
 typedef struct {
 	HANDLE hEvent;
-    TCHAR szText[MAX_SECONDLINE + 2];
-    DWORD timestamp;
+	TCHAR szText[MAX_SECONDLINE + 2];
+	DWORD timestamp;
 } EVENT_DATAT;
 
 typedef struct {
-    UINT 		eventType;
-    HANDLE 		hContact;
-    NEN_OPTIONS *pluginOptions;
+	UINT 		eventType;
+	HANDLE 		hContact;
+	NEN_OPTIONS *pluginOptions;
 	POPUPDATAT_V2* pud;
 	HWND 		hWnd;
 	long 		iSeconds;
-    TCHAR 		szHeader[256];
-    int  		nrMerged;
-    EVENT_DATAT *eventData;
-    int  		nrEventsAlloced;
-    int  		iActionTaken;
+	TCHAR 		szHeader[256];
+	int  		nrMerged;
+	EVENT_DATAT *eventData;
+	int  		nrEventsAlloced;
+	int  		iActionTaken;
+	HWND     hContainer;
 } PLUGIN_DATAT;
 
 #define NR_MERGED 5

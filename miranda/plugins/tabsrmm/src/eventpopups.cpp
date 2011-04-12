@@ -431,7 +431,19 @@ static int PopupAct(HWND hWnd, UINT mask, PLUGIN_DATAT* pdata)
 		}
 	}
 	if (mask & MASK_DISMISS)
+	{
 		PUDeletePopUp(hWnd);
+		if (pdata->hContainer)
+		{
+			FLASHWINFO fwi;
+			fwi.cbSize = sizeof(fwi);
+			fwi.uCount = 0;
+			fwi.dwFlags = FLASHW_STOP;
+			fwi.hwnd = pdata->hContainer;
+			fwi.dwTimeout = 0;
+			FlashWindowEx(&fwi);
+		}
+	}
 	return 0;
 }
 
@@ -660,7 +672,7 @@ static int PopupUpdateT(HANDLE hContact, HANDLE hEvent)
 	return(0);
 }
 
-static int PopupShowT(NEN_OPTIONS *pluginOptions, HANDLE hContact, HANDLE hEvent, UINT eventType)
+static int PopupShowT(NEN_OPTIONS *pluginOptions, HANDLE hContact, HANDLE hEvent, UINT eventType, HWND hContainer)
 {
 	POPUPDATAT_V2 	pud = {0};
 	PLUGIN_DATAT 	*pdata;
@@ -715,6 +727,7 @@ static int PopupShowT(NEN_OPTIONS *pluginOptions, HANDLE hContact, HANDLE hEvent
 	pdata->pluginOptions = pluginOptions;
 	pdata->pud = &pud;
 	pdata->iSeconds = iSeconds; // ? iSeconds : pluginOptions->iDelayDefault;
+	pdata->hContainer = hContainer;
 	pud.iSeconds = pdata->iSeconds ? -1 : 0;
 
 	//finally create the popup
@@ -763,8 +776,7 @@ static int PopupShowT(NEN_OPTIONS *pluginOptions, HANDLE hContact, HANDLE hEvent
 
 static int TSAPI PopupPreview(NEN_OPTIONS *pluginOptions)
 {
-	PopupShowT(pluginOptions, NULL, NULL, EVENTTYPE_MESSAGE);
-
+	PopupShowT(pluginOptions, NULL, NULL, EVENTTYPE_MESSAGE, NULL);
 	return 0;
 }
 
@@ -830,7 +842,7 @@ int TSAPI UpdateTrayMenu(const TWindowData *dat, WORD wStatus, const char *szPro
 			return(0);									// should also NOT happen
 
 		wMyStatus = (wStatus == 0) ? DBGetContactSettingWord(hContact, szProto, "Status", ID_STATUS_OFFLINE) : wStatus;
-		szMyStatus = (szStatus == NULL) ? (TCHAR *)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, (WPARAM)wMyStatus, GCMDF_TCHAR) : szStatus;
+		szMyStatus = (szStatus == NULL) ? (TCHAR *)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, (WPARAM)wMyStatus, GSMDF_TCHAR) : szStatus;
 		mii.wID = (UINT)hContact;
 		mii.hbmpItem = HBMMENU_CALLBACK;
 
@@ -935,10 +947,10 @@ passed:
 
 	if(PU_GetByContact((HANDLE)wParam) && nen_options.bMergePopup && eventType == EVENTTYPE_MESSAGE) {
 		if(PopupUpdateT((HANDLE)wParam, (HANDLE)lParam) != 0)
-			PopupShowT(&nen_options, (HANDLE)wParam, (HANDLE)lParam, (UINT)eventType);
+			PopupShowT(&nen_options, (HANDLE)wParam, (HANDLE)lParam, (UINT)eventType, pContainer ? pContainer->hwnd : 0);
 	}
 	else
-		PopupShowT(&nen_options, (HANDLE)wParam, (HANDLE)lParam, (UINT)eventType);
+		PopupShowT(&nen_options, (HANDLE)wParam, (HANDLE)lParam, (UINT)eventType, pContainer ? pContainer->hwnd : 0);
 
 	return 0;
 }
