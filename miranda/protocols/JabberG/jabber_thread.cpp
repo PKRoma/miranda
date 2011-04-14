@@ -477,7 +477,7 @@ LBL_FatalError:
 				if ( nSelRes == -1 ) // error
 					break;
 				else if ( nSelRes == 0 ) {
-					if ( m_options.EnableServerXMPPPing && ( m_ThreadInfo->jabberServerCaps & JABBER_CAPS_PING ))
+					if ( m_ThreadInfo->jabberServerCaps & JABBER_CAPS_PING )
 						info->send( 
 							XmlNodeIq( m_iqManager.AddHandler( &CJabberProto::OnPingReply, JABBER_IQ_TYPE_GET, NULL, 0, -1, this, 0, m_options.ConnectionKeepAliveTimeout ))
 								<< XCHILDNS( _T("ping"), _T(JABBER_FEAT_PING)));
