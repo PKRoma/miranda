@@ -187,7 +187,6 @@ struct CJabberOptions
 	CMOption<BYTE> DisableFrame;
 	CMOption<BYTE> EnableAvatars;
 	CMOption<BYTE> EnableRemoteControl;
-	CMOption<BYTE> EnableServerXMPPPing;
 	CMOption<BYTE> EnableUserActivity;
 	CMOption<BYTE> EnableUserMood;
 	CMOption<BYTE> EnableUserTune;
@@ -241,7 +240,6 @@ struct CJabberOptions
 		DisableFrame(proto, "DisableFrame", TRUE),
 		EnableAvatars(proto, "EnableAvatars", TRUE),
 		EnableRemoteControl(proto, "EnableRemoteControl", FALSE),
-		EnableServerXMPPPing(proto, "EnableServerXMPPPing", TRUE),
 		EnableUserActivity(proto, "EnableUserActivity", TRUE),
 		EnableUserMood(proto, "EnableUserMood", TRUE),
 		EnableUserTune(proto, "EnableUserTune", FALSE),
