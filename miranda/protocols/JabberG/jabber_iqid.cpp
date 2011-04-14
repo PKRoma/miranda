@@ -51,12 +51,18 @@ void CJabberProto::OnIqResultServerDiscoInfo( HXML iqNode )
 		for ( i = 1; ( identity = xmlGetNthChild( query, _T("identity"), i )) != NULL; i++ ) {
 			const TCHAR *identityCategory = xmlGetAttrValue( identity, _T("category"));
 			const TCHAR *identityType = xmlGetAttrValue( identity, _T("type"));
+			const TCHAR *identityName = xmlGetAttrValue( identity, _T("name"));
 			if ( identityCategory && identityType && !_tcscmp( identityCategory, _T("pubsub") ) && !_tcscmp( identityType, _T("pep")) ) {
 				m_bPepSupported = TRUE;
 
 				EnableMenuItems( TRUE );
 				RebuildInfoFrame();
-				break;
+			}
+			else if ( identityCategory && identityType && identityName &&
+				!_tcscmp( identityCategory, _T("server")) && 
+				!_tcscmp( identityType, _T("im")) && 
+				!_tcscmp( identityName, _T("Google Talk"))) {
+					m_ThreadInfo->jabberServerCaps |= JABBER_CAPS_PING;
 			}
 		}
 		if ( m_ThreadInfo ) {
