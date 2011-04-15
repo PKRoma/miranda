@@ -49,6 +49,7 @@ struct LIST_INTERFACE li;
 XML_API xi;
 SSL_API si;
 CLIST_INTERFACE *pcli;
+int hLangpack;
 
 // Event hooks
 static HANDLE hHookModulesLoaded = NULL;
@@ -141,11 +142,11 @@ const char *http_error_string(int h)
 // Gets plugin info
 __declspec(dllexport) PLUGININFOEX *MirandaPluginInfoEx(DWORD mirandaVersion)
 {
-	if (mirandaVersion < PLUGIN_MAKE_VERSION(0, 10, 0, 1))
+	if (mirandaVersion < MIRANDA_VERSION_CORE)
 	{
 		MessageBox(
 			NULL,
-			"The Gadu-Gadu protocol plugin cannot be loaded. It requires Miranda IM 0.10.0.1 or later.",
+			"The Gadu-Gadu protocol plugin cannot be loaded. It requires Miranda IM " MIRANDA_VERSION_CORE_STRING " or later.",
 			"Gadu-Gadu Protocol Plugin",
 			MB_OK | MB_ICONWARNING | MB_SETFOREGROUND | MB_TOPMOST
 		);
@@ -496,6 +497,7 @@ int __declspec(dllexport) Load(PLUGINLINK * link)
 	mir_getMD5I(&md5i);
 	mir_getLI(&li);
 	mir_getXI(&xi);
+	mir_getLP(&pluginInfo);
 
 	// Init winsock
 	if (WSAStartup(MAKEWORD( 1, 1 ), &wsaData))
