@@ -18,8 +18,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-// this plugin is for Miranda 0.8 only
-#define MIRANDA_VER 0x0900
+#define MIRANDA_VER 0x1000
 
 #include <m_stdhdr.h>
 

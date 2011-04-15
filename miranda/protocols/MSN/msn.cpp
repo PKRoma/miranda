@@ -24,6 +24,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 HINSTANCE hInst;
 PLUGINLINK *pluginLink;
+int hLangpack;
 
 MM_INTERFACE   mmi;
 LIST_INTERFACE li;
@@ -129,6 +130,7 @@ extern "C" int __declspec(dllexport) Load(PLUGINLINK* link)
 	mir_getUTFI(&utfi);
 	mir_getMD5I(&md5i);
 	mir_getSHA1I(&sha1i);
+	mir_getLP(&pluginInfo);
 
 	hMooduleLoaded = HookEvent(ME_SYSTEM_MODULESLOADED, OnModulesLoaded);
 

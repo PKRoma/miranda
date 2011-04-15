@@ -26,9 +26,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 HINSTANCE g_hInst = 0;
 PLUGINLINK * pluginLink;
 CLIST_INTERFACE* pcli = NULL;
+int hLangpack;
 
 struct LIST_INTERFACE li;
-struct MM_INTERFACE memoryManagerInterface;
+struct MM_INTERFACE mmi;
 static HANDLE hCListShutdown = 0;
 
 HMENU BuildGroupPopupMenu( struct ClcGroup* group );
@@ -181,11 +182,9 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 
 		OutputDebugStringA("CListInitialise ClistMW\r\n");
 
-		memoryManagerInterface.cbSize = sizeof(memoryManagerInterface);
-		CallService(MS_SYSTEM_GET_MMI, 0, (LPARAM)&memoryManagerInterface);
-
-		li.cbSize = sizeof(li);
-		CallService(MS_SYSTEM_GET_LI, 0, (LPARAM)&li);
+		mir_getMMI( &mmi );
+		mir_getLP( &pluginInfo );
+		mir_getLI( &li );
 
 		pcli = ( CLIST_INTERFACE* )CallService(MS_CLIST_RETRIEVE_INTERFACE, 0, (LPARAM)g_hInst);
 		if ( (INT_PTR)pcli == CALLSERVICE_NOTFOUND ) {

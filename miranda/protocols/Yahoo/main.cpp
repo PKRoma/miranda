@@ -29,7 +29,7 @@ MM_INTERFACE   mmi;
 UTF8_INTERFACE utfi;
 MD5_INTERFACE  md5i;
 LIST_INTERFACE li;
-
+int hLangpack;
 
 PLUGININFOEX pluginInfo={
 		sizeof(PLUGININFOEX),
@@ -124,6 +124,7 @@ extern "C" int __declspec(dllexport)Load(PLUGINLINK *link)
 	mir_getMMI( &mmi );
 	mir_getUTFI( &utfi );
 	mir_getMD5I( &md5i );
+	mir_getLP( &pluginInfo );
 	
 	PROTOCOLDESCRIPTOR pd = { 0 };
 	pd.cbSize = sizeof(pd);
@@ -171,13 +172,12 @@ extern "C" int __declspec(dllexport) Unload(void)
 extern "C" __declspec(dllexport) PLUGININFOEX* MirandaPluginInfoEx(DWORD mirandaVersion)
 {
 	/*
-     * We require Miranda 0.8.0.24
 	 * This requires the latest trunk... [md5, sha, etc..]
 	 */
-    if (mirandaVersion < PLUGIN_MAKE_VERSION(0, 9, 0, 1)) {
-		MessageBox( NULL, 
-				_T("Yahoo plugin cannot be loaded. It requires Miranda IM 0.9.0.1 or later."), 
-				_T("Yahoo"), 
+    if (mirandaVersion < MIRANDA_VERSION_CORE ) {
+		MessageBoxA( NULL, 
+				"Yahoo plugin cannot be loaded. It requires Miranda IM " MIRANDA_VERSION_CORE_STRING " or later.",
+				"Yahoo",
 				MB_OK|MB_ICONWARNING|MB_SETFOREGROUND|MB_TOPMOST );
 
         return NULL;

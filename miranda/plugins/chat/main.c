@@ -25,6 +25,7 @@ HINSTANCE   g_hInst;
 PLUGINLINK  *pluginLink;
 HANDLE      g_hWindowList;
 HMENU       g_hMenu = NULL;
+int         hLangpack;
 
 struct MM_INTERFACE memoryManagerInterface;
 struct UTF8_INTERFACE utfi;
@@ -81,7 +82,7 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL,DWORD fdwReason,LPVOID lpvReserved)
 
 __declspec(dllexport) PLUGININFOEX* MirandaPluginInfoEx(DWORD mirandaVersion)
 {
-	if (mirandaVersion < PLUGIN_MAKE_VERSION(0,7,0,2)) return NULL;
+	if (mirandaVersion < MIRANDA_VERSION_CORE) return NULL;
 	return &pluginInfo;
 }
 
@@ -106,8 +107,8 @@ int __declspec(dllexport) Load(PLUGINLINK *link)
 
 	// set the memory & utf8 managers
 	mir_getMMI( &memoryManagerInterface );
-	if ( mir_getUTFI( &utfi ) == CALLSERVICE_NOTFOUND )
-		return 1;
+	mir_getUTFI( &utfi );
+	mir_getLP( &pluginInfo );
 
 	hDll = LoadLibraryA("riched20.dll");
 	if ( hDll ) {

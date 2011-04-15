@@ -26,8 +26,23 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 struct MM_INTERFACE   mmi;
 struct LIST_INTERFACE li;
 struct UTF8_INTERFACE utfi;
+int hLangpack;
 
 extern char szDbPath[MAX_PATH];
+
+static PLUGININFOEX pluginInfo = {
+	sizeof(PLUGININFOEX),
+	"Miranda mmap database driver",
+	__VERSION_DWORD,
+	"Provides Miranda database support: global settings, contacts, history, settings per contact.",
+	"Miranda-IM project",
+	"bio@msx.ru; ghazan@miranda-im.org",
+	"Copyright 2000-2011 Miranda IM project",
+	"",
+	UNICODE_AWARE,
+	DEFMOD_DB,
+    {0xf7a6b27c, 0x9d9c, 0x4a42, { 0xbe, 0x86, 0xa4, 0x48, 0xae, 0x10, 0x91, 0x61 }} //{F7A6B27C-9D9C-4a42-BE86-A448AE109161}
+};
 
 HINSTANCE g_hInst=NULL;
 PLUGINLINK *pluginLink;
@@ -119,6 +134,7 @@ static int LoadDatabase( char * profile, void * plink )
 	mir_getLI( &li );
 	mir_getMMI( &mmi );
 	mir_getUTFI( &utfi );
+	mir_getLP( &pluginInfo );
 
 	// inject all APIs and hooks into the core
 	return LoadDatabaseModule();
@@ -147,20 +163,6 @@ static DATABASELINK dblink = {
 	UnloadDatabase,
 };
 
-static PLUGININFOEX pluginInfo = {
-	sizeof(PLUGININFOEX),
-	"Miranda mmap database driver",
-	__VERSION_DWORD,
-	"Provides Miranda database support: global settings, contacts, history, settings per contact.",
-	"Miranda-IM project",
-	"bio@msx.ru; ghazan@miranda-im.org",
-	"Copyright 2000-2008 Miranda IM project",
-	"",
-	UNICODE_AWARE,
-	DEFMOD_DB,
-    {0xf7a6b27c, 0x9d9c, 0x4a42, { 0xbe, 0x86, 0xa4, 0x48, 0xae, 0x10, 0x91, 0x61 }} //{F7A6B27C-9D9C-4a42-BE86-A448AE109161}
-};
-
 BOOL WINAPI DllMain(HINSTANCE hInstDLL, DWORD dwReason, LPVOID reserved)
 {
 	g_hInst=hInstDLL;
@@ -174,7 +176,7 @@ __declspec(dllexport) DATABASELINK* DatabasePluginInfo(void * reserved)
 
 __declspec(dllexport) PLUGININFOEX * MirandaPluginInfoEx(DWORD mirandaVersion)
 {
-	if ( mirandaVersion < PLUGIN_MAKE_VERSION(0,7,0,0)) {
+	if ( mirandaVersion < MIRANDA_VERSION_CORE ) {
 		MessageBox( NULL, _T("The db3x_mmap plugin cannot be loaded. It requires Miranda IM 0.7.0.0 or later."), _T("db3x_mmap Plugin"), MB_OK|MB_ICONWARNING|MB_SETFOREGROUND|MB_TOPMOST );
 		return NULL;
 	}

@@ -32,6 +32,7 @@ TIME_API tmi;
 
 PLUGINLINK *pluginLink;
 HINSTANCE g_hInst;
+int hLangpack;
 
 ITaskbarList3 * pTaskbarInterface;
 
@@ -87,6 +88,8 @@ int __declspec(dllexport) Load(PLUGINLINK * link)
 	mir_getLI( &li );
 	mir_getUTFI( &utfi );
 	mir_getTMI(&tmi);
+	mir_getLP( &pluginInfo );
+
 	if (IsWinVer7Plus())
 		CoCreateInstance(&CLSID_TaskbarList, NULL, CLSCTX_ALL, &IID_ITaskbarList3, (void**)&pTaskbarInterface);
 

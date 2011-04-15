@@ -43,6 +43,7 @@ MM_INTERFACE mmi;
 UTF8_INTERFACE utfi;
 MD5_INTERFACE md5i;
 LIST_INTERFACE li;
+int hLangpack;
 
 DWORD MIRANDA_VERSION;
 
@@ -73,9 +74,9 @@ extern "C" PLUGININFOEX __declspec(dllexport) *MirandaPluginInfoEx(DWORD miranda
 {
 	// Only load for 0.9.0.8 or greater
 	// We need the new Unicode aware Contact Search API
-	if (mirandaVersion < PLUGIN_MAKE_VERSION(0, 9, 0, 8))
+	if (mirandaVersion < MIRANDA_VERSION_CORE)
 	{
-		MessageBoxA( NULL, "ICQ plugin cannot be loaded. It requires Miranda IM 0.9.0.8 or later.", "ICQ Plugin",
+		MessageBoxA( NULL, "ICQ plugin cannot be loaded. It requires Miranda IM " MIRANDA_VERSION_CORE_STRING " or later.", "ICQ Plugin",
 			MB_OK|MB_ICONWARNING|MB_SETFOREGROUND|MB_TOPMOST );
 		return NULL;
 	}
@@ -127,6 +128,7 @@ extern "C" int __declspec(dllexport) Load(PLUGINLINK *link)
 	mir_getMMI( &mmi );
 	mir_getUTFI( &utfi );
 	mir_getMD5I( &md5i );
+	mir_getLP( &pluginInfo );
 
 	// Get Miranda version
 	MIRANDA_VERSION = (DWORD)CallService(MS_SYSTEM_GETVERSION, 0, 0);

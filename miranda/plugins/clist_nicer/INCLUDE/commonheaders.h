@@ -31,6 +31,7 @@
  */
 
 #define MIRANDA_VER 0x0700
+#define MIRANDA_CUSTOM_LP
 
 #define _WIN32_WINNT 0x0501
 #define _WIN32_IE 0x0501

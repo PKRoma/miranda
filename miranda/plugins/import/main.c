@@ -48,6 +48,7 @@ INT_PTR CALLBACK WizardDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM lPara
 HINSTANCE hInst;
 PLUGINLINK *pluginLink;
 static HWND hwndWizard = NULL;
+int hLangpack;
 
 PLUGININFOEX pluginInfo = {
 	sizeof(PLUGININFOEX),
@@ -85,7 +86,7 @@ static INT_PTR ImportCommand(WPARAM wParam,LPARAM lParam)
 
 __declspec(dllexport) PLUGININFOEX* MirandaPluginInfoEx(DWORD mirandaVersion)
 {
-	if (mirandaVersion < PLUGIN_MAKE_VERSION(0, 7, 0, 0))
+	if (mirandaVersion < MIRANDA_VERSION_CORE)
 		return NULL;
 
 	return &pluginInfo;
@@ -136,6 +137,7 @@ int __declspec(dllexport) Load(PLUGINLINK *link)
 	pluginLink = link;
 	mir_getMMI( &mmi );
 	mir_getUTFI( &utfi );
+	mir_getLP( &pluginInfo );
 
 	hImportService = CreateServiceFunction(IMPORT_SERVICE, ImportCommand);
 	{

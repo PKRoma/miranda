@@ -43,6 +43,7 @@ Last change by : $Author$
 
 HINSTANCE hInst;
 PLUGINLINK *pluginLink;
+int hLangpack;
 
 int g_cbCountries;
 struct CountryListEntry* g_countries;
@@ -113,8 +114,10 @@ extern "C" BOOL WINAPI DllMain( HINSTANCE hModule, DWORD, LPVOID )
 
 extern "C" __declspec( dllexport ) PLUGININFOEX *MirandaPluginInfoEx( DWORD mirandaVersion )
 {
-	if ( mirandaVersion < PLUGIN_MAKE_VERSION( 0,9,0,4 )) {
-		MessageBoxA( NULL, "The Jabber protocol plugin cannot be loaded. It requires Miranda IM 0.9.0.4 or later.", "Jabber Protocol Plugin", MB_OK|MB_ICONWARNING|MB_SETFOREGROUND|MB_TOPMOST );
+	if ( mirandaVersion < MIRANDA_VERSION_CORE ) {
+		MessageBoxA( NULL, 
+			"The Jabber protocol plugin cannot be loaded. It requires Miranda IM " MIRANDA_VERSION_CORE_STRING " or later.", 
+			"Jabber Protocol Plugin", MB_OK|MB_ICONWARNING|MB_SETFOREGROUND|MB_TOPMOST );
 		return NULL;
 	}
 
@@ -248,6 +251,7 @@ extern "C" int __declspec( dllexport ) Load( PLUGINLINK *link )
 	mir_getSHA1I( &sha1i );
 	mir_getXI( &xi );
 	mir_getTMI( &tmi );
+	mir_getLP( &pluginInfo );
 
 	CallService( MS_UTILS_GETCOUNTRYLIST, ( WPARAM )&g_cbCountries, ( LPARAM )&g_countries );
 	

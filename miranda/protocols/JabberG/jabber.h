@@ -32,8 +32,7 @@ Last change by : $Author$
 	#pragma warning(disable:4706 4121 4127)
 #endif
 
-// this plugin is for Miranda 0.9 only
-#define MIRANDA_VER 0x0900
+#define MIRANDA_VER 0x1000
 
 #include "m_stdhdr.h"
 

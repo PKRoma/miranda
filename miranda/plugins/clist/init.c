@@ -28,6 +28,7 @@ HINSTANCE g_hInst = 0;
 PLUGINLINK *pluginLink;
 CLIST_INTERFACE* pcli = NULL;
 HIMAGELIST himlCListClc = NULL;
+int hLangpack;
 
 struct MM_INTERFACE mmi;
 BOOL(WINAPI * MySetLayeredWindowAttributes) (HWND, COLORREF, BYTE, DWORD) = NULL;
@@ -79,7 +80,7 @@ PLUGININFOEX pluginInfo = {
 
 __declspec(dllexport) PLUGININFOEX *MirandaPluginInfoEx(DWORD mirandaVersion)
 {
-	if (mirandaVersion < PLUGIN_MAKE_VERSION(0, 8, 0, 9))
+	if (mirandaVersion < MIRANDA_VERSION_CORE)
 		return NULL;
 	return &pluginInfo;
 }
@@ -153,6 +154,7 @@ int __declspec(dllexport) CListInitialise(PLUGINLINK * link)
 
 	// get the internal malloc/free()
 	mir_getMMI( &mmi );
+	mir_getLP( &pluginInfo );
 
 	pcli = ( CLIST_INTERFACE* )CallService(MS_CLIST_RETRIEVE_INTERFACE, 0, (LPARAM)g_hInst);
 	if ( (INT_PTR)pcli == CALLSERVICE_NOTFOUND ) {

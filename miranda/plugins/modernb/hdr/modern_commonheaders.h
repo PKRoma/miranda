@@ -26,6 +26,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #pragma once
 #define MIRANDA_VER 0x0700
+#define MIRANDA_CUSTOM_LP
 
 #define _WIN32_WINNT 0x0501
 

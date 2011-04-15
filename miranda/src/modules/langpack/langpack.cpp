@@ -384,7 +384,7 @@ TCHAR* LangPackPcharToTchar( const char* pszStr )
 LangPackMuuid* __fastcall LangPackLookupUuid( WPARAM wParam )
 {
 	int idx = (wParam >> 16) & 0xFFFF;
-	return ( idx <= lMuuids.getCount()) ? lMuuids[ idx-1 ] : NULL;
+	return ( idx > 0 && idx <= lMuuids.getCount()) ? lMuuids[ idx-1 ] : NULL;
 }
 
 int LangPackMarkPluginLoaded( PLUGININFOEX* pInfo )
@@ -400,24 +400,17 @@ int LangPackMarkPluginLoaded( PLUGININFOEX* pInfo )
 
 void LangPackDropUnusedItems( void )
 {
-	LangPackEntry *s = langPack.entry, *d = s;
+	LangPackEntry *s = langPack.entry;
+	bool bSortNeeded = false;
 
-	for ( int i=0; i < langPack.entryCount; i++ ) {
-		if ( s->pMuuid == NULL || s->pMuuid->pInfo ) {
-			if ( s != d )
-				*d++ = *s++;
-			else
-				s++, d++;
-			continue;
+	for ( int i=0; i < langPack.entryCount; i++, s++ )
+		if ( s->pMuuid != NULL && s->pMuuid->pInfo == NULL ) {
+			s->pMuuid = NULL;
+			bSortNeeded = true;
 		}
 
-		mir_free( s->local );
-		mir_free( s->wlocal );
-		s++;
-	}
-
-	langPack.entryCount = int( d - langPack.entry );
-	mir_realloc( langPack.entry, langPack.entryCount * sizeof( LangPackEntry ));
+	if ( bSortNeeded )
+		qsort( langPack.entry, langPack.entryCount, sizeof(LangPackEntry), (int(*)(const void*,const void*))SortLangPackHashesProc);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
