@@ -5,7 +5,7 @@
 // Copyright © 2000-2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001-2002 Jon Keating, Richard Hughes
 // Copyright © 2002-2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004-2010 Joe Kucera
+// Copyright © 2004-2011 Joe Kucera
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -692,7 +692,13 @@ void CIcqProto::setUserInfo()
 #endif
 
 	//MIM/PackName
-	wAdditionalData += 16;
+	bool bHasPackName = false;
+	DBVARIANT dbv;
+	if ( !DBGetContactSettingString(NULL, "ICQCaps", "PackName", &dbv )) {
+		//MIM/PackName
+		bHasPackName = true;
+		wAdditionalData += 16;
+	}
 
 	serverPacketInit(&packet, (WORD)(62 + wAdditionalData));
 	packFNACHeader(&packet, ICQ_LOCATION_FAMILY, ICQ_LOCATION_SET_USER_INFO);
@@ -764,13 +770,10 @@ void CIcqProto::setUserInfo()
 	packDWord(&packet, ICQ_PLUG_VERSION);
 
 	//MIM/PackName
-	DBVARIANT dbv;
-	if ( !DBGetContactSettingString(NULL, "ICQCaps", "PackName", &dbv ))
-	{
+	if ( bHasPackName ) {
 		packBuffer(&packet, (BYTE*)dbv.pszVal, 0x10);
-		DBFreeVariant(&dbv);
+		ICQFreeVariant(&dbv);
 	}
-	else packBuffer(&packet, (BYTE*)"", 0x10);
 
 	sendServPacket(&packet);
 }
