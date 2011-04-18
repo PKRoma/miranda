@@ -21,7 +21,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 PLUGININFOEX pluginInfo = {
 	sizeof(PLUGININFOEX),
-	"dbRW Database Driver",
+	"dbRW SQLite DB Driver",
 	PLUGIN_MAKE_VERSION(DBRW_VER_MAJOR,DBRW_VER_MINOR,0,0),
 	#ifdef DBRW_DEBUG
     #ifdef DBRW_VER_ALPHA
@@ -38,7 +38,7 @@ PLUGININFOEX pluginInfo = {
 	#endif
 	"Robert Rainwater",
 	"rainwater@miranda-im.org",
-	"Copyright © 2005-2009 Robert Rainwater",
+	"Copyright © 2005-2011 Robert Rainwater",
 	"http://www.miranda-im.org/",
 	0,
 	DEFMOD_DB,
