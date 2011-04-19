@@ -144,10 +144,20 @@ typedef struct ColourIDW_tag {
 #define MS_FONT_REGISTER      "Font/Register"
 #define MS_FONT_REGISTERW     "Font/RegisterW"
 
+__forceinline void FontRegister( FontID* pFontID )
+{	CallService( MS_FONT_REGISTER, (WPARAM)&pFontID, 0 );
+}
+
+__forceinline void FontRegisterW( FontIDW* pFontID )
+{	CallService( MS_FONT_REGISTERW, (WPARAM)&pFontID, 0 );
+}
+
 #if defined( _UNICODE )
-  #define MS_FONT_REGISTERT MS_FONT_REGISTERW
+	#define MS_FONT_REGISTERT MS_FONT_REGISTERW
+	#define FontRegisterT FontRegisterW
 #else
   #define MS_FONT_REGISTERT MS_FONT_REGISTER
+	#define FontRegisterT FontRegister
 #endif
 
 // get a font
