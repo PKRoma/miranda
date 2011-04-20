@@ -81,7 +81,7 @@ FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     GROUPBOX        "ICQ",IDC_STICQGROUP,4,0,302,93
     RTEXT           "ICQ number:",IDC_STATIC11,12,14,51,8
-    EDITTEXT        IDC_ICQNUM,68,12,106,12,ES_AUTOHSCROLL | ES_NUMBER
+    EDITTEXT        IDC_ICQNUM,68,12,106,12,ES_AUTOHSCROLL
     RTEXT           "Password:",IDC_STATIC12,12,28,51,8
     EDITTEXT        IDC_PASSWORD,68,26,106,12,ES_PASSWORD | ES_AUTOHSCROLL
     LTEXT           "Hint: If you don't enter your password here, Miranda will ask for the password everytime you try to go online.",IDC_STATIC,12,43,286,19
