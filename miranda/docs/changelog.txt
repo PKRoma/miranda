@@ -3,6 +3,16 @@
                            www.miranda-im.org
 
 
+* New in 0.9.20
+Bugfixes:
+ - Fixed status message window title
+ - Improved idle detection
+ - Fixed rare crash in file transfers
+ - Gadu-Gadu: Fixed disconnect and message duplication issue
+ - Jabber: Fixed possible crash
+ - Yahoo: Fixed avatar retrieval
+ 
+
 * New in 0.9.19
 Bugfixes:
  - Fixed connection with some broken proxies
