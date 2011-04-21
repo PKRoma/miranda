@@ -692,7 +692,13 @@ void CIcqProto::setUserInfo()
 #endif
 
 	//MIM/PackName
-	wAdditionalData += 16;
+	bool bHasPackName = false;
+	DBVARIANT dbv;
+	if ( !DBGetContactSettingString(NULL, "ICQCaps", "PackName", &dbv )) {
+		//MIM/PackName
+		bHasPackName = true;
+		wAdditionalData += 16;
+	}
 
 	serverPacketInit(&packet, (WORD)(62 + wAdditionalData));
 	packFNACHeader(&packet, ICQ_LOCATION_FAMILY, ICQ_LOCATION_SET_USER_INFO);
@@ -710,7 +716,7 @@ void CIcqProto::setUserInfo()
 	}
 #endif
 	{
-//		packShortCapability(&packet, 0x1349);  // AIM_CAPS_ICQSERVERRELAY
+		packShortCapability(&packet, 0x1349);  // AIM_CAPS_ICQSERVERRELAY
 	}
 	if (m_bUtfEnabled)
 	{
@@ -764,13 +770,10 @@ void CIcqProto::setUserInfo()
 	packDWord(&packet, ICQ_PLUG_VERSION);
 
 	//MIM/PackName
-	DBVARIANT dbv;
-	if ( !DBGetContactSettingString(NULL, "ICQCaps", "PackName", &dbv ))
-	{
+	if ( bHasPackName ) {
 		packBuffer(&packet, (BYTE*)dbv.pszVal, 0x10);
-		DBFreeVariant(&dbv);
+		ICQFreeVariant(&dbv);
 	}
-	else packBuffer(&packet, (BYTE*)"", 0x10);
 
 	sendServPacket(&packet);
 }
