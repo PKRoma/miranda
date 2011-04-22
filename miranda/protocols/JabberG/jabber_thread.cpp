@@ -476,12 +476,12 @@ LBL_FatalError:
 				int nSelRes = JCallService( MS_NETLIB_SELECT, 0, ( LPARAM )&nls );
 				if ( nSelRes == -1 ) // error
 					break;
-				else if ( nSelRes == 0 ) {
+				else if ( nSelRes == 0 && m_bSendKeepAlive ) {
 					if ( m_ThreadInfo->jabberServerCaps & JABBER_CAPS_PING )
 						info->send( 
 							XmlNodeIq( m_iqManager.AddHandler( &CJabberProto::OnPingReply, JABBER_IQ_TYPE_GET, NULL, 0, -1, this, 0, m_options.ConnectionKeepAliveTimeout ))
 								<< XCHILDNS( _T("ping"), _T(JABBER_FEAT_PING)));
-					else if ( m_bSendKeepAlive )
+					else 
 						info->send( " \t " );
 					continue;
 			}	}
