@@ -66,7 +66,7 @@ static BOOL CALLBACK sttDeleteChildWindowsProc( HWND hwnd, LPARAM )
 	return TRUE;
 }
 
-static void sttEnableControls( HWND hwndDlg, BOOL bEnable, int * controlsID )
+static void sttEnableControls( HWND hwndDlg, BOOL bEnable, const int * controlsID )
 {
 	int i=0;
 	while ( controlsID[i]!=0 ) 
@@ -331,9 +331,11 @@ int CJabberProto::AdHoc_SubmitCommandForm(HWND hwndDlg, JabberAdHocData* dat, TC
 	IqAdd( iqId, IQ_PROC_EXECCOMMANDS, &CJabberProto::OnIqResult_CommandExecution );
 	m_ThreadInfo->send( iq );
 	
+	xi.destroyNode( dataNode );
+
 	JabberFormSetInstruction(hwndDlg,TranslateT("In progress. Please Wait..."));
 	
-	int toDisable[]={IDC_SUBMIT, IDC_PREV, IDC_NEXT, IDC_COMPLETE, 0};
+	static const int toDisable[]={IDC_SUBMIT, IDC_PREV, IDC_NEXT, IDC_COMPLETE, 0};
 	sttEnableControls( hwndDlg, FALSE, toDisable);
 	
 	return TRUE;

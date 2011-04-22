@@ -845,7 +845,7 @@ struct JABBER_SEARCH_BASIC
 
 void __cdecl CJabberProto::BasicSearchThread( JABBER_SEARCH_BASIC *jsb )
 {
-	SleepEx( 100, TRUE );
+	Sleep( 100 );
 
 	JABBER_SEARCH_RESULT jsr = { 0 };
 	jsr.hdr.cbSize = sizeof( JABBER_SEARCH_RESULT );
@@ -1154,7 +1154,7 @@ HANDLE __cdecl CJabberProto::SendFile( HANDLE hContact, const TCHAR* szDescripti
 
 void __cdecl CJabberProto::SendMessageAckThread( void* hContact )
 {
-	SleepEx( 10, TRUE );
+	Sleep( 100 );
 	Log( "Broadcast ACK" );
 	JSendBroadcast( hContact, ACKTYPE_MESSAGE, ACKRESULT_SUCCESS, ( HANDLE ) 1, 0 );
 	Log( "Returning from thread" );
