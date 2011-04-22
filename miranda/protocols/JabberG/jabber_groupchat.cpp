@@ -203,14 +203,21 @@ private:
 	}
 };
 
-JABBER_RESOURCE_STATUS* GcFindResource(JABBER_LIST_ITEM *item, const TCHAR *resource)
+JABBER_RESOURCE_STATUS* CJabberProto::GcFindResource(JABBER_LIST_ITEM *item, const TCHAR *resource)
 {
+	JABBER_RESOURCE_STATUS *res = NULL;
+	
+	EnterCriticalSection( &m_csLists );
 	JABBER_RESOURCE_STATUS *r = item->resource;
-	for ( int i=0; i<item->resourceCount; i++ )
-		if ( !_tcscmp( r[i].resourceName, resource )) 
-			return &r[i];
+	for ( int i=0; i<item->resourceCount; i++ ) {
+		if ( !_tcscmp( r[i].resourceName, resource )) {
+			res = &r[i];
+			break;
+		}
+	}
+	LeaveCriticalSection( &m_csLists );
 
-	return NULL;
+	return res;
 }
 
 INT_PTR __cdecl CJabberProto::OnMenuHandleJoinGroupchat( WPARAM, LPARAM )
