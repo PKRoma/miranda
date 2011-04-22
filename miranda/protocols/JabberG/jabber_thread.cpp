@@ -141,6 +141,11 @@ void CJabberProto::OnPingReply( HXML, CJabberIqInfo* pInfo )
 typedef DNS_STATUS (WINAPI *DNSQUERYA)(IN PCSTR pszName, IN WORD wType, IN DWORD Options, IN PIP4_ARRAY aipServers OPTIONAL, IN OUT PDNS_RECORDA *ppQueryResults OPTIONAL, IN OUT PVOID *pReserved OPTIONAL);
 typedef void (WINAPI *DNSFREELIST)(IN OUT PDNS_RECORDA pRecordList, IN DNS_FREE_TYPE FreeType);
 
+static int CompareDNS(const DNS_SRV_DATAA* dns1, const DNS_SRV_DATAA* dns2)
+{
+	return (int)dns1->wPriority - (int)dns2->wPriority;
+}
+
 void ThreadData::xmpp_client_query( void )
 {
 	if (inet_addr(server) != INADDR_NONE)
@@ -164,18 +169,24 @@ void ThreadData::xmpp_client_query( void )
 	DNS_RECORDA *results = NULL;
 	DNS_STATUS status = pDnsQuery(temp, DNS_TYPE_SRV, DNS_QUERY_STANDARD, NULL, &results, NULL);
 	if (SUCCEEDED(status) && results) {
-		for (DNS_RECORDA *rec = results; rec; rec = rec->pNext) {
-			if (rec->Data.Srv.pNameTarget && rec->wType == DNS_TYPE_SRV) {
-				WORD dnsPort = port == 0 || port == 5222 ? rec->Data.Srv.wPort : port;
-				char* dnsHost = rec->Data.Srv.pNameTarget;
+		LIST<DNS_SRV_DATAA> dnsList(5, CompareDNS); 
 
-				proto->Log("%s%s resolved to %s:%d", "_xmpp-client._tcp.", server, dnsHost, dnsPort);
-				s = proto->WsConnect(dnsHost, dnsPort);
-				if (s) {
-					mir_snprintf( manualHost, SIZEOF( manualHost ), "%s", dnsHost );
-					port = dnsPort;
-					break;
-		}	}	}
+		for (DNS_RECORDA *rec = results; rec; rec = rec->pNext) {
+			if (rec->Data.Srv.pNameTarget && rec->wType == DNS_TYPE_SRV)
+				dnsList.insert(&rec->Data.Srv);
+		}
+
+		for (int i = 0; i < dnsList.getCount(); ++i) {
+			WORD dnsPort = port == 0 || port == 5222 ? dnsList[i]->wPort : port;
+			char* dnsHost = dnsList[i]->pNameTarget;
+
+			proto->Log("%s%s resolved to %s:%d", "_xmpp-client._tcp.", server, dnsHost, dnsPort);
+			s = proto->WsConnect(dnsHost, dnsPort);
+			if (s) {
+				mir_snprintf( manualHost, SIZEOF( manualHost ), "%s", dnsHost );
+				port = dnsPort;
+				break;
+		}	}
 		pDnsRecordListFree(results, DnsFreeRecordList);
 	}
 	else
