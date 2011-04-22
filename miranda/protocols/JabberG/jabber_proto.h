@@ -537,11 +537,12 @@ struct CJabberProto : public PROTO_INTERFACE
 	//---- jabber_groupchat.c ------------------------------------------------------------
 
 	INT_PTR    __cdecl OnMenuHandleJoinGroupchat( WPARAM wParam, LPARAM lParam );
-	void   __cdecl GroupchatInviteAcceptThread( JABBER_GROUPCHAT_INVITE_INFO *inviteInfo );
+	void       __cdecl GroupchatInviteAcceptThread( JABBER_GROUPCHAT_INVITE_INFO *inviteInfo );
 
 	INT_PTR    __cdecl OnJoinChat( WPARAM wParam, LPARAM lParam );
 	INT_PTR    __cdecl OnLeaveChat( WPARAM wParam, LPARAM lParam );
 
+	JABBER_RESOURCE_STATUS* GcFindResource(JABBER_LIST_ITEM *item, const TCHAR *resource);
 	void   GroupchatJoinRoom( LPCTSTR server, LPCTSTR room, LPCTSTR nick, LPCTSTR password, bool autojoin = false );
 	void   GroupchatProcessPresence( HXML node );
 	void   GroupchatProcessMessage( HXML node );
