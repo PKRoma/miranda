@@ -1184,7 +1184,7 @@ static INT_PTR CALLBACK DlgProcLogOptions(HWND hwndDlg, UINT msg, WPARAM wParam,
 		case IDC_BTN_EXPORT:
 		{
 			TCHAR fname_buff[MAX_PATH], filter[MAX_PATH];
-			mir_sntprintf(filter, SIZEOF(filter), _T("%s (*.ini)%c*.ini%c%s (*.txt)%c*.TXT%c%s (*.*)%c*.*%c"), TranslateT("Configuration Files"), 0, 0, TranslateT("Text Files"), 0, 0, Translate("All Files"), 0, 0);
+			mir_sntprintf(filter, SIZEOF(filter), _T("%s (*.ini)%c*.ini%c%s (*.txt)%c*.TXT%c%s (*.*)%c*.*%c"), TranslateT("Configuration Files"), 0, 0, TranslateT("Text Files"), 0, 0, TranslateT("All Files"), 0, 0);
 
 			OPENFILENAME ofn = {0};
 			ofn.lStructSize = sizeof(ofn);
