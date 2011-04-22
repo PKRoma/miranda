@@ -279,12 +279,14 @@ void CJabberProto::GcLogShowInformation( JABBER_LIST_ITEM *item, JABBER_RESOURCE
 		gce.cbSize = sizeof(GCEVENT);
 		gce.ptszNick = user->resourceName;
 		gce.ptszUID = user->resourceName;
-		gce.ptszText = buf;
-		gce.dwFlags = GC_TCHAR|GCEF_ADDTOLOG;
+		gce.ptszText = EscapeChatTags( buf );
+		gce.dwFlags = GC_TCHAR | GCEF_ADDTOLOG;
 		gce.pDest = &gcd;
 		gce.time = time(0);
 		gcd.iType = GC_EVENT_INFORMATION;
 		CallServiceSync( MS_GC_EVENT, NULL, ( LPARAM )&gce );
+
+		mir_free( (void*)gce.ptszText ); // Since we processed msgText and created a new string
 	}
 }
 
