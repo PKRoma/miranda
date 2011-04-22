@@ -187,6 +187,7 @@ void ThreadData::xmpp_client_query( void )
 				port = dnsPort;
 				break;
 		}	}
+		dnsList.destroy();
 		pDnsRecordListFree(results, DnsFreeRecordList);
 	}
 	else
