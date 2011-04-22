@@ -110,13 +110,12 @@ static int Log_AppendRTF(LOGSTREAMDATA* streamData, BOOL simpleMode, char **buff
 {
 	va_list va;
 	int lineLen, textCharsCount=0;
-	TCHAR* line = (TCHAR*)alloca( 8001*sizeof(TCHAR));
+	TCHAR* line = (TCHAR*)alloca(8001 * sizeof(TCHAR));
 	char* d;
 
 	va_start(va, fmt);
 	lineLen = _vsntprintf( line, 8000, fmt, va);
-	if (lineLen < 0)
-		return 0;
+	if (lineLen < 0) lineLen = 8000;
 	line[lineLen] = 0;
 	va_end(va);
 
