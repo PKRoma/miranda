@@ -745,7 +745,9 @@ HWND __cdecl CJabberProto::SearchAdvanced( HWND hwndDlg )
 	// Forms: XEP-0055 Example 7
 	if ( dat->fSearchRequestIsXForm ) {
 		fRequestNotEmpty=TRUE;
-		xmlAddChild( query, JabberFormGetData(GetDlgItem(hwndDlg, IDC_FRAME), dat->xNode));
+		HXML n = JabberFormGetData(GetDlgItem(hwndDlg, IDC_FRAME), dat->xNode);
+		xmlAddChild( query, n );
+		xi.destroyNode( n );
     }
 	else { //and Simple fields: XEP-0055 Example 3
 		for ( int i=0; i<dat->nJSInfCount; i++ ) {

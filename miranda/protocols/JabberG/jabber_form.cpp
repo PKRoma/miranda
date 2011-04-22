@@ -857,6 +857,7 @@ static INT_PTR CALLBACK JabberFormDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam
 			if ( jfi != NULL ) {
 				HXML n = JabberFormGetData( GetDlgItem( hwndDlg, IDC_FRAME ), jfi->xNode );
 				( jfi->ppro->*(jfi->pfnSubmit))( n, jfi->userdata );
+				xi.destroyNode( n );
 			}
 			// fall through
 		case IDCANCEL:

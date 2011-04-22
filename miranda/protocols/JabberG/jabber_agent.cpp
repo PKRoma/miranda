@@ -245,7 +245,9 @@ public:
 
 		if (( xNode = xmlGetChild( queryNode , "x" )) != NULL ) {
 			// use new jabber:x:data form
-			xmlAddChild( query, JabberFormGetData( hFrame, xNode ));
+			HXML n = JabberFormGetData( hFrame, xNode );
+			xmlAddChild( query, n );
+			xi.destroyNode( n );
 		}
 		else {
 			// use old registration information form
