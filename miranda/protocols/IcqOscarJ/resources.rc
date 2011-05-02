@@ -1,7 +1,6 @@
 // Microsoft Visual C++ generated resource script.
 //
 #include "resource.h"
-#include "version.h"
 
 #define APSTUDIO_READONLY_SYMBOLS
 /////////////////////////////////////////////////////////////////////////////
@@ -9,17 +8,16 @@
 // Generated from the TEXTINCLUDE 2 resource.
 //
 #include "winres.h"
+#include "version.h"
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// English (U.S.) resources
+// English (United States) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
-#ifdef _WIN32
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 #pragma code_page(1252)
-#endif //_WIN32
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -67,11 +65,11 @@ STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CAPTI
 CAPTION "Enter ICQ Password"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
+    LTEXT           "Enter a password for UIN %d:",IDC_INSTRUCTION,7,7,142,8
     EDITTEXT        IDC_LOGINPW,17,16,122,14,ES_PASSWORD | ES_AUTOHSCROLL
     CONTROL         "Remember this session password",IDC_SAVEPASS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,18,54,120,10
     DEFPUSHBUTTON   "OK",IDOK,24,66,50,14
     PUSHBUTTON      "Cancel",IDCANCEL,84,66,50,14
-    LTEXT           "Enter a password for UIN %d:",IDC_INSTRUCTION,7,7,142,8
 END
 
 IDD_OPT_ICQ DIALOGEX 0, 0, 310, 234
@@ -529,6 +527,7 @@ END
 2 TEXTINCLUDE 
 BEGIN
     "#include ""winres.h""\0"
+    "#include ""version.h""\0"
 END
 
 3 TEXTINCLUDE 
@@ -578,7 +577,7 @@ BEGIN
     END
 END
 
-#endif    // English (U.S.) resources
+#endif    // English (United States) resources
 /////////////////////////////////////////////////////////////////////////////
 
 
