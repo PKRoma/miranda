@@ -3,6 +3,16 @@
                            www.miranda-im.org
 
 
+* New in 0.9.21
+Bugfixes:
+ - Check DNS SRV records in priority order (Fixes login server issues)
+ - Fix incorrect status mesage display in chat window
+ - Fix broken display in font options
+ - Jabber: Keep alive option works with XMPP ping
+ - Jabber: Fix memory leaks
+ - Jabber: Fix possible crash
+
+
 * New in 0.9.20
 Bugfixes:
  - Fixed status message window title
