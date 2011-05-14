@@ -534,7 +534,9 @@
     <ClCompile Include="msgs.c" />
     <ClCompile Include="msgtimedout.c" />
     <ClCompile Include="richutil.c" />
-    <ClCompile Include="srmm.c" />
+    <ClCompile Include="srmm.c">
+      <PrecompiledHeader>Create</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="statusicon.c" />
   </ItemGroup>
   <ItemGroup>
