@@ -459,7 +459,7 @@ protected:
 		SendDlgItemMessage(m_hwnd, IDC_PRIORITY_SPIN, UDM_SETRANGE, 0, (LPARAM)MAKELONG(127, -128));
 
 		TCHAR *passw = m_proto->JGetStringCrypt(NULL, "LoginPassword");
-		if (passw) 
+		if (passw)
 		{
 			m_txtPassword.SetText(passw);
 			mir_free(passw);
@@ -1324,7 +1324,7 @@ void CJabberProto::_RosterExportToFile(HWND hwndDlg)
 
 	}
 
-	char header[] = "<?xml version=\"1.0\" encoding=\"utf8\"?>\n<?mso-application progid=\"Excel.Sheet\"?>\n";
+	char header[] = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<?mso-application progid=\"Excel.Sheet\"?>\n";
 	fwrite(header, 1, sizeof(header) - 1 /* for zero terminator */, fp);
 
 	TCHAR *xtmp = xi.toString(root, NULL);
@@ -1707,7 +1707,7 @@ protected:
 		m_gotservers = false;
 
 		TCHAR *passw = m_proto->JGetStringCrypt(NULL, "LoginPassword");
-		if (passw) 
+		if (passw)
 		{
 			m_txtPassword.SetText(passw);
 			mir_free(passw);
