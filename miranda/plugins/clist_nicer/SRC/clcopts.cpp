@@ -1442,8 +1442,8 @@ int ClcOptInit(WPARAM wParam, LPARAM lParam)
     CallService(MS_OPT_ADDPAGE, wParam, (LPARAM) &odp);
 
     odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT);
-    odp.pszGroup = LPGEN("Customize");
-    odp.pszTitle = LPGEN("Contact list skin");
+    odp.pszGroup = LPGEN("Skins");
+    odp.pszTitle = LPGEN("Contact list");
     odp.flags = ODPF_BOLDGROUPS;
     odp.pfnDlgProc = OptionsDlgProc;
     CallService(MS_OPT_ADDPAGE, wParam, (LPARAM) &odp);

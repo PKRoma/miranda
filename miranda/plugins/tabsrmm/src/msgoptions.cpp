@@ -1353,11 +1353,11 @@ static int OptInitialise(WPARAM wParam, LPARAM lParam)
 
 
 	odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_SKIN);
-	odp.ptszTitle = LPGENT("Message window skin");
+	odp.ptszTitle = LPGENT("Message window");
 	odp.ptszTab = 	const_cast<TCHAR *>(CTranslator::getOpt(CTranslator::OPT_TAB_SKINLOAD));
 	odp.pfnDlgProc = DlgProcSkinOpts;
 	odp.nIDBottomSimpleControl = 0;
-	odp.ptszGroup = LPGENT("Customize");
+	odp.ptszGroup = LPGENT("Skins");
 	CallService(MS_OPT_ADDPAGE, wParam, (LPARAM) &odp);
 
 	odp.pszTemplate = MAKEINTRESOURCEA(IDD_TABCONFIG);

@@ -61,8 +61,8 @@ int SkinOptInit( WPARAM wParam, LPARAM lParam )
 		odp.hInstance = g_hInst;
 		odp.pfnDlgProc = DlgSkinOpts;
 		odp.pszTemplate = MAKEINTRESOURCEA( IDD_OPT_SKIN );
-		odp.ptszGroup = LPGENT( "Customize" );
-		odp.ptszTitle = LPGENT( "Contact list skin" );
+		odp.ptszGroup = LPGENT( "Skins" );
+		odp.ptszTitle = LPGENT( "Contact List" );
 		odp.flags = ODPF_BOLDGROUPS|ODPF_TCHAR;
 		odp.ptszTab = LPGENT( "Load/Save" );
 		CallService( MS_OPT_ADDPAGE, wParam, ( LPARAM )&odp );

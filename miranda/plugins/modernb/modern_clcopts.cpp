@@ -45,7 +45,7 @@ struct FontOptionsList
 	TCHAR*   szDefFace;
 	BYTE     defCharset, defStyle;
 	char     defSize;
-    FONTEFFECT  defeffect;
+	FONTEFFECT  defeffect;
 
 	COLORREF colour;
 	TCHAR    szFace[LF_FACESIZE];
@@ -103,10 +103,10 @@ static struct FontOptionsList fontOptionsList[] = {
 struct ColourOptionsList
 {
 	char *   chGroup;
-    char *   chName;
-    TCHAR*   szGroup;
-    TCHAR*   szDescr;    
-    COLORREF defColour;
+	char *   chName;
+	TCHAR*   szGroup;
+	TCHAR*   szDescr;
+	COLORREF defColour;
 };
 
 static struct ColourOptionsList colourOptionsList[] = {
@@ -115,9 +115,9 @@ static struct ColourOptionsList colourOptionsList[] = {
 	{ "CLC",			"Rows_BkColour",      CLCLINESGROUP,		LPGENT( "Background"),									DEFAULT_BACKCOLOUR },
 	{ "CLC",			"Frames_BkColour",    CLCFRAMESGROUP,		LPGENT( "Background"),									DEFAULT_BACKCOLOUR},
 
-    { "CLC",			"HotTextColour",      CLCCOLOURSGROUP,      LPGENT( "Hot text"),									CLCDEFAULT_MODERN_HOTTEXTCOLOUR },
-    { "CLC",			"SelTextColour",      CLCCOLOURSGROUP,      LPGENT( "Selected text"),								CLCDEFAULT_MODERN_SELTEXTCOLOUR },
-    { "CLC",			"QuickSearchColour",  CLCCOLOURSGROUP,      LPGENT( "Quick search text"),							CLCDEFAULT_MODERN_QUICKSEARCHCOLOUR},
+	{ "CLC",			"HotTextColour",      CLCCOLOURSGROUP,      LPGENT( "Hot text"),									CLCDEFAULT_MODERN_HOTTEXTCOLOUR },
+	{ "CLC",			"SelTextColour",      CLCCOLOURSGROUP,      LPGENT( "Selected text"),								CLCDEFAULT_MODERN_SELTEXTCOLOUR },
+	{ "CLC",			"QuickSearchColour",  CLCCOLOURSGROUP,      LPGENT( "Quick search text"),							CLCDEFAULT_MODERN_QUICKSEARCHCOLOUR},
 
 	{ "Menu",			"TextColour",		  CLCCOLOURSGROUP,      LPGENT( "Menu text"),									CLCDEFAULT_TEXTCOLOUR},
 	{ "Menu",			"SelTextColour",	  CLCCOLOURSGROUP,      LPGENT( "Selected menu text"),							CLCDEFAULT_MODERN_SELTEXTCOLOUR},
@@ -129,23 +129,23 @@ static struct ColourOptionsList colourOptionsList[] = {
 
 void RegisterCLUIFonts( void )
 {
-    static bool registered = false;
+	static bool registered = false;
 
-    if ( registered ) return;
+	if ( registered ) return;
 
 	FontIDT fontid = {0};
 	ColourIDT colourid = {0};
 	EffectIDT effectid = {0};
 	char idstr[10];
 	int i, index = 0;
-    
+
 	fontid.cbSize = FontID_SIZEOF_V2;
 	strncpy(fontid.dbSettingsGroup, "CLC", SIZEOF(fontid.dbSettingsGroup));
 
 	effectid.cbSize = sizeof( EffectIDT );
 	strncpy(effectid.dbSettingsGroup, "CLC", SIZEOF(effectid.dbSettingsGroup));
-   
-	for ( i = 0; i < SIZEOF(fontOptionsList); i++, index++ ) 
+
+	for ( i = 0; i < SIZEOF(fontOptionsList); i++, index++ )
 	{
 		fontid.flags =  FIDF_DEFAULTVALID | FIDF_APPENDNAME | FIDF_SAVEPOINTSIZE | FIDF_ALLOWEFFECTS | FIDF_ALLOWREREGISTER | FIDF_NOAS;
 		fontid.flags |= fontOptionsList[i].dwFlags;
@@ -162,35 +162,34 @@ void RegisterCLUIFonts( void )
 		fontid.deffontsettings.style = fontOptionsList[i].defStyle;
 		_tcsncpy(fontid.deffontsettings.szFace, fontOptionsList[i].szDefFace, SIZEOF(fontid.deffontsettings.szFace));
 
-        CallService(MS_FONT_REGISTERT, (WPARAM)&fontid, 0);
+		CallService(MS_FONT_REGISTERT, (WPARAM)&fontid, 0);
 
-        _tcsncpy(effectid.group, fontOptionsList[i].szGroup, SIZEOF(effectid.group));
-        _tcsncpy(effectid.name, fontOptionsList[i].szDescr, SIZEOF(effectid.name));
-        sprintf(idstr, "Font%d", fontOptionsList[i].fontID);
-        strncpy(effectid.setting, idstr, SIZEOF(effectid.setting));
-        effectid.order = i + 1;
+		_tcsncpy(effectid.group, fontOptionsList[i].szGroup, SIZEOF(effectid.group));
+		_tcsncpy(effectid.name, fontOptionsList[i].szDescr, SIZEOF(effectid.name));
+		sprintf(idstr, "Font%d", fontOptionsList[i].fontID);
+		strncpy(effectid.setting, idstr, SIZEOF(effectid.setting));
+		effectid.order = i + 1;
 
-        effectid.defeffect.effectIndex = fontOptionsList[i].defeffect.effectIndex;
-        effectid.defeffect.baseColour = fontOptionsList[i].defeffect.baseColour;
-        effectid.defeffect.secondaryColour = fontOptionsList[i].defeffect.secondaryColour;
-		
-        CallService(MS_EFFECT_REGISTERT, (WPARAM)&effectid, 0);
+		effectid.defeffect.effectIndex = fontOptionsList[i].defeffect.effectIndex;
+		effectid.defeffect.baseColour = fontOptionsList[i].defeffect.baseColour;
+		effectid.defeffect.secondaryColour = fontOptionsList[i].defeffect.secondaryColour;
+
+		CallService(MS_EFFECT_REGISTERT, (WPARAM)&effectid, 0);
 
 	}
-    colourid.cbSize = sizeof( ColourIDT );
-    
+	colourid.cbSize = sizeof( ColourIDT );
 
-    for ( i = 0; i < SIZEOF( colourOptionsList); i++ )
-    {
-        _tcsncpy(colourid.group,          colourOptionsList[i].szGroup, SIZEOF(colourid.group));
-        _tcsncpy(colourid.name,           colourOptionsList[i].szDescr, SIZEOF(colourid.group));
-        strncpy(colourid.setting,         colourOptionsList[i].chName,  SIZEOF(colourid.setting));
-        strncpy(colourid.dbSettingsGroup, colourOptionsList[i].chGroup, SIZEOF(colourid.dbSettingsGroup));
-        colourid.defcolour =  colourOptionsList[i].defColour;
-        colourid.order = i + 1;
-        CallService(MS_COLOUR_REGISTERT, (WPARAM)&colourid, 0);
-    }
-    registered = true;
+	for ( i = 0; i < SIZEOF( colourOptionsList); i++ )
+	{
+		_tcsncpy(colourid.group,          colourOptionsList[i].szGroup, SIZEOF(colourid.group));
+		_tcsncpy(colourid.name,           colourOptionsList[i].szDescr, SIZEOF(colourid.group));
+		strncpy(colourid.setting,         colourOptionsList[i].chName,  SIZEOF(colourid.setting));
+		strncpy(colourid.dbSettingsGroup, colourOptionsList[i].chGroup, SIZEOF(colourid.dbSettingsGroup));
+		colourid.defcolour =  colourOptionsList[i].defColour;
+		colourid.order = i + 1;
+		CallService(MS_COLOUR_REGISTERT, (WPARAM)&colourid, 0);
+	}
+	registered = true;
 }
 
 static INT_PTR CALLBACK DlgProcClistListOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -215,24 +214,23 @@ void GetFontSetting(int i,LOGFONT *lf,COLORREF *colour,BYTE *effect, COLORREF *e
 	DBVARIANT dbv={0};
 	char idstr[32];
 
+	int index = 0;
+	for ( index = 0; index < SIZEOF(fontOptionsList); index++ )
+	{
+		if ( fontOptionsList[index].fontID == i )
+			break;
+	}
+	if ( index == SIZEOF(fontOptionsList) )
+		return;
 
-    int index = 0;
-    for ( index = 0; index < SIZEOF(fontOptionsList); index++ )
-    {
-        if ( fontOptionsList[index].fontID == i )
-            break;
-    }
-    if ( index == SIZEOF(fontOptionsList) ) 
-        return;
+	FontIDT fontid = {0};
+	fontid.cbSize = FontID_SIZEOF_V2;
+	_tcsncpy( fontid.group, fontOptionsList[index].szGroup, SIZEOF( fontid.group ) );
+	_tcsncpy( fontid.name, fontOptionsList[index].szDescr, SIZEOF( fontid.name ) );
 
-    FontIDT fontid = {0};
-    fontid.cbSize = FontID_SIZEOF_V2;
-    _tcsncpy( fontid.group, fontOptionsList[index].szGroup, SIZEOF( fontid.group ) );
-    _tcsncpy( fontid.name, fontOptionsList[index].szDescr, SIZEOF( fontid.name ) );
+	COLORREF col = CallService( MS_FONT_GETT, (WPARAM)&fontid, (LPARAM)lf );
 
-    COLORREF col = CallService( MS_FONT_GETT, (WPARAM)&fontid, (LPARAM)lf );
-
-    if ( colour ) *colour = col;
+	if ( colour ) *colour = col;
 
 	if (effect)
 	{
@@ -306,8 +304,8 @@ int ClcOptInit(WPARAM wParam,LPARAM lParam)
 	if (g_CluiData.fDisableSkinEngine)
 	{
 		odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_CLIST_LISTBKG);
-		odp.ptszGroup = LPGENT("Customize");
-		odp.ptszTitle = LPGENT("Contact list skin");
+		odp.ptszGroup = LPGENT("Skins");
+		odp.ptszTitle = LPGENT("Contact List");
 		odp.ptszTab  = LPGENT("List Background");
 		odp.pfnDlgProc = DlgProcClcBkgOpts;
 		odp.flags = ODPF_BOLDGROUPS|ODPF_TCHAR;
