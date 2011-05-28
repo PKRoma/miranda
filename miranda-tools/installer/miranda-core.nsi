@@ -210,24 +210,24 @@ Section "Miranda IM"
   ${EndIf}
   
   ; AIM
-  !insertmacro PrintInstallerDetails "Installing AIM Protocol..."
+  !insertmacro PrintInstallerDetails "Installing AIM Support..."
   !insertmacro InstallMirandaPlugin "Aim.dll"
   !insertmacro InstallMirandaProtoIcon "AIM"
   
   ; Gadu-Gadu
-  !insertmacro PrintInstallerDetails "Installing Gadu-Gadu Protocol..."
+  !insertmacro PrintInstallerDetails "Installing Gadu-Gadu Support..."
   !insertmacro InstallMirandaPluginANSI "GG.dll"
   !insertmacro InstallMirandaProtoIcon "GG"
   
   ; ICQ 
-  !insertmacro PrintInstallerDetails "Installing ICQ Protocol..."
+  !insertmacro PrintInstallerDetails "Installing ICQ Support..."
   !insertmacro InstallMirandaPlugin "icq.dll"
   SetOutPath "$INSTDIR\Icons"
   File "${MIM_BUILD_DIRANSI}\Icons\xstatus_ICQ.dll"
   !insertmacro InstallMirandaProtoIcon "ICQ"
 
   ; IRC
-  !insertmacro PrintInstallerDetails "Installing IRC Protocol..."
+  !insertmacro PrintInstallerDetails "Installing IRC Support..."
   !insertmacro InstallMirandaPlugin "irc.dll"
   ${If} $INST_UPGRADE = 0
     SetOverWrite off
@@ -237,19 +237,19 @@ Section "Miranda IM"
   !insertmacro InstallMirandaProtoIcon "IRC"
 
   ; Jabber
-  !insertmacro PrintInstallerDetails "Installing Jabber Protocol..."
+  !insertmacro PrintInstallerDetails "Installing Jabber Support..."
   !insertmacro InstallMirandaPlugin "jabber.dll"
   SetOutPath "$INSTDIR\Icons"
   File "${MIM_BUILD_DIRANSI}\Icons\xstatus_jabber.dll"
   !insertmacro InstallMirandaProtoIcon "Jabber"
 
   ; MSN
-  !insertmacro PrintInstallerDetails "Installing MSN Protocol..."
+  !insertmacro PrintInstallerDetails "Installing MSN Support..."
   !insertmacro InstallMirandaPlugin "msn.dll"
   !insertmacro InstallMirandaProtoIcon "MSN"
 
   ; Yahoo
-  !insertmacro PrintInstallerDetails "Installing Yahoo Protocol..."
+  !insertmacro PrintInstallerDetails "Installing Yahoo Support..."
   !insertmacro InstallMirandaPlugin "yahoo.dll"
   !insertmacro InstallMirandaProtoIcon "Yahoo"
   
@@ -400,7 +400,7 @@ Function VerifyDirectoryDisplay
 FunctionEnd
 
 Function CustomInstallPage
-  !insertmacro MUI_HEADER_TEXT "Installation Mode" "Select the type of installation to perform."
+  !insertmacro MUI_HEADER_TEXT "Installation Mode" "Select the type of install to perform."
   ReserveFile "miranda-ui-type.ini"
   !insertmacro MUI_INSTALLOPTIONS_EXTRACT "miranda-ui-type.ini"
   ${If} $INST_MODE = 0
