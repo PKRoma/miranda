@@ -118,7 +118,7 @@ Page Custom CustomInstallPage CustomInstallPageLeave
   ${EndIf}
 !macroend
 
-Section "Miranda IM (core)"
+Section "Miranda IM"
   SectionIn RO
   !insertmacro PrintInstallerDetails "Installing Miranda IM Core Files..."
   
