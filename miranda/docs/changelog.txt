@@ -3,6 +3,12 @@
                            www.miranda-im.org
 
 
+* New in 0.9.22
+Bugfixes:
+ - Version displayed incorrectly
+ - Jabber: Fixed XMPP roster editor export XML UTF-8 encoding
+
+ 
 * New in 0.9.21
 Bugfixes:
  - Check DNS SRV records in priority order (Fixes login server issues)
