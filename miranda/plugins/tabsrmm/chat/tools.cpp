@@ -470,8 +470,7 @@ void TSAPI DoFlashAndSoundWorker(FLASH_PARAMS* p)
 						dat->iFlashIcon = p->hNotifyIcon;
 				}
 				dat->mayFlashTab = TRUE;
-				if (p->bMustFlash)
-					SetTimer(si->hWnd, TIMERID_FLASHWND, TIMEOUT_FLASHWND, NULL);
+				SetTimer(si->hWnd, TIMERID_FLASHWND, TIMEOUT_FLASHWND, NULL);
 			}
 		}
 		if(dat->pWnd) {
