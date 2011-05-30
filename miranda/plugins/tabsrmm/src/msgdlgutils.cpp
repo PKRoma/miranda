@@ -1102,6 +1102,16 @@ BOOL TSAPI DoRtfToTags(TCHAR * pszText, const TWindowData *dat)
 						bJustRemovedRTF = TRUE;
 						iRemoveChars = 10;
 						_sntprintf(InsertThis, safe_sizeof(InsertThis), _T("%c"), 0x201D);
+					} else if (p1 == _tcsstr(p1, _T("\\lquote"))) {
+						bTextHasStarted = TRUE;
+						bJustRemovedRTF = TRUE;
+						iRemoveChars = 7;
+						_sntprintf(InsertThis, safe_sizeof(InsertThis), _T("%c"), 0x2018);
+					} else if (p1 == _tcsstr(p1, _T("\\rquote"))) {
+						bTextHasStarted = TRUE;
+						bJustRemovedRTF = TRUE;
+						iRemoveChars = 7;
+						_sntprintf(InsertThis, safe_sizeof(InsertThis), _T("%c"), 0x2019);
 					} else if (p1 == _tcsstr(p1, _T("\\b"))) { //bold
 						bTextHasStarted = TRUE;
 						bJustRemovedRTF = TRUE;
