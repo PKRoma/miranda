@@ -59,8 +59,10 @@ class TPlainAuth : public TJabberAuth
 {
 	typedef TJabberAuth CSuper;
 
+	bool bOld;
 
-public:		TPlainAuth( ThreadData* );
+
+public:		TPlainAuth( ThreadData*, bool );
 	virtual ~TPlainAuth();
 
 	virtual	char* getInitialRequest();

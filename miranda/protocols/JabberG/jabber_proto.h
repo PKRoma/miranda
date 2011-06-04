@@ -853,6 +853,7 @@ struct CJabberProto : public PROTO_INTERFACE
 
 	typedef struct {
 		bool isPlainAvailable;
+		bool isPlainOldAvailable;
 		bool isMd5Available;
 		bool isScramAvailable;
 		bool isNtlmAvailable;

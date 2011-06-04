@@ -739,7 +739,12 @@ void CJabberProto::PerformAuthentication( ThreadData* info )
 
 	if ( auth == NULL && m_AuthMechs.isPlainAvailable ) {
 		m_AuthMechs.isPlainAvailable = false;
-		auth = new TPlainAuth( info );
+		auth = new TPlainAuth( info, false );
+	}
+
+	if ( auth == NULL && m_AuthMechs.isPlainOldAvailable ) {
+		m_AuthMechs.isPlainOldAvailable = false;
+		auth = new TPlainAuth( info, true );
 	}
 
 	if ( auth == NULL ) {
@@ -802,6 +807,7 @@ void CJabberProto::OnProcessFeatures( HXML node, ThreadData* info )
 
 		if ( !_tcscmp( xmlGetName( n ), _T("mechanisms"))) {
 			m_AuthMechs.isPlainAvailable = false;
+			m_AuthMechs.isPlainOldAvailable = false;
 			m_AuthMechs.isMd5Available = false;
 			m_AuthMechs.isScramAvailable = false;
 			m_AuthMechs.isNtlmAvailable = false;
@@ -818,7 +824,7 @@ void CJabberProto::OnProcessFeatures( HXML node, ThreadData* info )
 
 				if ( !_tcscmp( xmlGetName( c ), _T("mechanism"))) {
 					//JabberLog("Mechanism: %s",xmlGetText( c ));
-					     if ( !_tcscmp( xmlGetText( c ), _T("PLAIN")))          m_AuthMechs.isPlainAvailable = true;
+					     if ( !_tcscmp( xmlGetText( c ), _T("PLAIN")))          m_AuthMechs.isPlainOldAvailable = m_AuthMechs.isPlainAvailable = true;
 					else if ( !_tcscmp( xmlGetText( c ), _T("DIGEST-MD5")))     m_AuthMechs.isMd5Available = true;
 					else if ( !_tcscmp( xmlGetText( c ), _T("SCRAM-SHA-1")))    m_AuthMechs.isScramAvailable = true;
 					else if ( !_tcscmp( xmlGetText( c ), _T("NTLM")))           m_AuthMechs.isNtlmAvailable = true;
@@ -971,8 +977,6 @@ void CJabberProto::OnProcessProtocol( HXML node, ThreadData* info )
 		OnProcessError( node, info );
 	else if ( !lstrcmp( xmlGetName( node ), _T("challenge")))
 		OnProcessChallenge( node, info );
-	else if ( xmlGetChild( node , _T("captcha")))
-		OnProcessCaptcha( node, info );
 	else if ( info->type == JABBER_SESSION_NORMAL ) {
 		if ( !lstrcmp( xmlGetName( node ), _T("message")))
 			OnProcessMessage( node, info );
@@ -1164,6 +1168,12 @@ void CJabberProto::OnProcessMessage( HXML node, ThreadData* info )
 
 	hContact = HContactFromJID( from );
 	JABBER_LIST_ITEM *chatItem = ListGetItemPtr( LIST_CHATROOM, from );
+	if ( chatItem ) {
+		HXML xCaptcha = xmlGetChild( node, "captcha" );
+		if ( xCaptcha )
+			if ( ProcessCaptcha( xCaptcha, node, info ))
+				return;
+	}
 
 	const TCHAR* szMessage = NULL;
 	HXML bodyNode = xmlGetChildByTag( node , "body", "xml:lang", m_tszSelectedLang );
@@ -1307,6 +1317,7 @@ void CJabberProto::OnProcessMessage( HXML node, ThreadData* info )
 	}
 
 	for ( int i = 0; ( xNode = xmlGetChild( node, i )) != NULL; i++ ) {
+		// xmlGetNthChild() nth parameter starts from 1, not from 0
 		xNode = xmlGetNthChild( node, _T("x"), i + 1 );
 		if ( xNode == NULL ) {
 			xNode = xmlGetNthChild( node, _T("user:x"), i + 1 );
@@ -1421,6 +1432,35 @@ void CJabberProto::OnProcessMessage( HXML node, ThreadData* info )
 			if (( n = xmlGetChild( xNode , "password" )) != NULL )
 				invitePassword = xmlGetText( n );
 		}
+		// temporary disabled due to security holes (roster modification), infinite loops and invalid _tcscmp() usage
+ 		else if ( !_tcscmp( ptszXmlns, _T(JABBER_FEAT_ROSTER_EXCHANGE)) && 
+ 			item != NULL && (item->subscription == SUB_BOTH || item->subscription == SUB_TO)) {
+			TCHAR chkJID[512] = _T("@");
+			JabberStripJid( from, chkJID + 1, SIZEOF(chkJID) - 1 ); 
+ 			for ( int i = 1; ; ++i ) { 
+ 				HXML iNode = xmlGetNthChild( xNode , _T("item"), i );
+				if ( iNode == NULL ) break;
+ 				const TCHAR *action = xmlGetAttrValue( iNode, _T("action"));
+ 				const TCHAR *jid = xmlGetAttrValue( iNode, _T("jid"));
+ 				const TCHAR *nick = xmlGetAttrValue( iNode, _T("name"));
+ 				const TCHAR *group =  xmlGetText( xmlGetChild( iNode, _T("group")));
+ 				if ( action && jid && _tcsstr( jid, chkJID )) {
+ 					if ( !_tcscmp( action, _T("add"))) {
+ 						HANDLE hContact = DBCreateContact( jid, nick, FALSE, FALSE );
+ 						if ( group )
+							DBWriteContactSettingTString( hContact, "CList", "Group", group );
+ 					}
+ 					else if ( !_tcscmp( action, _T("modify"))) {
+//						HANDLE hContact = HContactFromJID( jid );
+ 					}
+ 					else if ( !_tcscmp( action, _T("delete"))) {
+ 						HANDLE hContact = HContactFromJID( jid );
+ 						if ( hContact )
+ 							JCallService( MS_DB_CONTACT_DELETE, ( WPARAM ) hContact, 0 );
+ 					}
+ 				}
+ 			}
+ 		}
 		else if ( !isChatRoomInvitation && !_tcscmp( ptszXmlns, _T("jabber:x:conference"))) {
 			inviteRoomJid = xmlGetAttrValue( xNode, _T("jid"));
 			inviteFromJid = from;
@@ -1429,7 +1469,8 @@ void CJabberProto::OnProcessMessage( HXML node, ThreadData* info )
 			if ( !inviteReason )
 				inviteReason = szMessage;
 			isChatRoomInvitation = TRUE;
-	}	}
+		}	
+	}
 
 	if ( isChatRoomInvitation ) {
 		if ( inviteRoomJid != NULL ) {
