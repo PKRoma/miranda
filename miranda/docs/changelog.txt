@@ -3,6 +3,12 @@
                            www.miranda-im.org
 
 
+* New in 0.9.23
+Bugfixes:
+ - Minor display issues
+ - Jabber: Added support for old style plain authentication for Google Apps accounts and pre 2.1 versions of ejabberd
+ 
+
 * New in 0.9.22
 Bugfixes:
  - Version displayed incorrectly
