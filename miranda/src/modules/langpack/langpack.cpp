@@ -49,6 +49,7 @@ struct LangPackEntry {
 	char *local;
 	wchar_t *wlocal;
 	LangPackMuuid* pMuuid;
+	LangPackEntry* pNext;  // for langpack items with the same hash value
 };
 
 struct LangPackStruct {
@@ -92,7 +93,7 @@ void ConvertBackslashes(char *str)
 }	}	}
 
 #ifdef _DEBUG
-#pragma optimize( "gt", on )
+//#pragma optimize( "gt", on )
 #endif
 
 // MurmurHash2
@@ -220,6 +221,7 @@ static void LoadLangPackFile( FILE* fp, char* line )
 			E->local = NULL;
 			E->wlocal = NULL;
 			E->pMuuid = pCurrentMuuid;
+			E->pNext = NULL;
 			continue;
 		}
 
@@ -312,9 +314,9 @@ static int LoadLangPack(const TCHAR *szLangPack)
 	langPack.entriesAlloced = 0;
 
 	LoadLangPackFile( fp, line );
+	fclose(fp);
 
 	qsort(langPack.entry,langPack.entryCount,sizeof(LangPackEntry),(int(*)(const void*,const void*))SortLangPackHashesProc);
-	fclose(fp);
 	return 0;
 }
 
@@ -324,29 +326,25 @@ static int SortLangPackHashesProc2(LangPackEntry *arg1,LangPackEntry *arg2)
 {
 	if (arg1->englishHash < arg2->englishHash) return -1;
 	if (arg1->englishHash > arg2->englishHash) return 1;
-
-	if (arg1->pMuuid == NULL || arg1->pMuuid == arg2->pMuuid)
-		return 0;
-
-	return (arg1->pMuuid < arg2->pMuuid) ? -1 : 1;
+	return 0;
 }
 
 char *LangPackTranslateString(LangPackMuuid* pUuid, const char *szEnglish, const int W)
 {
+	if ( langPack.entryCount == 0 || szEnglish == NULL )
+		return (char*)szEnglish;
+
 	LangPackEntry key,*entry;
-
-	if ( langPack.entryCount == 0 || szEnglish == NULL ) return (char*)szEnglish;
-
 	key.englishHash = W ? hashstrW(szEnglish) : hashstr(szEnglish);
-	key.pMuuid = pUuid;
-	entry=(LangPackEntry*)bsearch(&key,langPack.entry,langPack.entryCount,sizeof(LangPackEntry),(int(*)(const void*,const void*))SortLangPackHashesProc2);
-	if(entry==NULL) return (char*)szEnglish;
-	while(entry>langPack.entry)
-	{
-		entry--;
-		if(entry->englishHash != key.englishHash || entry->pMuuid != key.pMuuid) {
-			entry++;
-			return W ? (char *)entry->wlocal : entry->local;
+	entry = (LangPackEntry*)bsearch(&key, langPack.entry, langPack.entryCount, sizeof(LangPackEntry), (int(*)(const void*,const void*))SortLangPackHashesProc2 );
+	if ( entry == NULL )
+		return (char*)szEnglish;
+
+	// try to find the exact match, otherwise the first entry will be returned
+	for ( LangPackEntry* p = entry->pNext; p != NULL; p = p->pNext ) {
+		if (p->pMuuid == key.pMuuid) {
+			entry = p;
+			break;
 		}
 	}
 	return W ? (char *)entry->wlocal : entry->local;
@@ -400,17 +398,37 @@ int LangPackMarkPluginLoaded( PLUGININFOEX* pInfo )
 
 void LangPackDropUnusedItems( void )
 {
-	LangPackEntry *s = langPack.entry;
+	if ( langPack.entryCount == 0 )
+		return;
+
+	LangPackEntry *s = langPack.entry+1, *d = s, *pLast = langPack.entry;
+	DWORD dwSavedHash = langPack.entry->englishHash;
 	bool bSortNeeded = false;
 
-	for ( int i=0; i < langPack.entryCount; i++, s++ )
-		if ( s->pMuuid != NULL && s->pMuuid->pInfo == NULL ) {
+	for ( int i=1; i < langPack.entryCount; i++, s++ ) {
+		if ( s->pMuuid != NULL && s->pMuuid->pInfo == NULL )
 			s->pMuuid = NULL;
-			bSortNeeded = true;
-		}
 
-	if ( bSortNeeded )
-		qsort( langPack.entry, langPack.entryCount, sizeof(LangPackEntry), (int(*)(const void*,const void*))SortLangPackHashesProc);
+		if ( s->englishHash != dwSavedHash ) {
+			pLast = d;
+			if ( s != d )
+				*d++ = *s;
+			else
+				d++;
+			dwSavedHash = s->englishHash;
+		}
+		else {
+			bSortNeeded = true;
+			LangPackEntry* p = ( LangPackEntry* )mir_alloc( sizeof( LangPackEntry ));
+			*p = *s;
+			pLast->pNext = p; pLast = p;
+		}
+	}
+
+	if ( bSortNeeded ) {
+		langPack.entryCount = ( int )( d - langPack.entry );
+		qsort(langPack.entry,langPack.entryCount,sizeof(LangPackEntry),(int(*)(const void*,const void*))SortLangPackHashesProc);
+	}
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -445,10 +463,21 @@ void UnloadLangPackModule()
 		mir_free( lMuuids[i] );
 	lMuuids.destroy();
 
-	for ( i=0; i < langPack.entryCount; i++ ) {
-		mir_free(langPack.entry[i].local);
-		mir_free(langPack.entry[i].wlocal);
+	LangPackEntry* p = langPack.entry;
+	for ( i=0; i < langPack.entryCount; i++, p++ ) {
+		if ( p->pNext != NULL ) {
+			for ( LangPackEntry* p1 = p->pNext; p1 != NULL; ) {
+				LangPackEntry* p2 = p1; p1 = p1->pNext;
+				mir_free( p2->local);
+				mir_free( p2->wlocal);
+				mir_free( p2 );
+			}
+		}
+
+		mir_free( p->local );
+		mir_free( p->wlocal );
 	}
+
 	if ( langPack.entryCount ) {
 		mir_free(langPack.entry);
 		langPack.entry=0;
