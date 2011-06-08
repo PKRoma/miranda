@@ -325,7 +325,7 @@ static int SortLangPackHashesProc2(LangPackEntry *arg1,LangPackEntry *arg2)
 	if (arg1->englishHash < arg2->englishHash) return -1;
 	if (arg1->englishHash > arg2->englishHash) return 1;
 
-	if (arg1->pMuuid == NULL || arg2->pMuuid == NULL || arg1->pMuuid == arg2->pMuuid)
+	if (arg1->pMuuid == NULL || arg1->pMuuid == arg2->pMuuid)
 		return 0;
 
 	return (arg1->pMuuid < arg2->pMuuid) ? -1 : 1;
@@ -344,7 +344,7 @@ char *LangPackTranslateString(LangPackMuuid* pUuid, const char *szEnglish, const
 	while(entry>langPack.entry)
 	{
 		entry--;
-		if(entry->englishHash!=key.englishHash) {
+		if(entry->englishHash != key.englishHash || entry->pMuuid != key.pMuuid) {
 			entry++;
 			return W ? (char *)entry->wlocal : entry->local;
 		}
