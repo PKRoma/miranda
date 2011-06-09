@@ -161,6 +161,56 @@ static int SortLangPackHashesProc(LangPackEntry *arg1,LangPackEntry *arg2)
 	return (arg1->pMuuid < arg2->pMuuid) ? -1 : 1;
 }
 
+static void swapBytes( void* p, size_t iSize )
+{
+	char *head = (char *)p; // here
+	char *tail = head + iSize - 1;
+
+	for (; tail > head; --tail, ++head) {
+		char temp = *head;
+		*head = *tail;
+		*tail = temp;
+	}
+}
+
+static bool EnterMuuid( const char* p, MUUID& result )
+{
+	if ( *p++ != '{' )
+		return false;
+
+	BYTE* d = (BYTE*)&result;
+
+	for ( int nBytes = 0; *p && nBytes < 24; p++ ) {
+		if ( *p == '-' )
+			continue;
+
+		if ( *p == '}' )
+			break;
+
+		if ( !isxdigit( *p ))
+			return false;
+
+		if ( !isxdigit( p[1] ))
+			return false;
+
+		int c = 0;
+		if ( sscanf( p, "%2x", &c ) != 1 )
+			return false;
+
+		*d++ = ( BYTE )c;
+		nBytes++;
+		p++;
+	}
+
+	if ( *p != '}' )
+		return false;
+
+	swapBytes( &result.a, sizeof( result.a ));
+	swapBytes( &result.b, sizeof( result.b ));
+	swapBytes( &result.c, sizeof( result.c ));
+	return true;
+}
+
 static void LoadLangPackFile( FILE* fp, char* line )
 {
 	while ( !feof( fp )) {
@@ -189,7 +239,7 @@ static void LoadLangPackFile( FILE* fp, char* line )
 
 			if ( !memcmp( line+1, "muuid", 5 )) {
 				MUUID t;
-				if ( 11 != sscanf( line+7, "{%8x-%4x-%4x-%2x%2x%2x%2x%2x%2x%2x%2x}", &t.a, &t.b, &t.c, &t.d[0], &t.d[1], &t.d[2], &t.d[3], &t.d[4], &t.d[5], &t.d[6], &t.d[7] )) {
+				if ( !EnterMuuid( line+7, t )) {
 					NetlibLogf( NULL, "Invalid MUUID: %s\n", line+7 );
 					continue;
 				}
