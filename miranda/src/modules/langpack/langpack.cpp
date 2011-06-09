@@ -223,6 +223,8 @@ static void LoadLangPackFile( FILE* fp, char* line )
 		rtrim( line );
 
 		if ( line[0] == '#' ) {
+			strlwr( line );
+
 			if ( !memcmp( line+1, "include", 7 )) {
 				TCHAR tszFileName[ MAX_PATH ];
 				TCHAR* fileName = mir_a2t( ltrim( line+9 ));
@@ -234,10 +236,8 @@ static void LoadLangPackFile( FILE* fp, char* line )
 					LoadLangPackFile( p, line );
 					fclose( p );
 				}
-				continue;
 			}
-
-			if ( !memcmp( line+1, "muuid", 5 )) {
+			else if ( !memcmp( line+1, "muuid", 5 )) {
 				MUUID t;
 				if ( !EnterMuuid( line+7, t )) {
 					NetlibLogf( NULL, "Invalid MUUID: %s\n", line+7 );
@@ -249,8 +249,9 @@ static void LoadLangPackFile( FILE* fp, char* line )
 				pNew->pInfo = NULL;
 				lMuuids.insert( pNew );
 				pCurrentMuuid = pNew;
-				continue;
 			}
+
+			continue;
 		}
 
 		ConvertBackslashes( line );
@@ -391,12 +392,13 @@ char *LangPackTranslateString(LangPackMuuid* pUuid, const char *szEnglish, const
 		return (char*)szEnglish;
 
 	// try to find the exact match, otherwise the first entry will be returned
-	for ( LangPackEntry* p = entry->pNext; p != NULL; p = p->pNext ) {
-		if (p->pMuuid == key.pMuuid) {
-			entry = p;
-			break;
-		}
-	}
+	if ( pUuid ) {
+		for ( LangPackEntry* p = entry->pNext; p != NULL; p = p->pNext ) {
+			if (p->pMuuid == pUuid) {
+				entry = p;
+				break;
+	}	}	}
+
 	return W ? (char *)entry->wlocal : entry->local;
 }
 
