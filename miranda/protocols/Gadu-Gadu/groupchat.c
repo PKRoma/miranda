@@ -395,14 +395,13 @@ char *gg_gc_getchat(GGPROTO *gg, uin_t sender, uin_t *recipients, int recipients
 static void gg_gc_resetclistopts(HWND hwndList)
 {
 	int i;
-
 	SendMessage(hwndList, CLM_SETLEFTMARGIN, 2, 0);
 	SendMessage(hwndList, CLM_SETBKBITMAP, 0, (LPARAM)(HBITMAP)NULL);
 	SendMessage(hwndList, CLM_SETBKCOLOR, GetSysColor(COLOR_WINDOW), 0);
 	SendMessage(hwndList, CLM_SETGREYOUTFLAGS, 0, 0);
 	SendMessage(hwndList, CLM_SETINDENT, 10, 0);
 	SendMessage(hwndList, CLM_SETHIDEEMPTYGROUPS, (WPARAM)TRUE, 0);
-	for (i=0; i<=FONTID_MAX; i++)
+	for (i = 0; i <= FONTID_MAX; i++)
 		SendMessage(hwndList, CLM_SETTEXTCOLOR, i, GetSysColor(COLOR_WINDOWTEXT));
 }
 
@@ -453,7 +452,7 @@ static INT_PTR CALLBACK gg_gc_openconfdlg(HWND hwndDlg,UINT message,WPARAM wPara
 							GG_PROTONAME, MB_OK | MB_ICONSTOP
 						);
 					}
-					else if(hwndList)
+					else if (hwndList)
 					{
 						// Check count of contacts
 						HANDLE hItem, hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
@@ -467,8 +466,9 @@ static INT_PTR CALLBACK gg_gc_openconfdlg(HWND hwndDlg,UINT message,WPARAM wPara
 						}
 
 						// Create new participiants table
-						if(count)
+						if (count)
 						{
+							char *chat;
 							uin_t *participants = calloc(count, sizeof(uin_t));
 							gg_netlog(gg, "gg_gc_getchat(): Opening new conference for %d contacts.", count);
 							hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
@@ -479,8 +479,14 @@ static INT_PTR CALLBACK gg_gc_openconfdlg(HWND hwndDlg,UINT message,WPARAM wPara
 									participants[i++] = DBGetContactSettingDword(hContact, GG_PROTO, GG_KEY_UIN, 0);
 								hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM)hContact, 0);
 							}
-							if(count > i) i = count;
-							gg_gc_getchat(gg, 0, participants, count);
+							if (count > i) i = count;
+							chat = gg_gc_getchat(gg, 0, participants, count);
+							if (chat)
+							{
+								GCDEST gcdest = {GG_PROTO, chat, GC_EVENT_CONTROL};
+								GCEVENT gcevent = {sizeof(GCEVENT), &gcdest};
+								CallServiceSync(MS_GC_EVENT, WINDOW_VISIBLE, (LPARAM)&gcevent);
+							}
 							free(participants);
 						}
 					}
@@ -513,6 +519,7 @@ static INT_PTR CALLBACK gg_gc_openconfdlg(HWND hwndDlg,UINT message,WPARAM wPara
 							HANDLE hContact;
 							HANDLE hItem;
 							char* szProto;
+							uin_t uin;
 							GGPROTO *gg = (GGPROTO *)GetWindowLongPtr(hwndDlg, DWLP_USER);
 
 							if (!gg) break;
@@ -525,7 +532,8 @@ static INT_PTR CALLBACK gg_gc_openconfdlg(HWND hwndDlg,UINT message,WPARAM wPara
 								if (hItem)
 								{
 									szProto = (char*)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
-									if (szProto == NULL || lstrcmp(szProto, GG_PROTO) || !DBGetContactSettingDword(hContact, GG_PROTO, GG_KEY_UIN, 0))
+									uin = (uin_t)DBGetContactSettingDword(hContact, GG_PROTO, GG_KEY_UIN, 0);
+									if (szProto == NULL || lstrcmp(szProto, GG_PROTO) || !uin || uin == DBGetContactSettingDword(NULL, GG_PROTO, GG_KEY_UIN, 0))
 										SendDlgItemMessage(hwndDlg, IDC_CLIST, CLM_DELETEITEM, (WPARAM)hItem, 0);
 								}
 								hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM)hContact, 0);
