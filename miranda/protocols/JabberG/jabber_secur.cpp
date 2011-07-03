@@ -442,7 +442,7 @@ char* TPlainAuth::getInitialRequest()
 	mir_free( uname );
 	mir_free( passw );
 
-	return JabberBase64Encode( toEncode, size );
+	return JabberBase64Encode( toEncode, (int)size );
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
