@@ -80,21 +80,13 @@ static TCHAR* sttSettingToTchar( DBCONTACTWRITESETTING* cws )
 {
 	switch( cws->value.type ) {
 	case DBVT_ASCIIZ:
-		#if defined( _UNICODE )
-			return mir_a2u( cws->value.pszVal );
-		#else
-			return mir_strdup( cws->value.pszVal );
-		#endif
+		return mir_a2t( cws->value.pszVal );
 
 	case DBVT_UTF8:
-		#if defined( _UNICODE )
-		{	TCHAR* result;
-			mir_utf8decode( NEWSTR_ALLOCA(cws->value.pszVal), &result );
-			return result;
-		}
-		#else
-			return mir_strdup( mir_utf8decode( NEWSTR_ALLOCA(cws->value.pszVal), NULL ));
-		#endif
+		return mir_utf8decodeT( cws->value.pszVal );
+
+	case DBVT_WCHAR:
+		return mir_u2t( cws->value.pwszVal );
 	}
 	return NULL;
 }
