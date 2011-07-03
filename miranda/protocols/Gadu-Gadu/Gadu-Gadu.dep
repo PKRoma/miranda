@@ -351,6 +351,7 @@
 	".\gg.h"\
 	".\libgadu\libgadu.h"\
 	".\m_folders.h"\
+	".\m_metacontacts.h"\
 	".\resource.h"\
 	
 
