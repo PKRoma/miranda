@@ -2285,8 +2285,8 @@ int CIcqProto::servlistMoveContact_gotTargetGroup(const char *szGroup, WORD wNew
 	{ // imitate icq5, previously here was different order, but AOL changed and it ceased to work
 		void *doubleObject = NULL;
 
-		icq_sendServerContact(ack->hContact, dwCookie, ICQ_LISTS_REMOVEFROMLIST, wGroupID, wItemID, SSO_CONTACT_SETGROUP | SSOF_BEGIN_OPERATION, 500, &doubleObject);
 		icq_sendServerContact(ack->hContact, dwCookie2, ICQ_LISTS_ADDTOLIST, wNewGroupID, ack->wNewContactId, SSO_CONTACT_SETGROUP | SSOF_BEGIN_OPERATION, 500, &doubleObject);
+		icq_sendServerContact(ack->hContact, dwCookie, ICQ_LISTS_REMOVEFROMLIST, wGroupID, wItemID, SSO_CONTACT_SETGROUP | SSOF_BEGIN_OPERATION, 500, &doubleObject);
 	}
 	return CALLBACK_RESULT_CONTINUE;
 }
@@ -2694,15 +2694,6 @@ int CIcqProto::ServListDbSettingChanged(WPARAM wParam, LPARAM lParam)
 
 	if (!strcmpnull(cws->szModule, "CList"))
 	{
-		// Has a temporary contact just been added permanently?
-		if (!strcmpnull(cws->szSetting, "NotOnList") &&
-			(cws->value.type == DBVT_DELETED || (cws->value.type == DBVT_BYTE && cws->value.bVal == 0)))
-		{ // Add to server-list
-			setContactHidden((HANDLE)wParam, 0);
-			if (getSettingByte(NULL, "ServerAddRemove", DEFAULT_SS_ADDSERVER))
-				AddServerContact(wParam, 0);
-		}
-
 		// Has contact been renamed?
 		if (!strcmpnull(cws->szSetting, "MyHandle") &&
 			getSettingByte(NULL, "StoreServerDetails", DEFAULT_SS_STORE))

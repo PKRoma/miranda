@@ -42,7 +42,7 @@
 
 #define LISTSIZE 100
 
-#define XSTATUS_COUNT 32
+#define XSTATUS_COUNT 86
 
 struct CIcqProto;
 typedef void    ( __cdecl CIcqProto::*IcqThreadFunc )( void* );

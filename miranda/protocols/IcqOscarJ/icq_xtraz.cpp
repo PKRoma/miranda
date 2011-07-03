@@ -102,9 +102,9 @@ void CIcqProto::handleXtrazNotify(DWORD dwUin, DWORD dwMID, DWORD dwMID2, WORD w
 							char *szResponse = (char*)_alloca(nResponseLen + 1);
 							// send response
 							null_snprintf(szResponse, nResponseLen, 
-								"<ret event='OnRemoteNotification'>"
+								"<ret event=\"OnRemoteNotification\">"
 								"<srv><id>cAwaySrv</id>"
-								"<val srv_id='cAwaySrv'><Root>"
+								"<val srv_id=\"cAwaySrv\"><Root>"
 								"<CASXtraSetAwayMessage></CASXtraSetAwayMessage>"
 								"<uin>%d</uin>"
 								"<index>%d</index>"
@@ -213,96 +213,74 @@ void CIcqProto::handleXtrazNotifyResponse(DWORD dwUin, HANDLE hContact, WORD wCo
 		BroadcastAck(hContact, ICQACKTYPE_XTRAZNOTIFY_RESPONSE, ACKRESULT_SUCCESS, (HANDLE)wCookie, (LPARAM)szRes);
 
 NextVal:
-		szNode = strstrnull(szRes, "<val srv_id='");
+		szNode = strstrnull(szRes, "<val srv_id=");
 		if (szNode) szEnd = strstrnull(szNode, ">"); else szEnd = NULL;
 
 		if (szNode && szEnd)
 		{
 			*(szEnd-1) = '\0';
-			szNode += 13;
+			szNode += 13; //one more than the length of the string to skip ' or " too
 			szWork = szEnd + 1;
 
 			if (!stricmpnull(szNode, "cAwaySrv"))
 			{
-				szNode = strstrnull(szWork, "<uin>");
-				szEnd = strstrnull(szWork, "</uin>");
+				int bChanged = FALSE;
 
+				*szEnd = ' ';
+				szNode = strstrnull(szWork, "<index>");
+				szEnd = strstrnull(szWork, "</index>");
 				if (szNode && szEnd)
 				{
-					szNode += 5;
+					szNode += 7;
 					*szEnd = '\0';
-
-					if ((DWORD)atoi(szNode) == dwUin)
-					{
-						int bChanged = FALSE;
-
-						*szEnd = ' ';
-						szNode = strstrnull(szWork, "<index>");
-						szEnd = strstrnull(szWork, "</index>");
-
-						if (szNode && szEnd)
-						{
-							szNode += 7;
-							*szEnd = '\0';
-							if (atoi(szNode) != getContactXStatus(hContact))
-							{ // this is strange - but go on
-								NetLog_Server("Warning: XStatusIds do not match!");
-							}
-							*szEnd = ' ';
-						}
-						szNode = strstrnull(szWork, "<title>");
-						szEnd = strstrnull(szWork, "</title>");
-
-						if (szNode && szEnd)
-						{ // we got XStatus title, save it
-							char *szXName, *szOldXName;
-
-							szNode += 7;
-							*szEnd = '\0';
-							szXName = DemangleXml(szNode, strlennull(szNode));
-							// check if the name changed
-							szOldXName = getSettingStringUtf(hContact, DBSETTING_XSTATUS_NAME, NULL);
-							if (strcmpnull(szOldXName, szXName))
-								bChanged = TRUE;
-							SAFE_FREE(&szOldXName);
-							setSettingStringUtf(hContact, DBSETTING_XSTATUS_NAME, szXName);
-							SAFE_FREE(&szXName);
-							*szEnd = ' ';
-						}
-						szNode = strstrnull(szWork, "<desc>");
-						szEnd = strstrnull(szWork, "</desc>");
-
-						if (szNode && szEnd)
-						{ // we got XStatus mode msg, save it
-							char *szXMsg, *szOldXMsg;
-
-							szNode += 6;
-							*szEnd = '\0';
-							szXMsg = DemangleXml(szNode, strlennull(szNode));
-							// check if the decription changed
-							szOldXMsg = getSettingStringUtf(hContact, DBSETTING_XSTATUS_NAME, NULL);
-							if (strcmpnull(szOldXMsg, szXMsg))
-								bChanged = TRUE;
-							SAFE_FREE(&szOldXMsg);
-							setSettingStringUtf(hContact, DBSETTING_XSTATUS_MSG, szXMsg);
-							SAFE_FREE(&szXMsg);
-						}
-						BroadcastAck(hContact, ICQACKTYPE_XSTATUS_RESPONSE, ACKRESULT_SUCCESS, (HANDLE)wCookie, 0);
-
-						if (bChanged)
-							NotifyEventHooks(hxstatuschanged, (WPARAM)hContact, 0);
+					if (atoi(szNode) != getContactXStatus(hContact))
+					{ // this is strange - but go on
+						NetLog_Server("Warning: XStatusIds do not match!");
 					}
-					else
-						NetLog_Server("Error: Invalid sender information");
+					*szEnd = ' ';
 				}
-				else
-					NetLog_Server("Error: Missing sender information");
+				szNode = strstrnull(szWork, "<title>");
+				szEnd = strstrnull(szWork, "</title>");
+				if (szNode && szEnd)
+				{ // we got XStatus title, save it
+					char *szXName, *szOldXName;
+					szNode += 7;
+					*szEnd = '\0';
+					szXName = DemangleXml(szNode, strlennull(szNode));
+					// check if the name changed
+					szOldXName = getSettingStringUtf(hContact, DBSETTING_XSTATUS_NAME, NULL);
+					if (strcmpnull(szOldXName, szXName))
+						bChanged = TRUE;
+					SAFE_FREE(&szOldXName);
+					setSettingStringUtf(hContact, DBSETTING_XSTATUS_NAME, szXName);
+					SAFE_FREE(&szXName);
+					*szEnd = ' ';
+				}
+				szNode = strstrnull(szWork, "<desc>");
+				szEnd = strstrnull(szWork, "</desc>");
+				if (szNode && szEnd)
+				{ // we got XStatus mode msg, save it
+					char *szXMsg, *szOldXMsg;
+					szNode += 6;
+					*szEnd = '\0';
+					szXMsg = DemangleXml(szNode, strlennull(szNode));
+					// check if the decription changed
+					szOldXMsg = getSettingStringUtf(hContact, DBSETTING_XSTATUS_NAME, NULL);
+					if (strcmpnull(szOldXMsg, szXMsg))
+						bChanged = TRUE;
+					SAFE_FREE(&szOldXMsg);
+					setSettingStringUtf(hContact, DBSETTING_XSTATUS_MSG, szXMsg);
+					SAFE_FREE(&szXMsg);
+				}
+				BroadcastAck(hContact, ICQACKTYPE_XSTATUS_RESPONSE, ACKRESULT_SUCCESS, (HANDLE)wCookie, 0);
+				if (bChanged)
+					NotifyEventHooks(hxstatuschanged, (WPARAM)hContact, 0);
 			}
 			else
 			{
 				char *szSrvEnd = strstrnull(szEnd, "</srv>");
 
-				if (szSrvEnd && strstrnull(szSrvEnd, "<val srv_id='"))
+				if (szSrvEnd && strstrnull(szSrvEnd, "<val srv_id="))
 				{ // check all values !
 					szRes = szSrvEnd + 6; // after first value
 					goto NextVal;
