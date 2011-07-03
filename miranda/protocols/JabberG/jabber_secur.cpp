@@ -432,7 +432,7 @@ char* TPlainAuth::getInitialRequest()
 	char *uname = mir_utf8encodeT( info->username ), 
 		 *passw = mir_utf8encodeT( info->password ); 
 
-	int size = 2 * strlen( uname ) + strlen( passw ) + strlen( info->server ) + 4;
+	size_t size = 2 * strlen( uname ) + strlen( passw ) + strlen( info->server ) + 4;
 	char *toEncode = ( char* )alloca( size );
 	if ( bOld )
 		size = mir_snprintf( toEncode, size, "%s@%s%c%s%c%s", uname, info->server, 0, uname, 0, passw );
