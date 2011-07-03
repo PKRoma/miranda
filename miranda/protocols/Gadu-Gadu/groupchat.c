@@ -19,6 +19,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 #include "gg.h"
+#include "m_metacontacts.h"
 
 #define GG_GC_GETCHAT "%s/GCGetChat"
 #define GGS_OPEN_CONF "%s/OpenConf"
@@ -392,6 +393,26 @@ char *gg_gc_getchat(GGPROTO *gg, uin_t sender, uin_t *recipients, int recipients
 	return chat->id;
 }
 
+static HANDLE gg_getsubcontact(GGPROTO* gg, HANDLE hContact)
+{
+	char* szProto = (char*)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
+	char* szMetaProto = (char*)CallService(MS_MC_GETPROTOCOLNAME, 0, 0);
+
+	if (szProto && szMetaProto && (INT_PTR)szMetaProto != CALLSERVICE_NOTFOUND && !lstrcmp(szProto, szMetaProto))
+	{
+		int nSubContacts = (int)CallService(MS_MC_GETNUMCONTACTS, (WPARAM)hContact, 0), i;
+		HANDLE hMetaContact;
+		for (i = 0; i < nSubContacts; i++)
+		{
+			hMetaContact = (HANDLE)CallService(MS_MC_GETSUBCONTACT, (WPARAM)hContact, i);
+			szProto = (char*)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hMetaContact, 0);
+			if (szProto && !lstrcmp(szProto, GG_PROTO))
+				return hMetaContact;
+		}
+	}
+	return NULL;
+}
+
 static void gg_gc_resetclistopts(HWND hwndList)
 {
 	int i;
@@ -405,7 +426,30 @@ static void gg_gc_resetclistopts(HWND hwndList)
 		SendMessage(hwndList, CLM_SETTEXTCOLOR, i, GetSysColor(COLOR_WINDOWTEXT));
 }
 
-static INT_PTR CALLBACK gg_gc_openconfdlg(HWND hwndDlg,UINT message,WPARAM wParam,LPARAM lParam)
+static int gg_gc_countcheckmarks(HWND hwndList)
+{
+	int count = 0;
+	HANDLE hItem, hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
+	while (hContact)
+	{
+		hItem = (HANDLE)SendMessage(hwndList, CLM_FINDCONTACT, (WPARAM)hContact, 0);
+		if (hItem && SendMessage(hwndList, CLM_GETCHECKMARK, (WPARAM)hItem, 0))
+			count++;
+		hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM)hContact, 0);
+	}
+	return count;
+}
+
+#define HM_SUBCONTACTSCHANGED (WM_USER + 100)
+
+typedef struct
+{
+	HFONT hBoldFont;
+	HANDLE hMetaContactsEvent;
+}
+GGOPENCONFDLGDATA;
+
+static INT_PTR CALLBACK gg_gc_openconfdlg(HWND hwndDlg, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	switch(message)
 	{
@@ -413,24 +457,21 @@ static INT_PTR CALLBACK gg_gc_openconfdlg(HWND hwndDlg,UINT message,WPARAM wPara
 		{
 			CLCINFOITEM cii = {0};
 			LOGFONT lf;
-			HFONT hBoldFont, hNormalFont = (HFONT)SendDlgItemMessage(hwndDlg, IDC_NAME, WM_GETFONT, 0, 0);
+			HFONT hNormalFont = (HFONT)SendDlgItemMessage(hwndDlg, IDC_NAME, WM_GETFONT, 0, 0);
+			GGOPENCONFDLGDATA* dlgData = (GGOPENCONFDLGDATA*)mir_alloc(sizeof(GGOPENCONFDLGDATA));
+
 			SetWindowLongPtr(hwndDlg, DWLP_USER, (LONG_PTR)lParam);
-
 			TranslateDialogDefault(hwndDlg);
-
-			// Add the "All contacts" item
-			//~ cii.cbSize = sizeof(cii);
-			//~ cii.flags = CLCIIF_GROUPFONT | CLCIIF_CHECKBOX;
-			//~ cii.pszText = Translate("** All contacts **");
-			//~ hItemAll = (HANDLE)SendDlgItemMessage(hwndDlg, IDC_CLIST, CLM_ADDINFOITEM, 0, (LPARAM)&cii);
 			gg_gc_resetclistopts(GetDlgItem(hwndDlg, IDC_CLIST));
 
+			// Hook MetaContacts event (if available)
+			dlgData->hMetaContactsEvent = HookEventMessage(ME_MC_SUBCONTACTSCHANGED, hwndDlg, HM_SUBCONTACTSCHANGED);
 			// Make bold title font
 			GetObject(hNormalFont, sizeof(lf), &lf);
 			lf.lfWeight = FW_BOLD;
-			hBoldFont = CreateFontIndirect(&lf);
-			SendDlgItemMessage(hwndDlg, IDC_NAME, WM_SETFONT, (WPARAM)hBoldFont, 0);
-			SetWindowLongPtr(hwndDlg, GWLP_USERDATA, (LONG_PTR)hBoldFont);
+			dlgData->hBoldFont = CreateFontIndirect(&lf);
+			SendDlgItemMessage(hwndDlg, IDC_NAME, WM_SETFONT, (WPARAM)dlgData->hBoldFont, 0);
+			SetWindowLongPtr(hwndDlg, GWLP_USERDATA, (LONG_PTR)dlgData);
 		}
 		return TRUE;
 
@@ -438,11 +479,10 @@ static INT_PTR CALLBACK gg_gc_openconfdlg(HWND hwndDlg,UINT message,WPARAM wPara
 		{
 			switch (LOWORD(wParam))
 			{
-
-			case IDOK:
+				case IDOK:
 				{
 					HWND hwndList = GetDlgItem(hwndDlg, IDC_CLIST);
-					GGPROTO *gg = (GGPROTO *)GetWindowLongPtr(hwndDlg, DWLP_USER);
+					GGPROTO* gg = (GGPROTO*)GetWindowLongPtr(hwndDlg, DWLP_USER);
 					int count = 0, i = 0;
 					// Check if connected
 					if (!gg_isonline(gg))
@@ -452,50 +492,38 @@ static INT_PTR CALLBACK gg_gc_openconfdlg(HWND hwndDlg,UINT message,WPARAM wPara
 							GG_PROTONAME, MB_OK | MB_ICONSTOP
 						);
 					}
-					else if (hwndList)
+					else if (hwndList && (count = gg_gc_countcheckmarks(hwndList)) >= 2)
 					{
-						// Check count of contacts
+						// Create new participiants table
+						char* chat;
+						uin_t* participants = calloc(count, sizeof(uin_t));
 						HANDLE hItem, hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
-						while (hContact)
+						gg_netlog(gg, "gg_gc_getchat(): Opening new conference for %d contacts.", count);
+						while (hContact && i < count)
 						{
 							hItem = (HANDLE)SendMessage(hwndList, CLM_FINDCONTACT, (WPARAM)hContact, 0);
-							if (hItem && SendMessage(hwndList, CLM_GETCHECKMARK, (WPARAM)hItem, 0) &&
-									DBGetContactSettingDword(hContact, GG_PROTO, GG_KEY_UIN, 0))
-								count++;
+							if (hItem && SendMessage(hwndList, CLM_GETCHECKMARK, (WPARAM)hItem, 0))
+							{
+								HANDLE hMetaContact = gg_getsubcontact(gg, hContact); // MetaContacts support
+								participants[i++] = DBGetContactSettingDword(hMetaContact ? hMetaContact : hContact, GG_PROTO, GG_KEY_UIN, 0);
+							}
 							hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM)hContact, 0);
 						}
-
-						// Create new participiants table
-						if (count)
+						if (count > i) i = count;
+						chat = gg_gc_getchat(gg, 0, participants, count);
+						if (chat)
 						{
-							char *chat;
-							uin_t *participants = calloc(count, sizeof(uin_t));
-							gg_netlog(gg, "gg_gc_getchat(): Opening new conference for %d contacts.", count);
-							hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
-							while (hContact && i < count)
-							{
-								hItem = (HANDLE)SendMessage(hwndList, CLM_FINDCONTACT, (WPARAM)hContact, 0);
-								if (hItem && SendMessage(hwndList, CLM_GETCHECKMARK, (WPARAM)hItem, 0))
-									participants[i++] = DBGetContactSettingDword(hContact, GG_PROTO, GG_KEY_UIN, 0);
-								hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM)hContact, 0);
-							}
-							if (count > i) i = count;
-							chat = gg_gc_getchat(gg, 0, participants, count);
-							if (chat)
-							{
-								GCDEST gcdest = {GG_PROTO, chat, GC_EVENT_CONTROL};
-								GCEVENT gcevent = {sizeof(GCEVENT), &gcdest};
-								CallServiceSync(MS_GC_EVENT, WINDOW_VISIBLE, (LPARAM)&gcevent);
-							}
-							free(participants);
+							GCDEST gcdest = {GG_PROTO, chat, GC_EVENT_CONTROL};
+							GCEVENT gcevent = {sizeof(GCEVENT), &gcdest};
+							CallServiceSync(MS_GC_EVENT, WINDOW_VISIBLE, (LPARAM)&gcevent);
 						}
+						free(participants);
 					}
 				}
 
-			case IDCANCEL:
-				DestroyWindow(hwndDlg);
-				break;
-
+				case IDCANCEL:
+					DestroyWindow(hwndDlg);
+					break;
 			}
 			break;
 		}
@@ -520,7 +548,7 @@ static INT_PTR CALLBACK gg_gc_openconfdlg(HWND hwndDlg,UINT message,WPARAM wPara
 							HANDLE hItem;
 							char* szProto;
 							uin_t uin;
-							GGPROTO *gg = (GGPROTO *)GetWindowLongPtr(hwndDlg, DWLP_USER);
+							GGPROTO* gg = (GGPROTO*)GetWindowLongPtr(hwndDlg, DWLP_USER);
 
 							if (!gg) break;
 
@@ -531,8 +559,18 @@ static INT_PTR CALLBACK gg_gc_openconfdlg(HWND hwndDlg,UINT message,WPARAM wPara
 								hItem = (HANDLE)SendDlgItemMessage(hwndDlg, IDC_CLIST, CLM_FINDCONTACT, (WPARAM)hContact, 0);
 								if (hItem)
 								{
-									szProto = (char*)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
-									uin = (uin_t)DBGetContactSettingDword(hContact, GG_PROTO, GG_KEY_UIN, 0);
+									HANDLE hMetaContact = gg_getsubcontact(gg, hContact); // MetaContacts support
+									if (hMetaContact)
+									{
+										szProto = GG_PROTO;
+										uin = (uin_t)DBGetContactSettingDword(hMetaContact, GG_PROTO, GG_KEY_UIN, 0);
+									}
+									else
+									{
+										szProto = (char*)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
+										uin = (uin_t)DBGetContactSettingDword(hContact, GG_PROTO, GG_KEY_UIN, 0);
+									}
+
 									if (szProto == NULL || lstrcmp(szProto, GG_PROTO) || !uin || uin == DBGetContactSettingDword(NULL, GG_PROTO, GG_KEY_UIN, 0))
 										SendDlgItemMessage(hwndDlg, IDC_CLIST, CLM_DELETEITEM, (WPARAM)hItem, 0);
 								}
@@ -542,26 +580,20 @@ static INT_PTR CALLBACK gg_gc_openconfdlg(HWND hwndDlg,UINT message,WPARAM wPara
 						break;
 
 						case CLN_CHECKCHANGED:
-						{
-							HANDLE hItem, hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
-							HWND hwndList = GetDlgItem(hwndDlg, IDC_CLIST);
-							int count = 0;
-							GGPROTO *gg = (GGPROTO *)GetWindowLongPtr(hwndDlg, DWLP_USER);
-							while (hContact && hwndList)
-							{
-								hItem = (HANDLE)SendMessage(hwndList, CLM_FINDCONTACT, (WPARAM)hContact, 0);
-								if (hItem && SendMessage(hwndList, CLM_GETCHECKMARK, (WPARAM)hItem, 0) &&
-										DBGetContactSettingDword(hContact, GG_PROTO, GG_KEY_UIN, 0))
-									count++;
-								hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM)hContact, 0);
-							}
-							EnableWindow(GetDlgItem(hwndDlg, IDOK), count >= 2);
+							EnableWindow(GetDlgItem(hwndDlg, IDOK), gg_gc_countcheckmarks(GetDlgItem(hwndDlg, IDC_CLIST)) >= 2);
 							break;
-						}
 					}
 					break;
 				}
 			}
+			break;
+		}
+
+		case HM_SUBCONTACTSCHANGED:
+		{
+			HWND hwndList = GetDlgItem(hwndDlg, IDC_CLIST);
+			SendMessage(hwndList, CLM_AUTOREBUILD, 0, 0);
+			EnableWindow(GetDlgItem(hwndDlg, IDOK), gg_gc_countcheckmarks(hwndList) >= 2);
 			break;
 		}
 
@@ -571,20 +603,20 @@ static INT_PTR CALLBACK gg_gc_openconfdlg(HWND hwndDlg,UINT message,WPARAM wPara
 
 		case WM_DESTROY:
 		{
-			HFONT hBoldFont = (HFONT)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
-			if(hBoldFont) DeleteObject(hBoldFont);
+			GGOPENCONFDLGDATA* dlgData = (GGOPENCONFDLGDATA*)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
+			if (dlgData->hBoldFont) DeleteObject(dlgData->hBoldFont);
+			if (dlgData->hMetaContactsEvent) UnhookEvent(dlgData->hMetaContactsEvent);
+			mir_free(dlgData);
 			break;
 		}
 
 		case WM_CTLCOLORSTATIC:
-			if((GetDlgItem(hwndDlg, IDC_WHITERECT) == (HWND)lParam) ||
-				(GetDlgItem(hwndDlg, IDC_LOGO) == (HWND)lParam))
+			if ((GetDlgItem(hwndDlg, IDC_WHITERECT) == (HWND)lParam) ||	(GetDlgItem(hwndDlg, IDC_LOGO) == (HWND)lParam))
 			{
-				SetBkColor((HDC)wParam,RGB(255,255,255));
+				SetBkColor((HDC)wParam,RGB(255, 255, 255));
 				return (BOOL)GetStockObject(WHITE_BRUSH);
 			}
-			else if((GetDlgItem(hwndDlg, IDC_NAME) == (HWND)lParam) ||
-				(GetDlgItem(hwndDlg, IDC_SUBNAME) == (HWND)lParam))
+			else if ((GetDlgItem(hwndDlg, IDC_NAME) == (HWND)lParam) ||	(GetDlgItem(hwndDlg, IDC_SUBNAME) == (HWND)lParam))
 			{
 				SetBkMode((HDC)wParam, TRANSPARENT);
 				return (BOOL)GetStockObject(NULL_BRUSH);
