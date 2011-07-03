@@ -30,6 +30,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define TZF_DIFONLY     4
 #define TZF_KNOWNONLY   8
 
+#define LOCAL_TIME_HANDLE NULL
+#define UTC_TIME_HANDLE   ((void*)-1)
 
 typedef struct
 {

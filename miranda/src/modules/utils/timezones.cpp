@@ -110,9 +110,10 @@ static int timeapiGetTimeZoneTime(HANDLE hTZ, SYSTEMTIME *st)
 {
 	if (st == NULL) return 1;
 
-
 	MIM_TIMEZONE *tz = (MIM_TIMEZONE*)hTZ;
-	if (tz && tz != myInfo.myTZ)
+	if (tz == UTC_TIME_HANDLE)
+		GetSystemTime(st);
+	else if (tz && tz != myInfo.myTZ)
 	{
 		SYSTEMTIME sto;
 		GetSystemTime(&sto);
@@ -129,6 +130,8 @@ static LPCTSTR timeapiGetTzName(HANDLE hTZ)
 	MIM_TIMEZONE *tz = (MIM_TIMEZONE*)hTZ;
 	if (tz == NULL)
 		return myInfo.myTZ ? myInfo.myTZ->tszName : NULL;
+	else if (tz == UTC_TIME_HANDLE)
+		return _T("UTC");
 
 	return tz->tszName;
 }
@@ -290,6 +293,8 @@ static int timeapiPrintTimeStamp(HANDLE hTZ, time_t ts, LPCTSTR szFormat, LPTSTR
 		UnixTimeToFileTime(ts, &lft);
 		FileTimeToLocalFileTime(&lft, &ft);
 	}
+	else if (tz == UTC_TIME_HANDLE)
+		UnixTimeToFileTime(ts, &ft);
 	else
 	{
 		if (tz->offset == INT_MIN)
@@ -326,6 +331,8 @@ static time_t timeapiTimeStampToTimeZoneTimeStamp(HANDLE hTZ, time_t ts)
 		FileTimeToLocalFileTime(&ft, &lft);
 		return FileTimeToUnixTime(&lft);
 	}
+	else if (tz == UTC_TIME_HANDLE)
+		return ts;
 	
 	if (tz->offset == INT_MIN)
 		CalcTsOffset(tz);
