@@ -50,6 +50,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dbrw", "..\plugins\dbrw\dbr
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "clist_nicer", "..\plugins\clist_nicer\clist_nicer_10.vcxproj", "{3C42510C-A29E-4A53-899C-203BFA874E0B}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "xstatus_ICQ", "..\protocols\IcqOscarJ\icons_pack\ICONS.vcxproj", "{23C53DD3-5429-6D36-6F12-0B2D48D74474}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug Unicode|Win32 = Debug Unicode|Win32
@@ -460,6 +462,18 @@ Global
 		{3C42510C-A29E-4A53-899C-203BFA874E0B}.Release|Win32.Build.0 = Release|Win32
 		{3C42510C-A29E-4A53-899C-203BFA874E0B}.Release|x64.ActiveCfg = Release|x64
 		{3C42510C-A29E-4A53-899C-203BFA874E0B}.Release|x64.Build.0 = Release|x64
+		{23C53DD3-5429-6D36-6F12-0B2D48D74474}.Debug Unicode|Win32.ActiveCfg = Release|Win32
+		{23C53DD3-5429-6D36-6F12-0B2D48D74474}.Debug Unicode|Win32.Build.0 = Release|Win32
+		{23C53DD3-5429-6D36-6F12-0B2D48D74474}.Debug Unicode|x64.ActiveCfg = Release|Win32
+		{23C53DD3-5429-6D36-6F12-0B2D48D74474}.Debug|Win32.ActiveCfg = Release|Win32
+		{23C53DD3-5429-6D36-6F12-0B2D48D74474}.Debug|Win32.Build.0 = Release|Win32
+		{23C53DD3-5429-6D36-6F12-0B2D48D74474}.Debug|x64.ActiveCfg = Release|Win32
+		{23C53DD3-5429-6D36-6F12-0B2D48D74474}.Release Unicode|Win32.ActiveCfg = Release Unicode|Win32
+		{23C53DD3-5429-6D36-6F12-0B2D48D74474}.Release Unicode|Win32.Build.0 = Release Unicode|Win32
+		{23C53DD3-5429-6D36-6F12-0B2D48D74474}.Release Unicode|x64.ActiveCfg = Release|Win32
+		{23C53DD3-5429-6D36-6F12-0B2D48D74474}.Release|Win32.ActiveCfg = Release|Win32
+		{23C53DD3-5429-6D36-6F12-0B2D48D74474}.Release|Win32.Build.0 = Release|Win32
+		{23C53DD3-5429-6D36-6F12-0B2D48D74474}.Release|x64.ActiveCfg = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
