@@ -608,7 +608,7 @@ static INT_PTR WriteContactSetting(WPARAM wParam,LPARAM lParam)
 			}
 			if ( szCachedSettingName[-1] != 0 ) {
 				LeaveCriticalSection(&csDbAccess);
-				NotifyEventHooks(hSettingChangeEvent,wParam,lParam);
+				NotifyEventHooks(hSettingChangeEvent,wParam,(LPARAM)&tmp);
 				return 0;
 			}
 		}
@@ -701,7 +701,7 @@ static INT_PTR WriteContactSetting(WPARAM wParam,LPARAM lParam)
 				DBFlush(1);
 				LeaveCriticalSection(&csDbAccess);
 				//notify
-				NotifyEventHooks(hSettingChangeEvent,wParam,lParam);
+				NotifyEventHooks(hSettingChangeEvent,wParam,(LPARAM)&tmp);
 				return 0;
 			}
 		}
@@ -786,7 +786,7 @@ static INT_PTR WriteContactSetting(WPARAM wParam,LPARAM lParam)
 	DBFlush(1);
 	LeaveCriticalSection(&csDbAccess);
 	//notify
-	NotifyEventHooks(hSettingChangeEvent, wParam, ( LPARAM )&tmp );
+	NotifyEventHooks(hSettingChangeEvent, wParam, (LPARAM)&tmp);
 	return 0;
 }
 
