@@ -15,13 +15,11 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// English (U.S.) resources
+// English (United States) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
-#ifdef _WIN32
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 #pragma code_page(1252)
-#endif //_WIN32
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -96,7 +94,7 @@ BEGIN
     CONTROL         "",IDC_MESSAGE,RICHEDIT_CLASS,ES_MULTILINE | ES_AUTOVSCROLL | ES_NOHIDESEL | ES_WANTRETURN | WS_VSCROLL | WS_TABSTOP,1,49,141,13,WS_EX_ACCEPTFILES | WS_EX_STATICEDGE
     DEFPUSHBUTTON   "&Send",IDOK,143,48,39,15
     PUSHBUTTON      "Close",IDCANCEL,129,0,54,15,NOT WS_VISIBLE
-    CONTROL         "",IDC_LOG,RICHEDIT_CLASS,ES_MULTILINE | ES_AUTOVSCROLL | ES_READONLY | WS_VSCROLL | WS_TABSTOP,1,18,181,26,WS_EX_CLIENTEDGE
+    CONTROL         "",IDC_LOG,RICHEDIT_CLASS,ES_MULTILINE | ES_AUTOVSCROLL | ES_READONLY | WS_VSCROLL | WS_TABSTOP,1,18,183,26,WS_EX_STATICEDGE
     CONTROL         "",IDC_SPLITTER,"Static",SS_ENHMETAFILE,0,45,183,2
     CONTROL         "",IDC_AVATAR,"Button",BS_OWNERDRAW | NOT WS_VISIBLE,1,50,1,13
 END
@@ -211,7 +209,7 @@ END
 //
 
 #ifdef APSTUDIO_INVOKED
-GUIDELINES DESIGNINFO 
+GUIDELINES DESIGNINFO
 BEGIN
     IDD_OPT_MSGDLG, DIALOG
     BEGIN
@@ -233,8 +231,7 @@ BEGIN
 
     IDD_MSG, DIALOG
     BEGIN
-        LEFTMARGIN, 5
-        RIGHTMARGIN, 180
+        RIGHTMARGIN, 183
         TOPMARGIN, 5
         HORZGUIDE, 16
         HORZGUIDE, 53
@@ -314,7 +311,7 @@ IDC_DROPUSER            CURSOR                  "res/dropuser.cur"
 // Menu
 //
 
-IDR_CONTEXT MENU 
+IDR_CONTEXT MENU
 BEGIN
     POPUP "Log"
     BEGIN
@@ -347,7 +344,7 @@ BEGIN
     END
 END
 
-#endif    // English (U.S.) resources
+#endif    // English (United States) resources
 /////////////////////////////////////////////////////////////////////////////
 
 
