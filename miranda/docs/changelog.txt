@@ -3,6 +3,19 @@
                            www.miranda-im.org
 
 
+* New in 0.9.24
+Enhancements:
+ - Added installer option to install contrib (extra) plugins
+
+Bugfixes:
+ - Time zone improvements
+ - Minor alignment issue in message window
+ - Gadu-Gadu: Fixed bug that allowed invite your own contact to a conference
+ - ICQ: Password dialog fixes
+ - ICQ: X Status improvments
+ - Jabber: Fixed moving to group
+
+ 
 * New in 0.9.23
 Bugfixes:
  - Minor display issues
