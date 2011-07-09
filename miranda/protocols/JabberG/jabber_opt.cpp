@@ -927,6 +927,7 @@ class CDlgOptGc: public CJabberDlgBase
 {
 	typedef CJabberDlgBase CSuper;
 
+	CCtrlEdit		m_txtAltNick;
 	CCtrlEdit		m_txtSlap;
 	CCtrlEdit		m_txtQuit;
 	CCtrlTreeOpts	m_otvOptions;
@@ -934,10 +935,12 @@ class CDlgOptGc: public CJabberDlgBase
 public:
 	CDlgOptGc(CJabberProto *proto):
 		CJabberDlgBase(proto, IDD_OPT_JABBER4, NULL, false),
+		m_txtAltNick(this, IDC_TXT_ALTNICK),
 		m_txtSlap(this, IDC_TXT_SLAP),
 		m_txtQuit(this, IDC_TXT_QUIT),
 		m_otvOptions(this, IDC_OPTTREE)
 	{
+		CreateLink(m_txtAltNick, "GcAltNick", _T(""));
 		CreateLink(m_txtSlap, "GcMsgSlap", TranslateTS(JABBER_GC_MSG_SLAP));
 		CreateLink(m_txtQuit, "GcMsgQuit", TranslateTS(JABBER_GC_MSG_QUIT));
 
