@@ -1384,6 +1384,10 @@ void CIcqProto::handleServerCListReply(BYTE *buf, WORD wLen, WORD wFlags, server
 					ReserveServerID(wItemId, SSIT_ITEM, SSIF_UNHANDLED);
 			}
 
+		case SSI_ITEM_SAVED:
+		case SSI_ITEM_PREAUTH:
+			break;
+
 		default:
 			NetLog_Server("SSI unhandled item %2x", wTlvType);
 

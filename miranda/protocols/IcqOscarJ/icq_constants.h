@@ -589,6 +589,8 @@
 #define SSI_ITEM_UNKNOWN2           0x0011  // Unknown.
 #define SSI_ITEM_IMPORTTIME         0x0013  // Item that contain roster import time (name: "Import time")
 #define SSI_ITEM_BUDDYICON          0x0014  // Buddy icon info. (names: "1", "8", etc. according ot the icon type)
+#define SSI_ITEM_SAVED              0x0019
+#define SSI_ITEM_PREAUTH            0x001B
 #define SSI_ITEM_METAINFO           0x0020  // Owner Details' token & last update time
 
 #define SSI_TLV_AWAITING_AUTH       0x0066  // Contact not authorized in list
