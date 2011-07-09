@@ -46,7 +46,7 @@
 
 char* MirandaVersionToString(char* szStr, int bUnicode, int v, int m);
 
-extern char *nameXStatus[];
+extern const char *nameXStatus[];
 
 
 /////////////////////////////////////////////////////////////////////////////////////////
