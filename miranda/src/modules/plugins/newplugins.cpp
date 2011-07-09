@@ -967,7 +967,13 @@ INT_PTR CALLBACK DlgPluginOpt(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
 						CallService(MS_UTILS_OPENURL,0,(LPARAM) (LOWORD(wParam)==IDC_PLUGINEMAIL ? buf : p) );
 					}
 					break;
-		}	}	}
+				}
+				case IDC_GETMOREPLUGINS:
+				{
+					CallService(MS_UTILS_OPENURL,0,(LPARAM) "http://addons.miranda-im.org/index.php?action=display&id=1" );
+					break;
+				}
+		}	}
 		break;
 
 	case WM_DESTROY:
