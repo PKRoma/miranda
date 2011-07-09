@@ -310,11 +310,11 @@ capstr capXStatus[XSTATUS_COUNT] = {
 	NULLCAP, NULLCAP, NULLCAP, NULLCAP, NULLCAP, NULLCAP, NULLCAP, NULLCAP, NULLCAP, NULLCAP,
 	NULLCAP, NULLCAP, NULLCAP, NULLCAP};
 
-char *nameXStatus[XSTATUS_COUNT] = {
+const char *nameXStatus[XSTATUS_COUNT] = {
 	LPGEN("Angry"),         // 23
 	LPGEN("Taking a bath"), // 1
 	LPGEN("Tired"),         // 2
-	LPGEN("Bithday"),       // 3
+	LPGEN("Birthday"),      // 3
 	LPGEN("Drinking beer"), // 4
 	LPGEN("Thinking"),      // 5
 	LPGEN("Eating"),        // 80
