@@ -318,6 +318,7 @@
 #define IDC_COMBO_VALUES                1319
 #define IDC_HEADERBAR                   1320
 #define IDC_USEDOMAINLOGIN              1323
+#define IDC_TXT_ALTNICK                 1323
 #define IDI_BOOKMARKS                   3000
 #define IDD_BOOKMARKS                   3001
 #define IDC_BM_LIST                     3002
@@ -351,7 +352,7 @@
 #define _APS_NO_MFC                     1
 #define _APS_NEXT_RESOURCE_VALUE        235
 #define _APS_NEXT_COMMAND_VALUE         40017
-#define _APS_NEXT_CONTROL_VALUE         1323
+#define _APS_NEXT_CONTROL_VALUE         1324
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

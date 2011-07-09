@@ -1137,13 +1137,15 @@ void CJabberProto::GroupchatProcessPresence( HXML node )
 		TCHAR* str = JabberErrorMsg( errorNode, &errorCode );
 
 		if ( errorCode == JABBER_ERROR_CONFLICT ) {
-			// try to use our resource first
-			if ( ++item->iChatState == 1 ) {
-				replaceStr( item->nick, m_ThreadInfo->resource );
-
-				TCHAR text[ 1024 ];
-				mir_sntprintf( text, SIZEOF( text ), _T("%s/%s_%s"), item->jid, m_ThreadInfo->username, m_ThreadInfo->resource );
-				SendPresenceTo( m_iStatus, text, NULL );
+			TCHAR newNick[256] = { 0 };
+			if (++item->iChatState == 1 &&
+				JGetStringT(NULL, "GcAltNick", newNick, SIZEOF(newNick)) != NULL &&
+				newNick[0] != _T('\0'))
+			{
+				replaceStr(item->nick, newNick);
+				TCHAR text[1024] = { 0 };
+				mir_sntprintf(text, SIZEOF(text), _T("%s/%s"), item->jid, newNick);
+				SendPresenceTo(m_iStatus, text, NULL);
 			}
 			else {
 				CallFunctionAsync( JabberGroupchatChangeNickname, new JabberGroupchatChangeNicknameParam( this, from ));
