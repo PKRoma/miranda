@@ -31,10 +31,6 @@ LIST_INTERFACE li;
 int mirVersion;
 int hLangpack;
 
-static HANDLE hModulesLoaded;
-
-int IrcPrebuildContactMenu( WPARAM, LPARAM );
-
 static int CompareServers( const SERVER_INFO* p1, const SERVER_INFO* p2 )
 {
 	return lstrcmpA( p1->m_name, p2->m_name );
@@ -114,13 +110,6 @@ static int ircProtoUninit( CIrcProto* ppro )
 	return 0;
 }
 
-static int OnModulesLoaded( WPARAM, LPARAM )
-{
-	HookEvent( ME_CLIST_PREBUILDCONTACTMENU, IrcPrebuildContactMenu );
-	InitContactMenus();
-	return 0;
-}
-
 extern "C" int __declspec(dllexport) Load( PLUGINLINK *link )
 {
 	pluginLink = link;
@@ -129,11 +118,10 @@ extern "C" int __declspec(dllexport) Load( PLUGINLINK *link )
 	mir_getLI( &li );
 	mir_getLP( &pluginInfo );
 
-	hModulesLoaded = HookEvent(ME_SYSTEM_MODULESLOADED, OnModulesLoaded);
-
 	AddIcons();
 	InitTimers();
 	InitServers();
+	InitContactMenus();
 
 	// register protocol
 	PROTOCOLDESCRIPTOR pd = { 0 };
@@ -150,8 +138,7 @@ extern "C" int __declspec(dllexport) Load( PLUGINLINK *link )
 
 extern "C" int __declspec(dllexport) Unload(void)
 {
-	UnhookEvent(hModulesLoaded);
-
+	UninitContactMenus();
 	UninitIcons();
 	UninitTimers();
 
