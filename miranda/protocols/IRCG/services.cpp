@@ -89,6 +89,7 @@ void CIrcProto::InitMainMenus(void)
 /////////////////////////////////////////////////////////////////////////////////////////
 
 static HGENMENU hUMenuChanSettings, hUMenuWhois, hUMenuDisconnect, hUMenuIgnore;
+static HANDLE hPreBuildContactMenu, hMenuChanSettings, hMenuWhois, hMenuDisconnect, hMenuIgnore;
 
 static CIrcProto* IrcGetInstanceByHContact(HANDLE hContact)
 {
@@ -144,49 +145,56 @@ int IrcPrebuildContactMenu( WPARAM wParam, LPARAM lParam )
 
 void InitContactMenus(void)
 {
-	char temp[ MAXMODULELABELLENGTH ];
-	char *d = temp + sprintf( temp, "IRC" );
+	char temp[MAXMODULELABELLENGTH];
+	char *d = temp + sprintf(temp, "IRC");
 
-	CLISTMENUITEM mi = { 0 };
-	mi.cbSize = sizeof( mi );
+	CLISTMENUITEM mi = {0};
+	mi.cbSize = sizeof(mi);
 	mi.pszService = temp;
 	mi.flags = CMIF_ICONFROMICOLIB;
 
 	mi.pszName = LPGEN("Channel &settings");
 	mi.icolibItem = GetIconHandle(IDI_MANAGER);
-	strcpy( d, IRC_UM_CHANSETTINGS );
+	strcpy(d, IRC_UM_CHANSETTINGS);
 	mi.popupPosition = 500090002;
-	hUMenuChanSettings = ( HGENMENU )CallService( MS_CLIST_ADDCONTACTMENUITEM, (WPARAM)0, (LPARAM)&mi);
-	CreateServiceFunction( temp, IrcMenuChanSettings );
+	hUMenuChanSettings = (HGENMENU)CallService(MS_CLIST_ADDCONTACTMENUITEM, (WPARAM)0, (LPARAM)&mi);
+	hMenuChanSettings = CreateServiceFunction(temp, IrcMenuChanSettings);
 
 	mi.pszName = LPGEN("&WhoIs info");
 	mi.icolibItem = GetIconHandle(IDI_WHOIS);
-	strcpy( d, IRC_UM_WHOIS );
+	strcpy(d, IRC_UM_WHOIS);
 	mi.popupPosition = 500090001;
-	hUMenuWhois = ( HGENMENU )CallService( MS_CLIST_ADDCONTACTMENUITEM, (WPARAM)0, (LPARAM)&mi);
-	CreateServiceFunction( temp, IrcMenuWhois );
+	hUMenuWhois = (HGENMENU)CallService(MS_CLIST_ADDCONTACTMENUITEM, (WPARAM)0, (LPARAM)&mi);
+	hMenuWhois = CreateServiceFunction(temp, IrcMenuWhois);
 
 	mi.pszName = LPGEN("Di&sconnect");
 	mi.icolibItem = GetIconHandle(IDI_DELETE);
-	strcpy( d, IRC_UM_DISCONNECT );
+	strcpy(d, IRC_UM_DISCONNECT);
 	mi.popupPosition = 500090001;
-	hUMenuDisconnect = ( HGENMENU )CallService( MS_CLIST_ADDCONTACTMENUITEM, (WPARAM)0, (LPARAM)&mi);
-	CreateServiceFunction( temp, IrcMenuDisconnect );
+	hUMenuDisconnect = (HGENMENU)CallService(MS_CLIST_ADDCONTACTMENUITEM, (WPARAM)0, (LPARAM)&mi);
+	hMenuDisconnect = CreateServiceFunction(temp, IrcMenuDisconnect);
 
 	mi.pszName = LPGEN("&Add to ignore list");
 	mi.icolibItem = GetIconHandle(IDI_BLOCK);
-	strcpy( d, IRC_UM_IGNORE );
+	strcpy(d, IRC_UM_IGNORE);
 	mi.popupPosition = 500090002;
-	hUMenuIgnore = ( HGENMENU )CallService( MS_CLIST_ADDCONTACTMENUITEM, (WPARAM)0, (LPARAM)&mi);
-	CreateServiceFunction( temp, IrcMenuIgnore );
+	hUMenuIgnore = (HGENMENU)CallService( MS_CLIST_ADDCONTACTMENUITEM, (WPARAM)0, (LPARAM)&mi);
+	hMenuIgnore = CreateServiceFunction( temp, IrcMenuIgnore );
+
+	hPreBuildContactMenu = HookEvent(ME_CLIST_PREBUILDCONTACTMENU, IrcPrebuildContactMenu);
 }
 
-void UninitContactMenus( void )
+void UninitContactMenus(void)
 {
-	CallService( MS_CLIST_REMOVECONTACTMENUITEM, ( WPARAM )hUMenuChanSettings, 0 );
-	CallService( MS_CLIST_REMOVECONTACTMENUITEM, ( WPARAM )hUMenuWhois, 0 );
-	CallService( MS_CLIST_REMOVECONTACTMENUITEM, ( WPARAM )hUMenuDisconnect, 0 );
-	CallService( MS_CLIST_REMOVECONTACTMENUITEM, ( WPARAM )hUMenuIgnore, 0 );
+	UnhookEvent(hPreBuildContactMenu);
+	CallService(MS_CLIST_REMOVECONTACTMENUITEM, (WPARAM)hUMenuChanSettings, 0);
+	CallService(MS_CLIST_REMOVECONTACTMENUITEM, (WPARAM)hUMenuWhois, 0);
+	CallService(MS_CLIST_REMOVECONTACTMENUITEM, (WPARAM)hUMenuDisconnect, 0);
+	CallService(MS_CLIST_REMOVECONTACTMENUITEM, (WPARAM)hUMenuIgnore, 0);
+	DestroyServiceFunction(hMenuChanSettings);
+	DestroyServiceFunction(hMenuWhois);
+	DestroyServiceFunction(hMenuDisconnect);
+	DestroyServiceFunction(hMenuIgnore);
 }
 
 INT_PTR __cdecl CIrcProto::OnDoubleclicked(WPARAM, LPARAM lParam)

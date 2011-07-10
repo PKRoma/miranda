@@ -762,10 +762,11 @@ VOID CALLBACK RetryTimerProc( HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTi
 
 // options.cpp
 
-void    InitServers( void );
-void    RereadServers( void );
+void    InitServers(void);
+void    RereadServers(void);
 
 void    InitContactMenus(void);
+void	UninitContactMenus(void);
 
 void    WindowSetIcon(HWND hWnd, int iconId);
 void    WindowFreeIcon(HWND hWnd);
