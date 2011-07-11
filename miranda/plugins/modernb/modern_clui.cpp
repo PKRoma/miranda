@@ -29,8 +29,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "m_clui.h"
 #include "m_skin.h"
 #include "m_api/m_skinbutton.h"
-#include "wingdi.h"
-#include <Winuser.h>
 #include "hdr/modern_skinengine.h"
 #include "hdr/modern_statusbar.h"
 
@@ -70,12 +68,8 @@ int CLUI::OnEvent_ModulesLoaded(WPARAM wParam,LPARAM lParam)
 {
 	STATIC_METHOD;
 
-#ifdef _UNICODE
-	CallService("Update/RegisterFL", (WPARAM)3684, (LPARAM)&pluginInfo);
-#endif 
-
 	g_CluiData.bMetaAvail = ServiceExists(MS_MC_GETDEFAULTCONTACT) ? TRUE : FALSE;
-	setlocale(LC_CTYPE,"");  //fix for case insensitive comparing
+	setlocale(LC_ALL, "");  //fix for case insensitive comparing
 
 	if (ServiceExists(MS_MC_DISABLEHIDDENGROUP))
 		CallService(MS_MC_DISABLEHIDDENGROUP, (WPARAM)TRUE, (LPARAM)0);

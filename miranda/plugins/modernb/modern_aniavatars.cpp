@@ -324,8 +324,7 @@ int AniAva_AddAvatar(HANDLE hContact, TCHAR * szFilename, int width, int heigth)
 		}
 		if (i==AniAva.Objects->realCount)
 		{
-			pavi = (ANIAVA_OBJECT *) mir_alloc( sizeof(ANIAVA_OBJECT) );
-			memset( pavi,0,sizeof(ANIAVA_OBJECT) );  //not need due to further set all field but to be sure
+			pavi = (ANIAVA_OBJECT *) mir_calloc( sizeof(ANIAVA_OBJECT) );
 			pavi->hWindow		= NULL;
 			pavi->hContact		= hContact;
 			pavi->bInvalidPos	= 0;
@@ -684,8 +683,7 @@ static int	_AniAva_LoadAvatarFromImage(TCHAR * szFileName, int width, int height
 		int newWidth;
 		int newHeight;
 
-		paai=(ANIAVA_INFO *)mir_alloc(sizeof(ANIAVA_INFO));
-		memset(paai,0,sizeof(ANIAVA_INFO));
+		paai=(ANIAVA_INFO *)mir_calloc(sizeof(ANIAVA_INFO));
 		paai->tcsFilename=mir_tstrdup(szFileName);
 		paai->dwAvatarUniqId=rand();
 		fNeedInsertToList=TRUE;
@@ -1244,9 +1242,8 @@ static LRESULT CALLBACK _AniAva_WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPAR
 	case WM_CREATE:
 		{
 			LONG exStyle;
-			ANIAVA_WINDOWINFO * dat = (ANIAVA_WINDOWINFO *) mir_alloc(sizeof (ANIAVA_WINDOWINFO));
+			ANIAVA_WINDOWINFO * dat = (ANIAVA_WINDOWINFO *) mir_calloc(sizeof (ANIAVA_WINDOWINFO));
 			SetWindowLongPtr(hwnd,GWLP_USERDATA,(LONG_PTR)dat);
-			memset(dat,0, sizeof(ANIAVA_WINDOWINFO));
 			dat->hWindow=hwnd;
 			//ShowWindow(dat->hWindow,SW_SHOW);
 			//change layered mode

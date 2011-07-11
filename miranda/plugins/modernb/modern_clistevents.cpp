@@ -95,10 +95,7 @@ static CLISTEVENT* MyGetEvent(int iSelection)
 
 CListEvent* cliCreateEvent( void )
 {
-	CListEvent *p = (CListEvent *)mir_alloc(sizeof(CListEvent));
-	if(p)
-		ZeroMemory(p, sizeof(struct CListEvent));
-
+	CListEvent *p = (CListEvent *)mir_calloc(sizeof(CListEvent));
 	return p;
 }
 

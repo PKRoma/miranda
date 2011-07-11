@@ -315,8 +315,7 @@ static INT_PTR    svcToolBarAddButton(WPARAM wParam, LPARAM lParam)
 	tblock;
 	{	
 
-		MTB_BUTTONINFO * mtbi=(MTB_BUTTONINFO *)mir_alloc(sizeof(MTB_BUTTONINFO));
-		memset(mtbi,0,sizeof(MTB_BUTTONINFO));
+		MTB_BUTTONINFO * mtbi=(MTB_BUTTONINFO *)mir_calloc(sizeof(MTB_BUTTONINFO));
 		sttTBButton2MTBBUTTONINFO(bi,mtbi);
 	
 		sttGetButtonSettings(mtbi->szButtonID, &bVisible, &dwOrder, &bPanel);
@@ -779,8 +778,7 @@ static LRESULT CALLBACK ToolBar_WndProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM 
 			CLISTFrame Frame={0};
 			CREATESTRUCT * lpcs = (CREATESTRUCT *) lParam;
 			//create internal info
-			MTBINFO * pMTBInfo = (MTBINFO *) mir_alloc( sizeof(MTBINFO) );
-			memset( pMTBInfo, 0, sizeof(MTBINFO) );
+			MTBINFO * pMTBInfo = (MTBINFO *) mir_calloc( sizeof(MTBINFO) );
 			pMTBInfo->cbSize = sizeof(MTBINFO);
 			SetWindowLongPtr( hwnd, GWLP_USERDATA, (LONG_PTR) pMTBInfo );
 

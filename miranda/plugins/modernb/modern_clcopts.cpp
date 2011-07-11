@@ -1527,11 +1527,6 @@ extern struct MM_INTERFACE mmi;
 
 char **bkgrList = NULL;
 int bkgrCount = 0;
-/*
-#define mir_alloc(n) mmi.mmi_malloc(n)
-#define mir_free(ptr) mmi.mmi_free(ptr)
-#define mir_realloc(ptr,size) mmi.mmi_realloc(ptr,size)
-*/
 
 #define M_BKGR_UPDATE	(WM_USER+10)
 #define M_BKGR_SETSTATE	(WM_USER+11)
