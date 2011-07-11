@@ -139,7 +139,7 @@ XPTHANDLE xpt_AddThemeHandle(HWND hwnd, LPCWSTR className)
 	xptcheck NULL;
 	xptlock();
 	{
-		XPTObject* xptObject=(XPTObject*)mir_alloc(sizeof(XPTObject));
+		XPTObject* xptObject=(XPTObject*)mir_calloc(sizeof(XPTObject));
 		xptObject->lpcwClassObject=className;
 		xptObject->hOwnerWindow=hwnd;
 		_sttXptReloadThemeData(xptObject);
