@@ -445,7 +445,7 @@ Function CustomInstallPageLeave
 FunctionEnd
 
 Function VerifyComponentDisplay
-  ${If} $INST_MODE = 1
-    Abort
-  ${EndIf}
+  ;${If} $INST_MODE = 1
+  ;  Abort
+  ;${EndIf}
 FunctionEnd
