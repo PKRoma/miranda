@@ -265,20 +265,6 @@ Section "Miranda IM"
     WriteUninstaller "$INSTDIR\Uninstall.exe"
   ${EndIf}
 SectionEnd
-
-
-Section "Extra Plugins Pack" pContribPack
-  !insertmacro InstallMirandaPlugin "clist_modern.dll"
-  !insertmacro InstallMirandaPlugin "clist_mw.dll"
-  !insertmacro InstallMirandaPlugin "clist_nicer.dll"
-  !insertmacro InstallMirandaPlugin "scriver.dll"
-  !ifdef MIM_BUILD_UNICODE
-    !insertmacro InstallMirandaPlugin "tabsrmm.dll"
-    SetOutPath "$INSTDIR\Icons"
-    File "${MIM_BUILD_DIRANSI}\Icons\tabsrmm_icons.dll"
-    File "${MIM_BUILD_DIRANSI}\Icons\toolbar_icons.dll"
-  !endif
-SectionEnd
   
 SubSection /e "Options" pOptions
   Section "Install Start Menu Shortcuts" pSCStartMenu
@@ -405,7 +391,6 @@ Function VerifyInstallDir
       SectionSetText ${pSCQuickLaunch} ""
     ${EndIf}
   ${Endif}
-  !insertmacro ClearSectionFlag ${pContribPack} ${SF_SELECTED}
 FunctionEnd
 
 Function VerifyDirectoryDisplay
@@ -445,7 +430,7 @@ Function CustomInstallPageLeave
 FunctionEnd
 
 Function VerifyComponentDisplay
-  ;${If} $INST_MODE = 1
-  ;  Abort
-  ;${EndIf}
+  ${If} $INST_MODE = 1
+    Abort
+  ${EndIf}
 FunctionEnd
