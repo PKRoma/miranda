@@ -3,6 +3,16 @@
                            www.miranda-im.org
 
 
+* New in 0.8.25
+Enhancements:
+ - Jabber: Added the special field for the alternative nick in Jabber groupchats
+
+Bugfixes:
+ - Minor crash issue under Wine
+ - ICQ: Minor spelling mistake
+ - Jabber: Translation issues
+ 
+
 * New in 0.9.24
 Enhancements:
  - Added installer option to install contrib (extra) plugins
