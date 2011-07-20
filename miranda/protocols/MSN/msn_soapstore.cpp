@@ -564,7 +564,7 @@ bool CMsnProto::MSN_StoreCreateDocument(const char *szName, const char *szMimeTy
 		{
 			ezxml_t xmlm = ezxml_parse_str(tResult, strlen(tResult));
 			ezxml_t bdy = getSoapResponse(xmlm, "CreateDocument");
-			mir_snprintf(photoid, sizeof(photoid), "%s", ezxml_txt(bdy, "CreateDocumentResult"));
+			mir_snprintf(photoid, sizeof(photoid), "%s", ezxml_txt(bdy));
 			ezxml_free(xmlm);
 		}
 		else if (status == 500)
