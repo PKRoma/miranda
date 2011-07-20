@@ -408,16 +408,7 @@ bool CMsnProto::MSN_StoreCreateRelationships(bool allowRecurse)
 	{
 		UpdateStoreHost("CreateRelationships", storeUrl);
 
-		if (status == 200)
-		{
-			ezxml_t xmlm = ezxml_parse_str(tResult, strlen(tResult));
-			ezxml_t body = getSoapResponse(xmlm, "CreateProfile");
-
-			mir_snprintf(photoid, sizeof(photoid), "%s", ezxml_txt(body));
-
-			ezxml_free(xmlm);
-		}
-		else if (status == 500)
+		if (status == 500)
 		{
 			ezxml_t xmlm = ezxml_parse_str(tResult, strlen(tResult));
 			const char* szErr = ezxml_txt(getSoapFault(xmlm, true));
@@ -569,7 +560,14 @@ bool CMsnProto::MSN_StoreCreateDocument(const char *szName, const char *szMimeTy
 	if (tResult != NULL)
 	{
 		UpdateStoreHost("CreateDocument", storeUrl);
-		if (status == 500)
+		if (status == 200)
+		{
+			ezxml_t xmlm = ezxml_parse_str(tResult, strlen(tResult));
+			ezxml_t bdy = getSoapResponse(xmlm, "CreateDocument");
+			mir_snprintf(photoid, sizeof(photoid), "%s", ezxml_txt(bdy, "CreateDocumentResult"));
+			ezxml_free(xmlm);
+		}
+		else if (status == 500)
 		{
 			ezxml_t xmlm = ezxml_parse_str(tResult, strlen(tResult));
 			const char* szErr = ezxml_txt(getSoapFault(xmlm, true));
