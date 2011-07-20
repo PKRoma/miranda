@@ -258,7 +258,7 @@ INT_PTR CMsnProto::SetAvatar(WPARAM wParam, LPARAM lParam)
 
 		mir_sha1_ctx sha1ctx;
 		BYTE sha1c[MIR_SHA1_HASH_SIZE], sha1d[MIR_SHA1_HASH_SIZE];
-		char szSha1c[40], szSha1d[40];
+		char szSha1c[41], szSha1d[41];
 
 		mir_sha1_init(&sha1ctx);
 		mir_sha1_append(&sha1ctx, pResult, dwPngSize);
