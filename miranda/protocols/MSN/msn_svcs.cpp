@@ -290,7 +290,7 @@ INT_PTR CMsnProto::SetAvatar(WPARAM wParam, LPARAM lParam)
 		ezxml_set_attr(xmlp, "Type", "3");
 
 		mir_sha1_append(&sha1ctx, (PBYTE)"Location", 8);
-		mir_sha1_append(&sha1ctx, (PBYTE)fname, sizeof(fname));
+		mir_sha1_append(&sha1ctx, (PBYTE)fname, (int)strlen(fname));
 		ezxml_set_attr(xmlp, "Location", fname);
 
 		mir_sha1_append(&sha1ctx, (PBYTE)"Friendly", 8);
