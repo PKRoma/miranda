@@ -44,6 +44,7 @@
 #define IDI_SAVE				264
 #define IDI_CONFERENCE			265
 #define IDI_CLEAR_CONFERENCE	266
+#define IDI_SESSIONS			267
 
 #define IDD_INFO_GG 			301
 #define IDD_CHPASS				302
@@ -60,6 +61,7 @@
 #define IDD_IMAGE_RECV			313
 #define IDD_IMAGE_SEND			314
 #define IDD_ACCMGRUI 			315
+#define IDD_SESSIONS 			316
 
 #define IDC_UIN 				401
 #define IDC_PASSWORD			402
@@ -129,6 +131,10 @@
 
 #define IDC_OPTIONSTAB			471
 #define IDC_ENABLEAVATARS		472
+
+#define IDC_HEADERBAR			1001
+#define IDC_SESSIONS			1002
+#define IDC_SIGNOUTALL			1003
 
 #define IDC_IMG_DELETE			1010
 #define IDC_IMG_SEND			1011

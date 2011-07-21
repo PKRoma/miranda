@@ -668,6 +668,7 @@
     <ClCompile Include="oauth.c" />
     <ClCompile Include="ownerinfo.c" />
     <ClCompile Include="services.c" />
+    <ClCompile Include="sessions.c" />
     <ClCompile Include="token.c" />
     <ClCompile Include="userutils.c" />
     <ClCompile Include="libgadu\common.c">
@@ -915,6 +916,7 @@
     <None Include="icons\previous.ico" />
     <None Include="icons\remove_list_from_server.ico" />
     <None Include="icons\save.ico" />
+    <None Include="icons\sessions.ico" />
     <None Include="icons\settings.ico" />
     <None Include="docs\build-howto.txt" />
     <None Include="docs\gg-license.txt" />

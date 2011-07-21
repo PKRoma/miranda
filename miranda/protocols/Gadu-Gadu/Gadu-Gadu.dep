@@ -669,6 +669,45 @@
 	".\resource.h"\
 	
 
+.\sessions.c : \
+	"..\..\include\m_avatars.h"\
+	"..\..\include\m_button.h"\
+	"..\..\include\m_chat.h"\
+	"..\..\include\m_clc.h"\
+	"..\..\include\m_clist.h"\
+	"..\..\include\m_clistint.h"\
+	"..\..\include\m_clui.h"\
+	"..\..\include\m_database.h"\
+	"..\..\include\m_file.h"\
+	"..\..\include\m_genmenu.h"\
+	"..\..\include\m_icolib.h"\
+	"..\..\include\m_ignore.h"\
+	"..\..\include\m_imgsrvc.h"\
+	"..\..\include\m_langpack.h"\
+	"..\..\include\m_message.h"\
+	"..\..\include\m_netlib.h"\
+	"..\..\include\m_options.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_popup.h"\
+	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protomod.h"\
+	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_protoint.h"\
+	"..\..\include\m_skin.h"\
+	"..\..\include\m_system.h"\
+	"..\..\include\m_userinfo.h"\
+	"..\..\include\m_utils.h"\
+	"..\..\include\m_xml.h"\
+	"..\..\include\newpluginapi.h"\
+	"..\..\include\statusmodes.h"\
+	"..\..\include\m_freeimage.h"\
+	".\dynstuff.h"\
+	".\gg.h"\
+	".\libgadu\libgadu.h"\
+	".\m_folders.h"\
+	".\resource.h"\
+	
+
 .\token.c : \
 	"..\..\include\m_avatars.h"\
 	"..\..\include\m_button.h"\
@@ -762,6 +801,7 @@
 	".\icons\previous.ico"\
 	".\icons\remove_list_from_server.ico"\
 	".\icons\save.ico"\
+	".\icons\sessions.ico"\
 	".\icons\settings.ico"\
 	".\resource.h"\
 	".\version.h"\

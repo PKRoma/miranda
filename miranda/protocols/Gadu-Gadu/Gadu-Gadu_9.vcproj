@@ -987,6 +987,10 @@
 				>
 			</File>
 			<File
+				RelativePath="sessions.c"
+				>
+			</File>
+			<File
 				RelativePath="token.c"
 				>
 			</File>
@@ -1926,6 +1930,10 @@
 			</File>
 			<File
 				RelativePath="icons\save.ico"
+				>
+			</File>
+			<File
+				RelativePath="icons\sessions.ico"
 				>
 			</File>
 			<File

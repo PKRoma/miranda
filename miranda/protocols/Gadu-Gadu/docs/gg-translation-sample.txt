@@ -345,3 +345,32 @@ w innym wypadku
 ; Delete avatar
 [To remove your Gadu-Gadu avatar, you must use the MojaGeneracja.pl website.]
 Aby usun¹æ swój awatar Gadu-Gadu musisz u¿yæ serwisu MojaGeneracja.pl.
+
+; Concurrent sessions
+[Concurrent sessions]
+Równoleg³e sesje
+[Concurrent Sessions]
+Równoleg³e Sesje
+[Concurrent &sessions]
+Równoleg³e &sesje
+[Concurrent %s Login Sessions\nView information on active concurrent sessions]
+Równoleg³e Sesje Logowania %s\nWyœwietl informacje o aktywnych równoleg³ych sesjach
+[Sign out all sessions]
+Wyloguj wszystkie sesje
+[Client Name]
+Nazwa Klienta
+[IP Address]
+Adres IP
+[Login Time]
+Czas Zalogowania
+[Action]
+Akcja
+[sign out]
+wyloguj
+[There are no active concurrent sessions for this account.]
+Nie ma aktywnych równoleg³ych sesji logowania do tego konta.
+[You have to be logged in to view concurrent sessions.]
+Musisz byæ zalogowany, aby zobaczyæ równoleg³e sesje.
+[Copy Text]
+Kopiuj Tekst
+;[Whois]

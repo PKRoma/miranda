@@ -42,7 +42,8 @@ static const iconList[] =
 	{ LPGEN("Save image"),					"save",			IDI_SAVE				},
 	{ LPGEN("Delete image"),				"delete",		IDI_DELETE				},
 	{ LPGEN("Open new conference"),			"conference",	IDI_CONFERENCE			},
-	{ LPGEN("Clear ignored conferences"),	"clearignored",	IDI_CLEAR_CONFERENCE	}
+	{ LPGEN("Clear ignored conferences"),	"clearignored",	IDI_CLEAR_CONFERENCE	},
+	{ LPGEN("Concurrent sessions"),			"sessions",		IDI_SESSIONS			}
 };
 
 HANDLE hIconLibItem[SIZEOF(iconList)];

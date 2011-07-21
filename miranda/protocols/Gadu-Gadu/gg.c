@@ -263,7 +263,7 @@ int gg_preshutdown(WPARAM wParam, LPARAM lParam)
 // Menus initialization
 void gg_menus_init(GGPROTO *gg)
 {
-	HGENMENU hGCRoot, hRoot = MO_GetProtoRootMenu(gg->proto.m_szModuleName);
+	HGENMENU hGCRoot, hCLRoot, hRoot = MO_GetProtoRootMenu(gg->proto.m_szModuleName);
 	CLISTMENUITEM mi = {0};
 
 	mi.cbSize = sizeof(mi);
@@ -274,7 +274,7 @@ void gg_menus_init(GGPROTO *gg)
 		mi.hParentMenu = HGENMENU_ROOT;
 		mi.flags = CMIF_ICONFROMICOLIB | CMIF_ROOTPOPUP | CMIF_TCHAR | CMIF_KEEPUNTRANSLATED;
 		mi.icolibItem = GetIconHandle(IDI_GG);
-		hGCRoot = hRoot = gg->hMenuRoot = (HANDLE)CallService(MS_CLIST_ADDPROTOMENUITEM, 0, (LPARAM) &mi);
+		hGCRoot = hCLRoot = hRoot = gg->hMenuRoot = (HANDLE)CallService(MS_CLIST_ADDPROTOMENUITEM, 0, (LPARAM) &mi);
 	}
 	else
 	{
@@ -289,7 +289,7 @@ void gg_menus_init(GGPROTO *gg)
 		mi.ptszName = LPGENT("Contact list");
 		mi.position = 200002;
 		mi.icolibItem = GetIconHandle(IDI_LIST);
-		hRoot = (HANDLE)CallService(MS_CLIST_ADDPROTOMENUITEM, 0, (LPARAM) &mi);
+		hCLRoot = (HANDLE)CallService(MS_CLIST_ADDPROTOMENUITEM, 0, (LPARAM) &mi);
 
 		if (gg->hMenuRoot)
 			CallService(MS_CLIST_REMOVEMAINMENUITEM, (WPARAM)gg->hMenuRoot, 0);
@@ -297,7 +297,8 @@ void gg_menus_init(GGPROTO *gg)
 	}
 
 	gg_gc_menus_init(gg, hGCRoot);
-	gg_import_init(gg, hRoot);
+	gg_import_init(gg, hCLRoot);
+	gg_sessions_menus_init(gg, hRoot);
 }
 
 //////////////////////////////////////////////////////////
@@ -335,7 +336,7 @@ int gg_event(PROTO_INTERFACE *proto, PROTOEVENTTYPE eventType, WPARAM wParam, LP
 #endif
 			gg_threadwait(gg, &gg->pth_sess);
 			gg_img_shutdown(gg);
-
+			gg_sessions_closedlg(gg);
 			break;
 
 		case EV_PROTO_ONOPTIONS:
@@ -392,6 +393,7 @@ static GGPROTO *gg_proto_init(const char* pszProtoName, const TCHAR* tszUserName
 	InitializeCriticalSection(&gg->img_mutex);
 	InitializeCriticalSection(&gg->modemsg_mutex);
 	InitializeCriticalSection(&gg->avatar_mutex);
+	InitializeCriticalSection(&gg->sessions_mutex);
 
 	// Init instance names
 	gg->proto.m_szModuleName = mir_strdup(pszProtoName);
@@ -466,6 +468,7 @@ static int gg_proto_uninit(PROTO_INTERFACE *proto)
 	DeleteCriticalSection(&gg->img_mutex);
 	DeleteCriticalSection(&gg->modemsg_mutex);
 	DeleteCriticalSection(&gg->avatar_mutex);
+	DeleteCriticalSection(&gg->sessions_mutex);
 
 	// Free status messages
 	if (gg->modemsg.online)    mir_free(gg->modemsg.online);
@@ -610,6 +613,9 @@ static const ggdebug_eventype2string[] =
 	{GG_EVENT_DISCONNECT_ACK,		"GG_EVENT_DISCONNECT_ACK"},
 	{GG_EVENT_XML_ACTION,			"GG_EVENT_XML_ACTION"},
 	{GG_EVENT_TYPING_NOTIFICATION,	"GG_EVENT_TYPING_NOTIFICATION"},
+	{GG_EVENT_USER_DATA,			"GG_EVENT_USER_DATA"},
+	{GG_EVENT_MULTILOGON_MSG,		"GG_EVENT_MULTILOGON_MSG"},
+	{GG_EVENT_MULTILOGON_INFO,		"GG_EVENT_MULTILOGON_INFO"},
 	{-1,							"<unknown event>"}
 };
 

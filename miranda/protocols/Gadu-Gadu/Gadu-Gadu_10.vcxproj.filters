@@ -63,6 +63,9 @@
     <ClCompile Include="services.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="sessions.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="token.c">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -182,6 +185,9 @@
       <Filter>Resource Files</Filter>
     </None>
     <None Include="icons\save.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="icons\sessions.ico">
       <Filter>Resource Files</Filter>
     </None>
     <None Include="icons\settings.ico">
