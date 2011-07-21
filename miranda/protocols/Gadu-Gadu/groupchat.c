@@ -26,8 +26,8 @@
 #define GGS_CLEAR_IGNORED "%s/ClearIgnored"
 
 int gg_gc_event(GGPROTO *gg, WPARAM wParam, LPARAM lParam);
-int gg_gc_openconf(GGPROTO *gg, WPARAM wParam, LPARAM lParam);
-int gg_gc_clearignored(GGPROTO *gg, WPARAM wParam, LPARAM lParam);
+INT_PTR gg_gc_openconf(GGPROTO *gg, WPARAM wParam, LPARAM lParam);
+INT_PTR gg_gc_clearignored(GGPROTO *gg, WPARAM wParam, LPARAM lParam);
 
 ////////////////////////////////////////////////////////////////////////////////
 // Inits Gadu-Gadu groupchat module using chat.dll
@@ -627,7 +627,7 @@ static INT_PTR CALLBACK gg_gc_openconfdlg(HWND hwndDlg, UINT message, WPARAM wPa
 	return FALSE;
 }
 
-int gg_gc_clearignored(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
+INT_PTR gg_gc_clearignored(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
 {
 	list_t l = gg->chats; BOOL cleared = FALSE;
 	while(l)
@@ -653,7 +653,7 @@ int gg_gc_clearignored(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
-int gg_gc_openconf(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
+INT_PTR gg_gc_openconf(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
 {
 	// Check if connected
 	if (!gg_isonline(gg))

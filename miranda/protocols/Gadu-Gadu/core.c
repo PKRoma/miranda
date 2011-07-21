@@ -271,7 +271,7 @@ void __cdecl gg_mainthread(GGPROTO *gg, void *empty)
 	// Client version and misc settings
 	p.client_version = GG_DEFAULT_CLIENT_VERSION;
 	p.protocol_version = GG_DEFAULT_PROTOCOL_VERSION;
-	p.protocol_features = GG_FEATURE_DND_FFC | GG_FEATURE_UNKNOWN_100 | GG_FEATURE_USER_DATA | GG_FEATURE_MSG_ACK | GG_FEATURE_TYPING_NOTIFICATION;
+	p.protocol_features = GG_FEATURE_DND_FFC | GG_FEATURE_UNKNOWN_100 | GG_FEATURE_USER_DATA | GG_FEATURE_MSG_ACK | GG_FEATURE_TYPING_NOTIFICATION | GG_FEATURE_MULTILOGON;
 	p.encoding = GG_ENCODING_CP1250;
 	p.status_flags = GG_STATUS_FLAG_UNKNOWN;
 	if (DBGetContactSettingByte(NULL, GG_PROTO, GG_KEY_SHOWLINKS, GG_KEYDEF_SHOWLINKS))
@@ -835,6 +835,76 @@ retry:
 				}
 				break;
 
+			// Message sent from concurrent user session
+			case GG_EVENT_MULTILOGON_MSG:
+				if (e->event.multilogon_msg.recipients_count && gg->gc_enabled && !DBGetContactSettingByte(NULL, GG_PROTO, GG_KEY_IGNORECONF, GG_KEYDEF_IGNORECONF))
+				{
+					char *chat = gg_gc_getchat(gg, e->event.multilogon_msg.sender, e->event.multilogon_msg.recipients, e->event.multilogon_msg.recipients_count);
+					if (chat)
+					{
+						char id[32];
+						DBVARIANT dbv;
+						GCDEST gcdest = {GG_PROTO, chat, GC_EVENT_MESSAGE};
+						GCEVENT gcevent = {sizeof(GCEVENT), &gcdest};
+
+						UIN2ID(DBGetContactSettingDword(NULL, GG_PROTO, GG_KEY_UIN, 0), id);
+
+						gcevent.pszUID = id;
+						gcevent.pszText = e->event.multilogon_msg.message;
+						if (!DBGetContactSettingString(NULL, GG_PROTO, "Nick", &dbv))
+							gcevent.pszNick = dbv.pszVal;
+						else
+							gcevent.pszNick = Translate("Me");
+						gcevent.time = e->event.multilogon_msg.time;
+						gcevent.bIsMe = 1;
+						gcevent.dwFlags = GCEF_ADDTOLOG;
+						gg_netlog(gg, "gg_mainthread(%x): Sent conference message to room %s.", gg, chat);
+						CallServiceSync(MS_GC_EVENT, 0, (LPARAM)&gcevent);
+						if (gcevent.pszNick == dbv.pszVal) DBFreeVariant(&dbv);
+					}
+				}
+				else if (!e->event.multilogon_msg.recipients_count && e->event.multilogon_msg.message && *e->event.multilogon_msg.message
+					&& strcmp(e->event.multilogon_msg.message, "\xA0\0"))
+				{
+					DBEVENTINFO dbei = {0};
+					dbei.cbSize = sizeof(dbei);
+					dbei.szModule = GG_PROTO;
+					dbei.timestamp = (DWORD)e->event.multilogon_msg.time;
+					dbei.flags = DBEF_SENT;
+					dbei.eventType = EVENTTYPE_MESSAGE;
+					dbei.cbBlob = (DWORD)strlen(e->event.multilogon_msg.message) + 1;
+					dbei.pBlob = (PBYTE)e->event.multilogon_msg.message;
+					CallService(MS_DB_EVENT_ADD, (WPARAM)gg_getcontact(gg, e->event.multilogon_msg.sender, 1, 0, NULL), (LPARAM)&dbei);
+				}
+				break;
+
+			// Information on active concurrent sessions
+			case GG_EVENT_MULTILOGON_INFO:
+				{
+					list_t l;
+					int i;
+					gg_netlog(gg, "gg_mainthread(): Concurrent sessions count: %d.", e->event.multilogon_info.count);
+					EnterCriticalSection(&gg->sessions_mutex);
+					for (l = gg->sessions; l; l = l->next)
+					{
+						struct gg_multilogon_session* sess = (struct gg_multilogon_session*)l->data;
+						mir_free(sess->name);
+						mir_free(sess);
+					}
+					list_destroy(gg->sessions, 0);
+					gg->sessions = NULL;
+					for (i = 0; i < e->event.multilogon_info.count; i++)
+					{
+						struct gg_multilogon_session* sess = mir_alloc(sizeof(struct gg_multilogon_session));
+						memcpy(sess, &e->event.multilogon_info.sessions[i], sizeof(struct gg_multilogon_session));
+						sess->name = mir_strdup(e->event.multilogon_info.sessions[i].name);
+						list_add(&gg->sessions, sess, 0);
+					}
+					LeaveCriticalSection(&gg->sessions_mutex);
+					gg_sessions_updatedlg(gg);
+				}
+				break;
+
 			// Image reply sent
 			case GG_EVENT_IMAGE_REPLY:
 				// Get rid of empty image
@@ -1075,6 +1145,21 @@ retry:
 
 	mir_free(p.password);
 	mir_free(p.status_descr);
+
+	// Destroy concurrent sessions list
+	{
+		list_t l;
+		EnterCriticalSection(&gg->sessions_mutex);
+		for (l = gg->sessions; l; l = l->next)
+		{
+			struct gg_multilogon_session* sess = (struct gg_multilogon_session*)l->data;
+			mir_free(sess->name);
+			mir_free(sess);
+		}
+		list_destroy(gg->sessions, 0);
+		gg->sessions = NULL;
+		LeaveCriticalSection(&gg->sessions_mutex);
+	}
 
 	// Stop dcc server
 	gg->pth_dcc.dwThreadId = 0;

@@ -247,6 +247,10 @@ SOURCE=.\services.c
 # End Source File
 # Begin Source File
 
+SOURCE=.\sessions.c
+# End Source File
+# Begin Source File
+
 SOURCE=.\token.c
 # End Source File
 # Begin Source File
@@ -336,6 +340,10 @@ SOURCE=.\resource.rc
 # Begin Source File
 
 SOURCE=.\icons\save.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\icons\sessions.ico
 # End Source File
 # Begin Source File
 

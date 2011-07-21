@@ -121,8 +121,8 @@ typedef struct
 {
 	PROTO_INTERFACE proto;
 	LPTSTR name;
-	CRITICAL_SECTION ft_mutex, sess_mutex, img_mutex, modemsg_mutex, avatar_mutex;
-	list_t watches, transfers, requests, chats, imagedlgs, avatar_requests, avatar_transfers;
+	CRITICAL_SECTION ft_mutex, sess_mutex, img_mutex, modemsg_mutex, avatar_mutex, sessions_mutex;
+	list_t watches, transfers, requests, chats, imagedlgs, avatar_requests, avatar_transfers, sessions;
 	int gc_enabled, gc_id, list_remove, unicode_core;
 	uin_t next_uin;
 	unsigned long last_crc;
@@ -155,6 +155,7 @@ typedef struct
 	HANDLE hInstanceMenuItem;
 	HANDLE hAvatarsFolder;
 	HANDLE hImagesFolder;
+	HANDLE hwndSessionsDlg;
 } GGPROTO;
 
 typedef struct
@@ -396,7 +397,6 @@ int gg_img_releasepicture(void *img);
 int gg_img_display(GGPROTO *gg, HANDLE hContact, void *img);
 int gg_img_displayasmsg(GGPROTO *gg, HANDLE hContact, void *img);
 int gg_event(PROTO_INTERFACE *proto, PROTOEVENTTYPE eventType, WPARAM wParam, LPARAM lParam);
-int gg_recvmessage(PROTO_INTERFACE *proto, HANDLE hContact, PROTORECVEVENT *pre);
 
 /* Avatar functions */
 void gg_getavatarfilename(GGPROTO *gg, HANDLE hContact, char *pszDest, int cbLen);
@@ -462,7 +462,12 @@ GGGC *gg_gc_lookup(GGPROTO *gg, char *id);
 int gg_gc_changenick(GGPROTO *gg, HANDLE hContact, char *pszNick);
 #define UIN2ID(uin,id) _itoa(uin,id,10)
 
-/* Event helper */
+/* Sessions functions */
+void gg_sessions_updatedlg(GGPROTO* gg);
+BOOL gg_sessions_closedlg(GGPROTO* gg);
+void gg_sessions_menus_init(GGPROTO* gg, HGENMENU hRoot);
+
+/* Event helpers */
 #define HookProtoEvent(name, func, proto)             HookEventObj(name, (MIRANDAHOOKOBJ)func, proto)
 #define CreateProtoServiceFunction(name, func, proto) CreateServiceFunctionObj(name, (MIRANDASERVICEOBJ)func, proto)
 typedef INT_PTR (*GGPROTOFUNC)(GGPROTO*,WPARAM,LPARAM);

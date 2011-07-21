@@ -689,6 +689,11 @@ SOURCE=.\services.c
 "$(INTDIR)\services.obj" : $(SOURCE) "$(INTDIR)"
 
 
+SOURCE=.\sessions.c
+
+"$(INTDIR)\sessions.obj" : $(SOURCE) "$(INTDIR)"
+
+
 SOURCE=.\token.c
 
 "$(INTDIR)\token.obj" : $(SOURCE) "$(INTDIR)"
