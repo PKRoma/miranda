@@ -372,7 +372,6 @@ INT_PTR CMsnProto::SendNudge(WPARAM wParam, LPARAM lParam)
 	if (MSN_IsMeByContact(hContact, tEmail)) return 0;
 
 	static const char nudgemsg[] = 
-		"MIME-Version: 1.0\r\n"
 		"Content-Type: text/x-msnmsgr-datacast\r\n\r\n"
 		"ID: 1\r\n\r\n";
 
