@@ -442,13 +442,6 @@ static int gg_gc_countcheckmarks(HWND hwndList)
 
 #define HM_SUBCONTACTSCHANGED (WM_USER + 100)
 
-typedef struct
-{
-	HFONT hBoldFont;
-	HANDLE hMetaContactsEvent;
-}
-GGOPENCONFDLGDATA;
-
 static INT_PTR CALLBACK gg_gc_openconfdlg(HWND hwndDlg, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	switch(message)
@@ -456,22 +449,16 @@ static INT_PTR CALLBACK gg_gc_openconfdlg(HWND hwndDlg, UINT message, WPARAM wPa
 		case WM_INITDIALOG:
 		{
 			CLCINFOITEM cii = {0};
-			LOGFONT lf;
-			HFONT hNormalFont = (HFONT)SendDlgItemMessage(hwndDlg, IDC_NAME, WM_GETFONT, 0, 0);
-			GGOPENCONFDLGDATA* dlgData = (GGOPENCONFDLGDATA*)mir_alloc(sizeof(GGOPENCONFDLGDATA));
+			HANDLE hMetaContactsEvent;
 
 			SetWindowLongPtr(hwndDlg, DWLP_USER, (LONG_PTR)lParam);
 			TranslateDialogDefault(hwndDlg);
+			WindowSetIcon(hwndDlg, "conference");
 			gg_gc_resetclistopts(GetDlgItem(hwndDlg, IDC_CLIST));
 
 			// Hook MetaContacts event (if available)
-			dlgData->hMetaContactsEvent = HookEventMessage(ME_MC_SUBCONTACTSCHANGED, hwndDlg, HM_SUBCONTACTSCHANGED);
-			// Make bold title font
-			GetObject(hNormalFont, sizeof(lf), &lf);
-			lf.lfWeight = FW_BOLD;
-			dlgData->hBoldFont = CreateFontIndirect(&lf);
-			SendDlgItemMessage(hwndDlg, IDC_NAME, WM_SETFONT, (WPARAM)dlgData->hBoldFont, 0);
-			SetWindowLongPtr(hwndDlg, GWLP_USERDATA, (LONG_PTR)dlgData);
+			hMetaContactsEvent = HookEventMessage(ME_MC_SUBCONTACTSCHANGED, hwndDlg, HM_SUBCONTACTSCHANGED);
+			SetWindowLongPtr(hwndDlg, GWLP_USERDATA, (LONG_PTR)hMetaContactsEvent);
 		}
 		return TRUE;
 
@@ -603,25 +590,11 @@ static INT_PTR CALLBACK gg_gc_openconfdlg(HWND hwndDlg, UINT message, WPARAM wPa
 
 		case WM_DESTROY:
 		{
-			GGOPENCONFDLGDATA* dlgData = (GGOPENCONFDLGDATA*)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
-			if (dlgData->hBoldFont) DeleteObject(dlgData->hBoldFont);
-			if (dlgData->hMetaContactsEvent) UnhookEvent(dlgData->hMetaContactsEvent);
-			mir_free(dlgData);
+			HANDLE hMetaContactsEvent = (HANDLE)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
+			if (hMetaContactsEvent) UnhookEvent(hMetaContactsEvent);
+			WindowFreeIcon(hwndDlg);
 			break;
 		}
-
-		case WM_CTLCOLORSTATIC:
-			if ((GetDlgItem(hwndDlg, IDC_WHITERECT) == (HWND)lParam) ||	(GetDlgItem(hwndDlg, IDC_LOGO) == (HWND)lParam))
-			{
-				SetBkColor((HDC)wParam,RGB(255, 255, 255));
-				return (BOOL)GetStockObject(WHITE_BRUSH);
-			}
-			else if ((GetDlgItem(hwndDlg, IDC_NAME) == (HWND)lParam) ||	(GetDlgItem(hwndDlg, IDC_SUBNAME) == (HWND)lParam))
-			{
-				SetBkMode((HDC)wParam, TRANSPARENT);
-				return (BOOL)GetStockObject(NULL_BRUSH);
-			}
-			break;
 	}
 
 	return FALSE;

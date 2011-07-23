@@ -51,16 +51,7 @@ INT_PTR CALLBACK gg_tokendlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 			SetWindowLongPtr(hwndDlg, GWLP_USERDATA, lParam);
 			return TRUE;
 		}
-		case WM_CTLCOLORSTATIC:
-			/*
-			if((GetDlgItem(hwndDlg, IDC_WHITERECT) == (HWND)lParam) ||
-				(GetDlgItem(hwndDlg, IDC_LOGO) == (HWND)lParam))
-			{
-				SetBkColor((HDC)wParam,RGB(255,255,255));
-				return (BOOL)GetStockObject(WHITE_BRUSH);
-			}
-			*/
-			break;
+
 		case WM_COMMAND:
 			switch(LOWORD(wParam))
 			{
@@ -75,41 +66,38 @@ INT_PTR CALLBACK gg_tokendlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 					break;
 			}
 			break;
+
 		case WM_PAINT:
+		{
+			PAINTSTRUCT paintStruct;
+			HDC hdc = BeginPaint(hwndDlg, &paintStruct);
+			RECT rc; GetClientRect(GetDlgItem(hwndDlg, IDC_WHITERECT), &rc);
+			FillRect(hdc, &rc, (HBRUSH)GetStockObject(WHITE_BRUSH));
+
+			if(dat && dat->hBitmap)
 			{
-				PAINTSTRUCT paintStruct;
-				HDC hdc = BeginPaint(hwndDlg, &paintStruct);
-				RECT rc; GetClientRect(GetDlgItem(hwndDlg, IDC_WHITERECT), &rc);
-				FillRect(hdc, &rc, (HBRUSH)GetStockObject(WHITE_BRUSH));
+				HDC hdcBmp = NULL;
+				int nWidth, nHeight;
+				BITMAP bmp;
 
-				if(dat && dat->hBitmap)
+				GetObject(dat->hBitmap, sizeof(bmp), &bmp);
+				nWidth = bmp.bmWidth; nHeight = bmp.bmHeight;
+
+				if(hdcBmp = CreateCompatibleDC(hdc))
 				{
-					HDC hdcBmp = NULL;
-					int nWidth, nHeight;
-					BITMAP bmp;
-
-					GetObject(dat->hBitmap, sizeof(bmp), &bmp);
-					nWidth = bmp.bmWidth; nHeight = bmp.bmHeight;
-
-					if(hdcBmp = CreateCompatibleDC(hdc))
-					{
-						SelectObject(hdcBmp, dat->hBitmap);
-						SetStretchBltMode(hdc, HALFTONE);
-						BitBlt(hdc,
-							(rc.left + rc.right - nWidth) / 2,
-							(rc.top + rc.bottom - nHeight) / 2,
-							nWidth, nHeight,
-							hdcBmp, 0, 0, SRCCOPY);
-						DeleteDC(hdcBmp);
-					}
+					SelectObject(hdcBmp, dat->hBitmap);
+					SetStretchBltMode(hdc, HALFTONE);
+					BitBlt(hdc,
+						(rc.left + rc.right - nWidth) / 2,
+						(rc.top + rc.bottom - nHeight) / 2,
+						nWidth, nHeight,
+						hdcBmp, 0, 0, SRCCOPY);
+					DeleteDC(hdcBmp);
 				}
-				EndPaint(hwndDlg, &paintStruct);
-				return 0;
 			}
-			break;
-
-		case WM_DESTROY:
-			break;
+			EndPaint(hwndDlg, &paintStruct);
+			return 0;
+		}
 	}
 	return FALSE;
 }

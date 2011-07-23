@@ -231,20 +231,25 @@ Adres zewnêtrzny dla po³¹czeñ bezpoœrednich %s jest nieprawid³owy. Forwardowanie
 ;[Change Gadu-Gadu Password] << deprecated in 0.0.1.3
 [Change Gadu-Gadu password]
 Zmieñ has³o Gadu-Gadu
-[Changes current Gadu-Gadu user password.]
-Twoje aktualne has³o zostanie zmienione.
-[Change Gadu-Gadu e-mail]
-Zmieñ e-mail Gadu-Gadu
-[Changes current Gadu-Gadu user e-mail.]
-Twój aktualny e-mail zostanie zmieniony.
+;[Changes current Gadu-Gadu user password.] @ deprecated 0.9.26
+[Change Gadu-Gadu password\nChanges current Gadu-Gadu user password]
+Zmieñ has³o Gadu-Gadu\nTwoje aktualne has³o zostanie zmienione
 [New password:]
 Nowe has³o:
 [Password:]
 Has³o:
 [Confirm password:]
 PotwierdŸ has³o:
+
+; E-mail dialog
+[Change Gadu-Gadu e-mail]
+Zmieñ e-mail Gadu-Gadu
+;[Changes current Gadu-Gadu user e-mail.] @ deprecated 0.9.26
+[Change Gadu-Gadu e-mail\nChanges current Gadu-Gadu user e-mail]
+Zmieñ e-mail Gadu-Gadu\nTwój aktualny e-mail zostanie zmieniony
 [New e-mail:]
 Nowy e-mail:
+
 ; Remove account dialog
 [Remove]
 Usuñ
@@ -252,13 +257,16 @@ Usuñ
 Tak, chcê usun¹æ moje konto
 [Remove Gadu-Gadu account]
 Usuñ konto Gadu-Gadu
-[This will remove your Gadu-Gadu account.]
-Twoje konto zostanie usuniête.
+;[This will remove your Gadu-Gadu account.] @ deprecated 0.9.26
+[Remove Gadu-Gadu account\nThis will remove your Gadu-Gadu account]
+Usuñ konto Gadu-Gadu\nTwoje konto zostanie usuniête
+
 ; Create account dialog
 [Create Gadu-Gadu account]
 Utwórz konto Gadu-Gadu
-[This will create new Gadu-Gadu account.]
-Zostanie utworzone nowe konto Gadu-Gadu.
+;[This will create new Gadu-Gadu account.] @ deprecated 0.9.26
+[Create Gadu-Gadu account\nThis will create new Gadu-Gadu account]
+Utwórz konto Gadu-Gadu\nZostanie utworzone nowe konto Gadu-Gadu
 
 ; Search dialog
 [Age from:]
@@ -297,10 +305,11 @@ Nie mo¿na za³adowaæ obrazka. Wybrany plik mo¿e mieæ nieznany format.
 Rozmiar pliku obrazka przekracza maksymalny dozwolony rozmiar 255 KB.
 
 ; Conferences
+[Open new conference\nSelect conference participants]
+Otwórz now¹ konferencjê\nWybierz uczestników konferencji
 [Open new conference]
 Otwórz now¹ konferencjê
-[Select conference participants.]
-Wybierz uczestników konferencji.
+;[Select conference participants.] @ deprecated 0.9.26
 [Open &conference...]
 Otwórz &konferencjê...
 [&Clear ignored conferences]

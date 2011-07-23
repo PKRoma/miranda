@@ -241,61 +241,37 @@ void *gg_dochemail(GGPROTO *gg, uin_t uin, char *password, char *email, char *ne
 // User Util Dlg Page : Data
 INT_PTR CALLBACK gg_userutildlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	GGUSERUTILDLGDATA *dat;
-	dat = (GGUSERUTILDLGDATA *)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
+	GGUSERUTILDLGDATA *dat = (GGUSERUTILDLGDATA *)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 
-	switch(msg)
+	switch (msg)
 	{
 		case WM_INITDIALOG:
 			TranslateDialogDefault(hwndDlg);
-			dat = (GGUSERUTILDLGDATA  *)lParam;
+			WindowSetIcon(hwndDlg, "settings");
+			dat = (GGUSERUTILDLGDATA *)lParam;
 			SetWindowLongPtr(hwndDlg, GWLP_USERDATA, (LONG_PTR)lParam);
-			if(dat)
-			{
-				// Make bold title font
-				LOGFONT lf;
-				HFONT hNormalFont = (HFONT)SendDlgItemMessage(hwndDlg, IDC_NAME, WM_GETFONT, 0, 0);
-				// Readup email
-				SetDlgItemText(hwndDlg, IDC_EMAIL, dat->email);
-				GetObject(hNormalFont, sizeof(lf), &lf);
-				lf.lfWeight = FW_BOLD;
-				dat->hBoldFont = CreateFontIndirect(&lf);
-				SendDlgItemMessage(hwndDlg, IDC_NAME, WM_SETFONT, (WPARAM)dat->hBoldFont, 0);
-			}
+			if (dat) SetDlgItemText(hwndDlg, IDC_EMAIL, dat->email); // Readup email
 			return TRUE;
 
-		case WM_CTLCOLORSTATIC:
-			if((GetDlgItem(hwndDlg, IDC_WHITERECT) == (HWND)lParam) ||
-				(GetDlgItem(hwndDlg, IDC_LOGO) == (HWND)lParam))
-			{
-				SetBkColor((HDC)wParam,RGB(255,255,255));
-				return (BOOL)GetStockObject(WHITE_BRUSH);
-			}
-			else if((GetDlgItem(hwndDlg, IDC_NAME) == (HWND)lParam) ||
-				(GetDlgItem(hwndDlg, IDC_SUBNAME) == (HWND)lParam))
-			{
-				SetBkMode((HDC)wParam, TRANSPARENT);
-				return (BOOL)GetStockObject(NULL_BRUSH);
-			}
-			break;
 		case WM_COMMAND:
-			switch(LOWORD(wParam))
+			switch (LOWORD(wParam))
 			{
 				case IDC_PASSWORD:
 				case IDC_CPASSWORD:
 				case IDC_CONFIRM:
-					{
-						char pass[128], cpass[128];
-						BOOL enable;
-						GetDlgItemText(hwndDlg, IDC_PASSWORD, pass, sizeof(pass));
-						GetDlgItemText(hwndDlg, IDC_CPASSWORD, cpass, sizeof(cpass));
-						enable = strlen(pass) && strlen(cpass) && !strcmp(cpass, pass);
-						if(dat && dat->mode == GG_USERUTIL_REMOVE)
-							EnableWindow(GetDlgItem(hwndDlg, IDOK), IsDlgButtonChecked(hwndDlg, IDC_CONFIRM) ? enable : FALSE);
-						else
-							EnableWindow(GetDlgItem(hwndDlg, IDOK), enable);
-					}
+				{
+					char pass[128], cpass[128];
+					BOOL enable;
+					GetDlgItemText(hwndDlg, IDC_PASSWORD, pass, sizeof(pass));
+					GetDlgItemText(hwndDlg, IDC_CPASSWORD, cpass, sizeof(cpass));
+					enable = strlen(pass) && strlen(cpass) && !strcmp(cpass, pass);
+					if (dat && dat->mode == GG_USERUTIL_REMOVE)
+						EnableWindow(GetDlgItem(hwndDlg, IDOK), IsDlgButtonChecked(hwndDlg, IDC_CONFIRM) ? enable : FALSE);
+					else
+						EnableWindow(GetDlgItem(hwndDlg, IDOK), enable);
 					break;
+				}
+
 				case IDOK:
 				{
 					char pass[128], cpass[128], email[128];
@@ -305,24 +281,25 @@ INT_PTR CALLBACK gg_userutildlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 					EndDialog(hwndDlg, IDOK);
 
 					// Check dialog box mode
-					if(dat && dat->mode == GG_USERUTIL_CREATE)
-						gg_doregister(dat->gg, pass, email);
-					else if(dat && dat->mode == GG_USERUTIL_REMOVE)
-						gg_dounregister(dat->gg, dat->uin, pass);
-					else if(dat && dat->mode == GG_USERUTIL_PASS)
-						gg_dochpass(dat->gg, dat->uin, dat->pass, pass);
-					else if(dat && dat->mode == GG_USERUTIL_EMAIL)
-						gg_dochemail(dat->gg, dat->uin, dat->pass, dat->email, email);
+					if (!dat) break;
+					switch (dat->mode)
+					{
+						case GG_USERUTIL_CREATE: gg_doregister(dat->gg, pass, email);							break;
+						case GG_USERUTIL_REMOVE: gg_dounregister(dat->gg, dat->uin, pass);						break;
+						case GG_USERUTIL_PASS:   gg_dochpass(dat->gg, dat->uin, dat->pass, pass);				break;
+						case GG_USERUTIL_EMAIL:  gg_dochemail(dat->gg, dat->uin, dat->pass, dat->email, email);	break;
+					}
 					break;
 				}
+
 				case IDCANCEL:
 					EndDialog(hwndDlg, IDCANCEL);
 					break;
 			}
 			break;
+
 		case WM_DESTROY:
-			if(dat)
-				DeleteObject(dat->hBoldFont);
+			WindowFreeIcon(hwndDlg);
 			break;
 	}
 	return FALSE;

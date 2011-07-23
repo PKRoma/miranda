@@ -168,8 +168,7 @@ static INT_PTR CALLBACK gg_sessions_viewdlg(HWND hwndDlg, UINT message, WPARAM w
 			GetDlgItemText(hwndDlg, IDC_HEADERBAR, oldTitle, SIZEOF(oldTitle));
 			mir_snprintf(newTitle, SIZEOF(newTitle), oldTitle, GG_PROTONAME);
 			SetDlgItemText(hwndDlg, IDC_HEADERBAR, newTitle);
-			SendMessage(hwndDlg, WM_SETICON, ICON_SMALL, (LPARAM)LoadIconEx("sessions", FALSE));
-			SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)LoadIconEx("sessions", TRUE));
+			WindowSetIcon(hwndDlg, "sessions");
 			gg->hwndSessionsDlg = hwndDlg;
 
 			if (hHandCursor == NULL)
@@ -390,8 +389,7 @@ static INT_PTR CALLBACK gg_sessions_viewdlg(HWND hwndDlg, UINT message, WPARAM w
 			HANDLE hProtoAckEvent = (HANDLE)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 			if (hProtoAckEvent) UnhookEvent(hProtoAckEvent);
 			gg->hwndSessionsDlg = NULL;
-			ReleaseIconEx("image", FALSE);
-			ReleaseIconEx("image", TRUE);
+			WindowFreeIcon(hwndDlg);
 			break;
 		}
 	}
