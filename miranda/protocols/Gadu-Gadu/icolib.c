@@ -94,3 +94,15 @@ void ReleaseIconEx(const char* name, BOOL big)
 	mir_snprintf(szSettingName, sizeof(szSettingName), "%s_%s", GGDEF_PROTO, name);
 	CallService(big ? MS_SKIN2_RELEASEICONBIG : MS_SKIN2_RELEASEICON, 0, (LPARAM)szSettingName);
 }
+
+void WindowSetIcon(HWND hWnd, const char* name)
+{
+	SendMessage(hWnd, WM_SETICON, ICON_BIG, (LPARAM)LoadIconEx(name, TRUE));
+	SendMessage(hWnd, WM_SETICON, ICON_SMALL, (LPARAM)LoadIconEx(name, FALSE));
+}
+
+void WindowFreeIcon(HWND hWnd)
+{
+	CallService(MS_SKIN2_RELEASEICONBIG, SendMessage(hWnd, WM_SETICON, ICON_BIG, 0), 0);
+	CallService(MS_SKIN2_RELEASEICON, SendMessage(hWnd, WM_SETICON, ICON_SMALL, 0), 0);
+}

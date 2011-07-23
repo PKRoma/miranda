@@ -162,7 +162,6 @@ typedef struct
 	uin_t uin;
 	char *pass;
 	char *email;
-	HFONT hBoldFont;
 	GGPROTO *gg;
 } GGUSERUTILDLGDATA;
 
@@ -435,6 +434,8 @@ void gg_icolib_init();
 HICON LoadIconEx(const char* name, BOOL big);
 HANDLE GetIconHandle(int iconId);
 void ReleaseIconEx(const char* name, BOOL big);
+void WindowSetIcon(HWND hWnd, const char* name);
+void WindowFreeIcon(HWND hWnd);
 
 /* URI parser functions */
 void gg_links_instancemenu_init();
