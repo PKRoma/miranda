@@ -30,7 +30,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define SMF_STAYMINIMIZED			0x00000002
 #define SMF_CLOSEONSEND				0x00000004
 #define SMF_MINIMIZEONSEND			0x00000008
-#define SMF_AUTORESIZE				0x00000010
 #define SMF_SAVEDRAFTS				0x00000040
 #define SMF_DELTEMP					0x00000080
 #define SMF_SENDONENTER				0x00000100
@@ -114,7 +113,6 @@ struct GlobalMessageData
 	HIMAGELIST hSearchEngineIconList;
 	HBRUSH	   hInfobarBrush;
 	int		   toolbarPosition;
-	int        splitterY;
 	HWND       hFocusWnd;
     DWORD      logLineColour;
 	int        logPixelSX;
@@ -122,6 +120,7 @@ struct GlobalMessageData
     HICON      hMsgIcon;
     HICON      hMsgIconBig;
     HICON      hIconChatBig;
+	int		   minInputAreaHeight;
 };
 
 int IconsChanged(WPARAM wParam, LPARAM lParam);

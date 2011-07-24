@@ -395,7 +395,7 @@ void CheckColorsInModule(const char* pszModule)
 	COLORREF crFG;
 	COLORREF crBG = (COLORREF)DBGetContactSettingDword(NULL, "Chat", "ColorMessageBG", GetSysColor(COLOR_WINDOW));
 
-	Chat_LoadMsgDlgFont(17, NULL, &crFG);
+	LoadMsgDlgFont(MSGFONTID_MESSAGEAREA, NULL, &crFG, FALSE);
 
 	if ( !pMod )
 		return;

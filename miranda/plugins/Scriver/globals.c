@@ -37,13 +37,13 @@ extern int    Chat_PreShutdown(WPARAM wParam,LPARAM lParam);
 
 static const char *buttonIcons[] = {"scriver_CLOSEX", "scriver_QUOTE", "scriver_SMILEY", 
 									"scriver_ADD", NULL, "scriver_USERDETAILS", "scriver_HISTORY", 
-									"scriver_CANCEL", "scriver_SEND"};
+									"scriver_SEND"};
 
 static const char *chatButtonIcons[] = {"scriver_CLOSEX", 
 									"chat_bold", "chat_italics", "chat_underline", 
 									"chat_fgcol", "chat_bkgcol", 
 									"chat_smiley", "chat_history", 
-									"chat_filter", "chat_settings", "chat_nicklist", "scriver_CANCEL", "scriver_SEND"};
+									"chat_filter", "chat_settings", "chat_nicklist", "scriver_SEND"};
 
 typedef struct IconDefStruct 
 {
@@ -59,7 +59,6 @@ static const IconDef iconList[] = {
 	{LPGENT("Single Messaging"), "scriver_USERDETAILS", IDI_USERDETAILS, LPGENT("User's details")},
 	{LPGENT("Single Messaging"), "scriver_HISTORY", IDI_HISTORY, LPGENT("User's history")},
 	{LPGENT("Single Messaging"), "scriver_SEND", IDI_SEND, LPGENT("Send message")},
-	{LPGENT("Single Messaging"), "scriver_CANCEL", IDI_CANCEL, LPGENT("Close session")},
 	{LPGENT("Single Messaging"), "scriver_SMILEY", IDI_SMILEY, LPGENT("Smiley button")},
 	{LPGENT("Single Messaging"), "scriver_TYPING", IDI_TYPING, LPGENT("User is typing")},
 	{LPGENT("Single Messaging"), "scriver_TYPINGOFF", IDI_TYPINGOFF, LPGENT("Typing notification off")},
@@ -267,6 +266,9 @@ static BOOL CALLBACK LangAddCallback(CHAR * str) {
 
 void LoadInfobarFonts()
 {
+	LOGFONT lf;
+	LoadMsgDlgFont(MSGFONTID_MESSAGEAREA, &lf, NULL, FALSE);
+	g_dat->minInputAreaHeight = 2 * abs(lf.lfHeight) * g_dat->logPixelSY / 72;
 	if (g_dat->hInfobarBrush != NULL) {
 		DeleteObject(g_dat->hInfobarBrush);
 	}
@@ -296,7 +298,6 @@ void InitGlobals() {
 	g_dat->hHelperIconList = ImageList_Create(16, 16, IsWinVerXPPlus() ? ILC_COLOR32 | ILC_MASK : ILC_COLOR8 | ILC_MASK, 0, 0);
 	g_dat->hSearchEngineIconList = ImageList_Create(16, 16, IsWinVerXPPlus() ? ILC_COLOR32 | ILC_MASK : ILC_COLOR8 | ILC_MASK, 0, 0);
 	g_dat->draftList = NULL;
-	g_dat->splitterY = (int) DBGetContactSettingDword(NULL, SRMMMOD, "splitterPos", (DWORD) -1);
 	g_dat->logPixelSX = GetDeviceCaps(hdc, LOGPIXELSX);
 	g_dat->logPixelSY = GetDeviceCaps(hdc, LOGPIXELSY);
 	LoadInfobarFonts();
@@ -305,9 +306,6 @@ void InitGlobals() {
 
 void FreeGlobals() {
 	if (g_dat) {
-		if (!(g_dat->flags & SMF_AUTORESIZE)) {
-			DBWriteContactSettingDword(NULL, SRMMMOD, "splitterPos", g_dat->splitterY);
-		}
 		if (g_dat->hInfobarBrush != NULL) {
 			DeleteObject(g_dat->hInfobarBrush);
 		}
@@ -372,8 +370,6 @@ void ReloadGlobals() {
 		g_dat->flags |= SMF_STAYMINIMIZED;
 	if (DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_SAVEDRAFTS, SRMSGDEFSET_SAVEDRAFTS))
 		g_dat->flags |= SMF_SAVEDRAFTS;
-	if (DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_AUTORESIZE, SRMSGDEFSET_AUTORESIZE))
-		g_dat->flags |= SMF_AUTORESIZE;
 
 	if (DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_DELTEMP, SRMSGDEFSET_DELTEMP))
 		g_dat->flags |= SMF_DELTEMP;

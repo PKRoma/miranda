@@ -239,7 +239,7 @@ int IsAutoPopup(HANDLE hContact);
 #define MSGFONTID_INFOBAR_NAME   12
 #define MSGFONTID_INFOBAR_STATUS 13
 
-void LoadMsgDlgFont(int i, LOGFONT * lf, COLORREF * colour);
+void LoadMsgDlgFont(int i, LOGFONT * lf, COLORREF * colour, BOOL chatMode);
 extern int fontOptionsListSize;
 
 #define LOADHISTORY_UNREAD    0
@@ -276,8 +276,6 @@ extern int fontOptionsListSize;
 #define SRMSGDEFSET_CASCADE        1
 #define SRMSGSET_SAVEPERCONTACT    "SavePerContact"
 #define SRMSGDEFSET_SAVEPERCONTACT 0
-#define SRMSGSET_AUTORESIZE        "EnableAutoresize"
-#define SRMSGDEFSET_AUTORESIZE     1
 #define SRMSGSET_SHOWTITLEBAR	   "ShowTitleBar"
 #define SRMSGDEFSET_SHOWTITLEBAR   1
 #define SRMSGSET_SHOWSTATUSBAR	   "ShowStatusBar"

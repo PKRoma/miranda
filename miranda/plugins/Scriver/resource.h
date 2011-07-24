@@ -124,7 +124,6 @@
 #define IDC_HISTORY                     1080
 #define IDC_SMILEYS                     1081
 #define IDC_REMEMBER					1082
-#define IDC_AUTORESIZE                  1083
 #define IDC_INFOBAR_NAME				1090
 #define IDC_INFOBAR_STATUS				1091
 #define IDC_STMSGLOGGROUP               1442

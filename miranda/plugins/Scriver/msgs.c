@@ -632,7 +632,7 @@ int OnLoadModule(void) {
 
 	CreateServiceFunction_Ex(MS_MSG_SENDMESSAGE, SendMessageCommand);
  #if defined(_UNICODE)
-	CreateServiceFunction_Ex(MS_MSG_SENDMESSAGE "W", SendMessageCommandW);
+	CreateServiceFunction_Ex(MS_MSG_SENDMESSAGEW, SendMessageCommandW);
  #endif
 	CreateServiceFunction_Ex(MS_MSG_GETWINDOWAPI, GetWindowAPI);
 	CreateServiceFunction_Ex(MS_MSG_GETWINDOWCLASS, GetWindowClass);

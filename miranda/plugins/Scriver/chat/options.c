@@ -276,45 +276,7 @@ void LoadLogFonts(void)
 	int i;
 
 	for( i = 0; i<OPTIONS_FONTCOUNT; i++)
-		Chat_LoadMsgDlgFont(i, &aFonts[i].lf, &aFonts[i].color);
-}
-
-void Chat_LoadMsgDlgFont(int i, LOGFONT* lf, COLORREF* colour)
-{
-    char str[32];
-    int style;
-    DBVARIANT dbv;
-
-    if (colour) {
-        wsprintfA(str, "Font%dCol", i);
-        *colour = DBGetContactSettingDword(NULL, "ChatFonts", str, fontOptionsList[i].defColour);
-    }
-    if (lf) {
-        wsprintfA(str, "Font%dSize", i);
-        lf->lfHeight = (char) DBGetContactSettingByte(NULL, "ChatFonts", str, fontOptionsList[i].defSize);
-        lf->lfWidth = 0;
-        lf->lfEscapement = 0;
-        lf->lfOrientation = 0;
-        wsprintfA(str, "Font%dSty", i);
-        style = DBGetContactSettingByte(NULL, "ChatFonts", str, fontOptionsList[i].defStyle);
-        lf->lfWeight = style & FONTF_BOLD ? FW_BOLD : FW_NORMAL;
-        lf->lfItalic = style & FONTF_ITALIC ? 1 : 0;
-        lf->lfUnderline = 0;
-        lf->lfStrikeOut = 0;
-        wsprintfA(str, "Font%dSet", i);
-        lf->lfCharSet = DBGetContactSettingByte(NULL, "ChatFonts", str, fontOptionsList[i].defCharset);
-        lf->lfOutPrecision = OUT_DEFAULT_PRECIS;
-        lf->lfClipPrecision = CLIP_DEFAULT_PRECIS;
-        lf->lfQuality = DEFAULT_QUALITY;
-        lf->lfPitchAndFamily = DEFAULT_PITCH | FF_DONTCARE;
-        wsprintfA(str, "Font%d", i);
-        if (DBGetContactSettingTString(NULL, "ChatFonts", str, &dbv))
-            lstrcpy(lf->lfFaceName, fontOptionsList[i].szDefFace);
-        else {
-			lstrcpyn(lf->lfFaceName, dbv.ptszVal, SIZEOF(lf->lfFaceName));
-            DBFreeVariant(&dbv);
-        }
-    }
+		LoadMsgDlgFont(i, &aFonts[i].lf, &aFonts[i].color, TRUE);
 }
 
 void RegisterFonts( void )
@@ -327,6 +289,7 @@ void RegisterFonts( void )
 	fontid.cbSize = sizeof(FontIDT);
 	fontid.flags = FIDF_ALLOWREREGISTER | FIDF_DEFAULTVALID | FIDF_NEEDRESTART;
 	for (i = 0; i < SIZEOF(fontOptionsList); i++, index++) {
+		if (i == 17) continue;
 		strncpy(fontid.dbSettingsGroup, "ChatFonts", sizeof(fontid.dbSettingsGroup));
                 mir_sntprintf(fontid.group, SIZEOF(fontid.group), _T("%s/%s"), LPGENT("Messaging"), LPGENT("Group Chats"));
 		_tcsncpy(fontid.name, fontOptionsList[i].szDescr, SIZEOF(fontid.name));
@@ -998,17 +961,17 @@ void LoadGlobalSettings(void)
 
 	if(g_Settings.MessageBoxFont)
 		DeleteObject(g_Settings.MessageBoxFont);
-	Chat_LoadMsgDlgFont(17, &lf, NULL);
+	LoadMsgDlgFont(MSGFONTID_MESSAGEAREA, &lf, NULL, FALSE);
 	g_Settings.MessageBoxFont = CreateFontIndirect(&lf);
 
 	if(g_Settings.UserListFont)
 		DeleteObject(g_Settings.UserListFont);
-	Chat_LoadMsgDlgFont(18, &lf, NULL);
+	LoadMsgDlgFont(18, &lf, NULL, TRUE);
 	g_Settings.UserListFont = CreateFontIndirect(&lf);
 
 	if(g_Settings.UserListHeadingsFont)
 		DeleteObject(g_Settings.UserListHeadingsFont);
-	Chat_LoadMsgDlgFont(19, &lf, NULL);
+	LoadMsgDlgFont(19, &lf, NULL, TRUE);
 	g_Settings.UserListHeadingsFont = CreateFontIndirect(&lf);
 	if (hListBkgBrush != NULL) {
 		DeleteObject(hListBkgBrush);
@@ -1043,7 +1006,7 @@ void SetIndentSize()
 		HFONT hFont;
 		int iText;
 
-		Chat_LoadMsgDlgFont(0, &lf, NULL);
+		LoadMsgDlgFont(0, &lf, NULL, TRUE);
 		hFont = CreateFontIndirect(&lf);
 		iText = GetTextPixelSize(MakeTimeStamp(g_Settings.pszTimeStamp, time(NULL)),hFont, TRUE);
 		DeleteObject(hFont);
@@ -1061,7 +1024,7 @@ int OptionsInit(void)
 	g_hOptions = HookEvent(ME_OPT_INITIALISE, OptionsInitialize);
 
 	LoadLogFonts();
-	Chat_LoadMsgDlgFont(18, &lf, NULL);
+	LoadMsgDlgFont(18, &lf, NULL, TRUE);
 	lstrcpy(lf.lfFaceName, _T("MS Shell Dlg"));
 	lf.lfUnderline = lf.lfItalic = lf.lfStrikeOut = 0;
 	lf.lfHeight = -17;
@@ -1071,7 +1034,6 @@ int OptionsInit(void)
 	g_Settings.UserListHeadingsFont = NULL;
 	g_Settings.MessageBoxFont = NULL;
 	g_Settings.iSplitterX = DBGetContactSettingWord(NULL, "Chat", "SplitterX", 105);
-	g_Settings.iSplitterY = DBGetContactSettingWord(NULL, "Chat", "SplitterY", 90);
 	LoadGlobalSettings();
 
 	SkinAddNewSoundEx("ChatMessage", LPGEN("Group chats"), LPGEN("Incoming message"));
