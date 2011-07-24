@@ -328,11 +328,6 @@ void RegisterFonts( void )
 	colourid.defcolour = GetSysColor(COLOR_WINDOW);
 	CallService(MS_COLOUR_REGISTERT, (WPARAM)&colourid, 0);
 
-	strncpy(colourid.setting, "ColorMessageBG", SIZEOF(colourid.setting));
-	_tcsncpy(colourid.name, LPGENT("Message background"), SIZEOF(colourid.name));
-	colourid.defcolour = GetSysColor(COLOR_WINDOW);
-	CallService(MS_COLOUR_REGISTERT, (WPARAM)&colourid, 0);
-
 	strncpy(colourid.setting, "ColorNicklistBG", SIZEOF(colourid.setting));
 	_tcsncpy(colourid.name, LPGENT("User list background"), SIZEOF(colourid.name));
 	colourid.defcolour = GetSysColor(COLOR_WINDOW);
