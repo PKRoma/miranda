@@ -778,6 +778,7 @@ static LRESULT CALLBACK LogSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPAR
 			break;
 
 		case IDM_SEARCH_GOOGLE:
+		case IDM_SEARCH_BING:
 		case IDM_SEARCH_YAHOO:
 		case IDM_SEARCH_WIKIPEDIA:
 		case IDM_SEARCH_FOODNETWORK:

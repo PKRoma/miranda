@@ -417,6 +417,7 @@ static LRESULT CALLBACK LogEditSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, 
 				SendMessage(GetParent(hwnd), DM_CLEARLOG, 0, 0);
 				break;
 			case IDM_SEARCH_GOOGLE:
+			case IDM_SEARCH_BING:
 			case IDM_SEARCH_YAHOO:
 			case IDM_SEARCH_WIKIPEDIA:
 			case IDM_SEARCH_FOODNETWORK:

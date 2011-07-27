@@ -531,7 +531,6 @@ IDI_ADDCONTACT          ICON    DISCARDABLE     "res/addcontact.ico"
 IDI_USERDETAILS         ICON    DISCARDABLE     "res/details.ico"
 IDI_HISTORY             ICON    DISCARDABLE     "res/history.ico"
 IDI_SEND                ICON    DISCARDABLE     "res/send.ico"
-IDI_CANCEL              ICON    DISCARDABLE     "res/delete.ico"
 IDI_SMILEY              ICON    DISCARDABLE     "res/smiley.ico"
 IDI_TYPING              ICON    DISCARDABLE     "res/typing.ico"
 IDI_TYPINGOFF           ICON    DISCARDABLE     "res/typingoff.ico"
@@ -575,6 +574,7 @@ IDI_NICKLIST2           ICON                    "res/chat/nicklist2.ico"
 IDI_FILTER2             ICON                    "res/chat/filter2.ico"
 
 IDI_GOOGLE				ICON                    "res/google.ico"
+IDI_BING				ICON                    "res/bing.ico"
 IDI_YAHOO           	ICON                    "res/yahoo.ico"
 IDI_WIKIPEDIA 			ICON                    "res/wikipedia.ico"
 IDI_FOODNETWORK			ICON                    "res/foodnetwork.ico"
@@ -605,6 +605,7 @@ BEGIN
         POPUP "Word lookup", GRAYED
         BEGIN
             MENUITEM "Google",                      IDM_SEARCH_GOOGLE
+            MENUITEM "Bing",                        IDM_SEARCH_BING
             MENUITEM "Yahoo",                       IDM_SEARCH_YAHOO
             MENUITEM "Wikipedia (en)",              IDM_SEARCH_WIKIPEDIA
             MENUITEM "Foodnetwork",                 IDM_SEARCH_FOODNETWORK
@@ -655,9 +656,10 @@ BEGIN
         POPUP "Word lookup", GRAYED
         BEGIN
             MENUITEM "Google",                      IDM_SEARCH_GOOGLE
+            MENUITEM "Bing",                      IDM_SEARCH_BING
             MENUITEM "Yahoo",                       IDM_SEARCH_YAHOO
             MENUITEM "Wikipedia (en)",                  IDM_SEARCH_WIKIPEDIA
-	    MENUITEM "Foodnetwork",		IDM_SEARCH_FOODNETWORK
+			MENUITEM "Foodnetwork",		IDM_SEARCH_FOODNETWORK
         END
     END
 END

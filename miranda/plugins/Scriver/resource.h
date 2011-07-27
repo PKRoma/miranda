@@ -12,7 +12,6 @@
 #define IDI_USERDETAILS                 121
 #define IDI_HISTORY                     122
 #define IDI_SEND                        123
-#define IDI_CANCEL                      124
 #define IDI_SMILEY                      125
 #define IDI_TYPING                      126
 #define IDI_UNICODEON                   127
@@ -25,9 +24,10 @@
 #define IDI_CLOSEX                      135
 
 #define IDI_GOOGLE                      140
-#define IDI_YAHOO                       141
-#define IDI_WIKIPEDIA		  			142
-#define IDI_FOODNETWORK					143
+#define IDI_BING						141
+#define IDI_YAHOO                       142
+#define IDI_WIKIPEDIA		  			143
+#define IDI_FOODNETWORK					144
 
 #define IDR_CONTEXT                     180
 
@@ -187,9 +187,10 @@
 #define IDM_CLOSEOTHERTABS				40021
 #define IDM_TOPMOST						40040
 #define IDM_SEARCH_GOOGLE               40080
-#define IDM_SEARCH_YAHOO				40081
-#define IDM_SEARCH_WIKIPEDIA            40082
-#define IDM_SEARCH_FOODNETWORK          40083
+#define IDM_SEARCH_BING                 40081
+#define IDM_SEARCH_YAHOO				40082
+#define IDM_SEARCH_WIKIPEDIA            40083
+#define IDM_SEARCH_FOODNETWORK          40084
 /* chat.dll resources */
 
 #define IDC_CHAT_LOG                         5005
