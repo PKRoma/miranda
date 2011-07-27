@@ -183,22 +183,24 @@ static int LoadLangPack(const TCHAR *szLangPack)
 		if(line[0]=='[') break;
 		pszColon=strchr(line,':');
 		if(pszColon==NULL) {fclose(fp); return 3;}
-		*pszColon=0;
-		if(!lstrcmpA(line,"Language")) {mir_snprintf(langPack.language,sizeof(langPack.language),"%s",pszColon+1); lrtrim(langPack.language);}
-		else if(!lstrcmpA(line,"Last-Modified-Using")) {mir_snprintf(langPack.lastModifiedUsing,sizeof(langPack.lastModifiedUsing),"%s",pszColon+1); lrtrim(langPack.lastModifiedUsing);}
-		else if(!lstrcmpA(line,"Authors")) {mir_snprintf(langPack.authors,sizeof(langPack.authors),"%s",pszColon+1); lrtrim(langPack.authors);}
-		else if(!lstrcmpA(line,"Author-email")) {mir_snprintf(langPack.authorEmail,sizeof(langPack.authorEmail),"%s",pszColon+1); lrtrim(langPack.authorEmail);}
+		*pszColon++ = 0;
+		if(!lstrcmpA(line,"Language")) {mir_snprintf(langPack.language,sizeof(langPack.language),"%s",pszColon); lrtrim(langPack.language);}
+		else if(!lstrcmpA(line,"Last-Modified-Using")) {mir_snprintf(langPack.lastModifiedUsing,sizeof(langPack.lastModifiedUsing),"%s",pszColon); lrtrim(langPack.lastModifiedUsing);}
+		else if(!lstrcmpA(line,"Authors")) {mir_snprintf(langPack.authors,sizeof(langPack.authors),"%s",pszColon); lrtrim(langPack.authors);}
+		else if(!lstrcmpA(line,"Author-email")) {mir_snprintf(langPack.authorEmail,sizeof(langPack.authorEmail),"%s",pszColon); lrtrim(langPack.authorEmail);}
+		else if(!lstrcmpA(line,"Codepage")) { langPack.defaultANSICp = atoi( pszColon ); }
 		else if(!lstrcmpA(line, "Locale")) {
 			char szBuf[20], *stopped;
 
 			lrtrim(pszColon + 1);
-			langID = (USHORT)strtol(pszColon + 1, &stopped, 16);
+			langID = (USHORT)strtol(pszColon, &stopped, 16);
 			langPack.localeID = MAKELCID(langID, 0);
 			GetLocaleInfoA(langPack.localeID, LOCALE_IDEFAULTANSICODEPAGE, szBuf, 10);
 			szBuf[5] = 0;                       // codepages have max. 5 digits
 			langPack.defaultANSICp = atoi(szBuf);
 		}
 	}
+
 	//body
 	fseek(fp,startOfLine,SEEK_SET);
 	entriesAlloced=0;
