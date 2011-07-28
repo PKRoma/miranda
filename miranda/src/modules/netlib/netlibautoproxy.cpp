@@ -184,12 +184,19 @@ bool NetlibGetIeProxyConn(NetlibConnection *nlc)
 	char *m = NEWSTR_ALLOCA(mt); 
 	mir_free(mt);
 
-	if (m == NULL) return false; 
-	if (_stricmp(lrtrim(m), "direct") == 0) return true; 
+	if (m == NULL) return false;
 
+	 // if multiple servers, use the first one
+	char *c = strchr(m, ';'); if (c) *c = 0;
+	
+	// if 'direct' no proxy
+	if (_stricmp(lrtrim(m), "direct") == 0) return false; 
+
+	// find proxy address
 	char *h = strchr(m, ' ');
 	if (h) { *h = 0; ++h; } else return false;
 
+	// find proxy port
 	char *p = strchr(h, ':');
 	if (p) { *p = 0; ++p; }
 
@@ -203,6 +210,12 @@ bool NetlibGetIeProxyConn(NetlibConnection *nlc)
 	else if (_stricmp(m, "socks") == 0 && h[0])
 	{
 		nlc->proxyType = PROXYTYPE_SOCKS4;
+		nlc->wProxyPort = p ? atol(p) : 1080;
+		nlc->szProxyServer = mir_strdup(h);
+	}
+	else if (_stricmp(m, "socks5") == 0 && h[0])
+	{
+		nlc->proxyType = PROXYTYPE_SOCKS5;
 		nlc->wProxyPort = p ? atol(p) : 1080;
 		nlc->szProxyServer = mir_strdup(h);
 	}
