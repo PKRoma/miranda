@@ -603,12 +603,6 @@ static int isPluginOnWhiteList(TCHAR * pluginname)
 	return rc == 0;
 }
 
-static void MarkPluginAsLoaded( pluginEntry* p )
-{
-	pluginListAddr.insert( p );
-	p->pclass |= PCLASS_LOADED;
-}
-
 static pluginEntry* getCListModule(TCHAR * exe, TCHAR * slice, int useWhiteList)
 {
 	pluginEntry * p = pluginListUI;
@@ -621,9 +615,10 @@ static pluginEntry* getCListModule(TCHAR * exe, TCHAR * slice, int useWhiteList)
 			if ( checkAPI(exe, &bpi, mirandaVersion, CHECKAPI_CLIST, NULL) ) {
 				p->bpi = bpi;
 				p->pclass |= PCLASS_LAST | PCLASS_OK | PCLASS_BASICAPI;
+				pluginListAddr.insert( p );
 				if ( bpi.clistlink(&pluginCoreLink) == 0 ) {
 					p->bpi = bpi;
-					MarkPluginAsLoaded( p );
+					p->pclass |= PCLASS_LOADED;
 					return p;
 				}
 				else Plugin_Uninit( p );
@@ -1084,8 +1079,9 @@ int LoadNewPluginsModule(void)
 					p->pclass |= PCLASS_OK | PCLASS_BASICAPI;
 
 					if ( pluginDefModList[rm] == NULL ) {
+						pluginListAddr.insert( p );
 						if ( bpi.Load(&pluginCoreLink) == 0 ) {
-							MarkPluginAsLoaded( p );
+							p->pclass |= PCLASS_LOADED;
 							msgModule |= (bpi.pluginInfo->replacesDefaultModule == DEFMOD_SRMESSAGE);
 						}
 						else {
@@ -1108,7 +1104,10 @@ int LoadNewPluginsModule(void)
 			}
 		}
 		else if ( p->bpi.hInst != NULL )
-			MarkPluginAsLoaded( p );
+		{
+			pluginListAddr.insert( p );
+			p->pclass |= PCLASS_LOADED;
+		}
 	}
 	if (!msgModule)
 		MessageBox(NULL, TranslateT("No messaging plugins loaded. Please install/enable one of the messaging plugins, for instance, \"srmm.dll\""), _T("Miranda IM"), MB_OK | MB_ICONINFORMATION);
