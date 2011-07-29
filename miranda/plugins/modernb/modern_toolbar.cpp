@@ -315,8 +315,7 @@ static INT_PTR    svcToolBarAddButton(WPARAM wParam, LPARAM lParam)
 	tblock;
 	{	
 
-		MTB_BUTTONINFO * mtbi=(MTB_BUTTONINFO *)mir_alloc(sizeof(MTB_BUTTONINFO));
-		memset(mtbi,0,sizeof(MTB_BUTTONINFO));
+		MTB_BUTTONINFO * mtbi=(MTB_BUTTONINFO *)mir_calloc(sizeof(MTB_BUTTONINFO));
 		sttTBButton2MTBBUTTONINFO(bi,mtbi);
 	
 		sttGetButtonSettings(mtbi->szButtonID, &bVisible, &dwOrder, &bPanel);
@@ -779,8 +778,7 @@ static LRESULT CALLBACK ToolBar_WndProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM 
 			CLISTFrame Frame={0};
 			CREATESTRUCT * lpcs = (CREATESTRUCT *) lParam;
 			//create internal info
-			MTBINFO * pMTBInfo = (MTBINFO *) mir_alloc( sizeof(MTBINFO) );
-			memset( pMTBInfo, 0, sizeof(MTBINFO) );
+			MTBINFO * pMTBInfo = (MTBINFO *) mir_calloc( sizeof(MTBINFO) );
 			pMTBInfo->cbSize = sizeof(MTBINFO);
 			SetWindowLongPtr( hwnd, GWLP_USERDATA, (LONG_PTR) pMTBInfo );
 
@@ -1029,14 +1027,13 @@ static LRESULT CALLBACK ToolBar_WndProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM 
 	case MTBM_SETBUTTONSTATE:
 		{	
 			char * hButtonId=(msg==MTBM_SETBUTTONSTATEBYID) ? (char *) wParam : NULL;
-			HWND hButton=(msg==MTBM_SETBUTTONSTATE) ?(HWND)wParam : NULL;
+			void * hButton=(msg==MTBM_SETBUTTONSTATE) ? (void *)wParam : NULL;
 			MTB_BUTTONINFO *mtbi=NULL;
 			int i;
 			for (i=0; i<pMTBInfo->pButtonList->realCount; i++)
 			{
 				mtbi=(MTB_BUTTONINFO*)pMTBInfo->pButtonList->items[i];
-				if ( (hButtonId && !strcmp(mtbi->szButtonID, hButtonId)) ||
-					 (hButton == mtbi->hWindow ) )
+				if ((hButtonId && !strcmp(mtbi->szButtonID, hButtonId)) || (hButton == mtbi))
 				{
 					mtbi->bPushButton=(BOOL)lParam;
 				    sttUpdateButtonState(mtbi);
@@ -1052,14 +1049,13 @@ static LRESULT CALLBACK ToolBar_WndProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM 
 			int * res= (int*)lParam;
 			if (res==NULL) break;
 			char * hButtonId=(msg==MTBM_GETBUTTONSTATEBYID) ? (char *) wParam : NULL;
-			HWND hButton=(msg==MTBM_GETBUTTONSTATE) ?(HWND)wParam  : NULL;
+			void * hButton=(msg==MTBM_GETBUTTONSTATE) ? (void *)wParam : NULL;
 			MTB_BUTTONINFO *mtbi=NULL;
 			int i;
 			for (i=0; i<pMTBInfo->pButtonList->realCount; i++)
 			{
 				mtbi=(MTB_BUTTONINFO*)pMTBInfo->pButtonList->items[i];
-				if ( (hButtonId && !strcmp(mtbi->szButtonID, hButtonId)) ||
-					(hButton == mtbi->hWindow ) )
+				if ((hButtonId && !strcmp(mtbi->szButtonID, hButtonId)) || (hButton == mtbi))
 				{
 					*res=0;
 					*res |= mtbi->bPushButton ? TBST_PUSHED : TBST_RELEASED;
