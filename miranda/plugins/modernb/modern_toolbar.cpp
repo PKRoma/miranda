@@ -1027,14 +1027,13 @@ static LRESULT CALLBACK ToolBar_WndProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM 
 	case MTBM_SETBUTTONSTATE:
 		{	
 			char * hButtonId=(msg==MTBM_SETBUTTONSTATEBYID) ? (char *) wParam : NULL;
-			HWND hButton=(msg==MTBM_SETBUTTONSTATE) ?(HWND)wParam : NULL;
+			void * hButton=(msg==MTBM_SETBUTTONSTATE) ? (void *)wParam : NULL;
 			MTB_BUTTONINFO *mtbi=NULL;
 			int i;
 			for (i=0; i<pMTBInfo->pButtonList->realCount; i++)
 			{
 				mtbi=(MTB_BUTTONINFO*)pMTBInfo->pButtonList->items[i];
-				if ( (hButtonId && !strcmp(mtbi->szButtonID, hButtonId)) ||
-					 (hButton == mtbi->hWindow ) )
+				if ((hButtonId && !strcmp(mtbi->szButtonID, hButtonId)) || (hButton == mtbi))
 				{
 					mtbi->bPushButton=(BOOL)lParam;
 				    sttUpdateButtonState(mtbi);
@@ -1050,14 +1049,13 @@ static LRESULT CALLBACK ToolBar_WndProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM 
 			int * res= (int*)lParam;
 			if (res==NULL) break;
 			char * hButtonId=(msg==MTBM_GETBUTTONSTATEBYID) ? (char *) wParam : NULL;
-			HWND hButton=(msg==MTBM_GETBUTTONSTATE) ?(HWND)wParam  : NULL;
+			void * hButton=(msg==MTBM_GETBUTTONSTATE) ? (void *)wParam : NULL;
 			MTB_BUTTONINFO *mtbi=NULL;
 			int i;
 			for (i=0; i<pMTBInfo->pButtonList->realCount; i++)
 			{
 				mtbi=(MTB_BUTTONINFO*)pMTBInfo->pButtonList->items[i];
-				if ( (hButtonId && !strcmp(mtbi->szButtonID, hButtonId)) ||
-					(hButton == mtbi->hWindow ) )
+				if ((hButtonId && !strcmp(mtbi->szButtonID, hButtonId)) || (hButton == mtbi))
 				{
 					*res=0;
 					*res |= mtbi->bPushButton ? TBST_PUSHED : TBST_RELEASED;
