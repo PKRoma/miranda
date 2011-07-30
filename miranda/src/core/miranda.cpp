@@ -195,7 +195,7 @@ unsigned __stdcall forkthreadex_r(void * arg)
 	void *owner = fa->owner;
 	unsigned long rc = 0;
 
-	CallService(MS_SYSTEM_THREAD_PUSH,(WPARAM)fa->owner,(LPARAM)&threadcode);
+	CallService(MS_SYSTEM_THREAD_PUSH, (WPARAM)fa->owner, (LPARAM)threadcode);
 	SetEvent(fa->hEvent);
 	__try
 	{
@@ -281,7 +281,7 @@ VOID CALLBACK KillAllThreads(HWND, UINT, UINT_PTR, DWORD)
 			THREAD_WAIT_ENTRY* p = threads[j];
 			char szModuleName[ MAX_PATH ];
 			GetModuleFileNameA( p->hOwner, szModuleName, sizeof(szModuleName));
-			Netlib_Logf( NULL, "Thread %08x was abnormally terminated because module '%s' didn't release it. Entry point: %08x",
+			Netlib_Logf( NULL, "Thread %p was abnormally terminated because module '%s' didn't release it. Entry point: %p",
 				p->hThread, szModuleName, p->addr );
 			TerminateThread( p->hThread, 9999 );
 			CloseHandle(p->hThread);
