@@ -2,7 +2,7 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2009 Miranda ICQ/IM project,
+Copyright 2000-2011 Miranda ICQ/IM project,
 all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
@@ -124,7 +124,7 @@ typedef struct
 	void* pObject;
 	PVOID addr;
 }
- THREAD_WAIT_ENTRY;
+THREAD_WAIT_ENTRY;
 
 static LIST<THREAD_WAIT_ENTRY> threads( 10, NumericKeySortT );
 
@@ -163,7 +163,7 @@ UINT_PTR forkthread (
 	void (__cdecl *threadcode)(void*),
 	unsigned long stacksize,
 	void *arg
-)
+	)
 {
 	UINT_PTR rc;
 	struct FORK_ARG fa;
@@ -292,7 +292,8 @@ VOID CALLBACK KillAllThreads(HWND, UINT, UINT_PTR, DWORD)
 
 		ReleaseMutex( hStackMutex );
 		SetEvent( hThreadQueueEmpty );
-}	}
+	}	
+}
 
 void KillObjectThreads( void* owner )
 {
@@ -323,9 +324,12 @@ void KillObjectThreads( void* owner )
 					CloseHandle( p->hThread );
 					threads.remove( j );
 					mir_free( p );
-			}	}
+				}
+			}
 			ReleaseMutex(hStackMutex);
-}	}	}
+		}
+	}
+}
 
 static void UnwindThreadWait(void)
 {
@@ -379,12 +383,12 @@ INT_PTR UnwindThreadPush(WPARAM wParam,LPARAM lParam)
 
 		DuplicateHandle(GetCurrentProcess(), GetCurrentThread(), GetCurrentProcess(), &p->hThread, 0, FALSE, DUPLICATE_SAME_ACCESS);
 		p->dwThreadId = GetCurrentThreadId();
-        p->pObject = (void*)wParam;
+		p->pObject = (void*)wParam;
 		p->hOwner = GetInstByAddress((void*)lParam);
 		p->addr = (void*)lParam;
 		threads.insert(p);
 
- 		//Netlib_Logf( NULL, "*** pushing thread %x[%x] (%d)", hThread, GetCurrentThreadId(), threads.count );
+		//Netlib_Logf( NULL, "*** pushing thread %x[%x] (%d)", hThread, GetCurrentThreadId(), threads.count );
 		ReleaseMutex(hStackMutex);
 	} //if
 	return 0;
@@ -411,7 +415,7 @@ INT_PTR UnwindThreadPop(WPARAM,LPARAM)
 					SetEvent(hThreadQueueEmpty); // thread list is empty now
 					return 0;
 				} 
-				
+
 				ReleaseMutex(hStackMutex);
 				return 0;
 			} //if
@@ -468,7 +472,8 @@ void checkIdle(MSG * msg)
 	case WM_MOUSEMOVE:
 	case WM_CHAR:
 		dwEventTime = GetTickCount();
-}	}
+	}
+}
 
 static INT_PTR SystemGetIdle(WPARAM, LPARAM lParam)
 {
@@ -538,14 +543,16 @@ void ParseCommandLine()
 		if ( hProcess ) {
 			DialogBoxParam(hMirandaInst, MAKEINTRESOURCE(IDD_WAITRESTART), NULL, WaitForProcessDlgProc, (LPARAM)hProcess);
 			CloseHandle( hProcess );
-}	}	}
+		}	
+	}	
+}
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int )
 {
 	DWORD myPid=0;
 	int messageloop=1;
 	HMODULE hUser32, hThemeAPI, hDwmApi, hShFolder = NULL;
-    int result = 0;
+	int result = 0;
 
 	hMirandaInst = hInstance;
 
@@ -565,11 +572,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int )
 	MyMonitorFromPoint = (pfnMyMonitorFromPoint)GetProcAddress(hUser32, "MonitorFromPoint");
 	MyMonitorFromRect = (pfnMyMonitorFromRect)GetProcAddress(hUser32, "MonitorFromRect");
 	MyMonitorFromWindow = (pfnMyMonitorFromWindow)GetProcAddress(hUser32, "MonitorFromWindow");
-	#ifdef _UNICODE
-		MyGetMonitorInfo = (pfnMyGetMonitorInfo)GetProcAddress(hUser32, "GetMonitorInfoW");
-	#else
-		MyGetMonitorInfo = (pfnMyGetMonitorInfo)GetProcAddress(hUser32, "GetMonitorInfoA");
-	#endif
+#ifdef _UNICODE
+	MyGetMonitorInfo = (pfnMyGetMonitorInfo)GetProcAddress(hUser32, "GetMonitorInfoW");
+#else
+	MyGetMonitorInfo = (pfnMyGetMonitorInfo)GetProcAddress(hUser32, "GetMonitorInfoA");
+#endif
 
 	hShFolder = GetModuleHandleA("shell32");
 	shGetSpecialFolderPathA = (pfnSHGetSpecialFolderPathA)GetProcAddress(hShFolder,"SHGetSpecialFolderPathA");
@@ -583,9 +590,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int )
 
 	shAutoComplete = (pfnSHAutoComplete)GetProcAddress(GetModuleHandleA("shlwapi"),"SHAutoComplete");
 
-	if (IsWinVerXPPlus()) {
+	if (IsWinVerXPPlus())
+	{
 		hThemeAPI = LoadLibraryA("uxtheme.dll");
-		if (hThemeAPI) {
+		if (hThemeAPI)
+		{
 			openThemeData = (pfnOpenThemeData)GetProcAddress(hThemeAPI, "OpenThemeData");
 			isThemeBackgroundPartiallyTransparent = (pfnIsThemeBackgroundPartiallyTransparent)GetProcAddress(hThemeAPI, "IsThemeBackgroundPartiallyTransparent");
 			drawThemeParentBackground  = (pfnDrawThemeParentBackground)GetProcAddress(hThemeAPI, "DrawThemeParentBackground");
@@ -607,9 +616,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int )
 		}
 	}
 
-	if (IsWinVerVistaPlus()) {
+	if (IsWinVerVistaPlus())
+	{
 		hDwmApi = LoadLibraryA("dwmapi.dll");
-		if (hDwmApi) {
+		if (hDwmApi)
+		{
 			dwmExtendFrameIntoClientArea = (pfnDwmExtendFrameIntoClientArea)GetProcAddress(hDwmApi,"DwmExtendFrameIntoClientArea");
 			dwmIsCompositionEnabled = (pfnDwmIsCompositionEnabled)GetProcAddress(hDwmApi,"DwmIsCompositionEnabled");
 		}
@@ -629,8 +640,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int )
 		NotifyEventHooks(hShutdownEvent,0,0);
 		UnloadDefaultModules();
 
-        result = 1;
-        goto exit;
+		result = 1;
+		goto exit;
 	}
 	NotifyEventHooks(hModulesLoadedEvent,0,0);
 
@@ -658,7 +669,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int )
 				DWORD pid = 0;
 				checkIdle(&msg);
 				if ( h != NULL && GetWindowThreadProcessId(h, &pid) && pid == myPid && 
-					 GetClassLongPtr(h, GCW_ATOM)==32770 ) 
+					GetClassLongPtr(h, GCW_ATOM)==32770 ) 
 				{
 					if ( IsDialogMessage(h, &msg) ) 
 						continue;
@@ -671,7 +682,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int )
 				dying++;
 				SetEvent(hMirandaShutdown);
 				NotifyEventHooks(hPreShutdownEvent, 0, 0);
-				
+
 				// this spins and processes the msg loop, objects and APC.
 				UnwindThreadWait();
 				NotifyEventHooks(hShutdownEvent, 0, 0);
@@ -726,7 +737,7 @@ static INT_PTR GetMirandaVersion(WPARAM, LPARAM)
 	GetFileVersionInfo(filename,0,verInfoSize,pVerInfo);
 	VerQueryValue(pVerInfo,_T("\\"),(PVOID*)&vsffi,&blockSize);
 	ver=(((vsffi->dwProductVersionMS>>16)&0xFF)<<24)|
-	    ((vsffi->dwProductVersionMS&0xFF)<<16)|
+		((vsffi->dwProductVersionMS&0xFF)<<16)|
 		(((vsffi->dwProductVersionLS>>16)&0xFF)<<8)|
 		(vsffi->dwProductVersionLS&0xFF);
 	mir_free(pVerInfo);
@@ -746,13 +757,13 @@ static INT_PTR GetMirandaVersionText(WPARAM wParam,LPARAM lParam)
 	pVerInfo=mir_alloc(verInfoSize);
 	GetFileVersionInfo(filename,0,verInfoSize,pVerInfo);
 	VerQueryValue(pVerInfo,_T("\\StringFileInfo\\000004b0\\ProductVersion"),(LPVOID*)&productVersion,&blockSize);
-	#if defined( _WIN64 )
-		mir_snprintf(( char* )lParam, wParam, "%S x64 Unicode", productVersion );
-	#elif defined( _UNICODE )
-		mir_snprintf(( char* )lParam, wParam, "%S Unicode", productVersion );
-	#else
-		lstrcpyn((char*)lParam,productVersion,wParam);
-	#endif
+#if defined( _WIN64 )
+	mir_snprintf(( char* )lParam, wParam, "%S x64 Unicode", productVersion );
+#elif defined( _UNICODE )
+	mir_snprintf(( char* )lParam, wParam, "%S Unicode", productVersion );
+#else
+	lstrcpyn((char*)lParam,productVersion,wParam);
+#endif
 	mir_free(pVerInfo);
 	return 0;
 }
@@ -811,9 +822,9 @@ INT_PTR GetMemoryManagerInterface(WPARAM, LPARAM lParam)
 		break;
 
 	default:
-		#if defined( _DEBUG )
-			DebugBreak();
-		#endif
+#if defined( _DEBUG )
+		DebugBreak();
+#endif
 		return 1;
 	}
 
