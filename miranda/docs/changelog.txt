@@ -3,6 +3,21 @@
                            www.miranda-im.org
 
 
+* New in 0.9.26
+Enhancements:
+ - Added support for SOCKS5 proxy from autoconfig script
+ - Added the optional codepage parameter for langpacks to decode utf8-encoded files
+ - Gadu-Gadu: Added ability to view and disconnect active concurrent login sessions
+ - Gadu-Gadu: Added synchronization of sent messages between multiple concurrent logins
+ 
+Bugfixes:
+ - Fixed url encoding api
+ - Fixed inability to connect when IE proxy settings are used and proxy autoconfig script returned 'no proxy needed'
+ - Fixed proxy selection when proxy autoconfig script returns more then one proxy
+ - Fixed reporting for improperly terminated threads
+ - MSN: Fixed nudge sending
+
+
 * New in 0.9.25
 Enhancements:
  - Jabber: Added the special field for the alternative nick in Jabber groupchats
