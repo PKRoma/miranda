@@ -83,9 +83,8 @@ struct MIM_TIMEZONE
 
 typedef struct
 {
-	TIME_ZONE_INFORMATION tzi;
 	DWORD		timestamp;					// last time updated
-	MIM_TIMEZONE *myTZ;						// set to my own timezone
+	MIM_TIMEZONE myTZ;						// set to my own timezone
 } TZ_INT_INFO;
 
 static TZ_INT_INFO myInfo;
@@ -113,7 +112,7 @@ static int timeapiGetTimeZoneTime(HANDLE hTZ, SYSTEMTIME *st)
 	MIM_TIMEZONE *tz = (MIM_TIMEZONE*)hTZ;
 	if (tz == UTC_TIME_HANDLE)
 		GetSystemTime(st);
-	else if (tz && tz != myInfo.myTZ)
+	else if (tz && tz != &myInfo.myTZ)
 	{
 		SYSTEMTIME sto;
 		GetSystemTime(&sto);
@@ -129,7 +128,7 @@ static LPCTSTR timeapiGetTzName(HANDLE hTZ)
 {
 	MIM_TIMEZONE *tz = (MIM_TIMEZONE*)hTZ;
 	if (tz == NULL)
-		return myInfo.myTZ ? myInfo.myTZ->tszName : NULL;
+		return myInfo.myTZ.tszName;
 	else if (tz == UTC_TIME_HANDLE)
 		return _T("UTC");
 
@@ -158,7 +157,7 @@ static bool IsSameTime(MIM_TIMEZONE *tz)
 {
 	SYSTEMTIME st, stl;
 
-	if (tz == myInfo.myTZ) 
+	if (tz == &myInfo.myTZ) 
 		return true;
 
 	timeapiGetTimeZoneTime(tz, &stl);
@@ -170,14 +169,17 @@ static bool IsSameTime(MIM_TIMEZONE *tz)
 static HANDLE timeapiGetInfoByName(LPCTSTR tszName, DWORD dwFlags)
 {
 	if (tszName == NULL)
-		return (dwFlags & (TZF_DIFONLY | TZF_KNOWNONLY)) ? NULL : myInfo.myTZ;
+		return (dwFlags & (TZF_DIFONLY | TZF_KNOWNONLY)) ? NULL : &myInfo.myTZ;
+
+	if (_tcscmp(myInfo.myTZ.tszName, tszName) == 0)
+		return &myInfo.myTZ;
 
 	MIM_TIMEZONE tzsearch;
 	tzsearch.hash = hashstr(tszName);
 
 	MIM_TIMEZONE *tz = g_timezones.find(&tzsearch);
 	if (tz == NULL)
-		return (dwFlags & (TZF_DIFONLY | TZF_KNOWNONLY)) ? NULL : myInfo.myTZ;
+		return (dwFlags & (TZF_DIFONLY | TZF_KNOWNONLY)) ? NULL : &myInfo.myTZ;
 
 	if (dwFlags & TZF_DIFONLY)
 		return IsSameTime(tz) ? NULL : tz;
@@ -188,7 +190,7 @@ static HANDLE timeapiGetInfoByName(LPCTSTR tszName, DWORD dwFlags)
 static HANDLE timeapiGetInfoByContact(HANDLE hContact, DWORD dwFlags)
 {
 	if (hContact == NULL)
-		return (dwFlags & (TZF_DIFONLY | TZF_KNOWNONLY)) ? NULL : myInfo.myTZ;
+		return (dwFlags & (TZF_DIFONLY | TZF_KNOWNONLY)) ? NULL : &myInfo.myTZ;
 
 	DBVARIANT dbv;
 	if (!DBGetContactSettingTString(hContact, "UserInfo", "TzName", &dbv)) 
@@ -215,10 +217,10 @@ static HANDLE timeapiGetInfoByContact(HANDLE hContact, DWORD dwFlags)
 	{
 		MIM_TIMEZONE tzsearch;
 		tzsearch.tzi.Bias = timezone * 30;
-		if (myInfo.tzi.Bias == tzsearch.tzi.Bias)
+		if (myInfo.myTZ.tzi.Bias == tzsearch.tzi.Bias)
 		{
 			if (dwFlags & TZF_DIFONLY) return NULL;
-			if (myInfo.myTZ) return myInfo.myTZ;
+			return &myInfo.myTZ;
 		}
 
 		int i = g_timezonesBias.getIndex(&tzsearch);
@@ -227,7 +229,7 @@ static HANDLE timeapiGetInfoByContact(HANDLE hContact, DWORD dwFlags)
 		int delta = LONG_MAX;
 		for (int j = ++i; j < g_timezonesBias.getCount() && g_timezonesBias[j]->tzi.Bias == tzsearch.tzi.Bias; ++j)
 		{
-			int delta1 = abs(g_timezonesBias[j]->tzi.DaylightDate.wMonth - myInfo.tzi.DaylightDate.wMonth);
+			int delta1 = abs(g_timezonesBias[j]->tzi.DaylightDate.wMonth - myInfo.myTZ.tzi.DaylightDate.wMonth);
 			if (delta1 <= delta)
 			{
 				delta = delta1;
@@ -241,7 +243,7 @@ static HANDLE timeapiGetInfoByContact(HANDLE hContact, DWORD dwFlags)
 			return ((dwFlags & TZF_DIFONLY) && IsSameTime(tz)) ? NULL : tz;
 		}
 	}
-	return (dwFlags & (TZF_DIFONLY | TZF_KNOWNONLY)) ? NULL : myInfo.myTZ;
+	return (dwFlags & (TZF_DIFONLY | TZF_KNOWNONLY)) ? NULL : &myInfo.myTZ;
 }
 
 static void timeapiSetInfoByContact(HANDLE hContact, HANDLE hTZ)
@@ -285,7 +287,7 @@ static int timeapiPrintTimeStamp(HANDLE hTZ, time_t ts, LPCTSTR szFormat, LPTSTR
 
 	FILETIME ft;
 
-	if (tz == NULL) tz = myInfo.myTZ; 
+	if (tz == NULL) tz = &myInfo.myTZ; 
 	if (tz == NULL)
 	{
 		FILETIME lft;
@@ -314,7 +316,7 @@ static int timeapiPrintTimeStamp(HANDLE hTZ, time_t ts, LPCTSTR szFormat, LPTSTR
 static LPTIME_ZONE_INFORMATION timeapiGetTzi(HANDLE hTZ)
 {
 	MIM_TIMEZONE *tz = (MIM_TIMEZONE*)hTZ;
-	return tz ? &tz->tzi : &myInfo.tzi;
+	return tz ? &tz->tzi : &myInfo.myTZ.tzi;
 }
 
 
@@ -322,7 +324,7 @@ static time_t timeapiTimeStampToTimeZoneTimeStamp(HANDLE hTZ, time_t ts)
 {
 	MIM_TIMEZONE *tz = (MIM_TIMEZONE*)hTZ;
 	
-	if (tz == NULL) tz = myInfo.myTZ; 
+	if (tz == NULL) tz = &myInfo.myTZ; 
 	if (tz == NULL)
 	{
 		FILETIME ft, lft;
@@ -534,16 +536,21 @@ void GetLocalizedString(HKEY hSubKey, const TCHAR *szName, wchar_t *szBuf, DWORD
 
 void RecalculateTime(void)
 {
-	GetTimeZoneInformation(&myInfo.tzi);
+	GetTimeZoneInformation(&myInfo.myTZ.tzi);
 	myInfo.timestamp = time(NULL);
+	myInfo.myTZ.offset = INT_MIN;
 
-	TCHAR  *myTzKey = NULL;
+	bool found = false;
 	DYNAMIC_TIME_ZONE_INFORMATION dtzi;
 	
 	if (pfnGetDynamicTimeZoneInformation && pfnGetDynamicTimeZoneInformation(&dtzi) != TIME_ZONE_ID_INVALID)
-		myTzKey = mir_u2t(dtzi.TimeZoneKeyName);
+	{
+		TCHAR *myTzKey = mir_u2t(dtzi.TimeZoneKeyName);
+		_tcscpy(myInfo.myTZ.tszName, myTzKey);
+		mir_free(myTzKey);
+		found = true;
+	}
 
-	bool found = false;
 	for (int i = 0; i < g_timezones.getCount(); ++i) 
 	{
 		MIM_TIMEZONE &tz = g_timezones[i];
@@ -551,23 +558,14 @@ void RecalculateTime(void)
 
 		if (!found)
 		{
-			// compare registry key names (= not localized, so it's easy)
-			if (myTzKey && !_tcscmp(tz.tszName, myTzKey)) 
+			if (!wcscmp(tz.tzi.StandardName, myInfo.myTZ.tzi.StandardName) || 
+				!wcscmp(tz.tzi.DaylightName, myInfo.myTZ.tzi.DaylightName))
 			{
-				myInfo.myTZ = &tz;
+				_tcscpy(myInfo.myTZ.tszName, tz.tszName);
 				found = true;
-			}
-			else 
-			{
-				if (!wcscmp(tz.tzi.StandardName, myInfo.tzi.StandardName) || !wcscmp(tz.tzi.DaylightName, myInfo.tzi.DaylightName))
-				{
-					myInfo.myTZ = &tz;
-					found = true;
-				}
 			}
 		}
 	}
-	mir_free(myTzKey);
 }
 
 void InitTimeZones(void)
