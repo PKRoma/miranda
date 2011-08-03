@@ -160,7 +160,7 @@ static void PaintWorker(MButtonCtrl *ctl, HDC hdcPaint)
 		if (ctl->flatBtn) {
 			if (ctl->hThemeToolbar) {
 				int state = IsWindowEnabled(ctl->hwnd)?(ctl->stateId==PBS_NORMAL&&ctl->defbutton?PBS_DEFAULTED:ctl->stateId):PBS_DISABLED;
-                if (isThemeBackgroundPartiallyTransparent(ctl->hThemeToolbar, TP_BUTTON, TBStateConvert2Flat(state))) {
+				if (isThemeBackgroundPartiallyTransparent(ctl->hThemeToolbar, TP_BUTTON, TBStateConvert2Flat(state))) {
 					drawThemeParentBackground(ctl->hwnd, hdcMem, &rcClient);
 				}
 				drawThemeBackground(ctl->hThemeToolbar, hdcMem, TP_BUTTON, TBStateConvert2Flat(state), &rcClient, &rcClient);
@@ -365,8 +365,14 @@ static LRESULT CALLBACK MButtonWndProc(HWND hwndDlg, UINT msg,  WPARAM wParam, L
 	case WM_KEYUP:
 		if (bct->stateId!=PBS_DISABLED && wParam == VK_SPACE) {
 			if (bct->pushBtn) {
-				if (bct->pbState) bct->pbState = 0;
-				else bct->pbState = 1;
+				if (bct->pbState) {
+					bct->pbState = 0;
+					bct->stateId = PBS_NORMAL;
+				}
+				else {
+					bct->pbState = 1;
+					bct->stateId = PBS_PRESSED;
+				}
 				InvalidateRect(bct->hwnd, NULL, TRUE);
 			}
 			SendMessage(GetParent(hwndDlg), WM_COMMAND, MAKELONG(GetDlgCtrlID(hwndDlg), BN_CLICKED), (LPARAM)hwndDlg);
@@ -377,8 +383,14 @@ static LRESULT CALLBACK MButtonWndProc(HWND hwndDlg, UINT msg,  WPARAM wParam, L
 	case WM_SYSKEYUP:
 		if (bct->stateId!=PBS_DISABLED && bct->cHot && bct->cHot == tolower((int)wParam)) {
 			if (bct->pushBtn) {
-				if (bct->pbState) bct->pbState = 0;
-				else bct->pbState = 1;
+				if (bct->pbState) {
+					bct->pbState = 0;
+					bct->stateId = PBS_NORMAL;
+				}
+				else {
+					bct->pbState = 1;
+					bct->stateId = PBS_PRESSED;
+				}
 				InvalidateRect(bct->hwnd, NULL, TRUE);
 			}
 			SendMessage(GetParent(hwndDlg), WM_COMMAND, MAKELONG(GetDlgCtrlID(hwndDlg), BN_CLICKED), (LPARAM)hwndDlg);
