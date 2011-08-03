@@ -251,8 +251,14 @@ static int LoadLangPack(const TCHAR *szLangPack)
 			}
 		}
 	}
-	qsort(langPack.entry,langPack.entryCount,sizeof(struct LangPackEntry),(int(*)(const void*,const void*))SortLangPackHashesProc);
+
 	fclose(fp);
+
+	if ( langPack.defaultANSICp == CP_UTF8 )
+		for ( int i=0; i < langPack.entryCount; i++ )
+			Utf8DecodeCP( langPack.entry[i].local, CP_ACP, NULL );
+
+	qsort(langPack.entry,langPack.entryCount,sizeof(LangPackEntry),(int(*)(const void*,const void*))SortLangPackHashesProc);
 	return 0;
 }
 
