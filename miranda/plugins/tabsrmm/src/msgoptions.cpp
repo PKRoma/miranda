@@ -1346,6 +1346,7 @@ static int OptInitialise(WPARAM wParam, LPARAM lParam)
 
 	odp.pszTemplate = MAKEINTRESOURCEA(IDD_POPUP_OPT);
 	odp.ptszTitle = LPGENT("Event notifications");
+	odp.ptszGroup = LPGENT("PopUps");
 	odp.pfnDlgProc = DlgProcPopupOpts;
 	odp.nIDBottomSimpleControl = 0;
 	CallService(MS_OPT_ADDPAGE, wParam, (LPARAM) &odp);

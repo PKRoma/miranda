@@ -102,18 +102,22 @@ static void CheckForRemoveMask()
 int TSAPI NEN_ReadOptions(NEN_OPTIONS *options)
 {
 	options->bPreview = (BOOL)M->GetByte(MODULE, OPT_PREVIEW, TRUE);
-	options->bDefaultColorMsg = (BOOL)M->GetByte(MODULE, OPT_COLDEFAULT_MESSAGE, FALSE);
-	options->bDefaultColorOthers = (BOOL)M->GetByte(MODULE, OPT_COLDEFAULT_OTHERS, FALSE);
+	options->bDefaultColorMsg = (BOOL)M->GetByte(MODULE, OPT_COLDEFAULT_MESSAGE, TRUE);
+	options->bDefaultColorOthers = (BOOL)M->GetByte(MODULE, OPT_COLDEFAULT_OTHERS, TRUE);
+	options->bDefaultColorErr = (BOOL)M->GetByte(MODULE, OPT_COLDEFAULT_ERR, TRUE);
 	options->colBackMsg = (COLORREF)M->GetDword(MODULE, OPT_COLBACK_MESSAGE, DEFAULT_COLBACK);
 	options->colTextMsg = (COLORREF)M->GetDword(MODULE, OPT_COLTEXT_MESSAGE, DEFAULT_COLTEXT);
 	options->colBackOthers = (COLORREF)M->GetDword(MODULE, OPT_COLBACK_OTHERS, DEFAULT_COLBACK);
 	options->colTextOthers = (COLORREF)M->GetDword(MODULE, OPT_COLTEXT_OTHERS, DEFAULT_COLTEXT);
+	options->colBackErr = (COLORREF)M->GetDword(MODULE, OPT_COLBACK_ERR, DEFAULT_COLBACK);
+	options->colTextErr = (COLORREF)M->GetDword(MODULE, OPT_COLTEXT_ERR, DEFAULT_COLTEXT);
 	options->maskActL = (UINT)M->GetByte(MODULE, OPT_MASKACTL, DEFAULT_MASKACTL);
 	options->maskActR = (UINT)M->GetByte(MODULE, OPT_MASKACTR, DEFAULT_MASKACTR);
 	options->maskActTE = (UINT)M->GetByte(MODULE, OPT_MASKACTTE, DEFAULT_MASKACTR) & (MASK_OPEN | MASK_DISMISS);
-	options->bMergePopup = (BOOL)M->GetByte(MODULE, OPT_MERGEPOPUP, 1);
+	options->bMergePopup = (BOOL)M->GetByte(MODULE, OPT_MERGEPOPUP, 0);
 	options->iDelayMsg = (int)M->GetDword(MODULE, OPT_DELAY_MESSAGE, (DWORD)DEFAULT_DELAY);
 	options->iDelayOthers = (int)M->GetDword(MODULE, OPT_DELAY_OTHERS, (DWORD)DEFAULT_DELAY);
+	options->iDelayErr = (int)M->GetDword(MODULE, OPT_DELAY_ERR, (DWORD)DEFAULT_DELAY);
 	options->iDelayDefault = (int)DBGetContactSettingRangedWord(NULL, "PopUp", "Seconds", SETTING_LIFETIME_DEFAULT, SETTING_LIFETIME_MIN, SETTING_LIFETIME_MAX);
 	options->bShowHeaders = (BYTE)M->GetByte(MODULE, OPT_SHOW_HEADERS, FALSE);
 	options->bNoRSS = (BOOL)M->GetByte(MODULE, OPT_NORSS, FALSE);
@@ -137,16 +141,20 @@ int TSAPI NEN_WriteOptions(NEN_OPTIONS *options)
 	M->WriteByte(MODULE, OPT_PREVIEW, (BYTE)options->bPreview);
 	M->WriteByte(MODULE, OPT_COLDEFAULT_MESSAGE, (BYTE)options->bDefaultColorMsg);
 	M->WriteByte(MODULE, OPT_COLDEFAULT_OTHERS, (BYTE)options->bDefaultColorOthers);
+	M->WriteByte(MODULE, OPT_COLDEFAULT_ERR, (BYTE)options->bDefaultColorErr);
 	M->WriteDword(MODULE, OPT_COLBACK_MESSAGE, (DWORD)options->colBackMsg);
 	M->WriteDword(MODULE, OPT_COLTEXT_MESSAGE, (DWORD)options->colTextMsg);
 	M->WriteDword(MODULE, OPT_COLBACK_OTHERS, (DWORD)options->colBackOthers);
 	M->WriteDword(MODULE, OPT_COLTEXT_OTHERS, (DWORD)options->colTextOthers);
+	M->WriteDword(MODULE, OPT_COLBACK_ERR, (DWORD)options->colBackErr);
+	M->WriteDword(MODULE, OPT_COLTEXT_ERR, (DWORD)options->colTextErr);
 	M->WriteByte(MODULE, OPT_MASKACTL, (BYTE)options->maskActL);
 	M->WriteByte(MODULE, OPT_MASKACTR, (BYTE)options->maskActR);
 	M->WriteByte(MODULE, OPT_MASKACTTE, (BYTE)options->maskActTE);
 	M->WriteByte(MODULE, OPT_MERGEPOPUP, (BYTE)options->bMergePopup);
 	M->WriteDword(MODULE, OPT_DELAY_MESSAGE, (DWORD)options->iDelayMsg);
 	M->WriteDword(MODULE, OPT_DELAY_OTHERS, (DWORD)options->iDelayOthers);
+	M->WriteDword(MODULE, OPT_DELAY_ERR, (DWORD)options->iDelayErr);
 	M->WriteByte(MODULE, OPT_SHOW_HEADERS, (BYTE)options->bShowHeaders);
 	M->WriteByte(MODULE, OPT_DISABLE, (BYTE)options->iDisable);
 	M->WriteByte(MODULE, OPT_MUCDISABLE, (BYTE)options->iMUCDisable);
@@ -221,8 +229,11 @@ INT_PTR CALLBACK DlgProcPopupOpts(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPa
 			SendDlgItemMessage(hWnd, IDC_COLTEXT_MESSAGE, CPM_SETCOLOUR, 0, options->colTextMsg);
 			SendDlgItemMessage(hWnd, IDC_COLBACK_OTHERS, CPM_SETCOLOUR, 0, options->colBackOthers);
 			SendDlgItemMessage(hWnd, IDC_COLTEXT_OTHERS, CPM_SETCOLOUR, 0, options->colTextOthers);
+			SendDlgItemMessage(hWnd, IDC_COLBACK_ERR, CPM_SETCOLOUR, 0, options->colBackErr);
+			SendDlgItemMessage(hWnd, IDC_COLTEXT_ERR, CPM_SETCOLOUR, 0, options->colTextErr);
 			CheckDlgButton(hWnd, IDC_CHKDEFAULTCOL_MESSAGE, options->bDefaultColorMsg ? BST_CHECKED : BST_UNCHECKED);
 			CheckDlgButton(hWnd, IDC_CHKDEFAULTCOL_OTHERS, options->bDefaultColorOthers ? BST_CHECKED : BST_UNCHECKED);
+			CheckDlgButton(hWnd, IDC_CHKDEFAULTCOL_ERR, options->bDefaultColorErr ? BST_CHECKED : BST_UNCHECKED);
 
 			SendDlgItemMessage(hWnd, IDC_COLTEXT_MUC, CPM_SETCOLOUR, 0, g_Settings.crPUTextColour);
 			SendDlgItemMessage(hWnd, IDC_COLBACK_MUC, CPM_SETCOLOUR, 0, g_Settings.crPUBkgColour);
@@ -231,15 +242,19 @@ INT_PTR CALLBACK DlgProcPopupOpts(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPa
 			SendDlgItemMessage(hWnd, IDC_DELAY_MESSAGE_SPIN, UDM_SETRANGE, 0, MAKELONG(3600, -1));
 			SendDlgItemMessage(hWnd, IDC_DELAY_OTHERS_SPIN, UDM_SETRANGE, 0, MAKELONG(3600, -1));
 			SendDlgItemMessage(hWnd, IDC_DELAY_MESSAGE_MUC_SPIN, UDM_SETRANGE, 0, MAKELONG(3600, -1));
+			SendDlgItemMessage(hWnd, IDC_DELAY_ERR_SPIN, UDM_SETRANGE, 0, MAKELONG(3600, -1));
 
 			SendDlgItemMessage(hWnd, IDC_DELAY_MESSAGE_SPIN, UDM_SETPOS, 0, (LPARAM)options->iDelayMsg);
 			SendDlgItemMessage(hWnd, IDC_DELAY_OTHERS_SPIN, UDM_SETPOS, 0, (LPARAM)options->iDelayOthers);
+			SendDlgItemMessage(hWnd, IDC_DELAY_ERR_SPIN, UDM_SETPOS, 0, (LPARAM)options->iDelayErr);
 			SendDlgItemMessage(hWnd, IDC_DELAY_MESSAGE_MUC_SPIN, UDM_SETPOS, 0, (LPARAM)g_Settings.iPopupTimeout);
 
 			Utils::enableDlgControl(hWnd, IDC_COLBACK_MESSAGE, !options->bDefaultColorMsg);
 			Utils::enableDlgControl(hWnd, IDC_COLTEXT_MESSAGE, !options->bDefaultColorMsg);
 			Utils::enableDlgControl(hWnd, IDC_COLBACK_OTHERS, !options->bDefaultColorOthers);
 			Utils::enableDlgControl(hWnd, IDC_COLTEXT_OTHERS, !options->bDefaultColorOthers);
+			Utils::enableDlgControl(hWnd, IDC_COLBACK_ERR, !options->bDefaultColorErr);
+			Utils::enableDlgControl(hWnd, IDC_COLTEXT_ERR, !options->bDefaultColorErr);
 			Utils::enableDlgControl(hWnd, IDC_COLTEXT_MUC,  (g_Settings.iPopupStyle == 3) ? TRUE : FALSE);
 			Utils::enableDlgControl(hWnd, IDC_COLBACK_MUC,  (g_Settings.iPopupStyle == 3) ? TRUE : FALSE);
 
@@ -284,9 +299,11 @@ INT_PTR CALLBACK DlgProcPopupOpts(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPa
 
 						options->bDefaultColorMsg = IsDlgButtonChecked(hWnd, IDC_CHKDEFAULTCOL_MESSAGE);
 						options->bDefaultColorOthers = IsDlgButtonChecked(hWnd, IDC_CHKDEFAULTCOL_OTHERS);
+						options->bDefaultColorErr = IsDlgButtonChecked(hWnd, IDC_CHKDEFAULTCOL_ERR);
 
 						options->iDelayMsg = SendDlgItemMessage(hWnd, IDC_DELAY_MESSAGE_SPIN, UDM_GETPOS, 0, 0);
 						options->iDelayOthers = SendDlgItemMessage(hWnd, IDC_DELAY_OTHERS_SPIN, UDM_GETPOS, 0, 0);
+						options->iDelayErr = SendDlgItemMessage(hWnd, IDC_DELAY_ERR_SPIN, UDM_GETPOS, 0, 0);
 
 						g_Settings.iPopupTimeout = SendDlgItemMessage(hWnd, IDC_DELAY_MESSAGE_MUC_SPIN, UDM_GETPOS, 0, 0);
 
@@ -298,6 +315,8 @@ INT_PTR CALLBACK DlgProcPopupOpts(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPa
 						Utils::enableDlgControl(hWnd, IDC_COLTEXT_MESSAGE, !options->bDefaultColorMsg);
 						Utils::enableDlgControl(hWnd, IDC_COLBACK_OTHERS, !options->bDefaultColorOthers);
 						Utils::enableDlgControl(hWnd, IDC_COLTEXT_OTHERS, !options->bDefaultColorOthers);
+						Utils::enableDlgControl(hWnd, IDC_COLBACK_ERR, !options->bDefaultColorErr);
+						Utils::enableDlgControl(hWnd, IDC_COLTEXT_ERR, !options->bDefaultColorErr);
 						Utils::enableDlgControl(hWnd, IDC_COLTEXT_MUC,  (g_Settings.iPopupStyle == 3) ? TRUE : FALSE);
 						Utils::enableDlgControl(hWnd, IDC_COLBACK_MUC,  (g_Settings.iPopupStyle == 3) ? TRUE : FALSE);
 
@@ -307,6 +326,7 @@ INT_PTR CALLBACK DlgProcPopupOpts(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPa
 
 						Utils::enableDlgControl(hWnd, IDC_DELAY_MESSAGE, options->iDelayMsg != -1);
 						Utils::enableDlgControl(hWnd, IDC_DELAY_OTHERS, options->iDelayOthers != -1);
+						Utils::enableDlgControl(hWnd, IDC_DELAY_ERR, options->iDelayErr != -1);
 						Utils::enableDlgControl(hWnd, IDC_DELAY_MUC, g_Settings.iPopupTimeout != -1);
 
 						if (HIWORD(wParam) == CPN_COLOURCHANGED) {
@@ -314,6 +334,8 @@ INT_PTR CALLBACK DlgProcPopupOpts(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPa
 							options->colTextMsg = SendDlgItemMessage(hWnd, IDC_COLTEXT_MESSAGE, CPM_GETCOLOUR, 0, 0);
 							options->colBackOthers = SendDlgItemMessage(hWnd, IDC_COLBACK_OTHERS, CPM_GETCOLOUR, 0, 0);
 							options->colTextOthers = SendDlgItemMessage(hWnd, IDC_COLTEXT_OTHERS, CPM_GETCOLOUR, 0, 0);
+							options->colBackErr = SendDlgItemMessage(hWnd, IDC_COLBACK_ERR, CPM_GETCOLOUR, 0, 0);
+							options->colTextErr = SendDlgItemMessage(hWnd, IDC_COLTEXT_ERR, CPM_GETCOLOUR, 0, 0);
 							g_Settings.crPUBkgColour = SendDlgItemMessage(hWnd, IDC_COLBACK_MUC, CPM_GETCOLOUR, 0, 0);
 							g_Settings.crPUTextColour = SendDlgItemMessage(hWnd, IDC_COLTEXT_MUC, CPM_GETCOLOUR, 0, 0);
 						}

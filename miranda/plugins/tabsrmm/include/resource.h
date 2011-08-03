@@ -110,12 +110,14 @@
 #define IDC_PANELSTATUS                 1036
 #define IDC_SPLITTER                    1037
 #define IDC_CHKDEFAULTCOL_MESSAGE       1038
-#define IDC_SPLITTER2                   1039
 #define IDC_CHKDEFAULTCOL_MUC           1039
+#define IDC_CHKDEFAULTCOL_ERR           1040
 #define IDC_COLBACK_MESSAGE             1041
 #define IDC_COLTEXT_MESSAGE             1042
 #define IDC_COLTEXT_MUC                 1043
 #define IDC_COLBACK_MUC                 1044
+#define IDC_COLTEXT_ERR                 1045
+#define IDC_COLBACK_ERR                 1046
 #define IDC_SHOWNAMES                   1047
 #define IDC_CHKDEFAULTCOL_OTHERS        1050
 #define IDC_COLBACK_OTHERS              1051
@@ -176,6 +178,7 @@
 #define IDC_NORSS                       1099
 #define IDC_DETAILS                     1100
 #define IDC_ADD                         1101
+#define IDC_DELAY_ERR                   1102
 #define IDC_RTL                         1103
 #define IDC_PIC                         1104
 #define IDC_SMILEYBTN                   1105
@@ -420,6 +423,7 @@
 #define IDC_MESSAGEPREVIEWLIMITSPIN     1350
 #define IDC_DELAY_MESSAGE_SPIN          1351
 #define IDC_DELAY_MESSAGE_MUC_SPIN      1352
+#define IDC_DELAY_ERR_SPIN              1353
 #define IDC_MESSAGEPREVIEWLIMITSPIN2    1354
 #define IDC_DELAY_OTHERS_SPIN           1354
 #define IDC_TEMPLATELIST                1361
@@ -479,8 +483,6 @@
 #define IDC_CLOSEONESC                  1423
 #define IDC_ALWAYSPOPUP                 1424
 #define IDC_AEROEFFECT                  1424
-#define IDC_USEAERO						1531
-#define IDC_USEAEROPEEK					1532
 #define IDC_CREATEMIN                   1425
 #define IDC_ESCMODE                     1425
 #define IDC_CHECK5                      1426
@@ -540,6 +542,8 @@
 #define IDC_CLOSEBUTTONONTABS           1493
 #define IDC_O_STATIC_AVATAR             1501
 #define IDC_O_STATIC_OWNAVATAR          1502
+#define IDC_USEAERO                     1531
+#define IDC_USEAEROPEEK                 1532
 #define IDC_TXT_TITLE1                  1617
 #define IDC_TXT_TITLE2                  1618
 #define IDC_TXT_TITLE4                  1620

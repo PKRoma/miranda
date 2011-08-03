@@ -81,8 +81,11 @@ int tabSRMM_ShowPopup(WPARAM wParam, LPARAM lParam, WORD eventType, int windowOp
 #define OPT_COLBACK_MESSAGE "ColorBackMsg"
 #define OPT_COLTEXT_MESSAGE "ColorTextMsg"
 #define OPT_COLDEFAULT_OTHERS "DefaultColorOthers"
+#define OPT_COLDEFAULT_ERR "DefaultColorErr"
 #define OPT_COLBACK_OTHERS "ColorBackOthers"
 #define OPT_COLTEXT_OTHERS "ColorTextOthers"
+#define OPT_COLBACK_ERR "ColorBackErr"
+#define OPT_COLTEXT_ERR "ColorTextErr"
 #define OPT_MASKNOTIFY "Notify"
 #define OPT_MASKACTL "ActionLeft"
 #define OPT_MASKACTR "ActionRight"
@@ -90,6 +93,7 @@ int tabSRMM_ShowPopup(WPARAM wParam, LPARAM lParam, WORD eventType, int windowOp
 #define OPT_MERGEPOPUP "MergePopup"
 #define OPT_DELAY_MESSAGE "DelayMessage"
 #define OPT_DELAY_OTHERS "DelayOthers"
+#define OPT_DELAY_ERR "DelayErr"
 #define OPT_SHOW_HEADERS "ShowHeaders"
 #define OPT_NORSS "NoRSSAnnounces"
 #define OPT_DISABLE "Disabled"
@@ -102,16 +106,20 @@ struct NEN_OPTIONS {
 	BOOL bPreview;
 	BOOL bDefaultColorMsg;
 	BOOL bDefaultColorOthers;
+	BOOL bDefaultColorErr;
 	BOOL bDisableNonMessage;
 	COLORREF colBackMsg;
 	COLORREF colTextMsg;
 	COLORREF colBackOthers;
 	COLORREF colTextOthers;
+	COLORREF colBackErr;
+	COLORREF colTextErr;
 	UINT maskActL;
 	UINT maskActR;
 	UINT maskActTE;
 	int iDelayMsg;
 	int iDelayOthers;
+	int iDelayErr;
 	int iDelayDefault;
 	BOOL bMergePopup;
 	BOOL bShowHeaders;
