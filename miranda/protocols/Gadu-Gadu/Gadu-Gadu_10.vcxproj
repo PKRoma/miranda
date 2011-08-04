@@ -667,6 +667,7 @@
     <ClCompile Include="links.c" />
     <ClCompile Include="oauth.c" />
     <ClCompile Include="ownerinfo.c" />
+    <ClCompile Include="popups.c" />
     <ClCompile Include="services.c" />
     <ClCompile Include="sessions.c" />
     <ClCompile Include="token.c" />

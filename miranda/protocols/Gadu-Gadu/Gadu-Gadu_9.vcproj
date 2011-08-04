@@ -983,6 +983,10 @@
 				>
 			</File>
 			<File
+				RelativePath="popups.c"
+				>
+			</File>
+			<File
 				RelativePath="services.c"
 				>
 			</File>

@@ -243,6 +243,10 @@ SOURCE=.\ownerinfo.c
 # End Source File
 # Begin Source File
 
+SOURCE=.\popups.c
+# End Source File
+# Begin Source File
+
 SOURCE=.\services.c
 # End Source File
 # Begin Source File

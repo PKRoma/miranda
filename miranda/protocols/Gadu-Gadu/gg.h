@@ -81,7 +81,7 @@ extern "C" {
 #include <m_avatars.h>
 #include <m_xml.h>
 #include <m_chat.h>
-#include <m_idle.h>
+#include <m_popup.h>
 #include <win2k.h>
 
 // Custom profile folders plugin header
@@ -323,6 +323,13 @@ typedef void (__cdecl GGThreadFunc)(void*, void*);
 #define GG_USERUTIL_REMOVE	2
 #define GG_USERUTIL_EMAIL	3
 
+// popup flags
+#define	GG_POPUP_ALLOW_MSGBOX	1
+#define GG_POPUP_ONCE			2
+#define GG_POPUP_ERROR			4
+#define GG_POPUP_WARNING		8
+#define GG_POPUP_MULTILOGON		16
+
 #define LocalEventUnhook(hook)	if(hook) UnhookEvent(hook)
 
 // Some MSVC compatibility with gcc
@@ -379,7 +386,6 @@ int gg_refreshstatus(GGPROTO *gg, int status);
 void gg_broadcastnewstatus(GGPROTO *gg, int newStatus);
 int gg_contactdeleted(GGPROTO *gg, WPARAM wParam, LPARAM lParam);
 int gg_dbsettingchanged(GGPROTO *gg, WPARAM wParam, LPARAM lParam);
-int gg_idlechanged(GGPROTO *gg, WPARAM wParam, LPARAM lParam);
 void gg_notifyall(GGPROTO *gg);
 void gg_changecontactstatus(GGPROTO *gg, uin_t uin, int status, const char *idescr, int time, uint32_t remote_ip, uint16_t remote_port, uint32_t version);
 char *gg_getstatusmsg(GGPROTO *gg, int status);
@@ -461,7 +467,12 @@ GGGC *gg_gc_lookup(GGPROTO *gg, char *id);
 int gg_gc_changenick(GGPROTO *gg, HANDLE hContact, char *pszNick);
 #define UIN2ID(uin,id) _itoa(uin,id,10)
 
+/* Popups functions */
+void gg_initpopups(GGPROTO* gg);
+void gg_showpopup(GGPROTO* gg, const char* nickname, const char* msg, int flags);
+
 /* Sessions functions */
+INT_PTR gg_sessions_view(GGPROTO* gg, WPARAM wParam, LPARAM lParam);
 void gg_sessions_updatedlg(GGPROTO* gg);
 BOOL gg_sessions_closedlg(GGPROTO* gg);
 void gg_sessions_menus_init(GGPROTO* gg, HGENMENU hRoot);

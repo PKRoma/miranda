@@ -58,6 +58,7 @@ CLEAN :
 	-@erase "$(INTDIR)\links.obj"
 	-@erase "$(INTDIR)\oauth.obj"
 	-@erase "$(INTDIR)\ownerinfo.obj"
+	-@erase "$(INTDIR)\popups.obj"
 	-@erase "$(INTDIR)\pthread.obj"
 	-@erase "$(INTDIR)\pubdir.obj"
 	-@erase "$(INTDIR)\pubdir50.obj"
@@ -150,6 +151,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\links.obj" \
 	"$(INTDIR)\oauth.obj" \
 	"$(INTDIR)\ownerinfo.obj" \
+	"$(INTDIR)\popups.obj" \
 	"$(INTDIR)\services.obj" \
 	"$(INTDIR)\sessions.obj" \
 	"$(INTDIR)\token.obj" \
@@ -194,6 +196,7 @@ CLEAN :
 	-@erase "$(INTDIR)\links.obj"
 	-@erase "$(INTDIR)\oauth.obj"
 	-@erase "$(INTDIR)\ownerinfo.obj"
+	-@erase "$(INTDIR)\popups.obj"
 	-@erase "$(INTDIR)\pthread.obj"
 	-@erase "$(INTDIR)\pubdir.obj"
 	-@erase "$(INTDIR)\pubdir50.obj"
@@ -287,6 +290,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\links.obj" \
 	"$(INTDIR)\oauth.obj" \
 	"$(INTDIR)\ownerinfo.obj" \
+	"$(INTDIR)\popups.obj" \
 	"$(INTDIR)\services.obj" \
 	"$(INTDIR)\sessions.obj" \
 	"$(INTDIR)\token.obj" \
@@ -686,6 +690,11 @@ SOURCE=.\oauth.c
 SOURCE=.\ownerinfo.c
 
 "$(INTDIR)\ownerinfo.obj" : $(SOURCE) "$(INTDIR)"
+
+
+SOURCE=.\popups.c
+
+"$(INTDIR)\popups.obj" : $(SOURCE) "$(INTDIR)"
 
 
 SOURCE=.\services.c

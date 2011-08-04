@@ -383,3 +383,7 @@ Musisz byæ zalogowany, aby zobaczyæ równoleg³e sesje.
 [Copy Text]
 Kopiuj Tekst
 ;[Whois]
+[You have logged in at another location]
+W³aœnie zalogowa³eœ siê w innym miejscu
+[You are logged in at another location]
+Jesteœ zalogowany w innym miejscu
