@@ -847,7 +847,7 @@ struct JABBER_SEARCH_BASIC
 
 void __cdecl CJabberProto::BasicSearchThread( JABBER_SEARCH_BASIC *jsb )
 {
-	SleepEx( 100, TRUE );
+	Sleep( 100 );
 
 	JABBER_SEARCH_RESULT jsr = { 0 };
 	jsr.hdr.cbSize = sizeof( JABBER_SEARCH_RESULT );
@@ -1122,11 +1122,23 @@ HANDLE __cdecl CJabberProto::SendFile( HANDLE hContact, const TCHAR* szDescripti
 ////////////////////////////////////////////////////////////////////////////////////////
 // JabberSendMessage - sends a message
 
-void __cdecl CJabberProto::SendMessageAckThread( void* hContact )
+struct TFakeAckParams
 {
-	SleepEx( 10, TRUE );
+	inline TFakeAckParams( HANDLE p1, const char* p2 ) 
+		: hContact( p1 ), msg( p2 ) {}
+
+	HANDLE	hContact;
+	const char*	msg;
+};
+
+void __cdecl CJabberProto::SendMessageAckThread( void* param )
+{
+	TFakeAckParams *par = ( TFakeAckParams* )param;
+	Sleep( 100 );
 	Log( "Broadcast ACK" );
-	JSendBroadcast( hContact, ACKTYPE_MESSAGE, ACKRESULT_SUCCESS, ( HANDLE ) 1, 0 );
+	JSendBroadcast( par->hContact, ACKTYPE_MESSAGE, 
+		par->msg ? ACKRESULT_FAILED : ACKRESULT_SUCCESS, 
+		( HANDLE ) 1, ( LPARAM ) par->msg );
 	Log( "Returning from thread" );
 }
 
@@ -1139,7 +1151,8 @@ int __cdecl CJabberProto::SendMsg( HANDLE hContact, int flags, const char* pszSr
 
 	DBVARIANT dbv;
 	if ( !m_bJabberOnline || JGetStringT( hContact, "jid", &dbv )) {
-		JForkThread( &CJabberProto::SendMessageAckThread, hContact );
+		TFakeAckParams param( hContact, Translate( "Protocol is offline or no jid" ));
+		JForkThread( &CJabberProto::SendMessageAckThread, &param );
 		return 1;
 	}
 
