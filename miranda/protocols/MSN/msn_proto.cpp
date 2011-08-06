@@ -953,9 +953,14 @@ void CMsnProto::MsnSendOim(void* arg)
 
 int __cdecl CMsnProto::SendMsg(HANDLE hContact, int flags, const char* pszSrc)
 {
-	if (!msnLoggedIn) return 0;
+	const char *errMsg = NULL;
 
-	char *errMsg = NULL;
+	if (!msnLoggedIn)
+	{
+		errMsg = MSN_Translate("Protocol is offline");
+		ForkThread(&CMsnProto::MsnFakeAck, new TFakeAckParams(hContact, 999999, errMsg, this));
+		return 999999;
+	}
 
 	char tEmail[MSN_MAX_EMAIL_LEN];
 	if (MSN_IsMeByContact(hContact, tEmail)) 
