@@ -58,7 +58,7 @@ void CAimProto::avatar_request_handler(HANDLE hContact, char* hash, int hash_siz
 {
 	char* hash_string = bytes_to_string(hash, hash_size);
 
-	if (strcmp(hash_string, "0201d20472"))//gaim default icon fix- we don't want their blank icon displaying.
+	if (hash_string[0] && strcmp(hash_string, "0201d20472"))//gaim default icon fix- we don't want their blank icon displaying.
 	{
 		char* saved_hash = getSetting(hContact, AIM_KEY_ASH);
 		setString(hContact, AIM_KEY_AH, hash_string);
@@ -91,9 +91,9 @@ void CAimProto::avatar_retrieval_handler(const char* sn, const char* hash, const
 
 	char* norm_sn=normalize_name(sn);
 	AI.hContact=contact_from_sn(norm_sn);
-	if (data_len>0)
+	if (data_len > 0)
 	{
-		setString(AI.hContact, AIM_KEY_ASH,hash);
+		setString(AI.hContact, AIM_KEY_ASH, hash);
 
 		get_avatar_filename(AI.hContact, AI.filename, sizeof(AI.filename), NULL);
 		remove(AI.filename);
