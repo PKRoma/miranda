@@ -515,7 +515,7 @@ void CAimProto::snac_user_online(SNAC &snac)//family 0x0003
 						if (type == 0x0001)
 						{
 							int hash_size = tlv.ubyte(i+3);
-							char* hash = tlv.part(i+4,hash_size);
+							char* hash = tlv.part(i+4, hash_size);
 							avatar_request_handler(hContact, hash, hash_size);
 							mir_free(hash);
 						}
