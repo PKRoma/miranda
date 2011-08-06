@@ -1140,6 +1140,7 @@ void __cdecl CJabberProto::SendMessageAckThread( void* param )
 		par->msg ? ACKRESULT_FAILED : ACKRESULT_SUCCESS, 
 		( HANDLE ) 1, ( LPARAM ) par->msg );
 	Log( "Returning from thread" );
+	delete  par;
 }
 
 static char PGP_PROLOG[] = "-----BEGIN PGP MESSAGE-----\r\n\r\n";
@@ -1151,7 +1152,7 @@ int __cdecl CJabberProto::SendMsg( HANDLE hContact, int flags, const char* pszSr
 
 	DBVARIANT dbv;
 	if ( !m_bJabberOnline || JGetStringT( hContact, "jid", &dbv )) {
-		TFakeAckParams param( hContact, Translate( "Protocol is offline or no jid" ));
+		TFakeAckParams *param = new TFakeAckParams( hContact, Translate( "Protocol is offline or no jid" ));
 		JForkThread( &CJabberProto::SendMessageAckThread, &param );
 		return 1;
 	}
