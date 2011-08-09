@@ -205,6 +205,9 @@ int gg_setstatus(PROTO_INTERFACE *proto, int iNewStatus)
 	gg->proto.m_iDesiredStatus = nNewStatus;
 	LeaveCriticalSection(&gg->modemsg_mutex);
 
+	// If waiting for connection retry attempt then signal to stop that
+	if (gg->hConnStopEvent) SetEvent(gg->hConnStopEvent);
+
 	if (gg->proto.m_iStatus == nNewStatus) return 0;
 	gg_netlog(gg, "gg_setstatus(): PS_SETSTATUS(%d) normalized to %d.", iNewStatus, nNewStatus);
 	gg_refreshstatus(gg, nNewStatus);

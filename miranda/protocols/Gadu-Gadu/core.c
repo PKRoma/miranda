@@ -1,7 +1,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 // Gadu-Gadu Plugin for Miranda IM
 //
-// Copyright (c) 2003-2006 Adam Strzelecki <ono+miranda@java.pl>
+// Copyright (c) 2003-2009 Adam Strzelecki <ono+miranda@java.pl>
+// Copyright (c) 2009-2011 Bartosz Bia³ek
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -21,8 +22,6 @@
 #include "gg.h"
 #include <errno.h>
 #include <io.h>
-
-extern int gg_failno;
 
 ////////////////////////////////////////////////////////////
 // Swap bits in DWORD
@@ -51,7 +50,7 @@ GGINLINE int gg_isonline(GGPROTO *gg)
 // Send disconnect request and wait for server thread to die
 void gg_disconnect(GGPROTO *gg)
 {
-	// If main loop go and send disconnect request
+	// If main loop then send disconnect request
 	if (gg_isonline(gg))
 	{
 		// Fetch proper status msg
@@ -147,6 +146,9 @@ void gg_disconnect(GGPROTO *gg)
 		}
 		LeaveCriticalSection(&gg->sess_mutex);
 	}
+	// Else cancel connection attempt
+	else if (gg->sock)
+		closesocket(gg->sock);
 }
 
 ////////////////////////////////////////////////////////////
@@ -258,6 +260,7 @@ void __cdecl gg_mainthread(GGPROTO *gg, void *empty)
 	time_t loginTime = 0;
 	// Time deviation (300s)
 	time_t timeDeviation = DBGetContactSettingWord(NULL, GG_PROTO, GG_KEY_TIMEDEVIATION, GG_KEYDEF_TIMEDEVIATION);
+	int gg_failno = 0;
 
 	gg_netlog(gg, "gg_mainthread(%x): Server Thread Starting", gg);
 #ifdef DEBUGMODE
@@ -415,44 +418,64 @@ retry:
 		p.server_port = p.server_addr = 0;
 
 	// Send login request
-	if(!(sess = gg_login(&p)))
+	if (!(sess = gg_login(&p, &gg->sock, &gg_failno)))
 	{
-		char error[128], *perror = NULL;
-		// Lookup for error desciption
-		if(errno == EACCES)
+		gg_broadcastnewstatus(gg, ID_STATUS_OFFLINE);
+		// Check if connection attempt wasn't cancelled by the user
+		if (gg->proto.m_iDesiredStatus != ID_STATUS_OFFLINE)
 		{
-			int i;
-			for(i = 0; reason[i].type; i++) if(reason[i].type == gg_failno)
+			char error[128], *perror = NULL;
+			// Lookup for error desciption
+			if (errno == EACCES)
 			{
-				perror = Translate(reason[i].str);
-				break;
+				int i;
+				for (i = 0; reason[i].type; i++) if (reason[i].type == gg_failno)
+				{
+					perror = Translate(reason[i].str);
+					break;
+				}
 			}
-		}
-		if(!perror)
-		{
-			mir_snprintf(error, sizeof(error), Translate("Connection cannot be established because of error:\n\t%s"), strerror(errno));
-			perror = error;
-		}
-		gg_netlog(gg, "gg_mainthread(%x): %s", gg, perror);
-		if(DBGetContactSettingByte(NULL, GG_PROTO, GG_KEY_SHOWCERRORS, GG_KEYDEF_SHOWCERRORS))
-			gg_showpopup(gg, GG_PROTONAME, perror, GG_POPUP_ERROR | GG_POPUP_ALLOW_MSGBOX | GG_POPUP_ONCE);
+			if (!perror)
+			{
+				mir_snprintf(error, sizeof(error), Translate("Connection cannot be established because of error:\n\t%s"), strerror(errno));
+				perror = error;
+			}
+			gg_netlog(gg, "gg_mainthread(%x): %s", gg, perror);
+			if (DBGetContactSettingByte(NULL, GG_PROTO, GG_KEY_SHOWCERRORS, GG_KEYDEF_SHOWCERRORS))
+				gg_showpopup(gg, GG_PROTONAME, perror, GG_POPUP_ERROR | GG_POPUP_ALLOW_MSGBOX | GG_POPUP_ONCE);
 
-		// Reconnect to the next server on the list
-		if(gg->proto.m_iDesiredStatus != ID_STATUS_OFFLINE
-			&& errno == EACCES
-			&& (gg_failno >= GG_FAILURE_RESOLVING && gg_failno != GG_FAILURE_PASSWORD && gg_failno != GG_FAILURE_INTRUDER && gg_failno != GG_FAILURE_UNAVAILABLE)
-			&& (DBGetContactSettingByte(NULL, GG_PROTO, GG_KEY_ARECONNECT, GG_KEYDEF_ARECONNECT)
-				|| (hostnum < hostcount - 1)))
-		{
-			if(hostnum < hostcount - 1) hostnum ++;
-			mir_free(p.status_descr);
-			gg_broadcastnewstatus(gg, ID_STATUS_CONNECTING);
-			goto retry;
+			// Check if we should reconnect
+			if ((gg_failno >= GG_FAILURE_RESOLVING && gg_failno != GG_FAILURE_PASSWORD && gg_failno != GG_FAILURE_INTRUDER && gg_failno != GG_FAILURE_UNAVAILABLE)
+				&& errno == EACCES
+				&& (DBGetContactSettingByte(NULL, GG_PROTO, GG_KEY_ARECONNECT, GG_KEYDEF_ARECONNECT) || (hostnum < hostcount - 1)))
+			{
+				DWORD dwResult;
+				BOOL bRetry = TRUE;
+
+				gg->hConnStopEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
+				dwResult = WaitForSingleObjectEx(gg->hConnStopEvent, 3000, TRUE);
+				if ((dwResult == WAIT_OBJECT_0 && gg->proto.m_iDesiredStatus == ID_STATUS_OFFLINE)
+					|| (dwResult == WAIT_IO_COMPLETION && Miranda_Terminated()))
+					bRetry = FALSE;
+				CloseHandle(gg->hConnStopEvent);
+				gg->hConnStopEvent = NULL;
+
+				// Reconnect to the next server on the list
+				if (bRetry)
+				{
+					if (hostnum < hostcount - 1) hostnum++;
+					mir_free(p.status_descr);
+					gg_broadcastnewstatus(gg, ID_STATUS_CONNECTING);
+					goto retry;
+				}
+			}
+			// We cannot do more about this
+			EnterCriticalSection(&gg->modemsg_mutex);
+			gg->proto.m_iDesiredStatus = ID_STATUS_OFFLINE;
+			LeaveCriticalSection(&gg->modemsg_mutex);
 		}
-		// We cannot do more about this
-		EnterCriticalSection(&gg->modemsg_mutex);
-		gg->proto.m_iDesiredStatus = ID_STATUS_OFFLINE;
-		LeaveCriticalSection(&gg->modemsg_mutex);
+		else
+			gg_netlog(gg, "gg_mainthread(%x)): Connection attempt cancelled by the user.", gg);
 	}
 	else
 	{

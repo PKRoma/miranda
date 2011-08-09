@@ -132,6 +132,8 @@ typedef struct
 	struct gg_session *sess;
 	struct gg_dcc *dcc;
 	HANDLE event;
+	HANDLE hConnStopEvent;
+	SOCKET sock;
 	UINT_PTR timer;
 	struct
 	{
