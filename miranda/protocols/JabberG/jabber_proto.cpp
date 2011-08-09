@@ -1234,7 +1234,7 @@ int __cdecl CJabberProto::SendMsg( HANDLE hContact, int flags, const char* pszSr
 			}
 			m_ThreadInfo->send( m );
 
-			JForkThread( &CJabberProto::SendMessageAckThread, hContact );
+			JForkThread( &CJabberProto::SendMessageAckThread, new TFakeAckParams( hContact, 0 ));
 
 			nSentMsgId = 1;
 		}
