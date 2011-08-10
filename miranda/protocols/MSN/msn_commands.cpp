@@ -1769,14 +1769,19 @@ LBL_InvalidCommand:
 			if (strcmp(protocol1, msnProtID)) 
 			{
 				MSN_ShowError("Server has requested an unknown protocol set (%s)", params);
-
-				if (info->mType == SERVER_NOTIFICATION || info->mType == SERVER_DISPATCH) 
-				{
-					SendBroadcast(NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_WRONGPROTOCOL);
-				}
+				SendBroadcast(NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_WRONGPROTOCOL);
 				return 1;
 			}
 */
+			OSVERSIONINFO osvi = {0};
+			osvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
+			GetVersionEx(&osvi);
+
+			info->sendPacket("CVR","0x0409 %s %d.%d i386 MSNMSGR %s msmsgs %s",
+				osvi.dwPlatformId >= 2 ? "winnt" : "win", osvi.dwMajorVersion, osvi.dwMinorVersion, 
+				msnProductVer, MyOptions.szEmail);
+
+			info->sendPacket("USR", "SSO I %s", MyOptions.szEmail);
 			break;
 		}
 		case ' RFX':    //******** XFR: sections 7.4 Referral, 8.1 Referral to Switchboard

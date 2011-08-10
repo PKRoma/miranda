@@ -156,16 +156,6 @@ void __cdecl CMsnProto::MSNServerThread(void* arg)
 	if (info->mType == SERVER_DISPATCH || info->mType == SERVER_NOTIFICATION) 
 	{
 		info->sendPacket("VER", "MSNP15 MSNP14 CVR0");
-
-		OSVERSIONINFO osvi = {0};
-		osvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
-		GetVersionEx(&osvi);
-
-		info->sendPacket("CVR","0x0409 %s %d.%d i386 MSNMSGR %s msmsgs %s",
-			osvi.dwPlatformId >= 2 ? "winnt" : "win", osvi.dwMajorVersion, osvi.dwMinorVersion, 
-			msnProductVer, MyOptions.szEmail);
-
-		info->sendPacket("USR", "SSO I %s", MyOptions.szEmail);
 	}
 	else if (info->mType == SERVER_SWITCHBOARD)
 	{
