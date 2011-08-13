@@ -1,6 +1,6 @@
 /*
 Plugin of Miranda IM for communicating with users of the MSN Messenger protocol.
-Copyright (c) 2006-2010 Boris Krasnovskiy.
+Copyright (c) 2006-2011 Boris Krasnovskiy.
 Copyright (c) 2003-2005 George Hazan.
 Copyright (c) 2002-2003 Richard Hughes (original version).
 
@@ -24,7 +24,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 void CMsnProto::msnftp_sendAcceptReject(filetransfer *ft, bool acc)
 {
-	ThreadData* thread = MSN_GetThreadByContact(ft->std.hContact);
+	ThreadData* thread = MSN_GetThreadByContact(ft->p2p_dest);
 	if (thread == NULL) return;
 
 	if (acc)
@@ -53,7 +53,7 @@ void CMsnProto::msnftp_sendAcceptReject(filetransfer *ft, bool acc)
 void CMsnProto::msnftp_invite(filetransfer *ft)
 {
 	bool isOffline;
-	ThreadData* thread = MSN_StartSB(ft->std.hContact, isOffline);
+	ThreadData* thread = MSN_StartSB(ft->p2p_dest, isOffline);
 	if (isOffline) return; 
 	if (thread != NULL) thread->mMsnFtp = ft;
 
@@ -75,7 +75,7 @@ void CMsnProto::msnftp_invite(filetransfer *ft)
 		MSN_GenRandom(), UTF8(pszFiles), ft->std.currentFileSize);
 
 	if (thread == NULL)
-		MsgQueue_Add(ft->std.hContact, 'S', msg, -1, ft);
+		MsgQueue_Add(ft->p2p_dest, 'S', msg, -1, ft);
 	else
 		thread->sendMessage('S', NULL, NETID_MSN, msg, MSG_DISABLE_HDR);
 }

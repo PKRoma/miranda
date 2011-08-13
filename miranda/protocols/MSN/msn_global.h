@@ -18,7 +18,8 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#define MIRANDA_VER 0x1000
+// this plugin is for Miranda 0.9 only
+#define MIRANDA_VER 0x0900
 
 #include <m_stdhdr.h>
 
@@ -61,6 +62,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <m_popup.h>
 #include <m_chat.h>
 #include <m_avatars.h>
+#include <m_timezones.h>
 
 #include "sdk/m_proto_listeningto.h"
 #include "sdk/m_folders.h"
@@ -139,6 +141,9 @@ const char MSN_USER_AGENT[] =           "Mozilla/4.0 (compatible; MSIE 8.0; Wind
 #define MS_SET_NICKNAME_UI  "/SetNicknameUI"
 
 #define MSN_GETUNREAD_EMAILCOUNT	"/GetUnreadEmailCount"
+
+extern const char sttVoidUid[];
+
 /////////////////////////////////////////////////////////////////////////////////////////
 //	MSN plugin functions
 
@@ -158,6 +163,8 @@ char*       HtmlEncode(const char* str);
 bool		txtParseParam (const char* szData, const char* presearch, const char* start, const char* finish, char* param, const int size);
 void		stripBBCode(char* src);
 void		stripColorCode(char* src);
+void		parseWLID(char* wlid, char** net, char** email, char** inst);
+
 char*		MSN_Base64Decode(const char* str);
 
 template <class chartype> void UrlDecode(chartype* str);
@@ -167,8 +174,9 @@ void     	UrlEncode(const char* src, char* dest, size_t cbDest);
 void		__cdecl MSN_ConnectionProc(HANDLE hNewConnection, DWORD dwRemoteIP, void*);
 
 char*		MSN_GetAvatarHash(char* szContext);
-void        MSN_GetAvatarFileName(HANDLE hContact, char* pszDest, size_t cbLen);
+void        MSN_GetAvatarFileName(HANDLE hContact, char* pszDest, size_t cbLen, const char *ext);
 int			MSN_GetImageFormat(void* buf, const char** ext);
+int			MSN_GetImageFormat(const char* file);
 
 #define		MSN_SendNickname(a) MSN_SendNicknameUtf(UTF8(a))
 
@@ -220,6 +228,21 @@ char* arrayToHex(BYTE* data, size_t datasz);
 extern LONG (WINAPI *MyInterlockedIncrement)(LONG volatile* pVal);
 
 #endif
+
+inline unsigned short _htons(unsigned short s)
+{
+	return s>>8|s<<8;
+}
+
+inline unsigned long _htonl(unsigned long s)
+{
+	return s<<24|(s&0xff00)<<8|((s>>8)&0xff00)|s>>24;
+}
+
+inline unsigned __int64 _htonl64(unsigned __int64 s)
+{
+	return (unsigned __int64)_htonl(s & 0xffffffff) << 32 | _htonl(s >> 32);
+}
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // PNG library interface
@@ -320,25 +343,29 @@ struct filetransfer
 
 	bool        bCanceled;		// flag to interrupt a transfer
 	bool        bCompleted;		// was a FT ever completed?
+	bool        bAccepted;		// was a FT ever completed?
 	
 	int			fileId;			// handle of file being transferring (r/w)
 
 	HANDLE		hLockHandle;
 
+	ThreadData  *info;
 	TInfoType	tType;
 	TInfoType	tTypeReq;
 	time_t		ts;
 	clock_t     nNotify;
 	unsigned	cf;
 
+	bool        p2p_waitack;    // wait for ack
+	bool        p2p_isV2;       // P2P V2
+
 	unsigned    p2p_sessionid;	// session id
 	unsigned    p2p_acksessid;	// acknowledged session id
 	unsigned    p2p_sendmsgid;  // send message id
 	unsigned    p2p_byemsgid;   // bye message id
-	unsigned    p2p_waitack;    // invite message id
 	unsigned    p2p_ackID;		// number of ack's state
 	unsigned    p2p_appID;		// application id: 1 = avatar, 2 = file transfer
-	int         p2p_type;		// application id: 1 = avatar, 2 = file transfer, 3 = custom emoticon
+	unsigned    p2p_type;		// application id: 1 = avatar, 2 = file transfer, 3 = custom emoticon
 	char*       p2p_branch;		// header Branch: field
 	char*       p2p_callID;		// header Call-ID: field
 	char*       p2p_dest;		// destination e-mail address
@@ -352,7 +379,7 @@ struct filetransfer
 
 struct directconnection
 {
-	directconnection(const char* CallID, HANDLE HContact);
+	directconnection(const char* CallID, const char* Wlid);
 	~directconnection();
 
 	char* calcHashedNonce(UUID* nonce);
@@ -364,7 +391,7 @@ struct directconnection
 	char* xNonce;
 
 	char* callId;
-	HANDLE hContact;
+	char* wlid;
 
 	time_t ts;
 
@@ -388,7 +415,15 @@ typedef struct _tag_HFileContext
 	char unknown2[64];
 } HFileContext;
 
-typedef struct _tad_P2P_Header
+struct P2PB_Header
+{
+	virtual char* parseMsg(char *buf) = 0;
+	virtual char* createMsg(char *buf, const char* wlid, CMsnProto *ppro) = 0;
+	virtual bool isV2Hdr(void) = 0;
+	virtual void logHeader(CMsnProto *ppro) = 0;
+};
+
+struct P2P_Header : P2PB_Header
 {
 	unsigned          mSessionID;
 	unsigned          mID;
@@ -399,7 +434,36 @@ typedef struct _tad_P2P_Header
 	unsigned          mAckSessionID;
 	unsigned          mAckUniqueID;
 	unsigned __int64  mAckDataSize;
-} P2P_Header;
+
+	P2P_Header() { memset(&mSessionID, 0, 48); }
+	P2P_Header(char *buf) { parseMsg(buf); }
+
+	char* parseMsg(char *buf)  { memcpy(&mSessionID, buf, 48); return buf + 48; }
+	char* createMsg(char *buf, const char* wlid, CMsnProto *ppro);
+	bool isV2Hdr(void) { return false; } 
+	void logHeader(CMsnProto *ppro);
+} ;
+
+struct P2PV2_Header : P2PB_Header
+{
+	unsigned          mSessionID;
+	unsigned          mID;
+	const char*       mCap;
+	unsigned __int64  mRemSize;
+	unsigned          mPacketLen;
+	unsigned          mPacketNum;
+	unsigned          mAckUniqueID;
+	unsigned char     mOpCode;
+	unsigned char     mTFCode;
+
+	P2PV2_Header() { memset(&mSessionID, 0, ((char*)&mTFCode - (char*)&mSessionID) + sizeof(mTFCode)); }
+	P2PV2_Header(char *buf) { parseMsg(buf); }
+
+	char* parseMsg(char *buf);
+	char* createMsg(char *buf, const char* wlid, CMsnProto *ppro);
+	bool isV2Hdr(void) { return true; } 
+	void logHeader(CMsnProto *ppro);
+};
 
 #pragma pack()
 
@@ -411,6 +475,7 @@ bool p2p_IsDlFileOk(filetransfer* ft);
 #define MSG_DISABLE_HDR      1
 #define MSG_REQUIRE_ACK      2
 #define MSG_RTL              4
+#define MSG_OFFLINE          8
 
 struct CMsnProto;
 typedef void (__cdecl CMsnProto::*MsnThreadFunc)(void*);
@@ -420,44 +485,49 @@ struct ThreadData
 	ThreadData();
 	~ThreadData();
 
-	TInfoType      mType;            // thread type
-	MsnThreadFunc  mFunc;            // thread entry point
-	char           mServer[80];      // server name
+	TInfoType		mType;            // thread type
+	MsnThreadFunc	mFunc;            // thread entry point
+	char			mServer[80];      // server name
 
-	HANDLE         s;	               // NetLib connection for the thread
-	HANDLE		   mIncomingBoundPort; // Netlib listen for the thread
-	HANDLE         hWaitEvent;
-	WORD           mIncomingPort;
-	TCHAR          mChatID[10];
-	bool           mIsMainThread;
-	clock_t        mWaitPeriod;
+	HANDLE			s;					// NetLib connection for the thread
+	HANDLE			mIncomingBoundPort; // Netlib listen for the thread
+	HANDLE			hWaitEvent;
+	WORD			mIncomingPort;
+	TCHAR			mChatID[10];
+	bool			mIsMainThread;
+	clock_t			mWaitPeriod;
 
-	CMsnProto*     proto;
+	CMsnProto*		proto;
 
 	//----| for gateways |----------------------------------------------------------------
-	char           mSessionID[50]; // Gateway session ID
-	char           mGatewayIP[80]; // Gateway IP address
-	int            mGatewayTimeout;
-	bool           sessionClosed;
-	bool		   termPending;
-	bool		   gatewayType;
+	char			mSessionID[50]; // Gateway session ID
+	char			mGatewayIP[80]; // Gateway IP address
+	int				mGatewayTimeout;
+	bool			sessionClosed;
+	bool			termPending;
+	bool			gatewayType;
 
 	//----| for switchboard servers only |------------------------------------------------
-	int            mCaller;
-	char           mCookie[130];     // for switchboard servers only
-	HANDLE         mInitialContact;  // initial switchboard contact
-	HANDLE*        mJoinedContacts;  //	another contacts
-	int            mJoinedCount;     // another contacts count
-	LONG           mTrid;            // current message ID
-	UINT           mTimerId;         // typing notifications timer id
-	bool           firstMsgRecv;
+	bool			firstMsgRecv;
+	int				mCaller;
+	char			mCookie[130];     // for switchboard servers only
+	LONG			mTrid;            // current message ID
+	UINT			mTimerId;         // typing notifications timer id
+
+	int				mJoinedCount;     // another contacts count
+	char**			mJoinedContactsWLID;
+	char*			mInitialContactWLID;
+
+	int				mJoinedIdentCount;     // another contacts count
+	char**			mJoinedIdentContactsWLID;
 
 	//----| for file transfers only |-----------------------------------------------------
-	filetransfer*  mMsnFtp;          // file transfer block
+	filetransfer*	mMsnFtp;          // file transfer block
+	bool            mBridgeInit;
 
 	//----| internal data buffer |--------------------------------------------------------
-	int            mBytesInData;     // bytes available in data buffer
-	char           mData[8192];      // data buffer for connection
+	int				mBytesInData;     // bytes available in data buffer
+	char			mData[8192];      // data buffer for connection
 
 	//----| methods |---------------------------------------------------------------------
 	void           applyGatewayData(HANDLE hConn, bool isPoll);
@@ -471,13 +541,15 @@ struct ThreadData
 	void           resetTimeout(bool term = false);
 	bool           isTimeout(void);
 
+	void           sendTerminate(void);
 	void           sendCaps(void);
-	LONG           sendMessage(int msgType, const char* email, int netId, const char* msg, int parFlags);
-	LONG           sendRawMessage(int msgType, const char* data, int datLen);
-	LONG           sendPacket(const char* cmd, const char* fmt, ...);
+	int            sendMessage(int msgType, const char* email, int netId, const char* msg, int parFlags);
+	int            sendRawMessage(int msgType, const char* data, int datLen);
+	int            sendPacket(const char* cmd, const char* fmt, ...);
 
-	int			 contactJoined(HANDLE hContact);
-	int			 contactLeft(HANDLE hContact);
+	int            contactJoined(const char* email);
+	int            contactLeft(const char* email);
+	HANDLE         getContactHandle(void);
 };
 
 
@@ -488,6 +560,8 @@ struct ThreadData
 #define MSN_APPID_AVATAR2   	12
 #define MSN_APPID_FILE			2
 #define MSN_APPID_WEBCAM		4
+#define MSN_APPID_MEDIA_SHARING	35
+#define MSN_APPID_IMAGE			33
 
 #define MSN_APPID_CUSTOMSMILEY  3
 #define MSN_APPID_CUSTOMANIMATEDSMILEY  4
@@ -512,7 +586,7 @@ inline bool IsChatHandle(HANDLE hContact) { return (INT_PTR)hContact < 0; }
 
 struct MsgQueueEntry
 {
-	HANDLE         hContact;
+	char*          wlid;
 	char*          message;
 	int            msgType;
 	int            msgSize;
@@ -527,10 +601,26 @@ struct MsgQueueEntry
 /////////////////////////////////////////////////////////////////////////////////////////
 //	User lists
 
+template< class T >  int CompareId(const T* p1, const T* p2)
+{
+	return _stricmp(p1->id, p2->id);
+}
+
 struct ServerGroupItem
 {
 	char* id;
 	char* name; // in UTF8
+};
+
+struct MsnPlace
+{
+	char *id;
+	unsigned cap1;
+	unsigned cap2;
+	unsigned p2pMsgId;
+	unsigned short p2pPktNum;
+
+	~MsnPlace() { mir_free(id); }
 };
 
 struct MsnContact
@@ -543,13 +633,81 @@ struct MsnContact
 	int netId;
 	int p2pMsgId;
 
+	OBJLIST<MsnPlace> places;
+
+	MsnContact() : places(1, CompareId) {}
 	~MsnContact() { mir_free(email); mir_free(nick); mir_free(invite); }
 };
+
+#define cap_OnlineViaMobile                 0x00000001
+#define cap_OnlineMSN8User                  0x00000002
+#define cap_SupportsGifInk                  0x00000004
+#define cap_SupportsIsfInk                  0x00000008
+#define cap_WebCamDetected                  0x00000010
+#define cap_SupportsChunking                0x00000020
+#define cap_MobileEnabled                   0x00000040
+#define cap_WebWatchEnabled                 0x00000080
+#define cap_SupportsActivities              0x00000100
+#define cap_OnlineViaWebIM                  0x00000200
+#define cap_MobileDevice                    0x00000400
+#define cap_OnlineViaTGW                    0x00000800
+#define cap_HasSpace                        0x00001000
+#define cap_IsMceUser                       0x00002000
+#define cap_SupportsDirectIM                0x00004000
+#define cap_SupportsWinks                   0x00008000
+#define cap_SupportsSharedSearch            0x00010000
+#define cap_IsBot                           0x00020000
+#define cap_SupportsVoiceIM                 0x00040000
+#define cap_SupportsSChannel                0x00080000
+#define cap_SupportsSipInvite               0x00100000
+#define cap_SupportsMultipartyMedia         0x00200000
+#define cap_SupportsSDrive                  0x00400000
+#define cap_SupportsPageModeMessaging       0x00800000
+#define cap_HasOneCare                      0x01000000
+#define cap_SupportsTurn                    0x02000000
+#define cap_SupportsP2PBootstrap            0x04000000
+#define cap_UsingAlias                      0x08000000
+
+#define capex_IsSmsOnly                     0x00000001
+#define capex_SupportsVoiceOverMsnp         0x00000002
+#define capex_SupportsUucpSipStack          0x00000004
+#define capex_SupportsApplicationMsg        0x00000008
+#define capex_RTCVideoEnabled               0x00000010
+#define capex_SupportsPeerToPeerV2          0x00000020
+#define capex_IsAuthWebIMUser               0x00000040
+#define capex_Supports1On1ViaGroup          0x00000080
+#define capex_SupportsOfflineIM             0x00000100
+#define capex_SupportsSharingVideo          0x00000200
+#define capex_SupportsNudges                0x00000400
+#define capex_CircleVoiceIMEnabled          0x00000800
+#define capex_SharingEnabled                0x00001000
+#define capex_MobileSuspendIMFanoutDisable  0x00002000
+#define capex_SupportsP2PMixerRelay         0x00008000
+#define capex_ConvWindowFileTransfer        0x00020000
+#define capex_VideoCallSupports16x9         0x00040000
+#define capex_SupportsP2PEnveloping         0x00080000
+#define capex_YahooIMDisabled               0x00400000
+#define capex_SIPTunnelVersion2             0x00800000
+#define capex_VoiceClipSupportsWMAFormat    0x01000000
+#define capex_VoiceClipSupportsCircleIM     0x02000000
+#define capex_SupportsSocialNewsObjectTypes 0x04000000
+#define capex_CustomEmoticonsCapable        0x08000000
+#define capex_SupportsUTF8MoodMessages      0x10000000
+#define capex_FTURNCapable                  0x20000000
+#define capex_SupportsP4Activity            0x40000000
+#define capex_SupportsChats                 0x80000000
 
 #define NETID_UNKNOWN	0x0000
 #define NETID_MSN		0x0001
 #define NETID_LCS		0x0002
 #define NETID_MOB		0x0004
+#define NETID_MOBNET	0x0008
+#define NETID_CIRCLE	0x0009
+#define NETID_TMPCIRCLE	0x000A
+#define NETID_CID		0x000B
+#define NETID_CONNECT	0x000D
+#define NETID_REMOTE	0x000E
+#define NETID_SMTP		0x0010
 #define NETID_YAHOO		0x0020
 
 #define	LIST_FL         0x0001
@@ -570,11 +728,12 @@ typedef struct _tag_MYOPTIONS
 	bool		EnableSounds;
 
 	bool		ShowErrorsAsPopups;
-	bool		AwayAsBrb;
 	bool		SlowSend;
 	bool		ManageServer;
 
 	char		szEmail[MSN_MAX_EMAIL_LEN];
+	char		szMachineGuid[MSN_GUID_LEN];
+	char		szMachineGuidP2P[MSN_GUID_LEN];
 }
 MYOPTIONS;
 
@@ -597,11 +756,12 @@ struct TWinErrorCode
 
 #define MSN_NUM_MODES 9
 
-const char msnProtChallenge[] = "ILTXC!4IXB5FB*PX";
-const char msnProductID[] = "PROD0119GSJUC$18";
-const char msnProductVer[] = "8.5.1302";
-const char msnProtID[] = "MSNP15";
-
+const char msnProtChallenge[] = "C1BX{V4W}Q3*10SM";
+const char msnProductID[] = "PROD0120PW!CCV9@";
+const char msnAppID[] = "AAD9B99B-58E6-4F23-B975-D9EC1F9EC24A";
+const char msnStoreAppId[] = "Messenger Client 9.0";
+const char msnProductVer[] = "14.0.8117.0416";
+const char msnProtID[] = "MSNP18";
 
 extern	HINSTANCE	hInst;
 extern	bool		msnHaveChatDll;
@@ -621,7 +781,7 @@ public:
 	UTFEncoder(const wchar_t* pSrc) :
 		m_body(mir_utf8encodeW(pSrc)) {}
 
-    ~UTFEncoder() {  mir_free(m_body);	}
+	~UTFEncoder() {  mir_free(m_body);	}
 	const char* str() const { return m_body; }
 };
 

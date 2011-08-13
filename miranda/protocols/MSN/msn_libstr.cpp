@@ -1,6 +1,6 @@
 /*
 Plugin of Miranda IM for communicating with users of the MSN Messenger protocol.
-Copyright (c) 2006-2010 Boris Krasnovskiy.
+Copyright (c) 2006-2011 Boris Krasnovskiy.
 Copyright (c) 2003-2005 George Hazan.
 Copyright (c) 2002-2003 Richard Hughes (original version).
 
@@ -157,11 +157,36 @@ bool txtParseParam (const char* szData, const char* presearch, const char* start
 	return true;
 } 
 
+void parseWLID(char* wlid, char** net, char** email, char** inst)
+{
+	char* col = strchr(wlid, ':');
+	if (col && strncmp(wlid, "tel:", 4))
+	{
+		*col = 0;
+		if (net) *net = wlid;
+		if (email) *email = col + 1;
+		++col;
+	}
+	else
+	{
+		if (net) *net = NULL;
+		if (email) *email = wlid;
+	}
+
+	col = strchr(wlid, ';');
+	if (col)
+	{
+		*col = 0;
+		if (inst) *inst = col + 1;
+	}
+	else
+		if (inst) *inst = NULL;
+}
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // UrlDecode - converts URL chars like %20 into printable characters
 
-static int SingleHexToDecimal(int c)
+static int SingleHexToDecimal(char c)
 {
 	if (c >= '0' && c <= '9') return c-'0';
 	if (c >= 'a' && c <= 'f') return c-'a'+10;
@@ -189,7 +214,7 @@ template <class chartype> void UrlDecode(chartype* str)
 				if (digit2 != -1) 
 				{
 					s += 3;
-					*d++ = (chartype)((digit1 << 4) | digit2);
+					*d++ = (char)((digit1 << 4) | digit2);
 					continue;
 				}	
 			}	
@@ -320,7 +345,6 @@ void stripBBCode(char* src)
 
 void stripColorCode(char* src)
 {
-	bool tag = false; 
 	unsigned char* ps = (unsigned char*)src;
 	unsigned char* pd = (unsigned char*)src;
 
@@ -350,11 +374,11 @@ void stripColorCode(char* src)
 					else
 						++ps;
 
-						if (ps[0] == ',' && isdigit(ps[1]))
-						{
-							ps += 2;
+					if (ps[0] == ',' && isdigit(ps[1]))
+					{
+						ps += 2;
 						if (isdigit(ps[1]))
-								ps += 2;
+							ps += 2;
 						else
 							++ps;
 					}
@@ -375,3 +399,57 @@ void stripColorCode(char* src)
 	}
 	*pd = 0;
 }
+
+// Process a string, and double all % characters, according to chat.dll's restrictions
+// Returns a pointer to the new string (old one is not freed)
+TCHAR* EscapeChatTags(const TCHAR* pszText)
+{
+	int nChars = 0;
+	for (const TCHAR* p = pszText; (p = _tcschr(p, '%')) != NULL; p++)
+		nChars++;
+
+	if (nChars == 0)
+		return mir_tstrdup(pszText);
+
+	TCHAR *pszNewText = (TCHAR*)mir_alloc(sizeof(TCHAR)*(_tcslen(pszText) + 1 + nChars));
+	if (pszNewText == NULL)
+		return mir_tstrdup(pszText);
+
+	const TCHAR *s = pszText;
+	TCHAR *d = pszNewText;
+	while (*s) {
+		if (*s == '%')
+			*d++ = '%';
+		*d++ = *s++;
+	}
+	*d = 0;
+	return pszNewText;
+}
+
+TCHAR* UnEscapeChatTags(TCHAR* str_in)
+{
+	TCHAR *s = str_in, *d = str_in;
+	while (*s) {
+		if ((*s == '%' && s[1] == '%') || (*s == '\n' && s[1] == '\n'))
+			s++;
+		*d++ = *s++;
+	}
+	*d = 0;
+	return str_in;
+}
+
+char* getNewUuid(void)
+{
+	BYTE* p;
+	UUID id;
+
+	UuidCreate(&id);
+	UuidToStringA(&id, &p);
+	size_t len = strlen((char*)p) + 3;
+	char* result = (char*)mir_alloc(len);
+	mir_snprintf(result, len, "{%s}", p);
+	_strupr(result);
+	RpcStringFreeA(&p);
+	return result;
+}
+

@@ -1,6 +1,6 @@
 /*
 Plugin of Miranda IM for communicating with users of the MSN Messenger protocol.
-Copyright (c) 2007-2010 Boris Krasnovskiy.
+Copyright (c) 2007-2011 Boris Krasnovskiy.
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -101,7 +101,7 @@ void CMsnProto::MSNatDetect(void)
 
 	SOCKADDR_IN addr;
 	addr.sin_family = AF_INET;
-	addr.sin_port = htons(7001);
+	addr.sin_port = _htons(7001);
 	addr.sin_addr = *( PIN_ADDR )host->h_addr_list[0];
 
 	MSN_DebugLog("P2PNAT Detected echo server IP %d.%d.%d.%d",
@@ -198,7 +198,8 @@ void CMsnProto::MSNatDetect(void)
 	if ( sb != NULL )
 	{
 		MyConnection.upnpNAT = htonl(nlb.dwExternalIP) == MyConnection.extIP;
-		Netlib_CloseHandle( sb );
+		Sleep(100);
+		Netlib_CloseHandle(sb);
 	}
 
 	DiscardExtraPackets(s1);

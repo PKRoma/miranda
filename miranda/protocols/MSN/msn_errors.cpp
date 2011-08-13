@@ -1,6 +1,6 @@
 /*
 Plugin of Miranda IM for communicating with users of the MSN Messenger protocol.
-Copyright (c) 2006-2010 Boris Krasnovskiy.
+Copyright (c) 2006-2011 Boris Krasnovskiy.
 Copyright (c) 2003-2005 George Hazan.
 Copyright (c) 2002-2003 Richard Hughes (original version).
 
@@ -60,8 +60,12 @@ int CMsnProto::MSN_HandleErrors(ThreadData* info, char* cmdString)
 			return 0;
 
 	case ERR_NOT_ONLINE:
-		SendBroadcast(info->mInitialContact, ACKTYPE_MESSAGE, ACKRESULT_FAILED, 
-			(HANDLE)999999, (LPARAM)MSN_Translate("User not online"));
+		if (info->mInitialContactWLID)
+			SendBroadcast(MSN_HContactFromEmail(info->mInitialContactWLID), ACKTYPE_MESSAGE, ACKRESULT_FAILED, 
+				(HANDLE)999999, (LPARAM)MSN_Translate("User not online"));
+		else
+			MSN_ShowError("User not online");
+
 		return 1;
 
 	case ERR_NOT_EXPECTED:

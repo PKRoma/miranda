@@ -1,6 +1,6 @@
 /*
 Plugin of Miranda IM for communicating with users of the MSN Messenger protocol.
-Copyright (c) 2006-2010 Boris Krasnovskiy.
+Copyright (c) 2006-2011 Boris Krasnovskiy.
 Copyright (c) 2003-2005 George Hazan.
 Copyright (c) 2002-2003 Richard Hughes (original version).
 
@@ -140,7 +140,6 @@ static INT_PTR CALLBACK DlgProcMsnOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 
 		CheckDlgButton(hwndDlg, IDC_MOBILESEND,        proto->getByte("MobileAllowed", 0));
 		CheckDlgButton(hwndDlg, IDC_SENDFONTINFO,      proto->getByte("SendFontInfo", 1));
-		CheckDlgButton(hwndDlg, IDC_AWAY_AS_BRB,       proto->getByte("AwayAsBrb", 0));
 		CheckDlgButton(hwndDlg, IDC_MANAGEGROUPS,      proto->getByte("ManageServer", 1));
 
 		int tValue = proto->getByte("RunMailerOnHotmail", 0);
@@ -182,7 +181,6 @@ static INT_PTR CALLBACK DlgProcMsnOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			{
 			case IDC_SENDFONTINFO:
 			case IDC_DISABLE_ANOTHER_CONTACTS:
-			case IDC_AWAY_AS_BRB:
 			case IDC_MOBILESEND:
 				SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
 				break;
@@ -277,24 +275,24 @@ LBL_Continue:
 			{
 				reconnectRequired = true;
 				strcpy(proto->MyOptions.szEmail, szEmail);
-				proto->setString(NULL, "e-mail", szEmail);
+				proto->setString("e-mail", szEmail);
 			}
 
 			GetDlgItemTextA(hwndDlg, IDC_PASSWORD, password, sizeof(password));
 			MSN_CallService(MS_DB_CRYPT_ENCODESTRING, sizeof(password),(LPARAM)password);
-			if (!proto->getString(NULL, "Password", &dbv)) 
+			if (!proto->getString("Password", &dbv)) 
 			{
 				if (strcmp(password, dbv.pszVal)) 
 				{
 					reconnectRequired = true;
-					proto->setString(NULL, "Password", password);
+					proto->setString("Password", password);
 				}
 				MSN_FreeVariant(&dbv);
 			}
 			else 
 			{
 				reconnectRequired = true;
-				proto->setString(NULL, "Password", password);
+				proto->setString("Password", password);
 			}
 
 			GetDlgItemText(hwndDlg, IDC_HANDLE2, screenStr, SIZEOF(screenStr));
@@ -327,7 +325,6 @@ LBL_Continue:
 
 			proto->setByte("SendFontInfo",       (BYTE)IsDlgButtonChecked(hwndDlg, IDC_SENDFONTINFO));
 			proto->setByte("RunMailerOnHotmail", (BYTE)IsDlgButtonChecked(hwndDlg, IDC_RUN_APP_ON_HOTMAIL));
-			proto->setByte("AwayAsBrb",          (BYTE)IsDlgButtonChecked(hwndDlg, IDC_AWAY_AS_BRB));
 			proto->setByte("ManageServer",       (BYTE)IsDlgButtonChecked(hwndDlg, IDC_MANAGEGROUPS));
 
 			GetDlgItemText(hwndDlg, IDC_MAILER_APP, screenStr, SIZEOF(screenStr));
@@ -555,18 +552,18 @@ static INT_PTR CALLBACK DlgProcHotmailPopUpOpts(HWND hwndDlg, UINT msg, WPARAM w
 			switch (((LPNMHDR)lParam)->code) 
 			{
 			case PSN_RESET: 
-				{
+			{
 					CMsnProto* proto = (CMsnProto*)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 					proto->LoadOptions();
 					return TRUE;
-				}
+			}
 
 			case PSN_APPLY: 
 				{
 					CMsnProto* proto = (CMsnProto*)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 					
-					proto->MyOptions.ShowErrorsAsPopups = IsDlgButtonChecked(hwndDlg, IDC_ERRORS_USING_POPUPS) != 0;
-					proto->setByte("ShowErrorsAsPopups", proto->MyOptions.ShowErrorsAsPopups);
+				proto->MyOptions.ShowErrorsAsPopups = IsDlgButtonChecked(hwndDlg, IDC_ERRORS_USING_POPUPS) != 0;
+				proto->setByte("ShowErrorsAsPopups", proto->MyOptions.ShowErrorsAsPopups);
 
 					proto->setByte("DisableHotmail", (BYTE)IsDlgButtonChecked(hwndDlg, IDC_DISABLEHOTMAILPOPUP));
 					proto->setByte("DisableHotmailCL", (BYTE)IsDlgButtonChecked(hwndDlg, IDC_DISABLEHOTMAILCL));
@@ -575,8 +572,9 @@ static INT_PTR CALLBACK DlgProcHotmailPopUpOpts(HWND hwndDlg, UINT msg, WPARAM w
 					proto->setByte("EnableDeliveryPopup", (BYTE)IsDlgButtonChecked(hwndDlg, IDC_NOTIFY_FIRSTMSG));
 					proto->setByte("EnableSessionPopup", (BYTE)IsDlgButtonChecked(hwndDlg, IDC_NOTIFY_ENDSESSION));
 
-					HANDLE hContact = proto->MSN_HContactFromEmail(proto->MyOptions.szEmail, NULL, false, false);
-					if (hContact) proto->displayEmailCount(hContact);
+				HANDLE hContact = proto->MSN_HContactFromEmail(proto->MyOptions.szEmail);
+				if (hContact) proto->displayEmailCount(hContact);
+
 				}
 				return TRUE;
 			}
@@ -609,6 +607,13 @@ static INT_PTR CALLBACK DlgProcAccMgrUI(HWND hwndDlg, UINT msg, WPARAM wParam, L
 				SetDlgItemTextA(hwndDlg, IDC_PASSWORD, tBuffer);
 			}
 			SendDlgItemMessage(hwndDlg, IDC_PASSWORD, EM_SETLIMITTEXT, 16, 0);
+
+			DBVARIANT dbv;
+			if (!proto->getTString("Place", &dbv))
+			{
+				SetDlgItemText(hwndDlg, IDC_PLACE, dbv.ptszVal);
+				MSN_FreeVariant(&dbv);
+			}
 			return TRUE;
 		}
 
@@ -638,20 +643,29 @@ static INT_PTR CALLBACK DlgProcAccMgrUI(HWND hwndDlg, UINT msg, WPARAM wParam, L
 			CMsnProto* proto = (CMsnProto*)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 
 			GetDlgItemTextA(hwndDlg, IDC_HANDLE, szEmail, sizeof(szEmail));
-			if (strcmp(szEmail, proto->MyOptions.szEmail)) {
+			if (strcmp(szEmail, proto->MyOptions.szEmail))
+			{
 				strcpy(proto->MyOptions.szEmail, szEmail);
-				proto->setString(NULL, "e-mail", szEmail);
+				proto->setString("e-mail", szEmail);
 			}
 
 			GetDlgItemTextA(hwndDlg, IDC_PASSWORD, password, sizeof(password));
 			MSN_CallService(MS_DB_CRYPT_ENCODESTRING, sizeof(password),(LPARAM)password);
-			if (!proto->getString(NULL, "Password", &dbv)) {
+			if (!proto->getString("Password", &dbv))
+			{
 				if (strcmp(password, dbv.pszVal))
-					proto->setString(NULL, "Password", password);
+					proto->setString("Password", password);
 				MSN_FreeVariant(&dbv);
 			}
 			else 
-				proto->setString(NULL, "Password", password);
+				proto->setString("Password", password);
+
+			TCHAR szPlace[64];
+			GetDlgItemText(hwndDlg, IDC_PLACE, szPlace, SIZEOF(szPlace));
+			if (szPlace[0])
+				proto->setTString("Place", szPlace);
+			else
+				proto->deleteSetting(NULL, "Place");
 
 			return TRUE;
 		}
@@ -752,11 +766,20 @@ void  CMsnProto::LoadOptions(void)
 	memset(&MyOptions, 0, sizeof(MyOptions));
 
 	//PopUp Options
-	MyOptions.AwayAsBrb = getByte("AwayAsBrb", FALSE) != 0;
 	MyOptions.ManageServer = getByte("ManageServer", TRUE) != 0;
 	MyOptions.ShowErrorsAsPopups = getByte("ShowErrorsAsPopups", TRUE) != 0;
 	MyOptions.SlowSend = getByte("SlowSend", FALSE) != 0;
 	if (getStaticString(NULL, "e-mail", MyOptions.szEmail, sizeof(MyOptions.szEmail)))
 		MyOptions.szEmail[0] = 0;
 	_strlwr(MyOptions.szEmail);
+
+	if (getStaticString(NULL, "MachineGuid", MyOptions.szMachineGuid, sizeof(MyOptions.szMachineGuid)))
+	{
+		char* uuid = getNewUuid();
+		strcpy(MyOptions.szMachineGuid, uuid);
+		setString("MachineGuid", MyOptions.szMachineGuid);
+		mir_free(uuid);
+	}
+	strcpy(MyOptions.szMachineGuidP2P, MyOptions.szMachineGuid);
+	_strlwr(MyOptions.szMachineGuidP2P);
 }

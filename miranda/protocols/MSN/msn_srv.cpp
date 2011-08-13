@@ -1,6 +1,6 @@
 /*
 Plugin of Miranda IM for communicating with users of the MSN Messenger protocol.
-Copyright (c) 2006-2010 Boris Krasnovskiy.
+Copyright (c) 2006-2011 Boris Krasnovskiy.
 Copyright (c) 2003-2005 George Hazan.
 Copyright (c) 2002-2003 Richard Hughes (original version).
 
@@ -321,8 +321,7 @@ void  CMsnProto::MSN_SendNicknameUtf(const char* nickname)
 	
 	MSN_SetNicknameUtf(nickname[0] ? nickname : MyOptions.szEmail);
 
-	MSN_StoreUpdateProfile(nickname, false);
-//	MSN_ABUpdateNick(nickname, NULL);
+	ForkThread(&CMsnProto::msn_storeProfileThread, NULL);
 }
 
 void  CMsnProto::MSN_SetNicknameUtf(const char* nickname)
@@ -335,7 +334,7 @@ void  CMsnProto::MSN_SetNicknameUtf(const char* nickname)
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
-// MSN_StoreAvatar - update our own avatar on the server
+// msn_storeAvatarThread - update our own avatar on the server
 
 void CMsnProto::msn_storeAvatarThread(void* arg)
 {
@@ -344,9 +343,9 @@ void CMsnProto::msn_storeAvatarThread(void* arg)
 
 	if (dat)
 	{
-		long szEncPngSize = Netlib_GetBase64EncodedBufferSize(dat->dataSize);
+		size_t szEncPngSize = Netlib_GetBase64EncodedBufferSize(dat->dataSize);
 		szEncBuf = (char*)mir_alloc(szEncPngSize);
-		NETLIBBASE64 nlb = { szEncBuf, szEncPngSize, dat->data, dat->dataSize };
+		NETLIBBASE64 nlb = { szEncBuf, (int)szEncPngSize, dat->data, (int)dat->dataSize };
 		MSN_CallService(MS_NETLIB_BASE64ENCODE, 0, LPARAM(&nlb));
 	}
  
@@ -356,7 +355,7 @@ void CMsnProto::msn_storeAvatarThread(void* arg)
 	}
 	else
 	{
-		MSN_StoreUpdateProfile(NULL, 1);
+		MSN_StoreUpdateProfile(NULL, NULL, 1);
 
 		if (photoid[0])
 		{
@@ -371,7 +370,7 @@ void CMsnProto::msn_storeAvatarThread(void* arg)
 			MSN_StoreCreateRelationships();
 		}
 
-		MSN_StoreUpdateProfile(NULL, 0);
+		MSN_StoreUpdateProfile(NULL, NULL, 0);
 	}
 
 	MSN_ABUpdateDynamicItem();
@@ -383,4 +382,32 @@ void CMsnProto::msn_storeAvatarThread(void* arg)
 		mir_free(dat->data);
 		mir_free(dat);
 	}
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+// msn_storeProfileThread - update our own avatar on the server
+
+void CMsnProto::msn_storeProfileThread(void*)
+{
+	DBVARIANT dbv;
+	char *szNick = NULL;
+	bool needFree = false;
+	if (!getStringUtf("Nick", &dbv))
+	{
+		szNick = dbv.pszVal[0] ? dbv.pszVal : NULL;
+		needFree = true;
+	}
+
+	char** msgptr = GetStatusMsgLoc(m_iStatus);
+	char *szStatus = msgptr ? *msgptr : NULL;
+
+ 	if (msnLastStatusMsg != szStatus && (msnLastStatusMsg && szStatus && strcmp(msnLastStatusMsg, szStatus)))
+	{
+
+		if (MSN_StoreUpdateProfile(szNick, szStatus, false))
+			MSN_ABUpdateDynamicItem();
+	//	MSN_ABUpdateNick(nickname, NULL);
+	}
+
+	if (needFree) MSN_FreeVariant(&dbv);
 }

@@ -1,6 +1,6 @@
 /*
 Plugin of Miranda IM for communicating with users of the MSN Messenger protocol.
-Copyright (c) 2007-2010 Boris Krasnovskiy.
+Copyright (c) 2007-2011 Boris Krasnovskiy.
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -33,7 +33,7 @@ chunkedmsg::~chunkedmsg()
 	mir_free(msg);
 }
 
-void chunkedmsg::add( const char* tmsg, const size_t offset, const size_t portion )
+void chunkedmsg::add(const char* tmsg, const size_t offset, const size_t portion)
 {
 	if (bychunk) 
 	{
@@ -69,7 +69,7 @@ int CMsnProto::addCachedMsg(const char* id, const char* msg, const size_t offset
 				 const size_t portion, const size_t totsz, const bool bychunk)
 {
 	int idx = msgCache.getIndex((chunkedmsg*)&id);
-	if ( idx == -1 ) 
+	if (idx == -1) 
 	{
 		msgCache.insert(new chunkedmsg(id, totsz, bychunk));
 		idx = msgCache.getIndex((chunkedmsg*)&id);
@@ -78,6 +78,12 @@ int CMsnProto::addCachedMsg(const char* id, const char* msg, const size_t offset
 	msgCache[idx].add(msg, offset, portion);
 
 	return idx;
+}
+
+size_t CMsnProto::getCachedMsgSize(const char* id)
+{
+	int idx = msgCache.getIndex((chunkedmsg*)&id);
+	return idx != -1 ? msgCache[idx].size : 0;
 }
 
 bool CMsnProto::getCachedMsg(int idx, char*& msg, size_t& size)

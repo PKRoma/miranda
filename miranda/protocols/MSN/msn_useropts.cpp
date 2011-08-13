@@ -1,6 +1,6 @@
 /*
 Plugin of Miranda IM for communicating with users of the MSN Messenger protocol.
-Copyright (c) 2006-2010 Boris Krasnovskiy.
+Copyright (c) 2006-2011 Boris Krasnovskiy.
 Copyright (c) 2003-2005 George Hazan.
 Copyright (c) 2002-2003 Richard Hughes (original version).
 
@@ -59,12 +59,19 @@ int MsnOnDetailsInit(WPARAM wParam, LPARAM lParam)
 	if (!MSN_IsMyContact(hContact))
 		return 0;
 
-	if (setDword(hContact, "FlagBits", 0)) {
-		odp.pfnDlgProc = MsnDlgProc;
-		odp.position = -1900000000;
+	if (setDword(hContact, "FlagBits", 0)) 
+	{
+		OPTIONSDIALOGPAGE odp = {0};
+
+		odp.cbSize      = sizeof(odp);
+		odp.pfnDlgProc  = MsnDlgProc;
+		odp.position    = -1900000000;
 		odp.pszTemplate = MAKEINTRESOURCEA(IDD_USEROPTS);
-		odp.pszTitle = MSN_Translate(m_szProtoName);
+		odp.ptszTitle   = m_tszUserName;
+		odp.flags       = ODPF_TCHAR | ODPF_DONTTRANSLATE;
+
 		MSN_CallService(MS_USERINFO_ADDPAGE, wParam, (LPARAM)&odp);
 	}
-*/	return 0;
+*/	
+	return 0;
 }

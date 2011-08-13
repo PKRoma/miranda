@@ -32,9 +32,9 @@
 #define IDC_ICON_BL                     1019
 #define IDC_PASSWORD                    1020
 #define IDC_ICON_RL                     1021
+#define IDC_PLACE                       1021
 #define IDC_HANDLE                      1022
 #define IDC_HANDLE2                     1023
-#define IDC_AWAY_AS_BRB                 1029
 #define IDC_SLOWSEND                    1033
 #define IDC_MANAGEGROUPS                1034
 #define IDC_NOTIFY_ENDSESSION           1035

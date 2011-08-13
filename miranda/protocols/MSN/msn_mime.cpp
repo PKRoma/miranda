@@ -1,6 +1,6 @@
 /*
 Plugin of Miranda IM for communicating with users of the MSN Messenger protocol.
-Copyright (c) 2006-2010 Boris Krasnovskiy.
+Copyright (c) 2006-2011 Boris Krasnovskiy.
 Copyright (c) 2003-2005 George Hazan.
 Copyright (c) 2002-2003 Richard Hughes (original version).
 
@@ -144,7 +144,7 @@ size_t MimeHeaders::getLength(void)
 		iResult += strlen(H.name) + strlen(H.value) + 4;
 	}
 
-	return iResult;
+	return iResult + (iResult ? 2 : 0);
 }
 
 char* MimeHeaders::writeToBuffer(char* dest)
@@ -167,6 +167,13 @@ char* MimeHeaders::writeToBuffer(char* dest)
 		}
 		else
 			dest += sprintf(dest, "%s: %s\r\n", H.name, H.value);
+	}
+
+	if (mCount)
+	{
+		*(dest++) = '\r';
+		*(dest++) = '\n';
+		*dest = 0;
 	}
 
 	return dest;
@@ -244,12 +251,12 @@ static const struct _tag_cpltbl
 	const char* mimecp;
 } cptbl[] =
 {
-	{    37, "IBM037" },		  // IBM EBCDIC US-Canada 
-	{   437, "IBM437" },		  // OEM United States 
-	{   500, "IBM500" },          // IBM EBCDIC International 
-	{   708, "ASMO-708" },        // Arabic (ASMO 708) 
-	{   720, "DOS-720" },         // Arabic (Transparent ASMO); Arabic (DOS) 
-	{   737, "ibm737" },          // OEM Greek (formerly 437G); Greek (DOS) 
+	{    37, "IBM037" },          // IBM EBCDIC US-Canada
+	{   437, "IBM437" },          // OEM United States
+	{   500, "IBM500" },          // IBM EBCDIC International
+	{   708, "ASMO-708" },        // Arabic (ASMO 708)
+	{   720, "DOS-720" },         // Arabic (Transparent ASMO); Arabic (DOS)
+	{   737, "ibm737" },          // OEM Greek (formerly 437G); Greek (DOS)
 	{   775, "ibm775" },          // OEM Baltic; Baltic (DOS) 
 	{   850, "ibm850" },          // OEM Multilingual Latin 1; Western European (DOS) 
 	{   852, "ibm852" },          // OEM Latin 2; Central European (DOS) 
@@ -263,7 +270,7 @@ static const struct _tag_cpltbl
 	{   864, "IBM864" },          // OEM Arabic; Arabic (864) 
 	{   865, "IBM865" },          // OEM Nordic; Nordic (DOS) 
 	{   866, "cp866" },           // OEM Russian; Cyrillic (DOS) 
-	{   869, "ibm869" },		  // OEM Modern Greek; Greek, Modern (DOS) 
+	{   869, "ibm869" },          // OEM Modern Greek; Greek, Modern (DOS) 
 	{   870, "IBM870" },          // IBM EBCDIC Multilingual/ROECE (Latin 2); IBM EBCDIC Multilingual Latin 2 
 	{   874, "windows-874" },     // ANSI/OEM Thai (same as 28605, ISO 8859-15); Thai (Windows) 
 	{   875, "cp875" },           // IBM EBCDIC Greek Modern 

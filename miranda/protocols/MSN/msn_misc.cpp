@@ -69,12 +69,12 @@ const char*  CMsnProto::MirandaStatusToMSN(int status)
 	switch(status)
 	{
 		case ID_STATUS_OFFLINE:		return "FLN";
-		case ID_STATUS_NA:			return (MyOptions.AwayAsBrb) ? (char *)"AWY" : (char *)"BRB";
-		case ID_STATUS_AWAY:		return (MyOptions.AwayAsBrb) ? (char *)"BRB" : (char *)"AWY";
+		case ID_STATUS_ONTHEPHONE:
+		case ID_STATUS_OUTTOLUNCH:
+		case ID_STATUS_NA:
+		case ID_STATUS_AWAY:		return "AWY";
 		case ID_STATUS_DND:
 		case ID_STATUS_OCCUPIED:	return "BSY";
-		case ID_STATUS_ONTHEPHONE:  return "PHN";
-		case ID_STATUS_OUTTOLUNCH:  return "LUN";
 		case ID_STATUS_INVISIBLE:	return "HDN";
 		case ID_STATUS_IDLE:		return "IDL";
 		default:					return "NLN";
@@ -86,11 +86,11 @@ WORD  CMsnProto::MSNStatusToMiranda(const char *status)
 	{
 		case ' LDI': return ID_STATUS_IDLE;
 		case ' NLN': return ID_STATUS_ONLINE;
-		case ' YWA': return MyOptions.AwayAsBrb ? ID_STATUS_NA : ID_STATUS_AWAY;
-		case ' BRB': return MyOptions.AwayAsBrb ? ID_STATUS_AWAY : ID_STATUS_NA;
+		case ' NHP':
+		case ' NUL':
+		case ' BRB':
+		case ' YWA': return ID_STATUS_AWAY;
 		case ' YSB': return ID_STATUS_OCCUPIED;
-		case ' NHP': return ID_STATUS_ONTHEPHONE;
-		case ' NUL': return ID_STATUS_OUTTOLUNCH;
 		case ' NDH': return ID_STATUS_INVISIBLE;
 		default: return ID_STATUS_OFFLINE;
 	}	
@@ -212,13 +212,13 @@ char* MSN_GetAvatarHash(char* szContext)
 	const char* szAvatarHash = ezxml_attr(xmli, "SHA1D");
 	if (szAvatarHash != NULL)
 	{
-		BYTE szActHash[MIR_SHA1_HASH_SIZE+2];
+		BYTE szActHash[MIR_SHA1_HASH_SIZE+2]  = {0};
 		const size_t len = strlen(szAvatarHash);
 
 		NETLIBBASE64 nlb = { (char*)szAvatarHash, (int)len, szActHash, sizeof(szActHash) };
 		int decod = MSN_CallService(MS_NETLIB_BASE64DECODE, 0, LPARAM(&nlb));
 		if (decod != 0 && nlb.cbDecoded > 0)
-			res = arrayToHex(szActHash, MIR_SHA1_HASH_SIZE);
+			res = arrayToHex(szActHash, nlb.cbDecoded);
 	}
 	ezxml_free(xmli);
 
@@ -228,7 +228,7 @@ char* MSN_GetAvatarHash(char* szContext)
 /////////////////////////////////////////////////////////////////////////////////////////
 // MSN_GetAvatarFileName - gets a file name for an contact's avatar
 
-void  CMsnProto::MSN_GetAvatarFileName(HANDLE hContact, char* pszDest, size_t cbLen)
+void  CMsnProto::MSN_GetAvatarFileName(HANDLE hContact, char* pszDest, size_t cbLen, const char *ext)
 {
 	size_t tPathLen;
 
@@ -249,6 +249,7 @@ void  CMsnProto::MSN_GetAvatarFileName(HANDLE hContact, char* pszDest, size_t cb
 	if (_access(pszDest, 0))
 		MSN_CallService(MS_UTILS_CREATEDIRTREE, 0, (LPARAM)pszDest);
 
+	size_t tPathLen2 = tPathLen;
 	if (hContact != NULL) 
 	{
 		DBVARIANT dbv;
@@ -260,11 +261,44 @@ void  CMsnProto::MSN_GetAvatarFileName(HANDLE hContact, char* pszDest, size_t cb
 				tPathLen += mir_snprintf(pszDest + tPathLen, cbLen - tPathLen, "\\%s.", szAvatarHash);
 				mir_free(szAvatarHash);
 			}
+			else
+			{
+				deleteSetting(hContact, "PictContext");
+				if (cbLen) pszDest[0] = 0;
+			}
 			MSN_FreeVariant(&dbv);
+		}
+		else
+		{
+			if (cbLen) pszDest[0] = 0;
 		}
 	}
 	else 
-		tPathLen += mir_snprintf(pszDest + tPathLen, cbLen - tPathLen, "\\%s avatar.png", m_szModuleName);
+		tPathLen += mir_snprintf(pszDest + tPathLen, cbLen - tPathLen, "\\%s avatar.", m_szModuleName);
+
+	if (ext == NULL)
+	{
+		mir_snprintf(pszDest + tPathLen, cbLen - tPathLen, "*");
+
+		bool found = false;
+		_finddata_t c_file;
+		long hFile = _findfirst(pszDest, &c_file);
+		if (hFile > -1L)
+		{
+			do {
+				if (strrchr(c_file.name, '.'))
+				{
+					mir_snprintf(pszDest + tPathLen2, cbLen - tPathLen2, "\\%s", c_file.name);
+					found = true;
+				}
+			} while(_findnext(hFile, &c_file) == 0);
+			_findclose( hFile );
+		}
+		
+		if (!found) pszDest[0] = 0;
+	}
+	else
+		mir_snprintf(pszDest + tPathLen, cbLen - tPathLen, ext);
 }
 
 int MSN_GetImageFormat(void* buf, const char** ext)
@@ -296,6 +330,118 @@ int MSN_GetImageFormat(void* buf, const char** ext)
 		*ext = "unk";
 	}
 	return res;
+}
+
+int MSN_GetImageFormat(const char* file)
+{
+   const char *ext = strrchr(file, '.');
+   if (ext == NULL) 
+	   return PA_FORMAT_UNKNOWN;
+   if (strcmp(ext, ".gif") == 0)
+	   return PA_FORMAT_GIF;
+   else if (strcmp(ext, ".bmp") == 0)
+	   return PA_FORMAT_BMP;
+   else if (strcmp(ext, ".png") == 0)
+	   return PA_FORMAT_PNG;
+   else
+	   return PA_FORMAT_JPEG;
+}
+
+
+int  CMsnProto::MSN_SetMyAvatar(const char* szFname, void* pData, size_t cbLen)
+{
+	mir_sha1_ctx sha1ctx;
+	BYTE sha1c[MIR_SHA1_HASH_SIZE], sha1d[MIR_SHA1_HASH_SIZE];
+	char szSha1c[41], szSha1d[41];
+
+	mir_sha1_init(&sha1ctx);
+	mir_sha1_append(&sha1ctx, (mir_sha1_byte_t*)pData, (int)cbLen);
+	mir_sha1_finish(&sha1ctx, sha1d);
+
+	{
+		NETLIBBASE64 nlb = { szSha1d, sizeof(szSha1d), (PBYTE)sha1d, sizeof(sha1d) };
+		MSN_CallService(MS_NETLIB_BASE64ENCODE, 0, LPARAM(&nlb));
+	}
+	
+	mir_sha1_init(&sha1ctx);
+	ezxml_t xmlp = ezxml_new("msnobj");
+	
+	mir_sha1_append(&sha1ctx, (PBYTE)"Creator", 7);
+	mir_sha1_append(&sha1ctx, (PBYTE)MyOptions.szEmail, (int)strlen(MyOptions.szEmail));
+	ezxml_set_attr(xmlp, "Creator", MyOptions.szEmail);
+
+	char szFileSize[20];
+	_ultoa((unsigned)cbLen, szFileSize, 10);
+	mir_sha1_append(&sha1ctx, (PBYTE)"Size", 4);
+	mir_sha1_append(&sha1ctx, (PBYTE)szFileSize, (int)strlen(szFileSize));
+	ezxml_set_attr(xmlp, "Size", szFileSize);
+
+	mir_sha1_append(&sha1ctx, (PBYTE)"Type", 4);
+	mir_sha1_append(&sha1ctx, (PBYTE)"3", 1);  // MSN_TYPEID_DISPLAYPICT
+	ezxml_set_attr(xmlp, "Type", "3");
+
+	mir_sha1_append(&sha1ctx, (PBYTE)"Location", 8);
+	mir_sha1_append(&sha1ctx, (PBYTE)szFname, (int)strlen(szFname));
+	ezxml_set_attr(xmlp, "Location", szFname);
+
+	mir_sha1_append(&sha1ctx, (PBYTE)"Friendly", 8);
+	mir_sha1_append(&sha1ctx, (PBYTE)"AAA=", 4);
+	ezxml_set_attr(xmlp, "Friendly", "AAA=");
+
+	mir_sha1_append(&sha1ctx, (PBYTE)"SHA1D", 5);
+	mir_sha1_append(&sha1ctx, (PBYTE)szSha1d, (int)strlen(szSha1d));
+	ezxml_set_attr(xmlp, "SHA1D", szSha1d);
+		
+	mir_sha1_finish(&sha1ctx, sha1c);
+
+	{
+		NETLIBBASE64 nlb = { szSha1c, sizeof(szSha1c), (PBYTE)sha1c, sizeof(sha1c) };
+		MSN_CallService(MS_NETLIB_BASE64ENCODE, 0, LPARAM(&nlb));
+	}
+	
+//	ezxml_set_attr(xmlp, "SHA1C", szSha1c);
+
+	char* szBuffer = ezxml_toxml(xmlp, false);
+	ezxml_free(xmlp);
+
+	char szEncodedBuffer[2000];
+	UrlEncode(szBuffer, szEncodedBuffer, sizeof(szEncodedBuffer));
+	free(szBuffer);
+
+	const char *szExt;
+	int fmt = MSN_GetImageFormat(pData, &szExt);
+	if (fmt == PA_FORMAT_UNKNOWN) return fmt;
+
+	char szFileName[MAX_PATH];
+	MSN_GetAvatarFileName(NULL, szFileName, SIZEOF(szFileName), NULL);
+	remove(szFileName);
+
+	MSN_GetAvatarFileName(NULL, szFileName, SIZEOF(szFileName), szExt);
+
+	int fileId = _open(szFileName, _O_CREAT | _O_TRUNC | _O_WRONLY | O_BINARY,  _S_IREAD | _S_IWRITE);
+	if (fileId >= 0) 
+	{
+		_write(fileId, pData, (unsigned)cbLen);
+		_close(fileId);
+
+		char szAvatarHashdOld[41] = "";
+		getStaticString(NULL, "AvatarHash", szAvatarHashdOld, sizeof(szAvatarHashdOld));
+		char *szAvatarHash = arrayToHex(sha1d, sizeof(sha1d));
+		if (strcmp(szAvatarHashdOld, szAvatarHash))
+		{
+			setString(NULL, "PictObject", szEncodedBuffer);
+			setString(NULL, "AvatarHash", szAvatarHash);
+		}
+		mir_free(szAvatarHash);
+	}
+	else
+	{
+		TCHAR *fname = mir_a2t(szFileName);
+		MSN_ShowError("Cannot set avatar. File '%s' could not be created/overwritten", fname);
+		mir_free(fname);
+	}
+
+	return fmt;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -355,12 +501,16 @@ void CMsnProto::MSN_GoOffline(void)
 
 	msnLoggedIn = false;
 
+	if (mStatusMsgTS)
+		ForkThread(&CMsnProto::msn_storeProfileThread, NULL);
+
 	mir_free(msnPreviousUUX);
 	msnPreviousUUX = NULL;
 	msnSearchId = NULL;
 
 	if (!Miranda_Terminated())
 		MSN_EnableMenuItems(false);
+
 	MSN_FreeGroups();
 	MsgQueue_Clear();
 	clearCachedMsg();
@@ -388,60 +538,67 @@ void CMsnProto::MSN_GoOffline(void)
 /////////////////////////////////////////////////////////////////////////////////////////
 // MSN_SendMessage - formats and sends a MSG packet through the server
 
-static const char sttHeaderStart[] = "MIME-Version: 1.0\r\n";
-
-LONG ThreadData::sendMessage(int msgType, const char* email, int netId, const char* parMsg, int parFlags)
+int ThreadData::sendMessage(int msgType, const char* email, int netId, const char* parMsg, int parFlags)
 {
-	char tHeader[1024];
-	strcpy(tHeader, sttHeaderStart);
+	char buf[2048];
+	int off;
 
-	if ((parFlags & MSG_DISABLE_HDR) == 0) {
+	off = mir_snprintf(buf, sizeof(buf), "MIME-Version: 1.0\r\n");
+
+	if ((parFlags & MSG_DISABLE_HDR) == 0)
+	{
 		char  tFontName[100], tFontStyle[3];
 		DWORD tFontColor;
 
 		strcpy(tFontName, "Arial");
 
-		if (proto->getByte("SendFontInfo", 1)) {
+		if (proto->getByte("SendFontInfo", 1))
+		{
 			char* p;
 
 			DBVARIANT dbv;
-			if (!DBGetContactSettingString(NULL, "SRMsg", "Font0", &dbv)) {
+			if (!DBGetContactSettingString(NULL, "SRMsg", "Font0", &dbv)) 
+			{
 				for (p = dbv.pszVal; *p; p++)
 					if (BYTE(*p) >= 128 || *p < 32)
 						break;
 
-				if (*p == 0) {
+				if (*p == 0) 
+				{
 					UrlEncode(dbv.pszVal, tFontName, sizeof(tFontName));
 					MSN_FreeVariant(&dbv);
-			}	}
-
-			{	int  tStyle = DBGetContactSettingByte(NULL, "SRMsg", "Font0Sty", 0);
-				p = tFontStyle;
-				if (tStyle & 1) *p++ = 'B';
-				if (tStyle & 2) *p++ = 'I';
-				*p = 0;
+				}	
 			}
+
+			int  tStyle = DBGetContactSettingByte(NULL, "SRMsg", "Font0Sty", 0);
+			p = tFontStyle;
+			if (tStyle & 1) *p++ = 'B';
+			if (tStyle & 2) *p++ = 'I';
+			*p = 0;
 
 			tFontColor = DBGetContactSettingDword(NULL, "SRMsg", "Font0Col", 0);
 		}
-		else {
+		else 
+		{
 			tFontColor = 0;
 			tFontStyle[0] = 0;
 		}
 
-		mir_snprintf(tHeader + sizeof(sttHeaderStart)-1, sizeof(tHeader)-sizeof(sttHeaderStart),
-			"Content-Type: text/plain; charset=UTF-8\r\n"
-			"X-MMS-IM-Format: FN=%s; EF=%s; CO=%x; CS=0; PF=31%s\r\n\r\n",
+		if (parFlags & MSG_OFFLINE) 	
+			off += mir_snprintf(buf + off, sizeof(buf) - off, "Dest-Agent: client\r\n");
+
+		off += mir_snprintf(buf + off, sizeof(buf) - off, "Content-Type: text/plain; charset=UTF-8\r\n");
+		off += mir_snprintf(buf + off, sizeof(buf) - off, "X-MMS-IM-Format: FN=%s; EF=%s; CO=%x; CS=0; PF=31%s\r\n\r\n",
 			tFontName, tFontStyle, tFontColor, (parFlags & MSG_RTL) ? ";RL=1" : "");
 	}
 
 	int seq;
-	if (netId == NETID_YAHOO)
+	if (netId == NETID_YAHOO || netId == NETID_MOB || (parFlags & MSG_OFFLINE))
 		seq = sendPacket("UUM", "%s %d %c %d\r\n%s%s", email, netId, msgType, 
-			strlen(parMsg)+strlen(tHeader), tHeader, parMsg);
+			strlen(parMsg)+off, buf, parMsg);
 	else
 		seq = sendPacket("MSG", "%c %d\r\n%s%s", msgType, 
-			strlen(parMsg)+strlen(tHeader), tHeader, parMsg);
+			strlen(parMsg)+off, buf, parMsg);
 
 	return seq;
 }
@@ -459,10 +616,19 @@ void ThreadData::sendCaps(void)
 	sendMessage('U', NULL, 1, capMsg, MSG_DISABLE_HDR);
 }
 
+void ThreadData::sendTerminate(void)
+{
+	if (!termPending)
+	{
+		sendPacket("OUT", NULL);
+		termPending = true;
+	}
+}
+
 /////////////////////////////////////////////////////////////////////////////////////////
 // MSN_SendRawPacket - sends a packet accordingly to the MSN protocol
 
-LONG ThreadData::sendRawMessage(int msgType, const char* data, int datLen)
+int ThreadData::sendRawMessage(int msgType, const char* data, int datLen)
 {
 	if (data == NULL)
 		data = "";
@@ -472,9 +638,9 @@ LONG ThreadData::sendRawMessage(int msgType, const char* data, int datLen)
 
 	char* buf = (char*)alloca(datLen + 100);
 
-	LONG thisTrid = MyInterlockedIncrement(&mTrid);
-	int nBytes = mir_snprintf(buf, 100, "MSG %d %c %d\r\n%s",
-		thisTrid, msgType, datLen + sizeof(sttHeaderStart)-1, sttHeaderStart);
+	int thisTrid = MyInterlockedIncrement(&mTrid);
+	int nBytes = mir_snprintf(buf, 100, "MSG %d %c %d\r\nMIME-Version: 1.0\r\n",
+		thisTrid, msgType, datLen + 19);
 	memcpy(buf + nBytes, data, datLen);
 
 	send(buf, nBytes + datLen);
@@ -516,31 +682,14 @@ static VOID CALLBACK TypingTimerProc(HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWO
 
 void  CMsnProto::MSN_StartStopTyping(ThreadData* info, bool start)
 {
-	if (start && info->mTimerId == 0) 
-	{
+	if (start && info->mTimerId == 0) {
 		info->mTimerId = SetTimer(NULL, 0, 5000, TypingTimerProc);
 		MSN_SendTyping(info, NULL, 1);
 	}
-	else if (!start && info->mTimerId != 0) 
-	{
+	else if (!start && info->mTimerId != 0) {
 			KillTimer(NULL, info->mTimerId);
 			info->mTimerId = 0;
 	}
-}
-
-
-long CMsnProto::MSN_SendSMS(char* tel, char* txt)
-{
-	static const char *pgd = 
-		"<TEXT xml:space=\"preserve\" enc=\"utf-8\">%s</TEXT>"
-		"<LCID>%u</LCID><CS>iso-8859-1</CS>";
-
-	char* etxt = HtmlEncode(txt);
-	char pgda[1024];
-	size_t sz = mir_snprintf(pgda, sizeof(pgda), pgd, etxt, langpref);
-	mir_free(etxt);
-
-	return msnNsThread->sendPacket("PGD", "%s 1 %u\r\n%s", tel, sz, pgda);
 }
 
 
@@ -565,12 +714,17 @@ void  CMsnProto::MSN_SendStatusMessage(const char* msg)
 
 	size_t sz;
 	char  szMsg[2048];
-	if (msnCurrentMedia.cbSize == 0) 
-		sz = mir_snprintf(szMsg, sizeof(szMsg), "<Data><PSM>%s</PSM><CurrentMedia></CurrentMedia><MachineGuid></MachineGuid></Data>", msgEnc);
+	if (msnCurrentMedia.cbSize == 0)
+	{
+		sz = mir_snprintf(szMsg, sizeof(szMsg), "<Data><PSM>%s</PSM><CurrentMedia></CurrentMedia><MachineGuid>%s</MachineGuid>"
+			"<DDP></DDP><SignatureSound></SignatureSound><Scene></Scene><ColorScheme></ColorScheme></Data>", 
+			msgEnc, MyOptions.szMachineGuid);
+	}
 	else 
 	{
 		char *szFormatEnc;
-		if (ServiceExists(MS_LISTENINGTO_GETPARSEDTEXT)) {
+		if (ServiceExists(MS_LISTENINGTO_GETPARSEDTEXT)) 
+		{
 			LISTENINGTOINFO lti = {0};
 			lti.cbSize = sizeof(lti);
 			if (msnCurrentMedia.ptszTitle != NULL) lti.ptszTitle = _T("{0}");
@@ -586,7 +740,9 @@ void  CMsnProto::MSN_SendStatusMessage(const char* msg)
 			TCHAR *tmp = (TCHAR *)CallService(MS_LISTENINGTO_GETPARSEDTEXT, (WPARAM) _T("%title% - %artist%"), (LPARAM) &lti);
 			szFormatEnc = HtmlEncodeUTF8T(tmp);
 			mir_free(tmp);
-		} else {
+		}
+		else 
+		{
 			szFormatEnc = HtmlEncodeUTF8T(_T("{0} - {1}"));
 		}
 
@@ -604,9 +760,11 @@ void  CMsnProto::MSN_SendStatusMessage(const char* msg)
 			"<Data>"
 				"<PSM>%s</PSM>"
 				"<CurrentMedia>%s\\0%s\\01\\0%s\\0%s\\0%s\\0%s\\0%s\\0%s\\0%s\\0%s\\0%s\\0%s\\0\\0</CurrentMedia>"
-				"<MachineGuid></MachineGuid>"
+				"<MachineGuid>%s</MachineGuid><DDP></DDP><SignatureSound></SignatureSound><Scene></Scene><ColorScheme></ColorScheme>"
+				"<DDP></DDP><SignatureSound></SignatureSound><Scene></Scene><ColorScheme></ColorScheme>"
 			"</Data>", 
-			msgEnc, szPlayer, szType, szFormatEnc, szTitle, szArtist, szAlbum, szTrack, szYear, szGenre, szLength, szPlayer, szType);
+			msgEnc, szPlayer, szType, szFormatEnc, szTitle, szArtist, szAlbum, szTrack, szYear, szGenre, 
+			szLength, szPlayer, szType, MyOptions.szMachineGuid);
 
 		mir_free(szArtist);
 		mir_free(szAlbum);
@@ -624,20 +782,21 @@ void  CMsnProto::MSN_SendStatusMessage(const char* msg)
 	{
 		replaceStr(msnPreviousUUX, szMsg);
 		msnNsThread->sendPacket("UUX", "%d\r\n%s", sz, szMsg);
+		mStatusMsgTS = clock();
 	}
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // MSN_SendPacket - sends a packet accordingly to the MSN protocol
 
-LONG ThreadData::sendPacket(const char* cmd, const char* fmt,...)
+int ThreadData::sendPacket(const char* cmd, const char* fmt,...)
 {
 	if (this == NULL) return 0;
 
 	size_t strsize = 512;
 	char* str = (char*)mir_alloc(strsize);
 
-	LONG thisTrid = 0;
+	int thisTrid = 0;
 
 	if (fmt == NULL)
 		mir_snprintf(str, strsize, "%s", cmd);
@@ -677,21 +836,64 @@ void  CMsnProto::MSN_SetServerStatus(int newStatus)
 	if (!msnLoggedIn)
 		return;
 
+	if (isIdle) newStatus = ID_STATUS_IDLE;
+
 	const char* szStatusName = MirandaStatusToMSN(newStatus);
 
 	if (newStatus != ID_STATUS_OFFLINE) 
 	{
-		char szMsnObject[1000];
-		if (!ServiceExists(MS_AV_SETMYAVATAR) || 
-			 getStaticString(NULL, "PictObject", szMsnObject, sizeof(szMsnObject)))
-			szMsnObject[0] = 0;
+		DBVARIANT msnObject = {0};
+		if (ServiceExists(MS_AV_SETMYAVATAR)) 
+			 getString("PictObject", &msnObject);
 
-		// Capabilties: WLM 8.5, Chunking, UUN Bootstrap 
-		myFlags = 0x80000020 | 0x4000000;
+		// Capabilties: WLM 2009, Chunking, UUN Bootstrap 
+		myFlags = 0xA0000000 | cap_SupportsChunking | cap_SupportsP2PBootstrap | cap_SupportsSipInvite;
 		if (getByte("MobileEnabled", 0) && getByte("MobileAllowed", 0))
-			myFlags |= 0x40;
+			myFlags |= cap_MobileEnabled;
 
-		msnNsThread->sendPacket("CHG", "%s %u %s", szStatusName, myFlags, szMsnObject);
+		unsigned myFlagsEx = capex_SupportsNudges | capex_SupportsOfflineIM | capex_SupportsPeerToPeerV2;
+
+		char szMsg[256];
+		if (m_iStatus < ID_STATUS_ONLINE)
+		{
+			int sz = mir_snprintf(szMsg, sizeof(szMsg), 
+				"<EndpointData><Capabilities>%u:%u</Capabilities></EndpointData>", myFlags, myFlagsEx);
+			msnNsThread->sendPacket( "UUX", "%d\r\n%s", sz, szMsg );
+
+			msnNsThread->sendPacket("BLP", msnOtherContactsBlocked ? "BL" : "AL");
+
+			DBVARIANT dbv;
+			if (!getStringUtf("Nick", &dbv)) 
+			{
+				if (dbv.pszVal[0]) MSN_SetNicknameUtf(dbv.pszVal);
+				MSN_FreeVariant(&dbv);
+			}
+		}
+
+		char *szPlace;
+		DBVARIANT dbv;
+		if	(!getStringUtf("Place", &dbv))
+		{
+			szPlace = dbv.pszVal;
+		}
+		else
+		{
+			TCHAR buf[128] = _T("Miranda");
+			DWORD buflen = SIZEOF(buf);
+			GetComputerName(buf, &buflen);
+			szPlace =  mir_utf8encodeT(buf);
+		}
+
+		int sz = mir_snprintf(szMsg, sizeof(szMsg), 
+			"<PrivateEndpointData>"
+				"<EpName>%s</EpName>"
+				"<Idle>%s</Idle>"
+				"<ClientType>1</ClientType>"
+				"<State>%s</State>"
+			"</PrivateEndpointData>", 
+			szPlace, newStatus == ID_STATUS_IDLE ? "true" : "false", szStatusName);
+		msnNsThread->sendPacket("UUX", "%d\r\n%s", sz, szMsg);
+		mir_free(szPlace);
 
 		if (newStatus != ID_STATUS_IDLE) 
 		{
@@ -699,6 +901,9 @@ void  CMsnProto::MSN_SetServerStatus(int newStatus)
 			if (msgptr != NULL)
 				MSN_SendStatusMessage(*msgptr);
 		}
+
+		msnNsThread->sendPacket("CHG", "%s %u:%u %s", szStatusName, myFlags, myFlagsEx, msnObject.pszVal ? msnObject.pszVal : "0");
+		DBFreeVariant(&msnObject);
 	}
 	else msnNsThread->sendPacket("CHG", szStatusName);
 }
@@ -709,18 +914,17 @@ void  CMsnProto::MSN_SetServerStatus(int newStatus)
 
 void CMsnProto::MsnInvokeMyURL(bool ismail, const char* url)
 {
-	const char* requrl = url ? url : (ismail ? rru : "http://spaces.live.com");  
 	const char* id = ismail ? urlId : "73625";
 
 	char* hippy = NULL;
-	if (passport && requrl && id)
+	if (passport && url && id)
 	{
-		static const char postdataM[] = "ct=%u&bver=4&id=%s&rru=%s&svc=mail&js=yes&pl=%%3Fid%%3D%s";
-		static const char postdataS[] = "ct=%u&bver=4&id=%s&ru=%s&js=yes&pl=%%3Fid%%3D%s";
+		static const char postdataM[] = "ct=%u&bver=5&id=%s&rru=%s&svc=mail&js=yes&pl=%%3Fid%%3D%s";
+		static const char postdataS[] = "ct=%u&bver=5&id=%s&ru=%s&js=yes&pl=%%3Fid%%3D%s";
 		const char *postdata = ismail ? postdataM : postdataS;
 	  
 		char rruenc[256];
-		UrlEncode(requrl, rruenc, sizeof(rruenc));
+		UrlEncode(url, rruenc, sizeof(rruenc));
  
 		const size_t fnpstlen = strlen(postdata) +  strlen(rruenc) + 2*strlen(id) + 30;
 		char* fnpst = (char*)alloca(fnpstlen);
@@ -746,7 +950,7 @@ void CMsnProto::MsnInvokeMyURL(bool ismail, const char* url)
 			mir_free(post);
 		}
 	}
-	if (hippy == NULL) hippy = (char*)(ismail ? "http://mail.live.com" : "http://spaces.live.com");
+	if (hippy == NULL) hippy = (char*)(ismail ? "http://mail.live.com" : "http://profile.live.com");
 
 	MSN_DebugLog("Starting URL: '%s'", hippy);
 	MSN_CallService(MS_UTILS_OPENURL, 1, (LPARAM)hippy);
@@ -961,15 +1165,19 @@ filetransfer::~filetransfer(void)
 	WaitForSingleObject(hLockHandle, 2000);
 	CloseHandle(hLockHandle);
 
+	if (fileId != -1)
+	{
+		_close(fileId);
+		if (p2p_appID != MSN_APPID_FILE && !(std.flags & PFTS_SENDING)) 
+			proto->p2p_pictureTransferFailed(this);
+	}
+
 	if (!bCompleted && p2p_appID == MSN_APPID_FILE) 
 	{
 		std.ptszFiles = NULL;
 		std.totalFiles = 0;
 		proto->SendBroadcast(std.hContact, ACKTYPE_FILE, ACKRESULT_FAILED, this, 0);
 	}
-
-	if (fileId != -1)
-		_close(fileId);
 
 	mir_free(p2p_branch);
 	mir_free(p2p_callID);
@@ -1046,6 +1254,7 @@ int filetransfer::openNext(void)
 			p2p_sendmsgid = 0;
 			p2p_byemsgid = 0;
 			tType = SERVER_DISPATCH;
+			bAccepted = false;
 
 			mir_free(p2p_branch); p2p_branch = NULL;
 			mir_free(p2p_callID); p2p_callID = NULL;
@@ -1057,11 +1266,11 @@ int filetransfer::openNext(void)
 	return fileId;
 }
 
-directconnection::directconnection(const char* CallID, HANDLE HContact)
+directconnection::directconnection(const char* CallID, const char* Wlid)
 {
 	memset(this, 0, sizeof(directconnection));
 
-	hContact = HContact;
+	wlid = mir_strdup(Wlid);
 	callId = mir_strdup(CallID);
 	mNonce = (UUID*)mir_alloc(sizeof(UUID));
 	UuidCreate(mNonce);
@@ -1070,6 +1279,7 @@ directconnection::directconnection(const char* CallID, HANDLE HContact)
 
 directconnection::~directconnection()
 {
+	mir_free(wlid);
 	mir_free(callId);
 	mir_free(mNonce);
 	mir_free(xNonce);
@@ -1161,44 +1371,6 @@ char* TWinErrorCode::getText()
 	}
 
 	return mErrorText;
-}
-
-// Process a string, and double all % characters, according to chat.dll's restrictions
-// Returns a pointer to the new string (old one is not freed)
-TCHAR* EscapeChatTags(const TCHAR* pszText)
-{
-	int nChars = 0;
-	for (const TCHAR* p = pszText; (p = _tcschr(p, '%')) != NULL; p++)
-		nChars++;
-
-	if (nChars == 0)
-		return mir_tstrdup(pszText);
-
-	TCHAR *pszNewText = (TCHAR*)mir_alloc(sizeof(TCHAR)*(_tcslen(pszText) + 1 + nChars));
-	if (pszNewText == NULL)
-		return mir_tstrdup(pszText);
-
-	const TCHAR *s = pszText;
-	TCHAR *d = pszNewText;
-	while (*s) {
-		if (*s == '%')
-			*d++ = '%';
-		*d++ = *s++;
-	}
-	*d = 0;
-	return pszNewText;
-}
-
-TCHAR* UnEscapeChatTags(TCHAR* str_in)
-{
-	TCHAR *s = str_in, *d = str_in;
-	while (*s) {
-		if ((*s == '%' && s[1] == '%') || (*s == '\n' && s[1] == '\n'))
-			s++;
-		*d++ = *s++;
-	}
-	*d = 0;
-	return str_in;
 }
 
 char* MSN_Base64Decode(const char* str)

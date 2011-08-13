@@ -21,6 +21,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "msn_global.h"
 #include "msn_proto.h"
 
+extern bool bMir9;
 extern int avsPresent;
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -39,16 +40,13 @@ INT_PTR CMsnProto::GetMyAwayMsg(WPARAM wParam,LPARAM lParam)
 
 INT_PTR CMsnProto::GetAvatar(WPARAM wParam, LPARAM lParam)
 {
-	if (avsPresent < 0) avsPresent = ServiceExists(MS_AV_SETMYAVATAR) != 0;
-	if (!avsPresent) return 1;
-
 	char* buf = (char*)wParam;
 	int  size = (int)lParam;
 
 	if (buf == NULL || size <= 0)
 		return -1;
 
-	MSN_GetAvatarFileName(NULL, buf, size);
+	MSN_GetAvatarFileName(NULL, buf, size, NULL);
 	return _access(buf, 0);
 }
 
@@ -64,13 +62,17 @@ void CMsnProto::sttFakeAvatarAck(void* arg)
 
 INT_PTR CMsnProto::GetAvatarInfo(WPARAM wParam,LPARAM lParam)
 {
-	if (avsPresent < 0) avsPresent = ServiceExists(MS_AV_SETMYAVATAR) != 0;
-	if (!avsPresent) return GAIR_NOAVATAR;
-
 	PROTO_AVATAR_INFORMATION* AI = (PROTO_AVATAR_INFORMATION*)lParam;
 
 	if ((getDword(AI->hContact, "FlagBits", 0) & 0xf0000000) == 0)
 		return GAIR_NOAVATAR;
+
+	if (MSN_IsMeByContact(AI->hContact))
+	{
+		MSN_GetAvatarFileName(NULL, AI->filename, sizeof(AI->filename), NULL);
+		AI->format = MSN_GetImageFormat(AI->filename);
+		return 	(AI->format == PA_FORMAT_UNKNOWN ? GAIR_NOAVATAR : GAIR_SUCCESS);
+	}
 
 	char *szContext;
 	DBVARIANT dbv;
@@ -82,69 +84,11 @@ INT_PTR CMsnProto::GetAvatarInfo(WPARAM wParam,LPARAM lParam)
 	else
 		return GAIR_NOAVATAR;
 
-	if (MSN_IsMeByContact(AI->hContact))
-	{
-		MSN_GetAvatarFileName(NULL, AI->filename, sizeof(AI->filename));
-		AI->format = PA_FORMAT_PNG;
-		return 	(_access(AI->filename, 4) ? GAIR_NOAVATAR : GAIR_SUCCESS);
-	}
+	MSN_GetAvatarFileName(AI->hContact, AI->filename, sizeof(AI->filename), NULL);
+	AI->format = MSN_GetImageFormat(AI->filename);
 
-	MSN_GetAvatarFileName(AI->hContact, AI->filename, sizeof(AI->filename));
-	AI->format = PA_FORMAT_UNKNOWN;
-
-	if (AI->hContact) 
-	{
-		size_t len = strlen(AI->filename);
-		strcpy(AI->filename + len, "*");
-
-		_finddata_t c_file;
-		long hFile = _findfirst(AI->filename, &c_file);
-
-		// Find first .c file in current directory 
-		if (hFile == -1L)
-		{
-			strcpy(AI->filename + len, "unk");
-		}
-		else
-		{
-			char *ext = strrchr(c_file.name, '.');
-			if (ext != NULL) 
-			{
-				_strlwr(++ext);
-				
-				if (strcmp(ext, "png") == 0)
-				{
-					AI->format = PA_FORMAT_PNG;
-					strcpy(AI->filename + len, "png");
-				}
-				else if (strcmp(ext, "jpg") == 0)
-				{
-					AI->format = PA_FORMAT_JPEG;
-					strcpy(AI->filename + len, "jpg");
-				}
-				else if (strcmp(ext, "gif") == 0)
-				{
-					AI->format = PA_FORMAT_GIF;
-					strcpy(AI->filename + len, "gif");
-				}
-				else if (strcmp(ext, "bmp") == 0)
-				{
-					AI->format = PA_FORMAT_BMP;
-					strcpy(AI->filename + len, "bmp");
-				}
-				else
-					strcpy(AI->filename + len, "unk");
-			}
-			else
-				strcpy(AI->filename + len, "unk");
-
-			_findclose(hFile);
-		}
-	}
-	else {
-		if (_access(AI->filename, 0) == 0)
-			AI->format = PA_FORMAT_PNG;
-	}
+	if (_access(AI->filename, 0))
+		AI->format = PA_FORMAT_UNKNOWN;
 
 	if (AI->format != PA_FORMAT_UNKNOWN) 
 	{
@@ -169,8 +113,12 @@ INT_PTR CMsnProto::GetAvatarInfo(WPARAM wParam,LPARAM lParam)
 		return GAIR_SUCCESS;
 	}
 
+	MSN_GetAvatarFileName(AI->hContact, AI->filename, sizeof(AI->filename), "unk");
 	if ((wParam & GAIF_FORCE) != 0 && AI->hContact != NULL)
 	{
+		if (avsPresent < 0) avsPresent = ServiceExists(MS_AV_SETMYAVATAR) != 0;
+		if (!avsPresent) return GAIR_NOAVATAR;
+
 		WORD wStatus = getWord(AI->hContact, "Status", ID_STATUS_OFFLINE);
 		if (wStatus == ID_STATUS_OFFLINE) 
 		{
@@ -188,7 +136,7 @@ INT_PTR CMsnProto::GetAvatarInfo(WPARAM wParam,LPARAM lParam)
 				ft->p2p_object = mir_strdup(szContext);
 				ft->std.tszCurrentFile = mir_a2t(AI->filename);
 
-				p2p_invite(AI->hContact, MSN_APPID_AVATAR, ft);
+				p2p_invite(MSN_APPID_AVATAR, ft, NULL);
 			}
 		}
 		return GAIR_WAITFOR;
@@ -215,7 +163,7 @@ INT_PTR CMsnProto::GetAvatarCaps(WPARAM wParam, LPARAM lParam)
 		break;
 
 	case AF_FORMATSUPPORTED:
-		res = lParam == PA_FORMAT_PNG;
+		res = lParam == PA_FORMAT_PNG || lParam == PA_FORMAT_GIF || lParam == PA_FORMAT_JPEG;
 		break;
 
 	case AF_ENABLED:
@@ -231,17 +179,16 @@ INT_PTR CMsnProto::GetAvatarCaps(WPARAM wParam, LPARAM lParam)
 
 INT_PTR CMsnProto::SetAvatar(WPARAM wParam, LPARAM lParam)
 {
-	if (avsPresent < 0) avsPresent = ServiceExists(MS_AV_SETMYAVATAR) != 0;
-	if (!avsPresent) return 1;
-
 	char* szFileName = (char*)lParam;
+
+	char tFileName[MAX_PATH];
+	MSN_GetAvatarFileName(NULL, tFileName, sizeof(tFileName), NULL);
+	remove(tFileName);
 
 	if (szFileName == NULL)
 	{
-		char tFileName[MAX_PATH];
-		MSN_GetAvatarFileName(NULL, tFileName, sizeof(tFileName));
-		remove(tFileName);
 		deleteSetting(NULL, "PictObject");
+		deleteSetting(NULL, "AvatarHash");
 		ForkThread(&CMsnProto::msn_storeAvatarThread, NULL);
 	}
 	else
@@ -249,96 +196,26 @@ INT_PTR CMsnProto::SetAvatar(WPARAM wParam, LPARAM lParam)
 		int fileId = _open(szFileName, _O_RDONLY | _O_BINARY, _S_IREAD);
 		if (fileId < 0) return 1;
 
-		long  dwPngSize = _filelengthi64(fileId);
-		unsigned char* pResult = (unsigned char*)mir_alloc(dwPngSize);
-		if (pResult == NULL) return 2;
+		size_t dwPngSize = _filelengthi64(fileId);
+		unsigned char* pData = (unsigned char*)mir_alloc(dwPngSize);
+		if (pData == NULL) return 2;
 
-		_read(fileId, pResult, dwPngSize);
+		_read(fileId, pData, (unsigned)dwPngSize);
 		_close(fileId);
 
-		mir_sha1_ctx sha1ctx;
-		BYTE sha1c[MIR_SHA1_HASH_SIZE], sha1d[MIR_SHA1_HASH_SIZE];
-		char szSha1c[41], szSha1d[41];
-
-		mir_sha1_init(&sha1ctx);
-		mir_sha1_append(&sha1ctx, pResult, dwPngSize);
-		mir_sha1_finish(&sha1ctx, sha1d);
-		{	
-			NETLIBBASE64 nlb = { szSha1d, sizeof(szSha1d), (PBYTE)sha1d, sizeof(sha1d) };
-			MSN_CallService(MS_NETLIB_BASE64ENCODE, 0, LPARAM(&nlb));
-		}
 		char drive[_MAX_DRIVE];
 		char dir[_MAX_DIR];
 		char fname[_MAX_FNAME];
 		char ext[_MAX_EXT];
 		_splitpath(szFileName, drive, dir, fname, ext);
-		mir_sha1_init(&sha1ctx);
-		ezxml_t xmlp = ezxml_new("msnobj");
 
-		mir_sha1_append(&sha1ctx, (PBYTE)"Creator", 7);
-		mir_sha1_append(&sha1ctx, (PBYTE)MyOptions.szEmail, (int)strlen(MyOptions.szEmail));
-		ezxml_set_attr(xmlp, "Creator", MyOptions.szEmail);
-
-		char szFileSize[20];
-		_ltoa(dwPngSize, szFileSize, 10);
-		mir_sha1_append(&sha1ctx, (PBYTE)"Size", 4);
-		mir_sha1_append(&sha1ctx, (PBYTE)szFileSize, (int)strlen(szFileSize));
-		ezxml_set_attr(xmlp, "Size", szFileSize);
-
-		mir_sha1_append(&sha1ctx, (PBYTE)"Type", 4);
-		mir_sha1_append(&sha1ctx, (PBYTE)"3", 1);  // MSN_TYPEID_DISPLAYPICT
-		ezxml_set_attr(xmlp, "Type", "3");
-
-		mir_sha1_append(&sha1ctx, (PBYTE)"Location", 8);
-		mir_sha1_append(&sha1ctx, (PBYTE)fname, (int)strlen(fname));
-		ezxml_set_attr(xmlp, "Location", fname);
-
-		mir_sha1_append(&sha1ctx, (PBYTE)"Friendly", 8);
-		mir_sha1_append(&sha1ctx, (PBYTE)"AAA=", 4);
-		ezxml_set_attr(xmlp, "Friendly", "AAA=");
-
-		mir_sha1_append(&sha1ctx, (PBYTE)"SHA1D", 5);
-		mir_sha1_append(&sha1ctx, (PBYTE)szSha1d, (int)strlen(szSha1d));
-		ezxml_set_attr(xmlp, "SHA1D", szSha1d);
-		
-		mir_sha1_finish(&sha1ctx, sha1c);
-
-		{	
-			NETLIBBASE64 nlb = { szSha1c, sizeof(szSha1c), (PBYTE)sha1c, sizeof(sha1c) };
-			MSN_CallService(MS_NETLIB_BASE64ENCODE, 0, LPARAM(&nlb));
-			ezxml_set_attr(xmlp, "SHA1C", szSha1c);
-		}
-		{
-			char* szBuffer = ezxml_toxml(xmlp, false);
-			char szEncodedBuffer[2000];
-			UrlEncode(szBuffer, szEncodedBuffer, sizeof(szEncodedBuffer));
-			free(szBuffer);
-			ezxml_free(xmlp);
-
-			setString(NULL, "PictObject", szEncodedBuffer);
-		}
-		{	
-			char tFileName[MAX_PATH];
-			MSN_GetAvatarFileName(NULL, tFileName, SIZEOF(tFileName));
-			int fileId = _open(tFileName, _O_CREAT | _O_TRUNC | _O_WRONLY | O_BINARY,  _S_IREAD | _S_IWRITE);
-			if (fileId >= 0) 
-			{
-				_write(fileId, pResult, dwPngSize);
-				_close(fileId);
-			}
-			else
-			{
-				TCHAR *fname = mir_a2t(tFileName);
-				MSN_ShowError("Cannot set avatar. File '%s' could not be created/overwritten", fname);
-				mir_free(fname);
-			}
-		}
+		int fmt = MSN_SetMyAvatar(fname, pData, dwPngSize);
 
 		StoreAvatarData* par = (StoreAvatarData*)mir_alloc(sizeof(StoreAvatarData));
 		par->szName = mir_strdup(fname);
-		par->szMimeType = "image/png";
-		par->data = pResult;
+		par->data = pData;
 		par->dataSize = dwPngSize;
+		par->szMimeType = "image/png";
 
 		ForkThread(&CMsnProto::msn_storeAvatarThread, par);
 	}
@@ -386,11 +263,11 @@ INT_PTR CMsnProto::SendNudge(WPARAM wParam, LPARAM lParam)
 	case NETID_LCS:
 		{
 			bool isOffline;
-			ThreadData* thread = MSN_StartSB(hContact, isOffline);
+			ThreadData* thread = MSN_StartSB(tEmail, isOffline);
 			if (thread == NULL)
 			{
 				if (isOffline) return 0; 
-				MsgQueue_Add(hContact, 'N', nudgemsg, -1);
+				MsgQueue_Add(tEmail, 'N', nudgemsg, -1);
 			}
 			else
 			{
@@ -506,6 +383,8 @@ int CMsnProto::OnContactDeleted(WPARAM wParam, LPARAM lParam)
 	if (!msnLoggedIn)  //should never happen for MSN contacts
 		return 0;
 
+	if (bMir9 && !MSN_IsMyContact(hContact)) return 0;
+
 	int type = getByte(hContact, "ChatRoom", 0);
 	if (type != 0) 
 	{
@@ -590,6 +469,8 @@ int CMsnProto::OnDbSettingChanged(WPARAM wParam,LPARAM lParam)
 
 	if (hContact == NULL) 
 	{
+		if (bMir9 && !MSN_IsMyContact(hContact)) return 0;
+
 		if (MyOptions.SlowSend && strcmp(cws->szSetting, "MessageTimeout") == 0 &&
 		   (strcmp(cws->szModule, "SRMM") == 0 || strcmp(cws->szModule, "SRMsg") == 0))
 		{ 
@@ -602,21 +483,23 @@ int CMsnProto::OnDbSettingChanged(WPARAM wParam,LPARAM lParam)
 
 	if (!strcmp(cws->szSetting, "ApparentMode")) 
 	{
+		if (bMir9 && !MSN_IsMyContact(hContact)) return 0;
+
 		char tEmail[MSN_MAX_EMAIL_LEN];
 		if (!getStaticString(hContact, "e-mail", tEmail, sizeof(tEmail))) 
 		{
 			bool isBlocked = Lists_IsInList(LIST_BL, tEmail);
 
-			if (!isBlocked && cws->value.wVal == ID_STATUS_OFFLINE) 
-			{
-				MSN_AddUser(hContact, tEmail, 0, LIST_AL + LIST_REMOVE);
-				MSN_AddUser(hContact, tEmail, 0, LIST_BL);
-			}
-			else if (isBlocked && cws->value.wVal == 0) 
+			if (isBlocked && (cws->value.type == DBVT_DELETED || cws->value.wVal == 0)) 
 			{
 				MSN_AddUser(hContact, tEmail, 0, LIST_BL + LIST_REMOVE);
 				MSN_AddUser(hContact, tEmail, 0, LIST_AL);
 			}	
+			else if (!isBlocked && cws->value.wVal == ID_STATUS_OFFLINE) 
+			{
+				MSN_AddUser(hContact, tEmail, 0, LIST_AL + LIST_REMOVE);
+				MSN_AddUser(hContact, tEmail, 0, LIST_BL);
+			}
 		}	
 	}
 
@@ -649,25 +532,22 @@ int CMsnProto::OnDbSettingChanged(WPARAM wParam,LPARAM lParam)
 
 int CMsnProto::OnIdleChanged(WPARAM wParam, LPARAM lParam)
 {
-	if (!msnLoggedIn || m_iStatus == ID_STATUS_INVISIBLE)
+	if (m_iStatus == ID_STATUS_INVISIBLE)
 		return 0;
 
 	bool bIdle = (lParam & IDF_ISIDLE) != 0;
 	bool bPrivacy = (lParam & IDF_PRIVACY) != 0;
 
-	if (bPrivacy) 
+	if (isIdle && !bIdle)
 	{
-		if (!bIdle)
-			MSN_SetServerStatus(m_iDesiredStatus);
-		return 0;
+		isIdle = false;
+		MSN_SetServerStatus(m_iDesiredStatus);
 	}
-
-	MIRANDA_IDLE_INFO mii = {0};
-	mii.cbSize = sizeof(mii);
-	CallService(MS_IDLE_GETIDLEINFO, 0, (LPARAM) & mii);
-
-	if (!mii.aaStatus)
-		MSN_SetServerStatus(bIdle ? ID_STATUS_IDLE : m_iDesiredStatus);
+	else if (!isIdle && bIdle && !bPrivacy)
+	{
+		isIdle = true;
+		MSN_SetServerStatus(ID_STATUS_IDLE);
+	}
 
 	return 0;
 }
@@ -695,10 +575,10 @@ int CMsnProto::OnWindowEvent(WPARAM wParam, LPARAM lParam)
 		if (Lists_IsInList(LIST_BL, tEmail)) return 0;
 
 		bool isOffline;
-		ThreadData* thread = MSN_StartSB(msgEvData->hContact, isOffline);
+		ThreadData* thread = MSN_StartSB(tEmail, isOffline);
 		
 		if (thread == NULL && !isOffline)
-			MsgQueue_Add(msgEvData->hContact, 'X', NULL, 0, NULL);
+			MsgQueue_Add(tEmail, 'X', NULL, 0, NULL);
 	}
 	return 0;
 }
