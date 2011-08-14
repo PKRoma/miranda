@@ -48,7 +48,7 @@ bool    bMir9;
 bool	msnHaveChatDll;
 int		avsPresent = -1;
 
-PLUGININFOEX pluginInfo =
+static const PLUGININFOEX pluginInfo =
 {
 	sizeof(PLUGININFOEX),
 	"MSN Protocol",
@@ -133,6 +133,7 @@ extern "C" int __declspec(dllexport) Load(PLUGINLINK* link)
 	mir_getMD5I(&md5i);
 	mir_getSHA1I(&sha1i);
 	mir_getTMI(&tmi);
+	mir_getLP(&pluginInfo);
 
 	hMooduleLoaded = HookEvent(ME_SYSTEM_MODULESLOADED, OnModulesLoaded);
 
@@ -163,7 +164,7 @@ extern "C" int __declspec(dllexport) Unload(void)
 /////////////////////////////////////////////////////////////////////////////////////////
 // MirandaPluginInfoEx - returns an information about a plugin
 
-extern "C" __declspec(dllexport) PLUGININFOEX* MirandaPluginInfoEx(DWORD mirandaVersion)
+extern "C" __declspec(dllexport) const PLUGININFOEX* MirandaPluginInfoEx(DWORD mirandaVersion)
 {
 	if (mirandaVersion < PLUGIN_MAKE_VERSION(0, 9, 24, 0) || 
 		(mirandaVersion >= PLUGIN_MAKE_VERSION(0, 10, 0, 0) && 
