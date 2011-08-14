@@ -257,8 +257,7 @@ void __cdecl gg_mainthread(GGPROTO *gg, void *empty)
 		{ GG_FAILURE_UNAVAILABLE,	"Gadu-Gadu servers are now down. Try again later." },
 		{ 0,						"Unknown" }
 	};
-	time_t loginTime = 0;
-	// Time deviation (300s)
+	time_t logonTime = 0;
 	time_t timeDeviation = DBGetContactSettingWord(NULL, GG_PROTO, GG_KEY_TIMEDEVIATION, GG_KEYDEF_TIMEDEVIATION);
 	int gg_failno = 0;
 
@@ -449,11 +448,11 @@ retry:
 				&& errno == EACCES
 				&& (DBGetContactSettingByte(NULL, GG_PROTO, GG_KEY_ARECONNECT, GG_KEYDEF_ARECONNECT) || (hostnum < hostcount - 1)))
 			{
-				DWORD dwResult;
+				DWORD dwInterval = DBGetContactSettingDword(NULL, GG_PROTO, GG_KEY_RECONNINTERVAL, GG_KEYDEF_RECONNINTERVAL), dwResult;
 				BOOL bRetry = TRUE;
 
 				gg->hConnStopEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
-				dwResult = WaitForSingleObjectEx(gg->hConnStopEvent, 3000, TRUE);
+				dwResult = WaitForSingleObjectEx(gg->hConnStopEvent, dwInterval, TRUE);
 				if ((dwResult == WAIT_OBJECT_0 && gg->proto.m_iDesiredStatus == ID_STATUS_OFFLINE)
 					|| (dwResult == WAIT_IO_COMPLETION && Miranda_Terminated()))
 					bRetry = FALSE;
@@ -480,7 +479,8 @@ retry:
 	else
 	{
 		// Successfully connected
-		loginTime = time(NULL);
+		logonTime = time(NULL);
+		DBWriteContactSettingDword(NULL, GG_PROTO, GG_KEY_LOGONTIME, logonTime);
 		EnterCriticalSection(&gg->sess_mutex);
 		gg->sess = sess;
 		LeaveCriticalSection(&gg->sess_mutex);
@@ -915,7 +915,7 @@ retry:
 					gg_sessions_updatedlg(gg);
 					if (ServiceExists(MS_POPUP_ADDPOPUPCLASS))
 					{
-						const char* szText = time(NULL) - loginTime > 3
+						const char* szText = time(NULL) - logonTime > 3
 							? Translate("You have logged in at another location")
 							: Translate("You are logged in at another location");
 						for (i = 0; i < e->event.multilogon_info.count; i++)
@@ -1156,6 +1156,7 @@ retry:
 
 	gg_broadcastnewstatus(gg, ID_STATUS_OFFLINE);
 	gg_setalloffline(gg);
+	DBWriteContactSettingDword(NULL, GG_PROTO, GG_KEY_LOGONTIME, 0);
 
 	// If it was unwanted disconnection reconnect
 	if(gg->proto.m_iDesiredStatus != ID_STATUS_OFFLINE

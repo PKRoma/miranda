@@ -322,7 +322,6 @@ int gg_event(PROTO_INTERFACE *proto, PROTOEVENTTYPE eventType, WPARAM wParam, LP
 			gg_gc_init(gg);
 			gg_keepalive_init(gg);
 			gg_img_init(gg);
-
 			break;
 		}
 		case EV_PROTO_ONEXIT:
@@ -427,9 +426,12 @@ static GGPROTO *gg_proto_init(const char* pszProtoName, const TCHAR* tszUserName
 
 	// Register services
 	gg_registerservices(gg);
-	gg_setalloffline(gg);
 
-	if((dwVersion = DBGetContactSettingDword(NULL, GG_PROTO, GG_PLUGINVERSION, 0)) < pluginInfo.version)
+	// Offline contacts and clear logon time
+	gg_setalloffline(gg);
+	DBWriteContactSettingDword(NULL, GG_PROTO, GG_KEY_LOGONTIME, 0);
+
+	if ((dwVersion = DBGetContactSettingDword(NULL, GG_PROTO, GG_PLUGINVERSION, 0)) < pluginInfo.version)
 		gg_cleanuplastplugin(gg, dwVersion);
 
 	gg_links_instance_init(gg);

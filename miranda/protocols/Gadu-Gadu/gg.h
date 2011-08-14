@@ -319,6 +319,11 @@ typedef void (__cdecl GGThreadFunc)(void*, void*);
 #define GG_KEY_TIMEDEVIATION	"TimeDeviation" // Max time deviation for connections (seconds)
 #define GG_KEYDEF_TIMEDEVIATION	300
 
+#define GG_KEY_LOGONTIME		"LogonTS"
+
+#define GG_KEY_RECONNINTERVAL		"ReconnectInterval"
+#define GG_KEYDEF_RECONNINTERVAL	3000
+
 // chpassdlgproc() multipurpose dialog proc modes
 #define GG_USERUTIL_PASS	0
 #define GG_USERUTIL_CREATE	1
