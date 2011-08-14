@@ -192,7 +192,7 @@ __inline static INT_PTR Langpack_PCharToTChar(const char* str)
 
 #if defined( MIRANDA_CUSTOM_LP )
 
-__forceinline void mir_getLP( PLUGININFOEX* pInfo )
+__forceinline void mir_getLP( const PLUGININFOEX* pInfo )
 {	CallService(MS_LANGPACK_REGISTER, (WPARAM)&hLangpack, (LPARAM)pInfo);
 }
 
