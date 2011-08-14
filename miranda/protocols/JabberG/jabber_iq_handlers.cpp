@@ -554,7 +554,8 @@ BOOL CJabberProto::OnRosterPushRequest( HXML, CJabberIqInfo *pInfo )
 						JabberContactListCreateGroup( item->group );
 						DBWriteContactSettingTString( hContact, "CList", "Group", item->group );
 					}
-					else DBDeleteContactSetting( hContact, "CList", "Group" );
+					else if (m_options.IgnoreRosterGroups == FALSE)
+						DBDeleteContactSetting( hContact, "CList", "Group" );
 				}
 				mir_free( nick );
 		}	}
