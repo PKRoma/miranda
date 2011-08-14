@@ -3,6 +3,16 @@
                            www.miranda-im.org
 
 
+* New in 0.9.27
+Bugfixes:
+ - Fixed time display when Disable Automatic daylight correction checkbox in Windows is cleared
+ - Fixed show time different from current time
+ - Fixed pressing button with space
+ - Fixed utf8 langpacks and ansi translations
+ - Fixed error notifications when protocols are offline
+ - MSN: Fixed connectivity issues
+ 
+
 * New in 0.9.26
 Enhancements:
  - Added support for SOCKS5 proxy from autoconfig script
