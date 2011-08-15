@@ -270,9 +270,12 @@ INT_PTR NetlibCloseHandle(WPARAM wParam, LPARAM)
 			}
 			else
 			{
-				if(nlc->s != INVALID_SOCKET) {
-					NetlibDoClose(nlc);
+				if(nlc->handleType!=NLH_CONNECTION || nlc->s==INVALID_SOCKET) {
+					ReleaseMutex(hConnectionHeaderMutex);
+					SetLastError(ERROR_INVALID_PARAMETER);	  //already been closed
+					return 0;
 				}
+				NetlibDoClose(nlc);
 				if (nlc->s2 != INVALID_SOCKET) closesocket(nlc->s2);
 				nlc->s2 = INVALID_SOCKET;
 			}
