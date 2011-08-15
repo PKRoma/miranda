@@ -1640,19 +1640,23 @@ BOOL CJabberProto::IsMyOwnJID( LPCTSTR szJID )
 
 void __cdecl CJabberProto::LoadHttpAvatars(JABBER_HTTP_AVATARS * avs)
 {
+	HANDLE hHttpCon = NULL;
 	while (avs)
 	{
 		NETLIBHTTPREQUEST nlhr = {0};
 		nlhr.cbSize = sizeof(nlhr);
 		nlhr.requestType = REQUEST_GET;
-		nlhr.flags = NLHRF_REDIRECT;
-		nlhr.szUrl = mir_u2a(avs->Url);
+		nlhr.flags = NLHRF_HTTP11 | NLHRF_REDIRECT | NLHRF_PERSISTENT;
+		nlhr.szUrl = mir_t2a(avs->Url);
+		nlhr.nlc = hHttpCon;
+
 
 		NETLIBHTTPREQUEST * res = (NETLIBHTTPREQUEST*)JCallService(MS_NETLIB_HTTPTRANSACTION, (WPARAM)m_hNetlibUser, (LPARAM)&nlhr);
 		mir_free(nlhr.szUrl);
 		if (res)
 		{
-			if (res->resultCode / 100 == 2)
+			hHttpCon = res->nlc;
+			if ( res->resultCode == 200 && res->dataLength )
 			{
 				int pictureType = JabberGetPictureType( res->pData );
 				if (pictureType != PA_FORMAT_UNKNOWN)
@@ -1703,10 +1707,14 @@ void __cdecl CJabberProto::LoadHttpAvatars(JABBER_HTTP_AVATARS * avs)
 			}
 			JCallService(MS_NETLIB_FREEHTTPREQUESTSTRUCT, 0, (LPARAM)res);
 		}
+		else
+			hHttpCon = NULL;
 
 		JABBER_HTTP_AVATARS * tmp = avs;
 		avs = avs->Next;
 		mir_free(tmp->Url);
 		mir_free(tmp);
 	}
+	if ( hHttpCon )
+		Netlib_CloseHandle(hHttpCon);
 }
