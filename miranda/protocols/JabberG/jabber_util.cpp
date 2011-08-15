@@ -1637,3 +1637,76 @@ BOOL CJabberProto::IsMyOwnJID( LPCTSTR szJID )
 
 	return bRetVal;
 }
+
+void __cdecl CJabberProto::LoadHttpAvatars(JABBER_HTTP_AVATARS * avs)
+{
+	while (avs)
+	{
+		NETLIBHTTPREQUEST nlhr = {0};
+		nlhr.cbSize = sizeof(nlhr);
+		nlhr.requestType = REQUEST_GET;
+		nlhr.flags = NLHRF_REDIRECT;
+		nlhr.szUrl = mir_u2a(avs->Url);
+
+		NETLIBHTTPREQUEST * res = (NETLIBHTTPREQUEST*)JCallService(MS_NETLIB_HTTPTRANSACTION, (WPARAM)m_hNetlibUser, (LPARAM)&nlhr);
+		mir_free(nlhr.szUrl);
+		if (res)
+		{
+			if (res->resultCode / 100 == 2)
+			{
+				int pictureType = JabberGetPictureType( res->pData );
+				if (pictureType != PA_FORMAT_UNKNOWN)
+				{
+					TCHAR tszFileName[ MAX_PATH ];
+
+					PROTO_AVATAR_INFORMATION AI;
+					AI.cbSize = sizeof(AI);
+					AI.format = pictureType;
+					AI.hContact = avs->hContact;
+
+					if ( JGetByte( avs->hContact, "AvatarType", PA_FORMAT_UNKNOWN ) != (unsigned char)pictureType ) {
+						GetAvatarFileName( avs->hContact, tszFileName, SIZEOF(tszFileName));
+						DeleteFile( tszFileName );
+					}
+
+					JSetByte( avs->hContact, "AvatarType", pictureType );
+
+					char cmpsha[ 41 ];
+					char buffer[ 41 ];
+					mir_sha1_byte_t digest[20];
+					mir_sha1_ctx sha;
+					mir_sha1_init( &sha );
+					mir_sha1_append( &sha, ( mir_sha1_byte_t* )res->pData, res->dataLength );
+					mir_sha1_finish( &sha, digest );
+					for ( int i=0; i<20; i++ )
+						sprintf( buffer+( i<<1 ), "%02x", digest[i] );
+
+					if (JGetStaticString("AvatarSaved", avs->hContact, cmpsha, sizeof(cmpsha)) || strnicmp(cmpsha, buffer, sizeof(buffer)))
+					{
+						GetAvatarFileName( avs->hContact, tszFileName, SIZEOF(tszFileName));
+	#if defined( _UNICODE )
+						WideCharToMultiByte( CP_ACP, 0, tszFileName, -1, AI.filename, sizeof AI.filename, 0, 0 );
+	#else
+						strncpy( AI.filename, tszFileName, sizeof AI.filename );
+	#endif
+						FILE* out = _tfopen( tszFileName, _T("wb"));
+						if ( out != NULL ) {
+							fwrite( res->pData, res->dataLength, 1, out );
+							fclose( out );
+							JSetString( avs->hContact, "AvatarSaved", buffer );
+							JSendBroadcast( avs->hContact, ACKTYPE_AVATAR, ACKRESULT_SUCCESS, HANDLE( &AI ), NULL );
+							Log("Broadcast new avatar: %s",AI.filename);
+						}
+						else JSendBroadcast( avs->hContact, ACKTYPE_AVATAR, ACKRESULT_FAILED, HANDLE( &AI ), NULL );
+					}
+				}
+			}
+			JCallService(MS_NETLIB_FREEHTTPREQUESTSTRUCT, 0, (LPARAM)res);
+		}
+
+		JABBER_HTTP_AVATARS * tmp = avs;
+		avs = avs->Next;
+		mir_free(tmp->Url);
+		mir_free(tmp);
+	}
+}

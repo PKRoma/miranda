@@ -189,4 +189,11 @@ struct JABBER_LIST_ITEM
 	BOOL bUseResource;
 };
 
+struct JABBER_HTTP_AVATARS
+{
+	JABBER_HTTP_AVATARS * Next;
+	HANDLE hContact;
+	TCHAR * Url;
+};
+
 #endif

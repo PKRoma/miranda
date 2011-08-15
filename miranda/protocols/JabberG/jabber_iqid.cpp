@@ -386,6 +386,7 @@ void CJabberProto::OnIqResultGetRoster( HXML iqNode, CJabberIqInfo* pInfo )
 	int i;
 	SortedList chatRooms = {0};
 	chatRooms.increment = 10;
+	JABBER_HTTP_AVATARS * httpavatars = 0;
 
 	for ( i=0; ; i++ ) {
 		BOOL bIsTransport=FALSE;
@@ -485,7 +486,7 @@ void CJabberProto::OnIqResultGetRoster( HXML iqNode, CJabberIqInfo* pInfo )
 		{
 			UpdateSubscriptionInfo(hContact, item);
 		}
-
+		
 		if ( item->group != NULL ) {
 			JabberContactListCreateGroup( item->group );
 
@@ -506,7 +507,20 @@ void CJabberProto::OnIqResultGetRoster( HXML iqNode, CJabberIqInfo* pInfo )
 			else
 				JSetByte( hContact, "IsTransport", FALSE );
 		}
+
+		const TCHAR* imagepath = xmlGetAttrValue(itemNode, _T("vz:img"));
+		if (imagepath)
+		{
+			JABBER_HTTP_AVATARS * ha = (JABBER_HTTP_AVATARS*)mir_alloc(sizeof(JABBER_HTTP_AVATARS));
+			ha->Next = httpavatars;
+			httpavatars = ha;
+			ha->hContact = hContact;
+			ha->Url = mir_tstrdup(imagepath);
+		}
 	}
+
+	if (httpavatars)
+		JForkThread((JThreadFunc)&CJabberProto::LoadHttpAvatars, httpavatars);
 
 	// Delete orphaned contacts ( if roster sync is enabled )
 	if ( m_options.RosterSync == TRUE ) {
