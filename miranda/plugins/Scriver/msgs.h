@@ -413,4 +413,6 @@ extern int fontOptionsListSize;
 #define SRMSGSET_HIDECONTAINERS		"HideContainers"
 #define SRMSGDEFSET_HIDECONTAINERS  0
 
+#define SRMSGSET_AUTORESIZELINES "AutoResizeLines"
+#define SRMSGDEFSET_AUTORESIZELINES 2
 #endif

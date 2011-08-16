@@ -268,7 +268,7 @@ void LoadInfobarFonts()
 {
 	LOGFONT lf;
 	LoadMsgDlgFont(MSGFONTID_MESSAGEAREA, &lf, NULL, FALSE);
-	g_dat->minInputAreaHeight = 2 * abs(lf.lfHeight) * g_dat->logPixelSY / 72;
+	g_dat->minInputAreaHeight = DBGetContactSettingDword(NULL, SRMMMOD, SRMSGSET_AUTORESIZELINES, SRMSGDEFSET_AUTORESIZELINES) * abs(lf.lfHeight) * g_dat->logPixelSY / 72;
 	if (g_dat->hInfobarBrush != NULL) {
 		DeleteObject(g_dat->hInfobarBrush);
 	}
@@ -281,10 +281,12 @@ void InitGlobals() {
 	ZeroMemory(g_dat, sizeof(struct GlobalMessageData));
 	g_dat->hMessageWindowList = (HANDLE) CallService(MS_UTILS_ALLOCWINDOWLIST, 0, 0);
 	g_dat->hParentWindowList = (HANDLE) CallService(MS_UTILS_ALLOCWINDOWLIST, 0, 0);
+#if !defined(_UNICODE)
 	g_dat->hMenuANSIEncoding = CreatePopupMenu();
 	AppendMenu(g_dat->hMenuANSIEncoding, MF_STRING, 500, TranslateT("Default codepage"));
 	AppendMenuA(g_dat->hMenuANSIEncoding, MF_SEPARATOR, 0, 0);
 	EnumSystemCodePagesA(LangAddCallback, CP_INSTALLED);
+#endif
 	g_hAck = HookEvent_Ex(ME_PROTO_ACK, ackevent);
 	ReloadGlobals();
 	g_dat->lastParent = NULL;
@@ -320,7 +322,8 @@ void FreeGlobals() {
 			ImageList_Destroy(g_dat->hHelperIconList);
 		if (g_dat->hSearchEngineIconList)
 			ImageList_Destroy(g_dat->hSearchEngineIconList);
-        DestroyMenu(g_dat->hMenuANSIEncoding);
+		if (g_dat->hMenuANSIEncoding)
+			DestroyMenu(g_dat->hMenuANSIEncoding);
 		mir_free(g_dat->tabIconListUsage);
 		mir_free(g_dat);
 		g_dat = NULL;

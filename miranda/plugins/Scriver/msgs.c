@@ -505,7 +505,7 @@ int StatusIconPressed(WPARAM wParam, LPARAM lParam) {
 	}
 	if (hwnd != NULL) {
 		if (!strcmp(SRMMMOD, sicd->szModule)) {
-			if (sicd->dwId == 0) {
+			if (sicd->dwId == 0 && g_dat->hMenuANSIEncoding) {
 				if (sicd->flags & MBCF_RIGHTBUTTON) {
 					int codePage = (int) SendMessage(hwnd, DM_GETCODEPAGE, 0, 0);
 					if (codePage != 1200) {
