@@ -1,6 +1,6 @@
 /*
 Plugin of Miranda IM for communicating with users of the MSN Messenger protocol.
-Copyright (c) 2007-2010 Boris Krasnovskiy.
+Copyright (c) 2007-2011 Boris Krasnovskiy.
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -20,37 +20,45 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "msn_proto.h"
 #include "des.h"
 
-static const char defaultPassportUrl[] = "https://login.live.com/RST.srf";
+static const char defaultPassportUrl[] = "https://login.live.com/RST2.srf";
 
 static const char authPacket[] =
 "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
-"<Envelope xmlns=\"http://schemas.xmlsoap.org/soap/envelope/\""
-		" xmlns:wsse=\"http://schemas.xmlsoap.org/ws/2003/06/secext\"" 
+"<s:Envelope"
+		" xmlns:s=\"http://www.w3.org/2003/05/soap-envelope\"" 
+		" xmlns:wsse=\"http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd\"" 
 		" xmlns:saml=\"urn:oasis:names:tc:SAML:1.0:assertion\"" 
-		" xmlns:wsp=\"http://schemas.xmlsoap.org/ws/2002/12/policy\"" 
+		" xmlns:wsp=\"http://schemas.xmlsoap.org/ws/2004/09/policy\""
 		" xmlns:wsu=\"http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd\"" 
-		" xmlns:wsa=\"http://schemas.xmlsoap.org/ws/2004/03/addressing\"" 
-		" xmlns:wssc=\"http://schemas.xmlsoap.org/ws/2004/04/sc\"" 
-		" xmlns:wst=\"http://schemas.xmlsoap.org/ws/2004/04/trust\">"
-	"<Header>"
+		" xmlns:wsa=\"http://www.w3.org/2005/08/addressing\""
+		" xmlns:wssc=\"http://schemas.xmlsoap.org/ws/2005/02/sc\"" 
+		" xmlns:wst=\"http://schemas.xmlsoap.org/ws/2005/02/trust\">" 
+	"<s:Header>"
+		"<wsa:Action s:mustUnderstand=\"1\">http://schemas.xmlsoap.org/ws/2005/02/trust/RST/Issue</wsa:Action>"
+		"<wsa:To s:mustUnderstand=\"1\">HTTPS://login.live.com:443//RST2.srf</wsa:To>"
+		"<wsa:MessageID>%u</wsa:MessageID>"
 		"<ps:AuthInfo xmlns:ps=\"http://schemas.microsoft.com/Passport/SoapServices/PPCRL\" Id=\"PPAuthInfo\">"
 			"<ps:HostingApp>{7108E71A-9926-4FCB-BCC9-9A9D3F32E423}</ps:HostingApp>"
-			"<ps:BinaryVersion>4</ps:BinaryVersion>"
+			"<ps:BinaryVersion>5</ps:BinaryVersion>"
 			"<ps:UIVersion>1</ps:UIVersion>"
-			"<ps:Cookies></ps:Cookies>"
+			"<ps:Cookies />"
 			"<ps:RequestParams>AQAAAAIAAABsYwQAAAAxMDMz</ps:RequestParams>"
 		"</ps:AuthInfo>"
 		"<wsse:Security>"
-			"<wsse:UsernameToken Id=\"user\">"
+			"<wsse:UsernameToken wsu:Id=\"user\">"
 				"<wsse:Username>%s</wsse:Username>"
 				"<wsse:Password>%s</wsse:Password>"
 			"</wsse:UsernameToken>"
+			"<wsu:Timestamp Id=\"Timestamp\">"
+				"<wsu:Created>%s</wsu:Created>"
+				"<wsu:Expires>%s</wsu:Expires>"
+			"</wsu:Timestamp>"
 		"</wsse:Security>"
-	"</Header>"
-	"<Body>"
+	"</s:Header>"
+	"<s:Body>"
 		"<ps:RequestMultipleSecurityTokens xmlns:ps=\"http://schemas.microsoft.com/Passport/SoapServices/PPCRL\" Id=\"RSTS\">"
 			"<wst:RequestSecurityToken Id=\"RST0\">"
-				"<wst:RequestType>http://schemas.xmlsoap.org/ws/2004/04/security/trust/Issue</wst:RequestType>"
+				"<wst:RequestType>http://schemas.xmlsoap.org/ws/2005/02/trust/Issue</wst:RequestType>"
 				"<wsp:AppliesTo>"
 					"<wsa:EndpointReference>"
 						"<wsa:Address>http://Passport.NET/tb</wsa:Address>"
@@ -58,62 +66,62 @@ static const char authPacket[] =
 				"</wsp:AppliesTo>"
 			"</wst:RequestSecurityToken>"
 			"<wst:RequestSecurityToken Id=\"RST1\">"
-				"<wst:RequestType>http://schemas.xmlsoap.org/ws/2004/04/security/trust/Issue</wst:RequestType>"
+				"<wst:RequestType>http://schemas.xmlsoap.org/ws/2005/02/trust/Issue</wst:RequestType>"
 				"<wsp:AppliesTo>"
 					"<wsa:EndpointReference>"
 						"<wsa:Address>messengerclear.live.com</wsa:Address>"
 					"</wsa:EndpointReference>"
 				"</wsp:AppliesTo>"
-				"<wsse:PolicyReference URI=\"MBI_KEY_OLD\"></wsse:PolicyReference>"
+				"<wsp:PolicyReference URI=\"MBI_KEY_OLD\" />"
 			"</wst:RequestSecurityToken>"
 			"<wst:RequestSecurityToken Id=\"RST2\">"
-				"<wst:RequestType>http://schemas.xmlsoap.org/ws/2004/04/security/trust/Issue</wst:RequestType>"
+				"<wst:RequestType>http://schemas.xmlsoap.org/ws/2005/02/trust/Issue</wst:RequestType>"
 				"<wsp:AppliesTo>"
 					"<wsa:EndpointReference>"
 						"<wsa:Address>messenger.msn.com</wsa:Address>"
 					"</wsa:EndpointReference>"
 				"</wsp:AppliesTo>"
-				"<wsse:PolicyReference URI=\"?id=507\"></wsse:PolicyReference>"
+				"<wsp:PolicyReference URI=\"?id=507\" />"
 			"</wst:RequestSecurityToken>"
 			"<wst:RequestSecurityToken Id=\"RST3\">"
-				"<wst:RequestType>http://schemas.xmlsoap.org/ws/2004/04/security/trust/Issue</wst:RequestType>"
-				"<wsp:AppliesTo>"
-					"<wsa:EndpointReference>"
-						"<wsa:Address>contacts.msn.com</wsa:Address>"
-					"</wsa:EndpointReference>"
-				"</wsp:AppliesTo>"
-				"<wsse:PolicyReference URI=\"MBI\"></wsse:PolicyReference>"
-			"</wst:RequestSecurityToken>"
-			"<wst:RequestSecurityToken Id=\"RST4\">"
-				"<wst:RequestType>http://schemas.xmlsoap.org/ws/2004/04/security/trust/Issue</wst:RequestType>"
+				"<wst:RequestType>http://schemas.xmlsoap.org/ws/2005/02/trust/Issue</wst:RequestType>"
 				"<wsp:AppliesTo>"
 					"<wsa:EndpointReference>"
 						"<wsa:Address>messengersecure.live.com</wsa:Address>"
 					"</wsa:EndpointReference>"
 				"</wsp:AppliesTo>"
-				"<wsse:PolicyReference URI=\"MBI_SSL\"></wsse:PolicyReference>"
+				"<wsp:PolicyReference URI=\"MBI_SSL\" />"
 			"</wst:RequestSecurityToken>"
-			"<wst:RequestSecurityToken Id=\"RST5\">"
-				"<wst:RequestType>http://schemas.xmlsoap.org/ws/2004/04/security/trust/Issue</wst:RequestType>"
+			"<wst:RequestSecurityToken Id=\"RST4\">"
+				"<wst:RequestType>http://schemas.xmlsoap.org/ws/2005/02/trust/Issue</wst:RequestType>"
 				"<wsp:AppliesTo>"
 					"<wsa:EndpointReference>"
-						"<wsa:Address>spaces.live.com</wsa:Address>"
+						"<wsa:Address>contacts.msn.com</wsa:Address>"
 					"</wsa:EndpointReference>"
 				"</wsp:AppliesTo>"
-				"<wsse:PolicyReference URI=\"MBI\"></wsse:PolicyReference>"
+				"<wsp:PolicyReference URI=\"MBI\" />"
 			"</wst:RequestSecurityToken>"
-			"<wst:RequestSecurityToken Id=\"RST6\">"
-				"<wst:RequestType>http://schemas.xmlsoap.org/ws/2004/04/security/trust/Issue</wst:RequestType>"
+			"<wst:RequestSecurityToken Id=\"RST5\">"
+				"<wst:RequestType>http://schemas.xmlsoap.org/ws/2005/02/trust/Issue</wst:RequestType>"
 				"<wsp:AppliesTo>"
 					"<wsa:EndpointReference>"
 						"<wsa:Address>storage.msn.com</wsa:Address>"
 					"</wsa:EndpointReference>"
 				"</wsp:AppliesTo>"
-				"<wsse:PolicyReference URI=\"MBI\"></wsse:PolicyReference>"
+				"<wsp:PolicyReference URI=\"MBI\" />"
+			"</wst:RequestSecurityToken>"
+			"<wst:RequestSecurityToken Id=\"RST6\">"
+				"<wst:RequestType>http://schemas.xmlsoap.org/ws/2005/02/trust/Issue</wst:RequestType>"
+				"<wsp:AppliesTo>"
+					"<wsa:EndpointReference>"
+						"<wsa:Address>sup.live.com</wsa:Address>"
+					"</wsa:EndpointReference>"
+				"</wsp:AppliesTo>"
+				"<wsp:PolicyReference URI=\"MBI\" />"
 			"</wst:RequestSecurityToken>"
 		"</ps:RequestMultipleSecurityTokens>"
-	"</Body>"
-"</Envelope>";
+	"</s:Body>"
+"</s:Envelope>";
 
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -129,15 +137,26 @@ int CMsnProto::MSN_GetPassportAuth(void)
 	szPassword[16] = 0;
 	char* szEncPassword = HtmlEncode(szPassword);
 
+	time_t ts = time(NULL);
+
+	TCHAR szTs1[64], szTs2[64];
+
+	tmi.printTimeStamp(UTC_TIME_HANDLE, ts, _T("I"), szTs1, SIZEOF(szTs1), 0);
+	tmi.printTimeStamp(UTC_TIME_HANDLE, ts + 20 * 60, _T("I"), szTs2, SIZEOF(szTs2), 0);
+
+	char *szTs1A = mir_t2a(szTs1), *szTs2A = mir_t2a(szTs2);
+
 	const size_t len = sizeof(authPacket) + 2048;
 	char* szAuthInfo = (char*)alloca(len);
-	mir_snprintf(szAuthInfo, len, authPacket, MyOptions.szEmail, szEncPassword);
+	mir_snprintf(szAuthInfo, len, authPacket, time(NULL), MyOptions.szEmail, szEncPassword, szTs1A, szTs2A);
 
+	mir_free(szTs2A);
+	mir_free(szTs1A);
 	mir_free(szEncPassword);
 
 	char* szPassportHost = (char*)mir_alloc(256);;
 	if (getStaticString(NULL, "MsnPassportHost", szPassportHost, 256) 
-		|| strstr(szPassportHost, "/RST.srf") == NULL)
+		|| strstr(szPassportHost, "/RST2.srf") == NULL)
 		strcpy(szPassportHost, defaultPassportUrl);
 
 	bool defaultUrlAllow = strcmp(szPassportHost, defaultPassportUrl) != 0;
@@ -239,7 +258,7 @@ int CMsnProto::MSN_GetPassportAuth(void)
 						MSN_CallService(MS_UTILS_OPENURL, 1, (LPARAM)errurl);
 					}
 
-					ezxml_t tokrdr = ezxml_get(xml, "S:Fault", 0, "psf:redirectUrl", -1);
+					ezxml_t tokrdr = ezxml_get(xml, "S:Body", 0, "S:Fault", 0, "S:Detail", 0, "psf:redirectUrl", -1);
 					if (tokrdr != NULL)
 					{
 						strcpy(szPassportHost, ezxml_txt(tokrdr));

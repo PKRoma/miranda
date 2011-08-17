@@ -1,6 +1,6 @@
 /*
 Plugin of Miranda IM for communicating with users of the MSN Messenger protocol.
-Copyright (c) 2008-2010 Boris Krasnovskiy.
+Copyright (c) 2008-2011 Boris Krasnovskiy.
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -31,17 +31,10 @@ static int CompareLists(const MsnContact* p1, const MsnContact* p2)
 	return _stricmp(p1->email, p2->email);
 }
 
-template< class T >  int CompareId(const T* p1, const T* p2)
-{
-	return _stricmp(p1->id, p2->id);
-}
-
 template< class T > int ComparePtr(const T* p1, const T* p2)
 {
 	return int(p1 - p2);
 }
-
-
 
 CMsnProto::CMsnProto(const char* aProtoName, const TCHAR* aUserName) :
 	contList(10, CompareLists),
@@ -214,8 +207,13 @@ CMsnProto::~CMsnProto()
 	mir_free(rru);
 	mir_free(urlId);
 
+	mir_free(msnLastStatusMsg);
 	mir_free(msnPreviousUUX);
 	mir_free(msnExternalIP);
+
+	mir_free(abCacheKey);
+	mir_free(sharingCacheKey);
+	mir_free(storageCacheKey);
 
 	FreeAuthTokens();
 }
@@ -245,6 +243,7 @@ int CMsnProto::OnModulesLoaded(WPARAM, LPARAM)
 	}
 
 	HookProtoEvent(ME_IDLE_CHANGED, &CMsnProto::OnIdleChanged);
+	InitPopups();
 	return 0;
 }
 
@@ -273,6 +272,23 @@ HANDLE CMsnProto::AddToListByEmail(const char *email, const char *nick, DWORD fl
 	else 
 	{
 		DBDeleteContactSetting(hContact, "CList", "Hidden");
+		if (msnLoggedIn) 
+		{
+//			int netId = Lists_GetNetId(email);
+//			if (netId == NETID_UNKNOWN)
+			int netId = strncmp(email, "tel:", 4) ? NETID_MSN : NETID_MOB;
+			if (MSN_AddUser(hContact, email, netId, LIST_FL))
+			{
+				MSN_AddUser(hContact, email, netId, LIST_PL + LIST_REMOVE);
+				MSN_AddUser(hContact, email, netId, LIST_BL + LIST_REMOVE);
+				MSN_AddUser(hContact, email, netId, LIST_AL);
+				DBDeleteContactSetting(hContact, "CList", "Hidden");
+			}
+			MSN_SetContactDb(hContact, email);
+
+			if (MSN_IsMeByContact(hContact)) displayEmailCount(hContact);
+		}
+		else hContact = NULL;
 	}
 	return hContact;
 }
@@ -398,7 +414,6 @@ int CMsnProto::Authorize(HANDLE hDbEvent)
 
 	MSN_AddUser(hContact, email, netId, LIST_AL);
 	MSN_AddUser(hContact, email, netId, LIST_BL + LIST_REMOVE);
-	MSN_AddUser(hContact, email, netId, LIST_RL);
 	MSN_AddUser(hContact, email, netId, LIST_PL + LIST_REMOVE);
 
 	MSN_SetContactDb(hContact, email);
@@ -437,14 +452,16 @@ int CMsnProto::AuthDeny(HANDLE hDbEvent, const TCHAR* szReason)
 	MsnContact* msc = Lists_Get(email);
 	if (msc == NULL) return 0;
 
-	MSN_AddUser(NULL, email, msc->netId, LIST_RL);
-	MSN_AddUser(NULL, email, msc->netId, LIST_BL);
 	MSN_AddUser(NULL, email, msc->netId, LIST_PL + LIST_REMOVE);
+	MSN_AddUser(NULL, email, msc->netId, LIST_BL);
+	MSN_AddUser(NULL, email, msc->netId, LIST_RL);
 
 	if (!(msc->list & (LIST_FL | LIST_LL)))
 	{
 		if (msc->hContact) MSN_CallService(MS_DB_CONTACT_DELETE, (WPARAM)msc->hContact, 0);
 		msc->hContact = NULL;
+		HANDLE hContact = MSN_HContactFromEmail(email);
+		if (hContact) MSN_CallService(MS_DB_CONTACT_DELETE, (WPARAM)hContact, 0);
 	}
 
 	return 0;
@@ -636,10 +653,9 @@ int __cdecl CMsnProto::FileDeny(HANDLE hContact, HANDLE hTransfer, const PROTOCH
 	}
 	else 
 	{
+		ft->bCanceled = true;
 		if (ft->p2p_appID != 0)
 			p2p_sendCancel(ft);
-		else
-			ft->bCanceled = true;
 	}
 
 	return 0;
@@ -735,16 +751,17 @@ DWORD_PTR __cdecl CMsnProto::GetCaps(int type, HANDLE hContact)
 		return result;
 	}
 	case PFLAGNUM_2:
-		return PF2_ONLINE | PF2_SHORTAWAY | PF2_LONGAWAY | PF2_LIGHTDND |
-				 PF2_ONTHEPHONE | PF2_OUTTOLUNCH | PF2_INVISIBLE | PF2_IDLE;
+		return PF2_ONLINE | PF2_SHORTAWAY | PF2_LIGHTDND | PF2_INVISIBLE | PF2_ONTHEPHONE | PF2_IDLE;
 
 	case PFLAGNUM_3:
-		return PF2_ONLINE | PF2_SHORTAWAY | PF2_LONGAWAY | PF2_LIGHTDND |
-				 PF2_ONTHEPHONE | PF2_OUTTOLUNCH;
+		return PF2_ONLINE | PF2_SHORTAWAY | PF2_LIGHTDND;
 
 	case PFLAGNUM_4:
 		return PF4_FORCEAUTH | PF4_FORCEADDED | PF4_SUPPORTTYPING | PF4_AVATARS | PF4_SUPPORTIDLE | PF4_IMSENDUTF | 
 			PF4_IMSENDOFFLINE | PF4_NOAUTHDENYREASON;
+
+	case PFLAGNUM_5:
+        return PF2_ONTHEPHONE;
 
 	case PFLAG_UNIQUEIDTEXT:
 		return (UINT_PTR)MSN_Translate("Live ID");
@@ -882,9 +899,12 @@ HANDLE __cdecl CMsnProto::SendFile(HANDLE hContact, const PROTOCHAR* szDescripti
 	}
 
 	if (dwFlags & 0xf0000000)
-		p2p_invite(hContact, MSN_APPID_FILE, sft);
+		p2p_invite(MSN_APPID_FILE, sft, NULL);
 	else
+	{
+		sft->p2p_dest = mir_strdup(tEmail);
 		msnftp_invite(sft);
+	}
 
 	SendBroadcast(hContact, ACKTYPE_FILE, ACKRESULT_SENTREQUEST, sft, 0);
 	return sft;
@@ -920,37 +940,6 @@ void CMsnProto::MsnFakeAck(void* arg)
 	delete tParam;
 }
 
-void CMsnProto::MsnSendOim(void* arg)
-{
-	TFakeAckParams* tParam = (TFakeAckParams*)arg;
-
-	char tEmail[MSN_MAX_EMAIL_LEN];
-	tParam->proto->getStaticString(tParam->hContact, "e-mail", tEmail, sizeof(tEmail));
-
-	int seq = tParam->proto->MSN_SendOIM(_strlwr(tEmail), tParam->msg);
-
-	char* errMsg = NULL;
-	switch (seq)
-	{
-		case -1:
-			errMsg = MSN_Translate("Offline messages could not be sent to this contact");
-			break;
-
-		case -2:
-			errMsg = MSN_Translate("You sent too many offline messages and have been locked out");
-			break;
-
-		case -3:
-			errMsg = MSN_Translate("You are not allowed to send offline messages to this user");
-			break;
-	}
-	tParam->proto->SendBroadcast(tParam->hContact, ACKTYPE_MESSAGE, errMsg ? ACKRESULT_FAILED : ACKRESULT_SUCCESS,
-		(HANDLE)tParam->id, (LPARAM)errMsg);
-
-	mir_free((void*)tParam->msg);
-	delete tParam;
-}
-
 int __cdecl CMsnProto::SendMsg(HANDLE hContact, int flags, const char* pszSrc)
 {
 	const char *errMsg = NULL;
@@ -973,9 +962,11 @@ int __cdecl CMsnProto::SendMsg(HANDLE hContact, int flags, const char* pszSrc)
 	char *msg = (char*)pszSrc;
 	if (msg == NULL) return 0;
 
-	if (flags & PREF_UNICODE) {
+	if (flags & PREF_UNICODE)
+	{
 		char* p = strchr(msg, '\0');
-		if (p != msg) {
+		if (p != msg)
+		{
 			while (*(++p) == '\0') {}
 			msg = mir_utf8encodeW((wchar_t*)p);
 		}
@@ -993,14 +984,15 @@ int __cdecl CMsnProto::SendMsg(HANDLE hContact, int flags, const char* pszSrc)
 	switch (netId)
 	{
 	case NETID_MOB:
-		if (strlen(msg) > 133) {
+		if (strlen(msg) > 133)
+		{
 			errMsg = MSN_Translate("Message is too long: SMS page limited to 133 UTF8 chars");
 			seq = 999997;
 		}
 		else
 		{
 			errMsg = NULL;
-			seq = MSN_SendSMS(tEmail, msg);
+			seq = msnNsThread->sendMessage('1', tEmail, netId, msg, rtlFlag);
 		}
 		ForkThread(&CMsnProto::MsnFakeAck, new TFakeAckParams(hContact, seq, errMsg, this));
 		break;
@@ -1030,15 +1022,15 @@ int __cdecl CMsnProto::SendMsg(HANDLE hContact, int flags, const char* pszSrc)
 		{
 			const char msgType = MyOptions.SlowSend ? 'A' : 'N';
 			bool isOffline;
-			ThreadData* thread = MSN_StartSB(hContact, isOffline);
+			ThreadData* thread = MSN_StartSB(tEmail, isOffline);
 			if (thread == NULL)
 			{
 				if (isOffline) 
 				{
 					if (netId != NETID_LCS)
 					{
-						seq = MSN_GenRandom();
-						ForkThread(&CMsnProto::MsnSendOim, new TFakeAckParams(hContact, seq, mir_strdup(msg), this));
+						seq = msnNsThread->sendMessage('1', tEmail, netId, msg, rtlFlag | MSG_OFFLINE);
+						ForkThread(&CMsnProto::MsnFakeAck, new TFakeAckParams(hContact, seq, NULL, this));
 					}
 					else
 					{
@@ -1048,7 +1040,7 @@ int __cdecl CMsnProto::SendMsg(HANDLE hContact, int flags, const char* pszSrc)
 					}
 				}
 				else
-					seq = MsgQueue_Add(hContact, msgType, msg, 0, 0, rtlFlag);
+					seq = MsgQueue_Add(tEmail, msgType, msg, 0, 0, rtlFlag);
 			}
 			else
 			{
@@ -1125,7 +1117,8 @@ int __cdecl CMsnProto::SetStatus(int iNewStatus)
 
 	if (m_iDesiredStatus == ID_STATUS_OFFLINE)
 	{
-		MSN_CloseConnections();
+		if (msnNsThread)
+			msnNsThread->sendTerminate();
 	}
 	else if (!msnLoggedIn && m_iStatus == ID_STATUS_OFFLINE)
 	{
@@ -1144,6 +1137,9 @@ int __cdecl CMsnProto::SetStatus(int iNewStatus)
 			m_iStatus = m_iDesiredStatus = ID_STATUS_OFFLINE;
 			return 0;
 		}	
+
+		sessionList.destroy();
+		dcList.destroy();
 
 		usingGateway = false;
 		
@@ -1184,12 +1180,12 @@ int __cdecl CMsnProto::UserIsTyping(HANDLE hContact, int type)
 	case NETID_LCS:
 		{
 			bool isOffline;
-			ThreadData* thread = MSN_StartSB(hContact, isOffline);
+			ThreadData* thread = MSN_StartSB(tEmail, isOffline);
 
 			if (thread == NULL) 
 			{
 				if (isOffline) return 0;
-				MsgQueue_Add(hContact, 2571, NULL, 0, NULL, typing);
+				MsgQueue_Add(tEmail, 2571, NULL, 0, NULL, typing);
 			}
 			else
 				MSN_StartStopTyping(thread, typing);

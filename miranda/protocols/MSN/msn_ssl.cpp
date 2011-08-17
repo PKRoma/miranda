@@ -1,6 +1,6 @@
 /*
 Plugin of Miranda IM for communicating with users of the MSN Messenger protocol.
-Copyright (c) 2006-2010 Boris Krasnovskiy.
+Copyright (c) 2006-2011 Boris Krasnovskiy.
 Copyright (c) 2003-2005 George Hazan.
 Copyright (c) 2002-2003 Richard Hughes (original version).
 
@@ -102,5 +102,38 @@ char* CMsnProto::getSslResult(char** parUrl, const char* parAuthInfo, const char
 
 	mHttpsTS = clock();
 
+	return result;
+}
+
+
+bool CMsnProto::getMyAvatarFile(char *url, char *fname) 
+{
+	NETLIBHTTPREQUEST nlhr = {0};
+	bool result = true;
+
+	// initialize the netlib request
+	nlhr.cbSize = sizeof(nlhr);
+	nlhr.requestType = REQUEST_GET;
+	nlhr.flags = NLHRF_HTTP11 | NLHRF_REDIRECT;
+	nlhr.szUrl = url;
+
+	nlhr.headersCount = 1;
+	nlhr.headers=(NETLIBHTTPHEADER*)alloca(sizeof(NETLIBHTTPHEADER) * nlhr.headersCount);
+	nlhr.headers[0].szName   = "User-Agent";
+	nlhr.headers[0].szValue = (char*)MSN_USER_AGENT;
+
+	// download the page
+	NETLIBHTTPREQUEST *nlhrReply = (NETLIBHTTPREQUEST*)CallService(MS_NETLIB_HTTPTRANSACTION,
+		(WPARAM)hNetlibUserHttps,(LPARAM)&nlhr);
+
+	if (nlhrReply) 
+	{
+		if (nlhrReply->resultCode == 200 && nlhrReply->dataLength)
+			MSN_SetMyAvatar(fname, nlhrReply->pData, nlhrReply->dataLength);
+		else
+			result = false;
+
+		CallService(MS_NETLIB_FREEHTTPREQUESTSTRUCT, 0, (LPARAM)nlhrReply);
+	}
 	return result;
 }

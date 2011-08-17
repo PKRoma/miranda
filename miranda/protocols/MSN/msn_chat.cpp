@@ -1,6 +1,6 @@
 /*
 Plugin of Miranda IM for communicating with users of the MSN Messenger protocol.
-Copyright (c) 2006-2010 Boris Krasnovskiy.
+Copyright (c) 2006-2011 Boris Krasnovskiy.
 Copyright (c) 2003-2005 George Hazan.
 Copyright (c) 2002-2003 Richard Hughes (original version).
 
@@ -45,10 +45,6 @@ int CMsnProto::MSN_ChatInit(WPARAM wParam, LPARAM)
 	ThreadData *info = (ThreadData*)wParam;
 	MyInterlockedIncrement(&sttChatID);
 	_ltot(sttChatID, info->mChatID, 10);
-
-	info->mJoinedContacts = (HANDLE*)mir_realloc(info->mJoinedContacts, sizeof(HANDLE)*(++info->mJoinedCount));
-	info->mJoinedContacts[info->mJoinedCount - 1] = info->mJoinedContacts[0];
-	info->mJoinedContacts[0] = (HANDLE)-sttChatID;
 
 	TCHAR szName[512];
 	mir_sntprintf(szName, SIZEOF(szName), _T("%s %s%s"), 
@@ -118,17 +114,18 @@ void CMsnProto::MSN_ChatStart(ThreadData* info)
 	gce.time = time(NULL);
 	gce.bIsMe = FALSE;
 
-	for (int j=0; j < info->mJoinedCount; j++) {
-		if ((INT_PTR)info->mJoinedContacts[j] <= 0)
-			continue;
+	for (int j=0; j < info->mJoinedCount; j++) 
+	{
+		HANDLE hContact = MSN_HContactFromEmail(info->mJoinedContactsWLID[j]);
+		TCHAR *wlid = mir_a2t(info->mJoinedContactsWLID[j]);
 
-		gce.ptszNick = MSN_GetContactNameT(info->mJoinedContacts[j]);
+		gce.ptszNick = hContact ? MSN_GetContactNameT(hContact) : wlid;
+		gce.ptszUID = wlid;
+		CallServiceSync(MS_GC_EVENT, 0, (LPARAM)&gce);
 
-		DBVARIANT dbv;
-		if (!getTString(info->mJoinedContacts[j], "e-mail", &dbv)) {
-			gce.ptszUID = dbv.ptszVal;
-			CallServiceSync(MS_GC_EVENT, 0, (LPARAM)&gce);
-}	}	}
+		mir_free(wlid);
+	}	
+}
 
 void CMsnProto::MSN_KillChatSession(TCHAR* id)
 {
@@ -162,7 +159,7 @@ void CMsnProto::InviteUser(ThreadData* info)
 			bool alreadyInSession = false;
 			for (int j=0; j < info->mJoinedCount; j++) 
 			{
-				if (info->mJoinedContacts[j] == msc->hContact) 
+				if (_stricmp(info->mJoinedContactsWLID[j], msc->email) == 0) 
 				{
 					alreadyInSession = true;
 					break;
@@ -200,34 +197,31 @@ int CMsnProto::MSN_GCEventHook(WPARAM, LPARAM lParam)
 
 	if (_stricmp(gch->pDest->pszModule, m_szModuleName)) return 0;
 
-	HANDLE hChatContact = (HANDLE)-_ttoi(gch->pDest->ptszID);
-
 	switch (gch->pDest->iType) 
 	{
 		case GC_SESSION_TERMINATE: 
 		{
-			ThreadData* thread = MSN_GetThreadByContact(hChatContact);
+ 			ThreadData* thread = MSN_GetThreadByChatId(gch->pDest->ptszID);
 			if (thread != NULL) 
 			{
 				// open up srmm dialog when quit while 1 person left
-				if (thread->mJoinedCount == 1) 
+				if (thread->mJoinedCount <= 2) 
 				{
 					// switch back to normal session
-					thread->mJoinedContacts[0] = thread->mJoinedContacts[1];
-					thread->mJoinedContacts = (HANDLE*)mir_realloc(thread->mJoinedContacts, sizeof(HANDLE));
-					MSN_CallService(MS_MSG_SENDMESSAGE, (WPARAM)thread->mJoinedContacts[0], 0);
+					HANDLE hContact = thread->getContactHandle();
+					MSN_CallService(MS_MSG_SENDMESSAGE, (WPARAM)hContact, 0);
 					thread->mChatID[0] = 0;
 				}
-				else thread->sendPacket("OUT", NULL);
+				else
+					thread->sendTerminate();
 			}
 			break;
 		}
+
 		case GC_USER_MESSAGE:
 			if (gch->ptszText && gch->ptszText[0]) 
 			{
-				bool isOffline;
-				ThreadData* thread = MSN_StartSB(hChatContact, isOffline);
-
+				ThreadData* thread = MSN_GetThreadByChatId(gch->pDest->ptszID);
 				if (thread)
 				{
 					rtrim(gch->ptszText); // remove the ending linebreak
@@ -257,9 +251,10 @@ int CMsnProto::MSN_GCEventHook(WPARAM, LPARAM lParam)
 				}
 			}
 			break;
+
 		case GC_USER_CHANMGR: 
 		{
-			ThreadData* thread = MSN_GetThreadByContact(hChatContact);
+ 			ThreadData* thread = MSN_GetThreadByChatId(gch->pDest->ptszID);
 			if (thread != NULL) 
 			{
 				InviteUser(thread);
@@ -269,17 +264,18 @@ int CMsnProto::MSN_GCEventHook(WPARAM, LPARAM lParam)
 		case GC_USER_PRIVMESS: 
 		{
 			char *email = mir_t2a(gch->ptszUID);
-			HANDLE hContact = MSN_HContactFromEmail(email, NULL, false, false);
+			HANDLE hContact = MSN_HContactFromEmail(email);
 			MSN_CallService(MS_MSG_SENDMESSAGE, (WPARAM)hContact, 0);
 			mir_free(email);
 			break;
 		}
+
 		case GC_USER_LOGMENU:
 			switch(gch->dwData) 
 			{
 			case 10: 
 			{
-				ThreadData* thread = MSN_GetThreadByContact(hChatContact);
+ 				ThreadData* thread = MSN_GetThreadByChatId(gch->pDest->ptszID);
 				if (thread != NULL)
 					InviteUser(thread);
 
@@ -290,10 +286,11 @@ int CMsnProto::MSN_GCEventHook(WPARAM, LPARAM lParam)
 				break;
 			}
 			break;
+
 		case GC_USER_NICKLISTMENU: 
 		{
 			char *email = mir_t2a(gch->ptszUID);
-			HANDLE hContact = MSN_HContactFromEmail(email, email, false, false);
+			HANDLE hContact = MSN_HContactFromEmail(email);
 			mir_free(email);
 
 			switch(gch->dwData) 
