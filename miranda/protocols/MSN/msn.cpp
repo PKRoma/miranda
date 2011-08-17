@@ -44,7 +44,6 @@ void MsnLinks_Destroy(void);
 /////////////////////////////////////////////////////////////////////////////////////////
 // Global variables
 
-bool    bMir9;
 bool	msnHaveChatDll;
 int		avsPresent = -1;
 
@@ -166,15 +165,12 @@ extern "C" int __declspec(dllexport) Unload(void)
 
 extern "C" __declspec(dllexport) const PLUGININFOEX* MirandaPluginInfoEx(DWORD mirandaVersion)
 {
-	if (mirandaVersion < PLUGIN_MAKE_VERSION(0, 9, 24, 0) || 
-		(mirandaVersion >= PLUGIN_MAKE_VERSION(0, 10, 0, 0) && 
-		mirandaVersion < PLUGIN_MAKE_VERSION(0, 10, 0, 2))) 
+	if (mirandaVersion < PLUGIN_MAKE_VERSION(0, 10, 0, 2)) 
 	{
-		MessageBox(NULL, _T("The MSN protocol plugin cannot be loaded. It requires Miranda IM 0.9.24.0 or 0.10.0.2 or later."), 
+		MessageBox(NULL, _T("The MSN protocol plugin cannot be loaded. It requires Miranda IM 0.10.0.2 or later."), 
 			_T("MSN Protocol"), MB_OK | MB_ICONWARNING | MB_SETFOREGROUND | MB_TOPMOST);
 		return NULL;
 	}
-	bMir9 = mirandaVersion < PLUGIN_MAKE_VERSION(0, 10, 0, 0);
 
 	return &pluginInfo;
 }

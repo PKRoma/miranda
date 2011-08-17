@@ -19,8 +19,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "msn_global.h"
 #include "msn_proto.h"
 
-extern bool bMir9;
-
 static const COLORREF crCols[16] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15};
 
 int msn_httpGatewayInit(HANDLE hConn,NETLIBOPENCONNECTION *nloc,NETLIBHTTPREQUEST *nlhr);
@@ -95,12 +93,6 @@ CMsnProto::CMsnProto(const char* aProtoName, const TCHAR* aUserName) :
 
 	// service to get from protocol chat buddy info
 //	CreateProtoService(MS_GC_PROTO_GETTOOLTIPTEXT, &CMsnProto::GCGetToolTipText);
-
-	if (bMir9)
-	{
-		HookProtoEvent(ME_DB_CONTACT_DELETED,        &CMsnProto::OnContactDeleted);
-		HookProtoEvent(ME_DB_CONTACT_SETTINGCHANGED, &CMsnProto::OnDbSettingChanged);
-	}
 
 	HookProtoEvent(ME_MSG_WINDOWEVENT,           &CMsnProto::OnWindowEvent);
 	HookProtoEvent(ME_CLIST_GROUPCHANGE,         &CMsnProto::OnGroupChange);
