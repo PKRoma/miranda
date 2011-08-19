@@ -1,45 +1,18 @@
 /****************************************************************************/
-/*! \mainpage My Personal Index Page
+/*! \mainpage XMLParser library
  * \section intro_sec Introduction
  *
  * This is a basic XML parser written in ANSI C++ for portability.
  * It works by using recursion and a node tree for breaking
  * down the elements of an XML document.
-
- * Copyright (c) 2002, Frank Vanden Berghen
- * All rights reserved.
  *
- *  The following license terms apply to projects that are in some way related to
- *  "Miranda Instant Messenger", including applications using "Miranda Instant Messenger"
- *  and tools developed for enhancing "Miranda Instant Messenger". All other
- *  projects (not related to "Miranda Instant Messenger") have to use this
- *  code under the Aladdin Free Public License (AFPL)
- * (see http://www.artifex.com/downloads/doc/Public.htm for detailed AFPL terms)
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- *     * Redistributions of source code must retain the above copyright
- *       notice, this list of conditions and the following disclaimer.
- *     * Redistributions in binary form must reproduce the above copyright
- *       notice, this list of conditions and the following disclaimer in the
- *       documentation and/or other materials provided with the distribution.
- *     * Neither the name of Frank Vanden Berghen nor the
- *       names of its contributors may be used to endorse or promote products
- *       derived from this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY Frank Vanden Berghen ``AS IS'' AND ANY
- * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL <copyright holder> BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
- * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *
- * @version     V2.39
+ * @version     V2.43
  * @author      Frank Vanden Berghen
+ *
+ * Copyright (c) 2002, Business-Insight
+ * <a href="http://www.Business-Insight.com">Business-Insight</a>
+ * All rights reserved.
+ * See the file <a href="../../AFPL-license.txt">AFPL-license.txt</a> about the licensing terms
  *
  * \section tutorial First Tutorial
  * You can follow a simple <a href="../../xmlParser.html">Tutorial</a> to know the basics...
@@ -87,10 +60,10 @@
  *
  * 	Inside Visual C++, the "debug versions" of the memory allocation functions are
  * 	very slow: Do not forget to compile in "release mode" to get maximum speed.
- * 	When I have to debug a software that is using the XMLParser Library, it was usually
+ * 	When I had to debug a software that was using the XMLParser Library, it was usually
  * 	a nightmare because the library was sooOOOoooo slow in debug mode (because of the
  *  slow memory allocations in Debug mode). To solve this
- * 	problem, during all the debugging session, I use a very fast DLL version of the
+ * 	problem, during all the debugging session, I am now using a very fast DLL version of the
  * 	XMLParser Library (the DLL is compiled in release mode). Using the DLL version of
  * 	the XMLParser Library allows me to have lightening XML parsing speed even in debug!
  * 	Other than that, the DLL version is useless: In the release version of my tool,
@@ -354,6 +327,8 @@ typedef struct XMLDLLENTRY XMLNode
                                                                    ///< return the first child node with specific path. WARNING: the value of the parameter "path" is destroyed!
     XMLNode getChildNodeByPath(XMLCSTR path, char createNodeIfMissing=0, XMLCHAR sep='/');
                                                                    ///< return the first child node with specific path
+    XMLNode getChildNodeByPathNonConst(XMLSTR  path, char createNodeIfMissing=0, XMLCHAR sep='/');
+                                                                   ///< return the first child node with specific path.
 	XMLNode getNextNode() const;
 
     int nChildNode(XMLCSTR name) const;                            ///< return the number of child node with specific name
@@ -675,7 +650,7 @@ XMLDLLENTRY int     xmltoi(XMLCSTR xmlString,int    defautValue=0);
 XMLDLLENTRY long    xmltol(XMLCSTR xmlString,long   defautValue=0);
 XMLDLLENTRY double  xmltof(XMLCSTR xmlString,double defautValue=.0);
 XMLDLLENTRY XMLCSTR xmltoa(XMLCSTR xmlString,XMLCSTR defautValue=_CXML(""));
-XMLDLLENTRY XMLCHAR xmltoc(XMLCSTR xmlString,XMLCHAR defautValue=_CXML('\0'));
+XMLDLLENTRY XMLCHAR xmltoc(XMLCSTR xmlString,const XMLCHAR defautValue=_CXML('\0'));
 /** @} */
 
 /** @defgroup ToXMLStringTool Helper class to create XML files using "printf", "fprintf", "cout",... functions.

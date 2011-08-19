@@ -4,7 +4,7 @@
  * for portability. It works by using recursion and a node tree for breaking
  * down the elements of an XML document.  </P>
  *
- * @version     V2.39
+ * @version     V2.43
  * @author      Frank Vanden Berghen
  *
  * NOTE:
@@ -42,37 +42,10 @@
  *   console instead of inside a message-box-window. Message-box-windows are
  *   available on windows 9x/NT/2000/XP/Vista only.
  *
- * Copyright (c) 2002, Frank Vanden Berghen
+ * Copyright (c) 2002, Business-Insight
+ * <a href="http://www.Business-Insight.com">Business-Insight</a>
  * All rights reserved.
- *
- *  The following license terms apply to projects that are in some way related to
- *  the "Miranda Instant Messenger", including applications using "Miranda Instant Messenger"
- *  and tools developed for enhancing "Miranda Instant Messenger". All other
- *  projects (not related to "Miranda Instant Messenger") have to use this
- *  code under the Aladdin Free Public License (AFPL)
- * (see http://www.artifex.com/downloads/doc/Public.htm for detailed AFPL terms)
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- *     * Redistributions of source code must retain the above copyright
- *       notice, this list of conditions and the following disclaimer.
- *     * Redistributions in binary form must reproduce the above copyright
- *       notice, this list of conditions and the following disclaimer in the
- *       documentation and/or other materials provided with the distribution.
- *     * Neither the name of Frank Vanden Berghen nor the
- *       names of its contributors may be used to endorse or promote products
- *       derived from this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY Frank Vanden Berghen ``AS IS'' AND ANY
- * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL <copyright holder> BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
- * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * See the file "AFPL-license.txt" about the licensing terms
  *
  ****************************************************************************
  */
@@ -86,7 +59,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-XMLCSTR XMLNode::getVersion() { return _CXML("v2.39"); }
+XMLCSTR XMLNode::getVersion() { return _CXML("v2.43"); }
 void freeXMLString(XMLSTR t){if(t)free(t);}
 
 static XMLNode::XMLCharEncoding characterEncoding=XMLNode::char_encoding_UTF8;
@@ -97,8 +70,10 @@ inline int mmin( const int t1, const int t2 ) { return t1 < t2 ? t1 : t2; }
 // You can modify the initialization of the variable "XMLClearTags" below
 // to change the clearTags that are currently recognized by the library.
 // The number on the second columns is the length of the string inside the
-// first column. The "<!DOCTYPE" declaration must be the second in the list.
+// first column.
+// The "<!DOCTYPE" declaration must be the second in the list.
 // The "<!--" declaration must be the third in the list.
+// All ClearTag Strings must start with the '<' character.
 typedef struct { XMLCSTR lpszOpen; int openTagLen; XMLCSTR lpszClose;} ALLXMLClearTag;
 static ALLXMLClearTag XMLClearTags[] =
 {
@@ -207,7 +182,7 @@ char myIsTextWideChar(const void *b, int len) { return FALSE; }
         return FALSE;
     }
     #else
-    char myIsTextWideChar(const void *b,int l) { return (char)IsTextUnicode((CONST LPVOID)b,l,NULL); };
+    char myIsTextWideChar(const void *b,int l) { return (char)IsTextUnicode((CONST LPVOID)b,l,NULL); }
     #endif
 #endif
 
@@ -308,10 +283,34 @@ char myIsTextWideChar(const void *b, int len) { return FALSE; }
            static inline int xstrncmp(XMLCSTR c1, XMLCSTR c2, int l) { return wsncmp(c1,c2,l);}
            static inline int xstricmp(XMLCSTR c1, XMLCSTR c2) { return wscasecmp(c1,c2); }
         #else
-        // for gcc
+        static inline int xstrncmp(XMLCSTR c1, XMLCSTR c2, int l) { return wcsncmp(c1,c2,l);}
+            #ifdef __linux__
+            // for gcc/linux
            static inline int xstrnicmp(XMLCSTR c1, XMLCSTR c2, int l) { return wcsncasecmp(c1,c2,l);}
-           static inline int xstrncmp(XMLCSTR c1, XMLCSTR c2, int l) { return wcsncmp(c1,c2,l);}
            static inline int xstricmp(XMLCSTR c1, XMLCSTR c2) { return wcscasecmp(c1,c2); }
+            #else
+            #include <wctype.h>
+            // for gcc/non-linux (MacOS X 10.3, FreeBSD 6.0, NetBSD 3.0, OpenBSD 3.8, AIX 4.3.2, HP-UX 11, IRIX 6.5, OSF/1 5.1, Cygwin, mingw)
+            static inline int xstricmp(XMLCSTR c1, XMLCSTR c2)
+            {
+                wchar_t left,right;
+                do
+                {
+                    left=towlower(*c1++); right=towlower(*c2++);
+                } while (left&&(left==right));
+                return (int)left-(int)right;
+            }
+            static inline int xstrnicmp(XMLCSTR c1, XMLCSTR c2, int l)
+            {
+                wchar_t left,right;
+                while(l--)
+                {
+                    left=towlower(*c1++); right=towlower(*c2++);
+                    if ((!left)||(left!=right)) return (int)left-(int)right;
+                }
+                return 0;
+            }
+            #endif
         #endif
         static inline XMLSTR xstrstr(XMLCSTR c1, XMLCSTR c2) { return (XMLSTR)wcsstr(c1,c2); }
         static inline XMLSTR xstrcpy(XMLSTR c1, XMLCSTR c2) { return (XMLSTR)wcscpy(c1,c2); }
@@ -346,24 +345,24 @@ char myIsTextWideChar(const void *b, int len) { return FALSE; }
 #ifdef _XMLWIDECHAR
     #ifdef _XMLWINDOWS
     // for Microsoft Visual Studio 6.0 and Microsoft Visual Studio .NET and Borland C++ Builder 6.0
-        char    xmltob(XMLCSTR t,int     v){ if (t&&(*t)) return (char)_wtoi(t); return v; }
+        char    xmltob(XMLCSTR t,char    v){ if (t&&(*t)) return (char)_wtoi(t); return v; }
         int     xmltoi(XMLCSTR t,int     v){ if (t&&(*t)) return _wtoi(t); return v; }
         long    xmltol(XMLCSTR t,long    v){ if (t&&(*t)) return _wtol(t); return v; }
-        double  xmltof(XMLCSTR t,double  v){ if (t&&(*t)) wscanf(t, "%f", &v); /*v=_wtof(t);*/ return v; }
+        double  xmltof(XMLCSTR t,double  v){ if (t&&(*t)) swscanf(t, L"%lf", &v); /*v=_wtof(t);*/ return v; }
     #else
         #ifdef sun
         // for CC
            #include <widec.h>
-           char    xmltob(XMLCSTR t,int     v){ if (t) return (char)wstol(t,NULL,10); return v; }
+           char    xmltob(XMLCSTR t,char    v){ if (t) return (char)wstol(t,NULL,10); return v; }
            int     xmltoi(XMLCSTR t,int     v){ if (t) return (int)wstol(t,NULL,10); return v; }
            long    xmltol(XMLCSTR t,long    v){ if (t) return wstol(t,NULL,10); return v; }
         #else
         // for gcc
-           char    xmltob(XMLCSTR t,int     v){ if (t) return (char)wcstol(t,NULL,10); return v; }
+           char    xmltob(XMLCSTR t,char    v){ if (t) return (char)wcstol(t,NULL,10); return v; }
            int     xmltoi(XMLCSTR t,int     v){ if (t) return (int)wcstol(t,NULL,10); return v; }
            long    xmltol(XMLCSTR t,long    v){ if (t) return wcstol(t,NULL,10); return v; }
         #endif
-		double  xmltof(XMLCSTR t,double  v){ if (t&&(*t)) wscanf(t, "%f", &v); /*v=_wtof(t);*/ return v; }
+		double  xmltof(XMLCSTR t,double  v){ if (t&&(*t)) swscanf(t, L"%lf", &v); /*v=_wtof(t);*/ return v; }
     #endif
 #else
     char    xmltob(XMLCSTR t,char    v){ if (t&&(*t)) return (char)atoi(t); return v; }
@@ -372,7 +371,7 @@ char myIsTextWideChar(const void *b, int len) { return FALSE; }
     double  xmltof(XMLCSTR t,double  v){ if (t&&(*t)) return atof(t); return v; }
 #endif
 XMLCSTR xmltoa(XMLCSTR t,XMLCSTR v){ if (t)       return  t; return v; }
-XMLCHAR xmltoc(XMLCSTR t,XMLCHAR v){ if (t&&(*t)) return *t; return v; }
+XMLCHAR xmltoc(XMLCSTR t,const XMLCHAR v){ if (t&&(*t)) return *t; return v; }
 
 /////////////////////////////////////////////////////////////////////////
 //                    the "openFileHelper" function                    //
@@ -577,11 +576,11 @@ typedef enum Attrib
 
 // Enumeration used when parsing elements to dictate whether we are currently
 // inside a tag
-typedef enum Status
+typedef enum XMLStatus
 {
     eInsideTag = 0,
     eOutsideTag
-} Status;
+} XMLStatus;
 
 XMLError XMLNode::writeToFile(XMLCSTR filename, const char *encoding, char nFormat) const
 {
@@ -590,11 +589,18 @@ XMLError XMLNode::writeToFile(XMLCSTR filename, const char *encoding, char nForm
     if (!f) return eXMLErrorCannotOpenWriteFile;
 #ifdef _XMLWIDECHAR
     unsigned char h[2]={ 0xFF, 0xFE };
-    if (!fwrite(h,2,1,f)) return eXMLErrorCannotWriteFile;
+    if (!fwrite(h,2,1,f)) 
+    {
+    	fclose(f);
+    	return eXMLErrorCannotWriteFile;
+    }
     if ((!isDeclaration())&&((d->lpszName)||(!getChildNode().isDeclaration())))
     {
         if (!fwrite(L"<?xml version=\"1.0\" encoding=\"utf-16\"?>\n",sizeof(wchar_t)*40,1,f))
+        {
+        	fclose(f);
             return eXMLErrorCannotWriteFile;
+    }
     }
 #else
     if ((!isDeclaration())&&((d->lpszName)||(!getChildNode().isDeclaration())))
@@ -602,24 +608,47 @@ XMLError XMLNode::writeToFile(XMLCSTR filename, const char *encoding, char nForm
         if (characterEncoding==char_encoding_UTF8)
         {
             // header so that windows recognize the file as UTF-8:
-            unsigned char h[3]={0xEF,0xBB,0xBF}; if (!fwrite(h,3,1,f)) return eXMLErrorCannotWriteFile;
+            unsigned char h[3]={0xEF,0xBB,0xBF}; 
+            if (!fwrite(h,3,1,f)) 
+            {
+            	fclose(f);
+                return eXMLErrorCannotWriteFile;
+            }
             encoding="utf-8";
         } else if (characterEncoding==char_encoding_ShiftJIS) encoding="SHIFT-JIS";
 
         if (!encoding) encoding="ISO-8859-1";
-        if (fprintf(f,"<?xml version=\"1.0\" encoding=\"%s\"?>\n",encoding)<0) return eXMLErrorCannotWriteFile;
+        if (fprintf(f,"<?xml version=\"1.0\" encoding=\"%s\"?>\n",encoding)<0) 
+        {
+        	fclose(f);
+            return eXMLErrorCannotWriteFile;
+        }
     } else
     {
         if (characterEncoding==char_encoding_UTF8)
         {
-            unsigned char h[3]={0xEF,0xBB,0xBF}; if (!fwrite(h,3,1,f)) return eXMLErrorCannotWriteFile;
+            unsigned char h[3]={0xEF,0xBB,0xBF}; 
+            if (!fwrite(h,3,1,f)) 
+            {
+            	fclose(f);
+                return eXMLErrorCannotWriteFile;
+            }
         }
     }
 #endif
     int i;
     XMLSTR t=createXMLString(nFormat,&i);
-    if (!fwrite(t,sizeof(XMLCHAR)*i,1,f)) return eXMLErrorCannotWriteFile;
-    if (fclose(f)!=0) return eXMLErrorCannotWriteFile;
+    if (!fwrite(t,sizeof(XMLCHAR)*i,1,f)) 
+    {
+       free(t);
+       fclose(f);
+       return eXMLErrorCannotWriteFile;
+    }
+    if (fclose(f)!=0) 
+    {
+   	    free(t);
+        return eXMLErrorCannotWriteFile;
+    }
     free(t);
     return eXMLErrorNone;
 }
@@ -677,7 +706,7 @@ int ToXMLStringTool::lengthXMLString(XMLCSTR source)
     int r=0;
     XMLCharacterEntity *entity;
     XMLCHAR ch;
-    while ((ch=*source) != 0)
+    while ((ch=*source))
     {
         entity=XMLEntities;
         do
@@ -700,8 +729,14 @@ ToXMLStringTool::~ToXMLStringTool(){ freeBuffer(); }
 void ToXMLStringTool::freeBuffer(){ if (buf) free(buf); buf=NULL; buflen=0; }
 XMLSTR ToXMLStringTool::toXML(XMLCSTR source)
 {
+    if (!source)
+    {
+		if (buflen<1) { buflen=1; buf=(XMLSTR)malloc(sizeof(XMLCHAR)); }
+		*buf=0;
+		return buf;
+	}
     int l=lengthXMLString(source)+1;
-    if (l>buflen) { buflen=l; buf=(XMLSTR)realloc(buf,l*sizeof(XMLCHAR)); }
+    if (l>buflen) { freeBuffer(); buflen=l; buf=(XMLSTR)malloc(l*sizeof(XMLCHAR)); }
     return toXMLUnSafe(buf,source);
 }
 
@@ -878,22 +913,7 @@ static NextToken GetNextToken(XML *pXML, int *pcbToken, enum XMLTokenTypeTag *pT
         // Cache the current string pointer
         result.pStr = &pXML->lpXML[indexStart];
 
-        // First check whether the token is in the clear tag list (meaning it
-        // does not need formatting).
-        ALLXMLClearTag *ctag=XMLClearTags;
-        do
-        {
-            if (xstrncmp(ctag->lpszOpen, result.pStr, ctag->openTagLen)==0)
-            {
-                result.pClr=ctag;
-                pXML->nIndex+=ctag->openTagLen-1;
-                *pType=eTokenClear;
-                return result;
-            }
-            ctag++;
-        } while(ctag->lpszOpen);
-
-        // If we didn't find a clear tag then check for standard tokens
+        // check for standard tokens
         switch(ch)
         {
         // Check for quotes
@@ -939,6 +959,22 @@ static NextToken GetNextToken(XML *pXML, int *pcbToken, enum XMLTokenTypeTag *pT
         // Check for tag start and tag end
         case _CXML('<'):
 
+			{
+				// First check whether the token is in the clear tag list (meaning it
+				// does not need formatting).
+				ALLXMLClearTag *ctag=XMLClearTags;
+				do
+				{
+				   if (!xstrncmp(ctag->lpszOpen, result.pStr, ctag->openTagLen))
+				   {
+						result.pClr=ctag;
+						pXML->nIndex+=ctag->openTagLen-1;
+						*pType=eTokenClear;
+						return result;
+					}
+					ctag++;
+				} while(ctag->lpszOpen);
+
             // Peek at the next character to see if we have an end tag '</',
             // or an xml declaration '<?'
             chTemp = pXML->lpXML[pXML->nIndex];
@@ -966,6 +1002,7 @@ static NextToken GetNextToken(XML *pXML, int *pcbToken, enum XMLTokenTypeTag *pT
                 *pType = eTokenTagStart;
             }
             break;
+			}
 
         // Check to see if we have a short hand type end tag ('/>').
         case _CXML('/'):
@@ -1067,7 +1104,7 @@ XMLNode XMLNode::createXMLTopNode(XMLCSTR lpszName, char isDeclaration) { return
 
 #define MEMORYINCREASE 50
 
-static inline void myFree(void *p) { if (p) free(p); };
+static inline void myFree(void *p) { if (p) free(p); }
 static inline void *myRealloc(void *p, int newsize, int memInc, int sizeofElem)
 {
     if (p==NULL) { if (memInc) return malloc(memInc*sizeofElem); return malloc(sizeofElem); }
@@ -1217,7 +1254,7 @@ char XMLNode::parseClearTag(void *px, void *_pClear)
         pXML->nIndex += cbTemp+(int)xstrlen(pClear.lpszClose);
 
         // Add the clear node to the current element
-        addClear_priv(MEMORYINCREASE,stringDup(lpXML,cbTemp), pClear.lpszOpen, pClear.lpszClose,-1);
+        addClear_priv(MEMORYINCREASE,cbTemp?stringDup(lpXML,cbTemp):NULL, pClear.lpszOpen, pClear.lpszClose,-1);
         return 0;
     }
 
@@ -1285,7 +1322,7 @@ int XMLNode::ParseXMLElement(void *pa)
     int cbTemp=0;
     char nDeclaration;
     XMLNode pNew;
-    enum Status status; // inside or outside a tag
+    enum XMLStatus status; // inside or outside a tag
     enum Attrib attrib = eAttribName;
 
     assert(pXML);
@@ -1780,11 +1817,11 @@ XMLNode XMLNode::parseFile(XMLCSTR filename, XMLCSTR tag, XMLResults *pResults)
     FILE *f=xfopen(filename,_CXML("rb"));
     if (f==NULL) { if (pResults) pResults->error=eXMLErrorFileNotFound; return emptyXMLNode; }
     fseek(f,0,SEEK_END);
-    int l=ftell(f),headerSz=0;
+    int l=(int)ftell(f),headerSz=0;
     if (!l) { if (pResults) pResults->error=eXMLErrorEmpty; fclose(f); return emptyXMLNode; }
     fseek(f,0,SEEK_SET);
     unsigned char *buf=(unsigned char*)malloc(l+4);
-    fread(buf,l,1,f);
+    l=(int)fread(buf,1,l,f);
     fclose(f);
     buf[l]=0;buf[l+1]=0;buf[l+2]=0;buf[l+3]=0;
 #ifdef _XMLWIDECHAR
@@ -1795,12 +1832,21 @@ XMLNode XMLNode::parseFile(XMLCSTR filename, XMLCSTR tag, XMLResults *pResults)
             XMLNode::XMLCharEncoding ce=XMLNode::char_encoding_legacy;
             if ((buf[0]==0xef)&&(buf[1]==0xbb)&&(buf[2]==0xbf)) { headerSz=3; ce=XMLNode::char_encoding_UTF8; }
             XMLSTR b2=myMultiByteToWideChar((const char*)(buf+headerSz),ce);
+            if (!b2)
+            {
+            	// todo: unable to convert
+            }
             free(buf); buf=(unsigned char*)b2; headerSz=0;
         } else
         {
             if ((buf[0]==0xef)&&(buf[1]==0xff)) headerSz=2;
             if ((buf[0]==0xff)&&(buf[1]==0xfe)) headerSz=2;
         }
+    } else
+    {
+        if ((buf[0]==0xef)&&(buf[1]==0xff)) headerSz=2;
+        if ((buf[0]==0xff)&&(buf[1]==0xfe)) headerSz=2;
+        if ((buf[0]==0xef)&&(buf[1]==0xbb)&&(buf[2]==0xbf)) headerSz=3;
     }
 #else
     if (guessWideCharChars)
@@ -1815,6 +1861,11 @@ XMLNode XMLNode::parseFile(XMLCSTR filename, XMLCSTR tag, XMLResults *pResults)
         {
             if ((buf[0]==0xef)&&(buf[1]==0xbb)&&(buf[2]==0xbf)) headerSz=3;
         }
+    } else
+    {
+        if ((buf[0]==0xef)&&(buf[1]==0xff)) headerSz=2;
+        if ((buf[0]==0xff)&&(buf[1]==0xfe)) headerSz=2;
+        if ((buf[0]==0xef)&&(buf[1]==0xbb)&&(buf[2]==0xbf)) headerSz=3;
     }
 #endif
 
@@ -2467,18 +2518,17 @@ XMLNode XMLNode::getNextNode() const
 XMLNode XMLNode::getChildNodeByPath(XMLCSTR _path, char createMissing, XMLCHAR sep)
 {
     XMLSTR path=stringDup(_path);
-    XMLNode x=getChildNodeByPath(path,createMissing,sep);
+    XMLNode x=getChildNodeByPathNonConst(path,createMissing,sep);
     if (path) free(path);
     return x;
 }
 
-XMLNode XMLNode::getChildNodeByPath(XMLSTR path, char createIfMissing, XMLCHAR sep)
+XMLNode XMLNode::getChildNodeByPathNonConst(XMLSTR path, char createIfMissing, XMLCHAR sep)
 {
     if ((!path)||(!(*path))) return *this;
     XMLNode xn,xbase=*this;
-    XMLSTR tend1;
-	 XMLCHAR sepString[2]; sepString[0]=sep; sepString[1]=0;
-    tend1=xstrstr(path,(XMLSTR)sepString);
+    XMLCHAR *tend1,sepString[2]; sepString[0]=sep; sepString[1]=0;
+    tend1=xstrstr(path,sepString);
     while(tend1)
     {
         *tend1=0;
@@ -2486,11 +2536,12 @@ XMLNode XMLNode::getChildNodeByPath(XMLSTR path, char createIfMissing, XMLCHAR s
         if (xn.isEmpty())
         {
             if (createIfMissing) xn=xbase.addChild(path);
-            else return XMLNode::emptyXMLNode;
+            else { *tend1=sep; return XMLNode::emptyXMLNode; }
         }
+        *tend1=sep;
         xbase=xn;
-        path=(XMLSTR)tend1+1;
-        tend1=xstrstr(path,(XMLSTR)sepString);
+        path=tend1+1;
+        tend1=xstrstr(path,sepString);
     }
     xn=xbase.getChildNode(path);
     if (xn.isEmpty()&&createIfMissing) xn=xbase.addChild(path);
@@ -2854,6 +2905,7 @@ XMLSTR XMLParserBase64Tool::encode(unsigned char *inbuf, unsigned int inlen, cha
 
 unsigned int XMLParserBase64Tool::decodeSize(XMLCSTR data,XMLError *xe)
 {
+    if (!data) return 0;
      if (xe) *xe=eXMLErrorNone;
     int size=0;
     unsigned char c;
@@ -2876,6 +2928,7 @@ unsigned int XMLParserBase64Tool::decodeSize(XMLCSTR data,XMLError *xe)
 
 unsigned char XMLParserBase64Tool::decode(XMLCSTR data, unsigned char *buf, int len, XMLError *xe)
 {
+    if (!data) return 0;
     if (xe) *xe=eXMLErrorNone;
     int i=0,p=0;
     unsigned char d,c;
@@ -2943,6 +2996,7 @@ void XMLParserBase64Tool::alloc(int newsize)
 unsigned char *XMLParserBase64Tool::decode(XMLCSTR data, int *outlen, XMLError *xe)
 {
     if (xe) *xe=eXMLErrorNone;
+    if (!data) { *outlen=0; return (unsigned char*)""; }
     unsigned int len=decodeSize(data,xe);
     if (outlen) *outlen=len;
     if (!len) return NULL;
