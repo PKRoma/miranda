@@ -3,6 +3,15 @@
                            www.miranda-im.org
 
 
+* New in 0.9.28
+Enhancements:
+ - MSN: Update WLM protocol
+
+Bugfixes:
+ - Fixed XML parser causing issues with protocols
+ - Fixed memory leaks
+ 
+
 * New in 0.9.27
 Bugfixes:
  - Fixed time display when Disable Automatic daylight correction checkbox in Windows is cleared
