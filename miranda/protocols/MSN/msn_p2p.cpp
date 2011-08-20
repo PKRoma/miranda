@@ -1571,7 +1571,13 @@ LBL_Close:
 
 	if (!strcmp(szOldContentType, "application/x-msnmsgr-sessionreqbody")) 
 	{
-		if (ft->p2p_type == MSN_APPID_AVATAR || ft->p2p_type == MSN_APPID_AVATAR2)
+		if (ft == &ftl)
+		{
+			p2p_sendCancel(ft);
+			return;
+		}
+
+		if (ft->p2p_type != MSN_APPID_FILE)
 		{
 			if (ft->fileId == -1) ft->create(); 
 			return;
