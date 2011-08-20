@@ -284,7 +284,7 @@ char *LangPackTranslateString(const char *szEnglish, const int W)
 
 int LangPackGetDefaultCodePage()
 {
-	return (langPack.defaultANSICp == 0) ? CP_ACP : langPack.defaultANSICp;
+	return (langPack.defaultANSICp == 0 || langPack.defaultANSICp == CP_UTF8) ? CP_ACP : langPack.defaultANSICp;
 }
 
 int LangPackGetDefaultLocale()
