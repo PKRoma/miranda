@@ -409,7 +409,7 @@ char *LangPackTranslateString(LangPackMuuid* pUuid, const char *szEnglish, const
 
 int LangPackGetDefaultCodePage()
 {
-	return (langPack.defaultANSICp == 0) ? CP_ACP : langPack.defaultANSICp;
+	return (langPack.defaultANSICp == 0 || langPack.defaultANSICp == CP_UTF8) ? CP_ACP : langPack.defaultANSICp;
 }
 
 int LangPackGetDefaultLocale()
