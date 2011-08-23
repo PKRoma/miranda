@@ -1399,8 +1399,6 @@ LBL_InvalidCommand:
 
 				if ((dwValue & 0xf0000000) && data.cmdstring[0] && strcmp(data.cmdstring, "0")) 
 				{
-					setString(hContact, "PictContext", data.cmdstring);
-
 					char* szAvatarHash = MSN_GetAvatarHash(data.cmdstring);
 					if (szAvatarHash == NULL)
 						deleteSetting(hContact, "AvatarHash");
@@ -1427,6 +1425,7 @@ LBL_InvalidCommand:
 				}
 				else 
 				{
+remove:
 					deleteSetting(hContact, "AvatarHash");
 					deleteSetting(hContact, "AvatarSavedHash");
 					deleteSetting(hContact, "PictContext");
