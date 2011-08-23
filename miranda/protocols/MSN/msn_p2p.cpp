@@ -764,7 +764,7 @@ bool CMsnProto::p2p_connectTo(ThreadData* info, directconnection *dc)
 
 		if (dc->useHashedNonce) 
 		{
-			char* hnonce = dc->calcHashedNonce((UUID*)cookie.mAckSessionID);
+			char* hnonce = dc->calcHashedNonce((UUID*)&cookie.mAckSessionID);
 			cookieMatch = strcmp(hnonce, dc->xNonce) == 0;
 			mir_free(hnonce);
 		}
