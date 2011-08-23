@@ -1,7 +1,7 @@
 /*
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2010 Miranda ICQ/IM project,
+Copyright 2010-2011 Miranda ICQ/IM project,
 all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
@@ -21,20 +21,20 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 #include "commonheaders.h"
 #include "netlib.h"
- 
+
 #include <wininet.h>
 /*
 /////////////////////////////////////////////////////////////////////
 //  ResolveHostName                               (a helper function)
 /////////////////////////////////////////////////////////////////////
 DWORD __stdcall ResolveHostName(LPSTR lpszHostName,
-                                LPSTR lpszIPAddress, LPDWORD lpdwIPAddressSize)
+	LPSTR lpszIPAddress, LPDWORD lpdwIPAddressSize)
 {
-    if (*lpdwIPAddressSize < 17 || lpszIPAddress == NULL) 
+	if (*lpdwIPAddressSize < 17 || lpszIPAddress == NULL) 
 	{
-        *lpdwIPAddressSize = 17;
-        return ERROR_INSUFFICIENT_BUFFER;
-    }
+		*lpdwIPAddressSize = 17;
+		return ERROR_INSUFFICIENT_BUFFER;
+	}
 
 	IN_ADDR ip;
 	ip.s_addr = inet_addr(lpszHostName);
@@ -49,64 +49,64 @@ DWORD __stdcall ResolveHostName(LPSTR lpszHostName,
 	mir_snprintf(lpszIPAddress, *lpdwIPAddressSize, "%u.%u.%u.%u", 
 		ip.s_net, ip.s_host, ip.s_lh, ip.s_impno);
 
-    return 0;
+	return 0;
 }
- 
+
 /////////////////////////////////////////////////////////////////////
 //  IsResolvable                                  (a helper function)
 /////////////////////////////////////////////////////////////////////
 BOOL __stdcall IsResolvable(LPSTR lpszHost)
 {
-    char szDummy[255];
-    DWORD dwDummySize = sizeof (szDummy) - 1;
- 
-    if (ResolveHostName(lpszHost, szDummy, &dwDummySize))
-        return FALSE;
-    return TRUE;
+	char szDummy[255];
+	DWORD dwDummySize = sizeof (szDummy) - 1;
+
+	if (ResolveHostName(lpszHost, szDummy, &dwDummySize))
+		return FALSE;
+	return TRUE;
 }
- 
+
 /////////////////////////////////////////////////////////////////////
 //  GetIPAddress                                  (a helper function)
 /////////////////////////////////////////////////////////////////////
 DWORD __stdcall GetIPAddress(LPSTR lpszIPAddress, LPDWORD lpdwIPAddressSize)
 {
-    char szHostBuffer[255];
- 
-    if (gethostname(szHostBuffer, sizeof (szHostBuffer) - 1) != ERROR_SUCCESS)
-        return (ERROR_INTERNET_INTERNAL_ERROR);
-    return (ResolveHostName(szHostBuffer, lpszIPAddress, lpdwIPAddressSize));
+	char szHostBuffer[255];
+
+	if (gethostname(szHostBuffer, sizeof (szHostBuffer) - 1) != ERROR_SUCCESS)
+		return (ERROR_INTERNET_INTERNAL_ERROR);
+	return (ResolveHostName(szHostBuffer, lpszIPAddress, lpdwIPAddressSize));
 }
- 
+
 /////////////////////////////////////////////////////////////////////
 //  IsInNet                                       (a helper function)
 /////////////////////////////////////////////////////////////////////
 BOOL __stdcall IsInNet(LPSTR lpszIPAddress, LPSTR lpszDest, LPSTR lpszMask)
 {
-    DWORD dwDest;
-    DWORD dwIpAddr;
-    DWORD dwMask;
- 
-    dwIpAddr = inet_addr(lpszIPAddress);
-    dwDest = inet_addr(lpszDest);
-    dwMask = inet_addr(lpszMask);
- 
-     if ((dwDest == INADDR_NONE) ||
-        (dwIpAddr == INADDR_NONE) || ((dwIpAddr & dwMask) != dwDest))
-        return (FALSE);
- 
-    return (TRUE);
+	DWORD dwDest;
+	DWORD dwIpAddr;
+	DWORD dwMask;
+
+	dwIpAddr = inet_addr(lpszIPAddress);
+	dwDest = inet_addr(lpszDest);
+	dwMask = inet_addr(lpszMask);
+
+	if ((dwDest == INADDR_NONE) ||
+		(dwIpAddr == INADDR_NONE) || ((dwIpAddr & dwMask) != dwDest))
+		return (FALSE);
+
+	return (TRUE);
 }
 
 static const AutoProxyHelperVtbl OurVtbl = 
 {
-    IsResolvable,
-    GetIPAddress,
-    ResolveHostName,
-    IsInNet,
-    NULL,
-    NULL,
-    NULL,
-    NULL
+	IsResolvable,
+	GetIPAddress,
+	ResolveHostName,
+	IsInNet,
+	NULL,
+	NULL,
+	NULL,
+	NULL
 };
 
 static AutoProxyHelperFunctions HelperFunctions = { &OurVtbl };
@@ -156,14 +156,14 @@ static void GetFile(char* szUrl, AUTO_PROXY_SCRIPT_BUFFER &buf)
 	}
 }
 
-bool NetlibGetIeProxyConn(NetlibConnection *nlc)
+bool NetlibGetIeProxyConn(NetlibConnection *nlc, bool forceHttps)
 {
 	bool noHttp = false;
 	bool usingSsl = false;
 	char szUrl[256] = "";
 
 	if ((nlc->nloc.flags & (NLOCF_HTTP | NLOCF_HTTPGATEWAY) && nlc->nloc.flags & NLOCF_SSL) || 
-		nlc->nloc.wPort == 443)
+		nlc->nloc.wPort == 443 || forceHttps)
 	{
 		mir_snprintf(szUrl, sizeof(szUrl), "https://%s", nlc->nloc.szHost);
 		usingSsl = true;
@@ -179,16 +179,16 @@ bool NetlibGetIeProxyConn(NetlibConnection *nlc)
 	mir_free(nlc->szProxyServer); nlc->szProxyServer = NULL;
 	nlc->wProxyPort = 0;
 	nlc->proxyType = 0;
-	
+
 	char *mt = NetlibGetIeProxy(szUrl);
 	char *m = NEWSTR_ALLOCA(mt); 
 	mir_free(mt);
 
 	if (m == NULL) return false;
 
-	 // if multiple servers, use the first one
+	// if multiple servers, use the first one
 	char *c = strchr(m, ';'); if (c) *c = 0;
-	
+
 	// if 'direct' no proxy
 	if (_stricmp(lrtrim(m), "direct") == 0) return false; 
 
@@ -221,7 +221,6 @@ bool NetlibGetIeProxyConn(NetlibConnection *nlc)
 	}
 	else 
 		return false;
-
 
 	return true;
 }
@@ -344,7 +343,7 @@ char* NetlibGetIeProxy(char *szUrl)
 			ind = szProxyHost[2] ? 2 : (bOneProxy ? 0 : (szProxyHost[1] ? 1 : 2));
 
 		if (ind < 0 || !szProxyHost[ind]) return NULL;
-		
+
 		size_t len = strlen(szHost) + 20;
 		res = (char*)mir_alloc(len);
 		mir_snprintf(res, len, "%s %s", ind == 2 ? "SOCKS" : "PROXY", szProxyHost[ind]);
@@ -357,6 +356,7 @@ char* NetlibGetIeProxy(char *szUrl)
 		IeProxyParam param = { szUrl, szHost, NULL };
 		HANDLE hThread = (HANDLE)forkthreadex(NULL, 0, NetlibIeProxyThread, 0, &param, &dwThreadId);
 		WaitForSingleObject(hThread, INFINITE);
+		CloseHandle(hThread);
 		res = param.szProxy;
 	}
 	return res;
@@ -397,7 +397,7 @@ void NetlibLoadIeProxy(void)
 		{
 			char *szProxyEnd = strchr(szProxy, ';');
 			if (szProxyEnd) *szProxyEnd = 0;
-		
+
 			int ind = -1;
 			if (strncmp(szProxy, "http=", 5) == 0) { ind = 0; szProxy += 5; }
 			else if (strncmp(szProxy, "https=", 6) == 0) { ind = 1; szProxy += 6; }
@@ -452,7 +452,7 @@ void NetlibUnloadIeProxy(void)
 
 	for (i = 0; i < proxyBypass.getCount(); ++i)
 		mir_free(proxyBypass[i]);
-	
+
 	proxyBypass.destroy();
 	mir_free(abuf.lpszScriptBuffer);
 
