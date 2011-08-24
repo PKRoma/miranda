@@ -874,6 +874,7 @@ static INT_PTR serviceGetInterface(WPARAM wParam, LPARAM lParam)
 static INT_PTR serviceLoad(WPARAM wParam, LPARAM lParam)
 {
 	char *lpszFilename = (char *)wParam;
+	if(lpszFilename==NULL) return 0;
 	FREE_IMAGE_FORMAT fif = FIF_UNKNOWN;
 
 	if(lParam & IMGL_WCHAR)
