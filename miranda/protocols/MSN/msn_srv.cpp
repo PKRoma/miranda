@@ -321,7 +321,7 @@ void  CMsnProto::MSN_SendNicknameUtf(const char* nickname)
 	
 	MSN_SetNicknameUtf(nickname[0] ? nickname : MyOptions.szEmail);
 
-	ForkThread(&CMsnProto::msn_storeProfileThread, NULL);
+	ForkThread(&CMsnProto::msn_storeProfileThread, (void*)1);
 }
 
 void  CMsnProto::MSN_SetNicknameUtf(const char* nickname)
@@ -387,7 +387,7 @@ void CMsnProto::msn_storeAvatarThread(void* arg)
 /////////////////////////////////////////////////////////////////////////////////////////
 // msn_storeProfileThread - update our own avatar on the server
 
-void CMsnProto::msn_storeProfileThread(void*)
+void CMsnProto::msn_storeProfileThread(void* param)
 {
 	DBVARIANT dbv;
 	char *szNick = NULL;
@@ -401,7 +401,8 @@ void CMsnProto::msn_storeProfileThread(void*)
 	char** msgptr = GetStatusMsgLoc(m_iStatus);
 	char *szStatus = msgptr ? *msgptr : NULL;
 
- 	if (msnLastStatusMsg != szStatus && (msnLastStatusMsg && szStatus && strcmp(msnLastStatusMsg, szStatus)))
+ 	if (param || (msnLastStatusMsg != szStatus && 
+		(msnLastStatusMsg && szStatus && strcmp(msnLastStatusMsg, szStatus))))
 	{
 
 		if (MSN_StoreUpdateProfile(szNick, szStatus, false))
