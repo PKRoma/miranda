@@ -3,6 +3,19 @@
                            www.miranda-im.org
 
 
+* New in 0.9.29
+Bugfixes:
+ - Improved IE autoproxy connectivity
+ - Fixed crash in image services
+ - ICQ: Fix issues with XStatus
+ - MSN: Fixed crash on custom smiley transfer
+ - MSN: Fixed Disable Popups checkbox
+ - MSN: Fixed crash when contact specifies avatar with improperly encoded hash
+ - MSN: Fixed crash on direct transfer with older clients
+ - MSN: Fixed nickname update
+ - Yahoo: Fixed version display
+
+
 * New in 0.9.28
 Enhancements:
  - MSN: Update WLM protocol
