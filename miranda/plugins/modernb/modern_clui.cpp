@@ -2761,6 +2761,16 @@ LRESULT CLUI::OnListSizeChangeNotify( NMCLISTCONTROL * pnmc )
 	winstyle=GetWindowLong(pcli->hwndContactTree,GWL_STYLE);
 
 	SystemParametersInfo(SPI_GETWORKAREA,0,&rcWorkArea,FALSE);
+	if (MyMonitorFromWindow)
+	{
+ 		HMONITOR hMon = MyMonitorFromWindow(pcli->hwndContactTree, MONITOR_DEFAULTTONEAREST);
+		MONITORINFO mi;
+		mi.cbSize = sizeof(mi);
+		if (MyGetMonitorInfo(hMon, &mi))
+ 			rcWorkArea = mi.rcWork;
+	}
+
+
 	if (pnmc->pt.y>(rcWorkArea.bottom-rcWorkArea.top)) 
 	{
 		pnmc->pt.y=(rcWorkArea.bottom-rcWorkArea.top);
