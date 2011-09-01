@@ -576,7 +576,7 @@ INT_PTR CallProtoServiceInt( HANDLE hContact, const char *szModule, const char *
 							return ( INT_PTR )ppi->SearchByName( psbn->pszNick, psbn->pszFirstName, psbn->pszLastName ); 
 						else
 							return ( INT_PTR )ppi->SearchByName( StrConvA(( TCHAR* )psbn->pszNick ), 
-								StrConvT(( char* )psbn->pszFirstName ), StrConvA(( TCHAR* )psbn->pszLastName ));
+								StrConvA(( TCHAR* )psbn->pszFirstName ), StrConvA(( TCHAR* )psbn->pszLastName ));
 					}
 					case 110:
 						if ( ppi->m_iVersion > 1 )
