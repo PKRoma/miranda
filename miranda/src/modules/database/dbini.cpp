@@ -193,7 +193,7 @@ int SettingsEnumProc(const char *szSetting, LPARAM lParam)
 	return 0;
 }
 
-void ConvertBackslashes(char *);
+void ConvertBackslashes(char *, UINT);
 static void ProcessIniFile(TCHAR* szIniPath, char *szSafeSections, char *szUnsafeSections, int secur, bool secFN)
 {
 	FILE *fp = _tfopen(szIniPath, _T("rt"));
@@ -313,7 +313,7 @@ static void ProcessIniFile(TCHAR* szIniPath, char *szSafeSections, char *szUnsaf
 			break;
 		case 'e':
 		case 'E':
-			ConvertBackslashes(szValue+1);
+			ConvertBackslashes(szValue+1, LangPackGetDefaultCodePage());
 		case 's':
 		case 'S':
 			DBWriteContactSettingString(NULL,szSection,szName,szValue+1);

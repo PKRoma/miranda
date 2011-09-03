@@ -78,10 +78,10 @@ static int IsEmpty(char *str)
 	return 1;
 }
 
-void ConvertBackslashes(char *str)
+void ConvertBackslashes(char *str, UINT fileCp)
 {
 	char *pstr;
-	for ( pstr = str; *pstr; pstr = CharNextExA(( WORD )langPack.defaultANSICp, pstr, 0 )) {
+	for ( pstr = str; *pstr; pstr = CharNextExA( fileCp, pstr, 0 )) {
 		if( *pstr == '\\' ) {
 			switch( pstr[1] ) {
 			case 'n': *pstr = '\n'; break;
@@ -269,7 +269,7 @@ static void LoadLangPackFile( FILE* fp, char* line, UINT fileCp )
 			continue;
 		}
 
-		ConvertBackslashes( line );
+		ConvertBackslashes( line, fileCp );
 
 		if ( line[0] == '[' && line[ lstrlenA(line)-1 ] == ']' ) {
 			if ( langPack.entryCount && langPack.entry[ langPack.entryCount-1].local == NULL )
