@@ -1,6 +1,8 @@
 /*
 Miranda Database Tool
-Copyright (C) 2001-2005  Richard Hughes
+Copyright 2000-2011 Miranda ICQ/IM project, 
+all portions of this codebase are copyrighted to the people 
+listed in contributors.txt.
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -127,7 +129,7 @@ INT_PTR CALLBACK WizardDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM lPara
 			if (opts.hOutFile)
 				CloseHandle(opts.hOutFile);
 			DestroyWindow(hdlgPage);
-			LangPackShutdown();
+			UnloadLangPackModule();
 			if(hBoldFont!=NULL) DeleteObject(hBoldFont);
 			if(hEmfHeaderLogo!=NULL) DeleteEnhMetaFile(hEmfHeaderLogo);
 			break;

@@ -81,6 +81,9 @@
     <ClCompile Include="welcome.cpp">
       <Filter>Source Files\Wizard Pages</Filter>
     </ClCompile>
+    <ClCompile Include="utf.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="database.h">

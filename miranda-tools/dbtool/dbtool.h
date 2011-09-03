@@ -1,6 +1,8 @@
 /*
 Miranda Database Tool
-Copyright (C) 2001-2005  Richard Hughes
+Copyright 2000-2011 Miranda ICQ/IM project, 
+all portions of this codebase are copyrighted to the people 
+listed in contributors.txt.
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -107,9 +109,8 @@ DWORD ConvertModuleNameOfs(DWORD ofsOld);
 void FreeModuleChain();
 
 int TranslateDialog(HWND hwndDlg);
-int LangPackCodePage(void);
-int LoadLangPackModule(void);
-int LangPackShutdown(void);
+void LoadLangPackModule(void);
+void UnloadLangPackModule(void);
 
 char* LangPackTranslateString(const char *szEnglish, const int W);
 __inline LPSTR Translate(LPSTR source)
@@ -123,3 +124,8 @@ __inline LPSTR Translate(LPSTR source)
 	#define TranslateT(s) LangPackTranslateString(s,0)
 	#define TranslateTS(s) LangPackTranslateString(s,0)
 #endif
+
+char* Utf8DecodeCP(char* str, int codepage, wchar_t** ucs2);
+char* Utf8EncodeUcs2(const wchar_t* src);
+bool is_utf8_string(const char* str);
+
