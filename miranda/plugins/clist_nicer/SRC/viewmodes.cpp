@@ -882,10 +882,10 @@ void BuildViewModeMenu()
     CLVM_EnumModes(FillMenuCallback);
 
 	if(GetMenuItemCount(hViewModeMenu) > 0)
-		AppendMenuA(hViewModeMenu, MF_SEPARATOR, 0, NULL);
+		AppendMenu(hViewModeMenu, MF_SEPARATOR, 0, NULL);
 
-	AppendMenuA(hViewModeMenu, MF_STRING, 10001, Translate("Setup View Modes..."));
-	AppendMenuA(hViewModeMenu, MF_STRING, 10002, Translate("Clear current View Mode"));
+	AppendMenu(hViewModeMenu, MF_STRING, 10001, TranslateT("Setup View Modes..."));
+	AppendMenu(hViewModeMenu, MF_STRING, 10002, TranslateT("Clear current View Mode"));
 
 }
 
