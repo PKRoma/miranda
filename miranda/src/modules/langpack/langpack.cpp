@@ -233,6 +233,7 @@ static void LoadLangPackFile( FILE* fp, char* line, UINT fileCp )
 
 				FILE* p = _tfopen( tszFileName, _T("r"));
 				if ( p ) {
+					line[0] = 0;
 					fgets( line, SIZEOF(line), p );
 
 					UINT fileCp = CP_ACP;
@@ -242,7 +243,10 @@ static void LoadLangPackFile( FILE* fp, char* line, UINT fileCp )
 						fseek(p, 3, SEEK_SET);
 					}
 					else
+					{
 						fileCp = langPack.defaultANSICp;
+						fseek(p, 0, SEEK_SET);
+					}
 
 					LoadLangPackFile( p, line, fileCp );
 					fclose( p );
