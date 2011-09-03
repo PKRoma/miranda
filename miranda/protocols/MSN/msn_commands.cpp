@@ -1400,16 +1400,16 @@ LBL_InvalidCommand:
 				if ((dwValue & 0xf0000000) && data.cmdstring[0] && strcmp(data.cmdstring, "0")) 
 				{
 					char* szAvatarHash = MSN_GetAvatarHash(data.cmdstring);
-					if (szAvatarHash == NULL)
-						deleteSetting(hContact, "AvatarHash");
-					else
-						setString(hContact, "AvatarHash", szAvatarHash);
+					if (szAvatarHash == NULL) goto remove;
+
+					setString(hContact, "PictContext", data.cmdstring);
+					setString(hContact, "AvatarHash", szAvatarHash);
 
 					if (hContact != NULL)
 					{
-						char szSavedHash[64];
-						int result = getStaticString(hContact, "AvatarSavedHash", szSavedHash, sizeof(szSavedHash));
-						if (result || stricmp(szSavedHash, szAvatarHash))
+						char szSavedHash[64] = "";
+						getStaticString(hContact, "AvatarSavedHash", szSavedHash, sizeof(szSavedHash));
+						if (stricmp(szSavedHash, szAvatarHash))
 						{
 							SendBroadcast(hContact, ACKTYPE_AVATAR, ACKRESULT_STATUS, NULL, 0);
 						}
