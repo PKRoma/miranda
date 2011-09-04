@@ -1637,3 +1637,79 @@ BOOL CJabberProto::IsMyOwnJID( LPCTSTR szJID )
 
 	return bRetVal;
 }
+
+void __cdecl CJabberProto::LoadHttpAvatars(void* param)
+{
+	OBJLIST<JABBER_HTTP_AVATARS> &avs = *(OBJLIST<JABBER_HTTP_AVATARS>*)param;
+	HANDLE hHttpCon = NULL;
+	for (int i = 0; i < avs.getCount(); ++i)
+	{
+		NETLIBHTTPREQUEST nlhr = {0};
+		nlhr.cbSize = sizeof(nlhr);
+		nlhr.requestType = REQUEST_GET;
+		nlhr.flags = NLHRF_HTTP11 | NLHRF_REDIRECT | NLHRF_PERSISTENT;
+		nlhr.szUrl = avs[i].Url;
+		nlhr.nlc = hHttpCon;
+
+		NETLIBHTTPREQUEST * res = (NETLIBHTTPREQUEST*)JCallService(MS_NETLIB_HTTPTRANSACTION, (WPARAM)m_hNetlibUser, (LPARAM)&nlhr);
+		if (res)
+		{
+			hHttpCon = res->nlc;
+			if ( res->resultCode == 200 && res->dataLength )
+			{
+				int pictureType = JabberGetPictureType( res->pData );
+				if (pictureType != PA_FORMAT_UNKNOWN)
+				{
+					TCHAR tszFileName[ MAX_PATH ];
+
+					PROTO_AVATAR_INFORMATION AI;
+					AI.cbSize = sizeof(AI);
+					AI.format = pictureType;
+					AI.hContact = avs[i].hContact;
+
+					if ( JGetByte( AI.hContact, "AvatarType", PA_FORMAT_UNKNOWN ) != (unsigned char)pictureType ) {
+						GetAvatarFileName( AI.hContact, tszFileName, SIZEOF(tszFileName));
+						DeleteFile( tszFileName );
+					}
+
+					JSetByte( AI.hContact, "AvatarType", pictureType );
+
+					char cmpsha[ 41 ];
+					char buffer[ 41 ];
+					mir_sha1_byte_t digest[20];
+					mir_sha1_ctx sha;
+					mir_sha1_init( &sha );
+					mir_sha1_append( &sha, ( mir_sha1_byte_t* )res->pData, res->dataLength );
+					mir_sha1_finish( &sha, digest );
+					for ( int i=0; i<20; i++ )
+						sprintf( buffer+( i<<1 ), "%02x", digest[i] );
+
+					if (JGetStaticString("AvatarSaved", AI.hContact, cmpsha, sizeof(cmpsha)) || strnicmp(cmpsha, buffer, sizeof(buffer)))
+					{
+						GetAvatarFileName( AI.hContact, tszFileName, SIZEOF(tszFileName));
+	#if defined( _UNICODE )
+						WideCharToMultiByte( CP_ACP, 0, tszFileName, -1, AI.filename, sizeof(AI.filename), 0, 0 );
+	#else
+						strncpy(AI.filename, tszFileName, sizeof(AI.filename));
+	#endif
+						FILE* out = _tfopen( tszFileName, _T("wb"));
+						if ( out != NULL ) {
+							fwrite( res->pData, res->dataLength, 1, out );
+							fclose( out );
+							JSetString( AI.hContact, "AvatarSaved", buffer );
+							JSendBroadcast( AI.hContact, ACKTYPE_AVATAR, ACKRESULT_SUCCESS, &AI, 0 );
+							Log("Broadcast new avatar: %s",AI.filename);
+						}
+						else JSendBroadcast( AI.hContact, ACKTYPE_AVATAR, ACKRESULT_FAILED, &AI, 0 );
+					}
+				}
+			}
+			JCallService(MS_NETLIB_FREEHTTPREQUESTSTRUCT, 0, (LPARAM)res);
+		}
+		else
+			hHttpCon = NULL;
+	}
+	delete &avs;
+	if ( hHttpCon )
+		Netlib_CloseHandle(hHttpCon);
+}

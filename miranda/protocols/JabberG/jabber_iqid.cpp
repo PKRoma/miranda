@@ -384,8 +384,8 @@ void CJabberProto::OnIqResultGetRoster( HXML iqNode, CJabberIqInfo* pInfo )
 
 	TCHAR* nick;
 	int i;
-	SortedList chatRooms = {0};
-	chatRooms.increment = 10;
+	LIST<void> chatRooms(10);
+	OBJLIST<JABBER_HTTP_AVATARS> *httpavatars = new OBJLIST<JABBER_HTTP_AVATARS>(20, JABBER_HTTP_AVATARS::compare);
 
 	for ( i=0; ; i++ ) {
 		BOOL bIsTransport=FALSE;
@@ -480,12 +480,12 @@ void CJabberProto::OnIqResultGetRoster( HXML iqNode, CJabberIqInfo* pInfo )
 			CallServiceSync( MS_GC_NEWSESSION, 0, ( LPARAM )&gcw );
 
 			DBDeleteContactSetting( hContact, "CList", "Hidden" );
-			li.List_Insert( &chatRooms, hContact, chatRooms.realCount );
+			chatRooms.insert( hContact );
 		} else
 		{
 			UpdateSubscriptionInfo(hContact, item);
 		}
-
+		
 		if ( item->group != NULL ) {
 			JabberContactListCreateGroup( item->group );
 
@@ -498,14 +498,24 @@ void CJabberProto::OnIqResultGetRoster( HXML iqNode, CJabberIqInfo* pInfo )
 			}
 			else DBWriteContactSettingTString( hContact, "CList", "Group", item->group );
 		}
-		else DBDeleteContactSetting( hContact, "CList", "Group" );
+		else if (m_options.IgnoreRosterGroups == FALSE)
+			DBDeleteContactSetting( hContact, "CList", "Group" );
 		if ( hContact != NULL ) {
 			if ( bIsTransport)
 				JSetByte( hContact, "IsTransport", TRUE );
 			else
 				JSetByte( hContact, "IsTransport", FALSE );
 		}
+
+		const TCHAR* imagepath = xmlGetAttrValue(itemNode, _T("vz:img"));
+		if (imagepath)
+			httpavatars->insert(new JABBER_HTTP_AVATARS(imagepath, hContact));
 	}
+
+	if (httpavatars->getCount())
+		JForkThread(&CJabberProto::LoadHttpAvatars, httpavatars);
+	else
+		delete httpavatars;
 
 	// Delete orphaned contacts ( if roster sync is enabled )
 	if ( m_options.RosterSync == TRUE ) {
@@ -549,11 +559,10 @@ void CJabberProto::OnIqResultGetRoster( HXML iqNode, CJabberIqInfo* pInfo )
 	SetServerStatus( m_iDesiredStatus );
 
 	if ( m_options.AutoJoinConferences ) {
-		for ( i=0; i < chatRooms.realCount; i++ )
-			GroupchatJoinByHContact(( HANDLE )chatRooms.items[i], true);
+		for ( i=0; i < chatRooms.getCount(); i++ )
+			GroupchatJoinByHContact(( HANDLE )chatRooms[i], true);
 	}
-	li.List_Destroy( &chatRooms );
-
+	chatRooms.destroy();
 
 	//UI_SAFE_NOTIFY(m_pDlgJabberJoinGroupchat, WM_JABBER_CHECK_ONLINE);
 	//UI_SAFE_NOTIFY(m_pDlgBookmarks, WM_JABBER_CHECK_ONLINE);
@@ -712,6 +721,12 @@ LBL_Ret:
 				DeleteFile( item->photoFileName );
 			replaceStr( item->photoFileName, szAvatarFileName );
 			Log( "Contact's picture saved to " TCHAR_STR_PARAM, szAvatarFileName );
+
+			if (JGetWord( hContact, "Status", ID_STATUS_OFFLINE ) == ID_STATUS_OFFLINE) {
+				char szHashValue[ MAX_PATH ];
+				if ( JGetStaticString( "AvatarHash", hContact, szHashValue, sizeof( szHashValue )))
+					OnIqResultGotAvatar( hContact, o, xmlGetText( m ));
+			}
 		}
 		JFreeVariant( &dbv );
 	}

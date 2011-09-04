@@ -113,9 +113,9 @@ extern "C" BOOL WINAPI DllMain( HINSTANCE hModule, DWORD, LPVOID )
 
 extern "C" __declspec( dllexport ) PLUGININFOEX *MirandaPluginInfoEx( DWORD mirandaVersion )
 {
-	if ( mirandaVersion < MIRANDA_VERSION_CORE ) {
+	if ( mirandaVersion < __VERSION_DWORD ) {
 		MessageBoxA( NULL, 
-			"The Jabber protocol plugin cannot be loaded. It requires Miranda IM " MIRANDA_VERSION_CORE_STRING " or later.", 
+			"The Jabber protocol plugin cannot be loaded. It requires Miranda IM " __VERSION_STRING " or later.", 
 			"Jabber Protocol Plugin", MB_OK|MB_ICONWARNING|MB_SETFOREGROUND|MB_TOPMOST );
 		return NULL;
 	}

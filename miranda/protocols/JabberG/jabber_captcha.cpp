@@ -29,7 +29,6 @@ Last change by : $Author: borkra $
 
 struct CAPTCHA_FORM_PARAMS
 {
-	ThreadData* info;
 	LPCTSTR from;
 	LPCTSTR challenge;
 	LPCTSTR fromjid;
@@ -44,8 +43,7 @@ struct CAPTCHA_FORM_PARAMS
 INT_PTR CALLBACK JabberCaptchaFormDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam )
 {
 	CAPTCHA_FORM_PARAMS *params = (CAPTCHA_FORM_PARAMS*)GetWindowLongPtr( hwndDlg, GWLP_USERDATA );
-	switch (msg)
-	{
+	switch (msg) {
 	case WM_INITDIALOG: {
 		TranslateDialogDefault( hwndDlg );
 		SendMessage( hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)LoadSkinnedIconBig(IDI_KEYS));
@@ -61,53 +59,52 @@ INT_PTR CALLBACK JabberCaptchaFormDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam
 		return TRUE;
 	}
 	case WM_CTLCOLORSTATIC:
-		if ((GetWindowLongPtr((HWND)lParam, GWL_ID) == IDC_WHITERECT) ||
-			(GetWindowLongPtr((HWND)lParam, GWL_ID) == IDC_INSTRUCTION) ||
-			(GetWindowLongPtr((HWND)lParam, GWL_ID) == IDC_TITLE))
-		{
+		switch( GetWindowLongPtr((HWND)lParam, GWL_ID)) {
+		case IDC_WHITERECT:
+		case IDC_INSTRUCTION:
+		case IDC_TITLE:
 			return (BOOL)GetStockObject(WHITE_BRUSH);
-		} else
-		{
-			return NULL;
 		}
-	case WM_PAINT: if( params ) {
-		PAINTSTRUCT ps;
-		HDC hdc, hdcMem;
-		RECT rc;
+		return NULL;
 
-		GetClientRect( hwndDlg, &rc );
-		hdc = BeginPaint( hwndDlg, &ps );
-		hdcMem = CreateCompatibleDC( hdc );
-		HGDIOBJ hOld = SelectObject( hdcMem, params->bmp );
+	case WM_PAINT: 
+		if ( params ) {
+			PAINTSTRUCT ps;
+			HDC hdc, hdcMem;
+			RECT rc;
 
-		int y = ( rc.bottom + rc.top - params->h ) / 2;
-		int x = ( rc.right + rc.left - params->w ) / 2;
-		BitBlt( hdc, x, y, params->w, params->h, hdcMem, 0,0, SRCCOPY );
-		SelectObject( hdcMem, hOld );
-		DeleteDC( hdcMem );
+			GetClientRect( hwndDlg, &rc );
+			hdc = BeginPaint( hwndDlg, &ps );
+			hdcMem = CreateCompatibleDC( hdc );
+			HGDIOBJ hOld = SelectObject( hdcMem, params->bmp );
 
-		EndPaint( hwndDlg, &ps );
+			int y = ( rc.bottom + rc.top - params->h ) / 2;
+			int x = ( rc.right + rc.left - params->w ) / 2;
+			BitBlt( hdc, x, y, params->w, params->h, hdcMem, 0,0, SRCCOPY );
+			SelectObject( hdcMem, hOld );
+			DeleteDC( hdcMem );
 
-	}	break;
-	case WM_COMMAND:
-		switch ( LOWORD( wParam ))
-		{
-			case IDCANCEL:
-				EndDialog( hwndDlg, 0 );
-				return TRUE;
-			case IDC_SUBMIT:
-			{
-				GetDlgItemText( hwndDlg, IDC_VALUE, params->Result, SIZEOF(params->Result) );
-				EndDialog( hwndDlg, 1 );
-				return TRUE;
-			}
+			EndPaint( hwndDlg, &ps );
 		}
 		break;
-		case WM_CLOSE:
-			{
-				EndDialog( hwndDlg, 0 );
-				break;
-			}
+
+	case WM_COMMAND:
+		switch ( LOWORD( wParam )) {
+		case IDCANCEL:
+			EndDialog( hwndDlg, 0 );
+			return TRUE;
+
+		case IDC_SUBMIT:
+			GetDlgItemText( hwndDlg, IDC_VALUE, params->Result, SIZEOF(params->Result) );
+			EndDialog( hwndDlg, 1 );
+			return TRUE;
+		}
+		break;
+
+	case WM_CLOSE:
+		EndDialog( hwndDlg, 0 );
+		break;
+
 	case WM_DESTROY:
 		WindowFreeIcon( hwndDlg );
 		break;
@@ -115,45 +112,57 @@ INT_PTR CALLBACK JabberCaptchaFormDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam
 	return FALSE;
 }
 
-void CJabberProto::OnProcessCaptcha (HXML node, ThreadData* info ){
-	CAPTCHA_FORM_PARAMS* param = new CAPTCHA_FORM_PARAMS();
-	char *ImageBuf = {0};
-	const TCHAR *PicType = {0};
-	TCHAR *CaptchaPath = {0};
-	param->info = info;
-	HXML x = xmlGetChild(node, _T("captcha"));
-	x = xmlGetChild(x, _T("x"));
+bool CJabberProto::ProcessCaptcha (HXML node, HXML parentNode, ThreadData* info ){
+	CAPTCHA_FORM_PARAMS param;
+	char *ImageBuf = 0;
+	const TCHAR *PicType = 0;
+	TCHAR *CaptchaPath = 0;
+
+	HXML x = xmlGetChildByTag( node, "x", "xmlns", _T(JABBER_FEAT_DATA_FORMS));
+	if ( x == NULL )
+		return false;
+
 	HXML y = xmlGetChildByTag(x, _T("field"), _T("var"), _T("from"));
-	y = xmlGetChild( y, "value" );
-	param->fromjid = xmlGetText(y);
-	y = xmlGetChildByTag(x, _T("field"), _T("var"), _T("sid"));
-	y = xmlGetChild( y, "value" );
-	param->sid = xmlGetText(y);
-	y = xmlGetChildByTag(x, _T("field"), _T("var"), _T("ocr"));
-	param->hint = xmlGetAttrValue (y, _T("label"));
-	param->from = xmlGetAttrValue( node, _T("from"));
-	param->to = xmlGetAttrValue( node, _T("to"));
-	param->challenge = xmlGetAttrValue( node, _T("id"));
-	HXML o = xmlGetChild( node , "data" );
+	if ( y == NULL )
+		return false;
+	if (( y = xmlGetChild( y, "value" )) == NULL )
+		return false;
+	param.fromjid = xmlGetText( y );
+
+	if (( y = xmlGetChildByTag(x, _T("field"), _T("var"), _T("sid"))) == NULL )
+		return false;
+	if (( y = xmlGetChild( y, "value" )) == NULL )
+		return false;
+	param.sid = xmlGetText( y );
+
+	if (( y = xmlGetChildByTag(x, _T("field"), _T("var"), _T("ocr"))) == NULL )
+		return false;
+	param.hint = xmlGetAttrValue (y, _T("label"));
+
+	param.from = xmlGetAttrValue( parentNode, _T("from"));
+	param.to = xmlGetAttrValue( parentNode, _T("to"));
+	param.challenge = xmlGetAttrValue( parentNode, _T("id"));
+	HXML o = xmlGetChild( parentNode, "data" );
 	if ( o == NULL || xmlGetText( o ) == NULL )
-		return;
-	else GetCaptchaImage(node, ImageBuf, PicType, CaptchaPath);
+		return false;
+
+	GetCaptchaImage(parentNode, ImageBuf, PicType, CaptchaPath);
 	char* p = mir_t2a( CaptchaPath );
-	param->bmp = ( HBITMAP ) JCallService( MS_UTILS_LOADBITMAP, 0, ( LPARAM )p );
+	param.bmp = ( HBITMAP ) JCallService( MS_UTILS_LOADBITMAP, 0, ( LPARAM )p );
 	DeleteFile(CaptchaPath);
 	mir_free(CaptchaPath);
 	mir_free(p);
+
 	BITMAP bmp = {0};
-	GetObject( param->bmp, sizeof(bmp), &bmp );
-	param->w = bmp.bmWidth;
-	param->h = bmp.bmHeight;
-	int res = DialogBoxParam(hInst, MAKEINTRESOURCE(IDD_CAPTCHAFORM), NULL, JabberCaptchaFormDlgProc, (LPARAM)param);
-	if (lstrcmp(param->Result, _T("")) == 0 || !res)
-		sendCaptchaError(param->info, param->from, param->to, param->challenge);
+	GetObject( param.bmp, sizeof(bmp), &bmp );
+	param.w = bmp.bmWidth;
+	param.h = bmp.bmHeight;
+	int res = DialogBoxParam(hInst, MAKEINTRESOURCE(IDD_CAPTCHAFORM), NULL, JabberCaptchaFormDlgProc, (LPARAM)&param);
+	if (lstrcmp(param.Result, _T("")) == 0 || !res)
+		sendCaptchaError(info, param.from, param.to, param.challenge);
 	else
-		sendCaptchaResult (param->Result, param->info, param->from, param->challenge, param->fromjid, param->sid);
-	if (param)
-		delete param;
+		sendCaptchaResult (param.Result, info, param.from, param.challenge, param.fromjid, param.sid);
+	return true;
 }
 
 void CJabberProto::GetCaptchaImage ( HXML node, char *ImageBuf, const TCHAR *PicType, TCHAR*& CaptchaPath ){
@@ -203,9 +212,8 @@ LBL_Ret:
 
 	CloseHandle( hFile );
 
-	ImageBuf=buffer;
-	PicType=szPicType;
-	return;
+	ImageBuf = buffer;
+	PicType = szPicType;
 }
 
 void CJabberProto::sendCaptchaResult(TCHAR* buf, ThreadData* info, LPCTSTR from, LPCTSTR challenge, LPCTSTR fromjid,  LPCTSTR sid){
