@@ -1652,7 +1652,6 @@ void __cdecl CJabberProto::LoadHttpAvatars(void* param)
 		nlhr.nlc = hHttpCon;
 
 		NETLIBHTTPREQUEST * res = (NETLIBHTTPREQUEST*)JCallService(MS_NETLIB_HTTPTRANSACTION, (WPARAM)m_hNetlibUser, (LPARAM)&nlhr);
-		mir_free(nlhr.szUrl);
 		if (res)
 		{
 			hHttpCon = res->nlc;
