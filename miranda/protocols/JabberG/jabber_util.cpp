@@ -1638,18 +1638,18 @@ BOOL CJabberProto::IsMyOwnJID( LPCTSTR szJID )
 	return bRetVal;
 }
 
-void __cdecl CJabberProto::LoadHttpAvatars(JABBER_HTTP_AVATARS * avs)
+void __cdecl CJabberProto::LoadHttpAvatars(void* param)
 {
+	OBJLIST<JABBER_HTTP_AVATARS> &avs = *(OBJLIST<JABBER_HTTP_AVATARS>*)param;
 	HANDLE hHttpCon = NULL;
-	while (avs)
+	for (int i = 0; i < avs.getCount(); ++i)
 	{
 		NETLIBHTTPREQUEST nlhr = {0};
 		nlhr.cbSize = sizeof(nlhr);
 		nlhr.requestType = REQUEST_GET;
 		nlhr.flags = NLHRF_HTTP11 | NLHRF_REDIRECT | NLHRF_PERSISTENT;
-		nlhr.szUrl = mir_t2a(avs->Url);
+		nlhr.szUrl = avs[i].Url;
 		nlhr.nlc = hHttpCon;
-
 
 		NETLIBHTTPREQUEST * res = (NETLIBHTTPREQUEST*)JCallService(MS_NETLIB_HTTPTRANSACTION, (WPARAM)m_hNetlibUser, (LPARAM)&nlhr);
 		mir_free(nlhr.szUrl);
@@ -1666,14 +1666,14 @@ void __cdecl CJabberProto::LoadHttpAvatars(JABBER_HTTP_AVATARS * avs)
 					PROTO_AVATAR_INFORMATION AI;
 					AI.cbSize = sizeof(AI);
 					AI.format = pictureType;
-					AI.hContact = avs->hContact;
+					AI.hContact = avs[i].hContact;
 
-					if ( JGetByte( avs->hContact, "AvatarType", PA_FORMAT_UNKNOWN ) != (unsigned char)pictureType ) {
-						GetAvatarFileName( avs->hContact, tszFileName, SIZEOF(tszFileName));
+					if ( JGetByte( AI.hContact, "AvatarType", PA_FORMAT_UNKNOWN ) != (unsigned char)pictureType ) {
+						GetAvatarFileName( AI.hContact, tszFileName, SIZEOF(tszFileName));
 						DeleteFile( tszFileName );
 					}
 
-					JSetByte( avs->hContact, "AvatarType", pictureType );
+					JSetByte( AI.hContact, "AvatarType", pictureType );
 
 					char cmpsha[ 41 ];
 					char buffer[ 41 ];
@@ -1685,23 +1685,23 @@ void __cdecl CJabberProto::LoadHttpAvatars(JABBER_HTTP_AVATARS * avs)
 					for ( int i=0; i<20; i++ )
 						sprintf( buffer+( i<<1 ), "%02x", digest[i] );
 
-					if (JGetStaticString("AvatarSaved", avs->hContact, cmpsha, sizeof(cmpsha)) || strnicmp(cmpsha, buffer, sizeof(buffer)))
+					if (JGetStaticString("AvatarSaved", AI.hContact, cmpsha, sizeof(cmpsha)) || strnicmp(cmpsha, buffer, sizeof(buffer)))
 					{
-						GetAvatarFileName( avs->hContact, tszFileName, SIZEOF(tszFileName));
+						GetAvatarFileName( AI.hContact, tszFileName, SIZEOF(tszFileName));
 	#if defined( _UNICODE )
-						WideCharToMultiByte( CP_ACP, 0, tszFileName, -1, AI.filename, sizeof AI.filename, 0, 0 );
+						WideCharToMultiByte( CP_ACP, 0, tszFileName, -1, AI.filename, sizeof(AI.filename), 0, 0 );
 	#else
-						strncpy( AI.filename, tszFileName, sizeof AI.filename );
+						strncpy(AI.filename, tszFileName, sizeof(AI.filename));
 	#endif
 						FILE* out = _tfopen( tszFileName, _T("wb"));
 						if ( out != NULL ) {
 							fwrite( res->pData, res->dataLength, 1, out );
 							fclose( out );
-							JSetString( avs->hContact, "AvatarSaved", buffer );
-							JSendBroadcast( avs->hContact, ACKTYPE_AVATAR, ACKRESULT_SUCCESS, HANDLE( &AI ), NULL );
+							JSetString( AI.hContact, "AvatarSaved", buffer );
+							JSendBroadcast( AI.hContact, ACKTYPE_AVATAR, ACKRESULT_SUCCESS, &AI, 0 );
 							Log("Broadcast new avatar: %s",AI.filename);
 						}
-						else JSendBroadcast( avs->hContact, ACKTYPE_AVATAR, ACKRESULT_FAILED, HANDLE( &AI ), NULL );
+						else JSendBroadcast( AI.hContact, ACKTYPE_AVATAR, ACKRESULT_FAILED, &AI, 0 );
 					}
 				}
 			}
@@ -1709,12 +1709,8 @@ void __cdecl CJabberProto::LoadHttpAvatars(JABBER_HTTP_AVATARS * avs)
 		}
 		else
 			hHttpCon = NULL;
-
-		JABBER_HTTP_AVATARS * tmp = avs;
-		avs = avs->Next;
-		mir_free(tmp->Url);
-		mir_free(tmp);
 	}
+	delete &avs;
 	if ( hHttpCon )
 		Netlib_CloseHandle(hHttpCon);
 }

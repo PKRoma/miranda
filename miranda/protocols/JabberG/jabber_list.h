@@ -191,9 +191,16 @@ struct JABBER_LIST_ITEM
 
 struct JABBER_HTTP_AVATARS
 {
-	JABBER_HTTP_AVATARS * Next;
+	char * Url;
 	HANDLE hContact;
-	TCHAR * Url;
+
+	JABBER_HTTP_AVATARS(const TCHAR* tUrl, HANDLE thContact)
+		: Url(mir_t2a(tUrl)), hContact(thContact) {}
+
+	~JABBER_HTTP_AVATARS() { mir_free(Url); }
+
+	static int compare(const JABBER_HTTP_AVATARS *p1, const JABBER_HTTP_AVATARS *p2)
+	{ return strcmp(p1->Url, p2->Url); }
 };
 
 #endif

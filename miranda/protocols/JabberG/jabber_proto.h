@@ -923,7 +923,7 @@ struct CJabberProto : public PROTO_INTERFACE
 	BOOL   EnterString(TCHAR *result, size_t resultLen, TCHAR *caption=NULL, int type=0, char *windowName=NULL, int recentCount=JABBER_DEFAULT_RECENT_COUNT, int timeout=0);
 	BOOL   IsMyOwnJID( LPCTSTR szJID );
 
-	void __cdecl LoadHttpAvatars(JABBER_HTTP_AVATARS * avs);
+	void __cdecl LoadHttpAvatars(void* param);
 
 	//---- jabber_vcard.c -----------------------------------------------
 
