@@ -721,6 +721,12 @@ LBL_Ret:
 				DeleteFile( item->photoFileName );
 			replaceStr( item->photoFileName, szAvatarFileName );
 			Log( "Contact's picture saved to " TCHAR_STR_PARAM, szAvatarFileName );
+
+			if (JGetWord( hContact, "Status", ID_STATUS_OFFLINE ) == ID_STATUS_OFFLINE) {
+				char szHashValue[ MAX_PATH ];
+				if ( JGetStaticString( "AvatarHash", hContact, szHashValue, sizeof( szHashValue )))
+					OnIqResultGotAvatar( hContact, o, xmlGetText( m ));
+			}
 		}
 		JFreeVariant( &dbv );
 	}
