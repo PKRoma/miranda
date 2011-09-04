@@ -506,6 +506,24 @@ static void FillFilterCombo(int enableKeywordFiltering, HWND hDlg, struct Option
 		ExecuteFindFilterStringsTimer( hDlg );
 }
 
+static BOOL IsInsideTab( HWND hdlg, OptionsDlgData * dat, int i )
+{
+	int pages = 0;
+	if (dat->opd[i].pszTab != NULL)
+	{
+		// Count tabs to calc position
+		for (int j=0; j < dat->pageCount && pages < 2; j++ )
+		{
+			if (!CheckPageShow( hdlg, dat, j ) ) continue;
+			//if (( dat->opd[j].flags & ODPF_SIMPLEONLY ) && IsDlgButtonChecked( hdlg, IDC_EXPERT )) continue;
+			//if (( dat->opd[j].flags & ODPF_EXPERTONLY ) && !IsDlgButtonChecked( hdlg, IDC_EXPERT )) continue;
+			if ( lstrcmp(dat->opd[j].pszTitle, dat->opd[i].pszTitle) || lstrcmpnull(dat->opd[j].pszGroup, dat->opd[i].pszGroup) ) continue;
+			pages++;
+		}
+	}
+	return (pages > 1);
+}
+
 static INT_PTR CALLBACK OptionsDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPARAM lParam)
 {
 	struct OptionsDlgData* dat = (struct OptionsDlgData* )GetWindowLongPtr( hdlg, GWLP_USERDATA );
@@ -922,7 +940,7 @@ static INT_PTR CALLBACK OptionsDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPAR
 						if ( dat->opd[dat->currentPage].hwnd == NULL ) {
 							RECT rcPage;
 							RECT rcControl,rc;
-							int w,h,pages=0;
+							int w,h;
 
 							dat->opd[dat->currentPage].hwnd=CreateDialogIndirectParamA(dat->opd[dat->currentPage].hInst,dat->opd[dat->currentPage].pTemplate,hdlg,dat->opd[dat->currentPage].dlgProc,dat->opd[dat->currentPage].dwInitParam);
 							if(dat->opd[dat->currentPage].flags&ODPF_BOLDGROUPS)
@@ -959,17 +977,7 @@ static INT_PTR CALLBACK OptionsDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPAR
 							dat->opd[dat->currentPage].offsetX = 0;
 							dat->opd[dat->currentPage].offsetY = 0;
 
-							if (dat->opd[dat->currentPage].pszTab != NULL) {
-								// Count tabs to calc position
-								int i;
-								for ( i=0; i < dat->pageCount && pages < 2; i++ ) {
-									if (!CheckPageShow( hdlg, dat, i ) ) continue;
-									//if (( dat->opd[i].flags & ODPF_SIMPLEONLY ) && IsDlgButtonChecked( hdlg, IDC_EXPERT )) continue;
-									//if (( dat->opd[i].flags & ODPF_EXPERTONLY ) && !IsDlgButtonChecked( hdlg, IDC_EXPERT )) continue;
-									if ( lstrcmp(dat->opd[i].pszTitle, dat->opd[dat->currentPage].pszTitle) || lstrcmpnull(dat->opd[i].pszGroup, dat->opd[dat->currentPage].pszGroup) ) continue;
-									pages++;
-							}	}
-							dat->opd[dat->currentPage].insideTab = (pages > 1);
+							dat->opd[dat->currentPage].insideTab = IsInsideTab( hdlg, dat, dat->currentPage );
 							if (dat->opd[dat->currentPage].insideTab) {
 								SetWindowPos(dat->opd[dat->currentPage].hwnd,HWND_TOP,(dat->rcTab.left+dat->rcTab.right-w)>>1,dat->rcTab.top,w,h,0);
 								ThemeDialogBackground(dat->opd[dat->currentPage].hwnd,TRUE);
@@ -980,21 +988,7 @@ static INT_PTR CALLBACK OptionsDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPAR
 						}
 						if ( !tabChange )
 						{
-							if ( dat->opd[dat->currentPage].pszTab != NULL ) 
-							{
-								// Count tabs to calc position
-								int j;
-								int pages=0;
-								for ( j=0; j < dat->pageCount && pages < 2; j++ )
-								{
-									if (!CheckPageShow( hdlg, dat, j ) ) continue;
-									//if (( dat->opd[j].flags & ODPF_SIMPLEONLY ) && IsDlgButtonChecked( hdlg, IDC_EXPERT )) continue;
-									//if (( dat->opd[j].flags & ODPF_EXPERTONLY ) && !IsDlgButtonChecked( hdlg, IDC_EXPERT )) continue;
-									if ( lstrcmp(dat->opd[j].pszTitle, dat->opd[dat->currentPage].pszTitle) || lstrcmpnull(dat->opd[j].pszGroup, dat->opd[dat->currentPage].pszGroup) ) continue;
-									pages++;
-								}							
-								dat->opd[ dat->currentPage].insideTab = (pages > 1);
-							}
+							dat->opd[ dat->currentPage].insideTab = IsInsideTab( hdlg, dat, dat->currentPage );
 							if ( dat->opd[dat->currentPage].insideTab  ) {
 								// Make tabbed pane
 								int i,pages=0,sel=0;
@@ -1119,8 +1113,6 @@ static INT_PTR CALLBACK OptionsDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPAR
 				pshn.lParam=expert;
 				pshn.hdr.code=PSN_EXPERTCHANGED;
 				for(i=0;i<dat->pageCount;i++) {
-					int pages=0;
-
 					if(dat->opd[i].hwnd==NULL) continue;
 					if (!CheckPageShow( hdlg, dat, i ) ) continue;
 					//if (( dat->opd[i].flags & ODPF_SIMPLEONLY ) && expert) continue;
@@ -1131,17 +1123,7 @@ static INT_PTR CALLBACK OptionsDlgProc(HWND hdlg,UINT message,WPARAM wParam,LPAR
 					for(j=0;j<dat->opd[i].nExpertOnlyControls;j++)
 						ShowWindow(GetDlgItem(dat->opd[i].hwnd,dat->opd[i].expertOnlyControls[j]),expert?SW_SHOW:SW_HIDE);
 
-					if (dat->opd[i].pszTab != NULL) {
-						// Count tabs to calc position
-						int j;
-						for ( j=0; j < dat->pageCount && pages < 2; j++ ) {
-							if (!CheckPageShow( hdlg, dat, i ) ) continue;
-							//if (( dat->opd[j].flags & ODPF_SIMPLEONLY ) && IsDlgButtonChecked( hdlg, IDC_EXPERT )) continue;
-							//if (( dat->opd[j].flags & ODPF_EXPERTONLY ) && !IsDlgButtonChecked( hdlg, IDC_EXPERT )) continue;
-							if ( lstrcmp(dat->opd[j].pszTitle, dat->opd[i].pszTitle) || lstrcmpnull(dat->opd[j].pszGroup, dat->opd[i].pszGroup) ) continue;
-							pages++;
-					}	}
-					dat->opd[i].insideTab = (pages > 1);
+					dat->opd[i].insideTab = IsInsideTab( hdlg, dat, i );
 
 					GetWindowRect(dat->opd[i].hwnd,&rcPage);
 					if(dat->opd[i].simpleBottomControlId) newh=expert?dat->opd[i].expertHeight:dat->opd[i].simpleHeight;
