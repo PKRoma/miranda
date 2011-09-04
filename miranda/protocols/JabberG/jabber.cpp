@@ -113,8 +113,10 @@ extern "C" BOOL WINAPI DllMain( HINSTANCE hModule, DWORD, LPVOID )
 
 extern "C" __declspec( dllexport ) PLUGININFOEX *MirandaPluginInfoEx( DWORD mirandaVersion )
 {
-	if ( mirandaVersion < PLUGIN_MAKE_VERSION( 0,9,0,4 )) {
-		MessageBoxA( NULL, "The Jabber protocol plugin cannot be loaded. It requires Miranda IM 0.9.0.4 or later.", "Jabber Protocol Plugin", MB_OK|MB_ICONWARNING|MB_SETFOREGROUND|MB_TOPMOST );
+	if ( mirandaVersion < MIRANDA_VERSION_CORE ) {
+		MessageBoxA( NULL, 
+			"The Jabber protocol plugin cannot be loaded. It requires Miranda IM " MIRANDA_VERSION_CORE_STRING " or later.", 
+			"Jabber Protocol Plugin", MB_OK|MB_ICONWARNING|MB_SETFOREGROUND|MB_TOPMOST );
 		return NULL;
 	}
 
@@ -182,8 +184,10 @@ static int OnModulesLoaded( WPARAM, LPARAM )
 	// init fontservice for info frame
 	FontID fontid = {0};
 	fontid.cbSize = sizeof(fontid);
-	lstrcpyA(fontid.group, "Jabber");
-	lstrcpyA(fontid.dbSettingsGroup, GLOBAL_SETTING_MODULE);
+	strcpy(fontid.group, "Jabber");
+	strcpy(fontid.dbSettingsGroup, GLOBAL_SETTING_MODULE);
+	strcpy(fontid.backgroundGroup, "Jabber");
+	strcpy(fontid.backgroundName,"Background");
 	fontid.flags = FIDF_DEFAULTVALID;
 
 	fontid.deffontsettings.charset = DEFAULT_CHARSET;
@@ -192,23 +196,23 @@ static int OnModulesLoaded( WPARAM, LPARAM )
 	lstrcpyA(fontid.deffontsettings.szFace, "MS Shell Dlg");
 	fontid.deffontsettings.style = 0;
 
-	lstrcpyA(fontid.name, "Frame title");
-	lstrcpyA(fontid.prefix, "fntFrameTitle");
+	strcpy(fontid.name, "Frame title");
+	strcpy(fontid.prefix, "fntFrameTitle");
 	fontid.deffontsettings.style = DBFONTF_BOLD;
 	CallService(MS_FONT_REGISTER, (WPARAM)&fontid, 0);
 
-	lstrcpyA(fontid.name, "Frame text");
-	lstrcpyA(fontid.prefix, "fntFrameClock");
+	strcpy(fontid.name, "Frame text");
+	strcpy(fontid.prefix, "fntFrameClock");
 	fontid.deffontsettings.style = 0;
 	CallService(MS_FONT_REGISTER, (WPARAM)&fontid, 0);
 
 	ColourID colourid = {0};
 	colourid.cbSize = sizeof(colourid);
-	lstrcpyA(colourid.group, "Jabber");
-	lstrcpyA(colourid.dbSettingsGroup, GLOBAL_SETTING_MODULE);
+	strcpy(colourid.group, "Jabber");
+	strcpy(colourid.dbSettingsGroup, GLOBAL_SETTING_MODULE);
 
-	lstrcpyA(colourid.name, "Background");
-	lstrcpyA(colourid.setting, "clFrameBack");
+	strcpy(colourid.name, "Background");
+	strcpy(colourid.setting, "clFrameBack");
 	colourid.defcolour = GetSysColor(COLOR_WINDOW);
 	CallService(MS_COLOUR_REGISTER, (WPARAM)&colourid, 0);
 
