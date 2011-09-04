@@ -741,7 +741,7 @@ private:
 
 	void RefreshServers( HXML node )
 	{
-		m_gotservers = node ? true : false;
+		m_gotservers = node != NULL;
 
 		TCHAR *server = m_cbServer.GetText();
 		bool bDropdown = m_cbServer.GetDroppedState();
@@ -773,28 +773,29 @@ private:
 		HWND hwnd = wnd->GetHwnd();
 		bool bIsError = true;
 
+		if (!IsWindow(hwnd)) return;
+
 		NETLIBHTTPREQUEST request = {0};
 		request.cbSize = sizeof(request);
 		request.requestType = REQUEST_GET;
-		request.flags = NLHRF_GENERATEHOST|NLHRF_SMARTREMOVEHOST|NLHRF_SMARTAUTHHEADER|NLHRF_HTTP11;
+		request.flags = NLHRF_REDIRECT | NLHRF_HTTP11;
 		request.szUrl = "http://xmpp.org/services/services.xml";
 
 		NETLIBHTTPREQUEST *result = (NETLIBHTTPREQUEST *)CallService(MS_NETLIB_HTTPTRANSACTION, (WPARAM)wnd->GetProto()->m_hNetlibUser, (LPARAM)&request);
-		if ( result && IsWindow(hwnd)) {
+		if ( result ) {
 			if ( result->resultCode == 200 && result->dataLength && result->pData ) {
 				TCHAR* buf = mir_a2t( result->pData );
 				XmlNode node( buf, NULL, NULL );
 				if ( node ) {
 					HXML queryNode = xmlGetChild( node, _T("query") );
-					if ( queryNode && IsWindow(hwnd)) {
-						SendMessage(hwnd, WM_JABBER_REFRESH, 0, (LPARAM)queryNode);
-						bIsError = false;
-				}	}
+					SendMessage(hwnd, WM_JABBER_REFRESH, 0, (LPARAM)queryNode);
+					bIsError = false;
+				}
 				mir_free( buf );
-		}	}
-
-		if ( result )
+			}	
 			CallService(MS_NETLIB_FREEHTTPREQUESTSTRUCT, 0, (LPARAM)result);
+		}
+
 		if ( bIsError )
 			SendMessage(hwnd, WM_JABBER_REFRESH, 0, (LPARAM)NULL);
 	}
@@ -2203,7 +2204,7 @@ void CJabberDlgAccMgrUI::setupSMS()
 
 void CJabberDlgAccMgrUI::RefreshServers( HXML node )
 {
-	m_gotservers = node ? true : false;
+	m_gotservers = node != NULL;
 
 	TCHAR *server = m_cbServer.GetText();
 	bool bDropdown = m_cbServer.GetDroppedState();
