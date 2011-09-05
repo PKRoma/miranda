@@ -548,8 +548,11 @@ void  CMsnProto::p2p_sendSlp(int iKind, filetransfer *ft, MimeHeaders &pHeaders,
 	p = pHeaders.writeToBuffer(p);
 	p = pContent.writeToBuffer(p);
 
+	unsigned short status = getWord(ft->std.hContact, "Status", ID_STATUS_OFFLINE);
 	if (!(myFlags & cap_SupportsP2PBootstrap) || ft->p2p_sessionid || 
-		MSN_GetThreadByContact(wlid, SERVER_P2P_DIRECT))
+		MSN_GetThreadByContact(wlid, SERVER_P2P_DIRECT) ||
+		status == ID_STATUS_OFFLINE || status == ID_STATUS_INVISIBLE || 
+		m_iStatus == ID_STATUS_INVISIBLE)
 	{
 		if (!ft->p2p_isV2)
 		{
