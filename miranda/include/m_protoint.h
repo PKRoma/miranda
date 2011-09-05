@@ -108,7 +108,7 @@ typedef struct tagPROTO_INTERFACE
 	int    m_iStatus,
 	       m_iDesiredStatus,
 	       m_iXStatus,
-	       m_iVersion;
+	       m_iVersion;  // version 2 or higher designate support of Unicode services
 	TCHAR* m_tszUserName;
 	char*  m_szProtoName;
 	char*  m_szModuleName;
