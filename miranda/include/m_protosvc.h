@@ -32,6 +32,16 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "m_protocols.h"
 
+/* *****  Unicode Services note   ********
+******************************************
+
+Only new style protocols (Miranda 0.9+) with m_iVersion set to 2 or higher
+support Unicode services documented below, all other support only ANSI. 
+
+For all other that do not support Unicode services, Miranda core will 
+convert Unicode to ANSI and call the appropriate service.
+*/
+
 /*************************** NON-CONTACT SERVICES ************************/
 //these should be called with CallProtoService()
 
