@@ -1,6 +1,6 @@
 /*
 Plugin of Miranda IM for communicating with users of the AIM protocol.
-Copyright (c) 2008-2010 Boris Krasnovskiy
+Copyright (c) 2008-2011 Boris Krasnovskiy
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -326,10 +326,18 @@ DWORD_PTR __cdecl CAimProto::GetCaps(int type, HANDLE hContact)
 		return PF1_IM | PF1_MODEMSG | PF1_BASICSEARCH | PF1_SEARCHBYEMAIL | PF1_FILE;
 
 	case PFLAGNUM_2:
+#ifdef ALLOW_BUSY
+		return PF2_ONLINE | PF2_INVISIBLE | PF2_SHORTAWAY | PF2_ONTHEPHONE | PF2_LIGHTDND;
+#else
 		return PF2_ONLINE | PF2_INVISIBLE | PF2_SHORTAWAY | PF2_ONTHEPHONE;
+#endif
 
 	case PFLAGNUM_3:
+#ifdef ALLOW_BUSY
+		return  PF2_ONLINE | PF2_SHORTAWAY | PF2_INVISIBLE | PF2_LIGHTDND;
+#else
 		return  PF2_ONLINE | PF2_SHORTAWAY | PF2_INVISIBLE;
+#endif
 
 	case PFLAGNUM_4:
 		return PF4_SUPPORTTYPING | PF4_FORCEAUTH | PF4_NOCUSTOMAUTH | PF4_FORCEADDED |
@@ -339,7 +347,7 @@ DWORD_PTR __cdecl CAimProto::GetCaps(int type, HANDLE hContact)
 		return PF2_ONTHEPHONE;
 
 	case PFLAG_MAXLENOFMESSAGE:
-		return 1024;
+		return MAX_MESSAGE_LENGTH;
 
 	case PFLAG_UNIQUEIDTEXT:
 		return (DWORD_PTR) "Screen Name";
@@ -652,19 +660,31 @@ int __cdecl CAimProto::SetApparentMode(HANDLE hContact, int mode)
 
 int __cdecl CAimProto::SetStatus(int iNewStatus)
 {
+	switch (iNewStatus)
+	{
+	case ID_STATUS_FREECHAT:
+		iNewStatus = ID_STATUS_ONLINE;
+		break;
+
+	case ID_STATUS_DND:
+	case ID_STATUS_OCCUPIED:
+	case ID_STATUS_ONTHEPHONE:
+#ifdef ALLOW_BUSY
+		iNewStatus = ID_STATUS_OCCUPIED;
+		break;
+#endif
+
+	case ID_STATUS_OUTTOLUNCH:
+	case ID_STATUS_NA:
+		iNewStatus = ID_STATUS_AWAY;
+		break;
+	}
+
 	if (iNewStatus == m_iStatus)
 		return 0;
 
 	if (iNewStatus == ID_STATUS_OFFLINE)
 	{
-		char** msgptr = getStatusMsgLoc(iNewStatus);
-		if (msgptr && *msgptr)
-		{
-			if (m_iStatus == ID_STATUS_AWAY)
-				aim_set_away(hServerConn, seqno, NULL, false);//unset away message
-			else
-				aim_set_statusmsg(hServerConn, seqno, NULL);//unset status message
-		}
 		broadcast_status(ID_STATUS_OFFLINE);
 		return 0;
 	}
@@ -677,35 +697,26 @@ int __cdecl CAimProto::SetStatus(int iNewStatus)
 	}
 	else if (m_iStatus > ID_STATUS_OFFLINE)
 	{
-		char** msgptr = getStatusMsgLoc(iNewStatus);
 		switch(iNewStatus) 
 		{
 		case ID_STATUS_ONLINE:
-		case ID_STATUS_FREECHAT:
+			aim_set_status(hServerConn, seqno, AIM_STATUS_ONLINE);
 			broadcast_status(ID_STATUS_ONLINE);
-			aim_set_invis(hServerConn, seqno, AIM_STATUS_ONLINE, AIM_STATUS_NULL);//online not invis
-			aim_set_away(hServerConn, seqno, NULL, false);//unset away message
 			break;
 
 		case ID_STATUS_INVISIBLE:
+			aim_set_status(hServerConn, seqno, AIM_STATUS_INVISIBLE);
 			broadcast_status(ID_STATUS_INVISIBLE);
-			aim_set_invis(hServerConn,seqno,AIM_STATUS_INVISIBLE,AIM_STATUS_NULL);
-			aim_set_away(hServerConn, seqno, NULL, false);//unset away message
+			break;
+
+		case ID_STATUS_OCCUPIED:
+			aim_set_status(hServerConn, seqno, AIM_STATUS_BUSY | AIM_STATUS_AWAY);
+			broadcast_status(ID_STATUS_OCCUPIED);
 			break;
 
 		case ID_STATUS_AWAY:
-		case ID_STATUS_OUTTOLUNCH:
-		case ID_STATUS_NA:
-		case ID_STATUS_DND:
-		case ID_STATUS_OCCUPIED:
-		case ID_STATUS_ONTHEPHONE:
+			aim_set_status(hServerConn, seqno, AIM_STATUS_AWAY);
 			broadcast_status(ID_STATUS_AWAY);
-			if (m_iStatus != ID_STATUS_AWAY) 
-			{
-				aim_set_away(hServerConn, seqno, *msgptr, true);//set actual away message
-				aim_set_invis(hServerConn, seqno, AIM_STATUS_AWAY, AIM_STATUS_NULL);//away not invis
-			}
-			//see SetAwayMsg for m_iStatus away
 			break;
 		}	
 	}
@@ -772,31 +783,42 @@ int __cdecl CAimProto::SendAwayMsg(HANDLE hContact, HANDLE hProcess, const char*
 
 int __cdecl CAimProto::SetAwayMsg(int status, const TCHAR* msg)
 {
-	char** msgptr = getStatusMsgLoc(status);
-	if (msgptr==NULL) return 1;
+	char** msgptr = get_status_msg_loc(status);
+	if (msgptr == NULL) return 1;
 
-	mir_free(*msgptr);
-	*msgptr = mir_utf8encodeT(msg);
+	char* nmsg = mir_utf8encodeT(msg);
+	mir_free(*msgptr); *msgptr = nmsg;
 
-	if (state == 1 && status == m_iDesiredStatus)
+	switch (status)
 	{
-		switch(status) 
-		{
-		case ID_STATUS_ONLINE:
-		case ID_STATUS_FREECHAT:
-		case ID_STATUS_INVISIBLE:
-			aim_set_statusmsg(hServerConn, seqno, *msgptr);
-			break;
+	case ID_STATUS_FREECHAT:
+		status = ID_STATUS_ONLINE;
+		break;
 
-		case ID_STATUS_AWAY:
-		case ID_STATUS_OUTTOLUNCH:
-		case ID_STATUS_NA:
-		case ID_STATUS_DND:
-		case ID_STATUS_OCCUPIED:
-		case ID_STATUS_ONTHEPHONE:
-			aim_set_away(hServerConn, seqno, *msgptr, true); //set actual away message
-			break;
-		}
+	case ID_STATUS_DND:
+	case ID_STATUS_OCCUPIED:
+	case ID_STATUS_ONTHEPHONE:
+#ifdef ALLOW_BUSY
+		status = ID_STATUS_OCCUPIED;
+		break;
+#endif
+
+	case ID_STATUS_OUTTOLUNCH:
+	case ID_STATUS_NA:
+		status = ID_STATUS_AWAY;
+		break;
+	}
+
+	if (state == 1 && status == m_iStatus)
+	{
+		if (!_strcmps(last_status_msg, nmsg))
+			return 0;
+
+		mir_free(last_status_msg);
+		last_status_msg = mir_strdup(nmsg);
+		aim_set_statusmsg(hServerConn, seqno, nmsg);
+		aim_set_away(hServerConn, seqno, nmsg, 
+			status == ID_STATUS_AWAY || status == ID_STATUS_OCCUPIED);
 	}
 	return 0;
 }

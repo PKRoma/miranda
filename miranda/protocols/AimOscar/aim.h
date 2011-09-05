@@ -1,6 +1,6 @@
 /*
 Plugin of Miranda IM for communicating with users of the AIM protocol.
-Copyright (c) 2008-2009 Boris Krasnovskiy
+Copyright (c) 2008-2011 Boris Krasnovskiy
 Copyright (C) 2005-2006 Aaron Myles Landwehr
 
 This program is free software; you can redistribute it and/or
@@ -90,90 +90,114 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 #include "ui.h"
 #include "proto.h"
 
+// Protocol limits
+#define MAX_SCREEN_NAME_LENGTH      97
+#define MAX_GROUP_NAME_LENGTH       48
+#define MAX_NICKNAME_LENGTH         64
+#define MAX_MESSAGE_LENGTH          2544
+#define MAX_STATUS_MESSAGE_LENGTH   251
+#define MAX_AWAY_MESSAGE_LENGTH     4096
+#define MAX_ICON_SIZE               7168
+
+// ICBM parameter flags
+#define ICBM_CHANNEL_MSGS_ALLOWED   0x00000001
+#define ICBM_MISSED_CALLS_ENABLED   0x00000002
+#define ICBM_EVENTS_ALLOWED         0x00000008
+#define ICBM_SMS_SUPPORTED          0x00000010
+#define ICBM_OFFLINE_MSGS_ALLOWED   0x00000100
+
+// SSI preferences
+#define SHOW_IDLE                   0x00000400
+#define SHOW_RECENT_BUDDIES         0x00020000
+#define SHOW_TYPING                 0x00400000
+
 //Extended Status Icon Numbers
-#define ACCOUNT_TYPE_UNCONFIRMED 1
-#define ACCOUNT_TYPE_CONFIRMED 2
-#define ACCOUNT_TYPE_ICQ 3
-#define ACCOUNT_TYPE_AOL 4
-#define ACCOUNT_TYPE_ADMIN 5
-#define EXTENDED_STATUS_BOT 1
-#define EXTENDED_STATUS_HIPTOP 2
+#define ACCOUNT_TYPE_UNCONFIRMED    1
+#define ACCOUNT_TYPE_CONFIRMED      2
+#define ACCOUNT_TYPE_ICQ            3
+#define ACCOUNT_TYPE_AOL            4
+#define ACCOUNT_TYPE_ADMIN          5
+#define EXTENDED_STATUS_BOT         1
+#define EXTENDED_STATUS_HIPTOP      2
 
 //Popup flags
-#define MAIL_POPUP  0x04
-#define ERROR_POPUP 0x08
-#define TCHAR_POPUP 0x10
+#define MAIL_POPUP                  0x04
+#define ERROR_POPUP                 0x08
+#define TCHAR_POPUP                 0x10
 
 //Main Option Window Keys
-#define AIM_KEY_SN "SN"
-#define AIM_KEY_NK "Nick"
-#define AIM_KEY_PW "Password"
-#define AIM_KEY_HN "loginhost"
-#define AIM_KEY_PN "loginport"
-#define AIM_KEY_DC "DelConf"//delivery confirmation
-#define AIM_KEY_FP "ForceProxyTransfer"
-#define AIM_KEY_HF "HiptopFake"
-#define AIM_KEY_AT "DisableATIcons"
-#define AIM_KEY_ES "DisableESIcons"
-#define AIM_KEY_DM "DisableModeMsg"
-#define AIM_KEY_FI "FormatIncoming"//html->bbcodes
-#define AIM_KEY_FO "FormatOutgoing"//bbcodes->html
-#define AIM_KEY_II "InstantIdle"
-#define AIM_KEY_IIT "InstantIdleTS"
-#define AIM_KEY_CM "CheckMail"
-#define AIM_KEY_MG "ManageGroups"
-#define AIM_KEY_DA "DisableAvatars"
-#define AIM_KEY_DSSL "DisableSSL"
-#define AIM_KEY_FSC "ForceSingleClient"
+#define AIM_KEY_SN                  "SN"
+#define AIM_KEY_NK                  "Nick"
+#define AIM_KEY_PW                  "Password"
+#define AIM_KEY_HN                  "loginhost"
+#define AIM_KEY_PN                  "loginport"
+#define AIM_KEY_DC                  "DelConf"//delivery confirmation
+#define AIM_KEY_FP                  "ForceProxyTransfer"
+#define AIM_KEY_HF                  "HiptopFake"
+#define AIM_KEY_AT                  "DisableATIcons"
+#define AIM_KEY_ES                  "DisableESIcons"
+#define AIM_KEY_DM                  "DisableModeMsg"
+#define AIM_KEY_FI                  "FormatIncoming"//html->bbcodes
+#define AIM_KEY_FO                  "FormatOutgoing"//bbcodes->html
+#define AIM_KEY_II                  "InstantIdle"
+#define AIM_KEY_IIT                 "InstantIdleTS"
+#define AIM_KEY_CM                  "CheckMail"
+#define AIM_KEY_MG                  "ManageGroups"
+#define AIM_KEY_DA                  "DisableAvatars"
+#define AIM_KEY_DSSL                "DisableSSL"
+#define AIM_KEY_FSC                 "ForceSingleClient"
 
-#define OTH_KEY_SM "StatusMsg"
-#define OTH_KEY_GP "Group"
+#define OTH_KEY_SM                  "StatusMsg"
+#define OTH_KEY_GP                  "Group"
 //Module Name Key
-#define MOD_KEY_CL "CList"
+#define MOD_KEY_CL                  "CList"
 //Settings Keys
-#define AIM_KEY_PR "Profile"
-#define AIM_KEY_LA "LastAwayChange"
+#define AIM_KEY_PR                  "Profile"
+#define AIM_KEY_LA                  "LastAwayChange"
 //Contact Keys
-#define AIM_KEY_BI "BuddyId"
-#define AIM_KEY_GI "GroupId"
-#define AIM_KEY_ST "Status"
-#define AIM_KEY_IT "IdleTS"
-#define AIM_KEY_OT "LogonTS"
-#define AIM_KEY_MS "MemberTS"
-#define AIM_KEY_AC "AccType"//account type
-#define AIM_KEY_ET "ESType"//Extended Status type
-#define AIM_KEY_MV "MirVer"
-#define AIM_KEY_US "Utf8Support"
-#define AIM_KEY_NL "NotOnList"
-#define AIM_KEY_LM "LastMessage"
-#define AIM_KEY_NC "NewContact"
-#define AIM_KEY_AH "AvatarHash"
-#define AIM_KEY_ASH "AvatarSavedHash"
-#define AIM_KEY_EM "e-mail"
-#define AIM_KEY_LV "LastVer"
+#define AIM_KEY_BI                  "BuddyId"
+#define AIM_KEY_GI                  "GroupId"
+#define AIM_KEY_ST                  "Status"
+#define AIM_KEY_IT                  "IdleTS"
+#define AIM_KEY_OT                  "LogonTS"
+#define AIM_KEY_MS                  "MemberTS"
+#define AIM_KEY_AC                  "AccType"//account type
+#define AIM_KEY_ET                  "ESType"//Extended Status type
+#define AIM_KEY_MV                  "MirVer"
+#define AIM_KEY_US                  "Utf8Support"
+#define AIM_KEY_NL                  "NotOnList"
+#define AIM_KEY_LM                  "LastMessage"
+#define AIM_KEY_NC                  "NewContact"
+#define AIM_KEY_AH                  "AvatarHash"
+#define AIM_KEY_ASH                 "AvatarSavedHash"
+#define AIM_KEY_EM                  "e-mail"
+#define AIM_KEY_LV                  "LastVer"
+#define AIM_KEY_TIS		            "TotalIMsSent"
+#define AIM_KEY_TIR                 "TotalIMsReceived"
+#define AIM_KEY_TAM                 "TotalAwayMessages"
 
-#define AIM_DEFAULT_SERVER "slogin.oscar.aol.com"
-#define AIM_DEFAULT_SERVER_NS "login.oscar.aol.com"
-#define AIM_PROXY_SERVER "ars.oscar.aol.com"
-#define AIM_DEFAULT_PORT 5190
-#define AIM_DEFAULT_SSL_PORT 443
+#define AIM_DEFAULT_SERVER          "slogin.oscar.aol.com"
+#define AIM_DEFAULT_SERVER_NS       "login.oscar.aol.com"
+#define AIM_PROXY_SERVER            "ars.oscar.aol.com"
+#define AIM_DEFAULT_PORT            5190
+#define AIM_DEFAULT_SSL_PORT        443
 
 //Some Defaults for various things
-#define DEFAULT_KEEPALIVE_TIMER 39 // secs
-#define DEFAULT_GRACE_PERIOD 60
-#define AIM_DEFAULT_GROUP "miranda merged"
-#define SYSTEM_BUDDY "aolsystemmsg"
-#define DEFAULT_AWAY_MSG "I am away from my computer right now."
+#define DEFAULT_KEEPALIVE_TIMER     39 // secs
+#define DEFAULT_GRACE_PERIOD        60
+#define AIM_DEFAULT_GROUP           "miranda merged"
+#define SYSTEM_BUDDY                "aolsystemmsg"
+#define DEFAULT_AWAY_MSG            "I am away from my computer right now."
 //Md5 Roasting stuff
-#define AIM_MD5_STRING "AOL Instant Messenger (SM)"
-#define MD5_HASH_LENGTH 16
+#define AIM_MD5_STRING              "AOL Instant Messenger (SM)"
+#define MD5_HASH_LENGTH             16
 
 //Aim Version Stuff
-#define AIM_CLIENT_MAJOR_VERSION 5
-#define AIM_CLIENT_MINOR_VERSION 9
-#define AIM_CLIENT_LESSER_VERSION 0
-#define AIM_CLIENT_BUILD_NUMBER 0x1772
-#define AIM_CLIENT_ID_NUMBER 0x0109
+#define AIM_CLIENT_MAJOR_VERSION    5
+#define AIM_CLIENT_MINOR_VERSION    9
+#define AIM_CLIENT_LESSER_VERSION   0
+#define AIM_CLIENT_BUILD_NUMBER     0x1772
+#define AIM_CLIENT_ID_NUMBER        0x0109
 #define AIM_CLIENT_DISTRIBUTION_NUMBER 0x0150
 
 #define AIM_LANGUAGE "en"
@@ -294,13 +318,14 @@ extern char AIM_CAP_MIRANDA[]; //Miranda cap EXTERN
 #define AIM_STATUS_DCAUTH "\x10\0"
 #define AIM_STATUS_DCCONT "\x20\0"
 #define AIM_STATUS_NULL "\0\0"
-#define AIM_STATUS_ONLINE "\0\0"
-#define AIM_STATUS_AWAY "\0\x01"
-#define AIM_STATUS_DND "\0\x02"
-#define AIM_STATUS_NA "\0\x04"
-#define AIM_STATUS_OCCUPIED "\0\x10"
-#define AIM_STATUS_FREE4CHAT "\0\x20"
-#define AIM_STATUS_INVISIBLE "\x01\0"
+
+#define AIM_STATUS_ONLINE		0x00000000
+#define AIM_STATUS_AWAY         0x00000001
+#define AIM_STATUS_DND          0x00000002
+#define AIM_STATUS_OUT          0x00000004
+#define AIM_STATUS_BUSY         0x00000010
+#define AIM_STATUS_CHAT         0x00000020	// Broken. If set, you cannot unset.
+#define AIM_STATUS_INVISIBLE    0x00000100
 
 extern HINSTANCE hInstance; //plugin dll instance
 
@@ -309,5 +334,8 @@ extern HINSTANCE hInstance; //plugin dll instance
 #define NEWTSTR_ALLOCA(A) ((A==NULL)?NULL:_tcscpy((TCHAR*)alloca(sizeof(TCHAR)*(_tcslen(A)+1)),A))
 
 #define _strlens(a) (a ? strlen(a) : 0)
+#define _strcmps(a,b) (a != b && (!a || !b || strcmp(a, b)))
+
+#define ALLOW_BUSY
 
 #endif

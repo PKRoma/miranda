@@ -1,6 +1,6 @@
 /*
 Plugin of Miranda IM for communicating with users of the AIM protocol.
-Copyright (c) 2008-2009 Boris Krasnovskiy
+Copyright (c) 2008-2011 Boris Krasnovskiy
 Copyright (C) 2005-2006 Aaron Myles Landwehr
 
 This program is free software; you can redistribute it and/or
@@ -18,7 +18,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "aim.h"
 
-char** CAimProto::getStatusMsgLoc(int status)
+char** CAimProto::get_status_msg_loc(int status)
 {
 	static const int modes[] =
 	{
@@ -39,7 +39,6 @@ char** CAimProto::getStatusMsgLoc(int status)
 	return NULL;
 }
 
-
 int CAimProto::aim_set_away(HANDLE hServerConn, unsigned short &seqno, const char *amsg, bool set)//user info
 {
 	unsigned short offset=0;
@@ -47,6 +46,7 @@ int CAimProto::aim_set_away(HANDLE hServerConn, unsigned short &seqno, const cha
 	size_t msg_size = 0;
 	if (set)
 	{
+		if (!amsg) return -1;
 		setDword(AIM_KEY_LA, (DWORD)time(NULL));
 		html_msg = html_encode(amsg && amsg[0] ? amsg : DEFAULT_AWAY_MSG);
 		msg_size = strlen(html_msg);
@@ -59,14 +59,25 @@ int CAimProto::aim_set_away(HANDLE hServerConn, unsigned short &seqno, const cha
 	const char* msg = str.getBuf();
 	const unsigned short msg_len = str.getSize();
 
-	char* buf=(char*)alloca(SNAC_SIZE+TLV_HEADER_SIZE*2+charset_len+msg_len);
+	char* buf=(char*)alloca(SNAC_SIZE+TLV_HEADER_SIZE*3+charset_len+msg_len+1);
 
 	aim_writesnac(0x02,0x04,offset,buf);
 	aim_writetlv(0x03,charset_len,charset,offset,buf);
 	aim_writetlv(0x04,(unsigned short)msg_len,msg,offset,buf);
+
+	aim_writetlvchar(0x0f,2,offset,buf);
 	
 	mir_free(html_msg);
 
+	return aim_sendflap(hServerConn,0x02,offset,buf,seqno);
+}
+
+int CAimProto::aim_set_status(HANDLE hServerConn,unsigned short &seqno,unsigned long status_type)
+{
+	unsigned short offset=0;
+	char buf[SNAC_SIZE+TLV_HEADER_SIZE*2];
+	aim_writesnac(0x01,0x1E,offset,buf);
+	aim_writetlvlong(0x06,status_type,offset,buf);
 	return aim_sendflap(hServerConn,0x02,offset,buf,seqno);
 }
 

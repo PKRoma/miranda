@@ -1,6 +1,6 @@
 /*
 Plugin of Miranda IM for communicating with users of the AIM protocol.
-Copyright (c) 2008-2009 Boris Krasnovskiy
+Copyright (c) 2008-2011 Boris Krasnovskiy
 Copyright (C) 2005-2006 Aaron Myles Landwehr
 
 This program is free software; you can redistribute it and/or
@@ -151,33 +151,38 @@ void CAimProto::snac_icbm_limitations(SNAC &snac,HANDLE hServerConn,unsigned sho
 {
 	if (snac.subcmp(0x0005))
 	{
-		char** msgptr = getStatusMsgLoc(m_iDesiredStatus);
 		switch(m_iDesiredStatus)
 		{
 		case ID_STATUS_ONLINE:
 		case ID_STATUS_FREECHAT:
 			broadcast_status(ID_STATUS_ONLINE);
-			aim_set_invis(hServerConn,seqno,AIM_STATUS_ONLINE,AIM_STATUS_NULL);
-			aim_set_statusmsg(hServerConn,seqno,*msgptr);
+			aim_set_status(hServerConn,seqno,AIM_STATUS_ONLINE);
 			break;
 
 		case ID_STATUS_INVISIBLE:
 			broadcast_status(ID_STATUS_INVISIBLE);
-			aim_set_invis(hServerConn,seqno,AIM_STATUS_INVISIBLE,AIM_STATUS_NULL);
-			aim_set_statusmsg(hServerConn,seqno,*msgptr);
+			aim_set_status(hServerConn,seqno,AIM_STATUS_INVISIBLE);
+			break;
+
+		case ID_STATUS_DND:
+		case ID_STATUS_OCCUPIED:
+		case ID_STATUS_ONTHEPHONE:
+			broadcast_status(ID_STATUS_OCCUPIED);
+			aim_set_status(hServerConn,seqno,AIM_STATUS_BUSY|AIM_STATUS_AWAY);
 			break;
 
 		case ID_STATUS_AWAY:
 		case ID_STATUS_OUTTOLUNCH:
 		case ID_STATUS_NA:
-		case ID_STATUS_DND:
-		case ID_STATUS_OCCUPIED:
-		case ID_STATUS_ONTHEPHONE:
 			broadcast_status(ID_STATUS_AWAY);
-			aim_set_invis(hServerConn,seqno,AIM_STATUS_AWAY,AIM_STATUS_NULL);
-			aim_set_away(hServerConn,seqno, *msgptr, true);
+			aim_set_status(hServerConn,seqno,AIM_STATUS_AWAY);
 			break;
 		}
+
+		char** msgptr = get_status_msg_loc(m_iDesiredStatus);
+		mir_free(last_status_msg);
+		last_status_msg = mir_strdup(*msgptr);
+		aim_set_statusmsg(hServerConn,seqno,*msgptr);
 
 		if(getByte( AIM_KEY_II,0))
 		{
@@ -223,8 +228,10 @@ void CAimProto::snac_user_online(SNAC &snac)//family 0x0003
 		char client[100] = "";
 		bool hiptop_user = false;
 		bool bot_user = false;
+		bool wireless_user = false;
 		bool away_user = false;
 		bool caps_included = false;
+		unsigned long status_type = 0;	// 0 = online
 
 		unsigned char sn_len = snac.ubyte();
 		char* sn = snac.part(1, sn_len);
@@ -240,16 +247,16 @@ void CAimProto::snac_user_online(SNAC &snac)//family 0x0003
 			offset += TLV_HEADER_SIZE;
 			if (tlv.cmp(0x0001))//user m_iStatus
 			{
-				unsigned short m_iStatus = tlv.ushort();
-				int unconfirmed = m_iStatus&0x0001;
-				int admin_aol = m_iStatus&0x0002;
-				int aol = m_iStatus&0x0004;
-				//int nonfree = m_iStatus&0x0008;
-				//int aim = m_iStatus&0x0010;
-				int away = m_iStatus&0x0020;
-				int icq = m_iStatus&0x0040;
-				int wireless = m_iStatus&0x0080;
-				int bot = m_iStatus&0x0400;
+				unsigned short status = tlv.ushort();
+				int unconfirmed = status & 0x0001;
+				int admin_aol   = status & 0x0002;
+				int aol         = status & 0x0004;
+				//int nonfree   = status & 0x0008;
+				//int aim       = status & 0x0010;
+				int away        = status & 0x0020;
+				int icq         = status & 0x0040;
+				int wireless    = status & 0x0080;
+				int bot         = status & 0x0400;
 				setString(hContact, AIM_KEY_NK, sn);
 
 				if (icq)
@@ -286,19 +293,18 @@ void CAimProto::snac_user_online(SNAC &snac)//family 0x0003
 				if(wireless)
 				{
 					strcpy(client,CLIENT_SMS);
-					setWord(hContact, AIM_KEY_ST, ID_STATUS_ONTHEPHONE);	
+					wireless_user=1;
 				}
-				else if(away==0)
-				{
-					setWord(hContact, AIM_KEY_ST, ID_STATUS_ONLINE);
-				}
-				else 
+				else if(away)
 				{
 					away_user=1;
-					setWord(hContact, AIM_KEY_ST, ID_STATUS_AWAY);
 				}
 				setDword(hContact, AIM_KEY_IT, 0);//erase idle time
 				setDword(hContact, AIM_KEY_OT, 0);//erase online time
+			}
+			else if (tlv.cmp(0x0006))	// Status
+			{
+				status_type = tlv.ulong() & 0x00000FFF;
 			}
 			else if (tlv.cmp(0x000d))
 			{
@@ -558,18 +564,25 @@ void CAimProto::snac_user_online(SNAC &snac)//family 0x0003
 			}  			
 			offset += tlv.len();
 		}
+
+		if (status_type & AIM_STATUS_INVISIBLE)
+			setWord(hContact, AIM_KEY_ST, ID_STATUS_INVISIBLE);
+		else if (status_type & AIM_STATUS_BUSY)
+			setWord(hContact, AIM_KEY_ST, ID_STATUS_OCCUPIED);
+		else if (status_type & AIM_STATUS_AWAY || away_user)
+			setWord(hContact, AIM_KEY_ST, ID_STATUS_AWAY);
+		else if (wireless_user)
+			setWord(hContact, AIM_KEY_ST, ID_STATUS_ONTHEPHONE);
+		else
+			setWord(hContact, AIM_KEY_ST, ID_STATUS_ONLINE);
+
 		if (bot_user)
-		{
 			setByte(hContact, AIM_KEY_ET, EXTENDED_STATUS_BOT);
-		}
 		else if (hiptop_user)
-		{
 			setByte(hContact, AIM_KEY_ET, EXTENDED_STATUS_HIPTOP);
-		}
 		if (caps_included)
-		{
 			set_contact_icon(this, hContact);
-		}
+
 		if (caps_included || client[0])
 			setString(hContact, AIM_KEY_MV, client[0] ? client : "?");
 		else
@@ -755,6 +768,29 @@ void CAimProto::process_ssi_list(SNAC &snac, int &offset)
 		case 0x0014: //avatar record
 			if (group_id == 0 && name_length == 1 && name[0] == '1')
 				avatar_id = item_id;
+			break;
+
+		case 0x001D: // Vanity information
+			if (group_id == 0)
+			{
+				const int tlv_base = offset + name_length + 10;
+
+				for (int tlv_offset = 0; tlv_offset < tlv_size; )
+				{
+					TLV tlv(snac.val( tlv_base + tlv_offset));
+
+					if (tlv.cmp(0x0150))		// Number of IMs sent
+						setDword(AIM_KEY_TIS, tlv.ulong());
+					else if (tlv.cmp(0x0151))	// Number of seconds a user is online
+						setDword(AIM_KEY_OT, tlv.ulong());
+					else if (tlv.cmp(0x0152))	// Number of times a user has the away message set
+						setDword(AIM_KEY_TAM, tlv.ulong());
+					else if (tlv.cmp(0x0153))	// Number of IMs received
+						setDword(AIM_KEY_TIR, tlv.ulong());
+
+					tlv_offset += TLV_HEADER_SIZE + tlv.len();
+				}
+			}
 			break;
 	}
 
@@ -1142,7 +1178,8 @@ void CAimProto::snac_received_message(SNAC &snac,HANDLE hServerConn,unsigned sho
 							port=tlv.ushort();
 						}
 					}
-					return;
+					channel = 0;
+					break;
 				}
 				else if (cap_cmp(snac.val(offset+10), AIM_CAP_CHAT) == 0)//it's a chat invite request
 				{
@@ -1167,7 +1204,10 @@ void CAimProto::snac_received_message(SNAC &snac,HANDLE hServerConn,unsigned sho
 					}
 				}
 				else
-					return;
+				{
+					channel = 0;
+					break;
+				}
 			}
 			if (channel == 6 && tlv.cmp(0x0005))//audio/video tunnel
 			{
@@ -1214,7 +1254,7 @@ void CAimProto::snac_received_message(SNAC &snac,HANDLE hServerConn,unsigned sho
 			{
 				unsigned long msg_time = getDword(hContact, AIM_KEY_LM, 0);
 				unsigned long away_time = getDword(AIM_KEY_LA, 0);
-				char** msgptr = getStatusMsgLoc(m_iStatus);
+				char** msgptr = get_status_msg_loc(m_iStatus);
 				if (away_time > msg_time && *msgptr)
 				{
 					char* s_msg = process_status_msg(*msgptr, sn);

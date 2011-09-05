@@ -1,6 +1,6 @@
 /*
 Plugin of Miranda IM for communicating with users of the AIM protocol.
-Copyright (c) 2008-2010 Boris Krasnovskiy
+Copyright (c) 2008-2011 Boris Krasnovskiy
 Copyright (C) 2005-2006 Aaron Myles Landwehr
 
 This program is free software; you can redistribute it and/or
@@ -144,16 +144,19 @@ int CAimProto::aim_request_icbm(HANDLE hServerConn,unsigned short &seqno)
 
 int CAimProto::aim_set_icbm(HANDLE hServerConn,unsigned short &seqno)
 {
+	const unsigned icbm_flags = ICBM_CHANNEL_MSGS_ALLOWED | ICBM_MISSED_CALLS_ENABLED | 
+		ICBM_EVENTS_ALLOWED | ICBM_SMS_SUPPORTED | ICBM_OFFLINE_MSGS_ALLOWED;
+//	const unsigned icbm_flags = 0x3db;
+
 	unsigned short offset=0;
 	char buf[SNAC_SIZE+16];
 	aim_writesnac(0x04,0x02,offset,buf);
 	aim_writeshort(0,offset,buf);           //channel
-//    aim_writelong(0x3db,offset,buf);        //flags
-	aim_writelong(0x11b,offset,buf);        //flags
-	aim_writeshort(0x0fa0,offset,buf);      //max snac size
-	aim_writeshort(0x03e7,offset,buf);      //max sender warning level
-	aim_writeshort(0x03e7,offset,buf);      //max receiver warning level
-	aim_writelong(0,offset,buf);            //min msg interval, ms
+	aim_writelong(icbm_flags,offset,buf);   //flags
+	aim_writeshort(0x1f40,offset,buf);      //max snac size              8000
+	aim_writeshort(0x03e7,offset,buf);      //max sender warning level   999 (0-1000) WinAim default
+	aim_writeshort(0x03e7,offset,buf);      //max receiver warning level 999 (0-1000) WinAim default
+	aim_writelong(0,offset,buf);            //min message interval, ms   0
 	return aim_sendflap(hServerConn,0x02,offset,buf,seqno);
 }
 
@@ -225,18 +228,6 @@ int CAimProto::aim_set_profile(HANDLE hServerConn,unsigned short &seqno, char* a
 	aim_writetlvchar(0x0c,1,offset,buf);
 	aim_writetlv(0x01,charset_len,charset,offset,buf);
 	aim_writetlv(0x02,msg_len,msg,offset,buf);
-	return aim_sendflap(hServerConn,0x02,offset,buf,seqno);
-}
-
-int CAimProto::aim_set_invis(HANDLE hServerConn,unsigned short &seqno,const char* status,const char* status_flag)
-{
-	unsigned short offset=0;
-	char buf[SNAC_SIZE+TLV_HEADER_SIZE*2];
-	char temp[4];
-	memcpy(temp,status_flag,2);
-	memcpy(&temp[2],status,2);
-	aim_writesnac(0x01,0x1E,offset,buf);
-	aim_writetlv(0x06,4,temp,offset,buf);
 	return aim_sendflap(hServerConn,0x02,offset,buf,seqno);
 }
 

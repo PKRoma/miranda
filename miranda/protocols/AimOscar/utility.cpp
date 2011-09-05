@@ -1,6 +1,6 @@
 /*
 Plugin of Miranda IM for communicating with users of the AIM protocol.
-Copyright (c) 2008-2010 Boris Krasnovskiy
+Copyright (c) 2008-2011 Boris Krasnovskiy
 Copyright (C) 2005-2006 Aaron Myles Landwehr
 
 This program is free software; you can redistribute it and/or
@@ -23,8 +23,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 void CAimProto::broadcast_status(int status)
 {
 	LOG("Broadcast Status: %d",status);
-	int old_status=m_iStatus;
-	m_iStatus=status;
+	int old_status = m_iStatus;
+	m_iStatus = status;
 	if (m_iStatus == ID_STATUS_OFFLINE)
 	{
 		shutdown_file_transfers();
@@ -61,6 +61,7 @@ void CAimProto::broadcast_status(int status)
 		list_received = false;
 		state = 0;
 		m_iDesiredStatus = ID_STATUS_OFFLINE;
+		mir_free(last_status_msg); last_status_msg = NULL;
 	}
 	sendBroadcast(NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS, (HANDLE)old_status, m_iStatus);	
 }
@@ -249,9 +250,31 @@ void CAimProto::add_contact_to_group(HANDLE hContact, const char* new_group)
 	if (old_group && strcmp(new_group, old_group) == 0)
 		return;
    
-	aim_ssi_update(hServerConn, seqno, true);
+	DBVARIANT dbv;
+	char *nick = NULL;
+	if (!DBGetContactSettingStringUtf(hContact, MOD_KEY_CL, "MyHandle", &dbv))
+	{
+		nick = NEWSTR_ALLOCA(dbv.pszVal);
+		DBFreeVariant(&dbv);
+	}
 
+	if (getString(hContact, AIM_KEY_SN, &dbv)) return;
+
+	unsigned short item_id = getBuddyId(hContact, 1);
+	unsigned short new_item_id = search_for_free_item_id(hContact);
 	unsigned short new_group_id = group_list.find_id(new_group);
+
+	if (!item_id)
+		LOG("Contact %u not on list.", hContact);
+
+	setGroupId(hContact, 1, new_group_id);
+	if (new_group && strcmp(new_group, AIM_DEFAULT_GROUP))
+		DBWriteContactSettingStringUtf(hContact, MOD_KEY_CL, OTH_KEY_GP, new_group);
+	else
+		DBDeleteContactSetting(hContact, MOD_KEY_CL, OTH_KEY_GP);
+
+	aim_ssi_update(hServerConn, seqno, true);
+		
 	if (new_group_id == 0)
 	{
 		create_group(new_group);	
@@ -261,44 +284,22 @@ void CAimProto::add_contact_to_group(HANDLE hContact, const char* new_group)
 		aim_add_contact(hServerConn, seqno, new_group, 0, new_group_id, 1);//add the group server-side even if it exist
 	}
 
-	DBVARIANT dbv;
-	char *nick = NULL;
-	if (!DBGetContactSettingStringUtf(hContact, MOD_KEY_CL, "MyHandle", &dbv))
+	LOG("Adding buddy %s:%u %s:%u to the serverside list", dbv.pszVal, new_item_id, new_group, new_group_id);
+	aim_add_contact(hServerConn, seqno, dbv.pszVal, new_item_id, new_group_id, 0, nick);
+	
+	update_server_group(new_group, new_group_id);
+
+	if (old_group_id && item_id)
 	{
-		nick = NEWSTR_ALLOCA(dbv.pszVal);
-		DBFreeVariant(&dbv);
-	}
-
-	if (!getString(hContact, AIM_KEY_SN, &dbv))
-	{
-		unsigned short item_id = getBuddyId(hContact, 1);
-		unsigned short new_item_id = search_for_free_item_id(hContact);
-
-		if (!item_id)
-			LOG("Contact %u not on list.", hContact);
-
-		setGroupId(hContact, 1, new_group_id);
-		if (new_group && strcmp(new_group, AIM_DEFAULT_GROUP))
-			DBWriteContactSettingStringUtf(hContact, MOD_KEY_CL, OTH_KEY_GP, new_group);
-		else
-			DBDeleteContactSetting(hContact, MOD_KEY_CL, OTH_KEY_GP);
-
-		LOG("Adding buddy %s:%u %s:%u to the serverside list", dbv.pszVal, new_item_id, new_group, new_group_id);
-		aim_add_contact(hServerConn, seqno, dbv.pszVal, new_item_id, new_group_id, 0, nick);
-		update_server_group(new_group, new_group_id);
-
-		if (old_group_id && item_id)
-		{
-			LOG("Removing buddy %s:%u %s:%u from the serverside list", dbv.pszVal, item_id, old_group, old_group_id);
-			aim_delete_contact(hServerConn, seqno, dbv.pszVal, item_id, old_group_id, 0);
-			update_server_group(old_group, old_group_id);
-		}
-
-		DBFreeVariant(&dbv);
-		deleteSetting(hContact, AIM_KEY_NC);
+		LOG("Removing buddy %s:%u %s:%u from the serverside list", dbv.pszVal, item_id, old_group, old_group_id);
+		aim_delete_contact(hServerConn, seqno, dbv.pszVal, item_id, old_group_id, 0);
+		update_server_group(old_group, old_group_id);
 	}
 
 	aim_ssi_update(hServerConn, seqno, false);
+
+	DBFreeVariant(&dbv);
+	deleteSetting(hContact, AIM_KEY_NC);
 }
 
 void CAimProto::offline_contact(HANDLE hContact, bool remove_settings)

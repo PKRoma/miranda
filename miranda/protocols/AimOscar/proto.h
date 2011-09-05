@@ -1,6 +1,6 @@
 /*
 Plugin of Miranda IM for communicating with users of the AIM protocol.
-Copyright (c) 2008-2010 Boris Krasnovskiy
+Copyright (c) 2008-2011 Boris Krasnovskiy
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -218,7 +218,8 @@ struct CAimProto : public PROTO_INTERFACE
 	BdList group_list;
 
 	//away message retrieval stuff
-	char* modeMsgs[9];
+	char *modeMsgs[9];
+	char *last_status_msg; 
 
 	//////////////////////////////////////////////////////////////////////////////////////
 	// avatars.cpp
@@ -238,9 +239,11 @@ struct CAimProto : public PROTO_INTERFACE
 
 	int    aim_set_away(HANDLE hServerConn, unsigned short &seqno, const char *msg, bool set);//user info
 	int    aim_set_statusmsg(HANDLE hServerConn,unsigned short &seqno,const char *msg);//user info
+	int	   aim_set_status(HANDLE hServerConn,unsigned short &seqno,unsigned long status_type);
+
 	int    aim_query_away_message(HANDLE hServerConn,unsigned short &seqno,const char* sn);
 
-	char**  getStatusMsgLoc( int status );
+	char**  get_status_msg_loc( int status );
 
 	//////////////////////////////////////////////////////////////////////////////////////
 	// chat.cpp
@@ -274,7 +277,6 @@ struct CAimProto : public PROTO_INTERFACE
 	int    aim_request_offline_msgs(HANDLE hServerConn,unsigned short &seqno);
 	int    aim_set_icbm(HANDLE hServerConn,unsigned short &seqno);
 	int    aim_set_profile(HANDLE hServerConn,unsigned short &seqno,char* amsg);//user info
-	int    aim_set_invis(HANDLE hServerConn,unsigned short &seqno,const char* m_iStatus,const char* status_flag);
 	int    aim_request_list(HANDLE hServerConn,unsigned short &seqno);
 	int    aim_activate_list(HANDLE hServerConn,unsigned short &seqno);
 	int    aim_accept_rates(HANDLE hServerConn,unsigned short &seqno);
@@ -305,12 +307,12 @@ struct CAimProto : public PROTO_INTERFACE
 	int    aim_search_by_email(HANDLE hServerConn,unsigned short &seqno, const char* email);
 	int    aim_set_pd_info(HANDLE hServerConn, unsigned short &seqno);
 	int    aim_block_buddy(HANDLE hServerConn, unsigned short &seqno, bool remove, const char* sn, unsigned short item_id);
-	int	   aim_chatnav_request_limits(HANDLE hServerConn,unsigned short &seqno);
-	int	   aim_chatnav_create(HANDLE hServerConn,unsigned short &seqno, char* room, unsigned short exchage);
+	int    aim_chatnav_request_limits(HANDLE hServerConn,unsigned short &seqno);
+	int    aim_chatnav_create(HANDLE hServerConn,unsigned short &seqno, char* room, unsigned short exchage);
 	int    aim_chatnav_room_info(HANDLE hServerConn,unsigned short &seqno, char* chat_cookie, unsigned short exchange, unsigned short instance);  
-	int	   aim_chat_join_room(HANDLE hServerConn,unsigned short &seqno, char* chat_cookie, unsigned short exchange, unsigned short instance,unsigned short id);
-	int	   aim_chat_send_message(HANDLE hServerConn,unsigned short &seqno, char *amsg);
-	int	   aim_chat_invite(HANDLE hServerConn,unsigned short &seqno, char* chat_cookie, unsigned short exchange, unsigned short instance, char* sn, char* msg);
+	int    aim_chat_join_room(HANDLE hServerConn,unsigned short &seqno, char* chat_cookie, unsigned short exchange, unsigned short instance,unsigned short id);
+	int    aim_chat_send_message(HANDLE hServerConn,unsigned short &seqno, char *amsg);
+	int    aim_chat_invite(HANDLE hServerConn,unsigned short &seqno, char* chat_cookie, unsigned short exchange, unsigned short instance, char* sn, char* msg);
 	int    aim_chat_deny(HANDLE hServerConn,unsigned short &seqno,char* sn,char* icbm_cookie);
 	int    aim_admin_ready(HANDLE hServerConn,unsigned short &seqno);
 	int    aim_admin_format_name(HANDLE hServerConn,unsigned short &seqno, const char* sn);
