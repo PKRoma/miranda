@@ -1314,7 +1314,6 @@ LBL_InvalidCommand:
 			break;
 		}
 		case ' RVC':    //********* CVR: MSNP8
-			isConnectSuccess = true;
 			break;
 
 		case ' NLF':    //********* FLN: section 7.9 Notification Messages
@@ -1828,6 +1827,7 @@ remove:
 				}
 				else if (!strcmp(data.security, "OK")) 
 				{
+					isConnectSuccess = true;
 				}
 				else 
 				{
