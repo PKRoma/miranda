@@ -1053,8 +1053,10 @@ void CJabberProto::CheckMenuItems()
 	JCallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )m_hMenuBookmarks, ( LPARAM )&clmi );
 	JCallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )m_hMenuNotes, ( LPARAM )&clmi );
 
-	clmi.flags = CMIM_FLAGS | (( m_menuItemsStatus ) ? 0 : CMIF_HIDDEN);
+	clmi.flags = CMIM_FLAGS | (( m_ThreadInfo && ( m_ThreadInfo->jabberServerCaps & JABBER_CAPS_PRIVACY_LISTS)) ? 0 : CMIF_HIDDEN );
 	JCallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )m_hPrivacyMenuRoot, ( LPARAM )&clmi );
+	
+	clmi.flags = CMIM_FLAGS | ( m_menuItemsStatus ? 0 : CMIF_HIDDEN);
 	JCallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )m_hMenuPriorityRoot, ( LPARAM )&clmi );
 
 	if ( !m_bPepSupported )
