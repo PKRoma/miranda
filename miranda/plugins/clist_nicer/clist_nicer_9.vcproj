@@ -1139,10 +1139,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\INCLUDE\IcoLib.h"
-				>
-			</File>
-			<File
 				RelativePath=".\INCLUDE\m_avatars.h"
 				>
 			</File>
@@ -1240,11 +1236,11 @@
 				>
 			</File>
 			<File
-				RelativePath="res\invisible.ico"
+				RelativePath=".\res\overlay\invisible.ico"
 				>
 			</File>
 			<File
-				RelativePath=".\res\overlay\invisible.ico"
+				RelativePath="res\invisible.ico"
 				>
 			</File>
 			<File
@@ -1280,11 +1276,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\res\online.ico"
+				RelativePath=".\res\overlay\online.ico"
 				>
 			</File>
 			<File
-				RelativePath=".\res\overlay\online.ico"
+				RelativePath=".\res\online.ico"
 				>
 			</File>
 			<File

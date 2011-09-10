@@ -1,17 +1,13 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by C:\tabsrmm\trunk\miranda\plugins\clist_nicer\resource.rc
+// Used by D:\Develop\miranda\plugins\miranda\miranda\plugins\clist_nicer\resource.rc
 //
 #define IDD_OPT_VIEWMODES               1
 #define IDD_OPT_FLOATING                3
 #define IDD_OPT_SKIN                    4
 #define IDD_QUICKIGNORE                 5
 #define IDD_OPT                         6
-#define IDD_EXCEPTION					20
-#define IDI_FOLDER                      7
-#define IDI_POPUPON                     8
-#define IDI_ICON1                       9
-#define IDI_POPUPOFF                    9
+#define IDD_EXCEPTION                   20
 #define IDD_OPTIONSDIALOG               101
 #define IDD_CLNABOUT                    102
 #define IDD_OPT_CLIST                   126
@@ -111,17 +107,11 @@
 #define IDC_HIDEOFFLINE                 1081
 #define IDC_CRIGHTSPIN                  1081
 #define IDC_HIDEOFFLINEOPTS             1082
-#define IDC_HKREADMSG                   1083
-#define IDC_HKSEARCH                    1084
 #define IDC_EXTRA_ICON_ADV4             1085
-#define IDC_HKSHOWOPTIONS               1086
 #define IDC_LEFTMARGINSPIN              1092
-#define IDC_NETSEARCH                   1101
 #define IDC_NOGROUPICON                 1102
 #define IDC_ONECLK                      1105
-#define IDC_SEARCHURL                   1106
 #define IDC_BUILDTIME                   1108
-#define IDC_READMSG                     1119
 #define IDC_RIGHTMARGIN                 1121
 #define IDC_ROWGAP                      1122
 #define IDC_TRANSPARENT                 1124
@@ -131,7 +121,6 @@
 #define IDC_TRANSACTIVE                 1128
 #define IDC_PROFILELIST                 1134
 #define IDC_CLASSLIST                   1135
-#define IDC_SEARCHNEWWND                1139
 #define IDC_SELBLEND                    1140
 #define IDC_SHOWBOTTOMBUTTONS           1148
 #define IDC_STATIC11                    1154
@@ -141,16 +130,13 @@
 #define IDC_STATIC22                    1157
 #define IDC_STATIC14                    1157
 #define IDC_STATIC15                    1158
-#define IDC_HKSHOWHIDE                  1162
 #define IDC_EXTRA_ICON_CLIENT           1164
 #define IDC_EXTRA_ICON_ADV1             1166
 #define IDC_SHOWGRIP                    1169
-#define IDC_SHOWHIDE                    1170
 #define IDC_SKINBACKGROUND              1170
 #define IDC_FILLWALLPAPER               1171
 #define IDC_SHOWMETA                    1172
 #define IDC_CENTERGROUPNAMES            1173
-#define IDC_SHOWOPTIONS                 1174
 #define IDC_APPLYINDENTBG               1174
 #define IDC_COPYRIGHT                   1178
 #define IDC_VERSION                     1179
@@ -162,6 +148,9 @@
 #define IDC_SHOWVISIBILITY              1190
 #define IDC_SHOWLOCALTIMEONLYWHENDIFFERENT 1191
 #define IDC_TITLETEXT                   1196
+#define IDC_EXCEPTION_DETAILS           1200
+#define IDC_COPY_EXCEPTION              1201
+#define IDC_EX_REASON                   1202
 #define IDC_TILEH                       1208
 #define IDC_WHITERECT                   1225
 #define IDC_AUTOHIDE                    1235
@@ -223,7 +212,6 @@
 #define IDC_SORTPRIMARY                 1420
 #define IDC_HIDE                        1534
 #define IDC_TOPLINE                     1535
-#define IDC_HOTKEYURLSTR                1567
 #define IDC_BRINGTOFRONT                1579
 #define IDC_LOGO                        1591
 #define IDC_BLINKTIME                   1607
@@ -416,21 +404,13 @@
 #define IDC_FLT_BORDER                  40062
 #define IDC_FLT_ROUNDED                 40063
 #define IDC_FLT_RADIUS                  40065
-#define IDC_CHECK1                      40065
-#define IDC_SNAPTOEDGES                 40065
-#define IDC_FLT_WIDTHSPIN2              40066
 #define IDC_FLT_RADIUSSPIN              40066
 #define IDC_FLT_HOVERTIME               40067
+#define IDC_RESETXICONS                 40067
 #define IDC_FLT_SHOWTOOLTIPS            40068
 #define IDC_FLT_HOVERTIMESPIN           40069
 #define IDC_FLT_OPACITYVALUE            40070
-#define IDC_FLT_BGCOLOUR                40071
 #define IDC_FLT_BORDERCOLOUR            40072
-#define IDC_RESETXICONS                 40067
-
-#define IDC_EXCEPTION_DETAILS			1200
-#define IDC_COPY_EXCEPTION				1201
-#define IDC_EX_REASON					1202
 
 // Next default values for new objects
 // 
