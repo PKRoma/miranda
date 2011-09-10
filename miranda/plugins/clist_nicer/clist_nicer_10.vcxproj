@@ -42,7 +42,6 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release Unicode|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
-    <UseOfMfc>false</UseOfMfc>
     <CharacterSet>Unicode</CharacterSet>
     <WholeProgramOptimization>true</WholeProgramOptimization>
   </PropertyGroup>
@@ -64,22 +63,18 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release Unicode|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
-    <PlatformToolset>v90</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
     <WholeProgramOptimization>true</WholeProgramOptimization>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug Unicode|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
-    <PlatformToolset>v90</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
-    <PlatformToolset>v90</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
-    <PlatformToolset>v90</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -190,7 +185,6 @@
       <AdditionalIncludeDirectories>../../include;./include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;CLIST_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
-      <ExceptionHandling>Async</ExceptionHandling>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <BufferSecurityCheck>false</BufferSecurityCheck>
       <FunctionLevelLinking>true</FunctionLevelLinking>
@@ -201,7 +195,6 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <CompileAs>Default</CompileAs>
       <DisableSpecificWarnings>4996;%(DisableSpecificWarnings)</DisableSpecificWarnings>
-      <MinimalRebuild>true</MinimalRebuild>
       <SmallerTypeCheck>false</SmallerTypeCheck>
       <BasicRuntimeChecks>Default</BasicRuntimeChecks>
       <PrecompiledHeader>Use</PrecompiledHeader>
@@ -297,9 +290,6 @@
       <WarningLevel>Level3</WarningLevel>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <CompileAs>Default</CompileAs>
-      <DisableSpecificWarnings>4996;%(DisableSpecificWarnings)</DisableSpecificWarnings>
-      <MinimalRebuild>true</MinimalRebuild>
       <SmallerTypeCheck>false</SmallerTypeCheck>
       <BasicRuntimeChecks>Default</BasicRuntimeChecks>
       <PrecompiledHeader>Use</PrecompiledHeader>
@@ -328,6 +318,8 @@
       <AdditionalIncludeDirectories>../../include;./include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <PrecompiledHeaderFile>commonheaders.h</PrecompiledHeaderFile>
+      <Optimization>Disabled</Optimization>
+      <PrecompiledHeader>Use</PrecompiledHeader>
     </ClCompile>
     <ResourceCompile>
       <AdditionalIncludeDirectories>../../include;./include;../../include/msapi/;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -343,6 +335,7 @@
       <AdditionalIncludeDirectories>../../include;./include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <PrecompiledHeaderFile>commonheaders.h</PrecompiledHeaderFile>
+      <PrecompiledHeader>Use</PrecompiledHeader>
     </ClCompile>
     <ResourceCompile>
       <AdditionalIncludeDirectories>../../include;./include;../../include/msapi/;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -359,7 +352,6 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <FavorSizeOrSpeed>Size</FavorSizeOrSpeed>
       <StringPooling>true</StringPooling>
-      <MinimalRebuild>true</MinimalRebuild>
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>commonheaders.h</PrecompiledHeaderFile>
@@ -368,6 +360,7 @@
       <FloatingPointModel>Fast</FloatingPointModel>
       <BufferSecurityCheck>false</BufferSecurityCheck>
       <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
     </ClCompile>
     <ResourceCompile>
       <AdditionalIncludeDirectories>../../include;./include;../../include/msapi/;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -375,6 +368,9 @@
     </ResourceCompile>
     <Link>
       <AdditionalDependencies>comctl32.lib;shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OptimizeReferences>true</OptimizeReferences>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -385,17 +381,23 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <FavorSizeOrSpeed>Size</FavorSizeOrSpeed>
       <StringPooling>true</StringPooling>
-      <MinimalRebuild>true</MinimalRebuild>
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>commonheaders.h</PrecompiledHeaderFile>
       <BufferSecurityCheck>false</BufferSecurityCheck>
       <FloatingPointModel>Fast</FloatingPointModel>
       <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
     </ClCompile>
     <ResourceCompile>
       <AdditionalIncludeDirectories>../../include;./include;../../include/msapi/;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
+    <Link>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+    <Link>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+    </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="CLUIFrames\cluiframes.cpp" />
@@ -430,6 +432,8 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release Unicode|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug Unicode|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug Unicode|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="src\config.cpp" />
     <ClCompile Include="SRC\contact.cpp" />

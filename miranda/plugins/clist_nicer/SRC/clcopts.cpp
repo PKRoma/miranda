@@ -863,21 +863,19 @@ ORDERTREEDATA OrderTreeData[]=
 static int dragging=0;
 static HTREEITEM hDragItem=NULL;
 
-static int FillOrderTree(HWND hwndDlg, HWND hwndTree, DISPLAYPROFILE *p)
+static int FillOrderTree(HWND hwndDlg, HWND hwndTree, BYTE *exIconOrder, unsigned dwExtraImageMask)
 {
 	int i = 0;
 	TVINSERTSTRUCT tvis = {0};
 	TreeView_DeleteAllItems(hwndTree);
-	tvis.hParent = NULL;
 	tvis.hInsertAfter = TVI_LAST;
 	tvis.item.mask = TVIF_PARAM | TVIF_TEXT | TVIF_IMAGE | TVIF_SELECTEDIMAGE;
 
 	for (i = 0; i < EXICON_COUNT; i++) {
-        int iIndex = (int)(p->exIconOrder[i] - 1);
-		tvis.hInsertAfter = TVI_LAST;
+        int iIndex = (int)(exIconOrder[i] - 1);
 		tvis.item.lParam=(LPARAM)(&(OrderTreeData[iIndex]));
 		tvis.item.pszText = TranslateTS(OrderTreeData[iIndex].Name);
-        OrderTreeData[iIndex].Visible = (p->dwExtraImageMask & (1 << OrderTreeData[iIndex].ID)) ? TRUE : FALSE;
+        OrderTreeData[iIndex].Visible = (dwExtraImageMask & (1 << OrderTreeData[iIndex].ID)) != 0;
 		tvis.item.iImage = tvis.item.iSelectedImage = OrderTreeData[iIndex].Visible;
 		TreeView_InsertItem(hwndTree, &tvis);
 	}
@@ -937,16 +935,15 @@ static INT_PTR CALLBACK DlgProcXIcons(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 		if ((LOWORD(wParam) == IDC_EXICONSCALE) && (HIWORD(wParam) != EN_CHANGE || (HWND) lParam != GetFocus()))
 			return 0;
 
-		if(IDC_RESETXICONS == LOWORD(wParam)) {
-			DISPLAYPROFILE *p = reinterpret_cast<DISPLAYPROFILE *>(GetWindowLongPtr(hwndDlg, GWLP_USERDATA));
-			if(p) {
-				for(int i = 0; i < EXICON_COUNT; i++) {
-					OrderTreeData[i].Visible = TRUE;
-					p->exIconOrder[i] = i + 1;
-				}
-				p->dwExtraImageMask = 0xffffffff;
-				FillOrderTree(hwndDlg, GetDlgItem(hwndDlg, IDC_EXTRAORDER), p);
+		if(IDC_RESETXICONS == LOWORD(wParam))
+		{
+			BYTE exIconOrder[EXICON_COUNT];
+			for(int i = 0; i < EXICON_COUNT; i++)
+			{
+				OrderTreeData[i].Visible = TRUE;
+				exIconOrder[i] = i + 1;
 			}
+			FillOrderTree(hwndDlg, GetDlgItem(hwndDlg, IDC_EXTRAORDER), exIconOrder, 0xffffffff);
 		}
 		SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
 		break;
@@ -955,7 +952,6 @@ static INT_PTR CALLBACK DlgProcXIcons(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
         {
             DISPLAYPROFILE *p = (DISPLAYPROFILE *)lParam;
             if(p) {
-				SetWindowLongPtr(hwndDlg, GWLP_USERDATA, (INT_PTR)p);
                 CheckDlgButton(hwndDlg, IDC_XSTATUSASSTATUS, p->dwFlags & CLUI_FRAME_USEXSTATUSASSTATUS ? 1 : 0);
 
                 CheckDlgButton(hwndDlg, IDC_SHOWSTATUSICONS, (p->dwFlags & CLUI_FRAME_STATUSICONS) ? BST_CHECKED : BST_UNCHECKED);
@@ -970,7 +966,7 @@ static INT_PTR CALLBACK DlgProcXIcons(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 
                 SendDlgItemMessage(hwndDlg, IDC_EXICONSCALESPIN, UDM_SETRANGE, 0, MAKELONG(20, 8));
                 SendDlgItemMessage(hwndDlg, IDC_EXICONSCALESPIN, UDM_SETPOS, 0, (LPARAM)p->exIconScale);
-                FillOrderTree(hwndDlg, GetDlgItem(hwndDlg, IDC_EXTRAORDER), p);
+				FillOrderTree(hwndDlg, GetDlgItem(hwndDlg, IDC_EXTRAORDER), p->exIconOrder, p->dwExtraImageMask);
             }
             return 0;
         }

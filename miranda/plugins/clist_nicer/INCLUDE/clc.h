@@ -121,7 +121,7 @@ typedef struct ContactFloater CONTACTFLOATER;
 typedef struct _OrderTreeData
 {
 	BYTE	ID;
-	TCHAR *	Name;
+	const TCHAR *	Name;
 	BYTE	Position;
 	BOOL	Visible;
     BOOL    fReserved;
