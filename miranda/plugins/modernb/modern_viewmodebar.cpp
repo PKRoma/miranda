@@ -1084,7 +1084,8 @@ void BuildViewModeMenu()
     
 	CLVM_EnumModes(FillMenuCallback);
 
-	AppendMenu(hViewModeMenu, MF_SEPARATOR, 0, NULL);
+	if (GetMenuItemCount(hViewModeMenu) > 2)
+		AppendMenu(hViewModeMenu, MF_SEPARATOR, 0, NULL);
 	AppendMenu(hViewModeMenu, MFT_STRING, 10001, TranslateT("Setup View Modes..."));
 	
 
