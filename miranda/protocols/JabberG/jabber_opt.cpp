@@ -1858,8 +1858,11 @@ protected:
 			m_proto->JDeleteSetting(NULL, "LoginPassword");
 		}
 
-		switch (m_cbType.GetItemData(m_cbType.GetCurSel())) {
+		switch (m_cbType.GetItemData(m_cbType.GetCurSel()))
+		{
 		case ACC_FBOOK:
+			m_proto->m_options.IgnoreRosterGroups = TRUE;
+
 		case ACC_PUBLIC:
 			m_proto->m_options.UseSSL = m_proto->m_options.UseTLS = FALSE;
 			break;

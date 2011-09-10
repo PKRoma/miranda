@@ -498,7 +498,7 @@ void CJabberProto::OnIqResultGetRoster( HXML iqNode, CJabberIqInfo* pInfo )
 			}
 			else DBWriteContactSettingTString( hContact, "CList", "Group", item->group );
 		}
-		else if (m_options.IgnoreRosterGroups == FALSE)
+		else if (!m_options.IgnoreRosterGroups)
 			DBDeleteContactSetting( hContact, "CList", "Group" );
 		if ( hContact != NULL ) {
 			if ( bIsTransport)
