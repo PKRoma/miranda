@@ -26,7 +26,7 @@
  *
  * (C) 2005-2010 by silvercircle _at_ gmail _dot_ com and contributors
  *
- * $Id: clc.h 12887 2010-10-04 03:58:32Z borkra $
+ * $Id: clc.h 13850 2011-09-10 03:26:59Z borkra $
  *
  */
 
@@ -121,7 +121,7 @@ typedef struct ContactFloater CONTACTFLOATER;
 typedef struct _OrderTreeData
 {
 	BYTE	ID;
-	TCHAR *	Name;
+	const TCHAR *	Name;
 	BYTE	Position;
 	BOOL	Visible;
     BOOL    fReserved;

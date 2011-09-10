@@ -55,7 +55,7 @@ HBITMAP g_SFLhbmOld = 0, g_SFLhbm = 0;
 struct ContactFloater *pFirstFloater = 0;
 BOOL hover = FALSE;
 BOOL tooltip = FALSE;
-int hTooltipTimer = 0;
+UINT_PTR hTooltipTimer = 0;
 POINT start_pos;
 
 
