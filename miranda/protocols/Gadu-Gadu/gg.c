@@ -1,7 +1,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 // Gadu-Gadu Plugin for Miranda IM
 //
-// Copyright (c) 2003-2006 Adam Strzelecki <ono+miranda@java.pl>
+// Copyright (c) 2003-2009 Adam Strzelecki <ono+miranda@java.pl>
+// Copyright (c) 2009-2011 Bartosz Bia³ek
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -315,13 +316,15 @@ int gg_event(PROTO_INTERFACE *proto, PROTOEVENTTYPE eventType, WPARAM wParam, LP
 #ifdef DEBUGMODE
 			gg_netlog(gg, "gg_event(EV_PROTO_ONLOAD): loading modules...");
 #endif
-
-			// Init misc thingies
+			// Init misc stuff
 			gg_icolib_init();
 			gg_initpopups(gg);
 			gg_gc_init(gg);
 			gg_keepalive_init(gg);
 			gg_img_init(gg);
+
+			// Try to fetch user avatar
+			gg_getuseravatar(gg);
 			break;
 		}
 		case EV_PROTO_ONEXIT:
@@ -436,9 +439,7 @@ static GGPROTO *gg_proto_init(const char* pszProtoName, const TCHAR* tszUserName
 
 	gg_links_instance_init(gg);
 	gg_initcustomfolders(gg);
-
 	gg_initavatarrequestthread(gg);
-	gg_getuseravatar(gg);
 
 	return gg;
 }

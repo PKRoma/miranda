@@ -1,7 +1,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 // Gadu-Gadu Plugin for Miranda IM
 //
-// Copyright (c) 2003-2006 Adam Strzelecki <ono+miranda@java.pl>
+// Copyright (c) 2003-2009 Adam Strzelecki <ono+miranda@java.pl>
+// Copyright (c) 2009-2011 Bartosz Bia³ek
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -123,7 +124,7 @@ typedef struct
 	LPTSTR name;
 	CRITICAL_SECTION ft_mutex, sess_mutex, img_mutex, modemsg_mutex, avatar_mutex, sessions_mutex;
 	list_t watches, transfers, requests, chats, imagedlgs, avatar_requests, avatar_transfers, sessions;
-	int gc_enabled, gc_id, list_remove, unicode_core;
+	int gc_enabled, gc_id, list_remove, unicode_core, check_first_conn;
 	uin_t next_uin;
 	unsigned long last_crc;
 	GGTHREAD pth_dcc;
@@ -374,6 +375,7 @@ char *gg_status2db(int status, const char *suffix);
 char *ws_strerror(int code);
 uint32_t swap32(uint32_t x);
 const char *gg_version2string(int v);
+void gg_checknewuser(GGPROTO* gg, uin_t uin, const char* passwd);
 
 /* Thread functions */
 void gg_forkthread(GGPROTO *gg, GGThreadFunc pFunc, void *param);
@@ -416,7 +418,7 @@ void gg_requestavatar(GGPROTO *gg, HANDLE hContact, int iWaitFor);
 void gg_initavatarrequestthread(GGPROTO *gg);
 void gg_uninitavatarrequestthread(GGPROTO *gg);
 void gg_getuseravatar(GGPROTO *gg);
-int gg_setavatar(GGPROTO *gg, const char *szFilename);
+void gg_setavatar(GGPROTO *gg, const char *szFilename);
 INT_PTR gg_getavatarinfo(GGPROTO *gg, WPARAM wParam, LPARAM lParam);
 
 /* File transfer functions */

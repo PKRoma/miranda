@@ -200,8 +200,9 @@ Twój e-mail zosta³ zmieniony.
 Nie mo¿na zarejestrowaæ konta z powodu b³êdu:\n\t%s
 [Registration rejected]
 Rejestracja zosta³a odrzucona
-[You have registered new account.\nPlease fill up your personal details in "M->Change my details..."]
-Zarejestrowa³eœ nowe konto.\nProszê wype³nij informacjê o sobie w "M->Zmieñ moje dane..."
+;[You have registered new account.\nPlease fill up your personal details in "M->Change my details..."] @ deprecated since 0.9.30
+[You have registered new account.\nPlease fill up your personal details in "M->View/Change My Details..."]
+Zarejestrowa³eœ nowe konto.\nProszê wype³nij informacje o sobie w "M->Poka¿/Zmieñ Moje Dane..."
 ;Account removal
 [Your account cannot be removed because of error:\n\t%s]
 Twoje konto nie mo¿e byæ usuniête z powodu b³êdu:\n\t%s

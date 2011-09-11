@@ -1,7 +1,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 // Gadu-Gadu Plugin for Miranda IM
 //
-// Copyright (c) 2003-2006 Adam Strzelecki <ono+miranda@java.pl>
+// Copyright (c) 2003-2009 Adam Strzelecki <ono+miranda@java.pl>
+// Copyright (c) 2009-2011 Bartosz Bia³ek
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -861,7 +862,6 @@ INT_PTR gg_getmyavatar(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
 INT_PTR gg_setmyavatar(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
 {
 	char *szFilename = (char *)lParam;
-	INT_PTR res = -1;
 
 	if (!DBGetContactSettingByte(NULL, GG_PROTO, GG_KEY_ENABLEAVATARS, GG_KEYDEF_ENABLEAVATARS))
 		return -2;
@@ -871,20 +871,19 @@ INT_PTR gg_setmyavatar(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
 			NULL,
 			Translate("To remove your Gadu-Gadu avatar, you must use the MojaGeneracja.pl website."),
 			GG_PROTONAME, MB_OK | MB_ICONINFORMATION);
+		return -1;
 	}
 	else {
-		char filename[MAX_PATH];
-		gg_getavatarfilename(gg, NULL, filename, sizeof(filename));
-		if (strcmp(szFilename, filename) && !CopyFileA(szFilename, filename, FALSE)) {
-			gg_netlog(gg, "gg_setmyavatar(): Failed to set user avatar. File %s could not be created/overwritten.", filename);
-			return res;
+		char szMyFilename[MAX_PATH];
+		gg_getavatarfilename(gg, NULL, szMyFilename, sizeof(szMyFilename));
+		if (strcmp(szFilename, szMyFilename) && !CopyFileA(szFilename, szMyFilename, FALSE)) {
+			gg_netlog(gg, "gg_setmyavatar(): Failed to set user avatar. File %s could not be created/overwritten.", szMyFilename);
+			return -1;
 		}
-		remove(filename);
-		if (gg_setavatar(gg, szFilename)) res = 0;
-		gg_getuseravatar(gg); // Update user's avatar
+		gg_setavatar(gg, szMyFilename);
 	}
 
-	return res;
+	return 0;
 }
 
 //////////////////////////////////////////////////////////

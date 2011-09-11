@@ -495,6 +495,14 @@ retry:
 			// Change status of the contact with our own UIN (if got yourself added to the contact list)
 			gg_changecontactstatus(gg, p.uin, p.status, p.status_descr, 0, 0, 0, 0);
 		}
+		if (gg->check_first_conn) // First connection to the account
+		{
+			// Start search for user data
+			gg_getinfo((PROTO_INTERFACE *)gg, NULL, 0);
+			// Fetch user avatar
+			gg_getuseravatar(gg);
+			gg->check_first_conn = 0;
+		}
 	}
 
 	//////////////////////////////////////////////////////////////////////////////////
@@ -1269,14 +1277,6 @@ int gg_dbsettingchanged(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
 	DBCONTACTWRITESETTING *cws = (DBCONTACTWRITESETTING *) lParam;
 	HANDLE hContact = (HANDLE) wParam;
 	char *szProto = NULL;
-
-	// If user UIN changed
-	if(!hContact && !strcmp(cws->szModule, GG_PROTO) && !strcmp(cws->szSetting, GG_KEY_UIN)
-		&& cws->value.dVal)
-	{
-		// Get user's avatar
-		gg_getuseravatar(gg);
-	}
 
 	// Check if the contact is NULL or we are not online
 	if(!gg_isonline(gg))
