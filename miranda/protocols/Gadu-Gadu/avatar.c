@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 // Gadu-Gadu Plugin for Miranda IM
 //
-// Copyright (c) 2009-2010 Bartosz Bia³ek
+// Copyright (c) 2009-2011 Bartosz Bia³ek
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -314,7 +314,6 @@ void __cdecl gg_getuseravatarthread(GGPROTO *gg, void *empty)
 	DBWriteContactSettingByte(NULL, GG_PROTO, GG_KEY_AVATARREQUESTED, 1);
 
 	pai.cbSize = sizeof(pai);
-	pai.hContact = NULL;
 	gg_getavatarinfo(gg, (WPARAM)GAIF_FORCE, (LPARAM)&pai);
 }
 
@@ -325,23 +324,26 @@ void gg_getuseravatar(GGPROTO *gg)
 		gg_forkthread(gg, gg_getuseravatarthread, NULL);
 }
 
-int gg_setavatar(GGPROTO *gg, const char *szFilename)
+void __cdecl gg_setavatarthread(GGPROTO *gg, void *param)
 {
 	NETLIBHTTPHEADER httpHeaders[4];
 	NETLIBHTTPREQUEST req = {0};
 	NETLIBHTTPREQUEST *resp;
+	char *szFilename = (char *)param;
 	const char *contentend = "\r\n--AaB03x--\r\n";
 	char szUrl[128], uin[32], *authHeader, *data, *avatardata, content[256],
 		*fileext, image_ext[4], image_type[11];
 	int file_fd, avatardatalen, datalen, contentlen, contentendlen, res = 0, repeat = 0;
 
-	gg_netlog(gg, "gg_setvatar(): Trying to set user avatar using %s...", szFilename);
+	gg_netlog(gg, "gg_setavatar(): Trying to set user avatar using %s...", szFilename);
 	UIN2ID(DBGetContactSettingDword(NULL, GG_PROTO, GG_KEY_UIN, 0), uin);
 
 	file_fd = _open(szFilename, _O_RDONLY | _O_BINARY, _S_IREAD);
 	if (file_fd == -1) {
-		gg_netlog(gg, "gg_setavatar(): Wrong filename.");
-		return 0;
+		gg_netlog(gg, "gg_setavatar(): Failed to open avatar file (%s).", strerror(errno));
+		mir_free(szFilename);
+		gg_getuseravatar(gg);
+		return;
 	}
 	avatardatalen = _filelength(file_fd);
 	avatardata = (char *)mir_alloc(avatardatalen);
@@ -449,5 +451,11 @@ int gg_setavatar(GGPROTO *gg, const char *szFilename)
 	else
 		gg_netlog(gg, "gg_setavatar(): Failed to set user avatar.");
 
-	return res;
+	mir_free(szFilename);
+	gg_getuseravatar(gg);
+}
+
+void gg_setavatar(GGPROTO *gg, const char *szFilename)
+{
+	gg_forkthread(gg, gg_setavatarthread, (void*)mir_strdup(szFilename));
 }

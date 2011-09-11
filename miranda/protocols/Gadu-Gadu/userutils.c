@@ -54,14 +54,15 @@ void *gg_doregister(GGPROTO *gg, char *newPass, char *newEmail)
 	else
 	{
 		DBWriteContactSettingDword(NULL, GG_PROTO, GG_KEY_UIN, s->uin);
-		gg_pubdir_free(h);
 		CallService(MS_DB_CRYPT_ENCODESTRING, strlen(newPass) + 1, (LPARAM) newPass);
+		gg_checknewuser(gg, s->uin, newPass);
 		DBWriteContactSettingString(NULL, GG_PROTO, GG_KEY_PASSWORD, newPass);
 		DBWriteContactSettingString(NULL, GG_PROTO, GG_KEY_EMAIL, newEmail);
+		gg_pubdir_free(h);
 		gg_netlog(gg, "gg_doregister(): Account registration succesful.");
 		MessageBox(
 			NULL,
-			Translate("You have registered new account.\nPlease fill up your personal details in \"M->Change my details...\""),
+			Translate("You have registered new account.\nPlease fill up your personal details in \"M->View/Change My Details...\""),
 			GG_PROTONAME,
 			MB_OK | MB_ICONINFORMATION
 		);

@@ -20,7 +20,6 @@
 
 #include "gg.h"
 
-static INT_PTR CALLBACK gg_mainoptsdlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 static INT_PTR CALLBACK gg_genoptsdlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 static INT_PTR CALLBACK gg_confoptsdlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 static INT_PTR CALLBACK gg_advoptsdlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -153,6 +152,25 @@ int gg_options_init(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
 	CallService(MS_OPT_ADDPAGE, wParam, (LPARAM) & odp);
 
 	return 0;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Check if new user data has been filled in for specified account
+void gg_checknewuser(GGPROTO* gg, uin_t uin, const char* passwd)
+{
+	char oldpasswd[128];
+	DBVARIANT dbv;
+	uin_t olduin = (uin_t)DBGetContactSettingDword(NULL, GG_PROTO, GG_KEY_UIN, 0);
+
+	oldpasswd[0] = '\0';
+	if (!DBGetContactSettingString(NULL, GG_PROTO, GG_KEY_PASSWORD, &dbv))
+	{
+		if (dbv.pszVal) strcpy(oldpasswd, dbv.pszVal);
+		DBFreeVariant(&dbv);
+	}
+
+	if (uin > 0 && strlen(passwd) > 0 && (uin != olduin || strcmp(oldpasswd, passwd)))
+		gg->check_first_conn = 1;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -426,16 +444,19 @@ static INT_PTR CALLBACK gg_genoptsdlgproc(HWND hwndDlg, UINT msg, WPARAM wParam,
 				case PSN_APPLY:
 				{
 					GGPROTO *gg = (GGPROTO *)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
-					char str[128];
 					int status_flags = GG_STATUS_FLAG_UNKNOWN;
+					char str[128];
+					uin_t uin;
 
-					// Write Gadu-Gadu number
+					// Write Gadu-Gadu number & password
 					GetDlgItemText(hwndDlg, IDC_UIN, str, sizeof(str));
-					DBWriteContactSettingDword(NULL, GG_PROTO, GG_KEY_UIN, atoi(str));
-					// Write Gadu-Gadu password
+					uin = atoi(str);
 					GetDlgItemText(hwndDlg, IDC_PASSWORD, str, sizeof(str));
 					CallService(MS_DB_CRYPT_ENCODESTRING, sizeof(str), (LPARAM) str);
+					gg_checknewuser(gg, uin, str);
+					DBWriteContactSettingDword(NULL, GG_PROTO, GG_KEY_UIN, uin);
 					DBWriteContactSettingString(NULL, GG_PROTO, GG_KEY_PASSWORD, str);
+
 					// Write Gadu-Gadu email
 					GetDlgItemText(hwndDlg, IDC_EMAIL, str, sizeof(str));
 					DBWriteContactSettingString(NULL, GG_PROTO, GG_KEY_EMAIL, str);
@@ -489,7 +510,7 @@ static INT_PTR CALLBACK gg_genoptsdlgproc(HWND hwndDlg, UINT msg, WPARAM wParam,
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////
-// Proc: General options dialog
+// Proc: Conference options dialog
 static INT_PTR CALLBACK gg_confoptsdlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch (msg) {
@@ -889,7 +910,7 @@ int gg_details_init(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
 		CallService(MS_USERINFO_ADDPAGE, wParam, (LPARAM)&odp);
 	}
 
-	// Start search for my data
+	// Start search for user data
 	if((HANDLE)lParam == NULL)
 		gg_getinfo((PROTO_INTERFACE *)gg, NULL, 0);
 
@@ -987,15 +1008,19 @@ INT_PTR CALLBACK gg_acc_mgr_guidlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 				switch (((LPNMHDR) lParam)->code) {
 					case PSN_APPLY:
 					{
-						char str[128];
 						GGPROTO *gg = (GGPROTO *)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
-						// Write Gadu-Gadu number
+						char str[128];
+						uin_t uin;
+
+						// Write Gadu-Gadu number & password
 						GetDlgItemText(hwndDlg, IDC_UIN, str, sizeof(str));
-						DBWriteContactSettingDword(NULL, GG_PROTO, GG_KEY_UIN, atoi(str));
-						// Write Gadu-Gadu password
+						uin = atoi(str);
 						GetDlgItemText(hwndDlg, IDC_PASSWORD, str, sizeof(str));
 						CallService(MS_DB_CRYPT_ENCODESTRING, sizeof(str), (LPARAM) str);
+						gg_checknewuser(gg, uin, str);
+						DBWriteContactSettingDword(NULL, GG_PROTO, GG_KEY_UIN, uin);
 						DBWriteContactSettingString(NULL, GG_PROTO, GG_KEY_PASSWORD, str);
+
 						// Write Gadu-Gadu email
 						GetDlgItemText(hwndDlg, IDC_EMAIL, str, sizeof(str));
 						DBWriteContactSettingString(NULL, GG_PROTO, GG_KEY_EMAIL, str);
