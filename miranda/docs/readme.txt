@@ -57,7 +57,7 @@ d) Submit a bugreport.
 4. Compatibility issues
 -----------------------
 Miranda IM supports all released versions of Windows from
-Windows 95 to Windows Vista. Beta versions are not supported.
+Windows 95 to Windows 7. Beta versions are not supported.
 
 a) Windows 95
 
@@ -97,8 +97,7 @@ Source code is available at: http://www.miranda-im.org/download/
 Miranda IM is released under the terms of the GNU General Public License. See
 "License.txt" for more details.
 
-Miranda IM is copyright 2000-2009 by Richard Hughes, Roland Rabien,
-Tristan Van de Vreede, Martin Öberg, Robert Rainwater, Sam Kothari, and Lyon Lim.
+Miranda IM is copyright 2000-2011 by the people listed in contributors.txt.
 
-The plugins included with this release is copyrighted by their authors. See the
+The plugins included with this release are copyrighted by their authors. See the
 documentation for each plugin for more information.
