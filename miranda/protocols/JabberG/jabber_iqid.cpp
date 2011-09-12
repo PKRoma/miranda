@@ -75,10 +75,7 @@ void CJabberProto::OnIqResultServerDiscoInfo( HXML iqNode )
 							m_ThreadInfo->jabberServerCaps |= g_JabberFeatCapPairs[j].jcbCap;
 							break;
 		}	}	}	}	}
-
-		if (m_ThreadInfo->jabberServerCaps & JABBER_CAPS_PRIVACY_LISTS)
-			QueryPrivacyLists();
-		
+	
 		OnProcessLoginRq( m_ThreadInfo, JABBER_LOGIN_SERVERINFO);
 }	}
 
@@ -198,6 +195,8 @@ void CJabberProto::OnLoggedIn()
 	iqId = SerialNext();
 	IqAdd( iqId, IQ_PROC_NONE, &CJabberProto::OnIqResultServerDiscoInfo );
 	m_ThreadInfo->send( XmlNodeIq( _T("get"), iqId, _A2T(m_ThreadInfo->server)) << XQUERY( _T(JABBER_FEAT_DISCO_INFO)));
+
+	QueryPrivacyLists( m_ThreadInfo );
 
 	char szServerName[ sizeof(m_ThreadInfo->server) ];
 	if ( JGetStaticString( "LastLoggedServer", NULL, szServerName, sizeof(szServerName)))
