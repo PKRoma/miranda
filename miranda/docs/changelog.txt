@@ -3,6 +3,21 @@
                            www.miranda-im.org
 
 
+* New in 0.9.30
+Bugfixes:
+ - Fixed search by name
+ - Fixed UTF-8 language packs
+ - Fixed issue with options ok/cancel buttons
+ - Gadu-Gadu: Fixed setting and fetching avatar
+ - Gadu-Gadu: Fixed setting and fetching user details
+ - ICQ: Fixed client detection
+ - Jabber: Fixed font settings
+ - Jabber: Fixed XMPP server list retrieval
+ - Jabber: Fixed roster group setup for Facebook accounts
+ - Jabber: Privacy list UI was shown when not supported
+ - MSN: Fixed user not online issue
+
+ 
 * New in 0.9.29
 Bugfixes:
  - Improved IE autoproxy connectivity
