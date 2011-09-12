@@ -181,10 +181,11 @@ Musisz najpierw wpisaæ w konfiguracji swój e-mail rejestracyjny.
 Has³o nie mo¿e zostaæ wys³ane z powodu b³êdu:\n\t%s
 [Password was sent to your e-mail.]
 Has³o zosta³o wys³ane na Twój e-mail.
-[Your info cannot be uploaded because of error:\n\t%s]
-Twoje dane nie mo¿e byæ wys³ane z powodu b³êdu:\n\t%s
-[Your info has been uploaded to public catalog.]
+;[Your info has been uploaded to public catalog.] @ deprecated since 0.9.30
+[Your details has been uploaded to the public directory.]
 Twoje dane zosta³y wys³ane do katalogu publicznego.
+[You have to be logged in before you can change your details.]
+Musisz byæ zalogowany, ¿eby zmieniæ swoje dane.
 ;Password changing
 [Your password cannot be changed because of error:\n\t%s]
 Twoje has³o nie mo¿e byæ zmienione z powodu b³êdu:\n\t%s
