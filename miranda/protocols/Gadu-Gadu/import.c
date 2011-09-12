@@ -124,7 +124,7 @@ char *gg_makecontacts(GGPROTO *gg, int cr)
 			string_append_c(s, ';');
 
 			// Readup Nick
-			if (!DBGetContactSettingString(hContact, "CList", "MyHandle", &dbv) || !DBGetContactSettingString(hContact, GG_PROTO, "Nick", &dbv))
+			if (!DBGetContactSettingString(hContact, "CList", "MyHandle", &dbv) || !DBGetContactSettingString(hContact, GG_PROTO, GG_KEY_NICK, &dbv))
 			{
 				DBVARIANT dbv2;
 				if (!DBGetContactSettingString(hContact, GG_PROTO, "NickName", &dbv2))

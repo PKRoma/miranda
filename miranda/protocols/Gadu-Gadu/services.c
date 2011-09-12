@@ -581,8 +581,8 @@ INT_PTR CALLBACK gg_advancedsearchdlgproc(HWND hwndDlg,UINT message,WPARAM wPara
 		case WM_INITDIALOG:
 			TranslateDialogDefault(hwndDlg);
 			SendDlgItemMessage(hwndDlg, IDC_GENDER, CB_ADDSTRING, 0, (LPARAM)_T(""));				// 0
-			SendDlgItemMessage(hwndDlg, IDC_GENDER, CB_ADDSTRING, 0, (LPARAM)Translate("Male"));	// 1
-			SendDlgItemMessage(hwndDlg, IDC_GENDER, CB_ADDSTRING, 0, (LPARAM)Translate("Female"));	// 2
+			SendDlgItemMessage(hwndDlg, IDC_GENDER, CB_ADDSTRING, 0, (LPARAM)Translate("Female"));	// 1
+			SendDlgItemMessage(hwndDlg, IDC_GENDER, CB_ADDSTRING, 0, (LPARAM)Translate("Male"));	// 2
 			return TRUE;
 		case WM_COMMAND:
 			switch(LOWORD(wParam)) {
@@ -690,12 +690,12 @@ HWND gg_searchbyadvanced(PROTO_INTERFACE *proto, HWND hwndDlg)
 	switch(SendDlgItemMessage(hwndDlg, IDC_GENDER, CB_GETCURSEL, 0, 0))
 	{
 		case 1:
-			gg_pubdir50_add(req, GG_PUBDIR50_GENDER, GG_PUBDIR50_GENDER_MALE);
-			strncat(data, GG_PUBDIR50_GENDER_FEMALE, sizeof(data) - strlen(data));
-			break;
-		case 2:
 			gg_pubdir50_add(req, GG_PUBDIR50_GENDER, GG_PUBDIR50_GENDER_FEMALE);
 			strncat(data, GG_PUBDIR50_GENDER_MALE, sizeof(data) - strlen(data));
+			break;
+		case 2:
+			gg_pubdir50_add(req, GG_PUBDIR50_GENDER, GG_PUBDIR50_GENDER_MALE);
+			strncat(data, GG_PUBDIR50_GENDER_FEMALE, sizeof(data) - strlen(data));
 			break;
 	}
 	/* 6 */ strncat(data, ".", sizeof(data) - strlen(data));

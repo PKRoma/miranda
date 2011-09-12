@@ -420,7 +420,7 @@ static INT_PTR CALLBACK gg_genoptsdlgproc(HWND hwndDlg, UINT msg, WPARAM wParam,
 							// Remove details
 							if(LOWORD(wParam) != IDC_CHPASS && LOWORD(wParam) != IDC_CHEMAIL)
 							{
-								DBDeleteContactSetting(NULL, GG_PROTO, "Nick");
+								DBDeleteContactSetting(NULL, GG_PROTO, GG_KEY_NICK);
 								DBDeleteContactSetting(NULL, GG_PROTO, "NickName");
 								DBDeleteContactSetting(NULL, GG_PROTO, "City");
 								DBDeleteContactSetting(NULL, GG_PROTO, "FirstName");
@@ -727,8 +727,8 @@ static INT_PTR CALLBACK gg_detailsdlgproc(HWND hwndDlg, UINT msg, WPARAM wParam,
 			if(!dat->hContact)
 			{
 				SendDlgItemMessage(hwndDlg, IDC_GENDER, CB_ADDSTRING, 0, (LPARAM)_T(""));				// 0
-				SendDlgItemMessage(hwndDlg, IDC_GENDER, CB_ADDSTRING, 0, (LPARAM)Translate("Male"));	// 1
-				SendDlgItemMessage(hwndDlg, IDC_GENDER, CB_ADDSTRING, 0, (LPARAM)Translate("Female"));	// 2
+				SendDlgItemMessage(hwndDlg, IDC_GENDER, CB_ADDSTRING, 0, (LPARAM)Translate("Female"));	// 1
+				SendDlgItemMessage(hwndDlg, IDC_GENDER, CB_ADDSTRING, 0, (LPARAM)Translate("Male"));	// 2
 			}
 			break;
 		}
@@ -755,7 +755,7 @@ static INT_PTR CALLBACK gg_detailsdlgproc(HWND hwndDlg, UINT msg, WPARAM wParam,
 							{
 								MessageBox(
 									NULL,
-									Translate("Your info has been uploaded to public catalog."),
+									Translate("Your details has been uploaded to the public directory."),
 									GG_PROTONAME,
 									MB_OK | MB_ICONINFORMATION
 								);
@@ -793,10 +793,10 @@ static INT_PTR CALLBACK gg_detailsdlgproc(HWND hwndDlg, UINT msg, WPARAM wParam,
 							}
 							else switch((char)DBGetContactSettingByte(hContact, GG_PROTO, "Gender", (BYTE)'?'))
 							{
-								case 'M':
+								case 'F':
 									SendDlgItemMessage(hwndDlg, IDC_GENDER, CB_SETCURSEL, 1, 0);
 									break;
-								case 'F':
+								case 'M':
 									SendDlgItemMessage(hwndDlg, IDC_GENDER, CB_SETCURSEL, 2, 0);
 									break;
 								default:
@@ -818,6 +818,15 @@ static INT_PTR CALLBACK gg_detailsdlgproc(HWND hwndDlg, UINT msg, WPARAM wParam,
 				char text[256];
 				gg_pubdir50_t req;
 				GGPROTO *gg = dat->gg;
+
+				if (!gg_isonline(gg))
+				{
+					MessageBox(NULL,
+						Translate("You have to be logged in before you can change your details."),
+						GG_PROTONAME, MB_OK | MB_ICONSTOP
+					);
+					break;
+				}
 
 				EnableWindow(GetDlgItem(hwndDlg, IDC_SAVE), FALSE);
 

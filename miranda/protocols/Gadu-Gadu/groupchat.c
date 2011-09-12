@@ -177,7 +177,7 @@ int gg_gc_event(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
 
 		gcevent.pszUID = id;
 		gcevent.pszText = gch->pszText;
-		if(!DBGetContactSettingString(NULL, GG_PROTO, "Nick", &dbv))
+		if(!DBGetContactSettingString(NULL, GG_PROTO, GG_KEY_NICK, &dbv))
 			gcevent.pszNick = dbv.pszVal;
 		else
 			gcevent.pszNick = Translate("Me");
@@ -353,7 +353,7 @@ char *gg_gc_getchat(GGPROTO *gg, uin_t sender, uin_t *recipients, int recipients
 	if(uin = DBGetContactSettingDword(NULL, GG_PROTO, GG_KEY_UIN, 0))
 	{
 		UIN2ID(uin, id);
-		if(!DBGetContactSettingString(NULL, GG_PROTO, "Nick", &dbv))
+		if(!DBGetContactSettingString(NULL, GG_PROTO, GG_KEY_NICK, &dbv))
 			gcevent.pszNick = dbv.pszVal;
 		else
 			gcevent.pszNick = Translate("Me");

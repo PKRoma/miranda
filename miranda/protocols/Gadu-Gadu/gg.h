@@ -201,9 +201,8 @@ typedef void (__cdecl GGThreadFunc)(void*, void*);
 // Process handles / seqs
 #define GG_SEQ_INFO				100
 #define GG_SEQ_SEARCH			200
-#define GG_SEQ_AWAYMSG			300
-#define GG_SEQ_GETNICK			400
-#define GG_SEQ_CHINFO			500
+#define GG_SEQ_GETNICK			300
+#define GG_SEQ_CHINFO			400
 
 // Services
 #define GGS_IMPORT_SERVER		"%s/ImportFromServer"

@@ -591,17 +591,25 @@ retry:
 				gg_pubdir50_t res = e->event.pubdir50;
 				int i, count;
 
-				if(e->type == GG_EVENT_PUBDIR50_SEARCH_REPLY)
+				if (e->type == GG_EVENT_PUBDIR50_SEARCH_REPLY)
+				{
 					gg_netlog(gg, "gg_mainthread(%x): Got user info.", gg);
-				if(e->type == GG_EVENT_PUBDIR50_READ)
+					// Store next search UIN
+					if (res->seq == GG_SEQ_SEARCH)
+						gg->next_uin = gg_pubdir50_next(res);
+				}
+				else if (e->type == GG_EVENT_PUBDIR50_READ)
+				{
 					gg_netlog(gg, "gg_mainthread(%x): Got owner info.", gg);
-				if(e->type == GG_EVENT_PUBDIR50_WRITE)
-					gg_netlog(gg, "gg_mainthread(%x): Public catalog save succesful.", gg);
+				}
+				else if (e->type == GG_EVENT_PUBDIR50_WRITE)
+				{
+					gg_netlog(gg, "gg_mainthread(%x): Public directory save succesful.", gg);
+					// Update user details
+					gg_getinfo((PROTO_INTERFACE *)gg, NULL, 0);
+				}
 
-				// Store next search UIN
-				gg->next_uin = gg_pubdir50_next(res);
-
-				if((count = gg_pubdir50_count(res)) > 0)
+				if ((count = gg_pubdir50_count(res)) > 0)
 				{
 					for (i = 0; i < count; i++)
 					{
@@ -620,25 +628,25 @@ retry:
 
 						HANDLE hContact = (res->seq == GG_SEQ_CHINFO) ? NULL : gg_getcontact(gg, uin, 0, 0, NULL);
 						gg_netlog(gg, "gg_mainthread(%x): Search result for uin %d, seq %d.", gg, uin, res->seq);
-						if(res->seq == GG_SEQ_SEARCH)
+						if (res->seq == GG_SEQ_SEARCH)
 						{
 							char strFmt1[64];
 							char strFmt2[64];
 							GGSEARCHRESULT sr = {0};
 
 							mir_snprintf(strFmt2, sizeof(strFmt2), "%s", (char *)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, status_gg2m(gg, atoi(__status)), 0));
-							if(__city)
+							if (__city)
 							{
 								mir_snprintf(strFmt1, sizeof(strFmt1), ", %s %s", Translate("City:"), __city);
 								strncat(strFmt2, strFmt1, sizeof(strFmt2) - strlen(strFmt2));
 							}
-							if(__birthyear)
+							if (__birthyear)
 							{
 								time_t t = time(NULL);
 								struct tm *lt = localtime(&t);
 								int br = atoi(__birthyear);
 
-								if(br < (lt->tm_year + 1900) && br > 1900)
+								if (br < (lt->tm_year + 1900) && br > 1900)
 								{
 									mir_snprintf(strFmt1, sizeof(strFmt1), ", %s %d", Translate("Age:"), (lt->tm_year + 1900) - br);
 									strncat(strFmt2, strFmt1, sizeof(strFmt2) - strlen(strFmt2));
@@ -656,50 +664,84 @@ retry:
 							ProtoBroadcastAck(GG_PROTO, NULL, ACKTYPE_SEARCH, ACKRESULT_DATA, (HANDLE) 1, (LPARAM)&sr);
 						}
 
-						if(((res->seq == GG_SEQ_INFO || res->seq == GG_SEQ_GETNICK) && hContact != NULL)
+						if (((res->seq == GG_SEQ_INFO || res->seq == GG_SEQ_GETNICK) && hContact != NULL)
 							|| res->seq == GG_SEQ_CHINFO)
 						{
 							// Change nickname if it's not present
-							if(__nick && (res->seq == GG_SEQ_GETNICK || res->seq == GG_SEQ_CHINFO))
-								DBWriteContactSettingString(hContact, GG_PROTO, "Nick", __nick);
-							if(__nick)
+							if (__nick && (res->seq == GG_SEQ_GETNICK || res->seq == GG_SEQ_CHINFO))
+								DBWriteContactSettingString(hContact, GG_PROTO, GG_KEY_NICK, __nick);
+
+							if (__nick)
 								DBWriteContactSettingString(hContact, GG_PROTO, "NickName", __nick);
+							else if (res->seq == GG_SEQ_CHINFO)
+								DBDeleteContactSetting(NULL, GG_PROTO, "NickName");
 
 							// Change other info
-							if(__city)
+							if (__city)
 								DBWriteContactSettingString(hContact, GG_PROTO, "City", __city);
-							if(__firstname)
+							else if (res->seq == GG_SEQ_CHINFO)
+								DBDeleteContactSetting(NULL, GG_PROTO, "City");
+
+							if (__firstname)
 								DBWriteContactSettingString(hContact, GG_PROTO, "FirstName", __firstname);
-							if(__lastname)
+							else if (res->seq == GG_SEQ_CHINFO)
+								DBDeleteContactSetting(NULL, GG_PROTO, "FirstName");
+
+							if (__lastname)
 								DBWriteContactSettingString(hContact, GG_PROTO, "LastName", __lastname);
-							if(__familyname)
+							else if (res->seq == GG_SEQ_CHINFO)
+								DBDeleteContactSetting(NULL, GG_PROTO, "LastName");
+
+							if (__familyname)
 								DBWriteContactSettingString(hContact, GG_PROTO, "FamilyName", __familyname);
-							if(__origincity)
+							else if (res->seq == GG_SEQ_CHINFO)
+								DBDeleteContactSetting(NULL, GG_PROTO, "FamilyName");
+
+							if (__origincity)
 								DBWriteContactSettingString(hContact, GG_PROTO, "CityOrigin", __origincity);
-							if(__birthyear)
+							else if (res->seq == GG_SEQ_CHINFO)
+								DBDeleteContactSetting(NULL, GG_PROTO, "CityOrigin");
+
+							if (__birthyear)
 							{
 								time_t t = time(NULL);
 								struct tm *lt = localtime(&t);
 								int br = atoi(__birthyear);
-								if(br > 0)
+								if (br > 0)
 								{
 									DBWriteContactSettingWord(hContact, GG_PROTO, "Age", (WORD)(lt->tm_year + 1900 - br));
 									DBWriteContactSettingWord(hContact, GG_PROTO, "BirthYear", (WORD)br);
 								}
 							}
+							else if (res->seq == GG_SEQ_CHINFO)
+							{
+								DBDeleteContactSetting(NULL, GG_PROTO, "Age");
+								DBDeleteContactSetting(NULL, GG_PROTO, "BirthYear");
+							}
 
 							// Gadu-Gadu Male <-> Female
-							if(__gender)
-								DBWriteContactSettingByte(hContact, GG_PROTO, "Gender",
-								(BYTE)(!strcmp(__gender, GG_PUBDIR50_GENDER_MALE) ? 'M' :
-									  (!strcmp(__gender, GG_PUBDIR50_GENDER_FEMALE) ? 'F' : '?')));
+							if (__gender)
+							{
+								if (res->seq == GG_SEQ_CHINFO)
+									DBWriteContactSettingByte(hContact, GG_PROTO, "Gender",
+									(BYTE)(!strcmp(__gender, GG_PUBDIR50_GENDER_SET_MALE) ? 'M' :
+										  (!strcmp(__gender, GG_PUBDIR50_GENDER_SET_FEMALE) ? 'F' : '?')));
+								else
+									DBWriteContactSettingByte(hContact, GG_PROTO, "Gender",
+									(BYTE)(!strcmp(__gender, GG_PUBDIR50_GENDER_MALE) ? 'M' :
+										  (!strcmp(__gender, GG_PUBDIR50_GENDER_FEMALE) ? 'F' : '?')));
+							}
+							else if (res->seq == GG_SEQ_CHINFO)
+							{
+								DBDeleteContactSetting(NULL, GG_PROTO, "Gender");
+							}
 
 							gg_netlog(gg, "gg_mainthread(%x): Setting user info for uin %d.", gg, uin);
 							ProtoBroadcastAck(GG_PROTO, hContact, ACKTYPE_GETINFO, ACKRESULT_SUCCESS, (HANDLE) 1, 0);
 						}
 					}
 				}
-				if(res->seq == GG_SEQ_SEARCH)
+				if (res->seq == GG_SEQ_SEARCH)
 					ProtoBroadcastAck(GG_PROTO, NULL, ACKTYPE_SEARCH, ACKRESULT_SUCCESS, (HANDLE) 1, 0);
 				break;
 			}
@@ -860,7 +902,7 @@ retry:
 
 						gcevent.pszUID = id;
 						gcevent.pszText = e->event.multilogon_msg.message;
-						if (!DBGetContactSettingString(NULL, GG_PROTO, "Nick", &dbv))
+						if (!DBGetContactSettingString(NULL, GG_PROTO, GG_KEY_NICK, &dbv))
 							gcevent.pszNick = dbv.pszVal;
 						else
 							gcevent.pszNick = Translate("Me");
@@ -1290,7 +1332,7 @@ int gg_dbsettingchanged(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
 	}
 
 	// Contact is being renamed
-	if(gg->gc_enabled && !strcmp(cws->szModule, GG_PROTO) && !strcmp(cws->szSetting, "Nick")
+	if(gg->gc_enabled && !strcmp(cws->szModule, GG_PROTO) && !strcmp(cws->szSetting, GG_KEY_NICK)
 		&& cws->value.pszVal)
 	{
 		// Groupchat window contact is being renamed
