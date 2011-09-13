@@ -77,16 +77,18 @@ INT_PTR CALLBACK DlgProcAbout(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
 			char*   pszMsg    = (char*)LockResource(hRes);
 			if (pszMsg)
 			{
-				TCHAR* ptszMsg = ( TCHAR* )alloca((ResSize + 1) * sizeof(TCHAR));
-			#if defined( _UNICODE )
-				int len = MultiByteToWideChar(1252, 0, pszMsg, ResSize, ptszMsg, ResSize + 1);
-				ptszMsg[len] = 0;
-			#else
-				strncpy(ptszMsg, pszMsg, ResSize);
-				ptszMsg[ResSize] = 0;
-			#endif
+				char* pszMsgt = (char*)alloca(ResSize + 1);
+				memcpy(pszMsgt, pszMsg, ResSize); pszMsgt[ResSize] = 0;
+
+				TCHAR *ptszMsg;
+				if (ResSize >=3 && pszMsgt[0] == '\xef' && pszMsgt[1] == '\xbb' && pszMsgt[2] == '\xbf')
+					ptszMsg = Utf8DecodeT(pszMsgt + 3);
+				else
+					ptszMsg = mir_a2t_cp(pszMsgt, 1252);
+
 				SetDlgItemText(hwndDlg, IDC_CREDITSFILE, ptszMsg);
 				UnlockResource(pszMsg);
+				mir_free(ptszMsg);
 			}
 			FreeResource(hRes);
 		}
