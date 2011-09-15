@@ -66,7 +66,7 @@ void  __stdcall replaceStr( WCHAR*& dest, const WCHAR* src );
 // 2 minutes, milliseconds
 #define JABBER_DEFAULT_IQ_REQUEST_TIMEOUT		120000
 
-typedef void ( CJabberProto::*JABBER_IQ_HANDLER )( HXML iqNode, /*void *usedata,*/ CJabberIqInfo* pInfo );
+typedef void ( CJabberProto::*JABBER_IQ_HANDLER )( HXML iqNode, CJabberIqInfo* pInfo );
 typedef BOOL ( CJabberProto::*JABBER_PERMANENT_IQ_HANDLER )( HXML iqNode, CJabberIqInfo* pInfo );
 
 #define JABBER_IQ_PARSE_CHILD_TAG_NODE			(1)
@@ -94,7 +94,6 @@ protected:
 	int m_iPriority;
 public:
 	void *m_pUserData;
-	DWORD m_dwGroupId;
 public:// parsed data
 	int m_nIqType;
 	TCHAR *m_szFrom;
@@ -224,13 +223,13 @@ protected:
 
 	CJabberIqPermanentInfo* m_pPermanentHandlers;
 
-	CJabberIqInfo* DetachInfo(int nIqId, DWORD dwGroupId)
+	CJabberIqInfo* DetachInfo(int nIqId)
 	{
 		if (!m_pIqs)
 			return NULL;
 
 		CJabberIqInfo* pInfo = m_pIqs;
-		if (nIqId == -1 ? m_pIqs->m_dwGroupId == dwGroupId : m_pIqs->m_nIqId == nIqId)
+		if (m_pIqs->m_nIqId == nIqId)
 		{
 			m_pIqs = pInfo->m_pNext;
 			pInfo->m_pNext = NULL;
@@ -239,7 +238,7 @@ protected:
 
 		while (pInfo->m_pNext)
 		{
-			if (nIqId == -1 ? pInfo->m_pNext->m_dwGroupId == dwGroupId : pInfo->m_pNext->m_nIqId == nIqId)
+			if (pInfo->m_pNext->m_nIqId == nIqId)
 			{
 				CJabberIqInfo* pRetVal = pInfo->m_pNext;
 				pInfo->m_pNext = pInfo->m_pNext->m_pNext;
@@ -374,29 +373,8 @@ public:
 	{
 		LeaveCriticalSection(&m_cs);
 	}
-	DWORD GetNextFreeGroupId()
-	{
-		Lock();
-		DWORD dwRetVal = ++m_dwLastUsedHandle;
-		Unlock();
-		return dwRetVal;
-	}
-	DWORD GetGroupPendingIqCount(DWORD dwGroup)
-	{
-		Lock();
-		DWORD dwCount = 0;
-		CJabberIqInfo* pInfo = m_pIqs;
-		while (pInfo)
-		{
-			if (pInfo->m_dwGroupId == dwGroup)
-				dwCount++;
-			pInfo = pInfo->m_pNext;
-		}
-		Unlock();
-		return dwCount;
-	}
 	// fucking params, maybe just return CJabberIqRequestInfo pointer ?
-	CJabberIqInfo* AddHandler(JABBER_IQ_HANDLER pHandler, int nIqType = JABBER_IQ_TYPE_GET, const TCHAR *szReceiver = NULL, DWORD dwParamsToParse = 0, int nIqId = -1, void *pUserData = NULL, DWORD dwGroupId = 0, DWORD dwTimeout = JABBER_DEFAULT_IQ_REQUEST_TIMEOUT, int iPriority = JH_PRIORITY_DEFAULT);
+	CJabberIqInfo* AddHandler(JABBER_IQ_HANDLER pHandler, int nIqType = JABBER_IQ_TYPE_GET, const TCHAR *szReceiver = NULL, DWORD dwParamsToParse = 0, int nIqId = -1, void *pUserData = NULL, DWORD dwTimeout = JABBER_DEFAULT_IQ_REQUEST_TIMEOUT, int iPriority = JH_PRIORITY_DEFAULT);
 	CJabberIqPermanentInfo* AddPermanentHandler(JABBER_PERMANENT_IQ_HANDLER pHandler, int nIqTypes, DWORD dwParamsToParse, const TCHAR* szXmlns, BOOL bAllowPartialNs, const TCHAR* szTag, void *pUserData = NULL, IQ_USER_DATA_FREE_FUNC pUserDataFree = NULL, int iPriority = JH_PRIORITY_DEFAULT)
 	{
 		CJabberIqPermanentInfo* pInfo = new CJabberIqPermanentInfo();
@@ -505,7 +483,7 @@ public:
 	BOOL ExpireIq(int nIqId)
 	{
 		Lock();
-		CJabberIqInfo* pInfo = DetachInfo(nIqId, 0);
+		CJabberIqInfo* pInfo = DetachInfo(nIqId);
 		Unlock();
 		if (pInfo)
 		{
@@ -514,22 +492,6 @@ public:
 			return TRUE;
 		}
 		return FALSE;
-	}
-	BOOL ExpireGroup(DWORD dwGroupId, void *pUserData = NULL)
-	{
-		BOOL bRetVal = FALSE;
-		while (1)
-		{
-			Lock();
-			CJabberIqInfo* pInfo = DetachInfo(-1, dwGroupId);
-			Unlock();
-			if (!pInfo)
-				break;
-			ExpireInfo(pInfo, pUserData);
-			delete pInfo;
-			bRetVal = TRUE;
-		}
-		return bRetVal;
 	}
 	void ExpirerThread( void );
 	BOOL ExpireByUserData(void *pUserData)
