@@ -238,7 +238,7 @@ void CJabberIqManager::ExpireInfo( CJabberIqInfo* pInfo, void*)
 	(ppro->*(pInfo->m_pHandler))( NULL, pInfo );
 }
 
-CJabberIqInfo* CJabberIqManager::AddHandler(JABBER_IQ_HANDLER pHandler, int nIqType, const TCHAR *szReceiver, DWORD dwParamsToParse, int nIqId, void *pUserData, DWORD dwTimeout, int iPriority)
+CJabberIqInfo* CJabberIqManager::AddHandler(JABBER_IQ_HANDLER pHandler, int nIqType, const TCHAR *szReceiver, DWORD dwParamsToParse, int nIqId, void *pUserData, int iPriority)
 {
 	CJabberIqInfo* pInfo = new CJabberIqInfo();
 	if (!pInfo)
@@ -252,7 +252,7 @@ CJabberIqInfo* CJabberIqManager::AddHandler(JABBER_IQ_HANDLER pHandler, int nIqT
 	pInfo->m_dwParamsToParse = dwParamsToParse;
 	pInfo->m_pUserData = pUserData;
 	pInfo->m_dwRequestTime = GetTickCount();
-	pInfo->m_dwTimeout = dwTimeout;
+	pInfo->m_dwTimeout = JABBER_DEFAULT_IQ_REQUEST_TIMEOUT;
 	pInfo->m_iPriority = iPriority;
 	pInfo->SetReceiver(szReceiver);
 

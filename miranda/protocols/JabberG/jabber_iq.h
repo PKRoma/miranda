@@ -374,7 +374,7 @@ public:
 		LeaveCriticalSection(&m_cs);
 	}
 	// fucking params, maybe just return CJabberIqRequestInfo pointer ?
-	CJabberIqInfo* AddHandler(JABBER_IQ_HANDLER pHandler, int nIqType = JABBER_IQ_TYPE_GET, const TCHAR *szReceiver = NULL, DWORD dwParamsToParse = 0, int nIqId = -1, void *pUserData = NULL, DWORD dwTimeout = JABBER_DEFAULT_IQ_REQUEST_TIMEOUT, int iPriority = JH_PRIORITY_DEFAULT);
+	CJabberIqInfo* AddHandler(JABBER_IQ_HANDLER pHandler, int nIqType = JABBER_IQ_TYPE_GET, const TCHAR *szReceiver = NULL, DWORD dwParamsToParse = 0, int nIqId = -1, void *pUserData = NULL, int iPriority = JH_PRIORITY_DEFAULT);
 	CJabberIqPermanentInfo* AddPermanentHandler(JABBER_PERMANENT_IQ_HANDLER pHandler, int nIqTypes, DWORD dwParamsToParse, const TCHAR* szXmlns, BOOL bAllowPartialNs, const TCHAR* szTag, void *pUserData = NULL, IQ_USER_DATA_FREE_FUNC pUserDataFree = NULL, int iPriority = JH_PRIORITY_DEFAULT)
 	{
 		CJabberIqPermanentInfo* pInfo = new CJabberIqPermanentInfo();
