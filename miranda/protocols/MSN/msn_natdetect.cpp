@@ -179,7 +179,7 @@ void CMsnProto::MSNatDetect(void)
 	// Check if NAT not found
 	if (MyConnection.extIP == MyConnection.intIP)
 	{
-		if (msnExternalIP != NULL && inet_addr( msnExternalIP ) != MyConnection.extIP)
+		if (msnExternalIP != NULL && inet_addr(msnExternalIP) != MyConnection.extIP)
 			MyConnection.udpConType = conISALike;
 		else
 			MyConnection.udpConType = conDirect;
@@ -190,11 +190,11 @@ void CMsnProto::MSNatDetect(void)
 
 	// Detect UPnP NAT
 	NETLIBBIND nlb = {0};
-	nlb.cbSize = sizeof( nlb );
+	nlb.cbSize = sizeof(nlb);
 	nlb.pfnNewConnectionV2 = MSN_ConnectionProc;
 	nlb.pExtra = this;
 
-	HANDLE sb = (HANDLE) MSN_CallService(MS_NETLIB_BINDPORT, (WPARAM) hNetlibUser, ( LPARAM )&nlb);
+	HANDLE sb = (HANDLE) MSN_CallService(MS_NETLIB_BINDPORT, (WPARAM)hNetlibUser, (LPARAM)&nlb);
 	if ( sb != NULL )
 	{
 		MyConnection.upnpNAT = htonl(nlb.dwExternalIP) == MyConnection.extIP;

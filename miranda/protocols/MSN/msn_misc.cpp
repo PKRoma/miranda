@@ -989,7 +989,7 @@ LRESULT CALLBACK NullWindowProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPara
 			{
 				if (tData->flags & MSN_HOTMAIL_POPUP)
 				{
-					HANDLE hContact = tData->proto->MSN_HContactFromEmail(tData->proto->MyOptions.szEmail, NULL, false, false);
+					HANDLE hContact = tData->proto->MSN_HContactFromEmail(tData->proto->MyOptions.szEmail, NULL);
 					if (hContact) CallService(MS_CLIST_REMOVEEVENT, (WPARAM)hContact, (LPARAM) 1);
 					if (tData->flags & MSN_ALLOW_ENTER)
 						tData->proto->MsnInvokeMyURL(true, tData->url);
@@ -1009,7 +1009,7 @@ LRESULT CALLBACK NullWindowProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPara
 			PopupData* tData = (PopupData*)PUGetPluginData(hWnd);
 			if (tData != NULL && tData->flags & MSN_HOTMAIL_POPUP)
 			{
-				HANDLE hContact = tData->proto->MSN_HContactFromEmail(tData->proto->MyOptions.szEmail, NULL, false, false);
+				HANDLE hContact = tData->proto->MSN_HContactFromEmail(tData->proto->MyOptions.szEmail, NULL);
 				if (hContact) CallService(MS_CLIST_REMOVEEVENT, (WPARAM)hContact, (LPARAM) 1);
 			}
 			PUDeletePopUp(hWnd);

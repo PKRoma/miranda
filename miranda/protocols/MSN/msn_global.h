@@ -396,6 +396,7 @@ struct directconnection
 	time_t ts;
 
 	bool useHashedNonce;
+	bool bAccepted;
 
 	CMsnProto* proto;
 };
@@ -632,6 +633,8 @@ struct MsnContact
 	int list;
 	int netId;
 	int p2pMsgId;
+	unsigned cap1;
+	unsigned cap2;
 
 	OBJLIST<MsnPlace> places;
 
