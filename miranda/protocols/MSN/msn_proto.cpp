@@ -866,13 +866,11 @@ HANDLE __cdecl CMsnProto::SendFile(HANDLE hContact, const PROTOCHAR* szDescripti
 	if (getWord(hContact, "Status", ID_STATUS_OFFLINE) == ID_STATUS_OFFLINE)
 		return 0;
 
-	char tEmail[MSN_MAX_EMAIL_LEN];
-	if (MSN_IsMeByContact(hContact, tEmail)) return 0;
+	MsnContact *cont = Lists_Get(hContact);
 
-	DWORD dwFlags = getDword(hContact, "FlagBits", 0);
+	if (!cont || _stricmp(cont->email, MyOptions.szEmail) == 0) return 0;
 
-	int netId = Lists_GetNetId(tEmail);
-	if ((dwFlags & 0xf0000000) == 0 && netId != NETID_MSN) return 0;
+	if ((cont->cap1 & 0xf0000000) == 0 && cont->netId != NETID_MSN) return 0;
 
 	filetransfer* sft = new filetransfer(this);
 	sft->std.ptszFiles = ppszFiles;
@@ -896,11 +894,11 @@ HANDLE __cdecl CMsnProto::SendFile(HANDLE hContact, const PROTOCHAR* szDescripti
 		return 0;
 	}
 
-	if (dwFlags & 0xf0000000)
+	if (cont->cap1 & 0xf0000000)
 		p2p_invite(MSN_APPID_FILE, sft, NULL);
 	else
 	{
-		sft->p2p_dest = mir_strdup(tEmail);
+		sft->p2p_dest = mir_strdup(cont->email);
 		msnftp_invite(sft);
 	}
 

@@ -63,10 +63,13 @@ INT_PTR CMsnProto::GetAvatarInfo(WPARAM wParam,LPARAM lParam)
 {
 	PROTO_AVATAR_INFORMATION* AI = (PROTO_AVATAR_INFORMATION*)lParam;
 
-	if ((getDword(AI->hContact, "FlagBits", 0) & 0xf0000000) == 0)
+	MsnContact *cont = Lists_Get(AI->hContact);
+	if (cont == NULL) return GAIR_NOAVATAR;
+
+	if ((cont->cap1 & 0xf0000000) == 0)
 		return GAIR_NOAVATAR;
 
-	if (MSN_IsMeByContact(AI->hContact))
+	if (_stricmp(cont->email, MyOptions.szEmail) == 0)
 	{
 		MSN_GetAvatarFileName(NULL, AI->filename, sizeof(AI->filename), NULL);
 		AI->format = MSN_GetImageFormat(AI->filename);

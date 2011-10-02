@@ -1390,6 +1390,7 @@ void CMsnProto::p2p_InitDirectTransfer(MimeHeaders& tFileInfo, MimeHeaders& tFil
 		replaceStr(ft->p2p_callID, szCallID);
 		replaceStr(ft->p2p_branch, szBranch);
 		ft->p2p_isV2 = strchr(wlid, ';') != NULL;
+		ft->std.hContact = MSN_HContactFromEmail(wlid);
 	}
 	else
 	{
@@ -1543,6 +1544,7 @@ void CMsnProto::p2p_AcceptTransfer(MimeHeaders& tFileInfo, MimeHeaders& tFileInf
 		replaceStr(ft->p2p_callID, szCallID);
 		replaceStr(ft->p2p_dest, wlid);
 		ft->p2p_isV2 = strchr(wlid, ';') != NULL;
+		ft->std.hContact = MSN_HContactFromEmail(wlid);
 	}
 	else
 	{
@@ -1551,10 +1553,6 @@ void CMsnProto::p2p_AcceptTransfer(MimeHeaders& tFileInfo, MimeHeaders& tFileInf
 			replaceStr(ft->p2p_branch, szBranch);
 			replaceStr(ft->p2p_callID, szCallID);
 		}
-
-		if (!ft->bAccepted)
-			replaceStr(ft->p2p_dest, wlid);
-		ft->bAccepted = true;
 	}
 
 	if (szCallID == NULL || szBranch == NULL || szOldContentType == NULL) 
@@ -1579,6 +1577,14 @@ LBL_Close:
 			p2p_sendCancel(ft);
 			return;
 		}
+
+		if (!ft->bAccepted)
+		{
+			replaceStr(ft->p2p_dest, wlid);
+			ft->bAccepted = true;
+		}
+		else
+			return;
 
 		if (ft->p2p_type != MSN_APPID_FILE)
 		{
@@ -1627,6 +1633,11 @@ LBL_Close:
 
 		directconnection* dc = p2p_getDCByCallID(szCallID, wlid);
 		if (dc == NULL) return;
+
+		if (!dc->bAccepted)
+			dc->bAccepted = true;
+		else
+			return;
 
 		dc->useHashedNonce = szHashedNonce != NULL;
 		replaceStr(dc->xNonce, szHashedNonce ? szHashedNonce : szNonce);
@@ -1767,6 +1778,8 @@ void CMsnProto::p2p_processSIP(ThreadData* info, char* msgbody, P2PB_Header* hdr
 	case 4:
 		{
 			const char* callID = tFileInfo["Call-ID"];
+
+//			application/x-msnmsgr-session-failure-respbody
 			
   			directconnection *dc = p2p_getDCByCallID(callID, wlid);
 			if (dc != NULL)
@@ -2120,7 +2133,7 @@ void  CMsnProto::p2p_invite(unsigned iAppID, filetransfer* ft, const char *wlid)
 
 	if (ft->p2p_dest == NULL)
 	{
-		ft->p2p_isV2 = cont->places.getCount() != 0;
+		ft->p2p_isV2 = (cont->cap2 & capex_SupportsPeerToPeerV2) != 0;
 		ft->p2p_dest = mir_strdup(wlid ? wlid : cont->email);
 	}
 
@@ -2239,8 +2252,7 @@ void  CMsnProto::p2p_invite(unsigned iAppID, filetransfer* ft, const char *wlid)
 			else
 			{
 				const char *wlid = cont->email;
-				DWORD dwFlags = getDword(ft->std.hContact, "FlagBits", 0);
-				if (dwFlags & cap_SupportsP2PBootstrap)
+				if (cont->cap1 & cap_SupportsP2PBootstrap)
 				{
 					if (!MSN_GetThreadByContact(wlid, SERVER_P2P_DIRECT))
 						p2p_inviteDc(ft, wlid);

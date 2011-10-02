@@ -115,7 +115,10 @@ void CMsnProto::sttInviteMessage(ThreadData* info, char* msgBody, char* email, c
 	const char* Appfile = tFileInfo["Application-File"];
 	const char* Appfilesize = tFileInfo["Application-FileSize"];
 	const char* IPAddress = tFileInfo["IP-Address"];
+	const char* IPAddressInt = tFileInfo["IP-Address-Internal"];
 	const char* Port = tFileInfo["Port"];
+	const char* PortX = tFileInfo["PortX"];
+	const char* PortXInt = tFileInfo["PortX-Internal"];
 	const char* AuthCookie = tFileInfo["AuthCookie"];
 	const char* SessionID = tFileInfo["Session-ID"];
 	const char* SessionProtocol = tFileInfo["Session-Protocol"];
@@ -149,6 +152,7 @@ void CMsnProto::sttInviteMessage(ThreadData* info, char* msgBody, char* email, c
 		ft->std.totalBytes = ft->std.currentFileSize = _atoi64(Appfilesize);
 		ft->std.totalFiles = 1;
 		ft->szInvcookie = mir_strdup(Invcookie);
+		ft->p2p_dest = mir_strdup(email);
 
 		TCHAR tComment[40];
 		mir_sntprintf(tComment, SIZEOF(tComment), TranslateT("%I64u bytes"), ft->std.currentFileSize);
@@ -162,7 +166,7 @@ void CMsnProto::sttInviteMessage(ThreadData* info, char* msgBody, char* email, c
 		pre.lParam = (LPARAM)ft;
 
 		CCSDATA ccs;
-		ccs.hContact = MSN_HContactFromEmail(email, nick, true, true);
+		ccs.hContact = ft->std.hContact;
 		ccs.szProtoService = PSR_FILE;
 		ccs.wParam = 0;
 		ccs.lParam = (LPARAM)&pre;
@@ -173,9 +177,12 @@ void CMsnProto::sttInviteMessage(ThreadData* info, char* msgBody, char* email, c
 	if (IPAddress != NULL && Port != NULL && AuthCookie != NULL) // receive Second
 	{
 		ThreadData* newThread = new ThreadData;
-		strcpy(newThread->mServer, IPAddress);
-		strcat(newThread->mServer, ":");
-		strcat(newThread->mServer, Port);
+
+		if (inet_addr(IPAddress) != MyConnection.extIP || !IPAddressInt)
+			mir_snprintf(newThread->mServer, sizeof(newThread->mServer), "%s:%s", IPAddress, Port);
+		else
+			mir_snprintf(newThread->mServer, sizeof(newThread->mServer), "%s:%u", IPAddressInt, atol(PortXInt) ^ 0x3141);
+
 		newThread->mType = SERVER_FILETRANS;
 
 		if (info->mMsnFtp == NULL)
@@ -191,7 +198,6 @@ void CMsnProto::sttInviteMessage(ThreadData* info, char* msgBody, char* email, c
 		newThread->mMsnFtp = info->mMsnFtp; info->mMsnFtp = NULL;
 		strcpy(newThread->mCookie, AuthCookie);
 
-		MSN_DebugLog("Connecting to '%s'...", newThread->mServer);
 		newThread->startThread(&CMsnProto::MSNServerThread, this);
 		return;
 	}
@@ -437,9 +443,10 @@ void CMsnProto::MSN_ReceiveMessage(ThreadData* info, char* cmdString, char* para
 		if (!info->firstMsgRecv) 
 		{
 			info->firstMsgRecv = true;
-			HANDLE hContact = MSN_HContactFromEmail(email);
-			if (hContact != NULL)
-				sttSetMirVer(hContact, getDword(hContact, "FlagBits", 0), true);
+			MsnContact *cont = Lists_Get(email);
+//			HANDLE hContact = MSN_HContactFromEmail(email);
+			if (cont && cont->hContact != NULL)
+				sttSetMirVer(cont->hContact, cont->cap1, true);
 		}	
 	}
 
@@ -447,7 +454,7 @@ void CMsnProto::MSN_ReceiveMessage(ThreadData* info, char* cmdString, char* para
 	{
 		CCSDATA ccs = {0};
 
-		HANDLE tContact = MSN_HContactFromEmail(email, nick, false, false);
+		HANDLE tContact = MSN_HContactFromEmail(email, nick);
 
 		const char* p = tHeader["X-MMS-IM-Format"];
 		bool isRtl =  p != NULL && strstr(p, "RL=1") != NULL;
@@ -1355,10 +1362,12 @@ LBL_InvalidCommand:
 			stripBBCode(data.userNick);
 			stripColorCode(data.userNick);
 
+			bool isMe = false;
 			char* szEmail, *szNet;
 			parseWLID(NEWSTR_ALLOCA(data.wlid), &szNet, &szEmail, NULL);
 			if (!stricmp(szEmail, MyOptions.szEmail) && !strcmp(szNet, "1"))
 			{
+				isMe = true;
 				int newStatus = MSNStatusToMiranda(params);
 				if (newStatus != m_iStatus && newStatus != ID_STATUS_IDLE && m_iStatus != ID_STATUS_IDLE)
 				{
@@ -1369,7 +1378,17 @@ LBL_InvalidCommand:
 			}
 
 			WORD lastStatus = ID_STATUS_OFFLINE;
-			HANDLE hContact = MSN_HContactFromEmail(data.wlid);
+
+			MsnContact *cont = Lists_Get(szEmail);
+
+			HANDLE hContact = NULL;
+			if (!cont && !isMe)
+			{
+				hContact = MSN_HContactFromEmail(data.wlid, data.userNick, true, true);
+				cont = Lists_Get(szEmail);
+			}
+			if (cont) hContact = cont->hContact;
+
 			if (hContact != NULL)
 			{
 				setStringUtf(hContact, "Nick", data.userNick);
@@ -1382,21 +1401,23 @@ LBL_InvalidCommand:
 				setDword(hContact, "IdleTS", newStatus != ID_STATUS_IDLE ? 0 : time(NULL));
 			}
 
-			if (tArgs > 3 && tArgs <= 5) 
+			if (tArgs > 3 && tArgs <= 5 && cont) 
 			{
 				UrlDecode(data.cmdstring);
-				DWORD dwValue = strtoul(data.objid, NULL, 10);
-				setDword(hContact, "FlagBits", dwValue);
+
+				char* end = NULL;
+				cont->cap1 = strtoul(data.objid, &end, 10);
+				cont->cap2 = end && *end == ':' ? strtoul(end + 1, NULL, 10) : 0;
 
 				if (lastStatus == ID_STATUS_OFFLINE) 
 				{
 					DBVARIANT dbv;
 					bool always = getString(hContact, "MirVer", &dbv) != 0;
 					if (!always) MSN_FreeVariant(&dbv);
-					sttSetMirVer(hContact, dwValue, always);
+					sttSetMirVer(hContact, cont->cap1, always);
 				}
 
-				if ((dwValue & 0xf0000000) && data.cmdstring[0] && strcmp(data.cmdstring, "0")) 
+				if ((cont->cap1 & 0xf0000000) && data.cmdstring[0] && strcmp(data.cmdstring, "0")) 
 				{
 					char* szAvatarHash = MSN_GetAvatarHash(data.cmdstring);
 					if (szAvatarHash == NULL) goto remove;
@@ -1464,7 +1485,15 @@ remove:
 				UrlDecode(data.userNick);
 				HANDLE hContact = MSN_HContactFromEmail(data.userEmail, data.userNick, true, true);
 				if (tNumTokens == 5)
-					setDword(hContact, "FlagBits", strtoul(data.flags, NULL, 10));
+				{
+					MsnContact *cont = Lists_Get(data.userEmail);
+					if (cont)
+					{
+						char* end = NULL;
+						cont->cap1 = strtoul(data.flags, &end, 10);
+						cont->cap2 = end && *end == ':' ? strtoul(end + 1, NULL, 10) : 0;
+					}
+				}
 
 				int temp_status = getWord(hContact, "Status", ID_STATUS_OFFLINE);
 				if (temp_status == ID_STATUS_OFFLINE && Lists_IsInList(LIST_FL, data.userEmail))
@@ -1538,7 +1567,15 @@ remove:
 
 			HANDLE hContact = MSN_HContactFromEmail(data.userEmail, data.userNick, true, true);
 			if (tNumTokens == 3)
-				setDword(hContact, "FlagBits", strtoul(data.flags, NULL, 10));
+			{
+				MsnContact *cont = Lists_Get(data.userEmail);
+				if (cont)
+				{
+					char* end = NULL;
+					cont->cap1 = strtoul(data.flags, &end, 10);
+					cont->cap2 = end && *end == ':' ? strtoul(end + 1, NULL, 10) : 0;
+				}
+			}
 
 			mir_utf8decode(data.userNick, NULL);
 			MSN_DebugLog("New contact in channel %s %s", data.userEmail, data.userNick);

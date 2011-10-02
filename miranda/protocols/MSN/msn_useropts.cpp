@@ -59,7 +59,7 @@ int MsnOnDetailsInit(WPARAM wParam, LPARAM lParam)
 	if (!MSN_IsMyContact(hContact))
 		return 0;
 
-	if (setDword(hContact, "FlagBits", 0)) 
+	if (getDword(hContact, "FlagBits", 0)) 
 	{
 		OPTIONSDIALOGPAGE odp = {0};
 
