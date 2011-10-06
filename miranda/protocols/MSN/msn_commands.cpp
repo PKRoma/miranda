@@ -367,12 +367,13 @@ void CMsnProto::MSN_ReceiveMessage(ThreadData* info, char* cmdString, char* para
 	int msgBytes;
 	char *nick, *email;
 	bool ubmMsg = strncmp(cmdString, "UBM", 3) == 0;
+	bool sentMsg = false;
 
 	if (ubmMsg)
 	{
 		msgBytes = atol(datau.strMsgBytes);
-		nick = datau.toEmail;
-		email = datau.toEmail;
+		nick = datau.fromEmail;
+		email = datau.fromEmail;
 	}
 	else
 	{
@@ -438,23 +439,19 @@ void CMsnProto::MSN_ReceiveMessage(ThreadData* info, char* cmdString, char* para
 			deleteSetting(hContact, "StdMirVer");
 		}
 	}
-	else 
+	else if (!ubmMsg && !info->firstMsgRecv) 
 	{
-		if (!info->firstMsgRecv) 
-		{
-			info->firstMsgRecv = true;
-			MsnContact *cont = Lists_Get(email);
-//			HANDLE hContact = MSN_HContactFromEmail(email);
-			if (cont && cont->hContact != NULL)
-				sttSetMirVer(cont->hContact, cont->cap1, true);
-		}	
+		info->firstMsgRecv = true;
+		MsnContact *cont = Lists_Get(email);
+		if (cont && cont->hContact != NULL)
+			sttSetMirVer(cont->hContact, cont->cap1, true);
 	}
 
 	if (!_strnicmp(tContentType, "text/plain", 10)) 
 	{
 		CCSDATA ccs = {0};
 
-		HANDLE tContact = MSN_HContactFromEmail(email, nick);
+		ccs.hContact = MSN_HContactFromEmail(email, nick, true, true);
 
 		const char* p = tHeader["X-MMS-IM-Format"];
 		bool isRtl =  p != NULL && strstr(p, "RL=1") != NULL;
@@ -477,15 +474,12 @@ void CMsnProto::MSN_ReceiveMessage(ThreadData* info, char* cmdString, char* para
 		}
 		else
 		{
-			ccs.hContact = tContact;
-
-			if (info->mJoinedCount > 0 && !ubmMsg)
-			{
-				char* szEmail;
-				parseWLID(NEWSTR_ALLOCA(email), NULL, &szEmail, NULL);
-				if (_stricmp(szEmail, MyOptions.szEmail) == 0)
-					ccs.hContact = NULL;
-			}
+			char* szEmail;
+			parseWLID(NEWSTR_ALLOCA(email), NULL, &szEmail, NULL);
+			sentMsg = _stricmp(szEmail, MyOptions.szEmail) == 0;
+			if (sentMsg)
+				ccs.hContact = ubmMsg ? MSN_HContactFromEmail(datau.toEmail, nick) : 
+					info->getContactHandle();
 		}
 
 		const char* tP4Context = tHeader["P4-Context"];
@@ -508,7 +502,7 @@ void CMsnProto::MSN_ReceiveMessage(ThreadData* info, char* cmdString, char* para
 			gce.dwFlags = GC_TCHAR | GCEF_ADDTOLOG;
 			gce.pDest = &gcd;
 			gce.ptszUID = mir_a2t(email);
-			gce.ptszNick = MSN_GetContactNameT(tContact);
+			gce.ptszNick = MSN_GetContactNameT(ccs.hContact);
 			gce.time = time(NULL);
 			gce.bIsMe = FALSE;
 
@@ -520,9 +514,9 @@ void CMsnProto::MSN_ReceiveMessage(ThreadData* info, char* cmdString, char* para
 			mir_free((void*)gce.pszText);
 			mir_free((void*)gce.ptszUID);
 		}
-		else 
+		else if (ccs.hContact)
 		{
-			if (ccs.hContact && !ubmMsg)
+			if (!sentMsg)
 			{
 				MSN_CallService(MS_PROTO_CONTACTISTYPING, WPARAM(ccs.hContact), 0);
 				
@@ -539,7 +533,7 @@ void CMsnProto::MSN_ReceiveMessage(ThreadData* info, char* cmdString, char* para
 			}
 			else
 			{
-				DBEVENTINFO dbei = { 0 };
+				DBEVENTINFO dbei = {0};
 				
 				dbei.cbSize = sizeof(dbei);
 				dbei.eventType = EVENTTYPE_MESSAGE;
@@ -548,9 +542,7 @@ void CMsnProto::MSN_ReceiveMessage(ThreadData* info, char* cmdString, char* para
 				dbei.timestamp = time(NULL);
 				dbei.cbBlob = (unsigned)strlen(msgBody) + 1;
 				dbei.pBlob = (PBYTE)msgBody;
-				MSN_CallService(MS_DB_EVENT_ADD, 
-					(WPARAM)(ccs.hContact ? ccs.hContact : info->getContactHandle()), 
-					(LPARAM)&dbei);
+				MSN_CallService(MS_DB_EVENT_ADD, (WPARAM)ccs.hContact, (LPARAM)&dbei);
 			}
 		}
 	}
