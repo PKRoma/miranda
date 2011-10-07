@@ -3,6 +3,13 @@
                            www.miranda-im.org
 
 
+* New in 0.9.31
+Bugfixes:
+ - Minor display issue
+ - MSN: Fixes for file transfers
+ - MSN: Fixed receiving messages from Yahoo contacts
+
+ 
 * New in 0.9.30
 Bugfixes:
  - Fixed search by name
