@@ -334,6 +334,6 @@ extern HINSTANCE hInstance; //plugin dll instance
 #define _strlens(a) (a ? strlen(a) : 0)
 #define _strcmps(a,b) (a != b && (!a || !b || strcmp(a, b)))
 
-#define ALLOW_BUSY
+//#define ALLOW_BUSY
 
 #endif
