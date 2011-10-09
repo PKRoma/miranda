@@ -382,7 +382,7 @@ int CAimProto::aim_delete_contact(HANDLE hServerConn, unsigned short &seqno, cha
 	unsigned short offset=0;
 	unsigned short sn_length=(unsigned short)strlen(sn);
 	char* buf=(char*)alloca(SNAC_SIZE+sn_length+10);
-	aim_writesnac(0x13,0x0a,offset,buf);                            // SSI Delete
+	aim_writesnac(0x13,0x0a,offset,buf, get_random());              // SSI Delete
 	aim_writeshort(sn_length,offset,buf);                           // screen name length
 	aim_writegeneric(sn_length,sn,offset,buf);                      // screen name
 	aim_writeshort(group_id,offset,buf);                            // group id
@@ -402,7 +402,7 @@ int CAimProto::aim_add_contact(HANDLE hServerConn, unsigned short &seqno, const 
 	unsigned short tlv_len = nick || note ? TLV_HEADER_SIZE * 2 + nick_length + note_length : 0;
 
 	char* buf=(char*)alloca(SNAC_SIZE + sn_length + 10 + tlv_len);
-	aim_writesnac(0x13,0x08,offset,buf);                             // SSI Add
+	aim_writesnac(0x13,0x08,offset,buf, get_random());               // SSI Add
 	aim_writeshort(sn_length,offset,buf);                            // screen name length
 	aim_writegeneric(sn_length,sn,offset,buf);                       // screen name
 	aim_writeshort(group_id,offset,buf);                             // group id
@@ -424,7 +424,7 @@ int CAimProto::aim_mod_group(HANDLE hServerConn, unsigned short &seqno, const ch
 	unsigned short offset=0;
 	unsigned short name_length=(unsigned short)strlen(name);
 	char* buf=(char*)alloca(SNAC_SIZE+TLV_HEADER_SIZE+name_length+members_length+10);
-	aim_writesnac(0x13,0x09,offset,buf);                            // SSI Edit
+	aim_writesnac(0x13,0x09,offset,buf, get_random());              // SSI Edit
 	aim_writeshort(name_length,offset,buf);                         // group name length
 	aim_writegeneric(name_length,name,offset,buf);                  // group name 
 	aim_writeshort(group_id,offset,buf);                            // group id
@@ -446,7 +446,7 @@ int CAimProto::aim_mod_buddy(HANDLE hServerConn, unsigned short &seqno, const ch
 	unsigned short tlv_len = TLV_HEADER_SIZE * 2 + nick_length + note_length;
 	
 	char* buf=(char*)alloca(SNAC_SIZE+sn_length+10+tlv_len);
-	aim_writesnac(0x13,0x09,offset,buf);                            // SSI Edit
+	aim_writesnac(0x13,0x09,offset,buf, get_random());              // SSI Edit
 	aim_writeshort(sn_length,offset,buf);                           // screen name length
 	aim_writegeneric(sn_length,sn,offset,buf);                      // screen name 
 	aim_writeshort(buddy_id,offset,buf);                            // buddy id
@@ -469,7 +469,7 @@ int CAimProto::aim_set_pd_info(HANDLE hServerConn, unsigned short &seqno)
 		pd_info_id = get_random();
 		req = 0x08;
 	}
-	aim_writesnac(0x13,req,offset,buf);                             // SSI Edit/Add
+	aim_writesnac(0x13,req,offset,buf, get_random());               // SSI Edit/Add
 	aim_writeshort(0,offset,buf);                                   // name length
 	aim_writeshort(0,offset,buf);                                   // group id (root)
 	aim_writeshort(pd_info_id,offset,buf);                          // buddy id
@@ -491,7 +491,7 @@ int CAimProto::aim_ssi_update_preferences(HANDLE hServerConn, unsigned short &se
 		pref1_id = get_random();
 		req = 0x08;
 	}
-	aim_writesnac(0x13,req,offset,buf);                             // SSI Edit/Add
+	aim_writesnac(0x13,req,offset,buf, get_random());               // SSI Edit/Add
 	aim_writeshort(0,offset,buf);									// group name length
 	aim_writeshort(0,offset,buf);									// group id (root)
 	aim_writeshort(pref1_id,offset,buf);                            // buddy id
