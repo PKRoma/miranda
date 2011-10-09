@@ -32,11 +32,15 @@ void CAimProto::snac_md5_authkey(SNAC &snac,HANDLE hServerConn,unsigned short &s
 
 int CAimProto::snac_authorization_reply(SNAC &snac)//family 0x0017
 {
+	int res = 0;
+	
 	if (snac.subcmp(0x0003))
 	{
 		char* server = NULL;
 		int address = 0;
+		unsigned short port;
 		unsigned char use_ssl = 0;
+
 		while (address < snac.len())
 		{
 			TLV tlv(snac.val(address));
@@ -46,30 +50,29 @@ int CAimProto::snac_authorization_reply(SNAC &snac)//family 0x0017
 			{
 				Netlib_CloseHandle(hServerConn);
 
-				unsigned short port = get_default_port();
+				if (server == NULL) return 3;
 				char* delim = strchr(server, ':');
-				if (delim)
-				{
-					port = (unsigned short)atol(delim + 1);
-					*delim = 0;
-				}
+				port = delim ? (unsigned short)atoi(delim + 1) : get_default_port();
+				if (delim) *delim = 0;
+
 				hServerConn = aim_connect(server, port, use_ssl != 0, "bos.oscar.aol.com");
-				mir_free(server);
 				if (hServerConn)
 				{
 					mir_free(COOKIE);
 					COOKIE_LENGTH = tlv.len();
 					COOKIE = tlv.dup();
 					ForkThread(&CAimProto::aim_protocol_negotiation, 0);
-					return 1;
+					res = 1;
 				}
 				else
-					return 3;
+					res = 3;
+				break;
 			}
 			else if (tlv.cmp(0x0008))
 			{
 				login_error(tlv.ushort());
-				return 2;
+				res = 2;
+				break;
 			}
 			else if (tlv.cmp(0x0011))
 			{
@@ -83,8 +86,9 @@ int CAimProto::snac_authorization_reply(SNAC &snac)//family 0x0017
 			}
 			address += tlv.len() + 4;
 		}
+		mir_free(server);
 	} 
-	return 0;
+	return res;
 }
 void CAimProto::snac_supported_families(SNAC &snac,HANDLE hServerConn,unsigned short &seqno)//family 0x0001
 {
@@ -151,10 +155,9 @@ void CAimProto::snac_icbm_limitations(SNAC &snac,HANDLE hServerConn,unsigned sho
 {
 	if (snac.subcmp(0x0005))
 	{
-		switch(m_iDesiredStatus)
+		switch (m_iDesiredStatus)
 		{
 		case ID_STATUS_ONLINE:
-		case ID_STATUS_FREECHAT:
 			broadcast_status(ID_STATUS_ONLINE);
 			aim_set_status(hServerConn,seqno,AIM_STATUS_ONLINE);
 			break;
@@ -164,16 +167,12 @@ void CAimProto::snac_icbm_limitations(SNAC &snac,HANDLE hServerConn,unsigned sho
 			aim_set_status(hServerConn,seqno,AIM_STATUS_INVISIBLE);
 			break;
 
-		case ID_STATUS_DND:
 		case ID_STATUS_OCCUPIED:
-		case ID_STATUS_ONTHEPHONE:
 			broadcast_status(ID_STATUS_OCCUPIED);
 			aim_set_status(hServerConn,seqno,AIM_STATUS_BUSY|AIM_STATUS_AWAY);
 			break;
 
 		case ID_STATUS_AWAY:
-		case ID_STATUS_OUTTOLUNCH:
-		case ID_STATUS_NA:
 			broadcast_status(ID_STATUS_AWAY);
 			aim_set_status(hServerConn,seqno,AIM_STATUS_AWAY);
 			break;
@@ -184,9 +183,12 @@ void CAimProto::snac_icbm_limitations(SNAC &snac,HANDLE hServerConn,unsigned sho
 		last_status_msg = mir_strdup(*msgptr);
 		aim_set_statusmsg(hServerConn,seqno,*msgptr);
 
-		if(getByte( AIM_KEY_II,0))
+		if (m_iDesiredStatus == ID_STATUS_AWAY)
+			aim_set_away(hServerConn, seqno, *msgptr, true);
+
+		if (getByte( AIM_KEY_II,0))
 		{
-			unsigned long time = getDword( AIM_KEY_IIT, 0);
+			unsigned long time = getDword(AIM_KEY_IIT, 0);
 			aim_set_idle(hServerConn,seqno,time*60);
 			instantidle=1;
 		}
@@ -1528,9 +1530,10 @@ void CAimProto::snac_list_modification_ack(SNAC &snac)//family 0x0013
 {
 	if (snac.subcmp(0x000e))
 	{
-		unsigned short id=snac.id();
+		unsigned short id = snac.id();
 		TLV tlv(snac.val(2));
-		unsigned short code =snac.ushort(6+tlv.len());
+		unsigned short code = snac.ushort(6 + tlv.len());
+//		ssi_queue.execute(this, code == 0);
 		switch (id)		
 		{
 		case 0x000a:

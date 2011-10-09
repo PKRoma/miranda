@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 #ifndef AIM_H
 #define AIM_H
 
-#define MIRANDA_VER 0x1000
+#define MIRANDA_VER 0x0A00
 
 #include <m_stdhdr.h>
 
@@ -32,7 +32,6 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 #include <io.h>
 #include <prsht.h>
 #include <richedit.h>
-#include <stdio.h>
 #include <sys/stat.h>
 #include <time.h>
 
@@ -94,7 +93,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 #define MAX_SCREEN_NAME_LENGTH      97
 #define MAX_GROUP_NAME_LENGTH       48
 #define MAX_NICKNAME_LENGTH         64
-#define MAX_MESSAGE_LENGTH          2544
+#define MAX_MESSAGE_LENGTH          3978
 #define MAX_STATUS_MESSAGE_LENGTH   251
 #define MAX_AWAY_MESSAGE_LENGTH     4096
 #define MAX_ICON_SIZE               7168
@@ -167,7 +166,6 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 #define AIM_KEY_US                  "Utf8Support"
 #define AIM_KEY_NL                  "NotOnList"
 #define AIM_KEY_LM                  "LastMessage"
-#define AIM_KEY_NC                  "NewContact"
 #define AIM_KEY_AH                  "AvatarHash"
 #define AIM_KEY_ASH                 "AvatarSavedHash"
 #define AIM_KEY_EM                  "e-mail"
@@ -336,6 +334,6 @@ extern HINSTANCE hInstance; //plugin dll instance
 #define _strlens(a) (a ? strlen(a) : 0)
 #define _strcmps(a,b) (a != b && (!a || !b || strcmp(a, b)))
 
-//#define ALLOW_BUSY
+#define ALLOW_BUSY
 
 #endif

@@ -599,7 +599,7 @@ char* rtf_to_html(HWND hwndDlg,int DlgItem)
 	tl.flags=GTL_DEFAULT;
 	tl.codepage=CP_ACP;
 
-	int oldstart, oldend;
+	int oldstart = 0, oldend = 0;
 	SendDlgItemMessage(hwndDlg, DlgItem, EM_GETSEL, (WPARAM)&oldstart, (LPARAM)&oldend);
 
 	int length=SendDlgItemMessage(hwndDlg, DlgItem, EM_GETTEXTLENGTHEX,(WPARAM)&tl,0);
@@ -632,7 +632,7 @@ char* rtf_to_html(HWND hwndDlg,int DlgItem)
 			isSize=1;
 		else
 			isSize=3;
-		TCHAR text[3];
+		TCHAR text[3] =_T("");
 		SendDlgItemMessage(hwndDlg, DlgItem, EM_GETSELTEXT, 0, (LPARAM)&text);
 		if(Bold!=isBold)
 		{

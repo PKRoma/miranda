@@ -65,7 +65,7 @@ int CAimProto::aim_set_away(HANDLE hServerConn, unsigned short &seqno, const cha
 	aim_writetlv(0x03,charset_len,charset,offset,buf);
 	aim_writetlv(0x04,(unsigned short)msg_len,msg,offset,buf);
 
-	aim_writetlvchar(0x0f,2,offset,buf);
+//	aim_writetlvchar(0x0f,2,offset,buf);
 	
 	mir_free(html_msg);
 

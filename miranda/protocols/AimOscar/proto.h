@@ -239,11 +239,10 @@ struct CAimProto : public PROTO_INTERFACE
 
 	int    aim_set_away(HANDLE hServerConn, unsigned short &seqno, const char *msg, bool set);//user info
 	int    aim_set_statusmsg(HANDLE hServerConn,unsigned short &seqno,const char *msg);//user info
-	int	   aim_set_status(HANDLE hServerConn,unsigned short &seqno,unsigned long status_type);
-
+	int    aim_set_status(HANDLE hServerConn,unsigned short &seqno,unsigned long status_type);
 	int    aim_query_away_message(HANDLE hServerConn,unsigned short &seqno,const char* sn);
 
-	char**  get_status_msg_loc( int status );
+	char**  get_status_msg_loc(int status);
 
 	//////////////////////////////////////////////////////////////////////////////////////
 	// chat.cpp

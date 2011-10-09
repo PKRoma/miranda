@@ -299,7 +299,6 @@ void CAimProto::add_contact_to_group(HANDLE hContact, const char* new_group)
 	aim_ssi_update(hServerConn, seqno, false);
 
 	DBFreeVariant(&dbv);
-	deleteSetting(hContact, AIM_KEY_NC);
 }
 
 void CAimProto::offline_contact(HANDLE hContact, bool remove_settings)
