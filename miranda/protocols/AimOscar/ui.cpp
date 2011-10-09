@@ -1,6 +1,6 @@
 /*
 Plugin of Miranda IM for communicating with users of the AIM protocol.
-Copyright (c) 2008-2009 Boris Krasnovskiy
+Copyright (c) 2008-2011 Boris Krasnovskiy
 Copyright (C) 2005-2006 Aaron Myles Landwehr
 
 This program is free software; you can redistribute it and/or
@@ -626,7 +626,7 @@ static INT_PTR CALLBACK userinfo_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, L
 				cf.cbSize = sizeof(CHARFORMAT2);
 				cf.dwMask=CFM_SIZE;
 				cf.dwEffects=0;
-				char chsize[5];
+				char chsize[5] = "";
 				SendDlgItemMessage(hwndDlg, IDC_FONTSIZE, CB_GETLBTEXT, SendDlgItemMessage(hwndDlg, IDC_FONTSIZE, CB_GETCURSEL, 0, 0),(LPARAM)chsize);
 				//strlcpy(cf.szFaceName,size,strlen(size)+1);
 				cf.yHeight=atoi(chsize)*20;
@@ -1379,7 +1379,7 @@ static void clist_chat_invite_send(HANDLE hItem, HWND hwndList, chat_list_item* 
 			{
 				if (IsHContactInfo(hItem))
 				{
-					TCHAR buf[128];
+					TCHAR buf[128] = _T("");
 					SendMessage(hwndList, CLM_GETITEMTEXT, (WPARAM)hItem, (LPARAM)buf);
 
 					char* sn = mir_t2a(buf);
@@ -1487,7 +1487,7 @@ INT_PTR CALLBACK invite_to_chat_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 				if (param->ppro->state == 1)
 				{
 					TCHAR sn[64];
-					GetDlgItemText(hwndDlg, IDC_EDITSCR, sn, sizeof(sn));
+					GetDlgItemText(hwndDlg, IDC_EDITSCR, sn, SIZEOF(sn));
 
 					CLCINFOITEM cii = {0};
 					cii.cbSize = sizeof(cii);

@@ -1,6 +1,6 @@
 /*
 Plugin of Miranda IM for communicating with users of the AIM protocol.
-Copyright (c) 2008-2010 Boris Krasnovskiy
+Copyright (c) 2008-2011 Boris Krasnovskiy
 Copyright (C) 2005-2006 Aaron Myles Landwehr
 
 This program is free software; you can redistribute it and/or
@@ -20,7 +20,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 INT_PTR CAimProto::GetMyAwayMsg(WPARAM wParam,LPARAM lParam)
 {
-	char** msgptr = getStatusMsgLoc(wParam ? wParam : m_iStatus);
+	char** msgptr = get_status_msg_loc(wParam ? wParam : m_iStatus);
 	if (msgptr == NULL)	return 0;
 
 	return (lParam & SGMA_UNICODE) ? (INT_PTR)mir_utf8decodeW(*msgptr) : (INT_PTR)mir_utf8decodeA(*msgptr);
@@ -37,8 +37,8 @@ int CAimProto::OnIdleChanged(WPARAM /*wParam*/, LPARAM lParam)
 	if (instantidle) //ignore- we are instant idling at the moment
 		return 0;
 
-	BOOL bIdle = (lParam & IDF_ISIDLE);
-	BOOL bPrivacy = (lParam & IDF_PRIVACY);
+	bool bIdle = (lParam & IDF_ISIDLE) != 0;
+	bool bPrivacy = (lParam & IDF_PRIVACY) != 0;
 
 	if (bPrivacy && idle) 
 	{
@@ -51,11 +51,10 @@ int CAimProto::OnIdleChanged(WPARAM /*wParam*/, LPARAM lParam)
 
 	if (bIdle)  //don't want to change idle time if we are already idle
 	{
-		MIRANDA_IDLE_INFO mii;
-
-		ZeroMemory(&mii, sizeof(mii));
+		MIRANDA_IDLE_INFO mii = {0};
 		mii.cbSize = sizeof(mii);
 		CallService(MS_IDLE_GETIDLEINFO, 0, (LPARAM) & mii);
+
 		idle = 1;
 		aim_set_idle(hServerConn,seqno,mii.idleTime * 60);
 	}

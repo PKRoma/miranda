@@ -1,6 +1,6 @@
 /*
 Plugin of Miranda IM for communicating with users of the AIM protocol.
-Copyright (c) 2008-2009 Boris Krasnovskiy
+Copyright (c) 2008-2011 Boris Krasnovskiy
 Copyright (C) 2005-2006 Aaron Myles Landwehr
 
 This program is free software; you can redistribute it and/or
@@ -53,7 +53,8 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL,DWORD /*fdwReason*/,LPVOID /*lpvReserved*
 /////////////////////////////////////////////////////////////////////////////////////////
 // Plugin information
 
-PLUGININFOEX pluginInfo={
+static const PLUGININFOEX pluginInfo = 
+{
 	sizeof(PLUGININFOEX),
 	"AIM Protocol",
 	__VERSION_DWORD,
@@ -71,11 +72,14 @@ PLUGININFOEX pluginInfo={
 	#endif
 };
 
-extern "C" __declspec(dllexport) PLUGININFOEX* MirandaPluginInfoEx(DWORD mirandaVersion)
+extern "C" __declspec(dllexport) const PLUGININFOEX* MirandaPluginInfoEx(DWORD mirandaVersion)
 {
-	if ( mirandaVersion < PLUGIN_MAKE_VERSION( 0, 9, 0, 0 )) 
+	if (mirandaVersion < __VERSION_DWORD) 
 	{
-		MessageBox( NULL, _T("The AIM protocol plugin cannot be loaded. It requires Miranda IM 0.9.0.0 or later."), _T("Miranda"), MB_OK|MB_ICONWARNING|MB_SETFOREGROUND|MB_TOPMOST );
+		MessageBox(NULL, 
+			_T("The AIM protocol plugin cannot be loaded. It requires Miranda IM ") 
+			_T(__VERSION_STRING) _T(" or later."),
+			_T("Miranda"), MB_OK | MB_ICONWARNING | MB_SETFOREGROUND | MB_TOPMOST);
 		return NULL;
 	}
 
@@ -96,7 +100,7 @@ extern "C" __declspec(dllexport) const MUUID* MirandaPluginInterfaces(void)
 ////////////////////////////////////////////////////////////////////////////////////////
 //	OnModulesLoaded - finalizes plugin's configuration on load
 
-static int OnModulesLoaded( WPARAM wParam, LPARAM lParam )
+static int OnModulesLoaded(WPARAM wParam, LPARAM lParam)
 {
 	aim_links_init();
 	InitExtraIcons();
@@ -107,14 +111,14 @@ static int OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 /////////////////////////////////////////////////////////////////////////////////////////
 // Load
 
-static PROTO_INTERFACE* protoInit( const char* pszProtoName, const TCHAR* tszUserName )
+static PROTO_INTERFACE* protoInit(const char* pszProtoName, const TCHAR* tszUserName)
 {
-	CAimProto *ppro = new CAimProto( pszProtoName, tszUserName );
+	CAimProto *ppro = new CAimProto(pszProtoName, tszUserName);
 	g_Instances.insert(ppro);
 	return ppro;
 }
 
-static int protoUninit( PROTO_INTERFACE* ppro )
+static int protoUninit(PROTO_INTERFACE* ppro)
 {
 	g_Instances.remove((CAimProto*)ppro);
 	return 0;
@@ -123,14 +127,14 @@ static int protoUninit( PROTO_INTERFACE* ppro )
 extern "C" int __declspec(dllexport) Load(PLUGINLINK *link)
 {
 	pluginLink = link;
-	mir_getMMI( &mmi );
-	mir_getMD5I( &md5i );
-	mir_getUTFI( &utfi );
-	mir_getLI( &li );
+	mir_getMMI(&mmi);
+	mir_getMD5I(&md5i);
+	mir_getUTFI(&utfi);
+	mir_getLI(&li);
 
-	hMooduleLoaded = HookEvent( ME_SYSTEM_MODULESLOADED, OnModulesLoaded );
+	hMooduleLoaded = HookEvent(ME_SYSTEM_MODULESLOADED, OnModulesLoaded);
 
-	PROTOCOLDESCRIPTOR pd = { 0 };
+	PROTOCOLDESCRIPTOR pd = {0};
 	pd.cbSize = sizeof(pd);
 	pd.szName = "AIM";
 	pd.type = PROTOTYPE_PROTOCOL;

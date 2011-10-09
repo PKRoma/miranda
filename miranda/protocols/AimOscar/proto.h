@@ -218,7 +218,8 @@ struct CAimProto : public PROTO_INTERFACE
 	BdList group_list;
 
 	//away message retrieval stuff
-	char* modeMsgs[9];
+	char *modeMsgs[9];
+	char *last_status_msg; 
 
 	//////////////////////////////////////////////////////////////////////////////////////
 	// avatars.cpp
@@ -238,9 +239,10 @@ struct CAimProto : public PROTO_INTERFACE
 
 	int    aim_set_away(HANDLE hServerConn, unsigned short &seqno, const char *msg, bool set);//user info
 	int    aim_set_statusmsg(HANDLE hServerConn,unsigned short &seqno,const char *msg);//user info
+	int    aim_set_status(HANDLE hServerConn,unsigned short &seqno,unsigned long status_type);
 	int    aim_query_away_message(HANDLE hServerConn,unsigned short &seqno,const char* sn);
 
-	char**  getStatusMsgLoc( int status );
+	char**  get_status_msg_loc(int status);
 
 	//////////////////////////////////////////////////////////////////////////////////////
 	// chat.cpp
@@ -274,7 +276,6 @@ struct CAimProto : public PROTO_INTERFACE
 	int    aim_request_offline_msgs(HANDLE hServerConn,unsigned short &seqno);
 	int    aim_set_icbm(HANDLE hServerConn,unsigned short &seqno);
 	int    aim_set_profile(HANDLE hServerConn,unsigned short &seqno,char* amsg);//user info
-	int    aim_set_invis(HANDLE hServerConn,unsigned short &seqno,const char* m_iStatus,const char* status_flag);
 	int    aim_request_list(HANDLE hServerConn,unsigned short &seqno);
 	int    aim_activate_list(HANDLE hServerConn,unsigned short &seqno);
 	int    aim_accept_rates(HANDLE hServerConn,unsigned short &seqno);

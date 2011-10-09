@@ -1,6 +1,6 @@
 /*
 Plugin of Miranda IM for communicating with users of the AIM protocol.
-Copyright (c) 2008-2010 Boris Krasnovskiy
+Copyright (c) 2008-2011 Boris Krasnovskiy
 Copyright (C) 2005-2006 Aaron Myles Landwehr
 
 This program is free software; you can redistribute it and/or
@@ -235,21 +235,33 @@ bool get_avatar_hash(const char* file, char* hash, char** data, unsigned short &
 	int fileId = _open(file, _O_RDONLY | _O_BINARY, _S_IREAD);
 	if (fileId == -1) return false;
 
-	long  dwAvatar = _filelength(fileId);
-	char* pResult = (char*)mir_alloc(dwAvatar);
+	long  lAvatar = _filelength(fileId);
+	if (lAvatar <= 0)
+	{
+		_close(fileId);
+		return false;
+	}
 
-	_read(fileId, pResult, dwAvatar);
+	char* pResult = (char*)mir_alloc(lAvatar);
+	int res = _read(fileId, pResult, lAvatar);
 	_close(fileId);
+
+	if (res <= 0)
+	{
+		mir_free(pResult);
+		return false;
+	}
+
 
 	mir_md5_state_t state;
 	mir_md5_init(&state);
-	mir_md5_append(&state, (unsigned char*)pResult, dwAvatar);
+	mir_md5_append(&state, (unsigned char*)pResult, lAvatar);
 	mir_md5_finish(&state, (unsigned char*)hash);
 
 	if (data)
 	{
 		*data = pResult;
-		size = (unsigned short)dwAvatar;
+		size = (unsigned short)lAvatar;
 	}
 	else
 		mir_free(pResult);
