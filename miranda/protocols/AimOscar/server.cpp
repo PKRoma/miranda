@@ -956,8 +956,8 @@ void CAimProto::snac_contact_list(SNAC &snac,HANDLE hServerConn,unsigned short &
 		int offset=8, i;
 		unsigned short name_length=snac.ushort(offset);
 		char* name=snac.part(offset+2,name_length);
-	    unsigned short group_id=snac.ushort(offset+2+name_length);
-	    unsigned short item_id=snac.ushort(offset+4+name_length);
+		unsigned short group_id=snac.ushort(offset+2+name_length);
+		unsigned short item_id=snac.ushort(offset+4+name_length);
 		unsigned short type=snac.ushort(offset+6+name_length);
 
 		HANDLE hContact = contact_from_sn(name);
