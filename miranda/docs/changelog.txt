@@ -3,6 +3,15 @@
                            www.miranda-im.org
 
 
+
+* New in 0.9.32
+Bugfixes:
+ - Fixed issue with file versions
+ - AIM: Fixed problems with adding and moving contacts
+ - AIM: Fixes for Blast groups
+ - AIM: Better acknowledgments on message reception
+
+ 
 * New in 0.9.31
 Bugfixes:
  - Minor display issue
