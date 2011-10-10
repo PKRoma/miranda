@@ -586,10 +586,16 @@ HANDLE __cdecl CAimProto::SendFile(HANDLE hContact, const PROTOCHAR* szDescripti
 ////////////////////////////////////////////////////////////////////////////////////////
 // SendMessage - sends a message
 
-void __cdecl CAimProto::msg_ack_success(void* hContact)
+void __cdecl CAimProto::msg_ack_success(void* param)
 {
+	msg_ack_param *msg_ack = (msg_ack_param*)param;
+
 	Sleep(150);
-	sendBroadcast(hContact, ACKTYPE_MESSAGE, ACKRESULT_SUCCESS, (HANDLE) 1, 0);
+	sendBroadcast(msg_ack->hContact, ACKTYPE_MESSAGE, 
+		msg_ack->success ? ACKRESULT_SUCCESS : ACKRESULT_FAILED, 
+		(HANDLE)msg_ack->id, 0);
+	
+	mir_free(msg_ack);
 }
 
 
@@ -627,14 +633,20 @@ int __cdecl CAimProto::SendMsg(HANDLE hContact, int flags, const char* pszSrc)
 	else 
 		msg = smsg;
 
-	// Figure out is this message is actually ANSI
-	int res = aim_send_message(hServerConn, seqno, dbv.pszVal, msg, false);
+	bool blast = getBool(hContact, AIM_KEY_BLS, false);
+	int res = aim_send_message(hServerConn, seqno, dbv.pszVal, msg, false, blast);
 
 	mir_free(msg);
 	DBFreeVariant(&dbv);
 	
-	if (res && 0 == getByte(AIM_KEY_DC, 1))
-		ForkThread(&CAimProto::msg_ack_success, hContact);
+	if (!res || blast || 0 == getByte(AIM_KEY_DC, 1))
+	{
+		msg_ack_param *msg_ack = (msg_ack_param*)mir_alloc(sizeof(msg_ack_param));
+		msg_ack->hContact = hContact;
+		msg_ack->id = res;
+		msg_ack->success = res != 0;
+		ForkThread(&CAimProto::msg_ack_success, msg_ack);
+	}
 
 	return res;
 }
@@ -834,7 +846,7 @@ int __cdecl CAimProto::UserIsTyping(HANDLE hContact, int type)
 		return 0;
 
 	DBVARIANT dbv;
-	if (!getString(hContact, AIM_KEY_SN, &dbv)) 
+	if (!getBool(hContact, AIM_KEY_BLS, false) && !getString(hContact, AIM_KEY_SN, &dbv)) 
 	{
 		if (type == PROTOTYPE_SELFTYPING_ON)
 			aim_typing_notification(hServerConn, seqno, dbv.pszVal, 0x0002);

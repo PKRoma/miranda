@@ -285,7 +285,7 @@ struct CAimProto : public PROTO_INTERFACE
 	int    aim_avatar_ready(HANDLE hServerConn,unsigned short &seqno);
 	int    aim_chatnav_ready(HANDLE hServerConn,unsigned short &seqno);
 	int    aim_chat_ready(HANDLE hServerConn,unsigned short &seqno);
-	int    aim_send_message(HANDLE hServerConn,unsigned short &seqno,const char* sn,char* amsg,bool auto_response);
+	int    aim_send_message(HANDLE hServerConn,unsigned short &seqno,const char* sn,char* amsg,bool auto_response, bool blast);
 	int    aim_query_profile(HANDLE hServerConn,unsigned short &seqno,char* sn);
 	int    aim_delete_contact(HANDLE hServerConn,unsigned short &seqno,char* sn,unsigned short item_id,unsigned short group_id,unsigned short list);
 	int    aim_add_contact(HANDLE hServerConn,unsigned short &seqno,const char* sn,unsigned short item_id,unsigned short group_id,unsigned short list,char* nick=NULL, char* note=NULL);
@@ -428,6 +428,8 @@ struct CAimProto : public PROTO_INTERFACE
 	//////////////////////////////////////////////////////////////////////////////////////
 	// utilities.cpp
 
+	struct msg_ack_param { HANDLE hContact; int id; bool success; };
+
 	void   __cdecl msg_ack_success(void*);
 	void   __cdecl start_connection(void*);
 
@@ -466,34 +468,35 @@ struct CAimProto : public PROTO_INTERFACE
 	void   CreateProtoService(const char* szService, AimServiceFunc serviceProc);
 	void   CreateProtoServiceParam(const char* szService, AimServiceFuncParam serviceProc, LPARAM lParam);
 	void   HookProtoEvent(const char* szEvent, AimEventFunc pFunc);
-	void   ForkThread( AimThreadFunc, void* );
+	void   ForkThread(AimThreadFunc, void*);
 
-	int    deleteSetting( HANDLE hContact, const char* setting );
+	int    deleteSetting(HANDLE hContact, const char* setting);
 
-	int    getByte( const char* name, BYTE defaultValue );
-	int    getByte( HANDLE hContact, const char* name, BYTE defaultValue );
-	int    getDword( const char* name, DWORD defaultValue );
-	int    getDword( HANDLE hContact, const char* name, DWORD defaultValue );
-	int    getString( const char* name, DBVARIANT* );
-	int    getString( HANDLE hContact, const char* name, DBVARIANT* );
-	int    getTString( const char* name, DBVARIANT* );
-	int    getTString( HANDLE hContact, const char* name, DBVARIANT* );
-	WORD   getWord( const char* name, WORD defaultValue );
-	WORD   getWord( HANDLE hContact, const char* name, WORD defaultValue );
+	bool   getBool(HANDLE hContact, const char* name, bool defaultValue);
+	int    getByte(const char* name, BYTE defaultValue );
+	int    getByte(HANDLE hContact, const char* name, BYTE defaultValue);
+	int    getDword(const char* name, DWORD defaultValue);
+	int    getDword(HANDLE hContact, const char* name, DWORD defaultValue);
+	int    getString(const char* name, DBVARIANT*);
+	int    getString(HANDLE hContact, const char* name, DBVARIANT*);
+	int    getTString(const char* name, DBVARIANT*);
+	int    getTString(HANDLE hContact, const char* name, DBVARIANT*);
+	WORD   getWord(const char* name, WORD defaultValue);
+	WORD   getWord(HANDLE hContact, const char* name, WORD defaultValue);
 	char*  getSetting(HANDLE hContact, const char* setting);
 
-	void   setByte( const char* name, BYTE value );
-	void   setByte( HANDLE hContact, const char* name, BYTE value );
-	void   setDword( const char* name, DWORD value );
-	void   setDword( HANDLE hContact, const char* name, DWORD value );
-	void   setString( const char* name, const char* value );
-	void   setString( HANDLE hContact, const char* name, const char* value );
-	void   setTString( const char* name, const TCHAR* value );
-	void   setTString( HANDLE hContact, const char* name, const TCHAR* value );
-	void   setWord( const char* name, WORD value );
-	void   setWord( HANDLE hContact, const char* name, WORD value );
+	void   setByte(const char* name, BYTE value);
+	void   setByte(HANDLE hContact, const char* name, BYTE value);
+	void   setDword(const char* name, DWORD value);
+	void   setDword(HANDLE hContact, const char* name, DWORD value);
+	void   setString(const char* name, const char* value);
+	void   setString(HANDLE hContact, const char* name, const char* value);
+	void   setTString(const char* name, const TCHAR* value);
+	void   setTString(HANDLE hContact, const char* name, const TCHAR* value);
+	void   setWord(const char* name, WORD value);
+	void   setWord(HANDLE hContact, const char* name, WORD value);
 
-	int    sendBroadcast( HANDLE hContact, int type, int result, HANDLE hProcess, LPARAM lParam );
+	int    sendBroadcast(HANDLE hContact, int type, int result, HANDLE hProcess, LPARAM lParam);
 };
 
 #endif

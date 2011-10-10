@@ -337,7 +337,7 @@ char *normalize_name(const char *s)
 	
 	char* buf = mir_strdup(s);
 	_strlwr(buf);
-
+/*
 	char *p = strchr(buf, ' '); 
 	if (p)
 	{
@@ -349,6 +349,7 @@ char *normalize_name(const char *s)
 		}
 		*q = '\0';
 	}
+*/
 	return buf;
 }
 
@@ -724,6 +725,10 @@ unsigned short get_random(void)
 
 int CAimProto::deleteSetting(HANDLE hContact, const char* setting)
 {   return DBDeleteContactSetting(hContact, m_szModuleName, setting);
+}
+
+bool CAimProto::getBool(HANDLE hContact, const char* name, bool defaultValue)
+{	return DBGetContactSettingByte(hContact, m_szModuleName, name, defaultValue) != 0;
 }
 
 int CAimProto::getByte(const char* name, BYTE defaultValue)
