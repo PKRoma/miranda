@@ -953,19 +953,36 @@ void CAimProto::snac_contact_list(SNAC &snac,HANDLE hServerConn,unsigned short &
 	}
 	else if (snac.subcmp(0x000a)) // delete buddy
 	{
-		int offset=8;
+		int offset=8, i;
 		unsigned short name_length=snac.ushort(offset);
 		char* name=snac.part(offset+2,name_length);
-//	    unsigned short group_id=snac.ushort(offset+2+name_length);
-//	    unsigned short item_id=snac.ushort(offset+4+name_length);
+		unsigned short group_id=snac.ushort(offset+2+name_length);
+		unsigned short item_id=snac.ushort(offset+4+name_length);
 		unsigned short type=snac.ushort(offset+6+name_length);
+
+		HANDLE hContact = contact_from_sn(name);
 
 		switch (type)
 		{
 		case 0x0000: //buddy record
-			HANDLE hContact = contact_from_sn(name);
-			deleteBuddyId(hContact, 1);
-			CallService(MS_DB_CONTACT_DELETE, (WPARAM)hContact, 0);
+			for(i=1;;++i)
+			{
+				unsigned short item_id_st = getBuddyId(hContact, i);
+				if (item_id_st == 0) break;
+
+				if (item_id == item_id_st)
+				{
+					deleteBuddyId(hContact, i);
+					deleteGroupId(hContact, i);
+					--i;
+				}
+			}
+			if (i == 1)
+				CallService(MS_DB_CONTACT_DELETE, (WPARAM)hContact, 0);
+			break;
+
+		case 0x0001: //group record
+			group_list.remove_by_id(group_id);
 			break;
 		}
 		mir_free(name) ;
