@@ -173,6 +173,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 #define AIM_KEY_TIS		            "TotalIMsSent"
 #define AIM_KEY_TIR                 "TotalIMsReceived"
 #define AIM_KEY_TAM                 "TotalAwayMessages"
+#define AIM_KEY_BLS                 "IsBlast"
 
 #define AIM_DEFAULT_SERVER          "slogin.oscar.aol.com"
 #define AIM_DEFAULT_SERVER_NS       "login.oscar.aol.com"

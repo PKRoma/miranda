@@ -325,7 +325,7 @@ int CAimProto::aim_chat_ready(HANDLE hServerConn,unsigned short &seqno)
 	return aim_sendflap(hServerConn,0x02,offset,buf,seqno);
 }
 
-int CAimProto::aim_send_message(HANDLE hServerConn,unsigned short &seqno,const char* sn,char* amsg,bool auto_response)
+int CAimProto::aim_send_message(HANDLE hServerConn,unsigned short &seqno,const char* sn,char* amsg,bool auto_response, bool blast)
 {	
 	aimString str(amsg);
 
@@ -334,6 +334,9 @@ int CAimProto::aim_send_message(HANDLE hServerConn,unsigned short &seqno,const c
 
 	unsigned short tlv_offset=0;
 	char* tlv_buf=(char*)alloca(5+msg_len+8);
+
+	char icbm_cookie[8];
+	CallService(MS_UTILS_GETRANDOM, 8, (LPARAM)icbm_cookie);
  
 	aim_writegeneric(5,"\x05\x01\x00\x01\x01",tlv_offset,tlv_buf);   // icbm im capabilities
 	aim_writeshort(0x0101,tlv_offset,tlv_buf);                       // icbm im text tag
@@ -348,20 +351,24 @@ int CAimProto::aim_send_message(HANDLE hServerConn,unsigned short &seqno,const c
 	char* buf= (char*)alloca(SNAC_SIZE+8+3+sn_length+TLV_HEADER_SIZE*3+tlv_offset);
 	
 	aim_writesnac(0x04,0x06,offset,buf);
-	aim_writegeneric(8,"\0\0\0\0\0\0\0\0",offset,buf);               // icbm cookie
+	aim_writegeneric(8,icbm_cookie,offset,buf);                      // icbm cookie
 	aim_writeshort(0x01,offset,buf);                                 // channel
 	aim_writechar((unsigned char)sn_length,offset,buf);              // screen name len
 	aim_writegeneric(sn_length,sn,offset,buf);                       // screen name
 
 	aim_writetlv(0x02,tlv_offset,tlv_buf,offset,buf);
-	if(auto_response)
-		aim_writetlv(0x04,0,0,offset,buf);                           // auto-response message
-	else
+
+	if (!blast)
 	{
-		aim_writetlv(0x03,0,0,offset,buf);                           // message ack request
-		aim_writetlv(0x06,0,0,offset,buf);                           // offline message storage
+		if(auto_response)
+			aim_writetlv(0x04,0,0,offset,buf);                       // auto-response message
+		else
+		{
+			aim_writetlv(0x03,0,0,offset,buf);                       // message ack request
+			aim_writetlv(0x06,0,0,offset,buf);                       // offline message storage
+		}
 	}
-	return aim_sendflap(hServerConn,0x02,offset,buf,seqno) == 0;
+	return aim_sendflap(hServerConn,0x02,offset,buf,seqno) ? 0 : *(int*)icbm_cookie & 0x7fffffff;
 }
 
 int CAimProto::aim_query_profile(HANDLE hServerConn,unsigned short &seqno,char* sn)

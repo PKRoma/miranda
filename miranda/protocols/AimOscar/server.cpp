@@ -689,6 +689,8 @@ void CAimProto::process_ssi_list(SNAC &snac, int &offset)
 						mir_free(nick);
 						nickfound = true;
 					}
+					else if (tlv.cmp(0x7b))
+						setByte(hContact, AIM_KEY_BLS, 1);
 
 					tlv_offset += TLV_HEADER_SIZE + tlv.len();
 				}
@@ -974,13 +976,23 @@ void CAimProto::snac_message_accepted(SNAC &snac)//family 0x004
 {
 	if (snac.subcmp(0x000c))
 	{
+
+		char* icbm_cookie = snac.part(0,8);
 		unsigned char sn_length=snac.ubyte(10);
-		char* sn=snac.part(11,sn_length);
-		HANDLE hContact=contact_from_sn(sn);
-		if ( hContact )
-			ForkThread( &CAimProto::msg_ack_success, hContact );
+		char* sn = snac.part(11,sn_length);
+
+		HANDLE hContact = contact_from_sn(sn);
+		if (hContact)
+		{
+			msg_ack_param *msg_ack = (msg_ack_param*)mir_alloc(sizeof(msg_ack_param));
+			msg_ack->hContact = hContact;
+			msg_ack->id = *(int*)icbm_cookie & 0x7fffffff;
+			msg_ack->success = true;
+			ForkThread(&CAimProto::msg_ack_success, msg_ack);
+		}
 
 		mir_free(sn);
+		mir_free(icbm_cookie);
 	}
 }
 void CAimProto::snac_received_message(SNAC &snac,HANDLE hServerConn,unsigned short &seqno)//family 0x0004
@@ -1267,8 +1279,7 @@ void CAimProto::snac_received_message(SNAC &snac,HANDLE hServerConn,unsigned sho
 					mir_snprintf(buf, len, "%s %s", away, s_msg);
 					mir_free(away);
 
-					DBEVENTINFO dbei;
-					ZeroMemory(&dbei, sizeof(dbei));
+					DBEVENTINFO dbei = {0};
 					dbei.cbSize = sizeof(dbei);
 					dbei.szModule = m_szModuleName;
 					dbei.timestamp = (DWORD)time(NULL);
@@ -1278,7 +1289,7 @@ void CAimProto::snac_received_message(SNAC &snac,HANDLE hServerConn,unsigned sho
 					dbei.pBlob = (PBYTE)buf;
 					CallService(MS_DB_EVENT_ADD, (WPARAM)hContact, (LPARAM)&dbei);
 
-					aim_send_message(hServerConn, seqno, sn, s_msg, true);
+					aim_send_message(hServerConn, seqno, sn, s_msg, true, getBool(hContact, AIM_KEY_BLS, false));
 					mir_free(s_msg);
 				}
 				setDword(hContact, AIM_KEY_LM, (DWORD)time(NULL));
@@ -1408,6 +1419,18 @@ void CAimProto::snac_file_decline(SNAC &snac)//family 0x0004
 	{ 
 		char *icbm_cookie = snac.part(0, 8);
 		int channel = snac.ushort(8);
+		if (channel == 0x01)
+		{
+			int sn_len = snac.ubyte(10);
+			char* sn   = snac.part(11, sn_len);
+			HANDLE hContact = contact_from_sn(sn);
+
+			msg_ack_param *msg_ack = (msg_ack_param*)mir_alloc(sizeof(msg_ack_param));
+			msg_ack->hContact = hContact;
+			msg_ack->id = *(int*)icbm_cookie & 0x7fffffff;
+			msg_ack->success = false;
+			ForkThread(&CAimProto::msg_ack_success, msg_ack);
+		}
 		if (channel == 0x02)
 		{
 			int sn_len = snac.ubyte(10);

@@ -76,7 +76,7 @@ int CAimProto::OnWindowEvent(WPARAM wParam, LPARAM lParam)
 			return 0;
 
 		DBVARIANT dbv;
-		if (!getString(msgEvData->hContact, AIM_KEY_SN, &dbv)) 
+		if (!getBool(msgEvData->hContact, AIM_KEY_BLS, false) && !getString(msgEvData->hContact, AIM_KEY_SN, &dbv)) 
 		{
 			if (_stricmp(dbv.pszVal, SYSTEM_BUDDY))
 				aim_typing_notification(hServerConn, seqno, dbv.pszVal, 0x000f);
