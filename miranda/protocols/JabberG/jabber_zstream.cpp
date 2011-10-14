@@ -93,6 +93,7 @@ int ThreadData::zlibSend( char* data, int datalen )
 int ThreadData::zlibRecv( char* data, long datalen )
 {
 	if ( zRecvReady ) {
+retry:
 		zRecvDatalen = recvws( zRecvData, ZLIB_CHUNK_SIZE, MSG_NODUMP );
 		if ( zRecvDatalen == SOCKET_ERROR ) {
 			proto->Log( "Netlib_Recv() failed, error=%d", WSAGetLastError());
@@ -116,6 +117,8 @@ int ThreadData::zlibRecv( char* data, long datalen )
 	}
 
 	int len = datalen - zStreamIn.avail_out;
+	if ( len == 0 ) 
+		goto retry;
 
 	if ( DBGetContactSettingByte( NULL, "Netlib", "DumpRecv", TRUE ) == TRUE ) {
 		char* szLogBuffer = ( char* )alloca( len+32 );
