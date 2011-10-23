@@ -145,7 +145,7 @@ struct yahoo_input_data {
 /* default values for servers */
 static const char pager_host[] = "scs.msg.yahoo.com";
 static const int pager_port = 5050;
-static const int fallback_ports[]={23, 25, 80, 20, 119, 8001, 8002, 5050, 0};
+static const int fallback_ports[]={80, 23, 25, 20, 119, 8001, 8002, 5050, 0};
 static const char filetransfer_host[]="filetransfer.msg.yahoo.com";
 static const int filetransfer_port=80;
 static const char webcam_host[]="webcam.yahoo.com";

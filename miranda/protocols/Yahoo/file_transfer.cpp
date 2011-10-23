@@ -81,7 +81,7 @@ static y_filetransfer* new_ft(CYahooProto* ppro, int id, HANDLE hContact, const 
 	return ft;
 }
 
-y_filetransfer* find_ft(const char *ft_token) 
+y_filetransfer* find_ft(const char *ft_token, const char *who) 
 {
 	YList *l;
 	y_filetransfer* f;
@@ -89,7 +89,7 @@ y_filetransfer* find_ft(const char *ft_token)
 	
 	for(l = file_transfers; l; l = y_list_next(l)) {
 		f = (y_filetransfer* )l->data;
-		if (lstrcmpA(f->ftoken, ft_token) == 0) {
+		if (lstrcmpA(f->ftoken, ft_token) == 0 && lstrcmpA(f->who, who) == 0) {
 			LOG(("[find_ft] Got it!"));
 			return f;
 		}
@@ -609,7 +609,7 @@ void CYahooProto::ext_got_file7info(const char *me, const char *who, const char 
 
 	LOG(("[ext_yahoo_got_file7info] ident:%s, who: %s, url: %s, fname: %s, ft_token: %s", me, who, url, fname, ft_token));
 	
-	ft = find_ft(ft_token);
+	ft = find_ft(ft_token, who);
 	
 	if (ft == NULL) {
 		LOG(("ERROR: Can't find the token: %s in my file transfers list...", ft_token));
@@ -633,7 +633,7 @@ void ext_yahoo_send_file7info(int id, const char *me, const char *who, const cha
 	char *c;
 	LOG(("[ext_yahoo_send_file7info] id: %i, ident:%s, who: %s, ft_token: %s", id, me, who, ft_token));
 	
-	ft = find_ft(ft_token);
+	ft = find_ft(ft_token, who);
 	
 	if (ft == NULL) {
 		LOG(("ERROR: Can't find the token: %s in my file transfers list...", ft_token));
@@ -676,7 +676,7 @@ void CYahooProto::ext_ft7_send_file(const char *me, const char *who, const char 
 	
 	LOG(("[ext_yahoo_send_file7info] ident:%s, who: %s, ft_token: %s", me, who, ft_token));
 	
-	sf = find_ft(ft_token);
+	sf = find_ft(ft_token, who);
 	
 	if (sf == NULL) {
 		LOG(("ERROR: Can't find the token: %s in my file transfers list...", ft_token));
