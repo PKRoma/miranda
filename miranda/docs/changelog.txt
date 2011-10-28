@@ -4,6 +4,12 @@
 
 
 
+* New in 0.9.33
+Bugfixes:
+ - Jabber: Fixed disconnection issue with compressed connections
+ - Yahoo: File transfer fixes
+ 
+
 * New in 0.9.32
 Bugfixes:
  - Fixed issue with file versions
