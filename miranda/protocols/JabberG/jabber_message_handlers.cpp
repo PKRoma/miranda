@@ -34,6 +34,8 @@ BOOL CJabberProto::OnMessageError( HXML node, ThreadData *pThreadData, CJabberMe
 	// we check if is message delivery failure
 	int id = JabberGetPacketID( node );
 	JABBER_LIST_ITEM* item = ListGetItemPtr( LIST_ROSTER, pInfo->GetFrom() );
+	if ( item == NULL )
+		item = ListGetItemPtr( LIST_CHATROOM, pInfo->GetFrom() );
 	if ( item != NULL ) { // yes, it is
 		TCHAR *szErrText = JabberErrorMsg( pInfo->GetChildNode() );
 		if ( id != -1 ) {

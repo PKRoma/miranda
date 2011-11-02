@@ -385,12 +385,12 @@ BOOL CJabberProto::SendBothRequests(CJabberSDNode* pNode, HXML parent)
 
 void CJabberProto::PerformBrowse(HWND hwndDlg)
 {
-	TCHAR szJid[ 512 ];
+	TCHAR szJid[ JABBER_MAX_JID_LEN ];
 	TCHAR szNode[ 512 ];
 	if ( !GetDlgItemText( hwndDlg, IDC_COMBO_JID, szJid, SIZEOF( szJid )))
-		szJid[ 0 ] = _T('\0');
+		szJid[ 0 ] = 0;
 	if ( !GetDlgItemText( hwndDlg, IDC_COMBO_NODE, szNode, SIZEOF( szNode )))
-		szNode[ 0 ] = _T('\0');
+		szNode[ 0 ] = 0;
 	
 	ComboAddRecentString(hwndDlg, IDC_COMBO_JID, "discoWnd_rcJid", szJid);
 	ComboAddRecentString(hwndDlg, IDC_COMBO_NODE, "discoWnd_rcNode", szNode);

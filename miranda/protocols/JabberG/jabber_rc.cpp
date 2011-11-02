@@ -600,7 +600,7 @@ int CJabberProto::AdhocForwardHandler( HXML, CJabberIqInfo* pInfo, CJabberAdhocS
 										<< XCHILD( _T("body"), szEventText );
 
 									HXML addressesNode = msg << XCHILDNS( _T("addresses"), _T(JABBER_FEAT_EXT_ADDRESSING));
-									TCHAR szOFrom[ 512 ];
+									TCHAR szOFrom[ JABBER_MAX_JID_LEN ];
 									EnterCriticalSection( &m_csLastResourceMap );
 									TCHAR *szOResource = FindLastResourceByDbEvent( hDbEvent );
 									if ( szOResource )

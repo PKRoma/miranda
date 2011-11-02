@@ -550,7 +550,7 @@ void CJabberProto::UpdateMirVer(HANDLE hContact, JABBER_RESOURCE_STATUS *resourc
 
 	DBVARIANT dbv;
 	if ( !JGetStringT( hContact, "jid", &dbv )) {
-		TCHAR szFullJid[ 512 ];
+		TCHAR szFullJid[ JABBER_MAX_JID_LEN ];
 		if ( resource->resourceName )
 			mir_sntprintf( szFullJid, SIZEOF( szFullJid ), _T("%s/%s"), dbv.ptszVal, resource->resourceName );
 		else

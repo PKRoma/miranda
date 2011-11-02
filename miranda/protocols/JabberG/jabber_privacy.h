@@ -44,10 +44,12 @@ enum PrivacyListRuleType
 
 struct CPrivacyListModifyUserParam
 {
-	BOOL m_bAllOk;
-	CPrivacyListModifyUserParam()
+	BOOL   m_bAllOk;
+	volatile LONG m_dwCount;
+	CPrivacyListModifyUserParam() :
+		m_bAllOk( TRUE ),
+		m_dwCount( 0 )
 	{
-		ZeroMemory(this, sizeof(CPrivacyListModifyUserParam));
 	}
 };
 

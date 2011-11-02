@@ -115,14 +115,14 @@ static void sttFillJidList(HWND hwndDlg)
 						lvi.pszText = ( TCHAR* )jid;
 						if ( jidListInfo->type == MUC_BANLIST ) {
 							if (( reason = xmlGetText(xmlGetChild( itemNode , "reason" ))) != NULL ) {
-								TCHAR jidreason[ 200 ];
+								TCHAR jidreason[ JABBER_MAX_JID_LEN + 256 ];
 								mir_sntprintf( jidreason, SIZEOF( jidreason ), _T("%s (%s)") , jid, reason );
 								lvi.pszText = jidreason;
 						}	}
 
 						if ( jidListInfo->type == MUC_VOICELIST || jidListInfo->type == MUC_MODERATORLIST ) {
 							if (( nick = xmlGetAttrValue( itemNode, _T("nick"))) != NULL ) {
-								TCHAR nickjid[ 200 ];
+								TCHAR nickjid[ JABBER_MAX_JID_LEN + 256 ];
 								mir_sntprintf( nickjid, SIZEOF( nickjid ), _T("%s (%s)") , nick, jid );
 								lvi.pszText = nickjid;
 						}	}

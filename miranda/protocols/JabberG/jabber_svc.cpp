@@ -171,7 +171,7 @@ INT_PTR __cdecl CJabberProto::JabberGetAvatarInfo( WPARAM wParam, LPARAM lParam 
 			if ( item != NULL ) {
 				BOOL isXVcard = JGetByte( AI->hContact, "AvatarXVcard", 0 );
 
-				TCHAR szJid[ 512 ];
+				TCHAR szJid[ JABBER_MAX_JID_LEN ];
 				if ( item->resourceCount != NULL && !isXVcard ) {
 					TCHAR *bestResName = ListGetBestClientResourceNamePtr(dbv.ptszVal);
 					mir_sntprintf( szJid, SIZEOF( szJid ), bestResName?_T("%s/%s"):_T("%s"), dbv.ptszVal, bestResName );
@@ -617,7 +617,7 @@ INT_PTR __cdecl CJabberProto::JabberSendNudge( WPARAM wParam, LPARAM )
 	HANDLE hContact = ( HANDLE )wParam;
 	DBVARIANT dbv;
 	if ( !JGetStringT( hContact, "jid", &dbv )) {
-		TCHAR tszJid[ 512 ];
+		TCHAR tszJid[ JABBER_MAX_JID_LEN ];
 		TCHAR *szResource = ListGetBestClientResourceNamePtr( dbv.ptszVal );
 		if ( szResource )
 			mir_sntprintf( tszJid, SIZEOF(tszJid), _T("%s/%s"), dbv.ptszVal, szResource );
@@ -961,7 +961,10 @@ HJHANDLER CJabberNetInterface::AddTemporaryIqHandler( JABBER_HANDLER_FUNC Func, 
 	sHandlerData *d = (sHandlerData*)malloc(sizeof(sHandlerData));
 	d->Func = Func;
 	d->pUserData = pUserData;
-	return (HJHANDLER)m_psProto->m_iqManager.AddHandler( &CJabberProto::ExternalTempIqHandler, iIqTypes, NULL, 0, iIqId, d, 0, dwTimeout, iPriority );
+	CJabberIqInfo* pInfo = m_psProto->m_iqManager.AddHandler( &CJabberProto::ExternalTempIqHandler, iIqTypes, NULL, 0, iIqId, d, iPriority );
+	if ( pInfo && dwTimeout > 0 )
+		pInfo->SetTimeout( dwTimeout );
+	return (HJHANDLER)pInfo;
 }
 
 HJHANDLER CJabberNetInterface::AddSendHandler( JABBER_HANDLER_FUNC Func, void *pUserData, int iPriority )

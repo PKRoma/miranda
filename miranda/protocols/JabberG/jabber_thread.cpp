@@ -489,12 +489,12 @@ LBL_FatalError:
 				if ( nSelRes == -1 ) // error
 					break;
 				else if ( nSelRes == 0 && m_bSendKeepAlive ) {
-					if ( m_ThreadInfo->jabberServerCaps & JABBER_CAPS_PING )
-						info->send( 
-							XmlNodeIq( m_iqManager.AddHandler( &CJabberProto::OnPingReply, JABBER_IQ_TYPE_GET, NULL, 0, -1, this, 0, m_options.ConnectionKeepAliveTimeout ))
-								<< XCHILDNS( _T("ping"), _T(JABBER_FEAT_PING)));
-					else 
-						info->send( " \t " );
+					if ( m_ThreadInfo->jabberServerCaps & JABBER_CAPS_PING ) {
+						CJabberIqInfo* pInfo = m_iqManager.AddHandler( &CJabberProto::OnPingReply, JABBER_IQ_TYPE_GET, NULL, 0, -1, this );
+						pInfo->SetTimeout( m_options.ConnectionKeepAliveTimeout );
+						info->send( XmlNodeIq( pInfo ) << XCHILDNS( _T("ping"), _T(JABBER_FEAT_PING)));
+					}
+					else info->send( " \t " );
 					continue;
 			}	}
 
@@ -1433,7 +1433,7 @@ void CJabberProto::OnProcessMessage( HXML node, ThreadData* info )
 		}
  		else if ( !_tcscmp( ptszXmlns, _T(JABBER_FEAT_ROSTER_EXCHANGE)) && 
  			item != NULL && (item->subscription == SUB_BOTH || item->subscription == SUB_TO)) {
-			TCHAR chkJID[512] = _T("@");
+			TCHAR chkJID[JABBER_MAX_JID_LEN] = _T("@");
 			JabberStripJid( from, chkJID + 1, SIZEOF(chkJID) - 1 ); 
  			for ( int i = 1; ; ++i ) { 
  				HXML iNode = xmlGetNthChild( xNode , _T("item"), i );
@@ -1665,9 +1665,9 @@ void CJabberProto::OnProcessPresence( HXML node, ThreadData* info )
 	}
 
 	BOOL bSelfPresence = FALSE;
-	TCHAR szBareFrom[ 512 ];
+	TCHAR szBareFrom[ JABBER_MAX_JID_LEN ];
 	JabberStripJid( from, szBareFrom, SIZEOF( szBareFrom ));
-	TCHAR szBareOurJid[ 512 ];
+	TCHAR szBareOurJid[ JABBER_MAX_JID_LEN ];
 	JabberStripJid( info->fullJID, szBareOurJid, SIZEOF( szBareOurJid ));
 
 	if ( !_tcsicmp( szBareFrom, szBareOurJid ))

@@ -407,7 +407,7 @@ void CJabberProto::GcQuit( JABBER_LIST_ITEM* item, int code, HXML reason )
 	item->bChatActive = FALSE;
 
 	if ( m_bJabberOnline ) {
-		TCHAR szPresenceTo[ 512 ];
+		TCHAR szPresenceTo[ JABBER_MAX_JID_LEN ];
 		mir_sntprintf( szPresenceTo, SIZEOF( szPresenceTo ), _T("%s/%s"), item->jid, item->nick );
 
 		m_ThreadInfo->send(
@@ -1515,7 +1515,7 @@ static void sttLogListHook( CJabberProto* ppro, JABBER_LIST_ITEM* item, GCHOOK* 
 
 static void sttSendPrivateMessage( CJabberProto* ppro, JABBER_LIST_ITEM* item, const TCHAR* nick )
 {
-	TCHAR szFullJid[ 256 ];
+	TCHAR szFullJid[ JABBER_MAX_JID_LEN ];
 	mir_sntprintf( szFullJid, SIZEOF(szFullJid), _T("%s/%s"), item->jid, nick );
 	HANDLE hContact = ppro->DBCreateContact( szFullJid, NULL, TRUE, FALSE );
 	if ( hContact != NULL ) {

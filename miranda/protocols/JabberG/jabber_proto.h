@@ -240,6 +240,13 @@ struct CJabberProto : public PROTO_INTERFACE
 	int  __cdecl JabberGcInit( WPARAM, LPARAM );
 
 	int  __cdecl CListMW_ExtraIconsApply( WPARAM, LPARAM );
+	
+	// Google Shared Status
+	BOOL m_bGoogleSharedStatus;
+	BOOL m_bGoogleSharedStatusLock;
+	void OnIqResultGoogleSharedStatus(HXML iqNode, CJabberIqInfo* pInfo);
+	BOOL OnIqSetGoogleSharedStatus(HXML iqNode, CJabberIqInfo* pInfo);
+	void SendIqGoogleSharedStatus(int status);
 
 	//====| Data |========================================================================
 
@@ -274,6 +281,7 @@ struct CJabberProto : public PROTO_INTERFACE
 	BOOL   m_bChangeStatusMessageOnly;
 	BOOL   m_bSendKeepAlive;
 	BOOL   m_bPepSupported;
+	BOOL   m_bGoogleTalk;
 
 	HWND   m_hwndAgentRegInput;
 	HWND   m_hwndRegProgress;

@@ -1142,10 +1142,10 @@ void CJabberProto::_RosterHandleGetRequest( HXML node )
 		int ListItemCount=ListView_GetItemCount(hList);
 		for (int index=0; index<ListItemCount; index++)
 		{
-			TCHAR jid[260]={0};
-			TCHAR name[260]={0};
-			TCHAR group[260]={0};
-			TCHAR subscr[260]={0};
+			TCHAR jid[JABBER_MAX_JID_LEN]=_T("");
+			TCHAR name[260]=_T("");
+			TCHAR group[260]=_T("");
+			TCHAR subscr[260]=_T("");
 			ListView_GetItemText(hList, index, 0, jid, SIZEOF(jid));
 			ListView_GetItemText(hList, index, 1, name, SIZEOF(name));
 			ListView_GetItemText(hList, index, 2, group, SIZEOF(group));
@@ -1311,10 +1311,10 @@ void CJabberProto::_RosterExportToFile(HWND hwndDlg)
 
 	for (int index=0; index<ListItemCount; index++)
 	{
-		TCHAR jid[260]={0};
-		TCHAR name[260]={0};
-		TCHAR group[260]={0};
-		TCHAR subscr[260]={0};
+		TCHAR jid[JABBER_MAX_JID_LEN]=_T("");
+		TCHAR name[260]=_T("");
+		TCHAR group[260]=_T("");
+		TCHAR subscr[260]=_T("");
 		ListView_GetItemText(hList, index, 0, jid, SIZEOF(jid));
 		ListView_GetItemText(hList, index, 1, name, SIZEOF(name));
 		ListView_GetItemText(hList, index, 2, group, SIZEOF(group));
