@@ -712,6 +712,8 @@ DWORD_PTR __cdecl CJabberProto::GetCaps( int type, HANDLE /*hContact*/ )
 		return ( DWORD_PTR ) JTranslate( "JID" );
 	case PFLAG_UNIQUEIDSETTING:
 		return ( DWORD_PTR ) "jid";
+	case PFLAG_MAXCONTACTSPERPACKET:
+		return 50;
 	}
 	return 0;
 }
@@ -754,7 +756,7 @@ int __cdecl CJabberProto::GetInfo( HANDLE hContact, int /*infoType*/ )
 
 	if ( !JGetStringT( hContact, "jid", &dbv )) {
 		if ( m_ThreadInfo ) {
-			TCHAR jid[ 256 ];
+			TCHAR jid[ JABBER_MAX_JID_LEN ];
 			GetClientJID( dbv.ptszVal, jid, SIZEOF( jid ));
 
 			m_ThreadInfo->send(
@@ -772,8 +774,8 @@ int __cdecl CJabberProto::GetInfo( HANDLE hContact, int /*infoType*/ )
 				item = ListGetItemPtr( LIST_ROSTER, dbv.ptszVal );
 
 			if ( !item ) {
-				TCHAR szBareJid[ 1024 ];
-				_tcsncpy( szBareJid, dbv.ptszVal, 1023 );
+				TCHAR szBareJid[ JABBER_MAX_JID_LEN ];
+				_tcsncpy( szBareJid, dbv.ptszVal, SIZEOF( szBareJid ));
 				TCHAR* pDelimiter = _tcschr( szBareJid, _T('/') );
 				if ( pDelimiter ) {
 					*pDelimiter = 0;
@@ -1028,7 +1030,7 @@ int __cdecl CJabberProto::SendContacts( HANDLE hContact, int flags, int nContact
 		return 0;
 	}
 
-	TCHAR szClientJid[ 256 ];
+	TCHAR szClientJid[ JABBER_MAX_JID_LEN ];
 	GetClientJID( dbv.ptszVal, szClientJid, SIZEOF( szClientJid ));
 	JFreeVariant( &dbv );
 
@@ -1232,7 +1234,7 @@ int __cdecl CJabberProto::SendMsg( HANDLE hContact, int flags, const char* pszSr
 		}
 		mir_free( msg );
 
-		TCHAR szClientJid[ 256 ];
+		TCHAR szClientJid[ JABBER_MAX_JID_LEN ];
 		GetClientJID( dbv.ptszVal, szClientJid, SIZEOF( szClientJid ));
 
 		JABBER_RESOURCE_STATUS *r = ResourceInfoFromJID( szClientJid );
@@ -1544,7 +1546,7 @@ int __cdecl CJabberProto::UserIsTyping( HANDLE hContact, int type )
 
 	JABBER_LIST_ITEM *item;
 	if (( item = ListGetItemPtr( LIST_ROSTER, dbv.ptszVal )) != NULL ) {
-		TCHAR szClientJid[ 256 ];
+		TCHAR szClientJid[ JABBER_MAX_JID_LEN ];
 		GetClientJID( dbv.ptszVal, szClientJid, SIZEOF( szClientJid ));
 
 		JabberCapsBits jcb = GetResourceCapabilites( szClientJid, TRUE );

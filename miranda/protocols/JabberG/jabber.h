@@ -134,7 +134,7 @@ protected:
 
 #define JABBER_DEFAULT_PORT 5222
 #define JABBER_IQID "mir_"
-#define JABBER_MAX_JID_LEN  256
+#define JABBER_MAX_JID_LEN  1024
 
 #define JABBER_GC_MSG_QUIT				LPGENT("I'm happy Miranda IM user. Get it at http://miranda-im.org/.")
 #define JABBER_GC_MSG_SLAP				LPGENT("/me slaps %s around a bit with a large trout")
@@ -371,7 +371,7 @@ struct ThreadData
 	char  server[128];
 	char  manualHost[128];
 	TCHAR resource[128];
-	TCHAR fullJID[256];
+	TCHAR fullJID[JABBER_MAX_JID_LEN];
 	WORD  port;
 	TCHAR newPassword[512];
 
@@ -452,7 +452,7 @@ struct filetransfer
 struct JABBER_SEARCH_RESULT
 {
 	PROTOSEARCHRESULT hdr;
-	TCHAR jid[256];
+	TCHAR jid[JABBER_MAX_JID_LEN];
 };
 
 struct JABBER_GCLOG_FONT
