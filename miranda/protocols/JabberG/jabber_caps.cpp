@@ -73,7 +73,7 @@ const JabberFeatCapPair g_JabberFeatCapPairs[] = {
 	{	_T(JABBER_FEAT_MIRANDA_NOTES),        JABBER_CAPS_MIRANDA_NOTES,        _T("Supports Miranda IM notes extension"), },
 	{	_T(JABBER_FEAT_JINGLE),               JABBER_CAPS_JINGLE,               _T("Supports Jingle"), },
 	{	_T(JABBER_FEAT_ROSTER_EXCHANGE),      JABBER_CAPS_ROSTER_EXCHANGE,      _T("Supports Roster Exchange"), },
-	{	_T(JABBER_FEAT_GTALK_PMUC),           JABBER_CAPS_GTALK_PMUC,           _T("Supports private multi-user chat"), },
+	{	_T(JABBER_FEAT_GTALK_PMUC),           JABBER_CAPS_GTALK_PMUC,           _T("Supports GTalk private multi-user chat"), },
 	{	NULL,                                 0,                                NULL}
 };
 
@@ -219,7 +219,7 @@ JabberCapsBits CJabberProto::GetTotalJidCapabilites( const TCHAR *jid )
 
 JabberCapsBits CJabberProto::GetResourceCapabilites( const TCHAR *jid, BOOL appendBestResource )
 {
-	TCHAR fullJid[ 512 ];
+	TCHAR fullJid[ JABBER_MAX_JID_LEN ];
 	if ( appendBestResource )
 		GetClientJID( jid, fullJid, SIZEOF( fullJid ));
 	else

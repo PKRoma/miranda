@@ -543,7 +543,7 @@ void CJabberDlgGcJoin::OnInitDialog()
 	int i = 0;
 	for ( ; i < 5; ++i)
 	{
-		TCHAR jid[256];
+		TCHAR jid[JABBER_MAX_JID_LEN];
 		JabberGcRecentInfo info( m_proto );
 		if (info.loadRecent(i))
 		{

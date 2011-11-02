@@ -1120,7 +1120,7 @@ int CJabberProto::OnProcessSrmmEvent( WPARAM, LPARAM lParam )
 			JFreeVariant( &dbv );
 		}
 		if ( bSupportTyping && !JGetStringT( event->hContact, "jid", &dbv )) {
-			TCHAR jid[ 256 ];
+			TCHAR jid[ JABBER_MAX_JID_LEN ];
 			GetClientJID( dbv.ptszVal, jid, SIZEOF( jid ));
 			JFreeVariant( &dbv );
 

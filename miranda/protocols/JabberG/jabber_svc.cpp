@@ -171,7 +171,7 @@ INT_PTR __cdecl CJabberProto::JabberGetAvatarInfo( WPARAM wParam, LPARAM lParam 
 			if ( item != NULL ) {
 				BOOL isXVcard = JGetByte( AI->hContact, "AvatarXVcard", 0 );
 
-				TCHAR szJid[ 512 ];
+				TCHAR szJid[ JABBER_MAX_JID_LEN ];
 				if ( item->resourceCount != NULL && !isXVcard ) {
 					TCHAR *bestResName = ListGetBestClientResourceNamePtr(dbv.ptszVal);
 					mir_sntprintf( szJid, SIZEOF( szJid ), bestResName?_T("%s/%s"):_T("%s"), dbv.ptszVal, bestResName );
@@ -617,7 +617,7 @@ INT_PTR __cdecl CJabberProto::JabberSendNudge( WPARAM wParam, LPARAM )
 	HANDLE hContact = ( HANDLE )wParam;
 	DBVARIANT dbv;
 	if ( !JGetStringT( hContact, "jid", &dbv )) {
-		TCHAR tszJid[ 512 ];
+		TCHAR tszJid[ JABBER_MAX_JID_LEN ];
 		TCHAR *szResource = ListGetBestClientResourceNamePtr( dbv.ptszVal );
 		if ( szResource )
 			mir_sntprintf( tszJid, SIZEOF(tszJid), _T("%s/%s"), dbv.ptszVal, szResource );

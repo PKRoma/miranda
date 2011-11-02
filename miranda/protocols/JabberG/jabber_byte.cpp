@@ -435,7 +435,7 @@ void CJabberProto::IqResultStreamActivate( HXML iqNode )
 {
 	int id = JabberGetPacketID( iqNode );
 
-	TCHAR listJid[256];
+	TCHAR listJid[JABBER_MAX_JID_LEN];
 	mir_sntprintf(listJid, SIZEOF( listJid ), _T("ftproxy_%d"), id);
 
 	JABBER_LIST_ITEM *item = ListGetItemPtr( LIST_FTIQID, listJid );
@@ -737,7 +737,7 @@ int CJabberProto::ByteReceiveParse( HANDLE hConn, JABBER_BYTE_TRANSFER *jbt, cha
 			*(( DWORD* )data ) = 0x03000105;
 			data[4] = 40;
 
-			TCHAR text[256];
+			TCHAR text[JABBER_MAX_JID_LEN*2];
 			TCHAR *szInitiatorJid = JabberPrepareJid(jbt->srcJID);
 			TCHAR *szTargetJid = JabberPrepareJid(jbt->dstJID);
 			mir_sntprintf( text, SIZEOF( text ), _T("%s%s%s"), jbt->sid, szInitiatorJid, szTargetJid );

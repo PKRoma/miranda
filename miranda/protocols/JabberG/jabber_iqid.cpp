@@ -63,6 +63,12 @@ void CJabberProto::OnIqResultServerDiscoInfo( HXML iqNode )
 				!_tcscmp( identityType, _T("im")) && 
 				!_tcscmp( identityName, _T("Google Talk"))) {
 					m_ThreadInfo->jabberServerCaps |= JABBER_CAPS_PING;
+					m_bGoogleTalk = true;
+
+					// Google Shared Status
+					m_ThreadInfo->send(
+						XmlNodeIq(m_iqManager.AddHandler(&CJabberProto::OnIqResultGoogleSharedStatus, JABBER_IQ_TYPE_GET))
+							<< XQUERY(_T(JABBER_FEAT_GTALK_SHARED_STATUS)) << XATTR(_T("version"), _T("2")));
 			}
 		}
 		if ( m_ThreadInfo ) {
@@ -183,7 +189,7 @@ void CJabberProto::OnLoggedIn()
 				<< XQUERY( _T(JABBER_FEAT_PRIVATE_STORAGE))
 				<< XCHILDNS( _T("storage"), _T(JABBER_FEAT_MIRANDA_NOTES)));
 	}
-
+	
 	int iqId = SerialNext();
 	IqAdd( iqId, IQ_PROC_DISCOBOOKMARKS, &CJabberProto::OnIqResultDiscoBookmarks);
 	m_ThreadInfo->send(
@@ -1443,8 +1449,8 @@ void CJabberProto::OnIqResultGetClientAvatar( HXML iqNode )
 	}
 
 	if ( n == NULL ) {
-		TCHAR szJid[ 512 ];
-		lstrcpyn(szJid, from, 512);
+		TCHAR szJid[ JABBER_MAX_JID_LEN ];
+		lstrcpyn(szJid, from, SIZEOF(szJid));
 		TCHAR *res = _tcschr(szJid, _T('/'));
 		if ( res != NULL )
 			*res = 0;
@@ -1491,8 +1497,8 @@ void CJabberProto::OnIqResultGetServerAvatar( HXML iqNode )
 	}
 
 	if ( n == NULL ) {
-		TCHAR szJid[ 512 ];
-		lstrcpyn(szJid, from, 512);
+		TCHAR szJid[ JABBER_MAX_JID_LEN ];
+		lstrcpyn(szJid, from, SIZEOF(szJid));
 		TCHAR *res = _tcschr(szJid, _T('/'));
 		if ( res != NULL )
 			*res = 0;
