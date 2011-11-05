@@ -235,6 +235,8 @@ void CAimProto::snac_user_online(SNAC &snac)//family 0x0003
 		bool caps_included = false;
 		unsigned long status_type = 0;	// 0 = online
 
+		char *hash_sm = NULL, *hash_lg = NULL;
+
 		unsigned char sn_len = snac.ubyte();
 		char* sn = snac.part(1, sn_len);
 		HANDLE hContact = contact_from_sn(sn, true);
@@ -513,36 +515,50 @@ void CAimProto::snac_user_online(SNAC &snac)//family 0x0003
 
 				//	setByte(hContact, AIM_KEY_US, utf8);
 			}
-			else if (tlv.cmp(0x001d))//avatar
+			else if (tlv.cmp(0x001d)) //bart
 			{
 				if (hContact)
 				{
-					for(int i = 0; i < tlv.len(); i += (4 + tlv.ubyte(i + 3)))
+					bool msg_exist = false;
+					for (int i = 0; i < tlv.len(); )
 					{
+						// Bart header
 						unsigned short type = tlv.ushort(i);
-						if (type == 0x0001)
+						unsigned char flags = tlv.ubyte(i + 2);
+						unsigned char datalen = tlv.ubyte(i + 3);
+
+						switch (type)
 						{
-							int hash_size = tlv.ubyte(i+3);
-							char* hash = tlv.part(i+4, hash_size);
-							avatar_request_handler(hContact, hash, hash_size);
-							mir_free(hash);
-						}
-						else if (type == 0x0002)
-						{
-							if ((tlv.ubyte(i+2) & 4) && tlv.ubyte(i+3) && tlv.ubyte(i+5))
+						case 0x0001:
+							hash_sm = bytes_to_string(tlv.val() + i + 4, datalen);
+							break;
+
+						case 0x000c:
+							hash_lg = bytes_to_string(tlv.val() + i + 4, datalen);
+							break;
+
+						case 0x0002:
+							if ((flags & 4) && datalen > 2)
 							{
-								unsigned char len = tlv.ubyte(i+5);
-								char* msg = tlv.part(i+6,len);
-								char* msg_s = process_status_msg(msg, sn);
-								DBWriteContactSettingStringUtf(hContact, MOD_KEY_CL, OTH_KEY_SM, msg_s);
-								sendBroadcast(hContact, ACKTYPE_AWAYMSG, ACKRESULT_SUCCESS, NULL, (LPARAM)msg);
-								mir_free(msg);
-								mir_free(msg_s);
+								unsigned short len = tlv.ushort(i + 4);
+								if (len)
+								{
+									msg_exist = true;
+									char* msg = tlv.part(i + 6, len);
+									char* msg_s = process_status_msg(msg, sn);
+									DBWriteContactSettingStringUtf(hContact, MOD_KEY_CL, OTH_KEY_SM, msg_s);
+									sendBroadcast(hContact, ACKTYPE_AWAYMSG, ACKRESULT_SUCCESS, NULL, (LPARAM)msg);
+									mir_free(msg);
+									mir_free(msg_s);
+								}
 							}
-							else
-								DBDeleteContactSetting(hContact, MOD_KEY_CL, OTH_KEY_SM);
+							break;
 						}
+						i += 4 + datalen;
 					}
+
+					if (!msg_exist)
+						DBDeleteContactSetting(hContact, MOD_KEY_CL, OTH_KEY_SM);
 				}
 			}
 			else if(tlv.cmp(0x0004))//idle tlv
@@ -578,6 +594,11 @@ void CAimProto::snac_user_online(SNAC &snac)//family 0x0003
 		else
 			setWord(hContact, AIM_KEY_ST, ID_STATUS_ONLINE);
 
+		if (hash_lg)
+			avatar_request_handler(hContact, hash_lg, 12);
+		else
+			avatar_request_handler(hContact, hash_sm, 1);
+
 		if (bot_user)
 			setByte(hContact, AIM_KEY_ET, EXTENDED_STATUS_BOT);
 		else if (hiptop_user)
@@ -587,9 +608,15 @@ void CAimProto::snac_user_online(SNAC &snac)//family 0x0003
 
 		if (caps_included || client[0])
 			setString(hContact, AIM_KEY_MV, client[0] ? client : "?");
+		else if (atoi(sn))
+			setString(hContact, AIM_KEY_MV, CLIENT_ICQ);
+		else if (getBool(hContact, AIM_KEY_BLS, false))
+			setString(hContact, AIM_KEY_MV, CLIENT_BLAST);
 		else
 			setString(hContact, AIM_KEY_MV, CLIENT_AIMEXPRESS7);
-			
+
+		mir_free(hash_lg);
+		mir_free(hash_sm);
 		mir_free(sn);
 	}
 }
@@ -621,6 +648,7 @@ void CAimProto::process_ssi_list(SNAC &snac, int &offset)
 	unsigned short item_id = snac.ushort(offset+4+name_length);
 	unsigned short type = snac.ushort(offset+6+name_length);
 	unsigned short tlv_size = snac.ushort(offset+8+name_length);
+	const int tlv_base = offset + name_length + 10; 
 
 	switch (type)
 	{
@@ -677,7 +705,6 @@ void CAimProto::process_ssi_list(SNAC &snac, int &offset)
 				setWord(hContact, AIM_KEY_ST, ID_STATUS_OFFLINE);
 
 				bool nickfound = false;
-				const int tlv_base = offset + name_length + 10; 
 				for (int tlv_offset = 0; tlv_offset < tlv_size; )
 				{
 					TLV tlv(snac.val(tlv_base + tlv_offset));
@@ -691,6 +718,8 @@ void CAimProto::process_ssi_list(SNAC &snac, int &offset)
 					}
 					else if (tlv.cmp(0x7b))
 						setByte(hContact, AIM_KEY_BLS, 1);
+					else if (tlv.cmp(0x6a))
+						setByte(hContact, AIM_KEY_NIL, 1);
 
 					tlv_offset += TLV_HEADER_SIZE + tlv.len();
 				}
@@ -722,7 +751,6 @@ void CAimProto::process_ssi_list(SNAC &snac, int &offset)
 			{
 				pd_info_id = item_id;
 
-				const int tlv_base = offset + name_length + 10; 
 				for (int tlv_offset = 0; tlv_offset < tlv_size; )
 				{
 					TLV tlv(snac.val(tlv_base + tlv_offset));
@@ -742,7 +770,6 @@ void CAimProto::process_ssi_list(SNAC &snac, int &offset)
 			{
 				pref1_id = item_id;
 
-				const int tlv_base = offset + name_length + 10; 
 				for (int tlv_offset = 0; tlv_offset < tlv_size; )
 				{
 					TLV tlv(snac.val(tlv_base + tlv_offset));
@@ -770,23 +797,50 @@ void CAimProto::process_ssi_list(SNAC &snac, int &offset)
 			break;
 
 		case 0x0014: //avatar record
-			if (group_id == 0 && name_length == 1 && name[0] == '1')
-				avatar_id = item_id;
-			break;
-
-		case 0x001D: // Vanity information
-			if (group_id == 0)
+			if (!_strcmps(name, "1") || !_strcmps(name, "12"))
 			{
-				const int tlv_base = offset + name_length + 10;
+				if (name_length == 1)
+					avatar_id_sm = item_id;
+				else
+					avatar_id_lg = item_id;
 
 				for (int tlv_offset = 0; tlv_offset < tlv_size; )
 				{
 					TLV tlv(snac.val( tlv_base + tlv_offset));
 
+					if (tlv.cmp(0x00d5) && tlv.len() > 2)
+					{
+						unsigned char type = tlv.ubyte(0);
+						if (name_length == 1)
+						{
+							mir_free(hash_sm);
+							hash_sm = bytes_to_string(tlv.val() + 2, tlv.ubyte(1));
+						}
+						else
+						{
+							mir_free(hash_lg);
+							hash_lg = bytes_to_string(tlv.val() + 2, tlv.ubyte(1));
+						}
+					}
+
+					tlv_offset += TLV_HEADER_SIZE + tlv.len();
+				}
+				if (list_received)
+					avatar_request_handler(NULL, NULL, 0);
+			}
+			break;
+
+		case 0x001D: // Vanity information
+			if (group_id == 0)
+			{
+				for (int tlv_offset = 0; tlv_offset < tlv_size; )
+				{
+					TLV tlv(snac.val(tlv_base + tlv_offset));
+
 					if (tlv.cmp(0x0150))		// Number of IMs sent
 						setDword(AIM_KEY_TIS, tlv.ulong());
 					else if (tlv.cmp(0x0151))	// Number of seconds a user is online
-						setDword(AIM_KEY_OT, tlv.ulong());
+						setDword(AIM_KEY_TTO, tlv.ulong());
 					else if (tlv.cmp(0x0152))	// Number of times a user has the away message set
 						setDword(AIM_KEY_TAM, tlv.ulong());
 					else if (tlv.cmp(0x0153))	// Number of IMs received
@@ -798,8 +852,9 @@ void CAimProto::process_ssi_list(SNAC &snac, int &offset)
 			break;
 	}
 
-	offset += name_length + 10 + tlv_size;
 	mir_free(name);
+
+	offset = tlv_base + tlv_size;
 }
 
 void CAimProto::modify_ssi_list(SNAC &snac, int &offset)
@@ -810,15 +865,15 @@ void CAimProto::modify_ssi_list(SNAC &snac, int &offset)
 	unsigned short item_id = snac.ushort(offset+4+name_length);
 	unsigned short type = snac.ushort(offset+6+name_length);
 	unsigned short tlv_size = snac.ushort(offset+8+name_length);
+	const int tlv_base = offset + name_length + 10; 
 
 	switch (type)
 	{
-		case 0x0000: //buddy record
+	case 0x0000: //buddy record
 		{
 			HANDLE hContact = contact_from_sn(name, true);
 			if (hContact)
 			{
-				const int tlv_base = offset + name_length + 10; 
 				for (int tlv_offset = 0; tlv_offset < tlv_size; )
 				{
 					TLV tlv(snac.val(tlv_base + tlv_offset));
@@ -839,65 +894,144 @@ void CAimProto::modify_ssi_list(SNAC &snac, int &offset)
 			break;
 		}
 
-		case 0x0004: //privacy record
-			if (group_id == 0)
+	case 0x0004: //privacy record
+		if (group_id == 0)
+		{
+			pd_info_id = item_id;
+
+			for (int tlv_offset = 0; tlv_offset < tlv_size; )
 			{
-				pd_info_id = item_id;
+				TLV tlv(snac.val(tlv_base + tlv_offset));
 
-				const int tlv_base = offset + name_length + 10; 
-				for (int tlv_offset = 0; tlv_offset < tlv_size; )
-				{
-					TLV tlv(snac.val(tlv_base + tlv_offset));
+				if(tlv.cmp(0x00ca))
+					pd_mode = tlv.ubyte();
+				else if(tlv.cmp(0x00cc))
+					pd_flags = tlv.ulong();
 
-					if(tlv.cmp(0x00ca))
-						pd_mode = tlv.ubyte();
-					else if(tlv.cmp(0x00cc))
-						pd_flags = tlv.ulong();
-
-					tlv_offset += TLV_HEADER_SIZE + tlv.len();
-				}
+				tlv_offset += TLV_HEADER_SIZE + tlv.len();
 			}
-			break;
+		}
+		break;
 
-		case 0x0005: //prefernces record
-			if (group_id == 0)
+	case 0x0005: //prefernces record
+		if (group_id == 0)
+		{
+			pref1_id = item_id;
+
+			for (int tlv_offset = 0; tlv_offset < tlv_size; )
 			{
-				pref1_id = item_id;
+				TLV tlv(snac.val(tlv_base + tlv_offset));
 
-				const int tlv_base = offset + name_length + 10; 
-				for (int tlv_offset = 0; tlv_offset < tlv_size; )
+				if (tlv.cmp(0x00c9))
+					pref1_flags = tlv.ulong();
+				else if (tlv.cmp(0x00d6))
+					pref1_set_flags = tlv.ulong();
+				else if (tlv.cmp(0x00d7))
 				{
-					TLV tlv(snac.val(tlv_base + tlv_offset));
-
-					if (tlv.cmp(0x00c9))
-						pref1_flags = tlv.ulong();
-					else if (tlv.cmp(0x00d6))
-						pref1_set_flags = tlv.ulong();
-					else if (tlv.cmp(0x00d7))
-					{
-						mir_free(pref2_flags);
-						pref2_flags = tlv.dup();
-						pref2_len = tlv.len();
-					}
-					else if (tlv.cmp(0x00d8))
-					{
-						mir_free(pref2_set_flags);
-						pref2_set_flags = tlv.dup();
-						pref2_set_len = tlv.len();
-					}
-
-					tlv_offset += TLV_HEADER_SIZE + tlv.len();
+					mir_free(pref2_flags);
+					pref2_flags = tlv.dup();
+					pref2_len = tlv.len();
 				}
-			}
-			break;
+				else if (tlv.cmp(0x00d8))
+				{
+					mir_free(pref2_set_flags);
+					pref2_set_flags = tlv.dup();
+					pref2_set_len = tlv.len();
+				}
 
-		case 0x0014: //avatar record
-			if (group_id == 0 && name_length == 1 && name[0] == '1')
-				avatar_id = item_id;
-			break;
+				tlv_offset += TLV_HEADER_SIZE + tlv.len();
+			}
+		}
+		break;
+
+	case 0x0014: //avatar record
+		if (!_strcmps(name, "1") || !_strcmps(name, "12"))
+		{
+			if (name_length == 1)
+				avatar_id_sm = item_id;
+			else
+				avatar_id_lg = item_id;
+
+			for (int tlv_offset = 0; tlv_offset < tlv_size; )
+			{
+				TLV tlv(snac.val( tlv_base + tlv_offset));
+
+				if (tlv.cmp(0x00d5) && tlv.len() > 2)
+				{
+					unsigned char type = tlv.ubyte(0);
+					if (name_length == 1)
+					{
+						mir_free(hash_sm);
+						hash_sm = bytes_to_string(tlv.val() + 2, tlv.ubyte(1));
+					}
+					else
+					{
+						mir_free(hash_lg);
+						hash_lg = bytes_to_string(tlv.val() + 2, tlv.ubyte(1));
+					}
+				}
+				tlv_offset += TLV_HEADER_SIZE + tlv.len();
+			}
+			avatar_request_handler(NULL, NULL, 0);
+		}
+		break;
 	}
 
 	mir_free(name);
+}
+
+void CAimProto::delete_ssi_list(SNAC &snac, int &offset)
+{
+	int i;
+
+	unsigned short name_length=snac.ushort(offset);
+	char* name=snac.part(offset+2,name_length);
+	unsigned short group_id=snac.ushort(offset+2+name_length);
+	unsigned short item_id=snac.ushort(offset+4+name_length);
+	unsigned short type=snac.ushort(offset+6+name_length);
+
+	HANDLE hContact = contact_from_sn(name);
+
+	switch (type)
+	{
+	case 0x0000: //buddy record
+		for(i=1;;++i)
+		{
+			unsigned short item_id_st = getBuddyId(hContact, i);
+			if (item_id_st == 0) break;
+
+			if (item_id == item_id_st)
+			{
+				deleteBuddyId(hContact, i);
+				deleteGroupId(hContact, i);
+				--i;
+			}
+		}
+		if (i == 1)
+			CallService(MS_DB_CONTACT_DELETE, (WPARAM)hContact, 0);
+		break;
+
+	case 0x0001: //group record
+		group_list.remove_by_id(group_id);
+		break;
+
+	case 0x0014: //avatar record
+		if (_strcmps(name, "1"))
+		{
+			avatar_id_sm = 0;
+			mir_free(hash_sm);
+			hash_sm = NULL;
+		}
+		else if (!_strcmps(name, "12"))
+		{
+			avatar_id_lg = 0;
+			mir_free(hash_lg);
+			hash_lg = NULL;
+		}
+		avatar_request_handler(NULL, NULL, 0);
+		break;
+	}
+	mir_free(name) ;
 }
 
 void CAimProto::snac_contact_list(SNAC &snac,HANDLE hServerConn,unsigned short &seqno)//family 0x0013
@@ -934,8 +1068,10 @@ void CAimProto::snac_contact_list(SNAC &snac,HANDLE hServerConn,unsigned short &
 				setDword(AIM_KEY_LV, __VERSION_DWORD);
 			}
 
-			if (getByte( AIM_KEY_CM, 0))
+			if (getByte(AIM_KEY_CM, 0))
 				aim_new_service_request(hServerConn, seqno, 0x0018);//mail
+
+			avatar_request_handler(NULL, NULL, 0);
 
 			LOG("Connection Negotiation Finished");
 			state = 1;
@@ -953,42 +1089,11 @@ void CAimProto::snac_contact_list(SNAC &snac,HANDLE hServerConn,unsigned short &
 	}
 	else if (snac.subcmp(0x000a)) // delete buddy
 	{
-		int offset=8, i;
-		unsigned short name_length=snac.ushort(offset);
-		char* name=snac.part(offset+2,name_length);
-		unsigned short group_id=snac.ushort(offset+2+name_length);
-		unsigned short item_id=snac.ushort(offset+4+name_length);
-		unsigned short type=snac.ushort(offset+6+name_length);
-
-		HANDLE hContact = contact_from_sn(name);
-
-		switch (type)
-		{
-		case 0x0000: //buddy record
-			for(i=1;;++i)
-			{
-				unsigned short item_id_st = getBuddyId(hContact, i);
-				if (item_id_st == 0) break;
-
-				if (item_id == item_id_st)
-				{
-					deleteBuddyId(hContact, i);
-					deleteGroupId(hContact, i);
-					--i;
-				}
-			}
-			if (i == 1)
-				CallService(MS_DB_CONTACT_DELETE, (WPARAM)hContact, 0);
-			break;
-
-		case 0x0001: //group record
-			group_list.remove_by_id(group_id);
-			break;
-		}
-		mir_free(name) ;
+		int offset=8;
+		delete_ssi_list(snac, offset);
 	}
-
 }
+
 void CAimProto::snac_message_accepted(SNAC &snac)//family 0x004
 {
 	if (snac.subcmp(0x000c))

@@ -119,7 +119,7 @@ struct CAimProto : public PROTO_INTERFACE
 	int  __cdecl OnOptionsInit(WPARAM wParam,LPARAM lParam);
 	int  __cdecl OnPreBuildContactMenu(WPARAM wParam,LPARAM lParam);
 //    int  __cdecl OnPreShutdown(WPARAM wParam,LPARAM lParam);
-	int  __cdecl OnSettingChanged(WPARAM wParam,LPARAM lParam);
+	int  __cdecl OnDbSettingChanged(WPARAM wParam,LPARAM lParam);
 	int  __cdecl OnUserInfoInit(WPARAM wParam,LPARAM lParam);
 	int  __cdecl OnGCEvent(WPARAM wParam,LPARAM lParam);
 	int  __cdecl OnGCMenuHook(WPARAM wParam,LPARAM lParam);
@@ -178,7 +178,8 @@ struct CAimProto : public PROTO_INTERFACE
 	//avatar connection stuff
 	bool init_cst_fld_ran;
 	unsigned short avatar_seqno;
-	unsigned short avatar_id;
+	unsigned short avatar_id_sm;
+	unsigned short avatar_id_lg;
 	HANDLE hAvatarConn;
 	HANDLE hAvatarEvent;
 	HANDLE hAvatarsFolder;
@@ -224,12 +225,14 @@ struct CAimProto : public PROTO_INTERFACE
 	//////////////////////////////////////////////////////////////////////////////////////
 	// avatars.cpp
 
+	char *hash_sm, *hash_lg;
+
 	void   __cdecl avatar_request_thread( void* param );
 	void   __cdecl avatar_upload_thread( void* param );
 
-	void   avatar_request_handler(HANDLE hContact, char* hash, int hash_size);
+	void   avatar_request_handler(HANDLE hContact, char* hash, unsigned char type);
 	void   avatar_retrieval_handler(const char* sn, const char* hash, const char* data, int data_len);
-	void   get_avatar_filename(HANDLE hContact, char* pszDest, size_t cbLen, const char *ext);
+	int    get_avatar_filename(HANDLE hContact, char* pszDest, size_t cbLen, const char *ext);
 	void   init_custom_folders(void);
 
 	//////////////////////////////////////////////////////////////////////////////////////
@@ -287,7 +290,7 @@ struct CAimProto : public PROTO_INTERFACE
 	int    aim_chat_ready(HANDLE hServerConn,unsigned short &seqno);
 	int    aim_send_message(HANDLE hServerConn,unsigned short &seqno,const char* sn,char* amsg,bool auto_response, bool blast);
 	int    aim_query_profile(HANDLE hServerConn,unsigned short &seqno,char* sn);
-	int    aim_delete_contact(HANDLE hServerConn,unsigned short &seqno,char* sn,unsigned short item_id,unsigned short group_id,unsigned short list);
+	int    aim_delete_contact(HANDLE hServerConn,unsigned short &seqno,char* sn,unsigned short item_id,unsigned short group_id,unsigned short list, bool nil);
 	int    aim_add_contact(HANDLE hServerConn,unsigned short &seqno,const char* sn,unsigned short item_id,unsigned short group_id,unsigned short list,char* nick=NULL, char* note=NULL);
 	int    aim_mod_group(HANDLE hServerConn,unsigned short &seqno,const char* name,unsigned short group_id,char* members,unsigned short members_length);
 	int    aim_mod_buddy(HANDLE hServerConn,unsigned short &seqno,const char* sn,unsigned short buddy_id,unsigned short group_id,char* nick,char* note);
@@ -301,17 +304,18 @@ struct CAimProto : public PROTO_INTERFACE
 	int    aim_request_mail(HANDLE hServerConn,unsigned short &seqno);
 	int    aim_activate_mail(HANDLE hServerConn,unsigned short &seqno);
 	int    aim_request_avatar(HANDLE hServerConn,unsigned short &seqno,const char* sn, unsigned short bart_type, const char* hash, unsigned short hash_size);//family 0x0010
-	int    aim_set_avatar_hash(HANDLE hServerConn,unsigned short &seqno, char flags, unsigned short bart_type, char size, const char* hash);
+	int    aim_set_avatar_hash(HANDLE hServerConn,unsigned short &seqno, char flags, unsigned short bart_type, unsigned short &id, char size, const char* hash);
+	int    aim_delete_avatar_hash(HANDLE hServerConn,unsigned short &seqno, char flags, unsigned short bart_type, unsigned short &id);
 	int    aim_upload_avatar(HANDLE hServerConn,unsigned short &seqno, unsigned short bart_type, const char* avatar, unsigned short avatar_size);
 	int    aim_search_by_email(HANDLE hServerConn,unsigned short &seqno, const char* email);
 	int    aim_set_pd_info(HANDLE hServerConn, unsigned short &seqno);
 	int    aim_block_buddy(HANDLE hServerConn, unsigned short &seqno, bool remove, const char* sn, unsigned short item_id);
-	int	   aim_chatnav_request_limits(HANDLE hServerConn,unsigned short &seqno);
-	int	   aim_chatnav_create(HANDLE hServerConn,unsigned short &seqno, char* room, unsigned short exchage);
+	int    aim_chatnav_request_limits(HANDLE hServerConn,unsigned short &seqno);
+	int    aim_chatnav_create(HANDLE hServerConn,unsigned short &seqno, char* room, unsigned short exchage);
 	int    aim_chatnav_room_info(HANDLE hServerConn,unsigned short &seqno, char* chat_cookie, unsigned short exchange, unsigned short instance);  
-	int	   aim_chat_join_room(HANDLE hServerConn,unsigned short &seqno, char* chat_cookie, unsigned short exchange, unsigned short instance,unsigned short id);
-	int	   aim_chat_send_message(HANDLE hServerConn,unsigned short &seqno, char *amsg);
-	int	   aim_chat_invite(HANDLE hServerConn,unsigned short &seqno, char* chat_cookie, unsigned short exchange, unsigned short instance, char* sn, char* msg);
+	int    aim_chat_join_room(HANDLE hServerConn,unsigned short &seqno, char* chat_cookie, unsigned short exchange, unsigned short instance,unsigned short id);
+	int    aim_chat_send_message(HANDLE hServerConn,unsigned short &seqno, char *amsg);
+	int    aim_chat_invite(HANDLE hServerConn,unsigned short &seqno, char* chat_cookie, unsigned short exchange, unsigned short instance, char* sn, char* msg);
 	int    aim_chat_deny(HANDLE hServerConn,unsigned short &seqno,char* sn,char* icbm_cookie);
 	int    aim_admin_ready(HANDLE hServerConn,unsigned short &seqno);
 	int    aim_admin_format_name(HANDLE hServerConn,unsigned short &seqno, const char* sn);
@@ -411,6 +415,7 @@ struct CAimProto : public PROTO_INTERFACE
 
 	void process_ssi_list(SNAC &snac, int &offset);
 	void modify_ssi_list(SNAC &snac, int &offset);
+	void delete_ssi_list(SNAC &snac, int &offset);
 
 	//////////////////////////////////////////////////////////////////////////////////////
 	// themes.cpp
@@ -484,6 +489,7 @@ struct CAimProto : public PROTO_INTERFACE
 	WORD   getWord(const char* name, WORD defaultValue);
 	WORD   getWord(HANDLE hContact, const char* name, WORD defaultValue);
 	char*  getSetting(HANDLE hContact, const char* setting);
+	char*  getSetting(const char* setting);
 
 	void   setByte(const char* name, BYTE value);
 	void   setByte(HANDLE hContact, const char* name, BYTE value);

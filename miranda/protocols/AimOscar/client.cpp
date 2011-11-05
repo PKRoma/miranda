@@ -184,6 +184,24 @@ int CAimProto::aim_activate_list(HANDLE hServerConn,unsigned short &seqno)
 	return aim_sendflap(hServerConn,0x02,offset,buf,seqno);
 }
 
+/*
+0000   00 05 00 02 00 17 00 06 00 03 00 00 00 00 07 00  ................
+0010   01 00 00 08 00 01 01 00 0a 00 14 00 02 00 08 66  ...............f
+0020   61 63 65 62 6f 6f 6b 00 06 67 6f 6f 67 6c 65     acebook..google
+
+int CAimProto::aim_request_rights(HANDLE hServerConn,unsigned short &seqno)
+{
+	unsigned short offset=0;
+	char buf[SNAC_SIZE+50];
+	aim_writesnac(0x03,0x02,offset,buf);
+	aim_writetlvshort(0x05,0x17,offset,buf);
+	aim_writetlv(0x06,3,"\x0\x0",offset,buf);
+	aim_writetlvchar(0x07,0x01,offset,buf);
+	aim_writetlvshort(0x05,0x17,offset,buf);
+	aim_writetlvshort(0x05,0x17,offset,buf);
+	return aim_sendflap(hServerConn,0x02,offset,buf,seqno);
+}
+*/
 int CAimProto::aim_set_caps(HANDLE hServerConn,unsigned short &seqno)
 {
 	unsigned short offset=0;
@@ -201,7 +219,7 @@ int CAimProto::aim_set_caps(HANDLE hServerConn,unsigned short &seqno)
 	memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_BUDDY_ICON,AIM_CAPS_LENGTH);
 	memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_CHAT,AIM_CAPS_LENGTH);
 	memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_SUPPORT_ICQ,AIM_CAPS_LENGTH);
-	memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_ICQ_SERVER_RELAY,AIM_CAPS_LENGTH);
+//	memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_ICQ_SERVER_RELAY,AIM_CAPS_LENGTH);
 	memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_UTF8,AIM_CAPS_LENGTH);
 	memcpy(&temp[AIM_CAPS_LENGTH*i++],AIM_CAP_MIRANDA,AIM_CAPS_LENGTH);
 	if(getByte(AIM_KEY_HF, 0))
@@ -350,7 +368,7 @@ int CAimProto::aim_send_message(HANDLE hServerConn,unsigned short &seqno,const c
 	unsigned short sn_length=(unsigned short)strlen(sn);
 	char* buf= (char*)alloca(SNAC_SIZE+8+3+sn_length+TLV_HEADER_SIZE*3+tlv_offset);
 	
-	aim_writesnac(0x04,0x06,offset,buf);
+	aim_writesnac(0x04,0x06,offset,buf,get_random());
 	aim_writegeneric(8,icbm_cookie,offset,buf);                      // icbm cookie
 	aim_writeshort(0x01,offset,buf);                                 // channel
 	aim_writechar((unsigned char)sn_length,offset,buf);              // screen name len
@@ -384,7 +402,7 @@ int CAimProto::aim_query_profile(HANDLE hServerConn,unsigned short &seqno,char* 
 }
 
 int CAimProto::aim_delete_contact(HANDLE hServerConn, unsigned short &seqno, char* sn, unsigned short item_id,
-								  unsigned short group_id, unsigned short list)
+								  unsigned short group_id, unsigned short list, bool nil)
 {
 	unsigned short offset=0;
 	unsigned short sn_length=(unsigned short)strlen(sn);
@@ -395,7 +413,8 @@ int CAimProto::aim_delete_contact(HANDLE hServerConn, unsigned short &seqno, cha
 	aim_writeshort(group_id,offset,buf);                            // group id
 	aim_writeshort(item_id,offset,buf);                             // buddy id
 	aim_writeshort(list,offset,buf);                                // buddy type
-	aim_writeshort(0,offset,buf);                                   // length of extra data
+	aim_writeshort(nil?4:0,offset,buf);                             // length of extra data
+	if (nil) aim_writetlv(0x6a,0,NULL,offset,buf);
 	return aim_sendflap(hServerConn,0x02,offset,buf,seqno);
 }
 
@@ -699,7 +718,7 @@ int CAimProto::aim_request_avatar(HANDLE hServerConn,unsigned short &seqno, cons
 	return aim_sendflap(hServerConn,0x02,offset,buf,seqno);
 }
 
-int CAimProto::aim_set_avatar_hash(HANDLE hServerConn, unsigned short &seqno, char flags, unsigned short bart_type, char size, const char* hash)
+int CAimProto::aim_set_avatar_hash(HANDLE hServerConn, unsigned short &seqno, char flags, unsigned short bart_type, unsigned short &id, char size, const char* hash)
 {
 	unsigned short offset=0;
 	
@@ -707,21 +726,50 @@ int CAimProto::aim_set_avatar_hash(HANDLE hServerConn, unsigned short &seqno, ch
 	ultoa(bart_type, bart_type_txt, 10);
 	unsigned short bart_type_len = (unsigned short)strlen(bart_type_txt);
 
+	unsigned short req = 0x09;
+	if (id == 0)
+	{
+		id = get_random();
+		req = 0x08;
+	}
+
 	char* buf = (char*)alloca(SNAC_SIZE + TLV_HEADER_SIZE * 2 + 20 + size + bart_type_len);
-	aim_writesnac(0x13,0x09,offset,buf);                            // SSI Edit
+	aim_writesnac(0x13,req,offset,buf, get_random());               // SSI Edit/Add
 	aim_writeshort(bart_type_len,offset,buf);                       // name length
 	aim_writegeneric(bart_type_len,bart_type_txt,offset,buf);       // name 
 	aim_writeshort(0,offset,buf);                                   // group id
-	aim_writeshort(avatar_id,offset,buf);                           // buddy id
+	aim_writeshort(id,offset,buf);                                  // buddy id
 	aim_writeshort(0x14,offset,buf);                                // buddy type: Buddy Icon
-	aim_writeshort(size+10,offset,buf);                             // length of extra data
-	aim_writetlv(0x131,0,NULL,offset,buf);                          // buddy Display Name
+	aim_writeshort(2+size+TLV_HEADER_SIZE,offset,buf);              // length of extra data
 
 	char* buf2 = (char*)alloca(2+size);
 	buf2[0] = flags;
 	buf2[1] = (char)size;
 	memcpy(&buf2[2], hash, size);
 	aim_writetlv(0xd5, 2+size, buf2, offset, buf);                  // BART
+
+	return aim_sendflap(hServerConn,0x02,offset,buf,seqno);
+}
+
+int CAimProto::aim_delete_avatar_hash(HANDLE hServerConn, unsigned short &seqno, char flags, unsigned short bart_type, unsigned short & id)
+{
+	unsigned short offset=0;
+
+	if (id == 0) return -1;
+	id = 0;
+	
+	char bart_type_txt[8];
+	ultoa(bart_type, bart_type_txt, 10);
+	unsigned short bart_type_len = (unsigned short)strlen(bart_type_txt);
+
+	char* buf = (char*)alloca(SNAC_SIZE + 20 + bart_type_len);
+	aim_writesnac(0x13,0x0a,offset,buf, get_random());              // SSI Delete
+	aim_writeshort(bart_type_len,offset,buf);                       // name length
+	aim_writegeneric(bart_type_len,bart_type_txt,offset,buf);       // name 
+	aim_writeshort(0,offset,buf);                                   // group id
+	aim_writeshort(id,offset,buf);                                  // buddy id
+	aim_writeshort(0x14,offset,buf);                                // buddy type: Buddy Icon
+	aim_writeshort(0,offset,buf);                                   // length of extra data
 
 	return aim_sendflap(hServerConn,0x02,offset,buf,seqno);
 }

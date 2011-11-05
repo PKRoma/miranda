@@ -1092,7 +1092,7 @@ static INT_PTR CALLBACK privacy_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 				BdListItem& pd = ppro->block_list[i];
 				if (SendDlgItemMessageA(hwndDlg, IDC_BLOCKLIST, LB_FINDSTRING, (WPARAM)-1, (LPARAM)pd.name) == LB_ERR)
 				{
-					ppro->aim_delete_contact(ppro->hServerConn, ppro->seqno, pd.name, pd.item_id, 0, 3);
+					ppro->aim_delete_contact(ppro->hServerConn, ppro->seqno, pd.name, pd.item_id, 0, 3, false);
 					ppro->block_list.remove(i--);
 				}
 			}
@@ -1113,7 +1113,7 @@ static INT_PTR CALLBACK privacy_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 				BdListItem& pd = ppro->allow_list[i];
 				if (SendDlgItemMessageA(hwndDlg, IDC_ALLOWLIST, LB_FINDSTRING, (WPARAM)-1, (LPARAM)pd.name) == LB_ERR)
 				{
-					ppro->aim_delete_contact(ppro->hServerConn, ppro->seqno, pd.name, pd.item_id, 0, 2);
+					ppro->aim_delete_contact(ppro->hServerConn, ppro->seqno, pd.name, pd.item_id, 0, 2, false);
 					ppro->allow_list.remove(i--);
 				}
 			}

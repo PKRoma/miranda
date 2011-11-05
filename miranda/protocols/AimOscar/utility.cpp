@@ -35,26 +35,36 @@ void CAimProto::broadcast_status(int status)
 			aim_sendflap(hServerConn,0x04,0,NULL,seqno);
 			Netlib_Shutdown(hServerConn);
 		}
+
 		if (hDirectBoundPort)
 		{
 			Netlib_CloseHandle(hDirectBoundPort);
 			hDirectBoundPort=NULL;
 		}
+
 		if (hMailConn && hMailConn != (HANDLE)1)
 		{
 			aim_sendflap(hMailConn,0x04,0,NULL,mail_seqno);
 			Netlib_Shutdown(hMailConn);
 		}
+		else if (hMailConn == (HANDLE)1)
+			hMailConn = NULL;
+
 		if (hAvatarConn && hAvatarConn != (HANDLE)1)
 		{
 			aim_sendflap(hAvatarConn,0x04,0,NULL,avatar_seqno);
 			Netlib_Shutdown(hAvatarConn);
 		}
+		else if (hAvatarConn == (HANDLE)1)
+			hAvatarConn = NULL;
+
 		if (hChatNavConn && hChatNavConn != (HANDLE)1)
 		{
 			aim_sendflap(hChatNavConn,0x04,0,NULL,chatnav_seqno);
 			Netlib_Shutdown(hChatNavConn);
 		}
+		else if (hChatNavConn == (HANDLE)1)
+			hChatNavConn = NULL;
 
 		idle = false;
 		instantidle = false;
@@ -62,6 +72,19 @@ void CAimProto::broadcast_status(int status)
 		state = 0;
 		m_iDesiredStatus = ID_STATUS_OFFLINE;
 		mir_free(last_status_msg); last_status_msg = NULL;
+		
+		avatar_id_lg = 0;
+		avatar_id_sm = 0;
+		pd_flags = 0;
+		pd_info_id = 0;
+		pd_mode = 0;
+
+		seqno = 0;
+		mail_seqno = 0;
+		avatar_seqno = 0;
+		chatnav_seqno = 0;
+		admin_seqno = 0;
+
 	}
 	sendBroadcast(NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS, (HANDLE)old_status, m_iStatus);	
 }
@@ -93,7 +116,7 @@ void CAimProto::start_connection(void *arg)
 
 		bool use_ssl = !getByte(AIM_KEY_DSSL, 0);
 
-		char* login_url = getSetting(NULL, AIM_KEY_HN);
+		char* login_url = getSetting(AIM_KEY_HN);
 		if (login_url == NULL) login_url = mir_strdup(use_ssl ? AIM_DEFAULT_SERVER : AIM_DEFAULT_SERVER_NS);
 
 		hServerConn = aim_connect(login_url, get_default_port(), use_ssl, login_url);
@@ -291,9 +314,11 @@ void CAimProto::add_contact_to_group(HANDLE hContact, const char* new_group)
 
 	if (old_group_id && item_id)
 	{
+		bool is_not_in_list = getBool(hContact, AIM_KEY_NIL, false);
 		LOG("Removing buddy %s:%u %s:%u from the serverside list", dbv.pszVal, item_id, old_group, old_group_id);
-		aim_delete_contact(hServerConn, seqno, dbv.pszVal, item_id, old_group_id, 0);
+		aim_delete_contact(hServerConn, seqno, dbv.pszVal, item_id, old_group_id, 0, is_not_in_list);
 		update_server_group(old_group, old_group_id);
+		deleteSetting(hContact, AIM_KEY_NIL);
 	}
 
 	aim_ssi_update(hServerConn, seqno, false);
@@ -774,13 +799,15 @@ WORD CAimProto::getWord(HANDLE hContact, const char* name, WORD defaultValue)
 char* CAimProto::getSetting(HANDLE hContact, const char* setting)
 {
 	DBVARIANT dbv;
-	if (!DBGetContactSettingString(hContact, m_szModuleName, setting, &dbv))
-	{
-		char* store = mir_strdup(dbv.pszVal);
-		DBFreeVariant(&dbv);
-		return store;
-	}
-	return NULL;
+	return DBGetContactSettingString(hContact, m_szModuleName, setting, &dbv) ? 
+		NULL : dbv.pszVal;
+}
+
+char* CAimProto::getSetting(const char* setting)
+{
+	DBVARIANT dbv;
+	return DBGetContactSettingString(NULL, m_szModuleName, setting, &dbv) ? 
+		NULL : dbv.pszVal;
 }
 
 void CAimProto::setByte(const char* name, BYTE value)
