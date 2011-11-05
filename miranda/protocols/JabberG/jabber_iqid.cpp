@@ -81,7 +81,7 @@ void CJabberProto::OnIqResultServerDiscoInfo( HXML iqNode )
 							m_ThreadInfo->jabberServerCaps |= g_JabberFeatCapPairs[j].jcbCap;
 							break;
 		}	}	}	}	}
-	
+
 		OnProcessLoginRq( m_ThreadInfo, JABBER_LOGIN_SERVERINFO);
 }	}
 
@@ -189,7 +189,7 @@ void CJabberProto::OnLoggedIn()
 				<< XQUERY( _T(JABBER_FEAT_PRIVATE_STORAGE))
 				<< XCHILDNS( _T("storage"), _T(JABBER_FEAT_MIRANDA_NOTES)));
 	}
-	
+
 	int iqId = SerialNext();
 	IqAdd( iqId, IQ_PROC_DISCOBOOKMARKS, &CJabberProto::OnIqResultDiscoBookmarks);
 	m_ThreadInfo->send(
