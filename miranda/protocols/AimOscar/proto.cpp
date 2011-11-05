@@ -604,8 +604,8 @@ int __cdecl CAimProto::SendMsg(HANDLE hContact, int flags, const char* pszSrc)
 	if (state != 1) return 0;
 	if (pszSrc == NULL) return 0;
 
-	DBVARIANT dbv;
-	if (getString(hContact, AIM_KEY_SN, &dbv))  return 0;
+	char *sn = getSetting(hContact, AIM_KEY_SN);
+	if (sn == NULL) return 0;
 
 	char* msg;
 	if (flags & PREF_UNICODE) 
@@ -634,10 +634,10 @@ int __cdecl CAimProto::SendMsg(HANDLE hContact, int flags, const char* pszSrc)
 		msg = smsg;
 
 	bool blast = getBool(hContact, AIM_KEY_BLS, false);
-	int res = aim_send_message(hServerConn, seqno, dbv.pszVal, msg, false, blast);
+	int res = aim_send_message(hServerConn, seqno, sn, msg, false, blast);
 
 	mir_free(msg);
-	DBFreeVariant(&dbv);
+	mir_free(sn);
 	
 	if (!res || blast || 0 == getByte(AIM_KEY_DC, 1))
 	{

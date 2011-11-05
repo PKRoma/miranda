@@ -187,8 +187,9 @@ int CAimProto::OnContactDeleted(WPARAM wParam,LPARAM /*lParam*/)
 			unsigned short group_id = getGroupId(hContact, i);
 			if (group_id)
 			{
+				bool is_not_in_list = getBool(hContact, AIM_KEY_NIL, false);
 				aim_ssi_update(hServerConn, seqno, true);
-				aim_delete_contact(hServerConn, seqno, dbv.pszVal, item_id, group_id, 0);
+				aim_delete_contact(hServerConn, seqno, dbv.pszVal, item_id, group_id, 0, is_not_in_list);
 				char* group = group_list.find_name(group_id);
 				update_server_group(group, group_id);
 				aim_ssi_update(hServerConn, seqno, false);
@@ -215,7 +216,7 @@ int CAimProto::OnGroupChange(WPARAM wParam,LPARAM lParam)
 			unsigned short group_id = group_list.find_id(szOldName);
 			if (group_id)
 			{
-				aim_delete_contact(hServerConn, seqno, szOldName, 0, group_id, 1);
+				aim_delete_contact(hServerConn, seqno, szOldName, 0, group_id, 1, false);
 				group_list.remove_by_id(group_id);
 				update_server_group("", 0);
 			}
@@ -288,12 +289,12 @@ INT_PTR CAimProto::BlockBuddy(WPARAM wParam, LPARAM /*lParam*/)
 		if (item_id != 0)
 		{
 			block_list.remove_by_id(item_id);
-			aim_delete_contact(hServerConn, seqno, dbv.pszVal, item_id, 0, 3);
+			aim_delete_contact(hServerConn, seqno, dbv.pszVal, item_id, 0, 3, false);
 		}
 		else
 		{
 			item_id = block_list.add(dbv.pszVal);
-			aim_add_contact(hServerConn, seqno, dbv.pszVal, item_id, 0, 3);
+			aim_add_contact(hServerConn, seqno, dbv.pszVal, item_id, 0, 3, false);
 		}
 		break;
 
@@ -306,7 +307,7 @@ INT_PTR CAimProto::BlockBuddy(WPARAM wParam, LPARAM /*lParam*/)
 		if (item_id != 0)
 		{
 			allow_list.remove_by_id(item_id);
-			aim_delete_contact(hServerConn, seqno, dbv.pszVal, item_id, 0, 2);
+			aim_delete_contact(hServerConn, seqno, dbv.pszVal, item_id, 0, 2, false);
 		}
 		else
 		{
@@ -373,49 +374,32 @@ INT_PTR CAimProto::GetAvatarInfo(WPARAM wParam, LPARAM lParam)
 {
 	PROTO_AVATAR_INFORMATION* AI = (PROTO_AVATAR_INFORMATION*)lParam;
 	
-	INT_PTR res = GAIR_NOAVATAR;
 	AI->filename[0] = 0;
 	AI->format = PA_FORMAT_UNKNOWN;
 
-	if (getByte(AIM_KEY_DA, 0)) return res;
+	if (getByte(AIM_KEY_DA, 0)) return GAIR_NOAVATAR;
 
-	if (AI->hContact == NULL)
+	switch (get_avatar_filename(AI->hContact, AI->filename, sizeof(AI->filename), NULL))
 	{
-		get_avatar_filename(NULL, AI->filename, sizeof(AI->filename), NULL);
+	case GAIR_SUCCESS:
+		if (!(wParam & GAIF_FORCE) || state != 1 ) 
+			return GAIR_SUCCESS;
+
+	case GAIR_WAITFOR:
 		AI->format = detect_image_type(AI->filename);
-		return (AI->format ? GAIR_SUCCESS : GAIR_NOAVATAR);
+		break;
+
+	default:
+		return GAIR_NOAVATAR;
 	}
 
-	char* hash = getSetting(AI->hContact, AIM_KEY_AH);
-	if (hash)
+	if (state == 1)
 	{
-		get_avatar_filename(AI->hContact, AI->filename, sizeof(AI->filename), NULL);
-		char* hashs=getSetting(AI->hContact, AIM_KEY_ASH);
-		if (hashs && strcmp(hashs, hash) == 0)
-		{
-			AI->format = detect_image_type(AI->filename);
-			if (AI->format != PA_FORMAT_UNKNOWN) res = GAIR_SUCCESS;
-		}
-		mir_free(hashs);
-
-		if ((wParam & GAIF_FORCE) != 0 && res != GAIR_SUCCESS)
-		{
-			WORD wStatus = getWord(AI->hContact, AIM_KEY_ST, ID_STATUS_OFFLINE);
-			if (wStatus == ID_STATUS_OFFLINE) 
-			{
-				deleteSetting(AI->hContact, "AvatarHash");
-			}
-			else 
-			{
-				avatar_req_param *ar = new avatar_req_param(getSetting(AI->hContact, AIM_KEY_SN), mir_strdup(hash));
-				LOG("Starting avatar request thread for %s)", ar->sn);
-				ForkThread(&CAimProto::avatar_request_thread, ar);
-				res = GAIR_WAITFOR;
-			}
-		}
-		mir_free(hash);
+		ForkThread(&CAimProto::avatar_request_thread, AI->hContact);
+		return GAIR_WAITFOR;
 	}
-	return res;
+
+	return GAIR_NOAVATAR;
 }
 
 INT_PTR CAimProto::GetAvatarCaps(WPARAM wParam, LPARAM lParam)
@@ -425,12 +409,12 @@ INT_PTR CAimProto::GetAvatarCaps(WPARAM wParam, LPARAM lParam)
 	switch (wParam)
 	{
 	case AF_MAXSIZE:
-		((POINT*)lParam)->x = 64;
-		((POINT*)lParam)->y = 64;
+		((POINT*)lParam)->x = 100;
+		((POINT*)lParam)->y = 100;
 		break;
 
 	case AF_MAXFILESIZE:
-		res = 7168;
+		res = 11264;
 		break;
 
 	case AF_PROPORTION:
@@ -459,43 +443,89 @@ INT_PTR CAimProto::GetAvatar(WPARAM wParam, LPARAM lParam)
 	if (buf == NULL || size <= 0)
 		return -1;
 
-	get_avatar_filename(NULL, buf, size, NULL);
-	return _access(buf, 0);
+	PROTO_AVATAR_INFORMATION ai = { sizeof(ai) };
+	if (GetAvatarInfo(0, (LPARAM)&ai) == GAIR_SUCCESS)
+	{
+		strncpy(buf, ai.filename, size);
+		buf[size-1] = 0;
+		return 0;
+	}
+
+	return -1;
 }
 
 INT_PTR CAimProto::SetAvatar(WPARAM wParam, LPARAM lParam)
 {
 	char* szFileName = (char*)lParam;
 
-	char tFileName[MAX_PATH];
-	get_avatar_filename(NULL, tFileName, sizeof(tFileName), NULL);
-	remove(tFileName);
+	if (state != 1) return 1;
 
 	if (szFileName == NULL)
 	{
-		aim_set_avatar_hash(hServerConn, seqno, 0, 1, 5, "\x02\x01\xd2\x04\x72");
+		aim_ssi_update(hServerConn, seqno, true);
+		aim_delete_avatar_hash(hServerConn, seqno, 1, 1, avatar_id_sm);
+		aim_delete_avatar_hash(hServerConn, seqno, 1, 12, avatar_id_lg);
+		aim_ssi_update(hServerConn, seqno, false);
+
+		avatar_request_handler(NULL, NULL, 0);
 	}
 	else
 	{
-		char hash[16], *data;
-		unsigned short size;
-		if (!get_avatar_hash(szFileName, hash, &data, size))
-			return 1;
+		char hash[16], hash1[16], *data, *data1 = NULL;
+		unsigned short size, size1 = 0;
 
-		char* tFileName = (char*)mir_alloc(MAX_PATH);
+		if (!get_avatar_hash(szFileName, hash, &data, size))
+		{
+			mir_free(hash);
+			return 1;
+		}
+
+		rescale_image(data, size, data1, size1);
+
+		if (size1)
+		{
+			mir_md5_state_t state;
+			mir_md5_init(&state);
+			mir_md5_append(&state, (unsigned char*)data1, size1);
+			mir_md5_finish(&state, (unsigned char*)hash1);
+
+			mir_free(hash_lg); 	hash_lg = bytes_to_string(hash, sizeof(hash));
+			mir_free(hash_sm); 	hash_sm = bytes_to_string(hash1, sizeof(hash1));
+
+			aim_ssi_update(hServerConn, seqno, true);
+			aim_set_avatar_hash(hServerConn, seqno, 1, 1, avatar_id_sm, 16, hash1);
+			aim_set_avatar_hash(hServerConn, seqno, 1, 12, avatar_id_lg, 16, hash);
+			aim_ssi_update(hServerConn, seqno, false);
+		}
+		else
+		{
+			mir_free(hash_lg); 	hash_lg = NULL;
+			mir_free(hash_sm); 	hash_sm = bytes_to_string(hash, sizeof(hash1));
+
+			aim_ssi_update(hServerConn, seqno, true);
+			aim_set_avatar_hash(hServerConn, seqno, 1, 1, avatar_id_sm, 16, hash);
+			aim_delete_avatar_hash(hServerConn, seqno, 1, 12, avatar_id_lg);
+			aim_ssi_update(hServerConn, seqno, false);
+		}
+
+		avatar_request_handler(NULL, NULL, 0);
+
+		avatar_up_req *req = new avatar_up_req(data, size, data1, size1);
+		ForkThread(&CAimProto::avatar_upload_thread, req);
+
+		char tFileName[MAX_PATH];
 		char *ext = strrchr(szFileName, '.');
 		get_avatar_filename(NULL, tFileName, MAX_PATH, ext);
 		int fileId = _open(tFileName, _O_CREAT | _O_TRUNC | _O_WRONLY | O_BINARY, _S_IREAD | _S_IWRITE);
 		if (fileId < 0)
 		{
-//			ShowError("Cannot set avatar. File '%s' could not be created/overwritten", tFileName);
-			mir_free(tFileName);         
+			char errmsg[512];
+			mir_snprintf(errmsg, SIZEOF(errmsg), "Cannot store avatar. File '%s' could not be created/overwritten", tFileName);
+			ShowPopup(errmsg, ERROR_POPUP);
 			return 1; 
 		}
 		_write(fileId, data, size);
 		_close(fileId);
-	
-		ForkThread(&CAimProto::avatar_upload_thread, tFileName);
 	}
 	return 0;
 }

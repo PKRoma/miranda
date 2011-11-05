@@ -21,66 +21,77 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "m_folders.h"
 
-void __cdecl CAimProto::avatar_request_thread( void* param )
+void __cdecl CAimProto::avatar_request_thread(void* param)
 {
-	avatar_req_param* data = (avatar_req_param*)param;
+	HANDLE hContact = (HANDLE)param;
+
+	char *sn = getSetting(hContact, AIM_KEY_SN);
+	LOG("Starting avatar request thread for %s)", sn);
 
 	if (wait_conn(hAvatarConn, hAvatarEvent, 0x10))
 	{
-		size_t len = strlen(data->hash) / 2;
+		char *hash_str = getSetting(hContact, AIM_KEY_AH);
+		char type = getByte(hContact, AIM_KEY_AHT, 1);
+
+		size_t len = (strlen(hash_str) + 1) / 2;
 		char* hash = (char*)alloca(len);
-		string_to_bytes(data->hash, hash);
-		LOG("Requesting an Avatar: %s (Hash: %s)", data->sn, data->hash);
-		aim_request_avatar(hAvatarConn, avatar_seqno, data->sn, 1, hash, (unsigned short)len);
+		string_to_bytes(hash_str, hash);
+		LOG("Requesting an Avatar: %s (Hash: %s)", sn, hash_str);
+		aim_request_avatar(hAvatarConn, avatar_seqno, sn, type, hash, (unsigned short)len);
+
+		mir_free(hash_str);
 	}
-	delete data;
+
+	mir_free(sn);
 }
 
-void __cdecl CAimProto::avatar_upload_thread( void* param )
+void __cdecl CAimProto::avatar_upload_thread(void* param)
 {
-	char* file = (char*)param;
+	avatar_up_req* req = (avatar_up_req*)param;
 
 	if (wait_conn(hAvatarConn, hAvatarEvent, 0x10))
 	{
-		char hash[16], *data;
-		unsigned short size;
-		if (get_avatar_hash(file, hash, &data, size))
+		if (req->size2)
 		{
-			aim_set_avatar_hash(hServerConn, seqno, 1, 1, 16, (char*)hash);
-			aim_upload_avatar(hAvatarConn, avatar_seqno, 1, data, size);
-			mir_free(data);
+			aim_upload_avatar(hAvatarConn, avatar_seqno, 1, req->data2, req->size2);
+			aim_upload_avatar(hAvatarConn, avatar_seqno, 12, req->data1, req->size1);
 		}
+		else
+			aim_upload_avatar(hAvatarConn, avatar_seqno, 1, req->data1, req->size1);
 	}
-	mir_free(file);
+	delete req;
 }
 
-void CAimProto::avatar_request_handler(HANDLE hContact, char* hash, int hash_size)//checks to see if the avatar needs requested
+void CAimProto::avatar_request_handler(HANDLE hContact, char* hash, unsigned char type)//checks to see if the avatar needs requested
 {
-	char* hash_string = bytes_to_string(hash, hash_size);
-
-	if (hash_string[0] && strcmp(hash_string, "0201d20472"))//gaim default icon fix- we don't want their blank icon displaying.
+	if (hContact == NULL)
 	{
-		char* saved_hash = getSetting(hContact, AIM_KEY_ASH);
-		setString(hContact, AIM_KEY_AH, hash_string);
+		hash = hash_lg ? hash_lg : hash_sm;
+		type = hash_lg ? 12 : 1;
+	}
 
-		if (saved_hash == NULL || strcmp(saved_hash, hash_string))
-			sendBroadcast( hContact, ACKTYPE_AVATAR, ACKRESULT_STATUS, NULL, 0 );
-	
-		mir_free(saved_hash);
+	char* saved_hash = getSetting(hContact, AIM_KEY_AH);
+	if (hash && _stricmp(hash, "0201d20472") && _stricmp(hash, "2b00003341")) //gaim default icon fix- we don't want their blank icon displaying.
+	{
+		if (_strcmps(saved_hash, hash))
+		{
+			setByte(hContact, AIM_KEY_AHT, type);
+			setString(hContact, AIM_KEY_AH, hash);
+
+			sendBroadcast(hContact, ACKTYPE_AVATAR, ACKRESULT_STATUS, NULL, 0);
+		}
 	}
 	else
 	{
-		deleteSetting(hContact, AIM_KEY_AH);
-		deleteSetting(hContact, AIM_KEY_ASH);
+		if (saved_hash)
+		{
+			deleteSetting(hContact, AIM_KEY_AHT);
+			deleteSetting(hContact, AIM_KEY_AH);
 
-		char file[MAX_PATH];
-		get_avatar_filename(hContact, file, sizeof(file), NULL);
-		remove(file);
-
-		sendBroadcast(hContact, ACKTYPE_AVATAR, ACKRESULT_STATUS, NULL, 0);
+			sendBroadcast(hContact, ACKTYPE_AVATAR, ACKRESULT_STATUS, NULL, 0);
+		}
 	}
-
-	mir_free(hash_string);
+	mir_free(saved_hash);
 }
 
 void CAimProto::avatar_retrieval_handler(const char* sn, const char* hash, const char* data, int data_len)
@@ -89,15 +100,10 @@ void CAimProto::avatar_retrieval_handler(const char* sn, const char* hash, const
 	PROTO_AVATAR_INFORMATION AI = {0};
 	AI.cbSize = sizeof(AI);
 
-	char* norm_sn=normalize_name(sn);
-	AI.hContact=contact_from_sn(norm_sn);
+	AI.hContact = contact_from_sn(sn);
+	
 	if (data_len > 0)
 	{
-		setString(AI.hContact, AIM_KEY_ASH, hash);
-
-		get_avatar_filename(AI.hContact, AI.filename, sizeof(AI.filename), NULL);
-		remove(AI.filename);
-
 		const char *type; 
 		AI.format = detect_image_type(data, type);
 		get_avatar_filename(AI.hContact, AI.filename, sizeof(AI.filename), type);
@@ -107,16 +113,20 @@ void CAimProto::avatar_retrieval_handler(const char* sn, const char* hash, const
 		{
 			_write(fileId, data, data_len);
 			_close(fileId);
-			res=true;
+			res = true;
+
+			char *my_sn = getSetting(AIM_KEY_SN);
+			if (!_strcmps(sn, my_sn))
+				CallService(MS_AV_REPORTMYAVATARCHANGED, (WPARAM)m_szModuleName, 0);
+			mir_free(my_sn);
 		}
 //            else
 //			    ShowError("Cannot set avatar. File '%s' could not be created/overwritten", file);
 	}
 	else
-		LOG("AIM sent avatar of zero length for %s.(Usually caused by repeated request for the same icon)",norm_sn);
+		LOG("AIM sent avatar of zero length for %s.(Usually caused by repeated request for the same icon)", sn);
 
-	sendBroadcast( AI.hContact, ACKTYPE_AVATAR, res ? ACKRESULT_SUCCESS : ACKRESULT_FAILED, &AI, 0 );
-	mir_free(norm_sn);	
+	sendBroadcast(AI.hContact, ACKTYPE_AVATAR, res ? ACKRESULT_SUCCESS : ACKRESULT_FAILED, &AI, 0);
 }
 
 int detect_image_type(const char* stream, const char* &type_ret)
@@ -173,13 +183,14 @@ void CAimProto::init_custom_folders(void)
 	init_cst_fld_ran = true;
 }
 
-void  CAimProto::get_avatar_filename(HANDLE hContact, char* pszDest, size_t cbLen, const char *ext)
+int CAimProto::get_avatar_filename(HANDLE hContact, char* pszDest, size_t cbLen, const char *ext)
 {
 	size_t tPathLen;
+	bool found = false;
 
 	init_custom_folders();
 
-	char* path = (char*)alloca( cbLen );
+	char* path = (char*)alloca(cbLen);
 	if (hAvatarsFolder == NULL || FoldersGetCustomPath(hAvatarsFolder, path, (int)cbLen, ""))
 	{
 		char *tmpPath = Utils_ReplaceVars("%miranda_avatarcache%");
@@ -188,28 +199,24 @@ void  CAimProto::get_avatar_filename(HANDLE hContact, char* pszDest, size_t cbLe
 	}
 	else 
 	{
-		strcpy( pszDest, path );
-		tPathLen = strlen( pszDest );
+		strcpy(pszDest, path);
+		tPathLen = strlen(pszDest);
 	}
 
-	if (_access(pszDest, 0))
+	if (ext && _access(pszDest, 0))
 		CallService(MS_UTILS_CREATEDIRTREE, 0, (LPARAM)pszDest);
 
 	size_t tPathLen2 = tPathLen;
-	if (hContact != NULL) 
-	{
-		char* hash = getSetting(hContact, AIM_KEY_AH);
-		tPathLen += mir_snprintf(pszDest + tPathLen, cbLen - tPathLen, "\\%s", hash);
-		mir_free(hash);
-	}
-	else 
-		tPathLen += mir_snprintf(pszDest + tPathLen, cbLen - tPathLen, "\\%s avatar", m_szModuleName);
+	
+	char* hash = getSetting(hContact, AIM_KEY_AH);
+	if (hash == NULL) return GAIR_NOAVATAR;
+	tPathLen += mir_snprintf(pszDest + tPathLen, cbLen - tPathLen, "\\%s", hash);
+	mir_free(hash);
 
 	if (ext == NULL)
 	{
 		mir_snprintf(pszDest + tPathLen, cbLen - tPathLen, ".*");
 
-		bool found = false;
 		_finddata_t c_file;
 		long hFile = _findfirst(pszDest, &c_file);
 		if (hFile > -1L)
@@ -220,14 +227,19 @@ void  CAimProto::get_avatar_filename(HANDLE hContact, char* pszDest, size_t cbLe
 					mir_snprintf(pszDest + tPathLen2, cbLen - tPathLen2, "\\%s", c_file.name);
 					found = true;
 				}
-			} while(_findnext(hFile, &c_file) == 0);
+			} while (_findnext(hFile, &c_file) == 0);
 			_findclose( hFile );
 		}
 		
 		if (!found) pszDest[0] = 0;
 	}
 	else
+	{
 		mir_snprintf(pszDest + tPathLen, cbLen - tPathLen, ext);
+		found = _access(pszDest, 0) == 0;
+	}
+
+	return found ? GAIR_SUCCESS : GAIR_WAITFOR;
 }
 
 bool get_avatar_hash(const char* file, char* hash, char** data, unsigned short &size)
@@ -252,7 +264,6 @@ bool get_avatar_hash(const char* file, char* hash, char** data, unsigned short &
 		return false;
 	}
 
-
 	mir_md5_state_t state;
 	mir_md5_init(&state);
 	mir_md5_append(&state, (unsigned char*)pResult, lAvatar);
@@ -267,4 +278,34 @@ bool get_avatar_hash(const char* file, char* hash, char** data, unsigned short &
 		mir_free(pResult);
 
 	return true;
+}
+
+void rescale_image(char *data, unsigned short size, char *&data1, unsigned short &size1)
+{
+	FI_INTERFACE *fei = NULL;
+	CallService(MS_IMG_GETINTERFACE, FI_IF_VERSION, (LPARAM) &fei);
+	if (fei == NULL) return;
+
+    FIMEMORY *hmem = fei->FI_OpenMemory((BYTE *)data, size);
+    FREE_IMAGE_FORMAT fif = fei->FI_GetFileTypeFromMemory(hmem, 0);
+    FIBITMAP *dib = fei->FI_LoadFromMemory(fif, hmem, 0);
+    fei->FI_CloseMemory(hmem);
+
+	if (fei->FI_GetWidth(dib) > 64)
+	{
+		FIBITMAP *dib1 = fei->FI_Rescale(dib, 64, 64, FILTER_BSPLINE);
+
+		FIMEMORY *hmem = fei->FI_OpenMemory(NULL, 0);
+		fei->FI_SaveToMemory(fif, dib1, hmem, 0);
+
+		BYTE *data2; DWORD size2;
+		fei->FI_AcquireMemory(hmem, &data2, &size2);
+		data1 = (char*)mir_alloc(size2);
+		memcpy(data1, data2, size2);
+		size1 = size2;
+
+		fei->FI_CloseMemory(hmem);
+		fei->FI_Unload(dib1);
+	}
+	fei->FI_Unload(dib);
 }

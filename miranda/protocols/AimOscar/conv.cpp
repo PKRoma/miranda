@@ -77,7 +77,7 @@ char* process_status_msg (const char *str, const char* sn)
 }
 
 
-void  html_decode( char* str )
+void  html_decode(char* str)
 {
 	char *p, *q;
 //    char *rstr = (char*)mir_alloc(strlen(str)*2);
@@ -148,7 +148,7 @@ void  html_decode( char* str )
 }
 
 
-char* html_encode( const char* str )
+char* html_encode(const char* str)
 {
 	char* s, *q;
 	const char *p;
@@ -793,6 +793,8 @@ void wcs_htons(wchar_t * ch)
 
 char* bytes_to_string(char* bytes, int num_bytes)
 {
+	if (num_bytes == 0) return NULL;
+
 	char* string = (char*)mir_alloc(num_bytes*2+1);
 	for(int i=0;i<num_bytes;i++)
 	{

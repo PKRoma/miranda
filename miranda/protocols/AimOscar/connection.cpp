@@ -94,13 +94,9 @@ void CAimProto::aim_connection_authorization(void)
 	else
 		goto exit;
 
-	if (!getString(AIM_KEY_SN, &dbv))
-	{
-		mir_free(username);
-		username = mir_strdup(dbv.pszVal);
-		DBFreeVariant(&dbv);
-	}
-	else
+	mir_free(username);
+	username = getSetting(AIM_KEY_SN);
+	if (username == NULL)
 		goto exit;
 
 	hServerPacketRecver = (HANDLE)CallService(MS_NETLIB_CREATEPACKETRECVER, (WPARAM)hServerConn, 2048 * 4);

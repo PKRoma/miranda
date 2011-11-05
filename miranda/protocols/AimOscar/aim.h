@@ -67,6 +67,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 #include <m_icolib.h>
 #include <m_utils.h>
 #include <m_system_cpp.h>
+#include <m_imgsrvc.h>
 #include <win2k.h>
 
 //independent includes
@@ -167,13 +168,15 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 #define AIM_KEY_NL                  "NotOnList"
 #define AIM_KEY_LM                  "LastMessage"
 #define AIM_KEY_AH                  "AvatarHash"
-#define AIM_KEY_ASH                 "AvatarSavedHash"
+#define AIM_KEY_AHT                 "AvatarType"
 #define AIM_KEY_EM                  "e-mail"
 #define AIM_KEY_LV                  "LastVer"
 #define AIM_KEY_TIS		            "TotalIMsSent"
 #define AIM_KEY_TIR                 "TotalIMsReceived"
 #define AIM_KEY_TAM                 "TotalAwayMessages"
+#define AIM_KEY_TTO                 "TotalTimeOnline"
 #define AIM_KEY_BLS                 "IsBlast"
+#define AIM_KEY_NIL                 "IsNotInList"
 
 #define AIM_DEFAULT_SERVER          "slogin.oscar.aol.com"
 #define AIM_DEFAULT_SERVER_NS       "login.oscar.aol.com"
@@ -212,6 +215,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 #define CLIENT_AIMEXPRESS5 "AIM Express 5"
 #define CLIENT_AIMEXPRESS6 "AIM Express 6"
 #define CLIENT_AIMEXPRESS7 "AIM Express 7"
+#define CLIENT_ICQ "ICQ"
 #define CLIENT_AIM_TRITON "AIM Triton"
 #define CLIENT_AIM6_1 "AIM 6.1"
 #define CLIENT_AIM6_5 "AIM 6.5"
@@ -243,6 +247,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 #define CLIENT_TRILLIAN_PRO "Trillian Pro"
 #define CLIENT_TRILLIAN "Trillian"
 #define CLIENT_TRILLIAN_ASTRA "Trillian Astra"
+#define CLIENT_BLAST "Blast Group"
 
 //Aim Caps
 #define AIM_CAPS_LENGTH 16
