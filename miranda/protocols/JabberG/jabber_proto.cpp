@@ -697,7 +697,7 @@ int __cdecl CJabberProto::FileResume( HANDLE hTransfer, int* action, const TCHAR
 ////////////////////////////////////////////////////////////////////////////////////////
 // GetCaps - return protocol capabilities bits
 
-DWORD_PTR __cdecl CJabberProto::GetCaps( int type, HANDLE /*hContact*/ )
+DWORD_PTR __cdecl CJabberProto::GetCaps( int type, HANDLE hContact )
 {
 	switch( type ) {
 	case PFLAGNUM_1:
@@ -713,7 +713,16 @@ DWORD_PTR __cdecl CJabberProto::GetCaps( int type, HANDLE /*hContact*/ )
 	case PFLAG_UNIQUEIDSETTING:
 		return ( DWORD_PTR ) "jid";
 	case PFLAG_MAXCONTACTSPERPACKET:
-		return 50;
+		{
+			DBVARIANT dbv;
+			if(JGetStringT( hContact, "jid", &dbv ))
+				return 0;
+			TCHAR szClientJid[ JABBER_MAX_JID_LEN ];
+			GetClientJID( dbv.ptszVal, szClientJid, SIZEOF( szClientJid ));
+			JFreeVariant( &dbv );
+			JabberCapsBits jcb = GetResourceCapabilites( szClientJid, TRUE );
+			return (( ~jcb & JABBER_CAPS_ROSTER_EXCHANGE ) ? 0 : 50);
+		}
 	}
 	return 0;
 }
