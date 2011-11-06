@@ -411,7 +411,7 @@ ThreadData*  CMsnProto::MSN_GetThreadByContact(const char* wlid, TInfoType type)
 			if (T->mType != type || T->mJoinedContactsWLID == NULL || T->mInitialContactWLID != NULL || T->s == NULL)
 				continue;
 
-			if (_stricmp(T->mJoinedContactsWLID[0], szEmail) == 0)
+			if (_stricmp(T->mJoinedContactsWLID[0], szEmail) == 0 && T->mChatID[0] == 0)
 			{
 				result = T;
 				break;
