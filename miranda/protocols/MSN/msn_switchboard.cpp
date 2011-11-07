@@ -23,72 +23,29 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 int ThreadData::contactJoined(const char* email)
 {
-	for (int i=0; i < mJoinedCount; i++)
+	for (int i=0; i < mJoinedContactsWLID.getCount(); i++)
 		if (_stricmp(mJoinedContactsWLID[i], email) == 0)
-			return mJoinedCount;
+			return mJoinedContactsWLID.getCount();
 
 	if (strchr(email, ';'))
-	{
-		++mJoinedIdentCount;
-		mJoinedIdentContactsWLID = (char**)mir_realloc(mJoinedIdentContactsWLID, sizeof(char*) * mJoinedIdentCount);
-		mJoinedIdentContactsWLID[mJoinedIdentCount - 1] = mir_strdup(email);
-	}
+		mJoinedIdentContactsWLID.insertn(email);
 	else
-	{
-		++mJoinedCount;
-		mJoinedContactsWLID = (char**)mir_realloc(mJoinedContactsWLID, sizeof(char*) * mJoinedCount);
-		mJoinedContactsWLID[mJoinedCount - 1] = mir_strdup(email);
-	}
+		mJoinedContactsWLID.insertn(email);
 
-	return mJoinedCount;
+	return mJoinedContactsWLID.getCount();
 }
 
 int ThreadData::contactLeft(const char* email)
 {
-	int i;
-
-	for (i=0; i < mJoinedCount; i++)
-		if (_stricmp(mJoinedContactsWLID[i], email) == 0)
-			break;
-
-	if (i == mJoinedCount)
-		return i;
-
 	if (strchr(email, ';'))
-	{
-		mir_free(mJoinedIdentContactsWLID[i]);
-
-		if (--mJoinedIdentCount)
-		{
-			memmove(mJoinedIdentContactsWLID + i, mJoinedIdentContactsWLID + i + 1, sizeof(char*) * (mJoinedIdentCount - i));
-			mJoinedIdentContactsWLID = (char**)mir_realloc(mJoinedIdentContactsWLID, sizeof(char*) * mJoinedIdentCount);
-		}
-		else
-		{
-			mir_free(mJoinedIdentContactsWLID);
-			mJoinedIdentContactsWLID = NULL;
-		}
-	}
+		mJoinedIdentContactsWLID.remove(email);
 	else
-	{
-		mir_free(mJoinedContactsWLID[i]);
+		mJoinedContactsWLID.remove(email);
 
-		if (--mJoinedCount)
-		{
-			memmove(mJoinedContactsWLID + i, mJoinedContactsWLID + i + 1, sizeof(char*) * (mJoinedCount - i));
-			mJoinedContactsWLID = (char**)mir_realloc(mJoinedContactsWLID, sizeof(char*) * mJoinedCount);
-		}
-		else
-		{
-			mir_free(mJoinedContactsWLID);
-			mJoinedContactsWLID = NULL;
-		}
-	}
-
-	return mJoinedCount;
+	return mJoinedContactsWLID.getCount();
 }
 
 HANDLE ThreadData::getContactHandle(void)
 {
-	return mJoinedCount ? proto->MSN_HContactFromEmail(mJoinedContactsWLID[0]) : NULL;
+	return mJoinedContactsWLID.getCount() ? proto->MSN_HContactFromEmail(mJoinedContactsWLID[0]) : NULL;
 }

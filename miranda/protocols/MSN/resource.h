@@ -2,6 +2,7 @@
 // Microsoft Visual C++ generated include file.
 // Used by msn.rc
 //
+#define IDD_CHATROOM_INVITE             40
 #define IDI_MSN                         101
 #define IDD_USEROPTS                    104
 #define IDD_OPT_MSN_CONN                106
@@ -22,6 +23,10 @@
 #define IDD_ACCMGRUI                    135
 #define IDD_DELETECONTACT               136
 #define IDI_LIST_LC                     138
+#define IDC_MSG                         158
+#define IDC_CCLIST                      173
+#define IDC_EDITSCR                     174
+#define IDC_ADDSCR                      175
 #define IDD_OPT_MSN                     185
 #define IDD_SETNICKNAME                 226
 #define IDC_STMSNGROUP                  1002

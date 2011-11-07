@@ -114,7 +114,7 @@ void CMsnProto::MSN_ChatStart(ThreadData* info)
 	gce.time = time(NULL);
 	gce.bIsMe = FALSE;
 
-	for (int j=0; j < info->mJoinedCount; j++) 
+	for (int j=0; j < info->mJoinedContactsWLID.getCount(); j++) 
 	{
 		HANDLE hContact = MSN_HContactFromEmail(info->mJoinedContactsWLID[j]);
 		TCHAR *wlid = mir_a2t(info->mJoinedContactsWLID[j]);
@@ -139,54 +139,191 @@ void CMsnProto::MSN_KillChatSession(TCHAR* id)
 	CallServiceSync(MS_GC_EVENT, SESSION_TERMINATE, (LPARAM)&gce);
 }
 
-void CMsnProto::InviteUser(ThreadData* info) 
+static void ChatInviteUser(ThreadData* info, const char* email) 
 {
-	HMENU tMenu = ::CreatePopupMenu();
-
-	// add the heading
-	::AppendMenu(tMenu, MF_STRING|MF_GRAYED|MF_DISABLED, (UINT_PTR)0, TranslateT("&Invite user..."));
-	::AppendMenu(tMenu, MF_SEPARATOR, (UINT_PTR)1, NULL);
-
-	// generate a list of contact
-	int count = -1;
-	for (;;)
+	if (info->mJoinedContactsWLID.getCount())
 	{
-		MsnContact *msc = Lists_GetNext(count);
-		if (msc == NULL) break;
-
-		if (getWord(msc->hContact, "Status", ID_STATUS_OFFLINE) != ID_STATUS_OFFLINE) 
+		for (int j=0; j < info->mJoinedContactsWLID.getCount(); j++) 
 		{
-			bool alreadyInSession = false;
-			for (int j=0; j < info->mJoinedCount; j++) 
+			if (_stricmp(info->mJoinedContactsWLID[j], email) == 0) 
+				return;
+		}
+
+		info->sendPacket("CAL", email);
+		info->proto->MSN_ChatStart(info);
+	}
+}
+
+static void ChatInviteSend(HANDLE hItem, HWND hwndList, STRLIST &str, CMsnProto *ppro)
+{
+	if (hItem == NULL)
+		hItem = (HANDLE)SendMessage(hwndList, CLM_GETNEXTITEM, CLGN_ROOT, 0);
+
+	while (hItem) 
+	{
+		if (IsHContactGroup(hItem))
+		{
+			HANDLE hItemT = (HANDLE)SendMessage(hwndList, CLM_GETNEXTITEM, CLGN_CHILD, (LPARAM)hItem);
+			if (hItemT) ChatInviteSend(hItemT, hwndList, str, ppro);
+		}
+		else
+		{
+			int chk = SendMessage(hwndList, CLM_GETCHECKMARK, (WPARAM)hItem, 0);
+			if (chk)
 			{
-				if (_stricmp(info->mJoinedContactsWLID[j], msc->email) == 0) 
+				if (IsHContactInfo(hItem))
 				{
-					alreadyInSession = true;
-					break;
+					TCHAR buf[128] = _T("");
+					SendMessage(hwndList, CLM_GETITEMTEXT, (WPARAM)hItem, (LPARAM)buf);
+
+					if (buf[0]) str.insert(mir_t2a(buf));
+				}
+				else 
+				{
+					MsnContact *msc = ppro->Lists_Get(hItem);
+					if (msc) str.insertn(msc->email);
 				}
 			}
-			if (!alreadyInSession)
-				::AppendMenu(tMenu, MF_STRING, (UINT_PTR)msc->hContact, MSN_GetContactNameT(msc->hContact));
+		}
+		hItem = (HANDLE)SendMessage(hwndList, CLM_GETNEXTITEM, CLGN_NEXT, (LPARAM)hItem);
+	}
+}
+
+
+static void ChatValidateContact(HANDLE hItem, HWND hwndList, CMsnProto* ppro)
+{
+	if (!ppro->MSN_IsMyContact(hItem) || ppro->getByte(hItem, "ChatRoom", 0) || ppro->MSN_IsMeByContact(hItem)) 
+		SendMessage(hwndList, CLM_DELETEITEM, (WPARAM)hItem, 0);
+}
+
+static void ChatPrepare(HANDLE hItem, HWND hwndList, CMsnProto* ppro)
+{
+	if (hItem == NULL)
+		hItem = (HANDLE)SendMessage(hwndList, CLM_GETNEXTITEM, CLGN_ROOT, 0);
+
+	while (hItem) 
+	{
+		HANDLE hItemN = (HANDLE)SendMessage(hwndList, CLM_GETNEXTITEM, CLGN_NEXT, (LPARAM)hItem);
+
+		if (IsHContactGroup(hItem))
+		{
+			HANDLE hItemT = (HANDLE)SendMessage(hwndList, CLM_GETNEXTITEM, CLGN_CHILD, (LPARAM)hItem);
+			if (hItemT) ChatPrepare(hItemT, hwndList, ppro);
+		}
+		else if (IsHContactContact(hItem))
+			ChatValidateContact(hItem, hwndList, ppro);
+
+		hItem = hItemN;
+   }
+}
+
+INT_PTR CALLBACK DlgInviteToChat(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+	InviteChatParam* param = (InviteChatParam*)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
+
+	switch (msg) 
+	{
+	case WM_INITDIALOG:
+		TranslateDialogDefault(hwndDlg);
+
+		SetWindowLongPtr(hwndDlg, GWLP_USERDATA, lParam);
+		param = (InviteChatParam*)lParam;
+
+//		WindowSetIcon(hwndDlg, "msn");
+		break;
+
+	case WM_CLOSE:
+		EndDialog(hwndDlg, 0);
+		break;
+
+	case WM_NCDESTROY:
+//		WindowFreeIcon(hwndDlg);
+		delete param;
+		break;
+
+	case WM_NOTIFY:
+	{
+		NMCLISTCONTROL* nmc = (NMCLISTCONTROL*)lParam;
+		if (nmc->hdr.idFrom == IDC_CCLIST)
+		{
+			switch (nmc->hdr.code) 
+			{
+			case CLN_NEWCONTACT:
+				if (param && (nmc->flags & (CLNF_ISGROUP | CLNF_ISINFO)) == 0) 
+					ChatValidateContact(nmc->hItem, nmc->hdr.hwndFrom, param->ppro);
+				break;
+
+			case CLN_LISTREBUILT:
+				if (param) 
+					ChatPrepare(NULL, nmc->hdr.hwndFrom, param->ppro);
+				break; 
+			}
 		}
 	}
+	break;
 
-	HWND tWindow = CreateWindow(_T("EDIT"),_T(""),0,1,1,1,1,NULL,NULL,hInst,NULL);
+	case WM_COMMAND:
+		{
+			switch (LOWORD(wParam)) 
+			{
+			case IDC_ADDSCR:
+				if (param->ppro->msnLoggedIn)
+				{
+					TCHAR email[MSN_MAX_EMAIL_LEN];
+					GetDlgItemText(hwndDlg, IDC_EDITSCR, email, SIZEOF(email));
 
-	POINT pt;
-	::GetCursorPos (&pt);
-	HANDLE hInvitedUser = (HANDLE)::TrackPopupMenu(tMenu, TPM_NONOTIFY | TPM_LEFTALIGN | TPM_TOPALIGN | TPM_RETURNCMD, pt.x, pt.y, 0, tWindow, NULL);
-	::DestroyMenu(tMenu);
-	::DestroyWindow(tWindow);
+					CLCINFOITEM cii = {0};
+					cii.cbSize = sizeof(cii);
+					cii.flags = CLCIIF_CHECKBOX | CLCIIF_BELOWCONTACTS;
+					cii.pszText = _tcslwr(email);
 
-	if (!hInvitedUser)
-		return;
+					HANDLE hItem = (HANDLE)SendDlgItemMessage(hwndDlg, IDC_CCLIST, CLM_ADDINFOITEM, 0, (LPARAM)&cii);
+					SendDlgItemMessage(hwndDlg, IDC_CCLIST, CLM_SETCHECKMARK, (LPARAM)hItem, 1);
+				}
+				break;
 
-	char tEmail[MSN_MAX_EMAIL_LEN];
-	if (!getStaticString(hInvitedUser, "e-mail", tEmail, sizeof(tEmail))) 
-	{
-		info->sendPacket("CAL", _strlwr(tEmail));
-		MSN_ChatStart(info);
-	}	
+			case IDOK:
+				{
+					char tEmail[MSN_MAX_EMAIL_LEN] = "";
+					ThreadData *info = NULL;
+					if (param->id)
+						info = param->ppro->MSN_GetThreadByChatId(param->id);
+					else if (param->hContact)
+					{
+						if (!param->ppro->MSN_IsMeByContact(param->hContact, tEmail))
+							info =  param->ppro->MSN_GetThreadByContact(tEmail);
+					}
+
+					HWND hwndList = GetDlgItem(hwndDlg, IDC_CCLIST);
+					STRLIST *cont = new STRLIST;
+					ChatInviteSend(NULL, hwndList, *cont, param->ppro);
+
+					if (info)
+					{
+						for (int i = 0; i < cont->getCount(); ++i)
+							ChatInviteUser(info, (*cont)[i]);
+						delete cont;
+					}
+					else 
+					{
+						if (tEmail[0]) cont->insertn(tEmail);
+						param->ppro->MsgQueue_Add("chat", 'X', NULL, 0, NULL, 0, cont);
+						if (param->ppro->msnLoggedIn)
+							param->ppro->msnNsThread->sendPacket("XFR", "SB");
+					}
+				}
+
+				EndDialog(hwndDlg, IDOK);
+				break;
+
+			case IDCANCEL:
+				EndDialog(hwndDlg, IDCANCEL);
+				break;
+			}
+		}
+		break;
+	}
+	return FALSE;
 }
 
 int CMsnProto::MSN_GCEventHook(WPARAM, LPARAM lParam) 
@@ -203,18 +340,7 @@ int CMsnProto::MSN_GCEventHook(WPARAM, LPARAM lParam)
 		{
  			ThreadData* thread = MSN_GetThreadByChatId(gch->pDest->ptszID);
 			if (thread != NULL) 
-			{
-				// open up srmm dialog when quit while 1 person left
-				if (thread->mJoinedCount <= 2) 
-				{
-					// switch back to normal session
-					HANDLE hContact = thread->getContactHandle();
-					MSN_CallService(MS_MSG_SENDMESSAGE, (WPARAM)hContact, 0);
-					thread->mChatID[0] = 0;
-				}
-				else
-					thread->sendTerminate();
-			}
+				thread->sendTerminate();
 			break;
 		}
 
@@ -253,14 +379,10 @@ int CMsnProto::MSN_GCEventHook(WPARAM, LPARAM lParam)
 			break;
 
 		case GC_USER_CHANMGR: 
-		{
- 			ThreadData* thread = MSN_GetThreadByChatId(gch->pDest->ptszID);
-			if (thread != NULL) 
-			{
-				InviteUser(thread);
-			}
+			DialogBoxParam(hInst, MAKEINTRESOURCE(IDD_CHATROOM_INVITE), NULL, DlgInviteToChat, 
+				LPARAM(new InviteChatParam(gch->pDest->ptszID, NULL, this)));
 			break;
-		}
+
 		case GC_USER_PRIVMESS: 
 		{
 			char *email = mir_t2a(gch->ptszUID);
@@ -274,13 +396,10 @@ int CMsnProto::MSN_GCEventHook(WPARAM, LPARAM lParam)
 			switch(gch->dwData) 
 			{
 			case 10: 
-			{
- 				ThreadData* thread = MSN_GetThreadByChatId(gch->pDest->ptszID);
-				if (thread != NULL)
-					InviteUser(thread);
-
+				DialogBoxParam(hInst, MAKEINTRESOURCE(IDD_CHATROOM_INVITE), NULL, DlgInviteToChat, 
+					LPARAM(new InviteChatParam(gch->pDest->ptszID, NULL, this)));
 				break;
-			}
+
 			case 20:
 				MSN_KillChatSession(gch->pDest->ptszID);
 				break;

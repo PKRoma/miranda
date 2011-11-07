@@ -456,13 +456,13 @@ void CMsnProto::MSN_ReceiveMessage(ThreadData* info, char* cmdString, char* para
 		const char* p = tHeader["X-MMS-IM-Format"];
 		bool isRtl =  p != NULL && strstr(p, "RL=1") != NULL;
 
-		if (info->mJoinedCount > 1) 
+		if (info->mJoinedContactsWLID.getCount() > 1) 
 		{
 			if (msnHaveChatDll)
 				MSN_ChatStart(info);
 			else
 			{
-				for (int j=0; j < info->mJoinedCount; j++) 
+				for (int j=0; j < info->mJoinedContactsWLID.getCount(); j++) 
 				{
 					if (_stricmp(info->mJoinedContactsWLID[j], email) == 0 && j != 0) 
 					{
@@ -575,7 +575,7 @@ void CMsnProto::MSN_ReceiveMessage(ThreadData* info, char* cmdString, char* para
 	}
 	else if (!_strnicmp(tContentType, "text/x-msnmsgr-datacast", 23)) 
 	{
-		if (info->mJoinedCount)
+		if (info->mJoinedContactsWLID.getCount())
 		{
 			HANDLE tContact;
 
@@ -1090,7 +1090,6 @@ void CMsnProto::MSN_InitSB(ThreadData* info, const char* szEmail)
 				info->mMsnFtp = E.ft;
 		}
 		mir_free(info->mInitialContactWLID); info->mInitialContactWLID = NULL;
-		Sleep(100);
 	}
 
 	if (typing)
@@ -1139,7 +1138,7 @@ int CMsnProto::MSN_HandleCommands(ThreadData* info, char* cmdString)
 		case ' KCA':    //********* ACK: section 8.7 Instant Messages
 			ReleaseSemaphore(info->hWaitEvent, 1, NULL);
 
-			if (info->mJoinedCount > 0 && MyOptions.SlowSend)
+			if (info->mJoinedContactsWLID.getCount() > 0 && MyOptions.SlowSend)
 				SendBroadcast(info->getContactHandle(), ACKTYPE_MESSAGE, ACKRESULT_SUCCESS, (HANDLE)trid, 0);
 			break;
 
@@ -1228,8 +1227,6 @@ LBL_InvalidCommand:
 				mir_free((void*)gce.pszUID);
 			}
 
-			// in here, the first contact is the chat ID, starting from the second will be actual contact
-			// if only 1 person left in conversation
 			int personleft = info->contactLeft(data.userEmail);
 
 			int temp_status = getWord(hContact, "Status", ID_STATUS_OFFLINE);
@@ -1237,9 +1234,9 @@ LBL_InvalidCommand:
 				setWord(hContact, "Status", ID_STATUS_OFFLINE);
 
 			// see if the session is quit due to idleness
-			if (info->mChatID[0])
+			if (info->mChatID[0] && personleft == 1)
 			{
-				if (personleft == 1 && !lstrcmpA(data.isIdle, "1")) 
+				if (!strcmp(data.isIdle, "1")) 
 				{
 					GCDEST gcd = { m_szModuleName, { NULL }, GC_EVENT_INFORMATION };
 					gcd.ptszID = info->mChatID;
@@ -1255,19 +1252,23 @@ LBL_InvalidCommand:
 					gce.ptszText = TranslateT("To resume the conversation, please quit this session and start a new chat session.");
 					CallServiceSync(MS_GC_EVENT, 0, (LPARAM)&gce);
 				}
-				else if (personleft == 2 && lstrcmpA(data.isIdle, "1")) 
+				else
 				{
-					if (!Miranda_Terminated() &&
-						MessageBox(NULL, TranslateT("There is only 1 person left in the chat, do you want to switch back to standard message window?"),
-									TranslateT("MSN Chat"), MB_YESNO|MB_ICONQUESTION) == IDYES) 
+					if (!Miranda_Terminated() && MessageBox(NULL, 
+								TranslateT("There is only 1 person left in the chat, do you want to switch back to standard message window?"),
+								TranslateT("MSN Chat"), MB_YESNO|MB_ICONQUESTION) == IDYES)
 					{
 						// kill chat dlg and open srmm dialog
 						MSN_KillChatSession(info->mChatID);
-					}	
+						
+						// open up srmm dialog when quit while 1 person left
+						HANDLE hContact = info->getContactHandle();
+						if (hContact) CallServiceSync(MS_MSG_SENDMESSAGE, (WPARAM)hContact, 0);
+					}
 				}
 			}
 			// this is not in chat session, quit the session when everyone left
-			else if (info->mJoinedCount <= 2)
+			else if (info->mJoinedContactsWLID.getCount() < 1)
 				return 1;
 
 			break;
@@ -1492,7 +1493,7 @@ remove:
 					setWord(hContact, "Status", ID_STATUS_INVISIBLE);
 
 				// only start the chat session after all the IRO messages has been recieved
-				if (msnHaveChatDll && info->mJoinedCount > 1 && !strcmp(data.strThisContact, data.totalContacts))
+				if (msnHaveChatDll && info->mJoinedContactsWLID.getCount() > 1 && !strcmp(data.strThisContact, data.totalContacts))
 					MSN_ChatStart(info);
 			}
 			break;
@@ -1520,14 +1521,14 @@ remove:
 			{
 				if (!info->mCaller)
 				{
-					if (info->mJoinedCount == 1) 
+					if (info->mJoinedContactsWLID.getCount() == 1) 
 					{
 						MSN_InitSB(info, info->mJoinedContactsWLID[0]);
 					}
 					else 
 					{
 						info->sendCaps();
-						if (info->mInitialContactWLID != NULL && MsgQueue_CheckContact(info->mInitialContactWLID))
+						if (info->mInitialContactWLID && MsgQueue_CheckContact(info->mInitialContactWLID))
 							msnNsThread->sendPacket("XFR", "SB");
 						mir_free(info->mInitialContactWLID); info->mInitialContactWLID = NULL;
 					}
@@ -1543,6 +1544,21 @@ remove:
 				{
 					MSN_DebugLog("USR (SB) internal: thread created for no reason");
 					return 1;
+				}
+
+				if (strcmp(wlid, "chat") == 0)
+				{
+					MsgQueueEntry E;
+					MsgQueue_GetNext(wlid, E);
+
+					for (int i = 0; i < E.cont->getCount(); ++i)
+						info->sendPacket("CAL", (*E.cont)[i]);
+
+					MSN_ChatStart(info);
+					
+					delete E.cont;
+					mir_free(E.wlid);
+					break;
 				}
 
 				char* szEmail;
@@ -1616,7 +1632,7 @@ remove:
 			break;
 
 		case ' KAN':   //********* NAK: section 8.7 Instant Messages
-			if (info->mJoinedCount > 0 && MyOptions.SlowSend)
+			if (info->mJoinedContactsWLID.getCount() > 0 && MyOptions.SlowSend)
 				SendBroadcast(info->getContactHandle(), 
 					ACKTYPE_MESSAGE, ACKRESULT_FAILED, 
 					(HANDLE)trid, (LPARAM)MSN_Translate("Message delivery failed"));

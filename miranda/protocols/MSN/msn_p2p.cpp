@@ -383,7 +383,7 @@ void  CMsnProto::p2p_sendMsg(ThreadData* info, const char *wlid, unsigned appId,
 		switch (msgType) 
 		{
 			case 0:
-				MsgQueue_Add(wlid, 'D', buf, p - buf, NULL);
+				MsgQueue_Add(wlid, 'D', buf, p - buf);
 				break;
 
 			case 1: 
@@ -983,7 +983,7 @@ void __cdecl CMsnProto::p2p_sendFeedThread(void* arg)
 	TInfoType lastType = SERVER_DISPATCH;
 
 	filetransfer *ft = p2p_getSessionByCallID(info->mCookie, 
-		info->mJoinedIdentContactsWLID ? info->mJoinedIdentContactsWLID[0] : info->mJoinedContactsWLID[0]);
+		info->mJoinedIdentContactsWLID.getCount() ? info->mJoinedIdentContactsWLID[0] : info->mJoinedContactsWLID[0]);
 
 	if (ft != NULL && WaitForSingleObject(ft->hLockHandle, 2000) == WAIT_OBJECT_0)
 	{
@@ -1141,8 +1141,7 @@ void __cdecl CMsnProto::p2p_filePassiveThread(void* arg)
 			p2p_sendRecvFileDirectly(info);
 		else
 		{
-			mir_free(info->mInitialContactWLID);
-			info->mInitialContactWLID = NULL;
+			mir_free(info->mInitialContactWLID); info->mInitialContactWLID = NULL;
 		}
 
 		if (!MSN_GetThreadByContact(dc->wlid, SERVER_P2P_DIRECT) && !MSN_GetUnconnectedThread(dc->wlid, SERVER_P2P_DIRECT))
@@ -1159,7 +1158,7 @@ void CMsnProto::p2p_InitFileTransfer(
 	MimeHeaders&	tFileInfo2, 
 	const char* wlid)
 {
-	if (info->mJoinedCount == 0 && info->mJoinedIdentCount == 0)
+	if (info->mJoinedContactsWLID.getCount() == 0 && info->mJoinedIdentContactsWLID.getCount() == 0)
 		return;
 
 	const char	*szCallID = tFileInfo["Call-ID"],

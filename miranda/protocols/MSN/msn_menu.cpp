@@ -119,72 +119,10 @@ INT_PTR CMsnProto::MsnEditProfile(WPARAM, LPARAM)
 /////////////////////////////////////////////////////////////////////////////////////////
 // MsnInviteCommand - invite command callback function
 
-INT_PTR CMsnProto::MsnInviteCommand(WPARAM wParam, LPARAM)
+INT_PTR CMsnProto::MsnInviteCommand(WPARAM, LPARAM)
 {
-	ThreadData* tActiveThreads[64];
-	int tThreads = MSN_GetActiveThreads(tActiveThreads), tChosenThread;
-
-	switch(tThreads) {
-	case 0:
-		MessageBox(NULL, TranslateT("No active chat session is found."), TranslateT("MSN Chat"), MB_OK|MB_ICONINFORMATION);
-		return 0;
-
-	case 1:
-		tChosenThread = 0;
-		break;
-
-	default:
-		HMENU tMenu = ::CreatePopupMenu();
-
-		for (int i=0; i < tThreads; i++) 
-		{
-			if (tActiveThreads[i]->mChatID[0]) 
-			{
-				TCHAR sessionName[255];
-				mir_sntprintf(sessionName, SIZEOF(sessionName), _T("%s %s%s"),
-					m_tszUserName, TranslateT("Chat #"), tActiveThreads[i]->mChatID);
-				::AppendMenu(tMenu, MF_STRING, (UINT_PTR)(i+1), sessionName);
-			}
-			else
-			{
-				HANDLE hContact = tActiveThreads[i]->getContactHandle();
-				::AppendMenu(tMenu, MF_STRING, (UINT_PTR)(i+1), MSN_GetContactNameT(hContact));
-			}
-		}
-
-		HWND tWindow = CreateWindow(_T("EDIT"),_T(""),0,1,1,1,1,NULL,NULL,hInst,NULL);
-
-		POINT pt;
-		::GetCursorPos (&pt);
-		tChosenThread = ::TrackPopupMenu(tMenu, TPM_NONOTIFY | TPM_LEFTALIGN | TPM_TOPALIGN | TPM_RETURNCMD, pt.x, pt.y, 0, tWindow, NULL);
-		::DestroyMenu(tMenu);
-		::DestroyWindow(tWindow);
-		if (!tChosenThread)
-			return 0;
-
-		tChosenThread--;
-	}
-
-	char tEmail[MSN_MAX_EMAIL_LEN];
-	if (MSN_IsMeByContact((HANDLE)wParam, tEmail)) return 0;
-	if (tEmail[0]) 
-	{
-		for (int j=0; j < tActiveThreads[tChosenThread]->mJoinedCount; j++) 
-		{
-			// if the user is already in the chat session
-			if (_stricmp(tActiveThreads[tChosenThread]->mJoinedContactsWLID[j], tEmail) == 0) 
-			{
-				MessageBox(NULL, TranslateT("User is already in the chat session."), 
-					TranslateT("MSN Chat"), MB_OK | MB_ICONINFORMATION);
-				return 0;
-			}	
-		}
-
-		tActiveThreads[tChosenThread]->sendPacket("CAL", tEmail);
-
-		if (msnHaveChatDll)
-			MSN_ChatStart(tActiveThreads[tChosenThread]);
-	}
+	DialogBoxParam(hInst, MAKEINTRESOURCE(IDD_CHATROOM_INVITE), NULL, DlgInviteToChat, 
+		LPARAM(new InviteChatParam(NULL, NULL, this)));
 	return 0;
 }
 
@@ -381,16 +319,23 @@ void CMsnProto::MsnInitMainMenu(void)
 	mi.pszName = LPGEN("Set &Nickname");
 	menuItemsMain[0] = (HGENMENU)MSN_CallService(MS_CLIST_ADDPROTOMENUITEM, 0, (LPARAM)&mi);
 
+	strcpy(tDest, MSN_INVITE);
+	CreateProtoService(MSN_INVITE, &CMsnProto::MsnInviteCommand);
+	mi.position = 201002;
+	mi.icolibItem = GetIconHandle(IDI_INVITE);
+	mi.pszName = LPGEN("Create &Chat");
+	menuItemsMain[0] = (HGENMENU)MSN_CallService(MS_CLIST_ADDPROTOMENUITEM, 0, (LPARAM)&mi);
+
 	strcpy(tDest, MS_GOTO_INBOX);
 	CreateProtoService(MS_GOTO_INBOX, &CMsnProto::MsnGotoInbox);
-	mi.position = 201002;
+	mi.position = 201003;
 	mi.icolibItem = GetIconHandle(IDI_INBOX);
 	mi.pszName = LPGEN("Display &Hotmail Inbox");
 	menuItemsMain[1] = (HGENMENU)MSN_CallService(MS_CLIST_ADDPROTOMENUITEM, 0, (LPARAM)&mi);
 
 	strcpy(tDest, MS_EDIT_PROFILE);
 	CreateProtoService(MS_EDIT_PROFILE, &CMsnProto::MsnEditProfile);
-	mi.position = 201003;
+	mi.position = 201004;
 	mi.icolibItem = GetIconHandle(IDI_PROFILE);
 	mi.pszName = LPGEN("View &Profile");
 	menuItemsMain[2] = (HGENMENU)MSN_CallService(MS_CLIST_ADDPROTOMENUITEM, 0, (LPARAM)&mi);
@@ -466,12 +411,6 @@ static INT_PTR MsnMenuSendNetMeeting(WPARAM wParam, LPARAM lParam)
 	return (ppro) ? ppro->MsnSendNetMeeting(wParam, lParam) : 0;
 }
 
-static INT_PTR MsnMenuInviteCommand(WPARAM wParam, LPARAM lParam)
-{
-	CMsnProto* ppro = GetProtoInstanceByHContact((HANDLE)wParam);
-	return (ppro) ? ppro->MsnInviteCommand(wParam, lParam) : 0;
-}
-
 static INT_PTR MsnMenuSendHotmail(WPARAM wParam, LPARAM lParam)
 {
 	CMsnProto* ppro = GetProtoInstanceByHContact((HANDLE)wParam);
@@ -538,13 +477,6 @@ void MSN_InitContactMenu(void)
 	mi.icolibItem = GetIconHandle(IDI_NETMEETING);
 	mi.pszName = LPGEN("&Start Netmeeting");
 	hNetmeetingMenuItem = (HGENMENU)MSN_CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM)&mi);
-
-	strcpy(tDest, MSN_INVITE);
-	hInviteChat = CreateServiceFunction(servicefunction, MsnMenuInviteCommand);
-	mi.position = -500050001;
-	mi.icolibItem = GetIconHandle(IDI_INVITE);
-	mi.pszName = LPGEN("&Invite to chat");
-	hChatInviteMenuItem = (HGENMENU)MSN_CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM)&mi);
 
 	strcpy(tDest, "/SendHotmail");
 	hSendHotMail = CreateServiceFunction(servicefunction, MsnMenuSendHotmail);

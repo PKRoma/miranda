@@ -36,7 +36,7 @@ void CMsnProto::MsgQueue_Uninit(void)
 	DeleteCriticalSection(&csMsgQueue);
 }
 
-int  CMsnProto::MsgQueue_Add(const char* wlid, int msgType, const char* msg, int msgSize, filetransfer* ft, int flags)
+int  CMsnProto::MsgQueue_Add(const char* wlid, int msgType, const char* msg, int msgSize, filetransfer* ft, int flags, STRLIST *cnt)
 {
 	EnterCriticalSection(&csMsgQueue);
 
@@ -53,6 +53,7 @@ int  CMsnProto::MsgQueue_Add(const char* wlid, int msgType, const char* msg, int
 	else
 		memcpy(E->message = (char*)mir_alloc(msgSize), msg, msgSize);
 	E->ft = ft;
+	E->cont = cnt;
 	E->seq = seq;
 	E->flags = flags;
 	E->allocatedToThread = 0;
@@ -159,6 +160,7 @@ void  CMsnProto::MsgQueue_Clear(const char* wlid, bool msg)
 			}
 			mir_free(E.message);
 			mir_free(E.wlid);
+			if (E.cont) delete E.cont;
 		}
 		msgQueueList.destroy();
 
@@ -177,6 +179,7 @@ void  CMsnProto::MsgQueue_Clear(const char* wlid, bool msg)
 				
 				mir_free(E.message);
 				mir_free(E.wlid);
+				if (E.cont) delete E.cont;
 				msgQueueList.remove(i);
 
 				if (msgfnd) 

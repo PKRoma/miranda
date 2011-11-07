@@ -63,11 +63,11 @@ bool ThreadData::isTimeout(void)
 	{
 		res = !proto->usingGateway;
 	}
-	else if (mJoinedCount <= 1 || mChatID[0] == 0) 
+	else if (mJoinedContactsWLID.getCount() <= 1 || mChatID[0] == 0) 
 	{
 		HANDLE hContact = getContactHandle();
 
-		if (mJoinedCount == 0 || termPending)
+		if (mJoinedContactsWLID.getCount() == 0 || termPending)
 			res = true;
 		else if (proto->p2p_getThreadSession(hContact, mType) != NULL)
 			res = false;
@@ -109,8 +109,14 @@ bool ThreadData::isTimeout(void)
 
 		if (proto->getByte("EnableSessionPopup", 0)) 
 		{
-			HANDLE hContact = proto->MSN_HContactFromEmail(mJoinedCount ? mJoinedContactsWLID[0] : mInitialContactWLID);
-			proto->MSN_ShowPopup(hContact, TranslateT("Chat session dropped due to inactivity"), 0);
+			HANDLE hContact = NULL;
+			if (mJoinedContactsWLID.getCount())
+				hContact = proto->MSN_HContactFromEmail(mJoinedContactsWLID[0]);
+			else if (mInitialContactWLID)
+				hContact = proto->MSN_HContactFromEmail(mInitialContactWLID);
+			
+			if (hContact)
+				proto->MSN_ShowPopup(hContact, TranslateT("Chat session dropped due to inactivity"), 0);
 		}
 
 		sendTerminate();
