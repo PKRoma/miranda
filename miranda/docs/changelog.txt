@@ -4,6 +4,14 @@
 
 
 
+* New in 0.9.34
+Bugfixes:
+ - AIM: Improved avatar support
+ - MSN: Improved group chat entry UI
+ - MSN: Fixed issue with one-to-one chats
+ - Jabber: GTalk improvements with status modes
+
+
 * New in 0.9.33
 Bugfixes:
  - Jabber: Fixed disconnection issue with compressed connections
