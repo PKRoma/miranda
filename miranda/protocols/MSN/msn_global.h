@@ -245,7 +245,7 @@ inline unsigned __int64 _htonl64(unsigned __int64 s)
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
-// PNG library interface
+// Popup interface
 
 typedef struct _tag_PopupData
 {
@@ -255,6 +255,38 @@ typedef struct _tag_PopupData
 	TCHAR* text;
 	CMsnProto* proto;
 } PopupData;
+
+struct STRLIST : public LIST<char>
+{
+	static int compare(const char* p1, const char* p2)
+	{ return _stricmp(p1, p2); }
+	
+	STRLIST() : LIST<char>(2, compare) {}
+	~STRLIST() { destroy(); }
+
+	void destroy( void )
+	{	
+		for (int i=0; i < count; i++)
+			mir_free(items[i]);
+
+		li.List_Destroy((SortedList*)this);
+	}
+
+	int insertn(const char* p) { return insert(mir_strdup(p)); }
+	
+	int remove(int idx)
+	{
+		mir_free(items[idx]);
+		return li.List_Remove((SortedList*)this, idx);
+	}
+
+	int remove(const char* p)
+	{
+		int idx;
+		return  li.List_GetIndex((SortedList*)this, (char*)p, &idx) == 1 ? remove(idx) : -1;
+	}
+};
+
 
 /////////////////////////////////////////////////////////////////////////////////////////
 //	MIME headers processing
@@ -486,6 +518,10 @@ struct ThreadData
 	ThreadData();
 	~ThreadData();
 
+	STRLIST			mJoinedContactsWLID;
+	STRLIST			mJoinedIdentContactsWLID;
+	char*			mInitialContactWLID;
+
 	TInfoType		mType;            // thread type
 	MsnThreadFunc	mFunc;            // thread entry point
 	char			mServer[80];      // server name
@@ -514,13 +550,6 @@ struct ThreadData
 	char			mCookie[130];     // for switchboard servers only
 	LONG			mTrid;            // current message ID
 	UINT			mTimerId;         // typing notifications timer id
-
-	int				mJoinedCount;     // another contacts count
-	char**			mJoinedContactsWLID;
-	char*			mInitialContactWLID;
-
-	int				mJoinedIdentCount;     // another contacts count
-	char**			mJoinedIdentContactsWLID;
 
 	//----| for file transfers only |-----------------------------------------------------
 	filetransfer*	mMsnFtp;          // file transfer block
@@ -589,9 +618,10 @@ struct MsgQueueEntry
 {
 	char*          wlid;
 	char*          message;
+	filetransfer*  ft;
+	STRLIST*       cont;
 	int            msgType;
 	int            msgSize;
-	filetransfer*  ft;
 	int            seq;
 	int            allocatedToThread;
 	time_t         ts;
@@ -858,3 +888,18 @@ struct DeleteParam
 };
 
 INT_PTR CALLBACK DlgDeleteContactUI(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+
+struct InviteChatParam
+{
+	TCHAR* id;
+	HANDLE hContact;
+	CMsnProto* ppro;
+	
+	InviteChatParam(const TCHAR* id, HANDLE hContact, CMsnProto* ppro)
+		: id(mir_tstrdup(id)), hContact(hContact), ppro(ppro) {}
+
+	~InviteChatParam()
+	{ mir_free(id); }
+};
+
+INT_PTR CALLBACK DlgInviteToChat(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);

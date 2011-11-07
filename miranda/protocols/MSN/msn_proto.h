@@ -125,6 +125,7 @@ struct CMsnProto : public PROTO_INTERFACE
 	int  __cdecl OnDbSettingChanged(WPARAM wParam,LPARAM lParam);
 	int  __cdecl OnUserInfoInit(WPARAM wParam,LPARAM lParam);
 	int  __cdecl OnWindowEvent(WPARAM wParam, LPARAM lParam);
+	int  __cdecl OnWindowPopup(WPARAM wParam, LPARAM lParam);
 
 	//====| Data |========================================================================
 
@@ -328,7 +329,7 @@ struct CMsnProto : public PROTO_INTERFACE
 	/////////////////////////////////////////////////////////////////////////////////////////
 	// MSN message queue support
 
-	int         MsgQueue_Add(const char* wlid, int msgType, const char* msg, int msglen, filetransfer* ft = NULL, int flags = 0);
+	int         MsgQueue_Add(const char* wlid, int msgType, const char* msg, int msglen, filetransfer* ft = NULL, int flags = 0, STRLIST *cnt = NULL);
 	const char* MsgQueue_CheckContact(const char* wlid, time_t tsc = 0);
 	const char* MsgQueue_GetNextRecipient(void);
 	bool        MsgQueue_GetNext(const char* wlid, MsgQueueEntry& retVal);
@@ -430,7 +431,6 @@ struct CMsnProto : public PROTO_INTERFACE
 	//	MSN Chat support
 
 	void MSN_ChatStart(ThreadData* info);
-	void InviteUser(ThreadData* info);
 	void MSN_KillChatSession(TCHAR* id);
 
 	HANDLE MSN_GetChatInernalHandle(HANDLE hContact);

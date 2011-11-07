@@ -574,8 +574,36 @@ int CMsnProto::OnWindowEvent(WPARAM wParam, LPARAM lParam)
 		ThreadData* thread = MSN_StartSB(tEmail, isOffline);
 		
 		if (thread == NULL && !isOffline)
-			MsgQueue_Add(tEmail, 'X', NULL, 0, NULL);
+			MsgQueue_Add(tEmail, 'X', NULL, 0);
 	}
+	return 0;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+// OnWindowEvent - creates session on window open
+
+int CMsnProto::OnWindowPopup(WPARAM wParam, LPARAM lParam)
+{
+	MessageWindowPopupData *mwpd = (MessageWindowPopupData *)lParam;
+
+	if (!MSN_IsMyContact(mwpd->hContact) || getByte(mwpd->hContact, "ChatRoom", 0))
+		return 0;
+
+	switch (mwpd->uType)
+	{
+	case MSG_WINDOWPOPUP_SHOWING:
+		AppendMenu(mwpd->hMenu, MF_STRING, 13465, TranslateT("Convert to Chat"));
+		break;
+
+	case MSG_WINDOWPOPUP_SELECTED:
+		if (mwpd->selection == 13465)
+		{
+			DialogBoxParam(hInst, MAKEINTRESOURCE(IDD_CHATROOM_INVITE), NULL, DlgInviteToChat, 
+				LPARAM(new InviteChatParam(NULL, mwpd->hContact, this)));
+		}
+		break;
+	}
+
 	return 0;
 }
 

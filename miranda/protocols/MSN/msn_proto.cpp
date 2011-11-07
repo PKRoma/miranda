@@ -94,7 +94,8 @@ CMsnProto::CMsnProto(const char* aProtoName, const TCHAR* aUserName) :
 	// service to get from protocol chat buddy info
 //	CreateProtoService(MS_GC_PROTO_GETTOOLTIPTEXT, &CMsnProto::GCGetToolTipText);
 
-	HookProtoEvent(ME_MSG_WINDOWEVENT,           &CMsnProto::OnWindowEvent);
+	HookProtoEvent(ME_MSG_WINDOWPOPUP,           &CMsnProto::OnWindowPopup);
+//	HookProtoEvent(ME_MSG_WINDOWEVENT,           &CMsnProto::OnWindowEvent);
 	HookProtoEvent(ME_CLIST_GROUPCHANGE,         &CMsnProto::OnGroupChange);
 	HookProtoEvent(ME_OPT_INITIALISE,            &CMsnProto::OnOptionsInit);
 	HookProtoEvent(ME_CLIST_DOUBLECLICKED,       &CMsnProto::OnContactDoubleClicked);

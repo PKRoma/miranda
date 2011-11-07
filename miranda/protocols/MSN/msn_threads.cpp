@@ -389,7 +389,7 @@ ThreadData*  CMsnProto::MSN_GetThreadByContact(const char* wlid, TInfoType type)
 		for (int i=0; i < sttThreads.getCount(); i++)
 		{
 			ThreadData* T = &sttThreads[i];
-			if (T->mType != SERVER_P2P_DIRECT || T->mJoinedIdentContactsWLID == NULL || T->s == NULL)
+			if (T->mType != SERVER_P2P_DIRECT || !T->mJoinedIdentContactsWLID.getCount() || T->s == NULL)
 				continue;
 
 			if (_stricmp(T->mJoinedIdentContactsWLID[0], wlid) == 0)
@@ -408,7 +408,7 @@ ThreadData*  CMsnProto::MSN_GetThreadByContact(const char* wlid, TInfoType type)
 		for (int i=0; i < sttThreads.getCount(); i++)
 		{
 			ThreadData* T = &sttThreads[i];
-			if (T->mType != type || T->mJoinedContactsWLID == NULL || T->mInitialContactWLID != NULL || T->s == NULL)
+			if (T->mType != type || !T->mJoinedContactsWLID.getCount() || T->mInitialContactWLID || T->s == NULL)
 				continue;
 
 			if (_stricmp(T->mJoinedContactsWLID[0], szEmail) == 0 && T->mChatID[0] == 0)
@@ -471,7 +471,7 @@ ThreadData*  CMsnProto::MSN_GetP2PThreadByContact(const char *wlid)
 	for (int i=0; i < sttThreads.getCount(); i++)
 	{
 		ThreadData* T = &sttThreads[i];
-		if (T->mType != SERVER_P2P_DIRECT || T->mJoinedIdentContactsWLID == NULL)
+		if (T->mType != SERVER_P2P_DIRECT || !T->mJoinedIdentContactsWLID.getCount())
 			continue;
 
 		if (_stricmp(T->mJoinedIdentContactsWLID[0], wlid) == 0)
@@ -489,7 +489,7 @@ ThreadData*  CMsnProto::MSN_GetP2PThreadByContact(const char *wlid)
 		for (int i=0; i < sttThreads.getCount(); i++)
 		{
 			ThreadData* T = &sttThreads[i];
-			if (T->mJoinedContactsWLID && T->mInitialContactWLID == NULL &&
+			if (T->mJoinedContactsWLID.getCount() && !T->mInitialContactWLID &&
 				_stricmp(T->mJoinedContactsWLID[0], szEmail) == 0) 
 			{
 				if (T->mType == SERVER_P2P_DIRECT)
@@ -519,8 +519,8 @@ void  CMsnProto::MSN_StartP2PTransferByContact(const char* wlid)
 		if (T->mType == SERVER_FILETRANS && T->hWaitEvent != INVALID_HANDLE_VALUE)
 		{
 			if ((T->mInitialContactWLID && !_stricmp(T->mInitialContactWLID, wlid)) || 
-				(T->mJoinedContactsWLID && !_stricmp(T->mJoinedContactsWLID[0], wlid)) ||
-				(T->mJoinedIdentContactsWLID && !_stricmp(T->mJoinedIdentContactsWLID[0], wlid)))
+				(T->mJoinedContactsWLID.getCount() && !_stricmp(T->mJoinedContactsWLID[0], wlid)) ||
+				(T->mJoinedIdentContactsWLID.getCount() && !_stricmp(T->mJoinedIdentContactsWLID[0], wlid)))
 				ReleaseSemaphore(T->hWaitEvent, 1, NULL);
 		}
 	}
@@ -537,7 +537,7 @@ ThreadData*  CMsnProto::MSN_GetOtherContactThread(ThreadData* thread)
 	for (int i=0; i < sttThreads.getCount(); i++) 
 	{
 		ThreadData* T = &sttThreads[i];
-		if (T->mJoinedCount == 0 || T->mJoinedContactsWLID == NULL || T->s == NULL)
+		if (T->mJoinedContactsWLID.getCount() == 0 || T->s == NULL)
 			continue;
 
 		if (T != thread && _stricmp(T->mJoinedContactsWLID[0], thread->mJoinedContactsWLID[0]) == 0) 
@@ -564,7 +564,7 @@ ThreadData*  CMsnProto::MSN_GetUnconnectedThread(const char* wlid, TInfoType typ
 	for (int i=0; i < sttThreads.getCount(); i++) 
 	{
 		ThreadData* T = &sttThreads[i];
-		if (T->mType == type && T->mInitialContactWLID && _stricmp(T->mInitialContactWLID, szEmail) == 0) 
+ 		if (T->mType == type && T->mInitialContactWLID && _stricmp(T->mInitialContactWLID, szEmail) == 0) 
 		{
 			result = T;
 			break;
@@ -605,7 +605,7 @@ int  CMsnProto::MSN_GetActiveThreads(ThreadData** parResult)
 	for (int i=0; i < sttThreads.getCount(); i++)
 	{
 		ThreadData* T = &sttThreads[i];
-		if (T->mType == SERVER_SWITCHBOARD && T->mJoinedCount != 0 && T->mJoinedContactsWLID != NULL)
+		if (T->mType == SERVER_SWITCHBOARD && T->mJoinedContactsWLID.getCount() != 0 && T->mJoinedContactsWLID.getCount())
 			parResult[tCount++] = T;
 	}
 
@@ -656,7 +656,7 @@ ThreadData*  CMsnProto::MSN_GetThreadByPort(WORD wPort)
 
 ThreadData::ThreadData()
 {
-	memset(this, 0, sizeof(ThreadData));
+	memset(&mInitialContactWLID, 0, sizeof(ThreadData) - 2*sizeof(STRLIST));
 	mGatewayTimeout = 2;
 	resetTimeout();
 	hWaitEvent = CreateSemaphore(NULL, 0, MSN_PACKETS_COMBINE, NULL);
@@ -691,7 +691,7 @@ ThreadData::~ThreadData()
 
 	if (mType == SERVER_SWITCHBOARD)
 	{
-		for (i=0; i<mJoinedCount; ++i)
+		for (i=0; i<mJoinedContactsWLID.getCount(); ++i)
 		{
 			const char* wlid = mJoinedContactsWLID[i];
 			HANDLE hContact = proto->MSN_HContactFromEmail(wlid); 
@@ -701,18 +701,10 @@ ThreadData::~ThreadData()
 		}
 	}
 
-	for (i=0; i<mJoinedCount; ++i)
-	{
-		mir_free(mJoinedContactsWLID[i]);
-	}
-	mir_free(mJoinedContactsWLID);
+	mJoinedContactsWLID.destroy();
+	mJoinedIdentContactsWLID.destroy();
 
-	for (i=0; i<mJoinedIdentCount; ++i)
-	{
-		mir_free(mJoinedIdentContactsWLID[i]);
-	}
-	mir_free(mJoinedIdentContactsWLID);
-	const char* wlid = mInitialContactWLID;
+	const char* wlid = NEWSTR_ALLOCA(mInitialContactWLID);
 	mir_free(mInitialContactWLID); mInitialContactWLID = NULL;
 
 	if (proto && mType == SERVER_P2P_DIRECT) 
