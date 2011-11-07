@@ -169,9 +169,9 @@ void SetTranspBkgColor(HBITMAP hBitmap, COLORREF color)
 
 	bool changed = false;
 	for (y = 0; y < bmp.bmHeight; ++y) {
-        BYTE *px = p + bmp.bmWidth * 4 * y;
+		BYTE *px = p + bmp.bmWidth * 4 * y;
 
-        for (x = 0; x < bmp.bmWidth; ++x) 
+		for (x = 0; x < bmp.bmWidth; ++x) 
 		{
 			if (px[3] == 0) 
 			{
@@ -195,77 +195,77 @@ void SetTranspBkgColor(HBITMAP hBitmap, COLORREF color)
 
 void SetHIMETRICtoDP(HDC hdc, SIZE* sz)
 {
-    POINT pt;
-    int nMapMode = GetMapMode(hdc);
-    if ( nMapMode < MM_ISOTROPIC && nMapMode != MM_TEXT )
-    {
-        // when using a constrained map mode, map against physical inch
-        SetMapMode(hdc,MM_HIMETRIC);
-        pt.x = sz->cx;
-        pt.y = sz->cy;
-        LPtoDP(hdc,&pt,1);
-        sz->cx = pt.x;
-        sz->cy = pt.y;
-        SetMapMode(hdc, nMapMode);
-    }
-    else
-    {
-        // map against logical inch for non-constrained mapping modes
-        int cxPerInch, cyPerInch;
-        cxPerInch = GetDeviceCaps(hdc,LOGPIXELSX);
-        cyPerInch = GetDeviceCaps(hdc,LOGPIXELSY);
-        sz->cx = MulDiv(sz->cx, cxPerInch, HIMETRIC_INCH);
-        sz->cy = MulDiv(sz->cy, cyPerInch, HIMETRIC_INCH);
-    }
+	POINT pt;
+	int nMapMode = GetMapMode(hdc);
+	if ( nMapMode < MM_ISOTROPIC && nMapMode != MM_TEXT )
+	{
+		// when using a constrained map mode, map against physical inch
+		SetMapMode(hdc,MM_HIMETRIC);
+		pt.x = sz->cx;
+		pt.y = sz->cy;
+		LPtoDP(hdc,&pt,1);
+		sz->cx = pt.x;
+		sz->cy = pt.y;
+		SetMapMode(hdc, nMapMode);
+	}
+	else
+	{
+		// map against logical inch for non-constrained mapping modes
+		int cxPerInch, cyPerInch;
+		cxPerInch = GetDeviceCaps(hdc,LOGPIXELSX);
+		cyPerInch = GetDeviceCaps(hdc,LOGPIXELSY);
+		sz->cx = MulDiv(sz->cx, cxPerInch, HIMETRIC_INCH);
+		sz->cy = MulDiv(sz->cy, cyPerInch, HIMETRIC_INCH);
+	}
 
-    pt.x = sz->cx;
-    pt.y = sz->cy;
-    DPtoLP(hdc,&pt,1);
-    sz->cx = pt.x;
-    sz->cy = pt.y;
+	pt.x = sz->cx;
+	pt.y = sz->cy;
+	DPtoLP(hdc,&pt,1);
+	sz->cx = pt.x;
+	sz->cy = pt.y;
 }
 
 INT_PTR BmpFilterLoadBitmap32(WPARAM wParam,LPARAM lParam)
 {
-    FIBITMAP *dib32 = NULL;
+	FIBITMAP *dib32 = NULL;
 
 	if(fei == NULL)
-        return 0;
+		return 0;
 
-    FIBITMAP *dib = (FIBITMAP *)CallService(MS_IMG_LOAD, lParam, IMGL_RETURNDIB);
+	FIBITMAP *dib = (FIBITMAP *)CallService(MS_IMG_LOAD, lParam, IMGL_RETURNDIB);
 	
 	if(dib == NULL)
 		return 0;
 
-    if(fei->FI_GetBPP(dib) != 32) {
-        dib32 = fei->FI_ConvertTo32Bits(dib);
-	    fei->FI_Unload(dib);
-    }
-    else
-        dib32 = dib;
+	if(fei->FI_GetBPP(dib) != 32) {
+		dib32 = fei->FI_ConvertTo32Bits(dib);
+		fei->FI_Unload(dib);
+	}
+	else
+		dib32 = dib;
 
-    if(dib32) {
-        if(fei->FI_IsTransparent(dib32)) {
-            if(wParam) {
-                DWORD *dwTrans = (DWORD *)wParam;
+	if(dib32) {
+		if(fei->FI_IsTransparent(dib32)) {
+			if(wParam) {
+				DWORD *dwTrans = (DWORD *)wParam;
 				*dwTrans = 1;
 			}
-        }
+		}
 		if(fei->FI_GetWidth(dib32) > 128 || fei->FI_GetHeight(dib32) > 128) {
 			FIBITMAP *dib_new = fei->FI_MakeThumbnail(dib32, 128, FALSE);
-            fei->FI_Unload(dib32);
-            if(dib_new == NULL)
+			fei->FI_Unload(dib32);
+			if(dib_new == NULL)
 				return 0;
-            dib32 = dib_new;
-        }
+			dib32 = dib_new;
+		}
 
-        HBITMAP bitmap = fei->FI_CreateHBITMAPFromDIB(dib32);
+		HBITMAP bitmap = fei->FI_CreateHBITMAPFromDIB(dib32);
 
-        fei->FI_Unload(dib32);
-        fei->FI_CorrectBitmap32Alpha(bitmap, FALSE);
-        return (INT_PTR)bitmap;
+		fei->FI_Unload(dib32);
+		fei->FI_CorrectBitmap32Alpha(bitmap, FALSE);
+		return (INT_PTR)bitmap;
 	}
-    return 0;
+	return 0;
 }
 
 static HWND hwndClui = 0;
@@ -284,7 +284,7 @@ int BmpFilterSaveBitmap(HBITMAP hBmp, char *szFile, int flags)
 	i.dwMask = IMGI_HBITMAP;
 	i.fif = FIF_UNKNOWN;
 
-    return !CallService(MS_IMG_SAVE, (WPARAM) &i, MAKELONG(0, flags));
+	return !CallService(MS_IMG_SAVE, (WPARAM) &i, MAKELONG(0, flags));
 }
 
 
@@ -297,7 +297,7 @@ int BmpFilterSaveBitmapW(HBITMAP hBmp, wchar_t *wszFile, int flags)
 	i.dwMask = IMGI_HBITMAP;
 	i.fif = FIF_UNKNOWN;
 
-    return !CallService(MS_IMG_SAVE, (WPARAM) &i, MAKELONG(IMGL_WCHAR, flags));
+	return !CallService(MS_IMG_SAVE, (WPARAM) &i, MAKELONG(IMGL_WCHAR, flags));
 }
 
 // Save an HBITMAP to an image
@@ -351,7 +351,7 @@ INT_PTR BmpFilterSaveBitmapW(WPARAM wParam,LPARAM lParam)
 
 INT_PTR BmpFilterCanSaveBitmap(WPARAM wParam,LPARAM lParam)
 {
-    return 1;
+	return 1;
 }
 
 
@@ -444,21 +444,21 @@ DWORD GetImgHash(HBITMAP hBitmap)
  */
 HBITMAP MakeGrayscale(HANDLE hContact, HBITMAP hBitmap)
 {
-    if(hBitmap) {
-        FIBITMAP *dib = fei->FI_CreateDIBFromHBITMAP(hBitmap);
+	if(hBitmap) {
+		FIBITMAP *dib = fei->FI_CreateDIBFromHBITMAP(hBitmap);
 
-        if(dib) {
-            FIBITMAP *dib_new = fei->FI_ConvertToGreyscale(dib);
-            fei->FI_Unload(dib);
-            if(dib_new) {
-                DeleteObject(hBitmap);
-                HBITMAP hbm_new = fei->FI_CreateHBITMAPFromDIB(dib_new);
-                fei->FI_Unload(dib_new);
-                return hbm_new;
-            }
-        }
-    }
-    return hBitmap;
+		if(dib) {
+			FIBITMAP *dib_new = fei->FI_ConvertToGreyscale(dib);
+			fei->FI_Unload(dib);
+			if(dib_new) {
+				DeleteObject(hBitmap);
+				HBITMAP hbm_new = fei->FI_CreateHBITMAPFromDIB(dib_new);
+				fei->FI_Unload(dib_new);
+				return hbm_new;
+			}
+		}
+	}
+	return hBitmap;
 }
 
 /*
@@ -469,8 +469,8 @@ BOOL MakeTransparentBkg(HANDLE hContact, HBITMAP *hBitmap)
 {
 	BYTE *p = NULL;
 	DWORD dwLen;
-    int width, height, i, j;
-    BITMAP bmp;
+	int width, height, i, j;
+	BITMAP bmp;
 	BYTE colors[8][3];
 	BOOL foundBkg[8];
 	BYTE *px1; 
@@ -479,7 +479,7 @@ BOOL MakeTransparentBkg(HANDLE hContact, HBITMAP *hBitmap)
 	int colorDiff;
 
 	GetObject(*hBitmap, sizeof(bmp), &bmp);
-    width = bmp.bmWidth;
+	width = bmp.bmWidth;
 	height = bmp.bmHeight;
 	colorDiff = DBGetContactSettingWord(hContact, "ContactPhoto", "TranspBkgColorDiff", 
 					DBGetContactSettingWord(0, AVS_MODULE, "TranspBkgColorDiff", 10));
@@ -490,7 +490,7 @@ BOOL MakeTransparentBkg(HANDLE hContact, HBITMAP *hBitmap)
 
 	dwLen = width * height * 4;
 	p = (BYTE *)malloc(dwLen);
-    if (p == NULL) 
+	if (p == NULL) 
 	{
 		return FALSE;
 	}
@@ -505,7 +505,7 @@ BOOL MakeTransparentBkg(HANDLE hContact, HBITMAP *hBitmap)
 		hBmpTmp = CopyBitmapTo32(*hBitmap);
 	}
 
-    GetBitmapBits(hBmpTmp, dwLen, p);
+	GetBitmapBits(hBmpTmp, dwLen, p);
 
 	// **** Get corner colors
 
@@ -580,7 +580,6 @@ BOOL MakeTransparentBkg(HANDLE hContact, HBITMAP *hBitmap)
 		free(p);
 		return FALSE;
 	}
-
 
 	// **** X corners have to have the same color
 
@@ -739,10 +738,8 @@ BOOL MakeTransparentBkg(HANDLE hContact, HBITMAP *hBitmap)
 		free(stack);
 	}
 
-    dwLen = SetBitmapBits(*hBitmap, dwLen, p);
-    free(p);
+	dwLen = SetBitmapBits(*hBitmap, dwLen, p);
+	free(p);
 
 	return TRUE;
 }
-
-

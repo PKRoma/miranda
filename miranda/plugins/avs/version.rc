@@ -88,7 +88,7 @@ BEGIN
             VALUE "LegalCopyright", "Copyright (C) 2010, Nightwish, Pescuma"
             VALUE "LegalTrademarks", "Licensed under the Gnu General Public License V2 or any later version"
             VALUE "OriginalFilename", "avs.dll"
-            VALUE "ProductName", "Miranda IM Avatar Service (UNICODE)"
+            VALUE "ProductName", "Miranda IM Avatar Service (Unicode)"
             VALUE "ProductVersion", __FILEVERSION_STRING
 #endif
         END

@@ -63,15 +63,49 @@ static void RemoveProtoPic(const char *szProto)
 	DBDeleteContactSetting(NULL, PPICT_MODULE, szProto);
 
 	if ( szProto ) {
-		PROTOACCOUNT **accs;
-		int count;
-		ProtoEnumAccounts( &count, &accs );
-		for(int i = 0; i < count; i++) {
-			if(g_ProtoPictures[i].szProtoname != NULL && !strcmp(g_ProtoPictures[i].szProtoname, szProto)) {
-				if(g_ProtoPictures[i].hbmPic != 0)
-					DeleteObject(g_ProtoPictures[i].hbmPic);
-				ZeroMemory((void *)&g_ProtoPictures[i], sizeof(struct avatarCacheEntry));
-				NotifyEventHooks(hEventChanged, 0, (LPARAM)&g_ProtoPictures[i]);
+		if (!lstrcmpA(AVS_DEFAULT,szProto)) {
+			for (int i = 0; i < g_ProtoPictures.getCount(); i++) {
+				if(g_ProtoPictures[i].szProtoname != NULL) {
+					protoPicCacheEntry& p = g_ProtoPictures[i];
+					if(p.hbmPic != 0) 
+						DeleteObject(p.hbmPic);
+					ZeroMemory(&p, sizeof(avatarCacheEntry));
+					CreateAvatarInCache(0, &p, (char *)p.szProtoname);
+					NotifyEventHooks(hEventChanged, 0, (LPARAM)&p);
+				}
+			}
+		}
+		else if (strstr(szProto, "Global avatar for")) {
+			char szProtoname[MAX_PATH] = {0};
+			lstrcpynA(szProtoname, szProto, lstrlenA(szProto)- lstrlenA("accounts"));
+			lstrcpyA(szProtoname, strrchr(szProtoname, ' ') + 1);
+			for (int i = 0; i < g_ProtoPictures.getCount(); i++)
+			{
+				PROTOACCOUNT* pdescr = (PROTOACCOUNT*)CallService(MS_PROTO_GETACCOUNT, 0, (LPARAM)g_ProtoPictures[i].szProtoname);
+				if (pdescr == NULL && lstrcmpA(g_ProtoPictures[i].szProtoname, szProto))
+					continue;
+				else if (!lstrcmpA(g_ProtoPictures[i].szProtoname, szProto) || !lstrcmpA(pdescr->szProtoName, szProtoname))
+				{
+					if(g_ProtoPictures[i].szProtoname != NULL)
+					{
+						protoPicCacheEntry& p = g_ProtoPictures[i];
+						if(p.hbmPic != 0) 
+							DeleteObject(p.hbmPic);
+						ZeroMemory(&p, sizeof(avatarCacheEntry));
+						CreateAvatarInCache(0, &p, (char *)p.szProtoname);
+						NotifyEventHooks(hEventChanged, 0, (LPARAM)&p);
+					}
+				}
+			}
+		}
+		else {
+			for(int i = 0; i < g_ProtoPictures.getCount(); i++) {
+				if(g_ProtoPictures[i].szProtoname != NULL && !strcmp(g_ProtoPictures[i].szProtoname, szProto)) {
+					if(g_ProtoPictures[i].hbmPic != 0)
+						DeleteObject(g_ProtoPictures[i].hbmPic);
+					ZeroMemory((void *)&g_ProtoPictures[i], sizeof(struct avatarCacheEntry));
+					NotifyEventHooks(hEventChanged, 0, (LPARAM)&g_ProtoPictures[i]);
+				}
 			}
 		}
 	}
@@ -109,20 +143,58 @@ static void SetProtoPic(char *szProto)
 		AVS_pathToRelative(FileName, szNewPath);
 		DBWriteContactSettingString(NULL, PPICT_MODULE, szProto, szNewPath);
 
-		PROTOACCOUNT **accs;
-		int count;
-		ProtoEnumAccounts( &count, &accs );
-		for(i = 0; i < count; i++) {
-			protoPicCacheEntry& p = g_ProtoPictures[i];
-			if ( lstrlenA(p.szProtoname) == 0)
-				break;
-			if(!strcmp(p.szProtoname, szProto) && lstrlenA(p.szProtoname) == lstrlenA(szProto)) {
-				if(p.hbmPic != 0) 
-					DeleteObject(p.hbmPic);
-				ZeroMemory(&p, sizeof(avatarCacheEntry));
-				CreateAvatarInCache(0, &p, (char *)szProto);
-				NotifyEventHooks(hEventChanged, 0, (LPARAM)&p );
-				break;
+		// Unsane: set defaut avatar
+		if (!lstrcmpA(AVS_DEFAULT, szProto))
+		{
+			for (i = 0; i < g_ProtoPictures.getCount(); i++)
+			{
+				protoPicCacheEntry& p = g_ProtoPictures[i];
+				if (lstrlenA(p.szProtoname) != 0)
+				{
+					if(p.hbmPic == 0) 
+					{
+						CreateAvatarInCache(0, &p, (char *)szProto);
+						NotifyEventHooks(hEventChanged, 0, (LPARAM)&p);
+					}
+				}
+			}
+		}
+		else if (strstr(szProto, "Global avatar for"))
+		{
+			char szProtoname[MAX_PATH] = {0};
+			lstrcpynA(szProtoname, szProto, lstrlenA(szProto)- lstrlenA("accounts"));
+			lstrcpyA(szProtoname, strrchr(szProtoname, ' ') + 1);
+			for (i = 0; i < g_ProtoPictures.getCount(); i++)
+			{
+				PROTOACCOUNT* pdescr = (PROTOACCOUNT*)CallService(MS_PROTO_GETACCOUNT, 0, (LPARAM)g_ProtoPictures[i].szProtoname);
+				if (pdescr == NULL && lstrcmpA(g_ProtoPictures[i].szProtoname, szProto))
+					continue;
+				else if (!lstrcmpA(g_ProtoPictures[i].szProtoname, szProto) || !lstrcmpA(pdescr->szProtoName, szProtoname))
+				{
+					protoPicCacheEntry& p = g_ProtoPictures[i];
+					if (lstrlenA(p.szProtoname) != 0)
+					{
+						if(p.hbmPic == 0) 
+						{
+							CreateAvatarInCache(0, &p, (char *)szProto);
+							NotifyEventHooks(hEventChanged, 0, (LPARAM)&p);
+						}
+					}
+				}
+			}
+		}
+		else
+			for(i = 0; i < g_ProtoPictures.getCount(); i++) {
+				protoPicCacheEntry& p = g_ProtoPictures[i];
+				if ( lstrlenA(p.szProtoname) == 0)
+					break;
+				if(!strcmp(p.szProtoname, szProto) && lstrlenA(p.szProtoname) == lstrlenA(szProto)) {
+					if(p.hbmPic != 0) 
+						DeleteObject(p.hbmPic);
+					ZeroMemory(&p, sizeof(avatarCacheEntry));
+					CreateAvatarInCache(0, &p, (char *)szProto);
+					NotifyEventHooks(hEventChanged, 0, (LPARAM)&p );
+					break;
 			}
 		}
 	}
@@ -133,7 +205,7 @@ static char* g_selectedProto;
 INT_PTR CALLBACK DlgProcOptionsAvatars(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch (msg) {
-   case WM_INITDIALOG:
+	case WM_INITDIALOG:
 		TranslateDialogDefault(hwndDlg);
 
 		CheckDlgButton(hwndDlg, IDC_SHOWWARNINGS, DBGetContactSettingByte(0, AVS_MODULE, "warnings", 0));
@@ -182,7 +254,7 @@ INT_PTR CALLBACK DlgProcOptionsAvatars(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			}
 		case 0:
 			switch (((LPNMHDR) lParam)->code) {
-         case PSN_APPLY:
+			case PSN_APPLY:
 				DBWriteContactSettingByte(NULL, AVS_MODULE, "warnings", IsDlgButtonChecked(hwndDlg, IDC_SHOWWARNINGS) ? 1 : 0);
 				DBWriteContactSettingByte(NULL, AVS_MODULE, "MakeGrayscale", IsDlgButtonChecked(hwndDlg, IDC_MAKE_GRAYSCALE) ? 1 : 0);
 				DBWriteContactSettingByte(NULL, AVS_MODULE, "MakeTransparentBkg", IsDlgButtonChecked(hwndDlg, IDC_MAKE_TRANSPARENT_BKG) ? 1 : 0);
@@ -288,8 +360,8 @@ INT_PTR CALLBACK DlgProcOptionsProtos(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 					else
 						RemoveProtoPic( szProto );
 
-                    NMHDR nm = { hwndList, IDC_PROTOCOLS, NM_CLICK };
-                    SendMessage(hwndDlg, WM_NOTIFY, 0, (LPARAM)&nm);
+					NMHDR nm = { hwndList, IDC_PROTOCOLS, NM_CLICK };
+					SendMessage(hwndDlg, WM_NOTIFY, 0, (LPARAM)&nm);
 				}
 				break;
 			}
@@ -342,15 +414,14 @@ INT_PTR CALLBACK DlgProcOptionsProtos(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 					if ( g_selectedProto ) {
 						DBVARIANT dbv = {0};
 						if(!DBGetContactSettingString(NULL, PPICT_MODULE, g_selectedProto, &dbv)) 
-                        {
+						{
 							if (!AVS_pathIsAbsolute(dbv.pszVal))
-                            {
-							    char szFinalPath[MAX_PATH];
-                                mir_snprintf(szFinalPath, SIZEOF(szFinalPath), "%%miranda_userdata%%\\%s", dbv.pszVal);
-							    SetDlgItemTextA(hwndDlg, IDC_PROTOAVATARNAME, szFinalPath);
-                            }
-                            else
-							    SetDlgItemTextA(hwndDlg, IDC_PROTOAVATARNAME, dbv.pszVal);
+							{
+								char szFinalPath[MAX_PATH];
+								mir_snprintf(szFinalPath, SIZEOF(szFinalPath), "%%miranda_path%%\\%s", dbv.pszVal);
+								SetDlgItemTextA(hwndDlg, IDC_PROTOAVATARNAME, szFinalPath);
+							}
+							else SetDlgItemTextA(hwndDlg, IDC_PROTOAVATARNAME, dbv.pszVal);
 
 							InvalidateRect(GetDlgItem(hwndDlg, IDC_PROTOPIC), NULL, TRUE);
 							DBFreeVariant(&dbv);
@@ -713,7 +784,7 @@ INT_PTR CALLBACK DlgProcAvatarUserInfo(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			SendMessage(protopic, AVATAR_RESPECTHIDDEN, 0, (LPARAM) FALSE);
 			SendMessage(protopic, AVATAR_SETRESIZEIFSMALLER, 0, (LPARAM) FALSE);
 
-            SetWindowLongPtr(hwndDlg, GWLP_USERDATA, (LONG_PTR)dat);
+			SetWindowLongPtr(hwndDlg, GWLP_USERDATA, (LONG_PTR)dat);
 			hContact = (HANDLE)lParam;
 			TranslateDialogDefault(hwndDlg);
 			SendMessage(hwndDlg, DM_SETAVATARNAME, 0, 0);

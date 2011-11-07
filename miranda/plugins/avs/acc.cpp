@@ -181,10 +181,10 @@ void StartFlash(HWND hwnd, ACCData* data)
 		return;
 
 	FLASHAVATAR fa = {0}; 
-    fa.hContact = data->hContact;
+	fa.hContact = data->hContact;
 	fa.cProto = data->proto;
 	fa.hParentWindow = hwnd;
-    fa.id = 1675;
+	fa.id = 1675;
 	CallService(MS_FAVATAR_MAKE, (WPARAM)&fa, 0);
 
 	if (fa.hWindow == NULL) 
@@ -369,8 +369,8 @@ void StartAnimatedGif(HWND hwnd, ACCData* data)
 	AVATARCACHEENTRY *ace = NULL;
 
 	if (data->hContact != NULL)
-        ace = (AVATARCACHEENTRY *) GetAvatarBitmap((WPARAM) data->hContact, 0);	
-    else
+		ace = (AVATARCACHEENTRY *) GetAvatarBitmap((WPARAM) data->hContact, 0);	
+	else
 		ace = (AVATARCACHEENTRY *) GetMyAvatar(0, (LPARAM) data->proto);
 
 	if (ace == NULL)
@@ -530,8 +530,8 @@ static LRESULT CALLBACK ACCWndProc(HWND hwnd, UINT msg,  WPARAM wParam, LPARAM l
 			SetWindowLongPtr(hwnd, 0, (LONG_PTR)data);
 
 			ZeroMemory(data, sizeof(ACCData));
-            data->hHook = HookEventMessage(ME_AV_AVATARCHANGED, hwnd, DM_AVATARCHANGED);
-            data->hHookMy = HookEventMessage(ME_AV_MYAVATARCHANGED, hwnd, DM_MYAVATARCHANGED);
+			data->hHook = HookEventMessage(ME_AV_AVATARCHANGED, hwnd, DM_AVATARCHANGED);
+			data->hHookMy = HookEventMessage(ME_AV_MYAVATARCHANGED, hwnd, DM_MYAVATARCHANGED);
 			data->hFont = (HFONT) GetStockObject(DEFAULT_GUI_FONT);
 			data->borderColor = -1;
 			data->bkgColor = -1;
@@ -544,13 +544,13 @@ static LRESULT CALLBACK ACCWndProc(HWND hwnd, UINT msg,  WPARAM wParam, LPARAM l
 
 			return TRUE;
 		}
-        case WM_NCDESTROY:
-        {
+		case WM_NCDESTROY:
+		{
 			DestroyAnimation(hwnd, data);
 			if (data) 
 			{
-                UnhookEvent(data->hHook);
-                UnhookEvent(data->hHookMy);
+				UnhookEvent(data->hHook);
+				UnhookEvent(data->hHookMy);
 				mir_free(data);
 			}
 			SetWindowLongPtr(hwnd, 0, (LONG_PTR)NULL);
@@ -662,10 +662,10 @@ static LRESULT CALLBACK ACCWndProc(HWND hwnd, UINT msg,  WPARAM wParam, LPARAM l
 			if (data->showingFlash && ServiceExists(MS_FAVATAR_GETINFO))
 			{
 				FLASHAVATAR fa = {0}; 
-                fa.hContact = data->hContact;
+				fa.hContact = data->hContact;
 				fa.cProto = data->proto;
 				fa.hParentWindow = hwnd;
-                fa.id = 1675;
+				fa.id = 1675;
 				CallService(MS_FAVATAR_GETINFO, (WPARAM)&fa, 0);
 				if (fa.hWindow != NULL)
 				{
@@ -713,7 +713,7 @@ static LRESULT CALLBACK ACCWndProc(HWND hwnd, UINT msg,  WPARAM wParam, LPARAM l
 
 			return TRUE;
 		}
-        case DM_AVATARCHANGED:
+		case DM_AVATARCHANGED:
 		{
 			if (data->hContact == (HANDLE) wParam)
 			{
@@ -723,9 +723,9 @@ static LRESULT CALLBACK ACCWndProc(HWND hwnd, UINT msg,  WPARAM wParam, LPARAM l
 				NotifyAvatarChange(hwnd);
 				Invalidate(hwnd);
 			}
-            break;
+			break;
 		}
-        case DM_MYAVATARCHANGED:
+		case DM_MYAVATARCHANGED:
 		{
 			if (data->hContact == NULL && strcmp(data->proto, (char*) wParam) == 0)
 			{
@@ -735,7 +735,7 @@ static LRESULT CALLBACK ACCWndProc(HWND hwnd, UINT msg,  WPARAM wParam, LPARAM l
 				NotifyAvatarChange(hwnd);
 				Invalidate(hwnd);
 			}
-            break;
+			break;
 		}
 		case WM_NCPAINT:
 		case WM_PAINT:

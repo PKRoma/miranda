@@ -28,11 +28,11 @@ static HANDLE hOkToExit = NULL;
 
 static int OkToExitProc(WPARAM wParam, LPARAM lParam)
 {
-    g_shutDown = TRUE;
+	g_shutDown = TRUE;
 	SetEvent(hShutdownEvent);
-    CloseHandle(hShutdownEvent);
+	CloseHandle(hShutdownEvent);
 	UnhookEvent(hOkToExit);
-    return 0;
+	return 0;
 }
 
 

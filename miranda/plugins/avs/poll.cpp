@@ -88,7 +88,6 @@ void FreePolls()
 {
 }
 
-
 // Return true if this protocol can have avatar requested
 static BOOL PollProtocolCanHaveAvatar(const char *szProto)
 {
@@ -118,7 +117,7 @@ static BOOL PollContactCanHaveAvatar(HANDLE hContact, const char *szProto)
 static BOOL PollCheckContact(HANDLE hContact, const char *szProto)
 {
 	return !DBGetContactSettingByte(hContact, "ContactPhoto", "Locked", 0)
-            && FindAvatarInCache(hContact, FALSE, TRUE) != NULL;
+			&& FindAvatarInCache(hContact, FALSE, TRUE) != NULL;
 }
 
 static void QueueRemove(HANDLE hContact)
@@ -233,7 +232,7 @@ int FetchAvatarFor(HANDLE hContact, char *szProto = NULL)
 	if (szProto == NULL)
 		szProto = (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
 
-    if (szProto != NULL && PollProtocolCanHaveAvatar(szProto) && PollContactCanHaveAvatar(hContact, szProto))
+	if (szProto != NULL && PollProtocolCanHaveAvatar(szProto) && PollContactCanHaveAvatar(hContact, szProto))
 	{
 		// Can have avatar, but must request it?
 		if (
@@ -246,7 +245,7 @@ int FetchAvatarFor(HANDLE hContact, char *szProto = NULL)
 			pai_s.cbSize = sizeof(pai_s);
 			pai_s.hContact = hContact;
 			pai_s.format = PA_FORMAT_UNKNOWN;
-            //_DebugTrace(hContact, "schedule request");
+			//_DebugTrace(hContact, "schedule request");
 			result = CallProtoService(szProto, PS_GETAVATARINFO, GAIF_FORCE, (LPARAM)&pai_s);
 			ProcessAvatarInfo(pai_s.hContact, result, &pai_s, szProto);
 		}
@@ -254,7 +253,6 @@ int FetchAvatarFor(HANDLE hContact, char *szProto = NULL)
 
 	return result;
 }
-
 
 static void RequestThread(void *vParam)
 {
@@ -308,4 +306,3 @@ static void RequestThread(void *vParam)
 	DeleteCriticalSection(&cs);
 	queue.destroy();
 }
-
