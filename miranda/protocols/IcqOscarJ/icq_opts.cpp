@@ -298,13 +298,9 @@ static INT_PTR CALLBACK DlgProcIcqPrivacyOpts(HWND hwndDlg, UINT msg, WPARAM wPa
 				PBYTE buf=NULL;
 				int buflen=0;
 
-/*				ppro->ppackTLVLNTSBytefromDB(&buf, &buflen, "e-mail", (BYTE)!ppro->getSettingByte(NULL, "PublishPrimaryEmail", 0), TLV_EMAIL);
-				ppro->ppackTLVLNTSBytefromDB(&buf, &buflen, "e-mail0", 0, TLV_EMAIL);
-				ppro->ppackTLVLNTSBytefromDB(&buf, &buflen, "e-mail1", 0, TLV_EMAIL);*/
-
-				ppackTLVWord(&buf, &buflen, 0x19A, (WORD)!ppro->getSettingByte(NULL, "Auth", 1));
+				ppackTLVWord(&buf, &buflen, 0x19A, !ppro->getSettingByte(NULL, "Auth", 1));
 				ppackTLVByte(&buf, &buflen, 0x212, ppro->getSettingByte(NULL, "WebAware", 0));
-        ppackTLVWord(&buf, &buflen, 0x1F9, ppro->getSettingByte(NULL, "PrivacyLevel", 1));
+				ppackTLVWord(&buf, &buflen, 0x1F9, ppro->getSettingByte(NULL, "PrivacyLevel", 1));
 
 				ppro->icq_changeUserDirectoryInfoServ(buf, (WORD)buflen, DIRECTORYREQUEST_UPDATEPRIVACY);
 
