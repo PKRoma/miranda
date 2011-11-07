@@ -414,6 +414,7 @@
 #define ICQ_META_ERROR              0x0001
 #define ICQ_META_CLI_REQUEST        0x0002
 #define ICQ_META_SRV_REPLY          0x0003
+#define ICQ_META_SRV_UPDATE         0x0004
 
 /* Subtypes for Authorization Family 0x0017 */
 #define ICQ_SIGNON_ERROR            0x0001

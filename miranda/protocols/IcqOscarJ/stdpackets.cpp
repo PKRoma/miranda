@@ -56,10 +56,10 @@ static void packServMsgSendHeader(icq_packet *p, DWORD dwSequence, DWORD dwID1, 
 }
 
 
-static void packServIcqExtensionHeader(icq_packet *p, CIcqProto *ppro, WORD wLen, WORD wType, WORD wSeq)
+static void packServIcqExtensionHeader(icq_packet *p, CIcqProto *ppro, WORD wLen, WORD wType, WORD wSeq, WORD wCmd = ICQ_META_CLI_REQUEST)
 {
 	serverPacketInit(p, (WORD)(24 + wLen));
-	packFNACHeader(p, ICQ_EXTENSIONS_FAMILY, ICQ_META_CLI_REQUEST, 0, wSeq | ICQ_META_CLI_REQUEST<<0x10);
+	packFNACHeader(p, ICQ_EXTENSIONS_FAMILY, ICQ_META_CLI_REQUEST, 0, wSeq | (wCmd<<0x10));
 	packWord(p, 0x01);                // TLV type 1
 	packWord(p, (WORD)(10 + wLen));   // TLV len
 	packLEWord(p, (WORD)(8 + wLen));  // Data chunk size (TLV.Length-2)
@@ -69,9 +69,9 @@ static void packServIcqExtensionHeader(icq_packet *p, CIcqProto *ppro, WORD wLen
 }
 
 
-static void packServIcqDirectoryHeader(icq_packet *p, CIcqProto *ppro, WORD wLen, WORD wType, WORD wCommand, WORD wSeq)
+static void packServIcqDirectoryHeader(icq_packet *p, CIcqProto *ppro, WORD wLen, WORD wType, WORD wCommand, WORD wSeq, WORD wSubCommand = ICQ_META_CLI_REQUEST)
 {
-	packServIcqExtensionHeader(p, ppro, wLen + 0x1E, CLI_META_INFO_REQ, wSeq);
+	packServIcqExtensionHeader(p, ppro, wLen + 0x1E, CLI_META_INFO_REQ, wSeq, wSubCommand);
 	packLEWord(p, wType);
 	packLEWord(p, wLen + 0x1A);
 	packFNACHeader(p, 0x5b9, wCommand, 0, 0, 2);
@@ -1126,7 +1126,7 @@ DWORD CIcqProto::SearchByUin(DWORD dwUin)
 {
 	WORD wInfoLen;
 	icq_packet pBuffer; // I reuse the ICQ packet type as a generic buffer
-	// I should be ashamed! ;)
+                       // I should be ashamed! ;)
 
 	// Calculate data size
 	wInfoLen = 4 + getUINLen(dwUin);
@@ -1149,7 +1149,7 @@ DWORD CIcqProto::SearchByNames(const char *pszNick, const char *pszFirstName, co
 	WORD wInfoLen = 0;
 	WORD wNickLen,wFirstLen,wLastLen;
 	icq_packet pBuffer; // I reuse the ICQ packet type as a generic buffer
-	// I should be ashamed! ;)
+                       // I should be ashamed! ;)
 
 	wNickLen = strlennull(pszNick);
 	wFirstLen = strlennull(pszFirstName);
@@ -1362,7 +1362,7 @@ DWORD CIcqProto::icq_changeUserPasswordServ(const char *szPassword)
 	WORD wPasswordLen = strlennull(szPassword);
 	DWORD dwCookie = GenerateCookie(0);
 
-	packServIcqExtensionHeader(&packet, this, (WORD)(wPasswordLen + 4), CLI_META_INFO_REQ, (WORD)dwCookie);
+	packServIcqExtensionHeader(&packet, this, (WORD)(wPasswordLen + 4), CLI_META_INFO_REQ, (WORD)dwCookie, ICQ_META_SRV_UPDATE);
 	packLEWord(&packet, META_SET_PASSWORD_REQ);
 	packLEWord(&packet, wPasswordLen);
 	packBuffer(&packet, (BYTE*)szPassword, wPasswordLen);
@@ -1380,7 +1380,7 @@ DWORD CIcqProto::icq_changeUserDirectoryInfoServ(const BYTE *pData, WORD wDataLe
 	pCookieData->bRequestType = bRequestType;
 	DWORD dwCookie = AllocateCookie(CKT_DIRECTORY_UPDATE, 0, NULL, pCookieData);
 
-	packServIcqDirectoryHeader(&packet, this, wDataLen + 4, META_DIRECTORY_UPDATE, DIRECTORY_SET_INFO, (WORD)dwCookie);
+	packServIcqDirectoryHeader(&packet, this, wDataLen + 4, META_DIRECTORY_UPDATE, DIRECTORY_SET_INFO, (WORD)dwCookie, ICQ_META_SRV_UPDATE);
 	packWord(&packet, 0x0003);
 	packWord(&packet, wDataLen);
 	packBuffer(&packet, pData, wDataLen);
