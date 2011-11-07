@@ -104,12 +104,12 @@ FI_INTERFACE *fei = 0;
 PLUGININFOEX pluginInfoEx = {
 	sizeof(PLUGININFOEX),
 #if defined(_UNICODE)
-	"Avatar service (Unicode) Mataes Release",
+	"Avatar service (Unicode)",
 #else
-	"Avatar service Mataes Release",
+	"Avatar service",
 #endif
 	__VERSION_DWORD,
-	"Load and manage contact pictures for other plugins. Mod for Mataes Pack.",
+	"Load and manage contact pictures for other plugins.",
 	"Nightwish, Pescuma",
 	"",
 	"Copyright 2000-2011 Miranda-IM project",
