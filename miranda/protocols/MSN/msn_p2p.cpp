@@ -2132,7 +2132,7 @@ void  CMsnProto::p2p_invite(unsigned iAppID, filetransfer* ft, const char *wlid)
 
 	if (ft->p2p_dest == NULL)
 	{
-		ft->p2p_isV2 = (cont->cap2 & capex_SupportsPeerToPeerV2) != 0;
+		ft->p2p_isV2 = (cont->cap2 & capex_SupportsPeerToPeerV2) != 0 || (cont->cap1 >> 28) >= 10;
 		ft->p2p_dest = mir_strdup(wlid ? wlid : cont->email);
 	}
 

@@ -223,8 +223,13 @@ void  CMsnProto::p2p_startSessions(const char* wlid)
 	for (int i=0; i < sessionList.getCount(); i++) 
 	{
 		filetransfer* FT = &sessionList[i];
-		if (!FT->bAccepted  && (FT->std.flags & PFTS_SENDING) && !_stricmp(FT->p2p_dest, szEmail))
-			p2p_invite(FT->p2p_type, FT, wlid);
+		if (!FT->bAccepted  && !_stricmp(FT->p2p_dest, szEmail))
+		{
+			if (FT->p2p_appID == MSN_APPID_FILE && (FT->std.flags & PFTS_SENDING))
+				p2p_invite(FT->p2p_type, FT, wlid);
+			else if (FT->p2p_appID != MSN_APPID_FILE && !(FT->std.flags & PFTS_SENDING))
+				p2p_invite(FT->p2p_type, FT, wlid);
+		}
 	}
 
 	LeaveCriticalSection(&sessionLock);
