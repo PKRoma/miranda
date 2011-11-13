@@ -1874,7 +1874,7 @@ remove:
 				{
 					isConnectSuccess = true;
 				}
-				else 
+				else
 				{
 					MSN_DebugLog("Unknown security package '%s'", data.security);
 

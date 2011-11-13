@@ -386,16 +386,16 @@ void CMsnProto::MSNConnDetectThread( void* )
 			getStaticString(NULL, "YourHost", parBuf, sizeof(parBuf));
 			if (msnExternalIP == NULL || strcmp(msnExternalIP, parBuf) != 0)
 			{
-				MyConnection.extIP = inet_addr( parBuf );
-				if ( MyConnection.extIP == INADDR_NONE )
+				MyConnection.extIP = inet_addr(parBuf);
+				if (MyConnection.extIP == INADDR_NONE)
 				{
-					PHOSTENT myhost = gethostbyname( parBuf );
-					if ( myhost != NULL )
+					PHOSTENT myhost = gethostbyname(parBuf);
+					if (myhost != NULL)
 						MyConnection.extIP = ((PIN_ADDR)myhost->h_addr)->S_un.S_addr;
 					else
 						setByte("AutoGetHost", 1);
 				}
-				if ( MyConnection.extIP != INADDR_NONE )
+				if (MyConnection.extIP != INADDR_NONE)
 				{
 					MyConnection.intIP = MyConnection.extIP;
 					MyConnection.udpConType = MyConnection.extIP ? (ConEnum)portsMapped : conUnknown;
@@ -408,13 +408,13 @@ void CMsnProto::MSNConnDetectThread( void* )
 			break;
 
 		case 1:
-			if ( msnExternalIP != NULL )
-				MyConnection.extIP = inet_addr( msnExternalIP );
+			if (msnExternalIP != NULL)
+				MyConnection.extIP = inet_addr(msnExternalIP);
 			else
 			{
-				gethostname( parBuf, sizeof( parBuf ));
-				PHOSTENT myhost = gethostbyname( parBuf );
-				if ( myhost != NULL )
+				gethostname(parBuf, sizeof(parBuf));
+				PHOSTENT myhost = gethostbyname(parBuf);
+				if (myhost != NULL)
 					MyConnection.extIP = ((PIN_ADDR)myhost->h_addr)->S_un.S_addr;
 			}
 			MyConnection.intIP = MyConnection.extIP;

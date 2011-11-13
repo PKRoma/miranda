@@ -895,7 +895,7 @@ HANDLE __cdecl CMsnProto::SendFile(HANDLE hContact, const PROTOCHAR* szDescripti
 		return 0;
 	}
 
-	if (cont->cap1 & 0xf0000000)
+	if ((cont->cap1 & 0xf0000000))
 		p2p_invite(MSN_APPID_FILE, sft, NULL);
 	else
 	{
