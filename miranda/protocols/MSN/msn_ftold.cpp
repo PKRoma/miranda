@@ -336,7 +336,7 @@ void CMsnProto::msnftp_startFileSend(ThreadData* info, const char* Invcommand, c
 	HANDLE sb = NULL;
 
 	filetransfer* ft = info->mMsnFtp; info->mMsnFtp = NULL;
-	if (ft != NULL) 
+	if (ft != NULL && MyConnection.extIP) 
     {
 		nlb.cbSize = sizeof(nlb);
 		nlb.pfnNewConnectionV2 = MSN_ConnectionProc;
@@ -347,6 +347,16 @@ void CMsnProto::msnftp_startFileSend(ThreadData* info, const char* Invcommand, c
 			MSN_DebugLog("Unable to bind the port for incoming transfers");
 	}
 
+	char hostname[256] = "";
+	gethostname(hostname, sizeof(hostname));
+	PHOSTENT he = gethostbyname(hostname);
+
+	const PIN_ADDR addr = (PIN_ADDR)he->h_addr_list[0];
+	if (addr)
+		strcpy(hostname, inet_ntoa(*addr));
+	else
+		hostname[0] = 0;
+
 	char command[1024];
 	int  nBytes = mir_snprintf(command, sizeof(command),
 		"MIME-Version: 1.0\r\n"
@@ -354,12 +364,17 @@ void CMsnProto::msnftp_startFileSend(ThreadData* info, const char* Invcommand, c
 		"Invitation-Command: %s\r\n"
 		"Invitation-Cookie: %s\r\n"
 		"IP-Address: %s\r\n"
+		"IP-Address-Internal: %s\r\n"
 		"Port: %i\r\n"
+		"PortX: %i\r\n"
+		"PortX-Internal: %i\r\n"
 		"AuthCookie: %i\r\n"
 		"Launch-Application: FALSE\r\n"
 		"Request-Data: IP-Address:\r\n\r\n",
-		sb ? "ACCEPT" : "CANCEL",
-		Invcookie, MyConnection.GetMyExtIPStr(), nlb.wExPort, MSN_GenRandom());
+		sb && MyConnection.extIP ? "ACCEPT" : "CANCEL",
+		Invcookie, MyConnection.GetMyExtIPStr(), hostname, 
+		nlb.wExPort, nlb.wExPort ^ 0x3141, nlb.wPort ^ 0x3141,
+		MSN_GenRandom());
 
 	info->sendPacket("MSG", "N %d\r\n%s", nBytes, command);
 

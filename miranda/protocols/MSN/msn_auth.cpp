@@ -267,7 +267,13 @@ int CMsnProto::MSN_GetPassportAuth(void)
 					else
 					{
 						const char* szFault = ezxml_txt(ezxml_get(xml, "S:Fault", 0, "faultcode", -1));
-						retVal = strcmp(szFault, "wsse:FailedAuthentication") == 0 ? 3 : 5;
+						if (szFault[0])
+							retVal = strcmp(szFault, "wsse:FailedAuthentication") == 0 ? 3 : 5;
+						else
+						{
+							const char* szFault = ezxml_txt(ezxml_get(xml, "S:Fault", 0, "S:Code", 0, "S:Subcode", 0, "S:Value", -1));
+							retVal = strcmp(szFault, "wst:FailedAuthentication") == 0 ? 3 : 5;
+						}
 						if (retVal == 5 && defaultUrlAllow)
 						{
 							strcpy(szPassportHost, defaultPassportUrl);
