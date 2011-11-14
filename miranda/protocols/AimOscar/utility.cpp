@@ -75,6 +75,9 @@ void CAimProto::broadcast_status(int status)
 		
 		avatar_id_lg = 0;
 		avatar_id_sm = 0;
+		mir_free(hash_lg); hash_lg = NULL;
+		mir_free(hash_sm); hash_sm = NULL;
+
 		pd_flags = 0;
 		pd_info_id = 0;
 		pd_mode = 0;

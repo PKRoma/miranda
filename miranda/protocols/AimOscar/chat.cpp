@@ -146,8 +146,8 @@ int CAimProto::OnGCEvent(WPARAM wParam,LPARAM lParam)
 			}
 			break;
 		case GC_USER_CHANMGR: 
-			DialogBoxParam( hInstance, MAKEINTRESOURCE(IDD_CHATROOM_INVITE), NULL, invite_to_chat_dialog, 
-				LPARAM( new invite_chat_param(item->id, this )));
+			DialogBoxParam(hInstance, MAKEINTRESOURCE(IDD_CHATROOM_INVITE), NULL, invite_to_chat_dialog, 
+				LPARAM(new invite_chat_param(item->id, this)));
 			break;
 
 		case GC_USER_PRIVMESS:
@@ -163,8 +163,8 @@ int CAimProto::OnGCEvent(WPARAM wParam,LPARAM lParam)
 			switch(gch->dwData) 
 			{
 			case 10:
-				DialogBoxParam( hInstance, MAKEINTRESOURCE(IDD_CHATROOM_INVITE), NULL, invite_to_chat_dialog, 
-					LPARAM( new invite_chat_param(item->id, this )));
+				DialogBoxParam(hInstance, MAKEINTRESOURCE(IDD_CHATROOM_INVITE), NULL, invite_to_chat_dialog, 
+					LPARAM(new invite_chat_param(item->id, this)));
 				break;
 
 			case 20:
