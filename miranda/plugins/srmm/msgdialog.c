@@ -79,7 +79,7 @@ static BOOL IsUtfSendAvailable(HANDLE hContact)
 	 return ( CallProtoService(szProto, PS_GETCAPS, PFLAGNUM_4, 0) & PF4_IMSENDUTF ) ? TRUE : FALSE;
 }
 
-static int RTL_Detect(TCHAR *ptszText)
+static int RTL_Detect(const TCHAR *ptszText)
 {
     WORD *infoTypeC2;
     int i;
@@ -94,6 +94,75 @@ static int RTL_Detect(TCHAR *ptszText)
     }
     return 0;
 }
+
+HANDLE SendMessageDirect(const TCHAR *szMsg, HANDLE hContact, char *szProto)
+{
+	int flags = 0;
+	int bufSize = 0;
+	char *sendBuffer = NULL;
+
+	if (RTL_Detect(szMsg)) flags |= PREF_RTL;
+
+	if (IsUtfSendAvailable(hContact)) 
+	{
+		flags |= PREF_UTF;
+		sendBuffer = mir_utf8encodeT(szMsg);
+		if (!sendBuffer || !sendBuffer[0]) 
+		{
+			mir_free(sendBuffer);
+			return NULL;
+		}
+		bufSize = (int)strlen(sendBuffer) + 1;
+	}
+	else 
+	{
+		flags |= PREF_TCHAR;
+		sendBuffer = mir_t2a(szMsg);
+		if (!sendBuffer || !sendBuffer[0]) 
+		{
+			mir_free(sendBuffer);
+			return NULL;
+		}
+		bufSize = (int)strlen(sendBuffer) + 1;
+#ifdef _UNICODE
+		{
+			size_t bufSizeT = (_tcslen(szMsg) + 1) * sizeof(TCHAR) ;
+
+			sendBuffer = (char*)mir_realloc(sendBuffer, bufSizeT + bufSize);
+			memcpy((TCHAR*)&sendBuffer[bufSize], szMsg, bufSizeT);
+			bufSize += (int)bufSizeT;
+		}
+#endif
+	}
+
+	if (hContact == NULL)
+	{
+		mir_free(sendBuffer);
+		return NULL;
+	}
+
+	if (sendBuffer) 
+	{
+		HANDLE hNewEvent, hSendId;
+		DBEVENTINFO dbei = { 0 };
+		dbei.cbSize = sizeof(dbei);
+		dbei.eventType = EVENTTYPE_MESSAGE;
+		dbei.flags = DBEF_SENT | (flags & PREF_UTF ? DBEF_UTF : 0) | (flags & PREF_RTL ? DBEF_RTL : 0);
+		dbei.szModule = szProto;
+		dbei.timestamp = (DWORD)time(NULL);
+		dbei.cbBlob = (DWORD)bufSize;
+		dbei.pBlob = (PBYTE)sendBuffer;
+
+		hNewEvent = (HANDLE) CallService(MS_DB_EVENT_ADD, (WPARAM)hContact, (LPARAM)&dbei);
+		hSendId = (HANDLE) CallContactService(hContact, MsgServiceName(hContact), flags, (LPARAM) sendBuffer);
+		msgQueue_add(hContact, hSendId, szMsg, hNewEvent);
+		mir_free(sendBuffer);
+
+		return hNewEvent;
+	}
+	return NULL;
+}
+
 
 static void AddToFileList(TCHAR ***pppFiles,int *totalCount,const TCHAR* szFilename)
 {
@@ -1204,8 +1273,10 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			DBCONTACTWRITESETTING *cws = (DBCONTACTWRITESETTING *) wParam;
 
 			pszNewTitleEnd = _T("Message Session");
-			if (dat->hContact) {
-				if (dat->szProto) {
+			if (dat->hContact) 
+			{
+				if (dat->szProto)
+				{
 					TCHAR buf[128] = _T("");
 					int statusIcon = DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_STATUSICON, SRMSGDEFSET_STATUSICON);
 
@@ -1242,7 +1313,8 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 					else
 						mir_sntprintf(newtitle, SIZEOF(newtitle), _T("%s (%s): %s"), contactName, szStatus, TranslateTS(pszNewTitleEnd));
 
-					if (!cws || (!strcmp(cws->szModule, dat->szProto) && !strcmp(cws->szSetting, "Status"))) {
+					if (!cws || (!strcmp(cws->szModule, dat->szProto) && !strcmp(cws->szSetting, "Status")))
+					{
 						InvalidateRect(GetDlgItem(hwndDlg, IDC_PROTOCOL), NULL, TRUE);
 						if (statusIcon)
 							SendMessage(hwndDlg, DM_UPDATEWINICON, 0, 0);
@@ -1250,7 +1322,8 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 
 					// log
 					if ((dat->wStatus != dat->wOldStatus || lParam != 0) && 
-						  DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_SHOWSTATUSCH, SRMSGDEFSET_SHOWSTATUSCH)) {
+						  DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_SHOWSTATUSCH, SRMSGDEFSET_SHOWSTATUSCH))
+					{
 						DBEVENTINFO dbei;
 						TCHAR buffer[200];
 						HANDLE hNewEvent;
@@ -1259,7 +1332,8 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 						TCHAR *szOldStatus = (TCHAR*)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, (WPARAM) dat->wOldStatus, GSMDF_TCHAR);
 						TCHAR *szNewStatus = (TCHAR*)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, (WPARAM) dat->wStatus, GSMDF_TCHAR);
 
-						if (dat->wStatus == ID_STATUS_OFFLINE) {
+						if (dat->wStatus == ID_STATUS_OFFLINE)
+						{
 							iLen = mir_sntprintf(buffer, SIZEOF(buffer), TranslateT("signed off (was %s)"), szOldStatus);
 							SendMessage(hwndDlg, DM_TYPING, 0, 0);
 						}
@@ -1269,7 +1343,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 							iLen = mir_sntprintf(buffer, SIZEOF(buffer), TranslateT("is now %s (was %s)"), szNewStatus, szOldStatus);
 
 						{
-                     char* blob = ( char* )alloca( 1000 );
+							char* blob = ( char* )alloca(1000);
 							#if defined( _UNICODE )
 								int ansiLen = WideCharToMultiByte(CP_ACP, 0, buffer, -1, blob, 1000, 0, 0);
 								memcpy( blob+ansiLen, buffer, sizeof(TCHAR)*(iLen+1));
@@ -1288,7 +1362,8 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 							dbei.timestamp = (DWORD)time(NULL);
 							dbei.szModule = dat->szProto;
 							hNewEvent = (HANDLE) CallService(MS_DB_EVENT_ADD, (WPARAM) dat->hContact, (LPARAM) & dbei);
-							if (dat->hDbEventFirst == NULL) {
+							if (dat->hDbEventFirst == NULL) 
+							{
 								dat->hDbEventFirst = hNewEvent;
 								SendMessage(hwndDlg, DM_REMAKELOG, 0, 0);
 							}
@@ -1659,91 +1734,38 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			if (!IsWindowEnabled(GetDlgItem(hwndDlg, IDOK)))
 				break;
 			{
-				int flags = 0;
-				char *sendBuffer = NULL;
+				HANDLE hNewEvent;
 
 				int bufSize = GetWindowTextLength(GetDlgItem(hwndDlg, IDC_MESSAGE)) + 1;
 				TCHAR* temp = (TCHAR*)alloca(bufSize * sizeof(TCHAR));
 				GetDlgItemText(hwndDlg, IDC_MESSAGE, temp, bufSize);
 				if (!temp[0]) break;
 
-				tcmdlist_append(dat->cmdList, temp);
-
-				if (RTL_Detect(temp)) flags |= PREF_RTL;
-
-				if (IsUtfSendAvailable(dat->hContact)) 
+				hNewEvent = SendMessageDirect(temp, dat->hContact, dat->szProto);
+				if (hNewEvent)
 				{
-					flags |= PREF_UTF;
-					sendBuffer = mir_utf8encodeT(temp);
-					if (!sendBuffer || !sendBuffer[0]) 
-					{
-						mir_free(sendBuffer);
-						break;
-					}
-					bufSize = (int)strlen(sendBuffer) + 1;
-				}
-				else 
-				{
-					flags |= PREF_TCHAR;
-					sendBuffer = mir_t2a(temp);
-					if (!sendBuffer || !sendBuffer[0]) 
-					{
-						mir_free(sendBuffer);
-						break;
-					}
-					bufSize = (int)strlen(sendBuffer) + 1;
-#ifdef _UNICODE
-					{
-						size_t bufSizeT = (_tcslen(temp) + 1) * sizeof(TCHAR) ;
+					tcmdlist_append(dat->cmdList, temp);
 
-						sendBuffer = (char*)mir_realloc(sendBuffer, bufSizeT + bufSize);
-						memcpy((TCHAR*)&sendBuffer[bufSize], temp, bufSizeT);
-						bufSize += (int)bufSizeT;
-					}
-#endif
-				}
-				dat->cmdListInd = -1;
-				if (dat->nTypeMode == PROTOTYPE_SELFTYPING_ON)
-					NotifyTyping(dat, PROTOTYPE_SELFTYPING_OFF);
+					dat->cmdListInd = -1;
+					if (dat->nTypeMode == PROTOTYPE_SELFTYPING_ON)
+						NotifyTyping(dat, PROTOTYPE_SELFTYPING_OFF);
 
-				if (dat->hContact == NULL)
-				{
-					mir_free(sendBuffer);
-					break;      //never happens
-				}
+					EnableWindow(GetDlgItem(hwndDlg, IDOK), FALSE);
+					SetFocus(GetDlgItem(hwndDlg, IDC_MESSAGE));
 
-				EnableWindow(GetDlgItem(hwndDlg, IDOK), FALSE);
-				SetFocus(GetDlgItem(hwndDlg, IDC_MESSAGE));
-
-				if (sendBuffer) 
-				{
-					HANDLE hNewEvent, hSendId;
-					DBEVENTINFO dbei = { 0 };
-					dbei.cbSize = sizeof(dbei);
-					dbei.eventType = EVENTTYPE_MESSAGE;
-					dbei.flags = DBEF_SENT | (flags & PREF_UTF ? DBEF_UTF : 0) | (flags & PREF_RTL ? DBEF_RTL : 0);
-					dbei.szModule = dat->szProto;
-					dbei.timestamp = (DWORD)time(NULL);
-					dbei.cbBlob = (DWORD)bufSize;
-					dbei.pBlob = (PBYTE)sendBuffer;
-
-					hNewEvent = (HANDLE) CallService(MS_DB_EVENT_ADD, (WPARAM)dat->hContact, (LPARAM)&dbei);
 					if (dat->hDbEventFirst == NULL) 
 					{
 						dat->hDbEventFirst = hNewEvent;
 						SendMessage(hwndDlg, DM_REMAKELOG, 0, 0);
 					}
-					hSendId = (HANDLE) CallContactService(dat->hContact, MsgServiceName(dat->hContact), flags, (LPARAM) sendBuffer);
-					msgQueue_add(dat->hContact, hSendId, temp, hNewEvent);
-					mir_free(sendBuffer);
+
+					SetDlgItemText(hwndDlg, IDC_MESSAGE, _T(""));
+
+					if (g_dat->flags & SMF_AUTOCLOSE)
+						DestroyWindow(hwndDlg);
+					else if (g_dat->flags & SMF_AUTOMIN)
+						ShowWindow(hwndDlg, SW_MINIMIZE);
 				}
-
-				SetDlgItemText(hwndDlg, IDC_MESSAGE, _T(""));
-
-				if (g_dat->flags & SMF_AUTOCLOSE)
-					DestroyWindow(hwndDlg);
-				else if (g_dat->flags & SMF_AUTOMIN)
-					ShowWindow(hwndDlg, SW_MINIMIZE);
 			}
 			return TRUE;
 
