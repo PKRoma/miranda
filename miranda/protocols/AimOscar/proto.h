@@ -433,7 +433,7 @@ struct CAimProto : public PROTO_INTERFACE
 	//////////////////////////////////////////////////////////////////////////////////////
 	// utilities.cpp
 
-	struct msg_ack_param { HANDLE hContact; int id; bool success; };
+	struct msg_ack_param { HANDLE hContact; const char *msg; int id; bool success; };
 
 	void   __cdecl msg_ack_success(void*);
 	void   __cdecl start_connection(void*);

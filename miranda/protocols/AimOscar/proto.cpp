@@ -593,7 +593,7 @@ void __cdecl CAimProto::msg_ack_success(void* param)
 	Sleep(150);
 	sendBroadcast(msg_ack->hContact, ACKTYPE_MESSAGE, 
 		msg_ack->success ? ACKRESULT_SUCCESS : ACKRESULT_FAILED, 
-		(HANDLE)msg_ack->id, 0);
+		(HANDLE)msg_ack->id, (LPARAM)msg_ack->msg);
 	
 	mir_free(msg_ack);
 }
@@ -601,11 +601,24 @@ void __cdecl CAimProto::msg_ack_success(void* param)
 
 int __cdecl CAimProto::SendMsg(HANDLE hContact, int flags, const char* pszSrc)
 {
-	if (state != 1) return 0;
 	if (pszSrc == NULL) return 0;
 
+	if (state != 1)
+	{
+		msg_ack_param *msg_ack = (msg_ack_param*)mir_calloc(sizeof(msg_ack_param));
+		msg_ack->hContact = hContact;
+		msg_ack->msg = "Message cannot be sent, when protocol offline";
+		ForkThread(&CAimProto::msg_ack_success, msg_ack);
+	}
+
 	char *sn = getSetting(hContact, AIM_KEY_SN);
-	if (sn == NULL) return 0;
+	if (sn == NULL)
+	{
+		msg_ack_param *msg_ack = (msg_ack_param*)mir_calloc(sizeof(msg_ack_param));
+		msg_ack->hContact = hContact;
+		msg_ack->msg = "Screen Name for the contact not available";
+		ForkThread(&CAimProto::msg_ack_success, msg_ack);
+	}
 
 	char* msg;
 	if (flags & PREF_UNICODE) 
@@ -643,6 +656,7 @@ int __cdecl CAimProto::SendMsg(HANDLE hContact, int flags, const char* pszSrc)
 	{
 		msg_ack_param *msg_ack = (msg_ack_param*)mir_alloc(sizeof(msg_ack_param));
 		msg_ack->hContact = hContact;
+		msg_ack->msg = NULL;
 		msg_ack->id = res;
 		msg_ack->success = res != 0;
 		ForkThread(&CAimProto::msg_ack_success, msg_ack);

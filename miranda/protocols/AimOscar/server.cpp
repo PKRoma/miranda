@@ -1109,6 +1109,7 @@ void CAimProto::snac_message_accepted(SNAC &snac)//family 0x004
 			msg_ack_param *msg_ack = (msg_ack_param*)mir_alloc(sizeof(msg_ack_param));
 			msg_ack->hContact = hContact;
 			msg_ack->id = *(int*)icbm_cookie & 0x7fffffff;
+			msg_ack->msg = NULL;
 			msg_ack->success = true;
 			ForkThread(&CAimProto::msg_ack_success, msg_ack);
 		}
@@ -1545,10 +1546,12 @@ void CAimProto::snac_file_decline(SNAC &snac)//family 0x0004
 		{
 			int sn_len = snac.ubyte(10);
 			char* sn   = snac.part(11, sn_len);
+			int reason = snac.ushort(11 + sn_len);
 			HANDLE hContact = contact_from_sn(sn);
 
 			msg_ack_param *msg_ack = (msg_ack_param*)mir_alloc(sizeof(msg_ack_param));
 			msg_ack->hContact = hContact;
+			msg_ack->msg = NULL;
 			msg_ack->id = *(int*)icbm_cookie & 0x7fffffff;
 			msg_ack->success = false;
 			ForkThread(&CAimProto::msg_ack_success, msg_ack);
