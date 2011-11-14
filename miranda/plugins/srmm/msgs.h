@@ -102,6 +102,7 @@ INT_PTR CALLBACK ErrorDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
 int DbEventIsForMsgWindow(DBEVENTINFO *dbei);
 int DbEventIsShown(DBEVENTINFO * dbei, struct MessageWindowData *dat);
 void StreamInEvents(HWND hwndDlg, HANDLE hDbEventFirst, int count, int fAppend);
+HANDLE SendMessageDirect(const TCHAR *szMsg, HANDLE hContact, char *szProto);
 
 void LoadMsgLogIcons(void);
 void FreeMsgLogIcons(void);

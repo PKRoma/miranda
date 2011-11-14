@@ -73,7 +73,11 @@ INT_PTR CALLBACK ErrorDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPar
 		switch (LOWORD(wParam)) 
 		{
 		case IDOK:
-			SendMessageCmd(item->hContact, (char*)item->szMsg, sizeof(TCHAR) == sizeof(wchar_t));
+			{
+				char *szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) item->hContact, 0);
+				SendMessageDirect(item->szMsg, item->hContact, szProto);
+			}
+
 			DestroyWindow(hwndDlg);
 			break;
 
