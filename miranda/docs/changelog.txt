@@ -4,6 +4,16 @@
 
 
 
+* New in 0.9.35
+Bugfixes:
+ - Fixed message sending retry issues
+ - AIM: Fixed memory leak
+ - AIM: Improved error notifications
+ - ICQ: Fixed user info update
+ - MSN: Fixed avatar/file transfer with WLM 2011
+ - MSN: Fixed url reset when transitioning from old version
+
+
 * New in 0.9.34
 Bugfixes:
  - AIM: Improved avatar support
