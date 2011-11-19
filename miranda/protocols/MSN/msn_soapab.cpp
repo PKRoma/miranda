@@ -814,8 +814,12 @@ bool CMsnProto::MSN_ABFind(const char* szMethod, const char* szGuid, bool deltas
 
 					if (MyOptions.ManageServer)
 					{
-						ezxml_t grps = ezxml_get(contInf, "groupIds", 0, "guid", -1);
-						MSN_SyncContactToServerGroup(hContact, szContId, grps);
+						ezxml_t grpid = ezxml_child(contInf, "groupIds");
+						if (!deltas || grpid)
+						{
+							ezxml_t grps = ezxml_child(grpid, "guid");
+							MSN_SyncContactToServerGroup(hContact, szContId, grps);
+						}
 					}
 					
 					const char* szNick = NULL;
