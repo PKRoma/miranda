@@ -245,6 +245,12 @@
     <ClInclude Include="jabber_db_utils.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="jabber_icolib.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="jabber_xstatus.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="icos\add2roster.ico">
