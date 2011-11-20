@@ -963,8 +963,10 @@ BOOL CJabberProto::OnIqSetGoogleSharedStatus(HXML iqNode, CJabberIqInfo* pInfo) 
 		LPCTSTR txt = xmlGetText(xmlGetChild(query, _T("show")));
 		if (txt && 0 == _tcsicmp(_T("dnd"), txt))
 			status = ID_STATUS_DND;
-		else
+		else if (m_iStatus == ID_STATUS_DND || m_iStatus == ID_STATUS_INVISIBLE)
 			status = ID_STATUS_ONLINE;
+		else
+			status = m_iStatus;
 	}
 	
 	if (status != m_iStatus) SetStatus(status);
