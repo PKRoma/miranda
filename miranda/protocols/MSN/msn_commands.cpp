@@ -537,7 +537,7 @@ void CMsnProto::MSN_ReceiveMessage(ThreadData* info, char* cmdString, char* para
 				
 				dbei.cbSize = sizeof(dbei);
 				dbei.eventType = EVENTTYPE_MESSAGE;
-				dbei.flags = DBEF_SENT | DBEF_READ | DBEF_UTF | (isRtl ? DBEF_RTL : 0);
+				dbei.flags = DBEF_SENT | DBEF_UTF | (isRtl ? DBEF_RTL : 0);
 				dbei.szModule = m_szModuleName;
 				dbei.timestamp = time(NULL);
 				dbei.cbBlob = (unsigned)strlen(msgBody) + 1;
@@ -568,8 +568,9 @@ void CMsnProto::MSN_ReceiveMessage(ThreadData* info, char* cmdString, char* para
 	{
 		const char* tTypingUser = tHeader["TypingUser"];
 
-		if (tTypingUser != NULL && info->mChatID[0] == 0) {
-			HANDLE hContact = MSN_HContactFromEmail(tTypingUser, tTypingUser, true, true);
+		if (tTypingUser != NULL && info->mChatID[0] == 0 && _stricmp(email, MyOptions.szEmail)) 
+		{
+			HANDLE hContact = MSN_HContactFromEmail(tTypingUser, tTypingUser);
 			MSN_CallService(MS_PROTO_CONTACTISTYPING, (WPARAM) hContact, 7);
 		}
 	}
