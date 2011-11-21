@@ -1856,9 +1856,9 @@ remove:
 
 				if (!strcmp(data.security, "SSO")) 
 				{
-					if (MSN_GetPassportAuth()) 
+					if (MSN_GetPassportAuth())
 					{
-						SendBroadcast(NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_WRONGPASSWORD);
+						m_iDesiredStatus = ID_STATUS_OFFLINE;
 						return 1;
 					}
 
