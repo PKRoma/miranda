@@ -154,9 +154,8 @@ int CMsnProto::MSN_GetPassportAuth(void)
 	mir_free(szTs1A);
 	mir_free(szEncPassword);
 
-	char* szPassportHost = (char*)mir_alloc(256);;
-	if (getStaticString(NULL, "MsnPassportHost", szPassportHost, 256) 
-		|| strstr(szPassportHost, "/RST2.srf") == NULL)
+	char* szPassportHost = (char*)mir_alloc(256);
+	if (getStaticString(NULL, "MsnPassportHost", szPassportHost, 256))
 		strcpy(szPassportHost, defaultPassportUrl);
 
 	bool defaultUrlAllow = strcmp(szPassportHost, defaultPassportUrl) != 0;
@@ -258,7 +257,8 @@ int CMsnProto::MSN_GetPassportAuth(void)
 						MSN_CallService(MS_UTILS_OPENURL, 1, (LPARAM)errurl);
 					}
 
-					ezxml_t tokrdr = ezxml_get(xml, "S:Body", 0, "S:Fault", 0, "S:Detail", 0, "psf:redirectUrl", -1);
+					ezxml_t tokf = ezxml_get(xml, "S:Body", 0, "S:Fault", 0, "S:Detail", -1);
+					ezxml_t tokrdr = ezxml_child(tokf, "psf:redirectUrl");
 					if (tokrdr != NULL)
 					{
 						strcpy(szPassportHost, ezxml_txt(tokrdr));
@@ -266,19 +266,19 @@ int CMsnProto::MSN_GetPassportAuth(void)
 					}
 					else
 					{
-						const char* szFault = ezxml_txt(ezxml_get(xml, "S:Fault", 0, "faultcode", -1));
-						if (szFault[0])
-							retVal = strcmp(szFault, "wsse:FailedAuthentication") == 0 ? 3 : 5;
-						else
-						{
-							const char* szFault = ezxml_txt(ezxml_get(xml, "S:Fault", 0, "S:Code", 0, "S:Subcode", 0, "S:Value", -1));
-							retVal = strcmp(szFault, "wst:FailedAuthentication") == 0 ? 3 : 5;
-						}
-						if (retVal == 5 && defaultUrlAllow)
+						const char* szFault = ezxml_txt(ezxml_get(tokf, "psf:error", 0, "psf:value", -1));
+						retVal = strcmp(szFault, "0x80048821") == 0 ? 3 : (tokf ? 5 : 7);
+						if (retVal != 3 && defaultUrlAllow)
 						{
 							strcpy(szPassportHost, defaultPassportUrl);
 							defaultUrlAllow = false;
 							retVal = -1;
+						}
+						else if (retVal != 3 && retVal != 7)
+						{
+							char err[512];
+							mir_snprintf(err, sizeof(err), "Unknown Authentication error: %s", szFault);
+							MSN_ShowError(err);
 						}
 					}
 				}
@@ -302,10 +302,21 @@ int CMsnProto::MSN_GetPassportAuth(void)
 	{
 		if (!Miranda_Terminated())
 		{
-			MSN_ShowError(retVal == 3 ? "Your username or password is incorrect" : 
-				"Unable to contact MS Passport servers check proxy/firewall settings");
-			
-			SendBroadcast(NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_WRONGPASSWORD);
+			switch (retVal)
+			{
+			case 3:
+				MSN_ShowError("Your username or password is incorrect");
+				SendBroadcast(NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_WRONGPASSWORD);
+				break;
+
+			case 5:
+				break;
+
+			default:
+				MSN_ShowError("Unable to contact MS Passport servers check proxy/firewall settings");
+				SendBroadcast(NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_NOSERVER);
+				break;
+			}
 		}
 	}
 	else
