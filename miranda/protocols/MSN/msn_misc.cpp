@@ -1417,6 +1417,26 @@ bool CMsnProto::MSN_IsMeByContact(HANDLE hContact, char* szEmail)
 	return _stricmp(emailPtr, MyOptions.szEmail) == 0;
 }
 
+bool MSN_MsgWndExist(HANDLE hContact)
+{
+	MessageWindowInputData msgWinInData = 
+		{ sizeof(MessageWindowInputData), hContact, MSG_WINDOW_UFLAG_MSG_BOTH };
+	MessageWindowData msgWinData = {0};
+	msgWinData.cbSize = sizeof(MessageWindowData);
+
+	bool res = MSN_CallService(MS_MSG_GETWINDOWDATA, (WPARAM)&msgWinInData, (LPARAM)&msgWinData) != 0;
+	res = res || msgWinData.hwndWindow;
+	if (res) 
+	{	
+		msgWinInData.hContact = (HANDLE)MSN_CallService(MS_MC_GETMETACONTACT, (WPARAM)hContact, 0);
+		if (msgWinInData.hContact != NULL) 
+		{
+			res = MSN_CallService(MS_MSG_GETWINDOWDATA, (WPARAM)&msgWinInData, (LPARAM)&msgWinData) != 0;
+			res |= (msgWinData.hwndWindow == NULL);
+		}
+	}
+	return res;
+}
 
 void MSN_MakeDigest(const char* chl, char* dgst)
 {

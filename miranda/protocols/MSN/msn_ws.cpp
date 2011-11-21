@@ -73,22 +73,7 @@ bool ThreadData::isTimeout(void)
 			res = false;
 		else if (mType == SERVER_SWITCHBOARD) 
 		{
-			MessageWindowInputData msgWinInData = 
-				{ sizeof(MessageWindowInputData), hContact, MSG_WINDOW_UFLAG_MSG_BOTH };
-			MessageWindowData msgWinData = {0};
-			msgWinData.cbSize = sizeof(MessageWindowData);
-
-			res = MSN_CallService(MS_MSG_GETWINDOWDATA, (WPARAM)&msgWinInData, (LPARAM)&msgWinData) != 0;
-			res |= (msgWinData.hwndWindow == NULL);
-			if (res) 
-			{	
-				msgWinInData.hContact = (HANDLE)MSN_CallService(MS_MC_GETMETACONTACT, (WPARAM)hContact, 0);
-				if (msgWinInData.hContact != NULL) 
-				{
-					res = MSN_CallService(MS_MSG_GETWINDOWDATA, (WPARAM)&msgWinInData, (LPARAM)&msgWinData) != 0;
-					res |= (msgWinData.hwndWindow == NULL);
-				}
-			}
+			res = MSN_MsgWndExist(hContact);
 			if (res) 
 			{	
 				WORD status = proto->getWord(hContact, "Status", ID_STATUS_OFFLINE);

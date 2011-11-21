@@ -177,6 +177,7 @@ char*		MSN_GetAvatarHash(char* szContext);
 void        MSN_GetAvatarFileName(HANDLE hContact, char* pszDest, size_t cbLen, const char *ext);
 int			MSN_GetImageFormat(void* buf, const char** ext);
 int			MSN_GetImageFormat(const char* file);
+bool		MSN_MsgWndExist(HANDLE hContact);
 
 #define		MSN_SendNickname(a) MSN_SendNicknameUtf(UTF8(a))
 
