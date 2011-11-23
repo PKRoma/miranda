@@ -411,11 +411,11 @@ void HotkeyToName(TCHAR *buf, int size, BYTE shift, BYTE key)
 		sttHokeyVkToName(key));
 }
 
-WORD GetHotkeyValue( INT_PTR idHotkey )
+WORD GetHotkeyValue(INT_PTR idHotkey)
 {
-	for ( int i = 0; i < hotkeys.getCount(); i++ )
-		if ( hotkeys[i]->idHotkey == idHotkey )
-			return hotkeys[i]->Hotkey;
+	for (int i = 0; i < hotkeys.getCount(); i++)
+		if (hotkeys[i]->idHotkey == idHotkey)
+			return hotkeys[i]->Enabled ? hotkeys[i]->Hotkey : 0;
 
 	return 0;
 }
