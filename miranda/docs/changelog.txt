@@ -4,6 +4,17 @@
 
 
 
+				
+* New in 0.9.36
+Bugfixes:
+ - Fixed disabling hotkey issue
+ - Fixed icon blinking
+ - Jabber: Fixed inability login into Away with GTalk
+ - MSN: Fixed contact jumping out of group
+ - MSN: Fixed issues with multiple instances
+ - MSN: Improved error notifications
+
+
 * New in 0.9.35
 Bugfixes:
  - Fixed message sending retry issues
