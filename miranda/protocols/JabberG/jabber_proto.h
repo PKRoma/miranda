@@ -246,7 +246,7 @@ struct CJabberProto : public PROTO_INTERFACE
 	BOOL m_bGoogleSharedStatusLock;
 	void OnIqResultGoogleSharedStatus(HXML iqNode, CJabberIqInfo* pInfo);
 	BOOL OnIqSetGoogleSharedStatus(HXML iqNode, CJabberIqInfo* pInfo);
-	void SendIqGoogleSharedStatus(int status);
+	void SendIqGoogleSharedStatus(int status, const TCHAR *msg);
 
 	//====| Data |========================================================================
 
@@ -920,7 +920,7 @@ struct CJabberProto : public PROTO_INTERFACE
 	HANDLE ChatRoomHContactFromJID( const TCHAR* jid );
 	void   Log( const char* fmt, ... );
 	void   SendVisibleInvisiblePresence( BOOL invisible );
-	void   SendPresenceTo( int status, TCHAR* to, HXML extra, TCHAR *msg = NULL );
+	void   SendPresenceTo( int status, TCHAR* to, HXML extra, const TCHAR *msg = NULL );
 	void   SendPresence( int m_iStatus, bool bSendToAll );
 	void   StringAppend( char* *str, int *sizeAlloced, const char* fmt, ... );
 	TCHAR* GetClientJID( const TCHAR* jid, TCHAR*, size_t );

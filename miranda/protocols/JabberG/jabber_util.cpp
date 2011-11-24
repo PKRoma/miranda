@@ -798,7 +798,7 @@ time_t __stdcall JabberIsoToUnixTime( const TCHAR* stamp )
 		return ( time_t ) 0;
 }
 
-void CJabberProto::SendPresenceTo( int status, TCHAR* to, HXML extra, TCHAR *msg )
+void CJabberProto::SendPresenceTo( int status, TCHAR* to, HXML extra, const TCHAR *msg )
 {
 	if ( !m_bJabberOnline ) return;
 
@@ -888,8 +888,7 @@ void CJabberProto::SendPresenceTo( int status, TCHAR* to, HXML extra, TCHAR *msg
 	EnterCriticalSection( &m_csModeMsgMutex );
 	switch ( status ) {
 	case ID_STATUS_ONLINE:
-		if ( msg || m_modeMsgs.szOnline )
-			p << XCHILD( _T("status"), msg ? msg : m_modeMsgs.szOnline );
+		if ( !msg ) msg = m_modeMsgs.szOnline;
 		break;
 	case ID_STATUS_INVISIBLE:
 		if (!m_bGoogleSharedStatus) p << XATTR( _T("type"), _T("invisible"));
@@ -898,31 +897,33 @@ void CJabberProto::SendPresenceTo( int status, TCHAR* to, HXML extra, TCHAR *msg
 	case ID_STATUS_ONTHEPHONE:
 	case ID_STATUS_OUTTOLUNCH:
 		p << XCHILD( _T("show"), _T("away"));
-		if ( msg || m_modeMsgs.szAway )
-			p << XCHILD( _T("status"), msg ? msg : m_modeMsgs.szAway );
+		if ( !msg ) msg = m_modeMsgs.szAway;
 		break;
 	case ID_STATUS_NA:
 		p << XCHILD( _T("show"), _T("xa"));
-		if ( msg || m_modeMsgs.szNa )
-			p << XCHILD( _T("status"), msg ? msg : m_modeMsgs.szNa );
+		if ( !msg ) msg = m_modeMsgs.szNa;
 		break;
 	case ID_STATUS_DND:
 	case ID_STATUS_OCCUPIED:
 		p << XCHILD( _T("show"), _T("dnd"));
-		if ( msg || m_modeMsgs.szDnd )
-			p << XCHILD( _T("status"), msg ? msg : m_modeMsgs.szDnd );
+		if ( !msg ) msg = m_modeMsgs.szDnd;
 		break;
 	case ID_STATUS_FREECHAT:
 		p << XCHILD( _T("show"), _T("chat"));
-		if ( msg || m_modeMsgs.szFreechat )
-			p << XCHILD( _T("status"), msg ? msg : m_modeMsgs.szFreechat );
+		if ( !msg ) msg = m_modeMsgs.szFreechat;
 		break;
 	default:
 		// Should not reach here
 		break;
 	}
+	
+	if ( msg )
+		p << XCHILD( _T("status"), msg );
+
+	if ( m_bGoogleSharedStatus && !to )
+		SendIqGoogleSharedStatus( status, msg );
+
 	LeaveCriticalSection( &m_csModeMsgMutex );
-	if (m_bGoogleSharedStatus && !to) SendIqGoogleSharedStatus(status);
 	m_ThreadInfo->send( p );
 }
 
@@ -974,10 +975,10 @@ BOOL CJabberProto::OnIqSetGoogleSharedStatus(HXML iqNode, CJabberIqInfo* pInfo) 
 	return TRUE;
 }
 
-void CJabberProto::SendIqGoogleSharedStatus(int status) {
+void CJabberProto::SendIqGoogleSharedStatus(int status, const TCHAR *msg) {
 	XmlNodeIq iq(m_iqManager.AddHandler(&CJabberProto::OnIqResultGoogleSharedStatus, JABBER_IQ_TYPE_SET));
 	HXML query = iq << XQUERY(_T(JABBER_FEAT_GTALK_SHARED_STATUS)) << XATTR(_T("version"), _T("2"));
-	query << XCHILD(_T("status"));
+	query << XCHILD(_T("status"), msg);
 	if (status == ID_STATUS_INVISIBLE) {
 		query << XCHILD(_T("show"), _T("default"));
 		query << XCHILD(_T("invisible")) << XATTR(_T("value"), _T("true"));
