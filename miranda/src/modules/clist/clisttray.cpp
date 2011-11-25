@@ -202,7 +202,7 @@ int fnTrayIconAdd(HWND hwnd, const char *szProto, const char *szIconProto, int s
 	nid.cbSize = ( cli.shellVersion >= 5 ) ? sizeof(nid) : NOTIFYICONDATA_V1_SIZE;
 	nid.hWnd = hwnd;
 	nid.uID = cli.trayIcon[i].id;
-	nid.uFlags = mToolTipTrayTips ? NIF_ICON | NIF_MESSAGE | NIF_TIP : NIF_ICON | NIF_MESSAGE;
+	nid.uFlags = mToolTipTrayTips ? NIF_ICON | NIF_MESSAGE : NIF_ICON | NIF_MESSAGE | NIF_TIP;
 	nid.uCallbackMessage = TIM_CALLBACK;
 	nid.hIcon = cli.trayIcon[i].hBaseIcon;
 
@@ -374,7 +374,7 @@ int fnTrayIconUpdate(HICON hNewIcon, const TCHAR *szNewTip, const char *szPrefer
 	lock;
 	nid.cbSize = ( cli.shellVersion >= 5 ) ? sizeof(nid) : NOTIFYICONDATA_V1_SIZE;
 	nid.hWnd = cli.hwndContactList;
-	nid.uFlags = mToolTipTrayTips ? NIF_ICON | NIF_TIP : NIF_ICON;
+	nid.uFlags = mToolTipTrayTips ? NIF_ICON : NIF_ICON | NIF_TIP;
 	nid.hIcon = hNewIcon;
 	if (!hNewIcon)
 	{ ulock; return -1; }
