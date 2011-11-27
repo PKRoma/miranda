@@ -5,6 +5,12 @@
 
 
 				
+* New in 0.9.37
+Bugfixes:
+ - Fixed tray balloon notifications
+ - Jabber: Fixed GTalk status message
+
+
 * New in 0.9.36
 Bugfixes:
  - Fixed disabling hotkey issue
