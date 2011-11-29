@@ -534,7 +534,7 @@ int CMsnProto::OnDbSettingChanged(WPARAM wParam,LPARAM lParam)
 
 int CMsnProto::OnIdleChanged(WPARAM wParam, LPARAM lParam)
 {
-	if (m_iStatus == ID_STATUS_INVISIBLE)
+	if (m_iStatus == ID_STATUS_INVISIBLE || m_iStatus <= ID_STATUS_OFFLINE)
 		return 0;
 
 	bool bIdle = (lParam & IDF_ISIDLE) != 0;
@@ -545,7 +545,7 @@ int CMsnProto::OnIdleChanged(WPARAM wParam, LPARAM lParam)
 		isIdle = false;
 		MSN_SetServerStatus(m_iDesiredStatus);
 	}
-	else if (!isIdle && bIdle && !bPrivacy)
+	else if (!isIdle && bIdle && !bPrivacy && m_iDesiredStatus != ID_STATUS_AWAY)
 	{
 		isIdle = true;
 		MSN_SetServerStatus(ID_STATUS_IDLE);
