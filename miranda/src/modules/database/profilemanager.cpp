@@ -414,7 +414,7 @@ static INT_PTR CALLBACK DlgProfileSelect(HWND hwndDlg, UINT msg, WPARAM wParam, 
 			findProfiles(dat->pd->szProfileDir, EnumProfilesForList, (LPARAM)&ped);
 			PostMessage(hwndDlg, WM_FOCUSTEXTBOX, 0, 0);
 
-			dat->hFileNotify = FindFirstChangeNotification(dat->pd->szProfileDir, 0, 
+			dat->hFileNotify = FindFirstChangeNotification(dat->pd->szProfileDir, TRUE, 
 				FILE_NOTIFY_CHANGE_FILE_NAME | FILE_NOTIFY_CHANGE_LAST_WRITE);
 			if (dat->hFileNotify != INVALID_HANDLE_VALUE) 
 				SetTimer(hwndDlg, 0, 1200, NULL);
