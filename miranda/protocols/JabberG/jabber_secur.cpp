@@ -280,6 +280,7 @@ TScramAuth::TScramAuth( ThreadData* info ) :
 	TJabberAuth( info )
 {
 	szName = "SCRAM-SHA-1";
+	cnonce = msg1 = serverSignature = NULL;
 }
 
 TScramAuth::~TScramAuth()
