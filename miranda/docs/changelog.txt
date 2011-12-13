@@ -5,6 +5,13 @@
 
 
 				
+* New in 0.9.38
+Bugfixes:
+ - Profile manager doesn't react to changes in subfolders
+ - Jabber: Fix rare crash
+ - MSN: Do not transition to idle if you are away
+
+
 * New in 0.9.37
 Bugfixes:
  - Fixed tray balloon notifications
