@@ -451,7 +451,7 @@ retrycon:
 								if (_stricmp(lrtrimp(szRes), "Chunked") == 0)
 									acksz = hdrend - szResult;
 							}
-							else if (txtParseParam(szResult, NULL, "Connection:", "\n", szRes, sizeof(szRes)))
+							if (txtParseParam(szResult, NULL, "Connection:", "\n", szRes, sizeof(szRes)))
 							{
 								needClose = (_stricmp(lrtrimp(szRes), "close") == 0);
 							}
