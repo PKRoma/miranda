@@ -290,7 +290,7 @@ static int httpTransact(char* szUrl, char* szResult, int resSize, char* szAction
 
 				sz = mir_snprintf (szData, 4096,
 					szPostHdr, szPath, szHost, sPort,
-					sz, "schemas-upnp-org:control-1-0", "QueryStateVariable", szData1);
+					sz, "urn:schemas-upnp-org:control-1-0", "QueryStateVariable", szData1);
 			}
 			break;
 		}
