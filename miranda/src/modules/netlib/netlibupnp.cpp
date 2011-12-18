@@ -800,7 +800,7 @@ void NetlibUPnPCleanup(void*)
 	{
 		char* szData = ( char* )alloca(4096);
 		char buf[50], lip[50];
-		unsigned i, j = 0, k, num = 0;
+		unsigned i, j = 0, k, num = 100;
 
 		WORD ports[30];
 
