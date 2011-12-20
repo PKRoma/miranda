@@ -51,7 +51,7 @@ PLUGININFO pluginInfo = {
 	sizeof(PLUGININFO),
 	"Miranda Image services",
 	__VERSION_DWORD,
-	"Generic image services for Miranda IM",
+	"Generic image services for Miranda IM.",
 	"Nightwish, The FreeImage project (http://freeimage.sourceforge.net/)",
 	"",
 	"Copyright 2000-2008 Miranda-IM project, uses the FreeImage distribution",
@@ -64,7 +64,7 @@ PLUGININFOEX pluginInfoEx = {
 	sizeof(PLUGININFOEX),
 	"Miranda Image services",
 	__VERSION_DWORD,
-	"Generic image services for Miranda IM",
+	"Generic image services for Miranda IM.",
 	"Nightwish, The FreeImage project (http://freeimage.sourceforge.net/)",
 	"",
 	"Copyright 2000-2008 Miranda-IM project, uses the FreeImage distribution",
@@ -1055,6 +1055,7 @@ void FI_Populate(void)
 	feif.FI_LoadMultiBitmapFromMemory = FreeImage_LoadMultiBitmapFromMemory;
 
 	feif.FI_OpenMultiBitmap = FreeImage_OpenMultiBitmap;
+	feif.FI_OpenMultiBitmapU = FreeImage_OpenMultiBitmapU;
 	feif.FI_CloseMultiBitmap = FreeImage_CloseMultiBitmap;
 	feif.FI_GetPageCount = FreeImage_GetPageCount;
 	feif.FI_AppendPage = FreeImage_AppendPage;

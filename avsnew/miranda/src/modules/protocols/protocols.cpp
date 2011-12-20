@@ -52,6 +52,20 @@ static LIST<PROTOCOLDESCRIPTOR> protos( 10, CompareProtos );
 
 static INT_PTR Proto_BroadcastAck(WPARAM wParam,LPARAM lParam)
 {
+	#if defined( _UNICODE )
+		if ( wParam == ACKTYPE_AVATAR && lParam != 0 ) {
+			PROTO_AVATAR_INFORMATION* ai = (PROTO_AVATAR_INFORMATION*)lParam;
+			if ( ai->cbSize == sizeof(PROTO_AVATAR_INFORMATION)) {
+				PROTO_AVATAR_INFORMATIONW aiw;
+				aiw.cbSize = sizeof( aiw );
+				aiw.hContact = ai->hContact;
+				aiw.format = ai->format;
+				MultiByteToWideChar( CP_ACP, 0, ai->filename, -1, aiw.filename, SIZEOF(aiw.filename));
+
+				lParam = ( LPARAM )&aiw;
+		}	}
+	#endif
+
 	return NotifyEventHooks(hAckEvent,wParam,lParam);
 }
 

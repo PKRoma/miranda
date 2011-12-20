@@ -130,6 +130,7 @@ typedef struct _tagFI_interface {
 // Multipaging interface ----------------------------------------------------
 
     FIMULTIBITMAP *(DLL_CALLCONV *FI_OpenMultiBitmap)(FREE_IMAGE_FORMAT fif, const char *filename, BOOL create_new, BOOL read_only, BOOL keep_cache_in_memory FI_DEFAULT(FALSE), int flags FI_DEFAULT(0));
+    FIMULTIBITMAP *(DLL_CALLCONV *FI_OpenMultiBitmapU)(FREE_IMAGE_FORMAT fif, const wchar_t *filename, BOOL create_new, BOOL read_only, BOOL keep_cache_in_memory FI_DEFAULT(FALSE), int flags FI_DEFAULT(0));
     BOOL (DLL_CALLCONV *FI_CloseMultiBitmap)(FIMULTIBITMAP *bitmap, int flags FI_DEFAULT(0));
     int (DLL_CALLCONV *FI_GetPageCount)(FIMULTIBITMAP *bitmap);
     void (DLL_CALLCONV *FI_AppendPage)(FIMULTIBITMAP *bitmap, FIBITMAP *data);
@@ -344,10 +345,12 @@ typedef struct _tagFI_interface {
 #define FI_GetFIFFromFilenameT FI_GetFIFFromFilenameU
 #define FI_GetFileTypeT FI_GetFileTypeU
 #define FI_LoadT FI_LoadU
+#define FI_OpenMultiBitmapT FI_OpenMultiBitmapU
 #else
 #define FI_GetFIFFromFilenameT FI_GetFIFFromFilename
 #define FI_GetFileTypeT FI_GetFileType
 #define FI_LoadT FI_Load
+#define FI_OpenMultiBitmapT FI_OpenMultiBitmap
 #endif
 
 /*
@@ -440,6 +443,7 @@ typedef struct _tagIMGSRVC_INFO {
     union {
         char *szName;
         wchar_t *wszName;
+        TCHAR *tszName;
     };
     HBITMAP hbm;
     FIBITMAP *dib;

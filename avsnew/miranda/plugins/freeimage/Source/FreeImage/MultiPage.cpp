@@ -323,6 +323,22 @@ FreeImage_OpenMultiBitmap(FREE_IMAGE_FORMAT fif, const char *filename, BOOL crea
 }
 
 FIMULTIBITMAP * DLL_CALLCONV
+FreeImage_OpenMultiBitmapU(FREE_IMAGE_FORMAT fif, const wchar_t *filename, BOOL create_new, BOOL read_only, BOOL keep_cache_in_memory, int flags) {
+
+	// convert to single character - no national chars in extensions
+	char *extension = (char *)malloc(wcslen(filename)+1);
+	unsigned int i=0;
+	for(; i < wcslen(filename); i++) // convert 16-bit to 8-bit
+		extension[i] = (char)(filename[i] & 0x00FF);
+	// set terminating 0
+	extension[i]=0;
+	FIMULTIBITMAP *fRet = FreeImage_OpenMultiBitmap(fif, extension, create_new, read_only, keep_cache_in_memory, flags);
+	free(extension);
+
+	return fRet;
+}
+
+FIMULTIBITMAP * DLL_CALLCONV
 FreeImage_OpenMultiBitmapFromHandle(FREE_IMAGE_FORMAT fif, FreeImageIO *io, fi_handle handle, int flags) {
 	try {
 		BOOL read_only = FALSE;	// modifications (if any) will be stored into the memory cache

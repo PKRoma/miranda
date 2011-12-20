@@ -1716,7 +1716,7 @@ void __cdecl CJabberProto::LoadHttpAvatars(void* param)
 				{
 					TCHAR tszFileName[ MAX_PATH ];
 
-					PROTO_AVATAR_INFORMATION AI;
+					PROTO_AVATAR_INFORMATIONT AI;
 					AI.cbSize = sizeof(AI);
 					AI.format = pictureType;
 					AI.hContact = avs[i].hContact;
@@ -1741,11 +1741,7 @@ void __cdecl CJabberProto::LoadHttpAvatars(void* param)
 					if (JGetStaticString("AvatarSaved", AI.hContact, cmpsha, sizeof(cmpsha)) || strnicmp(cmpsha, buffer, sizeof(buffer)))
 					{
 						GetAvatarFileName( AI.hContact, tszFileName, SIZEOF(tszFileName));
-	#if defined( _UNICODE )
-						WideCharToMultiByte( CP_ACP, 0, tszFileName, -1, AI.filename, sizeof(AI.filename), 0, 0 );
-	#else
-						strncpy(AI.filename, tszFileName, sizeof(AI.filename));
-	#endif
+						_tcsncpy(AI.filename, tszFileName, SIZEOF(AI.filename));
 						FILE* out = _tfopen( tszFileName, _T("wb"));
 						if ( out != NULL ) {
 							fwrite( res->pData, res->dataLength, 1, out );

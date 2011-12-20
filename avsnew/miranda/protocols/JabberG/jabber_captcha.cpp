@@ -43,29 +43,23 @@ struct CAPTCHA_FORM_PARAMS
 INT_PTR CALLBACK JabberCaptchaFormDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam )
 {
 	CAPTCHA_FORM_PARAMS *params = (CAPTCHA_FORM_PARAMS*)GetWindowLongPtr( hwndDlg, GWLP_USERDATA );
+	TCHAR tszHeaderTxt[256];
 	switch (msg) {
 	case WM_INITDIALOG: {
 		TranslateDialogDefault( hwndDlg );
-		SendMessage( hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)LoadSkinnedIconBig(IDI_KEYS));
-		SendMessage( hwndDlg, WM_SETICON, ICON_SMALL, (LPARAM)LoadSkinnedIcon(IDI_KEYS));
+		SendMessage(hwndDlg, WM_SETICON, ICON_SMALL, (LPARAM)LoadIcon(hInst,MAKEINTRESOURCE(IDI_KEYS)));
+		SendMessage(GetDlgItem(hwndDlg, IDC_HEADERBAR), WM_SETICON, ICON_BIG, (LPARAM)LoadIcon(hInst,MAKEINTRESOURCE(IDI_KEYS)));
 		params = (CAPTCHA_FORM_PARAMS*)lParam;
 
 		LPCTSTR hint = params->hint;
 		if( hint == NULL )
 			hint = TranslateT("Enter the text you see");
-		SetDlgItemText( hwndDlg, IDC_INSTRUCTION, TranslateTS( hint ) );
+		mir_sntprintf(tszHeaderTxt, SIZEOF(tszHeaderTxt), _T("%s\n%s"), TranslateT("Instruction:"), hint);
+		SetWindowText(GetDlgItem(hwndDlg, IDC_HEADERBAR), tszHeaderTxt);
 		SetWindowLongPtr( hwndDlg, GWLP_USERDATA, ( LONG )params );
 
 		return TRUE;
 	}
-	case WM_CTLCOLORSTATIC:
-		switch( GetWindowLongPtr((HWND)lParam, GWL_ID)) {
-		case IDC_WHITERECT:
-		case IDC_INSTRUCTION:
-		case IDC_TITLE:
-			return (BOOL)GetStockObject(WHITE_BRUSH);
-		}
-		return NULL;
 
 	case WM_PAINT: 
 		if ( params ) {

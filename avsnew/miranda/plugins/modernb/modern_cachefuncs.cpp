@@ -872,14 +872,13 @@ void Cache_ProceedAvatarInList(struct ClcData *dat, struct ClcContact *contact)
 		{
 			height_clip = width_clip * ace->bmHeight / ace->bmWidth;					
 		}
-		if (wildcmpi(contact->avatar_data->szFilename,"*.gif"))
+		if (wildcmpi(contact->avatar_data->szFilename,_T("*.gif")))
 		{
-			TCHAR *temp=mir_a2t(contact->avatar_data->szFilename);
 			int res;
 			if (old_pos==AVATAR_POS_ANIMATED)
 				AniAva_RemoveAvatar(contact->hContact);
-			res=AniAva_AddAvatar(contact->hContact,temp,width_clip,height_clip);
-			mir_free(temp);
+
+			res=AniAva_AddAvatar(contact->hContact, contact->avatar_data->szFilename, width_clip, height_clip);
 			if (res)
 			{
 				contact->avatar_pos=AVATAR_POS_ANIMATED;

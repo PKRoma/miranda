@@ -25,7 +25,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 extern FI_INTERFACE *fei;
 
-int GetImageFormat(char *filename);
+int GetImageFormat(TCHAR *filename);
 INT_PTR DrawAvatarPicture(WPARAM wParam, LPARAM lParam);
 INT_PTR GetAvatarBitmap(WPARAM wParam, LPARAM lParam);
 INT_PTR GetMyAvatar(WPARAM wParam, LPARAM lParam);
@@ -380,11 +380,11 @@ void StartAnimatedGif(HWND hwnd, ACCData* data)
 	if (format != PA_FORMAT_GIF)
 		return;
 
-	FREE_IMAGE_FORMAT fif = fei->FI_GetFileType(ace->szFilename, 0);
+	FREE_IMAGE_FORMAT fif = fei->FI_GetFileTypeT(ace->szFilename, 0);
 	if(fif == FIF_UNKNOWN)
-		fif = fei->FI_GetFIFFromFilename(ace->szFilename);
+		fif = fei->FI_GetFIFFromFilenameT(ace->szFilename);
 
-	data->ag.multi = fei->FI_OpenMultiBitmap(fif, ace->szFilename, FALSE, TRUE, FALSE, GIF_LOAD256);
+	data->ag.multi = fei->FI_OpenMultiBitmapT(fif, ace->szFilename, FALSE, TRUE, FALSE, GIF_LOAD256);
 	if (data->ag.multi == NULL)
 		return;
 
