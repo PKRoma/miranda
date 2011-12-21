@@ -5,6 +5,12 @@
 
 
 				
+
+* New in 0.9.39
+Bugfixes:
+ - UPnP failed on some routers
+
+
 * New in 0.9.38
 Bugfixes:
  - Profile manager doesn't react to changes in subfolders
