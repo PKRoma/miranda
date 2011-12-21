@@ -302,6 +302,16 @@ return=0 for sucess
 */
 #define PS_GETMYAVATAR "/GetMyAvatar"
 
+#if defined( _UNICODE )
+	#define PS_SETMYAVATARW "/SetMyAvatarW"
+	#define PS_GETMYAVATARW "/GetMyAvatarW"
+
+	#define PS_GETMYAVATART PS_GETMYAVATARW
+	#define PS_SETMYAVATART PS_SETMYAVATARW
+#else
+	#define PS_GETMYAVATART PS_GETMYAVATAR
+	#define PS_SETMYAVATART PS_SETMYAVATAR
+#endif
 
 #define PIP_NONE				0
 #define PIP_SQUARE				1
