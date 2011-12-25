@@ -385,3 +385,5 @@ Musisz byæ zalogowany, aby zobaczyæ równoleg³e sesje.
 [Copy Text]
 Kopiuj Tekst
 ;[Whois]
+[Unknown client]
+Nieznany klient

@@ -188,7 +188,7 @@ char *gg_makecontacts(GGPROTO *gg, int cr)
 
 char *strndup(char *str, int c)
 {
-	char *ret = malloc(c + 1);
+	char *ret = (char*)malloc(c + 1);
 	ret[c] = 0;
 	strncpy(ret, str, c);
 	return ret;

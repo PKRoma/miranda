@@ -948,7 +948,9 @@ retry:
 					{
 						struct gg_multilogon_session* sess = mir_alloc(sizeof(struct gg_multilogon_session));
 						memcpy(sess, &e->event.multilogon_info.sessions[i], sizeof(struct gg_multilogon_session));
-						sess->name = mir_strdup(e->event.multilogon_info.sessions[i].name);
+						sess->name = mir_strdup(*e->event.multilogon_info.sessions[i].name != '\0'
+												? e->event.multilogon_info.sessions[i].name
+												: Translate("Unknown client"));
 						list_add(&gg->sessions, sess, 0);
 					}
 					LeaveCriticalSection(&gg->sessions_mutex);
