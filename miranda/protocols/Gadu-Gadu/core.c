@@ -958,7 +958,9 @@ retry:
 					{
 						struct gg_multilogon_session* sess = mir_alloc(sizeof(struct gg_multilogon_session));
 						memcpy(sess, &e->event.multilogon_info.sessions[i], sizeof(struct gg_multilogon_session));
-						sess->name = mir_strdup(e->event.multilogon_info.sessions[i].name);
+						sess->name = mir_strdup(*e->event.multilogon_info.sessions[i].name != '\0'
+												? e->event.multilogon_info.sessions[i].name
+												: Translate("Unknown client"));
 						list_add(&gg->sessions, sess, 0);
 					}
 					LeaveCriticalSection(&gg->sessions_mutex);
@@ -972,7 +974,10 @@ retry:
 						{
 							char szMsg[MAX_SECONDLINE];
 							if (iIndexes && iIndexes[i]) continue;
-							mir_snprintf(szMsg, SIZEOF(szMsg), "%s (%s)", szText, e->event.multilogon_info.sessions[i].name);
+							mir_snprintf(szMsg, SIZEOF(szMsg), "%s (%s)", szText,
+										 *e->event.multilogon_info.sessions[i].name != '\0'
+										 ? e->event.multilogon_info.sessions[i].name
+										 : Translate("Unknown client"));
 							gg_showpopup(gg, GG_PROTONAME, szMsg, GG_POPUP_MULTILOGON);
 						}
 					}

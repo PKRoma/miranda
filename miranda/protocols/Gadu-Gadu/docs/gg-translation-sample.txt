@@ -389,3 +389,5 @@ Kopiuj Tekst
 W³aœnie zalogowa³eœ siê w innym miejscu
 [You are logged in at another location]
 Jesteœ zalogowany w innym miejscu
+[Unknown client]
+Nieznany klient
