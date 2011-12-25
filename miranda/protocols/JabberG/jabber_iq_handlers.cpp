@@ -550,12 +550,15 @@ BOOL CJabberProto::OnRosterPushRequest( HXML, CJabberIqInfo *pInfo )
 					}
 					else DBDeleteContactSetting( hContact, "CList", "MyHandle" );
 
-					if ( item->group != NULL ) {
-						JabberContactListCreateGroup( item->group );
-						DBWriteContactSettingTString( hContact, "CList", "Group", item->group );
+					if (!m_options.IgnoreRosterGroups)
+					{
+						if ( item->group != NULL ) {
+							JabberContactListCreateGroup( item->group );
+							DBWriteContactSettingTString( hContact, "CList", "Group", item->group );
+						}
+						else 
+							DBDeleteContactSetting( hContact, "CList", "Group" );
 					}
-					else if (!m_options.IgnoreRosterGroups)
-						DBDeleteContactSetting( hContact, "CList", "Group" );
 				}
 				mir_free( nick );
 		}	}

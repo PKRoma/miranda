@@ -492,20 +492,23 @@ void CJabberProto::OnIqResultGetRoster( HXML iqNode, CJabberIqInfo* pInfo )
 			UpdateSubscriptionInfo(hContact, item);
 		}
 		
-		if ( item->group != NULL ) {
-			JabberContactListCreateGroup( item->group );
+		if (!m_options.IgnoreRosterGroups) {
+			if ( item->group != NULL ) {
+				JabberContactListCreateGroup( item->group );
 
-			// Don't set group again if already correct, or Miranda may show wrong group count in some case
-			DBVARIANT dbv;
-			if ( !DBGetContactSettingTString( hContact, "CList", "Group", &dbv )) {
-				if ( lstrcmp( dbv.ptszVal, item->group ))
-					DBWriteContactSettingTString( hContact, "CList", "Group", item->group );
-				JFreeVariant( &dbv );
+				// Don't set group again if already correct, or Miranda may show wrong group count in some case
+				DBVARIANT dbv;
+				if ( !DBGetContactSettingTString( hContact, "CList", "Group", &dbv )) {
+					if ( lstrcmp( dbv.ptszVal, item->group ))
+						DBWriteContactSettingTString( hContact, "CList", "Group", item->group );
+					JFreeVariant( &dbv );
+				}
+				else DBWriteContactSettingTString( hContact, "CList", "Group", item->group );
 			}
-			else DBWriteContactSettingTString( hContact, "CList", "Group", item->group );
+			else 
+				DBDeleteContactSetting( hContact, "CList", "Group" );
 		}
-		else if (!m_options.IgnoreRosterGroups)
-			DBDeleteContactSetting( hContact, "CList", "Group" );
+
 		if ( hContact != NULL ) {
 			if ( bIsTransport)
 				JSetByte( hContact, "IsTransport", TRUE );
