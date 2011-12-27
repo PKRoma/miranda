@@ -1365,11 +1365,17 @@ LBL_InvalidCommand:
 			{
 				isMe = true;
 				int newStatus = MSNStatusToMiranda(params);
-				if (newStatus != m_iStatus && newStatus != ID_STATUS_IDLE && m_iStatus != ID_STATUS_IDLE)
+				if (newStatus != m_iStatus)
 				{
-					int oldMode = m_iStatus;
-					m_iDesiredStatus = m_iStatus = newStatus;
-					SendBroadcast(NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS, (HANDLE)oldMode, m_iStatus);
+					if (m_iStatus == ID_STATUS_CONNECTING && newStatus == ID_STATUS_IDLE)
+						newStatus = ID_STATUS_ONLINE;
+
+					if (newStatus != ID_STATUS_IDLE)
+					{
+						int oldMode = m_iStatus;
+						m_iDesiredStatus = m_iStatus = newStatus;
+						SendBroadcast(NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS, (HANDLE)oldMode, m_iStatus);
+					}
 				}
 			}
 
