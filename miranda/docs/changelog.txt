@@ -6,6 +6,13 @@
 
 				
 
+* New in 0.9.40
+Bugfixes:
+ - Jabber: Fixed ignore roster group option (fixes Facebook group issues)
+ - MSN: Fixed connecting state issue
+ - Gadu-Gadu: Improved client detection
+
+
 * New in 0.9.39
 Bugfixes:
  - UPnP failed on some routers
