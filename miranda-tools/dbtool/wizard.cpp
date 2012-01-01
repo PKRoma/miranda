@@ -1,6 +1,6 @@
 /*
 Miranda Database Tool
-Copyright 2000-2011 Miranda ICQ/IM project, 
+Copyright 2000-2012 Miranda ICQ/IM project, 
 all portions of this codebase are copyrighted to the people 
 listed in contributors.txt.
 
