@@ -519,6 +519,7 @@ void CMsnProto::MSN_GoOffline(void)
 	{
 		int msnOldStatus = m_iStatus; m_iStatus = m_iDesiredStatus = ID_STATUS_OFFLINE; 
 		SendBroadcast(NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS, (HANDLE)msnOldStatus, ID_STATUS_OFFLINE);
+		isIdle = false;
 
 		int count = -1;
 		for (;;)
