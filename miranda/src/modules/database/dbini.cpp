@@ -234,7 +234,7 @@ static void ProcessIniFile(TCHAR* szIniPath, char *szSafeSections, char *szUnsaf
 					break;
 
 				case 2:
-					warnThisSection = !IsInSpaceSeparatedList(szSection, szUnsafeSections);
+					warnThisSection = IsInSpaceSeparatedList(szSection, szUnsafeSections);
 					break;
 
 				default:
