@@ -1032,6 +1032,10 @@
 			Filter="ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe"
 			>
 			<File
+				RelativePath="icons\block.ico"
+				>
+			</File>
+			<File
 				RelativePath="icons\clear_ignored_conference.ico"
 				>
 			</File>

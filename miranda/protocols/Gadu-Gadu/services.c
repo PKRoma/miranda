@@ -2,7 +2,7 @@
 // Gadu-Gadu Plugin for Miranda IM
 //
 // Copyright (c) 2003-2009 Adam Strzelecki <ono+miranda@java.pl>
-// Copyright (c) 2009-2011 Bartosz Bia³ek
+// Copyright (c) 2009-2012 Bartosz Bia³ek
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -567,8 +567,8 @@ int gg_setawaymsg(PROTO_INTERFACE *proto, int iStatus, const PROTOCHAR *msgt)
 int gg_setapparentmode(PROTO_INTERFACE *proto, HANDLE hContact, int mode)
 {
 	GGPROTO *gg = (GGPROTO *)proto;
-	DBWriteContactSettingWord(hContact, proto->m_szModuleName, GG_KEY_APPARENT, (WORD)mode);
-	if(gg_isonline(gg)) gg_notifyuser(gg, hContact, 1);
+	DBWriteContactSettingWord(hContact, GG_PROTO, GG_KEY_APPARENT, (WORD)mode);
+	gg_notifyuser(gg, hContact, 1);
 	return 0;
 }
 

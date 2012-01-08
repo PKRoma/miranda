@@ -2,7 +2,7 @@
 // Gadu-Gadu Plugin for Miranda IM
 //
 // Copyright (c) 2003-2009 Adam Strzelecki <ono+miranda@java.pl>
-// Copyright (c) 2009-2011 Bartosz Bia³ek
+// Copyright (c) 2009-2012 Bartosz Bia³ek
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -152,7 +152,9 @@ typedef struct
 		hookGCMenuBuild;
 	HGENMENU hMenuRoot;
 	HGENMENU hMainMenu[7];
-	HANDLE hContactMenu;
+	HANDLE hPrebuildMenuHook;
+	HANDLE hBlockMenuItem;
+	HANDLE hImageMenuItem;
 	HANDLE hInstanceMenuItem;
 	HANDLE hAvatarsFolder;
 	HANDLE hImagesFolder;
@@ -312,8 +314,7 @@ typedef void (__cdecl GGThreadFunc)(void*, void*);
 #define GG_KEY_GC_POLICY_DEFAULT		"GCPolicyDefault"
 #define GG_KEYDEF_GC_POLICY_DEFAULT 	0
 
-#define GG_KEY_DELETEUSER		"DeleteUser"	// When user is deleted
-
+#define GG_KEY_BLOCK			"Block"			// Contact is blocked
 #define GG_KEY_APPARENT 		"ApparentMode"	// Visible list
 
 #define GG_KEY_TIMEDEVIATION	"TimeDeviation" // Max time deviation for connections (seconds)
@@ -356,6 +357,7 @@ extern HINSTANCE hInstance;
 extern PLUGINLINK *pluginLink;
 extern CLIST_INTERFACE *pcli;
 extern struct LIST_INTERFACE li;
+extern list_t g_Instances;
 
 // Screen saver
 #ifndef SPI_GETSCREENSAVERRUNNING
@@ -456,7 +458,6 @@ void gg_links_instancemenu_init();
 void gg_links_init();
 void gg_links_destroy();
 void gg_links_instance_init(GGPROTO* gg);
-void gg_links_instance_destroy(GGPROTO* gg);
 
 /* OAuth functions */
 char *gg_oauth_header(GGPROTO *gg, const char *httpmethod, const char *url);

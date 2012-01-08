@@ -287,6 +287,10 @@ SOURCE=.\version.h
 # PROP Default_Filter "ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe"
 # Begin Source File
 
+SOURCE=.\icons\block.ico
+# End Source File
+# Begin Source File
+
 SOURCE=.\icons\clear_ignored_conference.ico
 # End Source File
 # Begin Source File

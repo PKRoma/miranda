@@ -903,6 +903,7 @@
     <ClInclude Include="version.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="icons\block.ico" />
     <None Include="icons\clear_ignored_conference.ico" />
     <None Include="icons\conference.ico" />
     <None Include="icons\delete.ico" />

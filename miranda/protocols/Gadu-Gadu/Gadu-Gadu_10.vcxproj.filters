@@ -148,6 +148,9 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
+    <None Include="icons\block.ico">
+      <Filter>Resource Files</Filter>
+    </None>
     <None Include="icons\clear_ignored_conference.ico">
       <Filter>Resource Files</Filter>
     </None>

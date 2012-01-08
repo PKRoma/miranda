@@ -114,6 +114,8 @@ Ustawienia konta
 [Contact list]
 Lista kontaktów
 ;[Blocked to this contact] @ deprecated 0.0.5.2
+[Block user]
+Zablokuj u¿ytkownika
 [Previous image]
 Poprzedni obrazek
 [Next image]
@@ -305,6 +307,12 @@ Wybierz obrazek do wys³ania
 Nie mo¿na za³adowaæ obrazka. Wybrany plik mo¿e mieæ nieznany format.
 [Image exceeds maximum allowed size of 255 KB.]
 Rozmiar pliku obrazka przekracza maksymalny dozwolony rozmiar 255 KB.
+
+; Blocking
+[&Unblock]
+Odblokuj
+[&Block]
+Zablokuj
 
 ; Conferences
 [Open new conference\nSelect conference participants]

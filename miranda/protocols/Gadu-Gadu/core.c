@@ -2,7 +2,7 @@
 // Gadu-Gadu Plugin for Miranda IM
 //
 // Copyright (c) 2003-2009 Adam Strzelecki <ono+miranda@java.pl>
-// Copyright (c) 2009-2011 Bartosz Bia³ek
+// Copyright (c) 2009-2012 Bartosz Bia³ek
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -1329,8 +1329,8 @@ int gg_dbsettingchanged(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
 	if(!gg_isonline(gg))
 		return 0;
 
-	// If ignorance changed
-	if(!strcmp(cws->szModule, "Ignore") && !strcmp(cws->szSetting, "Mask1"))
+	// If contact has been blocked
+	if(!strcmp(cws->szModule, GG_PROTO) && !strcmp(cws->szSetting, GG_KEY_BLOCK))
 	{
 		gg_notifyuser(gg, hContact, 1);
 		return 0;
@@ -1377,12 +1377,9 @@ int gg_dbsettingchanged(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
 		{
 			if(DBGetContactSettingByte(hContact, "CList", "Hidden", 0))
 				return 0;
+			// Notify user normally this time if added to the list permanently
 			if(cws->value.type == DBVT_DELETED || (cws->value.type == DBVT_BYTE && cws->value.bVal == 0))
-			{
-				// Notify user normally this time if added to the list permanently
-				DBDeleteContactSetting(hContact, GG_PROTO, GG_KEY_DELETEUSER); // What is it ?? I don't remember
 				gg_notifyuser(gg, hContact, 1);
-			}
 		}
 	}
 	return 0;
@@ -1422,16 +1419,16 @@ void gg_setalloffline(GGPROTO *gg)
 void gg_notifyuser(GGPROTO *gg, HANDLE hContact, int refresh)
 {
 	uin_t uin;
-	if(!hContact) return;
-	if(gg_isonline(gg) && (uin = (uin_t)DBGetContactSettingDword(hContact, GG_PROTO, GG_KEY_UIN, 0)))
+	if (!hContact) return;
+	if (gg_isonline(gg) && (uin = (uin_t)DBGetContactSettingDword(hContact, GG_PROTO, GG_KEY_UIN, 0)))
 	{
 		// Check if user should be invisible
 		// Or be blocked ?
-		if((DBGetContactSettingWord(hContact, GG_PROTO, GG_KEY_APPARENT, (WORD) ID_STATUS_ONLINE) == ID_STATUS_OFFLINE) ||
+		if ((DBGetContactSettingWord(hContact, GG_PROTO, GG_KEY_APPARENT, (WORD) ID_STATUS_ONLINE) == ID_STATUS_OFFLINE) ||
 			DBGetContactSettingByte(hContact, "CList", "NotOnList", 0))
 		{
 			EnterCriticalSection(&gg->sess_mutex);
-			if(refresh)
+			if (refresh)
 			{
 				gg_remove_notify_ex(gg->sess, uin, GG_USER_NORMAL);
 				gg_remove_notify_ex(gg->sess, uin, GG_USER_BLOCKED);
@@ -1440,10 +1437,10 @@ void gg_notifyuser(GGPROTO *gg, HANDLE hContact, int refresh)
 			gg_add_notify_ex(gg->sess, uin, GG_USER_OFFLINE);
 			LeaveCriticalSection(&gg->sess_mutex);
 		}
-		else if(DBGetContactSettingDword(hContact, "Ignore", "Mask1", (DWORD)0 ) & IGNOREEVENT_MESSAGE)
+		else if (DBGetContactSettingByte(hContact, GG_PROTO, GG_KEY_BLOCK, 0))
 		{
 			EnterCriticalSection(&gg->sess_mutex);
-			if(refresh)
+			if (refresh)
 			{
 				gg_remove_notify_ex(gg->sess, uin, GG_USER_OFFLINE);
 			}
@@ -1454,7 +1451,7 @@ void gg_notifyuser(GGPROTO *gg, HANDLE hContact, int refresh)
 		else
 		{
 			EnterCriticalSection(&gg->sess_mutex);
-			if(refresh)
+			if (refresh)
 			{
 				gg_remove_notify_ex(gg->sess, uin, GG_USER_BLOCKED);
 			}
@@ -1478,13 +1475,13 @@ void gg_notifyall(GGPROTO *gg)
 	while (hContact)
 	{
 		szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
-		if(szProto != NULL && !strcmp(szProto, GG_PROTO)) count ++;
+		if (szProto != NULL && !strcmp(szProto, GG_PROTO)) count ++;
 		hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM) hContact, 0);
 	}
 
 	// Readup list
 	/* FIXME: If we have nothing on the list but we omit gg_notify_ex we have problem with receiving any contacts */
-	if(count == 0)
+	if (count == 0)
 	{
 		if(gg_isonline(gg))
 		{
@@ -1501,12 +1498,12 @@ void gg_notifyall(GGPROTO *gg)
 	while (hContact && cc < count)
 	{
 		szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
-		if(szProto != NULL && !strcmp(szProto, GG_PROTO) && (uins[cc] = DBGetContactSettingDword(hContact, GG_PROTO, GG_KEY_UIN, 0)))
+		if (szProto != NULL && !strcmp(szProto, GG_PROTO) && (uins[cc] = DBGetContactSettingDword(hContact, GG_PROTO, GG_KEY_UIN, 0)))
 		{
-			if((DBGetContactSettingWord(hContact, GG_PROTO, GG_KEY_APPARENT, (WORD) ID_STATUS_ONLINE) == ID_STATUS_OFFLINE) ||
+			if ((DBGetContactSettingWord(hContact, GG_PROTO, GG_KEY_APPARENT, (WORD) ID_STATUS_ONLINE) == ID_STATUS_OFFLINE) ||
 				DBGetContactSettingByte(hContact, "CList", "NotOnList", 0))
 				types[cc] = GG_USER_OFFLINE;
-			else if(DBGetContactSettingDword(hContact, "Ignore", "Mask1", (DWORD)0 ) & IGNOREEVENT_MESSAGE)
+			else if (DBGetContactSettingByte(hContact, GG_PROTO, GG_KEY_BLOCK, 0))
 				types[cc] = GG_USER_BLOCKED;
 			else
 				types[cc] = GG_USER_NORMAL;
@@ -1514,10 +1511,10 @@ void gg_notifyall(GGPROTO *gg)
 		}
 		hContact = (HANDLE) CallService(MS_DB_CONTACT_FINDNEXT, (WPARAM) hContact, 0);
 	}
-	if(cc < count) count = cc;
+	if (cc < count) count = cc;
 
 	// Send notification
-	if(gg_isonline(gg))
+	if (gg_isonline(gg))
 	{
 		EnterCriticalSection(&gg->sess_mutex);
 		gg_notify_ex(gg->sess, uins, types, count);

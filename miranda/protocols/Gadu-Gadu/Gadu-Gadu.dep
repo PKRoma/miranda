@@ -916,6 +916,7 @@
 
 .\resource.rc : \
 	"..\..\include\m_version.h"\
+	".\icons\block.ico"\
 	".\icons\clear_ignored_conference.ico"\
 	".\icons\conference.ico"\
 	".\icons\delete.ico"\
