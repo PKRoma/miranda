@@ -45,6 +45,7 @@
 #define IDI_CONFERENCE			265
 #define IDI_CLEAR_CONFERENCE	266
 #define IDI_SESSIONS			267
+#define IDI_BLOCK				268
 
 #define IDD_INFO_GG 			301
 #define IDD_CHPASS				302

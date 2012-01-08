@@ -564,8 +564,8 @@ int gg_setawaymsg(PROTO_INTERFACE *proto, int iStatus, const PROTOCHAR *msgt)
 int gg_setapparentmode(PROTO_INTERFACE *proto, HANDLE hContact, int mode)
 {
 	GGPROTO *gg = (GGPROTO *)proto;
-	DBWriteContactSettingWord(hContact, proto->m_szModuleName, GG_KEY_APPARENT, (WORD)mode);
-	if(gg_isonline(gg)) gg_notifyuser(gg, hContact, 1);
+	DBWriteContactSettingWord(hContact, GG_PROTO, GG_KEY_APPARENT, (WORD)mode);
+	gg_notifyuser(gg, hContact, 1);
 	return 0;
 }
 

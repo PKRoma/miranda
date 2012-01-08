@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 // Gadu-Gadu Plugin for Miranda IM
 //
-// Copyright (c) 2009-2010 Bartosz Bia³ek
+// Copyright (c) 2009-2012 Bartosz Bia³ek
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -27,7 +27,6 @@
 #define GGS_PARSELINK "%s/ParseLink"
 #define GGS_MENUCHOOSE "%s/MenuChoose"
 
-list_t g_Instances;
 static HANDLE hInstanceMenu;
 static HANDLE hServiceMenuChoose;
 static HANDLE hServiceParseLink;
@@ -125,8 +124,6 @@ void gg_links_instancemenu_init()
 	TMenuParam mnu = {0};
 	TMO_MenuItem tmi = {0};
 
-	g_Instances = NULL;
-
 	mir_snprintf(service, sizeof(service), GGS_MENUCHOOSE, GGDEF_PROTO);
 	hServiceMenuChoose = CreateServiceFunction(service, gg_menuchoose);
 	mnu.cbSize = sizeof(mnu);
@@ -166,9 +163,6 @@ void gg_links_instance_init(GGPROTO *gg)
 	if (ServiceExists(MS_ASSOCMGR_ADDNEWURLTYPE))
 	{
 		TMO_MenuItem tmi = {0};
-
-		list_add(&g_Instances , gg, 0);
-
 		tmi.cbSize = sizeof(tmi);
 		tmi.flags = CMIF_TCHAR;
 		tmi.ownerdata = gg;
@@ -176,10 +170,4 @@ void gg_links_instance_init(GGPROTO *gg)
 		tmi.ptszName = GG_PROTONAME;
 		gg->hInstanceMenuItem = (HANDLE)CallService(MO_ADDNEWMENUITEM, (WPARAM)hInstanceMenu, (LPARAM)&tmi);
 	}
-}
-
-void gg_links_instance_destroy(GGPROTO *gg)
-{
-	if (ServiceExists(MS_ASSOCMGR_ADDNEWURLTYPE))
-		list_remove(&g_Instances , gg, 0);
 }

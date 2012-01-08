@@ -82,7 +82,6 @@ extern "C" {
 #include <m_avatars.h>
 #include <m_xml.h>
 #include <m_chat.h>
-#include <m_idle.h>
 #include <win2k.h>
 
 // Custom profile folders plugin header
@@ -152,7 +151,9 @@ typedef struct
 		hookGCMenuBuild;
 	HGENMENU hMenuRoot;
 	HGENMENU hMainMenu[7];
-	HANDLE hContactMenu;
+	HANDLE hPrebuildMenuHook;
+	HANDLE hBlockMenuItem;
+	HANDLE hImageMenuItem;
 	HANDLE hInstanceMenuItem;
 	HANDLE hAvatarsFolder;
 	HANDLE hImagesFolder;
@@ -312,8 +313,7 @@ typedef void (__cdecl GGThreadFunc)(void*, void*);
 #define GG_KEY_GC_POLICY_DEFAULT		"GCPolicyDefault"
 #define GG_KEYDEF_GC_POLICY_DEFAULT 	0
 
-#define GG_KEY_DELETEUSER		"DeleteUser"	// When user is deleted
-
+#define GG_KEY_BLOCK			"Block"			// Contact is blocked
 #define GG_KEY_APPARENT 		"ApparentMode"	// Visible list
 
 #define GG_KEY_TIMEDEVIATION	"TimeDeviation" // Max time deviation for connections (seconds)
@@ -344,6 +344,7 @@ extern HINSTANCE hInstance;
 extern PLUGINLINK *pluginLink;
 extern CLIST_INTERFACE *pcli;
 extern struct LIST_INTERFACE li;
+extern list_t g_Instances;
 
 // Screen saver
 #ifndef SPI_GETSCREENSAVERRUNNING
@@ -380,9 +381,8 @@ int gg_isonline(GGPROTO *gg);
 int gg_refreshstatus(GGPROTO *gg, int status);
 
 void gg_broadcastnewstatus(GGPROTO *gg, int newStatus);
-int gg_userdeleted(GGPROTO *gg, WPARAM wParam, LPARAM lParam);
+int gg_contactdeleted(GGPROTO *gg, WPARAM wParam, LPARAM lParam);
 int gg_dbsettingchanged(GGPROTO *gg, WPARAM wParam, LPARAM lParam);
-int gg_idlechanged(GGPROTO *gg, WPARAM wParam, LPARAM lParam);
 void gg_notifyall(GGPROTO *gg);
 void gg_changecontactstatus(GGPROTO *gg, uin_t uin, int status, const char *idescr, int time, uint32_t remote_ip, uint16_t remote_port, uint32_t version);
 char *gg_getstatusmsg(GGPROTO *gg, int status);
@@ -445,7 +445,6 @@ void gg_links_instancemenu_init();
 void gg_links_init();
 void gg_links_destroy();
 void gg_links_instance_init(GGPROTO* gg);
-void gg_links_instance_destroy(GGPROTO* gg);
 
 /* OAuth functions */
 char *gg_oauth_header(GGPROTO *gg, const char *httpmethod, const char *url);
