@@ -858,8 +858,9 @@ retry:
 					}
 
 					// RichEdit format included (image)
-					if(e->event.msg.formats_length
-						&& DBGetContactSettingByte(NULL, GG_PROTO, GG_KEY_IMGRECEIVE, GG_KEYDEF_IMGRECEIVE))
+					if(e->event.msg.formats_length &&
+						DBGetContactSettingByte(NULL, GG_PROTO, GG_KEY_IMGRECEIVE, GG_KEYDEF_IMGRECEIVE) &&
+						!(DBGetContactSettingDword(gg_getcontact(gg, e->event.msg.sender, 1, 0, NULL), "Ignore", "Mask1", 0) & IGNOREEVENT_MESSAGE))
 					{
 						char *formats = e->event.msg.formats;
 						int len = 0, formats_len = e->event.msg.formats_length, add_ptr;

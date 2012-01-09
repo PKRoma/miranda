@@ -645,7 +645,6 @@ void CreateProtoService(const char* szService, GGPROTOFUNC serviceProc, GGPROTO 
 	CreateServiceFunctionObj(str, (MIRANDASERVICEOBJ)serviceProc, gg);
 }
 
-
 //////////////////////////////////////////////////////////
 // Forks a thread
 void gg_forkthread(GGPROTO *gg, GGThreadFunc pFunc, void *param)
