@@ -6,6 +6,15 @@
 
 				
 
+* New in 0.9.41
+Bugfixes:
+ - Fix boot ini processing logic
+ - Gadu-Gadu: Fixed ignoring rich text messages
+ - Gadu-Gadu: Improved blocking/ignoring system
+ - Jabber: Minor fix for the Jabber account item
+ - MSN: Fixed connecting state issue
+
+ 
 * New in 0.9.40
 Bugfixes:
  - Jabber: Fixed ignore roster group option (fixes Facebook group issues)
