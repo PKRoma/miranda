@@ -155,8 +155,6 @@ struct CMsnProto : public PROTO_INTERFACE
 	int msgQueueSeq;
 	OBJLIST<MsgQueueEntry> msgQueueList;
 
-	int tridUrlInbox;
-	int tridUrlCompose;
 	LONG sttChatID;
 
 	int msnPingTimeout;
@@ -179,9 +177,6 @@ struct CMsnProto : public PROTO_INTERFACE
 	char*	    mailsoundname;
 	char*	    alertsoundname;
 
-	char*       passport;
-	char*       urlId;
-	char*       rru;
 	unsigned	langpref;
 	unsigned    emailEnabled;
 	unsigned    abchMigrated;

@@ -102,8 +102,6 @@ CMsnProto::CMsnProto(const char* aProtoName, const TCHAR* aUserName) :
 	
 	LoadOptions();
 
-	tridUrlInbox = -1;
-
 	HANDLE hContact = (HANDLE)MSN_CallService(MS_DB_CONTACT_FINDFIRST, 0, 0);
 	while (hContact != NULL) 
 	{
@@ -201,10 +199,6 @@ CMsnProto::~CMsnProto()
 
 	for (int i=0; i < MSN_NUM_MODES; i++)
 		mir_free(msnModeMsgs[i]);
-
-	mir_free(passport);
-	mir_free(rru);
-	mir_free(urlId);
 
 	mir_free(msnLastStatusMsg);
 	mir_free(msnPreviousUUX);

@@ -1800,30 +1800,6 @@ remove:
 		case ' NUU':	// UUN : MSNP13+ File sharing, P2P Bootstrap, TURN setup.
 			break;
 
-		case ' LRU':    // URL : Hotmail, Spaces URL 
-		{
-			union {
-				char* tWords[3];
-				struct { char *rru, *passport, *urlID; } data;
-			};
-
-			if (sttDivideWords(params, 3, tWords) != 3)
-				goto LBL_InvalidCommand;
-
-			if (trid == tridUrlInbox) 
-			{
-				replaceStr(passport, data.passport);
-				replaceStr(rru, data.rru);
-				replaceStr(urlId, data.urlID);
-				tridUrlInbox = -1;
-			}
-			if (trid == tridUrlCompose) 
-			{
-				MsnInvokeMyURL(true, data.rru);
-			}
-			break;
-		}
-
 		case ' RSU':	//********* USR: sections 7.3 Authentication, 8.2 Switchboard Connections and Authentication
 			if (info->mType == SERVER_SWITCHBOARD) //(section 8.2)
 			{
@@ -1870,8 +1846,6 @@ remove:
 
 					ForkThread(&CMsnProto::msn_keepAliveThread, NULL);
 					ForkThread(&CMsnProto::MSNConnDetectThread, NULL);
-
-					tridUrlInbox = msnNsThread->sendPacket("URL", "INBOX");
 				}
 				else if (!strcmp(data.security, "OK")) 
 				{

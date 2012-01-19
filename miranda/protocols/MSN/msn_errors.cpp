@@ -80,14 +80,6 @@ int CMsnProto::MSN_HandleErrors(ThreadData* info, char* cmdString)
 		}
 		return 1;
 
-	case ERR_INVALID_LOCALE:
-		if (packetID == tridUrlInbox) 
-		{
-			tridUrlInbox = -1;
-			return 0;
-		}
-		// fall through
-
 	default:
 		MSN_DebugLog("Unprocessed error: %s", cmdString);
 		if (errorCode >= 500) //all these errors look fatal-ish

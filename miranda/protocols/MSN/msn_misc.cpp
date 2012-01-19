@@ -852,7 +852,7 @@ void  CMsnProto::MSN_SetServerStatus(int newStatus)
 		if (getByte("MobileEnabled", 0) && getByte("MobileAllowed", 0))
 			myFlags |= cap_MobileEnabled;
 
-		unsigned myFlagsEx = capex_SupportsNudges | capex_SupportsOfflineIM | capex_SupportsPeerToPeerV2;
+		unsigned myFlagsEx = capex_SupportsPeerToPeerV2;
 
 		char szMsg[256];
 		if (m_iStatus < ID_STATUS_ONLINE)
@@ -915,43 +915,43 @@ void  CMsnProto::MSN_SetServerStatus(int newStatus)
 
 void CMsnProto::MsnInvokeMyURL(bool ismail, const char* url)
 {
-	const char* id = ismail ? urlId : "73625";
-
 	char* hippy = NULL;
-	if (passport && url && id)
-	{
-		static const char postdataM[] = "ct=%u&bver=5&id=%s&rru=%s&svc=mail&js=yes&pl=%%3Fid%%3D%s";
-		static const char postdataS[] = "ct=%u&bver=5&id=%s&ru=%s&js=yes&pl=%%3Fid%%3D%s";
-		const char *postdata = ismail ? postdataM : postdataS;
+	if (!url) url = ismail ? "http://mail.live.com?rru=inbox" : "http://profile.live.com";
+
+	static const char postdataM[] = "ct=%u&bver=7&wa=wsignin1.0&ru=%s&pl=MBI";
+	static const char postdataS[] = "ct=%u&bver=7&id=73625&ru=%s&js=yes&pl=%%3Fid%%3D73625";
+	const char *postdata = ismail ? postdataM : postdataS;
 	  
-		char rruenc[256];
-		UrlEncode(url, rruenc, sizeof(rruenc));
+	char passport[256];
+	if (getStaticString(NULL, "MsnPassportHost", passport, 256))
+		strcpy(passport, "https://login.live.com/");
+
+	char *p = strchr(passport, '/');
+	if (p && p[1] == '/') p = strchr(p + 2, '/');
+	if (p) *p = 0;
+
+	char ruenc[256];
+	UrlEncode(url, ruenc, sizeof(ruenc));
  
-		const size_t fnpstlen = strlen(postdata) +  strlen(rruenc) + 2*strlen(id) + 30;
-		char* fnpst = (char*)alloca(fnpstlen);
+	const size_t fnpstlen = strlen(postdata) +  strlen(ruenc) + 30;
+	char* fnpst = (char*)alloca(fnpstlen);
 
-		mir_snprintf(fnpst, fnpstlen, postdata, time(NULL), id, rruenc, id);
+	mir_snprintf(fnpst, fnpstlen, postdata, time(NULL), ruenc);
 
-		char* post = HotmailLogin(fnpst);
-		if (post)
-		{
-			size_t hipsz = strlen(passport) + 3*strlen(post) + 50;
-			hippy = (char*)alloca(hipsz);
+	char* post = HotmailLogin(fnpst);
+	if (post)
+	{
+		size_t hipsz = strlen(passport) + 3*strlen(post) + 70;
+		hippy = (char*)alloca(hipsz);
 
-			strcpy(hippy, passport);
-			char* ch = strstr(hippy, "md5auth");
-			if (ch)
-			{
-				memmove(ch + 1, ch, strlen(ch)+1);
-				memcpy(ch, "sha1", 4);  
-			}
-			strcat(hippy, "&token="); 
-			size_t hiplen = strlen(hippy);
-			UrlEncode(post, hippy+hiplen, hipsz-hiplen);
-			mir_free(post);
-		}
+		strcpy(hippy, passport);
+		strcat(hippy, "\\ppsecure\\sha1auth.srf?lc=");
+		strcat(hippy, itoa(langpref, passport, 10));
+		strcat(hippy, "&token="); 
+		size_t hiplen = strlen(hippy);
+		UrlEncode(post, hippy+hiplen, hipsz-hiplen);
+		mir_free(post);
 	}
-	if (hippy == NULL) hippy = (char*)(ismail ? "http://mail.live.com" : "http://profile.live.com");
 
 	MSN_DebugLog("Starting URL: '%s'", hippy);
 	MSN_CallService(MS_UTILS_OPENURL, 1, (LPARAM)hippy);
