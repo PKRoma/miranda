@@ -1,6 +1,6 @@
 /*
 Plugin of Miranda IM for communicating with users of the MSN Messenger protocol.
-Copyright (c) 2009 Boris Krasnovskiy.
+Copyright (c) 2009-2012 Boris Krasnovskiy.
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -155,8 +155,6 @@ struct CMsnProto : public PROTO_INTERFACE
 	int msgQueueSeq;
 	OBJLIST<MsgQueueEntry> msgQueueList;
 
-	int tridUrlInbox;
-	int tridUrlCompose;
 	LONG sttChatID;
 
 	int msnPingTimeout;
@@ -179,9 +177,6 @@ struct CMsnProto : public PROTO_INTERFACE
 	char*	    mailsoundname;
 	char*	    alertsoundname;
 
-	char*       passport;
-	char*       urlId;
-	char*       rru;
 	unsigned	langpref;
 	unsigned    emailEnabled;
 	unsigned    abchMigrated;

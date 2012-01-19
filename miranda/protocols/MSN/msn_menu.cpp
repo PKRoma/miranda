@@ -58,7 +58,7 @@ INT_PTR CMsnProto::MsnGotoInbox(WPARAM, LPARAM)
 	HANDLE hContact = MSN_HContactFromEmail(MyOptions.szEmail);
 	if (hContact) CallService(MS_CLIST_REMOVEEVENT, (WPARAM)hContact, (LPARAM) 1);
 
-	MsnInvokeMyURL(true, rru);
+	MsnInvokeMyURL(true, "http://mail.live.com?rru=inbox");
 	return 0;
 }
 
@@ -70,7 +70,13 @@ INT_PTR CMsnProto::MsnSendHotmail(WPARAM wParam, LPARAM)
 	if (MSN_IsMeByContact(hContact, szEmail))
 		MsnGotoInbox(0, 0);
 	else if (msnLoggedIn)
-		tridUrlCompose = msnNsThread->sendPacket("URL", "COMPOSE %s", szEmail);
+	{
+		char szEmailEnc[MSN_MAX_EMAIL_LEN*3], szUrl[256];
+
+		UrlEncode(szEmail, szEmailEnc, sizeof(szEmailEnc));
+		mir_snprintf(szUrl, sizeof(szUrl), "http://mail.live.com?rru=compose?to=%s", szEmailEnc);
+		MsnInvokeMyURL(true, szUrl);
+	}
 
 	return 0;
 }

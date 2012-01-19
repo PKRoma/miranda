@@ -331,9 +331,20 @@ void CMsnProto::sttNotificationMessage(char* msgBody, bool isInitial)
 		SkinPlaySound(mailsoundname);
 
 		const char *msgurl = tFileInfo["Message-URL"];
+		if (msgurl)
+		{
+			const char *p = strchr(msgurl, '&'); if (p) *(char*)p = 0;
+			p = strstr(msgurl, "getmsg"); if (p) msgurl = p;
+		}
+		else
+			msgurl = "inbox";
+		
+		char szUrl[256];
+		mir_snprintf(szUrl, sizeof(szUrl), "http://mail.live.com?rru=%s", msgurl);
+
 		MSN_ShowPopup(tBuffer, tBuffer2, 
 			MSN_ALLOW_ENTER | MSN_ALLOW_MSGBOX | MSN_HOTMAIL_POPUP, 
-			msgurl ? msgurl : rru);
+			szUrl);
 	}
 
 	if (!getByte("RunMailerOnHotmail", 0) || !ShowPopUp || isInitial)
