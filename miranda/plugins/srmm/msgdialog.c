@@ -1,5 +1,5 @@
 /*
-Copyright 2000-2010 Miranda IM project,
+Copyright 2000-2012 Miranda IM project,
 all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
@@ -332,7 +332,8 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
 	case WM_KEYDOWN:
 		if (wParam == VK_RETURN) 
 		{
-			if (((GetKeyState(VK_CONTROL) & 0x8000) != 0) != ((g_dat->flags & SMF_SENDONENTER) != 0)) 
+			if (!(GetKeyState(VK_SHIFT) & 0x8000) && 
+				((GetKeyState(VK_CONTROL) & 0x8000) != 0) != ((g_dat->flags & SMF_SENDONENTER) != 0)) 
 			{
 				PostMessage(GetParent(hwnd), WM_COMMAND, IDOK, 0);
 				return 0;
