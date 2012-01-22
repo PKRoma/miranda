@@ -51,19 +51,19 @@ BEGIN
 					IDC_HIDECONTAINERS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
 					8,91,292,10
     CONTROL         "Send message on 'Enter'",IDC_SENDONENTER,"Button",
-					BS_AUTOCHECKBOX | WS_TABSTOP,8,113,292,10
+					BS_AUTOCHECKBOX | WS_TABSTOP,8,102,292,10
     CONTROL         "Send message on double 'Enter'",IDC_SENDONDBLENTER,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,124,292,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,113,292,10
     CONTROL         "Remember unsent messages",
 					IDC_SAVEDRAFTS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,
-					135,292,10
+					124,292,10
     CONTROL         "Delete temporary contacts on closing",
-					IDC_DELTEMP,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,146,
+					IDC_DELTEMP,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,135,
 					292,10
     LTEXT           "Show warning when message has not been received after",
-					IDC_STATIC,8,159,211,8
-    EDITTEXT        IDC_SECONDS,223,157,25,12,ES_AUTOHSCROLL
-    LTEXT           "seconds.",IDC_STATIC,253,159,44,8
+					IDC_STATIC,8,148,211,8
+    EDITTEXT        IDC_SECONDS,223,146,25,12,ES_AUTOHSCROLL
+    LTEXT           "seconds.",IDC_STATIC,253,148,44,8
 
 END
 
@@ -75,26 +75,22 @@ BEGIN
     GROUPBOX        "Tabs",IDC_STATIC,0,0,304,118
     CONTROL         "Enable tabs",IDC_USETABS,"Button",BS_AUTOCHECKBOX |
 					WS_TABSTOP,8,12,260,10
-    CONTROL         "Always show tab bar",IDC_ALWAYSSHOWTABS,
-					"Button",BS_AUTOCHECKBOX | WS_TABSTOP,20,23,252,10
     CONTROL         "Tabs at bottom",IDC_TABSATBOTTOM,"Button",
-					BS_AUTOCHECKBOX | WS_TABSTOP,20,34,252,10
+					BS_AUTOCHECKBOX | WS_TABSTOP,20,23,252,10
     CONTROL         "Limit names on tabs to",IDC_LIMITNAMES,
-					"Button",BS_AUTOCHECKBOX | WS_TABSTOP,20,45,126,10
-    EDITTEXT        IDC_LIMITNAMESLEN,212,44,20,12,ES_RIGHT | ES_NUMBER
-    LTEXT           "characters",IDC_CHARS,236,45,65,8,WS_DISABLED
-    CONTROL         "Show close button on each tab ",IDC_TABCLOSEBUTTON,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,20,56,192,10
+					"Button",BS_AUTOCHECKBOX | WS_TABSTOP,20,34,126,10
+    EDITTEXT        IDC_LIMITNAMESLEN,212,33,20,12,ES_RIGHT | ES_NUMBER
+    LTEXT           "characters",IDC_CHARS,236,34,65,8,WS_DISABLED
     CONTROL         "Switch to active tab",IDC_SWITCHTOACTIVE,
-					"Button",BS_AUTOCHECKBOX | WS_TABSTOP,20,67,252,10
+					"Button",BS_AUTOCHECKBOX | WS_TABSTOP,20,45,252,10
     CONTROL         "Limit number of tabs per window to",IDC_LIMITTABS,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,20,78,180,10
-    EDITTEXT        IDC_LIMITTABSNUM,212,77,20,12,ES_RIGHT | ES_NUMBER
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,20,56,180,10
+    EDITTEXT        IDC_LIMITTABSNUM,212,55,20,12,ES_RIGHT | ES_NUMBER
     CONTROL         "Use separate windows for group chats",IDC_SEPARATECHATSCONTAINERS,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,20,89,192,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,20,67,192,10
     CONTROL         "Limit number of group chats tabs per window to",IDC_LIMITCHATSTABS,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,32,100,180,10
-    EDITTEXT        IDC_LIMITCHATSTABSNUM,212,99,20,12,ES_RIGHT | ES_NUMBER
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,32,78,180,10
+    EDITTEXT        IDC_LIMITCHATSTABSNUM,212,77,20,12,ES_RIGHT | ES_NUMBER
 END
 
 IDD_OPT_LAYOUT DIALOGEX 2, 0, 304, 230
