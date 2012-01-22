@@ -181,8 +181,8 @@ INT_PTR NetlibSelectEx(WPARAM wParam,LPARAM lParam);
 INT_PTR NetlibShutdown(WPARAM wParam,LPARAM lParam);
 
 //netlibupnp.c
-BOOL NetlibUPnPAddPortMapping(WORD intport, char *proto,
-							  WORD *extport, DWORD *extip, BOOL search);
+bool NetlibUPnPAddPortMapping(WORD intport, char *proto,
+							  WORD *extport, DWORD *extip, bool search);
 void NetlibUPnPDeletePortMapping(WORD extport, char* proto);
 void NetlibUPnPCleanup(void*);
 void NetlibUPnPInit(void);
