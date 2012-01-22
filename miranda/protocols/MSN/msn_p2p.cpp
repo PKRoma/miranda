@@ -1335,9 +1335,9 @@ void CMsnProto::p2p_InitFileTransfer(
 		break;
 
 	case MSN_APPID_MEDIA_SHARING:
-		MSN_ShowPopup(ft->std.hContact,
-			TranslateT("Contact tried to share media with us (currently not supported)"), 
-			MSN_ALLOW_MSGBOX | MSN_SHOW_ERROR);
+//		MSN_ShowPopup(ft->std.hContact,
+//			TranslateT("Contact tried to share media with us (currently not supported)"), 
+//			MSN_ALLOW_MSGBOX | MSN_SHOW_ERROR);
 		p2p_sendStatus(ft, 603);
 		p2p_unregisterSession(ft);
 		break;
