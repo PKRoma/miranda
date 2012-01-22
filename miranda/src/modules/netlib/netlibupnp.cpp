@@ -2,7 +2,7 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2011 Miranda ICQ/IM project,
+Copyright 2000-2012 Miranda ICQ/IM project,
 all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
@@ -120,8 +120,8 @@ typedef enum
 	ControlQuery
 } ReqType;
 
-static BOOL txtParseParam(char* szData, char* presearch,
-						  char* start, char* finish, char* param, size_t size)
+static bool txtParseParam(char* szData, char* presearch,
+	char* start, char* finish, char* param, size_t size)
 {
 	char *cp, *cp1;
 	size_t len;
@@ -130,25 +130,25 @@ static BOOL txtParseParam(char* szData, char* presearch,
 
 	if (presearch != NULL) {
 		cp1 = strstr(szData, presearch);
-		if (cp1 == NULL) return FALSE;
+		if (cp1 == NULL) return false;
 	}
 	else
 		cp1 = szData;
 
 	cp = strstr(cp1, start);
-	if (cp == NULL) return FALSE;
+	if (cp == NULL) return false;
 	cp += strlen(start);
 	while (*cp == ' ') ++cp;
 
 	cp1 = strstr(cp, finish);
-	if (cp1 == NULL) return FALSE;
+	if (cp1 == NULL) return false;
 	while (*(cp1-1) == ' ' && cp1 > cp) --cp1;
 
 	len = min((size_t)(cp1 - cp), size-1);
 	strncpy(param, cp, len);
 	param[len] = 0;
 
-	return TRUE;
+	return true;
 }
 
 void parseURL(char* szUrl, char* szHost, unsigned short* sPort, char* szPath)
@@ -195,7 +195,7 @@ void parseURL(char* szUrl, char* szHost, unsigned short* sPort, char* szPath)
 
 static void LongLog(char* szData)
 {
-    CallService(MS_NETLIB_LOG, 0, (LPARAM)szData);
+	CallService(MS_NETLIB_LOG, 0, (LPARAM)szData);
 }
 
 static void closeRouterConnection(void)
@@ -522,10 +522,23 @@ retry:
 	return res;
 }
 
-
-static BOOL getUPnPURLs(char* szUrl, size_t sizeUrl)
+static unsigned getExtIP(void)
 {
-	char* szData = (char*)alloca(8192);
+	char szExtIP[30];
+	char* szData = (char*)mir_alloc(4096); szData[0] = 0;
+
+	unsigned extip = 0;
+	int res = httpTransact(szCtlUrl, szData, 4096, "GetExternalIPAddress", ControlAction);
+	if (res == 200 && txtParseParam(szData, "<NewExternalIPAddress", ">", "<", szExtIP, sizeof(szExtIP)))
+		extip = ntohl(inet_addr(szExtIP));
+
+	mir_free(szData);
+	return extip;
+}
+
+static bool getUPnPURLs(char* szUrl, size_t sizeUrl)
+{
+	char* szData = (char*)mir_alloc(8192);
 
 	gatewayFound = httpTransact(szUrl, szData, 8192, NULL, DeviceGetReq) == 200;
 	if (gatewayFound)
@@ -573,9 +586,10 @@ static BOOL getUPnPURLs(char* szUrl, size_t sizeUrl)
 		else
 		{
 			szCtlUrl[0] = 0;
-			gatewayFound = FALSE;
+			gatewayFound = false;
 		}
 	}
+	mir_free(szData);
 
 	return gatewayFound;
 }
@@ -603,8 +617,8 @@ static void discoverUPnP(void)
 	enetaddr.sin_port = htons(1900);
 	enetaddr.sin_addr.s_addr = inet_addr("239.255.255.250");
 
-	gethostname( hostname, sizeof( hostname ));
-	he = gethostbyname( hostname );
+	gethostname(hostname, sizeof(hostname));
+	he = gethostbyname(hostname);
 
 	if (he)
 	{
@@ -612,15 +626,15 @@ static void discoverUPnP(void)
 
 		ips = ( unsigned* )mir_alloc(nip * sizeof(unsigned));
 
-		for (j=0; j<nip; ++j)
+		for (j = 0; j < nip; ++j)
 			ips[j] = *(unsigned*)he->h_addr_list[j];
 	}
 
-	buf = ( char* )alloca(1500);
+	buf = (char*)mir_alloc(1500);
 
 	for(i = 3;  --i && szUrl[0] == 0;)
 	{
-		for (j=0; j<nip; ++j)
+		for (j = 0; j < nip; ++j)
 		{
 			if (ips)
 				setsockopt(sock, IPPROTO_IP, IP_MULTICAST_IF, (char *)&ips[j], sizeof(unsigned));
@@ -659,7 +673,7 @@ static void discoverUPnP(void)
 					parseURL(szCtlUrl, szHostExist, NULL, NULL);
 					if (strcmp(szHostNew, szHostExist) == 0)
 					{
-						gatewayFound = TRUE;
+						gatewayFound = true;
 						break;
 					}
 
@@ -668,7 +682,11 @@ static void discoverUPnP(void)
 					expireTime = atoi(lrtrimp(age));
 					lrtrim(szDev);
 
-					if (getUPnPURLs(szUrl, sizeof(szUrl))) break;
+					if (getUPnPURLs(szUrl, sizeof(szUrl)))
+					{
+						gatewayFound = getExtIP() != 0;
+						if (gatewayFound) break;
+					}
 				}
 			}
 			FD_ZERO(&readfd);
@@ -676,13 +694,14 @@ static void discoverUPnP(void)
 		}
 	}
 
+	mir_free(buf);
 	mir_free(ips);
 	setsockopt(sock, IPPROTO_IP, IP_MULTICAST_IF, (char *)&any, sizeof(unsigned));
 	closesocket(sock);
 }
 
 
-static BOOL findUPnPGateway(void)
+static bool findUPnPGateway(void)
 {
 	if ((time(NULL) - lastDiscTime) >= expireTime)
 	{
@@ -692,7 +711,7 @@ static BOOL findUPnPGateway(void)
 
 		if ((curTime - lastDiscTime) >= expireTime)
 		{
-			gatewayFound = FALSE;
+			gatewayFound = false;
 
 			discoverUPnP();
 			lastDiscTime = curTime;
@@ -706,14 +725,13 @@ static BOOL findUPnPGateway(void)
 	return gatewayFound;
 }
 
-
-BOOL NetlibUPnPAddPortMapping(WORD intport, char *proto, WORD *extport, DWORD *extip, BOOL search)
+bool NetlibUPnPAddPortMapping(WORD intport, char *proto, WORD *extport, DWORD *extip, bool search)
 {
 	int res = 0, i = 5;
 
 	if (findUPnPGateway())
 	{
-		char* szData = ( char* )mir_alloc(4096);
+		char* szData = (char*)mir_alloc(4096);
 		char szExtIP[30];
 
 		*extport = intport - 1;
@@ -732,19 +750,18 @@ BOOL NetlibUPnPAddPortMapping(WORD intport, char *proto, WORD *extport, DWORD *e
 		}
 		while (search && res == 500 && atol(szExtIP) == 718 && --i);
 
+		mir_free(szData);
+
 		if (res == 200)
 		{
-			szData[0] = 0;
-			res = httpTransact(szCtlUrl, szData, 4096, "GetExternalIPAddress", ControlAction);
-			if (res == 200 && txtParseParam(szData, "<NewExternalIPAddress", ">", "<", szExtIP, sizeof(szExtIP)))
-				*extip = ntohl(inet_addr(szExtIP));
+			unsigned ip = getExtIP();
+			if (ip) *extip = ip; 
 
 			if (numports >= numportsAlloc)
 				mir_realloc(portList, sizeof(WORD)*(numportsAlloc += 10));
 			portList[numports++] = *extport;
 		}
 
-		mir_free(szData);
 		ReleaseMutex(portListMutex);
 	}
 
@@ -756,49 +773,50 @@ void NetlibUPnPDeletePortMapping(WORD extport, char* proto)
 	if (extport == 0)
 		return;
 
-//	findUPnPGateway();
+	//	findUPnPGateway();
 
 	if (gatewayFound)
 	{
 		unsigned i;
-		char* szData = (char*)alloca(4096);
+		char* szData = (char*)mir_alloc(4096);
 
 		WaitForSingleObject(portListMutex, INFINITE);
 		mir_snprintf(szData, 4096, delete_port_mapping, extport, proto);
 		httpTransact(szCtlUrl, szData, 4096, "DeletePortMapping", ControlAction);
 
-		for ( i=0; i < numports; ++i )
-			if ( portList[i] == extport && --numports > 0)
-				memmove(&portList[i], &portList[i+1], (numports - i)*sizeof(WORD));
+		for (i = 0; i < numports; ++i)
+			if (portList[i] == extport && --numports > 0)
+				memmove(&portList[i], &portList[i+1], (numports - i) * sizeof(WORD));
 
+		mir_free(szData);
 		ReleaseMutex(portListMutex);
 	}
 }
 
 void NetlibUPnPCleanup(void*)
 {
-    if (DBGetContactSettingByte(NULL,"Netlib","NLEnableUPnP",1)==0)
-        // upnp is disabled globally, no need for a cleanup
-        return;
+	if (DBGetContactSettingByte(NULL,"Netlib","NLEnableUPnP",1)==0)
+		// upnp is disabled globally, no need for a cleanup
+		return;
 
-    {
-        int i, incoming = 0;
-        EnterCriticalSection(&csNetlibUser);
-        for (i = 0; i < netlibUser.getCount(); ++i)
+	{
+		int i, incoming = 0;
+		EnterCriticalSection(&csNetlibUser);
+		for (i = 0; i < netlibUser.getCount(); ++i)
 		{
-            if (netlibUser[i]->user.flags & NUF_INCOMING)
+			if (netlibUser[i]->user.flags & NUF_INCOMING)
 			{
-                incoming = 1;
+				incoming = 1;
 				break;
 			}
 		}
 		LeaveCriticalSection(&csNetlibUser);
-        if (!incoming) return;
-    }
+		if (!incoming) return;
+	}
 
 	if (findUPnPGateway())
 	{
-		char* szData = ( char* )alloca(4096);
+		char* szData = (char*)alloca(4096);
 		char buf[50], lip[50];
 		unsigned i, j = 0, k, num = 100;
 
@@ -808,11 +826,11 @@ void NetlibUPnPCleanup(void*)
 
 		WaitForSingleObject(portListMutex, INFINITE);
 
-        if (httpTransact(szCtlUrl, szData, 4096, "PortMappingNumberOfEntries", ControlQuery) == 200 &&
-		    txtParseParam(szData, "QueryStateVariableResponse", "<return>", "<", buf, sizeof(buf)))
-		    num = atol(buf);
+		if (httpTransact(szCtlUrl, szData, 4096, "PortMappingNumberOfEntries", ControlQuery) == 200 &&
+			txtParseParam(szData, "QueryStateVariableResponse", "<return>", "<", buf, sizeof(buf)))
+			num = atol(buf);
 
-        for (i=0; i<num && !Miranda_Terminated(); ++i)
+		for (i=0; i<num && !Miranda_Terminated(); ++i)
 		{
 			mir_snprintf(szData, 4096, get_port_mapping, i);
 
@@ -832,11 +850,14 @@ void NetlibUPnPCleanup(void*)
 			{
 				WORD mport = (WORD)atol(buf);
 
+				if (j >= SIZEOF(ports)) 
+					break;
+
 				for (k=0; k<numports; ++k)
-					if ( portList[k] == mport)
+					if (portList[k] == mport)
 						break;
 
-				if (k >= numports && j < 30)
+				if (k >= numports)
 					ports[j++] = mport;
 			}
 		}
@@ -852,7 +873,7 @@ void NetlibUPnPInit(void)
 {
 	numports = 0;
 	numportsAlloc = 10;
-	portList = ( WORD* )mir_alloc(sizeof(WORD)*numportsAlloc);
+	portList = (WORD*)mir_alloc(sizeof(WORD)*numportsAlloc);
 
 	portListMutex = CreateMutex(NULL, FALSE, NULL);
 }

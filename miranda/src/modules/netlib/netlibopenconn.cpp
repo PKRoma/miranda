@@ -2,7 +2,7 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2011 Miranda ICQ/IM project, 
+Copyright 2000-2012 Miranda ICQ/IM project, 
 all portions of this codebase are copyrighted to the people 
 listed in contributors.txt.
 
@@ -35,15 +35,15 @@ static int iUPnPCleanup = 0;
 DWORD DnsLookup(struct NetlibUser *nlu,const char *szHost)
 {
 	HOSTENT* host;
-	DWORD ip = inet_addr( szHost);
-	if ( ip != INADDR_NONE )
+	DWORD ip = inet_addr(szHost);
+	if (ip != INADDR_NONE)
 		return ip;
 
 	__try 
 	{
-		host = gethostbyname( szHost );
+		host = gethostbyname(szHost);
 		if ( host )
-			return *( u_long* )host->h_addr_list[0];
+			return *(u_long*)host->h_addr_list[0];
 
 		NetlibLogf(nlu,"%s %d: %s() for host %s failed (%u)",__FILE__,__LINE__,"gethostbyname", szHost, WSAGetLastError());
 	}
@@ -694,17 +694,6 @@ INT_PTR NetlibOpenConnection(WPARAM wParam,LPARAM lParam)
 
 	NetlibLogf(nlu,"Connection request to %s:%d (Flags %x)....", nloc->szHost, nloc->wPort, nloc->flags);
 
-	if (iUPnPCleanup == 0)
-	{
-		EnterCriticalSection(&csNetlibUser);
-		if (iUPnPCleanup == 0) 
-		{
-			iUPnPCleanup = 1;
-			forkthread(NetlibUPnPCleanup, 0, NULL);
-		}
-		LeaveCriticalSection(&csNetlibUser);
-	}
-
 	if (GetNetlibHandleType(nlu) != NLH_USER || !(nlu->user.flags & NUF_OUTGOING) || nloc == NULL ||
 		(nloc->cbSize != NETLIBOPENCONNECTION_V1_SIZE && nloc->cbSize != sizeof(NETLIBOPENCONNECTION)) || 
 		nloc->szHost == NULL || nloc->wPort == 0)
@@ -731,6 +720,17 @@ INT_PTR NetlibOpenConnection(WPARAM wParam,LPARAM lParam)
 	{
 		FreePartiallyInitedConnection(nlc);		
 		return 0;
+	}
+
+	if (iUPnPCleanup == 0)
+	{
+		EnterCriticalSection(&csNetlibUser);
+		if (iUPnPCleanup == 0) 
+		{
+			iUPnPCleanup = 1;
+			forkthread(NetlibUPnPCleanup, 0, NULL);
+		}
+		LeaveCriticalSection(&csNetlibUser);
 	}
 
 	return (INT_PTR)nlc;

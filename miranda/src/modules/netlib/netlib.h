@@ -2,7 +2,7 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2011 Miranda ICQ/IM project,
+Copyright 2000-2012 Miranda ICQ/IM project,
 all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
@@ -181,8 +181,8 @@ INT_PTR NetlibSelectEx(WPARAM wParam,LPARAM lParam);
 INT_PTR NetlibShutdown(WPARAM wParam,LPARAM lParam);
 
 //netlibupnp.c
-BOOL NetlibUPnPAddPortMapping(WORD intport, char *proto,
-							  WORD *extport, DWORD *extip, BOOL search);
+bool NetlibUPnPAddPortMapping(WORD intport, char *proto,
+							  WORD *extport, DWORD *extip, bool search);
 void NetlibUPnPDeletePortMapping(WORD extport, char* proto);
 void NetlibUPnPCleanup(void*);
 void NetlibUPnPInit(void);
