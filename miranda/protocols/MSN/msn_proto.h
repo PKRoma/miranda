@@ -1,6 +1,6 @@
 /*
 Plugin of Miranda IM for communicating with users of the MSN Messenger protocol.
-Copyright (c) 2009 Boris Krasnovskiy.
+Copyright (c) 2009-2012 Boris Krasnovskiy.
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -569,7 +569,7 @@ struct CMsnProto : public PROTO_INTERFACE
 	void   ForkThread(MsnThreadFunc pFunc, void* param);
 
 	int    SendBroadcast(HANDLE hContact, int type, int result, HANDLE hProcess, LPARAM lParam);
-
+	TCHAR* GetContactNameT(HANDLE hContact);
 	void   deleteSetting(HANDLE hContact, const char* valueName);
 
 	int    getByte(const char* name, BYTE defaultValue);

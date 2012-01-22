@@ -1,6 +1,6 @@
 /*
 Plugin of Miranda IM for communicating with users of the MSN Messenger protocol.
-Copyright (c) 2007-2011 Boris Krasnovskiy.
+Copyright (c) 2007-2012 Boris Krasnovskiy.
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -258,12 +258,12 @@ bool CMsnProto::MSN_StoreGetProfile(bool allowRecurse)
 
 	if (tResult != NULL) 
 	{
-		UpdateStoreHost("GetProfile", storeUrl);
-
 		if (status == 200)
 		{
 			ezxml_t xmlm = ezxml_parse_str(tResult, strlen(tResult));
 			ezxml_t body = getSoapResponse(xmlm, "GetProfile");
+
+			UpdateStoreHost("GetProfile", body ? storeUrl : NULL);
 
 			mir_snprintf(proresid, sizeof(proresid), "%s", ezxml_txt(ezxml_child(body, "ResourceID")));
 
@@ -317,6 +317,9 @@ bool CMsnProto::MSN_StoreGetProfile(bool allowRecurse)
 			}
 			ezxml_free(xmlm);
 		}
+		else
+			UpdateStoreHost("GetProfile", NULL);
+
 	}
 	mir_free(tResult);
 	mir_free(storeUrl);

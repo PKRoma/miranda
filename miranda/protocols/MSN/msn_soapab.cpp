@@ -1,6 +1,6 @@
 /*
 Plugin of Miranda IM for communicating with users of the MSN Messenger protocol.
-Copyright (c) 2007-2011 Boris Krasnovskiy.
+Copyright (c) 2007-2012 Boris Krasnovskiy.
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -297,15 +297,15 @@ bool CMsnProto::MSN_SharingFindMembership(bool deltas, bool allowRecurse)
 
 	if (tResult != NULL)
 	{
-		UpdateABHost("FindMembership", abUrl);
 		ezxml_t xmlm = ezxml_parse_str(tResult, strlen(tResult));
-
 		if (status == 200)
 		{
 			UpdateABCacheKey(xmlm, true);
 			ezxml_t body = getSoapResponse(xmlm, "FindMembership");
 			ezxml_t svcs = ezxml_get(body, "Services", 0, "Service", -1); 
 			
+			UpdateABHost("FindMembership", body ? abUrl : NULL);
+
 			while (svcs != NULL)
 			{
 				const char* szType = ezxml_txt(ezxml_get(svcs, "Info", 0, "Handle", 0, "Type", -1));
@@ -397,6 +397,9 @@ bool CMsnProto::MSN_SharingFindMembership(bool deltas, bool allowRecurse)
 				status = MSN_SharingFindMembership(deltas, false) ? 200 : 500;
 			}
 		}
+		else
+			UpdateABHost("FindMembership", NULL);
+		
 		ezxml_free(xmlm);
 	}
 	mir_free(tResult);
@@ -712,13 +715,13 @@ bool CMsnProto::MSN_ABFind(const char* szMethod, const char* szGuid, bool deltas
 
 	if (tResult != NULL)
 	{
-		UpdateABHost(szMethod, abUrl);
 		ezxml_t xmlm = ezxml_parse_str(tResult, strlen(tResult));
 		UpdateABCacheKey(xmlm, false);
 
 		if (status == 200)
 		{
 			ezxml_t body = getSoapResponse(xmlm, szMethod);
+			UpdateABHost(szMethod, body ? abUrl : NULL);
 
 			ezxml_t ab = ezxml_child(body, "Ab");
 			if (strcmp(szMethod, "ABFindByContacts"))
@@ -944,8 +947,15 @@ bool CMsnProto::MSN_ABFind(const char* szMethod, const char* szGuid, bool deltas
 
 					szTmp = ezxml_txt(ezxml_child(contInf, "isMobileIMEnabled"));
 					setByte("MobileEnabled", strcmp(szTmp, "true") == 0);
+
 					szTmp = ezxml_txt(ezxml_child(contInf, "IsNotMobileVisible"));
 					setByte("MobileAllowed", strcmp(szTmp, "true") != 0);
+
+					szTmp = ezxml_txt(ezxml_child(contInf, "firstName"));
+					setStringUtf(NULL, "FirstName", szTmp);
+
+					szTmp = ezxml_txt(ezxml_child(contInf, "lastName"));
+					setStringUtf(NULL, "LastName", szTmp);
 
 					ezxml_t anot = ezxml_get(contInf, "annotations", 0, "Annotation", -1);
 					while (anot != NULL)
@@ -986,6 +996,9 @@ bool CMsnProto::MSN_ABFind(const char* szMethod, const char* szGuid, bool deltas
 				status = MSN_ABFind(szMethod, szGuid, false, false) ? 200 : 500;
 			}
 		}
+		else
+			UpdateABHost(szMethod, NULL);
+
 		ezxml_free(xmlm);
 	}
 	mir_free(tResult);
@@ -1534,7 +1547,6 @@ unsigned CMsnProto::MSN_ABContactAdd(const char* szEmail, const char* szNick, in
 
 	if (tResult != NULL)
 	{
-		UpdateABHost("ABContactAdd", abUrl);
 		ezxml_t xmlm = ezxml_parse_str(tResult, strlen(tResult));
 		UpdateABCacheKey(xmlm, false);
 		if (status == 200)

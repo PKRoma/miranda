@@ -1,6 +1,6 @@
 /*
 Plugin of Miranda IM for communicating with users of the MSN Messenger protocol.
-Copyright (c) 2007-2011 Boris Krasnovskiy.
+Copyright (c) 2007-2012 Boris Krasnovskiy.
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -408,7 +408,7 @@ void CMsnProto::displayEmailCount(HANDLE hContact)
 {
 	if (!emailEnabled || getByte("DisableHotmailCL", 0)) return;
 
-	TCHAR* name = MSN_GetContactNameT(hContact);
+	TCHAR* name = GetContactNameT(hContact);
 	if (name == NULL) return;
 
 	TCHAR* ch = name-1;

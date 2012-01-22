@@ -1,6 +1,6 @@
 /*
 Plugin of Miranda IM for communicating with users of the MSN Messenger protocol.
-Copyright (c) 2006-2011 Boris Krasnovskiy.
+Copyright (c) 2006-2012 Boris Krasnovskiy.
 Copyright (c) 2003-2005 George Hazan.
 Copyright (c) 2002-2003 Richard Hughes (original version).
 
@@ -68,12 +68,9 @@ int CMsnProto::MSN_ChatInit(WPARAM wParam, LPARAM)
 	gce.ptszStatus = TranslateT("Me");
 	CallServiceSync(MS_GC_EVENT, 0, (LPARAM)&gce);
 
-	DBVARIANT dbv;
-	int bError = getTString("Nick", &dbv);
-	gce.ptszNick = bError ? _T("") : dbv.ptszVal;
-
 	gcd.iType = GC_EVENT_JOIN;
 	gce.ptszUID = mir_a2t(MyOptions.szEmail);
+	gce.ptszNick = GetContactNameT(NULL);
 	gce.time = 0;
 	gce.bIsMe = TRUE;
 	CallServiceSync(MS_GC_EVENT, 0, (LPARAM)&gce);
@@ -87,8 +84,6 @@ int CMsnProto::MSN_ChatInit(WPARAM wParam, LPARAM)
 	CallServiceSync(MS_GC_EVENT, SESSION_ONLINE, (LPARAM)&gce);
 	CallServiceSync(MS_GC_EVENT, WINDOW_VISIBLE, (LPARAM)&gce);
 
-	if (!bError)
-		MSN_FreeVariant(&dbv);
 	mir_free((TCHAR*)gce.ptszUID);
 	return 0;
 }
@@ -119,7 +114,7 @@ void CMsnProto::MSN_ChatStart(ThreadData* info)
 		HANDLE hContact = MSN_HContactFromEmail(info->mJoinedContactsWLID[j]);
 		TCHAR *wlid = mir_a2t(info->mJoinedContactsWLID[j]);
 
-		gce.ptszNick = hContact ? MSN_GetContactNameT(hContact) : wlid;
+		gce.ptszNick = GetContactNameT(hContact);
 		gce.ptszUID = wlid;
 		CallServiceSync(MS_GC_EVENT, 0, (LPARAM)&gce);
 

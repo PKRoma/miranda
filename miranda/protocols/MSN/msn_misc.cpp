@@ -1139,7 +1139,7 @@ void CMsnProto::MSN_ShowPopup(const TCHAR* nickname, const TCHAR* msg, int flags
 
 void CMsnProto::MSN_ShowPopup(const HANDLE hContact, const TCHAR* msg, int flags)
 {
-	const TCHAR* nickname = hContact ? MSN_GetContactNameT(hContact) : _T("Me");
+	const TCHAR* nickname = hContact ? GetContactNameT(hContact) : _T("Me");
 	MSN_ShowPopup(nickname, msg, flags, NULL, hContact);
 }
 

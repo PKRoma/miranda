@@ -1,6 +1,6 @@
 /*
 Plugin of Miranda IM for communicating with users of the MSN Messenger protocol.
-Copyright (c) 2008-2011 Boris Krasnovskiy.
+Copyright (c) 2008-2012 Boris Krasnovskiy.
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -889,7 +889,7 @@ HANDLE __cdecl CMsnProto::SendFile(HANDLE hContact, const PROTOCHAR* szDescripti
 		return 0;
 	}
 
-	if ((cont->cap1 & 0xf0000000))
+	if (cont->cap1 & 0xf0000000)
 		p2p_invite(MSN_APPID_FILE, sft, NULL);
 	else
 	{
