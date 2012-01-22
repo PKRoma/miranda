@@ -408,7 +408,7 @@ void CMsnProto::displayEmailCount(HANDLE hContact)
 {
 	if (!emailEnabled || getByte("DisableHotmailCL", 0)) return;
 
-	TCHAR* name = MSN_GetContactNameT(hContact);
+	TCHAR* name = GetContactNameT(hContact);
 	if (name == NULL) return;
 
 	TCHAR* ch = name-1;

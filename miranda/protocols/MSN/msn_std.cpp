@@ -192,9 +192,21 @@ INT_PTR MSN_CallService(const char* szSvcName, WPARAM wParam, LPARAM lParam)
 }
 #endif
 
-TCHAR*  MSN_GetContactNameT(HANDLE hContact)
+TCHAR*  CMsnProto::GetContactNameT(HANDLE hContact)
 {
-	return (TCHAR*)MSN_CallService(MS_CLIST_GETCONTACTDISPLAYNAME, WPARAM(hContact), GCDNF_TCHAR);
+	if (hContact)
+		return (TCHAR*)MSN_CallService(MS_CLIST_GETCONTACTDISPLAYNAME, WPARAM(hContact), GCDNF_TCHAR);
+	else
+	{
+		CONTACTINFO ci = {0};
+		ci.cbSize = sizeof(ci);
+		ci.dwFlag = CNF_DISPLAY | CNF_TCHAR;
+		ci.szProto = m_szModuleName;
+		if (!CallService(MS_CONTACT_GETCONTACTINFO, 0, (LPARAM)&ci))
+			return (TCHAR*)ci.pszVal;
+		else
+			return _T("Me");
+	}
 }
 
 void MSN_FreeVariant(DBVARIANT* dbv)

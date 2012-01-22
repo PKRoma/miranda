@@ -502,7 +502,7 @@ void CMsnProto::MSN_ReceiveMessage(ThreadData* info, char* cmdString, char* para
 			gce.dwFlags = GC_TCHAR | GCEF_ADDTOLOG;
 			gce.pDest = &gcd;
 			gce.ptszUID = mir_a2t(email);
-			gce.ptszNick = MSN_GetContactNameT(ccs.hContact);
+			gce.ptszNick = GetContactNameT(ccs.hContact);
 			gce.time = time(NULL);
 			gce.bIsMe = FALSE;
 
@@ -1222,7 +1222,7 @@ LBL_InvalidCommand:
 				gce.cbSize = sizeof(GCEVENT);
 				gce.dwFlags = GC_TCHAR | GCEF_ADDTOLOG;
 				gce.pDest = &gcd;
-				gce.ptszNick = MSN_GetContactNameT(hContact);
+				gce.ptszNick = GetContactNameT(hContact);
 				gce.ptszUID = mir_a2t(data.userEmail);
 				gce.time = time(NULL);
 				gce.bIsMe = FALSE;
@@ -1612,7 +1612,7 @@ remove:
 						gce.cbSize = sizeof(GCEVENT);
 						gce.dwFlags = GC_TCHAR | GCEF_ADDTOLOG;
 						gce.pDest = &gcd;
-						gce.ptszNick = MSN_GetContactNameT(hContact);
+						gce.ptszNick = GetContactNameT(hContact);
 						gce.ptszUID = mir_a2t(data.userEmail);
 						gce.ptszStatus = TranslateT("Others");
 						gce.time = time(NULL);

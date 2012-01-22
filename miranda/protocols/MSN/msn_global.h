@@ -1,6 +1,6 @@
 /*
 Plugin of Miranda IM for communicating with users of the MSN Messenger protocol.
-Copyright (c) 2006-2012 Boris Krasnovskiy.
+Copyright (c) 2006-2011 Boris Krasnovskiy.
 Copyright (c) 2003-2005 George Hazan.
 Copyright (c) 2002-2003 Richard Hughes (original version).
 
@@ -42,6 +42,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <m_clist.h>
 #include <m_clistint.h>
 #include <m_clui.h>
+#include <m_contacts.h>
 #include <m_idle.h>
 #include <m_icolib.h>
 #include <m_message.h>
@@ -188,7 +189,6 @@ INT_PTR     MSN_CallService(const char* szSvcName, WPARAM wParam, LPARAM lParam)
 #endif
 
 void		MSN_FreeVariant(DBVARIANT* dbv);
-TCHAR*      MSN_GetContactNameT(HANDLE hContact);
 char*       MSN_Translate(const char* str);
 unsigned    MSN_GenRandom(void);
 
