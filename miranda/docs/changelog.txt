@@ -6,6 +6,16 @@
 
 				
 
+* New in 0.9.42
+Bugfixes:
+ - Fixed Shift-Enter new line behavior in messaging window
+ - Improved UPnP port mapping behavior
+ - MSN: Fixed login issues
+ - MSN: Improved nick name display in chat rooms
+ - MSN: Improved connection handling
+ - MSN: Removed media sharing popup
+
+
 * New in 0.9.41
 Bugfixes:
  - Fix boot ini processing logic
