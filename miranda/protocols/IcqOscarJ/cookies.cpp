@@ -290,15 +290,19 @@ cookie_message_data* CIcqProto::CreateMessageCookieData(BYTE bMsgType, HANDLE hC
 	BYTE bAckType;
 	WORD wStatus = getContactStatus(hContact);
 
+	bAckType = getSettingByte(NULL, "SlowSend", DEFAULT_SLOWSEND) && (dwUin || wStatus != ID_STATUS_OFFLINE) ? ACKTYPE_SERVER : ACKTYPE_NONE;
+
+/*
 	if (!getSettingByte(hContact, "SlowSend", DEFAULT_SLOWSEND) || !getSettingByte(NULL, "SlowSend", DEFAULT_SLOWSEND) ||
 		(!dwUin && wStatus == ID_STATUS_OFFLINE))
 		bAckType = ACKTYPE_NONE;
 	else if ((bUseSrvRelay && ((!dwUin) || (!CheckContactCapabilities(hContact, CAPF_SRV_RELAY)) ||
-		     (wStatus == ID_STATUS_OFFLINE))) || getSettingByte(hContact, "OnlyServerAcks", DEFAULT_ONLYSERVERACKS) ||
-		     getSettingByte(NULL, "OnlyServerAcks", DEFAULT_ONLYSERVERACKS))
+		(wStatus == ID_STATUS_OFFLINE))) || getSettingByte(hContact, "OnlyServerAcks", DEFAULT_ONLYSERVERACKS) ||
+		getSettingByte(NULL, "OnlyServerAcks", DEFAULT_ONLYSERVERACKS))
 		bAckType = ACKTYPE_SERVER;
 	else
 		bAckType = ACKTYPE_CLIENT;
+*/
 
 	return CreateMessageCookie(bMsgType, bAckType);
 }

@@ -668,7 +668,7 @@ int __cdecl CIcqProto::FileCancel( HANDLE hContact, HANDLE hTransfer )
 			icq_CancelFileTransfer(hContact, ft);
 			return 0; // Success
 		}
-		else if (ft->ft_magic = FT_MAGIC_OSCAR)
+		else if (ft->ft_magic == FT_MAGIC_OSCAR)
 		{ // cancel oscar file transfer
 			return oftFileCancel(hContact, hTransfer);
 		}
@@ -1415,11 +1415,13 @@ int __cdecl CIcqProto::SendContacts( HANDLE hContact, int flags, int nContacts, 
 							return ReportGenericSendError(hContact, ACKTYPE_CONTACTS, "The message could not be delivered. You are sending too fast. Wait a while and try again.");
 						}
 						// Select channel and send
+/*
 						if (!CheckContactCapabilities(hContact, CAPF_SRV_RELAY) || wRecipientStatus == ID_STATUS_OFFLINE)
 						{
 							dwCookie = icq_SendChannel4Message(dwUin, hContact, MTYPE_CONTACTS, (WORD)nBodyLength, pBody, pCookieData);
 						}
 						else
+*/
 						{
 							WORD wPriority;
 
@@ -1661,7 +1663,8 @@ int __cdecl CIcqProto::SendMsg( HANDLE hContact, int flags, const char* pszSrc )
 				}
 				// on failure, fallback to send thru server
 			}
-			if (!dwUin || !CheckContactCapabilities(hContact, CAPF_SRV_RELAY) || wRecipientStatus == ID_STATUS_OFFLINE)
+
+//			if (!dwUin || !CheckContactCapabilities(hContact, CAPF_SRV_RELAY) || wRecipientStatus == ID_STATUS_OFFLINE)
 			{
 				/// TODO: add support for RTL & user customizable font
 				{
@@ -1711,6 +1714,7 @@ int __cdecl CIcqProto::SendMsg( HANDLE hContact, int flags, const char* pszSrc )
 				// free the unicode message
 				SAFE_FREE((void**)&pwszText);
 			}
+/*
 			else
 			{
 				WORD wPriority;
@@ -1766,6 +1770,7 @@ int __cdecl CIcqProto::SendMsg( HANDLE hContact, int flags, const char* pszSrc )
 				dwCookie = icq_SendChannel2Message(dwUin, hContact, srv_msg, strlennull(srv_msg), wPriority, pCookieData, srv_cap);
 				SAFE_FREE(&szUserAnsi);
 			}
+*/
 
 			// This will stop the message dialog from waiting for the real message delivery ack
 			if (pCookieData->nAckType == ACKTYPE_NONE)
@@ -1846,6 +1851,7 @@ int __cdecl CIcqProto::SendUrl( HANDLE hContact, int flags, const char* url )
 				return ReportGenericSendError(hContact, ACKTYPE_URL, "The message could not be delivered. You are sending too fast. Wait a while and try again.");
 			}
 			// Select channel and send
+/*
 			if (!CheckContactCapabilities(hContact, CAPF_SRV_RELAY) ||
 				wRecipientStatus == ID_STATUS_OFFLINE)
 			{
@@ -1853,6 +1859,7 @@ int __cdecl CIcqProto::SendUrl( HANDLE hContact, int flags, const char* url )
 					(WORD)nBodyLen, szBody, pCookieData);
 			}
 			else
+*/
 			{
 				WORD wPriority;
 
