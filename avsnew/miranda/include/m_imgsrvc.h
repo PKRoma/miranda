@@ -130,7 +130,6 @@ typedef struct _tagFI_interface {
 // Multipaging interface ----------------------------------------------------
 
     FIMULTIBITMAP *(DLL_CALLCONV *FI_OpenMultiBitmap)(FREE_IMAGE_FORMAT fif, const char *filename, BOOL create_new, BOOL read_only, BOOL keep_cache_in_memory FI_DEFAULT(FALSE), int flags FI_DEFAULT(0));
-    FIMULTIBITMAP *(DLL_CALLCONV *FI_OpenMultiBitmapU)(FREE_IMAGE_FORMAT fif, const wchar_t *filename, BOOL create_new, BOOL read_only, BOOL keep_cache_in_memory FI_DEFAULT(FALSE), int flags FI_DEFAULT(0));
     BOOL (DLL_CALLCONV *FI_CloseMultiBitmap)(FIMULTIBITMAP *bitmap, int flags FI_DEFAULT(0));
     int (DLL_CALLCONV *FI_GetPageCount)(FIMULTIBITMAP *bitmap);
     void (DLL_CALLCONV *FI_AppendPage)(FIMULTIBITMAP *bitmap, FIBITMAP *data);
@@ -337,7 +336,9 @@ typedef struct _tagFI_interface {
     INT_PTR  (*FI_BmpFilterResizeBitmap)(WPARAM wParam,LPARAM lParam);      // more generic resizer for avatar images
     void     (*FI_CorrectBitmap32Alpha)(HBITMAP hBitmap, BOOL force);       // corrects broken images (when all alpha values are 0)
 
-    BYTE  reserved[200];            // future usage
+    FIMULTIBITMAP *(DLL_CALLCONV *FI_OpenMultiBitmapU)(FREE_IMAGE_FORMAT fif, const wchar_t *filename, BOOL create_new, BOOL read_only, BOOL keep_cache_in_memory FI_DEFAULT(FALSE), int flags FI_DEFAULT(0));
+
+    void*   reserved[49];            // future usage
 } FI_INTERFACE;
 
 
