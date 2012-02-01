@@ -213,8 +213,8 @@ char *gg_img_getfilter(char *szFilter, int nSize)
 	char *pFilter = szFilter;
 
 	// Match relative to ImgDecoder presence
-	szFilterName = Translate("Image files (*.bmp,*.jpg,*.gif,*.png)");
-	szFilterMask = "*.bmp;*.jpg;*.gif;*.png";
+	szFilterName = Translate("Image files (*.bmp,*.gif,*.jpeg,*.jpg,*.png)");
+	szFilterMask = "*.bmp;*.gif;*.jpeg;*.jpg;*.png";
 
 	// Make up filter
 	strncpy(pFilter, szFilterName, nSize);
@@ -249,7 +249,7 @@ int gg_img_saveimage(HWND hwnd, GGIMAGEENTRY *dat)
 	ofn.Flags = OFN_PATHMUSTEXIST | OFN_NOCHANGEDIR | OFN_OVERWRITEPROMPT;
 	if(GetSaveFileName(&ofn))
 	{
-		FILE *fp = fopen(szFileName, "w+b" );
+		FILE *fp = fopen(szFileName, "w+b");
 		if(fp)
 		{
 			fwrite(dat->lpData, dat->nSize, 1, fp);
@@ -637,7 +637,7 @@ static INT_PTR CALLBACK gg_img_dlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 							LPVOID pvData = NULL;
 							int len;
 
-							((struct gg_msg_richtext*)format)->flag=2;
+							((struct gg_msg_richtext*)format)->flag = 2;
 
 							r = (struct gg_msg_richtext_format *)(format + sizeof(struct gg_msg_richtext));
 							r->position = 0;
@@ -653,7 +653,7 @@ static INT_PTR CALLBACK gg_img_dlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 							((struct gg_msg_richtext*)format)->length = len;
 
 							EnterCriticalSection(&gg->sess_mutex);
-							gg_send_message_richtext(gg->sess, GG_CLASS_CHAT, (uin_t)uin,(unsigned char*)msg,format,len+sizeof(struct gg_msg_richtext));
+							gg_send_message_richtext(gg->sess, GG_CLASS_CHAT, (uin_t)uin, (unsigned char*)msg, format, len + sizeof(struct gg_msg_richtext));
 							LeaveCriticalSection(&gg->sess_mutex);
 
 							// Protect dat from releasing
@@ -885,24 +885,64 @@ gg_img_releasepicture(void *img)
 }
 
 ////////////////////////////////////////////////////////////////////////////
+// Helper functions to determine image file format and the right extension
+const char *gg_img_guessfileextension(const char *lpData)
+{
+	if (lpData != NULL)
+	{
+		if (memcmp(lpData, "BM", 2) == 0)
+			return ".bmp";
+		if (memcmp(lpData, "GIF8", 4) == 0)
+			return ".gif";
+		if (memcmp(lpData, "\xFF\xD8", 2) == 0)
+			return ".jpg";
+		if (memcmp(lpData, "\x89PNG", 4) == 0)
+			return ".png";
+	}
+	return "";
+}
+
+////////////////////////////////////////////////////////////////////////////
+BOOL gg_img_hasextension(const char *filename)
+{
+	if (filename != NULL && *filename != '\0')
+	{
+		char *imgtype = strrchr(filename, '.');
+		if (imgtype != NULL)
+		{
+			int len = strlen(imgtype);
+			imgtype++;
+			if (len == 4 && (_stricmp(imgtype, "bmp") == 0 ||
+							 _stricmp(imgtype, "gif") == 0 ||
+							 _stricmp(imgtype, "jpg") == 0 ||
+							 _stricmp(imgtype, "png") == 0))
+				return TRUE;
+			if (len == 5 &&  _stricmp(imgtype, "jpeg") == 0)
+				return TRUE;
+		}
+	}
+	return FALSE;
+}
+
+////////////////////////////////////////////////////////////////////////////
 // Image Window : Loading picture and sending for display
 void *gg_img_loadpicture(GGPROTO *gg, struct gg_event* e, char *szFileName)
 {
 	GGIMAGEENTRY *dat;
 
-	if(!szFileName
-		&& (!e || !e->event.image_reply.size || !e->event.image_reply.image || !e->event.image_reply.filename))
+	if (!szFileName &&
+		(!e || !e->event.image_reply.size || !e->event.image_reply.image || !e->event.image_reply.filename))
 		return NULL;
 
-	dat = (GGIMAGEENTRY *)malloc(sizeof(GGIMAGEENTRY));
-	memset(dat, 0, sizeof(GGIMAGEENTRY));
-	dat->lpNext = NULL;
+	dat = (GGIMAGEENTRY *)calloc(1, sizeof(GGIMAGEENTRY));
+	if (dat == NULL)
+		return NULL;
 
 	// Copy the file name
-	if(szFileName)
+	if (szFileName)
 	{
 		FILE *fp = fopen(szFileName, "rb");
-		if(!fp)
+		if (!fp)
 		{
 			free(dat);
 			gg_netlog(gg, "gg_img_loadpicture(): fopen(\"%s\", \"rb\") failed.", szFileName);
@@ -910,15 +950,15 @@ void *gg_img_loadpicture(GGPROTO *gg, struct gg_event* e, char *szFileName)
 		}
 		fseek(fp, 0, SEEK_END);
 		dat->nSize = ftell(fp);
-		if(dat->nSize <= 0)
+		if (dat->nSize <= 0)
 		{
 			fclose(fp);
 			free(dat);
 			gg_netlog(gg, "gg_img_loadpicture(): Zero file size \"%s\" failed.", szFileName);
 			return NULL;
 		}
-		// Maximum Gadu-Gadu accepted image size
-		if(dat->nSize > 255 * 1024)
+		// Maximum acceptable image size
+		if (dat->nSize > 255 * 1024)
 		{
 			fclose(fp);
 			free(dat);
@@ -928,7 +968,7 @@ void *gg_img_loadpicture(GGPROTO *gg, struct gg_event* e, char *szFileName)
 		}
 		fseek(fp, 0, SEEK_SET);
 		dat->lpData = malloc(dat->nSize);
-		if(fread(dat->lpData, 1, dat->nSize, fp) < dat->nSize)
+		if (fread(dat->lpData, 1, dat->nSize, fp) < dat->nSize)
 		{
 			free(dat->lpData);
 			fclose(fp);
@@ -940,24 +980,41 @@ void *gg_img_loadpicture(GGPROTO *gg, struct gg_event* e, char *szFileName)
 		dat->lpszFileName = _strdup(szFileName);
 	}
 	// Copy picture from packet
-	else if(e && e->event.image_reply.filename)
+	else if (e && e->event.image_reply.filename)
 	{
-		dat->lpszFileName = _strdup(e->event.image_reply.filename);
 		dat->nSize = e->event.image_reply.size;
 		dat->lpData = malloc(dat->nSize);
 		memcpy(dat->lpData, e->event.image_reply.image, dat->nSize);
+
+		if (!gg_img_hasextension(e->event.image_reply.filename))
+		{
+			// Add missing file extension
+			const char *szImgType = gg_img_guessfileextension(dat->lpData);
+			if (*szImgType)
+			{
+				dat->lpszFileName = malloc(strlen(e->event.image_reply.filename) + strlen(szImgType) + 1);
+				if (dat->lpszFileName != NULL)
+				{
+					strcpy(dat->lpszFileName, e->event.image_reply.filename);
+					strcat(dat->lpszFileName, szImgType);
+				}
+			}
+		}
+
+		if (dat->lpszFileName == NULL)
+			dat->lpszFileName = _strdup(e->event.image_reply.filename);
 	}
 
 	////////////////////////////////////////////////////////////////////
 	// Loading picture using Miranda Image services
 
 	// Load image from memory
-	if(!szFileName)
+	if (!szFileName)
 	{
 		IMGSRVC_MEMIO memio;
 		memio.iLen = dat->nSize;
 		memio.pBuf = (void *)dat->lpData;
-		memio.fif = -1; /* detect */
+		memio.fif = FIF_UNKNOWN; /* detect */
 		memio.flags = 0;
 		dat->hBitmap = (HBITMAP) CallService(MS_IMG_LOADFROMMEM, (WPARAM) &memio, 0);
 	}
@@ -966,14 +1023,14 @@ void *gg_img_loadpicture(GGPROTO *gg, struct gg_event* e, char *szFileName)
 		dat->hBitmap = (HBITMAP) CallService(MS_IMG_LOAD, (WPARAM) szFileName, 0);
 
 	// If everything is fine return the handle
-	if(dat->hBitmap) return dat;
+	if (dat->hBitmap) return dat;
 
 	gg_netlog(gg, "gg_img_loadpicture(): MS_IMG_LOAD(MEM) failed.");
-	if(dat)
+	if (dat)
 	{
-		if(dat->lpData)
+		if (dat->lpData)
 			free(dat->lpData);
-		if(dat->lpszFileName)
+		if (dat->lpszFileName)
 			free(dat->lpszFileName);
 		free(dat);
 	}
