@@ -2301,6 +2301,8 @@ void CIcqProto::oft_sendFileData(oscar_connection *oc)
 
 void CIcqProto::oft_sendPeerInit(oscar_connection *oc)
 {
+	icq_lock l(oftMutex);
+
 	oscar_filetransfer *ft = oc->ft;
 	struct _stati64 statbuf;
 	char *pszThisFileName;
