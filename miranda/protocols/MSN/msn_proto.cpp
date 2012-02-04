@@ -31,17 +31,12 @@ static int CompareLists(const MsnContact* p1, const MsnContact* p2)
 	return _stricmp(p1->email, p2->email);
 }
 
-template< class T > int ComparePtr(const T* p1, const T* p2)
-{
-	return int(p1 - p2);
-}
-
 CMsnProto::CMsnProto(const char* aProtoName, const TCHAR* aUserName) :
 	contList(10, CompareLists),
 	grpList(10, CompareId),
-	sttThreads(10, ComparePtr),
-	sessionList(10, ComparePtr),
-	dcList(10, ComparePtr),
+	sttThreads(10, PtrKeySortT),
+	sessionList(10, PtrKeySortT),
+	dcList(10, PtrKeySortT),
 	msgQueueList(1),
 	msgCache(5, CompareId)
 {
@@ -619,7 +614,11 @@ int __cdecl CMsnProto::FileCancel(HANDLE hContact, HANDLE hTransfer)
 	{
 		ft->bCanceled = true;
 		if (ft->p2p_appID != 0)
+		{
 			p2p_sendCancel(ft);
+			if  (!(ft->std.flags & PFTS_SENDING) && ft->p2p_isV2)
+				p2p_sessionComplete(ft);
+		}
 	}
 
 	ft->std.ptszFiles = NULL;

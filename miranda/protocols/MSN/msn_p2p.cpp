@@ -925,6 +925,7 @@ LONG  CMsnProto::p2p_sendPortion(filetransfer* ft, ThreadData* T, bool isV2)
 		*(unsigned*)databuf = portion + (p - databuf) - (unsigned)sizeof(unsigned);
 
 	// Fill data (payload) for transfer
+	if (ft->fileId == -1) return 0;
 	_read(ft->fileId, p, portion);
 	p += portion;
 
@@ -1013,6 +1014,7 @@ void __cdecl CMsnProto::p2p_sendFeedThread(void* arg)
 		if (ft->tType != lastType)
 			T = MSN_GetThreadByContact(ft->p2p_dest, ft->tType);
 
+		if (ft->bCanceled) break;
 		bool cfault = (T == NULL || p2p_sendPortion(ft, T, isV2) == 0);
 
 		if (cfault) 
@@ -1033,13 +1035,19 @@ void __cdecl CMsnProto::p2p_sendFeedThread(void* arg)
 			WaitForSingleObject(T->hWaitEvent, 5000);
 	}
 	ReleaseMutex(hLockHandle);
-	SendBroadcast(ft->std.hContact, ACKTYPE_FILE, ACKRESULT_DATA, ft, (LPARAM)&ft->std);
-
-	if (isV2 && ft->p2p_appID == MSN_APPID_FILE)
+	
+	if (ft->p2p_appID == MSN_APPID_FILE)
 	{
-		ft->bCompleted = true;
-		p2p_sendBye(ft);
-		p2p_sessionComplete(ft);
+		SendBroadcast(ft->std.hContact, ACKTYPE_FILE, ACKRESULT_DATA, ft, (LPARAM)&ft->std);
+		if (isV2)
+		{
+			if (!ft->bCanceled)
+			{
+				ft->bCompleted = true;
+				p2p_sendBye(ft);
+			}
+			p2p_sessionComplete(ft);
+		}
 	}
 	MSN_DebugLog("File send thread completed");
 }
