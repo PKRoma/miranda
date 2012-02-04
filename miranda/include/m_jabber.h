@@ -105,7 +105,7 @@ enum
 
 typedef void* HJHANDLER;
 
-typedef BOOL (*JABBER_HANDLER_FUNC)(IJabberInterface *ji, HXML node, void *pUserData);
+typedef bool (*JABBER_HANDLER_FUNC)(IJabberInterface *ji, HXML node, void *pUserData);
 
 struct IJabberNetInterface
 {

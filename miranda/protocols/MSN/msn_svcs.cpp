@@ -385,8 +385,6 @@ int CMsnProto::OnContactDeleted(WPARAM wParam, LPARAM lParam)
 	if (!msnLoggedIn)  //should never happen for MSN contacts
 		return 0;
 
-	if (!MSN_IsMyContact(hContact)) return 0;
-
 	int type = getByte(hContact, "ChatRoom", 0);
 	if (type != 0) 
 	{
@@ -471,8 +469,6 @@ int CMsnProto::OnDbSettingChanged(WPARAM wParam,LPARAM lParam)
 
 	if (hContact == NULL) 
 	{
-		if (!MSN_IsMyContact(hContact)) return 0;
-
 		if (MyOptions.SlowSend && strcmp(cws->szSetting, "MessageTimeout") == 0 &&
 		   (strcmp(cws->szModule, "SRMM") == 0 || strcmp(cws->szModule, "SRMsg") == 0))
 		{ 
@@ -485,8 +481,6 @@ int CMsnProto::OnDbSettingChanged(WPARAM wParam,LPARAM lParam)
 
 	if (!strcmp(cws->szSetting, "ApparentMode")) 
 	{
-		if (!MSN_IsMyContact(hContact)) return 0;
-
 		char tEmail[MSN_MAX_EMAIL_LEN];
 		if (!getStaticString(hContact, "e-mail", tEmail, sizeof(tEmail))) 
 		{

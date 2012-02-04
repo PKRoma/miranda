@@ -233,7 +233,7 @@ void CluiProtocolStatusChanged( int parStatus, const char* szProto )
 	* when connecting multiple protocols significantly.
 	*/
 	//g_isConnecting = (wStatus >= ID_STATUS_CONNECTING && wStatus < ID_STATUS_OFFLINE);
-	szStatus = (TCHAR *)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, (WPARAM) wStatus, GCMDF_TCHAR);
+	szStatus = (TCHAR *)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, (WPARAM) wStatus, GSMDF_TCHAR);
 
 	/*
 	* set the global status icon and display the global (most online) status mode on the

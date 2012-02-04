@@ -434,7 +434,7 @@ static void InitIcoLib()
 	for (i = IDI_OVL_OFFLINE; i <= IDI_OVL_OUTTOLUNCH; i++) {
 		mir_snprintf(szBuffer, sizeof(szBuffer), "cln_ovl_%d", ID_STATUS_OFFLINE + (i - IDI_OVL_OFFLINE));
 		sid.pszName = szBuffer;
-		sid.ptszDescription = (TCHAR *)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, ID_STATUS_OFFLINE + (i - IDI_OVL_OFFLINE), GCMDF_TCHAR);
+		sid.ptszDescription = (TCHAR *)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, ID_STATUS_OFFLINE + (i - IDI_OVL_OFFLINE), GSMDF_TCHAR);
 		sid.iDefaultIndex = -i;
 		CallService(MS_SKIN2_ADDICON, 0, (LPARAM) &sid);
 	}
@@ -1127,7 +1127,7 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 			ConfigureCLUIGeometry(0);
 
 			for (i = ID_STATUS_OFFLINE; i <= ID_STATUS_OUTTOLUNCH; i++)
-				statusNames[i - ID_STATUS_OFFLINE] = reinterpret_cast<TCHAR *>(CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, (WPARAM)i, GCMDF_TCHAR));
+				statusNames[i - ID_STATUS_OFFLINE] = reinterpret_cast<TCHAR *>(CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, (WPARAM)i, GSMDF_TCHAR));
 
 			//delay creation of CLC so that it can get the status icons right the first time (needs protocol modules loaded)
 			if (cfg::dat.bLayeredHack) {

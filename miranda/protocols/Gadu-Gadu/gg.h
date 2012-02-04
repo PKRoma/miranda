@@ -82,6 +82,7 @@ extern "C" {
 #include <m_avatars.h>
 #include <m_xml.h>
 #include <m_chat.h>
+#include <m_popup.h>
 #include <win2k.h>
 
 // Custom profile folders plugin header

@@ -127,7 +127,7 @@ static INT_PTR Proto_ChainRecv(WPARAM wParam,LPARAM lParam)
 	return CallServiceSync(MS_PROTO_CHAINRECV "ThreadSafe",wParam,lParam);
 }
 
-static INT_PTR Proto_GetContactBaseProto(WPARAM wParam, LPARAM)
+PROTOACCOUNT* __fastcall Proto_GetAccount(HANDLE hContact)
 {
 	DBVARIANT dbv;
 	DBCONTACTGETSETTING dbcgs;
@@ -139,30 +139,22 @@ static INT_PTR Proto_GetContactBaseProto(WPARAM wParam, LPARAM)
 	dbcgs.pValue = &dbv;
 	dbcgs.szModule = "Protocol";
 	dbcgs.szSetting = "p";
-	if ( CallService( MS_DB_CONTACT_GETSETTINGSTATIC, wParam, (LPARAM)&dbcgs ))
+	if (CallService(MS_DB_CONTACT_GETSETTINGSTATIC, (WPARAM)hContact, (LPARAM)&dbcgs))
 		return 0;
 
-	PROTOACCOUNT* pa = Proto_GetAccount(( char* )dbv.pszVal );
-	return (INT_PTR)( Proto_IsAccountEnabled( pa ) ? pa->szModuleName : NULL);
+	return Proto_GetAccount((char* )dbv.pszVal);
+}
+
+static INT_PTR Proto_GetContactBaseProto(WPARAM wParam, LPARAM)
+{
+	PROTOACCOUNT* pa = Proto_GetAccount((HANDLE)wParam);
+	return (INT_PTR)(Proto_IsAccountEnabled( pa ) ? pa->szModuleName : NULL);
 }
 
 static INT_PTR Proto_GetContactBaseAccount(WPARAM wParam, LPARAM)
 {
-	DBVARIANT dbv;
-	DBCONTACTGETSETTING dbcgs;
-	char name[32];
-
-	dbv.type = DBVT_ASCIIZ;
-	dbv.pszVal = name;
-	dbv.cchVal = SIZEOF(name);
-	dbcgs.pValue = &dbv;
-	dbcgs.szModule = "Protocol";
-	dbcgs.szSetting = "p";
-	if ( CallService( MS_DB_CONTACT_GETSETTINGSTATIC, wParam, (LPARAM)&dbcgs ))
-		return 0;
-
-	PROTOACCOUNT* pa = Proto_GetAccount(( char* )dbv.pszVal );
-    return (INT_PTR)( pa ? pa->szModuleName : NULL );
+	PROTOACCOUNT* pa = Proto_GetAccount((HANDLE)wParam);
+    return (INT_PTR)(pa ? pa->szModuleName : NULL);
 }
 
 static INT_PTR Proto_IsProtoOnContact(WPARAM wParam,LPARAM lParam)

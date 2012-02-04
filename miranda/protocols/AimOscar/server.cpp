@@ -186,7 +186,7 @@ void CAimProto::snac_icbm_limitations(SNAC &snac,HANDLE hServerConn,unsigned sho
 		if (m_iDesiredStatus == ID_STATUS_AWAY)
 			aim_set_away(hServerConn, seqno, last_status_msg, true);
 
-		if (getByte( AIM_KEY_II,0))
+		if (getByte(AIM_KEY_II,0))
 		{
 			unsigned long time = getDword(AIM_KEY_IIT, 0);
 			aim_set_idle(hServerConn,seqno,time*60);

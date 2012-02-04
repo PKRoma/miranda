@@ -81,18 +81,8 @@ HANDLE CList_AddRoom(const char* pszModule, const TCHAR* pszRoom, const TCHAR* p
 	if (pszGroup[0])
 		CList_CreateGroup(pszGroup);
 
-	if (hContact) {   //contact exist, make sure it is in the right group
-		/*
-		if(M->GetTString(hContact, "CList", "Group", &dbv)) {
-			CallService(MS_CLIST_CONTACTCHANGEGROUP, (WPARAM)hContact, (LPARAM)g_Settings.hGroup);
-			DBWriteContactSettingWord(hContact, pszModule, "Status", ID_STATUS_OFFLINE);
-			M->WriteTString(hContact, pszModule, "Nick", pszDisplayName);
-		}
-		else
-			DBFreeVariant(&dbv);
-			*/
+	if (hContact)
 		return hContact;
-	}
 
 	// here we create a new one since no one is to be found
 

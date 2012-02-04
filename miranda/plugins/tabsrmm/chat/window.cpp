@@ -2096,7 +2096,7 @@ INT_PTR CALLBACK RoomWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 				ZeroMemory(&item, sizeof(item));
 				item.mask = TCIF_TEXT;
 
-				lstrcpyn(dat->szStatus, (TCHAR *)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, (WPARAM)dat->wStatus, GCMDF_TCHAR), 50);
+				lstrcpyn(dat->szStatus, (TCHAR *)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, (WPARAM)dat->wStatus, GSMDF_TCHAR), 50);
 				dat->szStatus[49] = 0;
 				item.pszText = dat->newtitle;
 				item.cchTextMax = 120;

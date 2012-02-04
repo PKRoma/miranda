@@ -105,8 +105,6 @@ cheekySearchId( -1 )
 	// Initialize server lists
 	servlistMutex = new icq_critical_section();
 	servlistQueueMutex = new icq_critical_section();
-	HookProtoEvent(ME_DB_CONTACT_SETTINGCHANGED, &CIcqProto::ServListDbSettingChanged);
-	HookProtoEvent(ME_DB_CONTACT_DELETED, &CIcqProto::ServListDbContactDeleted);
 	HookProtoEvent(ME_CLIST_GROUPCHANGE, &CIcqProto::ServListCListGroupChange);
 
 	// Initialize status message struct
@@ -2370,13 +2368,13 @@ int __cdecl CIcqProto::UserIsTyping( HANDLE hContact, int type )
 		if (CheckContactCapabilities(hContact, CAPF_TYPING))
 		{
 			switch (type) {
-case PROTOTYPE_SELFTYPING_ON:
-	sendTypingNotification(hContact, MTN_BEGUN);
-	return 0;
+			case PROTOTYPE_SELFTYPING_ON:
+				sendTypingNotification(hContact, MTN_BEGUN);
+				return 0;
 
-case PROTOTYPE_SELFTYPING_OFF:
-	sendTypingNotification(hContact, MTN_FINISHED);
-	return 0;
+			case PROTOTYPE_SELFTYPING_OFF:
+				sendTypingNotification(hContact, MTN_FINISHED);
+				return 0;
 			}
 		}
 	}
@@ -2391,27 +2389,33 @@ case PROTOTYPE_SELFTYPING_OFF:
 int __cdecl CIcqProto::OnEvent(PROTOEVENTTYPE eventType, WPARAM wParam, LPARAM lParam)
 {
 	switch( eventType ) {
-case EV_PROTO_ONLOAD:
-	return OnModulesLoaded(0, 0);
+	case EV_PROTO_ONLOAD:
+		return OnModulesLoaded(0, 0);
 
-case EV_PROTO_ONEXIT:
-	return OnPreShutdown(0, 0);
+	case EV_PROTO_ONEXIT:
+		return OnPreShutdown(0, 0);
 
-case EV_PROTO_ONOPTIONS:
-	return OnOptionsInit(wParam, lParam);
+	case EV_PROTO_ONOPTIONS:
+		return OnOptionsInit(wParam, lParam);
 
-case EV_PROTO_ONERASE:
-	{
-		char szDbSetting[MAX_PATH];
+	case EV_PROTO_ONERASE:
+		{
+			char szDbSetting[MAX_PATH];
 
-		null_snprintf(szDbSetting, sizeof(szDbSetting), "%sP2P", m_szModuleName);
-		CallService(MS_DB_MODULE_DELETE, 0, (LPARAM)szDbSetting);
-		null_snprintf(szDbSetting, sizeof(szDbSetting), "%sSrvGroups", m_szModuleName);
-		CallService(MS_DB_MODULE_DELETE, 0, (LPARAM)szDbSetting);
-		null_snprintf(szDbSetting, sizeof(szDbSetting), "%sGroups", m_szModuleName);
-		CallService(MS_DB_MODULE_DELETE, 0, (LPARAM)szDbSetting);
-		break;
-	}
+			null_snprintf(szDbSetting, sizeof(szDbSetting), "%sP2P", m_szModuleName);
+			CallService(MS_DB_MODULE_DELETE, 0, (LPARAM)szDbSetting);
+			null_snprintf(szDbSetting, sizeof(szDbSetting), "%sSrvGroups", m_szModuleName);
+			CallService(MS_DB_MODULE_DELETE, 0, (LPARAM)szDbSetting);
+			null_snprintf(szDbSetting, sizeof(szDbSetting), "%sGroups", m_szModuleName);
+			CallService(MS_DB_MODULE_DELETE, 0, (LPARAM)szDbSetting);
+			break;
+		}
+
+	case EV_PROTO_ONCONTACTDELETED:
+		return ServListDbContactDeleted(wParam, lParam);
+
+	case EV_PROTO_DBSETTINGSCHANGED:
+		return ServListDbSettingChanged(wParam, lParam);
 	}
 	return 1;
 }

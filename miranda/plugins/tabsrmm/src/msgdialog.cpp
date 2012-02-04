@@ -537,14 +537,14 @@ static LRESULT CALLBACK MessageLogSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
 
 	switch (msg) {
 		case WM_KILLFOCUS: {
-			/*
-			CHARRANGE cr;
-			SendMessage(hwnd, EM_EXGETSEL, 0, (LPARAM)&cr);
-			if (cr.cpMax != cr.cpMin) {
-				cr.cpMin = cr.cpMax;
-				SendMessage(hwnd, EM_EXSETSEL, 0, (LPARAM)&cr);
+			if(wParam != (WPARAM)hwnd && 0 != wParam) {
+				CHARRANGE cr;
+				SendMessage(hwnd, EM_EXGETSEL, 0, (LPARAM)&cr);
+				if (cr.cpMax != cr.cpMin) {
+					cr.cpMin = cr.cpMax;
+					SendMessage(hwnd, EM_EXSETSEL, 0, (LPARAM)&cr);
+				}
 			}
-			*/
 			break;
 		}
 	   //MAD
@@ -584,10 +584,10 @@ static LRESULT CALLBACK MessageLogSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
 				if (/*wParam != VK_ESCAPE&&*/wParam != VK_PRIOR&&wParam != VK_NEXT&&
 					wParam != VK_DELETE&&wParam != VK_MENU&&wParam != VK_END&&
 					wParam != VK_HOME&&wParam != VK_UP&&wParam != VK_DOWN&&
-					wParam != VK_LEFT&&wParam != VK_RIGHT&&wParam != VK_TAB&&
+					wParam != VK_LEFT&&wParam != VK_RIGHT &&
 					wParam != VK_SPACE)
 				{
-					// TODO issues here...
+					// TODO causes issues when pressing keys in the log
 					//SetFocus(GetDlgItem(mwdat->hwnd,IDC_MESSAGE));
 					//keybd_event((BYTE)wParam, (BYTE)MapVirtualKey(wParam,0), KEYEVENTF_EXTENDEDKEY | 0, 0);
 
@@ -711,8 +711,8 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
 		case WM_PASTE:
 		case EM_PASTESPECIAL: {
 			if (OpenClipboard(hwnd)) {
-				HANDLE hClip = GetClipboardData(CF_TEXT);
-				if (hClip) {
+				HANDLE hClip;
+				if(hClip = GetClipboardData(CF_TEXT)) {
 					if (lstrlenA((char *)hClip) > mwdat->nMax) {
 						TCHAR szBuffer[512];
 						if (M->GetByte("autosplit", 0))
@@ -722,6 +722,9 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
 						SendMessage(hwndParent, DM_ACTIVATETOOLTIP, IDC_MESSAGE, (LPARAM)szBuffer);
 					}
 				}
+				else if(hClip = GetClipboardData(CF_BITMAP))
+					SendHBitmapAsFile(mwdat, (HBITMAP)hClip);
+
 				CloseClipboard();
 			}
 			return CallWindowProc(OldMessageEditProc, hwnd, msg, wParam, lParam);
@@ -847,6 +850,7 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
 			}
 			HWND hwndDlg = hwndParent;
 			BOOL isCtrl, isShift, isAlt;
+
 			KbdState(mwdat, isShift, isCtrl, isAlt);
 			if ((wParam >= '0' && wParam <= '9') && isAlt) {      // ALT-1 -> ALT-0 direct tab selection
 				BYTE bChar = (BYTE)wParam;
@@ -1352,7 +1356,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 
 			if (dat->hContact && dat->szProto != NULL) {
 				dat->wStatus = DBGetContactSettingWord(dat->hContact, dat->szProto, "Status", ID_STATUS_OFFLINE);
-				mir_sntprintf(dat->szStatus, safe_sizeof(dat->szStatus), _T("%s"), (char *) CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, dat->szProto == NULL ? ID_STATUS_OFFLINE : dat->wStatus, GCMDF_TCHAR));
+				mir_sntprintf(dat->szStatus, safe_sizeof(dat->szStatus), _T("%s"), (char *) CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, dat->szProto == NULL ? ID_STATUS_OFFLINE : dat->wStatus, GSMDF_TCHAR));
 			} else
 				dat->wStatus = ID_STATUS_OFFLINE;
 
@@ -2721,6 +2725,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 					if (!(dat->dwFlags & MWF_ERRORSTATE))
 						break;
 
+					dat->cache->saveHistory(0, 0);
 					if (wParam == MSGERROR_SENDLATER)
 						sendQueue->doSendLater(dat->iCurrentQueueError, dat);							// to be implemented at a later time
 					dat->iOpenJobs--;
@@ -2742,6 +2747,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 					if (!(dat->dwFlags & MWF_ERRORSTATE))
 						break;
 
+					dat->cache->saveHistory(0, 0);
 					if (dat->iCurrentQueueError >= 0 && dat->iCurrentQueueError < SendQueue::NR_SENDJOBS) {
 						SendJob *job = sendQueue->getJobByIndex(dat->iCurrentQueueError);
 
@@ -3457,6 +3463,13 @@ quote_from_last:
 				ChangeClientIconInStatusBar(dat);
 			return 0;
 		}
+		case DM_UPDATEUIN:
+			if(dat->Panel->isActive())
+				dat->Panel->Invalidate();
+			if(dat->pContainer->dwFlags & CNT_UINSTATUSBAR)
+				UpdateStatusBar(dat);
+			return(0);
+
 		case DM_REMOVEPOPUPS:
 			DeletePopupsForContact(dat->hContact, (DWORD)wParam);
 			return 0;

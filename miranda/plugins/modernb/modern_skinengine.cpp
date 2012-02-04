@@ -452,8 +452,7 @@ HRESULT SkinEngineLoadModule()
 {
 	ModernSkinButtonLoadModule();
 	InitializeCriticalSection(&cs_SkinChanging);
-	MainModernMaskList=(LISTMODERNMASK*)mir_alloc(sizeof(LISTMODERNMASK));
-	memset(MainModernMaskList,0,sizeof(LISTMODERNMASK));   
+	MainModernMaskList=(LISTMODERNMASK*)mir_calloc(sizeof(LISTMODERNMASK));
 	//init variables
 	g_SkinObjectList.dwObjLPAlocated=0;
 	g_SkinObjectList.dwObjLPReserved=0;
@@ -3952,8 +3951,7 @@ int ske_ReCreateBackImage(BOOL Erase,RECT *w)
 	{
 		//-- Create New Cache
 		{
-			g_pCachedWindow=(CURRWNDIMAGEDATA*)mir_alloc(sizeof(CURRWNDIMAGEDATA));
-			memset(g_pCachedWindow,0,sizeof(CURRWNDIMAGEDATA));
+			g_pCachedWindow=(CURRWNDIMAGEDATA*)mir_calloc(sizeof(CURRWNDIMAGEDATA));
 			g_pCachedWindow->hScreenDC=GetDC(NULL);
 			g_pCachedWindow->hBackDC=CreateCompatibleDC(g_pCachedWindow->hScreenDC);
 			g_pCachedWindow->hImageDC=CreateCompatibleDC(g_pCachedWindow->hScreenDC);
@@ -4058,7 +4056,7 @@ int ske_ValidateFrameImageProc(RECT * r)                                // Calli
 	{
 		//-- Create New Cache
 		{
-			g_pCachedWindow=(CURRWNDIMAGEDATA*)mir_alloc(sizeof(CURRWNDIMAGEDATA));
+			g_pCachedWindow=(CURRWNDIMAGEDATA*)mir_calloc(sizeof(CURRWNDIMAGEDATA));
 			g_pCachedWindow->hScreenDC=GetDC(NULL);
 			g_pCachedWindow->hBackDC=CreateCompatibleDC(g_pCachedWindow->hScreenDC);
 			g_pCachedWindow->hImageDC=CreateCompatibleDC(g_pCachedWindow->hScreenDC);
@@ -4376,8 +4374,7 @@ static void OLDske_AddParseTextGlyphObject(char * szGlyphTextID,char * szDefineS
 				globj->plTextList=li.List_Create(0,1);
 				globj->plTextList->sortFunc=ske_SortTextGlyphObjectFunc;
 			}
-			glText=(GLYPHTEXT*)mir_alloc(sizeof(GLYPHTEXT));
-			memset(glText,0,sizeof(GLYPHTEXT));
+			glText=(GLYPHTEXT*)mir_calloc(sizeof(GLYPHTEXT));
 			glText->szGlyphTextID=mir_strdup(szGlyphTextID);
 			glText->szObjectName=mir_strdup(buf);
 			glText->iLeft=atoi(GetParamN(szDefineString,buf,sizeof(buf),1,',',TRUE));
@@ -4421,8 +4418,7 @@ static void ske_AddParseTextGlyphObject(char * szGlyphTextID,char * szDefineStri
 	if (strlen(buf))
 	{
 		GLYPHTEXT * glText;
-		glText=(GLYPHTEXT*)mir_alloc(sizeof(GLYPHTEXT));
-		memset(glText,0,sizeof(GLYPHTEXT));
+		glText=(GLYPHTEXT*)mir_calloc(sizeof(GLYPHTEXT));
 		glText->szGlyphTextID=mir_strdup(szGlyphTextID);
 		glText->szObjectName=mir_strdup(buf);
 		glText->iLeft=atoi(GetParamN(szDefineString,buf,sizeof(buf),1,',',TRUE));
@@ -4468,10 +4464,9 @@ static void ske_AddParseSkinFont(char * szFontID,char * szDefineString,SKINOBJEC
 {
 	//SortedList * gl_plSkinFonts=NULL;
 	SKINFONT * sf =NULL;
-	sf=(SKINFONT*)mir_alloc(sizeof(SKINFONT));
+	sf=(SKINFONT*)mir_calloc(sizeof(SKINFONT));
 	if (sf)
 	{
-		memset(sf,0,sizeof(SKINFONT));
 		{
 			char buf[255];    
 			int fntSize=0;

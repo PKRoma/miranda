@@ -224,7 +224,7 @@ char *MirandaStatusToString(int mirandaStatus)
 
 char *MirandaStatusToStringUtf(int mirandaStatus)
 { // return miranda status description in utf-8, use unicode service is possible
-	return tchar_to_utf8((TCHAR*)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, mirandaStatus, GCMDF_TCHAR));
+	return tchar_to_utf8((TCHAR*)CallService(MS_CLIST_GETSTATUSMODEDESCRIPTION, mirandaStatus, GSMDF_TCHAR));
 }
 
 char** CIcqProto::MirandaStatusToAwayMsg(int nStatus)

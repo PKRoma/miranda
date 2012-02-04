@@ -73,10 +73,10 @@ extern "C" PLUGININFOEX __declspec(dllexport) *MirandaPluginInfoEx(DWORD miranda
 {
 	// Only load for 0.9.0.8 or greater
 	// We need the new Unicode aware Contact Search API
-	if (mirandaVersion < PLUGIN_MAKE_VERSION(0, 9, 0, 8))
+	if (mirandaVersion < __VERSION_DWORD)
 	{
-		MessageBoxA( NULL, "ICQ plugin cannot be loaded. It requires Miranda IM 0.9.0.8 or later.", "ICQ Plugin",
-			MB_OK|MB_ICONWARNING|MB_SETFOREGROUND|MB_TOPMOST );
+		MessageBoxA(NULL, "ICQ plugin cannot be loaded. It requires Miranda IM " __VERSION_STRING " or later.", 
+			"ICQ Plugin", MB_OK|MB_ICONWARNING|MB_SETFOREGROUND|MB_TOPMOST );
 		return NULL;
 	}
 

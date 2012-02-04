@@ -58,7 +58,7 @@ static INT_PTR Proto_BroadcastAck(WPARAM wParam,LPARAM lParam)
 INT_PTR __fastcall MyCallProtoService( const char *szModule, const char *szService, WPARAM wParam, LPARAM lParam );
 void FreeFilesMatrix( TCHAR ***files );
 
-PROTOCOLDESCRIPTOR* Proto_IsProtocolLoaded( const char* szProtoName )
+PROTOCOLDESCRIPTOR* __fastcall Proto_IsProtocolLoaded( const char* szProtoName )
 {
 	if ( szProtoName ) {
 		PROTOCOLDESCRIPTOR tmp;
@@ -341,7 +341,7 @@ static wchar_t** __fastcall Proto_FilesMatrixU( char **files )
 /////////////////////////////////////////////////////////////////////////////////////////
 // 0.8.0+ - accounts
 
-PROTOACCOUNT* Proto_GetAccount( const char* accName )
+PROTOACCOUNT* __fastcall Proto_GetAccount( const char* accName )
 {
 	int idx;
 	PROTOACCOUNT temp;
@@ -364,7 +364,7 @@ static INT_PTR Proto_EnumAccounts(WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
-int Proto_IsAccountEnabled( PROTOACCOUNT* pa )
+bool __fastcall Proto_IsAccountEnabled( PROTOACCOUNT* pa )
 {
 	return pa && (( pa->bIsEnabled && !pa->bDynDisabled ) || pa->bOldProto );
 }
@@ -374,9 +374,9 @@ static INT_PTR srvProto_IsAccountEnabled(WPARAM, LPARAM lParam)
 	return ( INT_PTR )Proto_IsAccountEnabled(( PROTOACCOUNT* )lParam);
 }
 
-int Proto_IsAccountLocked( PROTOACCOUNT* pa )
+bool __fastcall Proto_IsAccountLocked( PROTOACCOUNT* pa )
 {
-	return pa ? DBGetContactSettingByte(NULL, pa->szModuleName, "LockMainStatus", 0) : 0;
+	return pa && DBGetContactSettingByte(NULL, pa->szModuleName, "LockMainStatus", 0) != 0;
 }
 
 static INT_PTR srvProto_IsAccountLocked(WPARAM, LPARAM lParam)

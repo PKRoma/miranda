@@ -2,7 +2,7 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2010 Miranda ICQ/IM project,
+Copyright 2000-2012 Miranda ICQ/IM project,
 all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
@@ -69,6 +69,18 @@ typedef struct pluginEntry {
 	struct pluginEntry * nextclass;
 } pluginEntry;
 
+static int sttComparePlugins( const pluginEntry* p1, const pluginEntry* p2 )
+{	return ( int )( p1->bpi.hInst - p2->bpi.hInst );
+}
+
+static int sttComparePluginsByName( const pluginEntry* p1, const pluginEntry* p2 )
+{	return lstrcmp( p1->pluginname, p2->pluginname );
+}
+
+LIST<pluginEntry> pluginList( 10, sttComparePluginsByName ), pluginListAddr( 10, sttComparePlugins );
+
+/////////////////////////////////////////////////////////////////////////////////
+
 #define MAX_MIR_VER ULONG_MAX
 
 struct PluginUUIDList {
@@ -102,15 +114,6 @@ static const pluginBannedList[] =
 	{{0x7ab05d31, 0x9972, 0x4406, { 0x82, 0x3e, 0xe, 0xd7, 0x45, 0xef, 0x7c, 0x56 }}, PLUGIN_MAKE_VERSION(0, 9, 0, 0)} // 0.8.x Clist MW (ANSI)
 };
 const int pluginBannedListCount = SIZEOF(pluginBannedList);
-/*
-struct InterfaceUUIDList {
-    MUUID uuid;
-} interfaceBannedList[] = {
-
-};
-const int interfaceBannedListCount = SIZEOF(interfaceBannedList);
-*/
-SortedList pluginList = { 0 }, pluginListAddr = { 0 };
 
 static BOOL bModuleInitialized = FALSE;
 
@@ -139,10 +142,10 @@ int LoadDatabaseModule(void);
 char * GetPluginNameByInstance( HINSTANCE hInstance )
 {
 	int i = 0;
-	if (pluginList.realCount == 0) return NULL;
-	for (i = 0; i <  pluginList.realCount; i++)
+	if ( pluginList.getCount() == 0) return NULL;
+	for (i = 0; i <  pluginList.getCount(); i++)
 	{
-		pluginEntry * pe = (pluginEntry *)pluginList.items[i];
+		pluginEntry* pe = pluginList[i];
 		if (pe->bpi.pluginInfo && pe->bpi.hInst == hInstance)
 			return pe->bpi.pluginInfo->shortName;
 	}
@@ -155,14 +158,14 @@ HINSTANCE GetInstByAddress( void* codePtr )
 	HINSTANCE result;
 	pluginEntry p; p.bpi.hInst = ( HINSTANCE )codePtr;
 
-	if ( pluginListAddr.realCount == 0 )
+	if ( pluginListAddr.getCount() == 0 )
 		return NULL;
 
-	List_GetIndex( &pluginListAddr, &p, &idx );
+	List_GetIndex(( SortedList* )&pluginListAddr, &p, &idx );
 	if ( idx > 0 )
 		idx--;
 
-	result = (( pluginEntry* )( pluginListAddr.items[idx] ))->bpi.hInst;
+	result = pluginListAddr[idx]->bpi.hInst;
 
 	if (result < hMirandaInst && codePtr > hMirandaInst)
 		result = hMirandaInst;
@@ -433,8 +436,8 @@ static void Plugin_Uninit(pluginEntry * p)
 		FreeLibrary( p->bpi.hInst );
 		ZeroMemory( &p->bpi, sizeof( p->bpi ));
 	}
-	List_RemovePtr( &pluginList, p );
-	List_RemovePtr( &pluginListAddr, p );
+	pluginList.remove( p );
+	pluginListAddr.remove( p );
 }
 
 typedef BOOL (*SCAN_PLUGINS_CALLBACK) ( WIN32_FIND_DATA * fd, TCHAR * path, WPARAM wParam, LPARAM lParam );
@@ -571,7 +574,7 @@ static BOOL scanPluginsDir (WIN32_FIND_DATA * fd, TCHAR * path, WPARAM, LPARAM)
 		pluginList_freeimg = p;
 
 	// add it to the list
-	List_InsertPtr( &pluginList, p );
+	pluginList.insert( p );
 	return TRUE;
 }
 
@@ -612,9 +615,9 @@ static pluginEntry* getCListModule(TCHAR * exe, TCHAR * slice, int useWhiteList)
 			if ( checkAPI(exe, &bpi, mirandaVersion, CHECKAPI_CLIST, NULL) ) {
 				p->bpi = bpi;
 				p->pclass |= PCLASS_LAST | PCLASS_OK | PCLASS_BASICAPI;
-				List_InsertPtr( &pluginListAddr, p );
+				pluginListAddr.insert( p );
 				if ( bpi.clistlink(&pluginCoreLink) == 0 ) {
-					p->bpi=bpi;
+					p->bpi = bpi;
 					p->pclass |= PCLASS_LOADED;
 					return p;
 				}
@@ -629,9 +632,9 @@ static pluginEntry* getCListModule(TCHAR * exe, TCHAR * slice, int useWhiteList)
 int UnloadPlugin(TCHAR* buf, int bufLen)
 {
 	int i;
-	for ( i = pluginList.realCount-1; i >= 0; i-- ) 
+	for ( i = pluginList.getCount()-1; i >= 0; i-- ) 
 	{
-		pluginEntry* p = (pluginEntry*)pluginList.items[i];
+		pluginEntry* p = pluginList[i];
 		if (!_tcsicmp( p->pluginname, buf)) 
 		{
 			GetModuleFileName( p->bpi.hInst, buf, bufLen);
@@ -710,8 +713,8 @@ void UnloadNewPlugins(void)
 	int i;
 
 	// unload everything but the special db/clist plugins
-	for ( i = pluginList.realCount-1; i >= 0; i-- ) {
-		pluginEntry* p = ( pluginEntry* )pluginList.items[i];
+	for ( i = pluginList.getCount()-1; i >= 0; i-- ) {
+		pluginEntry* p = pluginList[i];
 		if ( !(p->pclass & PCLASS_LAST) && (p->pclass & PCLASS_OK))
 			Plugin_Uninit( p );
 }	}
@@ -1008,7 +1011,7 @@ int LoadNewPluginsModule(void)
 	pluginEntry* p;
 	pluginEntry* clist = NULL;
 	int useWhiteList, i;
-    bool msgModule = false;
+	bool msgModule = false;
 
 	// make full path to the plugin
 	GetModuleFileName(NULL, exe, SIZEOF(exe));
@@ -1054,16 +1057,15 @@ int LoadNewPluginsModule(void)
 	}
 
 	/* enable and disable as needed  */
-	p=pluginListUI;
+	p = pluginListUI;
 	while ( p != NULL ) {
 		SetPluginOnWhiteList(p->pluginname, clist != p ? 0 : 1 );
 		p = p->nextclass;
 	}
 	/* now loop thru and load all the other plugins, do this in one pass */
 
-	for ( i=0; i < pluginList.realCount; i++ ) 
-	{
-		p = ( pluginEntry* )pluginList.items[i];
+	for ( i=0; i < pluginList.getCount(); i++ ) {
+		p = pluginList[i];
 		CharLower(p->pluginname);
 		if (!(p->pclass & (PCLASS_LOADED | PCLASS_DB | PCLASS_CLIST))) 
 		{
@@ -1076,13 +1078,12 @@ int LoadNewPluginsModule(void)
 					p->bpi = bpi;
 					p->pclass |= PCLASS_OK | PCLASS_BASICAPI;
 
-					List_InsertPtr( &pluginListAddr, p );
-
 					if ( pluginDefModList[rm] == NULL ) {
-                        if ( bpi.Load(&pluginCoreLink) == 0 ) {
-                            p->pclass |= PCLASS_LOADED;
-                            msgModule |= (bpi.pluginInfo->replacesDefaultModule == DEFMOD_SRMESSAGE);
-                        }
+						pluginListAddr.insert( p );
+						if ( bpi.Load(&pluginCoreLink) == 0 ) {
+							p->pclass |= PCLASS_LOADED;
+							msgModule |= (bpi.pluginInfo->replacesDefaultModule == DEFMOD_SRMESSAGE);
+						}
 						else {
 							Plugin_Uninit( p );
 							i--;
@@ -1103,10 +1104,13 @@ int LoadNewPluginsModule(void)
 			}
 		}
 		else if ( p->bpi.hInst != NULL )
-			List_InsertPtr( &pluginListAddr, p );
+		{
+			pluginListAddr.insert( p );
+			p->pclass |= PCLASS_LOADED;
+		}
 	}
-    if (!msgModule)
-	    MessageBox(NULL, TranslateT("No messaging plugins loaded. Please install/enable one of the messaging plugins, for instance, \"srmm.dll\""), _T("Miranda IM"), MB_OK | MB_ICONINFORMATION);
+	if (!msgModule)
+		MessageBox(NULL, TranslateT("No messaging plugins loaded. Please install/enable one of the messaging plugins, for instance, \"srmm.dll\""), _T("Miranda IM"), MB_OK | MB_ICONINFORMATION);
 
 	HookEvent(ME_OPT_INITIALISE, PluginOptionsInit);
 	return 0;
@@ -1117,23 +1121,9 @@ int LoadNewPluginsModule(void)
 //   Plugins module initialization
 //   called before anything real is loaded, incl. database
 
-static int sttComparePlugins( pluginEntry* p1, pluginEntry* p2 )
-{	return ( int )( p1->bpi.hInst - p2->bpi.hInst );
-}
-
-static int sttComparePluginsByName( pluginEntry* p1, pluginEntry* p2 )
-{	return lstrcmp( p1->pluginname, p2->pluginname );
-}
-
 int LoadNewPluginsModuleInfos(void)
 {
 	bModuleInitialized = TRUE;
-
-	pluginList.increment = 10;
-	pluginList.sortFunc = ( FSortFunc )sttComparePluginsByName;
-
-	pluginListAddr.increment = 10;
-	pluginListAddr.sortFunc = ( FSortFunc )sttComparePlugins;
 
 	hPluginListHeap=HeapCreate(HEAP_NO_SERIALIZE, 0, 0);
 	mirandaVersion = (DWORD)CallService(MS_SYSTEM_GETVERSION, 0, 0);
@@ -1190,8 +1180,8 @@ void UnloadNewPluginsModule(void)
 	if ( !bModuleInitialized ) return;
 
 	// unload everything but the DB
-	for ( i = pluginList.realCount-1; i >= 0; i-- ) {
-		pluginEntry* p = ( pluginEntry* )pluginList.items[i];
+	for ( i = pluginList.getCount()-1; i >= 0; i-- ) {
+		pluginEntry* p = pluginList[i];
 		if ( !(p->pclass & PCLASS_DB) && p != pluginList_crshdmp )
 			Plugin_Uninit( p );
 	}
@@ -1200,15 +1190,15 @@ void UnloadNewPluginsModule(void)
 		Plugin_Uninit( pluginList_crshdmp );
 
 	// unload the DB
-	for ( i = pluginList.realCount-1; i >= 0; i-- ) {
-		pluginEntry* p = ( pluginEntry* )pluginList.items[i];
+	for ( i = pluginList.getCount()-1; i >= 0; i-- ) {
+		pluginEntry* p = pluginList[i];
 		Plugin_Uninit( p );
 	}
 
 	if ( hPluginListHeap ) HeapDestroy(hPluginListHeap);
 	hPluginListHeap=0;
 
-	List_Destroy( &pluginList );
-	List_Destroy( &pluginListAddr );
+	pluginList.destroy();
+	pluginListAddr.destroy();
 	UninitIni();
 }

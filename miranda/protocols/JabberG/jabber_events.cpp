@@ -48,10 +48,6 @@ int CJabberProto::OnContactDeleted( WPARAM wParam, LPARAM )
 	if( !m_bJabberOnline )	// should never happen
 		return 0;
 
-	char* szProto = ( char* )JCallService( MS_PROTO_GETCONTACTBASEPROTO, wParam, 0 );
-	if ( szProto==NULL || strcmp( szProto, m_szModuleName ))
-		return 0;
-
 	DBVARIANT dbv;
 	if ( !JGetStringT(( HANDLE ) wParam, JGetByte( (HANDLE ) wParam, "ChatRoom", 0 )?(char*)"ChatRoomID":(char*)"jid", &dbv )) {
 		if ( ListExist( LIST_ROSTER, dbv.ptszVal )) {
@@ -203,15 +199,11 @@ void __cdecl CJabberProto::OnAddContactForever( DBCONTACTWRITESETTING* cws, HAND
 int __cdecl CJabberProto::OnDbSettingChanged( WPARAM wParam, LPARAM lParam )
 {
 	HANDLE hContact = ( HANDLE ) wParam;
-	if ( hContact == NULL || !m_bJabberOnline )
+	if ( !m_bJabberOnline )
 		return 0;
 
 	DBCONTACTWRITESETTING* cws = ( DBCONTACTWRITESETTING* )lParam;
 	if ( strcmp( cws->szModule, "CList" ))
-		return 0;
-
-	char* szProto = ( char* )JCallService( MS_PROTO_GETCONTACTBASEPROTO, ( WPARAM ) hContact, 0 );
-	if ( szProto == NULL || strcmp( szProto, m_szModuleName ))
 		return 0;
 
 	if ( !strcmp( cws->szSetting, "Group" ))

@@ -44,8 +44,6 @@ CIrcProto::CIrcProto( const char* szModuleName, const TCHAR* tszUserName ) :
 	InitializeCriticalSection(&m_gchook);
 	m_evWndCreate = ::CreateEvent( NULL, FALSE, FALSE, NULL );
 
-	IrcHookEvent( ME_DB_CONTACT_DELETED,   &CIrcProto::OnDeletedContact );
-
 	CreateProtoService( PS_GETMYAWAYMSG,   &CIrcProto::GetMyAwayMsg );
 
 	CreateProtoService( PS_CREATEACCMGRUI, &CIrcProto::SvcCreateAccMgrUI );
@@ -323,7 +321,6 @@ int CIrcProto::OnModulesLoaded( WPARAM, LPARAM )
 
 	IrcHookEvent( ME_USERINFO_INITIALISE, &CIrcProto::OnInitUserInfo );
 	IrcHookEvent( ME_OPT_INITIALISE, &CIrcProto::OnInitOptionsPages );
-	IrcHookEvent( ME_DB_CONTACT_SETTINGCHANGED, &CIrcProto::OnDbSettingChanged );
 
 	if ( m_nick[0] ) {
 		TCHAR szBuf[ 40 ];
@@ -1075,6 +1072,12 @@ int __cdecl CIrcProto::OnEvent( PROTOEVENTTYPE eventType, WPARAM wParam, LPARAM 
 			CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )hMenuRoot, ( LPARAM )&clmi );
 		}
 		break;
+
+	case EV_PROTO_ONCONTACTDELETED:
+		return OnContactDeleted(wParam, lParam);
+
+	case EV_PROTO_DBSETTINGSCHANGED:
+		return OnDbSettingChanged(wParam, lParam);
 	}
 	return 1;
 }

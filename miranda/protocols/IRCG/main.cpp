@@ -77,8 +77,9 @@ extern "C" BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD, LPVOID)
 
 extern "C" __declspec(dllexport) PLUGININFOEX* MirandaPluginInfoEx(DWORD mirandaVersion)
 {
-	if ( mirandaVersion < PLUGIN_MAKE_VERSION( 0, 8, 0, 9 )) {
-		MessageBox( NULL, LPGENT("The IRC protocol plugin cannot be loaded. It requires Miranda IM 0.8.0.9 or later."), LPGENT("IRC Protocol Plugin"), MB_OK|MB_ICONWARNING|MB_SETFOREGROUND|MB_TOPMOST );
+	if ( mirandaVersion < __VERSION_DWORD) {
+		MessageBoxA( NULL, "The IRC protocol plugin cannot be loaded. It requires Miranda IM " __VERSION_STRING " or later.", 
+			"IRC Protocol Plugin", MB_OK|MB_ICONWARNING|MB_SETFOREGROUND|MB_TOPMOST );
 		return NULL;
 	}
 

@@ -60,11 +60,11 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 //returns NULL if the status mode was unknown
 #define GSMDF_PREFIXONLINE   1   //prefix "Online: " to all status modes that
                                  //imply online, eg "Online: Away"
-#define GCMDF_UNICODE        2   //will return TCHAR* instead of char*
+#define GSMDF_UNICODE        2   //will return TCHAR* instead of char*
 #if defined( _UNICODE )
-	#define GCMDF_TCHAR       GCMDF_UNICODE      //will return TCHAR* instead of char*
+	#define GSMDF_TCHAR       GSMDF_UNICODE      //will return TCHAR* instead of char*
 #else
-	#define GCMDF_TCHAR       0      //will return char*, as usual
+	#define GSMDF_TCHAR       0      //will return char*, as usual
 #endif
 #define GSMDF_UNTRANSLATED   4
 #define MS_CLIST_GETSTATUSMODEDESCRIPTION  "CList/GetStatusModeDescription"
@@ -256,7 +256,7 @@ typedef struct {
 	int cbSize;          //size in bytes of this structure
 	HANDLE hContact;	 //handle to the contact to put the icon by
 	HICON hIcon;		 //icon to flash
-	DWORD flags;		 //...of course	
+	DWORD flags;		 //...of course
 	union
 	{
 		HANDLE hDbEvent;	 //caller defined but should be unique for hContact
@@ -275,7 +275,7 @@ typedef struct {
 							//times. This is for eg online alert
 #define CLEF_UNICODE   4	//set pszTooltip as unicode
 
-#define CLEF_PROTOCOLGLOBAL   8		//set event globally for protocol, hContact has to be NULL, 
+#define CLEF_PROTOCOLGLOBAL   8		//set event globally for protocol, hContact has to be NULL,
 									//lpszProtocol the protocol ID name to be set
 
 #if defined( _UNICODE )
@@ -380,11 +380,11 @@ typedef struct {
 // to ensure that WM_COMMAND was realy from clist menu not from other menu
 // it is reserved range of menu ids from CLISTMENUIDMIN to CLISTMENUIDMAX
 // the menu items with ids outside from such range will not be processed by service.
-// Moreover if you process WM_COMMAND youself and your window contains self menu 
+// Moreover if you process WM_COMMAND youself and your window contains self menu
 // please be sure that you will not call service for non-clist menu items.
 // The simplest way is to ensure that your menus are not use item ids from such range.
 // Otherwise, you HAVE TO distinguish WM_COMMAND from clist menus and from youê internal menu and
-// DO NOT call MS_CLIST_MENUPROCESSCOMMAND for non clist menus. 
+// DO NOT call MS_CLIST_MENUPROCESSCOMMAND for non clist menus.
 
 
 #define MPCF_CONTACTMENU   1	//test commands from a contact menu
@@ -441,8 +441,8 @@ typedef struct {
 #define MS_CLIST_PAUSEAUTOHIDE        "CList/PauseAutoHide"
 
 //sent when the group get modified (created, renamed or deleted)
-//or contact is moving from group to group 
-//wParam=hContact - NULL if operation on group 
+//or contact is moving from group to group
+//wParam=hContact - NULL if operation on group
 //lParam=pointer to CLISTGROUPCHANGE
 typedef struct {
 	int cbSize;	            //size in bytes of this structure
@@ -458,7 +458,7 @@ typedef struct {
 //returns a handle to the new group
 //hParentGroup is NULL to create the new group at the root, or can be the
 //handle of the group of which the new group should be a subgroup.
-//groupName is a TCHAR* pointing to the group name to create or NULL for 
+//groupName is a TCHAR* pointing to the group name to create or NULL for
 //API to create unique name by itself
 #define MS_CLIST_GROUPCREATE   "CList/GroupCreate"
 

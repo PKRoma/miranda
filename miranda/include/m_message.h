@@ -107,7 +107,7 @@ typedef struct {
 #define ME_MSG_WINDOWPOPUP		"MessageAPI/WindowPopupRequested"
 // wParam = 0
 // lParam = (MessageWindowPopupData *)&MessageWindowPopupData;
-// Fired to allow plugins to add itens to the msg window popup menu
+// Fired to allow plugins to add items to the msg window popup menu
 // Always fired twice: once with MSG_WINDOWPOPUP_SHOWING and once with MSG_WINDOWPOPUP_SELECTED.
 // This is done to allow cleaning of resources.
 #define MSG_WINDOWPOPUP_SHOWING  1

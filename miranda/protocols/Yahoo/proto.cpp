@@ -76,7 +76,6 @@ CYahooProto::~CYahooProto()
 INT_PTR CYahooProto::OnModulesLoadedEx( WPARAM, LPARAM )
 {
 	YHookEvent( ME_USERINFO_INITIALISE, 		&CYahooProto::OnUserInfoInit );
-	YHookEvent( ME_DB_CONTACT_SETTINGCHANGED, 	&CYahooProto::OnSettingChanged);
 	YHookEvent( ME_IDLE_CHANGED, 				&CYahooProto::OnIdleEvent);
 	YHookEvent( ME_CLIST_PREBUILDCONTACTMENU, 	&CYahooProto::OnPrebuildContactMenu );
 
@@ -818,6 +817,12 @@ int __cdecl CYahooProto::OnEvent( PROTOEVENTTYPE eventType, WPARAM wParam, LPARA
 				YAHOO_CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )mainMenuRoot, ( LPARAM )&clmi );
 			}
 			break;
+
+		case EV_PROTO_ONCONTACTDELETED:
+			return OnContactDeleted(wParam, lParam);
+
+		case EV_PROTO_DBSETTINGSCHANGED:
+			return OnSettingChanged(wParam, lParam);
 	}	
 	return 1;
 }

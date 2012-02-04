@@ -106,8 +106,7 @@ int __declspec(dllexport) Load(PLUGINLINK *link)
 
 	// set the memory & utf8 managers
 	mir_getMMI( &memoryManagerInterface );
-	if ( mir_getUTFI( &utfi ) == CALLSERVICE_NOTFOUND )
-		return 1;
+	mir_getUTFI( &utfi );
 
 	hDll = LoadLibraryA("riched20.dll");
 	if ( hDll ) {

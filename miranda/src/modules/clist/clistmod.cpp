@@ -124,7 +124,7 @@ static INT_PTR GetStatusModeDescription(WPARAM wParam, LPARAM lParam)
 	TCHAR* buf1 = cli.pfnGetStatusModeDescription( wParam, lParam );
 
 	#ifdef UNICODE
-		if ( !( lParam & GCMDF_TCHAR ))
+		if ( !( lParam & GSMDF_TCHAR ))
 		{
 			static char szMode[64];
 			char *buf2 = mir_u2a(buf1);

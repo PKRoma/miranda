@@ -152,8 +152,6 @@ struct CIcqProto : public PROTO_INTERFACE
 
     //====| Events |======================================================================
 	void __cdecl OnAddContactForever( DBCONTACTWRITESETTING* cws, HANDLE hContact );
-	int  __cdecl OnContactDeleted( WPARAM, LPARAM );
-	int  __cdecl OnDbSettingChanged( WPARAM, LPARAM );
 	int  __cdecl OnIdleChanged( WPARAM, LPARAM );
 	int  __cdecl OnModernOptInit( WPARAM, LPARAM );
 	int  __cdecl OnModulesLoaded( WPARAM, LPARAM );
@@ -733,8 +731,6 @@ struct CIcqProto : public PROTO_INTERFACE
 	DWORD  icq_modifyServerPrivacyItem(HANDLE hContact, DWORD dwUin, char *szUid, WORD wAction, DWORD dwOperation, WORD wItemId, WORD wType);
 	DWORD  icq_removeServerPrivacyItem(HANDLE hContact, DWORD dwUin, char *szUid, WORD wItemId, WORD wType);
 	DWORD  icq_addServerPrivacyItem(HANDLE hContact, DWORD dwUin, char *szUid, WORD wItemId, WORD wType);
-
-	time_t dwLastCListGroupsChange;
 
 	int __cdecl ServListDbSettingChanged(WPARAM wParam, LPARAM lParam);
 	int __cdecl ServListDbContactDeleted(WPARAM wParam, LPARAM lParam);

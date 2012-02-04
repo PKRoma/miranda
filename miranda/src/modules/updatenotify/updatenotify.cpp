@@ -61,7 +61,7 @@ typedef struct {
 
 static BOOL bModuleInitialized = FALSE;
 static HANDLE hNetlibUser = 0, hHookModules, hHookPreShutdown;
-static UINT updateTimerId;
+static UINT_PTR updateTimerId;
 static HANDLE dwUpdateThreadID = 0;
 static HWND hwndUpdateDlg = 0, hwndManualUpdateDlg = 0;
 static XML_API xun;

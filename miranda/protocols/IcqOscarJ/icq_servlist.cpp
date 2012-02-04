@@ -2665,25 +2665,9 @@ int CIcqProto::ServListDbSettingChanged(WPARAM wParam, LPARAM lParam)
 {
 	DBCONTACTWRITESETTING* cws = (DBCONTACTWRITESETTING*)lParam;
 
-	// We can't upload changes to NULL contact
-	if ((HANDLE)wParam == NULL)
-	{ // only note last change of CListGroups - contact/group operation detection
-		if (!strcmpnull(cws->szModule, "CListGroups"))
-			dwLastCListGroupsChange = time(NULL);
-
-		return 0;
-	}
-
 	// TODO: Queue changes that occur while offline
 	if (!icqOnline() || !m_bSsiEnabled || bIsSyncingCL)
 		return 0;
-
-	{ // only our contacts will be handled
-		if (IsICQContact((HANDLE)wParam))
-			;// our contact, fine; otherwise return
-		else 
-			return 0;
-	}
 
 #ifdef _DEBUG
 	if (cws->value.type == DBVT_DELETED)
@@ -2707,10 +2691,6 @@ int CIcqProto::ServListDbSettingChanged(WPARAM wParam, LPARAM lParam)
 		{ // Read group from DB
 			char* szNewGroup = getContactCListGroup((HANDLE)wParam);
 
-			// it is contact operation only ? no, if CListGroups was changed less than 10 secs ago
-			if (szNewGroup && (dwLastCListGroupsChange + 10 < time(NULL)))
-				servlistMoveContact((HANDLE)wParam, szNewGroup);
-
 			SAFE_FREE(&szNewGroup);
 		}
 	}
@@ -2729,8 +2709,6 @@ int CIcqProto::ServListDbSettingChanged(WPARAM wParam, LPARAM lParam)
 
 int CIcqProto::ServListDbContactDeleted(WPARAM wParam, LPARAM lParam)
 {
-	if (!IsICQContact((HANDLE)wParam)) return 0;
-
 #ifdef _DEBUG
 	NetLog_Server("DB-Events: Contact %x deleted.", wParam);
 #endif

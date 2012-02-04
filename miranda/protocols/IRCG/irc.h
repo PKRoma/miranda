@@ -356,7 +356,7 @@ struct CIrcProto : public PROTO_INTERFACE, public CCallocBase
 	INT_PTR __cdecl OnShowServerMenuCommand( WPARAM, LPARAM );
 
 	// Events
-	int __cdecl OnDeletedContact( WPARAM, LPARAM );
+	int __cdecl OnContactDeleted( WPARAM, LPARAM );
 	int __cdecl OnInitOptionsPages( WPARAM, LPARAM );
 	int __cdecl OnInitUserInfo( WPARAM, LPARAM );
 	int __cdecl OnModulesLoaded( WPARAM, LPARAM );

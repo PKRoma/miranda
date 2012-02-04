@@ -910,7 +910,7 @@ BOOL gg_img_hasextension(const char *filename)
 		char *imgtype = strrchr(filename, '.');
 		if (imgtype != NULL)
 		{
-			int len = strlen(imgtype);
+			size_t len = strlen(imgtype);
 			imgtype++;
 			if (len == 4 && (_stricmp(imgtype, "bmp") == 0 ||
 							 _stricmp(imgtype, "gif") == 0 ||

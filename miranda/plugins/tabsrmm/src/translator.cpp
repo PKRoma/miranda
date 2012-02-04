@@ -451,7 +451,7 @@ wchar_t* CTranslator::m_Warnings[WARN_LAST] = {
 	L"Missing component|The icon pack is missing. Please install it to the default icons folder.\n\nNo icons will be available",		/* WARN_ICONPACKMISSING */ /* NOT TRANSLATABLE */
 	LPGENT("Aero peek warning|You have enabled Aero Peek features and loaded a custom container window skin\n\nThis can result in minor visual anomalies in the live preview feature."),	/* WARN_AEROPEEKSKIN */
 	L"TabSRMM group chat module|TabSRMM could not enable its group chat module. The most likely cause is that you have installed and enabled \\b1chat.dll\\b0  or another plugin that provides groupchat services.\n\nShould I try to fix this now \\b1(a restart of Miranda is required to apply these changes)?\\b0", /* WARN_CHAT_ENABLED */ /* NOT TRANSLATABLE */
-	L"Missing component|The image service plugin (\\b1advaimg.dll\\b0 ) is not properly installed. Please check your plugin configuration.\n\n\\b1TabSRMM is disabled.\\b0 ", /* WARN_IMGSVC_MISSING */ /* NOT TRANSLATABLE */
+	L"Filetransfer problem|Sending the image by file transfer failed.\n\nPossible reasons: File transfers not supported, either you or the target contact is offline, or you are invisible and the target contact is not on your visibilty list.", /* WARN_IMGSVC_MISSING */ /* NOT TRANSLATABLE */
 	LPGENT("Settings problem|The option \\b1 History->Imitate IEView API\\b0  is enabled and the History++ plugin is active. This can cause problems when using IEView as message log viewer.\n\nShould I correct the option (a restart is required)?"), /* WARN_HPP_APICHECK */
 	L" ", /* WARN_NO_SENDLATER */ /*uses QMGR_ERROR_NOMULTISEND */
 	LPGENT("Closing Window|You are about to close a window with multiple tabs open.\n\nProceed?"),		/* WARN_CLOSEWINDOW */
@@ -475,8 +475,6 @@ TOptionListItem CTranslator::m_lvItemsModPlus[] = {
 	0, LPGENT("Disable animated GIF avatars (will not affect already open message windows)"), 0, LOI_TYPE_SETTING, (UINT_PTR)"adv_DisableAniAvatars", 0,
 	0, LPGENT("Close current tab on send"), 0, LOI_TYPE_SETTING, (UINT_PTR)"adv_AutoClose_2", 0,
 	0, LPGENT("Disable error popups on sending failures"), 0, LOI_TYPE_SETTING, (UINT_PTR)"adv_noErrorPopups", 1,
-	0, LPGENT("Use Aero Glass for the message window (Vista+)"), 1, LOI_TYPE_SETTING, (UINT_PTR)"useAero", 0,
-	0, LPGENT("Use Windows 7 task bar features for tabbed windows (*)"), 1, LOI_TYPE_SETTING, (UINT_PTR)"useAeroPeek", 0,
 	0, LPGENT("Automatic keyboard layout: Do not load the system default for new contacts"), 1, LOI_TYPE_SETTING, (UINT_PTR)"adv_leaveKeyboardAlone", 0,
 	0, LPGENT("Enable unattended send (experimental feature, required for multisend and send later) (*)"), 0, LOI_TYPE_SETTING, (UINT_PTR)"sendLaterAvail", 0,
 	0, NULL, 0, 0, 0, 0
@@ -540,7 +538,7 @@ TOptionListItem CTranslator::m_lvItemsMsg[] = {
 	//mad_
 	0, LPGENT("Always flash contact list and tray icon for new messages"), 0, LOI_TYPE_SETTING, (UINT_PTR)"flashcl", 0,
 	0, LPGENT("Delete temporary contacts on close"), 0, LOI_TYPE_SETTING, (UINT_PTR)"deletetemp", 0,
-	0, LPGENT("Enable \"Paste and send\" feature"), 1, LOI_TYPE_SETTING, (UINT_PTR)"pasteandsend", 1,
+	0, LPGENT("Enable \"Paste and send\" feature"), 0, LOI_TYPE_SETTING, (UINT_PTR)"pasteandsend", 1,
 	0, LPGENT("Allow BBCode formatting in outgoing messages"), 0, LOI_TYPE_SETTING, (UINT_PTR)"sendformat", 1,
 	0, LPGENT("Automatically split long messages (experimental, use with care)"), 0, LOI_TYPE_SETTING, (UINT_PTR)"autosplit", 2,
 	0, NULL, 0, 0, 0, 0
