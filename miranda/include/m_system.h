@@ -234,6 +234,7 @@ typedef int ( *FSortFunc )( void*, void* );
 // Incredibly useful for Hash Tables
 #define NumericKeySort (FSortFunc)(void*) -1
 #define HandleKeySort  (FSortFunc)(void*) -2
+#define PtrKeySort     (FSortFunc)(void*) -3
 
 typedef struct
 {

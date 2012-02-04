@@ -70,7 +70,7 @@ static INT_PTR CALLBACK InstallIniDlgProc(HWND hwndDlg,UINT message,WPARAM wPara
 	return FALSE;
 }
 
-static int IsInSpaceSeparatedList(const char *szWord,const char *szList)
+static bool IsInSpaceSeparatedList(const char *szWord,const char *szList)
 {
 	const char *szItem,*szEnd;
 	int wordLen = lstrlenA(szWord);
@@ -81,7 +81,7 @@ static int IsInSpaceSeparatedList(const char *szWord,const char *szList)
 			return !lstrcmpA( szItem, szWord );
 		if ( szEnd - szItem == wordLen ) {
 			if ( !strncmp( szItem, szWord, wordLen ))
-				return 1;
+				return true;
 		}
 		szItem = szEnd+1;
 }	}
