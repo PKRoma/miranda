@@ -37,8 +37,9 @@ void  CMsnProto::p2p_registerSession(filetransfer* ft)
 void  CMsnProto::p2p_unregisterSession(filetransfer* ft)
 {
 	EnterCriticalSection(&sessionLock);
-	int idx = sessionList.getIndex(ft);
-	if (idx > -1) sessionList.remove(idx);
+//	int idx = sessionList.getIndex(ft);
+//	if (idx > -1) 
+		sessionList.remove(ft);
 	LeaveCriticalSection(&sessionLock);
 }
 
@@ -292,11 +293,7 @@ void  CMsnProto::p2p_registerDC(directconnection* dc)
 void  CMsnProto::p2p_unregisterDC(directconnection* dc)
 {
 	EnterCriticalSection(&sessionLock);
-	int idx = dcList.getIndex(dc);
-	if (idx > -1) 
-	{
-		dcList.remove(idx);
-	}
+	dcList.remove(dc);
 	LeaveCriticalSection(&sessionLock);
 }
 

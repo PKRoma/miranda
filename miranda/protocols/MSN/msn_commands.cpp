@@ -148,7 +148,6 @@ void CMsnProto::sttInviteMessage(ThreadData* info, char* msgBody, char* email, c
 		ft->std.hContact = MSN_HContactFromEmail(email, nick, true, true);
 		mir_free(ft->std.tszCurrentFile);
 		ft->std.tszCurrentFile = mir_utf8decodeT(Appfile);
-		ft->fileId = -1;
 		ft->std.totalBytes = ft->std.currentFileSize = _atoi64(Appfilesize);
 		ft->std.totalFiles = 1;
 		ft->szInvcookie = mir_strdup(Invcookie);
