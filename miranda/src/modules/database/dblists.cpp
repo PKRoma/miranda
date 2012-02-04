@@ -130,6 +130,31 @@ int List_GetIndex( SortedList* p_list, void* p_value, int* p_index )
 		}
 		break;
 
+	case PtrKeySort:
+		{
+			int low  = 0;
+			int high = p_list->realCount - 1;
+
+			while (low <= high)
+			{  
+				int i = (low + high) / 2;
+				const void* vali = p_list->items[i];
+				if (vali == p_value)
+				{	
+					*p_index = i;
+					return 1;
+				}
+
+				if (vali < p_value)
+					low = i + 1;
+				else
+					high = i - 1;
+			}
+
+			*p_index = low;
+		}
+		break;
+
 	default:
 		{
 			int low  = 0;

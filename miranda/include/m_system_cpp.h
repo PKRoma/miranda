@@ -30,6 +30,7 @@ extern LIST_INTERFACE li;
 
 #define	NumericKeySortT -1
 #define	HandleKeySortT  -2
+#define	PtrKeySortT     -3
 
 template<class T> struct LIST
 {
