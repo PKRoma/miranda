@@ -581,6 +581,8 @@
     <ClCompile Include="Source\FreeImage\BitmapAccess.cpp" />
     <ClCompile Include="Source\FreeImage\ColorLookup.cpp" />
     <ClCompile Include="Source\FreeImage\ConversionFloat.cpp" />
+    <ClCompile Include="Source\FreeImage\ConversionRGB16.cpp" />
+    <ClCompile Include="Source\FreeImage\ConversionUINT16.cpp" />
     <ClCompile Include="Source\FreeImage\FreeImage.cpp" />
     <ClCompile Include="Source\FreeImage\FreeImageC.c" />
     <ClCompile Include="Source\FreeImage\FreeImageIO.cpp" />
@@ -691,7 +693,6 @@
     <ClCompile Include="Source\LibPNG\pngrtran.c" />
     <ClCompile Include="Source\LibPNG\pngrutil.c" />
     <ClCompile Include="Source\LibPNG\pngset.c" />
-    <ClCompile Include="Source\LibPNG\pngtest.c" />
     <ClCompile Include="Source\LibPNG\pngtrans.c" />
     <ClCompile Include="Source\LibPNG\pngwio.c" />
     <ClCompile Include="Source\LibPNG\pngwrite.c" />
@@ -727,6 +728,9 @@
     <ClInclude Include="Source\LibPNG\png.h" />
     <ClInclude Include="Source\LibPNG\pngconf.h" />
     <ClInclude Include="Source\CacheFile.h" />
+    <ClInclude Include="Source\LibPNG\pngdebug.h" />
+    <ClInclude Include="Source\LibPNG\pnginfo.h" />
+    <ClInclude Include="Source\LibPNG\pnglibconf.h" />
     <ClInclude Include="Source\LibPNG\pngpriv.h" />
     <ClInclude Include="Source\Metadata\FIRational.h" />
     <ClInclude Include="SOURCE\FreeImage.h" />

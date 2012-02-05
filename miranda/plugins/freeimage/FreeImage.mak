@@ -60,8 +60,10 @@ CLEAN :
 	-@erase "$(INTDIR)\Conversion4.obj"
 	-@erase "$(INTDIR)\Conversion8.obj"
 	-@erase "$(INTDIR)\ConversionFloat.obj"
+	-@erase "$(INTDIR)\ConversionRGB16.obj"
 	-@erase "$(INTDIR)\ConversionRGBF.obj"
 	-@erase "$(INTDIR)\ConversionType.obj"
+	-@erase "$(INTDIR)\ConversionUINT16.obj"
 	-@erase "$(INTDIR)\CopyPaste.obj"
 	-@erase "$(INTDIR)\Display.obj"
 	-@erase "$(INTDIR)\Exif.obj"
@@ -230,8 +232,10 @@ LINK32_OBJS= \
 	"$(INTDIR)\Conversion4.obj" \
 	"$(INTDIR)\Conversion8.obj" \
 	"$(INTDIR)\ConversionFloat.obj" \
+	"$(INTDIR)\ConversionRGB16.obj" \
 	"$(INTDIR)\ConversionRGBF.obj" \
 	"$(INTDIR)\ConversionType.obj" \
+	"$(INTDIR)\ConversionUINT16.obj" \
 	"$(INTDIR)\Halftoning.obj" \
 	"$(INTDIR)\MultigridPoissonSolver.obj" \
 	"$(INTDIR)\tmoColorConvert.obj" \
@@ -392,10 +396,14 @@ CLEAN :
 	-@erase "$(INTDIR)\Conversion8.sbr"
 	-@erase "$(INTDIR)\ConversionFloat.obj"
 	-@erase "$(INTDIR)\ConversionFloat.sbr"
+	-@erase "$(INTDIR)\ConversionRGB16.obj"
+	-@erase "$(INTDIR)\ConversionRGB16.sbr"
 	-@erase "$(INTDIR)\ConversionRGBF.obj"
 	-@erase "$(INTDIR)\ConversionRGBF.sbr"
 	-@erase "$(INTDIR)\ConversionType.obj"
 	-@erase "$(INTDIR)\ConversionType.sbr"
+	-@erase "$(INTDIR)\ConversionUINT16.obj"
+	-@erase "$(INTDIR)\ConversionUINT16.sbr"
 	-@erase "$(INTDIR)\CopyPaste.obj"
 	-@erase "$(INTDIR)\CopyPaste.sbr"
 	-@erase "$(INTDIR)\Display.obj"
@@ -662,8 +670,10 @@ BSC32_SBRS= \
 	"$(INTDIR)\Conversion4.sbr" \
 	"$(INTDIR)\Conversion8.sbr" \
 	"$(INTDIR)\ConversionFloat.sbr" \
+	"$(INTDIR)\ConversionRGB16.sbr" \
 	"$(INTDIR)\ConversionRGBF.sbr" \
 	"$(INTDIR)\ConversionType.sbr" \
+	"$(INTDIR)\ConversionUINT16.sbr" \
 	"$(INTDIR)\Halftoning.sbr" \
 	"$(INTDIR)\MultigridPoissonSolver.sbr" \
 	"$(INTDIR)\tmoColorConvert.sbr" \
@@ -787,8 +797,10 @@ LINK32_OBJS= \
 	"$(INTDIR)\Conversion4.obj" \
 	"$(INTDIR)\Conversion8.obj" \
 	"$(INTDIR)\ConversionFloat.obj" \
+	"$(INTDIR)\ConversionRGB16.obj" \
 	"$(INTDIR)\ConversionRGBF.obj" \
 	"$(INTDIR)\ConversionType.obj" \
+	"$(INTDIR)\ConversionUINT16.obj" \
 	"$(INTDIR)\Halftoning.obj" \
 	"$(INTDIR)\MultigridPoissonSolver.obj" \
 	"$(INTDIR)\tmoColorConvert.obj" \
@@ -1179,6 +1191,24 @@ SOURCE=.\Source\FreeImage\ConversionFloat.cpp
 
 !ENDIF 
 
+SOURCE=.\Source\FreeImage\ConversionRGB16.cpp
+
+!IF  "$(CFG)" == "FreeImage - Win32 Release"
+
+
+"$(INTDIR)\ConversionRGB16.obj" : $(SOURCE) "$(INTDIR)"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ELSEIF  "$(CFG)" == "FreeImage - Win32 Debug"
+
+
+"$(INTDIR)\ConversionRGB16.obj"	"$(INTDIR)\ConversionRGB16.sbr" : $(SOURCE) "$(INTDIR)"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ENDIF 
+
 SOURCE=.\Source\FreeImage\ConversionRGBF.cpp
 
 !IF  "$(CFG)" == "FreeImage - Win32 Release"
@@ -1210,6 +1240,24 @@ SOURCE=.\Source\FreeImage\ConversionType.cpp
 
 
 "$(INTDIR)\ConversionType.obj"	"$(INTDIR)\ConversionType.sbr" : $(SOURCE) "$(INTDIR)"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ENDIF 
+
+SOURCE=.\Source\FreeImage\ConversionUINT16.cpp
+
+!IF  "$(CFG)" == "FreeImage - Win32 Release"
+
+
+"$(INTDIR)\ConversionUINT16.obj" : $(SOURCE) "$(INTDIR)"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ELSEIF  "$(CFG)" == "FreeImage - Win32 Debug"
+
+
+"$(INTDIR)\ConversionUINT16.obj"	"$(INTDIR)\ConversionUINT16.sbr" : $(SOURCE) "$(INTDIR)"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 

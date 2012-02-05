@@ -47,27 +47,14 @@ Last change by : $Author: rainwater $
 
 PLUGINLINK *pluginLink = NULL;
 
-PLUGININFO pluginInfo = {
-	sizeof(PLUGININFO),
-	"Miranda Image services",
-	__VERSION_DWORD,
-	"Generic image services for Miranda IM",
-	"Nightwish, The FreeImage project (http://freeimage.sourceforge.net/)",
-	"",
-	"Copyright 2000-2008 Miranda-IM project, uses the FreeImage distribution",
-	"http://www.miranda-im.org",
-	UNICODE_AWARE,
-	0
-};
-
-PLUGININFOEX pluginInfoEx = {
+static const PLUGININFOEX pluginInfoEx = {
 	sizeof(PLUGININFOEX),
 	"Miranda Image services",
 	__VERSION_DWORD,
 	"Generic image services for Miranda IM",
 	"Nightwish, The FreeImage project (http://freeimage.sourceforge.net/)",
 	"",
-	"Copyright 2000-2008 Miranda-IM project, uses the FreeImage distribution",
+	"Copyright 2000-2012 Miranda-IM project, uses the FreeImage distribution",
 	"http://www.miranda-im.org",
 	UNICODE_AWARE,
 	0,
@@ -517,7 +504,7 @@ HMemBufInfo;
 
 static void png_read_data( png_structp png_ptr, png_bytep data, png_size_t length )
 {
-	HMemBufInfo* io = ( HMemBufInfo* )png_ptr->io_ptr;
+	HMemBufInfo* io = ( HMemBufInfo* )png_get_io_ptr(png_ptr);
 	if ( length + io->mBufPtr > io->mBufSize )
 		length = io->mBufSize - io->mBufPtr;
 
@@ -530,7 +517,7 @@ static void png_read_data( png_structp png_ptr, png_bytep data, png_size_t lengt
 
 static void png_write_data( png_structp png_ptr, png_bytep data, png_size_t length )
 {
-	HMemBufInfo* io = ( HMemBufInfo* )png_ptr->io_ptr;
+	HMemBufInfo* io = ( HMemBufInfo* )png_get_io_ptr(png_ptr);
 	if ( io->mBuffer != NULL )
 		memcpy( io->mBuffer + io->mBufPtr, data, length );
 
@@ -559,8 +546,8 @@ extern "C" BOOL __declspec(dllexport) mempng2dib(BYTE* pSource, DWORD cbSourceSi
 	int						iColorType;
 	double					dGamma;
 	png_color_16*			pBackground;
-	png_uint_32				ulChannels;
-	png_uint_32				ulRowBytes;
+	png_byte				ulChannels;
+	png_size_t				ulRowBytes;
 	png_byte*				pbImageData;
 	png_byte**				ppbRowPointers = NULL;
 	int						i;
@@ -1279,16 +1266,9 @@ extern "C" __declspec(dllexport) const MUUID * MirandaPluginInterfaces(void)
 	return interfaces;
 }
 
-extern "C" __declspec(dllexport) PLUGININFO * MirandaPluginInfo(DWORD mirandaVersion)
+extern "C" __declspec(dllexport) const PLUGININFOEX * MirandaPluginInfoEx(DWORD mirandaVersion)
 {
-	if (mirandaVersion < PLUGIN_MAKE_VERSION(0, 4, 0, 0))
-		return NULL;
-	return &pluginInfo;
-}
-
-extern "C" __declspec(dllexport) PLUGININFOEX * MirandaPluginInfoEx(DWORD mirandaVersion)
-{
-	if (mirandaVersion < PLUGIN_MAKE_VERSION(0, 4, 0, 0))
+	if (mirandaVersion < PLUGIN_MAKE_VERSION(0, 9, 0, 0))
 		return NULL;
 	return &pluginInfoEx;
 }

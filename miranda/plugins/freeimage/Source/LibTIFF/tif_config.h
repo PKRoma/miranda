@@ -43,8 +43,7 @@
 /* Support NeXT 2-bit RLE algorithm */
 #define NEXT_SUPPORT 1
 
-/* Support Old JPEG compresson (read contrib/ojpeg/README first! Compilation
-   fails with unpatched IJG JPEG library) */
+/* Support Old JPEG compression (read-only) */
 #define OJPEG_SUPPORT 1
 
 /* Support Macintosh PackBits algorithm */
@@ -207,10 +206,13 @@
 #define SIZEOF_INT 4
 
 /* The size of a `long', as computed by sizeof. */
-#if defined(__SIZEOF_LONG__) && __SIZEOF_LONG__ == 8
-#  define SIZEOF_LONG 8
+#include <limits.h>
+#if (LONG_MAX == +9223372036854775807L)
+#define SIZEOF_LONG 8
+#elif (LONG_MAX == +2147483647)
+#define SIZEOF_LONG 4
 #else
-#  define SIZEOF_LONG 4
+#error "Cannot detect SIZEOF_LONG"
 #endif
 
 /* Define to 1 if you have the ANSI C header files. */

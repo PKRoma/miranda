@@ -71,11 +71,16 @@ static TagInfo
     {  0x011A, (char *) "XResolution", (char *) "Image resolution in width direction"},
     {  0x011B, (char *) "YResolution", (char *) "Image resolution in height direction"},
     {  0x011C, (char *) "PlanarConfiguration", (char *) "Image data arrangement"},
+	{  0x011D, (char *) "PageName", (char *) "Name of the page"},
+	{  0x011E, (char *) "XPosition", (char *) "X position of the image"},
+	{  0x011F, (char *) "YPosition", (char *) "Y position of the image"},
     {  0x0128, (char *) "ResolutionUnit", (char *) "Unit of X and Y resolution"},
+	{  0x0129, (char *) "PageNumber", (char *) "Page number"},
     {  0x012D, (char *) "TransferFunction", (char *) "Transfer function"},
     {  0x0131, (char *) "Software", (char *) "Software used"},
     {  0x0132, (char *) "DateTime", (char *) "File change date and time"},
     {  0x013B, (char *) "Artist", (char *) "Person who created the image"},
+	{  0x013C, (char *) "HostComputer", (char *) "Host computer used to generate the image"},
     {  0x013E, (char *) "WhitePoint", (char *) "White point chromaticity"},
     {  0x013F, (char *) "PrimaryChromaticities", (char *) "Chromaticities of primaries"},
     {  0x0156, (char *) "TransferRange", (char *) NULL},
@@ -150,10 +155,14 @@ static TagInfo
     {  0xA40B, (char *) "DeviceSettingDescription", (char *) "Device settings description"},
     {  0xA40C, (char *) "SubjectDistanceRange", (char *) "Subject distance range"},
     {  0xA420, (char *) "ImageUniqueID", (char *) "Unique image ID"},
-	// These tags are not part of the Exiv v2.2 specifications but are often loaded by applications as Exif data
-	{  0x013C, (char *) "HostComputer", (char *) "Host computer used to generate the image"},
+	// These tags are not part of the Exiv v2.3 specifications but are often loaded by applications as Exif data
 	{  0x4746, (char *) "Rating", (char *) "Rating tag used by Windows"},
 	{  0x4749, (char *) "RatingPercent", (char *) "Rating tag used by Windows, value in percent"},
+	{  0x9C9B, (char *) "XPTitle", (char *) "Title tag used by Windows, encoded in UCS2"},
+	{  0x9C9C, (char *) "XPComment", (char *) "Comment tag used by Windows, encoded in UCS2"},
+	{  0x9C9D, (char *) "XPAuthor", (char *) "Author tag used by Windows, encoded in UCS2"},
+	{  0x9C9E, (char *) "XPKeywords", (char *) "Keywords tag used by Windows, encoded in UCS2"},
+	{  0x9C9F, (char *) "XPSubject", (char *) "Subject tag used by Windows, encoded in UCS2"},
     {  0x0000, (char *) NULL, (char *) NULL}
   };
 
@@ -869,6 +878,7 @@ static TagInfo
     {  0x001F, (char *) "ShootingMode", (char *) NULL},
     {  0x0020, (char *) "Audio", (char *) NULL},
     {  0x0021, (char *) "DataDump", (char *) NULL},
+	{  0x0022, (char *) "EasyMode", (char *) NULL},
     {  0x0023, (char *) "WhiteBalanceBias", (char *) NULL},
     {  0x0024, (char *) "FlashBias", (char *) NULL},
     {  0x0025, (char *) "InternalSerialNumber", (char *) NULL},
@@ -898,6 +908,8 @@ static TagInfo
 	{  0x0042, (char *) "FilmMode", (char *) NULL},
 	{  0x0046, (char *) "WBAdjustAB", (char *) NULL},
 	{  0x0047, (char *) "WBAdjustGM", (char *) NULL},
+	{  0x004B, (char *) "PanasonicImageWidth", (char *) NULL},
+	{  0x004C, (char *) "PanasonicImageHeight", (char *) NULL},
 	{  0x004D, (char *) "AFPointPosition", (char *) NULL},
 	{  0x004E, (char *) "FaceDetInfo", (char *) NULL},
 	{  0x0051, (char *) "LensType", (char *) NULL},
@@ -996,6 +1008,7 @@ static TagInfo
     {  0x0032, (char *) "ImageProcessing", (char *) NULL},
     {  0x0033, (char *) "PictureMode", (char *) NULL},
     {  0x0034, (char *) "DriveMode", (char *) NULL},
+	{  0x0035, (char *) "SensorSize", (char *) NULL},
     {  0x0037, (char *) "ColorSpace", (char *) NULL},
     {  0x0039, (char *) "RawImageSize", (char *) NULL},
 	{  0x003C, (char *) "AFPointsInFocus", (char *) NULL},
@@ -1264,12 +1277,14 @@ TagLib::instance() {
 
 const TagInfo* 
 TagLib::getTagInfo(MDMODEL md_model, WORD tagID) {
-	TAGINFO *info_map = (TAGINFO*)_table_map[md_model];
 
-	if(info_map != NULL) {
-		return (*info_map)[tagID];
+	if(_table_map.find(md_model) != _table_map.end()) {
+
+		TAGINFO *info_map = (TAGINFO*)_table_map[md_model];
+		if(info_map->find(tagID) != info_map->end()) {
+			return (*info_map)[tagID];
+		}
 	}
-
 	return NULL;
 }
 
@@ -1301,8 +1316,10 @@ TagLib::getTagDescription(MDMODEL md_model, WORD tagID) {
 }
 
 int TagLib::getTagID(MDMODEL md_model, const char *key) {
-	TAGINFO *info_map = (TAGINFO*)_table_map[md_model];
-	if(info_map != NULL) {
+
+	if(_table_map.find(md_model) != _table_map.end()) {
+
+		TAGINFO *info_map = (TAGINFO*)_table_map[md_model];
 		for(TAGINFO::iterator i = info_map->begin(); i != info_map->end(); i++) {
 			const TagInfo *info = (*i).second;
 			if(info && (strcmp(info->fieldname, key) == 0)) {
@@ -1310,7 +1327,6 @@ int TagLib::getTagID(MDMODEL md_model, const char *key) {
 			}
 		}
 	}
-
 	return -1;
 }
 

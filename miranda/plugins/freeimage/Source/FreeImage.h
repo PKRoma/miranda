@@ -26,12 +26,10 @@
 #ifndef FREEIMAGE_H
 #define FREEIMAGE_H
 
-#pragma warning (disable:4291)
-
 // Version information ------------------------------------------------------
 
 #define FREEIMAGE_MAJOR_VERSION   3
-#define FREEIMAGE_MINOR_VERSION   14
+#define FREEIMAGE_MINOR_VERSION   15
 #define FREEIMAGE_RELEASE_SERIAL  1
 
 // Compiler options ---------------------------------------------------------
@@ -684,6 +682,7 @@ typedef void (DLL_CALLCONV *FI_InitProc)(Plugin *plugin, int format_id);
 #define JPEG_SUBSAMPLING_422 0x8000		// save with low 2x1 chroma subsampling (4:2:2) 
 #define JPEG_SUBSAMPLING_444 0x10000	// save with no chroma subsampling (4:4:4)
 #define JPEG_OPTIMIZE		0x20000		// on saving, compute optimal Huffman coding tables (can reduce a few percent of file size)
+#define JPEG_BASELINE		0x40000		// save basic JPEG, without metadata or any markers
 #define KOALA_DEFAULT       0
 #define LBM_DEFAULT         0
 #define MNG_DEFAULT         0
@@ -711,6 +710,7 @@ typedef void (DLL_CALLCONV *FI_InitProc)(Plugin *plugin, int format_id);
 #define RAW_DEFAULT         0		// load the file as linear RGB 48-bit
 #define RAW_PREVIEW			1		// try to load the embedded JPEG preview with included Exif Data or default to RGB 24-bit
 #define RAW_DISPLAY			2		// load the file as RGB 24-bit
+#define RAW_HALFSIZE		4		// output a half-size color image
 #define SGI_DEFAULT			0
 #define TARGA_DEFAULT       0
 #define TARGA_LOAD_RGB888   1       // If set the loader converts RGB555 and ARGB8888 -> RGB888.
@@ -898,6 +898,8 @@ DLL_API BOOL DLL_CALLCONV FreeImage_HasBackgroundColor(FIBITMAP *dib);
 DLL_API BOOL DLL_CALLCONV FreeImage_GetBackgroundColor(FIBITMAP *dib, RGBQUAD *bkcolor);
 DLL_API BOOL DLL_CALLCONV FreeImage_SetBackgroundColor(FIBITMAP *dib, RGBQUAD *bkcolor);
 
+DLL_API FIBITMAP *DLL_CALLCONV FreeImage_GetThumbnail(FIBITMAP *dib);
+DLL_API BOOL DLL_CALLCONV FreeImage_SetThumbnail(FIBITMAP *dib, FIBITMAP *thumbnail);
 
 // ICC profile routines -----------------------------------------------------
 
@@ -963,6 +965,8 @@ DLL_API void DLL_CALLCONV FreeImage_ConvertToRawBits(BYTE *bits, FIBITMAP *dib, 
 
 DLL_API FIBITMAP *DLL_CALLCONV FreeImage_ConvertToFloat(FIBITMAP *dib);
 DLL_API FIBITMAP *DLL_CALLCONV FreeImage_ConvertToRGBF(FIBITMAP *dib);
+DLL_API FIBITMAP *DLL_CALLCONV FreeImage_ConvertToUINT16(FIBITMAP *dib);
+DLL_API FIBITMAP *DLL_CALLCONV FreeImage_ConvertToRGB16(FIBITMAP *dib);
 
 DLL_API FIBITMAP *DLL_CALLCONV FreeImage_ConvertToStandardType(FIBITMAP *src, BOOL scale_linear FI_DEFAULT(TRUE));
 DLL_API FIBITMAP *DLL_CALLCONV FreeImage_ConvertToType(FIBITMAP *src, FREE_IMAGE_TYPE dst_type, BOOL scale_linear FI_DEFAULT(TRUE));

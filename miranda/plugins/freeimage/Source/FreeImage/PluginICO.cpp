@@ -219,17 +219,17 @@ SupportsNoPixels() {
 
 static void * DLL_CALLCONV
 Open(FreeImageIO *io, fi_handle handle, BOOL read) {
-	ICONHEADER *lpIH = NULL;
-
 	// Allocate memory for the header structure
-	if((lpIH = (ICONHEADER*)malloc( sizeof(ICONHEADER) )) == NULL) 
+	ICONHEADER *lpIH = (ICONHEADER*)malloc(sizeof(ICONHEADER));
+	if(lpIH == NULL) {
 		return NULL;
+	}
 
 	if (read) {
 		// Read in the header
 		io->read_proc(lpIH, 1, sizeof(ICONHEADER), handle);
 #ifdef FREEIMAGE_BIGENDIAN
-	SwapIconHeader(lpIH);
+		SwapIconHeader(lpIH);
 #endif
 
 		if(!(lpIH->idReserved == 0) || !(lpIH->idType == 1)) {
@@ -244,6 +244,7 @@ Open(FreeImageIO *io, fi_handle handle, BOOL read) {
 		lpIH->idType = 1;
 		lpIH->idCount = 0;
 	}
+
 	return lpIH;
 }
 
@@ -285,6 +286,9 @@ Load(FreeImageIO *io, fi_handle handle, int page, int flags, void *data) {
 		if (icon_header) {
 			// load the icon descriptions
 			ICONDIRENTRY *icon_list = (ICONDIRENTRY*)malloc(icon_header->idCount * sizeof(ICONDIRENTRY));
+			if(icon_list == NULL) {
+				return NULL;
+			}
 			io->seek_proc(handle, sizeof(ICONHEADER), SEEK_SET);
 			io->read_proc(icon_list, icon_header->idCount * sizeof(ICONDIRENTRY), 1, handle);
 #ifdef FREEIMAGE_BIGENDIAN
@@ -316,9 +320,9 @@ Load(FreeImageIO *io, fi_handle handle, int page, int flags, void *data) {
 				// allocate the bitmap
 				int width  = bmih.biWidth;
 				int height = bmih.biHeight / 2; // height == xor + and mask
-				int bit_count = bmih.biBitCount;
-				int line   = CalculateLine(width, bit_count);
-				int pitch  = CalculatePitch(line);
+				unsigned bit_count = bmih.biBitCount;
+				unsigned line   = CalculateLine(width, bit_count);
+				unsigned pitch  = CalculatePitch(line);
 
 				// allocate memory for one icon
 
@@ -333,7 +337,7 @@ Load(FreeImageIO *io, fi_handle handle, int page, int flags, void *data) {
 					io->read_proc(FreeImage_GetPalette(dib), CalculateUsedPaletteEntries(bit_count) * sizeof(RGBQUAD), 1, handle);
 #if FREEIMAGE_COLORORDER == FREEIMAGE_COLORORDER_RGB
 					RGBQUAD *pal = FreeImage_GetPalette(dib);
-					for(int i = 0; i < CalculateUsedPaletteEntries(bit_count); i++) {
+					for(unsigned i = 0; i < CalculateUsedPaletteEntries(bit_count); i++) {
 						INPLACESWAP(pal[i].rgbRed, pal[i].rgbBlue);
 					}
 #endif
@@ -427,9 +431,9 @@ Save(FreeImageIO *io, FIBITMAP *dib, fi_handle handle, int page, int flags, void
 
 	if(dib) {
 		// check format limits
-		int w = FreeImage_GetWidth(dib);
-		int h = FreeImage_GetHeight(dib);
-		if((w < 16) || (w > 128) || (h < 16) || (h > 128)) {
+		unsigned w = FreeImage_GetWidth(dib);
+		unsigned h = FreeImage_GetHeight(dib);
+		if((w < 16) || (w > 256) || (h < 16) || (h > 256)) {
 			FreeImage_OutputMessageProc(s_format_id, "Unsupported icon size");
 			return FALSE;
 		}
@@ -437,8 +441,9 @@ Save(FreeImageIO *io, FIBITMAP *dib, fi_handle handle, int page, int flags, void
 		return FALSE;
 	}
 
-	if (page == -1)
+	if (page == -1) {
 		page = 0;
+	}
 
 	// get the icon header
 	ICONHEADER *icon_header = (ICONHEADER*)data;
@@ -530,21 +535,21 @@ Save(FreeImageIO *io, FIBITMAP *dib, fi_handle handle, int page, int flags, void
 			}
 
 			// write the bits
-			int width		= bmih->biWidth;
-			int height		= bmih->biHeight;
-			int bit_count	= bmih->biBitCount;
-			int line		= CalculateLine(width, bit_count);
-			int pitch		= CalculatePitch(line);
-			int size_xor	= height * pitch;
-			int size_and	= height * WidthBytes(width);
+			int width			= bmih->biWidth;
+			int height			= bmih->biHeight;
+			unsigned bit_count	= bmih->biBitCount;
+			unsigned line		= CalculateLine(width, bit_count);
+			unsigned pitch		= CalculatePitch(line);
+			int size_xor		= height * pitch;
+			int size_and		= height * WidthBytes(width);
 
 			// XOR mask
 #ifdef FREEIMAGE_BIGENDIAN
 			if (bit_count == 16) {
 				WORD pixel;
-				for(int y = 0; y < FreeImage_GetHeight(icon_dib); y++) {
+				for(unsigned y = 0; y < FreeImage_GetHeight(icon_dib); y++) {
 					BYTE *line = FreeImage_GetScanLine(icon_dib, y);
-					for(int x = 0; x < FreeImage_GetWidth(icon_dib); x++) {
+					for(unsigned x = 0; x < FreeImage_GetWidth(icon_dib); x++) {
 						pixel = ((WORD *)line)[x];
 						SwapShort(&pixel);
 						if (io->write_proc(&pixel, sizeof(WORD), 1, handle) != 1)
@@ -556,9 +561,9 @@ Save(FreeImageIO *io, FIBITMAP *dib, fi_handle handle, int page, int flags, void
 #if FREEIMAGE_COLORORDER == FREEIMAGE_COLORORDER_RGB
 			if (bit_count == 24) {
 				FILE_BGR bgr;
-				for(int y = 0; y < FreeImage_GetHeight(icon_dib); y++) {
+				for(unsigned y = 0; y < FreeImage_GetHeight(icon_dib); y++) {
 					BYTE *line = FreeImage_GetScanLine(icon_dib, y);
-					for(int x = 0; x < FreeImage_GetWidth(icon_dib); x++) {
+					for(unsigned x = 0; x < FreeImage_GetWidth(icon_dib); x++) {
 						RGBTRIPLE *triple = ((RGBTRIPLE *)line)+x;
 						bgr.b = triple->rgbtBlue;
 						bgr.g = triple->rgbtGreen;
@@ -569,9 +574,9 @@ Save(FreeImageIO *io, FIBITMAP *dib, fi_handle handle, int page, int flags, void
 				}
 			} else if (bit_count == 32) {
 				FILE_BGRA bgra;
-				for(int y = 0; y < FreeImage_GetHeight(icon_dib); y++) {
+				for(unsigned y = 0; y < FreeImage_GetHeight(icon_dib); y++) {
 					BYTE *line = FreeImage_GetScanLine(icon_dib, y);
-					for(int x = 0; x < FreeImage_GetWidth(icon_dib); x++) {
+					for(unsigned x = 0; x < FreeImage_GetWidth(icon_dib); x++) {
 						RGBQUAD *quad = ((RGBQUAD *)line)+x;
 						bgra.b = quad->rgbBlue;
 						bgra.g = quad->rgbGreen;
