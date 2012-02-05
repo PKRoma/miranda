@@ -440,6 +440,7 @@
 			<File
 				RelativePath="msgdialog.c"
 				>
+			</File>
 			<File
 				RelativePath="msglog.c"
 				>

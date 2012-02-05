@@ -61,7 +61,6 @@
 				PrecompiledHeaderThrough="commonheaders.h"
 				AssemblerListingLocation=""
 				WarningLevel="3"
-				SuppressStartupBanner="true"
 				DebugInformationFormat="4"
 				DisableSpecificWarnings="4996"
 			/>
@@ -156,7 +155,6 @@
 				PrecompiledHeaderThrough="commonheaders.h"
 				AssemblerListingLocation=""
 				WarningLevel="3"
-				SuppressStartupBanner="true"
 				DebugInformationFormat="3"
 				DisableSpecificWarnings="4996"
 			/>
@@ -259,7 +257,6 @@
 				PrecompiledHeaderThrough="commonheaders.h"
 				AssemblerListingLocation=""
 				WarningLevel="3"
-				SuppressStartupBanner="true"
 				DebugInformationFormat="3"
 				DisableSpecificWarnings="4996"
 			/>
@@ -365,7 +362,6 @@
 				PrecompiledHeaderThrough="commonheaders.h"
 				AssemblerListingLocation=""
 				WarningLevel="3"
-				SuppressStartupBanner="true"
 				DebugInformationFormat="3"
 				DisableSpecificWarnings="4996"
 			/>
@@ -471,7 +467,6 @@
 				PrecompiledHeaderThrough="commonheaders.h"
 				AssemblerListingLocation=""
 				WarningLevel="3"
-				SuppressStartupBanner="true"
 				DebugInformationFormat="3"
 				DisableSpecificWarnings="4996"
 			/>
@@ -574,7 +569,6 @@
 				PrecompiledHeaderThrough="commonheaders.h"
 				AssemblerListingLocation=""
 				WarningLevel="3"
-				SuppressStartupBanner="true"
 				DebugInformationFormat="3"
 				DisableSpecificWarnings="4996"
 			/>
@@ -671,7 +665,6 @@
 				PrecompiledHeaderThrough="commonheaders.h"
 				AssemblerListingLocation=""
 				WarningLevel="3"
-				SuppressStartupBanner="true"
 				DebugInformationFormat="4"
 				DisableSpecificWarnings="4996"
 			/>
@@ -769,7 +762,6 @@
 				PrecompiledHeaderThrough="commonheaders.h"
 				AssemblerListingLocation=""
 				WarningLevel="3"
-				SuppressStartupBanner="true"
 				DebugInformationFormat="3"
 				DisableSpecificWarnings="4996"
 			/>

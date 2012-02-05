@@ -1,7 +1,7 @@
 /*
 Scriver
 
-Copyright 2000-2009 Miranda ICQ/IM project,
+Copyright 2000-2012 Miranda ICQ/IM project,
 
 all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
@@ -466,12 +466,14 @@ static void RegisterStatusIcons() {
 	sid.szTooltip = NULL;
 	AddStickyStatusIcon((WPARAM) 0, (LPARAM) &sid);
 
+#if !defined( _UNICODE )
 	sid.dwId = 0;
-	sid.hIcon = CopyIcon(GetCachedIcon("scriver_UNICODEON"));
+	sid.hIcon = CopyIcon(GetCachedIcon("scriver_UNICODEOFF"));
 	sid.hIconDisabled = CopyIcon(GetCachedIcon("scriver_UNICODEOFF"));
 	sid.flags = 0;
 	sid.szTooltip = NULL;
 	AddStickyStatusIcon((WPARAM) 0, (LPARAM) &sid);
+#endif
 }
 
 void ChangeStatusIcons() {
@@ -503,7 +505,7 @@ int StatusIconPressed(WPARAM wParam, LPARAM lParam) {
 	}
 	if (hwnd != NULL) {
 		if (!strcmp(SRMMMOD, sicd->szModule)) {
-			if (sicd->dwId == 0) {
+			if (sicd->dwId == 0 && g_dat->hMenuANSIEncoding) {
 				if (sicd->flags & MBCF_RIGHTBUTTON) {
 					int codePage = (int) SendMessage(hwnd, DM_GETCODEPAGE, 0, 0);
 					if (codePage != 1200) {
@@ -522,8 +524,6 @@ int StatusIconPressed(WPARAM wParam, LPARAM lParam) {
 							SendMessage(hwnd, DM_SETCODEPAGE, 0, iSel);
 						}
 					}
-				} else {
-					SendMessage(hwnd, DM_SWITCHUNICODE, 0, 0);
 				}
 			} else {
 				SendMessage(hwnd, DM_SWITCHTYPING, 0, 0);
@@ -632,7 +632,7 @@ int OnLoadModule(void) {
 
 	CreateServiceFunction_Ex(MS_MSG_SENDMESSAGE, SendMessageCommand);
  #if defined(_UNICODE)
-	CreateServiceFunction_Ex(MS_MSG_SENDMESSAGE "W", SendMessageCommandW);
+	CreateServiceFunction_Ex(MS_MSG_SENDMESSAGEW, SendMessageCommandW);
  #endif
 	CreateServiceFunction_Ex(MS_MSG_GETWINDOWAPI, GetWindowAPI);
 	CreateServiceFunction_Ex(MS_MSG_GETWINDOWCLASS, GetWindowClass);

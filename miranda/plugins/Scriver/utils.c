@@ -1,7 +1,7 @@
 /*
 Scriver
 
-Copyright 2000-2009 Miranda ICQ/IM project,
+Copyright 2000-2012 Miranda ICQ/IM project,
 
 all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
@@ -21,10 +21,7 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 #include "commonheaders.h"
-#include <ctype.h>
-#include <mbstring.h>
-#include <winsock.h>
-#include <m_netlib.h>
+
 #ifndef TTI_NONE
 #define TTI_NONE 0
 #endif
@@ -431,13 +428,41 @@ int DrawMenuItem(WPARAM wParam, LPARAM lParam)
 	return TRUE;
 }
 
+// Code taken from http://www.geekhideout.com/urlcode.shtml
+
+/* Converts an integer value to its hex character*/
+char to_hex(char code) {
+	static char hex[] = "0123456789abcdef";
+	return hex[code & 15];
+}
+
+/* Returns a url-encoded version of str */
+/* IMPORTANT: be sure to free() the returned string after use */
+char *url_encode(char *str) {
+	char *pstr = str, *buf = (char *)mir_alloc(strlen(str) * 3 + 1), *pbuf = buf;
+	while (*pstr) {
+		if ( (48 <= *pstr && *pstr <= 57) ||//0-9
+             (65 <= *pstr && *pstr <= 90) ||//ABC...XYZ
+             (97 <= *pstr && *pstr <= 122) ||//abc...xyz
+			*pstr == '-' || *pstr == '_' || *pstr == '.') 
+				*pbuf++ = *pstr;
+		else if (*pstr == ' ') 
+			*pbuf++ = '+';
+		else 
+			*pbuf++ = '%', *pbuf++ = to_hex(*pstr >> 4), *pbuf++ = to_hex(*pstr & 15);
+		pstr++;
+	}
+	*pbuf = '\0';
+	return buf;
+}
+
 void SearchWord(TCHAR * word, int engine)
 {
 	char szURL[4096];
 	if (word && word[0]) {
 		char *wordUTF = mir_utf8encodeT(word);
-		char *wordURL = (char *)CallService(MS_NETLIB_URLENCODE, 0, (LPARAM)wordUTF);
-		mir_free(wordUTF);
+		//char *wordURL = (char *)CallService(MS_NETLIB_URLENCODE, 0, (LPARAM)wordUTF);
+		char *wordURL = url_encode(wordUTF);
 		switch (engine) {
 			case SEARCHENGINE_WIKIPEDIA:
 				mir_snprintf( szURL, sizeof( szURL ), "http://en.wikipedia.org/wiki/%s", wordURL );
@@ -448,12 +473,17 @@ void SearchWord(TCHAR * word, int engine)
 			case SEARCHENGINE_FOODNETWORK:
 				mir_snprintf( szURL, sizeof( szURL ), "http://search.foodnetwork.com/search/delegate.do?fnSearchString=%s", wordURL );
 				break;
+			case SEARCHENGINE_BING:
+				mir_snprintf( szURL, sizeof( szURL ), "http://www.bing.com/search?q=%s&form=OSDSRC", wordURL );
+				break;
 			case SEARCHENGINE_GOOGLE:
 			default:
 				mir_snprintf( szURL, sizeof( szURL ), "http://www.google.com/search?q=%s&ie=utf-8&oe=utf-8", wordURL );
 				break;
 		}
-		HeapFree(GetProcessHeap(), 0, wordURL);
+//		HeapFree(GetProcessHeap(), 0, wordURL);
+		mir_free(wordUTF);
+		mir_free(wordURL);
 		CallService(MS_UTILS_OPENURL, 1, (LPARAM) szURL);
 	}
 }

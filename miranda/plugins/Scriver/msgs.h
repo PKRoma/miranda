@@ -1,7 +1,7 @@
 /*
 Scriver
 
-Copyright 2000-2009 Miranda ICQ/IM project,
+Copyright 2000-2012 Miranda ICQ/IM project,
 
 all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
@@ -187,7 +187,6 @@ struct MessageWindowData
 #define DM_SWITCHTITLEBAR	 (WM_USER+49)
 #define DM_SWITCHINFOBAR	 (WM_USER+50)
 #define DM_SWITCHRTL		 (WM_USER+51)
-#define DM_SWITCHUNICODE	 (WM_USER+52)
 #define DM_SWITCHTYPING		 (WM_USER+53)
 #define DM_MESSAGESENDING	 (WM_USER+54)
 #define DM_GETWINDOWSTATE	 (WM_USER+55)
@@ -240,7 +239,7 @@ int IsAutoPopup(HANDLE hContact);
 #define MSGFONTID_INFOBAR_NAME   12
 #define MSGFONTID_INFOBAR_STATUS 13
 
-void LoadMsgDlgFont(int i, LOGFONT * lf, COLORREF * colour);
+void LoadMsgDlgFont(int i, LOGFONT * lf, COLORREF * colour, BOOL chatMode);
 extern int fontOptionsListSize;
 
 #define LOADHISTORY_UNREAD    0
@@ -277,8 +276,6 @@ extern int fontOptionsListSize;
 #define SRMSGDEFSET_CASCADE        1
 #define SRMSGSET_SAVEPERCONTACT    "SavePerContact"
 #define SRMSGDEFSET_SAVEPERCONTACT 0
-#define SRMSGSET_AUTORESIZE        "EnableAutoresize"
-#define SRMSGDEFSET_AUTORESIZE     1
 #define SRMSGSET_SHOWTITLEBAR	   "ShowTitleBar"
 #define SRMSGDEFSET_SHOWTITLEBAR   1
 #define SRMSGSET_SHOWSTATUSBAR	   "ShowStatusBar"
@@ -416,4 +413,6 @@ extern int fontOptionsListSize;
 #define SRMSGSET_HIDECONTAINERS		"HideContainers"
 #define SRMSGDEFSET_HIDECONTAINERS  0
 
+#define SRMSGSET_AUTORESIZELINES "AutoResizeLines"
+#define SRMSGDEFSET_AUTORESIZELINES 2
 #endif

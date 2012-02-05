@@ -50,8 +50,6 @@ BEGIN
     CONTROL         "Hide windows on close",
 					IDC_HIDECONTAINERS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
 					8,91,292,10
-    CONTROL         "Auto resize input area",IDC_AUTORESIZE,"Button",
-					BS_AUTOCHECKBOX | WS_TABSTOP,8,102,283,10
     CONTROL         "Send message on 'Enter'",IDC_SENDONENTER,"Button",
 					BS_AUTOCHECKBOX | WS_TABSTOP,8,113,292,10
     CONTROL         "Send message on double 'Enter'",IDC_SENDONDBLENTER,
@@ -295,8 +293,6 @@ BEGIN
 					0x18000000L
     CONTROL         "&Q",IDC_QUOTE,"MButtonClass",0x0,130,71,16,14,
 					0x18000000L
-    CONTROL         "Close",IDCANCEL,"MButtonClass",0x0,146,71,16,14,
-					0x18000000L
     CONTROL         "",IDOK,"MButtonClass",0x0,162,71,20,14,0x18000000L
     CONTROL         "",IDC_SPLITTER,"Static",SS_ENHMETAFILE | WS_CLIPSIBLINGS,0,85,183,2
     CONTROL         "",IDC_AVATAR,"Static", SS_OWNERDRAW,180,80,0,0
@@ -330,7 +326,6 @@ BEGIN
     CONTROL         "",IDC_CHAT_BKGCOLOR,"MButtonClass",WS_DISABLED | WS_TABSTOP,96,108,15,13,0x18000000L
   //  COMBOBOX        IDC_CHAT_FONTSIZE,112,108,27,80,CBS_DROPDOWNLIST | WS_DISABLED | WS_VSCROLL | WS_TABSTOP
     CONTROL         "",IDC_CHAT_HISTORY,"MButtonClass",WS_TABSTOP,188,108,15,13,0x18000000L
-    CONTROL         "Close",IDCANCEL,"MButtonClass",0x0,146,71,16,14,0x18000000L
     CONTROL         "",IDOK,"MButtonClass",0x0,162,71,20,14,0x18000000L
     CONTROL         "",IDC_CHAT_FILTER,"MButtonClass",WS_TABSTOP,220,108,15,13,0x18000000L
     CONTROL         "",IDC_CHAT_CHANMGR,"MButtonClass",WS_DISABLED | WS_TABSTOP,204,108,15,13,0x18000000L
@@ -536,7 +531,6 @@ IDI_ADDCONTACT          ICON    DISCARDABLE     "res/addcontact.ico"
 IDI_USERDETAILS         ICON    DISCARDABLE     "res/details.ico"
 IDI_HISTORY             ICON    DISCARDABLE     "res/history.ico"
 IDI_SEND                ICON    DISCARDABLE     "res/send.ico"
-IDI_CANCEL              ICON    DISCARDABLE     "res/delete.ico"
 IDI_SMILEY              ICON    DISCARDABLE     "res/smiley.ico"
 IDI_TYPING              ICON    DISCARDABLE     "res/typing.ico"
 IDI_TYPINGOFF           ICON    DISCARDABLE     "res/typingoff.ico"
@@ -580,6 +574,7 @@ IDI_NICKLIST2           ICON                    "res/chat/nicklist2.ico"
 IDI_FILTER2             ICON                    "res/chat/filter2.ico"
 
 IDI_GOOGLE				ICON                    "res/google.ico"
+IDI_BING				ICON                    "res/bing.ico"
 IDI_YAHOO           	ICON                    "res/yahoo.ico"
 IDI_WIKIPEDIA 			ICON                    "res/wikipedia.ico"
 IDI_FOODNETWORK			ICON                    "res/foodnetwork.ico"
@@ -610,6 +605,7 @@ BEGIN
         POPUP "Word lookup", GRAYED
         BEGIN
             MENUITEM "Google",                      IDM_SEARCH_GOOGLE
+            MENUITEM "Bing",                        IDM_SEARCH_BING
             MENUITEM "Yahoo",                       IDM_SEARCH_YAHOO
             MENUITEM "Wikipedia (en)",              IDM_SEARCH_WIKIPEDIA
             MENUITEM "Foodnetwork",                 IDM_SEARCH_FOODNETWORK
@@ -660,9 +656,10 @@ BEGIN
         POPUP "Word lookup", GRAYED
         BEGIN
             MENUITEM "Google",                      IDM_SEARCH_GOOGLE
+            MENUITEM "Bing",                      IDM_SEARCH_BING
             MENUITEM "Yahoo",                       IDM_SEARCH_YAHOO
             MENUITEM "Wikipedia (en)",                  IDM_SEARCH_WIKIPEDIA
-	    MENUITEM "Foodnetwork",		IDM_SEARCH_FOODNETWORK
+            MENUITEM "Foodnetwork",		IDM_SEARCH_FOODNETWORK
         END
     END
 END
@@ -674,8 +671,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 2,9,0,6
- PRODUCTVERSION 2,9,0,6
+ FILEVERSION 2,9,0,7
+ PRODUCTVERSION 2,9,0,7
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -693,14 +690,14 @@ BEGIN
             VALUE "Comments", "http://www.miranda-im.org\0"
             VALUE "CompanyName", "Miranda IM Development Team\0"
             VALUE "FileDescription", "Scriver - send and receive instant messages\0"
-            VALUE "FileVersion", "2.9.0.6\0"
+            VALUE "FileVersion", "2.9.0.7\0"
             VALUE "InternalName", "scriver\0"
-            VALUE "LegalCopyright", "Copyright (c) 2000-2010 Miranda IM Project\0"
+            VALUE "LegalCopyright", "Copyright (c) 2000-2012 Miranda IM Project\0"
             VALUE "LegalTrademarks", "\0"
             VALUE "OriginalFilename", "scriver.dll\0"
             VALUE "PrivateBuild", "\0"
             VALUE "ProductName", "Scriver\0"
-            VALUE "ProductVersion", "2.9.0.6\0"
+            VALUE "ProductVersion", "2.9.0.7\0"
             VALUE "SpecialBuild", "\0"
         END
     END

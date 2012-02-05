@@ -1,7 +1,7 @@
 /*
 Scriver
 
-Copyright 2000-2009 Miranda ICQ/IM project,
+Copyright 2000-2012 Miranda ICQ/IM project,
 
 all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
@@ -30,7 +30,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define SMF_STAYMINIMIZED			0x00000002
 #define SMF_CLOSEONSEND				0x00000004
 #define SMF_MINIMIZEONSEND			0x00000008
-#define SMF_AUTORESIZE				0x00000010
 #define SMF_SAVEDRAFTS				0x00000040
 #define SMF_DELTEMP					0x00000080
 #define SMF_SENDONENTER				0x00000100
@@ -39,7 +38,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define SMF_AVATAR          		0x00000800
 #define SMF_STATUSICON				0x00002000
 #define SMF_RTL						0x00004000
-#define SMF_DISABLE_UNICODE			0x00008000
 #define SMF_USEIEVIEW				0x00010000
 #define SMF_SHOWICONS       		0x00020000
 #define SMF_HIDENAMES       		0x00040000
@@ -115,7 +113,6 @@ struct GlobalMessageData
 	HIMAGELIST hSearchEngineIconList;
 	HBRUSH	   hInfobarBrush;
 	int		   toolbarPosition;
-	int        splitterY;
 	HWND       hFocusWnd;
     DWORD      logLineColour;
 	int        logPixelSX;
@@ -123,6 +120,7 @@ struct GlobalMessageData
     HICON      hMsgIcon;
     HICON      hMsgIconBig;
     HICON      hIconChatBig;
+	int		   minInputAreaHeight;
 };
 
 int IconsChanged(WPARAM wParam, LPARAM lParam);
