@@ -371,9 +371,6 @@
     <ClCompile Include="Source\LibPNG\pngset.c">
       <Filter>Source Files\LibPNG\Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Source\LibPNG\pngtest.c">
-      <Filter>Source Files\LibPNG\Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Source\LibPNG\pngtrans.c">
       <Filter>Source Files\LibPNG\Source Files</Filter>
     </ClCompile>
@@ -434,6 +431,12 @@
     <ClCompile Include="Source\FreeImage\ConversionFloat.cpp">
       <Filter>Source Files\Conversion</Filter>
     </ClCompile>
+    <ClCompile Include="Source\FreeImage\ConversionRGB16.cpp">
+      <Filter>Source Files\Conversion</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\FreeImage\ConversionUINT16.cpp">
+      <Filter>Source Files\Conversion</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="FreeImage.rc">
@@ -447,16 +450,10 @@
     <ClInclude Include="Source\LibJPEG\cdjpeg.h">
       <Filter>Source Files\LibJPEG\Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Source\LibJPEG\jchuff.h">
-      <Filter>Source Files\LibJPEG\Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Source\LibJPEG\jconfig.h">
       <Filter>Source Files\LibJPEG\Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Source\LibJPEG\jdct.h">
-      <Filter>Source Files\LibJPEG\Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\LibJPEG\jdhuff.h">
       <Filter>Source Files\LibJPEG\Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Source\LibJPEG\jerror.h">
@@ -492,9 +489,6 @@
     <ClInclude Include="Source\CacheFile.h">
       <Filter>Source Files\LibJPEG\Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Source\DeprecationManager\DeprecationMgr.h">
-      <Filter>Source Files\LibJPEG\Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Source\Metadata\FIRational.h">
       <Filter>Source Files\LibJPEG\Header Files</Filter>
     </ClInclude>
@@ -505,12 +499,6 @@
       <Filter>Source Files\LibJPEG\Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Source\Metadata\FreeImageTag.h">
-      <Filter>Source Files\LibJPEG\Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Miranda\include\m_freeimage.h">
-      <Filter>Source Files\LibJPEG\Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Miranda\include\m_imgsrvc.h">
       <Filter>Source Files\LibJPEG\Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Source\Plugin.h">
@@ -534,9 +522,17 @@
     <ClInclude Include="Source\LibPNG\pngpriv.h">
       <Filter>Source Files\LibPNG\Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Source\LibPNG\pnglibconf.h">
+      <Filter>Source Files\LibPNG\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\LibPNG\pnginfo.h">
+      <Filter>Source Files\LibPNG\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\LibPNG\pngdebug.h">
+      <Filter>Source Files\LibPNG\Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="Todo.txt" />
-    <None Include="Whatsnew.txt" />
   </ItemGroup>
 </Project>

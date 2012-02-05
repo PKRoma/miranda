@@ -162,11 +162,19 @@ SOURCE=.\Source\FreeImage\ConversionFloat.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\Source\FreeImage\ConversionRGB16.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\Source\FreeImage\ConversionRGBF.cpp
 # End Source File
 # Begin Source File
 
 SOURCE=.\Source\FreeImage\ConversionType.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Source\FreeImage\ConversionUINT16.cpp
 # End Source File
 # Begin Source File
 

@@ -282,8 +282,9 @@ int psdDisplayInfo::Read(FreeImageIO *io, fi_handle handle) {
 	n = (int)io->read_proc(&ShortValue, sizeof(ShortValue), 1, handle);
 	nBytes += n * sizeof(ShortValue);
 	_Opacity = (short)psdGetValue(ShortValue, sizeof(_Opacity) );
-	assert( 0 <= _Opacity );
-	assert( 100 >= _Opacity );
+	if((_Opacity < 0) || (_Opacity > 100)) {
+		throw "Invalid DisplayInfo::Opacity value";
+	}
 	
 	BYTE c[1];
 	n = (int)io->read_proc(&c, sizeof(c), 1, handle);
@@ -293,7 +294,9 @@ int psdDisplayInfo::Read(FreeImageIO *io, fi_handle handle) {
 	n = (int)io->read_proc(&c, sizeof(c), 1, handle);
 	nBytes += n * sizeof(c);
 	_padding = (BYTE)psdGetValue(c, sizeof(c));
-	assert( 0 == _padding );
+	if(_padding != 0) {
+		throw "Invalid DisplayInfo::Padding value";
+	}
 	
 	return nBytes;
 }
@@ -301,16 +304,21 @@ int psdDisplayInfo::Read(FreeImageIO *io, fi_handle handle) {
 // --------------------------------------------------------------------------
 
 psdThumbnail::psdThumbnail() : 
-_Format(-1), _Width(-1), _Height(-1), _WidthBytes(-1), _Size(-1), _CompressedSize(-1), _BitPerPixel(-1), _Planes(-1), _plData(NULL) {
+_Format(-1), _Width(-1), _Height(-1), _WidthBytes(-1), _Size(-1), _CompressedSize(-1), _BitPerPixel(-1), _Planes(-1), _dib(NULL) {
 }
 
 psdThumbnail::~psdThumbnail() { 
-	SAFE_DELETE_ARRAY(_plData); 
+	FreeImage_Unload(_dib);
 }
 
-int psdThumbnail::Read(FreeImageIO *io, fi_handle handle, int iTotalData, bool isBGR) {
-	BYTE c[1], ShortValue[2], IntValue[4];
+int psdThumbnail::Read(FreeImageIO *io, fi_handle handle, int iResourceSize, bool isBGR) {
+	BYTE ShortValue[2], IntValue[4];
 	int nBytes=0, n;
+
+	// remove the header size (28 bytes) from the total data size
+	int iTotalData = iResourceSize - 28;
+
+	const long block_end = io->tell_proc(handle) + iTotalData;	
 	
 	n = (int)io->read_proc(&IntValue, sizeof(IntValue), 1, handle);
 	nBytes += n * sizeof(IntValue);
@@ -344,31 +352,31 @@ int psdThumbnail::Read(FreeImageIO *io, fi_handle handle, int iTotalData, bool i
 	nBytes += n * sizeof(ShortValue);
 	_Planes = (short)psdGetValue(ShortValue, sizeof(_Planes) );
 
-	_plData = new BYTE[iTotalData];
-	  
-	if (isBGR) {
-		// In BGR format
-		for (int i=0; i<iTotalData; i+=3 ) {
-			n = (int)io->read_proc(&c, sizeof(BYTE), 1, handle);
-			nBytes += n * sizeof(BYTE);
-			_plData[i+2] = (BYTE)psdGetValue(c, sizeof(BYTE) );
+	const long JFIF_startpos = io->tell_proc(handle);
 
-			n = (int)io->read_proc(&c, sizeof(BYTE), 1, handle);
-			nBytes += n * sizeof(BYTE);
-			_plData[i+1] = (BYTE)psdGetValue(c, sizeof(BYTE) );
-
-			n = (int)io->read_proc(&c, sizeof(BYTE), 1, handle);
-			nBytes += n * sizeof(BYTE);
-			_plData[i+0] = (BYTE)psdGetValue(c, sizeof(BYTE) );
-		}
-	} else {
-		// In RGB format										
-		for (int i=0; i<iTotalData; ++i) {
-			n = (int)io->read_proc(&c, sizeof(BYTE), 1, handle);
-			nBytes += n * sizeof(BYTE);
-			_plData[i] = (BYTE)psdGetValue(c, sizeof(BYTE) );
-		}
+	if(_dib) {
+		FreeImage_Unload(_dib);
 	}
+
+	if(_Format == 1) {
+		// kJpegRGB thumbnail image
+		_dib = FreeImage_LoadFromHandle(FIF_JPEG, io, handle);
+		if(isBGR) {
+			SwapRedBlue32(_dib);
+		}			
+		// HACK: manually go to end of thumbnail, because (for some reason) LoadFromHandle consumes more bytes then available! 
+		io->seek_proc(handle, block_end, SEEK_SET);
+	}
+	else {
+		// kRawRGB thumbnail image		
+		// ### Unimplemented (should be trivial)
+
+		// skip the thumbnail part
+		io->seek_proc(handle, iTotalData, SEEK_CUR);
+		return iResourceSize;
+	}
+	
+	nBytes += (block_end - JFIF_startpos); 
 
 	return nBytes;
 }
@@ -470,7 +478,6 @@ bool psdParser::ReadLayerAndMaskInfoSection(FreeImageIO *io, fi_handle handle)	{
 		nBytes += n * sizeof(data);
 	}
 	
-	assert( nBytes == nTotalBytes );
 	if ( nBytes == nTotalBytes ) {
 		bSuccess = true;
 	}
@@ -478,25 +485,32 @@ bool psdParser::ReadLayerAndMaskInfoSection(FreeImageIO *io, fi_handle handle)	{
 	return bSuccess;
 }
 
-bool psdParser::ReadImageResource(FreeImageIO *io, fi_handle handle) {
+bool psdParser::ReadImageResources(FreeImageIO *io, fi_handle handle, LONG length) {
 	psdImageResource oResource;
 	bool bSuccess = false;
 	
-	BYTE Length[4];
-	int n = (int)io->read_proc(&Length, sizeof(Length), 1, handle);
-	
-	oResource._Length = psdGetValue( Length, sizeof(oResource._Length) );
+	if(length > 0) {
+		oResource._Length = length;
+	} else {
+		BYTE Length[4];
+		int n = (int)io->read_proc(&Length, sizeof(Length), 1, handle);
+		
+		oResource._Length = psdGetValue( Length, sizeof(oResource._Length) );
+	}
 	
 	int nBytes = 0;
 	int nTotalBytes = oResource._Length;
 	
 	while(nBytes < nTotalBytes) {
-		n = 0;
+		int n = 0;
 		oResource.Reset();
 		
 		n = (int)io->read_proc(&oResource._OSType, sizeof(oResource._OSType), 1, handle);
 		nBytes += n * sizeof(oResource._OSType);
-		assert( 0 == (nBytes % 2) );
+
+		if( (nBytes % 2) != 0 ) {
+			return false;
+		}
 		
 		int nOSType = psdGetValue((BYTE*)&oResource._OSType, sizeof(oResource._OSType));
 
@@ -571,8 +585,7 @@ bool psdParser::ReadImageResource(FreeImageIO *io, fi_handle handle) {
 					{
 						_bThumbnailFilled = true;
 						bool bBGR = (1033==oResource._ID);
-						int nTotalData = oResource._Size - 28; // header
-						nBytes += _thumbnail.Read(io, handle, nTotalData, bBGR);
+						nBytes += _thumbnail.Read(io, handle, oResource._Size, bBGR);
 						break;
 					}
 					
@@ -609,11 +622,9 @@ bool psdParser::ReadImageResource(FreeImageIO *io, fi_handle handle) {
 					default:
 					{
 						// skip resource
-						BYTE c[1];
-						for(int i=0; i<oResource._Size; ++i) {
-							n = (int)io->read_proc(&c, sizeof(c), 1, handle);
-							nBytes += n * sizeof(c);
-						}
+						unsigned skip_length = MIN(oResource._Size, nTotalBytes - nBytes);
+						io->seek_proc(handle, skip_length, SEEK_CUR);
+						nBytes += skip_length;
 					}
 					break;
 				}
@@ -621,7 +632,6 @@ bool psdParser::ReadImageResource(FreeImageIO *io, fi_handle handle) {
 		}
   }
   
-  assert(nBytes == nTotalBytes);
   if (nBytes == nTotalBytes) {
 	  bSuccess = true;
   }
@@ -636,7 +646,6 @@ FIBITMAP* psdParser::ReadImageData(FreeImageIO *io, fi_handle handle) {
 	
 	bool header_only = (_fi_flags & FIF_LOAD_NOPIXELS) == FIF_LOAD_NOPIXELS;
 	
-	assert(sizeof(WORD) == 2);
 	WORD nCompression = 0;
 	io->read_proc(&nCompression, sizeof(nCompression), 1, handle);
 	
@@ -701,7 +710,10 @@ FIBITMAP* psdParser::ReadImageData(FreeImageIO *io, fi_handle handle) {
 		case PSDP_MULTICHANNEL	:
 			// force PSDP_MULTICHANNEL CMY as CMYK
 			dstCh = (mode == PSDP_MULTICHANNEL && !header_only) ? 4 : MIN<unsigned>(nChannels, 4);
-			assert(dstCh >= 3);
+			if(dstCh < 3) {
+				throw "Invalid number of channels";
+			}
+
 			switch(depth) {
 				case 16:
 				bitmap = FreeImage_AllocateHeaderT(header_only, dstCh < 4 ? FIT_RGB16 : FIT_RGBA16, nWidth, nHeight, depth*dstCh);
@@ -715,12 +727,15 @@ FIBITMAP* psdParser::ReadImageData(FreeImageIO *io, fi_handle handle) {
 			}
 			break;
 		default:
-			assert(false);
+			throw "Unsupported color mode";
 			break;
 	}
 	if(!bitmap) {
 		throw FI_MSG_ERROR_DIB_MEMORY;
 	}
+
+	// write thumbnail
+	FreeImage_SetThumbnail(bitmap, _thumbnail.getDib());
 		
 	// @todo Add some metadata model
 		
@@ -950,8 +965,7 @@ FIBITMAP* psdParser::ReadImageData(FreeImageIO *io, fi_handle handle) {
 		ConvertLABtoRGB(bitmap);
 	}
 	else {
-		if (needPalette) {
-			assert(FreeImage_GetPalette(bitmap));
+		if (needPalette && FreeImage_GetPalette(bitmap)) {
 			
 			if(mode == PSDP_BITMAP) {
 				CREATE_GREYSCALE_PALETTE_REVERSE(FreeImage_GetPalette(bitmap), 2);
@@ -995,7 +1009,7 @@ FIBITMAP* psdParser::Load(FreeImageIO *io, fi_handle handle, int s_format_id, in
 			throw("Error in ColourMode Data");
 		}
 		
-		if (!ReadImageResource(io, handle)) {
+		if (!ReadImageResources(io, handle)) {
 			throw("Error in Image Resource");
 		}
 		

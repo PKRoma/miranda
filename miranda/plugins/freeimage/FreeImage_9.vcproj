@@ -928,11 +928,19 @@
 					>
 				</File>
 				<File
+					RelativePath=".\Source\FreeImage\ConversionRGB16.cpp"
+					>
+				</File>
+				<File
 					RelativePath="Source\FreeImage\ConversionRGBF.cpp"
 					>
 				</File>
 				<File
 					RelativePath="Source\FreeImage\ConversionType.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\Source\FreeImage\ConversionUINT16.cpp"
 					>
 				</File>
 				<File
@@ -1371,10 +1379,6 @@
 						>
 					</File>
 					<File
-						RelativePath=".\Source\LibPNG\pngtest.c"
-						>
-					</File>
-					<File
 						RelativePath=".\Source\LibPNG\pngtrans.c"
 						>
 					</File>
@@ -1407,7 +1411,23 @@
 						>
 					</File>
 					<File
+						RelativePath=".\Source\LibPNG\pngdebug.h"
+						>
+					</File>
+					<File
+						RelativePath=".\Source\LibPNG\pnginfo.h"
+						>
+					</File>
+					<File
+						RelativePath=".\Source\LibPNG\pnglibconf.h"
+						>
+					</File>
+					<File
 						RelativePath=".\Source\LibPNG\pngpriv.h"
+						>
+					</File>
+					<File
+						RelativePath=".\Source\LibPNG\pngstruct.h"
 						>
 					</File>
 				</Filter>
