@@ -369,14 +369,14 @@ static INT_PTR stub42( PROTO_INTERFACE* ppi, WPARAM wParam, LPARAM lParam )
 
 static INT_PTR stub43( PROTO_INTERFACE* ppi, WPARAM wParam, LPARAM lParam )
 {	
-	PROTO_AVATAR_INFORMATION tmp = { 0 };
+	PROTO_AVATAR_INFORMATIONW tmp = { 0 };
 	tmp.cbSize = sizeof( tmp );
-	int result = CallProtoService( ppi->m_szModuleName, PS_GETAVATARINFO, wParam, ( LPARAM )&tmp );
+	int result = CallProtoService( ppi->m_szModuleName, PS_GETAVATARINFOW, wParam, ( LPARAM )&tmp );
 
-	PROTO_AVATAR_INFORMATIONW* p = ( PROTO_AVATAR_INFORMATIONW* )lParam;
+	PROTO_AVATAR_INFORMATION* p = ( PROTO_AVATAR_INFORMATION* )lParam;
 	p->hContact = tmp.hContact;
 	p->format = tmp.format;
-	MultiByteToWideChar( CP_ACP, 0, tmp.filename, -1, p->filename, MAX_PATH );
+	WideCharToMultiByte( LangPackGetDefaultCodePage(), 0, tmp.filename, -1, p->filename, MAX_PATH, 0, 0 );
 	return result;
 }
 
