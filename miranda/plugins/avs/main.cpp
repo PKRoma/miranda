@@ -886,12 +886,12 @@ INT_PTR SetAvatar(WPARAM wParam, LPARAM lParam)
 
 	is_locked = DBGetContactSettingByte(hContact, "ContactPhoto", "Locked", 0);
 
-	if(lParam == 0) {
+	if ( lParam == 0 ) {
 		OPENFILENAME ofn = {0};
 		TCHAR filter[256];
 
 		filter[0] = '\0';
-		CallService(MS_UTILS_GETBITMAPFILTERSTRINGS, SIZEOF(filter), (LPARAM) filter);
+		CallService(MS_UTILS_GETBITMAPFILTERSTRINGST, SIZEOF(filter), ( LPARAM )filter);
 
 		if (IsWinVer2000Plus())
 			ofn.lStructSize = sizeof(ofn);

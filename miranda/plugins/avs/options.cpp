@@ -114,7 +114,7 @@ static void SetProtoPic(char *szProto)
 	TCHAR filter[256];
 
 	filter[0] = '\0';
-	CallService(MS_UTILS_GETBITMAPFILTERSTRINGS, SIZEOF(filter), (LPARAM) filter);
+	CallService(MS_UTILS_GETBITMAPFILTERSTRINGST, SIZEOF(filter), ( LPARAM )filter);
 
 	ofn.lStructSize = OPENFILENAME_SIZE_VERSION_400;
 	ofn.lpstrFilter = filter;
@@ -126,51 +126,42 @@ static void SetProtoPic(char *szProto)
 	ofn.lpstrInitialDir = _T(".");
 	*FileName = '\0';
 	ofn.lpstrDefExt = _T("");
-	if (GetOpenFileName(&ofn)) {
+	if ( GetOpenFileName( &ofn )) {
 		HANDLE hFile;
 
 		if((hFile = CreateFile(FileName, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL)) == INVALID_HANDLE_VALUE)
 			return;
 
-		TCHAR szNewPath[MAX_PATH];
-		int i;
-
 		CloseHandle(hFile);
+
+		TCHAR szNewPath[MAX_PATH];
 		AVS_pathToRelative(FileName, szNewPath);
 		DBWriteContactSettingTString(NULL, PPICT_MODULE, szProto, szNewPath);
 
-		if (!lstrcmpA(AVS_DEFAULT, szProto))
-		{
-			for (i = 0; i < g_ProtoPictures.getCount(); i++)
-			{
+		if (!lstrcmpA(AVS_DEFAULT, szProto)) {
+			for ( int i = 0; i < g_ProtoPictures.getCount(); i++ ) {
 				protoPicCacheEntry& p = g_ProtoPictures[i];
-				if (lstrlenA(p.szProtoname) != 0)
-				{
-					if(p.hbmPic == 0) 
-					{
+				if (lstrlenA(p.szProtoname) != 0) {
+					if(p.hbmPic == 0) {
 						CreateAvatarInCache(0, &p, (char *)szProto);
 						NotifyEventHooks(hEventChanged, 0, (LPARAM)&p);
 					}
 				}
 			}
 		}
-		else if (strstr(szProto, "Global avatar for"))
-		{
+		else if (strstr(szProto, "Global avatar for")) {
 			char szProtoname[MAX_PATH] = {0};
 			lstrcpynA(szProtoname, szProto, lstrlenA(szProto)- lstrlenA("accounts"));
 			lstrcpyA(szProtoname, strrchr(szProtoname, ' ') + 1);
-			for (i = 0; i < g_ProtoPictures.getCount(); i++)
-			{
+			for (int i = 0; i < g_ProtoPictures.getCount(); i++) {
 				PROTOACCOUNT* pdescr = (PROTOACCOUNT*)CallService(MS_PROTO_GETACCOUNT, 0, (LPARAM)g_ProtoPictures[i].szProtoname);
 				if (pdescr == NULL && lstrcmpA(g_ProtoPictures[i].szProtoname, szProto))
 					continue;
-				else if (!lstrcmpA(g_ProtoPictures[i].szProtoname, szProto) || !lstrcmpA(pdescr->szProtoName, szProtoname))
-				{
+
+				if (!lstrcmpA(g_ProtoPictures[i].szProtoname, szProto) || !lstrcmpA(pdescr->szProtoName, szProtoname)) {
 					protoPicCacheEntry& p = g_ProtoPictures[i];
-					if (lstrlenA(p.szProtoname) != 0)
-					{
-						if(p.hbmPic == 0) 
-						{
+					if (lstrlenA(p.szProtoname) != 0) {
+						if(p.hbmPic == 0) {
 							CreateAvatarInCache(0, &p, (char *)szProto);
 							NotifyEventHooks(hEventChanged, 0, (LPARAM)&p);
 						}
@@ -178,11 +169,12 @@ static void SetProtoPic(char *szProto)
 				}
 			}
 		}
-		else
-			for(i = 0; i < g_ProtoPictures.getCount(); i++) {
+		else {
+			for(int i = 0; i < g_ProtoPictures.getCount(); i++) {
 				protoPicCacheEntry& p = g_ProtoPictures[i];
 				if ( lstrlenA(p.szProtoname) == 0)
 					break;
+
 				if(!strcmp(p.szProtoname, szProto) && lstrlenA(p.szProtoname) == lstrlenA(szProto)) {
 					if(p.hbmPic != 0) 
 						DeleteObject(p.hbmPic);
@@ -190,6 +182,7 @@ static void SetProtoPic(char *szProto)
 					CreateAvatarInCache(0, &p, (char *)szProto);
 					NotifyEventHooks(hEventChanged, 0, (LPARAM)&p );
 					break;
+				}
 			}
 		}
 	}
@@ -313,7 +306,6 @@ INT_PTR CALLBACK DlgProcOptionsProtos(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 		{
 			LVITEM item = {0};
 			LVCOLUMN lvc = {0};
-			int i = 0;
 			UINT64 newItem = 0;
 
 			dialoginit = TRUE;
@@ -325,7 +317,7 @@ INT_PTR CALLBACK DlgProcOptionsProtos(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 
 			item.mask = LVIF_TEXT | LVIF_PARAM;
 			item.iItem = 1000;
-			for(i = 0; i < g_ProtoPictures.getCount(); i++ ) {
+			for(int i = 0; i < g_ProtoPictures.getCount(); i++ ) {
 				item.lParam = ( LPARAM )&g_ProtoPictures[i];
 				item.pszText = g_ProtoPictures[i].tszAccName;
 				newItem = ListView_InsertItem(hwndList, &item);
@@ -382,6 +374,7 @@ INT_PTR CALLBACK DlgProcOptionsProtos(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 	case WM_NOTIFY:
 		if(dialoginit)
 			break;
+
 		switch (((LPNMHDR) lParam)->idFrom) {
 		case IDC_PROTOCOLS:
 			switch (((LPNMHDR) lParam)->code) {
