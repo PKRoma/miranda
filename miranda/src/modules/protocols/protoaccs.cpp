@@ -367,6 +367,19 @@ static INT_PTR stub42( PROTO_INTERFACE* ppi, WPARAM wParam, LPARAM lParam )
 {	return ppi->m_iStatus;
 }
 
+static INT_PTR stub43( PROTO_INTERFACE* ppi, WPARAM wParam, LPARAM lParam )
+{	
+	PROTO_AVATAR_INFORMATION tmp = { 0 };
+	tmp.cbSize = sizeof( tmp );
+	int result = CallProtoService( ppi->m_szModuleName, PS_GETAVATARINFO, wParam, ( LPARAM )&tmp );
+
+	PROTO_AVATAR_INFORMATIONW* p = ( PROTO_AVATAR_INFORMATIONW* )lParam;
+	p->hContact = tmp.hContact;
+	p->format = tmp.format;
+	MultiByteToWideChar( CP_ACP, 0, tmp.filename, -1, p->filename, MAX_PATH );
+	return result;
+}
+
 static HANDLE CreateProtoServiceEx( const char* szModule, const char* szService, MIRANDASERVICEOBJ pFunc, void* param )
 {
 	char tmp[100];
@@ -409,6 +422,16 @@ BOOL ActivateAccount( PROTOACCOUNT* pa )
 	CreateProtoServiceEx( pa->szModuleName, PS_SETAWAYMSG, (MIRANDASERVICEOBJ)stub33, pa->ppro );
 	CreateProtoServiceEx( pa->szModuleName, PS_GETNAME, (MIRANDASERVICEOBJ)stub41, pa->ppro );
 	CreateProtoServiceEx( pa->szModuleName, PS_GETSTATUS, (MIRANDASERVICEOBJ)stub42, pa->ppro );
+
+	#if defined( _UNICODE )
+		char szServiceName[ 200 ];
+		mir_snprintf( szServiceName, SIZEOF(szServiceName), "%s%s", pa->szModuleName, PS_GETAVATARINFO );
+		if ( !ServiceExists( szServiceName )) {
+			mir_snprintf( szServiceName, SIZEOF(szServiceName), "%s%s", pa->szModuleName, PS_GETAVATARINFOW );
+			if ( ServiceExists( szServiceName ))
+				CreateProtoServiceEx( pa->szModuleName, PS_GETAVATARINFO, (MIRANDASERVICEOBJ)stub43, pa->ppro );
+		}
+	#endif
 	return TRUE;
 }
 
