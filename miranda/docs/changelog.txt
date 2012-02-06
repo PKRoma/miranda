@@ -6,6 +6,15 @@
 
 				
 
+* New in 0.9.43
+ - Improved image services
+ - Improved stability
+ - Gadu-Gadu: Fixed reception of images without file extension
+ - ICQ: Fixed issues sending messages
+ - ICQ: Fixed possible crash
+ - MSN: Fixed issues during file transfer cancellation
+
+
 * New in 0.9.42
 Bugfixes:
  - Fixed Shift-Enter new line behavior in messaging window
