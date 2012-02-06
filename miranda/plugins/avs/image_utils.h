@@ -18,6 +18,9 @@ INT_PTR BmpFilterLoadBitmap32(WPARAM wParam,LPARAM lParam);
 INT_PTR BmpFilterSaveBitmap(WPARAM wParam,LPARAM lParam);
 #if defined(_UNICODE)
 	INT_PTR BmpFilterSaveBitmapW(WPARAM wParam,LPARAM lParam);
+	#define BmpFilterSaveBitmapT BmpFilterSaveBitmapW
+#else
+	#define BmpFilterSaveBitmapT BmpFilterSaveBitmap
 #endif
 
 // Returns != 0 if can save that type of image, = 0 if cant
@@ -34,6 +37,9 @@ INT_PTR BmpFilterResizeBitmap(WPARAM wParam,LPARAM lParam);
 int BmpFilterSaveBitmap(HBITMAP hBmp, char *szFile, int flags);
 #if defined(_UNICODE)
 	int BmpFilterSaveBitmapW(HBITMAP hBmp, wchar_t *wszFile, int flags);
+	#define BmpFilterSaveBitmapT BmpFilterSaveBitmapW
+#else
+	#define BmpFilterSaveBitmapT BmpFilterSaveBitmap
 #endif
 
 HBITMAP CopyBitmapTo32(HBITMAP hBitmap);
@@ -42,5 +48,9 @@ BOOL PreMultiply(HBITMAP hBitmap);
 BOOL MakeTransparentBkg(HANDLE hContact, HBITMAP *hBitmap);
 HBITMAP MakeGrayscale(HANDLE hContact, HBITMAP hBitmap);
 DWORD GetImgHash(HBITMAP hBitmap);
+
+int AVS_pathIsAbsolute(const TCHAR *path);
+size_t AVS_pathToRelative(const TCHAR *sPrc, TCHAR *pOut);
+size_t AVS_pathToAbsolute(const TCHAR *pSrc, TCHAR *pOut);
 
 #endif // __IMAGE_UTILS_H__

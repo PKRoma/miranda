@@ -712,9 +712,7 @@ LBL_Ret:
 	Log( "%d bytes written", nWritten );
 	if ( hContact == NULL ) {
 		hasPhoto = TRUE;
-		char* p = mir_t2a( szAvatarFileName );
-		JCallService( MS_AV_SETMYAVATAR, ( WPARAM )this->m_szModuleName, ( LPARAM )p );
-		mir_free( p );
+		JCallService( MS_AV_SETMYAVATAR, ( WPARAM )this->m_szModuleName, ( LPARAM )szAvatarFileName );
 
 		Log( "My picture saved to " TCHAR_STR_PARAM, szAvatarFileName );
 	}
@@ -1545,7 +1543,7 @@ LBL_ErrFormat:
 
 	TCHAR tszFileName[ MAX_PATH ];
 
-	PROTO_AVATAR_INFORMATION AI;
+	PROTO_AVATAR_INFORMATIONT AI;
 	AI.cbSize = sizeof AI;
 	AI.format = pictureType;
 	AI.hContact = hContact;
@@ -1567,11 +1565,7 @@ LBL_ErrFormat:
 		sprintf( buffer+( i<<1 ), "%02x", digest[i] );
 
 	GetAvatarFileName( hContact, tszFileName, SIZEOF(tszFileName));
-	#if defined( _UNICODE )
-		WideCharToMultiByte( CP_ACP, 0, tszFileName, -1, AI.filename, sizeof AI.filename, 0, 0 );
-	#else
-		strncpy( AI.filename, tszFileName, sizeof AI.filename );
-	#endif
+	_tcsncpy( AI.filename, tszFileName, SIZEOF(AI.filename) );
 
 	FILE* out = _tfopen( tszFileName, _T("wb"));
 	if ( out != NULL ) {

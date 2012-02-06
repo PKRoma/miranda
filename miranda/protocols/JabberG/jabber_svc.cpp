@@ -84,7 +84,7 @@ INT_PTR __cdecl CJabberProto::GetMyAwayMsg(WPARAM wParam, LPARAM lParam)
 
 INT_PTR __cdecl CJabberProto::JabberGetAvatar( WPARAM wParam, LPARAM lParam )
 {
-	char* buf = ( char* )wParam;
+	TCHAR* buf = ( TCHAR* )wParam;
 	int  size = ( int )lParam;
 
 	if ( buf == NULL || size <= 0 )
@@ -93,13 +93,7 @@ INT_PTR __cdecl CJabberProto::JabberGetAvatar( WPARAM wParam, LPARAM lParam )
 	if ( !m_options.EnableAvatars )
 		return -2;
 
-	#if defined( _UNICODE )
-		TCHAR tszBuf[MAX_PATH];
-		GetAvatarFileName( NULL, tszBuf, SIZEOF(tszBuf));
-		WideCharToMultiByte( CP_ACP, 0, tszBuf, -1, buf, size, 0, 0 );
-	#else
-		GetAvatarFileName( NULL, buf, size );
-	#endif
+	GetAvatarFileName( NULL, buf, size );
 		
 	return 0;
 }
@@ -138,7 +132,7 @@ INT_PTR __cdecl CJabberProto::JabberGetAvatarInfo( WPARAM wParam, LPARAM lParam 
 	if ( !m_options.EnableAvatars )
 		return GAIR_NOAVATAR;
 
-	PROTO_AVATAR_INFORMATION* AI = ( PROTO_AVATAR_INFORMATION* )lParam;
+	PROTO_AVATAR_INFORMATIONT* AI = ( PROTO_AVATAR_INFORMATIONT* )lParam;
 
 	char szHashValue[ MAX_PATH ];
 	if ( JGetStaticString( "AvatarHash", AI->hContact, szHashValue, sizeof szHashValue )) {
@@ -148,15 +142,11 @@ INT_PTR __cdecl CJabberProto::JabberGetAvatarInfo( WPARAM wParam, LPARAM lParam 
 
 	TCHAR tszFileName[ MAX_PATH ];
 	GetAvatarFileName( AI->hContact, tszFileName, SIZEOF(tszFileName));
-	#if defined( _UNICODE )
-		WideCharToMultiByte( CP_ACP, 0, tszFileName, -1, AI->filename, sizeof AI->filename, 0, 0 );
-	#else
-		strncpy( AI->filename, tszFileName, sizeof AI->filename );
-	#endif
+	_tcsncpy( AI->filename, tszFileName, SIZEOF(AI->filename));
 
 	AI->format = ( AI->hContact == NULL ) ? PA_FORMAT_PNG : JGetByte( AI->hContact, "AvatarType", 0 );
 
-	if ( ::_access( AI->filename, 0 ) == 0 ) {
+	if ( ::_taccess( AI->filename, 0 ) == 0 ) {
 		char szSavedHash[ 256 ];
 		if ( !JGetStaticString( "AvatarSaved", AI->hContact, szSavedHash, sizeof szSavedHash )) {
 			if ( !strcmp( szSavedHash, szHashValue )) {

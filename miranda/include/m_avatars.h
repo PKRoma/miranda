@@ -77,7 +77,7 @@ struct avatarCacheEntry {
                                     // use it whenever they access the avatar. may be used in the future
                                     // to implement cache expiration
     LPVOID lpDIBSection;			// unused field
-    char szFilename[MAX_PATH];      // filename of the avatar (absolute path)
+    TCHAR szFilename[MAX_PATH];      // filename of the avatar (absolute path)
 };
 
 typedef struct avatarCacheEntry AVATARCACHEENTRY;
@@ -220,8 +220,8 @@ typedef struct _contactAvatarChangedNotification {
 	int cbSize;					// sizeof()
 	HANDLE hContact;			// this might have to be set by the caller too
 	int format;					// PA_FORMAT_*
-	char filename[MAX_PATH];	// full path to filename which contains the avatar
-	char hash[128];				// avatar hash
+	TCHAR filename[MAX_PATH];	// full path to filename which contains the avatar
+	TCHAR hash[128];				// avatar hash
 } CONTACTAVATARCHANGEDNOTIFICATION;
 
 // fired when the contacts avatar is changed by the contact
@@ -302,6 +302,16 @@ return=0 for sucess
 */
 #define PS_GETMYAVATAR "/GetMyAvatar"
 
+#if defined( _UNICODE )
+	#define PS_SETMYAVATARW "/SetMyAvatarW"
+	#define PS_GETMYAVATARW "/GetMyAvatarW"
+
+	#define PS_GETMYAVATART PS_GETMYAVATARW
+	#define PS_SETMYAVATART PS_SETMYAVATARW
+#else
+	#define PS_GETMYAVATART PS_GETMYAVATAR
+	#define PS_SETMYAVATART PS_SETMYAVATAR
+#endif
 
 #define PIP_NONE				0
 #define PIP_SQUARE				1

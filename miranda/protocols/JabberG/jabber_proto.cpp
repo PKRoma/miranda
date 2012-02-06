@@ -117,7 +117,7 @@ CJabberProto::CJabberProto( const char* aProtoName, const TCHAR* aUserName ) :
 
 	JCreateService( PS_CREATEACCMGRUI, &CJabberProto::SvcCreateAccMgrUI );
 
-	JCreateService( PS_GETAVATARINFO, &CJabberProto::JabberGetAvatarInfo );
+	JCreateService( PS_GETAVATARINFOT, &CJabberProto::JabberGetAvatarInfo );
 	JCreateService( PS_GETMYAWAYMSG, &CJabberProto::GetMyAwayMsg );
 	JCreateService( PS_SET_LISTENINGTO, &CJabberProto::OnSetListeningTo );
 
@@ -136,9 +136,9 @@ CJabberProto::CJabberProto( const char* aProtoName, const TCHAR* aUserName ) :
 	JCreateService( JS_INCOMING_NOTE_EVENT, &CJabberProto::OnIncomingNoteEvent );
 
 	JCreateService( JS_SENDXML, &CJabberProto::ServiceSendXML );
-	JCreateService( PS_GETMYAVATAR, &CJabberProto::JabberGetAvatar );
+	JCreateService( PS_GETMYAVATART, &CJabberProto::JabberGetAvatar );
 	JCreateService( PS_GETAVATARCAPS, &CJabberProto::JabberGetAvatarCaps );
-	JCreateService( PS_SETMYAVATAR, &CJabberProto::JabberSetAvatar );
+	JCreateService( PS_SETMYAVATART, &CJabberProto::JabberSetAvatar );
 	JCreateService( PS_SETMYNICKNAME, &CJabberProto::JabberSetNickname );
 
 	JCreateService( JS_GETADVANCEDSTATUSICON, &CJabberProto::JGetAdvancedStatusIcon );
@@ -206,8 +206,7 @@ CJabberProto::CJabberProto( const char* aProtoName, const TCHAR* aUserName ) :
 	}
 	else m_tszSelectedLang = mir_tstrdup( _T( "en" ));
 
-	if (!DBGetContactSettingString(NULL, m_szModuleName, "Password", &dbv))
-	{
+	if (!DBGetContactSettingString(NULL, m_szModuleName, "Password", &dbv)) {
 		JCallService(MS_DB_CRYPT_DECODESTRING, lstrlenA(dbv.pszVal) + 1, (LPARAM)dbv.pszVal);
 		TCHAR *pssw = mir_a2t(dbv.pszVal);
 		JSetStringCrypt(NULL, "LoginPassword", pssw);
@@ -215,7 +214,6 @@ CJabberProto::CJabberProto( const char* aProtoName, const TCHAR* aUserName ) :
 		JFreeVariant(&dbv);
 		JDeleteSetting(NULL, "Password");
 	}
-
 	
 	CleanLastResourceMap();
 }

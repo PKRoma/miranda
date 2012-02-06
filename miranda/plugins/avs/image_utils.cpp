@@ -21,9 +21,6 @@ extern int _DebugTrace(HANDLE hContact, const char *fmt, ...);
 #define GET_PIXEL(__P__, __X__, __Y__) ( __P__ + width * 4 * (__Y__) + 4 * (__X__) )
 
 
-extern size_t AVS_pathToRelative(const char *sPrc, char *pOut);
-extern size_t AVS_pathToAbsolute(const char *pSrc, char *pOut);
-extern int AVS_pathToAbsoluteW(const wchar_t *pSrc, wchar_t *pOut);
 extern FI_INTERFACE *fei;
 
 // Make a bitmap all transparent, but only if it is a 32bpp
@@ -232,7 +229,7 @@ INT_PTR BmpFilterLoadBitmap32(WPARAM wParam,LPARAM lParam)
 	if(fei == NULL)
 		return 0;
 
-	FIBITMAP *dib = (FIBITMAP *)CallService(MS_IMG_LOAD, lParam, IMGL_RETURNDIB);
+	FIBITMAP *dib = (FIBITMAP *)CallService(MS_IMG_LOAD, lParam, IMGL_RETURNDIB|IMGL_TCHAR);
 	
 	if(dib == NULL)
 		return 0;
@@ -305,19 +302,17 @@ int BmpFilterSaveBitmapW(HBITMAP hBmp, wchar_t *wszFile, int flags)
 // lParam = filename
 INT_PTR BmpFilterSaveBitmap(WPARAM wParam,LPARAM lParam)
 {
-	HBITMAP hBmp = (HBITMAP) wParam;
-	const char *szFile=(const char *)lParam;
-	char szFilename[MAX_PATH];
-	int filenameLen;
-
-	if(fei == NULL)
+	if ( fei == NULL )
 		return -1;
 
-	if (!AVS_pathToAbsolute(szFile, szFilename))
+	const char *szFile = (const char*)lParam;
+	char szFilename[MAX_PATH];
+	if ( !CallService(MS_UTILS_PATHTOABSOLUTE, (WPARAM)szFile, (LPARAM)szFilename))
 		mir_snprintf(szFilename, SIZEOF(szFilename), "%s", szFile);
-	filenameLen=lstrlenA(szFilename);
-	if(filenameLen>4) 
-		return BmpFilterSaveBitmap(hBmp, szFilename, 0);
+
+	int filenameLen = lstrlenA( szFilename );
+	if ( filenameLen > 4 ) 
+		return BmpFilterSaveBitmap(( HBITMAP )wParam, szFilename, 0);
 
 	return -1;
 }
@@ -325,20 +320,17 @@ INT_PTR BmpFilterSaveBitmap(WPARAM wParam,LPARAM lParam)
 #if defined(_UNICODE)
 INT_PTR BmpFilterSaveBitmapW(WPARAM wParam,LPARAM lParam)
 {
-	HBITMAP hBmp = (HBITMAP) wParam;
-	const wchar_t *wszFile=(const wchar_t *)lParam;
-	wchar_t wszFilename[MAX_PATH];
-	int filenameLen;
-
-	if(fei == NULL)
+	if ( fei == NULL )
 		return -1;
 
-	if (!AVS_pathToAbsoluteW(wszFile, wszFilename))
+	const wchar_t *wszFile = (const wchar_t *)lParam;
+	wchar_t wszFilename[MAX_PATH];
+	if ( !CallService(MS_UTILS_PATHTOABSOLUTEW, (WPARAM)wszFile, (LPARAM)wszFilename))
 		mir_sntprintf(wszFilename, SIZEOF(wszFilename), _T("%s"), wszFile);
 
-	filenameLen=lstrlenW(wszFilename);
-	if(filenameLen > 4) 
-		return BmpFilterSaveBitmapW(hBmp, wszFilename, 0);
+	int filenameLen = lstrlenW( wszFilename );
+	if ( filenameLen > 4 ) 
+		return BmpFilterSaveBitmapW(( HBITMAP )wParam, wszFilename, 0 );
 
 	return -1;
 }
@@ -743,3 +735,23 @@ BOOL MakeTransparentBkg(HANDLE hContact, HBITMAP *hBitmap)
 
 	return TRUE;
 }
+
+/////////////////////////////////////////////////////////////////////////////////////////
+// Path utils
+
+int AVS_pathIsAbsolute(const TCHAR *path)
+{
+	if (!path || !(lstrlen(path) > 2))
+		return 0;
+	if ((path[1]==':'&&path[2]=='\\')||(path[0]=='\\'&&path[1]=='\\')) return 1;
+	return 0;
+}
+
+size_t AVS_pathToRelative(const TCHAR *pSrc, TCHAR *pOut)
+{	return CallService( MS_UTILS_PATHTORELATIVET, (WPARAM)pSrc, (LPARAM)pOut );
+}
+
+size_t AVS_pathToAbsolute(const TCHAR *pSrc, TCHAR *pOut)
+{	return CallService( MS_UTILS_PATHTOABSOLUTET, (WPARAM)pSrc, (LPARAM)pOut );
+}
+

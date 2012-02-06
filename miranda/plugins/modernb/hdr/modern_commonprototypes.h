@@ -210,6 +210,7 @@ HRESULT		BackgroundsLoadModule();
 int		BackgroundsUnloadModule();
 BOOL    wildcmp(const char * name, const char * mask, BYTE option);										//mod_skin_selector.c
 BOOL	wildcmpi(char * name, char * mask);													//mod_skin_selector.c
+BOOL	wildcmpi(WCHAR* name, WCHAR* mask);													//mod_skin_selector.c
 INT_PTR	CALLBACK DlgSkinEditorOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);	//SkinEditor.c
 INT_PTR	CALLBACK DlgTmplEditorOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);	//RowTemplate.c
 BOOL	FindMenuHanleByGlobalID(HMENU hMenu, int globalID, struct _MenuItemHandles * dat);	//GenMenu.c

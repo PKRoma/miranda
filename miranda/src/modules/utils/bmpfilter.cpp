@@ -170,9 +170,59 @@ static INT_PTR BmpFilterGetStrings(WPARAM wParam,LPARAM lParam)
 	return 0;
 }
 
+#if defined( _UNICODE )
+static INT_PTR BmpFilterGetStringsW(WPARAM wParam,LPARAM lParam)
+{
+	int bytesLeft=wParam;
+	TCHAR *filter=(TCHAR*)lParam,*pfilter;
+
+	lstrcpyn(filter,TranslateT("All Bitmaps"),bytesLeft); bytesLeft-=lstrlen(filter);
+	_tcsncat(filter, _T(" (*.bmp;*.jpg;*.gif;*.png)"), bytesLeft );
+	pfilter=filter+lstrlen(filter)+1; bytesLeft=wParam-(pfilter-filter);
+	lstrcpyn(pfilter,_T("*.BMP;*.RLE;*.JPG;*.JPEG;*.GIF;*.PNG"),bytesLeft);
+	pfilter+=lstrlen(pfilter)+1; bytesLeft=wParam-(pfilter-filter);
+
+	lstrcpyn(pfilter,TranslateT("Windows Bitmaps"),bytesLeft); bytesLeft-=lstrlen(pfilter);
+	_tcsncat(pfilter,_T(" (*.bmp;*.rle)"),bytesLeft);
+	pfilter+=lstrlen(pfilter)+1; bytesLeft=wParam-(pfilter-filter);
+	lstrcpyn(pfilter,_T("*.BMP;*.RLE"),bytesLeft);
+	pfilter+=lstrlen(pfilter)+1; bytesLeft=wParam-(pfilter-filter);
+
+	lstrcpyn(pfilter,TranslateT("JPEG Bitmaps"),bytesLeft); bytesLeft-=lstrlen(pfilter);
+	_tcsncat(pfilter,_T(" (*.jpg;*.jpeg)"),bytesLeft);
+	pfilter+=lstrlen(pfilter)+1; bytesLeft=wParam-(pfilter-filter);
+	lstrcpyn(pfilter,_T("*.JPG;*.JPEG"),bytesLeft);
+	pfilter+=lstrlen(pfilter)+1; bytesLeft=wParam-(pfilter-filter);
+
+	lstrcpyn(pfilter,TranslateT("GIF Bitmaps"),bytesLeft); bytesLeft-=lstrlen(pfilter);
+	_tcsncat(pfilter,_T(" (*.gif)"),bytesLeft);
+	pfilter+=lstrlen(pfilter)+1; bytesLeft=wParam-(pfilter-filter);
+	lstrcpyn(pfilter,_T("*.GIF"),bytesLeft);
+	pfilter+=lstrlen(pfilter)+1; bytesLeft=wParam-(pfilter-filter);
+
+	lstrcpyn(pfilter,TranslateT("PNG Bitmaps"),bytesLeft); bytesLeft-=lstrlen(pfilter);
+	_tcsncat(pfilter,_T(" (*.png)"),bytesLeft);
+	pfilter+=lstrlen(pfilter)+1; bytesLeft=wParam-(pfilter-filter);
+	lstrcpyn(pfilter,_T("*.PNG"),bytesLeft);
+	pfilter+=lstrlen(pfilter)+1; bytesLeft=wParam-(pfilter-filter);
+
+	lstrcpyn(pfilter,TranslateT("All Files"),bytesLeft); bytesLeft-=lstrlen(pfilter);
+	_tcsncat(pfilter,_T(" (*)"),bytesLeft);
+	pfilter+=lstrlen(pfilter)+1; bytesLeft=wParam-(pfilter-filter);
+	lstrcpyn(pfilter,_T("*"),bytesLeft);
+	pfilter+=lstrlen(pfilter)+1; bytesLeft=wParam-(pfilter-filter);
+
+	if(bytesLeft) *pfilter='\0';
+	return 0;
+}
+#endif
+
 int InitBitmapFilter(void)
 {
 	CreateServiceFunction(MS_UTILS_LOADBITMAP,BmpFilterLoadBitmap);
 	CreateServiceFunction(MS_UTILS_GETBITMAPFILTERSTRINGS,BmpFilterGetStrings);
+	#if defined( _UNICODE )
+		CreateServiceFunction(MS_UTILS_GETBITMAPFILTERSTRINGSW,BmpFilterGetStrings);
+	#endif
 	return 0;
 }

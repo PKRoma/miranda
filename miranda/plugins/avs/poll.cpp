@@ -48,7 +48,7 @@ extern HANDLE hShutdownEvent;
 extern char *g_szMetaName;
 extern int ChangeAvatar(HANDLE hContact, BOOL fLoad, BOOL fNotifyHist = FALSE, int pa_format = 0);
 extern int DeleteAvatar(HANDLE hContact);
-extern void MakePathRelative(HANDLE hContact, char *path);
+extern void MakePathRelative(HANDLE hContact, TCHAR *path);
 int Proto_GetDelayAfterFail(const char *proto);
 BOOL Proto_IsFetchingAlwaysAllowed(const char *proto);
 
@@ -163,7 +163,7 @@ void QueueAdd(HANDLE hContact)
 	QueueAdd(hContact, waitTime);
 }
 
-void ProcessAvatarInfo(HANDLE hContact, int type, PROTO_AVATAR_INFORMATION *pai, const char *szProto)
+void ProcessAvatarInfo(HANDLE hContact, int type, PROTO_AVATAR_INFORMATIONT *pai, const char *szProto)
 {
 	QueueRemove(hContact);
 
@@ -177,7 +177,7 @@ void ProcessAvatarInfo(HANDLE hContact, int type, PROTO_AVATAR_INFORMATION *pai,
 		DBDeleteContactSetting(hContact, "ContactPhoto", "RFile");
 		if (!DBGetContactSettingByte(hContact, "ContactPhoto", "Locked", 0))
 			DBDeleteContactSetting(hContact, "ContactPhoto", "Backup");
-		DBWriteContactSettingString(hContact, "ContactPhoto", "File", pai->filename);
+		DBWriteContactSettingTString(hContact, "ContactPhoto", "File", pai->filename);
 		DBWriteContactSettingWord(hContact, "ContactPhoto", "Format", pai->format);
 
 		if (pai->format == PA_FORMAT_PNG || pai->format == PA_FORMAT_JPEG 
@@ -241,12 +241,22 @@ int FetchAvatarFor(HANDLE hContact, char *szProto = NULL)
 			)
 		{
 			// Request it
-			PROTO_AVATAR_INFORMATION pai_s = {0};
+			PROTO_AVATAR_INFORMATIONT pai_s = {0};
 			pai_s.cbSize = sizeof(pai_s);
 			pai_s.hContact = hContact;
 			pai_s.format = PA_FORMAT_UNKNOWN;
 			//_DebugTrace(hContact, "schedule request");
-			result = CallProtoService(szProto, PS_GETAVATARINFO, GAIF_FORCE, (LPARAM)&pai_s);
+			result = CallProtoService(szProto, PS_GETAVATARINFOT, GAIF_FORCE, (LPARAM)&pai_s);
+			#ifdef _UNICODE
+				if ( result == CALLSERVICE_NOTFOUND ) {
+					PROTO_AVATAR_INFORMATION pai = {0};
+					pai.cbSize = sizeof(pai);
+					pai.hContact = hContact;
+					pai.format = PA_FORMAT_UNKNOWN;
+					result = CallProtoService(szProto, PS_GETAVATARINFO, GAIF_FORCE, (LPARAM)&pai);
+					MultiByteToWideChar( CP_ACP, 0, pai.filename, -1, pai_s.filename, SIZEOF(pai_s.filename));
+				}
+			#endif
 			ProcessAvatarInfo(pai_s.hContact, result, &pai_s, szProto);
 		}
 	}
