@@ -1169,7 +1169,7 @@ static int InternalRemoveMyAvatar(char *protocol)
 	if (protocol != NULL)
 	{
 		if (ProtoServiceExists(protocol, PS_SETMYAVATAR))
-			ret = CallProtoService(protocol, PS_SETMYAVATAR, 0, NULL);
+			ret = SaveAvatar(protocol, NULL);
 		else
 			ret = -3;
 
@@ -1200,7 +1200,7 @@ static int InternalRemoveMyAvatar(char *protocol)
 				continue;
 
 			// Found a protocol
-			int retTmp = CallProtoService( accs[i]->szModuleName, PS_SETMYAVATAR, 0, NULL);
+			int retTmp = SaveAvatar( accs[i]->szModuleName, NULL);
 			if (retTmp != 0)
 				ret = retTmp;
 		}
@@ -1246,7 +1246,7 @@ static int InternalSetMyAvatar(char *protocol, TCHAR *szFinalName, SetMyAvatarHo
 	else
 	{
 		// Try to open if is not a flash or XML
-		hBmp = (HBITMAP) CallService(MS_IMG_LOAD, (WPARAM) szFinalName, 0);
+		hBmp = (HBITMAP) CallService(MS_IMG_LOAD, (WPARAM) szFinalName, IMGL_TCHAR);
 		if (hBmp == NULL)
 			return -4;
 	}
@@ -1559,7 +1559,7 @@ static int SetProtoMyAvatar(char *protocol, HBITMAP hBmp, TCHAR *originalFilenam
 		if (!Proto_IsAvatarFormatSupported(protocol, PA_FORMAT_SWF))
 			return -1;
 
-		return CallProtoService(protocol, PS_SETMYAVATAR, 0, (LPARAM) originalFilename);
+		return SaveAvatar(protocol, originalFilename);
 	}
 
 	if (originalFormat == PA_FORMAT_XML)
@@ -1567,7 +1567,7 @@ static int SetProtoMyAvatar(char *protocol, HBITMAP hBmp, TCHAR *originalFilenam
 		if (!Proto_IsAvatarFormatSupported(protocol, PA_FORMAT_XML))
 			return -1;
 
-		return CallProtoService(protocol, PS_SETMYAVATAR, 0, (LPARAM) originalFilename);
+		return SaveAvatar(protocol, originalFilename);
 	}
 
 	// Get protocol info
@@ -1613,7 +1613,7 @@ static int SetProtoMyAvatar(char *protocol, HBITMAP hBmp, TCHAR *originalFilenam
 				DeleteFile(d.temp_file);
 
 			// Use original image
-			return CallProtoService(protocol, PS_SETMYAVATAR, 0, (LPARAM) originalFilename);
+			return SaveAvatar(protocol, originalFilename);
 		}
 
 		// Create a temporary file (if was not created already)
@@ -1665,7 +1665,7 @@ static int SetProtoMyAvatar(char *protocol, HBITMAP hBmp, TCHAR *originalFilenam
 	if (d.saved)
 	{
 		// Call proto service
-		ret = CallProtoService(protocol, PS_SETMYAVATAR, 0, (LPARAM)d.image_file_name);
+		ret = SaveAvatar(protocol, d.image_file_name);
 		DeleteFile(d.image_file_name);
 	}
 	else

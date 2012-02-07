@@ -94,7 +94,6 @@ INT_PTR __cdecl CJabberProto::JabberGetAvatar( WPARAM wParam, LPARAM lParam )
 		return -2;
 
 	GetAvatarFileName( NULL, buf, size );
-		
 	return 0;
 }
 
@@ -286,7 +285,7 @@ INT_PTR __cdecl CJabberProto::OnGetEventTextPresence( WPARAM, LPARAM lParam )
 
 INT_PTR __cdecl CJabberProto::JabberSetAvatar( WPARAM, LPARAM lParam )
 {
-	TCHAR* tszFileName = mir_a2t(( char* )lParam );
+	TCHAR* tszFileName = ( TCHAR* )lParam;
 
 	if ( m_bJabberOnline ) {
 		SetServerVcard( TRUE, tszFileName );
@@ -345,7 +344,7 @@ INT_PTR __cdecl CJabberProto::JabberSetAvatar( WPARAM, LPARAM lParam )
 
 		JSetString( NULL, "AvatarSaved", buf );
 	}
-	mir_free(tszFileName);
+
 	return 0;
 }
 
