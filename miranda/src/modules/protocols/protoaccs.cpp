@@ -376,7 +376,7 @@ static INT_PTR stub43( PROTO_INTERFACE* ppi, WPARAM wParam, LPARAM lParam )
 	PROTO_AVATAR_INFORMATION* p = ( PROTO_AVATAR_INFORMATION* )lParam;
 	p->hContact = tmp.hContact;
 	p->format = tmp.format;
-	WideCharToMultiByte( LangPackGetDefaultCodePage(), 0, tmp.filename, -1, p->filename, MAX_PATH, 0, 0 );
+	WideCharToMultiByte( CP_ACP, 0, tmp.filename, -1, p->filename, MAX_PATH, 0, 0 );
 	return result;
 }
 
