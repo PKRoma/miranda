@@ -222,7 +222,7 @@ int InitBitmapFilter(void)
 	CreateServiceFunction(MS_UTILS_LOADBITMAP,BmpFilterLoadBitmap);
 	CreateServiceFunction(MS_UTILS_GETBITMAPFILTERSTRINGS,BmpFilterGetStrings);
 	#if defined( _UNICODE )
-		CreateServiceFunction(MS_UTILS_GETBITMAPFILTERSTRINGSW,BmpFilterGetStrings);
+		CreateServiceFunction(MS_UTILS_GETBITMAPFILTERSTRINGSW,BmpFilterGetStringsW);
 	#endif
 	return 0;
 }
