@@ -206,22 +206,22 @@ int _DebugTrace(HANDLE hContact, const char *fmt, ...)
 
 static void NotifyMetaAware(HANDLE hContact, struct CacheNode *node = NULL, AVATARCACHEENTRY *ace = (AVATARCACHEENTRY *)-1)
 {
-	if(ace == (AVATARCACHEENTRY *)-1)
+	if (ace == (AVATARCACHEENTRY *)-1)
 		ace = &node->ace;
 
 	NotifyEventHooks(hEventChanged, (WPARAM)hContact, (LPARAM)ace);
 
-	if(g_MetaAvail && (node->dwFlags & MC_ISSUBCONTACT) && DBGetContactSettingByte(NULL, g_szMetaName, "Enabled", 0)) {
+	if (g_MetaAvail && (node->dwFlags & MC_ISSUBCONTACT) && DBGetContactSettingByte(NULL, g_szMetaName, "Enabled", 0)) {
 		HANDLE hMasterContact = (HANDLE)DBGetContactSettingDword(hContact, g_szMetaName, "Handle", 0);
 
-		if(hMasterContact && (HANDLE)CallService(MS_MC_GETMOSTONLINECONTACT, (WPARAM)hMasterContact, 0) == hContact &&
+		if (hMasterContact && (HANDLE)CallService(MS_MC_GETMOSTONLINECONTACT, (WPARAM)hMasterContact, 0) == hContact &&
 			!DBGetContactSettingByte(hMasterContact, "ContactPhoto", "Locked", 0))
 			NotifyEventHooks(hEventChanged, (WPARAM)hMasterContact, (LPARAM)ace);
 	}
-	if(node->dwFlags & AVH_MUSTNOTIFY) {
+	if (node->dwFlags & AVH_MUSTNOTIFY) {
 		// Fire the event for avatar history
 		node->dwFlags &= ~AVH_MUSTNOTIFY;
-		if(node->ace.szFilename[0] != '\0') {
+		if (node->ace.szFilename[0] != '\0') {
 			CONTACTAVATARCHANGEDNOTIFICATION cacn = {0};
 			cacn.cbSize = sizeof(CONTACTAVATARCHANGEDNOTIFICATION);
 			cacn.hContact = hContact;
@@ -300,12 +300,12 @@ static struct CacheNode *AllocCacheBlock()
 	}
 	//InitializeCriticalSection(&allocedBlock[CACHE_BLOCKSIZE - 1].cs);
 
-	if(g_Cache == NULL)													// first time only...
+	if (g_Cache == NULL)													// first time only...
 		g_Cache = allocedBlock;
 
 	// add it to the list of blocks
 
-	if(g_curBlock == g_maxBlock) {
+	if (g_curBlock == g_maxBlock) {
 		g_maxBlock += 10;
 		g_cacheBlocks = (struct CacheNode **)realloc(g_cacheBlocks, g_maxBlock * sizeof(struct CacheNode *));
 	}
@@ -321,13 +321,13 @@ int _DebugPopup(HANDLE hContact, const char *fmt, ...)
 	char	debug[1024];
 	int		ibsize = 1023;
 
-	if(!DBGetContactSettingByte(0, AVS_MODULE, "warnings", 0))
+	if (!DBGetContactSettingByte(0, AVS_MODULE, "warnings", 0))
 		return 0;
 
 	va_start(va, fmt);
 	_vsnprintf(debug, ibsize, fmt, va);
 
-	if(CallService(MS_POPUP_QUERY, PUQS_GETSTATUS, 0) == 1) {
+	if (CallService(MS_POPUP_QUERY, PUQS_GETSTATUS, 0) == 1) {
 		ZeroMemory((void *)&ppd, sizeof(ppd));
 		ppd.lchContact = hContact;
 		ppd.lchIcon = LoadSkinnedIcon(SKINICON_EVENT_MESSAGE);
@@ -367,11 +367,11 @@ int SetAvatarAttribute(HANDLE hContact, DWORD attrib, int mode)
 	struct CacheNode *cacheNode = g_Cache;
 
 	while(cacheNode) {
-		if(cacheNode->ace.hContact == hContact) {
+		if (cacheNode->ace.hContact == hContact) {
 			DWORD dwFlags = cacheNode->ace.dwFlags;
 
 			cacheNode->ace.dwFlags = mode ? cacheNode->ace.dwFlags | attrib : cacheNode->ace.dwFlags & ~attrib;
-			if(cacheNode->ace.dwFlags != dwFlags)
+			if (cacheNode->ace.dwFlags != dwFlags)
 				NotifyMetaAware(hContact, cacheNode);
 			break;
 		}
@@ -390,9 +390,9 @@ void MakePathRelative(HANDLE hContact, TCHAR *path)
 	szFinalPath[0] = '\0';
 
 	size_t result = AVS_pathToRelative(path, szFinalPath);
-	if(result && lstrlen(szFinalPath) > 0) {
+	if (result && lstrlen(szFinalPath) > 0) {
 		DBWriteContactSettingTString(hContact, "ContactPhoto", "RFile", szFinalPath);
-		if(!DBGetContactSettingByte(hContact, "ContactPhoto", "Locked", 0))
+		if (!DBGetContactSettingByte(hContact, "ContactPhoto", "Locked", 0))
 			DBWriteContactSettingTString(hContact, "ContactPhoto", "Backup", szFinalPath);
 	}
 }
@@ -406,8 +406,8 @@ static void MakePathRelative(HANDLE hContact)
 {
 	DBVARIANT dbv = {0};
 
-	if(!DBGetContactSetting(hContact, "ContactPhoto", "File", &dbv)) {
-		if(dbv.type == DBVT_TCHAR) {
+	if (!DBGetContactSetting(hContact, "ContactPhoto", "File", &dbv)) {
+		if (dbv.type == DBVT_TCHAR) {
 			MakePathRelative(hContact, dbv.ptszVal);
 		}
 		DBFreeVariant(&dbv);
@@ -427,9 +427,9 @@ static TCHAR *getJGMailID(char *szProto)
 	DBVARIANT dbva={0}, dbvb={0};
 
 	szJID[0] = '\0';
-	if(DBGetContactSettingTString(NULL, szProto, "LoginName", &dbva))
+	if (DBGetContactSettingTString(NULL, szProto, "LoginName", &dbva))
 		return szJID;
-	if(DBGetContactSettingTString(NULL, szProto, "LoginServer", &dbvb)) {
+	if (DBGetContactSettingTString(NULL, szProto, "LoginServer", &dbvb)) {
 		DBFreeVariant(&dbva);
 		return szJID;
 	}
@@ -446,11 +446,11 @@ int CreateAvatarInCache(HANDLE hContact, avatarCacheEntry *ace, char *szProto)
 {
 	DBVARIANT dbv = {0};
 	char *szExt = NULL;
-	TCHAR szFilename[MAX_PATH];
+	TCHAR tszFilename[MAX_PATH];
 	HANDLE hFile = INVALID_HANDLE_VALUE;
 	DWORD dwFileSizeHigh = 0, dwFileSize = 0, sizeLimit = 0;
 
-	szFilename[0] = 0;
+	tszFilename[0] = 0;
 
 	ace->hbmPic = 0;
 	ace->dwFlags = 0;
@@ -459,23 +459,23 @@ int CreateAvatarInCache(HANDLE hContact, avatarCacheEntry *ace, char *szProto)
 	ace->lpDIBSection = NULL;
 	ace->szFilename[0] = 0;
 
-	if(szProto == NULL) {
+	if (szProto == NULL) {
 		char *proto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
 		if (proto == NULL || !DBGetContactSettingByte(NULL, AVS_MODULE, proto, 1)) {
 			return -1;
 		}
 
-		if(DBGetContactSettingByte(hContact, "ContactPhoto", "Locked", 0)
+		if (DBGetContactSettingByte(hContact, "ContactPhoto", "Locked", 0)
 			&& !DBGetContactSettingTString(hContact, "ContactPhoto", "Backup", &dbv)) {
-				AVS_pathToAbsolute(dbv.ptszVal, szFilename);
+				AVS_pathToAbsolute(dbv.ptszVal, tszFilename);
 				DBFreeVariant(&dbv);
 		}
-		else if(!DBGetContactSettingTString(hContact, "ContactPhoto", "RFile", &dbv)) {
-			AVS_pathToAbsolute(dbv.ptszVal, szFilename);
+		else if (!DBGetContactSettingTString(hContact, "ContactPhoto", "RFile", &dbv)) {
+			AVS_pathToAbsolute(dbv.ptszVal, tszFilename);
 			DBFreeVariant(&dbv);
 		}
-		else if(!DBGetContactSettingTString(hContact, "ContactPhoto", "File", &dbv)) {
-			AVS_pathToAbsolute(dbv.ptszVal, szFilename);
+		else if (!DBGetContactSettingTString(hContact, "ContactPhoto", "File", &dbv)) {
+			AVS_pathToAbsolute(dbv.ptszVal, tszFilename);
 			DBFreeVariant(&dbv);
 		}
 		else {
@@ -483,15 +483,15 @@ int CreateAvatarInCache(HANDLE hContact, avatarCacheEntry *ace, char *szProto)
 		}
 	}
 	else {
-		if(hContact == 0) {				// create a protocol picture in the proto picture cache
-			if(!DBGetContactSettingTString(NULL, PPICT_MODULE, szProto, &dbv)) {
-				AVS_pathToAbsolute(dbv.ptszVal, szFilename);
+		if (hContact == 0) {				// create a protocol picture in the proto picture cache
+			if (!DBGetContactSettingTString(NULL, PPICT_MODULE, szProto, &dbv)) {
+				AVS_pathToAbsolute(dbv.ptszVal, tszFilename);
 				DBFreeVariant(&dbv);
 			}
 			else {
 				if (lstrcmpA(szProto, AVS_DEFAULT)) {
 					if (!DBGetContactSettingTString(NULL, PPICT_MODULE, AVS_DEFAULT, &dbv)) {
-						AVS_pathToAbsolute(dbv.ptszVal, szFilename);
+						AVS_pathToAbsolute(dbv.ptszVal, tszFilename);
 						DBFreeVariant(&dbv);
 					}
 
@@ -502,57 +502,65 @@ int CreateAvatarInCache(HANDLE hContact, avatarCacheEntry *ace, char *szProto)
 						char key[MAX_PATH];
 						mir_snprintf(key, SIZEOF(key), "Global avatar for %s accounts", pdescr->szProtoName);
 						if (!DBGetContactSettingTString(NULL, PPICT_MODULE, key, &dbv)) {
-							AVS_pathToAbsolute(dbv.ptszVal, szFilename);
+							AVS_pathToAbsolute(dbv.ptszVal, tszFilename);
 							DBFreeVariant(&dbv);
 						}
 					}
 				}
 			}
 		}
-		else if(hContact == (HANDLE)-1) {	// create own picture - note, own avatars are not on demand, they are loaded once at
+		else if (hContact == (HANDLE)-1) {	// create own picture - note, own avatars are not on demand, they are loaded once at
 			// startup and everytime they are changed.
 			if (szProto[0] == '\0') {
 				// Global avatar
-				if (!DBGetContactSettingTString(NULL, AVS_MODULE, "GlobalUserAvatarFile", &dbv)) {
-					AVS_pathToAbsolute(dbv.ptszVal, szFilename);
-					DBFreeVariant(&dbv);
-				} else
+				if ( DBGetContactSettingTString(NULL, AVS_MODULE, "GlobalUserAvatarFile", &dbv))
 					return -10;
 
-			} else if (ProtoServiceExists(szProto, PS_GETMYAVATAR)) {
-				if (CallProtoService(szProto, PS_GETMYAVATAR, (WPARAM)szFilename, (LPARAM)MAX_PATH)) {
-					szFilename[0] = '\0';
-				}
-			} else if(!DBGetContactSettingTString(NULL, szProto, "AvatarFile", &dbv)) {
-				AVS_pathToAbsolute(dbv.ptszVal, szFilename);
+				AVS_pathToAbsolute(dbv.ptszVal, tszFilename);
 				DBFreeVariant(&dbv);
 			}
-			else {
-				return -1;
+			else if (ProtoServiceExists(szProto, PS_GETMYAVATART)) {
+				if (CallProtoService(szProto, PS_GETMYAVATART, (WPARAM)tszFilename, (LPARAM)MAX_PATH))
+					tszFilename[0] = '\0';
 			}
+#if defined( _UNICODE )
+			else if (ProtoServiceExists(szProto, PS_GETMYAVATAR)) {
+				char szFileName[ MAX_PATH ];
+				if (CallProtoService(szProto, PS_GETMYAVATAR, (WPARAM)szFileName, (LPARAM)MAX_PATH)) 
+					tszFilename[0] = '\0';
+				else
+					MultiByteToWideChar( CP_ACP, 0, szFileName, -1, tszFilename, SIZEOF( tszFilename ));
+			} 
+#endif
+			else if (!DBGetContactSettingTString(NULL, szProto, "AvatarFile", &dbv)) {
+				AVS_pathToAbsolute(dbv.ptszVal, tszFilename);
+				DBFreeVariant(&dbv);
+			}
+			else return -1;
 		}
 	}
-	if(lstrlen(szFilename) < 4)
+
+	if ( lstrlen(tszFilename) < 4 )
 		return -1;
 
-	TCHAR* tmpPath = Utils_ReplaceVarsT(szFilename);
-	mir_sntprintf(szFilename, SIZEOF(szFilename), _T("%s"), tmpPath);
+	TCHAR* tmpPath = Utils_ReplaceVarsT(tszFilename);
+	mir_sntprintf(tszFilename, SIZEOF(tszFilename), _T("%s"), tmpPath);
 	mir_free(tmpPath);
 
-	if((hFile = CreateFile(szFilename, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL)) == INVALID_HANDLE_VALUE) {
+	if ((hFile = CreateFile(tszFilename, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL)) == INVALID_HANDLE_VALUE)
 		return -2;
-	}
+
 	CloseHandle(hFile);
 	WPARAM isTransparentImage = 0;
 
-	ace->hbmPic = (HBITMAP) BmpFilterLoadBitmap32((WPARAM)&isTransparentImage, (LPARAM)szFilename);
+	ace->hbmPic = (HBITMAP) BmpFilterLoadBitmap32((WPARAM)&isTransparentImage, (LPARAM)tszFilename);
 	ace->dwFlags = 0;
 	ace->bmHeight = 0;
 	ace->bmWidth = 0;
 	ace->lpDIBSection = NULL;
-	_tcsncpy(ace->szFilename, szFilename, MAX_PATH);
+	_tcsncpy(ace->szFilename, tszFilename, MAX_PATH);
 	ace->szFilename[MAX_PATH - 1] = 0;
-	if(ace->hbmPic != 0) {
+	if (ace->hbmPic != 0) {
 		BITMAP bminfo;
 
 		GetObject(ace->hbmPic, sizeof(bminfo), &bminfo);
@@ -627,12 +635,12 @@ int CreateAvatarInCache(HANDLE hContact, avatarCacheEntry *ace, char *szProto)
 			ace->dwFlags |= AVS_PREMULTIPLIED;
 		}
 
-		if(szProto)
+		if (szProto)
 		{
 			protoPicCacheEntry *pAce = (protoPicCacheEntry *)ace;
-			if(hContact == 0)
+			if (hContact == 0)
 				pAce->dwFlags |= AVS_PROTOPIC;
-			else if(hContact == (HANDLE)-1)
+			else if (hContact == (HANDLE)-1)
 				pAce->dwFlags |= AVS_OWNAVATAR;
 		}
 
@@ -667,14 +675,14 @@ struct CacheNode *FindAvatarInCache(HANDLE hContact, BOOL add, BOOL findAny = FA
 
 	while(cacheNode)
 	{
-		if(cacheNode->ace.hContact == hContact)
+		if (cacheNode->ace.hContact == hContact)
 		{
 			cacheNode->ace.t_lastAccess = time(NULL);
 			foundNode = cacheNode->loaded || findAny ? cacheNode : NULL;
 			LeaveCriticalSection(&cachecs);
 			return foundNode;
 		}
-		if(foundNode == NULL && cacheNode->ace.hContact == 0)
+		if (foundNode == NULL && cacheNode->ace.hContact == 0)
 			foundNode = cacheNode;				// found an empty and usable node
 
 		cacheNode = cacheNode->pNextNode;
@@ -684,7 +692,7 @@ struct CacheNode *FindAvatarInCache(HANDLE hContact, BOOL add, BOOL findAny = FA
 
 	if (add)
 	{
-		if(foundNode == NULL) {					// no free entry found, create a new and append it to the list
+		if (foundNode == NULL) {					// no free entry found, create a new and append it to the list
 			EnterCriticalSection(&alloccs);     // protect memory block allocation
 			struct CacheNode *newNode = AllocCacheBlock();
 			AddToList(newNode);
@@ -693,7 +701,7 @@ struct CacheNode *FindAvatarInCache(HANDLE hContact, BOOL add, BOOL findAny = FA
 		}
 
 		foundNode->ace.hContact = hContact;
-		if(g_MetaAvail)
+		if (g_MetaAvail)
 			foundNode->dwFlags |= (DBGetContactSettingByte(hContact, g_szMetaName, "IsSubcontact", 0) ? MC_ISSUBCONTACT : 0);
 		foundNode->loaded = FALSE;
 		foundNode->mustLoad = 1;                                 // pic loader will watch this and load images
@@ -716,7 +724,7 @@ struct CacheNode *FindAvatarInCache(HANDLE hContact, BOOL add, BOOL findAny = FA
 static int GetFileHash(TCHAR* filename)
 {
 	HANDLE hFile = CreateFile(filename, GENERIC_READ, FILE_SHARE_READ|FILE_SHARE_WRITE, NULL, OPEN_EXISTING, 0, NULL);
-	if(hFile == INVALID_HANDLE_VALUE)
+	if (hFile == INVALID_HANDLE_VALUE)
 		return 0;
 
 	int remainder = 0;
@@ -791,14 +799,14 @@ INT_PTR ProtectAvatar(WPARAM wParam, LPARAM lParam)
 	HANDLE hContact = (HANDLE)wParam;
 	BYTE was_locked = DBGetContactSettingByte(hContact, "ContactPhoto", "Locked", 0);
 
-	if(fei == NULL || was_locked == (BYTE)lParam)      // no need for redundant lockings...
+	if (fei == NULL || was_locked == (BYTE)lParam)      // no need for redundant lockings...
 		return 0;
 
-	if(hContact) {
-		if(!was_locked)
+	if (hContact) {
+		if (!was_locked)
 			MakePathRelative(hContact);
 		DBWriteContactSettingByte(hContact, "ContactPhoto", "Locked", lParam ? 1 : 0);
-		if(lParam == 0)
+		if (lParam == 0)
 			MakePathRelative(hContact);
 		ChangeAvatar(hContact, TRUE);
 	}
@@ -831,7 +839,7 @@ static BOOL CALLBACK OpenFileSubclass(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 		}
 
 	case WM_COMMAND:
-		if(LOWORD(wParam) == IDC_PROTECTAVATAR)
+		if (LOWORD(wParam) == IDC_PROTECTAVATAR)
 		{
 			OpenFileSubclassData *data= (OpenFileSubclassData *)GetWindowLongPtr(hwnd, GWLP_USERDATA);
 			*(data->locking_request) = IsDlgButtonChecked(hwnd, IDC_PROTECTAVATAR) ? TRUE : FALSE;
@@ -879,7 +887,7 @@ INT_PTR SetAvatar(WPARAM wParam, LPARAM lParam)
 	HANDLE hFile = 0;
 	BYTE locking_request;
 
-	if(wParam == 0 || fei == NULL)
+	if (wParam == 0 || fei == NULL)
 		return 0;
 	else
 		hContact = (HANDLE)wParam;
@@ -911,7 +919,7 @@ INT_PTR SetAvatar(WPARAM wParam, LPARAM lParam)
 		ofn.lpfnHook = (LPOFNHOOKPROC)OpenFileSubclass;
 		locking_request = is_locked;
 		ofn.lCustData = (LPARAM)&locking_request;
-		if(GetOpenFileName(&ofn)) {
+		if (GetOpenFileName(&ofn)) {
 			szFinalName = FileName;
 			is_locked = locking_request ? 1 : is_locked;
 		}
@@ -925,7 +933,7 @@ INT_PTR SetAvatar(WPARAM wParam, LPARAM lParam)
 	* filename is now set, check it and perform all needed action
 	*/
 
-	if((hFile = CreateFile(szFinalName, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL)) == INVALID_HANDLE_VALUE)
+	if ((hFile = CreateFile(szFinalName, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL)) == INVALID_HANDLE_VALUE)
 		return 0;
 
 	// file exists...
@@ -950,7 +958,7 @@ INT_PTR SetAvatar(WPARAM wParam, LPARAM lParam)
 static INT_PTR CanSetMyAvatar(WPARAM wParam, LPARAM lParam)
 {
 	char *protocol = (char *) wParam;
-	if(protocol == NULL || fei == NULL)
+	if (protocol == NULL || fei == NULL)
 		return 0;
 
 	return ProtoServiceExists(protocol, PS_SETMYAVATAR);
@@ -1131,7 +1139,7 @@ static void FilterGetStrings(TCHAR *filter, int bytesLeft, BOOL xml, BOOL swf)
 		pfilter+=lstrlen(pfilter)+1; bytesLeft=wParam-(pfilter-filter);
 	}
 
-	if(bytesLeft) *pfilter='\0';
+	if (bytesLeft) *pfilter='\0';
 }
 
 static void DeleteGlobalUserAvatar()
@@ -1151,7 +1159,7 @@ static void DeleteGlobalUserAvatar()
 static void SetIgnoreNotify(char *protocol, BOOL ignore)
 {
 	for(int i = 0; i < g_MyAvatars.getCount(); i++) {
-		if(protocol == NULL || !lstrcmpA(g_MyAvatars[i].szProtoname, protocol)) {
+		if (protocol == NULL || !lstrcmpA(g_MyAvatars[i].szProtoname, protocol)) {
 			if (ignore)
 				g_MyAvatars[i].dwFlags |= AVS_IGNORENOTIFY;
 			else
@@ -1425,7 +1433,7 @@ static INT_PTR SetMyAvatar(WPARAM wParam, LPARAM lParam)
 						|| DBGetContactSettingByte(0, AVS_MODULE, "SetAllwaysMakeSquare", 0);
 	}
 
-	if(lParam == 0) {
+	if (lParam == 0) {
 		OPENFILENAME ofn = {0};
 		TCHAR filter[512];
 		TCHAR inipath[1024];
@@ -1467,7 +1475,7 @@ static INT_PTR SetMyAvatar(WPARAM wParam, LPARAM lParam)
 		}
 		ofn.lpstrTitle = title;
 
-		if(GetOpenFileName(&ofn))
+		if (GetOpenFileName(&ofn))
 			szFinalName = FileName;
 		else
 			return 1;
@@ -1488,7 +1496,7 @@ static INT_PTR SetMyAvatar(WPARAM wParam, LPARAM lParam)
 static DWORD GetFileSize(TCHAR *szFilename)
 {
 	HANDLE hFile = CreateFile(szFilename, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
-	if(hFile == INVALID_HANDLE_VALUE)
+	if (hFile == INVALID_HANDLE_VALUE)
 		return 0;
 
 	DWORD low = GetFileSize(hFile, NULL);
@@ -1684,7 +1692,7 @@ static int SetProtoMyAvatar(char *protocol, HBITMAP hBmp, TCHAR *originalFilenam
 
 static INT_PTR ContactOptions(WPARAM wParam, LPARAM lParam)
 {
-	if(wParam)
+	if (wParam)
 		CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_AVATAROPTIONS), 0, DlgProcAvatarOptions, (LPARAM)wParam);
 	return 0;
 }
@@ -1694,14 +1702,14 @@ INT_PTR GetMyAvatar(WPARAM wParam, LPARAM lParam)
 	int i;
 	char *szProto = (char *)lParam;
 
-	if(wParam || g_shutDown || fei == NULL)
+	if (wParam || g_shutDown || fei == NULL)
 		return 0;
 
-	if(lParam == 0 || IsBadReadPtr(szProto, 4))
+	if (lParam == 0 || IsBadReadPtr(szProto, 4))
 		return 0;
 
 	for(i = 0; i < g_MyAvatars.getCount(); i++) {
-		if(!lstrcmpA(szProto, g_MyAvatars[i].szProtoname) && g_MyAvatars[i].hbmPic != 0)
+		if (!lstrcmpA(szProto, g_MyAvatars[i].szProtoname) && g_MyAvatars[i].hbmPic != 0)
 			return (INT_PTR)&g_MyAvatars[i];
 	}
 	return 0;
@@ -1710,7 +1718,7 @@ INT_PTR GetMyAvatar(WPARAM wParam, LPARAM lParam)
 static protoPicCacheEntry *GetProtoDefaultAvatar(HANDLE hContact)
 {
 	char *szProto = (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
-	if(szProto) {
+	if (szProto) {
 		for(int i = 0; i < g_ProtoPictures.getCount(); i++) {
 			protoPicCacheEntry& p = g_ProtoPictures[i];
 			if ( !lstrcmpA(p.szProtoname, szProto) && p.hbmPic != NULL)
@@ -1722,8 +1730,8 @@ static protoPicCacheEntry *GetProtoDefaultAvatar(HANDLE hContact)
 
 HANDLE GetContactThatHaveTheAvatar(HANDLE hContact, int locked = -1)
 {
-	if(g_MetaAvail && DBGetContactSettingByte(NULL, g_szMetaName, "Enabled", 0)) {
-		if(DBGetContactSettingDword(hContact, g_szMetaName, "NumContacts", 0) >= 1) {
+	if (g_MetaAvail && DBGetContactSettingByte(NULL, g_szMetaName, "Enabled", 0)) {
+		if (DBGetContactSettingDword(hContact, g_szMetaName, "NumContacts", 0) >= 1) {
 			if (locked == -1)
 				locked = DBGetContactSettingByte(hContact, "ContactPhoto", "Locked", 0);
 
@@ -1736,7 +1744,7 @@ HANDLE GetContactThatHaveTheAvatar(HANDLE hContact, int locked = -1)
 
 INT_PTR GetAvatarBitmap(WPARAM wParam, LPARAM lParam)
 {
-	if(wParam == 0 || g_shutDown || fei == NULL)
+	if (wParam == 0 || g_shutDown || fei == NULL)
 		return 0;
 
 	HANDLE hContact = (HANDLE) wParam;
@@ -1760,20 +1768,20 @@ void DeleteAvatarFromCache(HANDLE hContact, BOOL forever)
 	struct CacheNode *node = FindAvatarInCache(hContact, FALSE);
 	if (node == NULL) {
 		struct CacheNode temp_node = {0};
-		if(g_MetaAvail)
+		if (g_MetaAvail)
 			temp_node.dwFlags |= (DBGetContactSettingByte(hContact, g_szMetaName, "IsSubcontact", 0) ? MC_ISSUBCONTACT : 0);
 		NotifyMetaAware(hContact, &temp_node, (AVATARCACHEENTRY *)GetProtoDefaultAvatar(hContact));
 		return;
 	}
 	node->mustLoad = -1;                        // mark for deletion
-	if(forever)
+	if (forever)
 		node->dwFlags |= AVS_DELETENODEFOREVER;
 	SetEvent(hLoaderEvent);
 }
 
 int ChangeAvatar(HANDLE hContact, BOOL fLoad, BOOL fNotifyHist, int pa_format)
 {
-	if(g_shutDown)
+	if (g_shutDown)
 		return 0;
 
 	hContact = GetContactThatHaveTheAvatar(hContact);
@@ -1802,16 +1810,16 @@ static void PicLoader(LPVOID param)
 {
 	DWORD dwDelay = DBGetContactSettingDword(NULL, AVS_MODULE, "picloader_sleeptime", 80);
 
-	if(dwDelay < 30)
+	if (dwDelay < 30)
 		dwDelay = 30;
-	else if(dwDelay > 100)
+	else if (dwDelay > 100)
 		dwDelay = 100;
 
 	while(!g_shutDown) {
 		struct CacheNode *node = g_Cache;
 
 		while(!g_shutDown && node) {
-			if(node->mustLoad > 0 && node->ace.hContact) {
+			if (node->mustLoad > 0 && node->ace.hContact) {
 				node->mustLoad = 0;
 				AVATARCACHEENTRY ace_temp;
 
@@ -1846,7 +1854,7 @@ static void PicLoader(LPVOID param)
 					CopyMemory(&node->ace, &ace_temp, sizeof(AVATARCACHEENTRY));
 					node->loaded = TRUE;
 					LeaveCriticalSection(&cachecs);
-					if(oldPic)
+					if (oldPic)
 						DeleteObject(oldPic);
 					NotifyMetaAware(node->ace.hContact, node);
 				}
@@ -1859,22 +1867,22 @@ static void PicLoader(LPVOID param)
 					node->loaded = FALSE;
 					node->mustLoad = 0;
 					LeaveCriticalSection(&cachecs);
-					if(oldPic)
+					if (oldPic)
 						DeleteObject(oldPic);
 					NotifyMetaAware(node->ace.hContact, node);
 				}
 
 				mir_sleep(dwDelay);
 			}
-			else if(node->mustLoad < 0 && node->ace.hContact) {         // delete this picture
+			else if (node->mustLoad < 0 && node->ace.hContact) {         // delete this picture
 				HANDLE hContact = node->ace.hContact;
 				EnterCriticalSection(&cachecs);
 				node->mustLoad = 0;
 				node->loaded = 0;
-				if(node->ace.hbmPic)
+				if (node->ace.hbmPic)
 					DeleteObject(node->ace.hbmPic);
 				ZeroMemory(&node->ace, sizeof(AVATARCACHEENTRY));
-				if(node->dwFlags & AVS_DELETENODEFOREVER) {
+				if (node->dwFlags & AVS_DELETENODEFOREVER) {
 					node->dwFlags &= ~AVS_DELETENODEFOREVER;
 				} else {
 					node->ace.hContact = hContact;
@@ -1896,7 +1904,7 @@ static void PicLoader(LPVOID param)
 
 static int MetaChanged(WPARAM wParam, LPARAM lParam)
 {
-	if(wParam == 0 || g_shutDown)
+	if (wParam == 0 || g_shutDown)
 		return 0;
 
 	AVATARCACHEENTRY *ace;
@@ -2043,9 +2051,9 @@ static int ModulesLoaded(WPARAM wParam, LPARAM lParam)
 	g_AvatarHistoryAvail = ServiceExists(MS_AVATARHISTORY_ENABLED);
 
 	g_MetaAvail = ServiceExists(MS_MC_GETPROTOCOLNAME) ? TRUE : FALSE;
-	if(g_MetaAvail) {
+	if (g_MetaAvail) {
 		g_szMetaName = (char *)CallService(MS_MC_GETPROTOCOLNAME, 0, 0);
-		if(g_szMetaName == NULL)
+		if (g_szMetaName == NULL)
 			g_MetaAvail = FALSE;
 	}
 
@@ -2087,7 +2095,7 @@ static void ReloadMyAvatar(LPVOID lpParam)
 	for(int i = 0; !g_shutDown && i < g_MyAvatars.getCount(); i++) {
 		char *myAvatarProto = g_MyAvatars[i].szProtoname;
 
-		if(szProto[0] == 0) {
+		if (szProto[0] == 0) {
 			// Notify to all possibles
 			if (lstrcmpA(myAvatarProto, szProto)) {
 				if (!ProtoServiceExists( myAvatarProto, PS_SETMYAVATAR))
@@ -2100,10 +2108,10 @@ static void ReloadMyAvatar(LPVOID lpParam)
 			continue;
 		}
 
-		if(g_MyAvatars[i].hbmPic)
+		if (g_MyAvatars[i].hbmPic)
 			DeleteObject(g_MyAvatars[i].hbmPic);
 
-		if(CreateAvatarInCache((HANDLE)-1, &g_MyAvatars[i], myAvatarProto) != -1)
+		if (CreateAvatarInCache((HANDLE)-1, &g_MyAvatars[i], myAvatarProto) != -1)
 			NotifyEventHooks(hMyAvatarChanged, (WPARAM)myAvatarProto, (LPARAM)&g_MyAvatars[i]);
 		else
 			NotifyEventHooks(hMyAvatarChanged, (WPARAM)myAvatarProto, 0);
@@ -2123,7 +2131,7 @@ static INT_PTR ReportMyAvatarChanged(WPARAM wParam, LPARAM lParam)
 		if (g_MyAvatars[i].dwFlags & AVS_IGNORENOTIFY)
 			continue;
 
-		if( !lstrcmpA(g_MyAvatars[i].szProtoname, proto)) {
+		if ( !lstrcmpA(g_MyAvatars[i].szProtoname, proto)) {
 			LPVOID lpParam = (void *)malloc(lstrlenA(g_MyAvatars[i].szProtoname) + 2);
 			strcpy((char *)lpParam, g_MyAvatars[i].szProtoname);
 			mir_forkthread(ReloadMyAvatar, lpParam);
@@ -2138,11 +2146,11 @@ static int ContactSettingChanged(WPARAM wParam, LPARAM lParam)
 {
 	DBCONTACTWRITESETTING *cws = (DBCONTACTWRITESETTING *) lParam;
 
-	if(cws == NULL || g_shutDown)
+	if (cws == NULL || g_shutDown)
 		return 0;
 
-	if(wParam == 0) {
-		if(!strcmp(cws->szSetting, "AvatarFile")
+	if (wParam == 0) {
+		if (!strcmp(cws->szSetting, "AvatarFile")
 			|| !strcmp(cws->szSetting, "PictObject")
 			|| !strcmp(cws->szSetting, "AvatarHash")
 			|| !strcmp(cws->szSetting, "AvatarSaved"))
@@ -2151,8 +2159,8 @@ static int ContactSettingChanged(WPARAM wParam, LPARAM lParam)
 		}
 		return 0;
 	}
-	else if(g_MetaAvail && !strcmp(cws->szModule, g_szMetaName)) {
-		if(lstrlenA(cws->szSetting) > 6 && !strncmp(cws->szSetting, "Status", 5))
+	else if (g_MetaAvail && !strcmp(cws->szModule, g_szMetaName)) {
+		if (lstrlenA(cws->szSetting) > 6 && !strncmp(cws->szSetting, "Status", 5))
 			MetaChanged(wParam, 0);
 	}
 	return 0;
@@ -2259,7 +2267,7 @@ void InternalDrawAvatar(AVATARDRAWREQUEST *r, HBITMAP hbm, LONG bmWidth, LONG bm
 		oldRgn = NULL;
 	}
 
-	if(r->dwFlags & AVDRQ_ROUNDEDCORNER)
+	if (r->dwFlags & AVDRQ_ROUNDEDCORNER)
 		rgn = CreateRoundRectRgn(r->rcDraw.left + leftoffset, r->rcDraw.top + topoffset, r->rcDraw.left + leftoffset + newWidth + 1, r->rcDraw.top + topoffset + newHeight + 1, 2 * r->radius, 2 * r->radius);
 	else
 		rgn = CreateRectRgn(r->rcDraw.left + leftoffset, r->rcDraw.top + topoffset, r->rcDraw.left + leftoffset + newWidth, r->rcDraw.top + topoffset + newHeight);
@@ -2269,7 +2277,7 @@ void InternalDrawAvatar(AVATARDRAWREQUEST *r, HBITMAP hbm, LONG bmWidth, LONG bm
 	bf.SourceConstantAlpha = r->alpha > 0 ? r->alpha : 255;
 	bf.AlphaFormat = dwFlags & AVS_PREMULTIPLIED ? AC_SRC_ALPHA : 0;
 
-	if(!(r->dwFlags & AVDRQ_AERO))
+	if (!(r->dwFlags & AVDRQ_AERO))
 		SetStretchBltMode(r->hTargetDC, HALFTONE);
 	//else
 	//	FillRect(r->hTargetDC, &r->rcDraw, (HBRUSH)GetStockObject(BLACK_BRUSH));
@@ -2279,7 +2287,7 @@ void InternalDrawAvatar(AVATARDRAWREQUEST *r, HBITMAP hbm, LONG bmWidth, LONG bm
 			r->hTargetDC, r->rcDraw.left + leftoffset, r->rcDraw.top + topoffset, newWidth, newHeight,
 			hdcAvatar, 0, 0, bmWidth, bmHeight, bf);
 	} else {
-		if((bf.SourceConstantAlpha == 255 && bf.AlphaFormat == 0 && !(r->dwFlags & AVDRQ_FORCEALPHA) && !(r->dwFlags & AVDRQ_AERO)) || !AvsAlphaBlend) {
+		if ((bf.SourceConstantAlpha == 255 && bf.AlphaFormat == 0 && !(r->dwFlags & AVDRQ_FORCEALPHA) && !(r->dwFlags & AVDRQ_AERO)) || !AvsAlphaBlend) {
 			StretchBlt(r->hTargetDC, r->rcDraw.left + leftoffset, r->rcDraw.top + topoffset, newWidth, newHeight, hdcAvatar, 0, 0, bmWidth, bmHeight, SRCCOPY);
 		} else {
 			/*
@@ -2304,7 +2312,7 @@ void InternalDrawAvatar(AVATARDRAWREQUEST *r, HBITMAP hbm, LONG bmWidth, LONG bm
 			DeleteDC(hdcTemp);
 		}
 
-		if((r->dwFlags & AVDRQ_DRAWBORDER) && !((r->dwFlags & AVDRQ_HIDEBORDERONTRANSPARENCY) && (dwFlags & AVS_HASTRANSPARENCY))) {
+		if ((r->dwFlags & AVDRQ_DRAWBORDER) && !((r->dwFlags & AVDRQ_HIDEBORDERONTRANSPARENCY) && (dwFlags & AVS_HASTRANSPARENCY))) {
 			HBRUSH br = CreateSolidBrush(r->clrBorder);
 			HBRUSH brOld = (HBRUSH)SelectObject(r->hTargetDC, br);
 			FrameRgn(r->hTargetDC, rgn, br, 1, 1);
@@ -2326,26 +2334,26 @@ INT_PTR DrawAvatarPicture(WPARAM wParam, LPARAM lParam)
 	AVATARDRAWREQUEST *r = (AVATARDRAWREQUEST *)lParam;
 	AVATARCACHEENTRY *ace = NULL;
 
-	if(fei == NULL || r == NULL || IsBadReadPtr((void *)r, sizeof(AVATARDRAWREQUEST)))
+	if (fei == NULL || r == NULL || IsBadReadPtr((void *)r, sizeof(AVATARDRAWREQUEST)))
 		return 0;
 
-	if(r->cbSize != sizeof(AVATARDRAWREQUEST))
+	if (r->cbSize != sizeof(AVATARDRAWREQUEST))
 		return 0;
 
-	if(r->dwFlags & AVDRQ_PROTOPICT) {
-		if(r->szProto == NULL)
+	if (r->dwFlags & AVDRQ_PROTOPICT) {
+		if (r->szProto == NULL)
 			return 0;
 
 		for(int i = 0; i < g_ProtoPictures.getCount(); i++) {
 			protoPicCacheEntry& p = g_ProtoPictures[i];
-			if( !lstrcmpA(p.szProtoname, r->szProto) && lstrlenA(r->szProto) == lstrlenA(p.szProtoname) && p.hbmPic != 0) {
+			if ( !lstrcmpA(p.szProtoname, r->szProto) && lstrlenA(r->szProto) == lstrlenA(p.szProtoname) && p.hbmPic != 0) {
 				ace = (AVATARCACHEENTRY *)&g_ProtoPictures[i];
 				break;
 			}
 		}
 	}
-	else if(r->dwFlags & AVDRQ_OWNPIC) {
-		if(r->szProto == NULL)
+	else if (r->dwFlags & AVDRQ_OWNPIC) {
+		if (r->szProto == NULL)
 			return 0;
 
 		if (r->szProto[0] == '\0' && DBGetContactSettingByte(NULL, AVS_MODULE, "GlobalUserAvatarNotConsistent", 1))
@@ -2356,10 +2364,10 @@ INT_PTR DrawAvatarPicture(WPARAM wParam, LPARAM lParam)
 	else
 		ace = (AVATARCACHEENTRY *)GetAvatarBitmap((WPARAM)r->hContact, 0);
 
-	if(ace && (!(r->dwFlags & AVDRQ_RESPECTHIDDEN) || !(ace->dwFlags & AVS_HIDEONCLIST))) {
+	if (ace && (!(r->dwFlags & AVDRQ_RESPECTHIDDEN) || !(ace->dwFlags & AVS_HIDEONCLIST))) {
 		ace->t_lastAccess = time(NULL);
 
-		if(ace->bmHeight == 0 || ace->bmWidth == 0 || ace->hbmPic == 0)
+		if (ace->bmHeight == 0 || ace->bmWidth == 0 || ace->hbmPic == 0)
 			return 0;
 
 		InternalDrawAvatar(r, ace->hbmPic, ace->bmWidth, ace->bmHeight, ace->dwFlags);
@@ -2485,10 +2493,10 @@ extern "C" int __declspec(dllexport) Load(PLUGINLINK * link)
 	pluginLink = link;
 	mir_getLP( &pluginInfoEx );
 
-	if(ServiceExists(MS_IMG_GETINTERFACE))
+	if (ServiceExists(MS_IMG_GETINTERFACE))
 		result = CallService(MS_IMG_GETINTERFACE, FI_IF_VERSION, (LPARAM)&fei);
 
-	if(fei == NULL || result != S_OK) {
+	if (fei == NULL || result != S_OK) {
 		MessageBox(0, TranslateT("Fatal error, image services not found. Avatar services will be disabled."), TranslateT("Avatar Service"), MB_OK);
 		return 1;
 	}
@@ -2502,7 +2510,7 @@ extern "C" int __declspec(dllexport) Unload(void)
 
 	while(pNode) {
 		//DeleteCriticalSection(&pNode->cs);
-		if(pNode->ace.hbmPic != 0)
+		if (pNode->ace.hbmPic != 0)
 			DeleteObject(pNode->ace.hbmPic);
 		pNode = pNode->pNextNode;
 	}
