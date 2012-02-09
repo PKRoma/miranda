@@ -237,7 +237,6 @@
 	".\INCLUDE\commonheaders.h"\
 	".\INCLUDE\config.h"\
 	".\INCLUDE\extBackg.h"\
-	".\INCLUDE\m_avatars.h"\
 	".\INCLUDE\m_cln_skinedit.h"\
 	".\INCLUDE\m_metacontacts.h"\
 	".\INCLUDE\rowheight_funcs.h"\

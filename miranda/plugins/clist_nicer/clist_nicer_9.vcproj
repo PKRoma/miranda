@@ -1139,10 +1139,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\INCLUDE\m_avatars.h"
-				>
-			</File>
-			<File
 				RelativePath=".\INCLUDE\m_cln_skinedit.h"
 				>
 			</File>

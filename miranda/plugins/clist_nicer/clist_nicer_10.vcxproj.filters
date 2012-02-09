@@ -164,9 +164,6 @@
     <ClInclude Include="INCLUDE\extBackg.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="INCLUDE\m_avatars.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="INCLUDE\m_cln_skinedit.h">
       <Filter>Header Files</Filter>
     </ClInclude>

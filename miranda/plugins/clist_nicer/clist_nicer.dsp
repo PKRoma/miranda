@@ -332,10 +332,6 @@ SOURCE=.\INCLUDE\IcoLib.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\INCLUDE\m_avatars.h
-# End Source File
-# Begin Source File
-
 SOURCE=.\INCLUDE\m_cln_skinedit.h
 # End Source File
 # Begin Source File

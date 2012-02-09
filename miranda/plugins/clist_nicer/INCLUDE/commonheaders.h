@@ -69,6 +69,7 @@
 #include <m_utils.h>
 #include <m_database.h>
 #include <m_langpack.h>
+#include <m_avatars.h>
 #include <m_button.h>
 #include <m_options.h>
 #include <m_protosvc.h>
@@ -87,7 +88,6 @@
 #include <m_metacontacts.h>
 #include <m_cln_skinedit.h>
 
-#include "m_avatars.h"
 #include "extbackg.h"
 #include "clc.h"
 #include <config.h>
