@@ -5,7 +5,7 @@
 // Copyright © 2000-2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
 // Copyright © 2001-2002 Jon Keating, Richard Hughes
 // Copyright © 2002-2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004-2012 Joe Kucera
+// Copyright © 2004-2010 Joe Kucera
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -716,7 +716,7 @@ void CIcqProto::setUserInfo()
 	}
 #endif
 	{
-		packShortCapability(&packet, 0x1349);  // AIM_CAPS_ICQSERVERRELAY
+//		packShortCapability(&packet, 0x1349);  // AIM_CAPS_ICQSERVERRELAY
 	}
 	if (m_bUtfEnabled)
 	{
