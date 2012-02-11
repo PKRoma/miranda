@@ -2654,7 +2654,7 @@ void CIcqProto::handleRecvServMsgError(BYTE *buf, WORD wLen, WORD wFlags, DWORD 
 		case 0x0004:     // Recipient is not logged in (resend in a offline message)
 			if (pCookieData->bMessageType == MTYPE_PLAIN) 
 			{
-				if (((cookie_message_data_ext*)pCookieData)->isOffline)
+				if (pCookieData->isOffline)
 				{ // offline failed - most probably to AIM contact
 					pszErrorMessage = ICQTranslate("The contact does not support receiving offline messages.");
 					break;
