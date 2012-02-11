@@ -297,10 +297,8 @@ Usuñ obrazek z listy
 Obrazek od %s
 [Image for %s]
 Obrazek dla %s
-[Image files (*.bmp,*.jpg,*.gif)]
-Pliki obrazów (*.bmp,*.jpg,*.gif)
-[Image files (*.bmp,*.jpg,*.gif,*.png)]
-Pliki obrazów (*.bmp,*.jpg,*.gif,*.png)
+[Image files (*.bmp,*.gif,*.jpeg,*.jpg,*.png)]
+Pliki obrazów (*.bmp,*.gif,*.jpeg,*.jpg,*.png)
 [Select picture to send]
 Wybierz obrazek do wys³ania
 [Could not load image. Image might have unsupported file format.]
