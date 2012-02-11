@@ -757,21 +757,78 @@ GGIMAGEDLGDATA *gg_img_recvdlg(GGPROTO *gg, HANDLE hContact)
 	return dat;
 }
 
+////////////////////////////////////////////////////////////////////////////
+// Checks if an image is already saved to the specified path
+// Returns 1 if yes, 0 if no or -1 if different image on this path is found
+int gg_img_isexists(char *szPath, GGIMAGEENTRY *dat)
+{
+	struct _stat st;
+
+	if (_stat(szPath, &st) != 0)
+		return 0;
+
+	if (st.st_size == dat->nSize)
+	{
+		char *lpData;
+		FILE *fp = fopen(szPath, "rb");
+		if (!fp) return 0;
+		lpData = mir_alloc(dat->nSize);
+		if (fread(lpData, 1, dat->nSize, fp) == dat->nSize)
+		{
+			if (dat->crc32 == gg_fix32(gg_crc32(0, lpData, dat->nSize)) ||
+				memcmp(lpData, dat->lpData, dat->nSize) == 0)
+			{
+				fclose(fp);
+				return 1;
+			}
+		}
+		mir_free(lpData);
+		fclose(fp);
+	}
+
+	return -1;
+}
+
+////////////////////////////////////////////////////////////////////////////
+// Determine if image's file name has the proper extension
+char *gg_img_hasextension(const char *filename)
+{
+	if (filename != NULL && *filename != '\0')
+	{
+		char *imgtype = strrchr(filename, '.');
+		if (imgtype != NULL)
+		{
+			size_t len = strlen(imgtype);
+			imgtype++;
+			if (len == 4 && (_stricmp(imgtype, "bmp") == 0 ||
+							 _stricmp(imgtype, "gif") == 0 ||
+							 _stricmp(imgtype, "jpg") == 0 ||
+							 _stricmp(imgtype, "png") == 0))
+				return --imgtype;
+			if (len == 5 &&  _stricmp(imgtype, "jpeg") == 0)
+				return --imgtype;
+		}
+	}
+	return NULL;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
-// Display received image using [img] BBCode in message
+// Display received image using message with [img] BBCode
 int gg_img_displayasmsg(GGPROTO *gg, HANDLE hContact, void *img)
 {
 	GGIMAGEENTRY *dat = (GGIMAGEENTRY *)img;
-	char szPath[MAX_PATH], *path = (char *)alloca(MAX_PATH);
+	char szPath[MAX_PATH], *path = (char*)alloca(MAX_PATH), *pImgext, imgext[6];
 	size_t tPathLen;
-	FILE *fp;
+	int i, res;
 
-	if (gg->hImagesFolder == NULL || FoldersGetCustomPath(gg->hImagesFolder, path, MAX_PATH, "")) {
+	if (gg->hImagesFolder == NULL || FoldersGetCustomPath(gg->hImagesFolder, path, MAX_PATH, ""))
+	{
 		char *tmpPath = Utils_ReplaceVars("%miranda_userdata%");
 		tPathLen = mir_snprintf(szPath, MAX_PATH, "%s\\%s\\ImageCache", tmpPath, GG_PROTO);
 		mir_free(tmpPath);
 	}
-	else {
+	else
+	{
 		strcpy(szPath, path);
 		tPathLen = strlen(szPath);
 	}
@@ -780,27 +837,45 @@ int gg_img_displayasmsg(GGPROTO *gg, HANDLE hContact, void *img)
 		CallService(MS_UTILS_CREATEDIRTREE, 0, (LPARAM)szPath);
 
 	mir_snprintf(szPath + tPathLen, MAX_PATH - tPathLen, "\\%s", dat->lpszFileName);
-	fp = fopen(szPath, "w+b");
-	if(fp)
+	if ((pImgext = gg_img_hasextension(szPath)) == NULL)
+		pImgext = szPath + strlen(szPath);
+	mir_snprintf(imgext, SIZEOF(imgext), "%s", pImgext);
+	for (i = 1; ; ++i)
 	{
-		char imgmsg[MAX_PATH + 11];
+		if ((res = gg_img_isexists(szPath, dat)) != -1) break;
+		mir_snprintf(szPath, MAX_PATH, "%.*s (%u)%s", pImgext - szPath, szPath, i, imgext);
+	}
+
+	if (res == 0)
+	{
+		// Image file not found, thus create it
+		FILE *fp = fopen(szPath, "w+b");
+		if (fp)
+		{
+			res = fwrite(dat->lpData, dat->nSize, 1, fp) > 0;
+			fclose(fp);
+		}
+	}
+
+	if (res != 0)
+	{
+		char image_msg[MAX_PATH + 11];
 		CCSDATA ccs = {0};
 		PROTORECVEVENT pre = {0};
-
-		fwrite(dat->lpData, dat->nSize, 1, fp);
-		fclose(fp);
-		gg_netlog(gg, "gg_img_displayasmsg: Image saved to %s.", szPath);
 
 		ccs.szProtoService = PSR_MESSAGE;
 		ccs.hContact = hContact;
 		ccs.lParam = (LPARAM)&pre;
-		mir_snprintf(imgmsg, SIZEOF(imgmsg), "[img]%s[/img]", szPath);
+		mir_snprintf(image_msg, SIZEOF(image_msg), "[img]%s[/img]", szPath);
 		pre.timestamp = time(NULL);
-		pre.szMessage = imgmsg;
+		pre.szMessage = image_msg;
 		CallService(MS_PROTO_CHAINRECV, 0, (LPARAM) &ccs);
+		gg_netlog(gg, "gg_img_displayasmsg: Image saved to %s.", szPath);
 	}
 	else
+	{
 		gg_netlog(gg, "gg_img_displayasmsg: Cannot save image to %s.", szPath);
+	}
 
 	return 0;
 }
@@ -885,7 +960,7 @@ gg_img_releasepicture(void *img)
 }
 
 ////////////////////////////////////////////////////////////////////////////
-// Helper functions to determine image file format and the right extension
+// Helper function to determine image file format and the right extension
 const char *gg_img_guessfileextension(const char *lpData)
 {
 	if (lpData != NULL)
@@ -900,28 +975,6 @@ const char *gg_img_guessfileextension(const char *lpData)
 			return ".png";
 	}
 	return "";
-}
-
-////////////////////////////////////////////////////////////////////////////
-BOOL gg_img_hasextension(const char *filename)
-{
-	if (filename != NULL && *filename != '\0')
-	{
-		char *imgtype = strrchr(filename, '.');
-		if (imgtype != NULL)
-		{
-			int len = strlen(imgtype);
-			imgtype++;
-			if (len == 4 && (_stricmp(imgtype, "bmp") == 0 ||
-							 _stricmp(imgtype, "gif") == 0 ||
-							 _stricmp(imgtype, "jpg") == 0 ||
-							 _stricmp(imgtype, "png") == 0))
-				return TRUE;
-			if (len == 5 &&  _stricmp(imgtype, "jpeg") == 0)
-				return TRUE;
-		}
-	}
-	return FALSE;
 }
 
 ////////////////////////////////////////////////////////////////////////////
