@@ -273,7 +273,7 @@ void CIcqProto::InitMessageCookie(cookie_message_data *pCookie)
 
 cookie_message_data* CIcqProto::CreateMessageCookie(WORD bMsgType, BYTE bAckType)
 {
-	cookie_message_data *pCookie = (cookie_message_data*)SAFE_MALLOC(bMsgType == MTYPE_PLAIN ? sizeof(cookie_message_data_ext) : sizeof(cookie_message_data));
+	cookie_message_data *pCookie = (cookie_message_data*)SAFE_MALLOC(sizeof(cookie_message_data));
 	if (pCookie)
 	{
 		pCookie->bMessageType = bMsgType;
@@ -290,19 +290,19 @@ cookie_message_data* CIcqProto::CreateMessageCookieData(BYTE bMsgType, HANDLE hC
 	BYTE bAckType;
 	WORD wStatus = getContactStatus(hContact);
 
-	bAckType = getSettingByte(NULL, "SlowSend", DEFAULT_SLOWSEND) && (dwUin || wStatus != ID_STATUS_OFFLINE) ? ACKTYPE_SERVER : ACKTYPE_NONE;
-
-/*
-	if (!getSettingByte(hContact, "SlowSend", DEFAULT_SLOWSEND) || !getSettingByte(NULL, "SlowSend", DEFAULT_SLOWSEND) ||
+	if (!getSettingByte(hContact, "SlowSend", getSettingByte(NULL, "SlowSend", DEFAULT_SLOWSEND)) ||
 		(!dwUin && wStatus == ID_STATUS_OFFLINE))
 		bAckType = ACKTYPE_NONE;
-	else if ((bUseSrvRelay && ((!dwUin) || (!CheckContactCapabilities(hContact, CAPF_SRV_RELAY)) ||
-		(wStatus == ID_STATUS_OFFLINE))) || getSettingByte(hContact, "OnlyServerAcks", DEFAULT_ONLYSERVERACKS) ||
-		getSettingByte(NULL, "OnlyServerAcks", DEFAULT_ONLYSERVERACKS))
-		bAckType = ACKTYPE_SERVER;
-	else
+	else if (bUseSrvRelay)
 		bAckType = ACKTYPE_CLIENT;
-*/
+	else
+		bAckType = ACKTYPE_SERVER;
 
-	return CreateMessageCookie(bMsgType, bAckType);
+	cookie_message_data* pCookieData = CreateMessageCookie(bMsgType, bAckType);
+
+	// set flag for offline messages - to allow proper error handling
+	if (wStatus == ID_STATUS_OFFLINE || wStatus == ID_STATUS_INVISIBLE) 
+		pCookieData->isOffline = TRUE;
+
+	return pCookieData;
 }

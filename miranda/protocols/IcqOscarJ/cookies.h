@@ -89,14 +89,8 @@ struct cookie_message_data
   DWORD dwMsgID2;
   WORD bMessageType;
   BYTE nAckType;
-};
-
-
-struct cookie_message_data_ext: public cookie_message_data
-{
   BYTE isOffline;
 };
-
 
 #define REQUESTTYPE_OWNER        0
 #define REQUESTTYPE_USERAUTO     1
