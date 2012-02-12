@@ -1650,6 +1650,7 @@ int __cdecl CIcqProto::SendMsg( HANDLE hContact, int flags, const char* pszSrc )
 
 				// Set up the ack type
 				pCookieData = CreateMessageCookieData(MTYPE_PLAIN, hContact, dwUin, TRUE);
+				pCookieData->nAckType = ACKTYPE_CLIENT;
 				dwCookie = icq_SendDirectMessage(hContact, dc_msg, strlennull(dc_msg), 1, pCookieData, dc_cap);
 
 				SAFE_FREE(&szUserAnsi);
@@ -1664,7 +1665,8 @@ int __cdecl CIcqProto::SendMsg( HANDLE hContact, int flags, const char* pszSrc )
 
 			if (!dwUin || !CheckContactCapabilities(hContact, CAPF_SRV_RELAY) || 
 				wRecipientStatus == ID_STATUS_OFFLINE || wRecipientStatus == ID_STATUS_INVISIBLE ||
-				getSettingByte(hContact, "OnlyServerAcks", getSettingByte(NULL, "OnlyServerAcks", DEFAULT_ONLYSERVERACKS)))
+				getSettingByte(hContact, "OnlyServerAcks", getSettingByte(NULL, "OnlyServerAcks", DEFAULT_ONLYSERVERACKS)) ||
+				getSettingByte(hContact, "SlowSend", getSettingByte(NULL, "SlowSend", DEFAULT_SLOWSEND)))
 			{
 				/// TODO: add support for RTL & user customizable font
 				{
