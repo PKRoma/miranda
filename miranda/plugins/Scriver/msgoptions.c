@@ -1,7 +1,7 @@
 /*
 Scriver
 
-Copyright 2000-2009 Miranda ICQ/IM project,
+Copyright 2000-2012 Miranda ICQ/IM project,
 
 all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
@@ -493,6 +493,7 @@ static INT_PTR CALLBACK DlgProcLayoutOptions(HWND hwndDlg, UINT msg, WPARAM wPar
 			SetDlgItemTextA(hwndDlg, IDC_ATRANSPARENCYPERC, str);
 			sprintf(str,"%d%%",(int)(100*SendDlgItemMessage(hwndDlg,IDC_ITRANSPARENCYVALUE,TBM_GETPOS,0,0)/255));
 			SetDlgItemTextA(hwndDlg, IDC_ITRANSPARENCYPERC, str);
+			SetDlgItemInt(hwndDlg, IDC_INPUTLINES, DBGetContactSettingDword(NULL, SRMMMOD, SRMSGSET_AUTORESIZELINES, SRMSGDEFSET_AUTORESIZELINES), FALSE);
 
 			if (pSetLayeredWindowAttributes == NULL) {
 				EnableWindow(GetDlgItem(hwndDlg, IDC_TRANSPARENCY), FALSE);
@@ -530,6 +531,11 @@ static INT_PTR CALLBACK DlgProcLayoutOptions(HWND hwndDlg, UINT msg, WPARAM wPar
                         EnableWindow(GetDlgItem(hwndDlg, IDC_TRANSPARENCYTEXT2), bChecked);
                     }
                     break;
+
+				case IDC_INPUTLINES:
+					if (HIWORD(wParam) != EN_CHANGE || (HWND) lParam != GetFocus())
+						return 0;
+					break;
 			}
 			MarkChanges(16, hwndDlg);
 			break;
@@ -548,6 +554,8 @@ static INT_PTR CALLBACK DlgProcLayoutOptions(HWND hwndDlg, UINT msg, WPARAM wPar
                                 switch (((LPNMHDR) lParam)->code) {
                                     case PSN_APPLY:
                                     {
+                                        UINT lines;
+
                                         DBWriteContactSettingByte(NULL, SRMMMOD, SRMSGSET_SHOWSTATUSBAR, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_SHOWSTATUSBAR));
                                         DBWriteContactSettingByte(NULL, SRMMMOD, SRMSGSET_SHOWTITLEBAR, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_SHOWTITLEBAR));
                                         DBWriteContactSettingByte(NULL, SRMMMOD, SRMSGSET_SHOWBUTTONLINE, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_SHOWTOOLBAR));
@@ -561,6 +569,10 @@ static INT_PTR CALLBACK DlgProcLayoutOptions(HWND hwndDlg, UINT msg, WPARAM wPar
                                         DBWriteContactSettingByte(NULL, SRMMMOD, SRMSGSET_SHOWPROGRESS, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_SHOWPROGRESS));
 
                                         DBWriteContactSettingByte(NULL, SRMMMOD, SRMSGSET_AVATARENABLE, (BYTE) IsDlgButtonChecked(hwndDlg, IDC_AVATARSUPPORT));
+
+                                        lines = GetDlgItemInt(hwndDlg, IDC_INPUTLINES, NULL, FALSE);
+                                        DBWriteContactSettingDword(NULL, SRMMMOD, SRMSGSET_AUTORESIZELINES, lines ? lines : SRMSGDEFSET_AUTORESIZELINES);
+										LoadInfobarFonts();
 
                                         ApplyChanges(16);
                                         return TRUE;

@@ -98,7 +98,7 @@ STYLE DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    GROUPBOX        "Layout",IDC_STATIC,0,0,304,124
+    GROUPBOX        "Layout",IDC_STATIC,0,0,304,138
     CONTROL         "Show titlebar",IDC_SHOWTITLEBAR,"Button",
 					BS_AUTOCHECKBOX | WS_TABSTOP,8,12,180,10
     CONTROL         "Show status bar",IDC_SHOWSTATUSBAR,"Button",
@@ -116,14 +116,17 @@ BEGIN
 					"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,78,180,10
     CONTROL         "Enable transparency",IDC_TRANSPARENCY,"Button",
 					BS_AUTOCHECKBOX | WS_TABSTOP,8,95,140,10
-    LTEXT           "active",IDC_TRANSPARENCYTEXT1,148,91,36,8
+    LTEXT           "active",IDC_TRANSPARENCYTEXT1,152,91,36,8
     CONTROL         "Slider1",IDC_ATRANSPARENCYVALUE,"msctls_trackbar32",
-					TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,194,91,70,11
+					TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,194,91,70,12
     LTEXT           "100%",IDC_ATRANSPARENCYPERC,264,91,30,8
-    LTEXT           "inactive",IDC_TRANSPARENCYTEXT2,148,102,36,8
+    LTEXT           "inactive",IDC_TRANSPARENCYTEXT2,152,102,36,8
     CONTROL         "Slider1",IDC_ITRANSPARENCYVALUE,"msctls_trackbar32",
-					TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,194,102,70,11
+					TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,194,102,70,12
     LTEXT           "100%",IDC_ITRANSPARENCYPERC,264,102,30,8
+    LTEXT           "Min input area size",IDC_STATIC,8,119,139,8
+    EDITTEXT        IDC_INPUTLINES,154,117,25,12,ES_AUTOHSCROLL | ES_NUMBER
+    LTEXT           "lines",IDC_STATIC,187,119,43,8
 
 END
 
@@ -299,12 +302,12 @@ STYLE DS_SETFONT | DS_3DLOOK | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTI
 CAPTION "Send To All Tabs"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    ICON			IDI_QUESTION, IDC_STATIC, 10, 10, 21, 21
+    ICON            IDI_QUESTION, IDC_STATIC, 10, 10, 21, 21
     LTEXT           "You are about to send a message to all open tabs.\nAre you sure ?",
-					IDC_STATIC,40,10,175,20
+                    IDC_STATIC,40,10,175,20
     CONTROL         "Remember my choice for this container",
-					IDC_REMEMBER,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,40,39,
-					175,10
+                    IDC_REMEMBER,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,40,39,
+                    175,10
     DEFPUSHBUTTON   "Yes",IDYES,20,58,60,14
     PUSHBUTTON      "No",IDCANCEL,141,58,60,14
 END
@@ -569,11 +572,11 @@ IDI_OVERLAY             ICON                    "res/chat/overlay.ico"
 IDI_NICKLIST2           ICON                    "res/chat/nicklist2.ico"
 IDI_FILTER2             ICON                    "res/chat/filter2.ico"
 
-IDI_GOOGLE				ICON                    "res/google.ico"
-IDI_BING				ICON                    "res/bing.ico"
+IDI_GOOGLE              ICON                    "res/google.ico"
+IDI_BING                ICON                    "res/bing.ico"
 IDI_YAHOO           	ICON                    "res/yahoo.ico"
-IDI_WIKIPEDIA 			ICON                    "res/wikipedia.ico"
-IDI_FOODNETWORK			ICON                    "res/foodnetwork.ico"
+IDI_WIKIPEDIA           ICON                    "res/wikipedia.ico"
+IDI_FOODNETWORK         ICON                    "res/foodnetwork.ico"
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -627,7 +630,7 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "Select &All",                 IDM_SELECTALL
         MENUITEM SEPARATOR
-        MENUITEM "Clear",                 		IDM_CLEAR
+        MENUITEM "Clear",                       IDM_CLEAR
     END
     POPUP "Tabs"
     BEGIN
@@ -651,11 +654,11 @@ BEGIN
         MENUITEM SEPARATOR
         POPUP "Word lookup", GRAYED
         BEGIN
-            MENUITEM "Google",                      IDM_SEARCH_GOOGLE
-            MENUITEM "Bing",                      IDM_SEARCH_BING
-            MENUITEM "Yahoo",                       IDM_SEARCH_YAHOO
-            MENUITEM "Wikipedia (en)",                  IDM_SEARCH_WIKIPEDIA
-			MENUITEM "Foodnetwork",		IDM_SEARCH_FOODNETWORK
+            MENUITEM "Google",                  IDM_SEARCH_GOOGLE
+            MENUITEM "Bing",                    IDM_SEARCH_BING
+            MENUITEM "Yahoo",                   IDM_SEARCH_YAHOO
+            MENUITEM "Wikipedia (en)",          IDM_SEARCH_WIKIPEDIA
+            MENUITEM "Foodnetwork",             IDM_SEARCH_FOODNETWORK
         END
     END
 END
@@ -667,8 +670,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 2,9,0,4
- PRODUCTVERSION 2,9,0,4
+ FILEVERSION 2,10,0,1
+ PRODUCTVERSION 2,10,0,1
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -683,18 +686,15 @@ BEGIN
     BEGIN
         BLOCK "041504e3"
         BEGIN
-            VALUE "Comments", "http://www.miranda-im.org\0"
-            VALUE "CompanyName", "Miranda IM Development Team\0"
-            VALUE "FileDescription", "Scriver - send and receive instant messages\0"
-            VALUE "FileVersion", "2.9.0.4\0"
-            VALUE "InternalName", "scriver\0"
-            VALUE "LegalCopyright", "Copyright (c) 2000-2009 Miranda IM Project\0"
-            VALUE "LegalTrademarks", "\0"
-            VALUE "OriginalFilename", "scriver.dll\0"
-            VALUE "PrivateBuild", "\0"
-            VALUE "ProductName", "Scriver\0"
-            VALUE "ProductVersion", "2.9.0.4\0"
-            VALUE "SpecialBuild", "\0"
+            VALUE "Comments", "http://www.miranda-im.org"
+            VALUE "CompanyName", "Miranda IM Development Team"
+            VALUE "FileDescription", "Scriver - send and receive instant messages"
+            VALUE "FileVersion", "2.10.0.1"
+            VALUE "InternalName", "scriver"
+            VALUE "LegalCopyright", "Copyright (c) 2000-2012 Miranda IM Project"
+            VALUE "OriginalFilename", "scriver.dll"
+            VALUE "ProductName", "Scriver"
+            VALUE "ProductVersion", "2.10.0.1"
         END
     END
     BLOCK "VarFileInfo"

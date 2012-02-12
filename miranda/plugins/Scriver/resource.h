@@ -169,6 +169,7 @@
 #define IDC_INFOBAR						1644
 #define IDC_AVATAR						1645
 #define IDC_XSTATUSICON                 1646
+#define IDC_INPUTLINES                  1647
 #define IDM_CUT                         40000
 #define IDM_COPY                        40001
 #define IDM_PASTE                       40002
