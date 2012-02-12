@@ -90,7 +90,7 @@ CLEAN :
 	-@erase "$(INTDIR)\modern_viewmodebar.obj"
 	-@erase "$(INTDIR)\modern_xptheme.obj"
 	-@erase "$(INTDIR)\modernb.pch"
-	-@erase "$(INTDIR)\resource.res"
+	-@erase "$(INTDIR)\msvc6.res"
 	-@erase "$(INTDIR)\vc60.idb"
 	-@erase "$(INTDIR)\vc60.pdb"
 	-@erase "$(OUTDIR)\clist_modern.exp"
@@ -103,7 +103,7 @@ CLEAN :
 
 CPP_PROJ=/nologo /MD /W3 /Zi /O1 /I "../../include" /I "../../include/msapi" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "modernb_EXPORTS" /Fp"$(INTDIR)\modernb.pch" /Yu"hdr/modern_commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c
 MTL_PROJ=/nologo /D "NDEBUG" /mktyplib203 /win32
-RSC_PROJ=/l 0x809 /fo"$(INTDIR)\resource.res" /d "NDEBUG"
+RSC_PROJ=/l 0x809 /fo"$(INTDIR)\msvc6.res" /d "NDEBUG"
 BSC32=bscmake.exe
 BSC32_FLAGS=/nologo /o"$(OUTDIR)\modernb.bsc"
 BSC32_SBRS= \
@@ -160,7 +160,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\modern_toolbar.obj" \
 	"$(INTDIR)\modern_viewmodebar.obj" \
 	"$(INTDIR)\modern_xptheme.obj" \
-	"$(INTDIR)\resource.res"
+	"$(INTDIR)\msvc6.res"
 
 "..\..\bin\release\plugins\clist_modern.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -226,7 +226,7 @@ CLEAN :
 	-@erase "$(INTDIR)\modern_viewmodebar.obj"
 	-@erase "$(INTDIR)\modern_xptheme.obj"
 	-@erase "$(INTDIR)\modernb.pch"
-	-@erase "$(INTDIR)\resource.res"
+	-@erase "$(INTDIR)\msvc6.res"
 	-@erase "$(INTDIR)\vc60.idb"
 	-@erase "$(INTDIR)\vc60.pdb"
 	-@erase "$(OUTDIR)\clist_modern.exp"
@@ -239,7 +239,7 @@ CLEAN :
 
 CPP_PROJ=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../../include" /I "../../include/msapi" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "modernb_EXPORTS" /Fp"$(INTDIR)\modernb.pch" /Yu"hdr/modern_commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c
 MTL_PROJ=/nologo /D "_DEBUG" /mktyplib203 /win32
-RSC_PROJ=/l 0x809 /fo"$(INTDIR)\resource.res" /d "_DEBUG"
+RSC_PROJ=/l 0x809 /fo"$(INTDIR)\msvc6.res" /d "_DEBUG"
 BSC32=bscmake.exe
 BSC32_FLAGS=/nologo /o"$(OUTDIR)\modernb.bsc"
 BSC32_SBRS= \
@@ -296,7 +296,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\modern_toolbar.obj" \
 	"$(INTDIR)\modern_viewmodebar.obj" \
 	"$(INTDIR)\modern_xptheme.obj" \
-	"$(INTDIR)\resource.res"
+	"$(INTDIR)\msvc6.res"
 
 "..\..\bin\debug\plugins\clist_modern.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -362,7 +362,7 @@ CLEAN :
 	-@erase "$(INTDIR)\modern_viewmodebar.obj"
 	-@erase "$(INTDIR)\modern_xptheme.obj"
 	-@erase "$(INTDIR)\modernb.pch"
-	-@erase "$(INTDIR)\resource.res"
+	-@erase "$(INTDIR)\msvc6.res"
 	-@erase "$(INTDIR)\vc60.idb"
 	-@erase "$(INTDIR)\vc60.pdb"
 	-@erase "$(OUTDIR)\clist_modern.exp"
@@ -375,7 +375,7 @@ CLEAN :
 
 CPP_PROJ=/nologo /MD /W3 /Zi /O1 /I "../../include" /I "../../include/msapi" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "UNICODE" /D "_USRDLL" /D "modernb_EXPORTS" /Fp"$(INTDIR)\modernb.pch" /Yu"hdr/modern_commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c
 MTL_PROJ=/nologo /D "NDEBUG" /mktyplib203 /win32
-RSC_PROJ=/l 0x809 /fo"$(INTDIR)\resource.res" /d "NDEBUG"
+RSC_PROJ=/l 0x809 /fo"$(INTDIR)\msvc6.res" /d "NDEBUG"
 BSC32=bscmake.exe
 BSC32_FLAGS=/nologo /o"$(OUTDIR)\modernb.bsc"
 BSC32_SBRS= \
@@ -432,7 +432,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\modern_toolbar.obj" \
 	"$(INTDIR)\modern_viewmodebar.obj" \
 	"$(INTDIR)\modern_xptheme.obj" \
-	"$(INTDIR)\resource.res"
+	"$(INTDIR)\msvc6.res"
 
 "..\..\bin\release Unicode\plugins\clist_modern.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -498,7 +498,7 @@ CLEAN :
 	-@erase "$(INTDIR)\modern_viewmodebar.obj"
 	-@erase "$(INTDIR)\modern_xptheme.obj"
 	-@erase "$(INTDIR)\modernb.pch"
-	-@erase "$(INTDIR)\resource.res"
+	-@erase "$(INTDIR)\msvc6.res"
 	-@erase "$(INTDIR)\vc60.idb"
 	-@erase "$(INTDIR)\vc60.pdb"
 	-@erase "$(OUTDIR)\clist_modern.exp"
@@ -511,7 +511,7 @@ CLEAN :
 
 CPP_PROJ=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../../include" /I "../../include/msapi" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "UNICODE" /D "_USRDLL" /D "modernb_EXPORTS" /Fp"$(INTDIR)\modernb.pch" /Yu"hdr/modern_commonheaders.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /GZ /c
 MTL_PROJ=/nologo /D "_DEBUG" /mktyplib203 /win32
-RSC_PROJ=/l 0x809 /fo"$(INTDIR)\resource.res" /d "_DEBUG"
+RSC_PROJ=/l 0x809 /fo"$(INTDIR)\msvc6.res" /d "_DEBUG"
 BSC32=bscmake.exe
 BSC32_FLAGS=/nologo /o"$(OUTDIR)\modernb.bsc"
 BSC32_SBRS= \
@@ -568,7 +568,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\modern_toolbar.obj" \
 	"$(INTDIR)\modern_viewmodebar.obj" \
 	"$(INTDIR)\modern_xptheme.obj" \
-	"$(INTDIR)\resource.res"
+	"$(INTDIR)\msvc6.res"
 
 "..\..\bin\debug Unicode\plugins\clist_modern.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -1604,9 +1604,9 @@ CPP_SWITCHES=/nologo /MDd /W3 /Gm /GX /ZI /Od /I "../../include" /I "../../inclu
 
 !ENDIF
 
-SOURCE=.\resource.rc
+SOURCE=.\msvc6.rc
 
-"$(INTDIR)\resource.res" : $(SOURCE) "$(INTDIR)"
+"$(INTDIR)\msvc6.res" : $(SOURCE) "$(INTDIR)"
 	$(RSC) $(RSC_PROJ) $(SOURCE)
 
 

@@ -640,10 +640,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\stdafx.h"
-				>
-			</File>
-			<File
 				RelativePath=".\version.h"
 				>
 			</File>
@@ -966,6 +962,10 @@
 			</File>
 			<File
 				RelativePath=".\resource.rc"
+				>
+			</File>
+			<File
+				RelativePath=".\version.rc"
 				>
 			</File>
 			<Filter
