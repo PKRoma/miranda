@@ -81,7 +81,6 @@
 #define IDC_STAYMINIMIZED				1006
 #define IDC_SWITCHTOACTIVE				1007
 #define IDC_SEPARATECHATSCONTAINERS		1008
-#define IDC_TABCLOSEBUTTON				1009
 #define IDC_LIMITTABS					1010
 #define IDC_LIMITTABSNUM				1011
 #define IDC_LIMITCHATSTABS				1012
@@ -149,7 +148,6 @@
 #define IDC_ATRANSPARENCYPERC           1620
 #define IDC_ITRANSPARENCYVALUE			1621
 #define IDC_ITRANSPARENCYPERC           1622
-#define IDC_ALWAYSSHOWTABS              1623
 #define IDC_SENDALL						1624
 #define IDC_TRANSPARENCYTEXT1			1627
 #define IDC_TRANSPARENCYTEXT2			1628
@@ -171,6 +169,7 @@
 #define IDC_INFOBAR						1644
 #define IDC_AVATAR						1645
 #define IDC_XSTATUSICON                 1646
+#define IDC_INPUTLINES                  1647
 #define IDM_CUT                         40000
 #define IDM_COPY                        40001
 #define IDM_PASTE                       40002
