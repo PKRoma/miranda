@@ -22,7 +22,7 @@
 #ifndef GG_H
 #define GG_H
 
-#define MIRANDA_VER 0x1000
+#define MIRANDA_VER 0x0A00
 
 #if defined(__DEBUG__) || defined(_DEBUG) || defined(DEBUG)
 #define DEBUGMODE // Debug Mode

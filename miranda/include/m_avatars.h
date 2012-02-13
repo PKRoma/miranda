@@ -67,17 +67,23 @@ unless AF_FETCHALWAYS is set.
 #define AVS_OWNAVATAR 128			// is own avatar entry
 #define AVS_NOTREADY  4096
 
+#if MIRANDA_VER >= 0x0A00
+	#define AVS_CHAR TCHAR
+#else
+	#define AVS_CHAR char
+#endif
+
 struct avatarCacheEntry {
     DWORD cbSize;                   // set to sizeof(struct)
     HANDLE hContact;                // contacts handle, 0, if it is a protocol avatar
     HBITMAP hbmPic;                 // bitmap handle of the picutre itself
     DWORD dwFlags;                  // see above for flag values
     LONG bmHeight, bmWidth;         // bitmap dimensions
-    DWORD t_lastAccess;            // last access time (currently unused, but plugins should still
+    DWORD t_lastAccess;             // last access time (currently unused, but plugins should still
                                     // use it whenever they access the avatar. may be used in the future
                                     // to implement cache expiration
     LPVOID lpDIBSection;			// unused field
-    TCHAR szFilename[MAX_PATH];      // filename of the avatar (absolute path)
+    AVS_CHAR szFilename[MAX_PATH];  // filename of the avatar (absolute path)
 };
 
 typedef struct avatarCacheEntry AVATARCACHEENTRY;
@@ -85,11 +91,10 @@ typedef struct avatarCacheEntry AVATARCACHEENTRY;
 struct CacheNode {
 	struct CacheNode *pNextNode;
 	struct avatarCacheEntry ace;
-	//CRITICAL_SECTION cs;
-	BOOL loaded;
-    int   mustLoad;
-    DWORD dwFlags;
-    int   pa_format;
+	BOOL   loaded;
+	int    mustLoad;
+	DWORD  dwFlags;
+	int    pa_format;
 };
 
 #define AVDRQ_FALLBACKPROTO            0x0001        // use the protocol picture as fallback (currently not used)
@@ -98,7 +103,7 @@ struct CacheNode {
 #define AVDRQ_DRAWBORDER               0x0008        // draw a border around the picture
 #define AVDRQ_PROTOPICT                0x0010        // draw a protocol picture (if available).
 #define AVDRQ_HIDEBORDERONTRANSPARENCY 0x0020        // hide border if bitmap has transparency
-#define AVDRQ_OWNPIC	               0x0040        // draw own avatar (szProto is valid - use "" for global avatar)
+#define AVDRQ_OWNPIC	                  0x0040        // draw own avatar (szProto is valid - use "" for global avatar)
 #define AVDRQ_RESPECTHIDDEN            0x0080        // don't draw images marked as hidden
 #define AVDRQ_DONTRESIZEIFSMALLER      0x0100        // don't resize images that are smaller then the draw area
 #define AVDRQ_FORCEFASTALPHA           0x0200        // force rendering with simple AlphaBlend (will use FI_Resample otherwise)
@@ -217,11 +222,11 @@ typedef struct _avatarDrawRequest {
 
 
 typedef struct _contactAvatarChangedNotification {
-	int cbSize;					// sizeof()
-	HANDLE hContact;			// this might have to be set by the caller too
-	int format;					// PA_FORMAT_*
-	TCHAR filename[MAX_PATH];	// full path to filename which contains the avatar
-	TCHAR hash[128];				// avatar hash
+	int      cbSize;             // sizeof()
+	HANDLE   hContact;           // this might have to be set by the caller too
+	int      format;             // PA_FORMAT_*
+	AVS_CHAR filename[MAX_PATH]; // full path to filename which contains the avatar
+	AVS_CHAR hash[128];          // avatar hash
 } CONTACTAVATARCHANGEDNOTIFICATION;
 
 // fired when the contacts avatar is changed by the contact
