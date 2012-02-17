@@ -6,7 +6,16 @@
 
 				
 
+* New in 0.9.44
+Bugfixes:
+ - Updated messaging and contact list plugins
+ - ICQ: Fix delivery notifications
+ - ICQ: Renamed server acknowledgement for clarity
+ - Gadu-Gadu: Fixed overwriting image files
+
+
 * New in 0.9.43
+Bugfixes:
  - Improved image services
  - Improved stability
  - Gadu-Gadu: Fixed reception of images without file extension
