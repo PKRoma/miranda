@@ -1253,7 +1253,7 @@ int filetransfer::openNext(void)
 			
 			p2p_sendmsgid = 0;
 			p2p_byemsgid = 0;
-			tType = SERVER_DISPATCH;
+			tType = SERVER_NOTIFICATION;
 			bAccepted = false;
 
 			mir_free(p2p_branch); p2p_branch = NULL;

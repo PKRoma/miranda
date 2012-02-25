@@ -141,7 +141,6 @@ void __cdecl CMsnProto::MSNServerThread(void* arg)
 		switch (info->mType) 
 		{
 			case SERVER_NOTIFICATION: 
-			case SERVER_DISPATCH:
 				goto LBL_Exit; 
 				break;
 
@@ -157,7 +156,7 @@ void __cdecl CMsnProto::MSNServerThread(void* arg)
 
 	MSN_DebugLog("Connected with handle=%08X", info->s);
 
-	if (info->mType == SERVER_DISPATCH || info->mType == SERVER_NOTIFICATION) 
+	if (info->mType == SERVER_NOTIFICATION) 
 	{
 		info->sendPacket("VER", "MSNP18 MSNP17 CVR0");
 	}
@@ -264,7 +263,7 @@ LBL_Exit:
 			usingGateway = true; 
 
 			ThreadData* newThread = new ThreadData;
-			newThread->mType = SERVER_DISPATCH;
+			newThread->mType = SERVER_NOTIFICATION;
 			newThread->mIsMainThread = true;
 
 			newThread->startThread(&CMsnProto::MSNServerThread, this);
@@ -317,7 +316,6 @@ void  CMsnProto::MSN_CloseConnections(void)
 
 		switch (T->mType) 
 		{
-		case SERVER_DISPATCH :
 		case SERVER_NOTIFICATION :
 		case SERVER_SWITCHBOARD :
 			if (T->s != NULL && !T->sessionClosed && !T->termPending)
@@ -742,7 +740,7 @@ void ThreadData::getGatewayUrl(char* dest, int destlen, bool isPoll)
 
 	if (mSessionID[0] == 0)
 	{
-		const char* svr = mType == SERVER_NOTIFICATION || mType == SERVER_DISPATCH ? "NS" : "SB";
+		const char* svr = mType == SERVER_NOTIFICATION ? "NS" : "SB";
 		mir_snprintf(dest, destlen, openFmtStr, mGatewayIP, svr, mServer);
 	}
 	else
