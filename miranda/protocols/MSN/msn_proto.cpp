@@ -1139,7 +1139,7 @@ int __cdecl CMsnProto::SetStatus(int iNewStatus)
 
 		ThreadData* newThread = new ThreadData;
 
-		newThread->mType = SERVER_DISPATCH;
+		newThread->mType = SERVER_NOTIFICATION;
 		newThread->mIsMainThread = true;
 
 		newThread->startThread(&CMsnProto::MSNServerThread, this);

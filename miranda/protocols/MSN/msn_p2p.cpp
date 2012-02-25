@@ -981,7 +981,7 @@ void __cdecl CMsnProto::p2p_sendFeedThread(void* arg)
 
 	HANDLE hLockHandle = NULL;
 	ThreadData* T = NULL;
-	TInfoType lastType = SERVER_DISPATCH;
+	TInfoType lastType = SERVER_NOTIFICATION;
 
 	filetransfer *ft = p2p_getSessionByCallID(info->mCookie, 
 		info->mJoinedIdentContactsWLID.getCount() ? info->mJoinedIdentContactsWLID[0] : info->mJoinedContactsWLID[0]);
@@ -2137,6 +2137,7 @@ void  CMsnProto::p2p_invite(unsigned iAppID, filetransfer* ft, const char *wlid)
 	ft->p2p_callID = getNewUuid();
 
 	MsnContact* cont = Lists_Get(ft->std.hContact);
+	if (cont == NULL) return;
 
 	if (ft->p2p_dest == NULL)
 	{
@@ -2240,7 +2241,7 @@ void  CMsnProto::p2p_invite(unsigned iAppID, filetransfer* ft, const char *wlid)
 		{
 			if (ft->p2p_isV2)
 			{
-				if (cont->places[0].cap1 & cap_SupportsP2PBootstrap)
+				if (cont->places.getCount() && cont->places[0].cap1 & cap_SupportsP2PBootstrap)
 				{
 					char wlid[128];
 					mir_snprintf(wlid, SIZEOF(wlid), 

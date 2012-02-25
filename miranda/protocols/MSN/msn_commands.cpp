@@ -1854,7 +1854,7 @@ remove:
 				{
 					MSN_DebugLog("Unknown security package '%s'", data.security);
 
-					if (info->mType == SERVER_NOTIFICATION || info->mType == SERVER_DISPATCH) 
+					if (info->mType == SERVER_NOTIFICATION) 
 					{
 						SendBroadcast(NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_WRONGPROTOCOL);
 					}
@@ -1901,7 +1901,7 @@ remove:
 			{
 				MSN_ShowError("Server has requested an unknown protocol set (%s)", params);
 
-				if (info->mType == SERVER_NOTIFICATION || info->mType == SERVER_DISPATCH) 
+				if (info->mType == SERVER_NOTIFICATION) 
 				{
 					SendBroadcast(NULL, ACKTYPE_LOGIN, ACKRESULT_FAILED, NULL, LOGINERR_WRONGPROTOCOL);
 				}
@@ -1930,7 +1930,7 @@ remove:
 			};
 
 			int numWords = sttDivideWords(params, 7, tWords);
-			if (numWords < 2)
+			if (numWords < 3)
 				goto LBL_InvalidCommand;
 
 			if (!strcmp(data.type, "NS"))  //notification server
@@ -1941,6 +1941,7 @@ remove:
 				newThread->mType = SERVER_NOTIFICATION;
 				newThread->mTrid = info->mTrid;
 				newThread->mIsMainThread = true;
+				usingGateway |= *data.security == 'G';
 				info->mIsMainThread = false;
 
 				MSN_DebugLog("Switching to notification server '%s'...", data.newServer);
