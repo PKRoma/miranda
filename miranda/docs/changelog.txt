@@ -6,6 +6,13 @@
 
 				
 
+* New in 0.9.45
+Bugfixes:
+ - ICQ: More delivery confirmation fixes
+ - MSN: Fixed connectivity issue
+ - MSN: Fixed possible crashes
+
+
 * New in 0.9.44
 Bugfixes:
  - Updated messaging and contact list plugins
