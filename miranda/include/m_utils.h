@@ -2,7 +2,7 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2008 Miranda ICQ/IM project,
+Copyright 2000-2012 Miranda ICQ/IM project,
 all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
@@ -311,7 +311,7 @@ __inline static INT_PTR Utils_AssertInsideScreen(RECT *rc) {
 //Creates a directory tree (even more than one directories levels are missing) 0.7.0+
 //wParam=0 (unused)
 //lParam=(LPARAM)(char*)pszPath - directory to be created
-//Always returns 0
+//Returns 0 on success error code otherwise
 //Unicode version is available since 0.7.0
 #define MS_UTILS_CREATEDIRTREE "Utils/CreateDirTree"
 
@@ -402,17 +402,17 @@ __inline static TCHAR* Utils_ReplaceVarsT(const TCHAR *szData) {
 	#define MS_UTILS_PATHTORELATIVEW         "Utils/PathToRelativeW"
 	#define MS_UTILS_PATHTOABSOLUTEW         "Utils/PathToAbsoluteW"
 	#define MS_UTILS_CREATEDIRTREEW          "Utils/CreateDirTreeW"
-   #define MS_UTILS_GETBITMAPFILTERSTRINGSW "Utils/GetBitmapFilterStringsW"
+	#define MS_UTILS_GETBITMAPFILTERSTRINGSW "Utils/GetBitmapFilterStringsW"
 
 	#define MS_UTILS_PATHTORELATIVET         MS_UTILS_PATHTORELATIVEW
 	#define MS_UTILS_PATHTOABSOLUTET         MS_UTILS_PATHTOABSOLUTEW
 	#define MS_UTILS_CREATEDIRTREET          MS_UTILS_CREATEDIRTREEW
-   #define MS_UTILS_GETBITMAPFILTERSTRINGST MS_UTILS_GETBITMAPFILTERSTRINGSW
+	#define MS_UTILS_GETBITMAPFILTERSTRINGST MS_UTILS_GETBITMAPFILTERSTRINGSW
 #else
 	#define MS_UTILS_PATHTORELATIVET         MS_UTILS_PATHTORELATIVE
 	#define MS_UTILS_PATHTOABSOLUTET         MS_UTILS_PATHTOABSOLUTE
 	#define MS_UTILS_CREATEDIRTREET          MS_UTILS_CREATEDIRTREE
-   #define MS_UTILS_GETBITMAPFILTERSTRINGST MS_UTILS_GETBITMAPFILTERSTRINGS
+	#define MS_UTILS_GETBITMAPFILTERSTRINGST MS_UTILS_GETBITMAPFILTERSTRINGS
 #endif
 
 /*
