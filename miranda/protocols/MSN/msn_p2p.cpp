@@ -380,10 +380,12 @@ void  CMsnProto::p2p_sendMsg(ThreadData* info, const char *wlid, unsigned appId,
 			p += 4;
 		}
 
+		char* szEmail;
 		switch (msgType) 
 		{
 			case 0:
-				MsgQueue_Add(wlid, 'D', buf, p - buf);
+				parseWLID(NEWSTR_ALLOCA(wlid), NULL, &szEmail, NULL);
+				MsgQueue_Add(szEmail, 'D', buf, p - buf);
 				break;
 
 			case 1: 
@@ -397,7 +399,7 @@ void  CMsnProto::p2p_sendMsg(ThreadData* info, const char *wlid, unsigned appId,
 		}
 		offset += portion;
 	} 
-	while( offset < msgsz );
+	while (offset < msgsz);
 }
 
 
