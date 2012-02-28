@@ -3,6 +3,7 @@
 .\adler32.c : \
 	".\zconf.h"\
 	".\zlib.h"\
+	".\zutil.h"\
 	
 
 .\compress.c : \
@@ -24,10 +25,28 @@
 	".\zutil.h"\
 	
 
-.\gzio.c : \
+.\gzclose.c : \
+	".\gzguts.h"\
 	".\zconf.h"\
 	".\zlib.h"\
-	".\zutil.h"\
+	
+
+.\gzlib.c : \
+	".\gzguts.h"\
+	".\zconf.h"\
+	".\zlib.h"\
+	
+
+.\gzread.c : \
+	".\gzguts.h"\
+	".\zconf.h"\
+	".\zlib.h"\
+	
+
+.\gzwrite.c : \
+	".\gzguts.h"\
+	".\zconf.h"\
+	".\zlib.h"\
 	
 
 .\infback.c : \

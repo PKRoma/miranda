@@ -183,7 +183,23 @@ SOURCE=.\deflate.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\gzio.c
+SOURCE=.\gzclose.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\gzguts.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\gzlib.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\gzread.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\gzwrite.c
 # End Source File
 # Begin Source File
 

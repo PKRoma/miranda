@@ -40,7 +40,10 @@ CLEAN :
 	-@erase "$(INTDIR)\compress.obj"
 	-@erase "$(INTDIR)\crc32.obj"
 	-@erase "$(INTDIR)\deflate.obj"
-	-@erase "$(INTDIR)\gzio.obj"
+	-@erase "$(INTDIR)\gzclose.obj"
+	-@erase "$(INTDIR)\gzlib.obj"
+	-@erase "$(INTDIR)\gzread.obj"
+	-@erase "$(INTDIR)\gzwrite.obj"
 	-@erase "$(INTDIR)\infback.obj"
 	-@erase "$(INTDIR)\inffast.obj"
 	-@erase "$(INTDIR)\inflate.obj"
@@ -110,7 +113,10 @@ LINK32_OBJS= \
 	"$(INTDIR)\compress.obj" \
 	"$(INTDIR)\crc32.obj" \
 	"$(INTDIR)\deflate.obj" \
-	"$(INTDIR)\gzio.obj" \
+	"$(INTDIR)\gzclose.obj" \
+	"$(INTDIR)\gzlib.obj" \
+	"$(INTDIR)\gzread.obj" \
+	"$(INTDIR)\gzwrite.obj" \
 	"$(INTDIR)\infback.obj" \
 	"$(INTDIR)\inffast.obj" \
 	"$(INTDIR)\inflate.obj" \
@@ -145,8 +151,14 @@ CLEAN :
 	-@erase "$(INTDIR)\crc32.sbr"
 	-@erase "$(INTDIR)\deflate.obj"
 	-@erase "$(INTDIR)\deflate.sbr"
-	-@erase "$(INTDIR)\gzio.obj"
-	-@erase "$(INTDIR)\gzio.sbr"
+	-@erase "$(INTDIR)\gzclose.obj"
+	-@erase "$(INTDIR)\gzclose.sbr"
+	-@erase "$(INTDIR)\gzlib.obj"
+	-@erase "$(INTDIR)\gzlib.sbr"
+	-@erase "$(INTDIR)\gzread.obj"
+	-@erase "$(INTDIR)\gzread.sbr"
+	-@erase "$(INTDIR)\gzwrite.obj"
+	-@erase "$(INTDIR)\gzwrite.sbr"
 	-@erase "$(INTDIR)\infback.obj"
 	-@erase "$(INTDIR)\infback.sbr"
 	-@erase "$(INTDIR)\inffast.obj"
@@ -218,7 +230,10 @@ BSC32_SBRS= \
 	"$(INTDIR)\compress.sbr" \
 	"$(INTDIR)\crc32.sbr" \
 	"$(INTDIR)\deflate.sbr" \
-	"$(INTDIR)\gzio.sbr" \
+	"$(INTDIR)\gzclose.sbr" \
+	"$(INTDIR)\gzlib.sbr" \
+	"$(INTDIR)\gzread.sbr" \
+	"$(INTDIR)\gzwrite.sbr" \
 	"$(INTDIR)\infback.sbr" \
 	"$(INTDIR)\inffast.sbr" \
 	"$(INTDIR)\inflate.sbr" \
@@ -241,7 +256,10 @@ LINK32_OBJS= \
 	"$(INTDIR)\compress.obj" \
 	"$(INTDIR)\crc32.obj" \
 	"$(INTDIR)\deflate.obj" \
-	"$(INTDIR)\gzio.obj" \
+	"$(INTDIR)\gzclose.obj" \
+	"$(INTDIR)\gzlib.obj" \
+	"$(INTDIR)\gzread.obj" \
+	"$(INTDIR)\gzwrite.obj" \
 	"$(INTDIR)\infback.obj" \
 	"$(INTDIR)\inffast.obj" \
 	"$(INTDIR)\inflate.obj" \
@@ -269,7 +287,10 @@ CLEAN :
 	-@erase "$(INTDIR)\compress.obj"
 	-@erase "$(INTDIR)\crc32.obj"
 	-@erase "$(INTDIR)\deflate.obj"
-	-@erase "$(INTDIR)\gzio.obj"
+	-@erase "$(INTDIR)\gzclose.obj"
+	-@erase "$(INTDIR)\gzlib.obj"
+	-@erase "$(INTDIR)\gzread.obj"
+	-@erase "$(INTDIR)\gzwrite.obj"
 	-@erase "$(INTDIR)\infback.obj"
 	-@erase "$(INTDIR)\inffast.obj"
 	-@erase "$(INTDIR)\inflate.obj"
@@ -339,7 +360,10 @@ LINK32_OBJS= \
 	"$(INTDIR)\compress.obj" \
 	"$(INTDIR)\crc32.obj" \
 	"$(INTDIR)\deflate.obj" \
-	"$(INTDIR)\gzio.obj" \
+	"$(INTDIR)\gzclose.obj" \
+	"$(INTDIR)\gzlib.obj" \
+	"$(INTDIR)\gzread.obj" \
+	"$(INTDIR)\gzwrite.obj" \
 	"$(INTDIR)\infback.obj" \
 	"$(INTDIR)\inffast.obj" \
 	"$(INTDIR)\inflate.obj" \
@@ -374,8 +398,14 @@ CLEAN :
 	-@erase "$(INTDIR)\crc32.sbr"
 	-@erase "$(INTDIR)\deflate.obj"
 	-@erase "$(INTDIR)\deflate.sbr"
-	-@erase "$(INTDIR)\gzio.obj"
-	-@erase "$(INTDIR)\gzio.sbr"
+	-@erase "$(INTDIR)\gzclose.obj"
+	-@erase "$(INTDIR)\gzclose.sbr"
+	-@erase "$(INTDIR)\gzlib.obj"
+	-@erase "$(INTDIR)\gzlib.sbr"
+	-@erase "$(INTDIR)\gzread.obj"
+	-@erase "$(INTDIR)\gzread.sbr"
+	-@erase "$(INTDIR)\gzwrite.obj"
+	-@erase "$(INTDIR)\gzwrite.sbr"
 	-@erase "$(INTDIR)\infback.obj"
 	-@erase "$(INTDIR)\infback.sbr"
 	-@erase "$(INTDIR)\inffast.obj"
@@ -447,7 +477,10 @@ BSC32_SBRS= \
 	"$(INTDIR)\compress.sbr" \
 	"$(INTDIR)\crc32.sbr" \
 	"$(INTDIR)\deflate.sbr" \
-	"$(INTDIR)\gzio.sbr" \
+	"$(INTDIR)\gzclose.sbr" \
+	"$(INTDIR)\gzlib.sbr" \
+	"$(INTDIR)\gzread.sbr" \
+	"$(INTDIR)\gzwrite.sbr" \
 	"$(INTDIR)\infback.sbr" \
 	"$(INTDIR)\inffast.sbr" \
 	"$(INTDIR)\inflate.sbr" \
@@ -470,7 +503,10 @@ LINK32_OBJS= \
 	"$(INTDIR)\compress.obj" \
 	"$(INTDIR)\crc32.obj" \
 	"$(INTDIR)\deflate.obj" \
-	"$(INTDIR)\gzio.obj" \
+	"$(INTDIR)\gzclose.obj" \
+	"$(INTDIR)\gzlib.obj" \
+	"$(INTDIR)\gzread.obj" \
+	"$(INTDIR)\gzwrite.obj" \
 	"$(INTDIR)\infback.obj" \
 	"$(INTDIR)\inffast.obj" \
 	"$(INTDIR)\inflate.obj" \
@@ -610,30 +646,114 @@ SOURCE=.\deflate.c
 
 !ENDIF 
 
-SOURCE=.\gzio.c
+SOURCE=.\gzclose.c
 
 !IF  "$(CFG)" == "zlib - Win32 Release"
 
 
-"$(INTDIR)\gzio.obj" : $(SOURCE) "$(INTDIR)"
+"$(INTDIR)\gzclose.obj" : $(SOURCE) "$(INTDIR)"
 
 
 !ELSEIF  "$(CFG)" == "zlib - Win32 Debug"
 
 
-"$(INTDIR)\gzio.obj"	"$(INTDIR)\gzio.sbr" : $(SOURCE) "$(INTDIR)"
+"$(INTDIR)\gzclose.obj"	"$(INTDIR)\gzclose.sbr" : $(SOURCE) "$(INTDIR)"
 
 
 !ELSEIF  "$(CFG)" == "zlib - Win32 Release Unicode"
 
 
-"$(INTDIR)\gzio.obj" : $(SOURCE) "$(INTDIR)"
+"$(INTDIR)\gzclose.obj" : $(SOURCE) "$(INTDIR)"
 
 
 !ELSEIF  "$(CFG)" == "zlib - Win32 Debug Unicode"
 
 
-"$(INTDIR)\gzio.obj"	"$(INTDIR)\gzio.sbr" : $(SOURCE) "$(INTDIR)"
+"$(INTDIR)\gzclose.obj"	"$(INTDIR)\gzclose.sbr" : $(SOURCE) "$(INTDIR)"
+
+
+!ENDIF 
+
+SOURCE=.\gzlib.c
+
+!IF  "$(CFG)" == "zlib - Win32 Release"
+
+
+"$(INTDIR)\gzlib.obj" : $(SOURCE) "$(INTDIR)"
+
+
+!ELSEIF  "$(CFG)" == "zlib - Win32 Debug"
+
+
+"$(INTDIR)\gzlib.obj"	"$(INTDIR)\gzlib.sbr" : $(SOURCE) "$(INTDIR)"
+
+
+!ELSEIF  "$(CFG)" == "zlib - Win32 Release Unicode"
+
+
+"$(INTDIR)\gzlib.obj" : $(SOURCE) "$(INTDIR)"
+
+
+!ELSEIF  "$(CFG)" == "zlib - Win32 Debug Unicode"
+
+
+"$(INTDIR)\gzlib.obj"	"$(INTDIR)\gzlib.sbr" : $(SOURCE) "$(INTDIR)"
+
+
+!ENDIF 
+
+SOURCE=.\gzread.c
+
+!IF  "$(CFG)" == "zlib - Win32 Release"
+
+
+"$(INTDIR)\gzread.obj" : $(SOURCE) "$(INTDIR)"
+
+
+!ELSEIF  "$(CFG)" == "zlib - Win32 Debug"
+
+
+"$(INTDIR)\gzread.obj"	"$(INTDIR)\gzread.sbr" : $(SOURCE) "$(INTDIR)"
+
+
+!ELSEIF  "$(CFG)" == "zlib - Win32 Release Unicode"
+
+
+"$(INTDIR)\gzread.obj" : $(SOURCE) "$(INTDIR)"
+
+
+!ELSEIF  "$(CFG)" == "zlib - Win32 Debug Unicode"
+
+
+"$(INTDIR)\gzread.obj"	"$(INTDIR)\gzread.sbr" : $(SOURCE) "$(INTDIR)"
+
+
+!ENDIF 
+
+SOURCE=.\gzwrite.c
+
+!IF  "$(CFG)" == "zlib - Win32 Release"
+
+
+"$(INTDIR)\gzwrite.obj" : $(SOURCE) "$(INTDIR)"
+
+
+!ELSEIF  "$(CFG)" == "zlib - Win32 Debug"
+
+
+"$(INTDIR)\gzwrite.obj"	"$(INTDIR)\gzwrite.sbr" : $(SOURCE) "$(INTDIR)"
+
+
+!ELSEIF  "$(CFG)" == "zlib - Win32 Release Unicode"
+
+
+"$(INTDIR)\gzwrite.obj" : $(SOURCE) "$(INTDIR)"
+
+
+!ELSEIF  "$(CFG)" == "zlib - Win32 Debug Unicode"
+
+
+"$(INTDIR)\gzwrite.obj"	"$(INTDIR)\gzwrite.sbr" : $(SOURCE) "$(INTDIR)"
 
 
 !ENDIF 
