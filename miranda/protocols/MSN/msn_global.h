@@ -877,7 +877,7 @@ struct chunkedmsg
 	chunkedmsg(const char* tid, const size_t totsz, const bool bychunk);
 	~chunkedmsg();
 
-	void add(const char* msg, const size_t offset, const size_t portion);
+	void add(const char* msg, size_t offset, size_t portion);
 	bool get(char*& tmsg, size_t& tsize);
 };
 

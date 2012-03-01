@@ -33,7 +33,7 @@ chunkedmsg::~chunkedmsg()
 	mir_free(msg);
 }
 
-void chunkedmsg::add(const char* tmsg, const size_t offset, const size_t portion)
+void chunkedmsg::add(const char* tmsg, size_t offset, size_t portion)
 {
 	if (bychunk) 
 	{
@@ -43,9 +43,15 @@ void chunkedmsg::add(const char* tmsg, const size_t offset, const size_t portion
 		memcpy( msg + oldsz, tmsg, portion );
 		--size;
 	}
-	else {
-		memcpy(msg + offset, tmsg, portion); 
+	else 
+	{
 		size_t newsz = offset + portion;
+		if (newsz > size)
+		{
+			portion = size - offset;
+			newsz = size;
+		}
+		memcpy(msg + offset, tmsg, portion); 
 		if (newsz > recvsz) recvsz = newsz; 
 	}
 }
