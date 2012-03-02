@@ -461,7 +461,6 @@
     <ClInclude Include="inffast.h" />
     <ClInclude Include="inflate.h" />
     <ClInclude Include="inftrees.h" />
-    <ClInclude Include="resource.h" />
     <ClInclude Include="trees.h" />
     <ClInclude Include="zconf.h" />
     <ClInclude Include="zlib.h" />

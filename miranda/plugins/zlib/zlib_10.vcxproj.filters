@@ -84,7 +84,6 @@
     <ClInclude Include="zutil.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="zlib.def">
