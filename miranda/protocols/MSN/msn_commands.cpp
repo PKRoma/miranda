@@ -1284,6 +1284,7 @@ LBL_InvalidCommand:
 			int newStatus = MSNStatusToMiranda(params);
 			if (oldStatus <= ID_STATUS_OFFLINE)
 			{
+				isConnectSuccess = true;
 				int count = -1;
 				for (;;)
 				{
@@ -1848,7 +1849,6 @@ remove:
 				}
 				else if (!strcmp(data.security, "OK")) 
 				{
-					isConnectSuccess = true;
 				}
 				else
 				{
