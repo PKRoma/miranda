@@ -1941,6 +1941,8 @@ static int DestroyServicesAndEvents()
 	for ( int i=0; i < arServices.getCount(); i++ )
 		DestroyServiceFunction( arServices[i] );
 
+	arServices.destroy();
+
 	DestroyHookableEvent(hEventChanged);
 	DestroyHookableEvent(hEventContactAvatarChanged);
 	DestroyHookableEvent(hMyAvatarChanged);
