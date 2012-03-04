@@ -369,14 +369,15 @@ static INT_PTR stub42( PROTO_INTERFACE* ppi, WPARAM wParam, LPARAM lParam )
 
 static INT_PTR stub43( PROTO_INTERFACE* ppi, WPARAM wParam, LPARAM lParam )
 {	
+	PROTO_AVATAR_INFORMATION* p = ( PROTO_AVATAR_INFORMATION* )lParam;
+
 	PROTO_AVATAR_INFORMATIONW tmp = { 0 };
 	tmp.cbSize = sizeof( tmp );
+	tmp.hContact = p->hContact;
 	int result = CallProtoService( ppi->m_szModuleName, PS_GETAVATARINFOW, wParam, ( LPARAM )&tmp );
 
-	PROTO_AVATAR_INFORMATION* p = ( PROTO_AVATAR_INFORMATION* )lParam;
-	p->hContact = tmp.hContact;
 	p->format = tmp.format;
-	WideCharToMultiByte( LangPackGetDefaultCodePage(), 0, tmp.filename, -1, p->filename, MAX_PATH, 0, 0 );
+	WideCharToMultiByte( CP_ACP, 0, tmp.filename, -1, p->filename, MAX_PATH, 0, 0 );
 	return result;
 }
 
@@ -385,7 +386,7 @@ static INT_PTR stub44( PROTO_INTERFACE* ppi, WPARAM wParam, LPARAM lParam )
 	TCHAR* buf = ( TCHAR* )_alloca( sizeof(TCHAR) * (lParam + 1));
 	int result = CallProtoService( ppi->m_szModuleName, PS_GETMYAVATARW, WPARAM( buf ), lParam );
 	if ( result == 0 )
-		WideCharToMultiByte( LangPackGetDefaultCodePage(), 0, buf,-1, ( char* )wParam, lParam, 0, 0 );
+		WideCharToMultiByte( CP_ACP, 0, buf,-1, ( char* )wParam, lParam, 0, 0 );
 
 	return result;
 }
