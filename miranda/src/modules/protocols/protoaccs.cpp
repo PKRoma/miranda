@@ -367,6 +367,8 @@ static INT_PTR stub42( PROTO_INTERFACE* ppi, WPARAM wParam, LPARAM lParam )
 {	return ppi->m_iStatus;
 }
 
+#ifdef _UNICODE
+
 static INT_PTR stub43( PROTO_INTERFACE* ppi, WPARAM wParam, LPARAM lParam )
 {	
 	PROTO_AVATAR_INFORMATION* p = ( PROTO_AVATAR_INFORMATION* )lParam;
@@ -377,24 +379,37 @@ static INT_PTR stub43( PROTO_INTERFACE* ppi, WPARAM wParam, LPARAM lParam )
 	int result = CallProtoService( ppi->m_szModuleName, PS_GETAVATARINFOW, wParam, ( LPARAM )&tmp );
 
 	p->format = tmp.format;
-	WideCharToMultiByte( CP_ACP, 0, tmp.filename, -1, p->filename, MAX_PATH, 0, 0 );
+
+	wchar_t filename[MAX_PATH];
+	wcscpy(filename, tmp.filename);
+	GetShortPathNameW(tmp.filename, filename, SIZEOF(filename));
+
+	WideCharToMultiByte( CP_ACP, 0, filename, -1, p->filename, MAX_PATH, 0, 0 );
 	return result;
 }
 
 static INT_PTR stub44( PROTO_INTERFACE* ppi, WPARAM wParam, LPARAM lParam )
 {	
-	TCHAR* buf = ( TCHAR* )_alloca( sizeof(TCHAR) * (lParam + 1));
+	wchar_t* buf = ( wchar_t* )_alloca( sizeof(wchar_t) * (lParam + 1));
 	int result = CallProtoService( ppi->m_szModuleName, PS_GETMYAVATARW, WPARAM( buf ), lParam );
 	if ( result == 0 )
-		WideCharToMultiByte( CP_ACP, 0, buf,-1, ( char* )wParam, lParam, 0, 0 );
+	{
+		wchar_t* filename = ( wchar_t* )_alloca( sizeof(wchar_t) * (lParam + 1));
+		wcscpy(filename, buf);
+		GetShortPathNameW(buf, filename, lParam + 1);
+
+		WideCharToMultiByte( CP_ACP, 0, filename, -1, ( char* )wParam, lParam, 0, 0 );
+	}
 
 	return result;
 }
 
 static INT_PTR stub45( PROTO_INTERFACE* ppi, WPARAM wParam, LPARAM lParam )
 {	
-	return CallProtoService( ppi->m_szModuleName, PS_SETMYAVATARW, wParam, ( LPARAM )( const WCHAR* )StrConvT(( char* )lParam ));
+	return CallProtoService( ppi->m_szModuleName, PS_SETMYAVATARW, wParam, ( LPARAM )( LPCTSTR )StrConvT(( char* )lParam ));
 }
+
+#endif
 
 static HANDLE CreateProtoServiceEx( const char* szModule, const char* szService, MIRANDASERVICEOBJ pFunc, void* param )
 {
@@ -439,7 +454,7 @@ BOOL ActivateAccount( PROTOACCOUNT* pa )
 	CreateProtoServiceEx( pa->szModuleName, PS_GETNAME, (MIRANDASERVICEOBJ)stub41, pa->ppro );
 	CreateProtoServiceEx( pa->szModuleName, PS_GETSTATUS, (MIRANDASERVICEOBJ)stub42, pa->ppro );
 
-	#if defined( _UNICODE )
+#ifdef _UNICODE
 		char szServiceName[ 200 ];
 		mir_snprintf( szServiceName, SIZEOF(szServiceName), "%s%s", pa->szModuleName, PS_GETAVATARINFO );
 		if ( !ServiceExists( szServiceName )) {
