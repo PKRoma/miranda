@@ -1,6 +1,6 @@
 /*
 Plugin of Miranda IM for communicating with users of the AIM protocol.
-Copyright (c) 2008-2011 Boris Krasnovskiy
+Copyright (c) 2008-2012 Boris Krasnovskiy
 Copyright (C) 2005-2006 Aaron Myles Landwehr
 
 This program is free software; you can redistribute it and/or
@@ -97,18 +97,18 @@ void CAimProto::avatar_request_handler(HANDLE hContact, char* hash, unsigned cha
 void CAimProto::avatar_retrieval_handler(const char* sn, const char* hash, const char* data, int data_len)
 {
 	bool res = false;
-	PROTO_AVATAR_INFORMATION AI = {0};
+	PROTO_AVATAR_INFORMATIONT AI = {0};
 	AI.cbSize = sizeof(AI);
 
 	AI.hContact = contact_from_sn(sn);
 	
 	if (data_len > 0)
 	{
-		const char *type; 
+		const TCHAR *type; 
 		AI.format = detect_image_type(data, type);
-		get_avatar_filename(AI.hContact, AI.filename, sizeof(AI.filename), type);
+		get_avatar_filename(AI.hContact, AI.filename, SIZEOF(AI.filename), type);
 
-		int fileId = _open(AI.filename, _O_CREAT | _O_TRUNC | _O_WRONLY | O_BINARY,  _S_IREAD | _S_IWRITE);
+		int fileId = _topen(AI.filename, _O_CREAT | _O_TRUNC | _O_WRONLY | O_BINARY,  _S_IREAD | _S_IWRITE);
 		if (fileId >= 0)
 		{
 			_write(fileId, data, data_len);
@@ -129,40 +129,40 @@ void CAimProto::avatar_retrieval_handler(const char* sn, const char* hash, const
 	sendBroadcast(AI.hContact, ACKTYPE_AVATAR, res ? ACKRESULT_SUCCESS : ACKRESULT_FAILED, &AI, 0);
 }
 
-int detect_image_type(const char* stream, const char* &type_ret)
+int detect_image_type(const char* stream, const TCHAR* &type_ret)
 {
 	if(stream[0]=='G'&&stream[1]=='I'&&stream[2]=='F')
 	{
-		type_ret = ".gif";
+		type_ret = _T(".gif");
 		return PA_FORMAT_GIF;
 	}
 	else if(stream[1]=='P'&&stream[2]=='N'&&stream[3]=='G')
 	{
-		type_ret = ".png";
+		type_ret = _T(".png");
 		return PA_FORMAT_PNG;
 	}
 	else if(stream[0]=='B'&&stream[1]=='M')
 	{
-		type_ret = ".bmp";
+		type_ret = _T(".bmp");
 		return PA_FORMAT_BMP;
 	}
 	else//assume jpg
 	{
-		type_ret = ".jpg";
+		type_ret = _T(".jpg");
 		return PA_FORMAT_JPEG;
 	}
 }
 
-int detect_image_type(const char* file)
+int detect_image_type(const TCHAR* file)
 {
-   const char *ext = strrchr(file, '.');
+   const TCHAR *ext = _tcsrchr(file, '.');
    if (ext == NULL) 
 	   return PA_FORMAT_UNKNOWN;
-   if (strcmp(ext, ".gif") == 0)
+   if (_tcsicmp(ext, _T(".gif")) == 0)
 	   return PA_FORMAT_GIF;
-   else if (strcmp(ext, ".bmp") == 0)
+   else if (_tcsicmp(ext, _T(".bmp")) == 0)
 	   return PA_FORMAT_BMP;
-   else if (strcmp(ext, ".png") == 0)
+   else if (_tcsicmp(ext, _T(".png")) == 0)
 	   return PA_FORMAT_PNG;
    else
 	   return PA_FORMAT_JPEG;
@@ -183,51 +183,53 @@ void CAimProto::init_custom_folders(void)
 	init_cst_fld_ran = true;
 }
 
-int CAimProto::get_avatar_filename(HANDLE hContact, char* pszDest, size_t cbLen, const char *ext)
+int CAimProto::get_avatar_filename(HANDLE hContact, TCHAR* pszDest, size_t cbLen, const TCHAR *ext)
 {
 	size_t tPathLen;
 	bool found = false;
 
 	init_custom_folders();
 
-	char* path = (char*)alloca(cbLen);
-	if (hAvatarsFolder == NULL || FoldersGetCustomPath(hAvatarsFolder, path, (int)cbLen, ""))
+	TCHAR* path = (TCHAR*)alloca(cbLen * sizeof(TCHAR));
+	if (hAvatarsFolder == NULL || FoldersGetCustomPathT(hAvatarsFolder, path, (int)cbLen, _T("")))
 	{
-		char *tmpPath = Utils_ReplaceVars("%miranda_avatarcache%");
-		tPathLen = mir_snprintf(pszDest, cbLen, "%s\\%s", tmpPath, m_szModuleName);
+		TCHAR *tmpPath = Utils_ReplaceVarsT(_T("%miranda_avatarcache%"));
+		TCHAR *sztModuleName = mir_a2t(m_szModuleName);
+		tPathLen = mir_sntprintf(pszDest, cbLen, _T("%s\\%s"), tmpPath, sztModuleName);
+		mir_free(sztModuleName);
 		mir_free(tmpPath);
 	}
 	else 
 	{
-		strcpy(pszDest, path);
-		tPathLen = strlen(pszDest);
+		_tcscpy(pszDest, path);
+		tPathLen = _tcslen(pszDest);
 	}
 
-	if (ext && _access(pszDest, 0))
-		CallService(MS_UTILS_CREATEDIRTREE, 0, (LPARAM)pszDest);
+	if (ext && _taccess(pszDest, 0))
+		CallService(MS_UTILS_CREATEDIRTREET, 0, (LPARAM)pszDest);
 
 	size_t tPathLen2 = tPathLen;
 	
-	char* hash = getSetting(hContact, AIM_KEY_AH);
-	if (hash == NULL) return GAIR_NOAVATAR;
-	tPathLen += mir_snprintf(pszDest + tPathLen, cbLen - tPathLen, "\\%s", hash);
-	mir_free(hash);
+	DBVARIANT dbv;
+	if (getTString(hContact, AIM_KEY_AH, &dbv)) return GAIR_NOAVATAR;
+	tPathLen += mir_sntprintf(pszDest + tPathLen, cbLen - tPathLen, _T("\\%s"), dbv.ptszVal);
+	DBFreeVariant(&dbv);
 
 	if (ext == NULL)
 	{
-		mir_snprintf(pszDest + tPathLen, cbLen - tPathLen, ".*");
+		mir_sntprintf(pszDest + tPathLen, cbLen - tPathLen, _T(".*"));
 
-		_finddata_t c_file;
-		long hFile = _findfirst(pszDest, &c_file);
+		_tfinddata_t c_file;
+		long hFile = _tfindfirst(pszDest, &c_file);
 		if (hFile > -1L)
 		{
 			do {
-				if (strrchr(c_file.name, '.'))
+				if (_tcsrchr(c_file.name, '.'))
 				{
-					mir_snprintf(pszDest + tPathLen2, cbLen - tPathLen2, "\\%s", c_file.name);
+					mir_sntprintf(pszDest + tPathLen2, cbLen - tPathLen2, _T("\\%s"), c_file.name);
 					found = true;
 				}
-			} while (_findnext(hFile, &c_file) == 0);
+			} while (_tfindnext(hFile, &c_file) == 0);
 			_findclose( hFile );
 		}
 		
@@ -235,16 +237,16 @@ int CAimProto::get_avatar_filename(HANDLE hContact, char* pszDest, size_t cbLen,
 	}
 	else
 	{
-		mir_snprintf(pszDest + tPathLen, cbLen - tPathLen, ext);
-		found = _access(pszDest, 0) == 0;
+		mir_sntprintf(pszDest + tPathLen, cbLen - tPathLen, ext);
+		found = _taccess(pszDest, 0) == 0;
 	}
 
 	return found ? GAIR_SUCCESS : GAIR_WAITFOR;
 }
 
-bool get_avatar_hash(const char* file, char* hash, char** data, unsigned short &size)
+bool get_avatar_hash(const TCHAR* file, char* hash, char** data, unsigned short &size)
 {
-	int fileId = _open(file, _O_RDONLY | _O_BINARY, _S_IREAD);
+	int fileId = _topen(file, _O_RDONLY | _O_BINARY, _S_IREAD);
 	if (fileId == -1) return false;
 
 	long  lAvatar = _filelength(fileId);

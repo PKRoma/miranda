@@ -1,6 +1,6 @@
 /*
 Plugin of Miranda IM for communicating with users of the AIM protocol.
-Copyright (c) 2008-2011 Boris Krasnovskiy
+Copyright (c) 2008-2012 Boris Krasnovskiy
 Copyright (C) 2005-2006 Aaron Myles Landwehr
 
 This program is free software; you can redistribute it and/or
@@ -190,7 +190,6 @@ char* html_encode(const char* str)
 
 	return s;
 }
-
 
 char* html_to_bbcodes(char *src)
 {
@@ -460,6 +459,21 @@ char* html_to_bbcodes(char *src)
 		else
 			rptr++;
 	}
+/*
+	rptr = dest;
+	while ((ptr = strstr(rptr, "aim:")) || (ptr = strstr(rptr, "AIM:")))
+	{
+		int addr=ptr-rptr;
+		int len=0;
+		for (len
+		dest=(char*)mir_realloc(dest,strlen(dest)+8);
+		rptr=dest;
+		ptr=rptr+addr;
+		ptrl = ptr + 5;
+		memcpy(ptrl,"[url=",7);
+		memmove(ptr, ptrl, strlen(ptrl) + 1);
+	}
+*/
 	return dest;
 }
 

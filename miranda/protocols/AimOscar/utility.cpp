@@ -1,6 +1,6 @@
 /*
 Plugin of Miranda IM for communicating with users of the AIM protocol.
-Copyright (c) 2008-2011 Boris Krasnovskiy
+Copyright (c) 2008-2012 Boris Krasnovskiy
 Copyright (C) 2005-2006 Aaron Myles Landwehr
 
 This program is free software; you can redistribute it and/or
@@ -400,11 +400,6 @@ char* trim_str(char* s)
 	return s;
 }
 
-void CAimProto::execute_cmd(const char* arg) 
-{
-	ShellExecuteA(NULL,"open", arg, NULL, NULL, SW_SHOW);
-}
-
 void create_group(const char *group)
 {
 	if (strcmp(group, AIM_DEFAULT_GROUP) == 0) return;
@@ -599,39 +594,43 @@ int CAimProto::deleteGroupId(HANDLE hContact, int i)
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-int CAimProto::open_contact_file(const char* sn, const char* file, const char* mode, char* &path, bool contact_dir)
+int CAimProto::open_contact_file(const char* sn, const TCHAR* file, const char* mode, TCHAR* &path, bool contact_dir)
 {
-	path = (char*)mir_alloc(MAX_PATH);
+	path = (TCHAR*)mir_alloc(MAX_PATH * sizeof(TCHAR));
 
-	char *tmpPath = Utils_ReplaceVars("%miranda_userdata%");
-	int pos = mir_snprintf(path, MAX_PATH, "%s\\%s", tmpPath, m_szModuleName);
+	TCHAR *tmpPath = Utils_ReplaceVarsT(_T("%miranda_userdata%"));
+	TCHAR *sztModuleName = mir_a2t(m_szModuleName);
+	int pos = mir_sntprintf(path, MAX_PATH, _T("%s\\%s"), tmpPath, sztModuleName);
+	mir_free(sztModuleName);
 	mir_free(tmpPath);
 	if  (contact_dir)
 	{
 		char* norm_sn = normalize_name(sn);
-		pos += mir_snprintf(path + pos, MAX_PATH - pos,"\\%s", norm_sn);
+		TCHAR *norm_snt = mir_a2t(m_szModuleName);
+		pos += mir_sntprintf(path + pos, MAX_PATH - pos, _T("\\%s"), norm_snt);
+		mir_free(norm_snt);
 		mir_free(norm_sn);
 	}
 
-	if (_access(path, 0))
-		CallService(MS_UTILS_CREATEDIRTREE, 0, (LPARAM)path);
+	if (_taccess(path, 0))
+		CallService(MS_UTILS_CREATEDIRTREET, 0, (LPARAM)path);
 
-	mir_snprintf(path + pos, MAX_PATH - pos,"\\%s", file);
-	int fid = _open(path, _O_CREAT | _O_RDWR | _O_BINARY, _S_IREAD);
+	mir_sntprintf(path + pos, MAX_PATH - pos, _T("\\%s"), file);
+	int fid = _topen(path, _O_CREAT | _O_RDWR | _O_BINARY, _S_IREAD);
 	if (fid < 0)
 	{
-		char errmsg[512];
-		mir_snprintf(errmsg, SIZEOF(errmsg), Translate("Failed to open file: %s "), path);
-		char* error = _strerror(errmsg);
-		ShowPopup(error, ERROR_POPUP);
+		TCHAR errmsg[512];
+		mir_sntprintf(errmsg, SIZEOF(errmsg), TranslateT("Failed to open file: %s "), path);
+		TCHAR* error = __tcserror(errmsg);
+		ShowPopup((char*)error, ERROR_POPUP | TCHAR_POPUP);
 	}
 	return fid;
 }
 
 void CAimProto::write_away_message(const char* sn, const char* msg, bool utf)
 {
-	char* path;
-	int fid = open_contact_file(sn,"away.html","wb",path,1);
+	TCHAR* path;
+	int fid = open_contact_file(sn, _T("away.html"), "wb", path, 1);
 	if (fid >= 0)
 	{
 		if (utf) _write(fid, "\xEF\xBB\xBF", 3);
@@ -641,7 +640,7 @@ void CAimProto::write_away_message(const char* sn, const char* msg, bool utf)
 		_write(fid, "'s Away Message:</h3>", 21);
 		_write(fid, s_msg, (unsigned)strlen(s_msg));
 		_close(fid);
-		execute_cmd(path);
+		ShellExecute(NULL, _T("open"), path, NULL, NULL, SW_SHOW);
 		mir_free(path);
 		mir_free(s_msg);
 	}
@@ -649,8 +648,8 @@ void CAimProto::write_away_message(const char* sn, const char* msg, bool utf)
 
 void CAimProto::write_profile(const char* sn, const char* msg, bool utf)
 {
-	char* path;
-	int fid = open_contact_file(sn,"profile.html","wb", path, 1);
+	TCHAR* path;
+	int fid = open_contact_file(sn, _T("profile.html"),"wb", path, 1);
 	if (fid >= 0)
 	{
 		if (utf) _write(fid, "\xEF\xBB\xBF", 3);
@@ -660,7 +659,7 @@ void CAimProto::write_profile(const char* sn, const char* msg, bool utf)
 		_write(fid, "'s Profile:</h3>", 16);
 		_write(fid, s_msg, (unsigned)strlen(s_msg));
 		_close(fid);
-		execute_cmd(path);
+		ShellExecute(NULL, _T("open"), path, NULL, NULL, SW_SHOW);
 		mir_free(path);
 		mir_free(s_msg);
 	}

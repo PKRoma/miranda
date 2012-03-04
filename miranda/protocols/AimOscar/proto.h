@@ -1,6 +1,6 @@
 /*
 Plugin of Miranda IM for communicating with users of the AIM protocol.
-Copyright (c) 2008-2011 Boris Krasnovskiy
+Copyright (c) 2008-2012 Boris Krasnovskiy
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -232,7 +232,7 @@ struct CAimProto : public PROTO_INTERFACE
 
 	void   avatar_request_handler(HANDLE hContact, char* hash, unsigned char type);
 	void   avatar_retrieval_handler(const char* sn, const char* hash, const char* data, int data_len);
-	int    get_avatar_filename(HANDLE hContact, char* pszDest, size_t cbLen, const char *ext);
+	int    get_avatar_filename(HANDLE hContact, TCHAR* pszDest, size_t cbLen, const TCHAR *ext);
 	void   init_custom_folders(void);
 
 	//////////////////////////////////////////////////////////////////////////////////////
@@ -449,10 +449,9 @@ struct CAimProto : public PROTO_INTERFACE
 	void   update_server_group(const char* group, unsigned short group_id);
 	void   offline_contacts(void);
 	void   offline_contact(HANDLE hContact, bool remove_settings);
-	void   execute_cmd(const char* arg);
 	unsigned short get_default_port(void);
 
-	int    open_contact_file(const char* sn, const char* file, const char* mode, char* &path, bool contact_dir);
+	int    open_contact_file(const char* sn, const TCHAR* file, const char* mode, TCHAR* &path, bool contact_dir);
 	void   write_away_message(const char* sn, const char* msg, bool utf);
 	void   write_profile(const char* sn, const char* msg, bool utf);
 

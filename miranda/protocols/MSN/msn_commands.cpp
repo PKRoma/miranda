@@ -324,9 +324,9 @@ void CMsnProto::sttCustomSmiley(const char* msgBody, char* email, char* nick, in
 			UrlEncode(buf, smileyName, rlen*3);
 			mir_free(buf);
 
-			char path[MAX_PATH];
+			TCHAR path[MAX_PATH];
 			MSN_GetCustomSmileyFileName(hContact, path, SIZEOF(path), smileyName, iSmileyType);
-			ft->std.tszCurrentFile = mir_a2t(path);
+			ft->std.tszCurrentFile = mir_tstrdup(path);
 			mir_free(smileyName);
 
 			if (p2p_IsDlFileOk(ft))
@@ -1434,7 +1434,7 @@ LBL_InvalidCommand:
 							char szSavedContext[64];
 							int result = getStaticString(hContact, "PictSavedContext", szSavedContext, sizeof(szSavedContext));
 							if (result || strcmp(szSavedContext, data.cmdstring))
-								setString(hContact, "PictSavedContext", szSavedContext);
+								SendBroadcast(hContact, ACKTYPE_AVATAR, ACKRESULT_STATUS, NULL, 0);
 						}
 						mir_free(szAvatarHash);
 					}

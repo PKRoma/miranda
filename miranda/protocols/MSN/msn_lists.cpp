@@ -312,18 +312,17 @@ void CMsnProto::MSN_CleanupLists(void)
 		
 		if (p.list & (LIST_LL | LIST_FL) && p.hContact)
 		{
-			char path[MAX_PATH];
-			MSN_GetCustomSmileyFileName(p.hContact, path, sizeof(path), "", 0);
+			TCHAR path[MAX_PATH];
+			MSN_GetCustomSmileyFileName(p.hContact, path, SIZEOF(path), "", 0);
 			if (path[0])
 			{
 				SMADD_CONT cont;
 				cont.cbSize = sizeof(SMADD_CONT);
 				cont.hContact = p.hContact;
 				cont.type = 0;
-				cont.path = mir_a2t(path);
+				cont.path = path;
 
 				MSN_CallService(MS_SMILEYADD_LOADCONTACTSMILEYS, 0, (LPARAM)&cont);
-				mir_free(cont.path);
 			}
 		}
 	}

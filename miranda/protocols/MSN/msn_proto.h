@@ -206,12 +206,12 @@ struct CMsnProto : public PROTO_INTERFACE
 	void        MSN_DebugLog(const char* fmt, ...);
 
 	char*       getSslResult(char** parUrl, const char* parAuthInfo, const char* hdrs, unsigned& status);
-	bool        getMyAvatarFile(char *url, char *fname);
+	bool        getMyAvatarFile(char *url, TCHAR *fname);
 
 	void        MSN_GoOffline(void);
-	void        MSN_GetAvatarFileName(HANDLE hContact, char* pszDest, size_t cbLen, const char *ext);
-	int         MSN_SetMyAvatar(const char* szFname, void* pData, size_t cbLen);
-	void        MSN_GetCustomSmileyFileName(HANDLE hContact, char* pszDest, size_t cbLen, const char* SmileyName, int Type);
+	void        MSN_GetAvatarFileName(HANDLE hContact, TCHAR* pszDest, size_t cbLen, const TCHAR *ext);
+	int         MSN_SetMyAvatar(const TCHAR* szFname, void* pData, size_t cbLen);
+	void        MSN_GetCustomSmileyFileName(HANDLE hContact, TCHAR* pszDest, size_t cbLen, const char* SmileyName, int Type);
 	
 	const char*	MirandaStatusToMSN(int status);
 	WORD		MSNStatusToMiranda(const char *status);
@@ -246,7 +246,7 @@ struct CMsnProto : public PROTO_INTERFACE
 	void		MSN_SetNicknameUtf(const char* nickname);
 	void		MSN_SendNicknameUtf(const char* nickname);
 
-	typedef struct { char *szName; const char *szMimeType; unsigned char *data; size_t dataSize; } StoreAvatarData;
+	typedef struct { TCHAR *szName; const char *szMimeType; unsigned char *data; size_t dataSize; } StoreAvatarData;
 	void __cdecl msn_storeAvatarThread(void* arg);
 
 	void __cdecl msn_storeProfileThread(void*);
@@ -547,8 +547,8 @@ struct CMsnProto : public PROTO_INTERFACE
 	bool MSN_StoreShareItem(const char* id, bool allowRecurse = true);
 	bool MSN_StoreCreateRelationships(bool allowRecurse = true);
 	bool MSN_StoreDeleteRelationships(bool tile, bool allowRecurse = true);
-	bool MSN_StoreCreateDocument(const char *szName, const char *szMimeType, const char *szPicData, bool allowRecurse = true);
-	bool MSN_StoreUpdateDocument(const char *szName, const char *szMimeType, const char *szPicData, bool allowRecurse = true);
+	bool MSN_StoreCreateDocument(const TCHAR *sztName, const char *szMimeType, const char *szPicData, bool allowRecurse = true);
+	bool MSN_StoreUpdateDocument(const TCHAR *sztName, const char *szMimeType, const char *szPicData, bool allowRecurse = true);
 	bool MSN_StoreFindDocuments(bool allowRecurse = true);
 
 	ezxml_t storeSoapHdr(const char* service, const char* scenario, ezxml_t& tbdy, char*& httphdr);

@@ -39,14 +39,14 @@ INT_PTR CMsnProto::GetMyAwayMsg(WPARAM wParam,LPARAM lParam)
 
 INT_PTR CMsnProto::GetAvatar(WPARAM wParam, LPARAM lParam)
 {
-	char* buf = (char*)wParam;
+	TCHAR* buf = (TCHAR*)wParam;
 	int  size = (int)lParam;
 
 	if (buf == NULL || size <= 0)
 		return -1;
 
 	MSN_GetAvatarFileName(NULL, buf, size, NULL);
-	return _access(buf, 0);
+	return _taccess(buf, 0);
 }
 
 
@@ -61,17 +61,21 @@ void CMsnProto::sttFakeAvatarAck(void* arg)
 
 INT_PTR CMsnProto::GetAvatarInfo(WPARAM wParam,LPARAM lParam)
 {
-	PROTO_AVATAR_INFORMATION* AI = (PROTO_AVATAR_INFORMATION*)lParam;
+	PROTO_AVATAR_INFORMATIONT* AI = (PROTO_AVATAR_INFORMATIONT*)lParam;
+	MsnContact *cont = NULL;
 
-	MsnContact *cont = Lists_Get(AI->hContact);
-	if (cont == NULL) return GAIR_NOAVATAR;
-
-	if ((cont->cap1 & 0xf0000000) == 0)
-		return GAIR_NOAVATAR;
-
-	if (_stricmp(cont->email, MyOptions.szEmail) == 0)
+	if (AI->hContact)
 	{
-		MSN_GetAvatarFileName(NULL, AI->filename, sizeof(AI->filename), NULL);
+		cont = Lists_Get(AI->hContact);
+		if (cont == NULL) return GAIR_NOAVATAR;
+
+		if ((cont->cap1 & 0xf0000000) == 0)
+			return GAIR_NOAVATAR;
+	}
+
+	if (AI->hContact == NULL || _stricmp(cont->email, MyOptions.szEmail) == 0)
+	{
+		MSN_GetAvatarFileName(NULL, AI->filename, SIZEOF(AI->filename), NULL);
 		AI->format = MSN_GetImageFormat(AI->filename);
 		return 	(AI->format == PA_FORMAT_UNKNOWN ? GAIR_NOAVATAR : GAIR_SUCCESS);
 	}
@@ -86,10 +90,10 @@ INT_PTR CMsnProto::GetAvatarInfo(WPARAM wParam,LPARAM lParam)
 	else
 		return GAIR_NOAVATAR;
 
-	MSN_GetAvatarFileName(AI->hContact, AI->filename, sizeof(AI->filename), NULL);
+	MSN_GetAvatarFileName(AI->hContact, AI->filename, SIZEOF(AI->filename), NULL);
 	AI->format = MSN_GetImageFormat(AI->filename);
 
-	if (_access(AI->filename, 0))
+	if (_taccess(AI->filename, 0))
 		AI->format = PA_FORMAT_UNKNOWN;
 
 	if (AI->format != PA_FORMAT_UNKNOWN) 
@@ -115,7 +119,7 @@ INT_PTR CMsnProto::GetAvatarInfo(WPARAM wParam,LPARAM lParam)
 		return GAIR_SUCCESS;
 	}
 
-	MSN_GetAvatarFileName(AI->hContact, AI->filename, sizeof(AI->filename), "unk");
+	MSN_GetAvatarFileName(AI->hContact, AI->filename, SIZEOF(AI->filename), _T("unk"));
 	if ((wParam & GAIF_FORCE) != 0 && AI->hContact != NULL)
 	{
 		if (avsPresent < 0) avsPresent = ServiceExists(MS_AV_SETMYAVATAR) != 0;
@@ -125,7 +129,7 @@ INT_PTR CMsnProto::GetAvatarInfo(WPARAM wParam,LPARAM lParam)
 		if (wStatus == ID_STATUS_OFFLINE) 
 		{
 			deleteSetting(AI->hContact, "AvatarHash");
-			PROTO_AVATAR_INFORMATION* fakeAI = new PROTO_AVATAR_INFORMATION;
+			PROTO_AVATAR_INFORMATIONT* fakeAI = new PROTO_AVATAR_INFORMATIONT;
 			*fakeAI = *AI;
 			ForkThread(&CMsnProto::sttFakeAvatarAck, fakeAI);
 		}
@@ -136,7 +140,7 @@ INT_PTR CMsnProto::GetAvatarInfo(WPARAM wParam,LPARAM lParam)
 				filetransfer* ft = new filetransfer(this);
 				ft->std.hContact = AI->hContact;
 				ft->p2p_object = mir_strdup(szContext);
-				ft->std.tszCurrentFile = mir_a2t(AI->filename);
+				ft->std.tszCurrentFile = mir_tstrdup(AI->filename);
 
 				p2p_invite(MSN_APPID_AVATAR, ft, NULL);
 			}
@@ -181,11 +185,11 @@ INT_PTR CMsnProto::GetAvatarCaps(WPARAM wParam, LPARAM lParam)
 
 INT_PTR CMsnProto::SetAvatar(WPARAM wParam, LPARAM lParam)
 {
-	char* szFileName = (char*)lParam;
+	TCHAR* szFileName = (TCHAR*)lParam;
 
-	char tFileName[MAX_PATH];
-	MSN_GetAvatarFileName(NULL, tFileName, sizeof(tFileName), NULL);
-	remove(tFileName);
+	TCHAR tFileName[MAX_PATH];
+	MSN_GetAvatarFileName(NULL, tFileName, SIZEOF(tFileName), NULL);
+	_tremove(tFileName);
 
 	if (szFileName == NULL)
 	{
@@ -195,7 +199,7 @@ INT_PTR CMsnProto::SetAvatar(WPARAM wParam, LPARAM lParam)
 	}
 	else
 	{
-		int fileId = _open(szFileName, _O_RDONLY | _O_BINARY, _S_IREAD);
+		int fileId = _topen(szFileName, _O_RDONLY | _O_BINARY, _S_IREAD);
 		if (fileId < 0) return 1;
 
 		size_t dwPngSize = _filelengthi64(fileId);
@@ -205,16 +209,16 @@ INT_PTR CMsnProto::SetAvatar(WPARAM wParam, LPARAM lParam)
 		_read(fileId, pData, (unsigned)dwPngSize);
 		_close(fileId);
 
-		char drive[_MAX_DRIVE];
-		char dir[_MAX_DIR];
-		char fname[_MAX_FNAME];
-		char ext[_MAX_EXT];
-		_splitpath(szFileName, drive, dir, fname, ext);
+		TCHAR drive[_MAX_DRIVE];
+		TCHAR dir[_MAX_DIR];
+		TCHAR fname[_MAX_FNAME];
+		TCHAR ext[_MAX_EXT];
+		_tsplitpath(szFileName, drive, dir, fname, ext);
 
 		int fmt = MSN_SetMyAvatar(fname, pData, dwPngSize);
 
 		StoreAvatarData* par = (StoreAvatarData*)mir_alloc(sizeof(StoreAvatarData));
-		par->szName = mir_strdup(fname);
+		par->szName = mir_tstrdup(fname);
 		par->data = pData;
 		par->dataSize = dwPngSize;
 		par->szMimeType = "image/png";
