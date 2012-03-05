@@ -689,12 +689,12 @@ BEGIN
             VALUE "Comments", "http://www.miranda-im.org"
             VALUE "CompanyName", "Miranda IM Development Team"
             VALUE "FileDescription", "Scriver - send and receive instant messages"
-            VALUE "FileVersion", "2.10.0.1"
+            VALUE "FileVersion", "2.9.0.9"
             VALUE "InternalName", "scriver"
             VALUE "LegalCopyright", "Copyright (c) 2000-2012 Miranda IM Project"
             VALUE "OriginalFilename", "scriver.dll"
             VALUE "ProductName", "Scriver"
-            VALUE "ProductVersion", "2.10.0.1"
+            VALUE "ProductVersion", "2.9.0.9"
         END
     END
     BLOCK "VarFileInfo"
