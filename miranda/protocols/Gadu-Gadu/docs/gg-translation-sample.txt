@@ -285,8 +285,9 @@ Szukaj tylko wœród dostêpnych
 &Obrazek
 [Image saved.]
 Zapisano obrazek.
-[Image received]
-Odebrano obrazek
+;[Image received] @ deprecated since 0.9.46
+[Incoming image]
+Nadchodz¹cy obrazek
 [Save image to disk]
 Zapisz obrazek na dysk
 [Image cannot be written to disk.]

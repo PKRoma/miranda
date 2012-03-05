@@ -1,7 +1,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 // Gadu-Gadu Plugin for Miranda IM
 //
-// Copyright (c) 2003-2006 Adam Strzelecki <ono+miranda@java.pl>
+// Copyright (c) 2003-2009 Adam Strzelecki <ono+miranda@java.pl>
+// Copyright (c) 2009-2012 Bartosz Bia³ek
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -20,8 +21,6 @@
 
 #include "gg.h"
 #include <io.h>
-
-#define HIMETRIC_INCH 2540
 
 #define WM_ADDIMAGE  WM_USER + 1
 #define WM_SENDIMG	 WM_USER + 2
@@ -56,13 +55,12 @@ typedef struct
 	uin_t uin;
 	int nImg, nImgTotal;
 	GGIMAGEENTRY *lpImages;
-	SIZE size, minSize;
+	SIZE minSize;
 	BOOL bReceiving;
 	GGPROTO *gg;
 } GGIMAGEDLGDATA;
 
 // Prototypes
-int gg_img_add(GGIMAGEDLGDATA *dat);
 int gg_img_remove(GGIMAGEDLGDATA *dat);
 INT_PTR gg_img_sendimg(GGPROTO *gg, WPARAM wParam, LPARAM lParam);
 
@@ -102,20 +100,18 @@ int gg_img_shutdown(GGPROTO *gg)
 	gg_netlog(gg, "gg_img_shutdown(): Closing all dialogs...");
 #endif
 	// Rather destroy window instead of just removing structures
-	for(l = gg->imagedlgs; l;)
+	for (l = gg->imagedlgs; l;)
 	{
 		GGIMAGEDLGDATA *dat = (GGIMAGEDLGDATA *)l->data;
 		l = l->next;
 
-		if(dat && dat->hWnd)
+		if (dat && dat->hWnd)
 		{
-			if(IsWindow(dat->hWnd))
+			if (IsWindow(dat->hWnd))
 			{
 				// Post message async, since it maybe be different thread
-				if(!PostMessage(dat->hWnd, WM_CLOSE, 0, 0))
-				{
+				if (!PostMessage(dat->hWnd, WM_CLOSE, 0, 0))
 					gg_netlog(gg, "gg_img_shutdown(): Image dlg %x cannot be released !!", dat->hWnd);
-				}
 			}
 			else
 				gg_netlog(gg, "gg_img_shutdown(): Image dlg %x not exists, but structure does !!", dat->hWnd);
@@ -130,7 +126,7 @@ int gg_img_shutdown(GGPROTO *gg)
 int gg_img_destroy(GGPROTO *gg)
 {
 	// Release all dialogs
-	while(gg->imagedlgs && gg_img_remove((GGIMAGEDLGDATA *)gg->imagedlgs->data));
+	while (gg->imagedlgs && gg_img_remove((GGIMAGEDLGDATA *)gg->imagedlgs->data));
 
 	// Destroy list
 	list_destroy(gg->imagedlgs, 1);
@@ -145,14 +141,15 @@ int gg_img_paint(HWND hwnd, GGIMAGEENTRY *dat)
 {
 	PAINTSTRUCT paintStruct;
 	HDC hdc = BeginPaint(hwnd, &paintStruct);
-	RECT rc; GetWindowRect(GetDlgItem(hwnd, IDC_IMG_IMAGE), &rc);
+	RECT rc;
+
+	GetWindowRect(GetDlgItem(hwnd, IDC_IMG_IMAGE), &rc);
 	ScreenToClient(hwnd, (POINT *)&rc.left);
 	ScreenToClient(hwnd, (POINT *)&rc.right);
 	FillRect(hdc, &rc, (HBRUSH)GetSysColorBrush(COLOR_WINDOW));
 
-	if(dat->hBitmap)
+	if (dat->hBitmap)
 	{
-		// Get width and height of picture
 		HDC hdcBmp = NULL;
 		int nWidth, nHeight;
 		BITMAP bmp;
@@ -162,43 +159,41 @@ int gg_img_paint(HWND hwnd, GGIMAGEENTRY *dat)
 
 		hdcBmp = CreateCompatibleDC(hdc);
 		SelectObject(hdcBmp, dat->hBitmap);
-		SetStretchBltMode(hdc, HALFTONE);
-
-		// Draw bitmap
-		if(nWidth > (rc.right-rc.left) || nHeight > (rc.bottom-rc.top))
+		if (hdcBmp)
 		{
-			if((double)nWidth / (double)nHeight > (double) (rc.right-rc.left) / (double)(rc.bottom-rc.top))
+			SetStretchBltMode(hdc, HALFTONE);
+			// Draw bitmap
+			if (nWidth > (rc.right-rc.left) || nHeight > (rc.bottom-rc.top))
 			{
-				if(hdcBmp)
+				if ((double)nWidth / (double)nHeight > (double) (rc.right-rc.left) / (double)(rc.bottom-rc.top))
+				{
 					StretchBlt(hdc,
 						rc.left,
 						((rc.top + rc.bottom) - (rc.right - rc.left) * nHeight / nWidth) / 2,
 						(rc.right - rc.left),
 						(rc.right - rc.left) * nHeight / nWidth,
 						hdcBmp, 0, 0, nWidth, nHeight, SRCCOPY);
-			}
-			else
-			{
-				if(hdcBmp)
+				}
+				else
+				{
 					StretchBlt(hdc,
 						((rc.left + rc.right) - (rc.bottom - rc.top) * nWidth / nHeight) / 2,
 						rc.top,
 						(rc.bottom - rc.top) * nWidth / nHeight,
 						(rc.bottom - rc.top),
 						hdcBmp, 0, 0, nWidth, nHeight, SRCCOPY);
+				}
 			}
-		}
-		else
-		{
-			if(hdcBmp)
+			else
+			{
 				BitBlt(hdc,
 					(rc.left + rc.right - nWidth) / 2,
 					(rc.top + rc.bottom - nHeight) / 2,
 					nWidth, nHeight,
 					hdcBmp, 0, 0, SRCCOPY);
+			}
+			DeleteDC(hdcBmp);
 		}
-
-		if(hdcBmp) DeleteDC(hdcBmp);
 	}
 	EndPaint(hwnd, &paintStruct);
 
@@ -219,10 +214,10 @@ char *gg_img_getfilter(char *szFilter, int nSize)
 	// Make up filter
 	strncpy(pFilter, szFilterName, nSize);
 	pFilter += strlen(pFilter) + 1;
-	if(pFilter >= szFilter + nSize) return NULL;
+	if (pFilter >= szFilter + nSize) return NULL;
 	strncpy(pFilter, szFilterMask, nSize - (pFilter - szFilter));
 	pFilter += strlen(pFilter) + 1;
-	if(pFilter >= szFilter + nSize) return NULL;
+	if (pFilter >= szFilter + nSize) return NULL;
 	*pFilter = 0;
 
 	return szFilter;
@@ -236,7 +231,7 @@ int gg_img_saveimage(HWND hwnd, GGIMAGEENTRY *dat)
 	char szFileName[MAX_PATH];
 	char szFilter[128];
 
-	if(!dat) return FALSE;
+	if (!dat) return FALSE;
 
 	gg_img_getfilter(szFilter, sizeof(szFilter));
 	strncpy(szFileName, dat->lpszFileName, sizeof(szFileName));
@@ -247,10 +242,10 @@ int gg_img_saveimage(HWND hwnd, GGIMAGEENTRY *dat)
 	ofn.lpstrFilter = szFilter;
 	ofn.nMaxFile = MAX_PATH;
 	ofn.Flags = OFN_PATHMUSTEXIST | OFN_NOCHANGEDIR | OFN_OVERWRITEPROMPT;
-	if(GetSaveFileName(&ofn))
+	if (GetSaveFileName(&ofn))
 	{
 		FILE *fp = fopen(szFileName, "w+b");
-		if(fp)
+		if (fp)
 		{
 			fwrite(dat->lpData, dat->nSize, 1, fp);
 			fclose(fp);
@@ -266,35 +261,6 @@ int gg_img_saveimage(HWND hwnd, GGIMAGEENTRY *dat)
 	return 0;
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// Resize layouting functions
-#define LAYOUT_SIZE(hwndDlg, id, rect, size, oldSize) \
-				GetWindowRect(GetDlgItem(hwndDlg, id), &rect); \
-				SetWindowPos(GetDlgItem(hwndDlg, id), NULL, 0, 0, \
-					rect.right - rect.left + size.cx - oldSize.cx, \
-					rect.bottom - rect.top + size.cy - oldSize.cy, \
-					SWP_NOMOVE | SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOREDRAW)
-#define LAYOUT_SIZE_X(hwndDlg, id, rect, size, oldSize) \
-				GetWindowRect(GetDlgItem(hwndDlg, id), &rect); \
-				SetWindowPos(GetDlgItem(hwndDlg, id), NULL, 0, 0, \
-					rect.right - rect.left + size.cx - oldSize.cx, \
-					rect.bottom - rect.top, \
-					SWP_NOMOVE | SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOREDRAW)
-#define LAYOUT_MOVE(hwndDlg, id, rect, size, oldSize) \
-				GetWindowRect(GetDlgItem(hwndDlg, id), &rect); \
-				ScreenToClient(hwndDlg, (POINT *)&rect); \
-				SetWindowPos(GetDlgItem(hwndDlg, id), NULL, \
-					rect.left + size.cx - oldSize.cx, \
-					rect.top + size.cy - oldSize.cy, \
-					0, 0, SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOREDRAW)
-#define LAYOUT_MOVE_X(hwndDlg, id, rect, size, oldSize) \
-				GetWindowRect(GetDlgItem(hwndDlg, id), &rect); \
-				ScreenToClient(hwndDlg, (POINT *)&rect); \
-				SetWindowPos(GetDlgItem(hwndDlg, id), NULL, \
-					rect.left + size.cx - oldSize.cx, \
-					rect.top, \
-					0, 0, SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOREDRAW)
-
 ////////////////////////////////////////////////////////////////////////////
 // Fit window size to image size
 BOOL gg_img_fit(HWND hwndDlg)
@@ -309,13 +275,13 @@ BOOL gg_img_fit(HWND hwndDlg)
 	HDC hdc;
 
 	// Check if image is loaded
-	if(!dat || !dat->lpImages || !dat->lpImages->hBitmap)
+	if (!dat || !dat->lpImages || !dat->lpImages->hBitmap)
 		return FALSE;
 
 	img = dat->lpImages;
 
 	// Go to last image
-	while(img->lpNext && dat->lpImages->hBitmap)
+	while (img->lpNext && dat->lpImages->hBitmap)
 		img = img->lpNext;
 
 	// Get rects of display
@@ -330,31 +296,31 @@ BOOL gg_img_fit(HWND hwndDlg)
 
 	ReleaseDC(hwndDlg, hdc);
 
-	if((imgRect.right - imgRect.left) < nWidth)
+	if ((imgRect.right - imgRect.left) < nWidth)
 		rWidth = nWidth - imgRect.right + imgRect.left;
-	if((imgRect.bottom - imgRect.top) < nWidth)
+	if ((imgRect.bottom - imgRect.top) < nWidth)
 		rHeight = nHeight - imgRect.bottom + imgRect.top;
 
 	// Check if anything needs resize
-	if(!rWidth && !rHeight)
+	if (!rWidth && !rHeight)
 		return FALSE;
 
 	oWidth = dlgRect.right - dlgRect.left + rWidth;
 	oHeight = dlgRect.bottom - dlgRect.top + rHeight;
 
-	if(oHeight > wrkRect.bottom - wrkRect.top)
+	if (oHeight > wrkRect.bottom - wrkRect.top)
 	{
 		oWidth = (int)((double)(wrkRect.bottom - wrkRect.top + imgRect.bottom - imgRect.top - dlgRect.bottom + dlgRect.top) * nWidth / nHeight)
 			- imgRect.right + imgRect.left + dlgRect.right - dlgRect.left;
-		if(oWidth < dlgRect.right - dlgRect.left)
+		if (oWidth < dlgRect.right - dlgRect.left)
 			oWidth = dlgRect.right - dlgRect.left;
 		oHeight = wrkRect.bottom - wrkRect.top;
 	}
-	if(oWidth > wrkRect.right - wrkRect.left)
+	if (oWidth > wrkRect.right - wrkRect.left)
 	{
 		oHeight = (int)((double)(wrkRect.right - wrkRect.left + imgRect.right - imgRect.left - dlgRect.right + dlgRect.left) * nHeight / nWidth)
 			- imgRect.bottom + imgRect.top + dlgRect.bottom - dlgRect.top;
-		if(oHeight < dlgRect.bottom - dlgRect.top)
+		if (oHeight < dlgRect.bottom - dlgRect.top)
 			oHeight = dlgRect.bottom - dlgRect.top;
 		oWidth = wrkRect.right - wrkRect.left;
 	}
@@ -367,14 +333,33 @@ BOOL gg_img_fit(HWND hwndDlg)
 	return TRUE;
 }
 
+////////////////////////////////////////////////////////////////////////////
+// Dialog resizer procedure
+static int sttImageDlgResizer(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL* urc)
+{
+	switch (urc->wId)
+	{
+		case IDC_IMG_PREV:
+		case IDC_IMG_NEXT:
+		case IDC_IMG_DELETE:
+		case IDC_IMG_SAVE:
+			return RD_ANCHORX_RIGHT | RD_ANCHORY_TOP;
+		case IDC_IMG_IMAGE:
+			return RD_ANCHORX_LEFT | RD_ANCHORY_TOP | RD_ANCHORY_HEIGHT | RD_ANCHORX_WIDTH;
+		case IDC_IMG_SEND:
+		case IDC_IMG_CANCEL:
+			return RD_ANCHORX_RIGHT | RD_ANCHORY_BOTTOM;
+	}
+	return RD_ANCHORX_LEFT | RD_ANCHORY_TOP;
+}
 
 ////////////////////////////////////////////////////////////////////////////
-// Send / Recv main dialog proc
+// Send / Recv main dialog procedure
 static INT_PTR CALLBACK gg_img_dlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	GGIMAGEDLGDATA *dat = (GGIMAGEDLGDATA *)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 
-	switch(msg)
+	switch (msg)
 	{
 		case WM_INITDIALOG:
 			{
@@ -393,7 +378,7 @@ static INT_PTR CALLBACK gg_img_dlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 				dat->hWnd = hwndDlg;
 
 				// Send event if someone's waiting
-				if(dat->hEvent) SetEvent(dat->hEvent);
+				if (dat->hEvent) SetEvent(dat->hEvent);
 				else gg_netlog(dat->gg, "gg_img_dlgproc(): Creation event not found, but someone might be waiting.");
 
 				// Making buttons flat
@@ -418,7 +403,7 @@ static INT_PTR CALLBACK gg_img_dlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 				WindowSetIcon(hwndDlg, "image");
 
 				szName = (char *) CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)dat->hContact, 0);
-				if(dat->bReceiving)
+				if (dat->bReceiving)
 					mir_snprintf(szTitle, sizeof(szTitle), Translate("Image from %s"), szName);
 				else
 					mir_snprintf(szTitle, sizeof(szTitle), Translate("Image for %s"), szName);
@@ -426,62 +411,44 @@ static INT_PTR CALLBACK gg_img_dlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 
 				// Store client extents
 				GetClientRect(hwndDlg, &rect);
-				dat->size.cx = rect.right - rect.left;
-				dat->size.cy = rect.bottom - rect.top;
-				dat->minSize = dat->size;
+				dat->minSize.cx = rect.right - rect.left;
+				dat->minSize.cy = rect.bottom - rect.top;
 			}
 			return TRUE;
 
 		case WM_SIZE:
-			if(wParam == SIZE_RESTORED || wParam == SIZE_MAXIMIZED)
-			{
-				RECT rect;
-				SIZE size = {LOWORD(lParam), HIWORD(lParam)};
-
-				GetClientRect(hwndDlg, &rect);
-
-				LockWindowUpdate(hwndDlg);
-				// Image area
-				LAYOUT_SIZE_X(hwndDlg, IDC_IMG_NAME, rect, size, dat->size);
-				LAYOUT_SIZE(hwndDlg, IDC_IMG_IMAGE, rect, size, dat->size);
-				// Buttons
-				if(dat->bReceiving)
-				{
-					LAYOUT_MOVE_X(hwndDlg, IDC_IMG_PREV, rect, size, dat->size);
-					LAYOUT_MOVE_X(hwndDlg, IDC_IMG_NEXT, rect, size, dat->size);
-					LAYOUT_MOVE_X(hwndDlg, IDC_IMG_SAVE, rect, size, dat->size);
-					LAYOUT_MOVE_X(hwndDlg, IDC_IMG_DELETE, rect, size, dat->size);
-				}
-				else
-					LAYOUT_MOVE(hwndDlg, IDC_IMG_SEND, rect, size, dat->size);
-				LAYOUT_MOVE(hwndDlg, IDC_IMG_CANCEL, rect, size, dat->size);
-
-				// Store new size
-				dat->size = size;
-				LockWindowUpdate(NULL);
+		{
+			UTILRESIZEDIALOG urd = {0};
+			urd.cbSize = sizeof(urd);
+			urd.hInstance = hInstance;
+			urd.hwndDlg = hwndDlg;
+			urd.lpTemplate = dat->bReceiving ? MAKEINTRESOURCEA(IDD_IMAGE_RECV) : MAKEINTRESOURCEA(IDD_IMAGE_SEND);
+			urd.pfnResizer = sttImageDlgResizer;
+			CallService(MS_UTILS_RESIZEDIALOG, 0, (LPARAM)&urd);
+			if (wParam == SIZE_RESTORED || wParam == SIZE_MAXIMIZED)
 				InvalidateRect(hwndDlg, NULL, FALSE);
-			}
-			break;
+			return 0;
+		}
 
 		case WM_SIZING:
 			{
 				RECT *pRect = (RECT *)lParam;
-				if(pRect->right - pRect->left < dat->minSize.cx)
+				if (pRect->right - pRect->left < dat->minSize.cx)
 				{
-					if(wParam == WMSZ_BOTTOMLEFT || wParam == WMSZ_LEFT || wParam == WMSZ_TOPLEFT)
+					if (wParam == WMSZ_BOTTOMLEFT || wParam == WMSZ_LEFT || wParam == WMSZ_TOPLEFT)
 						pRect->left = pRect->right - dat->minSize.cx;
 					else
 						pRect->right = pRect->left + dat->minSize.cx;
 				}
-				if(pRect->bottom - pRect->top < dat->minSize.cy)
+				if (pRect->bottom - pRect->top < dat->minSize.cy)
 				{
-					if(wParam == WMSZ_TOPLEFT || wParam == WMSZ_TOP || wParam == WMSZ_TOPRIGHT)
+					if (wParam == WMSZ_TOPLEFT || wParam == WMSZ_TOP || wParam == WMSZ_TOPRIGHT)
 						pRect->top = pRect->bottom - dat->minSize.cy;
 					else
 						pRect->bottom = pRect->top + dat->minSize.cy;
 				}
 			}
-			break;
+			return TRUE;
 
 		case WM_CLOSE:
 			EndDialog(hwndDlg, 0);
@@ -489,16 +456,16 @@ static INT_PTR CALLBACK gg_img_dlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 
 		// Flash the window
 		case WM_TIMER:
-			if(wParam == TIMERID_FLASHWND)
+			if (wParam == TIMERID_FLASHWND)
 				FlashWindow(hwndDlg, TRUE);
 			break;
 
 		// Kill the timer
 		case WM_ACTIVATE:
-			if(LOWORD(wParam) != WA_ACTIVE)
+			if (LOWORD(wParam) != WA_ACTIVE)
 				break;
 		case WM_MOUSEACTIVATE:
-			if(KillTimer(hwndDlg, TIMERID_FLASHWND))
+			if (KillTimer(hwndDlg, TIMERID_FLASHWND))
 				FlashWindow(hwndDlg, FALSE);
 			break;
 
@@ -508,16 +475,16 @@ static INT_PTR CALLBACK gg_img_dlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 				GGIMAGEENTRY *img = dat->lpImages;
 				int i;
 
-				for(i = 1; img && (i < dat->nImg); i++)
+				for (i = 1; img && (i < dat->nImg); i++)
 					img = img->lpNext;
 
-				if(!img)
+				if (!img)
 				{
 					gg_netlog(dat->gg, "gg_img_dlgproc(): Image was not found on the list. Cannot paint the window.");
 					return FALSE;
 				}
 
-				if(dat->bReceiving)
+				if (dat->bReceiving)
 				{
 					char szTitle[128];
 					mir_snprintf(szTitle, sizeof(szTitle),
@@ -531,12 +498,12 @@ static INT_PTR CALLBACK gg_img_dlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			break;
 
 		case WM_DESTROY:
-			if(dat)
+			if (dat)
 			{
 				// Deleting all image entries
 				GGIMAGEENTRY *temp, *img = dat->lpImages;
 				GGPROTO *gg = dat->gg;
-				while(temp = img)
+				while (temp = img)
 				{
 					img = img->lpNext;
 					gg_img_releasepicture(temp);
@@ -553,14 +520,14 @@ static INT_PTR CALLBACK gg_img_dlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			return TRUE;
 
 		case WM_COMMAND:
-			switch(LOWORD(wParam))
+			switch (LOWORD(wParam))
 			{
 				case IDC_IMG_CANCEL:
 					EndDialog(hwndDlg, 0);
 					return TRUE;
 
 				case IDC_IMG_PREV:
-					if(dat->nImg > 1)
+					if (dat->nImg > 1)
 					{
 						dat->nImg--;
 						InvalidateRect(hwndDlg, NULL, FALSE);
@@ -578,7 +545,7 @@ static INT_PTR CALLBACK gg_img_dlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 				case IDC_IMG_DELETE:
 					{
 						GGIMAGEENTRY *del, *img = dat->lpImages;
-						if(dat->nImg == 1)
+						if (dat->nImg == 1)
 						{
 							del = dat->lpImages;
 							dat->lpImages = img->lpNext;
@@ -586,9 +553,9 @@ static INT_PTR CALLBACK gg_img_dlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 						else
 						{
 							int i;
-							for(i = 1; img && (i < dat->nImg - 1); i++)
+							for (i = 1; img && (i < dat->nImg - 1); i++)
 								img = img->lpNext;
-							if(!img)
+							if (!img)
 							{
 								gg_netlog(dat->gg, "gg_img_dlgproc(): Image was not found on the list. Cannot delete it from the list.");
 								return FALSE;
@@ -598,7 +565,7 @@ static INT_PTR CALLBACK gg_img_dlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 							dat->nImg --;
 						}
 
-						if((-- dat->nImgTotal) == 0)
+						if ((-- dat->nImgTotal) == 0)
 							EndDialog(hwndDlg, 0);
 						else
 							InvalidateRect(hwndDlg, NULL, FALSE);
@@ -612,9 +579,9 @@ static INT_PTR CALLBACK gg_img_dlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 						GGIMAGEENTRY *img = dat->lpImages;
 						int i;
 
-						for(i = 1; img && (i < dat->nImg); i++)
+						for (i = 1; img && (i < dat->nImg); i++)
 							img = img->lpNext;
-						if(!img)
+						if (!img)
 						{
 							gg_netlog(dat->gg, "gg_img_dlgproc(): Image was not found on the list. Cannot launch saving.");
 							return FALSE;
@@ -672,19 +639,19 @@ static INT_PTR CALLBACK gg_img_dlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 				GGIMAGEENTRY *lpImage = (GGIMAGEENTRY *)lParam;
 				GGIMAGEENTRY *lpImages = dat->lpImages;
 
-				if(!dat->lpImages) // first image entry
+				if (!dat->lpImages) // first image entry
 					dat->lpImages = lpImage;
 				else // adding at the end of the list
 				{
-					while(lpImages->lpNext)
+					while (lpImages->lpNext)
 						lpImages = lpImages->lpNext;
 					lpImages->lpNext = lpImage;
 				}
 				dat->nImg = ++ dat->nImgTotal;
 			}
 			// Fit window to image
-			if(!gg_img_fit(hwndDlg))
-				InvalidateRect(hwndDlg, 0, 0);
+			if (!gg_img_fit(hwndDlg))
+				InvalidateRect(hwndDlg, NULL, FALSE);
 			return TRUE;
 
 		case WM_CHOOSEIMG:
@@ -703,17 +670,17 @@ static INT_PTR CALLBACK gg_img_dlgproc(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 			ofn.nMaxFile = MAX_PATH;
 			ofn.lpstrTitle = Translate("Select picture to send");
 			ofn.Flags = OFN_FILEMUSTEXIST | OFN_NOCHANGEDIR | OFN_HIDEREADONLY;
-			if(GetOpenFileName(&ofn))
+			if (GetOpenFileName(&ofn))
 			{
-				if(dat->lpImages)
+				if (dat->lpImages)
 					gg_img_releasepicture(dat->lpImages);
-				if(!(dat->lpImages = (GGIMAGEENTRY *)gg_img_loadpicture(dat->gg, 0, szFileName)))
+				if (!(dat->lpImages = (GGIMAGEENTRY *)gg_img_loadpicture(dat->gg, 0, szFileName)))
 				{
 					EndDialog(hwndDlg, 0);
 					return FALSE;
 				}
-				if(!gg_img_fit(hwndDlg))
-					InvalidateRect(hwndDlg, 0, 0);
+				if (!gg_img_fit(hwndDlg))
+					InvalidateRect(hwndDlg, NULL, FALSE);
 			}
 			else
 			{
@@ -743,12 +710,8 @@ void __cdecl gg_img_dlgcallthread(GGPROTO *gg, void *param)
 GGIMAGEDLGDATA *gg_img_recvdlg(GGPROTO *gg, HANDLE hContact)
 {
 	// Create dialog data
-	GGIMAGEDLGDATA *dat = (GGIMAGEDLGDATA *)malloc(sizeof(GGIMAGEDLGDATA));
-	ZeroMemory(dat, sizeof(GGIMAGEDLGDATA));
+	GGIMAGEDLGDATA *dat = (GGIMAGEDLGDATA *)calloc(1, sizeof(GGIMAGEDLGDATA));
 	dat->hContact = hContact;
-	dat->lpImages = NULL;
-	dat->nImg = 0;
-	dat->nImgTotal = 0;
 	dat->hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
 	dat->bReceiving = TRUE;
 	dat->gg = gg;
@@ -778,6 +741,7 @@ int gg_img_isexists(char *szPath, GGIMAGEENTRY *dat)
 			if (dat->crc32 == gg_fix32(gg_crc32(0, lpData, dat->nSize)) ||
 				memcmp(lpData, dat->lpData, dat->nSize) == 0)
 			{
+				mir_free(lpData);
 				fclose(fp);
 				return 1;
 			}
@@ -885,10 +849,10 @@ int gg_img_displayasmsg(GGPROTO *gg, HANDLE hContact, void *img)
 BOOL gg_img_opened(GGPROTO *gg, uin_t uin)
 {
 	list_t l = gg->imagedlgs;
-	while(l)
+	while (l)
 	{
 		GGIMAGEDLGDATA *dat = (GGIMAGEDLGDATA *)l->data;
-		if(dat->uin == uin)
+		if (dat->uin == uin)
 			return TRUE;
 		l = l->next;
 	}
@@ -902,21 +866,21 @@ gg_img_display(GGPROTO *gg, HANDLE hContact, void *img)
 	list_t l = gg->imagedlgs;
 	GGIMAGEDLGDATA *dat;
 
-	if(!img) return FALSE;
+	if (!img) return FALSE;
 
 	// Look for already open dialog
 	EnterCriticalSection(&gg->img_mutex);
-	while(l)
+	while (l)
 	{
 		dat = (GGIMAGEDLGDATA *)l->data;
-		if(dat->bReceiving && dat->hContact == hContact)
+		if (dat->bReceiving && dat->hContact == hContact)
 			break;
 		l = l->next;
 	}
 
-	if(!l) dat = NULL;
+	if (!l) dat = NULL;
 
-	if(!dat)
+	if (!dat)
 	{
 		dat = gg_img_recvdlg(gg, hContact);
 		dat->uin = DBGetContactSettingDword(hContact, gg->proto.m_szModuleName, GG_KEY_UIN, 0);
@@ -930,7 +894,7 @@ gg_img_display(GGPROTO *gg, HANDLE hContact, void *img)
 	LeaveCriticalSection(&gg->img_mutex);
 
 	SendMessage(dat->hWnd, WM_ADDIMAGE, 0, (LPARAM)img);
-	if(/*DBGetContactSettingByte(NULL, "Chat", "FlashWindowHighlight", 0) != 0 && */
+	if (/*DBGetContactSettingByte(NULL, "Chat", "FlashWindowHighlight", 0) != 0 && */
 		GetActiveWindow() != dat->hWnd && GetForegroundWindow() != dat->hWnd)
 		SetTimer(dat->hWnd, TIMERID_FLASHWND, 900, NULL);
 
@@ -946,13 +910,13 @@ gg_img_display(GGPROTO *gg, HANDLE hContact, void *img)
 // Image Window : Frees image entry structure
 gg_img_releasepicture(void *img)
 {
-	if(!img)
+	if (!img)
 		return FALSE;
-	if(((GGIMAGEENTRY *)img)->lpszFileName)
+	if (((GGIMAGEENTRY *)img)->lpszFileName)
 		free(((GGIMAGEENTRY *)img)->lpszFileName);
-	if(((GGIMAGEENTRY *)img)->hBitmap)
+	if (((GGIMAGEENTRY *)img)->hBitmap)
 		DeleteObject(((GGIMAGEENTRY *)img)->hBitmap);
-	if(((GGIMAGEENTRY *)img)->lpData)
+	if (((GGIMAGEENTRY *)img)->lpData)
 		free(((GGIMAGEENTRY *)img)->lpData);
 	free(img);
 
@@ -1098,7 +1062,7 @@ INT_PTR gg_img_recvimage(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
 	GGIMAGEENTRY *img = (GGIMAGEENTRY *)cle->lParam;
 
 	gg_netlog(gg, "gg_img_recvimage(%x, %x): Popup new image.", wParam, lParam);
-	if(!img) return FALSE;
+	if (!img) return FALSE;
 
 	gg_img_display(gg, cle->hContact, img);
 
@@ -1110,27 +1074,13 @@ INT_PTR gg_img_recvimage(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
 ////////////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////////////
-int gg_img_add(GGIMAGEDLGDATA *dat)
-{
-	GGPROTO *gg;
-	if(!dat) return FALSE;
-
-	gg = dat->gg;
-	EnterCriticalSection(&gg->img_mutex);
-	list_add(&gg->imagedlgs, dat, 0);
-	LeaveCriticalSection(&gg->img_mutex);
-
-	return FALSE;
-}
-
-////////////////////////////////////////////////////////////////////////////
 // Removes dat structure
 int gg_img_remove(GGIMAGEDLGDATA *dat)
 {
 	GGIMAGEENTRY *temp = NULL, *img = NULL;
 	GGPROTO *gg;
 
-	if(!dat) return FALSE;
+	if (!dat) return FALSE;
 	gg = dat->gg;
 
 	EnterCriticalSection(&gg->img_mutex);
@@ -1139,7 +1089,7 @@ int gg_img_remove(GGIMAGEDLGDATA *dat)
 	img = dat->lpImages;
 
 	// Destroy picture handle
-	while(temp = img)
+	while (temp = img)
 	{
 		img = img->lpNext;
 		gg_img_releasepicture(temp);
@@ -1161,12 +1111,12 @@ GGIMAGEDLGDATA *gg_img_find(GGPROTO *gg, uin_t uin, uint32_t crc32)
 	GGIMAGEDLGDATA *dat;
 
 	EnterCriticalSection(&gg->img_mutex);
-	while(l)
+	while (l)
 	{
 		uin_t c_uin;
 
 		dat = (GGIMAGEDLGDATA *)l->data;
-		if(!dat) break;
+		if (!dat) break;
 
 		c_uin = DBGetContactSettingDword(dat->hContact, dat->gg->proto.m_szModuleName, GG_KEY_UIN, 0);
 
@@ -1191,7 +1141,7 @@ BOOL gg_img_sendonrequest(GGPROTO *gg, struct gg_event* e)
 {
 	GGIMAGEDLGDATA *dat = gg_img_find(gg, e->event.image_request.sender, e->event.image_request.crc32);
 
-	if(!gg || !dat || !gg_isonline(gg)) return FALSE;
+	if (!gg || !dat || !gg_isonline(gg)) return FALSE;
 
 	EnterCriticalSection(&gg->sess_mutex);
 	gg_image_reply(gg->sess, e->event.image_request.sender, dat->lpImages->lpszFileName, dat->lpImages->lpData, dat->lpImages->nSize);
@@ -1210,14 +1160,10 @@ INT_PTR gg_img_sendimg(GGPROTO *gg, WPARAM wParam, LPARAM lParam)
 	GGIMAGEDLGDATA *dat = NULL;
 
 	EnterCriticalSection(&gg->img_mutex);
-	if(!dat)
+	if (!dat)
 	{
-		dat = (GGIMAGEDLGDATA *)malloc(sizeof(GGIMAGEDLGDATA));
+		dat = (GGIMAGEDLGDATA *)calloc(1, sizeof(GGIMAGEDLGDATA));
 		dat->hContact = hContact;
-		dat->lpImages = 0;
-		dat->nImg = 0;
-		dat->nImgTotal = 0;
-		dat->bReceiving = FALSE;
 		dat->hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
 		dat->gg = gg;
 		ResetEvent(dat->hEvent);
