@@ -334,11 +334,12 @@ static INT_PTR CALLBACK PhotoDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 				JCallService( MS_UTILS_GETBITMAPFILTERSTRINGST, SIZEOF( szFilter ), ( LPARAM )szFilter );
 
 				OPENFILENAME ofn = {0};
+				ofn.lStructSize = sizeof(ofn);
 				ofn.hwndOwner = hwndDlg;
 				ofn.lpstrFilter = szFilter;
 				ofn.lpstrCustomFilter = NULL;
 				ofn.lpstrFile = szFileName;
-				ofn.nMaxFile = _MAX_PATH;
+				ofn.nMaxFile = MAX_PATH;
 				ofn.Flags = OFN_FILEMUSTEXIST | OFN_DONTADDTORECENT;
 				szFileName[0] = '\0';
 				if ( GetOpenFileName( &ofn )) {
