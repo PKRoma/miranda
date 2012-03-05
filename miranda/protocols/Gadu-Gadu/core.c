@@ -991,7 +991,7 @@ retry:
 						cle.hDbEvent = (HANDLE)"img";
 						cle.lParam = (LPARAM)img;
 						cle.pszService = service;
-						cle.pszTooltip = Translate("Image received");
+						cle.pszTooltip = Translate("Incoming image");
 						CallService(MS_CLIST_ADDEVENT, 0, (LPARAM)&cle);
 						ReleaseIconEx("image", FALSE);
 					}
