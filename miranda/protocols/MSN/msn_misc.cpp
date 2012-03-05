@@ -180,24 +180,16 @@ void CMsnProto::InitCustomFolders(void)
 {
 	if (InitCstFldRan) return; 
 
-	{
-		char folder[MAX_PATH];
+	TCHAR folder[MAX_PATH];
+	TCHAR* tszModuleName = mir_a2t( m_szModuleName );
 
-		char *tmpPath = Utils_ReplaceVars("%miranda_avatarcache%");
-		mir_snprintf(folder, SIZEOF(folder), "%s\\%s", tmpPath, m_szModuleName);
-		hMSNAvatarsFolder = FoldersRegisterCustomPath(m_szModuleName, "Avatars", folder);
-		mir_free(tmpPath);
-	}
+	mir_sntprintf(folder, SIZEOF(folder), _T("%%miranda_avatarcache%%\\%s"), tszModuleName);
+	hMSNAvatarsFolder = FoldersRegisterCustomPathT(m_szModuleName, "Avatars", folder);
 
-	{
-		char folder[MAX_PATH];
+	mir_sntprintf(folder, SIZEOF(folder), _T("%%miranda_userdata%%\\%s\\CustomSmiley"), tszModuleName);
+	hCustomSmileyFolder = FoldersRegisterCustomPathT(m_szModuleName, "Custom Smiley", folder);
 
-		char *tmpPath = Utils_ReplaceVars("%miranda_userdata%");
-		mir_snprintf(folder, SIZEOF(folder), "%s\\%s\\CustomSmiley", tmpPath, m_szModuleName);
-		hCustomSmileyFolder = FoldersRegisterCustomPath(m_szModuleName, "Custom Smiley", folder);
-		mir_free(tmpPath);
-	}
-
+	mir_free(tszModuleName);
 	InitCstFldRan = true;
 }
 
