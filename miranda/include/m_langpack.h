@@ -140,7 +140,7 @@ __inline static INT_PTR TranslateDialogDefault(HWND hwndDlg)
 #if defined( MIRANDA_CUSTOM_LP )
 
 __inline static INT_PTR TranslateMenu(HMENU hMenu)
-{	return CallService(MS_LANGPACK_TRANSLATEMENU, (LPARAM)hMenu, hLangpack);
+{	return CallService(MS_LANGPACK_TRANSLATEMENU, (WPARAM)hMenu, hLangpack);
 }
 
 #else
