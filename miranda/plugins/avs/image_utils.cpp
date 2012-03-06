@@ -60,7 +60,7 @@ INT_PTR BmpFilterResizeBitmap(WPARAM wParam,LPARAM lParam)
 
 HBITMAP CopyBitmapTo32(HBITMAP hBitmap)
 {
-	BITMAPINFO RGB32BitsBITMAPINFO; 
+	BITMAPINFO RGB32BitsBITMAPINFO;
 	BYTE * ptPixels;
 	HBITMAP hDirectBitmap;
 
@@ -83,10 +83,10 @@ HBITMAP CopyBitmapTo32(HBITMAP hBitmap)
 	RGB32BitsBITMAPINFO.bmiHeader.biPlanes = 1;
 	RGB32BitsBITMAPINFO.bmiHeader.biBitCount = 32;
 
-	hDirectBitmap = CreateDIBSection(NULL, 
-									(BITMAPINFO *)&RGB32BitsBITMAPINFO, 
+	hDirectBitmap = CreateDIBSection(NULL,
+									(BITMAPINFO *)&RGB32BitsBITMAPINFO,
 									DIB_RGB_COLORS,
-									(void **)&ptPixels, 
+									(void **)&ptPixels,
 									NULL, 0);
 
 	// Copy data
@@ -94,7 +94,7 @@ HBITMAP CopyBitmapTo32(HBITMAP hBitmap)
 	{
 		HDC hdcOrig, hdcDest;
 		HBITMAP oldOrig, oldDest;
-		
+
 		hdcOrig = CreateCompatibleDC(NULL);
 		oldOrig = (HBITMAP) SelectObject(hdcOrig, hBitmap);
 
@@ -124,7 +124,7 @@ HBITMAP CopyBitmapTo32(HBITMAP hBitmap)
 
 HBITMAP CreateBitmap32(int cx, int cy)
 {
-	BITMAPINFO RGB32BitsBITMAPINFO; 
+	BITMAPINFO RGB32BitsBITMAPINFO;
 	UINT * ptPixels;
 	HBITMAP DirectBitmap;
 
@@ -135,10 +135,10 @@ HBITMAP CreateBitmap32(int cx, int cy)
 	RGB32BitsBITMAPINFO.bmiHeader.biPlanes=1;
 	RGB32BitsBITMAPINFO.bmiHeader.biBitCount=32;
 
-	DirectBitmap = CreateDIBSection(NULL, 
-									(BITMAPINFO *)&RGB32BitsBITMAPINFO, 
+	DirectBitmap = CreateDIBSection(NULL,
+									(BITMAPINFO *)&RGB32BitsBITMAPINFO,
 									DIB_RGB_COLORS,
-									(void **)&ptPixels, 
+									(void **)&ptPixels,
 									NULL, 0);
 	return DirectBitmap;
 }
@@ -168,9 +168,9 @@ void SetTranspBkgColor(HBITMAP hBitmap, COLORREF color)
 	for (y = 0; y < bmp.bmHeight; ++y) {
 		BYTE *px = p + bmp.bmWidth * 4 * y;
 
-		for (x = 0; x < bmp.bmWidth; ++x) 
+		for (x = 0; x < bmp.bmWidth; ++x)
 		{
-			if (px[3] == 0) 
+			if (px[3] == 0)
 			{
 				px[0] = GetBValue(color);
 				px[1] = GetGValue(color);
@@ -230,7 +230,7 @@ INT_PTR BmpFilterLoadBitmap32(WPARAM wParam,LPARAM lParam)
 		return 0;
 
 	FIBITMAP *dib = (FIBITMAP *)CallService(MS_IMG_LOAD, lParam, IMGL_RETURNDIB|IMGL_TCHAR);
-	
+
 	if(dib == NULL)
 		return 0;
 
@@ -267,7 +267,7 @@ INT_PTR BmpFilterLoadBitmap32(WPARAM wParam,LPARAM lParam)
 
 static HWND hwndClui = 0;
 
-// 
+//
 // Save ///////////////////////////////////////////////////////////////////////////////////////////
 // PNG and BMP will be saved as 32bit images, jpg as 24bit with default quality (75)
 // returns 1 on success, 0 on failure
@@ -311,7 +311,7 @@ INT_PTR BmpFilterSaveBitmap(WPARAM wParam,LPARAM lParam)
 		mir_snprintf(szFilename, SIZEOF(szFilename), "%s", szFile);
 
 	int filenameLen = lstrlenA( szFilename );
-	if ( filenameLen > 4 ) 
+	if ( filenameLen > 4 )
 		return BmpFilterSaveBitmap(( HBITMAP )wParam, szFilename, 0);
 
 	return -1;
@@ -329,7 +329,7 @@ INT_PTR BmpFilterSaveBitmapW(WPARAM wParam,LPARAM lParam)
 		mir_sntprintf(wszFilename, SIZEOF(wszFilename), _T("%s"), wszFile);
 
 	int filenameLen = lstrlenW( wszFilename );
-	if ( filenameLen > 4 ) 
+	if ( filenameLen > 4 )
 		return BmpFilterSaveBitmapW(( HBITMAP )wParam, wszFilename, 0 );
 
 	return -1;
@@ -352,8 +352,8 @@ INT_PTR BmpFilterCanSaveBitmap(WPARAM wParam,LPARAM lParam)
 
 static BOOL ColorsAreTheSame(int colorDiff, BYTE *px1, BYTE *px2)
 {
-	return abs(px1[0] - px2[0]) <= colorDiff 
-			&& abs(px1[1] - px2[1]) <= colorDiff 
+	return abs(px1[0] - px2[0]) <= colorDiff
+			&& abs(px1[1] - px2[1]) <= colorDiff
 			&& abs(px1[2] - px2[2])  <= colorDiff;
 }
 
@@ -369,18 +369,18 @@ void AddToStack(int *stack, int *topPos, int x, int y)
 			return;
 	}
 
-	stack[*topPos] = x; 
+	stack[*topPos] = x;
 	(*topPos)++;
 
-	stack[*topPos] = y; 
+	stack[*topPos] = y;
 	(*topPos)++;
 }
 
 
-BOOL GetColorForPoint(int colorDiff, BYTE *p, int width, int height, 
+BOOL GetColorForPoint(int colorDiff, BYTE *p, int width, int height,
 					  int x0, int y0, int x1, int y1, int x2, int y2, BOOL *foundBkg, BYTE colors[][3])
 {
-	BYTE *px1, *px2, *px3; 
+	BYTE *px1, *px2, *px3;
 
 	px1 = GET_PIXEL(p, x0,y0);
 	px2 = GET_PIXEL(p, x1,y1);
@@ -465,7 +465,7 @@ BOOL MakeTransparentBkg(HANDLE hContact, HBITMAP *hBitmap)
 	BITMAP bmp;
 	BYTE colors[8][3];
 	BOOL foundBkg[8];
-	BYTE *px1; 
+	BYTE *px1;
 	int count, maxCount, selectedColor;
 	HBITMAP hBmpTmp;
 	int colorDiff;
@@ -473,7 +473,7 @@ BOOL MakeTransparentBkg(HANDLE hContact, HBITMAP *hBitmap)
 	GetObject(*hBitmap, sizeof(bmp), &bmp);
 	width = bmp.bmWidth;
 	height = bmp.bmHeight;
-	colorDiff = DBGetContactSettingWord(hContact, "ContactPhoto", "TranspBkgColorDiff", 
+	colorDiff = DBGetContactSettingWord(hContact, "ContactPhoto", "TranspBkgColorDiff",
 					DBGetContactSettingWord(0, AVS_MODULE, "TranspBkgColorDiff", 10));
 
 	// Min 5x5 to easy things in loop
@@ -482,7 +482,7 @@ BOOL MakeTransparentBkg(HANDLE hContact, HBITMAP *hBitmap)
 
 	dwLen = width * height * 4;
 	p = (BYTE *)malloc(dwLen);
-	if (p == NULL) 
+	if (p == NULL)
 	{
 		return FALSE;
 	}
@@ -502,7 +502,7 @@ BOOL MakeTransparentBkg(HANDLE hContact, HBITMAP *hBitmap)
 	// **** Get corner colors
 
 	// Top left
-	if (!GetColorForPoint(colorDiff, p, width, height, 
+	if (!GetColorForPoint(colorDiff, p, width, height,
 						  0, 0, 0, 1, 1, 0, &foundBkg[0], &colors[0]))
 	{
 		if (hBmpTmp != *hBitmap) DeleteObject(hBmpTmp);
@@ -511,7 +511,7 @@ BOOL MakeTransparentBkg(HANDLE hContact, HBITMAP *hBitmap)
 	}
 
 	// Top center
-	if (!GetColorForPoint(colorDiff, p, width, height, 
+	if (!GetColorForPoint(colorDiff, p, width, height,
 						  width/2, 0, width/2-1, 0, width/2+1, 0, &foundBkg[1], &colors[1]))
 	{
 		if (hBmpTmp != *hBitmap) DeleteObject(hBmpTmp);
@@ -520,7 +520,7 @@ BOOL MakeTransparentBkg(HANDLE hContact, HBITMAP *hBitmap)
 	}
 
 	// Top Right
-	if (!GetColorForPoint(colorDiff, p, width, height, 
+	if (!GetColorForPoint(colorDiff, p, width, height,
 						  width-1, 0, width-1, 1, width-2, 0, &foundBkg[2], &colors[2]))
 	{
 		if (hBmpTmp != *hBitmap) DeleteObject(hBmpTmp);
@@ -529,7 +529,7 @@ BOOL MakeTransparentBkg(HANDLE hContact, HBITMAP *hBitmap)
 	}
 
 	// Center left
-	if (!GetColorForPoint(colorDiff, p, width, height, 
+	if (!GetColorForPoint(colorDiff, p, width, height,
 						  0, height/2, 0, height/2-1, 0, height/2+1, &foundBkg[3], &colors[3]))
 	{
 		if (hBmpTmp != *hBitmap) DeleteObject(hBmpTmp);
@@ -538,7 +538,7 @@ BOOL MakeTransparentBkg(HANDLE hContact, HBITMAP *hBitmap)
 	}
 
 	// Center left
-	if (!GetColorForPoint(colorDiff, p, width, height, 
+	if (!GetColorForPoint(colorDiff, p, width, height,
 						  width-1, height/2, width-1, height/2-1, width-1, height/2+1, &foundBkg[4], &colors[4]))
 	{
 		if (hBmpTmp != *hBitmap) DeleteObject(hBmpTmp);
@@ -547,7 +547,7 @@ BOOL MakeTransparentBkg(HANDLE hContact, HBITMAP *hBitmap)
 	}
 
 	// Bottom left
-	if (!GetColorForPoint(colorDiff, p, width, height, 
+	if (!GetColorForPoint(colorDiff, p, width, height,
 						  0, height-1, 0, height-2, 1, height-1, &foundBkg[5], &colors[5]))
 	{
 		if (hBmpTmp != *hBitmap) DeleteObject(hBmpTmp);
@@ -556,7 +556,7 @@ BOOL MakeTransparentBkg(HANDLE hContact, HBITMAP *hBitmap)
 	}
 
 	// Bottom center
-	if (!GetColorForPoint(colorDiff, p, width, height, 
+	if (!GetColorForPoint(colorDiff, p, width, height,
 						  width/2, height-1, width/2-1, height-1, width/2+1, height-1, &foundBkg[6], &colors[6]))
 	{
 		if (hBmpTmp != *hBitmap) DeleteObject(hBmpTmp);
@@ -565,7 +565,7 @@ BOOL MakeTransparentBkg(HANDLE hContact, HBITMAP *hBitmap)
 	}
 
 	// Bottom Right
-	if (!GetColorForPoint(colorDiff, p, width, height, 
+	if (!GetColorForPoint(colorDiff, p, width, height,
 						  width-1, height-1, width-1, height-2, width-2, height-1, &foundBkg[7], &colors[7]))
 	{
 		if (hBmpTmp != *hBitmap) DeleteObject(hBmpTmp);
@@ -582,7 +582,7 @@ BOOL MakeTransparentBkg(HANDLE hContact, HBITMAP *hBitmap)
 			count++;
 	}
 
-	if (count < DBGetContactSettingWord(hContact, "ContactPhoto", "TranspBkgNumPoints", 
+	if (count < DBGetContactSettingWord(hContact, "ContactPhoto", "TranspBkgNumPoints",
 						DBGetContactSettingWord(0, AVS_MODULE, "TranspBkgNumPoints", 5)))
 	{
 		if (hBmpTmp != *hBitmap) DeleteObject(hBmpTmp);
@@ -612,7 +612,7 @@ BOOL MakeTransparentBkg(HANDLE hContact, HBITMAP *hBitmap)
 		}
 	}
 
-	if (maxCount < DBGetContactSettingWord(hContact, "ContactPhoto", "TranspBkgNumPoints", 
+	if (maxCount < DBGetContactSettingWord(hContact, "ContactPhoto", "TranspBkgNumPoints",
 						DBGetContactSettingWord(0, AVS_MODULE, "TranspBkgNumPoints", 5)))
 	{
 		// Not enought corners with the same color
@@ -700,9 +700,9 @@ BOOL MakeTransparentBkg(HANDLE hContact, HBITMAP *hBitmap)
 				{
 					if (transpProportional)
 					{
-						px1[3] = min(252, 
-								(abs(px1[0] - colors[selectedColor][0]) 
-								+ abs(px1[1] - colors[selectedColor][1]) 
+						px1[3] = min(252,
+								(abs(px1[0] - colors[selectedColor][0])
+								+ abs(px1[1] - colors[selectedColor][1])
 								+ abs(px1[2] - colors[selectedColor][2])) / 3);
 					}
 					else
@@ -761,13 +761,16 @@ size_t AVS_pathToAbsolute(const TCHAR *pSrc, TCHAR *pOut)
 int SaveAvatar( const char* protocol, const TCHAR* tszFileName )
 {
 	int result = CallProtoService(protocol, PS_SETMYAVATART, 0, ( LPARAM )tszFileName);
-	if ( result == CALLSERVICE_NOTFOUND ) {
-		if ( tszFileName != NULL ) {
-			char szFileName[ MAX_PATH ];
-			WideCharToMultiByte( CP_ACP, 0, tszFileName, -1, szFileName, SIZEOF(szFileName), 0, 0 );
-			result = CallProtoService(protocol, PS_SETMYAVATAR, 0, ( LPARAM )szFileName);
+	#if defined( _UNICODE )
+		if ( result == CALLSERVICE_NOTFOUND ) {
+			if ( tszFileName != NULL ) {
+				char szFileName[ MAX_PATH ];
+				WideCharToMultiByte( CP_ACP, 0, tszFileName, -1, szFileName, SIZEOF(szFileName), 0, 0 );
+				result = CallProtoService(protocol, PS_SETMYAVATAR, 0, ( LPARAM )szFileName);
+			}
+			else result = CallProtoService(protocol, PS_SETMYAVATAR, 0, 0);
 		}
-		else result = CallProtoService(protocol, PS_SETMYAVATAR, 0, 0);
-	}
+	#endif
+
 	return result;
 }
