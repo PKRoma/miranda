@@ -53,7 +53,7 @@ static TabDef tabPages[] = {
 #define FONTF_BOLD   1
 #define FONTF_ITALIC 2
 
-struct FontOptionsList
+typedef struct FontOptionsListStruct
 {
 	TCHAR *szDescr;
 	COLORREF defColour;
@@ -61,9 +61,9 @@ struct FontOptionsList
 	BYTE defStyle;
 	char defSize;
 	TCHAR *szBkgName;
-}
+}FontOptionsList;
 
-static fontOptionsList[] = {
+static FontOptionsList fontOptionsList[] = {
 	{LPGENT("Outgoing messages"), RGB(106, 106, 106), _T("Arial"), 0, -12, LPGENT("Outgoing background")},
 	{LPGENT("Incoming messages"), RGB(0, 0, 0), _T("Arial"), 0, -12, LPGENT("Incoming background")},
 	{LPGENT("Outgoing name"), RGB(89, 89, 89), _T("Arial"), FONTF_BOLD, -12, LPGENT("Outgoing background")},
@@ -81,6 +81,30 @@ static fontOptionsList[] = {
 };
 
 int fontOptionsListSize = SIZEOF(fontOptionsList);
+
+//remeber to put these in the Translate( ) template file too
+static FontOptionsList chatFontOptionsList[] = {
+	{LPGENT("Timestamp"), RGB(50, 50, 240), _T("Terminal"), 0, -8, LPGENT("Background")},
+	{LPGENT("Others nicknames"), RGB(0, 0, 0), _T("Verdana"), FONTF_BOLD, -13, LPGENT("Background")},
+	{LPGENT("Your nickname"), RGB(0, 0, 0), _T("Verdana"), FONTF_BOLD, -13, LPGENT("Background")},
+	{LPGENT("User has joined"), RGB(90, 160, 90), _T("Verdana"), 0, -13, LPGENT("Background")},
+	{LPGENT("User has left"), RGB(160, 160, 90), _T("Verdana"), 0, -13, LPGENT("Background")},
+	{LPGENT("User has disconnected"), RGB(160, 90, 90), _T("Verdana"), 0, -13, LPGENT("Background")},
+	{LPGENT("User kicked ..."), RGB(100, 100, 100), _T("Verdana"), 0, -13, LPGENT("Background")},
+	{LPGENT("User is now known as ..."), RGB(90, 90, 160), _T("Verdana"), 0, -13, LPGENT("Background")},
+	{LPGENT("Notice from user"), RGB(160, 130, 60), _T("Verdana"), 0, -13, LPGENT("Background")},
+	{LPGENT("Incoming message"), RGB(90, 90, 90), _T("Verdana"), 0, -13, LPGENT("Background")},
+	{LPGENT("Outgoing message"), RGB(90, 90, 90), _T("Verdana"), 0, -13, LPGENT("Background")},
+	{LPGENT("The topic is ..."), RGB(70, 70, 160), _T("Verdana"), 0, -13, LPGENT("Background")},
+	{LPGENT("Information messages"), RGB(130, 130, 195), _T("Verdana"), 0, -13, LPGENT("Background")},
+	{LPGENT("User enables status for ..."), RGB(70, 150, 70), _T("Verdana"), 0, -13, LPGENT("Background")},
+	{LPGENT("User disables status for ..."), RGB(150, 70, 70), _T("Verdana"), 0, -13, LPGENT("Background")},
+	{LPGENT("Action message"), RGB(160, 90, 160), _T("Verdana"), 0, -13, LPGENT("Background")},
+	{LPGENT("Highlighted message"), RGB(180, 150, 80), _T("Verdana"), 0, -13, LPGENT("Background")},
+	{LPGENT("Message typing area"), RGB(0, 0, 40), _T("Verdana"), 0, -14, LPGENT("Message background")},
+	{LPGENT("User list members (online)"), RGB(0,0, 0), _T("Verdana"), 0, -12, LPGENT("User list background")},
+	{LPGENT("User list members (away)"), RGB(170, 170, 170), _T("Verdana"), 0, -12, LPGENT("User list background")},
+};
 
 struct ColourOptionsList
 {
@@ -191,14 +215,14 @@ void RegisterFontServiceFonts() {
     mir_sntprintf(fid.group, SIZEOF(fid.group), _T("%s"), LPGENT("Messaging"));
     mir_sntprintf(fid.backgroundGroup, SIZEOF(fid.backgroundGroup), _T("%s"), LPGENT("Messaging"));
 	strncpy(fid.dbSettingsGroup, (SRMMMOD), SIZEOF(fid.dbSettingsGroup));
-	fid.flags = FIDF_DEFAULTVALID;
+	fid.flags = FIDF_DEFAULTVALID | FIDF_DEFAULTVALID;
 	for (i = 0; i < SIZEOF(fontOptionsList); i++) {
 		fid.order = i;
 		mir_snprintf(szTemp, SIZEOF(szTemp), "SRMFont%d", i);
 		strncpy(fid.prefix, szTemp, SIZEOF(fid.prefix));
 		_tcsncpy(fid.name, fontOptionsList[i].szDescr, SIZEOF(fid.name));
 		fid.deffontsettings.colour = fontOptionsList[i].defColour;
-		fid.deffontsettings.size = (char) fontOptionsList[i].defSize;
+		fid.deffontsettings.size = fontOptionsList[i].defSize;
 		fid.deffontsettings.style = fontOptionsList[i].defStyle;
 		fid.deffontsettings.charset = MsgDlgGetFontDefaultCharset(fontOptionsList[i].szDefFace);
 		_tcsncpy(fid.deffontsettings.szFace, fontOptionsList[i].szDefFace, SIZEOF(fid.deffontsettings.szFace));
@@ -220,6 +244,58 @@ void RegisterFontServiceFonts() {
 		strncpy(cid.setting, colourOptionsList[i].szSettingName, SIZEOF(cid.setting));
 		CallService(MS_COLOUR_REGISTERT, (WPARAM)&cid, 0);
 	}
+}
+
+void RegisterChatFonts( void )
+{
+	FontIDT fid = {0};
+	ColourIDT colourid;
+	char idstr[10];
+	int index = 0, i;
+	fid.cbSize = sizeof(FontIDT);
+	mir_sntprintf(fid.group, SIZEOF(fid.group), _T("%s/%s"), LPGENT("Messaging"), LPGENT("Group Chats"));
+	mir_sntprintf(fid.backgroundGroup, SIZEOF(fid.backgroundGroup), _T("%s/%s"), LPGENT("Messaging"), LPGENT("Group Chats"));
+	strncpy(fid.dbSettingsGroup, "ChatFonts", sizeof(fid.dbSettingsGroup));
+	fid.flags = FIDF_ALLOWREREGISTER | FIDF_DEFAULTVALID | FIDF_NEEDRESTART;
+	for (i = 0; i < SIZEOF(chatFontOptionsList); i++) {
+		if (i == 17) continue;
+		fid.order = index++;
+		sprintf(idstr, "Font%d", i);
+		strncpy(fid.prefix, idstr, sizeof(fid.prefix));
+		_tcsncpy(fid.name, chatFontOptionsList[i].szDescr, SIZEOF(fid.name));
+		fid.deffontsettings.colour = chatFontOptionsList[i].defColour;
+		fid.deffontsettings.size = chatFontOptionsList[i].defSize;
+		fid.deffontsettings.style = chatFontOptionsList[i].defStyle;
+		fid.deffontsettings.charset = MsgDlgGetFontDefaultCharset(fontOptionsList[i].szDefFace);
+		_tcsncpy(fid.deffontsettings.szFace, chatFontOptionsList[i].szDefFace, SIZEOF(fid.deffontsettings.szFace));
+		_tcsncpy(fid.backgroundName, chatFontOptionsList[i].szBkgName, SIZEOF(fid.backgroundName));
+		CallService(MS_FONT_REGISTERT, (WPARAM)&fid, 0);
+	}
+
+	colourid.cbSize = sizeof(ColourIDT);
+	colourid.order = 0;
+	strncpy(colourid.dbSettingsGroup, "Chat", sizeof(colourid.dbSettingsGroup));
+
+	strncpy(colourid.setting, "ColorLogBG", SIZEOF(colourid.setting));
+	_tcsncpy(colourid.name, LPGENT("Background"), SIZEOF(colourid.name));
+	mir_sntprintf(colourid.group, SIZEOF(colourid.group), _T("%s/%s"), LPGENT("Messaging"), LPGENT("Group Chats"));
+	colourid.defcolour = GetSysColor(COLOR_WINDOW);
+	CallService(MS_COLOUR_REGISTERT, (WPARAM)&colourid, 0);
+
+	strncpy(colourid.setting, "ColorNicklistBG", SIZEOF(colourid.setting));
+	_tcsncpy(colourid.name, LPGENT("User list background"), SIZEOF(colourid.name));
+	colourid.defcolour = GetSysColor(COLOR_WINDOW);
+	CallService(MS_COLOUR_REGISTERT, (WPARAM)&colourid, 0);
+
+	strncpy(colourid.setting, "ColorNicklistLines", SIZEOF(colourid.setting));
+	_tcsncpy(colourid.name, LPGENT("User list lines"), SIZEOF(colourid.name));
+	colourid.defcolour = GetSysColor(COLOR_INACTIVEBORDER);
+	CallService(MS_COLOUR_REGISTERT, (WPARAM)&colourid, 0);
+
+	strncpy(colourid.setting, "ColorNicklistSelectedBG", SIZEOF(colourid.setting));
+	_tcsncpy(colourid.name, LPGENT("User list background (selected)"), SIZEOF(colourid.name));
+	colourid.defcolour = GetSysColor(COLOR_HIGHLIGHT);
+	CallService(MS_COLOUR_REGISTERT, (WPARAM)&colourid, 0);
 }
 
 int IconsChanged(WPARAM wParam, LPARAM lParam)
@@ -249,19 +325,20 @@ void LoadMsgDlgFont(int i, LOGFONT * lf, COLORREF * colour, BOOL chatMode)
 	DBVARIANT dbv;
 	const char * module =  chatMode ? "ChatFonts" : SRMMMOD;
 	const char * prefix = chatMode ? "Font" : "SRMFont";
+	const FontOptionsList * fontList = chatMode ? chatFontOptionsList : fontOptionsList;
 
 	if (colour) {
 		wsprintfA(str, "%s%dCol", prefix, i);
-		*colour = DBGetContactSettingDword(NULL, module, str, fontOptionsList[i].defColour);
+		*colour = DBGetContactSettingDword(NULL, module, str, fontList[i].defColour);
 	}
 	if (lf) {
 		wsprintfA(str, "%s%dSize", prefix, i);
-		lf->lfHeight = (char) DBGetContactSettingByte(NULL, module, str, fontOptionsList[i].defSize);
+		lf->lfHeight = (char) DBGetContactSettingByte(NULL, module, str, fontList[i].defSize);
 		lf->lfWidth = 0;
 		lf->lfEscapement = 0;
 		lf->lfOrientation = 0;
 		wsprintfA(str, "%s%dSty", prefix, i);
-		style = DBGetContactSettingByte(NULL, module, str, fontOptionsList[i].defStyle);
+		style = DBGetContactSettingByte(NULL, module, str, fontList[i].defStyle);
 		lf->lfWeight = style & FONTF_BOLD ? FW_BOLD : FW_NORMAL;
 		lf->lfItalic = style & FONTF_ITALIC ? 1 : 0;
 		lf->lfUnderline = 0;
@@ -272,7 +349,7 @@ void LoadMsgDlgFont(int i, LOGFONT * lf, COLORREF * colour, BOOL chatMode)
 		lf->lfPitchAndFamily = DEFAULT_PITCH | FF_DONTCARE;
 		wsprintfA(str, "%s%d", prefix, i);
 		if (DBGetContactSettingTString(NULL, module, str, &dbv))
-			lstrcpy(lf->lfFaceName, fontOptionsList[i].szDefFace);
+			lstrcpy(lf->lfFaceName, fontList[i].szDefFace);
 		else {
 			_tcsncpy(lf->lfFaceName, dbv.ptszVal, SIZEOF(lf->lfFaceName));
 			DBFreeVariant(&dbv);

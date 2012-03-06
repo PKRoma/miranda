@@ -34,45 +34,6 @@ extern FONTINFO			aFonts[OPTIONS_FONTCOUNT];
 HANDLE			g_hOptions = NULL;
 static HWND hPathTip = 0;
 
-#define FONTF_BOLD   1
-#define FONTF_ITALIC 2
-struct FontOptionsList
-{
-    TCHAR*   szDescr;
-    COLORREF defColour;
-    TCHAR*   szDefFace;
-    BYTE     defCharset, defStyle;
-    char     defSize;
-    COLORREF colour;
-    TCHAR    szFace[LF_FACESIZE];
-    BYTE     charset, style;
-    char     size;
-}
-
-//remeber to put these in the Translate( ) template file too
-static fontOptionsList[] = {
-	{LPGENT("Timestamp"), RGB(50, 50, 240), _T("Terminal"), DEFAULT_CHARSET, 0, -8},
-	{LPGENT("Others nicknames"), RGB(0, 0, 0), _T("Verdana"), DEFAULT_CHARSET, FONTF_BOLD, -13},
-	{LPGENT("Your nickname"), RGB(0, 0, 0), _T("Verdana"), DEFAULT_CHARSET, FONTF_BOLD, -13},
-	{LPGENT("User has joined"), RGB(90, 160, 90), _T("Verdana"), DEFAULT_CHARSET, 0, -13},
-	{LPGENT("User has left"), RGB(160, 160, 90), _T("Verdana"), DEFAULT_CHARSET, 0, -13},
-	{LPGENT("User has disconnected"), RGB(160, 90, 90), _T("Verdana"), DEFAULT_CHARSET, 0, -13},
-	{LPGENT("User kicked ..."), RGB(100, 100, 100), _T("Verdana"), DEFAULT_CHARSET, 0, -13},
-	{LPGENT("User is now known as ..."), RGB(90, 90, 160), _T("Verdana"), DEFAULT_CHARSET, 0, -13},
-	{LPGENT("Notice from user"), RGB(160, 130, 60), _T("Verdana"), DEFAULT_CHARSET, 0, -13},
-	{LPGENT("Incoming message"), RGB(90, 90, 90), _T("Verdana"), DEFAULT_CHARSET, 0, -13},
-	{LPGENT("Outgoing message"), RGB(90, 90, 90), _T("Verdana"), DEFAULT_CHARSET, 0, -13},
-	{LPGENT("The topic is ..."), RGB(70, 70, 160), _T("Verdana"), DEFAULT_CHARSET, 0, -13},
-	{LPGENT("Information messages"), RGB(130, 130, 195), _T("Verdana"), DEFAULT_CHARSET, 0, -13},
-	{LPGENT("User enables status for ..."), RGB(70, 150, 70), _T("Verdana"), DEFAULT_CHARSET, 0, -13},
-	{LPGENT("User disables status for ..."), RGB(150, 70, 70), _T("Verdana"), DEFAULT_CHARSET, 0, -13},
-	{LPGENT("Action message"), RGB(160, 90, 160), _T("Verdana"), DEFAULT_CHARSET, 0, -13},
-	{LPGENT("Highlighted message"), RGB(180, 150, 80), _T("Verdana"), DEFAULT_CHARSET, 0, -13},
-	{LPGENT("Message typing area"), RGB(0, 0, 40), _T("Verdana"), DEFAULT_CHARSET, 0, -14},
-	{LPGENT("User list members (online)"), RGB(0,0, 0), _T("Verdana"), DEFAULT_CHARSET, 0, -12},
-	{LPGENT("User list members (away)"), RGB(170, 170, 170), _T("Verdana"), DEFAULT_CHARSET, 0, -12},
-};
-
 struct branch_t
 {
 	TCHAR*    szDescr;
@@ -274,116 +235,8 @@ static INT CALLBACK BrowseCallbackProc(HWND hwnd, UINT uMsg, LPARAM lp, LPARAM p
 void LoadLogFonts(void)
 {
 	int i;
-
 	for( i = 0; i<OPTIONS_FONTCOUNT; i++)
-		Chat_LoadMsgDlgFont(i, &aFonts[i].lf, &aFonts[i].color);
-}
-
-void Chat_LoadMsgDlgFont(int i, LOGFONT* lf, COLORREF* colour)
-{
-    char str[32];
-    int style;
-    DBVARIANT dbv;
-
-    if (colour) {
-        wsprintfA(str, "Font%dCol", i);
-        *colour = DBGetContactSettingDword(NULL, "ChatFonts", str, fontOptionsList[i].defColour);
-    }
-    if (lf) {
-        wsprintfA(str, "Font%dSize", i);
-        lf->lfHeight = (char) DBGetContactSettingByte(NULL, "ChatFonts", str, fontOptionsList[i].defSize);
-        lf->lfWidth = 0;
-        lf->lfEscapement = 0;
-        lf->lfOrientation = 0;
-        wsprintfA(str, "Font%dSty", i);
-        style = DBGetContactSettingByte(NULL, "ChatFonts", str, fontOptionsList[i].defStyle);
-        lf->lfWeight = style & FONTF_BOLD ? FW_BOLD : FW_NORMAL;
-        lf->lfItalic = style & FONTF_ITALIC ? 1 : 0;
-        lf->lfUnderline = 0;
-        lf->lfStrikeOut = 0;
-        wsprintfA(str, "Font%dSet", i);
-        lf->lfCharSet = DBGetContactSettingByte(NULL, "ChatFonts", str, fontOptionsList[i].defCharset);
-        lf->lfOutPrecision = OUT_DEFAULT_PRECIS;
-        lf->lfClipPrecision = CLIP_DEFAULT_PRECIS;
-        lf->lfQuality = DEFAULT_QUALITY;
-        lf->lfPitchAndFamily = DEFAULT_PITCH | FF_DONTCARE;
-        wsprintfA(str, "Font%d", i);
-        if (DBGetContactSettingTString(NULL, "ChatFonts", str, &dbv))
-            lstrcpy(lf->lfFaceName, fontOptionsList[i].szDefFace);
-        else {
-			lstrcpyn(lf->lfFaceName, dbv.ptszVal, SIZEOF(lf->lfFaceName));
-            DBFreeVariant(&dbv);
-        }
-    }
-}
-
-void RegisterFonts( void )
-{
-	FontIDT fontid = {0};
-	ColourIDT colourid;
-	char idstr[10];
-	int index = 0, i;
-
-	fontid.cbSize = sizeof(FontIDT);
-	fontid.flags = FIDF_ALLOWREREGISTER | FIDF_DEFAULTVALID | FIDF_NEEDRESTART;
-	for (i = 0; i < SIZEOF(fontOptionsList); i++, index++) {
-		strncpy(fontid.dbSettingsGroup, "ChatFonts", sizeof(fontid.dbSettingsGroup));
-                mir_sntprintf(fontid.group, SIZEOF(fontid.group), _T("%s/%s"), LPGENT("Messaging"), LPGENT("Group Chats"));
-		_tcsncpy(fontid.name, fontOptionsList[i].szDescr, SIZEOF(fontid.name));
-		sprintf(idstr, "Font%d", index);
-		strncpy(fontid.prefix, idstr, sizeof(fontid.prefix));
-		fontid.order = index;
-
-		fontid.deffontsettings.charset = fontOptionsList[i].defCharset;
-		fontid.deffontsettings.colour = fontOptionsList[i].defColour;
-		fontid.deffontsettings.size = fontOptionsList[i].defSize;
-		fontid.deffontsettings.style = fontOptionsList[i].defStyle;
-		_tcsncpy(fontid.deffontsettings.szFace, fontOptionsList[i].szDefFace, SIZEOF(fontid.deffontsettings.szFace));
-                mir_sntprintf(fontid.backgroundGroup, SIZEOF(fontid.backgroundGroup), _T("%s/%s"), LPGENT("Messaging"), LPGENT("Group Chats"));
-		switch (i) {
-		case 17:
-			_tcsncpy(fontid.backgroundName, _T("Message background"), SIZEOF(fontid.backgroundName));
-			break;
-		case 18:
-		case 19:
-			_tcsncpy(fontid.backgroundName, _T("User list background"), SIZEOF(fontid.backgroundName));
-			break;
-		default:
-			_tcsncpy(fontid.backgroundName, _T("Background"), SIZEOF(fontid.backgroundName));
-			break;
-		}
-		CallService(MS_FONT_REGISTERT, (WPARAM)&fontid, 0);
-	}
-
-	colourid.cbSize = sizeof(ColourIDT);
-	colourid.order = 0;
-	strncpy(colourid.dbSettingsGroup, "Chat", sizeof(colourid.dbSettingsGroup));
-
-	strncpy(colourid.setting, "ColorLogBG", SIZEOF(colourid.setting));
-	_tcsncpy(colourid.name, LPGENT("Background"), SIZEOF(colourid.name));
-        mir_sntprintf(colourid.group, SIZEOF(colourid.group), _T("%s/%s"), LPGENT("Messaging"), LPGENT("Group Chats"));
-	colourid.defcolour = GetSysColor(COLOR_WINDOW);
-	CallService(MS_COLOUR_REGISTERT, (WPARAM)&colourid, 0);
-
-	strncpy(colourid.setting, "ColorMessageBG", SIZEOF(colourid.setting));
-	_tcsncpy(colourid.name, LPGENT("Message background"), SIZEOF(colourid.name));
-	colourid.defcolour = GetSysColor(COLOR_WINDOW);
-	CallService(MS_COLOUR_REGISTERT, (WPARAM)&colourid, 0);
-
-	strncpy(colourid.setting, "ColorNicklistBG", SIZEOF(colourid.setting));
-	_tcsncpy(colourid.name, LPGENT("User list background"), SIZEOF(colourid.name));
-	colourid.defcolour = GetSysColor(COLOR_WINDOW);
-	CallService(MS_COLOUR_REGISTERT, (WPARAM)&colourid, 0);
-
-	strncpy(colourid.setting, "ColorNicklistLines", SIZEOF(colourid.setting));
-	_tcsncpy(colourid.name, LPGENT("User list lines"), SIZEOF(colourid.name));
-	colourid.defcolour = GetSysColor(COLOR_INACTIVEBORDER);
-	CallService(MS_COLOUR_REGISTERT, (WPARAM)&colourid, 0);
-
-	strncpy(colourid.setting, "ColorNicklistSelectedBG", SIZEOF(colourid.setting));
-	_tcsncpy(colourid.name, LPGENT("User list background (selected)"), SIZEOF(colourid.name));
-	colourid.defcolour = GetSysColor(COLOR_HIGHLIGHT);
-	CallService(MS_COLOUR_REGISTERT, (WPARAM)&colourid, 0);
+		LoadMsgDlgFont(i, &aFonts[i].lf, &aFonts[i].color, TRUE);
 }
 
 
@@ -998,17 +851,17 @@ void LoadGlobalSettings(void)
 
 	if(g_Settings.MessageBoxFont)
 		DeleteObject(g_Settings.MessageBoxFont);
-	Chat_LoadMsgDlgFont(17, &lf, NULL);
+	LoadMsgDlgFont(MSGFONTID_MESSAGEAREA, &lf, NULL, FALSE);
 	g_Settings.MessageBoxFont = CreateFontIndirect(&lf);
 
 	if(g_Settings.UserListFont)
 		DeleteObject(g_Settings.UserListFont);
-	Chat_LoadMsgDlgFont(18, &lf, NULL);
+	LoadMsgDlgFont(18, &lf, NULL, TRUE);
 	g_Settings.UserListFont = CreateFontIndirect(&lf);
 
 	if(g_Settings.UserListHeadingsFont)
 		DeleteObject(g_Settings.UserListHeadingsFont);
-	Chat_LoadMsgDlgFont(19, &lf, NULL);
+	LoadMsgDlgFont(19, &lf, NULL, TRUE);
 	g_Settings.UserListHeadingsFont = CreateFontIndirect(&lf);
 	if (hListBkgBrush != NULL) {
 		DeleteObject(hListBkgBrush);
@@ -1043,7 +896,7 @@ void SetIndentSize()
 		HFONT hFont;
 		int iText;
 
-		Chat_LoadMsgDlgFont(0, &lf, NULL);
+		LoadMsgDlgFont(0, &lf, NULL, TRUE);
 		hFont = CreateFontIndirect(&lf);
 		iText = GetTextPixelSize(MakeTimeStamp(g_Settings.pszTimeStamp, time(NULL)),hFont, TRUE);
 		DeleteObject(hFont);
@@ -1061,7 +914,7 @@ int OptionsInit(void)
 	g_hOptions = HookEvent(ME_OPT_INITIALISE, OptionsInitialize);
 
 	LoadLogFonts();
-	Chat_LoadMsgDlgFont(18, &lf, NULL);
+	LoadMsgDlgFont(18, &lf, NULL, TRUE);
 	lstrcpy(lf.lfFaceName, _T("MS Shell Dlg"));
 	lf.lfUnderline = lf.lfItalic = lf.lfStrikeOut = 0;
 	lf.lfHeight = -17;
@@ -1071,7 +924,6 @@ int OptionsInit(void)
 	g_Settings.UserListHeadingsFont = NULL;
 	g_Settings.MessageBoxFont = NULL;
 	g_Settings.iSplitterX = DBGetContactSettingWord(NULL, "Chat", "SplitterX", 105);
-	g_Settings.iSplitterY = DBGetContactSettingWord(NULL, "Chat", "SplitterY", 90);
 	LoadGlobalSettings();
 
 	SkinAddNewSoundEx("ChatMessage", LPGEN("Group chats"), LPGEN("Incoming message"));
