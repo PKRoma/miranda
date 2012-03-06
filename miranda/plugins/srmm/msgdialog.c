@@ -1033,7 +1033,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 	case HM_AVATARACK:
 		{
 			ACKDATA *pAck = (ACKDATA *)lParam;
-			PROTO_AVATAR_INFORMATION *pai = (PROTO_AVATAR_INFORMATION *)pAck->hProcess;
+			PROTO_AVATAR_INFORMATIONT *pai = ( PROTO_AVATAR_INFORMATIONT* )pAck->hProcess;
 			HWND hwnd = 0;
 
 			if (pAck->hContact!=dat->hContact)
@@ -1047,8 +1047,8 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			if (pai==NULL)
 				return 0;
 			if (pAck->result == ACKRESULT_SUCCESS) {
-				if (pai->filename&&strlen(pai->filename)&&VALID_AVATAR(pai->format)) {
-					DBWriteContactSettingString(dat->hContact, SRMMMOD, SRMSGSET_AVATAR, pai->filename);
+				if (pai->filename && *pai->filename && VALID_AVATAR(pai->format)) {
+					DBWriteContactSettingTString(dat->hContact, SRMMMOD, SRMSGSET_AVATAR, pai->filename);
 					ShowAvatar(hwndDlg, dat);
 				}
 			}
