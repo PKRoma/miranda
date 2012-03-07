@@ -620,18 +620,10 @@ int CAimProto::open_contact_file(const char* sn, const char* file, const char* m
 	int fid = _open(path, _O_CREAT | _O_RDWR | _O_BINARY, _S_IREAD);
 	if (fid < 0)
 	{
-		#if _MSC_VER > 1200
-			TCHAR errmsg[512];
-			mir_sntprintf(errmsg, SIZEOF(errmsg), TranslateT("Failed to open file: %s "), path);
-			TCHAR* error = __tcserror(errmsg);
-			ShowPopup((char*)error, ERROR_POPUP | TCHAR_POPUP);
-		#else
-			char errmsg[512], *szFileName = mir_t2a(path);
-			mir_snprintf(errmsg, SIZEOF(errmsg), Translate("Failed to open file: %s "), szFileName);
-			char* error = _strerror(errmsg);
-			ShowPopup((char*)error, ERROR_POPUP);
-			mir_free(szFileName);
-		#endif
+		char errmsg[512];
+		mir_snprintf(errmsg, SIZEOF(errmsg), Translate("Failed to open file: %s "), path);
+		char* error = _strerror(errmsg);
+		ShowPopup(error, ERROR_POPUP);
 	}
 	return fid;
 }
