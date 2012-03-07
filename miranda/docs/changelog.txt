@@ -6,6 +6,16 @@
 
 				
 
+* New in 0.9.46
+Bugfixes:
+ - Updated zlib library
+ - Fixed issue creating directories
+ - Fixed messaging window hang
+ - Gadu-Gadu: Updates to the image dialog window
+ - MSN: Fixed buffer overrun when receiving malformed messages
+ - MSN: Fixed file transfer issues
+
+
 * New in 0.9.45
 Bugfixes:
  - ICQ: More delivery confirmation fixes
