@@ -327,7 +327,7 @@ BOOL CJabberProto::OnIqRequestLastActivity( HXML, CJabberIqInfo *pInfo )
 // XEP-0199: XMPP Ping support
 BOOL CJabberProto::OnIqRequestPing( HXML, CJabberIqInfo *pInfo )
 {
-	m_ThreadInfo->send( XmlNodeIq( _T("result"), pInfo ));
+	m_ThreadInfo->send( XmlNodeIq( _T("result"), pInfo ) << XATTR( _T("from"), m_ThreadInfo->fullJID ));
 	return TRUE;
 }
 
