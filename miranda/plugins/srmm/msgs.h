@@ -213,6 +213,5 @@ extern const int msgDlgFontCount;
 #define SRMSGDEFSET_LIMITAVHEIGHT   1
 #define SRMSGSET_AVHEIGHT          "AvatarHeight"
 #define SRMSGDEFSET_AVHEIGHT        60
-#define SRMSGSET_AVATAR             "Avatar"
 
 #endif

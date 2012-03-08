@@ -277,7 +277,7 @@ static void SetDialogToType(HWND hwndDlg)
 	ShowWindow(GetDlgItem(hwndDlg, IDC_SPLITTER), SW_SHOW);
 	ShowWindow(GetDlgItem(hwndDlg, IDOK), (g_dat->flags & SMF_SENDBTN) ? SW_SHOW : SW_HIDE);
 	EnableWindow(GetDlgItem(hwndDlg, IDOK), GetWindowTextLength(GetDlgItem(hwndDlg, IDC_MESSAGE)) != 0);
-	if (dat->avatarPic == 0 || !(g_dat->flags & SMF_AVATAR))
+	if (dat->avatarPic == NULL || !(g_dat->flags & SMF_AVATAR))
 		ShowWindow(GetDlgItem(hwndDlg, IDC_AVATAR), SW_HIDE);
 	SendMessage(hwndDlg, DM_UPDATETITLE, 0, 0);
 	SendMessage(hwndDlg, WM_SIZE, 0, 0);
@@ -642,13 +642,13 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
 
 	case IDC_MESSAGE:
 		{
-			if (!(g_dat->flags&SMF_SENDBTN))
+			if (!(g_dat->flags & SMF_SENDBTN))
 				urc->rcItem.right = urc->dlgNewSize.cx - urc->rcItem.left;
-			if ((g_dat->flags&SMF_AVATAR)&&dat->avatarPic) {
+			if ((g_dat->flags & SMF_AVATAR) && dat->avatarPic) {
 				urc->rcItem.left = dat->avatarWidth+4;
 			}
 			urc->rcItem.top -= dat->splitterPos - dat->originalSplitterPos;
-			if (!(g_dat->flags&SMF_SENDBTN))
+			if (!(g_dat->flags & SMF_SENDBTN))
 				return RD_ANCHORX_CUSTOM | RD_ANCHORY_BOTTOM;
 			return RD_ANCHORX_WIDTH | RD_ANCHORY_BOTTOM;
 		}
@@ -668,25 +668,12 @@ static int MessageDialogResize(HWND hwndDlg, LPARAM lParam, UTILRESIZECONTROL * 
 
 void ShowAvatar(HWND hwndDlg, struct MessageWindowData *dat)
 {
-	DBVARIANT dbv;
+	AVATARCACHEENTRY *ace = (AVATARCACHEENTRY *)CallService(MS_AV_GETAVATARBITMAP, (WPARAM)dat->hContact, 0);
+	if (ace && (ace->dwFlags & AVS_BITMAP_VALID) && !(ace->dwFlags & AVS_HIDEONCLIST))
+		dat->avatarPic = ace->hbmPic;
+	else
+		dat->avatarPic = NULL;
 
-	if (dat->avatarPic) {
-		DeleteObject(dat->avatarPic);
-		dat->avatarPic=0;
-	}
-
-	if (!DBGetContactSettingString(dat->hContact, SRMMMOD, SRMSGSET_AVATAR, &dbv)) {
-		if(dbv.pszVal) {
-			HANDLE hFile;
-
-			hFile = CreateFileA(dbv.pszVal, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
-			if (hFile!=INVALID_HANDLE_VALUE) {
-				dat->avatarPic=(HBITMAP)CallService(MS_UTILS_LOADBITMAP,0,(LPARAM)dbv.pszVal);
-				CloseHandle(hFile);
-		}	}
-
-		DBFreeVariant(&dbv);
-	}
 	SendMessage(hwndDlg, DM_UPDATESIZEBAR, 0, 0);
 	SendMessage(hwndDlg, DM_AVATARSIZECHANGE, 0, 0);
 }
@@ -1031,38 +1018,15 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 		break;
 
 	case HM_AVATARACK:
-		{
-			ACKDATA *pAck = (ACKDATA *)lParam;
-			PROTO_AVATAR_INFORMATION *pai = (PROTO_AVATAR_INFORMATION *)pAck->hProcess;
-			HWND hwnd = 0;
-
-			if (pAck->hContact!=dat->hContact)
-				return 0;
-			if (pAck->type != ACKTYPE_AVATAR)
-				return 0;
-			if (pAck->result == ACKRESULT_STATUS) {
-				SendMessage(hwndDlg, DM_GETAVATAR, 0, 0);
-				break;
-			}
-			if (pai==NULL)
-				return 0;
-			if (pAck->result == ACKRESULT_SUCCESS) {
-				if (pai->filename&&strlen(pai->filename)&&VALID_AVATAR(pai->format)) {
-					DBWriteContactSettingString(dat->hContact, SRMMMOD, SRMSGSET_AVATAR, pai->filename);
-					ShowAvatar(hwndDlg, dat);
-				}
-			}
-			else if (pAck->result == ACKRESULT_FAILED) {
-				DBWriteContactSettingString(dat->hContact, SRMMMOD, SRMSGSET_AVATAR, "");
-				ShowAvatar(hwndDlg, dat);
-		}	}
+		ShowAvatar(hwndDlg, dat);
 		break;
 
 	case DM_AVATARCALCSIZE:
 		{
 			BITMAP bminfo;
 
-			if (dat->avatarPic==0||!(g_dat->flags&SMF_AVATAR)) {
+			if (dat->avatarPic == NULL || !(g_dat->flags&SMF_AVATAR))
+			{
 				dat->avatarWidth=50;
 				dat->avatarHeight=50;
 				ShowWindow(GetDlgItem(hwndDlg, IDC_AVATAR), SW_HIDE);
@@ -1084,7 +1048,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 		dat->minEditBoxSize.cy = dat->minEditInit.bottom - dat->minEditInit.top;
 		if(g_dat->flags&SMF_AVATAR) {
 			SendMessage(hwndDlg, DM_AVATARCALCSIZE, 0, 0);
-			if(dat->avatarPic && dat->minEditBoxSize.cy<=dat->avatarHeight)
+			if(dat->avatarPic && dat->minEditBoxSize.cy <= dat->avatarHeight)
 				dat->minEditBoxSize.cy = dat->avatarHeight;
 		}
 		break;
@@ -1101,39 +1065,18 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 		break;
 
 	case DM_GETAVATAR:
+		SetWindowLongPtr(hwndDlg, DWLP_MSGRESULT, 1);
+		if (!(g_dat->flags & SMF_AVATAR) || !(CallProtoService(dat->szProto, PS_GETCAPS, PFLAGNUM_4, 0) & PF4_AVATARS))
 		{
-			PROTO_AVATAR_INFORMATION pai;
-			int caps = 0, result;
-
-			SetWindowLongPtr(hwndDlg, DWLP_MSGRESULT, 0);
-			if (!(g_dat->flags&SMF_AVATAR)||!(CallProtoService(dat->szProto, PS_GETCAPS, PFLAGNUM_4, 0)&PF4_AVATARS)) {
-				SendMessage(hwndDlg, DM_UPDATESIZEBAR, 0, 0);
-				SendMessage(hwndDlg, DM_AVATARSIZECHANGE, 0, 0);
-				SetWindowLongPtr(hwndDlg, DWLP_MSGRESULT, 1);
-				return 0;
-			}
-			if(DBGetContactSettingWord(dat->hContact, dat->szProto, "Status", ID_STATUS_OFFLINE) == ID_STATUS_OFFLINE) {
-				ShowAvatar(hwndDlg, dat);
-				SetWindowLongPtr(hwndDlg, DWLP_MSGRESULT, 1);
-				return 0;
-			}
-			ZeroMemory((void *)&pai, sizeof(pai));
-			pai.cbSize = sizeof(pai);
-			pai.hContact = dat->hContact;
-			pai.format = PA_FORMAT_UNKNOWN;
-			strcpy(pai.filename, "");
-			result = CallProtoService(dat->szProto, PS_GETAVATARINFO, GAIF_FORCE, (LPARAM)&pai);
-			if (result==GAIR_SUCCESS) {
-				if (VALID_AVATAR(pai.format))
-					DBWriteContactSettingString(dat->hContact, SRMMMOD, SRMSGSET_AVATAR, pai.filename);
-				else DBWriteContactSettingString(dat->hContact, SRMMMOD, SRMSGSET_AVATAR, "");
-				ShowAvatar(hwndDlg, dat);
-			} else if (result == GAIR_NOAVATAR) {
-				DBWriteContactSettingString(dat->hContact, SRMMMOD, SRMSGSET_AVATAR, "");
-				ShowAvatar(hwndDlg, dat);
-			}
-			SetWindowLongPtr(hwndDlg, DWLP_MSGRESULT, 1);
+			SendMessage(hwndDlg, DM_UPDATESIZEBAR, 0, 0);
+			SendMessage(hwndDlg, DM_AVATARSIZECHANGE, 0, 0);
+			return 0;
 		}
+		{
+			PROTO_AVATAR_INFORMATION ai = { sizeof(ai), dat->hContact };
+			CallProtoService(dat->szProto, PS_GETAVATARINFO, GAIF_FORCE, (LPARAM)&ai);
+		}
+		ShowAvatar(hwndDlg, dat);
 		break;
 
 	case DM_TYPING:
@@ -1220,7 +1163,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			SendDlgItemMessage(hwndDlg, IDC_MESSAGE, EM_SETBKGNDCOLOR, 0, colour);
 		}
 		{ // avatar stuff
-			dat->avatarPic = 0;
+			dat->avatarPic = NULL;
 			dat->limitAvatarH = 0;
 			if (CallProtoService(dat->szProto, PS_GETCAPS, PFLAGNUM_4, 0) & PF4_AVATARS) 
 			{
@@ -2059,8 +2002,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			DBWriteContactSettingDword(hContact, SRMMMOD, "width", wp.rcNormalPosition.right - wp.rcNormalPosition.left);
 			DBWriteContactSettingDword(hContact, SRMMMOD, "height", wp.rcNormalPosition.bottom - wp.rcNormalPosition.top);
 		}
-		if (dat->avatarPic)
-			DeleteObject(dat->avatarPic);
+
 		NotifyLocalWinEvent(dat->hContact, hwndDlg, MSG_WINDOW_EVT_CLOSE);
 		if (dat->hContact&&DBGetContactSettingByte(NULL, SRMMMOD, SRMSGSET_DELTEMP, SRMSGDEFSET_DELTEMP))
 			if (DBGetContactSettingByte(dat->hContact, "CList", "NotOnList", 0))

@@ -20,10 +20,11 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "commonheaders.h"
 
 struct GlobalMessageData *g_dat;
-static HANDLE g_hooks[3];
+static HANDLE g_hooks[4];
 
 static int dbaddedevent(WPARAM wParam, LPARAM lParam);
 static int ackevent(WPARAM wParam, LPARAM lParam);
+static int AvatarChanged(WPARAM wParam, LPARAM lParam);
 
 typedef struct IconDefStruct 
 {
@@ -82,6 +83,7 @@ void InitGlobals()
 	g_hooks[0] = HookEvent(ME_DB_EVENT_ADDED, dbaddedevent);
 	g_hooks[1] = HookEvent(ME_PROTO_ACK, ackevent);
 	g_hooks[2] = HookEvent(ME_SKIN2_ICONSCHANGED, IconsChanged);
+	g_hooks[3] = HookEvent(ME_AV_CONTACTAVATARCHANGED, AvatarChanged);
 
 	ReloadGlobals();
 	InitIcons();
@@ -166,12 +168,7 @@ static int ackevent(WPARAM wParam, LPARAM lParam)
 	ACKDATA *pAck = (ACKDATA *)lParam;
 	
 	if (!pAck) return 0;
-	else if (pAck->type == ACKTYPE_AVATAR) 
-	{
-		HWND h = WindowList_Find(g_dat->hMessageWindowList, (HANDLE)pAck->hContact);
-		if(h) SendMessage(h, HM_AVATARACK, wParam, lParam);
-	}
-	else if (pAck->type == ACKTYPE_MESSAGE) 
+	if (pAck->type == ACKTYPE_MESSAGE) 
 	{
 		msgQueue_processack(pAck->hContact, pAck->hProcess, pAck->result == ACKRESULT_SUCCESS, (char*)pAck->lParam);
 
@@ -180,3 +177,11 @@ static int ackevent(WPARAM wParam, LPARAM lParam)
 	}
 	return 0;
 }
+
+int AvatarChanged(WPARAM wParam, LPARAM lParam)
+{
+	HANDLE hContact = (HANDLE)wParam;
+	HWND h = WindowList_Find(g_dat->hMessageWindowList, hContact);
+	if (h) SendMessage(h, HM_AVATARACK, wParam, lParam);
+}
+
