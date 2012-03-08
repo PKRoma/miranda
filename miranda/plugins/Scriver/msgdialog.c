@@ -582,10 +582,12 @@ static void MessageDialogResize(HWND hwndDlg, struct MessageWindowData *dat, int
 			if (avatarHeight < BOTTOM_RIGHT_AVATAR_HEIGHT) {
 				avatarHeight = BOTTOM_RIGHT_AVATAR_HEIGHT;
 				hSplitterPos = avatarHeight - toolbarHeight + 2;
+			} else {
+				avatarHeight = BOTTOM_RIGHT_AVATAR_HEIGHT;
 			}
 			avatarWidth = avatarHeight;
-			if (avatarWidth > BOTTOM_RIGHT_AVATAR_HEIGHT && avatarWidth > w/3) {
-				avatarWidth = w /3;
+			if (avatarWidth > BOTTOM_RIGHT_AVATAR_HEIGHT && avatarWidth > w/4) {
+				avatarWidth = w /4;
 			}
 			if ((toolbarWidth - avatarWidth - 2) < dat->toolbarSize.cx) {
 				avatarWidth = toolbarWidth - dat->toolbarSize.cx - 2;
