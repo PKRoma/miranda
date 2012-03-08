@@ -235,7 +235,7 @@ void CJabberIqManager::ExpireInfo( CJabberIqInfo* pInfo, void*)
 	if (( pInfo->m_dwParamsToParse & JABBER_IQ_PARSE_HCONTACT ) && ( pInfo->m_szFrom ))
 		pInfo->m_hContact = ppro->HContactFromJID( pInfo->m_szFrom , 3);
 
-	ppro->Log( "Expiring iq id %d, sent to " TCHAR_STR_PARAM, pInfo->m_nIqId, pInfo->m_szReceiver ? pInfo->m_szReceiver : _T("unknown") );
+	ppro->Log( "Expiring iq id %d, sent to " TCHAR_STR_PARAM, pInfo->m_nIqId, pInfo->m_szReceiver ? pInfo->m_szReceiver : _T("server") );
 
 	pInfo->m_nIqType = JABBER_IQ_TYPE_FAIL;
 	(ppro->*(pInfo->m_pHandler))( NULL, pInfo );
