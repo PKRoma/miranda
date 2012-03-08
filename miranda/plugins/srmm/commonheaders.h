@@ -62,6 +62,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <m_icolib.h>
 #include <m_fontservice.h>
 #include <m_timezones.h>
+#include <m_avatars.h>
 
 #include "cmdlist.h"
 #include "msgs.h"
