@@ -571,6 +571,8 @@ static INT_PTR CALLBACK DlgProcLayoutOptions(HWND hwndDlg, UINT msg, WPARAM wPar
 			sprintf(str,"%d%%",(int)(100*SendDlgItemMessage(hwndDlg,IDC_ITRANSPARENCYVALUE,TBM_GETPOS,0,0)/255));
 			SetDlgItemTextA(hwndDlg, IDC_ITRANSPARENCYPERC, str);
 			SetDlgItemInt(hwndDlg, IDC_INPUTLINES, DBGetContactSettingDword(NULL, SRMMMOD, SRMSGSET_AUTORESIZELINES, SRMSGDEFSET_AUTORESIZELINES), FALSE);
+			SendDlgItemMessage(hwndDlg, IDC_INPUTLINESSPIN, UDM_SETRANGE, 0, MAKELONG(100, 1));
+			SendDlgItemMessage(hwndDlg, IDC_INPUTLINESSPIN, UDM_SETPOS, 0, DBGetContactSettingDword(NULL, SRMMMOD, SRMSGSET_AUTORESIZELINES, SRMSGDEFSET_AUTORESIZELINES));
 
 			if (pSetLayeredWindowAttributes == NULL) {
 				EnableWindow(GetDlgItem(hwndDlg, IDC_TRANSPARENCY), FALSE);
