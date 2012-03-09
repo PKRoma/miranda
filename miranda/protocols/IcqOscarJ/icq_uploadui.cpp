@@ -311,7 +311,7 @@ static INT_PTR CALLBACK DlgProcUploadList(HWND hwndDlg,UINT message,WPARAM wPara
 
 	switch(message) {
 	case WM_INITDIALOG:
-		ICQTranslateDialog(hwndDlg);
+		TranslateDialogDefault(hwndDlg);
 
 		SetWindowLongPtr(hwndDlg, GWLP_USERDATA, lParam);
 		{

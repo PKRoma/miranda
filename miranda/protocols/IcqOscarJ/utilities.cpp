@@ -623,7 +623,7 @@ HANDLE CIcqProto::HContactFromAuthEvent(HANDLE hEvent)
 char *NickFromHandle(HANDLE hContact)
 {
 	if (hContact == INVALID_HANDLE_VALUE)
-		return null_strdup(ICQTranslate("<invalid>"));
+		return null_strdup(Translate("<invalid>"));
 
 	return null_strdup((char *)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)hContact, 0));
 }
@@ -1834,22 +1834,6 @@ int CIcqProto::BroadcastAck(HANDLE hContact,int type,int result,HANDLE hProcess,
 	return CallService(MS_PROTO_BROADCASTACK,0,(LPARAM)&ack);
 }
 
-int __fastcall ICQTranslateDialog(HWND hwndDlg)
-{
-	LANGPACKTRANSLATEDIALOG lptd;
-
-	lptd.cbSize=sizeof(lptd);
-	lptd.flags=0;
-	lptd.hwndDlg=hwndDlg;
-	lptd.ignoreControls=NULL;
-	return CallService(MS_LANGPACK_TRANSLATEDIALOG,0,(LPARAM)&lptd);
-}
-
-char* __fastcall ICQTranslate(const char *src)
-{
-	return (char*)CallService(MS_LANGPACK_TRANSLATESTRING,0,(LPARAM)src);
-}
-
 char* __fastcall ICQTranslateUtf(const char *src)
 { // this takes UTF-8 strings only!!!
 	char *szRes = NULL;
@@ -2221,7 +2205,7 @@ char* CIcqProto::ConvertMsgToUserSpecificAnsi(HANDLE hContact, const char* szMsg
 DWORD CIcqProto::ReportGenericSendError(HANDLE hContact, int nType, const char* szErrorMsg)
 { 
 	DWORD dwCookie = GenerateCookie(0);
-	SendProtoAck(hContact, dwCookie, ACKRESULT_FAILED, nType, ICQTranslate(szErrorMsg));
+	SendProtoAck(hContact, dwCookie, ACKRESULT_FAILED, nType, Translate(szErrorMsg));
 	return dwCookie;
 }
 

@@ -138,7 +138,7 @@ void CIcqProto::handleFileRequest(PBYTE buf, WORD wLen, DWORD dwUin, DWORD dwCoo
 
 	if (strlennull(pszDescription) == 0)
 	{
-		pszDescription = ICQTranslate("No description given");
+		pszDescription = Translate("No description given");
 		bEmptyDesc = TRUE;
 	}
 

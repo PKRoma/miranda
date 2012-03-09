@@ -2644,11 +2644,11 @@ void CIcqProto::handleRecvServMsgError(BYTE *buf, WORD wLen, WORD wFlags, DWORD 
 		switch (wError) {
 
 		case 0x0002:     // Server rate limit exceeded
-			pszErrorMessage = ICQTranslate("You are sending too fast. Wait a while and try again.\r\nSNAC(4.1) Error x02");
+			pszErrorMessage = Translate("You are sending too fast. Wait a while and try again.\r\nSNAC(4.1) Error x02");
 			break;
 
 		case 0x0003:     // Client rate limit exceeded
-			pszErrorMessage = ICQTranslate("You are sending too fast. Wait a while and try again.\r\nSNAC(4.1) Error x03");
+			pszErrorMessage = Translate("You are sending too fast. Wait a while and try again.\r\nSNAC(4.1) Error x03");
 			break;
 
 		case 0x0004:     // Recipient is not logged in (resend in a offline message)
@@ -2656,33 +2656,33 @@ void CIcqProto::handleRecvServMsgError(BYTE *buf, WORD wLen, WORD wFlags, DWORD 
 			{
 				if (pCookieData->isOffline)
 				{ // offline failed - most probably to AIM contact
-					pszErrorMessage = ICQTranslate("The contact does not support receiving offline messages.");
+					pszErrorMessage = Translate("The contact does not support receiving offline messages.");
 					break;
 				}
 				// TODO: this needs better solution
 				setSettingWord(hContact, "Status", ID_STATUS_OFFLINE);
 			}
-			pszErrorMessage = ICQTranslate("The user has logged off. Select 'Retry' to send an offline message.\r\nSNAC(4.1) Error x04");
+			pszErrorMessage = Translate("The user has logged off. Select 'Retry' to send an offline message.\r\nSNAC(4.1) Error x04");
 			break;
 
 		case 0x0005:     // Requested service unavailable
-			pszErrorMessage = ICQTranslate("The messaging service is temporarily unavailable. Wait a while and try again.\r\nSNAC(4.1) Error x05");
+			pszErrorMessage = Translate("The messaging service is temporarily unavailable. Wait a while and try again.\r\nSNAC(4.1) Error x05");
 			break;
 
 		case 0x0009:     // Not supported by client (resend in a simpler format)
-			pszErrorMessage = ICQTranslate("The receiving client does not support this type of message.\r\nSNAC(4.1) Error x09");
+			pszErrorMessage = Translate("The receiving client does not support this type of message.\r\nSNAC(4.1) Error x09");
 			break;
 
 		case 0x000A:     // Refused by client
-			pszErrorMessage = ICQTranslate("You sent too long message. The receiving client does not support it.\r\nSNAC(4.1) Error x0A");
+			pszErrorMessage = Translate("You sent too long message. The receiving client does not support it.\r\nSNAC(4.1) Error x0A");
 			break;
 
 		case 0x000E:     // Incorrect SNAC format
-			pszErrorMessage = ICQTranslate("The SNAC format was rejected by the server.\nSNAC(4.1) Error x0E");
+			pszErrorMessage = Translate("The SNAC format was rejected by the server.\nSNAC(4.1) Error x0E");
 			break;
 
 		case 0x0013:     // User temporarily unavailable
-			pszErrorMessage = ICQTranslate("The user is temporarily unavailable. Wait a while and try again.\r\nSNAC(4.1) Error x13");
+			pszErrorMessage = Translate("The user is temporarily unavailable. Wait a while and try again.\r\nSNAC(4.1) Error x13");
 			break;
 
 		case 0x0001:     // Invalid SNAC header
@@ -2703,7 +2703,7 @@ void CIcqProto::handleRecvServMsgError(BYTE *buf, WORD wLen, WORD wFlags, DWORD 
 		case 0x0018:     // Not while on AOL
 		default:
 			if (pszErrorMessage = (char*)_alloca(256))
-				null_snprintf(pszErrorMessage, 256, ICQTranslate("SNAC(4.1) SENDMSG Error (x%02x)"), wError);
+				null_snprintf(pszErrorMessage, 256, Translate("SNAC(4.1) SENDMSG Error (x%02x)"), wError);
 			break;
 		}
 

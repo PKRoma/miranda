@@ -58,14 +58,14 @@ INT_PTR CALLBACK AdvancedSearchDlgProc(HWND hwndDlg, UINT message, WPARAM wParam
 	switch(message)
 	{
 	case WM_INITDIALOG:
-		ICQTranslateDialog(hwndDlg);
+		TranslateDialogDefault(hwndDlg);
 		InitComboBox(GetDlgItem(hwndDlg, IDC_GENDER), genderField);
 		InitComboBox(GetDlgItem(hwndDlg, IDC_AGERANGE), agesField);
 		InitComboBox(GetDlgItem(hwndDlg, IDC_MARITALSTATUS), maritalField);
 		InitComboBox(GetDlgItem(hwndDlg, IDC_WORKFIELD), occupationField);
 		InitComboBox(GetDlgItem(hwndDlg, IDC_ORGANISATION), affiliationField);
 		InitComboBox(GetDlgItem(hwndDlg, IDC_LANGUAGE), languageField);
-    InitComboBox(GetDlgItem(hwndDlg, IDC_COUNTRY), countryField);
+		InitComboBox(GetDlgItem(hwndDlg, IDC_COUNTRY), countryField);
 		InitComboBox(GetDlgItem(hwndDlg, IDC_INTERESTSCAT), interestsField);
 		InitComboBox(GetDlgItem(hwndDlg, IDC_PASTCAT), pastField);
 
