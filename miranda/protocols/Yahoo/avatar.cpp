@@ -662,7 +662,7 @@ void CYahooProto::GetAvatarFileName(HANDLE hContact, TCHAR* pszDest, int cbLen, 
 
 INT_PTR __cdecl CYahooProto::GetAvatarInfo(WPARAM wParam,LPARAM lParam)
 {
-	PROTO_AVATAR_INFORMATION* AI = ( PROTO_AVATAR_INFORMATION* )lParam;
+	PROTO_AVATAR_INFORMATIONT* AI = ( PROTO_AVATAR_INFORMATIONT* )lParam;
 	DBVARIANT dbv;
 	int avtType;
 
@@ -692,17 +692,11 @@ INT_PTR __cdecl CYahooProto::GetAvatarInfo(WPARAM wParam,LPARAM lParam)
 	if (DBGetContactSettingDword(AI->hContact, m_szModuleName,"PictCK", 0) == 0) 
 		return GAIR_NOAVATAR;
 
-	TCHAR tszFileName[ MAX_PATH ];
-	GetAvatarFileName(AI->hContact, tszFileName, SIZEOF(tszFileName), DBGetContactSettingByte(AI->hContact, m_szModuleName,"AvatarType", 0));
-	#if defined( _UNICODE )
-		WideCharToMultiByte( CP_ACP, 0, tszFileName, -1, AI->filename, sizeof AI->filename, 0, 0 );
-	#else
-		strcpy( AI->filename, tszFileName );
-	#endif
+	GetAvatarFileName(AI->hContact, AI->filename, SIZEOF(AI->filename), DBGetContactSettingByte(AI->hContact, m_szModuleName,"AvatarType", 0));
 	AI->format = PA_FORMAT_PNG;
 	DebugLog("[YAHOO_GETAVATARINFO] filename: %s", AI->filename);
 
-	if (_taccess( tszFileName, 0 ) == 0 ) 
+	if (_taccess( AI->filename, 0 ) == 0 ) 
 		return GAIR_SUCCESS;
 
 	if (( wParam & GAIF_FORCE ) != 0 && AI->hContact != NULL ) {		
@@ -791,7 +785,7 @@ return=0 on success, else on error
 */
 INT_PTR __cdecl CYahooProto::GetMyAvatar(WPARAM wParam, LPARAM lParam)
 {
-	char *buffer = (char *)wParam;
+	TCHAR *buffer = ( TCHAR* )wParam;
 	int size = (int)lParam;
 
 	DebugLog("[YahooGetMyAvatar]");
@@ -806,9 +800,9 @@ INT_PTR __cdecl CYahooProto::GetMyAvatar(WPARAM wParam, LPARAM lParam)
 	int ret = -3;
 
 	if (GetDword("AvatarHash", 0)){
-		if (!DBGetContactSettingString(NULL, m_szModuleName, "AvatarFile", &dbv)){
-			if (_access(dbv.pszVal, 0) == 0){
-				strncpy(buffer, dbv.pszVal, size-1);
+		if (!DBGetContactSettingTString(NULL, m_szModuleName, "AvatarFile", &dbv)){
+			if (_taccess(dbv.ptszVal, 0) == 0){
+				lstrcpyn(buffer, dbv.ptszVal, size-1);
 				buffer[size-1] = '\0';
 
 				ret = 0;
@@ -829,12 +823,12 @@ return=0 for sucess
 
 INT_PTR __cdecl CYahooProto::SetMyAvatar(WPARAM wParam, LPARAM lParam)
 {
-	char* szFile = ( char* )lParam;
-	TCHAR szMyFile[MAX_PATH+1];
+	TCHAR* tszFile = ( TCHAR* )lParam;
+	TCHAR  tszMyFile[MAX_PATH+1];
 
-	GetAvatarFileName(NULL, szMyFile, MAX_PATH, 2);
+	GetAvatarFileName(NULL, tszMyFile, MAX_PATH, 2);
 
-	if (szFile == NULL) {
+	if (tszFile == NULL) {
 		DebugLog("[Deleting Avatar Info]");	
 
 		/* remove ALL our Avatar Info Keys */
@@ -848,14 +842,14 @@ INT_PTR __cdecl CYahooProto::SetMyAvatar(WPARAM wParam, LPARAM lParam)
 
 		SetByte("ShareAvatar",0);
 
-		DeleteFile(szMyFile);
+		DeleteFile(tszMyFile);
 	} else {
 		DWORD  dwPngSize, dw;
 		BYTE* pResult;
 		unsigned int hash;
 		HANDLE  hFile;
 
-		hFile = CreateFileA(szFile, 
+		hFile = CreateFile(tszFile, 
 			GENERIC_READ, 
 			FILE_SHARE_READ|FILE_SHARE_WRITE, 
 			NULL, 
@@ -873,7 +867,7 @@ INT_PTR __cdecl CYahooProto::SetMyAvatar(WPARAM wParam, LPARAM lParam)
 		ReadFile( hFile, pResult, dwPngSize, &dw, NULL );
 		CloseHandle( hFile );
 
-		hFile = CreateFile(szMyFile, 
+		hFile = CreateFile(tszMyFile, 
 			GENERIC_WRITE, 
 			FILE_SHARE_WRITE, 
 			NULL, 
@@ -890,11 +884,11 @@ INT_PTR __cdecl CYahooProto::SetMyAvatar(WPARAM wParam, LPARAM lParam)
 		free( pResult );
 
 		if ( hash ) {
-			LOG(("[YAHOO_SetAvatar] File: '%s' CK: %d", szMyFile, hash));	
+			LOG(("[YAHOO_SetAvatar] File: '%s' CK: %d", tszMyFile, hash));	
 
 			/* now check and make sure we don't reupload same thing over again */
 			if (hash != GetDword("AvatarHash", 0)) {
-				SetStringT(NULL, "AvatarFile", szMyFile);
+				SetStringT(NULL, "AvatarFile", tszMyFile);
 				DBWriteContactSettingDword(NULL, m_szModuleName, "TMPAvatarHash", hash);
 
 				/*	Set Sharing to ON if it's OFF */
@@ -904,11 +898,11 @@ INT_PTR __cdecl CYahooProto::SetMyAvatar(WPARAM wParam, LPARAM lParam)
 				}
 
 				#if defined( _UNICODE )
-					char* tmp = mir_t2a(szMyFile);
+					char* tmp = mir_t2a(tszMyFile);
 					SendAvatar(tmp);
 					mir_free( tmp );
 				#else
-					SendAvatar(szMyFile);
+					SendAvatar(tszMyFile);
 				#endif
 			} 
 			else LOG(("[YAHOO_SetAvatar] Same checksum and avatar on YahooFT. Not Reuploading."));	  
