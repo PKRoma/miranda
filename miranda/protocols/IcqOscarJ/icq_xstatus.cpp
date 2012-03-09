@@ -777,7 +777,7 @@ static INT_PTR CALLBACK SetXStatusDlgProc(HWND hwndDlg,UINT message,WPARAM wPara
 		{
 			InitXStatusData *init = (InitXStatusData*)lParam;
 
-			ICQTranslateDialog(hwndDlg);
+			TranslateDialogDefault(hwndDlg);
 			dat = (SetXStatusData*)SAFE_MALLOC(sizeof(SetXStatusData));
 			dat->ppro = init->ppro;
 			SetWindowLongPtr(hwndDlg,GWLP_USERDATA,(LONG_PTR)dat);
@@ -1033,7 +1033,7 @@ void CIcqProto::InitXStatusItems(BOOL bAllowStatus)
 	// Custom Status UI is disabled, no need to continue items' init
 	if (m_bHideXStatusUI || m_bHideXStatusMenu) return;
 
-	null_snprintf(szItem, sizeof(szItem), ICQTranslate("%s Custom Status"), m_szModuleName);
+	null_snprintf(szItem, sizeof(szItem), Translate("%s Custom Status"), m_szModuleName);
 	mi.cbSize = sizeof(mi);
 	mi.pszPopupName = szItem;
 	mi.popupPosition= 500084000;

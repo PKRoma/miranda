@@ -799,7 +799,7 @@ DWORD_PTR __cdecl CIcqProto::GetCaps( int type, HANDLE hContact )
 		break;
 
 	case PFLAG_UNIQUEIDTEXT:
-		nReturn = (DWORD_PTR)ICQTranslate("User ID");
+		nReturn = (DWORD_PTR)Translate("User ID");
 		break;
 
 	case PFLAG_UNIQUEIDSETTING:

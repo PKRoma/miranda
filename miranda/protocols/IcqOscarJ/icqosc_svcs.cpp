@@ -69,7 +69,7 @@ static int LookupDatabaseSetting(const FieldNamesItem* table, int code, DBVARIAN
 
 	if (type == DBVT_ASCIIZ)
 	{
-		dbv->pszVal = mir_strdup(ICQTranslate(text));
+		dbv->pszVal = mir_strdup(Translate(text));
 		dbv->type = DBVT_ASCIIZ;
 	}
 	else if (type == DBVT_UTF8 || !type)
