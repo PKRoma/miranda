@@ -737,25 +737,6 @@ BOOL MakeTransparentBkg(HANDLE hContact, HBITMAP *hBitmap)
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
-// Path utils
-
-int AVS_pathIsAbsolute(const TCHAR *path)
-{
-	if (!path || !(lstrlen(path) > 2))
-		return 0;
-	if ((path[1]==':'&&path[2]=='\\')||(path[0]=='\\'&&path[1]=='\\')) return 1;
-	return 0;
-}
-
-size_t AVS_pathToRelative(const TCHAR *pSrc, TCHAR *pOut)
-{	return CallService( MS_UTILS_PATHTORELATIVET, (WPARAM)pSrc, (LPARAM)pOut );
-}
-
-size_t AVS_pathToAbsolute(const TCHAR *pSrc, TCHAR *pOut)
-{	return CallService( MS_UTILS_PATHTOABSOLUTET, (WPARAM)pSrc, (LPARAM)pOut );
-}
-
-/////////////////////////////////////////////////////////////////////////////////////////
 // Other utils
 
 int SaveAvatar( const char* protocol, const TCHAR* tszFileName )

@@ -204,6 +204,43 @@ int _DebugTrace(HANDLE hContact, const char *fmt, ...)
  * taken and modified from core services
  */
 
+int AVS_pathIsAbsolute(const TCHAR *path)
+{
+	if (!path || !(lstrlen(path) > 2))
+		return 0;
+	if ((path[1]==':'&&path[2]=='\\')||(path[0]=='\\'&&path[1]=='\\')) return 1;
+	return 0;
+}
+
+size_t AVS_pathToRelative(const TCHAR *pSrc, TCHAR *pOut)
+{
+	if (!pSrc || !*pSrc || _tcslen(pSrc) > MAX_PATH) return 0;
+	if (!AVS_pathIsAbsolute( pSrc ))
+		lstrcpyn(pOut, pSrc, MAX_PATH);
+	else {
+		TCHAR szTmp[MAX_PATH];
+		mir_sntprintf(szTmp, SIZEOF(szTmp), _T("%s"), pSrc);
+		_tcslwr(szTmp);
+		if (_tcsstr(szTmp, g_szDataPath))
+			lstrcpyn(pOut, pSrc + _tcslen(g_szDataPath) + 1, MAX_PATH);
+		else
+			lstrcpyn(pOut, pSrc, MAX_PATH);
+	}
+	return _tcslen(pOut);
+}
+
+size_t AVS_pathToAbsolute(const TCHAR *pSrc, TCHAR *pOut)
+{
+	if (!pSrc || !lstrlen(pSrc) || lstrlen(pSrc) > MAX_PATH)
+		return 0;
+
+	if (AVS_pathIsAbsolute(pSrc) || !_istalnum(pSrc[0]))
+		lstrcpyn(pOut, pSrc, MAX_PATH);
+	else
+		mir_sntprintf(pOut, MAX_PATH, _T("%s\\%s"), g_szDataPath, pSrc, MAX_PATH);
+	return lstrlen(pOut);
+}
+
 static void NotifyMetaAware(HANDLE hContact, struct CacheNode *node = NULL, AVATARCACHEENTRY *ace = (AVATARCACHEENTRY *)-1)
 {
 	if (ace == (AVATARCACHEENTRY *)-1)
@@ -2459,8 +2496,7 @@ static int LoadAvatarModule()
 	if (AvsAlphaBlend == NULL && (hDll = LoadLibrary(_T("msimg32.dll"))))
 		AvsAlphaBlend = (BOOL (WINAPI *)(HDC, int, int, int, int, HDC, int, int, int, int, BLENDFUNCTION)) GetProcAddress(hDll, "AlphaBlend");
 
-	TCHAR* tmpPath = Utils_ReplaceVarsT(_T("%miranda_path%"));
-
+	TCHAR* tmpPath = Utils_ReplaceVarsT(_T("%miranda_userdata%"));
 	lstrcpyn(g_szDataPath, tmpPath, SIZEOF(g_szDataPath)-1);
 	mir_free(tmpPath);
 	g_szDataPath[MAX_PATH - 1] = 0;
