@@ -1962,7 +1962,7 @@ int CIcqProto::servlistCreateGroup_gotParentGroup(const char *szGroup, WORD wGro
 		}
 	}
 	// we failed to create sub-group give parent groupid
-	icq_LogMessage(LOG_ERROR, "Failed to create the correct sub-group, the using closest parent group.");
+	icq_LogMessage(LOG_ERROR, LPGEN("Failed to create the correct sub-group, the using closest parent group."));
 
 	servlistPendingRemoveGroup(szSubGroup, wGroupID, PENDING_RESULT_FAILED);
 
@@ -2499,16 +2499,18 @@ void CIcqProto::servlistRenameGroup(char *szGroup, WORD wGroupId, char *szNewGro
 		int i = nGroupLevel;
 		while (i)
 		{ // find correct part of grouppath
-			szGroupName = strstrnull(szGroupName, "\\") + 1;
+			szGroupName = strstrnull(szGroupName, "\\");
 			if (!szGroupName) return; // failed to get correct part of the grouppath
+			szGroupName++;
 			i--;
 		}
 		szNewGroupName = szNewGroup;
 		i = nGroupLevel;
 		while (i)
 		{ // find correct part of new grouppath
-			szNewGroupName = strstrnull(szNewGroupName, "\\") + 1;
+			szNewGroupName = strstrnull(szNewGroupName, "\\");
 			if (!szNewGroupName) return; // failed to get correct part of the new grouppath
+			szNewGroupName++;
 			i--;
 		}
 		// truncate possible sub-groups
