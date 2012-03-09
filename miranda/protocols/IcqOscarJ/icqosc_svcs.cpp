@@ -406,7 +406,7 @@ INT_PTR CIcqProto::GetAvatarCaps(WPARAM wParam, LPARAM lParam)
 
 INT_PTR CIcqProto::GetAvatarInfo(WPARAM wParam, LPARAM lParam)
 {
-	PROTO_AVATAR_INFORMATION *pai = (PROTO_AVATAR_INFORMATION*)lParam;
+	PROTO_AVATAR_INFORMATIONT *pai = (PROTO_AVATAR_INFORMATIONT*)lParam;
 	DWORD dwUIN;
 	uid_str szUID;
 	DBVARIANT dbv = {DBVT_DELETED};
@@ -416,14 +416,12 @@ INT_PTR CIcqProto::GetAvatarInfo(WPARAM wParam, LPARAM lParam)
 	if (getSetting(pai->hContact, "AvatarHash", &dbv) || dbv.type != DBVT_BLOB || (dbv.cpbVal != 0x14 && dbv.cpbVal != 0x09))
 	{
 		ICQFreeVariant(&dbv);
-
 		return GAIR_NOAVATAR; // we did not found avatar hash or hash invalid - no avatar available
 	}
 
 	if (getContactUid(pai->hContact, &dwUIN, &szUID))
 	{
 		ICQFreeVariant(&dbv);
-
 		return GAIR_NOAVATAR; // we do not support avatars for invalid contacts
 	}
 
@@ -431,16 +429,16 @@ INT_PTR CIcqProto::GetAvatarInfo(WPARAM wParam, LPARAM lParam)
 
 	if (dwPaFormat != PA_FORMAT_UNKNOWN)
 	{ // we know the format, test file
-		char szFile[MAX_PATH * 2 + 4];
+		TCHAR tszFile[MAX_PATH * 2 + 4];
 
-		GetFullAvatarFileName(dwUIN, szUID, dwPaFormat, szFile, MAX_PATH * 2);
+		GetFullAvatarFileName(dwUIN, szUID, dwPaFormat, tszFile, MAX_PATH * 2);
 
-		utf8_decode_static(szFile, pai->filename, SIZEOF(pai->filename)); // Avatar API does not support unicode :-(
+		lstrcpyn(pai->filename, tszFile, SIZEOF(pai->filename)); // Avatar API does not support unicode :-(
 		pai->format = dwPaFormat;
 
 		if (!IsAvatarChanged(pai->hContact, dbv.pbVal, dbv.cpbVal))
 		{ // hashes are the same
-			if (FileAccessUtf(szFile, 0) == 0)
+			if (_taccess(tszFile, 0) == 0)
 			{
 				ICQFreeVariant(&dbv);
 
@@ -453,11 +451,11 @@ INT_PTR CIcqProto::GetAvatarInfo(WPARAM wParam, LPARAM lParam)
 	{ // we didn't received the avatar before - this ensures we will not request avatar again and again
 		if ((wParam & GAIF_FORCE) != 0 && pai->hContact != 0)
 		{ // request avatar data
-			char szFile[MAX_PATH * 2 + 4];
+			TCHAR tszFile[MAX_PATH * 2 + 4];
 
-			GetAvatarFileName(dwUIN, szUID, szFile, MAX_PATH * 2);
-			GetAvatarData(pai->hContact, dwUIN, szUID, dbv.pbVal, dbv.cpbVal, szFile);
-			utf8_decode_static(szFile, pai->filename, SIZEOF(pai->filename)); // Avatar API does not support unicode :-(
+			GetAvatarFileName(dwUIN, szUID, tszFile, MAX_PATH * 2);
+			GetAvatarData(pai->hContact, dwUIN, szUID, dbv.pbVal, dbv.cpbVal, tszFile);
+			lstrcpyn(pai->filename, tszFile, SIZEOF(pai->filename)); // Avatar API does not support unicode :-(
 
 			ICQFreeVariant(&dbv);
 
@@ -476,17 +474,15 @@ INT_PTR CIcqProto::GetMyAvatar(WPARAM wParam, LPARAM lParam)
 
 	if (!wParam) return -3;
 
-	char *szFile = GetOwnerAvatarFileName();
-
-	if (szFile && !FileAccessUtf(szFile, 0)) 
+	TCHAR *tszFile = GetOwnAvatarFileName();
+	if (tszFile && !_taccess(tszFile, 0)) 
 	{
-		utf8_decode_static(szFile, (char*)wParam, (int)lParam); // Avatar API does not support unicode :-(
-		SAFE_FREE(&szFile);
-
+		_tcsncpy((TCHAR*)wParam, tszFile, (int)lParam);
+		SAFE_FREE(&tszFile);
 		return 0;
 	}
-	SAFE_FREE(&szFile);
 
+	SAFE_FREE(&tszFile);
 	return -1;
 }
 
@@ -582,33 +578,32 @@ INT_PTR CIcqProto::SendYouWereAdded(WPARAM wParam, LPARAM lParam)
 
 INT_PTR CIcqProto::SetMyAvatar(WPARAM wParam, LPARAM lParam)
 {
-	char* szFile = (char*)lParam;
+	TCHAR* tszFile = (TCHAR*)lParam;
 	int iRet = -1;
 
 	if (!m_bAvatarsEnabled || !m_bSsiEnabled) return -2;
 
-	if (szFile)
+	if (tszFile)
 	{ // set file for avatar
-		char szMyFile[MAX_PATH+1];
-		int dwPaFormat = DetectAvatarFormat(szFile);
-		BYTE *hash;
-		HBITMAP avt;
-
+		int dwPaFormat = DetectAvatarFormat(tszFile);
 		if (dwPaFormat != PA_FORMAT_XML)
-		{ // if it should be image, check if it is valid
-			avt = (HBITMAP)CallService(MS_UTILS_LOADBITMAP, 0, (WPARAM)szFile);
+		{ 
+			// if it should be image, check if it is valid
+			HBITMAP avt = (HBITMAP)CallService(MS_UTILS_LOADBITMAP, 0, (WPARAM)tszFile);
 			if (!avt) return iRet;
 			DeleteObject(avt);
 		}
-		GetFullAvatarFileName(0, NULL, dwPaFormat, szMyFile, MAX_PATH);
+
+		TCHAR tszMyFile[MAX_PATH+1];
+		GetFullAvatarFileName(0, NULL, dwPaFormat, tszMyFile, MAX_PATH);
 		// if not in our storage, copy
-		if (strcmpnull(szFile, szMyFile) && !CopyFileA(szFile, szMyFile, FALSE))
+		if (lstrcmp(tszFile, tszMyFile) && !CopyFile(tszFile, tszMyFile, FALSE))
 		{
 			NetLog_Server("Failed to copy our avatar to local storage.");
 			return iRet;
 		}
 
-		hash = calcMD5HashOfFile(szMyFile);
+		BYTE *hash = calcMD5HashOfFile(tszMyFile);
 		if (hash)
 		{
 			BYTE* ihash = (BYTE*)_alloca(0x14);
@@ -625,9 +620,9 @@ INT_PTR CIcqProto::SetMyAvatar(WPARAM wParam, LPARAM lParam)
 				NetLog_Server("Failed to save avatar hash.");
 			}
 
-			char tmp[MAX_PATH];
-			CallService(MS_UTILS_PATHTORELATIVE, (WPARAM)szMyFile, (LPARAM)tmp);
-			setSettingString(NULL, "AvatarFile", tmp);
+			TCHAR tmp[MAX_PATH];
+			CallService(MS_UTILS_PATHTORELATIVET, (WPARAM)tszMyFile, (LPARAM)tmp);
+			setSettingStringT(NULL, "AvatarFile", tmp);
 
 			iRet = 0;
 

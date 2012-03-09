@@ -93,7 +93,7 @@ public:
   __inline BOOL isPending() { return !isLoggedIn; };
   __inline BOOL isReady() { return isLoggedIn && isActive && !stopThread; };
 
-  DWORD  sendGetAvatarRequest(HANDLE hContact, DWORD dwUin, char *szUid, const BYTE *hash, unsigned int hashlen, const char *file);
+  DWORD  sendGetAvatarRequest(HANDLE hContact, DWORD dwUin, char *szUid, const BYTE *hash, unsigned int hashlen, const TCHAR *file);
   DWORD  sendUploadAvatarRequest(HANDLE hContact, WORD wRef, const BYTE *data, unsigned int datalen);
 };
 
@@ -108,8 +108,8 @@ struct avatars_request : public void_struct
 	uid_str szUid;
 	BYTE  *hash;
 	unsigned int hashlen;
-	char  *szFile;
-	BYTE  *pData;
+	TCHAR  *szFile;
+	BYTE   *pData;
 	unsigned int cbData;
 	WORD   wRef;
 	DWORD  timeOut;
@@ -126,9 +126,9 @@ __inline static void SAFE_DELETE(avatars_request **p) { SAFE_DELETE((void_struct
 #define ART_BLOCK   4
 
 
-int  DetectAvatarFormat(const char *szFile);
-void AddAvatarExt(int dwFormat, char *pszDest);
+int  DetectAvatarFormat(const TCHAR *szFile);
+void AddAvatarExt(int dwFormat, TCHAR *pszDest);
 
-BYTE* calcMD5HashOfFile(const char *szFile);
+BYTE* calcMD5HashOfFile(const TCHAR *szFile);
 
 #endif /* __ICQ_AVATAR_H */
