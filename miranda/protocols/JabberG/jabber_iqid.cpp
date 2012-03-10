@@ -712,7 +712,7 @@ LBL_Ret:
 	Log( "%d bytes written", nWritten );
 	if ( hContact == NULL ) {
 		hasPhoto = TRUE;
-		JCallService( MS_AV_SETMYAVATAR, ( WPARAM )this->m_szModuleName, ( LPARAM )szAvatarFileName );
+		JCallService( MS_AV_SETMYAVATART, ( WPARAM )m_szModuleName, ( LPARAM )szAvatarFileName );
 
 		Log( "My picture saved to " TCHAR_STR_PARAM, szAvatarFileName );
 	}
