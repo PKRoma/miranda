@@ -1,5 +1,5 @@
 /*
-Copyright 2000-2010 Miranda /IM project, 
+Copyright 2000-2012 Miranda /IM project, 
 all portions of this codebase are copyrighted to the people 
 listed in contributors.txt.
 
@@ -183,5 +183,6 @@ int AvatarChanged(WPARAM wParam, LPARAM lParam)
 	HANDLE hContact = (HANDLE)wParam;
 	HWND h = WindowList_Find(g_dat->hMessageWindowList, hContact);
 	if (h) SendMessage(h, HM_AVATARACK, wParam, lParam);
+	return 0;
 }
 
