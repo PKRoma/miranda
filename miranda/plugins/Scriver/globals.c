@@ -447,10 +447,6 @@ static int ackevent(WPARAM wParam, LPARAM lParam) {
 	ACKDATA *pAck = (ACKDATA *)lParam;
 
 	if (!pAck) return 0;
-	else if (pAck->type==ACKTYPE_AVATAR) {
-		HWND h = WindowList_Find(g_dat->hMessageWindowList, (HANDLE)pAck->hContact);
-		if(h) SendMessage(h, HM_AVATARACK, wParam, lParam);
-	}
 	else if (pAck->type==ACKTYPE_MESSAGE) {
 		ACKDATA *ack = (ACKDATA *) lParam;
 		DBEVENTINFO dbei = { 0 };
