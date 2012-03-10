@@ -1081,7 +1081,6 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			return TRUE;
 		}
 	case WM_DROPFILES:
-	{
 		if (dat->szProto==NULL) break;
 		if (!(CallProtoService(dat->szProto, PS_GETCAPS, PFLAGNUM_1,0)&PF1_FILESEND)) break;
 		if (dat->wStatus==ID_STATUS_OFFLINE) break;
@@ -1099,64 +1098,24 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			mir_free(ppFiles);
 		}
 		break;
-	}
-	case HM_AVATARACK:
-	{
-		ACKDATA *pAck = (ACKDATA *)lParam;
-		PROTO_AVATAR_INFORMATIONT *pai = ( PROTO_AVATAR_INFORMATIONT* )pAck->hProcess;
-		if (pAck->hContact!=dat->windowData.hContact)
-			return 0;
-		if (pAck->type != ACKTYPE_AVATAR)
-			return 0;
-		if (pAck->result == ACKRESULT_STATUS) {
-			SendMessage(hwndDlg, DM_GETAVATAR, 0, 0);
-			return 0;
-		}
-		if (pai==NULL)
-			return 0;
-		if (pAck->result == ACKRESULT_SUCCESS) {
-			if (pai->filename && *pai->filename && VALID_AVATAR(pai->format)) {
-				ShowAvatar(hwndDlg, dat);
-			}
-		} else if (pAck->result == ACKRESULT_FAILED) {
-			SendMessage(hwndDlg, DM_GETAVATAR, 0, 0);
-		}
-		break;
-	}
+
 	case DM_AVATARCHANGED:
-		if (g_dat->avatarServiceInstalled) {
-			if ((HANDLE) wParam == NULL) {
-				dat->ace = (struct avatarCacheEntry *)CallService(MS_AV_GETAVATARBITMAP, (WPARAM)dat->windowData.hContact, 0);
-				ShowAvatar(hwndDlg, dat);
-			} else if (dat->windowData.hContact == (HANDLE) wParam) {
-				dat->ace = (struct avatarCacheEntry *) lParam;
-				ShowAvatar(hwndDlg, dat);
-			}
+		if ((HANDLE) wParam == NULL) {
+			dat->ace = (struct avatarCacheEntry *)CallService(MS_AV_GETAVATARBITMAP, (WPARAM)dat->windowData.hContact, 0);
+			ShowAvatar(hwndDlg, dat);
+		} else if (dat->windowData.hContact == (HANDLE) wParam) {
+			dat->ace = (struct avatarCacheEntry *) lParam;
+			ShowAvatar(hwndDlg, dat);
 		}
 		break;
+
 	case DM_GETAVATAR:
 	{
-		PROTO_AVATAR_INFORMATION pai;
-		int result;
-        if (!(CallProtoService(dat->szProto, PS_GETCAPS, PFLAGNUM_4, 0)&PF4_AVATARS)) {
-			ShowAvatar(hwndDlg, dat);
-			break;
-		}
-		if(DBGetContactSettingWord(dat->windowData.hContact, dat->szProto, "Status", ID_STATUS_OFFLINE) == ID_STATUS_OFFLINE) {
-			ShowAvatar(hwndDlg, dat);
-			break;
-		}
-		ZeroMemory((void *)&pai, sizeof(pai));
-		pai.cbSize = sizeof(pai);
-		pai.hContact = dat->windowData.hContact;
-		pai.format = PA_FORMAT_UNKNOWN;
-		strcpy(pai.filename, "");
-		result = CallProtoService(dat->szProto, PS_GETAVATARINFO, GAIF_FORCE, (LPARAM)&pai);
-		if (result==GAIR_SUCCESS) {
-			ShowAvatar(hwndDlg, dat);
-		} else if (result==GAIR_NOAVATAR) {
-			ShowAvatar(hwndDlg, dat);
-		}
+		PROTO_AVATAR_INFORMATION ai = { sizeof(ai), dat->windowData.hContact };
+		CallProtoService(dat->szProto, PS_GETAVATARINFO, GAIF_FORCE, (LPARAM)&ai);
+
+		dat->ace = (struct avatarCacheEntry *)CallService(MS_AV_GETAVATARBITMAP, (WPARAM)dat->windowData.hContact, 0);
+		ShowAvatar(hwndDlg, dat);
 		break;
 	}
 	case DM_TYPING:
@@ -1315,9 +1274,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 				}
 				dat->windowData.hwndLog = NULL;
 			}
-			if(g_dat->avatarServiceInstalled) {
-				dat->ace = (struct avatarCacheEntry *)CallService(MS_AV_GETAVATARBITMAP, (WPARAM)dat->windowData.hContact, 0);
-			}
+
 			SendMessage(hwndDlg, DM_GETAVATAR, 0, 0);
 			SetDialogToType(hwndDlg);
 

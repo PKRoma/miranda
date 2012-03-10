@@ -96,7 +96,6 @@ struct GlobalMessageData
 	int     tabIconListUsageSize;
 	ImageListUsageEntry     *tabIconListUsage;
 	TCmdList *draftList;
-	int		avatarServiceInstalled;
 	int		smileyAddInstalled;
 	int 	popupInstalled;
 	int		ieviewInstalled;

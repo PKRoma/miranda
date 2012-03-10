@@ -29,7 +29,6 @@ extern PSLWA pSetLayeredWindowAttributes;
 
 HANDLE hEventSkin2IconsChanged;
 
-static HANDLE g_hAck = 0;
 static int ackevent(WPARAM wParam, LPARAM lParam);
 
 extern int    Chat_ModulesLoaded(WPARAM wParam,LPARAM lParam);
@@ -238,7 +237,7 @@ void LoadGlobalIcons() {
 static BOOL CALLBACK LangAddCallback(CHAR * str) {
 	int i, count;
 	UINT cp;
-	static struct { UINT cpId; TCHAR *cpName; } cpTable[] = {
+	static struct { UINT cpId; const TCHAR *cpName; } cpTable[] = {
 		{	874,	_T("Thai") },
 		{	932,	_T("Japanese") },
 		{	936,	_T("Simplified Chinese") },
@@ -287,7 +286,7 @@ void InitGlobals() {
 	AppendMenuA(g_dat->hMenuANSIEncoding, MF_SEPARATOR, 0, 0);
 	EnumSystemCodePagesA(LangAddCallback, CP_INSTALLED);
 #endif
-	g_hAck = HookEvent_Ex(ME_PROTO_ACK, ackevent);
+	HookEvent_Ex(ME_PROTO_ACK, ackevent);
 	ReloadGlobals();
 	g_dat->lastParent = NULL;
 	g_dat->lastChatParent = NULL;
@@ -331,7 +330,6 @@ void FreeGlobals() {
 }
 
 void ReloadGlobals() {
-	g_dat->avatarServiceInstalled = ServiceExists(MS_AV_GETAVATARBITMAP);
 	g_dat->smileyAddInstalled =  ServiceExists(MS_SMILEYADD_SHOWSELECTION);
 	g_dat->popupInstalled =  ServiceExists(MS_POPUP_ADDPOPUPEX);
 	g_dat->ieviewInstalled =  ServiceExists(MS_IEVIEW_WINDOW);
