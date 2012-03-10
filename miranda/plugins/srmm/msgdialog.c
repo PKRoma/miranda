@@ -671,7 +671,7 @@ void ShowAvatar(HWND hwndDlg, struct MessageWindowData *dat)
 	if (g_dat->flags & SMF_AVATAR)
 	{
 		AVATARCACHEENTRY *ace = (AVATARCACHEENTRY *)CallService(MS_AV_GETAVATARBITMAP, (WPARAM)dat->hContact, 0);
-		if (ace && (ace->dwFlags & AVS_BITMAP_VALID) && !(ace->dwFlags & AVS_HIDEONCLIST))
+		if (ace  && (INT_PTR)ace != CALLSERVICE_NOTFOUND && (ace->dwFlags & AVS_BITMAP_VALID) && !(ace->dwFlags & AVS_HIDEONCLIST))
 			dat->avatarPic = ace->hbmPic;
 		else
 			dat->avatarPic = NULL;

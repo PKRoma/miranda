@@ -666,7 +666,10 @@ static void UpdateReadChars(HWND hwndDlg, struct MessageWindowData * dat)
 	}
 }
 
-void ShowAvatar(HWND hwndDlg, struct MessageWindowData *dat) {
+void ShowAvatar(HWND hwndDlg, struct MessageWindowData *dat)
+{
+	INT_PTR res = CallService(MS_AV_GETAVATARBITMAP, (WPARAM)dat->windowData.hContact, 0);
+	dat->ace = res != CALLSERVICE_NOTFOUND ? (AVATARCACHEENTRY*)res : NULL;
 	dat->avatarPic = (dat->ace != NULL && (dat->ace->dwFlags & AVS_HIDEONCLIST) == 0) ? dat->ace->hbmPic : NULL;
 	SendMessage(hwndDlg, WM_SIZE, 0, 0);
 
@@ -1100,21 +1103,13 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 		break;
 
 	case DM_AVATARCHANGED:
-		if ((HANDLE) wParam == NULL) {
-			dat->ace = (struct avatarCacheEntry *)CallService(MS_AV_GETAVATARBITMAP, (WPARAM)dat->windowData.hContact, 0);
-			ShowAvatar(hwndDlg, dat);
-		} else if (dat->windowData.hContact == (HANDLE) wParam) {
-			dat->ace = (struct avatarCacheEntry *) lParam;
-			ShowAvatar(hwndDlg, dat);
-		}
+		ShowAvatar(hwndDlg, dat);
 		break;
 
 	case DM_GETAVATAR:
 	{
 		PROTO_AVATAR_INFORMATION ai = { sizeof(ai), dat->windowData.hContact };
 		CallProtoService(dat->szProto, PS_GETAVATARINFO, GAIF_FORCE, (LPARAM)&ai);
-
-		dat->ace = (struct avatarCacheEntry *)CallService(MS_AV_GETAVATARBITMAP, (WPARAM)dat->windowData.hContact, 0);
 		ShowAvatar(hwndDlg, dat);
 		break;
 	}
@@ -1142,7 +1137,6 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			tcd.hIcon = GetTabIcon(dat);
 			SendMessage(dat->hwndParent, CM_UPDATETABCONTROL, (WPARAM)&tcd, (LPARAM)hwndDlg);
 			SendDlgItemMessage(hwndDlg, IDC_USERMENU, BM_SETIMAGE, IMAGE_ICON, (LPARAM)dat->statusIcon);
-//			ShowAvatar(hwndDlg, dat);
 		}
 		break;
 	case DM_UPDATETABCONTROL:
@@ -1165,6 +1159,7 @@ INT_PTR CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 			mir_free(tbd.pszText);
 		}
 		break;
+
 	case DM_CLISTSETTINGSCHANGED:
 		{
             if ((HANDLE)wParam == dat->windowData.hContact) {
