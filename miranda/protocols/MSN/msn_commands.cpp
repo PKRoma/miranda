@@ -1105,9 +1105,7 @@ void CMsnProto::MSN_InitSB(ThreadData* info, const char* szEmail)
 			0);
 	}
 
-	PROTO_AVATAR_INFORMATION ai = {0};
-	ai.cbSize = sizeof(ai);
-	ai.hContact = cont->hContact;
+	PROTO_AVATAR_INFORMATIONT ai = { sizeof(ai), cont->hContact };
 	GetAvatarInfo(GAIF_FORCE, (LPARAM)&ai);
 }
 
