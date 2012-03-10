@@ -30,8 +30,7 @@
  *
  */
 
-#define MIRANDA_VER 0x0700
-#define MIRANDA_CUSTOM_LP
+#define MIRANDA_VER 0x0A00
 
 #define _WIN32_WINNT 0x0501
 #define _WIN32_IE 0x0501
@@ -219,4 +218,3 @@ void FreeAndNil( void** );
 #if _MSC_VER >= 1500
 	#define wEffects wReserved
 #endif
-

@@ -26,7 +26,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #pragma once
 #define MIRANDA_VER 0x0A00
-#define MIRANDA_CUSTOM_LP
 
 #define _WIN32_WINNT 0x0501
 
@@ -447,9 +446,9 @@ public:
 	}
 #endif
 
-	~HashStringKeyNoCase() 
-	{ 
-		if (_strKey) free (_strKey); 
+	~HashStringKeyNoCase()
+	{
+		if (_strKey) free (_strKey);
 		_strKey = NULL;
 		_dwKey=0;
 	}
@@ -458,7 +457,7 @@ private:
 	char*   _strKey;
 	DWORD   _dwKey;
 
-	void  _CreateHashKey() 
+	void  _CreateHashKey()
 	{
 		_strKey=_strupr( _strKey );
 		_dwKey = mod_CalcHash( _strKey );
@@ -467,15 +466,15 @@ private:
 public:
 	bool operator< ( const HashStringKeyNoCase& second ) const
 	{
-		if ( this->_dwKey != second._dwKey ) 
+		if ( this->_dwKey != second._dwKey )
 			return ( this->_dwKey < second._dwKey );
 		else
 			return ( strcmp( this->_strKey, second._strKey ) < 0 ); // already maked upper so in any case - will be case insensitive
 	}
 
-	struct HashKeyLess 
-	{	
-		bool operator() ( const HashStringKeyNoCase& first, const HashStringKeyNoCase& second ) const 
+	struct HashKeyLess
+	{
+		bool operator() ( const HashStringKeyNoCase& first, const HashStringKeyNoCase& second ) const
 		{	return ( first < second ); }
 	};
 };
@@ -519,10 +518,10 @@ int __cdecl ModernDBFreeVariant     ( DBVARIANT *dbv );
 #ifdef _UNICODE
 	int __cdecl ModernWriteSettingWString    ( HANDLE hContact, const char *szModule, const char *szSetting, const WCHAR *val );
 	#define ModernWriteSettingTString(a,b,c,d) ModernWriteSettingWString( a,b,c,d )
-    #define ModernGetSettingTString(a,b,c,d)   ModernGetSettingWString(a,b,c,d) 
+    #define ModernGetSettingTString(a,b,c,d)   ModernGetSettingWString(a,b,c,d)
 #else
     #define ModernWriteSettingTString(a,b,c,d) ModernWriteSettingString( a,b,c,d )
-    #define ModernGetSettingTString(a,b,c,d)   ModernGetSettingString(a,b,c,d) 
+    #define ModernGetSettingTString(a,b,c,d)   ModernGetSettingString(a,b,c,d)
 #endif //_UNICODE
 
 
