@@ -92,7 +92,7 @@ static INT_PTR sttBitmapLoader( const TCHAR* ptszFileName )
 			return (INT_PTR)cbFileSize;
 	}	}
 
-	if (S_OK != OleLoadPicturePath( StrConvU(szFilename), NULL, 0, 0, IID_IPicture, (PVOID*)&pic ))
+	if (S_OK != OleLoadPicturePath( LPOLESTR(( const wchar_t* )StrConvU(szFilename)), NULL, 0, 0, IID_IPicture, (PVOID*)&pic ))
 		return 0;
 
 	pic->get_Type(&picType);
