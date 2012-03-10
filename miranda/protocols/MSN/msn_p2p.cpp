@@ -238,14 +238,17 @@ void CMsnProto::p2p_savePicture2disk(filetransfer* ft)
 
 				_trename(ft->std.tszCurrentFile, AI.filename);
 
-				setString(ft->std.hContact, "PictSavedContext", ft->p2p_object);
-				SendBroadcast(AI.hContact, ACKTYPE_AVATAR, ACKRESULT_SUCCESS, &AI, 0);
-
 				// Store also avatar hash
 				char *szAvatarHash = MSN_GetAvatarHash(ft->p2p_object);
 				setString(ft->std.hContact, "AvatarSavedHash", szAvatarHash);
-				MSN_DebugLog("Avatar for contact %08x saved to file '%s'", AI.hContact, AI.filename);
 				mir_free(szAvatarHash);
+
+				setString(ft->std.hContact, "PictSavedContext", ft->p2p_object);
+				SendBroadcast(AI.hContact, ACKTYPE_AVATAR, ACKRESULT_SUCCESS, &AI, 0);
+
+				char *filename = mir_utf8encodeT(AI.filename);
+				MSN_DebugLog("Avatar for contact %08x saved to file '%s'", AI.hContact, filename);
+				mir_free(filename);
 			}
 			break;
 
@@ -1035,18 +1038,18 @@ void __cdecl CMsnProto::p2p_sendFeedThread(void* arg)
 	ReleaseMutex(hLockHandle);
 	
 	if (ft->p2p_appID == MSN_APPID_FILE)
-	{
 		SendBroadcast(ft->std.hContact, ACKTYPE_FILE, ACKRESULT_DATA, ft, (LPARAM)&ft->std);
-		if (isV2)
+
+	if (isV2)
+	{
+		if (!ft->bCanceled)
 		{
-			if (!ft->bCanceled)
-			{
-				ft->bCompleted = true;
-				p2p_sendBye(ft);
-			}
-			p2p_sessionComplete(ft);
+			ft->bCompleted = true;
+			p2p_sendBye(ft);
 		}
+		p2p_sessionComplete(ft);
 	}
+
 	MSN_DebugLog("File send thread completed");
 }
 
@@ -1916,9 +1919,9 @@ void  CMsnProto::p2p_processMsgV2(ThreadData* info,  char* msgbody, const char* 
 
 		if (hdrdata.mRemSize == 0) 
 		{
-			SendBroadcast(ft->std.hContact, ACKTYPE_FILE, ACKRESULT_DATA, ft, (LPARAM)&ft->std);
 			if (ft->p2p_appID == MSN_APPID_FILE)
 			{
+				SendBroadcast(ft->std.hContact, ACKTYPE_FILE, ACKRESULT_DATA, ft, (LPARAM)&ft->std);
 				ft->complete();
 			}
 			else 

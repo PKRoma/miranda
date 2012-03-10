@@ -62,6 +62,7 @@ void CMsnProto::sttFakeAvatarAck(void* arg)
 INT_PTR CMsnProto::GetAvatarInfo(WPARAM wParam,LPARAM lParam)
 {
 	PROTO_AVATAR_INFORMATIONT* AI = (PROTO_AVATAR_INFORMATIONT*)lParam;
+	TCHAR filename[MAX_PATH];
 	MsnContact *cont = NULL;
 
 	if (AI->hContact)
@@ -75,9 +76,10 @@ INT_PTR CMsnProto::GetAvatarInfo(WPARAM wParam,LPARAM lParam)
 
 	if (AI->hContact == NULL || _stricmp(cont->email, MyOptions.szEmail) == 0)
 	{
-		MSN_GetAvatarFileName(NULL, AI->filename, SIZEOF(AI->filename), NULL);
-		AI->format = MSN_GetImageFormat(AI->filename);
-		return 	(AI->format == PA_FORMAT_UNKNOWN ? GAIR_NOAVATAR : GAIR_SUCCESS);
+		MSN_GetAvatarFileName(NULL, filename, SIZEOF(filename), NULL);
+		AI->format = MSN_GetImageFormat(filename);
+		if (AI->format != PA_FORMAT_UNKNOWN) _tcscpy(AI->filename, filename);
+		return AI->format == PA_FORMAT_UNKNOWN ? GAIR_NOAVATAR : GAIR_SUCCESS;
 	}
 
 	char *szContext;
@@ -90,11 +92,8 @@ INT_PTR CMsnProto::GetAvatarInfo(WPARAM wParam,LPARAM lParam)
 	else
 		return GAIR_NOAVATAR;
 
-	MSN_GetAvatarFileName(AI->hContact, AI->filename, SIZEOF(AI->filename), NULL);
-	AI->format = MSN_GetImageFormat(AI->filename);
-
-	if (_taccess(AI->filename, 0))
-		AI->format = PA_FORMAT_UNKNOWN;
+	MSN_GetAvatarFileName(AI->hContact, filename, SIZEOF(filename), NULL);
+	AI->format = MSN_GetImageFormat(filename);
 
 	if (AI->format != PA_FORMAT_UNKNOWN) 
 	{
@@ -116,10 +115,10 @@ INT_PTR CMsnProto::GetAvatarInfo(WPARAM wParam,LPARAM lParam)
 				mir_free(szAvatarHash);
 			}
 		}
+		_tcscpy(AI->filename, filename);
 		return GAIR_SUCCESS;
 	}
 
-	MSN_GetAvatarFileName(AI->hContact, AI->filename, SIZEOF(AI->filename), _T("unk"));
 	if ((wParam & GAIF_FORCE) != 0 && AI->hContact != NULL)
 	{
 		if (avsPresent < 0) avsPresent = ServiceExists(MS_AV_SETMYAVATAR) != 0;
@@ -140,7 +139,9 @@ INT_PTR CMsnProto::GetAvatarInfo(WPARAM wParam,LPARAM lParam)
 				filetransfer* ft = new filetransfer(this);
 				ft->std.hContact = AI->hContact;
 				ft->p2p_object = mir_strdup(szContext);
-				ft->std.tszCurrentFile = mir_tstrdup(AI->filename);
+
+				MSN_GetAvatarFileName(AI->hContact, filename, SIZEOF(filename), _T("unk"));
+				ft->std.tszCurrentFile = mir_tstrdup(filename);
 
 				p2p_invite(MSN_APPID_AVATAR, ft, NULL);
 			}
