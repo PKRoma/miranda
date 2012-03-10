@@ -1039,18 +1039,18 @@ void __cdecl CMsnProto::p2p_sendFeedThread(void* arg)
 	ReleaseMutex(hLockHandle);
 	
 	if (ft->p2p_appID == MSN_APPID_FILE)
-	{
 		SendBroadcast(ft->std.hContact, ACKTYPE_FILE, ACKRESULT_DATA, ft, (LPARAM)&ft->std);
-		if (isV2)
+
+	if (isV2)
+	{
+		if (!ft->bCanceled)
 		{
-			if (!ft->bCanceled)
-			{
-				ft->bCompleted = true;
-				p2p_sendBye(ft);
-			}
-			p2p_sessionComplete(ft);
+			ft->bCompleted = true;
+			p2p_sendBye(ft);
 		}
+		p2p_sessionComplete(ft);
 	}
+
 	MSN_DebugLog("File send thread completed");
 }
 

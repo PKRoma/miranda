@@ -1,5 +1,5 @@
 /*
-Copyright 2000-2010 Miranda IM project,
+Copyright 2000-2012 Miranda IM project,
 all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
@@ -25,7 +25,6 @@ int SplitmsgShutdown(void);
 
 PLUGINLINK* pluginLink;
 HINSTANCE   g_hInst;
-int hLangpack;
 
 struct MM_INTERFACE mmi;
 struct UTF8_INTERFACE utfi;
@@ -39,7 +38,7 @@ PLUGININFOEX pluginInfo = {
 	"Send and receive instant messages",
 	"Miranda IM Development Team",
 	"rainwater@miranda-im.org",
-	"Copyright 2000-2010 Miranda IM project",
+	"Copyright 2000-2012 Miranda IM project",
 	"http://www.miranda-im.org",
 	UNICODE_AWARE,
 	DEFMOD_SRMESSAGE,            // replace internal version (if any)
@@ -58,7 +57,7 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)
 
 __declspec(dllexport) PLUGININFOEX *MirandaPluginInfoEx(DWORD mirandaVersion)
 {
-	if (mirandaVersion < MIRANDA_VERSION_CORE )
+	if (mirandaVersion < PLUGIN_MAKE_VERSION(0, 9, 0, 0))
 		return NULL;
 	return &pluginInfo;
 }
@@ -76,7 +75,6 @@ int __declspec(dllexport) Load(PLUGINLINK * link)
 	mir_getUTFI(&utfi);
 	mir_getLI(&li);
 	mir_getTMI(&tmi);
-	mir_getLP(&pluginInfo);
 
 	return LoadSendRecvMessageModule();
 }
