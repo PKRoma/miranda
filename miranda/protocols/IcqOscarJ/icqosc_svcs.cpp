@@ -589,7 +589,7 @@ INT_PTR CIcqProto::SetMyAvatar(WPARAM wParam, LPARAM lParam)
 		if (dwPaFormat != PA_FORMAT_XML)
 		{ 
 			// if it should be image, check if it is valid
-			HBITMAP avt = (HBITMAP)CallService(MS_UTILS_LOADBITMAP, 0, (WPARAM)tszFile);
+			HBITMAP avt = (HBITMAP)CallService(MS_UTILS_LOADBITMAPT, 0, (WPARAM)tszFile);
 			if (!avt) return iRet;
 			DeleteObject(avt);
 		}

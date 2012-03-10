@@ -279,6 +279,13 @@ __inline static INT_PTR Utils_AssertInsideScreen(RECT *rc) {
 //Remember to DeleteObject() when you're done
 #define MS_UTILS_LOADBITMAP   "Utils/LoadBitmap"
 
+#if defined( _UNICODE ) && MIRANDA_VER >= 0x0A00
+	#define MS_UTILS_LOADBITMAPW  "Utils/LoadBitmapW"
+	#define MS_UTILS_LOADBITMAPT MS_UTILS_LOADBITMAPW
+#else
+	#define MS_UTILS_LOADBITMAPT MS_UTILS_LOADBITMAP
+#endif
+
 //Gets the filter strings for use in the open file dialog	   v0.1.2.1+
 //wParam=cbLengthOfBuffer
 //lParam=(LPARAM)(char*)pszBuffer

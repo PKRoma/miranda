@@ -24,36 +24,34 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <olectl.h>
 
 #include "m_png.h"
+#include "m_imgsrvc.h"
 
-static INT_PTR BmpFilterLoadBitmap(WPARAM, LPARAM lParam)
+static INT_PTR sttBitmapLoader( const TCHAR* ptszFileName )
 {
 	IPicture *pic;
 	HBITMAP hBmp,hBmpCopy;
 	HBITMAP hOldBitmap, hOldBitmap2;
 	BITMAP bmpInfo;
-	WCHAR pszwFilename[MAX_PATH];
 	HDC hdc,hdcMem1,hdcMem2;
 	short picType;
-	const char *szFile=(const char *)lParam;
-	char szFilename[MAX_PATH];
-	int filenameLen;
-    
-	if (!pathToAbsolute(szFile, szFilename, NULL))
-		mir_snprintf(szFilename, SIZEOF(szFilename), "%s", szFile);
-	filenameLen=lstrlenA(szFilename);
-	if(filenameLen>4) {
-		char* pszExt = szFilename+filenameLen-4;
-		
-		if(ServiceExists("IMG/Load")) {
-            return CallService("IMG/Load", (WPARAM)szFilename, 0);
-        }
-		
-		if ( !lstrcmpiA( pszExt,".bmp" ) || !lstrcmpiA( pszExt, ".rle" )) {
+
+	TCHAR szFilename[MAX_PATH];
+	if ( !pathToAbsoluteT(ptszFileName, szFilename, NULL ))
+		mir_sntprintf(szFilename, SIZEOF(szFilename), _T("%s"), ptszFileName);
+
+	int filenameLen = lstrlen(szFilename);
+	if ( filenameLen > 4 ) {
+		TCHAR* pszExt = szFilename + filenameLen - 4;
+
+		if ( ServiceExists( MS_IMG_LOAD ))
+			return CallService( MS_IMG_LOAD, (WPARAM)szFilename, IMGL_TCHAR );
+
+		if ( !lstrcmpi( pszExt, _T(".bmp")) || !lstrcmpi( pszExt, _T(".rle"))) {
 			//LoadImage can do this much faster
-			return (INT_PTR)LoadImageA( hMirandaInst, szFilename, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE );
+			return (INT_PTR)LoadImage( hMirandaInst, szFilename, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE );
 		}
 
-		if ( !lstrcmpiA( pszExt, ".png" )) {
+		if ( !lstrcmpi( pszExt, _T(".png"))) {
 			HANDLE hFile, hMap = NULL;
 			BYTE* ppMap = NULL;
 			INT_PTR  cbFileSize = 0;
@@ -65,7 +63,7 @@ static INT_PTR BmpFilterLoadBitmap(WPARAM, LPARAM lParam)
 				return 0;
 			}
 
-			if (( hFile = CreateFileA( szFilename, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL )) != INVALID_HANDLE_VALUE )
+			if (( hFile = CreateFile( szFilename, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL )) != INVALID_HANDLE_VALUE )
 				if (( hMap = CreateFileMapping( hFile, NULL, PAGE_READONLY, 0, 0, NULL )) != NULL )
 					if (( ppMap = ( BYTE* )MapViewOfFile( hMap, FILE_MAP_READ, 0, 0, 0 )) != NULL )
 						cbFileSize = GetFileSize( hFile, NULL );
@@ -94,10 +92,11 @@ static INT_PTR BmpFilterLoadBitmap(WPARAM, LPARAM lParam)
 			return (INT_PTR)cbFileSize;
 	}	}
 
-	MultiByteToWideChar(CP_ACP,0,szFilename,-1,pszwFilename,MAX_PATH);
-	if(S_OK!=OleLoadPicturePath(pszwFilename,NULL,0,0,IID_IPicture,(PVOID*)&pic)) return 0;
+	if (S_OK != OleLoadPicturePath( StrConvU(szFilename), NULL, 0, 0, IID_IPicture, (PVOID*)&pic ))
+		return 0;
+
 	pic->get_Type(&picType);
-	if(picType!=PICTYPE_BITMAP) {
+	if (picType!=PICTYPE_BITMAP) {
 		pic->Release();
 		return 0;
 	}
@@ -124,6 +123,20 @@ static INT_PTR BmpFilterLoadBitmap(WPARAM, LPARAM lParam)
 	pic->Release();
 	return (INT_PTR)hBmpCopy;
 }
+
+static INT_PTR BmpFilterLoadBitmap(WPARAM, LPARAM lParam)
+{
+	return sttBitmapLoader( StrConvT(( const char* )lParam ));
+}
+
+#if defined( _UNICODE )
+static INT_PTR BmpFilterLoadBitmapW(WPARAM, LPARAM lParam)
+{
+	return sttBitmapLoader(( const wchar_t* )lParam );
+}
+#endif
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
 
 static INT_PTR BmpFilterGetStrings(WPARAM wParam,LPARAM lParam)
 {
@@ -166,7 +179,7 @@ static INT_PTR BmpFilterGetStrings(WPARAM wParam,LPARAM lParam)
 	lstrcpynA(pfilter,"*",bytesLeft);
 	pfilter+=lstrlenA(pfilter)+1; bytesLeft=wParam-(pfilter-filter);
 
-	if(bytesLeft) *pfilter='\0';
+	if (bytesLeft) *pfilter='\0';
 	return 0;
 }
 
@@ -212,7 +225,7 @@ static INT_PTR BmpFilterGetStringsW(WPARAM wParam,LPARAM lParam)
 	lstrcpyn(pfilter,_T("*"),bytesLeft);
 	pfilter+=lstrlen(pfilter)+1; bytesLeft=wParam-(pfilter-filter);
 
-	if(bytesLeft) *pfilter='\0';
+	if (bytesLeft) *pfilter='\0';
 	return 0;
 }
 #endif
@@ -223,6 +236,7 @@ int InitBitmapFilter(void)
 	CreateServiceFunction(MS_UTILS_GETBITMAPFILTERSTRINGS,BmpFilterGetStrings);
 	#if defined( _UNICODE )
 		CreateServiceFunction(MS_UTILS_GETBITMAPFILTERSTRINGSW,BmpFilterGetStringsW);
+		CreateServiceFunction(MS_UTILS_LOADBITMAPW,BmpFilterLoadBitmapW);
 	#endif
 	return 0;
 }
