@@ -1012,10 +1012,10 @@ void Cache_GetAvatar(struct ClcData *dat, struct ClcContact *contact)
         contact->avatar_pos = AVATAR_POS_DONT_HAVE;
         if (dat->avatars_show && !ModernGetSettingByte(contact->hContact, "CList", "HideContactAvatar", 0))
         {
-            DBVARIANT dbv={0};
-            if (!ModernGetSetting(contact->hContact, "ContactPhoto", "File", &dbv) && (dbv.type == DBVT_ASCIIZ || dbv.type == DBVT_UTF8))
+            DBVARIANT dbv;
+            if (!ModernGetSettingTString(contact->hContact, "ContactPhoto", "File", &dbv))
             {
-                HBITMAP hBmp = (HBITMAP) CallService(MS_UTILS_LOADBITMAP, 0, (LPARAM)dbv.pszVal);
+                HBITMAP hBmp = (HBITMAP) CallService(MS_UTILS_LOADBITMAPT, 0, (LPARAM)dbv.ptszVal);
                 if (hBmp != NULL)
                 {
                     // Make bounds
