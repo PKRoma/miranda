@@ -183,5 +183,6 @@ int AvatarChanged(WPARAM wParam, LPARAM lParam)
 	HANDLE hContact = (HANDLE)wParam;
 	HWND h = WindowList_Find(g_dat->hMessageWindowList, hContact);
 	if (h) SendMessage(h, HM_AVATARACK, wParam, lParam);
+	return 0;
 }
 
