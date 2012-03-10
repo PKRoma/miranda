@@ -915,23 +915,20 @@ static BOOL CALLBACK OpenFileSubclass(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
  * image filename (will be checked for existance, though)
  */
 
-INT_PTR SetAvatar(WPARAM wParam, LPARAM lParam)
+INT_PTR avSetAvatar(HANDLE hContact, TCHAR* tszPath)
 {
-	HANDLE hContact = 0;
 	BYTE is_locked = 0;
 	TCHAR FileName[MAX_PATH], szBackupName[MAX_PATH];
 	TCHAR *szFinalName = NULL;
 	HANDLE hFile = 0;
 	BYTE locking_request;
 
-	if (wParam == 0 || fei == NULL)
+	if (hContact == NULL || fei == NULL)
 		return 0;
-	else
-		hContact = (HANDLE)wParam;
 
 	is_locked = DBGetContactSettingByte(hContact, "ContactPhoto", "Locked", 0);
 
-	if ( lParam == 0 ) {
+	if ( tszPath == NULL ) {
 		OPENFILENAME ofn = {0};
 		TCHAR filter[256];
 
@@ -964,7 +961,7 @@ INT_PTR SetAvatar(WPARAM wParam, LPARAM lParam)
 			return 0;
 	}
 	else
-		szFinalName = (TCHAR *)lParam;
+		szFinalName = tszPath;
 
 	/*
 	* filename is now set, check it and perform all needed action
@@ -988,6 +985,16 @@ INT_PTR SetAvatar(WPARAM wParam, LPARAM lParam)
 
 	return 0;
 }
+
+INT_PTR SetAvatar(WPARAM wParam, LPARAM lParam)
+{	return avSetAvatar(( HANDLE )wParam, A2T(( const char* )lParam ));
+}
+
+#if defined( _UNICODE )
+INT_PTR SetAvatarW(WPARAM wParam, LPARAM lParam)
+{	return avSetAvatar(( HANDLE )wParam, ( TCHAR* )lParam );
+}
+#endif
 
 /*
  * see if is possible to set the avatar for the expecified protocol
@@ -1412,21 +1419,19 @@ static int InternalSetMyAvatar(char *protocol, TCHAR *szFinalName, SetMyAvatarHo
  * if lParam == NULL, a open file dialog will be opened, otherwise, lParam is taken as a FULL
  * image filename (will be checked for existance, though)
  */
-static INT_PTR SetMyAvatar(WPARAM wParam, LPARAM lParam)
+
+INT_PTR avSetMyAvatar( char* protocol, TCHAR* tszPath )
 {
-	char *protocol;
 	TCHAR FileName[MAX_PATH];
 	TCHAR *szFinalName = NULL;
 	BOOL allAcceptXML;
 	BOOL allAcceptSWF;
 
-	protocol = (char *)wParam;
-
 	// Protocol allow seting of avatar?
 	if (protocol != NULL && !CanSetMyAvatar((WPARAM) protocol, 0))
 		return -1;
 
-	if (lParam == 0 && hwndSetMyAvatar != 0)
+	if (tszPath == NULL && hwndSetMyAvatar != 0)
 	{
 		SetForegroundWindow((HWND) hwndSetMyAvatar);
 		SetFocus((HWND) hwndSetMyAvatar);
@@ -1470,7 +1475,7 @@ static INT_PTR SetMyAvatar(WPARAM wParam, LPARAM lParam)
 						|| DBGetContactSettingByte(0, AVS_MODULE, "SetAllwaysMakeSquare", 0);
 	}
 
-	if (lParam == 0) {
+	if (tszPath == NULL) {
 		OPENFILENAME ofn = {0};
 		TCHAR filter[512];
 		TCHAR inipath[1024];
@@ -1518,7 +1523,7 @@ static INT_PTR SetMyAvatar(WPARAM wParam, LPARAM lParam)
 			return 1;
 	}
 	else
-		szFinalName = (TCHAR *)lParam;
+		szFinalName = (TCHAR *)tszPath;
 
 	/*
 	* filename is now set, check it and perform all needed action
@@ -1529,6 +1534,18 @@ static INT_PTR SetMyAvatar(WPARAM wParam, LPARAM lParam)
 
 	return InternalSetMyAvatar(protocol, szFinalName, data, allAcceptXML, allAcceptSWF);
 }
+
+static INT_PTR SetMyAvatar( WPARAM wParam, LPARAM lParam )
+{	return avSetMyAvatar(( char* )wParam, A2T(( const char* )lParam ));
+}
+
+#if defined( _UNICODE )
+static INT_PTR SetMyAvatarW( WPARAM wParam, LPARAM lParam )
+{	return avSetMyAvatar(( char* )wParam, ( TCHAR* )lParam );
+}
+#endif
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////
 
 static DWORD GetFileSize(TCHAR *szFilename)
 {
@@ -2484,6 +2501,11 @@ static int LoadAvatarModule()
 	arServices.insert( CreateServiceFunction( MS_AV_CANSAVEBITMAP, BmpFilterCanSaveBitmap ));
 	arServices.insert( CreateServiceFunction( MS_AV_RESIZEBITMAP, BmpFilterResizeBitmap ));
 
+	#if defined( _UNICODE )
+		arServices.insert( CreateServiceFunction( MS_AV_SETAVATARW, SetAvatarW ));
+		arServices.insert( CreateServiceFunction( MS_AV_SETMYAVATARW, SetMyAvatarW ));
+	#endif
+
 	hEventChanged = CreateHookableEvent(ME_AV_AVATARCHANGED);
 	hEventContactAvatarChanged = CreateHookableEvent(ME_AV_CONTACTAVATARCHANGED);
 	hMyAvatarChanged = CreateHookableEvent(ME_AV_MYAVATARCHANGED);
@@ -2566,12 +2588,22 @@ extern "C" int __declspec(dllexport) Unload(void)
 	return 0;
 }
 
+///////////////////////////////////////////////////////////////////////////////////////////////////
+
 protoPicCacheEntry::~protoPicCacheEntry()
 {
 	if ( hbmPic != 0 )
 		DeleteObject( hbmPic );
 	mir_free( szProtoname );
 	mir_free( tszAccName );
+}
+
+void protoPicCacheEntry::clear()
+{
+	if (hbmPic != 0) 
+		DeleteObject(hbmPic);
+
+	memset(this, 0, sizeof(avatarCacheEntry));
 }
 
 /*

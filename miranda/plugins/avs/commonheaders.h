@@ -22,7 +22,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
 #define MIRANDA_VER  0x0A00
-#define MIRANDA_CUSTOM_LP
 #define _WIN32_WINNT 0x0501
 
 #include "m_stdhdr.h"
@@ -98,6 +97,8 @@ struct protoPicCacheEntry : public avatarCacheEntry
 
     protoPicCacheEntry() { memset(this, 0, sizeof(*this)); };
 	~protoPicCacheEntry();
+
+	void clear();
 
 	char*  szProtoname;
 	TCHAR* tszAccName;
