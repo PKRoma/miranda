@@ -121,17 +121,27 @@ void __cdecl CYahooProto::send_avt_thread(void *psf)
 		SetByte("AvatarUL", 0);
 }
 
-void CYahooProto::SendAvatar(const char *szFile)
+void CYahooProto::SendAvatar(const TCHAR *szFile)
 {
 	struct _stat statbuf;
-	if ( _stat( szFile, &statbuf ) != 0 ) {
+	if (_tstat( szFile, &statbuf ) != 0) {
 		LOG(("[YAHOO_SendAvatar] Error reading File information?!"));
 		return;
 	}
 
 	yahoo_file_info *sf = y_new(struct yahoo_file_info, 1);
-	sf->filename = strdup(szFile);
 	sf->filesize = statbuf.st_size;
+
+#ifdef _UNICODE
+	wchar_t tszFilename[MAX_PATH];
+	wcscpy(tszFilename, szFile);
+	GetShortPathNameW(szFile, tszFilename, SIZEOF(tszFilename));
+	char szFilename[MAX_PATH];
+	WideCharToMultiByte(CP_ACP, 0, tszFilename, -1, szFilename, MAX_PATH, 0, 0);
+	sf->filename = strdup(szFilename);
+#else
+	sf->filename = strdup(szFile);
+#endif
 
 	DebugLog("[Uploading avatar] filename: %s size: %ld", sf->filename, sf->filesize);
 
@@ -299,14 +309,14 @@ void CYahooProto::ext_got_picture(const char *me, const char *who, const char *p
 				 */
 				if (GetByte("AvatarUL", 0) != 1){
 					// NO avatar URL??
-					if (!DBGetContactSettingString(NULL, m_szModuleName, "AvatarFile", &dbv)) {
+					if (!DBGetContactSettingTString(NULL, m_szModuleName, "AvatarFile", &dbv)) {
 						struct _stat statbuf;
 						
-						if (_stat( dbv.pszVal, &statbuf ) != 0 ) {
-							LOG(("[ext_yahoo_got_picture] Avatar File Missing? Can't find file: %s", dbv.pszVal));
+						if (_tstat( dbv.ptszVal, &statbuf ) != 0 ) {
+							LOG(("[ext_yahoo_got_picture] Avatar File Missing? Can't find file: %s", dbv.ptszVal));
 						} else {
 							DBWriteContactSettingString(NULL, m_szModuleName, "AvatarInv", who);
-							SendAvatar(dbv.pszVal);
+							SendAvatar(dbv.ptszVal);
 						}
 						
 						DBFreeVariant(&dbv);
@@ -421,9 +431,9 @@ void CYahooProto::ext_got_picture(const char *me, const char *who, const char *p
 						LOG(("[ext_yahoo_got_picture] Buddy: %s told us this is bad??Expired??. Re-uploading", who));
 						DBDeleteContactSetting(NULL, m_szModuleName, "AvatarURL");
 						
-						if (!DBGetContactSettingString(NULL, m_szModuleName, "AvatarFile", &dbv2)) {
+						if (!DBGetContactSettingTString(NULL, m_szModuleName, "AvatarFile", &dbv2)) {
 							DBWriteContactSettingString(NULL, m_szModuleName, "AvatarInv", who);
-							SendAvatar(dbv2.pszVal);
+							SendAvatar(dbv2.ptszVal);
 							DBFreeVariant(&dbv2);
 						} else {
 							LOG(("[ext_yahoo_got_picture] No Local Avatar File??? "));
@@ -897,13 +907,7 @@ INT_PTR __cdecl CYahooProto::SetMyAvatar(WPARAM wParam, LPARAM lParam)
 					yahoo_send_picture_status(m_id, 2);
 				}
 
-				#if defined( _UNICODE )
-					char* tmp = mir_t2a(tszMyFile);
-					SendAvatar(tmp);
-					mir_free( tmp );
-				#else
-					SendAvatar(tszMyFile);
-				#endif
+				SendAvatar(tszMyFile);
 			} 
 			else LOG(("[YAHOO_SetAvatar] Same checksum and avatar on YahooFT. Not Reuploading."));	  
 	}	}
