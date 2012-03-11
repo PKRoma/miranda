@@ -362,7 +362,7 @@ void LoadMsgDlgFont(int i, LOGFONT * lf, COLORREF * colour, BOOL chatMode)
 struct CheckBoxValues_t
 {
     DWORD  style;
-    TCHAR* szDescr;
+    const TCHAR* szDescr;
 };
 
 static const struct CheckBoxValues_t statusValues[] =
