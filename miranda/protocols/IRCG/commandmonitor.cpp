@@ -2325,6 +2325,7 @@ void CIrcProto::OnIrcDisconnected()
 	m_myHost[0] = '\0';
 
 	int Temp = m_iStatus;
+	KillIdent();
 	KillChatTimer( OnlineNotifTimer );
 	KillChatTimer( OnlineNotifTimer3 );
 	KillChatTimer( KeepAliveTimer );
