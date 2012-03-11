@@ -160,7 +160,7 @@ struct CYahooProto : public PROTO_INTERFACE
 	void   reset_avatar(HANDLE hContact);
 	void   request_avatar(const char* who);
 
-	void   SendAvatar(const char *szFile);
+	void   SendAvatar(const TCHAR *szFile);
 	void   GetAvatarFileName(HANDLE hContact, TCHAR* pszDest, int cbLen, int type);
 
 	//====| filetransfer.cpp |============================================================
