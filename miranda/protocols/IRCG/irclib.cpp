@@ -248,6 +248,8 @@ void CIrcProto::Disconnect(void)
 	if( con == NULL )
 		return;
 
+	KillIdent();
+
 	if ( m_quitMessage && m_quitMessage[0] )
 		NLSend( _T("QUIT :%s\r\n"), m_quitMessage);
 	else
@@ -335,9 +337,10 @@ int CIrcProto::NLReceive(unsigned char* buf, int cbBuf)
 
 void CIrcProto::KillIdent()
 {
-	if ( hBindPort )
+	if ( hBindPort ) {
 		Netlib_CloseHandle( hBindPort );
-	return;
+		hBindPort = NULL;
+	}
 }
 
 void CIrcProto::InsertIncomingEvent(TCHAR* pszRaw)
@@ -445,8 +448,6 @@ void CIrcProto::DoReceive()
 		Netlib_CloseHandle(con);
 		con = NULL;
 	}
-
-	KillIdent();
 
 	// notify monitor objects that the connection has been closed
 	Notify(NULL);
