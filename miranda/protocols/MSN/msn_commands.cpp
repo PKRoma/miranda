@@ -1941,7 +1941,7 @@ remove:
 				newThread->mType = SERVER_NOTIFICATION;
 				newThread->mTrid = info->mTrid;
 				newThread->mIsMainThread = true;
-				usingGateway |= *data.security == 'G';
+				usingGateway = usingGateway || *data.security == 'G';
 				info->mIsMainThread = false;
 
 				MSN_DebugLog("Switching to notification server '%s'...", data.newServer);
