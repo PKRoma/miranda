@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="9,00"
+	Version="9.00"
 	Name="clist_nicer"
 	ProjectGUID="{3C42510C-A29E-4A53-899C-203BFA874E0B}"
 	RootNamespace="clist_nicer"
@@ -93,7 +93,6 @@
 				MapFileName=""
 				BaseAddress="0x6590000"
 				RandomizedBaseAddress="1"
-				DataExecutionPrevention="0"
 				ImportLibrary="$(IntDir)/$(TargetName).lib"
 				TargetMachine="1"
 			/>
@@ -195,7 +194,6 @@
 				MapFileName=""
 				BaseAddress="0x6590000"
 				RandomizedBaseAddress="1"
-				DataExecutionPrevention="0"
 				ImportLibrary="$(IntDir)/$(TargetName).lib"
 				TargetMachine="17"
 			/>
@@ -306,7 +304,6 @@
 				LinkTimeCodeGeneration="1"
 				BaseAddress="0x6590000"
 				RandomizedBaseAddress="1"
-				DataExecutionPrevention="0"
 				ImportLibrary="$(IntDir)/$(TargetName).lib"
 				TargetMachine="1"
 			/>
@@ -418,7 +415,6 @@
 				LinkTimeCodeGeneration="1"
 				BaseAddress="0x6590000"
 				RandomizedBaseAddress="1"
-				DataExecutionPrevention="0"
 				ImportLibrary="$(IntDir)/$(TargetName).lib"
 				TargetMachine="17"
 			/>
@@ -520,7 +516,6 @@
 				MapFileName=""
 				BaseAddress="0x6590000"
 				RandomizedBaseAddress="1"
-				DataExecutionPrevention="0"
 				ImportLibrary="$(IntDir)/$(TargetName).lib"
 				TargetMachine="1"
 			/>
@@ -623,7 +618,6 @@
 				MapFileName=""
 				BaseAddress="0x6590000"
 				RandomizedBaseAddress="1"
-				DataExecutionPrevention="0"
 				ImportLibrary="$(IntDir)/$(TargetName).lib"
 				TargetMachine="17"
 			/>
@@ -731,7 +725,6 @@
 				LinkTimeCodeGeneration="1"
 				BaseAddress="0x6c540000"
 				RandomizedBaseAddress="1"
-				DataExecutionPrevention="0"
 				ImportLibrary="$(IntDir)/$(TargetName).lib"
 				TargetMachine="1"
 			/>
@@ -839,7 +832,6 @@
 				LinkTimeCodeGeneration="1"
 				BaseAddress="0x6c540000"
 				RandomizedBaseAddress="1"
-				DataExecutionPrevention="0"
 				ImportLibrary="$(IntDir)/$(TargetName).lib"
 				TargetMachine="17"
 			/>
@@ -1236,11 +1228,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\res\overlay\invisible.ico"
+				RelativePath="res\invisible.ico"
 				>
 			</File>
 			<File
-				RelativePath="res\invisible.ico"
+				RelativePath=".\res\overlay\invisible.ico"
 				>
 			</File>
 			<File
@@ -1276,11 +1268,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\res\overlay\online.ico"
+				RelativePath=".\res\online.ico"
 				>
 			</File>
 			<File
-				RelativePath=".\res\online.ico"
+				RelativePath=".\res\overlay\online.ico"
 				>
 			</File>
 			<File

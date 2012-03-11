@@ -87,7 +87,6 @@
 				GenerateMapFile="false"
 				MapFileName=""
 				RandomizedBaseAddress="1"
-				DataExecutionPrevention="0"
 				ImportLibrary="$(IntDir)/$(TargetName).lib"
 				TargetMachine="1"
 			/>
@@ -184,7 +183,6 @@
 				GenerateMapFile="false"
 				MapFileName=""
 				RandomizedBaseAddress="1"
-				DataExecutionPrevention="0"
 				ImportLibrary="$(IntDir)/$(TargetName).lib"
 				TargetMachine="17"
 			/>
@@ -287,7 +285,6 @@
 				EnableCOMDATFolding="2"
 				LinkTimeCodeGeneration="1"
 				RandomizedBaseAddress="1"
-				DataExecutionPrevention="0"
 				ImportLibrary="$(IntDir)/$(TargetName).lib"
 				TargetMachine="1"
 			/>
@@ -390,7 +387,6 @@
 				EnableCOMDATFolding="2"
 				LinkTimeCodeGeneration="1"
 				RandomizedBaseAddress="1"
-				DataExecutionPrevention="0"
 				ImportLibrary="$(IntDir)/$(TargetName).lib"
 				TargetMachine="17"
 			/>
@@ -496,7 +492,6 @@
 				OptimizeForWindows98="0"
 				LinkTimeCodeGeneration="1"
 				RandomizedBaseAddress="1"
-				DataExecutionPrevention="0"
 				ImportLibrary="$(IntDir)/$(TargetName).lib"
 				TargetMachine="1"
 			/>
@@ -603,7 +598,6 @@
 				OptimizeForWindows98="0"
 				LinkTimeCodeGeneration="1"
 				RandomizedBaseAddress="1"
-				DataExecutionPrevention="0"
 				ImportLibrary="$(IntDir)/$(TargetName).lib"
 				TargetMachine="17"
 			/>
@@ -700,7 +694,6 @@
 				GenerateMapFile="false"
 				MapFileName=""
 				RandomizedBaseAddress="1"
-				DataExecutionPrevention="0"
 				ImportLibrary="$(IntDir)/$(TargetName).lib"
 				TargetMachine="1"
 			/>
@@ -798,7 +791,6 @@
 				GenerateMapFile="false"
 				MapFileName=""
 				RandomizedBaseAddress="1"
-				DataExecutionPrevention="0"
 				ImportLibrary="$(IntDir)/$(TargetName).lib"
 				TargetMachine="17"
 			/>

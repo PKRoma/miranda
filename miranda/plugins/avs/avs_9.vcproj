@@ -89,7 +89,6 @@
 				GenerateMapFile="false"
 				MapFileName=""
 				RandomizedBaseAddress="1"
-				DataExecutionPrevention="0"
 				ImportLibrary="$(IntDir)/$(TargetName).lib"
 				TargetMachine="1"
 			/>
@@ -188,7 +187,6 @@
 				GenerateMapFile="false"
 				MapFileName=""
 				RandomizedBaseAddress="1"
-				DataExecutionPrevention="0"
 				ImportLibrary="$(IntDir)/$(TargetName).lib"
 				TargetMachine="17"
 			/>
@@ -283,7 +281,6 @@
 				GenerateMapFile="false"
 				MapFileName=""
 				RandomizedBaseAddress="1"
-				DataExecutionPrevention="0"
 				ImportLibrary="$(IntDir)/$(TargetName).lib"
 				TargetMachine="1"
 			/>
@@ -380,7 +377,6 @@
 				GenerateMapFile="false"
 				MapFileName=""
 				RandomizedBaseAddress="1"
-				DataExecutionPrevention="0"
 				ImportLibrary="$(IntDir)/$(TargetName).lib"
 				TargetMachine="17"
 			/>
@@ -456,7 +452,6 @@
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="commonheaders.h"
 				AssemblerListingLocation=""
-				BrowseInformation="0"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
 				DebugInformationFormat="3"
@@ -484,7 +479,6 @@
 				LinkTimeCodeGeneration="1"
 				BaseAddress="0x5130000"
 				RandomizedBaseAddress="1"
-				DataExecutionPrevention="0"
 				ImportLibrary="$(IntDir)/$(TargetName).lib"
 				TargetMachine="1"
 			/>
@@ -560,7 +554,6 @@
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="commonheaders.h"
 				AssemblerListingLocation=""
-				BrowseInformation="0"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
 				DebugInformationFormat="3"
@@ -589,7 +582,6 @@
 				LinkTimeCodeGeneration="1"
 				BaseAddress="0x5130000"
 				RandomizedBaseAddress="1"
-				DataExecutionPrevention="0"
 				ImportLibrary="$(IntDir)/$(TargetName).lib"
 				TargetMachine="17"
 			/>
@@ -697,7 +689,6 @@
 				LinkTimeCodeGeneration="1"
 				BaseAddress="0x5130000"
 				RandomizedBaseAddress="1"
-				DataExecutionPrevention="0"
 				ImportLibrary="$(IntDir)/$(TargetName).lib"
 				TargetMachine="1"
 			/>
@@ -806,7 +797,6 @@
 				LinkTimeCodeGeneration="1"
 				BaseAddress="0x5130000"
 				RandomizedBaseAddress="1"
-				DataExecutionPrevention="0"
 				ImportLibrary="$(IntDir)/$(TargetName).lib"
 				TargetMachine="17"
 			/>
