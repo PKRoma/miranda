@@ -1,5 +1,5 @@
 /*
-Copyright 2000-2010 Miranda IM project, 
+Copyright 2000-2012 Miranda IM project, 
 all portions of this codebase are copyrighted to the people 
 listed in contributors.txt.
 

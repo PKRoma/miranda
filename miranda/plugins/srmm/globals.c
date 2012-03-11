@@ -83,7 +83,7 @@ void InitGlobals()
 	g_hooks[0] = HookEvent(ME_DB_EVENT_ADDED, dbaddedevent);
 	g_hooks[1] = HookEvent(ME_PROTO_ACK, ackevent);
 	g_hooks[2] = HookEvent(ME_SKIN2_ICONSCHANGED, IconsChanged);
-	g_hooks[3] = HookEvent(ME_AV_CONTACTAVATARCHANGED, AvatarChanged);
+	g_hooks[3] = HookEvent(ME_AV_AVATARCHANGED, AvatarChanged);
 
 	ReloadGlobals();
 	InitIcons();
