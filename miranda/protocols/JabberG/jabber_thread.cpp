@@ -1734,9 +1734,9 @@ void CJabberProto::OnProcessPresence( HXML node, ThreadData* info )
 						Log( "AvatarXVcard deleted" );
 						JSetStringT( hContact, "AvatarHash", xmlGetText( xNode ) );
 						hasAvatar = true;
-						DBVARIANT dbv = {0};
+						DBVARIANT dbv;
 						int result = JGetStringT( hContact, "AvatarSaved", &dbv );
-						if ( !result || lstrcmp( dbv.ptszVal, xmlGetText( xNode ) )) {
+						if ( result || lstrcmp( dbv.ptszVal, xmlGetText( xNode ) )) {
 							Log( "Avatar was changed" );
 							JSendBroadcast( hContact, ACKTYPE_AVATAR, ACKRESULT_STATUS, NULL, NULL );
 						} else Log( "Not broadcasting avatar changed" );
@@ -1756,9 +1756,9 @@ void CJabberProto::OnProcessPresence( HXML node, ThreadData* info )
 								Log( "AvatarXVcard set" );
 								JSetStringT( hContact, "AvatarHash", txt );
 								hasAvatar = true;
-								DBVARIANT dbv = {0};
+								DBVARIANT dbv;
 								int result = JGetStringT( hContact, "AvatarSaved", &dbv );
-								if ( !result || lstrcmp( dbv.ptszVal, xmlGetText( xNode ) )) {
+								if ( result || lstrcmp( dbv.ptszVal, txt )) {
 									Log( "Avatar was changed. Using vcard-temp:x:update" );
 									JSendBroadcast( hContact, ACKTYPE_AVATAR, ACKRESULT_STATUS, NULL, NULL );
 								}
