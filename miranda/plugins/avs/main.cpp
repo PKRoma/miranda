@@ -59,10 +59,9 @@ static int ComparePicture( const protoPicCacheEntry* p1, const protoPicCacheEntr
 {
 	if ((lstrcmpA(p1->szProtoname, "Global avatar") == 0) || strstr(p1->szProtoname, "Global avatar"))
 		return -1;
-	else if ((lstrcmpA(p2->szProtoname, "Global avatar") == 0) || strstr(p1->szProtoname, "Global avatar"))
+	if ((lstrcmpA(p2->szProtoname, "Global avatar") == 0) || strstr(p1->szProtoname, "Global avatar"))
 		return 1;
-	else
-		return lstrcmpA( p1->szProtoname, p2->szProtoname );
+	return lstrcmpA( p1->szProtoname, p2->szProtoname );
 }
 
 OBJLIST<protoPicCacheEntry>
