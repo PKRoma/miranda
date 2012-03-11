@@ -37,16 +37,16 @@ INT_PTR CALLBACK DlgProcOptions2(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 typedef struct TabDefStruct {
 	DLGPROC dlgProc;
 	DWORD dlgId;
-	TCHAR *tabName;
+	const char *tabName;
 } TabDef;
 
-static TabDef tabPages[] = {
-						 {DlgProcOptions, IDD_OPT_MSGDLG, _T("General")},
-						 {DlgProcTabsOptions, IDD_OPT_MSGTABS, _T("Tabs")},
-						 {DlgProcLayoutOptions, IDD_OPT_LAYOUT, _T("Layout")},
-						 {DlgProcLogOptions, IDD_OPT_MSGLOG, _T("Event Log")},
-						 {DlgProcOptions1, IDD_OPTIONS1, _T("Group Chat")},
-						 {DlgProcOptions2, IDD_OPTIONS2, _T("Group Chat Log")}
+static const TabDef tabPages[] = {
+						 {DlgProcOptions, IDD_OPT_MSGDLG, LPGEN("General")},
+						 {DlgProcTabsOptions, IDD_OPT_MSGTABS, LPGEN("Tabs")},
+						 {DlgProcLayoutOptions, IDD_OPT_LAYOUT, LPGEN("Layout")},
+						 {DlgProcLogOptions, IDD_OPT_MSGLOG, LPGEN("Event Log")},
+						 {DlgProcOptions1, IDD_OPTIONS1, LPGEN("Group Chat")},
+						 {DlgProcOptions2, IDD_OPTIONS2, LPGEN("Group Chat Log")}
 						 };
 
 
@@ -55,15 +55,15 @@ static TabDef tabPages[] = {
 
 typedef struct FontOptionsListStruct
 {
-	TCHAR *szDescr;
+	const TCHAR *szDescr;
 	COLORREF defColour;
-	TCHAR *szDefFace;
+	const TCHAR *szDefFace;
 	BYTE defStyle;
 	char defSize;
-	TCHAR *szBkgName;
+	const TCHAR *szBkgName;
 }FontOptionsList;
 
-static FontOptionsList fontOptionsList[] = {
+static const FontOptionsList fontOptionsList[] = {
 	{LPGENT("Outgoing messages"), RGB(106, 106, 106), _T("Arial"), 0, -12, LPGENT("Outgoing background")},
 	{LPGENT("Incoming messages"), RGB(0, 0, 0), _T("Arial"), 0, -12, LPGENT("Incoming background")},
 	{LPGENT("Outgoing name"), RGB(89, 89, 89), _T("Arial"), FONTF_BOLD, -12, LPGENT("Outgoing background")},
@@ -83,7 +83,7 @@ static FontOptionsList fontOptionsList[] = {
 int fontOptionsListSize = SIZEOF(fontOptionsList);
 
 //remeber to put these in the Translate( ) template file too
-static FontOptionsList chatFontOptionsList[] = {
+static const FontOptionsList chatFontOptionsList[] = {
 	{LPGENT("Timestamp"), RGB(50, 50, 240), _T("Terminal"), 0, -8, LPGENT("Background")},
 	{LPGENT("Others nicknames"), RGB(0, 0, 0), _T("Verdana"), FONTF_BOLD, -13, LPGENT("Background")},
 	{LPGENT("Your nickname"), RGB(0, 0, 0), _T("Verdana"), FONTF_BOLD, -13, LPGENT("Background")},
@@ -108,13 +108,13 @@ static FontOptionsList chatFontOptionsList[] = {
 
 struct ColourOptionsList
 {
-	TCHAR *szName;
-	char *szSettingName;
+	const TCHAR *szName;
+	const char *szSettingName;
 	COLORREF defColour;
 	int systemColor;
 }
 
-static colourOptionsList[] = {
+static const colourOptionsList[] = {
 	{LPGENT("Background"), SRMSGSET_BKGCOLOUR, 0, COLOR_WINDOW},
 	{LPGENT("Input area background"), SRMSGSET_INPUTBKGCOLOUR, 0, COLOR_WINDOW},
 	{LPGENT("Incoming background"), SRMSGSET_INCOMINGBKGCOLOUR, 0, COLOR_WINDOW},
@@ -1159,22 +1159,21 @@ int OptInitialise(WPARAM wParam, LPARAM lParam)
 	odp.cbSize = sizeof(odp);
 	odp.position = 910000000;
 	odp.hInstance = g_hInst;
-//	odp.ptszTitle = LPGENT("Messaging");
-	odp.ptszTitle = LPGENT("Message Sessions");
-	odp.flags = ODPF_BOLDGROUPS | ODPF_TCHAR;
+	odp.pszTitle = LPGEN("Message Sessions");
+	odp.flags = ODPF_BOLDGROUPS;
 	odp.nIDBottomSimpleControl = 0;
 	for (i = 0; i < SIZEOF(tabPages); i++) {
 		odp.pszTemplate = MAKEINTRESOURCEA(tabPages[i].dlgId);
 		odp.pfnDlgProc = tabPages[i].dlgProc;
-		odp.ptszTab = tabPages[i].tabName;
+		odp.pszTab = (char*)tabPages[i].tabName;
 		CallService(MS_OPT_ADDPAGE, wParam, (LPARAM) & odp);
 	}
+
 	odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPT_MSGTYPE);
-//	odp.ptszGroup = LPGENT("Messaging");
-	odp.ptszGroup = LPGENT("Message Sessions");
-	odp.ptszTitle = TranslateT("Typing Notify");
+	odp.pszGroup = LPGEN("Message Sessions");
+	odp.pszTitle = LPGEN("Typing Notify");
 	odp.pfnDlgProc = DlgProcTypeOptions;
-	odp.ptszTab = NULL;
+	odp.pszTab = NULL;
 	CallService(MS_OPT_ADDPAGE, wParam, (LPARAM) & odp);
 
 	return 0;
