@@ -1,5 +1,5 @@
 /*
-Copyright 2000-2010 Miranda IM project,
+Copyright 2000-2012 Miranda IM project,
 all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
@@ -39,7 +39,7 @@ PLUGININFOEX pluginInfo = {
 	"Send and receive instant messages",
 	"Miranda IM Development Team",
 	"rainwater@miranda-im.org",
-	"Copyright 2000-2010 Miranda IM project",
+	"Copyright 2000-2012 Miranda IM project",
 	"http://www.miranda-im.org",
 	UNICODE_AWARE,
 	DEFMOD_SRMESSAGE,            // replace internal version (if any)
