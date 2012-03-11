@@ -623,7 +623,7 @@ int CAimProto::open_contact_file(const char* sn, const TCHAR* file, const char* 
 	#if _MSC_VER > 1200
 		mir_sntprintf(errmsg, SIZEOF(errmsg), TranslateT("Failed to open file: %s %s"), path, __tcserror(NULL));
 	#else
-		char* err = mir_a2t(_strerror(NULL));
+		TCHAR* err = mir_a2t(_strerror(NULL));
 		mir_sntprintf(errmsg, SIZEOF(errmsg), TranslateT("Failed to open file: %s %s"), path, err);
 		mir_free(err);
 	#endif
