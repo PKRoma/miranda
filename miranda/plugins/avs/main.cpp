@@ -511,6 +511,15 @@ int CreateAvatarInCache(HANDLE hContact, avatarCacheEntry *ace, char *szProto)
 				if (CallProtoService(szProto, PS_GETMYAVATART, (WPARAM)tszFilename, (LPARAM)MAX_PATH))
 					tszFilename[0] = '\0';
 			}
+#if defined( _UNICODE )
+			else if (ProtoServiceExists(szProto, PS_GETMYAVATAR)) {
+				char szFileName[ MAX_PATH ];
+				if (CallProtoService(szProto, PS_GETMYAVATAR, (WPARAM)szFileName, (LPARAM)MAX_PATH))
+					tszFilename[0] = '\0';
+				else
+					MultiByteToWideChar( CP_ACP, 0, szFileName, -1, tszFilename, SIZEOF( tszFilename ));
+			}
+#endif
 			else if (!DBGetContactSettingTString(NULL, szProto, "AvatarFile", &dbv)) {
 				AVS_pathToAbsolute(dbv.ptszVal, tszFilename);
 				DBFreeVariant(&dbv);
@@ -2158,7 +2167,7 @@ static int ContactSettingChanged(WPARAM wParam, LPARAM lParam)
 		return 0;
 	}
 	else if (g_MetaAvail && !strcmp(cws->szModule, g_szMetaName)) {
-		if (!strcmp(cws->szSetting, "Status"))
+		if (lstrlenA(cws->szSetting) > 6 && !strncmp(cws->szSetting, "Status", 5))
 			MetaChanged(wParam, 0);
 	}
 	return 0;
@@ -2542,7 +2551,7 @@ protoPicCacheEntry::~protoPicCacheEntry()
 
 void protoPicCacheEntry::clear()
 {
-	if (hbmPic != 0) 
+	if (hbmPic != 0)
 		DeleteObject(hbmPic);
 
 	memset(this, 0, sizeof(avatarCacheEntry));
