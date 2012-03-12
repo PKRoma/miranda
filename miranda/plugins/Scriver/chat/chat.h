@@ -317,7 +317,6 @@ int GetTextPixelSize( TCHAR* pszText, HFONT hFont, BOOL bWidth);
 //options.c
 int    OptionsInit(void);
 int    OptionsUnInit(void);
-void   Chat_LoadMsgDlgFont(int i, LOGFONT * lf, COLORREF * colour);
 void   LoadGlobalSettings(void);
 void   LoadLogFonts(void);
 void   SetIndentSize();

@@ -170,6 +170,7 @@
 #define IDC_AVATAR						1645
 #define IDC_XSTATUSICON                 1646
 #define IDC_INPUTLINES                  1647
+#define IDC_INPUTLINESSPIN              1648
 #define IDM_CUT                         40000
 #define IDM_COPY                        40001
 #define IDM_PASTE                       40002
