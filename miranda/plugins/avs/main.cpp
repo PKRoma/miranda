@@ -108,7 +108,7 @@ PLUGININFOEX pluginInfoEx = {
 	"Load and manage contact pictures for other plugins.",
 	"Nightwish, Pescuma",
 	"",
-	"Copyright 2000-2011 Miranda-IM project",
+	"Copyright 2000-2012 Miranda-IM project",
 	"http://www.miranda-im.org",
 	UNICODE_AWARE,
 	0,
@@ -350,54 +350,6 @@ static struct CacheNode *AllocCacheBlock()
 	return(allocedBlock);
 }
 
-int _DebugPopup(HANDLE hContact, const char *fmt, ...)
-{
-	POPUPDATA ppd;
-	va_list va;
-	char	debug[1024];
-	int		ibsize = 1023;
-
-	if (!DBGetContactSettingByte(0, AVS_MODULE, "warnings", 0))
-		return 0;
-
-	va_start(va, fmt);
-	_vsnprintf(debug, ibsize, fmt, va);
-
-	if (CallService(MS_POPUP_QUERY, PUQS_GETSTATUS, 0) == 1) {
-		ZeroMemory((void *)&ppd, sizeof(ppd));
-		ppd.lchContact = hContact;
-		ppd.lchIcon = LoadSkinnedIcon(SKINICON_EVENT_MESSAGE);
-		strncpy(ppd.lpzContactName, "Avatar Service Warning:", MAX_CONTACTNAME);
-		mir_snprintf(ppd.lpzText, MAX_SECONDLINE - 5, "%s\nAffected contact: %s", debug, hContact != 0 ? (char *)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)hContact, 0) : "Global");
-		ppd.colorText = RGB(0,0,0);
-		ppd.colorBack = RGB(255,0,0);
-		CallService(MS_POPUP_ADDPOPUP, (WPARAM)&ppd, 0);
-	}
-	return 0;
-}
-
-int _TracePopup(HANDLE hContact, const char *fmt, ...)
-{
-	POPUPDATA ppd;
-	va_list va;
-	char	debug[1024];
-	int		ibsize = 1023;
-
-	va_start(va, fmt);
-	_vsnprintf(debug, ibsize, fmt, va);
-
-	ZeroMemory((void *)&ppd, sizeof(ppd));
-	ppd.lchContact = hContact;
-	ppd.lchIcon = g_hIcon;
-	strncpy(ppd.lpzContactName, "Avatar Service TRACE:", MAX_CONTACTNAME);
-	mir_snprintf(ppd.lpzText, MAX_SECONDLINE - 5, "%s\nAffected contact: %s", debug, hContact != 0 ? (char *)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)hContact, 0) : "Global");
-	ppd.colorText = RGB(0,0,0);
-	ppd.colorBack = RGB(255,0,0);
-	CallService(MS_POPUP_ADDPOPUP, (WPARAM)&ppd, 0);
-
-	return 0;
-}
-
 int SetAvatarAttribute(HANDLE hContact, DWORD attrib, int mode)
 {
 	struct CacheNode *cacheNode = g_Cache;
@@ -559,15 +511,6 @@ int CreateAvatarInCache(HANDLE hContact, avatarCacheEntry *ace, char *szProto)
 				if (CallProtoService(szProto, PS_GETMYAVATART, (WPARAM)tszFilename, (LPARAM)MAX_PATH))
 					tszFilename[0] = '\0';
 			}
-#if defined( _UNICODE )
-			else if (ProtoServiceExists(szProto, PS_GETMYAVATAR)) {
-				char szFileName[ MAX_PATH ];
-				if (CallProtoService(szProto, PS_GETMYAVATAR, (WPARAM)szFileName, (LPARAM)MAX_PATH)) 
-					tszFilename[0] = '\0';
-				else
-					MultiByteToWideChar( CP_ACP, 0, szFileName, -1, tszFilename, SIZEOF( tszFilename ));
-			} 
-#endif
 			else if (!DBGetContactSettingTString(NULL, szProto, "AvatarFile", &dbv)) {
 				AVS_pathToAbsolute(dbv.ptszVal, tszFilename);
 				DBFreeVariant(&dbv);
@@ -2215,7 +2158,7 @@ static int ContactSettingChanged(WPARAM wParam, LPARAM lParam)
 		return 0;
 	}
 	else if (g_MetaAvail && !strcmp(cws->szModule, g_szMetaName)) {
-		if (lstrlenA(cws->szSetting) > 6 && !strncmp(cws->szSetting, "Status", 5))
+		if (!strcmp(cws->szSetting, "Status"))
 			MetaChanged(wParam, 0);
 	}
 	return 0;
