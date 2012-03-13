@@ -172,7 +172,6 @@ struct MessageWindowData
 #define DM_CHANGEICONS		 (WM_USER+24)
 #define DM_UPDATEICON		 (WM_USER+25)
 #define DM_GETAVATAR         (WM_USER+27)
-#define HM_AVATARACK         (WM_USER+28)
 #define HM_ACKEVENT          (WM_USER+29)
 
 #define DM_SENDMESSAGE		 (WM_USER+30)
