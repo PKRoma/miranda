@@ -24,7 +24,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef SRMM_COMMONHEADERS_H
 #define SRMM_COMMONHEADERS_H
 
-#define MIRANDA_VER 0x0A00
+#define MIRANDA_VER 0x0900
 
 #define COMPILE_MULTIMON_STUBS
 #define _WIN32_WINNT 0x0501
