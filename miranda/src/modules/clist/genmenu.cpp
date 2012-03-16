@@ -23,7 +23,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "commonheaders.h"
 #include "genmenu.h"
 
-static boolean bIsGenMenuInited = FALSE;
+static bool bIsGenMenuInited;
+bool bIconsDisabled;
 static CRITICAL_SECTION csMenuHook;
 
 static int NextObjectId = 0x100, NextObjectMenuItemId = CLISTMENUIDMIN;
@@ -335,7 +336,7 @@ int MO_ModifyMenuItem( PMO_IntMenuItem menuHandle, PMO_MenuItem pmi )
 		oldflags = pimi->mi.flags & ( CMIF_ROOTHANDLE | CMIF_ICONFROMICOLIB );
 		pimi->mi.flags = (pmi->flags & ~CMIM_ALL) | oldflags;
 	}
-	if ( pmi->flags & CMIM_ICON ) {
+	if ( (pmi->flags & CMIM_ICON) && !bIconsDisabled ) {
 		if ( pimi->mi.flags & CMIF_ICONFROMICOLIB ) {
 			HICON hIcon = IcoLib_GetIconByHandle( pmi->hIcolibItem, false );
 			if ( hIcon != NULL ) {
@@ -660,15 +661,15 @@ PMO_IntMenuItem MO_AddNewMenuItem( HANDLE menuobjecthandle, PMO_MenuItem pmi )
 			p->mi.ptszName = mir_tstrdup(( pmi->flags & CMIF_KEEPUNTRANSLATED ) ? pmi->ptszName : TranslateTS( pmi->ptszName ));
 		else {
 			if ( pmi->flags & CMIF_KEEPUNTRANSLATED )
-				p->mi.ptszName = mir_a2u_cp(pmi->pszName, CP_ACP);
-			else 
+				p->mi.ptszName = mir_a2u(pmi->pszName);
+			else
 				p->mi.ptszName = LangPackPcharToTchar( pmi->pszName );
 		}
 	#else
 		p->mi.ptszName = mir_strdup(( pmi->flags & CMIF_KEEPUNTRANSLATED ) ? pmi->ptszName : Translate( pmi->ptszName ));
 	#endif
 
-	if ( pmi->hIcon != NULL ) {
+	if ( pmi->hIcon != NULL && !bIconsDisabled ) {
 		if ( pmi->flags & CMIF_ICONFROMICOLIB ) {
 			HICON hIcon = IcoLib_GetIconByHandle( pmi->hIcolibItem, false );
 			p->iconId = ImageList_AddIcon( pmo->m_hMenuIcons, hIcon );
@@ -1237,8 +1238,10 @@ int InitGenMenu()
 	CreateServiceFunction( MO_SETOPTIONSMENUOBJECT, SRVMO_SetOptionsMenuObject );
 	CreateServiceFunction( MO_SETOPTIONSMENUITEM, SRVMO_SetOptionsMenuItem );
 
+	bIconsDisabled = DBGetContactSettingByte(NULL, "CList", "DisableMenuIcons", 1) != 0;
+
 	EnterCriticalSection( &csMenuHook );
-	bIsGenMenuInited = TRUE;
+	bIsGenMenuInited = true;
 	LeaveCriticalSection( &csMenuHook );
 
 	HookEvent( ME_SYSTEM_MODULESLOADED, OnModulesLoaded );
@@ -1251,7 +1254,7 @@ int UnitGenMenu()
 	if ( bIsGenMenuInited ) {
 		EnterCriticalSection( &csMenuHook );
 		MO_RemoveAllObjects();
-		bIsGenMenuInited=FALSE;
+		bIsGenMenuInited=false;
 
 		LeaveCriticalSection( &csMenuHook );
 		DeleteCriticalSection(&csMenuHook);
