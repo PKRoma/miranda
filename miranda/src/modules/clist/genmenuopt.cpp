@@ -25,11 +25,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #define STR_SEPARATOR _T("-----------------------------------")
 
+extern bool bIconsDisabled;
 extern int DefaultImageListColorDepth;
 long handleCustomDraw(HWND hWndTreeView, LPNMTVCUSTOMDRAW pNMTVCD);
 void RebuildProtoMenus( int );
-
-int hInst;
 
 struct OrderData
 {
@@ -448,6 +447,7 @@ static INT_PTR CALLBACK GenMenuOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 			TreeView_SetImageList(GetDlgItem(hwndDlg,IDC_MENUITEMS),himlCheckBoxes,TVSIL_NORMAL);
 		}
 		CheckDlgButton(hwndDlg, dat->iInitMenuValue ? IDC_RADIO2 : IDC_RADIO1, TRUE );
+		DBGetContactSettingByte(NULL, "CList", "DisableMenuIcons", 0);
 		BuildMenuObjectsTree(hwndDlg);
 		return TRUE;
 
@@ -535,6 +535,8 @@ static INT_PTR CALLBACK GenMenuOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 		switch( hdr->idFrom ) {
 		case 0:
 			if (hdr->code == PSN_APPLY ) {
+				bIconsDisabled = IsDlgButtonChecked(hwndDlg, IDC_DISABLEMENUICONS) != 0;
+				DBWriteContactSettingByte(NULL, "CList", "DisableMenuIcons", bIconsDisabled);
 				SaveTree(hwndDlg);
 				int iNewMenuValue = IsDlgButtonChecked(hwndDlg, IDC_RADIO1) ? 0 : 1;
 				if ( iNewMenuValue != dat->iInitMenuValue ) {
