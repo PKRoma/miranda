@@ -1238,7 +1238,7 @@ int InitGenMenu()
 	CreateServiceFunction( MO_SETOPTIONSMENUOBJECT, SRVMO_SetOptionsMenuObject );
 	CreateServiceFunction( MO_SETOPTIONSMENUITEM, SRVMO_SetOptionsMenuItem );
 
-	bIconsDisabled = DBGetContactSettingByte(NULL, "CList", "DisableMenuIcons", 1) != 0;
+	bIconsDisabled = DBGetContactSettingByte(NULL, "CList", "DisableMenuIcons", 0) != 0;
 
 	EnterCriticalSection( &csMenuHook );
 	bIsGenMenuInited = true;
