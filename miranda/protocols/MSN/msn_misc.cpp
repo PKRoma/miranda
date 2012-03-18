@@ -455,9 +455,9 @@ void  CMsnProto::MSN_GetCustomSmileyFileName(HANDLE hContact, TCHAR* pszDest, si
 	if (hCustomSmileyFolder == NULL || FoldersGetCustomPathT(hCustomSmileyFolder, path, (int)cbLen, _T(""))) 
 	{
 		TCHAR *tmpPath = Utils_ReplaceVarsT(_T("%miranda_userdata%"));
-		TCHAR *sztModuleName = mir_a2t(m_szModuleName);
-		tPathLen = mir_sntprintf(pszDest, cbLen, _T("%s\\%s\\CustomSmiley"), tmpPath, m_szModuleName);
-		mir_free(sztModuleName);
+		TCHAR *tszModuleName = mir_a2t(m_szModuleName);
+		tPathLen = mir_sntprintf(pszDest, cbLen, _T("%s\\%s\\CustomSmiley"), tmpPath, tszModuleName);
+		mir_free(tszModuleName);
 		mir_free(tmpPath);
 	}
 	else 
@@ -481,9 +481,9 @@ void  CMsnProto::MSN_GetCustomSmileyFileName(HANDLE hContact, TCHAR* pszDest, si
 	}
 	else
 	{
-		TCHAR *sztModuleName = mir_a2t(m_szModuleName);
-		tPathLen += mir_sntprintf(pszDest + tPathLen, cbLen - tPathLen, _T("\\%s"), sztModuleName);
-		mir_free(sztModuleName);
+		TCHAR *tszModuleName = mir_a2t(m_szModuleName);
+		tPathLen += mir_sntprintf(pszDest + tPathLen, cbLen - tPathLen, _T("\\%s"), tszModuleName);
+		mir_free(tszModuleName);
 	}
 		
 	bool exist = _taccess(pszDest, 0) == 0;
