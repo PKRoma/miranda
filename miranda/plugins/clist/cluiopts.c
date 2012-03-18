@@ -215,7 +215,6 @@ static INT_PTR CALLBACK DlgProcCluiOpts(HWND hwndDlg, UINT msg, WPARAM wParam, L
 			if (IsDlgButtonChecked(hwndDlg, IDC_SHOWCAPTION)) 
 			{
 				int style = GetWindowLong(pcli->hwndContactList, GWL_STYLE) | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX; 
-				if (IsDlgButtonChecked(hwndDlg, IDC_MIN2TRAY)) style &= ~WS_MINIMIZEBOX;
 				SetWindowLong(pcli->hwndContactList, GWL_STYLE, style);
 			}
 			else
