@@ -338,8 +338,9 @@ int CIrcProto::NLReceive(unsigned char* buf, int cbBuf)
 void CIrcProto::KillIdent()
 {
 	if ( hBindPort ) {
-		Netlib_CloseHandle( hBindPort );
+		HANDLE hPort = hBindPort;
 		hBindPort = NULL;
+		Netlib_CloseHandle( hPort );
 	}
 }
 
