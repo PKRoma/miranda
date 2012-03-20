@@ -6,6 +6,20 @@
 
 				
 
+* New in 0.9.47
+Enhancements:
+ - Added option to disable menu icons
+ 
+Bugfixes:
+ - Improved messaging window handling of avatars
+ - Improved handling of missing image services
+ - ICQ: Fixed possible crash
+ - ICS: Minor translation fix
+ - IRC: Improved connection speed
+ - IRC: Fixed closing already closed port
+ - Jabber: Changed ping stanza format to comply with XEP-0199
+
+
 * New in 0.9.46
 Bugfixes:
  - Updated zlib library
