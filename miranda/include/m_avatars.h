@@ -94,8 +94,7 @@ typedef struct avatarCacheEntry {
 	TCHAR szFilename[MAX_PATH];		// filename of the avatar (absolute path)
 } AVATARCACHEENTRY;
 #else
-	#define avatarCacheEntry avatarCacheEntryA
-	#define AVATARCACHEENTRY AVATARCACHEENTRYA
+#define AVATARCACHEENTRY AVATARCACHEENTRYA
 #endif
 
 struct CacheNode {
