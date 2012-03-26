@@ -2,8 +2,8 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2012 Miranda ICQ/IM project, 
-all portions of this codebase are copyrighted to the people 
+Copyright 2000-2012 Miranda ICQ/IM project,
+all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
 This program is free software; you can redistribute it and/or
@@ -20,7 +20,7 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
-Avatar service 
+Avatar service
 
 - load and maintain a cache of contact avatars.
 - draw avatars to a given target device context
@@ -37,7 +37,7 @@ asynchronously, the avatar iamge may not be ready when a plugin calls the servic
 case, an event (ME_AV_AVATARCHANGED) is fired when a contacts avatar changes. This event
 is also fired, when a contact avatar changes automatically.
 
-The service takes care about protocol capabilites (does not actively fetch avatars for 
+The service takes care about protocol capabilites (does not actively fetch avatars for
 protocols which do not report avatar capabilities via PF4_AVATARS or for protocols which
 have been disabled in the option dialog). It also does not actively fetch avatars for
 protocols which are in invisible status mode (may cause privacy issues and some protocols
@@ -94,7 +94,8 @@ typedef struct avatarCacheEntry {
 	TCHAR szFilename[MAX_PATH];		// filename of the avatar (absolute path)
 } AVATARCACHEENTRY;
 #else
-#define AVATARCACHEENTRY AVATARCACHEENTRYA
+	#define avatarCacheEntry avatarCacheEntryA
+	#define AVATARCACHEENTRY AVATARCACHEENTRYA
 #endif
 
 struct CacheNode {
@@ -122,7 +123,7 @@ struct CacheNode {
 // request to draw a contacts picture. See MS_AV_DRAWAVATAR service description
 
 typedef struct _avatarDrawRequest {
-	DWORD  cbSize;                  // set this to sizeof(AVATARDRAWREQUEST) - mandatory, service will return failure code if 
+	DWORD  cbSize;                  // set this to sizeof(AVATARDRAWREQUEST) - mandatory, service will return failure code if
 	                                // cbSize is wrong
 	HANDLE hContact;                // the contact for which the avatar should be drawn. set it to 0 to draw a protocol picture
 	HDC    hTargetDC;               // target device context
@@ -165,14 +166,14 @@ typedef struct _avatarDrawRequest {
 // and will used the backuped version until the contact picture gets unlocked
 // again. So this service does not disable avatar updates, but it "fakes"
 // a locked contact picture to the users of the GetAvatar service.
-// 
+//
 // wParam = (HANDLE)hContact
 // lParam = 1 -> lock the avatar, lParam = 0 -> unlock
 
 #define MS_AV_PROTECTAVATAR "SV_Avatars/ProtectAvatar"
 
 // set (and optionally protect) a local contact picture for the given hContact
-// 
+//
 // wParam = (HANDLE)hContact
 // lParam = either a full picture filename or NULL. If lParam == NULL, the service
 // will open a file selection dialog.
@@ -187,7 +188,7 @@ typedef struct _avatarDrawRequest {
 #endif
 
 // set a local picture for the given protocol
-// 
+//
 // wParam = (char *) protocol name or NULL for all protocols
 // lParam = either a full picture filename or NULL. If lParam == NULL, the service
 // will open a file selection dialog. If lParam == "" the avatar will be removed
@@ -202,7 +203,7 @@ typedef struct _avatarDrawRequest {
 #endif
 
 // see if is possible to set the avatar for the expecified protocol
-// 
+//
 // wParam = (char *) protocol name
 // lParam = 0
 // return = 1 if can set, 0 if can't
@@ -210,13 +211,13 @@ typedef struct _avatarDrawRequest {
 #define MS_AV_CANSETMYAVATAR "SV_Avatars/CanSetMyAvatar"
 
 // Call avatar option dialog for contact
-// 
+//
 // wParam = (HANDLE)hContact
 
 #define MS_AV_CONTACTOPTIONS "SV_Avatars/ContactOptions"
 
 // draw an avatar picture
-// 
+//
 // wParam = 0 (not used)
 // lParam = AVATARDRAWREQUEST *avdr
 // draw a contact picture to a destination device context. see description of
@@ -237,9 +238,9 @@ typedef struct _avatarDrawRequest {
 // the event CAN pass a NULL pointer in lParam which means that the avatar has changed,
 // but is no longer valid (happens, when a contact removes his avatar, for example).
 // DONT DESTROY the bitmap handle passed in the struct avatarCacheEntry *
-// 
+//
 // It is also possible that this event passes 0 as wParam (hContact), in which case,
-// a protocol picture (pseudo - avatar) has been changed. 
+// a protocol picture (pseudo - avatar) has been changed.
 
 #define ME_AV_AVATARCHANGED "SV_Avatars/AvatarChanged"
 
@@ -294,7 +295,7 @@ typedef struct _contactAvatarChangedNotification {
 
 // Save an HBITMAP to an image
 // wParam = HBITMAP
-// lParam = full path of filename 
+// lParam = full path of filename
 #define MS_AV_SAVEBITMAP  "SV_Avatars/SaveBitmap"
 #define MS_AV_SAVEBITMAPW "SV_Avatars/SaveBitmapW"
 
