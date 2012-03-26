@@ -196,7 +196,7 @@ BEGIN
     CONTROL         "Do not show popups when the channel window is not open",IDC_NOPOPUPSFORCLOSEDWINDOWS,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,176,282,10
     LTEXT           "Highlight event",IDC_STATIC,44,139,68,12
-    COMBOBOX        IDC_LOGICONTYPE,12,212,171,38,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_LOGICONTYPE,12,212,171,38,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     LTEXT           "Line markers in the message log",IDC_STATIC,14,201,257,10
 END
 

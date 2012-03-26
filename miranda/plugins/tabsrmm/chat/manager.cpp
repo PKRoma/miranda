@@ -1037,19 +1037,10 @@ BOOL MM_RemoveAll(void)
 		MODULEINFO *pLast = m_ModList->next;
 		mir_free(m_ModList->pszModule);
 		mir_free(m_ModList->ptszModDispName);
-		mir_free(m_ModList->pszHeader);
+		if(m_ModList->pszHeader)
+			mir_free(m_ModList->pszHeader);
 		mir_free(m_ModList->crColors);
 
-		/*
-		if (m_ModList->hOfflineIcon)
-			DestroyIcon(m_ModList->hOfflineIcon);
-		if (m_ModList->hOnlineIcon)
-			DestroyIcon(m_ModList->hOnlineIcon);
-		if (m_ModList->hOnlineTalkIcon)
-			DestroyIcon(m_ModList->hOnlineTalkIcon);
-		if (m_ModList->hOfflineTalkIcon)
-			DestroyIcon(m_ModList->hOfflineTalkIcon);
-		*/
 		mir_free(m_ModList);
 		m_ModList = pLast;
 	}
