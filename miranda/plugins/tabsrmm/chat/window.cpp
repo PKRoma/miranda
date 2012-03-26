@@ -3741,7 +3741,7 @@ LABEL_SHOWWINDOW:
 				DestroyWindow(dat->hwndTip);
 
 			if (hCurHyperlinkHand)
- 						DestroyCursor(hCurHyperlinkHand);
+				DestroyCursor(hCurHyperlinkHand);
 
 			i = GetTabIndexFromHWND(hwndTab, hwndDlg);
 			if (i >= 0) {

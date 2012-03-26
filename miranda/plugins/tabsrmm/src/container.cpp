@@ -1265,7 +1265,6 @@ buttons_done:
 
 			mmi->ptMinTrackSize.x = 275;
 			mmi->ptMinTrackSize.y = 130;
-
 			GetClientRect(GetDlgItem(hwndDlg, IDC_MSGTABS), &rc);
 			if(pContainer->hwndActive)								// at container creation time, there is no hwndActive yet..
 				GetClientRect(pContainer->hwndActive, &rcClient);

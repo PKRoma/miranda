@@ -163,7 +163,7 @@ INT_PTR CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, 
 
 	switch (msg) {
 		case WM_INITDIALOG: {
-			TCHAR 			szNewTitle[128];
+			wchar_t			szNewTitle[128];
 			TContainerData *pContainer = 0;
 			int   			i, j;
 			TVINSERTSTRUCT 	tvis = {0};
@@ -323,7 +323,7 @@ INT_PTR CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, 
 						return TRUE;
 					goto do_apply;
 				case IDC_SELECTTHEME: {
-					const TCHAR *szFileName = GetThemeFileName(0);
+					const wchar_t *szFileName = GetThemeFileName(0);
 
 					if (PathFileExists(szFileName)) {
 						SetDlgItemText(hwndDlg, IDC_THEME, szFileName);
@@ -353,7 +353,7 @@ INT_PTR CALLBACK DlgProcContainerOptions(HWND hwndDlg, UINT msg, WPARAM wParam, 
 					pContainer->szRelThemeFile[0] = pContainer->szAbsThemeFile[0] = 0;
 
 					if (GetWindowTextLengthA(GetDlgItem(hwndDlg, IDC_THEME)) > 0) {
-						TCHAR	szFinalThemeFile[MAX_PATH], szFilename[MAX_PATH];
+						wchar_t	szFinalThemeFile[MAX_PATH], szFilename[MAX_PATH];
 
 						GetDlgItemText(hwndDlg, IDC_THEME, szFilename, MAX_PATH);
 						szFilename[MAX_PATH - 1] = 0;
