@@ -108,6 +108,12 @@ typedef HRESULT ( STDAPICALLTYPE *pfnDwmIsCompositionEnabled )( BOOL * );
 extern pfnDwmExtendFrameIntoClientArea dwmExtendFrameIntoClientArea;
 extern pfnDwmIsCompositionEnabled dwmIsCompositionEnabled;
 
+typedef INT (STDAPICALLTYPE *pfnGetaddrinfo)(PCSTR pNodeName, PCSTR pServiceName, const ADDRINFOA * pHints, PADDRINFOA * ppResult);
+typedef INT (STDAPICALLTYPE *pfnFreeaddrinfo)(PADDRINFOA pAddrInfo);
+
+extern pfnGetaddrinfo MyGetaddrinfo;
+extern pfnFreeaddrinfo MyFreeaddrinfo;
+
 /**** file.c ***************************************************************************/
 
 void PushFileEvent( HANDLE hContact, HANDLE hdbe, LPARAM lParam );

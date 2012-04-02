@@ -2,7 +2,7 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2009 Miranda ICQ/IM project,
+Copyright 2000-2012 Miranda ICQ/IM project,
 all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
@@ -227,6 +227,8 @@ static INT_PTR NetlibSetUserSettings(WPARAM wParam,LPARAM lParam)
 
 void NetlibDoClose(NetlibConnection *nlc, bool noShutdown)
 {
+	if (nlc->s == INVALID_SOCKET) return;
+
 	NetlibLogf(nlc->nlu, "(%p:%u) Connection closed internal", nlc, nlc->s);
 	if (nlc->hSsl)
 	{
@@ -234,7 +236,7 @@ void NetlibDoClose(NetlibConnection *nlc, bool noShutdown)
 		si.sfree(nlc->hSsl);
 		nlc->hSsl = NULL;
 	}
-	if (nlc->s != INVALID_SOCKET) closesocket(nlc->s);
+	closesocket(nlc->s);
 	nlc->s = INVALID_SOCKET;
 }
 
@@ -289,7 +291,6 @@ INT_PTR NetlibCloseHandle(WPARAM wParam, LPARAM)
 				return 0;
 			}
 			nlc->handleType=0;
-			nlc->sinProxy.sin_addr.S_un.S_addr = 0;
 			mir_free(nlc->nlhpi.szHttpPostUrl);
 			mir_free(nlc->nlhpi.szHttpGetUrl);
 			mir_free(nlc->dataBuffer);
@@ -357,7 +358,6 @@ INT_PTR NetlibShutdown(WPARAM wParam, LPARAM)
 					if (nlc->hSsl) si.shutdown(nlc->hSsl);
 					if (nlc->s != INVALID_SOCKET) shutdown(nlc->s, 2);
 					if (nlc->s2 != INVALID_SOCKET) shutdown(nlc->s2, 2);
-					nlc->sinProxy.sin_addr.S_un.S_addr = 0;
 					nlc->termRequested = true;
 				}
 				break;
@@ -537,7 +537,7 @@ int LoadNetlibModule(void)
 
 	bModuleInitialized = TRUE;
 	
-	WSAStartup(MAKEWORD(1,1), &wsadata);
+	WSAStartup(MAKEWORD(2,2), &wsadata);
 
 	HookEvent(ME_OPT_INITIALISE,NetlibOptInitialise);
 
