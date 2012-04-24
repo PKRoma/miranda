@@ -6,6 +6,13 @@
 
 				
 
+* New in 0.9.48
+Bugfixes:
+ - Fixed window state of URLs opened in IE
+ - Minor updates to TabSRMM plugin
+ - Fix minor issue with SDK language pack tool
+
+
 * New in 0.9.47
 Enhancements:
  - Added option to disable menu icons
