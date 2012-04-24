@@ -200,7 +200,7 @@ sub csearch {
 		}
 		close(READ);
 		$_ = $all;
-		while (/(?:Button_SetIcon_IcoLib|Translate[A-Z]{0,2}|LPGENT?|ICQTranslateUtfStatic)\s*\(\s*(\".*?\")\s*[,\)]/g) {
+		while (/(?:Button_SetIcon_IcoLib|Translate[A-Z]{0,2}|LPGENT?|ICQTranslateUtfStatic)\s*\(\s*(\"[^\\]*?(\\.[^\\]*?)*\")\s*[,\)]/g) {
 			$found += append_str($1, $found);
 		}
 		print "($found)\n";
@@ -219,7 +219,8 @@ sub rcsearch {
 		}
 		close(READ);
 		$_ = $all;
-		while (/\s*(?:CONTROL|(?:DEF)?PUSHBUTTON|[LRC]TEXT|GROUPBOX|CAPTION|MENUITEM|POPUP)\s*(\".*?\")/g) {
+		s/\"\"/\\\"/g;
+		while (/\s*(?:CONTROL|(?:DEF)?PUSHBUTTON|[LRC]TEXT|GROUPBOX|CAPTION|MENUITEM|POPUP)\s*(\"[^\\]*?(\\.[^\\]*?)*\")/g) {
 			$found += append_str($1, $found);
 		}
 		print "($found)\n";
