@@ -194,7 +194,7 @@ static void OpenURLThread(void *arg)
 			}
 		}
 	}
-	ShellExecuteA(NULL, "open", szResult, NULL, NULL, SW_SHOW);
+	ShellExecuteA(NULL, "open", szResult, NULL, NULL, SW_SHOWDEFAULT);
 	mir_free(szResult);
 	mir_free(hUrlInfo->szUrl);
 	mir_free(hUrlInfo);
