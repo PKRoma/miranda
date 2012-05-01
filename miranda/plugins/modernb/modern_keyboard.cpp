@@ -41,11 +41,10 @@ INT_PTR hkRestoreStatus(WPARAM wParam,LPARAM lParam)
 
 int InitSkinHotKeys(void)
 {
-	HOTKEYDESC shk;
-
 	CreateServiceFunction("CLIST/HK/CloseMiranda",hkCloseMiranda);
 	CreateServiceFunction("CLIST/HK/RestoreStatus",hkRestoreStatus);
 
+	HOTKEYDESC shk = {0};
 	shk.cbSize=sizeof(shk);
 
 	shk.pszDescription=LPGEN("Close Miranda");
