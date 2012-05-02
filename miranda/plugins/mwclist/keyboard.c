@@ -2,8 +2,8 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2003 Miranda ICQ/IM project, 
-all portions of this codebase are copyrighted to the people 
+Copyright 2000-2003 Miranda ICQ/IM project,
+all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
 This program is free software; you can redistribute it and/or
@@ -39,7 +39,7 @@ INT_PTR hkRestoreStatus(WPARAM wParam,LPARAM lParam)
 
 int InitSkinHotKeys(void)
 {
-	HOTKEYDESC shk;
+	HOTKEYDESC shk={0};
 
 	CreateServiceFunction("CLIST/HK/CloseMiranda",hkCloseMiranda);
 	CreateServiceFunction("CLIST/HK/RestoreStatus",hkRestoreStatus);
@@ -51,14 +51,14 @@ int InitSkinHotKeys(void)
 	shk.pszSection="Main";
 	shk.pszService="CLIST/HK/CloseMiranda";
 	shk.DefHotKey=0;
-	CallService(MS_HOTKEY_REGISTER,0,(LPARAM)&shk);	
+	CallService(MS_HOTKEY_REGISTER,0,(LPARAM)&shk);
 
 	shk.pszDescription="Restore last status";
 	shk.pszName="RestoreLastStatus";
 	shk.pszSection="Status";
 	shk.pszService="CLIST/HK/RestoreStatus";
 	shk.DefHotKey=0;
-	CallService(MS_HOTKEY_REGISTER,0,(LPARAM)&shk);	
+	CallService(MS_HOTKEY_REGISTER,0,(LPARAM)&shk);
 
 	return 0;
 }
