@@ -816,8 +816,9 @@ INT_PTR CALLBACK CSendLater::DlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
 					case NM_RCLICK: {
 						HMENU hMenu = ::LoadMenu(g_hInst, MAKEINTRESOURCE(IDR_TABCONTEXT));
 						HMENU hSubMenu = ::GetSubMenu(hMenu, 13);
-						POINT pt;
+						::TranslateMenu(hSubMenu);
 
+						POINT pt;
 						::GetCursorPos(&pt);
 						/*
 						 * copy to clipboard only allowed with a single selection
