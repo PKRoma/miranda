@@ -179,7 +179,10 @@ void CMsnProto::getMetaData(void)
 	if (tResult != NULL && status == 200)
 	{
 		ezxml_t xmlm = ezxml_parse_str(tResult, strlen(tResult));
-		ezxml_t xmli = ezxml_get(xmlm, "soap:Body", 0, "GetMetadataResponse", 0, "MD", -1);
+		ezxml_t xmli = ezxml_get(xmlm, "s:Body", 0, "GetMetadataResponse", 0, "MD", -1);
+		if (!xmli)
+			xmli = ezxml_get(xmlm, "soap:Body", 0, "GetMetadataResponse", 0, "MD", -1);
+
 		getOIMs(xmli);
 		ezxml_free(xmlm);
 	}
