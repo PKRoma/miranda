@@ -242,9 +242,11 @@ void NetlibDoClose(NetlibConnection *nlc, bool noShutdown)
 
 INT_PTR NetlibCloseHandle(WPARAM wParam, LPARAM)
 {
-	switch(GetNetlibHandleType(wParam)) {
+	switch(GetNetlibHandleType(wParam))
+	{
 		case NLH_USER:
-		{	struct NetlibUser *nlu=(struct NetlibUser*)wParam;
+		{	
+			struct NetlibUser *nlu=(struct NetlibUser*)wParam;
 			int i;
 			
 			EnterCriticalSection(&csNetlibUser);
@@ -323,27 +325,51 @@ INT_PTR NetlibCloseHandle(WPARAM wParam, LPARAM)
 static INT_PTR NetlibGetSocket(WPARAM wParam, LPARAM)
 {
 	SOCKET s;
-	if(wParam==0) {
-		s=INVALID_SOCKET;
+	if (wParam == 0)
+	{
+		s = INVALID_SOCKET;
 		SetLastError(ERROR_INVALID_PARAMETER);
 	}
-	else {
+	else
+	{
 		WaitForSingleObject(hConnectionHeaderMutex,INFINITE);
-		switch(GetNetlibHandleType(wParam)) {
+		switch (GetNetlibHandleType(wParam))
+		{
 			case NLH_CONNECTION:
-				s=((struct NetlibConnection*)wParam)->s;
+				s = ((struct NetlibConnection*)wParam)->s;
 				break;
 			case NLH_BOUNDPORT:
-				s=((struct NetlibBoundPort*)wParam)->s;
+				s = ((struct NetlibBoundPort*)wParam)->s;
 				break;
 			default:
-				s=INVALID_SOCKET;
+				s = INVALID_SOCKET;
 				SetLastError(ERROR_INVALID_PARAMETER);
 				break;
 		}
 		ReleaseMutex(hConnectionHeaderMutex);
 	}
 	return s;
+}
+
+INT_PTR NetlibStringToAddressSrv(WPARAM wParam, LPARAM lParam)
+{
+	return (INT_PTR)!NetlibStringToAddress((char*)wParam, (PSOCKADDR_INET)lParam);
+}
+
+INT_PTR NetlibAddressToStringSrv(WPARAM wParam, LPARAM)
+{
+	return (INT_PTR)NetlibAddressToString((PSOCKADDR_INET)wParam);
+}
+
+INT_PTR NetlibGetConnectionInfoSrv(WPARAM wParam, LPARAM lParam)
+{
+	NetlibGetConnectionInfo((NetlibConnection*)wParam, (NETLIBCONNINFO*)lParam);
+	return 0;
+}
+
+INT_PTR NetlibGetMyIp(WPARAM, LPARAM)
+{
+	return (INT_PTR)GetMyIp();
 }
 
 INT_PTR NetlibShutdown(WPARAM wParam, LPARAM)
@@ -623,6 +649,10 @@ int LoadNetlibModule(void)
 	CreateServiceFunction(MS_NETLIB_GETMOREPACKETS,NetlibPacketRecverGetMore);
 	CreateServiceFunction(MS_NETLIB_SETPOLLINGTIMEOUT,NetlibHttpSetPollingTimeout);
 	CreateServiceFunction(MS_NETLIB_STARTSSL,NetlibStartSsl);
+	CreateServiceFunction(MS_NETLIB_STARINGTOADDRESS,NetlibStringToAddressSrv);
+	CreateServiceFunction(MS_NETLIB_ADDRESSTOSTRING,NetlibAddressToStringSrv);
+	CreateServiceFunction(MS_NETLIB_GETCONNECTIONINFO,NetlibGetConnectionInfoSrv);
+	CreateServiceFunction(MS_NETLIB_GETMYIP,NetlibGetMyIp);
 
 	hRecvEvent = CreateHookableEvent(ME_NETLIB_FASTRECV);
 	hSendEvent = CreateHookableEvent(ME_NETLIB_FASTSEND);

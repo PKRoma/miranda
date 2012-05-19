@@ -201,3 +201,129 @@ INT_PTR NetlibSelectEx(WPARAM, LPARAM lParam)
 	ReleaseMutex(hConnectionHeaderMutex);
 	return rc;
 }
+
+bool NetlibStringToAddress(const char* str, PSOCKADDR_INET addr)
+{
+	if (!str) return false;
+
+	if (MyWSAStringToAddress)
+	{
+		int len = sizeof(SOCKADDR_INET);
+		return !MyWSAStringToAddress((char*)str, AF_INET6, NULL, (LPSOCKADDR)addr, &len);
+	}
+	else
+	{
+		unsigned iaddr = inet_addr(str);
+		if (!iaddr) return false;
+
+		addr->Ipv4.sin_addr.s_addr = iaddr;
+		addr->si_family = AF_INET;
+		return true; 
+	}
+}
+
+char* NetlibAddressToString(PSOCKADDR_INET addr)
+{
+	char saddr[128];
+
+	if (MyWSAAddressToString)
+	{
+		DWORD len = sizeof(saddr);
+		if (!MyWSAAddressToString((LPSOCKADDR)addr, sizeof(*addr), NULL, saddr, &len))
+			return mir_strdup(saddr);
+	}
+	else if (addr->si_family == AF_INET)
+	{
+		char *szIp = inet_ntoa(addr->Ipv4.sin_addr);
+		if (addr->Ipv4.sin_port != 0)
+		{
+			mir_snprintf(saddr, sizeof(saddr), "%s:%d", szIp, htons(addr->Ipv4.sin_port));
+			return mir_strdup(saddr);
+		}
+		else 
+			return mir_strdup(szIp);
+	}
+	return NULL;
+}
+
+void NetlibGetConnectionInfo(NetlibConnection* nlc, NETLIBCONNINFO *connInfo)
+{
+	if (!nlc || !connInfo || connInfo->cbSize < sizeof(NETLIBCONNINFO)) return;
+
+	SOCKADDR_INET sin = {0};
+	int len = sizeof(sin);
+
+	if (!getsockname(nlc->s, (PSOCKADDR)&sin, &len))
+	{
+		connInfo->wPort = ntohs(sin.Ipv4.sin_port);
+		connInfo->dwIpv4 = sin.si_family == AF_INET ? htonl(sin.Ipv4.sin_addr.s_addr) : 0;
+
+		char *szTmp = NetlibAddressToString(&sin);
+		strncpy(connInfo->szIpPort, szTmp, sizeof(connInfo->szIpPort));
+		connInfo->szIpPort[sizeof(connInfo->szIpPort) - 1] = 0;
+		mir_free(szTmp);
+	}
+}
+
+static PSOCKADDR_INET GetMyIpv6(void)
+{
+	addrinfo *air = NULL, *ai;
+	const char *szMyHost = ""; 
+
+	if (MyGetaddrinfo(szMyHost, NULL, NULL, &air))
+		return NULL;
+
+	unsigned n = 0;
+	for (ai = air; ai; ai = ai->ai_next)
+	{
+		if (ai->ai_family == AF_INET || ai->ai_family == AF_INET6)
+			++n;
+	}
+
+	PSOCKADDR_INET addr = (PSOCKADDR_INET)mir_calloc((n + 1) * sizeof(SOCKADDR_INET));
+
+	unsigned i = 0;
+	for (ai = air; ai; ai = ai->ai_next)
+	{
+		if (ai->ai_family == AF_INET)
+		{
+			addr[i].si_family = AF_INET;
+			addr[i].Ipv4 = *(PSOCKADDR_IN)ai->ai_addr;
+			++i;
+		}
+		else if (ai->ai_family == AF_INET6)
+		{
+			addr[i].si_family = AF_INET6;
+			addr[i].Ipv6 = *(PSOCKADDR_IN6)ai->ai_addr;
+			++i;
+		}
+	}
+	MyFreeaddrinfo(air);
+	return addr;
+}
+
+static PSOCKADDR_INET GetMyIpv4(void)
+{
+	char hostname[256] = "";
+
+	gethostname(hostname, sizeof(hostname));
+	PHOSTENT he = gethostbyname(hostname);
+
+	unsigned n;
+	for (n = 0; he->h_addr_list[n]; ++n) ;
+
+	PSOCKADDR_INET addr = (PSOCKADDR_INET)mir_calloc((n + 1) * sizeof(SOCKADDR_INET));
+
+	for (unsigned i = 0; i < n; ++i) 
+	{
+		addr[i].si_family     = AF_INET;
+		addr[i].Ipv4.sin_addr = *(PIN_ADDR)he->h_addr_list[i];
+	}
+
+	return addr;
+}
+
+PSOCKADDR_INET GetMyIp(void)
+{
+	return (MyGetaddrinfo && MyFreeaddrinfo) ? GetMyIpv6() : GetMyIpv4();
+}

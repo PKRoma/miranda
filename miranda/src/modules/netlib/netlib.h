@@ -83,6 +83,7 @@ struct NetlibConnection
 struct NetlibBoundPort {
 	int handleType;
 	SOCKET s;
+	SOCKET s6;
 	WORD wPort;
 	WORD wExPort;
 	struct NetlibUser *nlu;
@@ -123,7 +124,7 @@ bool NetlibGetIeProxyConn(NetlibConnection *nlc, bool forceHttps);
 //netlibbind.c
 int NetlibFreeBoundPort(struct NetlibBoundPort *nlbp);
 INT_PTR NetlibBindPort(WPARAM wParam,LPARAM lParam);
-bool BindSocketToPort(const char *szPorts, SOCKET s, int* portn);
+bool BindSocketToPort(const char *szPorts, SOCKET s, SOCKET s6, int* portn);
 
 //netlibhttp.c
 INT_PTR NetlibHttpSendRequest(WPARAM wParam,LPARAM lParam);
@@ -178,6 +179,11 @@ INT_PTR NetlibRecv(WPARAM wParam,LPARAM lParam);
 INT_PTR NetlibSelect(WPARAM wParam,LPARAM lParam);
 INT_PTR NetlibSelectEx(WPARAM wParam,LPARAM lParam);
 INT_PTR NetlibShutdown(WPARAM wParam,LPARAM lParam);
+
+bool NetlibStringToAddress(const char* str, SOCKADDR_INET *addr);
+char* NetlibAddressToString(PSOCKADDR_INET addr);
+void NetlibGetConnectionInfo(NetlibConnection* nlc, NETLIBCONNINFO *connInfo);
+PSOCKADDR_INET GetMyIp(void);
 
 //netlibupnp.c
 bool NetlibUPnPAddPortMapping(WORD intport, char *proto,
