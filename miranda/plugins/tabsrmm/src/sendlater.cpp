@@ -816,7 +816,7 @@ INT_PTR CALLBACK CSendLater::DlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
 					case NM_RCLICK: {
 						HMENU hMenu = ::LoadMenu(g_hInst, MAKEINTRESOURCE(IDR_TABCONTEXT));
 						HMENU hSubMenu = ::GetSubMenu(hMenu, 13);
-						::TranslateMenu(hSubMenu);
+						CallService(MS_LANGPACK_TRANSLATEMENU, (WPARAM) hSubMenu, 0);
 
 						POINT pt;
 						::GetCursorPos(&pt);
