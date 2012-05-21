@@ -356,9 +356,9 @@ INT_PTR NetlibStringToAddressSrv(WPARAM wParam, LPARAM lParam)
 	return (INT_PTR)!NetlibStringToAddress((char*)wParam, (PSOCKADDR_INET)lParam);
 }
 
-INT_PTR NetlibAddressToStringSrv(WPARAM wParam, LPARAM)
+INT_PTR NetlibAddressToStringSrv(WPARAM, LPARAM lParam)
 {
-	return (INT_PTR)NetlibAddressToString((PSOCKADDR_INET)wParam);
+	return (INT_PTR)NetlibAddressToString((PSOCKADDR_INET)lParam);
 }
 
 INT_PTR NetlibGetConnectionInfoSrv(WPARAM wParam, LPARAM lParam)
