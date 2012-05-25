@@ -151,9 +151,6 @@ __inline static INT_PTR TranslateMenu(HMENU hMenu)
 
 #endif
 
-__inline static INT_PTR TranslateMenu(HMENU hMenu)
-{	return CallService(MS_LANGPACK_TRANSLATEMENU, (WPARAM)hMenu, 0);
-}
 
 //returns the codepage used in the language pack 	  v0.4.3.0+
 //wParam=0
