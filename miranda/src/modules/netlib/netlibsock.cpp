@@ -267,10 +267,13 @@ void NetlibGetConnectionInfo(NetlibConnection* nlc, NETLIBCONNINFO *connInfo)
 
 static PSOCKADDR_INET GetMyIpv6(void)
 {
-	addrinfo *air = NULL, *ai;
+	addrinfo *air = NULL, *ai, hints = {0};
 	const char *szMyHost = ""; 
 
-	if (MyGetaddrinfo(szMyHost, NULL, NULL, &air))
+	hints.ai_family = AF_UNSPEC;
+	hints.ai_flags = AI_PASSIVE;
+
+	if (MyGetaddrinfo(szMyHost, NULL, &hints, &air))
 		return NULL;
 
 	unsigned n = 0;
