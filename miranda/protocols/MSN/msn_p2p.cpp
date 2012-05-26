@@ -126,9 +126,14 @@ bool CMsnProto::p2p_createListener(filetransfer* ft, directconnection *dc, MimeH
 			if (szIpStr)
 			{
 				if (i6++ != 0) strcat(szIpv6, " ");
-				strcat(szIpv6, szIpStr + 1);
-				char *end = strchr(szIpv6, ']');
-				if (end) *end = 0;
+				if (*szIpStr == '[')
+				{
+					strcat(szIpv6, szIpStr + 1);
+					char *end = strchr(szIpv6, ']');
+					if (end) *end = 0;
+				}
+				else
+					strcat(szIpv6, szIpStr);
 				mir_free(szIpStr);
 			}
 		}
@@ -1520,7 +1525,7 @@ void CMsnProto::p2p_startConnect(const char* wlid, const char* szCallID, const c
 
 void CMsnProto::p2p_InitDirectTransfer2(MimeHeaders& tFileInfo, MimeHeaders& tFileInfo2, const char* wlid)
 {
-	const char  *szCallID = tFileInfo["Call-ID"],
+	const char  *szCallID          = tFileInfo["Call-ID"],
 				*szInternalAddress = tFileInfo2["IPv4Internal-Addrs"],
 				*szInternalPort    = tFileInfo2["IPv4Internal-Port"],
 				*szExternalAddress = tFileInfo2["IPv4External-Addrs"],
