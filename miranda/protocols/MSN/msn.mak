@@ -97,7 +97,7 @@ BSC32_FLAGS=/nologo /o"$(OUTDIR)\msn.bsc"
 BSC32_SBRS= \
 	
 LINK32=link.exe
-LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib wsock32.lib comctl32.lib Rpcrt4.lib /nologo /base:"0x19000000" /dll /incremental:no /pdb:"$(OUTDIR)\msn.pdb" /map:"$(INTDIR)\msn.map" /debug /machine:I386 /out:"../../bin/release/plugins/msn.dll" /implib:"$(OUTDIR)\msn.lib" /filealign:512 
+LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib ws2_32.lib comctl32.lib Rpcrt4.lib /nologo /base:"0x19000000" /dll /incremental:no /pdb:"$(OUTDIR)\msn.pdb" /map:"$(INTDIR)\msn.map" /debug /machine:I386 /out:"../../bin/release/plugins/msn.dll" /implib:"$(OUTDIR)\msn.lib" /filealign:512 
 LINK32_OBJS= \
 	"$(INTDIR)\des.obj" \
 	"$(INTDIR)\ezxml.obj" \
@@ -280,7 +280,7 @@ BSC32_SBRS= \
 <<
 
 LINK32=link.exe
-LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib wsock32.lib comctl32.lib Rpcrt4.lib /nologo /dll /incremental:yes /pdb:"$(OUTDIR)\msn.pdb" /debug /machine:I386 /out:"../../bin/debug/plugins/msn.dll" /implib:"$(OUTDIR)\msn.lib" /pdbtype:sept 
+LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib ws2_32.lib comctl32.lib Rpcrt4.lib /nologo /dll /incremental:yes /pdb:"$(OUTDIR)\msn.pdb" /debug /machine:I386 /out:"../../bin/debug/plugins/msn.dll" /implib:"$(OUTDIR)\msn.lib" /pdbtype:sept 
 LINK32_OBJS= \
 	"$(INTDIR)\des.obj" \
 	"$(INTDIR)\ezxml.obj" \
@@ -386,7 +386,7 @@ BSC32_FLAGS=/nologo /o"$(OUTDIR)\msn.bsc"
 BSC32_SBRS= \
 	
 LINK32=link.exe
-LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib wsock32.lib comctl32.lib Rpcrt4.lib /nologo /base:"0x19000000" /dll /incremental:no /pdb:"$(OUTDIR)\msn.pdb" /map:"$(INTDIR)\msn.map" /debug /machine:I386 /out:"../../bin/Release Unicode/plugins/msn.dll" /implib:"$(OUTDIR)\msn.lib" /filealign:512 
+LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib ws2_32.lib comctl32.lib Rpcrt4.lib /nologo /base:"0x19000000" /dll /incremental:no /pdb:"$(OUTDIR)\msn.pdb" /map:"$(INTDIR)\msn.map" /debug /machine:I386 /out:"../../bin/Release Unicode/plugins/msn.dll" /implib:"$(OUTDIR)\msn.lib" /filealign:512 
 LINK32_OBJS= \
 	"$(INTDIR)\des.obj" \
 	"$(INTDIR)\ezxml.obj" \
@@ -569,7 +569,7 @@ BSC32_SBRS= \
 <<
 
 LINK32=link.exe
-LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib wsock32.lib comctl32.lib Rpcrt4.lib /nologo /dll /incremental:yes /pdb:"$(OUTDIR)\msn.pdb" /debug /machine:I386 /out:"../../bin/Debug Unicode/plugins/msn.dll" /implib:"$(OUTDIR)\msn.lib" /pdbtype:sept 
+LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib ws2_32.lib comctl32.lib Rpcrt4.lib /nologo /dll /incremental:yes /pdb:"$(OUTDIR)\msn.pdb" /debug /machine:I386 /out:"../../bin/Debug Unicode/plugins/msn.dll" /implib:"$(OUTDIR)\msn.lib" /pdbtype:sept 
 LINK32_OBJS= \
 	"$(INTDIR)\des.obj" \
 	"$(INTDIR)\ezxml.obj" \

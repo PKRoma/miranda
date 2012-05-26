@@ -23,6 +23,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <m_stdhdr.h>
 
+#include <winsock2.h>
+#include <ws2tcpip.h>
 #include <windows.h>
 #include <commctrl.h>
 
@@ -167,6 +169,7 @@ void		stripColorCode(char* src);
 void		parseWLID(char* wlid, char** net, char** email, char** inst);
 
 char*		MSN_Base64Decode(const char* str);
+char*		GetGlobalIp(void);
 
 template <class chartype> void UrlDecode(chartype* str);
 
