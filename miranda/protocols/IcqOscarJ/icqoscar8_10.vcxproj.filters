@@ -155,6 +155,21 @@
     <None Include="docs\IcqOscarJ-translation.txt">
       <Filter>Documentation</Filter>
     </None>
+    <None Include="icos\auth_ask.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="icos\auth_grant.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="icos\auth_revoke.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="icos\srvlist_add.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="changeinfo\expandst.ico">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="resources.rc">
