@@ -23,69 +23,73 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "commonheaders.h"
 #include "netlib.h"
 
-extern HANDLE hConnectionHeaderMutex,hSendEvent,hRecvEvent;
+extern HANDLE hConnectionHeaderMutex, hSendEvent, hRecvEvent;
 
-INT_PTR NetlibSend(WPARAM wParam,LPARAM lParam)
+INT_PTR NetlibSend(WPARAM wParam, LPARAM lParam)
 {
-	struct NetlibConnection *nlc=(struct NetlibConnection*)wParam;
-	NETLIBBUFFER *nlb=(NETLIBBUFFER*)lParam;
+	NetlibConnection *nlc = (NetlibConnection*)wParam;
+	NETLIBBUFFER *nlb = (NETLIBBUFFER*)lParam;
 	INT_PTR result;
 
-	if ( nlb == NULL ) {
+	if (nlb == NULL)
+	{
 		SetLastError(ERROR_INVALID_PARAMETER);
 		return SOCKET_ERROR;
 	}
 
-	if ( !NetlibEnterNestedCS( nlc, NLNCS_SEND ))
+	if (!NetlibEnterNestedCS(nlc, NLNCS_SEND))
 		return SOCKET_ERROR;
 
-	if ( nlc->usingHttpGateway && !( nlb->flags & MSG_RAW )) {
-		if ( !( nlb->flags & MSG_NOHTTPGATEWAYWRAP ) && nlc->nlu->user.pfnHttpGatewayWrapSend ) {
-			NetlibDumpData( nlc, ( PBYTE )nlb->buf, nlb->len, 1, nlb->flags );
-			result = nlc->nlu->user.pfnHttpGatewayWrapSend(( HANDLE )nlc, ( PBYTE )nlb->buf, nlb->len, nlb->flags | MSG_NOHTTPGATEWAYWRAP, NetlibSend );
+	if (nlc->usingHttpGateway && !(nlb->flags & MSG_RAW))
+	{
+		if (!(nlb->flags & MSG_NOHTTPGATEWAYWRAP) && nlc->nlu->user.pfnHttpGatewayWrapSend)
+		{
+			NetlibDumpData(nlc, (PBYTE)nlb->buf, nlb->len, 1, nlb->flags);
+			result = nlc->nlu->user.pfnHttpGatewayWrapSend((HANDLE)nlc, (PBYTE)nlb->buf, nlb->len, nlb->flags | MSG_NOHTTPGATEWAYWRAP, NetlibSend);
 		}
-		else result = NetlibHttpGatewayPost( nlc, nlb->buf, nlb->len, nlb->flags );
+		else result = NetlibHttpGatewayPost(nlc, nlb->buf, nlb->len, nlb->flags);
 	}
 	else {
-		NetlibDumpData( nlc, ( PBYTE )nlb->buf, nlb->len, 1, nlb->flags );
+		NetlibDumpData(nlc, (PBYTE)nlb->buf, nlb->len, 1, nlb->flags);
 		if (nlc->hSsl)
-			result = si.write( nlc->hSsl, nlb->buf, nlb->len );
+			result = si.write(nlc->hSsl, nlb->buf, nlb->len);
 		else
-			result = send( nlc->s, nlb->buf, nlb->len, nlb->flags & 0xFFFF );
+			result = send(nlc->s, nlb->buf, nlb->len, nlb->flags & 0xFFFF);
 	}
-	NetlibLeaveNestedCS( &nlc->ncsSend );
+	NetlibLeaveNestedCS(&nlc->ncsSend);
 
-	if ((( THook* )hSendEvent)->subscriberCount ) {
+	if (((THook*)hSendEvent)->subscriberCount)
+	{
 		NETLIBNOTIFY nln = { nlb, result };
-		CallHookSubscribers( hSendEvent, (WPARAM)&nln, (LPARAM)&nlc->nlu->user );
+		CallHookSubscribers(hSendEvent, (WPARAM)&nln, (LPARAM)&nlc->nlu->user);
 	}
 	return result;
 }
 
-INT_PTR NetlibRecv(WPARAM wParam,LPARAM lParam)
+INT_PTR NetlibRecv(WPARAM wParam, LPARAM lParam)
 {
-	struct NetlibConnection *nlc = (struct NetlibConnection*)wParam;
-	NETLIBBUFFER* nlb = ( NETLIBBUFFER* )lParam;
+	NetlibConnection *nlc = (NetlibConnection*)wParam;
+	NETLIBBUFFER* nlb = (NETLIBBUFFER*)lParam;
 	int recvResult;
 
-	if ( nlb == NULL ) {
-		SetLastError( ERROR_INVALID_PARAMETER );
+	if (nlb == NULL) {
+		SetLastError(ERROR_INVALID_PARAMETER);
 		return SOCKET_ERROR;
 	}
 
-	if ( !NetlibEnterNestedCS( nlc, NLNCS_RECV ))
+	if (!NetlibEnterNestedCS(nlc, NLNCS_RECV))
 		return SOCKET_ERROR;
 
-	if ( nlc->usingHttpGateway && !( nlb->flags & MSG_RAW ))
-		recvResult = NetlibHttpGatewayRecv( nlc, nlb->buf, nlb->len, nlb->flags );
+	if (nlc->usingHttpGateway && !(nlb->flags & MSG_RAW))
+		recvResult = NetlibHttpGatewayRecv(nlc, nlb->buf, nlb->len, nlb->flags);
 	else
 	{
 		if (nlc->hSsl)
-			recvResult = si.read( nlc->hSsl, nlb->buf, nlb->len, (nlb->flags & MSG_PEEK) != 0 );
+			recvResult = si.read(nlc->hSsl, nlb->buf, nlb->len, (nlb->flags & MSG_PEEK) != 0);
 		else
-			recvResult = recv( nlc->s, nlb->buf, nlb->len, nlb->flags & 0xFFFF );
+			recvResult = recv(nlc->s, nlb->buf, nlb->len, nlb->flags & 0xFFFF);
 	}
-	NetlibLeaveNestedCS( &nlc->ncsRecv );
+	NetlibLeaveNestedCS(&nlc->ncsRecv);
 	if (recvResult <= 0) 
 		return recvResult;
 
@@ -101,18 +105,20 @@ INT_PTR NetlibRecv(WPARAM wParam,LPARAM lParam)
 
 static int ConnectionListToSocketList(HANDLE *hConns, fd_set *fd, int& pending)
 {
-	struct NetlibConnection *nlcCheck;
+	NetlibConnection *nlcCheck;
 	int i;
 
 	FD_ZERO(fd);
-	for(i=0;hConns[i] && hConns[i]!=INVALID_HANDLE_VALUE && i<FD_SETSIZE;i++) {
-		nlcCheck=(struct NetlibConnection*)hConns[i];
-		if (nlcCheck->handleType!=NLH_CONNECTION && nlcCheck->handleType!=NLH_BOUNDPORT) {
+	for (i = 0; hConns[i] && hConns[i] != INVALID_HANDLE_VALUE && i < FD_SETSIZE; i++)
+	{
+		nlcCheck = (NetlibConnection*)hConns[i];
+		if (nlcCheck->handleType != NLH_CONNECTION && nlcCheck->handleType != NLH_BOUNDPORT)
+		{
 			SetLastError(ERROR_INVALID_DATA);
 			return 0;
 		}
 		FD_SET(nlcCheck->s,fd);
-		if ( si.pending( nlcCheck->hSsl ))
+		if (si.pending(nlcCheck->hSsl))
 			pending++;
 	}
 	return 1;
@@ -120,8 +126,9 @@ static int ConnectionListToSocketList(HANDLE *hConns, fd_set *fd, int& pending)
 
 INT_PTR NetlibSelect(WPARAM,LPARAM lParam)
 {
-	NETLIBSELECT *nls=(NETLIBSELECT*)lParam;
-	if (nls==NULL || nls->cbSize!=sizeof(NETLIBSELECT)) {
+	NETLIBSELECT *nls = (NETLIBSELECT*)lParam;
+	if (nls == NULL || nls->cbSize != sizeof(NETLIBSELECT))
+	{
 		SetLastError(ERROR_INVALID_PARAMETER);
 		return SOCKET_ERROR;
 	}
@@ -132,54 +139,58 @@ INT_PTR NetlibSelect(WPARAM,LPARAM lParam)
 
 	int pending = 0;
 	fd_set readfd, writefd, exceptfd;
-	WaitForSingleObject(hConnectionHeaderMutex,INFINITE);
-	if (!ConnectionListToSocketList(nls->hReadConns,&readfd,pending)
-	   || !ConnectionListToSocketList(nls->hWriteConns,&writefd,pending)
-	   || !ConnectionListToSocketList(nls->hExceptConns,&exceptfd,pending)) {
-		ReleaseMutex(hConnectionHeaderMutex);
-		return SOCKET_ERROR;
+	WaitForSingleObject(hConnectionHeaderMutex, INFINITE);
+	if (!ConnectionListToSocketList(nls->hReadConns, &readfd, pending)
+		|| !ConnectionListToSocketList(nls->hWriteConns, &writefd, pending)
+		|| !ConnectionListToSocketList(nls->hExceptConns, &exceptfd, pending))
+	{
+			ReleaseMutex(hConnectionHeaderMutex);
+			return SOCKET_ERROR;
 	}
 	ReleaseMutex(hConnectionHeaderMutex);
 	if (pending)
 		return 1;
 
-	return select(0,&readfd,&writefd,&exceptfd,nls->dwTimeout==INFINITE?NULL:&tv);
+	return select(0, &readfd, &writefd, &exceptfd, nls->dwTimeout == INFINITE ? NULL : &tv);
 }
 
 INT_PTR NetlibSelectEx(WPARAM, LPARAM lParam)
 {
-	NETLIBSELECTEX *nls=(NETLIBSELECTEX*)lParam;
-	if (nls==NULL || nls->cbSize!=sizeof(NETLIBSELECTEX)) {
+	NETLIBSELECTEX *nls = (NETLIBSELECTEX*)lParam;
+	if (nls == NULL || nls->cbSize != sizeof(NETLIBSELECTEX))
+	{
 		SetLastError(ERROR_INVALID_PARAMETER);
 		return SOCKET_ERROR;
 	}
 
 	TIMEVAL tv;
-	tv.tv_sec=nls->dwTimeout/1000;
-	tv.tv_usec=(nls->dwTimeout%1000)*1000;
-	WaitForSingleObject(hConnectionHeaderMutex,INFINITE);
+	tv.tv_sec = nls->dwTimeout / 1000;
+	tv.tv_usec = (nls->dwTimeout % 1000) * 1000;
+	WaitForSingleObject(hConnectionHeaderMutex, INFINITE);
 
 	int pending = 0;
-	fd_set readfd,writefd,exceptfd;
-	if (!ConnectionListToSocketList(nls->hReadConns,&readfd,pending)
-	   || !ConnectionListToSocketList(nls->hWriteConns,&writefd,pending)
-	   || !ConnectionListToSocketList(nls->hExceptConns,&exceptfd,pending)) {
-		ReleaseMutex(hConnectionHeaderMutex);
-		return SOCKET_ERROR;
+	fd_set readfd, writefd, exceptfd;
+	if (!ConnectionListToSocketList(nls->hReadConns, &readfd, pending)
+		|| !ConnectionListToSocketList(nls->hWriteConns, &writefd, pending)
+		|| !ConnectionListToSocketList(nls->hExceptConns, &exceptfd, pending))
+	{
+			ReleaseMutex(hConnectionHeaderMutex);
+			return SOCKET_ERROR;
 	}
 	ReleaseMutex(hConnectionHeaderMutex);
 
-	int rc = (pending) ? pending : select(0,&readfd,&writefd,&exceptfd,nls->dwTimeout==INFINITE?NULL:&tv);
+	int rc = (pending) ? pending : select(0, &readfd, &writefd, &exceptfd, nls->dwTimeout == INFINITE ? NULL : &tv);
 
-	WaitForSingleObject(hConnectionHeaderMutex,INFINITE);
+	WaitForSingleObject(hConnectionHeaderMutex, INFINITE);
 	/* go thru each passed HCONN array and grab its socket handle, then give it to FD_ISSET()
 	to see if an event happened for that socket, if it has it will be returned as TRUE (otherwise not)
 	This happens for read/write/except */
-	struct NetlibConnection *conn=NULL;
+	NetlibConnection *conn = NULL;
 	int j;
-	for (j=0; j<FD_SETSIZE; j++) {
-		conn=(struct NetlibConnection*)nls->hReadConns[j];
-		if (conn==NULL || conn==INVALID_HANDLE_VALUE) break;
+	for (j = 0; j < FD_SETSIZE; j++) 
+	{
+		conn = (NetlibConnection*)nls->hReadConns[j];
+		if (conn == NULL || conn == INVALID_HANDLE_VALUE) break;
 
 		if (si.pending(conn->hSsl))
 			nls->hReadStatus[j] = TRUE;
@@ -188,14 +199,16 @@ INT_PTR NetlibSelectEx(WPARAM, LPARAM lParam)
 		else
 			nls->hReadStatus[j] = FD_ISSET(conn->s,&readfd);
 	}
-	for (j=0; j<FD_SETSIZE; j++) {
-		conn=(struct NetlibConnection*)nls->hWriteConns[j];
-		if (conn==NULL || conn==INVALID_HANDLE_VALUE) break;
+	for (j = 0; j < FD_SETSIZE; j++)
+	{
+		conn = (NetlibConnection*)nls->hWriteConns[j];
+		if (conn == NULL || conn == INVALID_HANDLE_VALUE) break;
 		nls->hWriteStatus[j] = FD_ISSET(conn->s,&writefd);
 	}
-	for (j=0; j<FD_SETSIZE; j++) {
-		conn=(struct NetlibConnection*)nls->hExceptConns[j];
-		if (conn==NULL || conn==INVALID_HANDLE_VALUE) break;
+	for (j = 0; j < FD_SETSIZE; j++)
+	{
+		conn = (NetlibConnection*)nls->hExceptConns[j];
+		if (conn == NULL || conn == INVALID_HANDLE_VALUE) break;
 		nls->hExceptStatus[j] = FD_ISSET(conn->s,&exceptfd);
 	}
 	ReleaseMutex(hConnectionHeaderMutex);
@@ -267,16 +280,9 @@ void NetlibGetConnectionInfo(NetlibConnection* nlc, NETLIBCONNINFO *connInfo)
 
 inline bool IsAddrGlobal(const IN6_ADDR *a)
 {
-    //
-    // Check the format prefix and exclude addresses
-    // whose high 4 bits are all zero or all one.
-    // This is a cheap way of excluding v4-compatible,
-    // v4-mapped, loopback, multicast, link-local, site-local.
-    //
-    ULONG High = (a->s6_bytes[0] & 0xf0);
-    return (High != 0) && (High != 0xf0);
+	unsigned char High = a->s6_bytes[0] & 0xf0;
+	return High != 0 && High != 0xf0;
 }
-
 
 static NETLIBIPLIST* GetMyIpv6(unsigned flags)
 {
