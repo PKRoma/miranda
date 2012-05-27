@@ -105,39 +105,25 @@ bool CMsnProto::p2p_createListener(filetransfer* ft, directconnection *dc, MimeH
 
 	char szIpv4[256] = "";
 	char szIpv6[256] = "";
+	const char *szExtIp = MyConnection.GetMyExtIPStr(); 
 
 	bool ipInt = false;
 	int i4 = 0, i6 = 0;
 
-	PSOCKADDR_INET ihaddr = (PSOCKADDR_INET)CallService(MS_NETLIB_GETMYIP, 0, 0);
-	for (PSOCKADDR_INET iaddr = ihaddr; iaddr->si_family; ++iaddr)
+	NETLIBIPLIST* ihaddr = (NETLIBIPLIST*)CallService(MS_NETLIB_GETMYIP, 1, 0);
+	for (unsigned i = 0; i < ihaddr->cbNum; ++i)
 	{
-		if (iaddr->si_family == AF_INET)
+		if (strchr(ihaddr->szIp[i], ':'))
 		{
-			const PIN_ADDR addr = &iaddr->Ipv4.sin_addr;
-
+			if (i6++ != 0) strcat(szIpv6, " ");
+			strcat(szIpv6, ihaddr->szIp[i]);
+		}
+		else
+		{
 			if (i4++ != 0) strcat(szIpv4, " ");
-			ipInt |= (addr->S_un.S_addr == MyConnection.extIP);
-			strcat(szIpv4, inet_ntoa(*addr));
+			ipInt |= (strcmp(ihaddr->szIp[i], szExtIp) == 0);
+			strcat(szIpv4, ihaddr->szIp[i]);
 		}
-		else if (iaddr->si_family == AF_INET6 && IN6_IS_ADDR_GLOBAL(&iaddr->Ipv6.sin6_addr))
-		{
-			char *szIpStr = (char*)CallService(MS_NETLIB_ADDRESSTOSTRING, 0, (LPARAM)iaddr);
-			if (szIpStr)
-			{
-				if (i6++ != 0) strcat(szIpv6, " ");
-				if (*szIpStr == '[')
-				{
-					strcat(szIpv6, szIpStr + 1);
-					char *end = strchr(szIpv6, ']');
-					if (end) *end = 0;
-				}
-				else
-					strcat(szIpv6, szIpStr);
-				mir_free(szIpStr);
-			}
-		}
-
 	}
 	mir_free(ihaddr);
 
