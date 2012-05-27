@@ -426,7 +426,7 @@ typedef struct {
 #define Netlib_GetBase64EncodedBufferSize(cbDecoded)  (((cbDecoded)*4+11)/12*4+1)
 #define MS_NETLIB_BASE64ENCODE   "Netlib/Base64Encode"
 
-// Converts string representation of IP and port into numerical SOCKADDR_INET
+// Converts string representation of IP and port into numerical sockaddr_gen
 // IPv4 could supplied in formats address:port or address
 // IPv6 could supplied in formats [address]:port or [address]
 // wParam=(WPARAM)(char*) string to convert
@@ -437,8 +437,8 @@ typedef struct {
 // Converts numerical representation of IP in SOCKADDR_INET into string representation with IP and port 
 // IPv4 will be supplied in formats address:port or address
 // IPv6 will be supplied in formats [address]:port or [address]
-// wParam=(WPARAM)(int) 0 - lParam - (SOCKADDR_INET*); 1 - lParam - (unsigned) in host byte order
-// lParam=(LPARAM)(SOCKADDR_INET*) or (unsigned) numeric IP address structure
+// wParam=(WPARAM)(int) 0 - lParam - (sockaddr_gen*); 1 - lParam - (unsigned) in host byte order
+// lParam=(LPARAM)(sockaddr_gen*) or (unsigned) numeric IP address structure
 // Returns pointer to the string or NULL if not successful 
 #define MS_NETLIB_ADDRESSTOSTRING  "Netlib/AddressToString"
 

@@ -46,7 +46,7 @@
 				Name="VCLinkerTool"
 				IgnoreImportLibrary="TRUE"
 				AdditionalOptions="/filealign:512"
-				AdditionalDependencies="vc7to6.lib wsock32.lib comctl32.lib Rpcrt4.lib"
+				AdditionalDependencies="vc7to6.lib ws2_32.lib comctl32.lib Rpcrt4.lib"
 				SuppressStartupBanner="TRUE"
 				AdditionalLibraryDirectories="../../lib"
 				IgnoreAllDefaultLibraries="TRUE"
@@ -114,7 +114,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="wsock32.lib comctl32.lib Rpcrt4.lib"
+				AdditionalDependencies="ws2_32.lib comctl32.lib Rpcrt4.lib"
 				LinkIncremental="2"
 				SuppressStartupBanner="TRUE"
 				GenerateDebugInformation="TRUE"
@@ -178,7 +178,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				IgnoreImportLibrary="TRUE"
-				AdditionalDependencies="wsock32.lib comctl32.lib Rpcrt4.lib"
+				AdditionalDependencies="ws2_32.lib comctl32.lib Rpcrt4.lib"
 				LinkIncremental="2"
 				SuppressStartupBanner="TRUE"
 				GenerateDebugInformation="TRUE"
@@ -248,7 +248,7 @@
 				Name="VCLinkerTool"
 				IgnoreImportLibrary="TRUE"
 				AdditionalOptions="/filealign:512"
-				AdditionalDependencies="vc7to6.lib wsock32.lib comctl32.lib Rpcrt4.lib"
+				AdditionalDependencies="vc7to6.lib ws2_32.lib comctl32.lib Rpcrt4.lib"
 				AdditionalLibraryDirectories="../../lib"
 				IgnoreAllDefaultLibraries="TRUE"
 				GenerateDebugInformation="TRUE"

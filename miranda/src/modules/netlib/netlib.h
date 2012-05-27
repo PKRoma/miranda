@@ -180,8 +180,8 @@ INT_PTR NetlibSelect(WPARAM wParam,LPARAM lParam);
 INT_PTR NetlibSelectEx(WPARAM wParam,LPARAM lParam);
 INT_PTR NetlibShutdown(WPARAM wParam,LPARAM lParam);
 
-bool NetlibStringToAddress(const char* str, SOCKADDR_INET *addr);
-char* NetlibAddressToString(PSOCKADDR_INET addr);
+bool NetlibStringToAddress(const char* str, sockaddr_gen* addr);
+char* NetlibAddressToString(sockaddr_gen* addr);
 void NetlibGetConnectionInfo(NetlibConnection* nlc, NETLIBCONNINFO *connInfo);
 NETLIBIPLIST* GetMyIp(unsigned flags);
 

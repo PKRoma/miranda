@@ -427,7 +427,7 @@ static bool my_connectIPv4(NetlibConnection *nlc, NETLIBOPENCONNECTION * nloc)
 	{
 		sin.sin_addr.s_addr = *(u_long*)*har;
 
-		char* szIp = NetlibAddressToString((PSOCKADDR_INET)&sin);
+		char* szIp = NetlibAddressToString((sockaddr_gen*)&sin);
 		NetlibLogf(nlc->nlu,"(%p) Connecting to ip %s ....", nlc, szIp);
 		mir_free(szIp);
 
@@ -603,7 +603,7 @@ static bool my_connectIPv6(NetlibConnection *nlc, NETLIBOPENCONNECTION * nloc)
 
 	for (ai = air; ai && !Miranda_Terminated(); ai = ai->ai_next)
 	{
-		char* szIp = NetlibAddressToString((PSOCKADDR_INET)ai->ai_addr);
+		char* szIp = NetlibAddressToString((sockaddr_gen*)ai->ai_addr);
 		NetlibLogf(nlc->nlu,"(%p) Connecting to ip %s ....", nlc, szIp);
 		mir_free(szIp);
 retry:
