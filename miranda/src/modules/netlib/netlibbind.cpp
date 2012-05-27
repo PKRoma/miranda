@@ -132,7 +132,7 @@ int NetlibFreeBoundPort(struct NetlibBoundPort *nlbp)
 static unsigned __stdcall NetlibBindAcceptThread(void* param)
 {
 	SOCKET s;
-	sockaddr_gen sin;
+	SOCKADDR_INET_M sin;
 	int sinLen;
 	struct NetlibConnection *nlc;
 	struct NetlibBoundPort *nlbp = (NetlibBoundPort*)param;
@@ -175,7 +175,7 @@ static unsigned __stdcall NetlibBindAcceptThread(void* param)
 		NetlibInitializeNestedCS(&nlc->ncsSend);
 		NetlibInitializeNestedCS(&nlc->ncsRecv);
 		
-		if (nlbp->pfnNewConnectionV2) nlbp->pfnNewConnectionV2(nlc, ntohl(sin.AddressIn.sin_addr.S_un.S_addr), nlbp->pExtra);
+		if (nlbp->pfnNewConnectionV2) nlbp->pfnNewConnectionV2(nlc, ntohl(sin.Ipv4.sin_addr.S_un.S_addr), nlbp->pExtra);
 	}
 	NetlibUPnPDeletePortMapping(nlbp->wExPort, "TCP");
 	return 0;
@@ -282,15 +282,15 @@ INT_PTR NetlibBindPort(WPARAM wParam, LPARAM lParam)
 	}
 
 	{	
-		sockaddr_gen sin = {0};
+		SOCKADDR_INET_M sin = {0};
 		int len = sizeof(sin);
-		if (!getsockname(nlbp->s, &sin.Address, &len))
+		if (!getsockname(nlbp->s, (PSOCKADDR)&sin, &len))
 		{
-			nlb->wPort = ntohs(sin.AddressIn.sin_port);
-			nlb->dwInternalIP = ntohl(sin.AddressIn.sin_addr.S_un.S_addr);
+			nlb->wPort = ntohs(sin.Ipv4.sin_port);
+			nlb->dwInternalIP = ntohl(sin.Ipv4.sin_addr.S_un.S_addr);
 		}
-		else if (!getsockname(nlbp->s6, &sin.Address, &len))
-			nlb->wPort = ntohs(sin.AddressIn6.sin6_port);
+		else if (!getsockname(nlbp->s6, (PSOCKADDR)&sin, &len))
+			nlb->wPort = ntohs(sin.Ipv6.sin6_port);
 		else
 		{
 			NetlibLogf(nlu,"%s %d: %s() failed (%u)",__FILE__,__LINE__,"getsockname",WSAGetLastError());

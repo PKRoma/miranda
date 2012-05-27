@@ -353,20 +353,20 @@ static INT_PTR NetlibGetSocket(WPARAM wParam, LPARAM)
 
 INT_PTR NetlibStringToAddressSrv(WPARAM wParam, LPARAM lParam)
 {
-	return (INT_PTR)!NetlibStringToAddress((char*)wParam, (sockaddr_gen*)lParam);
+	return (INT_PTR)!NetlibStringToAddress((char*)wParam, (SOCKADDR_INET_M*)lParam);
 }
 
 INT_PTR NetlibAddressToStringSrv(WPARAM wParam, LPARAM lParam)
 {
 	if (wParam)
 	{
-		sockaddr_gen iaddr = {0};
-		iaddr.AddressIn.sin_family = AF_INET;
-		iaddr.AddressIn.sin_addr.s_addr = htonl((unsigned)lParam);
+		SOCKADDR_INET_M iaddr = {0};
+		iaddr.Ipv4.sin_family = AF_INET;
+		iaddr.Ipv4.sin_addr.s_addr = htonl((unsigned)lParam);
 		return (INT_PTR)NetlibAddressToString(&iaddr);
 	}
 	else
-		return (INT_PTR)NetlibAddressToString((sockaddr_gen*)lParam);
+		return (INT_PTR)NetlibAddressToString((SOCKADDR_INET_M*)lParam);
 }
 
 INT_PTR NetlibGetConnectionInfoSrv(WPARAM wParam, LPARAM lParam)

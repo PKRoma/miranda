@@ -416,7 +416,7 @@ static bool my_connectIPv4(NetlibConnection *nlc, NETLIBOPENCONNECTION * nloc)
 	}
 	else
 	{
-		if (!nloc || !nloc->szHost || nloc->szHost[0] == '[') return false;
+		if (!nloc || !nloc->szHost || nloc->szHost[0] == '[' || strchr(nloc->szHost, ':')) return false;
 		NetlibLogf(nlc->nlu,"(%p) Connecting to server %s:%d....", nlc, nloc->szHost, nloc->wPort);
 
 		sin.sin_port = htons(nloc->wPort);
@@ -427,7 +427,7 @@ static bool my_connectIPv4(NetlibConnection *nlc, NETLIBOPENCONNECTION * nloc)
 	{
 		sin.sin_addr.s_addr = *(u_long*)*har;
 
-		char* szIp = NetlibAddressToString((sockaddr_gen*)&sin);
+		char* szIp = NetlibAddressToString((SOCKADDR_INET_M*)&sin);
 		NetlibLogf(nlc->nlu,"(%p) Connecting to ip %s ....", nlc, szIp);
 		mir_free(szIp);
 
@@ -603,7 +603,7 @@ static bool my_connectIPv6(NetlibConnection *nlc, NETLIBOPENCONNECTION * nloc)
 
 	for (ai = air; ai && !Miranda_Terminated(); ai = ai->ai_next)
 	{
-		char* szIp = NetlibAddressToString((sockaddr_gen*)ai->ai_addr);
+		char* szIp = NetlibAddressToString((SOCKADDR_INET_M*)ai->ai_addr);
 		NetlibLogf(nlc->nlu,"(%p) Connecting to ip %s ....", nlc, szIp);
 		mir_free(szIp);
 retry:
