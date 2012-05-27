@@ -1501,21 +1501,11 @@ void MSN_MakeDigest(const char* chl, char* dgst)
 
 char* GetGlobalIp(void)
 {
-	PSOCKADDR_INET ihaddr = (PSOCKADDR_INET)CallService(MS_NETLIB_GETMYIP, 0, 0);
-	for (PSOCKADDR_INET iaddr = ihaddr; iaddr->si_family; ++iaddr)
+	NETLIBIPLIST* ihaddr = (NETLIBIPLIST*)CallService(MS_NETLIB_GETMYIP, 1, 0);
+	for (unsigned i = 0; i < ihaddr->cbNum; ++i)
 	{
-		if (iaddr->si_family == AF_INET6 && IN6_IS_ADDR_GLOBAL(&iaddr->Ipv6.sin6_addr))
-		{
-			char *szIpStr = (char*)CallService(MS_NETLIB_ADDRESSTOSTRING, 0, (LPARAM)iaddr);
-			if (szIpStr)
-			{
-				char *end = strchr(szIpStr, ']');
-				if (end) *end = 0;
-				memmove(szIpStr, szIpStr + 1, strlen(szIpStr));
-				mir_free(ihaddr);
-				return szIpStr;
-			}
-		}
+		if (strchr(ihaddr->szIp[i], ':'))
+				return mir_strdup(ihaddr->szIp[i]);
 	}
 	mir_free(ihaddr);
 	return NULL;

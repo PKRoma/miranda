@@ -23,8 +23,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <m_stdhdr.h>
 
-#include <winsock2.h>
-#include <ws2tcpip.h>
 #include <windows.h>
 #include <commctrl.h>
 
