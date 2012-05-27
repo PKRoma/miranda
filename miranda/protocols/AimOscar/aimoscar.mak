@@ -113,7 +113,7 @@ BSC32_FLAGS=/nologo /o"$(OUTDIR)\aimoscar.bsc"
 BSC32_SBRS= \
 	
 LINK32=link.exe
-LINK32_FLAGS=wsock32.lib kernel32.lib user32.lib gdi32.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib /nologo /dll /incremental:no /pdb:"$(OUTDIR)\Aim.pdb" /map:"$(INTDIR)\Aim.map" /debug /machine:I386 /out:"../../bin/release/plugins/Aim.dll" /implib:"$(OUTDIR)\Aim.lib" /ALIGN:4096 /ignore:4108 
+LINK32_FLAGS=ws2_32.lib kernel32.lib user32.lib gdi32.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib /nologo /dll /incremental:no /pdb:"$(OUTDIR)\Aim.pdb" /map:"$(INTDIR)\Aim.map" /debug /machine:I386 /out:"../../bin/release/plugins/Aim.dll" /implib:"$(OUTDIR)\Aim.lib" /ALIGN:4096 /ignore:4108 
 LINK32_OBJS= \
 	"$(INTDIR)\aim.obj" \
 	"$(INTDIR)\avatars.obj" \
@@ -290,7 +290,7 @@ BSC32_SBRS= \
 <<
 
 LINK32=link.exe
-LINK32_FLAGS=wsock32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /incremental:yes /pdb:"$(OUTDIR)\Aim.pdb" /debug /machine:I386 /out:"../../bin/debug/plugins/Aim.dll" /implib:"$(OUTDIR)\Aim.lib" /pdbtype:sept 
+LINK32_FLAGS=ws2_32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /incremental:yes /pdb:"$(OUTDIR)\Aim.pdb" /debug /machine:I386 /out:"../../bin/debug/plugins/Aim.dll" /implib:"$(OUTDIR)\Aim.lib" /pdbtype:sept 
 LINK32_OBJS= \
 	"$(INTDIR)\aim.obj" \
 	"$(INTDIR)\avatars.obj" \
@@ -409,7 +409,7 @@ BSC32_FLAGS=/nologo /o"$(OUTDIR)\aimoscar.bsc"
 BSC32_SBRS= \
 	
 LINK32=link.exe
-LINK32_FLAGS=wsock32.lib kernel32.lib user32.lib gdi32.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib /nologo /dll /incremental:no /pdb:"$(OUTDIR)\Aim.pdb" /map:"$(INTDIR)\Aim.map" /debug /machine:I386 /out:"../../bin/release unicode/plugins/Aim.dll" /implib:"$(OUTDIR)\Aim.lib" /ALIGN:4096 /ignore:4108 
+LINK32_FLAGS=ws2_32.lib kernel32.lib user32.lib gdi32.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib /nologo /dll /incremental:no /pdb:"$(OUTDIR)\Aim.pdb" /map:"$(INTDIR)\Aim.map" /debug /machine:I386 /out:"../../bin/release unicode/plugins/Aim.dll" /implib:"$(OUTDIR)\Aim.lib" /ALIGN:4096 /ignore:4108 
 LINK32_OBJS= \
 	"$(INTDIR)\aim.obj" \
 	"$(INTDIR)\avatars.obj" \
@@ -586,7 +586,7 @@ BSC32_SBRS= \
 <<
 
 LINK32=link.exe
-LINK32_FLAGS=wsock32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /incremental:yes /pdb:"$(OUTDIR)\Aim.pdb" /debug /machine:I386 /out:"../../bin/debug unicode/plugins/Aim.dll" /implib:"$(OUTDIR)\Aim.lib" /pdbtype:sept 
+LINK32_FLAGS=ws2_32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /incremental:yes /pdb:"$(OUTDIR)\Aim.pdb" /debug /machine:I386 /out:"../../bin/debug unicode/plugins/Aim.dll" /implib:"$(OUTDIR)\Aim.lib" /pdbtype:sept 
 LINK32_OBJS= \
 	"$(INTDIR)\aim.obj" \
 	"$(INTDIR)\avatars.obj" \
