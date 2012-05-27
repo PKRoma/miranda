@@ -114,7 +114,7 @@ BSC32_FLAGS=/nologo /o"$(OUTDIR)\Yahoo.bsc"
 BSC32_SBRS= \
 	
 LINK32=link.exe
-LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib comdlg32.lib advapi32.lib shell32.lib wsock32.lib /nologo /dll /incremental:no /pdb:"$(OUTDIR)\Yahoo.pdb" /map:"$(INTDIR)\Yahoo.map" /debug /machine:I386 /out:"../../Bin/Release/Plugins/Yahoo.dll" /implib:"$(OUTDIR)\Yahoo.lib" 
+LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib comdlg32.lib advapi32.lib shell32.lib ws2_32.lib /nologo /dll /incremental:no /pdb:"$(OUTDIR)\Yahoo.pdb" /map:"$(INTDIR)\Yahoo.map" /debug /machine:I386 /out:"../../Bin/Release/Plugins/Yahoo.dll" /implib:"$(OUTDIR)\Yahoo.lib" 
 LINK32_OBJS= \
 	"$(INTDIR)\crypt.obj" \
 	"$(INTDIR)\libyahoo2.obj" \
@@ -233,7 +233,7 @@ BSC32_FLAGS=/nologo /o"$(OUTDIR)\Yahoo.bsc"
 BSC32_SBRS= \
 	
 LINK32=link.exe
-LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib comdlg32.lib advapi32.lib shell32.lib wsock32.lib /nologo /dll /incremental:yes /pdb:"$(OUTDIR)\Yahoo.pdb" /debug /machine:I386 /out:"../../Bin/Debug/Plugins/Yahoo.dll" /implib:"$(OUTDIR)\Yahoo.lib" /pdbtype:sept 
+LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib comdlg32.lib advapi32.lib shell32.lib ws2_32.lib /nologo /dll /incremental:yes /pdb:"$(OUTDIR)\Yahoo.pdb" /debug /machine:I386 /out:"../../Bin/Debug/Plugins/Yahoo.dll" /implib:"$(OUTDIR)\Yahoo.lib" /pdbtype:sept 
 LINK32_OBJS= \
 	"$(INTDIR)\crypt.obj" \
 	"$(INTDIR)\libyahoo2.obj" \
@@ -352,7 +352,7 @@ BSC32_FLAGS=/nologo /o"$(OUTDIR)\Yahoo.bsc"
 BSC32_SBRS= \
 	
 LINK32=link.exe
-LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib comdlg32.lib advapi32.lib shell32.lib wsock32.lib /nologo /dll /incremental:yes /pdb:"$(OUTDIR)\Yahoo.pdb" /debug /machine:I386 /out:"../../Bin/Debug Unicode/Plugins/Yahoo.dll" /implib:"$(OUTDIR)\Yahoo.lib" /pdbtype:sept 
+LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib comdlg32.lib advapi32.lib shell32.lib ws2_32.lib /nologo /dll /incremental:yes /pdb:"$(OUTDIR)\Yahoo.pdb" /debug /machine:I386 /out:"../../Bin/Debug Unicode/Plugins/Yahoo.dll" /implib:"$(OUTDIR)\Yahoo.lib" /pdbtype:sept 
 LINK32_OBJS= \
 	"$(INTDIR)\crypt.obj" \
 	"$(INTDIR)\libyahoo2.obj" \
@@ -471,7 +471,7 @@ BSC32_FLAGS=/nologo /o"$(OUTDIR)\Yahoo.bsc"
 BSC32_SBRS= \
 	
 LINK32=link.exe
-LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib comdlg32.lib advapi32.lib shell32.lib wsock32.lib /nologo /dll /incremental:no /pdb:"$(OUTDIR)\Yahoo.pdb" /map:"$(INTDIR)\Yahoo.map" /debug /machine:I386 /out:"../../Bin/Release Unicode/Plugins/Yahoo.dll" /implib:"$(OUTDIR)\Yahoo.lib" 
+LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib comdlg32.lib advapi32.lib shell32.lib ws2_32.lib /nologo /dll /incremental:no /pdb:"$(OUTDIR)\Yahoo.pdb" /map:"$(INTDIR)\Yahoo.map" /debug /machine:I386 /out:"../../Bin/Release Unicode/Plugins/Yahoo.dll" /implib:"$(OUTDIR)\Yahoo.lib" 
 LINK32_OBJS= \
 	"$(INTDIR)\crypt.obj" \
 	"$(INTDIR)\libyahoo2.obj" \

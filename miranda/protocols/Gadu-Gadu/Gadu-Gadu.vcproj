@@ -40,7 +40,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="wsock32.lib version.lib"
+				AdditionalDependencies="ws2_32.lib version.lib"
 				OutputFile="../../bin/debug/plugins/GG.dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
@@ -111,7 +111,7 @@
 				Name="VCLinkerTool"
 				IgnoreImportLibrary="TRUE"
 				AdditionalOptions="/ALIGN:4096 /ignore:4108"
-				AdditionalDependencies="vc7to6.lib wsock32.lib version.lib"
+				AdditionalDependencies="vc7to6.lib ws2_32.lib version.lib"
 				OutputFile="$(OutDir)/GG.dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
@@ -179,7 +179,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="wsock32.lib version.lib"
+				AdditionalDependencies="ws2_32.lib version.lib"
 				OutputFile="../../bin/debug/plugins/GG.dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
@@ -251,7 +251,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/ALIGN:4096 /ignore:4108"
-				AdditionalDependencies="vc7to6.lib wsock32.lib version.lib"
+				AdditionalDependencies="vc7to6.lib ws2_32.lib version.lib"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
 				AdditionalLibraryDirectories="../../lib"
