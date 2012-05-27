@@ -265,7 +265,7 @@ void NetlibGetConnectionInfo(NetlibConnection* nlc, NETLIBCONNINFO *connInfo)
 	}
 }
 
-static PSOCKADDR_INET GetMyIpv6(void)
+static NETLIBIPLIST* GetMyIpv6(unsigned flags)
 {
 	addrinfo *air = NULL, *ai, hints = {0};
 	const char *szMyHost = ""; 
@@ -279,33 +279,35 @@ static PSOCKADDR_INET GetMyIpv6(void)
 	unsigned n = 0;
 	for (ai = air; ai; ai = ai->ai_next)
 	{
-		if (ai->ai_family == AF_INET || ai->ai_family == AF_INET6)
+		PSOCKADDR_INET iaddr = (PSOCKADDR_INET)ai->ai_addr;
+		if (ai->ai_family == AF_INET ||
+			(ai->ai_family == AF_INET6 && 
+			(!(flags & 1) || IN6_IS_ADDR_GLOBAL(&iaddr->Ipv6.sin6_addr))))
 			++n;
 	}
 
-	PSOCKADDR_INET addr = (PSOCKADDR_INET)mir_calloc((n + 1) * sizeof(SOCKADDR_INET));
+	NETLIBIPLIST *addr = (NETLIBIPLIST*)mir_calloc(n * 64 + 4);
+	addr->cbNum = n;
 
 	unsigned i = 0;
 	for (ai = air; ai; ai = ai->ai_next)
 	{
-		if (ai->ai_family == AF_INET)
+		PSOCKADDR_INET iaddr = (PSOCKADDR_INET)ai->ai_addr;
+		if (ai->ai_family == AF_INET ||
+			(ai->ai_family == AF_INET6 && 
+			(!(flags & 1) || IN6_IS_ADDR_GLOBAL(&iaddr->Ipv6.sin6_addr))))
 		{
-			addr[i].si_family = AF_INET;
-			addr[i].Ipv4 = *(PSOCKADDR_IN)ai->ai_addr;
-			++i;
-		}
-		else if (ai->ai_family == AF_INET6)
-		{
-			addr[i].si_family = AF_INET6;
-			addr[i].Ipv6 = *(PSOCKADDR_IN6)ai->ai_addr;
-			++i;
+
+			char* szIp = NetlibAddressToString(iaddr);
+			strcpy(addr->szIp[i++], szIp);
+			mir_free(szIp);
 		}
 	}
 	MyFreeaddrinfo(air);
 	return addr;
 }
 
-static PSOCKADDR_INET GetMyIpv4(void)
+static NETLIBIPLIST* GetMyIpv4(void)
 {
 	char hostname[256] = "";
 
@@ -315,18 +317,16 @@ static PSOCKADDR_INET GetMyIpv4(void)
 	unsigned n;
 	for (n = 0; he->h_addr_list[n]; ++n) ;
 
-	PSOCKADDR_INET addr = (PSOCKADDR_INET)mir_calloc((n + 1) * sizeof(SOCKADDR_INET));
+	NETLIBIPLIST *addr = (NETLIBIPLIST*)mir_calloc(n * 64 + 4);
+	addr->cbNum = n;
 
 	for (unsigned i = 0; i < n; ++i) 
-	{
-		addr[i].si_family     = AF_INET;
-		addr[i].Ipv4.sin_addr = *(PIN_ADDR)he->h_addr_list[i];
-	}
+		strcpy(addr->szIp[i], inet_ntoa(*(PIN_ADDR)he->h_addr_list[i]));
 
 	return addr;
 }
 
-PSOCKADDR_INET GetMyIp(void)
+NETLIBIPLIST* GetMyIp(unsigned flags)
 {
-	return (MyGetaddrinfo && MyFreeaddrinfo) ? GetMyIpv6() : GetMyIpv4();
+	return (MyGetaddrinfo && MyFreeaddrinfo) ? GetMyIpv6(flags) : GetMyIpv4();
 }

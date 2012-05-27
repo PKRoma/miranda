@@ -356,9 +356,17 @@ INT_PTR NetlibStringToAddressSrv(WPARAM wParam, LPARAM lParam)
 	return (INT_PTR)!NetlibStringToAddress((char*)wParam, (PSOCKADDR_INET)lParam);
 }
 
-INT_PTR NetlibAddressToStringSrv(WPARAM, LPARAM lParam)
+INT_PTR NetlibAddressToStringSrv(WPARAM wParam, LPARAM lParam)
 {
-	return (INT_PTR)NetlibAddressToString((PSOCKADDR_INET)lParam);
+	if (wParam)
+	{
+		SOCKADDR_INET iaddr = {0};
+		iaddr.si_family = AF_INET;
+		iaddr.Ipv4.sin_addr.s_addr = htonl((unsigned)lParam);
+		return (INT_PTR)NetlibAddressToString(&iaddr);
+	}
+	else
+		return (INT_PTR)NetlibAddressToString((PSOCKADDR_INET)lParam);
 }
 
 INT_PTR NetlibGetConnectionInfoSrv(WPARAM wParam, LPARAM lParam)
@@ -367,9 +375,9 @@ INT_PTR NetlibGetConnectionInfoSrv(WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
-INT_PTR NetlibGetMyIp(WPARAM, LPARAM)
+INT_PTR NetlibGetMyIp(WPARAM wParam, LPARAM)
 {
-	return (INT_PTR)GetMyIp();
+	return (INT_PTR)GetMyIp((unsigned)wParam);
 }
 
 INT_PTR NetlibShutdown(WPARAM wParam, LPARAM)

@@ -437,13 +437,14 @@ typedef struct {
 // Converts numerical representation of IP in SOCKADDR_INET into string representation with IP and port 
 // IPv4 will be supplied in formats address:port or address
 // IPv6 will be supplied in formats [address]:port or [address]
-// lParam=(LPARAM)(SOCKADDR_INET*) numeric IP address structure
+// wParam=(WPARAM)(int) 0 - lParam - (SOCKADDR_INET*); 1 - lParam - (unsigned) in host byte order
+// lParam=(LPARAM)(SOCKADDR_INET*) or (unsigned) numeric IP address structure
 // Returns pointer to the string or NULL if not successful 
 #define MS_NETLIB_ADDRESSTOSTRING  "Netlib/AddressToString"
 
 typedef struct {
 	int cbSize;
-	char szIpPort[128];
+	char szIpPort[64];
 	unsigned dwIpv4;
 	WORD wPort;
 } NETLIBCONNINFO;
@@ -456,8 +457,14 @@ typedef struct {
 // Returns 0 if successful  
 #define MS_NETLIB_GETCONNECTIONINFO  "Netlib/GetConnectionInfo"
 
+typedef struct {
+	unsigned cbNum;
+	char szIp[1][64];
+} NETLIBIPLIST;
+
 // Get connection Information
-// Returns (INT_PTR)(SOCKADDR_INET*) numeric IP address address array 
+// wParam=(WPARAM)IP filter 1 - return global only IPv6 address, 0 all IPs
+// Returns (INT_PTR)(NETLIBIPLIST*) numeric IP address address array 
 // the last element of the array is all 0s, 0 if not successful
 #define MS_NETLIB_GETMYIP  "Netlib/GetMyIP"
 

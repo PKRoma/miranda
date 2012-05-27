@@ -183,7 +183,7 @@ INT_PTR NetlibShutdown(WPARAM wParam,LPARAM lParam);
 bool NetlibStringToAddress(const char* str, SOCKADDR_INET *addr);
 char* NetlibAddressToString(PSOCKADDR_INET addr);
 void NetlibGetConnectionInfo(NetlibConnection* nlc, NETLIBCONNINFO *connInfo);
-PSOCKADDR_INET GetMyIp(void);
+NETLIBIPLIST* GetMyIp(unsigned flags);
 
 //netlibupnp.c
 bool NetlibUPnPAddPortMapping(WORD intport, char *proto,
