@@ -30,7 +30,7 @@
 
 #define FREEIMAGE_MAJOR_VERSION   3
 #define FREEIMAGE_MINOR_VERSION   15
-#define FREEIMAGE_RELEASE_SERIAL  1
+#define FREEIMAGE_RELEASE_SERIAL  3
 
 // Compiler options ---------------------------------------------------------
 
@@ -141,6 +141,8 @@ typedef uint8_t BYTE;
 typedef uint16_t WORD;
 typedef uint32_t DWORD;
 typedef int32_t LONG;
+typedef int64_t FIINT64;
+typedef uint64_t FIUINT64;
 #else
 // MS is not C99 ISO compliant
 typedef long BOOL;
@@ -148,6 +150,8 @@ typedef unsigned char BYTE;
 typedef unsigned short WORD;
 typedef unsigned long DWORD;
 typedef long LONG;
+typedef signed __int64 FIINT64;
+typedef unsigned __int64 FIUINT64;
 #endif // _MSC_VER
 
 #if (defined(_WIN32) || defined(__WIN32__))
@@ -525,7 +529,10 @@ FI_ENUM(FREE_IMAGE_MDTYPE) {
 	FIDT_FLOAT		= 11,	// 32-bit IEEE floating point 
 	FIDT_DOUBLE		= 12,	// 64-bit IEEE floating point 
 	FIDT_IFD		= 13,	// 32-bit unsigned integer (offset) 
-	FIDT_PALETTE	= 14	// 32-bit RGBQUAD 
+	FIDT_PALETTE	= 14,	// 32-bit RGBQUAD 
+	FIDT_LONG8		= 16,	// 64-bit unsigned integer 
+	FIDT_SLONG8		= 17,	// 64-bit signed integer
+	FIDT_IFD8		= 18	// 64-bit unsigned integer (offset)
 };
 
 /**
@@ -823,6 +830,7 @@ DLL_API BOOL DLL_CALLCONV FreeImage_FIFSupportsNoPixels(FREE_IMAGE_FORMAT fif);
 // Multipaging interface ----------------------------------------------------
 
 DLL_API FIMULTIBITMAP * DLL_CALLCONV FreeImage_OpenMultiBitmap(FREE_IMAGE_FORMAT fif, const char *filename, BOOL create_new, BOOL read_only, BOOL keep_cache_in_memory FI_DEFAULT(FALSE), int flags FI_DEFAULT(0));
+DLL_API FIMULTIBITMAP * DLL_CALLCONV FreeImage_OpenMultiBitmapU(FREE_IMAGE_FORMAT fif, const wchar_t *filename, BOOL create_new, BOOL read_only, BOOL keep_cache_in_memory FI_DEFAULT(FALSE), int flags FI_DEFAULT(0));
 DLL_API FIMULTIBITMAP * DLL_CALLCONV FreeImage_OpenMultiBitmapFromHandle(FREE_IMAGE_FORMAT fif, FreeImageIO *io, fi_handle handle, int flags FI_DEFAULT(0));
 DLL_API BOOL DLL_CALLCONV FreeImage_SaveMultiBitmapToHandle(FREE_IMAGE_FORMAT fif, FIMULTIBITMAP *bitmap, FreeImageIO *io, fi_handle handle, int flags FI_DEFAULT(0));
 DLL_API BOOL DLL_CALLCONV FreeImage_CloseMultiBitmap(FIMULTIBITMAP *bitmap, int flags FI_DEFAULT(0));

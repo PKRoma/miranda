@@ -323,6 +323,22 @@ FreeImage_OpenMultiBitmap(FREE_IMAGE_FORMAT fif, const char *filename, BOOL crea
 }
 
 FIMULTIBITMAP * DLL_CALLCONV
+FreeImage_OpenMultiBitmapU(FREE_IMAGE_FORMAT fif, const wchar_t *filename, BOOL create_new, BOOL read_only, BOOL keep_cache_in_memory, int flags) {
+
+	// convert to single character - no national chars in extensions
+	char *extension = (char *)malloc(wcslen(filename)+1);
+	unsigned int i=0;
+	for(; i < wcslen(filename); i++) // convert 16-bit to 8-bit
+		extension[i] = (char)(filename[i] & 0x00FF);
+	// set terminating 0
+	extension[i]=0;
+	FIMULTIBITMAP *fRet = FreeImage_OpenMultiBitmap(fif, extension, create_new, read_only, keep_cache_in_memory, flags);
+	free(extension);
+
+	return fRet;
+}
+
+FIMULTIBITMAP * DLL_CALLCONV
 FreeImage_OpenMultiBitmapFromHandle(FREE_IMAGE_FORMAT fif, FreeImageIO *io, fi_handle handle, int flags) {
 	try {
 		BOOL read_only = FALSE;	// modifications (if any) will be stored into the memory cache
@@ -617,89 +633,78 @@ FreeImage_GetPageCount(FIMULTIBITMAP *bitmap) {
 	return 0;
 }
 
+static BlockReference* 
+FreeImage_SavePageToBlock(MULTIBITMAPHEADER *header, FIBITMAP *data) {
+	if (header->read_only || !header->locked_pages.empty())
+		return NULL;
+
+	DWORD compressed_size = 0;
+	BYTE *compressed_data = NULL;
+
+	// compress the bitmap data
+
+	// open a memory handle
+	FIMEMORY *hmem = FreeImage_OpenMemory();
+	if(hmem==NULL) return NULL;
+	// save the file to memory
+	if(!FreeImage_SaveToMemory(header->cache_fif, data, hmem, 0)) {
+		FreeImage_CloseMemory(hmem);
+		return NULL;
+	}
+	// get the buffer from the memory stream
+	if(!FreeImage_AcquireMemory(hmem, &compressed_data, &compressed_size)) {
+		FreeImage_CloseMemory(hmem);
+		return NULL;
+	}
+
+	// write the compressed data to the cache
+	int ref = header->m_cachefile->writeFile(compressed_data, compressed_size);
+	// get rid of the compressed data
+	FreeImage_CloseMemory(hmem);
+
+	return new(std::nothrow) BlockReference(ref, compressed_size);
+}
+
 void DLL_CALLCONV
 FreeImage_AppendPage(FIMULTIBITMAP *bitmap, FIBITMAP *data) {
-	if ((bitmap) && (data)) {
-		MULTIBITMAPHEADER *header = FreeImage_GetMultiBitmapHeader(bitmap);
+	if (!bitmap || !data) 
+		return;
 
-		if ((!header->read_only) && (header->locked_pages.empty())) {
-			DWORD compressed_size = 0;
-			BYTE *compressed_data = NULL;
+	MULTIBITMAPHEADER *header = FreeImage_GetMultiBitmapHeader(bitmap);
 
-			// compress the bitmap data
+	BlockReference *block = FreeImage_SavePageToBlock(header, data);
+	if(block==NULL) return;
 
-			// open a memory handle
-			FIMEMORY *hmem = FreeImage_OpenMemory();
-			// save the file to memory
-			FreeImage_SaveToMemory(header->cache_fif, data, hmem, 0);
-			// get the buffer from the memory stream
-			FreeImage_AcquireMemory(hmem, &compressed_data, &compressed_size);
-
-			// write the compressed data to the cache
-
-			int ref = header->m_cachefile->writeFile(compressed_data, compressed_size);
-
-			BlockReference *block = new BlockReference(ref, compressed_size);
-
-			// get rid of the compressed data
-
-			FreeImage_CloseMemory(hmem);
-
-			// add the block
-
-			header->m_blocks.push_back((BlockTypeS *)block);
-			header->changed = TRUE;
-			header->page_count = -1;
-		}
-	}
+	// add the block
+	header->m_blocks.push_back((BlockTypeS *)block);
+	header->changed = TRUE;
+	header->page_count = -1;
 }
 
 void DLL_CALLCONV
 FreeImage_InsertPage(FIMULTIBITMAP *bitmap, int page, FIBITMAP *data) {
-	if ((bitmap) && (data)) {
-		if (page < FreeImage_GetPageCount(bitmap)) {
-			MULTIBITMAPHEADER *header = FreeImage_GetMultiBitmapHeader(bitmap);
+	if (!bitmap || !data) 
+		return;
 
-			if ((!header->read_only) && (header->locked_pages.empty())) {
-				DWORD compressed_size = 0;
-				BYTE *compressed_data = NULL;
+	if (page >= FreeImage_GetPageCount(bitmap)) 
+		return;
+			
+	MULTIBITMAPHEADER *header = FreeImage_GetMultiBitmapHeader(bitmap);
 
-				// compress the bitmap data
+	BlockReference *block = FreeImage_SavePageToBlock(header, data);
+	if(block==NULL) return;
 
-				// open a memory handle
-				FIMEMORY *hmem = FreeImage_OpenMemory();
-				// save the file to memory
-				FreeImage_SaveToMemory(header->cache_fif, data, hmem, 0);
-				// get the buffer from the memory stream
-				FreeImage_AcquireMemory(hmem, &compressed_data, &compressed_size);
+	// add a block
+	if (page > 0) {
+		BlockListIterator block_source = FreeImage_FindBlock(bitmap, page);		
 
-				// write the compressed data to the cache
-
-				int ref = header->m_cachefile->writeFile(compressed_data, compressed_size);
-
-				// add a block
-
-				if (page > 0) {
-					BlockListIterator block_source = FreeImage_FindBlock(bitmap, page);
-
-					BlockReference *block = new BlockReference(ref, compressed_size);
-
-					header->m_blocks.insert(block_source, (BlockTypeS *)block);
-				} else {
-					BlockReference *block = new BlockReference(ref, compressed_size);
-
-					header->m_blocks.push_front((BlockTypeS *)block);
-				}
-
-				// get rid of the compressed buffer
-
-				FreeImage_CloseMemory(hmem);
-
-				header->changed = TRUE;
-				header->page_count = -1;
-			}
-		}
+		header->m_blocks.insert(block_source, (BlockTypeS *)block);
+	} else {
+		header->m_blocks.push_front((BlockTypeS *)block);
 	}
+
+	header->changed = TRUE;
+	header->page_count = -1;
 }
 
 void DLL_CALLCONV
