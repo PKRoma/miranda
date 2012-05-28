@@ -93,7 +93,6 @@
 				LinkTimeCodeGeneration="1"
 				BaseAddress="0x5130000"
 				RandomizedBaseAddress="1"
-				DataExecutionPrevention="0"
 				ImportLibrary="$(IntDir)/$(TargetName).lib"
 				TargetMachine="1"
 			/>
@@ -194,7 +193,6 @@
 				LinkTimeCodeGeneration="1"
 				BaseAddress="0x5130000"
 				RandomizedBaseAddress="1"
-				DataExecutionPrevention="0"
 				ImportLibrary="$(IntDir)/$(TargetName).lib"
 				TargetMachine="17"
 			/>
@@ -301,7 +299,6 @@
 				LinkTimeCodeGeneration="1"
 				BaseAddress="0x5130000"
 				RandomizedBaseAddress="1"
-				DataExecutionPrevention="0"
 				ImportLibrary="$(IntDir)/$(TargetName).lib"
 				TargetMachine="1"
 			/>
@@ -408,7 +405,6 @@
 				LinkTimeCodeGeneration="1"
 				BaseAddress="0x5130000"
 				RandomizedBaseAddress="1"
-				DataExecutionPrevention="0"
 				ImportLibrary="$(IntDir)/$(TargetName).lib"
 				TargetMachine="17"
 			/>
@@ -501,7 +497,6 @@
 				GenerateMapFile="false"
 				MapFileName=""
 				RandomizedBaseAddress="1"
-				DataExecutionPrevention="0"
 				ImportLibrary="$(IntDir)/$(TargetName).lib"
 				TargetMachine="1"
 			/>
@@ -594,7 +589,6 @@
 				GenerateMapFile="false"
 				MapFileName=""
 				RandomizedBaseAddress="1"
-				DataExecutionPrevention="0"
 				ImportLibrary="$(IntDir)/$(TargetName).lib"
 				TargetMachine="17"
 			/>
@@ -690,7 +684,6 @@
 				GenerateMapFile="false"
 				MapFileName=""
 				RandomizedBaseAddress="1"
-				DataExecutionPrevention="0"
 				ImportLibrary="$(IntDir)/$(TargetName).lib"
 				TargetMachine="1"
 			/>
@@ -786,7 +779,6 @@
 				GenerateMapFile="false"
 				MapFileName=""
 				RandomizedBaseAddress="1"
-				DataExecutionPrevention="0"
 				ImportLibrary="$(IntDir)/$(TargetName).lib"
 				TargetMachine="17"
 			/>
