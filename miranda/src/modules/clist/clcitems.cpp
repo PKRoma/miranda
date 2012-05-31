@@ -588,28 +588,16 @@ struct SavedContactState_t
 	int checked;
 };
 
-static int CompareContactState( const SavedContactState_t* p1, const SavedContactState_t* p2 )
-{	return INT_PTR(p1->hContact) - INT_PTR(p2->hContact);
-}
-
 struct SavedGroupState_t
 {
 	int groupId, expanded;
 };
-
-static int CompareGroupState( const SavedGroupState_t* p1, const SavedGroupState_t* p2 )
-{	return p1->groupId - p2->groupId;
-}
 
 struct SavedInfoState_t
 {
 	int parentId;
 	ClcContact contact;
 };
-
-static int CompareInfoState( const SavedInfoState_t* p1, const SavedInfoState_t* p2 )
-{	return p1->parentId - p2->parentId;
-}
 
 void fnSaveStateAndRebuildList(HWND hwnd, struct ClcData *dat)
 {
@@ -623,9 +611,9 @@ void fnSaveStateAndRebuildList(HWND hwnd, struct ClcData *dat)
 	KillTimer(hwnd, TIMERID_RENAME);
 	cli.pfnEndRename(hwnd, dat, 1);
 
-	OBJLIST<SavedContactState_t> saveContact( 10, CompareContactState );
-	OBJLIST<SavedGroupState_t> saveGroup( 100, CompareGroupState );
-	OBJLIST<SavedInfoState_t> saveInfo( 10, CompareInfoState );
+	OBJLIST<SavedContactState_t> saveContact( 10, HandleKeySortT );
+	OBJLIST<SavedGroupState_t> saveGroup( 100, NumericKeySortT );
+	OBJLIST<SavedInfoState_t> saveInfo( 10, NumericKeySortT );
 
 	dat->needsResort = 1;
 	group = &dat->list;

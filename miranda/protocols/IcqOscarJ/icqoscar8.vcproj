@@ -45,7 +45,7 @@
 				Name="VCLinkerTool"
 				IgnoreImportLibrary="TRUE"
 				AdditionalOptions="/ALIGN:4096 /ignore:4108"
-				AdditionalDependencies="vc7to6.lib wsock32.lib comctl32.lib"
+				AdditionalDependencies="vc7to6.lib ws2_32.lib comctl32.lib"
 				OutputFile="$(OutDir)/icq.dll"
 				SuppressStartupBanner="TRUE"
 				AdditionalLibraryDirectories="../../lib"
@@ -112,7 +112,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="wsock32.lib comctl32.lib"
+				AdditionalDependencies="ws2_32.lib comctl32.lib"
 				OutputFile="$(OutDir)/icq.dll"
 				LinkIncremental="2"
 				SuppressStartupBanner="TRUE"
@@ -178,7 +178,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				IgnoreImportLibrary="TRUE"
-				AdditionalDependencies="wsock32.lib comctl32.lib"
+				AdditionalDependencies="ws2_32.lib comctl32.lib"
 				OutputFile="$(OutDir)/icq.dll"
 				LinkIncremental="2"
 				SuppressStartupBanner="TRUE"
@@ -251,7 +251,7 @@
 				Name="VCLinkerTool"
 				IgnoreImportLibrary="TRUE"
 				AdditionalOptions="/ALIGN:4096 /ignore:4108"
-				AdditionalDependencies="vc7to6.lib wsock32.lib comctl32.lib"
+				AdditionalDependencies="vc7to6.lib ws2_32.lib comctl32.lib"
 				OutputFile="$(OutDir)/icq.dll"
 				AdditionalLibraryDirectories="../../lib"
 				IgnoreAllDefaultLibraries="TRUE"

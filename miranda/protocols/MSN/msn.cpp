@@ -132,6 +132,7 @@ extern "C" int __declspec(dllexport) Load(PLUGINLINK* link)
 	mir_getMD5I(&md5i);
 	mir_getSHA1I(&sha1i);
 	mir_getTMI(&tmi);
+	mir_getLP(&pluginInfo);
 
 	hMooduleLoaded = HookEvent(ME_SYSTEM_MODULESLOADED, OnModulesLoaded);
 

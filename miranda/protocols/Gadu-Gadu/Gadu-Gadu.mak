@@ -58,6 +58,7 @@ CLEAN :
 	-@erase "$(INTDIR)\links.obj"
 	-@erase "$(INTDIR)\oauth.obj"
 	-@erase "$(INTDIR)\ownerinfo.obj"
+	-@erase "$(INTDIR)\popups.obj"
 	-@erase "$(INTDIR)\pthread.obj"
 	-@erase "$(INTDIR)\pubdir.obj"
 	-@erase "$(INTDIR)\pubdir50.obj"
@@ -122,7 +123,7 @@ BSC32_FLAGS=/nologo /o"$(OUTDIR)\Gadu-Gadu.bsc"
 BSC32_SBRS= \
 	
 LINK32=link.exe
-LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib wsock32.lib version.lib /nologo /base:"0x32500000" /dll /incremental:no /pdb:"$(OUTDIR)\GG.pdb" /map:"$(INTDIR)\GG.map" /debug /machine:I386 /out:"../../bin/release/plugins/GG.dll" /implib:"$(OUTDIR)\GG.lib" /ALIGN:4096 /ignore:4108 
+LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib ws2_32.lib version.lib /nologo /base:"0x32500000" /dll /incremental:no /pdb:"$(OUTDIR)\GG.pdb" /map:"$(INTDIR)\GG.map" /debug /machine:I386 /out:"../../bin/release/plugins/GG.dll" /implib:"$(OUTDIR)\GG.lib" /ALIGN:4096 /ignore:4108 
 LINK32_OBJS= \
 	"$(INTDIR)\common.obj" \
 	"$(INTDIR)\dcc.obj" \
@@ -150,6 +151,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\links.obj" \
 	"$(INTDIR)\oauth.obj" \
 	"$(INTDIR)\ownerinfo.obj" \
+	"$(INTDIR)\popups.obj" \
 	"$(INTDIR)\services.obj" \
 	"$(INTDIR)\sessions.obj" \
 	"$(INTDIR)\token.obj" \
@@ -194,6 +196,7 @@ CLEAN :
 	-@erase "$(INTDIR)\links.obj"
 	-@erase "$(INTDIR)\oauth.obj"
 	-@erase "$(INTDIR)\ownerinfo.obj"
+	-@erase "$(INTDIR)\popups.obj"
 	-@erase "$(INTDIR)\pthread.obj"
 	-@erase "$(INTDIR)\pubdir.obj"
 	-@erase "$(INTDIR)\pubdir50.obj"
@@ -259,7 +262,7 @@ BSC32_FLAGS=/nologo /o"$(OUTDIR)\Gadu-Gadu.bsc"
 BSC32_SBRS= \
 	
 LINK32=link.exe
-LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib wsock32.lib version.lib /nologo /base:"0x32500000" /dll /incremental:yes /pdb:"$(OUTDIR)\GG.pdb" /map:"$(INTDIR)\GG.map" /debug /machine:I386 /out:"../../bin/debug/plugins/GG.dll" /implib:"$(OUTDIR)\GG.lib" /pdbtype:sept 
+LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib ws2_32.lib version.lib /nologo /base:"0x32500000" /dll /incremental:yes /pdb:"$(OUTDIR)\GG.pdb" /map:"$(INTDIR)\GG.map" /debug /machine:I386 /out:"../../bin/debug/plugins/GG.dll" /implib:"$(OUTDIR)\GG.lib" /pdbtype:sept 
 LINK32_OBJS= \
 	"$(INTDIR)\common.obj" \
 	"$(INTDIR)\dcc.obj" \
@@ -287,6 +290,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\links.obj" \
 	"$(INTDIR)\oauth.obj" \
 	"$(INTDIR)\ownerinfo.obj" \
+	"$(INTDIR)\popups.obj" \
 	"$(INTDIR)\services.obj" \
 	"$(INTDIR)\sessions.obj" \
 	"$(INTDIR)\token.obj" \
@@ -686,6 +690,11 @@ SOURCE=.\oauth.c
 SOURCE=.\ownerinfo.c
 
 "$(INTDIR)\ownerinfo.obj" : $(SOURCE) "$(INTDIR)"
+
+
+SOURCE=.\popups.c
+
+"$(INTDIR)\popups.obj" : $(SOURCE) "$(INTDIR)"
 
 
 SOURCE=.\services.c

@@ -671,7 +671,11 @@ struct gg_login_params {
 
 };
 
+#ifdef GG_CONFIG_MIRANDA
+struct gg_session *gg_login(const struct gg_login_params *p, SOCKET *gg_sock, int *gg_failno);
+#else
 struct gg_session *gg_login(const struct gg_login_params *p);
+#endif
 void gg_free_session(struct gg_session *sess);
 void gg_logoff(struct gg_session *sess);
 int gg_change_status(struct gg_session *sess, int status);
@@ -1484,6 +1488,9 @@ char *gg_vsaprintf(const char *format, va_list ap) GG_DEPRECATED;
 char *gg_get_line(char **ptr) GG_DEPRECATED;
 
 SOCKET gg_connect(void *addr, int port, int async) GG_DEPRECATED;
+#ifdef GG_CONFIG_MIRANDA
+SOCKET gg_connect_internal(void *addr, int port, int async, SOCKET *gg_sock);
+#endif
 struct in_addr *gg_gethostbyname(const char *hostname) GG_DEPRECATED;
 char *gg_read_line(SOCKET sock, char *buf, int length) GG_DEPRECATED;
 void gg_chomp(char *line) GG_DEPRECATED;

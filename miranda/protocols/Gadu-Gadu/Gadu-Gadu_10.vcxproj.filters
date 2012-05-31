@@ -60,6 +60,9 @@
     <ClCompile Include="ownerinfo.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="popups.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="services.c">
       <Filter>Source Files</Filter>
     </ClCompile>

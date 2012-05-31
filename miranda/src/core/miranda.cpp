@@ -77,6 +77,11 @@ pfnGetBufferedPaintBits getBufferedPaintBits;
 pfnDwmExtendFrameIntoClientArea dwmExtendFrameIntoClientArea;
 pfnDwmIsCompositionEnabled dwmIsCompositionEnabled;
 
+LPFN_GETADDRINFO MyGetaddrinfo;
+LPFN_FREEADDRINFO MyFreeaddrinfo;
+LPFN_WSASTRINGTOADDRESSA MyWSAStringToAddress;
+LPFN_WSAADDRESSTOSTRINGA MyWSAAddressToString;
+
 ITaskbarList3 * pTaskbarInterface;
 
 static DWORD MsgWaitForMultipleObjectsExWorkaround(DWORD nCount, const HANDLE *pHandles,
@@ -534,7 +539,7 @@ static INT_PTR CALLBACK WaitForProcessDlgProc(HWND hwnd, UINT msg, WPARAM wParam
 	return FALSE;
 }
 
-static void ParseCommandLine()
+void ParseCommandLine()
 {
 	char* cmdline = GetCommandLineA();
 	char* p = strstr( cmdline, "/restart:" );
@@ -626,6 +631,12 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int )
 		}
 	}
 
+	HMODULE hWinSock = GetModuleHandleA("ws2_32");
+	MyGetaddrinfo = (LPFN_GETADDRINFO)GetProcAddress(hWinSock, "getaddrinfo");
+	MyFreeaddrinfo = (LPFN_FREEADDRINFO)GetProcAddress(hWinSock, "freeaddrinfo");
+	MyWSAStringToAddress = (LPFN_WSASTRINGTOADDRESSA)GetProcAddress(hWinSock, "WSAStringToAddressA");
+	MyWSAAddressToString = (LPFN_WSAADDRESSTOSTRINGA)GetProcAddress(hWinSock, "WSAAddressToStringA");
+
 	if (bufferedPaintInit) bufferedPaintInit();
 
 	OleInitialize(NULL);
@@ -634,7 +645,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int )
 		CoCreateInstance(CLSID_TaskbarList, NULL, CLSCTX_ALL, IID_ITaskbarList3, (void**)&pTaskbarInterface);
 
 	InitialiseModularEngine();
-	ParseCommandLine();
+//	ParseCommandLine();
 
 	if (LoadDefaultModules()) {
 		NotifyEventHooks(hShutdownEvent,0,0);

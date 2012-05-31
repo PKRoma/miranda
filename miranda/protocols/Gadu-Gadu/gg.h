@@ -22,7 +22,7 @@
 #ifndef GG_H
 #define GG_H
 
-#define MIRANDA_VER 0x900
+#define MIRANDA_VER 0x0A00
 
 #if defined(__DEBUG__) || defined(_DEBUG) || defined(DEBUG)
 #define DEBUGMODE // Debug Mode
@@ -133,6 +133,8 @@ typedef struct
 	struct gg_session *sess;
 	struct gg_dcc *dcc;
 	HANDLE event;
+	HANDLE hConnStopEvent;
+	SOCKET sock;
 	UINT_PTR timer;
 	struct
 	{
@@ -146,8 +148,6 @@ typedef struct
 	HANDLE netlib,
 		hookOptsInit,
 		hookUserInfoInit,
-		hookSettingDeleted,
-		hookSettingChanged,
 		hookGCUserEvent,
 		hookGCMenuBuild;
 	HGENMENU hMenuRoot;
@@ -320,11 +320,23 @@ typedef void (__cdecl GGThreadFunc)(void*, void*);
 #define GG_KEY_TIMEDEVIATION	"TimeDeviation" // Max time deviation for connections (seconds)
 #define GG_KEYDEF_TIMEDEVIATION	300
 
+#define GG_KEY_LOGONTIME		"LogonTS"
+
+#define GG_KEY_RECONNINTERVAL		"ReconnectInterval"
+#define GG_KEYDEF_RECONNINTERVAL	3000
+
 // chpassdlgproc() multipurpose dialog proc modes
 #define GG_USERUTIL_PASS	0
 #define GG_USERUTIL_CREATE	1
 #define GG_USERUTIL_REMOVE	2
 #define GG_USERUTIL_EMAIL	3
+
+// popup flags
+#define	GG_POPUP_ALLOW_MSGBOX	1
+#define GG_POPUP_ONCE			2
+#define GG_POPUP_ERROR			4
+#define GG_POPUP_WARNING		8
+#define GG_POPUP_MULTILOGON		16
 
 #define LocalEventUnhook(hook)	if(hook) UnhookEvent(hook)
 
@@ -464,7 +476,12 @@ GGGC *gg_gc_lookup(GGPROTO *gg, char *id);
 int gg_gc_changenick(GGPROTO *gg, HANDLE hContact, char *pszNick);
 #define UIN2ID(uin,id) _itoa(uin,id,10)
 
+/* Popups functions */
+void gg_initpopups(GGPROTO* gg);
+void gg_showpopup(GGPROTO* gg, const char* nickname, const char* msg, int flags);
+
 /* Sessions functions */
+INT_PTR gg_sessions_view(GGPROTO* gg, WPARAM wParam, LPARAM lParam);
 void gg_sessions_updatedlg(GGPROTO* gg);
 BOOL gg_sessions_closedlg(GGPROTO* gg);
 void gg_sessions_menus_init(GGPROTO* gg, HGENMENU hRoot);

@@ -793,6 +793,15 @@
     <None Include="res\status_user_online.ico">
       <Filter>Resources</Filter>
     </None>
+    <None Include="..\protocols\JabberG\docs\translation_jabber.txt">
+      <Filter>SDK</Filter>
+    </None>
+    <None Include="res\Off.ico">
+      <Filter>Resources</Filter>
+    </None>
+    <None Include="res\On.ico">
+      <Filter>Resources</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="resource.rc">

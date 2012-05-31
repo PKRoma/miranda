@@ -29,7 +29,7 @@ MM_INTERFACE   mmi;
 UTF8_INTERFACE utfi;
 MD5_INTERFACE  md5i;
 LIST_INTERFACE li;
-
+int hLangpack;
 
 PLUGININFOEX pluginInfo={
 		sizeof(PLUGININFOEX),
@@ -124,6 +124,7 @@ extern "C" int __declspec(dllexport)Load(PLUGINLINK *link)
 	mir_getMMI( &mmi );
 	mir_getUTFI( &utfi );
 	mir_getMD5I( &md5i );
+	mir_getLP( &pluginInfo );
 	
 	PROTOCOLDESCRIPTOR pd = { 0 };
 	pd.cbSize = sizeof(pd);

@@ -79,7 +79,7 @@ PLUGININFOEX pluginInfo = {
 
 __declspec(dllexport) PLUGININFOEX *MirandaPluginInfoEx(DWORD mirandaVersion)
 {
-	if (mirandaVersion < PLUGIN_MAKE_VERSION(0, 8, 0, 9))
+	if (mirandaVersion < __VERSION_DWORD)
 		return NULL;
 	return &pluginInfo;
 }

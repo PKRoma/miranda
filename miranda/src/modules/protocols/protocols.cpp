@@ -50,9 +50,24 @@ static int CompareProtos( const PROTOCOLDESCRIPTOR* p1, const PROTOCOLDESCRIPTOR
 
 static LIST<PROTOCOLDESCRIPTOR> protos( 10, CompareProtos );
 
-static INT_PTR Proto_BroadcastAck(WPARAM wParam,LPARAM lParam)
+static INT_PTR Proto_BroadcastAck(WPARAM wParam, LPARAM lParam)
 {
-	return NotifyEventHooks(hAckEvent,wParam,lParam);
+#ifdef _UNICODE
+	ACKDATA *ack = (ACKDATA*)lParam;
+	if (ack && ack->type == ACKTYPE_AVATAR && ack->hProcess)
+	{
+		PROTO_AVATAR_INFORMATION* ai = (PROTO_AVATAR_INFORMATION*)ack->hProcess;
+		if (ai->cbSize == sizeof(PROTO_AVATAR_INFORMATION))
+		{
+			PROTO_AVATAR_INFORMATIONW aiw = { sizeof(aiw), ai->hContact, ai->format };
+			MultiByteToWideChar(CP_ACP, 0, ai->filename, -1, aiw.filename, SIZEOF(aiw.filename));
+
+			ack->hProcess = &aiw;
+		}	
+	}
+#endif
+
+	return NotifyEventHooks(hAckEvent, wParam, lParam);
 }
 
 INT_PTR __fastcall MyCallProtoService( const char *szModule, const char *szService, WPARAM wParam, LPARAM lParam );
@@ -111,8 +126,7 @@ static INT_PTR Proto_RegisterModule(WPARAM, LPARAM lParam)
 					pa->szModuleName = mir_strdup( pd->szName );
 					pa->szProtoName = mir_strdup( pd->szName );
 					pa->tszAccountName = mir_a2t( pd->szName );
-					pa->bIsVisible = TRUE;
-                    pa->bIsEnabled = TRUE;
+					pa->bIsVisible = pa->bIsEnabled = TRUE;
 					pa->iOrder = accounts.getCount();
 					accounts.insert( pa );
 				}

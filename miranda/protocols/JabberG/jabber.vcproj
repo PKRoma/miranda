@@ -40,7 +40,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="wsock32.lib version.lib comctl32.lib"
+				AdditionalDependencies="ws2_32.lib version.lib comctl32.lib"
 				LinkIncremental="2"
 				SuppressStartupBanner="TRUE"
 				GenerateDebugInformation="TRUE"
@@ -112,7 +112,7 @@
 				Name="VCLinkerTool"
 				IgnoreImportLibrary="TRUE"
 				AdditionalOptions="/ALIGN:4096 /ignore:4108"
-				AdditionalDependencies="vc7to6.lib wsock32.lib version.lib comctl32.lib"
+				AdditionalDependencies="vc7to6.lib ws2_32.lib version.lib comctl32.lib"
 				SuppressStartupBanner="TRUE"
 				AdditionalLibraryDirectories="../../lib"
 				IgnoreAllDefaultLibraries="TRUE"
@@ -183,7 +183,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				IgnoreImportLibrary="TRUE"
-				AdditionalDependencies="wsock32.lib version.lib comctl32.lib"
+				AdditionalDependencies="ws2_32.lib version.lib comctl32.lib"
 				LinkIncremental="2"
 				SuppressStartupBanner="TRUE"
 				GenerateDebugInformation="TRUE"
@@ -254,7 +254,7 @@
 				Name="VCLinkerTool"
 				IgnoreImportLibrary="TRUE"
 				AdditionalOptions="/ALIGN:4096 /ignore:4108"
-				AdditionalDependencies="vc7to6.lib eh7.lib wsock32.lib version.lib comctl32.lib"
+				AdditionalDependencies="vc7to6.lib eh7.lib ws2_32.lib version.lib comctl32.lib"
 				AdditionalLibraryDirectories="../../lib"
 				IgnoreAllDefaultLibraries="TRUE"
 				GenerateDebugInformation="TRUE"

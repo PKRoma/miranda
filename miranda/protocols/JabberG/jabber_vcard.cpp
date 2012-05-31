@@ -2,7 +2,7 @@
 
 Jabber Protocol Plugin for Miranda IM
 Copyright ( C ) 2002-04  Santithorn Bunchua
-Copyright ( C ) 2005-12  George Hazan
+Copyright ( C ) 2005-11  George Hazan
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -329,26 +329,17 @@ static INT_PTR CALLBACK PhotoDlgProc( HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 		case IDC_LOAD:
 			{
 				TCHAR szFilter[512];
-				union {
-					TCHAR szFileName[MAX_PATH];
-					char  boo[512];
-				};
+				TCHAR szFileName[MAX_PATH];
 
-				#if defined( _UNICODE )
-					JCallService( MS_UTILS_GETBITMAPFILTERSTRINGS, sizeof( boo ), ( LPARAM )boo );
-					memset( szFilter, 0, sizeof( szFilter ));
-					MultiByteToWideChar( CP_ACP, 0, boo, -1, szFilter, SIZEOF(szFilter));
-				#else
-					JCallService( MS_UTILS_GETBITMAPFILTERSTRINGS, sizeof( szFilter ), ( LPARAM )szFilter );
-				#endif
+				JCallService( MS_UTILS_GETBITMAPFILTERSTRINGST, SIZEOF( szFilter ), ( LPARAM )szFilter );
 
 				OPENFILENAME ofn = {0};
-				ofn.lStructSize = OPENFILENAME_SIZE_VERSION_400;
+				ofn.lStructSize = sizeof(ofn);
 				ofn.hwndOwner = hwndDlg;
 				ofn.lpstrFilter = szFilter;
 				ofn.lpstrCustomFilter = NULL;
 				ofn.lpstrFile = szFileName;
-				ofn.nMaxFile = _MAX_PATH;
+				ofn.nMaxFile = MAX_PATH;
 				ofn.Flags = OFN_FILEMUSTEXIST | OFN_DONTADDTORECENT;
 				szFileName[0] = '\0';
 				if ( GetOpenFileName( &ofn )) {

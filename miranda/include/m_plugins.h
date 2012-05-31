@@ -2,7 +2,7 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2008 Miranda ICQ/IM project, 
+Copyright 2000-2012 Miranda ICQ/IM project, 
 all portions of this codebase are copyrighted to the people 
 listed in contributors.txt.
 
@@ -65,7 +65,7 @@ typedef struct PLUGIN_DB_ENUM {
 #define DEFMOD_RNDIDLE        23    // v0.3.4a+
 #define DEFMOD_CLISTALL       24	// v0.3.4a+ (2004/09/28)
 #define DEFMOD_DB             25    // v0.3.4.3+ (2004/10/11)
-#define DEFMOD_FONTSERVICE    26    // v0.7.0+ (2006/11/17)
+//#define DEFMOD_FONTSERVICE  26    // v0.7.0+ (2006/11/17)
 #define DEFMOD_UPDATENOTIFY   27
 #define DEFMOD_SSL            28    // v0.8.0+
 #define DEFMOD_HIGHEST        28

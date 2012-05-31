@@ -127,9 +127,10 @@ INT_PTR CALLBACK AddContactDlgProc(HWND hdlg,UINT msg,WPARAM wparam,LPARAM lpara
 		break;
 
 	case WM_COMMAND:
-		acs=(ADDCONTACTSTRUCT *)GetWindowLongPtr(hdlg,GWLP_USERDATA);
+		acs = (ADDCONTACTSTRUCT *)GetWindowLongPtr(hdlg, GWLP_USERDATA);
 
-		switch(LOWORD(wparam)) {
+		switch (LOWORD(wparam))
+		{
 		case IDC_AUTH:
 			{
 				DWORD flags = CallProtoService(acs->szProto,PS_GETCAPS,PFLAGNUM_4,0);
@@ -145,52 +146,58 @@ INT_PTR CALLBACK AddContactDlgProc(HWND hdlg,UINT msg,WPARAM wparam,LPARAM lpara
 			break;
 		case IDOK:
 			{
-				HANDLE hcontact = INVALID_HANDLE_VALUE;
-				switch ( acs->handleType ) {
+				HANDLE hContact = INVALID_HANDLE_VALUE;
+				switch (acs->handleType) 
+				{
 				case HANDLE_EVENT:
 					{
 						DBEVENTINFO dbei = { 0 };
 						dbei.cbSize = sizeof(dbei);
-						CallService(MS_DB_EVENT_GET,(WPARAM)acs->handle,(LPARAM)&dbei);
-						hcontact = (HANDLE)CallProtoService(dbei.szModule,PS_ADDTOLISTBYEVENT,0,(LPARAM)acs->handle);
-               }
-					break;
-				case HANDLE_SEARCHRESULT:
-					hcontact = (HANDLE)CallProtoService(acs->szProto,PS_ADDTOLIST,0,(LPARAM)acs->psr);
-					break;
-				case HANDLE_CONTACT:
-					hcontact = acs->handle;
-					break;
-				}
-
-				if ( hcontact == NULL )
-					break;
-
-				{	TCHAR szHandle[256]; int item;
-					if ( GetDlgItemText( hdlg, IDC_MYHANDLE, szHandle, SIZEOF(szHandle)))
-						DBWriteContactSettingTString( hcontact, "CList", "MyHandle", szHandle );
-
-					item = SendDlgItemMessage(hdlg, IDC_GROUP, CB_GETCURSEL, 0, 0);
-					if (item > 0) {
-						item = SendDlgItemMessage(hdlg, IDC_GROUP, CB_GETITEMDATA, item, 0);
-						CallService(MS_CLIST_CONTACTCHANGEGROUP, (WPARAM)hcontact, item);
+						CallService(MS_DB_EVENT_GET, (WPARAM)acs->handle, (LPARAM)&dbei);
+						hContact = (HANDLE)CallProtoService(dbei.szModule, PS_ADDTOLISTBYEVENT, 0, (LPARAM)acs->handle);
 					}
+					break;
+
+				case HANDLE_SEARCHRESULT:
+					hContact = (HANDLE)CallProtoService(acs->szProto, PS_ADDTOLIST, 0, (LPARAM)acs->psr);
+					break;
+
+				case HANDLE_CONTACT:
+					hContact = acs->handle;
+					break;
 				}
 
-				if ( IsDlgButtonChecked( hdlg, IDC_ADDED ))
-					CallContactService( hcontact, PSS_ADDED, 0, 0 );
+				if (hContact == NULL)
+					break;
 
-				if ( IsDlgButtonChecked( hdlg, IDC_AUTH )) {
-					DWORD flags = CallProtoService( acs->szProto, PS_GETCAPS, PFLAGNUM_4, 0 );
-					if ( flags & PF4_NOCUSTOMAUTH )
-						CallContactService( hcontact, PSS_AUTHREQUESTT, 0, 0 );
-					else {
-						TCHAR szReason[256];
-						GetDlgItemText(hdlg,IDC_AUTHREQ,szReason,256);
-						CallContactService(hcontact, PSS_AUTHREQUESTT, 0, (LPARAM)szReason);
-				}	}
+				TCHAR szHandle[256];
+				if (GetDlgItemText(hdlg, IDC_MYHANDLE, szHandle, SIZEOF(szHandle)))
+					DBWriteContactSettingTString(hContact, "CList", "MyHandle", szHandle);
 
-				DBDeleteContactSetting(hcontact,"CList","NotOnList");
+				int item = SendDlgItemMessage(hdlg, IDC_GROUP, CB_GETCURSEL, 0, 0);
+				if (item > 0) 
+				{
+					item = SendDlgItemMessage(hdlg, IDC_GROUP, CB_GETITEMDATA, item, 0);
+					CallService(MS_CLIST_CONTACTCHANGEGROUP, (WPARAM)hContact, item);
+				}
+
+				DBDeleteContactSetting(hContact, "CList", "NotOnList");
+
+				if (IsDlgButtonChecked(hdlg, IDC_ADDED))
+					CallContactService(hContact, PSS_ADDED, 0, 0);
+
+				if (IsDlgButtonChecked(hdlg, IDC_AUTH)) 
+				{
+					DWORD flags = CallProtoService(acs->szProto, PS_GETCAPS, PFLAGNUM_4, 0);
+					if (flags & PF4_NOCUSTOMAUTH)
+						CallContactService(hContact, PSS_AUTHREQUESTT, 0, 0);
+					else 
+					{
+						TCHAR szReason[512];
+						GetDlgItemText(hdlg, IDC_AUTHREQ, szReason, SIZEOF(szReason));
+						CallContactService(hContact, PSS_AUTHREQUESTT, 0, (LPARAM)szReason);
+					}	
+				}
 			}
 			// fall through
 		case IDCANCEL:

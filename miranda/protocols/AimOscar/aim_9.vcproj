@@ -86,7 +86,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				IgnoreImportLibrary="true"
-				AdditionalDependencies="wsock32.lib"
+				AdditionalDependencies="ws2_32.lib"
 				GenerateDebugInformation="true"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
@@ -186,7 +186,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				IgnoreImportLibrary="true"
-				AdditionalDependencies="wsock32.lib"
+				AdditionalDependencies="ws2_32.lib"
 				LinkIncremental="1"
 				GenerateDebugInformation="true"
 				OptimizeReferences="2"
@@ -280,7 +280,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				IgnoreImportLibrary="true"
-				AdditionalDependencies="wsock32.lib"
+				AdditionalDependencies="ws2_32.lib"
 				GenerateDebugInformation="true"
 				RandomizedBaseAddress="1"
 				ImportLibrary="$(IntDir)/$(TargetName).lib"
@@ -370,7 +370,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="wsock32.lib"
+				AdditionalDependencies="ws2_32.lib"
 				LinkIncremental="1"
 				GenerateDebugInformation="true"
 				RandomizedBaseAddress="1"
@@ -462,7 +462,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				IgnoreImportLibrary="true"
-				AdditionalDependencies="wsock32.lib"
+				AdditionalDependencies="ws2_32.lib"
 				GenerateDebugInformation="true"
 				RandomizedBaseAddress="1"
 				ImportLibrary="$(IntDir)/$(TargetName).lib"
@@ -552,7 +552,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="wsock32.lib"
+				AdditionalDependencies="ws2_32.lib"
 				LinkIncremental="1"
 				GenerateDebugInformation="true"
 				RandomizedBaseAddress="1"
@@ -651,7 +651,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				IgnoreImportLibrary="true"
-				AdditionalDependencies="wsock32.lib"
+				AdditionalDependencies="ws2_32.lib"
 				GenerateDebugInformation="true"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
@@ -751,7 +751,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				IgnoreImportLibrary="true"
-				AdditionalDependencies="wsock32.lib"
+				AdditionalDependencies="ws2_32.lib"
 				LinkIncremental="1"
 				GenerateDebugInformation="true"
 				OptimizeReferences="2"

@@ -48,7 +48,7 @@ extern HANDLE hShutdownEvent;
 extern char *g_szMetaName;
 extern int ChangeAvatar(HANDLE hContact, BOOL fLoad, BOOL fNotifyHist = FALSE, int pa_format = 0);
 extern int DeleteAvatar(HANDLE hContact);
-extern void MakePathRelative(HANDLE hContact, char *path);
+extern void MakePathRelative(HANDLE hContact, TCHAR *path);
 int Proto_GetDelayAfterFail(const char *proto);
 BOOL Proto_IsFetchingAlwaysAllowed(const char *proto);
 
@@ -88,7 +88,6 @@ void FreePolls()
 {
 }
 
-
 // Return true if this protocol can have avatar requested
 static BOOL PollProtocolCanHaveAvatar(const char *szProto)
 {
@@ -118,7 +117,7 @@ static BOOL PollContactCanHaveAvatar(HANDLE hContact, const char *szProto)
 static BOOL PollCheckContact(HANDLE hContact, const char *szProto)
 {
 	return !DBGetContactSettingByte(hContact, "ContactPhoto", "Locked", 0)
-            && FindAvatarInCache(hContact, FALSE, TRUE) != NULL;
+			&& FindAvatarInCache(hContact, FALSE, TRUE) != NULL;
 }
 
 static void QueueRemove(HANDLE hContact)
@@ -164,7 +163,7 @@ void QueueAdd(HANDLE hContact)
 	QueueAdd(hContact, waitTime);
 }
 
-void ProcessAvatarInfo(HANDLE hContact, int type, PROTO_AVATAR_INFORMATION *pai, const char *szProto)
+void ProcessAvatarInfo(HANDLE hContact, int type, PROTO_AVATAR_INFORMATIONT *pai, const char *szProto)
 {
 	QueueRemove(hContact);
 
@@ -178,7 +177,7 @@ void ProcessAvatarInfo(HANDLE hContact, int type, PROTO_AVATAR_INFORMATION *pai,
 		DBDeleteContactSetting(hContact, "ContactPhoto", "RFile");
 		if (!DBGetContactSettingByte(hContact, "ContactPhoto", "Locked", 0))
 			DBDeleteContactSetting(hContact, "ContactPhoto", "Backup");
-		DBWriteContactSettingString(hContact, "ContactPhoto", "File", pai->filename);
+		DBWriteContactSettingTString(hContact, "ContactPhoto", "File", pai->filename);
 		DBWriteContactSettingWord(hContact, "ContactPhoto", "Format", pai->format);
 
 		if (pai->format == PA_FORMAT_PNG || pai->format == PA_FORMAT_JPEG 
@@ -233,7 +232,7 @@ int FetchAvatarFor(HANDLE hContact, char *szProto = NULL)
 	if (szProto == NULL)
 		szProto = (char *)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
 
-    if (szProto != NULL && PollProtocolCanHaveAvatar(szProto) && PollContactCanHaveAvatar(hContact, szProto))
+	if (szProto != NULL && PollProtocolCanHaveAvatar(szProto) && PollContactCanHaveAvatar(hContact, szProto))
 	{
 		// Can have avatar, but must request it?
 		if (
@@ -242,19 +241,29 @@ int FetchAvatarFor(HANDLE hContact, char *szProto = NULL)
 			)
 		{
 			// Request it
-			PROTO_AVATAR_INFORMATION pai_s = {0};
+			PROTO_AVATAR_INFORMATIONT pai_s = {0};
 			pai_s.cbSize = sizeof(pai_s);
 			pai_s.hContact = hContact;
-			pai_s.format = PA_FORMAT_UNKNOWN;
-            //_DebugTrace(hContact, "schedule request");
-			result = CallProtoService(szProto, PS_GETAVATARINFO, GAIF_FORCE, (LPARAM)&pai_s);
+			//_DebugTrace(hContact, "schedule request");
+			INT_PTR res = CallProtoService(szProto, PS_GETAVATARINFOT, GAIF_FORCE, (LPARAM)&pai_s);
+#ifdef _UNICODE
+			if (res == CALLSERVICE_NOTFOUND)
+			{
+				PROTO_AVATAR_INFORMATION pai = {0};
+				pai.cbSize = sizeof(pai);
+				pai.hContact = hContact;
+				res = CallProtoService(szProto, PS_GETAVATARINFO, GAIF_FORCE, (LPARAM)&pai);
+				MultiByteToWideChar( CP_ACP, 0, pai.filename, -1, pai_s.filename, SIZEOF(pai_s.filename));
+				pai_s.format = pai.format;
+			}
+#endif
+			if (res != CALLSERVICE_NOTFOUND) result = res;
 			ProcessAvatarInfo(pai_s.hContact, result, &pai_s, szProto);
 		}
 	}
 
 	return result;
 }
-
 
 static void RequestThread(void *vParam)
 {
@@ -308,4 +317,3 @@ static void RequestThread(void *vParam)
 	DeleteCriticalSection(&cs);
 	queue.destroy();
 }
-

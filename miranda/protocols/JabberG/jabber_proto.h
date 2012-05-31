@@ -2,7 +2,7 @@
 
 Jabber Protocol Plugin for Miranda IM
 Copyright ( C ) 2002-04  Santithorn Bunchua
-Copyright ( C ) 2005-12  George Hazan
+Copyright ( C ) 2005-11  George Hazan
 Copyright ( C ) 2007     Maxim Mluhov
 
 This program is free software; you can redistribute it and/or
@@ -260,7 +260,6 @@ struct CJabberProto : public PROTO_INTERFACE
 
 	TCHAR* m_szJabberJID;
 	char*  m_szStreamId;
-	DWORD  m_dwJabberLocalIP;
 	BOOL   m_bJabberConnected; // TCP connection to jabber server established
 	BOOL   m_bJabberOnline; // XMPP connection initialized and we can send XMPP packets
 	int    m_nJabberSearchID;

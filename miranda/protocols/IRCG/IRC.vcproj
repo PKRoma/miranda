@@ -37,7 +37,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/DLL"
-				AdditionalDependencies="shlwapi.lib wsock32.lib"
+				AdditionalDependencies="shlwapi.lib ws2_32.lib"
 				LinkIncremental="2"
 				SuppressStartupBanner="TRUE"
 				AdditionalLibraryDirectories="../../lib"
@@ -105,7 +105,7 @@
 				Name="VCLinkerTool"
 				IgnoreImportLibrary="TRUE"
 				AdditionalOptions="/DLL"
-				AdditionalDependencies="vc7to6.lib eh7.lib shlwapi.lib wsock32.lib"
+				AdditionalDependencies="vc7to6.lib eh7.lib shlwapi.lib ws2_32.lib"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
 				AdditionalLibraryDirectories="../../lib"
@@ -169,7 +169,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/DLL"
-				AdditionalDependencies="shlwapi.lib wsock32.lib"
+				AdditionalDependencies="shlwapi.lib ws2_32.lib"
 				LinkIncremental="2"
 				SuppressStartupBanner="TRUE"
 				AdditionalLibraryDirectories="../../lib"
@@ -238,7 +238,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/DLL"
-				AdditionalDependencies="vc7to6.lib eh7.lib shlwapi.lib wsock32.lib"
+				AdditionalDependencies="vc7to6.lib eh7.lib shlwapi.lib ws2_32.lib"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
 				AdditionalLibraryDirectories="../../lib"

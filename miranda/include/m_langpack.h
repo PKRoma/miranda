@@ -2,8 +2,8 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2008 Miranda ICQ/IM project, 
-all portions of this codebase are copyrighted to the people 
+Copyright 2000-2012 Miranda ICQ/IM project,
+all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
 This program is free software; you can redistribute it and/or
@@ -24,6 +24,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef M_LANGPACK_H__
 #define M_LANGPACK_H__
 
+#if MIRANDA_VER >= 0x0900 && !defined( _STATIC )
+	#define MIRANDA_CUSTOM_LP
+#endif
+
 #define LANG_UNICODE 0x1000
 
 //translates a single string into the user's local language	  v0.1.1.0+
@@ -35,9 +39,32 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 //Note that the Translate() macro as defined below will crash plugins that are
 //loaded into Miranda 0.1.0.1 and earlier. If anyone's actually using one of
 //these versions, I pity them.
-#define MS_LANGPACK_TRANSLATESTRING   "LangPack/TranslateString"
-#define Translate(s)   ((char*)CallService(MS_LANGPACK_TRANSLATESTRING,0,(LPARAM)(s)))
-#define TranslateW(s)   ((WCHAR*)CallService(MS_LANGPACK_TRANSLATESTRING,LANG_UNICODE,(LPARAM)(s)))
+#define MS_LANGPACK_TRANSLATESTRING  "LangPack/TranslateString"
+
+#if defined( MIRANDA_CUSTOM_LP )
+
+extern int hLangpack;
+
+__inline static char* Translate(const char* str)
+{	return (char*)CallService(MS_LANGPACK_TRANSLATESTRING,hLangpack,(LPARAM)(str));
+}
+
+__inline static WCHAR* TranslateW(const WCHAR* str)
+{	return (WCHAR*)CallService(MS_LANGPACK_TRANSLATESTRING,hLangpack+LANG_UNICODE,(LPARAM)(str));
+}
+
+#else
+
+__inline static char* Translate(const char* str)
+{	return (char*)CallService(MS_LANGPACK_TRANSLATESTRING,0,(LPARAM)(str));
+}
+
+__inline static WCHAR* TranslateW(const WCHAR* str)
+{	return (WCHAR*)CallService(MS_LANGPACK_TRANSLATESTRING,LANG_UNICODE,(LPARAM)(str));
+}
+
+#endif
+
 #ifdef _UNICODE
 	#define TranslateT(s)	TranslateW(_T(s))
 	#define TranslateTS(s)	TranslateW(s)
@@ -77,6 +104,21 @@ typedef struct {
 #define LPTDF_NOTITLE        2     //do not translate the title of the dialog
 
 #define MS_LANGPACK_TRANSLATEDIALOG  "LangPack/TranslateDialog"
+
+#if defined( MIRANDA_CUSTOM_LP )
+
+__inline static INT_PTR TranslateDialogDefault(HWND hwndDlg)
+{
+	LANGPACKTRANSLATEDIALOG lptd;
+	lptd.cbSize=sizeof(lptd);
+	lptd.flags=hLangpack;
+	lptd.hwndDlg=hwndDlg;
+	lptd.ignoreControls=NULL;
+	return CallService(MS_LANGPACK_TRANSLATEDIALOG,0,(LPARAM)&lptd);
+}
+
+#else
+
 __inline static INT_PTR TranslateDialogDefault(HWND hwndDlg)
 {
 	LANGPACKTRANSLATEDIALOG lptd;
@@ -87,15 +129,28 @@ __inline static INT_PTR TranslateDialogDefault(HWND hwndDlg)
 	return CallService(MS_LANGPACK_TRANSLATEDIALOG,0,(LPARAM)&lptd);
 }
 
+#endif
+
 //translates a menu into the user's local language	  v0.1.1.0+
 //wParam=(WPARAM)(HMENU)hMenu
-//lParam=0
+//lParam=langpack handle (v.0.10.0+)
 //returns 0 on success, nonzero on failure
 #define MS_LANGPACK_TRANSLATEMENU    "LangPack/TranslateMenu"
 
+#if defined( MIRANDA_CUSTOM_LP )
+
 __inline static INT_PTR TranslateMenu(HMENU hMenu)
-{	return CallService(MS_LANGPACK_TRANSLATEMENU, (WPARAM)hMenu, 0);
+{	return CallService(MS_LANGPACK_TRANSLATEMENU, (WPARAM)hMenu, hLangpack);
 }
+
+#else
+
+__inline static INT_PTR TranslateMenu(HMENU hMenu)
+{	return CallService(MS_LANGPACK_TRANSLATEMENU, (LPARAM)hMenu, 0);
+}
+
+#endif
+
 
 //returns the codepage used in the language pack 	  v0.4.3.0+
 //wParam=0
@@ -110,9 +165,38 @@ __inline static INT_PTR TranslateMenu(HMENU hMenu)
 #define MS_LANGPACK_GETLOCALE        "LangPack/GetLocale"
 
 //returns the strdup/wcsdup of lparam according to the langpack  v0.4.3.0+
-//wParam=0
+//wParam=langpack handle (v.0.10.0+)
 //lParam=(LPARAM)(char*)source string
-//returns a string converted from char* to TCHAR* using the langpack codepage. 
+//returns a string converted from char* to TCHAR* using the langpack codepage.
 //This string should be freed using mir_free() then
 #define MS_LANGPACK_PCHARTOTCHAR     "LangPack/PcharToTchar"
+
+#if defined( MIRANDA_CUSTOM_LP )
+
+__inline static INT_PTR Langpack_PCharToTChar(const char* str)
+{	return CallService(MS_LANGPACK_PCHARTOTCHAR, hLangpack, (LPARAM)str);
+}
+
+#else
+
+__inline static INT_PTR Langpack_PCharToTChar(const char* str)
+{	return CallService(MS_LANGPACK_PCHARTOTCHAR, 0, (LPARAM)str);
+}
+
+#endif
+
+//initializes the plugin-specific translation context  v0.10.0+
+//wParam=pointer to the langpack handle
+//lParam=PLUGININFOEX* of the caller plugin
+//always returns 0
+#define MS_LANGPACK_REGISTER         "LangPack/Register"
+
+#if defined( MIRANDA_CUSTOM_LP )
+
+__forceinline void mir_getLP( const PLUGININFOEX* pInfo )
+{	CallService(MS_LANGPACK_REGISTER, (WPARAM)&hLangpack, (LPARAM)pInfo);
+}
+
+#endif
+
 #endif // M_LANGPACK_H__

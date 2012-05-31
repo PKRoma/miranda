@@ -1,7 +1,7 @@
 /*
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2008 Miranda ICQ/IM project, 
+Copyright 2000-2012 Miranda ICQ/IM project, 
 all portions of this codebase are copyrighted to the people 
 listed in contributors.txt.
 
@@ -336,7 +336,9 @@ typedef struct _tagFI_interface {
     INT_PTR  (*FI_BmpFilterResizeBitmap)(WPARAM wParam,LPARAM lParam);      // more generic resizer for avatar images
     void     (*FI_CorrectBitmap32Alpha)(HBITMAP hBitmap, BOOL force);       // corrects broken images (when all alpha values are 0)
 
-    BYTE  reserved[200];            // future usage
+    FIMULTIBITMAP *(DLL_CALLCONV *FI_OpenMultiBitmapU)(FREE_IMAGE_FORMAT fif, const wchar_t *filename, BOOL create_new, BOOL read_only, BOOL keep_cache_in_memory FI_DEFAULT(FALSE), int flags FI_DEFAULT(0));
+
+    void*   reserved[49];            // future usage
 } FI_INTERFACE;
 
 
@@ -344,10 +346,12 @@ typedef struct _tagFI_interface {
 #define FI_GetFIFFromFilenameT FI_GetFIFFromFilenameU
 #define FI_GetFileTypeT FI_GetFileTypeU
 #define FI_LoadT FI_LoadU
+#define FI_OpenMultiBitmapT FI_OpenMultiBitmapU
 #else
 #define FI_GetFIFFromFilenameT FI_GetFIFFromFilename
 #define FI_GetFileTypeT FI_GetFileType
 #define FI_LoadT FI_Load
+#define FI_OpenMultiBitmapT FI_OpenMultiBitmap
 #endif
 
 /*
@@ -440,6 +444,7 @@ typedef struct _tagIMGSRVC_INFO {
     union {
         char *szName;
         wchar_t *wszName;
+        TCHAR *tszName;
     };
     HBITMAP hbm;
     FIBITMAP *dib;

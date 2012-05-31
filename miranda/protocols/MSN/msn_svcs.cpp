@@ -39,14 +39,14 @@ INT_PTR CMsnProto::GetMyAwayMsg(WPARAM wParam,LPARAM lParam)
 
 INT_PTR CMsnProto::GetAvatar(WPARAM wParam, LPARAM lParam)
 {
-	char* buf = (char*)wParam;
+	TCHAR* buf = (TCHAR*)wParam;
 	int  size = (int)lParam;
 
 	if (buf == NULL || size <= 0)
 		return -1;
 
 	MSN_GetAvatarFileName(NULL, buf, size, NULL);
-	return _access(buf, 0);
+	return _taccess(buf, 0);
 }
 
 
@@ -56,13 +56,13 @@ INT_PTR CMsnProto::GetAvatar(WPARAM wParam, LPARAM lParam)
 void CMsnProto::sttFakeAvatarAck(void* arg)
 {
 	Sleep(100);
-	SendBroadcast(((PROTO_AVATAR_INFORMATION*)arg)->hContact, ACKTYPE_AVATAR, ACKRESULT_FAILED, arg, 0);
+	SendBroadcast(((PROTO_AVATAR_INFORMATIONT*)arg)->hContact, ACKTYPE_AVATAR, ACKRESULT_FAILED, arg, 0);
 }
 
 INT_PTR CMsnProto::GetAvatarInfo(WPARAM wParam,LPARAM lParam)
 {
-	PROTO_AVATAR_INFORMATION* AI = (PROTO_AVATAR_INFORMATION*)lParam;
-	char filename[MAX_PATH];
+	PROTO_AVATAR_INFORMATIONT* AI = (PROTO_AVATAR_INFORMATIONT*)lParam;
+	TCHAR filename[MAX_PATH];
 	MsnContact *cont = NULL;
 
 	if (AI->hContact)
@@ -78,7 +78,7 @@ INT_PTR CMsnProto::GetAvatarInfo(WPARAM wParam,LPARAM lParam)
 	{
 		MSN_GetAvatarFileName(NULL, filename, SIZEOF(filename), NULL);
 		AI->format = MSN_GetImageFormat(filename);
-		if (AI->format != PA_FORMAT_UNKNOWN) strcpy(AI->filename, filename);
+		if (AI->format != PA_FORMAT_UNKNOWN) _tcscpy(AI->filename, filename);
 		return AI->format == PA_FORMAT_UNKNOWN ? GAIR_NOAVATAR : GAIR_SUCCESS;
 	}
 
@@ -115,7 +115,7 @@ INT_PTR CMsnProto::GetAvatarInfo(WPARAM wParam,LPARAM lParam)
 				mir_free(szAvatarHash);
 			}
 		}
-		strcpy(AI->filename, filename);
+		_tcscpy(AI->filename, filename);
 		return GAIR_SUCCESS;
 	}
 
@@ -128,7 +128,7 @@ INT_PTR CMsnProto::GetAvatarInfo(WPARAM wParam,LPARAM lParam)
 		if (wStatus == ID_STATUS_OFFLINE) 
 		{
 			deleteSetting(AI->hContact, "AvatarHash");
-			PROTO_AVATAR_INFORMATION* fakeAI = new PROTO_AVATAR_INFORMATION;
+			PROTO_AVATAR_INFORMATIONT* fakeAI = new PROTO_AVATAR_INFORMATIONT;
 			*fakeAI = *AI;
 			ForkThread(&CMsnProto::sttFakeAvatarAck, fakeAI);
 		}
@@ -140,8 +140,8 @@ INT_PTR CMsnProto::GetAvatarInfo(WPARAM wParam,LPARAM lParam)
 				ft->std.hContact = AI->hContact;
 				ft->p2p_object = mir_strdup(szContext);
 
-				MSN_GetAvatarFileName(AI->hContact, filename, SIZEOF(filename), "unk");
-				ft->std.tszCurrentFile = mir_a2t(filename);
+				MSN_GetAvatarFileName(AI->hContact, filename, SIZEOF(filename), _T("unk"));
+				ft->std.tszCurrentFile = mir_tstrdup(filename);
 
 				p2p_invite(MSN_APPID_AVATAR, ft, NULL);
 			}
@@ -186,11 +186,11 @@ INT_PTR CMsnProto::GetAvatarCaps(WPARAM wParam, LPARAM lParam)
 
 INT_PTR CMsnProto::SetAvatar(WPARAM wParam, LPARAM lParam)
 {
-	char* szFileName = (char*)lParam;
+	TCHAR* szFileName = (TCHAR*)lParam;
 
-	char tFileName[MAX_PATH];
-	MSN_GetAvatarFileName(NULL, tFileName, sizeof(tFileName), NULL);
-	remove(tFileName);
+	TCHAR tFileName[MAX_PATH];
+	MSN_GetAvatarFileName(NULL, tFileName, SIZEOF(tFileName), NULL);
+	_tremove(tFileName);
 
 	if (szFileName == NULL)
 	{
@@ -200,7 +200,7 @@ INT_PTR CMsnProto::SetAvatar(WPARAM wParam, LPARAM lParam)
 	}
 	else
 	{
-		int fileId = _open(szFileName, _O_RDONLY | _O_BINARY, _S_IREAD);
+		int fileId = _topen(szFileName, _O_RDONLY | _O_BINARY, _S_IREAD);
 		if (fileId < 0) return 1;
 
 		size_t dwPngSize = _filelengthi64(fileId);
@@ -210,16 +210,16 @@ INT_PTR CMsnProto::SetAvatar(WPARAM wParam, LPARAM lParam)
 		_read(fileId, pData, (unsigned)dwPngSize);
 		_close(fileId);
 
-		char drive[_MAX_DRIVE];
-		char dir[_MAX_DIR];
-		char fname[_MAX_FNAME];
-		char ext[_MAX_EXT];
-		_splitpath(szFileName, drive, dir, fname, ext);
+		TCHAR drive[_MAX_DRIVE];
+		TCHAR dir[_MAX_DIR];
+		TCHAR fname[_MAX_FNAME];
+		TCHAR ext[_MAX_EXT];
+		_tsplitpath(szFileName, drive, dir, fname, ext);
 
 		int fmt = MSN_SetMyAvatar(fname, pData, dwPngSize);
 
 		StoreAvatarData* par = (StoreAvatarData*)mir_alloc(sizeof(StoreAvatarData));
-		par->szName = mir_strdup(fname);
+		par->szName = mir_tstrdup(fname);
 		par->data = pData;
 		par->dataSize = dwPngSize;
 		par->szMimeType = "image/png";

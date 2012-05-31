@@ -171,10 +171,6 @@ char *gg_proxy_username = NULL;
  */
 char *gg_proxy_password = NULL;
 
-#ifdef GG_CONFIG_MIRANDA
-int gg_failno = 0;
-#endif
-
 #ifndef DOXYGEN
 
 #ifndef lint
@@ -736,7 +732,11 @@ static int gg_session_callback(struct gg_session *sess)
  *
  * \ingroup login
  */
+#ifdef GG_CONFIG_MIRANDA
+struct gg_session *gg_login(const struct gg_login_params *p, SOCKET *gg_sock, int *gg_failno)
+#else
 struct gg_session *gg_login(const struct gg_login_params *p)
+#endif
 {
 	struct gg_session *sess = NULL;
 	char *hostname;
@@ -913,7 +913,7 @@ struct gg_session *gg_login(const struct gg_login_params *p)
 					gg_debug(GG_DEBUG_MISC, "// gg_login() host \"%s\" not found\n", hostname);
 #ifdef GG_CONFIG_MIRANDA
 					errno = EACCES;
-					gg_failno = GG_FAILURE_RESOLVING;
+					*gg_failno = GG_FAILURE_RESOLVING;
 #endif
 					goto fail;
 				}
@@ -928,14 +928,22 @@ struct gg_session *gg_login(const struct gg_login_params *p)
 		if (gg_proxy_enabled)
 			sess->proxy_addr = addr.s_addr;
 
+#ifdef GG_CONFIG_MIRANDA
+		if ((sess->fd = gg_connect_internal(&addr, port, 0, gg_sock)) == -1) {
+#else
 		if ((sess->fd = gg_connect(&addr, port, 0)) == -1) {
+#endif
 			gg_debug(GG_DEBUG_MISC, "// gg_login() connection failed (errno=%d, %s)\n", errno, strerror(errno));
 
 			/* nie wyszło? próbujemy portu 443. */
 			if (sess->server_addr) {
 				sess->port = GG_HTTPS_PORT;
 
+#ifdef GG_CONFIG_MIRANDA
+				if ((sess->fd = gg_connect_internal(&addr, GG_HTTPS_PORT, 0, gg_sock)) == -1) {
+#else
 				if ((sess->fd = gg_connect(&addr, GG_HTTPS_PORT, 0)) == -1) {
+#endif
 					/* ostatnia deska ratunku zawiodła?
 					 * w takim razie zwijamy manatki. */
 					gg_debug_session(sess, GG_DEBUG_MISC, "// gg_login() connection failed (errno=%d, %s)\n", errno, strerror(errno));
@@ -962,7 +970,7 @@ struct gg_session *gg_login(const struct gg_login_params *p)
 			if (e->type == GG_EVENT_CONN_FAILED) {
 				errno = EACCES;
 #ifdef GG_CONFIG_MIRANDA
-				gg_failno = e->event.failure;
+				*gg_failno = e->event.failure;
 #endif
 				gg_debug(GG_DEBUG_MISC, "// gg_login() could not login\n");
 				gg_event_free(e);

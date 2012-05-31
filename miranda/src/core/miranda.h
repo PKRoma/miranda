@@ -108,6 +108,11 @@ typedef HRESULT ( STDAPICALLTYPE *pfnDwmIsCompositionEnabled )( BOOL * );
 extern pfnDwmExtendFrameIntoClientArea dwmExtendFrameIntoClientArea;
 extern pfnDwmIsCompositionEnabled dwmIsCompositionEnabled;
 
+extern LPFN_GETADDRINFO MyGetaddrinfo;
+extern LPFN_FREEADDRINFO MyFreeaddrinfo;
+extern LPFN_WSASTRINGTOADDRESSA MyWSAStringToAddress;
+extern LPFN_WSAADDRESSTOSTRINGA MyWSAAddressToString;
+
 /**** file.c ***************************************************************************/
 
 void PushFileEvent( HANDLE hContact, HANDLE hdbe, LPARAM lParam );
@@ -183,7 +188,7 @@ int   Ucs2toUtf8Len(const wchar_t *src);
 int    LangPackGetDefaultCodePage();
 int    LangPackGetDefaultLocale();
 TCHAR* LangPackPcharToTchar( const char* pszStr );
-char*  LangPackTranslateString(const char *szEnglish, const int W);
+char*  LangPackTranslateString(struct LangPackMuuid* pUuid, const char *szEnglish, const int W);
 
 unsigned int __fastcall hash(const void * key, unsigned int len);
 

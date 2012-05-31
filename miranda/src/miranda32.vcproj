@@ -45,7 +45,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				IgnoreImportLibrary="TRUE"
-				AdditionalDependencies="vc7to6.lib oldnames.lib wsock32.lib shlwapi.lib comctl32.lib winmm.lib version.lib"
+				AdditionalDependencies="vc7to6.lib oldnames.lib ws2_32.lib shlwapi.lib comctl32.lib winmm.lib version.lib"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
 				AdditionalLibraryDirectories="../lib"
@@ -115,7 +115,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="wsock32.lib comctl32.lib winmm.lib version.lib"
+				AdditionalDependencies="ws2_32.lib comctl32.lib winmm.lib version.lib"
 				LinkIncremental="2"
 				SuppressStartupBanner="TRUE"
 				GenerateDebugInformation="TRUE"
@@ -187,7 +187,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				IgnoreImportLibrary="TRUE"
-				AdditionalDependencies="vc7to6.lib oldnames.lib wsock32.lib shlwapi.lib comctl32.lib winmm.lib version.lib"
+				AdditionalDependencies="vc7to6.lib oldnames.lib ws2_32.lib shlwapi.lib comctl32.lib winmm.lib version.lib"
 				OutputFile="$(OutDir)/$(ProjectName).exe"
 				AdditionalLibraryDirectories="../lib"
 				IgnoreAllDefaultLibraries="TRUE"
@@ -259,7 +259,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				IgnoreImportLibrary="TRUE"
-				AdditionalDependencies="wsock32.lib comctl32.lib winmm.lib version.lib"
+				AdditionalDependencies="ws2_32.lib comctl32.lib winmm.lib version.lib"
 				OutputFile="$(OutDir)/$(ProjectName).exe"
 				LinkIncremental="2"
 				SuppressStartupBanner="TRUE"

@@ -26,6 +26,7 @@ MD5_INTERFACE md5i;
 MM_INTERFACE mmi;
 UTF8_INTERFACE utfi;
 LIST_INTERFACE li;
+int hLangpack;
 
 HINSTANCE hInstance;
 
@@ -131,6 +132,7 @@ extern "C" int __declspec(dllexport) Load(PLUGINLINK *link)
 	mir_getMD5I(&md5i);
 	mir_getUTFI(&utfi);
 	mir_getLI(&li);
+	mir_getLP(&pluginInfo);
 
 	hMooduleLoaded = HookEvent(ME_SYSTEM_MODULESLOADED, OnModulesLoaded);
 

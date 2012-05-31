@@ -24,13 +24,12 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 PLUGINLINK*    pluginLink;
 HINSTANCE      hInst = NULL;
-
-int            mirVersion;
-
 UTF8_INTERFACE utfi;
 MM_INTERFACE   mmi;
 LIST_INTERFACE li;
 
+int mirVersion;
+int hLangpack;
 
 static int CompareServers( const SERVER_INFO* p1, const SERVER_INFO* p2 )
 {
@@ -116,6 +115,7 @@ extern "C" int __declspec(dllexport) Load( PLUGINLINK *link )
 	mir_getMMI( &mmi );
 	mir_getUTFI( &utfi );
 	mir_getLI( &li );
+	mir_getLP( &pluginInfo );
 
 	AddIcons();
 	InitTimers();

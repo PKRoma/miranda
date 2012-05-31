@@ -46,9 +46,9 @@ struct avatar_up_req
     { mir_free(data1); mir_free(data2); }
 };
 
-int detect_image_type(const char* stream, const char* &type_ret);
-int detect_image_type(const char* file);
-bool get_avatar_hash(const char* file, char* hash, char** data, unsigned short &size);
+int detect_image_type(const char* stream, const TCHAR* &type_ret);
+int detect_image_type(const TCHAR* file);
+bool get_avatar_hash(const TCHAR* file, char* hash, char** data, unsigned short &size);
 void rescale_image(char *data, unsigned short size, char *&data1, unsigned short &size1);
 
 #endif

@@ -191,7 +191,6 @@ char* html_encode(const char* str)
 	return s;
 }
 
-
 char* html_to_bbcodes(char *src)
 {
 	char *ptr;
@@ -460,6 +459,21 @@ char* html_to_bbcodes(char *src)
 		else
 			rptr++;
 	}
+/*
+	rptr = dest;
+	while ((ptr = strstr(rptr, "aim:")) || (ptr = strstr(rptr, "AIM:")))
+	{
+		int addr=ptr-rptr;
+		int len=0;
+		for (len
+		dest=(char*)mir_realloc(dest,strlen(dest)+8);
+		rptr=dest;
+		ptr=rptr+addr;
+		ptrl = ptr + 5;
+		memcpy(ptrl,"[url=",7);
+		memmove(ptr, ptrl, strlen(ptrl) + 1);
+	}
+*/
 	return dest;
 }
 

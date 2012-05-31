@@ -30,30 +30,20 @@ void MSN_ConnectionProc(HANDLE hNewConnection, DWORD /* dwRemoteIP */, void* ext
 	
 	proto->MSN_DebugLog("File transfer connection accepted");
 
-	WORD localPort = 0;
-	SOCKET s = MSN_CallService(MS_NETLIB_GETSOCKET, (WPARAM)hNewConnection, 0);
-	if (s != INVALID_SOCKET) 
-	{
-		SOCKADDR_IN saddr;
-		int len = sizeof(saddr);
-		if (getsockname(s, (SOCKADDR*)&saddr, &len) != SOCKET_ERROR)
-			localPort = ntohs(saddr.sin_port);
-	}
+	NETLIBCONNINFO connInfo = { sizeof(connInfo) }; 
+	CallService(MS_NETLIB_GETCONNECTIONINFO, (WPARAM)hNewConnection, (LPARAM)&connInfo);
 
-	if (localPort != 0) 
+	ThreadData* T = proto->MSN_GetThreadByPort(connInfo.wPort);
+	if (T != NULL && T->s == NULL) 
 	{
-		ThreadData* T = proto->MSN_GetThreadByPort(localPort);
-		if (T != NULL && T->s == NULL) 
-		{
-			T->s = hNewConnection;
-			ReleaseSemaphore(T->hWaitEvent, 1, NULL);
-			return;
-		}
-		proto->MSN_DebugLog("There's no registered file transfers for incoming port #%d, connection closed", localPort);
+		T->s = hNewConnection;
+		ReleaseSemaphore(T->hWaitEvent, 1, NULL);
 	}
-	else proto->MSN_DebugLog("Unable to determine the local port, file server connection closed.");
-
-	Netlib_CloseHandle(hNewConnection);
+	else
+	{
+		proto->MSN_DebugLog("There's no registered file transfers for incoming port #%u, connection closed", connInfo.wPort);
+		Netlib_CloseHandle(hNewConnection);
+	}
 }
 
 
@@ -324,9 +314,9 @@ void CMsnProto::sttCustomSmiley(const char* msgBody, char* email, char* nick, in
 			UrlEncode(buf, smileyName, rlen*3);
 			mir_free(buf);
 
-			char path[MAX_PATH];
+			TCHAR path[MAX_PATH];
 			MSN_GetCustomSmileyFileName(hContact, path, SIZEOF(path), smileyName, iSmileyType);
-			ft->std.tszCurrentFile = mir_a2t(path);
+			ft->std.tszCurrentFile = mir_tstrdup(path);
 			mir_free(smileyName);
 
 			if (p2p_IsDlFileOk(ft))
@@ -1105,9 +1095,7 @@ void CMsnProto::MSN_InitSB(ThreadData* info, const char* szEmail)
 			0);
 	}
 
-	PROTO_AVATAR_INFORMATION ai = {0};
-	ai.cbSize = sizeof(ai);
-	ai.hContact = cont->hContact;
+	PROTO_AVATAR_INFORMATIONT ai = { sizeof(ai), cont->hContact };
 	GetAvatarInfo(GAIF_FORCE, (LPARAM)&ai);
 }
 
@@ -1434,7 +1422,7 @@ LBL_InvalidCommand:
 							char szSavedContext[64];
 							int result = getStaticString(hContact, "PictSavedContext", szSavedContext, sizeof(szSavedContext));
 							if (result || strcmp(szSavedContext, data.cmdstring))
-								setString(hContact, "PictSavedContext", szSavedContext);
+								SendBroadcast(hContact, ACKTYPE_AVATAR, ACKRESULT_STATUS, NULL, 0);
 						}
 						mir_free(szAvatarHash);
 					}
@@ -1941,7 +1929,7 @@ remove:
 				newThread->mType = SERVER_NOTIFICATION;
 				newThread->mTrid = info->mTrid;
 				newThread->mIsMainThread = true;
-				usingGateway = usingGateway || *data.security == 'G';
+				usingGateway |= (*data.security == 'G');
 				info->mIsMainThread = false;
 
 				MSN_DebugLog("Switching to notification server '%s'...", data.newServer);

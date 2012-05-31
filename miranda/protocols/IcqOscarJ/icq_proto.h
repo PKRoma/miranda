@@ -134,6 +134,7 @@ struct CIcqProto : public PROTO_INTERFACE
 	INT_PTR  __cdecl GetXStatusIcon(WPARAM wParam, LPARAM lParam);
 	INT_PTR  __cdecl GrantAuthorization(WPARAM wParam, LPARAM lParam);
 	INT_PTR  __cdecl menuXStatus(WPARAM wParam,LPARAM lParam,LPARAM fParam);
+	INT_PTR  __cdecl OpenWebProfile(WPARAM wParam, LPARAM lParam);
 	INT_PTR  __cdecl RecvAuth(WPARAM wParam, LPARAM lParam);
 	INT_PTR  __cdecl RequestAdvStatusIconIdx(WPARAM wParam, LPARAM lParam);
 	INT_PTR  __cdecl RequestAuthorization(WPARAM wParam, LPARAM lParam);
@@ -432,12 +433,12 @@ struct CIcqProto : public PROTO_INTERFACE
 	void   InitAvatars();
 	avatars_request *ReleaseAvatarRequestInQueue(avatars_request *request);
 
-	char*  GetOwnerAvatarFileName();
-	void   GetFullAvatarFileName(int dwUin, const char *szUid, int dwFormat, char *pszDest, int cbLen);
-	void   GetAvatarFileName(int dwUin, const char *szUid, char *pszDest, int cbLen);
+	TCHAR* GetOwnAvatarFileName();
+	void   GetFullAvatarFileName(int dwUin, const char *szUid, int dwFormat, TCHAR *pszDest, int cbLen);
+	void   GetAvatarFileName(int dwUin, const char *szUid, TCHAR *pszDest, int cbLen);
 	int    IsAvatarChanged(HANDLE hContact, const BYTE *pHash, int nHashLen);
 
-	int    GetAvatarData(HANDLE hContact, DWORD dwUin, const char *szUid, const BYTE *hash, unsigned int hashlen, const char *file);
+	int    GetAvatarData(HANDLE hContact, DWORD dwUin, const char *szUid, const BYTE *hash, unsigned int hashlen, const TCHAR *file);
 	int    SetAvatarData(HANDLE hContact, WORD wRef, const BYTE *data, unsigned int datalen);
 
 	void   StartAvatarThread(HANDLE hConn, char* cookie, WORD cookieLen);

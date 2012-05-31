@@ -99,45 +99,43 @@ void CIcqProto::InitAvatars()
 
 		if (ServiceExists(MS_FOLDERS_REGISTER_PATH))
 		{ // check if it does make sense
-			TCHAR szPath[MAX_PATH * 2];
+			TCHAR tszPath[MAX_PATH * 2];
 			TCHAR *tmpPath = Utils_ReplaceVarsT(_T("%miranda_avatarcache%"));
-
-			null_snprintf(szPath, MAX_PATH * 2, _T("%s\\") _T(TCHAR_STR_PARAM) _T("\\"), tmpPath, m_szModuleName);
+			null_snprintf(tszPath, MAX_PATH * 2, _T("%s\\") _T(TCHAR_STR_PARAM) _T("\\"), tmpPath, m_szModuleName);
 			mir_free(tmpPath);
 
-			hAvatarsFolder = FoldersRegisterCustomPathT(m_szModuleName, "Avatars Cache", szPath);
+			hAvatarsFolder = FoldersRegisterCustomPathT(m_szModuleName, "Avatars Cache", tszPath);
 		}
 	}
 }
 
 
-char* CIcqProto::GetOwnerAvatarFileName()
+TCHAR* CIcqProto::GetOwnAvatarFileName()
 {
 	DBVARIANT dbvFile = {DBVT_DELETED};
 
 	if (!getSettingStringT(NULL, "AvatarFile", &dbvFile))
 	{
 		TCHAR tmp[MAX_PATH * 2];
-
 		CallService(MS_UTILS_PATHTOABSOLUTET, (WPARAM)dbvFile.ptszVal, (LPARAM)tmp);
 		ICQFreeVariant(&dbvFile);
 
-		return tchar_to_utf8(tmp);
+		return null_strdup(tmp);
 	}
 	return NULL;
 }
 
 
-void CIcqProto::GetFullAvatarFileName(int dwUin, const char *szUid, int dwFormat, char *pszDest, int cbLen)
+void CIcqProto::GetFullAvatarFileName(int dwUin, const char *szUid, int dwFormat, TCHAR *pszDest, int cbLen)
 {
 	GetAvatarFileName(dwUin, szUid, pszDest, cbLen);
 	AddAvatarExt(dwFormat, pszDest);
 }
 
 
-void CIcqProto::GetAvatarFileName(int dwUin, const char *szUid, char *pszDest, int cbLen)
+void CIcqProto::GetAvatarFileName(int dwUin, const char *szUid, TCHAR *pszDest, int cbLen)
 {
-  TCHAR szPath[MAX_PATH * 2];
+	TCHAR szPath[MAX_PATH * 2];
 	FOLDERSGETDATA fgd = {0};
 
 	InitAvatars();
@@ -147,68 +145,64 @@ void CIcqProto::GetAvatarFileName(int dwUin, const char *szUid, char *pszDest, i
 	fgd.szPathT = szPath;
 	if (CallService(MS_FOLDERS_GET_PATH, (WPARAM)hAvatarsFolder, (LPARAM)&fgd))
 	{
-    TCHAR *tmpPath = Utils_ReplaceVarsT(_T("%miranda_avatarcache%"));
+		TCHAR *tmpPath = Utils_ReplaceVarsT(_T("%miranda_avatarcache%"));
 		null_snprintf(szPath, MAX_PATH * 2, _T("%s\\") _T(TCHAR_STR_PARAM) _T("\\"), tmpPath, m_szModuleName);
-    mir_free(tmpPath);
+		mir_free(tmpPath);
 	}
 	else
-	{
 		_tcscat(szPath, _T("\\"));
-	}
 	
-	char *szDir = tchar_to_utf8(szPath);
-  // fill the destination
-  null_strcpy(pszDest, szDir, cbLen - 1);
+	// fill the destination
+	lstrcpyn(pszDest, szPath, cbLen - 1);
 	int tPathLen = strlennull(pszDest);
 
 	// make sure the avatar cache directory exists
-	MakeDirUtf(szDir);
-	SAFE_FREE(&szDir);
+	CallService(MS_UTILS_CREATEDIRTREET, 0, (LPARAM)szPath);
 
 	if (dwUin != 0) 
 	{
-		_ltoa(dwUin, pszDest + tPathLen, 10);
+		_ltot(dwUin, pszDest + tPathLen, 10);
 	}
 	else if (szUid)
 	{
-		strcpy(pszDest + tPathLen, szUid);
+		TCHAR* p = mir_a2t(szUid);
+		_tcscpy(pszDest + tPathLen, p);
+		mir_free( p );
 	}
 	else
 	{
-		char szBuf[MAX_PATH];
+		TCHAR szBuf[MAX_PATH];
 
-		if (CallService(MS_DB_GETPROFILENAME, MAX_PATH, (LPARAM)szBuf))
-			strcpy(pszDest + tPathLen, "avatar");
+		if (CallService(MS_DB_GETPROFILENAMET, MAX_PATH, (LPARAM)szBuf))
+			_tcscpy(pszDest + tPathLen, _T("avatar"));
 		else 
 		{
-			char *szLastDot = strrchr(szBuf, '.');
+			TCHAR *szLastDot = _tcsrchr(szBuf, '.');
 			if (szLastDot) szLastDot[0] = '\0';
 
-      char *szProfileName = ansi_to_utf8(szBuf);
-			strcpy(pszDest + tPathLen, szProfileName);
-			strcat(pszDest + tPathLen, "_avt");
-      SAFE_FREE(&szProfileName);
+			_tcscpy(pszDest + tPathLen, szBuf);
+			_tcscat(pszDest + tPathLen, _T("_avt"));
 		}
 	}
 }
 
 
-void AddAvatarExt(int dwFormat, char *pszDest)
+void AddAvatarExt(int dwFormat, TCHAR *pszDest)
 {
 	if (dwFormat == PA_FORMAT_JPEG)
-		strcat(pszDest, ".jpg");
+		_tcscat(pszDest, _T(".jpg"));
 	else if (dwFormat == PA_FORMAT_GIF)
-		strcat(pszDest, ".gif");
+		_tcscat(pszDest, _T(".gif"));
 	else if (dwFormat == PA_FORMAT_PNG)
-		strcat(pszDest, ".png");
+		_tcscat(pszDest, _T(".png"));
 	else if (dwFormat == PA_FORMAT_BMP)
-		strcat(pszDest, ".bmp");
+		_tcscat(pszDest, _T(".bmp"));
 	else if (dwFormat == PA_FORMAT_XML)
-		strcat(pszDest, ".xml");
+		_tcscat(pszDest, _T(".xml"));
 	else if (dwFormat == PA_FORMAT_SWF)
-		strcat(pszDest, ".swf");
+		_tcscat(pszDest, _T(".swf"));
 	else
-		strcat(pszDest, ".dat");
+		_tcscat(pszDest, _T(".dat"));
 }
 
 
@@ -233,64 +227,57 @@ int DetectAvatarFormatBuffer(const char *pBuffer)
 }
 
 
-int DetectAvatarFormat(const char *szFile)
+int DetectAvatarFormat(const TCHAR *tszFile)
 {
-	int src = OpenFileUtf(szFile, _O_BINARY | _O_RDONLY, 0);
-
-	if (src != -1)
-	{
-		char pBuf[32];
-
-		_read(src, pBuf, 32);
-		_close(src);
-
-		return DetectAvatarFormatBuffer(pBuf);
-	}
-	else
+	int src = _topen(tszFile, _O_BINARY | _O_RDONLY, 0);
+	if (src == -1)
 		return PA_FORMAT_UNKNOWN;
+
+	char pBuf[32];
+	_read(src, pBuf, 32);
+	_close(src);
+
+	return DetectAvatarFormatBuffer(pBuf);
 }
 
 
 #define MD5_BLOCK_SIZE 1024*1024 /* use 1MB blocks */
 
-BYTE* calcMD5HashOfFile(const char *szFile)
+BYTE* calcMD5HashOfFile(const TCHAR *tszFile)
 {
-  int size = strlennull(szFile) + 2;
-  TCHAR *tszFile = (TCHAR*)_alloca(size * sizeof(TCHAR));
 	BYTE *res = NULL;
 
-	if (utf8_to_tchar_static(szFile, tszFile, size))
+	HANDLE hFile = NULL, hMap = NULL;
+
+	if ((hFile = CreateFile(tszFile, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL )) != INVALID_HANDLE_VALUE)
 	{
-		HANDLE hFile = NULL, hMap = NULL;
+		if ((hMap = CreateFileMapping(hFile, NULL, PAGE_READONLY, 0, 0, NULL)) != NULL)
+		{
+			long cbFileSize = GetFileSize(hFile, NULL);
 
-		if ((hFile = CreateFile(tszFile, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL )) != INVALID_HANDLE_VALUE)
-			if ((hMap = CreateFileMapping(hFile, NULL, PAGE_READONLY, 0, 0, NULL)) != NULL)
+			res = (BYTE*)SAFE_MALLOC(16 * sizeof(mir_md5_byte_t));
+			if (cbFileSize != 0 && res)
 			{
-				long cbFileSize = GetFileSize(hFile, NULL);
+				mir_md5_state_t state;
+				mir_md5_byte_t digest[16];
+				int dwOffset = 0;
 
-				res = (BYTE*)SAFE_MALLOC(16 * sizeof(mir_md5_byte_t));
-				if (cbFileSize != 0 && res)
+				mir_md5_init(&state);
+				while (dwOffset < cbFileSize)
 				{
-					mir_md5_state_t state;
-					mir_md5_byte_t digest[16];
-					int dwOffset = 0;
+					BYTE *ppMap = NULL;
+					int dwBlockSize = min(MD5_BLOCK_SIZE, cbFileSize-dwOffset);
 
-					mir_md5_init(&state);
-					while (dwOffset < cbFileSize)
-					{
-						BYTE *ppMap = NULL;
-						int dwBlockSize = min(MD5_BLOCK_SIZE, cbFileSize-dwOffset);
-
-						if (!(ppMap = (BYTE*)MapViewOfFile(hMap, FILE_MAP_READ, 0, dwOffset, dwBlockSize)))
-							break;
-						mir_md5_append(&state, (const mir_md5_byte_t *)ppMap, dwBlockSize);
-						UnmapViewOfFile(ppMap);
-						dwOffset += dwBlockSize;
-					}
-					mir_md5_finish(&state, digest);
-					memcpy(res, digest, 16 * sizeof(mir_md5_byte_t));
+					if (!(ppMap = (BYTE*)MapViewOfFile(hMap, FILE_MAP_READ, 0, dwOffset, dwBlockSize)))
+						break;
+					mir_md5_append(&state, (const mir_md5_byte_t *)ppMap, dwBlockSize);
+					UnmapViewOfFile(ppMap);
+					dwOffset += dwBlockSize;
 				}
+				mir_md5_finish(&state, digest);
+				memcpy(res, digest, 16 * sizeof(mir_md5_byte_t));
 			}
+		}
 
 		if (hMap  != NULL) CloseHandle(hMap);
 		if (hFile != NULL) CloseHandle(hFile);
@@ -412,20 +399,20 @@ static void NetLog_Hash(CIcqProto *ppro, const char *pszIdent, const BYTE *pHash
 // handle Owner's avatar hash changes
 void CIcqProto::handleAvatarOwnerHash(WORD wItemID, BYTE bFlags, BYTE *pData, BYTE nDataLen)
 {
-  if ((nDataLen >= 0x14) && m_bAvatarsEnabled)
-  {
+	if ((nDataLen >= 0x14) && m_bAvatarsEnabled)
+	{
 		switch (bFlags)
 		{
-			case 1: // our avatar is on the server
+		case 1: // our avatar is on the server
 			{
 				setSettingBlob(NULL, "AvatarHash", pData, 0x14); /// TODO: properly handle multiple avatar items (more formats)
 
 				setUserInfo();
 				// here we need to find a file, check its hash, if invalid get avatar from server
-				char *file = GetOwnerAvatarFileName();
+				TCHAR *file = GetOwnAvatarFileName();
 				if (!file)
 				{ // we have no avatar file, download from server
-					char szFile[MAX_PATH * 2 + 4];
+					TCHAR szFile[MAX_PATH * 2 + 4];
 #ifdef _DEBUG
 					NetLog_Server("We have no avatar, requesting from server.");
 #endif
@@ -438,7 +425,7 @@ void CIcqProto::handleAvatarOwnerHash(WORD wItemID, BYTE bFlags, BYTE *pData, BY
 
 					if (!hash)
 					{ // hash could not be calculated - probably missing file, get avatar from server
-						char szFile[MAX_PATH * 2 + 4];
+						TCHAR szFile[MAX_PATH * 2 + 4];
 #ifdef _DEBUG
 						NetLog_Server("We have no avatar, requesting from server.");
 #endif
@@ -463,12 +450,12 @@ void CIcqProto::handleAvatarOwnerHash(WORD wItemID, BYTE bFlags, BYTE *pData, BY
 						}
 						else
 						{ // get avatar from server
-							char szFile[MAX_PATH * 2 + 4];
+							TCHAR tszFile[MAX_PATH * 2 + 4];
 #ifdef _DEBUG
 							NetLog_Server("We have different avatar, requesting new from server.");
 #endif
-							GetAvatarFileName(0, NULL, szFile, MAX_PATH * 2);
-							GetAvatarData(NULL, m_dwLocalUIN, NULL, pData, 0x14, szFile);
+							GetAvatarFileName(0, NULL, tszFile, MAX_PATH * 2);
+							GetAvatarData(NULL, m_dwLocalUIN, NULL, pData, 0x14, tszFile);
 						}
 					}
 					SAFE_FREE((void**)&hash);
@@ -476,12 +463,12 @@ void CIcqProto::handleAvatarOwnerHash(WORD wItemID, BYTE bFlags, BYTE *pData, BY
 				}
 				break;
 			}
-			case 0x41: // request to upload avatar data
-			case 0x81:
+		case 0x41: // request to upload avatar data
+		case 0x81:
 			{ // request to re-upload avatar data
 				if (!m_bSsiEnabled) break; // we could not change serv-list if it is disabled...
 
-				char *file = GetOwnerAvatarFileName();
+				TCHAR *file = GetOwnAvatarFileName();
 				if (!file)
 				{ // we have no file to upload, remove hash from server
 					NetLog_Server("We do not have avatar, removing hash.");
@@ -504,14 +491,10 @@ void CIcqProto::handleAvatarOwnerHash(WORD wItemID, BYTE bFlags, BYTE *pData, BY
 
 					NetLog_Server("Uploading our avatar data.");
 
-          int size = strlennull(file) + 2;
-          TCHAR *szFile = (TCHAR*)_alloca(size * sizeof(TCHAR));
-
-	        if (utf8_to_tchar_static(file, szFile, size))
-  					if ((hFile = CreateFile(szFile, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL )) != INVALID_HANDLE_VALUE)
-	  					if ((hMap = CreateFileMapping(hFile, NULL, PAGE_READONLY, 0, 0, NULL)) != NULL)
-		  					if ((ppMap = (BYTE*)MapViewOfFile(hMap, FILE_MAP_READ, 0, 0, 0)) != NULL)
-			  					cbFileSize = GetFileSize(hFile, NULL);
+					if ((hFile = CreateFile(file, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL )) != INVALID_HANDLE_VALUE)
+						if ((hMap = CreateFileMapping(hFile, NULL, PAGE_READONLY, 0, 0, NULL)) != NULL)
+							if ((ppMap = (BYTE*)MapViewOfFile(hMap, FILE_MAP_READ, 0, 0, 0)) != NULL)
+								cbFileSize = GetFileSize(hFile, NULL);
 
 					if (cbFileSize != 0)
 					{
@@ -541,9 +524,9 @@ void CIcqProto::handleAvatarOwnerHash(WORD wItemID, BYTE bFlags, BYTE *pData, BY
 
 				SAFE_FREE(&file);
 				break;
-      }
-			default:
-				NetLog_Server("Received UNKNOWN Avatar Status.");
+			}
+		default:
+			NetLog_Server("Received UNKNOWN Avatar Status.");
 		}
 	}
 }
@@ -553,7 +536,7 @@ void CIcqProto::handleAvatarOwnerHash(WORD wItemID, BYTE bFlags, BYTE *pData, BY
 void CIcqProto::handleAvatarContactHash(DWORD dwUIN, char *szUID, HANDLE hContact, BYTE *pHash, int nHashLen, WORD wOldStatus)
 {
 	int bJob = FALSE;
-  BOOL avatarInfoPresent = FALSE;
+	BOOL avatarInfoPresent = FALSE;
 	int avatarType = -1;
 	BYTE *pAvatarHash = NULL;
 	int cbAvatarHash;
@@ -583,12 +566,12 @@ void CIcqProto::handleAvatarContactHash(DWORD dwUIN, char *szUID, HANDLE hContac
 			// 000C: ICQ contact photo (16 bytes)
 			// 000D: Last update time of online message
 			// 000E: Status mood
-      if (itemType == AVATAR_HASH_MINI && itemLen == 0x05 && avatarType == -1)
-      { // mini avatar
-        pAvatarHash = pHash;
-        cbAvatarHash = itemLen + 4;
-        avatarType = itemType;
-      }
+			if (itemType == AVATAR_HASH_MINI && itemLen == 0x05 && avatarType == -1)
+			{ // mini avatar
+				pAvatarHash = pHash;
+				cbAvatarHash = itemLen + 4;
+				avatarType = itemType;
+			}
 			else if (itemType == AVATAR_HASH_STATIC && (itemLen == 0x05 || itemLen == 0x10) && (avatarType == -1 || avatarType == AVATAR_HASH_MINI))
 			{ // normal avatar
 				pAvatarHash = pHash;
@@ -608,10 +591,10 @@ void CIcqProto::handleAvatarContactHash(DWORD dwUIN, char *szUID, HANDLE hContac
 				avatarType = itemType;
 			}
 		}
-    else if ((itemLen == 0) && (itemType == AVATAR_HASH_MINI || itemType == AVATAR_HASH_STATIC || itemType == AVATAR_HASH_FLASH || itemType == AVATAR_HASH_PHOTO))
-    { // empty item - indicating that avatar of that type was removed
-      avatarInfoPresent = TRUE;
-    }
+		else if ((itemLen == 0) && (itemType == AVATAR_HASH_MINI || itemType == AVATAR_HASH_STATIC || itemType == AVATAR_HASH_FLASH || itemType == AVATAR_HASH_PHOTO))
+		{ // empty item - indicating that avatar of that type was removed
+			avatarInfoPresent = TRUE;
+		}
 
 		pHash += itemLen + 4;
 		nHashLen -= itemLen + 4;
@@ -619,26 +602,26 @@ void CIcqProto::handleAvatarContactHash(DWORD dwUIN, char *szUID, HANDLE hContac
 
 	if (avatarType != -1)
 	{ // check settings, should we request avatar immediatelly?
-    DBVARIANT dbv = {DBVT_DELETED};
-		char szAvatar[MAX_PATH * 2 +4];
+		DBVARIANT dbv = {DBVT_DELETED};
+		TCHAR tszAvatar[MAX_PATH * 2 +4];
 		BYTE bAutoLoad = getSettingByte(NULL, "AvatarsAutoLoad", DEFAULT_LOAD_AVATARS);
 
-    if ((avatarType == AVATAR_HASH_STATIC || avatarType == AVATAR_HASH_MINI) && cbAvatarHash == 0x09 && !memcmp(pAvatarHash + 4, hashEmptyAvatar + 4, 0x05))
+		if ((avatarType == AVATAR_HASH_STATIC || avatarType == AVATAR_HASH_MINI) && cbAvatarHash == 0x09 && !memcmp(pAvatarHash + 4, hashEmptyAvatar + 4, 0x05))
 		{ // empty avatar - unlink image, clear hash
-      if (!getSetting(hContact, "AvatarHash", &dbv))
-      { // contact had avatar, clear hash, notify UI
+			if (!getSetting(hContact, "AvatarHash", &dbv))
+			{ // contact had avatar, clear hash, notify UI
 #ifdef _DEBUG
-  			NetLog_Hash(this, "old", dbv.pbVal, dbv.cpbVal);
+				NetLog_Hash(this, "old", dbv.pbVal, dbv.cpbVal);
 #endif
-        ICQFreeVariant(&dbv);
-        NetLog_Server("%s has removed Avatar.", strUID(dwUIN, szUID));
+				ICQFreeVariant(&dbv);
+				NetLog_Server("%s has removed Avatar.", strUID(dwUIN, szUID));
 
-  			deleteSetting(hContact, "AvatarHash");
-	  		BroadcastAck(hContact, ACKTYPE_AVATAR, ACKRESULT_STATUS, NULL, (LPARAM)NULL);
-      }
+				deleteSetting(hContact, "AvatarHash");
+				BroadcastAck(hContact, ACKTYPE_AVATAR, ACKRESULT_STATUS, NULL, (LPARAM)NULL);
+			}
 #ifdef _DEBUG
-      else
-        NetLog_Server("%s has empty Avatar.", strUID(dwUIN, szUID));
+			else
+				NetLog_Server("%s has empty Avatar.", strUID(dwUIN, szUID));
 #endif
 			return;
 		}
@@ -652,40 +635,40 @@ void CIcqProto::handleAvatarContactHash(DWORD dwUIN, char *szUID, HANDLE hContac
 			{ // hashes are the same
 				int dwPaFormat = getSettingByte(hContact, "AvatarType", PA_FORMAT_UNKNOWN);
 
-				GetFullAvatarFileName(dwUIN, szUID, dwPaFormat, szAvatar, MAX_PATH * 2);
-				if (FileAccessUtf(szAvatar, 0) == 0)
+				GetFullAvatarFileName(dwUIN, szUID, dwPaFormat, tszAvatar, MAX_PATH * 2);
+				if (_taccess(tszAvatar, 0) == 0)
 				{ // the file is there, link to contactphoto, save hash
 					NetLog_Server("%s has published Avatar. Image was found in the cache.", strUID(dwUIN, szUID));
 #ifdef _DEBUG
-			  	NetLog_Hash(this, "new", pAvatarHash, cbAvatarHash);
+					NetLog_Hash(this, "new", pAvatarHash, cbAvatarHash);
 #endif
 					setSettingBlob(hContact, "AvatarHash", pAvatarHash, cbAvatarHash);
 					BroadcastAck(hContact, ACKTYPE_AVATAR, ACKRESULT_STATUS, NULL, (LPARAM)NULL);
 				}
 				else
-        { // the file was lost, request avatar again
-          NetLog_Server("%s has published Avatar.", strUID(dwUIN, szUID));
+				{ // the file was lost, request avatar again
+					NetLog_Server("%s has published Avatar.", strUID(dwUIN, szUID));
 #ifdef _DEBUG
-			  	NetLog_Hash(this, "new", pAvatarHash, cbAvatarHash);
+					NetLog_Hash(this, "new", pAvatarHash, cbAvatarHash);
 #endif
 					bJob = TRUE;
-        }
+				}
 			}
 			else
-      { // the hash is not the one we want, request avatar
-        NetLog_Server("%s has published a new Avatar.", strUID(dwUIN, szUID));
+			{ // the hash is not the one we want, request avatar
+				NetLog_Server("%s has published a new Avatar.", strUID(dwUIN, szUID));
 #ifdef _DEBUG
-		  	NetLog_Hash(this, "new", pAvatarHash, cbAvatarHash);
+				NetLog_Hash(this, "new", pAvatarHash, cbAvatarHash);
 #endif
 				bJob = TRUE;
-      }
+			}
 		}
 		else
 		{ // we found hash check if it changed or not
 			if ((dbv.cpbVal != cbAvatarHash) || memcmp(dbv.pbVal, pAvatarHash, cbAvatarHash))
 			{ // the hash is different, request new avatar
 #ifdef _DEBUG
-  			NetLog_Hash(this, "old", dbv.pbVal, dbv.cpbVal);
+				NetLog_Hash(this, "old", dbv.pbVal, dbv.cpbVal);
 #endif
 				NetLog_Server("%s has changed Avatar.", strUID(dwUIN, szUID));
 #ifdef _DEBUG
@@ -704,38 +687,38 @@ void CIcqProto::handleAvatarContactHash(DWORD dwUIN, char *szUID, HANDLE hContac
 					if (dwPaFormat == PA_FORMAT_UNKNOWN)
 					{ // we do not know the format, get avatar again
 #ifdef _DEBUG
-      			NetLog_Hash(this, "current", dbv.pbVal, dbv.cpbVal);
+						NetLog_Hash(this, "current", dbv.pbVal, dbv.cpbVal);
 #endif
-    				NetLog_Server("%s has Avatar. Image is missing.", strUID(dwUIN, szUID));
+						NetLog_Server("%s has Avatar. Image is missing.", strUID(dwUIN, szUID));
 						bJob = 2;
 					}
 					else
 					{
-						GetFullAvatarFileName(dwUIN, szUID, dwPaFormat, szAvatar, MAX_PATH * 2);
-						if (FileAccessUtf(szAvatar, 0) != 0)
+						GetFullAvatarFileName(dwUIN, szUID, dwPaFormat, tszAvatar, MAX_PATH * 2);
+						if (_taccess(tszAvatar, 0) != 0)
 						{ // the file was lost, get it again
 #ifdef _DEBUG
-        			NetLog_Hash(this, "current", dbv.pbVal, dbv.cpbVal);
+							NetLog_Hash(this, "current", dbv.pbVal, dbv.cpbVal);
 #endif
-      				NetLog_Server("%s has Avatar. Image is missing.", strUID(dwUIN, szUID));
+							NetLog_Server("%s has Avatar. Image is missing.", strUID(dwUIN, szUID));
 							bJob = 2;
 						}
 #ifdef _DEBUG
-            else
-            {
-         			NetLog_Hash(this, "current", dbv.pbVal, dbv.cpbVal);
+						else
+						{
+							NetLog_Hash(this, "current", dbv.pbVal, dbv.cpbVal);
 
-              NetLog_Server("%s has Avatar. Image was found in the cache.", strUID(dwUIN, szUID));
-            }
+							NetLog_Server("%s has Avatar. Image was found in the cache.", strUID(dwUIN, szUID));
+						}
 #endif
 					}
 				}
 				else
 				{ // the hash is not the one we want, request avatar
 #ifdef _DEBUG
-     			NetLog_Hash(this, "current", dbv.pbVal, dbv.cpbVal);
+					NetLog_Hash(this, "current", dbv.pbVal, dbv.cpbVal);
 #endif
-   				NetLog_Server("%s has Avatar. Image was not retrieved yet.", strUID(dwUIN, szUID));
+					NetLog_Server("%s has Avatar. Image was not retrieved yet.", strUID(dwUIN, szUID));
 					bJob = 2;
 				}
 			}
@@ -767,47 +750,42 @@ void CIcqProto::handleAvatarContactHash(DWORD dwUIN, char *szUID, HANDLE hContac
 
 			if (bAutoLoad)
 			{ // auto-load is on, so request the avatar now, otherwise we are done
-				GetAvatarFileName(dwUIN, szUID, szAvatar, MAX_PATH * 2);
-				GetAvatarData(hContact, dwUIN, szUID, pAvatarHash, cbAvatarHash, szAvatar);
+				GetAvatarFileName(dwUIN, szUID, tszAvatar, MAX_PATH * 2);
+				GetAvatarData(hContact, dwUIN, szUID, pAvatarHash, cbAvatarHash, tszAvatar);
 			} // avatar request sent or added to queue
 		}
 	}
 	else if (avatarInfoPresent)
 	{ // hash was not found, clear the hash
-    DBVARIANT dbv = {DBVT_DELETED};
+		DBVARIANT dbv = {DBVT_DELETED};
 
-    if (!getSetting(hContact, "AvatarHash", &dbv))
-    { // contact had avatar, clear hash, notify UI
+		if (!getSetting(hContact, "AvatarHash", &dbv))
+		{ // contact had avatar, clear hash, notify UI
 #ifdef _DEBUG
- 			NetLog_Hash(this, "old", dbv.pbVal, dbv.cpbVal);
+			NetLog_Hash(this, "old", dbv.pbVal, dbv.cpbVal);
 #endif
-      ICQFreeVariant(&dbv);
-      NetLog_Server("%s has removed Avatar.", strUID(dwUIN, szUID));
+			ICQFreeVariant(&dbv);
+			NetLog_Server("%s has removed Avatar.", strUID(dwUIN, szUID));
 
- 			deleteSetting(hContact, "AvatarHash");
-  		BroadcastAck(hContact, ACKTYPE_AVATAR, ACKRESULT_STATUS, NULL, (LPARAM)NULL);
-    }
+			deleteSetting(hContact, "AvatarHash");
+			BroadcastAck(hContact, ACKTYPE_AVATAR, ACKRESULT_STATUS, NULL, (LPARAM)NULL);
+		}
 #ifdef _DEBUG
-    else
-      NetLog_Server("%s has no Avatar.", strUID(dwUIN, szUID));
+		else
+			NetLog_Server("%s has no Avatar.", strUID(dwUIN, szUID));
 #endif
 	}
 }
 
 
 // request avatar data from server
-int CIcqProto::GetAvatarData(HANDLE hContact, DWORD dwUin, const char *szUid, const BYTE *hash, unsigned int hashlen, const char *file)
+int CIcqProto::GetAvatarData(HANDLE hContact, DWORD dwUin, const char *szUid, const BYTE *hash, unsigned int hashlen, const TCHAR *file)
 {
 	uid_str szUidData;
 	char *pszUid = NULL;
 	if (!dwUin && szUid) 
-	{	// create a copy in local writable buffer
+	{ // create a copy in local writable buffer
 		strcpy(szUidData, szUid);
-		pszUid = szUidData;
-	}
-	else if (dwUin)
-	{	// prepare empty writable buffer
-		szUidData[0] = '\0';
 		pszUid = szUidData;
 	}
 
@@ -834,23 +812,23 @@ int CIcqProto::GetAvatarData(HANDLE hContact, DWORD dwUin, const char *szUid, co
 			ar = ar->pNext;
 		}
 
-    avatars_server_connection *pConnection = m_avatarsConnection;
+		avatars_server_connection *pConnection = m_avatarsConnection;
 
-    pConnection->_Lock();
-    m_avatarsMutex->Leave();
+		pConnection->_Lock();
+		m_avatarsMutex->Leave();
 
-    DWORD dwCookie = pConnection->sendGetAvatarRequest(hContact, dwUin, pszUid, hash, hashlen, file);
+		DWORD dwCookie = pConnection->sendGetAvatarRequest(hContact, dwUin, pszUid, hash, hashlen, file);
 
-    m_avatarsMutex->Enter();
-    pConnection->_Release();
+		m_avatarsMutex->Enter();
+		pConnection->_Release();
 
-    if (dwCookie)
-    { // return now if the request was sent successfully
-      m_avatarsMutex->Leave();
-      return dwCookie;
-    }
+		if (dwCookie)
+		{ // return now if the request was sent successfully
+			m_avatarsMutex->Leave();
+			return dwCookie;
+		}
 	}
-  // we failed to send request, or avatar thread not ready
+	// we failed to send request, or avatar thread not ready
 
 	// check if any request for this user is not already in the queue
 	avatars_request *ar = m_avatarsQueue;
@@ -867,8 +845,8 @@ int CIcqProto::GetAvatarData(HANDLE hContact, DWORD dwUin, const char *szUid, co
 			m_avatarsMutex->Leave();
 			NetLog_Server("Avatars: Ignoring duplicate get %s avatar request.", strUID(dwUin, pszUid));
 
-      // make sure avatar connection is in progress
-      requestAvatarConnection();
+			// make sure avatar connection is in progress
+			requestAvatarConnection();
 			return 0;
 		}
 		ar = ar->pNext;
@@ -882,8 +860,8 @@ int CIcqProto::GetAvatarData(HANDLE hContact, DWORD dwUin, const char *szUid, co
 	}
 	ar->hContact = hContact;
 	ar->dwUin = dwUin;
-  if (!dwUin)
-	  strcpy(ar->szUid, szUid);
+	if (!dwUin)
+		strcpy(ar->szUid, szUid);
 	ar->hash = (BYTE*)SAFE_MALLOC(hashlen);
 	if (!ar->hash)
 	{ // alloc failed
@@ -900,8 +878,8 @@ int CIcqProto::GetAvatarData(HANDLE hContact, DWORD dwUin, const char *szUid, co
 
 	NetLog_Server("Avatars: Request to get %s image added to queue.", strUID(dwUin, pszUid));
 
-  // make sure avatar connection is in progress
-  requestAvatarConnection();
+	// make sure avatar connection is in progress
+	requestAvatarConnection();
 
 	return -1; // we added to queue
 }
@@ -914,37 +892,37 @@ int CIcqProto::SetAvatarData(HANDLE hContact, WORD wRef, const BYTE *data, unsig
 
 	if (m_avatarsConnection && m_avatarsConnection->isReady()) // check if we are ready
 	{
-    avatars_server_connection *pConnection = m_avatarsConnection;
+		avatars_server_connection *pConnection = m_avatarsConnection;
 
-    pConnection->_Lock();
-    m_avatarsMutex->Leave();
+		pConnection->_Lock();
+		m_avatarsMutex->Leave();
 
-    DWORD dwCookie = pConnection->sendUploadAvatarRequest(hContact, wRef, data, datalen);
+		DWORD dwCookie = pConnection->sendUploadAvatarRequest(hContact, wRef, data, datalen);
 
-    m_avatarsMutex->Enter();
-    pConnection->_Release();
+		m_avatarsMutex->Enter();
+		pConnection->_Release();
 
-    if (dwCookie)
-    { // return now if the request was sent successfully
-      m_avatarsMutex->Leave();
-      return dwCookie;
-    }
+		if (dwCookie)
+		{ // return now if the request was sent successfully
+			m_avatarsMutex->Leave();
+			return dwCookie;
+		}
 	}
 	// we failed to send request, or avatar thread not ready
 
-  // check if any request for this user is not already in the queue
+	// check if any request for this user is not already in the queue
 	avatars_request *ar = m_avatarsQueue;
 	int bYet = 0;
 
-  while (ar)
+	while (ar)
 	{
 		if (ar->hContact == hContact && ar->type == ART_UPLOAD)
 		{ // we found it, return error
 			m_avatarsMutex->Leave();
 			NetLog_Server("Avatars: Ignoring duplicate upload avatar request.");
 
-      // make sure avatar connection is in progress
-      requestAvatarConnection();
+			// make sure avatar connection is in progress
+			requestAvatarConnection();
 			return 0;
 		}
 		ar = ar->pNext;
@@ -973,8 +951,8 @@ int CIcqProto::SetAvatarData(HANDLE hContact, WORD wRef, const BYTE *data, unsig
 
 	NetLog_Server("Avatars: Request to upload image added to queue.");
 
-  // make sure avatar connection is in progress
-  requestAvatarConnection();
+	// make sure avatar connection is in progress
+	requestAvatarConnection();
 
 	return -1; // we added to queue
 }
@@ -982,22 +960,22 @@ int CIcqProto::SetAvatarData(HANDLE hContact, WORD wRef, const BYTE *data, unsig
 
 void CIcqProto::requestAvatarConnection()
 {
-  m_avatarsMutex->Enter();
+	m_avatarsMutex->Enter();
 	if (!m_avatarsConnectionPending && (!m_avatarsConnection || (!m_avatarsConnection->isPending() && !m_avatarsConnection->isReady())))
 	{ // avatar connection is not pending, request new one
 		m_avatarsConnectionPending = TRUE;
-    m_avatarsMutex->Leave();
+		m_avatarsMutex->Leave();
 
 		icq_requestnewfamily(ICQ_AVATAR_FAMILY, &CIcqProto::StartAvatarThread);
 	}
-  else
-    m_avatarsMutex->Leave();
+	else
+		m_avatarsMutex->Leave();
 }
 
 
 void __cdecl CIcqProto::AvatarThread(avatars_server_connection *pInfo)
 {
-  NetLog_Server("%s thread started.", "Avatar");
+	NetLog_Server("%s thread started.", "Avatar");
 
 	// Execute connection handler
 	pInfo->connectionThread();
@@ -1018,7 +996,7 @@ void __cdecl CIcqProto::AvatarThread(avatars_server_connection *pInfo)
 
 
 avatars_server_connection::avatars_server_connection(CIcqProto *ppro, HANDLE hConnection, char *pCookie, WORD wCookieLen): 
-  isLoggedIn(FALSE), stopThread(FALSE), isActive(FALSE)
+isLoggedIn(FALSE), stopThread(FALSE), isActive(FALSE)
 {
 	this->ppro = ppro;
 	this->hConnection = hConnection;
@@ -1039,8 +1017,8 @@ avatars_server_connection::avatars_server_connection(CIcqProto *ppro, HANDLE hCo
 
 avatars_server_connection::~avatars_server_connection()
 {
-  SAFE_DELETE(&m_ratesMutex);
-  SAFE_DELETE(&localSeqMutex);
+	SAFE_DELETE(&m_ratesMutex);
+	SAFE_DELETE(&localSeqMutex);
 }
 
 
@@ -1076,12 +1054,12 @@ void avatars_server_connection::shutdownConnection()
 		Netlib_Shutdown(hConnection);
 }
 
-DWORD avatars_server_connection::sendGetAvatarRequest(HANDLE hContact, DWORD dwUin, char *szUid, const BYTE *hash, unsigned int hashlen, const char *file)
+DWORD avatars_server_connection::sendGetAvatarRequest(HANDLE hContact, DWORD dwUin, char *szUid, const BYTE *hash, unsigned int hashlen, const TCHAR *file)
 {
 	int i;
 	DWORD dwNow = GetTickCount();
 
-  ppro->m_avatarsMutex->Enter();
+	ppro->m_avatarsMutex->Enter();
 
 	for(i = 0; i < runCount;)
 	{ // look for timeouted requests
@@ -1111,7 +1089,7 @@ DWORD avatars_server_connection::sendGetAvatarRequest(HANDLE hContact, DWORD dwU
 		int bSendNow = TRUE;
 
 		{ // rate management
-      icq_lock l(m_ratesMutex);
+			icq_lock l(m_ratesMutex);
 			WORD wGroup = m_rates->getGroupFromSNAC(ICQ_AVATAR_FAMILY, ICQ_AVATAR_GET_REQUEST);
 
 			if (m_rates->getNextRateLevel(wGroup) < m_rates->getLimitLevel(wGroup, RML_ALERT))
@@ -1133,7 +1111,7 @@ DWORD avatars_server_connection::sendGetAvatarRequest(HANDLE hContact, DWORD dwU
 
 			int nUinLen = getUIDLen(dwUin, szUid);
 
-      cookie_avatar *ack = (cookie_avatar*)SAFE_MALLOC(sizeof(cookie_avatar));
+			cookie_avatar *ack = (cookie_avatar*)SAFE_MALLOC(sizeof(cookie_avatar));
 			if (!ack) return 0; // Failure: out of memory
 
 			ack->dwUin = 1; //dwUin; // I should be damned for this - only to identify get request
@@ -1169,13 +1147,13 @@ DWORD avatars_server_connection::sendGetAvatarRequest(HANDLE hContact, DWORD dwU
 	else
 		ppro->m_avatarsMutex->Leave();
 
-  return 0; // Failure
+	return 0; // Failure
 }
 
 
 DWORD avatars_server_connection::sendUploadAvatarRequest(HANDLE hContact, WORD wRef, const BYTE *data, unsigned int datalen)
 {
-  cookie_avatar *ack = (cookie_avatar*)SAFE_MALLOC(sizeof(cookie_avatar));
+	cookie_avatar *ack = (cookie_avatar*)SAFE_MALLOC(sizeof(cookie_avatar));
 	if (!ack) return 0; // Failure: out of memory
 
 	ack->hContact = hContact;
@@ -1197,14 +1175,14 @@ DWORD avatars_server_connection::sendUploadAvatarRequest(HANDLE hContact, WORD w
 	}
 	ppro->ReleaseCookie(dwCookie); // failed to send, free resources
 
-  return 0;
+	return 0;
 }
 
 
 void avatars_server_connection::checkRequestQueue()
 {
 #ifdef _DEBUG
-  NetLog_Server("Checking request queue...");
+	NetLog_Server("Checking request queue...");
 #endif
 
 	ppro->m_avatarsMutex->Enter();
@@ -1214,7 +1192,7 @@ void avatars_server_connection::checkRequestQueue()
 		avatars_request *pRequest = ppro->m_avatarsQueue;
 
 		{ // rate management
-      icq_lock l(m_ratesMutex);
+			icq_lock l(m_ratesMutex);
 			WORD wGroup = m_rates->getGroupFromSNAC(ICQ_AVATAR_FAMILY, (WORD)(pRequest->type == ART_UPLOAD ? ICQ_AVATAR_GET_REQUEST : ICQ_AVATAR_UPLOAD_REQUEST));
 
 			if (m_rates->getNextRateLevel(wGroup) < m_rates->getLimitLevel(wGroup, RML_ALERT))
@@ -1226,46 +1204,46 @@ void avatars_server_connection::checkRequestQueue()
 			}
 		}
 
-    if (pRequest->type == ART_BLOCK)
-    { // block contact processing
-      avatars_request **ppRequest = &ppro->m_avatarsQueue;
+		if (pRequest->type == ART_BLOCK)
+		{ // block contact processing
+			avatars_request **ppRequest = &ppro->m_avatarsQueue;
 
-      while (pRequest)
-      {
-			  if (GetTickCount() > pRequest->timeOut)
-        { // expired contact block, remove
-          *ppRequest = pRequest->pNext;
-          SAFE_DELETE(&pRequest);
+			while (pRequest)
+			{
+				if (GetTickCount() > pRequest->timeOut)
+				{ // expired contact block, remove
+					*ppRequest = pRequest->pNext;
+					SAFE_DELETE(&pRequest);
 				}
-        else // it is not time, move to next request
-          ppRequest = &pRequest->pNext;
+				else // it is not time, move to next request
+					ppRequest = &pRequest->pNext;
 
-        pRequest = *ppRequest;
-      }
-      // end queue processing (only block requests follows)
+				pRequest = *ppRequest;
+			}
+			// end queue processing (only block requests follows)
 			break;
-    }
-    else
-		  ppro->m_avatarsQueue = pRequest->pNext;
+		}
+		else
+			ppro->m_avatarsQueue = pRequest->pNext;
 
-    ppro->m_avatarsMutex->Leave();
+		ppro->m_avatarsMutex->Leave();
 
 #ifdef _DEBUG
 		NetLog_Server("Picked up the %s request from queue.", strUID(pRequest->dwUin, pRequest->szUid));
 #endif
 		switch (pRequest->type)
 		{
-			case ART_GET: // get avatar
-			  sendGetAvatarRequest(pRequest->hContact, pRequest->dwUin, pRequest->szUid, pRequest->hash, pRequest->hashlen, pRequest->szFile);
-				break;
+		case ART_GET: // get avatar
+			sendGetAvatarRequest(pRequest->hContact, pRequest->dwUin, pRequest->szUid, pRequest->hash, pRequest->hashlen, pRequest->szFile);
+			break;
 
-			case ART_UPLOAD: // set avatar
-				sendUploadAvatarRequest(pRequest->hContact, pRequest->wRef, pRequest->pData, pRequest->cbData);
-				break;
+		case ART_UPLOAD: // set avatar
+			sendUploadAvatarRequest(pRequest->hContact, pRequest->wRef, pRequest->pData, pRequest->cbData);
+			break;
 		}
 		SAFE_DELETE(&pRequest);
 
-    ppro->m_avatarsMutex->Enter();
+		ppro->m_avatarsMutex->Enter();
 	}
 
 	ppro->m_avatarsMutex->Leave();
@@ -1334,7 +1312,7 @@ void avatars_server_connection::connectionThread()
 				continue; 
 			}
 			if (!stopThread)
-				  NetLog_Server("Abortive closure of server socket, error: %d", GetLastError());
+				NetLog_Server("Abortive closure of server socket, error: %d", GetLastError());
 			else
 				NetLog_Server("Connection closed.");
 			break;
@@ -1348,7 +1326,7 @@ void avatars_server_connection::connectionThread()
 			checkRequestQueue();
 		}
 	}
-  { // release connection
+	{ // release connection
 		icq_lock l(localSeqMutex);
 		NetLib_SafeCloseHandle(&hPacketRecver); // Close the packet receiver 
 		NetLib_CloseConnection(&hConnection, FALSE); // Close the connection
@@ -1357,7 +1335,7 @@ void avatars_server_connection::connectionThread()
 	{ // release rates
 		icq_lock l(m_ratesMutex);
 		SAFE_DELETE((void_struct**)&m_rates);
-  }
+	}
 
 	SAFE_FREE((void**)&pCookie);
 }
@@ -1511,7 +1489,7 @@ void avatars_server_connection::handleDataChannel(BYTE *buf, WORD datalen)
 #ifdef _DEBUG
 		if (snacHeader.wFlags & 0x8000)
 			NetLog_Server(" Received SNAC(x%02X,x%02X), version %u", snacHeader.wFamily, snacHeader.wSubtype, snacHeader.wVersion);
-    else
+		else
 			NetLog_Server(" Received SNAC(x%02X,x%02X)", snacHeader.wFamily, snacHeader.wSubtype);
 #endif
 
@@ -1577,7 +1555,7 @@ void avatars_server_connection::handleServiceFam(BYTE *pBuffer, WORD wBufferLeng
 #ifdef _DEBUG
 		NetLog_Server("Sending Rate Info Ack");
 #endif
-    m_rates->initAckPacket(&packet);
+		m_rates->initAckPacket(&packet);
 		sendServerPacket(&packet);
 
 		// send cli_ready
@@ -1612,7 +1590,7 @@ void avatars_server_connection::handleAvatarFam(BYTE *pBuffer, WORD wBufferLengt
 
 			if (ppro->FindCookie(pSnacHeader->dwRef, NULL, (void**)&pCookieData))
 			{
-				PROTO_AVATAR_INFORMATION ai = {0};
+				PROTO_AVATAR_INFORMATIONT ai = {0};
 				BYTE bResult;
 
 				{ // remove from active request list
@@ -1632,7 +1610,7 @@ void avatars_server_connection::handleAvatarFam(BYTE *pBuffer, WORD wBufferLengt
 				ai.cbSize = sizeof(PROTO_AVATAR_INFORMATION);
 				ai.format = PA_FORMAT_JPEG; // this is for error only
 				ai.hContact = pCookieData->hContact;
-				utf8_decode_static(pCookieData->szFile, ai.filename, SIZEOF(ai.filename)); // Avatar API does not support unicode :-(
+				lstrcpyn(ai.filename, pCookieData->szFile, SIZEOF(ai.filename)); // Avatar API does not support unicode :-(
 				AddAvatarExt(PA_FORMAT_JPEG, ai.filename); 
 
 				ppro->FreeCookie(pSnacHeader->dwRef);
@@ -1688,16 +1666,16 @@ void avatars_server_connection::handleAvatarFam(BYTE *pBuffer, WORD wBufferLengt
 						NetLog_Server("Received user avatar, storing (%d bytes).", datalen);
 
 						int dwPaFormat = DetectAvatarFormatBuffer((char*)pBuffer);
-						char *szImageFile = (char*)_alloca(strlennull(pCookieData->szFile) + 6);
+						TCHAR *tszImageFile = (TCHAR*)_alloca(sizeof(TCHAR)*(strlennull(pCookieData->szFile) + 6));
 
-						strcpy(szImageFile, pCookieData->szFile);
-						AddAvatarExt(dwPaFormat, szImageFile);
+						_tcscpy(tszImageFile, pCookieData->szFile);
+						AddAvatarExt(dwPaFormat, tszImageFile);
 
 						ppro->setSettingByte(pCookieData->hContact, "AvatarType", (BYTE)dwPaFormat);
 						ai.format = dwPaFormat; // set the format
-						utf8_decode_static(szImageFile, ai.filename, SIZEOF(ai.filename)); // Avatar API does not support unicode :-(
+						lstrcpyn(ai.filename, tszImageFile, SIZEOF(ai.filename));
 
-						int out = OpenFileUtf(szImageFile, _O_BINARY | _O_CREAT | _O_TRUNC | _O_WRONLY, _S_IREAD | _S_IWRITE);
+						int out = _topen(tszImageFile, _O_BINARY | _O_CREAT | _O_TRUNC | _O_WRONLY, _S_IREAD | _S_IWRITE);
 						if (out != -1) 
 						{
 							DBVARIANT dbv = {DBVT_DELETED};
@@ -1707,16 +1685,9 @@ void avatars_server_connection::handleAvatarFam(BYTE *pBuffer, WORD wBufferLengt
 
 							if (!pCookieData->hContact) // our avatar, set filename
 							{
-								int size = strlennull(szImageFile) + 2;
-								TCHAR *tszImageFile = (TCHAR*)_alloca(size * sizeof(TCHAR));
-
-								if (utf8_to_tchar_static(szImageFile, tszImageFile, size))
-								{
-									TCHAR tmp[MAX_PATH * 2];
-
-									CallService(MS_UTILS_PATHTORELATIVET, (WPARAM)tszImageFile, (LPARAM)tmp);
-									ppro->setSettingStringT(NULL, "AvatarFile", tmp);
-								}
+								TCHAR tmp[MAX_PATH * 2];
+								CallService(MS_UTILS_PATHTORELATIVET, (WPARAM)tszImageFile, (LPARAM)tmp);
+								ppro->setSettingStringT(NULL, "AvatarFile", tmp);
 							}
 							else
 							{ // contact's avatar set hash
@@ -1732,7 +1703,7 @@ void avatars_server_connection::handleAvatarFam(BYTE *pBuffer, WORD wBufferLengt
 									NetLog_Server("Warning: DB error (no hash in DB).");
 									// the hash was lost, try to fix that
 									if (ppro->setSettingBlob(pCookieData->hContact, "AvatarSaved", pCookieData->hash, pCookieData->hashlen) ||
-										  ppro->setSettingBlob(pCookieData->hContact, "AvatarHash", pCookieData->hash, pCookieData->hashlen))
+										ppro->setSettingBlob(pCookieData->hContact, "AvatarHash", pCookieData->hash, pCookieData->hashlen))
 									{
 										NetLog_Server("Failed to save avatar hash to DB");
 									}

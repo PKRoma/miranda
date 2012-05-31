@@ -43,6 +43,7 @@ Last change by : $Author$
 
 HINSTANCE hInst;
 PLUGINLINK *pluginLink;
+int hLangpack;
 
 int g_cbCountries;
 struct CountryListEntry* g_countries;

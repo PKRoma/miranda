@@ -50,6 +50,7 @@ struct LIST_INTERFACE li;
 XML_API xi;
 SSL_API si;
 CLIST_INTERFACE *pcli;
+int hLangpack;
 list_t g_Instances;
 
 // Event hooks
@@ -397,6 +398,7 @@ int gg_event(PROTO_INTERFACE *proto, PROTOEVENTTYPE eventType, WPARAM wParam, LP
 #endif
 			// Init misc stuff
 			gg_icolib_init();
+			gg_initpopups(gg);
 			gg_gc_init(gg);
 			gg_keepalive_init(gg);
 			gg_img_init(gg);
@@ -511,6 +513,7 @@ static GGPROTO *gg_proto_init(const char* pszProtoName, const TCHAR* tszUserName
 
 	// Offline contacts and clear logon time
 	gg_setalloffline(gg);
+	DBWriteContactSettingDword(NULL, GG_PROTO, GG_KEY_LOGONTIME, 0);
 
 	if ((dwVersion = DBGetContactSettingDword(NULL, GG_PROTO, GG_PLUGINVERSION, 0)) < pluginInfo.version)
 		gg_cleanuplastplugin(gg, dwVersion);
@@ -590,6 +593,7 @@ int __declspec(dllexport) Load(PLUGINLINK * link)
 	mir_getMD5I(&md5i);
 	mir_getLI(&li);
 	mir_getXI(&xi);
+	mir_getLP(&pluginInfo);
 
 	// Init winsock
 	if (WSAStartup(MAKEWORD( 1, 1 ), &wsaData))

@@ -230,9 +230,8 @@ static INT_PTR createDirTreeW(WPARAM, LPARAM lParam)
 
 int InitPathUtilsW(void)
 {
-	TCHAR *p = 0;
 	GetModuleFileName(hMirandaInst, szMirandaPathW, SIZEOF(szMirandaPathW));
-	p = _tcsrchr(szMirandaPathW,'\\');
+	TCHAR *p = _tcsrchr(szMirandaPathW,'\\');
 	if ( p )
 		p[1] = 0;
 	mir_sntprintf(szMirandaPathWLower, SIZEOF(szMirandaPathWLower), _T("%s"), szMirandaPathW);
