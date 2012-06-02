@@ -872,14 +872,13 @@ void Cache_ProceedAvatarInList(struct ClcData *dat, struct ClcContact *contact)
 		{
 			height_clip = width_clip * ace->bmHeight / ace->bmWidth;					
 		}
-		if (wildcmpi(contact->avatar_data->szFilename,"*.gif"))
+		if (wildcmpi(contact->avatar_data->szFilename,_T("*.gif")))
 		{
-			TCHAR *temp=mir_a2t(contact->avatar_data->szFilename);
 			int res;
 			if (old_pos==AVATAR_POS_ANIMATED)
 				AniAva_RemoveAvatar(contact->hContact);
-			res=AniAva_AddAvatar(contact->hContact,temp,width_clip,height_clip);
-			mir_free(temp);
+
+			res=AniAva_AddAvatar(contact->hContact, contact->avatar_data->szFilename, width_clip, height_clip);
 			if (res)
 			{
 				contact->avatar_pos=AVATAR_POS_ANIMATED;
@@ -1013,10 +1012,10 @@ void Cache_GetAvatar(struct ClcData *dat, struct ClcContact *contact)
         contact->avatar_pos = AVATAR_POS_DONT_HAVE;
         if (dat->avatars_show && !ModernGetSettingByte(contact->hContact, "CList", "HideContactAvatar", 0))
         {
-            DBVARIANT dbv={0};
-            if (!ModernGetSetting(contact->hContact, "ContactPhoto", "File", &dbv) && (dbv.type == DBVT_ASCIIZ || dbv.type == DBVT_UTF8))
+            DBVARIANT dbv;
+            if (!ModernGetSettingTString(contact->hContact, "ContactPhoto", "File", &dbv))
             {
-                HBITMAP hBmp = (HBITMAP) CallService(MS_UTILS_LOADBITMAP, 0, (LPARAM)dbv.pszVal);
+                HBITMAP hBmp = (HBITMAP) CallService(MS_UTILS_LOADBITMAPT, 0, (LPARAM)dbv.ptszVal);
                 if (hBmp != NULL)
                 {
                     // Make bounds

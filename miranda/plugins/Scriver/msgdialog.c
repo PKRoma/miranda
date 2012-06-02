@@ -64,30 +64,6 @@ static DWORD CALLBACK StreamOutCallback(DWORD_PTR dwCookie, LPBYTE pbBuff, LONG 
     return 0;
 }
 
-TCHAR *GetRichEditSelection(HWND hwnd) {
-	CHARRANGE sel;
-	SendMessage(hwnd, EM_EXGETSEL, 0, (LPARAM)&sel);
-	if (sel.cpMin!=sel.cpMax) {
-		MessageSendQueueItem msi;
-		EDITSTREAM stream;
-		DWORD dwFlags = 0;
-		ZeroMemory(&stream, sizeof(stream));
-		stream.pfnCallback = StreamOutCallback;
-		stream.dwCookie = (DWORD_PTR) &msi;
-#if defined( _UNICODE )
-		dwFlags = SF_TEXT|SF_UNICODE|SFF_SELECTION;
-#else
-		dwFlags = SF_TEXT|SFF_SELECTION;
-#endif
-		msi.sendBuffer = NULL;
-		msi.sendBufferSize = 0;
-		SendMessage(hwnd, EM_STREAMOUT, (WPARAM)dwFlags, (LPARAM) & stream);
-		return (TCHAR *)msi.sendBuffer;
-	}
-	return NULL;
-}
-
-
 static TCHAR *GetIEViewSelection(struct MessageWindowData *dat) {
 	IEVIEWEVENT event;
 	ZeroMemory(&event, sizeof(event));
@@ -421,7 +397,10 @@ static LRESULT CALLBACK LogEditSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, 
 			case IDM_SEARCH_YAHOO:
 			case IDM_SEARCH_WIKIPEDIA:
 			case IDM_SEARCH_FOODNETWORK:
+			case IDM_SEARCH_GOOGLE_MAPS:
+			case IDM_SEARCH_GOOGLE_TRANSLATE:
 				SearchWord(pszWord, uID - IDM_SEARCH_GOOGLE + SEARCHENGINE_GOOGLE);
+				PostMessage(GetParent(hwnd), WM_MOUSEACTIVATE, 0, 0 );
 				break;
 			}
 			DestroyMenu(hMenu);

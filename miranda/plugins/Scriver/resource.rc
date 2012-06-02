@@ -578,8 +578,10 @@ IDI_FILTER2             ICON                    "res/chat/filter2.ico"
 
 IDI_GOOGLE              ICON                    "res/google.ico"
 IDI_BING                ICON                    "res/bing.ico"
-IDI_YAHOO           	ICON                    "res/yahoo.ico"
 IDI_WIKIPEDIA           ICON                    "res/wikipedia.ico"
+IDI_GOOGLE_MAPS         ICON                    "res/gmaps.ico"
+IDI_GOOGLE_TRANSLATE    ICON                    "res/gtranslate.ico"
+IDI_YAHOO           	ICON                    "res/yahoo.ico"
 IDI_FOODNETWORK         ICON                    "res/foodnetwork.ico"
 
 
@@ -609,8 +611,12 @@ BEGIN
         BEGIN
             MENUITEM "Google",                      IDM_SEARCH_GOOGLE
             MENUITEM "Bing",                        IDM_SEARCH_BING
-            MENUITEM "Yahoo",                       IDM_SEARCH_YAHOO
             MENUITEM "Wikipedia (en)",              IDM_SEARCH_WIKIPEDIA
+	        MENUITEM SEPARATOR
+            MENUITEM "Google Maps",             IDM_SEARCH_GOOGLE_MAPS
+            MENUITEM "Google Translate",        IDM_SEARCH_GOOGLE_TRANSLATE
+	        MENUITEM SEPARATOR
+            MENUITEM "Yahoo",                       IDM_SEARCH_YAHOO
             MENUITEM "Foodnetwork",                 IDM_SEARCH_FOODNETWORK
         END
         MENUITEM SEPARATOR
@@ -660,8 +666,12 @@ BEGIN
         BEGIN
             MENUITEM "Google",                  IDM_SEARCH_GOOGLE
             MENUITEM "Bing",                    IDM_SEARCH_BING
-            MENUITEM "Yahoo",                   IDM_SEARCH_YAHOO
             MENUITEM "Wikipedia (en)",          IDM_SEARCH_WIKIPEDIA
+	        MENUITEM SEPARATOR
+            MENUITEM "Google Maps",             IDM_SEARCH_GOOGLE_MAPS
+            MENUITEM "Google Translate",        IDM_SEARCH_GOOGLE_TRANSLATE
+	        MENUITEM SEPARATOR
+            MENUITEM "Yahoo",                   IDM_SEARCH_YAHOO
             MENUITEM "Foodnetwork",             IDM_SEARCH_FOODNETWORK
         END
     END
@@ -693,12 +703,12 @@ BEGIN
             VALUE "Comments", "http://www.miranda-im.org"
             VALUE "CompanyName", "Miranda IM Development Team"
             VALUE "FileDescription", "Scriver - send and receive instant messages"
-            VALUE "FileVersion", "2.9.0.10"
+            VALUE "FileVersion", "2.9.0.11"
             VALUE "InternalName", "scriver"
             VALUE "LegalCopyright", "Copyright (c) 2000-2012 Miranda IM Project"
             VALUE "OriginalFilename", "scriver.dll"
             VALUE "ProductName", "Scriver"
-            VALUE "ProductVersion", "2.9.0.10"
+            VALUE "ProductVersion", "2.9.0.11"
         END
     END
     BLOCK "VarFileInfo"

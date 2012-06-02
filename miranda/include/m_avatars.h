@@ -80,7 +80,7 @@ typedef struct avatarCacheEntryA {
 	char szFilename[MAX_PATH];      // filename of the avatar (absolute path)
 } AVATARCACHEENTRYA;
 
-#if MIRANDA_VER >= 0x0A00
+#if MIRANDA_VER >= 0x0900
 typedef struct avatarCacheEntry {
 	DWORD cbSize;                   // set to sizeof(struct)
 	HANDLE hContact;                // contacts handle, 0, if it is a protocol avatar

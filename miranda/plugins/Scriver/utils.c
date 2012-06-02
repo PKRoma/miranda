@@ -319,35 +319,98 @@ char* GetRichTextRTF(HWND hwnd)
 	return pszText; // pszText contains the text
 }
 
+void rtrimText(TCHAR *text) 
+{
+	static TCHAR szTrimString[] = _T(":;,.!?\'\"><()[]- \r\n");
+	int iLen = lstrlen(text)-1;
+	while(iLen >= 0 && _tcschr(szTrimString, text[iLen])) {
+		text[iLen] = _T('\0');
+		iLen--;
+	}
+}
+
+TCHAR *limitText(TCHAR *text, int limit)
+{
+	int len = lstrlen(text);
+	if (len > g_dat->limitNamesLength) 
+	{
+		TCHAR *ptszTemp = (TCHAR *)mir_alloc(sizeof(TCHAR) * (limit + 4));
+		_tcsncpy(ptszTemp, text, limit + 1);
+		_tcsncpy(ptszTemp + limit, _T("..."), 4);
+		return ptszTemp;
+	}
+	return text;
+}
 TCHAR *GetRichTextWord(HWND hwnd, POINTL *ptl)
 {
 	TCHAR* pszWord = NULL;
 	long iCharIndex, start, end, iRes;
-	iCharIndex = SendMessage(hwnd, EM_CHARFROMPOS, 0, (LPARAM)ptl);
-	if (iCharIndex >= 0) {
-		start = SendMessage(hwnd, EM_FINDWORDBREAK, WB_LEFT, iCharIndex);//-iChars;
-		end = SendMessage(hwnd, EM_FINDWORDBREAK, WB_RIGHT, iCharIndex);//-iChars;
-		if (end - start > 0) {
-			TEXTRANGE tr;
-			CHARRANGE cr;
-			static TCHAR szTrimString[] = _T(":;,.!?\'\"><()[]- \r\n");
-			ZeroMemory(&tr, sizeof(TEXTRANGE));
-			pszWord = mir_alloc(sizeof(TCHAR) * (end - start + 1));
-			cr.cpMin = start;
-			cr.cpMax = end;
-			tr.chrg = cr;
-			tr.lpstrText = pszWord;
-			iRes = SendMessage(hwnd, EM_GETTEXTRANGE, 0, (LPARAM)&tr);
-			if (iRes > 0) {
-				int iLen = lstrlen(pszWord)-1;
-				while(iLen >= 0 && _tcschr(szTrimString, pszWord[iLen])) {
-					pszWord[iLen] = _T('\0');
-					iLen--;
+	pszWord = GetRichEditSelection(hwnd);
+	if (pszWord == NULL) {
+		iCharIndex = SendMessage(hwnd, EM_CHARFROMPOS, 0, (LPARAM)ptl);
+		if (iCharIndex >= 0) 
+		{
+			start = SendMessage(hwnd, EM_FINDWORDBREAK, WB_LEFT, iCharIndex);//-iChars;
+			end = SendMessage(hwnd, EM_FINDWORDBREAK, WB_RIGHT, iCharIndex);//-iChars;
+			if (end - start > 0) 
+			{
+				TEXTRANGE tr;
+				CHARRANGE cr;
+				ZeroMemory(&tr, sizeof(TEXTRANGE));
+				pszWord = (TCHAR *)mir_alloc(sizeof(TCHAR) * (end - start + 1));
+				cr.cpMin = start;
+				cr.cpMax = end;
+				tr.chrg = cr;
+				tr.lpstrText = pszWord;
+				iRes = SendMessage(hwnd, EM_GETTEXTRANGE, 0, (LPARAM)&tr);
+				if (iRes <= 0) 
+				{
+					mir_free(pszWord);
+					pszWord = NULL;
 				}
 			}
 		}
 	}
+	if (pszWord != NULL) 
+	{
+		rtrimText(pszWord);
+	}
 	return pszWord;
+}
+
+static DWORD CALLBACK StreamOutCallback(DWORD_PTR dwCookie, LPBYTE pbBuff, LONG cb, LONG * pcb)
+{
+	MessageSendQueueItem * msi = (MessageSendQueueItem *) dwCookie;
+	msi->sendBuffer = (char *)mir_realloc(msi->sendBuffer, msi->sendBufferSize + cb + 2);
+	memcpy (msi->sendBuffer + msi->sendBufferSize, pbBuff, cb);
+	msi->sendBufferSize += cb;
+	*((TCHAR *)(msi->sendBuffer+msi->sendBufferSize)) = '\0';
+	*pcb = cb;
+    return 0;
+}
+
+TCHAR *GetRichEditSelection(HWND hwnd) 
+{
+	CHARRANGE sel;
+	SendMessage(hwnd, EM_EXGETSEL, 0, (LPARAM)&sel);
+	if (sel.cpMin!=sel.cpMax) {
+		MessageSendQueueItem msi;
+		EDITSTREAM stream;
+		DWORD dwFlags = 0;
+		ZeroMemory(&stream, sizeof(stream));
+		stream.pfnCallback = StreamOutCallback;
+		stream.dwCookie = (DWORD_PTR) &msi;
+#if defined( _UNICODE )
+		dwFlags = SF_TEXT|SF_UNICODE|SFF_SELECTION;
+#else
+		dwFlags = SF_TEXT|SFF_SELECTION;
+#endif
+		msi.sendBuffer = NULL;
+		msi.sendBufferSize = 0;
+		SendMessage(hwnd, EM_STREAMOUT, (WPARAM)dwFlags, (LPARAM) & stream);
+		return (TCHAR *)msi.sendBuffer;
+	}
+	return NULL;
 }
 
 void AppendToBuffer(char **buffer, int *cbBufferEnd, int *cbBufferAlloced, const char *fmt, ...)
@@ -475,6 +538,12 @@ void SearchWord(TCHAR * word, int engine)
 				break;
 			case SEARCHENGINE_BING:
 				mir_snprintf( szURL, sizeof( szURL ), "http://www.bing.com/search?q=%s&form=OSDSRC", wordURL );
+				break;
+			case SEARCHENGINE_GOOGLE_MAPS:
+				mir_snprintf( szURL, sizeof( szURL ), "http://maps.google.com/maps?q=%s&ie=utf-8&oe=utf-8", wordURL );
+				break;
+			case SEARCHENGINE_GOOGLE_TRANSLATE:
+				mir_snprintf( szURL, sizeof( szURL ), "http://translate.google.com/?q=%s&ie=utf-8&oe=utf-8", wordURL );
 				break;
 			case SEARCHENGINE_GOOGLE:
 			default:

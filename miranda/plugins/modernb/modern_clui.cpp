@@ -137,7 +137,7 @@ int CLUI::OnEvent_ContactMenuPreBuild(WPARAM wParam, LPARAM lParam)
 		else
 		{
 			DBVARIANT dbv={0};
-			if (ModernGetSettingString(hItem, "ContactPhoto", "File", &dbv))
+			if (ModernGetSettingTString(hItem, "ContactPhoto", "File", &dbv))
 			{
 				has_avatar = 0;
 			}
