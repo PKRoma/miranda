@@ -128,6 +128,7 @@ extern "C" int __declspec(dllexport) Load(PLUGINLINK *link)
 	mir_getMMI( &mmi );
 	mir_getUTFI( &utfi );
 	mir_getMD5I( &md5i );
+	mir_getLP( &pluginInfo );
 
 	// Get Miranda version
 	MIRANDA_VERSION = (DWORD)CallService(MS_SYSTEM_GETVERSION, 0, 0);
