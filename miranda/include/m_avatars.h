@@ -252,7 +252,7 @@ typedef struct _contactAvatarChangedNotificationA {
 	char     hash[128];          // avatar hash
 } CONTACTAVATARCHANGEDNOTIFICATIONA;
 
-#if MIRANDA_VER >= 0x0A00
+#if MIRANDA_VER >= 0x0900
 typedef struct _contactAvatarChangedNotification {
 	int      cbSize;             // sizeof()
 	HANDLE   hContact;           // this might have to be set by the caller too
