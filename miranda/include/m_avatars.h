@@ -180,7 +180,7 @@ typedef struct _avatarDrawRequest {
 
 #define MS_AV_SETAVATAR "SV_Avatars/SetAvatar"
 
-#if defined(_UNICODE) && MIRANDA_VER >= 0x0A00
+#if defined(_UNICODE) && MIRANDA_VER >= 0x0900
 #define MS_AV_SETAVATARW "SV_Avatars/SetAvatarW"
 #define MS_AV_SETAVATART MS_AV_SETAVATARW
 #else
@@ -195,7 +195,7 @@ typedef struct _avatarDrawRequest {
 
 #define MS_AV_SETMYAVATAR "SV_Avatars/SetMyAvatar"
 
-#if defined(_UNICODE) && MIRANDA_VER >= 0x0A00
+#if defined(_UNICODE) && MIRANDA_VER >= 0x0900
 #define MS_AV_SETMYAVATARW "SV_Avatars/SetMyAvatarW"
 #define MS_AV_SETMYAVATART MS_AV_SETMYAVATARW
 #else
