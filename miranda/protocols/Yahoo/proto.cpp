@@ -149,14 +149,13 @@ HANDLE CYahooProto::AddToList( int flags, PROTOSEARCHRESULT* psr )
 
 HANDLE __cdecl CYahooProto::AddToListByEvent( int flags, int /*iContact*/, HANDLE hDbEvent )
 {
-	DBEVENTINFO dbei;
+	DBEVENTINFO dbei = {0};
 	HANDLE hContact;
 
 	DebugLog("[YahooAddToListByEvent]");
 	if ( !m_bLoggedIn )
 		return 0;
 
-	memset( &dbei, 0, sizeof( dbei ));
 	dbei.cbSize = sizeof( dbei );
 
 	if (( dbei.cbBlob = YAHOO_CallService( MS_DB_EVENT_GETBLOBSIZE, ( LPARAM )hDbEvent, 0 )) == -1 ) {
@@ -240,11 +239,19 @@ int CYahooProto::Authorize( HANDLE hdbe )
 	memcpy(&hContact,( char* )( dbei.pBlob + sizeof( DWORD ) ), sizeof(HANDLE)); 
 
 	/* Need to remove the buddy from our Miranda Lists */
-	DBVARIANT dbv;
-	if (hContact != NULL && !DBGetContactSettingString( hContact, m_szModuleName, YAHOO_LOGINID, &dbv )){
-		DebugLog("Accepting buddy:%s", dbv.pszVal);    
-		accept(dbv.pszVal, GetWord(hContact, "yprotoid", 0));
-		DBFreeVariant(&dbv);
+
+	if (hContact != NULL)
+	{
+		char *who = DBGetString(hContact, m_szModuleName, YAHOO_LOGINID);
+		if (!who) return 0;
+
+		char *myid = DBGetString(hContact, m_szModuleName, "MyIdentity");
+
+		DebugLog("Accepting buddy:%s", who);    
+		accept(myid, who, GetWord(hContact, "yprotoid", 0));
+
+		mir_free(myid);
+		mir_free(who);
 	}
 
 	return 0;
@@ -285,21 +292,24 @@ int CYahooProto::AuthDeny( HANDLE hdbe, const TCHAR* reason )
 	}
 
 	HANDLE hContact;
-	memcpy(&hContact,( char* )( dbei.pBlob + sizeof( DWORD ) ), sizeof(HANDLE)); 
+	memcpy(&hContact, dbei.pBlob + sizeof(DWORD), sizeof(HANDLE)); 
 
 	/* Need to remove the buddy from our Miranda Lists */
-	DBVARIANT dbv;
-	if (hContact != NULL && !DBGetContactSettingString( hContact, m_szModuleName, YAHOO_LOGINID, &dbv )){
-		char *u_reason;
+	if (hContact != NULL)
+	{
+		char *who = DBGetString(hContact, m_szModuleName, YAHOO_LOGINID);
+		if (!who) return 0;
+
+		char *myid = DBGetString(hContact, m_szModuleName, "MyIdentity");
+		char *u_reason = mir_utf8encodeT(reason);
 		
-		u_reason = mir_utf8encodeT(reason);
-		
-		DebugLog("Rejecting buddy:%s msg: %s", dbv.pszVal, u_reason);    
-		reject(dbv.pszVal, GetWord(hContact, "yprotoid", 0), u_reason);
-		DBFreeVariant(&dbv);
-		YAHOO_CallService( MS_DB_CONTACT_DELETE, (WPARAM) hContact, 0);
+		DebugLog("Rejecting buddy:%s msg: %s", who, u_reason);    
+		reject(myid, who, GetWord(hContact, "yprotoid", 0), u_reason);
+		YAHOO_CallService(MS_DB_CONTACT_DELETE, (WPARAM) hContact, 0);
 		
 		mir_free(u_reason);
+		mir_free(myid);
+		mir_free(who);
 	}
 	return 0;
 }
@@ -337,21 +347,8 @@ int __cdecl CYahooProto::AuthRequest( HANDLE hContact, const TCHAR* msg )
 	DebugLog("[YahooSendAuthRequest]");
 	
 	if (hContact && m_bLoggedIn) {
-		if (hContact) {
-			DBVARIANT dbv;
-			if (!DBGetContactSettingString(hContact, m_szModuleName, YAHOO_LOGINID, &dbv )) {
-				char *u_msg;
-				
-				u_msg = mir_utf8encodeT(msg);
-				DebugLog("Adding buddy:%s Auth:%s", dbv.pszVal, u_msg);
-				AddBuddy( dbv.pszVal, GetWord(hContact, "yprotoid", 0), "miranda", u_msg );
-				SetString(hContact, "YGroup", "miranda");
-				DBFreeVariant( &dbv );
-				
-				mir_free(u_msg);
-				return 0; // Success
-			}
-		}
+		AddBuddy(hContact, "miranda", msg);
+		return 0; // Success
 	}
 	
 	return 1; // Failure
@@ -509,9 +506,9 @@ int __cdecl CYahooProto::SetApparentMode( HANDLE hContact, int mode )
 	if (mode && mode != ID_STATUS_OFFLINE)
 		return 1;
 
-	int oldMode = DBGetContactSettingWord(hContact, m_szModuleName, "ApparentMode", 0);
+	int oldMode = GetWord(hContact, "ApparentMode", 0);
 	if (mode != oldMode)
-		DBWriteContactSettingWord(hContact, m_szModuleName, "ApparentMode", (WORD)mode);
+		SetWord(hContact, "ApparentMode", mode);
 	return 1;
 }
 
@@ -628,7 +625,7 @@ void __cdecl CYahooProto::get_status_thread(HANDLE hContact)
 	Sleep( 150 );
 
 	/* Check Yahoo Games Message */
-	if (! DBGetContactSettingString(( HANDLE )hContact, m_szModuleName, "YGMsg", &dbv )) {
+	if (!GetString(hContact, "YGMsg", &dbv)) {
 		gm = strdup(dbv.pszVal);
 
 		DBFreeVariant( &dbv );
@@ -640,7 +637,7 @@ void __cdecl CYahooProto::get_status_thread(HANDLE hContact)
 
 		DBFreeVariant( &dbv );
 	} else {
-		WORD status = DBGetContactSettingWord(hContact, m_szModuleName, "YStatus", YAHOO_STATUS_OFFLINE);
+		WORD status = GetWord(hContact, "YStatus", YAHOO_STATUS_OFFLINE);
 		sm = yahoo_status_code( yahoo_status( status ));
 		if (sm) sm = strdup(sm); /* we need this to go global FREE later */
 	}
@@ -685,7 +682,7 @@ HANDLE __cdecl CYahooProto::GetAwayMsg( HANDLE hContact )
 	DebugLog("[YahooGetAwayMessage] ");
 
 	if (hContact && m_bLoggedIn) {
-		if (DBGetContactSettingWord(hContact, m_szModuleName, "Status", ID_STATUS_OFFLINE) == ID_STATUS_OFFLINE)
+		if (GetWord(hContact, "Status", ID_STATUS_OFFLINE) == ID_STATUS_OFFLINE)
 			return 0; /* user offline, what Status message? */
 
 		YForkThread(&CYahooProto::get_status_thread, hContact);
@@ -785,7 +782,7 @@ int __cdecl CYahooProto::UserIsTyping( HANDLE hContact, int type )
 		return 0;
 
 	DBVARIANT dbv;
-	if (!DBGetContactSettingString(hContact, m_szModuleName, YAHOO_LOGINID, &dbv)) {
+	if (!GetString(hContact, YAHOO_LOGINID, &dbv)) {
 		if (type == PROTOTYPE_SELFTYPING_OFF || type == PROTOTYPE_SELFTYPING_ON) {
 			sendtyping(dbv.pszVal, GetWord(hContact, "yprotoid", 0), type == PROTOTYPE_SELFTYPING_ON?1:0);
 		}
