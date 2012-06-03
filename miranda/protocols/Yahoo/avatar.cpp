@@ -295,7 +295,7 @@ void CYahooProto::ext_got_picture(const char *me, const char *who, const char *p
 			/* need to read CheckSum */
 			cksum = GetDword("AvatarHash", 0);
 			if (cksum) {
-				if (!DBGetContactSettingString(NULL, m_szModuleName, "AvatarURL", &dbv)) {
+				if (!GetString("AvatarURL", &dbv)) {
 					LOG(("[ext_yahoo_got_picture] Sending url: %s checksum: %d to '%s'!", dbv.pszVal, cksum, who));
 					//void yahoo_send_picture_info(int id, const char *me, const char *who, const char *pic_url, int cksum)
 					yahoo_send_picture_info(m_id, who, 2, dbv.pszVal, cksum);
@@ -406,7 +406,7 @@ void CYahooProto::ext_got_picture(const char *me, const char *who, const char *p
 			
 			LOG(("[ext_yahoo_got_picture] My Checksum: %d", mcksum));
 			
-			if (!DBGetContactSettingString(NULL, m_szModuleName, "AvatarURL", &dbv)){
+			if (!GetString("AvatarURL", &dbv)){
 					if (lstrcmpiA(pic_url, dbv.pszVal) == 0) {
 						DBVARIANT dbv2;
 						/*time_t  ts;
@@ -562,7 +562,7 @@ void CYahooProto::ext_got_picture_upload(const char *me, const char *url,unsigne
 	SetString(NULL, "AvatarURL", url);
 	//YAHOO_SetDword("AvatarExpires", ts);
 
-	if  (!DBGetContactSettingString(NULL, m_szModuleName, "AvatarInv", &dbv) ){
+	if  (!GetString("AvatarInv", &dbv) ){
 		LOG(("[ext_yahoo_got_picture_upload] Buddy: %s told us this is bad??", dbv.pszVal));
 
 		LOG(("[ext_yahoo_got_picture] Sending url: %s checksum: %d to '%s'!", url, cksum, dbv.pszVal));
@@ -676,7 +676,7 @@ INT_PTR __cdecl CYahooProto::GetAvatarInfo(WPARAM wParam,LPARAM lParam)
 	DBVARIANT dbv;
 	int avtType;
 
-	if (!DBGetContactSettingString(AI->hContact, m_szModuleName, YAHOO_LOGINID, &dbv)) {
+	if (!GetString(AI->hContact, YAHOO_LOGINID, &dbv)) {
 		DebugLog("[YAHOO_GETAVATARINFO] For: %s", dbv.pszVal);
 		DBFreeVariant(&dbv);
 	}else {
@@ -718,7 +718,7 @@ INT_PTR __cdecl CYahooProto::GetAvatarInfo(WPARAM wParam,LPARAM lParam)
 		} else if ( m_bLoggedIn ) {
 			DBVARIANT dbv;
 
-			if (!DBGetContactSettingString(AI->hContact, m_szModuleName, YAHOO_LOGINID, &dbv)) {
+			if (!GetString(AI->hContact, YAHOO_LOGINID, &dbv)) {
 				DebugLog("[YAHOO_GETAVATARINFO] Requesting avatar!");
 
 				request_avatar(dbv.pszVal);

@@ -13,7 +13,7 @@
 #ifndef _YAHOO_YAHOO_H_
 #define _YAHOO_YAHOO_H_
 
-#define MIRANDA_VER 0x0900
+#define MIRANDA_VER 0x0A00
 
 extern "C"
 {
@@ -65,7 +65,7 @@ extern "C"
 // Build is a cvs build
 //
 // If defined, the build will add cvs info to the plugin info
-//#define YAHOO_CVSBUILD
+#define YAHOO_CVSBUILD
 
 #define YAHOO_LOGINSERVER					"LoginServer"
 #define YAHOO_LOGINPORT						"LoginPort"
