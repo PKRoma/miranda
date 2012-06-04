@@ -6,6 +6,20 @@
 
 				
 
+* New in 0.9.50
+Enhancements:
+ - IPv6 support
+ - Unicode avatar paths support
+ - Per plugin language pack support
+
+Bugfixes:
+ - Updated zlib library
+ - Updated scriver with new search engines
+ - Improved image handling services
+ - Yahoo: Fixed contact authorization issues
+ - Yahoo: Fixed client detection
+ 
+
 * New in 0.9.49
 Bugfixes:
  - Translation improvements
