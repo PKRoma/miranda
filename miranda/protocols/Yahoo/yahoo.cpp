@@ -207,12 +207,12 @@ void CYahooProto::sendtyping(const char *who, int protocol, int stat)
 
 void CYahooProto::accept(const char *myid, const char *who, int protocol)
 {
-	yahoo_accept_buddy(m_id, myid, who, protocol);
+	yahoo_accept_buddy(m_id, who, protocol);
 }
 
 void CYahooProto::reject(const char *myid, const char *who, int protocol, const char *msg)
 {
-	yahoo_reject_buddy(m_id, myid, who, protocol, msg);
+	yahoo_reject_buddy(m_id, who, protocol, msg);
 }
 
 void CYahooProto::logout()
@@ -271,7 +271,7 @@ void CYahooProto::AddBuddy(HANDLE hContact, const char *group, const TCHAR *msg)
 	SetStringUtf(hContact, "YGroup", group);
 
 	DebugLog("Adding Permanently %s to list. Auth: %s", who, u_msg ? u_msg : "<None>");
- 	yahoo_add_buddy(m_id, ident, fname, lname, who, protocol, group, u_msg);
+ 	yahoo_add_buddy(m_id, fname, lname, who, protocol, group, u_msg);
 
 	free(fname);
 	free(lname);
