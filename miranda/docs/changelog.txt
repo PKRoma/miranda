@@ -11,11 +11,14 @@ Enhancements:
  - IPv6 support
  - Unicode avatar paths support
  - Per plugin language pack support
+ - Gadu-Gadu: Added login notifications
 
 Bugfixes:
  - Updated zlib library
  - Updated scriver with new search engines
  - Improved image handling services
+ - Gadu-Gadu: Improved error notifications
+ - Gadu-Gadu: Improved cancelling connection attempt 
  - Yahoo: Fixed contact authorization issues
  - Yahoo: Fixed client detection
  
