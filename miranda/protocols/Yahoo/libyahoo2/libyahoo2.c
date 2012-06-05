@@ -5346,7 +5346,7 @@ void yahoo_chat_keepalive (int id)
 	yahoo_packet_free (pkt);
 }
 
-void yahoo_add_buddy(int id, const char *fname, const char *lname, const char *who, int protocol, const char *group, const char *msg)
+void yahoo_add_buddy(int id, const char *myid, const char *fname, const char *lname, const char *who, int protocol, const char *group, const char *msg)
 {
 	struct yahoo_input_data *yid = find_input_by_id_and_type(id, YAHOO_CONNECTION_PAGER);
 	struct yahoo_data *yd;
@@ -5370,7 +5370,7 @@ void yahoo_add_buddy(int id, const char *fname, const char *lname, const char *w
 	if (lname != NULL)
 		yahoo_packet_hash(pkt, 254, lname); 
 		
-	yahoo_packet_hash(pkt, 1, yd->user); // identity with which we are adding the user.
+	yahoo_packet_hash(pkt, 1, myid ? myid : yd->user); // identity with which we are adding the user.
 	yahoo_packet_hash(pkt, 302, "319");
 	yahoo_packet_hash(pkt, 300, "319");
 	yahoo_packet_hash(pkt, 7, who);
@@ -5428,7 +5428,7 @@ void yahoo_remove_buddy(int id, const char *who, int protocol, const char *group
 	yahoo_packet_free(pkt);
 }
 
-void yahoo_accept_buddy(int id, const char *who, int protocol)
+void yahoo_accept_buddy(int id, const char *myid, const char *who, int protocol)
 {
 	struct yahoo_input_data *yid = find_input_by_id_and_type(id, YAHOO_CONNECTION_PAGER);
 	struct yahoo_data *yd;
@@ -5442,7 +5442,7 @@ void yahoo_accept_buddy(int id, const char *who, int protocol)
 		return;
 
 	pkt = yahoo_packet_new(YAHOO_SERVICE_Y7_AUTHORIZATION, YPACKET_STATUS_DEFAULT, yd->session_id);
-	yahoo_packet_hash(pkt, 1, yd->user);
+	yahoo_packet_hash(pkt, 1, myid ? myid : yd->user);
 	yahoo_packet_hash(pkt, 5, who);
 	
 	if (protocol != 0)
@@ -5455,7 +5455,7 @@ void yahoo_accept_buddy(int id, const char *who, int protocol)
 	yahoo_packet_free(pkt);
 }
 
-void yahoo_reject_buddy(int id, const char *who, int protocol, const char *msg)
+void yahoo_reject_buddy(int id, const char *myid, const char *who, int protocol, const char *msg)
 {
 	struct yahoo_input_data *yid = find_input_by_id_and_type(id, YAHOO_CONNECTION_PAGER);
 	struct yahoo_data *yd;
@@ -5469,7 +5469,7 @@ void yahoo_reject_buddy(int id, const char *who, int protocol, const char *msg)
 		return;
 
 	pkt = yahoo_packet_new(YAHOO_SERVICE_Y7_AUTHORIZATION, YPACKET_STATUS_DEFAULT, yd->session_id);
-	yahoo_packet_hash(pkt, 1, yd->user);
+	yahoo_packet_hash(pkt, 1, myid ? myid : yd->user);
 	yahoo_packet_hash(pkt, 5, who);
 	yahoo_packet_hash(pkt, 13, "2"); // Reject Authorization
 	
