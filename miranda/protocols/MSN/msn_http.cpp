@@ -91,7 +91,6 @@ PBYTE msn_httpGatewayUnwrapRecv(NETLIBHTTPREQUEST* nlhr, PBYTE buf, int len, int
 				xMsgr = tHeader.szValue;
 			else if (_stricmp(tHeader.szName, "X-MSN-Host") == 0)
 				xHost = tHeader.szValue;
-
 		}
 
 		if (xMsgr)

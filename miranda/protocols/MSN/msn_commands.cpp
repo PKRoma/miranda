@@ -1401,7 +1401,7 @@ LBL_InvalidCommand:
 					sttSetMirVer(hContact, cont->cap1, always);
 				}
 
-				if ((cont->cap1 & 0xf0000000) && data.cmdstring[0] && strcmp(data.cmdstring, "0")) 
+				if (/*(cont->cap1 & 0xf0000000) &&*/ data.cmdstring[0] && strcmp(data.cmdstring, "0")) 
 				{
 					char* szAvatarHash = MSN_GetAvatarHash(data.cmdstring);
 					if (szAvatarHash == NULL) goto remove;

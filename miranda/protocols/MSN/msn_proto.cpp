@@ -1019,6 +1019,13 @@ int __cdecl CMsnProto::SendMsg(HANDLE hContact, int flags, const char* pszSrc)
 				{
 					if (netId != NETID_LCS)
 					{
+						if (strlen(msg) > 400) 
+						{
+							seq = 999996;
+							errMsg = MSN_Translate("Message is too long: MSN offline messages are limited by 400 UTF8 chars");
+							ForkThread(&CMsnProto::MsnFakeAck, new TFakeAckParams(hContact, seq, errMsg, this));
+							break;
+						}
 						seq = msnNsThread->sendMessage('1', tEmail, netId, msg, rtlFlag | MSG_OFFLINE);
 						ForkThread(&CMsnProto::MsnFakeAck, new TFakeAckParams(hContact, seq, NULL, this));
 					}

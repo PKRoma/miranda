@@ -1490,22 +1490,38 @@ void CMsnProto::p2p_startConnect(const char* wlid, const char* szCallID, const c
 {
 	if (port == NULL) return;
 
-	while (addr != NULL) 
+	char *pPortTokBeg = (char*)port;
+	for (;;) 
 	{
-		char* pSpace = (char*)strchr(addr, ' ');
-		if (pSpace != NULL) *(pSpace++) = 0;
+		char *pPortTokEnd = strchr(pPortTokBeg, ' ');
+		if (pPortTokEnd != NULL) *pPortTokEnd = 0;
 
-		ThreadData* newThread = new ThreadData;
+		char *pAddrTokBeg = (char*)addr;
+		for (;;) 
+		{
+			char *pAddrTokEnd = strchr(pAddrTokBeg, ' ');
+			if (pAddrTokEnd != NULL) *pAddrTokEnd = 0;
 
-		newThread->mType = SERVER_P2P_DIRECT;
-		newThread->mInitialContactWLID = mir_strdup(wlid);
-		mir_snprintf(newThread->mCookie, sizeof(newThread->mCookie), "%s", szCallID);
-		mir_snprintf(newThread->mServer, sizeof(newThread->mServer),
-			ipv6 ? "[%s]:%s" : "%s:%s", addr, port);
+			ThreadData* newThread = new ThreadData;
 
-		newThread->startThread(&CMsnProto::p2p_fileActiveThread, this);
+			newThread->mType = SERVER_P2P_DIRECT;
+			newThread->mInitialContactWLID = mir_strdup(wlid);
+			mir_snprintf(newThread->mCookie, sizeof(newThread->mCookie), "%s", szCallID);
+			mir_snprintf(newThread->mServer, sizeof(newThread->mServer),
+				ipv6 ? "[%s]:%s" : "%s:%s", pAddrTokBeg, pPortTokBeg);
 
-		addr = pSpace;
+			newThread->startThread(&CMsnProto::p2p_fileActiveThread, this);
+
+			if (pAddrTokEnd == NULL) break;
+
+			*pAddrTokEnd = ' ';
+			pAddrTokBeg = pAddrTokEnd + 1;
+		}
+
+		if (pPortTokEnd == NULL) break;
+
+		*pPortTokEnd = ' ';
+		pPortTokBeg = pPortTokEnd + 1;
 	}
 }
 
