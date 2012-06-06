@@ -70,8 +70,8 @@ INT_PTR CMsnProto::GetAvatarInfo(WPARAM wParam,LPARAM lParam)
 		cont = Lists_Get(AI->hContact);
 		if (cont == NULL) return GAIR_NOAVATAR;
 
-		if ((cont->cap1 & 0xf0000000) == 0)
-			return GAIR_NOAVATAR;
+//		if ((cont->cap1 & 0xf0000000) == 0)
+//			return GAIR_NOAVATAR;
 	}
 
 	if (AI->hContact == NULL || _stricmp(cont->email, MyOptions.szEmail) == 0)
