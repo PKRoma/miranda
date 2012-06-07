@@ -153,10 +153,10 @@ cheekySearchId( -1 )
 	// ChangeInfo API
 	CreateProtoService(PS_CHANGEINFOEX, &CIcqProto::ChangeInfoEx);
 	// Avatar API
-	CreateProtoService(PS_GETAVATARINFO, &CIcqProto::GetAvatarInfo);
+	CreateProtoService(PS_GETAVATARINFOT, &CIcqProto::GetAvatarInfo);
 	CreateProtoService(PS_GETAVATARCAPS, &CIcqProto::GetAvatarCaps);
-	CreateProtoService(PS_GETMYAVATAR, &CIcqProto::GetMyAvatar);
-	CreateProtoService(PS_SETMYAVATAR, &CIcqProto::SetMyAvatar);
+	CreateProtoService(PS_GETMYAVATART, &CIcqProto::GetMyAvatar);
+	CreateProtoService(PS_SETMYAVATART, &CIcqProto::SetMyAvatar);
 	// Custom Status API
 	CreateProtoService(PS_ICQ_SETCUSTOMSTATUS, &CIcqProto::SetXStatus);
 	CreateProtoService(PS_ICQ_GETCUSTOMSTATUS, &CIcqProto::GetXStatus);
