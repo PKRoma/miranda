@@ -6,6 +6,11 @@
 
 				
 
+* New in 0.9.51
+Bugfixes:
+ - ICQ: Fixed display of avatars
+
+
 * New in 0.9.50
 Enhancements:
  - IPv6 support
