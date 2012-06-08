@@ -205,7 +205,7 @@ int _DebugTrace(HANDLE hContact, const char *fmt, ...)
 
 int AVS_pathIsAbsolute(const TCHAR *path)
 {
-	if (!path || !(lstrlen(path) > 2))
+	if (!path || !path[0] || !path[1])
 		return 0;
 	if ((path[1]==':'&&path[2]=='\\')||(path[0]=='\\'&&path[1]=='\\')) return 1;
 	return 0;
@@ -215,29 +215,31 @@ size_t AVS_pathToRelative(const TCHAR *pSrc, TCHAR *pOut)
 {
 	if (!pSrc || !*pSrc || _tcslen(pSrc) > MAX_PATH) return 0;
 	if (!AVS_pathIsAbsolute( pSrc ))
-		lstrcpyn(pOut, pSrc, MAX_PATH);
+		_tcscpy(pOut, pSrc);
 	else {
 		TCHAR szTmp[MAX_PATH];
-		mir_sntprintf(szTmp, SIZEOF(szTmp), _T("%s"), pSrc);
+		_tcscpy(szTmp, pSrc);
 		_tcslwr(szTmp);
 		if (_tcsstr(szTmp, g_szDataPath))
-			lstrcpyn(pOut, pSrc + _tcslen(g_szDataPath) + 1, MAX_PATH);
+			_tcscpy(pOut, pSrc + _tcslen(g_szDataPath) + 1);
 		else
-			lstrcpyn(pOut, pSrc, MAX_PATH);
+			_tcscpy(pOut, pSrc);
 	}
 	return _tcslen(pOut);
 }
 
 size_t AVS_pathToAbsolute(const TCHAR *pSrc, TCHAR *pOut)
 {
-	if (!pSrc || !lstrlen(pSrc) || lstrlen(pSrc) > MAX_PATH)
+	if (!pSrc || !*pSrc || _tcslen(pSrc) > MAX_PATH)
 		return 0;
 
 	if (AVS_pathIsAbsolute(pSrc) || !_istalnum(pSrc[0]))
-		lstrcpyn(pOut, pSrc, MAX_PATH);
+	{
+		_tcscpy(pOut, pSrc);
+		return _tcslen(pOut);
+	}
 	else
-		mir_sntprintf(pOut, MAX_PATH, _T("%s\\%s"), g_szDataPath, pSrc, MAX_PATH);
-	return lstrlen(pOut);
+		return mir_sntprintf(pOut, MAX_PATH, _T("%s\\%s"), g_szDataPath, pSrc, MAX_PATH);
 }
 
 static void NotifyMetaAware(HANDLE hContact, struct CacheNode *node = NULL, AVATARCACHEENTRY *ace = (AVATARCACHEENTRY *)-1)
@@ -378,7 +380,7 @@ void MakePathRelative(HANDLE hContact, TCHAR *path)
 	szFinalPath[0] = '\0';
 
 	size_t result = AVS_pathToRelative(path, szFinalPath);
-	if (result && lstrlen(szFinalPath) > 0) {
+	if (result && *szFinalPath) {
 		DBWriteContactSettingTString(hContact, "ContactPhoto", "RFile", szFinalPath);
 		if (!DBGetContactSettingByte(hContact, "ContactPhoto", "Locked", 0))
 			DBWriteContactSettingTString(hContact, "ContactPhoto", "Backup", szFinalPath);
@@ -528,11 +530,12 @@ int CreateAvatarInCache(HANDLE hContact, avatarCacheEntry *ace, char *szProto)
 		}
 	}
 
-	if ( lstrlen(tszFilename) < 4 )
+	if ( _tcslen(tszFilename) < 4 )
 		return -1;
 
 	TCHAR* tmpPath = Utils_ReplaceVarsT(tszFilename);
-	mir_sntprintf(tszFilename, SIZEOF(tszFilename), _T("%s"), tmpPath);
+	_tcsncpy(tszFilename, tszFilename, SIZEOF(tszFilename)); 
+	ace->szFilename[SIZEOF(tszFilename) - 1] = 0;
 	mir_free(tmpPath);
 
 	if ((hFile = CreateFile(tszFilename, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL)) == INVALID_HANDLE_VALUE)
@@ -546,9 +549,9 @@ int CreateAvatarInCache(HANDLE hContact, avatarCacheEntry *ace, char *szProto)
 	ace->bmHeight = 0;
 	ace->bmWidth = 0;
 	ace->lpDIBSection = NULL;
-	_tcsncpy(ace->szFilename, tszFilename, MAX_PATH);
-	ace->szFilename[MAX_PATH - 1] = 0;
-	if (ace->hbmPic != 0) {
+	_tcsncpy(ace->szFilename, tszFilename, SIZEOF(ace->szFilename)); 
+	ace->szFilename[SIZEOF(ace->szFilename) - 1] = 0;
+	if (ace->hbmPic != NULL) {
 		BITMAP bminfo;
 
 		GetObject(ace->hbmPic, sizeof(bminfo), &bminfo);
@@ -2167,7 +2170,7 @@ static int ContactSettingChanged(WPARAM wParam, LPARAM lParam)
 		return 0;
 	}
 	else if (g_MetaAvail && !strcmp(cws->szModule, g_szMetaName)) {
-		if (lstrlenA(cws->szSetting) > 6 && !strncmp(cws->szSetting, "Status", 5))
+		if (strlen(cws->szSetting) > 6 && !strncmp(cws->szSetting, "Status", 5))
 			MetaChanged(wParam, 0);
 	}
 	return 0;
