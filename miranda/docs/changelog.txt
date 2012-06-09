@@ -6,6 +6,12 @@
 
 				
 
+* New in 0.9.52
+Bugfixes:
+ - Fixed minor avatar issues
+ - Fixed issues with avatars in Clist Nicer
+
+
 * New in 0.9.51
 Bugfixes:
  - ICQ: Fixed display of avatars
