@@ -1,13 +1,13 @@
-#define VERSION_STRING "0.9.14.0"
+#define VERSION_STRING "0.9.15.0"
 #define VER_MAJOR 0
 #define VER_MINOR 9
-#define VER_REVISION 14
+#define VER_REVISION 15
 #define VER_BUILD 0
 
 
 #if defined(UNICODE)
 	#if defined(_WIN64)
-		#define RES_FILE_DESC "Clist_Nicer+ (Unicode) x86_amd64"
+		#define RES_FILE_DESC "Clist_Nicer+ (Unicode) x64"
 	#else
 		#define RES_FILE_DESC "Clist_Nicer+ (Unicode) x86"
 	#endif
@@ -36,7 +36,7 @@ BEGIN
             VALUE "FileDescription", RES_FILE_DESC
             VALUE "FileVersion", VERSION_STRING
             VALUE "InternalName", "clist_nicer"
-            VALUE "LegalCopyright", "Copyright (C) 2004-2010"
+            VALUE "LegalCopyright", "Copyright (C) 2004-2012"
             VALUE "LegalTrademarks", "Licensed under the Gnu general public license V2 or any later version."
             VALUE "OriginalFilename", "clist_nicer.dll"
             VALUE "ProductName", "Contact list plugin for Miranda IM"
