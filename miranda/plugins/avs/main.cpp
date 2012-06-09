@@ -2489,7 +2489,7 @@ extern "C" BOOL WINAPI DllMain(HINSTANCE hInstDLL, DWORD dwReason, LPVOID reserv
 
 extern "C" __declspec(dllexport) PLUGININFOEX * MirandaPluginInfoEx(DWORD mirandaVersion)
 {
-	if (mirandaVersion < _VERSION_DWORD)
+	if (mirandaVersion < __VERSION_DWORD)
 		return NULL;
 	return &pluginInfoEx;
 }
