@@ -1141,7 +1141,7 @@ LRESULT CALLBACK ContactListWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM l
 			}
 			transparentFocus = 1;
 
-            CallService(MS_LANGPACK_TRANSLATEMENU, (WPARAM) GetMenu(hwnd), 0);
+            TranslateMenu(GetMenu(hwnd));
 			PostMessage(hwnd, M_CREATECLC, 0, 0);
 			return FALSE;
 		}
@@ -2056,7 +2056,7 @@ buttons_done:
 				CheckMenuItem(hMenu, ID_BUTTONBAR_NOVISUALSTYLES, MF_BYCOMMAND | ((cfg::dat.dwFlags & CLUI_FRAME_BUTTONSCLASSIC) ? MF_CHECKED : MF_UNCHECKED));
 				CheckMenuItem(hMenu, ID_BUTTONBAR_DRAWSUNKENFRAME, MF_BYCOMMAND | ((cfg::dat.dwFlags & CLUI_FRAME_BUTTONBARSUNKEN) ? MF_CHECKED : MF_UNCHECKED));
 				CheckMenuItem(hMenu, ID_BUTTONBAR_SKINNEDTOOLBAR, MF_BYCOMMAND | (cfg::dat.bSkinnedToolbar ? MF_CHECKED : MF_UNCHECKED));
-				CallService(MS_LANGPACK_TRANSLATEMENU, (WPARAM) hMenu, 0);
+				TranslateMenu(hMenu);
 
 				iSelection = TrackPopupMenu(hMenu, TPM_RETURNCMD | TPM_TOPALIGN | TPM_LEFTALIGN | TPM_RIGHTBUTTON, pt.x, pt.y, 0, hwnd, NULL);
 				if (iSelection >= 50000) {

@@ -80,7 +80,7 @@ typedef struct avatarCacheEntryA {
 	char szFilename[MAX_PATH];      // filename of the avatar (absolute path)
 } AVATARCACHEENTRYA;
 
-#if MIRANDA_VER >= 0x0A00
+#if MIRANDA_VER >= 0x0900
 typedef struct avatarCacheEntry {
 	DWORD cbSize;                   // set to sizeof(struct)
 	HANDLE hContact;                // contacts handle, 0, if it is a protocol avatar
@@ -180,7 +180,7 @@ typedef struct _avatarDrawRequest {
 
 #define MS_AV_SETAVATAR "SV_Avatars/SetAvatar"
 
-#if defined(_UNICODE) && MIRANDA_VER >= 0x0A00
+#if defined(_UNICODE) && MIRANDA_VER >= 0x0900
 #define MS_AV_SETAVATARW "SV_Avatars/SetAvatarW"
 #define MS_AV_SETAVATART MS_AV_SETAVATARW
 #else
@@ -195,7 +195,7 @@ typedef struct _avatarDrawRequest {
 
 #define MS_AV_SETMYAVATAR "SV_Avatars/SetMyAvatar"
 
-#if defined(_UNICODE) && MIRANDA_VER >= 0x0A00
+#if defined(_UNICODE) && MIRANDA_VER >= 0x0900
 #define MS_AV_SETMYAVATARW "SV_Avatars/SetMyAvatarW"
 #define MS_AV_SETMYAVATART MS_AV_SETMYAVATARW
 #else
@@ -252,7 +252,7 @@ typedef struct _contactAvatarChangedNotificationA {
 	char     hash[128];          // avatar hash
 } CONTACTAVATARCHANGEDNOTIFICATIONA;
 
-#if MIRANDA_VER >= 0x0A00
+#if MIRANDA_VER >= 0x0900
 typedef struct _contactAvatarChangedNotification {
 	int      cbSize;             // sizeof()
 	HANDLE   hContact;           // this might have to be set by the caller too

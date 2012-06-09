@@ -365,7 +365,7 @@ void ShowMoreOptionsMenu(HWND hwndDlg,int x,int y)
 
 	hMenu=LoadMenu(hMirandaInst,MAKEINTRESOURCE(IDR_CONTEXT));
 	hPopupMenu=GetSubMenu(hMenu,4);
-	CallService(MS_LANGPACK_TRANSLATEMENU,(WPARAM)hPopupMenu,0);
+	TranslateMenu(hPopupMenu);
 	commandId=TrackPopupMenu(hPopupMenu,TPM_RIGHTBUTTON|TPM_RETURNCMD,x,y,0,hwndDlg,NULL);
 	switch(commandId) {
 		case IDC_ADD:
