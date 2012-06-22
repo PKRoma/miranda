@@ -808,7 +808,7 @@ bool CMsnProto::p2p_connectTo(ThreadData* info, directconnection *dc)
 
 bool CMsnProto::p2p_listen(ThreadData* info, directconnection *dc)
 {
-	switch(WaitForSingleObject(info->hWaitEvent, 6000)) 
+	switch(WaitForSingleObject(info->hWaitEvent, 10000)) 
 	{
 	case WAIT_TIMEOUT:
 	case WAIT_FAILED:
