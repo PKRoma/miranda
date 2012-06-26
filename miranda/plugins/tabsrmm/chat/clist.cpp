@@ -106,8 +106,7 @@ BOOL CList_SetOffline(HANDLE hContact, BOOL bHide)
 {
 	if (hContact) {
 		char* szProto = (char*)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM) hContact, 0);
-		int i = M->GetByte(hContact, szProto, "ChatRoom", 0);
-		DBWriteContactSettingWord(hContact, szProto, "ApparentMode", (LPARAM) 0);
+		DBWriteContactSettingWord(hContact, szProto, "ApparentMode", 0);
 		DBWriteContactSettingWord(hContact, szProto, "Status", ID_STATUS_OFFLINE);
 		return TRUE;
 	}
