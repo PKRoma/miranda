@@ -2,7 +2,7 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2009 Miranda ICQ/IM project, 
+Copyright 2000-2012 Miranda ICQ/IM project, 
 all portions of this codebase are copyrighted to the people 
 listed in contributors.txt.
 
@@ -256,18 +256,14 @@ static LRESULT CALLBACK HyperlinkWndProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM
 
 int InitHyperlink(void)
 {
-	WNDCLASS wcl;
+	WNDCLASS wcl = {0};
 
 	wcl.lpfnWndProc=HyperlinkWndProc;
-	wcl.cbClsExtra=0;
 	wcl.cbWndExtra=sizeof(struct HyperlinkWndData*);
 	wcl.hInstance=hMirandaInst;
 	if(IsWinVer2000Plus()) wcl.hCursor=NULL;
 	else wcl.hCursor=LoadCursor(wcl.hInstance,MAKEINTRESOURCE(IDC_HYPERLINKHAND));
 	wcl.lpszClassName=WNDCLASS_HYPERLINK;
-	wcl.hbrBackground=NULL;
-	wcl.hIcon=NULL;
-	wcl.lpszMenuName=NULL;
 	wcl.style=CS_HREDRAW|CS_VREDRAW|CS_GLOBALCLASS|CS_PARENTDC;
 	RegisterClass(&wcl);  /* automatically unregistered on exit */
 	return 0;

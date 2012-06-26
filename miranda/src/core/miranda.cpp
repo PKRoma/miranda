@@ -92,8 +92,74 @@ static HANDLE hShutdownEvent,hPreShutdownEvent;
 static HANDLE hWaitObjects[MAXIMUM_WAIT_OBJECTS-1];
 static char *pszWaitServices[MAXIMUM_WAIT_OBJECTS-1];
 static int waitObjectCount=0;
-HANDLE hStackMutex,hMirandaShutdown,hThreadQueueEmpty;
+HANDLE hStackMutex, hMirandaShutdown, hThreadQueueEmpty, hApcMutex;
 HINSTANCE hMirandaInst;
+
+/////////////////////////////////////////////////////////////////////////////////////////
+// APC on Main Thread
+
+struct APCCall
+{
+	MirApcFunc func;
+	void* param;
+
+	APCCall() : func(NULL), param(NULL) {}
+
+	APCCall(MirApcFunc func, void* param)
+		: func(func), param(param) {}
+};
+
+OBJLIST<APCCall> APCCallQueue(10);
+HWND hAPCWindow;
+
+void CallMainThread(MirApcFunc func, void* param)
+{
+	WaitForSingleObject(hApcMutex, INFINITE);
+	APCCallQueue.insert(new APCCall(func, param));
+	ReleaseMutex(hApcMutex);
+	PostMessage(hAPCWindow, WM_NULL, 0, 0);
+}
+
+LRESULT CALLBACK APCWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+	switch(msg)
+	{
+	case WM_NULL: 
+		while (APCCallQueue.getCount())
+		{
+			APCCall tmpCall;
+
+			WaitForSingleObject(hApcMutex, INFINITE);
+			if (APCCallQueue.getCount())
+			{
+				tmpCall = APCCallQueue[0];
+				APCCallQueue.remove(0);
+			}
+			ReleaseMutex(hApcMutex);
+			if (tmpCall.func) tmpCall.func(tmpCall.param);
+		}
+		break;
+
+	case WM_TIMECHANGE:
+		RecalculateTime();
+		break;
+	}
+	return DefWindowProc(hwnd,msg,wParam,lParam);
+}
+
+void CreateAPCWindow(void)
+{
+	WNDCLASSEX wc = {0};
+
+	wc.cbSize = sizeof(wc);
+	wc.lpfnWndProc = APCWndProc;
+	wc.hInstance = hMirandaInst;
+	wc.lpszClassName = _T("MirandaApcWnd");
+	RegisterClassEx(&wc);
+
+	hAPCWindow = CreateWindowEx(0,_T("MirandaApcWnd"),NULL,0, 0,0,0,0, NULL,NULL,hMirandaInst,NULL);
+}
+
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // exception handling
@@ -450,14 +516,6 @@ static void __cdecl compactHeapsThread(void*)
 	} //while
 }
 
-LRESULT CALLBACK APCWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
-{
-	if (msg==WM_NULL) SleepEx(0,TRUE);
-	if (msg == WM_TIMECHANGE) RecalculateTime();
-	return DefWindowProc(hwnd,msg,wParam,lParam);
-}
-
-HWND hAPCWindow=NULL;
 void (*SetIdleCallback) (void)=NULL;
 
 static INT_PTR SystemSetIdleCallback(WPARAM, LPARAM lParam)
@@ -711,6 +769,8 @@ exit:
 	CloseHandle(hStackMutex);
 	CloseHandle(hMirandaShutdown);
 	CloseHandle(hThreadQueueEmpty);
+	CloseHandle(hApcMutex);
+	APCCallQueue.destroy();
 	DestroyWindow(hAPCWindow);
 
 	if (pTaskbarInterface)
@@ -907,17 +967,17 @@ int LoadSystemModule(void)
 	InitCommonControlsEx(&icce);
 
 	if (IsWinVerXPPlus()) {
-		hAPCWindow=CreateWindowEx(0,_T("ComboLBox"),NULL,0, 0,0,0,0, NULL,NULL,NULL,NULL);
-		SetClassLongPtr(hAPCWindow, GCL_STYLE, GetClassLongPtr(hAPCWindow, GCL_STYLE) | CS_DROPSHADOW);
-		DestroyWindow(hAPCWindow);
-		hAPCWindow = NULL;
+		HWND hWnd = CreateWindowEx(0,_T("ComboLBox"),NULL,0, 0,0,0,0, NULL,NULL,NULL,NULL);
+		SetClassLongPtr(hWnd, GCL_STYLE, GetClassLongPtr(hWnd, GCL_STYLE) | CS_DROPSHADOW);
+		DestroyWindow(hWnd);
 	}
 
-	hAPCWindow=CreateWindowEx(0,_T("STATIC"),NULL,0, 0,0,0,0, NULL,NULL,NULL,NULL); // lame
-	SetWindowLongPtr(hAPCWindow,GWLP_WNDPROC,(LONG_PTR)APCWndProc);
+	CreateAPCWindow();
+
 	hStackMutex=CreateMutex(NULL,FALSE,NULL);
 	hMirandaShutdown=CreateEvent(NULL,TRUE,FALSE,NULL);
 	hThreadQueueEmpty=CreateEvent(NULL,TRUE,TRUE,NULL);
+	hApcMutex = CreateMutex(NULL, FALSE, NULL);
 
 	hShutdownEvent=CreateHookableEvent(ME_SYSTEM_SHUTDOWN);
 	hPreShutdownEvent=CreateHookableEvent(ME_SYSTEM_PRESHUTDOWN);

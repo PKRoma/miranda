@@ -2,7 +2,7 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2009 Miranda ICQ/IM project, 
+Copyright 2000-2012 Miranda ICQ/IM project, 
 all portions of this codebase are copyrighted to the people 
 listed in contributors.txt.
 
@@ -143,6 +143,9 @@ char*  mir_u2a( const wchar_t* src);
 
 extern HINSTANCE hMirandaInst;
 extern pfnExceptionFilter pMirandaExceptFilter;
+
+typedef void (CALLBACK *MirApcFunc)(void *);
+void CallMainThread(MirApcFunc func, void* param);
 
 /**** modules.c ************************************************************************/
 
