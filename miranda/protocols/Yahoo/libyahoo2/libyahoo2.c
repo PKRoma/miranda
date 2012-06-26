@@ -1008,6 +1008,7 @@ static void yahoo_send_packet(struct yahoo_input_data *yid, struct yahoo_packet 
 		( yid->type == YAHOO_CONNECTION_PAGER && 
 			( pkt->service == YAHOO_SERVICE_KEEPALIVE || 
 			  pkt->service == YAHOO_SERVICE_PING ||
+			  pkt->service == YAHOO_SERVICE_CONFLOGOFF ||
 			  pkt->service == YAHOO_SERVICE_LOGOFF) )
 		) {
 		yahoo_send_data(yid->fd, (const char *)data, len);
@@ -5579,6 +5580,7 @@ void yahoo_conference_addinvite(int id, const char * from, const char *who, cons
 	yahoo_packet_hash(pkt, 57, room);
 	yahoo_packet_hash(pkt, 58, msg);
 	yahoo_packet_hash(pkt, 13, "0");
+	yahoo_packet_hash(pkt, 97, "1");
 	for(; members; members = members->next) {
 		yahoo_packet_hash(pkt, 52, (char *)members->data);
 		yahoo_packet_hash(pkt, 53, (char *)members->data);
@@ -5610,6 +5612,7 @@ void yahoo_conference_invite(int id, const char * from, YList *who, const char *
 	yahoo_packet_hash(pkt, 57, room);
 	yahoo_packet_hash(pkt, 58, msg);
 	yahoo_packet_hash(pkt, 13, "0");
+	yahoo_packet_hash(pkt, 97, "1");
 
 	yahoo_send_packet(yid, pkt, 0);
 
@@ -5660,6 +5663,7 @@ void yahoo_conference_decline(int id, const char * from, YList *who, const char 
 	}
 	yahoo_packet_hash(pkt, 57, room);
 	yahoo_packet_hash(pkt, 14, msg);
+	yahoo_packet_hash(pkt, 97, "1");
 
 	yahoo_send_packet(yid, pkt, 0);
 

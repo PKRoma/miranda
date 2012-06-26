@@ -28,8 +28,8 @@
 	#pragma warning(disable:4355)
 #endif
 
-CYahooProto::CYahooProto( const char* aProtoName, const TCHAR* aUserName ) :
-	m_bLoggedIn( FALSE ), poll_loop( 0 ) 
+CYahooProto::CYahooProto( const char* aProtoName, const TCHAR* aUserName ) 
+	: m_bLoggedIn( FALSE ), poll_loop( 0 ), m_chatrooms(3, ChatRoom::compare) 
 {
 	m_iVersion = 2;
 	m_tszUserName = mir_tstrdup( aUserName );
@@ -59,6 +59,7 @@ CYahooProto::~CYahooProto()
 
 	MenuUninit();
 	
+	m_chatrooms.destroy();
 	mir_free( m_szModuleName );
 	mir_free( m_tszUserName );
 
@@ -71,16 +72,14 @@ CYahooProto::~CYahooProto()
 ////////////////////////////////////////////////////////////////////////////////////////
 // OnModulesLoadedEx - performs hook registration
 
-//static COLORREF crCols[16] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15};
-
-INT_PTR CYahooProto::OnModulesLoadedEx( WPARAM, LPARAM )
+int CYahooProto::OnModulesLoadedEx( WPARAM, LPARAM )
 {
 	YHookEvent( ME_USERINFO_INITIALISE, 		&CYahooProto::OnUserInfoInit );
 	YHookEvent( ME_IDLE_CHANGED, 				&CYahooProto::OnIdleEvent);
 	YHookEvent( ME_CLIST_PREBUILDCONTACTMENU, 	&CYahooProto::OnPrebuildContactMenu );
 
-	TCHAR tModuleDescr[ 100 ];
-	mir_sntprintf(tModuleDescr, SIZEOF(tModuleDescr), TranslateT( "%s plugin connections" ), m_tszUserName);
+	TCHAR tModuleDescr[100];
+	mir_sntprintf(tModuleDescr, SIZEOF(tModuleDescr), TranslateT("%s plugin connections"), m_tszUserName);
 	
 	NETLIBUSER nlu = {0};
 	nlu.cbSize = sizeof(nlu);
@@ -102,8 +101,9 @@ INT_PTR CYahooProto::OnModulesLoadedEx( WPARAM, LPARAM )
 	nlu.pfnHttpGatewayUnwrapRecv = YAHOO_httpGatewayUnwrapRecv;
 #endif	
 	
-	m_hNetlibUser = ( HANDLE )YAHOO_CallService( MS_NETLIB_REGISTERUSER, 0, ( LPARAM )&nlu );
+	m_hNetlibUser = (HANDLE)YAHOO_CallService(MS_NETLIB_REGISTERUSER, 0, (LPARAM)&nlu);
 	MenuContactInit();
+	ChatRegister();
 	
 	return 0;
 }
@@ -745,7 +745,7 @@ int __cdecl CYahooProto::SetAwayMsg( int status, const PROTOCHAR* msg )
 		} else if(status != ID_STATUS_INVISIBLE){ 
 			set_status(YAHOO_CUSTOM_STATUS, c, 1);
 		}
-    } else {
+    } else if (status != ID_STATUS_OFFLINE) {
 		set_status(status, NULL, 0);
 		m_startMsg = NULL;
 	}
@@ -777,8 +777,7 @@ int __cdecl CYahooProto::UserIsTyping( HANDLE hContact, int type )
 	if (!m_bLoggedIn)
 		return 0;
 
-	char *szProto = (char *) CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)hContact, 0);
-	if (szProto==NULL || strcmp(szProto, m_szModuleName))
+	if (!IsMyContact(hContact))
 		return 0;
 
 	DBVARIANT dbv;
