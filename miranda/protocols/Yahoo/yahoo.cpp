@@ -558,7 +558,7 @@ void CYahooProto::ext_status_logon(const char *who, int protocol, int stat, cons
 		if (cksum == 0 || cksum == -1){
 			// no avatar
 			DBWriteContactSettingDword(hContact, m_szModuleName, "PictCK", 0);
-		} else if (DBGetContactSettingDword(hContact, m_szModuleName,"PictCK", 0) != cksum) {
+		} else if (DBGetContactSettingDword(hContact, m_szModuleName,"PictCK", 0) != (unsigned)cksum) {
 			//char szFile[MAX_PATH];
 			
 			// Save new Checksum

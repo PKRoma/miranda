@@ -119,7 +119,7 @@ struct CYahooProto : public PROTO_INTERFACE
 	INT_PTR __cdecl SendNudge( WPARAM, LPARAM );
 	INT_PTR __cdecl SetMyAvatar( WPARAM, LPARAM );
 
-	INT_PTR CreateConference(WPARAM /*wParam*/, LPARAM /*lParam*/);
+	INT_PTR __cdecl CreateConference(WPARAM /*wParam*/, LPARAM /*lParam*/);
 
 
 	void   BroadcastStatus(int s);
@@ -191,8 +191,8 @@ struct CYahooProto : public PROTO_INTERFACE
 	void ChatLeave(const char* room);
 	void ChatLeaveAll(void);
 
-	int OnGCEventHook(WPARAM, LPARAM lParam);
-	int OnGCMenuHook(WPARAM, LPARAM lParam);
+	int __cdecl OnGCEventHook(WPARAM, LPARAM lParam);
+	int __cdecl OnGCMenuHook(WPARAM, LPARAM lParam);
 
 	//====| filetransfer.cpp |============================================================
 	void __cdecl recv_filethread(void *psf);

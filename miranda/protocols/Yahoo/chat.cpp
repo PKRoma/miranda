@@ -280,7 +280,7 @@ void CYahooProto::ChatEvent(const char* room, const char* who, int evt, const TC
 	mir_free(idt);
 }
 
-int CYahooProto::OnGCEventHook(WPARAM, LPARAM lParam) 
+int __cdecl CYahooProto::OnGCEventHook(WPARAM, LPARAM lParam) 
 {
 	GCHOOK *gch = (GCHOOK*) lParam;
 	if (!gch) return 1;
@@ -363,7 +363,7 @@ int CYahooProto::OnGCEventHook(WPARAM, LPARAM lParam)
 	return 0;
 }
 
-int CYahooProto::OnGCMenuHook(WPARAM, LPARAM lParam) 
+int __cdecl CYahooProto::OnGCMenuHook(WPARAM, LPARAM lParam) 
 {
 	GCMENUITEMS *gcmi = (GCMENUITEMS*) lParam;
 
@@ -668,7 +668,7 @@ static void CALLBACK ConferenceRequestCB(PVOID pParam)
 		 NULL, ChatRequestDialog, (LPARAM)pParam);
 }
 
-INT_PTR CYahooProto::CreateConference(WPARAM /*wParam*/, LPARAM /*lParam*/)
+INT_PTR __cdecl CYahooProto::CreateConference(WPARAM /*wParam*/, LPARAM /*lParam*/)
 {
 	char room[128];
 	mir_snprintf(room, sizeof(room), "%s-%u", m_yahoo_id, time(NULL));

@@ -235,7 +235,7 @@ void __cdecl CYahooProto::recv_avatarthread(void *pavt)
 		}
 	}
 
-	if (GetDword(hContact, "PictCK", 0) != avt->cksum) {
+	if (GetDword(hContact, "PictCK", 0) != (unsigned)avt->cksum) {
 		LOG(("WARNING: Checksum updated during download?!"));
 		error = 1; /* don't use this one? */
 	} 
@@ -364,7 +364,7 @@ void CYahooProto::ext_got_picture(const char *me, const char *who, const char *p
 				TCHAR z[1024];
 				GetAvatarFileName(hContact, z, 1024, DBGetContactSettingByte(hContact, m_szModuleName,"AvatarType", 0));
 				
-				if (DBGetContactSettingDword(hContact, m_szModuleName,"PictCK", 0) != cksum || _taccess( z, 0 ) != 0 ) {
+				if (DBGetContactSettingDword(hContact, m_szModuleName,"PictCK", 0) != (unsigned)cksum || _taccess( z, 0 ) != 0 ) {
 					
 					DebugLog("[ext_yahoo_got_picture] Checksums don't match or avatar file is missing. Current: %d, New: %d",(int)DBGetContactSettingDword(hContact, m_szModuleName,"PictCK", 0), cksum);
 
@@ -475,7 +475,7 @@ void CYahooProto::ext_got_picture_checksum(const char *me, const char *who, int 
 		reset_avatar(hContact);
 	}
 	else {
-		if (DBGetContactSettingDword(hContact, m_szModuleName,"PictCK", 0) != cksum) {
+		if (DBGetContactSettingDword(hContact, m_szModuleName,"PictCK", 0) != (unsigned)cksum) {
 			// Now save the new checksum. No rush requesting new avatar yet.
 			DBWriteContactSettingDword(hContact, m_szModuleName, "PictCK", cksum);
 
