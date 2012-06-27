@@ -5,6 +5,7 @@
  *
  * Authors: Gennady Feldman (aka Gena01) 
  *          Laurent Marechal (aka Peorth)
+ *          Boris Krasnovskiy (aka borkra)
  *
  * This code is under GPL and is based on AIM, MSN and Miranda source code.
  * I want to thank Robert Rainwater and George Hazan for their code and support
@@ -664,7 +665,7 @@ INT_PTR CALLBACK ChatRequestDialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM
 
 static void CALLBACK ConferenceRequestCB(PVOID pParam)
 {
-	DialogBoxParam(hInstance, MAKEINTRESOURCE(IDD_CHATROOM_INVITE_REQ), 
+	CreateDialogParam(hInstance, MAKEINTRESOURCE(IDD_CHATROOM_INVITE_REQ), 
 		 NULL, ChatRequestDialog, (LPARAM)pParam);
 }
 
@@ -674,7 +675,7 @@ INT_PTR __cdecl CYahooProto::CreateConference(WPARAM /*wParam*/, LPARAM /*lParam
 	mir_snprintf(room, sizeof(room), "%s-%u", m_yahoo_id, time(NULL));
 	
 	InviteChatParam* param = new InviteChatParam(room, this);
-	CreateDialogParam(hInstance, MAKEINTRESOURCE(IDD_CHATROOM_INVITE), NULL, 
+	DialogBoxParam(hInstance, MAKEINTRESOURCE(IDD_CHATROOM_INVITE), NULL, 
 		InviteToChatDialog, LPARAM(param));
 	return 0;
 }
