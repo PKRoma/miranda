@@ -199,4 +199,10 @@ __forceinline void mir_getLP( const PLUGININFOEX* pInfo )
 
 #endif
 
+//reloads langpack
+//wParam=0 (ignored)
+//lParam=(LPARAM)(TCHAR*)langpack file name or NULL to reload the current one
+//always returns 0
+#define MS_LANGPACK_RELOAD           "LangPack/Reload"
+
 #endif // M_LANGPACK_H__

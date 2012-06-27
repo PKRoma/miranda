@@ -743,11 +743,7 @@ INT_PTR CallServiceSync(const char *name, WPARAM wParam, LPARAM lParam)
 
 int CallFunctionAsync( void (__stdcall *func)(void *), void *arg)
 {
-	if (GetCurrentThreadId() != mainThreadId)
-		CallMainThread(func, arg);
-	else
-		func(arg);
-	
+	CallMainThread(func, arg);
 	return 0;
 }
 

@@ -567,3 +567,38 @@ void UnloadLangPackModule()
 		langPack.entry=0;
 		langPack.entryCount=0;
 }	}
+
+INT_PTR ReloadLangpack(WPARAM wParam, LPARAM lParam)
+{
+	TCHAR* pszStr = ( TCHAR* )lParam;
+	if ( pszStr == NULL )
+		pszStr = langPack.filename;
+
+	UnloadLangPackModule();
+	LoadLangPack(pszStr);
+	LangPackDropUnusedItems();
+	return 0;
+}
+
+void LoadUserLangPack(void)
+{
+	TCHAR *pfd = Utils_ReplaceVarsT(_T("%miranda_userdata%\\localization\\langpack_*.txt"));
+
+	WIN32_FIND_DATA fd;
+	HANDLE hFind = FindFirstFile(pfd, &fd);
+	if (hFind != INVALID_HANDLE_VALUE)
+	{
+		FindClose(hFind);
+
+		TCHAR path[MAX_PATH];
+		mir_sntprintf(path, SIZEOF(path), _T("%%miranda_userdata%%\\localization\\%s"), fd.cFileName);
+
+		mir_free(pfd);
+		pfd = Utils_ReplaceVarsT(path);
+
+		UnloadLangPackModule();
+		LoadLangPack(pfd);
+	}
+
+	mir_free(pfd);
+}

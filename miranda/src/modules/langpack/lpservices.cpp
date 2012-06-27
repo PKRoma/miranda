@@ -154,6 +154,8 @@ static INT_PTR PcharToTchar(WPARAM wParam, LPARAM lParam)
 	#endif
 }
 
+INT_PTR ReloadLangpack(WPARAM wParam, LPARAM lParam);
+
 int LoadLangPackServices(void)
 {
 	CreateServiceFunction(MS_LANGPACK_TRANSLATESTRING,TranslateString);
@@ -163,6 +165,7 @@ int LoadLangPackServices(void)
 	CreateServiceFunction(MS_LANGPACK_GETLOCALE,GetDefaultLocale);
 	CreateServiceFunction(MS_LANGPACK_PCHARTOTCHAR,PcharToTchar);
 	CreateServiceFunction(MS_LANGPACK_REGISTER,LPRegister);
+	CreateServiceFunction(MS_LANGPACK_RELOAD,ReloadLangpack);
 	return 0;
 }
 

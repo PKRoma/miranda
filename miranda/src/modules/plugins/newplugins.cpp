@@ -1163,6 +1163,7 @@ int LoadNewPluginsModuleInfos(void)
 	enumPlugins(scanPluginsDir, 0, 0);
 	// the database will select which db plugin to use, or fail if no profile is selected
 	if (LoadDatabaseModule()) return 1;
+	LoadUserLangPack();
 	InitIni();
 	//  could validate the plugin entries here but internal modules arent loaded so can't call Load() in one pass
 	return 0;
