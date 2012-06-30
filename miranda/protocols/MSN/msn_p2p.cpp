@@ -2401,13 +2401,14 @@ void CMsnProto::p2p_sendSessionAck(filetransfer* ft)
 */
 void  CMsnProto::p2p_sessionComplete(filetransfer* ft)
 {
-	if (ft->std.flags & PFTS_SENDING) 
+	if (ft->p2p_appID != MSN_APPID_FILE)
+		p2p_unregisterSession(ft);
+	else if (ft->std.flags & PFTS_SENDING) 
 	{
 		if (ft->openNext() == -1) 
 		{
 			bool success = ft->std.currentFileNumber >= ft->std.totalFiles && ft->bCompleted;
 			SendBroadcast(ft->std.hContact, ACKTYPE_FILE, success ? ACKRESULT_SUCCESS : ACKRESULT_FAILED, ft, 0);
-			p2p_unregisterSession(ft);
 		}
 		else 
 		{
