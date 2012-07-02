@@ -1244,10 +1244,6 @@ int __cdecl CJabberProto::SendMsg( HANDLE hContact, int flags, const char* pszSr
 		TCHAR szClientJid[ JABBER_MAX_JID_LEN ];
 		GetClientJID( dbv.ptszVal, szClientJid, SIZEOF( szClientJid ));
 
-		JABBER_RESOURCE_STATUS *r = ResourceInfoFromJID( szClientJid );
-		if ( r )
-			r->bMessageSessionActive = TRUE;
-
 		JabberCapsBits jcb = GetResourceCapabilites( szClientJid, TRUE );
 
 		if ( jcb & JABBER_RESOURCE_CAPS_ERROR )

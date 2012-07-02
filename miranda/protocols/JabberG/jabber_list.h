@@ -64,9 +64,8 @@ typedef enum {
 	ROLE_MODERATOR
 } JABBER_GC_ROLE;
 
-typedef enum {			// initial default to RSMODE_LASTSEEN
+typedef enum {			// initial default to RSMODE_SERVER
 	RSMODE_SERVER,		// always let server decide ( always send correspondence without resouce name )
-	RSMODE_LASTSEEN,	// use the last seen resource ( or let server decide if haven't seen anything yet )
 	RSMODE_MANUAL		// specify resource manually ( see the defaultResource field - must not be NULL )
 } JABBER_RESOURCE_MODE;
 
@@ -118,7 +117,7 @@ struct JABBER_RESOURCE_STATUS
 	JabberCapsBits jcbManualDiscoveredCaps;
 
 	// XEP-0085 gone event support
-	BOOL bMessageSessionActive;
+	BOOL uMessageSessionActive;
 	JABBER_XEP0232_SOFTWARE_INFO* pSoftwareInfo;
 };
 
@@ -133,8 +132,8 @@ struct JABBER_LIST_ITEM
 	int resourceCount;
 	JABBER_RESOURCE_STATUS *resource;
 	JABBER_RESOURCE_STATUS itemResource; // resource for jids without /resource node
-	int lastSeenResource;	// index to resource[x] which was last seen active
-	int manualResource;	// manually set index to resource[x]
+	JABBER_RESOURCE_STATUS *lastSeenResource;	// index to resource[x] which was last seen active
+	JABBER_RESOURCE_STATUS *manualResource;	// manually set index to resource[x]
 //	int defaultResource;	// index to resource[x] which is the default, negative ( -1 ) means no resource is chosen yet
 	JABBER_RESOURCE_MODE resourceMode;
 	JABBER_SUBSCRIPTION subscription;
