@@ -331,7 +331,7 @@ void CJabberProto::GroupchatJoinRoom( const TCHAR* server, const TCHAR* room, co
 		}	
 	}
 
-	SendPresenceTo( status, text, x );
+	SendPresenceTo( status, jid, x );
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1249,10 +1249,7 @@ void CJabberProto::GroupchatProcessMessage( HXML node )
 
 	if ( resource != NULL ) {
 		JABBER_RESOURCE_STATUS* r = GcFindResource(item, resource);
-		if (r) {
-			nick = r->nick ? r->nick : resource;
-			lastEventTime = msgTime;
-		}
+		nick = r && r->nick ? r->nick : resource;
 	}
 	else
 		nick = NULL;

@@ -116,8 +116,6 @@ struct JABBER_RESOURCE_STATUS
 	JabberCapsBits jcbCachedCaps;
 	JabberCapsBits jcbManualDiscoveredCaps;
 
-	DWORD lastEventTime;
-
 	// XEP-0085 gone event support
 	BOOL uMessageSessionActive;
 	JABBER_XEP0232_SOFTWARE_INFO* pSoftwareInfo;
@@ -162,7 +160,7 @@ struct JABBER_LIST_ITEM
 	HWND hwndGcListAdmin;
 	HWND hwndGcListOwner;
 	int  iChatState;
-	// BOOL bAutoJoin; // chat sessio was started via auto-join
+	// BOOL bAutoJoin; // chat session was started via auto-join
 
 	// LIST_FILE
 	// jid = string representation of port number
