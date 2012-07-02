@@ -57,7 +57,7 @@ static INT_PTR Proto_BroadcastAck(WPARAM wParam, LPARAM lParam)
 	if (ack && ack->type == ACKTYPE_AVATAR && ack->hProcess)
 	{
 		PROTO_AVATAR_INFORMATION* ai = (PROTO_AVATAR_INFORMATION*)ack->hProcess;
-		if (ai->cbSize == sizeof(PROTO_AVATAR_INFORMATION))
+		if (ai && ai->cbSize == sizeof(PROTO_AVATAR_INFORMATION))
 		{
 			PROTO_AVATAR_INFORMATIONW aiw = { sizeof(aiw), ai->hContact, ai->format };
 			MultiByteToWideChar(CP_ACP, 0, ai->filename, -1, aiw.filename, SIZEOF(aiw.filename));
