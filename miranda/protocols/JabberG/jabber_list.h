@@ -116,6 +116,8 @@ struct JABBER_RESOURCE_STATUS
 	JabberCapsBits jcbCachedCaps;
 	JabberCapsBits jcbManualDiscoveredCaps;
 
+	DWORD lastEventTime;
+
 	// XEP-0085 gone event support
 	BOOL uMessageSessionActive;
 	JABBER_XEP0232_SOFTWARE_INFO* pSoftwareInfo;

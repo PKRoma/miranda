@@ -3,6 +3,7 @@
 Jabber Protocol Plugin for Miranda IM
 Copyright ( C ) 2002-04  Santithorn Bunchua
 Copyright ( C ) 2005-11  George Hazan
+Copyright ( C ) 2012     Boris Krasnovskiy
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -307,10 +308,10 @@ void CJabberProto::GroupchatJoinRoom( const TCHAR* server, const TCHAR* room, co
 		info.saveRecent(0);
 	}
 
-	TCHAR text[512];
-	mir_sntprintf( text, SIZEOF(text), _T("%s@%s/%s"), room, server, nick );
+	TCHAR jid[512];
+	mir_sntprintf( jid, SIZEOF(jid), _T("%s@%s/%s"), room, server, nick );
 
-	JABBER_LIST_ITEM* item = ListAdd( LIST_CHATROOM, text );
+	JABBER_LIST_ITEM* item = ListAdd( LIST_CHATROOM, jid );
 	item->bAutoJoin = autojoin;
 	replaceStr( item->nick, nick );
 	replaceStr( item->password, info.password );
@@ -319,6 +320,17 @@ void CJabberProto::GroupchatJoinRoom( const TCHAR* server, const TCHAR* room, co
 	XmlNode x( _T("x")); x << XATTR( _T("xmlns"), _T(JABBER_FEAT_MUC));
 	if ( info.password && info.password[0] )
 		x << XCHILD( _T("password"), info.password );
+
+	if (m_options.GcLogChatHistory) {
+		HANDLE hContact = ChatRoomHContactFromJID(jid);
+		time_t lasteventtime = JGetDword(hContact, "muc_lastevent", 0);
+		if (hContact && lasteventtime) {
+			TCHAR lasteventdate[40];
+			tmi.printTimeStamp(UTC_TIME_HANDLE, lasteventtime, _T("I"), lasteventdate, SIZEOF(lasteventdate), 0);
+			x << XCHILD( _T("history") ) << XATTR( _T("since"), lasteventdate);
+		}	
+	}
+
 	SendPresenceTo( status, text, x );
 }
 
@@ -1235,16 +1247,19 @@ void CJabberProto::GroupchatProcessMessage( HXML node )
 				if (( p = xmlGetAttrValue( xNode, _T("stamp"))) != NULL )
 					msgTime = JabberIsoToUnixTime( p );
 
-	time_t now = time( NULL );
-	if ( msgTime == 0 || msgTime > now )
-		msgTime = now;
-
 	if ( resource != NULL ) {
 		JABBER_RESOURCE_STATUS* r = GcFindResource(item, resource);
-		nick = r && r->nick ? r->nick : resource;
+		if (r) {
+			nick = r->nick ? r->nick : resource;
+			lastEventTime = msgTime;
+		}
 	}
 	else
 		nick = NULL;
+
+	time_t now = time( NULL );
+	if ( msgTime == 0 || msgTime > now )
+		msgTime = now;
 
 	GCEVENT gce = {0};
 	gce.cbSize = sizeof(GCEVENT);

@@ -4,6 +4,7 @@ Jabber Protocol Plugin for Miranda IM
 Copyright ( C ) 2002-04  Santithorn Bunchua
 Copyright ( C ) 2005-11  George Hazan
 Copyright ( C ) 2007     Maxim Mluhov
+Copyright ( C ) 2012     Boris Krasnovskiy
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -956,6 +957,7 @@ public:
 		m_otvOptions.AddOption(LPGENT("Log events") _T("/") LPGENT("Affiliation changes"),                  m_proto->m_options.GcLogAffiliations);
 		m_otvOptions.AddOption(LPGENT("Log events") _T("/") LPGENT("Role changes"),                         m_proto->m_options.GcLogRoles);
 		m_otvOptions.AddOption(LPGENT("Log events") _T("/") LPGENT("Status changes"),                       m_proto->m_options.GcLogStatuses);
+		m_otvOptions.AddOption(LPGENT("Log events") _T("/") LPGENT("Filter history messages"),              m_proto->m_options.GcLogChatHistory);
 	}
 
 	static CDlgBase *Create(void *param) { return new CDlgOptGc((CJabberProto *)param); }

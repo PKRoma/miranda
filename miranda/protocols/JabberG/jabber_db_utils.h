@@ -2,7 +2,7 @@
 
 Jabber Protocol Plugin for Miranda IM
 Copyright ( C ) 2002-04  Santithorn Bunchua
-Copyright ( C ) 2005-11  George Hazan
+Copyright ( C ) 2005-12  George Hazan
 Copyright ( C ) 2007-09  Maxim Mluhov
 Copyright ( C ) 2007-09  Victor Pavlychko
 
@@ -198,6 +198,7 @@ struct CJabberOptions
 	CMOption<BYTE> GcLogConfig;
 	CMOption<BYTE> GcLogRoles;
 	CMOption<BYTE> GcLogStatuses;
+	CMOption<BYTE> GcLogChatHistory;
 	CMOption<BYTE> HostNameAsResource;
 	CMOption<BYTE> IgnoreMUCInvites;
 	CMOption<BYTE> KeepAlive;
@@ -252,6 +253,7 @@ struct CJabberOptions
 		GcLogConfig(proto, "GcLogConfig", FALSE),
 		GcLogRoles(proto, "GcLogRoles", FALSE),
 		GcLogStatuses(proto, "GcLogStatuses", FALSE),
+		GcLogChatHistory(proto, "GcLogChatHistory", TRUE),
 		HostNameAsResource(proto, "HostNameAsResource", FALSE),
 		IgnoreMUCInvites(proto, "IgnoreMUCInvites", FALSE),
 		KeepAlive(proto, "KeepAlive", TRUE),

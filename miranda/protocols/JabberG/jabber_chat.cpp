@@ -3,6 +3,7 @@
 Jabber Protocol Plugin for Miranda IM
 Copyright ( C ) 2002-04  Santithorn Bunchua
 Copyright ( C ) 2005-11  George Hazan
+Copyright ( C ) 2012     Boris Krasnovskiy
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -375,6 +376,11 @@ void CJabberProto::GcQuit( JABBER_LIST_ITEM* item, int code, HXML reason )
 	const TCHAR* szReason = NULL;
 	if ( reason != NULL && xmlGetText( reason ) != NULL )
 		szReason = xmlGetText( reason );
+
+	if (m_options.GcLogChatHistory) {
+		HANDLE hContact = ChatRoomHContactFromJID(item->jid);
+		JSetDword(hContact, "muc_lastevent", time(NULL));
+	}
 
 	GCDEST gcd = { m_szModuleName, NULL, GC_EVENT_CONTROL };
 	gcd.ptszID = item->jid;
