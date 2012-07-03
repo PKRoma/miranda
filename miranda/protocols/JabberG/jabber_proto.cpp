@@ -1094,10 +1094,10 @@ HANDLE __cdecl CJabberProto::SendFile( HANDLE hContact, const TCHAR* szDescripti
 		return 0;
 	}
 
-	JabberCapsBits jcb = GetResourceCapabilites( item->jid, TRUE );
-	if ( jcb == JABBER_RESOURCE_CAPS_IN_PROGRESS ) {
+	JabberCapsBits jcb = GetTotalJidCapabilites( item->jid );
+	if (( jcb & JABBER_RESOURCE_CAPS_IN_PROGRESS ) == JABBER_RESOURCE_CAPS_IN_PROGRESS ) {
 		Sleep(600);
-		jcb = GetResourceCapabilites( item->jid, TRUE );
+		jcb = GetTotalJidCapabilites( item->jid );
 	}
 
 	// fix for very smart clients, like gajim
