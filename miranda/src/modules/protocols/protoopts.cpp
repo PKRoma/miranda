@@ -33,26 +33,15 @@ INT_PTR  Proto_EnumProtocols( WPARAM, LPARAM );
 bool CheckProtocolOrder(void);
 
 #define errMsg \
-"WARNING! The account is going to be deleted. It means that all its \
-settings, contacts and histories will be also erased.\n\n\
-Are you absolutely sure?"
-
-#define upgradeMsg \
-"Your account was successfully upgraded. \
-To activate it, restart of Miranda is needed.\n\n\
-If you want to restart Miranda now, press Yes, if you want to upgrade another account, press No"
+LPGENT("WARNING! The account is going to be deleted. It means that all its settings, contacts and histories will be also erased.\n\n Are you absolutely sure?")
 
 #define legacyMsg \
-"This account uses legacy protocol plugin. \
-Use Miranda IM options dialogs to change it's preferences."
+LPGENT("This account uses legacy protocol plugin. Use Miranda IM options dialogs to change it's preferences.")
 
 #define welcomeMsg \
-"Welcome to Miranda IM's account manager!\n \
-Here you can set up your IM accounts.\n\n \
-Select an account from the list on the left to see the available options. \
-Alternatively, just click on the Plus sign underneath the list to set up a new IM account."
+LPGENT("Welcome to Miranda IM's account manager!\n Here you can set up your IM accounts.\n\n Select an account from the list on the left to see the available options. Alternatively, just click on the Plus sign underneath the list to set up a new IM account.")
 
-static HWND hAccMgr = NULL;
+static HWND hAccMgr;
 
 extern HANDLE hAccListChanged;
 
@@ -448,7 +437,7 @@ static void sttUpdateAccountInfo(HWND hwndDlg, struct TAccMgrData *dat)
 				}
 				else {
 					ShowWindow(GetDlgItem(hwndDlg, IDC_TXT_INFO), SW_SHOW);
-					SetWindowText(GetDlgItem(hwndDlg, IDC_TXT_INFO), TranslateT(legacyMsg));
+					SetWindowText(GetDlgItem(hwndDlg, IDC_TXT_INFO), TranslateTS(legacyMsg));
 			}	}
 			return;
 	}	}
@@ -459,7 +448,7 @@ static void sttUpdateAccountInfo(HWND hwndDlg, struct TAccMgrData *dat)
 	EnableWindow( GetDlgItem( hwndDlg, IDC_OPTIONS ), FALSE );
 
 	ShowWindow(GetDlgItem(hwndDlg, IDC_TXT_INFO), SW_SHOW);
-	SetWindowText(GetDlgItem(hwndDlg, IDC_TXT_INFO), TranslateT(welcomeMsg));
+	SetWindowText(GetDlgItem(hwndDlg, IDC_TXT_INFO), TranslateTS(welcomeMsg));
 }
 
 INT_PTR CALLBACK AccMgrDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LPARAM lParam)
@@ -860,7 +849,7 @@ INT_PTR CALLBACK AccMgrDlgProc(HWND hwndDlg,UINT message, WPARAM wParam, LPARAM 
 							MB_ICONERROR | MB_OK );
 						break;
 					}
-					if ( IDYES == MessageBox( NULL, TranslateT( errMsg ), buf, MB_ICONSTOP | MB_DEFBUTTON2 | MB_YESNO )) {
+					if ( IDYES == MessageBox( NULL, TranslateTS( errMsg ), buf, MB_ICONSTOP | MB_DEFBUTTON2 | MB_YESNO )) {
 						// lock controls to avoid changes during remove process
 						ListBox_SetCurSel( hList, -1 );
 						sttUpdateAccountInfo( hwndDlg, dat );
