@@ -203,6 +203,19 @@ DWORD CYahooProto::SetStringUtf( HANDLE hContact, const char* valueName, const c
 	return DBWriteContactSettingStringUtf( hContact, m_szModuleName, valueName, parValue );
 }
 
+char* CYahooProto::GetLoginId(HANDLE hContact)
+{ 
+	DBVARIANT dbv;
+	return GetString( hContact, YAHOO_LOGINID, &dbv) ? NULL : dbv.pszVal;
+}
+
+char* CYahooProto::GetLoginIdent(HANDLE hContact)
+{ 
+	DBVARIANT dbv;
+	return GetString( hContact, "MyIdentity", &dbv) ? NULL : dbv.pszVal;
+}
+
+
 /////////////////////////////////////////////////////////////////////////////////////////
 // Popups
 

@@ -219,7 +219,7 @@ struct CYahooProto : public PROTO_INTERFACE
 	//====| im.cpp |======================================================================
 	void   ext_got_im(const char *me, const char *who, int protocol, const char *msg, long tm, int stat, int utf8, int buddy_icon, const char *seqn=NULL, int sendn=0);
 
-	void   send_msg(const char *id, int protocol, const char *msg, int utf8);
+	void   send_msg(const char *id, const char* from, int protocol, const char *msg, int utf8);
 
 	void __cdecl im_sendacksuccess(HANDLE hContact);
 	void __cdecl im_sendackfail(HANDLE hContact);
@@ -258,6 +258,9 @@ struct CYahooProto : public PROTO_INTERFACE
 	int    GetString( HANDLE hContact, const char* name, DBVARIANT* );
 	int    GetStringUtf( HANDLE hContact, const char* name, DBVARIANT* );
 	
+	char*  GetLoginId(HANDLE hContact);
+	char*  GetLoginIdent(HANDLE hContact);
+
 	void   SetString( const char* name, const char* value );
 	void   SetString( HANDLE hContact, const char* name, const char* value );
 	void   SetStringT( HANDLE hContact, const char* name, const TCHAR* value );

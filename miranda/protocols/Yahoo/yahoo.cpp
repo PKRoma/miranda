@@ -242,22 +242,12 @@ void CYahooProto::AddBuddy(HANDLE hContact, const char *group, const TCHAR *msg)
 	
 	No refresh needed. */
 	
-	if (!GetString(hContact, YAHOO_LOGINID, &dbv))
-	{
-		who = strdup(dbv.pszVal);
-		DBFreeVariant(&dbv);
-	}
-	else
-		return;
+	who = GetLoginId(hContact);
+	if (!who) return;
 
 	protocol = GetWord(hContact, "yprotoid", 0);
 	u_msg = mir_utf8encodeT(msg);
-
-	if (!GetString(hContact, "MyIdentity", &dbv))
-	{
-		ident = strdup(dbv.pszVal);
-		DBFreeVariant(&dbv);
-	}
+	ident = GetLoginIdent(hContact);
 
 	if (!GetStringUtf(NULL, "FirstName", &dbv))
 	{
@@ -278,8 +268,8 @@ void CYahooProto::AddBuddy(HANDLE hContact, const char *group, const TCHAR *msg)
 
 	free(fname);
 	free(lname);
-	free(ident);
-	free(who);
+	mir_free(who);
+	mir_free(ident);
 	mir_free(u_msg);
 }
 
