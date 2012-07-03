@@ -536,8 +536,8 @@ INT_PTR __cdecl CJabberProto::OnMenuRosterAdd( WPARAM wParam, LPARAM )
 		TCHAR *roomID = mir_tstrdup(dbv.ptszVal);
 		JFreeVariant( &dbv );
 		if ( ListGetItemPtr( LIST_ROSTER, roomID ) == NULL ) {
-			TCHAR *nick = 0;
-			TCHAR *group = 0;
+			TCHAR *nick = NULL;
+			TCHAR *group = NULL;
 			if ( !DBGetContactSettingTString( ( HANDLE ) wParam, "CList", "Group", &dbv ) ) {
 				group = mir_tstrdup(dbv.ptszVal);
 				JFreeVariant( &dbv );
@@ -553,8 +553,7 @@ INT_PTR __cdecl CJabberProto::OnMenuRosterAdd( WPARAM wParam, LPARAM )
 
 				item = ListGetItemPtr(LIST_BOOKMARK, roomID);
 				if (!item) {
-					item = ( JABBER_LIST_ITEM* )mir_alloc( sizeof( JABBER_LIST_ITEM ));
-					ZeroMemory( item, sizeof( JABBER_LIST_ITEM ));
+					item = ( JABBER_LIST_ITEM* )mir_calloc( sizeof( JABBER_LIST_ITEM ));
 					item->jid = mir_tstrdup(roomID);
 					item->name = mir_tstrdup(nick);
 					if ( !JGetStringT( ( HANDLE ) wParam, "MyNick", &dbv ) ) {
@@ -562,11 +561,14 @@ INT_PTR __cdecl CJabberProto::OnMenuRosterAdd( WPARAM wParam, LPARAM )
 						JFreeVariant( &dbv );
 					}
 					AddEditBookmark( item );
+					mir_free(item->jid);
+					mir_free(item->name);
+					mir_free(item->nick);
 					mir_free(item);
 				}
 			}
-			if (nick) mir_free(nick);
-			if (nick) mir_free(group);
+			mir_free(nick);
+			mir_free(group);
 		}
 		mir_free(roomID);
 	}
@@ -659,15 +661,13 @@ INT_PTR __cdecl CJabberProto::OnMenuBookmarkAdd( WPARAM wParam, LPARAM )
 		TCHAR *roomID = mir_tstrdup(dbv.ptszVal);
 		JFreeVariant( &dbv );
 		if ( ListGetItemPtr( LIST_BOOKMARK, roomID ) == NULL ) {
-			TCHAR *nick = 0;
+			TCHAR *nick = NULL;
 			if ( !JGetStringT( ( HANDLE ) wParam, "Nick", &dbv ) ) {
 				nick = mir_tstrdup(dbv.ptszVal);
 				JFreeVariant( &dbv );
 			}
-			JABBER_LIST_ITEM* item = NULL;
 
-			item = ( JABBER_LIST_ITEM* )mir_alloc( sizeof( JABBER_LIST_ITEM ));
-			ZeroMemory( item, sizeof( JABBER_LIST_ITEM ));
+			JABBER_LIST_ITEM* item = ( JABBER_LIST_ITEM* )mir_calloc( sizeof( JABBER_LIST_ITEM ));
 			item->jid = mir_tstrdup(roomID);
 			item->name = ( TCHAR* )JCallService( MS_CLIST_GETCONTACTDISPLAYNAME, wParam, GCDNF_TCHAR );
 			item->type = _T("conference");
@@ -676,9 +676,11 @@ INT_PTR __cdecl CJabberProto::OnMenuBookmarkAdd( WPARAM wParam, LPARAM )
 				JFreeVariant( &dbv );
 			}
 			AddEditBookmark( item );
+			mir_free(item->jid);
+			mir_free(item->nick);
 			mir_free(item);
 
-			if (nick) mir_free(nick);
+			mir_free(nick);
 		}
 		mir_free(roomID);
 	}
