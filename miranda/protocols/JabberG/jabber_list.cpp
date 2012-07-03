@@ -378,6 +378,7 @@ TCHAR* CJabberProto::ListGetBestClientResourceNamePtr( const TCHAR* jid )
 
 	JABBER_LIST_ITEM* LI = m_lstRoster[i-1];
 	TCHAR* res = ListGetBestResourceNamePtr( jid );
+	if ( res == NULL ) res = LI->lastSeenResource->resourceName;
 	if ( res == NULL ) {
 		JABBER_RESOURCE_STATUS* r = LI->resource;
 		int status = ID_STATUS_OFFLINE;

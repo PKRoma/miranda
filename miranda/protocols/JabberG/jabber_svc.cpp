@@ -604,14 +604,11 @@ INT_PTR __cdecl CJabberProto::JabberSendNudge( WPARAM wParam, LPARAM )
 		return 0;
 
 	HANDLE hContact = ( HANDLE )wParam;
+	
 	DBVARIANT dbv;
 	if ( !JGetStringT( hContact, "jid", &dbv )) {
 		TCHAR tszJid[ JABBER_MAX_JID_LEN ];
-		TCHAR *szResource = ListGetBestClientResourceNamePtr( dbv.ptszVal );
-		if ( szResource )
-			mir_sntprintf( tszJid, SIZEOF(tszJid), _T("%s/%s"), dbv.ptszVal, szResource );
-		else
-			mir_sntprintf( tszJid, SIZEOF(tszJid), _T("%s"), dbv.ptszVal );
+		GetClientJID( dbv.ptszVal, tszJid, SIZEOF( tszJid )); 
 		JFreeVariant( &dbv );
 
 		JabberCapsBits jcb = GetResourceCapabilites( tszJid, FALSE );
