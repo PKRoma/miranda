@@ -306,7 +306,7 @@ LBL_FatalError:
 			oldStatus = m_iStatus;
 			m_iDesiredStatus = m_iStatus = ID_STATUS_OFFLINE;
 			JSendBroadcast( NULL, ACKTYPE_STATUS, ACKRESULT_SUCCESS, ( HANDLE ) oldStatus, m_iStatus );
-         goto LBL_Exit;
+			goto LBL_Exit;
 		}
 
 		if ( !DBGetContactSettingString( NULL, m_szModuleName, "LoginServer", &dbv )) {

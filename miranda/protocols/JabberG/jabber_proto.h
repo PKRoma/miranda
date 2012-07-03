@@ -272,7 +272,6 @@ struct CJabberProto : public PROTO_INTERFACE
 
 	CRITICAL_SECTION m_csModeMsgMutex;
 	JABBER_MODEMSGS m_modeMsgs;
-	BOOL m_bModeMsgStatusChangePending;
 
 	HANDLE m_hHookExtraIconsRebuild;
 	HANDLE m_hHookExtraIconsApply;

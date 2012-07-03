@@ -64,11 +64,6 @@ void CJabberProto::OnIqResultServerDiscoInfo( HXML iqNode )
 				!_tcscmp( identityName, _T("Google Talk"))) {
 					m_ThreadInfo->jabberServerCaps |= JABBER_CAPS_PING;
 					m_bGoogleTalk = true;
-
-					// Google Shared Status
-					m_ThreadInfo->send(
-						XmlNodeIq(m_iqManager.AddHandler(&CJabberProto::OnIqResultGoogleSharedStatus, JABBER_IQ_TYPE_GET))
-							<< XQUERY(_T(JABBER_FEAT_GTALK_SHARED_STATUS)) << XATTR(_T("version"), _T("2")));
 			}
 		}
 		if ( m_ThreadInfo ) {
@@ -171,6 +166,10 @@ void CJabberProto::OnLoggedIn()
 	m_tmJabberLoggedInTime = time(0);
 
 	m_ThreadInfo->dwLoginRqs = 0;
+
+	m_ThreadInfo->send(
+		XmlNodeIq(m_iqManager.AddHandler(&CJabberProto::OnIqResultGoogleSharedStatus, JABBER_IQ_TYPE_GET))
+			<< XQUERY(_T(JABBER_FEAT_GTALK_SHARED_STATUS)) << XATTR(_T("version"), _T("2")));
 
 	// XEP-0083 support
 	{
@@ -564,7 +563,6 @@ void CJabberProto::OnIqResultGetRoster( HXML iqNode, CJabberIqInfo* pInfo )
 	EnableMenuItems( TRUE );
 
 	Log( "Status changed via THREADSTART" );
-	m_bModeMsgStatusChangePending = FALSE;
 	SetServerStatus( m_iDesiredStatus );
 
 	if ( m_options.AutoJoinConferences ) {
