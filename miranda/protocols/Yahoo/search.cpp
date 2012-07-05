@@ -30,7 +30,7 @@ void __cdecl CYahooProto::search_simplethread(void *snsearch)
 		return;
 	}
 
-	TCHAR *c = _tcschr(id, '@');
+	TCHAR *c = _tcsstr(id, _T("@yahoo.com"));
 	if (c) *c = 0;
 
 	PROTOSEARCHRESULT psr = { 0 };

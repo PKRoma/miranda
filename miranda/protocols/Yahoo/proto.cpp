@@ -883,6 +883,7 @@ INT_PTR CALLBACK first_run_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 			BOOL reconnectRequired = FALSE;
 			
 			GetDlgItemTextA(hwndDlg, IDC_HANDLE, str, sizeof(str));
+			char *c = strstr(str, "@yahoo.com"); if (c) *c = 0;
 			
 			dbv.pszVal = NULL;
 			

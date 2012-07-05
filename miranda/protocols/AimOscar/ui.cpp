@@ -886,7 +886,10 @@ static INT_PTR CALLBACK options_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LP
 
 				//NK
 				if (GetDlgItemTextA(hwndDlg, IDC_NK, str, sizeof(str)))
+				{
+					char *c = strstr(str, "@aol.com"); if (c) *c = 0;
 					ppro->setString(AIM_KEY_NK, str);
+				}
 				else
 				{
 					GetDlgItemTextA(hwndDlg, IDC_SN, str, sizeof(str));
@@ -1225,6 +1228,7 @@ INT_PTR CALLBACK first_run_dialog(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
 
 			char str[128];
 			GetDlgItemTextA(hwndDlg, IDC_SN, str, sizeof(str));
+			char *c = strstr(str, "@aol.com"); if (c) *c = 0;
 			ppro->setString(AIM_KEY_SN, str);
 			GetDlgItemTextA(hwndDlg, IDC_PW, str, sizeof(str));
 			CallService(MS_DB_CRYPT_ENCODESTRING, sizeof(str), (LPARAM) str);
