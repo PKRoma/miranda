@@ -251,10 +251,7 @@ only useful to multi threaded modules calling thread unsafe services!
 INT_PTR CallServiceSync(const char *name, WPARAM wParam, LPARAM lParam);
 
 /* CallFunctionAsync
-Calls a given function pointer, it doesn't go thru the core at all, it is
-just a wrapper around QueueUserAPC() and other workarounds to make APC
-work even if there are non APC message loops, this allows plugins who
-need this feature to get it without recoding it themselves.
+Calls a given function pointer on the main thread.
 
 The function 'func' will always be called from the main thread in idle time even
 if it is invokved from a worker thread, 'arg' must not be on the stack.

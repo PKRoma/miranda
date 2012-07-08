@@ -219,8 +219,6 @@ int CListMod_ContactListShutdownProc(WPARAM wParam,LPARAM lParam)
 {
     ModernUnhookEvent(hookSystemShutdown_CListMod);
     FreeDisplayNameCache();
-    if(g_hMainThread) CloseHandle(g_hMainThread);
-    g_hMainThread=NULL;
 	return 0;
 }
 

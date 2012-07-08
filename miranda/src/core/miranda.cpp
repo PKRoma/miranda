@@ -138,6 +138,7 @@ LRESULT CALLBACK APCWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 			ReleaseMutex(hApcMutex);
 			if (tmpCall.func) tmpCall.func(tmpCall.param);
 		}
+		SleepEx(0, TRUE); // process APCs created by plugins that do not use core service
 		break;
 
 	case WM_TIMECHANGE:
