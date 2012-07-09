@@ -67,7 +67,9 @@ void CMsnProto::sttSetMirVer(HANDLE hContact, DWORD dwValue, bool always)
 		"WLM Unknown",
 	};
 
-	if (dwValue & 0x1)
+	if (dwValue == 0)
+		setString(hContact, "MirVer", "Windows Phone");
+	else if (dwValue & 0x1)
 		setString(hContact, "MirVer", "MSN Mobile");
 	else if (dwValue & 0x200)
 		setString(hContact, "MirVer", "Webmessenger");
