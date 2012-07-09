@@ -1190,6 +1190,8 @@ LBL_InvalidCommand:
 
 			if (strchr(data.userEmail, ';'))
 			{
+				if (info->mJoinedContactsWLID.getCount() == 1)
+					p2p_clearThreadSessions(info->mJoinedContactsWLID[0], info->mType);
 				info->contactLeft(data.userEmail);
 				break;
 			}
@@ -1468,7 +1470,8 @@ remove:
 			{
 				UrlDecode(data.userNick);
 				HANDLE hContact = MSN_HContactFromEmail(data.userEmail, data.userNick, true, true);
-				if (tNumTokens == 5)
+
+				if (tNumTokens == 5 && strcmp(data.flags, "0:0"))
 				{
 					MsnContact *cont = Lists_Get(data.userEmail);
 					if (cont)
@@ -1780,6 +1783,7 @@ remove:
 
 				case 10:
 					// TURN setup
+					p2p_processSIP(info, msgBody, NULL, szEmail);
 					break;
 			}
 			break;

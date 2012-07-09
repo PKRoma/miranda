@@ -750,6 +750,8 @@ void  CMsnProto::MSN_SendStatusMessage(const char* msg)
 			if (msnCurrentMedia.ptszPlayer != NULL) lti.ptszPlayer = _T("{7}");
 			if (msnCurrentMedia.ptszType != NULL) lti.ptszType = _T("{8}");
 
+//			XBOXMSGR\0Game\01\0{0}: {1} ({2})\0Xbox 360\0KS: Season Two\0Nisu86\0http://live.xbox.com/profile/profile.aspx?GamerTag=Nisu86&amp;appid=messenger\066262\0\0
+
 			TCHAR *tmp = (TCHAR *)CallService(MS_LISTENINGTO_GETPARSEDTEXT, (WPARAM) _T("%title% - %artist%"), (LPARAM) &lti);
 			szFormatEnc = HtmlEncodeUTF8T(tmp);
 			mir_free(tmp);

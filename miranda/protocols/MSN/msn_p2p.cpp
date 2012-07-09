@@ -1433,6 +1433,7 @@ void CMsnProto::p2p_InitDirectTransfer(MimeHeaders& tFileInfo, MimeHeaders& tFil
 		if (MSN_GetThreadByContact(wlid, SERVER_P2P_DIRECT))
 		{
 			p2p_sendStatus(ft, 1603);
+			p2p_unregisterDC(dc);
 			return;
 		}
 		p2p_unregisterDC(dc);
@@ -1821,18 +1822,18 @@ void CMsnProto::p2p_processSIP(ThreadData* info, char* msgbody, P2PB_Header* hdr
 
 	case 4:
 		{
-			const char* callID = tFileInfo["Call-ID"];
+			const char* szCallID = tFileInfo["Call-ID"];
 
 //			application/x-msnmsgr-session-failure-respbody
 
-			directconnection *dc = p2p_getDCByCallID(callID, wlid);
+			directconnection *dc = p2p_getDCByCallID(szCallID, wlid);
 			if (dc != NULL)
 			{
 				p2p_unregisterDC(dc);
 				break;
 			}
 
-			filetransfer* ft = p2p_getSessionByCallID(callID, wlid);
+			filetransfer* ft = p2p_getSessionByCallID(szCallID, wlid);
 			if (ft == NULL)
 				break;
 
