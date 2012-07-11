@@ -97,7 +97,7 @@ Source code is available at: http://www.miranda-im.org/download/
 Miranda IM is released under the terms of the GNU General Public License. See
 "License.txt" for more details.
 
-Miranda IM is copyright 2000-2011 by the people listed in contributors.txt.
+Miranda IM is copyright 2000-2012 by the people listed in contributors.txt.
 
 The plugins included with this release are copyrighted by their authors. See the
 documentation for each plugin for more information.
