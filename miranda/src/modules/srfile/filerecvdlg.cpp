@@ -256,22 +256,32 @@ INT_PTR CALLBACK DlgProcRecvFile(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 		{
 			DBEVENTINFO dbei={0};
 			TCHAR datetimestr[64];
-			char buf[540];
 
-			dbei.cbSize=sizeof(dbei);
-			dbei.cbBlob=CallService(MS_DB_EVENT_GETBLOBSIZE,(WPARAM)dat->hDbEvent,0);
-			dbei.pBlob=(PBYTE)mir_alloc(dbei.cbBlob);
-			CallService(MS_DB_EVENT_GET,(WPARAM)dat->hDbEvent,(LPARAM)&dbei);
-			dat->fs = cle->lParam ? (HANDLE)cle->lParam : (HANDLE)*(PDWORD)dbei.pBlob;
-			lstrcpynA(buf, (char*)dbei.pBlob+4, min(dbei.cbBlob+1,SIZEOF(buf)));
-			TCHAR* ptszFileName = DbGetEventStringT( &dbei, buf );
-			SetDlgItemText(hwndDlg,IDC_FILENAMES,ptszFileName);
-			mir_free(ptszFileName);
-			lstrcpynA(buf, (char*)dbei.pBlob+4+strlen((char*)dbei.pBlob+4)+1, min((int)(dbei.cbBlob-4-strlen((char*)dbei.pBlob+4)),SIZEOF(buf)));
-			TCHAR* ptszDescription = DbGetEventStringT( &dbei, buf );
-			SetDlgItemText(hwndDlg,IDC_MSG,ptszDescription);
-			mir_free(ptszDescription);
-			mir_free(dbei.pBlob);
+			dbei.cbSize = sizeof(dbei);
+			dbei.cbBlob = CallService(MS_DB_EVENT_GETBLOBSIZE, (WPARAM)dat->hDbEvent, 0);
+			if (dbei.cbBlob > 4 && dbei.cbBlob <= 8196)
+			{
+				dbei.pBlob = (PBYTE)alloca(dbei.cbBlob + 1);
+				CallService(MS_DB_EVENT_GET, (WPARAM)dat->hDbEvent, (LPARAM)&dbei);
+				dbei.pBlob[dbei.cbBlob] = 0;
+				dat->fs = cle->lParam ? (HANDLE)cle->lParam : (HANDLE)*(PDWORD)dbei.pBlob;
+
+				char *str = (char*)dbei.pBlob + 4;
+				TCHAR* ptszFileName = DbGetEventStringT(&dbei, str);
+				SetDlgItemText(hwndDlg, IDC_FILENAMES, ptszFileName);
+				mir_free(ptszFileName);
+				
+				unsigned len = (unsigned)strlen(str) + 1;
+				if (len + 4 < dbei.cbBlob)
+				{
+					str += len;
+					TCHAR* ptszDescription = DbGetEventStringT(&dbei, str);
+					SetDlgItemText(hwndDlg, IDC_MSG, ptszDescription);
+					mir_free(ptszDescription);
+				}
+			}
+			else
+				DestroyWindow(hwndDlg);
 
 			tmi.printTimeStamp(NULL, dbei.timestamp, _T("t d"), datetimestr, SIZEOF(datetimestr), 0);
 			SetDlgItemText(hwndDlg, IDC_DATE, datetimestr);
@@ -279,10 +289,9 @@ INT_PTR CALLBACK DlgProcRecvFile(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
 		{
 			char* szProto = (char*)CallService(MS_PROTO_GETCONTACTBASEPROTO, (WPARAM)dat->hContact, 0);
 			if (szProto) {
-				CONTACTINFO ci;
+				CONTACTINFO ci = {0};
 				int hasName = 0;
 				char buf[128];
-				ZeroMemory(&ci,sizeof(ci));
 
 				ci.cbSize = sizeof(ci);
 				ci.hContact = dat->hContact;
