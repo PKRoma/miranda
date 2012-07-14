@@ -1,6 +1,6 @@
 /*
 Plugin of Miranda IM for communicating with users of the AIM protocol.
-Copyright (c) 2008-2009 Boris Krasnovskiy
+Copyright (c) 2008-2012 Boris Krasnovskiy
 Copyright (C) 2005-2006 Aaron Myles Landwehr
 
 This program is free software; you can redistribute it and/or
@@ -28,6 +28,7 @@ struct file_transfer
 
 	HANDLE hConn;
 	HANDLE hResumeEvent;
+	HANDLE hDirectBoundPort;
 
 	char* file;
 	char* message;
@@ -44,6 +45,7 @@ struct file_transfer
 	unsigned short max_ver;
 
 	unsigned short req_num;
+	unsigned short local_port;
 
 	bool peer_force_proxy;
 	bool me_force_proxy;
@@ -54,6 +56,10 @@ struct file_transfer
 
 	file_transfer(HANDLE hCont, char* nick, char* cookie);
 	~file_transfer();
+
+	void listen(HANDLE hNetlibPeer);
+	void stop_listen(void);
+
 };
 
 struct ft_list_type : OBJLIST <file_transfer> 
@@ -62,8 +68,7 @@ struct ft_list_type : OBJLIST <file_transfer>
 
 	file_transfer* find_by_handle(HANDLE hContact);
 	file_transfer* find_by_cookie(char* cookie, HANDLE hContact);
-	file_transfer* find_by_ip(unsigned long ip);
-	file_transfer* find_suitable(void);
+	file_transfer* find_by_port(unsigned short port);
 
 	bool find_by_ft(file_transfer *ft);
 

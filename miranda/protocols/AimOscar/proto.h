@@ -157,11 +157,9 @@ struct CAimProto : public PROTO_INTERFACE
 	HANDLE hNetlib;//handle to netlib
 	unsigned long internal_ip;  // our ip
 	unsigned long detected_ip;  // our ip
-	unsigned short local_port;  // our port
 	
 	//Peer connection stuff
 	HANDLE hNetlibPeer;//handle to the peer netlib
-	HANDLE hDirectBoundPort;//direct connection listening port
 
 	//Handles for the context menu items
 	HGENMENU hMenuRoot;
