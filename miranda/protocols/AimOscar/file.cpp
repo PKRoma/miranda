@@ -501,7 +501,7 @@ file_transfer* ft_list_type::find_by_port(unsigned short port)
 	for (int i = getCount(); i--; )
 	{
 		file_transfer *ft = items[i];
-		if (ft->accepted && ft->requester && ft->local_port  == port)
+		if (ft->requester && ft->local_port  == port)
 			return ft;
 	}
 	return NULL;
@@ -569,15 +569,15 @@ file_transfer::~file_transfer()
 	CloseHandle(hResumeEvent);
 }
 
-void file_transfer::listen(HANDLE hNetlibPeer) 
+void file_transfer::listen(CAimProto* ppro) 
 { 
 	if (hDirectBoundPort) return;
 
 	NETLIBBIND nlb = {0};
 	nlb.cbSize = sizeof(nlb);
 	nlb.pfnNewConnectionV2 = aim_direct_connection_initiated;
-	nlb.pExtra = this;
-	hDirectBoundPort = (HANDLE)CallService(MS_NETLIB_BINDPORT, (WPARAM)hNetlibPeer, (LPARAM)&nlb);
+	nlb.pExtra = ppro;
+	hDirectBoundPort = (HANDLE)CallService(MS_NETLIB_BINDPORT, (WPARAM)ppro->hNetlibPeer, (LPARAM)&nlb);
 	local_port = hDirectBoundPort ? nlb.wPort : 0;
 }
 

@@ -569,7 +569,7 @@ HANDLE __cdecl CAimProto::SendFile(HANDLE hContact, const PROTOCHAR* szDescripti
 			}
 			else 
 			{
-				ft->listen(hNetlibPeer);
+				ft->listen(this);
 				aim_send_file(hServerConn, seqno, detected_ip, ft->local_port, false, ft);
 			}
 

@@ -73,7 +73,7 @@ void __cdecl CAimProto::accept_file_thread(void* param)//buddy sending file
 		else
 		{
 			LOG("Failed to connect to buddy- asking buddy to connect to us.");
-			ft->listen(hNetlibPeer);
+			ft->listen(this);
 			ft->requester = true;
 			aim_send_file(hServerConn, seqno, detected_ip, ft->local_port, false, ft);
 			return;

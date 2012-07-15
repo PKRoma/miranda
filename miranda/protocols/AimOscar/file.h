@@ -19,6 +19,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef FILE_H
 #define FILE_H
 
+struct CAimProto;
+
 struct file_transfer
 {
 	HANDLE hContact;
@@ -57,7 +59,7 @@ struct file_transfer
 	file_transfer(HANDLE hCont, char* nick, char* cookie);
 	~file_transfer();
 
-	void listen(HANDLE hNetlibPeer);
+	void listen(CAimProto* ppro);
 	void stop_listen(void);
 
 };
