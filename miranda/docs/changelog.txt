@@ -6,6 +6,24 @@
 
 				
 
+* New in 0.10.0
+Bugfixes:
+ - Fixed rare crash
+ - AIM: Fixed memory leaks
+ - AIM: Fixed chat invitation messages
+ - Jabber: Fixed GTalk login to invisible
+ - MSN: Improved P2P connectivity
+ - MSN: Fixed crashes
+ - Yahoo: Fixed searching for AT&T user accounts
+
+Enhancements:
+ - New language pack format support and per user language packs
+ - AIM: Establishing listening connection only when needed not on startup
+ - Jabber: Re-designed resource selection logic to comply with RFC
+ - MSN: Added Windows Phone detection
+ - Yahoo: Added conference support
+
+
 * New in 0.9.52
 Bugfixes:
  - Fixed minor avatar issues
