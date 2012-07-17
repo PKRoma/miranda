@@ -198,7 +198,7 @@ Section "Miranda IM"
   ${If} ${FileExists} "$INSTDIR\Plugins\tabsrmm.dll"
     !insertmacro InstallMirandaPlugin "tabsrmm.dll"
     SetOutPath "$INSTDIR\Icons"
-    File "${MIM_BUILD_DIRANSI}\Icons\tabsrmm_icons.dll"
+    File "${MIM_BUILD_DIR}\Icons\tabsrmm_icons.dll"
     File "${MIM_BUILD_DIRANSI}\Icons\toolbar_icons.dll"
   ${EndIf}
   !endif
