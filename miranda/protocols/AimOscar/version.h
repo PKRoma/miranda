@@ -19,4 +19,4 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #define __FILEVERSION_STRING        MIRANDA_VERSION_FILEVERSION
 #define __VERSION_STRING            MIRANDA_VERSION_STRING
-#define __VERSION_DWORD             MIRANDA_VERSION_DWORD
+#define __VERSION_DWORD             MIRANDA_VERSION_CORE

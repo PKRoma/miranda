@@ -2,7 +2,7 @@
 
 #define __FILEVERSION_STRING        MIRANDA_VERSION_FILEVERSION
 #define __VERSION_STRING            MIRANDA_VERSION_STRING
-#define __VERSION_DWORD             MIRANDA_VERSION_DWORD
+#define __VERSION_DWORD             MIRANDA_VERSION_CORE
 
 
 #define __DESC	                  "IRC protocol for Miranda IM"
