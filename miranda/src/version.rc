@@ -29,14 +29,14 @@ BEGIN
             VALUE "Comments", "This software is licensed under the terms of the GNU General Public License.\0" 
             VALUE "CompanyName", " \0"                                        
             VALUE "FileDescription", "Miranda IM\0"                           
-            VALUE "FileVersion", MIRANDA_VERSION_DISPLAY                
+            VALUE "FileVersion", MIRANDA_VERSION_STRING                
             VALUE "InternalName", "miranda32\0"                               
             VALUE "LegalCopyright", "Copyright © 2000-2012 Miranda IM Project. This software is licensed under the terms of the GNU General Public License.\0"    
             VALUE "LegalTrademarks", "\0"                                     
             VALUE "OriginalFilename", "miranda32.exe\0"                       
             VALUE "PrivateBuild", "\0"                                        
             VALUE "ProductName", "Miranda IM\0"                               
-            VALUE "ProductVersion", MIRANDA_VERSION_DISPLAY            
+            VALUE "ProductVersion", MIRANDA_VERSION_STRING            
             VALUE "SpecialBuild", "\0"                                        
         END                                                                   
     END                                                                       
