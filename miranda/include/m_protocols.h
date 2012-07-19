@@ -467,14 +467,12 @@ typedef struct {
 	char filename[MAX_PATH];   // full path to filename which contains the avatar
 } PROTO_AVATAR_INFORMATION;
 
-#ifdef _UNICODE
 typedef struct {
 	int cbSize;                // sizeof()
 	HANDLE hContact;           // this might have to be set by the caller too
 	int format;                // PA_FORMAT_*
 	WCHAR filename[MAX_PATH];  // full path to filename which contains the avatar
 } PROTO_AVATAR_INFORMATIONW;
-#endif
 
 #define GAIF_FORCE 1			// force an update of the avatar if there is none
 
@@ -491,9 +489,9 @@ typedef struct {
 	Version: 0.3.4+ (2004/09/13)
 */
 #define PS_GETAVATARINFO "/GetAvatarInformation"
+#define PS_GETAVATARINFOW "/GetAvatarInformationW"
 
 #ifdef _UNICODE
-	#define PS_GETAVATARINFOW "/GetAvatarInformationW"
 	#define PS_GETAVATARINFOT PS_GETAVATARINFOW
 
 	#define PROTO_AVATAR_INFORMATIONT PROTO_AVATAR_INFORMATIONW
