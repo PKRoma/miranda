@@ -133,8 +133,8 @@ void CJabberProto::OnPingReply( HXML, CJabberIqInfo* pInfo )
 		return;
 	if ( pInfo->GetIqType() == JABBER_IQ_TYPE_FAIL ) {
 		// disconnect because of timeout
-		m_ThreadInfo->send( "</stream:stream>" );
-		m_ThreadInfo->shutdown();
+//		m_ThreadInfo->send( "</stream:stream>" );
+//		m_ThreadInfo->shutdown();
 	}
 }
 
