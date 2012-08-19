@@ -6,6 +6,13 @@
 
 				
 
+* New in 0.10.1
+Bugfixes:
+ - Fixed icon pack packaging
+ - AIM: Fixed HTML decoding
+ - Jabber: Fixed disconnection issues on ping timeout
+ 
+ 
 * New in 0.10.0
 Bugfixes:
  - Fixed rare crash
