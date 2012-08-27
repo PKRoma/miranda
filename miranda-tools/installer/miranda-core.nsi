@@ -40,7 +40,7 @@ InstallDir                      "$PROGRAMFILES\Miranda IM"
 InstallDirRegKey                HKLM "Software\Microsoft\Windows\CurrentVersion\App Paths\miranda32.exe" "Path"
 SetCompressor                   lzma
 SetOverWrite                    on
-BrandingText                    "www.miranda-im.org"
+BrandingText                    "miranda-im.org"
 
 VAR INST_UPGRADE
 VAR INST_SUCCESS
@@ -120,7 +120,7 @@ Page Custom CustomInstallPage CustomInstallPageLeave
 
 Section "Miranda IM"
   SectionIn RO
-  !insertmacro PrintInstallerDetails "Installing Miranda IM Core Files..."
+  !insertmacro PrintInstallerDetails "Installing Miranda IM..."
   
   !insertmacro WriteInstallerOption "0" "Import"
   !insertmacro WriteInstallerOption "0" "StartMenuShortCut"
@@ -211,24 +211,24 @@ Section "Miranda IM"
   ${EndIf}
   
   ; AIM
-  !insertmacro PrintInstallerDetails "Installing AIM Support..."
+  !insertmacro PrintInstallerDetails "Installing AIM Protocol..."
   !insertmacro InstallMirandaPlugin "Aim.dll"
   !insertmacro InstallMirandaProtoIcon "AIM"
   
   ; Gadu-Gadu
-  !insertmacro PrintInstallerDetails "Installing Gadu-Gadu Support..."
+  !insertmacro PrintInstallerDetails "Installing Gadu-Gadu Protocol..."
   !insertmacro InstallMirandaPluginANSI "GG.dll"
   !insertmacro InstallMirandaProtoIcon "GG"
   
   ; ICQ 
-  !insertmacro PrintInstallerDetails "Installing ICQ Support..."
+  !insertmacro PrintInstallerDetails "Installing ICQ Protocol..."
   !insertmacro InstallMirandaPlugin "icq.dll"
   SetOutPath "$INSTDIR\Icons"
   File "${MIM_BUILD_DIRANSI}\Icons\xstatus_ICQ.dll"
   !insertmacro InstallMirandaProtoIcon "ICQ"
 
   ; IRC
-  !insertmacro PrintInstallerDetails "Installing IRC Support..."
+  !insertmacro PrintInstallerDetails "Installing IRC Protocol..."
   !insertmacro InstallMirandaPlugin "irc.dll"
   ${If} $INST_UPGRADE = 0
     SetOverWrite off
@@ -238,19 +238,19 @@ Section "Miranda IM"
   !insertmacro InstallMirandaProtoIcon "IRC"
 
   ; Jabber
-  !insertmacro PrintInstallerDetails "Installing Jabber Support..."
+  !insertmacro PrintInstallerDetails "Installing Jabber Protocol..."
   !insertmacro InstallMirandaPlugin "jabber.dll"
   SetOutPath "$INSTDIR\Icons"
   File "${MIM_BUILD_DIRANSI}\Icons\xstatus_jabber.dll"
   !insertmacro InstallMirandaProtoIcon "Jabber"
 
   ; MSN
-  !insertmacro PrintInstallerDetails "Installing MSN Support..."
+  !insertmacro PrintInstallerDetails "Installing MSN Protocol..."
   !insertmacro InstallMirandaPlugin "msn.dll"
   !insertmacro InstallMirandaProtoIcon "MSN"
 
   ; Yahoo
-  !insertmacro PrintInstallerDetails "Installing Yahoo Support..."
+  !insertmacro PrintInstallerDetails "Installing Yahoo Protocol..."
   !insertmacro InstallMirandaPlugin "yahoo.dll"
   !insertmacro InstallMirandaProtoIcon "Yahoo"
   
@@ -268,7 +268,7 @@ SectionEnd
   
 SubSection /e "Options" pOptions
   Section "Install Start Menu Shortcuts" pSCStartMenu
-    !insertmacro PrintInstallerDetails "Installing Start Menu Shortcuts..."
+    !insertmacro PrintInstallerDetails "Configuring Miranda IM..."
     !insertmacro WriteInstallerOption "1" "StartMenuShortCut"
     SetOutPath "$INSTDIR"
     RMDir /r "$SMPROGRAMS\Miranda IM"
@@ -280,14 +280,14 @@ SubSection /e "Options" pOptions
   SectionEnd
 
   Section "Install Desktop Shortcut" pSCDesktop
-    !insertmacro PrintInstallerDetails "Installing Desktop Shortcut..."
+    !insertmacro PrintInstallerDetails "Configuring Miranda IM..."
     !insertmacro WriteInstallerOption "1" "DesktopShortCut"
     SetOutPath "$INSTDIR"
     CreateShortCut  "$DESKTOP\Miranda IM.lnk" "$INSTDIR\miranda32.exe"
   SectionEnd
 
   Section "Install Quicklaunch Shortcut" pSCQuickLaunch
-    !insertmacro PrintInstallerDetails "Installing Quicklaunch Shortcut..."
+    !insertmacro PrintInstallerDetails "Configuring Miranda IM..."
     !insertmacro WriteInstallerOption "1" "QuickLaunchShortCut"
     SetOutPath "$INSTDIR"
     CreateShortCut  "$QUICKLAUNCH\Miranda IM.lnk" "$INSTDIR\miranda32.exe"
@@ -340,9 +340,6 @@ FunctionEnd
 
 Function .onInstSuccess
   StrCpy $INST_SUCCESS 1
-  ${If} $INST_WARN == "1"
-    ;MessageBox MB_OK "Due to recent changes in Miranda IM, you may need to manually move your profiles to allow them to be recognized by Miranda IM.  Please see the support forums for more information."
-  ${Endif}
 FunctionEnd
 
 Function .onGUIEnd
