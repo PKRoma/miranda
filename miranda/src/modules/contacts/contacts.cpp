@@ -17,7 +17,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 #include "commonheaders.h"
 
-#define NAMEORDERCOUNT 8
+#define NAMEORDERCOUNT 9
 static TCHAR* nameOrderDescr[ NAMEORDERCOUNT ] =
 {
 	_T( "My custom name (not moveable)" ),
@@ -27,6 +27,7 @@ static TCHAR* nameOrderDescr[ NAMEORDERCOUNT ] =
 	_T( "LastName" ),
 	_T( "Username" ),
 	_T( "FirstName LastName" ),
+	_T( "LastName FirstName" ),
 	_T( "'(Unknown Contact)' (not moveable)" )
 };
 
@@ -310,8 +311,35 @@ static INT_PTR GetContactInfo(WPARAM, LPARAM lParam) {
 							DBFreeVariant( &dbv );
 						}
 						break;
-
 					case 7:
+						if(!GetDatabaseString(ci,"LastName",&dbv)) {
+							DBVARIANT dbv2;
+							if(!GetDatabaseString(ci,"FirstName",&dbv2)) {
+								ci->type = CNFT_ASCIIZ;
+
+								if ( ci->dwFlag & CNF_UNICODE ) {
+									size_t len = wcslen(dbv.pwszVal) + wcslen(dbv2.pwszVal) + 2;
+									WCHAR* buf = ( WCHAR* )mir_alloc( sizeof( WCHAR )*len );
+									if ( buf != NULL )
+										wcscat( wcscat( wcscpy( buf, dbv.pwszVal ), L" " ), dbv2.pwszVal );
+									ci->pszVal = ( TCHAR* )buf;
+								}
+								else {
+									size_t len = strlen(dbv.pszVal) + strlen(dbv2.pszVal) + 2;
+									char* buf = ( char* )mir_alloc( len );
+									if ( buf != NULL )
+										strcat( strcat( strcpy( buf, dbv.pszVal ), " " ), dbv2.pszVal );
+									ci->pszVal = ( TCHAR* )buf;
+								}
+
+								DBFreeVariant( &dbv );
+								DBFreeVariant( &dbv2 );
+								return 0;
+							}
+							DBFreeVariant( &dbv );
+						}
+						break;	
+					case 8:
 						if ( ci->dwFlag & CNF_UNICODE )
 							ci->pszVal = ( TCHAR* )mir_wstrdup( TranslateW( L"'(Unknown Contact)'" ));
 						else
