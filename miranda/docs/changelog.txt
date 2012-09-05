@@ -6,6 +6,12 @@
 
 				
 
+* New in 0.10.2
+Enhancements:
+ - Added Last Name - First Name sorting option to the contact list
+ - Installer improvements
+
+
 * New in 0.10.1
 Bugfixes:
  - Fixed icon pack packaging
