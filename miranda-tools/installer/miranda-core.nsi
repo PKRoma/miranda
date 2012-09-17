@@ -1,4 +1,6 @@
 !include "MUI.nsh"
+!addplugindir "contrib\"
+!include "contrib\UAC.nsh"
 !include "Sections.nsh"
 !include "WinVer.nsh"
 !include "LogicLib.nsh"
@@ -344,7 +346,7 @@ FunctionEnd
 
 Function .onGUIEnd
   ${If} $INST_SUCCESS = 1
-    ExecShell "open" "${MIM_BUILD_SUCCESS}"
+    UAC_AsUser_ExecShell "open" "${MIM_BUILD_SUCCESS}"
   ${EndIf}
 FunctionEnd
 
