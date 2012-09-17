@@ -62,6 +62,7 @@ VAR INST_WARN
 !define MUI_LICENSEPAGE_BGCOLOR /grey
 !define MUI_FINISHPAGE_RUN $INSTDIR\miranda32.exe
 !define MUI_FINISHPAGE_RUN_TEXT "Start Miranda IM"
+!define MUI_FINISHPAGE_RUN_FUNCTION "CustomOnGUIEnd"
 !define MUI_FINISHPAGE_SHOWREADME $INSTDIR\readme.txt
 !define MUI_FINISHPAGE_SHOWREADME_TEXT "View Readme"
 !define MUI_FINISHPAGE_SHOWREADME_NOTCHECKED
@@ -352,6 +353,12 @@ FunctionEnd
 Function .onGUIEnd
   ${If} $INST_SUCCESS = 1
     UAC_AsUser_ExecShell "open" "${MIM_BUILD_SUCCESS}"
+  ${EndIf}
+FunctionEnd
+
+Function CustomOnGUIEnd
+  ${If} $INST_SUCCESS = 1
+    UAC_AsUser_ExecShell "open" "${MUI_FINISHPAGE_RUN}"
   ${EndIf}
 FunctionEnd
 
