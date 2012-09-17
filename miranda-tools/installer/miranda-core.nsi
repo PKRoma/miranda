@@ -210,6 +210,10 @@ Section "Miranda IM"
    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Miranda IM" "UninstallString" "$INSTDIR\Uninstall.exe"
    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\App Paths\miranda32.exe" "" "$INSTDIR\miranda32.exe"
    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\App Paths\miranda32.exe" "Path" "$INSTDIR"
+   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\App Paths\miranda32.exe" "DisplayIcon" "$INSTDIR\miranda32.exe"
+   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\App Paths\miranda32.exe" "DisplayVersion" "${MIM_VERSION}"
+   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\App Paths\miranda32.exe" "URLInfoAbout" "http://www.miranda-im.org/"
+   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\App Paths\miranda32.exe" "Publisher" "Miranda IM Project"
   ${EndIf}
   
   ; AIM
@@ -323,6 +327,7 @@ Section Uninstall
   DeleteRegKey HKLM "SOFTWARE\Miranda"
   DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Miranda IM"
   DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\App Paths\miranda32.exe"
+  
 SectionEnd
 
 Function .onInit
