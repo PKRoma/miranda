@@ -62,8 +62,9 @@ VAR INST_WARN
 !define MUI_LICENSEPAGE_BGCOLOR /grey
 !define MUI_FINISHPAGE_RUN $INSTDIR\miranda32.exe
 !define MUI_FINISHPAGE_RUN_TEXT "Start Miranda IM"
-!define MUI_FINISHPAGE_RUN_FUNCTION "CustomOnGUIEnd"
+!define MUI_FINISHPAGE_RUN_FUNCTION "CustomRun"
 !define MUI_FINISHPAGE_SHOWREADME $INSTDIR\readme.txt
+!define MUI_FINISHPAGE_SHOWREADME_FUNCTION "CustomShowReadme"
 !define MUI_FINISHPAGE_SHOWREADME_TEXT "View Readme"
 !define MUI_FINISHPAGE_SHOWREADME_NOTCHECKED
 
@@ -209,12 +210,12 @@ Section "Miranda IM"
   ${If} $INST_MODE = 0
    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Miranda IM" "DisplayName" "Miranda IM ${MIM_VERSION}" 
    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Miranda IM" "UninstallString" "$INSTDIR\Uninstall.exe"
+   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Miranda IM" "DisplayIcon" "$INSTDIR\miranda32.exe"
+   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Miranda IM" "DisplayVersion" "${MIM_VERSION}"
+   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Miranda IM" "URLInfoAbout" "http://www.miranda-im.org/"
+   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Miranda IM" "Publisher" "Miranda IM Project"
    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\App Paths\miranda32.exe" "" "$INSTDIR\miranda32.exe"
    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\App Paths\miranda32.exe" "Path" "$INSTDIR"
-   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\App Paths\miranda32.exe" "DisplayIcon" "$INSTDIR\miranda32.exe"
-   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\App Paths\miranda32.exe" "DisplayVersion" "${MIM_VERSION}"
-   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\App Paths\miranda32.exe" "URLInfoAbout" "http://www.miranda-im.org/"
-   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\App Paths\miranda32.exe" "Publisher" "Miranda IM Project"
   ${EndIf}
   
   ; AIM
@@ -351,14 +352,16 @@ FunctionEnd
 
 Function .onGUIEnd
   ${If} $INST_SUCCESS = 1
-    UAC_AsUser_ExecShell "open" "${MIM_BUILD_SUCCESS}"
+    !insertmacro UAC_AsUser_ExecShell "open" "${MIM_BUILD_SUCCESS}" "" "" ""
   ${EndIf}
 FunctionEnd
 
-Function CustomOnGUIEnd
-  ${If} $INST_SUCCESS = 1
-    UAC_AsUser_ExecShell "open" "${MUI_FINISHPAGE_RUN}"
-  ${EndIf}
+Function CustomRun
+  !insertmacro UAC_AsUser_ExecShell "" $INSTDIR\miranda32.exe "" "" ""
+FunctionEnd
+
+Function CustomShowReadme
+  !insertmacro UAC_AsUser_ExecShell "open" $INSTDIR\readme.txt "" "" ""
 FunctionEnd
 
 Function VerifyInstallDir
