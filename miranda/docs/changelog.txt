@@ -6,6 +6,11 @@
 
 				
 
+* New in 0.10.3
+Enhancements:
+ - Installer will launch Miranda IM with user permissions (no longer require admin)
+
+
 * New in 0.10.2
 Enhancements:
  - Added Last Name - First Name sorting option to the contact list
