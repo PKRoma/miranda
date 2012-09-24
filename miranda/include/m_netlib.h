@@ -786,9 +786,9 @@ static INT_PTR Netlib_Logf(HANDLE hUser, const char *fmt, ...)
 		__except(EXCEPTION_EXECUTE_HANDLER) {}
 		return 0;
 	}
-	#define Netlib_LogfW Netlib_LogfT
+	#define Netlib_LogfT Netlib_LogfW 
 #else
-	#define Netlib_LogfW Netlib_Logf
+	#define Netlib_LogfT Netlib_Logf
 #endif
 
 #endif //defined va_start
@@ -799,7 +799,7 @@ static INT_PTR Netlib_Logf(HANDLE hUser, const char *fmt, ...)
 #define NNR_UNICODE 1
 
 #ifdef UNICODE
-#define NNR_TCHAR 1
+#define NNR_TCHAR NNR_UNICODE
 #else
 #define NNR_TCHAR 0
 #endif
