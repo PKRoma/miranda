@@ -37,6 +37,7 @@ OutFile                         "..\..\miranda\bin\miranda-im-v${MIM_VERSION}b${
 Name                            "${MIM_NAME} ${MIM_VERSION}"
 OutFile                         "..\..\miranda\bin\miranda-im-v${MIM_VERSION}-${MIM_BUILD_TYPE}.exe"
 !endif
+RequestExecutionLevel user
 
 InstallDir                      "$PROGRAMFILES\Miranda IM"
 InstallDirRegKey                HKLM "Software\Microsoft\Windows\CurrentVersion\App Paths\miranda32.exe" "Path"
@@ -332,6 +333,20 @@ Section Uninstall
 SectionEnd
 
 Function .onInit
+  uac_tryagain:
+  !insertmacro UAC_RunElevated
+  ${Switch} $0
+  ${Case} 0
+	  ${IfThen} $1 = 1 ${|} Quit ${|}
+	  ${IfThen} $3 <> 0 ${|} ${Break} ${|}
+	  ${If} $1 = 3
+		  MessageBox mb_YesNo|mb_IconExclamation|mb_TopMost|mb_SetForeground "Admin privileges required. Try again?" /SD IDNO IDYES uac_tryagain IDNO 0
+	  ${EndIf}
+	  ;fall-through
+  ${Default}
+	  MessageBox mb_IconStop|mb_TopMost|mb_SetForeground "Unable to execute the installer with admin privileges."
+	  Quit
+  ${EndSwitch}
   SetShellVarContext "current"
   FindWindow $R0 "Miranda"
   IsWindow $R0 showwarn
