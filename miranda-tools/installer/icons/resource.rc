@@ -91,6 +91,7 @@ IDI_INVISIBLE    ICON DISCARDABLE "res\\JABBER\\32_jabber_Invisible.ico"
 IDI_NA	         ICON DISCARDABLE "res\\JABBER\\32_jabber_NA.ico"
 IDI_DND          ICON DISCARDABLE "res\\JABBER\\32_jabber_DND.ico"
 IDI_FREE4CHAT    ICON DISCARDABLE "res\\JABBER\\32_jabber_FFC.ico"
+IDI_ONTHEPHONE   ICON DISCARDABLE "res\\JABBER\\32_jabber_Phone.ico"
 #endif
 
 #ifdef ICO_JABBERLO
@@ -101,6 +102,7 @@ IDI_INVISIBLE    ICON DISCARDABLE "res\\JABBER\\8_jabber_Invisible.ico"
 IDI_NA	         ICON DISCARDABLE "res\\JABBER\\8_jabber_NA.ico"
 IDI_DND          ICON DISCARDABLE "res\\JABBER\\8_jabber_DND.ico"
 IDI_FREE4CHAT    ICON DISCARDABLE "res\\JABBER\\8_jabber_FFC.ico"
+IDI_ONTHEPHONE   ICON DISCARDABLE "res\\JABBER\\8_jabber_Phone.ico"
 #endif
 
 #ifdef ICO_MSNHI
