@@ -6,9 +6,16 @@
 
 				
 
+* New in 0.10.7
+Bugfixes:
+ - Jabber: Fix possible crash
+ - Jabber: Update default icon pack with all status modes
+
+
 * New in 0.10.6
 Bugfixes:
  - Fix Jabber Android Gtalk status mode
+
 
 * New in 0.10.5
 Bugfixes:
