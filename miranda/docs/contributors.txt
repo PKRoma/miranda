@@ -1,6 +1,5 @@
 ﻿Miranda IM is proudly brought to you by:
 
-Ricardo Domenecci
 Gennady Feldman
 Tim Hunter
 Kubilay Kocak
@@ -34,6 +33,7 @@ Jörgen Persson
 George Hazan
 Artem Shpynov
 Maxim Mluhov
+Ricardo Domenecci
 
 Our plugin developers, too multitudinous to name individually, but whos works are nontheless crucial to our success.  
 Special mention to Scott Ellis, a welcome part of arguably almost every Miranda IM installation :)
