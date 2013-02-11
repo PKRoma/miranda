@@ -85,7 +85,7 @@ BEGIN
             VALUE "FileDescription", "Provides generic image services for Miranda IM"
             VALUE "FileVersion", __FILEVERSION_STRING
             VALUE "InternalName", "fe_imgsrvc"
-            VALUE "LegalCopyright", "Copyright (C) 2012, Nightwish, based on the FreeImage project (http://freeimage.sourceforge.net/)"
+            VALUE "LegalCopyright", "Copyright (C) 2012-2013, Nightwish, based on the FreeImage project (http://freeimage.sourceforge.net/)"
             VALUE "LegalTrademarks", "Licensed under the Gnu General Public License V2 or any later version"
             VALUE "OriginalFilename", "advaimg.dll"
             VALUE "ProductName", "Miranda IM Image services"

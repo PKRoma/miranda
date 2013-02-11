@@ -28,7 +28,7 @@
  * original chat module for Miranda IM, written and copyrighted
  * by Joergen Persson in 2005.
  *
- * (C) 2005-2010 by silvercircle _at_ gmail _dot_ com and contributors
+ * (C) 2005-2013 by silvercircle _at_ gmail _dot_ com and contributors
  *
  * $Id$
  *

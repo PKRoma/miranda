@@ -565,7 +565,7 @@ BEGIN
             VALUE "FileDescription", "ICQ protocol plugin for Miranda IM, enhanced"
             VALUE "FileVersion", __VERSION_STRING
             VALUE "InternalName", "ICQJ protocol plugin for Miranda IM"
-            VALUE "LegalCopyright", "Copyright (C) 2000-2010 Joe Kucera, Angeli-Ka, Bio, Martin Öberg, Richard Hughes, Jon Keating"
+            VALUE "LegalCopyright", "Copyright (C) 2000-2013 Joe Kucera, Angeli-Ka, Bio, Martin Öberg, Richard Hughes, Jon Keating"
             VALUE "OriginalFilename", "ICQ.dll"
             VALUE "ProductName", "ICQ Protocol Support"
             VALUE "ProductVersion", __VERSION_STRING

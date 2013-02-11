@@ -54,7 +54,7 @@ static const PLUGININFOEX pluginInfoEx = {
 	"Generic image services for Miranda IM.",
 	"Nightwish, The FreeImage project (http://freeimage.sourceforge.net/)",
 	"",
-	"Copyright 2000-2012 Miranda-IM project, uses the FreeImage distribution",
+	"Copyright 2000-2013 Miranda-IM project, uses the FreeImage distribution",
 	"http://www.miranda-im.org",
 	UNICODE_AWARE,
 	0,

@@ -4,7 +4,7 @@
  *
  * Miranda IM: the free IM client for Microsoft* Windows*
  *
- * Copyright 2000-2010 Miranda ICQ/IM project,
+ * Copyright 2000-2013 Miranda ICQ/IM project,
  * all portions of this codebase are copyrighted to the people
  * listed in contributors.txt.
  *
@@ -24,7 +24,7 @@
  *
  * part of clist_nicer plugin for Miranda.
  *
- * (C) 2005-2010 by silvercircle _at_ gmail _dot_ com and contributors
+ * (C) 2005-2013 by silvercircle _at_ gmail _dot_ com and contributors
  *
  * $Id$
  *
