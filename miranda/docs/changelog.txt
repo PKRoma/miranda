@@ -6,6 +6,13 @@
 						   
 
 
+* New in 0.10.10
+Bugfixes:
+ - Copyright updates
+ - Jabber: Fixed crash with mood message
+ - Jabber: Fixed XStatus issue
+
+ 
 * New in 0.10.9
 Bugfixes:
  - Fix issue with plugin build process
