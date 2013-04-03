@@ -78,6 +78,11 @@ int ChangeInfoData::UploadSettings(void)
 	{
 		if (strlennull(Password) > 0 && strcmpnull(Password, tmp))
 		{
+			// update password in user info dialog (still open)
+			strcpy(Password, tmp);
+			// update password in protocol
+			strcpy(ppro->m_szPassword, tmp);
+			
 			hUpload[1] = (HANDLE)ppro->icq_changeUserPasswordServ(tmp);
 			char szPwd[PASSWORDMAXLEN] = {0};
 
