@@ -1,4 +1,4 @@
 ; Miranda Version Info
 
-!define MIM_VERSION             "0.10.11"
+!define MIM_VERSION             "0.10.12"
 !define MIM_BETA                "0" ; 0 for final build
