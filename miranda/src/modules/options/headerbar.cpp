@@ -201,7 +201,7 @@ static LRESULT MHeaderbar_OnPaint(HWND hwndDlg, MHeaderbarCtrl *mit, UINT  msg, 
 	LOGFONT lf;
 	GetObject(hFont, sizeof(lf), &lf);
 	lf.lfWeight = FW_BOLD;
-	HFONT hFntBold = CreateFontIndirect(&lf);
+	HFONT hOldFont, hFntBold = CreateFontIndirect(&lf);
 
 	if (mit->hIcon)
 		DrawIcon(tempDC, 10, iTopSpace, mit->hIcon);
@@ -226,7 +226,7 @@ static LRESULT MHeaderbar_OnPaint(HWND hwndDlg, MHeaderbarCtrl *mit, UINT  msg, 
 
 		HANDLE hTheme = openThemeData(hwndDlg, L"Window");
 		textRect.left=50;
-		SelectObject(tempDC, hFntBold);
+		hOldFont = (HFONT)SelectObject(tempDC, hFntBold);
 
 		wchar_t *szTitleW = mir_t2u(szTitle);
 		drawThemeTextEx(hTheme, tempDC, WP_CAPTION, CS_ACTIVE, szTitleW, -1, DT_TOP|DT_LEFT|DT_SINGLELINE|DT_NOPREFIX|DT_NOCLIP|DT_END_ELLIPSIS, &textRect, &dto);
@@ -244,7 +244,7 @@ static LRESULT MHeaderbar_OnPaint(HWND hwndDlg, MHeaderbarCtrl *mit, UINT  msg, 
 	}
 	else {
 		textRect.left=50;
-		SelectObject(tempDC, hFntBold);
+		hOldFont = (HFONT)SelectObject(tempDC, hFntBold);
 		DrawText(tempDC, szTitle, -1, &textRect, DT_TOP|DT_LEFT|DT_SINGLELINE|DT_NOPREFIX|DT_NOCLIP|DT_END_ELLIPSIS);
 
 		if (szSubTitle) {
@@ -285,6 +285,7 @@ static LRESULT MHeaderbar_OnPaint(HWND hwndDlg, MHeaderbarCtrl *mit, UINT  msg, 
 
 	SelectObject(tempDC,hOldBmp);
 	DeleteObject(hBmp);
+	SelectObject(tempDC,hOldFont);
 	DeleteDC(tempDC);
 
 	EndPaint(hwndDlg,&ps);

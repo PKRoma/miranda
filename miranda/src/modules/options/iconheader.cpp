@@ -308,7 +308,7 @@ static LRESULT MIcoTab_OnPaint(HWND hwndDlg, MIcoTabCtrl *mit, UINT  msg, WPARAM
 
 	//Draw Items
 	hFont = mit->hFont;
-	SelectObject(tempDC,hFont);
+	HFONT hOldFont = (HFONT)SelectObject(tempDC,hFont);
 	SetBkMode(tempDC,TRANSPARENT);
 
 	for (i=0; i<mit->pList.getCount(); i++) {
@@ -320,6 +320,7 @@ static LRESULT MIcoTab_OnPaint(HWND hwndDlg, MIcoTabCtrl *mit, UINT  msg, WPARAM
 	BitBlt(hdc,mit->rc.left,mit->rc.top,mit->width,mit->height,tempDC,0,0,SRCCOPY);
 	SelectObject(tempDC,hOldBmp);
 	DeleteObject(hBmp);
+	SelectObject(tempDC,hOldFont);
 	DeleteDC(tempDC);
 
 	EndPaint(hwndDlg,&ps);
