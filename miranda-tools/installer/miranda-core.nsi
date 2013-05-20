@@ -38,7 +38,7 @@ OutFile                         "..\..\miranda\bin\miranda-im-v${MIM_VERSION}-${
 
 InstallDir                      "$PROGRAMFILES\Miranda IM"
 InstallDirRegKey                HKLM "Software\Microsoft\Windows\CurrentVersion\App Paths\miranda32.exe" "Path"
-SetCompressor                   lzma
+SetCompressor                   /SOLID lzma
 SetOverWrite                    on
 BrandingText                    "miranda-im.org"
 
@@ -80,6 +80,20 @@ Page Custom CustomInstallPage CustomInstallPageLeave
 
 !insertmacro MUI_LANGUAGE "English"
 
+LangString CLOSE_WARN ${LANG_ENGLISH}     "${MIM_NAME} is currently running.  It is recommended that you close ${MIM_NAME} so the installation can complete successfully."
+
+!macro CloseMiranda
+  FindWindow $0 "Miranda"
+  IsWindow $0 +3
+  FindWindow $0 "Miranda IM"
+  IsWindow $0 0 +6
+  MessageBox MB_ICONEXCLAMATION|MB_ABORTRETRYIGNORE "$(CLOSE_WARN)" IDRETRY +2 IDIGNORE +5
+  Quit
+  SendMessage $0 16 0 0 /TIMEOUT=5000
+  Sleep 5000
+  Goto -8
+!macroend
+
 !macro PrintInstallerDetails Details
   SetDetailsPrint textonly
   DetailPrint "${Details}"
@@ -120,6 +134,8 @@ Page Custom CustomInstallPage CustomInstallPageLeave
 
 Section "Miranda IM"
   SectionIn RO
+  !insertmacro CloseMiranda
+	
   !insertmacro PrintInstallerDetails "Installing Miranda IM..."
   
   !insertmacro WriteInstallerOption "0" "Import"
@@ -329,14 +345,6 @@ SectionEnd
 
 Function .onInit
   SetShellVarContext "current"
-  FindWindow $R0 "Miranda"
-  IsWindow $R0 showwarn
-  FindWindow $R0 "Miranda IM"
-  IsWindow $R0 0 norun
-  showwarn:
-  MessageBox MB_OK "Miranda IM is currently running.  It is recommended that you close Miranda IM so the installation can complete successfully."
-  Sleep 1000
-  norun:
   StrCpy $INST_SUCCESS 0
   StrCpy $INST_MODE 0
   StrCpy $INST_WARN 0
