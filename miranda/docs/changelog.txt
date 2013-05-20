@@ -6,6 +6,13 @@
 						   
 
 
+* New in 0.10.13
+Bugfixes:
+ - Add notification on account creation name duplication error
+ - Updated installer to properly close Miranda during install process
+ - Reduced installer size
+
+
 * New in 0.10.12
 Bugfixes:
  - Fixed memory leaks in options
