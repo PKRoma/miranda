@@ -6,6 +6,10 @@
 !include "miranda-version.nsi"
 
 !define MIM_NAME                "Miranda IM"
+!define MIM_NAME                "Miranda IM"
+!define MIM_URL                 "http://www.miranda-im.org/"
+!define MIM_PUBLISHER           "Miranda IM Project"
+!define MIM_COPYRIGHT           "Copyright © 2000-2013 ${MIM_PUBLISHER}"
 
 !define MIM_BUILD_ICONS_LOW     "icons\bin\locolor"
 !define MIM_BUILD_ICONS_HI      "icons\bin\hicolor"
@@ -23,6 +27,7 @@
 !define MIM_BUILD_DIRANSI       "..\..\miranda\bin\Release"
 !define MIM_BUILD_SRC           "..\..\miranda"
 
+!define MIM_BUILD_EXE           "miranda32.exe"
 
 !if  ${MIM_BETA} != 0
 Name                            "${MIM_NAME} ${MIM_VERSION} Beta ${MIM_BETA}"
@@ -37,10 +42,19 @@ OutFile                         "..\..\miranda\bin\miranda-im-v${MIM_VERSION}-${
 !endif
 
 InstallDir                      "$PROGRAMFILES\Miranda IM"
-InstallDirRegKey                HKLM "Software\Microsoft\Windows\CurrentVersion\App Paths\miranda32.exe" "Path"
+InstallDirRegKey                HKLM "Software\Microsoft\Windows\CurrentVersion\App Paths\${MIM_BUILD_EXE}" "Path"
 SetCompressor                   /SOLID lzma
 SetOverWrite                    on
 BrandingText                    "miranda-im.org"
+
+VIProductVersion                "${MIM_VERSION}.0"
+VIAddVersionKey                 ProductName "${MIM_NAME}"
+VIAddVersionKey                 ProductVersion "${MIM_VERSION}.0"
+VIAddVersionKey                 FileDescription "${MIM_NAME}"
+VIAddVersionKey                 FileVersion "${MIM_VERSION}.0"
+VIAddVersionKey                 CompanyName "${MIM_PUBLISHER}"
+VIAddVersionKey                 LegalCopyright "${MIM_COPYRIGHT}"
+VIAddVersionKey                 Comments "${MIM_URL}"
 
 VAR INST_UPGRADE
 VAR INST_SUCCESS
@@ -58,7 +72,7 @@ VAR INST_WARN
 !define MUI_ABORTWARNING
 !define MUI_COMPONENTSPAGE_NODESC
 !define MUI_LICENSEPAGE_BGCOLOR /grey
-!define MUI_FINISHPAGE_RUN $INSTDIR\miranda32.exe
+!define MUI_FINISHPAGE_RUN $INSTDIR\${MIM_BUILD_EXE}
 !define MUI_FINISHPAGE_RUN_TEXT "Start Miranda IM"
 !define MUI_FINISHPAGE_SHOWREADME $INSTDIR\readme.txt
 !define MUI_FINISHPAGE_SHOWREADME_TEXT "View Readme"
@@ -144,7 +158,7 @@ Section "Miranda IM"
   !insertmacro WriteInstallerOption "0" "QuickLaunchShortCut"
 
   SetOutPath "$INSTDIR"
-  File "${MIM_BUILD_DIR}\miranda32.exe"
+  File "${MIM_BUILD_DIR}\${MIM_BUILD_EXE}"
   File "${MIM_BUILD_DIR}\dbtool.exe"
   File "${MIM_BUILD_DIR}\zlib.dll"
   File "${MIM_BUILD_SRC}\docs\contributors.txt"
@@ -220,14 +234,15 @@ Section "Miranda IM"
   !endif
 
   ${If} $INST_MODE = 0
-   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Miranda IM" "DisplayName" "Miranda IM ${MIM_VERSION}" 
-   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Miranda IM" "UninstallString" "$INSTDIR\Uninstall.exe"
-   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Miranda IM" "DisplayIcon" "$INSTDIR\miranda32.exe"
-   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Miranda IM" "DisplayVersion" "${MIM_VERSION}"
-   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Miranda IM" "URLInfoAbout" "http://www.miranda-im.org/"
-   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Miranda IM" "Publisher" "Miranda IM Project"
-   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\App Paths\miranda32.exe" "" "$INSTDIR\miranda32.exe"
-   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\App Paths\miranda32.exe" "Path" "$INSTDIR"
+   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${MIM_NAME}" "DisplayName" "Miranda IM ${MIM_VERSION}" 
+   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${MIM_NAME}" "UninstallString" "$INSTDIR\Uninstall.exe"
+   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${MIM_NAME}" "InstallLocation" "$INSTDIR"
+   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${MIM_NAME}" "DisplayIcon" "$INSTDIR\${MIM_BUILD_EXE}"
+   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${MIM_NAME}" "DisplayVersion" "${MIM_VERSION}"
+   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${MIM_NAME}" "URLInfoAbout" "${MIM_URL}"
+   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${MIM_NAME}" "Publisher" "${MIM_PUBLISHER}"
+   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\App Paths\${MIM_BUILD_EXE}" "" "$INSTDIR\${MIM_BUILD_EXE}"
+   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\App Paths\${MIM_BUILD_EXE}" "Path" "$INSTDIR"
   ${EndIf}
   
   ; AIM
@@ -293,9 +308,9 @@ SubSection /e "Options" pOptions
     SetOutPath "$INSTDIR"
     RMDir /r "$SMPROGRAMS\Miranda IM"
     CreateDirectory "$SMPROGRAMS\Miranda IM"
-    CreateShortCut  "$SMPROGRAMS\Miranda IM\Miranda IM.lnk" "$INSTDIR\miranda32.exe"
+    CreateShortCut  "$SMPROGRAMS\Miranda IM\Miranda IM.lnk" "$INSTDIR\${MIM_BUILD_EXE}"
     CreateShortCut  "$SMPROGRAMS\Miranda IM\Database Tool.lnk" "$INSTDIR\dbtool.exe"
-    WriteINIStr     "$SMPROGRAMS\Miranda IM\Homepage.url" "InternetShortcut" "URL" "http://www.miranda-im.org/"
+    WriteINIStr     "$SMPROGRAMS\Miranda IM\Homepage.url" "InternetShortcut" "URL" "${MIM_URL}"
     WriteINIStr     "$SMPROGRAMS\Miranda IM\Get More Addons.url" "InternetShortcut" "URL" "http://addons.miranda-im.org/"
   SectionEnd
 
@@ -303,14 +318,14 @@ SubSection /e "Options" pOptions
     !insertmacro PrintInstallerDetails "Configuring Miranda IM..."
     !insertmacro WriteInstallerOption "1" "DesktopShortCut"
     SetOutPath "$INSTDIR"
-    CreateShortCut  "$DESKTOP\Miranda IM.lnk" "$INSTDIR\miranda32.exe"
+    CreateShortCut  "$DESKTOP\Miranda IM.lnk" "$INSTDIR\${MIM_BUILD_EXE}"
   SectionEnd
 
   Section "Install Quicklaunch Shortcut" pSCQuickLaunch
     !insertmacro PrintInstallerDetails "Configuring Miranda IM..."
     !insertmacro WriteInstallerOption "1" "QuickLaunchShortCut"
     SetOutPath "$INSTDIR"
-    CreateShortCut  "$QUICKLAUNCH\Miranda IM.lnk" "$INSTDIR\miranda32.exe"
+    CreateShortCut  "$QUICKLAUNCH\Miranda IM.lnk" "$INSTDIR\${MIM_BUILD_EXE}"
   SectionEnd
 SubSectionEnd
 
@@ -327,7 +342,7 @@ Section Uninstall
   RMDir /r "$INSTDIR\Icons"
   RMDir /r "$INSTDIR\Plugins"
   Delete "$INSTDIR\dbtool.exe"
-  Delete "$INSTDIR\miranda32.exe"
+  Delete "$INSTDIR\${MIM_BUILD_EXE}"
   Delete "$INSTDIR\zlib.dll"
   Delete "$INSTDIR\mirandaboot.ini"
   Delete "$INSTDIR\license.txt"
@@ -339,8 +354,8 @@ Section Uninstall
   RMDir "$INSTDIR"
 
   DeleteRegKey HKLM "SOFTWARE\Miranda"
-  DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Miranda IM"
-  DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\App Paths\miranda32.exe"
+  DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${MIM_NAME}"
+  DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\App Paths\${MIM_BUILD_EXE}"
 SectionEnd
 
 Function .onInit
@@ -362,7 +377,7 @@ FunctionEnd
 
 Function VerifyInstallDir
   StrCpy $INSTDIR $INST_DIR
-  ${If} ${FileExists} "$INSTDIR\miranda32.exe"
+  ${If} ${FileExists} "$INSTDIR\${MIM_BUILD_EXE}"
     StrCpy $INST_UPGRADE 1
   ${Else}
     StrCpy $INST_UPGRADE 0
@@ -429,7 +444,7 @@ Function CustomInstallPageLeave
 	StrCpy $R0 $WINDIR 2
 	StrCpy $INST_DIR "$R0\Miranda IM"
   ${Else}
-	ReadRegStr $0 HKLM "Software\Microsoft\Windows\CurrentVersion\App Paths\miranda32.exe" "Path"
+	ReadRegStr $0 HKLM "Software\Microsoft\Windows\CurrentVersion\App Paths\${MIM_BUILD_EXE}" "Path"
 	${If} $0 == ""
       StrCpy $INST_DIR "$PROGRAMFILES\Miranda IM"
 	${Else}
