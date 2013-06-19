@@ -1683,29 +1683,27 @@ void CJabberProto::OnProcessPresence( HXML node, ThreadData* info )
 			ListAdd( LIST_ROSTER, from );
 		}
 		DBCheckIsTransportedContact( from, hContact );
-		int status = ID_STATUS_ONLINE;
+		//int status = ID_STATUS_ONLINE;
 		/* GTalk android user set status as on the phone */
-		LPCTSTR pEndOfJID = NULL; 
-		pEndOfJID = _tcsrchr(from, '/');
-		if (pEndOfJID)
-		{
-			pEndOfJID++;
-			/*If the second half of JID (after /) starts with android, the contact is using android*/
-			if(_tcsstr(pEndOfJID, _T("android")) == pEndOfJID)
-			{
-				status = ID_STATUS_ONTHEPHONE;
+		//LPCTSTR pEndOfJID = NULL; 
+		//pEndOfJID = _tcsrchr(from, '/');
+		//if (pEndOfJID)
+		//{
+		//	pEndOfJID++;
+		//	/*If the second half of JID (after /) starts with android, the contact is using android*/
+		//	if(_tcsstr(pEndOfJID, _T("android")) == pEndOfJID)
+		//	{
+		//		status = ID_STATUS_ONTHEPHONE;
+		//	}
+		//}
+		if (( showNode = xmlGetChild( node , "show" )) != NULL ) {
+			if (( show = xmlGetText( showNode ) ) != NULL ) {
+				if ( !_tcscmp( show, _T("away"))) status = ID_STATUS_AWAY;
+				else if ( !_tcscmp( show, _T("xa"))) status = ID_STATUS_NA;
+				else if ( !_tcscmp( show, _T("dnd"))) status = ID_STATUS_DND;
+				else if ( !_tcscmp( show, _T("chat"))) status = ID_STATUS_FREECHAT;
 			}
-		}
-		if (status == ID_STATUS_ONLINE) {
-			if (( showNode = xmlGetChild( node , "show" )) != NULL ) {
-				if (( show = xmlGetText( showNode ) ) != NULL ) {
-					if ( !_tcscmp( show, _T("away"))) status = ID_STATUS_AWAY;
-					else if ( !_tcscmp( show, _T("xa"))) status = ID_STATUS_NA;
-					else if ( !_tcscmp( show, _T("dnd"))) status = ID_STATUS_DND;
-					else if ( !_tcscmp( show, _T("chat"))) status = ID_STATUS_FREECHAT;
-				}
-			}	
-		}
+		}	
 
 		char priority = 0;
 		if (( priorityNode = xmlGetChild( node , "priority" )) != NULL && xmlGetText( priorityNode ) != NULL )
