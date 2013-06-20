@@ -1683,7 +1683,7 @@ void CJabberProto::OnProcessPresence( HXML node, ThreadData* info )
 			ListAdd( LIST_ROSTER, from );
 		}
 		DBCheckIsTransportedContact( from, hContact );
-		//int status = ID_STATUS_ONLINE;
+		int status = ID_STATUS_ONLINE;
 		/* GTalk android user set status as on the phone */
 		//LPCTSTR pEndOfJID = NULL; 
 		//pEndOfJID = _tcsrchr(from, '/');
