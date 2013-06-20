@@ -6,7 +6,6 @@
 !include "miranda-version.nsi"
 
 !define MIM_NAME                "Miranda IM"
-!define MIM_NAME                "Miranda IM"
 !define MIM_URL                 "http://www.miranda-im.org/"
 !define MIM_PUBLISHER           "Miranda IM Project"
 !define MIM_COPYRIGHT           "Copyright © 2000-2013 ${MIM_PUBLISHER}"
