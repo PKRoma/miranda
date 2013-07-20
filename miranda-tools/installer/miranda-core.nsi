@@ -7,7 +7,7 @@
 
 !define MIM_NAME                "Miranda IM"
 !define MIM_URL                 "http://www.miranda-im.org/"
-!define MIM_PUBLISHER           "Miranda IM Project"
+!define MIM_PUBLISHER           "${MIM_NAME} Project"
 !define MIM_COPYRIGHT           "Copyright © 2000-2013 ${MIM_PUBLISHER}"
 
 !define MIM_BUILD_ICONS_LOW     "icons\bin\locolor"
@@ -40,7 +40,7 @@ Name                            "${MIM_NAME} ${MIM_VERSION}"
 OutFile                         "..\..\miranda\bin\miranda-im-v${MIM_VERSION}-${MIM_BUILD_TYPE}.exe"
 !endif
 
-InstallDir                      "$PROGRAMFILES\Miranda IM"
+InstallDir                      "$PROGRAMFILES\${MIM_NAME}"
 InstallDirRegKey                HKLM "Software\Microsoft\Windows\CurrentVersion\App Paths\${MIM_BUILD_EXE}" "Path"
 SetCompressor                   /SOLID lzma
 SetOverWrite                    on
@@ -72,7 +72,7 @@ VAR INST_WARN
 !define MUI_COMPONENTSPAGE_NODESC
 !define MUI_LICENSEPAGE_BGCOLOR /grey
 !define MUI_FINISHPAGE_RUN $INSTDIR\${MIM_BUILD_EXE}
-!define MUI_FINISHPAGE_RUN_TEXT "Start Miranda IM"
+!define MUI_FINISHPAGE_RUN_TEXT "Start ${MIM_NAME}"
 !define MUI_FINISHPAGE_SHOWREADME $INSTDIR\readme.txt
 !define MUI_FINISHPAGE_SHOWREADME_TEXT "View Readme"
 !define MUI_FINISHPAGE_SHOWREADME_NOTCHECKED
@@ -145,11 +145,11 @@ LangString CLOSE_WARN ${LANG_ENGLISH}     "${MIM_NAME} is currently running.  It
   ${EndIf}
 !macroend
 
-Section "Miranda IM"
+Section "${MIM_NAME}"
   SectionIn RO
   !insertmacro CloseMiranda
 	
-  !insertmacro PrintInstallerDetails "Installing Miranda IM..."
+  !insertmacro PrintInstallerDetails "Installing ${MIM_NAME}..."
   
   !insertmacro WriteInstallerOption "0" "Import"
   !insertmacro WriteInstallerOption "0" "StartMenuShortCut"
@@ -233,7 +233,7 @@ Section "Miranda IM"
   !endif
 
   ${If} $INST_MODE = 0
-   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${MIM_NAME}" "DisplayName" "Miranda IM ${MIM_VERSION}" 
+   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${MIM_NAME}" "DisplayName" "${MIM_NAME} ${MIM_VERSION}" 
    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${MIM_NAME}" "UninstallString" "$INSTDIR\Uninstall.exe"
    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${MIM_NAME}" "InstallLocation" "$INSTDIR"
    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${MIM_NAME}" "DisplayIcon" "$INSTDIR\${MIM_BUILD_EXE}"
@@ -302,44 +302,90 @@ SectionEnd
   
 SubSection /e "Options" pOptions
   Section "Install Start Menu Shortcuts" pSCStartMenu
-    !insertmacro PrintInstallerDetails "Configuring Miranda IM..."
+    !insertmacro PrintInstallerDetails "Configuring ${MIM_NAME}..."
     !insertmacro WriteInstallerOption "1" "StartMenuShortCut"
     SetOutPath "$INSTDIR"
-    RMDir /r "$SMPROGRAMS\Miranda IM"
-    CreateDirectory "$SMPROGRAMS\Miranda IM"
-    CreateShortCut  "$SMPROGRAMS\Miranda IM\Miranda IM.lnk" "$INSTDIR\${MIM_BUILD_EXE}"
-    CreateShortCut  "$SMPROGRAMS\Miranda IM\Database Tool.lnk" "$INSTDIR\dbtool.exe"
-    WriteINIStr     "$SMPROGRAMS\Miranda IM\Homepage.url" "InternetShortcut" "URL" "${MIM_URL}"
-    WriteINIStr     "$SMPROGRAMS\Miranda IM\Get More Addons.url" "InternetShortcut" "URL" "http://addons.miranda-im.org/"
+    RMDir /r "$SMPROGRAMS\${MIM_NAME}"
+    CreateDirectory "$SMPROGRAMS\${MIM_NAME}"
+    CreateShortCut  "$SMPROGRAMS\${MIM_NAME}\${MIM_NAME}.lnk" "$INSTDIR\${MIM_BUILD_EXE}"
+    WriteINIStr     "$SMPROGRAMS\${MIM_NAME}\Homepage.url" "InternetShortcut" "URL" "${MIM_URL}"
+    WriteINIStr     "$SMPROGRAMS\${MIM_NAME}\Get More Addons.url" "InternetShortcut" "URL" "http://addons.miranda-im.org/"
   SectionEnd
 
   Section "Install Desktop Shortcut" pSCDesktop
-    !insertmacro PrintInstallerDetails "Configuring Miranda IM..."
+    !insertmacro PrintInstallerDetails "Configuring ${MIM_NAME}..."
     !insertmacro WriteInstallerOption "1" "DesktopShortCut"
     SetOutPath "$INSTDIR"
-    CreateShortCut  "$DESKTOP\Miranda IM.lnk" "$INSTDIR\${MIM_BUILD_EXE}"
+    CreateShortCut  "$DESKTOP\${MIM_NAME}.lnk" "$INSTDIR\${MIM_BUILD_EXE}"
   SectionEnd
 
   Section "Install Quicklaunch Shortcut" pSCQuickLaunch
-    !insertmacro PrintInstallerDetails "Configuring Miranda IM..."
+    !insertmacro PrintInstallerDetails "Configuring ${MIM_NAME}..."
     !insertmacro WriteInstallerOption "1" "QuickLaunchShortCut"
     SetOutPath "$INSTDIR"
-    CreateShortCut  "$QUICKLAUNCH\Miranda IM.lnk" "$INSTDIR\${MIM_BUILD_EXE}"
+    CreateShortCut  "$QUICKLAUNCH\${MIM_NAME}.lnk" "$INSTDIR\${MIM_BUILD_EXE}"
   SectionEnd
 SubSectionEnd
 
 Section Uninstall
+  ; All users shortcuts
   SetShellVarContext "all"
-  RMDir /r "$SMPROGRAMS\Miranda IM"
-  Delete "$DESKTOP\Miranda IM.lnk"
-  Delete "$QUICKLAUNCH\Miranda IM.lnk"
-  SetShellVarContext "current"
-  RMDir /r "$SMPROGRAMS\Miranda IM"
-  Delete "$DESKTOP\Miranda IM.lnk"
-  Delete "$QUICKLAUNCH\Miranda IM.lnk"
+  Delete "$SMPROGRAMS\${MIM_NAME}\${MIM_NAME}.lnk"
+  Delete "$SMPROGRAMS\${MIM_NAME}\Database Tool.lnk" ; legacy
+  Delete "$SMPROGRAMS\${MIM_NAME}\Homepage.url"
+  Delete "$SMPROGRAMS\${MIM_NAME}\Get More Addons.url"
+  RMDir "$SMPROGRAMS\${MIM_NAME}"
+  Delete "$DESKTOP\${MIM_NAME}.lnk"
+  Delete "$QUICKLAUNCH\${MIM_NAME}.lnk"
 
-  RMDir /r "$INSTDIR\Icons"
-  RMDir /r "$INSTDIR\Plugins"
+    ; Current user shortcuts
+  SetShellVarContext "current"
+  Delete "$SMPROGRAMS\${MIM_NAME}\${MIM_NAME}.lnk"
+  Delete "$SMPROGRAMS\${MIM_NAME}\Database Tool.lnk" ; legacy
+  Delete "$SMPROGRAMS\${MIM_NAME}\Homepage.url"
+  Delete "$SMPROGRAMS\${MIM_NAME}\Get More Addons.url"
+  RMDir "$SMPROGRAMS\${MIM_NAME}"
+  Delete "$DESKTOP\${MIM_NAME}.lnk"
+  Delete "$QUICKLAUNCH\${MIM_NAME}.lnk"
+  
+  ; Icons
+  Delete "$INSTDIR\Icons\proto_AIM.dll"
+  Delete "$INSTDIR\Icons\proto_GG.dll"
+  Delete "$INSTDIR\Icons\proto_ICQ.dll"
+  Delete "$INSTDIR\Icons\proto_IRC.dll"
+  Delete "$INSTDIR\Icons\proto_Jabber.dll"
+  Delete "$INSTDIR\Icons\proto_MSN.dll"
+  Delete "$INSTDIR\Icons\proto_Yahoo.dll"
+  Delete "$INSTDIR\Icons\tabsrmm_icons.dll"
+  Delete "$INSTDIR\Icons\toolbar_icons.dll"
+  Delete "$INSTDIR\Icons\xstatus_ICQ.dll"
+  Delete "$INSTDIR\Icons\xstatus_jabber.dll"
+  RMDir "$INSTDIR\Icons"
+
+  ; Plugins
+  Delete "$INSTDIR\Plugins\advaimg.dll"
+  Delete "$INSTDIR\Plugins\aim.dll"
+  Delete "$INSTDIR\Plugins\avs.dll"
+  Delete "$INSTDIR\Plugins\chat.dll"
+  Delete "$INSTDIR\Plugins\clist_classic.dll"
+  Delete "$INSTDIR\Plugins\clist_modern.dll"
+  Delete "$INSTDIR\Plugins\clist_mw.dll"
+  Delete "$INSTDIR\Plugins\clist_nicer.dll"
+  Delete "$INSTDIR\Plugins\dbx_3x.dll"
+  Delete "$INSTDIR\Plugins\dbx_mmap.dll"
+  Delete "$INSTDIR\Plugins\gg.dll"
+  Delete "$INSTDIR\Plugins\icq.dll"
+  Delete "$INSTDIR\Plugins\import.dll"
+  Delete "$INSTDIR\Plugins\irc.dll"
+  Delete "$INSTDIR\Plugins\irc_servers.ini"
+  Delete "$INSTDIR\Plugins\jabber.dll"
+  Delete "$INSTDIR\Plugins\msn.dll"
+  Delete "$INSTDIR\Plugins\scriver.dll"
+  Delete "$INSTDIR\Plugins\srmm.dll"
+  Delete "$INSTDIR\Plugins\tabsrmm.dll"
+  Delete "$INSTDIR\Plugins\yahoo.dll"
+  RMDir "$INSTDIR\Plugins"
+ 
   Delete "$INSTDIR\dbtool.exe"
   Delete "$INSTDIR\${MIM_BUILD_EXE}"
   Delete "$INSTDIR\zlib.dll"
@@ -441,11 +487,11 @@ Function CustomInstallPageLeave
   !insertmacro MUI_INSTALLOPTIONS_READ $INST_MODE "miranda-ui-type.ini" "Field 3" "State"
   ${If} $INST_MODE = 1
 	StrCpy $R0 $WINDIR 2
-	StrCpy $INST_DIR "$R0\Miranda IM"
+	StrCpy $INST_DIR "$R0\${MIM_NAME}"
   ${Else}
 	ReadRegStr $0 HKLM "Software\Microsoft\Windows\CurrentVersion\App Paths\${MIM_BUILD_EXE}" "Path"
 	${If} $0 == ""
-      StrCpy $INST_DIR "$PROGRAMFILES\Miranda IM"
+      StrCpy $INST_DIR "$PROGRAMFILES\${MIM_NAME}"
 	${Else}
 	  StrCpy $INST_DIR $0
 	${EndIf}
