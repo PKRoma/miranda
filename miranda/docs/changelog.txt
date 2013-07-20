@@ -3,9 +3,6 @@
                            www.miranda-im.org
 
 
-						   
-
-
 * New in 0.10.15
 Bugfixes:
  - Fixed issue with uninstaller removing unwanted files
