@@ -6,6 +6,14 @@
 						   
 
 
+* New in 0.10.15
+Bugfixes:
+ - Fixed issue with uninstaller removing unwanted files
+
+Enhancements:
+ - Move download hosting to project website (Google Project Hosting is ending file download support)
+
+
 * New in 0.10.14
 Bugfixes:
  - Minor changes to installer format
