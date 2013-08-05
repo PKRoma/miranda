@@ -3,6 +3,11 @@
                            www.miranda-im.org
 
 
+* New in 0.10.16
+Bugfixes:
+ - Updated zlib to 1.2.8
+
+
 * New in 0.10.15
 Bugfixes:
  - Fixed issue with uninstaller removing unwanted files
