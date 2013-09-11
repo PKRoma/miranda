@@ -3,6 +3,10 @@
                            www.miranda-im.org
 
 
+* New in 0.10.17
+ - Fix NSIS installer resources issue
+
+
 * New in 0.10.16
 Bugfixes:
  - Updated zlib to 1.2.8
