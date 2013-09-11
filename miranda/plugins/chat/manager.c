@@ -1332,7 +1332,7 @@ USERINFO* UM_AddUser(STATUSINFO* pStatusList, USERINFO** ppUserList, const TCHAR
 {
 	USERINFO * pTemp = *ppUserList, *pLast = NULL;
 
-	if (!pStatusList || !ppUserList || !ppUserList)
+	if (!pStatusList || !ppUserList)
 		return NULL;
 
 	while(pTemp && UM_CompareItem(pTemp, pszNick, wStatus) <= 0)
