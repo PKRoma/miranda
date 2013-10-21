@@ -26,8 +26,8 @@ BEGIN
     BEGIN                                                                     
         BLOCK "000004b0"                                                      
         BEGIN                                                                 
-            VALUE "Comments", "This software is licensed under the terms of the GNU General Public License.\0" 
-            VALUE "CompanyName", " \0"                                        
+            VALUE "Comments", "\0" 
+            VALUE "CompanyName", "Miranda IM\0"                                        
             VALUE "FileDescription", "Miranda IM\0"                           
             VALUE "FileVersion", MIRANDA_VERSION_STRING                
             VALUE "InternalName", "miranda32\0"                               
