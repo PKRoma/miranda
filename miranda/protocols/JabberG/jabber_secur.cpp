@@ -404,7 +404,6 @@ char* TScramAuth::getInitialRequest()
 	int cbLen = mir_snprintf( buf, sizeof( buf ), "n,,n=%s,r=%s", uname, cnonce ); 
 	msg1 = mir_strdup( buf + 3 );
 
-	mir_free( serv );
 	mir_free( uname );
 
 	return JabberBase64Encode( buf, cbLen );
