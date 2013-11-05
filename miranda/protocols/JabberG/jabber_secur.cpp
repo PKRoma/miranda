@@ -394,15 +394,14 @@ char* TScramAuth::getChallenge( const TCHAR* challenge )
 
 char* TScramAuth::getInitialRequest()
 {
-	char *uname = mir_utf8encodeT( info->username ),
-		 *serv  = mir_utf8encode( info->server );
+	char *uname = mir_utf8encodeT( info->username );
 
 	unsigned char nonce[24];
 	JCallService( MS_UTILS_GETRANDOM, sizeof(nonce), ( LPARAM )nonce );
 	cnonce = JabberBase64Encode(( char* )nonce, sizeof( nonce ));
 
 	char buf[4096];
-	int cbLen = mir_snprintf( buf, sizeof( buf ), "n,,n=%s@%s,r=%s", uname, serv, cnonce );
+	int cbLen = mir_snprintf( buf, sizeof( buf ), "n,,n=%s,r=%s", uname, cnonce ); 
 	msg1 = mir_strdup( buf + 3 );
 
 	mir_free( serv );
