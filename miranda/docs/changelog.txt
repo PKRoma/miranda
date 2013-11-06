@@ -3,11 +3,18 @@
                            www.miranda-im.org
 
 
+* New in 0.10.19
+Bugfixes:
+ - Fix for SCRAM authorization (affects jabber.ru servers)
+
+
 * New in 0.10.18
+Bugfixes:
  - Change update server url (old style update server has been disabled on the server)
 
 
 * New in 0.10.17
+Bugfixes:
  - Fix NSIS installer resources issue
 
 
