@@ -293,7 +293,7 @@ void CMsnProto::sttNotificationMessage(char* msgBody, bool isInitial)
 		if (MailData != NULL) processMailData((char*)MailData);
 
 		mir_sntprintf(tBuffer, SIZEOF(tBuffer), m_tszUserName);
-		mir_sntprintf(tBuffer2, SIZEOF(tBuffer2), TranslateT("Unread mail is available: %d in Inbox and %d in other folders)."),
+		mir_sntprintf(tBuffer2, SIZEOF(tBuffer2), TranslateT("Unread mail is available: %d in Inbox and %d in other folders."),
 			mUnreadMessages, mUnreadJunkEmails);
 	}
 
