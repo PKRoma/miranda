@@ -58,7 +58,7 @@ static void DoAnnoyingShellCommand(HWND hwnd,const TCHAR *szFilename,int cmd,POI
 			WCHAR* wszFilename = ( LPWSTR )szFilename;
 		#else
 			WCHAR wszFilename[MAX_PATH];
-			MultiByteToWideChar(CP_ACP,0,szFilename,-1,wszFilename,SIZEOF(wszFilename));
+			MultiByteToWideChar(CP_ACP,0,szFilename,-1,wszFilename,MAX_PATH);
 		#endif
 		if(pDesktopFolder->ParseDisplayName(NULL,NULL,wszFilename,NULL,&pCurrentIdl,NULL)==NOERROR) {
 			if(pCurrentIdl->mkid.cb) {
