@@ -3,6 +3,12 @@
                            www.miranda-im.org
 
 
+* New in 0.10.20
+Bugfixes:
+ - Fix possible crash with the file transfer dialog
+ - Minor translation fix
+
+
 * New in 0.10.19
 Bugfixes:
  - Fix for SCRAM authorization (affects jabber.ru servers)
