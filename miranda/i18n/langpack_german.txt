@@ -1599,8 +1599,8 @@ Eingehende Verb.
 Ports für eingehende Verbindungen festlegen
 [Range:]
 Bereich:
-[Example: 1050-1070, 2000-2013, 2500]
-Beispiele: 1050-1070, 2000-2013, 2500
+[Example: 1050-1070, 2000-2014, 2500]
+Beispiele: 1050-1070, 2000-2014, 2500
 [You will need to reconnect for the changes you have made on this page to take effect.]
 Damit die Einstellungen aktiv werden, muss man sich neu mit dem Server verbinden.
 

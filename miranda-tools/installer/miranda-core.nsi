@@ -8,7 +8,7 @@
 !define MIM_NAME                "Miranda IM"
 !define MIM_URL                 "http://www.miranda-im.org/"
 !define MIM_PUBLISHER           "${MIM_NAME} Project"
-!define MIM_COPYRIGHT           "Copyright © 2000-2013 ${MIM_PUBLISHER}"
+!define MIM_COPYRIGHT           "Copyright © 2000-2014 ${MIM_PUBLISHER}"
 
 !define MIM_BUILD_ICONS_LOW     "icons\bin\locolor"
 !define MIM_BUILD_ICONS_HI      "icons\bin\hicolor"

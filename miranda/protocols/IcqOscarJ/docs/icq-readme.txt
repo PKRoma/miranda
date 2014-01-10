@@ -463,7 +463,7 @@ Thanks to Angeli-Ka for nice custom status icons.
 License and Copyright
 _____________________
 
-Copyright (C) 2000-2013 Joe Kucera, Martin Öberg, Richard Hughes, Jon Keating
+Copyright (C) 2000-2014 Joe Kucera, Martin Öberg, Richard Hughes, Jon Keating
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License

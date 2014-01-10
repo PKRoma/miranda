@@ -2,7 +2,7 @@
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2013 Miranda ICQ/IM project, 
+Copyright 2000-2014 Miranda ICQ/IM project, 
 all portions of this codebase are copyrighted to the people 
 listed in contributors.txt.
 
@@ -27,9 +27,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define MIRANDA_MAKE_VERSION(a,b,c,d)   (((((DWORD)(a))&0xFF)<<24)|((((DWORD)(b))&0xFF)<<16)|((((DWORD)(c))&0xFF)<<8)|(((DWORD)(d))&0xFF))
 #endif
 
-#define MIRANDA_VERSION_FILEVERSION 0,10,20,0
-#define MIRANDA_VERSION_STRING      "0.10.20.0"
-#define MIRANDA_VERSION_CORE        MIRANDA_MAKE_VERSION(0, 10, 20, 0)
-#define MIRANDA_VERSION_CORE_STRING "0.10.20"
+#define MIRANDA_VERSION_FILEVERSION 0,10,21,0
+#define MIRANDA_VERSION_STRING      "0.10.21.0"
+#define MIRANDA_VERSION_CORE        MIRANDA_MAKE_VERSION(0, 10, 21, 0)
+#define MIRANDA_VERSION_CORE_STRING "0.10.21"
                                                                               
 #endif // M_VERSION_H__                                                       

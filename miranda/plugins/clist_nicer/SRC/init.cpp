@@ -4,7 +4,7 @@
  *
  * Miranda IM: the free IM client for Microsoft* Windows*
  *
- * Copyright 2000-2013 Miranda ICQ/IM project,
+ * Copyright 2000-2014 Miranda ICQ/IM project,
  * all portions of this codebase are copyrighted to the people
  * listed in contributors.txt.
  *
@@ -24,7 +24,7 @@
  *
  * part of clist_nicer plugin for Miranda.
  *
- * (C) 2005-2013 by silvercircle _at_ gmail _dot_ com and contributors
+ * (C) 2005-2014 by silvercircle _at_ gmail _dot_ com and contributors
  *
  * $Id$
  *
@@ -110,7 +110,7 @@ PLUGININFOEX pluginInfo = {
 		sizeof(PLUGININFOEX), "CList Nicer+", PLUGIN_MAKE_VERSION(0, 9, 2, 1),
 #endif
 		"Display contacts, event notifications, protocol status",
-		"Pixel, egoDust, cyreve, Nightwish", "", "Copyright 2000-2013 Miranda-IM project", "http://www.miranda-im.org",
+		"Pixel, egoDust, cyreve, Nightwish", "", "Copyright 2000-2014 Miranda-IM project", "http://www.miranda-im.org",
 		UNICODE_AWARE,
 		DEFMOD_CLISTALL,
 #if defined(_UNICODE)

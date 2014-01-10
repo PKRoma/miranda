@@ -2,7 +2,7 @@
 /* $Id: dcc7.c,v 1.2 2007-07-20 23:00:49 wojtekka Exp $ */
 
 /*
- *  (C) Copyright 2001-2013 Wojtek Kaniewski <wojtekka@irc.pl>
+ *  (C) Copyright 2001-2014 Wojtek Kaniewski <wojtekka@irc.pl>
  *                          Tomasz Chiliński <chilek@chilan.com>
  *                          Adam Wysocki <gophi@ekg.chmurka.net>
  *                          Bartłomiej Zimoń <uzi18@o2.pl>

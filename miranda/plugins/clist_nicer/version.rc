@@ -36,7 +36,7 @@ BEGIN
             VALUE "FileDescription", RES_FILE_DESC
             VALUE "FileVersion", VERSION_STRING
             VALUE "InternalName", "clist_nicer"
-            VALUE "LegalCopyright", "Copyright (C) 2004-2013"
+            VALUE "LegalCopyright", "Copyright (C) 2004-2014"
             VALUE "LegalTrademarks", "Licensed under the Gnu general public license V2 or any later version."
             VALUE "OriginalFilename", "clist_nicer.dll"
             VALUE "ProductName", "Contact list plugin for Miranda IM"
