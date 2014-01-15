@@ -58,8 +58,6 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "aim", "..\protocols\AimOsca
 		{E2A369CD-EDA3-414F-8AD0-E732CD7EE68C} = {E2A369CD-EDA3-414F-8AD0-E732CD7EE68C}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "modernopt", "..\plugins\modernopt\modernopt_9.vcproj", "{153DD132-084C-4DE4-8F40-A088BCB22723}"
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dbrw", "..\plugins\dbrw\dbrw_9.vcproj", "{E481F22E-ED6C-499F-A0CA-F2A3173376D8}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "cln_skinedit", "..\plugins\clist_nicer\skineditor\skinedit_9.vcproj", "{987F026D-EB1F-4013-ADA8-2406ACCDA526}"
