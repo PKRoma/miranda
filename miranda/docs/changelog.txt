@@ -6,6 +6,7 @@
 * New in 0.10.21
 Bugfixes:
  - Update copyrights
+ - Update notification was shown before first setup
 
 
 * New in 0.10.20
