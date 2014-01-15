@@ -106,9 +106,9 @@ PLUGININFOEX pluginInfoEx = {
 #endif
 	__VERSION_DWORD,
 	"Load and manage contact pictures for other plugins.",
-	"Nightwish, Pescuma",
-	"",
-	"Copyright 2000-2014 Miranda-IM project",
+	"Miranda IM",
+	"noreply@miranda-im.org",
+	"Copyright © 2000-2014 Miranda IM Project",
 	"http://www.miranda-im.org",
 	UNICODE_AWARE,
 	0,

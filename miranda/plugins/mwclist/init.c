@@ -86,9 +86,9 @@ PLUGININFOEX pluginInfo = {
 	#endif
 	PLUGIN_MAKE_VERSION(0,9,0,0),
 	"Display contacts, event notifications, protocol status with MW modifications",
-	"",
-	"bethoven@mailgate.ru" ,
-	"Copyright 2000-2014 Miranda-IM project ["__DATE__" "__TIME__"]",
+	"Miranda IM",
+	"noreply@miranda-im.org" ,
+	"Copyright © 2000-2014 Miranda IM Project",
 	"http://www.miranda-im.org",
 	UNICODE_AWARE,
 	DEFMOD_CLISTALL,

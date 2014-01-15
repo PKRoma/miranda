@@ -70,10 +70,10 @@ PLUGININFOEX pluginInfo = {
 #endif
 	PLUGIN_MAKE_VERSION(_VER_MAJOR, _VER_MINOR, _VER_REVISION, _VER_BUILD),
 	"IM and group chat module for Miranda IM.",
-	"The Miranda developers team and contributors",
-	"silvercircle _at_ gmail _dot_ com",
-	"2000-2014 Miranda Project and contributors. See readme.txt for more.",
-	"http://miranda.or.at",
+	"Miranda IM",
+	"noreply@miranda-im.org",
+	"Copyright © 2000-2014 Miranda IM Project",
+	"http://www.miranda-im.org",
 	UNICODE_AWARE,
 	DEFMOD_SRMESSAGE,            // replace internal version (if any)
 	{0x6ca5f042, 0x7a7f, 0x47cc, { 0xa7, 0x15, 0xfc, 0x8c, 0x46, 0xfb, 0xf4, 0x34 }} //{6CA5F042-7A7F-47cc-A715-FC8C46FBF434}

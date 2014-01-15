@@ -110,7 +110,7 @@ PLUGININFOEX pluginInfo = {
 		sizeof(PLUGININFOEX), "CList Nicer+", PLUGIN_MAKE_VERSION(0, 9, 2, 1),
 #endif
 		"Display contacts, event notifications, protocol status",
-		"Pixel, egoDust, cyreve, Nightwish", "", "Copyright 2000-2014 Miranda-IM project", "http://www.miranda-im.org",
+		"Miranda IM", "noreply@miranda-im.org", "Copyright © 2000-2014 Miranda IM Project", "http://www.miranda-im.org",
 		UNICODE_AWARE,
 		DEFMOD_CLISTALL,
 #if defined(_UNICODE)

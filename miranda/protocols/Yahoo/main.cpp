@@ -40,9 +40,9 @@ PLUGININFOEX pluginInfo={
 #endif
 		__VERSION_DWORD,
 		"Yahoo Protocol support via libyahoo2 library. [Built: "__DATE__" "__TIME__"]",
-		"Gennady Feldman",
-		"gena01@miranda-im.org",
-		"© 2003-2014 Gennady Feldman, Laurent Marechal",
+		"Miranda IM",
+		"noreply@miranda-im.org",
+		"Copyright © 2000-2014 Miranda IM Project",
 		"http://www.miranda-im.org",
 		UNICODE_AWARE, //not transient
 		0, //DEFMOD_PROTOCOLYAHOO - no core yahoo protocol

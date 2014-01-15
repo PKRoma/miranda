@@ -20,10 +20,10 @@ PLUGININFOEX pluginInfo={
 	"Plugin Template",
 	PLUGIN_MAKE_VERSION(0,0,0,2),
 	"The long description of your plugin, to go in the plugin options dialog",
-	"J. Random Hacker",
-	"noreply@sourceforge.net",
-	"© 2002 J. Random Hacker",
-	"http://miranda-icq.sourceforge.net/",
+	"Miranda IM",
+	"noreply@miranda-im.org",
+	"Copyright © 2000-2014 Miranda IM Project",
+	"http://www.miranda-im.org",
 	0,		//not transient
 	0,		//doesn't replace anything built-in
     // Generate your own unique id for your plugin.

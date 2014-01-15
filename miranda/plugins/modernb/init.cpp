@@ -58,13 +58,13 @@ int EventArea_UnloadModule();
 
 PLUGININFOEX pluginInfo = {
 	sizeof(PLUGININFOEX),
-	DEBUG_AWARE_STR "Modern Contact List '09",
+	DEBUG_AWARE_STR "Modern Contact List",
 	0,                              //will initialized later in MirandaPluginInfoEx
 	"Display contacts, event notifications, protocol status with advantage visual modifications. Supported MW modifications, enchanced metacontact cooperation.",
-	"Artem Shpynov, Ricardo Pescuma Domenecci and Anton Senko based on clist_mw by Bethoven",
-	"ashpynov@gmail.com" ,
-	"Copyright 2000-2014 Miranda-IM project ["__DATE__" "__TIME__"]",
-	"http://miranda-im.org/development",
+	"Miranda IM",
+	"noreply@miranda-im.org" ,
+	"Copyright © 2000-2014 Miranda IM Project",
+	"http://www.miranda-im.org",
 	UNICODE_AWARE,
 	DEFMOD_CLISTALL,
 #ifdef UNICODE

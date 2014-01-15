@@ -45,8 +45,8 @@ PLUGININFOEX pluginInfo = {
 #endif
 	PLUGIN_MAKE_VERSION(2, 10, 0, 2),
 	"Scriver - send and receive instant messages",
-	"Miranda IM Development Team",
-	"the_leech@users.berlios.de",
+	"Miranda IM",
+	"noreply@miranda-im.org",
 	"Copyright (c) 2000-2014 Miranda IM Project",
 	"http://www.miranda-im.org",
 	UNICODE_AWARE,

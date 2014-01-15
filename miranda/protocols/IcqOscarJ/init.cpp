@@ -57,10 +57,10 @@ PLUGININFOEX pluginInfo = {
 	"IcqOscarJ Protocol",
 	__VERSION_DWORD,
 	"Support for ICQ network, enhanced.",
-	"Joe Kucera, Bio, Martin Öberg, Richard Hughes, Jon Keating, etc",
-	"jokusoftware@miranda-im.org",
-	"(C) 2000-2014 M.Öberg, R.Hughes, J.Keating, Bio, Angeli-Ka, G.Hazan, J.Kucera",
-	"http://addons.miranda-im.org/details.php?action=viewfile&id=1683",
+	"Miranda IM",
+	"noreply@miranda-im.org",
+	"Copyright © 2000-2014 Miranda IM Project",
+	"http://www.miranda-im.org",
 	UNICODE_AWARE,
 	0,   //doesn't replace anything built-in
 #if defined( _UNICODE )
