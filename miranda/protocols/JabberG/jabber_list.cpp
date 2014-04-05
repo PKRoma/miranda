@@ -348,7 +348,9 @@ TCHAR* CJabberProto::ListGetBestResourceNamePtr( const TCHAR* jid )
 	TCHAR* res = NULL;
 
 	JABBER_LIST_ITEM* LI = m_lstRoster[i-1];
-	if ( LI->resourceCount > 1 ) {
+	if ( LI->resourceCount >= 1 ) {
+		if (!res && LI->resource)
+			res = LI->resource[0].resourceName;
 		if (LI->resourceMode == RSMODE_MANUAL && LI->manualResource )
 			res = LI->manualResource->resourceName;
 		else {
