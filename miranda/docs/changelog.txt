@@ -3,6 +3,12 @@
                            www.miranda-im.org
 
 
+* New in 0.10.22
+Bugfixes:
+ - Installer fixes/changes
+ - Jabber: Fix issue with acknowledgement
+
+ 
 * New in 0.10.21
 Bugfixes:
  - Update copyrights
