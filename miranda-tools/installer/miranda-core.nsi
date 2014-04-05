@@ -73,9 +73,6 @@ VAR INST_WARN
 !define MUI_LICENSEPAGE_BGCOLOR /grey
 !define MUI_FINISHPAGE_RUN $INSTDIR\${MIM_BUILD_EXE}
 !define MUI_FINISHPAGE_RUN_TEXT "Start ${MIM_NAME}"
-!define MUI_FINISHPAGE_SHOWREADME $INSTDIR\readme.txt
-!define MUI_FINISHPAGE_SHOWREADME_TEXT "View Readme"
-!define MUI_FINISHPAGE_SHOWREADME_NOTCHECKED
 
 !insertmacro MUI_PAGE_LICENSE "${MIM_BUILD_SRC}\docs\license.txt"
 Page Custom CustomInstallPage CustomInstallPageLeave
@@ -93,7 +90,7 @@ Page Custom CustomInstallPage CustomInstallPageLeave
 
 !insertmacro MUI_LANGUAGE "English"
 
-LangString CLOSE_WARN ${LANG_ENGLISH}     "${MIM_NAME} is currently running.  It is recommended that you close ${MIM_NAME} so the installation can complete successfully."
+LangString CLOSE_WARN ${LANG_ENGLISH}     "${MIM_NAME} is currently running.  Please close ${MIM_NAME} so the installation can complete."
 
 !macro CloseMiranda
   FindWindow $0 "Miranda"
@@ -233,7 +230,7 @@ Section "${MIM_NAME}"
   !endif
 
   ${If} $INST_MODE = 0
-   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${MIM_NAME}" "DisplayName" "${MIM_NAME} ${MIM_VERSION}" 
+   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${MIM_NAME}" "DisplayName" "${MIM_NAME}" 
    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${MIM_NAME}" "UninstallString" "$INSTDIR\Uninstall.exe"
    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${MIM_NAME}" "InstallLocation" "$INSTDIR"
    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${MIM_NAME}" "DisplayIcon" "$INSTDIR\${MIM_BUILD_EXE}"
@@ -331,7 +328,6 @@ Section Uninstall
   ; All users shortcuts
   SetShellVarContext "all"
   Delete "$SMPROGRAMS\${MIM_NAME}\${MIM_NAME}.lnk"
-  Delete "$SMPROGRAMS\${MIM_NAME}\Database Tool.lnk" ; legacy
   Delete "$SMPROGRAMS\${MIM_NAME}\Homepage.url"
   Delete "$SMPROGRAMS\${MIM_NAME}\Get More Addons.url"
   RMDir "$SMPROGRAMS\${MIM_NAME}"
@@ -341,7 +337,6 @@ Section Uninstall
     ; Current user shortcuts
   SetShellVarContext "current"
   Delete "$SMPROGRAMS\${MIM_NAME}\${MIM_NAME}.lnk"
-  Delete "$SMPROGRAMS\${MIM_NAME}\Database Tool.lnk" ; legacy
   Delete "$SMPROGRAMS\${MIM_NAME}\Homepage.url"
   Delete "$SMPROGRAMS\${MIM_NAME}\Get More Addons.url"
   RMDir "$SMPROGRAMS\${MIM_NAME}"
@@ -470,7 +465,7 @@ Function VerifyDirectoryDisplay
 FunctionEnd
 
 Function CustomInstallPage
-  !insertmacro MUI_HEADER_TEXT "Installation Mode" "Select the type of install to perform."
+  !insertmacro MUI_HEADER_TEXT "Installation Mode" "Select install type."
   ReserveFile "miranda-ui-type.ini"
   !insertmacro MUI_INSTALLOPTIONS_EXTRACT "miranda-ui-type.ini"
   ${If} $INST_MODE = 0
