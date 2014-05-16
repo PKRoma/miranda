@@ -37,9 +37,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define UN_CUSTOMXMLURL      "UpdateNotifyCustomXMLURL"
 #define UN_URLXML            "http://update.miranda-im.org/v1/update.xml"
 #define UN_MINCHECKTIME      60*60*24 /* Check no more than once a day */
-#define UN_DEFAULTCHECKTIME  60*60*72 /* Default to check once every 3 days */
+#define UN_DEFAULTCHECKTIME  60*60*24 /* Default to check once every 3 days */
 #define UN_FIRSTCHECK        60*60 /* First check 1 hour after startup */
-#define UN_REPEATNOTIFYDLY   60*60*72 /* 3 days before showing release notification again */
+#define UN_REPEATNOTIFYDLY   60*60*24*5 /* 5 days before showing release notification again */
 
 typedef struct {
 	int isNew;

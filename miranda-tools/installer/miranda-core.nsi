@@ -42,7 +42,6 @@ OutFile                         "..\..\miranda\bin\miranda-im-v${MIM_VERSION}-${
 
 InstallDir                      "$PROGRAMFILES\${MIM_NAME}"
 InstallDirRegKey                HKLM "Software\Microsoft\Windows\CurrentVersion\App Paths\${MIM_BUILD_EXE}" "Path"
-SetCompressor                   /SOLID lzma
 SetOverWrite                    on
 BrandingText                    "miranda-im.org"
 
@@ -90,7 +89,7 @@ Page Custom CustomInstallPage CustomInstallPageLeave
 
 !insertmacro MUI_LANGUAGE "English"
 
-LangString CLOSE_WARN ${LANG_ENGLISH}     "${MIM_NAME} is currently running.  Please close ${MIM_NAME} so the installation can complete."
+LangString CLOSE_WARN ${LANG_ENGLISH}     "${MIM_NAME} is currently running.  Please close the application so the installation can complete."
 
 !macro CloseMiranda
   FindWindow $0 "Miranda"
@@ -305,8 +304,7 @@ SubSection /e "Options" pOptions
     RMDir /r "$SMPROGRAMS\${MIM_NAME}"
     CreateDirectory "$SMPROGRAMS\${MIM_NAME}"
     CreateShortCut  "$SMPROGRAMS\${MIM_NAME}\${MIM_NAME}.lnk" "$INSTDIR\${MIM_BUILD_EXE}"
-    WriteINIStr     "$SMPROGRAMS\${MIM_NAME}\Homepage.url" "InternetShortcut" "URL" "${MIM_URL}"
-    WriteINIStr     "$SMPROGRAMS\${MIM_NAME}\Get More Addons.url" "InternetShortcut" "URL" "http://addons.miranda-im.org/"
+    WriteINIStr     "$SMPROGRAMS\${MIM_NAME}\Donate.url" "InternetShortcut" "URL" "http://www.miranda-im.org/donate/"
   SectionEnd
 
   Section "Install Desktop Shortcut" pSCDesktop
@@ -337,8 +335,11 @@ Section Uninstall
     ; Current user shortcuts
   SetShellVarContext "current"
   Delete "$SMPROGRAMS\${MIM_NAME}\${MIM_NAME}.lnk"
+  Delete "$SMPROGRAMS\${MIM_NAME}\Donate.url"
+  ; legacy begin
   Delete "$SMPROGRAMS\${MIM_NAME}\Homepage.url"
   Delete "$SMPROGRAMS\${MIM_NAME}\Get More Addons.url"
+  ; legacy end
   RMDir "$SMPROGRAMS\${MIM_NAME}"
   Delete "$DESKTOP\${MIM_NAME}.lnk"
   Delete "$QUICKLAUNCH\${MIM_NAME}.lnk"
