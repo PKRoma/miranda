@@ -3,6 +3,11 @@
                            www.miranda-im.org
 
 
+* New in 0.10.24
+Bugfixes:
+ - Installer fixes (more internal NSIS updates)
+
+
 * New in 0.10.23
 Bugfixes:
  - Installer fixes (internal NSIS update)
